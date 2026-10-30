@@ -15,7 +15,7 @@ The page refuses a skin missing any of these (see `REQUIRED` in the page):
 |---|---|
 | `name`, `kind` | Display name; one line on the method ("Hologram light in sculpted armour") |
 | `bg` | The console's background colour |
-| `css` | The skin's CSS tokens: `--s-ink`, `--s-dim`, `--s-num`, `--s-body`, `--btn-ink`, `--btn-justify`, `--btn-font`, `--btn-track`, `--btn-case`, `--btn-motion`, `--btn-press`, `--tab-font`, `--tab-ink`, `--tab-ink-on`, `--title-font`, `--title-ink`, `--lbl-font`, `--num-font`; optional `--btn-align`, `--btn-pt` |
+| `css` | The skin's CSS tokens (optional ones: `--btn-shadow`, `--btn-align`, `--btn-pt`, and `--bt-rep`, `--bf-rep` set to `round` to tile the bar images instead of stretching them): `--s-ink`, `--s-dim`, `--s-num`, `--s-body`, `--btn-ink`, `--btn-justify`, `--btn-font`, `--btn-track`, `--btn-case`, `--btn-motion`, `--btn-press`, `--tab-font`, `--tab-ink`, `--tab-ink-on`, `--title-font`, `--title-ink`, `--lbl-font`, `--num-font`; optional `--btn-align`, `--btn-pt` |
 | `accent`, `warn` | Accent and warning colours |
 | `title(t, m)` | Places a panel's title element `t` (CSS text) given the panel frame's margins `m` (top, right, bottom, left) |
 | `plateText` | `{ left, top, width, height, font, color, sub }`: the name plate's live text field and text |
