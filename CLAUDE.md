@@ -317,7 +317,8 @@ else's artwork):
     numbers decor.
   - **Kethran Hegemony**: **modelled hard-surface pieces rendered in Blender** (owner: "build the other
     design language using 3d models in blender like starcraft"): armoured gunmetal plates, bolts,
-    conduits, trapezoid wedge keycaps with lit lenses, harsh top light (`tools/blender/build_ui_kethran.py`).
+    conduits, plain trapezoid wedge keycaps ("buttons should be more plain"), harsh top light
+    (`tools/blender/build_ui_kethran.py`).
   - **Vos Syndicate** (the pirates): **a hand-drawn aesthetic** (owner: "design a hand drawn aesthetic of
     the mirak ui"): ink outlines that wobble, washes and hatching, lopsided claw-tag buttons, spiral and
     claw icons, drawn by a committed script, never by hand.

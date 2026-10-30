@@ -67,6 +67,7 @@ ROLES = {
     "gunmetal":  dict(c=PAL["gunmetal"], r=0.46, m=0.3, wear=0.6, grime=0.9),
     "gunmetal2": dict(c="#24282c", r=0.5, m=0.3, wear=0.45, grime=0.9),
     "iron":      dict(c=PAL["iron"], r=0.42, m=0.45, wear=0.75, grime=0.8),
+    "iron_hi":   dict(c="#626a72", r=0.36, m=0.5, wear=0.75, grime=0.7),
     "steel":     dict(c=PAL["steel"], r=0.34, m=0.8, wear=0.0, grime=0.5),
     "oxide":     dict(c=PAL["oxide"], r=0.62, m=0.0, wear=0.9, grime=0.8),
     "signal":    dict(c=PAL["signal"], r=0.5, m=0.0, wear=0.5, grime=0.6),
@@ -327,7 +328,9 @@ def keycap(K, outer, key, z_top, lens_role, key_role="iron", lens_inset=8.0,
     """The Kethran wedge key: a trapezoid socket bezel round a recessed socket, and a raised
     trapezoid keycap (wider at the top) whose face carries a backlit glass lens strip sunk into a
     chamfered channel. outer and key are trapezoids (tx0, tx1, ty, bx0, bx1, by); z_top is the cap's
-    face height in mm (9 at rest, 3 pressed: 6 mm of travel below the bezel's 6 mm face)."""
+    face height in mm (9 at rest, 3 pressed: 6 mm of travel below the bezel's 6 mm face).
+    With lens_role None the cap is plain (owner, 2026-10-30: "buttons should be more plain"): a bare
+    chamfered wedge face that carries the live label or arrow, its state told by the cap itself."""
     if outer and bezel_role:
         tx0, tx1, ty, bx0, bx1, by = outer
         sock = (tx0 + 5.5, tx1 - 5.5, ty + 4.5, bx0 + 4.5, bx1 - 4.5, by - 4.5)
@@ -335,6 +338,9 @@ def keycap(K, outer, key, z_top, lens_role, key_role="iron", lens_inset=8.0,
         # the socket floor: the bezel's own trapezoid pulled in, so nothing shows past the bezel
         K.prism(chamfer(trap(tx0 + 3, tx1 - 3, ty + 2.5, bx0 + 2.5, bx1 - 2.5, by - 2.5), 3), -9, -6, "socket")
     kx0, kx1, kty, kbx0, kbx1, kby = key
+    if lens_role is None:
+        K.prism(chamfer(trap(*key), 3), -7.5, z_top, key_role, bevel=2.5)
+        return
     ly0, ly1 = lens_y or (kty + (kby - kty) * 0.4, kty + (kby - kty) * 0.62)
 
     def side(y, left):
@@ -399,10 +405,10 @@ def button(state):
     def build(K):
         w, h = 160, 56
         z = 3.0 if state == "pressed" else 9.0      # 6 mm of travel
-        lens = {"idle": "lens_idle", "hover": "lens_hover", "pressed": "lens_hot"}[state]
-        # the pressed key sits in its socket's shadow: its cap reads darker, not just lower
-        keycap(K, (0, w, 0, 12, w - 12, h), (9.5, w - 9.5, 8, 18.5, w - 18.5, 48), z, lens,
-               key_role="gunmetal" if state == "pressed" else "iron")
+        # A plain cap: hover lifts its steel a shade; the pressed key sinks into its socket's shadow and
+        # reads darker, not just lower.
+        keycap(K, (0, w, 0, 12, w - 12, h), (9.5, w - 9.5, 8, 18.5, w - 18.5, 48), z, None,
+               key_role={"idle": "iron", "hover": "iron_hi", "pressed": "gunmetal"}[state])
     return build
 
 
@@ -519,8 +525,7 @@ def helm_pad(K):
             holes=[chamfer(trap(*sk), 3) for sk in socks])
     for c, r, key in keys:
         centre = (c, r) == (1, 1)
-        keycap(K, None, key, 10.0 if centre else 9.0, "lens_hover" if centre else "lens_idle",
-               key_role="oxide" if centre else "iron", bezel_role=None, lens_inset=7.0 if centre else 6.0)
+        keycap(K, None, key, 10.0 if centre else 9.0, None, key_role="oxide" if centre else "iron", bezel_role=None)
 
 
 def ssd_bezel(K):

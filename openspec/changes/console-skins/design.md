@@ -33,7 +33,7 @@ the survey asks the owner to correct them.
 | | Concord | Kethran Hegemony | Vos Syndicate |
 |---|---|---|---|
 | **Method** | Flat vector, back-lit, built on LCARS's principles | Hard-surface models, lit and rendered in Blender | Hand-drawn: ink, wash and hatching, drawn by a script |
-| **Button shape** | **Pill**: a round-capped bar segment; where a frame ends, its cap is the button | **Trapezoid wedge keycap**: raised, chamfered, wider at the top, with a lit lens strip; sinks when pressed | **Claw tag**: a lopsided hand-cut tag with one hooked claw corner and an uneven ink edge |
+| **Button shape** | **Pill**: a round-capped bar segment; where a frame ends, its cap is the button | **Trapezoid wedge keycap**: raised, chamfered, wider at the top, a plain face (owner: "buttons should be more plain"); lighter steel on hover, sinks and darkens when pressed | **Claw tag**: a lopsided hand-cut tag with one hooked claw corner and an uneven ink edge |
 | **Frame** | The sweep: an elbow joining a thick vertical bar to a thin horizontal one; never the same thickness after a turn | A heavy bolted bezel with chamfered corners around recessed dark glass, conduits along the edges | A wobbly inked border over a stained wash, a spiral or a knot in each corner |
 | **Light and shading** | None painted: flat colour that glows, on black | Harsh key light from the top left, rim light, deep occlusion, spec on bevels, emissive lenses | Drawn: hatching on the shadow side, a dry-brush highlight, a little ink bleed |
 | **Icons** | Open circles and arcs in an even thin line; nothing pointed (from the saucer and the circle of species) | Solid wedges, chevrons and blades pointing forward (from the prow); stencilled | Brush-drawn spirals, claws, eyes and teeth, a little crooked (from tattoos and trophies) |
@@ -84,8 +84,8 @@ Text: white `#eef3ff` normal, Lilac highlight. Background: true black.
 
 Every piece is a hard-surface model rendered face on in Cycles (`tools/blender/build_ui_kethran.py`, writing
 `assets/ui/kethran/` and its `manifest.json` of sizes and margins). Gunmetal plates bolted in layers, chamfers that
-catch a harsh top light, recessed dark glass, conduits along the edges, trapezoid wedge keycaps with an amber lens
-strip that sinks when pressed, a caged alert lamp, and an iron crest of a prow between two blade chevrons with a red
+catch a harsh top light, recessed dark glass, conduits along the edges, plain trapezoid wedge keycaps that sink when pressed (owner, 2026-10-30, on version 2:
+"buttons should be more plain. BUT YES YOU ARE GETTINGIT"), a caged alert lamp, and an iron crest of a prow between two blade chevrons with a red
 enamel inlay. Hazard notches are red and black, not yellow and black.
 
 | Colour | Hex | Role | Ideology |
