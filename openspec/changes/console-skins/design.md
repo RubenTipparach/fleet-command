@@ -152,6 +152,36 @@ vbased on this"):
 | Button shape | **Instrument key**: an enamel faceplate with a domed chrome push button set into its left end |
 | Progress and gauges | Needle meters on ruled scales, oscilloscope traces on a graticule |
 
+A seventh (owner, 2026-10-30, with a screenshot of a Starfleet Command battle console: "A gurilla style faction, gun
+metal, beveled corner, industrial retro CRT style buttons", then "that faction is from the gorn, which are more hunter
+like faction, they enjoy the sport, so their ui is reminiscent of a dense jungle akin to the Predator"). We take the
+shape only: an original reptilian race that hunts for sport, its console a hunter's kit carried through a dense jungle.
+No name, ship, glyph or art from that game or from those films. The name is ours and provisional (survey U10).
+
+| | Ssarith Hunt |
+|---|---|
+| World view | The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted |
+| Bodies and technology | Big-boned reptiles with heavy clawed hands, slow and silent until they strike; a hunter's field kit: worn gunmetal, camouflage, tracking tubes, grown over by the jungle it hides in |
+| Ships | Squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen |
+| Method | Modelled in Blender: worn gunmetal with an oiled sheen and 45 degree chamfers, hex bolts in counterbores, canopy camouflage on the hero pieces, vines and frond leaves over the hardware, tally marks and tracking reticles in bone white, green phosphor tubes behind curved glass |
+| Button shape | **Tube key**: a small curved CRT screen with scanlines, set into a thick cut-cornered gunmetal bezel; dark at rest, lit green on hover, flaring and sunk 1.5 mm when pressed |
+| Frame | Heavy chamfered gunmetal with a canopy-green inner lip round a dark tube well; a vine curls over one corner and fronds cover another |
+| Light and shading | A dim light falling through the canopy from above, a weak cool fill; the tubes spill green onto the steel |
+| Icons | Hunt glyphs drawn as glowing vector strokes on tiny tubes: a track mark, closing brackets, a scale plate, a snare, a scent trace, a call, a skinning blade, a trail to an X, a tally |
+| Progress and gauges | Segmented phosphor cells; a tracker that sweeps and marks the quarry |
+| Type | A stencilled military face for titles (Black Ops One) over a phosphor terminal face for readouts (VT323) |
+| Motion | A key's tube flares and settles; the tracker sweeps; nothing moves until it strikes |
+| Distinct from | The Vhorr Brood (a grown hive: hide, membranes, no metal); the Krai Warhost (open war: black blades, angry red, triangles); the Vos (flamboyant pirates, hand-drawn) |
+
+| Colour | Hex | Role | Ideology |
+|---|---|---|---|
+| Gunmetal | `#3a4044` | Plates, bezels, keys | The hunter's gear: plain, made to outlast the hunt |
+| Canopy | `#2f4a2a` | Camouflage, field paint | The hunting ground; staying unseen |
+| Moss | `#5b6340` | Camouflage mottling | Patience: the hunter becomes the jungle |
+| Phosphor | `#6dff8a` | Tubes, readouts, traces | The tracker: the quarry in sight |
+| Bone | `#d8cfb4` | Tally marks, trophies, titles | The count of worthy kills |
+| Kill red | `#c2412b` | Alerts only | The strike, given once |
+
 ## Rendered, not drawn (version 10 onward)
 
 The owner, 2026-10-30, on version 9: "all kinda get the point across, but I think svgs should be reserved for flat stuff
@@ -169,6 +199,7 @@ rendered shell around the UI panels and elements".
 | Kethran Hegemony | Hard surface in Blender | `tools/blender/build_ui_kethran.py` |
 | Vhorr Brood | Organic in Blender: hide with light through it (Voronoi veins, subsurface, clear coat), iridescent carapace (thin film), flesh tendrils (subsurface), sinew fibres, blister pods glowing from their cores | `tools/blender/build_ui_vhorr.py` |
 | Kelvane Institute | Lab dashboard in Blender: cream enamel with an orange-peel finish in chrome bezels, domed push buttons with amber pilot rings, bat-handle toggles, a needle meter under glass, knurled knobs, amber displays, a phosphor scope with its graticule, jewel lamps, engraved placards | `tools/blender/build_ui_kelvane.py` |
+| Ssarith Hunt | Hunter's jungle kit in Blender: worn gunmetal with chamfers and sunk hex bolts, canopy camouflage, vines and fronds, bone tally marks and reticles, CRT tube keys with scanlines | `tools/blender/build_ui_ssarith.py` |
 | Krai Warhost, Ombrai | In Blender | to come |
 | Aelith Conclave | Hybrid: armour shells in Blender, hologram keys and icons vector | to come |
 | Tarsine Remnant | Painted in the page for now; Blender recommended (survey U9) | |
@@ -226,3 +257,4 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 | U6 | Does a skin change only images, or also sounds and type? | Images, colours, type, icons, motion and button sounds (provisional) |
 | U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | Skins only for now, with the names above; factions decided later (provisional) |
 | U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |
+| U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | A new race named the Ssarith Hunt: a skin now, a faction decided with the others under U8 (provisional) |

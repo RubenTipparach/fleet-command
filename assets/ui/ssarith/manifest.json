@@ -1,0 +1,345 @@
+{
+  "skin": "ssarith",
+  "scale": 2,
+  "pieces": {
+    "frame.panel": {
+      "kind": "nine",
+      "size": [
+        180,
+        140
+      ],
+      "file": "frame.panel.png",
+      "margins": [
+        28,
+        28,
+        28,
+        28
+      ],
+      "stretch": "xy"
+    },
+    "frame.inset": {
+      "kind": "nine",
+      "size": [
+        72,
+        56
+      ],
+      "file": "frame.inset.png",
+      "margins": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "stretch": "xy"
+    },
+    "bar.track": {
+      "kind": "nine",
+      "size": [
+        8,
+        16
+      ],
+      "file": "bar.track.png",
+      "margins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "stretch": "x"
+    },
+    "bar.fill": {
+      "kind": "nine",
+      "size": [
+        8,
+        10
+      ],
+      "file": "bar.fill.png",
+      "margins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "stretch": "x"
+    },
+    "bar.fill.red": {
+      "kind": "nine",
+      "size": [
+        8,
+        10
+      ],
+      "file": "bar.fill.red.png",
+      "margins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "stretch": "x"
+    },
+    "button.idle": {
+      "kind": "nine",
+      "size": [
+        150,
+        48
+      ],
+      "file": "button.idle.png",
+      "margins": [
+        16,
+        18,
+        16,
+        18
+      ],
+      "stretch": "x"
+    },
+    "button.hover": {
+      "kind": "nine",
+      "size": [
+        150,
+        48
+      ],
+      "file": "button.hover.png",
+      "margins": [
+        16,
+        18,
+        16,
+        18
+      ],
+      "stretch": "x"
+    },
+    "button.pressed": {
+      "kind": "nine",
+      "size": [
+        150,
+        48
+      ],
+      "file": "button.pressed.png",
+      "margins": [
+        16,
+        18,
+        16,
+        18
+      ],
+      "stretch": "x"
+    },
+    "tab.idle": {
+      "kind": "nine",
+      "size": [
+        120,
+        40
+      ],
+      "file": "tab.idle.png",
+      "margins": [
+        14,
+        36,
+        14,
+        22
+      ],
+      "stretch": "x"
+    },
+    "tab.active": {
+      "kind": "nine",
+      "size": [
+        120,
+        40
+      ],
+      "file": "tab.active.png",
+      "margins": [
+        14,
+        36,
+        14,
+        22
+      ],
+      "stretch": "x"
+    },
+    "strip.top": {
+      "kind": "nine",
+      "size": [
+        512,
+        56
+      ],
+      "file": "strip.top.png",
+      "margins": [
+        10,
+        92,
+        10,
+        88
+      ],
+      "stretch": "x"
+    },
+    "strip.bottom": {
+      "kind": "nine",
+      "size": [
+        512,
+        56
+      ],
+      "file": "strip.bottom.png",
+      "margins": [
+        10,
+        92,
+        10,
+        88
+      ],
+      "stretch": "x"
+    },
+    "divider": {
+      "kind": "nine",
+      "size": [
+        128,
+        10
+      ],
+      "file": "divider.png",
+      "margins": [
+        0,
+        12,
+        0,
+        12
+      ],
+      "stretch": "x"
+    },
+    "nameplate": {
+      "kind": "hero",
+      "size": [
+        460,
+        56
+      ],
+      "file": "nameplate.png"
+    },
+    "helm.pad": {
+      "kind": "hero",
+      "size": [
+        300,
+        300
+      ],
+      "file": "helm.pad.png"
+    },
+    "ssd.bezel": {
+      "kind": "hero",
+      "size": [
+        460,
+        300
+      ],
+      "file": "ssd.bezel.png"
+    },
+    "dial": {
+      "kind": "hero",
+      "size": [
+        120,
+        120
+      ],
+      "file": "dial.png"
+    },
+    "lamp.alert.green": {
+      "kind": "hero",
+      "size": [
+        64,
+        64
+      ],
+      "file": "lamp.alert.green.png"
+    },
+    "lamp.alert.yellow": {
+      "kind": "hero",
+      "size": [
+        64,
+        64
+      ],
+      "file": "lamp.alert.yellow.png"
+    },
+    "lamp.alert.red": {
+      "kind": "hero",
+      "size": [
+        64,
+        64
+      ],
+      "file": "lamp.alert.red.png"
+    },
+    "crest": {
+      "kind": "hero",
+      "size": [
+        96,
+        96
+      ],
+      "file": "crest.png"
+    },
+    "icon.helm": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.helm.png"
+    },
+    "icon.fire": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.fire.png"
+    },
+    "icon.shields": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.shields.png"
+    },
+    "icon.tractor": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.tractor.png"
+    },
+    "icon.transport": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.transport.png"
+    },
+    "icon.science": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.science.png"
+    },
+    "icon.comms": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.comms.png"
+    },
+    "icon.repair": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.repair.png"
+    },
+    "icon.map": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.map.png"
+    },
+    "icon.settings": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "icon.settings.png"
+    }
+  }
+}

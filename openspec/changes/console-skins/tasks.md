@@ -24,6 +24,12 @@
   Institute (v9), each shot, looked at and published
 - [x] 1.12 Survey U8 (answered: skins only for now; the races are civilisations met in pockets across the galaxy)
 
+## 1d. Version 13: the Ssarith Hunt (owner, 2026-10-30)
+
+- [x] 1.13 The Ssarith Hunt, a hunter race's jungle kit, modelled and rendered in Blender (`tools/blender/build_ui_ssarith.py`,
+  `assets/ui/ssarith/`), its module `docs/mockups/skins/ssarith.js`, shot, looked at and published
+- [x] 1.14 Survey U10 added: a new race, and its name
+
 ## 2. After approval for build
 
 - [ ] 2.1 Blender kit generator per skin (`panel-textures`), bakes, manifest with margins
