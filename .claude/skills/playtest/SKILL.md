@@ -25,7 +25,7 @@ playing and recording with `obs-record` by hand, and a mockup is reviewed with `
   `select_target`, `set_speed`, `turn_to`, `allocate`, `arm` (offline, normal, overload),
   `fire`, `fire_multiple`, `expand_panel`, `collapse_panel`, `orbit_view`, `hold`.
 - **Both screen shapes.** A script names its sizes: the desktop reference size and a phone size
-  (landscape, and portrait if survey `U2` allows it). The phone pass expands each panel it uses and
+  (landscape and portrait, survey `U2`). The phone pass expands each panel it uses and
   checks the 3D view is live at the side.
 
 ## The output lines

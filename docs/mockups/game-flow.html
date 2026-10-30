@@ -1,0 +1,1153 @@
+<title>Fleet Command Game Flow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Mockup 1 (OpenSpec change game-flow, mockup-work.md): the menus, skirmish setup, the campaign hex map, ports,
+   missions and the way back, as one clickable prototype. Layout: a full-bleed 3D stage with the console's textured
+   metal panels laid over it; on a phone a port panel takes the screen and the live map moves to a strip (CLAUDE.md 7).
+   Deliberately one dark look: it is the game's own screen, so it does not follow the viewer's light theme. */
+:root {
+  color-scheme: dark;
+  --bg: #04070b;
+  --metal-hi: #36414e; --metal: #222a34; --metal-lo: #151b22; --edge: #0a0e13; --rim: #4a5767;
+  --ink: #dbe6f1; --dim: #8b9cb0; --faint: #56667a;
+  --lamp: #ffb547; --lamp-soft: rgba(255, 181, 71, 0.16);
+  --ok: #62d08c; --warn: #ff6b5a;
+  --concord: #4f8fe8; --kethran: #d9483b; --vos: #e3a33a; --neutral: #7c8794;
+  --display: "Saira Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.45 var(--body); overflow: hidden; }
+#stage { position: fixed; inset: 0; z-index: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+#ui { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+#ui > * { pointer-events: auto; }
+.badge { position: fixed; right: max(12px, env(safe-area-inset-right, 0px)); top: max(4px, env(safe-area-inset-top, 0px)); z-index: 3;
+  font: 500 10px/1 var(--mono); letter-spacing: 0.1em; color: var(--faint); pointer-events: none; text-transform: uppercase; }
+
+/* Textured console metal (survey U3): brushed plate, bevel, corner fixings. */
+.panel {
+  position: relative; border: 1px solid var(--edge); border-radius: 6px; color: var(--ink);
+  background:
+    radial-gradient(circle at 9px 9px, #8c97a4 0 1.6px, #20262e 2.2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 9px) 9px, #8c97a4 0 1.6px, #20262e 2.2px, transparent 3px),
+    radial-gradient(circle at 9px calc(100% - 9px), #8c97a4 0 1.6px, #20262e 2.2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #8c97a4 0 1.6px, #20262e 2.2px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, var(--metal-hi), var(--metal) 38%, var(--metal-lo));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.03), 0 10px 28px rgba(0,0,0,0.55);
+  padding: 18px 20px;
+}
+.panel.inset { background: linear-gradient(180deg, #0c1117, #121921); box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.04); border-color: #000; padding: 12px; }
+.plate { font: 700 13px/1 var(--display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+.plate::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--lamp); box-shadow: 0 0 8px var(--lamp); }
+h1, h2, h3 { font-family: var(--display); text-transform: uppercase; margin: 0; letter-spacing: 0.04em; text-wrap: balance; }
+h2 { font-size: 30px; font-weight: 800; line-height: 1; }
+h3 { font-size: 19px; font-weight: 700; line-height: 1.1; }
+p { margin: 0; }
+.muted { color: var(--dim); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.col { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.spacer { flex: 1; }
+
+/* Keycap buttons with a lamp. */
+button { font: inherit; color: inherit; }
+.key {
+  min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 5px; cursor: pointer;
+  font: 700 15px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink);
+  border: 1px solid #05080b; background: linear-gradient(180deg, #3a4654, #263039);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -2px 0 rgba(0,0,0,0.4), 0 2px 0 #05080b;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: left;
+}
+.key:hover:not(:disabled) { background: linear-gradient(180deg, #45525f, #2c3742); }
+.key:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 0 #05080b; }
+.key:focus-visible, .chip:focus-visible, .tab:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+.key:disabled { opacity: 0.42; cursor: not-allowed; }
+.key.go { background: linear-gradient(180deg, #e3a03c, #b8741c); color: #1a1006; }
+.key.go:hover:not(:disabled) { background: linear-gradient(180deg, #f0b24f, #c98126); }
+.key.danger { background: linear-gradient(180deg, #a6392f, #7a241d); }
+.key.small { min-height: 36px; padding: 0 10px; font-size: 13px; }
+.key.on { box-shadow: inset 0 0 0 2px var(--lamp), inset 0 0 14px var(--lamp-soft), 0 2px 0 #05080b; }
+.key .lamp { width: 8px; height: 8px; border-radius: 50%; background: #3b2a12; box-shadow: inset 0 0 2px #000; flex: none; }
+.key.on .lamp { background: var(--lamp); box-shadow: 0 0 8px var(--lamp); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { min-height: 40px; padding: 0 12px; border-radius: 4px; cursor: pointer; border: 1px solid #05080b; background: #18202a; color: var(--dim);
+  font: 600 13px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; }
+.tab[aria-selected="true"] { color: var(--ink); background: #2b3644; box-shadow: inset 0 -3px 0 var(--lamp); }
+
+/* Lists and bars. */
+.list { display: grid; gap: 6px; }
+.item { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 12px; min-height: 44px;
+  border-radius: 4px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; text-align: left; width: 100%; }
+.item:hover { border-color: rgba(255,181,71,0.45); }
+.item[aria-selected="true"] { border-color: var(--lamp); background: var(--lamp-soft); }
+.item .t { font: 700 17px/1.1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; }
+.item .s { grid-column: 1 / -1; color: var(--dim); font-size: 13px; }
+.item.off { opacity: 0.5; }
+.bar { height: 8px; border-radius: 4px; background: #0a0f15; box-shadow: inset 0 1px 2px #000; overflow: hidden; min-width: 60px; }
+.bar i { display: block; height: 100%; background: var(--ok); }
+.bar.over i { background: var(--warn); }
+.boxes { display: inline-flex; gap: 3px; }
+.boxes button { width: 18px; height: 26px; border-radius: 2px; border: 1px solid #000; background: #1a222b; cursor: pointer; padding: 0; }
+.boxes button.lit { background: var(--lamp); box-shadow: 0 0 6px var(--lamp-soft); }
+table.grid { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.grid th { font: 600 12px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); text-align: left; padding: 6px 8px; }
+table.grid td { padding: 6px 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+.scroll { overflow: auto; min-height: 0; }
+.err { color: var(--warn); font-size: 13px; min-height: 18px; }
+.chip { font: 500 11px/1 var(--mono); padding: 5px 8px; border-radius: 3px; background: #0d131a; border: 1px solid #2d3946; color: var(--dim); white-space: nowrap; }
+.fac { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+/* Screens. */
+.menu { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); width: min(380px, calc(100% - 32px)); display: grid; gap: 18px; }
+.title { font: 800 clamp(46px, 9vw, 86px)/0.84 var(--display); letter-spacing: 0.02em; text-transform: uppercase; text-shadow: 0 4px 24px rgba(0,0,0,0.8); }
+.title small { display: block; font: 600 14px/1.4 var(--display); letter-spacing: 0.4em; color: var(--lamp); margin-top: 10px; }
+.menu .key { width: 100%; justify-content: flex-start; min-height: 52px; font-size: 19px; }
+.center { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; pointer-events: none; }
+.center > * { pointer-events: auto; }
+.sheet { width: min(560px, 100%); max-height: calc(100% - 24px); display: grid; gap: 14px; overflow: auto; }
+.screen { position: absolute; inset: max(12px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: grid; gap: 12px; grid-template-rows: auto 1fr auto; min-height: 0; }
+.head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end; justify-content: space-between; }
+.split { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); min-height: 0; align-items: start; }
+.split > * { min-height: 0; max-height: 100%; }
+.screen > * { width: 100%; max-width: 1360px; justify-self: center; }
+.foot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; }
+.map-preview { aspect-ratio: 16 / 10; width: 100%; border-radius: 4px; background: #070b10; display: block; }
+
+/* Campaign map overlay. */
+.topbar { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); top: max(10px, env(safe-area-inset-top, 0px));
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 14px; }
+.topbar .stat { display: grid; gap: 2px; }
+.topbar .stat b { font: 600 11px/1 var(--display); letter-spacing: 0.14em; color: var(--dim); text-transform: uppercase; }
+.topbar .stat span { font: 500 15px/1 var(--mono); }
+.fleetchips { display: flex; gap: 6px; flex-wrap: wrap; }
+.fleetchips .chip { display: inline-flex; gap: 6px; align-items: center; }
+.hexpanel { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); top: 88px; width: 330px; max-height: calc(100% - 170px); overflow: auto; display: grid; gap: 12px; }
+.mapkeys { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px; padding: 8px; }
+.endturn { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
+.tip { position: fixed; z-index: 4; pointer-events: none; font: 600 13px/1.2 var(--display); letter-spacing: 0.06em; text-transform: uppercase;
+  background: rgba(6,10,14,0.88); border: 1px solid #2c3845; padding: 6px 8px; border-radius: 3px; }
+
+/* A port panel open: on desktop it sits on the left with the live map beside it; on a phone it takes the screen
+   and the map moves to a strip on the right (landscape) or the bottom (portrait), survey U1 and U2. */
+.portpanel { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: max(12px, env(safe-area-inset-top, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  width: min(640px, calc(100% - 380px)); display: grid; grid-template-rows: auto 1fr auto; gap: 12px; min-height: 0; }
+.strip-tag { display: none; }
+@media (max-width: 920px), (max-height: 520px) {
+  body.strip #stage { left: auto; width: 33.4vw; }
+  body.strip .portpanel { width: auto; right: calc(33.4vw + 8px); }
+  body.strip .strip-tag { display: block; position: fixed; right: 8px; bottom: 8px; z-index: 2; pointer-events: none; }
+  body.strip .topbar, body.strip .mapkeys, body.strip .endturn { display: none; }
+  .hexpanel { top: auto; bottom: 64px; right: max(8px, env(safe-area-inset-right, 0px)); width: min(330px, 46vw); max-height: 58%; padding: 12px; }
+  .topbar { padding: 8px 10px; gap: 6px 12px; }
+  .topbar .fleetchips, .topbar .stat.cap { display: none; }
+  .split { grid-template-columns: 1fr; overflow: auto; }
+  .screen { grid-template-rows: auto 1fr auto; }
+  h2 { font-size: 24px; }
+  .panel { padding: 14px; }
+}
+@media (orientation: portrait) and (max-width: 920px) {
+  body.strip #stage { left: 0; width: 100%; top: auto; height: 36vh; }
+  body.strip .portpanel { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(36vh + 8px); width: auto; }
+  .hexpanel { left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); width: auto; max-height: 44%; bottom: 84px; }
+  .menu { top: auto; bottom: 24px; transform: none; }
+}
+.loadout { display: grid; gap: 12px; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); min-height: 0; align-items: start; }
+.loadout canvas { width: 100%; height: auto; aspect-ratio: 3 / 4; display: block; border-radius: 4px; background: #070b10; }
+@media (max-width: 920px), (max-height: 520px) { .loadout { grid-template-columns: minmax(0, 220px) minmax(0, 1fr); } }
+@media (max-width: 560px) { .loadout { grid-template-columns: 1fr; } .loadout canvas { max-width: 240px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+
+<div id="stage"></div>
+<div id="ui"></div>
+<div class="tip" id="tip" hidden></div>
+<div class="badge">Mockup 1 · game-flow</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { MapControls } from 'three/addons/controls/MapControls.js';
+
+// ---------------------------------------------------------------------------------------------------------------
+// Data. One table per kind of thing, as the game's data/ files will be (openspec/changes/game-flow/design.md).
+// ---------------------------------------------------------------------------------------------------------------
+const FACTIONS = {
+  concord: { name: 'Concord', color: '#4f8fe8' },
+  kethran: { name: 'Kethran Hegemony', color: '#d9483b' },
+  vos: { name: 'Vos Syndicate', color: '#e3a33a' },
+  neutral: { name: 'Unclaimed', color: '#7c8794' },
+};
+const TERRAIN = {
+  open: { name: 'Open space', cost: 1 },
+  nebula: { name: 'Nebula', cost: 2 },
+  asteroids: { name: 'Asteroid field', cost: 2 },
+  star: { name: 'Star', cost: Infinity },
+};
+const GROUPS = [
+  ['shields', 'Shields'], ['primary', 'Primary weapons'], ['heavy', 'Heavy weapons'],
+  ['hull', 'Hull systems'], ['bridge', 'Bridge systems'], ['engines', 'Engines'],
+];
+const HULLS = {
+  swift: { name: 'Swift', cls: 'Corvette', cost: 160, slots: { shields: 1, primary: 2, heavy: 0, hull: 1, bridge: 1, engines: 1 }, hp: 60, len: 0.62 },
+  lantern: { name: 'Lantern', cls: 'Frigate', cost: 230, slots: { shields: 1, primary: 2, heavy: 1, hull: 2, bridge: 1, engines: 1 }, hp: 90, len: 0.72 },
+  halberd: { name: 'Halberd', cls: 'Destroyer', cost: 320, slots: { shields: 2, primary: 3, heavy: 1, hull: 2, bridge: 1, engines: 1 }, hp: 130, len: 0.8 },
+  bastion: { name: 'Bastion', cls: 'Cruiser', cost: 450, slots: { shields: 2, primary: 4, heavy: 2, hull: 3, bridge: 2, engines: 1 }, hp: 190, len: 0.9 },
+  paragon: { name: 'Paragon', cls: 'Battlecruiser', cost: 620, slots: { shields: 3, primary: 4, heavy: 3, hull: 3, bridge: 2, engines: 2 }, hp: 260, len: 1 },
+};
+const SYSTEMS = {
+  defl1: { g: 'shields', name: 'Deflector I', cost: 20, d: 'Light shield generator for every facing.' },
+  defl2: { g: 'shields', name: 'Deflector II', cost: 40, d: 'Stronger facings, faster recharge.' },
+  defl3: { g: 'shields', name: 'Deflector III', cost: 70, d: 'Heavy shield generator; draws more power.' },
+  pulse: { g: 'primary', name: 'Pulse cannon', cost: 20, d: 'Short bursts; good at close range.', arc: 120 },
+  lance: { g: 'primary', name: 'Beam lance', cost: 30, d: 'Long-range beam; charges from the capacitor.', arc: 180 },
+  pdt: { g: 'primary', name: 'Point-defense turret', cost: 15, d: 'Shoots down missiles and fighters.', arc: 360 },
+  missile: { g: 'heavy', name: 'Missile rack', cost: 30, d: 'Guided missiles; needs reloads.', arc: 240 },
+  torpedo: { g: 'heavy', name: 'Torpedo tube', cost: 45, d: 'Slow to arm, hits very hard.', arc: 90 },
+  plasma: { g: 'heavy', name: 'Plasma projector', cost: 60, d: 'Bolt that weakens with range.', arc: 60 },
+  armour: { g: 'hull', name: 'Armour plating', cost: 20, d: 'Extra hull points.' },
+  tractor: { g: 'hull', name: 'Tractor emitter', cost: 25, d: 'Holds or tows a ship or object.' },
+  bay: { g: 'hull', name: 'Shuttle bay', cost: 30, d: 'Carries two shuttles.' },
+  cargo: { g: 'hull', name: 'Cargo pod', cost: 10, d: 'Room for supplies and prizes.' },
+  sensor: { g: 'bridge', name: 'Sensor suite', cost: 20, d: 'Longer detection range.' },
+  target: { g: 'bridge', name: 'Targeting computer', cost: 25, d: 'Raises the chance to hit.' },
+  ecm: { g: 'bridge', name: 'ECM suite', cost: 25, d: 'Lowers the enemy\'s chance to hit.' },
+  imp1: { g: 'engines', name: 'Impulse drive I', cost: 15, d: 'Standard drive.' },
+  imp2: { g: 'engines', name: 'Impulse drive II', cost: 35, d: 'Faster, turns tighter.' },
+};
+const STOCK = { shields: 'defl1', primary: 'pulse', heavy: 'missile', hull: 'armour', bridge: 'sensor', engines: 'imp1' };
+const SUPPLIES = [
+  { id: 'marines', name: 'Marines', cost: 5, max: (s) => Math.round(HULLS[s.hull].hp / 15) },
+  { id: 'shuttles', name: 'Shuttles', cost: 15, max: (s) => 2 * countFit(s, 'bay') },
+  { id: 'mines', name: 'Mines', cost: 8, max: () => 4 },
+  { id: 'reloads', name: 'Missile reloads', cost: 6, max: (s) => 4 * countFit(s, 'missile') },
+  { id: 'parts', name: 'Spare parts', cost: 4, max: (s) => Math.round(HULLS[s.hull].hp / 20) },
+];
+const BEHAVIOURS = ['Escort', 'Attack my target', 'Hold at range', 'Defensive'];
+const SCENARIOS = [
+  { id: 'picket', name: 'Border Picket', budget: 600, sides: 'Your fleet against one patrol group',
+    brief: 'A Kethran patrol has crossed the border beacon line. Destroy it or drive it back across.', objs: [['ship', 0.75, 0.35], ['ship', 0.82, 0.48]] },
+  { id: 'raid', name: 'Convoy Raid', budget: 900, sides: 'Your fleet against three freighters and two escorts',
+    brief: 'A Vos supply convoy is running for Cinder Den. Destroy two of the three freighters before they jump.', objs: [['cargo', 0.6, 0.3], ['cargo', 0.68, 0.42], ['cargo', 0.76, 0.54], ['ship', 0.7, 0.24], ['ship', 0.84, 0.5]] },
+  { id: 'siege', name: 'Station Siege', budget: 1200, sides: 'Your fleet against an outpost station and its picket',
+    brief: 'Ironmouth outpost guards the pass. Break its shields and destroy it.', objs: [['station', 0.78, 0.45], ['ship', 0.66, 0.3], ['ship', 0.66, 0.62]] },
+  { id: 'action', name: 'Fleet Action', budget: 1500, sides: 'Your fleet against an equal fleet',
+    brief: 'Two battle groups meet over Tessaly. Destroy the enemy flagship.', objs: [['ship', 0.74, 0.3], ['ship', 0.8, 0.42], ['ship', 0.74, 0.56], ['ship', 0.86, 0.66]] },
+];
+const BUDGET_SCALE = [['Small', 0.75], ['Standard', 1], ['Large', 1.5]];
+const MISSIONS = {
+  patrol: { name: 'Patrol', glyph: 'P', reward: 300, obj: 'Sweep the sector and engage what you find.' },
+  station: { name: 'Enemy station assault', glyph: 'S', reward: 1200, obj: 'Destroy the station.' },
+  planet: { name: 'Planetary assault', glyph: 'A', reward: 1000, obj: 'Destroy the orbital defences.' },
+  ambush: { name: 'Convoy ambush', glyph: 'C', reward: 700, obj: 'Destroy two of the three freighters.' },
+  defend: { name: 'Convoy defense', glyph: 'D', reward: 600, obj: 'Keep two of the three freighters alive.' },
+  assassinate: { name: 'Assassination', glyph: 'X', reward: 900, obj: 'Destroy the commander\'s ship.' },
+  capture: { name: 'Capture a ship', glyph: 'K', reward: 800, obj: 'Board and take the ship. Needs marines.' },
+};
+const STATIONS = ['Helm', 'Tactical', 'Engineering', 'Science', 'Comms', 'Security'];
+const SKILLS = [['Green', 150], ['Skilled', 300], ['Veteran', 550], ['Elite', 900], ['Legendary', 1400]];
+const OFFICER_NAMES = ['Ines Marrow', 'Tavo Quell', 'Dace Orrin', 'Mirela Vance', 'Sef Anjou', 'Kito Brand', 'Lysa Fenn', 'Oren Hale', 'Pell Varro', 'Juno Tesh', 'Arlo Kade', 'Nim Sato'];
+const CREDIT_RATE = 10; // campaign prices are points x 10 credits
+const MOVE_POINTS = 3;
+const MISSION_TURNS = 3;
+const FLEET_MAX = 4;
+
+// ---------------------------------------------------------------------------------------------------------------
+// Rules: plain functions on plain data, the same for skirmish and campaign (CLAUDE.md 6.1).
+// ---------------------------------------------------------------------------------------------------------------
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+let shipSerial = 0;
+function newShip(hullId, name) {
+  const h = HULLS[hullId];
+  const fit = {};
+  for (const [g] of GROUPS) fit[g] = Array.from({ length: h.slots[g] }, () => STOCK[g]);
+  return { id: ++shipSerial, hull: hullId, name: name || `${h.name} ${100 + shipSerial}`, fit, supplies: { marines: 0, shuttles: 0, mines: 0, reloads: 0, parts: 0 }, behaviour: 'Escort', hullPct: 100 };
+}
+function countFit(s, sys) { return Object.values(s.fit).flat().filter((x) => x === sys).length; }
+function fitCost(s) { return Object.values(s.fit).flat().reduce((n, x) => n + (x ? SYSTEMS[x].cost : 0), 0); }
+function supplyCost(s) { return SUPPLIES.reduce((n, u) => n + s.supplies[u.id] * u.cost, 0); }
+function shipPoints(s) { return HULLS[s.hull].cost + fitCost(s) + supplyCost(s); }
+function clampSupplies(s) { for (const u of SUPPLIES) s.supplies[u.id] = Math.min(s.supplies[u.id], u.max(s)); }
+
+// A purse says how refits are paid: skirmish spends from a budget checked at launch (full refunds), the campaign
+// pays credits now and refunds half (survey F6).
+function skirmishPurse() { return { kind: 'points', unit: 'pts', price: (p) => p, refund: (p) => p, pay: () => null }; }
+function campaignPurse() {
+  return { kind: 'credits', unit: 'cr', price: (p) => p * CREDIT_RATE, refund: (p) => Math.floor((p * CREDIT_RATE) / 2),
+    pay: (net) => { if (net > CAMP.credits) return `Not enough credits: needs ${net}, have ${CAMP.credits}.`; CAMP.credits -= net; return null; } };
+}
+function refit(purse, s, g, i, sysId) {
+  if (sysId && SYSTEMS[sysId].g !== g) return `${SYSTEMS[sysId].name} does not fit a ${g} hardpoint.`;
+  const old = s.fit[g][i];
+  if (old === sysId) return null;
+  const net = (sysId ? purse.price(SYSTEMS[sysId].cost) : 0) - (old ? purse.refund(SYSTEMS[old].cost) : 0);
+  const err = purse.pay(net);
+  if (err) return err;
+  s.fit[g][i] = sysId;
+  clampSupplies(s);
+  return null;
+}
+function resupply(purse, s, id, delta) {
+  const u = SUPPLIES.find((x) => x.id === id);
+  const next = Math.max(0, Math.min(u.max(s), s.supplies[id] + delta));
+  if (next === s.supplies[id]) return delta > 0 ? `${u.name}: this ship carries at most ${u.max(s)}.` : null;
+  const n = next - s.supplies[id];
+  const err = purse.pay(n > 0 ? purse.price(u.cost) * n : -purse.refund(u.cost) * -n);
+  if (err) return err;
+  s.supplies[id] = next;
+  return null;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Hex map: flat-topped hexes in odd-q offset columns, 15 x 11 (design: Campaign map).
+// ---------------------------------------------------------------------------------------------------------------
+const COLS = 15, ROWS = 11, HEX_R = 1;
+const key = (c, r) => `${c},${r}`;
+function hexPos(c, r) { return new THREE.Vector3(1.5 * HEX_R * c, 0, Math.sqrt(3) * HEX_R * (r + 0.5 * (c & 1))); }
+function cube(c, r) { const x = c, z = r - (c - (c & 1)) / 2; return [x, -x - z, z]; }
+function hexDist(a, b) { const [ax, ay, az] = cube(a.c, a.r), [bx, by, bz] = cube(b.c, b.r); return Math.max(Math.abs(ax - bx), Math.abs(ay - by), Math.abs(az - bz)); }
+function neighbours(c, r) {
+  const odd = c & 1;
+  const d = odd ? [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [0, -1]] : [[1, -1], [1, 0], [0, 1], [-1, 0], [-1, -1], [0, -1]];
+  return d.map(([dc, dr]) => [c + dc, r + dr]).filter(([x, y]) => x >= 0 && y >= 0 && x < COLS && y < ROWS);
+}
+
+let CAMP = null; // the campaign state, plain data
+function buildCampaign(seed = 7) {
+  const R = rng(seed);
+  const hexes = {};
+  const seeds = [['concord', 2, 5], ['concord', 4, 2], ['kethran', 12, 5], ['kethran', 11, 1], ['vos', 7, 9], ['neutral', 7, 4], ['neutral', 8, 1]];
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    let best = null, bd = 1e9;
+    for (const [f, sc, sr] of seeds) { const d = hexDist({ c, r }, { c: sc, r: sr }) + R() * 1.4; if (d < bd) { bd = d; best = f; } }
+    const t = R();
+    hexes[key(c, r)] = { c, r, owner: best, terrain: t < 0.1 ? 'nebula' : t < 0.18 ? 'asteroids' : 'open', planet: null, station: null };
+  }
+  for (const [c, r] of [[6, 6], [9, 3], [3, 9]]) hexes[key(c, r)].terrain = 'star';
+  const place = (kind, c, r, name, owner) => { const h = hexes[key(c, r)]; h.terrain = 'open'; h[kind] = name; if (owner) h.owner = owner; };
+  place('planet', 2, 5, 'Halcyon', 'concord'); place('station', 4, 3, 'Keel Station', 'concord'); place('planet', 5, 8, 'Meridian', 'concord');
+  place('planet', 12, 5, 'Vahr', 'kethran'); place('station', 11, 2, 'Ironmouth', 'kethran'); place('station', 10, 8, 'Gatehold', 'kethran');
+  place('station', 7, 9, 'Cinder Den', 'vos'); place('planet', 7, 4, 'Ouro', null); place('planet', 8, 7, 'Tessaly', null);
+  const groups = [
+    { name: 'Kethran Patrol 3', fac: 'kethran', c: 9, r: 5, size: 2 }, { name: 'Warlord Vesh', fac: 'kethran', c: 11, r: 4, size: 3, commander: true },
+    { name: 'Kethran Scout', fac: 'kethran', c: 9, r: 9, size: 1 }, { name: 'Vos Raiders', fac: 'vos', c: 6, r: 8, size: 2 },
+    { name: 'Vos Blockade Runner', fac: 'vos', c: 8, r: 10, size: 1 }, { name: 'Concord Picket', fac: 'concord', c: 5, r: 4, size: 2 },
+  ];
+  const fleet = [newShip('lantern', 'CNS Resolute'), newShip('swift', 'CNS Wren')];
+  fleet[0].supplies.marines = 4;
+  CAMP = { seed, R, hexes, groups, fleet, at: { c: 2, r: 5 }, credits: 4000, turn: 1, mp: MOVE_POINTS, missions: [], crew: [], officerPool: [], mid: 0, captain: 'Captain Ardent', battles: 0 };
+  rollOfficers();
+  for (let i = 0; i < 4; i++) offerMission();
+  return CAMP;
+}
+function isPort(h) { return (h.planet || h.station) && h.owner === 'concord'; }
+function eligible(type) {
+  const all = Object.values(CAMP.hexes).filter((h) => h.terrain !== 'star');
+  const plain = (h) => !h.planet && !h.station;
+  const enemy = (h) => h.owner === 'kethran' || h.owner === 'vos';
+  const groupAt = (h) => CAMP.groups.find((g) => g.c === h.c && g.r === h.r);
+  return {
+    patrol: all.filter((h) => plain(h) && (h.owner === 'concord' || h.owner === 'neutral')),
+    station: all.filter((h) => h.station && enemy(h)),
+    planet: all.filter((h) => h.planet && enemy(h)),
+    ambush: all.filter((h) => plain(h) && enemy(h)),
+    defend: all.filter((h) => plain(h) && h.owner === 'concord'),
+    assassinate: all.filter((h) => groupAt(h)?.commander),
+    capture: all.filter((h) => groupAt(h)?.size === 1),
+  }[type].filter((h) => !CAMP.missions.some((m) => m.c === h.c && m.r === h.r));
+}
+function offerMission(type) {
+  const R = CAMP.R;
+  const types = Object.keys(MISSIONS);
+  for (let tries = 0; tries < 20; tries++) {
+    const t = type || types[Math.floor(R() * types.length)];
+    const pool = eligible(t);
+    if (!pool.length) { if (type) return null; continue; }
+    const h = pool[Math.floor(R() * pool.length)];
+    const m = { id: ++CAMP.mid, type: t, c: h.c, r: h.r, turns: MISSION_TURNS, strength: ['Light', 'Moderate', 'Heavy'][Math.floor(R() * 3)], reward: MISSIONS[t].reward + Math.floor(R() * 5) * 50 };
+    CAMP.missions.push(m);
+    return m;
+  }
+  return null;
+}
+function rollOfficers() {
+  const R = CAMP.R;
+  const names = OFFICER_NAMES.filter((n) => !CAMP.crew.some((o) => o.name === n)).map((n) => [R(), n]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+  CAMP.officerPool = names.slice(0, 6).map((name) => {
+    const sk = Math.floor(R() * R() * SKILLS.length);
+    return { name, station: STATIONS[Math.floor(R() * STATIONS.length)], skill: SKILLS[sk][0], cost: SKILLS[sk][1] };
+  });
+}
+function pathTo(target) {
+  // Cheapest path by move cost, within the move points left (design: Moving).
+  const start = key(CAMP.at.c, CAMP.at.r), goal = key(target.c, target.r);
+  const dist = { [start]: 0 }, prev = {}, open = [start];
+  while (open.length) {
+    open.sort((a, b) => dist[a] - dist[b]);
+    const k = open.shift();
+    if (k === goal) break;
+    const [c, r] = k.split(',').map(Number);
+    for (const [nc, nr] of neighbours(c, r)) {
+      const nk = key(nc, nr), cost = TERRAIN[CAMP.hexes[nk].terrain].cost;
+      const nd = dist[k] + cost;
+      if (nd <= CAMP.mp && nd < (dist[nk] ?? Infinity)) { dist[nk] = nd; prev[nk] = k; open.push(nk); }
+    }
+  }
+  if (dist[goal] == null || goal === start) return null;
+  const path = [];
+  for (let k = goal; k !== start; k = prev[k]) path.unshift(k);
+  return { path, cost: dist[goal] };
+}
+function endTurn() {
+  CAMP.turn++;
+  CAMP.mp = MOVE_POINTS;
+  CAMP.missions = CAMP.missions.filter((m) => --m.turns > 0);
+  const n = 1 + Math.floor(CAMP.R() * 2);
+  for (let i = 0; i < n && CAMP.missions.length < 7; i++) offerMission();
+  rollOfficers();
+}
+function fleetPoints(fleet) { return fleet.reduce((n, s) => n + shipPoints(s), 0); }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Rendering: one renderer, three scenes (menu backdrop, campaign map, stand-in battle).
+// ---------------------------------------------------------------------------------------------------------------
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+stage.append(renderer.domElement);
+const clock = new THREE.Clock();
+
+function starfield(n, radius) {
+  const R = rng(11), pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const u = R() * 2 - 1, th = R() * Math.PI * 2, s = Math.sqrt(1 - u * u);
+    pos.set([radius * s * Math.cos(th), radius * u, radius * s * Math.sin(th)], i * 3);
+    const w = 0.6 + R() * 0.4; col.set([w, w, w * (0.9 + R() * 0.2)], i * 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return new THREE.Points(g, new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, vertexColors: true }));
+}
+function canvasTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+function planetTex(hue) {
+  return canvasTex(512, 256, (x, w, h) => {
+    const R = rng(hue * 7 + 3);
+    for (let y = 0; y < h; y++) { const v = 0.35 + 0.25 * Math.sin(y * 0.09 + R() * 0.4) + R() * 0.08; x.fillStyle = `hsl(${hue + 20 * Math.sin(y * 0.03)}, 45%, ${18 + v * 40}%)`; x.fillRect(0, y, w, 1); }
+    for (let i = 0; i < 90; i++) { x.fillStyle = `hsla(${hue + 30}, 50%, ${50 + R() * 30}%, 0.12)`; x.beginPath(); x.ellipse(R() * w, R() * h, 10 + R() * 60, 2 + R() * 6, 0, 0, 7); x.fill(); }
+  });
+}
+// A stand-in ship, our own shape (a spine, a wedge bow, two drive pods): the look is mockup 3's to decide.
+function shipModel(color, scale = 1) {
+  const g = new THREE.Group();
+  const hull = new THREE.MeshStandardMaterial({ color: 0xb9c2cc, metalness: 0.55, roughness: 0.42 });
+  const trim = new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.5 });
+  const glow = new THREE.MeshStandardMaterial({ color: 0x9fd0ff, emissive: 0x6fb6ff, emissiveIntensity: 2.2 });
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.32, 3.2), hull); g.add(spine);
+  const bow = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.8, 4), hull); bow.rotation.x = Math.PI / 2; bow.rotation.y = Math.PI / 4; bow.scale.set(1, 1, 0.35); bow.position.set(0, 0.05, 2.2); g.add(bow);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.34, 0.25), trim); band.position.z = 1.1; g.add(band);
+  for (const s of [-1, 1]) {
+    const pylon = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.5), hull); pylon.position.set(s * 0.7, 0, -0.9); pylon.rotation.z = s * 0.25; g.add(pylon);
+    const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 2.2, 12), hull); pod.rotation.x = Math.PI / 2; pod.position.set(s * 1.25, 0.15, -0.9); g.add(pod);
+    const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.235, 0.235, 0.3, 12), trim); stripe.rotation.x = Math.PI / 2; stripe.position.set(s * 1.25, 0.15, -0.1); g.add(stripe);
+    const exhaust = new THREE.Mesh(new THREE.CircleGeometry(0.2, 12), glow); exhaust.position.set(s * 1.25, 0.15, -2.01); exhaust.rotation.y = Math.PI; g.add(exhaust);
+  }
+  const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.5), hull); bridge.position.set(0, 0.25, 0.6); g.add(bridge);
+  g.scale.setScalar(scale);
+  return g;
+}
+
+// Menu backdrop.
+const menuScene = new THREE.Scene();
+const menuCam = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
+menuCam.position.set(0, 2, 16);
+menuScene.add(starfield(2500, 600));
+menuScene.add(new THREE.AmbientLight(0x334455, 0.6));
+const sun = new THREE.DirectionalLight(0xfff1dd, 2.6); sun.position.set(-20, 8, 10); menuScene.add(sun);
+const menuPlanet = new THREE.Mesh(new THREE.SphereGeometry(7, 64, 48), new THREE.MeshStandardMaterial({ map: planetTex(200), roughness: 0.9 }));
+menuPlanet.position.set(9, -4, -10); menuScene.add(menuPlanet);
+const menuShip = shipModel(0x4f8fe8, 0.9); menuShip.position.set(2.5, 1.2, 2); menuShip.rotation.set(0.15, -0.9, 0.05); menuScene.add(menuShip);
+
+// Campaign map.
+const mapScene = new THREE.Scene();
+mapScene.background = new THREE.Color(0x03060a);
+mapScene.add(starfield(1500, 300));
+mapScene.add(new THREE.HemisphereLight(0x9fb4d8, 0x101418, 0.7));
+const mapSun = new THREE.DirectionalLight(0xffffff, 1.1); mapSun.position.set(10, 20, 6); mapScene.add(mapSun);
+const mapCam = new THREE.PerspectiveCamera(42, 1, 0.1, 1000);
+const controls = new MapControls(mapCam, renderer.domElement);
+controls.enableRotate = false; controls.screenSpacePanning = false; controls.enableDamping = true;
+controls.minDistance = 7; controls.maxDistance = 42;
+controls.minPolarAngle = controls.maxPolarAngle = 0.88;
+controls.enabled = false;
+const mapRoot = new THREE.Group(); mapScene.add(mapRoot);
+let hexMesh = null, hexKeys = [], standees = [], markers = [], decals = [], pathDots = null, selRing = null, fleetStandee = null;
+const MAP_W = 1.5 * (COLS - 1), MAP_H = Math.sqrt(3) * (ROWS - 0.5);
+const mapCenter = new THREE.Vector3(MAP_W / 2, 0, MAP_H / 2);
+
+function standeeTex(kind, fac, label) {
+  const col = FACTIONS[fac].color;
+  return canvasTex(256, 360, (x, w, h) => {
+    x.fillStyle = '#0b1016'; x.fillRect(0, 0, w, h);
+    x.strokeStyle = col; x.lineWidth = 14; x.strokeRect(7, 7, w - 14, h - 14);
+    x.fillStyle = col; x.fillRect(7, h - 80, w - 14, 73);
+    const g = x.createLinearGradient(0, 20, 0, h - 90); g.addColorStop(0, '#1d2733'); g.addColorStop(1, '#0d131a'); x.fillStyle = g; x.fillRect(14, 14, w - 28, h - 100);
+    x.save(); x.translate(w / 2, 140);
+    if (kind === 'ship') {
+      x.fillStyle = '#c9d2dc';
+      x.beginPath(); x.moveTo(-90, 10); x.lineTo(70, 4); x.lineTo(98, 14); x.lineTo(70, 24); x.lineTo(-90, 22); x.closePath(); x.fill();
+      x.fillRect(-80, -26, 70, 14); x.fillRect(-60, -14, 10, 26);
+      x.fillStyle = col; x.fillRect(10, 8, 18, 14); x.fillRect(-50, -24, 14, 10);
+      x.fillStyle = '#8fd0ff'; x.fillRect(-92, -24, 6, 10);
+    } else if (kind === 'planet') {
+      const pg = x.createRadialGradient(-20, -20, 8, 0, 0, 70); pg.addColorStop(0, '#9fc4e8'); pg.addColorStop(1, '#1d3e66');
+      x.fillStyle = pg; x.beginPath(); x.arc(0, 0, 64, 0, 7); x.fill();
+      x.strokeStyle = col; x.lineWidth = 5; x.beginPath(); x.ellipse(0, 0, 96, 20, -0.25, 0, 7); x.stroke();
+    } else {
+      x.strokeStyle = '#c9d2dc'; x.lineWidth = 12; x.beginPath(); x.arc(0, 0, 58, 0, 7); x.stroke();
+      x.lineWidth = 7; for (let a = 0; a < 4; a++) { x.beginPath(); x.moveTo(0, 0); x.lineTo(58 * Math.cos(a * 1.571), 58 * Math.sin(a * 1.571)); x.stroke(); }
+      x.fillStyle = col; x.beginPath(); x.arc(0, 0, 18, 0, 7); x.fill();
+    }
+    x.restore();
+    x.fillStyle = '#0b1016'; x.font = '700 30px "Saira Condensed", sans-serif'; x.textAlign = 'center';
+    x.fillText(label.toUpperCase().slice(0, 16), w / 2, h - 34);
+  });
+}
+function makeStandee(kind, fac, label, size = 1) {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.3 * size, 0.34 * size, 0.06, 24), new THREE.MeshStandardMaterial({ color: FACTIONS[fac].color, metalness: 0.3, roughness: 0.5 }));
+  base.position.y = 0.03; g.add(base);
+  const card = new THREE.Mesh(new THREE.PlaneGeometry(0.56 * size, 0.79 * size), new THREE.MeshStandardMaterial({ map: standeeTex(kind, fac, label), side: THREE.DoubleSide, roughness: 0.7 }));
+  card.position.y = 0.06 + 0.4 * size; g.add(card);
+  g.userData = { card, kind, label, fac };
+  return g;
+}
+function buildMap() {
+  mapRoot.clear(); standees = []; markers = []; decals = [];
+  const geo = new THREE.CylinderGeometry(HEX_R * 0.95, HEX_R * 0.95, 0.12, 6, 1, false, Math.PI / 6);
+  hexMesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0.05 }), COLS * ROWS);
+  hexKeys = [];
+  const m = new THREE.Matrix4(), col = new THREE.Color();
+  let i = 0;
+  for (const h of Object.values(CAMP.hexes)) {
+    const p = hexPos(h.c, h.r);
+    m.makeTranslation(p.x, -0.06, p.z);
+    hexMesh.setMatrixAt(i, m);
+    col.set(0x0e131a).lerp(new THREE.Color(FACTIONS[h.owner].color), h.owner === 'neutral' ? 0.08 : 0.18);
+    if (h.terrain === 'nebula') col.lerp(new THREE.Color(0x4a2a66), 0.4);
+    if (h.terrain === 'asteroids') col.lerp(new THREE.Color(0x3a3128), 0.35);
+    if (h.terrain === 'star') col.set(0x3a2a10);
+    hexMesh.setColorAt(i, col);
+    hexKeys.push(key(h.c, h.r));
+    i++;
+    if (h.terrain === 'star') {
+      const s = new THREE.Mesh(new THREE.SphereGeometry(0.42, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffd27a })); s.position.set(p.x, 0.5, p.z); mapRoot.add(s);
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb547, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); halo.scale.setScalar(1.6); halo.position.copy(s.position); mapRoot.add(halo);
+      const l = new THREE.PointLight(0xffc26a, 3, 3.5); l.position.copy(s.position); mapRoot.add(l);
+    }
+    if (h.terrain === 'nebula') { const n = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x9a5cd0, opacity: 0.35, transparent: true, depthWrite: false })); n.scale.set(2.2, 1.1, 1); n.position.set(p.x, 0.35, p.z); mapRoot.add(n); decals.push(n); }
+    if (h.terrain === 'asteroids') {
+      const R = rng(h.c * 31 + h.r);
+      for (let k = 0; k < 7; k++) { const a = new THREE.Mesh(new THREE.DodecahedronGeometry(0.07 + R() * 0.08), rockMat); a.position.set(p.x + (R() - 0.5) * 1.1, 0.12 + R() * 0.15, p.z + (R() - 0.5) * 1.1); a.rotation.set(R() * 3, R() * 3, 0); mapRoot.add(a); decals.push(a); }
+    }
+    if (h.planet) addStandee(makeStandee('planet', h.owner === 'neutral' ? 'neutral' : h.owner, h.planet, 1.7), p.clone().add(PLACE_OFFSET), 'place');
+    if (h.station) addStandee(makeStandee('station', h.owner, h.station, 1.5), p.clone().add(PLACE_OFFSET), 'place');
+  }
+  hexMesh.instanceColor.needsUpdate = true;
+  mapRoot.add(hexMesh);
+  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1.2); addStandee(s, hexPos(g.c, g.r).add(new THREE.Vector3(0.45, 0, 0.4)), 'ship'); }
+  fleetStandee = makeStandee('ship', 'concord', CAMP.fleet[0].name, 1.45);
+  const lampRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide }));
+  lampRing.rotation.x = -Math.PI / 2; lampRing.position.y = 0.07; fleetStandee.add(lampRing);
+  addStandee(fleetStandee, hexPos(CAMP.at.c, CAMP.at.r).add(FLEET_OFFSET), 'fleet');
+  selRing = new THREE.Mesh(new THREE.RingGeometry(0.82, 0.95, 6, 1, Math.PI / 6), new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide }));
+  selRing.rotation.x = -Math.PI / 2; selRing.position.y = 0.02; selRing.visible = false; mapRoot.add(selRing);
+  rebuildMarkers();
+}
+const rockMat = new THREE.MeshStandardMaterial({ color: 0x8a7a68, roughness: 0.95 });
+const glowTex = canvasTex(128, 128, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.4, 'rgba(255,255,255,0.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); });
+// Within a hex: a planet or station stands at the back, the player's fleet front left, other ships front right.
+const FLEET_OFFSET = new THREE.Vector3(-0.45, 0, 0.45), PLACE_OFFSET = new THREE.Vector3(0.1, 0, -0.35);
+function addStandee(s, p, role) { s.position.copy(p); s.userData.role = role; mapRoot.add(s); standees.push(s); }
+function markerTex(m) {
+  return canvasTex(128, 128, (x, w, h) => {
+    x.translate(w / 2, h / 2); x.rotate(Math.PI / 4); x.fillStyle = '#ffb547'; x.fillRect(-36, -36, 72, 72);
+    x.strokeStyle = '#1a1006'; x.lineWidth = 5; x.strokeRect(-30, -30, 60, 60); x.rotate(-Math.PI / 4);
+    x.fillStyle = '#1a1006'; x.font = '800 46px "Saira Condensed", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(MISSIONS[m.type].glyph, 0, 3);
+  });
+}
+function rebuildMarkers() {
+  for (const k of markers) mapRoot.remove(k);
+  markers = CAMP.missions.map((m) => {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: markerTex(m), depthTest: false, sizeAttenuation: false }));
+    const p = hexPos(m.c, m.r); s.position.set(p.x + 0.38, 1.25, p.z - 0.35); s.scale.setScalar(0.07); s.userData.mission = m; s.renderOrder = 5;
+    mapRoot.add(s); return s;
+  });
+}
+function showPath(res) {
+  if (pathDots) { mapRoot.remove(pathDots); pathDots = null; }
+  if (!res) return;
+  pathDots = new THREE.Group();
+  for (const k of res.path) {
+    const [c, r] = k.split(',').map(Number); const p = hexPos(c, r);
+    const d = new THREE.Mesh(new THREE.CircleGeometry(0.16, 20), new THREE.MeshBasicMaterial({ color: 0xffb547 })); d.rotation.x = -Math.PI / 2; d.position.set(p.x, 0.03, p.z); pathDots.add(d);
+  }
+  mapRoot.add(pathDots);
+}
+function zoomLevel() { const d = mapCam.position.distanceTo(controls.target); return d > 26 ? 'far' : d > 14 ? 'middle' : 'near'; }
+function setZoom(dist) { const dir = mapCam.position.clone().sub(controls.target).normalize(); mapCam.position.copy(controls.target).addScaledVector(dir, dist); controls.update(); }
+function centreOn(c, r, dist) {
+  const p = hexPos(c, r); controls.target.copy(p);
+  mapCam.position.set(p.x, Math.cos(0.88) * (dist ?? 18), p.z + Math.sin(0.88) * (dist ?? 18)); controls.update();
+}
+
+// Stand-in battle: two fleets turning about each other with beams. The real battle is mockup 2.
+const battleScene = new THREE.Scene();
+const battleCam = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
+battleCam.position.set(0, 9, 22); battleCam.lookAt(0, 0, 0);
+battleScene.add(starfield(2500, 600));
+battleScene.add(new THREE.AmbientLight(0x334455, 0.7));
+const bsun = new THREE.DirectionalLight(0xfff1dd, 2.4); bsun.position.set(-10, 12, 8); battleScene.add(bsun);
+const bplanet = new THREE.Mesh(new THREE.SphereGeometry(40, 64, 48), new THREE.MeshStandardMaterial({ map: planetTex(28), roughness: 0.95 })); bplanet.position.set(-30, -48, -60); battleScene.add(bplanet);
+const battleShips = [];
+const beams = new THREE.Group(); battleScene.add(beams);
+function setupBattle(ownCount, enemyCount, enemyFac) {
+  for (const s of battleShips) battleScene.remove(s.obj);
+  battleShips.length = 0;
+  const add = (side, n, color) => { for (let i = 0; i < n; i++) { const o = shipModel(color, 0.8); battleScene.add(o); battleShips.push({ obj: o, side, i, n }); } };
+  add(0, ownCount, 0x4f8fe8); add(1, enemyCount, new THREE.Color(FACTIONS[enemyFac].color).getHex());
+}
+let beamTimer = 0;
+function animateBattle(t, dt) {
+  for (const s of battleShips) {
+    const a = t * 0.18 + s.side * Math.PI + (s.i - (s.n - 1) / 2) * 0.32;
+    const r = 7 + s.i * 0.8;
+    s.obj.position.set(Math.cos(a) * r, Math.sin(t * 0.6 + s.i) * 0.5, Math.sin(a) * r * 0.6);
+    s.obj.rotation.y = -a + (s.side ? 0 : Math.PI) + Math.PI / 2;
+  }
+  beamTimer -= dt;
+  if (beamTimer <= 0 && battleShips.length) {
+    beamTimer = 0.35;
+    beams.clear();
+    const own = battleShips.filter((s) => s.side === 0), foe = battleShips.filter((s) => s.side === 1);
+    const a = own[Math.floor(Math.random() * own.length)], b = foe[Math.floor(Math.random() * foe.length)];
+    if (a && b) {
+      const pts = Math.random() < 0.5 ? [a.obj.position, b.obj.position] : [b.obj.position, a.obj.position];
+      beams.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone())), new THREE.LineBasicMaterial({ color: pts[0] === a.obj.position ? 0x8fd0ff : 0xff7a5c })));
+    }
+  }
+}
+
+let activeScene = menuScene, activeCam = menuCam;
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  for (const c of [menuCam, mapCam, battleCam]) { c.aspect = w / Math.max(1, h); c.updateProjectionMatrix(); }
+}
+new ResizeObserver(resize).observe(stage);
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+  if (activeScene === menuScene) { menuShip.rotation.y += dt * 0.08; menuPlanet.rotation.y += dt * 0.02; }
+  if (activeScene === battleScene) animateBattle(t, dt);
+  if (activeScene === mapScene) {
+    controls.update();
+    controls.target.x = THREE.MathUtils.clamp(controls.target.x, -1, MAP_W + 1);
+    controls.target.z = THREE.MathUtils.clamp(controls.target.z, 0, MAP_H + 1);
+    const z = zoomLevel();
+    for (const s of standees) {
+      s.visible = s.userData.role === 'fleet' || (s.userData.role === 'place' ? z !== 'far' : z === 'near');
+      const c = s.userData.card; c.rotation.y = Math.atan2(mapCam.position.x - s.position.x, mapCam.position.z - s.position.z);
+    }
+    for (const d of decals) d.visible = z !== 'far';
+    for (const m of markers) m.position.y = 1.25 + Math.sin(t * 2 + m.userData.mission.id) * 0.08;
+    if (selRing?.visible) selRing.material.opacity = 1;
+  }
+  renderer.render(activeScene, activeCam);
+});
+function useScene(name) {
+  activeScene = { menu: menuScene, map: mapScene, battle: battleScene }[name];
+  activeCam = { menu: menuCam, map: mapCam, battle: battleCam }[name];
+  controls.enabled = name === 'map';
+}
+
+// Map picking: a tap (not a drag) selects a hex or a mission marker.
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+const NARROW = matchMedia('(max-width: 920px), (max-height: 520px)');
+let downAt = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (activeScene !== mapScene || !downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+  if (S.screen !== 'map') return;
+  // On a phone the live map in its strip is a way back: tapping it closes the port panel (CLAUDE.md 7).
+  if (document.body.classList.contains('strip') && NARROW.matches) { closePort(); return; }
+  pick(e.clientX, e.clientY);
+});
+renderer.domElement.addEventListener('pointermove', (e) => {
+  const tip = document.getElementById('tip');
+  if (activeScene !== mapScene || e.buttons) { tip.hidden = true; return; }
+  const hit = rayAt(e.clientX, e.clientY, standees.filter((s) => s.visible).map((s) => s.userData.card));
+  if (hit) { const s = hit.object.parent; tip.textContent = s.userData.label; tip.style.left = e.clientX + 14 + 'px'; tip.style.top = e.clientY + 10 + 'px'; tip.hidden = false; }
+  else tip.hidden = true;
+});
+function rayAt(x, y, objs) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, mapCam);
+  return ray.intersectObjects(objs, false)[0];
+}
+function pick(x, y) {
+  const mk = rayAt(x, y, markers);
+  if (mk) { const m = mk.object.userData.mission; selectHex(m.c, m.r); briefing(m); return; }
+  const hit = rayAt(x, y, [hexMesh]);
+  if (!hit) return;
+  const [c, r] = hexKeys[hit.instanceId].split(',').map(Number);
+  if (S.sel && S.sel.c === c && S.sel.r === r && S.path) { moveFleet(S.path); return; }
+  selectHex(c, r);
+}
+function selectHex(c, r) {
+  S.sel = { c, r };
+  const p = hexPos(c, r); selRing.position.set(p.x, 0.02, p.z); selRing.visible = true;
+  S.path = (c === CAMP.at.c && r === CAMP.at.r) ? null : pathTo({ c, r });
+  showPath(S.path);
+  render();
+}
+function moveFleet(res) {
+  const last = res.path[res.path.length - 1].split(',').map(Number);
+  CAMP.mp -= res.cost; CAMP.at = { c: last[0], r: last[1] };
+  fleetStandee.position.copy(hexPos(CAMP.at.c, CAMP.at.r).add(FLEET_OFFSET));
+  S.path = null; showPath(null);
+  render();
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Screens. S is the page's own state; every screen is rebuilt from it by render().
+// ---------------------------------------------------------------------------------------------------------------
+const S = { screen: 'menu', opts: { master: 8, music: 6, fx: 7, quality: 'High', scale: 100 }, quit: false, closed: false,
+  sk: { scen: 0, scale: 1, fleet: [], sel: 0 }, lo: { group: 'primary', hp: 0, sys: null, err: '', variants: [] },
+  sel: null, path: null, port: null, mission: null, result: null, from: null, yard: 'buy', yardSel: 'halberd', camp: { name: 'Captain Ardent', diff: 1 } };
+const ui = document.getElementById('ui');
+
+function h(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'text') n.textContent = v;
+    else if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat(3)) if (k != null && k !== false) n.append(k.nodeType ? k : String(k));
+  return n;
+}
+const key_ = (label, onclick, cls = '', extra = {}) => h('button', { class: `key ${cls}`, type: 'button', onclick, ...extra }, label);
+function go(screen, extra = {}) { Object.assign(S, extra, { screen }); render(); }
+
+function render() {
+  document.getElementById('tip').hidden = true;
+  ui.replaceChildren();
+  document.body.classList.toggle('strip', !!(S.port && S.screen === 'map'));
+  resize();
+  const build = SCREENS[S.screen];
+  ui.append(...[].concat(build()));
+}
+
+const SCREENS = {
+  menu() {
+    useScene('menu');
+    if (S.closed) return h('div', { class: 'center' }, h('div', { class: 'panel sheet' }, h('h2', { text: 'Game closed' }), h('p', { class: 'muted', text: 'Quit closes the game. The mockup stays open.' }), key_('Start again', () => go('menu', { closed: false }), 'go')));
+    const menu = h('div', { class: 'menu' },
+      h('div', { class: 'title' }, 'Fleet Command', h('small', { text: 'Mockup 1 · Game flow' })),
+      h('div', { class: 'panel col' },
+        key_(h('span', {}, h('span', { class: 'lamp' }), 'Campaign'), () => go('newcamp')),
+        key_(h('span', {}, h('span', { class: 'lamp' }), 'Skirmish'), () => go('skirmish')),
+        key_(h('span', {}, h('span', { class: 'lamp' }), 'Options'), () => go('options')),
+        key_(h('span', {}, h('span', { class: 'lamp' }), 'Quit'), () => go('menu', { quit: true }))));
+    if (!S.quit) return menu;
+    return [menu, h('div', { class: 'center' }, h('div', { class: 'panel sheet' }, h('h2', { text: 'Quit Fleet Command?' }),
+      h('div', { class: 'row' }, key_('Quit', () => go('menu', { quit: false, closed: true }), 'danger'), key_('Stay', () => go('menu', { quit: false }), 'go'))))];
+  },
+
+  options() {
+    useScene('menu');
+    const o = S.opts;
+    const boxes = (k) => h('span', { class: 'boxes', role: 'group', 'aria-label': k }, Array.from({ length: 10 }, (_, i) =>
+      h('button', { type: 'button', class: i < o[k] ? 'lit' : '', 'aria-label': `${k} ${i + 1}`, onclick: () => { o[k] = o[k] === i + 1 ? i : i + 1; render(); } })));
+    const pick = (k, vals, fmt = (v) => v) => h('div', { class: 'tabs' }, vals.map((v) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(o[k] === v), onclick: () => { o[k] = v; render(); } }, fmt(v))));
+    return h('div', { class: 'center' }, h('div', { class: 'panel sheet' },
+      h('div', { class: 'plate', text: 'Options' }),
+      h('table', { class: 'grid' }, h('tbody', {},
+        h('tr', {}, h('td', { text: 'Master volume' }), h('td', {}, boxes('master'))),
+        h('tr', {}, h('td', { text: 'Music' }), h('td', {}, boxes('music'))),
+        h('tr', {}, h('td', { text: 'Effects' }), h('td', {}, boxes('fx'))),
+        h('tr', {}, h('td', { text: 'Graphics' }), h('td', {}, pick('quality', ['Low', 'Medium', 'High']))),
+        h('tr', {}, h('td', { text: 'Interface scale' }), h('td', {}, pick('scale', [90, 100, 115], (v) => `${v}%`))))),
+      h('div', { class: 'row' }, h('span', { class: 'spacer' }), key_('Done', () => go('menu'), 'go'))));
+  },
+
+  skirmish() {
+    useScene('menu');
+    const sc = SCENARIOS[S.sk.scen], budget = Math.round(sc.budget * BUDGET_SCALE[S.sk.scale][1]);
+    const prev = h('canvas', { class: 'map-preview', width: 480, height: 300 });
+    drawPreview(prev, sc);
+    return h('div', { class: 'screen' },
+      h('div', { class: 'head' }, h('div', {}, h('div', { class: 'plate', text: 'Skirmish' }), h('h2', { text: 'Choose a scenario' }))),
+      h('div', { class: 'split' },
+        h('div', { class: 'panel col scroll' }, h('div', { class: 'list', role: 'listbox', 'aria-label': 'Scenarios' }, SCENARIOS.map((s, i) =>
+          h('button', { class: 'item', type: 'button', role: 'option', 'aria-selected': String(i === S.sk.scen), onclick: () => { S.sk.scen = i; render(); } },
+            h('span', { class: 't', text: s.name }), h('span', { class: 'num muted', text: `${s.budget} pts` }), h('span', { class: 's', text: s.sides }))))),
+        h('div', { class: 'panel col scroll' }, prev, h('h3', { text: sc.name }), h('p', { text: sc.brief }),
+          h('div', { class: 'row' }, h('span', { class: 'muted', text: 'Point budget' }), h('div', { class: 'tabs' }, BUDGET_SCALE.map(([n], i) =>
+            h('button', { class: 'tab', type: 'button', 'aria-selected': String(i === S.sk.scale), onclick: () => { S.sk.scale = i; render(); } }, n))),
+            h('span', { class: 'num', text: `${budget} pts` })))),
+      h('div', { class: 'foot' }, key_('Back', () => go('menu')), key_('Build fleet', () => { if (!S.sk.fleet.length) S.sk.fleet = [newShip('lantern', 'CNS Resolute')]; S.sk.sel = 0; go('fleet'); }, 'go')));
+  },
+
+  fleet() {
+    useScene('menu');
+    const sc = SCENARIOS[S.sk.scen], budget = Math.round(sc.budget * BUDGET_SCALE[S.sk.scale][1]);
+    const spent = fleetPoints(S.sk.fleet), over = spent > budget;
+    const err = h('div', { class: 'err', 'aria-live': 'polite' });
+    return h('div', { class: 'screen' },
+      h('div', { class: 'head' }, h('div', {}, h('div', { class: 'plate', text: `Skirmish · ${sc.name}` }), h('h2', { text: 'Your fleet' })),
+        h('div', { class: 'col', style: 'min-width:220px' }, h('div', { class: 'row' }, h('span', { class: 'muted', text: 'Budget' }), h('span', { class: 'spacer' }), h('span', { class: 'num', text: `${spent} / ${budget} pts` })),
+          h('div', { class: `bar ${over ? 'over' : ''}` }, h('i', { style: `width:${Math.min(100, (100 * spent) / budget)}%` })),
+          over ? h('div', { class: 'err', text: `${spent - budget} pts over budget` }) : null)),
+      h('div', { class: 'split' },
+        h('div', { class: 'panel col scroll' }, h('div', { class: 'plate', text: `Ships (${S.sk.fleet.length} of ${FLEET_MAX})` }),
+          h('div', { class: 'list' }, S.sk.fleet.map((s, i) => h('div', { class: 'item', 'aria-selected': String(i === S.sk.sel), onclick: () => { S.sk.sel = i; render(); } },
+            h('span', { class: 't', text: s.name }), h('span', { class: 'num', text: `${shipPoints(s)} pts` }),
+            h('span', { class: 's', text: `${HULLS[s.hull].cls}${i === 0 ? ' · flagship' : ` · ${s.behaviour}`}` }),
+            h('span', { class: 'row', style: 'grid-column:1/-1' }, key_('Refit', (e) => { e.stopPropagation(); openLoadout(s, 'fleet', skirmishPurse()); }, 'small'),
+              i > 0 ? key_('Remove', (e) => { e.stopPropagation(); S.sk.fleet.splice(i, 1); S.sk.sel = 0; render(); }, 'small') : null)))), err),
+        h('div', { class: 'panel col scroll' }, h('div', { class: 'plate', text: 'Add a hull' }),
+          h('div', { class: 'list' }, Object.entries(HULLS).map(([id, hl]) => {
+            const probe = newShip(id); shipSerial--;
+            return h('button', { class: 'item', type: 'button', onclick: () => {
+              if (S.sk.fleet.length >= FLEET_MAX) { err.textContent = `A fleet holds at most ${FLEET_MAX} ships.`; return; }
+              S.sk.fleet.push(newShip(id)); S.sk.sel = S.sk.fleet.length - 1; render();
+            } }, h('span', { class: 't', text: `${hl.name} · ${hl.cls}` }), h('span', { class: 'num', text: `${shipPoints(probe)} pts` }),
+              h('span', { class: 's', text: GROUPS.map(([g, n]) => `${hl.slots[g]} ${n.split(' ')[0].toLowerCase()}`).join(' · ') }));
+          })))),
+      h('div', { class: 'foot' }, key_('Back', () => go('skirmish')),
+        key_('Launch', () => { if (over || !S.sk.fleet.length) return; startBattle({ kind: 'skirmish', name: sc.name, fleet: S.sk.fleet, enemy: 'kethran', enemyCount: sc.objs.length }); }, 'go', { disabled: over || !S.sk.fleet.length })));
+  },
+
+  loadout() { return loadoutScreen(); },
+
+  newcamp() {
+    useScene('menu');
+    const diffs = ['Ensign', 'Captain', 'Admiral'];
+    const name = h('input', { id: 'captain', value: S.camp.name, 'aria-label': 'Captain\'s name', style: 'min-height:44px;width:100%;font:500 16px var(--body);color:var(--ink);background:#0b1117;border:1px solid #2d3946;border-radius:4px;padding:0 12px' });
+    name.addEventListener('input', () => { S.camp.name = name.value; });
+    return h('div', { class: 'center' }, h('div', { class: 'panel sheet' }, h('div', { class: 'plate', text: 'New campaign' }), h('h2', { text: 'Take command' }),
+      h('label', { class: 'col', for: 'captain' }, h('span', { class: 'muted', text: 'Captain' }), name),
+      h('div', { class: 'col' }, h('span', { class: 'muted', text: 'Difficulty' }), h('div', { class: 'tabs' }, diffs.map((d, i) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(i === S.camp.diff), onclick: () => { S.camp.diff = i; render(); } }, d)))),
+      h('div', { class: 'row' }, key_('Back', () => go('menu')), h('span', { class: 'spacer' }), key_('Begin', () => startCampaign(), 'go'))));
+  },
+
+  map() {
+    useScene('map');
+    const here = CAMP.hexes[key(CAMP.at.c, CAMP.at.r)];
+    const sel = S.sel ? CAMP.hexes[key(S.sel.c, S.sel.r)] : here;
+    const atPort = isPort(here);
+    const portKey = (id, label) => key_(label, () => openPort(id), '', { disabled: !atPort });
+    const top = h('div', { class: 'panel topbar' },
+      key_('Menu', () => go('menu'), 'small'),
+      h('div', { class: 'stat cap' }, h('b', { text: 'Captain' }), h('span', { text: CAMP.captain })),
+      h('div', { class: 'stat' }, h('b', { text: 'Credits' }), h('span', { class: 'num', text: CAMP.credits.toLocaleString('en-US') })),
+      h('div', { class: 'stat' }, h('b', { text: 'Turn' }), h('span', { class: 'num', text: CAMP.turn })),
+      h('div', { class: 'stat' }, h('b', { text: 'Moves' }), h('span', { class: 'num', text: `${CAMP.mp} / ${MOVE_POINTS}` })),
+      h('div', { class: 'fleetchips' }, CAMP.fleet.map((s) => h('span', { class: 'chip' }, s.name, h('span', { class: 'bar', style: 'width:44px' }, h('i', { style: `width:${s.hullPct}%;${s.hullPct < 50 ? 'background:var(--warn)' : ''}` }))))));
+    const here_ = sel.c === CAMP.at.c && sel.r === CAMP.at.r;
+    const groupsHere = CAMP.groups.filter((g) => g.c === sel.c && g.r === sel.r);
+    const missionsHere = CAMP.missions.filter((m) => m.c === sel.c && m.r === sel.r);
+    const panel = h('div', { class: 'panel hexpanel' },
+      h('div', { class: 'plate', text: here_ ? 'Your position' : `Sector ${sel.c + 1}-${sel.r + 1}` }),
+      h('h3', { text: sel.planet || sel.station || TERRAIN[sel.terrain].name }),
+      h('p', { class: 'muted' }, h('span', { class: 'fac', style: `background:${FACTIONS[sel.owner].color}` }), FACTIONS[sel.owner].name, ` · ${TERRAIN[sel.terrain].name}`, sel.terrain !== 'star' ? ` · move cost ${TERRAIN[sel.terrain].cost}` : ''),
+      groupsHere.length ? h('p', { text: groupsHere.map((g) => `${g.name} (${g.size} ${g.size > 1 ? 'ships' : 'ship'})`).join(', ') }) : null,
+      !here_ && sel.terrain !== 'star' ? (S.path ? h('div', { class: 'row' }, h('span', { class: 'muted', text: `Path cost ${S.path.cost}` }), h('span', { class: 'spacer' }), key_('Move here', () => moveFleet(S.path), 'go small'))
+        : h('p', { class: 'err', text: `Out of reach this turn (${CAMP.mp} moves left).` })) : null,
+      missionsHere.map((m) => h('button', { class: 'item', type: 'button', onclick: () => briefing(m) }, h('span', { class: 't', text: MISSIONS[m.type].name }), h('span', { class: 'num', text: `${m.reward} cr` }), h('span', { class: 's', text: `${m.turns} ${m.turns > 1 ? 'turns' : 'turn'} left · ${m.strength} opposition` }))),
+      h('div', { class: 'plate', text: atPort ? `Port: ${here.planet || here.station}` : 'No friendly port here' }),
+      h('div', { class: 'row' }, portKey('shipyard', 'Shipyard'), portKey('outfitter', 'Outfitter'), portKey('recruit', 'Recruiting')));
+    const keys = h('div', { class: 'panel mapkeys' },
+      key_('+', () => setZoom(Math.max(8, mapCam.position.distanceTo(controls.target) * 0.7)), 'small', { 'aria-label': 'Zoom in' }),
+      key_('−', () => setZoom(Math.min(40, mapCam.position.distanceTo(controls.target) * 1.4)), 'small', { 'aria-label': 'Zoom out' }),
+      key_('Fleet', () => centreOn(CAMP.at.c, CAMP.at.r, mapCam.position.distanceTo(controls.target)), 'small'));
+    const out = [top, keys, h('div', { class: 'endturn' }, key_('End turn', () => { endTurn(); rebuildMarkers(); S.path = S.sel ? pathTo(S.sel) : null; showPath(S.path); render(); }, 'go'))];
+    if (S.port) out.push(portPanel());
+    else out.splice(1, 0, panel);
+    if (S.mission) out.push(briefPanel());
+    return out;
+  },
+
+  battle() {
+    useScene('battle');
+    const b = S.battle;
+    return h('div', { class: 'screen' },
+      h('div', { class: 'head' }, h('div', {}, h('div', { class: 'plate', text: 'Battle stand-in · the battle console is mockup 2' }), h('h2', { text: b.name }))),
+      h('div', {}),
+      h('div', { class: 'panel row' }, h('span', { class: 'muted', text: 'End the battle as' }), h('span', { class: 'spacer' }),
+        key_('Victory', () => finishBattle(true), 'go'), key_('Defeat', () => finishBattle(false), 'danger')));
+  },
+
+  results() {
+    useScene('battle');
+    const r = S.result;
+    return h('div', { class: 'center' }, h('div', { class: 'panel sheet' },
+      h('div', { class: 'plate', text: r.kind === 'campaign' ? 'Mission report' : 'Skirmish report' }),
+      h('h2', { text: r.win ? 'Victory' : 'Defeat', style: `color:${r.win ? 'var(--ok)' : 'var(--warn)'}` }), h('p', { class: 'muted', text: r.name }),
+      h('table', { class: 'grid' }, h('thead', {}, h('tr', {}, h('th', { text: 'Ship' }), h('th', { text: 'Hull' }))), h('tbody', {}, r.ships.map((s) =>
+        h('tr', {}, h('td', { text: s.name }), h('td', {}, s.lost ? h('span', { class: 'err', text: 'Destroyed' }) : h('span', { class: 'row' }, h('span', { class: 'bar', style: 'width:90px' }, h('i', { style: `width:${s.hullPct}%` })), h('span', { class: 'num', text: `${s.hullPct}%` }))))))),
+      r.kind === 'campaign' ? h('p', {}, 'Credits earned: ', h('span', { class: 'num', text: r.reward })) : null,
+      r.prize ? h('p', { text: `Captured: ${r.prize} joins the fleet.` }) : null,
+      h('div', { class: 'row' }, h('span', { class: 'spacer' }), key_(r.kind === 'campaign' ? 'Back to the map' : 'Main menu', () => { S.result = null; if (r.kind === 'campaign') { buildMap(); go('map', { mission: null, sel: null, path: null }); } else go('menu'); }, 'go'))));
+  },
+};
+
+function drawPreview(cv, sc) {
+  const x = cv.getContext('2d'), w = cv.width, hh = cv.height;
+  x.fillStyle = '#070b10'; x.fillRect(0, 0, w, hh);
+  x.strokeStyle = 'rgba(120,150,180,0.12)'; for (let i = 0; i < w; i += 30) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, hh); x.stroke(); } for (let j = 0; j < hh; j += 30) { x.beginPath(); x.moveTo(0, j); x.lineTo(w, j); x.stroke(); }
+  const dot = (px, py, col, kind) => { x.fillStyle = col; x.strokeStyle = col; x.lineWidth = 3; if (kind === 'station') { x.beginPath(); x.arc(px, py, 12, 0, 7); x.stroke(); } else if (kind === 'cargo') x.fillRect(px - 6, py - 4, 12, 8); else { x.beginPath(); x.moveTo(px + 8, py); x.lineTo(px - 6, py - 6); x.lineTo(px - 6, py + 6); x.fill(); } };
+  dot(w * 0.18, hh * 0.45, '#4f8fe8', 'ship'); dot(w * 0.2, hh * 0.58, '#4f8fe8', 'ship');
+  for (const [k, px, py] of sc.objs) dot(w * px, hh * py, k === 'cargo' ? '#e3a33a' : '#d9483b', k);
+  x.fillStyle = '#56667a'; x.font = '500 12px "IBM Plex Mono", monospace'; x.fillText('YOU', w * 0.12, hh * 0.38); x.fillText('ENEMY', w * 0.72, hh * 0.18);
+}
+
+// The loadout screen: one implementation, reached from skirmish setup and from the campaign outfitter.
+let LO = null; // { ship, back, purse }
+function openLoadout(ship, back, purse) { LO = { ship, back, purse }; S.lo.err = ''; S.lo.sys = null; S.lo.hp = 0; go('loadout'); }
+function loadoutScreen() {
+  const { ship, purse } = LO;
+  const inCamp = purse.kind === 'credits';
+  useScene(inCamp ? 'map' : 'menu');
+  const body = loadoutBody(ship, purse);
+  const wallet = inCamp ? `${CAMP.credits.toLocaleString('en-US')} cr` : `${fleetPoints(S.sk.fleet)} / ${Math.round(SCENARIOS[S.sk.scen].budget * BUDGET_SCALE[S.sk.scale][1])} pts`;
+  return h('div', { class: 'screen' },
+    h('div', { class: 'head' }, h('div', {}, h('div', { class: 'plate', text: inCamp ? 'Outfitter · refit' : 'Skirmish · refit' }), h('h2', { text: `${ship.name}` })), h('span', { class: 'chip', text: wallet })),
+    body,
+    h('div', { class: 'foot' }, key_('Done', () => { if (inCamp) go('map', { port: 'outfitter' }); else go(LO.back); }, 'go')));
+}
+function loadoutBody(ship, purse) {
+  const g = S.lo.group, hull = HULLS[ship.hull];
+  const cv = h('canvas', { width: 300, height: 400, 'aria-label': 'Ship schematic' });
+  drawSchematic(cv, ship, g, S.lo.hp);
+  const slots = ship.fit[g];
+  const hp = Math.min(S.lo.hp, Math.max(0, slots.length - 1));
+  const cur = slots[hp];
+  const choices = Object.entries(SYSTEMS).filter(([, s]) => s.g === g);
+  const err = h('div', { class: 'err', 'aria-live': 'polite', text: S.lo.err });
+  const sysSel = S.lo.sys && SYSTEMS[S.lo.sys].g === g ? S.lo.sys : null;
+  const act = (sys) => { S.lo.err = refit(purse, ship, g, hp, sys) || ''; render(); };
+  const isWing = S.screen === 'loadout' && purse.kind === 'points' ? S.sk.fleet.indexOf(ship) > 0 : CAMP && CAMP.fleet.indexOf(ship) > 0;
+  return h('div', { class: 'loadout scroll' },
+    h('div', { class: 'panel inset col' }, cv, h('p', { class: 'muted', text: `${hull.name} · ${hull.cls} · ${hull.hp} hull points` })),
+    h('div', { class: 'col' },
+      h('div', { class: 'tabs', role: 'tablist' }, GROUPS.map(([id, n]) => h('button', { class: 'tab', type: 'button', role: 'tab', 'aria-selected': String(id === g), disabled: !hull.slots[id], onclick: () => { S.lo.group = id; S.lo.hp = 0; S.lo.sys = null; S.lo.err = ''; render(); } }, `${n} ${hull.slots[id]}`))),
+      slots.length ? h('div', { class: 'panel col' },
+        h('div', { class: 'tabs' }, slots.map((s, i) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(i === hp), onclick: () => { S.lo.hp = i; S.lo.err = ''; render(); } }, `${i + 1}: ${s ? SYSTEMS[s].name : 'empty'}`))),
+        h('div', { class: 'list' }, choices.map(([id, s]) => h('button', { class: 'item', type: 'button', 'aria-selected': String(id === sysSel), onclick: () => { S.lo.sys = id; S.lo.err = ''; render(); } },
+          h('span', { class: 't', text: s.name }), h('span', { class: 'num', text: `${purse.price(s.cost)} ${purse.unit}` }), h('span', { class: 's', text: s.d + (s.arc ? ` Arc ${s.arc}°.` : '') })))),
+        h('div', { class: 'row' },
+          key_(cur ? 'Trade' : 'Fit', () => sysSel && act(sysSel), 'go small', { disabled: !sysSel || sysSel === cur }),
+          key_('Remove', () => act(null), 'small', { disabled: !cur }),
+          h('span', { class: 'muted', text: cur ? `Refund ${purse.refund(SYSTEMS[cur].cost)} ${purse.unit}` : '' })), err)
+        : h('p', { class: 'muted', text: 'This hull has no hardpoints in this group.' }),
+      h('div', { class: 'panel col' }, h('div', { class: 'plate', text: 'Supplies' }),
+        h('table', { class: 'grid' }, h('thead', {}, h('tr', {}, ['Item', 'Carried', 'Max', 'Each', ''].map((t) => h('th', { text: t })))),
+          h('tbody', {}, SUPPLIES.map((u) => h('tr', {}, h('td', { text: u.name }), h('td', { class: 'num', text: ship.supplies[u.id] }), h('td', { class: 'num', text: u.max(ship) }), h('td', { class: 'num', text: `${purse.price(u.cost)}` }),
+            h('td', {}, h('span', { class: 'row' }, key_('−', () => { S.lo.err = resupply(purse, ship, u.id, -1) || ''; render(); }, 'small', { 'aria-label': `One fewer ${u.name}` }), key_('+', () => { S.lo.err = resupply(purse, ship, u.id, 1) || ''; render(); }, 'small', { 'aria-label': `One more ${u.name}` })))))))),
+      isWing ? h('div', { class: 'panel col' }, h('div', { class: 'plate', text: 'Wingman behaviour' }), h('div', { class: 'tabs' }, BEHAVIOURS.map((b) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(ship.behaviour === b), onclick: () => { ship.behaviour = b; render(); } }, b)))) : null,
+      h('div', { class: 'panel col' }, h('div', { class: 'plate', text: 'Variants' }),
+        h('div', { class: 'row' }, key_('Save variant', () => { S.lo.variants.push({ name: `${HULLS[ship.hull].name} variant ${S.lo.variants.length + 1}`, hull: ship.hull, fit: JSON.parse(JSON.stringify(ship.fit)) }); render(); }, 'small'),
+          S.lo.variants.filter((v) => v.hull === ship.hull).map((v) => h('span', { class: 'chip', text: v.name }))))));
+}
+function slotLayout(ship) {
+  // Where each hardpoint sits on the schematic, in 0..1 of the drawing, and which way it faces (radians, 0 = ahead).
+  const out = {}, hull = HULLS[ship.hull];
+  const spread = (n, y0, y1, xs) => Array.from({ length: n }, (_, i) => { const t = n === 1 ? 0.5 : i / (n - 1); return [xs[i % xs.length], y0 + (y1 - y0) * t]; });
+  out.shields = spread(hull.slots.shields, 0.42, 0.58, [0.5]).map(([x, y], i) => [x + (i - (hull.slots.shields - 1) / 2) * 0.12, y, 0]);
+  out.primary = spread(hull.slots.primary, 0.22, 0.5, [0.32, 0.68]).map(([x, y]) => [x, y, x < 0.5 ? -0.6 : 0.6]);
+  out.heavy = spread(hull.slots.heavy, 0.12, 0.2, [0.5, 0.42, 0.58]).map(([x, y]) => [x, y, 0]);
+  out.hull = spread(hull.slots.hull, 0.5, 0.7, [0.42, 0.58]).map(([x, y]) => [x, y, 0]);
+  out.bridge = spread(hull.slots.bridge, 0.3, 0.36, [0.5, 0.56]).map(([x, y]) => [x, y, 0]);
+  out.engines = spread(hull.slots.engines, 0.86, 0.86, [0.32, 0.68]).map(([x, y]) => [x, y, Math.PI]);
+  return out;
+}
+function drawSchematic(cv, ship, group, hp) {
+  const x = cv.getContext('2d'), w = cv.width, hh = cv.height, L = HULLS[ship.hull].len;
+  x.fillStyle = '#070b10'; x.fillRect(0, 0, w, hh);
+  x.strokeStyle = 'rgba(120,150,180,0.1)'; for (let i = 0; i < w; i += 20) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, hh); x.stroke(); } for (let j = 0; j < hh; j += 20) { x.beginPath(); x.moveTo(0, j); x.lineTo(w, j); x.stroke(); }
+  // The hull from above, scaled by class: bow at the top.
+  x.save(); x.translate(w / 2, hh / 2); x.scale(L, L); x.translate(-w / 2, -hh / 2);
+  x.fillStyle = '#2a3542'; x.strokeStyle = '#8fb3d8'; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(w * 0.5, hh * 0.06); x.lineTo(w * 0.63, hh * 0.26); x.lineTo(w * 0.58, hh * 0.72); x.lineTo(w * 0.42, hh * 0.72); x.lineTo(w * 0.37, hh * 0.26); x.closePath(); x.fill(); x.stroke();
+  for (const s of [-1, 1]) { x.beginPath(); x.rect(w * (0.5 + s * 0.19) - w * 0.05, hh * 0.58, w * 0.1, hh * 0.34); x.fill(); x.stroke(); x.beginPath(); x.moveTo(w * 0.5 + s * w * 0.06, hh * 0.62); x.lineTo(w * 0.5 + s * w * 0.14, hh * 0.66); x.stroke(); }
+  x.restore();
+  const lay = slotLayout(ship);
+  const map = (px, py) => [w / 2 + (px * w - w / 2) * L, hh / 2 + (py * hh - hh / 2) * L];
+  for (const [g] of GROUPS) {
+    lay[g].forEach(([px, py, face], i) => {
+      const [cx, cy] = map(px, py), on = g === group, sys = ship.fit[g][i];
+      if (on && sys && SYSTEMS[sys].arc) {
+        const arc = (SYSTEMS[sys].arc * Math.PI) / 180, a0 = face - Math.PI / 2 - arc / 2;
+        x.fillStyle = i === hp ? 'rgba(255,181,71,0.22)' : 'rgba(143,179,216,0.12)';
+        x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, 70, a0, a0 + arc); x.closePath(); x.fill();
+      }
+      x.fillStyle = on ? (i === hp ? '#ffb547' : '#cfe0f2') : '#46576a';
+      x.strokeStyle = '#05080b'; x.lineWidth = 2;
+      x.beginPath(); if (g === 'shields') x.arc(cx, cy, 7, 0, 7); else x.rect(cx - 6, cy - 6, 12, 12); x.fill(); x.stroke();
+      if (!sys) { x.strokeStyle = '#ff6b5a'; x.beginPath(); x.moveTo(cx - 4, cy - 4); x.lineTo(cx + 4, cy + 4); x.stroke(); }
+    });
+  }
+  x.fillStyle = '#56667a'; x.font = '500 11px "IBM Plex Mono", monospace'; x.fillText('BOW', w / 2 - 12, 14);
+}
+
+// Campaign.
+function startCampaign() {
+  buildCampaign(7);
+  CAMP.captain = S.camp.name || 'Captain';
+  buildMap();
+  centreOn(CAMP.at.c, CAMP.at.r, 18);
+  go('map', { sel: null, path: null, port: null, mission: null });
+}
+function openPort(id) { S.port = id; S.mission = null; render(); }
+function closePort() { S.port = null; render(); }
+function portPanel() {
+  const here = CAMP.hexes[key(CAMP.at.c, CAMP.at.r)];
+  const title = { shipyard: 'Shipyard', outfitter: 'Outfitter', recruit: 'Recruiting center' }[S.port];
+  let body;
+  if (S.port === 'shipyard') body = shipyardBody();
+  if (S.port === 'outfitter') body = outfitterBody();
+  if (S.port === 'recruit') body = recruitBody();
+  return h('div', { class: 'panel portpanel' },
+    h('div', { class: 'head' }, h('div', {}, h('div', { class: 'plate', text: here.planet || here.station }), h('h2', { text: title })), h('span', { class: 'chip', text: `${CAMP.credits.toLocaleString('en-US')} cr` })),
+    h('div', { class: 'scroll col' }, body),
+    h('div', { class: 'foot' }, h('div', { class: 'tabs' }, [['shipyard', 'Shipyard'], ['outfitter', 'Outfitter'], ['recruit', 'Recruiting']].map(([id, n]) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(id === S.port), onclick: () => openPort(id) }, n))),
+      key_('Close', closePort, 'go')),
+    h('div', { class: 'strip-tag chip', text: 'Live map' }));
+}
+function shipyardBody() {
+  const err = h('div', { class: 'err', 'aria-live': 'polite' });
+  const tabs = h('div', { class: 'tabs' }, [['buy', 'Buy a ship'], ['fleet', 'Your ships']].map(([id, n]) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(S.yard === id), onclick: () => { S.yard = id; render(); } }, n)));
+  if (S.yard === 'buy') {
+    return [tabs, h('div', { class: 'list' }, Object.entries(HULLS).map(([id, hl]) => {
+      const probe = newShip(id); shipSerial--; const price = shipPoints(probe) * CREDIT_RATE;
+      return h('div', { class: `item ${price > CAMP.credits ? 'off' : ''}` }, h('span', { class: 't', text: `${hl.name} · ${hl.cls}` }), h('span', { class: 'num', text: `${price.toLocaleString('en-US')} cr` }),
+        h('span', { class: 's', text: `${hl.hp} hull points · stock loadout` }),
+        h('span', { class: 'row', style: 'grid-column:1/-1' }, key_('Buy', () => {
+          if (CAMP.fleet.length >= FLEET_MAX) { err.textContent = `Your fleet holds at most ${FLEET_MAX} ships.`; return; }
+          if (price > CAMP.credits) { err.textContent = `Not enough credits: needs ${price.toLocaleString('en-US')}.`; return; }
+          CAMP.credits -= price; CAMP.fleet.push(newShip(id)); render();
+        }, 'small')));
+    })), err];
+  }
+  return [tabs, h('div', { class: 'list' }, CAMP.fleet.map((s, i) => {
+    const repair = Math.ceil(((100 - s.hullPct) / 100) * HULLS[s.hull].hp) * 6;
+    const value = Math.floor((shipPoints(s) * CREDIT_RATE) / 2);
+    return h('div', { class: 'item' }, h('span', { class: 't', text: s.name }), h('span', { class: 'num', text: `${s.hullPct}%` }), h('span', { class: 's', text: `${HULLS[s.hull].cls}${i === 0 ? ' · flagship' : ''}` }),
+      h('span', { class: 'row', style: 'grid-column:1/-1' },
+        key_(`Repair ${repair} cr`, () => { if (repair > CAMP.credits) { err.textContent = 'Not enough credits to repair.'; return; } CAMP.credits -= repair; s.hullPct = 100; render(); }, 'small', { disabled: s.hullPct >= 100 }),
+        i > 0 ? key_(`Sell ${value} cr`, () => { CAMP.credits += value; CAMP.fleet.splice(i, 1); render(); }, 'small') : null));
+  })), err];
+}
+function outfitterBody() {
+  return h('div', { class: 'list' }, CAMP.fleet.map((s, i) => h('div', { class: 'item' }, h('span', { class: 't', text: s.name }), h('span', { class: 'num', text: `${(shipPoints(s) * CREDIT_RATE).toLocaleString('en-US')} cr` }),
+    h('span', { class: 's', text: `${HULLS[s.hull].cls}${i === 0 ? ' · flagship' : ` · ${s.behaviour}`} · ${Object.values(s.fit).flat().filter(Boolean).length} systems fitted` }),
+    h('span', { class: 'row', style: 'grid-column:1/-1' }, key_('Refit and supplies', () => { S.port = null; openLoadout(s, 'map', campaignPurse()); }, 'small')))));
+}
+function recruitBody() {
+  const err = h('div', { class: 'err', 'aria-live': 'polite' });
+  return [h('div', { class: 'plate', text: 'Available officers' }),
+    h('div', { class: 'list' }, CAMP.officerPool.map((o, i) => h('div', { class: 'item' }, h('span', { class: 't', text: o.name }), h('span', { class: 'num', text: `${o.cost} cr` }), h('span', { class: 's', text: `${o.station} · ${o.skill}` }),
+      h('span', { class: 'row', style: 'grid-column:1/-1' }, key_('Hire', () => { if (o.cost > CAMP.credits) { err.textContent = 'Not enough credits.'; return; } CAMP.credits -= o.cost; CAMP.crew.push(o); CAMP.officerPool.splice(i, 1); render(); }, 'small'))))), err,
+    h('div', { class: 'plate', text: 'Your officers' }),
+    CAMP.crew.length ? h('table', { class: 'grid' }, h('tbody', {}, CAMP.crew.map((o) => h('tr', {}, h('td', { text: o.name }), h('td', { text: o.station }), h('td', { text: o.skill }))))) : h('p', { class: 'muted', text: 'No officers hired.' }),
+    h('div', { class: 'row' }, h('span', { class: 'muted', text: `Marines aboard the flagship: ${CAMP.fleet[0].supplies.marines} of ${SUPPLIES[0].max(CAMP.fleet[0])}` }), key_('Hire a marine squad (25 cr)', () => {
+      const e = resupply(campaignPurse(), CAMP.fleet[0], 'marines', 1); if (e) err.textContent = e; else render();
+    }, 'small'))];
+}
+function briefing(m) { S.mission = m; render(); }
+function briefPanel() {
+  const m = S.mission, def = MISSIONS[m.type];
+  const here = CAMP.at.c === m.c && CAMP.at.r === m.r;
+  const needMarines = m.type === 'capture' && !CAMP.fleet.some((s) => s.supplies.marines > 0);
+  return h('div', { class: 'center' }, h('div', { class: 'panel sheet' },
+    h('div', { class: 'plate', text: `Mission briefing · sector ${m.c + 1}-${m.r + 1}` }), h('h2', { text: def.name }),
+    h('p', { text: def.obj }),
+    h('table', { class: 'grid' }, h('tbody', {},
+      h('tr', {}, h('td', { class: 'muted', text: 'Opposition' }), h('td', { text: m.strength })),
+      h('tr', {}, h('td', { class: 'muted', text: 'Reward' }), h('td', { class: 'num', text: `${m.reward} cr` })),
+      h('tr', {}, h('td', { class: 'muted', text: 'Expires in' }), h('td', { text: `${m.turns} ${m.turns > 1 ? 'turns' : 'turn'}` })))),
+    !here ? h('p', { class: 'err', text: 'Move your fleet to this sector to deploy.' }) : null,
+    needMarines ? h('p', { class: 'err', text: 'Boarding needs marines aboard.' }) : null,
+    h('div', { class: 'row' }, key_('Close', () => { S.mission = null; render(); }), h('span', { class: 'spacer' }),
+      key_('Deploy', () => startBattle({ kind: 'campaign', name: def.name, fleet: CAMP.fleet, enemy: CAMP.hexes[key(m.c, m.r)].owner === 'vos' ? 'vos' : 'kethran', enemyCount: { Light: 1, Moderate: 2, Heavy: 3 }[m.strength], mission: m }), 'go', { disabled: !here || needMarines }))));
+}
+function startBattle(b) { S.battle = b; setupBattle(b.fleet.length, b.enemyCount, b.enemy); S.mission = null; S.port = null; go('battle'); }
+function finishBattle(win) {
+  const b = S.battle, R = rng(1000 + (CAMP?.battles ?? 0) * 17 + (win ? 1 : 0));
+  if (CAMP) CAMP.battles++;
+  const ships = b.fleet.map((s, i) => {
+    const dmg = Math.floor((win ? 10 + R() * 35 : 35 + R() * 50));
+    const hullPct = Math.max(0, s.hullPct - dmg);
+    return { s, name: s.name, hullPct, lost: !win && i > 0 && hullPct < 20 };
+  });
+  const r = { kind: b.kind, name: b.name, win, ships, reward: 0, prize: null };
+  if (b.kind === 'campaign') {
+    for (const x of ships) x.s.hullPct = x.hullPct;
+    CAMP.fleet = CAMP.fleet.filter((s) => !ships.find((x) => x.s === s && x.lost));
+    if (win) {
+      r.reward = b.mission.reward; CAMP.credits += r.reward;
+      if (b.mission.type === 'capture' && CAMP.fleet.length < FLEET_MAX) { const p = newShip('swift', 'Prize Ship Varn'); p.hullPct = 40; CAMP.fleet.push(p); r.prize = p.name; }
+    }
+    CAMP.missions = CAMP.missions.filter((m) => m !== b.mission);
+  }
+  go('results', { result: r });
+}
+
+// Named shots for tools/mockups/shoot.mjs: each sets up one screen from a fresh state.
+function freshCampaign() { S.camp = { name: 'Captain Ardent', diff: 1 }; startCampaign(); }
+window.MOCKUP_SHOTS = {
+  menu: () => go('menu', { quit: false, closed: false }),
+  options: () => go('options'),
+  quit: () => go('menu', { quit: true, closed: false }),
+  skirmish: () => { S.sk = { scen: 1, scale: 1, fleet: [], sel: 0 }; go('skirmish'); },
+  fleet: () => { S.sk = { scen: 1, scale: 1, fleet: [newShip('halberd', 'CNS Resolute'), newShip('swift', 'CNS Wren')], sel: 0 }; S.sk.fleet[1].behaviour = 'Attack my target'; go('fleet'); },
+  fleet_over: () => { S.sk = { scen: 0, scale: 0, fleet: [newShip('bastion', 'CNS Resolute'), newShip('lantern', 'CNS Wren')], sel: 0 }; go('fleet'); },
+  loadout: () => { S.sk = { scen: 3, scale: 1, fleet: [newShip('bastion', 'CNS Resolute'), newShip('lantern', 'CNS Wren')], sel: 0 }; S.lo.group = 'primary'; openLoadout(S.sk.fleet[0], 'fleet', skirmishPurse()); S.lo.hp = 1; S.lo.sys = 'lance'; render(); },
+  battle: () => { S.sk = { scen: 1, scale: 1, fleet: [newShip('halberd', 'CNS Resolute'), newShip('swift', 'CNS Wren')], sel: 0 }; CAMP = null; startBattle({ kind: 'skirmish', name: 'Convoy Raid', fleet: S.sk.fleet, enemy: 'vos', enemyCount: 5 }); },
+  skirmish_results: () => { MOCKUP_SHOTS.battle(); finishBattle(true); },
+  new_campaign: () => go('newcamp'),
+  map: () => { freshCampaign(); },
+  map_far: () => { freshCampaign(); setZoom(36); },
+  map_near: () => { freshCampaign(); centreOn(4, 4, 9); },
+  map_path: () => { freshCampaign(); selectHex(4, 3); },
+  shipyard: () => { freshCampaign(); openPort('shipyard'); },
+  outfitter: () => { freshCampaign(); openPort('outfitter'); },
+  outfitter_refit: () => { freshCampaign(); S.lo.group = 'heavy'; openLoadout(CAMP.fleet[0], 'map', campaignPurse()); S.lo.sys = 'torpedo'; render(); },
+  recruiting: () => { freshCampaign(); openPort('recruit'); },
+  briefing: () => { freshCampaign(); const m = CAMP.missions.find((x) => x.type === 'patrol') || offerMission('patrol'); rebuildMarkers(); CAMP.at = { c: m.c, r: m.r }; buildMap(); centreOn(m.c, m.r, 14); selectHex(m.c, m.r); briefing(m); },
+  campaign_results: () => { MOCKUP_SHOTS.briefing(); const m = S.mission; startBattle({ kind: 'campaign', name: MISSIONS[m.type].name, fleet: CAMP.fleet, enemy: 'kethran', enemyCount: 2, mission: m }); finishBattle(true); },
+};
+window.MOCKUP_SCENE = mapScene;
+
+render();
+resize();
+window.MOCKUP_READY = true;
+</script>

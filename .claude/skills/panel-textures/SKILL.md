@@ -21,7 +21,7 @@ Crab Breeze's note and Star Crew's text. Where they disagree with this note, thi
     Seams are placed on the 3D model first, then baked (Star Crew).
   - **Console faces**: the left column's panel frames, buttons, the helm pad, the arming switches,
     placards. Whether the console is drawn with these textures (like the owner's reference) or as
-    flat vector shapes is survey `U3`; panel faces are made only once it is answered.
+    flat vector shapes was survey `U3`: textured (owner, 2026-10-30), with live readouts drawn inside.
 - **The kit is here**: `tools/blender/panel_kit.py` (Crab Breeze's `cockpit_kit.py` at `69ce196`:
   `Panel` with `plates`, `screw`, `screws`, `screw_row`, `button`, `toggle`, `knob`, `dial`, `keypad`,
   `placard`, `hazard`, `annunciator`, `vent`, `frame`, `window`, `pcb`, `text`, `code`, `tube`, and

@@ -18,9 +18,12 @@ not the files. Fleet Command's kit:
 | --- | --- |
 | `docs/mockups/lib/template.html` | The page skeleton: three.js 0.169.0 from jsDelivr, OrbitControls, a 10 m grid and a 1.8 m figure, named views, a triangles and draw-calls meter, `MOCKUP_SHOTS` and `MOCKUP_READY`. Copy it to `docs/mockups/<subject>.html` to start. |
 | `docs/mockups/lib/gltf_json_loader.js` | Loads a glTF JSON with its buffer embedded (the artifact host refuses `fetch()` of `data:` and `blob:` URLs and does not serve `.glb`). From Crab Breeze. |
-| `tools/mockups/shoot.mjs` | Headless Chromium screenshots of every named shot at desktop (1920 x 1080) and phone (844 x 390) size into `docs/screenshots/mockups/<page>-<shot>-<size>.png`; fails on a console error. `NODE_PATH=$(npm root -g) node tools/mockups/shoot.mjs docs/mockups/<page>.html docs/screenshots/mockups` |
+| `tools/mockups/shoot.mjs` | Headless Chromium screenshots of every named shot at desktop (1920 x 1080), phone landscape (844 x 390) and phone portrait (390 x 844) into `docs/screenshots/mockups/<page>-<shot>-<size>.png`; fails on a console error. `NODE_PATH=$(npm root -g) node tools/mockups/shoot.mjs docs/mockups/<page>.html docs/screenshots/mockups` |
 
-- **One page per subject**, naming the OpenSpec change it presents.
+| `tools/mockups/shrink_png.py` | Re-saves shots as 256-colour PNGs (about a quarter of the size) before they are committed. |
+
+- **One page per subject**, naming the OpenSpec change it presents. Add it to `mockup-work.md` and the
+  mockup tracker (`mockup-tracker`), and record both approvals there (CLAUDE.md section 4).
 - **Ships and stations**: orbitable, at true relative scale beside the yardstick and each other.
 - **Console layouts**: shown at desktop and phone sizes, with each panel expanded once and the 3D
   view in its side strip (CLAUDE.md section 7). Touch targets at least 44 x 44 CSS px.
