@@ -113,6 +113,31 @@ by a committed script with a seeded wobble, so it is the same every time and nev
 | Bone | `#efe0bd` | Paper, text | Trophies and the charts they steal |
 | Blood | `#d23a4a` | Alerts | A warning, once |
 
+## Five more races (version 4, first pass)
+
+The owner, 2026-10-30, with screenshots of StarCraft II's Zerg console, StarCraft's Protoss console and Starfleet
+Command's Klingon, Romulan and Gorn skins: "Some more UI design ideas: an organic alien race, lots of leather shining
+through light, slimy carapace, tendrils; an wise and advanced alien race. holographic buttons, with organic shaped metal
+armor peices surrounding the edges; a powerful ancient race. rusty, with back lit buttons clogged with dirt. their ships
+havent been upgraded in ages, rough around the edges; a combat focused race, lots of triangular motifs, angry red colors
+and orange lit buttons that are activated. strong metal framing, almost blade like; an enigmatic alien race with cool
+dark purple colors and pink buttons, progress bars are curcular, almost organic like eyes. this is all first pass stuff,
+really love how you did the hand drawn one".
+
+Each is a skin module (`docs/mockups/skins/<id>.js`, the contract in `docs/mockups/skins/README.md`) on the same kit,
+under the same three rules. Names are ours and provisional (survey U8). Whether these races join the campaign map, and
+whether the combat race is the Kethran Hegemony's own direction, is U8 too.
+
+| | Vhorr Brood | Aelith Conclave | Tarsine Remnant | Krai Warhost | Ombrai |
+|---|---|---|---|---|---|
+| Owner's words | "organic ... leather shining through light, slimy carapace, tendrils" | "wise and advanced ... holographic buttons, organic shaped metal armor" | "powerful ancient ... rusty, back lit buttons clogged with dirt ... rough around the edges" | "combat focused ... triangular motifs, angry red ... orange lit buttons ... blade like" | "enigmatic ... dark purple ... pink buttons, progress bars are circular ... like eyes" |
+| World view | The brood is one body; it grows, consumes and adapts | Patient knowledge kept over aeons; act rarely, act exactly | A fallen empire that remembers being first and will not change | War is the only honest test; rank is won in blood | Hidden purpose; they watch, and are seldom seen |
+| Bodies and technology | Grown, not built: hide, chitin, membranes, nerve tendrils | Graceful bodies, psionic minds; light shaped by thought in sculpted alloy shells | Huge, slow, long-lived; machines older than the crew, patched and never replaced | Lean predators; forged steel, edged everything | Shadowy, many-eyed; technology that looks back at you |
+| Ships | Living hulls of carapace plates over glowing flesh | Smooth golden shells around crystal cores | Massive, scarred, rusted dreadnoughts | Knife-blade hulls, swept triangles | Dark, curved, petal-like hulls with glowing eyes |
+| Method | Painted organic material: leather lit from behind, wet carapace, tendrils | Hologram light inside sculpted pearl and gold armour | Corroded iron, pitted and stained; buttons lit through grime | Black blade steel with red, lit orange when engaged | Dark violet glass, pink light, concentric rings |
+| Button shape | **Blister pod**: a swollen, lopsided membrane lit from within | **Holo lozenge**: a pointed-ended light shape held between two armour claws | **Arched tablet**: round top, flat foot, a backlit window caked in dirt | **Blade**: a parallelogram that ends in a point | **Crescent bar**: one end bitten concave, the other round |
+| Progress and gauges | Veins that fill | Thin light lines | Needle gauges behind cracked glass | Segmented triangles | Circular, like eyes (the owner's words) |
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
@@ -161,4 +186,5 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 | U4 | When does the player see another faction's skin? | Both: a captured ship keeps its builder's console, and Options can pin one (provisional) |
 | U5 | The Kethran skin's direction? | Answered by the owner: modelled in Blender, "like starcraft" |
 | U6 | Does a skin change only images, or also sounds and type? | Images, colours, type, icons, motion and button sounds (provisional) |
+| U8 | The five new races: names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | New, minor factions with the names above; the combat race stays its own race and the Kethran keep their look (provisional) |
 | U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |

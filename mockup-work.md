@@ -136,6 +136,14 @@ else's art):
   Version 2 builds Concord on LCARS's principles (palette sampled from the two games), Kethran as Blender renders, and
   the Vos hand-drawn (`openspec/changes/console-skins/design.md`).
 - On version 2: "buttons should be more plain. BUT YES YOU ARE GETTINGIT". Version 3 makes the Kethran keys plain wedge caps.
+- On version 3, with screenshots of StarCraft II's Zerg console, StarCraft's Protoss console and Starfleet Command's Klingon,
+  Romulan and Gorn skins: "Some more UI design ideas: an organic alien race, lots of leather shining through light, slimy
+  carapace, tendrils; an wise and advanced alien race. holographic buttons, with organic shaped metal armor peices
+  surrounding the edges; a powerful ancient race. rusty, with back lit buttons clogged with dirt. their ships havent been
+  upgraded in ages, rough around the edges; a combat focused race, lots of triangular motifs, angry red colors and orange
+  lit buttons that are activated. strong metal framing, almost blade like; an enigmatic alien race with cool dark purple
+  colors and pink buttons, progress bars are curcular, almost organic like eyes. this is all first pass stuff, really love
+  how you did the hand drawn one". Version 4 adds five skins as first passes.
 
 What the mockup shows:
 

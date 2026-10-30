@@ -13,6 +13,8 @@ piece's image as a "data" URI, so a page can draw a kit rendered in Blender with
 
     <!-- INLINE assets/ui/kethran/manifest.json -->
 
+A JavaScript file (a mockup module, such as a faction skin in docs/mockups/skins/) is inlined as a script element.
+
     python3 tools/mockups/inline_data.py docs/mockups/game-flow.html [--check]
 
 --check fails (exit 1) when a page's inlined data differs from the file, writing nothing.
@@ -41,6 +43,11 @@ def load(src):
 def fill(text):
     def one(m):
         src = m.group(2)
+        if src.endswith(".js"):
+            code = (ROOT / src).read_text()
+            if "</script" in code:
+                raise SystemExit(f"{src} contains a closing script tag and cannot be inlined")
+            return f'{m.group(1)}<script data-src="{src}">\n{code}</script>\n{m.group(4)}'
         data = json.dumps(load(src), separators=(",", ":"))
         return f'{m.group(1)}<script type="application/json" data-src="{src}">{data}</script>\n{m.group(4)}'
     return MARK.sub(one, text)
