@@ -10,8 +10,9 @@ metadata:
 
 New in this repository (owner, 2026-10-30: "Start writing up a guide/bible. UI design Bible for using blender to
 render UI stuff the way they did in the 90s ... The Bible should compliment the skill"). This skill is the procedure;
-the bible is the shared vocabulary and the diagrams: `docs/design/ui-bible.html`, published as an artifact (link in
-`docs/artifacts/ui-bible/README.md`). Use the bible's part names and numbers (P1 plate, W3 lip, N2 shoulder and so
+the bible is the shared vocabulary and the diagrams: the Analog Panel Bible, `docs/design/ui-bible.html`,
+published at https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w (record in `docs/artifacts/ui-bible/README.md`;
+its diagrams come from `tools/mockups/ui_bible_svgs.py`). Use the bible's part names and numbers (P1 plate, W3 lip, N2 shoulder and so
 on) when talking to the owner, so "the shoulder is too tight" means one thing.
 
 It was learnt on a lighting study of a 1999 music-player skin the owner chose as a reference (two layers: "the top
@@ -36,7 +37,7 @@ A panel is two things stacked, each lit on its own:
 | Layer | What it is | Lit by |
 |---|---|---|
 | Metal (the faceplate) | Pillowed plates with windows cut through, knobs, rivets, bezels | A soft room light from the top, a softbox and a large overhead area light for the polished parts to reflect |
-| Display (the film) | A cream film in a well behind each window, its printing, the slot streaks | Its own glow (backlight) and the lamps under each lip, nothing else |
+| Display (the film) | A cream film in a well behind each window, its printing, the slot streaks | Its own glow (backlight), the lamps under each lip, and the main light (a sun from the room light's direction, upper left) so the lips cast the top and left shadow |
 
 Numbers that work (study, 2026-10-30):
 
@@ -140,27 +141,36 @@ and previous 10 px, slider knobs 11 px. A pointer is a red line on the crown.
 
 ## 7. The film: backlight, lamps, ink
 
-**Film** (`display`): base and emission `#f4d9a9`, emission strength `0.85 * BACKLIGHT`, multiplied by ambient
-occlusion (distance 7 mm, power 2.2) so it darkens in a thin contact line at the rim. `BACKLIGHT` is one scale on
-every display-layer light (0.25 now): change brightness there, never per object.
+**Film** (`display`): base and emission `#f4d9a9`, emission strength `0.85 * FILM_GLOW`, multiplied by ambient
+occlusion (distance 7 mm, power 2.2) so it darkens in a thin contact line at the rim. Two separate scales: `FILM_GLOW`
+(1.0) on the film, its ink and the slot streaks, which sets the film's colour (clear film `#eacfa1` against the
+reference's `#eacf9f`), and `LAMPS` (0.25) on the lamps. One shared scale was a mistake: dimming the lamps darkened
+the film's colour with them.
+
+**Main light** (`MAIN`, about 1.2): a sun from the room light's direction (upper left) linked to the display layer
+too, so the top lip casts a shadow on the film's top edge and the left lip a thinner one on its left. It is what
+makes a well read as deep. Raise `MAIN` for more shadow and lower `FILM_GLOW` to keep the colour.
+
+**Sub-displays** (`sub`): a readout box is its own film sunk 1.5 mm into the main one through a hole, with a small
+lamp along its top; its printed frame sits on the step, which throws a contact line round it.
 
 **Lamps** (`lip_light`): a short area light, not a point and not a strip.
 
 | Knob | Value | Effect |
 |---|---|---|
 | `LIP_LEN` | 40 px | length of the source line |
-| `LIP_W` | 4 mm (test: 20 mm reads better) | depth of the source: bigger is softer |
+| `LIP_W` | 20 mm | depth of the source: bigger is softer |
 | `LIP_TILT` | 90 deg | from the film's normal toward screen-down; 30-35 deg gives dots, 60 deg starts a spill, 80-90 deg a fan |
 | `LIP_CONE` | 120 deg | the area light's `spread`; 180 deg is too wide, under 100 deg too tight |
 | depth | `DZ + 8` mm | 8 mm off the film, inside the well, just inside the window edge |
-| `SPILL` | 0.8 (test: 0.2-0.3 with a 20 mm source) | lamp power multiplier |
+| `SPILL` | 0.2 (the owner's pick: "Power x0.2 is the sweet spot") | lamp power multiplier |
 
 - A strip lamp along the whole top edge makes a highlight across the glass that reads as curved glass: do not use one.
 - A wall round the well blocks lamps that sit in it: put lamps inside the window footprint (they are invisible to the
   camera) and any well wall outside it.
 
 **Ink** (`film_ink`): printing on the film absorbs. Its surface reflects 35% of its colour; its emission carries the
-full colour at `0.9 * BACKLIGHT`, so it glows faintly through the film and a lamp right above it cannot wash it out.
+full colour at `0.9 * FILM_GLOW`, so it glows faintly through the film and a lamp right above it cannot wash it out.
 Sampled from the reference: text and scales `#9a7f4f`, box outlines `#7d6845`, list text `#b39867`, a red trace
 `#a83020`, never black.
 
@@ -181,6 +191,12 @@ the text"): print a line of text right under the middle lamp, render the top ban
 | line source 20 mm deep, `SPILL` 0.2, absorbing ink | 0.62, lamp peak 237 (no clipping) |
 
 Keep it at 0.5 or more, and keep the lamp peak under 250 of 255.
+
+**Children fit inside their parents** (owner: "make sure the UI fits well inside parent elements ... not a hard
+rule, but generally we dont want that overlap, it cheapens the look"): every bar, key, readout and knob sits wholly
+inside its parent's inner edge with an even margin. A reach-over is formed metal, grown with its parent (section 4),
+never a child spilling out. The Concord top strip on the console-skins page breaks this today: its bars run past the
+strip's bottom edge.
 
 ## 8. Compare pixels against the reference
 

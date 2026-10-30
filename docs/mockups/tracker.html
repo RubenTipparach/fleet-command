@@ -44,6 +44,13 @@ h1 { font: 800 clamp(40px, 9vw, 64px)/0.92 var(--display); margin: 0; text-wrap:
 .chip.impl { color: var(--go); background: var(--go-soft); }
 .notice { font-size: 14px; color: var(--muted); background: var(--brass-soft); border-radius: 8px; padding: 10px 12px; margin: 0; }
 .list { display: grid; gap: 16px; }
+.sect { display: grid; gap: 14px; }
+.sect > header { display: grid; gap: 4px; border-top: 2px solid var(--ink); padding-top: 14px; }
+.sect h2.sh { font: 800 34px/1 var(--display); margin: 0; }
+.sect p.sd { margin: 0; color: var(--muted); font-size: 14px; max-width: 64ch; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.link { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.link h3 { font: 800 22px/1 var(--display); margin: 0; }
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
 .head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
 .mid { font: 500 13px/1 var(--mono); color: var(--brass); border: 1px solid currentColor; border-radius: 6px; padding: 5px 7px; }
@@ -73,7 +80,7 @@ code { font: 500 0.9em var(--mono); }
   <header class="top">
     <div class="eyebrow">Fleet Command · mockup reviews</div>
     <h1>Mockup Tracker</h1>
-    <p class="lede">Every mockup, its link and where it stands. A mockup is approved for build first, then for the game. Nothing goes into the game without both.</p>
+    <p class="lede">Every Fleet Command artifact in one place: the game mockups with their approvals, the guides, and everything else. A mockup is approved for build first, then for the game. Nothing goes into the game without both.</p>
     <ul class="stages" aria-label="Stages">
       <li><span class="chip listed">Listed</span></li>
       <li><span class="chip drafted">Drafted</span></li>
@@ -82,7 +89,18 @@ code { font: 500 0.9em var(--mono); }
     </ul>
     <p class="notice" id="mode" hidden></p>
   </header>
-  <div class="list" id="list"></div>
+  <section class="sect" aria-labelledby="s-mockups">
+    <header><h2 class="sh" id="s-mockups">Game mockups</h2><p class="sd">Each mockup with its stage, its two approvals and your notes.</p></header>
+    <div class="list" id="list"></div>
+  </section>
+  <section class="sect" aria-labelledby="s-guides">
+    <header><h2 class="sh" id="s-guides">Guides</h2><p class="sd">How we build things, written for you to read and point at.</p></header>
+    <div class="links" id="guides"></div>
+  </section>
+  <section class="sect" aria-labelledby="s-misc">
+    <header><h2 class="sh" id="s-misc">Misc</h2><p class="sd">Everything else published for Fleet Command.</p></header>
+    <div class="links" id="misc"></div>
+  </section>
 </div>
 
 <script>
@@ -100,6 +118,19 @@ const MOCKUPS = [
   { id: 'M4', title: 'Console skins', change: 'console-skins', page: 'docs/mockups/console-skins.html',
     url: 'https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW', published: '2026-10-30', version: 13,
     summary: 'One UI kit, three design languages: Concord flat back-lit vector after LCARS with a Starfleet Command palette, Kethran modelled and rendered in Blender, the Vos hand-drawn. No two share a button, palette or icon shape.' },
+];
+
+// Every other published artifact, by section. Each also has a record in docs/artifacts/<name>/README.md.
+const GUIDES = [
+  { title: 'Analog Panel Bible', page: 'docs/design/ui-bible.html', url: 'https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w',
+    published: '2026-10-30', version: 1,
+    summary: 'Building 1990s-style instrument panels in Blender: named parts, depth, light, readability, formed metal, and the worked example that taught it.' },
+];
+const MISC = [
+  { title: 'Survey', page: 'docs/design/survey.html', url: 'https://claude.ai/artifact/JE8gf8sUcGwwAoD9qCguRD',
+    published: '2026-10-30', version: 8, summary: 'Open questions for you, with a recommendation each. A blank answer accepts the recommendation.' },
+  { title: 'Mockup Tracker', page: 'docs/mockups/tracker.html', url: 'https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F',
+    published: '2026-10-30', version: 17, summary: 'This page: every artifact, and the approvals for each mockup.' },
 ];
 
 const reviews = {}; // id -> { build, implementation, note }
@@ -245,8 +276,16 @@ async function connect() {
   }, () => showMode('Live updates stopped. Reload the page to see the latest reviews.'));
 }
 
+function linkCard(a) {
+  return el('article', { class: 'link' }, el('h3', { text: a.title }), el('p', { class: 'summary', text: a.summary }),
+    el('p', { class: 'meta', text: `${a.page}  ·  published ${a.published}, v${a.version}` }),
+    el('div', { class: 'row' }, el('a', { class: 'open', href: a.url, target: '_blank', rel: 'noopener' }, 'Open')));
+}
+
 const list = document.getElementById('list');
 MOCKUPS.forEach((m) => list.append(card(m)));
+GUIDES.forEach((a) => document.getElementById('guides').append(linkCard(a)));
+MISC.forEach((a) => document.getElementById('misc').append(linkCard(a)));
 MOCKUPS.forEach((m) => paint(m.id));
 connect();
 </script>

@@ -164,8 +164,10 @@ build, and then need to be approved for actual game implementation after"):
 
 - **`mockup-work.md` is the rolling list of mockups needed** (owner, 2026-10-30), in the owner's words,
   with each mockup's stage, change, page and link. A new mockup goes on the list before work starts.
-- **The mockup tracker** (`mockup-tracker` skill) is an HTML artifact listing every mockup's link and
-  stage, where the owner approves each stage and leaves notes. Its link is in `mockup-work.md` and
+- **The mockup tracker** (`mockup-tracker` skill) is the master artifact: it lists every published artifact
+  (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"), in three sections: game
+  mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A new
+  artifact goes on it when it is first published. Its link is in `mockup-work.md` and
   `docs/design/README.md`. An approval counts only when it is in the tracker or in the owner's own
   words in the conversation; record it in `mockup-work.md` either way.
 - **Every mockup is checked into the repository** (owner, 2026-10-30: "All mockups are to be checked
@@ -475,7 +477,7 @@ Before claiming anything is done, run what applies:
 |---|---|
 | `openspec-*` and `/opsx:*` | The OpenSpec workflow (section 3). Tool-owned: `openspec update` rewrites them. |
 | `html-survey` | The owner's question system (section 8). |
-| `mockup-tracker` | The page listing every mockup's link and approval stage; republishing after an account change (section 4). |
+| `mockup-tracker` | The master page listing every artifact (game mockups with their approval stages, guides, misc); republishing after an account change (section 4). |
 | `clean-code` | One implementation, SOLID in GDScript, conventions, review checklist (section 6). |
 | `godot-architecture` | Where code goes: simulation, scenes, autoloads, input, the console, determinism (sections 2, 6, 7). |
 | `testing-practices` | Headless GDScript tests, the layout test, golden seeds, the checks before a push (sections 6, 12). |
@@ -490,7 +492,7 @@ Before claiming anything is done, run what applies:
 | `music-authoring` | Motifs in notes, Strudel scores, multitrack MIDI, LMMS headless (section 11). |
 | `playtest` | Running, watching, recording, uploading and reporting a playtest (section 9). |
 | `obs-record` | Recording a window with OBS and copying it to Google Drive (section 9). |
-| `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Draft: its companion guide, `docs/design/ui-bible.html`, is not written yet. |
+| `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

@@ -11,7 +11,14 @@ metadata:
 The owner, 2026-10-30: "create another html survey skill to track all mockup urls", "all these mockups
 need to be approved for build, and then need to be approved for actual game implmentation after", and
 "if I change accounts, republish the mockup urls for that new account, and update links". CLAUDE.md
-section 4 holds the rules; `mockup-work.md` is the rolling list in the owner's words. The tracker is
+section 4 holds the rules; `mockup-work.md` is the rolling list in the owner's words.
+
+**It is the master artifact** (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts",
+"haave a section for "game mockup" and guides and misc"). It has three sections: **Game mockups** (`MOCKUPS`, with
+approvals), **Guides** (`GUIDES`: the Analog Panel Bible and any other guide) and **Misc** (`MISC`: the survey,
+the tracker itself and anything else). Every artifact published for Fleet Command goes on it in the same step as
+its first publish; check `docs/artifacts/*/README.md` against its lists. Bump the tracker's own `version` in
+`MISC` each time it is republished. The tracker is
 the same idea as the survey (`html-survey`): a page whose database holds the owner's answers, here one
 review per mockup.
 
@@ -19,7 +26,7 @@ review per mockup.
 
 | File | What it is |
 | --- | --- |
-| `docs/mockups/tracker.html` | The page. `MOCKUPS` in its script is the list (one entry per mockup); the owner's approvals and notes live in its database, collection `reviews`, one document per mockup id. |
+| `docs/mockups/tracker.html` | The page. `MOCKUPS` in its script is the list of mockups (one entry per mockup), `GUIDES` and `MISC` the other artifacts; the owner's approvals and notes live in its database, collection `reviews`, one document per mockup id. |
 | `docs/artifacts/mockup-tracker/README.md` | Its link and record (CLAUDE.md section 8). |
 | `mockup-work.md` | The rolling list: each mockup's stage, change, page and link, kept in step with the tracker. |
 

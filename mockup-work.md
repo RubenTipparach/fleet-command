@@ -13,6 +13,8 @@ Every mockup is checked into the repository, the page in `docs/mockups/` and its
 `docs/artifacts/<name>/` (owner, 2026-10-30: "All mockups are to be checked into repo especially when
 they are html claude artifacts"). The **mockup tracker** lists every link and stage, and is where the
 owner approves: https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F (record in `docs/artifacts/mockup-tracker/`).
+It is the master artifact (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"): game
+mockups, guides (the Analog Panel Bible, https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w) and misc.
 If the owner changes accounts, every mockup, the tracker and the survey are republished from the new
 account and every link here is updated.
 

@@ -15,8 +15,15 @@ Question id prefixes: `G` game and feel, `U` the console and screens, `T` tech a
 
 Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` skill):
 
-- Tracker: https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F (source `docs/mockups/tracker.html`)
+- Tracker: https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F (source `docs/mockups/tracker.html`). It is the
+  master artifact: every published artifact, in three sections (game mockups, guides, misc).
 - The rolling list: [`mockup-work.md`](../../mockup-work.md)
+
+## Guides
+
+- Analog Panel Bible: https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w (source `docs/design/ui-bible.html`, record in
+  `docs/artifacts/ui-bible/`). Building 1990s-style instrument panels in Blender; goes with the `blender-ui-panels`
+  skill.
 
 ## The screen
 
