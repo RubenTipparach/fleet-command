@@ -168,7 +168,7 @@ rendered shell around the UI panels and elements".
 | Vos Syndicate | Hand-drawn by a seeded painter (page) | |
 | Kethran Hegemony | Hard surface in Blender | `tools/blender/build_ui_kethran.py` |
 | Vhorr Brood | Organic in Blender: hide with light through it (Voronoi veins, subsurface, clear coat), iridescent carapace (thin film), flesh tendrils (subsurface), sinew fibres, blister pods glowing from their cores | `tools/blender/build_ui_vhorr.py` |
-| Kelvane Institute | Lab dashboard in Blender: enamel, chrome, dials, toggles, oscilloscope | `tools/blender/build_ui_kelvane.py` (next) |
+| Kelvane Institute | Lab dashboard in Blender: cream enamel with an orange-peel finish in chrome bezels, domed push buttons with amber pilot rings, bat-handle toggles, a needle meter under glass, knurled knobs, amber displays, a phosphor scope with its graticule, jewel lamps, engraved placards | `tools/blender/build_ui_kelvane.py` |
 | Krai Warhost, Ombrai | In Blender | to come |
 | Aelith Conclave | Hybrid: armour shells in Blender, hologram keys and icons vector | to come |
 | Tarsine Remnant | Painted in the page for now; Blender recommended (survey U9) | |
