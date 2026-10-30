@@ -20,6 +20,22 @@ looks, one data file (`data/materials/materials.json`) lists every material, and
 - **Texel density and map sizes** follow survey `A1` and `T3` (phones): start at 2048 px maps at most,
   and halve for mobile LODs.
 - **Rendering in a cloud session** is `material-maker-headless`.
+- **The pipeline here** (replaces the source's file table below):
+
+  | File | What it is |
+  | --- | --- |
+  | `data/materials/materials.json` | The one list: each material's `name`, `size_px` (2048 at most), `maps`, `tile_m`, `status` (`starter` or `approved`) and `use`. Validated by `postprocess.py`: an unknown key or missing field stops it. |
+  | `tools/materials/ptex_graph.py` | The graph kit: `Graph`, `shader`, `fbm`, `vor`, `finish` (Crab Breeze `69ce196`, from Star Crew). |
+  | `tools/materials/build_ptex.py` | One function per material writing `tools/materials/ptex/<name>.ptex`. |
+  | `tools/materials/export_materials.sh` | Renders the graphs headless at 2048 px into `tools/materials/raw/` (ignored), then the post-process. |
+  | `tools/materials/postprocess.py` | Writes `assets/textures/materials/<name>/` (maps and `SOURCE.md`) and `docs/screenshots/materials/contact-sheet.png` (albedo 2 x 2, lit flat, lit sphere). |
+
+  Run: `eval "$(bash .claude/skills/material-maker-headless/scripts/setup.sh | grep ^export)"`, then
+  `tools/materials/export_materials.sh [name ...]`.
+- **Proven here on 2026-10-30**: the starter `hull_plate` graph rendered headless (Material Maker
+  `174f15e` on Godot 4.7, lavapipe) in about 20 s, and the contact sheet showed it tiling with no
+  seam. `hull_plate` is a pipeline proof, not an approved look: ship materials are designed in an
+  OpenSpec change and shown on a mockup first.
 - **Where Material Maker is not the source**: modelled panels (`panel-textures`) and baked hull
   lights (`light-baking`).
 

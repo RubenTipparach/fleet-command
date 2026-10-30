@@ -9,3 +9,5 @@ output/
 # Music tool dependencies (npm install in tools/music).
 tools/music/node_modules/
 __pycache__/
+# Material Maker renders (tools/materials/export_materials.sh), never committed.
+tools/materials/raw/

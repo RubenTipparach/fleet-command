@@ -1,0 +1,13 @@
+{
+  "_doc": "Every Material Maker material Fleet Command ships (material-maker skill). Each is rendered from tools/materials/ptex/<name>.ptex (written by tools/materials/build_ptex.py) by tools/materials/export_materials.sh, and written by tools/materials/postprocess.py to assets/textures/materials/<name>/. size_px: the shipped map size (2048 at most); maps: the maps shipped; tile_m: the metres one tile covers; status: starter (proves the pipeline, not an approved look) or approved; use: what reads it.",
+  "materials": [
+    {
+      "name": "hull_plate",
+      "size_px": 1024,
+      "maps": ["albedo", "normal", "orm"],
+      "tile_m": 2.0,
+      "status": "starter",
+      "use": "painted hull plating, 0.5 m rows of plates with 6 mm seams"
+    }
+  ]
+}
