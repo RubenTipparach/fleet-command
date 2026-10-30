@@ -1,0 +1,13 @@
+# Tools installed by scripts/ (Godot editor), never committed.
+.tools/
+# Godot's import cache and editor state.
+.godot/
+*.import.tmp
+# Build products and local takes.
+builds/
+output/
+# Music tool dependencies (npm install in tools/music).
+tools/music/node_modules/
+__pycache__/
+# Material Maker renders (tools/materials/export_materials.sh), never committed.
+tools/materials/raw/
