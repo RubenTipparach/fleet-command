@@ -1,8 +1,9 @@
 // The Vhorr Brood skin (mockup 4, OpenSpec change console-skins): an organic race whose consoles are grown, not built
-// (owner, 2026-10-30: "an organic alien race, lots of leather shining through light, slimy carapace, tendrils"). Hide
-// stretched over chitin is lit from behind by bioluminescent bile, carapace plates are wet and glossy, tendrils curl
-// out of every corner, and keys are blister pods that squeeze when pressed. Painted in canvas with seeded noise, so
-// every piece is drawn the same way every time. Registers itself with the page's skin registry (docs/mockups/skins).
+// (owner, 2026-10-30: "an organic alien race, lots of leather shining through light, slimy carapace, tendrils", then "Vhor
+// needs special treatment with organic materials and shaders, and organic looking modeling"). The kit is modelled, shaded
+// and rendered in Blender (tools/blender/build_ui_vhorr.py: hide with light through it, iridescent carapace, flesh with
+// subsurface scattering, blister pods) and inlined into the page; this module adds the skin's tokens and draws only the
+// live readouts. Registers itself with the page's skin registry (docs/mockups/skins).
 (function () {
 'use strict';
 const F = window.FCK, P = F.P;
@@ -82,158 +83,7 @@ function curl(cx, cy, r, a0, turns, dir = 1) { const o = []; for (let i = 0; i <
 function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
 const RNG = (k) => F.rng(F.hash('vhorr.' + k));
 
-// ---- the nine-slice pieces --------------------------------------------------------------------------------------
-// A frame: a band of glowing hide round a dark wet pit, chitin claws over the corners, tendrils curling from them.
-function frame(x, w, h, R, band, claw, r) {
-  const outer = () => { x.beginPath(); x.roundRect(2, 2, w - 4, h - 4, r); };
-  const both = () => { x.beginPath(); x.roundRect(2, 2, w - 4, h - 4, r); x.roundRect(2 + band, 2 + band, w - 4 - 2 * band, h - 4 - 2 * band, Math.max(4, r - band)); };
-  x.fillStyle = VH.pit; outer(); x.fill();
-  // the band, lit along its middle by bile glowing through the skin
-  x.save(); both(); x.clip('evenodd');
-  x.fillStyle = VH.hide; x.fillRect(0, 0, w, h);
-  x.shadowColor = VH.bile; x.shadowBlur = band * 1.0; x.strokeStyle = hexA(VH.bile, 0.5); x.lineWidth = band * 0.3;
-  x.beginPath(); x.roundRect(2 + band / 2, 2 + band / 2, w - 4 - band, h - 4 - band, Math.max(4, r - band / 2)); x.stroke(); x.shadowBlur = 0;
-  x.strokeStyle = 'rgba(110,20,30,0.5)'; x.lineWidth = 0.9;
-  for (const f of [0.28, 0.72]) { x.beginPath(); x.roundRect(2 + band * f, 2 + band * f, w - 4 - 2 * band * f, h - 4 - 2 * band * f, Math.max(4, r - band * f)); x.stroke(); }
-  for (let i = 0; i < w * h / 30; i++) { x.fillStyle = 'rgba(30,12,10,0.16)'; x.fillRect(R() * w, R() * h, 0.9, 0.9); }
-  x.restore();
-  x.strokeStyle = '#140808'; x.lineWidth = 1.8; both(); x.stroke();
-  // inner gloss: the pit is wet
-  x.save(); x.beginPath(); x.roundRect(2 + band, 2 + band, w - 4 - 2 * band, h - 4 - 2 * band, Math.max(4, r - band)); x.clip();
-  const g = x.createLinearGradient(0, band, 0, band + 10); g.addColorStop(0, 'rgba(255,240,230,0.12)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); x.restore();
-  // the claws over each corner, and a tendril from each
-  for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
-    x.save(); x.translate(sx > 0 ? 0 : w, sy > 0 ? 0 : h); x.scale(sx, sy);
-    const c = claw, pts = [[1, 1], [c, 3], [c * 0.82, c * 0.42], [c * 0.42, c * 0.82], [3, c]];
-    chitin(x, () => smooth(x, pts), R, [0, 0, c, c]);
-    tendril(x, curl(c * 0.9, c * 0.45, c * 0.38, P, 0.8, 1), 3.2, 0.6, VH.flesh);
-    x.restore();
-  }
-}
-// A blister pod: a lopsided swollen membrane, a big round end on the left and a smaller one on the right, lit from within.
-function pod(state) {
-  return (x, w, h) => {
-    const R = RNG('pod.' + state), sq = state === 'pressed' ? 4 : 0;
-    const top = 4 + sq, bot = h - 4;
-    const pts = [[22, top + 1], [w * 0.5, top - 1], [w - 22, top + 3], [w - 5, top + (bot - top) * 0.35], [w - 7, bot - 5], [w - 26, bot], [w * 0.5, bot + 1], [26, bot], [4, bot - 6], [2, (top + bot) / 2], [6, top + 6]];
-    const core = { idle: 0.32, hover: 0.85, pressed: 1 }[state];
-    // the stalk the pod grows from
-    tendril(x, [[3, h - 2], [8, h - 6], [14, h - 7]], 4, 2, VH.hideDark);
-    x.save(); smooth(x, pts); x.clip();
-    x.fillStyle = VH.hide; x.fillRect(0, 0, w, h);
-    const g = x.createRadialGradient(w * 0.42, (top + bot) / 2, 2, w * 0.42, (top + bot) / 2, w * 0.62);
-    g.addColorStop(0, hexA(state === 'pressed' ? VH.bileHot : VH.bile, core)); g.addColorStop(0.5, hexA(VH.flesh, 0.25 + core * 0.35)); g.addColorStop(1, 'rgba(30,10,12,0.9)');
-    x.fillStyle = g; x.fillRect(0, 0, w, h);
-    veins(x, [8, top, w - 8, bot], R, 3);
-    x.restore();
-    smooth(x, pts); x.strokeStyle = '#1a0a0c'; x.lineWidth = 2; x.stroke();
-    // a wet highlight bubble on the left end and a streak along the top
-    x.fillStyle = 'rgba(255,248,235,0.75)'; x.beginPath(); x.ellipse(15, top + 9, 5, 3, -0.6, 0, 2 * P); x.fill();
-    x.strokeStyle = 'rgba(255,248,235,0.35)'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(26, top + 4); x.lineTo(w - 30, top + 5); x.stroke();
-  };
-}
-// A tab: a chitin shell segment; the active one splits along its lower seam to show the glow inside.
-function shell(active) {
-  return (x, w, h) => {
-    const R = RNG('tab.' + active), pts = [[10, 3], [w - 10, 3], [w - 3, h * 0.45], [w - 9, h - 3], [9, h - 3], [3, h * 0.45]];
-    chitin(x, () => smooth(x, pts), R, [0, 0, w, h], 0.55);
-    x.strokeStyle = 'rgba(0,0,0,0.55)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(12, h * 0.42); x.quadraticCurveTo(w / 2, h * 0.32, w - 12, h * 0.42); x.stroke();
-    if (active) { x.save(); x.shadowColor = VH.bile; x.shadowBlur = 8; x.strokeStyle = VH.bileHot; x.lineWidth = 2.4; x.beginPath(); x.moveTo(14, h - 8); x.quadraticCurveTo(w / 2, h - 5, w - 14, h - 8); x.stroke(); x.restore(); }
-  };
-}
-// A spine for the top and bottom strips: a glowing hide cord between two chitin knuckles, tendrils from each end.
-function spine(flip) {
-  return (x, w, h) => {
-    const R = RNG('spine.' + flip);
-    if (flip) { x.translate(0, h); x.scale(1, -1); }
-    const cy = h - 9;
-    x.save(); x.beginPath(); x.roundRect(60, cy - 5, w - 120, 10, 5); x.clip();
-    x.fillStyle = VH.hide; x.fillRect(0, 0, w, h); x.shadowColor = VH.bile; x.shadowBlur = 10; x.strokeStyle = hexA(VH.bile, 0.6); x.lineWidth = 4; x.beginPath(); x.moveTo(0, cy); x.lineTo(w, cy); x.stroke(); x.shadowBlur = 0;
-    x.strokeStyle = 'rgba(110,20,30,0.5)'; x.lineWidth = 0.8; for (const dy of [-3, 3]) { x.beginPath(); x.moveTo(0, cy + dy); x.lineTo(w, cy + dy); x.stroke(); }
-    x.restore(); x.strokeStyle = '#140808'; x.lineWidth = 1.6; x.beginPath(); x.roundRect(60, cy - 5, w - 120, 10, 5); x.stroke();
-    for (const s of [1, -1]) {
-      x.save(); if (s < 0) { x.translate(w, 0); x.scale(-1, 1); }
-      chitin(x, () => smooth(x, [[4, cy - 30], [34, cy - 40], [72, cy - 16], [92, cy], [72, cy + 8], [30, cy + 8], [4, cy + 6], [0, cy - 12]]), R, [0, cy - 40, 92, cy + 9]);
-      tendril(x, curl(66, cy - 24, 12, P / 2, 0.75, -1), 3.2, 0.6);
-      x.restore();
-    }
-  };
-}
-const nine = {
-  'frame.panel': { size: [160, 120], m: [34, 34, 34, 34], draw: (x, w, h) => frame(x, w, h, RNG('panel'), 20, 32, 20) },
-  'frame.inset': { size: [64, 48], m: [14, 14, 14, 14], draw: (x, w, h) => frame(x, w, h, RNG('inset'), 7, 0.1, 10) },
-  'bar.track': { size: [96, 16], m: [0, 12, 0, 12], inset: [3, 3], draw: (x, w, h) => {
-    x.fillStyle = '#1c0d10'; x.beginPath(); x.roundRect(1, 1, w - 2, h - 2, 7); x.fill(); x.strokeStyle = VH.hideDark; x.lineWidth = 2; x.stroke();
-    x.strokeStyle = 'rgba(255,240,230,0.18)'; x.lineWidth = 1; x.beginPath(); x.moveTo(8, 3.5); x.lineTo(w - 8, 3.5); x.stroke(); } },
-  'bar.fill': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => fluid(x, w, h, VH.bile, VH.bileHot) },
-  'bar.fill.red': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => fluid(x, w, h, VH.blood, '#ff9a7a') },
-  'button.idle': { size: [140, 52], m: [24, 30, 24, 28], draw: pod('idle') },
-  'button.hover': { size: [140, 52], m: [24, 30, 24, 28], draw: pod('hover') },
-  'button.pressed': { size: [140, 52], m: [24, 30, 24, 28], draw: pod('pressed') },
-  'tab.idle': { size: [120, 40], m: [16, 18, 16, 18], draw: shell(false) },
-  'tab.active': { size: [120, 40], m: [16, 18, 16, 18], draw: shell(true) },
-  'strip.top': { size: [512, 56], m: [10, 100, 10, 100], draw: spine(false) },
-  'strip.bottom': { size: [512, 56], m: [10, 100, 10, 100], draw: spine(true) },
-  'divider': { size: [128, 10], m: [0, 18, 0, 18], draw: (x, w, h) => {
-    x.strokeStyle = VH.hideDark; x.lineWidth = 3; x.beginPath(); x.moveTo(10, h / 2); x.lineTo(w - 10, h / 2); x.stroke();
-    x.strokeStyle = hexA(VH.bile, 0.55); x.lineWidth = 1; x.beginPath(); x.moveTo(10, h / 2); x.lineTo(w - 10, h / 2); x.stroke();
-    for (const cx of [7, w - 7]) { x.fillStyle = VH.flesh; x.beginPath(); x.arc(cx, h / 2, 4, 0, 2 * P); x.fill(); x.strokeStyle = '#1a0a0c'; x.lineWidth = 1; x.stroke(); } } },
-};
-// Fluid in a vein: bright at its core, darker at the walls, a highlight along the top.
-function fluid(x, w, h, col, hot) {
-  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, hot); g.addColorStop(0.5, col); g.addColorStop(1, hexA(col, 0.55));
-  x.save(); x.shadowColor = col; x.shadowBlur = 5; x.fillStyle = g; x.beginPath(); x.roundRect(0.5, 0.5, w - 1, h - 1, 5); x.fill(); x.restore();
-  x.strokeStyle = 'rgba(255,255,240,0.6)'; x.lineWidth = 0.8; x.beginPath(); x.moveTo(5, 2.5); x.lineTo(w - 5, 2.5); x.stroke();
-}
-
-// ---- the hero pieces ---------------------------------------------------------------------------------------------
-const hero = {
-  // A hide banner stretched between two claws, a dark wet slit for the name.
-  'nameplate': (x, w, h) => {
-    const R = RNG('plate');
-    hide(x, () => smooth(x, [[30, 4], [w * 0.5, 2], [w - 30, 4], [w - 6, h / 2], [w - 30, h - 4], [w * 0.5, h - 2], [30, h - 4], [6, h / 2]]), R, [0, 0, w, h], VH.bile, 0.4);
-    x.fillStyle = VH.pit; x.beginPath(); x.roundRect(70, 9, 320, 38, 19); x.fill(); x.strokeStyle = '#140808'; x.lineWidth = 2; x.stroke();
-    for (const s of [1, -1]) { x.save(); if (s < 0) { x.translate(w, 0); x.scale(-1, 1); } chitin(x, () => smooth(x, [[2, h / 2], [20, 2], [58, 6], [52, h / 2], [58, h - 6], [20, h - 2]]), R, [0, 0, 60, h]); x.restore(); }
-  },
-  // A nerve cluster: eight pods round a swollen heart pod on a disc of veined hide, ringed with chitin teeth.
-  'helm.pad': (x, w, h) => {
-    const R = RNG('helm'), c = w / 2;
-    for (let i = 0; i < 16; i++) { const a = i * P / 8; x.save(); x.translate(c, c); x.rotate(a); chitin(x, () => smooth(x, [[128, -9], [146, 0], [128, 9], [120, 0]]), R, [118, -10, 148, 10], 0.5); x.restore(); }
-    hide(x, () => { x.beginPath(); x.arc(c, c, 128, 0, 2 * P); }, R, [c - 128, c - 128, c + 128, c + 128], VH.bile, 0.35);
-    for (let i = 0; i < 8; i++) { const a = -P / 2 + i * P / 4; tendril(x, [[c + Math.cos(a) * 40, c + Math.sin(a) * 40], [c + Math.cos(a + 0.08) * 62, c + Math.sin(a + 0.08) * 62], [c + Math.cos(a) * 84, c + Math.sin(a) * 84]], 5, 3, VH.hideDark); }
-    for (let i = 0; i < 8; i++) {
-      const a = -P / 2 + i * P / 4, px = c + Math.cos(a) * 100, py = c + Math.sin(a) * 100;
-      x.save(); x.translate(px, py); x.rotate(a); podDisc(x, 26, 19, 0.35, RNG('helm.k' + i)); x.restore();
-    }
-    x.save(); x.translate(c, c); podDisc(x, 36, 34, 0.9, RNG('helm.core'), VH.blood); x.restore();
-  },
-  // A ribcage: chitin ribs down both sides, a glowing membrane edge round a dark field for the ship.
-  'ssd.bezel': (x, w, h) => {
-    const R = RNG('ssd');
-    frame(x, w, h, R, 14, 34, 26);
-    for (const s of [1, -1]) for (let i = 0; i < 5; i++) {
-      x.save(); if (s < 0) { x.translate(w, 0); x.scale(-1, 1); }
-      const y = 50 + i * 48; chitin(x, () => smooth(x, [[4, y - 6], [30, y - 10], [44, y], [30, y + 8], [4, y + 5]]), R, [0, y - 12, 46, y + 10], 0.6);
-      x.restore();
-    }
-  },
-  // A heart chamber: a chitin socket round a translucent membrane, veins running to its edge.
-  'dial': (x, w, h) => {
-    const R = RNG('dial'), c = w / 2;
-    chitin(x, () => smooth(x, F.arcPts(c, c, 57, 57, 0, 2 * P, 14).slice(0, 14)), R, [0, 0, w, h]);
-    hide(x, () => { x.beginPath(); x.arc(c, c, 44, 0, 2 * P); }, R, [c - 44, c - 44, c + 44, c + 44], VH.bile, 0.28);
-    x.fillStyle = 'rgba(18,10,16,0.55)'; x.beginPath(); x.arc(c, c, 38, 0, 2 * P); x.fill();
-  },
-  'lamp.alert.green': (x, w) => sac(x, w, VH.bile), 'lamp.alert.yellow': (x, w) => sac(x, w, VH.amber), 'lamp.alert.red': (x, w) => sac(x, w, VH.blood),
-  // The Brood's mark (original): three chitin claws closing round a glowing seed, a tendril coiled beneath.
-  'crest': (x, w) => {
-    const R = RNG('crest'), c = w / 2;
-    tendril(x, curl(c, c + 10, 34, P * 0.2, 1.1, 1), 7, 1, VH.flesh);
-    x.save(); x.shadowColor = VH.bile; x.shadowBlur = 16; x.fillStyle = VH.bile; x.beginPath(); x.ellipse(c, c, 13, 17, 0, 0, 2 * P); x.fill(); x.restore();
-    x.fillStyle = VH.bileHot; x.beginPath(); x.ellipse(c - 3, c - 5, 4, 6, -0.4, 0, 2 * P); x.fill();
-    for (let i = 0; i < 3; i++) { x.save(); x.translate(c, c); x.rotate(-P / 2 + i * 2 * P / 3); chitin(x, () => smooth(x, [[14, -10], [40, -6], [46, 4], [30, 10], [16, 6]]), R, [12, -12, 48, 12]); x.restore(); }
-  },
-};
+// ---- live drawing helpers (the kit itself is rendered in Blender: tools/blender/build_ui_vhorr.py) ---------------
 // One pod seen from above, its long axis along x, lit from within.
 function podDisc(x, rx, ry, core, R, col = VH.bile) {
   const pts = blob(0, 0, rx, ry, R, 0.07, 18);
@@ -244,40 +94,9 @@ function podDisc(x, rx, ry, core, R, col = VH.bile) {
   smooth(x, pts); x.strokeStyle = '#1a0a0c'; x.lineWidth = 2; x.stroke();
   x.fillStyle = 'rgba(255,248,235,0.7)'; x.beginPath(); x.ellipse(-rx * 0.4, -ry * 0.45, rx * 0.22, ry * 0.14, -0.4, 0, 2 * P); x.fill();
 }
-// A lamp: a glowing pustule in a chitin cup.
-function sac(x, w, col) {
-  const R = RNG('sac.' + col), c = w / 2;
-  chitin(x, () => smooth(x, [[6, 34], [c, 62], [w - 6, 34], [w - 14, 40], [c, 50], [14, 40]]), R, [0, 30, w, 64], 0.5);
-  x.save(); x.shadowColor = col; x.shadowBlur = 14; x.fillStyle = hexA(col, 0.9); x.beginPath(); x.ellipse(c, 30, 20, 24, 0, 0, 2 * P); x.fill(); x.restore();
-  const g = x.createRadialGradient(c - 5, 22, 1, c, 30, 24); g.addColorStop(0, 'rgba(255,255,230,0.9)'); g.addColorStop(0.4, hexA(col, 0.6)); g.addColorStop(1, 'rgba(40,10,10,0.6)');
-  x.fillStyle = g; x.beginPath(); x.ellipse(c, 30, 20, 24, 0, 0, 2 * P); x.fill(); x.strokeStyle = '#1a0a0c'; x.lineWidth = 1.6; x.stroke();
-  veins(x, [c - 14, 12, c + 14, 48], R, 1);
-}
-
-// ---- icons: tendrils, spores, maws and cells; no straight lines -------------------------------------------------
-function icon(name) {
-  return F.paint(48, 48, (x) => {
-    const R = RNG('icon.' + name);
-    const T = (pts, w0 = 5, w1 = 1, col = VH.bile) => { x.save(); x.shadowColor = VH.bile; x.shadowBlur = 4; tendril(x, pts, w0, w1, col); x.restore(); };
-    const D = (cx, cy, r, col = VH.bile) => { x.save(); x.shadowColor = col; x.shadowBlur = 5; x.fillStyle = col; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); x.restore(); x.strokeStyle = '#1a0a0c'; x.lineWidth = 1; x.stroke(); };
-    ({
-      helm: () => T(curl(26, 22, 18, P * 0.9, 0.85, 1), 6, 1),
-      fire: () => { T([[6, 10], [16, 20], [22, 24]], 6, 2); T([[6, 38], [16, 28], [22, 24]], 6, 2); D(32, 24, 5, VH.bileHot); D(42, 22, 2.5); },
-      shields: () => { for (let i = 0; i < 3; i++) { x.save(); x.translate(10 + i * 9, 30 - i * 6); chitin(x, () => smooth(x, [[0, 0], [14, -8], [24, 0], [14, 10]]), R, [0, -9, 25, 11], 0.6); x.restore(); } },
-      tractor: () => { T([[4, 10], [16, 18], [22, 24], [26, 22]], 5, 1); T([[4, 38], [16, 30], [22, 24], [26, 27]], 5, 1); D(36, 24, 6, VH.flesh); },
-      transport: () => { for (let i = 0; i < 6; i++) D(10 + R() * 28, 8 + i * 6 + R() * 3, 2 + R() * 2.5); },
-      science: () => { T([[24, 40], [22, 26], [12, 8]], 4, 1); T([[24, 40], [26, 26], [36, 8]], 4, 1); D(12, 8, 2.5); D(36, 8, 2.5); },
-      comms: () => { D(14, 24, 6, VH.flesh); for (const r of [12, 19]) { x.strokeStyle = VH.bile; x.lineWidth = 2.4; x.beginPath(); x.arc(14, 24, r, -0.9, 0.9); x.stroke(); } },
-      repair: () => { T([[24, 44], [24, 30], [20, 18]], 5, 2); podDisc(x, 7, 9, 0.8, R); },
-      map: () => { const n = [[8, 10], [24, 18], [40, 8], [14, 34], [34, 38], [24, 18]]; for (const [a, b] of [[0, 1], [1, 2], [1, 3], [1, 4]]) T([n[a], [(n[a][0] + n[b][0]) / 2 + 2, (n[a][1] + n[b][1]) / 2 - 2], n[b]], 3, 2); for (const [px, py] of n.slice(0, 5)) D(px, py, 3); },
-      settings: () => { x.save(); x.translate(24, 24); podDisc(x, 16, 14, 0.5, R); x.restore(); D(26, 25, 5, VH.blood); },
-    })[name]();
-  });
-}
-
 // ---- the skin --------------------------------------------------------------------------------------------------
 F.register('vhorr', {
-  name: 'Vhorr Brood', kind: 'Grown, not built: hide lit from behind, wet chitin, tendrils', bg: '#0d0709',
+  name: 'Vhorr Brood', kind: 'Grown in Blender: hide lit from behind, wet iridescent carapace, tendrils, sinew', bg: '#0d0709',
   css: { '--s-ink': VH.ink, '--s-dim': VH.dim, '--s-num': VH.bile, '--s-body': '"Barlow Condensed", sans-serif', '--btn-ink': VH.ink, '--btn-shadow': '0 1px 2px #000, 0 0 5px #1a0a0c', '--btn-justify': 'center',
     '--btn-font': '400 20px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'transform 0.2s cubic-bezier(.3,1.7,.5,1)', '--btn-press': 'scale(0.97, 0.9)',
     '--tab-font': '400 17px/1 "Metamorphous", serif', '--tab-ink': VH.dim, '--tab-ink-on': VH.bileHot, '--title-font': '400 21px/1 "Metamorphous", serif', '--title-ink': VH.bileHot,
@@ -287,7 +106,7 @@ F.register('vhorr', {
   plateText: { left: 82, top: 9, width: 300, height: 38, font: '400 21px/1 "Metamorphous", serif', color: VH.ink, sub: 'Sskarr · Matriarch Vhaal' },
   helmKeys: 'ring', helmR: 100, shield: [VH.bile, VH.amber, VH.blood],
   fonts: ['400 20px "Metamorphous"', '600 20px "Barlow Condensed"'], view: { title: '400 28px "Metamorphous"', body: '600 25px "Barlow Condensed"', upper: false },
-  build: () => F.fromPainters(nine, hero, icon, false),
+  build: () => { const d = F.kitData('assets/ui/vhorr/manifest.json'); return d ? F.fromManifest(d, () => F.paint(48, 48, () => {})) : null; },
   live: {
     // A talon pointing the way.
     arrow: (x) => { x.fillStyle = VH.slime; x.strokeStyle = '#1a0a0c'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(13, 0); x.quadraticCurveTo(0, -3, -9, -9); x.quadraticCurveTo(-4, 0, -9, 9); x.quadraticCurveTo(0, 3, 13, 0); x.fill(); x.stroke(); },

@@ -152,6 +152,30 @@ vbased on this"):
 | Button shape | **Instrument key**: an enamel faceplate with a domed chrome push button set into its left end |
 | Progress and gauges | Needle meters on ruled scales, oscilloscope traces on a graticule |
 
+## Rendered, not drawn (version 10 onward)
+
+The owner, 2026-10-30, on version 9: "all kinda get the point across, but I think svgs should be reserved for flat stuff
+like the cocnord. Voorr, conclave, Krai ,Ombrai and Kelvane could all use rendering in blender. Vhor needs special
+treatment with organic materials and shaders, and organic looking modeling, things likeslimey leather, tendrils, glaws,
+carapaces, fibers, could help sell the alien hive mind aesthetic, ive it a try again. Kelvane 100% can be modeled, let and
+rendered just take the osciloscope dash board for inspiration, old school electircal dashboards, dials, switches etc";
+then "the conclave is one exception. They have a hybrid of both vector graphics for holographic buttons and icons, but 3d
+rendered shell around the UI panels and elements".
+
+| Skin | Method | Generator |
+|---|---|---|
+| Concord | Flat vector (page) | |
+| Vos Syndicate | Hand-drawn by a seeded painter (page) | |
+| Kethran Hegemony | Hard surface in Blender | `tools/blender/build_ui_kethran.py` |
+| Vhorr Brood | Organic in Blender: hide with light through it (Voronoi veins, subsurface, clear coat), iridescent carapace (thin film), flesh tendrils (subsurface), sinew fibres, blister pods glowing from their cores | `tools/blender/build_ui_vhorr.py` |
+| Kelvane Institute | Lab dashboard in Blender: enamel, chrome, dials, toggles, oscilloscope | `tools/blender/build_ui_kelvane.py` (next) |
+| Krai Warhost, Ombrai | In Blender | to come |
+| Aelith Conclave | Hybrid: armour shells in Blender, hologram keys and icons vector | to come |
+| Tarsine Remnant | Painted in the page for now; Blender recommended (survey U9) | |
+
+Every generator shares `tools/blender/ui_render.py` (render settings, lights, the camera, byte-reproducible PNGs, the
+manifest), and the page loads any rendered kit with `FCK.fromManifest`; a kit may render its own icons (`icon.<name>`).
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per

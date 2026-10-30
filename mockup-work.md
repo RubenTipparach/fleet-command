@@ -21,7 +21,7 @@ account and every link here is updated.
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-10-30, v9) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
+| 4 | Console skins | Drafted (2026-10-30, v10) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -146,8 +146,12 @@ else's art):
   how you did the hand drawn one". Version 4 adds five skins as first passes.
 - Then: "one more, the old science, nucleo nlog skin from winamp. UI love this old osciloscope aesthetic from science labs. Some race
   will value thier anolog physics instruments and design their ui vbased on this". The Kelvane Institute is the sixth.
-- Then: "one more, the old science, nucleo nlog skin from winamp. UI love this old osciloscope aesthetic from science labs. Some race
-  will value thier anolog physics instruments and design their ui vbased on this". The Kelvane Institute is the sixth.
+- On version 9: "svgs should be reserved for flat stuff like the cocnord. Voorr, conclave, Krai ,Ombrai and Kelvane could all use
+  rendering in blender"; "Vhor needs special treatment with organic materials and shaders, and organic looking modeling, things
+  likeslimey leather, tendrils, glaws, carapaces, fibers"; "Kelvane 100% can be modeled, let and rendered just take the osciloscope
+  dash board for inspiration, old school electircal dashboards, dials, switches etc"; "the conclave is one exception. They have a
+  hybrid of both vector graphics for holographic buttons and icons, but 3d rendered shell around the UI panels and elements".
+  Version 10 renders the Vhorr in Blender; the others follow one at a time.
 
 What the mockup shows:
 

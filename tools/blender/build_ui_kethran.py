@@ -33,13 +33,9 @@ Deterministic: no randomness but fixed seeds, Cycles seed 0, fixed samples, Open
 Kethran design language: openspec/changes/console-skins/design.md. Our own design throughout.
 """
 
-import argparse
-import json
 import math
 import os
-import struct
 import sys
-import time
 
 import bmesh
 import bpy
@@ -48,6 +44,7 @@ from mathutils import Matrix, Vector
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import panel_kit  # noqa: E402  (the Star Crew / Crab Breeze panel kit: Panel primitives, srgb, camera)
+import ui_render  # noqa: E402  (the render harness every Blender skin shares)
 
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 MM = 0.001          # one 1x slot pixel, in metres
@@ -636,119 +633,13 @@ PIECES = {
 
 # ----------------------------------------------------------------------------- lighting and render
 
-def sun(name, direction, energy, colour, angle_deg):
-    ld = bpy.data.lights.new(name, "SUN")
-    ld.energy = energy
-    ld.color = colour
-    ld.angle = math.radians(angle_deg)
-    ob = bpy.data.objects.new(name, ld)
-    ob.rotation_mode = "QUATERNION"
-    ob.rotation_quaternion = Vector(direction).normalized().to_track_quat("-Z", "Y")
-    bpy.context.scene.collection.objects.link(ob)
+# The harsh key from the top left (light travels toward +x, -y, down), a cool rim from the bottom right.
+LIGHTS = [("Key", (1.0, -1.0, -1.25), 5.0, (1.0, 0.96, 0.9), 3.0), ("Rim", (-1.0, 1.0, -0.8), 1.1, (0.62, 0.78, 1.0), 6.0)]
 
 
-def setup(w_px, h_px, samples):
-    sc = bpy.context.scene
-    sc.render.engine = "CYCLES"
-    cy = sc.cycles
-    cy.device = "CPU"
-    cy.samples = samples
-    cy.use_adaptive_sampling = False
-    cy.seed = 0
-    cy.use_denoising = True
-    cy.denoiser = "OPENIMAGEDENOISE"
-    cy.max_bounces = 4
-    cy.diffuse_bounces = 2
-    cy.glossy_bounces = 2
-    cy.transmission_bounces = 0
-    cy.sample_clamp_indirect = 3.0
-    cy.filter_width = 1.0
-    sc.render.film_transparent = True
-    sc.render.resolution_x, sc.render.resolution_y = w_px, h_px
-    sc.render.resolution_percentage = 100
-    sc.render.threads_mode = "AUTO"
-    sc.view_settings.view_transform = "Standard"
-    sc.view_settings.look = "None"
-    sc.view_settings.exposure = 0.0
-    sc.render.image_settings.file_format = "PNG"
-    sc.render.image_settings.color_mode = "RGBA"
-    sc.render.image_settings.color_depth = "8"
-    sc.render.image_settings.compression = 100
-    # no metadata stamps (date, render time, file name): the PNGs are byte-reproducible
-    for attr in dir(sc.render):
-        if attr.startswith("use_stamp"):
-            setattr(sc.render, attr, False)
-    world = bpy.data.worlds.new("World")
-    world.use_nodes = True
-    bg = world.node_tree.nodes["Background"]
-    bg.inputs["Color"].default_value = (0.055, 0.06, 0.07, 1.0)
-    bg.inputs["Strength"].default_value = 1.0
-    sc.world = world
-    # the harsh key from the top left (light travels toward +x, -y, down), a cool rim from the bottom right
-    sun("Key", (1.0, -1.0, -1.25), 5.0, (1.0, 0.96, 0.9), 3.0)
-    sun("Rim", (-1.0, 1.0, -0.8), 1.1, (0.62, 0.78, 1.0), 6.0)
-
-
-def strip_png_metadata(path):
-    """Drop every ancillary text, time and EXIF chunk from a PNG (Cycles writes its render time
-    into the file), keeping the image chunks byte for byte, so a rerun writes identical files."""
-    with open(path, "rb") as f:
-        data = f.read()
-    out, i = [data[:8]], 8
-    while i < len(data):
-        n = struct.unpack(">I", data[i:i + 4])[0]
-        kind = data[i + 4:i + 8]
-        if kind not in (b"tEXt", b"zTXt", b"iTXt", b"tIME", b"eXIf", b"pHYs"):
-            out.append(data[i:i + 12 + n])
-        i += 12 + n
-    with open(path, "wb") as f:
-        f.write(b"".join(out))
-
-
-def render_piece(name, out_dir, samples):
-    kind, (w, h), margins, stretch, build = PIECES[name]
-    panel_kit.reset_scene()
-    setup(w * SCALE, h * SCALE, samples)
-    K = Piece(name, w, h, hero=(kind == "hero"))
-    build(K)
-    panel_kit.camera(w * MM, h * MM)
-    sc = bpy.context.scene
-    sc.render.filepath = os.path.join(out_dir, f"{name}.png")
-    bpy.ops.render.render(write_still=True)
-    strip_png_metadata(sc.render.filepath)
-    entry = {"kind": kind, "size": [w, h], "file": f"{name}.png"}
-    if kind == "nine":
-        entry["margins"] = list(margins)
-        entry["stretch"] = stretch
-    return entry
-
-
-def main():
-    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=os.path.join(ROOT, "assets", "ui", "kethran"))
-    ap.add_argument("--only", default="")
-    ap.add_argument("--samples", type=int, default=64)
-    a = ap.parse_args(argv)
-    out = os.path.abspath(a.out)
-    os.makedirs(out, exist_ok=True)
-    names = [n for n in a.only.split(",") if n] or list(PIECES)
-    man_path = os.path.join(out, "manifest.json")
-    man = {"skin": "kethran", "scale": SCALE, "pieces": {}}
-    if a.only and os.path.exists(man_path):
-        with open(man_path) as f:
-            man = json.load(f)
-    t0 = time.time()
-    for n in names:
-        t = time.time()
-        man["pieces"][n] = render_piece(n, out, a.samples)
-        print(f"KETHRAN {n}: {time.time() - t:.1f} s", flush=True)
-    man["pieces"] = {k: man["pieces"][k] for k in PIECES if k in man["pieces"]}
-    with open(man_path, "w") as f:
-        json.dump(man, f, indent=2)
-        f.write("\n")
-    print(f"KETHRAN done: {len(names)} pieces in {time.time() - t0:.1f} s", flush=True)
+def render_setup(w_px, h_px, samples):
+    ui_render.setup(w_px, h_px, samples, LIGHTS)
 
 
 if __name__ == "__main__":
-    main()
+    ui_render.run("kethran", PIECES, Piece, render_setup)

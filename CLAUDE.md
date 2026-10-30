@@ -322,6 +322,17 @@ else's artwork):
   - **Vos Syndicate** (the pirates): **a hand-drawn aesthetic** (owner: "design a hand drawn aesthetic of
     the mirak ui"): ink outlines that wobble, washes and hatching, lopsided claw-tag buttons, spiral and
     claw icons, drawn by a committed script, never by hand.
+
+  **Vector drawing is for flat styles only; everything with material and depth is modelled and rendered in
+  Blender** (owner, 2026-10-30: "svgs should be reserved for flat stuff like the cocnord. Voorr, conclave, Krai,
+  Ombrai and Kelvane could all use rendering in blender"). Concord stays flat vector, the Vos stay hand-drawn;
+  the Vhorr Brood, Krai Warhost, Ombrai and Kelvane Institute are modelled and rendered like the Kethran, each by
+  its own generator on the shared harness `tools/blender/ui_render.py`. **The Aelith Conclave is a hybrid**
+  (owner: "the conclave is one exception. They have a hybrid of both vector graphics for holographic buttons and
+  icons, but 3d rendered shell around the UI panels and elements"): its armour shells are rendered, its hologram
+  keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
+  carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
+  dashboards, dials, switches".
 - **One UI kit, swapped per faction** (owner, 2026-10-30: "whatever we do, we gotta design it for like
   UI kit that we can sweap out between factions"). The kit is a fixed list of named pieces (each 9-slice
   frame, bar, button, tab and hero piece, with its slot size and margins), and a skin is one set of
