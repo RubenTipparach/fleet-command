@@ -2,85 +2,110 @@
 <title>Fleet Command Console Skins</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&family=Pirata+One&family=Barlow+Semi+Condensed:wght@500;600;700&family=Black+Ops+One&family=Barlow+Condensed:wght@500;600;700&family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Saira+Stencil+One&family=Saira+Condensed:wght@500;700&family=Permanent+Marker&family=Patrick+Hand&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Mockup 4 (OpenSpec change console-skins, mockup-work.md): one UI kit of named 9-slice and hero pieces, and each
-   faction's skin for it, switched live on one battle console. Layout: a page of plain dark chrome around the console,
-   which is drawn at its true 1920 x 1080 slot sizes and scaled to fit. The page is deliberately one dark look. */
+/* Mockup 4, version 2 (OpenSpec change console-skins): one UI kit of named 9-slice and hero pieces, and three faction
+   skins that are three design languages (owner, 2026-10-30: "NO skin uses the same button shape", palettes from each
+   faction's ideology, shapes and icons from how each faction thinks). Concord's pieces are flat vector drawn here,
+   built on LCARS's principles; Kethran's are Blender renders (tools/blender/build_ui_kethran.py) inlined below; the
+   Vos pieces are hand-drawn by a seeded ink painter here. The page chrome around them is one plain dark look. */
 :root {
   color-scheme: dark;
   --bg: #07090d; --panel: #10141b; --line: #222a35; --ink: #e2e8ef; --dim: #8d99a8; --accent: #ffb547;
   --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
-  /* The active skin's tokens, set by applySkin(). */
-  --s-ink: #dfe9f5; --s-dim: #8aa0b8; --s-accent: #4fc3ff; --s-display: "Chakra Petch", sans-serif; --s-num: "Share Tech Mono", monospace;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--body);
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
-.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 28px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 30px; }
 header.top { padding-top: 24px; display: grid; gap: 8px; }
 .eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
-h1 { font: 700 clamp(30px, 6vw, 48px)/1 "Chakra Petch", sans-serif; margin: 0; text-wrap: balance; }
-h2 { font: 700 24px/1.1 "Chakra Petch", sans-serif; margin: 0; text-wrap: balance; }
-h3 { font: 600 16px/1.2 var(--body); margin: 0; }
-p { margin: 0; max-width: 72ch; }
+h1 { font: 700 clamp(30px, 6vw, 46px)/1 var(--body); margin: 0; text-wrap: balance; }
+h2 { font: 600 24px/1.15 var(--body); margin: 0; text-wrap: balance; }
+h3 { font: 600 16px/1.25 var(--body); margin: 0; }
+p { margin: 0; max-width: 74ch; }
 .muted { color: var(--dim); }
 .switch { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line); }
 .switch button { min-height: 44px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: 600 14px/1 var(--body); cursor: pointer; }
 .switch button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
 .switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 section { display: grid; gap: 14px; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
-.grid2 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
-.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
-.swatches span { width: 56px; height: 40px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.12); display: grid; place-items: end start; padding: 3px; font: 500 9px/1 var(--mono); color: #fff; text-shadow: 0 1px 2px #000; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.grid3 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
 .lang { width: 100%; border-collapse: collapse; font-size: 14px; }
-.lang th { text-align: left; color: var(--dim); font: 600 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 8px 6px 0; vertical-align: top; width: 110px; }
-.lang td { padding: 6px 0; border-top: 1px solid var(--line); }
+.lang th { text-align: left; color: var(--dim); font: 600 11px/1.3 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 10px 7px 0; vertical-align: top; width: 96px; }
+.lang td { padding: 7px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.pal { display: grid; gap: 6px; }
+.pal div { display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: center; font-size: 13px; }
+.pal i { width: 36px; height: 28px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.14); }
+.pal b { font: 500 12px var(--mono); color: var(--ink); }
 .scroll-x { overflow-x: auto; }
-table.kit { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 620px; }
-table.kit th, table.kit td { text-align: left; padding: 6px 10px 6px 0; border-top: 1px solid var(--line); }
+table.kit { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 640px; }
+table.kit th, table.kit td { text-align: left; padding: 6px 10px 6px 0; border-top: 1px solid var(--line); vertical-align: top; }
 table.kit th { color: var(--dim); font: 600 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; border-top: none; }
 table.kit code { font: 500 12px var(--mono); color: var(--accent); }
 
+/* The rules, side by side: each skin's button, icons and colours in one column. */
+.rules { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); }
+.rulecol { background: #000; border-radius: 8px; padding: 16px; display: grid; gap: 14px; align-content: start; }
+.rulecol h3 { color: #fff; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.icons { display: grid; grid-template-columns: repeat(5, 48px); gap: 10px 14px; }
+.icons figure { margin: 0; display: grid; gap: 3px; justify-items: center; }
+.icons img { width: 48px; height: 48px; display: block; }
+.icons figcaption { font: 500 9px/1 var(--mono); color: var(--dim); text-transform: uppercase; }
+.stripes { display: flex; height: 22px; border-radius: 3px; overflow: hidden; }
+.stripes span { flex: 1; }
+
 /* The console: a fixed 1920 x 1080 board scaled to the width it is given. */
 .stage { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; background: #000; }
-.console { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; font-family: var(--s-display); color: var(--s-ink); }
-.view { position: absolute; left: 470px; top: 56px; right: 0; bottom: 56px; }
+.console { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; background: var(--s-bg); color: var(--s-ink); font-family: var(--s-body); }
+.view { position: absolute; left: 472px; top: 60px; right: 0; bottom: 60px; }
 .view canvas { width: 100%; height: 100%; display: block; }
-.col { position: absolute; left: 0; top: 0; bottom: 0; width: 470px; display: flex; flex-direction: column; gap: 6px; padding: 6px; }
+.col { position: absolute; left: 0; top: 0; bottom: 0; width: 472px; display: flex; flex-direction: column; gap: 6px; padding: 6px; }
+.hero { display: block; position: relative; flex: none; }
+.hero > img, .hero > canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+.hero .live { pointer-events: none; }
+.ovl { position: absolute; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* 9-slice pieces: border-image with the margins the kit records; images are set as CSS variables per skin. */
-.k-panel { border-style: solid; border-width: 24px; border-image: var(--frame-panel) 24 fill stretch; }
-.k-inset { border-style: solid; border-width: 12px; border-image: var(--frame-inset) 12 fill stretch; }
-.k-track { border-style: solid; border-width: 7px; border-image: var(--bar-track) 7 fill stretch; height: 14px; }
-.k-fill { border-style: solid; border-width: 5px; border-image: var(--bar-fill) 5 fill stretch; height: 10px; }
-.k-button { border-style: solid; border-width: 12px; border-image: var(--button) 12 fill stretch; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; color: var(--s-ink); font: 600 17px/1 var(--s-display); letter-spacing: 0.06em; text-transform: uppercase; background: none; cursor: pointer; padding: 0 6px; }
-.k-button.on { border-image-source: var(--button-on); }
-.k-tab { border-style: solid; border-width: 10px; border-image: var(--tab) 10 fill stretch; min-height: 40px; display: flex; align-items: center; justify-content: center; font: 600 15px/1 var(--s-display); text-transform: uppercase; color: var(--s-dim); }
-.k-tab.sel { border-image-source: var(--tab-on); color: var(--s-ink); }
-.k-strip { position: absolute; left: 0; right: 0; height: 56px; border-style: solid; border-width: 8px 64px; border-image: var(--strip) 8 64 fill stretch; display: flex; align-items: center; gap: 28px; padding: 0 8px; }
-.k-divider { height: 6px; border-style: solid; border-width: 0 12px; border-image: var(--divider) 0 12 fill stretch; }
-.lbl { font: 600 13px/1 var(--s-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--s-dim); white-space: nowrap; }
-.num { font: 400 20px/1 var(--s-num); color: var(--s-ink); font-variant-numeric: tabular-nums; }
-.barbox { display: grid; gap: 4px; flex: 1; }
-.barbox .k-track { position: relative; }
-.barbox .k-fill { position: absolute; left: -4px; top: -5px; }
-canvas.hero { display: block; }
+/* 9-slice pieces: border-image from the active skin's kit, with that skin's own margins (set as CSS variables). */
+.nine { border-style: solid; border-image-repeat: stretch; }
+.k-panel { border-width: var(--fp-w); border-image-source: var(--fp); border-image-slice: var(--fp-s) fill; position: relative; }
+.k-inset { border-width: var(--fi-w); border-image-source: var(--fi); border-image-slice: var(--fi-s) fill; }
+.k-track { border-width: 0; border-image-width: var(--bt-w); border-image-source: var(--bt); border-image-slice: var(--bt-s) fill; position: relative; height: 16px; }
+.k-fill { border-width: 0; border-image-width: var(--bf-w); border-image-source: var(--bf); border-image-slice: var(--bf-s) fill; position: absolute; height: 10px; }
+.k-fill.warn { border-image-source: var(--bfw); }
+.k-button { border-width: 0; border-image-width: var(--bi-w); padding: 0 var(--bi-r) 0 var(--bi-l); border-image-source: var(--bi); border-image-slice: var(--bi-s) fill; height: 48px; display: inline-flex; align-items: center;
+  justify-content: var(--btn-justify); color: var(--btn-ink); font: var(--btn-font); letter-spacing: var(--btn-track); text-transform: var(--btn-case);
+  background: none; cursor: pointer; white-space: nowrap; overflow: hidden; transition: var(--btn-motion); }
+.k-button:hover, .k-button.hover { border-image-source: var(--bh); }
+.k-button:active, .k-button.pressed { border-image-source: var(--bp); transform: var(--btn-press); }
+.k-tab { border-width: 0; border-image-width: var(--ti-w); padding: 0 6px; border-image-source: var(--ti); border-image-slice: var(--ti-s) fill; height: 40px; display: flex; align-items: center; justify-content: center;
+  font: var(--tab-font); text-transform: var(--btn-case); color: var(--tab-ink); white-space: nowrap; overflow: hidden; }
+.k-tab.sel { border-image-source: var(--ta); color: var(--tab-ink-on); }
+.k-strip { position: absolute; left: 472px; right: 0; height: 56px; border-width: 0; border-image-width: var(--st-w); padding: 0 var(--st-r) 0 var(--st-l); border-image-slice: var(--st-s) fill; display: flex; align-items: center; gap: 26px; }
+.k-strip.top { top: 0; border-image-source: var(--st); }
+.k-strip.bottom { bottom: 0; border-image-source: var(--sb); }
+.k-divider { height: 10px; border-width: 0; border-image-width: var(--dv-w); border-image-source: var(--dv); border-image-slice: var(--dv-s) fill; }
+.ptitle { position: absolute; z-index: 1; font: var(--title-font); letter-spacing: var(--btn-track); text-transform: var(--btn-case); color: var(--title-ink); white-space: nowrap; }
+.lbl { font: var(--lbl-font); letter-spacing: 0.1em; text-transform: var(--btn-case); color: var(--s-dim); white-space: nowrap; }
+.num { font: var(--num-font); color: var(--s-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.barbox { display: grid; gap: 4px; flex: 1; min-width: 0; }
 
-/* The 9-slice proof rows. */
-.proof { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; background: #000; border-radius: 6px; padding: 14px; overflow-x: auto; }
+/* Proof rows: every 9-slice piece at three sizes, the hero pieces at their size. */
+.proof { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; background: #000; border-radius: 6px; padding: 16px; overflow-x: auto; }
 .proof > div { flex: none; }
 .cap { font: 500 11px/1.4 var(--mono); color: var(--dim); margin-top: 4px; }
-.heroes { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; background: #000; border-radius: 6px; padding: 14px; overflow-x: auto; }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+.heroes { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; background: #000; border-radius: 6px; padding: 16px; overflow-x: auto; }
+.research li { margin-bottom: 6px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">Mockup 4 · console-skins</div>
+    <div class="eyebrow">Mockup 4 · console-skins · version 2</div>
     <h1>Console Skins</h1>
-    <p class="muted">One kit of interface pieces, one skin per faction. The same console, every piece swapped by the skin. Pieces here are drawn in code at their true sizes as stand-ins for the Blender bakes.</p>
+    <p class="muted">One kit of interface pieces, three factions, three design languages. Concord is flat back-lit vector on LCARS's principles, Kethran is modelled and rendered in Blender, the Vos are hand-drawn. No two share a button, a palette or an icon shape.</p>
   </header>
   <nav class="switch" id="switch" aria-label="Skin"></nav>
 
@@ -89,14 +114,43 @@ canvas.hero { display: block; }
     <div class="stage" id="stage"><div class="console" id="console"></div></div>
   </section>
 
+  <section id="rules">
+    <h2>Three rules, side by side</h2>
+    <p class="muted">No skin shares a button shape. Each palette comes from what the faction believes. Each icon set is drawn from how the faction thinks, its bodies, its technology and its ships.</p>
+    <div class="rules" id="rulecols"></div>
+  </section>
+
   <section id="language">
-    <h2>Design language</h2>
-    <div class="grid2" id="langs"></div>
+    <h2>Design languages</h2>
+    <div class="grid3" id="langs"></div>
+  </section>
+
+  <section id="research">
+    <h2>Concord: what we took from LCARS</h2>
+    <div class="grid3">
+      <div class="card research">
+        <h3>Principles, in our words</h3>
+        <ul>
+          <li><b>The sweep is the language.</b> An elbow joins a thick bar to a thin one and frames each group of controls. A frame always changes thickness at a turn.</li>
+          <li><b>A rounded cap ends a bar</b>, and because it ends something it is the button.</li>
+          <li><b>Break the frame into buttons</b> rather than adding buttons inside it. A frame that only frames is waste.</li>
+          <li><b>Flat and vector</b>: no bevels, no emboss. Colour glows on black.</li>
+          <li><b>Five colours at most, each with one meaning</b>; two text colours; three type sizes; two spacing constants.</li>
+          <li><b>Nothing moves under the hand.</b> A new task is a new screen; fades under 150 ms.</li>
+        </ul>
+        <p class="muted">Sources: Wikipedia on LCARS (Michael Okuda; Roddenberry's "not busy" panels), Bracer Jack's LCARS Manifesto and Coherent Interface guideline (lcars-terminal.de), thelcars.com. LCARS is a studio's copyrighted design: we take principles, never its art, typeface or number decor.</p>
+      </div>
+      <div class="card">
+        <h3>Palette sampled from the reference games</h3>
+        <p class="muted">k-means over the saturated pixels of Starfleet Command's Federation console and Starfleet Academy's HUD (<code>tools/mockups/sample_palette.py</code>). Sampled on the left, the Concord colour it became on the right.</p>
+        <div class="pal" id="sampled"></div>
+      </div>
+    </div>
   </section>
 
   <section id="kit">
-    <h2>The kit</h2>
-    <p class="muted">Every screen draws only these pieces. A skin supplies each one; a missing piece fails the build.</p>
+    <h2 id="kit-title">The kit</h2>
+    <p class="muted">Every screen draws only these pieces. Each skin supplies all of them with its own margins; a missing piece fails the build.</p>
     <div class="card scroll-x"><table class="kit" id="kit-table"></table></div>
     <h3>9-slice pieces at three sizes</h3>
     <div class="proof" id="proof"></div>
@@ -105,361 +159,646 @@ canvas.hero { display: block; }
   </section>
 </div>
 
+<!-- The Kethran kit, rendered in Blender by tools/blender/build_ui_kethran.py; inlined by tools/mockups/inline_data.py. -->
+<!-- INLINE assets/ui/kethran/manifest.json -->
+<!-- /INLINE -->
+
 <script>
 (function () {
+'use strict';
 // ---------------------------------------------------------------------------------------------------------------
-// The kit (openspec/changes/console-skins/design.md): names, kinds, slots and margins. One list for every skin.
+// The kit (openspec/changes/console-skins/design.md). Sizes are at the 1920 x 1080 reference; images are made at 2x.
 // ---------------------------------------------------------------------------------------------------------------
-const KIT = [
-  { id: 'frame.panel', kind: '9-slice', base: [96, 96], m: 24, slot: 'any, min 96 x 96', use: 'every console panel, port panels, sheets' },
-  { id: 'frame.inset', kind: '9-slice', base: [48, 48], m: 12, slot: 'any, min 48 x 48', use: 'readout wells, lists, the schematic well' },
-  { id: 'bar.track', kind: '9-slice', base: [64, 14], m: 7, slot: 'any width x 14', use: 'hull, capacitor, speed, power bars' },
-  { id: 'bar.fill', kind: '9-slice', base: [32, 10], m: 5, slot: 'any width x 10', use: 'the bars\' fills' },
-  { id: 'button', kind: '9-slice, 2 states', base: [48, 48], m: 12, slot: 'min 44 x 44', use: 'every key, idle and lit' },
-  { id: 'tab', kind: '9-slice, 2 states', base: [40, 40], m: 10, slot: 'min 40 high', use: 'tab rows, arming states' },
-  { id: 'strip', kind: '9-slice', base: [192, 56], m: [8, 64], slot: 'full width x 56', use: 'the top and bottom strips' },
-  { id: 'divider', kind: '9-slice', base: [48, 6], m: [0, 12], slot: 'any x 6', use: 'between stacked panels' },
-  { id: 'nameplate', kind: 'hero', base: [458, 56], slot: '458 x 56', use: 'the captain\'s plate' },
-  { id: 'helm.pad', kind: 'hero', base: [300, 300], slot: '300 x 300', use: 'the helm\'s 3 x 3 pad' },
-  { id: 'ssd.bezel', kind: 'hero', base: [458, 300], slot: '458 x 300', use: 'the ship systems display' },
-  { id: 'dial', kind: 'hero', base: [148, 148], slot: '148 x 148', use: 'radar and gauges' },
-  { id: 'lamp.alert', kind: 'hero, 3 states', base: [56, 56], slot: '56 x 56', use: 'condition green, yellow, red' },
-  { id: 'crest', kind: 'hero', base: [96, 96], slot: '96 x 96', use: 'the faction\'s mark' },
+const NINE = ['frame.panel', 'frame.inset', 'bar.track', 'bar.fill', 'bar.fill.red', 'button.idle', 'button.hover', 'button.pressed',
+  'tab.idle', 'tab.active', 'strip.top', 'strip.bottom', 'divider'];
+const HERO = { 'nameplate': [460, 56], 'helm.pad': [300, 300], 'ssd.bezel': [460, 300], 'dial': [120, 120],
+  'lamp.alert.green': [64, 64], 'lamp.alert.yellow': [64, 64], 'lamp.alert.red': [64, 64], 'crest': [96, 96] };
+const ICONS = ['helm', 'fire', 'shields', 'tractor', 'transport', 'science', 'comms', 'repair', 'map', 'settings'];
+const KIT_ROWS = [
+  ['frame.panel', '9-slice', 'any, min 96 x 96', 'every console panel, port panels, sheets'],
+  ['frame.inset', '9-slice', 'any, min 48 x 48', 'readout wells, lists'],
+  ['bar.track', '9-slice', 'any width x 16', 'hull, capacitor, speed, power'],
+  ['bar.fill', '9-slice, 2 states', 'any width x 10', 'the bars\' fills, normal and warning'],
+  ['button', '9-slice, 3 states', 'any width x 48', 'every key: idle, hover, pressed'],
+  ['tab', '9-slice, 2 states', 'any width x 40', 'tab rows, arming states'],
+  ['strip.top', '9-slice', 'full width x 56', 'the top strip'],
+  ['strip.bottom', '9-slice', 'full width x 56', 'the bottom strip'],
+  ['divider', '9-slice', 'any x 10', 'between stacked parts of a panel'],
+  ['nameplate', 'hero', '460 x 56', 'the captain\'s plate'],
+  ['helm.pad', 'hero', '300 x 300', 'the helm\'s eight directions and stop'],
+  ['ssd.bezel', 'hero', '460 x 300', 'the ship systems display'],
+  ['dial', 'hero', '120 x 120', 'radar and gauges'],
+  ['lamp.alert', 'hero, 3 states', '64 x 64', 'condition green, yellow, red'],
+  ['crest', 'hero', '96 x 96', 'the faction\'s mark'],
+  ['icon.*', 'hero, 10', '48 x 48', ICONS.join(', ')],
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
-// The skins: tokens and the style each painter follows. Our own designs after the owner's words (CLAUDE.md 7).
+// Shared drawing helpers.
 // ---------------------------------------------------------------------------------------------------------------
-const SKINS = {
-  concord: { name: 'Concord', words: '"sleek, utilitarian ... very sci-fi very minimal"', style: 'glass',
-    display: '"Chakra Petch", sans-serif', num: '"Share Tech Mono", monospace',
-    c: { base: '#0b1a2e', base2: '#06101d', rim: '#7d93ad', rimHi: '#d6e6f7', accent: '#4fc3ff', accent2: '#8fe0ff', ink: '#e4f1ff', dim: '#86a3c2', warn: '#ffb547', bad: '#ff5d5d', ok: '#59e0a8' },
-    lang: { Shape: 'Thin frames with small chamfered corners, long straight runs, segmented bar caps.', Material: 'Smoked navy glass over brushed steel, edge-lit.', Light: 'Cool light from the edges; soft cyan glow lines; no ornament shadows.', Type: 'Chakra Petch for labels, Share Tech Mono for numbers. Capitals, wide tracking.', Ornament: 'Almost none: hairlines, ticks and a crest.', Blender: 'Bevelled steel rim, glass slab with an emissive edge strip, baked under a soft top light.' } },
-  vos: { name: 'Vos Syndicate', words: '"so playful and pirate like"', style: 'brass',
-    display: '"Pirata One", serif', num: '"Barlow Semi Condensed", sans-serif',
-    c: { base: '#5a2416', base2: '#2e130c', rim: '#a8792f', rimHi: '#ffd98a', accent: '#3fe0b0', accent2: '#a9ffe0', ink: '#ffe6bd', dim: '#d1a173', warn: '#ffb547', bad: '#ff6a4a', ok: '#3fe0b0' },
-    lang: { Shape: 'Bulging rounded corners, hand-built plates, cabling along the edges, uneven rivets.', Material: 'Rust-red enamel over brass, bone fittings, green glass lenses.', Light: 'Warm lamp light; glossy highlights on brass; worn paint where hands touch.', Type: 'Pirata One for headings, Barlow Semi Condensed for numbers and buttons.', Ornament: 'Rivets, pipes and cables, patches, painted numbers, a hook-and-coin crest.', Blender: 'Sculpted brass rim with rivets, enamel plate with edge wear, cable tubes along the corners, baked under warm lamps.' } },
-  kethA: { name: 'Kethran A: militarist', words: 'Option A (survey U5)', style: 'armour',
-    display: '"Black Ops One", sans-serif', num: '"Barlow Condensed", sans-serif',
-    c: { base: '#22252a', base2: '#121417', rim: '#5d6168', rimHi: '#b9bec6', accent: '#e0362c', accent2: '#ff8a7a', ink: '#f2ece4', dim: '#a49c92', warn: '#ffb547', bad: '#ff3b2f', ok: '#9fd36a' },
-    lang: { Shape: 'Hard angular plates, clipped corners, notches and armour bolts.', Material: 'Matte gunmetal plate, red stencil paint, bone-white markings.', Light: 'Harsh top light, hard shadows under each plate.', Type: 'Black Ops One stencil for labels, Barlow Condensed for numbers.', Ornament: 'Hazard notches, hex bolts, a fanged crest.', Blender: 'Chamfered armour plates with boolean notches and hex bolts, baked under a hard key light.' } },
-  kethB: { name: 'Kethran B: ornate imperial', words: 'Option B (survey U5)', style: 'gilded',
-    display: '"Cinzel", serif', num: '"Cormorant Garamond", serif',
-    c: { base: '#171316', base2: '#0b090b', rim: '#9a7a35', rimHi: '#ffe39a', accent: '#d9a43a', accent2: '#ffe08a', ink: '#f5e6c2', dim: '#b79a63', warn: '#ffb547', bad: '#e0443a', ok: '#c9d36a' },
-    lang: { Shape: 'Framed panels with scrollwork corners and double gold borders.', Material: 'Black stone with gold inlay, red velvet wells.', Light: 'Candle-warm gold highlights, deep shadows.', Type: 'Cinzel engraved capitals, Cormorant Garamond numbers.', Ornament: 'Scrollwork, a crowned sun crest.', Blender: 'Stone slab with inlaid gold mouldings and curled corner ornaments, baked under warm point lights.' } },
-};
-let SKIN = 'concord';
-
-// ---------------------------------------------------------------------------------------------------------------
-// Painters: one per piece, branching on the skin's style. Light comes from the top left, as in a Blender bake.
-// ---------------------------------------------------------------------------------------------------------------
-const cv = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-function chamferPath(x, w, h, c, inset = 0) {
-  const a = inset, b = c;
-  x.beginPath(); x.moveTo(a + b, a); x.lineTo(w - a - b, a); x.lineTo(w - a, a + b); x.lineTo(w - a, h - a - b); x.lineTo(w - a - b, h - a); x.lineTo(a + b, h - a); x.lineTo(a, h - a - b); x.lineTo(a, a + b); x.closePath();
+function hash(s) { let h = 2166136261; for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return h >>> 0; }
+// A canvas at 2x for a piece of w x h reference pixels; draw() works in reference pixels.
+function paint(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w * 2; c.height = h * 2;
+  const x = c.getContext('2d'); x.scale(2, 2); x.lineJoin = 'round'; x.lineCap = 'round'; draw(x, w, h); return c;
 }
-function roundPath(x, w, h, r, inset = 0) { x.beginPath(); x.roundRect(inset, inset, w - 2 * inset, h - 2 * inset, Math.max(0, r - inset)); }
-function rivet(x, px, py, r, S) {
-  const g = x.createRadialGradient(px - r * 0.35, py - r * 0.35, r * 0.1, px, py, r);
-  g.addColorStop(0, S.c.rimHi); g.addColorStop(0.5, S.c.rim); g.addColorStop(1, '#1a0f08');
-  x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill();
+const png = (c) => c.toDataURL('image/png');
+const P = Math.PI;
+function rr(x, X, Y, W, H, r) { x.beginPath(); x.roundRect(X, Y, W, H, r); }
+
+// ===============================================================================================================
+// CONCORD: flat back-lit vector on LCARS's principles. Palette sampled from Starfleet Command and Starfleet Academy.
+// ===============================================================================================================
+const CC = { deep: '#1b2a6b', signal: '#2f62e0', sky: '#3fa9f0', accord: '#2fbf5a', lilac: '#b7a6f2', caution: '#f0b43c', alert: '#e8352b', text: '#eef3ff' };
+// The sweep: a thick bar on the left joined by outer-rounded elbows to thin arms along the top and bottom, which end in
+// a small rounded cap of another colour. Thick to thin at every turn (the LCARS rule).
+function ccSweep(x, X, Y, W, H, o) {
+  const { bar, arm, R, r, cap, col, capCol } = o, end = X + W - cap - 5;
+  x.fillStyle = col; x.beginPath();
+  x.moveTo(X + R, Y); x.lineTo(end, Y); x.lineTo(end, Y + arm); x.lineTo(X + bar + r, Y + arm);
+  x.arcTo(X + bar, Y + arm, X + bar, Y + arm + r, r); x.lineTo(X + bar, Y + H - arm - r); x.arcTo(X + bar, Y + H - arm, X + bar + r, Y + H - arm, r);
+  x.lineTo(end, Y + H - arm); x.lineTo(end, Y + H); x.lineTo(X + R, Y + H); x.arcTo(X, Y + H, X, Y + H - R, R); x.lineTo(X, Y + R); x.arcTo(X, Y, X + R, Y, R);
+  x.closePath(); x.fill();
+  if (cap) { x.fillStyle = capCol; rr(x, end + 5, Y, cap, arm, arm / 2); x.fill(); rr(x, end + 5, Y + H - arm, cap, arm, arm / 2); x.fill(); }
 }
-function hexBolt(x, px, py, r, S) {
-  x.fillStyle = S.c.rim; x.strokeStyle = '#000'; x.lineWidth = 1; x.beginPath();
-  for (let k = 0; k < 6; k++) { const a = (Math.PI / 3) * k + Math.PI / 6; x.lineTo(px + r * Math.cos(a), py + r * Math.sin(a)); }
-  x.closePath(); x.fill(); x.stroke(); x.fillStyle = S.c.rimHi; x.beginPath(); x.arc(px - r * 0.2, py - r * 0.2, r * 0.3, 0, 7); x.fill();
+function ccArcSeg(x, cx, cy, r0, r1, a0, a1) { x.beginPath(); x.arc(cx, cy, r1, a0, a1); x.arc(cx, cy, r0, a1, a0, true); x.closePath(); }
+const concordKit = {
+  'frame.panel': { size: [160, 120], m: [22, 28, 22, 44], draw: (x, w, h) => ccSweep(x, 0, 0, w, h, { bar: 28, arm: 10, R: 24, r: 10, cap: 16, col: CC.signal, capCol: CC.sky }) },
+  'frame.inset': { size: [64, 48], m: [14, 14, 14, 14], draw: (x, w, h) => { x.strokeStyle = CC.deep; x.lineWidth = 3; rr(x, 1.5, 1.5, w - 3, h - 3, 12); x.stroke(); x.fillStyle = CC.sky; rr(x, 8, 0, 14, 3, 1.5); x.fill(); } },
+  'bar.track': { size: [96, 16], m: [0, 10, 0, 10], inset: [3, 3], draw: (x, w, h) => { x.fillStyle = CC.deep; rr(x, 0, 0, w, h, 8); x.fill(); x.fillStyle = '#000'; rr(x, 2, 2, w - 4, h - 4, 6); x.fill(); } },
+  'bar.fill': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => { x.fillStyle = CC.sky; rr(x, 0, 0, w, h, 5); x.fill(); } },
+  'bar.fill.red': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => { x.fillStyle = CC.alert; rr(x, 0, 0, w, h, 5); x.fill(); } },
+  // The pill: round caps both ends (LCARS's button). Labels black, right-aligned, as on a back-lit panel.
+  'button.idle': { size: [120, 48], m: [22, 24, 22, 24], draw: (x, w, h) => { x.fillStyle = CC.signal; rr(x, 0, 0, w, h, 24); x.fill(); } },
+  'button.hover': { size: [120, 48], m: [22, 24, 22, 24], draw: (x, w, h) => { x.fillStyle = CC.sky; rr(x, 0, 0, w, h, 24); x.fill(); } },
+  'button.pressed': { size: [120, 48], m: [22, 24, 22, 24], draw: (x, w, h) => { x.fillStyle = CC.lilac; rr(x, 0, 0, w, h, 24); x.fill(); } },
+  // A tab is a button that grew a flat side: one cap on the left, square on the right.
+  'tab.idle': { size: [120, 40], m: [18, 6, 18, 20], draw: (x, w, h) => { x.fillStyle = CC.deep; rr(x, 0, 0, w, h, [20, 2, 2, 20]); x.fill(); } },
+  'tab.active': { size: [120, 40], m: [18, 6, 18, 20], draw: (x, w, h) => { x.fillStyle = CC.accord; rr(x, 0, 0, w, h, [20, 2, 2, 20]); x.fill(); } },
+  'strip.top': { size: [512, 56], m: [10, 96, 16, 96], draw: (x, w, h) => ccStrip(x, w, h, false) },
+  'strip.bottom': { size: [512, 56], m: [16, 96, 10, 96], draw: (x, w, h) => ccStrip(x, w, h, true) },
+  'divider': { size: [128, 10], m: [0, 18, 0, 18], draw: (x, w, h) => { x.fillStyle = CC.deep; rr(x, 16, 3, w - 32, 4, 2); x.fill(); x.fillStyle = CC.signal; rr(x, 0, 2, 12, 6, 3); x.fill(); rr(x, w - 12, 2, 12, 6, 3); x.fill(); } },
+};
+function ccStrip(x, w, h, flip) {
+  // A tall block at the left, rounded on its outer side, sweeping into a thin bar along one edge with a cap at the end.
+  x.save(); if (flip) { x.translate(0, h); x.scale(1, -1); }
+  const by = h - 12, bt = 8;
+  x.fillStyle = CC.signal; x.beginPath();
+  x.moveTo(28, 0); x.lineTo(72, 0); x.lineTo(72, by - 10); x.arcTo(72, by, 82, by, 10); x.lineTo(w - 44, by); x.lineTo(w - 44, by + bt);
+  x.lineTo(28, by + bt); x.arcTo(0, by + bt, 0, by + bt - 28, 28); x.lineTo(0, 28); x.arcTo(0, 0, 28, 0, 28); x.closePath(); x.fill();
+  x.fillStyle = CC.sky; rr(x, w - 39, by, 22, bt, 4); x.fill();
+  x.fillStyle = CC.deep; rr(x, w - 13, by, 13, bt, 4); x.fill();
+  x.restore();
 }
-function scroll(x, px, py, r, sx, sy, S) {
-  x.save(); x.translate(px, py); x.scale(sx, sy); x.strokeStyle = S.c.rimHi; x.lineWidth = 1.6; x.beginPath();
-  for (let a = 0; a < Math.PI * 3.2; a += 0.15) { const rr = r * (1 - a / (Math.PI * 3.6)); x.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
-  x.stroke(); x.restore();
+const concordHero = {
+  'nameplate': (x, w, h) => {
+    x.fillStyle = CC.signal; rr(x, 0, 0, 96, h, [28, 4, 4, 28]); x.fill();
+    x.fillStyle = CC.deep; rr(x, 102, h - 10, w - 140, 8, 4); x.fill();
+    x.fillStyle = CC.sky; rr(x, w - 32, h - 10, 32, 8, 4); x.fill();
+  },
+  // Helm: a saucer. Eight arc keys round a round stop key.
+  'helm.pad': (x, w, h) => {
+    const c = w / 2, gap = 0.06;
+    for (let i = 0; i < 8; i++) { const a = -P / 2 + (i - 0.5) * P / 4; x.fillStyle = i % 2 ? CC.deep : CC.signal; ccArcSeg(x, c, c, 58, 128, a + gap, a + P / 4 - gap); x.fill(); }
+    x.fillStyle = CC.signal; x.beginPath(); x.arc(c, c, 46, 0, 2 * P); x.fill();
+    x.strokeStyle = CC.deep; x.lineWidth = 3; x.beginPath(); x.arc(c, c, 140, 0, 2 * P); x.stroke();
+    x.fillStyle = '#000'; for (const a of [0, P / 2, P, 1.5 * P]) { x.save(); x.translate(c, c); x.rotate(a); x.fillRect(136, -6, 10, 12); x.restore(); }
+  },
+  // The systems display: two sweeps facing each other, thick on the left, thinner on the right.
+  'ssd.bezel': (x, w, h) => {
+    ccSweep(x, 0, 0, 220, h, { bar: 26, arm: 10, R: 24, r: 10, cap: 18, col: CC.signal, capCol: CC.sky });
+    x.save(); x.translate(w, 0); x.scale(-1, 1); ccSweep(x, 0, 0, 220, h, { bar: 14, arm: 6, R: 16, r: 8, cap: 0, col: CC.deep, capCol: CC.deep }); x.restore();
+  },
+  'dial': (x, w, h) => {
+    const c = w / 2; x.strokeStyle = CC.deep; x.lineWidth = 6; x.beginPath(); x.arc(c, c, 54, 0, 2 * P); x.stroke();
+    x.lineWidth = 2; x.beginPath(); x.arc(c, c, 36, 0, 2 * P); x.stroke(); x.beginPath(); x.arc(c, c, 18, 0, 2 * P); x.stroke();
+    x.strokeStyle = CC.signal; x.lineWidth = 6; for (let i = 0; i < 4; i++) { x.beginPath(); x.arc(c, c, 54, i * P / 2 - 0.12, i * P / 2 + 0.12); x.stroke(); }
+  },
+  'lamp.alert.green': (x, w) => ccLamp(x, w, CC.accord), 'lamp.alert.yellow': (x, w) => ccLamp(x, w, CC.caution), 'lamp.alert.red': (x, w) => ccLamp(x, w, CC.alert),
+  // The Concord mark (original): five worlds round an open circle, crossed by one orbit.
+  'crest': (x, w) => {
+    const c = w / 2; x.strokeStyle = CC.sky; x.lineWidth = 4; x.beginPath(); x.arc(c, c, 44, 0, 2 * P); x.stroke();
+    x.fillStyle = CC.signal; for (let i = 0; i < 5; i++) { const a = -P / 2 + i * 2 * P / 5; x.beginPath(); x.arc(c + Math.cos(a) * 27, c + Math.sin(a) * 27, 7, 0, 2 * P); x.fill(); }
+    x.strokeStyle = CC.lilac; x.lineWidth = 3; x.beginPath(); x.arc(c, c, 11, 0, 2 * P); x.stroke();
+    x.strokeStyle = CC.sky; x.lineWidth = 2; x.beginPath(); x.ellipse(c, c, 40, 13, -0.5, 0, 2 * P); x.stroke();
+  },
+};
+function ccLamp(x, w, col) { const c = w / 2; x.fillStyle = CC.deep; x.beginPath(); x.arc(c, c, 30, 0, 2 * P); x.fill(); x.fillStyle = '#000'; x.beginPath(); x.arc(c, c, 25, 0, 2 * P); x.fill(); x.fillStyle = col; x.beginPath(); x.arc(c, c, 21, 0, 2 * P); x.fill(); }
+// Concord icons: open circles and arcs in one even line. Nothing pointed (the saucer, the circle of species).
+function ccIcon(name) {
+  return paint(48, 48, (x) => {
+    x.strokeStyle = CC.sky; x.fillStyle = CC.sky; x.lineWidth = 3;
+    const C = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
+    const D = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); };
+    const A = (cx, cy, r, a0, a1) => { x.beginPath(); x.arc(cx, cy, r, a0, a1); x.stroke(); };
+    ({
+      helm: () => { C(24, 24, 18); D(24, 24, 3.5); x.beginPath(); x.moveTo(24, 24); x.lineTo(35, 13); x.stroke(); D(36.7, 11.3, 4.5); },
+      fire: () => { C(24, 24, 18); C(24, 24, 10); D(24, 24, 3.5); },
+      shields: () => { A(24, 30, 19, P * 1.12, P * 1.88); A(24, 30, 12, P * 1.15, P * 1.85); D(24, 32, 4); },
+      tractor: () => { C(10, 24, 6); C(38, 24, 6); x.beginPath(); x.moveTo(17, 20); x.lineTo(31, 20); x.moveTo(17, 28); x.lineTo(31, 28); x.stroke(); },
+      transport: () => { for (const [cx, cy] of [[24, 10], [14, 24], [34, 24], [24, 38]]) D(cx, cy, 3.5); C(24, 24, 7); },
+      science: () => { x.beginPath(); x.ellipse(24, 24, 19, 8, -0.6, 0, 2 * P); x.stroke(); x.beginPath(); x.ellipse(24, 24, 19, 8, 0.6, 0, 2 * P); x.stroke(); D(24, 24, 4); },
+      comms: () => { D(12, 36, 4); A(12, 36, 11, -P / 2, 0); A(12, 36, 20, -P / 2, 0); A(12, 36, 29, -P / 2 + 0.12, -0.12); },
+      repair: () => { A(24, 24, 15, 0.5, 2 * P - 0.5); D(24, 24, 4); x.beginPath(); x.moveTo(35, 18); x.lineTo(35, 30); x.stroke(); },
+      map: () => { C(12, 14, 6); C(36, 20, 6); C(20, 36, 6); x.lineWidth = 2; x.beginPath(); x.moveTo(18, 15); x.lineTo(30, 19); x.moveTo(33, 25); x.lineTo(24, 32); x.moveTo(17, 30); x.lineTo(13, 20); x.stroke(); },
+      settings: () => { C(24, 24, 8); for (let i = 0; i < 6; i++) { const a = i * P / 3; D(24 + Math.cos(a) * 17, 24 + Math.sin(a) * 17, 3.5); } },
+    })[name]();
+  });
 }
-// A frame: rim, body and the style's corner details. Detail stays inside the margin so the edges stretch cleanly.
-function paintFrame(S, w, h, m, opt = {}) {
-  const c = cv(w, h), x = c.getContext('2d'), C = S.c;
-  const body = x.createLinearGradient(0, 0, 0, h); body.addColorStop(0, opt.lit ? C.base : C.base); body.addColorStop(1, C.base2);
-  if (S.style === 'glass') {
-    chamferPath(x, w, h, m * 0.42); x.fillStyle = body; x.fill();
-    const rim = x.createLinearGradient(0, 0, w, h); rim.addColorStop(0, C.rimHi); rim.addColorStop(0.5, C.rim); rim.addColorStop(1, '#2a3646');
-    x.strokeStyle = rim; x.lineWidth = Math.max(1.5, m * 0.09); chamferPath(x, w, h, m * 0.42, x.lineWidth / 2); x.stroke();
-    x.strokeStyle = C.accent; x.globalAlpha = opt.lit ? 0.95 : 0.55; x.lineWidth = 1; x.shadowColor = C.accent; x.shadowBlur = 6;
-    chamferPath(x, w, h, m * 0.42, m * 0.24); x.stroke(); x.shadowBlur = 0; x.globalAlpha = 1;
-    x.fillStyle = C.accent; const t = m * 0.34;
-    for (const [px, py, sx, sy] of [[m * 0.36, m * 0.36, 1, 1], [w - m * 0.36, m * 0.36, -1, 1], [m * 0.36, h - m * 0.36, 1, -1], [w - m * 0.36, h - m * 0.36, -1, -1]]) { x.fillRect(px, py, t * sx, 1.5 * sy); x.fillRect(px, py, 1.5 * sx, t * sy); }
-    x.fillStyle = 'rgba(255,255,255,0.12)'; x.fillRect(m * 0.5, 2, w - m, 1);
-  } else if (S.style === 'brass') {
-    roundPath(x, w, h, m * 0.9); x.fillStyle = body; x.fill();
-    const rim = x.createLinearGradient(0, 0, w * 0.6, h); rim.addColorStop(0, C.rimHi); rim.addColorStop(0.35, C.rim); rim.addColorStop(1, '#3a2410');
-    x.strokeStyle = rim; x.lineWidth = m * 0.26; roundPath(x, w, h, m * 0.9, x.lineWidth / 2); x.stroke();
-    x.strokeStyle = 'rgba(0,0,0,0.5)'; x.lineWidth = 1.2; roundPath(x, w, h, m * 0.9, m * 0.3); x.stroke();
-    // cable tubes round the top-left and bottom-right corners
-    x.lineCap = 'round';
-    for (const [cx, cy, a0] of [[m * 0.95, m * 0.95, Math.PI], [w - m * 0.95, h - m * 0.95, 0]]) {
-      x.strokeStyle = '#1b0d06'; x.lineWidth = m * 0.18; x.beginPath(); x.arc(cx, cy, m * 0.62, a0, a0 + Math.PI / 2); x.stroke();
-      x.strokeStyle = C.accent; x.globalAlpha = 0.65; x.lineWidth = m * 0.07; x.beginPath(); x.arc(cx, cy, m * 0.62, a0, a0 + Math.PI / 2); x.stroke(); x.globalAlpha = 1;
-    }
-    const R = rng(w * 31 + h);
-    for (const [px, py] of [[m * 0.5, m * 0.22], [m * 0.22, m * 0.55], [w - m * 0.5, m * 0.22], [w - m * 0.22, m * 0.55], [m * 0.5, h - m * 0.22], [m * 0.22, h - m * 0.55], [w - m * 0.5, h - m * 0.22], [w - m * 0.22, h - m * 0.55]]) rivet(x, px + (R() - 0.5) * 1.5, py + (R() - 0.5) * 1.5, m * 0.07 + 0.6, S);
-    x.fillStyle = 'rgba(255,220,160,0.10)'; for (let i = 0; i < 6; i++) { x.beginPath(); x.arc(R() * m, R() * m + h * (R() < 0.5 ? 0 : 1) - (R() < 0.5 ? 0 : m), 1 + R() * 2, 0, 7); x.fill(); }
-  } else if (S.style === 'armour') {
-    chamferPath(x, w, h, m * 0.75); x.fillStyle = body; x.fill();
-    x.strokeStyle = '#000'; x.lineWidth = 2; chamferPath(x, w, h, m * 0.75, 1); x.stroke();
-    x.strokeStyle = C.rimHi; x.globalAlpha = 0.35; x.lineWidth = 1; x.beginPath(); x.moveTo(m * 0.75, 3); x.lineTo(w - m * 0.75, 3); x.stroke(); x.globalAlpha = 1;
-    x.strokeStyle = C.rim; x.lineWidth = m * 0.16; chamferPath(x, w, h, m * 0.75, m * 0.16); x.stroke();
-    x.fillStyle = C.accent; for (const [px, py, s] of [[0, 0, 1], [w, 0, -1]]) { x.beginPath(); x.moveTo(px + s * m * 0.95, py + m * 0.08); x.lineTo(px + s * m * 0.55, py + m * 0.5); x.lineTo(px + s * m * 0.4, py + m * 0.5); x.lineTo(px + s * m * 0.8, py + m * 0.08); x.fill(); }
-    for (const [px, py] of [[m * 0.55, h - m * 0.55], [w - m * 0.55, h - m * 0.55]]) hexBolt(x, px, py, m * 0.12, S);
-  } else {
-    roundPath(x, w, h, 3); x.fillStyle = body; x.fill();
-    const R = rng(w + h * 7); x.fillStyle = 'rgba(255,255,255,0.025)'; for (let i = 0; i < w * h / 40; i++) x.fillRect(R() * w, R() * h, 1, 1);
-    x.strokeStyle = C.rim; x.lineWidth = m * 0.12; roundPath(x, w, h, 3, m * 0.1); x.stroke();
-    x.strokeStyle = C.rimHi; x.lineWidth = 1; roundPath(x, w, h, 3, m * 0.32); x.stroke();
-    for (const [px, py, sx, sy] of [[m * 0.55, m * 0.55, 1, 1], [w - m * 0.55, m * 0.55, -1, 1], [m * 0.55, h - m * 0.55, 1, -1], [w - m * 0.55, h - m * 0.55, -1, -1]]) scroll(x, px, py, m * 0.32, sx, sy, S);
+
+// ===============================================================================================================
+// VOS SYNDICATE: hand-drawn. Ink that wobbles, a stained wash, hatching on the shadow side, a dry-brush highlight.
+// Every stroke comes from a seeded generator, so a piece is drawn the same way every time.
+// ===============================================================================================================
+const VC = { ink: '#2a1410', rust: '#a8482a', brass: '#d6a043', brassHi: '#efc56a', verd: '#3fb7a3', bone: '#efe0bd', blood: '#d23a4a', wine: '#24110d', caution: '#e8b33a' };
+function noise1(R) { const p = [0, 1, 2, 3].map(() => [R() * 6.283, 0.6 + R() * 1.4]); return (t) => p.reduce((s, [ph, f], i) => s + Math.sin(t * f * (i + 1) + ph) / (i + 1), 0) / 1.6; }
+// Resample a polyline and push each point sideways by smooth noise: the line of a hand.
+function wob(pts, closed, amp, R, step = 2.5) {
+  const n = noise1(R), out = []; let s = 0; const segs = closed ? pts.length : pts.length - 1;
+  for (let i = 0; i < segs; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, k = Math.max(1, Math.ceil(L / step));
+    const nx = -(b[1] - a[1]) / L, ny = (b[0] - a[0]) / L;
+    for (let j = 0; j < k; j++) { const t = j / k, d = n((s + t * L) * 0.07) * amp; out.push([a[0] + (b[0] - a[0]) * t + nx * d, a[1] + (b[1] - a[1]) * t + ny * d]); }
+    s += L;
   }
-  return c;
+  if (!closed) out.push(pts[pts.length - 1]);
+  return out;
 }
-function paintBar(S, w, h, m, fill) {
-  const c = cv(w, h), x = c.getContext('2d'), C = S.c;
-  if (fill) {
-    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, fill === 'warn' ? C.warn : fill === 'bad' ? C.bad : C.accent2); g.addColorStop(1, fill === 'warn' ? '#a86a10' : fill === 'bad' ? '#7a1a12' : C.accent);
-    x.fillStyle = g;
-    if (S.style === 'glass') { x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(0,0,0,0.35)'; for (let i = 6; i < w; i += 6) x.fillRect(i, 0, 1, h); }
-    else if (S.style === 'armour') { chamferPath(x, w, h, 3); x.fill(); }
-    else { x.beginPath(); x.roundRect(0, 0, w, h, h / 2); x.fill(); x.fillStyle = 'rgba(255,255,255,0.35)'; x.fillRect(m, 1, w - 2 * m, 1); }
-    return c;
+function arcPts(cx, cy, rx, ry, a0, a1, n = 24) { const o = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; o.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]); } return o; }
+function rrPts(X, Y, W, H, r) { return [...arcPts(X + W - r, Y + r, r, r, -P / 2, 0, 6), ...arcPts(X + W - r, Y + H - r, r, r, 0, P / 2, 6), ...arcPts(X + r, Y + H - r, r, r, P / 2, P, 6), ...arcPts(X + r, Y + r, r, r, P, 1.5 * P, 6)]; }
+function trace(x, pts, closed) { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0], p[1]); if (closed) x.closePath(); }
+// An ink line: a full stroke, then a thinner second pass a little off it, as a brush leaves.
+function ink(x, pts, closed, w = 2.4, col = VC.ink) {
+  trace(x, pts, closed); x.strokeStyle = col; x.lineWidth = w; x.globalAlpha = 1; x.stroke();
+  x.save(); x.translate(0.5, 0.35); trace(x, pts, closed); x.lineWidth = w * 0.45; x.globalAlpha = 0.55; x.stroke(); x.restore(); x.globalAlpha = 1;
+}
+// A wash: the colour, then blotches lighter and darker, then paper grain, clipped to the shape.
+function wash(x, pts, col, R, dark = 'rgba(42,20,16,0.20)', light = 'rgba(255,240,210,0.13)') {
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  x.save(); trace(x, pts, true); x.clip(); x.fillStyle = col; x.fillRect(x0, y0, x1 - x0, y1 - y0);
+  const n = Math.max(6, Math.round((x1 - x0) * (y1 - y0) / 500));
+  for (let i = 0; i < n; i++) {
+    const cx = x0 + R() * (x1 - x0), cy = y0 + R() * (y1 - y0), r = 6 + R() * 22, g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, R() < 0.55 ? dark : light); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
   }
-  x.fillStyle = '#000'; if (S.style === 'armour') { chamferPath(x, w, h, 4); x.fill(); } else { x.beginPath(); x.roundRect(0, 0, w, h, S.style === 'glass' ? 2 : h / 2); x.fill(); }
-  x.strokeStyle = S.c.rim; x.lineWidth = 1.5; x.beginPath(); x.roundRect(0.75, 0.75, w - 1.5, h - 1.5, S.style === 'glass' ? 2 : S.style === 'armour' ? 0 : h / 2); x.stroke();
-  return c;
+  for (let i = 0; i < n * 14; i++) { x.fillStyle = R() < 0.5 ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.06)'; x.fillRect(x0 + R() * (x1 - x0), y0 + R() * (y1 - y0), 0.8, 0.8); }
+  // A darker rim inside the edge, as pigment pools where a wash dries.
+  trace(x, pts, true); x.strokeStyle = 'rgba(42,20,16,0.22)'; x.lineWidth = 3; x.stroke();
+  x.restore();
 }
-function paintButton(S, on) {
-  const w = 48, h = 48, m = 12, c = cv(w, h), x = c.getContext('2d'), C = S.c;
-  const f = paintFrame(S, w, h, m, { lit: on }); x.drawImage(f, 0, 0);
-  const g = x.createLinearGradient(0, m, 0, h - m); g.addColorStop(0, on ? C.accent : 'rgba(255,255,255,0.10)'); g.addColorStop(1, on ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.25)');
-  x.globalAlpha = on ? 0.45 : 1; x.fillStyle = g; x.fillRect(m * 0.6, m * 0.6, w - m * 1.2, h - m * 1.2); x.globalAlpha = 1;
-  return c;
+// Hatching on the shadow side (bottom right), wobbly diagonal strokes clipped to the shape.
+function hatch(x, pts, R, from = 0.55, gap = 3.4, col = 'rgba(42,20,16,0.55)') {
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const W = x1 - x0, H = y1 - y0;
+  x.save(); trace(x, pts, true); x.clip();
+  x.beginPath(); x.moveTo(x0 + W, y0 + H * from * 0.6); x.lineTo(x0 + W, y1); x.lineTo(x0 + W * from * 0.6, y1); x.closePath(); x.clip();
+  x.strokeStyle = col; x.lineWidth = 0.9;
+  for (let d = -H; d < W + H; d += gap) { const l = wob([[x0 + d, y1 + 2], [x0 + d + H + 4, y0 - 2]], false, 0.6, R, 6); trace(x, l, false); x.stroke(); }
+  x.restore();
 }
-function paintTab(S, on) {
-  const w = 40, h = 40, m = 10, c = cv(w, h), x = c.getContext('2d'), C = S.c;
-  x.drawImage(paintFrame(S, w, h, m), 0, 0);
-  if (on) { x.fillStyle = C.accent; x.shadowColor = C.accent; x.shadowBlur = 6; x.fillRect(m * 0.7, h - m * 0.55, w - m * 1.4, 3); x.shadowBlur = 0; }
-  return c;
-}
-function paintStrip(S) { return paintFrame(S, 192, 56, 16); }
-function paintDivider(S) {
-  const c = cv(48, 6), x = c.getContext('2d'), C = S.c;
-  const g = x.createLinearGradient(0, 0, 48, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.25, C.rim); g.addColorStop(0.75, C.rim); g.addColorStop(1, 'rgba(0,0,0,0)');
-  x.fillStyle = g; x.fillRect(0, 2, 48, 2); if (S.style !== 'glass') { x.fillStyle = C.rimHi; x.fillRect(10, 2, 28, 1); }
-  return c;
-}
-// Hero pieces.
-function paintCrest(S, size = 96) {
-  const c = cv(size, size), x = c.getContext('2d'), C = S.c, s = size / 96;
-  x.save(); x.scale(s, s); x.translate(48, 48);
-  if (S.style === 'glass') {
-    x.strokeStyle = C.accent; x.lineWidth = 3; x.shadowColor = C.accent; x.shadowBlur = 8; x.beginPath(); x.arc(0, 0, 34, 0, 7); x.stroke();
-    x.fillStyle = C.ink; x.beginPath(); x.moveTo(0, -26); x.lineTo(16, 18); x.lineTo(0, 8); x.lineTo(-16, 18); x.closePath(); x.fill();
-    for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + (k - 2) * 0.32; x.fillStyle = C.accent2; x.beginPath(); x.arc(Math.cos(a) * 42, Math.sin(a) * 42, 2.5, 0, 7); x.fill(); }
-  } else if (S.style === 'brass') {
-    const g = x.createRadialGradient(-10, -10, 4, 0, 0, 36); g.addColorStop(0, C.rimHi); g.addColorStop(1, C.rim);
-    x.fillStyle = g; x.beginPath(); x.arc(0, 0, 30, 0, 7); x.fill(); x.strokeStyle = '#3a2410'; x.lineWidth = 3; x.stroke();
-    x.strokeStyle = '#2b140a'; x.lineWidth = 6; x.lineCap = 'round';
-    for (const s2 of [-1, 1]) { x.beginPath(); x.moveTo(s2 * -26, 30); x.lineTo(s2 * 18, -22); x.arc(s2 * 10, -22, 8 * Math.abs(s2), s2 > 0 ? 0 : Math.PI, s2 > 0 ? -Math.PI : 0, s2 < 0); x.stroke(); }
-    x.fillStyle = C.accent; x.beginPath(); x.arc(0, 4, 7, 0, 7); x.fill();
-  } else if (S.style === 'armour') {
-    x.fillStyle = C.accent; x.beginPath(); x.moveTo(0, -38); x.lineTo(30, -10); x.lineTo(14, 36); x.lineTo(0, 18); x.lineTo(-14, 36); x.lineTo(-30, -10); x.closePath(); x.fill();
-    x.fillStyle = C.base2; x.beginPath(); x.moveTo(-10, -6); x.lineTo(-4, 14); x.lineTo(-14, 2); x.fill(); x.beginPath(); x.moveTo(10, -6); x.lineTo(4, 14); x.lineTo(14, 2); x.fill();
-  } else {
-    x.strokeStyle = C.rimHi; x.lineWidth = 2; for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2; x.beginPath(); x.moveTo(Math.cos(a) * 18, Math.sin(a) * 18); x.lineTo(Math.cos(a) * (k % 2 ? 30 : 38), Math.sin(a) * (k % 2 ? 30 : 38)); x.stroke(); }
-    const g = x.createRadialGradient(-5, -5, 2, 0, 0, 18); g.addColorStop(0, C.rimHi); g.addColorStop(1, C.rim); x.fillStyle = g; x.beginPath(); x.arc(0, 0, 16, 0, 7); x.fill();
-    x.fillStyle = C.rimHi; x.beginPath(); x.moveTo(-14, -40); x.lineTo(-8, -50); x.lineTo(0, -42); x.lineTo(8, -50); x.lineTo(14, -40); x.closePath(); x.fill();
+// A dry-brush highlight: broken light strokes just inside the top-left of the edge.
+function dry(x, pts, R) {
+  const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length, cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+  x.strokeStyle = 'rgba(255,244,215,0.55)'; x.lineWidth = 1.3;
+  for (let i = 0; i < pts.length - 3; i += 3) {
+    const [px, py] = pts[i]; if (px - cx > (cy - py) * 0.6 || R() < 0.35) continue;
+    const q = pts[i + 2]; const ix = (cx - px) * 0.07, iy = (cy - py) * 0.07;
+    x.beginPath(); x.moveTo(px + ix, py + iy); x.lineTo(q[0] + ix, q[1] + iy); x.stroke();
   }
-  x.restore(); return c;
 }
-function paintHelm(S) {
-  const c = cv(300, 300), x = c.getContext('2d'), C = S.c;
-  x.drawImage(paintFrame(S, 300, 300, 24), 0, 0);
-  const cell = 76, ox = 36, oy = 36, glyphs = ['↖', '↑', '↗', '↶', '⊙', '↷', '↙', '↓', '↘'];
-  for (let i = 0; i < 9; i++) {
-    const bx = ox + (i % 3) * cell, by = oy + Math.floor(i / 3) * cell;
-    x.drawImage(paintFrame(S, cell - 6, cell - 6, 12, { lit: i === 1 }), bx, by);
-    x.fillStyle = i === 1 ? C.accent2 : C.ink; x.font = `600 30px ${S.display}`; x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText(glyphs[i], bx + (cell - 6) / 2, by + (cell - 6) / 2 + 1);
-  }
-  return c;
+function spiral(x, cx, cy, r, turns, R, w = 1.8, col = VC.ink) { const o = []; const n = 40 * turns; for (let i = 0; i <= n; i++) { const t = i / n, a = t * turns * 2 * P; o.push([cx + Math.cos(a) * r * t, cy + Math.sin(a) * r * t]); } ink(x, wob(o, false, 0.4, R, 1.5), false, w, col); }
+// A painted body: wash, hatching, highlight, ink outline.
+function body(x, pts, col, R, opt = {}) { wash(x, pts, col, R); if (opt.hatch !== false) hatch(x, pts, R, opt.from ?? 0.55); dry(x, pts, R); ink(x, pts, true, opt.w ?? 2.4); }
+function vos(name, w, h, draw) { return (x) => draw(x, w, h, rng(hash('vos.' + name))); }
+// The claw tag: a lopsided luggage tag with an eyelet, its right end hooked like a claw.
+function clawTag(X, Y, W, H) {
+  return [[X + 18, Y + 3], [X + W - 40, Y + 5], ...[[X + W - 26, Y + 6], [X + W - 14, Y + 12], [X + W - 6, Y + 24], [X + W - 2, Y + H - 2], [X + W - 12, Y + H - 9], [X + W - 24, Y + H - 6]],
+    [X + 18, Y + H - 4], ...arcPts(X + 18, Y + H / 2, 15, H / 2 - 4, P / 2, 1.5 * P, 10)];
 }
-function paintSSD(S) {
-  const c = cv(458, 300), x = c.getContext('2d'), C = S.c;
-  x.drawImage(paintFrame(S, 458, 300, 24), 0, 0);
-  x.drawImage(paintFrame(S, 300, 236, 12), 79, 32);
-  x.save(); x.translate(229, 150);
-  // shield facings: six arcs, each at its own strength
-  const st = [1, 0.8, 0.55, 0.9, 0.3, 0.7];
-  for (let k = 0; k < 6; k++) { const a0 = -Math.PI / 2 + (k - 0.5) * Math.PI / 3 + 0.05; x.strokeStyle = st[k] > 0.5 ? C.accent : st[k] > 0.35 ? C.warn : C.bad; x.globalAlpha = 0.35 + 0.6 * st[k]; x.lineWidth = 6; x.beginPath(); x.ellipse(0, 0, 118, 92, 0, a0, a0 + Math.PI / 3 - 0.1); x.stroke(); }
-  x.globalAlpha = 1; x.fillStyle = C.rim; x.strokeStyle = C.rimHi; x.lineWidth = 1.5;
-  x.beginPath(); x.moveTo(0, -70); x.lineTo(16, -30); x.lineTo(14, 30); x.lineTo(-14, 30); x.lineTo(-16, -30); x.closePath(); x.fill(); x.stroke();
-  for (const s2 of [-1, 1]) { x.fillRect(s2 * 30 - 7, 10, 14, 52); x.strokeRect(s2 * 30 - 7, 10, 14, 52); }
-  x.fillStyle = C.accent2; for (const [px, py] of [[0, -52], [-10, -20], [10, -20], [0, 12], [-30, 56], [30, 56]]) x.fillRect(px - 4, py - 4, 8, 8);
-  x.restore(); return c;
+function vosButton(col, hi) {
+  return (x, w, h, R) => {
+    const pts = wob(clawTag(1, 1, w - 2, h - 2), true, 1.1, R); body(x, pts, col, R, { from: 0.4 });
+    if (hi) { x.fillStyle = 'rgba(255,236,170,0.22)'; trace(x, pts, true); x.fill(); }
+    x.fillStyle = VC.wine; x.beginPath(); x.arc(12, h / 2, 4.2, 0, 2 * P); x.fill(); ink(x, wob(arcPts(12, h / 2, 5.5, 5.5, 0, 2 * P, 14), true, 0.4, R), true, 1.6);
+  };
 }
-function paintDial(S) {
-  const c = cv(148, 148), x = c.getContext('2d'), C = S.c;
-  x.translate(74, 74);
-  const rim = x.createLinearGradient(-60, -60, 60, 60); rim.addColorStop(0, C.rimHi); rim.addColorStop(0.5, C.rim); rim.addColorStop(1, '#111');
-  x.fillStyle = rim; x.beginPath(); x.arc(0, 0, 70, 0, 7); x.fill();
-  if (S.style === 'brass') for (let k = 0; k < 8; k++) rivet(x, Math.cos(k * Math.PI / 4) * 63, Math.sin(k * Math.PI / 4) * 63, 3, S);
-  if (S.style === 'armour') for (let k = 0; k < 4; k++) hexBolt(x, Math.cos(k * Math.PI / 2 + Math.PI / 4) * 62, Math.sin(k * Math.PI / 2 + Math.PI / 4) * 62, 4, S);
-  const g = x.createRadialGradient(0, 0, 4, 0, 0, 58); g.addColorStop(0, C.base); g.addColorStop(1, C.base2);
-  x.fillStyle = g; x.beginPath(); x.arc(0, 0, 56, 0, 7); x.fill();
-  x.strokeStyle = C.accent; x.globalAlpha = 0.5; x.lineWidth = 1; for (const r of [18, 36, 54]) { x.beginPath(); x.arc(0, 0, r, 0, 7); x.stroke(); }
-  x.beginPath(); x.moveTo(-56, 0); x.lineTo(56, 0); x.moveTo(0, -56); x.lineTo(0, 56); x.stroke();
-  const sw = x.createRadialGradient(0, 0, 0, 0, 0, 56); sw.addColorStop(0, C.accent2); sw.addColorStop(1, 'rgba(0,0,0,0)');
-  x.globalAlpha = 0.45; x.fillStyle = sw; x.beginPath(); x.moveTo(0, 0); x.arc(0, 0, 56, -1.2, -0.5); x.fill(); x.globalAlpha = 1;
-  x.fillStyle = C.bad; x.beginPath(); x.arc(24, -26, 4, 0, 7); x.fill(); x.fillStyle = C.accent2; x.beginPath(); x.arc(0, 0, 3, 0, 7); x.fill();
-  return c;
+function vosTab(col) {
+  return (x, w, h, R) => {
+    const bottom = []; for (let i = 0; i <= 12; i++) bottom.push([w - 2 - i * (w - 4) / 12, h - 3 - (i % 2 ? 3.5 : 0) - R() * 1.5]);
+    const pts = wob([[2, 3], [w - 2, 2], ...bottom], true, 0.8, R); body(x, pts, col, R, { from: 0.5, w: 2 });
+  };
 }
-function paintLamp(S, state) {
-  const c = cv(56, 56), x = c.getContext('2d'), C = S.c, col = { green: C.ok, yellow: C.warn, red: C.bad }[state];
-  x.translate(28, 28);
-  const rim = x.createLinearGradient(-20, -20, 20, 20); rim.addColorStop(0, C.rimHi); rim.addColorStop(1, '#111');
-  x.fillStyle = rim; if (S.style === 'armour') { x.beginPath(); for (let k = 0; k < 6; k++) x.lineTo(26 * Math.cos(k * Math.PI / 3), 26 * Math.sin(k * Math.PI / 3)); x.fill(); } else { x.beginPath(); x.arc(0, 0, 26, 0, 7); x.fill(); }
-  const g = x.createRadialGradient(-6, -6, 2, 0, 0, 20); g.addColorStop(0, '#fff'); g.addColorStop(0.35, col); g.addColorStop(1, '#000');
-  x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = g; x.beginPath(); x.arc(0, 0, 18, 0, 7); x.fill();
-  return c;
+const vosKit = {
+  'frame.panel': { size: [160, 120], m: [32, 32, 32, 32], draw: (x, w, h, R) => {
+    const outer = wob(rrPts(2, 2, w - 4, h - 4, 16), true, 1.3, R), inner = wob(rrPts(21, 21, w - 42, h - 42, 8), true, 0.9, R);
+    wash(x, outer, VC.rust, R); hatch(x, outer, R, 0.6); dry(x, outer, R);
+    wash(x, inner, VC.wine, R, 'rgba(0,0,0,0.25)', 'rgba(255,200,160,0.05)'); ink(x, outer, true, 2.6); ink(x, inner, true, 2);
+    for (const [cx, cy] of [[11.5, 11.5], [w - 11.5, 11.5], [11.5, h - 11.5], [w - 11.5, h - 11.5]]) spiral(x, cx, cy, 6.5, 2.2, R, 1.6, VC.brassHi);
+  } },
+  'frame.inset': { size: [64, 48], m: [14, 14, 14, 14], draw: (x, w, h, R) => { const p = wob(rrPts(2, 2, w - 4, h - 4, 9), true, 0.8, R); wash(x, p, VC.wine, R, 'rgba(0,0,0,0.25)', 'rgba(255,200,160,0.05)'); ink(x, p, true, 2, VC.brass); } },
+  'bar.track': { size: [96, 16], m: [0, 12, 0, 12], inset: [3, 3], draw: (x, w, h, R) => { const p = wob(rrPts(1.5, 1.5, w - 3, h - 3, 7), true, 0.6, R); wash(x, p, VC.wine, R, 'rgba(0,0,0,0.3)'); ink(x, p, true, 1.8); } },
+  'bar.fill': { size: [64, 10], m: [0, 10, 0, 6], draw: (x, w, h, R) => vosStroke(x, w, h, R, VC.verd) },
+  'bar.fill.red': { size: [64, 10], m: [0, 10, 0, 6], draw: (x, w, h, R) => vosStroke(x, w, h, R, VC.blood) },
+  'button.idle': { size: [140, 52], m: [22, 40, 22, 28], draw: vosButton(VC.brass, false) },
+  'button.hover': { size: [140, 52], m: [22, 40, 22, 28], draw: vosButton(VC.brassHi, true) },
+  'button.pressed': { size: [140, 52], m: [22, 40, 22, 28], draw: vosButton(VC.rust, false) },
+  'tab.idle': { size: [120, 40], m: [12, 14, 14, 14], draw: vosTab(VC.bone) },
+  'tab.active': { size: [120, 40], m: [12, 14, 14, 14], draw: vosTab(VC.verd) },
+  'strip.top': { size: [512, 56], m: [12, 100, 12, 100], draw: (x, w, h, R) => vosPlank(x, w, h, R) },
+  'strip.bottom': { size: [512, 56], m: [12, 100, 12, 100], draw: (x, w, h, R) => vosPlank(x, w, h, R) },
+  'divider': { size: [128, 10], m: [0, 16, 0, 16], draw: (x, w, h, R) => { const l = []; for (let i = 0; i <= 30; i++) l.push([12 + i * (w - 24) / 30, h / 2 + Math.sin(i * 1.3) * 1.4]); ink(x, wob(l, false, 0.5, R), false, 1.8); spiral(x, 6, h / 2, 4.5, 1.8, R, 1.4); spiral(x, w - 6, h / 2, 4.5, 1.8, R, 1.4); } },
+};
+function vosStroke(x, w, h, R, col) {
+  // A loaded brush pulled left to right, drying out at its end into streaks.
+  x.save(); x.globalAlpha = 0.95; const p = wob([[1, 2], [w - 6, 1.5], [w - 1, h / 2], [w - 6, h - 1.5], [1, h - 2]], true, 0.5, R); wash(x, p, col, R, 'rgba(0,0,0,0.18)', 'rgba(255,255,255,0.18)');
+  x.strokeStyle = 'rgba(255,250,230,0.5)'; x.lineWidth = 1; for (let i = 0; i < 3; i++) { x.beginPath(); x.moveTo(3, 3 + i * 2); x.lineTo(w - 10 - R() * 20, 3 + i * 2); x.stroke(); }
+  x.restore();
 }
-function paintNameplate(S) {
-  const c = cv(458, 56), x = c.getContext('2d'), C = S.c;
-  x.drawImage(paintFrame(S, 458, 56, 16), 0, 0);
-  x.drawImage(paintCrest(S, 40), 10, 8);
-  x.fillStyle = C.ink; x.font = `${S.style === 'brass' ? '400 26px' : '600 21px'} ${S.display}`; x.textBaseline = 'middle'; x.fillText(S.style === 'brass' ? 'Capt. Marrow' : 'CAPT. I. MARROW', 60, 29);
-  x.fillStyle = C.dim; x.font = `500 15px ${S.num}`; x.textAlign = 'right'; x.fillText('CNS RESOLUTE', 444, 29);
-  return c;
+function vosPlank(x, w, h, R) {
+  const p = wob([[22, 6], [w - 30, 5], [w - 8, 12], [w - 2, h - 8], [w - 30, h - 6], [22, h - 7], ...arcPts(22, h / 2, 18, h / 2 - 6, P / 2, 1.5 * P, 10)], true, 1.2, R);
+  wash(x, p, VC.rust, R); hatch(x, p, R, 0.75);
+  x.save(); trace(x, p, true); x.clip(); x.strokeStyle = 'rgba(42,20,16,0.45)'; x.lineWidth = 0.9;
+  for (const y of [16, 27, 39]) { const l = []; for (let i = 0; i <= 40; i++) l.push([0 + i * w / 40, y + Math.sin(i * 0.7 + y) * 1.2]); trace(x, l, false); x.stroke(); }
+  x.restore(); dry(x, p, R); ink(x, p, true, 2.6);
+  spiral(x, 22, h / 2, 13, 2.6, R, 2.2, VC.brassHi);
+  ink(x, wob([[w - 26, 14], [w - 14, 22], [w - 20, 36], [w - 30, 42]], false, 0.5, R), false, 2.2, VC.brassHi);
+}
+const vosHero = {
+  // A scroll: a bone banner whose ends curl.
+  'nameplate': (x, w, h, R) => {
+    const p = wob([[34, 6], [w - 34, 4], [w - 26, h / 2], [w - 34, h - 5], [34, h - 6], [26, h / 2]], true, 1.1, R); body(x, p, VC.bone, R, { from: 0.7, w: 2.2 });
+    spiral(x, 20, h / 2, 14, 2.3, R, 2.2); spiral(x, w - 20, h / 2, 14, 2.3, R, 2.2);
+  },
+  // Helm: a ship's wheel. Eight spokes end in claw handles, the hub is a brass coin with a spiral.
+  'helm.pad': (x, w, h, R) => {
+    const c = w / 2;
+    for (let i = 0; i < 8; i++) { const a = -P / 2 + i * P / 4; const s = wob([[c + Math.cos(a) * 40, c + Math.sin(a) * 40], [c + Math.cos(a) * 132, c + Math.sin(a) * 132]], false, 0.8, R); ink(x, s, false, 9, VC.ink); ink(x, s, false, 5, VC.rust); }
+    const rimO = wob(arcPts(c, c, 110, 110, 0, 2 * P, 60), true, 1.4, R), rimI = wob(arcPts(c, c, 88, 88, 0, 2 * P, 50), true, 1.2, R).reverse();
+    x.save(); x.beginPath(); for (const ring of [rimO, rimI]) { x.moveTo(ring[0][0], ring[0][1]); for (const q of ring.slice(1)) x.lineTo(q[0], q[1]); x.closePath(); } x.clip('evenodd'); wash(x, rimO, VC.rust, R); hatch(x, rimO, R, 0.6); x.restore(); ink(x, rimO, true, 2.6); ink(x, rimI, true, 2.2);
+    for (let i = 0; i < 8; i++) { const a = -P / 2 + i * P / 4, hx = c + Math.cos(a) * 128, hy = c + Math.sin(a) * 128; const k = wob(arcPts(hx, hy, 16, 16, 0, 2 * P, 16), true, 1, R); body(x, k, VC.brass, R, { w: 2 }); }
+    const hub = wob(arcPts(c, c, 40, 40, 0, 2 * P, 30), true, 1, R); body(x, hub, VC.brass, R); spiral(x, c, c, 26, 2.5, R, 2.2);
+  },
+  // The systems display: a stolen chart, torn at the edges, stained, with a spiral at each corner.
+  'ssd.bezel': (x, w, h, R) => {
+    const p = wob([[6, 8], [w * 0.4, 4], [w - 8, 9], [w - 4, h * 0.5], [w - 9, h - 6], [w * 0.55, h - 3], [8, h - 8], [3, h * 0.45]], true, 2.2, R);
+    body(x, p, VC.bone, R, { from: 0.8, w: 2.6 });
+    x.strokeStyle = 'rgba(120,60,30,0.25)'; x.lineWidth = 5; x.beginPath(); x.arc(w * 0.78, h * 0.25, 30, 0.3, 5.6); x.stroke();
+    const b = wob(rrPts(22, 22, w - 44, h - 44, 6), true, 1.1, R); ink(x, b, true, 1.6);
+    for (const [cx, cy] of [[22, 22], [w - 22, 22], [22, h - 22], [w - 22, h - 22]]) spiral(x, cx, cy, 10, 2.2, R, 1.8, VC.rust);
+  },
+  // A gauge drawn as an eye: the iris is drawn live, so the eye looks toward the nearest contact.
+  'dial': (x, w, h, R) => {
+    const c = w / 2; const lid = wob([...arcPts(c, c + 26, 56, 52, -P * 0.86, -P * 0.14, 20), ...arcPts(c, c - 26, 56, 52, P * 0.14, P * 0.86, 20)], true, 1, R);
+    body(x, lid, VC.bone, R, { from: 0.6, w: 2.6 });
+    for (let i = 0; i < 6; i++) { const a = -P * 0.8 + i * P * 0.12; ink(x, wob([[c + Math.cos(a) * 46, c + 8 + Math.sin(a) * 40], [c + Math.cos(a) * 58, c + 2 + Math.sin(a) * 52]], false, 0.6, R), false, 2); }
+  },
+  'lamp.alert.green': (x, w, h, R) => vosLamp(x, w, R, VC.verd), 'lamp.alert.yellow': (x, w, h, R) => vosLamp(x, w, R, VC.caution), 'lamp.alert.red': (x, w, h, R) => vosLamp(x, w, R, VC.blood),
+  // The Vos mark (original): a coin with a spiral, raked by three claws.
+  'crest': (x, w, h, R) => {
+    const c = w / 2; const coin = wob(arcPts(c, c, 40, 40, 0, 2 * P, 32), true, 1.2, R); body(x, coin, VC.brass, R); spiral(x, c, c, 28, 2.6, R, 2.4);
+    for (let i = 0; i < 3; i++) { const o = (i - 1) * 13; const cl = wob([[c - 26 + o, 10], [c - 4 + o, c], [c + 18 + o, w - 10]], false, 0.6, R); ink(x, cl, false, 5, VC.ink); ink(x, cl, false, 2.4, VC.blood); }
+  },
+};
+function vosLamp(x, w, R, col) {
+  const c = w / 2; ink(x, wob(arcPts(c, 12, 9, 9, P, 2 * P, 10), false, 0.5, R), false, 2);
+  const g = wob(arcPts(c, c + 6, 20, 22, 0, 2 * P, 22), true, 1, R); wash(x, g, col, R, 'rgba(0,0,0,0.15)', 'rgba(255,255,230,0.35)');
+  x.save(); x.globalAlpha = 0.35; x.fillStyle = col; x.shadowColor = col; x.shadowBlur = 14; trace(x, g, true); x.fill(); x.restore();
+  ink(x, g, true, 2.4); for (const dx of [-8, 0, 8]) ink(x, wob([[c + dx, c - 14], [c + dx * 1.2, c + 26]], false, 0.5, R), false, 1.4);
+}
+// Vos icons: brush-drawn spirals, claws, eyes and teeth, a little crooked (tattoos and trophies).
+function vosIcon(name) {
+  return paint(48, 48, (x, w, h) => {
+    const R = rng(hash('vos.icon.' + name)); const L = (pts, wd = 3.2, col = VC.brassHi) => ink(x, wob(pts, false, 0.7, R, 2), false, wd, col);
+    ({
+      helm: () => { spiral(x, 24, 24, 9, 1.6, R, 2.6, VC.brassHi); for (let i = 0; i < 6; i++) { const a = i * P / 3; L([[24 + Math.cos(a) * 11, 24 + Math.sin(a) * 11], [24 + Math.cos(a) * 21, 24 + Math.sin(a) * 21]], 3); } },
+      fire: () => { for (let i = 0; i < 3; i++) L([[8 + i * 10, 6], [16 + i * 10, 24], [12 + i * 10, 42]], 4, VC.blood); },
+      shields: () => { spiral(x, 24, 26, 18, 2.2, R, 3, VC.verd); },
+      tractor: () => { L([[24, 4], [24, 28]], 3.4); L([[24, 28], ...arcPts(18, 30, 8, 10, 0, P, 8), [8, 22], [13, 20]], 3.4); },
+      transport: () => { for (let i = 0; i < 9; i++) { const a = i * 0.9, r = 4 + i * 2.2; x.fillStyle = VC.verd; x.beginPath(); x.arc(24 + Math.cos(a) * r, 24 + Math.sin(a) * r, 2 + R(), 0, 2 * P); x.fill(); } },
+      science: () => { L([...arcPts(24, 34, 20, 18, -P * 0.85, -P * 0.15, 10)], 3); L([...arcPts(24, 14, 20, 18, P * 0.15, P * 0.85, 10)], 3); x.fillStyle = VC.verd; x.beginPath(); x.arc(24, 24, 6, 0, 2 * P); x.fill(); x.fillStyle = VC.ink; x.beginPath(); x.arc(25, 24, 2.4, 0, 2 * P); x.fill(); },
+      comms: () => { spiral(x, 18, 30, 12, 1.7, R, 3, VC.brassHi); L([[24, 22], [40, 8]], 3.4); L([[30, 26], [44, 22]], 3); },
+      repair: () => { L([[8, 40], [36, 12]], 3.6); for (let i = 0; i < 4; i++) L([[14 + i * 7, 34 - i * 7], [20 + i * 7, 40 - i * 7]], 2, VC.bone); L([[36, 12], [42, 6]], 2.4, VC.bone); },
+      map: () => { L([[10, 10], [38, 38]], 4.2, VC.blood); L([[38, 10], [10, 38]], 4.2, VC.blood); },
+      settings: () => { const o = []; for (let i = 0; i <= 16; i++) { const a = i * 2 * P / 16, r = i % 2 ? 13 : 19; o.push([24 + Math.cos(a) * r, 24 + Math.sin(a) * r]); } L(o, 3); spiral(x, 24, 24, 6, 1.4, R, 2.2, VC.brassHi); },
+    })[name]();
+  });
+}
+
+// ===============================================================================================================
+// KETHRAN HEGEMONY: modelled hard surface, rendered in Blender (inlined). Icons are forward wedges and chevrons, drawn
+// here as amber glyphs glowing behind the keys' lenses.
+// ===============================================================================================================
+const KC = { gun: '#2b2f33', iron: '#4a4f55', steel: '#8a9096', oxide: '#9e2a1e', red: '#d9483b', ember: '#ffb547', bone: '#d8cfbf' };
+const kethranData = (() => { const n = document.querySelector('script[data-src="assets/ui/kethran/manifest.json"]'); return n ? JSON.parse(n.textContent) : null; })();
+function ktIcon(name) {
+  return paint(48, 48, (x) => {
+    const F = (pts) => { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0], p[1]); x.closePath(); x.fill(); };
+    x.shadowColor = KC.ember; x.shadowBlur = 6; const g = x.createLinearGradient(0, 4, 0, 44); g.addColorStop(0, '#ffe2a6'); g.addColorStop(1, '#e88a1a'); x.fillStyle = g;
+    ({
+      helm: () => { F([[24, 4], [42, 26], [32, 26], [24, 17], [16, 26], [6, 26]]); F([[24, 22], [42, 44], [32, 44], [24, 35], [16, 44], [6, 44]]); },
+      fire: () => { F([[24, 4], [30, 26], [24, 44], [18, 26]]); F([[4, 14], [20, 24], [6, 30]]); F([[44, 14], [28, 24], [42, 30]]); },
+      shields: () => { F([[6, 8], [42, 8], [38, 30], [24, 44], [10, 30]]); x.fillStyle = '#1a0d05'; x.shadowBlur = 0; F([[14, 14], [34, 14], [31, 28], [24, 35], [17, 28]]); },
+      tractor: () => { F([[4, 8], [20, 24], [4, 40], [10, 24]]); F([[44, 8], [28, 24], [44, 40], [38, 24]]); x.fillRect(20, 22, 8, 4); },
+      transport: () => { for (let i = 0; i < 3; i++) F([[8, 6 + i * 13], [24, 16 + i * 13], [40, 6 + i * 13], [40, 11 + i * 13], [24, 21 + i * 13], [8, 11 + i * 13]]); },
+      science: () => { F([[24, 4], [44, 40], [4, 40]]); x.fillStyle = '#1a0d05'; x.shadowBlur = 0; F([[24, 16], [34, 34], [14, 34]]); x.fillStyle = g; F([[24, 24], [28, 31], [20, 31]]); },
+      comms: () => { F([[4, 20], [14, 20], [14, 28], [4, 28]]); F([[18, 14], [26, 10], [26, 38], [18, 34]]); F([[30, 6], [44, 2], [44, 46], [30, 42]]); },
+      repair: () => { F([[6, 6], [26, 6], [30, 14], [22, 20], [42, 40], [36, 46], [16, 26], [10, 30], [4, 20]]); },
+      map: () => { for (let r = 0; r < 3; r++) for (let c = 0; c <= r; c++) F([[24 - r * 7 + c * 14, 6 + r * 13], [31 - r * 7 + c * 14, 18 + r * 13], [17 - r * 7 + c * 14, 18 + r * 13]]); },
+      settings: () => { const o = []; for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; o.push([24 + Math.cos(a) * 20, 24 + Math.sin(a) * 20]); } F(o); x.fillStyle = '#1a0d05'; x.shadowBlur = 0; x.fillRect(19, 19, 10, 10); },
+    })[name]();
+  });
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Applying a skin: paint every 9-slice image into a CSS variable, set the type and colour tokens, repaint the heroes.
+// The skins. Each supplies every kit piece as an image with its own margins, and its type, ink and motion.
 // ---------------------------------------------------------------------------------------------------------------
-const url = (c) => `url(${c.toDataURL()})`;
+function fromPainters(nine, hero, icon, prefix) {
+  const out = { nine: {}, hero: {}, icons: {} };
+  for (const id of NINE) { const k = nine[id]; out.nine[id] = { src: png(paint(k.size[0], k.size[1], prefix ? vos(id, k.size[0], k.size[1], k.draw) : k.draw)), size: k.size, m: k.m, inset: k.inset }; }
+  for (const [id, [w, h]] of Object.entries(HERO)) out.hero[id] = { src: png(paint(w, h, prefix ? vos(id, w, h, hero[id]) : hero[id])), size: [w, h] };
+  for (const n of ICONS) out.icons[n] = png(icon(n));
+  return out;
+}
+function fromManifest(d) {
+  const out = { nine: {}, hero: {}, icons: {} };
+  for (const id of NINE) { const p = d.pieces[id]; out.nine[id] = { src: p.data, size: p.size, m: p.margins, inset: p.inset || [3, 3] }; }
+  for (const id of Object.keys(HERO)) { const p = d.pieces[id]; out.hero[id] = { src: p.data, size: p.size }; }
+  for (const n of ICONS) out.icons[n] = png(ktIcon(n));
+  return out;
+}
+const SKINS = {
+  concord: {
+    name: 'Concord', kind: 'Flat back-lit vector, after LCARS', bg: '#000',
+    css: { '--s-ink': CC.text, '--s-dim': CC.lilac, '--s-num': CC.sky, '--s-body': '"Antonio", sans-serif', '--btn-ink': '#000', '--btn-justify': 'flex-end', '--btn-font': '600 22px/1 "Antonio", sans-serif',
+      '--btn-track': '0.04em', '--btn-case': 'uppercase', '--btn-motion': 'border-image-source 0.08s', '--btn-press': 'none', '--tab-font': '600 19px/1 "Antonio", sans-serif', '--tab-ink': CC.text, '--tab-ink-on': '#000',
+      '--title-font': '700 24px/1 "Antonio", sans-serif', '--title-ink': CC.sky, '--lbl-font': '600 16px/1 "Antonio", sans-serif', '--num-font': '600 24px/1 "Antonio", sans-serif' },
+    accent: CC.sky, warn: CC.alert, line: CC.signal,
+    // The title sits in a black notch that breaks the panel's top arm, right-aligned (LCARS's habit).
+    title: (t, m) => { t.style.cssText = `right:${34 - m[1]}px;top:${-m[0] - 7}px;background:#000;padding:0 8px;`; },
+    plateText: { left: 108, top: 6, width: 340, height: 36, font: '700 28px/1 "Antonio", sans-serif', color: CC.text, sub: 'CNS RESOLUTE · CAPT. ARDENT' },
+    helmKeys: 'ring', helmR: 93,
+    world: ['A federation of many species that decides by consent; explores, mediates, defends.', 'Every shape of hand, claw and tentacle: big flat touch keys, nothing fiddly.', 'Clean energy and light: screens are glass lit from behind.', 'Saucers and slender nacelles: long smooth sweeps, circles.'],
+    shapes: 'The sweep (thick to thin at every turn), pills, arcs. Nothing pointed.', light: 'None painted: flat colour glowing on black.', motion: 'Snappy fades under 150 ms; nothing moves under the hand.',
+    type: '"Antonio": tall condensed capitals, labels right-aligned.',
+    palette: [['Deep', CC.deep, 'Idle frames', 'Calm: the night sky every homeworld shares'], ['Signal', CC.signal, 'Live frames and keys', 'Trust: the Concord\'s flag'], ['Sky', CC.sky, 'Readouts, live data', 'Clarity, open information'],
+      ['Accord', CC.accord, 'Ready, armed, agreed', 'Consent: green means agreed'], ['Lilac', CC.lilac, 'Highlighted text', 'Many species, mixed'], ['Alert', CC.alert, 'Red alert only', 'Danger, used sparingly']],
+  },
+  kethran: {
+    name: 'Kethran Hegemony', kind: 'Hard surface, modelled and rendered in Blender', bg: '#0b0c0d',
+    css: { '--s-ink': KC.bone, '--s-dim': '#a99a86', '--s-num': KC.ember, '--s-body': '"Saira Condensed", sans-serif', '--btn-ink': KC.bone, '--btn-justify': 'center', '--btn-font': '400 22px/1 "Saira Stencil One", sans-serif',
+      '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'transform 0.05s', '--btn-press': 'translateY(2px)', '--tab-font': '400 18px/1 "Saira Stencil One", sans-serif', '--tab-ink': '#a99a86', '--tab-ink-on': KC.ember,
+      '--title-font': '400 20px/1 "Saira Stencil One", sans-serif', '--title-ink': KC.bone, '--lbl-font': '700 15px/1 "Saira Condensed", sans-serif', '--num-font': '700 26px/1 "Saira Condensed", sans-serif' },
+    accent: KC.ember, warn: KC.red, line: KC.ember,
+    title: (t, m) => { t.style.cssText = `left:${30 - m[3]}px;top:${-m[0] + 5}px;text-shadow:0 2px 0 #000;`; },
+    plateText: { left: 70, top: 8, width: 360, height: 40, font: '400 26px/1 "Saira Stencil One", sans-serif', color: KC.bone, sub: 'KHS VORRAK · WARLORD TESK' },
+    helmKeys: 'grid',
+    world: ['An empire of rank and conquest: order is strength, the strong lead.', 'Heavy, armoured, thick-clawed: big keys with a long, firm travel.', 'Fusion, foundries, armour plate: machines proud of their mass.', 'Armoured wedges and blades, stepped plates, forward prows.'],
+    shapes: 'Wedges, chevrons, trapezoids, stepped plates, heavy chamfers. Never round.', light: 'Harsh key light from the top left, rim light, deep occlusion, emissive lenses.', motion: 'A mechanical press: the key travels 2 px to a hard stop.',
+    type: '"Saira Stencil One" for keys and titles, "Saira Condensed" for numbers.',
+    palette: [['Gunmetal', KC.gun, 'Plate', 'Iron: the empire\'s material and patience'], ['Iron', KC.iron, 'Raised plate, bezels', 'Mass and rank'], ['Oxide', KC.oxide, 'Painted plates', 'Old blood, old wars'],
+      ['Signal red', KC.red, 'Rank stripes, alerts', 'Blood and command'], ['Ember', KC.ember, 'Lenses, readouts', 'The foundry\'s fire'], ['Bone', KC.bone, 'Stencilled text', 'Trophies of the defeated']],
+  },
+  vos: {
+    name: 'Vos Syndicate', kind: 'Hand-drawn ink and wash, after the reference game\'s pirate skin', bg: '#140a08',
+    css: { '--s-ink': VC.bone, '--s-dim': '#caa98a', '--s-num': VC.verd, '--s-body': '"Patrick Hand", cursive', '--btn-ink': VC.ink, '--btn-justify': 'center', '--btn-font': '400 21px/1 "Permanent Marker", cursive',
+      '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'transform 0.25s cubic-bezier(.3,1.8,.5,1)', '--btn-press': 'rotate(-3deg) scale(0.97)', '--tab-font': '400 18px/1 "Permanent Marker", cursive', '--tab-ink': VC.ink, '--tab-ink-on': VC.ink,
+      '--title-font': '400 22px/1 "Permanent Marker", cursive', '--title-ink': VC.brassHi, '--lbl-font': '400 20px/1 "Patrick Hand", cursive', '--num-font': '400 28px/1 "Patrick Hand", cursive' },
+    accent: VC.verd, warn: VC.blood, line: VC.bone,
+    title: (t, m) => { t.style.cssText = `left:${44 - m[3]}px;top:${-m[0] + 2}px;transform:rotate(-2deg);text-shadow:0 2px 0 #2a1410;`; },
+    plateText: { left: 60, top: 8, width: 340, height: 40, font: '400 22px/1 "Permanent Marker", cursive', color: VC.ink, sub: 'Grinning Debt · Cap\'n Ardent' },
+    helmKeys: 'ring', helmR: 128,
+    world: ['Free clans of raiders: luck, loot, loyalty to the crew, nothing else.', 'Lanky, long-fingered, many-jointed, tattooed: quick flicks.', 'Salvage, patched and grown over: nothing matches, everything works.', 'Scavenged hulls under spikes, mandible prows, swirling paint.'],
+    shapes: 'Claw tags, torn tickets, scrolls, a ship\'s wheel, spirals and knots.', light: 'Drawn: hatching on the shadow side, dry-brush highlights, ink bleed.', motion: 'A wobble: a pressed tag tilts and springs back.',
+    type: '"Permanent Marker" for keys and titles over "Patrick Hand".',
+    palette: [['Ink', VC.ink, 'Outlines, hatching', 'The crew\'s tattoos'], ['Rust', VC.rust, 'Frames, plates', 'Salvage: all of it was someone\'s'], ['Brass', VC.brass, 'Keys, highlights', 'Loot and luck'],
+      ['Verdigris', VC.verd, 'Lenses, readouts', 'Old coin: the spoils kept'], ['Bone', VC.bone, 'Paper, text', 'Trophies and stolen charts'], ['Blood', VC.blood, 'Alerts', 'A warning, once']],
+  },
+};
+const SAMPLED = [['#141d50', '#273579', CC.deep, 'Deep'], ['#064ed3', '#2d26f4', CC.signal, 'Signal'], ['#1797e0', '#0570ac', CC.sky, 'Sky'], ['#0d9c3c', '#03a004', CC.accord, 'Accord'], ['#ae97ec', '#474aaa', CC.lilac, 'Lilac'], ['#97160f', '#f40e0e', CC.alert, 'Alert']];
+
+const BUILT = {};
+function kit(id) {
+  if (BUILT[id]) return BUILT[id];
+  if (id === 'concord') BUILT[id] = fromPainters(concordKit, concordHero, ccIcon, false);
+  else if (id === 'vos') BUILT[id] = fromPainters(vosKit, vosHero, vosIcon, true);
+  else BUILT[id] = kethranData ? fromManifest(kethranData) : null;
+  return BUILT[id];
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Applying a skin: every 9-slice image and its margins into CSS variables, the type and ink tokens, then rebuild.
+// ---------------------------------------------------------------------------------------------------------------
+const VARS = { 'frame.panel': 'fp', 'frame.inset': 'fi', 'bar.track': 'bt', 'bar.fill': 'bf', 'bar.fill.red': 'bfw', 'button.idle': 'bi', 'button.hover': 'bh', 'button.pressed': 'bp',
+  'tab.idle': 'ti', 'tab.active': 'ta', 'strip.top': 'st', 'strip.bottom': 'sb', 'divider': 'dv' };
+let SKIN = 'concord';
 function applySkin(id) {
+  const K = kit(id); if (!K) return;
   SKIN = id; const S = SKINS[id], R = document.documentElement.style;
-  R.setProperty('--frame-panel', url(paintFrame(S, 96, 96, 24)));
-  R.setProperty('--frame-inset', url(paintFrame(S, 48, 48, 12)));
-  R.setProperty('--bar-track', url(paintBar(S, 64, 14, 7)));
-  R.setProperty('--bar-fill', url(paintBar(S, 32, 10, 5, 'ok')));
-  R.setProperty('--bar-warn', url(paintBar(S, 32, 10, 5, 'warn')));
-  R.setProperty('--button', url(paintButton(S, false)));
-  R.setProperty('--button-on', url(paintButton(S, true)));
-  R.setProperty('--tab', url(paintTab(S, false)));
-  R.setProperty('--tab-on', url(paintTab(S, true)));
-  R.setProperty('--strip', url(paintStrip(S)));
-  R.setProperty('--divider', url(paintDivider(S)));
-  R.setProperty('--s-ink', S.c.ink); R.setProperty('--s-dim', S.c.dim); R.setProperty('--s-accent', S.c.accent);
-  R.setProperty('--s-display', S.display); R.setProperty('--s-num', S.num);
+  for (const [piece, v] of Object.entries(VARS)) {
+    const p = K.nine[piece]; R.setProperty(`--${v}`, `url(${p.src})`);
+    R.setProperty(`--${v}-s`, p.m.map((n) => n * 2).join(' ')); R.setProperty(`--${v}-w`, p.m.map((n) => n + 'px').join(' ')); R.setProperty(`--${v}-l`, p.m[3] + 'px'); R.setProperty(`--${v}-r`, p.m[1] + 'px');
+  }
+  for (const [k, v] of Object.entries(S.css)) R.setProperty(k, v);
+  R.setProperty('--s-bg', S.bg);
   for (const b of document.querySelectorAll('#switch button')) b.setAttribute('aria-pressed', String(b.dataset.id === id));
-  buildConsole(); buildProof(); buildHeroes();
+  buildConsole(); buildProof(); buildHeroes(); buildKitTable();
 }
 
-// The console: the reference layout (CLAUDE.md 7), drawn only from kit pieces.
-function el(tag, cls, html) { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; }
-function heroCanvas(c) { c.className = 'hero'; return c; }
+// ---------------------------------------------------------------------------------------------------------------
+// The console: the reference layout (CLAUDE.md 7), drawn only from kit pieces. Readouts are live DOM and canvas.
+// ---------------------------------------------------------------------------------------------------------------
+function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+function heroEl(id, w, h) { const K = kit(SKIN), d = el('div', 'hero'); d.style.width = w + 'px'; d.style.height = h + 'px'; const im = new Image(); im.src = K.hero[id].src; im.alt = ''; d.append(im); return d; }
+function liveCanvas(host, w, h, draw) { const c = paint(w, h, draw); c.className = 'live'; host.append(c); return c; }
 function bar(label, pct, warn) {
+  const K = kit(SKIN), t = K.nine['bar.track'], [ix, iy] = t.inset || [3, 3];
   const b = el('div', 'barbox'); b.append(el('div', 'lbl', label));
-  const t = el('div', 'k-track'); const f = el('div', 'k-fill'); f.style.width = `calc(${pct}% + 8px)`; if (warn) f.style.borderImageSource = 'var(--bar-warn)';
-  t.append(f); b.append(t); return b;
+  const tr = el('div', 'nine k-track'), f = el('div', 'nine k-fill' + (warn ? ' warn' : ''));
+  f.style.left = ix + 'px'; f.style.top = iy + 'px'; f.style.width = `calc((100% - ${2 * ix}px) * ${pct / 100})`;
+  tr.append(f); b.append(tr); return b;
 }
+function panel(title, css) { const p = el('div', 'nine k-panel'); if (css) p.style.cssText = css; const t = el('div', 'ptitle', title); SKINS[SKIN].title(t, kit(SKIN).nine['frame.panel'].m); p.append(t); return p; }
+function button(label, cls = '') { const b = el('button', 'nine k-button ' + cls, label); b.type = 'button'; return b; }
 function buildConsole() {
-  const S = SKINS[SKIN], root = document.getElementById('console'); root.replaceChildren();
+  const S = SKINS[SKIN], K = kit(SKIN), root = document.getElementById('console'); root.replaceChildren();
   document.getElementById('console-title').textContent = `The console · ${S.name}`;
-  const view = el('div', 'view'); const vc = document.createElement('canvas'); vc.width = 1450; vc.height = 968; view.append(vc); root.append(view); drawView(vc, S);
-  const top = el('div', 'k-strip'); top.style.top = '0'; top.style.left = '470px';
-  top.append(bar('Hull integrity', 82), bar('Weapon capacitor', 64), bar('Target hull', 37, true), el('div', 'num', '00:04:12'));
-  root.append(top);
-  const bot = el('div', 'k-strip'); bot.style.bottom = '0'; bot.style.left = '470px';
-  bot.append(el('div', 'lbl', 'Speed'), el('div', 'num', '17.8'), bar('Power', 71), bar('Systems', 54, true), heroCanvas(paintLamp(S, 'yellow')));
-  root.append(bot);
+  const view = el('div', 'view'); const vc = document.createElement('canvas'); vc.width = 1448; vc.height = 960; view.append(vc); root.append(view); drawView(vc, S);
+  const top = el('div', 'nine k-strip top'); top.append(bar('Hull integrity', 82), bar('Weapon capacitor', 64), bar('Target hull', 37, true), el('div', 'num', '04:12'));
+  const bot = el('div', 'nine k-strip bottom'); bot.append(el('div', 'lbl', 'Speed'), el('div', 'num', '17.8'), bar('Power', 71), bar('Systems', 54, true));
+  const lamp = heroEl('lamp.alert.yellow', 48, 48); bot.append(lamp);
+  root.append(top, bot);
   const col = el('div', 'col');
-  col.append(heroCanvas(paintNameplate(S)));
-  const helmRow = el('div', ''); helmRow.style.cssText = 'display:flex;gap:6px;align-items:stretch';
-  helmRow.append(heroCanvas(paintHelm(S)));
-  const side = el('div', 'k-panel'); side.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center';
-  side.append(el('div', 'lbl', 'To hit'), el('div', 'num', '83.3'), el('div', 'k-divider'));
-  const eng = el('button', 'k-button on', 'Engage'); side.append(eng);
+  // Name plate with the captain's name written live into its field.
+  const plate = heroEl('nameplate', 460, 56); const pt = S.plateText, pn = el('div', 'ovl', pt.sub);
+  pn.style.cssText += `left:${pt.left}px;top:${pt.top}px;width:${pt.width}px;height:${pt.height}px;font:${pt.font};color:${pt.color};`; plate.append(pn); col.append(plate);
+  // Helm pad with the direction glyphs drawn live in the skin's own hand, and the chance to hit and Engage beside it.
+  const helmRow = el('div', ''); helmRow.style.cssText = 'display:flex;gap:6px;height:300px';
+  const helm = heroEl('helm.pad', 300, 300); liveCanvas(helm, 300, 300, (x) => helmGlyphs(x, S)); helmRow.append(helm);
+  const side = panel('Helm', 'flex:1;display:flex;flex-direction:column;gap:10px;justify-content:center;padding-top:8px');
+  side.append(el('div', 'lbl', 'To hit'), el('div', 'num', '83%'), el('div', 'nine k-divider'), button('Engage', 'pressed'), button('Stop'));
   helmRow.append(side); col.append(helmRow);
-  col.append(heroCanvas(paintSSD(S)));
-  const wpn = el('div', 'k-panel'); wpn.style.cssText = 'display:grid;gap:8px';
-  const r1 = el('div', ''); r1.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px';
-  r1.append(el('button', 'k-button on', 'Fire'), el('button', 'k-button', 'Multiple'));
-  const r2 = el('div', ''); r2.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:6px';
-  r2.append(el('div', 'k-tab', 'Offline'), el('div', 'k-tab sel', 'Normal'), el('div', 'k-tab', 'Overload'));
+  const ssd = heroEl('ssd.bezel', 460, 300); liveCanvas(ssd, 460, 300, (x) => ssdLive(x, S)); col.append(ssd);
+  const wpn = panel('Weapons', 'display:grid;gap:8px;padding-top:10px');
+  const r1 = el('div', ''); r1.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px'; r1.append(button('Fire', 'hover'), button('Multiple'));
+  const r2 = el('div', ''); r2.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:6px'; r2.append(el('div', 'nine k-tab', 'Offline'), el('div', 'nine k-tab sel', 'Normal'), el('div', 'nine k-tab', 'Overload'));
   wpn.append(r1, r2); col.append(wpn);
-  const radar = el('div', ''); radar.style.cssText = 'display:flex;gap:6px;align-items:center';
-  const rp = el('div', 'k-inset'); rp.style.cssText = 'flex:1;height:148px;display:grid;align-content:center;gap:6px;padding:0 6px';
-  rp.append(el('div', 'lbl', 'Contacts'), el('div', 'num', '3 hostile'), el('div', 'lbl', 'Nearest 5.4k'));
-  radar.append(heroCanvas(paintDial(S)), rp); col.append(radar);
+  const radar = el('div', ''); radar.style.cssText = 'display:flex;gap:6px;align-items:center;flex:1;min-height:0';
+  const dial = heroEl('dial', 120, 120); liveCanvas(dial, 120, 120, (x) => dialLive(x, S));
+  const rp = el('div', 'nine k-inset'); rp.style.cssText = 'flex:1;height:120px;display:grid;align-content:center;gap:6px;padding:0 4px';
+  const ic = el('div', ''); ic.style.cssText = 'display:flex;gap:8px'; for (const n of ['shields', 'tractor', 'transport', 'science', 'comms']) { const im = new Image(); im.src = K.icons[n]; im.style.cssText = 'width:36px;height:36px'; im.alt = n; ic.append(im); }
+  rp.append(el('div', 'lbl', 'Contacts · 3 hostile'), ic);
+  const crest = heroEl('crest', 96, 96);
+  radar.append(dial, rp, crest); col.append(radar);
   root.append(col);
   fit();
 }
+// The helm's direction glyphs, in each skin's own vocabulary: Concord a dot with a trail, Kethran a chevron, Vos a crooked arrow.
+function helmGlyphs(x, S) {
+  const c = 150, pos = [];
+  if (S.helmKeys === 'ring') for (let i = 0; i < 8; i++) { const a = -P / 2 + i * P / 4; pos.push([c + Math.cos(a) * S.helmR, c + Math.sin(a) * S.helmR, a]); }
+  else { const g = kethranData && kethranData.pieces['helm.pad'].keys; const ks = g || [[60, 60], [150, 60], [240, 60], [240, 150], [240, 240], [150, 240], [60, 240], [60, 150]]; ks.forEach(([px, py]) => pos.push([px, py, Math.atan2(py - c, px - c)])); }
+  for (const [px, py, a] of pos) {
+    x.save(); x.translate(px, py); x.rotate(a);
+    if (SKIN === 'concord') { x.fillStyle = '#000'; x.beginPath(); x.arc(6, 0, 6, 0, 2 * P); x.fill(); x.strokeStyle = '#000'; x.lineWidth = 3; x.beginPath(); x.moveTo(-12, 0); x.lineTo(0, 0); x.stroke(); }
+    else if (SKIN === 'kethran') { x.fillStyle = KC.ember; x.shadowColor = KC.ember; x.shadowBlur = 8; x.beginPath(); x.moveTo(12, 0); x.lineTo(-6, -11); x.lineTo(-2, 0); x.lineTo(-6, 11); x.closePath(); x.fill(); }
+    else { const R = rng(hash('helm' + a)); ink(x, wob([[-12, 2], [10, -1]], false, 0.8, R), false, 3, VC.ink); ink(x, wob([[2, -8], [11, -1], [3, 7]], false, 0.6, R), false, 3, VC.ink); }
+    x.restore();
+  }
+  if (SKIN === 'concord') { x.fillStyle = '#000'; x.font = '700 22px Antonio'; x.textAlign = 'center'; x.fillText('STOP', c, c + 8); }
+}
+// The systems display: the faction's own ship from above, its six shield facings and its mounts, in the skin's hand.
+function ssdLive(x, S) {
+  const cx = 230, cy = 150, shields = [0.9, 0.7, 0.4, 0.95, 0.6, 0.15];
+  const col = (v) => v > 0.66 ? (SKIN === 'concord' ? CC.accord : SKIN === 'kethran' ? KC.ember : VC.verd) : v > 0.33 ? (SKIN === 'vos' ? VC.caution : SKIN === 'kethran' ? '#ff8a3a' : CC.caution) : S.warn;
+  if (SKIN === 'concord') {
+    for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.strokeStyle = col(shields[i]); x.lineWidth = 7; x.beginPath(); x.arc(cx, cy, 102, a - P / 6 + 0.08, a + P / 6 - 0.08); x.stroke(); }
+    x.strokeStyle = CC.sky; x.lineWidth = 2.5; x.beginPath(); x.arc(cx, cy - 26, 40, 0, 2 * P); x.stroke();
+    rr(x, cx - 10, cy - 4, 20, 50, 10); x.stroke(); rr(x, cx - 52, cy + 4, 14, 70, 7); x.stroke(); rr(x, cx + 38, cy + 4, 14, 70, 7); x.stroke();
+    x.beginPath(); x.moveTo(cx - 10, cy + 24); x.lineTo(cx - 38, cy + 30); x.moveTo(cx + 10, cy + 24); x.lineTo(cx + 38, cy + 30); x.stroke();
+    x.fillStyle = CC.accord; for (const [mx, my] of [[cx, cy - 56], [cx - 22, cy - 34], [cx + 22, cy - 34], [cx, cy + 40]]) { x.beginPath(); x.arc(mx, my, 5, 0, 2 * P); x.fill(); }
+  } else if (SKIN === 'kethran') {
+    x.shadowColor = KC.ember; x.shadowBlur = 6;
+    for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.fillStyle = col(shields[i]); x.save(); x.translate(cx, cy); x.rotate(a); x.beginPath(); x.moveTo(96, -40); x.lineTo(110, -46); x.lineTo(110, 46); x.lineTo(96, 40); x.closePath(); x.fill(); x.restore(); }
+    x.strokeStyle = KC.ember; x.lineWidth = 2.5; x.beginPath(); x.moveTo(cx, cy - 74); x.lineTo(cx + 42, cy + 40); x.lineTo(cx + 18, cy + 30); x.lineTo(cx, cy + 66); x.lineTo(cx - 18, cy + 30); x.lineTo(cx - 42, cy + 40); x.closePath(); x.stroke();
+    x.beginPath(); x.moveTo(cx, cy - 40); x.lineTo(cx, cy + 40); x.moveTo(cx - 20, cy); x.lineTo(cx + 20, cy); x.stroke();
+    x.fillStyle = KC.red; for (const [mx, my] of [[cx, cy - 60], [cx - 30, cy + 26], [cx + 30, cy + 26]]) { x.beginPath(); x.moveTo(mx, my - 7); x.lineTo(mx + 6, my + 5); x.lineTo(mx - 6, my + 5); x.closePath(); x.fill(); }
+  } else {
+    const R = rng(7);
+    for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; ink(x, wob(arcPts(cx, cy, 96, 92, a - P / 6 + 0.12, a + P / 6 - 0.12, 10), false, 0.9, R), false, 6, col(shields[i])); }
+    const hull = wob([[cx, cy - 70], [cx + 16, cy - 40], [cx + 40, cy - 56], [cx + 26, cy - 10], [cx + 46, cy + 30], [cx + 14, cy + 22], [cx, cy + 62], [cx - 14, cy + 22], [cx - 46, cy + 30], [cx - 26, cy - 10], [cx - 40, cy - 56], [cx - 16, cy - 40]], true, 1, R);
+    ink(x, hull, true, 2.4); for (const [mx, my] of [[cx, cy - 46], [cx - 30, cy + 18], [cx + 30, cy + 18]]) spiral(x, mx, my, 6, 1.5, R, 1.6, VC.blood);
+  }
+}
+// Radar: Concord sweeps an arc, Kethran swings a needle, the Vos eye's iris turns toward the nearest contact.
+function dialLive(x, S) {
+  const c = 60, contacts = [[0.6, -0.9], [0.3, 0.5], [-0.5, 0.2]];
+  if (SKIN === 'vos') {
+    const [dx, dy] = contacts[0], L = Math.hypot(dx, dy), ix = c + dx / L * 12, iy = c + dy / L * 7, R = rng(3);
+    const iris = wob(arcPts(ix, iy, 16, 16, 0, 2 * P, 20), true, 0.8, R); wash(x, iris, VC.verd, R); ink(x, iris, true, 2); spiral(x, ix, iy, 9, 1.7, R, 1.4); x.fillStyle = VC.ink; x.beginPath(); x.arc(ix + 1, iy, 4, 0, 2 * P); x.fill();
+    return;
+  }
+  if (SKIN === 'concord') { x.strokeStyle = CC.sky; x.lineWidth = 3; x.beginPath(); x.arc(c, c, 46, -P / 2, 0.4); x.stroke(); }
+  else { x.strokeStyle = KC.ember; x.lineWidth = 3; x.shadowColor = KC.ember; x.shadowBlur = 6; x.beginPath(); x.moveTo(c, c); x.lineTo(c + 38, c - 22); x.stroke(); }
+  for (const [dx, dy] of contacts) { x.fillStyle = S.warn; x.beginPath(); if (SKIN === 'kethran') { x.moveTo(c + dx * 36, c + dy * 36 - 5); x.lineTo(c + dx * 36 + 5, c + dy * 36 + 4); x.lineTo(c + dx * 36 - 5, c + dy * 36 + 4); } else x.arc(c + dx * 36, c + dy * 36, 4, 0, 2 * P); x.fill(); }
+}
+// The 3D view, stood in by a painted starfield; the target bracket is in the skin's own shape.
 function drawView(c, S) {
   const x = c.getContext('2d'), w = c.width, h = c.height, R = rng(5);
   x.fillStyle = '#020306'; x.fillRect(0, 0, w, h);
   for (let i = 0; i < 6; i++) { const g = x.createRadialGradient(R() * w, R() * h, 0, R() * w, R() * h, 300 + R() * 300); g.addColorStop(0, `rgba(${[60, 40, 90][i % 3]},${[30, 70, 40][i % 3]},${[90, 100, 60][i % 3]},0.25)`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); }
   for (let i = 0; i < 700; i++) { const b = 120 + R() * 135; x.fillStyle = `rgba(${b},${b},${b + 20},${0.3 + R() * 0.7})`; x.fillRect(R() * w, R() * h, R() < 0.92 ? 1 : 2, R() < 0.92 ? 1 : 2); }
-  // target bracket in the skin's accent
-  const bx = w * 0.56, by = h * 0.34, bw = 260, bh = 170;
-  x.strokeStyle = S.c.accent; x.lineWidth = 3; x.shadowColor = S.c.accent; x.shadowBlur = 8;
-  for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) { x.beginPath(); x.moveTo(px + sx * 40, py); x.lineTo(px, py); x.lineTo(px, py + sy * 40); x.stroke(); }
-  x.shadowBlur = 0; x.fillStyle = S.c.ink; x.font = `600 24px ${S.num}`; x.fillText('KETHRAN DESTROYER · 3.4 · SPEED 14.8', bx - 20, by + bh + 38);
+  const bx = w * 0.56, by = h * 0.32, bw = 260, bh = 170;
   x.fillStyle = '#9aa6b4'; x.beginPath(); x.moveTo(bx + 60, by + 90); x.lineTo(bx + 200, by + 70); x.lineTo(bx + 220, by + 90); x.lineTo(bx + 200, by + 110); x.closePath(); x.fill();
   x.fillStyle = '#c9d2dc'; x.beginPath(); x.moveTo(w * 0.36, h * 0.72); x.lineTo(w * 0.5, h * 0.62); x.lineTo(w * 0.54, h * 0.66); x.lineTo(w * 0.42, h * 0.8); x.closePath(); x.fill();
-  x.fillStyle = S.c.dim; x.font = `500 20px ${S.num}`; ['Range 3.5  Speed 14.8', '1x Plasma projector  armed', '2x Beam lance  charged', '2x Missile rack  4 left'].forEach((t, i) => x.fillText(t, 40, h - 150 + i * 28));
+  x.strokeStyle = S.accent; x.lineWidth = 3;
+  if (SKIN === 'concord') { for (const [px, py, a] of [[bx, by, P], [bx + bw, by, 1.5 * P], [bx + bw, by + bh, 0], [bx, by + bh, P / 2]]) { x.beginPath(); x.arc(px + (a === P || a === P / 2 ? 30 : -30), py + (a === P || a === 1.5 * P ? 30 : -30), 30, a, a + P / 2); x.stroke(); } }
+  else if (SKIN === 'kethran') { x.fillStyle = S.accent; x.shadowColor = S.accent; x.shadowBlur = 10; for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) { x.beginPath(); x.moveTo(px, py); x.lineTo(px + sx * 46, py); x.lineTo(px + sx * 30, py + sy * 10); x.lineTo(px + sx * 10, py + sy * 10); x.lineTo(px + sx * 10, py + sy * 30); x.lineTo(px, py + sy * 46); x.closePath(); x.fill(); } x.shadowBlur = 0; }
+  else { const Rr = rng(11); for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) ink(x, wob([[px + sx * 44, py + sy * 2], [px, py], [px + sx * 3, py + sy * 44]], false, 1.4, Rr), false, 3.4, VC.bone); }
+  x.fillStyle = S.css['--s-ink']; x.font = SKIN === 'vos' ? '400 30px "Permanent Marker"' : SKIN === 'kethran' ? '400 26px "Saira Stencil One"' : '600 30px Antonio';
+  x.fillText(SKIN === 'vos' ? 'Kethran Destroyer · 3.4 · speed 14.8' : 'KETHRAN DESTROYER · 3.4 · SPEED 14.8', bx - 20, by + bh + 44);
+  x.fillStyle = S.css['--s-dim']; x.font = SKIN === 'vos' ? '400 26px "Patrick Hand"' : SKIN === 'kethran' ? '700 24px "Saira Condensed"' : '600 24px Antonio';
+  ['Range 3.5  Speed 14.8', '1x Plasma projector  armed', '2x Beam lance  charged', '2x Missile rack  4 left'].forEach((t, i) => x.fillText(SKIN === 'vos' ? t : t.toUpperCase(), 40, h - 150 + i * 32));
 }
 function fit() { const s = document.getElementById('stage').clientWidth / 1920; document.getElementById('console').style.transform = `scale(${s})`; }
 addEventListener('resize', fit);
 
-function buildProof() {
-  const S = SKINS[SKIN], p = document.getElementById('proof'); p.replaceChildren();
-  const cases = [['frame.panel', 'k-panel', [[96, 96], [300, 180], [560, 110]]], ['button', 'k-button', [[48, 48], [140, 48], [260, 64]]], ['tab', 'k-tab', [[40, 40], [120, 40], [220, 40]]]];
-  for (const [id, cls, sizes] of cases) for (const [w, h] of sizes) {
-    const d = el('div', ''); const n = el('div', cls); n.style.width = w + 'px'; n.style.height = h + 'px'; if (cls === 'k-button') n.textContent = w > 60 ? 'Engage' : '';
-    d.append(n, el('div', 'cap', `${id} · ${w} x ${h}`)); p.append(d);
-  }
-  for (const w of [64, 240, 420]) { const d = el('div', ''); d.style.width = w + 'px'; d.append(bar(`bar · ${w}`, 66)); p.append(d); }
+// ---------------------------------------------------------------------------------------------------------------
+// The rules, side by side; the design languages; the sampled palette; the kit table and proofs.
+// ---------------------------------------------------------------------------------------------------------------
+function withSkinVars(node, id) {
+  // A node styled as another skin: its own copies of the variables, so three skins sit on one page at once.
+  const K = kit(id), S = SKINS[id];
+  for (const [piece, v] of Object.entries(VARS)) { const p = K.nine[piece]; node.style.setProperty(`--${v}`, `url(${p.src})`); node.style.setProperty(`--${v}-s`, p.m.map((n) => n * 2).join(' ')); node.style.setProperty(`--${v}-w`, p.m.map((n) => n + 'px').join(' ')); node.style.setProperty(`--${v}-l`, p.m[3] + 'px'); node.style.setProperty(`--${v}-r`, p.m[1] + 'px'); }
+  for (const [k, v] of Object.entries(S.css)) node.style.setProperty(k, v);
 }
-function buildHeroes() {
-  const S = SKINS[SKIN], hr = document.getElementById('heroes'); hr.replaceChildren();
-  const add = (c, cap) => { const d = el('div', ''); d.append(heroCanvas(c), el('div', 'cap', cap)); hr.append(d); };
-  add(paintNameplate(S), 'nameplate · 458 x 56'); add(paintHelm(S), 'helm.pad · 300 x 300'); add(paintSSD(S), 'ssd.bezel · 458 x 300');
-  add(paintDial(S), 'dial · 148 x 148'); for (const s of ['green', 'yellow', 'red']) add(paintLamp(S, s), `lamp.alert · ${s}`); add(paintCrest(S), 'crest · 96 x 96');
+function buildRules() {
+  const R = document.getElementById('rulecols'); R.replaceChildren();
+  for (const id of Object.keys(SKINS)) {
+    const K = kit(id), S = SKINS[id]; const col = el('div', 'rulecol'); col.style.background = S.bg;
+    if (!K) { col.append(el('h3', '', S.name), el('p', 'muted', 'Blender renders not inlined yet.')); R.append(col); continue; }
+    withSkinVars(col, id);
+    col.append(el('h3', '', S.name), el('div', 'cap', S.kind));
+    const br = el('div', 'btnrow'); const b1 = button('Fire'), b2 = button('Fire', 'hover'), b3 = button('Fire', 'pressed'); for (const b of [b1, b2, b3]) b.style.width = '130px'; br.append(b1, b2, b3);
+    col.append(el('div', 'cap', 'Button: idle, hover, pressed'), br);
+    const ic = el('div', 'icons'); for (const n of ICONS) { const f = el('figure', ''); const im = new Image(); im.src = K.icons[n]; im.alt = n; f.append(im, el('figcaption', '', n)); ic.append(f); }
+    col.append(el('div', 'cap', 'Icons'), ic);
+    const st = el('div', 'stripes'); for (const [, hex] of S.palette) { const s = el('span', ''); s.style.background = hex; st.append(s); } col.append(el('div', 'cap', 'Palette'), st);
+    R.append(col);
+  }
 }
 function buildLangs() {
-  const L = document.getElementById('langs');
+  const L = document.getElementById('langs'); L.replaceChildren();
   for (const [id, S] of Object.entries(SKINS)) {
-    const card = el('div', 'card'); card.append(el('h3', '', `${S.name}`), el('p', 'muted', S.words));
-    const sw = el('div', 'swatches'); for (const k of ['base', 'rim', 'rimHi', 'accent', 'ink', 'warn', 'bad']) { const s = el('span', '', k); s.style.background = S.c[k]; sw.append(s); }
-    const t = el('table', 'lang'); for (const [k, v] of Object.entries(S.lang)) { const r = el('tr', ''); r.append(el('th', '', k), el('td', '', v)); t.append(r); }
-    const type = el('p', ''); type.style.cssText = `font:28px/1.1 ${S.display};color:${S.c.ink}`; type.textContent = id === 'vos' ? 'Phaser Capacitor 64' : 'PHASER CAPACITOR 64';
-    card.append(type, sw, t); L.append(card);
+    const card = el('div', 'card'); card.append(el('h3', '', S.name), el('p', 'muted', S.kind));
+    const t = el('table', 'lang');
+    const rows = [['World view', S.world[0]], ['Bodies', S.world[1]], ['Technology', S.world[2]], ['Ships', S.world[3]], ['Shapes', S.shapes], ['Light', S.light], ['Motion', S.motion], ['Type', S.type]];
+    for (const [k, v] of rows) { const r = el('tr', ''); r.append(el('th', '', k), el('td', '', v)); t.append(r); }
+    const pal = el('div', 'pal'); for (const [n, hex, role, why] of S.palette) { const d = el('div', ''); const i = el('i', ''); i.style.background = hex; const tx = el('span', ''); tx.append(el('b', '', `${n} ${hex}`), document.createTextNode(` · ${role}. ${why}.`)); d.append(i, tx); pal.append(d); }
+    const type = el('p', ''); type.style.cssText = `font:${S.css['--title-font'].replace(/\d+px/, '30px')};color:${S.css['--title-ink']};background:${S.bg};padding:10px 12px;border-radius:6px`; type.textContent = id === 'vos' ? 'Phaser Capacitor 64' : 'PHASER CAPACITOR 64';
+    card.append(type, t, el('h3', '', 'Palette, from the ideology'), pal); L.append(card);
   }
 }
+function buildSampled() {
+  const p = document.getElementById('sampled');
+  for (const [a, b, c, n] of SAMPLED) { const d = el('div', ''); d.style.gridTemplateColumns = '36px 36px 36px 1fr'; for (const hex of [a, b, c]) { const i = el('i', ''); i.style.background = hex; d.append(i); } d.append(el('b', '', `${a}, ${b} → ${n} ${c}`)); p.append(d); }
+}
 function buildKitTable() {
-  const t = document.getElementById('kit-table');
-  t.innerHTML = '<thead><tr><th>Piece</th><th>Kind</th><th>Slot</th><th>Margins (px)</th><th>Used by</th></tr></thead>';
+  const K = kit(SKIN), t = document.getElementById('kit-table');
+  document.getElementById('kit-title').textContent = `The kit · ${SKINS[SKIN].name}`;
+  t.innerHTML = '<thead><tr><th>Piece</th><th>Kind</th><th>Slot (px)</th><th>Margins here (t r b l)</th><th>Used by</th></tr></thead>';
   const b = document.createElement('tbody');
-  for (const k of KIT) { const r = el('tr', ''); r.append(el('td', '', `<code>${k.id}</code>`), el('td', '', k.kind), el('td', '', k.slot), el('td', '', k.m == null ? 'none' : Array.isArray(k.m) ? k.m.join(', ') : String(k.m)), el('td', '', k.use)); b.append(r); }
+  for (const [id, kind, slot, use] of KIT_ROWS) {
+    const n = K.nine[id] || K.nine[id + '.idle']; const r = el('tr', ''); const code = el('td', ''); code.append(el('code', '', id));
+    r.append(code, el('td', '', kind), el('td', '', slot), el('td', '', n ? n.m.join(' ') : 'none'), el('td', '', use)); b.append(r);
+  }
   t.append(b);
+}
+function buildProof() {
+  const p = document.getElementById('proof'); p.replaceChildren();
+  const cases = [['frame.panel', 'nine k-panel', [[100, 100], [300, 180], [560, 110]]], ['button', 'nine k-button', [[120, 48], [200, 48], [320, 48]]], ['tab', 'nine k-tab', [[100, 40], [160, 40], [240, 40]]], ['frame.inset', 'nine k-inset', [[60, 60], [220, 80], [400, 60]]]];
+  for (const [id, cls, sizes] of cases) for (const [w, h] of sizes) {
+    const d = el('div', ''); const n = el(cls.includes('button') ? 'button' : 'div', cls); n.style.width = w + 'px'; n.style.height = h + 'px'; if (cls.includes('button') || cls.includes('tab')) n.textContent = 'Overload';
+    d.append(n, el('div', 'cap', `${id} · ${w} x ${h}`)); p.append(d);
+  }
+  for (const w of [80, 260, 440]) { const d = el('div', ''); d.style.width = w + 'px'; d.append(bar(`bar · ${w}`, 66)); p.append(d); }
+  for (const w of [140, 420]) { const d = el('div', ''); d.style.width = w + 'px'; d.append(el('div', 'nine k-divider'), el('div', 'cap', `divider · ${w}`)); p.append(d); }
+  const s = el('div', ''); s.style.cssText = 'width:min(100%,900px);position:relative;height:56px'; const st = el('div', 'nine k-strip top'); st.style.left = '0'; st.append(bar('Hull', 70), el('div', 'num', '04:12')); s.append(st); p.append(s);
+}
+function buildHeroes() {
+  const K = kit(SKIN), hr = document.getElementById('heroes'); hr.replaceChildren();
+  for (const [id, [w, h]] of Object.entries(HERO)) { const d = el('div', ''); const im = new Image(); im.src = K.hero[id].src; im.width = w; im.height = h; im.alt = id; d.append(im, el('div', 'cap', `${id} · ${w} x ${h}`)); hr.append(d); }
 }
 
 const sw = document.getElementById('switch');
-for (const [id, S] of Object.entries(SKINS)) { const b = el('button', '', S.name); b.type = 'button'; b.dataset.id = id; b.onclick = () => applySkin(id); sw.append(b); }
-buildLangs(); buildKitTable();
-const start = () => { applySkin('concord'); window.MOCKUP_READY = true; };
-(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(start, start);
+for (const [id, S] of Object.entries(SKINS)) { const b = el('button', '', S.name); b.type = 'button'; b.dataset.id = id; b.onclick = () => applySkin(id); if (!kit(id)) b.disabled = true; sw.append(b); }
 const top = () => scrollTo(0, 0), at = (id) => document.getElementById(id).scrollIntoView();
 window.MOCKUP_SHOTS = {
-  concord: () => { applySkin('concord'); top(); }, vos: () => { applySkin('vos'); top(); },
-  kethran_a: () => { applySkin('kethA'); top(); }, kethran_b: () => { applySkin('kethB'); top(); },
-  language: () => { applySkin('concord'); at('language'); },
-  kit_concord: () => { applySkin('concord'); at('kit'); }, kit_vos: () => { applySkin('vos'); at('kit'); },
+  concord: () => { applySkin('concord'); top(); }, kethran: () => { applySkin('kethran'); top(); }, vos: () => { applySkin('vos'); top(); },
+  rules: () => { applySkin('concord'); at('rules'); }, language: () => { at('language'); }, research: () => { at('research'); },
+  kit_concord: () => { applySkin('concord'); at('kit'); }, kit_kethran: () => { applySkin('kethran'); at('kit'); }, kit_vos: () => { applySkin('vos'); at('kit'); },
 };
+Promise.all(['600 20px Antonio', '700 20px Antonio', '400 20px "Saira Stencil One"', '700 20px "Saira Condensed"', '400 20px "Permanent Marker"', '400 20px "Patrick Hand"']
+  .map((f) => document.fonts.load(f).catch(() => null))).then(() => { buildRules(); buildLangs(); buildSampled(); applySkin('concord'); window.MOCKUP_READY = true; });
 })();
 </script>
