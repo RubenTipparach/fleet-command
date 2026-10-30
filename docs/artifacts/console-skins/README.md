@@ -15,4 +15,4 @@
   palette was sampled with `tools/mockups/sample_palette.py`. Shots: `docs/screenshots/mockups/console-skins-*.png`.
 - Stage: drafted.
 - Published: 2026-10-30, version 1 (one kit, four recoloured skins); version 2 (three design languages: Concord after
-  LCARS, Kethran rendered in Blender, Vos hand-drawn); version 3 (the Kethran keys plain wedge caps, no lens strip); version 4 (the page made a registry of skin modules, `docs/mockups/skins/`; the Vhorr Brood, the first of six new races); version 5 (the Aelith Conclave); version 6 (the Tarsine Remnant).
+  LCARS, Kethran rendered in Blender, Vos hand-drawn); version 3 (the Kethran keys plain wedge caps, no lens strip); version 4 (the page made a registry of skin modules, `docs/mockups/skins/`; the Vhorr Brood, the first of six new races); version 5 (the Aelith Conclave); version 6 (the Tarsine Remnant); version 7 (the Krai Warhost).
