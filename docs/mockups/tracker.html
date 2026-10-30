@@ -89,7 +89,7 @@ code { font: 500 0.9em var(--mono); }
 // The mockups, in the order of mockup-work.md. Reviews live in the db collection `reviews`, one document per id.
 const MOCKUPS = [
   { id: 'M1', title: 'Primary game flow', change: 'game-flow', page: 'docs/mockups/game-flow.html',
-    url: 'https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk', published: '2026-10-30', version: 1,
+    url: 'https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk', published: '2026-10-30', version: 3,
     summary: 'Main menu, skirmish (scenario, point budget, fleet and loadout), the campaign hex map with standees, port panels and missions, deploy, a stand-in battle, results, and back to the map.' },
   { id: 'M2', title: 'In-game UI', change: 'battle-console', page: 'docs/mockups/battle-console.html',
     url: '', published: '', version: 0,
@@ -97,6 +97,9 @@ const MOCKUPS = [
   { id: 'M3', title: 'Look dev', change: 'look-dev', page: 'docs/mockups/look-dev.html',
     url: '', published: '', version: 0,
     summary: 'Ship detail level, faction design language, destructible hulls and interiors, engines and effects, and hull lighting.' },
+  { id: 'M4', title: 'Console skins', change: 'console-skins', page: 'docs/mockups/console-skins.html',
+    url: '', published: '', version: 0,
+    summary: 'One UI kit of nine-slice and hero pieces, modelled and baked in Blender, swapped per faction: Concord sleek and minimal, the Vos playful and pirate-like.' },
 ];
 
 const reviews = {}; // id -> { build, implementation, note }

@@ -6,4 +6,4 @@
 - Made by: `docs/design/survey.html`, from the `html-survey` skill's template, published with the
   `db`, `user` and `downloads` capabilities. The page source is kept at `docs/design/survey.html`
   (one copy, not duplicated here); answers live in the artifact's `answers` collection.
-- Published: 2026-10-30, version 1; republished 2026-10-30, version 2 (answers folded in, questions T4 and F1-F6 added).
+- Published: 2026-10-30, version 1; republished 2026-10-30, version 2 (answers folded in, questions T4 and F1-F6 added); version 3 (F answers folded in; T4a, F6a, F7, U4, U5 added).

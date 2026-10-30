@@ -10,4 +10,4 @@
   `openspec/changes/game-flow/`. Shots: `docs/screenshots/mockups/game-flow-*.png`, from
   `tools/mockups/shoot.mjs` then `tools/mockups/shrink_png.py`.
 - Stage: drafted. Approvals are given in the mockup tracker.
-- Published: 2026-10-30, version 1.
+- Published: 2026-10-30, version 1; version 2 (UMD three.js so it renders on the artifact host); version 3 (bordered hexes, 3D miniatures, belts and nebulae, sector numbers, market and standing).

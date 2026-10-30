@@ -77,7 +77,8 @@ After SFC3 printed page 28: the ship's schematic, top down, with its hardpoints 
 Primary weapons, Heavy weapons, Hull systems, Bridge systems, Engines**. Pick a group, pick a hardpoint,
 pick a system from the list (its cost and a one-line description), then **Fit** (an empty hardpoint),
 **Trade** (an occupied one: the old system is refunded) or **Remove** (refunded). In skirmish setup a
-refund is the full price (SFC3 page 29); in the campaign a sale returns half (survey F6). Weapon groups
+refund is the full price (SFC3 page 29); in the campaign a removed system is sold to the port's owner
+(see Selling and standing). Weapon groups
 show each hardpoint's firing arc on the schematic.
 
 | Group | Systems (cost in points or x10 credits) |
@@ -114,7 +115,12 @@ pinch between three levels of detail (SFC3 page 32):
 | Near | ship standees and labels |
 
 **Territory**: each hex belongs to the Concord (the player's, blue), the Kethran Hegemony (red), the Vos
-Syndicate (amber, raiders) or no one (grey) (SFC3 page 33).
+Syndicate (amber, raiders) or no one (grey) (SFC3 page 33). **Territory is told by the hex borders, not by
+filling the hexes** (owner, 2026-10-30, with a box-back star map: "the elements of each sector is inside the
+hex, with the hex borders communicating territory"): every hex is dark glass over a painted galaxy, every
+edge is a faint line in its owner's colour, and where ownership changes a bright band runs along the edge,
+inside each side's hex in that side's colour. Each hex carries its sector number (column and row, `0705`),
+printed like a wargame map.
 
 **Terrain** sets how far the fleet moves in a turn (impedance, SFC3 page 33):
 
@@ -125,9 +131,13 @@ Syndicate (amber, raiders) or no one (grey) (SFC3 page 33).
 | Asteroid field | 2 | |
 | Star | impassable | |
 
-**Standees**: every ship group, planet and station stands on the map as a printed card on a round base in
-its faction's colour, like a board-game standee; cards turn to face the camera. The fleet's standee is
-the flagship's. Hovering or tapping one names it.
+**Miniatures** (owner, 2026-10-30, with photos of a wargame and a board game: "3d ships on stands, 3d
+stations on stands, 3d planets, asteroid belts, nebula"): every ship group and station is a 3D miniature
+on a clear flight post over a black hex base ringed in its faction's colour; planets are 3D globes floating
+in their hex with an orbit ring in the owner's colour; asteroid fields are belts of rocks curving across
+the hex; nebulae are 3D clouds of glowing puffs at several heights. The fleet's miniature is the
+flagship's, with an amber ring. Names show at near zoom; hovering or tapping one names it. The models are
+stand-ins until mockup 3 sets each faction's ships.
 
 **Moving**: tap a hex; the path and its move cost show; tap again to go. The fleet has 3 move points a
 turn (survey F2: turn based). **End turn** spends the rest, ages missions and spawns new ones.
@@ -146,6 +156,32 @@ them out elsewhere, SFC3 page 34):
 - **Recruiting center**: officers for six stations (helm, tactical, engineering, science, comms,
   security), each with a skill rating from Green to Legendary and a cost; and marines (SFC3 pages 29
   and 36).
+
+**Markets**: another faction's station or planet, while your standing with that faction is 0 or above,
+opens a **market** where you sell ships, systems and supplies to them (survey F6a, provisional). Only your
+own faction's ports have the shipyard, outfitter and recruiting (F1).
+
+## Selling and standing
+
+Survey F6, the owner: "depends who you sell it to as well, a rival of that faction might pay more,
+pirates migth pay less, but you get reputation increase etc, depending on where you sell it. you can
+also fix it up and join your crew".
+
+**Price**: a sale pays a quarter of the item's price (F6), times the buyer's interest in it:
+
+| Buyer | Pays | Standing |
+|---|---|---|
+| A rival of the faction that built it (Concord for a Kethran ship, and the reverse) | x1.5 | +1 with the buyer |
+| The faction that built it, or anyone else | x1 | +1 with the buyer |
+| Pirates (the Vos Syndicate) | x0.6 | +5 with the Vos |
+
+**Standing**: each faction's view of you, from -100 to 100 (survey F7, provisional). It starts at Concord
++40, Vos 0, Kethran -40. Sales raise it as above; a mission against a faction lowers it by 10 and raises
+its rival's by 5. Below 0 a faction's ports are closed to you. The top bar shows all three.
+
+**Prizes**: a captured ship is built by its old owner (it keeps its maker, so a rival pays more for it).
+It joins the fleet damaged; repair it at a shipyard to fly it ("fix it up and join your crew"), or sell
+it.
 
 On a phone a port panel takes the screen and the live map moves to the right third (U1), or the bottom in
 portrait (U2).
@@ -187,9 +223,11 @@ trivial next to a battle. Campaign state is plain data: a few kilobytes to save.
 
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
-| F1 | Do the shipyard and outfitter also need a friendly port, or only recruiting? | All three need one (provisional) |
-| F2 | Does the campaign map move in turns, or in real time? | Turns: 3 move points, End turn (provisional) |
-| F3 | Where must the fleet be to deploy a mission? | On the mission's hex (provisional) |
-| F4 | Can the player change a scenario's point budget? | Yes: Small, Standard, Large (provisional) |
-| F5 | How many ships in a fleet? | Up to four: the flagship and three wingmen (provisional) |
-| F6 | What does selling return in the campaign? | Half the price; skirmish refunds in full (provisional) |
+| F1 | Do the shipyard and outfitter also need a friendly port, or only recruiting? | **Decided** (owner, 2026-10-30): all three need one |
+| F2 | Does the campaign map move in turns, or in real time? | **Decided**: turns, 3 move points, End turn |
+| F3 | Where must the fleet be to deploy a mission? | **Decided**: on the mission's hex |
+| F4 | Can the player change a scenario's point budget? | **Decided**: yes, Small, Standard, Large |
+| F5 | How many ships in a fleet? | **Decided**: up to four, the flagship and three wingmen |
+| F6 | What does selling return in the campaign? | **Decided**: a quarter, more from a rival of the builder, less from pirates who raise your standing; prizes can be repaired into the fleet |
+| F6a | Where can you sell to another faction? | At its ports, open while your standing with it is 0 or above (provisional) |
+| F7 | How does standing work? | -100 to 100 per faction; sales and missions move it; below 0 its ports close (provisional) |

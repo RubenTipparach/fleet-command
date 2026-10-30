@@ -22,6 +22,18 @@ Crab Breeze's note and Star Crew's text. Where they disagree with this note, thi
   - **Console faces**: the left column's panel frames, buttons, the helm pad, the arming switches,
     placards. Whether the console is drawn with these textures (like the owner's reference) or as
     flat vector shapes was survey `U3`: textured (owner, 2026-10-30), with live readouts drawn inside.
+- **The console kit** (owner, 2026-10-30: "modeled and lit in blender then baked into a texture",
+  "deisnged for 9slicing for some elements, and others are like hero elements"; CLAUDE.md section 7):
+  - A **9-slice piece** is modelled at a reference size with its corners as finished as a hero piece
+    and its edges and centre made to stretch or repeat without seams (no detail that would smear when
+    stretched: rivets and greebles go in the corners). It is rendered lit, face-on, to one image, and
+    its four slice margins in pixels are written beside it. Check it drawn at three sizes on the
+    contact sheet before calling it done.
+  - A **hero piece** (helm pad, systems display bezel, dials, alert lamp, crest) is modelled and baked
+    whole at the size it is drawn, with its live parts (needles, readouts, lit lenses) left as named
+    regions for the game to draw.
+  - **One kit per faction skin**, same piece names and slots: Concord sleek and minimal in blues, Vos
+    Syndicate playful and organic, Kethran to be designed (mockup 4 in `mockup-work.md`).
 - **The kit is here**: `tools/blender/panel_kit.py` (Crab Breeze's `cockpit_kit.py` at `69ce196`:
   `Panel` with `plates`, `screw`, `screws`, `screw_row`, `button`, `toggle`, `knob`, `dial`, `keypad`,
   `placard`, `hazard`, `annunciator`, `vent`, `frame`, `window`, `pcb`, `text`, `code`, `tube`, and

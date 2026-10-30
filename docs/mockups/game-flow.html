@@ -165,30 +165,27 @@ table.grid td { padding: 6px 8px; border-top: 1px solid rgba(255,255,255,0.06); 
 @media (max-width: 560px) { .loadout { grid-template-columns: 1fr; } .loadout canvas { max-width: 240px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
-<script type="importmap">
-{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-} }
-</script>
 
 <div id="stage"></div>
 <div id="ui"></div>
 <div class="tip" id="tip" hidden></div>
 <div class="badge">Mockup 1 · game-flow</div>
 
-<script type="module">
-import * as THREE from 'three';
-import { MapControls } from 'three/addons/controls/MapControls.js';
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+
+const { MapControls } = THREE; // UMD build: examples/js/controls/OrbitControls.js defines both
 
 // ---------------------------------------------------------------------------------------------------------------
 // Data. One table per kind of thing, as the game's data/ files will be (openspec/changes/game-flow/design.md).
 // ---------------------------------------------------------------------------------------------------------------
 const FACTIONS = {
-  concord: { name: 'Concord', color: '#4f8fe8' },
-  kethran: { name: 'Kethran Hegemony', color: '#d9483b' },
-  vos: { name: 'Vos Syndicate', color: '#e3a33a' },
-  neutral: { name: 'Unclaimed', color: '#7c8794' },
+  concord: { name: 'Concord', color: '#4f8fe8', rival: 'kethran' },
+  kethran: { name: 'Kethran Hegemony', color: '#d9483b', rival: 'concord' },
+  vos: { name: 'Vos Syndicate', color: '#e3a33a', rival: null },
+  neutral: { name: 'Unclaimed', color: '#7c8794', rival: null },
 };
 const TERRAIN = {
   open: { name: 'Open space', cost: 1 },
@@ -260,6 +257,10 @@ const STATIONS = ['Helm', 'Tactical', 'Engineering', 'Science', 'Comms', 'Securi
 const SKILLS = [['Green', 150], ['Skilled', 300], ['Veteran', 550], ['Elite', 900], ['Legendary', 1400]];
 const OFFICER_NAMES = ['Ines Marrow', 'Tavo Quell', 'Dace Orrin', 'Mirela Vance', 'Sef Anjou', 'Kito Brand', 'Lysa Fenn', 'Oren Hale', 'Pell Varro', 'Juno Tesh', 'Arlo Kade', 'Nim Sato'];
 const CREDIT_RATE = 10; // campaign prices are points x 10 credits
+// Selling (survey F6): a quarter of the price, x1.5 from a rival of the builder, x0.6 from pirates who
+// raise your standing more; standing from -100 to 100, ports closed below 0 (F6a, F7, provisional).
+const SALE_SHARE = 0.25, RIVAL_PAYS = 1.5, PIRATES_PAY = 0.6, SALE_STANDING = 1, PIRATE_SALE_STANDING = 5;
+const START_STANDING = { concord: 40, vos: 0, kethran: -40 };
 const MOVE_POINTS = 3;
 const MISSION_TURNS = 3;
 const FLEET_MAX = 4;
@@ -273,7 +274,7 @@ function newShip(hullId, name) {
   const h = HULLS[hullId];
   const fit = {};
   for (const [g] of GROUPS) fit[g] = Array.from({ length: h.slots[g] }, () => STOCK[g]);
-  return { id: ++shipSerial, hull: hullId, name: name || `${h.name} ${100 + shipSerial}`, fit, supplies: { marines: 0, shuttles: 0, mines: 0, reloads: 0, parts: 0 }, behaviour: 'Escort', hullPct: 100 };
+  return { id: ++shipSerial, hull: hullId, maker: 'concord', name: name || `${h.name} ${100 + shipSerial}`, fit, supplies: { marines: 0, shuttles: 0, mines: 0, reloads: 0, parts: 0 }, behaviour: 'Escort', hullPct: 100 };
 }
 function countFit(s, sys) { return Object.values(s.fit).flat().filter((x) => x === sys).length; }
 function fitCost(s) { return Object.values(s.fit).flat().reduce((n, x) => n + (x ? SYSTEMS[x].cost : 0), 0); }
@@ -284,8 +285,14 @@ function clampSupplies(s) { for (const u of SUPPLIES) s.supplies[u.id] = Math.mi
 // A purse says how refits are paid: skirmish spends from a budget checked at launch (full refunds), the campaign
 // pays credits now and refunds half (survey F6).
 function skirmishPurse() { return { kind: 'points', unit: 'pts', price: (p) => p, refund: (p) => p, pay: () => null }; }
-function campaignPurse() {
-  return { kind: 'credits', unit: 'cr', price: (p) => p * CREDIT_RATE, refund: (p) => Math.floor((p * CREDIT_RATE) / 2),
+function salePrice(credits, maker, buyer) {
+  const mult = FACTIONS[maker].rival === buyer ? RIVAL_PAYS : buyer === 'vos' ? PIRATES_PAY : 1;
+  return Math.floor(credits * SALE_SHARE * mult);
+}
+function soldTo(buyer) { changeStanding(buyer, buyer === 'vos' ? PIRATE_SALE_STANDING : SALE_STANDING); }
+function changeStanding(fac, d) { CAMP.standing[fac] = Math.max(-100, Math.min(100, CAMP.standing[fac] + d)); }
+function campaignPurse(buyer = 'concord') {
+  return { kind: 'credits', unit: 'cr', price: (p) => p * CREDIT_RATE, refund: (p) => salePrice(p * CREDIT_RATE, 'concord', buyer), sold: () => soldTo(buyer),
     pay: (net) => { if (net > CAMP.credits) return `Not enough credits: needs ${net}, have ${CAMP.credits}.`; CAMP.credits -= net; return null; } };
 }
 function refit(purse, s, g, i, sysId) {
@@ -296,6 +303,7 @@ function refit(purse, s, g, i, sysId) {
   const err = purse.pay(net);
   if (err) return err;
   s.fit[g][i] = sysId;
+  if (old) purse.sold?.();
   clampSupplies(s);
   return null;
 }
@@ -347,12 +355,14 @@ function buildCampaign(seed = 7) {
   ];
   const fleet = [newShip('lantern', 'CNS Resolute'), newShip('swift', 'CNS Wren')];
   fleet[0].supplies.marines = 4;
-  CAMP = { seed, R, hexes, groups, fleet, at: { c: 2, r: 5 }, credits: 4000, turn: 1, mp: MOVE_POINTS, missions: [], crew: [], officerPool: [], mid: 0, captain: 'Captain Ardent', battles: 0 };
+  CAMP = { seed, R, hexes, groups, fleet, at: { c: 2, r: 5 }, credits: 4000, turn: 1, mp: MOVE_POINTS, missions: [], crew: [], officerPool: [], mid: 0, captain: 'Captain Ardent', battles: 0, standing: { ...START_STANDING } };
   rollOfficers();
   for (let i = 0; i < 4; i++) offerMission();
   return CAMP;
 }
 function isPort(h) { return (h.planet || h.station) && h.owner === 'concord'; }
+// Another faction's port deals with you (a market, selling only) while your standing with it is 0 or above.
+function isMarket(h) { return (h.planet || h.station) && h.owner !== 'concord' && (CAMP.standing[h.owner] ?? 0) >= 0; }
 function eligible(type) {
   const all = Object.values(CAMP.hexes).filter((h) => h.terrain !== 'star');
   const plain = (h) => !h.planet && !h.station;
@@ -426,7 +436,7 @@ function fleetPoints(fleet) { return fleet.reduce((n, s) => n + shipPoints(s), 0
 const stage = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 stage.append(renderer.domElement);
 const clock = new THREE.Clock();
@@ -442,7 +452,7 @@ function starfield(n, radius) {
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   return new THREE.Points(g, new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, vertexColors: true }));
 }
-function canvasTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+function canvasTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t; }
 function planetTex(hue) {
   return canvasTex(512, 256, (x, w, h) => {
     const R = rng(hue * 7 + 3);
@@ -451,9 +461,9 @@ function planetTex(hue) {
   });
 }
 // A stand-in ship, our own shape (a spine, a wedge bow, two drive pods): the look is mockup 3's to decide.
-function shipModel(color, scale = 1) {
+function shipModel(color, scale = 1, hullColor = 0xb9c2cc) {
   const g = new THREE.Group();
-  const hull = new THREE.MeshStandardMaterial({ color: 0xb9c2cc, metalness: 0.55, roughness: 0.42 });
+  const hull = new THREE.MeshStandardMaterial({ color: hullColor, metalness: 0.55, roughness: 0.42 });
   const trim = new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.5 });
   const glow = new THREE.MeshStandardMaterial({ color: 0x9fd0ff, emissive: 0x6fb6ff, emissiveIntensity: 2.2 });
   const spine = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.32, 3.2), hull); g.add(spine);
@@ -475,8 +485,9 @@ const menuScene = new THREE.Scene();
 const menuCam = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
 menuCam.position.set(0, 2, 16);
 menuScene.add(starfield(2500, 600));
-menuScene.add(new THREE.AmbientLight(0x334455, 0.6));
-const sun = new THREE.DirectionalLight(0xfff1dd, 2.6); sun.position.set(-20, 8, 10); menuScene.add(sun);
+// three.js 0.147 uses the legacy light units: an intensity here is about pi times brighter than in r155 and later.
+menuScene.add(new THREE.AmbientLight(0x334455, 0.25));
+const sun = new THREE.DirectionalLight(0xfff1dd, 1.0); sun.position.set(-20, 8, 10); menuScene.add(sun);
 const menuPlanet = new THREE.Mesh(new THREE.SphereGeometry(7, 64, 48), new THREE.MeshStandardMaterial({ map: planetTex(200), roughness: 0.9 }));
 menuPlanet.position.set(9, -4, -10); menuScene.add(menuPlanet);
 const menuShip = shipModel(0x4f8fe8, 0.9); menuShip.position.set(2.5, 1.2, 2); menuShip.rotation.set(0.15, -0.9, 0.05); menuScene.add(menuShip);
@@ -485,8 +496,8 @@ const menuShip = shipModel(0x4f8fe8, 0.9); menuShip.position.set(2.5, 1.2, 2); m
 const mapScene = new THREE.Scene();
 mapScene.background = new THREE.Color(0x03060a);
 mapScene.add(starfield(1500, 300));
-mapScene.add(new THREE.HemisphereLight(0x9fb4d8, 0x101418, 0.7));
-const mapSun = new THREE.DirectionalLight(0xffffff, 1.1); mapSun.position.set(10, 20, 6); mapScene.add(mapSun);
+mapScene.add(new THREE.HemisphereLight(0x9fb4d8, 0x101418, 0.3));
+const mapSun = new THREE.DirectionalLight(0xffffff, 0.45); mapSun.position.set(10, 20, 6); mapScene.add(mapSun);
 const mapCam = new THREE.PerspectiveCamera(42, 1, 0.1, 1000);
 const controls = new MapControls(mapCam, renderer.domElement);
 controls.enableRotate = false; controls.screenSpacePanning = false; controls.enableDamping = true;
@@ -498,47 +509,75 @@ let hexMesh = null, hexKeys = [], standees = [], markers = [], decals = [], path
 const MAP_W = 1.5 * (COLS - 1), MAP_H = Math.sqrt(3) * (ROWS - 0.5);
 const mapCenter = new THREE.Vector3(MAP_W / 2, 0, MAP_H / 2);
 
-function standeeTex(kind, fac, label) {
-  const col = FACTIONS[fac].color;
-  return canvasTex(256, 360, (x, w, h) => {
-    x.fillStyle = '#0b1016'; x.fillRect(0, 0, w, h);
-    x.strokeStyle = col; x.lineWidth = 14; x.strokeRect(7, 7, w - 14, h - 14);
-    x.fillStyle = col; x.fillRect(7, h - 80, w - 14, 73);
-    const g = x.createLinearGradient(0, 20, 0, h - 90); g.addColorStop(0, '#1d2733'); g.addColorStop(1, '#0d131a'); x.fillStyle = g; x.fillRect(14, 14, w - 28, h - 100);
-    x.save(); x.translate(w / 2, 140);
-    if (kind === 'ship') {
-      x.fillStyle = '#c9d2dc';
-      x.beginPath(); x.moveTo(-90, 10); x.lineTo(70, 4); x.lineTo(98, 14); x.lineTo(70, 24); x.lineTo(-90, 22); x.closePath(); x.fill();
-      x.fillRect(-80, -26, 70, 14); x.fillRect(-60, -14, 10, 26);
-      x.fillStyle = col; x.fillRect(10, 8, 18, 14); x.fillRect(-50, -24, 14, 10);
-      x.fillStyle = '#8fd0ff'; x.fillRect(-92, -24, 6, 10);
-    } else if (kind === 'planet') {
-      const pg = x.createRadialGradient(-20, -20, 8, 0, 0, 70); pg.addColorStop(0, '#9fc4e8'); pg.addColorStop(1, '#1d3e66');
-      x.fillStyle = pg; x.beginPath(); x.arc(0, 0, 64, 0, 7); x.fill();
-      x.strokeStyle = col; x.lineWidth = 5; x.beginPath(); x.ellipse(0, 0, 96, 20, -0.25, 0, 7); x.stroke();
-    } else {
-      x.strokeStyle = '#c9d2dc'; x.lineWidth = 12; x.beginPath(); x.arc(0, 0, 58, 0, 7); x.stroke();
-      x.lineWidth = 7; for (let a = 0; a < 4; a++) { x.beginPath(); x.moveTo(0, 0); x.lineTo(58 * Math.cos(a * 1.571), 58 * Math.sin(a * 1.571)); x.stroke(); }
-      x.fillStyle = col; x.beginPath(); x.arc(0, 0, 18, 0, 7); x.fill();
-    }
-    x.restore();
-    x.fillStyle = '#0b1016'; x.font = '700 30px "Saira Condensed", sans-serif'; x.textAlign = 'center';
-    x.fillText(label.toUpperCase().slice(0, 16), w / 2, h - 34);
+// Tabletop miniatures (the owner's references, 2026-10-30: "3d ships on stands, 3d stations on stands, 3d
+// planets"): a ship or a station stands on a clear flight post over a black base ringed in its faction's
+// colour; a planet floats in its hex. Names show as small labels at near zoom.
+const HULL_TINT = { concord: 0xb9c6d6, kethran: 0x8c6a64, vos: 0xb39a6e, neutral: 0xa0a6ae };
+const postMat = new THREE.MeshStandardMaterial({ color: 0xcfe6ff, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0 });
+const baseMat = new THREE.MeshStandardMaterial({ color: 0x15181d, roughness: 0.55, metalness: 0.2 });
+function flightStand(fac, height, size) {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * size, 0.26 * size, 0.06, 6, 1, false, Math.PI / 6), baseMat); base.position.y = 0.03; g.add(base);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.24 * size, 0.018, 6, 6), new THREE.MeshBasicMaterial({ color: FACTIONS[fac].color }));
+  rim.rotation.x = Math.PI / 2; rim.rotation.z = Math.PI / 6; rim.position.y = 0.062; g.add(rim);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, height, 8), postMat); post.position.y = height / 2 + 0.06; g.add(post);
+  return g;
+}
+function stationModel(fac) {
+  const g = new THREE.Group();
+  const metal = new THREE.MeshStandardMaterial({ color: HULL_TINT[fac], metalness: 0.5, roughness: 0.45 });
+  const trim = new THREE.MeshStandardMaterial({ color: FACTIONS[fac].color, emissive: FACTIONS[fac].color, emissiveIntensity: 0.25 });
+  const hub = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 14), metal); g.add(hub);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.045, 10, 36), metal); ring.rotation.x = Math.PI / 2; g.add(ring);
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.048, 6, 36, Math.PI / 3), trim); band.rotation.x = Math.PI / 2; g.add(band);
+  for (let k = 0; k < 4; k++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.025, 0.025), metal); sp.rotation.y = (k * Math.PI) / 4; g.add(sp); }
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.42, 8), metal); g.add(mast);
+  return g;
+}
+function labelSprite(text, color) {
+  const tex = canvasTex(512, 96, (x, w, h) => {
+    x.font = '700 52px "Saira Condensed", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.lineWidth = 10; x.strokeStyle = 'rgba(3,6,10,0.9)'; x.strokeText(text.toUpperCase(), w / 2, h / 2);
+    x.fillStyle = color; x.fillText(text.toUpperCase(), w / 2, h / 2);
   });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, sizeAttenuation: false }));
+  s.scale.set(0.16, 0.03, 1); s.renderOrder = 4;
+  return s;
 }
 function makeStandee(kind, fac, label, size = 1) {
   const g = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.3 * size, 0.34 * size, 0.06, 24), new THREE.MeshStandardMaterial({ color: FACTIONS[fac].color, metalness: 0.3, roughness: 0.5 }));
-  base.position.y = 0.03; g.add(base);
-  const card = new THREE.Mesh(new THREE.PlaneGeometry(0.56 * size, 0.79 * size), new THREE.MeshStandardMaterial({ map: standeeTex(kind, fac, label), side: THREE.DoubleSide, roughness: 0.7 }));
-  card.position.y = 0.06 + 0.4 * size; g.add(card);
-  g.userData = { card, kind, label, fac };
+  let labelY = 0.2;
+  if (kind === 'ship') {
+    g.add(flightStand(fac, 0.42 * size, size));
+    const ship = shipModel(new THREE.Color(FACTIONS[fac].color).getHex(), 0.16 * size, HULL_TINT[fac]);
+    ship.position.y = 0.06 + 0.46 * size; ship.rotation.y = fac === 'concord' ? Math.PI / 2 : -Math.PI / 2;
+    g.add(ship);
+  } else if (kind === 'station') {
+    g.add(flightStand(fac, 0.5 * size, size));
+    const st = stationModel(fac); st.scale.setScalar(size); st.position.y = 0.06 + 0.58 * size; g.add(st);
+    g.userData.spin = st;
+  } else {
+    const r = 0.36 * size;
+    const planet = new THREE.Mesh(new THREE.SphereGeometry(r, 40, 28), new THREE.MeshStandardMaterial({ map: planetTex(PLANET_HUE[label] ?? 200), roughness: 0.9 }));
+    planet.position.y = r + 0.12; g.add(planet);
+    const atmo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x8fc4ff, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }));
+    atmo.scale.setScalar(r * 3); atmo.position.copy(planet.position); g.add(atmo);
+    const orbit = new THREE.Mesh(new THREE.TorusGeometry(r * 1.55, 0.012, 6, 64), new THREE.MeshBasicMaterial({ color: FACTIONS[fac].color, transparent: true, opacity: 0.8 }));
+    orbit.rotation.x = Math.PI / 2 - 0.25; orbit.position.copy(planet.position); g.add(orbit);
+    g.userData.spin = planet;
+  }
+  const tag = labelSprite(label, FACTIONS[fac].color); tag.position.y = -0.05; g.add(tag);
+  Object.assign(g.userData, { kind, label, fac, tag });
   return g;
 }
+const PLANET_HUE = { Halcyon: 205, Meridian: 160, Vahr: 12, Ouro: 40, Tessaly: 280 };
 function buildMap() {
   mapRoot.clear(); standees = []; markers = []; decals = [];
   const geo = new THREE.CylinderGeometry(HEX_R * 0.95, HEX_R * 0.95, 0.12, 6, 1, false, Math.PI / 6);
-  hexMesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0.05 }), COLS * ROWS);
+  // The owner's reference (a box-back star map): dark glass hexes over the galaxy, each sector's contents
+  // inside its hex, and territory told by the hex borders, not by filling the hexes.
+  mapRoot.add(galaxyPlane());
+  hexMesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0.1, transparent: true, opacity: 0.62, depthWrite: false }), COLS * ROWS);
   hexKeys = [];
   const m = new THREE.Matrix4(), col = new THREE.Color();
   let i = 0;
@@ -546,30 +585,47 @@ function buildMap() {
     const p = hexPos(h.c, h.r);
     m.makeTranslation(p.x, -0.06, p.z);
     hexMesh.setMatrixAt(i, m);
-    col.set(0x0e131a).lerp(new THREE.Color(FACTIONS[h.owner].color), h.owner === 'neutral' ? 0.08 : 0.18);
-    if (h.terrain === 'nebula') col.lerp(new THREE.Color(0x4a2a66), 0.4);
-    if (h.terrain === 'asteroids') col.lerp(new THREE.Color(0x3a3128), 0.35);
-    if (h.terrain === 'star') col.set(0x3a2a10);
+    col.set(0x080c12).lerp(new THREE.Color(FACTIONS[h.owner].color), h.owner === 'neutral' ? 0.02 : 0.06);
+    if (h.terrain === 'nebula') col.lerp(new THREE.Color(0x3a2052), 0.5);
+    if (h.terrain === 'asteroids') col.lerp(new THREE.Color(0x2a241e), 0.4);
+    if (h.terrain === 'star') col.set(0x2a1d0c);
     hexMesh.setColorAt(i, col);
     hexKeys.push(key(h.c, h.r));
     i++;
     if (h.terrain === 'star') {
       const s = new THREE.Mesh(new THREE.SphereGeometry(0.42, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffd27a })); s.position.set(p.x, 0.5, p.z); mapRoot.add(s);
       const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb547, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); halo.scale.setScalar(1.6); halo.position.copy(s.position); mapRoot.add(halo);
-      const l = new THREE.PointLight(0xffc26a, 3, 3.5); l.position.copy(s.position); mapRoot.add(l);
+      const l = new THREE.PointLight(0xffc26a, 1.2, 3.5); l.position.copy(s.position); mapRoot.add(l);
     }
-    if (h.terrain === 'nebula') { const n = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x9a5cd0, opacity: 0.35, transparent: true, depthWrite: false })); n.scale.set(2.2, 1.1, 1); n.position.set(p.x, 0.35, p.z); mapRoot.add(n); decals.push(n); }
+    if (h.terrain === 'nebula') {
+      // A cloud in depth: puffs at several heights in two tints, added together.
+      const R = rng(h.c * 17 + h.r * 5);
+      for (let k = 0; k < 9; k++) {
+        const n = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: R() < 0.6 ? 0x8a4fd0 : 0x3fa3c8, opacity: 0.16 + R() * 0.12, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+        n.scale.setScalar(0.7 + R() * 0.8); n.position.set(p.x + (R() - 0.5) * 1.0, 0.15 + R() * 0.75, p.z + (R() - 0.5) * 1.0); mapRoot.add(n); decals.push(n);
+      }
+    }
     if (h.terrain === 'asteroids') {
-      const R = rng(h.c * 31 + h.r);
-      for (let k = 0; k < 7; k++) { const a = new THREE.Mesh(new THREE.DodecahedronGeometry(0.07 + R() * 0.08), rockMat); a.position.set(p.x + (R() - 0.5) * 1.1, 0.12 + R() * 0.15, p.z + (R() - 0.5) * 1.1); a.rotation.set(R() * 3, R() * 3, 0); mapRoot.add(a); decals.push(a); }
+      // A belt: rocks along a curved band across the hex, big ones in the middle of the band.
+      const R = rng(h.c * 31 + h.r), a0 = R() * Math.PI, rad = 0.9 + R() * 0.5;
+      const cx = p.x - Math.cos(a0) * rad, cz = p.z - Math.sin(a0) * rad;
+      for (let k = 0; k < 34; k++) {
+        const u = (R() - 0.5) * 1.1, off = (R() - 0.5) * 0.28, rr = rad + off;
+        const a = new THREE.Mesh(new THREE.DodecahedronGeometry(0.025 + R() * (0.07 - Math.abs(off) * 0.15)), rockMat);
+        a.position.set(cx + Math.cos(a0 + u) * rr, 0.1 + R() * 0.18, cz + Math.sin(a0 + u) * rr);
+        if (Math.hypot(a.position.x - p.x, a.position.z - p.z) > HEX_R * 0.85) continue;
+        a.rotation.set(R() * 3, R() * 3, R() * 3); mapRoot.add(a); decals.push(a);
+      }
     }
-    if (h.planet) addStandee(makeStandee('planet', h.owner === 'neutral' ? 'neutral' : h.owner, h.planet, 1.7), p.clone().add(PLACE_OFFSET), 'place');
-    if (h.station) addStandee(makeStandee('station', h.owner, h.station, 1.5), p.clone().add(PLACE_OFFSET), 'place');
+    if (h.planet) addStandee(makeStandee('planet', h.owner === 'neutral' ? 'neutral' : h.owner, h.planet, 1.15), p.clone().add(PLACE_OFFSET), 'place');
+    if (h.station) addStandee(makeStandee('station', h.owner, h.station, 1.05), p.clone().add(PLACE_OFFSET), 'place');
   }
   hexMesh.instanceColor.needsUpdate = true;
   mapRoot.add(hexMesh);
-  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1.2); addStandee(s, hexPos(g.c, g.r).add(new THREE.Vector3(0.45, 0, 0.4)), 'ship'); }
-  fleetStandee = makeStandee('ship', 'concord', CAMP.fleet[0].name, 1.45);
+  mapRoot.add(hexBorders());
+  mapRoot.add(sectorNumbers());
+  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1); addStandee(s, hexPos(g.c, g.r).add(new THREE.Vector3(0.45, 0, 0.4)), 'ship'); }
+  fleetStandee = makeStandee('ship', 'concord', CAMP.fleet[0].name, 1.15);
   const lampRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide }));
   lampRing.rotation.x = -Math.PI / 2; lampRing.position.y = 0.07; fleetStandee.add(lampRing);
   addStandee(fleetStandee, hexPos(CAMP.at.c, CAMP.at.r).add(FLEET_OFFSET), 'fleet');
@@ -578,6 +634,66 @@ function buildMap() {
   rebuildMarkers();
 }
 const rockMat = new THREE.MeshStandardMaterial({ color: 0x8a7a68, roughness: 0.95 });
+// The galaxy under the map: painted clouds and stars on one plane.
+function galaxyPlane() {
+  const tex = canvasTex(1024, 768, (x, w, h) => {
+    const R = rng(23);
+    x.fillStyle = '#03050a'; x.fillRect(0, 0, w, h);
+    const clouds = [['92,48,140', 0.22], ['40,110,150', 0.16], ['170,70,40', 0.14], ['120,40,90', 0.16]];
+    for (let i = 0; i < 70; i++) {
+      const [rgb, a] = clouds[i % clouds.length], cx = R() * w, cy = R() * h, r = 60 + R() * 220;
+      const g = x.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, `rgba(${rgb},${a})`); g.addColorStop(1, `rgba(${rgb},0)`);
+      x.fillStyle = g; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+    }
+    for (let i = 0; i < 1400; i++) { const b = 120 + R() * 135; x.fillStyle = `rgba(${b},${b},${b + 20},${0.4 + R() * 0.6})`; x.fillRect(R() * w, R() * h, R() < 0.95 ? 1 : 2, R() < 0.95 ? 1 : 2); }
+  });
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(70, 52), new THREE.MeshBasicMaterial({ map: tex }));
+  plane.rotation.x = -Math.PI / 2; plane.position.set(mapCenter.x, -0.8, mapCenter.z);
+  return plane;
+}
+// Sector numbers printed on the hexes, like a wargame map (the owner's reference): one plane for the whole map.
+function sectorNumbers() {
+  const x0 = -1.2, z0 = -1.2, W = MAP_W + 2.4, H = MAP_H + 2.4, px = 2048, py = Math.round((2048 * H) / W);
+  const tex = canvasTex(px, py, (x) => {
+    x.font = '500 17px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(170,190,215,0.55)';
+    for (const h of Object.values(CAMP.hexes)) {
+      const c = hexPos(h.c, h.r);
+      x.fillText(`${String(h.c + 1).padStart(2, '0')}${String(h.r + 1).padStart(2, '0')}`, ((c.x - x0) / W) * px, ((c.z + 0.72 - z0) / H) * py);
+    }
+  });
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+  plane.rotation.x = -Math.PI / 2; plane.position.set(x0 + W / 2, 0.015, z0 + H / 2);
+  return plane;
+}
+// Hex borders: a faint grid line on every edge, and a bright ribbon in the owner's colour along every edge
+// where territory changes, drawn inside each side's hex so a border shows both owners' colours.
+function hexBorders() {
+  const group = new THREE.Group();
+  const centreKey = (v) => `${v.x.toFixed(2)},${v.z.toFixed(2)}`;
+  const byCentre = {};
+  for (const h of Object.values(CAMP.hexes)) byCentre[centreKey(hexPos(h.c, h.r))] = h;
+  const grid = [], gridCol = [], rib = [], ribCol = [];
+  const corner = (p, k, r) => new THREE.Vector3(p.x + r * Math.cos((Math.PI / 3) * k), 0.01, p.z + r * Math.sin((Math.PI / 3) * k));
+  for (const h of Object.values(CAMP.hexes)) {
+    const p = hexPos(h.c, h.r), col = new THREE.Color(FACTIONS[h.owner].color);
+    for (let k = 0; k < 6; k++) {
+      const a = corner(p, k, HEX_R * 0.98), b = corner(p, k + 1, HEX_R * 0.98);
+      const dir = (Math.PI / 3) * k + Math.PI / 6;
+      const n = byCentre[centreKey(new THREE.Vector3(p.x + Math.sqrt(3) * HEX_R * Math.cos(dir), 0, p.z + Math.sqrt(3) * HEX_R * Math.sin(dir)))];
+      const gc = col.clone().multiplyScalar(h.owner === 'neutral' ? 0.35 : 0.5);
+      grid.push(a.x, a.y, a.z, b.x, b.y, b.z); gridCol.push(gc.r, gc.g, gc.b, gc.r, gc.g, gc.b);
+      if (h.owner === 'neutral' || (n && n.owner === h.owner)) continue;
+      const ai = corner(p, k, HEX_R * 0.86), bi = corner(p, k + 1, HEX_R * 0.86);
+      rib.push(a.x, 0.02, a.z, b.x, 0.02, b.z, bi.x, 0.02, bi.z, a.x, 0.02, a.z, bi.x, 0.02, bi.z, ai.x, 0.02, ai.z);
+      for (let v = 0; v < 6; v++) ribCol.push(col.r, col.g, col.b);
+    }
+  }
+  const g1 = new THREE.BufferGeometry(); g1.setAttribute('position', new THREE.Float32BufferAttribute(grid, 3)); g1.setAttribute('color', new THREE.Float32BufferAttribute(gridCol, 3));
+  group.add(new THREE.LineSegments(g1, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.8 })));
+  const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(rib, 3)); g2.setAttribute('color', new THREE.Float32BufferAttribute(ribCol, 3));
+  group.add(new THREE.Mesh(g2, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })));
+  return group;
+}
 const glowTex = canvasTex(128, 128, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.4, 'rgba(255,255,255,0.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); });
 // Within a hex: a planet or station stands at the back, the player's fleet front left, other ships front right.
 const FLEET_OFFSET = new THREE.Vector3(-0.45, 0, 0.45), PLACE_OFFSET = new THREE.Vector3(0.1, 0, -0.35);
@@ -619,8 +735,8 @@ const battleScene = new THREE.Scene();
 const battleCam = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
 battleCam.position.set(0, 9, 22); battleCam.lookAt(0, 0, 0);
 battleScene.add(starfield(2500, 600));
-battleScene.add(new THREE.AmbientLight(0x334455, 0.7));
-const bsun = new THREE.DirectionalLight(0xfff1dd, 2.4); bsun.position.set(-10, 12, 8); battleScene.add(bsun);
+battleScene.add(new THREE.AmbientLight(0x334455, 0.25));
+const bsun = new THREE.DirectionalLight(0xfff1dd, 0.9); bsun.position.set(-10, 12, 8); battleScene.add(bsun);
 const bplanet = new THREE.Mesh(new THREE.SphereGeometry(40, 64, 48), new THREE.MeshStandardMaterial({ map: planetTex(28), roughness: 0.95 })); bplanet.position.set(-30, -48, -60); battleScene.add(bplanet);
 const battleShips = [];
 const beams = new THREE.Group(); battleScene.add(beams);
@@ -669,7 +785,8 @@ renderer.setAnimationLoop(() => {
     const z = zoomLevel();
     for (const s of standees) {
       s.visible = s.userData.role === 'fleet' || (s.userData.role === 'place' ? z !== 'far' : z === 'near');
-      const c = s.userData.card; c.rotation.y = Math.atan2(mapCam.position.x - s.position.x, mapCam.position.z - s.position.z);
+      s.userData.tag.visible = z === 'near';
+      if (s.userData.spin) s.userData.spin.rotation.y += dt * 0.15;
     }
     for (const d of decals) d.visible = z !== 'far';
     for (const m of markers) m.position.y = 1.25 + Math.sin(t * 2 + m.userData.mission.id) * 0.08;
@@ -698,15 +815,15 @@ renderer.domElement.addEventListener('pointerup', (e) => {
 renderer.domElement.addEventListener('pointermove', (e) => {
   const tip = document.getElementById('tip');
   if (activeScene !== mapScene || e.buttons) { tip.hidden = true; return; }
-  const hit = rayAt(e.clientX, e.clientY, standees.filter((s) => s.visible).map((s) => s.userData.card));
-  if (hit) { const s = hit.object.parent; tip.textContent = s.userData.label; tip.style.left = e.clientX + 14 + 'px'; tip.style.top = e.clientY + 10 + 'px'; tip.hidden = false; }
+  const hit = rayAt(e.clientX, e.clientY, standees.filter((s) => s.visible), true);
+  if (hit) { let s = hit.object; while (s.parent && !s.userData.role) s = s.parent; tip.textContent = s.userData.label; tip.style.left = e.clientX + 14 + 'px'; tip.style.top = e.clientY + 10 + 'px'; tip.hidden = false; }
   else tip.hidden = true;
 });
-function rayAt(x, y, objs) {
+function rayAt(x, y, objs, deep = false) {
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, mapCam);
-  return ray.intersectObjects(objs, false)[0];
+  return ray.intersectObjects(objs, deep)[0];
 }
 function pick(x, y) {
   const mk = rayAt(x, y, markers);
@@ -870,6 +987,8 @@ const SCREENS = {
       h('div', { class: 'stat' }, h('b', { text: 'Credits' }), h('span', { class: 'num', text: CAMP.credits.toLocaleString('en-US') })),
       h('div', { class: 'stat' }, h('b', { text: 'Turn' }), h('span', { class: 'num', text: CAMP.turn })),
       h('div', { class: 'stat' }, h('b', { text: 'Moves' }), h('span', { class: 'num', text: `${CAMP.mp} / ${MOVE_POINTS}` })),
+      h('div', { class: 'stat' }, h('b', { text: 'Standing' }), h('span', { class: 'row', style: 'gap:4px' }, ['concord', 'vos', 'kethran'].map((f) =>
+        h('span', { class: 'chip', title: FACTIONS[f].name }, h('span', { class: 'fac', style: `background:${FACTIONS[f].color}` }), `${CAMP.standing[f] > 0 ? '+' : ''}${CAMP.standing[f]}`)))),
       h('div', { class: 'fleetchips' }, CAMP.fleet.map((s) => h('span', { class: 'chip' }, s.name, h('span', { class: 'bar', style: 'width:44px' }, h('i', { style: `width:${s.hullPct}%;${s.hullPct < 50 ? 'background:var(--warn)' : ''}` }))))));
     const here_ = sel.c === CAMP.at.c && sel.r === CAMP.at.r;
     const groupsHere = CAMP.groups.filter((g) => g.c === sel.c && g.r === sel.r);
@@ -882,8 +1001,10 @@ const SCREENS = {
       !here_ && sel.terrain !== 'star' ? (S.path ? h('div', { class: 'row' }, h('span', { class: 'muted', text: `Path cost ${S.path.cost}` }), h('span', { class: 'spacer' }), key_('Move here', () => moveFleet(S.path), 'go small'))
         : h('p', { class: 'err', text: `Out of reach this turn (${CAMP.mp} moves left).` })) : null,
       missionsHere.map((m) => h('button', { class: 'item', type: 'button', onclick: () => briefing(m) }, h('span', { class: 't', text: MISSIONS[m.type].name }), h('span', { class: 'num', text: `${m.reward} cr` }), h('span', { class: 's', text: `${m.turns} ${m.turns > 1 ? 'turns' : 'turn'} left · ${m.strength} opposition` }))),
-      h('div', { class: 'plate', text: atPort ? `Port: ${here.planet || here.station}` : 'No friendly port here' }),
-      h('div', { class: 'row' }, portKey('shipyard', 'Shipyard'), portKey('outfitter', 'Outfitter'), portKey('recruit', 'Recruiting')));
+      h('div', { class: 'plate', text: atPort ? `Port: ${here.planet || here.station}` : isMarket(here) ? `${FACTIONS[here.owner].name} port: ${here.planet || here.station}`
+        : (here.planet || here.station) ? `Closed to you: standing ${CAMP.standing[here.owner]}` : 'No friendly port here' }),
+      h('div', { class: 'row' }, portKey('shipyard', 'Shipyard'), portKey('outfitter', 'Outfitter'), portKey('recruit', 'Recruiting'),
+        isMarket(here) ? key_('Market', () => openPort('market'), 'go') : null));
     const keys = h('div', { class: 'panel mapkeys' },
       key_('+', () => setZoom(Math.max(8, mapCam.position.distanceTo(controls.target) * 0.7)), 'small', { 'aria-label': 'Zoom in' }),
       key_('−', () => setZoom(Math.min(40, mapCam.position.distanceTo(controls.target) * 1.4)), 'small', { 'aria-label': 'Zoom out' }),
@@ -914,7 +1035,7 @@ const SCREENS = {
       h('table', { class: 'grid' }, h('thead', {}, h('tr', {}, h('th', { text: 'Ship' }), h('th', { text: 'Hull' }))), h('tbody', {}, r.ships.map((s) =>
         h('tr', {}, h('td', { text: s.name }), h('td', {}, s.lost ? h('span', { class: 'err', text: 'Destroyed' }) : h('span', { class: 'row' }, h('span', { class: 'bar', style: 'width:90px' }, h('i', { style: `width:${s.hullPct}%` })), h('span', { class: 'num', text: `${s.hullPct}%` }))))))),
       r.kind === 'campaign' ? h('p', {}, 'Credits earned: ', h('span', { class: 'num', text: r.reward })) : null,
-      r.prize ? h('p', { text: `Captured: ${r.prize} joins the fleet.` }) : null,
+      r.prize ? h('p', { text: `Captured: ${r.prize} joins the fleet damaged. Repair it at a shipyard to fly it, or sell it; a Concord yard pays more for a Kethran hull.` }) : null,
       h('div', { class: 'row' }, h('span', { class: 'spacer' }), key_(r.kind === 'campaign' ? 'Back to the map' : 'Main menu', () => { S.result = null; if (r.kind === 'campaign') { buildMap(); go('map', { mission: null, sel: null, path: null }); } else go('menu'); }, 'go'))));
   },
 };
@@ -1030,15 +1151,16 @@ function openPort(id) { S.port = id; S.mission = null; render(); }
 function closePort() { S.port = null; render(); }
 function portPanel() {
   const here = CAMP.hexes[key(CAMP.at.c, CAMP.at.r)];
-  const title = { shipyard: 'Shipyard', outfitter: 'Outfitter', recruit: 'Recruiting center' }[S.port];
+  const title = { shipyard: 'Shipyard', outfitter: 'Outfitter', recruit: 'Recruiting center', market: 'Market' }[S.port];
   let body;
   if (S.port === 'shipyard') body = shipyardBody();
   if (S.port === 'outfitter') body = outfitterBody();
   if (S.port === 'recruit') body = recruitBody();
+  if (S.port === 'market') body = marketBody(here.owner);
   return h('div', { class: 'panel portpanel' },
     h('div', { class: 'head' }, h('div', {}, h('div', { class: 'plate', text: here.planet || here.station }), h('h2', { text: title })), h('span', { class: 'chip', text: `${CAMP.credits.toLocaleString('en-US')} cr` })),
     h('div', { class: 'scroll col' }, body),
-    h('div', { class: 'foot' }, h('div', { class: 'tabs' }, [['shipyard', 'Shipyard'], ['outfitter', 'Outfitter'], ['recruit', 'Recruiting']].map(([id, n]) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(id === S.port), onclick: () => openPort(id) }, n))),
+    h('div', { class: 'foot' }, S.port === 'market' ? h('span', {}) : h('div', { class: 'tabs' }, [['shipyard', 'Shipyard'], ['outfitter', 'Outfitter'], ['recruit', 'Recruiting']].map(([id, n]) => h('button', { class: 'tab', type: 'button', 'aria-selected': String(id === S.port), onclick: () => openPort(id) }, n))),
       key_('Close', closePort, 'go')),
     h('div', { class: 'strip-tag chip', text: 'Live map' }));
 }
@@ -1059,12 +1181,22 @@ function shipyardBody() {
   }
   return [tabs, h('div', { class: 'list' }, CAMP.fleet.map((s, i) => {
     const repair = Math.ceil(((100 - s.hullPct) / 100) * HULLS[s.hull].hp) * 6;
-    const value = Math.floor((shipPoints(s) * CREDIT_RATE) / 2);
+    const value = salePrice(shipPoints(s) * CREDIT_RATE, s.maker, 'concord');
     return h('div', { class: 'item' }, h('span', { class: 't', text: s.name }), h('span', { class: 'num', text: `${s.hullPct}%` }), h('span', { class: 's', text: `${HULLS[s.hull].cls}${i === 0 ? ' · flagship' : ''}` }),
       h('span', { class: 'row', style: 'grid-column:1/-1' },
         key_(`Repair ${repair} cr`, () => { if (repair > CAMP.credits) { err.textContent = 'Not enough credits to repair.'; return; } CAMP.credits -= repair; s.hullPct = 100; render(); }, 'small', { disabled: s.hullPct >= 100 }),
-        i > 0 ? key_(`Sell ${value} cr`, () => { CAMP.credits += value; CAMP.fleet.splice(i, 1); render(); }, 'small') : null));
+        i > 0 ? key_(`Sell ${value} cr`, () => { CAMP.credits += value; soldTo('concord'); CAMP.fleet.splice(i, 1); render(); }, 'small') : null));
   })), err];
+}
+function marketBody(buyer) {
+  const f = FACTIONS[buyer];
+  return [h('p', { class: 'muted', text: `${f.name} buyers. They pay ${buyer === 'vos' ? 'less than a shipyard, and dealing with them raises your standing with them' : 'a quarter of the price, more for a rival\'s hull'}.` }),
+    h('div', { class: 'list' }, CAMP.fleet.map((s, i) => {
+      const value = salePrice(shipPoints(s) * CREDIT_RATE, s.maker, buyer), gain = buyer === 'vos' ? PIRATE_SALE_STANDING : SALE_STANDING;
+      return h('div', { class: `item ${i === 0 ? 'off' : ''}` }, h('span', { class: 't', text: s.name }), h('span', { class: 'num', text: `${value.toLocaleString('en-US')} cr` }),
+        h('span', { class: 's', text: `${FACTIONS[s.maker].name}-built ${HULLS[s.hull].cls.toLowerCase()} · hull ${s.hullPct}%${i === 0 ? ' · your flagship' : ` · standing +${gain}`}` }),
+        i > 0 ? h('span', { class: 'row', style: 'grid-column:1/-1' }, key_('Sell', () => { CAMP.credits += value; soldTo(buyer); CAMP.fleet.splice(i, 1); render(); }, 'small')) : null);
+    }))];
 }
 function outfitterBody() {
   return h('div', { class: 'list' }, CAMP.fleet.map((s, i) => h('div', { class: 'item' }, h('span', { class: 't', text: s.name }), h('span', { class: 'num', text: `${(shipPoints(s) * CREDIT_RATE).toLocaleString('en-US')} cr` }),
@@ -1114,7 +1246,7 @@ function finishBattle(win) {
     CAMP.fleet = CAMP.fleet.filter((s) => !ships.find((x) => x.s === s && x.lost));
     if (win) {
       r.reward = b.mission.reward; CAMP.credits += r.reward;
-      if (b.mission.type === 'capture' && CAMP.fleet.length < FLEET_MAX) { const p = newShip('swift', 'Prize Ship Varn'); p.hullPct = 40; CAMP.fleet.push(p); r.prize = p.name; }
+      if (b.mission.type === 'capture' && CAMP.fleet.length < FLEET_MAX) { const p = newShip('swift', 'Prize Ship Varn'); p.maker = 'kethran'; p.hullPct = 40; CAMP.fleet.push(p); r.prize = p.name; }
     }
     CAMP.missions = CAMP.missions.filter((m) => m !== b.mission);
   }
@@ -1142,6 +1274,7 @@ window.MOCKUP_SHOTS = {
   outfitter: () => { freshCampaign(); openPort('outfitter'); },
   outfitter_refit: () => { freshCampaign(); S.lo.group = 'heavy'; openLoadout(CAMP.fleet[0], 'map', campaignPurse()); S.lo.sys = 'torpedo'; render(); },
   recruiting: () => { freshCampaign(); openPort('recruit'); },
+  market: () => { freshCampaign(); const p = newShip('swift', 'Prize Ship Varn'); p.maker = 'kethran'; p.hullPct = 40; CAMP.fleet.push(p); CAMP.at = { c: 7, r: 9 }; buildMap(); centreOn(7, 9, 14); render(); openPort('market'); },
   briefing: () => { freshCampaign(); const m = CAMP.missions.find((x) => x.type === 'patrol') || offerMission('patrol'); rebuildMarkers(); CAMP.at = { c: m.c, r: m.r }; buildMap(); centreOn(m.c, m.r, 14); selectHex(m.c, m.r); briefing(m); },
   campaign_results: () => { MOCKUP_SHOTS.briefing(); const m = S.mission; startBattle({ kind: 'campaign', name: MISSIONS[m.type].name, fleet: CAMP.fleet, enemy: 'kethran', enemyCount: 2, mission: m }); finishBattle(true); },
 };
@@ -1150,4 +1283,5 @@ window.MOCKUP_SCENE = mapScene;
 render();
 resize();
 window.MOCKUP_READY = true;
+})();
 </script>

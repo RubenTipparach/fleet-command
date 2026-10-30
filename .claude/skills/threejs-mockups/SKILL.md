@@ -16,7 +16,7 @@ not the files. Fleet Command's kit:
 
 | File | What it is |
 | --- | --- |
-| `docs/mockups/lib/template.html` | The page skeleton: three.js 0.169.0 from jsDelivr, OrbitControls, a 10 m grid and a 1.8 m figure, named views, a triangles and draw-calls meter, `MOCKUP_SHOTS` and `MOCKUP_READY`. Copy it to `docs/mockups/<subject>.html` to start. |
+| `docs/mockups/lib/template.html` | The page skeleton: three.js **0.147.0 UMD** from jsDelivr (plain `<script>` tags, the `THREE` global; an ES-module import map left the published page empty on the artifact host, 2026-10-30, and 0.147 is the last release with `examples/js`; its lights use the legacy units, about pi times brighter than r155 and later for the same number), OrbitControls, a 10 m grid and a 1.8 m figure, named views, a triangles and draw-calls meter, `MOCKUP_SHOTS` and `MOCKUP_READY`. Copy it to `docs/mockups/<subject>.html` to start. |
 | `docs/mockups/lib/gltf_json_loader.js` | Loads a glTF JSON with its buffer embedded (the artifact host refuses `fetch()` of `data:` and `blob:` URLs and does not serve `.glb`). From Crab Breeze. |
 | `tools/mockups/shoot.mjs` | Headless Chromium screenshots of every named shot at desktop (1920 x 1080), phone landscape (844 x 390) and phone portrait (390 x 844) into `docs/screenshots/mockups/<page>-<shot>-<size>.png`; fails on a console error. `NODE_PATH=$(npm root -g) node tools/mockups/shoot.mjs docs/mockups/<page>.html docs/screenshots/mockups` |
 

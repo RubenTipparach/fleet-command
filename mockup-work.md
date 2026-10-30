@@ -18,9 +18,10 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow | Drafted (2026-10-30, v1) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
+| 1 | Primary game flow | Drafted (2026-10-30, v3) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
+| 4 | Console skins | Listed | `console-skins` (to write) | `docs/mockups/console-skins.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -40,6 +41,12 @@ Owner, 2026-10-30: "let start with the primary game flow in three js".
   - Otherwise, **missions**: patrol, enemy station assault, planetary assault, convoy ambush, convoy
     defense, assassination, capture a ship.
   - Click **Deploy** on a mission, play the game, and at the end return to the campaign map.
+
+Later direction, the owner, 2026-10-30 (folded into the design and the page): "look at this star map, the
+elements of each sector is inside the hex, with the hex borders communicating territory"; "ships, planets
+and stations should be 3d"; "3d ships on stands, 3d stations on stands, 3d planets, asteroid belts, nebula"
+(with photos of tabletop miniatures on flight stands); and the survey's F answers (prices by buyer, standing,
+prizes repaired into the fleet).
 
 Design: `openspec/changes/game-flow/`. References: SFC2 manual printed pages 74-89 (menus, skirmish,
 campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish points, refit by
@@ -97,3 +104,31 @@ Owner, 2026-10-30: "this is the look dev area".
     | Taxi and turnoff lights | Lower side lamps for manoeuvring near stations | Dimmer, wider |
     | (the owner's addition) | **Hull floodlighting**: lamps set into the hull that graze its plating, so panel lines, vents and greebles read when the ship is in shadow | Steady, baked |
 
+
+## 4. Console skins
+
+Owner, 2026-10-30, with two screenshots of the reference game's battle screen (not committed: someone
+else's art):
+
+- "I want the ui to look really nice, like modeled and lit in blender then baked into a texture, also it
+  should be deisnged for 9slicing for some elements, and others are like hero elements."
+- "I really like espeically the mirak ui design, its so playful and pirate like."
+- "I also enjoy the sleek, utilitarian, LCARS blue version of the federation, very sci-fi very minimal."
+- "whatever we do, we gotta design it for like UI kit that we can sweap out between factions."
+
+What the mockup shows:
+
+- **The kit**: every console piece, sorted into 9-slice pieces (frames, bars, buttons, tabs, shown
+  stretched to several sizes to prove the slicing) and hero pieces (helm pad, systems display bezel,
+  dials, alert lamp, crest).
+- **The kit's piece list** first: every named piece, its kind (9-slice or hero), its slot size and its
+  margins, shared by every skin. Mockups 1 and 2 are then redrawn from kit pieces so a skin can be
+  swapped on them live.
+- **Skins on one layout**: the same console (mockup 2's layout) in each faction's skin, switchable:
+  Concord sleek, utilitarian and minimal in blues; Vos Syndicate playful, organic and pirate-like;
+  Kethran to be designed. Our own designs, after the qualities the owner named.
+- **How they are made**: modelled and lit in Blender (`panel-textures`, `blender-hard-surface`), baked
+  to PBR maps, then to the flat lit images the console draws, with each 9-slice image's margins recorded.
+- At desktop and phone sizes, panels expanded (CLAUDE.md section 7).
+
+Order: it follows mockup 2, whose layout it dresses; a first skin can be shown on mockup 2's page.

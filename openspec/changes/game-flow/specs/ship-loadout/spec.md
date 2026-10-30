@@ -20,13 +20,17 @@ A system SHALL be fitted only to a hardpoint of its own group (shields, primary 
 - **WHEN** the player tries to fit a torpedo tube to a primary hardpoint
 - **THEN** the fit is refused and nothing is spent
 
-### Requirement: Campaign sales return half
+### Requirement: Campaign sales depend on the buyer
 
-Removing or selling a system or a ship in the campaign SHALL refund half its price, rounded down.
+Removing or selling a system or a ship in the campaign SHALL pay a quarter of its price, times 1.5 when the buyer is a rival of the faction that built it, times 0.6 when the buyer is the pirates, rounded down.
 
-#### Scenario: Selling a torpedo tube
-- **WHEN** the player removes a torpedo tube priced 450 credits at an outfitter
-- **THEN** 225 credits are refunded
+#### Scenario: Selling a torpedo tube at home
+- **WHEN** the player removes a Concord-built torpedo tube priced 450 credits at a Concord outfitter
+- **THEN** 112 credits are paid
+
+#### Scenario: A rival pays more for a prize
+- **WHEN** the player sells a Kethran-built ship priced 2750 credits at a Concord shipyard
+- **THEN** 1031 credits are paid
 
 ### Requirement: Supplies stay within the hull's maximum
 

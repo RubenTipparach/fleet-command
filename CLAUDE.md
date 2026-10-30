@@ -88,13 +88,16 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
 ## 2. The stack: Godot
 
 > **Under review: Godot or Bevy** (owner, 2026-10-30: "I'm notr convinced with godot actually because I
-> really want high fidelity rendering... soooo maybe bevy if it supports android?"). Bevy does build
-> for Android (its `mobile` example, `cargo-ndk`, GameActivity on API 31 and up), and Crab Breeze is
-> already a Bevy 0.20 workspace with its own skills. Survey `T4` decides; Bevy is the recommendation.
-> Until it is answered, write no engine code and nothing new that only one engine can use. The
-> mockups are three.js and carry over either way. When `T4` lands on Bevy, this section, the Godot
-> skills (`godot-architecture`, `clean-code`, `testing-practices`, `playtest`) and `build.config` are
-> rewritten from Crab Breeze's Bevy versions in one change.
+> really want high fidelity rendering... soooo maybe bevy if it supports android?", then in the survey: "can
+> godot handle a lot of the graphical and simulation aspects?"). Bevy builds for Android (GameActivity, API
+> 31 and up) and ships a path tracer for RTX cards; mainline Godot 4.7 has rich raster lighting (SDFGI,
+> VoxelGI, lightmaps, volumetric fog, HDR output, area lights) but only groundwork for ray tracing, and has
+> the more mature UI (nine-slice, themes) and Android export. Survey `T4a` decides; Godot is the
+> recommendation, for the baked, nine-sliced, faction-skinned console and the phones. Until it is
+> answered, write no engine code and nothing new that only one engine can use. The mockups are three.js
+> and carry over either way. If `T4a` lands on Bevy, this section, the Godot skills (`godot-architecture`,
+> `clean-code`, `testing-practices`, `playtest`) and `build.config` are rewritten from Crab Breeze's Bevy
+> versions in one change.
 
 - **Godot 4.7.1-stable, standard (GDScript) build**, pinned in `build.config`, the one place a
   toolchain version is written. `scripts/install-godot.sh` installs that editor into `.tools/godot/`.
@@ -283,6 +286,30 @@ else's artwork):
   5), and nothing is reachable by hover alone.
 - **The console panels are textured** (U3): modelled metal frames, real buttons and placards,
   rendered to images by `panel-textures`, with readouts drawn live inside them.
+- **The console is modelled and lit in Blender, then baked** (owner, 2026-10-30: "I want the ui to look
+  really nice, like modeled and lit in blender then baked into a texture, also it should be deisnged
+  for 9slicing for some elements, and others are like hero elements"). Two kinds of piece:
+  - **9-slice pieces**: panel frames, bars, buttons and tabs that change size. Each is baked once with
+    fixed corners, edges that stretch or tile, and a centre that stretches, and its slice margins in
+    pixels are recorded beside the image. Text and readouts are drawn live on top.
+  - **Hero pieces**: one-off elements baked whole at their final size: the helm pad, the ship systems
+    display's bezel, the dials, the alert lamp, the faction crest.
+- **Each faction has its own console skin**, on the same layout and the same 9-slice and hero slots
+  (owner, 2026-10-30, with two screenshots of the reference game's skins: "I really like espeically the
+  mirak ui design, its so playful and pirate like", "I also enjoy the sleek, utilitarian, LCARS blue
+  version of the federation, very sci-fi very minimal"). The two references set two directions, in our
+  own designs (section 1: take the shape, not the art):
+  - **Concord** (the player's faction): sleek, utilitarian and minimal, in blues. Thin frames, flat
+    lit panels, clean type, little ornament.
+  - **Vos Syndicate** (the pirates): playful and organic. Sculpted, hand-built frames, rivets and
+    cabling, warm rusts and brass, a little wild.
+  - **Kethran Hegemony**: a direction of its own, to be set in the console skins mockup (mockup 4).
+- **One UI kit, swapped per faction** (owner, 2026-10-30: "whatever we do, we gotta design it for like
+  UI kit that we can sweap out between factions"). The kit is a fixed list of named pieces (each 9-slice
+  frame, bar, button, tab and hero piece, with its slot size and margins), and a skin is one set of
+  images and colours for that list. Every screen (the menus, the campaign map's panels and the battle
+  console) draws only kit pieces by name, so swapping the skin swaps the look and changes no layout or
+  code. A piece a skin lacks is a build error, not a fallback.
 - **The OpenAI `game-ui-frontend` skill's "protect the playfield" defaults** (one HUD cluster,
   20-25% of the screen at most) **do not apply** to the console: the owner chose a dense,
   panel-heavy layout. Its other rules do apply: readable over motion, themed (not a SaaS
