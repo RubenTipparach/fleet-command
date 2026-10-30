@@ -490,6 +490,7 @@ Before claiming anything is done, run what applies:
 | `music-authoring` | Motifs in notes, Strudel scores, multitrack MIDI, LMMS headless (section 11). |
 | `playtest` | Running, watching, recording, uploading and reporting a playtest (section 9). |
 | `obs-record` | Recording a window with OBS and copying it to Google Drive (section 9). |
+| `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Draft: its companion guide, `docs/design/ui-bible.html`, is not written yet. |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

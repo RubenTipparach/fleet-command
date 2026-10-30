@@ -24,6 +24,7 @@ note, and the note wins where they differ.
 | `godot-architecture` | New, after the-federation's `src/sim/` split and CLAUDE.md sections 5 and 6, and Crab Breeze's `bevy-architecture` | the-federation `02791b6`, Crab Breeze `69ce196` | 2026-10-30 | |
 | `testing-practices` | New, after the-federation's `tests/` and `scripts/run-tests.sh`, and Crab Breeze's `testing-practices` | the-federation `02791b6`, Crab Breeze `69ce196` | 2026-10-30 | |
 | `playtest` | New, after Crab Breeze's `playtest` (itself after Star Crew's `--playtest`, Mining Mike's five-minute checks and Tom Lander's `bot-run`) | Crab Breeze `69ce196` | 2026-10-30 | Rewritten for Godot input events and two screen shapes. |
+| `blender-ui-panels` | New, from this session's lighting study after a 1999 music-player skin (the study itself is not committed) | | 2026-10-30 | Draft. Its companion guide and the step renders in `docs/design/ui-bible/` were started; the guide page is not written yet. |
 
 Data and code borrowed for the mockups (not skills, recorded here so they are found):
 - The puff nebulae in `docs/mockups/game-flow.html` (camera-facing billboards, noise-eroded edges, lit as spheres,
