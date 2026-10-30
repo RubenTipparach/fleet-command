@@ -37,6 +37,7 @@ import argparse
 import json
 import math
 import os
+import struct
 import sys
 import time
 
@@ -354,20 +355,20 @@ def keycap(K, outer, key, z_top, lens_role, key_role="iron", lens_inset=8.0,
 def corner_brackets(K, w, h, roles, z0=8.0, z1=13.0, bolt=True):
     """Armour brackets hugging a frame's chamfered corners, each with a hex bolt; roles per corner
     (tl, tr, br, bl). They stay inside the 28 px corner squares so a 9-slice frame stretches clean."""
-    tl = [(4, 17), (17, 4), (27, 4), (27, 9), (9, 27), (4, 27)]
+    tl = [(4, 17), (17, 4), (25, 4), (25, 8), (8, 25), (4, 25)]
     corners = (tl, mirror(tl, w=w), mirror(tl, w=w, h=h), mirror(tl, h=h))
-    spots = ((14.5, 14.5), (w - 14.5, 14.5), (w - 14.5, h - 14.5), (14.5, h - 14.5))
+    spots = ((13.5, 13.5), (w - 13.5, 13.5), (w - 13.5, h - 13.5), (13.5, h - 13.5))
     for pts, role, (bx, by) in zip(corners, roles, spots):
         K.prism(pts, z0, z1, role, bevel=1.5)
         if bolt:
-            K.bolt(bx, by, z1, r=3.0)
+            K.bolt(bx, by, z1, r=2.8)
 
 
 # ----------------------------------------------------------------------------- the pieces
 
 def frame_panel(K):
     w = h = 160
-    K.prism(chamfer(rect(0, 0, w, h), 14), 0, 6, "gunmetal", bevel=2.0, holes=[chamfer(rect(24, 24, w - 24, h - 24), 4)])
+    K.prism(chamfer(rect(0, 0, w, h), 14), 0, 6, "gunmetal", bevel=2.0, holes=[chamfer(rect(24, 24, w - 24, h - 24), 2)])
     K.prism(chamfer(rect(3, 3, w - 3, h - 3), 13), 4, 10, "iron", bevel=2.5, holes=[chamfer(rect(17, 17, w - 17, h - 17), 6)])
     K.prism(rect(20, 20, w - 20, h - 20), -3, 0.5, "glass")
     corner_brackets(K, w, h, ("oxide", "oxide", "iron", "iron"))
@@ -383,7 +384,7 @@ def frame_inset(K):
 def bar_track(K):
     w, h = 96, 16
     K.prism([(0, 8), (5, 0), (w - 5, 0), (w, 8), (w - 5, h), (5, h)], 0, 5, "gunmetal", bevel=1.5,
-            holes=[[(6, 8), (9.5, 3.5), (w - 9.5, 3.5), (w - 6, 8), (w - 9.5, 12.5), (9.5, 12.5)]])
+            holes=[[(4.5, 8), (7.5, 3.5), (w - 7.5, 3.5), (w - 4.5, 8), (w - 7.5, 12.5), (7.5, 12.5)]])
     K.prism(rect(4, 2, w - 4, h - 2), -3, -1, "socket")
 
 
@@ -442,18 +443,19 @@ def strip(bottom):
         K.pipe(30, w - 30, Y(5.0), 2.6, 9.0, "steel")
         K.prism(poly(rect(40, 48.5, w - 40, 50.5)), 5, 6.6, "iron", bevel=0.5)
         # the end caps: armoured wedges pointing in toward the field, bolted, red-ranked, hazard-notched
-        cap = chamfer([(2, 1), (74, 1), (93, 20), (93, 37), (76, 54), (22, 54), (2, 34)], [0, 3, 2, 2, 3, 2, 0])
-        haz = [(12, 14), (40, 14), (34, 24), (6, 24)]
-        rank = [(48, 12), (58, 12), (70, 28), (58, 44), (48, 44), (60, 28)]
+        # (the cap's prow stops at 84 px so its shadow ends inside the 96 px margin)
+        cap = chamfer([(2, 1), (66, 1), (84, 19), (84, 37), (68, 54), (22, 54), (2, 34)], [0, 3, 2, 2, 3, 2, 0])
+        haz = [(12, 14), (38, 14), (32, 24), (6, 24)]
+        rank = [(44, 12), (53, 12), (64, 28), (53, 44), (44, 44), (55, 28)]
         for fx in (False, True):
-            K.prism(poly(cap, fx), 5, 13, "iron", bevel=2.2)
-            K.prism(poly(chamfer(haz, 1), fx), 12.4, 13.6, "hazard", bevel=0.5)
-            K.prism(poly(rank, fx), 12.4, 13.8, "signal", bevel=0.6)
-            for bx, by in ((14, 38), (32, 44), (80, 28)):
+            K.prism(poly(cap, fx), 5, 11.5, "iron", bevel=2.2)
+            K.prism(poly(chamfer(haz, 1), fx), 10.9, 12.1, "hazard", bevel=0.5)
+            K.prism(poly(rank, fx), 10.9, 12.3, "signal", bevel=0.6)
+            for bx, by in ((14, 38), (32, 44), (73, 28)):
                 X = w - bx if fx else bx
-                K.bolt(X, Y(by), 13, r=3.0)
-            K.prism(poly(rect(16, 31, 30, 33), fx), 12.6, 13.4, "bone")
-            K.prism(poly(rect(16, 35, 24, 37), fx), 12.6, 13.4, "bone")
+                K.bolt(X, Y(by), 11.5, r=3.0)
+            K.prism(poly(rect(16, 31, 30, 33), fx), 11.1, 11.9, "bone")
+            K.prism(poly(rect(16, 35, 24, 37), fx), 11.1, 11.9, "bone")
     return build
 
 
@@ -605,7 +607,7 @@ def crest(K):
 PIECES = {
     "frame.panel":   ("nine", (160, 160), (28, 28, 28, 28), "xy", frame_panel),
     "frame.inset":   ("nine", (64, 64), (14, 14, 14, 14), "xy", frame_inset),
-    "bar.track":     ("nine", (96, 16), (0, 8, 0, 8), "x", bar_track),
+    "bar.track":     ("nine", (96, 16), (0, 12, 0, 12), "x", bar_track),
     "bar.fill":      ("nine", (64, 10), (0, 5, 0, 5), "x", bar_fill("fill_amber")),
     "bar.fill.red":  ("nine", (64, 10), (0, 5, 0, 5), "x", bar_fill("fill_red")),
     "button.idle":   ("nine", (160, 56), (14, 26, 14, 26), "x", button("idle")),
@@ -667,6 +669,10 @@ def setup(w_px, h_px, samples):
     sc.render.image_settings.color_mode = "RGBA"
     sc.render.image_settings.color_depth = "8"
     sc.render.image_settings.compression = 100
+    # no metadata stamps (date, render time, file name): the PNGs are byte-reproducible
+    for attr in dir(sc.render):
+        if attr.startswith("use_stamp"):
+            setattr(sc.render, attr, False)
     world = bpy.data.worlds.new("World")
     world.use_nodes = True
     bg = world.node_tree.nodes["Background"]
@@ -675,7 +681,23 @@ def setup(w_px, h_px, samples):
     sc.world = world
     # the harsh key from the top left (light travels toward +x, -y, down), a cool rim from the bottom right
     sun("Key", (1.0, -1.0, -1.25), 5.0, (1.0, 0.96, 0.9), 3.0)
-    sun("Rim", (-1.0, 1.0, -0.55), 1.1, (0.62, 0.78, 1.0), 6.0)
+    sun("Rim", (-1.0, 1.0, -0.8), 1.1, (0.62, 0.78, 1.0), 6.0)
+
+
+def strip_png_metadata(path):
+    """Drop every ancillary text, time and EXIF chunk from a PNG (Cycles writes its render time
+    into the file), keeping the image chunks byte for byte, so a rerun writes identical files."""
+    with open(path, "rb") as f:
+        data = f.read()
+    out, i = [data[:8]], 8
+    while i < len(data):
+        n = struct.unpack(">I", data[i:i + 4])[0]
+        kind = data[i + 4:i + 8]
+        if kind not in (b"tEXt", b"zTXt", b"iTXt", b"tIME", b"eXIf", b"pHYs"):
+            out.append(data[i:i + 12 + n])
+        i += 12 + n
+    with open(path, "wb") as f:
+        f.write(b"".join(out))
 
 
 def render_piece(name, out_dir, samples):
@@ -688,6 +710,7 @@ def render_piece(name, out_dir, samples):
     sc = bpy.context.scene
     sc.render.filepath = os.path.join(out_dir, f"{name}.png")
     bpy.ops.render.render(write_still=True)
+    strip_png_metadata(sc.render.filepath)
     entry = {"kind": kind, "size": [w, h], "file": f"{name}.png"}
     if kind == "nine":
         entry["margins"] = list(margins)

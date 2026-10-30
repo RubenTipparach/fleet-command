@@ -41,9 +41,9 @@
       "file": "bar.track.png",
       "margins": [
         0,
-        8,
+        12,
         0,
-        8
+        12
       ],
       "stretch": "x"
     },
