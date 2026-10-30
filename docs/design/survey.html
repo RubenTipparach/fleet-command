@@ -166,21 +166,22 @@ const SECTIONS = [
         why: 'Per-faction standing is what makes selling to pirates a choice, as your answer described.' },
     ] },
   { tag: 'U', name: 'The console',
-    lead: 'Your two UI references are now rules: the console is one kit of nine-slice and hero pieces, modelled and baked in Blender, with a skin per faction (Concord sleek and minimal in blues, the Vos playful and pirate-like). Mockup 4 (Console Skins) shows the kit and all four skins on one console; Kethran A and B are the U5 options.',
+    lead: 'The console is one kit of nine-slice and hero pieces with a skin per faction, and each skin is a design language of its own (your three rules): Concord built on LCARS\'s principles with Starfleet Command\'s palette, Kethran modelled in Blender like StarCraft, Vos hand-drawn. To give each skin its shapes and colours, U7 writes down who each faction is. Mockup 4 (Console Skins) shows all three.',
     qs: [
       { id: 'U4', q: 'When does the player see another faction\'s skin? The player\'s campaign faction is the Concord.',
         options: ['Flying a ship of that faction: a captured ship keeps its builder\'s console, and skirmish lets you pick a faction', 'Any skin can be chosen in Options', 'Both'], rec: 2,
         why: 'Captured ships make the skins part of play, and an Options choice lets you keep a favourite.' },
-      { id: 'U5', q: 'The Kethran Hegemony\'s skin: which direction?',
-        options: ['Militarist: angular armour plates, red and black, hard edges', 'Ornate imperial: gold filigree on dark stone', 'Design it in mockup 4 and show options'], rec: 2,
-        why: 'Better chosen from rendered options than from words.' },
       { id: 'U6', q: 'Does a faction skin change only the pictures, or also the type and the button sounds?',
         options: ['Pictures, colours, type and button sounds', 'Pictures and colours only', 'Everything, including layout differences'], rec: 0,
         why: 'Type and sound carry as much character as the frames do; layout stays fixed so a captain always knows where things are.' },
+      { id: 'U7', q: 'Are the factions as the skins read them? Concord: many species deciding by consent, every kind of hand, clean light, saucers and sweeps. Kethran: an empire of rank and conquest, heavy armoured clawed bodies, foundries and armour plate, wedge ships. Vos: free raider clans living on luck and loot, lanky many-jointed tattooed bodies, patched salvage, spiked scavenged hulls.',
+        options: ['Yes, as written', 'Mostly: corrections in the notes', 'No: I will describe them in the notes'], rec: 0,
+        why: 'Your third rule shapes every icon and button from these four things; writing them down lets each skin follow from them.' },
     ] },
 ];
 
 const DECIDED = [
+  { text: 'U5: the Kethran skin is modelled hard surface rendered in Blender, "like starcraft"; Concord is built on LCARS\'s principles with a palette from Starfleet Command and Starfleet Academy; the Vos are hand-drawn; no two skins share a button shape (2026-10-30)', where: 'CLAUDE.md section 7, openspec/changes/console-skins, mockup 4' },
   { text: 'F6: a sale pays a quarter, more from a rival of the builder, less from pirates who raise your standing; prizes can be repaired into the fleet ("depends who you sell it to as well...")', where: 'openspec/changes/game-flow (design, specs), mockup 1' },
   { text: 'F1-F5 (recommendations confirmed): all port facilities need a friendly port; turn-based map with 3 move points; deploy from the mission\'s hex; Small, Standard, Large budgets; up to four ships', where: 'openspec/changes/game-flow' },
   { text: 'The map: territory by hex borders, contents inside each hex; 3D ships and stations on stands, 3D planets, asteroid belts, nebulae', where: 'openspec/changes/game-flow, mockup 1' },

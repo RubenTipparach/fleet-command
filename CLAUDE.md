@@ -284,26 +284,43 @@ else's artwork):
   portrait** (U2): in portrait the console stacks above the view, and an expanded panel leaves the
   live view in a strip along the bottom. Touch targets are at least 44 x 44 CSS px (Tactical Airsuite
   5), and nothing is reachable by hover alone.
-- **The console panels are textured** (U3): modelled metal frames, real buttons and placards,
-  rendered to images by `panel-textures`, with readouts drawn live inside them.
-- **The console is modelled and lit in Blender, then baked** (owner, 2026-10-30: "I want the ui to look
-  really nice, like modeled and lit in blender then baked into a texture, also it should be deisnged
-  for 9slicing for some elements, and others are like hero elements"). Two kinds of piece:
-  - **9-slice pieces**: panel frames, bars, buttons and tabs that change size. Each is baked once with
+- **The console panels are images** (U3), rendered by a committed generator, with readouts drawn live
+  inside them. How the images are made is part of each faction's design language (below): the owner first
+  asked for the whole console "modeled and lit in blender then baked into a texture" (2026-10-30), then
+  set one skin per method (the faction skins, below). Two kinds of piece, in every skin (owner: "it should
+  be deisnged for 9slicing for some elements, and others are like hero elements"):
+  - **9-slice pieces**: panel frames, bars, buttons and tabs that change size. Each is made once with
     fixed corners, edges that stretch or tile, and a centre that stretches, and its slice margins in
     pixels are recorded beside the image. Text and readouts are drawn live on top.
-  - **Hero pieces**: one-off elements baked whole at their final size: the helm pad, the ship systems
+  - **Hero pieces**: one-off elements made whole at their final size: the helm pad, the ship systems
     display's bezel, the dials, the alert lamp, the faction crest.
 - **Each faction has its own console skin**, on the same layout and the same 9-slice and hero slots
-  (owner, 2026-10-30, with two screenshots of the reference game's skins: "I really like espeically the
+  (owner, 2026-10-30, with screenshots of the reference games' skins: "I really like espeically the
   mirak ui design, its so playful and pirate like", "I also enjoy the sleek, utilitarian, LCARS blue
-  version of the federation, very sci-fi very minimal"). The two references set two directions, in our
-  own designs (section 1: take the shape, not the art):
-  - **Concord** (the player's faction): sleek, utilitarian and minimal, in blues. Thin frames, flat
-    lit panels, clean type, little ornament.
-  - **Vos Syndicate** (the pirates): playful and organic. Sculpted, hand-built frames, rivets and
-    cabling, warm rusts and brass, a little wild.
-  - **Kethran Hegemony**: a direction of its own, to be set in the console skins mockup (mockup 4).
+  version of the federation, very sci-fi very minimal"). **A skin is a design language, not a recolour**
+  (owner, 2026-10-30: "this ui language thing, it just different colors, not very interesting"). Three
+  rules, the owner's, for every skin:
+  1. **No skin uses the same button shape** as another.
+  2. **Every skin's palette comes from its faction's ideology.**
+  3. **Elements and icons come from how the faction thinks**: each skin has its own shapes, lighting,
+     shading and icon shapes, drawn from the faction's world view, body shape, technology and ships.
+
+  The three, in our own designs (section 1: take the shape, not the art). `openspec/changes/console-skins/design.md`
+  holds each one in full:
+  - **Concord** (the player's faction): **a design language built on LCARS's principles** (owner: "do
+    research on LCARS design language", with its Wikipedia page, Bracer Jack's LCARS Manifesto and Coherent
+    Interface guideline, and thelcars.com), its palette **sampled from Starfleet Command and Starfleet
+    Academy** screenshots ("extract colorpallete from starfleet command and starfleet academy, build ONE
+    design language based on that"). Flat back-lit vector shapes on black, sweeping frames that change
+    thickness at every turn, round-capped pill buttons, at most five colours each with one meaning. LCARS
+    itself is a studio's copyrighted design: we take its principles, never its artwork, typeface or
+    numbers decor.
+  - **Kethran Hegemony**: **modelled hard-surface pieces rendered in Blender** (owner: "build the other
+    design language using 3d models in blender like starcraft"): armoured gunmetal plates, bolts,
+    conduits, trapezoid wedge keycaps with lit lenses, harsh top light (`tools/blender/build_ui_kethran.py`).
+  - **Vos Syndicate** (the pirates): **a hand-drawn aesthetic** (owner: "design a hand drawn aesthetic of
+    the mirak ui"): ink outlines that wobble, washes and hatching, lopsided claw-tag buttons, spiral and
+    claw icons, drawn by a committed script, never by hand.
 - **One UI kit, swapped per faction** (owner, 2026-10-30: "whatever we do, we gotta design it for like
   UI kit that we can sweap out between factions"). The kit is a fixed list of named pieces (each 9-slice
   frame, bar, button, tab and hero piece, with its slot size and margins), and a skin is one set of

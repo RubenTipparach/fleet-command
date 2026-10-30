@@ -8,10 +8,16 @@ one source in data/ (after Star Crew's tools/mockups/inline.py). A marker pair
 
 is filled with <script type="application/json" data-src="data/space/skies/quiet.json">minified JSON</script>.
 
+A UI kit manifest (a JSON file with "pieces", each naming its image as "file" beside the manifest) is inlined with each
+piece's image as a "data" URI, so a page can draw a kit rendered in Blender without fetching anything:
+
+    <!-- INLINE assets/ui/kethran/manifest.json -->
+
     python3 tools/mockups/inline_data.py docs/mockups/game-flow.html [--check]
 
 --check fails (exit 1) when a page's inlined data differs from the file, writing nothing.
 """
+import base64
 import json
 import pathlib
 import re
@@ -21,10 +27,21 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 MARK = re.compile(r"(<!-- INLINE (\S+) -->\n)(.*?)(<!-- /INLINE -->)", re.S)
 
 
+def load(src):
+    """The JSON at src, with a kit manifest's piece images carried as data URIs."""
+    path = ROOT / src
+    obj = json.loads(path.read_text())
+    if isinstance(obj, dict) and isinstance(obj.get("pieces"), dict):
+        for piece in obj["pieces"].values():
+            png = (path.parent / piece["file"]).read_bytes()
+            piece["data"] = "data:image/png;base64," + base64.b64encode(png).decode("ascii")
+    return obj
+
+
 def fill(text):
     def one(m):
         src = m.group(2)
-        data = json.dumps(json.loads((ROOT / src).read_text()), separators=(",", ":"))
+        data = json.dumps(load(src), separators=(",", ":"))
         return f'{m.group(1)}<script type="application/json" data-src="{src}">{data}</script>\n{m.group(4)}'
     return MARK.sub(one, text)
 

@@ -125,6 +125,16 @@ else's art):
 - "whatever we do, we gotta design it for like UI kit that we can sweap out between factions."
 - "before I approve this start another artifact so we can design the design language of the ui, which changes based on
   what faction origin we are."
+- On version 1, with screenshots of Starfleet Command's Federation and Mirak consoles, Starfleet Academy's science station
+  and StarCraft's Terran console: "this ui language thing, it just different colors, not very interesting. 1. do research on
+  LCARS design language [Wikipedia, the LCARS Manifesto and guideline at lcars-terminal.de, thelcars.com] 2. extract
+  colorpallete from starfleet command and starfleet academy, build ONE design language based on that 3. build the other
+  design language using 3d models in blender like starcraft 4. design a hand drawn aesthetic of the mirak ui". Rules: "NO
+  skin uses the same button shape"; "every ui has a color palette inspired by that factions ideologies"; "ui elements and
+  iconography is inspired by how that faction thinks. each ui skin uses different shapes, lighting, and shading on their UI
+  and different icon shapes shaped by their world view, their body shapes, their technology, the shape of their ships".
+  Version 2 builds Concord on LCARS's principles (palette sampled from the two games), Kethran as Blender renders, and
+  the Vos hand-drawn (`openspec/changes/console-skins/design.md`).
 
 What the mockup shows:
 

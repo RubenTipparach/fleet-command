@@ -8,6 +8,15 @@
 - [x] 1.3 Shots at desktop and phone sizes, looked at; published; recorded; in the tracker and `mockup-work.md`
 - [x] 1.4 Survey: U4, U5 (open), U6
 
+## 1b. Version 2: three design languages (owner, 2026-10-30)
+
+- [x] 1.5 Research LCARS (the owner's four links); sample the reference games' palettes (`tools/mockups/sample_palette.py`)
+- [x] 1.6 Design: the factions as the skins read them, three languages, the owner's three rules, icons in the kit
+- [ ] 1.7 Kethran pieces modelled and rendered in Blender (`tools/blender/build_ui_kethran.py`, `assets/ui/kethran/`)
+- [ ] 1.8 Page v2: Concord vector pieces, Vos hand-drawn pieces, Kethran renders, three button shapes and icon sets side
+  by side; shots looked at; published; recorded; tracker and `mockup-work.md`
+- [ ] 1.9 Survey: U5 answered, U7 added
+
 ## 2. After approval for build
 
 - [ ] 2.1 Blender kit generator per skin (`panel-textures`), bakes, manifest with margins

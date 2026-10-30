@@ -23,3 +23,19 @@ A 9-slice piece SHALL draw its corners at their native size and stretch or repea
 #### Scenario: A frame stretched three ways
 - **WHEN** `frame.panel` is drawn at 96 x 96, 460 x 300 and 1200 x 140
 - **THEN** its corners are identical in all three and no corner detail is stretched
+
+### Requirement: No two skins share a button shape
+
+Each skin SHALL have its own button outline, and validation SHALL fail when two skins' button images have the same silhouette (the owner, 2026-10-30: "NO skin uses the same button shape").
+
+#### Scenario: Three skins, three buttons
+- **WHEN** the Concord, Kethran and Vos skins are validated
+- **THEN** their idle button masks differ from one another in silhouette (Concord a pill, Kethran a trapezoid wedge, Vos a claw tag)
+
+### Requirement: Every skin supplies its own icon set
+
+Each skin SHALL supply every icon in the kit's icon list in its own drawing, and a skin that lacks one SHALL fail validation naming the skin and the icon.
+
+#### Scenario: A missing icon
+- **WHEN** the Vos skin has no `icon.tractor`
+- **THEN** validation fails naming `vos` and `icon.tractor`
