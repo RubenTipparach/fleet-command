@@ -17,6 +17,13 @@
   by side; shots looked at; published; recorded; tracker and `mockup-work.md`
 - [x] 1.9 Survey: U5 answered, U7 added
 
+## 1c. Versions 4-9: six more races, one at a time (owner, 2026-10-30)
+
+- [x] 1.10 The page made a registry of skin modules (`docs/mockups/skins/`, contract in its README)
+- [x] 1.11 Vhorr Brood (v4), Aelith Conclave (v5), Tarsine Remnant (v6), Krai Warhost (v7), Ombrai (v8), Kelvane
+  Institute (v9), each shot, looked at and published
+- [x] 1.12 Survey U8 (answered: skins only for now; the races are civilisations met in pockets across the galaxy)
+
 ## 2. After approval for build
 
 - [ ] 2.1 Blender kit generator per skin (`panel-textures`), bakes, manifest with margins

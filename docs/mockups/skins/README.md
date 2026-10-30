@@ -22,7 +22,7 @@ The page refuses a skin missing any of these (see `REQUIRED` in the page):
 | `helmKeys` | `'ring'` with `helmR` (radius of eight keys round the centre of a 300 x 300 pad) or an array of eight `[x, y]` key centres, clockwise from north-west or north |
 | `shield` | Three colours for shield strength: strong, middling, weak |
 | `fonts` | CSS font strings to load before drawing, e.g. `'400 20px "Exo 2"'` (Google Fonts; the page's `<link>` must include them) |
-| `view` | `{ title, body, upper }`: canvas fonts for the 3D view's target label and readouts, and whether they are upper case |
+| `view` | `{ title, body, upper }`: canvas fonts for the 3D view's target label and readouts, and whether they are upper case; optional `ink` and `dim` colours for them when the skin's own ink is dark |
 | `build()` | Returns `FCK.fromPainters(nine, hero, icon, false)`: see below |
 | `live` | `{ arrow(x, a), ssd(x, cx, cy, shields, col), dial(x, c, contacts), bracket(x, bx, by, bw, bh) }`, optional `helmCentre(x, cx, cy)` |
 | `world` | Four strings: world view, bodies, technology, ships |
