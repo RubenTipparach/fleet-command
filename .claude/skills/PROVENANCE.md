@@ -25,6 +25,11 @@ note, and the note wins where they differ.
 | `testing-practices` | New, after the-federation's `tests/` and `scripts/run-tests.sh`, and Crab Breeze's `testing-practices` | the-federation `02791b6`, Crab Breeze `69ce196` | 2026-10-30 | |
 | `playtest` | New, after Crab Breeze's `playtest` (itself after Star Crew's `--playtest`, Mining Mike's five-minute checks and Tom Lander's `bot-run`) | Crab Breeze `69ce196` | 2026-10-30 | Rewritten for Godot input events and two screen shapes. |
 
+Data and code borrowed for the mockups (not skills, recorded here so they are found):
+- `data/space/` (nebula skies `quiet`, `verdigris`, `ember` and `starfield.json`): Star-Crew-Bridge-Simulator `9a35f08`,
+  unchanged (`data/space/SOURCE.md`). The sky and streak shaders in `docs/mockups/game-flow.html` are ported from its
+  `crates/sc-render/shaders/sky.glsl` and `docs/mockups/nebula-skies.html`.
+
 Not copied, and why:
 - Crab Breeze's `bevy-architecture`, `deterministic-simulation` and `perf-measure`: Bevy and Rust
   specific. Determinism is in `godot-architecture`; a Godot `perf-measure` comes with the first

@@ -21,6 +21,7 @@ not the files. Fleet Command's kit:
 | `tools/mockups/shoot.mjs` | Headless Chromium screenshots of every named shot at desktop (1920 x 1080), phone landscape (844 x 390) and phone portrait (390 x 844) into `docs/screenshots/mockups/<page>-<shot>-<size>.png`; fails on a console error. `NODE_PATH=$(npm root -g) node tools/mockups/shoot.mjs docs/mockups/<page>.html docs/screenshots/mockups` |
 
 | `tools/mockups/shrink_png.py` | Re-saves shots as 256-colour PNGs (about a quarter of the size) before they are committed. |
+| `tools/mockups/inline_data.py` | Writes `data/` files into a page between `<!-- INLINE path -->` and `<!-- /INLINE -->` markers, so a published page carries its data and the data keeps one source; `--check` fails on a stale page. The space backdrop (`data/space/`, Star Crew's nebula skies and streaking stars) is inlined this way. |
 
 - **One page per subject**, naming the OpenSpec change it presents. Add it to `mockup-work.md` and the
   mockup tracker (`mockup-tracker`), and record both approvals there (CLAUDE.md section 4).

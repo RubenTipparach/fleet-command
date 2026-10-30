@@ -104,15 +104,18 @@ refit is one tap.
 
 **New campaign**: captain's name and difficulty (Ensign, Captain, Admiral). No story yet.
 
-**The map** is a grid of flat-topped hexagons, 15 columns by 11 rows (165 hexes), seen like Civilization
-V: a perspective camera tilted about 50 degrees from vertical, which pans by drag and zooms by wheel or
-pinch between three levels of detail (SFC3 page 32):
+**The map** is a grid of flat-topped hexagons, 30 columns by 22 rows (660 sectors; owner, 2026-10-30: "4x the map
+size"), seen like Civilization V: a perspective camera tilted about 50 degrees from vertical, which pans by drag and
+zooms by wheel or pinch. Panning stops at the map's edge without tilting the view. **Every piece stays on the board at
+every zoom** (owner: "elements shouldnt hide when zooming out"); only the name labels leave at far zoom, where they would
+overlap. Hovering a sector names whose space it is, its number and its terrain (owner: "show tool tip of what faction
+space my mouse is hovering over").
 
-| Zoom | Shows |
-|---|---|
-| Far | territory colours and borders only |
-| Middle | terrain, planets and stations |
-| Near | ship standees and labels |
+**The backdrop** (owner, 2026-10-30: "stars not be flat but a 3d paralax background", "a cool nebula background",
+"borrow its star shader ... so when we scroll around the stars trace an outline"): Star Crew Bridge Simulator's nebula
+skies and vector stars (`data/space/`, copied at `9a35f08`): a vertex-coloured nebula sphere with faint hashed stars,
+FreeSpace-style stars drawn as lines from where they are to where they were, and three layers of the same stars at
+depths 3-90 below the board, which slide at different speeds and streak as the map scrolls.
 
 **Territory**: each hex belongs to the Concord (the player's, blue), the Kethran Hegemony (red), the Vos
 Syndicate (amber, raiders) or no one (grey) (SFC3 page 33). **Territory is told by the hex borders, not by
@@ -139,7 +142,8 @@ the hex; nebulae are 3D clouds of glowing puffs at several heights. The fleet's 
 flagship's, with an amber ring. Names show at near zoom; hovering or tapping one names it. The models are
 stand-ins until mockup 3 sets each faction's ships.
 
-**Moving**: tap a hex; the path and its move cost show; tap again to go. The fleet has 3 move points a
+**Moving**: tap a hex; the route is traced as a line from the fleet through each sector to an arrowhead (owner: "I
+prefer routs be traced like a line"), with its move cost; tap again to go. The fleet has 3 move points a
 turn (survey F2: turn based). **End turn** spends the rest, ages missions and spawns new ones.
 
 **The top bar**: captain, credits, turn, the fleet's ships with hull integrity. **The hex panel**: the
@@ -214,9 +218,9 @@ with the live map in a strip (U1). Every control is at least 44 x 44 CSS px.
 
 ## What it costs
 
-The mockup draws 165 hexes as one instanced mesh (1 draw call, about 2 000 triangles), plus about 40
-standees (3 small meshes each, about 120 draw calls, under 5 000 triangles), plus a starfield and a few
-planets: well under 50 000 triangles and 200 draw calls. A game map of this size costs the same order:
+The mockup draws 660 hexes as one instanced mesh (1 draw call, about 8 000 triangles), the borders as two
+merged meshes, about 40 miniatures (a few hundred draw calls in the mockup, which a game would instance), the sky (8 000
+vertices) and about 7 000 streaking stars (2 draw calls): under 150 000 triangles. A game map of this size costs the same order:
 trivial next to a battle. Campaign state is plain data: a few kilobytes to save.
 
 ## Open questions

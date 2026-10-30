@@ -18,10 +18,10 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow | Drafted (2026-10-30, v3) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
+| 1 | Primary game flow | Drafted (2026-10-30, v4) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Listed | `console-skins` (to write) | `docs/mockups/console-skins.html` | |
+| 4 | Console skins | Drafted (2026-10-30, v1) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -46,7 +46,11 @@ Later direction, the owner, 2026-10-30 (folded into the design and the page): "l
 elements of each sector is inside the hex, with the hex borders communicating territory"; "ships, planets
 and stations should be 3d"; "3d ships on stands, 3d stations on stands, 3d planets, asteroid belts, nebula"
 (with photos of tabletop miniatures on flight stands); and the survey's F answers (prices by buyer, standing,
-prizes repaired into the fleet).
+prizes repaired into the fleet). Then: "can we have stars not be flat but a 3d paralax background? also map rotates
+when I hit edges, I dont like that, a cool nebula background would be nice too"; "Star crew bridge simulator! also
+borrow its star shader from there too, so when we scroll around the stars trace an outline" (its nebula skies and
+FreeSpace-style streaking stars, `data/space/`); "elements shouldnt hide when zooming out"; "I prefer routs be traced
+like a line, 4x the map size" (30 x 22 sectors); "show tool tip of what faction space my mouse is hovering over".
 
 Design: `openspec/changes/game-flow/`. References: SFC2 manual printed pages 74-89 (menus, skirmish,
 campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish points, refit by
@@ -115,6 +119,8 @@ else's art):
 - "I really like espeically the mirak ui design, its so playful and pirate like."
 - "I also enjoy the sleek, utilitarian, LCARS blue version of the federation, very sci-fi very minimal."
 - "whatever we do, we gotta design it for like UI kit that we can sweap out between factions."
+- "before I approve this start another artifact so we can design the design language of the ui, which changes based on
+  what faction origin we are."
 
 What the mockup shows:
 

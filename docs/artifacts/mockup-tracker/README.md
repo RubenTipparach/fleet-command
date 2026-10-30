@@ -6,4 +6,4 @@
   collection.
 - Made by: `docs/mockups/tracker.html` (the page source, one copy), kept by the `mockup-tracker` skill,
   published with the `db` and `user` capabilities.
-- Published: 2026-10-30, version 1; version 2 (mockup 1 at v3, mockup 4 listed).
+- Published: 2026-10-30, version 1; version 2 (mockup 1 at v3, mockup 4 listed); version 3 (mockup 1 at v4, mockup 4 published).
