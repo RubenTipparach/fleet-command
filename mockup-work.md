@@ -144,6 +144,10 @@ else's art):
   lit buttons that are activated. strong metal framing, almost blade like; an enigmatic alien race with cool dark purple
   colors and pink buttons, progress bars are curcular, almost organic like eyes. this is all first pass stuff, really love
   how you did the hand drawn one". Version 4 adds five skins as first passes.
+- Then: "one more, the old science, nucleo nlog skin from winamp. UI love this old osciloscope aesthetic from science labs. Some race
+  will value thier anolog physics instruments and design their ui vbased on this". The Kelvane Institute is the sixth.
+- Then: "one more, the old science, nucleo nlog skin from winamp. UI love this old osciloscope aesthetic from science labs. Some race
+  will value thier anolog physics instruments and design their ui vbased on this". The Kelvane Institute is the sixth.
 
 What the mockup shows:
 

@@ -138,6 +138,20 @@ whether the combat race is the Kethran Hegemony's own direction, is U8 too.
 | Button shape | **Blister pod**: a swollen, lopsided membrane lit from within | **Holo lozenge**: a pointed-ended light shape held between two armour claws | **Arched tablet**: round top, flat foot, a backlit window caked in dirt | **Blade**: a parallelogram that ends in a point | **Crescent bar**: one end bitten concave, the other round |
 | Progress and gauges | Veins that fill | Thin light lines | Needle gauges behind cracked glass | Segmented triangles | Circular, like eyes (the owner's words) |
 
+
+A sixth (owner, 2026-10-30, with the Nucleo NLog Winamp skin: "the old science, nucleo nlog skin from winamp. UI love this
+old osciloscope aesthetic from science labs. Some race will value thier anolog physics instruments and design their ui
+vbased on this"):
+
+| | Kelvane Institute |
+|---|---|
+| World view | Truth is measured, never assumed; every reading is shown on an instrument a scientist can check by eye |
+| Bodies and technology | Careful, many-handed experimenters; cream-enamelled lab instruments, chrome, brass, valves |
+| Ships | Rounded research hulls studded with sensor dishes and gauge clusters |
+| Method | Painted lab equipment: cream enamel faceplates, chrome bezels, warm amber backlights, phosphor oscilloscopes |
+| Button shape | **Instrument key**: an enamel faceplate with a domed chrome push button set into its left end |
+| Progress and gauges | Needle meters on ruled scales, oscilloscope traces on a graticule |
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
@@ -186,5 +200,5 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 | U4 | When does the player see another faction's skin? | Both: a captured ship keeps its builder's console, and Options can pin one (provisional) |
 | U5 | The Kethran skin's direction? | Answered by the owner: modelled in Blender, "like starcraft" |
 | U6 | Does a skin change only images, or also sounds and type? | Images, colours, type, icons, motion and button sounds (provisional) |
-| U8 | The five new races: names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | New, minor factions with the names above; the combat race stays its own race and the Kethran keep their look (provisional) |
+| U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | Skins only for now, with the names above; factions decided later (provisional) |
 | U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |
