@@ -108,8 +108,10 @@ refit is one tap.
 size"), seen like Civilization V: a perspective camera tilted about 50 degrees from vertical, which pans by drag and
 zooms by wheel or pinch. Panning stops at the map's edge without tilting the view. **Every piece stays on the board at
 every zoom** (owner: "elements shouldnt hide when zooming out"); only the name labels leave at far zoom, where they would
-overlap. Hovering a sector names whose space it is, its number and its terrain (owner: "show tool tip of what faction
-space my mouse is hovering over").
+overlap. Hovering a sector names whose space it is and what is in it (owner: "show tool tip of what faction
+space my mouse is hovering over"). **Clicking a ship** selects its sector with the route drawn and glides the view to it in
+0.35 s; a second click moves the fleet there; any drag takes the view back at once (owner, 2026-10-30: "I should be able
+to click on ship to quicky go there"). The fleet's chips in the top bar glide the view to the fleet.
 
 **The backdrop** (owner, 2026-10-30: "stars not be flat but a 3d paralax background", "a cool nebula background",
 "borrow its star shader ... so when we scroll around the stars trace an outline"): Star Crew Bridge Simulator's nebula
@@ -122,8 +124,15 @@ Syndicate (amber, raiders) or no one (grey) (SFC3 page 33). **Territory is told 
 filling the hexes** (owner, 2026-10-30, with a box-back star map: "the elements of each sector is inside the
 hex, with the hex borders communicating territory"): every hex is dark glass over a painted galaxy, every
 edge is a faint line in its owner's colour, and where ownership changes a bright band runs along the edge,
-inside each side's hex in that side's colour. Each hex carries its sector number (column and row, `0705`),
-printed like a wargame map.
+inside each side's hex in that side's colour. **No sector numbers** (owner, 2026-10-30: "remove numbers"). **A port
+sector (a planet or a station) is lit brighter** in its owner's colour (owner: "tiles with planets or stations should be a
+different color").
+
+**The board is polished glass** (owner, 2026-10-30: "can you use some sort of ssr? combined with reflection probe of space
+skybox? to make this look nicer?"): a planar mirror just under the hexes reflects the miniatures, planets and clouds
+(three.js `Reflector`, the mockup's stand-in for screen-space reflections, which the engine provides), and a reflection
+probe of the nebula sky (a prefiltered environment map) lights the glossy hexes and the miniatures. Cost: the mirror
+renders the board a second time at half resolution; in the game this is SSR plus one baked sky probe.
 
 **Terrain** sets how far the fleet moves in a turn (impedance, SFC3 page 33):
 
@@ -138,7 +147,10 @@ printed like a wargame map.
 stations on stands, 3d planets, asteroid belts, nebula"): every ship group and station is a 3D miniature
 on a clear flight post over a black hex base ringed in its faction's colour; planets are 3D globes floating
 in their hex with an orbit ring in the owner's colour; asteroid fields are belts of rocks curving across
-the hex; nebulae are 3D clouds of glowing puffs at several heights. The fleet's miniature is the
+the hex; nebulae are 3D clouds of puffs (Crab Breeze's billboard method: camera-facing quads with noise-eroded edges,
+lit as spheres and glowing from within, sorted back to front in one draw), and each connected nebula takes its own
+colour (owner: "nebulas can be of different color, make the clouds more pronounced and 3d looking, use the puffs method
+from crab-breeeze"). The fleet's miniature is the
 flagship's, with an amber ring. Names show at near zoom; hovering or tapping one names it. The models are
 stand-ins until mockup 3 sets each faction's ships.
 
@@ -146,7 +158,9 @@ stand-ins until mockup 3 sets each faction's ships.
 prefer routs be traced like a line"), with its move cost; tap again to go. The fleet has 3 move points a
 turn (survey F2: turn based). **End turn** spends the rest, ages missions and spawns new ones.
 
-**The top bar**: captain, credits, turn, the fleet's ships with hull integrity. **The hex panel**: the
+**The top bar** hangs from the top edge of the screen, full width (owner, 2026-10-30: "can we merge this with the top? so
+tis not floating?"): captain, credits, turn, moves, **standing with** each faction by name (your reputation with it,
+-100 to 100; its ports close to you below 0), and the fleet's ships with hull integrity. **The hex panel**: the
 hex's owner, terrain and contents, and the port and mission buttons.
 
 ## Campaign ports

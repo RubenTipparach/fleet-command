@@ -26,6 +26,9 @@ note, and the note wins where they differ.
 | `playtest` | New, after Crab Breeze's `playtest` (itself after Star Crew's `--playtest`, Mining Mike's five-minute checks and Tom Lander's `bot-run`) | Crab Breeze `69ce196` | 2026-10-30 | Rewritten for Godot input events and two screen shapes. |
 
 Data and code borrowed for the mockups (not skills, recorded here so they are found):
+- The puff nebulae in `docs/mockups/game-flow.html` (camera-facing billboards, noise-eroded edges, lit as spheres,
+  sorted back to front): Crab-breeze `69ce196`, `docs/mockups/island.html` (its cloud-weather puffs), adapted to glow from
+  within and take a colour per nebula.
 - `data/space/` (nebula skies `quiet`, `verdigris`, `ember` and `starfield.json`): Star-Crew-Bridge-Simulator `9a35f08`,
   unchanged (`data/space/SOURCE.md`). The sky and streak shaders in `docs/mockups/game-flow.html` are ported from its
   `crates/sc-render/shaders/sky.glsl` and `docs/mockups/nebula-skies.html`.

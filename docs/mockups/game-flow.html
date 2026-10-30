@@ -123,14 +123,17 @@ table.grid td { padding: 6px 8px; border-top: 1px solid rgba(255,255,255,0.06); 
 .map-preview { aspect-ratio: 16 / 10; width: 100%; border-radius: 4px; background: #070b10; display: block; }
 
 /* Campaign map overlay. */
-.topbar { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); top: max(10px, env(safe-area-inset-top, 0px));
-  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 14px; }
+.topbar { position: absolute; left: 0; right: 0; top: 0; border-top: 0; border-radius: 0 0 8px 8px; display: flex; flex-wrap: wrap; gap: 8px 18px;
+  align-items: center; padding: max(8px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); }
+.topbar.panel { background-position: 0 -9px, 100% -9px, 0 0, 0 0, 0 0, 0 0; }
+.topbar .chip[role=button] { cursor: pointer; }
+.topbar .chip[role=button]:hover { border-color: var(--edge); color: var(--ink); }
 .topbar .stat { display: grid; gap: 2px; }
 .topbar .stat b { font: 600 11px/1 var(--display); letter-spacing: 0.14em; color: var(--dim); text-transform: uppercase; }
 .topbar .stat span { font: 500 15px/1 var(--mono); }
 .fleetchips { display: flex; gap: 6px; flex-wrap: wrap; }
 .fleetchips .chip { display: inline-flex; gap: 6px; align-items: center; }
-.hexpanel { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); top: 88px; width: 330px; max-height: calc(100% - 170px); overflow: auto; display: grid; gap: 12px; }
+.hexpanel { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); top: 74px; width: 330px; max-height: calc(100% - 170px); overflow: auto; display: grid; gap: 12px; }
 .mapkeys { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px; padding: 8px; }
 .endturn { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
 .tip { position: fixed; z-index: 4; pointer-events: none; font: 600 13px/1.2 var(--display); letter-spacing: 0.06em; text-transform: uppercase;
@@ -186,6 +189,7 @@ table.grid td { padding: 6px 8px; border-top: 1px solid rgba(255,255,255,0.06); 
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/objects/Reflector.js"></script>
 <script>
 (function () {
 
@@ -195,10 +199,10 @@ const { MapControls } = THREE; // UMD build: examples/js/controls/OrbitControls.
 // Data. One table per kind of thing, as the game's data/ files will be (openspec/changes/game-flow/design.md).
 // ---------------------------------------------------------------------------------------------------------------
 const FACTIONS = {
-  concord: { name: 'Concord', color: '#4f8fe8', rival: 'kethran' },
-  kethran: { name: 'Kethran Hegemony', color: '#d9483b', rival: 'concord' },
-  vos: { name: 'Vos Syndicate', color: '#e3a33a', rival: null },
-  neutral: { name: 'Unclaimed', color: '#7c8794', rival: null },
+  concord: { name: 'Concord', short: 'Concord', color: '#4f8fe8', rival: 'kethran' },
+  kethran: { name: 'Kethran Hegemony', short: 'Kethran', color: '#d9483b', rival: 'concord' },
+  vos: { name: 'Vos Syndicate', short: 'Vos', color: '#e3a33a', rival: null },
+  neutral: { name: 'Unclaimed', short: 'Unclaimed', color: '#7c8794', rival: null },
 };
 const TERRAIN = {
   open: { name: 'Open space', cost: 1 },
@@ -663,7 +667,7 @@ function shipModel(color, scale = 1, hullColor = 0xb9c2cc) {
 const menuScene = new THREE.Scene();
 const menuCam = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
 menuCam.position.set(0, 2, 16);
-menuScene.userData.sky = makeSpace('verdigris'); menuScene.add(menuScene.userData.sky);
+menuScene.userData.sky = makeSpace('verdigris'); menuScene.add(menuScene.userData.sky); menuScene.environment = skyProbe('verdigris');
 // three.js 0.147 uses the legacy light units: an intensity here is about pi times brighter than in r155 and later.
 menuScene.add(new THREE.AmbientLight(0x334455, 0.25));
 const sun = new THREE.DirectionalLight(0xfff1dd, 1.0); sun.position.set(-20, 8, 10); menuScene.add(sun);
@@ -684,7 +688,7 @@ controls.minDistance = 7; controls.maxDistance = 70;
 controls.minPolarAngle = controls.maxPolarAngle = 0.88;
 controls.enabled = false;
 const mapRoot = new THREE.Group(); mapScene.add(mapRoot);
-let hexMesh = null, hexKeys = [], standees = [], markers = [], decals = [], pathDots = null, selRing = null, fleetStandee = null;
+let puffSetMap = null, hexMesh = null, hexKeys = [], standees = [], markers = [], decals = [], pathDots = null, selRing = null, fleetStandee = null;
 const MAP_W = 1.5 * (COLS - 1), MAP_H = Math.sqrt(3) * (ROWS - 0.5);
 const mapCenter = new THREE.Vector3(MAP_W / 2, 0, MAP_H / 2);
 
@@ -698,7 +702,7 @@ function flightStand(fac, height, size) {
   const g = new THREE.Group();
   const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * size, 0.26 * size, 0.06, 6, 1, false, Math.PI / 6), baseMat); base.position.y = 0.03; g.add(base);
   const rim = new THREE.Mesh(new THREE.TorusGeometry(0.24 * size, 0.018, 6, 6), new THREE.MeshBasicMaterial({ color: FACTIONS[fac].color }));
-  rim.rotation.x = Math.PI / 2; rim.rotation.z = Math.PI / 6; rim.position.y = 0.062; g.add(rim);
+  rim.rotation.x = Math.PI / 2; rim.position.y = 0.062; g.add(rim);
   const post = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, height, 8), postMat); post.position.y = height / 2 + 0.06; g.add(post);
   return g;
 }
@@ -758,7 +762,11 @@ function buildMap() {
   if (mapScene.userData.sky) mapScene.remove(mapScene.userData.sky);
   mapScene.userData.sky = makeSpace('quiet', parallaxStars(mapCenter, 220, [[-3, -10, 600], [-12, -32, 1400], [-40, -90, 2600]], 41));
   mapScene.add(mapScene.userData.sky);
-  hexMesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0.1, transparent: true, opacity: 0.62, depthWrite: false }), COLS * ROWS);
+  const regions = nebulaRegions(), puffs = [];
+  mapScene.environment = skyProbe('quiet');
+  mapRoot.add(boardMirror());
+  // Glossy dark glass: it catches the sky probe's nebula, and the mirror beneath shows through it.
+  hexMesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.35, envMapIntensity: 0.6, transparent: true, opacity: 0.5, depthWrite: false }), COLS * ROWS);
   hexKeys = [];
   const m = new THREE.Matrix4(), col = new THREE.Color();
   let i = 0;
@@ -767,9 +775,12 @@ function buildMap() {
     m.makeTranslation(p.x, -0.06, p.z);
     hexMesh.setMatrixAt(i, m);
     col.set(0x080c12).lerp(new THREE.Color(FACTIONS[h.owner].color), h.owner === 'neutral' ? 0.02 : 0.06);
-    if (h.terrain === 'nebula') col.lerp(new THREE.Color(0x3a2052), 0.5);
+    if (h.terrain === 'nebula') col.lerp(new THREE.Color().setRGB(...regions[key(h.c, h.r)].tint), 0.18);
     if (h.terrain === 'asteroids') col.lerp(new THREE.Color(0x2a241e), 0.4);
     if (h.terrain === 'star') col.set(0x2a1d0c);
+    // Port sectors (a planet or a station) stand out: brighter glass in the owner's colour, warmed (owner, 2026-10-30:
+    // "tiles with planets or stations should be a different color").
+    if (h.planet || h.station) col.set(0x1c2430).lerp(new THREE.Color(FACTIONS[h.owner].color), h.owner === 'neutral' ? 0.25 : 0.42).lerp(new THREE.Color(0xffd9a0), 0.12);
     hexMesh.setColorAt(i, col);
     hexKeys.push(key(h.c, h.r));
     i++;
@@ -779,11 +790,11 @@ function buildMap() {
       const l = new THREE.PointLight(0xffc26a, 1.2, 3.5); l.position.copy(s.position); mapRoot.add(l);
     }
     if (h.terrain === 'nebula') {
-      // A cloud in depth: puffs at several heights in two tints, added together.
-      const R = rng(h.c * 17 + h.r * 5);
-      for (let k = 0; k < 9; k++) {
-        const n = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: R() < 0.6 ? 0x6a3aa8 : 0x2f7f9e, opacity: 0.07 + R() * 0.06, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-        n.scale.setScalar(0.7 + R() * 0.8); n.position.set(p.x + (R() - 0.5) * 1.0, 0.15 + R() * 0.75, p.z + (R() - 0.5) * 1.0); mapRoot.add(n); decals.push(n);
+      // A cloud in depth: puffs at several heights, big and dim low, smaller and brighter on top.
+      const R = rng(h.c * 17 + h.r * 5), tint = regions[key(h.c, h.r)].tint;
+      for (let k = 0; k < 14; k++) {
+        const y = 0.12 + R() * 0.85, r = 0.32 + R() * 0.32 - y * 0.12, v = 0.75 + R() * 0.4;
+        puffs.push({ x: p.x + (R() - 0.5) * 1.3, y, z: p.z + (R() - 0.5) * 1.3, rx: r, ry: r * 0.8, seed: R() * 100, tint: [tint[0] * v, tint[1] * v, tint[2] * v, 0.5 + R() * 0.3] });
       }
     }
     if (h.terrain === 'asteroids') {
@@ -804,8 +815,8 @@ function buildMap() {
   hexMesh.instanceColor.needsUpdate = true;
   mapRoot.add(hexMesh);
   mapRoot.add(hexBorders());
-  mapRoot.add(sectorNumbers());
-  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1); addStandee(s, hexPos(g.c, g.r).add(new THREE.Vector3(0.45, 0, 0.4)), 'ship'); }
+  puffSetMap = puffSet(puffs); mapRoot.add(puffSetMap.mesh);
+  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1); s.userData.hex = g; addStandee(s, hexPos(g.c, g.r).add(new THREE.Vector3(0.45, 0, 0.4)), 'ship'); }
   fleetStandee = makeStandee('ship', 'concord', CAMP.fleet[0].name, 1.15);
   const lampRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide }));
   lampRing.rotation.x = -Math.PI / 2; lampRing.position.y = 0.07; fleetStandee.add(lampRing);
@@ -814,21 +825,119 @@ function buildMap() {
   selRing.rotation.x = -Math.PI / 2; selRing.position.y = 0.02; selRing.visible = false; mapRoot.add(selRing);
   rebuildMarkers();
 }
-const rockMat = new THREE.MeshStandardMaterial({ color: 0x8a7a68, roughness: 0.95 });
-// Sector numbers printed on the hexes, like a wargame map (the owner's reference): one plane for the whole map.
-function sectorNumbers() {
-  const x0 = -1.2, z0 = -1.2, W = MAP_W + 2.4, H = MAP_H + 2.4, px = 3072, py = Math.round((3072 * H) / W);
-  const tex = canvasTex(px, py, (x) => {
-    x.font = '500 15px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(170,190,215,0.55)';
-    for (const h of Object.values(CAMP.hexes)) {
-      const c = hexPos(h.c, h.r);
-      x.fillText(`${String(h.c + 1).padStart(2, '0')}${String(h.r + 1).padStart(2, '0')}`, ((c.x - x0) / W) * px, ((c.z + 0.72 - z0) / H) * py);
-    }
-  });
-  const plane = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
-  plane.rotation.x = -Math.PI / 2; plane.position.set(x0 + W / 2, 0.015, z0 + H / 2);
-  return plane;
+// Nebula clouds by Crab Breeze's puff method (RubenTipparach/Crab-breeze 69ce196, docs/mockups/island.html, its
+// cloud-weather billboards): one camera-facing billboard per puff, its edge eroded by noise and lit as a sphere, sorted
+// back to front in one draw. Here the gas glows from within as well as catching the light, and each connected nebula
+// takes its own colour (owner, 2026-10-30: "nebulas can be of different color, make the clouds more pronounced and 3d
+// looking, use the puffs method from crab-breeeze").
+const NEBULA_TINTS = [[0.62, 0.36, 0.95], [0.25, 0.78, 0.86], [0.95, 0.4, 0.62], [0.98, 0.62, 0.3], [0.45, 0.9, 0.55], [0.4, 0.5, 1.0]];
+const puffMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  uniforms: { uLight: { value: new THREE.Vector3(-0.4, 0.8, 0.45).normalize() } },
+  vertexShader: `attribute vec3 aCentre; attribute vec2 aSize; attribute vec4 aTint; attribute float aSeed;
+    varying vec2 vUv; varying vec4 vTint; varying float vSeed;
+    void main() {
+      vUv = position.xy; vTint = aTint; vSeed = aSeed;
+      vec3 c = (modelMatrix * vec4(aCentre, 1.0)).xyz;
+      vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+      vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+      float k = abs(normalize(cameraPosition - c).y);
+      vec3 wp = c + right * position.x * aSize.x + up * position.y * mix(aSize.y, aSize.x, k * k);
+      gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
+    }`,
+  fragmentShader: `uniform vec3 uLight; varying vec2 vUv; varying vec4 vTint; varying float vSeed;
+    float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+    float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
+    float fbm2(vec2 p) { return 0.5 * vn(p) + 0.3 * vn(p * 2.1 + 3.7) + 0.2 * vn(p * 4.3 + 8.1); }
+    void main() {
+      vec2 p = vUv; float d = length(p);
+      if (d > 1.0) discard;
+      // Billows: the edge eaten by two octaves of noise in the sprite's plane.
+      float n = fbm2(p * 2.2 + vSeed * 13.1), n2 = vn(p * 7.0 + vSeed * 5.0);
+      float dens = smoothstep(1.0, 0.4, d + (n - 0.5) * 0.7 + (n2 - 0.5) * 0.22);
+      if (dens < 0.01) discard;
+      vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+      vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+      vec3 back = vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
+      float z = sqrt(max(0.0, 1.0 - d * d));
+      vec3 nrm = normalize(right * p.x + up * p.y + back * (z + 0.15) + 0.5 * (vec3(n, n2, n) - 0.5));
+      float diffuse = clamp((dot(nrm, uLight) + 0.6) / 1.6, 0.0, 1.0);
+      // Lit like a cloud, and glowing from its core like gas.
+      vec3 c = vTint.rgb * (0.18 + 0.62 * diffuse) + vTint.rgb * 0.55 * z * z * (0.6 + 0.4 * n);
+      gl_FragColor = vec4(c, dens * vTint.a);
+    }`,
+});
+function puffSet(list) {
+  const n = list.length, g = new THREE.InstancedBufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute([-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0], 3));
+  g.setIndex([0, 1, 2, 0, 2, 3]);
+  const attr = (name, size) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(n * size), size); a.setUsage(THREE.DynamicDrawUsage); g.setAttribute(name, a); return a; };
+  const set = { list, centre: attr('aCentre', 3), size: attr('aSize', 2), tint: attr('aTint', 4), seed: attr('aSeed', 1), last: new THREE.Vector3(1e9, 0, 0), order: list.map((_, i) => i) };
+  g.instanceCount = n;
+  set.mesh = new THREE.Mesh(g, puffMat); set.mesh.frustumCulled = false; set.mesh.renderOrder = 3;
+  return set;
 }
+function sortPuffs(set, eye) {
+  if (!set || eye.distanceToSquared(set.last) < 0.01) return;
+  set.last.copy(eye);
+  const L = set.list, key = L.map((q) => (q.x - eye.x) ** 2 + (q.y - eye.y) ** 2 + (q.z - eye.z) ** 2);
+  set.order.sort((a, b) => key[b] - key[a]);
+  set.order.forEach((i, o) => { const q = L[i]; set.centre.array.set([q.x, q.y, q.z], o * 3); set.size.array.set([q.rx, q.ry], o * 2); set.tint.array.set(q.tint, o * 4); set.seed.array[o] = q.seed; });
+  [set.centre, set.size, set.tint, set.seed].forEach((a) => { a.needsUpdate = true; });
+}
+// Each connected run of nebula sectors is one cloud with one colour.
+function nebulaRegions() {
+  const region = {}, R = rng(97);
+  let id = 0;
+  for (const h of Object.values(CAMP.hexes)) {
+    if (h.terrain !== 'nebula' || region[key(h.c, h.r)] != null) continue;
+    const tint = NEBULA_TINTS[Math.floor(R() * NEBULA_TINTS.length)], stack = [h];
+    region[key(h.c, h.r)] = { id, tint };
+    while (stack.length) {
+      const q = stack.pop();
+      for (const [c, r] of neighbours(q.c, q.r)) { const k = key(c, r); if (CAMP.hexes[k].terrain === 'nebula' && region[k] == null) { region[k] = { id, tint }; stack.push(CAMP.hexes[k]); } }
+    }
+    id++;
+  }
+  return region;
+}
+// A planar mirror under the glass board (three.js's Reflector, drawn see-through), so the miniatures, planets, clouds and
+// the nebula sky reflect in it (owner: "can you use some sort of ssr? combined with reflection probe of space skybox?").
+// For a flat board a planar reflection is exact, where screen-space reflection would miss what is off screen.
+function boardMirror() {
+  const size = new THREE.Vector2(); renderer.getDrawingBufferSize(size);
+  const m = new THREE.Reflector(new THREE.PlaneGeometry(MAP_W + 4, MAP_H + 4), {
+    textureWidth: Math.round(size.x * 0.6), textureHeight: Math.round(size.y * 0.6), clipBias: 0.003, color: 0x8a96a8,
+    shader: {
+      uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null }, opacity: { value: 0.55 } },
+      vertexShader: `uniform mat4 textureMatrix; varying vec4 vUv;
+        void main() { vUv = textureMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `uniform vec3 color; uniform sampler2D tDiffuse; uniform float opacity; varying vec4 vUv;
+        void main() { vec4 b = texture2DProj(tDiffuse, vUv); gl_FragColor = vec4(b.rgb * color, opacity); }`,
+    },
+  });
+  m.material.transparent = true; m.material.depthWrite = false;
+  m.rotation.x = -Math.PI / 2; m.position.set(mapCenter.x, -0.125, mapCenter.z); m.renderOrder = -1;
+  // The streaking stars draw from their own matrices, which the mirror's camera cannot move: hide them while it renders.
+  const before = m.onBeforeRender;
+  m.onBeforeRender = function (...args) {
+    const sky = mapScene.userData.sky, hidden = [];
+    sky?.traverse((o) => { if ((o.isPoints || o.isLineSegments) && o.visible) { o.visible = false; hidden.push(o); } });
+    before.apply(this, args);
+    for (const o of hidden) o.visible = true;
+  };
+  return m;
+}
+// A reflection probe of the scene's nebula sky: an environment map the hulls, planets and glass reflect.
+function skyProbe(skyId) {
+  const tmp = new THREE.Scene(), neb = nebulaMesh(DATA[`data/space/skies/${skyId}.json`]);
+  neb.scale.setScalar(50); neb.material.uniforms.uStars.value.z = 0.004; tmp.add(neb);
+  const pm = new THREE.PMREMGenerator(renderer), env = pm.fromScene(tmp, 0.02).texture;
+  pm.dispose(); neb.geometry.dispose(); neb.material.dispose();
+  return env;
+}
+const rockMat = new THREE.MeshStandardMaterial({ color: 0x8a7a68, roughness: 0.95 });
 // Hex borders: a faint grid line on every edge, and a bright ribbon in the owner's colour along every edge
 // where territory changes, drawn inside each side's hex so a border shows both owners' colours.
 function hexBorders() {
@@ -903,6 +1012,19 @@ function showPath(res) {
 }
 function zoomLevel() { const d = mapCam.position.distanceTo(controls.target); return d > 34 ? 'far' : d > 14 ? 'middle' : 'near'; }
 function setZoom(dist) { const dir = mapCam.position.clone().sub(controls.target).normalize(); mapCam.position.copy(controls.target).addScaledVector(dir, dist); controls.update(); }
+// Clicking a ship or the fleet's chip glides the view there over a third of a second; any drag takes over at once.
+let glide = null;
+function glideTo(c, r) {
+  const to = hexPos(c, r);
+  glide = { from: controls.target.clone(), to, t: 0 };
+}
+function stepGlide(dt) {
+  if (!glide) return;
+  glide.t = Math.min(1, glide.t + dt / 0.35);
+  const k = 1 - Math.pow(1 - glide.t, 3), next = glide.from.clone().lerp(glide.to, k), d = next.sub(controls.target);
+  controls.target.add(d); mapCam.position.add(d);
+  if (glide.t >= 1) glide = null;
+}
 function centreOn(c, r, dist) {
   const p = hexPos(c, r); controls.target.copy(p);
   mapCam.position.set(p.x, Math.cos(0.88) * (dist ?? 18), p.z + Math.sin(0.88) * (dist ?? 18)); controls.update();
@@ -912,7 +1034,7 @@ function centreOn(c, r, dist) {
 const battleScene = new THREE.Scene();
 const battleCam = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
 battleCam.position.set(0, 9, 22); battleCam.lookAt(0, 0, 0);
-battleScene.userData.sky = makeSpace('ember'); battleScene.add(battleScene.userData.sky);
+battleScene.userData.sky = makeSpace('ember'); battleScene.add(battleScene.userData.sky); battleScene.environment = skyProbe('ember');
 battleScene.add(new THREE.AmbientLight(0x334455, 0.25));
 const bsun = new THREE.DirectionalLight(0xfff1dd, 0.9); bsun.position.set(-10, 12, 8); battleScene.add(bsun);
 const bplanet = new THREE.Mesh(new THREE.SphereGeometry(40, 64, 48), new THREE.MeshStandardMaterial({ map: planetTex(28), roughness: 0.95 })); bplanet.position.set(-30, -48, -60); battleScene.add(bplanet);
@@ -958,6 +1080,7 @@ renderer.setAnimationLoop(() => {
   if (activeScene === battleScene) animateBattle(t, dt);
   if (activeScene === mapScene) {
     if (panDemo) { controls.target.x += panDemo * dt * 60; mapCam.position.x += panDemo * dt * 60; if (controls.target.x > MAP_W - 4) panDemo = -Math.abs(panDemo); if (controls.target.x < 4) panDemo = Math.abs(panDemo); }
+    stepGlide(dt);
     controls.update();
     // Stop panning at the map's edge by moving the camera with its target, so the view never tilts.
     const dx = THREE.MathUtils.clamp(controls.target.x, -1, MAP_W + 1) - controls.target.x;
@@ -970,6 +1093,7 @@ renderer.setAnimationLoop(() => {
       s.userData.tag.visible = z !== 'far';
       if (s.userData.spin) s.userData.spin.rotation.y += dt * 0.15;
     }
+    sortPuffs(puffSetMap, mapCam.position);
     for (const m of markers) m.position.y = 1.25 + Math.sin(t * 2 + m.userData.mission.id) * 0.08;
     if (selRing?.visible) selRing.material.opacity = 1;
   }
@@ -986,7 +1110,7 @@ function useScene(name) {
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 const NARROW = matchMedia('(max-width: 920px), (max-height: 520px)');
 let downAt = null;
-renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; glide = null; });
 renderer.domElement.addEventListener('pointerup', (e) => {
   if (activeScene !== mapScene || !downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
   if (S.screen !== 'map') return;
@@ -1006,7 +1130,7 @@ renderer.domElement.addEventListener('pointermove', (e) => {
     if (hx) {
       const hh = CAMP.hexes[hexKeys[hx.instanceId]];
       const space = hh.owner === 'neutral' ? 'Unclaimed space' : `${FACTIONS[hh.owner].name} space`;
-      text = `${space} · ${String(hh.c + 1).padStart(2, '0')}${String(hh.r + 1).padStart(2, '0')} · ${TERRAIN[hh.terrain].name}`;
+      text = `${space} · ${hh.planet || hh.station || TERRAIN[hh.terrain].name}`;
     }
   }
   if (text) { tip.textContent = text; tip.style.left = e.clientX + 14 + 'px'; tip.style.top = e.clientY + 10 + 'px'; tip.hidden = false; }
@@ -1019,6 +1143,16 @@ function rayAt(x, y, objs, deep = false) {
   return ray.intersectObjects(objs, deep)[0];
 }
 function pick(x, y) {
+  const st = rayAt(x, y, standees.filter((s) => s.visible), true);
+  if (st) {
+    let s = st.object; while (s.parent && !s.userData.role) s = s.parent;
+    const at = s.userData.role === 'fleet' ? CAMP.at : s.userData.hex;
+    if (at) {
+      const { c, r } = at;
+      if (S.sel && S.sel.c === c && S.sel.r === r && S.path) { moveFleet(S.path); return; }
+      selectHex(c, r); glideTo(c, r); return;
+    }
+  }
   const mk = rayAt(x, y, markers);
   if (mk) { const m = mk.object.userData.mission; selectHex(m.c, m.r); briefing(m); return; }
   const hit = rayAt(x, y, [hexMesh]);
@@ -1180,14 +1314,15 @@ const SCREENS = {
       h('div', { class: 'stat' }, h('b', { text: 'Credits' }), h('span', { class: 'num', text: CAMP.credits.toLocaleString('en-US') })),
       h('div', { class: 'stat' }, h('b', { text: 'Turn' }), h('span', { class: 'num', text: CAMP.turn })),
       h('div', { class: 'stat' }, h('b', { text: 'Moves' }), h('span', { class: 'num', text: `${CAMP.mp} / ${MOVE_POINTS}` })),
-      h('div', { class: 'stat' }, h('b', { text: 'Standing' }), h('span', { class: 'row', style: 'gap:4px' }, ['concord', 'vos', 'kethran'].map((f) =>
-        h('span', { class: 'chip', title: FACTIONS[f].name }, h('span', { class: 'fac', style: `background:${FACTIONS[f].color}` }), `${CAMP.standing[f] > 0 ? '+' : ''}${CAMP.standing[f]}`)))),
-      h('div', { class: 'fleetchips' }, CAMP.fleet.map((s) => h('span', { class: 'chip' }, s.name, h('span', { class: 'bar', style: 'width:44px' }, h('i', { style: `width:${s.hullPct}%;${s.hullPct < 50 ? 'background:var(--warn)' : ''}` }))))));
+      h('div', { class: 'stat' }, h('b', { text: 'Standing with' }), h('span', { class: 'row', style: 'gap:4px' }, ['concord', 'vos', 'kethran'].map((f) =>
+        h('span', { class: 'chip', title: `${FACTIONS[f].name}: ${CAMP.standing[f] >= 0 ? 'ports open' : 'ports closed'}` }, h('span', { class: 'fac', style: `background:${FACTIONS[f].color}` }),
+          `${FACTIONS[f].short} ${CAMP.standing[f] > 0 ? '+' : ''}${CAMP.standing[f]}`)))),
+      h('div', { class: 'fleetchips' }, CAMP.fleet.map((s) => h('span', { class: 'chip', role: 'button', title: 'Go to the fleet', onclick: () => glideTo(CAMP.at.c, CAMP.at.r) }, s.name, h('span', { class: 'bar', style: 'width:44px' }, h('i', { style: `width:${s.hullPct}%;${s.hullPct < 50 ? 'background:var(--warn)' : ''}` }))))));
     const here_ = sel.c === CAMP.at.c && sel.r === CAMP.at.r;
     const groupsHere = CAMP.groups.filter((g) => g.c === sel.c && g.r === sel.r);
     const missionsHere = CAMP.missions.filter((m) => m.c === sel.c && m.r === sel.r);
     const panel = h('div', { class: 'panel hexpanel' },
-      h('div', { class: 'plate', text: here_ ? 'Your position' : `Sector ${sel.c + 1}-${sel.r + 1}` }),
+      h('div', { class: 'plate', text: here_ ? 'Your position' : 'Selected sector' }),
       h('h3', { text: sel.planet || sel.station || TERRAIN[sel.terrain].name }),
       h('p', { class: 'muted' }, h('span', { class: 'fac', style: `background:${FACTIONS[sel.owner].color}` }), FACTIONS[sel.owner].name, ` · ${TERRAIN[sel.terrain].name}`, sel.terrain !== 'star' ? ` · move cost ${TERRAIN[sel.terrain].cost}` : ''),
       groupsHere.length ? h('p', { text: groupsHere.map((g) => `${g.name} (${g.size} ${g.size > 1 ? 'ships' : 'ship'})`).join(', ') }) : null,
@@ -1464,6 +1599,16 @@ window.MOCKUP_SHOTS = {
   map: () => { freshCampaign(); },
   map_far: () => { freshCampaign(); centreOn(15, 11, 64); },
   map_pan: () => { freshCampaign(); centreOn(12, 10, 20); panDemo = 0.35; },
+  // Clicking a ship: its sector is picked with the route drawn, and the view glides to it.
+  map_ship: () => {
+    freshCampaign(); centreOn(CAMP.at.c, CAMP.at.r, 16); controls.update(); mapCam.updateMatrixWorld();
+    const g = [...CAMP.groups].sort((a, b) => hexPos(a.c, a.r).distanceTo(controls.target) - hexPos(b.c, b.r).distanceTo(controls.target))[0];
+    const s = standees.find((x) => x.userData.hex === g); mapRoot.updateMatrixWorld(true);
+    const r = renderer.domElement.getBoundingClientRect(), meshes = []; s.traverse((o) => { if (o.isMesh && !o.isSprite) meshes.push(o); });
+    const at = meshes.map((o) => { const v = new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3()).project(mapCam); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; })
+      .find(([x, y]) => { const hit = rayAt(x, y, [s], true); return hit && hit.object.isMesh; });
+    pick(at[0], at[1]); glide.t = 1; stepGlide(0);
+  },
   map_hover: () => { freshCampaign(); centreOn(8, 10, 16); renderer.render(mapScene, mapCam); renderer.domElement.dispatchEvent(new PointerEvent('pointermove', { clientX: innerWidth * 0.62, clientY: innerHeight * 0.45, bubbles: true })); },
   map_near: () => { freshCampaign(); centreOn(6, 8, 9); },
   map_path: () => { freshCampaign(); selectHex(CAMP.at.c + 2, CAMP.at.r - 1); },

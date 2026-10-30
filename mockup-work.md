@@ -18,7 +18,7 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow | Drafted (2026-10-30, v4) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
+| 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-30, v1) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
@@ -50,7 +50,11 @@ prizes repaired into the fleet). Then: "can we have stars not be flat but a 3d p
 when I hit edges, I dont like that, a cool nebula background would be nice too"; "Star crew bridge simulator! also
 borrow its star shader from there too, so when we scroll around the stars trace an outline" (its nebula skies and
 FreeSpace-style streaking stars, `data/space/`); "elements shouldnt hide when zooming out"; "I prefer routs be traced
-like a line, 4x the map size" (30 x 22 sectors); "show tool tip of what faction space my mouse is hovering over".
+like a line, 4x the map size" (30 x 22 sectors); "show tool tip of what faction space my mouse is hovering over". Then: "remove numbers, can you use some sort of ssr? combined with
+reflection probe of space skybox? to make this look nicer? nebulas can be of different color, make the clouds more pronounced and 3d
+looking, use the puffs method from crab-breeeze"; "tiles with planets or stations should be a different color"; "hex orientation all
+need to be same orientation"; "what is standing in relation to? can we merge this with the top? so tis not floating? looks more like a
+panel hanging from top of the screen"; "I should be able to click on ship to quicky go there".
 
 Design: `openspec/changes/game-flow/`. References: SFC2 manual printed pages 74-89 (menus, skirmish,
 campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish points, refit by
