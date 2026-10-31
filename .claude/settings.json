@@ -19,7 +19,9 @@
       "mcp__claude-artifacts__publish_files",
       "mcp__claude-artifacts__publish_version",
       "mcp__claude-artifacts__edit_version",
-      "mcp__claude-artifacts__declare_capabilities"
+      "mcp__claude-artifacts__declare_capabilities",
+      "Bash(openspec validate *)",
+      "mcp__github__pull_request_read"
     ]
   }
 }
