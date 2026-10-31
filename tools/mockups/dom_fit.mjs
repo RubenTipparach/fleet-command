@@ -43,8 +43,9 @@ for (const [sizeName, viewport] of SIZES) {
         const ps = getComputedStyle(p);
         const kids = [...p.children].filter((c) => shown(c) && !overlay(getComputedStyle(c)) && !['SCRIPT', 'STYLE', 'BR'].includes(c.tagName));
         if (framed(ps) && ps.overflow === 'visible' && p !== document.documentElement && p !== document.body) {
-          const r = p.getBoundingClientRect();
-          const inner = { l: r.left + parseFloat(ps.borderLeftWidth), t: r.top + parseFloat(ps.borderTopWidth), r: r.right - parseFloat(ps.borderRightWidth), b: r.bottom - parseFloat(ps.borderBottomWidth) };
+          // Boxes come back scaled by any CSS transform above (the console is drawn scaled); border widths do not.
+          const r = p.getBoundingClientRect(), k = p.offsetWidth ? r.width / p.offsetWidth : 1;
+          const inner = { l: r.left + k * parseFloat(ps.borderLeftWidth), t: r.top + k * parseFloat(ps.borderTopWidth), r: r.right - k * parseFloat(ps.borderRightWidth), b: r.bottom - k * parseFloat(ps.borderBottomWidth) };
           for (const c of kids) {
             const q = c.getBoundingClientRect(), d = Math.max(inner.l - q.left, inner.t - q.top, q.right - inner.r, q.bottom - inner.b);
             if (d > 0.5) out.push(`spill ${label(c)} out of ${label(p)} by ${d.toFixed(1)} px`);

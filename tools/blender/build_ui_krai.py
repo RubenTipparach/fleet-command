@@ -32,7 +32,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ui_render  # noqa: E402  (the render harness every Blender skin shares)
-from ui_shapes import NodeKit, Panel, film_mat, link_layers, metal, printed  # noqa: E402  (shared modelling and shading)
+from ui_shapes import NodeKit, Panel, film_mat, link_layers, lip_runs, metal, printed  # noqa: E402  (shared modelling and shading)
 
 SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "krai", "shapes.json")))
 CELL = SHAPES["cell"]
@@ -76,38 +76,9 @@ def glass(name, col, es):
 
 
 def lower_lips(well):
-    """The edges of a well whose inward normal points up the screen: the lower lip, where a forge lamp sits. Yields
-    (x0, y0, x1, y1, nx, ny) per edge longer than 3 px (the outline's orientation gives the inward side)."""
-    area = sum(well[i - 1][0] * well[i][1] - well[i][0] * well[i - 1][1] for i in range(len(well))) / 2
-    side = 1.0 if area > 0 else -1.0   # y-down screen: a positive area runs clockwise on screen, inward is to the right
-    run = []
-    for i in range(len(well)):
-        a, b = well[i], well[(i + 1) % len(well)]
-        run.append((a, b))
-    seg, acc = [], 0.0
-    for a, b in run:
-        tx, ty = b[0] - a[0], b[1] - a[1]
-        n = math.hypot(tx, ty) or 1.0
-        nx, ny = -ty / n * side, tx / n * side
-        if ny < -0.85 and n > 1.0:   # the flat lower lips only: a glow rising evenly, no beam from a corner
-            seg.append((a, b, nx, ny))
-            acc += n
-            if acc >= 10.0:
-                yield from merge(seg)
-                seg, acc = [], 0.0
-        elif seg:
-            yield from merge(seg)
-            seg, acc = [], 0.0
-    if seg:
-        yield from merge(seg)
-
-
-def merge(seg):
-    (a, _b, _nx, _ny), (_a, b, _x, _y) = seg[0], seg[-1]
-    nx, ny = sum(s[2] for s in seg) / len(seg), sum(s[3] for s in seg) / len(seg)
-    n = math.hypot(nx, ny) or 1.0
-    if math.hypot(b[0] - a[0], b[1] - a[1]) > 3.0:
-        yield a[0], a[1], b[0], b[1], nx / n, ny / n
+    """The well's flat lower lips, where a forge lamp sits (ui_shapes.lip_runs): edges longer than 1 px whose inward
+    normal points up the screen, in runs of about 10 px, a glow rising evenly with no beam from a corner."""
+    return lip_runs(well, 10.0, faces=lambda nx, ny, ln: ny < -0.85 and ln > 1.0, min_len=3.0)
 
 
 def mats(K, s):

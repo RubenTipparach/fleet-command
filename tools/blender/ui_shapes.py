@@ -270,6 +270,43 @@ def _area(pts):
     return abs(sum(pts[i - 1][0] * p[1] - p[0] * pts[i - 1][1] for i, p in enumerate(pts))) / 2
 
 
+def lip_runs(well, seg, faces=None, min_len=0.5):
+    """Where a well's lamps go: walks the closed outline `well` (px, y down) and groups the edges `faces(nx, ny, length)`
+    accepts (all of them when None) into runs about `seg` px long. Yields (x0, y0, x1, y1, nx, ny): a run's ends and the
+    length-weighted inward normal of its edges; a run shorter than min_len is dropped. One implementation for every
+    skin's lighting option (the bible's chapter 10): rim light takes every edge, bottom light the lower lips (ny < 0),
+    side light the left lips (nx > 0). The inward side comes from the outline's winding, so any shape works."""
+    n = len(well)
+    area = sum(well[i - 1][0] * well[i][1] - well[i][0] * well[i - 1][1] for i in range(n)) / 2
+    sgn = 1.0 if area > 0 else -1.0   # y down: a positive area runs clockwise on screen, so inward is to the right
+    start, end, acc, nrm = None, None, 0.0, [0.0, 0.0]
+
+    def flush():
+        if start is not None and math.hypot(end[0] - start[0], end[1] - start[1]) > min_len:
+            k = math.hypot(*nrm) or 1.0
+            yield start[0], start[1], end[0], end[1], nrm[0] / k, nrm[1] / k
+
+    for i in range(n):
+        a, b = well[i], well[(i + 1) % n]
+        tx, ty = b[0] - a[0], b[1] - a[1]
+        ln = math.hypot(tx, ty)
+        if ln == 0:
+            continue
+        nx, ny = -ty / ln * sgn, tx / ln * sgn
+        if faces is None or faces(nx, ny, ln):
+            if start is None:
+                start, acc, nrm = a, 0.0, [0.0, 0.0]
+            end, acc = b, acc + ln
+            nrm = [nrm[0] + nx * ln, nrm[1] + ny * ln]
+            if acc >= seg:
+                yield from flush()
+                start = None
+        else:
+            yield from flush()
+            start = None
+    yield from flush()
+
+
 def offset_poly(pts, d):
     """Move a closed outline d px inward (negative: outward), each point along its mitred normal. Works on any
     smooth outline, which is what lets a plate's roll follow a formed shape."""
