@@ -6,6 +6,10 @@ metadata:
   version: "1.0"
 ---
 
+> **Hold: do not use this skill or its guide to build anything yet.** The Organic Panel Bible is a draft that has not
+> been reviewed. Use it only to continue the study until it is finished and a human has reviewed and approved it (owner,
+> 2026-10-31: "Make a note to not use the guide until it's ready and human reviewed").
+
 ## In Fleet Command
 
 New in this repository (owner, 2026-10-31, of the Vhorr Brood's version 23: "Nah that's bad lol. Let's make a new
