@@ -1,18 +1,20 @@
 // The Vhorr Brood skin (mockup 4, OpenSpec change console-skins): an organic race (owner, 2026-10-30: "an organic alien
-// race, lots of leather shining through light, slimy carapace, tendrils"). Since version 23 it is assimilated tech (owner,
-// 2026-10-31: "I like that some of the tech in zerg is human tech with an organic layer on top"; design.md, "The Vhorr
-// Brood: assimilated tech"): a captured gunmetal machine built on the analog panel bible (rolled steel plates, machined
-// wells of dark glass, keycaps, bolts, lamps under the lips), with the brood grown over it: vein-lit creep and membrane
-// from the corners, bolts swallowed into glowing pustules, chitin spines and horns breaking the corners, conduits wrapped
-// in sinew, the brood's eye in a fleshy pocket on the name plate, a glowing egg as the crest. Growth never covers a
-// readout, a label or a key's face (rule G, tools/mockups/vhorr_shapes.py; rendered by tools/blender/build_ui_vhorr.py,
-// assets/ui/vhorr/). This module loads that kit and draws the live readouts. Registers itself with the page's skin
-// registry (docs/mockups/skins).
+// race, lots of leather shining through light, slimy carapace, tendrils"). Since version 25 it is built on the Organic
+// Panel Bible (docs/design/organic-bible.html; owner, 2026-10-31: "Nah that's bad lol. Let's make a new design system for
+// organic", then of the blockout: "Go"): no nine-slice (rule 4) and no raw primitives (rule 1). Every slot of the console
+// is sculpted at its exact, pinned size by the parametric sculptors (tools/blender/organic_components.py, run by
+// tools/blender/build_ui_vhorr_organic.py over assets/ui/vhorr/organic/blockout.json): bone, then muscle, then one skin of
+// leather stretched over both, veins and sacs of light under it (rule 2), black smoked glass with a bronze rim in every
+// window, dark key caps with hot rims set into collars of flesh, the crystal heart as the crest; the panels float over the
+// game with nothing behind them (rule 5), and the portrait is live pixels under a fine hex-cell filter (rule 3). The kit's
+// symbol cells and icons are still the version 23 renders (assets/ui/vhorr/). This module loads both and draws the live
+// readouts. Registers itself with the page's skin registry (docs/mockups/skins).
 (function () {
 'use strict';
 const F = window.FCK, P = F.P;
 const VH = { chitin: '#2b1d2a', chitinHi: '#6a4a68', hide: '#5a3424', hideDark: '#2e1814', flesh: '#c4566a', bile: '#a6e34a', bileHot: '#e4ff9a',
-  slime: '#f4f0e0', blood: '#e0342a', pit: '#120a10', ink: '#f3e6d0', dim: '#c9a48c', amber: '#f0b43c' };
+  slime: '#f4f0e0', blood: '#e0342a', pit: '#120a10', ink: '#f3e6d0', dim: '#c9a48c', amber: '#f0b43c',
+  readout: '#b8f27a', keyInk: '#ffd9a0', leather: '#33110f', bone: '#e2d6bb', glass: '#050405', hero: '#b35cff' };
 
 // ---- organic shape helpers -------------------------------------------------------------------------------------
 // A closed path through points, smoothed by quadratic curves between midpoints (no corners anywhere: nothing is cut).
@@ -100,21 +102,35 @@ function podDisc(x, rx, ry, core, R, col = VH.bile) {
 }
 // ---- the skin --------------------------------------------------------------------------------------------------
 F.register('vhorr', {
-  name: 'Vhorr Brood', kind: 'Assimilated tech in Blender: a captured steel console overgrown with vein-lit creep, chitin and pustules', bg: '#0b080a',
-  css: { '--s-ink': VH.ink, '--s-dim': VH.dim, '--s-num': VH.bile, '--s-body': '"Barlow Condensed", sans-serif', '--btn-ink': '#0c1406', '--btn-shadow': '0 1px 0 rgba(230,255,170,0.45)', '--btn-justify': 'center',
-    '--btn-font': '400 16px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'none', '--btn-sink': '1.5px', '--btn-pt': '2px', '--btn-pb': '0px',
-    '--tab-font': '400 13px/1 "Metamorphous", serif', '--tab-ink': VH.dim, '--tab-ink-on': '#0c1406', '--title-font': '400 21px/1 "Metamorphous", serif', '--title-ink': VH.bileHot,
+  name: 'Vhorr Brood', kind: 'Organic, sculpted in Blender per slot on the Organic Panel Bible: leather over muscle and bone, no nine-slice, an overlay', bg: '#0b080a',
+  css: { '--s-ink': VH.ink, '--s-dim': VH.dim, '--s-num': VH.readout, '--s-body': '"Barlow Condensed", sans-serif', '--btn-ink': VH.keyInk, '--btn-shadow': '0 0 6px rgba(255,132,0,0.55)', '--btn-justify': 'center',
+    '--btn-font': '400 16px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1px', '--btn-pt': '2px', '--btn-pb': '0px',
+    '--tab-font': '400 13px/1 "Metamorphous", serif', '--tab-ink': VH.dim, '--tab-ink-on': VH.readout, '--title-font': '400 21px/1 "Metamorphous", serif', '--title-ink': VH.ink,
     '--lbl-font': '600 17px/1 "Barlow Condensed", sans-serif', '--num-font': '600 27px/1 "Barlow Condensed", sans-serif',
     // The strips are 72 px; their open band is the captured beam's channel of dark glass, rows 13-59 inside its rolled lip
     // (tools/mockups/vhorr_shapes.py), so each label stands over its bar with 3 px clear of the art.
     '--stt-pt': '13px', '--stt-pb': '13px', '--stb-pt': '13px', '--stb-pb': '13px', '--strip-lamp': '40px' },
   accent: VH.bile, warn: VH.blood,
   // The title sits in the frame's well, right of the top-left creep, under the well's rolled lip.
-  title: (t, m) => { t.style.cssText = `left:${38 - m[3]}px;top:${19 - m[0]}px;text-shadow:0 1px 2px #000, 0 0 6px ${VH.bile};`; },
-  plateText: { left: 76, top: 13, width: 352, height: 30, font: '400 21px/1 "Metamorphous", serif', color: VH.ink, shadow: '0 1px 2px #000, 0 0 3px #0a1404', sub: 'Sskarr · Matriarch Vhaal' },
+  title: (t, m) => { t.style.cssText = `left:${38 - m[3]}px;top:${19 - m[0]}px;text-shadow:0 1px 2px #000;`; },
+  plateText: { left: 76, top: 13, width: 352, height: 30, font: '400 21px/1 "Metamorphous", serif', color: VH.ink, shadow: '0 1px 2px #000', sub: 'Sskarr · Matriarch Vhaal' },
   helmKeys: [[150, 63], [236, 63], [236, 149], [236, 235], [150, 235], [64, 235], [64, 149], [64, 63]], shield: [VH.bile, VH.amber, VH.blood],
   fonts: ['400 20px "Metamorphous"', '600 20px "Barlow Condensed"'], view: { title: '400 28px "Metamorphous"', body: '600 25px "Barlow Condensed"', upper: false },
-  build: () => { const d = F.kitData('assets/ui/vhorr/manifest.json'); return d ? F.fromManifest(d, () => F.paint(48, 48, () => {})) : null; },
+  // The sculpted slots (assets/ui/vhorr/organic/manifest.json, kind "organic") over the version 23 kit, which still gives
+  // the symbol cells, the icons and the layout margins the console was measured with (so the blockout's slots hold).
+  build: () => {
+    const d = F.kitData('assets/ui/vhorr/manifest.json'), o = F.kitData('assets/ui/vhorr/organic/manifest.json');
+    if (!d || !o) return null;
+    const K = F.fromManifest(d, () => F.paint(48, 48, () => {})), img = {};
+    for (const [k, p] of Object.entries(o.pieces)) img[k] = p.data;
+    K.organic = { slots: o.slots, img, portrait: img.portrait, portraitRect: o.portrait.rect, hex: o.hex };
+    for (const id of Object.keys(K.hero)) {   // the hero pieces are sculpted slots too (the lamp's three colours are one slot's states)
+      const lamp = id.startsWith('lamp.alert.'), sl = lamp ? 'lamp.alert.yellow' : id, so = o.slots[sl];
+      const src = so && img[`${sl}.${lamp ? id.split('.').pop() : so.rest}`];
+      if (src) K.hero[id] = { src, size: so.rect.slice(2) };
+    }
+    return K;
+  },
   live: {
     // A talon pointing the way.
     arrow: (x) => { x.fillStyle = VH.slime; x.strokeStyle = '#1a0a0c'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(13, 0); x.quadraticCurveTo(0, -3, -9, -9); x.quadraticCurveTo(-4, 0, -9, 9); x.quadraticCurveTo(0, 3, 13, 0); x.fill(); x.stroke(); },
@@ -143,10 +159,10 @@ F.register('vhorr', {
       }
     },
   },
-  world: ['The brood is one body: it grows, consumes and adapts.', 'It does not build consoles, it takes them: captured machines, overgrown.', 'Living tissue: light is bile glowing through skin, armour is shed carapace.', 'Living hulls of carapace plates over glowing flesh.'],
-  shapes: 'Machined plates, wells and keycaps under creep, pustules, spines and horns: the rectangle broken by growth.', light: 'The machine\'s lamps under the lips, turned bile; light running through the creep\'s veins; pustules as status lights.',
-  motion: 'A pressed key\'s glass is pushed in and glows hot, its letters sinking with it; the frame stays put.', type: '"Metamorphous" for keys and titles over "Barlow Condensed" numbers.',
-  palette: [['Chitin', VH.chitin, 'Plates, claws', 'Armour grown, not forged'], ['Hide', VH.hide, 'Frames, membranes', 'The brood\'s one skin'], ['Flesh', VH.flesh, 'Tendrils, tissue', 'Hunger'],
-    ['Bile', VH.bile, 'Light, readouts', 'Growth: the light inside the body'], ['Slime', VH.slime, 'Wet highlights', 'The newly grown'], ['Blood', VH.blood, 'Alerts', 'A wound']],
+  world: ['The brood is one body: it grows, consumes and adapts.', 'Its consoles are grown, not built: bone, then muscle, then leather stretched over both.', 'The instruments it holds are hard and crisp: black glass, dark keys with hot rims.', 'It floats over the battle like a living thing; nothing stands behind it.'],
+  shapes: 'One sculpted body per slot: a thick rolled lip round every window, a vertebral ridge with horns, muscle lobes, veins under the skin. No raw primitives, no nine-slice.', light: 'A warm key from above and grazing rims on wet ridges; sacs of light glow green through the skin; the crystal heart glows violet.',
+  motion: 'A pressed key\'s cap sinks into its collar of flesh and its rim burns hotter, its letters sinking with it; the flesh stays put.', type: '"Metamorphous" for keys and titles over "Barlow Condensed" numbers.',
+  palette: [['Leather', VH.leather, 'Every frame', 'The brood\'s one skin'], ['Bone', VH.bone, 'Crests through thin skin', 'The frame under the flesh'], ['Glass', VH.glass, 'Every screen', 'Calm behind the readouts'],
+    ['Readout', VH.readout, 'Readouts, life', 'Growth: the light inside the body'], ['Key', '#ff8400', 'Key rims', 'Touch'], ['Heart', VH.hero, 'The crest', 'The brood\'s heartbeat'], ['Blood', VH.blood, 'Alerts', 'A wound']],
 });
 })();
