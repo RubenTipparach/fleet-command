@@ -228,7 +228,7 @@ function icon(name) {
 F.register('tarsine', {
   name: 'Tarsine Remnant', kind: 'Corroded monumental iron; backlights clogged with dirt', bg: '#110e0b',
   css: { '--s-ink': TA.bone, '--s-dim': TA.dim, '--s-num': TA.light, '--s-body': '"Alegreya Sans SC", sans-serif', '--btn-ink': '#1e160c', '--btn-shadow': '0 1px 0 rgba(255,230,160,0.35)', '--btn-justify': 'center',
-    '--btn-pt': '0px', '--btn-pb': '2px', '--btn-font': '700 17px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'translateY(1px)',
+    '--btn-pt': '0px', '--btn-pb': '2px', '--btn-font': '700 17px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-sink': '1px',
     '--tab-font': '700 13px/1 "Cinzel", serif', '--tab-ink': TA.dim, '--tab-ink-on': TA.light, '--title-font': '700 17px/1 "Cinzel", serif', '--title-ink': TA.goldHi,
     '--lbl-font': '700 16px/1 "Alegreya Sans SC", sans-serif', '--num-font': '700 24px/1 "Alegreya Sans SC", sans-serif',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is above the beam: rows 0-45 of the top strip, 26-72 of the bottom,

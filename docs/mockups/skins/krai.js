@@ -59,7 +59,7 @@ function icon(name) {
 F.register('krai', {
   name: 'Krai Warhost', kind: 'Black blade steel and red enamel; keys lit orange when engaged', bg: '#0a0707',
   css: { '--s-ink': KR.bone, '--s-dim': KR.dim, '--s-num': KR.orange, '--s-body': '"Teko", sans-serif', '--btn-ink': KR.bone, '--btn-shadow': '0 1px 2px #000, 0 0 3px #000', '--btn-justify': 'center',
-    '--btn-font': '400 18px/1 "Russo One", sans-serif', '--btn-track': '0.06em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'none',
+    '--btn-font': '400 18px/1 "Russo One", sans-serif', '--btn-track': '0.06em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-sink': '1px',
     '--tab-font': '400 14px/1 "Russo One", sans-serif', '--tab-ink': KR.dim, '--tab-ink-on': KR.bone, '--title-font': '400 18px/1 "Russo One", sans-serif', '--title-ink': KR.red,
     '--lbl-font': '500 19px/1 "Teko", sans-serif', '--num-font': '600 28px/1 "Teko", sans-serif',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the blade channel, rows 13-58,

@@ -146,15 +146,13 @@ def pieces():
     add("helm.pad", "hero", (300, 300), Point(150, 150).buffer(149.5, quad_segs=48), [("phos", disc(150, 150, 50))],
         studs=keys + screws, cradle=(150, 150, 92.0, 24.0, 2.5), prints=[("graticule", graticule(150, 150, 44, [18, 34]), 0.8, "grat")],
         live=[("stop", box(126, 140, 174, 160))], roll=3.5, dz=-10.0)
-    # The ship display: a large round phosphor scope held at its sides by two ears of the plate, a screw in each; two
-    # knurled knobs to its left, two jewel lamps in dimples to its right. The live shield rings fill radius 106.
-    ears = unary_union([disc(100, 150, 18), disc(360, 150, 18)])
-    scope = soft(disc(230, 150, 124).difference(ears), 5)
+    # The ship display: one big phosphor screen, an oscilloscope's rounded-rectangle CRT, filling the panel (owner,
+    # 2026-10-31: "ship display should take up 90% of the panel or more"): 443 x 283 of 460 x 300, 91% of its area, in a
+    # thin rolled rim (roll 2.5 mm, the most rule R allows at this land). The live shield rings fill radius 137.
+    scope = rbox(8.5, 8.5, 451.5, 291.5, 20)
     add("ssd.bezel", "hero", (460, 300), rbox(0.5, 0.5, 459.5, 299.5, 24), [("phos", scope)],
-        studs=[(107, 150, 3.0, "screw"), (353, 150, 3.0, "screw"), (52, 82, 13.0, "knurl"), (52, 218, 13.0, "knurl"),
-               (408, 82, 5.0, "jewel"), (408, 218, 5.0, "jewel")], dimples=[(408, 82, 8.5), (408, 218, 8.5)],
-        prints=[("graticule", graticule(230, 150, 104, [36, 70, 104], 6), 0.8, "grat")], live=[("rings", disc(230, 150, 106))],
-        roll=3.5, dz=-10.0)
+        prints=[("graticule", graticule(230, 150, 135, [45, 90, 135], 6), 0.8, "grat")], live=[("rings", disc(230, 150, 137))],
+        roll=2.5, dz=-10.0)
     add("dial", "hero", (120, 120), Point(60, 60).buffer(59.5, quad_segs=48), [("phos", disc(60, 60, 51.5))],
         prints=[("graticule", graticule(60, 60, 46, [16, 32]), 0.7, "grat")], live=[("scope", disc(60, 60, 47))], roll=2.2, dz=-8.0)
     for c in ("green", "yellow", "red"):

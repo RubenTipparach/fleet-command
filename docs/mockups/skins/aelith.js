@@ -127,7 +127,7 @@ function icon(name) {
 F.register('aelith', {
   name: 'Aelith Conclave', kind: 'Hybrid: a gold and pearl shell rendered in Blender, holograms drawn as vectors in its wells', bg: '#03111a',
   css: { '--s-ink': AE.holoHi, '--s-dim': '#9fc9cf', '--s-num': AE.holo, '--s-body': '"Exo 2", sans-serif', '--btn-ink': AE.holoHi, '--btn-shadow': `0 0 6px ${AE.holo}`, '--btn-justify': 'center',
-    '--btn-font': '400 11px/1 "Michroma", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.25s', '--btn-press': 'none',
+    '--btn-font': '400 11px/1 "Michroma", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.25s', '--btn-sink': '1px',
     '--tab-font': '400 9.5px/1 "Michroma", sans-serif', '--tab-pb': '1px', '--btn-pb': '3px', '--tab-ink': '#9fc9cf', '--tab-ink-on': AE.holoHi, '--title-font': '400 15px/1 "Michroma", sans-serif', '--title-ink': AE.goldHi,
     '--lbl-font': '600 15px/1 "Exo 2", sans-serif', '--num-font': '300 28px/1 "Exo 2", sans-serif',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the channel, rows 12-59,

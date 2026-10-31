@@ -38,7 +38,7 @@ the survey asks the owner to correct them.
 | **Light and shading** | None painted: flat colour that glows, on black | Harsh key light from the top left, rim light, deep occlusion, spec on bevels, emissive lenses | Drawn: hatching on the shadow side, a dry-brush highlight, a little ink bleed |
 | **Icons** | Open circles and arcs in an even thin line; nothing pointed (from the saucer and the circle of species) | Solid wedges, chevrons and blades pointing forward (from the prow); stencilled | Brush-drawn spirals, claws, eyes and teeth, a little crooked (from tattoos and trophies) |
 | **Type** | A tall condensed sans in capitals, right-aligned labels (Antonio) | A squared stencil face (Saira Stencil One) | A hand-lettered marker face (Permanent Marker) over a hand-written body (Patrick Hand) |
-| **Motion** | Snappy fades, at most 150 ms; nothing moves that a hand was reaching for | A mechanical press: the key travels 2 px with a hard stop | A wobble: a pressed tag tilts and springs back |
+| **Motion** | Snappy fades, at most 150 ms; nothing moves that a hand was reaching for | A mechanical press: the cap sinks into its socket; the frame never moves | A wobble: a struck tag tilts and springs back (the one skin whose key moves, owner: "these should rotate when I click them") |
 | **Sound (U6)** | Soft chirps | Heavy clunks and servo whines | Rattles, a bell, a laugh |
 
 ### Concord: LCARS's principles, Starfleet's palette
@@ -360,6 +360,17 @@ its small pilot ring changed. Now the window is the state: unlit film and no lam
 film and a stronger lamp when pressed, the pilot ring lit with it. Each tab, the console's toggles (Offline, Normal,
 Overload), carries a jewel pilot lamp in a pressed dimple at its left, inside the slice margin: dark glass when off,
 glowing when that setting is on. The plate, glass and dimple are the same in every state; only the light changes.
+
+## Keys never move (version 20)
+
+The owner, 2026-10-31: "Krai buttons shouldnt move position when I press them", then of the Kethran keys "these buttons
+should not move, the button should have a 3d animation where the inner part is pushed in and the frame stays put in the
+same spot". No pressed key is moved or squashed by the page any more (the Kethran and Hunt slid down, the Vhorr squashed,
+the Krai slid sideways), with one exception the owner asked for: the Vos tag still tilts and springs back ("these should
+rotate when I click them"), its hand-cut character. Every skin's pressed image keeps its frame exactly where its idle
+image has it (measured: identical footprints in all seven rendered kits) with the cap sunk in its socket, so a press swaps
+to that image and the label rides the cap down by the skin's `--btn-sink` (2 px on the Kethran's long key travel, 1 px
+elsewhere).
 
 ## The kit
 

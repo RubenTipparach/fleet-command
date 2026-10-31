@@ -98,7 +98,7 @@ function podDisc(x, rx, ry, core, R, col = VH.bile) {
 F.register('vhorr', {
   name: 'Vhorr Brood', kind: 'Grown in Blender: hide lit from behind, wet iridescent carapace, tendrils, sinew', bg: '#0d0709',
   css: { '--s-ink': VH.ink, '--s-dim': VH.dim, '--s-num': VH.bile, '--s-body': '"Barlow Condensed", sans-serif', '--btn-ink': VH.ink, '--btn-shadow': '0 1px 2px #000, 0 0 5px #1a0a0c', '--btn-justify': 'center',
-    '--btn-font': '400 16px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'transform 0.2s cubic-bezier(.3,1.7,.5,1)', '--btn-press': 'scale(0.97, 0.9)',
+    '--btn-font': '400 16px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1px',
     '--tab-font': '400 14px/1 "Metamorphous", serif', '--tab-pb': '5px', '--tab-ink': VH.dim, '--tab-ink-on': VH.bileHot, '--title-font': '400 21px/1 "Metamorphous", serif', '--title-ink': VH.bileHot,
     '--lbl-font': '600 17px/1 "Barlow Condensed", sans-serif', '--num-font': '600 27px/1 "Barlow Condensed", sans-serif',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is beside the hide roll: rows 0-51 of the top strip, 20-72 of the bottom,
@@ -137,7 +137,7 @@ F.register('vhorr', {
   },
   world: ['The brood is one body: it grows, consumes and adapts.', 'Grown, not built: hide, chitin, membranes, nerve tendrils.', 'Living tissue: light is bile glowing through skin, armour is shed carapace.', 'Living hulls of carapace plates over glowing flesh.'],
   shapes: 'Blister pods, shells, ribs, tendrils and blobs. Nothing straight, nothing cut.', light: 'From within: bile glowing through hide; wet specular highlights on chitin.',
-  motion: 'A pod squeezes flat when pressed and swells back.', type: '"Metamorphous" for keys and titles over "Barlow Condensed" numbers.',
+  motion: 'A pressed pod glows hot and its letters sink; the pod stays put.', type: '"Metamorphous" for keys and titles over "Barlow Condensed" numbers.',
   palette: [['Chitin', VH.chitin, 'Plates, claws', 'Armour grown, not forged'], ['Hide', VH.hide, 'Frames, membranes', 'The brood\'s one skin'], ['Flesh', VH.flesh, 'Tendrils, tissue', 'Hunger'],
     ['Bile', VH.bile, 'Light, readouts', 'Growth: the light inside the body'], ['Slime', VH.slime, 'Wet highlights', 'The newly grown'], ['Blood', VH.blood, 'Alerts', 'A wound']],
 });
