@@ -1578,7 +1578,7 @@ function icon(name) {
 F.register('krai', {
   name: 'Krai Warhost', kind: 'Black blade steel and red enamel; keys lit orange when engaged', bg: '#0a0707',
   css: { '--s-ink': KR.bone, '--s-dim': KR.dim, '--s-num': KR.orange, '--s-body': '"Teko", sans-serif', '--btn-ink': KR.bone, '--btn-shadow': '0 1px 2px #000, 0 0 3px #000', '--btn-justify': 'center',
-    '--btn-font': '400 18px/1 "Russo One", sans-serif', '--btn-track': '0.06em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'translateX(2px)',
+    '--btn-font': '400 18px/1 "Russo One", sans-serif', '--btn-track': '0.06em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'none',
     '--tab-font': '400 14px/1 "Russo One", sans-serif', '--tab-ink': KR.dim, '--tab-ink-on': KR.bone, '--title-font': '400 18px/1 "Russo One", sans-serif', '--title-ink': KR.red,
     '--lbl-font': '500 19px/1 "Teko", sans-serif', '--num-font': '600 28px/1 "Teko", sans-serif',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the blade channel, rows 13-58,
@@ -1615,7 +1615,7 @@ F.register('krai', {
   },
   world: ['War is the only honest test; rank is won in blood.', 'Lean predators with long claws: short, sharp gestures.', 'Forged steel, edged everything; nothing round survives the forge.', 'Knife-blade hulls and swept triangles.'],
   shapes: 'Blades, fangs, spikes and triangles; nothing round.', light: 'A forge glow rising from under every lip; honed steel edges; red enamel; keys dark until engaged, then lit orange.',
-  motion: 'A key thrusts forward 2 px when struck.', type: '"Russo One" for keys and titles over "Teko" numbers.',
+  motion: 'A struck key stays put and burns: dark ember, red on hover, forge orange when engaged.', type: '"Russo One" for keys and titles over "Teko" numbers.',
   palette: [['Black steel', KR.black, 'Frames, keys', 'The forge'], ['Edge', KR.edge, 'Honed highlights', 'Readiness'], ['Blood', KR.blood, 'Inlays', 'Honour paid in blood'],
     ['Red', KR.red, 'Titles, warnings', 'Rage'], ['Orange', KR.orange, 'Engaged keys, readouts', 'The strike'], ['Bone', KR.bone, 'Text', 'Trophies']],
 });
