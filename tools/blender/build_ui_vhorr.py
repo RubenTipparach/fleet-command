@@ -1,45 +1,55 @@
 """Fleet Command: the Vhorr Brood console skin, modelled, shaded and rendered in Blender.
 
-Owns every piece of the Vhorr skin of the shared console UI kit, organic throughout (owner, 2026-10-30:
-"Vhor needs special treatment with organic materials and shaders, and organic looking modeling, things
-like slimey leather, tendrils, claws, carapaces, fibers, could help sell the alien hive mind aesthetic").
-Nothing here is cut or bolted: frames are bands of leathery hide with bioluminescence glowing through
-them between dark veins, wet and slimy under a clear coat; corners are grown over by glossy iridescent
-carapace claws; tendrils with subsurface flesh curl out of them; sinew fibres run along the cords; keys are
-blister pods whose membranes glow from within. Rendered face on in Cycles through the shared harness
-(tools/blender/ui_render.py), at twice the slot size, with a manifest of sizes and margins.
+Owns every piece of the Brood skin of the shared console UI kit, rebuilt as assimilated tech (owner, 2026-10-31: "The
+brood still needs work", "I like that some of the tech in zerg is human tech with an organic layer on top"; design.md,
+"The Vhorr Brood: assimilated tech"). The brood grows, consumes and adapts; it does not build consoles, it takes them.
+Two layers:
 
-    /opt/blender/blender --background --factory-startup --python tools/blender/build_ui_vhorr.py -- \
+- a captured machine on the analog panel bible (docs/design/ui-bible.html, the blender-ui-panels skill): gunmetal
+  steel plates whose every edge rolls over, machined wells with dark glass, keycaps, bolts, a lamp under each window's
+  top lip, fully legible;
+- the brood's growth over it, in the skin's organic materials (owner, 2026-10-30: "slimey leather, tendrils, claws,
+  carapaces, fibers"): creep spreading from the corners and seams (a thick core of hide lit from behind, a thin wet
+  membrane at its edge fogging the bezels), bolts swallowed into glowing pustules that serve as status lights, chitin
+  ridges and horns growing out past the plate's corners, captured conduits wrapped in sinew, a fleshy pocket on the
+  name plate holding the brood's eye as the captain's portrait, and a large glowing egg as the crest.
+
+Growth never covers a readout, a label or a key's face, and on a 9-slice piece it lies only in the cells that never
+stretch (rule G). The shapes come from assets/ui/vhorr/shapes.json, written and fit-checked by
+tools/mockups/vhorr_shapes.py (run it first); this script models exactly those outlines through tools/blender/ui_shapes.py's
+Panel and renders them face on in Cycles through the shared harness (tools/blender/ui_render.py) at twice the slot
+size, with a manifest. The icons are the skin's organic sculptures, unchanged.
+
+    python3 tools/mockups/vhorr_shapes.py
+    /opt/blender/blender --background --factory-startup --python tools/blender/build_ui_vhorr.py -- \\
         --out assets/ui/vhorr [--only button.idle,crest] [--samples 48]
+    python3 tools/mockups/vhorr_shapes.py --verify assets/ui/vhorr
 
-Units: 1 px of the 1x slot is 1 mm; the builders take slot pixels with y running down (as the image does).
-9-slice pieces keep their detail (claws, knuckles, bulbs) inside the margins and one cross-section along
-their edges; their shaders use object-space noise, which a stretched edge draws out along its length like
-the grain of a sinew, so the hide's features are kept long and soft. Geometry and shaders use fixed seeds
-only; the Cycles renders vary by a few colour levels between runs (unlike the Kethran's, which repeat byte for
-byte), so a rerun is visually the same but not bit-identical.
-Vhorr design language: openspec/changes/console-skins/design.md. Our own design throughout.
+Units: 1 px of the 1x slot is 1 mm, y down. Geometry and shaders use fixed seeds only; subsurface renders vary by a
+few colour levels between runs, so a rerun is visually the same but not bit-identical. Our own design throughout.
 """
 
+import json
 import math
 import os
 import sys
 
-import bpy
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import panel_kit  # noqa: E402  (srgb, camera, reset_scene)
+import panel_kit  # noqa: E402  (srgb)
 import ui_render  # noqa: E402  (the render harness every Blender skin shares)
-from ui_shapes import NodeKit, Shaper, circle, curl, rrect, taper  # noqa: E402  (shared modelling and shading)
+from ui_shapes import NodeKit, Panel, curl, film_mat, link_layers, printed, taper  # noqa: E402  (shared modelling and shading)
 
 MM = ui_render.MM
 srgb = panel_kit.srgb
+SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "vhorr", "shapes.json")))
+CELL, EGG = SHAPES["cell"], SHAPES["egg"]
+SHAPES = SHAPES["pieces"]
 
 # ----------------------------------------------------------------------------- materials
-# Hunger, growth, the swarm: dark chitin, leather hide, flesh, bile light, slime, blood.
+# Hunger, growth, the swarm: dark chitin, leather hide, flesh, bile light, slime, blood; and the steel they took.
 PAL = dict(chitin="#2b1d2a", chitin_hi="#5a3a5e", hide="#5a3424", hide_dark="#2e1814", flesh="#c4566a", bile="#a6e34a",
-           bile_hot="#e4ff9a", sinew="#d9a8a0", pit="#120a10", blood="#e0342a", amber="#f0b43c")
+           bile_hot="#e4ff9a", sinew="#d9a8a0", pit="#120a10", blood="#e0342a", amber="#f0b43c", steel="#6a737a", steel_lo="#4a5258")
 
 
 def hide_mat(name, glow, glow_col="#b6d86a"):
@@ -147,98 +157,188 @@ def glow_mat(name, col, strength):
     return k.mat
 
 
-# ----------------------------------------------------------------------------- shared assemblies
+
+
+def steel_mat(name):
+    """The captured machine's gunmetal: brushed along x, worn bright on its edges, grime pooled in its crevices (its
+    own occlusion), and a faint bile stain where the brood has fed on it."""
+    k = NodeKit(name)
+    brush = k.tex("ShaderNodeTexNoise", 140.0, **{"Detail": 3.0})
+    v = k.warped(30.0, 0.004)
+    wear = k.tex("ShaderNodeTexNoise", 45.0, vec=v, **{"Detail": 6.0, "Roughness": 0.6}).outputs["Fac"]
+    ao = k.N.new("ShaderNodeAmbientOcclusion")
+    ao.samples, ao.only_local = 12, True
+    ao.inputs["Distance"].default_value = 3.5 * MM
+    grime = k.math("SUBTRACT", 1.0, k.math("POWER", ao.outputs["AO"], 1.5), clamp=True)
+    c = k.ramp(brush.outputs["Fac"], PAL["steel_lo"], PAL["steel"], 0.2, 0.8)
+    m = k.N.new("ShaderNodeMix")
+    m.data_type = "RGBA"
+    k.L.new(k.math("MULTIPLY", k.math("DIVIDE", k.math("SUBTRACT", wear, 0.58), 0.12, clamp=True), 0.45), m.inputs["Factor"])
+    k.L.new(c, m.inputs[6])
+    m.inputs[7].default_value = list(srgb("#3a4a22")) + [1.0]
+    g = k.N.new("ShaderNodeMix")
+    g.data_type = "RGBA"
+    k.L.new(k.math("MULTIPLY", grime, 0.9), g.inputs["Factor"])
+    k.L.new(m.outputs[2], g.inputs[6])
+    g.inputs[7].default_value = list(srgb("#0c0a0c")) + [1.0]
+    k.set(Base_Color=g.outputs[2], Metallic=0.85, Roughness=k.math("ADD", 0.34, k.math("MULTIPLY", wear, 0.2)))
+    k.bump(k.math("MULTIPLY", wear, 0.4), 0.06)
+    return k.mat
+
+
+def creep_mat(name):
+    """The creep's thick core: dark wet hide, its light running through a web of thin veins (not patches: mottled hide
+    read as camouflage), brighter where the veins knot, under a glistening coat."""
+    k = NodeKit(name)
+    wv = k.warped(50.0, 0.006)
+    cells = k.tex("ShaderNodeTexVoronoi", 90.0, vec=wv, feature="DISTANCE_TO_EDGE")
+    vein = k.math("POWER", k.math("SUBTRACT", 1.0, k.math("DIVIDE", cells.outputs["Distance"], 0.05, clamp=True)), 3.0)
+    knot = k.tex("ShaderNodeTexNoise", 18.0, **{"Detail": 2.0}).outputs["Fac"]
+    mott = k.tex("ShaderNodeTexNoise", 60.0, vec=wv, **{"Detail": 6.0, "Roughness": 0.6}).outputs["Fac"]
+    k.set(Base_Color=k.ramp(mott, "#1a0a0e", "#4a2024", 0.3, 0.75), Roughness=0.32, Coat_Weight=0.9, Coat_Roughness=0.06,
+          Subsurface_Weight=0.35, Subsurface_Scale=0.002, Subsurface_Radius=(1.0, 0.35, 0.25), Emission_Color=PAL["bile"],
+          Emission_Strength=k.math("MULTIPLY", vein, k.math("ADD", 0.6, k.math("MULTIPLY", k.math("SUBTRACT", knot, 0.45, clamp=True), 6.0))))
+    k.bump(k.math("ADD", k.math("MULTIPLY", vein, 0.7), mott), 0.4)
+    return k.mat
+
+
+def fog_mat(name):
+    """The thin wet membrane at the creep's edge: dark red-brown, translucent, so the glass and steel under it still
+    show, glistening under a clear coat."""
+    k = NodeKit(name)
+    wv = k.warped(70.0, 0.004)
+    cells = k.tex("ShaderNodeTexVoronoi", 140.0, vec=wv, feature="DISTANCE_TO_EDGE")
+    vein = k.math("POWER", k.math("SUBTRACT", 1.0, k.math("DIVIDE", cells.outputs["Distance"], 0.03, clamp=True)), 3.0)
+    k.set(Base_Color="#4a1a16", Roughness=0.3, Coat_Weight=1.0, Coat_Roughness=0.04, Subsurface_Weight=0.4, Subsurface_Scale=0.002,
+          Subsurface_Radius=(1.0, 0.4, 0.3), Alpha=k.math("ADD", 0.62, k.math("MULTIPLY", vein, 0.3)))
+    k.bump(k.math("SUBTRACT", 0.5, vein), 0.3)
+    return k.mat
+
 
 def M(K, key):
     """The skin's materials by role, made once per piece."""
     makers = {
-        "hide": lambda: hide_mat("hide", 1.6), "hide_dim": lambda: hide_mat("hide_dim", 0.7), "hide_hot": lambda: hide_mat("hide_hot", 3.0),
-        "chitin": lambda: chitin_mat("chitin"), "flesh": lambda: flesh_mat("flesh"), "flesh_dark": lambda: flesh_mat("flesh_dark", "#5a2430"),
-        "sinew": lambda: flesh_mat("sinew", PAL["sinew"]), "pit": lambda: wet_mat("pit"),
+        "steel": lambda: steel_mat("steel"), "bolt": lambda: steel_mat("bolt"),
+        "hide": lambda: hide_mat("hide", 0.8), "creep": lambda: creep_mat("creep"), "fog": lambda: fog_mat("fog"), "chitin": lambda: chitin_mat("chitin"),
+        "flesh": lambda: flesh_mat("flesh"), "sinew": lambda: flesh_mat("sinew", PAL["sinew"]), "pit": lambda: wet_mat("pit"),
         "pod_idle": lambda: membrane_mat("pod_idle", 0.3), "pod_hover": lambda: membrane_mat("pod_hover", 1.6),
-        "pod_hot": lambda: membrane_mat("pod_hot", 2.4, PAL["bile_hot"]),
-        "key_idle": lambda: membrane_mat("key_idle", 0.3, plain=True), "key_hover": lambda: membrane_mat("key_hover", 1.6, plain=True),
-        "key_hot": lambda: membrane_mat("key_hot", 2.4, PAL["bile_hot"], plain=True),
+        "pod_hot": lambda: membrane_mat("pod_hot", 2.4, PAL["bile_hot"]), "pustule": lambda: membrane_mat("pustule", 2.0),
         # the symbol bar's spore eggs: one membrane and one vein pattern, only the glow differs (lit and unlit match)
         "egg_off": lambda: membrane_mat("egg_off", 0.12), "egg_on": lambda: membrane_mat("egg_on", 2.2),
-        "egg_warn": lambda: membrane_mat("egg_warn", 2.4, PAL["blood"]), "pod_blood": lambda: membrane_mat("pod_blood", 2.6, PAL["blood"]),
+        "egg_warn": lambda: membrane_mat("egg_warn", 2.4, PAL["blood"]),
         "bile": lambda: glow_mat("bile", PAL["bile"], 2.2), "blood": lambda: glow_mat("blood", PAL["blood"], 2.2),
-        "amber": lambda: glow_mat("amber", PAL["amber"], 2.2), "vessel": lambda: wet_mat("vessel", "#1c0d10"),
+        "amber": lambda: glow_mat("amber", PAL["amber"], 2.2), "groove": lambda: printed("groove", "#060406"),
     }
     return K.mat(key, makers[key])
 
 
-def claw(K, x, y, sx, sy, size):
-    """Carapace grown over a corner: a domed knuckle plate, two long curved horns sweeping out along
-    the two edges and tapering to points, and a tendril curling out from beneath them."""
-    ch = M(K, "chitin")
-    K.blob(x + sx * size * 0.3, y + sy * size * 0.3, size * 0.36, size * 0.3, size * 0.16, ch, z=12.0, rot=sx * sy * 0.78, lumps=0.1)
-    for along in (0, 1):
-        pts = [(x + sx * size * 0.22, y + sy * size * 0.22)]
-        for f in (0.55, 0.9):
-            pts.append((x + sx * size * (f if along == 0 else 0.1 + 0.05 * f), y + sy * size * (0.1 + 0.05 * f if along == 0 else f)))
-        K.tube(pts, [size * 0.16, size * 0.1, size * 0.015], ch, flat=0.55, z=[13.0, 12.0, 11.0])
-    c = curl(x + sx * size * 0.62, y + sy * size * 0.62, size * 0.28, math.atan2(sy, sx), 0.8, 1 if sx * sy > 0 else -1)
-    K.tube(c, taper(len(c), size * 0.1, size * 0.02), M(K, "flesh"), flat=0.8, z=[15.0] * len(c))
+# The films behind the captured glass: (colour, its shadow at the rim, emission). The brood's light is bile: dark glass
+# on frames and screens; keys glow dimly at rest (their label must read), brighter on hover, brightest pressed; the
+# helm's centre and the name window glow warm; the pocket holds the eye.
+FILMS = dict(dim=("#16261a", "#040806", 0.3), low=("#7fb04a", "#14200c", 0.6), warm=(PAL["bile"], "#1a2a0c", 1.0),
+             hot=(PAL["bile_hot"], "#2a3a10", 1.5), hearth=(PAL["bile_hot"], "#24300c", 1.2), gold=("#4e7a2c", "#0a1406", 0.45),
+             pocket=("#c4566a", "#2a0a10", 0.9), slot=("#14201a", "#040606", 0.15), lamp_green=(PAL["bile"], "#1a3010", 1.8),
+             lamp_yellow=(PAL["amber"], "#3a2a08", 1.8), lamp_red=(PAL["blood"], "#3a0806", 1.8))
+INKS = ("iris", "pupil")
+DISPLAY = tuple(FILMS) + INKS
+LAMP = (0.78, 1.0, 0.55)                         # the lamps under the lips, turned bile by the brood
+LAMP_P = float(os.environ.get("LAMP_P", 0.3))
+MAIN = (0.7, 60.0)
 
 
-def band(K, x0, y0, x1, y1, r, width, thick, hide_key="hide"):
-    """A band of hide round a rectangle: a rounded ring slab, with sinew fibres running along it."""
-    outer = rrect(x0, y0, x1, y1, r)
-    inner = rrect(x0 + width, y0 + width, x1 - width, y1 - width, max(2.0, r - width))
-    K.slab([outer, inner], 0.0, thick, M(K, hide_key), bevel=min(thick / 2 - 0.2, width / 2.5))
-    for f in (0.3, 0.7):
-        d = width * f
-        K.tube(rrect(x0 + d, y0 + d, x1 - d, y1 - d, max(2.0, r - d), 6), [1.0] * 28, M(K, "sinew"), flat=0.5, z=[thick + 0.4] * 28, cyclic=True)
+def glass(K, s):
+    a = min(7.0, -s["dz"] * 0.6)
+    K.m.update(plate=M(K, "steel"), knob=M(K, "bolt"), bezel=K.mat("bezel", lambda: printed("bezel", "#1a1c1e", 0.35)), groove=M(K, "groove"))
+    for kind, (col, lo, es) in FILMS.items():
+        K.m[kind] = K.mat(kind, lambda col=col, lo=lo, es=es, kind=kind: film_mat(kind, col=col, shadow=lo, es=es, ao_mm=a))
+    K.m["iris"] = K.mat("iris", lambda: glow_mat("iris", PAL["amber"], 1.6))
+    K.m["pupil"] = K.mat("pupil", lambda: printed("pupil", "#0a0306"))
 
 
-def pod(K, x0, x1, cy, rad, key, z=3.0, flat=0.55, bulb=1.3):
-    """A blister pod from x0 to x1 (px) along row cy: a membrane capsule with a swollen bulb at its
-    left end, lit from within; a stalk feeds it from below the bulb."""
-    m = M(K, key)
-    K.tube([(x0 + rad * bulb * 0.6, cy), ((x0 + x1) / 2, cy), (x1 - rad, cy)], [rad, rad, rad], m, flat=flat, z=[z, z, z])
-    K.blob(x0 + rad * bulb * 0.8, cy, rad * bulb, rad * bulb * 0.95, rad * bulb * flat, m, z=z)
-    K.blob(x1 - rad * 0.95, cy, rad * 0.95, rad * 0.95, rad * flat, m, z=z)
-    K.tube([(x0 - 2, cy + rad * 1.4), (x0 + 4, cy + rad * 0.9), (x0 + rad * 0.9, cy + rad * 0.3)], [rad * 0.3, rad * 0.24, rad * 0.16], M(K, "flesh_dark"), flat=0.7)
+def P(pts):
+    return [tuple(p) for p in pts]
 
 
-# ----------------------------------------------------------------------------- the pieces
+def growth(K, s):
+    """The brood's layer over the captured machine: creep (a thick core of lit hide inside a thin membrane), pustules
+    over the bolts, chitin ridges and horns, sinew-wrapped conduits and the portrait pocket's lip."""
+    top = K.pt
+    for c in s["conduits"]:
+        K.tube(P(c["pts"]), [c["r"]] * len(c["pts"]), M(K, "steel"), flat=0.8, z=[top + c["r"] * 0.6] * len(c["pts"]))
+        for w in c["wraps"]:
+            K.tube(P(w), [1.1, 1.3, 1.1], M(K, "sinew"), flat=0.8, z=[top + c["r"] * 0.9] * 3)
+    for outline, core in (zip(s["creep"], s["core"])):
+        ob = K.slab([P(outline)], top - 0.6, top + 0.9, M(K, "fog"), bevel=0.7)   # outlines come drawn in by their bevel
+        ob.visible_shadow = False
+        if core:
+            K.slab([P(core)], top - 0.4, top + 4.4, M(K, "creep"), bevel=2.3)
+            xs, ys = [p[0] for p in core], [p[1] for p in core]
+            span = min(max(xs) - min(xs), max(ys) - min(ys))
+            if span > 10:   # nodules swelling on the creep, inside its core: thick knots beside the thin membrane
+                cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+                for j in range(3 if span > 24 else 1):
+                    a = 2.1 * j + len(core) * 0.37
+                    r = span * (0.16 if j else 0.22)
+                    K.blob(cx + math.cos(a) * span * 0.18 * (j > 0), cy + math.sin(a) * span * 0.18 * (j > 0), r, r * 0.9, r * 0.55,
+                           M(K, "creep"), z=top + 4.0, lumps=0.0)
+    if s["pocket"]:
+        ring = [P(r) for r in s["pocket"]]
+        K.slab(ring, top - 0.5, top + 3.4, M(K, "flesh"), bevel=1.6)
+    for x, y, r in s["pustules"]:
+        K.blob(x, y, r * 1.2, r * 1.2, r * 0.45, M(K, "hide"), z=top + 3.0, lumps=0.0)
+        K.blob(x, y, r * 0.85, r * 0.85, r * 0.75, M(K, "pustule"), z=top + 3.6)
+    for rg in s["ridges"]:
+        z = [top + r * 0.55 for r in rg["radii"]]
+        K.tube(P(rg["pts"]), rg["radii"], M(K, "chitin"), flat=0.75, z=z)
+        if len(rg["pts"]) >= 5:   # a spine: vertebral knobs along it, thick and thin
+            for (x, y), r in zip(rg["pts"][1:-1], rg["radii"][1:-1]):
+                K.blob(x, y, r * 1.25, r * 1.1, r * 0.9, M(K, "chitin"), z=top + r * 0.9)
 
-def frame_panel(K):
-    w, h = K.w, K.h
-    K.slab([rrect(14, 14, w - 14, h - 14, 14)], -2.0, 0.0, M(K, "pit"), bevel=0.8)
-    band(K, 3, 3, w - 3, h - 3, 22, 24, 9.0)
-    for (x, y, sx, sy) in ((2, 2, 1, 1), (w - 2, 2, -1, 1), (2, h - 2, 1, -1), (w - 2, h - 2, -1, -1)):
-        claw(K, x, y, sx, sy, 38)
 
-
-def frame_inset(K):
-    w, h = K.w, K.h
-    K.slab([rrect(6, 6, w - 6, h - 6, 8)], -2.0, 0.0, M(K, "pit"), bevel=0.6)
-    band(K, 2, 2, w - 2, h - 2, 12, 9, 5.0, "hide_dim")
-
-
-def bar_track(K):
-    w, h = K.w, K.h
-    K.tube([(4, h / 2), (w / 2, h / 2), (w - 4, h / 2)], [6.5, 6.5, 6.5], M(K, "vessel"), flat=0.45)
-    K.tube([(3, h / 2), (w / 2, h / 2), (w - 3, h / 2)], [7.2, 7.2, 7.2], M(K, "flesh_dark"), flat=0.12, z=[-1.5] * 3)
-
-
-def bar_groove(K):
-    """The symbol bar's track: a wet dark furrow between two rolls of flesh, the spore eggs sit in it (groove y 4-16)."""
-    w, h = K.w, K.h
-    K.slab([rrect(3, 3, w - 3, h - 3, 6)], -2.0, 0.0, M(K, "pit"), bevel=0.6)
-    for y in (2.2, h - 2.2):
-        K.tube([(4, y), (w / 2, y), (w - 4, y)], [1.9, 1.9, 1.9], M(K, "flesh_dark"), flat=0.6, z=[1.2] * 3)
-    for x in (5, w - 5):
-        K.blob(x, h / 2, 4.2, 6.5, 3.0, M(K, "flesh"), z=1.0)
+def piece(name):
+    def build(K):
+        s = SHAPES[name]
+        K.roll, K.dz = s["roll"], s["dz"]
+        K.pt = min(8.0, 2 * s["roll"] + 2.0)
+        glass(K, s)
+        wells = [(kind, P(w)) for kind, w in s["wells"]]
+        plate = P(s["plate"])
+        for (kind, _w), f in zip(wells, s["films"]):   # films measured to fit inside the plate (rule B)
+            K.film(None, shape=P(f), m=K.m[kind])
+        K.plate([plate] + [w for _k, w in wells])
+        for kind, w in wells:
+            gap = min(min(math.hypot(x - px, y - py) for px, py in plate) for x, y in w)
+            if gap >= 5.0:
+                K.bezel(w, grow=1.0, wall=gap >= 7.0)
+            if kind.startswith("lamp_") or kind in ("slot", "pocket") or name.startswith(("button.", "tab.")):
+                continue   # keys and tabs are backlit only: a lamp's hot spot under the lip would cross their label
+            xs, ys = [p[0] for p in w], [p[1] for p in w]
+            x0, x1, y0 = min(xs), max(xs), min(ys)
+            n = 2 if x1 - x0 > 140 else 1
+            for j in range(n):   # the machine's lamps under the top lip
+                K.lip_light(x0 + (x1 - x0) * (j + 1) / (n + 1), y0 + 1.5, LAMP_P * (0.4 if kind == "dim" else 1.0), colour=LAMP)
+        if name == "nameplate":   # the brood's eye looks out of the pocket: the captain's portrait
+            cx, cy = 30, 28
+            K.flat([[(cx + 10 * math.cos(a), cy + 9 * math.sin(a)) for a in [i * math.pi / 24 for i in range(48)]]], K.m["iris"])
+            K.flat([[(cx + 2.4 * math.cos(a), cy + 8 * math.sin(a)) for a in [i * math.pi / 16 for i in range(32)]]], K.m["pupil"], z=K.dz + 0.1)
+        for x, y, r in s["bolts"]:   # the machine's hex bolts (most now under pustules)
+            K.cyl(x, y, r, K.pt - 0.2, K.pt + 0.9, K.m["knob"], seg=6, smooth=False)
+        growth(K, s)
+        if name == "crest":
+            x, y, rx, ry = EGG
+            K.blob(x, y + 2, rx * 1.15, ry * 1.08, 6.0, M(K, "hide"), z=K.pt + 1.0)
+            K.blob(x, y, rx, ry, rx * 0.9, M(K, "pod_hot"), z=K.pt + 4.0, lumps=0.04)
+        link_layers(DISPLAY, tuple(FILMS) + ("iris",), main=MAIN)
+    return build
 
 
 def egg(key):
-    """A spore egg, the Vhorr bar's symbol: a swollen oval membrane, unlit grey-violet or glowing from its core."""
+    """A spore egg, the Vhorr bar's symbol, in a ring of hide: the same membrane in every state, only its glow differs."""
     def build(K):
-        w, h = K.w, K.h
-        K.blob(w / 2, h / 2 + 0.3, w / 2 - 0.6, h / 2 - 0.6, 2.6, M(K, key), z=1.0)
+        out = P(CELL["outline"])
+        K.slab([out], 0.0, 1.0, M(K, "hide"), bevel=0.4)
+        w, h = CELL["size"]
+        K.blob(w / 2, h / 2 + 0.2, w / 2 - 1.3, h / 2 - 1.4, 2.4, M(K, key), z=1.2)
     return build
 
 
@@ -247,127 +347,6 @@ def bar_fill(key):
         w, h = K.w, K.h
         K.tube([(4, h / 2), (w / 2, h / 2), (w - 4, h / 2)], [4.2, 4.2, 4.2], M(K, key), flat=0.5)
     return build
-
-
-def button(state):
-    def build(K):
-        w, h = K.w, K.h
-        key = {"idle": "key_idle", "hover": "key_hover", "pressed": "key_hot"}[state]
-        # every state keeps the same crown: a flatter pressed pod (0.6) left creases across the face, under the label;
-        # pressed reads by its hot glow and the page's press motion
-        squash = 0.85
-        # radius 21 (was 18): the lit face is tall enough for a label with descenders, 3 px clear (console fit check)
-        pod(K, 8, w - 6, h / 2, 21, key, flat=squash)
-    return build
-
-
-def tab(active):
-    def build(K):
-        w, h = K.w, K.h
-        ch = M(K, "chitin")
-        K.tube([(14, h / 2), (w / 2, h / 2), (w - 14, h / 2)], [12, 12, 12], ch, flat=0.42)
-        K.blob(14, h / 2, 13, 12, 5.5, ch)
-        K.blob(w - 14, h / 2, 13, 12, 5.5, ch)
-        # the ridge and the active vein run along the shell's top and bottom edges, leaving the middle 12 px clear
-        # for the label (they crossed it: the console fit check)
-        K.tube([(18, h / 2 - 8), (w / 2, h / 2 - 9), (w - 18, h / 2 - 8)], [1.8, 1.8, 1.8], ch, flat=1.0, z=[4.6] * 3)
-        if active:
-            K.tube([(22, h / 2 + 8), (w / 2, h / 2 + 9), (w - 22, h / 2 + 8)], [1.6, 1.6, 1.6], M(K, "bile"), flat=1.0, z=[5.0] * 3)
-    return build
-
-
-def strip(bottom):
-    def build(K):
-        w, h = K.w, K.h
-        y = 12 if bottom else h - 12
-        K.tube([(60, y), (w / 2, y), (w - 60, y)], [8, 8, 8], M(K, "hide"), flat=0.6)
-        for dy in (-3.5, 0.0, 3.5):
-            K.tube([(62, y + dy), (w / 2, y + dy), (w - 62, y + dy)], [0.7] * 3, M(K, "sinew"), flat=0.6, z=[4.6] * 3)
-        for x, s in ((2, 1), (w - 2, -1)):
-            ch = M(K, "chitin")
-            sy = 1 if bottom else -1
-            for i, (dx, dyy, rx, ry, rot) in enumerate(((40, 0, 46, 14, 0.0), (68, 10, 26, 9, 0.35), (26, 18, 18, 12, 0.6))):
-                K.blob(x + s * dx, y + sy * dyy, rx, ry, 7.0, ch, z=3.0 + i, rot=s * sy * rot, lumps=0.1, seed=i)
-            c = curl(x + s * 74, y + sy * 26, 12, math.pi / 2 * sy, 0.8, s * sy)
-            K.tube(c, taper(len(c), 3.2, 0.6), M(K, "flesh"), flat=0.8, z=[6.0] * len(c))
-    return build
-
-
-def divider(K):
-    w, h = K.w, K.h
-    K.tube([(10, h / 2), (w / 2, h / 2), (w - 10, h / 2)], [2.2, 2.2, 2.2], M(K, "flesh_dark"), flat=0.7)
-    for x in (6, w - 6):
-        K.blob(x, h / 2, 4.6, 4.6, 3.0, M(K, "pod_idle"))
-
-
-def nameplate(K):
-    w, h = K.w, K.h
-    lens = [(30 + (w - 60) * i / 40, h / 2 - (h / 2 - 3) * math.sin(math.pi * i / 40) ** 0.25) for i in range(41)]
-    lens += [(x, h - y) for x, y in reversed(lens)]
-    K.slab([lens], 0.0, 7.0, M(K, "hide"), bevel=3.0)
-    K.slab([rrect(70, 10, 390, h - 10, 18)], 6.0, 7.5, M(K, "pit"), bevel=1.0)
-    for x, s in ((4, 1), (w - 4, -1)):
-        for i, (dx, rx, ry, rot) in enumerate(((22, 30, 13, 0.35), (22, 30, 13, -0.35), (40, 16, 9, 0.0))):
-            K.blob(x + s * dx, h / 2 + (i - 1) * 0 + (-8 if i == 0 else 8 if i == 1 else 0), rx, ry, 6.0, M(K, "chitin"), z=7.0 + i, rot=s * rot, lumps=0.1, seed=i)
-
-
-def helm_pad(K):
-    w, h = K.w, K.h
-    c = w / 2
-    K.slab([circle(c, c, 132)], 0.0, 8.0, M(K, "hide_dim"), bevel=3.5)
-    for i in range(16):
-        a = i * math.pi / 8
-        K.blob(c + math.cos(a) * 136, c + math.sin(a) * 136, 13, 6, 5, M(K, "chitin"), z=4.0, rot=a, lumps=0.1, seed=i)
-    for i in range(8):
-        a = -math.pi / 2 + i * math.pi / 4
-        p = [(c + math.cos(a) * 38, c + math.sin(a) * 38), (c + math.cos(a + 0.12) * 60, c + math.sin(a + 0.12) * 60), (c + math.cos(a) * 82, c + math.sin(a) * 82)]
-        K.tube(p, [5, 4, 3.4], M(K, "flesh_dark"), flat=0.6, z=[8.0] * 3)
-    for i in range(8):
-        a = -math.pi / 2 + i * math.pi / 4
-        K.blob(c + math.cos(a) * 100, c + math.sin(a) * 100, 27, 20, 11, M(K, "pod_idle"), z=9.0, rot=a, lumps=0.06, seed=i)
-    K.blob(c, c, 38, 36, 16, M(K, "pod_blood"), z=10.0, lumps=0.08, seed=9)
-
-
-def ssd_bezel(K):
-    w, h = K.w, K.h
-    K.slab([rrect(12, 12, w - 12, h - 12, 22)], -2.0, 0.0, M(K, "pit"), bevel=0.8)
-    band(K, 3, 3, w - 3, h - 3, 28, 18, 8.0)
-    for s in (1, -1):
-        for i in range(5):
-            y = 54 + i * 48
-            x0 = 6 if s > 0 else w - 6
-            K.tube([(x0, y - 2), (x0 + s * 22, y - 8), (x0 + s * 40, y + 2)], [6, 4.6, 1.6], M(K, "chitin"), flat=0.6, z=[8.0] * 3)
-    for (x, y, sx, sy) in ((2, 2, 1, 1), (w - 2, 2, -1, 1), (2, h - 2, 1, -1), (w - 2, h - 2, -1, -1)):
-        claw(K, x, y, sx, sy, 44)
-
-
-def dial(K):
-    w, h = K.w, K.h
-    c = w / 2
-    K.slab([circle(c, c, 58), circle(c, c, 44)], 0.0, 8.0, M(K, "chitin"), bevel=3.0)
-    K.slab([circle(c, c, 46)], -1.0, 3.0, M(K, "hide_dim"), bevel=1.5)
-    K.slab([circle(c, c, 36)], 2.5, 3.5, M(K, "pit"), bevel=0.5)
-
-
-def lamp(key):
-    def build(K):
-        w, h = K.w, K.h
-        c = w / 2
-        K.blob(c, c + 14, 26, 12, 6, M(K, "chitin"), lumps=0.1)
-        K.blob(c, c - 4, 19, 22, 14, M(K, key), z=4.0, lumps=0.04)
-    return build
-
-
-def crest(K):
-    w, h = K.w, K.h
-    c = w / 2
-    cl = curl(c, c + 8, 36, 0.4, 1.0, 1, 9)
-    K.tube(cl, taper(9, 6.5, 1.0), M(K, "flesh"), flat=0.7)
-    K.blob(c, c, 13, 17, 10, M(K, "pod_hot"), z=6.0)
-    for i in range(3):
-        a = -math.pi / 2 + i * 2 * math.pi / 3
-        p = [(c + math.cos(a) * 44, c + math.sin(a) * 44), (c + math.cos(a + 0.35) * 30, c + math.sin(a + 0.35) * 30), (c + math.cos(a + 0.55) * 16, c + math.sin(a + 0.55) * 16)]
-        K.tube(p, [7, 5.5, 1.2], M(K, "chitin"), flat=0.6, z=[8.0] * 3)
 
 
 # Icons: small organic sculptures, lit with bile so they read at 48 px.
@@ -419,43 +398,32 @@ def icon(name):
     return build
 
 
+
+
 ICONS = ["helm", "fire", "shields", "tractor", "transport", "science", "comms", "repair", "map", "settings"]
-PIECES = {
-    "frame.panel":    ("nine", (200, 150), (40, 40, 40, 40), "xy", frame_panel),
-    "frame.inset":    ("nine", (80, 60), (16, 16, 16, 16), "xy", frame_inset),
-    "bar.track":      ("nine", (120, 20), (0, 14, 0, 14), "x", bar_groove, (11, 4)),
-    "bar.fill":       ("nine", (80, 10), (0, 6, 0, 6), "x", bar_fill("bile")),
-    "bar.fill.red":   ("nine", (80, 10), (0, 6, 0, 6), "x", bar_fill("blood")),
-    "bar.cell.off":   ("cell", (9, 12), None, None, egg("egg_off"), 2),
-    "bar.cell.on":    ("cell", (9, 12), None, None, egg("egg_on"), 2),
-    "bar.cell.warn":  ("cell", (9, 12), None, None, egg("egg_warn"), 2),
-    "button.idle":    ("nine", (160, 52), (0, 30, 0, 46), "x", button("idle")),
-    "button.hover":   ("nine", (160, 52), (0, 30, 0, 46), "x", button("hover")),
-    "button.pressed": ("nine", (160, 52), (0, 30, 0, 46), "x", button("pressed")),
-    "tab.idle":       ("nine", (130, 40), (14, 28, 14, 28), "x", tab(False)),
-    "tab.active":     ("nine", (130, 40), (14, 28, 14, 28), "x", tab(True)),
-    "strip.top":      ("nine", (512, 72), (8, 110, 8, 110), "x", strip(False)),   # 72 tall since 2026-10-31
-    "strip.bottom":   ("nine", (512, 72), (8, 110, 8, 110), "x", strip(True)),
-    "divider":        ("nine", (128, 10), (0, 14, 0, 14), "x", divider),
-    "nameplate":      ("hero", (460, 56), None, None, nameplate),
-    "helm.pad":       ("hero", (300, 300), None, None, helm_pad),
-    "ssd.bezel":      ("hero", (460, 300), None, None, ssd_bezel),
-    "dial":           ("hero", (120, 120), None, None, dial),
-    "lamp.alert.green": ("hero", (64, 64), None, None, lamp("bile")),
-    "lamp.alert.yellow": ("hero", (64, 64), None, None, lamp("amber")),
-    "lamp.alert.red": ("hero", (64, 64), None, None, lamp("blood")),
-    "crest":          ("hero", (96, 96), None, None, crest),
-}
+PIECES = {}
+for _n, _s in SHAPES.items():
+    PIECES[_n] = (_s["kind"], tuple(_s["size"]), tuple(_s["margins"]) if _s["margins"] else None, _s["stretch"], piece(_n), _s["inset"])
+PIECES["bar.fill"] = ("nine", (64, 10), (0, 6, 0, 6), "x", bar_fill("bile"))
+PIECES["bar.fill.red"] = ("nine", (64, 10), (0, 6, 0, 6), "x", bar_fill("blood"))
+for _st, _key in (("off", "egg_off"), ("on", "egg_on"), ("warn", "egg_warn")):
+    PIECES[f"bar.cell.{_st}"] = ("cell", tuple(CELL["size"]), None, None, egg(_key), CELL["gap"])
+ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "bar.cell.off", "bar.cell.on", "bar.cell.warn",
+         "button.idle", "button.hover", "button.pressed", "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate",
+         "helm.pad", "ssd.bezel", "dial", "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest"]
+PIECES = {k: PIECES[k] for k in ORDER}
 PIECES.update({f"icon.{n}": ("hero", (48, 48), None, None, icon(n)) for n in ICONS})
 
-# A dim warm key from the top left, a violet rim from the bottom right, a dark purple world: the light
-# that matters comes from inside the hide.
-LIGHTS = [("Key", (1.0, -1.0, -1.2), 2.6, (1.0, 0.9, 0.82), 4.0), ("Rim", (-1.0, 1.0, -0.7), 1.4, (0.75, 0.55, 1.0), 8.0)]
+# A cool room light from the upper left shows the steel and the wet growth; a violet rim from the lower right catches
+# the chitin; link_layers adds the softbox, the ceiling and the main light. The world is dark: the light that matters
+# comes from inside the brood.
+LIGHTS = [("Room", (0.3, -1.0, -1.6), 1.1, (0.86, 0.9, 1.0), 10.0), ("Rim", (-1.0, 1.0, -0.7), 0.6, (0.75, 0.55, 1.0), 8.0)]
 
 
 def render_setup(w_px, h_px, samples):
-    ui_render.setup(w_px, h_px, samples, LIGHTS, world=(0.02, 0.012, 0.022), bounces=dict(max_bounces=6, transmission_bounces=2))
+    ui_render.setup(w_px, h_px, samples, LIGHTS, world=(0.018, 0.012, 0.02),
+                    bounces=dict(max_bounces=8, glossy_bounces=4, transmission_bounces=4, diffuse_bounces=3))
 
 
 if __name__ == "__main__":
-    ui_render.run("vhorr", PIECES, Shaper, render_setup, samples=48)
+    ui_render.run("vhorr", PIECES, Panel, render_setup, samples=48)

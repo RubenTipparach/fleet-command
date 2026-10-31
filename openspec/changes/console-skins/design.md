@@ -413,7 +413,7 @@ With ten rendered kits inlined as PNG the page reached 19 MB, past the artifact 
 each kit image as high-quality WebP (quality 92, alpha kept; `tools/mockups/inline_data.py`), 2.4 MB in all, measured
 indistinguishable on the page (mean 0.33 of 255); the committed renders stay PNG.
 
-## The Vhorr Brood: assimilated tech (planned, version 23)
+## The Vhorr Brood: assimilated tech (version 23)
 
 The owner, 2026-10-31, with two screenshots of StarCraft II's Zerg interface (not committed; direction only, take the
 shape, not the art): "The brood still needs work. Analyze elements in this UI system carefully", then "I like that some of
@@ -452,6 +452,25 @@ overhang never covers another panel's content. Measured, like every other rule. 
 
 If the result is not right, the next step is the Winamp exercise: study the reference element by element, rebuild, and
 compare pixels.
+
+**Built (version 23, 2026-10-31)**: `tools/mockups/vhorr_shapes.py` writes and checks the shapes, `tools/blender/build_ui_vhorr.py`
+renders them, `docs/mockups/skins/vhorr.js` draws the live readouts.
+- **The captured machine**: gunmetal steel with a 3 mm roll (keys 2.4, tabs 2.0), machined wells (the frames' corners
+  chamfered 22 px to make land for a bolt), dark glass lit bile by a lamp under each top lip. Keys and tabs are backlit only,
+  because a lamp's hot spot under the lip crossed their labels. Its plates, wells and bolts pass rules K, L, R, P and B.
+- **The growth**: creep is a thick core of dark wet hide whose light runs through a web of thin veins (patches read as
+  camouflage), inside a translucent membrane that thins onto the steel; nodules swell on the larger creeps. Pustules sit
+  over the bolts, chitin spines with vertebral knobs and horns run along the helm's and the ship display's top edges and
+  out past the rounded corners, captured conduits carry sinew bands, the name plate's left end is a fleshy pocket holding
+  the brood's eye, and the crest is a glowing egg cradled by chitin ribs.
+- **Rule G**, new and measured: growth stays inside the piece's image (G1), at least 3 px from every live readout, label
+  and key face (G2), and on a 9-slice piece only in the cells the slicing never stretches (G3). Creep is grown from an
+  anchor and fitted by sliding and shrinking, never clipped, so it has no straight cut edge.
+- **Pressed keys move** (owner, 2026-10-31: "I actually prefer the more animated versions on click"): the glass is
+  pushed 3 mm in and 3 px down, the frame and growth unchanged; `--btn-sink` 1.5px moves the label with it.
+- Contacts on the dial glow by threat: bile far, amber nearer, blood nearest.
+- Not built yet: tendrils bridging the gutters between panels. They need a page-level growth overlay, a new kit idea
+  with its own fit rule (never over another panel's content).
 
 ## The kit
 
