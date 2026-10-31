@@ -114,7 +114,8 @@ def sheet(bad, path):
     for rec, r in bad:
         im = Image.open(rec["shot"]).convert("RGB")
         a = np.asarray(im).copy()
-        a[r["hits"]] = (255, 0, 0)
+        if r["hits"] is not None:
+            a[r["hits"]] = (255, 0, 0)
         b = r["box"]
         x0, y0 = max(0, b[0] - 40), max(0, b[1] - 30)
         x1, y1 = min(a.shape[1], b[2] + 40), min(a.shape[0], b[3] + 30)
@@ -161,13 +162,20 @@ def main():
         bad = []
         for rec in skin["leaves"]:
             r = check(rec)
+            if r and r.get("empty") and rec["name"].split(" ")[0] in ("ptitle", "lbl", "num", "ovl") or (r and r.get("empty") and rec["name"].endswith(" label")):
+                # text that shows no pixels was clipped or hidden: that is a fault, not a pass
+                bad.append((rec, {"h": 0, "v": 0, "box": [0, 0, 1, 1], "bad": True, "hits": None, "empty": True}))
+                continue
             if r and not r.get("empty") and r["bad"]:
                 bad.append((rec, r))
         ov = overlaps(skin["blocks"]) + [(c, "", 0, 0) for c in skin.get("clipped", [])]
         fails += len(bad) + len(ov)
         print("%-9s %s" % (skin["skin"], "clear" if not bad and not ov else "%d leaf edge(s), %d block overlap(s)" % (len(bad), len(ov))))
         for rec, r in bad:
-            print("    %-46s on %-22s edge run h %3d v %3d" % (rec["name"][:46], rec["parentCls"].replace("nine", "").strip()[:22], r["h"], r["v"]))
+            if r.get("empty"):
+                print("    %-46s on %-22s shows no pixels (clipped or hidden)" % (rec["name"][:46], rec["parentCls"].replace("nine", "").strip()[:22]))
+            else:
+                print("    %-46s on %-22s edge run h %3d v %3d" % (rec["name"][:46], rec["parentCls"].replace("nine", "").strip()[:22], r["h"], r["v"]))
         for a, b, ix, iy in ov:
             print("    overlap: %s / %s (%s x %s px)" % (a, b, ix, iy) if b else "    does not fit: %s" % a)
         sheet(bad, os.path.join(out_dir, "%s-fit.png" % skin["skin"]))
