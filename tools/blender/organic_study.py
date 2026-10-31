@@ -776,15 +776,31 @@ def sculpted_frame(step):
                         CRADLE, pustules=(PUSTULES[:1] if step >= OVERLAY_FROM else PUSTULES) if step >= 19 else (),
                         overlay=step >= OVERLAY_FROM)
     S, masks = sc.build(layers)
-    ny, nx = S.shape
+    ob = field_mesh("sculpt", sc.X, sc.Y, S, masks, cut_mm=OVERLAY_CUT_MM if step >= OVERLAY_FROM else None)
+    mat = clay("clay", step >= 17) if step < 18 else anatomy("anatomy", step)
+    assign(ob, mat)
+    # (no lamp over a sac: a point light that close burns a hot dot into the skin; the skin's own emission lights it)
+    return sc, ob
+
+
+def field_mesh(name, X, Y, S, masks, cut_mm=None, glow=None):
+    """A sculpted height field as a smooth mesh (X, Y, S in mm; one vertex per sample), the sculpt's masks written as the
+    colour attributes the anatomy material blends by (m1: bone, muscle, vein; m2: crease, web, pustule, depth) and, if
+    glow is given (an (ny, nx, 3) array of linear rgb), the colour of each sac's light as attribute gc. cut_mm: faces
+    whose every corner lies below it are the bare floor, cut away (rule 5: an overlay, not a scene). Used by the study
+    and by every organic skin's generator (tools/blender/build_ui_vhorr_organic.py), so both build the surface alike."""
     import numpy as np
+    ny, nx = S.shape
     co = np.zeros((ny * nx, 3), dtype=np.float32)
-    co[:, 0] = sc.X.ravel() * MM
-    co[:, 1] = sc.Y.ravel() * MM
+    co[:, 0] = X.ravel() * MM
+    co[:, 1] = Y.ravel() * MM
     co[:, 2] = S.ravel() * MM
     idx = np.arange(ny * nx).reshape(ny, nx)
     quads = np.stack([idx[:-1, :-1].ravel(), idx[:-1, 1:].ravel(), idx[1:, 1:].ravel(), idx[1:, :-1].ravel()], axis=1)
-    me = bpy.data.meshes.new("sculpt")
+    if cut_mm is not None:   # drop the floor's faces before they are made: cheaper than deleting them afterwards
+        zq = S.ravel()[quads]
+        quads = quads[(zq >= cut_mm).any(axis=1)]
+    me = bpy.data.meshes.new(name)
     me.vertices.add(len(co))
     me.vertices.foreach_set("co", co.ravel())
     me.loops.add(quads.size)
@@ -800,23 +816,21 @@ def sculpted_frame(step):
             if ch:
                 col[:, i] = masks[ch].ravel()
         a.data.foreach_set("color", col.ravel())
+    if glow is not None:
+        a = me.color_attributes.new("gc", "FLOAT_COLOR", "POINT")
+        col = np.ones((ny * nx, 4), dtype=np.float32)
+        col[:, :3] = glow.reshape(-1, 3)
+        a.data.foreach_set("color", col.ravel())
     me.polygons.foreach_set("use_smooth", np.ones(len(quads), dtype=bool))
-    if step >= OVERLAY_FROM:
-        # an overlay, not a scene: the bare floor between the bodies is cut away, so the game view shows between the
-        # panels; only what has grown up out of the floor (the panels' bodies and the sinew that is part of them) stays
+    if cut_mm is not None:   # loose vertices of the cut floor
         import bmesh
         bm = bmesh.new()
         bm.from_mesh(me)
-        low = [f for f in bm.faces if all(v.co.z / MM < OVERLAY_CUT_MM for v in f.verts)]
-        bmesh.ops.delete(bm, geom=low, context="FACES")
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
         bm.to_mesh(me)
         bm.free()
         me.update()
-    ob = link(bpy.data.objects.new("sculpt", me))
-    mat = clay("clay", step >= 17) if step < 18 else anatomy("anatomy", step)
-    assign(ob, mat)
-    # (no lamp over a sac: a point light that close burns a hot dot into the skin; the skin's own emission lights it)
-    return sc, ob
+    return link(bpy.data.objects.new(name, me))
 
 
 def measure_field(sc):
@@ -1058,67 +1072,7 @@ def build(step):
     # ---------------------------------------------------------------- the hero: a crystal heart (step 12)
     if on(12):
         cz = sculpt.at(200, 92) - 4.0 if on(16) else 18.0     # grown from the sculpted cradle, its root sunk in it
-        if on(23):   # frosted, lit from a core inside, a breath of violet mist round it: never a plastic toy
-            cr = principled("crystal", "#4c2490", rough=0.5, transmission=1.0, coat=0.5, coat_rough=0.35,
-                            emit=PAL["hero"], emit_strength=0.12)
-            frost = noise(cr, 900.0, 6.0)                   # frosted, pitted facets
-            fb = nt(cr)[0].new("ShaderNodeBump")
-            fb.inputs["Strength"].default_value = 0.35
-            fb.inputs["Distance"].default_value = 0.3 * MM
-            nt(cr)[1].new(frost.outputs["Fac"], fb.inputs["Height"])
-            nt(cr)[1].new(fb.outputs["Normal"], nt(cr)[0]["Principled BSDF"].inputs["Normal"])
-            core = principled("crystalcore", PAL["hero_hot"], rough=0.5, emit=PAL["hero"], emit_strength=6.0)
-        else:
-            cr = principled("crystal", PAL["hero"], rough=0.05, transmission=0.6, coat=1.0, emit=PAL["hero"], emit_strength=0.6)
-            core = None
-        for k, (dx, dy, h, w, rot) in enumerate([(0, 0, 72, 17, 0), (-22, -8, 44, 12, 26), (21, -10, 50, 13, -22),
-                                                 (8, -20, 28, 9, -55), (-12, -18, 26, 8, 50)]):
-            a = math.radians(rot)
-            ux, uy = -math.sin(a), math.cos(a)            # the shard's axis in the view, tilted by rot
-            for part, (frac, flip) in (("tip", (1.0, 0)), ("root", (0.35, 1))):
-                ln = h * frac
-                bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=w * MM, radius2=0, depth=ln * MM)
-                c = bpy.context.active_object
-                c.name = f"crystal{k}{part}"
-                if on(23):   # rule 1: no raw cone. Cut it into an uneven shard: facets of different widths, a broken tip
-                    import random
-                    rr = random.Random(k * 7 + (part == "root"))
-                    bpy.ops.object.mode_set(mode="EDIT")
-                    bpy.ops.mesh.subdivide(number_cuts=2)
-                    bpy.ops.object.mode_set(mode="OBJECT")
-                    for v in c.data.vertices:
-                        v.co.x *= rr.uniform(0.7, 1.25)
-                        v.co.y *= rr.uniform(0.7, 1.25)
-                        v.co.z += rr.uniform(-0.04, 0.04) * ln * MM
-                    for f in c.data.polygons:
-                        f.use_smooth = False
-                off = ln / 2 * (-1 if flip else 1)
-                c.location = ((200 + dx + ux * off) * MM, (96 + dy + uy * off) * MM, cz * MM)
-                c.rotation_euler = (math.radians(90 if flip else -90), 0, a)
-                growth.append(assign(c, cr))
-                if core is not None and part == "tip":     # a core of light inside each shard, a third its size
-                    bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=w * 0.35 * MM, radius2=0, depth=ln * 0.7 * MM)
-                    ci = bpy.context.active_object
-                    ci.name = f"crystalcore{k}"
-                    ci.location = ((200 + dx + ux * off * 0.8) * MM, (96 + dy + uy * off * 0.8) * MM, cz * MM)
-                    ci.rotation_euler = c.rotation_euler
-                    assign(ci, core)
-        if on(23):
-            bpy.ops.mesh.primitive_uv_sphere_add(radius=46 * MM, location=(200 * MM, 112 * MM, (cz + 6) * MM))
-            mist = bpy.context.active_object
-            mist.name = "mist"
-            mm = bpy.data.materials.new("mist")
-            mm.use_nodes = True
-            mn = mm.node_tree.nodes
-            mn.remove(mn["Principled BSDF"])
-            vol = mn.new("ShaderNodeVolumePrincipled")
-            vol.inputs["Color"].default_value = srgb("#b07cff")
-            vol.inputs["Density"].default_value = 0.6
-            mm.node_tree.links.new(vol.outputs[0], mn["Material Output"].inputs["Volume"])
-            assign(mist, mm)
-        kp = 0.55 if on(23) else 1.0
-        point("heart", (200, 120, cz + 8), 0.3 * kp, 6, (0.7, 0.4, 1.0))
-        point("heartspill", (200, 80, cz + 12), 0.25 * kp, 30, (0.75, 0.45, 1.0))
+        growth += crystal_heart(200, 96, cz, 1.0, frosted=on(23))
         if not on(16):
             cb = Body("cradle")
             cb.el("BALL", 200, 84, 22)
@@ -1140,6 +1094,77 @@ def build(step):
         so = link(bpy.data.objects.new("front", sun))
         so.rotation_euler = (math.radians(8), math.radians(-6), 0)
     return growth, protected
+
+
+def crystal_heart(cx, cy, cz, scale, frosted=True):
+    """The hero: a crystal heart of violet shards grown from (cx, cy) at depth cz (mm), its size scaled by scale (1.0 is
+    the study's, about 72 mm tall). frosted: the accepted look (step 23 on), frosted shards each cut uneven (rule 1: no
+    raw cone), a hot core in each and a breath of violet mist; else the early glassy toy. Returns its objects. Shared by
+    the study and every organic skin's generator."""
+    out = []
+    if frosted:   # frosted, lit from a core inside, a breath of violet mist round it: never a plastic toy
+        cr = principled("crystal", "#4c2490", rough=0.5, transmission=1.0, coat=0.5, coat_rough=0.35,
+                        emit=PAL["hero"], emit_strength=0.12)
+        frost = noise(cr, 900.0 / scale, 6.0)                   # frosted, pitted facets
+        fb = nt(cr)[0].new("ShaderNodeBump")
+        fb.inputs["Strength"].default_value = 0.35
+        fb.inputs["Distance"].default_value = 0.3 * MM * scale
+        nt(cr)[1].new(frost.outputs["Fac"], fb.inputs["Height"])
+        nt(cr)[1].new(fb.outputs["Normal"], nt(cr)[0]["Principled BSDF"].inputs["Normal"])
+        core = principled("crystalcore", PAL["hero_hot"], rough=0.5, emit=PAL["hero"], emit_strength=6.0)
+    else:
+        cr = principled("crystal", PAL["hero"], rough=0.05, transmission=0.6, coat=1.0, emit=PAL["hero"], emit_strength=0.6)
+        core = None
+    for k, (dx, dy, h, w, rot) in enumerate([(0, 0, 72, 17, 0), (-22, -8, 44, 12, 26), (21, -10, 50, 13, -22),
+                                             (8, -20, 28, 9, -55), (-12, -18, 26, 8, 50)]):
+        dx, dy, h, w = dx * scale, dy * scale, h * scale, w * scale
+        a = math.radians(rot)
+        ux, uy = -math.sin(a), math.cos(a)            # the shard's axis in the view, tilted by rot
+        for part, (frac, flip) in (("tip", (1.0, 0)), ("root", (0.35, 1))):
+            ln = h * frac
+            bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=w * MM, radius2=0, depth=ln * MM)
+            c = bpy.context.active_object
+            c.name = f"crystal{k}{part}"
+            if frosted:   # rule 1: no raw cone. Cut it into an uneven shard: facets of different widths, a broken tip
+                import random
+                rr = random.Random(k * 7 + (part == "root"))
+                bpy.ops.object.mode_set(mode="EDIT")
+                bpy.ops.mesh.subdivide(number_cuts=2)
+                bpy.ops.object.mode_set(mode="OBJECT")
+                for v in c.data.vertices:
+                    v.co.x *= rr.uniform(0.7, 1.25)
+                    v.co.y *= rr.uniform(0.7, 1.25)
+                    v.co.z += rr.uniform(-0.04, 0.04) * ln * MM
+                for f in c.data.polygons:
+                    f.use_smooth = False
+            off = ln / 2 * (-1 if flip else 1)
+            c.location = ((cx + dx + ux * off) * MM, (cy + dy + uy * off) * MM, cz * MM)
+            c.rotation_euler = (math.radians(90 if flip else -90), 0, a)
+            out.append(assign(c, cr))
+            if core is not None and part == "tip":     # a core of light inside each shard, a third its size
+                bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=w * 0.35 * MM, radius2=0, depth=ln * 0.7 * MM)
+                ci = bpy.context.active_object
+                ci.name = f"crystalcore{k}"
+                ci.location = ((cx + dx + ux * off * 0.8) * MM, (cy + dy + uy * off * 0.8) * MM, cz * MM)
+                ci.rotation_euler = c.rotation_euler
+                assign(ci, core)
+    if frosted:
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=46 * MM * scale, location=(cx * MM, (cy + 16 * scale) * MM, (cz + 6 * scale) * MM))
+        mist = bpy.context.active_object
+        mist.name = "mist"
+        mm = bpy.data.materials.new("mist")
+        mm.use_nodes = True
+        mn = mm.node_tree.nodes
+        mn.remove(mn["Principled BSDF"])
+        vol = mn.new("ShaderNodeVolumePrincipled")
+        vol.inputs["Color"].default_value = srgb("#b07cff")
+        vol.inputs["Density"].default_value = 0.6 / scale
+        mm.node_tree.links.new(vol.outputs[0], mn["Material Output"].inputs["Volume"])
+        assign(mist, mm)
+    kp = (0.55 if frosted else 1.0) * scale * scale
+    point("heart", (cx, cy + 24 * scale, cz + 8 * scale), 0.3 * kp, 6 * scale, (0.7, 0.4, 1.0))
+    point("heartspill", (cx, cy - 16 * scale, cz + 12 * scale), 0.25 * kp, 30 * scale, (0.75, 0.45, 1.0))
+    return out
 
 
 def measure(growth):
