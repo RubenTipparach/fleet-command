@@ -278,6 +278,35 @@ What it found, and the fix for each (one fix per cause, in the shared layout whe
 Mockup 1's port panel covered the map's top bar and keys on desktop; the top bar now starts beside an open panel and
 the keys step aside, as they already did on a phone.
 
+## Symbol bars, the Remnant's dust, and three skins on the bible (version 17)
+
+The owner, 2026-10-31, with four screenshots of the reference game's skins (not committed; they set direction only, in
+order the Remnant, the Krai, the Ombrai and the Hunt): "Remnant: need to sync up dust with out and unlit button to give it
+that illusion. Id fix up health and power sliders for a lot of these factions: have different repeated symbols for them.
+Please use that instead of the same boring progress bar. The concord having them makes sense and sodoes kethran.and voss.
+Everybody else could use a little more character. In addition we need to update krai, onbrai, and hunt to use the new
+guildine standards".
+
+**The Remnant's dust.** Each tablet key drew its grime from a seed that included its light level, and its backlight drew a
+random number only when lit, so the idle, lit and pressed keys each carried different dirt and the tabs two different
+plates. Now one seed per piece draws the same dust at every level; only the light behind it changes, which is the
+illusion of a lamp coming on behind old glass. The rule holds for every skin: a piece's states share their texture, wear
+and dust, and differ only in light (and a pressed key's travel).
+
+**Symbol bars.** A skin may supply three optional kit pieces, `bar.cell.off`, `bar.cell.on` and `bar.cell.warn` (a
+rendered kit: kind `cell`, with the gap between cells); its bars then become a row of its own symbol in the track's
+groove, as many whole cells as fit at the groove's height, centred, the first `round(n x value)` lit. The track may be
+taller than 16 px (its image height is its slot height). Concord, the Kethran and the Vos keep the plain fill, as the
+owner said. The fit check measures a row of cells like a fill: it may fill its groove, never cover its rim.
+
+| Skin | Symbol | Unlit | Lit | Warning |
+|---|---|---|---|---|
+| Vhorr Brood | Spore egg, a swollen membrane | Dim olive | Bile glowing from its core | Blood |
+| Aelith Conclave | Lozenge of light, the key's own shape | Hollow outline in scanlines | Filled with light | Coral |
+| Tarsine Remnant | Arched window, the tablet key's in miniature, caked in the same dust | Dark grimy glass | Gold light behind the dirt | Ember |
+| Kelvane Institute | Jewel lamp in a brass bezel, an instrument's indicator row | Dark amber glass | Amber | Red |
+| Krai Warhost, Ombrai, Ssarith Hunt | With their rebuilds (below) | | | |
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
