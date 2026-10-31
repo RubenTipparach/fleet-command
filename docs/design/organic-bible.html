@@ -87,13 +87,15 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">Fleet Command · design guide · living panels rendered in Blender</div>
+    <div class="eyebrow">Fleet Command · design guide · draft, growing as we learn · living panels rendered in Blender</div>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <h1>Organic Panel Bible</h1>
     <p class="lede">How to build an interface that is grown, not built: crisp instruments held in a living frame. The frame is flesh, chitin and bone in one body, the screens are black smoked glass, and the keys are hard, dark and lit at their rims. This is the organic counterpart of the <a href="https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF" target="_blank" rel="noopener">Analog Panel Bible</a>.</p>
+    <p class="note"><strong>Draft.</strong> This guide is a living document: the method behind organic interfaces is still being found, one study step at a time, and every new lesson is added here (owner, 2026-10-31: "it's in draft and we'll be adding to it as we discover the methodology behind organic ui"). The study's latest notes from the owner: build the body in layers (bone underneath, muscle over it, leather stretched over both, veins under the skin), sculpt it rather than placing shapes, blend the textures, make it wetter, and never use raw primitives.</p>
     <blockquote><span class="who">Owner, 2026-10-31</span>"Nah that's bad lol. Let's make a new design system for organic" · "The brood is overly simple. It's just metal with ameobas on top. Completely missing the zerg aesthetic"</blockquote>
     <p class="note">This guide goes with the skill <code>.claude/skills/blender-organic-panels</code>, which holds the Blender procedure, and the study generator <code>tools/blender/organic_study.py</code>, which renders every image here. The direction comes from the owner's notes and two reference screenshots of a hive race's interface that are not committed: we take how it is built (its shapes, materials and light), never its art. Every shape, word and colour on this page is our own.</p>
     <ol class="toc">
+      <li><a href="#no-primitives"><span class="no">R1</span>Never use raw primitives</a></li>
       <li><a href="#organism"><span class="no">1</span>One organism</a></li>
       <li><a href="#materials"><span class="no">2</span>Five materials</a></li>
       <li><a href="#form"><span class="no">3</span>Form: grow it, don't cut it</a></li>
@@ -108,6 +110,17 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     </ol>
     <figure class="sheet render-fig"><img src="organic-bible/14-final.jpg" alt="The finished study: a portrait pocket, a black screen with a glowing readout, three crisp keys with amber rims, bone spines arching over, a violet crystal and a neighbour panel, all grown from one ribbed body of dark flesh"><figcaption class="cap">The study's last step: one corner of a living console, rendered face on in Blender exactly as a kit piece is. Everything you see is one body (flesh, chitin plates, bone) except the instruments it holds: the screen, the keys and the portrait.</figcaption></figure>
   </header>
+
+  <section class="ch" id="no-primitives">
+    <div class="chhead"><div class="kicker">Rule 1</div><h2>Never use raw primitives</h2></div>
+    <p class="note"><b>The owner, 2026-10-31:</b> "I don't like the pubbles and the white tendril. These look like low effort shapes. Whereas the organic leather frame looks a little more purposeful and organic", and "never use raw primitives".</p>
+    <ul>
+      <li><b>No raw primitive is ever a visible form.</b> No sphere, capsule, cylinder, cone, torus, plain tube or smooth untextured spike appears in a render as itself: not a bead, a pustule, a spine, a claw, a rib or a tendril.</li>
+      <li><b>Every form is sculpted into the one body and carries its skin detail.</b> A bead row becomes vertebrae under the skin; a spine becomes a bone crest the skin thins over; a pustule becomes a swelling in the leather with light glowing through it; a tendril becomes a sinew cord raised under the skin. Pores, wrinkles, veins and wetness run over all of it.</li>
+      <li><b>Primitives may only be invisible construction</b>: metaball seeds, cutters and the shapes a height field is computed from, which the sculpt and its remesh absorb so no trace of them survives.</li>
+      <li>The crisp instruments (the screen glass, the key caps, the portrait) are tech, not body, and keep their clean edges (chapter 4).</li>
+    </ul>
+  </section>
 
   <section class="ch" id="organism">
     <div class="chhead"><div class="kicker">Chapter 1</div><h2>One organism</h2></div>

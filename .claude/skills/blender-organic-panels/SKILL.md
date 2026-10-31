@@ -16,6 +16,20 @@ Read the guide's chapters 1 and 9 before starting. The analog `blender-ui-panels
 is not organic (render harness, kit pieces, fit checks on the page). Take the shape, not the art: the reference
 screenshots are never committed, and every shape, word and colour is our own.
 
+## 0. Rule 1: never use raw primitives
+
+The owner, 2026-10-31: "I don't like the pubbles and the white tendril. These look like low effort shapes. Whereas the
+organic leather frame looks a little more purposeful and organic", and "never use raw primitives".
+
+- No sphere, capsule, cylinder, cone, torus, plain tube or smooth untextured spike may appear as a visible form: not as a
+  bead, pustule, spine, claw, rib or tendril.
+- Every form is sculpted into the one body and carries its skin detail (pores, wrinkles, veins, wetness): vertebrae
+  under the skin instead of a bead row, a bone crest the skin thins over instead of a spine, a swelling with light
+  glowing through the stretched skin instead of a glossy sphere, a sinew cord raised under the skin instead of a tube.
+- Primitives may only be invisible construction (metaball seeds, cutters, the shapes a height field is computed from)
+  that the sculpt and its remesh absorb.
+- The crisp instruments (screen glass, key caps, the portrait) are tech, not body, and keep their clean edges.
+
 ## 1. The premise
 
 Start from the creature, never from a machine. An organic console is one body that holds instruments:
