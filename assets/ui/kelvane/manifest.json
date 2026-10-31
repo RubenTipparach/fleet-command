@@ -36,7 +36,7 @@
       "kind": "nine",
       "size": [
         96,
-        16
+        20
       ],
       "file": "bar.track.png",
       "margins": [
@@ -47,8 +47,8 @@
       ],
       "stretch": "x",
       "inset": [
-        7,
-        3
+        10,
+        4
       ]
     },
     "bar.fill": {
@@ -344,6 +344,33 @@
         48
       ],
       "file": "icon.settings.png"
+    },
+    "bar.cell.off": {
+      "kind": "cell",
+      "size": [
+        12,
+        12
+      ],
+      "file": "bar.cell.off.png",
+      "gap": 1
+    },
+    "bar.cell.on": {
+      "kind": "cell",
+      "size": [
+        12,
+        12
+      ],
+      "file": "bar.cell.on.png",
+      "gap": 1
+    },
+    "bar.cell.warn": {
+      "kind": "cell",
+      "size": [
+        12,
+        12
+      ],
+      "file": "bar.cell.warn.png",
+      "gap": 1
     }
   }
 }

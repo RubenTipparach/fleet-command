@@ -83,7 +83,21 @@ function build() {
   for (const [name, col] of Object.entries(FILLS)) {
     pieces[name] = { size: [64, 10], margins: [0, 6, 0, 6], data: F.png(F.paint(64, 10, (x) => holo(x, () => { x.beginPath(); x.roundRect(1, 1, 62, 8, 4); }, [0, 0, 64, 10], 0.9, col))) };
   }
+  // The symbol bar: a row of small lozenges of light, the Conclave key's own shape (owner, 2026-10-31: "have different
+  // repeated symbols for them"). Unlit, a faint outline in the same scanlines; lit, the lozenge fills with light.
+  for (const [name, level, col] of [['bar.cell.off', 0.05, AE.holo], ['bar.cell.on', 0.95, AE.holo], ['bar.cell.warn', 0.95, AE.coral]]) {
+    pieces[name] = { kind: 'cell', size: [8, 12], gap: 3, data: F.png(F.paint(8, 12, (x) => lozenge(x, level, col))) };
+  }
   return F.fromManifest({ pieces }, icon);
+}
+function lozenge(x, level, col) {
+  const pts = [[4, 0.6], [7.4, 6], [4, 11.4], [0.6, 6]];
+  holo(x, () => path(x, pts), [0, 0, 8, 12], level, col);
+  if (level > 0.5) {   // lit: the lozenge fills with light, brightest at its heart
+    const g = x.createRadialGradient(4, 6, 0.5, 4, 6, 6); g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, AE.holoHi); g.addColorStop(1, hexA(col, 0.7));
+    x.save(); path(x, pts); x.clip(); x.fillStyle = g; x.fillRect(0, 0, 8, 12); x.restore();
+  }
+  x.save(); x.shadowColor = col; x.shadowBlur = level > 0.5 ? 4 : 0; x.strokeStyle = hexA(col, 0.35 + level * 0.6); x.lineWidth = 0.9; path(x, pts); x.stroke(); x.restore();
 }
 
 // ---- icons: sacred geometry in hairlines of light ---------------------------------------------------------------

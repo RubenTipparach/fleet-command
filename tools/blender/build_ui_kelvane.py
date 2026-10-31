@@ -190,11 +190,26 @@ def fill(col, es):
     return build
 
 
+def lamp_cell(col, es):
+    """A symbol bar cell: a jewel lamp in a brass bezel. Every state is the same lamp and the same glass; only its light
+    (and, on a warning, its colour) changes."""
+    def build(K):
+        w, h = K.w, K.h
+        c = (w / 2, h / 2)
+        K.cyl(c[0], c[1], 5.6, 0.0, 1.4, K.mat("brass", lambda: metal("brass", PAL["brass"], 0.28)))
+        K.cyl(c[0], c[1], 4.6, 1.0, 1.6, K.mat("groove", lambda: printed("groove", PAL["groove"])))
+        K.blob(c[0], c[1], 4.2, 4.2, 2.6, K.mat(f"jewel_{col}_{es}", lambda: jewel(f"jewel_{col}_{es}", col, es)), z=1.4)
+    return build
+
+
 PIECES = {}
 for name, s in SHAPES.items():
     PIECES[name] = (s["kind"], tuple(s["size"]), tuple(s["margins"]) if s["margins"] else None, s["stretch"], piece(name), s["inset"])
 PIECES["bar.fill"] = ("nine", (64, 10), (0, 6, 0, 6), "x", fill("#ffcf6a", 3.0))
 PIECES["bar.fill.red"] = ("nine", (64, 10), (0, 6, 0, 6), "x", fill("#ff5a3a", 3.0))
+PIECES["bar.cell.off"] = ("cell", (12, 12), None, None, lamp_cell("#ffc35a", 0.03), 1)
+PIECES["bar.cell.on"] = ("cell", (12, 12), None, None, lamp_cell("#ffc35a", 2.6), 1)
+PIECES["bar.cell.warn"] = ("cell", (12, 12), None, None, lamp_cell("#ff4a2a", 2.6), 1)
 ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "button.idle", "button.hover", "button.pressed",
          "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate", "helm.pad", "ssd.bezel", "dial",
          "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest"]

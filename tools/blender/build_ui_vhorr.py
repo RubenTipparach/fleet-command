@@ -158,7 +158,10 @@ def M(K, key):
         "pod_idle": lambda: membrane_mat("pod_idle", 0.3), "pod_hover": lambda: membrane_mat("pod_hover", 1.6),
         "pod_hot": lambda: membrane_mat("pod_hot", 2.4, PAL["bile_hot"]),
         "key_idle": lambda: membrane_mat("key_idle", 0.3, plain=True), "key_hover": lambda: membrane_mat("key_hover", 1.6, plain=True),
-        "key_hot": lambda: membrane_mat("key_hot", 2.4, PAL["bile_hot"], plain=True), "pod_blood": lambda: membrane_mat("pod_blood", 2.6, PAL["blood"]),
+        "key_hot": lambda: membrane_mat("key_hot", 2.4, PAL["bile_hot"], plain=True),
+        # the symbol bar's spore eggs: one membrane and one vein pattern, only the glow differs (lit and unlit match)
+        "egg_off": lambda: membrane_mat("egg_off", 0.12), "egg_on": lambda: membrane_mat("egg_on", 2.2),
+        "egg_warn": lambda: membrane_mat("egg_warn", 2.4, PAL["blood"]), "pod_blood": lambda: membrane_mat("pod_blood", 2.6, PAL["blood"]),
         "bile": lambda: glow_mat("bile", PAL["bile"], 2.2), "blood": lambda: glow_mat("blood", PAL["blood"], 2.2),
         "amber": lambda: glow_mat("amber", PAL["amber"], 2.2), "vessel": lambda: wet_mat("vessel", "#1c0d10"),
     }
@@ -219,6 +222,24 @@ def bar_track(K):
     w, h = K.w, K.h
     K.tube([(4, h / 2), (w / 2, h / 2), (w - 4, h / 2)], [6.5, 6.5, 6.5], M(K, "vessel"), flat=0.45)
     K.tube([(3, h / 2), (w / 2, h / 2), (w - 3, h / 2)], [7.2, 7.2, 7.2], M(K, "flesh_dark"), flat=0.12, z=[-1.5] * 3)
+
+
+def bar_groove(K):
+    """The symbol bar's track: a wet dark furrow between two rolls of flesh, the spore eggs sit in it (groove y 4-16)."""
+    w, h = K.w, K.h
+    K.slab([rrect(3, 3, w - 3, h - 3, 6)], -2.0, 0.0, M(K, "pit"), bevel=0.6)
+    for y in (2.2, h - 2.2):
+        K.tube([(4, y), (w / 2, y), (w - 4, y)], [1.9, 1.9, 1.9], M(K, "flesh_dark"), flat=0.6, z=[1.2] * 3)
+    for x in (5, w - 5):
+        K.blob(x, h / 2, 4.2, 6.5, 3.0, M(K, "flesh"), z=1.0)
+
+
+def egg(key):
+    """A spore egg, the Vhorr bar's symbol: a swollen oval membrane, unlit grey-violet or glowing from its core."""
+    def build(K):
+        w, h = K.w, K.h
+        K.blob(w / 2, h / 2 + 0.3, w / 2 - 0.6, h / 2 - 0.6, 2.6, M(K, key), z=1.0)
+    return build
 
 
 def bar_fill(key):
@@ -402,9 +423,12 @@ ICONS = ["helm", "fire", "shields", "tractor", "transport", "science", "comms", 
 PIECES = {
     "frame.panel":    ("nine", (200, 150), (40, 40, 40, 40), "xy", frame_panel),
     "frame.inset":    ("nine", (80, 60), (16, 16, 16, 16), "xy", frame_inset),
-    "bar.track":      ("nine", (120, 16), (0, 14, 0, 14), "x", bar_track),
+    "bar.track":      ("nine", (120, 20), (0, 14, 0, 14), "x", bar_groove, (11, 4)),
     "bar.fill":       ("nine", (80, 10), (0, 6, 0, 6), "x", bar_fill("bile")),
     "bar.fill.red":   ("nine", (80, 10), (0, 6, 0, 6), "x", bar_fill("blood")),
+    "bar.cell.off":   ("cell", (9, 12), None, None, egg("egg_off"), 2),
+    "bar.cell.on":    ("cell", (9, 12), None, None, egg("egg_on"), 2),
+    "bar.cell.warn":  ("cell", (9, 12), None, None, egg("egg_warn"), 2),
     "button.idle":    ("nine", (160, 52), (0, 30, 0, 46), "x", button("idle")),
     "button.hover":   ("nine", (160, 52), (0, 30, 0, 46), "x", button("hover")),
     "button.pressed": ("nine", (160, 52), (0, 30, 0, 46), "x", button("pressed")),

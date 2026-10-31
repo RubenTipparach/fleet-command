@@ -67,8 +67,9 @@ def pieces():
     add("frame.inset", "nine", (72, 56), rbox(0.5, 0.5, 71.5, 55.5, 12), [soft(rbox(7, 7, 65, 49, 6).difference(small), 2.5)],
         margins=(14, 14, 14, 14), stretch="xy", roll=1.6)
     # The bar track: a capsule of gold with a channel the light fills; the fill sits at inset (16, 3).
-    add("bar.track", "nine", (96, 16), rbox(0.5, 0.5, 95.5, 15.5, 7.5), [rbox(8, 2.2, 88, 13.8, 5.8)],
-        holo=[("fill-slot", box(16, 3, 80, 13))], margins=(0, 14, 0, 14), stretch="x", roll=0.65, land=0.3, inset=(16, 3), dz=-2.5, pad=0.6)
+    # 20 px tall since 2026-10-31, so the symbol bar's holo lozenges (bar.cell.*, laid at inset (16, 4)) read at 12 px.
+    add("bar.track", "nine", (96, 20), rbox(0.5, 0.5, 95.5, 19.5, 9.5), [rbox(8, 2.4, 88, 17.6, 7.4)],
+        holo=[("fill-slot", box(16, 4, 80, 16))], margins=(0, 14, 0, 14), stretch="x", roll=0.65, land=0.3, inset=(16, 4), dz=-2.5, pad=0.6)
     # Keys: a pointed lozenge of light held between two gold claws, a pearl in each claw. The points and claws stay in
     # the 42 px ends, so the middle stretches.
     btn = soft(lozenge(22, 128, 10, 38, 14), 4)

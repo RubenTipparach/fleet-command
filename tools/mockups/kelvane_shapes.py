@@ -95,12 +95,12 @@ def pieces():
         engrave=[[(x, y) for x, y in list(rbox(9, 9, 171, 131, 8).exterior.coords)]], margins=(28, 28, 28, 28), stretch="xy", roll=3.5)
     add("frame.inset", "nine", (72, 56), rbox(0.5, 0.5, 71.5, 55.5, 10), [("tray", rbox(7.5, 7.5, 64.5, 48.5, 5))],
         margins=(14, 14, 14, 14), stretch="xy", roll=2.0, dz=-3.0)
-    # The bar: an EQ-style slot rolled through the plate, a dim unlit streak down its middle; the fill is the lit streak
-    # the page lays over it at inset (7, 3).
-    slot = rbox(5, 3, 91, 13, 5)
-    add("bar.track", "nine", (96, 16), rbox(0.5, 0.5, 95.5, 15.5, 7.5), [("slot", slot)],
-        prints=[("streak", [[(10, 8), (86, 8)]], 1.6, "unlit")], live=[("fill", box(12, 6.6, 84, 9.4))],
-        margins=(0, 14, 0, 14), stretch="x", roll=0.8, land=0.9, inset=(7, 3), dz=-2.5, pad=0.8)
+    # The bar: a slot rolled through the plate holding a row of jewel lamps, the instrument's indicator row (owner,
+    # 2026-10-31: "have different repeated symbols for them"); the page lays the lamps (bar.cell.*) at inset (10, 4).
+    slot = rbox(5, 3, 91, 17, 6)
+    add("bar.track", "nine", (96, 20), rbox(0.5, 0.5, 95.5, 19.5, 9.5), [("slot", slot)],
+        live=[("cells", box(10, 4, 86, 16))],
+        margins=(0, 14, 0, 14), stretch="x", roll=0.8, land=0.9, inset=(10, 4), dz=-2.5, pad=0.8)
     # Keys: a domed key in a pressed dimple beside a small amber window that holds the key's name (never a knob jammed
     # at a frame's edge). The key and dimple stay in the 46 px left end, the window's ends in the margins.
     win = rbox(44, 9, 140, 39, 5)
