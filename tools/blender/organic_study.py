@@ -30,6 +30,8 @@ from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import organic_anatomy as oa  # noqa: E402  (the layered sculpt: bone, muscle, skin, as one height field)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mockups"))
+import hex_portrait as hx  # noqa: E402  (the hex-cell screen filter's one set of numbers, and the portrait pixels)
 
 MM = 0.001
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -46,6 +48,7 @@ SCREEN_Z = -6.0                                                            # the
 VIEW = (-245.0, -125.0, 300.0, 175.0)                                      # what the camera sees
 PX_PER_MM = 2.0
 KEY_W = 7.0                                                                # the warm key light's power, W
+PORTRAIT_PNG = os.path.join(ROOT, "docs", "design", "organic-bible", "portrait-pixels.png")  # hex_portrait.py writes it
 
 # The steps: (number, file name, title). Each step turns on one change; a step includes every change before it. The
 # order follows the owner's notes on version 23 (coordinator's comparison, 2026-10-31), one fix per step.
@@ -79,6 +82,10 @@ STEPS = [
     (22, "cavern", "A cavern behind, not a wall"),
     (23, "values", "Dark, so the instruments carry the light"),
     (24, "final-layered", "Final, layered and measured"),
+    # the third round (owner, 2026-10-31, of step 24: "That looks amazing! I think the portrait should be like a hex grid
+    # filter on top of pixels. Hex grid should be pretty fine and we can read text and images on it just fine"): the
+    # portrait is a screen, live pixels under a fine hex-cell filter (tools/mockups/hex_portrait.py writes the pixels).
+    (25, "hex-portrait", "The portrait is pixels under a hex filter"),
 ]
 
 # Version 23's colours (step 1): grey metal, lime everywhere. The fix: dark maroon-brown flesh, near-black chitin,
@@ -286,6 +293,74 @@ def smoked(name, veins=True):
 def glow(name, col, strength, sss=0.0):
     return principled(name, col, rough=0.25, coat=1.0, coat_rough=0.02, emit=col, emit_strength=strength, sss=sss,
                       sss_scale_mm=2.0)
+
+
+def hex_mask_nodes(m, hexp=hx.HEX):
+    """The hex-cell filter as shader nodes, from object coordinates in mm (the same arithmetic as
+    tools/mockups/hex_portrait.py hex_mask): wrap the point into two offset rectangular lattices, keep the nearer
+    centre, take the hexagonal distance from it, and threshold that into a soft dark wall with a faint lens in each
+    cell. Returns the mask socket: 1 + dome in a cell's middle, 1 at its rim, wall_level on its walls."""
+    n, l = nt(m)
+    p = hexp["pitch_mm"]
+    sx, sy = p, p * math.sqrt(3.0)
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(obj_co(m), sep.inputs[0])
+    x = mathn(m, "MULTIPLY", sep.outputs["X"], 1.0 / MM)
+    y = mathn(m, "MULTIPLY", sep.outputs["Y"], 1.0 / MM)
+
+    def wrap(v, s):
+        w = n.new("ShaderNodeMath")
+        w.operation = "WRAP"
+        l.new(v, w.inputs[0])
+        w.inputs[1].default_value, w.inputs[2].default_value = s / 2, -s / 2
+        return w.outputs[0]
+    ax, ay = wrap(x, sx), wrap(y, sy)
+    bx, by = wrap(mathn(m, "SUBTRACT", x, sx / 2), sx), wrap(mathn(m, "SUBTRACT", y, sy / 2), sy)
+    sq = lambda a, b: mathn(m, "ADD", mathn(m, "MULTIPLY", a, a), mathn(m, "MULTIPLY", b, b))  # noqa: E731
+    pick = mathn(m, "LESS_THAN", sq(ax, ay), sq(bx, by))          # 1 where lattice a's centre is the nearer
+    cx = mathn(m, "ADD", bx, mathn(m, "MULTIPLY", pick, mathn(m, "SUBTRACT", ax, bx)))
+    cy = mathn(m, "ADD", by, mathn(m, "MULTIPLY", pick, mathn(m, "SUBTRACT", ay, by)))
+    s3 = math.sqrt(3.0) / 2
+    hc = mathn(m, "MULTIPLY", cx, 0.5)
+    k1 = mathn(m, "ABSOLUTE", mathn(m, "ADD", hc, mathn(m, "MULTIPLY", cy, s3)))
+    k2 = mathn(m, "ABSOLUTE", mathn(m, "SUBTRACT", hc, mathn(m, "MULTIPLY", cy, s3)))
+    d = mathn(m, "DIVIDE", mathn(m, "MAXIMUM", mathn(m, "ABSOLUTE", cx), mathn(m, "MAXIMUM", k1, k2)), p / 2)
+    edge, soft = 1.0 - hexp["wall"], 0.35 * hexp["wall"]
+    cell = mathn(m, "ADD", mathn(m, "DIVIDE", mathn(m, "SUBTRACT", edge, d), soft), 0.5, clamp=True)
+    dd = mathn(m, "DIVIDE", d, edge)
+    lens = mathn(m, "ADD", 1.0, mathn(m, "MULTIPLY", mathn(m, "SUBTRACT", 1.0, mathn(m, "MULTIPLY", dd, dd), clamp=True),
+                                       hexp["dome"]))
+    wl = hexp["wall_level"]
+    return mathn(m, "ADD", wl, mathn(m, "MULTIPLY", mathn(m, "SUBTRACT", lens, wl), cell))
+
+
+def hex_screen(name, png, rect, strength=2.2):
+    """A live organic screen: the pixels in png, mapped onto rect (mm), emissive behind smoked glass, multiplied by the
+    hex-cell filter. Outside rect the screen is dark glass (the image is clipped)."""
+    m = principled(name, PAL["screen"], rough=0.35, coat=1.0, coat_rough=0.04)
+    n, l = nt(m)
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(obj_co(m), sep.inputs[0])
+    x0, y0, x1, y1 = rect
+    u = mathn(m, "DIVIDE", mathn(m, "SUBTRACT", mathn(m, "MULTIPLY", sep.outputs["X"], 1.0 / MM), x0), x1 - x0)
+    v = mathn(m, "DIVIDE", mathn(m, "SUBTRACT", mathn(m, "MULTIPLY", sep.outputs["Y"], 1.0 / MM), y0), y1 - y0)
+    uv = n.new("ShaderNodeCombineXYZ")
+    l.new(u, uv.inputs[0])
+    l.new(v, uv.inputs[1])
+    tex = n.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(png)
+    tex.extension = "CLIP"
+    tex.interpolation = "Cubic"
+    l.new(uv.outputs[0], tex.inputs["Vector"])
+    mask = hex_mask_nodes(m)
+    mul = n.new("ShaderNodeVectorMath")
+    mul.operation = "SCALE"
+    l.new(tex.outputs["Color"], mul.inputs[0])
+    l.new(mask, mul.inputs["Scale"])
+    b = n["Principled BSDF"]
+    l.new(mul.outputs[0], b.inputs["Emission Color"])
+    b.inputs["Emission Strength"].default_value = strength
+    return m
 
 
 def flat(name, col, rough=0.6, metal=0.0):
@@ -873,6 +948,10 @@ def build(step):
         assign(box("portback", PORT[0] - 6, PORT[1] - 6, PORT[2] + 6, PORT[3] + 6, -14, -12, bevel=0),
                principled("pocket", "#020101", rough=0.9))
         pcx = (PORT[0] + PORT[2]) / 2
+    if on(25):     # a screen in the pocket: live pixels under the hex-cell filter; the render gives only pocket and glass
+        scr = box("portscreen", PORT[0] - 5, PORT[1] - 5, PORT[2] + 5, PORT[3] + 5, -10.0, -9.0, bevel=0)
+        protected.append(assign(scr, hex_screen("portscreen", PORTRAIT_PNG, PORT)))
+    elif on(8):
         head = sphere("head", pcx, 18, -9, 15, 24, 8)
         assign(head, principled("headskin", "#2c1420", rough=0.4, coat=1.0, sss=0.4, sss_scale_mm=3.0))
         protected.append(head)

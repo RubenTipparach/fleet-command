@@ -100,12 +100,34 @@ bridges gaps poorly. Look at a 2x crop: if a row of bumps reads as beads, turn a
 - **Key:** a near-black box cap (2 mm bevel, 4 segments, coat 1) in a pit; a 0.7 mm emissive rim 2.5 mm inside the
   face; a flat emissive icon; a small point light in front. Pressed: the cap goes back 3 mm and down 2 mm and its rim
   and icon brighten; the flesh does not move. The page sinks the label by the same 3 px (`--btn-sink: 1.5px`).
-- **Portrait:** a tall pocket under an arch of balls in the body, a near-black back, the face lit from below.
+- **Portrait:** a tall pocket under an arch in the body, a near-black back, and in it a **screen, not a sculpted head**
+  (rule 3 below).
 - **Hero:** a cluster of shards cut uneven (no raw cone: subdivided, vertices pushed 0.7-1.25 x, flat shaded), frosted
   (roughness 0.5, transmission 1, a fine bump), a core of light inside each, a faint violet volume as mist, grown from a
   sculpted cradle; a point light inside and one below.
 - **Key accent:** a saturated orange (`#ff8400`) at emission 1.8. AgX turns bright orange pale pink as it is driven
   harder (the first round's peach rims): keep the accent saturated and gentle and let the dark round it carry it.
+
+### Rule 3: screens are pixels under a fine hex filter
+
+Owner, 2026-10-31, of the study's step 24: "I think the portrait should be like a hex grid filter on top of pixels. Hex
+grid should be pretty fine and we can read text and images on it just fine".
+
+- The portrait (and any organic screen that shows an image) is **live pixels** (face, name, rank) drawn by the game or
+  the page, with a **fine hexagonal cell filter multiplied over them**. The Blender render provides only the pocket and
+  the glass; never bake the face or the text into a kit image.
+- The numbers live once, in `HEX` in `tools/mockups/hex_portrait.py`: pitch **2.0 mm** (2 px at 1x, 4 px at 2x), walls
+  **20%** of the pitch, a wall **45%** as bright as its cell, each cell's middle **10%** brighter (a faint lens). Pointy-top
+  cells on a triangular lattice; multiplied in linear light.
+- **Measure it**: `python3 tools/mockups/hex_portrait.py` writes `hex-measure.json` and `hex-measure.jpg`. Text through
+  the filter keeps WCAG 4.5:1 or more against the glass at 1x and 2x, and its shape (correlation 0.95 or more with the
+  plain letters). The study's label measures 11.5:1 at 1x (14.1:1 plain).
+- **Blender**: `organic_study.hex_mask_nodes` (object coordinates in mm; Math WRAP into two offset lattices, LESS_THAN to
+  pick the nearer centre, the hex distance with ABSOLUTE and MAXIMUM, a soft clamped threshold) and `hex_screen` (the
+  content as an Image Texture mapped on the window, CLIP, scaled by the mask into Emission Color at 2.2, under a coat).
+- **Page or game**: draw the content into the portrait canvas, multiply a mask built once per size with the same formula
+  (normalised by its 1.10 peak, in sRGB: walls grey 178), and draw the content 10% brighter; in Godot, a canvas_item shader
+  on the portrait's TextureRect with the same arithmetic.
 
 ## 5. Light
 

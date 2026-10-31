@@ -101,6 +101,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     <ol class="toc">
       <li><a href="#no-primitives"><span class="no">R1</span>Never use raw primitives</a></li>
       <li><a href="#layers"><span class="no">R2</span>Layered anatomy, sculpted</a></li>
+      <li><a href="#hex"><span class="no">R3</span>Screens: pixels under a fine hex filter</a></li>
       <li><a href="#organism"><span class="no">1</span>One organism</a></li>
       <li><a href="#materials"><span class="no">2</span>Five materials</a></li>
       <li><a href="#form"><span class="no">3</span>Form: grow it, don't cut it</a></li>
@@ -113,7 +114,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <li><a href="#story"><span class="no">10</span>Worked example</a></li>
       <li><a href="#checklist"><span class="no">11</span>Before you call it done</a></li>
     </ol>
-    <figure class="sheet render-fig"><img src="organic-bible/24-final-layered.jpg" alt="The study's latest step: a portrait pocket, a black screen with a glowing readout and three keys with hot orange rims, set in one sculpted surface of wrinkled leather stretched over bone and muscle, vertebrae showing through along the top, green light glowing through swellings in the skin, a frosted violet crystal, and a dark cavern of ribs behind"><figcaption class="cap">The study's latest step (24): one corner of a living console, rendered face on in Blender exactly as a kit piece is. The frame is one sculpted surface: bone underneath, muscle over it, leather stretched over both, veins and sacs of light under the skin. Only the instruments it holds (the screen, the keys, the portrait) and the crystal are separate objects.</figcaption></figure>
+    <figure class="sheet render-fig"><img src="organic-bible/25-hex-portrait.jpg" alt="The study's latest step: a portrait screen showing an officer's face and name through a fine hex-cell filter, a black screen with a glowing readout and three keys with hot orange rims, set in one sculpted surface of wrinkled leather stretched over bone and muscle, vertebrae showing through along the top, green light glowing through swellings in the skin, a frosted violet crystal, and a dark cavern of ribs behind"><figcaption class="cap">The study's latest step (25): one corner of a living console, rendered face on in Blender exactly as a kit piece is. The frame is one sculpted surface: bone underneath, muscle over it, leather stretched over both, veins and sacs of light under the skin. Only the instruments it holds (the screen, the keys, the portrait screen) and the crystal are separate objects; the portrait is live pixels seen through a fine hex-cell filter (rule 3).</figcaption></figure>
   </header>
 
   <section class="ch" id="no-primitives">
@@ -149,6 +150,34 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     </div>
   </section>
 
+  <section class="ch" id="hex">
+    <div class="chhead"><div class="kicker">Rule 3</div><h2>Screens: pixels under a fine hex filter</h2></div>
+    <p class="note"><b>The owner, 2026-10-31</b>, of step 24: "That looks amazing! I think the portrait should be like a hex grid filter on top of pixels. Hex grid should be pretty fine and we can read text and images on it just fine".</p>
+    <ul>
+      <li><b>An organic screen is live pixels seen through living cells.</b> The portrait (and any organic screen that shows an image) is ordinary pixels, drawn live by the game or the page, under a fine honeycomb of hexagonal cells, like a compound eye. The cells' thin walls are darker than the cell; each cell is a faint lens, a little brighter in its middle.</li>
+      <li><b>The filter is an overlay, never baked.</b> The Blender render gives only the pocket and the glass; the face, the name and the rank are drawn live on top and the filter is multiplied over them, so the officer and the text can change in play.</li>
+      <li><b>Fine enough to read.</b> One cell every <b>2.0 mm</b> (2 px at the kit's 1x, 4 px at 2x). Walls <b>20%</b> of the pitch, never black: a wall is <b>45%</b> as bright as its cell's middle. Each cell's middle is <b>10%</b> brighter than its rim. These four numbers live in one place, <code>HEX</code> in <code>tools/mockups/hex_portrait.py</code>; the study's shader reads them from there.</li>
+      <li><b>Measured, like every other rule.</b> Text under the filter must keep WCAG contrast of 4.5:1 or more against the glass at 1x and 2x, and keep its shape (the filtered letters correlate 0.95 or more with the plain ones). The table below is the measurement of the study's own label and a 12 px readout line.</li>
+      <li><b>Light the pocket from the screen.</b> The portrait's emission lights the pocket's inner walls; there is no separate lamp.</li>
+    </ul>
+    <figure class="sheet render-fig"><img src="organic-bible/close-portrait-hex.jpg" alt="The portrait pocket enlarged: on the left step 24's sculpted head; in the middle the live content with no filter, a Vhorr matriarch's long head with three crest horns, slit green eyes and curved mandibles over the name VHAAL and the rank MATRIARCH; on the right step 25, the same content glowing through a fine hex-cell filter in the pocket" loading="lazy"><figcaption class="cap">Left, step 24: a sculpted mask, a dead object in a box. Middle: the live content behind the filter, drawn by <code>hex_portrait.py</code> from a height field (our own officer, a Vhorr matriarch; in the game, whatever the officer's portrait and readout are). Right, step 25: the same pixels through the hex cells, the name and rank as readable as before. The renders are enlarged 4 times.</figcaption></figure>
+    <div class="scroll"><table>
+      <thead><tr><th>Text</th><th>Size</th><th>Contrast, plain</th><th>Contrast, hex filter</th><th>Shape kept</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>The name VHAAL, 10 mm</td><td class="n">1x</td><td class="n">14.1:1</td><td class="n">11.5:1</td><td class="n">0.995</td><td class="ok">pass</td></tr>
+        <tr><td>The name VHAAL, 10 mm</td><td class="n">2x</td><td class="n">15.4:1</td><td class="n">12.8:1</td><td class="n">0.967</td><td class="ok">pass</td></tr>
+        <tr><td>A 12 px readout line</td><td class="n">1x</td><td class="n">15.1:1</td><td class="n">12.5:1</td><td class="n">0.996</td><td class="ok">pass</td></tr>
+        <tr><td>A 12 px readout line</td><td class="n">2x</td><td class="n">15.6:1</td><td class="n">13.0:1</td><td class="n">0.966</td><td class="ok">pass</td></tr>
+      </tbody>
+    </table></div>
+    <figure class="sheet render-fig"><img src="organic-bible/hex-measure.jpg" alt="The name VHAAL and a 12 px readout line at 1x and 2x, each plain and under the hex filter, enlarged so the cells show; every line reads" loading="lazy"><figcaption class="cap">The measurement, enlarged so a 1x pixel is 8 screen pixels: the label and a 12 px line at 1x and 2x, plain and filtered. At 1x the cells are about the size of a pixel and read as a fine texture; at 2x they read as cells. Every line reads.</figcaption></figure>
+    <div class="cat">
+      <article><h3>The filter, in numbers</h3><p class="params">A triangular lattice of cell centres 2.0 mm apart (neighbours at 0, 60 and 120 degrees), so every cell is a pointy-top hexagon. Hex distance from a centre: d = max(|x|, |x/2 + y&middot;&radic;3/2|, |x/2 &minus; y&middot;&radic;3/2|) / (pitch/2), 0 in the middle and 1 at the rim. Cell = clamp((0.8 &minus; d) / 0.07 + 0.5); lens = 1 + 0.10 &middot; clamp(1 &minus; (d/0.8)&sup2;); filter = 0.45 + (lens &minus; 0.45) &middot; cell. Multiplied over the content in linear light.</p></article>
+      <article><h3>Blender: the shader</h3><p class="params"><code>organic_study.hex_mask_nodes</code>. Object coordinates &times; 1000 (mm). Math WRAP x into [&minus;p/2, p/2] and y into [&minus;p&radic;3/2, p&radic;3/2] (lattice a); the same for x &minus; p/2 and y &minus; p&radic;3/2 (lattice b). LESS_THAN on the two squared lengths picks the nearer centre (cx, cy = b + pick &middot; (a &minus; b)). Then the hex distance and the formula above with Math nodes (ABSOLUTE, MAXIMUM, DIVIDE, clamped ADD). <code>hex_screen</code>: an Image Texture of the content mapped onto the window from the same object coordinates (extension CLIP, cubic), Vector Math SCALE by the mask, into the Principled BSDF's Emission Color at strength 2.2; base #050405, roughness 0.35, coat 1.0 at 0.04 for the glass.</p></article>
+      <article><h3>The page or the game: an overlay</h3><p class="params">Draw the content (face, name, rank) into the portrait's canvas at device pixels. Build the mask once per size with the same formula, the pitch in device pixels (2 CSS px at 1x, times the device pixel ratio), into an offscreen canvas as grey: divide the filter by its peak 1.10 and convert to sRGB, so a wall is grey 178 and a cell's middle white. Then <code>ctx.globalCompositeOperation = 'multiply'; ctx.drawImage(mask, 0, 0)</code>, and draw the content 10% brighter to give back the lens. In Godot the same arithmetic is a canvas_item shader on the portrait's TextureRect, from UV &times; size in mm.</p></article>
+    </div>
+  </section>
+
   <section class="ch" id="organism">
     <div class="chhead"><div class="kicker">Chapter 1</div><h2>One organism</h2></div>
     <p>An organic console is not a set of panels with growth added. It is <b>one creature that holds instruments</b>. Three ideas follow from that, and every later chapter is one of them in practice:</p>
@@ -159,7 +188,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     </ol>
     <div class="pair">
       <figure class="dont"><img src="organic-bible/01-boxes.jpg" alt="Version 23's approach: a grey plate with openings cut, lime moss blobs and rivets"><figcaption><b>Don't:</b> a machine with growth stuck on top. Grey plate, cut openings, lime blobs, a lit lime screen.</figcaption></figure>
-      <figure class="do"><img src="organic-bible/24-final-layered.jpg" alt="The study's latest step"><figcaption><b>Do:</b> one sculpted body grown round the instruments, set in a cavern of the same tissue.</figcaption></figure>
+      <figure class="do"><img src="organic-bible/25-hex-portrait.jpg" alt="The study's latest step"><figcaption><b>Do:</b> one sculpted body grown round the instruments, set in a cavern of the same tissue.</figcaption></figure>
     </div>
   </section>
 
@@ -197,7 +226,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <li><b>A calm middle.</b> The glass's veins live only near its rim; a squarish oval over the readout is plain black, so the letters sit on nothing.</li>
       <li><b>Keys are square, dark and lit at the rim.</b> A near-black cap with a small round, a thin glowing amber rim inset 2.5 mm, and a clean amber icon. It sits in a pit grown in the flesh. Soft green pillows read as more growth, not as something to press.</li>
       <li><b>A press pushes the cap in.</b> The cap sinks 3 mm and drops 2 mm; its rim and icon brighten; the flesh round it stays put (step 13).</li>
-      <li><b>The portrait lives in a pocket.</b> A tall dark pocket under an arch of flesh, the face lit from below out of the dark. A flat name bar reads as a label, not a presence.</li>
+      <li><b>The portrait lives in a pocket.</b> A tall dark pocket under an arch of flesh, the face lit from below out of the dark. A flat name bar reads as a label, not a presence. Since step 25 the face is a screen: live pixels under a fine hex filter (rule 3).</li>
     </ul>
     <div class="pair">
       <figure><img src="organic-bible/close-keys.jpg" alt="Close-up: three keys at rest"><figcaption>Keys at rest (step 12): dark caps, amber rims and icons, in pits grown in the flesh.</figcaption></figure>
@@ -332,6 +361,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <div class="step"><img src="organic-bible/22-cavern.jpg" alt="Step 22" loading="lazy"><div class="txt"><h3>22 · A cavern behind, not a wall</h3><p>The flat backdrop became a ribcage receding into the dark: ribs and a spine column of the same sculpt, falling into shadow with depth.</p><p class="lesson"><b>Lesson:</b> depth behind the panels makes the console sit inside the creature.</p></div></div>
       <div class="step"><img src="organic-bible/23-values.jpg" alt="Step 23" loading="lazy"><div class="txt"><h3>23 · Dark, so the instruments carry the light</h3><p>The light dropped to 70%; the key rims became a hot saturated orange; the crystal frosted, uneven and lit from a core inside, with a breath of mist.</p><p class="lesson"><b>Lesson:</b> the frame is dark so the screens, keys and the heart carry the light.</p></div></div>
       <div class="step"><img src="organic-bible/24-final-layered.jpg" alt="Step 24" loading="lazy"><div class="txt"><h3>24 · Final, layered and measured</h3><p>All of it at final quality, with the fit measured: the skin is below the glass at least 2 mm before every screen, key face and the portrait window (chapter 7).</p><p class="lesson"><b>Lesson:</b> a sculpted frame still obeys the kit's rules, by measurement.</p></div></div>
+      <div class="step"><img src="organic-bible/25-hex-portrait.jpg" alt="Step 25" loading="lazy"><div class="txt"><h3>25 · The portrait is pixels under a hex filter</h3><p>The sculpted head in the pocket became a screen: our own officer, her name and her rank drawn as live pixels and seen through a honeycomb of cells 2 mm apart, walls 45% bright, each cell a faint lens. The pocket's walls are lit by the screen alone.</p><p class="lesson"><b>Lesson:</b> a living screen still reads like a screen; measure it (rule 3).</p></div></div>
     </div>
   </section>
 
@@ -344,6 +374,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <li>Every panel joins its neighbours through the wall: ribs, tubes or tendrils, no black gaps.</li>
       <li>Something grows past the top edge; the left and right are not mirrored.</li>
       <li>Every screen is black glass with a thin rim and a calm middle; text glows on it.</li>
+      <li>The portrait (and any organic image screen) is live pixels under the fine hex filter, with its text at 4.5:1 or more through it, measured (rule 3).</li>
       <li>Every key is a crisp dark cap with a lit rim and a clean icon, set into the flesh; pressing moves only the cap.</li>
       <li>Green is only light for life; the key accent appears only on keys; violet only on the hero.</li>
       <li>The light comes from above; hollows are deep; ridges show a wet highlight.</li>
