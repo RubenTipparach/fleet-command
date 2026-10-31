@@ -36,7 +36,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ui_render  # noqa: E402  (the render harness every Blender skin shares)
-from ui_shapes import NodeKit, Panel, film_ink, film_mat, link_layers, lip_runs, metal, printed, rrect  # noqa: E402
+from ui_shapes import MM, NodeKit, Panel, film_ink, film_mat, link_layers, lip_runs, metal, printed, rrect  # noqa: E402
 
 SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "ombrai", "shapes.json")))["pieces"]
 
@@ -47,6 +47,7 @@ MOON = {"green": "#7affc8", "yellow": "#ffd36a", "red": "#ff2f5a"}
 SIDE = (1.0, 0.42, 0.82)                                    # the side lamps: pink-violet
 SIDE_W = float(os.environ.get("SIDE_W", 0.0045))            # their power per mm of left lip (times the lamp scale)
 MAIN = (float(os.environ.get("MAIN_S", 0.4)), 60.0)                                          # the soft main light on the wells: strength, size (deg)
+PRESS_MM = 3.0                                              # how far a pressed key's glass travels, down and in (3 px at 1x)
 DISPLAY = ("void", "eyefilm", "keyfilm", "line", "moon_green", "moon_yellow", "moon_red", "lid", "iris", "pupil", "shade")
 
 
@@ -61,14 +62,21 @@ def plum(name):
     return k.mat
 
 
-def glass(name, base, col, es, ao_mm):
+def glass(name, base, col, es, ao_mm, lip=None):
     """A key's or a tab's film: dark violet glass (the same in every state) that glows col at es from behind, darkened
-    by occlusion at its rim like the bible's film. Only es changes between idle, hover and pressed."""
+    by occlusion at its rim like the bible's film. Only es changes between idle, hover and pressed, except that a
+    pressed key's glass, pushed in under the frame, takes the top lip's shadow: lip = (top, band) in the glass's own
+    object coordinates (m, y up), a dark band from top falling off over band below it."""
     k = NodeKit(name)
     ao = k.N.new("ShaderNodeAmbientOcclusion")
     ao.samples, ao.only_local = 16, False
     ao.inputs["Distance"].default_value = ao_mm * 0.001
     occ = k.math("POWER", ao.outputs["AO"], 2.2)
+    if lip is not None:
+        sep = k.N.new("ShaderNodeSeparateXYZ")
+        k.L.new(k.co, sep.inputs[0])
+        fall = k.math("DIVIDE", k.math("SUBTRACT", lip[0], sep.outputs["Y"]), lip[1], clamp=True)
+        occ = k.math("MULTIPLY", occ, k.math("ADD", 0.05, k.math("MULTIPLY", k.math("POWER", fall, 2.0), 0.95)))
     k.set(Base_Color=k.ramp(occ, "#07020c", base), Roughness=0.55, Emission_Color=col, Emission_Strength=k.math("MULTIPLY", occ, es))
     return k.mat
 
@@ -98,6 +106,13 @@ def side(K, well, seg, colour=SIDE, power=1.0):
                     depth=K.dz + min(3.0, -K.dz * 0.4), colour=colour)
 
 
+def key_lip(K, s):
+    """The top lip's shadow on a pressed key's glass, in the glass's object coordinates (it moved down PRESS_MM with
+    the glass): from the well's top edge, 2 PRESS_MM + 4 mm deep (the bezel hides its first few mm)."""
+    top = min(p[1] for kind, w in s["wells"] if kind == "key" for p in w)
+    return ((K.h / 2 - top + PRESS_MM) * MM, (2 * PRESS_MM + 4.0) * MM)
+
+
 def mats(K, s, name):
     lv = s["level"]
     ao = min(6.0, -s["dz"] * 0.6)
@@ -108,7 +123,8 @@ def mats(K, s, name):
                groove=K.mat("wall", lambda: printed("wall", PAL["wall"])),
                void=K.mat("void", lambda: film_mat("void", col=PAL["void"], shadow=PAL["void_lo"], es=0.35, ao_mm=ao)),
                eyefilm=K.mat("eyefilm", lambda: film_mat("eyefilm", col="#2a0f3e", shadow=PAL["void_lo"], es=0.25 + 0.9 * lv, ao_mm=ao)),
-               keyfilm=K.mat("keyfilm", lambda: glass("keyfilm", "#2b1240", PAL["key_hot"] if hot else PAL["key"], 0.03 + 0.55 * lv, ao)),
+               keyfilm=K.mat("keyfilm", lambda: glass("keyfilm", "#2b1240", PAL["key_hot"] if hot else PAL["key"], 0.03 + 0.55 * lv, ao,
+                                                     lip=key_lip(K, s) if hot and name.startswith("button") else None)),
                line=K.mat("line", lambda: film_mat("line", col=PAL["pink"], shadow="#12041c", es=0.9, rim=False)),
                lid=K.mat("lid", lambda: film_ink("lid", PAL["lilac"], es=0.18 + 0.55 * lv)),
                iris=K.mat("iris", lambda: film_ink("iris", eye_col, es=0.12 + 1.6 * lv)),
@@ -127,9 +143,16 @@ def piece(name):
         mats(K, s, name)
         wells = [(kind, [tuple(p) for p in w]) for kind, w in s["wells"]]
         plate = [tuple(p) for p in s["plate"]]
+        # A pressed key's glass is pushed in, down PRESS_MM and back PRESS_MM, and the page's label sinks the same
+        # PRESS_MM (skins/ombrai.js --btn-sink), so glass and letters move as one while the plum frame stays put (owner,
+        # 2026-10-31: "I actually prefer the more animated versions on click"). Moved, the film still lies inside the
+        # plate (0.7 mm from its foot) and still covers the whole well (0.7 mm above its top).
+        press = PRESS_MM if name == "button.pressed" else 0.0
         for (kind, _w), f in zip(wells, s["films"]):   # films measured to fit inside the plate (rule B)
             fm = {"void": "void", "eye": "eyefilm", "key": "keyfilm", "line": "line"}.get(kind, kind)
-            K.film(None, shape=[tuple(p) for p in f], m=K.m[fm])
+            ob = K.film(None, shape=[tuple(p) for p in f], m=K.m[fm], z=K.dz - (press if kind == "key" else 0.0))
+            if kind == "key":
+                ob.location.y -= press * MM
         K.plate([plate] + [w for _k, w in wells])
         for kind, w in wells:
             gap = min(min(math.hypot(x - px, y - py) for px, py in plate) for x, y in w)

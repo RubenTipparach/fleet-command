@@ -32,6 +32,12 @@ function holo(x, draw, box, level, col = AE.holo) {
 }
 const shape = (x, pts) => () => path(x, pts);
 const field = (x, pts, level, col) => holo(x, shape(x, pts), bounds(pts), level, col);
+// A pressed key's hologram is pushed in while its gold shell stays put (owner, 2026-10-31: "I actually prefer the more
+// animated versions on click"): it drops PRESS px and draws back into the void (a touch smaller), so its middle moves
+// with the label (2 x --btn-sink = 3 px) and it stays inside its well (the key has 2 px of void round it; pushed in,
+// 0.46 px is left at its foot).
+const PRESS = 2.5;
+function pushIn(x, pts) { const [x0, y0, x1, y1] = bounds(pts), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; x.translate(cx, cy + PRESS); x.scale(0.97, 0.92); x.translate(-cx, -cy); }
 // A key's sheen when pressed: a soft bar of light across its middle.
 function sheen(x, pts) { const [x0, y0, x1, y1] = bounds(pts); const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(240,255,255,0.4)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.save(); path(x, pts); x.clip(); x.fillStyle = g; x.fillRect(x0, y0, x1 - x0, y1 - y0); x.restore(); }
 
@@ -41,7 +47,7 @@ const HOLO = {
   'frame.inset': (x, s) => field(x, s.wells[0], 0.08),
   'button.idle': (x, s) => field(x, s.holo.key, 0.15),
   'button.hover': (x, s) => field(x, s.holo.key, 0.6),
-  'button.pressed': (x, s) => { field(x, s.holo.key, 1); sheen(x, s.holo.key); },
+  'button.pressed': (x, s) => { x.save(); pushIn(x, s.holo.key); field(x, s.holo.key, 1); sheen(x, s.holo.key); x.restore(); },
   'tab.idle': (x, s) => field(x, s.holo.tab, 0.08),
   'tab.active': (x, s) => field(x, s.holo.tab, 0.75),
   'strip.top': (x, s) => field(x, s.holo.edge, 0.06),
@@ -127,7 +133,7 @@ function icon(name) {
 F.register('aelith', {
   name: 'Aelith Conclave', kind: 'Hybrid: a gold and pearl shell rendered in Blender, holograms drawn as vectors in its wells', bg: '#03111a',
   css: { '--s-ink': AE.holoHi, '--s-dim': '#9fc9cf', '--s-num': AE.holo, '--s-body': '"Exo 2", sans-serif', '--btn-ink': AE.holoHi, '--btn-shadow': `0 0 6px ${AE.holo}`, '--btn-justify': 'center',
-    '--btn-font': '400 11px/1 "Michroma", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.25s', '--btn-sink': '1px',
+    '--btn-font': '400 11px/1 "Michroma", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.25s, padding-top 0.06s', '--btn-sink': '1.5px',
     '--tab-font': '400 9.5px/1 "Michroma", sans-serif', '--tab-pb': '1px', '--btn-pb': '3px', '--tab-ink': '#9fc9cf', '--tab-ink-on': AE.holoHi, '--title-font': '400 15px/1 "Michroma", sans-serif', '--title-ink': AE.goldHi,
     '--lbl-font': '600 15px/1 "Exo 2", sans-serif', '--num-font': '300 28px/1 "Exo 2", sans-serif',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the channel, rows 12-59,

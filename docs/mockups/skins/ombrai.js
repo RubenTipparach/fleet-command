@@ -64,7 +64,7 @@ function icon(name) {
 F.register('ombrai', {
   name: 'Ombrai', kind: 'Plum metal over violet wells lit from below; every gauge a watching eye', bg: '#0b0516',
   css: { '--s-ink': OM.pale, '--s-dim': OM.dim, '--s-num': OM.pink, '--s-body': '"Quicksand", sans-serif', '--btn-ink': OM.pale, '--btn-shadow': `0 0 6px ${OM.pink}`, '--btn-justify': 'center',
-    '--btn-font': '700 13px/1 "Syncopate", sans-serif', '--btn-track': '0.14em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.4s', '--btn-sink': '1px',
+    '--btn-font': '700 13px/1 "Syncopate", sans-serif', '--btn-track': '0.14em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.4s, padding-top 0.06s', '--btn-sink': '1.5px',
     '--tab-font': '700 10px/1 "Syncopate", sans-serif', '--tab-ink': OM.dim, '--tab-ink-on': OM.pale, '--title-font': '700 14px/1 "Syncopate", sans-serif', '--title-ink': OM.lilac,
     '--lbl-font': '700 15px/1 "Quicksand", sans-serif', '--num-font': '500 26px/1 "Quicksand", sans-serif',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the channel, rows 11-60,
