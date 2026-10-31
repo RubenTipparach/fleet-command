@@ -104,6 +104,12 @@ inked and painted by its crew: wobbly ink outlines, a stained wash fill, hatchin
 highlight, spirals and knots in the corners, lopsided claw-tag buttons, a gauge drawn as an eye. Every piece is drawn
 by a committed script with a seeded wobble, so it is the same every time and never hand-painted.
 
+**More pirate factions may come** (owner, 2026-10-31: "Yea we might have more pirate factions. That's cool", on
+Krita painting the Vos skin). So the hand-drawn method is built to be reused, not tied to the Vos: Krita's brush
+engines driven by script (`krita-brushwork`, `tools/krita/brush.py`) are the shared painter, and each pirate faction
+would be its own skin module and design language on it (its own brushes, palette, button shape and icons; the three
+rules still hold: no two skins share a button shape). None is designed yet.
+
 | Colour | Hex | Role | Ideology |
 |---|---|---|---|
 | Ink | `#2a1410` | Outlines, hatching | The crew's tattoos |
