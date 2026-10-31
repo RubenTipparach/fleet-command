@@ -16,7 +16,9 @@ section 4 holds the rules; `mockup-work.md` is the rolling list in the owner's w
 **It is the master artifact** (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts",
 "haave a section for "game mockup" and guides and misc"). It has three sections: **Game mockups** (`MOCKUPS`, with
 approvals), **Guides** (`GUIDES`: the Analog Panel Bible and any other guide) and **Misc** (`MISC`: the survey and
-anything else). Every other artifact published for Fleet Command goes on it in the same step as its first publish;
+anything else). Every published page links back to the tracker: an "All Fleet Command mockups (the tracker)" link near
+its top (owner, 2026-10-31: "Make sure all published pages link back to the master"). Every other artifact published
+for Fleet Command goes on it in the same step as its first publish;
 check `docs/artifacts/*/README.md` against its lists. The tracker never lists itself (owner, 2026-10-31: "Misc
 shouldn't include the tracker itself lol. That makes no sense"); its own versions are recorded in
 `docs/artifacts/mockup-tracker/README.md`. The tracker is
