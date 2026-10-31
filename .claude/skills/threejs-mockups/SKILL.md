@@ -21,6 +21,8 @@ not the files. Fleet Command's kit:
 | `tools/mockups/shoot.mjs` | Headless Chromium screenshots of every named shot at desktop (1920 x 1080), phone landscape (844 x 390) and phone portrait (390 x 844) into `docs/screenshots/mockups/<page>-<shot>-<size>.png`; fails on a console error. `NODE_PATH=$(npm root -g) node tools/mockups/shoot.mjs docs/mockups/<page>.html docs/screenshots/mockups` |
 
 | `tools/mockups/shrink_png.py` | Re-saves shots as 256-colour PNGs (about a quarter of the size) before they are committed. |
+| `tools/mockups/dom_fit.mjs` | The children-inside-parents rule on a page's DOM, every shot at all three sizes: a child spilling out of its framed parent, overlapping siblings or overlays, text cut without an ellipsis. `NODE_PATH=$(npm root -g) node tools/mockups/dom_fit.mjs docs/mockups/<page>.html` |
+| `tools/mockups/console_fit.mjs` | The same rule on the skinned console's pixels (its frames are images): every label, bar, key, title, icon and lamp grown by 3 px must lie on plain art, clear of every rail, bevel, rim and 9-slice seam, and no panel may grow past its slot. Writes a contact sheet of failures. `NODE_PATH=$(npm root -g) node tools/mockups/console_fit.mjs docs/mockups/console-skins.html` |
 | `tools/mockups/inline_data.py` | Writes `data/` files into a page between `<!-- INLINE path -->` and `<!-- /INLINE -->` markers, so a published page carries its data and the data keeps one source; `--check` fails on a stale page. The space backdrop (`data/space/`, Star Crew's nebula skies and streaking stars) is inlined this way. |
 
 - **One page per subject**, naming the OpenSpec change it presents. Add it to `mockup-work.md` and the
@@ -28,6 +30,10 @@ not the files. Fleet Command's kit:
 - **Ships and stations**: orbitable, at true relative scale beside the yardstick and each other.
 - **Console layouts**: shown at desktop and phone sizes, with each panel expanded once and the 3D
   view in its side strip (CLAUDE.md section 7). Touch targets at least 44 x 44 CSS px.
+- **Children fit inside their parents, measured** (owner, 2026-10-31: "remember the overlap rule? can you fix this
+  too...and every other ui systems too"). Run `dom_fit.mjs` on every changed page and `console_fit.mjs` on the console
+  skins; both must pass before a page is shot for the owner. A failure is fixed where it comes from: the art (re-render
+  the piece), the skin's tokens (its strip band, label size) or the shared layout, never by loosening the check.
 - **Look at the shots before showing anything.** Then publish the page with the Artifact tool,
   check it in under `docs/artifacts/<name>/` with a README giving its link (CLAUDE.md section 8),
   and end the reply with the link.

@@ -165,9 +165,12 @@ F.register('ombrai', {
   css: { '--s-ink': OM.pale, '--s-dim': OM.dim, '--s-num': OM.pink, '--s-body': '"Quicksand", sans-serif', '--btn-ink': OM.pale, '--btn-shadow': `0 0 6px ${OM.pink}`, '--btn-justify': 'center',
     '--btn-font': '700 13px/1 "Syncopate", sans-serif', '--btn-track': '0.14em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.4s', '--btn-press': 'none',
     '--tab-font': '700 10px/1 "Syncopate", sans-serif', '--tab-ink': OM.dim, '--tab-ink-on': OM.pale, '--title-font': '700 14px/1 "Syncopate", sans-serif', '--title-ink': OM.lilac,
-    '--lbl-font': '700 15px/1 "Quicksand", sans-serif', '--num-font': '500 28px/1 "Quicksand", sans-serif', '--bt-rep': 'round', '--bf-rep': 'round', '--bfw-rep': 'round' },
+    '--lbl-font': '700 15px/1 "Quicksand", sans-serif', '--num-font': '500 28px/1 "Quicksand", sans-serif', '--bt-rep': 'round', '--bf-rep': 'round', '--bfw-rep': 'round',
+    // Strip padding is each strip's open band beside its neon rail (top rows 3-33, bottom 22-52), measured by
+    // tools/mockups/console_fit.mjs.
+    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '3px', '--stt-pb': '22px', '--stb-pt': '22px', '--stb-pb': '3px', '--strip-lamp': '25px' },
   accent: OM.pink, warn: OM.crimson,
-  title: (t, m) => { t.style.cssText = `left:${46 - m[3]}px;top:${-m[0] + 8}px;letter-spacing:0.22em;text-shadow:0 0 8px ${OM.pink};`; },
+  title: (t, m) => { t.style.cssText = `left:${46 - m[3]}px;top:${-m[0] + 3}px;letter-spacing:0.22em;text-shadow:0 0 8px ${OM.pink};`; },
   plateText: { left: 70, top: 14, width: 360, height: 28, font: '700 13px/1 "Syncopate", sans-serif', color: OM.pale, sub: 'VEIL OF ISH · THE WATCHER' },
   helmKeys: 'ring', helmR: 98, shield: [OM.pink, '#ffd36a', OM.crimson],
   fonts: ['700 20px "Syncopate"', '700 20px "Quicksand"', '500 20px "Quicksand"'], view: { title: '700 20px "Syncopate"', body: '500 26px "Quicksand"', upper: true },

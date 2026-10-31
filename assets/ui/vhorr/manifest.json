@@ -85,9 +85,9 @@
       ],
       "file": "button.idle.png",
       "margins": [
-        24,
+        0,
         30,
-        24,
+        0,
         46
       ],
       "stretch": "x"
@@ -100,9 +100,9 @@
       ],
       "file": "button.hover.png",
       "margins": [
-        24,
+        0,
         30,
-        24,
+        0,
         46
       ],
       "stretch": "x"
@@ -115,9 +115,9 @@
       ],
       "file": "button.pressed.png",
       "margins": [
-        24,
+        0,
         30,
-        24,
+        0,
         46
       ],
       "stretch": "x"

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Fleet Command Game Flow</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -144,6 +145,10 @@ table.grid td { padding: 6px 8px; border-top: 1px solid rgba(255,255,255,0.06); 
 .portpanel { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: max(12px, env(safe-area-inset-top, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px));
   width: min(640px, calc(100% - 380px)); display: grid; grid-template-rows: auto 1fr auto; gap: 12px; min-height: 0; }
 .strip-tag { display: none; }
+/* On desktop the open panel keeps the map's own overlays clear of it (children never overlap, measured by
+   tools/mockups/dom_fit.mjs): the top bar starts beside the panel and the map keys step aside, as on a phone. */
+body.strip .topbar { left: calc(max(16px, env(safe-area-inset-left, 0px)) + min(640px, 100% - 380px) + 8px); border-radius: 0 0 8px 8px; }
+body.strip .mapkeys { display: none; }
 @media (max-width: 920px), (max-height: 520px) {
   body.strip #stage { left: auto; width: 33.4vw; }
   body.strip .portpanel { width: auto; right: calc(33.4vw + 8px); }

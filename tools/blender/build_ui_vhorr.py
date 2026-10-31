@@ -100,10 +100,19 @@ def flesh_mat(name, col=PAL["flesh"], glow=0.0):
     return k.mat
 
 
-def membrane_mat(name, glow, col=PAL["bile"]):
+def membrane_mat(name, glow, col=PAL["bile"], plain=False):
     """A blister's skin: a dark translucent membrane over a glowing core. The glow is strongest where
-    the membrane faces the viewer and fades to dark at its swollen rim; veins shadow it."""
+    the membrane faces the viewer and fades to dark at its swollen rim; veins shadow it. plain: no veins
+    and no bump, for a 9-slice key whose centre is stretched (a vein pattern stretched leaves seams at
+    the slice lines; the console fit check found them across the pressed key's label)."""
     k = NodeKit(name)
+    if plain:
+        lw = k.N.new("ShaderNodeLayerWeight")
+        lw.inputs["Blend"].default_value = 0.5
+        core = k.math("POWER", k.math("SUBTRACT", 1.0, lw.outputs["Facing"]), 5.0)
+        k.set(Base_Color=list(srgb("#3a1614")) + [1.0], Roughness=0.3, Subsurface_Weight=0.5, Subsurface_Scale=0.003, Subsurface_Radius=(1.0, 0.45, 0.3),
+              Coat_Weight=1.0, Coat_Roughness=0.03, Emission_Color=col, Emission_Strength=k.math("MULTIPLY", core, glow))
+        return k.mat
     wv = k.warped(80.0, 0.004)
     cells = k.tex("ShaderNodeTexVoronoi", 170.0, vec=wv, feature="DISTANCE_TO_EDGE")
     vein = k.math("POWER", k.math("SUBTRACT", 1.0, k.math("DIVIDE", cells.outputs["Distance"], 0.03, clamp=True)), 3.0)
@@ -147,7 +156,9 @@ def M(K, key):
         "chitin": lambda: chitin_mat("chitin"), "flesh": lambda: flesh_mat("flesh"), "flesh_dark": lambda: flesh_mat("flesh_dark", "#5a2430"),
         "sinew": lambda: flesh_mat("sinew", PAL["sinew"]), "pit": lambda: wet_mat("pit"),
         "pod_idle": lambda: membrane_mat("pod_idle", 0.3), "pod_hover": lambda: membrane_mat("pod_hover", 1.6),
-        "pod_hot": lambda: membrane_mat("pod_hot", 2.4, PAL["bile_hot"]), "pod_blood": lambda: membrane_mat("pod_blood", 2.6, PAL["blood"]),
+        "pod_hot": lambda: membrane_mat("pod_hot", 2.4, PAL["bile_hot"]),
+        "key_idle": lambda: membrane_mat("key_idle", 0.3, plain=True), "key_hover": lambda: membrane_mat("key_hover", 1.6, plain=True),
+        "key_hot": lambda: membrane_mat("key_hot", 2.4, PAL["bile_hot"], plain=True), "pod_blood": lambda: membrane_mat("pod_blood", 2.6, PAL["blood"]),
         "bile": lambda: glow_mat("bile", PAL["bile"], 2.2), "blood": lambda: glow_mat("blood", PAL["blood"], 2.2),
         "amber": lambda: glow_mat("amber", PAL["amber"], 2.2), "vessel": lambda: wet_mat("vessel", "#1c0d10"),
     }
@@ -220,9 +231,12 @@ def bar_fill(key):
 def button(state):
     def build(K):
         w, h = K.w, K.h
-        key = {"idle": "pod_idle", "hover": "pod_hover", "pressed": "pod_hot"}[state]
-        squash = 0.6 if state == "pressed" else 0.85
-        pod(K, 8, w - 6, h / 2, 18 if state != "pressed" else 17, key, flat=squash)
+        key = {"idle": "key_idle", "hover": "key_hover", "pressed": "key_hot"}[state]
+        # every state keeps the same crown: a flatter pressed pod (0.6) left creases across the face, under the label;
+        # pressed reads by its hot glow and the page's press motion
+        squash = 0.85
+        # radius 21 (was 18): the lit face is tall enough for a label with descenders, 3 px clear (console fit check)
+        pod(K, 8, w - 6, h / 2, 21, key, flat=squash)
     return build
 
 
@@ -233,9 +247,11 @@ def tab(active):
         K.tube([(14, h / 2), (w / 2, h / 2), (w - 14, h / 2)], [12, 12, 12], ch, flat=0.42)
         K.blob(14, h / 2, 13, 12, 5.5, ch)
         K.blob(w - 14, h / 2, 13, 12, 5.5, ch)
-        K.tube([(16, h / 2 - 4), (w / 2, h / 2 - 5), (w - 16, h / 2 - 4)], [2.5, 2.5, 2.5], ch, flat=1.0, z=[5.0] * 3)
+        # the ridge and the active vein run along the shell's top and bottom edges, leaving the middle 12 px clear
+        # for the label (they crossed it: the console fit check)
+        K.tube([(18, h / 2 - 8), (w / 2, h / 2 - 9), (w - 18, h / 2 - 8)], [1.8, 1.8, 1.8], ch, flat=1.0, z=[4.6] * 3)
         if active:
-            K.tube([(20, h / 2 + 6), (w / 2, h / 2 + 7), (w - 20, h / 2 + 6)], [2.2, 2.2, 2.2], M(K, "bile"), flat=1.0, z=[5.5] * 3)
+            K.tube([(22, h / 2 + 8), (w / 2, h / 2 + 9), (w - 22, h / 2 + 8)], [1.6, 1.6, 1.6], M(K, "bile"), flat=1.0, z=[5.0] * 3)
     return build
 
 
@@ -389,9 +405,9 @@ PIECES = {
     "bar.track":      ("nine", (120, 16), (0, 14, 0, 14), "x", bar_track),
     "bar.fill":       ("nine", (80, 10), (0, 6, 0, 6), "x", bar_fill("bile")),
     "bar.fill.red":   ("nine", (80, 10), (0, 6, 0, 6), "x", bar_fill("blood")),
-    "button.idle":    ("nine", (160, 52), (24, 30, 24, 46), "x", button("idle")),
-    "button.hover":   ("nine", (160, 52), (24, 30, 24, 46), "x", button("hover")),
-    "button.pressed": ("nine", (160, 52), (24, 30, 24, 46), "x", button("pressed")),
+    "button.idle":    ("nine", (160, 52), (0, 30, 0, 46), "x", button("idle")),
+    "button.hover":   ("nine", (160, 52), (0, 30, 0, 46), "x", button("hover")),
+    "button.pressed": ("nine", (160, 52), (0, 30, 0, 46), "x", button("pressed")),
     "tab.idle":       ("nine", (130, 40), (14, 28, 14, 28), "x", tab(False)),
     "tab.active":     ("nine", (130, 40), (14, 28, 14, 28), "x", tab(True)),
     "strip.top":      ("nine", (512, 56), (8, 110, 8, 110), "x", strip(False)),

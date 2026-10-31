@@ -463,7 +463,7 @@ Before claiming anything is done, run what applies:
 | Dash check | section 5 |
 | Tests | `scripts/run-tests.sh` (headless simulation tests, then the layout test under Xvfb), once the project exists |
 | Data | the data validator, once it exists |
-| Mockups | screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 
 - **Know what is proven.** Keep implemented, validated and proposed work distinct in docs, PRs and

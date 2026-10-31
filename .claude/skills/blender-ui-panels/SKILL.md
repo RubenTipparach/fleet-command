@@ -274,6 +274,13 @@ The study's sampled palette: film `#eacf9f` (ours `#e9ce9f`), plate `#bdb8ae` me
 
 ## 9. Before calling it done
 
+- On the page, the whole skin passes `tools/mockups/console_fit.mjs` (owner, 2026-10-31: "remember the overlap rule?"):
+  every live label, bar, key, title and lamp lies on plain art 3 px clear of every edge. It found, and the kits now
+  avoid: a strip whose open band (between rail and lip) is thinner than a label over a bar (lay the label beside the bar,
+  `--bar-flow: column`, and set the strip padding to the measured band); a bar groove narrower than its fill; a title
+  set on a frame's bevel; a 9-slice key whose noise texture or whose top and bottom margins leave seams across its face
+  (a stretched piece's centre is plain, and an x-stretch key's vertical margins are 0); and a 154 px panel that grew
+  into the 3D view because its frame and key caps needed more.
 - Every formed shape and every kit piece passes the fit check (K, R, L, P, B) before it is rendered; look at its check
   map. After rendering, no lit pixel outside the plates (rule B).
 - Render the top band at 24 samples while tuning (render border), the whole panel at 64 to finish.

@@ -17,9 +17,9 @@ F.register('kelvane', {
   name: 'Kelvane Institute', kind: 'An NLog-style instrument kit in Blender: champagne plates, amber readouts, phosphor scopes', bg: KV.bg, sampleBg: KV.champagne,
   css: { '--s-ink': KV.engrave, '--s-dim': KV.dim, '--s-num': KV.engrave, '--s-body': '"Courier Prime", monospace', '--btn-ink': KV.ink, '--btn-justify': 'center',
     '--btn-shadow': '0 0 3px rgba(255, 226, 160, 0.55)', '--btn-font': '400 17px/1 "Share Tech Mono", monospace', '--btn-track': '0.12em', '--btn-case': 'uppercase',
-    '--btn-motion': 'none', '--btn-press': 'none', '--tab-font': '400 13px/1 "Share Tech Mono", monospace', '--tab-ink': '#2a1d0a', '--tab-ink-on': KV.inkOn,
+    '--btn-motion': 'none', '--btn-press': 'none', '--tab-font': '400 13px/1 "Share Tech Mono", monospace', '--tab-pb': '1px', '--tab-ink': '#2a1d0a', '--tab-ink-on': KV.inkOn,
     '--title-font': '700 13px/1 "Courier Prime", monospace', '--title-ink': KV.engrave, '--lbl-font': '700 12px/1 "Courier Prime", monospace',
-    '--num-font': '400 27px/1 "Share Tech Mono", monospace' },
+    '--num-font': '400 27px/1 "Share Tech Mono", monospace', '--strip-lamp': '40px' },
   accent: KV.phos, warn: KV.needle,
   // The title is engraved inside the panel's fine line (it ends 10 px in), starting 13 px clear of the corner screw (18 +/- 3 px).
   title: (t, m) => { t.style.cssText = `left:${34 - m[3]}px;top:${12 - m[0]}px;letter-spacing:0.16em;`; },

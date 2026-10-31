@@ -212,11 +212,14 @@ function icon(name) {
 F.register('tarsine', {
   name: 'Tarsine Remnant', kind: 'Corroded monumental iron; backlights clogged with dirt', bg: '#110e0b',
   css: { '--s-ink': TA.bone, '--s-dim': TA.dim, '--s-num': TA.light, '--s-body': '"Alegreya Sans SC", sans-serif', '--btn-ink': '#1e160c', '--btn-shadow': '0 1px 0 rgba(255,230,160,0.35)', '--btn-justify': 'center',
-    '--btn-pt': '4px', '--btn-font': '700 17px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'translateY(1px)',
+    '--btn-pt': '0px', '--btn-pb': '2px', '--btn-font': '700 17px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'translateY(1px)',
     '--tab-font': '700 13px/1 "Cinzel", serif', '--tab-ink': TA.dim, '--tab-ink-on': TA.light, '--title-font': '700 17px/1 "Cinzel", serif', '--title-ink': TA.goldHi,
-    '--lbl-font': '700 16px/1 "Alegreya Sans SC", sans-serif', '--num-font': '700 26px/1 "Alegreya Sans SC", sans-serif' },
+    '--lbl-font': '700 16px/1 "Alegreya Sans SC", sans-serif', '--num-font': '700 24px/1 "Alegreya Sans SC", sans-serif',
+    // Strip padding is each strip's open band beside its beam (top rows 3-29, bottom 26-52), measured by
+    // tools/mockups/console_fit.mjs.
+    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '3px', '--stt-pb': '26px', '--stb-pt': '26px', '--stb-pb': '3px', '--strip-lamp': '21px' },
   accent: TA.light, warn: TA.ember,
-  title: (t, m) => { t.style.cssText = `left:${40 - m[3]}px;top:${-m[0] + 8}px;letter-spacing:0.12em;text-shadow:0 1px 0 #000, 0 0 3px #000;`; },
+  title: (t, m) => { t.style.cssText = `left:${40 - m[3]}px;top:${-m[0] + 15}px;letter-spacing:0.12em;text-shadow:0 1px 0 #000, 0 0 3px #000;`; },
   plateText: { left: 44, top: 12, width: 372, height: 32, font: '700 19px/1 "Cinzel", serif', color: '#2a1c0c', sub: 'ANKHAR · ELDEST VOR' },
   helmKeys: [[150, 63], [236, 63], [236, 149], [236, 235], [150, 235], [64, 235], [64, 149], [64, 63]], shield: [TA.light, '#c9873a', TA.ember],
   fonts: ['700 20px "Cinzel"', '700 20px "Alegreya Sans SC"'], view: { title: '700 26px "Cinzel"', body: '700 24px "Alegreya Sans SC"', upper: true },

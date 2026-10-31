@@ -75,7 +75,8 @@ def pieces():
     for state in ("idle", "hover", "pressed"):
         add(f"button.{state}", "nine", (150, 48), rbox(1, 2, 149, 46, 22), [btn], studs=[(11, 24, 3.5), (139, 24, 3.5)],
             holo=[("key", btn.buffer(-2, quad_segs=8))], margins=(20, 42, 20, 42), stretch="x", roll=2.0, dz=-6.0, pad=1.8)
-    tab = soft(rbox(14, 11, 106, 29, 9), 3)
+    # the window is as tall as rule R allows (land 3 px to the plate), so a label clears its lit rim (console fit check)
+    tab = soft(rbox(14, 10.3, 106, 29.7, 9.7), 3)
     for state in ("idle", "active"):
         add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 16), [tab], holo=[("tab", tab.buffer(-1.5, quad_segs=8))],
             margins=(12, 30, 12, 30), stretch="x", roll=1.6, dz=-5.0, pad=1.4)

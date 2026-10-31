@@ -386,8 +386,10 @@ def frame_inset(K):
 
 def bar_track(K):
     w, h = 96, 16
-    K.prism([(0, 8), (5, 0), (w - 5, 0), (w, 8), (w - 5, h), (5, h)], 0, 5, "gunmetal", bevel=1.5,
-            holes=[[(4.5, 8), (7.5, 3.5), (w - 7.5, 3.5), (w - 4.5, 8), (w - 7.5, 12.5), (7.5, 12.5)]])
+    # The groove (2.5-13.5) is wider than the 10 px fill laid in it at y 3-13 (the kit's inset), so the fill never
+    # covers the rim (the console fit check, tools/mockups/console_fit.mjs). It was 3.5-12.5: the fill sat on the rim.
+    K.prism([(0, 8), (5, 0), (w - 5, 0), (w, 8), (w - 5, h), (5, h)], 0, 5, "gunmetal", bevel=1.0,
+            holes=[[(3.5, 8), (7.0, 2.5), (w - 7.0, 2.5), (w - 3.5, 8), (w - 7.0, 13.5), (7.0, 13.5)]])
     K.prism(rect(4, 2, w - 4, h - 2), -3, -1, "socket")
 
 
@@ -486,10 +488,12 @@ def nameplate(K):
     for x in range(96, 420, 28):
         K.cone(x, 5.5, 2.0, 1.3, 5.5, 7.4, "steel", seg=8)
         K.cone(x, 50.5, 2.0, 1.3, 5.5, 7.4, "steel", seg=8)
-    K.prism(chamfer([(428, 28), (452, 28), (452, 50), (428, 50)], [0, 4, 0, 0]), 5.5, 8, "iron", bevel=1.2)
-    K.prism([(431, 32), (449, 32), (449, 38), (431, 38)], 7.6, 8.6, "hazard", bevel=0.3)
-    K.bolt(436, 44, 8, r=2.6)
-    K.bolt(446, 44, 8, r=2.6)
+    # The prow block keeps an even land from the field (6 px) and from the plate's chamfered edges (at least 8 px):
+    # it sat 2 px from the bottom-right chamfer and read as stuck on the edge.
+    K.prism(chamfer([(426, 26), (446, 26), (446, 46), (426, 46)], [0, 4, 0, 0]), 5.5, 8, "iron", bevel=1.2)
+    K.prism([(429, 30), (443, 30), (443, 35), (429, 35)], 7.6, 8.6, "hazard", bevel=0.3)
+    K.bolt(431, 41, 8, r=2.4)
+    K.bolt(441, 41, 8, r=2.4)
 
 
 def helm_pad(K):

@@ -239,6 +239,39 @@ for holographic buttons and icons, but 3d rendered shell around the UI panels an
 Every generator shares `tools/blender/ui_render.py` (render settings, lights, the camera, byte-reproducible PNGs, the
 manifest), and the page loads any rendered kit with `FCK.fromManifest`; a kit may render its own icons (`icon.<name>`).
 
+## Children inside parents, measured on every skin (version 16)
+
+The owner, 2026-10-31, with a shot of the Kethran console's top strip: "remember the overlap rule? can you fix this
+too...and every other ui systems too, to be sure that you understand how to UI stuff". The rule (the analog panel
+bible, chapter 7; the `blender-ui-panels` skill): every child sits wholly inside its parent's open area with an even
+margin, and a panel never grows with its content (CLAUDE.md section 7). It is now measured on the page, not judged:
+
+- `tools/mockups/console_fit.mjs` shoots every leaf of every skin's console (a title, label, number, bar, fill, key,
+  tab, icon, the plate's name, the strip lamp) on its parent's art with and without it, takes the leaf's own pixels from
+  the difference, grows them by 3 px and looks under them for frame lines: a run of strong luminance steps (over 34 of
+  255) at least 14 px long under the leaf and 36 px long in the parent, that is not one of three or more parallel lines
+  at one pitch (scanlines, ribs). A fill may fill its groove but not cover its rim. Every column piece stays inside the
+  460 px column and no key, label or panel is clipped. On the page as it was it found 90 faults in ten skins; it passes
+  now. `tools/mockups/dom_fit.mjs` checks flat CSS pages (mockup 1, this page's proof rows) the same way on geometry.
+
+What it found, and the fix for each (one fix per cause, in the shared layout where the cause was shared):
+
+| Fault | Skins | Fix |
+|---|---|---|
+| A label over a bar (35 px) in a strip whose open band is 26-41 px, so labels touched the rail and bars sat on the lip | Kethran, Vos, Vhorr, Aelith, Tarsine, Ombrai | A skin may lay a label beside its bar (`--bar-flow: column`); each skin's strip padding is its art's open band, measured (Kethran's top strip: rows 17-43) |
+| The alert lamp (48 px) drawn over the bottom strip's rails | every skin but Ssarith and Krai | `--strip-lamp`: the lamp sized to the band less 6 px |
+| A panel title set on the frame's bevel or band | Kethran, Vos, Tarsine, Ombrai, Vhorr | Kethran and Vos title the open field; Tarsine and Ombrai move theirs clear of the band's edge; Vhorr's tag grows to hold its letters |
+| The helm readouts' 154 px panel grew 7-106 px into the 3D view: its frame and the key caps needed 161-260 px | every skin | The helm pad drawn at 264 px (its 2x render stays sharp), the readouts in a 190 px inset frame, fixed; radar icons 32 px so the row fits 460 px |
+| Kethran's bar groove (9 px) narrower than its 10 px fill | Kethran | Groove 11 px (2.5-13.5), re-rendered |
+| Kethran's prow block 2 px from the plate's chamfer | Kethran | Moved in to 8 px of land, re-rendered |
+| Vhorr keys: a vein texture and 24 px top and bottom margins left 9-slice seams across the face; the pressed pod creased; the face too thin for a label with descenders | Vhorr | A plain membrane on keys, vertical margins 0, one crown for every state, pod radius 21, re-rendered |
+| Vhorr's tab ridge and vein crossed its label | Vhorr | Moved to the shell's top and bottom edges, re-rendered |
+| Aelith's tab lens too thin for its label | Aelith | The lens as tall as rule R allows (land 6.2 mm), re-rendered and re-checked (K, R, L, P, B) |
+| Labels a few px low or wide in their key or tab | Aelith, Tarsine, Kelvane | `--btn-pb`, `--tab-pb` and smaller key type, per skin |
+
+Mockup 1's port panel covered the map's top bar and keys on desktop; the top bar now starts beside an open panel and
+the keys step aside, as they already did on a phone.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per

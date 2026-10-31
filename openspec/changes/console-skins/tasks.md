@@ -50,6 +50,15 @@
 - [x] 1.18 The Concord top strip's bars kept inside the strip, clear of its thin bar (optional strip padding tokens,
   measured on the page for every skin by `tools/mockups/strip_fit.mjs`)
 
+## 1f. Version 16: children inside parents, measured (owner, 2026-10-31)
+
+- [x] 1.19 `tools/mockups/console_fit.mjs` (pixels, every skin's console) and `tools/mockups/dom_fit.mjs` (geometry, any
+  page): the children-inside-parents rule measured; both catch the faults on the old page and seeded faults
+- [x] 1.20 Every fault fixed at its cause: strip bands and bar layout per skin, strip lamps, titles, the helm column's
+  widths, Kethran's groove and prow block, Vhorr's keys and tabs, Aelith's tab lens (re-rendered in Blender, fit rules
+  re-checked); mockup 1's top bar beside an open port panel
+- [x] 1.21 Shots looked at, every artifact republished
+
 ## 2. After approval for build
 
 - [ ] 2.1 Blender kit generator per skin (`panel-textures`), bakes, manifest with margins

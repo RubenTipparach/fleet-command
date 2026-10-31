@@ -98,11 +98,14 @@ function podDisc(x, rx, ry, core, R, col = VH.bile) {
 F.register('vhorr', {
   name: 'Vhorr Brood', kind: 'Grown in Blender: hide lit from behind, wet iridescent carapace, tendrils, sinew', bg: '#0d0709',
   css: { '--s-ink': VH.ink, '--s-dim': VH.dim, '--s-num': VH.bile, '--s-body': '"Barlow Condensed", sans-serif', '--btn-ink': VH.ink, '--btn-shadow': '0 1px 2px #000, 0 0 5px #1a0a0c', '--btn-justify': 'center',
-    '--btn-font': '400 20px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'transform 0.2s cubic-bezier(.3,1.7,.5,1)', '--btn-press': 'scale(0.97, 0.9)',
-    '--tab-font': '400 17px/1 "Metamorphous", serif', '--tab-ink': VH.dim, '--tab-ink-on': VH.bileHot, '--title-font': '400 21px/1 "Metamorphous", serif', '--title-ink': VH.bileHot,
-    '--lbl-font': '600 17px/1 "Barlow Condensed", sans-serif', '--num-font': '600 27px/1 "Barlow Condensed", sans-serif' },
+    '--btn-font': '400 16px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'transform 0.2s cubic-bezier(.3,1.7,.5,1)', '--btn-press': 'scale(0.97, 0.9)',
+    '--tab-font': '400 14px/1 "Metamorphous", serif', '--tab-pb': '5px', '--tab-ink': VH.dim, '--tab-ink-on': VH.bileHot, '--title-font': '400 21px/1 "Metamorphous", serif', '--title-ink': VH.bileHot,
+    '--lbl-font': '600 17px/1 "Barlow Condensed", sans-serif', '--num-font': '600 27px/1 "Barlow Condensed", sans-serif',
+    // Strip padding is each strip's open band beside its hide roll (top rows 3-35, bottom 20-52), measured by
+    // tools/mockups/console_fit.mjs; a label beside its bar fits it, and the lamp is sized to it.
+    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '3px', '--stt-pb': '20px', '--stb-pt': '20px', '--stb-pb': '3px', '--strip-lamp': '28px' },
   accent: VH.bile, warn: VH.blood,
-  title: (t, m) => { t.style.cssText = `left:${44 - m[3]}px;top:${-m[0] + 6}px;padding:1px 10px 3px;border-radius:12px;background:#1a0c0e;box-shadow:0 0 0 2px #140808;text-shadow:0 0 6px ${VH.bile};`; },
+  title: (t, m) => { t.style.cssText = `left:${44 - m[3]}px;top:${-m[0] + 6}px;padding:4px 12px 6px;border-radius:14px;background:#1a0c0e;box-shadow:0 0 0 2px #140808;text-shadow:0 0 6px ${VH.bile};`; },
   plateText: { left: 82, top: 9, width: 300, height: 38, font: '400 21px/1 "Metamorphous", serif', color: VH.ink, sub: 'Sskarr · Matriarch Vhaal' },
   helmKeys: 'ring', helmR: 100, shield: [VH.bile, VH.amber, VH.blood],
   fonts: ['400 20px "Metamorphous"', '600 20px "Barlow Condensed"'], view: { title: '400 28px "Metamorphous"', body: '600 25px "Barlow Condensed"', upper: false },
