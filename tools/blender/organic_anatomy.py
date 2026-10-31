@@ -131,8 +131,9 @@ class Sculpt:
     .masks after .build(). The `layers` set decides how far the sculpt goes (the study shows each layer as a step):
     "bone", "muscle", "skin", "detail" (veins, cords, creases, pustules, fibres) and "cavern" (the receding ribcage)."""
 
-    def __init__(self, view, res_mm, win, port, keys, neigh, cradle, pustules=(), seed=7):
+    def __init__(self, view, res_mm, win, port, keys, neigh, cradle, pustules=(), seed=7, overlay=False):
         self.view, self.res = view, res_mm
+        self.overlay = overlay   # an overlay over gameplay: nothing runs off into a wall that is not there
         self.pustules = list(pustules)   # (x, y, radius mm): sacs of light under the skin
         self.win, self.port, self.keys, self.neigh, self.cradle = win, port, keys, neigh, cradle
         self.seed = seed
@@ -248,6 +249,8 @@ class Sculpt:
                  ([(-245, 120), (-200, 96), (-160, 112), (-118, 98)], 4.5, None),
                  ([(-170, -112), (-120, -98), (-60, -114), (20, -106), (120, -118), (205, -102)], 4.0, None),
                  ([(self.win[2] + 30, 100), (170, 122), (215, 116), (265, 132)], 4.0, None)]
+        if self.overlay:   # only the tendril that joins two panels stays; the cords that ran into the wall go with it
+            cords = cords[:1]
         for pts, rad, radii in cords:
             M = M + 2.0 * rad * path_field(X, Y, pts, rad, radii)
         # the cradle the crystal grows from

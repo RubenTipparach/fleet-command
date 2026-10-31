@@ -492,8 +492,9 @@ with its skill (`blender-organic-panels`). Reference screenshots of another game
 and are not committed; the shapes, words and colours are our own.
 
 Its rules, in short (the bible has them in full):
-- **One organism holding instruments.** The frame and the backdrop are one body: a ribbed wall of tissue, panels as
-  swellings in it, tubes, veins and tendrils between them. No grey metal, no panel on black.
+- **One organism holding instruments.** Each panel's frame is one body, with no grey metal. (The first round put a
+  ribbed wall of tissue behind the panels; that is superseded by the version 25 note below: the console is an overlay
+  with no backdrop.)
 - **Five materials.** Leathery maroon-brown flesh with a wet coat, near-black chitin plates sunk into it, ivory bone,
   black smoked glass for every screen (with a thin bronze rim and a calm middle), and light.
 - **Grown form.** Metaball bodies, voxel remeshed and lumped; a ribcage rhythm; chitin overlapping like vertebrae;
@@ -541,6 +542,12 @@ placeholders then a full detail agent will go in and sculpt components manually"
 - **Cost.** One sculpt per slot per screen shape instead of one stretchable image per piece: more pieces to make, and a
   layout change to an organic skin means re-sculpting the slots it touches. Rendering is about 5 minutes per piece at
   32 samples on the cloud machine.
+
+- **An overlay, not a scene** (the owner, 2026-10-31: "The one thing about UI is it's overlayed on top of gameplay so that background wouldn't make sense here", then of study step 25: "Only this new iteration is accepted. Minus the background there"). The
+  console sits over the live battle, so no wall, cavern or fill stands behind or between the panels; every organic
+  piece renders on a transparent film and is judged composited over the game view; only the panels' own bodies join
+  them (a tendril). The bible's rule 5, and its study step 26, which is the accepted design; step 14 (placed beads, a
+  white spine, a wall) is shown beside it as the owner's rejected iteration.
 
 **Next:** the Vhorr Brood is rebuilt this way, starting with the blockout of the desktop console.
 

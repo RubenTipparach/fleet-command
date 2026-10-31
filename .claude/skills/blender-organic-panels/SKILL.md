@@ -1,6 +1,6 @@
 ---
 name: blender-organic-panels
-description: Build and render organic, grown console panels for Fleet Command's living factions (the Vhorr Brood first) in Blender, headless - one surface sculpted in layers (bone, then muscle, then leather stretched over both, veins and sacs of light under the skin) as a height field, its materials blended by masks from the sculpt, never a raw primitive placed on the body, black smoked-glass screens with bronze rims, square dark keys with glowing rims, a portrait pocket, a ribcage wall joining every panel, bioluminescent accents that light their surroundings, a warm top light with grazing rims, a value-ladder palette, and growth measured clear of every readout and key face. Use whenever making or changing an organic, biological, hive, alien-flesh or grown skin, or when a render "looks like metal with blobs on it", "reads as camo", "looks like plastic or chocolate", or "is missing the hive aesthetic" ("organic UI", "flesh panel", "chitin", "tendrils", "Vhorr", "brood", "hive console").
+description: Build and render organic, grown console panels for Fleet Command's living factions (the Vhorr Brood first) in Blender, headless - one surface sculpted in layers (bone, then muscle, then leather stretched over both, veins and sacs of light under the skin) as a height field, its materials blended by masks from the sculpt, never a raw primitive placed on the body, black smoked-glass screens with bronze rims, square dark keys with glowing rims, a portrait pocket, panels that float over the game with no backdrop (rendered on a transparent film; only their own bodies join them), bioluminescent accents that light their surroundings, a warm top light with grazing rims, a value-ladder palette, and growth measured clear of every readout and key face. Use whenever making or changing an organic, biological, hive, alien-flesh or grown skin, or when a render "looks like metal with blobs on it", "reads as camo", "looks like plastic or chocolate", or "is missing the hive aesthetic" ("organic UI", "flesh panel", "chitin", "tendrils", "Vhorr", "brood", "hive console").
 metadata:
   author: Fleet Command (Claude Code)
   version: "1.0"
@@ -50,10 +50,27 @@ using placeholders then a full detail agent will go in and sculpt components man
   labels, the hex-filtered portrait) is drawn over the piece, never sculpted in.
 - **Swap and measure.** Each sculpt replaces its placeholder; the fit checks run again; look at its close-up.
 
+## 0c. Rule 5: an overlay, not a scene
+
+The owner, 2026-10-31: "The one thing about UI is it's overlayed on top of gameplay so that background wouldn't make sense here", and of study step 25: "Only this new iteration is accepted. Minus the background there".
+
+- The console sits over the live battle: no wall, cavern or fill of tissue behind or between the panels. The game
+  shows through every gap.
+- Render every piece on a transparent film (`scene.render.film_transparent = True`, RGBA PNG) and judge it composited
+  over the game view (`tools/mockups/overlay_composite.py`), never over flat black or a wall.
+- A height-field sculpt's bare floor is cut away: faces whose every corner is lower than 27 mm below the face are
+  deleted (`OVERLAY_CUT_MM` in `tools/blender/organic_study.py`), so the silhouette is the body's own edge.
+- What joins two panels is part of both bodies (a tendril), with the game visible round it. Cords that only ran into a
+  wall, and sacs that sat on it, go with the wall.
+- Light the pieces as the battle would (the warm key from above, grazing rims), with nothing behind them.
+- The accepted design is study step 26; step 14 (placed beads, a white spine, a wall) is the owner's rejected
+  iteration. Both are shown side by side at the top of the bible.
+
 ## 1. The premise
 
 Start from the creature, never from a machine. An organic console is one body that holds instruments:
-- the frame and the backdrop are the same body (a ribbed wall of tissue; tubes, veins and tendrils between panels);
+- each panel is one body, and the body is all there is: no backdrop, the panels float over the game (rule 5), and
+  neighbours join only where their bodies reach each other (a tendril);
 - the tech is crisp (screens, keys, the portrait), the frame is soft (flesh, chitin, bone);
 - the body breaks the rectangle (spines, arches, horns past the top edge, asymmetric); the instruments never do.
 
@@ -64,7 +81,7 @@ Adding growth to a finished machine panel (version 23) always reads as decoratio
 | Material | Job | Recipe |
 |---|---|---|
 | Body (from step 20) | The sculpted frame | One Principled blended by the sculpt's masks: leather ramp `#080303` / `#2e140d` / `#55281a` on AO 10 mm + broad noise; raw muscle `#62140f`, veins `#1c1028`, bone stained `#7d6b4c` to ivory `#cfc2a2` in patches, creases `#080303` with dried fluid `#3a2c14`; sacs emit green through the skin; depth to black. Bump 0.8 over 0.7 mm (pores, wrinkles in the webs, grain). Wet where flesh is wet: coat 0.12 + 0.6 muscle + 0.8 crease - 0.5 bone, coat roughness broken 0.08-0.48. |
-| Flesh (first round) | Frames, wall | Principled; colour ramp fold `#080303` 0.3, flesh `#33110f` 0.75, lit `#6a2620` 1.15 driven by AO 14 mm + 0.3 x noise (260, detail 10); bump 0.5 over 0.6 mm from wave bands (90, distortion 18) + noise; roughness 0.62, coat 0.55 at 0.22, subsurface 0.08 random walk 1.5 mm. A darker variant (no lit step) for the wall. |
+| Flesh (first round) | Frames | Principled; colour ramp fold `#080303` 0.3, flesh `#33110f` 0.75, lit `#6a2620` 1.15 driven by AO 14 mm + 0.3 x noise (260, detail 10); bump 0.5 over 0.6 mm from wave bands (90, distortion 18) + noise; roughness 0.62, coat 0.55 at 0.22, subsurface 0.08 random walk 1.5 mm. A darker variant (no lit step) for the wall. |
 | Chitin (first round; placed plates banned by rule 1) | Armour plates | Noise `#140c0e` to `#4a3236`, roughness 0.3, coat 1.0 at 0.03, thin film 380 nm. |
 | Bone (first round; placed spines banned by rule 1) | Spines, horns, claws, arches | `#e2d6bb`, AO ramp to `#8a7a5e` at the root, roughness 0.38, coat 0.5, subsurface 0.15. Now bone is a mask of the body material. |
 | Smoked glass | Screens | `#050405`, roughness 0.12, coat 1; dark-red Voronoi edge veins only outside a squarish oval over the readout; a thin bronze rim (`#9a5a34`, metal). |
@@ -102,7 +119,7 @@ bridges gaps poorly. Look at a 2x crop: if a row of bumps reads as beads, turn a
 2. **Mesh it.** Convert; squash the back to 20%; Remesh voxel 1.4 mm; Displace clouds 18 mm by 2.2 mm; Corrective
    Smooth 5; shade smooth.
 3. **Ribs.** Capsules across a frame's sides, lengths following a sine (longest in the middle), turned 12-15 degrees,
-   4-6 mm proud. The wall: tubes every 24 mm, bowed and of uneven radius.
+   4-6 mm proud. (The first round's wall of tubes behind the panels is superseded by rule 5.)
 4. **Chitin sunk, not stuck.** Squashed spheres overlapping by a third along a run, swelling to its middle, tilted, half
    inside the flesh. Separate beans on a tube read as decoration.
 5. **Bone.** Bezier tubes tapering from radius 1.0 at the root to 0.05 at the tip; long spines arch over the panel and

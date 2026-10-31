@@ -86,7 +86,15 @@ STEPS = [
     # filter on top of pixels. Hex grid should be pretty fine and we can read text and images on it just fine"): the
     # portrait is a screen, live pixels under a fine hex-cell filter (tools/mockups/hex_portrait.py writes the pixels).
     (25, "hex-portrait", "The portrait is pixels under a hex filter"),
+    # the fourth round (owner, 2026-10-31: "The one thing about UI is it's overlayed on top of gameplay so that
+    # background wouldn't make sense here", "Only this new iteration is accepted. Minus the background there"): the
+    # cavern and every fill behind or between the panels go; the panels render on a transparent film and are judged
+    # composited over the game view (tools/mockups/overlay_composite.py).
+    (26, "overlay", "An overlay, not a scene: no backdrop"),
 ]
+
+OVERLAY_FROM = 26          # from this step on the console is an overlay: no backdrop, a transparent film
+OVERLAY_CUT_MM = -27.0     # sculpt faces whose every corner lies below this height are the bare floor: cut away
 
 # Version 23's colours (step 1): grey metal, lime everywhere. The fix: dark maroon-brown flesh, near-black chitin,
 # ivory bone, black screens, one hot accent for keys (our amber), green only for life, violet only for the hero.
@@ -622,6 +630,7 @@ def key_icon(name, kind, cx, cy, z, m):
 
 # ------------------------------------------------------------------------------------------- the sculpt (step 16 on)
 SCULPT_RES_MM = 0.5     # one height sample every 0.5 mm: one per pixel at the bible's 2 px/mm, so no facet shows
+# sacs of light under the skin; from the overlay step on only the first stays: the others sat on the wall, not a panel
 PUSTULES = [(-124.0, -32.0, 9.0), (140.0, -62.0, 11.0), (156.0, -44.0, 7.0), (224.0, -88.0, 8.0)]
 CRADLE = (200.0, 84.0, 30.0)
 
@@ -762,9 +771,10 @@ def sculpted_frame(step):
     """The frame as one sculpted surface, as far as `step` takes it: bone (16), muscle (17), skin (18), what lies under
     the skin (19), the cavern behind (22). Returns (the sculpt, its mesh object)."""
     layers = {"bone"} | ({"muscle"} if step >= 17 else set()) | ({"skin"} if step >= 18 else set()) | \
-             ({"detail"} if step >= 19 else set()) | ({"cavern"} if step >= 22 else set())
+             ({"detail"} if step >= 19 else set()) | ({"cavern"} if 22 <= step < OVERLAY_FROM else set())
     sc = oa.Sculpt((VIEW[0] - 10, VIEW[1] - 10, VIEW[2] + 10, VIEW[3] + 10), SCULPT_RES_MM, WIN, PORT, KEYS, NEIGH,
-                        CRADLE, pustules=PUSTULES if step >= 19 else ())
+                        CRADLE, pustules=(PUSTULES[:1] if step >= OVERLAY_FROM else PUSTULES) if step >= 19 else (),
+                        overlay=step >= OVERLAY_FROM)
     S, masks = sc.build(layers)
     ny, nx = S.shape
     import numpy as np
@@ -791,6 +801,17 @@ def sculpted_frame(step):
                 col[:, i] = masks[ch].ravel()
         a.data.foreach_set("color", col.ravel())
     me.polygons.foreach_set("use_smooth", np.ones(len(quads), dtype=bool))
+    if step >= OVERLAY_FROM:
+        # an overlay, not a scene: the bare floor between the bodies is cut away, so the game view shows between the
+        # panels; only what has grown up out of the floor (the panels' bodies and the sinew that is part of them) stays
+        import bmesh
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        low = [f for f in bm.faces if all(v.co.z / MM < OVERLAY_CUT_MM for v in f.verts)]
+        bmesh.ops.delete(bm, geom=low, context="FACES")
+        bm.to_mesh(me)
+        bm.free()
+        me.update()
     ob = link(bpy.data.objects.new("sculpt", me))
     mat = clay("clay", step >= 17) if step < 18 else anatomy("anatomy", step)
     assign(ob, mat)
@@ -1162,6 +1183,9 @@ def main():
         sc = reset(a.samples)
         LAST.clear()
         growth, _protected = build(n)
+        if n >= OVERLAY_FROM:   # an overlay: the panels on a transparent film, composited over the game view later
+            sc.render.film_transparent = True
+            sc.render.image_settings.color_mode = "RGBA"
         sc.render.filepath = os.path.join(a.out, f"{n:02d}-{fname}.png")
         bpy.ops.render.render(write_still=True)
         print(f"STUDY step {n} {title}: {sc.render.filepath}", flush=True)
