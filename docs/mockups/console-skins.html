@@ -1727,6 +1727,35 @@ function icon(name) {
 }
 
 // ---- the skin --------------------------------------------------------------------------------------------------
+// The ship display is a wireframe schematic (owner, 2026-10-31: "The krai ship display should be a wire frame
+// schematic"): the blade hull top-down in glowing hairlines, a node at every vertex, its frame ribs and spine, the wing
+// spars, the lower hull in dashed hidden lines, the weapon mounts boxed and called out, the engines as nozzle rings.
+function wireframe(x, cx, cy) {
+  const P2 = (pts) => pts.map(([a, b]) => [cx + a, cy + b]);
+  const hull = P2([[0, -84], [9, -40], [12, 4], [54, 52], [52, 60], [16, 46], [8, 66], [-8, 66], [-16, 46], [-52, 60], [-54, 52], [-12, 4], [-9, -40]]);
+  const lower = P2([[0, -70], [6, -36], [8, 2], [38, 40], [10, 34], [0, 54], [-10, 34], [-38, 40], [-8, 2], [-6, -36]]);
+  const line = (pts, closed, w, a, dash) => { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const q of pts.slice(1)) x.lineTo(q[0], q[1]); if (closed) x.closePath(); x.lineWidth = w; x.strokeStyle = hexA(KR.hot, a); x.setLineDash(dash || []); x.stroke(); };
+  x.save(); x.shadowColor = KR.orange; x.shadowBlur = 6; x.lineJoin = 'round';
+  line(lower, true, 0.9, 0.45, [3, 3]);                                         // the lower hull, hidden: dashed
+  line(hull, true, 1.6, 0.95);                                                   // the hull's outline
+  line(P2([[0, -84], [0, 66]]), false, 0.9, 0.7);                               // the spine
+  for (const y of [-56, -36, -16, 4, 24, 44]) {                                  // frame ribs, as wide as the hull at that station
+    const half = y < 4 ? 9 + (y + 84) / 88 * 3 : 12 + (y - 4) / 48 * (y < 46 ? 4 : 4);
+    line(P2([[-half, y], [half, y]]), false, 0.8, 0.6);
+  }
+  for (const s of [-1, 1]) {                                                     // wing spars and the joint to the hull
+    line(P2([[12 * s, 4], [54 * s, 52]]), false, 0.8, 0.6);
+    line(P2([[12 * s, 18], [44 * s, 50]]), false, 0.7, 0.45);
+    line(P2([[16 * s, 46], [12 * s, 4]]), false, 0.7, 0.45);
+  }
+  x.setLineDash([]); x.shadowBlur = 0; x.fillStyle = KR.hot;
+  for (const [a, b] of hull) { x.beginPath(); x.arc(a, b, 1.6, 0, 2 * P); x.fill(); }   // vertex nodes
+  // weapon mounts: boxed, with a short callout tick; engines: nozzle rings at the stern
+  x.shadowColor = KR.orange; x.shadowBlur = 8; x.strokeStyle = KR.orange; x.lineWidth = 1.2;
+  for (const [a, b] of [[0, -68], [-38, 44], [38, 44]]) { x.strokeRect(cx + a - 4, cy + b - 4, 8, 8); x.beginPath(); x.moveTo(cx + a + 4, cy + b - 4); x.lineTo(cx + a + 12, cy + b - 12); x.stroke(); }
+  for (const a of [-5, 5]) { x.beginPath(); x.arc(cx + a, cy + 70, 3.4, 0, 2 * P); x.stroke(); }
+  x.restore();
+}
 F.register('krai', {
   name: 'Krai Warhost', kind: 'Black blade steel and red enamel; keys lit orange when engaged', bg: '#0a0707',
   css: { '--s-ink': KR.bone, '--s-dim': KR.dim, '--s-num': KR.orange, '--s-body': '"Teko", sans-serif', '--btn-ink': KR.bone, '--btn-shadow': '0 1px 2px #000, 0 0 3px #000', '--btn-justify': 'center',
@@ -1749,9 +1778,7 @@ F.register('krai', {
     // A knife-blade hull swept back into wings; shields as rows of red teeth.
     ssd: (x, cx, cy, sh, col) => {
       for (let i = 0; i < 6; i++) { const a0 = -P / 2 + i * P / 3 - P / 6 + 0.1, a1 = a0 + P / 3 - 0.2; x.fillStyle = col(sh[i]); for (let k = 0; k <= 6; k++) { const a = a0 + (a1 - a0) * k / 6; poly(x, [[cx + Math.cos(a) * 98, cy + Math.sin(a) * 98], [cx + Math.cos(a + 0.04) * 110, cy + Math.sin(a + 0.04) * 110], [cx + Math.cos(a - 0.04) * 110, cy + Math.sin(a - 0.04) * 110]]); x.fill(); } }
-      steel(x, [[cx, cy - 82], [cx + 10, cy + 10], [cx + 50, cy + 56], [cx + 12, cy + 44], [cx, cy + 66], [cx - 12, cy + 44], [cx - 50, cy + 56], [cx - 10, cy + 10]], [cx - 50, cy - 82, cx + 50, cy + 66]);
-      enamel(x, [[cx, cy - 50], [cx + 5, cy + 10], [cx - 5, cy + 10]], KR.red, 6);
-      for (const [mx, my] of [[cx, cy - 70], [cx - 36, cy + 46], [cx + 36, cy + 46]]) enamel(x, [[mx, my - 6], [mx + 5, my + 4], [mx - 5, my + 4]], KR.orange, 6);
+      wireframe(x, cx, cy);
     },
     // A thin wedge sweeps; contacts are red triangles.
     dial: (x, c, cts) => {

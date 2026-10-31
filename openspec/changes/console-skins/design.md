@@ -388,6 +388,9 @@ interaction. if you can, get rid of the slice lines, and use canvas rendering, o
   one). For people, the bars fill from empty when a skin is shown and the weapon capacitor keeps charging and
   discharging; headless checks see still frames.
 - The fit checks measure content without the art canvases, which cover the border box by design.
+- The Krai ship display is a wireframe schematic (owner: "The krai ship display should be a wire frame schematic"): the
+  blade hull top-down in glowing hairlines, a node at every vertex, its spine and frame ribs, the wing spars, the lower
+  hull in dashed hidden lines, the three weapon mounts boxed and called out, the engines as nozzle rings.
 
 ## The kit
 
