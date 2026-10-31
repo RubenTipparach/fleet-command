@@ -1,8 +1,8 @@
 # Fleet Command: rules for Claude
 
-Fleet Command is a real-time tactical starship combat game in Godot. The captain fights one ship
-from a bridge console: a column of control panels down the left, status bars along the top and
-bottom, and the 3D view of the battle filling the rest. It plays on desktop and on phones.
+Fleet Command is a real-time tactical starship combat game in Godot. The captain commands a small
+fleet from a bridge console: a column of control panels down the left, status bars along the top
+and bottom, and the 3D view of the battle filling the rest. It plays on desktop and on phones.
 
 These rules are binding. When a rule here conflicts with a general habit, a design doc or a
 tool's default, this file wins. Most are adapted from the owner's other repositories (Crab Breeze,
@@ -46,6 +46,38 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   panel can be opened to fill the screen. The 3D view then moves to the side and keeps playing; it
   is never hidden or paused (section 7).
 - **Godot** (owner, 2026-10-30: "I want to do godot for this"). Section 2.
+- **The reference manuals** (owner, 2026-10-30: "also link this in claude md for refrence", "sfc 3 is
+  where alot of the ship load out and configuration was, so add this too"):
+  - Starfleet Command 2: https://gaming.trekcore.com/starfleetcommand2/downloads/sfc2.pdf (139 PDF
+    pages). Menus at printed pages 74-75; skirmish setup 76-80; campaign, hex map and missions
+    81-87; supply dock and shipyard 88-89; the battle console ("Take the conn") 108 onward.
+  - Starfleet Command 3: https://gaming.trekcore.com/starfleetcommand3/downloads/SFC3manual.pdf (41
+    PDF pages). **Ship loadout and configuration**: refit by hardpoint groups, resupply and officers
+    at printed pages 28-29; skirmish setup with a points budget 26-27; the campaign hex map, its
+    facilities (supply dock, shipyard, officers) and missions 32-37.
+
+  They show how the reference games' screens, systems and campaigns worked. Two rules for using them,
+  after the-federation's rules for Federation Commander:
+  - **Cite the page, do not trust recall.** When a design rests on how the reference game did
+    something, name the manual and its printed page in the OpenSpec design, not a memory of it.
+  - **Take the shape, not the text.** Its wording, names, ships, races, art and screenshots belong to
+    their owners. What we take is how a system works and how a screen is laid out. Never copy its
+    text, names or images into this repository; notes about it go in our own words.
+- **Survey answers** (owner, 2026-10-30; the decided list in `docs/design/survey.html`). Windows
+  desktop plus native Android (T1). Forward+ on desktop, Compatibility on phones (T2). A mid-range
+  phone from about 2022 must hold 60 fps at the phone layout (T3). An expanded panel puts the live
+  battle in a strip down the right side, about a third of the width (U1). Phones play landscape and
+  portrait; portrait stacks the console above the view (U2). Console panels are textured: modelled
+  metal frames, real buttons and placards, rendered to images (U3). Classic space opera: bright
+  hulls, named starships, a federation of species against rival empires (G1). Real time with pause,
+  orders given while paused (G2). **A small fleet**: the player commands several ships and switches
+  between them, "with ai wingmen, and behaviors configuratble for AI" (G3). Mid-detail ships: clear
+  silhouettes, panel-line textures, baked hull lights, sized for phones (A1). Orchestral space opera
+  with a synth bed (S1). Playtests on the Windows PC with the RTX 3070 and the owner's phone (P1).
+- **Mockups first, in three stages** (owner, 2026-10-30: "we'll begin with a rolling list of
+  mockups needed", "all these mockups need to be approved for build, and then need to be approved
+  for actual game implementation after", "All mockups are to be checked into repo especially when
+  they are html claude artifacts"). `mockup-work.md` is the rolling list; section 4 has the rules.
 - **Ground rules and skills first** (owner, 2026-10-30: "lets establish ground rules, we need skills
   like open spec, 3d modeling, game ui, audio/music, light baking (hull lights), material maker,
   panel textures, automated playtesting, threejs mockups, obs recording, questions html survey,
@@ -54,6 +86,18 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   (section 4).
 
 ## 2. The stack: Godot
+
+> **Under review: Godot or Bevy** (owner, 2026-10-30: "I'm notr convinced with godot actually because I
+> really want high fidelity rendering... soooo maybe bevy if it supports android?", then in the survey: "can
+> godot handle a lot of the graphical and simulation aspects?"). Bevy builds for Android (GameActivity, API
+> 31 and up) and ships a path tracer for RTX cards; mainline Godot 4.7 has rich raster lighting (SDFGI,
+> VoxelGI, lightmaps, volumetric fog, HDR output, area lights) but only groundwork for ray tracing, and has
+> the more mature UI (nine-slice, themes) and Android export. Survey `T4a` decides; Godot is the
+> recommendation, for the baked, nine-sliced, faction-skinned console and the phones. Until it is
+> answered, write no engine code and nothing new that only one engine can use. The mockups are three.js
+> and carry over either way. If `T4a` lands on Bevy, this section, the Godot skills (`godot-architecture`,
+> `clean-code`, `testing-practices`, `playtest`) and `build.config` are rewritten from Crab Breeze's Bevy
+> versions in one change.
 
 - **Godot 4.7.1-stable, standard (GDScript) build**, pinned in `build.config`, the one place a
   toolchain version is written. `scripts/install-godot.sh` installs that editor into `.tools/godot/`.
@@ -70,8 +114,9 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
 - **Assets are glTF (`.glb`)** built by committed Blender generators (section 10). They are
   imported by Godot, and the import is a build product.
 - **Platforms**: Windows desktop is the owner's playtest machine, Linux runs the headless tests,
-  and phones are a target from the first screen. Which phone build (web export or native Android
-  and iOS) and which renderer are survey questions `T1` and `T2`.
+  and phones are a target from the first screen. The builds are Windows desktop and native Android
+  (survey T1). The renderer is Forward+ on desktop and Compatibility on Android, set per platform
+  in `project.godot` (`rendering/renderer/rendering_method.mobile`) (survey T2).
 
 ## 3. Spec-driven work: OpenSpec
 
@@ -107,6 +152,32 @@ Adapted from Crab Breeze and Star Crew:
    `threejs-mockups` skill), published as an artifact and linked to the owner. A 3D subject is shown
    orbitable and at true scale.
 4. Stop there. Game code waits until the owner has seen the mockup and asks for it.
+
+**Every mockup passes two approvals** (owner, 2026-10-30: "all these mockups need to be approved for
+build, and then need to be approved for actual game implementation after"):
+
+| Stage | Means | What may follow |
+|---|---|---|
+| **Drafted** | The write-up and the page exist and are published | Revisions from the owner's notes |
+| **Approved for build** | The owner approves the mockup as the design to build | The mockup is finished out (every screen, state and shot) and the OpenSpec change is completed with its tasks |
+| **Approved for implementation** | The owner approves putting it in the game | Game code (`/opsx:apply`), in a separate request |
+
+- **`mockup-work.md` is the rolling list of mockups needed** (owner, 2026-10-30), in the owner's words,
+  with each mockup's stage, change, page and link. A new mockup goes on the list before work starts.
+- **The mockup tracker** (`mockup-tracker` skill) is the master artifact: it lists every published artifact
+  (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"), in three sections: game
+  mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A new
+  artifact goes on it when it is first published. Its link is in `mockup-work.md` and
+  `docs/design/README.md`. An approval counts only when it is in the tracker or in the owner's own
+  words in the conversation; record it in `mockup-work.md` either way.
+- **Every mockup is checked into the repository** (owner, 2026-10-30: "All mockups are to be checked
+  into repo especially when they are html claude artifacts"): the page in `docs/mockups/`, its shots in
+  `docs/screenshots/mockups/`, and a record in `docs/artifacts/<name>/` with its link, committed in the
+  same step as every publish.
+- **If the owner changes accounts, republish every mockup, the tracker and the survey from the new
+  account** (owner, 2026-10-30), then update every link: the tracker's list, `mockup-work.md`,
+  `docs/design/README.md` and each `docs/artifacts/<name>/README.md`. An artifact made from another
+  account cannot be read or updated from here.
 
 - **Any new screen or panel needs the owner's approval of its mockup first** (the-federation 6).
   Bug fixes and small changes to approved UI do not.
@@ -210,10 +281,66 @@ else's artwork):
   6.4): fixed rectangles on a reference resolution, clipped, with text that is trimmed with an
   ellipsis and never resizes the panel. A layout test checks this.
 - **Mobile: every panel can be expanded to full screen.** An expanded panel takes the screen, and
-  the 3D view moves into a strip at the side, still live, still showing the battle. Tapping it
-  brings the console back. Survey `U1` asks which side and how big. Touch targets are at least
-  44 x 44 CSS px (Tactical Airsuite 5), and nothing is reachable by hover alone. Whether phones
-  play in landscape only is survey `U2`.
+  the 3D view moves into a strip down the right side, about a third of the width, still live, still
+  showing the battle (survey U1). Tapping it brings the console back. **Phones play landscape and
+  portrait** (U2): in portrait the console stacks above the view, and an expanded panel leaves the
+  live view in a strip along the bottom. Touch targets are at least 44 x 44 CSS px (Tactical Airsuite
+  5), and nothing is reachable by hover alone.
+- **The console panels are images** (U3), rendered by a committed generator, with readouts drawn live
+  inside them. How the images are made is part of each faction's design language (below): the owner first
+  asked for the whole console "modeled and lit in blender then baked into a texture" (2026-10-30), then
+  set one skin per method (the faction skins, below). Two kinds of piece, in every skin (owner: "it should
+  be deisnged for 9slicing for some elements, and others are like hero elements"):
+  - **9-slice pieces**: panel frames, bars, buttons and tabs that change size. Each is made once with
+    fixed corners, edges that stretch or tile, and a centre that stretches, and its slice margins in
+    pixels are recorded beside the image. Text and readouts are drawn live on top.
+  - **Hero pieces**: one-off elements made whole at their final size: the helm pad, the ship systems
+    display's bezel, the dials, the alert lamp, the faction crest.
+- **Each faction has its own console skin**, on the same layout and the same 9-slice and hero slots
+  (owner, 2026-10-30, with screenshots of the reference games' skins: "I really like espeically the
+  mirak ui design, its so playful and pirate like", "I also enjoy the sleek, utilitarian, LCARS blue
+  version of the federation, very sci-fi very minimal"). **A skin is a design language, not a recolour**
+  (owner, 2026-10-30: "this ui language thing, it just different colors, not very interesting"). Three
+  rules, the owner's, for every skin:
+  1. **No skin uses the same button shape** as another.
+  2. **Every skin's palette comes from its faction's ideology.**
+  3. **Elements and icons come from how the faction thinks**: each skin has its own shapes, lighting,
+     shading and icon shapes, drawn from the faction's world view, body shape, technology and ships.
+
+  The three, in our own designs (section 1: take the shape, not the art). `openspec/changes/console-skins/design.md`
+  holds each one in full:
+  - **Concord** (the player's faction): **a design language built on LCARS's principles** (owner: "do
+    research on LCARS design language", with its Wikipedia page, Bracer Jack's LCARS Manifesto and Coherent
+    Interface guideline, and thelcars.com), its palette **sampled from Starfleet Command and Starfleet
+    Academy** screenshots ("extract colorpallete from starfleet command and starfleet academy, build ONE
+    design language based on that"). Flat back-lit vector shapes on black, sweeping frames that change
+    thickness at every turn, round-capped pill buttons, at most five colours each with one meaning. LCARS
+    itself is a studio's copyrighted design: we take its principles, never its artwork, typeface or
+    numbers decor.
+  - **Kethran Hegemony**: **modelled hard-surface pieces rendered in Blender** (owner: "build the other
+    design language using 3d models in blender like starcraft"): armoured gunmetal plates, bolts,
+    conduits, plain trapezoid wedge keycaps ("buttons should be more plain"), harsh top light
+    (`tools/blender/build_ui_kethran.py`).
+  - **Vos Syndicate** (the pirates): **a hand-drawn aesthetic** (owner: "design a hand drawn aesthetic of
+    the mirak ui"): ink outlines that wobble, washes and hatching, lopsided claw-tag buttons, spiral and
+    claw icons, drawn by a committed script, never by hand.
+
+  **Vector drawing is for flat styles only; everything with material and depth is modelled and rendered in
+  Blender** (owner, 2026-10-30: "svgs should be reserved for flat stuff like the cocnord. Voorr, conclave, Krai,
+  Ombrai and Kelvane could all use rendering in blender"). Concord stays flat vector, the Vos stay hand-drawn;
+  the Vhorr Brood, Krai Warhost, Ombrai and Kelvane Institute are modelled and rendered like the Kethran, each by
+  its own generator on the shared harness `tools/blender/ui_render.py`. **The Aelith Conclave is a hybrid**
+  (owner: "the conclave is one exception. They have a hybrid of both vector graphics for holographic buttons and
+  icons, but 3d rendered shell around the UI panels and elements"): its armour shells are rendered, its hologram
+  keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
+  carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
+  dashboards, dials, switches".
+- **One UI kit, swapped per faction** (owner, 2026-10-30: "whatever we do, we gotta design it for like
+  UI kit that we can sweap out between factions"). The kit is a fixed list of named pieces (each 9-slice
+  frame, bar, button, tab and hero piece, with its slot size and margins), and a skin is one set of
+  images and colours for that list. Every screen (the menus, the campaign map's panels and the battle
+  console) draws only kit pieces by name, so swapping the skin swaps the look and changes no layout or
+  code. A piece a skin lacks is a build error, not a fallback.
 - **The OpenAI `game-ui-frontend` skill's "protect the playfield" defaults** (one HUD cluster,
   20-25% of the screen at most) **do not apply** to the console: the owner chose a dense,
   panel-heavy layout. Its other rules do apply: readable over motion, themed (not a SaaS
@@ -259,7 +386,7 @@ The `playtest` and `obs-record` skills are the method (Crab Breeze 9, Mining Mik
   clicks and keys through `InputMap`), following beats in `data/playtests/<name>.json`, and prints
   `GAME_READY`, `PLAYTEST_START`, `PLAYTEST_BEAT`, `PLAYTEST_RESULT` and `PLAYTEST_END`.
 - **A playtest covers both screen shapes.** It plays at the desktop reference resolution and at a
-  phone's (landscape, and portrait if survey `U2` allows it), including a panel expanded to full
+  phone's (landscape and portrait, survey U2), including a panel expanded to full
   screen with the view at the side.
 - **Record with OBS** between `PLAYTEST_START` and `PLAYTEST_END`, in real time, and **look at
   the contact sheet** before calling a take done.
@@ -292,15 +419,22 @@ saying what changes here. Where a note and the copied text below it disagree, th
   window rows, spotlit registry and deflector glow are baked into the ship's emission and light
   maps with occlusion. A few live lights (weapon flashes, damage fires) play over the bake.
   `light-baking` says how.
+- **Ships are lit like aircraft at night** (owner, 2026-10-30, with an airliner lighting guide: "logo
+  lights will be cool, but we'll need additional hull lighting too, as that highlights details on the
+  ship in dark lighting conditions"). Logo floodlights on insignia and registry, inspection floods on
+  nacelles and wings, white strobes at the extremities, red beacons top and bottom, position lights
+  (port red, starboard green, white aft), docking and manoeuvring lamps, and **hull floodlighting that
+  grazes the plating** so its detail reads in shadow. The full table is mockup 3 in `mockup-work.md`.
 - **Materials are Material Maker graphs** (Star Crew): a graph is the one implementation of how a
   material looks, one data file lists every material, and a contact sheet is looked at before it
   is done. PBR maps: base colour, normal, ORM, emission.
 - **Panels are modelled and rendered** (owner, 2026-10-30: "panel textures"). Hull plating panels
   and the console's own panel faces (bevelled frames, buttons, placards) are modelled in Blender
   and rendered face-on into maps (`panel-textures`).
-- **Mobile budgets.** Every asset has a triangle and texture budget per LOD in its manifest, and
-  the build refuses an asset over budget. The numbers are set when the renderer and phone floor
-  are decided (survey `T2`, `T3`).
+- **Mid detail, mobile budgets** (survey A1, T3). Ships have clear silhouettes, panel-line textures
+  and baked hull lights. Every asset has a triangle and texture budget per LOD in its manifest, and
+  the build refuses an asset over budget; the numbers are set by the look-dev mockup (mockup 3) so a
+  mid-range 2022 phone holds 60 fps at the phone layout.
 - **Original designs.** Ships, factions, insignia and markings are our own. Nothing is traced,
   sampled or modelled from another game's assets.
 - **No z-fighting, ever** (Undercity, Star Crew).
@@ -312,7 +446,8 @@ saying what changes here. Where a note and the copied text below it disagree, th
 - **Music is written motifs first, Tom Lander's way** (`music-authoring`): motifs as notes in
   `docs/design/music.md` and `music/motifs.strudel`, cues as Strudel scores, exported by
   `tools/music/` to multitrack MIDI and LMMS projects, and rendered headless in LMMS into the final
-  comp. The direction is survey `S1`.
+  comp. The direction is orchestral space opera, brass, strings and timpani, over a synth bed
+  (survey S1).
 - **Sound effects are recorded CC0 sounds where possible** (Crab Breeze), every original named
   in `SOURCES.md`. They are synthesised only where nothing recorded is better.
 - **Sounds from the battle are placed in 3D** at their ship or mount. Interface clicks, music and
@@ -342,6 +477,7 @@ Before claiming anything is done, run what applies:
 |---|---|
 | `openspec-*` and `/opsx:*` | The OpenSpec workflow (section 3). Tool-owned: `openspec update` rewrites them. |
 | `html-survey` | The owner's question system (section 8). |
+| `mockup-tracker` | The master page listing every artifact (game mockups with their approval stages, guides, misc); republishing after an account change (section 4). |
 | `clean-code` | One implementation, SOLID in GDScript, conventions, review checklist (section 6). |
 | `godot-architecture` | Where code goes: simulation, scenes, autoloads, input, the console, determinism (sections 2, 6, 7). |
 | `testing-practices` | Headless GDScript tests, the layout test, golden seeds, the checks before a push (sections 6, 12). |
@@ -356,6 +492,7 @@ Before claiming anything is done, run what applies:
 | `music-authoring` | Motifs in notes, Strudel scores, multitrack MIDI, LMMS headless (section 11). |
 | `playtest` | Running, watching, recording, uploading and reporting a playtest (section 9). |
 | `obs-record` | Recording a window with OBS and copying it to Google Drive (section 9). |
+| `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

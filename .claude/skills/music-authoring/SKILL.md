@@ -13,8 +13,8 @@ The owner, 2026-10-30, asking for "audio/music". Copied from Crab Breeze
 only), and its calibrated `music/instruments.json`; provenance in `.claude/skills/PROVENANCE.md`. The
 text below is Crab Breeze's: its paths match this repository, its musical direction does not.
 
-- **Direction is not decided.** Crab Breeze's moody cyberpunk and 90s drums are that game's; Fleet
-  Command's sound is survey `S1`. Write no motif until it is answered or the recommendation stands.
+- **Direction** (survey `S1`, owner 2026-10-30): orchestral space opera, brass, strings and timpani,
+  over a synth bed. Crab Breeze's moody cyberpunk and 90s drums are that game's, not this one's.
 - **Not here yet**: `docs/design/music.md`, `music/motifs.strudel` and the music page. The first
   music change writes them.
 - **Proven here on 2026-10-30**: a two-bar test score went through `tools/music/render.sh` (Strudel

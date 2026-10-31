@@ -13,8 +13,7 @@ Blue Dot, with `scripts/obs_record.py`; provenance in `.claude/skills/PROVENANCE
 below this note are Crab Breeze's and Mining Mike's; these are Fleet Command's (the `playtest` skill
 drives them):
 
-- The game is `fleet-command.exe`, a Godot export (Vulkan or Direct3D 12 on Forward+, OpenGL on
-  Compatibility, by survey `T2`). Target it with `--window-exe fleet-command.exe` and prefer
+- The game is `fleet-command.exe`, a Godot export (Forward+ on Windows, survey `T2`). Target it with `--window-exe fleet-command.exe` and prefer
   `--capture game`.
 - Record with `--start-on "^PLAYTEST_START" --stop-on "^PLAYTEST_END"`; the game prints `GAME_READY`
   before either, so a take never opens on a loading screen.

@@ -13,9 +13,13 @@ The owner, 2026-10-30: "light baking (hull lights)". Copied from Crab Breeze
 cockpit; provenance in `.claude/skills/PROVENANCE.md`. Below this note are Crab Breeze's note and
 Star Crew's text. Where they disagree with this note, this note wins.
 
-- **Fixtures a crew could point at**: navigation lights (red to port, green to starboard), white
-  strobes and anti-collision beacons, window rows, floodlights that wash the registry and the hull,
-  the glow of engines, deflectors and shield emitters. Each is a named `LIGHT_<kind>_<n>` empty in
+- **Fixtures a crew could point at**, after the owner's airliner lighting guide (2026-10-30; the
+  table is mockup 3 in `mockup-work.md`): position lights (port red, starboard green, white aft),
+  white strobes at the extremities, red beacons top and bottom, logo floodlights on the insignia and
+  registry, inspection floods on nacelles and wings, docking and manoeuvring lamps, window rows, the
+  glow of engines, deflectors and shield emitters, and **hull floodlighting** that grazes the plating
+  so its panel lines, vents and greebles read when the ship is in shadow ("we'll need additional hull
+  lighting too, as that highlights details on the ship in dark lighting conditions"). Each is a named `LIGHT_<kind>_<n>` empty in
   the ship's generator (`blender-hard-surface`), and its colour and strength are data.
 - **Baked into textures, because ships move**: Godot's `LightmapGI` is for static scenery, so a
   ship's self-lighting (floodlight pools on the plating, window spill, glow on nearby hull, and

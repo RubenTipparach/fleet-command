@@ -19,10 +19,20 @@ note, and the note wins where they differ.
 | `music-authoring` | Crab Breeze, after tom-lander `dea3d50` | `69ce196` | 2026-10-30 | Note (direction open, survey `S1`). Tools copied: `tools/music/` (titles renamed), `music/instruments.json`. |
 | `game-ui-frontend` (with `references/`) | openai/plugins `plugins/game-studio/skills/game-ui-frontend` and three files of `plugins/game-studio/references/`, MIT | `0722921` | 2026-10-30 | Note: CLAUDE.md section 7's console overrides the playfield budget; reference paths moved beside it. The Codex `agents/openai.yaml` left out. |
 | `ui-ux-pro-max` | nextlevelbuilder/ui-ux-pro-max-skill `.claude/skills/ui-ux-pro-max` v2.15.0, MIT (`LICENSE` beside it) | `28b3b8d` | 2026-10-30 | Note; `scripts/tests/` left out. |
+| `mockup-tracker` | New, after `html-survey` (the owner, 2026-10-30: "create another html survey skill to track all mockup urls") | | 2026-10-30 | Page `docs/mockups/tracker.html`, written new on the survey's look. |
 | `clean-code` | New, after Crab Breeze's `clean-code` and the-federation's CLAUDE.md sections 4 and 5 | Crab Breeze `69ce196`, the-federation `02791b6` | 2026-10-30 | Rewritten for GDScript and Godot. |
 | `godot-architecture` | New, after the-federation's `src/sim/` split and CLAUDE.md sections 5 and 6, and Crab Breeze's `bevy-architecture` | the-federation `02791b6`, Crab Breeze `69ce196` | 2026-10-30 | |
 | `testing-practices` | New, after the-federation's `tests/` and `scripts/run-tests.sh`, and Crab Breeze's `testing-practices` | the-federation `02791b6`, Crab Breeze `69ce196` | 2026-10-30 | |
 | `playtest` | New, after Crab Breeze's `playtest` (itself after Star Crew's `--playtest`, Mining Mike's five-minute checks and Tom Lander's `bot-run`) | Crab Breeze `69ce196` | 2026-10-30 | Rewritten for Godot input events and two screen shapes. |
+| `blender-ui-panels` | New, from this session's lighting study after a 1999 music-player skin (the study itself is not committed) | | 2026-10-30 | Its companion guide: `docs/design/ui-bible.html` (the Analog Panel Bible), with the study's step renders in `docs/design/ui-bible/`. |
+
+Data and code borrowed for the mockups (not skills, recorded here so they are found):
+- The puff nebulae in `docs/mockups/game-flow.html` (camera-facing billboards, noise-eroded edges, lit as spheres,
+  sorted back to front): Crab-breeze `69ce196`, `docs/mockups/island.html` (its cloud-weather puffs), adapted to glow from
+  within and take a colour per nebula.
+- `data/space/` (nebula skies `quiet`, `verdigris`, `ember` and `starfield.json`): Star-Crew-Bridge-Simulator `9a35f08`,
+  unchanged (`data/space/SOURCE.md`). The sky and streak shaders in `docs/mockups/game-flow.html` are ported from its
+  `crates/sc-render/shaders/sky.glsl` and `docs/mockups/nebula-skies.html`.
 
 Not copied, and why:
 - Crab Breeze's `bevy-architecture`, `deterministic-simulation` and `perf-measure`: Bevy and Rust

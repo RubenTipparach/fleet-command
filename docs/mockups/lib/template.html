@@ -31,12 +31,6 @@
     border: 1px solid var(--edge); border-radius: 4px; font: inherit; text-transform: uppercase; padding: 0 12px; }
   .views button:hover { border-color: var(--accent); }
 </style>
-<script type="importmap">
-{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-} }
-</script>
 </head>
 <body>
 <div class="stage" id="stage"></div>
@@ -46,14 +40,17 @@
 </div>
 <div class="views" id="views"></div>
 <div class="meter" id="meter"></div>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+
+const { OrbitControls } = THREE; // UMD build
 
 const stage = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 stage.append(renderer.domElement);
 
@@ -63,8 +60,9 @@ const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 20000);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-scene.add(new THREE.HemisphereLight(0x8fb0ff, 0x101018, 0.6));
-const key = new THREE.DirectionalLight(0xffffff, 2.2);
+// three.js 0.147 uses the legacy light units: about pi times brighter than r155 and later for the same number.
+scene.add(new THREE.HemisphereLight(0x8fb0ff, 0x101018, 0.25));
+const key = new THREE.DirectionalLight(0xffffff, 0.8);
 key.position.set(300, 400, 200);
 scene.add(key);
 
@@ -117,6 +115,7 @@ renderer.setAnimationLoop(() => {
 window.MOCKUP_SCENE = scene;
 window.MOCKUP_SHOTS = VIEWS;
 window.MOCKUP_READY = true;
+})();
 </script>
 </body>
 </html>

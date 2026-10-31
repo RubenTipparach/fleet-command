@@ -1,7 +1,7 @@
 // Screenshot a mockup page headless, one PNG per named shot, for looking at before it is shown
 // (threejs-mockups skill). The page sets window.MOCKUP_SHOTS = { name: () => setView } and
 // window.MOCKUP_READY = true (docs/mockups/lib/template.html). Fails on a console error or a page that
-// never becomes ready. Shoots at desktop size and at a phone's landscape size (CLAUDE.md section 7).
+// never becomes ready. Shoots at desktop size and at a phone's landscape and portrait sizes (CLAUDE.md section 7).
 // After Crab Breeze tools/mockups/shoot.mjs (69ce196).
 //
 //   NODE_PATH=$(npm root -g) node tools/mockups/shoot.mjs docs/mockups/<page>.html docs/screenshots/mockups [only,names]
@@ -19,6 +19,7 @@ if (!target || !outDir) {
 const SIZES = [
   ['desktop', { width: 1920, height: 1080 }],
   ['phone', { width: 844, height: 390 }],
+  ['portrait', { width: 390, height: 844 }],
 ];
 const pageName = path.basename(target).replace(/\.html$/, '') || 'page';
 fs.mkdirSync(outDir, { recursive: true });
@@ -30,7 +31,7 @@ for (const [sizeName, viewport] of SIZES) {
   const page = await browser.newPage({ viewport });
   page.on('console', (m) => { if (m.type() === 'error') { errors++; console.log('console:', m.text()); } });
   page.on('pageerror', (e) => { errors++; console.log('pageerror:', e.message); });
-  await page.goto(/^https?:/.test(target) ? target : 'file://' + path.resolve(target));
+  await page.goto(/^https?:/.test(target) ? target : 'file://' + path.resolve(target), { timeout: 240000 });
   await page.waitForFunction(() => window.MOCKUP_READY, null, { timeout: 240000 });
   const names = await page.evaluate(() => Object.keys(window.MOCKUP_SHOTS || {}));
   for (const name of names.length ? names : ['default']) {
