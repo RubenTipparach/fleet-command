@@ -20,3 +20,4 @@
   renders that pass the fit check, a fit-rules chapter (9) and a lighting-options chapter (10), close-up renders of a
   well and the notch, the light chapter and settings table brought up to the final study, and step 19.
 - Account move: Republished 2026-10-31 on the owner's current account (the earlier links were made from another account and cannot be read from here); every link updated.
+- 2026-10-31, republished from the desktop session (owner: "Make sure all published pages link back to the master", commit 7200539): the page links back to the mockup tracker; version id `1793462717-c534`.
