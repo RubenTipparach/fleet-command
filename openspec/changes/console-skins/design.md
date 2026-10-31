@@ -409,6 +409,10 @@ for the alert lamps; little arched windows for the bar's cells.
 between 35% and 100% power, because the Remnant never replaced its fixtures and not all of them still burn. The name
 plate's letters are pale and outlined dark, so they read over the lit gold and the stains alike.
 
+With ten rendered kits inlined as PNG the page reached 19 MB, past the artifact host's 16 MiB limit. The page now carries
+each kit image as high-quality WebP (quality 92, alpha kept; `tools/mockups/inline_data.py`), 2.4 MB in all, measured
+indistinguishable on the page (mean 0.33 of 255); the committed renders stay PNG.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
