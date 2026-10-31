@@ -108,13 +108,15 @@ def pieces():
             margins=(12, 30, 12, 30), stretch="x", dz=-5.0, pad=1.5)
     # The strips: a long blade channel drawn to a point at each end, where a great blade of red enamel lies on the metal
     # and two honed pyramids hold it down.
-    chan = soft(Polygon([(64, 11), (448, 11), (474, 28), (448, 45), (64, 45), (38, 28)]), 3.6)
+    # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the channel grows 16 px, its points and the
+    # blades and pyramids at its ends keep their size, centred on row 36.
+    chan = soft(Polygon([(64, 11), (448, 11), (474, 36), (448, 61), (64, 61), (38, 36)]), 3.6)
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 56), soft(box(0.5, 0.5, 511.5, 55.5), 3.6), [("ember", chan)],
-            studs=[(14, 14, 2.6), (14, 42, 2.6), (498, 14, 2.6), (498, 42, 2.6)],
-            inlays=[Polygon([(22, 26), (48, 8), (60, 8)]), Polygon([(22, 30), (48, 48), (60, 48)]),
-                    Polygon([(490, 26), (464, 8), (452, 8)]), Polygon([(490, 30), (464, 48), (452, 48)])],
-            live=[("readouts", box(90, 14, 422, 42))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
+        add(name, "nine", (512, 72), soft(box(0.5, 0.5, 511.5, 71.5), 3.6), [("ember", chan)],
+            studs=[(14, 14, 2.6), (14, 58, 2.6), (498, 14, 2.6), (498, 58, 2.6)],
+            inlays=[Polygon([(22, 26), (48, 8), (60, 8)]), Polygon([(22, 46), (48, 64), (60, 64)]),
+                    Polygon([(490, 26), (464, 8), (452, 8)]), Polygon([(490, 46), (464, 64), (452, 64)])],
+            live=[("readouts", box(90, 14, 422, 58))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
     add("divider", "nine", (128, 10), soft(Polygon([(6, 0.5), (122, 0.5), (127.5, 5), (122, 9.5), (6, 9.5), (0.5, 5)]), 1),
         [("red", soft(box(14, 3.3, 114, 6.7), 1.2))], margins=(0, 16, 0, 16), stretch="x", roll=0.6, land=1.0, dz=-2.0, pad=0.5)
     # Heroes. The name plate: a blade of steel, a rank triangle glowing red at its head, a long field for the name.

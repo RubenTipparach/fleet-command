@@ -69,6 +69,11 @@
   scales border widths with the console's transform
 - [x] 1.26 Shots looked at; published
 
+## 1h. Version 18: taller strips (owner, 2026-10-31)
+
+- [x] 1.27 Strips 72 px in every skin (art re-made, shapes re-checked), padding from each measured band, labels over their
+  bars; console fit and dom fit pass; published
+
 ## 2. After approval for build
 
 - [ ] 2.1 Blender kit generator per skin (`panel-textures`), bakes, manifest with margins

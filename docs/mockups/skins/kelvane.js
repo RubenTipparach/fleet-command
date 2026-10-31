@@ -19,7 +19,10 @@ F.register('kelvane', {
     '--btn-shadow': '0 0 3px rgba(255, 226, 160, 0.55)', '--btn-font': '400 17px/1 "Share Tech Mono", monospace', '--btn-track': '0.12em', '--btn-case': 'uppercase',
     '--btn-motion': 'none', '--btn-press': 'none', '--tab-font': '400 13px/1 "Share Tech Mono", monospace', '--tab-pb': '1px', '--tab-ink': '#2a1d0a', '--tab-ink-on': KV.inkOn,
     '--title-font': '700 13px/1 "Courier Prime", monospace', '--title-ink': KV.engrave, '--lbl-font': '700 12px/1 "Courier Prime", monospace',
-    '--num-font': '400 27px/1 "Share Tech Mono", monospace', '--strip-lamp': '40px' },
+    '--num-font': '400 27px/1 "Share Tech Mono", monospace',
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the plate inside its rolled rim, rows 4-69,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '4px', '--stt-pb': '3px', '--stb-pt': '4px', '--stb-pb': '3px', '--strip-lamp': '44px' },
   accent: KV.phos, warn: KV.needle,
   // The title is engraved inside the panel's fine line (it ends 10 px in), starting 13 px clear of the corner screw (18 +/- 3 px).
   title: (t, m) => { t.style.cssText = `left:${34 - m[3]}px;top:${12 - m[0]}px;letter-spacing:0.16em;`; },

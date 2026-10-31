@@ -330,6 +330,28 @@ Learnt on the way (now in the `blender-ui-panels` skill): a plate or well corner
 or offsetting by the roll and bevelling by the roll turns it inside out into a spike; outlines are cleaned of
 near-duplicate points before they are offset.
 
+## Taller strips (version 18)
+
+The owner, 2026-10-31, with a shot of the Kethran top strip as it was before version 16: "text and progress bar
+overlapping with parent bevels, we need to make parent taller". Version 16 had laid each label beside its bar to fit the
+26-41 px open bands of 56 px strips; the owner's fix is the better one. The strips are now **72 px** (the 3D view's inset
+grows from 60 to 76 px top and bottom). Every skin's strip keeps its rails, lips and end ornaments at their size, centred
+on row 36, and its open band grows 16 px; the shaped skins' strips pass rules K, L, R, P and B again (the Krai's end blades
+moved back clear of its longer pointed channel). Each skin's strip padding is its measured band, the alert lamp is sized to
+it, and every label stands over its bar again, 3 px clear of the art (console fit: all ten pass).
+
+| Skin | Open band (top strip) | Was |
+|---|---|---|
+| Concord | 57 px beside the thin bar | 44 |
+| Kethran | 43 px, rows 17-59 | 27 |
+| Vos | 55 px | 41 |
+| Vhorr | 52 px | 36 |
+| Aelith | 47 px | 33 |
+| Tarsine | 46 px above the beam | 30 |
+| Krai | 45 px | 30 |
+| Ombrai | 49 px | 33 |
+| Kelvane, Ssarith | 66 px | 50, 55 |
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
@@ -343,7 +365,7 @@ piece and its own slice margins; a missing piece is a build error. Icons join th
 | `bar.fill` | 9-slice | any width x 10 | the bars' fills |
 | `button` | 9-slice, 3 states | min 44 x 44 | every key: idle, hover, pressed |
 | `tab` | 9-slice, 2 states | min 40 high | tab rows, the arming states |
-| `strip.top`, `strip.bottom` | 9-slice | full width x 56 | the top and bottom strips |
+| `strip.top`, `strip.bottom` | 9-slice | full width x 72 | the top and bottom strips |
 | `divider` | 9-slice | any x 10 | between stacked panels |
 | `nameplate` | hero | 460 x 56 | the captain's plate |
 | `helm.pad` | hero | 300 x 300 | the helm's 3 x 3 pad |

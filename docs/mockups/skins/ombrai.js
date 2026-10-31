@@ -67,9 +67,9 @@ F.register('ombrai', {
     '--btn-font': '700 13px/1 "Syncopate", sans-serif', '--btn-track': '0.14em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.4s', '--btn-press': 'none',
     '--tab-font': '700 10px/1 "Syncopate", sans-serif', '--tab-ink': OM.dim, '--tab-ink-on': OM.pale, '--title-font': '700 14px/1 "Syncopate", sans-serif', '--title-ink': OM.lilac,
     '--lbl-font': '700 15px/1 "Quicksand", sans-serif', '--num-font': '500 26px/1 "Quicksand", sans-serif',
-    // Strip padding is the open band of each strip's channel (rows 12-44 of its 56, inside the rolled lip), measured by
-    // tools/mockups/console_fit.mjs; a label sits beside its bar of eyes, and the lamp is sized to the band.
-    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '26px',
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the channel, rows 11-60,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '11px', '--stt-pb': '11px', '--stb-pt': '11px', '--stb-pb': '11px', '--strip-lamp': '40px',
     // the well's bitten end glows 5-10 px past the 76 px slice margin: the strip's readouts start clear of it
     '--st-l': '88px', '--st-r': '88px' },
   accent: OM.pink, warn: OM.crimson,

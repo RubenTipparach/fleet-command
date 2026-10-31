@@ -104,13 +104,16 @@ function beam(flip) {
   return (x, w, h) => {
     const R = RNG('beam.' + flip);
     if (flip) { x.translate(0, h); x.scale(1, -1); }
-    iron(x, () => { x.beginPath(); x.rect(0, 30, w, 24); }, [0, 30, w, 54], R);
-    x.fillStyle = hexA(TA.gold, 0.5); x.fillRect(0, 36, w, 3); x.fillStyle = 'rgba(0,0,0,0.25)'; for (let i = 0; i < 30; i++) x.fillRect(R() * w, 36, 2 + R() * 8, 3);
+    // the beam runs along the strip's outer edge (its bottom 26 px before the flip); the open band above it holds the readouts
+    const by = h - 26;
+    iron(x, () => { x.beginPath(); x.rect(0, by, w, 24); }, [0, by, w, by + 24], R);
+    x.fillStyle = hexA(TA.gold, 0.5); x.fillRect(0, by + 6, w, 3); x.fillStyle = 'rgba(0,0,0,0.25)'; for (let i = 0; i < 30; i++) x.fillRect(R() * w, by + 6, 2 + R() * 8, 3);
     for (const s of [1, -1]) {
       x.save(); if (s < 0) { x.translate(w, 0); x.scale(-1, 1); }
-      iron(x, () => { x.beginPath(); x.moveTo(1, 2); x.lineTo(70, 2); x.lineTo(92, 26); x.lineTo(92, 55); x.lineTo(1, 55); x.closePath(); }, [0, 0, 94, 56], R, { top: '#57493c' });
+      // the bracket stands the strip's full height: its slanted shoulder ends at the same place, its foot grows
+      iron(x, () => { x.beginPath(); x.moveTo(1, 2); x.lineTo(70, 2); x.lineTo(92, 26); x.lineTo(92, h - 1); x.lineTo(1, h - 1); x.closePath(); }, [0, 0, 94, h], R, { top: '#57493c' });
       x.strokeStyle = hexA(TA.gold, 0.5); x.lineWidth = 1.2; x.beginPath(); x.moveTo(8, 8); x.lineTo(64, 8); x.lineTo(84, 30); x.stroke();
-      rivet(x, 16, 20, 4, R); rivet(x, 40, 20, 4, R); rivet(x, 16, 42, 4, R); rivet(x, 70, 42, 4, R);
+      rivet(x, 16, 20, 4, R); rivet(x, 40, 20, 4, R); rivet(x, 16, h - 14, 4, R); rivet(x, 70, h - 14, 4, R);
       x.restore();
     }
   };
@@ -136,8 +139,8 @@ const nine = {
   'button.pressed': { size: [140, 52], m: [24, 30, 12, 30], draw: tablet(1, true) },
   'tab.idle': { size: [120, 40], m: [12, 14, 12, 14], draw: lintel(false) },
   'tab.active': { size: [120, 40], m: [12, 14, 12, 14], draw: lintel(true) },
-  'strip.top': { size: [512, 56], m: [10, 100, 10, 100], draw: beam(false) },
-  'strip.bottom': { size: [512, 56], m: [10, 100, 10, 100], draw: beam(true) },
+  'strip.top': { size: [512, 72], m: [10, 100, 10, 100], draw: beam(false) },
+  'strip.bottom': { size: [512, 72], m: [10, 100, 10, 100], draw: beam(true) },
   'divider': { size: [128, 10], m: [0, 14, 0, 14], draw: (x, w, h) => { const R = RNG('div'); iron(x, () => { x.beginPath(); x.rect(6, 3, w - 12, 4); }, [6, 3, w - 6, 7], R); rivet(x, 6, h / 2, 3.5, R); rivet(x, w - 6, h / 2, 3.5, R); } },
 };
 
@@ -228,9 +231,9 @@ F.register('tarsine', {
     '--btn-pt': '0px', '--btn-pb': '2px', '--btn-font': '700 17px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'translateY(1px)',
     '--tab-font': '700 13px/1 "Cinzel", serif', '--tab-ink': TA.dim, '--tab-ink-on': TA.light, '--title-font': '700 17px/1 "Cinzel", serif', '--title-ink': TA.goldHi,
     '--lbl-font': '700 16px/1 "Alegreya Sans SC", sans-serif', '--num-font': '700 24px/1 "Alegreya Sans SC", sans-serif',
-    // Strip padding is each strip's open band beside its beam (top rows 3-29, bottom 26-52), measured by
-    // tools/mockups/console_fit.mjs.
-    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '3px', '--stt-pb': '26px', '--stb-pt': '26px', '--stb-pb': '3px', '--strip-lamp': '21px' },
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is above the beam: rows 0-45 of the top strip, 26-72 of the bottom,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '3px', '--stt-pb': '26px', '--stb-pt': '26px', '--stb-pb': '3px', '--strip-lamp': '36px' },
   accent: TA.light, warn: TA.ember,
   title: (t, m) => { t.style.cssText = `left:${40 - m[3]}px;top:${-m[0] + 15}px;letter-spacing:0.12em;text-shadow:0 1px 0 #000, 0 0 3px #000;`; },
   plateText: { left: 44, top: 12, width: 372, height: 32, font: '700 19px/1 "Cinzel", serif', color: '#2a1c0c', sub: 'ANKHAR · ELDEST VOR' },

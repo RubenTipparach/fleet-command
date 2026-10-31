@@ -36,7 +36,7 @@ The page refuses a skin missing any of these (see `REQUIRED` in the page):
 - `nine[piece] = { size: [w, h], m: [top, right, bottom, left], draw(x, w, h), inset?: [x, y] }` for every name in
   `FCK.NINE`: `frame.panel`, `frame.inset`, `bar.track` (height 16; `inset` is where the fill sits inside it),
   `bar.fill` (height 10), `bar.fill.red` (the warning fill), `button.idle`, `button.hover`, `button.pressed`,
-  `tab.idle`, `tab.active`, `strip.top`, `strip.bottom` (height 56), `divider` (height 10). Sizes and margins are at
+  `tab.idle`, `tab.active`, `strip.top`, `strip.bottom` (height 72, since 2026-10-31: a label stands over its bar inside the strip's open band), `divider` (height 10). Sizes and margins are at
   the 1920 x 1080 reference; `FCK.paint` draws at 2x for you. Detail lives in the margins (corners and the edges'
   ends); edges must stretch cleanly and the centre must be plain. Buttons are scaled uniformly to 48 px high and tabs
   to 40, so draw them at any height with sensible proportions.

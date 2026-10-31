@@ -115,14 +115,16 @@ def pieces():
             lamps=[(60, 10, 0.05)] if state == "active" else [])
     # Strips: a long plate; at its left end a bay holds a small needle meter on amber film (an arched window grown up
     # out of a box), at its right end a knurled knob in a dimple and two screws. The middle is plain metal that stretches.
-    bay = soft(unary_union([rbox(14, 24, 78, 46, 5), disc(46, 34, 24)]).intersection(box(0, 0, 512, 46)), 4)
-    meter = [arc_pts(46, 42, 22, math.radians(205), math.radians(335), 20)] + \
-        [[(46 + math.cos(a) * 18, 42 + math.sin(a) * 18), (46 + math.cos(a) * 22, 42 + math.sin(a) * 22)] for a in [math.radians(205 + 13 * i) for i in range(11)]]
+    # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the bay, knob and screws keep their size,
+    # moved down 8 px to centre on row 36; the plain middle the readouts sit on grows.
+    bay = soft(unary_union([rbox(14, 32, 78, 54, 5), disc(46, 42, 24)]).intersection(box(0, 0, 512, 54)), 4)
+    meter = [arc_pts(46, 50, 22, math.radians(205), math.radians(335), 20)] + \
+        [[(46 + math.cos(a) * 18, 50 + math.sin(a) * 18), (46 + math.cos(a) * 22, 50 + math.sin(a) * 22)] for a in [math.radians(205 + 13 * i) for i in range(11)]]
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 56), rbox(0.5, 0.5, 511.5, 55.5, 12), [("amber", bay)],
-            studs=[(468, 28, 12.0, "knurl"), (497, 13, 2.5, "screw"), (497, 43, 2.5, "screw")], dimples=[(468, 28, 15.0)],
-            prints=[("scale", meter, 1.0, "ink"), ("needle", [[(46, 42), (46 + math.cos(math.radians(250)) * 20, 42 + math.sin(math.radians(250)) * 20)]], 1.2, "red")],
-            margins=(10, 88, 10, 90), stretch="x", roll=2.5, dz=-6.0, lamps=[(46, 10, 0.06)], pad=2.0)
+        add(name, "nine", (512, 72), rbox(0.5, 0.5, 511.5, 71.5, 12), [("amber", bay)],
+            studs=[(468, 36, 12.0, "knurl"), (497, 15, 2.5, "screw"), (497, 57, 2.5, "screw")], dimples=[(468, 36, 15.0)],
+            prints=[("scale", meter, 1.0, "ink"), ("needle", [[(46, 50), (46 + math.cos(math.radians(250)) * 20, 50 + math.sin(math.radians(250)) * 20)]], 1.2, "red")],
+            margins=(10, 88, 10, 90), stretch="x", roll=2.5, dz=-6.0, lamps=[(46, 18, 0.06)], pad=2.0)
     add("divider", "nine", (128, 10), rbox(0.5, 1.5, 127.5, 8.5, 3.5), [], margins=(0, 12, 0, 12), stretch="x", roll=3.0)
     # Heroes. The name plate: an amber window for the live name, an engraved fork-and-wave mark at its left, a jewel and
     # a domed key in dimples at its right.

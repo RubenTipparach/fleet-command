@@ -101,9 +101,9 @@ F.register('vhorr', {
     '--btn-font': '400 16px/1 "Metamorphous", serif', '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'transform 0.2s cubic-bezier(.3,1.7,.5,1)', '--btn-press': 'scale(0.97, 0.9)',
     '--tab-font': '400 14px/1 "Metamorphous", serif', '--tab-pb': '5px', '--tab-ink': VH.dim, '--tab-ink-on': VH.bileHot, '--title-font': '400 21px/1 "Metamorphous", serif', '--title-ink': VH.bileHot,
     '--lbl-font': '600 17px/1 "Barlow Condensed", sans-serif', '--num-font': '600 27px/1 "Barlow Condensed", sans-serif',
-    // Strip padding is each strip's open band beside its hide roll (top rows 3-35, bottom 20-52), measured by
-    // tools/mockups/console_fit.mjs; a label beside its bar fits it, and the lamp is sized to it.
-    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '3px', '--stt-pb': '20px', '--stb-pt': '20px', '--stb-pb': '3px', '--strip-lamp': '28px' },
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is beside the hide roll: rows 0-51 of the top strip, 20-72 of the bottom,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '3px', '--stt-pb': '20px', '--stb-pt': '20px', '--stb-pb': '3px', '--strip-lamp': '44px' },
   accent: VH.bile, warn: VH.blood,
   title: (t, m) => { t.style.cssText = `left:${44 - m[3]}px;top:${-m[0] + 6}px;padding:4px 12px 6px;border-radius:14px;background:#1a0c0e;box-shadow:0 0 0 2px #140808;text-shadow:0 0 6px ${VH.bile};`; },
   plateText: { left: 82, top: 9, width: 300, height: 38, font: '400 21px/1 "Metamorphous", serif', color: VH.ink, sub: 'Sskarr · Matriarch Vhaal' },

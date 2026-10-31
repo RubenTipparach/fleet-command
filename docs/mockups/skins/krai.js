@@ -62,9 +62,9 @@ F.register('krai', {
     '--btn-font': '400 18px/1 "Russo One", sans-serif', '--btn-track': '0.06em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'translateX(2px)',
     '--tab-font': '400 14px/1 "Russo One", sans-serif', '--tab-ink': KR.dim, '--tab-ink-on': KR.bone, '--title-font': '400 18px/1 "Russo One", sans-serif', '--title-ink': KR.red,
     '--lbl-font': '500 19px/1 "Teko", sans-serif', '--num-font': '600 28px/1 "Teko", sans-serif',
-    // The strips' blade channel leaves a 30 px band (rows 13-43): each label sits beside its bar of chevrons, and the
-    // lamp is sized to the band (measured by tools/mockups/console_fit.mjs).
-    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '14px', '--stt-pb': '13px', '--stb-pt': '14px', '--stb-pb': '13px', '--strip-lamp': '22px' },
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the blade channel, rows 13-58,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '13px', '--stt-pb': '13px', '--stb-pt': '13px', '--stb-pb': '13px', '--strip-lamp': '38px' },
   accent: KR.orange, warn: KR.red,
   // The title heads the open field of the well (in flow, below the corner fangs), never on the steel or its enamel.
   title: (t, m) => { t.style.cssText = `position:relative;justify-self:start;align-self:flex-start;margin-left:4px;letter-spacing:0.1em;text-shadow:0 1px 0 #000;`; },

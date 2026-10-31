@@ -101,10 +101,12 @@ def pieces():
         add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 16), [("key", tab)], margins=(0, 26, 0, 26),
             stretch="x", roll=1.6, land=3.0, dz=-5.0, pad=1.4, level=lv)
     # The strips: a long channel the readouts sit in, and at each end a round bay holding a watching eye.
-    chan = rbox(64, 9, 448, 47, 19)
+    # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the channel grows 16 px, the eye bays keep
+    # their size, centred on row 36.
+    chan = rbox(64, 9, 448, 63, 19)
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 56), rbox(0.5, 0.5, 511.5, 55.5, 20), [("void", chan), ("eye", disc(31, 28, 17)), ("eye", disc(481, 28, 17))],
-            eyes=[(31, 28, 12, 8.5), (481, 28, 12, 8.5)], margins=(0, 76, 0, 76), stretch="x", roll=2.4, land=3.0, dz=-6.0, pad=1.4, level=0.7)
+        add(name, "nine", (512, 72), rbox(0.5, 0.5, 511.5, 71.5, 20), [("void", chan), ("eye", disc(31, 36, 17)), ("eye", disc(481, 36, 17))],
+            eyes=[(31, 36, 12, 8.5), (481, 36, 12, 8.5)], margins=(0, 76, 0, 76), stretch="x", roll=2.4, land=3.0, dz=-6.0, pad=1.4, level=0.7)
     add("divider", "nine", (128, 10), rbox(0.5, 0.5, 127.5, 9.5, 4.5), [("line", rbox(12, 3, 116, 7, 2))],
         margins=(0, 16, 0, 16), stretch="x", roll=0.6, land=1.0, dz=-2.0, pad=0.5, level=0.6, lamps=False)
     # Heroes. The name plate: a capsule with a round eye bay at its head and a long field for the live name.

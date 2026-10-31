@@ -130,7 +130,7 @@
       "kind": "nine",
       "size": [
         512,
-        56
+        72
       ],
       "file": "strip.top.png",
       "margins": [
@@ -145,7 +145,7 @@
       "kind": "nine",
       "size": [
         512,
-        56
+        72
       ],
       "file": "strip.bottom.png",
       "margins": [

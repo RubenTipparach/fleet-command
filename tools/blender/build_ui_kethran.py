@@ -428,7 +428,9 @@ def tab(active):
 
 def strip(bottom):
     def build(K):
-        w, h = 512, 56
+        # 72 px tall since 2026-10-31 (owner: "text and progress bar overlapping with parent bevels, we need to make
+        # parent taller"): the conduit rail and lip trim keep their size; the open band between them grows to rows 17-59.
+        w, h = 512, 72
 
         def Y(y):
             return h - y if bottom else y
@@ -441,26 +443,26 @@ def strip(bottom):
 
         # the rail body: a plate whose screen-side corners (bottom for the top strip) are cut as prows
         body = chamfer([(0, 0), (w, 0), (w, h), (0, h)], [0, 0, 20, 20])
-        K.prism(poly(body), 0, 6, "gunmetal", bevel=2.0, holes=[poly(chamfer(rect(60, 13, w - 60, 44), 4))])
-        K.prism(poly(rect(56, 11, w - 56, 46)), -3, -1, "gunmetal2")
+        K.prism(poly(body), 0, 6, "gunmetal", bevel=2.0, holes=[poly(chamfer(rect(60, 13, w - 60, 60), 4))])
+        K.prism(poly(rect(56, 11, w - 56, 62)), -3, -1, "gunmetal2")
         # the conduit rail along the outer edge, and the steel trim along the inner lip
         K.prism(poly(rect(0, 0, w, 10)), 4, 8, "iron", bevel=1.5)
         K.pipe(30, w - 30, Y(5.0), 2.6, 9.0, "steel")
-        K.prism(poly(rect(40, 48.5, w - 40, 50.5)), 5, 6.6, "iron", bevel=0.5)
+        K.prism(poly(rect(40, 64.5, w - 40, 66.5)), 5, 6.6, "iron", bevel=0.5)
         # the end caps: armoured wedges pointing in toward the field, bolted, red-ranked, hazard-notched
         # (the cap's prow stops at 84 px so its shadow ends inside the 96 px margin)
-        cap = chamfer([(2, 1), (66, 1), (84, 19), (84, 37), (68, 54), (22, 54), (2, 34)], [0, 3, 2, 2, 3, 2, 0])
+        cap = chamfer([(2, 1), (66, 1), (84, 19), (84, 53), (68, 70), (22, 70), (2, 50)], [0, 3, 2, 2, 3, 2, 0])
         haz = [(12, 14), (38, 14), (32, 24), (6, 24)]
-        rank = [(44, 12), (53, 12), (64, 28), (53, 44), (44, 44), (55, 28)]
+        rank = [(44, 20), (53, 20), (64, 36), (53, 52), (44, 52), (55, 36)]
         for fx in (False, True):
             K.prism(poly(cap, fx), 5, 11.5, "iron", bevel=2.2)
             K.prism(poly(chamfer(haz, 1), fx), 10.9, 12.1, "hazard", bevel=0.5)
             K.prism(poly(rank, fx), 10.9, 12.3, "signal", bevel=0.6)
-            for bx, by in ((14, 38), (32, 44), (73, 28)):
+            for bx, by in ((14, 54), (32, 60), (73, 36)):
                 X = w - bx if fx else bx
                 K.bolt(X, Y(by), 11.5, r=3.0)
-            K.prism(poly(rect(16, 31, 30, 33), fx), 11.1, 11.9, "bone")
-            K.prism(poly(rect(16, 35, 24, 37), fx), 11.1, 11.9, "bone")
+            K.prism(poly(rect(16, 41, 30, 43), fx), 11.1, 11.9, "bone")
+            K.prism(poly(rect(16, 45, 24, 47), fx), 11.1, 11.9, "bone")
     return build
 
 
@@ -621,8 +623,8 @@ PIECES = {
     "button.pressed": ("nine", (160, 56), (14, 26, 14, 26), "x", button("pressed")),
     "tab.idle":      ("nine", (120, 44), (16, 16, 16, 16), "x", tab(False)),
     "tab.active":    ("nine", (120, 44), (16, 16, 16, 16), "x", tab(True)),
-    "strip.top":     ("nine", (512, 56), (10, 96, 10, 96), "x", strip(False)),
-    "strip.bottom":  ("nine", (512, 56), (10, 96, 10, 96), "x", strip(True)),
+    "strip.top":     ("nine", (512, 72), (10, 96, 10, 96), "x", strip(False)),
+    "strip.bottom":  ("nine", (512, 72), (10, 96, 10, 96), "x", strip(True)),
     "divider":       ("nine", (128, 10), (0, 16, 0, 16), "x", divider),
     "nameplate":     ("hero", (460, 56), None, None, nameplate),
     "helm.pad":      ("hero", (300, 300), None, None, helm_pad),

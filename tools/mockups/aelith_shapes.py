@@ -82,9 +82,11 @@ def pieces():
         add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 16), [tab], holo=[("tab", tab.buffer(-1.5, quad_segs=8))],
             margins=(12, 30, 12, 30), stretch="x", roll=1.6, dz=-5.0, pad=1.4)
     # The strips: a long channel the readouts sit in, drawn to a point at each end where a swept gold wing holds a pearl.
-    chan = soft(lozenge(60, 452, 9, 47, 30), 6)
+    # 72 px tall since 2026-10-31 (owner: "text and progress bar overlapping with parent bevels, we need to make parent
+    # taller"): the channel grows 16 px, the wings and pearls stay their size, centred on row 36.
+    chan = soft(lozenge(60, 452, 9, 63, 30), 6)
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 56), rbox(0.5, 0.5, 511.5, 55.5, 14), [chan], studs=[(30, 28, 7), (482, 28, 7)],
+        add(name, "nine", (512, 72), rbox(0.5, 0.5, 511.5, 71.5, 14), [chan], studs=[(30, 36, 7), (482, 36, 7)],
             holo=[("edge", chan.buffer(-1.5, quad_segs=8))], margins=(10, 110, 10, 110), stretch="x", roll=2.4, dz=-6.0, pad=1.4)
     add("divider", "nine", (128, 10), rbox(0.5, 0.5, 127.5, 9.5, 4.5), [rbox(10, 3, 118, 7, 2)],
         holo=[("line", box(13, 4.2, 115, 5.8))], margins=(0, 16, 0, 16), stretch="x", roll=0.6, land=1.0, dz=-2.0, pad=1.0)

@@ -434,8 +434,8 @@ PIECES = {
     "button.pressed": ("nine", (160, 52), (0, 30, 0, 46), "x", button("pressed")),
     "tab.idle":       ("nine", (130, 40), (14, 28, 14, 28), "x", tab(False)),
     "tab.active":     ("nine", (130, 40), (14, 28, 14, 28), "x", tab(True)),
-    "strip.top":      ("nine", (512, 56), (8, 110, 8, 110), "x", strip(False)),
-    "strip.bottom":   ("nine", (512, 56), (8, 110, 8, 110), "x", strip(True)),
+    "strip.top":      ("nine", (512, 72), (8, 110, 8, 110), "x", strip(False)),   # 72 tall since 2026-10-31
+    "strip.bottom":   ("nine", (512, 72), (8, 110, 8, 110), "x", strip(True)),
     "divider":        ("nine", (128, 10), (0, 14, 0, 14), "x", divider),
     "nameplate":      ("hero", (460, 56), None, None, nameplate),
     "helm.pad":       ("hero", (300, 300), None, None, helm_pad),

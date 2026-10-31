@@ -180,12 +180,14 @@ def pieces():
             roll=1.6, land=2.0, dz=-4.0, pad=2.5)
     # Strips: a long gunmetal rail. At its left end a bay holds a small tracker tube (a sweep and its grid); at its right
     # end the hunt's tally is engraved beside a sunk bolt. The middle is plain flat metal, where the readouts sit.
-    w = soft_cut(14, 11, 76, 45, 6)
+    # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the tracker tube, bolts and tally keep their
+    # size, centred on row 36; the flat middle grows.
+    w = soft_cut(14, 19, 76, 53, 6)
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 56), soft_cut(0.5, 0.5, 511.5, 55.5, 12), [("tube", w)],
-            studs=[(492, 15, 2.4, "bolt"), (492, 41, 2.4, "bolt")],
-            prints=[("grid", grid(w, 7.0, 2.8), 0.5, "grid"), ("sweep", [[(45, 28), (64, 19)]], 1.2, "phos")],
-            engrave=tally(440, 28, 2, 12.0), margins=(10, 92, 10, 88), stretch="x", roll=2.6, dz=-6.0, pad=2.0)
+        add(name, "nine", (512, 72), soft_cut(0.5, 0.5, 511.5, 71.5, 12), [("tube", w)],
+            studs=[(492, 23, 2.4, "bolt"), (492, 49, 2.4, "bolt")],
+            prints=[("grid", grid(w, 7.0, 2.8), 0.5, "grid"), ("sweep", [[(45, 36), (64, 27)]], 1.2, "phos")],
+            engrave=tally(440, 36, 2, 12.0), margins=(10, 92, 10, 88), stretch="x", roll=2.6, dz=-6.0, pad=2.0)
     add("divider", "nine", (128, 10), soft_cut(0.5, 1.5, 127.5, 8.5, 3), [], margins=(0, 12, 0, 12), stretch="x", roll=1.2)
     # Heroes carry the hide-scale texture. The name plate: a tube for the live name; a reticle engraved at its left, the
     # tally of kills at its right, a sunk bolt, and a frond lying on the flat.

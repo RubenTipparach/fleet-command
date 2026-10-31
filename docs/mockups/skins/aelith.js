@@ -130,8 +130,9 @@ F.register('aelith', {
     '--btn-font': '400 11px/1 "Michroma", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.25s', '--btn-press': 'none',
     '--tab-font': '400 9.5px/1 "Michroma", sans-serif', '--tab-pb': '1px', '--btn-pb': '3px', '--tab-ink': '#9fc9cf', '--tab-ink-on': AE.holoHi, '--title-font': '400 15px/1 "Michroma", sans-serif', '--title-ink': AE.goldHi,
     '--lbl-font': '600 15px/1 "Exo 2", sans-serif', '--num-font': '300 28px/1 "Exo 2", sans-serif',
-    // Strip padding is the open band inside each strip's shell (rows 11-43), measured by tools/mockups/console_fit.mjs.
-    '--bar-flow': 'column', '--bar-cols': 'auto 1fr', '--bar-gap': '10px', '--stt-pt': '11px', '--stt-pb': '12px', '--stb-pt': '11px', '--stb-pb': '12px', '--strip-lamp': '26px' },
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the channel, rows 12-59,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '40px' },
   accent: AE.holo, warn: AE.coral,
   // The title sits inside the well, just under its top rim and right of the corner knuckle (well from 16 px, knuckles to
   // 41 px), so it never crosses the gold.
