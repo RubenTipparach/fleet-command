@@ -86,22 +86,24 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 .hold { margin: 0 0 18px; padding: 14px 18px; border: 2px solid #e05a3a; border-radius: 8px; background: #3a1410; color: #ffd9cf; font: 500 16px/1.45 system-ui, sans-serif; }
 .hold strong { color: #fff; }
+.hold.ok { border-color: #7fbf5a; background: #16240f; color: #dcf2cf; }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <div class="hold" role="note"><strong>Do not use this guide yet.</strong> It is a draft and has not been reviewed. Nothing may be built from it (no skin, kit piece or game art) until it is finished and a human has reviewed and approved it (owner, 2026-10-31: "Make a note to not use the guide until it's ready and human reviewed").</div>
-    <div class="eyebrow">Fleet Command · design guide · draft, growing as we learn · living panels rendered in Blender</div>
+    <div class="hold ok" role="note"><strong>Reviewed by the owner.</strong> After step 25 the owner wrote "Now that looks good. Create the guide" (2026-10-31), which lifts the hold this guide carried while it was a draft. It stays a living guide: new lessons are added as they are learned.</div>
+    <div class="eyebrow">Fleet Command · design guide · reviewed, still growing · living panels rendered in Blender</div>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <h1>Organic Panel Bible</h1>
     <p class="lede">How to build an interface that is grown, not built: crisp instruments held in a living frame. The frame is flesh, chitin and bone in one body, the screens are black smoked glass, and the keys are hard, dark and lit at their rims. This is the organic counterpart of the <a href="https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF" target="_blank" rel="noopener">Analog Panel Bible</a>.</p>
-    <p class="note"><strong>Draft.</strong> This guide is a living document: the method behind organic interfaces is still being found, one study step at a time, and every new lesson is added here (owner, 2026-10-31: "it's in draft and we'll be adding to it as we discover the methodology behind organic ui"). The study's latest notes from the owner: build the body in layers (bone underneath, muscle over it, leather stretched over both, veins under the skin), sculpt it rather than placing shapes, blend the textures, make it wetter, and never use raw primitives.</p>
+    <p class="note"><strong>A living guide.</strong> This guide grows as we learn: the method behind organic interfaces is still being found, one study step at a time, and every new lesson is added here (owner, 2026-10-31: "it's in draft and we'll be adding to it as we discover the methodology behind organic ui"). The study's latest notes from the owner: build the body in layers (bone underneath, muscle over it, leather stretched over both, veins under the skin), sculpt it rather than placing shapes, blend the textures, make it wetter, and never use raw primitives.</p>
     <blockquote><span class="who">Owner, 2026-10-31</span>"Nah that's bad lol. Let's make a new design system for organic" · "The brood is overly simple. It's just metal with ameobas on top. Completely missing the zerg aesthetic"</blockquote>
     <p class="note">This guide goes with the skill <code>.claude/skills/blender-organic-panels</code>, which holds the Blender procedure, and the study generator <code>tools/blender/organic_study.py</code>, which renders every image here. The direction comes from the owner's notes and two reference screenshots of a hive race's interface that are not committed: we take how it is built (its shapes, materials and light), never its art. Every shape, word and colour on this page is our own.</p>
     <ol class="toc">
       <li><a href="#no-primitives"><span class="no">R1</span>Never use raw primitives</a></li>
       <li><a href="#layers"><span class="no">R2</span>Layered anatomy, sculpted</a></li>
       <li><a href="#hex"><span class="no">R3</span>Screens: pixels under a fine hex filter</a></li>
+      <li><a href="#no-nine"><span class="no">R4</span>No nine-slice: block out, then sculpt</a></li>
       <li><a href="#organism"><span class="no">1</span>One organism</a></li>
       <li><a href="#materials"><span class="no">2</span>Five materials</a></li>
       <li><a href="#form"><span class="no">3</span>Form: grow it, don't cut it</a></li>
@@ -176,6 +178,18 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <article><h3>Blender: the shader</h3><p class="params"><code>organic_study.hex_mask_nodes</code>. Object coordinates &times; 1000 (mm). Math WRAP x into [&minus;p/2, p/2] and y into [&minus;p&radic;3/2, p&radic;3/2] (lattice a); the same for x &minus; p/2 and y &minus; p&radic;3/2 (lattice b). LESS_THAN on the two squared lengths picks the nearer centre (cx, cy = b + pick &middot; (a &minus; b)). Then the hex distance and the formula above with Math nodes (ABSOLUTE, MAXIMUM, DIVIDE, clamped ADD). <code>hex_screen</code>: an Image Texture of the content mapped onto the window from the same object coordinates (extension CLIP, cubic), Vector Math SCALE by the mask, into the Principled BSDF's Emission Color at strength 2.2; base #050405, roughness 0.35, coat 1.0 at 0.04 for the glass.</p></article>
       <article><h3>The page or the game: an overlay</h3><p class="params">Draw the content (face, name, rank) into the portrait's canvas at device pixels. Build the mask once per size with the same formula, the pitch in device pixels (2 CSS px at 1x, times the device pixel ratio), into an offscreen canvas as grey: divide the filter by its peak 1.10 and convert to sRGB, so a wall is grey 178 and a cell's middle white. Then <code>ctx.globalCompositeOperation = 'multiply'; ctx.drawImage(mask, 0, 0)</code>, and draw the content 10% brighter to give back the lens. In Godot the same arithmetic is a canvas_item shader on the portrait's TextureRect, from UV &times; size in mm.</p></article>
     </div>
+  </section>
+
+  <section class="ch" id="no-nine">
+    <div class="chhead"><div class="kicker">Rule 4</div><h2>No nine-slice: block out, then sculpt</h2></div>
+    <p class="note"><b>The owner, 2026-10-31</b>: "due to the nature of this ui, nine slice is not possible and the UI will have to be bocked out using placeholders then a full detail agent will go in and sculpt components manually".</p>
+    <ul>
+      <li><b>Why nine-slice cannot work here.</b> A nine-slice piece stretches its middle and tiles its edges. An organic frame is one sculpted body: its ribs and vertebrae change along their length, growth crosses from one panel to the next, and no two corners are alike. Stretched, the sculpt smears; tiled, one vertebra repeats like wallpaper. So no organic frame, strip, key surround or tab is a nine-slice piece.</li>
+      <li><b>Every organic piece is a hero piece at its final size.</b> Each panel is sculpted whole for its exact slot, and a panel of another size (another screen shape: desktop, phone landscape, phone portrait) is its own sculpt. Nothing stretches, and there is no fallback to stretching.</li>
+      <li><b>Step 1, block out with placeholders.</b> The whole console is first laid out with plain placeholders: one flat, labelled rectangle per panel at its exact slot size and place, with its protected rectangles marked (every screen, key face, label and the portrait window). The layout and fit checks run on the blockout, so the geometry is right before any sculpting starts.</li>
+      <li><b>Step 2, sculpt each component in full detail.</b> A full-detail agent then sculpts the components one at a time, by hand-directed sculpting on rules 1-3: at final size, in place beside its neighbours so the growth joins across the gutters, keeping clear of every protected rectangle. Live content (readouts, labels, the hex-filtered portrait) is never sculpted in; it is drawn over the piece.</li>
+      <li><b>Step 3, swap and measure.</b> Each sculpted piece replaces its placeholder, and the fit checks run again on the sculpt. A piece passes when the checks pass and its close-up has been looked at.</li>
+    </ul>
   </section>
 
   <section class="ch" id="organism">

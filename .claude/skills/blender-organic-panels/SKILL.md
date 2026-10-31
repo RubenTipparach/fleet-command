@@ -6,9 +6,8 @@ metadata:
   version: "1.0"
 ---
 
-> **Hold: do not use this skill or its guide to build anything yet.** The Organic Panel Bible is a draft that has not
-> been reviewed. Use it only to continue the study until it is finished and a human has reviewed and approved it (owner,
-> 2026-10-31: "Make a note to not use the guide until it's ready and human reviewed").
+> **Reviewed by the owner** (2026-10-31, after step 25: "Now that looks good. Create the guide"). The hold that stood
+> here while the guide was a draft is lifted. It stays a living guide: add each new lesson to the skill and the page.
 
 ## In Fleet Command
 
@@ -33,6 +32,23 @@ organic leather frame looks a little more purposeful and organic", and "never us
 - Primitives may only be invisible construction (metaball seeds, cutters, the shapes a height field is computed from)
   that the sculpt and its remesh absorb.
 - The crisp instruments (screen glass, key caps, the portrait) are tech, not body, and keep their clean edges.
+
+## 0b. Rule 4: no nine-slice; block out, then sculpt
+
+The owner, 2026-10-31: "due to the nature of this ui, nine slice is not possible and the UI will have to be bocked out
+using placeholders then a full detail agent will go in and sculpt components manually".
+
+- An organic frame is one sculpted body (ribs that change along their length, growth across gutters, no two corners
+  alike), so it cannot stretch or tile. No organic frame, strip, key surround or tab is a nine-slice piece: every piece
+  is a hero piece sculpted whole at its exact slot size, and each screen shape (desktop, phone landscape, phone
+  portrait) gets its own sculpt. There is no fallback to stretching.
+- **Block out first.** Lay the whole console out with flat, labelled placeholder rectangles at each slot's exact size
+  and place, protected rectangles marked (screens, key faces, labels, the portrait window); run the layout and fit
+  checks on the blockout.
+- **Then sculpt each component in full detail**, one at a time, hand-directed, on rules 1-3, at final size and in place
+  beside its neighbours so growth joins across gutters, clear of every protected rectangle. Live content (readouts,
+  labels, the hex-filtered portrait) is drawn over the piece, never sculpted in.
+- **Swap and measure.** Each sculpt replaces its placeholder; the fit checks run again; look at its close-up.
 
 ## 1. The premise
 

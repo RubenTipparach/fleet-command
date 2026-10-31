@@ -511,6 +511,39 @@ Its rules, in short (the bible has them in full):
 **Next:** the Vhorr Brood kit is rebuilt on the organic bible once the owner has seen it (a new
 `tools/blender/build_ui_vhorr.py` on the skill's method, its kit pieces measured by G1-G4 and the page's fit checks).
 
+## The organic guide reviewed, and no nine-slice for organic skins (version 25)
+
+The owner, 2026-10-31, after study steps 15-25 (the frame sculpted in layers: bone, muscle, leather stretched over both,
+veins under the skin, no raw primitives, and the portrait as live pixels under a fine hex-cell filter): "That looks
+amazing!", then "Now that looks good. Create the guide and update the console skins documentation. We need a note in
+there that due to the nature of this ui, nine slice is not possible and the UI will have to be bocked out using
+placeholders then a full detail agent will go in and sculpt components manually".
+
+- **The Organic Panel Bible is reviewed** and its draft hold lifted; it stays a living guide. Its rules: R1 never use raw
+  primitives, R2 layered anatomy sculpted as one surface, R3 screens as live pixels under a fine hex filter (2.0 mm
+  cells, 20% walls at 45% brightness, label contrast 11.5:1 at 1x), R4 no nine-slice.
+- **No nine-slice in an organic skin.** An organic frame is one sculpted body: its ribs change along their length,
+  growth crosses the gutters between panels, and no two corners are alike, so it cannot stretch or tile (stretched, the
+  sculpt smears; tiled, one vertebra repeats). Every organic kit piece is a **hero piece sculpted at its exact slot
+  size**, and each screen shape (desktop, phone landscape, phone portrait) gets its own sculpt. The kit's piece names
+  stay the same, so screens still draw only kit pieces by name; what changes is that an organic skin supplies a fixed
+  image per slot instead of one stretchable image. A slot without its sculpt is a build error, as for any missing
+  piece; nothing falls back to stretching.
+- **The build method: block out, then sculpt.**
+  1. **Blockout.** The whole console is laid out with plain placeholders: one flat, labelled rectangle per panel at its
+     exact slot size and place, with its protected rectangles marked (every screen, key face, label and the portrait
+     window). The page's layout and fit checks run on the blockout.
+  2. **Full-detail sculpt.** A full-detail agent then sculpts the components one at a time, by hand-directed sculpting on
+     the bible's rules: at final size, in place beside its neighbours so growth joins across the gutters, clear of every
+     protected rectangle. Live content (readouts, labels, the hex-filtered portrait) is drawn over the piece, never
+     sculpted in.
+  3. **Swap and measure.** Each sculpt replaces its placeholder; the fit checks run again and its close-up is looked at.
+- **Cost.** One sculpt per slot per screen shape instead of one stretchable image per piece: more pieces to make, and a
+  layout change to an organic skin means re-sculpting the slots it touches. Rendering is about 5 minutes per piece at
+  32 samples on the cloud machine.
+
+**Next:** the Vhorr Brood is rebuilt this way, starting with the blockout of the desktop console.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
@@ -533,6 +566,8 @@ piece and its own slice margins; a missing piece is a build error. Icons join th
 | `lamp.alert` | hero, 3 states | 64 x 64 | condition green, yellow, red |
 | `crest` | hero | 96 x 96 | the faction's mark |
 | `icon.*` | hero, per skin | 48 x 48 | helm, fire, shields, tractor, transport, science, comms, repair, map, settings |
+
+**Organic skins are the exception** (version 25): every piece is a hero piece sculpted at its exact slot size, blocked out with placeholders first, so their manifests record fixed sizes, not margins.
 
 The margins differ by skin (a pill's caps, a wedge's slants and a claw tag's hook take different widths), so each skin's
 manifest records its own; the layout never depends on them.
