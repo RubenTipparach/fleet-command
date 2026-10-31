@@ -36,7 +36,7 @@
       "kind": "nine",
       "size": [
         96,
-        16
+        20
       ],
       "file": "bar.track.png",
       "margins": [
@@ -48,7 +48,7 @@
       "stretch": "x",
       "inset": [
         16,
-        3
+        4
       ]
     },
     "button.idle": {
@@ -130,7 +130,7 @@
       "kind": "nine",
       "size": [
         512,
-        56
+        72
       ],
       "file": "strip.top.png",
       "margins": [
@@ -145,7 +145,7 @@
       "kind": "nine",
       "size": [
         512,
-        56
+        72
       ],
       "file": "strip.bottom.png",
       "margins": [

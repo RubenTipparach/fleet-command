@@ -12,18 +12,19 @@ passes two approvals before it reaches the game (CLAUDE.md section 4):
 Every mockup is checked into the repository, the page in `docs/mockups/` and its record in
 `docs/artifacts/<name>/` (owner, 2026-10-30: "All mockups are to be checked into repo especially when
 they are html claude artifacts"). The **mockup tracker** lists every link and stage, and is where the
-owner approves: https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F (record in `docs/artifacts/mockup-tracker/`).
+owner approves: https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu (record in `docs/artifacts/mockup-tracker/`).
 It is the master artifact (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"): game
-mockups, guides (the Analog Panel Bible, https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w) and misc.
+mockups, guides (the Analog Panel Bible, https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF, and the Organic Panel
+Bible, `docs/design/organic-bible.html`, to be published) and misc.
 If the owner changes accounts, every mockup, the tracker and the survey are republished from the new
 account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
+| 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-10-31, v15) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
+| 4 | Console skins | Drafted (2026-10-31, v23) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 

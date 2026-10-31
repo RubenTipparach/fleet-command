@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <title>Fleet Command Mockups</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,7 +108,7 @@ code { font: 500 0.9em var(--mono); }
 // The mockups, in the order of mockup-work.md. Reviews live in the db collection `reviews`, one document per id.
 const MOCKUPS = [
   { id: 'M1', title: 'Primary game flow', change: 'game-flow', page: 'docs/mockups/game-flow.html',
-    url: 'https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk', published: '2026-10-30', version: 5,
+    url: 'https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt', published: '2026-10-30', version: 5,
     summary: 'Main menu, skirmish (scenario, point budget, fleet and loadout), the campaign hex map with standees, port panels and missions, deploy, a stand-in battle, results, and back to the map.' },
   { id: 'M2', title: 'In-game UI', change: 'battle-console', page: 'docs/mockups/battle-console.html',
     url: '', published: '', version: 0,
@@ -116,21 +117,19 @@ const MOCKUPS = [
     url: '', published: '', version: 0,
     summary: 'Ship detail level, faction design language, destructible hulls and interiors, engines and effects, and hull lighting.' },
   { id: 'M4', title: 'Console skins', change: 'console-skins', page: 'docs/mockups/console-skins.html',
-    url: 'https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW', published: '2026-10-31', version: 15,
-    summary: 'One UI kit in ten faction design languages: Concord flat back-lit vector after LCARS, the Vos hand-drawn, the rest modelled and rendered in Blender; the Aelith Conclave a gold shell with holograms drawn into its wells; the Kelvane Institute champagne plates over amber readouts and phosphor scopes. No two share a button, palette or icon shape.' },
+    url: 'https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb', published: '2026-10-31', version: 23,
+    summary: 'One UI kit in ten faction design languages: Concord flat back-lit vector after LCARS, the Vos hand-drawn, the rest modelled and rendered in Blender; the Aelith Conclave a gold shell with holograms drawn into its wells; the Kelvane Institute champagne plates over amber readouts and phosphor scopes; the Vhorr Brood a captured steel console the brood has overgrown. No two share a button, palette or icon shape. Every label, bar, key and title measured to sit clear of its frame in every skin.' },
 ];
 
 // Every other published artifact, by section. Each also has a record in docs/artifacts/<name>/README.md.
 const GUIDES = [
-  { title: 'Analog Panel Bible', page: 'docs/design/ui-bible.html', url: 'https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w',
+  { title: 'Analog Panel Bible', page: 'docs/design/ui-bible.html', url: 'https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF',
     published: '2026-10-31', version: 3,
     summary: 'Building 1990s-style instrument panels in Blender: named parts, depth, light, readability, measured fit rules (rolled edges never meet, layers stay inside their plate), formed metal rendered in 3D, seven lighting options, and the worked example that taught it.' },
 ];
 const MISC = [
-  { title: 'Survey', page: 'docs/design/survey.html', url: 'https://claude.ai/artifact/JE8gf8sUcGwwAoD9qCguRD',
-    published: '2026-10-30', version: 8, summary: 'Open questions for you, with a recommendation each. A blank answer accepts the recommendation.' },
-  { title: 'Mockup Tracker', page: 'docs/mockups/tracker.html', url: 'https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F',
-    published: '2026-10-31', version: 20, summary: 'This page: every artifact, and the approvals for each mockup.' },
+  { title: 'Survey', page: 'docs/design/survey.html', url: 'https://claude.ai/artifact/81ey21Ngrr8WPTdhce7y8a',
+    published: '2026-10-31', version: 9, summary: 'Open questions for you, with a recommendation each. A blank answer accepts the recommendation.' },
 ];
 
 const reviews = {}; // id -> { build, implementation, note }

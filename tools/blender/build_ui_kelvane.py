@@ -47,7 +47,12 @@ PAL = dict(champagne="#c9bfa9", knob="#d6d0c4", brass="#b0915a", amber="#f2c46e"
 GLOW = float(os.environ.get("FILM_GLOW", 0.78))   # the film's own backlight, as in the study
 MAIN = (0.8, 60.0)                                  # the soft main light on the wells: strength, angular size (deg)
 DIMPLE = 2.2                                        # a dimple's depth, mm
-DISPLAY = ("amber", "dim", "phos", "slotfilm", "ink", "grat", "unlit", "redink")
+# A pressed key is pushed in (owner, 2026-10-31: "I actually prefer the more animated versions on click"; the inner part
+# moves, the frame stays): its name window's glass travels PRESS_MM down and back, and the page's label sinks the same
+# (skins/kelvane.js --btn-sink is half of it), while the domed key goes KEY_PRESS_MM deeper into its dimple.
+PRESS_MM = 3.0
+KEY_PRESS_MM = 2.6
+DISPLAY = ("amber", "hot", "dim", "phos", "slotfilm", "ink", "grat", "unlit", "redink")
 
 
 def jewel(name, col, es):
@@ -70,6 +75,7 @@ def mats(K, s):
                pointer=K.mat("pointer", lambda: printed("pointer", "#a83020")),
                amber=K.mat("amber", lambda: film_mat("amber", col=PAL["amber"], shadow=PAL["amber_lo"], es=0.85, glow=GLOW, ao_mm=ao)),
                dim=K.mat("dim", lambda: film_mat("dim", col=PAL["dim"], shadow="#3a2810", es=0.3, glow=GLOW, ao_mm=ao)),
+               hot=K.mat("hot", lambda: film_mat("hot", col=PAL["amber"], shadow=PAL["amber_lo"], es=1.35, glow=GLOW, ao_mm=ao)),
                phos=K.mat("phos", lambda: film_mat("phos", col=PAL["phos"], shadow=PAL["phos_lo"], es=0.55, glow=1.0, ao_mm=ao)),
                slot=K.mat("slotfilm", lambda: film_mat("slotfilm", col=PAL["slot"], shadow="#0c0805", es=0.2, glow=1.0, ao_mm=1.5)),
                tray=K.mat("tray", lambda: satin("tray", PAL["tray"])),
@@ -118,11 +124,28 @@ def stud(K, x, y, r, style, sunk, press=0.0):
         K.slab([[(x - r * 0.72, y - 0.32), (x + r * 0.72, y - 0.42), (x + r * 0.72, y + 0.32), (x - r * 0.72, y + 0.42)]], z + 0.8, z + 1.15,
                K.m["groove"], bevel=0.08)
     elif style.startswith("jewel"):
-        col = {"jewel": PAL["amber"], "jewel_green": "#5aff8a", "jewel_yellow": "#ffcf6a", "jewel_red": "#ff4a3a"}[style]
-        es = 1.2 if style == "jewel" else 3.0
+        col = {"jewel": PAL["amber"], "jewel_green": "#5aff8a", "jewel_yellow": "#ffcf6a", "jewel_red": "#ff4a3a",
+               "jewel_on": "#ffc35a", "jewel_off": "#ffc35a"}[style]   # a toggle's pilot lamp: one glass, lit or dark
+        es = {"jewel": 1.2, "jewel_on": 3.0, "jewel_off": 0.03}.get(style, 3.0)
         m = K.mat(style, lambda: jewel(style, col, es))
         K.cyl(x, y, r + 1.6, z - 0.4, z + 0.6, K.m["bezel"], seg=48)
         K.blob(x, y, r, r, r * 0.62, m, z=z + 0.4, seg=10)
+
+
+def lip_shadow(K, win, depth):
+    """The top lip's shadow on a pushed-in window's glass: a dark band fading down over depth mm from the well's top
+    edge (most of it under the overhanging lip; what shows below the lip is the deeper glass's cue that it went in). Its fade runs in the band's object coordinates (origin at the slot's
+    middle), so it is exact in mm."""
+    xs, ys = [p[0] for p in win], [p[1] for p in win]
+    x0, x1, y0 = min(xs), max(xs), min(ys)
+    k = NodeKit("lipshade")
+    sep = k.N.new("ShaderNodeSeparateXYZ")
+    k.L.new(k.co, sep.inputs[0])
+    top = (K.h / 2 - y0) * MM   # object Y of the well's top edge; the band fades to nothing depth mm below it
+    a = k.math("DIVIDE", k.math("SUBTRACT", sep.outputs["Y"], top - depth * MM), depth * MM, clamp=True)
+    k.set(Base_Color="#1a1208", Roughness=0.9, Alpha=k.math("MULTIPLY", k.math("POWER", a, 1.3), 0.8))
+    ob = K.slab([rrect(x0, y0 - 0.5, x1, y0 + depth, 2.0)], K.dz - PRESS_MM + 0.05, K.dz - PRESS_MM + 0.08, k.mat, bevel=0.0)
+    ob.visible_shadow = False
 
 
 def piece(name):
@@ -133,8 +156,17 @@ def piece(name):
         mats(K, s)
         wells = [(kind, [tuple(p) for p in w]) for kind, w in s["wells"]]
         plate = [tuple(p) for p in s["plate"]]
-        for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B)
-            K.film(None, shape=[tuple(p) for p in f], m=K.m[{"amber": "amber", "dim": "dim", "phos": "phos", "slot": "slot", "tray": "tray"}[kind]])
+        press = PRESS_MM if name == "button.pressed" else 0.0
+        for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B), pressed: pushed in
+            shape = [tuple(p) for p in f]
+            if press:  # its foot held where it was, so the moved glass never shows past the plate's rolled edge (rule B)
+                foot = max(y for _x, y in shape) - press
+                shape = [(x, min(y, foot)) for x, y in shape]
+            glass = K.film(None, shape=shape, m=K.m[{"amber": "amber", "hot": "hot", "dim": "dim", "phos": "phos", "slot": "slot", "tray": "tray"}[kind]],
+                           z=K.dz - press)
+            glass.location.y -= press * MM
+            if press:
+                lip_shadow(K, _w, 9.0)
         ob = K.plate([plate] + [w for _k, w in wells])
         cuts = False
         for x, y, r in s["dimples"]:
@@ -154,7 +186,7 @@ def piece(name):
         cr = s["cradle"]
         for i, (x, y, r, style) in enumerate(s["studs"]):
             in_cradle = bool(cr) and abs(math.hypot(x - cr[0], y - cr[1]) - cr[2]) < 1.0
-            press = 1.0 if (i == 0 and name.endswith(".pressed")) else 0.0
+            press = KEY_PRESS_MM if (i == 0 and name.endswith(".pressed")) else 0.0
             stud(K, x, y, r, style, (round(x, 2), round(y, 2)) in sunk or in_cradle, press)
         for role, lines, w, ink in s["prints"]:
             m = K.m[{"ink": "ink", "grat": "grat", "unlit": "unlit", "red": "red"}[ink]]
@@ -190,11 +222,26 @@ def fill(col, es):
     return build
 
 
+def lamp_cell(col, es):
+    """A symbol bar cell: a jewel lamp in a brass bezel. Every state is the same lamp and the same glass; only its light
+    (and, on a warning, its colour) changes."""
+    def build(K):
+        w, h = K.w, K.h
+        c = (w / 2, h / 2)
+        K.cyl(c[0], c[1], 5.6, 0.0, 1.4, K.mat("brass", lambda: metal("brass", PAL["brass"], 0.28)))
+        K.cyl(c[0], c[1], 4.6, 1.0, 1.6, K.mat("groove", lambda: printed("groove", PAL["groove"])))
+        K.blob(c[0], c[1], 4.2, 4.2, 2.6, K.mat(f"jewel_{col}_{es}", lambda: jewel(f"jewel_{col}_{es}", col, es)), z=1.4)
+    return build
+
+
 PIECES = {}
 for name, s in SHAPES.items():
     PIECES[name] = (s["kind"], tuple(s["size"]), tuple(s["margins"]) if s["margins"] else None, s["stretch"], piece(name), s["inset"])
 PIECES["bar.fill"] = ("nine", (64, 10), (0, 6, 0, 6), "x", fill("#ffcf6a", 3.0))
 PIECES["bar.fill.red"] = ("nine", (64, 10), (0, 6, 0, 6), "x", fill("#ff5a3a", 3.0))
+PIECES["bar.cell.off"] = ("cell", (12, 12), None, None, lamp_cell("#ffc35a", 0.03), 1)
+PIECES["bar.cell.on"] = ("cell", (12, 12), None, None, lamp_cell("#ffc35a", 2.6), 1)
+PIECES["bar.cell.warn"] = ("cell", (12, 12), None, None, lamp_cell("#ff4a2a", 2.6), 1)
 ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "button.idle", "button.hover", "button.pressed",
          "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate", "helm.pad", "ssd.bezel", "dial",
          "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest"]

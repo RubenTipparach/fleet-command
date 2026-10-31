@@ -1,9 +1,13 @@
 // The Krai Warhost skin (mockup 4, OpenSpec change console-skins): a combat race (owner, 2026-10-30: "a combat focused
 // race, lots of triangular motifs, angry red colors and orange lit buttons that are activated. strong metal framing,
-// almost blade like"). Black blade steel with honed bright edges, red enamel, triangles everywhere; keys are blades,
-// dark until engaged, then lit hot orange. Kept apart from the Kethran Hegemony (gunmetal plates, wedge keycaps,
-// amber chevrons): thinner, sharper, black and red. Painted in canvas, deterministic. Registers itself with the
-// page's skin registry (docs/mockups/skins).
+// almost blade like"), rebuilt on the analog panel bible (owner, 2026-10-31: "update krai, onbrai, and hunt to use the
+// new guildine standards"). The kit is modelled and rendered in Blender (tools/blender/build_ui_krai.py) from fit-checked
+// shapes (tools/mockups/krai_shapes.py, assets/ui/krai/shapes.json): blackened blade steel plates with a tight honed
+// roll, red enamel bezels round every well, ember glass lit from below like a forge, Blade keys dark at rest, red on
+// hover and forge orange when engaged, and bars of blade chevrons that light one by one. This module adds the type,
+// the ink, the icons and the live readouts drawn into the measured windows. Kept apart from the Kethran Hegemony
+// (gunmetal plates, wedge keycaps, amber chevrons): thinner, sharper, black and red. Registers itself with the page's
+// skin registry (docs/mockups/skins).
 (function () {
 'use strict';
 const F = window.FCK, P = F.P;
@@ -31,126 +35,6 @@ function enamel(x, pts, col = KR.blood, glow = 0) {
   g.addColorStop(0, col === KR.blood ? '#d8232c' : KR.hot); g.addColorStop(1, col); x.fillStyle = g; x.fill(); x.restore();
   poly(x, pts); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.8; x.stroke();
 }
-const RNG = (k) => F.rng(F.hash('krai.' + k));
-
-// ---- the nine-slice pieces --------------------------------------------------------------------------------------
-// A frame of blades: a black steel band with a red inlay; each corner a swept blade with a red triangle cut through it.
-function frame(x, w, h, b, c) {
-  const band = [[0, 0], [w, 0], [w, h], [0, h]];
-  x.fillStyle = '#0b0808'; x.fillRect(b, b, w - 2 * b, h - 2 * b);
-  x.save(); x.beginPath(); x.rect(0, 0, w, h); x.rect(b, b, w - 2 * b, h - 2 * b); x.clip('evenodd'); steel(x, band, [0, 0, w, h]); x.restore();
-  x.strokeStyle = KR.blood; x.lineWidth = 2; x.strokeRect(b * 0.45, b * 0.45, w - b * 0.9, h - b * 0.9);
-  x.strokeStyle = '#050303'; x.lineWidth = 1; x.strokeRect(b, b, w - 2 * b, h - 2 * b);
-  for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
-    x.save(); x.translate(sx > 0 ? 0 : w, sy > 0 ? 0 : h); x.scale(sx, sy);
-    steel(x, [[0, 0], [c, 0], [b + 2, b * 0.55], [b * 0.55, b + 2], [0, c]], [0, 0, c, c], { top: '#4a4244' });
-    enamel(x, [[5, 5], [c * 0.55, 5], [5, c * 0.55]], KR.red, 4);
-    if (c > 30) steel(x, [[b - 2, b - 2], [c + 2, b + 2], [b + 6, b + 6], [b + 2, c + 2]], [b - 2, b - 2, c + 2, c + 2], { top: '#5a5052' });
-    x.restore();
-  }
-}
-// The blade key: a slanted back, a pointed tip; dark until engaged, then lit hot orange from within.
-function bladeKey(state) {
-  return (x, w, h) => {
-    const pts = [[18, 3], [w - 30, 3], [w - 2, h / 2], [w - 30, h - 3], [4, h - 3]];
-    if (state === 'pressed') {
-      x.save(); x.shadowColor = KR.orange; x.shadowBlur = 12; poly(x, pts);
-      const g = x.createLinearGradient(0, 3, 0, h - 3); g.addColorStop(0, KR.hot); g.addColorStop(0.55, KR.orange); g.addColorStop(1, '#b8360a'); x.fillStyle = g; x.fill(); x.restore();
-      x.strokeStyle = '#fff1dc'; x.lineWidth = 1.3; x.beginPath(); x.moveTo(18, 3.5); x.lineTo(w - 30, 3.5); x.lineTo(w - 2, h / 2); x.stroke();
-      poly(x, pts); x.strokeStyle = '#3a0a04'; x.lineWidth = 1; x.stroke();
-    } else {
-      steel(x, pts, [0, 0, w, h]);
-      x.save(); if (state === 'hover') { x.shadowColor = KR.red; x.shadowBlur = 10; }
-      x.strokeStyle = state === 'hover' ? KR.red : hexA(KR.blood, 0.9); x.lineWidth = state === 'hover' ? 2.2 : 1.4;
-      x.beginPath(); x.moveTo(8, h - 6); x.lineTo(w - 32, h - 6); x.lineTo(w - 10, h / 2 + 2); x.stroke(); x.restore();
-    }
-    enamel(x, [[6, h / 2 - 7], [14, h / 2], [6, h / 2 + 7]], state === 'pressed' ? '#3a0a04' : KR.red, state === 'hover' ? 6 : 0);
-  };
-}
-// A tab: a steel bar with fangs hanging from both ends; the active one lit red along its edge.
-function fangTab(active) {
-  return (x, w, h) => {
-    steel(x, [[2, 4], [w - 2, 4], [w - 2, h - 12], [2, h - 12]], [0, 0, w, h]);
-    for (const s of [1, -1]) { x.save(); if (s < 0) { x.translate(w, 0); x.scale(-1, 1); } steel(x, [[2, h - 13], [12, h - 13], [5, h - 1]], [0, h - 14, 12, h]); x.restore(); }
-    x.save(); if (active) { x.shadowColor = KR.red; x.shadowBlur = 8; } x.fillStyle = active ? KR.red : hexA(KR.blood, 0.6); x.fillRect(14, h - 11, w - 28, 2.5); x.restore();
-  };
-}
-// A strip: a long blade rail with a red inlay, a great swept blade at each end.
-function rail(flip) {
-  return (x, w, h) => {
-    if (flip) { x.translate(0, h); x.scale(1, -1); }
-    steel(x, [[0, h - 18], [w, h - 18], [w, h - 4], [0, h - 4]], [0, h - 18, w, h - 4]);
-    x.fillStyle = KR.blood; x.fillRect(0, h - 12, w, 2);
-    for (const s of [1, -1]) {
-      x.save(); if (s < 0) { x.translate(w, 0); x.scale(-1, 1); }
-      steel(x, [[0, 2], [24, 2], [96, h - 18], [96, h - 4], [0, h - 4]], [0, 0, 96, h], { top: '#4a4244' });
-      enamel(x, [[10, 10], [26, 10], [64, h - 20], [10, h - 20]], KR.blood);
-      enamel(x, [[14, 16], [22, 16], [14, 30]], KR.red, 5);
-      x.restore();
-    }
-  };
-}
-const nine = {
-  'frame.panel': { size: [170, 130], m: [42, 42, 42, 42], draw: (x, w, h) => frame(x, w, h, 17, 42) },
-  'frame.inset': { size: [64, 48], m: [14, 14, 14, 14], draw: (x, w, h) => frame(x, w, h, 5, 14) },
-  'bar.track': { size: [96, 16], m: [0, 14, 0, 14], inset: [4, 3], draw: (x, w, h) => {
-    steel(x, [[6, 0], [w, 0], [w - 6, h], [0, h]], [0, 0, w, h]); x.fillStyle = '#080505'; x.fillRect(5, 3, w - 10, h - 6);
-    for (const px of [3, w - 3]) enamel(x, [[px - 2, 3], [px + 2, h / 2], [px - 2, h - 3]], KR.blood); } },
-  'bar.fill': { size: [64, 10], m: [0, 10, 0, 4], draw: (x, w, h) => fillBlade(x, w, h, KR.orange) },
-  'bar.fill.red': { size: [64, 10], m: [0, 10, 0, 4], draw: (x, w, h) => fillBlade(x, w, h, KR.red) },
-  'button.idle': { size: [150, 48], m: [20, 32, 20, 20], draw: bladeKey('idle') },
-  'button.hover': { size: [150, 48], m: [20, 32, 20, 20], draw: bladeKey('hover') },
-  'button.pressed': { size: [150, 48], m: [20, 32, 20, 20], draw: bladeKey('pressed') },
-  'tab.idle': { size: [120, 40], m: [14, 14, 16, 14], draw: fangTab(false) },
-  'tab.active': { size: [120, 40], m: [14, 14, 16, 14], draw: fangTab(true) },
-  'strip.top': { size: [512, 56], m: [10, 100, 10, 100], draw: rail(false) },
-  'strip.bottom': { size: [512, 56], m: [10, 100, 10, 100], draw: rail(true) },
-  'divider': { size: [128, 10], m: [0, 14, 0, 14], draw: (x, w, h) => { x.fillStyle = KR.blood; x.fillRect(10, h / 2 - 1, w - 20, 2); enamel(x, [[0, 0], [10, h / 2], [0, h]], KR.red); enamel(x, [[w, 0], [w - 10, h / 2], [w, h]], KR.red); } },
-};
-function fillBlade(x, w, h, col) {
-  x.save(); x.shadowColor = col; x.shadowBlur = 6; poly(x, [[0, 0], [w - 8, 0], [w, h / 2], [w - 8, h], [0, h]]);
-  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, KR.hot); g.addColorStop(0.5, col); g.addColorStop(1, '#7a1a08'); x.fillStyle = g; x.fill(); x.restore();
-}
-
-// ---- the hero pieces ---------------------------------------------------------------------------------------------
-const hero = {
-  // A blade plate: angled ends, a red triangle of rank, a black field for the name.
-  'nameplate': (x, w, h) => {
-    steel(x, [[16, 1], [w - 4, 1], [w - 20, h - 1], [1, h - 1]], [0, 0, w, h]);
-    enamel(x, [[10, 8], [56, 8], [33, h - 8]], KR.blood); enamel(x, [[22, 14], [44, 14], [33, h - 18]], KR.red, 6);
-    x.fillStyle = '#080505'; poly(x, [[66, 9], [w - 22, 9], [w - 32, h - 9], [62, h - 9]]); x.fill(); x.strokeStyle = KR.blood; x.lineWidth = 1.2; x.stroke();
-  },
-  // An eight-pointed blade star of steel; eight blade keys point outward between its spikes, a red triangle at its heart.
-  'helm.pad': (x, w, h) => {
-    const c = w / 2, star = [];
-    for (let i = 0; i < 16; i++) { const a = -P / 2 + P / 8 + i * P / 8, r = i % 2 ? 98 : 148; star.push([c + Math.cos(a) * r, c + Math.sin(a) * r]); }
-    steel(x, star, [0, 0, w, h], { top: '#3a3335' });
-    for (let i = 0; i < 8; i++) { const a = -P / 2 + P / 8 + i * P / 4; x.strokeStyle = KR.blood; x.lineWidth = 2; x.beginPath(); x.moveTo(c + Math.cos(a) * 60, c + Math.sin(a) * 60); x.lineTo(c + Math.cos(a) * 140, c + Math.sin(a) * 140); x.stroke(); }
-    for (let i = 0; i < 8; i++) {
-      const a = -P / 2 + i * P / 4; x.save(); x.translate(c + Math.cos(a) * 96, c + Math.sin(a) * 96); x.rotate(a);
-      steel(x, [[-20, -18], [24, 0], [-20, 18], [-12, 0]], [-20, -18, 24, 18], { top: '#4a4244' }); x.restore();
-    }
-    enamel(x, [[c, c - 46], [c + 40, c + 24], [c - 40, c + 24]], KR.blood, 0); enamel(x, [[c, c - 30], [c + 26, c + 15], [c - 26, c + 15]], KR.red, 10);
-  },
-  // A heavy blade frame round a black field.
-  'ssd.bezel': (x, w, h) => frame(x, w, h, 16, 44),
-  // A hexagonal housing of steel and red teeth.
-  'dial': (x, w) => {
-    const c = w / 2, hex = [0, 1, 2, 3, 4, 5].map((i) => [c + Math.cos(i * P / 3) * 58, c + Math.sin(i * P / 3) * 58]);
-    steel(x, hex, [0, 0, w, w]); x.fillStyle = '#080505'; poly(x, hex.map(([px, py]) => [c + (px - c) * 0.76, c + (py - c) * 0.76])); x.fill();
-    for (let i = 0; i < 6; i++) { const a = i * P / 3 + P / 6; enamel(x, [[c + Math.cos(a) * 52, c + Math.sin(a) * 52], [c + Math.cos(a - 0.12) * 44, c + Math.sin(a - 0.12) * 44], [c + Math.cos(a + 0.12) * 44, c + Math.sin(a + 0.12) * 44]], KR.blood); }
-  },
-  'lamp.alert.green': (x, w) => warnTri(x, w, '#5aff7a'), 'lamp.alert.yellow': (x, w) => warnTri(x, w, '#ffc23a'), 'lamp.alert.red': (x, w) => warnTri(x, w, KR.red),
-  // The Warhost's mark (original): a broad falling blade between two fangs, in a triangle of steel.
-  'crest': (x, w) => {
-    const c = w / 2; steel(x, [[c, 4], [w - 4, w - 10], [4, w - 10]], [0, 0, w, w]);
-    enamel(x, [[c - 9, 30], [c + 9, 30], [c, 78]], KR.red, 8); enamel(x, [[c - 26, 52], [c - 15, 52], [c - 20, 74]], KR.blood); enamel(x, [[c + 15, 52], [c + 26, 52], [c + 20, 74]], KR.blood);
-  },
-};
-function warnTri(x, w, col) {
-  const c = w / 2; steel(x, [[c, 2], [w - 2, w - 6], [2, w - 6]], [0, 0, w, w]);
-  x.save(); x.shadowColor = col; x.shadowBlur = 14; poly(x, [[c, 16], [w - 15, w - 13], [15, w - 13]]); const g = x.createLinearGradient(0, 16, 0, w - 13); g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, col); g.addColorStop(1, hexA(col, 0.6)); x.fillStyle = g; x.fill(); x.restore();
-}
 
 // ---- icons: triangles and blades only ---------------------------------------------------------------------------
 function icon(name) {
@@ -172,27 +56,58 @@ function icon(name) {
 }
 
 // ---- the skin --------------------------------------------------------------------------------------------------
+// The ship display is a wireframe schematic (owner, 2026-10-31: "The krai ship display should be a wire frame
+// schematic"): the blade hull top-down in glowing hairlines, a node at every vertex, its frame ribs and spine, the wing
+// spars, the lower hull in dashed hidden lines, the weapon mounts boxed and called out, the engines as nozzle rings.
+function wireframe(x, cx, cy) {
+  const P2 = (pts) => pts.map(([a, b]) => [cx + a, cy + b]);
+  const hull = P2([[0, -84], [9, -40], [12, 4], [54, 52], [52, 60], [16, 46], [8, 66], [-8, 66], [-16, 46], [-52, 60], [-54, 52], [-12, 4], [-9, -40]]);
+  const lower = P2([[0, -70], [6, -36], [8, 2], [38, 40], [10, 34], [0, 54], [-10, 34], [-38, 40], [-8, 2], [-6, -36]]);
+  const line = (pts, closed, w, a, dash) => { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const q of pts.slice(1)) x.lineTo(q[0], q[1]); if (closed) x.closePath(); x.lineWidth = w; x.strokeStyle = hexA(KR.hot, a); x.setLineDash(dash || []); x.stroke(); };
+  x.save(); x.shadowColor = KR.orange; x.shadowBlur = 6; x.lineJoin = 'round';
+  line(lower, true, 0.9, 0.45, [3, 3]);                                         // the lower hull, hidden: dashed
+  line(hull, true, 1.6, 0.95);                                                   // the hull's outline
+  line(P2([[0, -84], [0, 66]]), false, 0.9, 0.7);                               // the spine
+  for (const y of [-56, -36, -16, 4, 24, 44]) {                                  // frame ribs, as wide as the hull at that station
+    const half = y < 4 ? 9 + (y + 84) / 88 * 3 : 12 + (y - 4) / 48 * (y < 46 ? 4 : 4);
+    line(P2([[-half, y], [half, y]]), false, 0.8, 0.6);
+  }
+  for (const s of [-1, 1]) {                                                     // wing spars and the joint to the hull
+    line(P2([[12 * s, 4], [54 * s, 52]]), false, 0.8, 0.6);
+    line(P2([[12 * s, 18], [44 * s, 50]]), false, 0.7, 0.45);
+    line(P2([[16 * s, 46], [12 * s, 4]]), false, 0.7, 0.45);
+  }
+  x.setLineDash([]); x.shadowBlur = 0; x.fillStyle = KR.hot;
+  for (const [a, b] of hull) { x.beginPath(); x.arc(a, b, 1.6, 0, 2 * P); x.fill(); }   // vertex nodes
+  // weapon mounts: boxed, with a short callout tick; engines: nozzle rings at the stern
+  x.shadowColor = KR.orange; x.shadowBlur = 8; x.strokeStyle = KR.orange; x.lineWidth = 1.2;
+  for (const [a, b] of [[0, -68], [-38, 44], [38, 44]]) { x.strokeRect(cx + a - 4, cy + b - 4, 8, 8); x.beginPath(); x.moveTo(cx + a + 4, cy + b - 4); x.lineTo(cx + a + 12, cy + b - 12); x.stroke(); }
+  for (const a of [-5, 5]) { x.beginPath(); x.arc(cx + a, cy + 70, 3.4, 0, 2 * P); x.stroke(); }
+  x.restore();
+}
 F.register('krai', {
   name: 'Krai Warhost', kind: 'Black blade steel and red enamel; keys lit orange when engaged', bg: '#0a0707',
   css: { '--s-ink': KR.bone, '--s-dim': KR.dim, '--s-num': KR.orange, '--s-body': '"Teko", sans-serif', '--btn-ink': KR.bone, '--btn-shadow': '0 1px 2px #000, 0 0 3px #000', '--btn-justify': 'center',
-    '--btn-font': '400 18px/1 "Russo One", sans-serif', '--btn-track': '0.06em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-press': 'translateX(2px)',
+    '--btn-font': '400 18px/1 "Russo One", sans-serif', '--btn-track': '0.06em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1.5px', '--btn-pb': '2px',
     '--tab-font': '400 14px/1 "Russo One", sans-serif', '--tab-ink': KR.dim, '--tab-ink-on': KR.bone, '--title-font': '400 18px/1 "Russo One", sans-serif', '--title-ink': KR.red,
-    '--lbl-font': '500 19px/1 "Teko", sans-serif', '--num-font': '600 32px/1 "Teko", sans-serif' },
+    '--lbl-font': '500 19px/1 "Teko", sans-serif', '--num-font': '600 28px/1 "Teko", sans-serif',
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the blade channel, rows 13-58,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '13px', '--stt-pb': '13px', '--stb-pt': '13px', '--stb-pb': '13px', '--strip-lamp': '38px' },
   accent: KR.orange, warn: KR.red,
-  title: (t, m) => { t.style.cssText = `left:${40 - m[3]}px;top:${-m[0] + 7}px;letter-spacing:0.1em;text-shadow:0 1px 0 #000;`; },
-  plateText: { left: 76, top: 10, width: 330, height: 36, font: '400 20px/1 "Russo One", sans-serif', color: KR.bone, sub: 'KHARZ · WARLORD UTREK' },
+  // The title heads the open field of the well (in flow, below the corner fangs), never on the steel or its enamel.
+  title: (t, m) => { t.style.cssText = `position:relative;justify-self:start;align-self:flex-start;margin-left:4px;letter-spacing:0.1em;text-shadow:0 1px 0 #000;`; },
+  plateText: { left: 86, top: 11, width: 318, height: 34, font: '400 20px/1 "Russo One", sans-serif', color: KR.bone, sub: 'KHARZ · WARLORD UTREK' },
   helmKeys: 'ring', helmR: 96, shield: [KR.orange, '#ffc23a', KR.red],
   fonts: ['400 20px "Russo One"', '500 20px "Teko"', '600 20px "Teko"'], view: { title: '400 26px "Russo One"', body: '500 28px "Teko"', upper: true },
-  build: () => F.fromPainters(nine, hero, icon, false),
+  build: () => F.fromManifest(F.kitData('assets/ui/krai/manifest.json'), icon),
   live: {
     arrow: (x) => { x.fillStyle = KR.bone; poly(x, [[12, 0], [-6, -6], [-2, 0], [-6, 6]]); x.fill(); x.strokeStyle = KR.blood; x.lineWidth = 1; x.stroke(); },
     helmCentre: (x, c) => { x.fillStyle = KR.bone; x.font = '400 13px "Russo One"'; x.textAlign = 'center'; x.fillText('HOLD', c, c + 8); },
     // A knife-blade hull swept back into wings; shields as rows of red teeth.
     ssd: (x, cx, cy, sh, col) => {
       for (let i = 0; i < 6; i++) { const a0 = -P / 2 + i * P / 3 - P / 6 + 0.1, a1 = a0 + P / 3 - 0.2; x.fillStyle = col(sh[i]); for (let k = 0; k <= 6; k++) { const a = a0 + (a1 - a0) * k / 6; poly(x, [[cx + Math.cos(a) * 98, cy + Math.sin(a) * 98], [cx + Math.cos(a + 0.04) * 110, cy + Math.sin(a + 0.04) * 110], [cx + Math.cos(a - 0.04) * 110, cy + Math.sin(a - 0.04) * 110]]); x.fill(); } }
-      steel(x, [[cx, cy - 82], [cx + 10, cy + 10], [cx + 50, cy + 56], [cx + 12, cy + 44], [cx, cy + 66], [cx - 12, cy + 44], [cx - 50, cy + 56], [cx - 10, cy + 10]], [cx - 50, cy - 82, cx + 50, cy + 66]);
-      enamel(x, [[cx, cy - 50], [cx + 5, cy + 10], [cx - 5, cy + 10]], KR.red, 6);
-      for (const [mx, my] of [[cx, cy - 70], [cx - 36, cy + 46], [cx + 36, cy + 46]]) enamel(x, [[mx, my - 6], [mx + 5, my + 4], [mx - 5, my + 4]], KR.orange, 6);
+      wireframe(x, cx, cy);
     },
     // A thin wedge sweeps; contacts are red triangles.
     dial: (x, c, cts) => {
@@ -207,8 +122,8 @@ F.register('krai', {
     },
   },
   world: ['War is the only honest test; rank is won in blood.', 'Lean predators with long claws: short, sharp gestures.', 'Forged steel, edged everything; nothing round survives the forge.', 'Knife-blade hulls and swept triangles.'],
-  shapes: 'Blades, fangs, spikes and triangles; nothing round.', light: 'Hard white light along honed edges; red enamel; keys dark until engaged, then lit orange.',
-  motion: 'A key thrusts forward 2 px when struck.', type: '"Russo One" for keys and titles over "Teko" numbers.',
+  shapes: 'Blades, fangs, spikes and triangles; nothing round.', light: 'A forge glow rising from under every lip; honed steel edges; red enamel; keys dark until engaged, then lit orange.',
+  motion: 'A struck key stays put and burns: dark ember, red on hover, forge orange when engaged.', type: '"Russo One" for keys and titles over "Teko" numbers.',
   palette: [['Black steel', KR.black, 'Frames, keys', 'The forge'], ['Edge', KR.edge, 'Honed highlights', 'Readiness'], ['Blood', KR.blood, 'Inlays', 'Honour paid in blood'],
     ['Red', KR.red, 'Titles, warnings', 'Rage'], ['Orange', KR.orange, 'Engaged keys, readouts', 'The strike'], ['Bone', KR.bone, 'Text', 'Trophies']],
 });

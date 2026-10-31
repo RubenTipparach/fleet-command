@@ -168,7 +168,8 @@ build, and then need to be approved for actual game implementation after"):
   (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"), in three sections: game
   mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A new
   artifact goes on it when it is first published. Its link is in `mockup-work.md` and
-  `docs/design/README.md`. An approval counts only when it is in the tracker or in the owner's own
+  `docs/design/README.md`, and **every published page links back to it** (owner, 2026-10-31: "Make sure all
+  published pages link back to the master"): an "All Fleet Command mockups (the tracker)" link near the page's top. An approval counts only when it is in the tracker or in the owner's own
   words in the conversation; record it in `mockup-work.md` either way.
 - **Every mockup is checked into the repository** (owner, 2026-10-30: "All mockups are to be checked
   into repo especially when they are html claude artifacts"): the page in `docs/mockups/`, its shots in
@@ -449,7 +450,7 @@ saying what changes here. Where a note and the copied text below it disagree, th
   sampled or modelled from another game's assets.
 - **No z-fighting, ever** (Undercity, Star Crew).
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
-  minute).
+  minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).
 
 ## 11. Sound and music
 
@@ -473,7 +474,7 @@ Before claiming anything is done, run what applies:
 | Dash check | section 5 |
 | Tests | `scripts/run-tests.sh` (headless simulation tests, then the layout test under Xvfb), once the project exists |
 | Data | the data validator, once it exists |
-| Mockups | screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 
 - **Know what is proven.** Keep implemented, validated and proposed work distinct in docs, PRs and
@@ -503,6 +504,8 @@ Before claiming anything is done, run what applies:
 | `playtest` | Running, watching, recording, uploading and reporting a playtest (section 9). |
 | `obs-record` | Recording a window with OBS and copying it to Google Drive (section 9). |
 | `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
+| `blender-organic-panels` | Organic, grown panels in Blender (the Vhorr Brood first): one body of flesh, chitin and bone round crisp instruments, black smoked screens, rim-lit keys, a ribcage wall, growth measured clear of readouts (sections 7, 10). Its companion guide is the Organic Panel Bible, `docs/design/organic-bible.html`. |
+| `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

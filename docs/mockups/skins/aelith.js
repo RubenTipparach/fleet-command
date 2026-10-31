@@ -32,6 +32,12 @@ function holo(x, draw, box, level, col = AE.holo) {
 }
 const shape = (x, pts) => () => path(x, pts);
 const field = (x, pts, level, col) => holo(x, shape(x, pts), bounds(pts), level, col);
+// A pressed key's hologram is pushed in while its gold shell stays put (owner, 2026-10-31: "I actually prefer the more
+// animated versions on click"): it drops PRESS px and draws back into the void (a touch smaller), so its middle moves
+// with the label (2 x --btn-sink = 3 px) and it stays inside its well (the key has 2 px of void round it; pushed in,
+// 0.46 px is left at its foot).
+const PRESS = 2.5;
+function pushIn(x, pts) { const [x0, y0, x1, y1] = bounds(pts), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; x.translate(cx, cy + PRESS); x.scale(0.97, 0.92); x.translate(-cx, -cy); }
 // A key's sheen when pressed: a soft bar of light across its middle.
 function sheen(x, pts) { const [x0, y0, x1, y1] = bounds(pts); const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(240,255,255,0.4)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.save(); path(x, pts); x.clip(); x.fillStyle = g; x.fillRect(x0, y0, x1 - x0, y1 - y0); x.restore(); }
 
@@ -41,7 +47,7 @@ const HOLO = {
   'frame.inset': (x, s) => field(x, s.wells[0], 0.08),
   'button.idle': (x, s) => field(x, s.holo.key, 0.15),
   'button.hover': (x, s) => field(x, s.holo.key, 0.6),
-  'button.pressed': (x, s) => { field(x, s.holo.key, 1); sheen(x, s.holo.key); },
+  'button.pressed': (x, s) => { x.save(); pushIn(x, s.holo.key); field(x, s.holo.key, 1); sheen(x, s.holo.key); x.restore(); },
   'tab.idle': (x, s) => field(x, s.holo.tab, 0.08),
   'tab.active': (x, s) => field(x, s.holo.tab, 0.75),
   'strip.top': (x, s) => field(x, s.holo.edge, 0.06),
@@ -83,7 +89,21 @@ function build() {
   for (const [name, col] of Object.entries(FILLS)) {
     pieces[name] = { size: [64, 10], margins: [0, 6, 0, 6], data: F.png(F.paint(64, 10, (x) => holo(x, () => { x.beginPath(); x.roundRect(1, 1, 62, 8, 4); }, [0, 0, 64, 10], 0.9, col))) };
   }
+  // The symbol bar: a row of small lozenges of light, the Conclave key's own shape (owner, 2026-10-31: "have different
+  // repeated symbols for them"). Unlit, a faint outline in the same scanlines; lit, the lozenge fills with light.
+  for (const [name, level, col] of [['bar.cell.off', 0.05, AE.holo], ['bar.cell.on', 0.95, AE.holo], ['bar.cell.warn', 0.95, AE.coral]]) {
+    pieces[name] = { kind: 'cell', size: [8, 12], gap: 3, data: F.png(F.paint(8, 12, (x) => lozenge(x, level, col))) };
+  }
   return F.fromManifest({ pieces }, icon);
+}
+function lozenge(x, level, col) {
+  const pts = [[4, 0.6], [7.4, 6], [4, 11.4], [0.6, 6]];
+  holo(x, () => path(x, pts), [0, 0, 8, 12], level, col);
+  if (level > 0.5) {   // lit: the lozenge fills with light, brightest at its heart
+    const g = x.createRadialGradient(4, 6, 0.5, 4, 6, 6); g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, AE.holoHi); g.addColorStop(1, hexA(col, 0.7));
+    x.save(); path(x, pts); x.clip(); x.fillStyle = g; x.fillRect(0, 0, 8, 12); x.restore();
+  }
+  x.save(); x.shadowColor = col; x.shadowBlur = level > 0.5 ? 4 : 0; x.strokeStyle = hexA(col, 0.35 + level * 0.6); x.lineWidth = 0.9; path(x, pts); x.stroke(); x.restore();
 }
 
 // ---- icons: sacred geometry in hairlines of light ---------------------------------------------------------------
@@ -113,9 +133,12 @@ function icon(name) {
 F.register('aelith', {
   name: 'Aelith Conclave', kind: 'Hybrid: a gold and pearl shell rendered in Blender, holograms drawn as vectors in its wells', bg: '#03111a',
   css: { '--s-ink': AE.holoHi, '--s-dim': '#9fc9cf', '--s-num': AE.holo, '--s-body': '"Exo 2", sans-serif', '--btn-ink': AE.holoHi, '--btn-shadow': `0 0 6px ${AE.holo}`, '--btn-justify': 'center',
-    '--btn-font': '400 13px/1 "Michroma", sans-serif', '--btn-track': '0.12em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.25s', '--btn-press': 'none',
-    '--tab-font': '400 10px/1 "Michroma", sans-serif', '--tab-ink': '#9fc9cf', '--tab-ink-on': AE.holoHi, '--title-font': '400 15px/1 "Michroma", sans-serif', '--title-ink': AE.goldHi,
-    '--lbl-font': '600 15px/1 "Exo 2", sans-serif', '--num-font': '300 28px/1 "Exo 2", sans-serif' },
+    '--btn-font': '400 11px/1 "Michroma", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'filter 0.25s, padding-top 0.06s', '--btn-sink': '1.5px',
+    '--tab-font': '400 9.5px/1 "Michroma", sans-serif', '--tab-pb': '1px', '--btn-pb': '3px', '--tab-ink': '#9fc9cf', '--tab-ink-on': AE.holoHi, '--title-font': '400 15px/1 "Michroma", sans-serif', '--title-ink': AE.goldHi,
+    '--lbl-font': '600 15px/1 "Exo 2", sans-serif', '--num-font': '300 28px/1 "Exo 2", sans-serif',
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the channel, rows 12-59,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '40px' },
   accent: AE.holo, warn: AE.coral,
   // The title sits inside the well, just under its top rim and right of the corner knuckle (well from 16 px, knuckles to
   // 41 px), so it never crosses the gold.
