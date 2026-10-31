@@ -33,7 +33,7 @@ for (const id of ids) {
     window.scrollTo(0, 0);
     const root = document.getElementById('console');
     const PARENTS = '.k-strip,.k-panel,.k-inset,.hero,.k-track';
-    const LEAVES = '.ptitle,.lbl,.num,.k-track,.k-fill,.k-button,.k-tab,.k-divider,.ovl,.k-inset img,.k-strip .hero';
+    const LEAVES = '.ptitle,.lbl,.num,.k-track,.k-fill,.k-cells,.k-button,.k-tab,.k-divider,.ovl,.k-inset img,.k-strip .hero';
     const parents = [], leaves = [];
     const pid = (n) => { if (!n.dataset.fitP) { n.dataset.fitP = String(parents.length); const r = n.getBoundingClientRect(); parents.push({ cls: n.className, rect: [r.left + scrollX, r.top + scrollY, r.width, r.height] }); } return +n.dataset.fitP; };
     const name = (n) => (n.className || n.tagName).toString().replace(/\bnine\b|\bfit-\S+/g, '').trim() + (n.textContent ? ' "' + n.textContent.trim().slice(0, 18) + '"' : (n.alt ? ' ' + n.alt : ''));

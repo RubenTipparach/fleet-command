@@ -40,6 +40,13 @@ The page refuses a skin missing any of these (see `REQUIRED` in the page):
   the 1920 x 1080 reference; `FCK.paint` draws at 2x for you. Detail lives in the margins (corners and the edges'
   ends); edges must stretch cleanly and the centre must be plain. Buttons are scaled uniformly to 48 px high and tabs
   to 40, so draw them at any height with sensible proportions.
+- **Symbol bars (optional)**: `nine['bar.cell.off']`, `nine['bar.cell.on']`, `nine['bar.cell.warn']`, each
+  `{ size: [w, h], gap, draw(x, w, h) }` (a rendered kit: pieces of the same names in its manifest, with `gap`). Supply all
+  three and every bar becomes a row of the skin's own symbol in the track's groove: as many whole cells as fit at the
+  groove's height, centred, the first ones lit (owner, 2026-10-31: "have different repeated symbols for them ... instead
+  of the same boring progress bar"). The track may then be taller than 16 (its own image height is its slot height);
+  the groove is its `inset`. Draw a lit and an unlit cell from the same seed, so lighting a cell changes only its light.
+  Concord, Kethran and the Vos keep the plain fill.
 - `hero[piece] = draw(x, w, h)` for every key of `FCK.HERO`: `nameplate` 460 x 56 (leave a field for live text),
   `helm.pad` 300 x 300 (eight direction keys and a centre key; arrows are drawn live by `live.arrow`), `ssd.bezel`
   460 x 300 (a frame round an empty field for `live.ssd`), `dial` 120 x 120 (a housing; `live.dial` draws the

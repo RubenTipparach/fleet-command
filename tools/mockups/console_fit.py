@@ -85,8 +85,8 @@ def check(rec):
     ink = ndimage.binary_opening(ink, np.ones((2, 2))) | (ndimage.uniform_filter(ink.astype(float), 3) > 0.6)
     if ink.sum() < 6:
         return {"empty": True}
-    if rec["name"].startswith("k-fill"):
-        # A fill fills its track's groove (the kit's `inset`), so shadows inside the groove lie under it by design;
+    if rec["name"].startswith(("k-fill", "k-cells")):
+        # A fill (or a symbol bar's row of cells) fills its track's groove (the kit's `inset`), so shadows inside the groove lie under it by design;
         # what it must not do is cover the groove's rim: no frame line in its own first or last row.
         ys = np.where(ink.any(1))[0]
         grown = ink.copy()

@@ -40,13 +40,16 @@ function rivet(x, px, py, r, R) {
   const g = x.createRadialGradient(px - r * 0.4, py - r * 0.4, 0.5, px, py, r); g.addColorStop(0, '#9a8a74'); g.addColorStop(0.5, '#5a4a3a'); g.addColorStop(1, '#1c1510');
   x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 2 * P); x.fill(); x.strokeStyle = '#0c0907'; x.lineWidth = 0.8; x.stroke();
 }
-// Light through a dirty window: an uneven backlight, caked grime, specks and a smear, cracks if asked.
+// Light through a dirty window: an uneven backlight, caked grime, specks and a smear, cracks if asked. The dirt is
+// drawn from R the same way at every light level, so a window lit and unlit carries the same dust and only its light
+// changes (owner, 2026-10-31: "sync up dust with out and unlit button to give it that illusion").
 function grimeLight(x, draw, box, level, R, col = TA.light, cracked = false) {
   const [x0, y0, x1, y1] = box, w = x1 - x0, h = y1 - y0;
   x.save(); draw(); x.clip();
   x.fillStyle = TA.glass; x.fillRect(x0, y0, w, h);
+  const jit = R();   // drawn whether lit or not, so the dust that follows matches
   if (level > 0) {
-    const g = x.createRadialGradient(x0 + w * (0.4 + R() * 0.2), y0 + h * 0.5, 1, x0 + w * 0.5, y0 + h * 0.5, Math.max(w, h) * 0.75);
+    const g = x.createRadialGradient(x0 + w * (0.4 + jit * 0.2), y0 + h * 0.5, 1, x0 + w * 0.5, y0 + h * 0.5, Math.max(w, h) * 0.75);
     g.addColorStop(0, hexA(col, 0.1 + level * 0.85)); g.addColorStop(0.7, hexA(col, 0.05 + level * 0.5)); g.addColorStop(1, hexA(col, 0.02 + level * 0.2));
     x.fillStyle = g; x.fillRect(x0, y0, w, h);
   }
@@ -83,7 +86,7 @@ function tablet(level, sunk) {
     iron(x, slab, [0, 0, w, h], R, { rustEvery: 600 });
     iron(x, foot, [0, h - 7, w, h], R, { top: '#4f443a' });
     const win = () => { const rr = 13; x.beginPath(); x.moveTo(14, h - 12); x.lineTo(14, rr + 9 + d); x.arcTo(14, 9 + d, 14 + rr, 9 + d, rr); x.lineTo(w - 14 - rr, 9 + d); x.arcTo(w - 14, 9 + d, w - 14, rr + 9 + d, rr); x.lineTo(w - 14, h - 12); x.closePath(); };
-    grimeLight(x, win, [14, 9, w - 14, h - 12], level, RNG('win.' + level));
+    grimeLight(x, win, [14, 9, w - 14, h - 12], level, RNG('win'));   // one dust for idle, hover and pressed
     if (sunk) { x.save(); slab(); x.clip(); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 6; slab(); x.stroke(); x.restore(); }
     rivet(x, 10, h - 4, 2.2, R); rivet(x, w - 10, h - 4, 2.2, R);
   };
@@ -91,7 +94,7 @@ function tablet(level, sunk) {
 // A tab: a lintel bar of iron, chipped at the ends; the active one shows a slot of light.
 function lintel(active) {
   return (x, w, h) => {
-    const R = RNG('lintel.' + active);
+    const R = RNG('lintel');   // one plate and one dust for both states
     iron(x, () => { x.beginPath(); x.moveTo(4, 6); x.lineTo(w - 6, 4); x.lineTo(w - 2, 10); x.lineTo(w - 3, h - 4); x.lineTo(6, h - 3); x.lineTo(2, h - 10); x.closePath(); }, [0, 0, w, h], R);
     grimeLight(x, () => { x.beginPath(); x.rect(10, h - 12, w - 20, 5); }, [10, h - 12, w - 10, h - 7], active ? 0.9 : 0.05, R);
   };
@@ -112,10 +115,20 @@ function beam(flip) {
     }
   };
 }
+// One bar cell: an arched window in miniature, its dust always the same (RNG('cell')), lit to level in col.
+function cell(x, w, h, level, col = TA.light) {
+  const win = () => { x.beginPath(); x.moveTo(0.5, h - 0.5); x.lineTo(0.5, w / 2); x.arc(w / 2, w / 2, w / 2 - 0.5, P, 0); x.lineTo(w - 0.5, h - 0.5); x.closePath(); };
+  grimeLight(x, win, [0, 0, w, h], level, RNG('cell'), col);
+}
 const nine = {
   'frame.panel': { size: [160, 120], m: [34, 34, 34, 34], draw: (x, w, h) => frame(x, w, h, RNG('panel'), 22) },
   'frame.inset': { size: [64, 48], m: [14, 14, 14, 14], draw: (x, w, h) => { const R = RNG('inset'); iron(x, () => { x.beginPath(); x.rect(1, 1, w - 2, h - 2); }, [0, 0, w, h], R); grimeLight(x, () => { x.beginPath(); x.rect(7, 7, w - 14, h - 14); }, [7, 7, w - 7, h - 7], 0, R); } },
-  'bar.track': { size: [96, 16], m: [0, 14, 0, 14], inset: [4, 3], draw: (x, w, h) => { const R = RNG('track'); iron(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], R); grimeLight(x, () => { x.beginPath(); x.rect(4, 3, w - 8, h - 6); }, [4, 3, w - 4, h - 3], 0, R); rivet(x, 4, h / 2, 2, R); rivet(x, w - 4, h / 2, 2, R); } },
+  // The symbol bar: a row of small arched windows (the tablet key's window, in miniature) set in an iron rail; each
+  // shows the same caked dust lit or unlit, so a window coming on reads as light behind the dirt, not new glass.
+  'bar.track': { size: [96, 20], m: [0, 14, 0, 14], inset: [9, 3], draw: (x, w, h) => { const R = RNG('track'); iron(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], R); x.fillStyle = TA.glass; x.fillRect(8, 2, w - 16, h - 4); x.strokeStyle = 'rgba(0,0,0,0.7)'; x.lineWidth = 1; x.strokeRect(8.5, 2.5, w - 17, h - 5); rivet(x, 4, h / 2, 2, R); rivet(x, w - 4, h / 2, 2, R); } },
+  'bar.cell.off': { size: [10, 14], gap: 2, draw: (x, w, h) => cell(x, w, h, 0.07) },
+  'bar.cell.on': { size: [10, 14], gap: 2, draw: (x, w, h) => cell(x, w, h, 0.95) },
+  'bar.cell.warn': { size: [10, 14], gap: 2, draw: (x, w, h) => cell(x, w, h, 0.95, TA.ember) },
   'bar.fill': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => grimeLight(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], 0.95, RNG('fill')) },
   'bar.fill.red': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => grimeLight(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], 0.95, RNG('fillr'), TA.ember) },
   'button.idle': { size: [140, 52], m: [24, 30, 12, 30], draw: tablet(0.45, false) },
