@@ -481,6 +481,36 @@ renders them, `docs/mockups/skins/vhorr.js` draws the live readouts.
 - Not built yet: tendrils bridging the gutters between panels. They need a page-level growth overlay, a new kit idea
   with its own fit rule (never over another panel's content).
 
+## An organic design system (version 24)
+
+The owner, 2026-10-31, of version 23: "Nah that's bad lol. Let's make a new design system for organic", then "The brood
+is overly simple. It's just metal with ameobas on top. Completely missing the zerg aesthetic". Version 23's assimilated
+tech is **superseded**: it started from a machine and added growth, so the growth read as decoration. This is the
+Winamp exercise the owner named, done for organic UI: a study refined one change at a time in Blender
+(`tools/blender/organic_study.py`, 14 steps), written up as the **Organic Panel Bible** (`docs/design/organic-bible.html`)
+with its skill (`blender-organic-panels`). Reference screenshots of another game's hive interface gave the direction
+and are not committed; the shapes, words and colours are our own.
+
+Its rules, in short (the bible has them in full):
+- **One organism holding instruments.** The frame and the backdrop are one body: a ribbed wall of tissue, panels as
+  swellings in it, tubes, veins and tendrils between them. No grey metal, no panel on black.
+- **Five materials.** Leathery maroon-brown flesh with a wet coat, near-black chitin plates sunk into it, ivory bone,
+  black smoked glass for every screen (with a thin bronze rim and a calm middle), and light.
+- **Grown form.** Metaball bodies, voxel remeshed and lumped; a ribcage rhythm; chitin overlapping like vertebrae;
+  bone spines and arches growing past the top edge and over neighbours; asymmetric.
+- **Crisp tech in a soft frame.** Screens are black with glowing content; keys are square dark caps with glowing amber
+  rims and clean icons set into the flesh (a press sinks the cap 3 mm, the flesh stays); the name plate is a tall pocket
+  under an arch holding a live portrait; the crest is a big faceted violet crystal.
+- **Light and palette.** A warm soft key from above, grazing rims, a dim cool fill; accents light their surroundings.
+  A value ladder: fold `#080303`, flesh `#33110f`, lit flesh `#6a2620`, chitin `#140c0e`, bone `#e2d6bb`, screen
+  `#050405`, bronze `#9a5a34`; light only in readout green `#b8f27a`, key amber `#ffb03a`, life green `#6fd82a`, hero
+  violet `#b35cff`.
+- **Fit, measured (G1-G4).** Growth may cover frames and neighbours' frames, never a screen, a key face or the portrait
+  window; the study measures it on the evaluated geometry (all clear in the final step).
+
+**Next:** the Vhorr Brood kit is rebuilt on the organic bible once the owner has seen it (a new
+`tools/blender/build_ui_vhorr.py` on the skill's method, its kit pieces measured by G1-G4 and the page's fit checks).
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per

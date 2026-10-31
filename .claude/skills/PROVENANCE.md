@@ -25,6 +25,7 @@ note, and the note wins where they differ.
 | `testing-practices` | New, after the-federation's `tests/` and `scripts/run-tests.sh`, and Crab Breeze's `testing-practices` | the-federation `02791b6`, Crab Breeze `69ce196` | 2026-10-30 | |
 | `playtest` | New, after Crab Breeze's `playtest` (itself after Star Crew's `--playtest`, Mining Mike's five-minute checks and Tom Lander's `bot-run`) | Crab Breeze `69ce196` | 2026-10-30 | Rewritten for Godot input events and two screen shapes. |
 | `blender-ui-panels` | New, from this session's lighting study after a 1999 music-player skin (the study itself is not committed) | | 2026-10-30 | Its companion guide: `docs/design/ui-bible.html` (the Analog Panel Bible), with the study's step renders in `docs/design/ui-bible/`. |
+| `blender-organic-panels` | New, from this session's organic panel study (`tools/blender/organic_study.py`, our own shapes; the reference screenshots are not committed) | | 2026-10-31 | Its companion guide: `docs/design/organic-bible.html` (the Organic Panel Bible), with the study's step renders in `docs/design/organic-bible/`. |
 | `krita-brushwork` | New, from this session: Krita 5.3.4.1 run headless under Xvfb with a script-runner plugin | | 2026-10-31 | `scripts/install-krita.sh`, `tools/krita/`. |
 
 Data and code borrowed for the mockups (not skills, recorded here so they are found):

@@ -1,0 +1,27 @@
+{
+  "screen": {
+    "clearance_mm": 0.89,
+    "nearest": "body",
+    "pass": true
+  },
+  "portrait window": {
+    "clearance_mm": 0.09,
+    "nearest": "canopy0",
+    "pass": true
+  },
+  "key 1 face": {
+    "clearance_mm": 2.17,
+    "nearest": "body",
+    "pass": true
+  },
+  "key 2 face": {
+    "clearance_mm": 2.33,
+    "nearest": "body",
+    "pass": true
+  },
+  "key 3 face": {
+    "clearance_mm": 2.49,
+    "nearest": "body",
+    "pass": true
+  }
+}

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Organic Panel Bible</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:wght@600;800&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: the Analog Panel Bible's service-manual sheets (docs/design/ui-bible.html), recoloured for living tissue:
+   dark maroon paper, ivory ink, one green accent for life and one amber for the keys. */
+:root {
+  --paper: #140b0b; --sheet: #1d1110; --ink: #ece2cf; --muted: #b29d8a; --rule: #3a2522;
+  --accent: #ffb03a; --accent-soft: #3a2410; --life: #7fe03a; --hero: #b35cff; --red: #ff6a55; --green: #7fe03a;
+  --display: "Saira Extra Condensed", "Arial Narrow", Impact, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 900px; margin: 0 auto; display: grid; gap: 40px; }
+header.top { padding-top: 32px; display: grid; gap: 14px; }
+.eyebrow, .kicker { font: 500 12px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 800 clamp(48px, 11vw, 92px)/0.86 var(--display); letter-spacing: 0.01em; margin: 0; text-wrap: balance; text-transform: uppercase; }
+h2 { font: 800 clamp(30px, 6vw, 44px)/0.95 var(--display); margin: 0; text-wrap: balance; text-transform: uppercase; }
+h3 { font: 600 22px/1.1 var(--display); letter-spacing: 0.02em; margin: 0; text-transform: uppercase; }
+p { margin: 0; max-width: 68ch; }
+.lede { font-size: 18px; color: var(--muted); }
+section.ch { display: grid; gap: 16px; padding-top: 28px; border-top: 2px solid var(--ink); }
+.chhead { display: grid; gap: 6px; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.sheet .cap { font-size: 14px; color: var(--muted); }
+.scroll { overflow-x: auto; }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 68ch; }
+code, .mono { font: 500 0.88em var(--mono); }
+.tagi { font: 500 12px/1 var(--mono); border: 1px solid var(--ink); border-radius: 3px; padding: 2px 4px; white-space: nowrap; }
+blockquote { margin: 0; padding: 8px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-style: italic; max-width: 68ch; border-radius: 0 4px 4px 0; }
+blockquote span.who { font: 500 11px/1 var(--mono); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 620px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 11px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: var(--mono); font-size: 13px; }
+td.ok { color: var(--green); font-family: var(--mono); font-size: 13px; }
+.toc { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 20px; list-style: none; padding: 0; margin: 0; max-width: none; }
+.toc a { color: var(--ink); text-decoration: none; display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px dotted var(--rule); min-height: 44px; align-items: center; }
+.toc a:hover { color: var(--accent); }
+.toc .no { font: 500 13px/1.6 var(--mono); color: var(--accent); width: 2ch; }
+figure.render-fig { margin: 0; }
+figure.render-fig img { width: 100%; border-radius: 4px; display: block; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pair figure { margin: 0; display: grid; gap: 6px; }
+.pair img { width: 100%; border-radius: 4px; display: block; border: 1px solid var(--rule); }
+.pair figcaption { font-size: 13px; color: var(--muted); }
+.pair .dont { border-top: 3px solid var(--red); padding-top: 6px; }
+.pair .do { border-top: 3px solid var(--green); padding-top: 6px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.sw { border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--sheet); }
+.sw .chip { height: 54px; }
+.sw .t { padding: 8px 10px; display: grid; gap: 2px; }
+.sw .t b { font: 600 14px/1.2 var(--body); }
+.sw .t span { font: 500 11.5px/1.3 var(--mono); color: var(--muted); }
+.cat { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.cat article { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cat .params { font: 500 12px/1.5 var(--mono); color: var(--muted); }
+.story { display: grid; gap: 22px; }
+.step { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.step img { width: 100%; border-radius: 4px; border: 1px solid var(--rule); display: block; }
+.step .txt { display: grid; gap: 8px; min-width: 0; }
+.step h3 { font-size: 20px; }
+.lesson { font-size: 14px; color: var(--muted); }
+.lesson b { color: var(--ink); }
+.note { font-size: 14px; color: var(--muted); background: var(--sheet); border: 1px dashed var(--rule); border-radius: 6px; padding: 10px 12px; max-width: 68ch; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.master { display: inline-flex; align-items: center; justify-self: start; min-height: 44px; padding: 0 14px; border: 1px solid currentColor; border-radius: 8px; font: 600 14px/1 system-ui, sans-serif; color: inherit; text-decoration: none; opacity: 0.85; }
+.master:hover { opacity: 1; }
+@media (max-width: 600px) {
+  .step { grid-template-columns: 1fr; }
+  .pair { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Fleet Command · design guide · living panels rendered in Blender</div>
+    <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+    <h1>Organic Panel Bible</h1>
+    <p class="lede">How to build an interface that is grown, not built: crisp instruments held in a living frame. The frame is flesh, chitin and bone in one body, the screens are black smoked glass, and the keys are hard, dark and lit at their rims. This is the organic counterpart of the <a href="https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF" target="_blank" rel="noopener">Analog Panel Bible</a>.</p>
+    <blockquote><span class="who">Owner, 2026-10-31</span>"Nah that's bad lol. Let's make a new design system for organic" · "The brood is overly simple. It's just metal with ameobas on top. Completely missing the zerg aesthetic"</blockquote>
+    <p class="note">This guide goes with the skill <code>.claude/skills/blender-organic-panels</code>, which holds the Blender procedure, and the study generator <code>tools/blender/organic_study.py</code>, which renders every image here. The direction comes from the owner's notes and two reference screenshots of a hive race's interface that are not committed: we take how it is built (its shapes, materials and light), never its art. Every shape, word and colour on this page is our own.</p>
+    <ol class="toc">
+      <li><a href="#organism"><span class="no">1</span>One organism</a></li>
+      <li><a href="#materials"><span class="no">2</span>Five materials</a></li>
+      <li><a href="#form"><span class="no">3</span>Form: grow it, don't cut it</a></li>
+      <li><a href="#tech"><span class="no">4</span>Crisp tech in a soft frame</a></li>
+      <li><a href="#light"><span class="no">5</span>Light</a></li>
+      <li><a href="#palette"><span class="no">6</span>Palette and value</a></li>
+      <li><a href="#fit"><span class="no">7</span>Fit rules, measured</a></li>
+      <li><a href="#recipes"><span class="no">8</span>Blender recipes</a></li>
+      <li><a href="#v23"><span class="no">9</span>What went wrong in v23</a></li>
+      <li><a href="#story"><span class="no">10</span>Worked example</a></li>
+      <li><a href="#checklist"><span class="no">11</span>Before you call it done</a></li>
+    </ol>
+    <figure class="sheet render-fig"><img src="organic-bible/14-final.jpg" alt="The finished study: a portrait pocket, a black screen with a glowing readout, three crisp keys with amber rims, bone spines arching over, a violet crystal and a neighbour panel, all grown from one ribbed body of dark flesh"><figcaption class="cap">The study's last step: one corner of a living console, rendered face on in Blender exactly as a kit piece is. Everything you see is one body (flesh, chitin plates, bone) except the instruments it holds: the screen, the keys and the portrait.</figcaption></figure>
+  </header>
+
+  <section class="ch" id="organism">
+    <div class="chhead"><div class="kicker">Chapter 1</div><h2>One organism</h2></div>
+    <p>An organic console is not a set of panels with growth added. It is <b>one creature that holds instruments</b>. Three ideas follow from that, and every later chapter is one of them in practice:</p>
+    <ol>
+      <li><b>The frame and the backdrop are the same body.</b> Panels are swellings in one ribbed wall of tissue; tubes, veins and ribs run from one to the next. There is no black gap between panels, and no panel floats.</li>
+      <li><b>The tech is crisp, the frame is soft.</b> The parts a captain reads or presses (screens, keys, the portrait) are hard-edged, dark and clean. Everything round them is curved, wet and uneven. The contrast between the two is the look.</li>
+      <li><b>The body breaks the rectangle; the instruments do not.</b> Spines, horns and arches grow past a panel's edge and over its neighbours, but every screen and key face stays an exact, measured rectangle that nothing covers.</li>
+    </ol>
+    <div class="pair">
+      <figure class="dont"><img src="organic-bible/01-boxes.jpg" alt="Version 23's approach: a grey plate with openings cut, lime moss blobs and rivets"><figcaption><b>Don't:</b> a machine with growth stuck on top. Grey plate, cut openings, lime blobs, a lit lime screen.</figcaption></figure>
+      <figure class="do"><img src="organic-bible/14-final.jpg" alt="The finished study"><figcaption><b>Do:</b> one body grown round the instruments, standing in a wall of the same tissue.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="ch" id="materials">
+    <div class="chhead"><div class="kicker">Chapter 2</div><h2>Five materials</h2></div>
+    <p>The whole look is five materials. Each has one job, and none is grey metal.</p>
+    <div class="cat">
+      <article><h3>Flesh</h3><p>The frame and the wall. Dark maroon-brown, leathery: fine pores and diagonal creases in the bump, its colour stepped by its own ambient occlusion (black in the folds, lit brown on the swells), a little subsurface so thin edges warm up, and a satin wet coat.</p><p class="params">base #33110f · lit #6a2620 · fold #080303 · roughness 0.62 · coat 0.55 at 0.22 · subsurface 0.08 over 1.5 mm</p></article>
+      <article><h3>Chitin</h3><p>The armour: segmented plates along a frame's top and shoulders, overlapping like vertebrae and sunk into the flesh so it swells round each one. Near black and hard, its shape carried by one sharp highlight under a clear coat, with a faint thin-film sheen.</p><p class="params">base #140c0e to #4a3236 by noise · roughness 0.3 · coat 1.0 at 0.03 · thin film 380 nm</p></article>
+      <article><h3>Bone</h3><p>Spines, horns, claws and arches: ivory, waxy, darker at the root where it grows out of the flesh. The brightest solid thing on the console, so it draws the silhouette.</p><p class="params">#e2d6bb, root #8a7a5e by occlusion · roughness 0.38 · coat 0.5 · subsurface 0.15</p></article>
+      <article><h3>Smoked glass</h3><p>Every screen: a recess of near-black glass, glossy, with faint dark-red veins only at its edges, held by a thin bronze rim. The content glows on the black.</p><p class="params">#050405 · roughness 0.12 · coat 1.0 · veins #3a0d0c outside 45% of a squarish oval · rim bronze #9a5a34, metal</p></article>
+      <article><h3>Light</h3><p>Things that glow: the readouts (pale green), the key rims and icons (our amber), the pustules (green, life), the crystal (violet, the heart). Light is never a surface colour of the frame.</p><p class="params">readout #b8f27a · accent #ffb03a · life #6fd82a · hero #b35cff</p></article>
+    </div>
+  </section>
+
+  <section class="ch" id="form">
+    <div class="chhead"><div class="kicker">Chapter 3</div><h2>Form: grow it, don't cut it</h2></div>
+    <p>Hard-surface panels are cut: a plate, a boolean, a bevel. Organic panels are <b>grown</b>: soft elements that merge wherever they meet, so one shape flows into the next with no seam.</p>
+    <ul>
+      <li><b>Metaballs, then a remesh.</b> Capsules hug each opening (thicker along the top, thinner below: the thick-and-thin rhythm), balls swell at the corners, negative cubes carve the openings. The metaball is converted to a mesh, voxel remeshed at 1.4 mm, lumped by a 2.2 mm cloud displacement and relaxed by corrective smoothing.</li>
+      <li><b>A ribcage rhythm.</b> Short capsules laid across a frame's sides, longest in the middle and tapering at the ends, turn a tube into a ribbed thing. The wall behind is the same: ribs sweeping across every 24 mm, bowed and uneven.</li>
+      <li><b>Armour sunk, not stuck.</b> Chitin plates overlap each other and sit half inside the flesh. A plate standing on a frame reads as a bean on a sausage (step 5 shows both).</li>
+      <li><b>Asymmetry.</b> The left side carries the long canopy spines; the right side has short swept-back spines. A grown thing is never mirrored.</li>
+      <li><b>Past the edge.</b> Arches, canopies and horns rise above a panel's top and over its neighbour. That is what makes the silhouette alive.</li>
+    </ul>
+    <figure class="sheet render-fig"><img src="organic-bible/04-ribs.jpg" alt="Step 4: the body with ribs along its sides and a vertebral band of chitin along its top"><figcaption class="cap">Step 4: the same body as step 3 with its ribs. Nothing new was cut; only more elements were grown into the same metaball.</figcaption></figure>
+  </section>
+
+  <section class="ch" id="tech">
+    <div class="chhead"><div class="kicker">Chapter 4</div><h2>Crisp tech in a soft frame</h2></div>
+    <p>What the captain reads and presses is the one place nothing is soft.</p>
+    <ul>
+      <li><b>Screens are black.</b> A smoked recess sunk 6 mm into the body, the readout glowing on it. A lit field behind dark letters (version 23's lime screens) is low contrast and fights every glow on the console.</li>
+      <li><b>A calm middle.</b> The glass's veins live only near its rim; a squarish oval over the readout is plain black, so the letters sit on nothing.</li>
+      <li><b>Keys are square, dark and lit at the rim.</b> A near-black cap with a small round, a thin glowing amber rim inset 2.5 mm, and a clean amber icon. It sits in a pit grown in the flesh. Soft green pillows read as more growth, not as something to press.</li>
+      <li><b>A press pushes the cap in.</b> The cap sinks 3 mm and drops 2 mm; its rim and icon brighten; the flesh round it stays put (step 13).</li>
+      <li><b>The portrait lives in a pocket.</b> A tall dark pocket under an arch of flesh, the face lit from below out of the dark. A flat name bar reads as a label, not a presence.</li>
+    </ul>
+    <div class="pair">
+      <figure><img src="organic-bible/close-keys.jpg" alt="Close-up: three keys at rest"><figcaption>Keys at rest (step 12): dark caps, amber rims and icons, in pits grown in the flesh.</figcaption></figure>
+      <figure><img src="organic-bible/close-pressed.jpg" alt="Close-up: the middle key pressed"><figcaption>The middle key pressed (step 13): the cap sinks and drops, its rim brightens, nothing round it moves.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="ch" id="light">
+    <div class="chhead"><div class="kicker">Chapter 5</div><h2>Light</h2></div>
+    <ul>
+      <li><b>A warm key light from above</b>, large and soft (an area light 180 mm wide, 420 mm up). It puts a wet highlight on every ridge's top and leaves the hollows under ribs and plates deep.</li>
+      <li><b>Two grazing rims</b> from the sides, warm on the left and faintly violet on the right, at 30% and 20% of the key. They light the edges of the bone and the wet flesh, which is what makes a surface read as wet.</li>
+      <li><b>A dim cool fill</b> from below, 3% of the key, only so the darkest folds are not pure black.</li>
+      <li><b>Bioluminescent accents light their surroundings.</b> Each pustule has a tiny point light just in front of it, so the flesh round it picks up green. The crystal has one inside and one spilling below it.</li>
+      <li><b>Never a flat front light.</b> Step 1 to 4 use one; step 5 shows the difference.</li>
+    </ul>
+    <div class="pair">
+      <figure><img src="organic-bible/04-ribs.jpg" alt="Step 4 under a flat front light"><figcaption>Step 4: one flat light from the front. The body reads as plastic.</figcaption></figure>
+      <figure><img src="organic-bible/05-light.jpg" alt="Step 5 under a warm top light, rims and a cool fill"><figcaption>Step 5: warm from above, grazing rims, a dim cool fill. Ridges shine, hollows go deep.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="ch" id="palette">
+    <div class="chhead"><div class="kicker">Chapter 6</div><h2>Palette and value</h2></div>
+    <p>Version 23 used several mid hues at one value (grey, olive, lime), mottled together: it read as camouflage. The fix is few hues on a <b>value ladder</b>: the wall darkest, flesh dark, chitin dark with bright highlights, bone pale, and the light brightest. Each colour that glows has one meaning.</p>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#080303"></div><div class="t"><b>Fold</b><span>#080303 · hollows, pits</span></div></div>
+      <div class="sw"><div class="chip" style="background:#33110f"></div><div class="t"><b>Flesh</b><span>#33110f · frame, wall</span></div></div>
+      <div class="sw"><div class="chip" style="background:#6a2620"></div><div class="t"><b>Lit flesh</b><span>#6a2620 · swells</span></div></div>
+      <div class="sw"><div class="chip" style="background:#140c0e"></div><div class="t"><b>Chitin</b><span>#140c0e · armour</span></div></div>
+      <div class="sw"><div class="chip" style="background:#e2d6bb"></div><div class="t"><b>Bone</b><span>#e2d6bb · spines, horns</span></div></div>
+      <div class="sw"><div class="chip" style="background:#050405"></div><div class="t"><b>Screen</b><span>#050405 · glass</span></div></div>
+      <div class="sw"><div class="chip" style="background:#9a5a34"></div><div class="t"><b>Bronze</b><span>#9a5a34 · screen rims</span></div></div>
+      <div class="sw"><div class="chip" style="background:#b8f27a"></div><div class="t"><b>Readout</b><span>#b8f27a · text on glass</span></div></div>
+      <div class="sw"><div class="chip" style="background:#ffb03a"></div><div class="t"><b>Accent</b><span>#ffb03a · keys only</span></div></div>
+      <div class="sw"><div class="chip" style="background:#6fd82a"></div><div class="t"><b>Life</b><span>#6fd82a · pustules, health</span></div></div>
+      <div class="sw"><div class="chip" style="background:#b35cff"></div><div class="t"><b>Hero</b><span>#b35cff · the crystal only</span></div></div>
+    </div>
+    <p>Green is a light, never a surface. The amber accent is ours (the reference uses its own hot colour for keys); violet belongs to the hero alone.</p>
+  </section>
+
+  <section class="ch" id="fit">
+    <div class="chhead"><div class="kicker">Chapter 7</div><h2>Fit rules, measured</h2></div>
+    <p>Growth may cover a frame, a bezel or a neighbour's frame. It may never cover what a captain reads or presses. The study measures it on the geometry: every vertex of every growing object that stands in front of the screen glass is projected onto the view, and its distance to each protected rectangle is taken.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Rule</th><th>What it says</th><th>How it is checked</th></tr></thead>
+      <tbody>
+        <tr><td class="n">G1</td><td>No growth covers a screen, a key face or the portrait window.</td><td>Nearest growth vertex in front of the glass to each protected rectangle is 0 mm or more (<code>organic_study.py measure</code>).</td></tr>
+        <tr><td class="n">G2</td><td>Children stay inside their parents: a readout inside its screen, an icon inside its key, the face inside its pocket.</td><td>Laid out from the protected rectangle with a margin; the kit's <code>console_fit</code> measures the page.</td></tr>
+        <tr><td class="n">G3</td><td>Overhangs never cover another panel's content: a canopy may pass over a neighbour's frame, never its screen.</td><td>G1 run against every panel's rectangles, not only its own.</td></tr>
+        <tr><td class="n">G4</td><td>A 9-slice piece keeps its growth in the corners and edges; the stretching middle is plain flesh, so it stretches without smearing a rib.</td><td>Margins chosen round the ribs, as in the analog kits.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Protected rectangle</th><th>Clearance</th><th>Nearest growth</th><th>Result</th></tr></thead>
+      <tbody id="fitrows">
+        <tr><td>Screen</td><td class="n">0.89 mm</td><td class="n">body</td><td class="ok">pass</td></tr>
+        <tr><td>Portrait window</td><td class="n">0.09 mm</td><td class="n">canopy0</td><td class="ok">pass</td></tr>
+        <tr><td>Key 1 face</td><td class="n">2.17 mm</td><td class="n">body</td><td class="ok">pass</td></tr>
+        <tr><td>Key 2 face</td><td class="n">2.33 mm</td><td class="n">body</td><td class="ok">pass</td></tr>
+        <tr><td>Key 3 face</td><td class="n">2.49 mm</td><td class="n">body</td><td class="ok">pass</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="ch" id="recipes">
+    <div class="chhead"><div class="kicker">Chapter 8</div><h2>Blender recipes</h2></div>
+    <div class="cat">
+      <article><h3>The body</h3><p class="params">Metaball, threshold 0.6, resolution 1.8 mm. Capsules round each opening (radius 22 mm on top, 18 on the sides, 18 below), balls at the corners at 1.25 x. Negative cubes, stiffness 10, carve the openings 3 mm larger than their rectangles. Convert to mesh; squash the back to 20%; Remesh, voxel 1.4 mm; Displace, clouds 18 mm, 2.2 mm; Corrective Smooth, 5 iterations; shade smooth.</p></article>
+      <article><h3>Ribs</h3><p class="params">Capsules, radius 7-7.5 mm, length 14-22 mm (a sine across the run), turned 12-15 degrees, set 4-6 mm proud. The wall: tubes of radius 7.5-10 mm every 24 mm, bowed by a sine of 7 mm.</p></article>
+      <article><h3>Flesh shader</h3><p class="params">Principled. Colour ramp fold #080303 at 0.3, flesh #33110f at 0.75, lit #6a2620 at 1.15, driven by AO (14 mm) + 0.3 x noise (scale 260, detail 10). Bump 0.5 over 0.6 mm from wave bands (scale 90, distortion 18) + noise. Roughness 0.62, coat 0.55 at 0.22, subsurface 0.08 random walk over 1.5 mm.</p></article>
+      <article><h3>Chitin plates</h3><p class="params">UV spheres squashed to 15.5 x 13 x 6.5 mm, swelling 18% to the middle of a run, overlapping by a third, tilted -22 degrees and -18 degrees, half sunk. Shader: noise between #140c0e and #4a3236, roughness 0.3, coat 1.0 at 0.03, thin film 380 nm.</p></article>
+      <article><h3>Bone</h3><p class="params">Bezier curves, bevel depth 3-10 mm, taper by point radius from 1.0 at the root to 0.05 at the tip. Shader ivory #e2d6bb, AO ramp to #8a7a5e at the root, roughness 0.38, coat 0.5, subsurface 0.15.</p></article>
+      <article><h3>Smoked screen</h3><p class="params">A recess 6 mm into the body. Glass #050405, roughness 0.12, coat 1. Voronoi distance-to-edge (scale 30, width 0.03) for veins in #3a0d0c, masked by (dx/rx)^4 + (dy/ry)^4 from 0.45 to 1. Bronze rim: a 1.6 mm tube 4.5 mm outside the rectangle, corners 4 mm.</p></article>
+      <article><h3>Keys</h3><p class="params">A box with a 2 mm, 4-segment bevel, #0e0a0b, roughness 0.28, coat 1. A 0.7 mm tube rim 2.5 mm inside the face, emission amber 1.6 (3.2 pressed). Flat icon polygons on the face, same emission. A point light 12 mm out, 0.012 W (0.03 pressed). Pressed: back 3 mm, down 2 mm.</p></article>
+      <article><h3>Glow</h3><p class="params">Pustules: spheres, emission 0.8 with subsurface 0.5, and a point light of 0.012 W per mm of radius just in front. The crystal: hexagonal cones (a tip and a short root), transmission 0.6, emission 0.6 violet, a 0.3 W point inside and 0.25 W below.</p></article>
+      <article><h3>Render</h3><p class="params">Cycles, CPU, 32 samples, denoised, AgX with medium-high contrast. Orthographic face on, 2 px per mm. World near black (#010101).</p></article>
+    </div>
+  </section>
+
+  <section class="ch" id="v23">
+    <div class="chhead"><div class="kicker">Chapter 9</div><h2>What went wrong in v23</h2></div>
+    <p>Version 23 rebuilt the Vhorr Brood as "assimilated tech": a captured machine with growth over it. The owner's verdict was that it was "just metal with ameobas on top". Compared element by element with the reference, in our own words:</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Element</th><th>Version 23</th><th>What it should be</th><th>Step</th></tr></thead>
+      <tbody>
+        <tr><td>Material</td><td>Grey stone and metal with lime moss blotches</td><td>Leathery maroon-brown flesh and near-black chitin with a wet sheen, ivory bone. No grey base; green only as light</td><td class="n">3</td></tr>
+        <tr><td>Form</td><td>Flat, even-width rounded rectangles</td><td>Thick sculpted carapace, ribbed like a ribcage, a vertebral band along the top, asymmetric</td><td class="n">2, 4</td></tr>
+        <tr><td>Silhouette</td><td>Inside the panel's box</td><td>Horns and spines arching over the panels, a canopy over the portrait, growing past the top edge</td><td class="n">9</td></tr>
+        <tr><td>Screens</td><td>Lit lime fields behind dark text, low contrast</td><td>Near-black smoked recesses with a thin bronze rim; the content glows on black</td><td class="n">6</td></tr>
+        <tr><td>Keys</td><td>Soft green pillows</td><td>Square dark caps with glowing amber rims and clean icons, set into the flesh</td><td class="n">7</td></tr>
+        <tr><td>Name plate</td><td>A flat green bar</td><td>A tall fleshy pocket under an arch holding a live portrait</td><td class="n">8</td></tr>
+        <tr><td>Joins</td><td>Separate boxes on black</td><td>One continuous ribbed wall of tissue; tubes, veins and ribs between the panels</td><td class="n">10</td></tr>
+        <tr><td>Hero</td><td>A small egg in a grey disc</td><td>A big faceted violet crystal, the console's heartbeat</td><td class="n">12</td></tr>
+        <tr><td>Light</td><td>Flat and even</td><td>Warm key from above, deep hollows, wet highlights on ridges, glowing accents</td><td class="n">5, 11</td></tr>
+        <tr><td>Palette</td><td>Grey and lime everywhere</td><td>Dark flesh, ivory bone, black screens, one amber accent for keys, green for life, violet for the hero</td><td class="n">3, 6, 11</td></tr>
+      </tbody>
+    </table></div>
+    <p>The root cause was the premise: starting from a machine and adding growth made the growth decoration. Starting from the creature and letting it hold the machine (chapter 1) fixes all ten at once.</p>
+  </section>
+
+  <section class="ch" id="story">
+    <div class="chhead"><div class="kicker">Chapter 10</div><h2>Worked example</h2></div>
+    <p>One corner of a console, built up in fourteen steps by <code>tools/blender/organic_study.py</code>. Each step changes one thing and keeps every change before it.</p>
+    <div class="story">
+      <div class="step"><img src="organic-bible/01-boxes.jpg" alt="Step 1" loading="lazy"><div class="txt"><h3>1 · Version 23's way</h3><p>A grey plate with the openings cut by booleans, rivets, lime moss blobs, a lit lime screen with dark text, green pillow keys, a flat green name bar and a small egg in a disc.</p><p class="lesson"><b>Lesson:</b> growth added to a machine is decoration. Chapter 1.</p></div></div>
+      <div class="step"><img src="organic-bible/02-one-body.jpg" alt="Step 2" loading="lazy"><div class="txt"><h3>2 · One sculpted body</h3><p>The plate became one metaball body grown round every opening, the neighbour panel's frame part of the same body. Still grey, so only the form changed.</p><p class="lesson"><b>Lesson:</b> grow, don't cut. Chapter 3.</p></div></div>
+      <div class="step"><img src="organic-bible/03-flesh.jpg" alt="Step 3" loading="lazy"><div class="txt"><h3>3 · Flesh and chitin, not stone</h3><p>Leathery maroon-brown flesh with pores, creases and a wet coat; a band of near-black chitin plates sunk along the top and down the portrait's shoulder.</p><p class="lesson"><b>Lesson:</b> the material is most of the look. Chapter 2.</p></div></div>
+      <div class="step"><img src="organic-bible/04-ribs.jpg" alt="Step 4" loading="lazy"><div class="txt"><h3>4 · A ribcage rhythm</h3><p>Ribs across the screen frame's sides, longest in the middle; ribs down the portrait pocket; short ribs under the key shelf.</p><p class="lesson"><b>Lesson:</b> repetition with variation reads as anatomy. Chapter 3.</p></div></div>
+      <div class="step"><img src="organic-bible/05-light.jpg" alt="Step 5" loading="lazy"><div class="txt"><h3>5 · Warm light from above</h3><p>The flat front light became a warm soft key from above, two grazing rims and a dim cool fill. The flesh turned wet, the hollows deep.</p><p class="lesson"><b>Lesson:</b> wetness is a highlight on a ridge against a dark hollow. Chapter 5.</p></div></div>
+      <div class="step"><img src="organic-bible/06-screen.jpg" alt="Step 6" loading="lazy"><div class="txt"><h3>6 · Screens are black smoked glass</h3><p>The lime field became a near-black glass recess with a thin bronze rim, its veins only at the edges; the readout glows on it.</p><p class="lesson"><b>Lesson:</b> content glows on black; a lit field behind text loses contrast. Chapter 4.</p></div></div>
+      <div class="step"><img src="organic-bible/07-keys.jpg" alt="Step 7" loading="lazy"><div class="txt"><h3>7 · Crisp keys set into the flesh</h3><p>The green pillows became square dark caps with glowing amber rims and clean icons, each in a pit grown in the flesh.</p><p class="lesson"><b>Lesson:</b> the parts you press are tech, crisp and hard. Chapter 4.</p></div></div>
+      <div class="step"><img src="organic-bible/08-portrait.jpg" alt="Step 8" loading="lazy"><div class="txt"><h3>8 · A portrait pocket under an arch</h3><p>The flat name bar became a tall dark pocket under a bow of flesh, a face lit from below inside it, its name glowing at its foot.</p><p class="lesson"><b>Lesson:</b> the captain's officer is a presence, not a label.</p></div></div>
+      <div class="step"><img src="organic-bible/09-spines.jpg" alt="Step 9" loading="lazy"><div class="txt"><h3>9 · Bone spines arching over</h3><p>Two long ivory spines rise behind the portrait and arch over it and the screen's corner; short swept-back spines off the right; claws curl under the key shelf.</p><p class="lesson"><b>Lesson:</b> the silhouette breaks the rectangle; the instruments do not. Chapter 3.</p></div></div>
+      <div class="step"><img src="organic-bible/10-wall.jpg" alt="Step 10" loading="lazy"><div class="txt"><h3>10 · One wall of tissue</h3><p>The black backdrop became a ribcage wall of the same flesh, darker; tubes and veins run between the panels, half sunk; a tendril reaches the neighbour, thick at its roots, thin and knotted between.</p><p class="lesson"><b>Lesson:</b> no panel floats. Chapter 1.</p></div></div>
+      <div class="step"><img src="organic-bible/11-nodules.jpg" alt="Step 11" loading="lazy"><div class="txt"><h3>11 · Green for life only</h3><p>Pustules at the joints glow green from inside and light the flesh round them. Green appears nowhere else as a surface.</p><p class="lesson"><b>Lesson:</b> each glowing colour has one meaning. Chapter 6.</p></div></div>
+      <div class="step"><img src="organic-bible/12-crystal.jpg" alt="Step 12" loading="lazy"><div class="txt"><h3>12 · A crystal heart</h3><p>A cluster of faceted violet shards in a cradle of flesh above the neighbour panel, lit from inside, spilling violet below.</p><p class="lesson"><b>Lesson:</b> one big focal object gives the console a heartbeat.</p></div></div>
+      <div class="step"><img src="organic-bible/13-pressed.jpg" alt="Step 13" loading="lazy"><div class="txt"><h3>13 · Pressed</h3><p>The middle key pressed: its cap sinks 3 mm and drops 2 mm, its rim and icon brighten, and the flesh round it stays put.</p><p class="lesson"><b>Lesson:</b> the inner part moves, the frame never does (version 20's rule).</p></div></div>
+      <div class="step"><img src="organic-bible/14-final.jpg" alt="Step 14" loading="lazy"><div class="txt"><h3>14 · Final, measured</h3><p>All of it, with the fit measured: no growth covers the screen, a key face or the portrait window (chapter 7).</p><p class="lesson"><b>Lesson:</b> a living frame still obeys the kit's rules, by measurement.</p></div></div>
+    </div>
+  </section>
+
+  <section class="ch" id="checklist">
+    <div class="chhead"><div class="kicker">Chapter 11</div><h2>Before you call it done</h2></div>
+    <ul>
+      <li>No grey metal anywhere; the frame is flesh, chitin and bone, and the backdrop is the same body.</li>
+      <li>Every panel joins its neighbours through the wall: ribs, tubes or tendrils, no black gaps.</li>
+      <li>Something grows past the top edge; the left and right are not mirrored.</li>
+      <li>Every screen is black glass with a thin rim and a calm middle; text glows on it.</li>
+      <li>Every key is a crisp dark cap with a lit rim and a clean icon, set into the flesh; pressing moves only the cap.</li>
+      <li>Green is only light for life; the key accent appears only on keys; violet only on the hero.</li>
+      <li>The light comes from above; hollows are deep; ridges show a wet highlight.</li>
+      <li>G1 to G4 pass, measured, and the kit's fit checks pass on the page.</li>
+      <li>Look at a 2x crop of every key, screen and the portrait before calling it done.</li>
+    </ul>
+  </section>
+</div>
