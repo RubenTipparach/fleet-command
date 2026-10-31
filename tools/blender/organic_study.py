@@ -28,6 +28,9 @@ import sys
 import bpy
 from mathutils import Vector
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import organic_anatomy as oa  # noqa: E402  (the layered sculpt: bone, muscle, skin, as one height field)
+
 MM = 0.001
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
@@ -61,6 +64,21 @@ STEPS = [
     (12, "crystal", "A crystal heart"),
     (13, "pressed", "Pressed: the cap sinks, the flesh stays"),
     (14, "final", "Final, with the fit measured"),
+    # the second round (owner, 2026-10-31: "Your approach used discrete shapes. The zerg have a couple layers. There's a
+    # bone underneath. The leather stretches over muscle and bone with veins underneath ... Try sculpting these shapes",
+    # and of the beads, the white spine and the glossy pustules: "These look like low effort shapes. Whereas the organic
+    # leather frame looks a little more purposeful and organic"): the frame is sculpted as one surface in layers
+    # (tools/blender/organic_anatomy.py) and nothing is placed on it.
+    (15, "no-primitives", "Nothing placed on the body"),
+    (16, "bone", "Sculpt the bone first"),
+    (17, "muscle", "Muscle over the bone"),
+    (18, "skin", "Skin stretched over both"),
+    (19, "under-skin", "Veins, cords and sacs under the skin"),
+    (20, "blend", "Blend the materials by the sculpt"),
+    (21, "wet", "Wet where flesh is wet"),
+    (22, "cavern", "A cavern behind, not a wall"),
+    (23, "values", "Dark, so the instruments carry the light"),
+    (24, "final-layered", "Final, layered and measured"),
 ]
 
 # Version 23's colours (step 1): grey metal, lime everywhere. The fix: dark maroon-brown flesh, near-black chitin,
@@ -68,7 +86,7 @@ STEPS = [
 V23 = {"metal": "#6d6f72", "lime": "#a6e34a", "moss": "#7d9a3a", "egg": "#c9d78a", "ink": "#1d2410"}
 PAL = {"pit": "#080303", "flesh": "#33110f", "flesh_lit": "#6a2620", "hide": "#1a0908", "chitin": "#140c0e",
        "chitin_hi": "#4a3236", "bone": "#e2d6bb", "bone_dk": "#8a7a5e", "bronze": "#9a5a34", "screen": "#050405",
-       "accent": "#ffb03a", "accent_hot": "#ffe3a0", "life": "#6fd82a", "hero": "#b35cff", "hero_hot": "#e7c8ff",
+       "accent": "#ffb03a", "accent_sat": "#ff8400", "accent_hot": "#ffe3a0", "life": "#6fd82a", "hero": "#b35cff", "hero_hot": "#e7c8ff",
        "readout": "#b8f27a"}
 
 
@@ -527,6 +545,199 @@ def key_icon(name, kind, cx, cy, z, m):
     return [poly_flat(name, [(cx + x, cy + y) for x, y in ICONS[kind]], z, m)]
 
 
+# ------------------------------------------------------------------------------------------- the sculpt (step 16 on)
+SCULPT_RES_MM = 0.5     # one height sample every 0.5 mm: one per pixel at the bible's 2 px/mm, so no facet shows
+PUSTULES = [(-124.0, -32.0, 9.0), (140.0, -62.0, 11.0), (156.0, -44.0, 7.0), (224.0, -88.0, 8.0)]
+CRADLE = (200.0, 84.0, 30.0)
+
+
+def attr(m, name):
+    """A colour attribute's channels in a material: (r, g, b, a) sockets."""
+    n, l = nt(m)
+    a = n.new("ShaderNodeAttribute")
+    a.attribute_type = "GEOMETRY"
+    a.attribute_name = name
+    sep = n.new("ShaderNodeSeparateColor")
+    l.new(a.outputs["Color"], sep.inputs[0])
+    return sep.outputs[0], sep.outputs[1], sep.outputs[2], a.outputs["Alpha"]
+
+
+def mathn(m, op, a, b=None, clamp=False):
+    n, l = nt(m)
+    x = n.new("ShaderNodeMath")
+    x.operation = op
+    x.use_clamp = clamp
+    for i, v in enumerate((a, b)):
+        if v is None:
+            continue
+        if isinstance(v, (int, float)):
+            x.inputs[i].default_value = v
+        else:
+            l.new(v, x.inputs[i])
+    return x.outputs[0]
+
+
+def mixc(m, fac, a, b):
+    """Mix two colours (hex or socket) by fac (number or socket)."""
+    n, l = nt(m)
+    x = n.new("ShaderNodeMix")
+    x.data_type = "RGBA"
+    for sock, v in ((x.inputs["Factor"], fac), (x.inputs[6], a), (x.inputs[7], b)):
+        if isinstance(v, str):
+            sock.default_value = srgb(v)
+        elif isinstance(v, (int, float)):
+            sock.default_value = v
+        else:
+            l.new(v, sock)
+    return x.outputs[2]
+
+
+def clay(name, muscle):
+    """A sculptor's clay pass: the bone layer pale, the muscle layer red clay, so each layer reads as itself."""
+    m = principled(name, "#2a1c18", rough=0.75)
+    bone_m, musc, _v, _ = attr(m, "m1")
+    c = mixc(m, mathn(m, "POWER", bone_m, 0.7), "#2a1c18", "#b9ab90")
+    if muscle:
+        c = mixc(m, mathn(m, "MULTIPLY", musc, 0.9), c, "#6e2a22")
+    nt(m)[1].new(c, nt(m)[0]["Principled BSDF"].inputs["Base Color"])
+    return m
+
+
+def anatomy(name, step):
+    """The sculpted body's one material, its layers blended by masks the sculpt wrote (m1: bone showing through thin
+    skin, raw muscle in the hollows, veins; m2: creases, webs in tension, pustules, depth). Before step 20 it is plain
+    leather (only the veins' and sacs' light show); step 20 blends; step 21 makes it wet where flesh is wet; step 22
+    sinks the cavern into shadow; step 23 darkens the whole ladder."""
+    on = lambda k: step >= k  # noqa: E731
+    dark = on(23)
+    m = principled(name, PAL["flesh"], rough=0.6, coat=0.4, coat_rough=0.25, sss=0.06, sss_scale_mm=1.5)
+    n, l = nt(m)
+    b = n["Principled BSDF"]
+    bone_m, musc, vein, _ = attr(m, "m1")
+    crease, web, pust, depth = attr(m, "m2")
+    ao = n.new("ShaderNodeAmbientOcclusion")
+    ao.samples = 16
+    ao.inputs["Distance"].default_value = 10 * MM
+    pores = n.new("ShaderNodeTexVoronoi")
+    pores.inputs["Scale"].default_value = 520.0
+    l.new(obj_co(m), pores.inputs["Vector"])
+    grain = noise(m, 220.0, 8.0).outputs["Fac"]
+    blot = noise(m, 40.0, 3.0).outputs["Fac"]
+    wr = n.new("ShaderNodeTexWave")            # leather wrinkles, strongest where the skin is stretched over a gap
+    wr.wave_type = "BANDS"
+    wr.bands_direction = "DIAGONAL"
+    wr.inputs["Scale"].default_value = 120.0
+    wr.inputs["Distortion"].default_value = 22.0
+    wr.inputs["Detail"].default_value = 5.0
+    l.new(obj_co(m), wr.inputs["Vector"])
+    # leather: a value ladder on the body's own occlusion, mottled by a broad blotch
+    lit = "#4a2416" if dark else "#55281a"     # brown-maroon, not orange: the warm key light adds the warmth
+    mid = "#22100a" if dark else "#2e140d"
+    t = mathn(m, "ADD", mathn(m, "MULTIPLY", ao.outputs["AO"], 0.85), mathn(m, "MULTIPLY", blot, 0.3))
+    c = ramp(m, t, [(0.25, PAL["pit"]), (0.7, mid), (1.1, lit)])
+    if on(20):
+        # raw muscle where the skin parts in the hollows: redder, darker
+        c = mixc(m, mathn(m, "MULTIPLY", musc, 0.75), c, "#4a0f0c" if dark else "#62140f")
+        # veins under the skin: dark purple-blue through it
+        c = mixc(m, mathn(m, "MULTIPLY", vein, 0.8), c, "#1c1028")
+        # bone where the skin thins over a crest: stained ivory, worn brighter on the very top, blended through the leather
+        bonec = mixc(m, mathn(m, "MULTIPLY", grain, 1.2, clamp=True), "#7d6b4c", "#cfc2a2" if not dark else "#b3a585")
+        bm = mathn(m, "POWER", bone_m, 1.6)
+        patch = mathn(m, "MULTIPLY", mathn(m, "SUBTRACT", blot, 0.3), 2.2, clamp=True)   # leather still clings in patches
+        c = mixc(m, mathn(m, "MULTIPLY", bm, patch, clamp=True), c, bonec)
+        # grime and dried fluid in the creases
+        c = mixc(m, mathn(m, "MULTIPLY", crease, 0.75), c, "#080303")
+        dried = mathn(m, "MULTIPLY", crease, mathn(m, "GREATER_THAN", blot, 0.55))
+        c = mixc(m, mathn(m, "MULTIPLY", dried, 0.45), c, "#3a2c14")
+    else:
+        c = mixc(m, mathn(m, "MULTIPLY", vein, 0.45), c, "#1c1028")
+    if on(19):   # sacs of light: the skin stretched thin over them glows green from inside
+        pg = mathn(m, "POWER", pust, 1.5)
+        c = mixc(m, mathn(m, "MULTIPLY", pg, 0.55), c, "#25500f")
+        b.inputs["Emission Color"].default_value = srgb(PAL["life"])
+        # the light spreads through the skin, strongest at the sac's middle, broken by the veins over it
+        glowf = mathn(m, "MULTIPLY", mathn(m, "POWER", pust, 0.9), mathn(m, "SUBTRACT", 1.0, mathn(m, "MULTIPLY", vein, 0.8)))
+        l.new(mathn(m, "MULTIPLY", glowf, mathn(m, "ADD", 0.25, mathn(m, "MULTIPLY", grain, 0.5))), b.inputs["Emission Strength"])
+    # whatever lies deeper falls into shadow: a little before the cavern (step 22), steeply after it
+    fall = mathn(m, "POWER", mathn(m, "SUBTRACT", 1.0, depth, clamp=True), 0.7 if on(22) else 1.0)
+    c = mixc(m, mathn(m, "MULTIPLY", fall, 1.0 if on(22) else 0.8), c, "#000000")
+    l.new(c, b.inputs["Base Color"])
+    # wetness
+    if on(21):
+        wet = mathn(m, "ADD", mathn(m, "ADD", mathn(m, "MULTIPLY", musc, 0.6), mathn(m, "MULTIPLY", crease, 0.8)), 0.12)
+        wet = mathn(m, "SUBTRACT", wet, mathn(m, "MULTIPLY", bone_m, 0.5), clamp=True)
+        l.new(wet, b.inputs["Coat Weight"])
+        # broken by the micro detail so it never reads as a glossy shell
+        l.new(mathn(m, "ADD", 0.08, mathn(m, "MULTIPLY", grain, 0.4)), b.inputs["Coat Roughness"])
+        l.new(mathn(m, "ADD", 0.48, mathn(m, "MULTIPLY", bone_m, 0.25)), b.inputs["Roughness"])
+        b.inputs["Subsurface Weight"].default_value = 0.12
+    # bump: pores everywhere, wrinkles where stretched, a fine grain
+    h = mathn(m, "MULTIPLY", pores.outputs["Distance"], 0.6)
+    h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", wr.outputs["Fac"], mathn(m, "ADD", 0.25, mathn(m, "MULTIPLY", web, 1.2))))
+    h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", grain, 0.4))
+    bump = n.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.8
+    bump.inputs["Distance"].default_value = 0.7 * MM
+    l.new(h, bump.inputs["Height"])
+    l.new(bump.outputs["Normal"], b.inputs["Normal"])
+    return m
+
+
+def sculpted_frame(step):
+    """The frame as one sculpted surface, as far as `step` takes it: bone (16), muscle (17), skin (18), what lies under
+    the skin (19), the cavern behind (22). Returns (the sculpt, its mesh object)."""
+    layers = {"bone"} | ({"muscle"} if step >= 17 else set()) | ({"skin"} if step >= 18 else set()) | \
+             ({"detail"} if step >= 19 else set()) | ({"cavern"} if step >= 22 else set())
+    sc = oa.Sculpt((VIEW[0] - 10, VIEW[1] - 10, VIEW[2] + 10, VIEW[3] + 10), SCULPT_RES_MM, WIN, PORT, KEYS, NEIGH,
+                        CRADLE, pustules=PUSTULES if step >= 19 else ())
+    S, masks = sc.build(layers)
+    ny, nx = S.shape
+    import numpy as np
+    co = np.zeros((ny * nx, 3), dtype=np.float32)
+    co[:, 0] = sc.X.ravel() * MM
+    co[:, 1] = sc.Y.ravel() * MM
+    co[:, 2] = S.ravel() * MM
+    idx = np.arange(ny * nx).reshape(ny, nx)
+    quads = np.stack([idx[:-1, :-1].ravel(), idx[:-1, 1:].ravel(), idx[1:, 1:].ravel(), idx[1:, :-1].ravel()], axis=1)
+    me = bpy.data.meshes.new("sculpt")
+    me.vertices.add(len(co))
+    me.vertices.foreach_set("co", co.ravel())
+    me.loops.add(quads.size)
+    me.loops.foreach_set("vertex_index", quads.ravel().astype(np.int32))
+    me.polygons.add(len(quads))
+    me.polygons.foreach_set("loop_start", (np.arange(len(quads)) * 4).astype(np.int32))
+    me.update(calc_edges=True)
+    me.validate()
+    for nm, chans in (("m1", ("bone", "muscle", "vein", None)), ("m2", ("crease", "web", "pustule", "depth"))):
+        a = me.color_attributes.new(nm, "FLOAT_COLOR", "POINT")
+        col = np.ones((ny * nx, 4), dtype=np.float32)
+        for i, ch in enumerate(chans):
+            if ch:
+                col[:, i] = masks[ch].ravel()
+        a.data.foreach_set("color", col.ravel())
+    me.polygons.foreach_set("use_smooth", np.ones(len(quads), dtype=bool))
+    ob = link(bpy.data.objects.new("sculpt", me))
+    mat = clay("clay", step >= 17) if step < 18 else anatomy("anatomy", step)
+    assign(ob, mat)
+    # (no lamp over a sac: a point light that close burns a hot dot into the skin; the skin's own emission lights it)
+    return sc, ob
+
+
+def measure_field(sc):
+    """Rule G1 on the sculpt: the nearest any part of the surface standing above the screen glass comes to each
+    protected rectangle, in mm (negative: it covers it)."""
+    import numpy as np
+    up = sc.height > SCREEN_Z + 0.5
+    out = {}
+    for label, r in [("screen", WIN), ("portrait window", PORT)] + [(f"key {i + 1} face", k) for i, k in enumerate(KEYS)]:
+        d = oa.sd_box(sc.X, sc.Y, r)[up]
+        out[label] = round(float(d.min()), 2)
+    return out
+
+
+LAST = {}     # the last build's sculpt, for the fit measure
+
+
 def build(step):
     """Build the corner of console as it stands after `step`; return (growth objects, protected objects)."""
     on = lambda n: step >= n  # noqa: E731
@@ -549,6 +760,10 @@ def build(step):
         rv = flat("rivet", "#a3a5a8", rough=0.3, metal=1.0)
         for i, (rx, ry) in enumerate([(-215, -90), (125, -90), (-215, 92), (120, 92), (-120, -90), (-120, 92)]):
             growth.append(assign(sphere(f"rivet{i}", rx, ry, 8, 4, 4, 2.5), rv))
+    elif on(16):   # the second round: bone, muscle and skin sculpted as one surface, nothing placed on it
+        sculpt, field = sculpted_frame(step)
+        growth.append(field)
+        LAST["sculpt"] = sculpt
     else:
         b = Body("body")
         b.ring(WIN, 19, 22, top=1.25, bottom=0.8)
@@ -583,7 +798,7 @@ def build(step):
         growth.append(body)
 
     # ---------------------------------------------------------------- chitin carapace over the flesh (step 3)
-    if on(3):
+    if on(3) and not on(15):   # (step 15 removes every placed form: beads, plates, spines, spheres)
         # a segmented band of chitin along the screen's top run, overlapping like vertebrae, sunk into the flesh so the
         # flesh swells round each plate (never a plate sitting on top of the frame)
         n_seg = 13
@@ -642,8 +857,11 @@ def build(step):
         sink, drop = (3.0, 2.0) if pressed else (0.0, 0.0)
         cap = box(f"cap{i}", r[0] + 1, r[1] + 1 - drop, r[2] - 1, r[3] - 1 - drop, -6 - sink, 6 - sink, bevel=2.0, segs=4)
         protected.append(assign(cap, principled(f"keycap{i}", "#0e0a0b", rough=0.28, coat=1.0, coat_rough=0.03)))
-        hot = PAL["accent_hot"] if pressed else PAL["accent"]
-        lit = glow(f"rim{i}", hot, 3.2 if pressed else 1.6)
+        if on(23):   # a hot accent: a saturated orange driven hard, so AgX keeps it orange at the edges and hot inside
+            lit = glow(f"rim{i}", PAL["accent_sat"], 1.8)
+        else:
+            hot = PAL["accent_hot"] if pressed else PAL["accent"]
+            lit = glow(f"rim{i}", hot, 3.2 if pressed else 1.6)
         protected.append(rect_ring(f"rim{i}", (r[0] + 2.5, r[1] + 2.5 - drop, r[2] - 2.5, r[3] - 2.5 - drop), 6.2 - sink, 0.7,
                                    lit, corner=3.0))
         protected += key_icon(f"icon{i}", kinds[i], cx, cy - drop, 6.3 - sink, lit)
@@ -671,7 +889,7 @@ def build(step):
         protected.append(text("name", "VHAAL", (PORT[0] + PORT[2]) / 2, 8, -10, 9, flat("nameink", V23["ink"]), spacing=1.2))
 
     # ---------------------------------------------------------------- bone spines arching over (step 9)
-    if on(9):
+    if on(9) and not on(15):
         pcx = (PORT[0] + PORT[2]) / 2
         # the canopy: two long spines rising from behind the portrait's arch and curving over it and the screen's corner
         growth.append(tube("canopy0", [(PORT[0] - 14, PORT[3] - 10, 6), (pcx - 10, PORT[3] + 40, 22),
@@ -690,7 +908,13 @@ def build(step):
                                [1.0, 0.55, 0.05], bn))
 
     # ---------------------------------------------------------------- the wall of tissue (step 10)
-    if on(10):
+    if on(15) and not on(16):   # step 15: the wall without its placed ribs, tubes and tendril
+        bpy.ops.mesh.primitive_plane_add(size=1.0)
+        wall = bpy.context.active_object
+        wall.scale = ((VIEW[2] - VIEW[0] + 40) * MM, (VIEW[3] - VIEW[1] + 40) * MM, 1.0)
+        wall.location = ((VIEW[0] + VIEW[2]) / 2 * MM, (VIEW[1] + VIEW[3]) / 2 * MM, -30 * MM)
+        assign(wall, flesh("wallflesh", dark=True))
+    if on(10) and not on(15):
         bpy.ops.mesh.primitive_plane_add(size=1.0)
         wall = bpy.context.active_object
         wall.name = "wall"
@@ -721,7 +945,7 @@ def build(step):
                            [1.0, 0.45, 0.8, 0.35, 0.95], fl))
 
     # ---------------------------------------------------------------- life: green pustules (step 11)
-    if on(11):
+    if on(11) and not on(15):
         nod = glow("pustule", PAL["life"], 0.8, sss=0.5)
         for k, (nx, ny, r) in enumerate([(x0 - 22, y0 - 8, 6.5), (x0 - 21, y0 + 12, 4.5), (-122, -40, 7),
                                          (140, -60, 7.5), (152, -48, 4.5), (238, -78, 6)]):
@@ -733,7 +957,20 @@ def build(step):
 
     # ---------------------------------------------------------------- the hero: a crystal heart (step 12)
     if on(12):
-        cr = principled("crystal", PAL["hero"], rough=0.05, transmission=0.6, coat=1.0, emit=PAL["hero"], emit_strength=0.6)
+        cz = sculpt.at(200, 92) - 4.0 if on(16) else 18.0     # grown from the sculpted cradle, its root sunk in it
+        if on(23):   # frosted, lit from a core inside, a breath of violet mist round it: never a plastic toy
+            cr = principled("crystal", "#4c2490", rough=0.5, transmission=1.0, coat=0.5, coat_rough=0.35,
+                            emit=PAL["hero"], emit_strength=0.12)
+            frost = noise(cr, 900.0, 6.0)                   # frosted, pitted facets
+            fb = nt(cr)[0].new("ShaderNodeBump")
+            fb.inputs["Strength"].default_value = 0.35
+            fb.inputs["Distance"].default_value = 0.3 * MM
+            nt(cr)[1].new(frost.outputs["Fac"], fb.inputs["Height"])
+            nt(cr)[1].new(fb.outputs["Normal"], nt(cr)[0]["Principled BSDF"].inputs["Normal"])
+            core = principled("crystalcore", PAL["hero_hot"], rough=0.5, emit=PAL["hero"], emit_strength=6.0)
+        else:
+            cr = principled("crystal", PAL["hero"], rough=0.05, transmission=0.6, coat=1.0, emit=PAL["hero"], emit_strength=0.6)
+            core = None
         for k, (dx, dy, h, w, rot) in enumerate([(0, 0, 72, 17, 0), (-22, -8, 44, 12, 26), (21, -10, 50, 13, -22),
                                                  (8, -20, 28, 9, -55), (-12, -18, 26, 8, 50)]):
             a = math.radians(rot)
@@ -743,24 +980,59 @@ def build(step):
                 bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=w * MM, radius2=0, depth=ln * MM)
                 c = bpy.context.active_object
                 c.name = f"crystal{k}{part}"
+                if on(23):   # rule 1: no raw cone. Cut it into an uneven shard: facets of different widths, a broken tip
+                    import random
+                    rr = random.Random(k * 7 + (part == "root"))
+                    bpy.ops.object.mode_set(mode="EDIT")
+                    bpy.ops.mesh.subdivide(number_cuts=2)
+                    bpy.ops.object.mode_set(mode="OBJECT")
+                    for v in c.data.vertices:
+                        v.co.x *= rr.uniform(0.7, 1.25)
+                        v.co.y *= rr.uniform(0.7, 1.25)
+                        v.co.z += rr.uniform(-0.04, 0.04) * ln * MM
+                    for f in c.data.polygons:
+                        f.use_smooth = False
                 off = ln / 2 * (-1 if flip else 1)
-                c.location = ((200 + dx + ux * off) * MM, (96 + dy + uy * off) * MM, 18 * MM)
+                c.location = ((200 + dx + ux * off) * MM, (96 + dy + uy * off) * MM, cz * MM)
                 c.rotation_euler = (math.radians(90 if flip else -90), 0, a)
                 growth.append(assign(c, cr))
-        point("heart", (200, 120, 26), 0.3, 6, (0.7, 0.4, 1.0))
-        point("heartspill", (200, 80, 30), 0.25, 30, (0.75, 0.45, 1.0))
-        cb = Body("cradle")
-        cb.el("BALL", 200, 84, 22)
-        cb.el("CAPSULE", 200, 80, 13, sx=34)
-        cb.el("BALL", 230, 70, 15)
-        growth.append(assign(cb.mesh(), fl))
+                if core is not None and part == "tip":     # a core of light inside each shard, a third its size
+                    bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=w * 0.35 * MM, radius2=0, depth=ln * 0.7 * MM)
+                    ci = bpy.context.active_object
+                    ci.name = f"crystalcore{k}"
+                    ci.location = ((200 + dx + ux * off * 0.8) * MM, (96 + dy + uy * off * 0.8) * MM, cz * MM)
+                    ci.rotation_euler = c.rotation_euler
+                    assign(ci, core)
+        if on(23):
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=46 * MM, location=(200 * MM, 112 * MM, (cz + 6) * MM))
+            mist = bpy.context.active_object
+            mist.name = "mist"
+            mm = bpy.data.materials.new("mist")
+            mm.use_nodes = True
+            mn = mm.node_tree.nodes
+            mn.remove(mn["Principled BSDF"])
+            vol = mn.new("ShaderNodeVolumePrincipled")
+            vol.inputs["Color"].default_value = srgb("#b07cff")
+            vol.inputs["Density"].default_value = 0.6
+            mm.node_tree.links.new(vol.outputs[0], mn["Material Output"].inputs["Volume"])
+            assign(mist, mm)
+        kp = 0.55 if on(23) else 1.0
+        point("heart", (200, 120, cz + 8), 0.3 * kp, 6, (0.7, 0.4, 1.0))
+        point("heartspill", (200, 80, cz + 12), 0.25 * kp, 30, (0.75, 0.45, 1.0))
+        if not on(16):
+            cb = Body("cradle")
+            cb.el("BALL", 200, 84, 22)
+            cb.el("CAPSULE", 200, 80, 13, sx=34)
+            cb.el("BALL", 230, 70, 15)
+            growth.append(assign(cb.mesh(), fl))
 
     # ---------------------------------------------------------------- light
     if on(5):
-        area("key", (-40, 420, 260), (0, 0, 0), KEY_W, 180, (1.0, 0.82, 0.62))       # warm, from above
-        area("rimL", (-520, 60, -20), (-150, 20, 10), KEY_W * 0.3, 200, (1.0, 0.72, 0.55))  # grazes the wet ridges
-        area("rimR", (560, 40, -10), (200, 20, 10), KEY_W * 0.2, 200, (0.85, 0.75, 1.0))
-        area("fill", (100, -420, 300), (0, 0, 0), KEY_W * 0.03, 600, (0.45, 0.55, 1.0))  # dim and cool, hollows stay deep
+        kw = KEY_W * (0.7 if on(23) else 1.0)   # step 23: dark, so the screens and keys carry the light
+        area("key", (-40, 420, 260), (0, 0, 0), kw, 180, (1.0, 0.82, 0.62))       # warm, from above
+        area("rimL", (-520, 60, -20), (-150, 20, 10), kw * 0.3, 200, (1.0, 0.72, 0.55))  # grazes the wet ridges
+        area("rimR", (560, 40, -10), (200, 20, 10), kw * 0.2, 200, (0.85, 0.75, 1.0))
+        area("fill", (100, -420, 300), (0, 0, 0), kw * 0.03, 600, (0.45, 0.55, 1.0))  # dim and cool, hollows stay deep
     else:
         sun = bpy.data.lights.new("front", "SUN")
         sun.energy = 1.4
@@ -809,12 +1081,17 @@ def main():
         if n not in want:
             continue
         sc = reset(a.samples)
+        LAST.clear()
         growth, _protected = build(n)
         sc.render.filepath = os.path.join(a.out, f"{n:02d}-{fname}.png")
         bpy.ops.render.render(write_still=True)
         print(f"STUDY step {n} {title}: {sc.render.filepath}", flush=True)
         if n == STEPS[-1][0]:
-            fit = measure(growth)
+            fit = measure([g for g in growth if g.name != "sculpt"])
+            if LAST.get("sculpt") is not None:   # the sculpted surface, measured on its height field
+                for label, d in measure_field(LAST["sculpt"]).items():
+                    if d < fit[label]["clearance_mm"]:
+                        fit[label] = {"clearance_mm": d, "nearest": "sculpt", "pass": d >= 0.0}
             with open(os.path.join(a.out, "fit.json"), "w") as f:
                 json.dump(fit, f, indent=2)
             print("STUDY fit", json.dumps(fit), flush=True)

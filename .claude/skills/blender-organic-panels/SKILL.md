@@ -1,6 +1,6 @@
 ---
 name: blender-organic-panels
-description: Build and render organic, grown console panels for Fleet Command's living factions (the Vhorr Brood first) in Blender, headless - one sculpted body of flesh, chitin and bone grown round crisp instruments (metaballs, voxel remesh, displacement, ribs, sunk chitin plates, tapering bone spines and tendrils), black smoked-glass screens with bronze rims, square dark keys with glowing rims, a portrait pocket, a ribcage wall joining every panel, bioluminescent accents that light their surroundings, a warm top light with grazing rims, a value-ladder palette, and growth measured clear of every readout and key face. Use whenever making or changing an organic, biological, hive, alien-flesh or grown skin, or when a render "looks like metal with blobs on it", "reads as camo", "looks like plastic or chocolate", or "is missing the hive aesthetic" ("organic UI", "flesh panel", "chitin", "tendrils", "Vhorr", "brood", "hive console").
+description: Build and render organic, grown console panels for Fleet Command's living factions (the Vhorr Brood first) in Blender, headless - one surface sculpted in layers (bone, then muscle, then leather stretched over both, veins and sacs of light under the skin) as a height field, its materials blended by masks from the sculpt, never a raw primitive placed on the body, black smoked-glass screens with bronze rims, square dark keys with glowing rims, a portrait pocket, a ribcage wall joining every panel, bioluminescent accents that light their surroundings, a warm top light with grazing rims, a value-ladder palette, and growth measured clear of every readout and key face. Use whenever making or changing an organic, biological, hive, alien-flesh or grown skin, or when a render "looks like metal with blobs on it", "reads as camo", "looks like plastic or chocolate", or "is missing the hive aesthetic" ("organic UI", "flesh panel", "chitin", "tendrils", "Vhorr", "brood", "hive console").
 metadata:
   author: Fleet Command (Claude Code)
   version: "1.0"
@@ -47,15 +47,38 @@ Adding growth to a finished machine panel (version 23) always reads as decoratio
 
 | Material | Job | Recipe |
 |---|---|---|
-| Flesh | Frames, wall | Principled; colour ramp fold `#080303` 0.3, flesh `#33110f` 0.75, lit `#6a2620` 1.15 driven by AO 14 mm + 0.3 x noise (260, detail 10); bump 0.5 over 0.6 mm from wave bands (90, distortion 18) + noise; roughness 0.62, coat 0.55 at 0.22, subsurface 0.08 random walk 1.5 mm. A darker variant (no lit step) for the wall. |
-| Chitin | Armour plates | Noise `#140c0e` to `#4a3236`, roughness 0.3, coat 1.0 at 0.03, thin film 380 nm. |
-| Bone | Spines, horns, claws, arches | `#e2d6bb`, AO ramp to `#8a7a5e` at the root, roughness 0.38, coat 0.5, subsurface 0.15. |
+| Body (from step 20) | The sculpted frame | One Principled blended by the sculpt's masks: leather ramp `#080303` / `#2e140d` / `#55281a` on AO 10 mm + broad noise; raw muscle `#62140f`, veins `#1c1028`, bone stained `#7d6b4c` to ivory `#cfc2a2` in patches, creases `#080303` with dried fluid `#3a2c14`; sacs emit green through the skin; depth to black. Bump 0.8 over 0.7 mm (pores, wrinkles in the webs, grain). Wet where flesh is wet: coat 0.12 + 0.6 muscle + 0.8 crease - 0.5 bone, coat roughness broken 0.08-0.48. |
+| Flesh (first round) | Frames, wall | Principled; colour ramp fold `#080303` 0.3, flesh `#33110f` 0.75, lit `#6a2620` 1.15 driven by AO 14 mm + 0.3 x noise (260, detail 10); bump 0.5 over 0.6 mm from wave bands (90, distortion 18) + noise; roughness 0.62, coat 0.55 at 0.22, subsurface 0.08 random walk 1.5 mm. A darker variant (no lit step) for the wall. |
+| Chitin (first round; placed plates banned by rule 1) | Armour plates | Noise `#140c0e` to `#4a3236`, roughness 0.3, coat 1.0 at 0.03, thin film 380 nm. |
+| Bone (first round; placed spines banned by rule 1) | Spines, horns, claws, arches | `#e2d6bb`, AO ramp to `#8a7a5e` at the root, roughness 0.38, coat 0.5, subsurface 0.15. Now bone is a mask of the body material. |
 | Smoked glass | Screens | `#050405`, roughness 0.12, coat 1; dark-red Voronoi edge veins only outside a squarish oval over the readout; a thin bronze rim (`#9a5a34`, metal). |
 | Light | Readouts, key rims and icons, pustules, the hero | Emission. Green only for life, the key accent only on keys, violet only for the hero. |
 
 No grey metal. Too much subsurface or coat makes flesh read as plastic or chocolate; too little bump reads as clay.
 
-## 3. Growing the form
+## 3. Growing the form: layered anatomy, sculpted
+
+The owner, 2026-10-31: "Your approach used discrete shapes. The zerg have a couple layers. There's a bone underneath.
+The leather stretches over muscle and bone with veins underneath. One thing you could try is sculpting." This replaces
+the first round's discrete shapes (kept below as a record; every visible primitive in it is banned by rule 1).
+
+The frame is ONE height field `z = h(x, y)`, computed in numpy by `tools/blender/organic_anatomy.py` (`Sculpt`) and
+written into a 0.5 mm grid mesh (one sample per pixel at 2 px/mm), with its masks as colour attributes:
+1. **Bone**: rings round every opening, a spine of varied, turned vertebrae with crest blades and shadowed hollows,
+   ribs, an arch over the portrait, horn crests past the frame, claws. Coordinates warped by noise (9 mm at 34 mm, 3 mm
+   at 11 mm) so nothing runs parallel to a rectangle.
+2. **Muscle** rises from the bone (`rise(under, top, profile)`: never a cliff): lumpy bundles following the frame,
+   striated along it; sinew cords between panels; the hero's cradle.
+3. **Skin**: `max(core + 0.9, blur(core, 6 mm) - 0.6)`: tight on every crest (thin there, so the bone shows), webbed
+   across gaps (in tension, so it wrinkles), diving into every opening (`-14 + 5 (d - 2.6)` mm).
+4. **Under the skin**: veins as seeded walks raised 0.7 mm; sacs of light raised 7 mm; creases from the Laplacian.
+5. **Masks** for the one material: bone (skin thin over a locally proud crest), muscle, vein, crease, web, sac, depth.
+
+Why a height field: kit pieces are rendered face on, so a surface that never folds under itself loses nothing, and it
+repeats exactly. Scripted `bpy.ops.sculpt` strokes need a window context headless Blender lacks; a shrinkwrapped skin
+bridges gaps poorly. Look at a 2x crop: if a row of bumps reads as beads, turn and vary them and lower their crests.
+
+### The first round's discrete shapes (record only)
 
 1. **Metaball body.** Capsules round each opening (thicker on top, thinner below), balls swelling at the corners,
    negative cubes (stiffness 10) carving each protected rectangle 3 mm larger. Every panel, the neighbour's frame and
@@ -78,21 +101,26 @@ No grey metal. Too much subsurface or coat makes flesh read as plastic or chocol
   face; a flat emissive icon; a small point light in front. Pressed: the cap goes back 3 mm and down 2 mm and its rim
   and icon brighten; the flesh does not move. The page sinks the label by the same 3 px (`--btn-sink: 1.5px`).
 - **Portrait:** a tall pocket under an arch of balls in the body, a near-black back, the face lit from below.
-- **Hero:** a cluster of hexagonal cones (tip and short root) with transmission and violet emission, a point light inside
-  and one below, in a cradle of flesh.
+- **Hero:** a cluster of shards cut uneven (no raw cone: subdivided, vertices pushed 0.7-1.25 x, flat shaded), frosted
+  (roughness 0.5, transmission 1, a fine bump), a core of light inside each, a faint violet volume as mist, grown from a
+  sculpted cradle; a point light inside and one below.
+- **Key accent:** a saturated orange (`#ff8400`) at emission 1.8. AgX turns bright orange pale pink as it is driven
+  harder (the first round's peach rims): keep the accent saturated and gentle and let the dark round it carry it.
 
 ## 5. Light
 
 A warm soft area key from above (180 mm, 420 mm up), two grazing rims from the sides at 30% and 20% of the key (warm
 left, faint violet right), a cool fill from below at 3%. Every glowing accent carries a small point light just in front
-of it so the flesh round it picks up its colour. Never a flat front light: flesh under it reads as plastic. AgX, medium
+of it so the flesh round it picks up its colour, except a sac under the skin: a lamp that close burns a hot dot into
+it; its own emission lights it. From step 23 the light is at 70% so the instruments carry the light. Never a flat front light: flesh under it reads as plastic. AgX, medium
 high contrast; a bright emission desaturates toward white under AgX, so keep accents' emission low (0.6-1.5) and let
 their point lights do the spill.
 
 ## 6. Fit, measured
 
-- G1: no growth in front of the glass covers a screen, a key face or the portrait window. `organic_study.py` measures
-  it on the evaluated geometry (`measure()`); a skin generator must do the same for every kit piece.
+- G1: no growth in front of the glass comes within 2 mm of a screen, a key face or the portrait window.
+  `organic_study.py` measures objects on their evaluated geometry (`measure()`) and the sculpt on its height field
+  (`measure_field()`); a skin generator must do the same for every kit piece.
 - G2: children inside parents (readout in screen, icon in key, face in pocket), with margins.
 - G3: overhangs never cover another panel's content.
 - G4: 9-slice pieces keep growth in corners and edges; the stretching middle is plain flesh.
@@ -101,6 +129,6 @@ Then the page's `console_fit.mjs` and `dom_fit.mjs` as for every skin.
 ## 7. Working method
 
 Render the study (`/opt/blender/blender --background --factory-startup --python tools/blender/organic_study.py --
---steps 14 --samples 16 --out /tmp/org` for a quick look, about 1.5 minutes on 4 CPUs), look at it, change one thing,
+--steps 24 --samples 16 --out /tmp/org` for a quick look, about 1.5 minutes on 4 CPUs; the sculpt itself takes 3 s), look at it, change one thing,
 render again. Convert step renders to JPEG (quality 82) for the bible. When building a kit, render each piece face on
 through `tools/blender/ui_render.py` at twice its slot size, and compare a 2x crop of every key, screen and the portrait.
