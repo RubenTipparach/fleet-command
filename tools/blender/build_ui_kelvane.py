@@ -47,6 +47,11 @@ PAL = dict(champagne="#c9bfa9", knob="#d6d0c4", brass="#b0915a", amber="#f2c46e"
 GLOW = float(os.environ.get("FILM_GLOW", 0.78))   # the film's own backlight, as in the study
 MAIN = (0.8, 60.0)                                  # the soft main light on the wells: strength, angular size (deg)
 DIMPLE = 2.2                                        # a dimple's depth, mm
+# A pressed key is pushed in (owner, 2026-10-31: "I actually prefer the more animated versions on click"; the inner part
+# moves, the frame stays): its name window's glass travels PRESS_MM down and back, and the page's label sinks the same
+# (skins/kelvane.js --btn-sink is half of it), while the domed key goes KEY_PRESS_MM deeper into its dimple.
+PRESS_MM = 3.0
+KEY_PRESS_MM = 2.6
 DISPLAY = ("amber", "hot", "dim", "phos", "slotfilm", "ink", "grat", "unlit", "redink")
 
 
@@ -127,6 +132,22 @@ def stud(K, x, y, r, style, sunk, press=0.0):
         K.blob(x, y, r, r, r * 0.62, m, z=z + 0.4, seg=10)
 
 
+def lip_shadow(K, win, depth):
+    """The top lip's shadow on a pushed-in window's glass: a dark band fading down over depth mm from the well's top
+    edge (most of it under the overhanging lip; what shows below the lip is the deeper glass's cue that it went in). Its fade runs in the band's object coordinates (origin at the slot's
+    middle), so it is exact in mm."""
+    xs, ys = [p[0] for p in win], [p[1] for p in win]
+    x0, x1, y0 = min(xs), max(xs), min(ys)
+    k = NodeKit("lipshade")
+    sep = k.N.new("ShaderNodeSeparateXYZ")
+    k.L.new(k.co, sep.inputs[0])
+    top = (K.h / 2 - y0) * MM   # object Y of the well's top edge; the band fades to nothing depth mm below it
+    a = k.math("DIVIDE", k.math("SUBTRACT", sep.outputs["Y"], top - depth * MM), depth * MM, clamp=True)
+    k.set(Base_Color="#1a1208", Roughness=0.9, Alpha=k.math("MULTIPLY", k.math("POWER", a, 1.3), 0.8))
+    ob = K.slab([rrect(x0, y0 - 0.5, x1, y0 + depth, 2.0)], K.dz - PRESS_MM + 0.05, K.dz - PRESS_MM + 0.08, k.mat, bevel=0.0)
+    ob.visible_shadow = False
+
+
 def piece(name):
     def build(K):
         s = SHAPES[name]
@@ -135,8 +156,17 @@ def piece(name):
         mats(K, s)
         wells = [(kind, [tuple(p) for p in w]) for kind, w in s["wells"]]
         plate = [tuple(p) for p in s["plate"]]
-        for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B)
-            K.film(None, shape=[tuple(p) for p in f], m=K.m[{"amber": "amber", "hot": "hot", "dim": "dim", "phos": "phos", "slot": "slot", "tray": "tray"}[kind]])
+        press = PRESS_MM if name == "button.pressed" else 0.0
+        for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B), pressed: pushed in
+            shape = [tuple(p) for p in f]
+            if press:  # its foot held where it was, so the moved glass never shows past the plate's rolled edge (rule B)
+                foot = max(y for _x, y in shape) - press
+                shape = [(x, min(y, foot)) for x, y in shape]
+            glass = K.film(None, shape=shape, m=K.m[{"amber": "amber", "hot": "hot", "dim": "dim", "phos": "phos", "slot": "slot", "tray": "tray"}[kind]],
+                           z=K.dz - press)
+            glass.location.y -= press * MM
+            if press:
+                lip_shadow(K, _w, 9.0)
         ob = K.plate([plate] + [w for _k, w in wells])
         cuts = False
         for x, y, r in s["dimples"]:
@@ -156,7 +186,7 @@ def piece(name):
         cr = s["cradle"]
         for i, (x, y, r, style) in enumerate(s["studs"]):
             in_cradle = bool(cr) and abs(math.hypot(x - cr[0], y - cr[1]) - cr[2]) < 1.0
-            press = 1.0 if (i == 0 and name.endswith(".pressed")) else 0.0
+            press = KEY_PRESS_MM if (i == 0 and name.endswith(".pressed")) else 0.0
             stud(K, x, y, r, style, (round(x, 2), round(y, 2)) in sunk or in_cradle, press)
         for role, lines, w, ink in s["prints"]:
             m = K.m[{"ink": "ink", "grat": "grat", "unlit": "unlit", "red": "red"}[ink]]

@@ -17,7 +17,7 @@ F.register('kelvane', {
   name: 'Kelvane Institute', kind: 'An NLog-style instrument kit in Blender: champagne plates, amber readouts, phosphor scopes', bg: KV.bg, sampleBg: KV.champagne,
   css: { '--s-ink': KV.engrave, '--s-dim': KV.dim, '--s-num': KV.engrave, '--s-body': '"Courier Prime", monospace', '--btn-ink': KV.ink, '--btn-justify': 'center',
     '--btn-shadow': '0 0 3px rgba(255, 226, 160, 0.55)', '--btn-font': '400 17px/1 "Share Tech Mono", monospace', '--btn-track': '0.12em', '--btn-case': 'uppercase',
-    '--btn-motion': 'none', '--btn-sink': '1px', '--tab-font': '400 13px/1 "Share Tech Mono", monospace', '--tab-pb': '1px', '--tab-ink': '#2a1d0a', '--tab-ink-on': KV.inkOn,
+    '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1.5px', '--tab-font': '400 13px/1 "Share Tech Mono", monospace', '--tab-pb': '1px', '--tab-ink': '#2a1d0a', '--tab-ink-on': KV.inkOn,
     '--title-font': '700 13px/1 "Courier Prime", monospace', '--title-ink': KV.engrave, '--lbl-font': '700 12px/1 "Courier Prime", monospace',
     '--num-font': '400 27px/1 "Share Tech Mono", monospace',
     // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the plate inside its rolled rim, rows 4-69,

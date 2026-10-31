@@ -24,7 +24,7 @@ function glowStroke(x, w, col) {
 F.register('ssarith', {
   name: 'Ssarith Hunt', kind: 'A hunter\'s kit on the panel bible: hide-scaled olive gunmetal over CRT tubes, claw-mark bars', bg: '#0c120d', sampleBg: '#1c2a1d',
   css: { '--s-ink': SS.bone, '--s-dim': SS.dim, '--s-num': SS.phos, '--s-body': '"VT323", monospace', '--btn-ink': SS.phos, '--btn-shadow': '0 0 2px #000, 0 0 3px #000, 0 0 7px rgba(109,255,138,0.6)', '--btn-justify': 'center',
-    '--btn-font': '400 22px/1 "VT323", monospace', '--btn-track': '0.12em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-sink': '1px',
+    '--btn-font': '400 22px/1 "VT323", monospace', '--btn-track': '0.12em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1.5px',
     '--tab-font': '400 18px/1 "VT323", monospace', '--tab-ink': SS.dim, '--tab-ink-on': SS.phos, '--title-font': '400 15px/1 "Black Ops One", sans-serif', '--title-ink': SS.bone,
     '--lbl-font': '400 20px/1 "VT323", monospace', '--num-font': '400 32px/1 "VT323", monospace' },
   accent: SS.phos, warn: SS.kill,

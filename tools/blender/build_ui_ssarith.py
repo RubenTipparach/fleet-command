@@ -38,7 +38,7 @@ import bmesh
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ui_render  # noqa: E402  (the render harness every Blender skin shares)
-from ui_shapes import NodeKit, Panel, film_ink, film_mat, link_layers, metal, printed  # noqa: E402
+from ui_shapes import MM, NodeKit, Panel, film_ink, film_mat, link_layers, metal, printed  # noqa: E402
 
 SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "ssarith", "shapes.json")))["pieces"]
 
@@ -52,6 +52,7 @@ DIMPLE = 2.2          # a lamp's pressed dimple, mm deep
 # Display materials: every film and everything printed on one (the first is the film the print sits on).
 DISPLAY = ("tube", "lit", "flare", "slotfilm", "cellglass", "scan", "grid", "phos", "clawoff", "kill")
 # A tube's light by its kind and the piece's state: (film material, emission strength).
+PRESS_MM = 3.0   # how far a pressed key's tube travels, down and in (3 px at the kit's 1x)
 LIGHT = dict(tube=("tube", 0.32), lit=("lit", 0.6), flare=("flare", 0.9), slot=("slotfilm", 0.22), cell=("cellglass", 0.22))
 
 
@@ -155,12 +156,21 @@ def piece(name):
         K.pt = min(8.0, 2 * s["roll"] + 2.0)
         mats(K, s)
         wells = [(light_of(name, kind), [tuple(p) for p in w]) for kind, w in s["wells"]]
+        # A pressed key's tube is pushed in (owner, 2026-10-31: "I actually prefer the more animated versions on click";
+        # the inner part moves, the frame stays): the glass and its scan lines travel PRESS_MM down and back, and the
+        # page's label sinks the same (skins/ssarith.js --btn-sink is half of it).
+        press = PRESS_MM if name == "button.pressed" else 0.0
+        glass = []
         if s["kind"] == "cell":  # a cell is all tube: its glass, the claw marks printed on it, nothing else
             K.film(None, shape=wells[0][1], m=K.m[LIGHT["cell"][0]])
         else:
             plate = [tuple(p) for p in s["plate"]]
-            for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B)
-                K.film(None, shape=[tuple(p) for p in f], m=K.m[LIGHT[kind][0]])
+            for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B), pressed: pushed in
+                shape = [tuple(p) for p in f]
+                if press:  # its foot held where it was, so the moved glass never shows past the plate's edge (rule B)
+                    foot = max(y for _x, y in shape) - press
+                    shape = [(x, min(y, foot)) for x, y in shape]
+                glass.append(K.film(None, shape=shape, m=K.m[LIGHT[kind][0]], z=K.dz - press))
             ob = K.plate([plate] + [w for _k, w in wells])
             jewels = [st for st in s["studs"] if st[3].startswith("jewel")]
             for x, y, r, st in s["studs"]:
@@ -176,7 +186,9 @@ def piece(name):
                     K.bezel(w, grow=1.0, wall=gap >= 6.0)
         for _role, lines, w, ink in s["prints"]:
             for line in lines:
-                K.stroke([tuple(p) for p in line], w, K.m[ink])
+                glass.append(K.stroke([tuple(p) for p in line], w, K.m[ink], z=K.dz - press if press else None))
+        for ob in glass:
+            ob.location.y -= press * MM
         for line in s["engrave"]:
             K.stroke([tuple(p) for p in line], 1.1, K.m["bone"], z=K.pt)
         for (cx, cy, length, _width, ang), outline in s["leaves"]:
