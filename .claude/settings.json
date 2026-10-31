@@ -21,7 +21,8 @@
       "mcp__claude-artifacts__edit_version",
       "mcp__claude-artifacts__declare_capabilities",
       "Bash(openspec validate *)",
-      "mcp__github__pull_request_read"
+      "mcp__github__pull_request_read",
+      "mcp__claude-code-remote__read_documentation"
     ]
   }
 }
