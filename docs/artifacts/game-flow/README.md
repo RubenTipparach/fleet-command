@@ -11,3 +11,4 @@
   `tools/mockups/shoot.mjs` then `tools/mockups/shrink_png.py`.
 - Stage: drafted. Approvals are given in the mockup tracker.
 - Published: 2026-10-30, version 1; version 2 (UMD three.js so it renders on the artifact host); version 3 (bordered hexes, 3D miniatures, belts and nebulae, sector numbers, market and standing); version 4 (Star Crew nebula sky and streaking parallax stars, a 30 x 22 map, routes traced as lines, faction-space tooltip, no edge tilt, nothing hidden at far zoom); version 5 (no sector numbers, port sectors lit, a glass board with a planar mirror and a sky reflection probe, puff nebulae in several colours, the top bar docked to the screen with standing named by faction, click a ship to go there, every stand's hex ringed the board's way round).
+- Account move: Republished 2026-10-31 on the owner's current account (the earlier links were made from another account and cannot be read from here); every link updated.

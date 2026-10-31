@@ -6,7 +6,7 @@
 - [x] 1.2 Survey questions F1-F6 in `docs/design/survey.html`
 - [x] 1.3 `docs/mockups/game-flow.html`: main menu, options, quit; skirmish scenarios, fleet, loadout, stand-in battle, results; campaign map (hex grid, perspective, pan and zoom, territory, terrain, standees, movement, end turn), ports (shipyard, outfitter with supplies, recruiting), missions (markers, briefing, deploy, results, back to the map); desktop and phone, landscape and portrait
 - [x] 1.4 Named shots for every screen, shot at desktop and phone size and looked at
-- [x] 1.5 Published (https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk); recorded in `docs/artifacts/game-flow/`; listed in the mockup tracker and `mockup-work.md`
+- [x] 1.5 Published (https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt); recorded in `docs/artifacts/game-flow/`; listed in the mockup tracker and `mockup-work.md`
 
 ## 2. After approval for build
 

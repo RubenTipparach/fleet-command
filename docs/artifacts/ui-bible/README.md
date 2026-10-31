@@ -19,3 +19,4 @@
   rendered", "Add alternatives like all sides, bottom lit, rim lighting etc"): the drawn catalogue replaced by 3D
   renders that pass the fit check, a fit-rules chapter (9) and a lighting-options chapter (10), close-up renders of a
   well and the notch, the light chapter and settings table brought up to the final study, and step 19.
+- Account move: Republished 2026-10-31 on the owner's current account (the earlier links were made from another account and cannot be read from here); every link updated.
