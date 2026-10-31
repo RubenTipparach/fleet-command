@@ -1,6 +1,6 @@
 # Mockup 4: Console Skins
 
-- Link: https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW
+- Link: https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb
 - Shows: three faction design languages for one UI kit, under the owner's three rules (no two skins share a button
   shape; each palette comes from the faction's ideology; shapes, lighting and icons come from how the faction thinks).
   One battle console drawn only from kit pieces with a live skin switch; the three skins' buttons (idle, hover,

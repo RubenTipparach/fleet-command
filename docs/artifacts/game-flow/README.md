@@ -1,6 +1,6 @@
 # Mockup 1: Game Flow
 
-- Link: https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk
+- Link: https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt
 - Shows: the main menu (options, quit), skirmish setup (scenarios, point budget, fleet, refit by
   hardpoint with arcs, supplies, wingman behaviour, variants), a stand-in battle and its results, and the
   campaign: the hex map in perspective with pan, zoom and standees, movement, End turn, the shipyard,

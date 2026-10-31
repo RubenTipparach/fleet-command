@@ -21,7 +21,7 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
 
 ## Guides
 
-- Analog Panel Bible: https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w (source `docs/design/ui-bible.html`, record in
+- Analog Panel Bible: https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF (source `docs/design/ui-bible.html`, record in
   `docs/artifacts/ui-bible/`). Building 1990s-style instrument panels in Blender; goes with the `blender-ui-panels`
   skill.
 

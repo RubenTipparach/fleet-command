@@ -1,6 +1,6 @@
 # Analog Panel Bible
 
-- Link: https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w
+- Link: https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF
 - Shows: the guide to building 1990s-style instrument panels in Blender (owner, 2026-10-30: "Start writing up a
   guide/bible. UI design Bible for using blender to render UI stuff the way they did in the 90s"). Named and
   numbered parts, depth, light, readability, analog feel, children inside their parents, formed metal (the notch

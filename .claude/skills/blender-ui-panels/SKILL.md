@@ -11,7 +11,7 @@ metadata:
 New in this repository (owner, 2026-10-30: "Start writing up a guide/bible. UI design Bible for using blender to
 render UI stuff the way they did in the 90s ... The Bible should compliment the skill"). This skill is the procedure;
 the bible is the shared vocabulary and the diagrams: the Analog Panel Bible, `docs/design/ui-bible.html`,
-published at https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w (record in `docs/artifacts/ui-bible/README.md`;
+published at https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF (record in `docs/artifacts/ui-bible/README.md`;
 its diagrams come from `tools/mockups/ui_bible_svgs.py`). Use the bible's part names and numbers (P1 plate, W3 lip, N2 shoulder and so
 on) when talking to the owner, so "the shoulder is too tight" means one thing.
 
