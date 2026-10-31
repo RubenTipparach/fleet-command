@@ -201,8 +201,38 @@ rendered shell around the UI panels and elements".
 | Kelvane Institute | Lab dashboard in Blender: cream enamel with an orange-peel finish in chrome bezels, domed push buttons with amber pilot rings, bat-handle toggles, a needle meter under glass, knurled knobs, amber displays, a phosphor scope with its graticule, jewel lamps, engraved placards | `tools/blender/build_ui_kelvane.py` |
 | Ssarith Hunt | Hunter's jungle kit in Blender: worn gunmetal with chamfers and sunk hex bolts, canopy camouflage, vines and fronds, bone tally marks and reticles, CRT tube keys with scanlines | `tools/blender/build_ui_ssarith.py` |
 | Krai Warhost, Ombrai | In Blender | to come |
-| Aelith Conclave | Hybrid: armour shells in Blender, hologram keys and icons vector | to come |
+| Aelith Conclave | Hybrid on the analog panel bible: pillowed satin-gold shells with formed wells (lozenges drawn to a point, knuckled corners, a scalloped rim, embracing arms), pearls on flat metal, each well a void rim-lit in cyan; the holograms drawn as vectors into the wells from the same shapes | `tools/blender/build_ui_aelith.py` from `assets/ui/aelith/shapes.json` (`tools/mockups/aelith_shapes.py`) |
 | Tarsine Remnant | Painted in the page for now; Blender recommended (survey U9) | |
+
+### The Aelith Conclave, rebuilt on the analog panel bible (version 14)
+
+The owner, 2026-10-31: "Using these design principles. Update conclave UI" (the analog panel bible,
+`docs/design/ui-bible.html`, and the `blender-ui-panels` skill), still under the hybrid rule of 2026-10-30 ("vector graphics
+for holographic buttons and icons, but 3d rendered shell around the UI panels and elements").
+
+- **The shell** is the bible's two-layer panel in the Conclave's own materials: satin gold (`#c9a646`, metallic 0.95,
+  roughness 0.24, a fine grain under a thin coat) whose every edge rolls over, footprint-true, and pearl inlays (thin-film
+  sheen) set on flat metal. Its wells are formed with the shell, never added on top: keys are lozenges drawn to a point
+  between two gold claws, each with a pearl; panel frames have a knuckle of armour grown into each corner of the well,
+  each holding a pearl (the bible's ear); the helm's rim is scalloped by eight lobes between the eight keys (the bible's
+  scallop); the ship display is embraced by two arms from the sides; the strips are a long channel drawn to a point at
+  each end, where a swept wing holds a pearl.
+- **The light**: a soft main light from the upper left on the gold and into the wells (strength 0.8, 60 degrees across, so
+  the lip's shadow fades out softly); each well a void of dark teal glass (`#0c3340`, glowing at 0.12) **rim-lit**: cyan
+  strip lamps tucked under the lip all the way round each well, 0.0008 W per mm of edge, spread 120 degrees. Rim light
+  is the bible's option chosen for the Conclave because the Conclave's light is thought made visible, held by the armour
+  rather than thrown at it: it rises from the shell's own inner edge on every side at once (patient, balanced, no single
+  source), and it leaves the middle of each well dark, where the holograms are drawn and must read.
+- **The holograms** (keys, fields, the helm's eight keys and crystal, the crest's triangle, the alert crystals, icons) stay
+  vector, drawn by `docs/mockups/skins/aelith.js`, clipped to their wells so no glow spills onto the gold. A kit image is
+  the render and its hologram layered in one SVG, so the page's 9-slice and hero slots take it unchanged; the two bar fills
+  are light alone and ride inside the track's channel.
+- **One source of shape**: `tools/mockups/aelith_shapes.py` builds every piece's plate, wells, pearls, films and hologram
+  outlines (shapely), checks them against the bible's fit rules (K, L, R, P, B), and writes `assets/ui/aelith/shapes.json`
+  only if all 20 pieces pass; the Blender generator models exactly those outlines and the page draws its holograms from
+  them. After the render, `aelith_shapes.py --verify` measures rule B on the images: no lit pixel outside any shell (all
+  19 rendered pieces: 0).
+- Panel titles sit inside their well, right of the corner knuckle, in holo light.
 
 Every generator shares `tools/blender/ui_render.py` (render settings, lights, the camera, byte-reproducible PNGs, the
 manifest), and the page loads any rendered kit with `FCK.fromManifest`; a kit may render its own icons (`icon.<name>`).

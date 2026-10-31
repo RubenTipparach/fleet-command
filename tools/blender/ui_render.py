@@ -107,9 +107,10 @@ def strip_png_metadata(path):
 
 def render_piece(name, spec, out_dir, samples, make_piece, render_setup):
     """Model one piece in a fresh scene, render it face on and return its manifest entry.
-    spec is (kind, (w, h), margins, stretch, build); make_piece(name, w, h, hero) returns the
-    modelling context build() draws into; render_setup(w_px, h_px, samples) sets render and lights."""
-    kind, (w, h), margins, stretch, build = spec
+    spec is (kind, (w, h), margins, stretch, build), optionally with a sixth item, a bar track's fill inset (x, y);
+    make_piece(name, w, h, hero) returns the modelling context build() draws into; render_setup(w_px, h_px, samples)
+    sets render and lights."""
+    kind, (w, h), margins, stretch, build = spec[:5]
     panel_kit.reset_scene()
     render_setup(w * SCALE, h * SCALE, samples)
     K = make_piece(name, w, h, kind == "hero")
@@ -123,6 +124,8 @@ def render_piece(name, spec, out_dir, samples, make_piece, render_setup):
     if kind == "nine":
         entry["margins"] = list(margins)
         entry["stretch"] = stretch
+        if len(spec) > 5 and spec[5]:
+            entry["inset"] = list(spec[5])
     return entry
 
 

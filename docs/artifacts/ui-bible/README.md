@@ -13,7 +13,7 @@
   `docs/design/ui-bible/lighting/`) come from `tools/mockups/formed_metal.py` (outlines and the fit check; it refuses a
   failing layout) and `tools/blender/ui_tiles_tail.py` (the Blender renderer, on the study's helpers). The study itself is not committed: it follows someone else's
   layout (CLAUDE.md sections 1 and 10); the renders are our own modelling and text.
-- Published: 2026-10-30, version 1.
+- Published: 2026-10-30, version 1; version 2 (2026-10-31: every formed shape and lighting option a real 3D render, fit-checked); version 3 (2026-10-31: rule R, rolled edges never meet, and rule B, layers behind a plate stay inside it, both measured by the fit check with self-tests from the study's own faults; the tiles built on `tools/blender/ui_shapes.py`'s Panel; the Aelith Conclave as the example of rim light, `ui-bible/aelith-rim.jpg`).
 - Version 2, 2026-10-31 (owner: "the guide illustrations violates some guidelines. Like the button overlapping with the
   bevels ... implement these as 3d renderings and verify the overlap rule", "make sure all those examples are 3d
   rendered", "Add alternatives like all sides, bottom lit, rim lighting etc"): the drawn catalogue replaced by 3D

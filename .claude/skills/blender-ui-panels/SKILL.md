@@ -21,14 +21,17 @@ car"). The study is not committed: it copies someone else's layout (CLAUDE.md se
 the construction and the numbers. Every skin built with it is our own design.
 
 Where it sits: `tools/blender/ui_render.py` (render harness), `tools/blender/ui_shapes.py` (`NodeKit`, `Shaper`,
-`rrect`, `circle`), `tools/blender/panel_kit.py` (scene reset, camera). Skins: `tools/blender/build_ui_<id>.py`
-(`build_ui_kelvane.py` is the closest relative). Units: 1 px of the 1x slot is 1 mm; builders take slot pixels with y
-running down; renders are at 2x.
+`rrect`, `circle`, and the panel kit below), `tools/blender/panel_kit.py` (scene reset, camera). Skins:
+`tools/blender/build_ui_<id>.py`. Units: 1 px of the 1x slot is 1 mm; builders take slot pixels with y running down;
+renders are at 2x.
 
-**Follow-up task, not done yet**: move the study's reusable helpers (`offset_poly`, `notched`, `plate`, `dimple`,
-`finish`, `film_ink`, `lip_light`, `knob`, `flat`, `stroke`, `label`) into `tools/blender/ui_shapes.py`, one
-implementation for every skin (CLAUDE.md section 6.1). Until then, the code below is the reference; when the first
-skin needs one, move it then, with its docstring.
+**The panel kit is in `tools/blender/ui_shapes.py`**, one implementation for every skin (CLAUDE.md section 6.1): `Panel`
+(a `Shaper` with `plate`, `finish`, `dimple`, `cut`, `bevel`, `bezel`, `knob`, `film`, `flat`, `stroke`, `label`,
+`lip_light`, `edge_lamp`; its `pt`, `roll`, `dz`, `lamps` and `lip` settings; materials by role in `K.m`: plate, film,
+ink, groove, knob, pointer, bezel), `offset_poly`, `notched`, `rr`, the materials `metal`, `satin`, `printed`,
+`film_mat`, `film_ink`, and `link_layers` (the two layers, the softbox, the ceiling and the main light). The code
+fragments below show how each works; call the kit, never copy it. The bible's tiles (`tools/blender/ui_tiles_tail.py`)
+and the Aelith Conclave (`tools/blender/build_ui_aelith.py`) are built with it.
 
 ## 1. The two layers
 
@@ -127,13 +130,24 @@ shape, and exits with an error on any failure:
 | Rule | Must hold | Numbers |
 |---|---|---|
 | K | each knob's footprint (radius x 1.14 for the collar, plus MARGIN) lies on flat metal: inside the plate, clear of every roll | ROLL 3.8 mm, MARGIN 2.5 mm |
-| L | every land of metal is at least 2 x ROLL + LAND wide, and the metal opened by ROLL changes by 0.6 mm or less (no pinched tip) | 10.6 mm, LAND 3.0 mm |
-| P | printing on a display (a gauge, a scale) stays PAD inside its window | PAD 3.0 mm |
+| R | **rolled edges never touch or overlap** (owner, 2026-10-31: "Bevels should never intersect", "You must measure elements like this carefully", "Avoid two rolled edges from touching or overlap"): a window or slot to its plate's edge and to every other window; a pressed dimple to the plate's edge, a window or a raised plate; a raised plate inside its parent and clear of its openings | 2 x ROLL + LAND = 10.6 mm; ROLL + dimple rim 1.4 + LAND = 8.2 mm; ROLL + LAND = 6.8 mm |
+| L | every metal tip is rounder than the roll: the metal opened by ROLL changes by 0.6 mm or less | 0.6 mm |
+| P | printing on a display (a gauge, a scale, a hologram) stays PAD inside its window | PAD 3.0 mm |
+| B | every layer behind a plate (film, well, sub-display, glow plane, backing) stays inside the plate's footprint, rounded corners included (owner, 2026-10-31: "Some times the UI layer/plane can stick outside its bounds. It must measured properly to fit inside the parent panel"): clamped when built (`behind_layer()`, `Panel.film(inside=...)` or `shape=`), and on the render no lit pixel outside the plates | INSET 4 mm |
 
-`--selftest` proves the checker catches the first drawings' faults (a knob on the ear's edge, two windows 4 mm apart
-whose rolls overlap, a key on a 12 mm shelf, a bar pinched to 10 mm). Render the checked tiles with
-`tools/blender/ui_tiles_tail.py` (`TILES=formed`), on the study helpers until they move into `ui_shapes.py`. Then look
-at the check map beside each render: flat metal light, rolls dark, each knob's clearance a green ring.
+**Measure, never eyeball.** Every rule is measured on the geometry (shapely), not judged from a render: the study's
+time display sat 5 px from its plate's bottom edge (two 3.8 mm rolls need 7.6 before any flat), most of its windows had
+7-8 px of land against 10.6, raised plates sat 2 px from their parent's edge, and a film grown 8 px past a window 8 px
+from the panel's edge showed as a cream sliver below the plate. All looked fine at a glance. A piece too thin for 3 mm of
+land (a 16 px bar) shrinks its roll and keeps a positive land; two rolls never share a line. `formed_metal.fit()` takes
+any plate, windows, knobs, prints, layers, dimples and raised plates, so a whole skin's kit is checked the same way
+(`tools/mockups/aelith_shapes.py`, which also measures rule B on the renders with `--verify`).
+
+`--selftest` proves the checker catches eight faults: the first drawings' (a knob on the ear's edge, two windows 4 mm
+apart whose rolls overlap, a key on a 12 mm shelf, a bar pinched to 10 mm) and the study's (a window 5 mm from the
+plate's edge, a dimple 8 mm from a window, a raised plate 2 mm from its parent's edge, a film grown past the plate).
+Render the checked tiles with `tools/blender/ui_tiles_tail.py` (`TILES=formed`). Then look at the check map beside each
+render: flat metal light, rolls dark, each knob's clearance a green ring.
 
 ## 5. Pressed details
 
@@ -206,6 +220,10 @@ the film burns to white (251 or brighter) than the spots do:
 | side | 1 edge lamp along the left, 0.0006 W/mm | 3.7% |
 | backlight only | none, `FILM_GLOW` alone | 0.0% |
 
+The Aelith Conclave uses rim light on a dark void film: 0.0008 W/mm of edge, spread 120 deg (30 deg left visible rays
+between the short lamps), the lamps walked round any well outline in 8-12 px segments, each aimed along its inward
+normal, so a formed well is lit evenly all the way round. A dark film needs more lamp than a cream one.
+
 A first pass at 3 to 10 times these powers burnt 9% to 28% of the film white: a strip puts all its light right
 against the film's edge, so it needs far less power per lamp than a spot.
 
@@ -235,8 +253,9 @@ Keep it at 0.5 or more, and keep the lamp peak under 250 of 255.
 **Children fit inside their parents** (owner: "make sure the UI fits well inside parent elements ... not a hard
 rule, but generally we dont want that overlap, it cheapens the look"): every bar, key, readout and knob sits wholly
 inside its parent's inner edge with an even margin. A reach-over is formed metal, grown with its parent (section 4),
-never a child spilling out. The Concord top strip on the console-skins page breaks this today: its bars run past the
-strip's bottom edge.
+never a child spilling out. On a page, measure it on the page (`tools/mockups/strip_fit.mjs` does the strips: the
+Concord top strip's bars ran across its thin bar until its readouts were padded into the 44 px beside it). A hybrid
+skin's vector layer (the Conclave's holograms) is clipped to its wells, so its glow never reaches the metal.
 
 ## 8. Compare pixels against the reference
 
@@ -255,7 +274,8 @@ The study's sampled palette: film `#eacf9f` (ours `#e9ce9f`), plate `#bdb8ae` me
 
 ## 9. Before calling it done
 
-- Every formed shape passes `formed_metal.py` before it is rendered; look at its check map.
+- Every formed shape and every kit piece passes the fit check (K, R, L, P, B) before it is rendered; look at its check
+  map. After rendering, no lit pixel outside the plates (rule B).
 - Render the top band at 24 samples while tuning (render border), the whole panel at 64 to finish.
 - Look at a crop at 2x of every changed area; check text under every lamp.
 - Keep each earlier version of a study beside it while iterating, so "change it back" is one copy.

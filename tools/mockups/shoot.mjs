@@ -31,7 +31,7 @@ for (const [sizeName, viewport] of SIZES) {
   const page = await browser.newPage({ viewport });
   page.on('console', (m) => { if (m.type() === 'error') { errors++; console.log('console:', m.text()); } });
   page.on('pageerror', (e) => { errors++; console.log('pageerror:', e.message); });
-  await page.goto(/^https?:/.test(target) ? target : 'file://' + path.resolve(target));
+  await page.goto(/^https?:/.test(target) ? target : 'file://' + path.resolve(target), { timeout: 240000 });
   await page.waitForFunction(() => window.MOCKUP_READY, null, { timeout: 240000 });
   const names = await page.evaluate(() => Object.keys(window.MOCKUP_SHOTS || {}));
   for (const name of names.length ? names : ['default']) {

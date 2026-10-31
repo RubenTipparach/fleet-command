@@ -23,7 +23,7 @@ account and every link here is updated.
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-10-30, v13) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
+| 4 | Console skins | Drafted (2026-10-31, v14) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -158,6 +158,10 @@ else's art):
   style buttons", then "that faction is from the gorn, which are more hunter like faction, they enjoy the sport, so their ui is
   reminiscent of a dense jungle akin to the Predator". Version 13 adds the Ssarith Hunt, an original hunter race whose console is a
   jungle hunter's kit, modelled and rendered in Blender (name provisional, survey U10).
+- 2026-10-31: "Using these design principles. Update conclave UI" (the analog panel bible and the `blender-ui-panels` skill). Version
+  14 rebuilds the Aelith Conclave on them: pillowed satin-gold shells with formed wells and pearls, each well a void rim-lit in cyan,
+  the holograms still vector, drawn into the wells from the same fit-checked shapes. The Concord top strip's bars now sit inside the
+  strip, clear of its thin bar (the owner's example of a child overlapping its parent).
 
 What the mockup shows:
 

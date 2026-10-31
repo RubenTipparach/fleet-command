@@ -1,0 +1,239 @@
+{
+  "skin": "aelith",
+  "scale": 2,
+  "pieces": {
+    "frame.panel": {
+      "kind": "nine",
+      "size": [
+        180,
+        140
+      ],
+      "file": "frame.panel.png",
+      "margins": [
+        44,
+        44,
+        44,
+        44
+      ],
+      "stretch": "xy"
+    },
+    "frame.inset": {
+      "kind": "nine",
+      "size": [
+        72,
+        56
+      ],
+      "file": "frame.inset.png",
+      "margins": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "stretch": "xy"
+    },
+    "bar.track": {
+      "kind": "nine",
+      "size": [
+        96,
+        16
+      ],
+      "file": "bar.track.png",
+      "margins": [
+        0,
+        14,
+        0,
+        14
+      ],
+      "stretch": "x",
+      "inset": [
+        16,
+        3
+      ]
+    },
+    "button.idle": {
+      "kind": "nine",
+      "size": [
+        150,
+        48
+      ],
+      "file": "button.idle.png",
+      "margins": [
+        20,
+        42,
+        20,
+        42
+      ],
+      "stretch": "x"
+    },
+    "button.hover": {
+      "kind": "nine",
+      "size": [
+        150,
+        48
+      ],
+      "file": "button.hover.png",
+      "margins": [
+        20,
+        42,
+        20,
+        42
+      ],
+      "stretch": "x"
+    },
+    "button.pressed": {
+      "kind": "nine",
+      "size": [
+        150,
+        48
+      ],
+      "file": "button.pressed.png",
+      "margins": [
+        20,
+        42,
+        20,
+        42
+      ],
+      "stretch": "x"
+    },
+    "tab.idle": {
+      "kind": "nine",
+      "size": [
+        120,
+        40
+      ],
+      "file": "tab.idle.png",
+      "margins": [
+        12,
+        30,
+        12,
+        30
+      ],
+      "stretch": "x"
+    },
+    "tab.active": {
+      "kind": "nine",
+      "size": [
+        120,
+        40
+      ],
+      "file": "tab.active.png",
+      "margins": [
+        12,
+        30,
+        12,
+        30
+      ],
+      "stretch": "x"
+    },
+    "strip.top": {
+      "kind": "nine",
+      "size": [
+        512,
+        56
+      ],
+      "file": "strip.top.png",
+      "margins": [
+        10,
+        110,
+        10,
+        110
+      ],
+      "stretch": "x"
+    },
+    "strip.bottom": {
+      "kind": "nine",
+      "size": [
+        512,
+        56
+      ],
+      "file": "strip.bottom.png",
+      "margins": [
+        10,
+        110,
+        10,
+        110
+      ],
+      "stretch": "x"
+    },
+    "divider": {
+      "kind": "nine",
+      "size": [
+        128,
+        10
+      ],
+      "file": "divider.png",
+      "margins": [
+        0,
+        16,
+        0,
+        16
+      ],
+      "stretch": "x"
+    },
+    "nameplate": {
+      "kind": "hero",
+      "size": [
+        460,
+        56
+      ],
+      "file": "nameplate.png"
+    },
+    "helm.pad": {
+      "kind": "hero",
+      "size": [
+        300,
+        300
+      ],
+      "file": "helm.pad.png"
+    },
+    "ssd.bezel": {
+      "kind": "hero",
+      "size": [
+        460,
+        300
+      ],
+      "file": "ssd.bezel.png"
+    },
+    "dial": {
+      "kind": "hero",
+      "size": [
+        120,
+        120
+      ],
+      "file": "dial.png"
+    },
+    "lamp.alert.green": {
+      "kind": "hero",
+      "size": [
+        64,
+        64
+      ],
+      "file": "lamp.alert.green.png"
+    },
+    "lamp.alert.yellow": {
+      "kind": "hero",
+      "size": [
+        64,
+        64
+      ],
+      "file": "lamp.alert.yellow.png"
+    },
+    "lamp.alert.red": {
+      "kind": "hero",
+      "size": [
+        64,
+        64
+      ],
+      "file": "lamp.alert.red.png"
+    },
+    "crest": {
+      "kind": "hero",
+      "size": [
+        96,
+        96
+      ],
+      "file": "crest.png"
+    }
+  }
+}

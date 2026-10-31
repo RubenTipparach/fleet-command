@@ -30,6 +30,19 @@
   `assets/ui/ssarith/`), its module `docs/mockups/skins/ssarith.js`, shot, looked at and published
 - [x] 1.14 Survey U10 added: a new race, and its name
 
+## 1e. Version 14: the Aelith Conclave on the analog panel bible (owner, 2026-10-31)
+
+- [x] 1.15 The study's panel helpers moved into `tools/blender/ui_shapes.py` (`Panel`, `offset_poly`, `notched`, `metal`,
+  `satin`, `film_mat`, `film_ink`, `link_layers`); the bible's tile renderer runs on them alone (a re-rendered tile matches
+  the old one within 1 level of 255)
+- [x] 1.16 The fit check gains rule R (rolled edges never meet, measured) and rule B (layers behind a plate stay inside it,
+  clamped when built and checked on the render), with self-tests from the study's own faults
+- [x] 1.17 The Aelith Conclave rebuilt: shapes fit-checked (`tools/mockups/aelith_shapes.py`), shell rendered
+  (`tools/blender/build_ui_aelith.py`, `assets/ui/aelith/`), rule B verified on the renders, holograms drawn from the same
+  shapes (`docs/mockups/skins/aelith.js`); contact sheet and shots looked at; published
+- [x] 1.18 The Concord top strip's bars kept inside the strip, clear of its thin bar (optional strip padding tokens,
+  measured on the page for every skin by `tools/mockups/strip_fit.mjs`)
+
 ## 2. After approval for build
 
 - [ ] 2.1 Blender kit generator per skin (`panel-textures`), bakes, manifest with margins

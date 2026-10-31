@@ -26,7 +26,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ui_render  # noqa: E402  (the render harness every Blender skin shares)
-from ui_shapes import NodeKit, Shaper, arc, circle, rrect  # noqa: E402  (shared modelling and shading)
+from ui_shapes import NodeKit, Shaper, arc, circle, metal, rrect  # noqa: E402  (shared modelling and shading)
 
 # ----------------------------------------------------------------------------- materials
 # Measurement, patience, precision: cream enamel, chrome, amber light, phosphor green, needle red, ink.
@@ -41,16 +41,6 @@ def enamel(name, col=PAL["cream"]):
     k.set(Base_Color=k.ramp(tone.outputs["Fac"], "#e0d1b0", col, 0.2, 0.8), Roughness=0.36, Coat_Weight=0.55, Coat_Roughness=0.1)
     peel = k.tex("ShaderNodeTexNoise", 700.0, **{"Detail": 2.0})
     k.bump(peel.outputs["Fac"], 0.06)
-    return k.mat
-
-
-def metal(name, col, rough, knurl=False):
-    """Chrome or brass; with knurl, fine diagonal ridges for grip."""
-    k = NodeKit(name)
-    k.set(Base_Color=col, Metallic=1.0, Roughness=rough)
-    if knurl:
-        w = k.tex("ShaderNodeTexWave", 900.0, **{"Distortion": 0.0})
-        k.bump(w.outputs["Fac"], 0.5)
     return k.mat
 
 

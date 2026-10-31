@@ -10,9 +10,17 @@ solids (shapely), then checked:
 
   K  every knob's footprint (radius x 1.14 for its collar, plus MARGIN) lies wholly on FLAT metal: inside the plate,
      clear of every rolled edge (ROLL from any edge)
-  L  every land of metal is at least 2 x ROLL + LAND wide, and every metal tip is rounder than the roll: the metal,
-     opened by ROLL, differs from itself by at most 0.6 mm (else the roll pinches or eats it)
+  L  every metal tip is rounder than the roll: the metal, opened by ROLL, differs from itself by at most 0.6 mm (else
+     the roll pinches or eats it)
+  R  rolled edges never touch or overlap (owner, 2026-10-31: "Bevels should never intersect", "You must measure elements
+     like this carefully", "Avoid two rolled edges from touching or overlap"). Measured, never eyeballed: a window or
+     slot is 2 x ROLL + LAND (10.6 mm) from its plate's edge and from every other window; a pressed dimple is ROLL +
+     DIMPLE_RIM + LAND (8.2 mm) from the plate's edge, a window or a raised plate; a raised plate stays ROLL + LAND
+     (6.8 mm) inside its parent's edge and clear of its openings
   P  anything printed on a display (a gauge) stays PAD inside its window
+  B  every layer behind the plate (a film, a well, a glow plane) stays INSET inside the plate's footprint, rounded
+     corners included (owner, 2026-10-31: "Some times the UI layer/plane can stick outside its bounds. It must
+     measured properly to fit inside the parent panel"); behind_layer() builds one already clamped
 
 Writes tiles.json for the Blender renderer and check_<name>.png maps (flat metal, rolls, footprints, pass or fail)
 into --out, and exits with an error if any rule fails. --selftest feeds the checker four known faults (the first
@@ -30,10 +38,11 @@ import os
 import sys
 
 from PIL import Image, ImageDraw
+from shapely import affinity
 from shapely.geometry import LineString, Point, Polygon, box
 from shapely.ops import unary_union
 
-ROLL, LAND, MARGIN, PAD, F = 3.8, 3.0, 2.5, 3.0, 10.0
+ROLL, LAND, MARGIN, PAD, F, INSET, DIMPLE_RIM = 3.8, 3.0, 2.5, 3.0, 10.0, 4.0, 1.4
 W, H = 320, 220
 
 
@@ -104,30 +113,64 @@ def tiles():
     return t
 
 
-def check(name, spec):
-    wins = spec["windows"]
-    holes = unary_union(wins)
-    metal = PLATE.difference(holes)
-    flat = PLATE.buffer(-ROLL).difference(holes.buffer(ROLL))
+def fit(plate, windows, knobs=(), prints=(), behind=(), roll=ROLL, land=LAND, margin=MARGIN, pad=PAD, inset=INSET,
+        dimples=(), raised=()):
+    """The fit rules for any plate (a shapely polygon) and its windows; returns (results, flat metal).
+
+    knobs are (x, y, r, pointer) on the metal, prints are (label, geometry) drawn on a display, behind are (label,
+    geometry) layers under the plate (film, well, glow plane), dimples are (x, y, rx, ry) pressed into it, raised are
+    (label, geometry) plates standing on it. Each result is (rule, what, passed, why). Everything is measured on the
+    geometry, never judged by eye."""
+    holes = unary_union(windows) if windows else Polygon()
+    metal = plate.difference(holes)
+    flat = plate.buffer(-roll).difference(holes.buffer(roll))
+    two = 2 * roll + land
     out = []
-    for (x, y, r, _p) in spec["knobs"]:
-        foot = disc(x, y, r * 1.14 + MARGIN)
-        ok = flat.contains(foot)
-        gap = flat.exterior.distance(Point(x, y)) if flat.geom_type == "Polygon" else min(g.exterior.distance(Point(x, y)) for g in flat.geoms)
-        out.append(("K", f"knob at ({x}, {y}) r {r} mm", ok, f"needs {r * 1.14 + MARGIN:.1f} mm of flat round it"))
-    for (x, y, r) in spec.get("gauges", []):
-        ok = any(w.buffer(-PAD).contains(disc(x, y, r)) for w in wins)
-        out.append(("P", f"gauge at ({x}, {y}) r {r} mm", ok, f"stays {PAD} mm inside its window"))
-    opened = metal.buffer(-ROLL, quad_segs=16).buffer(ROLL, quad_segs=16)
+    for (x, y, r, _p) in knobs:
+        foot = disc(x, y, r * 1.14 + margin)
+        out.append(("K", f"knob at ({x:g}, {y:g}) r {r:g} mm", flat.contains(foot), f"needs {r * 1.14 + margin:.1f} mm of flat round it"))
+    for what, g in prints:
+        ok = any(w.buffer(-pad).contains(g) for w in windows)
+        out.append(("P", what, ok, f"stays {pad:g} mm inside its window"))
+    for what, g in behind:
+        ok = plate.buffer(-inset, quad_segs=16).buffer(0.05).contains(g)
+        out.append(("B", what, ok, f"stays {inset:g} mm inside the plate, corners included"))
+    opened = metal.buffer(-roll, quad_segs=16).buffer(roll, quad_segs=16)
     dev = metal.hausdorff_distance(opened)
-    out.append(("L", "every land and tip holds its roll", dev <= 0.6, f"metal changes by {dev:.2f} mm when opened by the roll"))
-    for i, a in enumerate(wins):
-        d = a.exterior.distance(PLATE.exterior)
-        out.append(("L", f"window {i + 1} to the plate edge", d >= 2 * ROLL + LAND, f"{d:.1f} mm of metal (needs {2 * ROLL + LAND:.1f})"))
-        for j, b in enumerate(wins[i + 1:], i + 1):
+    out.append(("L", "every metal tip holds its roll", dev <= 0.6, f"metal changes by {dev:.2f} mm when opened by the roll {roll:g} mm"))
+    # R: rolled edges never touch or overlap (owner, 2026-10-31: "Bevels should never intersect", "Avoid two rolled
+    # edges from touching or overlap"): between any two rolled edges there is flat land.
+    for i, a in enumerate(windows):
+        d = a.exterior.distance(plate.exterior)
+        out.append(("R", f"window {i + 1} to the plate edge", d >= two, f"{d:.1f} mm of metal (two rolls and the land need {two:.1f})"))
+        for j, b in enumerate(windows[i + 1:], i + 1):
             d = a.distance(b)
-            out.append(("L", f"window {i + 1} to window {j + 1}", d >= 2 * ROLL + LAND, f"{d:.1f} mm of metal (needs {2 * ROLL + LAND:.1f})"))
+            out.append(("R", f"window {i + 1} to window {j + 1}", d >= two, f"{d:.1f} mm of metal (needs {two:.1f})"))
+    need_d = roll + DIMPLE_RIM + land
+    for (x, y, rx, ry) in dimples:
+        e = affinity.scale(Point(x, y).buffer(1.0, quad_segs=24), rx, ry)
+        d = min([e.exterior.distance(plate.exterior)] + [e.distance(w) for w in windows] + [e.distance(g) for _, g in raised])
+        out.append(("R", f"dimple at ({x:g}, {y:g})", d >= need_d, f"{d:.1f} mm to the nearest edge (roll, rim and land need {need_d:.1f})"))
+    for what, g in raised:
+        ok = plate.buffer(-(roll + land)).contains(g) and all(g.distance(w) >= roll + land for w in windows)
+        out.append(("R", f"raised {what}", ok, f"stays {roll + land:.1f} mm inside its parent and clear of its openings"))
     return out, flat
+
+
+def behind_layer(window, plate, grow=8.0, inset=None):
+    """A layer under a plate (a film, a well), measured to fit: the window grown by grow mm, clamped inside the plate's
+    footprint by inset mm with its corners rounded at least as much as the plate's (rule B)."""
+    inset = INSET if inset is None else inset
+    return window.buffer(grow, quad_segs=16).intersection(plate.buffer(-inset, quad_segs=16))
+
+
+def check(name, spec, plate=None):
+    """The catalogue tiles' fit (plate defaults to the 320 x 220 tile; its films are the windows grown 8 mm)."""
+    plate = plate or PLATE
+    wins = spec["windows"]
+    films = [(f"film behind window {i + 1}", behind_layer(w, plate)) for i, w in enumerate(wins)]
+    prints = [(f"gauge at ({x}, {y}) r {r} mm", disc(x, y, r)) for (x, y, r) in spec.get("gauges", [])]
+    return fit(plate, wins, spec["knobs"], prints, films)
 
 
 def draw(out_dir, name, spec, flat, results, scale=2):
@@ -172,6 +215,7 @@ def build(out_dir):
                            holes_off=[list(w.buffer(ROLL, quad_segs=16).exterior.coords)[:-1] for w in spec["windows"]],
                            bezel=[[list(w.buffer(0.8, quad_segs=16).exterior.coords)[:-1], list(w.buffer(-1.5, quad_segs=16).exterior.coords)[:-1]]
                                   for w in spec["windows"]],
+                           films=[list(behind_layer(w, PLATE).exterior.coords)[:-1] for w in spec["windows"]],
                            lamps=lamps(spec["windows"]))
     for name, res in report:
         print(f"{name}:")
@@ -193,6 +237,21 @@ def selftest():
         "bridge, a bar pinched to 10 mm": dict(windows=[rbox(22, 22, 155, 160, 8), rbox(165, 22, 298, 160, 8)], knobs=[]),
     }
     missed = 0
+    # rule B, the study's own fault: a time display 8 mm above the plate's bottom edge, its film grown 8 mm unclamped
+    win = rbox(122, 150, 298, 206, 4)
+    res, _ = fit(PLATE, [win], behind=[("film grown 8 mm, unclamped", win.buffer(8, quad_segs=16))])
+    fails = [f"{r[1]}: {r[3]}" for r in res if not r[2] and r[0] == "B"]
+    missed += not fails
+    print(f"{'CAUGHT' if fails else 'MISSED'} time display, film past the plate's edge: {'; '.join(fails[:1])}")
+    for name, (spec, rule) in {
+        "time display 5 mm from the plate's bottom edge (rolls meet)": (dict(windows=[rbox(122, 150, 298, 209, 4)]), "R"),
+        "dimple 8 mm from a window (8.2 needed)": (dict(windows=[rbox(22, 22, 298, 120, 8)], dimples=[(160, 140, 12, 12)]), "R"),
+        "raised plate 2 mm from its parent's edge": (dict(windows=[], raised=[("transport plate", rbox(8, 150, 200, 212, 6))]), "R"),
+    }.items():
+        res, _ = fit(PLATE, spec["windows"], dimples=spec.get("dimples", ()), raised=spec.get("raised", ()))
+        fails = [f"{r[1]}: {r[3]}" for r in res if not r[2] and r[0] == rule]
+        missed += not fails
+        print(f"{'CAUGHT' if fails else 'MISSED'} {name}: {'; '.join(fails[:1])}")
     for name, spec in cases.items():
         res, _ = check(name, spec)
         fails = [f"{r[1]}: {r[3]}" for r in res if not r[2]]
