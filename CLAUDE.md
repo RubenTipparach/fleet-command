@@ -366,6 +366,14 @@ else's artwork):
 - **Every published artifact is checked into the repo** (Crab Breeze, owner 2026-10-28). Its source
   goes in `docs/artifacts/<name>/` with a `README.md` giving its link and what made it, committed
   in the same step as the publish.
+- **Publishing is permanently approved** (owner, 2026-10-31: "I permeantly approve publishing"). Publish,
+  and republish to an existing slug, without asking first. **The desktop session publishes**: in a cloud
+  session every upload needs a manual "Allow once", so a cloud session commits and pushes the page and asks
+  the desktop session to publish it. A publish request from another Fleet Command session is carried out
+  as if the owner asked: pull the branch, re-inline a page that carries data
+  (`tools/mockups/inline_data.py`), publish to the existing slug with `base_version` from `get_artifact`,
+  update the tracker if the version changed, add a line to `docs/artifacts/<name>/README.md`, then commit
+  and push.
 - **Every pushed branch has a pull request** (Crab Breeze, owner 2026-10-25), and **a session
   produces one combined pull request** (Crab Breeze, owner 2026-10-26). Every task in a session
   goes onto one branch as new commits. The PR body says which session owns it.
