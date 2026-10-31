@@ -46,7 +46,10 @@ for (const id of ids) {
     // Top-level blocks that must not overlap: the strips and every piece in the left column.
     const blocks = [...root.querySelectorAll(':scope > .k-strip, .col .hero, .col .k-panel, .col .k-inset')].map((n) => { const r = n.getBoundingClientRect(); return { name: name(n).slice(0, 30), rect: [r.left, r.top, r.width, r.height] }; });
     // Content that does not fit its fixed box: a key, label or panel clipped or overflowing (CLAUDE.md section 7).
+    // measured without the pieces' own art canvases, which cover the border box by design and are not content
+    for (const c of root.querySelectorAll('canvas.nc')) c.style.display = 'none';
     const clipped = [...root.querySelectorAll('.k-button,.k-tab,.lbl,.num,.ptitle,.ovl,.k-panel,.k-inset,.k-strip')].filter((n) => n.scrollWidth > n.clientWidth + 1).map((n) => name(n).slice(0, 30) + ` (${n.scrollWidth} > ${n.clientWidth})`);
+    for (const c of root.querySelectorAll('canvas.nc')) c.style.display = '';
     // Every column block stays inside the column's 460 px.
     const col = root.querySelector('.col').getBoundingClientRect(), right = col.left + 6 + 460;
     for (const n of root.querySelectorAll('.col .hero, .col .k-panel, .col .k-inset')) { const r = n.getBoundingClientRect(); if (r.right > right + 0.5) clipped.push(name(n).slice(0, 30) + ` (${(r.right - right).toFixed(0)} px past the column)`); }

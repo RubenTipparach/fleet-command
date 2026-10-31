@@ -70,7 +70,14 @@ table.kit code { font: 500 12px var(--mono); color: var(--accent); }
 .ovl { position: absolute; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* 9-slice pieces: border-image from the active skin's kit, with that skin's own margins (set as CSS variables). */
-.nine { border-style: solid; border-image-repeat: stretch; }
+.nine { border-style: solid; border-color: transparent; border-image-repeat: stretch; position: relative; isolation: isolate; }
+/* Every kit piece is painted by the page's own nine-slice canvas (paintNine), never by CSS border-image: the browser's
+   border-image samples across slice lines and leaves seams (owner, 2026-10-31: "get rid of the slice lines"). Borders stay
+   only to lay content out inside a frame. */
+.nine { border-image: none !important; }
+.nine > canvas.nc { position: absolute; z-index: -1; pointer-events: none; }
+.k-track { cursor: ew-resize; touch-action: none; }
+.k-fill { transition: width 0.25s cubic-bezier(.2,.8,.3,1); }
 .k-panel { border-width: var(--fp-w); border-image-source: var(--fp); border-image-slice: var(--fp-s) fill; position: relative; }
 .k-inset { border-width: var(--fi-w); border-image-source: var(--fi); border-image-slice: var(--fi-s) fill; }
 .k-track { border-image-repeat: var(--bt-rep, stretch); border-width: 0; border-image-width: var(--bt-w); border-image-source: var(--bt); border-image-slice: var(--bt-s) fill; position: relative; height: var(--bt-h, 16px); }
@@ -722,6 +729,8 @@ function applySkin(id) {
   R.setProperty('--s-bg', S.bg);
   for (const b of document.querySelectorAll('#switch button')) b.setAttribute('aria-pressed', String(b.dataset.id === id));
   buildConsole(); buildProof(); buildHeroes(); buildKitTable();
+  makeLive(document.getElementById('proof'));
+  return paintAll(document);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -777,7 +786,7 @@ function buildConsole() {
   // tools/mockups/console_fit.mjs: the old 154 px panel grew 7-106 px into the 3D view in every skin).
   const helmRow = el('div', ''); helmRow.style.cssText = 'display:flex;gap:6px;height:264px';
   const helm = heroEl('helm.pad', 264, 264); liveCanvas(helm, 300, 300, (x) => helmGlyphs(x, S)); helmRow.append(helm);
-  const side = el('div', 'nine k-inset'); side.style.cssText = 'flex:0 0 190px;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center;padding:0 4px';
+  const side = el('div', 'nine k-inset'); side.style.cssText = 'flex:0 0 190px;min-width:0;display:flex;flex-direction:column;gap:10px;justify-content:center;padding:0 4px';
   side.append(el('div', 'lbl', 'To hit'), el('div', 'num', '83%'), el('div', 'nine k-divider'), button('Engage', 'pressed'), button('Stop'));
   helmRow.append(side); col.append(helmRow);
   const ssd = heroEl('ssd.bezel', 460, 300); liveCanvas(ssd, 460, 300, (x) => ssdLive(x, S)); col.append(ssd);
@@ -787,14 +796,17 @@ function buildConsole() {
   wpn.append(r1, r2); col.append(wpn);
   const radar = el('div', ''); radar.style.cssText = 'display:flex;gap:6px;align-items:center;flex:1;min-height:0';
   const dial = heroEl('dial', 120, 120); liveCanvas(dial, 120, 120, (x) => dialLive(x, S));
-  const rp = el('div', 'nine k-inset'); rp.style.cssText = 'flex:1;min-width:0;overflow:hidden;height:120px;display:grid;align-content:center;gap:6px;padding:0 4px';
+  const rp = el('div', 'nine k-inset'); rp.style.cssText = 'flex:1;min-width:0;height:120px;display:grid;align-content:center;gap:6px;padding:0 4px';
   const ic = el('div', ''); ic.style.cssText = 'display:flex;gap:6px'; for (const n of ['shields', 'tractor', 'transport', 'science', 'comms']) { const im = new Image(); im.src = K.icons[n]; im.style.cssText = 'width:32px;height:32px'; im.alt = n; ic.append(im); }
   rp.append(el('div', 'lbl', 'Contacts · 3 hostile'), ic);
   const crest = heroEl('crest', 96, 96);
   radar.append(dial, rp, crest); col.append(radar);
   root.append(col);
   layoutCells(root);
+  for (const tr of root.querySelectorAll('.k-track')) { const row = tr.querySelector('.k-cells'); tr.dataset.pct = row ? row.dataset.pct : (parseFloat((tr.querySelector('.k-fill')?.style.width.match(/\* ([\d.]+)\)/) || [])[1]) * 100 || 50); }
+  makeLive(root);
   fit();
+  startDemo(root);
 }
 // The live readouts drawn over a skin's hero pieces. Each skin's own hooks draw them (SKINS[id].live), so a new skin
 // adds a module, never a branch here: the helm's direction glyphs, the systems display, the radar, the target bracket.
@@ -825,15 +837,151 @@ function drawView(c, S) {
   x.fillStyle = S.view.dim || S.css['--s-dim']; x.font = S.view.body;
   ['Range 3.5  Speed 14.8', '1x Plasma projector  armed', '2x Beam lance  charged', '2x Missile rack  4 left'].forEach((s, i) => x.fillText(cs(s), 40, h - 150 + i * 32));
 }
-function fit() { const s = document.getElementById('stage').clientWidth / 1920; document.getElementById('console').style.transform = `scale(${s})`; }
+function fit() { const s = document.getElementById('stage').clientWidth / 1920; document.getElementById('console').style.transform = `scale(${s})`; paintAll(document); }
 addEventListener('resize', fit);
+
+// ---------------------------------------------------------------------------------------------------------------
+// The nine-slice renderer. Each kit image is cut once into nine canvases, so drawing one slice never samples its
+// neighbour (the seam the browser's border-image leaves); each element gets a canvas behind its content, sized to its
+// box at the console's scale and the screen's pixel ratio, its slices drawn on whole device pixels. A piece changing
+// state (a key hovered or pressed, a toggle switched) cross-fades from the old image to the new one.
+// ---------------------------------------------------------------------------------------------------------------
+const SLICED = new Map();   // image src -> Promise of { cv: 3 x 3 canvases, sw, sh }
+function sliced(p) {
+  if (!SLICED.has(p.src)) SLICED.set(p.src, new Promise((res) => {
+    const im = new Image(); im.onload = () => {
+      const k = im.naturalWidth / p.size[0], [t, r, b, l] = p.m.map((v) => Math.round(v * k));
+      const xs = [0, l, im.naturalWidth - r, im.naturalWidth], ys = [0, t, im.naturalHeight - b, im.naturalHeight];
+      const cv = [];
+      for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) {
+        const w = xs[i + 1] - xs[i], h = ys[j + 1] - ys[j];
+        if (w <= 0 || h <= 0) { cv.push(null); continue; }
+        const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, xs[i], ys[j], w, h, 0, 0, w, h); cv.push(c);
+      }
+      res({ cv });
+    };
+    im.src = p.src;
+  }));
+  return SLICED.get(p.src);
+}
+// Which kit piece an element shows, from its classes, and its slot scale (keys and tabs are drawn at a fixed height).
+function pieceOf(e) {
+  const c = e.classList;
+  if (c.contains('k-panel')) return 'frame.panel'; if (c.contains('k-inset')) return 'frame.inset';
+  if (c.contains('k-track')) return 'bar.track'; if (c.contains('k-fill')) return c.contains('warn') ? 'bar.fill.red' : 'bar.fill';
+  if (c.contains('k-button')) return c.contains('pressed') ? 'button.pressed' : c.contains('hover') ? 'button.hover' : 'button.idle';
+  if (c.contains('k-tab')) return c.contains('sel') ? 'tab.active' : 'tab.idle';
+  if (c.contains('k-strip')) return c.contains('top') ? 'strip.top' : 'strip.bottom';
+  if (c.contains('k-divider')) return 'divider';
+  return null;
+}
+function skinOf(e) { const n = e.closest('[data-skin]'); return n ? n.dataset.skin : SKIN; }
+function scaleOf(e) { const c = e.closest('#console'); if (!c) return 1; const m = /scale\(([\d.]+)\)/.exec(c.style.transform || ''); return m ? +m[1] : 1; }
+async function drawPiece(x, e, id, W, H, k, alpha) {
+  const p = kit(skinOf(e)).nine[id], { cv } = await sliced(p);
+  const slot = SLOT_H[id.split('.')[0]], s = slot ? slot / p.size[1] : 1, [t, r, b, l] = p.m.map((v) => v * s);
+  const S = SKINS[skinOf(e)], round = (id === 'bar.track' && S.css['--bt-rep'] === 'round') || (id.startsWith('bar.fill') && S.css['--bf-rep'] === 'round');
+  const X = [0, l, W - r, W].map((v) => Math.round(v * k)), Y = [0, t, H - b, H].map((v) => Math.round(v * k));
+  x.globalAlpha = alpha; x.imageSmoothingQuality = 'high';
+  for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) {
+    const c = cv[j * 3 + i], dw = X[i + 1] - X[i], dh = Y[j + 1] - Y[j];
+    if (!c || dw <= 0 || dh <= 0) continue;
+    if (round && i === 1) {   // a skin may tile its bar images: whole copies, scaled to fit
+      const n = Math.max(1, Math.round(dw / (c.width * dh / c.height)));
+      for (let q = 0; q < n; q++) { const a = X[i] + Math.round(q * dw / n), z = X[i] + Math.round((q + 1) * dw / n); x.drawImage(c, a, Y[j], z - a, dh); }
+    } else x.drawImage(c, X[i], Y[j], dw, dh);
+  }
+  x.globalAlpha = 1;
+}
+// Paint one element (fade: ms to cross-fade from what it showed before).
+function paintNine(e, fade = 0) {
+  const id = pieceOf(e); if (!id || !kit(skinOf(e))) return;
+  let cv = e.querySelector(':scope > canvas.nc');
+  if (!cv) { cv = document.createElement('canvas'); cv.className = 'nc'; e.prepend(cv); }
+  const cs = getComputedStyle(e), W = e.offsetWidth, H = e.offsetHeight; if (!W || !H) return;
+  const k = scaleOf(e) * (window.devicePixelRatio || 1);
+  cv.style.left = -parseFloat(cs.borderLeftWidth) + 'px'; cv.style.top = -parseFloat(cs.borderTopWidth) + 'px'; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const bw = Math.round(W * k), bh = Math.round(H * k);
+  const prev = e._nine && e._nine.id !== id && fade ? e._nine.id : null;
+  const tok = (e._tok || 0) + 1; e._tok = tok; e._nine = { id };
+  const frame = async (t) => {
+    if (e._tok !== tok) return;
+    const off = document.createElement('canvas'); off.width = bw; off.height = bh; const x = off.getContext('2d');
+    if (prev && t < 1) await drawPiece(x, e, prev, W, H, k, 1);
+    await drawPiece(x, e, id, W, H, k, prev ? Math.min(1, t) : 1);
+    if (e._tok !== tok) return;
+    cv.width = bw; cv.height = bh; cv.getContext('2d').drawImage(off, 0, 0);
+  };
+  if (!prev) { frame(1); return; }
+  const t0 = performance.now(), step = (now) => { const t = (now - t0) / fade; frame(t); if (t < 1 && e._tok === tok) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function paintAll(root) {
+  const all = [...root.querySelectorAll('.nine')].map((e) => { const id = pieceOf(e), K = id && kit(skinOf(e)); return K ? sliced(K.nine[id]) : null; });
+  for (const e of root.querySelectorAll('.nine')) paintNine(e);
+  return Promise.all(all).then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The controls are live (owner, 2026-10-31: "can you animate all the toggle and sliders? for every ui kit"): a key lights
+// on hover and is pushed in while held (its cap image cross-fades, its label rides down; the frame never moves), a
+// toggle switches with a fade, and every bar is a slider: drag along it and its fill (or its cells) follows.
+// ---------------------------------------------------------------------------------------------------------------
+const AUTO = !navigator.webdriver;   // headless checks see still frames; people see the motion
+function liveKey(b) {
+  const set = (st) => { b.classList.toggle('hover', st === 'hover'); b.classList.toggle('pressed', st === 'pressed'); paintNine(b, st === 'pressed' ? 70 : 120); };
+  b.addEventListener('pointerenter', () => set('hover'));
+  b.addEventListener('pointerleave', () => set('idle'));
+  b.addEventListener('pointerdown', () => set('pressed'));
+  b.addEventListener('pointerup', () => set('hover'));
+}
+function liveTab(t) {
+  t.addEventListener('click', () => {
+    for (const o of t.parentElement.querySelectorAll(':scope > .k-tab')) if (o !== t && o.classList.contains('sel')) { o.classList.remove('sel'); paintNine(o, 150); }
+    if (!t.classList.contains('sel')) { t.classList.add('sel'); paintNine(t, 150); }
+  });
+}
+function setBar(tr, pct, anim = true) {
+  pct = Math.max(0, Math.min(100, pct)); tr.dataset.pct = pct;
+  const f = tr.querySelector('.k-fill'), row = tr.querySelector('.k-cells');
+  if (f) { if (!anim) f.style.transition = 'none'; const ix = parseFloat(f.style.left) || 0; f.style.width = `calc((100% - ${2 * ix}px) * ${pct / 100})`; if (!anim) { f.offsetWidth; f.style.transition = ''; } }
+  if (row) {
+    const cells = [...row.children], lit = Math.round(cells.length * pct / 100), K = kit(skinOf(tr)), on = K.cells[row.dataset.warn ? 'bar.cell.warn' : 'bar.cell.on'].src, off = K.cells['bar.cell.off'].src;
+    cells.forEach((c, i) => { const want = i < lit ? on : off; if (c.src !== want) { if (anim) { const d = Math.abs(i - lit) * 12; setTimeout(() => { c.src = want; }, d); } else c.src = want; } });
+  }
+}
+function liveBar(tr) {
+  const at = (ev) => { const r = tr.getBoundingClientRect(); return (ev.clientX - r.left) / r.width * 100; };
+  tr.addEventListener('pointerdown', (ev) => { tr.setPointerCapture(ev.pointerId); setBar(tr, at(ev)); tr._drag = true; });
+  tr.addEventListener('pointermove', (ev) => { if (tr._drag) setBar(tr, at(ev)); });
+  tr.addEventListener('pointerup', () => { tr._drag = false; });
+}
+function makeLive(root) {
+  for (const b of root.querySelectorAll('.k-button')) liveKey(b);
+  for (const t of root.querySelectorAll('.k-tab')) liveTab(t);
+  for (const tr of root.querySelectorAll('.k-track')) liveBar(tr);
+}
+// A gentle demo for people, never for the headless checks: the bars fill from empty when a skin is shown, and the
+// weapon capacitor keeps charging and discharging so the symbols can be seen lighting.
+let demo = 0;
+function startDemo(root) {
+  if (!AUTO) return;
+  const tracks = [...root.querySelectorAll('.k-strip .k-track')], goal = tracks.map((t) => +(t.querySelector('.k-cells')?.dataset.pct ?? t.dataset.pct ?? 50));
+  tracks.forEach((t) => setBar(t, 0, false));
+  setTimeout(() => tracks.forEach((t, i) => setBar(t, goal[i])), 120);
+  const my = ++demo, cap = tracks[1];
+  if (!cap) return;
+  let v = goal[1], dir = 1;
+  const tick = () => { if (demo !== my || !cap.isConnected) return; if (!cap._drag) { v += dir * 4; if (v >= 100) { v = 100; dir = -1; } if (v <= 8) { v = 8; dir = 1; } setBar(cap, v); } setTimeout(tick, 220); };
+  setTimeout(tick, 1600);
+}
 
 // ---------------------------------------------------------------------------------------------------------------
 // The rules, side by side; the design languages; the sampled palette; the kit table and proofs.
 // ---------------------------------------------------------------------------------------------------------------
 function withSkinVars(node, id) {
   // A node styled as another skin: its own copies of the variables, so three skins sit on one page at once.
-  setSkinVars(node.style, id);
+  setSkinVars(node.style, id); node.dataset.skin = id;
 }
 function buildRules() {
   const R = document.getElementById('rulecols'); R.replaceChildren();
@@ -904,7 +1052,7 @@ addEventListener('DOMContentLoaded', () => {
     MOCKUP_SHOTS[id] = () => { applySkin(id); top(); }; MOCKUP_SHOTS['kit_' + id] = () => { applySkin(id); at('kit'); };
   }
   Promise.all(Object.values(SKINS).flatMap((S) => S.fonts).map((f) => document.fonts.load(f).catch(() => null)))
-    .then(() => { buildRules(); buildLangs(); buildSampled(); applySkin('concord'); window.MOCKUP_READY = true; });
+    .then(() => { buildRules(); buildLangs(); buildSampled(); return applySkin('concord'); }).then(() => { window.MOCKUP_READY = true; });
 });
 })();
 </script>

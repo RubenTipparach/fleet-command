@@ -372,6 +372,23 @@ image has it (measured: identical footprints in all seven rendered kits) with th
 to that image and the label rides the cap down by the skin's `--btn-sink` (2 px on the Kethran's long key travel, 1 px
 elsewhere).
 
+## Drawn on canvas, and live (version 21)
+
+The owner, 2026-10-31: "can you animate all the toggle and sliders? for every ui kit? that would be valuable to see the
+interaction. if you can, get rid of the slice lines, and use canvas rendering, or a game engine like phaser js or three js".
+
+- **No more slice lines.** The browser's CSS border-image samples across the lines between a 9-slice piece's corners,
+  edges and centre, and leaves faint seams. The page now paints every kit piece itself: each image is cut once into nine
+  canvases (so no slice ever samples its neighbour) and each element gets a canvas behind its content, sized to its box at
+  the console's scale and the screen's pixel ratio, its slices drawn on whole device pixels. Plain canvas is enough: no
+  engine is needed for 2D pieces, and the page stays one self-contained file. The borders stay only to lay content out.
+- **Live controls, in every skin.** A key lights on hover and is pushed in while held (its art cross-fades to the sunk cap
+  in 70 ms, its label rides down; the frame never moves, except the Vos tag's tilt); a toggle (the arming tabs) switches
+  with a 150 ms fade; every bar is a slider (drag along it and its fill slides, or its symbols light and go dark one by
+  one). For people, the bars fill from empty when a skin is shown and the weapon capacitor keeps charging and
+  discharging; headless checks see still frames.
+- The fit checks measure content without the art canvases, which cover the border box by design.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
