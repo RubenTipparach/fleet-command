@@ -55,6 +55,7 @@ FILMS = dict(dim=("#3a3322", "#0a0806", 0.22), low=(PAL["light"], "#2a2412", 0.5
              hot=("#ffe08a", "#4a3a14", 1.45), hearth=("#ffd36a", "#4a3410", 1.25), gold=("#e2c67a", "#3a2c10", 1.05),
              slot=("#3a3020", "#0c0a08", 0.12), lamp_green=("#8ad46a", "#1a3010", 1.8), lamp_yellow=(PAL["light"], "#3a3010", 1.8),
              lamp_red=(PAL["ember"], "#3a1006", 1.8))
+PRESS_MM = 3.0                # how far a pressed key's glass travels, down and in (3 px at the kit's 1x)
 KEY_FILMS = {"dim": "low"}   # a key at rest glows a little (its window is never dark, or its label would not read)
 LAMP = (1.0, 0.78, 0.48)                         # the old lamps' colour
 LAMP_P = float(os.environ.get("LAMP_P", 0.22))   # their power (times the lamp scale), before each lamp's own age
@@ -139,6 +140,28 @@ def dirt(name):
     return k.mat
 
 
+def dirt_key(name, rx_mm=50.0, ry_mm=13.5):
+    """The same caked dirt on a key's glass, wiped from its middle by fingers (owner, 2026-10-31: "make the middle area
+    of the button kinda clear because fingers have pressed on it. so the grime should mostly be along the edges"): an
+    oval rx_mm by ry_mm round the key's middle, ragged at its rim, where only a faint film of dirt is left (owner: "I need like a clean area where people mush their fingers on
+    the dust, also makes text more legible"). The mask runs
+    in the dirt slab's object coordinates (origin at the slot's middle), so it moves with the glass when a key is
+    pressed."""
+    k = NodeKit(name)
+    caked = k.tex("ShaderNodeTexNoise", 48.0, vec=k.warped(20.0, 0.003), **{"Detail": 6.0}).outputs["Fac"]
+    specks = k.tex("ShaderNodeTexNoise", 650.0, **{"Detail": 1.0}).outputs["Fac"]
+    a = k.math("MAXIMUM", k.math("MULTIPLY", band(k, caked, 0.40, 0.66), 0.85), k.math("MULTIPLY", band(k, specks, 0.6, 0.7), 0.85))
+    sep = k.N.new("ShaderNodeSeparateXYZ")
+    k.L.new(k.co, sep.inputs[0])
+    dx = k.math("DIVIDE", sep.outputs["X"], rx_mm * MM)
+    dy = k.math("DIVIDE", sep.outputs["Y"], ry_mm * MM)
+    d = k.math("SQRT", k.math("ADD", k.math("MULTIPLY", dx, dx), k.math("MULTIPLY", dy, dy)))
+    rag = k.tex("ShaderNodeTexNoise", 30.0, **{"Detail": 4.0}).outputs["Fac"]
+    edge = band(k, k.math("ADD", d, k.math("MULTIPLY", k.math("SUBTRACT", rag, 0.5), 0.35)), 0.74, 1.02)
+    k.set(Base_Color="#2a1e12", Roughness=0.95, Alpha=k.math("MULTIPLY", a, k.math("ADD", 0.02, k.math("MULTIPLY", edge, 0.98))))
+    return k.mat
+
+
 def streak(name):
     """A rust streak: rust colour, strongest at its top (the rivet) and fading down, broken by noise."""
     k = NodeKit(name)
@@ -162,7 +185,7 @@ def mats(K, s):
     a = min(7.0, -s["dz"] * 0.6)
     K.m.update(plate=K.mat("iron", lambda: iron("iron")), knob=K.mat("rivet", lambda: iron("rivet", 0.06)),
                bezel=K.mat("gold", lambda: gold("gold")), groove=K.mat("wall", lambda: printed("wall", "#0c0907")),
-               dirt=K.mat("dirt", lambda: dirt("dirt")), streak=K.mat("streak", lambda: streak("streak")),
+               dirt=K.mat("dirt", lambda: dirt("dirt")), dirt_key=K.mat("dirt_key", lambda: dirt_key("dirt_key")), streak=K.mat("streak", lambda: streak("streak")),
                crack=K.mat("crack", lambda: glow("crack", PAL["bone"], 0.35)), cage=K.mat("cage", lambda: printed("cage", "#1a140e")))
     for kind, (col, lo, es) in FILMS.items():
         K.m[kind] = K.mat(kind, lambda col=col, lo=lo, es=es, kind=kind: film_mat(kind, col=col, shadow=lo, es=es, ao_mm=a))
@@ -183,10 +206,16 @@ def piece(name):
         is_key = name.startswith("button.")
         wells = [(KEY_FILMS.get(kind, kind) if is_key else kind, [tuple(p) for p in w]) for kind, w in s["wells"]]
         plate = [tuple(p) for p in s["plate"]]
+        # A pressed key's glass is pushed in: down PRESS_MM and back PRESS_MM, its dirt with it, and the page's label
+        # sinks the same PRESS_MM (skins/tarsine.js --btn-sink), so glass, dirt and letters move as one and the iron stays.
+        press = PRESS_MM if name == "button.pressed" else 0.0
         for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B), and their dirt
             shape = [tuple(p) for p in f]
-            K.film(None, shape=shape, m=K.m[kind])
-            K.slab([shape], K.dz + 0.12, K.dz + 0.16, K.m["dirt"], bevel=0.0).visible_shadow = False
+            glass = [K.film(None, shape=shape, m=K.m[kind], z=K.dz - press),
+                     K.slab([shape], K.dz - press + 0.12, K.dz - press + 0.16, K.m["dirt_key" if is_key else "dirt"], bevel=0.0)]
+            glass[1].visible_shadow = False
+            for ob in glass:
+                ob.location.y -= press * MM
         K.plate([plate] + [w for _k, w in wells])
         lamp = 0
         for kind, w in wells:
