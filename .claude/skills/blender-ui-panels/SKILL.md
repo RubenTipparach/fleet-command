@@ -114,8 +114,26 @@ bezel(win)                              # the brass bezel follows the same outli
 ```
 
 Keep `fall` at least `h` (30 px over 30 px here); steeper reads as a cut, not a pressing. Keep the knob that sits in
-it inside the flat (`hw`) with at least 6 px of metal round it. The bible's catalogue gives eight more shapes built
-the same way: describe the outline as a function, then plate, bezel and film all follow it.
+it inside the flat (`hw`) with at least 6 px of metal round it. The bible's catalogue gives nine more shapes built
+the same way (bridge, ear, saddle, scallop, cradle, peninsula, terrace, bay, swept edge), each rendered in 3D:
+describe the window as a smoothed outline, then plate, bezel and film all follow it.
+
+**The fit check is a required step before rendering a formed shape** (owner, 2026-10-31: "the guide illustrations
+violates some guidelines. Like the button overlapping with the bevels ... implement these as 3d renderings and verify
+the overlap rule"). `tools/mockups/formed_metal.py --out <dir>` builds each outline (shapely: unions and differences,
+every corner rounded with `buffer(f).buffer(-2f).buffer(f)`), checks it, writes `tiles.json` and a check map per
+shape, and exits with an error on any failure:
+
+| Rule | Must hold | Numbers |
+|---|---|---|
+| K | each knob's footprint (radius x 1.14 for the collar, plus MARGIN) lies on flat metal: inside the plate, clear of every roll | ROLL 3.8 mm, MARGIN 2.5 mm |
+| L | every land of metal is at least 2 x ROLL + LAND wide, and the metal opened by ROLL changes by 0.6 mm or less (no pinched tip) | 10.6 mm, LAND 3.0 mm |
+| P | printing on a display (a gauge, a scale) stays PAD inside its window | PAD 3.0 mm |
+
+`--selftest` proves the checker catches the first drawings' faults (a knob on the ear's edge, two windows 4 mm apart
+whose rolls overlap, a key on a 12 mm shelf, a bar pinched to 10 mm). Render the checked tiles with
+`tools/blender/ui_tiles_tail.py` (`TILES=formed`), on the study helpers until they move into `ui_shapes.py`. Then look
+at the check map beside each render: flat metal light, rolls dark, each knob's clearance a green ring.
 
 ## 5. Pressed details
 
@@ -143,13 +161,15 @@ and previous 10 px, slider knobs 11 px. A pointer is a red line on the crown.
 
 **Film** (`display`): base and emission `#f4d9a9`, emission strength `0.85 * FILM_GLOW`, multiplied by ambient
 occlusion (distance 7 mm, power 2.2) so it darkens in a thin contact line at the rim. Two separate scales: `FILM_GLOW`
-(1.0) on the film, its ink and the slot streaks, which sets the film's colour (clear film `#eacfa1` against the
-reference's `#eacf9f`), and `LAMPS` (0.25) on the lamps. One shared scale was a mistake: dimming the lamps darkened
+(0.78, with the main light also on the film) on the film, its ink and the slot streaks, which sets the film's colour
+(clear film `#edd2a2` against the reference's `#eacf9f`), and `LAMPS` (0.25) on the lamps. One shared scale was a mistake: dimming the lamps darkened
 the film's colour with them.
 
-**Main light** (`MAIN`, about 1.2): a sun from the room light's direction (upper left) linked to the display layer
-too, so the top lip casts a shadow on the film's top edge and the left lip a thinner one on its left. It is what
-makes a well read as deep. Raise `MAIN` for more shadow and lower `FILM_GLOW` to keep the colour.
+**Main light** (`MAIN` 0.8, `MAIN_SOFT` 60 deg): a sun from the room light's direction (upper left) linked to the
+display layer too, so the top lip casts a shadow on the film's top edge and the left lip a thinner one on its left.
+It is what makes a well read as deep. Its angular size `MAIN_SOFT` keeps the shadow soft (owner: "soft shadow
+please", "not harsh"): at 2 deg it ended in a hard line. Raise `MAIN` for more shadow and lower `FILM_GLOW` to keep
+the colour.
 
 **Sub-displays** (`sub`): a readout box is its own film sunk 1.5 mm into the main one through a hole, with a small
 lamp along its top; its printed frame sits on the step, which throws a contact line round it.
@@ -158,16 +178,36 @@ lamp along its top; its printed frame sits on the step, which throws a contact l
 
 | Knob | Value | Effect |
 |---|---|---|
-| `LIP_LEN` | 40 px | length of the source line |
+| `LIP_LEN` | 10 mm (owner: "10 mm 180 degrees cone") | length of the source line |
 | `LIP_W` | 20 mm | depth of the source: bigger is softer |
 | `LIP_TILT` | 90 deg | from the film's normal toward screen-down; 30-35 deg gives dots, 60 deg starts a spill, 80-90 deg a fan |
-| `LIP_CONE` | 120 deg | the area light's `spread`; 180 deg is too wide, under 100 deg too tight |
+| `LIP_CONE` | 180 deg | the area light's `spread`; 180 deg with a 10 mm source is the chosen look, 120 deg with 40 mm also works, under 100 deg is too tight |
 | depth | `DZ + 8` mm | 8 mm off the film, inside the well, just inside the window edge |
 | `SPILL` | 0.2 (the owner's pick: "Power x0.2 is the sweet spot") | lamp power multiplier |
 
-- A strip lamp along the whole top edge makes a highlight across the glass that reads as curved glass: do not use one.
+- On this panel a strip lamp along the whole top edge made a highlight across the glass that read as curved glass.
+  A strip is still a lighting option for other skins (below).
 - A wall round the well blocks lamps that sit in it: put lamps inside the window footprint (they are invisible to the
   camera) and any well wall outside it.
+
+**Lighting options** (owner: "One strip lamp is ok to do, it's just not for this UI, but in the future it's a lighting
+option. Add alternatives like all sides, bottom lit, rim lighting etc"). `edge_lamp` in `tools/blender/ui_tiles_tail.py`
+is a strip lamp along any window edge, aimed inward along the film; its power is per mm of edge (times `LAMPS`), so a
+longer edge stays as bright. Each option is rendered in the bible's chapter 10 (`TILES=lighting`), tuned so no more of
+the film burns to white (251 or brighter) than the spots do:
+
+| Option | Lamps | Burnt to white |
+|---|---|---|
+| spots (this UI) | 3 x `lip_light`, 10 mm, 180 deg, power 0.3 | 3.2% |
+| strip | 1 edge lamp along the top, 0.0004 W/mm, 120 deg | 0.0% |
+| all sides | 4 edge lamps, 0.00018 W/mm each | 0.0% |
+| bottom | 1 edge lamp along the bottom, 0.0004 W/mm | 3.9% |
+| rim | 4 edge lamps, 0.0004 W/mm, 30 deg, 1.5 mm off the film | 0.0% |
+| side | 1 edge lamp along the left, 0.0006 W/mm | 3.7% |
+| backlight only | none, `FILM_GLOW` alone | 0.0% |
+
+A first pass at 3 to 10 times these powers burnt 9% to 28% of the film white: a strip puts all its light right
+against the film's edge, so it needs far less power per lamp than a spot.
 
 **Ink** (`film_ink`): printing on the film absorbs. Its surface reflects 35% of its colour; its emission carries the
 full colour at `0.9 * FILM_GLOW`, so it glows faintly through the film and a lamp right above it cannot wash it out.
@@ -215,6 +255,7 @@ The study's sampled palette: film `#eacf9f` (ours `#e9ce9f`), plate `#bdb8ae` me
 
 ## 9. Before calling it done
 
+- Every formed shape passes `formed_metal.py` before it is rendered; look at its check map.
 - Render the top band at 24 samples while tuning (render border), the whole panel at 64 to finish.
 - Look at a crop at 2x of every changed area; check text under every lamp.
 - Keep each earlier version of a study beside it while iterating, so "change it back" is one copy.

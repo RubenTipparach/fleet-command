@@ -1,9 +1,10 @@
 """Fleet Command: the diagrams of the analog panel bible (docs/design/ui-bible.html).
 
-Owns every inline SVG in the bible. Each diagram is drawn from the same outline functions the Blender panels use
-(a rounded rectangle, a mitred outline offset, a window whose edges carry profiles such as the notch), so a formed
-shape in the catalogue is the shape the plate would be built from, not a sketch of it. The SVGs carry classes only;
-the page's CSS colours them from its theme tokens, so they read in light and dark.
+Owns every inline SVG in the bible: the diagrams of parameters, sections and names. Each is drawn from the same
+outline functions the Blender panels use (a rounded rectangle, a mitred outline offset, a window whose edges carry
+profiles such as the notch). How a panel looks is shown by real renders, not drawn here: the formed-metal catalogue
+is tools/mockups/formed_metal.py and tools/blender/ui_tiles_tail.py. The SVGs carry classes only; the page's CSS
+colours them from its theme tokens, so they read in light and dark.
 
     python3 tools/mockups/ui_bible_svgs.py            # rewrite the SVG blocks between <!-- SVG:name --> markers
     python3 tools/mockups/ui_bible_svgs.py --check    # fail if the page is out of date
@@ -69,26 +70,6 @@ def smooth(t):
 def flat(c, hw, fall, h):
     """The notch: flat at h within hw of c, back to 0 over fall px through a smoothstep (foot fillet and shoulder)."""
     return lambda s: h * smooth(1.0 - (abs(s - c) - hw) / fall) if abs(s - c) > hw else h
-
-
-def bell(c, w, h):
-    """A lobe: a cos-squared bump, round on top with concave feet, w px either side of c."""
-    return lambda s: h * math.cos(math.pi * (s - c) / (2 * w)) ** 2 if abs(s - c) < w else 0.0
-
-
-def waves(s0, s1, pitch, depth):
-    """Scallops: a row of shallow round bumps between s0 and s1."""
-    return lambda s: depth * (0.5 - 0.5 * math.cos(2 * math.pi * (s - s0) / pitch)) if s0 <= s <= s1 else 0.0
-
-
-def steps(*stairs):
-    """A terrace: a sum of smoothstep risers, each (start, run, rise)."""
-    return lambda s: sum(rise * smooth((s - a) / run) for a, run, rise in stairs)
-
-
-def flare(s0, s1, fall, h):
-    """A bridge's side: h at both ends of the edge, falling to 0 within fall px, so the bar flares into the frame."""
-    return lambda s: h * (smooth(1 - (s - s0) / fall) + smooth(1 - (s1 - s) / fall))
 
 
 def shaped(x0, y0, x1, y1, r, top=None, right=None, bottom=None, left=None, step=2.0):
@@ -458,56 +439,11 @@ def dont_pairs():
     return "".join(out)
 
 
-def catalogue():
-    """D8: the formed-metal catalogue, each shape drawn from its outline function."""
-    P = rrect(4, 4, 196, 136, 12)
-    items = []
-    # 1 notch
-    w = shaped(14, 14, 186, 100, 6, bottom=flat(100, 30, 18, 24))
-    items.append(("notch", panel(P, [w]) + knob(84, 92, 7, -125) + knob(116, 92, 7, -90)))
-    # 2 bridge: two openings whose inner sides flare into the frame
-    l = shaped(14, 14, 92, 100, 6, right=flare(14, 100, 26, 8))
-    r = shaped(108, 14, 186, 100, 6, left=flare(14, 100, 26, 8))
-    items.append(("bridge", panel(P, [l, r]) + knob(100, 40, 5) + knob(100, 66, 5)))
-    # 3 ear: a lobe from the right edge carrying one knob
-    w = shaped(14, 14, 186, 100, 6, right=bell(57, 34, 32))
-    items.append(("ear", panel(P, [w]) + knob(170, 57, 9, -150)))
-    # 4 saddle: the bar between two windows bulges at its middle for a knob
-    l = shaped(14, 14, 92, 100, 6, right=bell(57, 34, 12))
-    r = shaped(108, 14, 186, 100, 6, left=bell(57, 34, 12))
-    items.append(("saddle", panel(P, [l, r]) + knob(100, 57, 8)))
-    # 5 scallop: the bottom edge rises in a row of bumps, a key on each
-    w = shaped(14, 14, 186, 100, 6, bottom=waves(30, 170, 35, 18))
-    items.append(("scallop", panel(P, [w]) + "".join(knob(30 + 17.5 + k * 35, 100, 5.5) for k in range(4))))
-    # 6 cradle: a notch holding its own round meter
-    w = shaped(14, 14, 186, 100, 6, bottom=flat(100, 26, 18, 40))
-    m = circle(100, 86, 14)
-    items.append(("cradle", panel(P, [w, m]) + line(100, 86, 108, 78, "pointer")))
-    # 7 peninsula: a long tongue of metal carrying a row of keys into the film
-    w = shaped(14, 14, 186, 100, 6, bottom=flat(100, 8, 12, 64))
-    items.append(("peninsula", panel(P, [w]) + knob(100, 50, 5) + knob(100, 70, 5) + knob(100, 90, 5)))
-    # 8 terrace: the bottom edge climbs in steps, a shelf for a key or a readout on each
-    w = shaped(14, 14, 186, 100, 6, bottom=steps((60, 14, 16), (106, 14, 16), (156, 14, -32)))
-    items.append(("terrace", panel(P, [w]) + knob(40, 108, 5) + knob(90, 92, 5) + knob(140, 76, 5)))
-    # 9 bay: the window bulges outward into the metal to seat a round gauge
-    w = shaped(14, 24, 186, 100, 6, top=lambda s: -bell(140, 30, 14)(s))
-    items.append(("bay", panel(P, [w]) + path(circle(140, 34, 11), "subfl") + line(140, 34, 146, 26, "inkline")))
-    # 10 swept edge: the top edge sweeps down across the window, a tapering display
-    w = shaped(14, 14, 186, 100, 6, top=steps((24, 120, 40), (160, 16, -40)))
-    items.append(("swept edge", panel(P, [w]) + knob(120, 30, 6)))
-    out = {}
-    for name, body in items:
-        out[name] = svg("cat-" + name.replace(" ", "-"), 200, 140, body, f"Formed metal: the {name}")
-    return out
-
-
 # ----------------------------------------------------------------------------- write into the page
 
 def blocks():
     b = {"section": section(), "anatomy": anatomy(), "notch": notch_profile(), "lights": lights(),
          "legibility": legibility(), "fit": fit(), "donts": dont_pairs()}
-    for name, s in catalogue().items():
-        b["cat-" + name.replace(" ", "-")] = s
     return b
 
 
