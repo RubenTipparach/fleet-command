@@ -305,7 +305,30 @@ owner said. The fit check measures a row of cells like a fill: it may fill its g
 | Aelith Conclave | Lozenge of light, the key's own shape | Hollow outline in scanlines | Filled with light | Coral |
 | Tarsine Remnant | Arched window, the tablet key's in miniature, caked in the same dust | Dark grimy glass | Gold light behind the dirt | Ember |
 | Kelvane Institute | Jewel lamp in a brass bezel, an instrument's indicator row | Dark amber glass | Amber | Red |
-| Krai Warhost, Ombrai, Ssarith Hunt | With their rebuilds (below) | | | |
+| Krai Warhost | Chevron, a blade's point | Dark glass | Forge orange | Red |
+| Ombrai | Eye | Dim lidded eye | Open, glowing pink | Crimson |
+| Ssarith Hunt | Claw mark on a phosphor tube | Dark tube | Green phosphor | Kill red |
+
+**Krai, Ombrai and the Hunt on the bible.** Each is now built the way the Aelith and Kelvane were: a shapes file of fit-
+checked outlines (rules K, L, R, P and B on every piece, written only if all pass, and `--verify` for rule B on the
+renders: 0 lit pixels outside any plate), a Blender generator on the shared panel kit (pillowed plates whose every edge
+rolls over, formed wells, a film layer behind the metal, light linking) and the skin module loading the rendered kit.
+Each takes a different one of the bible's lighting options, chosen from how the faction thinks:
+
+| Skin | Shapes, generator | The look | Light, and why |
+|---|---|---|---|
+| Krai Warhost | `tools/mockups/krai_shapes.py`, `tools/blender/build_ui_krai.py` | Blackened blade steel with a tight 1.6 mm honed roll, red enamel bezels and blades, a fang of metal grown into every well's corner; Blade keys dark ember at rest, red on hover, forge orange engaged; an octagonal war-shield helm round a red heart triangle; spikes driven into the ship display; a hexagonal radar | **Bottom**: forge lamps on each well's lower lips only, so the glow rises like faces round a forge, never from a calm sky |
+| Ombrai | `tools/mockups/ombrai_shapes.py`, `tools/blender/build_ui_ombrai.py` | Pillowed plum with a thin iridescent sheen and lilac rims; crescent-bitten keys with a moon jewel in the bite; an iris of eight petal wells round a slit-pupil eye; an eye-shaped ship display under two lids; a watching eye at each strip's end; moons for alert lamps | **Side**: lamps under each well's left lip, so every well is lit like a crescent moon with its far side in shadow, for a race that watches and is seldom seen |
+| Ssarith Hunt | `tools/mockups/ssarith_shapes.py`, `tools/blender/build_ui_ssarith.py` (rewritten) | Cut-cornered olive gunmetal, every edge rolled, the heroes pressed with a hide-scale texture; every well a small CRT tube with scanlines on its glass; hex bolts in counterbores, bone tally marks and reticles engraved, frond leaves on flat metal; caged jewel alert lamps | **Backlight only**: the tubes light themselves and no lamp hides under any lip, because a hunter shows nothing the quarry could see |
+
+All three share their states' texture (one model per key, tab and cell; only the light changes). Every well's lamps are
+placed by one helper, `ui_shapes.lip_runs` (every edge for rim light, the lower lips for bottom light, the left lips for
+side light). It replaced three copies; the Aelith's copy had been aiming its long lips' lamps out of the well, so its rim
+light now runs all the way round as designed, at half the power (0.0004 W per mm).
+
+Learnt on the way (now in the `blender-ui-panels` skill): a plate or well corner must be rounder than about twice the roll,
+or offsetting by the roll and bevelling by the roll turns it inside out into a spike; outlines are cleaned of
+near-duplicate points before they are offset.
 
 ## The kit
 

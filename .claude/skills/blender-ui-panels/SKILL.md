@@ -83,6 +83,12 @@ def plate(outlines, z0, z1, m, edge):        # outlines[0] is the outside, the r
 checks the result's area to pick the inward side. It works on any shape, which is what makes formed metal possible.
 
 - A window inset 8 px from the plate edge with `ROLL` 3.8 mm leaves one round bar between them: the frame bar.
+- **Corners rounder than twice the roll** (found rebuilding the Krai, 2026-10-31): `plate` offsets the outline by the roll and
+  then bevels by the roll, so a corner tighter than about 2 x roll turns inside out and spikes. Ease every corner at least
+  that round, and clean each outline of near-duplicate points before it is offset (the mitred offset has no defence
+  against them).
+- **Lamps round a well come from one helper**, `lip_runs(well, seg, faces)` in `ui_shapes.py`: every edge for rim light,
+  `ny < 0` for the lower lips (bottom light), `nx > 0` for the left lips (side light). Never walk a rim by hand.
 - Flat faces must shade flat (`f.smooth = abs(f.normal.z) < 0.999`), or the fill's long triangles pick up the
   bevel's normals and show a streak across the plate.
 

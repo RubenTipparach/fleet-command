@@ -59,6 +59,16 @@
   re-checked); mockup 1's top bar beside an open port panel
 - [x] 1.21 Shots looked at, every artifact republished
 
+## 1g. Version 17: symbol bars, the Remnant's dust, Krai, Ombrai and the Hunt on the bible (owner, 2026-10-31)
+
+- [x] 1.22 The Remnant's keys and tabs: one dust for every state, only the light changes
+- [x] 1.23 Symbol bars in the kit (`bar.cell.off`, `.on`, `.warn`, the harness's `cell` kind) for the Vhorr, Aelith, Tarsine,
+  Krai, Ombrai, Kelvane and Hunt; the fit check measures them
+- [x] 1.24 Krai, Ombrai and the Hunt rebuilt from fit-checked shapes in Blender, each with its own lighting option
+- [x] 1.25 One `lip_runs` helper for every well's lamps; the fit check fails a title that shows no pixels; dom_fit
+  scales border widths with the console's transform
+- [x] 1.26 Shots looked at; published
+
 ## 2. After approval for build
 
 - [ ] 2.1 Blender kit generator per skin (`panel-textures`), bakes, manifest with margins
