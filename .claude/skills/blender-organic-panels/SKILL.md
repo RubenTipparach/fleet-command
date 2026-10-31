@@ -19,6 +19,14 @@ Read the guide's chapters 1 and 9 before starting. The analog `blender-ui-panels
 is not organic (render harness, kit pieces, fit checks on the page). Take the shape, not the art: the reference
 screenshots are never committed, and every shape, word and colour is our own.
 
+## Rule 0: screenshots first, approval before any update
+
+The owner, 2026-10-31: "before updating anything I want screenshots on this chat until I approve of the design", then "add that rule to guide too". Show every new or changed organic design as screenshots in the conversation (the
+render beside the accepted reference at the same scale, the piece in place in the console, any proof sheet) and wait
+for the owner's approval in their own words. Until then work only in scratch renders: do not change the page, the
+Organic Panel Bible, this skill, the design docs or the tracker, do not overwrite committed renders, and do not
+publish. After approval, write the design into all of them in one step and publish.
+
 ## 0. Rule 1: never use raw primitives
 
 The owner, 2026-10-31: "I don't like the pubbles and the white tendril. These look like low effort shapes. Whereas the
