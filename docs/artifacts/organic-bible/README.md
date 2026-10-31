@@ -13,3 +13,11 @@
   `fit.json` is the final step's fit measurement). The direction came from two reference screenshots of another game's
   hive interface, which are not committed: the renders are our own modelling, words and colours.
 - Published: not yet.
+
+## Compiled for publishing (draft)
+
+The guide is a draft that grows with the study (owner, 2026-10-31: "just compile organic guide as html, since it's in
+draft and we'll be adding to it as we discover the methodology behind organic ui"). `docs/artifacts/organic-bible/index.html`
+is the page compiled into one self-contained file, every study image carried inside it as a data URI, by
+`python3 tools/mockups/compile_page.py docs/design/organic-bible.html docs/artifacts/organic-bible/index.html`.
+Edit `docs/design/organic-bible.html`, recompile, then republish `index.html` to this artifact's slug.
