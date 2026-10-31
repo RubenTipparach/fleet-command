@@ -14,7 +14,12 @@
   "permissions": {
     "allow": [
       "Artifact",
-      "mcp__claude-artifacts__*"
+      "mcp__claude-artifacts__*",
+      "mcp__claude-artifacts",
+      "mcp__claude-artifacts__publish_files",
+      "mcp__claude-artifacts__publish_version",
+      "mcp__claude-artifacts__edit_version",
+      "mcp__claude-artifacts__declare_capabilities"
     ]
   }
 }
