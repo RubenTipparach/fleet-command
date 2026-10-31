@@ -76,7 +76,7 @@ F.register('tarsine', {
   name: 'Tarsine Remnant', kind: 'Corroded monumental iron rendered in Blender; backlights clogged with dirt', bg: '#110e0b',
   css: { '--s-ink': TA.bone, '--s-dim': TA.dim, '--s-num': TA.light, '--s-body': '"Alegreya Sans SC", sans-serif', '--btn-ink': '#1e160c', '--btn-shadow': '0 1px 0 rgba(255,230,160,0.35)', '--btn-justify': 'center',
     '--btn-pt': '0px', '--btn-pb': '3px', '--btn-font': '700 16px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1.5px',
-    '--tab-font': '700 13px/1 "Cinzel", serif', '--tab-ink': TA.dim, '--tab-ink-on': '#1e160c', '--title-font': '700 17px/1 "Cinzel", serif', '--title-ink': TA.goldHi,
+    '--tab-font': '700 12px/1 "Cinzel", serif', '--tab-ink': TA.dim, '--tab-ink-on': '#1e160c', '--title-font': '700 17px/1 "Cinzel", serif', '--title-ink': TA.goldHi,
     '--lbl-font': '700 16px/1 "Alegreya Sans SC", sans-serif', '--num-font': '700 24px/1 "Alegreya Sans SC", sans-serif',
     // The strips are 72 px; their open band is the beam's channel of grimy glass, rows 13-59 inside its worn rolled lip
     // (tools/mockups/tarsine_shapes.py), so each label stands over its bar with 3 px clear of the art.
