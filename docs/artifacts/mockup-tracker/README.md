@@ -13,3 +13,4 @@
 - 2026-10-31, desktop session: Console skins at v23 (the Vhorr Brood rebuilt as assimilated tech), a text edit; version id `1793463792-e352`.
 - 2026-10-31, cloud session (owner: "Just publish it"): Console skins at v24, and the Organic Panel Bible added under Guides; version id `1793479717-4da8`.
 - 2026-10-31, cloud session: the Organic Panel Bible at v2 (rule 5, rejected and accepted iterations); version id `1793481205-2d0a`.
+- 2026-10-31, desktop session: Console skins at v25 and the Organic Panel Bible at v3; version id `1793486571-01bf`.
