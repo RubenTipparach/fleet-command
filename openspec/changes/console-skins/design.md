@@ -551,13 +551,13 @@ placeholders then a full detail agent will go in and sculpt components manually"
 
 **Next:** the Vhorr Brood is rebuilt this way, starting with the blockout of the desktop console.
 
-## The Vhorr Brood on the organic bible (version 26, in progress)
+## The Vhorr Brood on the organic bible (page version 25)
 
 The owner, 2026-10-31, of the Organic Panel Bible v2: "Looks dope, now let's see if this new design system can be
 applied to the design language/brood skins design system". The Brood is rebuilt on the bible's rules: no raw
 primitives (R1), layered anatomy sculpted as one surface (R2), screens as live pixels under a fine hex filter (R3), no
 nine-slice, so block out first and then sculpt each component in place (R4), and an overlay over the game with no
-backdrop (R5). Version 23 (assimilated tech) stays on the page until the new kit replaces it.
+backdrop (R5). The owner saw the blockout and said "Go"; the page's Vhorr skin is now the sculpted kit (phase 2, below).
 
 **Phase 1, the blockout (done).** `tools/mockups/vhorr_blockout.mjs` measures the live page (the Vhorr skin at the
 1920 x 1080 desktop reference) and writes `assets/ui/vhorr/organic/blockout.json`: every slot the console draws with a
@@ -607,24 +607,53 @@ grid layout instead, and must be pinned before sculpting):
   lamp three; because growth joins across slots, each state is rendered in place in the full scene, not alone.
 - **The lamp** shows at 40 px in the strip though its kit piece is 64 px (`--strip-lamp`); it is sculpted at 40.
 
-**Phase 2, the sculpt (next).**
-1. One Blender scene laid out exactly at the blockout rects (1 px = 1 mm, the console's 1920 x 1080), every component
-   sculpted as its own anatomy on `tools/blender/organic_anatomy.py` (bone, muscle, leather over both, veins and sacs
-   under the skin), the instruments it holds (screens, key caps, the portrait screen) as separate objects. Growth joins
-   across a gutter only through the panels' own bodies (a tendril or sinew that belongs to a panel); the game shows in
-   every gutter. Transparent film, no backdrop (R5).
-2. Rendered at 2x (3840 x 2160), then cut into one hero image per slot by its rect, with a manifest of kind "organic"
-   listing each slot's image, rect and state (`assets/ui/vhorr/organic/manifest.json`). State renders (keys hover and
-   pressed, tabs active, lamp colours) render only their slots' regions over the same scene.
-3. **The page change**: the Vhorr skin draws each slot's image at its exact rect with no slicing; labels, readouts, the
-   bar cells, the helm glyphs, the ship display and the hex portrait filter are drawn live on top, as today.
-4. **Checks**: the bible's G1 clearance measured on the sculpt's height field for every protected rectangle in
-   `blockout.json` (growth never covers one), `console_fit.mjs` and `dom_fit.mjs` on the page, and close-ups of every
-   key, screen and the portrait looked at.
+**Phase 2, the sculpt (built).** Two owner notes shaped it: the blockout's two choices accepted (pin every
+content-sized or fractional slot to whole px, in the page too; keep the 460 x 56 name plate and put the hex portrait in
+its 62 x 48 pocket), and "If you structured your sculpting tools well. Then we should be able to sculpt panels, buttons
+and elements of any size". So the sculpt is a library, not per-slot code:
 
-**Cost, estimated**: the study renders about 0.65 MP in 5 minutes at 32 samples on the cloud machine, so the full 2x
-scene (8.3 MP) is about an hour per render, and the state regions about 30 minutes more: 1.5-2 hours of rendering per
-screen shape, plus the sculpting iterations, each a cheap preview at 16 samples.
+- **`tools/blender/organic_components.py`, the parametric sculptors** (numpy only, on `organic_anatomy.py`'s
+  primitives): a `Field` (bone, muscle and skin height fields over a region, openings, sacs of light, protected
+  rectangles, the instruments to place) and one sculptor per kind of piece: `panel` (a body grown round its windows and
+  the pieces set into it, a thick rolled lip round every window, a vertebral ridge with horn ends along the edge with
+  the most room, long muscle lobes between), `key` (a hard cap sized from its label in a collar of flesh with sinew
+  knots each side), `tab`, `strip` (a long body with glass channels, a spine along its outer edge and a knot at each
+  end), `bezel` (a deep pocket with a ribcage round it), `round_pocket` (the dial), `crest` (a cradle and the crystal
+  heart), `lamp` (a sac of light, green, amber or red), `cord` (the divider) and `helm` (the panel sculptor round nine
+  key faces). Every size is laid out in mm from the rectangle and its room (hug thickness from the window's size,
+  vertebrae about one per 19 mm, lobe count from the area), seeded from the slot id, so two keys of one size are
+  siblings, not clones, and a longer strip has more vertebrae, never stretched ones. `Field.finish` stretches one skin
+  over everything (a smooth maximum, then a blur that webs across gaps), raises veins and sacs, creases the hollows,
+  sinks every opening, and drops everything outside the bodies to the floor (cut by the renderer: R5).
+- **`tools/blender/build_ui_vhorr_organic.py` only reads a layout** (`blockout.json`, or any list of slots with a rect,
+  a kit piece and protected rectangles), pins it, and hands each slot to the sculptor its kit piece names. Each
+  top-level slot renders as a region (its neighbours' edges sculpted in an 8 mm margin, so light and shadow match),
+  through the study's own `field_mesh` and `crystal_heart` and materials (`organic_study.py`: one implementation), lit by
+  the bible's key, rims and fill as suns so every region is lit alike, at 2 px per mm on a transparent film. Children
+  (keys, tabs, tracks, the lamp, the divider) are cut from their parent's render; each other state is the same region
+  re-sculpted with only that state changed and rendered over the child alone.
+- **Pinned**: tracks 371 / 370 / 370 and 507 x 20, tabs 127 / 126 / 126 x 40, the weapons panel 460 x 174, the radar row
+  where it sits; the page's `organicPin` sets each slot element's size from the manifest (measured: every slot's size
+  exact, its position within 1 px of the sculpt, from the strips' and grid's half pixels).
+- **The page** (`console-skins.html`): every console element names its slot (`data-slot`); a skin with `organic` in its
+  kit draws each slot's own image, in its state, unsliced at its rect (`drawPiece`), keys and tabs swapping images as
+  they are hovered, pressed and switched; the portrait is drawn live in the plate's pocket with the hex filter
+  (`hexMask`, the same numbers and arithmetic as `hex_portrait.py`); the kit section shows every slot in every state at
+  its size. `skins/vhorr.js` lays the organic manifest over the version 23 kit, which still gives the symbol cells, the
+  icons and the layout margins the blockout was measured with.
+
+**Numbers.** 24 slots, 23 renders (9 regions, 14 state crops), 228 s of rendering at 24 samples (about 4 minutes for
+the whole desktop console on the cloud machine, against the hour estimated: regions are only the slots, not the whole
+screen). Rule G1 on the sculpted fields: every protected rectangle clear by 2.83 mm or more (the helm key
+faces, the tightest; labels 3.5 mm or more, key labels 6 mm or more). `console_fit` and `dom_fit` pass on all ten skins.
+The "any size" proof (`docs/design/organic-bible/any-size.jpg`): one key at 90, 160 and 260 px, one panel at three
+aspect ratios, one strip at 300 and 630 px, the same sculptors, each grown at its size.
+
+**Gaps, honestly.** The strips are mostly glass channels (their labels and bars fill the 72 px band, so little flesh
+shows); the name plate is glass with a thin rim, its portrait small; the symbol cells and the contacts icons are version
+23's renders; the helm pad's keys are one state (the helm's live glyphs do not press); the phone portrait layout has no
+slots yet; `vhorr_blockout.mjs` finds the helm by the version 23 hero images, so it needs to read `data-slot` before it
+can re-measure the organic page.
 
 ## The kit
 
@@ -649,7 +678,7 @@ piece and its own slice margins; a missing piece is a build error. Icons join th
 | `crest` | hero | 96 x 96 | the faction's mark |
 | `icon.*` | hero, per skin | 48 x 48 | helm, fire, shields, tractor, transport, science, comms, repair, map, settings |
 
-**Organic skins are the exception** (version 25): every piece is a hero piece sculpted at its exact slot size, blocked out with placeholders first, so their manifests record fixed sizes, not margins.
+**Organic skins are the exception** (version 25): every piece is sculpted at its exact slot size by parametric sculptors (`tools/blender/organic_components.py`), so any size is a re-run; blocked out with placeholders first, so their manifests record each slot's pinned rect, not margins.
 
 The margins differ by skin (a pill's caps, a wedge's slants and a claw tag's hook take different widths), so each skin's
 manifest records its own; the layout never depends on them.

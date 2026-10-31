@@ -299,9 +299,11 @@ else's artwork):
     display's bezel, the dials, the alert lamp, the faction crest.
   - **Organic skins have no 9-slice pieces** (owner, 2026-10-31: "due to the nature of this ui, nine slice is not
     possible and the UI will have to be bocked out using placeholders then a full detail agent will go in and sculpt
-    components manually"). Every piece of an organic skin (the Vhorr Brood first) is a hero piece sculpted at its exact
-    slot size, per screen shape: the console is blocked out with placeholder rectangles first, then a full-detail agent
-    sculpts each component in place on the Organic Panel Bible's rules (`docs/design/organic-bible.html`).
+    components manually", then "If you structured your sculpting tools well. Then we should be able to sculpt panels,
+    buttons and elements of any size"). Every piece of an organic skin (the Vhorr Brood first) is sculpted at its exact
+    slot size by parametric sculptors (`tools/blender/organic_components.py`), so any size is a re-run: the console is
+    blocked out with placeholder rectangles first, then each component is sculpted in place on the Organic Panel Bible's
+    rules (`docs/design/organic-bible.html`) by `tools/blender/build_ui_vhorr_organic.py` reading the layout.
 - **Each faction has its own console skin**, on the same layout and the same 9-slice and hero slots
   (owner, 2026-10-30, with screenshots of the reference games' skins: "I really like espeically the
   mirak ui design, its so playful and pirate like", "I also enjoy the sleek, utilitarian, LCARS blue
@@ -520,8 +522,8 @@ Nothing is an exception until it is listed here with its reason.
 - **Tool-owned files keep their tool's text.** The OpenSpec CLI writes `.claude/skills/openspec-*`
   and `.claude/commands/opsx/*`; don't hand-edit them. The dash check excludes `.claude/`.
 - **Organic skins are not nine-sliced** (section 7; owner, 2026-10-31). Their frames are one sculpted body that cannot
-  stretch or tile, so every piece is a hero piece at its exact slot size, blocked out with placeholders and then
-  sculpted. The kit's piece names and the rule that a missing piece is a build error still hold.
+  stretch or tile, so every piece is sculpted at its exact slot size by parametric sculptors, so any size is a re-run,
+  blocked out with placeholders first. The kit's piece names and the rule that a missing piece is a build error still hold.
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from

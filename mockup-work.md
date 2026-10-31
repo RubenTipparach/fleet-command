@@ -24,7 +24,7 @@ account and every link here is updated.
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-10-31, v23) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
+| 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -167,6 +167,13 @@ else's art):
   institute", then "They were inspired by the nucleo look. So.lets update that". Version 15 rebuilds the Kelvane Institute on the
   Nucleo NLog construction, our own design: pillowed champagne plates over amber backlit readout windows and green phosphor scopes,
   keys in pressed dimples, the helm's keys in a pressed cradle, meters in bays. The Conclave is to be revisited.
+- 2026-10-31, of the Vhorr Brood's version 23: "Nah that's bad lol. Let's make a new design system for organic", which became
+  the Organic Panel Bible; then "Looks dope, now let's see if this new design system can be applied to the design
+  language/brood skins design system", "Go" (on the blockout), and "If you structured your sculpting tools well. Then we
+  should be able to sculpt panels, buttons and elements of any size". Version 25 rebuilds the Vhorr Brood on the bible:
+  every slot sculpted at its exact, pinned size by parametric sculptors (`tools/blender/organic_components.py`, run by
+  `tools/blender/build_ui_vhorr_organic.py` over the blockout), no nine-slice, floating over the game, the portrait
+  live under the hex filter (design.md, "The Vhorr Brood on the organic bible").
 
 What the mockup shows:
 

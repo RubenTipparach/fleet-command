@@ -33,7 +33,7 @@ organic leather frame looks a little more purposeful and organic", and "never us
   that the sculpt and its remesh absorb.
 - The crisp instruments (screen glass, key caps, the portrait) are tech, not body, and keep their clean edges.
 
-## 0b. Rule 4: no nine-slice; block out, then sculpt
+## 0b. Rule 4: no nine-slice, no fixed sizes; block out, then sculpt
 
 The owner, 2026-10-31: "due to the nature of this ui, nine slice is not possible and the UI will have to be bocked out
 using placeholders then a full detail agent will go in and sculpt components manually".
@@ -49,6 +49,14 @@ using placeholders then a full detail agent will go in and sculpt components man
   beside its neighbours so growth joins across gutters, clear of every protected rectangle. Live content (readouts,
   labels, the hex-filtered portrait) is drawn over the piece, never sculpted in.
 - **Swap and measure.** Each sculpt replaces its placeholder; the fit checks run again; look at its close-up.
+- **Sculptors, not sculpts** (owner, 2026-10-31: "If you structured your sculpting tools well. Then we should be able to
+  sculpt panels, buttons and elements of any size"). Sizes are not fixed either: every piece is sculpted at its exact
+  size by a parametric sculptor in `tools/blender/organic_components.py` (`panel`, `key`, `tab`, `strip`, `bezel`,
+  `round_pocket`, `crest`, `lamp`, `cord`, `helm`), which lays its anatomy out in mm from the rectangle and its room
+  (lip thickness from the window, about one vertebra per 19 mm, lobe count from the area, seeded from the slot id). A
+  skin's generator (`tools/blender/build_ui_vhorr_organic.py`) only reads a layout and calls the sculptors, so a new
+  size, panel or screen shape is a re-run. Add a new kind of piece as a new sculptor, never as per-slot code. Prove a
+  change with the any-size sheet (`--sheet`, `docs/design/organic-bible/any-size.jpg`).
 
 ## 0c. Rule 5: an overlay, not a scene
 
