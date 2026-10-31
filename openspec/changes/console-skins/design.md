@@ -551,6 +551,81 @@ placeholders then a full detail agent will go in and sculpt components manually"
 
 **Next:** the Vhorr Brood is rebuilt this way, starting with the blockout of the desktop console.
 
+## The Vhorr Brood on the organic bible (version 26, in progress)
+
+The owner, 2026-10-31, of the Organic Panel Bible v2: "Looks dope, now let's see if this new design system can be
+applied to the design language/brood skins design system". The Brood is rebuilt on the bible's rules: no raw
+primitives (R1), layered anatomy sculpted as one surface (R2), screens as live pixels under a fine hex filter (R3), no
+nine-slice, so block out first and then sculpt each component in place (R4), and an overlay over the game with no
+backdrop (R5). Version 23 (assimilated tech) stays on the page until the new kit replaces it.
+
+**Phase 1, the blockout (done).** `tools/mockups/vhorr_blockout.mjs` measures the live page (the Vhorr skin at the
+1920 x 1080 desktop reference) and writes `assets/ui/vhorr/organic/blockout.json`: every slot the console draws with a
+kit piece, its rect in the console's own px, and its protected rectangles (labels, readouts, the inked extent of each
+live drawing, icons, bar cells, key and tab labels, the helm pad's nine key faces, the name plate's portrait window, and
+child slots). `tools/mockups/vhorr_blockout_draw.py` draws it over the page's own game view:
+`docs/screenshots/mockups/vhorr-blockout-desktop.png`.
+
+| Sculpt group | Slots | Size (px) | Notes |
+|---|---|---|---|
+| `strip.top` | 1 | 1448 x 72 | holds three tracks, three labels and the clock |
+| `strip.bottom` | 1 | 1448 x 72 | holds two tracks, labels, the speed readout and the lamp |
+| `bar.track` | 3 | 370.5 x 20 | top strip; cells drawn live on top |
+| `bar.track` | 2 | 507.5 x 20 | bottom strip |
+| `lamp.alert` | 1 slot, 3 states | 40 x 40 | in the bottom strip (shown 40 px, the kit piece is 64) |
+| `nameplate` | 1 | 460 x 56 | name field 290 x 26; portrait window 62 x 48 |
+| `helm.pad` | 1 | 264 x 264 | nine key faces of 54.5 px (one key cap, placed nine times) |
+| `frame.inset` (helm readout) | 1 | 190 x 264 | holds To hit, 83%, a divider and Engage and Stop |
+| `divider` | 1 | 154 x 10 | |
+| `button` | 2 slots, 3 states | 154 x 48 | Engage, Stop |
+| `ssd.bezel` | 1 | 460 x 300 | live drawing 215 x 217 |
+| `frame.panel` (weapons) | 1 | 460 x 174 | title, Fire, Multiple and three tabs |
+| `button` | 2 slots, 3 states | 192 x 48 | Fire, Multiple |
+| `tab` | 3 slots, 2 states | 126.5 x 40 | Offline, Normal, Overload |
+| `dial` | 1 | 120 x 120 | live drawing 74 x 74 |
+| `frame.inset` (contacts) | 1 | 232 x 120 | label and five icons |
+| `crest` | 1 | 96 x 96 | the violet crystal |
+
+24 slots in 17 sculpt groups at the desktop reference. Slots of one group share one sculpt only where they are a
+self-contained piece (a key, a tab, a bar track); frames are sculpted once each, in place, because their growth joins
+their neighbours'. A phone in landscape shows this same console scaled to fit, so it uses these slots; no mockup lays
+out the battle console in portrait yet, so that slot set waits for its layout.
+
+**Awkward for organic slots** (the console rules say panels are fixed rectangles; these come out of the page's flex and
+grid layout instead, and must be pinned before sculpting):
+- **Track widths come from content**: 370.5 and 507.5 px are what the strips' flex rows leave after the labels and
+  gaps; a different label or font would move them. Phase 2 pins them as fixed widths.
+- **The weapons panel's 174 px height comes from its content** (a grid with no set height), and the radar row's slots
+  sit wherever the column's leftover height centres them (the dial at y 889, the crest at y 901). Phase 2 pins every
+  column slot's y and height.
+- **Fractional sizes** (tabs 126.5 px from a three-column grid, the tracks): pinned to whole px, so a sculpt maps to
+  whole pixels at 2x.
+- **No portrait slot.** The bible's tall portrait pocket does not fit the 460 x 56 name plate; its pocket is 62 x 48. A
+  taller name plate is a layout change to the console, which needs the owner's approval of a mockup (CLAUDE.md 4).
+  Until then the hex-filtered portrait lives in the plate's 62 x 48 pocket.
+- **States multiply sculpts.** Keys have three states and tabs two, each a separate render of the same slot, and the
+  lamp three; because growth joins across slots, each state is rendered in place in the full scene, not alone.
+- **The lamp** shows at 40 px in the strip though its kit piece is 64 px (`--strip-lamp`); it is sculpted at 40.
+
+**Phase 2, the sculpt (next).**
+1. One Blender scene laid out exactly at the blockout rects (1 px = 1 mm, the console's 1920 x 1080), every component
+   sculpted as its own anatomy on `tools/blender/organic_anatomy.py` (bone, muscle, leather over both, veins and sacs
+   under the skin), the instruments it holds (screens, key caps, the portrait screen) as separate objects. Growth joins
+   across a gutter only through the panels' own bodies (a tendril or sinew that belongs to a panel); the game shows in
+   every gutter. Transparent film, no backdrop (R5).
+2. Rendered at 2x (3840 x 2160), then cut into one hero image per slot by its rect, with a manifest of kind "organic"
+   listing each slot's image, rect and state (`assets/ui/vhorr/organic/manifest.json`). State renders (keys hover and
+   pressed, tabs active, lamp colours) render only their slots' regions over the same scene.
+3. **The page change**: the Vhorr skin draws each slot's image at its exact rect with no slicing; labels, readouts, the
+   bar cells, the helm glyphs, the ship display and the hex portrait filter are drawn live on top, as today.
+4. **Checks**: the bible's G1 clearance measured on the sculpt's height field for every protected rectangle in
+   `blockout.json` (growth never covers one), `console_fit.mjs` and `dom_fit.mjs` on the page, and close-ups of every
+   key, screen and the portrait looked at.
+
+**Cost, estimated**: the study renders about 0.65 MP in 5 minutes at 32 samples on the cloud machine, so the full 2x
+scene (8.3 MP) is about an hour per render, and the state regions about 30 minutes more: 1.5-2 hours of rendering per
+screen shape, plus the sculpting iterations, each a cheap preview at 16 samples.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
