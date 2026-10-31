@@ -103,16 +103,22 @@ def pieces():
         margins=(0, 14, 0, 14), stretch="x", roll=0.8, land=0.9, inset=(10, 4), dz=-2.5, pad=0.8)
     # Keys: a domed key in a pressed dimple beside a small amber window that holds the key's name (never a knob jammed
     # at a frame's edge). The key and dimple stay in the 46 px left end, the window's ends in the margins.
+    # The window is the key's state (owner, 2026-10-31: "these need to switch back light on off based on hover/click
+    # state"): unlit film and no lamp at rest, backlit amber on hover, brighter with a stronger lamp when pressed. The
+    # plate, glass and dimple are the same in every state; only the light changes.
     win = rbox(44, 9, 140, 39, 5)
-    for state in ("idle", "hover", "pressed"):
-        add(f"button.{state}", "nine", (150, 48), rbox(0.5, 2.5, 149.5, 45.5, 10), [("amber", win)],
+    for state, film, lamps in (("idle", "dim", []), ("hover", "amber", [(92, 9, 0.05)]), ("pressed", "hot", [(92, 9, 0.08)])):
+        add(f"button.{state}", "nine", (150, 48), rbox(0.5, 2.5, 149.5, 45.5, 10), [(film, win)],
             studs=[(22, 24, 9.0, "key")], dimples=[(22, 24, 13.0)], live=[("label", box(48, 15, 136, 33))],
-            margins=(20, 16, 20, 46), stretch="x", roll=1.6, dz=-5.0, lamps=[(92, 9, 0.05)], pad=2.5)
-    # Tabs: a plate with one long amber window; the selected tab's window is lit, the others dim.
+            margins=(20, 16, 20, 46), stretch="x", roll=1.6, dz=-5.0, lamps=lamps, pad=2.5)
+    # Tabs are the console's toggles: a plate with a jewel pilot lamp in a dimple at its left (owner, 2026-10-31: "some
+    # of the togle buttons for instutues having lights on would be cool") and one long amber window. The selected tab's
+    # lamp glows and its window is lit; the others' lamps are dark glass and their windows dim. Same glass in both.
     for state in ("idle", "active"):
-        add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 8), [("amber" if state == "active" else "dim", rbox(8, 10, 112, 30, 5))],
-            live=[("label", box(14, 13, 106, 27))], margins=(12, 14, 12, 14), stretch="x", roll=1.4, dz=-4.0, pad=2.5,
-            lamps=[(60, 10, 0.05)] if state == "active" else [])
+        add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 8), [("amber" if state == "active" else "dim", rbox(28, 10, 112, 30, 5))],
+            studs=[(15, 20, 3.6, "jewel_on" if state == "active" else "jewel_off")], dimples=[(15, 20, 5.0)],
+            live=[("label", box(32, 13, 106, 27))], margins=(12, 14, 12, 28), stretch="x", roll=1.4, dz=-4.0, pad=2.5,
+            lamps=[(70, 10, 0.05)] if state == "active" else [])
     # Strips: a long plate; at its left end a bay holds a small needle meter on amber film (an arched window grown up
     # out of a box), at its right end a knurled knob in a dimple and two screws. The middle is plain metal that stretches.
     # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the bay, knob and screws keep their size,

@@ -47,7 +47,7 @@ PAL = dict(champagne="#c9bfa9", knob="#d6d0c4", brass="#b0915a", amber="#f2c46e"
 GLOW = float(os.environ.get("FILM_GLOW", 0.78))   # the film's own backlight, as in the study
 MAIN = (0.8, 60.0)                                  # the soft main light on the wells: strength, angular size (deg)
 DIMPLE = 2.2                                        # a dimple's depth, mm
-DISPLAY = ("amber", "dim", "phos", "slotfilm", "ink", "grat", "unlit", "redink")
+DISPLAY = ("amber", "hot", "dim", "phos", "slotfilm", "ink", "grat", "unlit", "redink")
 
 
 def jewel(name, col, es):
@@ -70,6 +70,7 @@ def mats(K, s):
                pointer=K.mat("pointer", lambda: printed("pointer", "#a83020")),
                amber=K.mat("amber", lambda: film_mat("amber", col=PAL["amber"], shadow=PAL["amber_lo"], es=0.85, glow=GLOW, ao_mm=ao)),
                dim=K.mat("dim", lambda: film_mat("dim", col=PAL["dim"], shadow="#3a2810", es=0.3, glow=GLOW, ao_mm=ao)),
+               hot=K.mat("hot", lambda: film_mat("hot", col=PAL["amber"], shadow=PAL["amber_lo"], es=1.35, glow=GLOW, ao_mm=ao)),
                phos=K.mat("phos", lambda: film_mat("phos", col=PAL["phos"], shadow=PAL["phos_lo"], es=0.55, glow=1.0, ao_mm=ao)),
                slot=K.mat("slotfilm", lambda: film_mat("slotfilm", col=PAL["slot"], shadow="#0c0805", es=0.2, glow=1.0, ao_mm=1.5)),
                tray=K.mat("tray", lambda: satin("tray", PAL["tray"])),
@@ -118,8 +119,9 @@ def stud(K, x, y, r, style, sunk, press=0.0):
         K.slab([[(x - r * 0.72, y - 0.32), (x + r * 0.72, y - 0.42), (x + r * 0.72, y + 0.32), (x - r * 0.72, y + 0.42)]], z + 0.8, z + 1.15,
                K.m["groove"], bevel=0.08)
     elif style.startswith("jewel"):
-        col = {"jewel": PAL["amber"], "jewel_green": "#5aff8a", "jewel_yellow": "#ffcf6a", "jewel_red": "#ff4a3a"}[style]
-        es = 1.2 if style == "jewel" else 3.0
+        col = {"jewel": PAL["amber"], "jewel_green": "#5aff8a", "jewel_yellow": "#ffcf6a", "jewel_red": "#ff4a3a",
+               "jewel_on": "#ffc35a", "jewel_off": "#ffc35a"}[style]   # a toggle's pilot lamp: one glass, lit or dark
+        es = {"jewel": 1.2, "jewel_on": 3.0, "jewel_off": 0.03}.get(style, 3.0)
         m = K.mat(style, lambda: jewel(style, col, es))
         K.cyl(x, y, r + 1.6, z - 0.4, z + 0.6, K.m["bezel"], seg=48)
         K.blob(x, y, r, r, r * 0.62, m, z=z + 0.4, seg=10)
@@ -134,7 +136,7 @@ def piece(name):
         wells = [(kind, [tuple(p) for p in w]) for kind, w in s["wells"]]
         plate = [tuple(p) for p in s["plate"]]
         for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B)
-            K.film(None, shape=[tuple(p) for p in f], m=K.m[{"amber": "amber", "dim": "dim", "phos": "phos", "slot": "slot", "tray": "tray"}[kind]])
+            K.film(None, shape=[tuple(p) for p in f], m=K.m[{"amber": "amber", "hot": "hot", "dim": "dim", "phos": "phos", "slot": "slot", "tray": "tray"}[kind]])
         ob = K.plate([plate] + [w for _k, w in wells])
         cuts = False
         for x, y, r in s["dimples"]:

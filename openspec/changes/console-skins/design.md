@@ -352,6 +352,15 @@ it, and every label stands over its bar again, 3 px clear of the art (console fi
 | Ombrai | 49 px | 33 |
 | Kelvane, Ssarith | 66 px | 50, 55 |
 
+## The Kelvane's keys and toggles light up (version 19)
+
+The owner, 2026-10-31: "these need to switch back light on off based on hover/click state", then "some of the togle
+buttons for instutues having lights on would be cool". The Kelvane key's amber window was backlit in every state, so only
+its small pilot ring changed. Now the window is the state: unlit film and no lamp at rest, backlit amber on hover, brighter
+film and a stronger lamp when pressed, the pilot ring lit with it. Each tab, the console's toggles (Offline, Normal,
+Overload), carries a jewel pilot lamp in a pressed dimple at its left, inside the slice margin: dark glass when off,
+glowing when that setting is on. The plate, glass and dimple are the same in every state; only the light changes.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
