@@ -309,6 +309,15 @@ owner said. The fit check measures a row of cells like a fill: it may fill its g
 | Ombrai | Eye | Dim lidded eye | Open, glowing pink | Crimson |
 | Ssarith Hunt | Claw mark on a phosphor tube | Dark tube | Green phosphor | Kill red |
 
+**Krai: cast volcanic gunmetal (version 23).** Owner, 2026-10-31: "edges of panels look kinda flat here. i also
+expected something like a rough gun metal, maybe sort of akin to volcanic magma type metal", and on keys "I actually prefer
+the more animated versions on click". The blade steel becomes cast volcanic gunmetal (`steel()` in
+`tools/blender/build_ui_krai.py`): near-black basalt-grey metal with a cooled-lava crust split by fissures, coarse pits,
+roughness from 0.5 to 0.9, and a dim ember glow (`MAGMA_ES` 0.7) in some fissures, deepest in the crevices. The roll
+grows from 1.6 mm to 2.0 mm (the land shrinks from 3.0 mm to 2.3 mm so rule R still holds), and the top of every roll is
+worn bright, picked out by the surface's own tilt. An engaged key's glass is pushed in 3 mm down and back while its frame
+stays put (`PRESS_MM`); krai.js sinks the label to match (`--btn-sink` 1.5 px, `--btn-motion` 0.06 s, `--btn-pb` 2 px).
+
 **Krai, Ombrai and the Hunt on the bible.** Each is now built the way the Aelith and Kelvane were: a shapes file of fit-
 checked outlines (rules K, L, R, P and B on every piece, written only if all pass, and `--verify` for rule B on the
 renders: 0 lit pixels outside any plate), a Blender generator on the shared panel kit (pillowed plates whose every edge
