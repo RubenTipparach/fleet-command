@@ -13,7 +13,8 @@
   },
   "permissions": {
     "allow": [
-      "Artifact"
+      "Artifact",
+      "mcp__claude-artifacts__*"
     ]
   }
 }
