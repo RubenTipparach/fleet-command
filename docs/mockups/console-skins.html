@@ -91,8 +91,8 @@ table.kit code { font: 500 12px var(--mono); color: var(--accent); }
 .k-button:hover, .k-button.hover { border-image-source: var(--bh); }
 /* A pressed key never moves (owner, 2026-10-31: "these buttons should not move, the button should have a 3d animation where
    the inner part is pushed in and the frame stays put"): its art swaps to the cap sunk in its socket, frame unchanged, and
-   only the label rides the cap down by the skin's --btn-sink. The one exception is the Vos, whose hand-cut tag tilts and
-   springs back when struck (owner, 2026-10-31: "these should rotate when I click them"): --btn-press, Vos only. */
+   only the label rides the cap down by the skin's --btn-sink. No skin's key moves, the Vos tag included (owner,
+   2026-10-31: "Vos buttons are still being rotated when I click"). */
 .k-button:active, .k-button.pressed { border-image-source: var(--bp); padding-top: calc(var(--btn-pt, 0px) + 2 * var(--btn-sink, 1px)); transform: var(--btn-press, none); }
 .k-tab { border-width: 0; border-image-width: var(--ti-w); padding: 0 6px; border-image-source: var(--ti); border-image-slice: var(--ti-s) fill; height: 40px; display: flex; align-items: center; justify-content: center;
   font: var(--tab-font); text-transform: var(--btn-case); color: var(--tab-ink); white-space: nowrap; overflow: hidden; padding-bottom: var(--tab-pb, 0); }
@@ -653,7 +653,7 @@ const SKINS = {
   vos: {
     name: 'Vos Syndicate', kind: 'Hand-drawn ink and wash, after the reference game\'s pirate skin', bg: '#140a08',
     css: { '--s-ink': VC.bone, '--s-dim': '#caa98a', '--s-num': VC.verd, '--s-body': '"Patrick Hand", cursive', '--btn-ink': VC.ink, '--btn-justify': 'center', '--btn-font': '400 21px/1 "Permanent Marker", cursive',
-      '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'transform 0.25s cubic-bezier(.3,1.8,.5,1), padding-top 0.06s', '--btn-sink': '1px', '--btn-press': 'rotate(-3deg) scale(0.97)', '--tab-font': '400 18px/1 "Permanent Marker", cursive', '--tab-ink': VC.ink, '--tab-ink-on': VC.ink,
+      '--btn-track': '0.02em', '--btn-case': 'none', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1px', '--tab-font': '400 18px/1 "Permanent Marker", cursive', '--tab-ink': VC.ink, '--tab-ink-on': VC.ink,
       '--title-font': '400 22px/1 "Permanent Marker", cursive', '--title-ink': VC.brassHi, '--lbl-font': '400 20px/1 "Patrick Hand", cursive', '--num-font': '400 28px/1 "Patrick Hand", cursive',
       // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is rows 7-62, inside the inked border,
       // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
@@ -680,7 +680,7 @@ const SKINS = {
       bracket: (x, bx, by, bw, bh) => { const Rr = rng(11); for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) ink(x, wob([[px + sx * 44, py + sy * 2], [px, py], [px + sx * 3, py + sy * 44]], false, 1.4, Rr), false, 3.4, VC.bone); },
     },
     world: ['Free clans of raiders: luck, loot, loyalty to the crew, nothing else.', 'Lanky, long-fingered, many-jointed, tattooed: quick flicks.', 'Salvage, patched and grown over: nothing matches, everything works.', 'Scavenged hulls under spikes, mandible prows, swirling paint.'],
-    shapes: 'Claw tags, torn tickets, scrolls, a ship\'s wheel, spirals and knots.', light: 'Drawn: hatching on the shadow side, dry-brush highlights, ink bleed.', motion: 'A wobble: a struck tag tilts and springs back.',
+    shapes: 'Claw tags, torn tickets, scrolls, a ship\'s wheel, spirals and knots.', light: 'Drawn: hatching on the shadow side, dry-brush highlights, ink bleed.', motion: 'A struck tag stays put; its ink darkens and its letters dip.',
     type: '"Permanent Marker" for keys and titles over "Patrick Hand".',
     palette: [['Ink', VC.ink, 'Outlines, hatching', 'The crew\'s tattoos'], ['Rust', VC.rust, 'Frames, plates', 'Salvage: all of it was someone\'s'], ['Brass', VC.brass, 'Keys, highlights', 'Loot and luck'],
       ['Verdigris', VC.verd, 'Lenses, readouts', 'Old coin: the spoils kept'], ['Bone', VC.bone, 'Paper, text', 'Trophies and stolen charts'], ['Blood', VC.blood, 'Alerts', 'A warning, once']],
