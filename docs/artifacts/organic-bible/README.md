@@ -1,6 +1,6 @@
 # Organic Panel Bible
 
-- Link: https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD (slug `c56cabee-e37f-4451-a6dd-bf03afee1b3e`).md section 8: the desktop session publishes for cloud sessions).
+- Link: https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD (slug `c56cabee-e37f-4451-a6dd-bf03afee1b3e`).
 - Shows: the design system for grown, organic console panels (owner, 2026-10-31, of the Vhorr Brood's version 23: "Nah
   that's bad lol. Let's make a new design system for organic", and "The brood is overly simple. It's just metal with
   ameobas on top. Completely missing the zerg aesthetic"). One organism holding crisp instruments; five materials
