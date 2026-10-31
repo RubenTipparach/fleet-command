@@ -168,7 +168,8 @@ build, and then need to be approved for actual game implementation after"):
   (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"), in three sections: game
   mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A new
   artifact goes on it when it is first published. Its link is in `mockup-work.md` and
-  `docs/design/README.md`. An approval counts only when it is in the tracker or in the owner's own
+  `docs/design/README.md`, and **every published page links back to it** (owner, 2026-10-31: "Make sure all
+  published pages link back to the master"): an "All Fleet Command mockups (the tracker)" link near the page's top. An approval counts only when it is in the tracker or in the owner's own
   words in the conversation; record it in `mockup-work.md` either way.
 - **Every mockup is checked into the repository** (owner, 2026-10-30: "All mockups are to be checked
   into repo especially when they are html claude artifacts"): the page in `docs/mockups/`, its shots in
