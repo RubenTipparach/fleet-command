@@ -15,7 +15,7 @@ they are html claude artifacts"). The **mockup tracker** lists every link and st
 owner approves: https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu (record in `docs/artifacts/mockup-tracker/`).
 It is the master artifact (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"): game
 mockups, guides (the Analog Panel Bible, https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF, and the Organic Panel
-Bible, `docs/design/organic-bible.html`, to be published) and misc.
+Bible, https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD, `docs/design/organic-bible.html`) and misc.
 If the owner changes accounts, every mockup, the tracker and the survey are republished from the new
 account and every link here is updated.
 

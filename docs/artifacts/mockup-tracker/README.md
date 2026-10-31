@@ -11,3 +11,4 @@
 - Account move: Republished 2026-10-31 on the owner's current account (the earlier links were made from another account and cannot be read from here); every link updated.
 - Version 22, 2026-10-31: the tracker no longer lists itself under Misc (owner: "Misc shouldn't include the tracker itself lol. That makes no sense"); its versions are recorded here.
 - 2026-10-31, desktop session: Console skins at v23 (the Vhorr Brood rebuilt as assimilated tech), a text edit; version id `1793463792-e352`.
+- 2026-10-31, cloud session (owner: "Just publish it"): Console skins at v24, and the Organic Panel Bible added under Guides; version id `1793479717-4da8`.

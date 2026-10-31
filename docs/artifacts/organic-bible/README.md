@@ -1,6 +1,6 @@
 # Organic Panel Bible
 
-- Link: to be published by the desktop session (CLAUDE.md section 8: the desktop session publishes for cloud sessions).
+- Link: https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD (slug `c56cabee-e37f-4451-a6dd-bf03afee1b3e`).md section 8: the desktop session publishes for cloud sessions).
 - Shows: the design system for grown, organic console panels (owner, 2026-10-31, of the Vhorr Brood's version 23: "Nah
   that's bad lol. Let's make a new design system for organic", and "The brood is overly simple. It's just metal with
   ameobas on top. Completely missing the zerg aesthetic"). One organism holding crisp instruments; five materials
@@ -21,3 +21,7 @@ draft and we'll be adding to it as we discover the methodology behind organic ui
 is the page compiled into one self-contained file, every study image carried inside it as a data URI, by
 `python3 tools/mockups/compile_page.py docs/design/organic-bible.html docs/artifacts/organic-bible/index.html`.
 Edit `docs/design/organic-bible.html`, recompile, then republish `index.html` to this artifact's slug.
+
+## Versions
+
+- Version 1, 2026-10-31, published from the cloud session (owner: "Now that looks good. Create the guide", "Just publish it"; commit 60b7e2e): reviewed, rules 1-4 (never raw primitives; layered anatomy sculpted; screens as pixels under a fine hex filter; no nine-slice, block out then sculpt), study steps 1-25; the compiled `index.html`, one self-contained file; version id `1793479604-bb1a`.
