@@ -18,7 +18,7 @@ The page refuses a skin missing any of these (see `REQUIRED` in the page):
 | `css` | The skin's CSS tokens (optional ones: `--btn-shadow`, `--btn-align`, `--btn-pt`, `--bt-rep` and `--bf-rep` set to `round` to tile the bar images instead of stretching them, and `--stt-pt`, `--stt-pb`, `--stb-pt`, `--stb-pb`, the top and bottom strips' content padding, so a strip's readouts stay inside the open part of its art): `--s-ink`, `--s-dim`, `--s-num`, `--s-body`, `--btn-ink`, `--btn-justify`, `--btn-font`, `--btn-track`, `--btn-case`, `--btn-motion`, `--btn-press`, `--tab-font`, `--tab-ink`, `--tab-ink-on`, `--title-font`, `--title-ink`, `--lbl-font`, `--num-font`; optional `--btn-align`, `--btn-pt` |
 | `accent`, `warn` | Accent and warning colours |
 | `title(t, m)` | Places a panel's title element `t` (CSS text) given the panel frame's margins `m` (top, right, bottom, left) |
-| `plateText` | `{ left, top, width, height, font, color, sub }`: the name plate's live text field and text |
+| `plateText` | `{ left, top, width, height, font, color, sub }`, optional `shadow` (a CSS text-shadow, for letters over a busy ground): the name plate's live text field and text |
 | `helmKeys` | `'ring'` with `helmR` (radius of eight keys round the centre of a 300 x 300 pad) or an array of eight `[x, y]` key centres, clockwise from north-west or north |
 | `shield` | Three colours for shield strength: strong, middling, weak |
 | `fonts` | CSS font strings to load before drawing, e.g. `'400 20px "Exo 2"'` (Google Fonts; the page's `<link>` must include them) |

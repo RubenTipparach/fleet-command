@@ -1,9 +1,13 @@
 // The Tarsine Remnant skin (mockup 4, OpenSpec change console-skins): a powerful ancient race that stopped changing
 // long ago (owner, 2026-10-30: "a powerful ancient race. rusty, with back lit buttons clogged with dirt. their ships
-// havent been upgraded in ages, rough around the edges"). Monumental corroded iron, pitted and streaked with rust, old
-// gold worn through to the metal, grime in every corner; keys are arched tablets whose backlit windows glow through
-// caked dirt; gauges sit behind cracked glass; icons are worn carved glyphs. Painted in canvas, deterministic.
-// Registers itself with the page's skin registry (docs/mockups/skins).
+// havent been upgraded in ages, rough around the edges"). Since 2026-10-31 it is rendered in Blender on the analog panel
+// bible (owner: "I love the Remnant ui, i htink it could use some polish from our guide, but please dont remove the
+// grimey industrial feel"): monumental corroded iron with worn rolled edges, rust, verdigris, pitting and soot in every
+// crevice, great rivets with rust running down from them, worn gold bezels and brackets, arched-tablet keys and lintel
+// tabs whose grimy glass carries the same caked dirt in every state (only the backlight changes), cracked gauge glass,
+// lit by old lamps under the lips that do not all still burn (tools/mockups/tarsine_shapes.py,
+// tools/blender/build_ui_tarsine.py, assets/ui/tarsine/). This module loads that kit and draws the live readouts, the
+// carved glyph icons and the view's brackets. Registers itself with the page's skin registry (docs/mockups/skins).
 (function () {
 'use strict';
 const F = window.FCK, P = F.P;
@@ -40,163 +44,6 @@ function rivet(x, px, py, r, R) {
   const g = x.createRadialGradient(px - r * 0.4, py - r * 0.4, 0.5, px, py, r); g.addColorStop(0, '#9a8a74'); g.addColorStop(0.5, '#5a4a3a'); g.addColorStop(1, '#1c1510');
   x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 2 * P); x.fill(); x.strokeStyle = '#0c0907'; x.lineWidth = 0.8; x.stroke();
 }
-// Light through a dirty window: an uneven backlight, caked grime, specks and a smear, cracks if asked. The dirt is
-// drawn from R the same way at every light level, so a window lit and unlit carries the same dust and only its light
-// changes (owner, 2026-10-31: "sync up dust with out and unlit button to give it that illusion").
-function grimeLight(x, draw, box, level, R, col = TA.light, cracked = false) {
-  const [x0, y0, x1, y1] = box, w = x1 - x0, h = y1 - y0;
-  x.save(); draw(); x.clip();
-  x.fillStyle = TA.glass; x.fillRect(x0, y0, w, h);
-  const jit = R();   // drawn whether lit or not, so the dust that follows matches
-  if (level > 0) {
-    const g = x.createRadialGradient(x0 + w * (0.4 + jit * 0.2), y0 + h * 0.5, 1, x0 + w * 0.5, y0 + h * 0.5, Math.max(w, h) * 0.75);
-    g.addColorStop(0, hexA(col, 0.1 + level * 0.85)); g.addColorStop(0.7, hexA(col, 0.05 + level * 0.5)); g.addColorStop(1, hexA(col, 0.02 + level * 0.2));
-    x.fillStyle = g; x.fillRect(x0, y0, w, h);
-  }
-  for (let i = 0; i < 6 + w * h / 160; i++) { const cx = x0 + R() * w, cy = y0 + R() * h, r = 1 + R() * 5, b = x.createRadialGradient(cx, cy, 0, cx, cy, r); b.addColorStop(0, `rgba(30,22,12,${0.25 + R() * 0.4})`); b.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = b; x.fillRect(cx - r, cy - r, 2 * r, 2 * r); }
-  for (let i = 0; i < w * h / 25; i++) { x.fillStyle = `rgba(20,14,8,${0.2 + R() * 0.5})`; x.fillRect(x0 + R() * w, y0 + R() * h, 0.8, 0.8); }
-  const sm = x.createLinearGradient(x0, y1, x1, y0); sm.addColorStop(0.3, 'rgba(40,30,18,0)'); sm.addColorStop(0.45, 'rgba(40,30,18,0.35)'); sm.addColorStop(0.6, 'rgba(40,30,18,0)'); x.fillStyle = sm; x.fillRect(x0, y0, w, h);
-  if (cracked) { x.strokeStyle = 'rgba(220,210,190,0.35)'; x.lineWidth = 0.7; for (let c = 0; c < 2; c++) { let cx = x0 + R() * w, cy = y0 + R() * h * 0.3; x.beginPath(); x.moveTo(cx, cy); for (let k = 0; k < 5; k++) { cx += (R() - 0.3) * 14; cy += R() * 12; x.lineTo(cx, cy); } x.stroke(); } }
-  x.restore();
-  draw(); x.strokeStyle = '#0c0907'; x.lineWidth = 1.2; x.stroke();
-}
-
-// ---- the nine-slice pieces --------------------------------------------------------------------------------------
-// A monumental frame: a thick stepped iron border round dark grimy glass, stepped capitals and great rivets at the
-// corners, rust running from each.
-function frame(x, w, h, R, b) {
-  const outer = () => { x.beginPath(); x.rect(1, 1, w - 2, h - 2); };
-  iron(x, outer, [0, 0, w, h], R);
-  // the step: a second, lower lip inside the border
-  x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 2; x.strokeRect(b * 0.55, b * 0.55, w - b * 1.1, h - b * 1.1);
-  x.strokeStyle = 'rgba(200,180,150,0.18)'; x.lineWidth = 1; x.strokeRect(b * 0.55 + 1.5, b * 0.55 + 1.5, w - b * 1.1 - 3, h - b * 1.1 - 3);
-  grimeLight(x, () => { x.beginPath(); x.rect(b, b, w - 2 * b, h - 2 * b); }, [b, b, w - b, h - b], 0, R);
-  for (const [cx, cy] of [[0, 0], [w - b - 6, 0], [0, h - b - 6], [w - b - 6, h - b - 6]]) {
-    iron(x, () => { x.beginPath(); x.rect(cx + 1, cy + 1, b + 4, b + 4); }, [cx, cy, cx + b + 6, cy + b + 6], R, { top: '#57493c' });
-    x.strokeStyle = hexA(TA.gold, 0.55); x.lineWidth = 1; x.strokeRect(cx + 4, cy + 4, b - 2, b - 2);
-    rivet(x, cx + (b + 6) / 2, cy + (b + 6) / 2, 4, R);
-  }
-}
-// The arched tablet: a round-topped slab standing on a wider foot, a backlit window in it clogged with dirt.
-function tablet(level, sunk) {
-  return (x, w, h) => {
-    const R = RNG('tablet'), d = sunk ? 2 : 0, r = 20;
-    const slab = () => { x.beginPath(); x.moveTo(6, h - 6); x.lineTo(6, r + 2 + d); x.arcTo(6, 2 + d, 6 + r, 2 + d, r); x.lineTo(w - 6 - r, 2 + d); x.arcTo(w - 6, 2 + d, w - 6, r + 2 + d, r); x.lineTo(w - 6, h - 6); x.closePath(); };
-    const foot = () => { x.beginPath(); x.rect(1, h - 7, w - 2, 6); };
-    iron(x, slab, [0, 0, w, h], R, { rustEvery: 600 });
-    iron(x, foot, [0, h - 7, w, h], R, { top: '#4f443a' });
-    const win = () => { const rr = 13; x.beginPath(); x.moveTo(14, h - 12); x.lineTo(14, rr + 9 + d); x.arcTo(14, 9 + d, 14 + rr, 9 + d, rr); x.lineTo(w - 14 - rr, 9 + d); x.arcTo(w - 14, 9 + d, w - 14, rr + 9 + d, rr); x.lineTo(w - 14, h - 12); x.closePath(); };
-    grimeLight(x, win, [14, 9, w - 14, h - 12], level, RNG('win'));   // one dust for idle, hover and pressed
-    if (sunk) { x.save(); slab(); x.clip(); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 6; slab(); x.stroke(); x.restore(); }
-    rivet(x, 10, h - 4, 2.2, R); rivet(x, w - 10, h - 4, 2.2, R);
-  };
-}
-// A tab: a lintel bar of iron, chipped at the ends; the active one shows a slot of light.
-function lintel(active) {
-  return (x, w, h) => {
-    const R = RNG('lintel');   // one plate and one dust for both states
-    iron(x, () => { x.beginPath(); x.moveTo(4, 6); x.lineTo(w - 6, 4); x.lineTo(w - 2, 10); x.lineTo(w - 3, h - 4); x.lineTo(6, h - 3); x.lineTo(2, h - 10); x.closePath(); }, [0, 0, w, h], R);
-    grimeLight(x, () => { x.beginPath(); x.rect(10, h - 12, w - 20, 5); }, [10, h - 12, w - 10, h - 7], active ? 0.9 : 0.05, R);
-  };
-}
-// A strip: an iron beam with a worn gold stripe, heavy brackets riveted at each end.
-function beam(flip) {
-  return (x, w, h) => {
-    const R = RNG('beam.' + flip);
-    if (flip) { x.translate(0, h); x.scale(1, -1); }
-    // the beam runs along the strip's outer edge (its bottom 26 px before the flip); the open band above it holds the readouts
-    const by = h - 26;
-    iron(x, () => { x.beginPath(); x.rect(0, by, w, 24); }, [0, by, w, by + 24], R);
-    x.fillStyle = hexA(TA.gold, 0.5); x.fillRect(0, by + 6, w, 3); x.fillStyle = 'rgba(0,0,0,0.25)'; for (let i = 0; i < 30; i++) x.fillRect(R() * w, by + 6, 2 + R() * 8, 3);
-    for (const s of [1, -1]) {
-      x.save(); if (s < 0) { x.translate(w, 0); x.scale(-1, 1); }
-      // the bracket stands the strip's full height: its slanted shoulder ends at the same place, its foot grows
-      iron(x, () => { x.beginPath(); x.moveTo(1, 2); x.lineTo(70, 2); x.lineTo(92, 26); x.lineTo(92, h - 1); x.lineTo(1, h - 1); x.closePath(); }, [0, 0, 94, h], R, { top: '#57493c' });
-      x.strokeStyle = hexA(TA.gold, 0.5); x.lineWidth = 1.2; x.beginPath(); x.moveTo(8, 8); x.lineTo(64, 8); x.lineTo(84, 30); x.stroke();
-      rivet(x, 16, 20, 4, R); rivet(x, 40, 20, 4, R); rivet(x, 16, h - 14, 4, R); rivet(x, 70, h - 14, 4, R);
-      x.restore();
-    }
-  };
-}
-// One bar cell: an arched window in miniature, its dust always the same (RNG('cell')), lit to level in col.
-function cell(x, w, h, level, col = TA.light) {
-  const win = () => { x.beginPath(); x.moveTo(0.5, h - 0.5); x.lineTo(0.5, w / 2); x.arc(w / 2, w / 2, w / 2 - 0.5, P, 0); x.lineTo(w - 0.5, h - 0.5); x.closePath(); };
-  grimeLight(x, win, [0, 0, w, h], level, RNG('cell'), col);
-}
-const nine = {
-  'frame.panel': { size: [160, 120], m: [34, 34, 34, 34], draw: (x, w, h) => frame(x, w, h, RNG('panel'), 22) },
-  'frame.inset': { size: [64, 48], m: [14, 14, 14, 14], draw: (x, w, h) => { const R = RNG('inset'); iron(x, () => { x.beginPath(); x.rect(1, 1, w - 2, h - 2); }, [0, 0, w, h], R); grimeLight(x, () => { x.beginPath(); x.rect(7, 7, w - 14, h - 14); }, [7, 7, w - 7, h - 7], 0, R); } },
-  // The symbol bar: a row of small arched windows (the tablet key's window, in miniature) set in an iron rail; each
-  // shows the same caked dust lit or unlit, so a window coming on reads as light behind the dirt, not new glass.
-  'bar.track': { size: [96, 20], m: [0, 14, 0, 14], inset: [9, 3], draw: (x, w, h) => { const R = RNG('track'); iron(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], R); x.fillStyle = TA.glass; x.fillRect(8, 2, w - 16, h - 4); x.strokeStyle = 'rgba(0,0,0,0.7)'; x.lineWidth = 1; x.strokeRect(8.5, 2.5, w - 17, h - 5); rivet(x, 4, h / 2, 2, R); rivet(x, w - 4, h / 2, 2, R); } },
-  'bar.cell.off': { size: [10, 14], gap: 2, draw: (x, w, h) => cell(x, w, h, 0.07) },
-  'bar.cell.on': { size: [10, 14], gap: 2, draw: (x, w, h) => cell(x, w, h, 0.95) },
-  'bar.cell.warn': { size: [10, 14], gap: 2, draw: (x, w, h) => cell(x, w, h, 0.95, TA.ember) },
-  'bar.fill': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => grimeLight(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], 0.95, RNG('fill')) },
-  'bar.fill.red': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => grimeLight(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], 0.95, RNG('fillr'), TA.ember) },
-  'button.idle': { size: [140, 52], m: [24, 30, 12, 30], draw: tablet(0.45, false) },
-  'button.hover': { size: [140, 52], m: [24, 30, 12, 30], draw: tablet(0.8, false) },
-  'button.pressed': { size: [140, 52], m: [24, 30, 12, 30], draw: tablet(1, true) },
-  'tab.idle': { size: [120, 40], m: [12, 14, 12, 14], draw: lintel(false) },
-  'tab.active': { size: [120, 40], m: [12, 14, 12, 14], draw: lintel(true) },
-  'strip.top': { size: [512, 72], m: [10, 100, 10, 100], draw: beam(false) },
-  'strip.bottom': { size: [512, 72], m: [10, 100, 10, 100], draw: beam(true) },
-  'divider': { size: [128, 10], m: [0, 14, 0, 14], draw: (x, w, h) => { const R = RNG('div'); iron(x, () => { x.beginPath(); x.rect(6, 3, w - 12, 4); }, [6, 3, w - 6, 7], R); rivet(x, 6, h / 2, 3.5, R); rivet(x, w - 6, h / 2, 3.5, R); } },
-};
-
-// ---- the hero pieces ---------------------------------------------------------------------------------------------
-const hero = {
-  // An iron plaque with a worn gold field for the name, engraved like a monument.
-  'nameplate': (x, w, h) => {
-    const R = RNG('plate');
-    iron(x, () => { x.beginPath(); x.moveTo(14, 1); x.lineTo(w - 14, 1); x.lineTo(w - 1, h / 2); x.lineTo(w - 14, h - 1); x.lineTo(14, h - 1); x.lineTo(1, h / 2); x.closePath(); }, [0, 0, w, h], R);
-    const field = () => { x.beginPath(); x.rect(36, 9, w - 72, h - 18); };
-    x.save(); field(); x.clip(); const g = x.createLinearGradient(0, 9, 0, h - 9); g.addColorStop(0, TA.goldHi); g.addColorStop(1, '#6a5426'); x.fillStyle = g; x.fillRect(36, 9, w - 72, h - 18);
-    for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(40,28,14,${0.2 + R() * 0.4})`; x.beginPath(); x.arc(36 + R() * (w - 72), 9 + R() * (h - 18), 1 + R() * 4, 0, 2 * P); x.fill(); }
-    x.restore(); field(); x.strokeStyle = '#0c0907'; x.lineWidth = 2; x.stroke();
-    rivet(x, 20, h / 2, 4, R); rivet(x, w - 20, h / 2, 4, R);
-  },
-  // A temple keyboard: nine arched tablets in a heavy stepped frame; the centre one lit like a hearth.
-  'helm.pad': (x, w, h) => {
-    const R = RNG('helm');
-    frame(x, w, h, R, 18);
-    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
-      x.save(); x.translate(26 + c * 86, 24 + r * 86); tablet(r === 1 && c === 1 ? 1 : 0.35, false)(x, 76, 78); x.restore();
-    }
-  },
-  // A monument frame round cracked, grimy glass for the ship.
-  'ssd.bezel': (x, w, h) => {
-    const R = RNG('ssd'); frame(x, w, h, R, 24);
-    grimeLight(x, () => { x.beginPath(); x.rect(24, 24, w - 48, h - 48); }, [24, 24, w - 24, h - 24], 0.04, R, TA.light, true);
-  },
-  // An iron gauge housing round cracked glass, a worn scale.
-  'dial': (x, w) => {
-    const R = RNG('dial'), c = w / 2;
-    iron(x, () => { x.beginPath(); x.arc(c, c, 58, 0, 2 * P); }, [0, 0, w, w], R);
-    grimeLight(x, () => { x.beginPath(); x.arc(c, c, 44, 0, 2 * P); }, [c - 44, c - 44, c + 44, c + 44], 0.18, R, TA.light, true);
-    x.strokeStyle = hexA(TA.bone, 0.55); x.lineWidth = 1.4; for (let i = 0; i <= 10; i++) { const a = P * 0.75 + i * P * 0.15; if (R() < 0.2) continue; x.beginPath(); x.moveTo(c + Math.cos(a) * 36, c + Math.sin(a) * 36); x.lineTo(c + Math.cos(a) * 42, c + Math.sin(a) * 42); x.stroke(); }
-    for (const a of [0, P / 2, P, 1.5 * P]) rivet(x, c + Math.cos(a + P / 4) * 51, c + Math.sin(a + P / 4) * 51, 3, R);
-  },
-  'lamp.alert.green': (x, w) => bulb(x, w, '#8ad46a'), 'lamp.alert.yellow': (x, w) => bulb(x, w, TA.light), 'lamp.alert.red': (x, w) => bulb(x, w, TA.ember),
-  // The Remnant's seal (original): a stepped crown of three tiers in a corroded ring, worn to the metal.
-  'crest': (x, w) => {
-    const R = RNG('crest'), c = w / 2;
-    iron(x, () => { x.beginPath(); x.arc(c, c, 46, 0, 2 * P); }, [0, 0, w, w], R);
-    const g = x.createLinearGradient(0, 18, 0, 78); g.addColorStop(0, TA.goldHi); g.addColorStop(1, '#6a5426');
-    x.fillStyle = g; x.beginPath(); x.moveTo(c - 30, 70); x.lineTo(c - 30, 58); x.lineTo(c - 20, 58); x.lineTo(c - 20, 44); x.lineTo(c - 10, 44); x.lineTo(c - 10, 28); x.lineTo(c + 10, 28); x.lineTo(c + 10, 44); x.lineTo(c + 20, 44); x.lineTo(c + 20, 58); x.lineTo(c + 30, 58); x.lineTo(c + 30, 70); x.closePath(); x.fill();
-    x.strokeStyle = '#0c0907'; x.lineWidth = 1.4; x.stroke();
-    for (let i = 0; i < 30; i++) { x.fillStyle = hexA(TA.rust, 0.5); x.beginPath(); x.arc(c - 30 + R() * 60, 28 + R() * 42, 1 + R() * 2.5, 0, 2 * P); x.fill(); }
-    x.strokeStyle = hexA(TA.gold, 0.6); x.lineWidth = 2; x.beginPath(); x.arc(c, c, 40, 0, 2 * P); x.stroke();
-  },
-};
-// A lamp: an old caged bulb, dirty glass, a dim colour.
-function bulb(x, w, col) {
-  const R = RNG('bulb.' + col), c = w / 2;
-  x.save(); x.shadowColor = col; x.shadowBlur = 10; grimeLight(x, () => { x.beginPath(); x.arc(c, c - 2, 20, 0, 2 * P); }, [c - 20, c - 22, c + 20, c + 18], 0.85, R, col); x.restore();
-  x.strokeStyle = '#2a221a'; x.lineWidth = 2.4; for (const dx of [-10, 0, 10]) { x.beginPath(); x.moveTo(c + dx, c - 22); x.quadraticCurveTo(c + dx * 1.9, c - 2, c + dx, c + 18); x.stroke(); }
-  iron(x, () => { x.beginPath(); x.rect(c - 18, c + 16, 36, 10); }, [c - 18, c + 16, c + 18, c + 26], R);
-}
-
 // ---- icons: worn carved glyphs ------------------------------------------------------------------------------------
 function icon(name) {
   return F.paint(48, 48, (x) => {
@@ -226,20 +73,23 @@ function icon(name) {
 
 // ---- the skin --------------------------------------------------------------------------------------------------
 F.register('tarsine', {
-  name: 'Tarsine Remnant', kind: 'Corroded monumental iron; backlights clogged with dirt', bg: '#110e0b',
+  name: 'Tarsine Remnant', kind: 'Corroded monumental iron rendered in Blender; backlights clogged with dirt', bg: '#110e0b',
   css: { '--s-ink': TA.bone, '--s-dim': TA.dim, '--s-num': TA.light, '--s-body': '"Alegreya Sans SC", sans-serif', '--btn-ink': '#1e160c', '--btn-shadow': '0 1px 0 rgba(255,230,160,0.35)', '--btn-justify': 'center',
-    '--btn-pt': '0px', '--btn-pb': '2px', '--btn-font': '700 17px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-sink': '1px',
-    '--tab-font': '700 13px/1 "Cinzel", serif', '--tab-ink': TA.dim, '--tab-ink-on': TA.light, '--title-font': '700 17px/1 "Cinzel", serif', '--title-ink': TA.goldHi,
+    '--btn-pt': '0px', '--btn-pb': '3px', '--btn-font': '700 16px/1 "Cinzel", serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'none', '--btn-sink': '1px',
+    '--tab-font': '700 13px/1 "Cinzel", serif', '--tab-ink': TA.dim, '--tab-ink-on': '#1e160c', '--title-font': '700 17px/1 "Cinzel", serif', '--title-ink': TA.goldHi,
     '--lbl-font': '700 16px/1 "Alegreya Sans SC", sans-serif', '--num-font': '700 24px/1 "Alegreya Sans SC", sans-serif',
-    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is above the beam: rows 0-45 of the top strip, 26-72 of the bottom,
-    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
-    '--stt-pt': '3px', '--stt-pb': '26px', '--stb-pt': '26px', '--stb-pb': '3px', '--strip-lamp': '36px' },
+    // The strips are 72 px; their open band is the beam's channel of grimy glass, rows 13-59 inside its worn rolled lip
+    // (tools/mockups/tarsine_shapes.py), so each label stands over its bar with 3 px clear of the art.
+    '--stt-pt': '13px', '--stt-pb': '13px', '--stb-pt': '13px', '--stb-pb': '13px', '--strip-lamp': '40px' },
   accent: TA.light, warn: TA.ember,
-  title: (t, m) => { t.style.cssText = `left:${40 - m[3]}px;top:${-m[0] + 15}px;letter-spacing:0.12em;text-shadow:0 1px 0 #000, 0 0 3px #000;`; },
-  plateText: { left: 44, top: 12, width: 372, height: 32, font: '700 19px/1 "Cinzel", serif', color: '#2a1c0c', sub: 'ANKHAR · ELDEST VOR' },
+  // The title sits in the frame's well, right of the top-left capital, under the well's worn lip.
+  title: (t, m) => { t.style.cssText = `left:${38 - m[3]}px;top:${19 - m[0]}px;letter-spacing:0.12em;text-shadow:0 1px 0 #000, 0 0 3px #000;`; },
+  plateText: { left: 44, top: 13, width: 372, height: 30, font: '700 19px/1 "Cinzel", serif', color: '#f2e6c4',
+    // pale carved letters outlined dark: they read over the lit gold and the grime stains alike (the dirt stays)
+    shadow: '0 0 2px #0c0703, 0 0 2px #0c0703, 0 1px 0 #0c0703', sub: 'ANKHAR · ELDEST VOR' },
   helmKeys: [[150, 63], [236, 63], [236, 149], [236, 235], [150, 235], [64, 235], [64, 149], [64, 63]], shield: [TA.light, '#c9873a', TA.ember],
   fonts: ['700 20px "Cinzel"', '700 20px "Alegreya Sans SC"'], view: { title: '700 26px "Cinzel"', body: '700 24px "Alegreya Sans SC"', upper: true },
-  build: () => F.fromPainters(nine, hero, icon, false),
+  build: () => { const d = F.kitData('assets/ui/tarsine/manifest.json'); return d ? F.fromManifest(d, icon) : null; },
   live: {
     // A carved arrow, dark in the lit tablet.
     arrow: (x) => { x.fillStyle = '#1e160c'; x.beginPath(); x.moveTo(12, 0); x.lineTo(0, -10); x.lineTo(0, -4); x.lineTo(-11, -4); x.lineTo(-11, 4); x.lineTo(0, 4); x.lineTo(0, 10); x.closePath(); x.fill(); },
@@ -270,7 +120,7 @@ F.register('tarsine', {
     },
   },
   world: ['A fallen empire that remembers being first, and will not change.', 'Huge, slow and long-lived: the crews outlast their worlds.', 'Machines older than their crews, patched and never replaced.', 'Massive, scarred, rusted dreadnoughts.'],
-  shapes: 'Arched tablets, stepped frames, lintels, heavy brackets: monuments.', light: 'Weak backlight through grime; worn bright edges on rusted iron.',
+  shapes: 'Arched tablets, stepped frames with capitals, lintels, heavy brackets: monuments.', light: 'Old lamps under the lips, not all still burning; backlight through caked dirt; worn rolled edges on rusted iron.',
   motion: 'Almost none: a key gives a millimetre and the light behind it steadies.', type: '"Cinzel" carved capitals over "Alegreya Sans SC".',
   palette: [['Soot', TA.soot, 'Grime, shadow', 'Ages of use'], ['Rust', TA.rust, 'Frames', 'Decline they will not admit'], ['Verdigris', TA.verd, 'Corrosion', 'Time'],
     ['Old gold', TA.gold, 'Inlays, glyphs', 'Old majesty'], ['Backlight', TA.light, 'Keys, readouts', 'The fire still burning'], ['Ember', TA.ember, 'Alerts', 'Anger, slow to wake']],

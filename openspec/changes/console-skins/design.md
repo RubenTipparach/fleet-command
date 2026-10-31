@@ -210,7 +210,7 @@ rendered shell around the UI panels and elements".
 | Ssarith Hunt | Hunter's jungle kit in Blender: worn gunmetal with chamfers and sunk hex bolts, canopy camouflage, vines and fronds, bone tally marks and reticles, CRT tube keys with scanlines | `tools/blender/build_ui_ssarith.py` |
 | Krai Warhost, Ombrai | In Blender | to come |
 | Aelith Conclave | Hybrid on the analog panel bible: pillowed satin-gold shells with formed wells (lozenges drawn to a point, knuckled corners, a scalloped rim, embracing arms), pearls on flat metal, each well a void rim-lit in cyan; the holograms drawn as vectors into the wells from the same shapes | `tools/blender/build_ui_aelith.py` from `assets/ui/aelith/shapes.json` (`tools/mockups/aelith_shapes.py`) |
-| Tarsine Remnant | Painted in the page for now; Blender recommended (survey U9) | |
+| Tarsine Remnant | On the bible since version 22: corroded iron, worn gold, grimy backlit glass, dim aged spots | `tools/mockups/tarsine_shapes.py`, `tools/blender/build_ui_tarsine.py` |
 
 ### The Aelith Conclave, rebuilt on the analog panel bible (version 14)
 
@@ -391,6 +391,23 @@ interaction. if you can, get rid of the slice lines, and use canvas rendering, o
 - The Krai ship display is a wireframe schematic (owner: "The krai ship display should be a wire frame schematic"): the
   blade hull top-down in glowing hairlines, a node at every vertex, its spine and frame ribs, the wing spars, the lower
   hull in dashed hidden lines, the three weapon mounts boxed and called out, the engines as nozzle rings.
+
+## The Remnant on the bible, grime kept (version 22)
+
+The owner, 2026-10-31: "I love the Remnant ui, i htink it could use some polish from our guide, but please dont remove the
+grimey industrial feel, I love that story telling so much". The Tarsine Remnant is now built like the other rendered
+skins: fit-checked shapes (`tools/mockups/tarsine_shapes.py`, rules K, L, R, P and B on all 19 shaped pieces, `--verify`
+0 lit pixels outside any plate) rendered in Blender (`tools/blender/build_ui_tarsine.py`). The grime lives in the
+materials: corroded iron with rust blooms, verdigris and pitting, soot pooled where the plate's own occlusion collects it,
+great domed rivets with rust streaks running down the flat, worn gold on bezels, brackets and the crest, and one caked
+dirt layer laid over every window's glass, the same in every state, so only the backlight behind it changes. Keys stay
+arched tablets on a wider foot; tabs chipped lintels with a slot of glass; the strips a 72 px beam with a grimy glass
+channel; the helm nine tablets, the centre lit like a hearth; cracked glass over the ship display and dial; caged bulbs
+for the alert lamps; little arched windows for the bar's cells.
+
+**Light**: the bible's spots, dimmed and uneven: one or two old lamps under each window's lip, each with a fixed age
+between 35% and 100% power, because the Remnant never replaced its fixtures and not all of them still burn. The name
+plate's letters are pale and outlined dark, so they read over the lit gold and the stains alike.
 
 ## The kit
 
