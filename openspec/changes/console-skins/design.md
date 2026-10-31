@@ -413,6 +413,46 @@ With ten rendered kits inlined as PNG the page reached 19 MB, past the artifact 
 each kit image as high-quality WebP (quality 92, alpha kept; `tools/mockups/inline_data.py`), 2.4 MB in all, measured
 indistinguishable on the page (mean 0.33 of 255); the committed renders stay PNG.
 
+## The Vhorr Brood: assimilated tech (planned, version 23)
+
+The owner, 2026-10-31, with two screenshots of StarCraft II's Zerg interface (not committed; direction only, take the
+shape, not the art): "The brood still needs work. Analyze elements in this UI system carefully", then "I like that some of
+the tech in zerg is human tech with an organic layer on top", then "Send it. If it's good, it's good; if not we're gonna
+repeat the same exercise we did with winamp" (the Nucleo NLog study: a reference studied element by element, then the
+skin rebuilt and compared pixel by pixel, the `blender-ui-panels` skill's section 8).
+
+**What the reference does that the Brood does not**:
+- **One organism.** Its panels share one continuous carapace and are joined by sinew cables; ours are isolated boxes.
+- **A silhouette that breaks the rectangle.** Domes, horns and ribs overhang the frames and cast shadow on the playfield;
+  ours are even bands with corner claws.
+- **Bone and chitin ridges.** Vertebral ridges and glossy bone against wet flesh; ours is mottled hide that reads as camo.
+- **Membrane windows.** Smoked glass with a thin bright inner rim, calm behind text; ours are flat dark interiors.
+- **Glowing nodules.** Pustules at the joints act as status lights; ours has none.
+- **A portrait pocket and a focal object.** A fleshy pocket holds a live portrait, and a large crystal is the heartbeat;
+  our name plate is a band and our crest is quiet.
+- **Crisp keys in a soft frame, and state by glow colour.** Our tabs are low contrast.
+- **A thick-and-thin rhythm.** Swollen knots alternate with thin tendrils.
+
+**The rebuild: assimilated tech.** The brood grows, consumes and adapts; it does not build consoles, it takes them. Two layers:
+1. **A captured machine**, built on the panel bible (plates with rolled edges, rivets, screens, real keys), fully legible.
+2. **The growth over it**:
+   - Creep and membrane spreading from the corners and seams, thinning toward the controls.
+   - Conduits wrapped in sinew, and tendrils bridging the gutters between panels.
+   - Bolts swallowed into glowing pustules that act as status lights.
+   - Bezels fogged by membrane, but each screen's middle clear.
+   - Keys with membrane over their edges.
+   - Bone and chitin ridges growing out of the metal over the frame tops, breaking the rectangle.
+   - A fleshy portrait pocket on the name plate.
+   - A large glowing egg or crystal as the focal hero piece.
+   - Contacts glowing by threat.
+
+**The fit rules extend naturally**: growth may cover frames and bezels, never a readout, a label or a key's face, and an
+overhang never covers another panel's content. Measured, like every other rule. A shared "growth overlay" kit idea
+(tendrils across the gutters between panels) is new and needs its fit rule.
+
+If the result is not right, the next step is the Winamp exercise: study the reference element by element, rebuild, and
+compare pixels.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
