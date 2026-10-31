@@ -35,47 +35,78 @@
     "bar.track": {
       "kind": "nine",
       "size": [
-        8,
-        16
+        96,
+        20
       ],
       "file": "bar.track.png",
       "margins": [
         0,
+        16,
         0,
-        0,
-        0
+        16
       ],
-      "stretch": "x"
+      "stretch": "x",
+      "inset": [
+        9,
+        3
+      ]
     },
     "bar.fill": {
       "kind": "nine",
       "size": [
-        8,
+        64,
         10
       ],
       "file": "bar.fill.png",
       "margins": [
         0,
+        6,
         0,
-        0,
-        0
+        6
       ],
       "stretch": "x"
     },
     "bar.fill.red": {
       "kind": "nine",
       "size": [
-        8,
+        64,
         10
       ],
       "file": "bar.fill.red.png",
       "margins": [
         0,
+        6,
         0,
-        0,
-        0
+        6
       ],
       "stretch": "x"
+    },
+    "bar.cell.off": {
+      "kind": "cell",
+      "size": [
+        10,
+        14
+      ],
+      "file": "bar.cell.off.png",
+      "gap": 2
+    },
+    "bar.cell.on": {
+      "kind": "cell",
+      "size": [
+        10,
+        14
+      ],
+      "file": "bar.cell.on.png",
+      "gap": 2
+    },
+    "bar.cell.warn": {
+      "kind": "cell",
+      "size": [
+        10,
+        14
+      ],
+      "file": "bar.cell.warn.png",
+      "gap": 2
     },
     "button.idle": {
       "kind": "nine",
@@ -85,10 +116,10 @@
       ],
       "file": "button.idle.png",
       "margins": [
-        16,
-        18,
-        16,
-        18
+        0,
+        22,
+        0,
+        22
       ],
       "stretch": "x"
     },
@@ -100,10 +131,10 @@
       ],
       "file": "button.hover.png",
       "margins": [
-        16,
-        18,
-        16,
-        18
+        0,
+        22,
+        0,
+        22
       ],
       "stretch": "x"
     },
@@ -115,10 +146,10 @@
       ],
       "file": "button.pressed.png",
       "margins": [
-        16,
-        18,
-        16,
-        18
+        0,
+        22,
+        0,
+        22
       ],
       "stretch": "x"
     },
@@ -130,10 +161,10 @@
       ],
       "file": "tab.idle.png",
       "margins": [
-        14,
-        36,
-        14,
-        22
+        0,
+        16,
+        0,
+        28
       ],
       "stretch": "x"
     },
@@ -145,10 +176,10 @@
       ],
       "file": "tab.active.png",
       "margins": [
-        14,
-        36,
-        14,
-        22
+        0,
+        16,
+        0,
+        28
       ],
       "stretch": "x"
     },
