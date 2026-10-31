@@ -35,45 +35,49 @@
     "bar.track": {
       "kind": "nine",
       "size": [
-        8,
+        96,
         16
       ],
       "file": "bar.track.png",
       "margins": [
         0,
+        14,
         0,
-        0,
-        0
+        14
       ],
-      "stretch": "x"
+      "stretch": "x",
+      "inset": [
+        7,
+        3
+      ]
     },
     "bar.fill": {
       "kind": "nine",
       "size": [
-        8,
+        64,
         10
       ],
       "file": "bar.fill.png",
       "margins": [
         0,
+        6,
         0,
-        0,
-        0
+        6
       ],
       "stretch": "x"
     },
     "bar.fill.red": {
       "kind": "nine",
       "size": [
-        8,
+        64,
         10
       ],
       "file": "bar.fill.red.png",
       "margins": [
         0,
+        6,
         0,
-        0,
-        0
+        6
       ],
       "stretch": "x"
     },
@@ -130,10 +134,10 @@
       ],
       "file": "tab.idle.png",
       "margins": [
+        12,
         14,
-        18,
-        14,
-        26
+        12,
+        14
       ],
       "stretch": "x"
     },
@@ -145,10 +149,10 @@
       ],
       "file": "tab.active.png",
       "margins": [
+        12,
         14,
-        18,
-        14,
-        26
+        12,
+        14
       ],
       "stretch": "x"
     },

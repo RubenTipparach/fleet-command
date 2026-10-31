@@ -148,9 +148,11 @@ vbased on this"):
 | World view | Truth is measured, never assumed; every reading is shown on an instrument a scientist can check by eye |
 | Bodies and technology | Careful, many-handed experimenters; cream-enamelled lab instruments, chrome, brass, valves |
 | Ships | Rounded research hulls studded with sensor dishes and gauge clusters |
-| Method | Painted lab equipment: cream enamel faceplates, chrome bezels, warm amber backlights, phosphor oscilloscopes |
-| Button shape | **Instrument key**: an enamel faceplate with a domed chrome push button set into its left end |
-| Progress and gauges | Needle meters on ruled scales, oscilloscope traces on a graticule |
+| Method | Rebuilt 2026-10-31 on the Nucleo NLog construction (owner: "They were inspired by the nucleo look. So.lets update that"), in our own design: a pillowed champagne plate whose every edge rolls over, over recessed displays lit from behind. Two kinds of light for two kinds of information: **amber backlit film** with flat ink for readouts (the name plate, every key's name, the tabs, the strips' meters, the icons) and **green phosphor glass** with a faint graticule for the scopes (the helm, the ship display, the radar). Soft lamps tucked under each amber window's top lip (10 mm, 180 degrees, the study's settings) and a soft main light from the upper left shade into the wells; light linking keeps the metal and the displays apart |
+| Formed metal | The helm's eight keys sit in one pressed cradle (an annular channel) round its round phosphor scope; the ship display's round scope is held at its sides by two ears of the plate, a screw on each; each strip ends in a bay that holds a needle meter on amber film; the bar is an EQ-style slot with a lit streak; keys sit in pressed dimples; jewel lamps glow in dimples; the crest's tuning fork over a sine wave is inlaid in brass inside a pressed ring |
+| Button shape | **Instrument key**: a domed key in a pressed dimple beside a small amber window that holds the key's name; a pilot ring round the key lights on hover and glows when pressed, and the pressed key sinks 1 mm |
+| Progress and gauges | Needle meters in bays; the bars' lit streak in a slot; oscilloscope traces on a graticule |
+| Fit | Every piece passes the bible's rules K, L, R, P and B before it renders (`tools/mockups/kelvane_shapes.py`), and no render has a lit pixel outside its plate (`--verify`) |
 
 A seventh (owner, 2026-10-30, with a screenshot of a Starfleet Command battle console: "A gurilla style faction, gun
 metal, beveled corner, industrial retro CRT style buttons", then "that faction is from the gorn, which are more hunter
@@ -198,7 +200,7 @@ rendered shell around the UI panels and elements".
 | Vos Syndicate | Hand-drawn by a seeded painter (page) | |
 | Kethran Hegemony | Hard surface in Blender | `tools/blender/build_ui_kethran.py` |
 | Vhorr Brood | Organic in Blender: hide with light through it (Voronoi veins, subsurface, clear coat), iridescent carapace (thin film), flesh tendrils (subsurface), sinew fibres, blister pods glowing from their cores | `tools/blender/build_ui_vhorr.py` |
-| Kelvane Institute | Lab dashboard in Blender: cream enamel with an orange-peel finish in chrome bezels, domed push buttons with amber pilot rings, bat-handle toggles, a needle meter under glass, knurled knobs, amber displays, a phosphor scope with its graticule, jewel lamps, engraved placards | `tools/blender/build_ui_kelvane.py` |
+| Kelvane Institute | The NLog construction (2026-10-31): pillowed champagne plates over amber backlit readout windows and green phosphor scopes, keys in pressed dimples, the helm's keys in a pressed cradle, meters in bays, lamps under the lips, light linking; from fit-checked shapes | `tools/mockups/kelvane_shapes.py`, `tools/blender/build_ui_kelvane.py` |
 | Ssarith Hunt | Hunter's jungle kit in Blender: worn gunmetal with chamfers and sunk hex bolts, canopy camouflage, vines and fronds, bone tally marks and reticles, CRT tube keys with scanlines | `tools/blender/build_ui_ssarith.py` |
 | Krai Warhost, Ombrai | In Blender | to come |
 | Aelith Conclave | Hybrid on the analog panel bible: pillowed satin-gold shells with formed wells (lozenges drawn to a point, knuckled corners, a scalloped rim, embracing arms), pearls on flat metal, each well a void rim-lit in cyan; the holograms drawn as vectors into the wells from the same shapes | `tools/blender/build_ui_aelith.py` from `assets/ui/aelith/shapes.json` (`tools/mockups/aelith_shapes.py`) |

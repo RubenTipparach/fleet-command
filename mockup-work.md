@@ -23,7 +23,7 @@ account and every link here is updated.
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-10-31, v14) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
+| 4 | Console skins | Drafted (2026-10-31, v15) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -162,6 +162,10 @@ else's art):
   14 rebuilds the Aelith Conclave on them: pillowed satin-gold shells with formed wells and pearls, each well a void rim-lit in cyan,
   the holograms still vector, drawn into the wells from the same fit-checked shapes. The Concord top strip's bars now sit inside the
   strip, clear of its thin bar (the owner's example of a child overlapping its parent).
+- 2026-10-31: "Ok conclave looks better not quite the rpotoss look I wanted but we'll revisit that in a bit..let's talk about the
+  institute", then "They were inspired by the nucleo look. So.lets update that". Version 15 rebuilds the Kelvane Institute on the
+  Nucleo NLog construction, our own design: pillowed champagne plates over amber backlit readout windows and green phosphor scopes,
+  keys in pressed dimples, the helm's keys in a pressed cradle, meters in bays. The Conclave is to be revisited.
 
 What the mockup shows:
 

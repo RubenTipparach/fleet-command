@@ -30,6 +30,13 @@
   `assets/ui/ssarith/`), its module `docs/mockups/skins/ssarith.js`, shot, looked at and published
 - [x] 1.14 Survey U10 added: a new race, and its name
 
+## 1e. Version 15: the Kelvane Institute on the NLog construction (owner, 2026-10-31)
+
+- [x] 1.15 The Kelvane kit rebuilt as the Nucleo NLog study taught (owner: "They were inspired by the nucleo look. So.lets
+  update that"): fit-checked shapes (`tools/mockups/kelvane_shapes.py`, `assets/ui/kelvane/shapes.json`), modelled and
+  rendered on the shared panel helpers (`tools/blender/build_ui_kelvane.py`), every piece passing K, L, R, P and B and
+  the lit-pixel check, its module `docs/mockups/skins/kelvane.js` updated, shot, looked at and published
+
 ## 1e. Version 14: the Aelith Conclave on the analog panel bible (owner, 2026-10-31)
 
 - [x] 1.15 The study's panel helpers moved into `tools/blender/ui_shapes.py` (`Panel`, `offset_poly`, `notched`, `metal`,
