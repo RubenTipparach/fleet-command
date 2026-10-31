@@ -34,7 +34,7 @@ from formed_metal import INSET, behind_layer, disc, fit, soft  # noqa: E402
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "ui", "krai")
 
-ROLL = 1.6   # the honed edge: tight, so a blade reads sharp, but every edge still rolls over (rule L)
+ROLL = 2.0   # the cast edge: a heavy round that catches the light (owner: "edges of panels look kinda flat"), rule L
 
 
 def cut(x0, y0, x1, y1, c):
@@ -73,7 +73,7 @@ def pieces():
     pyramid studs, its raised enamel inlays, and the live readouts the page draws (label, geometry) for rule P."""
     P = {}
 
-    def add(name, kind, size, plate, wells, studs=(), inlays=(), live=(), margins=None, stretch=None, roll=ROLL, land=3.0,
+    def add(name, kind, size, plate, wells, studs=(), inlays=(), live=(), margins=None, stretch=None, roll=ROLL, land=2.3,
             inset=None, dz=-8.0, pad=3.0):
         P[name] = dict(kind=kind, size=size, margins=margins, stretch=stretch, roll=roll, land=land, inset=inset, plate=plate,
                        wells=list(wells), studs=list(studs), inlays=list(inlays), live=list(live), dz=dz, pad=pad)

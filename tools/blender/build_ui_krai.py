@@ -32,7 +32,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ui_render  # noqa: E402  (the render harness every Blender skin shares)
-from ui_shapes import NodeKit, Panel, film_mat, link_layers, lip_runs, metal, printed  # noqa: E402  (shared modelling and shading)
+from ui_shapes import MM, NodeKit, Panel, film_mat, link_layers, lip_runs, metal, printed  # noqa: E402  (shared modelling and shading)
 
 SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "krai", "shapes.json")))
 CELL = SHAPES["cell"]
@@ -40,7 +40,7 @@ SHAPES = SHAPES["pieces"]
 
 # War is the only honest test: black steel (the forge), honed edge (readiness), blood enamel (honour paid in blood),
 # red (rage), forge orange (the strike), bone (trophies). The palette and its meanings are in design.md.
-PAL = dict(steel="#2b2628", honed="#c9d0d8", blood="#9a1016", red="#ff2a20", forge="#ff7a1a", ember="#3a0c0a",
+PAL = dict(steel="#2b2628", basalt="#1a1718", gunmetal="#55504f", magma="#ff3a0c", honed="#c9d0d8", blood="#9a1016", red="#ff2a20", forge="#ff7a1a", ember="#3a0c0a",
            ember_lo="#080202", slot="#120505", wall="#0a0606")
 # The films: (colour, its shadow in the well, emission). Ember at rest, red on hover, forge orange when engaged.
 FILMS = dict(ember=("#2a0806", "#050101", 0.14), red=("#ff2a20", "#3a0505", 1.1), forge=("#ff7a1a", "#5a1a04", 1.7),
@@ -48,16 +48,56 @@ FILMS = dict(ember=("#2a0806", "#050101", 0.14), red=("#ff2a20", "#3a0505", 1.1)
              lamp_red=("#ff2a20", "#3a0505", 2.4))
 FORGE = (1.0, 0.42, 0.15)                        # the forge lamps' colour
 FORGE_W = float(os.environ.get("FORGE_W", 0.0003))   # forge lamp power per mm of lower lip (times the lamp scale)
+MAGMA_ES = float(os.environ.get("MAGMA_ES", 0.7))   # the fissures' ember glow at full (a dim seam, never a readout)
+PRESS_MM = 3.0   # how far an engaged key's glass is pushed in (owner: "the inner part is pushed in and the frame stays put");
+# krai.js sinks the label 2 x --btn-sink = 3 px to match
 MAIN = (0.8, 60.0)                               # the soft main light on the wells: strength, angular size (deg)
 DISPLAY = tuple(FILMS) + ("cellglass",)
 
 
 def steel(name):
-    """Blackened blade steel: dark, brushed along its length, a thin clear coat; its honed rolled edges catch the light."""
+    """Cast volcanic gunmetal (owner, 2026-10-31: "something like a rough gun metal, maybe sort of akin to volcanic magma
+    type metal"): near-black basalt-grey metal poured like lava and left to cool, its face a crust of cooled plates
+    split by fissures, coarse pitting all over, roughness that wanders from satin to raw. Deep in the fissures and the
+    crevices the metal is still hot: a thin, dim ember glow (emission from the fissure mask times the plate's own
+    occlusion, kept far below the readouts). Its rolled edges are worn bright where hands and blades rub them: the
+    geometry's own tilt (its normal leaving the face) picks out the top of every roll as a band of honed bare steel."""
     k = NodeKit(name)
-    g = k.tex("ShaderNodeTexWave", 700.0, **{"Distortion": 0.6, "Detail": 3.0})
-    k.set(Base_Color=PAL["steel"], Metallic=0.9, Roughness=0.3, Coat_Weight=0.25, Coat_Roughness=0.08)
-    k.bump(g.outputs["Fac"], 0.03)
+    v = k.warped(30.0, 0.004)
+    crust = k.tex("ShaderNodeTexVoronoi", 50.0, vec=v, feature="DISTANCE_TO_EDGE")
+    fiss = k.math("SUBTRACT", 1.0, k.math("DIVIDE", crust.outputs["Distance"], 0.03, clamp=True), clamp=True)
+    tone = k.tex("ShaderNodeTexNoise", 60.0, vec=v, **{"Detail": 8.0, "Roughness": 0.65}).outputs["Fac"]
+    pits = k.math("SUBTRACT", 1.0, k.math("DIVIDE", k.tex("ShaderNodeTexVoronoi", 520.0).outputs["Distance"], 0.35, clamp=True), clamp=True)
+    grain = k.tex("ShaderNodeTexNoise", 900.0, **{"Detail": 2.0}).outputs["Fac"]
+    occ = k.N.new("ShaderNodeAmbientOcclusion")
+    occ.samples, occ.only_local = 12, True
+    occ.inputs["Distance"].default_value = 3.0 * 0.001
+    cavity = k.math("SUBTRACT", 1.0, k.math("POWER", occ.outputs["AO"], 1.5), clamp=True)
+    geo = k.N.new("ShaderNodeNewGeometry")
+    sep = k.N.new("ShaderNodeSeparateXYZ")
+    k.L.new(geo.outputs["Normal"], sep.inputs[0])
+    tilt = k.math("SUBTRACT", 1.0, sep.outputs["Z"], clamp=True)          # 0 on the face, rising round the roll
+    wear = k.math("MULTIPLY", k.math("DIVIDE", k.math("SUBTRACT", tilt, 0.01), 0.1, clamp=True),
+                  k.math("SUBTRACT", 1.0, k.math("DIVIDE", k.math("SUBTRACT", tilt, 0.7), 0.3, clamp=True), clamp=True))
+    wear = k.math("MULTIPLY", wear, k.math("ADD", 0.55, k.math("MULTIPLY", tone, 0.6)), clamp=True)
+    base = k.ramp(k.math("ADD", k.math("MULTIPLY", tone, 0.8), k.math("MULTIPLY", grain, 0.2)), PAL["basalt"], PAL["gunmetal"], 0.3, 0.75)
+    m = k.N.new("ShaderNodeMix")
+    m.data_type = "RGBA"
+    k.L.new(wear, m.inputs["Factor"])
+    k.L.new(base, m.inputs[6])
+    m.inputs[7].default_value = (0.75, 0.74, 0.76, 1.0)
+    dark = k.N.new("ShaderNodeMix")    # soot in the fissures and pits
+    dark.data_type = "RGBA"
+    k.L.new(k.math("MAXIMUM", k.math("MULTIPLY", fiss, 0.9), k.math("MULTIPLY", pits, 0.6)), dark.inputs["Factor"])
+    k.L.new(m.outputs[2], dark.inputs[6])
+    dark.inputs[7].default_value = (0.004, 0.003, 0.003, 1.0)
+    glow = k.math("MULTIPLY", k.math("MULTIPLY", fiss, k.math("ADD", 0.25, cavity)),
+                  k.math("DIVIDE", k.math("SUBTRACT", tone, 0.45), 0.25, clamp=True))
+    rough = k.math("ADD", 0.5, k.math("MULTIPLY", tone, 0.42))
+    rough = k.math("SUBTRACT", rough, k.math("MULTIPLY", wear, 0.45))
+    k.set(Base_Color=dark.outputs[2], Metallic=0.85, Roughness=rough, Emission_Color=PAL["magma"],
+          Emission_Strength=k.math("MULTIPLY", glow, MAGMA_ES))
+    k.bump(k.math("ADD", k.math("MULTIPLY", fiss, -0.6), k.math("ADD", k.math("MULTIPLY", pits, -0.5), k.math("MULTIPLY", tone, 0.4))), 0.6)
     return k.mat
 
 
@@ -98,8 +138,11 @@ def piece(name):
         mats(K, s)
         wells = [(kind, [tuple(p) for p in w]) for kind, w in s["wells"]]
         plate = [tuple(p) for p in s["plate"]]
-        for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B)
-            K.film(None, shape=[tuple(p) for p in f], m=K.m[kind])
+        sink = PRESS_MM if name == "button.pressed" else 0.0
+        for (kind, _w), f in zip(wells, s["films"]):  # films measured to fit inside the plate (rule B), even pressed in
+            glass = K.film(None, shape=[tuple(p) for p in f], m=K.m[kind])
+            glass.location.y -= sink * MM   # an engaged key's glass is pushed in: down the screen and back, frame still
+            glass.location.z -= sink * MM
         K.plate([plate] + [w for _k, w in wells])
         for _kind, w in wells:
             gap = min(min(math.hypot(x - px, y - py) for px, py in plate) for x, y in w)
