@@ -138,16 +138,31 @@ the weapons' cooldown format and be disabled until then.
 - **THEN** no second mine is dropped and the key reads "Next mine in 2.4 s"
 
 ### Requirement: The tractor beam is a contest of rounds
-A tractor beam SHALL take hold of a target inside reach at a grip of 50 %. Every round (10 s) SHALL end with each
-ship's beam value (the energy in its tractor, times its tractor's health) compared, and the grip SHALL move toward the
-higher value by 10 % for each energy point of difference, between 0 and 100 %. A grip of 0 SHALL free the held ship and
-switch the beam off, and the same holder SHALL NOT take that ship again for one round. The panel SHALL show the grip,
-the seconds left in the round and the last round's two values, all from the rule that resolves the round.
+The tractor station SHALL offer two keys, Hold and Break. Hold SHALL power the beam up for 10 s, after which it SHALL take
+hold of the target inside reach at a grip of 50 %. Every round (10 s) SHALL end with each ship's beam value (the energy
+in its tractor, times its tractor's health) compared, and the grip SHALL move toward the higher value by 10 % for each
+energy point of difference, between 0 and 100 %. A grip of 0, or the holder's tractor going down, SHALL free the held
+ship; if the holder's tractor is down or its value is under half the breaker's, the breaker SHALL take hold of the
+holder at 50 %. The holder SHALL be able to Break at any time. The panel SHALL show the power-up, the grip (on the
+target, or on the player when held), the seconds left in the round and the last round's two values, all from the rule
+that resolves the round.
+
+#### Scenario: Powering up
+- **WHEN** the captain presses Hold with energy in the tractor
+- **THEN** the key reads "Powering" with the seconds left, and no beam takes hold for 10 s
 
 #### Scenario: A round won
 - **WHEN** the holder puts 5 E in its tractor and the held ship resists with 4.3 E when the round ends
 - **THEN** the grip moves from 50 % to 57 % and the panel shows "5.0 vs 4.3 · +7%"
 
 #### Scenario: Breaking free
-- **WHEN** the grip is 34 % and the held ship out-picks the holder by 3.4 E or more
-- **THEN** the held ship breaks free, the beam switches off, and switching it back on does not take hold for 10 s
+- **WHEN** the grip reaches 0 with the holder at 3 E and the held ship at 5 E
+- **THEN** the held ship is free, and the same holder cannot take it again for 10 s
+
+#### Scenario: The beam turns
+- **WHEN** the grip reaches 0 with the holder at 2 E and the held ship at 5 E, or the holder's tractor is disabled
+- **THEN** the ship that broke free holds the former holder at 50 %, and the former holder's panel shows "Held by"
+
+#### Scenario: Break
+- **WHEN** the holder clicks Break during the power-up or while holding
+- **THEN** the beam lets go at once

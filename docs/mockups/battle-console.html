@@ -427,13 +427,15 @@ for (const el of document.querySelectorAll('script[type="application/json"][data
 const M_PER_U = 100;
 // Mine laying (owner, 2026-11-01: "Mine laying should have a cool down system of 3 seconds").
 const MINE = { cooldown_s: 3, arm_s: 3, trigger_u: 12, dmg: 20 };
-// The tractor beam is a contest of rounds (owner, 2026-11-01): the grip starts at 50 %, a round lasts 10 s, and by its
-// end each ship has picked a beam value, the energy it puts into its tractor (the holder to hold, the held ship to
-// resist). Neither sees the other's pick until the round ends. The higher pick moves the grip its way, step_per_e for
-// each point of difference; a grip at 0 frees the held ship. The grip scales how hard the beam holds, pulls or pushes.
-// A ship that breaks free cannot be taken by the same holder again for relock_s (one round), so switching the beam
-// straight back on does not hand the holder a fresh 50 %.
-const TRACTOR = { reach_km: 3, grip_start: 0.5, round_s: 10, step_per_e: 0.1, hold_damp: 0.8, move_u_s: 2, relock_s: 10 };
+// The tractor beam is a contest of rounds (owner, 2026-11-01). Two keys only, Hold and Break ("Hold and break should be
+// only two options"): Hold powers the beam up for powerup_s ("Tractor beam does take 10 seconds to power up"), then it
+// takes the target inside reach at a grip of 50 %. A round lasts round_s; by its end each ship has picked a beam value,
+// the energy it puts into its tractor (the holder to hold, the held ship to resist), unseen by the other until the
+// round ends. The higher pick moves the grip its way, step_per_e for each point of difference. A grip at 0 frees the
+// held ship, and if the holder's tractor is down (off, disabled or destroyed) or its value is under reverse_ratio of
+// the breaker's, the breaker takes hold of the holder ("The ship breaking the beam then becomes the holder"). The
+// holder can Break at any time. A ship that broke free cannot be taken by the same holder again for relock_s.
+const TRACTOR = { reach_km: 3, powerup_s: 10, grip_start: 0.5, round_s: 10, step_per_e: 0.1, reverse_ratio: 0.5, hold_damp: 0.8, relock_s: 10 };
 const WEAPONS = {
   lance: { name: 'Lance', kind: 'beam', range_km: 12, charge_s: 3.5, cost_e: 2, dmg: 7, color: 0x6fc4ff },
   torpedo: { name: 'Pulse torpedo', kind: 'torpedo', range_km: 18, charge_s: 8, cost_e: 5, dmg: 14, speed_m_s: 2600, color: 0x9fd0ff,
@@ -567,7 +569,7 @@ function makeShip(d) {
     mounts: c.mounts.map(([w, x, y, ac, aw], i) => ({ i, w, x, y, arc: [ac, aw], state: 'normal', charge: 0.6 + (i % 3) * 0.15, sel: w !== 'pd', hp: 1 })),
     sys: { weapons: 1, shields: 1, engines: 1, sensors: 1, tractor: 1, transport: 1 }, target: null, aim: 'hull', order: 'approach', engaged: false,
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
-    scan: { id: null, p: 0 }, tractor: 'off', beam: null, relock: null, mineCool: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
+    scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false }, brown: 1, overdraw: false,
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
@@ -636,33 +638,51 @@ function systemsStep(s) {
 // The beam's value for a round: the energy a ship puts into its tractor, scaled by the tractor's health. The holder's
 // value holds; the held ship's resists. One rule for both sides and for the panel's readout.
 function beamValue(s) { return s.power.tractor * s.sys.tractor * s.brown; }
-// The tractor beam, every step. A beam takes hold of the target inside reach when the captain sets a mode with power
-// in the tractor; it drops when the target leaves reach or dies, the power goes, or the mode is set to Off. Each round
-// ends with both picks compared and the grip moved; at 0 the held ship breaks free and the mode returns to Off.
+// A ship's tractor counts as down when it has no energy or is disabled or destroyed.
+function tractorDown(s) { return s.power.tractor <= 0 || s.sys.tractor < 0.35; }
+// A beam taking hold: at the start grip, a fresh round.
+function takeHold(s, h, why) {
+  s.tractor = 'hold'; s.powerT = 0;
+  s.beam = { on: h.id, grip: TRACTOR.grip_start, roundT: TRACTOR.round_s, round: 1, last: null };
+  say('Tractor', `${s.name} ${why} ${h.name}, grip ${pct(TRACTOR.grip_start)}.`);
+}
+// The tractor beam, every step. Modes: 'off', 'power' (powering up after Hold), 'hold' (powered; holding, or waiting
+// for the target to come inside reach). The beam drops if the target leaves reach or dies, or the tractor is down.
+// Each round ends with both picks compared and the grip moved; at 0 the held ship breaks free, and may turn the beam.
 function tractorStep(s) {
-  const t = tgt(s);
   if (s.relock && (s.relock.t -= DT) <= 0) s.relock = null;
+  if (s.tractor === 'power') { if (s.power.tractor > 0) s.powerT = Math.max(0, s.powerT - DT); if (s.powerT <= 0) s.tractor = 'hold'; return; }
+  const t = tgt(s);
   if (!s.beam) {
-    if (s.tractor !== 'off' && t && s.power.tractor > 0 && distKm(s, t) <= TRACTOR.reach_km && !(s.relock && s.relock.on === t.id)) {
-      s.beam = { on: t.id, grip: TRACTOR.grip_start, roundT: TRACTOR.round_s, round: 1, last: null };
-      say('Tractor', `Beam on ${t.name}, grip ${pct(TRACTOR.grip_start)}.`);
-    }
+    if (s.tractor === 'hold' && t && !tractorDown(s) && !heldBy(s) && distKm(s, t) <= TRACTOR.reach_km && !(s.relock && s.relock.on === t.id)) takeHold(s, t, 'takes hold of');
     return;
   }
   const b = s.beam, h = ship(b.on);
-  if (s.tractor === 'off' || !h || !h.alive || s.power.tractor <= 0 || distKm(s, h) > TRACTOR.reach_km + 0.2) {
-    s.beam = null; if (s.tractor !== 'off') say('Tractor', 'Beam lost.'); return;
+  // The holder's tractor going down (disabled, destroyed or out of energy) frees the held ship, which takes hold of
+  // the holder if its own tractor can ("If enemy tractor beam module is down ... the ship breaking the beam then
+  // becomes the holder").
+  if (h && h.alive && s.tractor === 'hold' && tractorDown(s)) {
+    s.beam = null; s.tractor = 'off'; s.relock = { on: h.id, t: TRACTOR.relock_s };
+    if (!tractorDown(h) && distKm(s, h) <= TRACTOR.reach_km) takeHold(h, s, 'breaks free and takes hold of'); else say('Tractor', `${h.name} broke free.`);
+    return;
+  }
+  if (s.tractor !== 'hold' || !h || !h.alive || distKm(s, h) > TRACTOR.reach_km + 0.2) {
+    s.beam = null; s.tractor = 'off'; say('Tractor', `${s.name}: beam lost.`); return;
   }
   b.roundT -= DT;
   if (b.roundT <= 0) {
     const mine = beamValue(s), theirs = beamValue(h), d = (mine - theirs) * TRACTOR.step_per_e;
     b.grip = clamp(b.grip + d, 0, 1); b.last = { mine, theirs, d }; b.roundT += TRACTOR.round_s; b.round++;
-    if (b.grip <= 0) { say('Tractor', `${h.name} broke free.`); s.beam = null; s.tractor = 'off'; s.relock = { on: h.id, t: TRACTOR.relock_s }; return; }
+    if (b.grip <= 0) {
+      s.beam = null; s.tractor = 'off'; s.relock = { on: h.id, t: TRACTOR.relock_s };
+      // The breaker turns the beam when the holder's tractor is down or holds with under half the breaker's value.
+      if (!tractorDown(h) && (tractorDown(s) || mine < TRACTOR.reverse_ratio * theirs)) takeHold(h, s, 'breaks free and takes hold of');
+      else say('Tractor', `${h.name} broke free.`);
+      return;
+    }
     say('Tractor', `Round: ${mine.toFixed(1)} E against ${theirs.toFixed(1)} E, grip ${pct(b.grip)}.`);
   }
-  const k = b.grip, d = distU(s, h), ux = (h.x - s.x) / d, uz = (h.z - s.z) / d;
-  if (s.tractor === 'hold') h.v *= 1 - TRACTOR.hold_damp * k * DT;
-  else { const dir = s.tractor === 'pull' ? -1 : 1; h.x += ux * dir * TRACTOR.move_u_s * k * DT; h.z += uz * dir * TRACTOR.move_u_s * k * DT; }
+  h.v *= 1 - TRACTOR.hold_damp * b.grip * DT;
 }
 // The ship a beam is holding this one, or null.
 function heldBy(s) { return W.ships.find((o) => o.alive && o.beam && o.beam.on === s.id) || null; }
@@ -727,15 +747,15 @@ function think(s) {
   const [la, lb] = s.reactor.loops; if (la.hp < 0.3 && lb.flow < REACTOR.flow_max) { lb.flow++; la.flow = Math.max(0, la.flow - 1); } else if (lb.hp < 0.3 && la.flow < REACTOR.flow_max) { la.flow++; lb.flow = Math.max(0, lb.flow - 1); }
   if (ai.fire === 'free') for (const m of s.mounts) if (m.w !== 'pd' && ready(m) && inArc(s, m, t) && hitChance(s, m, t) >= 0.35) fireMount(s, m, t);
   if (s.side === 1 && s.ecm === 0 && s.power.sensors > 0) s.ecm = 1;
-  // Held by a beam: once a round, the crew picks how much to resist with (a seeded pick within the room it has),
-  // unseen by the holder until the round ends; free again, the tractor's energy goes back to nothing.
-  const hb = heldBy(s);
-  if (hb && s.resistRound !== hb.beam.round) {
-    // spare energy first, then energy taken from the weapons
-    s.resistRound = hb.beam.round; s.power.weapons += s.power.tractor; s.power.tractor = 0;
+  // In a tractor contest (held, or holding after turning a beam): once a round the crew picks its beam value (a seeded
+  // pick, spare energy first, then energy from the weapons), unseen by the other ship until the round ends. Out of
+  // the contest, the tractor's energy goes back to the weapons.
+  const hb = heldBy(s), contest = hb ? hb.beam : s.beam;
+  if (contest && s.pickRound !== contest.round) {
+    s.pickRound = contest.round; s.power.weapons += s.power.tractor; s.power.tractor = 0;
     const want = 1 + Math.floor(W.rand.ai() * 6), spare = Math.max(0, Math.min(want, powerRoom(s, 0))), take = Math.min(want - spare, s.power.weapons);
     s.power.weapons -= take; s.power.tractor = spare + take;
-  } else if (!hb && s.resistRound) { s.resistRound = 0; s.power.weapons += s.power.tractor; s.power.tractor = 0; }
+  } else if (!contest && s.pickRound) { s.pickRound = 0; s.power.weapons += s.power.tractor; s.power.tractor = 0; }
 }
 function mountWorld(s, m) {
   const L = CLASSES[s.cls].len_m / M_PER_U / 2, f = fwd(s.h), r = rightOf(s.h);
@@ -867,7 +887,9 @@ const A = {
   priority: (k) => { W.player.priority = k; },
   marines: () => { const s = W.player, t = tgt(s); if (!canBoard(s, t)) return; s.transporter = 0; s.marines -= 2; const k = Object.keys(t.sys)[Math.floor(W.rand.dmg() * 6)]; t.sys[k] = Math.max(0, t.sys[k] - 0.5); say('Transport', `Marines aboard ${t.name}: ${k} sabotaged.`); },
   mine: () => { const s = W.player; if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
-  tractor: (mode) => { W.player.tractor = mode; },
+  // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
+  tractorHold: () => { const s = W.player; if (s.tractor !== 'off' || s.power.tractor <= 0 || heldBy(s)) return; s.tractor = 'power'; s.powerT = TRACTOR.powerup_s; say('Tractor', 'Beam powering up.'); },
+  tractorBreak: () => { const s = W.player; if (s.tractor === 'off') return; if (s.beam) say('Tractor', `Beam on ${ship(s.beam.on).name} released.`); s.tractor = 'off'; s.powerT = 0; s.beam = null; },
   launch: () => { const s = W.player; if (s.fighters <= 0) return; const n = s.fighters; s.fighters = 0; for (let i = 0; i < n; i++) W.craft.push({ home: s.id, x: s.x, z: s.z, a: i * P / 2, cool: 1 + i * 0.5, mission: s.mission, recall: false, side: s.side }); say('Flight deck', `${n} fighters launched.`); },
   recall: () => { for (const c of W.craft) if (c.home === W.player.id) c.recall = true; },
   mission: (m) => { W.player.mission = m; for (const c of W.craft) if (c.home === W.player.id) c.mission = m; },
@@ -1409,7 +1431,7 @@ function healthOf(s, key) { return key === 'reactor' ? Math.min(s.reactor.conf, 
 function isOff(s, key) {
   if (key === 'reactor') return false;
   if (key === 'shields') return !s.shUp || s.power.shields <= 0;
-  if (key === 'tractor') return s.power.tractor <= 0 || s.tractor === 'off';
+  if (key === 'tractor') return s.power.tractor <= 0;
   if (key === 'weapons') return s.power.weapons <= 0 || s.mounts.every((m) => m.w === 'pd' || m.state === 'offline');
   return (s.power[key] || 0) <= 0;
 }
@@ -1628,24 +1650,25 @@ function shSensors(b) {
   pairs('se.2', b.x, y, [['Hostile', String(enemiesOf(s).length)], ['Friendly', String(W.ships.filter((o) => o.alive && o.side === 0).length - 1)]], b.w); y += 34;
   if (t) pairs('se.3', b.x, y, [['Lock', t.name], ['Their ECM', String(t.ecm)]], b.w); else LBL('No lock', b.x, y);
 }
-// The tractor station: the mode, the target's reach, the grip and the round, your pick (the energy boxes), and the last
-// round's two picks. Every figure comes from tractorStep's own state and beamValue (6.1).
+// The tractor station: Hold and Break, the power-up, the contest (grip, round, last picks) whichever side of the beam
+// the ship is on, and its pick (the energy boxes). Every figure comes from tractorStep's own state and beamValue (6.1).
 function shTractor(b, big) {
-  const s = W.player, t = tgt(s), bm = s.beam, held = bm ? ship(bm.on) : null; let y = b.y;
-  tabs('trc', b.x, y, b.w, 40, [['off', 'Off'], ['hold', 'Hold'], ['pull', 'Pull'], ['push', 'Push']], s.tractor, A.tractor, () => s.power.tractor <= 0); y += 50;
-  if (bm && held) {
-    y += bar(b.x, y, b.w, `Grip on ${held.name} · ${pct(bm.grip)}`, bm.grip, bm.grip < 0.25) + 8;
-    const L = bm.last, sign = L ? (L.d > 0 ? '+' : '') : '';
-    pairs('trc.r', b.x, y + 12, [[`Round ${bm.round} ends in`, `${fmtCool(Math.max(0.05, bm.roundT))} S`], ['Last', L ? `${L.mine.toFixed(1)} vs ${L.theirs.toFixed(1)} · ${sign}${Math.round(L.d * 100)}%` : '--', L ? (L.d > 0 ? CC.accord : L.d < 0 ? CC.alert : CC.sky) : CC.sky]], b.w, 20); y += 30;
-  } else {
-    if (s.power.tractor <= 0) LBL('No tractor power', b.x, y + 14, b.w);
-    else if (t && s.relock && s.relock.on === t.id) pairs('trc.l', b.x, y + 14, [[`${t.name} broke free`, ''], ['Beam again in', `${fmtCool(s.relock.t)} S`, CC.caution]], b.w, 20);
-    else if (!t) LBL('No target', b.x, y + 14);
-    else { const d = distKm(s, t); pairs('trc.d', b.x, y + 14, [[t.name, km(d), d <= TRACTOR.reach_km ? CC.accord : CC.alert], [d <= TRACTOR.reach_km ? 'in reach' : `reach ${km(TRACTOR.reach_km)}`, '']], b.w, 20); }
-    y += 30;
-  }
-  // Your pick for the round: the energy in the tractor, the same boxes as the power station.
-  powerRow('trc.pw', b.x, Math.max(y + 6, b.y + b.h - 30), b.w, 26, 'tractor', 82);
+  const s = W.player, t = tgt(s), hb = heldBy(s), bm = s.beam || (hb && hb.beam), other = s.beam ? ship(s.beam.on) : hb; let y = b.y;
+  const hw = (b.w - 8) / 2;
+  button('trc.hold', b.x, y, hw, 40, s.tractor === 'power' ? `Powering ${fmtCool(s.powerT)} S` : 'Hold', A.tractorHold, { center: true, sel: () => s.tractor !== 'off', dis: () => s.tractor === 'off' && (s.power.tractor <= 0 || !!hb) });
+  button('trc.break', b.x + hw + 8, y, hw, 40, 'Break', A.tractorBreak, { center: true, dis: () => s.tractor === 'off' });
+  y += 50;
+  if (bm && other) {
+    // Holding: our grip on them, green; held: their grip on us, red.
+    y += bar(b.x, y, b.w, s.beam ? `Grip on ${other.name} · ${pct(bm.grip)}` : `Held by ${other.name} · ${pct(bm.grip)}`, bm.grip, !s.beam || bm.grip < 0.25) + 8;
+    const L = bm.last, ours = L && (s.beam ? L.mine : L.theirs), theirs = L && (s.beam ? L.theirs : L.mine), gain = L ? (s.beam ? L.d : -L.d) : 0;
+    pairs('trc.r', b.x, y + 12, [[`Round ${bm.round} ends in`, `${fmtCool(Math.max(0.05, bm.roundT))} S`], ['Last', L ? `${ours.toFixed(1)} vs ${theirs.toFixed(1)} · ${gain > 0 ? '+' : ''}${Math.round(gain * 100)}%` : '--', L ? (gain > 0 ? CC.accord : gain < 0 ? CC.alert : CC.sky) : CC.sky]], b.w, 20);
+  } else if (s.power.tractor <= 0) LBL('No tractor power', b.x, y + 14, b.w);
+  else if (t && s.relock && s.relock.on === t.id) pairs('trc.l', b.x, y + 14, [[`${t.name} broke free`, ''], ['Beam again in', `${fmtCool(s.relock.t)} S`, CC.caution]], b.w, 20);
+  else if (!t) LBL('No target', b.x, y + 14);
+  else { const d = distKm(s, t); pairs('trc.d', b.x, y + 14, [[t.name, km(d), d <= TRACTOR.reach_km ? CC.accord : CC.alert], [d <= TRACTOR.reach_km ? 'in reach' : `reach ${km(TRACTOR.reach_km)}`, '']], b.w, 20); }
+  // The pick for the round, to hold or to resist: the energy in the tractor, the same boxes as the power station.
+  powerRow('trc.pw', b.x, b.y + b.h - 30, b.w, 26, 'tractor', 82);
 }
 function shCraft(b) {
   const s = W.player; let y = b.y + 22;
@@ -1894,7 +1917,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false, 'tgt')); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v21', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v22', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.
@@ -1983,14 +2006,14 @@ function scripted(steps, then) {
 function damagedReactor() { const r = W.player.reactor; r.coils = [0.42, -0.18, 0.04]; r.conf = 0.7; r.loops[1].hp = 0.15; W.player.overdraw = true; W.player.power.shields = 7; for (let i = 0; i < 240; i++) step(); }
 // Some damage for the status shots: mount 2 damaged, 3 disabled, 6 destroyed, 7 turned off; sensors damaged, engines
 // disabled, the tractor off.
-// The tractor shots: the target brought to 2 km, 5 E in the tractor, Pull, then one round and a bit played out.
+// The tractor shots: the target brought to 2 km, 5 E in the tractor, Hold, the power-up, then a round and a bit.
 function tractorScene() {
   // every ship holds fire, so the target lives through the shot
   for (const o of W.ships) { o.ai.fire = 'hold'; for (const m of o.mounts) m.state = 'offline'; }
   W.shots = [];
   const s = W.player, t = tgt(s), f = 2 / distKm(s, t); t.x = s.x + (t.x - s.x) * f; t.z = s.z + (t.z - s.z) * f;
-  s.power.weapons = Math.max(0, s.power.weapons - 5); s.power.tractor = 5; A.tractor('pull');
-  for (let i = 0; i < Math.round(13.5 / DT); i++) step();
+  s.power.weapons = Math.max(0, s.power.weapons - 5); s.power.tractor = 5; A.tractorHold();
+  for (let i = 0; i < Math.round((TRACTOR.powerup_s + 13.5) / DT); i++) step();
 }
 function damagedSystems() { const s = W.player; s.mounts[1].hp = 0.6; s.mounts[2].hp = 0.2; s.mounts[5].hp = 0; s.mounts[6].state = 'offline'; s.sys.sensors = 0.6; s.sys.engines = 0.25; }
 window.MOCKUP_SHOTS = {
@@ -1998,6 +2021,10 @@ window.MOCKUP_SHOTS = {
   shields: () => scripted(600, () => { shipTab = 'shields'; W.player.reinforce = 0; }),
   tractor: () => scripted(600, () => { shipTab = 'tractor'; tractorScene(); }),
   tractor_expanded: () => scripted(600, () => { shipTab = 'tractor'; expanded = 'ship'; tractorScene(); }),
+  tractor_power: () => scripted(600, () => { shipTab = 'tractor'; const s = W.player; s.power.weapons -= 5; s.power.tractor = 5; A.tractorHold(); for (let i = 0; i < Math.round(3.7 / DT); i++) step(); }),
+  // Holding with 1 E against the Vorrak's picks until it breaks free and turns the beam on us.
+  tractor_held: () => scripted(600, () => { shipTab = 'tractor'; tractorScene(); const s = W.player; s.power.weapons += 4; s.power.tractor = 1;
+    for (let i = 0; i < 4000 && !heldBy(s); i++) step(); for (let i = 0; i < Math.round(4 / DT); i++) step(); }),
   mine_cool: () => scripted(600, () => { station = 'transport'; A.mine(); for (let i = 0; i < 18; i++) step(); }),
   shields_expanded: () => scripted(600, () => { shipTab = 'shields'; expanded = 'ship'; W.player.reinforce = 0; }),
   shields_tip: () => { scripted(600, () => { shipTab = 'shields'; const sh = W.player.shields; sh[0] = 12; sh[1] = 22; sh[4] = 6; W.player.reinforce = 0; }); HOT = 'shx.1'; },

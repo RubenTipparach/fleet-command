@@ -237,21 +237,26 @@ result in grip increasing or decreasing. Grip decreasing to 0 or below the ship 
 "Next mine in 2.4 s" in the weapons' cooldown format (x.x under 10 s) and is disabled until then. A mine still arms 3 s
 after it is dropped and goes off within 1.2 km of an enemy.
 
-**The tractor contest** (`TRACTOR` in the page, every number data):
+**The tractor contest** (`TRACTOR` in the page, every number data). Owner, 2026-11-01, second pass: "Hold and break
+should be only two options. If enemy tractor beam module is down or is less than .5x of the breaking ships strength.
+The ship breaking the beam then becomes the holder. The holding ship can break at anytime by clicking break. Tractor
+beam does take 10 seconds to power up".
 
 | Step | What happens |
 |---|---|
-| Take hold | The captain sets Hold, Pull or Push with energy in the tractor and the target inside 3 km: the beam takes hold at a grip of **50 %** |
+| Two keys | **Hold** and **Break**, nothing else (Off, Pull and Push are gone). The beam only holds: it damps the held ship's speed, 80 % a second at full grip |
+| Power-up | Hold powers the beam up for **10 s** ("Powering 6.4 s" on the key); it pauses while the tractor has no energy. Powered, it takes the target as soon as it is inside 3 km, at a grip of **50 %** |
 | A round | **10 s**, counted down on the panel ("Round 2 ends in 6.6 s") |
-| The picks | Each ship's **beam value** is the energy in its tractor when the round ends, times its tractor's health (and the brownout share). The holder sets its pick with the tractor panel's energy boxes, the same boxes as the power station; the held ship's crew picks how much to resist with, taking energy from its weapons when it has none spare. **Neither side sees the other's pick until the round ends** (built as recommended, B10) |
-| The result | The grip moves toward the higher pick, **10 % per energy point of difference** (5.0 E against 4.3 E: +7 %), between 0 and 100 % (B8); the panel shows the last round: "5.0 vs 4.3 · +7 %" |
-| Breaking free | A grip at **0** frees the held ship; the beam switches Off, and the same holder cannot take that ship again for one round, 10 s (B9) |
-| Its pull | The grip scales the beam: Hold damps the held ship's speed by 80 % a second at full grip; Pull and Push move it 200 m/s at full grip |
-| Dropped | The beam drops if the target leaves reach (3.2 km), dies, the tractor loses its energy, or the captain sets Off |
+| The picks | Each ship's **beam value** is the energy in its tractor when the round ends, times its tractor's health (and the brownout share). The player picks with the tractor panel's energy boxes, to hold or to resist; an AI crew picks once a round, taking energy from its weapons when it has none spare. **Neither side sees the other's pick until the round ends** (B10) |
+| The result | The grip moves toward the higher pick, **10 % per energy point of difference** (5.0 E against 4.3 E: +7 %), between 0 and 100 % (B8) |
+| Breaking free | A grip at **0**, or the holder's tractor going down (no energy, disabled or destroyed), frees the held ship |
+| The beam turns | When the held ship breaks free and the holder's tractor is **down**, or the holder's value is **under half** the breaker's, the breaker **takes hold of the holder** at once, at 50 %, with no power-up (B12). Otherwise it is simply free (3 E against 5 E: free; 2 E against 5 E: the beam turns) |
+| Break | The holder can **Break at any time**, also during the power-up. A ship that broke free cannot be taken by the same holder again for one round, 10 s (B9) |
+| Held | When an enemy holds you, the panel shows "Held by Vorrak · 50 %" in red with its round and the last picks from your side; Hold and Break are disabled, and you resist with the energy boxes |
 
-The energy in the tractor is drawn every second like any other system, so holding someone costs weapons or shields.
-In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. In the mockup only the
-player holds; enemies only resist (B11 asks whether they should hold you).
+The energy in the tractor is drawn every second like any other system, so holding someone, or resisting, costs weapons or
+shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
+only by turning your beam; whether enemies should start a hold on their own is B11.
 
 ## 5. Costs
 
@@ -274,4 +279,5 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B8 | Tractor: how far does the grip move after a round? | **10 % per energy point of difference** between the picks (a close round moves it a little, a lopsided one a lot); the other option is a fixed 10 % to whoever picked higher |
 | B9 | Tractor: after a ship breaks free, how soon can the same holder beam it again? | **One round (10 s)**, so switching the beam straight back on does not hand the holder a fresh 50 % |
 | B10 | Tractor: does either side see the other's pick before the round ends? | **No**, both picks are shown when the round ends (a blind bid); the other option shows the opponent's pick as it changes |
-| B11 | Tractor: can enemy ships hold yours, so you resist with the same boxes? | **Yes, in the next version**: the tractor panel would show "Held by" with the grip on you (the mockup has only your beam today) |
+| B11 | Tractor: should enemy ships start a hold on their own (power up and take you), not only by turning your beam? | **Yes, in the next version**, when they are inside 3 km and have energy to spare; today an enemy holds you only after breaking your beam |
+| B12 | Tractor: when a beam turns, does the new holder start at 50 % at once, or power up for 10 s first? | **At once, at 50 %**: turning the beam is the reward for out-picking the holder by double |
