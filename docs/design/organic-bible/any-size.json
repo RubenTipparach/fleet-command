@@ -1,74 +1,82 @@
 {
  "items": [
   [
-   "key",
+   "sheet.key0",
+   "wart",
    [
-    10,
-    10,
+    14,
+    14,
     90,
     48
    ]
   ],
   [
-   "key",
+   "sheet.key1",
+   "larva",
    [
-    110,
-    10,
+    118,
+    14,
     160,
     48
    ]
   ],
   [
-   "key",
+   "sheet.key2",
+   "larva",
    [
-    280,
-    10,
+    292,
+    14,
     260,
     48
    ]
   ],
   [
-   "panel",
+   "sheet.panel0",
+   "wrap",
    [
-    10,
-    70,
+    24,
+    96,
     160,
     160
    ]
   ],
   [
-   "panel",
+   "sheet.panel1",
+   "hang",
    [
-    180,
-    70,
+    214,
+    96,
     330,
-    140
+    150
    ]
   ],
   [
-   "panel",
+   "sheet.panel2",
+   "plain",
    [
-    520,
-    70,
+    574,
+    96,
     120,
-    260
+    270
    ]
   ],
   [
-   "strip",
+   "sheet.strip0",
+   "mixed",
    [
-    10,
-    340,
+    24,
+    380,
     300,
     60
    ]
   ],
   [
-   "strip",
+   "sheet.strip1",
+   "mixed",
    [
-    10,
-    410,
-    630,
+    24,
+    460,
+    670,
     60
    ]
   ]
@@ -76,21 +84,22 @@
  "region": [
   0,
   0,
-  650,
-  480
+  720,
+  560
  ],
  "px_per_mm": 2,
- "render_s": 61.0,
+ "render_s": 80.3,
  "clearance_mm": {
-  "sheet.panel3 window": 3.54,
-  "sheet.panel3 label": 3.54,
-  "sheet.panel4 window": 3.54,
-  "sheet.panel4 label": 3.54,
-  "sheet.panel5 window": 3.54,
-  "sheet.panel5 label": 3.54,
-  "sheet.strip6 window": 3.54,
-  "sheet.strip6 label": 3.54,
-  "sheet.strip7 window": 3.54,
-  "sheet.strip7 label": 3.54
+  "sheet.key0 label": 12.0,
+  "sheet.key1 label": 12.0,
+  "sheet.key2 label": 12.0,
+  "sheet.panel0 window": 3.54,
+  "sheet.panel0 label": 3.54,
+  "sheet.panel1 window": 3.54,
+  "sheet.panel1 label": 3.54,
+  "sheet.panel2 window": 3.54,
+  "sheet.panel2 label": 3.54,
+  "sheet.strip0 window": 3.54,
+  "sheet.strip1 window": 3.54
  }
 }
