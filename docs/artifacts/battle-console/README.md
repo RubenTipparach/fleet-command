@@ -35,3 +35,4 @@
 - Version 15 published 2026-11-01, version id `1793564103-a559`: weapon mounts snapped to a grid (rows and columns, mirrored pairs); the lance glyph fixed, no longer turned to its arc.
 - Version 16 published 2026-11-01, version id `1793564157-a675`: the mount grid drawn faintly behind the ship, clipped to the shield ring.
 - Version 17 published 2026-11-01, version id `1793566190-ab8e`: the selection ring flush on the weapon box, same corner radius, no gap.
+- Version 18 published 2026-11-01, version id `1793566438-87a3`: the selection ring drawn as a solid plate under the weapon box, boxes on whole pixels; measured seam 0 at 1x and 2x (`tools/mockups/ring_seam.mjs`, 21-33 before).
