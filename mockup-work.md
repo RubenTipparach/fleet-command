@@ -21,7 +21,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
-| 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
+| 2 | In-game UI | Drafted (2026-11-01, v1, to publish) | `battle-console` | `docs/mockups/battle-console.html` | (published by the desktop session) |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v15) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
 
@@ -84,6 +84,22 @@ Owner, 2026-10-30. Ship systems on the left.
 Notes for its write-up: CLAUDE.md section 7 bans sliders for whole-number allocation; speed is a
 continuous value, so the write-up argues the speed slider as an exception (the-federation allowed one
 for tow distance) or proposes discrete boxes, for the owner to choose.
+
+Owner, 2026-11-01, starting the UI thread with a screenshot of the reference game's battle screen: "we're gonna start a
+thread to handle the ui design mockup of the game, the first design system we will implement will be the concord, we
+will then reuse this design once it has been fully approved across all other factions, and each faction's implementation
+will be manually verified such that all of it is functional and readable." And: "review this starfleet command ui
+implementation and my initial prompt on how we would go about this, break down the elements, create a javascript three
+js mockup, 3d gameplay can be placeholder of a ship moving through space for now, but the ui must be fully interactive.
+I'll walk you through and iterate the fine details, but lets get something built so we can begin the iteration process."
+
+Version 1 (2026-11-01): the reference screen broken down element by element (design section 1, with the SFC2 manual's
+printed pages); the console in the Concord skin, drawn from the kit's pieces by the shared `docs/mockups/lib/concord.js`;
+nine stations on a rail, the ship panel (systems display, shields, sensors, tractor, craft), weapons, the radar row and
+tactical map, the strips, right-click targeting with a tap equivalent, the target camera and the 3D shield display, all
+working against a seeded stand-in battle with a three-ship fleet and configurable wingmen; every panel expands with the
+battle beside it, at desktop, phone landscape and portrait. The speed slider question is survey B1 (boxes built, a
+Boxes or Slider switch in the menu to compare).
 
 ## 3. Look dev
 
