@@ -19,3 +19,6 @@
 - Stage: drafted.
 - Published: version 1 not published; version 2 published 2026-11-01 from the cloud session, version id `1793521024-5061` (2026-11-01: icon tabs in narrow columns named on
   hover, the ship below the centre, a speed handle, Power over Systems, desktop only).
+- Version 3 (2026-11-01, not published: the owner approves each publish by hand, so changes are shown as screenshots
+  until asked): no seams between 9-slice pieces (each element composed whole at its pixel size); Power and Systems
+  labels tightened.

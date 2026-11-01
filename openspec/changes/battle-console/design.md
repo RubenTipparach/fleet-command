@@ -81,6 +81,13 @@ button).
 | `cell.idle`, `cell.lit`, `cell.warn`, `cell.locked` | 9-slice, 4 states | any x 28 (16 in the strips) | Energy allocation, ECM and ECCM, speed, the capacitor (CLAUDE.md section 7: allocation is discrete boxes) |
 | `icon.power`, `.tactical`, `.pd`, `.fleet`, `.ship`, `.sensors`, `.cargo`, `.craft`, `.weapons`, `.pause`, `.menu` | hero, 48 x 48 | 48 x 48 | The phone rail, the power rows |
 
+**No seams between slices** (owner, 2026-11-01, with a close-up of the tabs and keys: "see these slice lines?"). CSS
+`border-image` drew each of a piece's nine slices separately, and at the console's fractional scale their edges were
+smoothed on their own, leaving faint lines where slices meet. The page now composes each kit element whole at its
+device-pixel size (`nineImage()`: corners at their margins, edges and centre stretched, every slice on whole pixels),
+one image per state, cached by piece and size. The game's own 9-slice (Godot's `NinePatchRect`) must be checked for
+the same fault at fractional scales; that check goes in the layout test.
+
 ## 4. The stand-in battle
 
 The page carries a small simulation so every control does something. It is the mockup's, not the game's design of

@@ -110,6 +110,10 @@ YET"; "speed needs a slider handle"; "power and systems need to sit on top of ea
 our systems are draining". Version 2: icon tabs in narrow columns with their names shown above on hover, the ship held
 at 74% of the view's height, a handle on the speed boxes (B1 decided), Power over Systems on one scale, desktop only.
 
+Then: "gotta get rid of the lines, from now on, hold off the publishing stuff, just take screenshots for me, I have to
+manually approve artifacts publish apparently", and "see these slice lines?" (a close-up of seams in the tabs and keys).
+Version 3 composes each kit element whole at its pixel size, so no seam shows; shown as screenshots, not published.
+
 ## 3. Look dev
 
 Owner, 2026-10-30: "this is the look dev area".

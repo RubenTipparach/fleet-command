@@ -26,36 +26,37 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 button:disabled { opacity: 0.35; cursor: default; }
 button:focus-visible { outline: 2px solid var(--s-num); outline-offset: 2px; }
 
-/* 9-slice pieces from the skin's kit (border-image, margins as CSS variables): the same classes as console-skins.html. */
-.nine { border-style: solid; border-image-repeat: stretch; }
-.k-panel { border-width: var(--fp-w); border-image-source: var(--fp); border-image-slice: var(--fp-s) fill; }
-.k-inset { border-width: var(--fi-w); border-image-source: var(--fi); border-image-slice: var(--fi-s) fill; }
-.k-track { border-width: 0; border-image-width: var(--bt-w); border-image-source: var(--bt); border-image-slice: var(--bt-s) fill; position: relative; height: 16px; }
-.k-fill { border-width: 0; border-image-width: var(--bf-w); border-image-source: var(--bf); border-image-slice: var(--bf-s) fill; position: absolute; height: 10px; }
-.k-fill.warn { border-image-source: var(--bfw); }
-.k-button { border-width: 0; border-image-width: var(--bi-w); padding: 0 var(--bi-r) 0 var(--bi-l); border-image-source: var(--bi); border-image-slice: var(--bi-s) fill;
+/* 9-slice pieces from the skin's kit, composed per element by nineFor() at its device-pixel size into --n0..--n3 (one
+   image per state). CSS border-image is not used: scaled to a fractional size it left seams between the slices. */
+.nine { border-style: solid; border-color: transparent; background-repeat: no-repeat; background-size: 100% 100%; background-origin: border-box; background-clip: border-box; background-image: var(--n0); }
+.k-panel { border-width: var(--fp-w); }
+.k-inset { border-width: var(--fi-w); }
+.k-track { border-width: 0; position: relative; height: 16px; }
+.k-fill { border-width: 0; position: absolute; height: 10px; }
+.k-fill.warn { background-image: var(--n1); }
+.k-button { border-width: 0; padding: 0 var(--bi-r) 0 var(--bi-l);
   height: 48px; display: inline-flex; align-items: center; justify-content: var(--btn-justify); color: var(--btn-ink); font: var(--btn-font); letter-spacing: var(--btn-track);
   text-transform: uppercase; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: var(--btn-motion); min-width: 0; }
-.k-button:hover:not(:disabled) { border-image-source: var(--bh); }
-.k-button:active:not(:disabled), .k-button.pressed { border-image-source: var(--bp); }
-.k-button.sm { height: 30px; font-size: 17px; padding: 0 12px; border-image-width: 15px; }
-.k-tab { border-width: 0; border-image-width: var(--ti-w); padding: 0 8px 0 14px; border-image-source: var(--ti); border-image-slice: var(--ti-s) fill; height: 40px;
+.k-button:hover:not(:disabled) { background-image: var(--n1); }
+.k-button:active:not(:disabled), .k-button.pressed { background-image: var(--n2); }
+.k-button.sm { height: 30px; font-size: 17px; padding: 0 12px; }
+.k-tab { border-width: 0; padding: 0 8px 0 14px; height: 40px;
   display: flex; align-items: center; justify-content: flex-end; font: var(--tab-font); text-transform: uppercase; color: var(--tab-ink); white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; cursor: pointer; min-width: 0; letter-spacing: 0.03em; }
-.k-tab.sel { border-image-source: var(--ta); color: var(--tab-ink-on); }
-.k-strip { position: absolute; height: 56px; border-width: 0; border-image-width: var(--st-w); padding: 0 var(--st-r) 0 var(--st-l); border-image-slice: var(--st-s) fill;
+.k-tab.sel { background-image: var(--n1); color: var(--tab-ink-on); }
+.k-strip { position: absolute; height: 56px; border-width: 0; padding: 0 var(--st-r) 0 var(--st-l);
   display: flex; align-items: center; gap: 22px; }
-.k-strip.top { border-image-source: var(--st); padding-bottom: 12px; }
-.k-strip.bottom { border-image-source: var(--sb); padding-top: 12px; }
-.k-divider { height: 10px; border-width: 0; border-image-width: var(--dv-w); border-image-source: var(--dv); border-image-slice: var(--dv-s) fill; flex: none; }
-.cell { border-width: 0; border-image-width: 8px; border-image-slice: var(--ci-s) fill; border-image-source: var(--ci); height: 28px; flex: 1 1 0; min-width: 8px; cursor: pointer; }
-.cell.lit { border-image-source: var(--cl); }
-.cell.warn { border-image-source: var(--cw); }
-.cell.locked { border-image-source: var(--ck); cursor: default; }
+.k-strip.top { padding-bottom: 12px; }
+.k-strip.bottom { padding-top: 12px; }
+.k-divider { height: 10px; border-width: 0; flex: none; }
+.cell { border-width: 0; height: 28px; flex: 1 1 0; min-width: 8px; cursor: pointer; }
+.cell.lit { background-image: var(--n1); }
+.cell.warn { background-image: var(--n2); }
+.cell.locked { background-image: var(--n3); cursor: default; }
 .cells { display: flex; gap: 3px; min-width: 0; }
 .spd { position: relative; flex: 1; height: 40px; display: flex; align-items: center; cursor: ew-resize; touch-action: none; }
 .spd .cells { flex: 1; pointer-events: none; }
-.spd-h { position: absolute; top: 2px; width: 22px; height: 36px !important; padding: 0 !important; border-image-width: 11px; cursor: ew-resize; }
+.spd-h { position: absolute; top: 2px; width: 22px; height: 36px !important; padding: 0 !important; cursor: ew-resize; }
 
 .lbl { font: var(--lbl-font); letter-spacing: 0.1em; text-transform: uppercase; color: var(--s-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .num { font: var(--num-font); color: var(--s-num); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -75,16 +76,16 @@ button:focus-visible { outline: 2px solid var(--s-num); outline-offset: 2px; }
 .panel > .pin { position: absolute; inset: 0; overflow: hidden; display: flex; gap: 8px; }
 .ptitle { position: absolute; right: 6px; top: -29px; z-index: 2; background: #000; padding: 0 8px; display: flex; gap: 10px; align-items: center; height: 26px;
   font: var(--title-font); color: var(--title-ink); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-.ptitle .k-button.sm { height: 26px; font-size: 15px; padding: 0 10px; border-image-width: 13px; }
+.ptitle .k-button.sm { height: 26px; font-size: 15px; padding: 0 10px; }
 .rail { display: flex; flex-direction: column; gap: 2px; flex: none; width: 48px; overflow-y: auto; scrollbar-width: none; }
 .rail .k-tab { flex: none; font-size: 18px; padding: 0 8px 0 12px; }
-.k-strip .cells .cell { height: 16px; border-image-width: 6px; }
+.k-strip .cells .cell { height: 16px; }
 .k-strip.bottom .cells .cell { height: 24px; }
 .tabs { display: flex; gap: 4px; flex: none; }
 .tabs .k-tab { flex: 1 1 0; padding: 0 8px 0 12px; }
 /* Icon tabs: the panel tabs carry the skin's icon, not a word; the panel's title names the page. */
 .k-tab.ic { justify-content: center; padding: 0 2px 0 8px; }
-#tip { position: absolute; z-index: 30; pointer-events: none; display: none; height: 30px; font-size: 17px; padding: 0 14px; border-image-width: 15px; justify-content: center; }
+#tip { position: absolute; z-index: 30; pointer-events: none; display: none; height: 30px; font-size: 17px; padding: 0 14px; justify-content: center; }
 .k-tab.ic img { width: 30px; height: 30px; flex: none; pointer-events: none; }
 .hero { position: relative; flex: none; }
 .hero > img, .hero > canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
@@ -130,7 +131,7 @@ canvas.live { cursor: pointer; }
 [data-mode="land"] #badge, [data-mode="port"] #badge { display: none; }
 [data-mode="land"] .vtext, [data-mode="port"] .vtext { font-size: 16px; }
 [data-mode="land"] #paused, [data-mode="port"] #paused { font-size: 20px; top: 54px; }
-.k-strip.compact { height: 44px; gap: 10px; border-image-width: 8px 40px 8px 40px; padding: 0 12px 0 46px; }
+.k-strip.compact { height: 44px; gap: 10px; padding: 0 12px 0 46px; }
 .k-strip.compact.top { padding-bottom: 6px; }
 .k-strip.compact.bottom { padding-top: 6px; }
 .k-strip.compact .lbl { font-size: 12px; }
@@ -884,7 +885,7 @@ addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen 
 // =================================================================================================================
 // The kit: Concord's pieces, painted once to images (docs/mockups/lib/concord.js), set as CSS variables for 9-slicing.
 // =================================================================================================================
-const KIT = { nine: { ...CON.kit, ...CON.cells }, hero: {}, icons: {}, iconsOn: {} };
+const KIT = { nine: { ...CON.kit, ...CON.cells }, src: {}, hero: {}, icons: {}, iconsOn: {} };
 const VARS = { 'frame.panel': 'fp', 'frame.inset': 'fi', 'bar.track': 'bt', 'bar.fill': 'bf', 'bar.fill.red': 'bfw', 'button.idle': 'bi', 'button.hover': 'bh', 'button.pressed': 'bp',
   'tab.idle': 'ti', 'tab.active': 'ta', 'strip.top': 'st', 'strip.bottom': 'sb', 'divider': 'dv', 'cell.idle': 'ci', 'cell.lit': 'cl', 'cell.warn': 'cw', 'cell.locked': 'ck' };
 const SLOT_H = { button: 48, tab: 40 };
@@ -894,18 +895,56 @@ function buildKit() {
   const R = document.documentElement.style;
   for (const [piece, v] of Object.entries(VARS)) {
     const p = KIT.nine[piece], slot = SLOT_H[piece.split('.')[0]], k = slot ? slot / p.size[1] : 1;
-    R.setProperty(`--${v}`, `url(${png(paint(p.size[0], p.size[1], p.draw))})`);
+    KIT.src[piece] = paint(p.size[0], p.size[1], p.draw);
     R.setProperty(`--${v}-s`, p.m.map((n) => n * 2).join(' '));
     R.setProperty(`--${v}-w`, p.m.map((n) => n * k + 'px').join(' ')); R.setProperty(`--${v}-l`, p.m[3] * k + 'px'); R.setProperty(`--${v}-r`, p.m[1] * k + 'px');
   }
   for (const [id, [w, h]] of Object.entries(HERO)) KIT.hero[id] = png(paint(w, h, CON.hero[id]));
   for (const n of ICONS) { KIT.icons[n] = png(CON.icon(n)); KIT.iconsOn[n] = png(CON.icon(n, '#000')); }
   const css = { '--s-ink': CC.text, '--s-dim': CC.lilac, '--s-num': CC.sky, '--s-body': '"Antonio", sans-serif', '--btn-ink': '#000', '--btn-justify': 'flex-end',
-    '--btn-font': '600 22px/1 "Antonio", sans-serif', '--btn-track': '0.04em', '--btn-motion': 'border-image-source 0.08s', '--tab-font': '600 19px/1 "Antonio", sans-serif',
+    '--btn-font': '600 22px/1 "Antonio", sans-serif', '--btn-track': '0.04em', '--btn-motion': 'none', '--tab-font': '600 19px/1 "Antonio", sans-serif',
     '--tab-ink': CC.text, '--tab-ink-on': '#000', '--title-font': '700 24px/1 "Antonio", sans-serif', '--title-ink': CC.sky, '--lbl-font': '600 15px/1 "Antonio", sans-serif',
     '--num-font': '600 24px/1 "Antonio", sans-serif' };
   for (const [k, v] of Object.entries(css)) R.setProperty(k, v);
 }
+
+// ---- The 9-slice compositor --------------------------------------------------------------------------------------
+// Each kit element is drawn whole at its own device-pixel size: the piece's four corners at their margins (scaled down
+// only when the slot is smaller than the piece), edges and centre stretched, every slice on whole pixels, so no seam
+// can show between slices at any console scale (owner, 2026-11-01: "see these slice lines?"). One image per state,
+// cached by piece and size; a ResizeObserver redraws an element when its size changes (a bar's fill growing).
+const STATES = [
+  ['k-button', ['button.idle', 'button.hover', 'button.pressed']], ['k-tab', ['tab.idle', 'tab.active']],
+  ['cell', ['cell.idle', 'cell.lit', 'cell.warn', 'cell.locked']], ['k-fill', ['bar.fill', 'bar.fill.red']],
+  ['k-panel', ['frame.panel']], ['k-inset', ['frame.inset']], ['k-track', ['bar.track']], ['k-divider', ['divider']],
+  ['top', ['strip.top']], ['bottom', ['strip.bottom']],
+];
+const NINE_IMG = new Map();
+function nineImage(piece, w, h) {
+  const p = KIT.nine[piece], dpr = Math.min(devicePixelRatio, 2) * S;
+  const W = Math.max(1, Math.round(w * dpr)), H = Math.max(1, Math.round(h * dpr)), key = `${piece}|${W}|${H}`;
+  let url = NINE_IMG.get(key); if (url) return url;
+  const src = KIT.src[piece], sk = src.width / p.size[0], [mt, mr, mb, ml] = p.m;
+  let k = Math.min(1, h / p.size[1]) * dpr;
+  k = Math.min(k, W / Math.max(1, (ml + mr)), H / Math.max(1, (mt + mb)));
+  const d = [mt, mr, mb, ml].map((n) => Math.round(n * k));
+  const sx = [0, ml * sk, src.width - mr * sk, src.width], sy = [0, mt * sk, src.height - mb * sk, src.height];
+  const dx = [0, d[3], W - d[1], W], dy = [0, d[0], H - d[2], H];
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    const sw = sx[j + 1] - sx[j], sh = sy[i + 1] - sy[i], dw = dx[j + 1] - dx[j], dh = dy[i + 1] - dy[i];
+    if (sw > 0 && sh > 0 && dw > 0 && dh > 0) x.drawImage(src, sx[j], sy[i], sw, sh, dx[j], dy[i], dw, dh);
+  }
+  url = `url(${c.toDataURL()})`; NINE_IMG.set(key, url);
+  return url;
+}
+function nineFor(n) {
+  const row = STATES.find(([cls]) => n.classList.contains(cls)); if (!row) return;
+  const w = n.offsetWidth, h = n.offsetHeight; if (!w || !h) return;
+  row[1].forEach((piece, i) => { const u = nineImage(piece, w, h); if (n.style.getPropertyValue(`--n${i}`) !== u) n.style.setProperty(`--n${i}`, u); });
+}
+const nineRO = new ResizeObserver((list) => { for (const e of list) nineFor(e.target); });
+function watchNine() { for (const n of root.querySelectorAll('.nine:not([data-ro])')) { n.dataset.ro = '1'; nineRO.observe(n); } }
 
 // =================================================================================================================
 // UI helpers. A panel is built once (on a tab change, an expand or a change of ship); its readouts are binders that
@@ -1029,6 +1068,7 @@ function layout() {
   for (const k of ['top', 'bottom']) R[k].classList.toggle('compact', mode !== 'desk');
   sizeView(o.view);
   rebuild();
+  watchNine(); for (const n of root.querySelectorAll('.nine')) nineFor(n); // a new scale needs new pixels
 }
 function rebuild() {
   hideTip();
@@ -1073,13 +1113,13 @@ function buildBottom() {
   // Power over systems, on one scale (the reactor's rating), so the systems' drain reads against the output at a glance
   // (owner, 2026-11-01: "power and systems need to sit on top of each other so we can see how much power our systems
   // are draining"). A drain past the output turns the systems bar red.
-  const ps = el('div', 'grid'); css(ps, 'grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:5px;flex:1.4;');
+  const ps = el('div', 'grid'); css(ps, 'grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:2px;flex:1.4;');
   const rated = () => CLASSES[s().cls].reactor_e;
   for (const [label, val, warn] of [['Power', () => output(s()), null], ['Systems', () => used(s()), () => used(s()) > output(s())]]) {
     const bx = bar(null, () => val() / rated(), warn ? () => warn() : null); css(bx, 'gap:0;');
     ps.append(el('div', 'lbl', label), bx, txt(() => `${val()} E`, 'num'));
   }
-  ps.querySelectorAll('.num').forEach((n) => css(n, 'font-size:18px;'));
+  ps.querySelectorAll('.num').forEach((n) => css(n, 'font-size:16px;')); ps.querySelectorAll('.lbl').forEach((n) => css(n, 'font-size:13px;'));
   if (mode !== 'port') R.bottom.append(ps);
   if (!c) R.bottom.append(btn('Next target', A.nextTarget, { sm: true }));
   const lamp = el('div', 'hero'); css(lamp, `width:${c ? 34 : 44}px;height:${c ? 34 : 44}px;`); const li = new Image(); li.alt = ''; lamp.append(li);
@@ -1559,7 +1599,7 @@ function buildViewUI() {
   const q = el('div'); q.id = 'quick';
   q.append(btn('Port', () => A.turn(-30)), btn(() => `Fire · ${tgt(W.player) ? W.player.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(W.player, m, tgt(W.player)) && inRange(W.player, m, tgt(W.player))).length : 0}`, A.fire), btn('Stbd', () => A.turn(30)));
   const vb = btn('Next', A.nextTarget); q.prepend(vb);
-  const badge = el('div'); badge.id = 'badge'; badge.append(el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V2'), btn('Reset', A.reset, { sm: true }));
+  const badge = el('div'); badge.id = 'badge'; badge.append(el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V3'), btn('Reset', A.reset, { sm: true }));
   const sl = el('div', 'vtext'); sl.id = 'striplabel'; sl.textContent = 'Live · tap to return';
   R.view.append(tools, ro, msg, pz, inset, lp, q, badge, sl);
 }
@@ -1633,7 +1673,7 @@ function renderSheet() {
 // The loop: fixed simulation steps, the UI's binders ten times a second, a render every frame.
 // =================================================================================================================
 let acc = 0, uiT = 0, last = performance.now(), frozen = false;
-function tickUI() { for (const k of Object.keys(binders)) for (const f of binders[k]) f(); if (W.over && !R.sheet.classList.contains('on')) renderSheet(); }
+function tickUI() { watchNine(); for (const k of Object.keys(binders)) for (const f of binders[k]) f(); if (W.over && !R.sheet.classList.contains('on')) renderSheet(); }
 function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (!paused && !menuOpen && !frozen) { acc += dt; while (acc >= DT) { step(); acc -= DT; } }
