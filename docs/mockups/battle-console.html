@@ -1374,10 +1374,6 @@ function reactorDiagram(w, h, big) {
     if (!c.isConnected) return;
     const s = W.player, rx = s.reactor, t = performance.now() / 1000, tc = heatCol(rx.temp);
     x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, w, h); x.lineCap = 'round'; x.lineJoin = 'round';
-    // The power bus: output leaving the vessel, in Power's blue, beads at the output.
-    const bp = bus(); x.lineWidth = 8 * k; x.strokeStyle = CC.deep; path(bp); x.stroke(); x.lineWidth = 3 * k; x.strokeStyle = CC.signal; path(bp); x.stroke();
-    x.fillStyle = CC.sky; const nb = Math.max(1, Math.round(output(s) / 4)); for (let m = 0; m < nb; m++) { const [bx, by] = along(bp, m / nb + t * 0.25); x.beginPath(); x.arc(bx, by, 2.4 * k, 0, 2 * P); x.fill(); }
-    label(`POWER ${output(s).toFixed(1)} E`, 8 * k, h - 8 * k, CC.sky, 'left', 13);
     // Coolant loops.
     rx.loops.forEach((l, j) => {
       const g = loopGeom(j), [px, py] = g.pump, [qx, qy] = g.rad, sgn = g.s, closed = [...g.pts, g.pts[0]];
@@ -1388,7 +1384,7 @@ function reactorDiagram(w, h, big) {
         const hot = g.pts.slice(0, g.hotEnd + 1), cold = [...g.pts.slice(g.hotEnd), g.pts[0]];
         x.globalAlpha = l.hp < 0.5 ? 0.55 : 0.85; x.lineWidth = 3 * k;
         x.strokeStyle = tc; path(hot); x.stroke(); x.strokeStyle = CC.sky; path(cold); x.stroke(); x.globalAlpha = 1;
-        const n = 4 + l.flow * 3, speed = l.flow * 0.045;
+        const n = 2 + l.flow * 2, speed = l.flow * 0.045;
         for (let m = 0; m < n; m++) {
           const f = (((m / n + t * speed) % 1) + 1) % 1, [bx, by] = along(closed, f);
           x.fillStyle = f < g.hotEnd / g.pts.length ? tc : CC.sky; x.beginPath(); x.arc(bx, by, 2.6 * k, 0, 2 * P); x.fill();
@@ -1397,13 +1393,11 @@ function reactorDiagram(w, h, big) {
       // Radiator: a fin bank on the far side of the loop, glowing with the heat it sheds.
       const shed = clamp(l.flow * l.hp * rx.temp / 250, 0, 1), rh = Math.abs(g.yO - g.yI) * 0.62;
       x.fillStyle = CC.deep; x.beginPath(); x.roundRect(qx - 13 * k, qy - rh / 2, 26 * k, rh, 9 * k); x.fill();
-      for (let f = 0; f < 4; f++) { x.strokeStyle = l.hp <= 0 ? CC.alert : shed > 0.6 ? CC.caution : CC.sky; x.globalAlpha = 0.35 + 0.65 * shed; x.lineWidth = 2 * k; const fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; x.beginPath(); x.moveTo(qx - 8 * k, fy); x.lineTo(qx + 8 * k, fy); x.stroke(); }
+      for (let f = 0; f < 4; f++) { x.strokeStyle = l.hp <= 0 ? CC.alert : CC.signal; x.globalAlpha = 1; x.lineWidth = 2 * k; const fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; x.beginPath(); x.moveTo(qx - 8 * k, fy); x.lineTo(qx + 8 * k, fy); x.stroke(); }
       x.globalAlpha = 1; if (big) label('RADIATOR', qx - 18 * k, qy + 4 * k, CC.lilac, 'right');
       // Pump: a ring on the outer side with an impeller turning at the flow, its flow in the middle.
       const pc = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.signal, hv = hover && hover.pump === j;
       x.fillStyle = '#000'; x.strokeStyle = pc; x.lineWidth = (hv ? 5 : 4) * k; x.beginPath(); x.arc(px, py, 16 * k, 0, 2 * P); x.fill(); x.stroke();
-      const spin = t * l.flow * 2.2 * (l.hp > 0 ? 1 : 0) * -sgn; x.strokeStyle = CC.deep; x.lineWidth = 3 * k;
-      for (let m = 0; m < 3; m++) { const a = spin + m * 2 * P / 3; x.beginPath(); x.arc(px, py, 11 * k, a, a + 0.9); x.stroke(); }
       x.fillStyle = CC.text; x.font = `700 ${15 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(l.flow), px, py + 5 * k);
       label(`LOOP ${'AB'[j]} · ${l.hp <= 0 ? 'OFFLINE' : pct(l.hp)}`, (px + qx) / 2 + 6 * k, g.yI + sgn * 12 * k + 4 * k, l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.lilac);
       for (const [bx, by, d] of keysAt(j)) {
@@ -1412,28 +1406,17 @@ function reactorDiagram(w, h, big) {
         x.fillStyle = '#000'; x.font = `700 ${16 * k}px Antonio`; x.textAlign = 'center'; x.fillText(d < 0 ? '−' : '+', bx, by + 5.5 * k);
       }
     });
-    // The temperature dial round the vessel, open on the right where the pipes leave: 0-120 %, clockwise from the lower
-    // right, ticks at the warning (85) and the limit (100).
-    const g0 = P * 0.25, gs = P * 1.5, gr = R + 11 * k, gv = clamp(rx.temp / 120, 0, 1);
-    x.lineWidth = 4 * k; x.strokeStyle = CC.deep; x.beginPath(); x.arc(cx, cy, gr, g0, g0 + gs); x.stroke();
-    x.strokeStyle = tc; x.beginPath(); x.arc(cx, cy, gr, g0, g0 + gs * gv); x.stroke();
-    for (const [v2, col] of [[85, CC.caution], [100, CC.alert]]) { const a = g0 + gs * v2 / 120; x.strokeStyle = col; x.lineWidth = 2 * k; x.beginPath(); x.moveTo(cx + Math.cos(a) * (gr - 5 * k), cy + Math.sin(a) * (gr - 5 * k)); x.lineTo(cx + Math.cos(a) * (gr + 5 * k), cy + Math.sin(a) * (gr + 5 * k)); x.stroke(); }
     // The vessel: outer and inner walls, the field-coil cage, the plasma in the channel.
     x.lineWidth = 3 * k; x.strokeStyle = CC.signal; x.beginPath(); x.arc(cx, cy, R, 0, 2 * P); x.stroke(); x.beginPath(); x.arc(cx, cy, Ri, 0, 2 * P); x.stroke();
-    x.strokeStyle = CC.deep; x.lineWidth = 4 * k; x.globalAlpha = 0.7;
-    for (let m = 0; m < 16; m++) { const a = m * P / 8 + P / 16; x.beginPath(); x.moveTo(cx + Math.cos(a) * (Ri - 4 * k), cy + Math.sin(a) * (Ri - 4 * k)); x.lineTo(cx + Math.cos(a) * (R + 4 * k), cy + Math.sin(a) * (R + 4 * k)); x.stroke(); }
-    x.globalAlpha = 1;
     const off = rx.coils.reduce(([ax, ay], o, i) => [ax + Math.cos(coilDir(i)) * o, ay + Math.sin(coilDir(i)) * o], [0, 0]), offN = Math.hypot(off[0], off[1]);
     const ox = off[0] * chan * 0.42, oy = off[1] * chan * 0.42, pulse = rx.melt > 0 ? 0.55 + 0.45 * Math.sin(t * 9) : 0.85 + 0.15 * Math.sin(t * 2.3);
     x.save(); x.beginPath(); x.arc(cx, cy, R - 1.5 * k, 0, 2 * P); x.arc(cx, cy, Ri + 1.5 * k, 0, 2 * P, true); x.clip();
-    x.globalAlpha = 0.16 * pulse; x.strokeStyle = tc; x.lineWidth = chan * 0.8; x.beginPath(); x.arc(cx + ox, cy + oy, mid, 0, 2 * P); x.stroke();
+    x.strokeStyle = tc;
     x.globalAlpha = 0.95 * pulse; x.lineWidth = chan * 0.22; x.beginPath(); x.arc(cx + ox, cy + oy, mid, 0, 2 * P); x.stroke();
-    x.globalAlpha = 1; x.strokeStyle = '#fff'; x.lineWidth = 1.2 * k; x.globalAlpha = 0.6 * pulse; x.beginPath(); x.arc(cx + ox, cy + oy, mid, 0, 2 * P); x.stroke(); x.globalAlpha = 1; x.restore();
-    // Wall contact: the plasma pushed far enough to scrape the vessel sparks red where it touches.
-    if (offN > 0.3) { const a = Math.atan2(off[1], off[0]); x.strokeStyle = CC.alert; x.lineWidth = 4 * k; x.globalAlpha = 0.5 + 0.5 * Math.sin(t * 14); x.beginPath(); x.arc(cx, cy, R, a - 0.35, a + 0.35); x.stroke(); x.globalAlpha = 1; }
+    x.globalAlpha = 1; x.restore();
     // Centre: temperature, the word CORE.
     x.fillStyle = rx.temp >= 85 ? CC.alert : CC.text; x.textAlign = 'center'; x.font = `700 ${(big ? 26 : 20) * k / (big ? 1.25 : 1)}px Antonio`; x.fillText(`${Math.round(rx.temp)}%`, cx, cy + 6 * k);
-    label('CORE', cx, cy - 12 * k);
+    label('CORE', cx, cy - 18 * k);
     // Confinement coils: a short track across the vessel, a green ring where each belongs, the coil numbered on its face.
     for (let i = 0; i < REACTOR.coils; i++) {
       const a = coilDir(i), mx = cx + Math.cos(a) * mid, my = cy + Math.sin(a) * mid, [qx, qy] = coilAt(i), o = rx.coils[i], ao = Math.abs(o);
@@ -1442,7 +1425,7 @@ function reactorDiagram(w, h, big) {
       x.save(); x.translate(qx, qy); x.rotate(a + P / 2); x.fillStyle = col; x.beginPath(); x.roundRect(-17 * k, -8 * k, 34 * k, 16 * k, 8 * k); x.fill();
       if (act) { x.strokeStyle = CC.text; x.lineWidth = 2 * k; x.stroke(); }
       x.rotate(-(a + P / 2)); x.fillStyle = '#000'; x.font = `700 ${12 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(i + 1), 0, 4.5 * k); x.restore();
-      const vr = R + 26 * k; if (act || ao >= 0.1) label(`${o >= 0 ? '+' : ''}${o.toFixed(2)}`, cx + Math.cos(a) * vr, cy + Math.sin(a) * vr + 4 * k, col, 'center', 12);
+      const vr = R + 22 * k; if (act) label(`${o >= 0 ? '+' : ''}${o.toFixed(2)}`, cx + Math.cos(a) * vr, cy + Math.sin(a) * vr + 4 * k, col, 'center', 12);
     }
     // The meltdown clock, across the top.
     if (rx.melt > 0) { x.fillStyle = CC.alert; x.globalAlpha = 0.6 + 0.4 * Math.sin(t * 9); x.font = `700 ${15 * k}px Antonio`; x.textAlign = 'left'; x.fillText(`MELTDOWN IN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 16 * k); x.globalAlpha = 1; }

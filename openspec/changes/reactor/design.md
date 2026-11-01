@@ -36,25 +36,19 @@ brown out.
 ## The screen (Concord skin)
 
 - **The reactor diagram** (owner, 2026-11-01: "I want like an actual diagram of the nuclear reactor and be able to like
-  interact with it", "please improve that diagram of a reactor", "the loop a and loop b should look like loops"), a
-  schematic in Concord's flat hand:
-  - **The vessel**: outer and inner walls with a cage of sixteen field coils across the channel, the plasma ring glowing
-    in it by temperature (Sky, amber from 65 %, red from 85 %; pulsing while the meltdown clock runs) and pushed off
-    centre by the coils' misalignment; past 0.3 it scrapes the wall, which sparks red where it touches. CORE and the
-    temperature in the middle.
-  - **The temperature dial** round the vessel, 0-120 %, open on the right where the loops leave, ticks at 85 and 100.
-  - **Confinement coils** (1 top, 2 left, 3 bottom) across the channel, numbered on their faces, each with a green ring
-    where it belongs; the captain **drags a coil onto its ring**; its value shows outside the dial while it is off.
-  - **Coolant loops**: each a closed rounded circuit whose inner side runs through the vessel, out along the outer side
-    through the pump, round the radiator on the far side and back. Coolant is hot (coloured by the core) from the
-    vessel to the radiator and Sky after it; beads move round the loop at its flow. The pump's impeller turns at the
-    flow, the flow in its middle, **minus and plus** inside the loop beside it. Amber when the loop is damaged, a broken
-    red line when offline. The radiator's fins glow with the heat it sheds.
-  - **The power bus** leaves the vessel to the lower left, in Power's blue, beads at the output, POWER and the output.
-  - **Warnings** in the corner: COOLING LOW under 1.5 cooling, MELTDOWN IN n S flashing while the clock runs.
-  - Docked it is 348 x 276 px (the output and temperature rows are in the diagram); expanded it is drawn large beside
-    the same controls as numbers. Checked headless: dragging coil 1 from +0.56 onto its ring sets it to 0.00; plus on
-    loop A raises its flow from 1 to 2.
+  interact with it", then "please improve that diagram", "the loop a and loop b should look like loops", and "simpler
+  please!"). Only what the captain acts on:
+  - **The core**: the vessel's two walls and the plasma ring between them, coloured by temperature (Sky, amber from
+    65 %, red from 85 %; pulsing while the meltdown clock runs) and pushed off centre by the coils' misalignment; CORE
+    and the temperature in the middle.
+  - **Three coils** (1 top, 2 left, 3 bottom), numbered, each with a green ring where it belongs: **drag a coil onto its
+    ring**. Its value shows while it is pointed at or dragged.
+  - **Two coolant loops**, each a closed circuit through the core: out past the pump, round the radiator, back. Hot
+    (core-coloured) out, Sky back, a few beads moving at the flow. The pump shows its flow, with **minus and plus**
+    beside it. Amber when damaged, a broken red line when offline.
+  - **Warnings** in the corner: COOLING LOW, or MELTDOWN IN n S flashing.
+  - Docked 348 x 276 px; expanded, drawn large beside the same controls as numbers. Checked headless: dragging coil 1
+    from +0.56 onto its ring sets it to 0.00; plus on loop A raises its flow from 1 to 2.
 - **Reactor mode**: output and efficiency; the core temperature bar (warning from 85 %, and the meltdown countdown in
   its label); three coil gauges (a track, a centre mark, a green safe band of 0.1, a dot green, amber or red by
   misalignment) with minus and plus keys and the value; two coolant loops as five flow boxes each with the loop's

@@ -127,7 +127,8 @@ nuclear reactor and be able to like interact with it": the Reactor mode is now a
 loops, worked by dragging the coils home and pressing minus and plus on the pumps. Then: "please improve that diagram of a reactor", "the
 loop a and loop b should look like loops i think", "it would make more sense": the diagram redrawn as a schematic (a
 vessel with a field-coil cage and the plasma in its channel, a temperature dial, wall contact, closed coolant loops
-running through the vessel with hot and cold legs, turning pumps, glowing radiators, the power bus).
+running through the vessel with hot and cold legs, turning pumps, glowing radiators, the power bus). Then: "simpler please!": only the core,
+the three coils, the two loops with their pumps and radiators, and the warnings.
 
 ## 3. Look dev
 
