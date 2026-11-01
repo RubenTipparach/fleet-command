@@ -125,6 +125,13 @@ icons here, instead of circle icons I prefer square with iconography inside", "s
 - The **3D shield display is a flat hexagon** in the ship's plane, an edge toward the bow, each facing a stack of one to
   three glowing bands (its layers); a hit flashes the inner band.
 
+**The shield page** (owner, 2026-11-01: "this should be a shield diagram that I can pick what sides to reinforce", "and
+adjust how much energy I want to allocate - same energy slider as the one found in the power menu"): a hexagon of the six
+facings round the ship, each side drawn as its layers with its name and strength beside it; a click on a side reinforces
+it (again to clear), the reinforced side outlined in Lilac, the side toward the target marked white; Shields up or down,
+the regeneration and the reinforced side beside it; and under it the shields' row of energy boxes, the same control the
+power station draws (`powerRow`, one implementation).
+
 **The five statuses** (owner's definitions; they drive the combat change's rules, which are not built here):
 
 | Status | Means | Colour |

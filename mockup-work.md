@@ -145,7 +145,9 @@ subsystem or weapon box: show what subsystem name is, health, status: Active/Dis
 five statuses defined ("all of the status description is for your spec ... we are currently only concerned with just ui
 - which will be driving gameplay spec in the future"). Version 8: weapon glyphs, subsystem columns, hover cards. Then:
 the white arc over the facing toward the enemy, square weapon boxes with glyphs, "shield facing should be hexagons here"
-(3D), "going from red 1 layer -> yellow 2 layers -> green 3 layers", "make sure weapon icons dont overlap!". Version 9.
+(3D), "going from red 1 layer -> yellow 2 layers -> green 3 layers", "make sure weapon icons dont overlap!". Version 9. Then: "this should be a shield diagram that I can
+pick what sides to reinforce" and "adjust how much energy I want to allocate - same energy slider as the one found in the
+power menu". Version 10: the shield page is a hexagon diagram, click a side to reinforce, the power station's shield row.
 
 ## 3. Look dev
 
