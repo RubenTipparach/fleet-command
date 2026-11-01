@@ -521,6 +521,12 @@ function spec(m) { const w = WEAPONS[m.w]; return m.state === 'overload' && w.ov
 function inArc(s, m, t) { if (m.arc[1] >= 360) return true; const b = bearing(s, t.x, t.z), c = m.arc[0] * DEG; return Math.abs(wrap(b - c)) <= m.arc[1] * DEG / 2; }
 function inRange(s, m, t) { return distKm(s, t) <= spec(m).range_km; }
 function ready(m) { return m.state !== 'offline' && m.charge >= 1 && m.hp > 0; }
+// Seconds until a mount is ready, from the same rate systemsStep charges it by (DT / charge_s per step); null when it
+// is not cooling (ready, offline or destroyed). A shortage of energy stalls it, so this is the soonest it can be ready.
+function cooldownS(m) { return m.state === 'offline' || m.hp <= 0 || m.charge >= 1 ? null : (1 - m.charge) * spec(m).charge_s; }
+// Cooldown text, two figures (owner, 2026-11-01: "show x.x seconds to cool down. Target 2 decimal places so either xx or
+// x.x"): under 10 s one decimal, rounded up so it never reads 0.0 while cooling; 10 s and over whole seconds.
+function fmtCool(sec) { const t = Math.ceil(sec * 10) / 10; return t < 10 ? t.toFixed(1) : String(Math.ceil(sec)); }
 // The chance a shot from mount m of s hits t. The helm's readout, the weapons panel and the shot itself all call this.
 function hitChance(s, m, t) {
   if (!t || !t.alive || !inRange(s, m, t)) return 0;
@@ -1388,10 +1394,10 @@ function weaponGlyph(x, m, mx, my, r, col) {
 function ssdHits(idp, ox, oy, geo, s, own) {
   for (const [bx, by, bs, key] of geo.boxes) { const st = subsysStatus(s, key); hit(`${idp}.sys.${key}`, ox + bx, oy + by, bs, bs, { tip: { title: SUBSYS.find((q) => q[0] === key)[1], rows: [['Health', pct(clamp(healthOf(s, key), 0, 1))], ['Status', st, STATUS_COL[st]]] } }); }
   for (const [mx, my, rr, m] of geo.mounts) { const st = mountStatus(s, m); hit(`${idp}.m.${m.i}`, ox + mx - rr, oy + my - rr, rr * 2, rr * 2, { click: own && m.w !== 'pd' ? () => A.selectMount(m.i) : null, cursor: own ? 'pointer' : 'default',
-    tip: { title: `${m.i + 1} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ['Charge', m.state === 'offline' || m.hp <= 0 ? '--' : pct(m.charge)]] } }); }
+    tip: { title: `${m.i + 1} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ['Charge', m.state === 'offline' || m.hp <= 0 ? '--' : pct(m.charge)], ['Ready in', cooldownS(m) === null ? (ready(m) ? 'Ready' : '--') : fmtCool(cooldownS(m)) + ' s']] } }); }
 }
 // The ship systems display: one drawing for own ship and target, used docked, expanded and in the Target box (6.1).
-function drawSSD(x, w, h, s, big, own) {
+function drawSSD(x, w, h, s, big, own, idp) {
   const cx = w / 2, cy = h / 2 + 4, k = Math.min(w * 0.7, h - (big ? 60 : 44)) / 2 * 0.92, Rr = k * 0.95;
   const toward = own ? (tgt(s) ? facingFrom(s, tgt(s).x, tgt(s).z) : -1) : facingFrom(s, W.player.x, W.player.z);
   for (let i = 0; i < 6; i++) {
@@ -1453,21 +1459,6 @@ function drawSSD(x, w, h, s, big, own) {
     const [c, r] = cand.find(([c1, r1]) => !taken.has(c1 + ',' + r1));
     taken.add(c + ',' + r); pos[m.i] = [cx + c * clear, cy + r * clear];
   }
-  for (const m of s.mounts) {
-    // whole pixels, so the box's edges land on the pixel grid
-    const bx = Math.round(pos[m.i][0] - mb / 2), by = Math.round(pos[m.i][1] - mb / 2), mx = bx + mb / 2, my = by + mb / 2, st = mountStatus(s, m);
-    // The box filled solid with its status colour, the glyph black on it (owner, 2026-11-01: "Fill the icon boxes fully.
-    // And communicate icon system status with different colors ... as the ship gets hit and takes damage").
-    // The selection ring is a solid Sky plate under the box, not a stroke round it (owner, 2026-11-01: "Still gaps here
-    // on the weapon box", "Remeasure precisely"): the box's anti-aliased edge then blends into Sky, never into the dark
-    // behind, so no seam shows between box and ring.
-    if (own && m.sel) { const lw = big ? 3 : 2; x.fillStyle = CC.sky; x.beginPath(); x.roundRect(bx - lw, by - lw, mb + 2 * lw, mb + 2 * lw, mb * 0.22 + lw); x.fill(); }
-    statusBox(x, bx, by, mb, st, mb * 0.22);
-    weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : '#000');
-    if (m.hp > 0 && m.state !== 'offline' && !ready(m)) { x.fillStyle = CC.deep; x.fillRect(bx, by + mb + 2, mb, big ? 4 : 2.5); x.fillStyle = CC.sky; x.fillRect(bx, by + mb + 2, mb * m.charge, big ? 4 : 2.5); }
-    if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(String(m.i + 1), bx + mb + 10, by + 4); }
-    mounts.push([mx, my, mb / 2 + 5, m]);
-  }
   // Subsystems in two columns beside the ship (owner: "on the side, show subsystems as well"), each an icon in a box
   // coloured by its status.
   const boxes = [], bs = big ? 44 : 30, gap = big ? 10 : 6;
@@ -1480,11 +1471,39 @@ function drawSSD(x, w, h, s, big, own) {
       boxes.push([bx, by, bs, key]);
     });
   });
+  // Each mount is one group drawn last, above the ship schematic, the grid and the subsystems (owner, 2026-11-01:
+  // "Outline and icon and icon status color should be grouped together and always show above ship schematic layer"),
+  // outermost first: the hover outline (white), the selection ring (Sky), the box in its status colour, then the glyph,
+  // or while it cools the seconds left. Rings are solid plates under the box, not strokes, so no seam shows between
+  // them (owner: "Still gaps here on the weapon box", "Remeasure precisely").
+  for (const m of s.mounts) {
+    // whole pixels, so the box's edges land on the pixel grid
+    const bx = Math.round(pos[m.i][0] - mb / 2), by = Math.round(pos[m.i][1] - mb / 2), mx = bx + mb / 2, my = by + mb / 2, st = mountStatus(s, m);
+    const lw = big ? 3 : 2, rad = mb * 0.22, sel = own && m.sel, hov = idp && HOT === `${idp}.m.${m.i}`;
+    const plate = (grow, col) => { x.fillStyle = col; x.beginPath(); x.roundRect(bx - grow, by - grow, mb + 2 * grow, mb + 2 * grow, rad + grow); x.fill(); };
+    // Hover outlines the group in white (owner: "If mouse hover over highlight outline").
+    if (hov) plate(sel ? 2 * lw : lw, '#fff');
+    if (sel) plate(lw, CC.sky);
+    // The box filled solid with its status colour (owner: "Fill the icon boxes fully. And communicate icon system status
+    // with different colors").
+    statusBox(x, bx, by, mb, st, rad);
+    const cool = cooldownS(m);
+    if (cool !== null) {
+      // Cooling: the seconds left in place of the glyph, scaled down to fit the box if it runs to three figures.
+      const txt = fmtCool(cool); let fs = Math.round(mb * 0.72);
+      x.font = `700 ${fs}px Antonio`; const tw = x.measureText(txt).width, room = mb - 4;
+      if (tw > room) { fs = Math.floor(fs * room / tw); x.font = `700 ${fs}px Antonio`; }
+      x.fillStyle = st === 'Destroyed' ? CC.alert : '#000'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText(txt, mx, my + 0.5); x.textBaseline = 'alphabetic';
+    } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : '#000');
+    if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(String(m.i + 1), bx + mb + 12, by + 4); }
+    mounts.push([mx, my, mb / 2 + 5, m]);
+  }
   return { cx, cy, Rr, L, mounts, boxes };
 }
 // The own ship's display: tap a mount to select it for firing, tap a shield arc to reinforce that facing.
 function shSSD(b, big) {
-  const geo = inBox(b.x, b.y, b.w, b.h, (x, w, h) => drawSSD(x, w, h, W.player, big, true));
+  const geo = inBox(b.x, b.y, b.w, b.h, (x, w, h) => drawSSD(x, w, h, W.player, big, true, 'ssd'));
   hit('ssd', b.x, b.y, b.w, b.h, { cursor: 'crosshair', click: (px, py) => {
     const lx = px - b.x, ly = py - b.y;
     const d = Math.hypot(lx - geo.cx, ly - geo.cy);
@@ -1804,10 +1823,10 @@ function uiView() {
     const ir = insetRect(), bx = vx + ir[0], by = vy + ir[1];
     g.fillStyle = '#000'; g.fillRect(bx + 2, by + 2, ir[2] - 4, ir[3] - 4); nine('frame.inset', bx, by, ir[2], ir[3]);
     LBL(`Target · ${t.name}`, bx + 18, by + 34, ir[2] - 36, CC.sky, 'left', 18);
-    const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false)); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
+    const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false, 'tgt')); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v18', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v19', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.
@@ -1916,7 +1935,7 @@ window.MOCKUP_SHOTS = {
 };
 window.MOCKUP_SCENE = scene;
 // For headless checks of the stand-in battle's rules (tools, not the page's UI).
-window.MOCKUP_SIM = { step, A, get W() { return W; }, REACTOR, output, used, cooling };
+window.MOCKUP_SIM = { step, A, get W() { return W; }, REACTOR, output, used, cooling, cooldownS, fmtCool, WEAPONS, get HOT() { return HOT; } };
 let lastInfo = { triangles: 0, calls: 0 };
 window.MOCKUP_INFO = () => lastInfo;
 // The rectangles the console registered last frame, for headless checks (no overlaps, sizes).

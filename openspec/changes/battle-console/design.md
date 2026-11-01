@@ -120,7 +120,16 @@ icons here, instead of circle icons I prefer square with iconography inside", "s
 - Mounts are **square boxes** with the weapon's glyph inside: glyph colour for its state, the box outlined in its status
   colour when not Active, the charge as a bar under it, a Sky ring when selected, drawn as a solid plate under the box with the box's corner radius so the box's
   edge blends into Sky and no seam shows (owner: "Still gaps here on the weapon box", "Remeasure precisely";
-  `tools/mockups/ring_seam.mjs` measures it: 0 at 1x and 2x). Mounts sit on a **grid** (owner, 2026-11-01:
+  `tools/mockups/ring_seam.mjs` measures it: 0 at 1x and 2x).
+- A cooling mount shows the **seconds until ready** in its box in place of the glyph (owner, 2026-11-01: "When weapon
+  cool do show x.x seconds to cool down. Target 2 decimal places so either xx or x.x ... we'll scale stuff down to fit if
+  needed"): `(1 - charge) x charge_s`, the rate the simulation charges by, one decimal under 10 s (rounded up, so never
+  0.0 while cooling), whole seconds from 10 s, three figures scaled to fit. It replaces the charge bar under the box.
+  The hover card adds "Ready in".
+- **Pointing at a mount outlines it in white**, outside its selection ring (owner: "If mouse hover over highlight
+  outline"). Each mount is **one group** (hover outline, ring, status colour, glyph or seconds) drawn last, above the
+  schematic, grid and subsystems (owner: "Outline and icon and icon status color should be grouped together and always
+  show above ship schematic layer"). Mounts sit on a **grid** (owner, 2026-11-01:
   "They don't seem to align to a grid"): one cell is a box, its selection ring and a 3 px gap, centred on the ship's
   spine. Each mount takes the cell nearest its hull position, rounded alike on both sides so pairs stay mirrored; a
   taken cell sends it to the nearest free one, its own side first. Boxes line up in rows and columns and never overlap. The grid is drawn faintly behind the ship, clipped to the shield ring (owner: "Grid").

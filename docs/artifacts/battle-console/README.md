@@ -36,3 +36,4 @@
 - Version 16 published 2026-11-01, version id `1793564157-a675`: the mount grid drawn faintly behind the ship, clipped to the shield ring.
 - Version 17 published 2026-11-01, version id `1793566190-ab8e`: the selection ring flush on the weapon box, same corner radius, no gap.
 - Version 18 published 2026-11-01, version id `1793566438-87a3`: the selection ring drawn as a solid plate under the weapon box, boxes on whole pixels; measured seam 0 at 1x and 2x (`tools/mockups/ring_seam.mjs`, 21-33 before).
+- Version 19 published 2026-11-01, version id `1793568233-3bd6`: cooling weapons show seconds until ready (x.x under 10 s, xx above, three figures scaled to fit) in place of the glyph and the charge bar; white hover outline; each mount one group drawn above the schematic.

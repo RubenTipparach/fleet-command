@@ -113,3 +113,17 @@ power to run) and Destroyed (off line for good, cannot be restored).
 #### Scenario: A subsystem turned off
 - **WHEN** the tractor beam has no power and the captain points at its box
 - **THEN** the box is dimmed and the card shows status Off
+
+### Requirement: A cooling weapon shows the seconds until it is ready
+While a weapon mount charges, its box SHALL show the seconds until it is ready in place of its glyph, computed from the
+same charge rate that charges the mount: one decimal under 10 s, whole seconds from 10 s, scaled down to fit the box
+when it runs to three figures. Each mount SHALL be drawn as one group (hover outline, selection ring, status colour,
+glyph or seconds) above the ship schematic, and pointing at a mount SHALL outline it in white.
+
+#### Scenario: A lance cooling down
+- **WHEN** a lance (3.5 s to charge) fired 0.1 s ago
+- **THEN** its box shows 3.4 until the next tenth passes, then its glyph once it is ready
+
+#### Scenario: A long cooldown
+- **WHEN** a mount has 12.3 s left
+- **THEN** its box shows 13
