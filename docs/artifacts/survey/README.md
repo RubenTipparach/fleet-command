@@ -11,3 +11,4 @@
 - The old survey's answers stayed in its database on the other account; the decisions they made are in the page's "Already decided" list and CLAUDE.md section 1, and open questions start blank on the new page.
 - 2026-10-31, republished from the desktop session (owner: "Make sure all published pages link back to the master", commit 7200539): the page links back to the mockup tracker; version id `1793462719-68d8`.
 - 2026-10-31, desktop session for the cloud session (commit bdf754f): version 10, section V added (the Vhorr Brood's panel styles: board A-H, a pick per panel type, keys, what next); database capability kept; version id `1793500807-486e`.
+- 2026-11-01, desktop session for the cloud session (commit e960a32): version 11, section W replaces section V (each Vhorr Brood style option is a picture of that exact component, 48 pictures inlined as data URIs); database capability kept; version id `1793508311-c274`.
