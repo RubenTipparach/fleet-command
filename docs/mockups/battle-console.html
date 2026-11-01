@@ -1483,7 +1483,7 @@ function shieldHex(cx, cy, R, s, big, idp) {
     if (i === toward) { g.strokeStyle = '#fff'; g.lineWidth = 2.5 * k; seg(R - 2.2 * step); }
     const [lx, ly] = vert(am, R + 3 * step + 14 * k);
     LBL(FACINGS[i], lx, ly - 2 * k, 0, s.reinforce === i ? CC.lilac : CC.lilac, 'center', 12 * k);
-    NUM(String(Math.round(s.shields[i])), lx, ly + 14 * k, 0, CC.text, 'center', 16 * k);
+    NUM(`${Math.round(s.shields[i])}/${shieldMax(s, i)}`, lx, ly + 14 * k, 0, nl ? col : CC.lilac, 'center', 16 * k); // colour-coded (owner: "Color coding and numbers still help")
   }
   // the ship, small, in the middle
   g.save(); g.translate(cx, cy); g.strokeStyle = CC.sky; g.lineWidth = 1.6 * k; const L = R * 0.42;
