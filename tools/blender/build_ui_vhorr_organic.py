@@ -48,7 +48,16 @@ MM = st.MM
 PX = 2                  # pixels per mm in the kit images (the kit's 2x)
 RES = 0.5               # sculpt samples per mm
 MARGIN = 8.0            # mm of the layout sculpted round a region, so its edges are lit and shadowed as in place
+LIGHT_GAIN = 1.0        # the rig's power against the study's (the same light)
+KIT_DETAIL = 2.2        # the anatomy material's surface detail drawn this many times larger than the study's: the kit is
+                        # seen at about 0.65 px per mm on the page, the study at 2 (measured: at page scale v25's body had
+                        # a lightness spread of 12.8 against the widget's 21.9, its fine detail averaged into flat brown)
+BLEED = 16.0            # mm a top-level slot's body may grow past its rectangle (horns, crests, ribs, claws), so a feature
+                        # too big for the slot bleeds over the gutter and the game instead of being dropped (the owner, of
+                        # the accepted widget: "this thing just looks sooo good!"); never over a neighbour's protected
+                        # rectangles, which are cut back to the floor and measured by rule G1 like the slot's own
 OUT = os.path.join(ROOT, "assets", "ui", "vhorr", "organic")
+ISOLATE = False
 
 STATES = {"button": ["idle", "hover", "pressed"], "tab": ["idle", "active"], "lamp": ["green", "yellow", "red"]}
 
@@ -92,26 +101,54 @@ def prot(s, kinds=None):
     return [p["rect"] for p in s["protected"] if kinds is None or p["kind"] in kinds]
 
 
+# The owner's picks from the style board (2026-11-01: "Go"): one style per panel (organic_components.STYLES; letters as on
+# the board). The strips wear a tentacle crown off their inner edge (C), the weapons panel hanging tentacles (E), the
+# ship systems display and the name plate plain heavy leather (B), the helm pad and its readout panel a ridge with
+# tentacles (H), the radar, contacts and crest row feelers (G).
+STYLE = {"strip.top": "crown", "strip.bottom": "crown", "panel.weapons": "hang", "ssd.bezel": "plain", "nameplate": "plain",
+         "helm.pad": "mixed", "inset.helm-readout": "mixed", "dial": "feelers", "inset.contacts": "feelers", "crest": "feelers"}
+SLOT_BLEED = {"panel.weapons": 34.0, "strip.top": 44.0, "strip.bottom": 36.0, "dial": 24.0, "inset.contacts": 24.0,
+              "crest": 24.0}
+
+
 def sculpt_slot(f, s, state):
     """Hand one slot to the sculptor its kit piece calls for. Every size and position comes from the slot."""
     fam, r, sid = s["family"], s["rect"], s["id"]
     if fam == "strip":
         outer = "top" if s["piece"] == "strip.top" else "bottom"
-        oc.strip(f, r, windows=prot(s, {"label", "bar-cells"}) + [c["rect"] for c in s.get("child_rects", []) if c["family"] == "bar"],
-                 seed=sid, outer=outer)
+        wins = prot(s, {"label", "bar-cells"}) + [c["rect"] for c in s.get("child_rects", []) if c["family"] == "bar"]
+        sty = STYLE.get(sid, "ridge")
+        oc.strip(f, r, windows=wins, seed=sid, outer=outer, spine=sty in ("ridge", "mixed"))
+        allw = wins + [c["rect"] for c in s.get("child_rects", [])]
+        if sty in ("crown", "mixed"):
+            oc.strip_crown(f, r, allw, outer, sid, scale=1.0 if outer == "top" else 0.8, half=sty == "mixed")
+        elif sty == "hang":       # longer, straighter tentacles dripping off the strip's inner edge
+            oc.strip_crown(f, r, allw, outer, sid, scale=1.5, bend=(0.3, 0.8))
+        elif sty == "web":        # tentacles strung along the strip between its readouts, holding them
+            rng = np.random.default_rng(oc.sid(sid) + 5)
+            ws = sorted(oc.grow(oc.xyxy(q), 3.0) for q in allw)
+            x0, y0, x1, y1 = oc.xyxy(r)
+            yy = (y0 + y1) / 2
+            for a, b in zip([(x0 + 6, 0, x0 + 6, 0)] + ws, ws + [(x1 - 6, 0, x1 - 6, 0)]):
+                if b[0] - a[2] > 12:
+                    m = ((a[2] + b[0]) / 2, yy + rng.uniform(2, 6))
+                    f.tentacle([(a[2], yy - 4), m, (b[0], yy - 4)], 6.0, 2.0, height=9.0)
+        elif sty in ("wrap", "feelers"):
+            oc.tentacle_styles(f, sty, oc.xyxy(r), [], [], np.random.default_rng(oc.sid(sid)))
     elif fam == "lamp":
         oc.lamp(f, r, state=state or "yellow", seed=sid)
     elif fam == "nameplate":
-        oc.panel(f, r, windows=prot(s, {"portrait-window"}), labels=prot(s, {"label"}), seed=sid, deep=2.0)
+        oc.panel(f, r, windows=prot(s, {"portrait-window"}), labels=prot(s, {"label"}), seed=sid, deep=2.0,
+                 style=STYLE.get(sid, "ridge"))
     elif fam == "helm":
-        oc.helm(f, r, faces=prot(s, {"key-face"}), seed=sid)
+        oc.helm(f, r, faces=prot(s, {"key-face"}), seed=sid, style=STYLE.get(sid, "ridge"))
     elif fam in ("frame", "ssd") and s["piece"] == "ssd.bezel":
-        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid)
+        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid, style=STYLE.get(sid, "ridge"))
     elif fam == "frame":
-        oc.panel(f, r, windows=prot(s, {"icon", "live-drawing"}), labels=prot(s, {"label"}), seed=sid,
+        oc.panel(f, r, windows=prot(s, {"icon", "live-drawing"}), labels=prot(s, {"label"}), seed=sid, style=STYLE.get(sid, "ridge"),
                  avoid=[c["rect"] for c in s.get("child_rects", [])])
     elif fam == "ssd":
-        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid)
+        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid, style=STYLE.get(sid, "ridge"))
     elif fam == "divider":
         oc.cord(f, r, seed=sid)
     elif fam == "button":
@@ -123,25 +160,41 @@ def sculpt_slot(f, s, state):
         oc.tab(f, r, seed=sid, state=state or "idle")
     elif fam == "dial":
         oc.round_pocket(f, r, window=prot(s, {"live-drawing"})[0], seed=sid)
+        if STYLE.get(sid) in ("crown", "hang", "feelers", "wrap", "mixed", "web"):
+            oc.tentacle_styles(f, {"web": "wrap"}.get(STYLE[sid], STYLE[sid]), oc.xyxy(r), [], [], np.random.default_rng(oc.sid(sid)))
     elif fam == "crest":
         oc.crest(f, r, seed=sid)
+        if STYLE.get(sid) in ("crown", "hang", "feelers", "wrap", "mixed", "web"):
+            oc.tentacle_styles(f, {"web": "wrap"}.get(STYLE[sid], STYLE[sid]), oc.xyxy(r), [], [], np.random.default_rng(oc.sid(sid)))
     elif fam == "bar":
         pass   # a bar's track is a window of its strip, cut from the strip's render
     else:
         raise SystemExit(f"slot {sid}: no sculptor for kit piece {s['piece']}")
 
 
-def grow_field(slots, region, states):
-    """Sculpt every slot touching the region (grown by MARGIN), parents before children, each in its given state."""
+def grow_field(slots, region, states, own, bleed=BLEED):
+    """Sculpt one slot's family (own: its id and its children's) over the region grown by its bleed and MARGIN, parents
+    before children, each in its given state. Every other slot reaching into those bounds only keeps its protected
+    rectangles clear (cut back to the floor, measured by rule G1): a neighbour is drawn by its own image, never twice."""
     x, y, w, h = region
-    bounds = (x - MARGIN, y - MARGIN, x + w + MARGIN, y + h + MARGIN)
+    pad = MARGIN + bleed
+    bounds = (x - pad, y - pad, x + w + pad, y + h + pad)
     f = oc.Field(bounds, RES, seed=oc.sid("vhorr" + str(region)))
+    f.bleed = bleed
 
     def touches(s):
         sx, sy, sw, sh = s["rect"]
         return sx < bounds[2] and sx + sw > bounds[0] and sy < bounds[3] and sy + sh > bounds[1]
     order = sorted((s for s in slots.values() if touches(s)), key=lambda s: (s["parent"] is not None, s["id"]))
     for s in order:
+        if s["id"] not in own:
+            if ISOLATE:   # survey pictures: the component alone, its style whole (no neighbour to keep clear of)
+                continue
+            for p in s["protected"]:
+                f.keepout(oc.xyxy(p["rect"]), f"{s['id']} {p['kind']} (neighbour)")
+            if s["family"] in ("button", "tab", "lamp") or s["family"] == "bar":
+                f.keepout(oc.xyxy(s["rect"]), f"{s['id']} (neighbour)")
+            continue
         s["child_rects"] = [slots[c] | {"rect": slots[c]["rect"]} for c in s["children"]]
         sculpt_slot(f, s, states.get(s["id"], s["rest"]))
     f.finish()
@@ -155,10 +208,10 @@ def B(r):
 
 
 LIGHTS = [   # the bible's light as suns, so every region of any size is lit alike: (name, direction, W/m2, colour, angle)
-    ("key", (0.08, -0.85, -0.52), 3.0, (1.0, 0.82, 0.62), 20.0),       # warm, from above
-    ("rimL", (0.97, -0.2, -0.12), 2.4, (1.0, 0.72, 0.55), 25.0),        # grazing the wet ridges from the left
-    ("rimR", (-0.97, -0.15, -0.1), 1.5, (0.85, 0.75, 1.0), 25.0),       # and, cooler, from the right
-    ("fill", (-0.19, 0.8, -0.57), 0.16, (0.45, 0.55, 1.0), 60.0),       # dim and cool from below: the hollows stay deep
+    ("key", (0.08, -0.85, -0.52), 4.2, (1.0, 0.82, 0.62), 20.0),       # warm, from above
+    ("rimL", (0.97, -0.2, -0.12), 4.6, (1.0, 0.72, 0.55), 12.0),        # grazing the wet ridges from the left
+    ("rimR", (-0.97, -0.15, -0.1), 2.8, (0.85, 0.75, 1.0), 12.0),       # and, cooler, from the right
+    ("fill", (-0.19, 0.8, -0.57), 0.3, (0.45, 0.55, 1.0), 60.0),        # dim and cool from below: the hollows stay deep
 ]
 
 
@@ -173,15 +226,16 @@ def scene(region, samples):
     cam.data.ortho_scale = max(w, h) * MM
     cam.data.sensor_fit = "AUTO"
     cam.location = ((x + w / 2) * MM, -(y + h / 2) * MM, 0.5)
-    for name, d, e, c, a in LIGHTS:
-        ui_render.sun(name, d, e, c, a)
+    # the study's own light rig, laid round the region at its size (the accepted widget's light, not an approximation of
+    # it: version 25 lit the kit with suns, which give no broad wet highlight on the rolled lips)
+    st.light_rig(st.KEY_W * 0.7 * LIGHT_GAIN, centre=(x + w / 2, -(y + h / 2)), scale=max(w, h, 120.0) / 545.0)
     return sc
 
 
 def materials():
     """The skin's materials: the bible's accepted anatomy (step 26), its sacs' light coloured per vertex (attribute gc,
     so the alert lamp can glow amber or red while every other sac glows life green), glass, bronze, key caps."""
-    m = st.anatomy("anatomy", 26)
+    m = st.anatomy("anatomy", 26, detail=KIT_DETAIL, bone_gain=1.6)
     n, l = st.nt(m)
     a = n.new("ShaderNodeAttribute")
     a.attribute_type = "GEOMETRY"
@@ -189,7 +243,7 @@ def materials():
     l.new(a.outputs["Color"], n["Principled BSDF"].inputs["Emission Color"])
     return {"anatomy": m, "glass": st.smoked("glass", veins=False),
             "bronze": st.principled("bronze", st.PAL["bronze"], rough=0.3, metal=1.0),
-            "cap": st.principled("keycap", "#0e0a0b", rough=0.28, coat=1.0, coat_rough=0.03),
+            "cap": st.principled("keycap", "#3a332b", rough=0.3, metal=1.0, coat=0.6, coat_rough=0.08),   # a metal button
             "pocket": st.principled("pocket", "#020101", rough=0.9)}
 
 
@@ -213,7 +267,7 @@ def place(f, M, only_rect=None):
             r = B(o["rect"])
             state = o["state"]
             sink, drop = (3.0, 2.0) if state == "pressed" else (0.0, 0.0)
-            top = oc.KEY_TOP_Z if kind == "key" else oc.KEY_TOP_Z - 1.5
+            top = o.get("top", oc.KEY_TOP_Z if kind == "key" else oc.KEY_TOP_Z - 1.5)
             st.assign(st.box(f"cap{k}", r[0] + 0.8, r[1] + 0.8 - drop, r[2] - 0.8, r[3] - 0.8 - drop, top - 9.0 - sink,
                              top - sink, bevel=1.6, segs=4), M["cap"])
             st.assign(st.box(f"pit{k}", r[0] - 3, r[1] - 3, r[2] + 3, r[3] + 3, oc.GLASS_Z - 12.0, oc.GLASS_Z - 10.0, bevel=0),
@@ -294,19 +348,23 @@ def build(args):
         if want and not (want & set(fam_ids)):
             continue
         region = t["rect"]
-        f = grow_field(slots, region, {})
+        own = set(fam_ids)
+        bl = SLOT_BLEED.get(t["id"], BLEED)
+        f = grow_field(slots, region, {}, own, bleed=bl)
+        x, y, w, h = region
+        bled = [x - bl, y - bl, w + 2 * bl, h + 2 * bl]
         for label, d in f.clearance().items():
             fit[label] = min(d, fit.get(label, 99.0))
         full = os.path.join(args.out, f"{t['id']}.{t['rest'] or 'idle'}.png")
-        times[t["id"]] = round(render(region, f, full, args.samples), 1)
+        times[t["id"]] = round(render(bled, f, full, args.samples), 1)
         print(f"VHORR {t['id']} {region} {times[t['id']]} s", flush=True)
         for c in t["children"]:   # each child at rest, cut from its parent
             cs = slots[c]
-            crop(full, region, cs["rect"], os.path.join(args.out, f"{c}.{cs['rest'] or 'idle'}.png"))
+            crop(full, bled, cs["rect"], os.path.join(args.out, f"{c}.{cs['rest'] or 'idle'}.png"))
             for state in cs["states"]:   # each other state: only that slot re-rendered with the state changed
-                if state == (cs["rest"] or "idle"):
+                if state == (cs["rest"] or "idle") or args.rest_only:
                     continue
-                fs = grow_field(slots, region, {c: state})
+                fs = grow_field(slots, region, {c: state}, own, bleed=bl)
                 p = os.path.join(args.out, f"{c}.{state}.png")
                 times[f"{c}.{state}"] = round(render(cs["rect"], fs, p, args.samples), 1)
                 print(f"VHORR {c}.{state} {times[f'{c}.{state}']} s", flush=True)
@@ -320,10 +378,12 @@ def build(args):
     shutil.copyfile(portrait, os.path.join(args.out, "portrait.png"))
     pieces["portrait"] = {"file": "portrait.png", "slot": "nameplate", "state": "live"}
     slot_list = {s["id"]: {"piece": s["piece"], "rect": s["rect"], "states": s["states"], "rest": s["rest"] or "idle",
-                           "parent": s["parent"]} for s in slots.values()}
+                           "parent": s["parent"], "bleed": SLOT_BLEED.get(s["id"], BLEED) if s["parent"] is None else 0.0}
+                  for s in slots.values()}
     portrait_rect = next((p["rect"] for p in slots["nameplate"]["protected"] if p["kind"] == "portrait-window"), None)
     man = {"skin": "vhorr", "kind": "organic", "scale": PX, "layout": args.layout, "size": size,
-           "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice)",
+           "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice); "
+                     "a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
            "portrait": {"rect": pin(portrait_rect) if portrait_rect else None}, "hex": st.hx.HEX,
            "slots": slot_list, "pieces": pieces}
     if not want:
@@ -362,6 +422,39 @@ def sheet(args):
     print("VHORR sheet", args.sheet, round(t, 1), flush=True)
 
 
+def board(args):
+    """A style board for the owner to choose from (owner, 2026-10-31: "Get some different styles to see what i like.
+    Some panels don't need the boney ridge. Some should have like a tentacle kind of thing. I want to see more
+    tentacles"): one panel (a framed readout and three larva keys with metal buttons, over the rib floor) in every
+    style the panel sculptor knows (organic_components.STYLES), each with a tall thin panel and a wide strip beside it,
+    all from the same sculptors; labelled afterwards by the caller."""
+    global PX
+    PX = 1.5
+    cw, ch, cols = 380, 380, 4
+    rows = (len(oc.STYLES) + cols - 1) // cols
+    region = (0, 0, cw * cols, ch * rows)
+    f = oc.Field((-MARGIN, -MARGIN, region[2] + MARGIN, region[3] + MARGIN), RES, seed=13)
+    f.bleed = 14.0
+    cells = []
+    for k, style in enumerate(oc.STYLES):
+        x, y = (k % cols) * cw, (k // cols) * ch
+        keys = [(x + 36 + 100 * j, y + 140, 88, 40) for j in range(3)]
+        oc.panel(f, (x + 20, y + 40, 330, 180), labels=[(x + 40, y + 62, 90, 14)], windows=[(x + 40, y + 80, 260, 44)],
+                 seed=f"board.{style}", avoid=keys, style=style)
+        for j, kr in enumerate(keys):
+            oc.key(f, kr, seed=f"board.{style}.key{j}", state="pressed" if j == 2 else "idle",
+                   label=(kr[0] + 30, kr[1] + 13, 28, 14))
+        oc.panel(f, (x + 20, y + 236, 64, 96), windows=[(x + 34, y + 258, 36, 52)], seed=f"board.{style}.tall", style=style)
+        oc.panel(f, (x + 100, y + 262, 250, 46), labels=[(x + 124, y + 276, 56, 14)], windows=[(x + 190, y + 278, 140, 12)],
+                 seed=f"board.{style}.strip", style=style)
+        cells.append({"style": style, "x": x, "y": y})
+    f.finish()
+    t = render(region, f, args.board, args.samples)
+    json.dump({"cells": cells, "cell_mm": [cw, ch], "px_per_mm": PX, "render_s": round(t, 1), "clearance_mm": f.clearance()},
+              open(os.path.splitext(args.board)[0] + ".json", "w"), indent=1)
+    print("VHORR board", args.board, round(t, 1), flush=True)
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
@@ -371,8 +464,22 @@ def main():
     ap.add_argument("--samples", type=int, default=24)
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--sheet", default="")
+    ap.add_argument("--board", default="")
+    ap.add_argument("--style", default="", help="every slot in this one style (organic_components.STYLES): survey options")
+    ap.add_argument("--rest-only", action="store_true", help="only each slot's resting state")
+    ap.add_argument("--isolate", action="store_true", help="each slot sculpted alone, no neighbour kept clear (survey pictures)")
     a = ap.parse_args(argv)
-    if a.sheet:
+    global ISOLATE
+    ISOLATE = a.isolate
+    if a.style:
+        if a.style not in oc.STYLES:
+            raise SystemExit(f"--style {a.style}: not one of {oc.STYLES}")
+        for k in list(STYLE) + ["panel.weapons", "ssd.bezel", "nameplate", "helm.pad", "inset.helm-readout", "dial",
+                                "inset.contacts", "crest", "strip.top", "strip.bottom"]:
+            STYLE[k] = a.style
+    if a.board:
+        board(a)
+    elif a.sheet:
         sheet(a)
     else:
         build(a)

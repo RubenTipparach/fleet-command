@@ -382,6 +382,22 @@ def satin(name, col="#bdb8ae"):
     return k.mat
 
 
+def clip_rows(poly, y0, y1):
+    """A polygon (slot px, y down) clipped to the rows y0..y1 (Sutherland-Hodgman against two horizontal lines)."""
+    def cut(pts, keep, at):
+        out = []
+        for i, p in enumerate(pts):
+            q = pts[(i + 1) % len(pts)]
+            if keep(p):
+                out.append(p)
+            if keep(p) != keep(q):
+                t = (at - p[1]) / (q[1] - p[1])
+                out.append((p[0] + (q[0] - p[0]) * t, at))
+        return out
+    pts = cut(poly, lambda p: p[1] >= y0, y0)
+    return cut(pts, lambda p: p[1] <= y1, y1) if pts else []
+
+
 def printed(name, col, rough=0.55):
     """Plain paint or enamel: engraving fill, a dark chassis, a pointer."""
     k = NodeKit(name)
@@ -573,6 +589,23 @@ class Panel(Shaper):
                 r = max(r, pr - 4)
             shape = rrect(x0, y0, x1, y1, min(r, (x1 - x0) / 2, (y1 - y0) / 2), seg=16)
         return self.slab([shape] + list(holes), z - 2.0, z, m or self.m["film"], bevel=0.4)
+
+    def press_wall(self, win, press, z, col="#0a0806", hidden=0.0):
+        """The socket's inner wall that a pressed key's sunken glass uncovers under the well's top lip: a dark band
+        press px deep along the top of the well win, laid just over the sunken glass at z (mm). A face-on render cannot
+        see depth, so without it flat glass pushed in looks unchanged (owner, 2026-10-31: "render the 3d state of the
+        button being pressed with the frame unmoved, and the label should sync with the amount of travel that button
+        took"). The band is the well clipped to rows [top, top + hidden + press], hidden being how far the bezel's lip
+        overhangs the well's top edge, so press px of it show; nothing outside the well is drawn. The travel that shows
+        is measured from the renders by tools/mockups/press_travel.py."""
+        top = min(y for _x, y in win)
+        band = clip_rows(list(win), top - 1.0, top + hidden + press)
+        if len(band) < 3:
+            return None
+        m = self.mat("press_wall", lambda: printed("press_wall", col, rough=0.8))
+        ob = self.slab([band], z + 0.02, z + 0.05, m, bevel=0.0)
+        ob.visible_shadow = False
+        return ob
 
     def flat(self, outlines, m, z=None):
         """A flat printed shape on the film: closed outlines filled with no depth and no bevel, casting no shadow."""

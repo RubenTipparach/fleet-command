@@ -167,6 +167,7 @@ def piece(name):
             glass.location.y -= press * MM
             if press:
                 lip_shadow(K, _w, 9.0)
+                K.press_wall(_w, press, K.dz - press, hidden=2.0)   # the well's inner wall the sunken glass uncovers
         ob = K.plate([plate] + [w for _k, w in wells])
         cuts = False
         for x, y, r in s["dimples"]:

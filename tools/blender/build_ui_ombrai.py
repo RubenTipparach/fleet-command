@@ -153,6 +153,8 @@ def piece(name):
             ob = K.film(None, shape=[tuple(p) for p in f], m=K.m[fm], z=K.dz - (press if kind == "key" else 0.0))
             if kind == "key":
                 ob.location.y -= press * MM
+                if press:
+                    K.press_wall(_w, press, K.dz - press, hidden=2.5)   # the well's inner wall the sunken glass uncovers
         K.plate([plate] + [w for _k, w in wells])
         for kind, w in wells:
             gap = min(min(math.hypot(x - px, y - py) for px, py in plate) for x, y in w)

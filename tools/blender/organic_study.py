@@ -91,6 +91,10 @@ STEPS = [
     # cavern and every fill behind or between the panels go; the panels render on a transparent film and are judged
     # composited over the game view (tools/mockups/overlay_composite.py).
     (26, "overlay", "An overlay, not a scene: no backdrop"),
+    # the owner, of step 26: "The header looks better but the body needs work. The body looks soft, and has very little
+    # details ... Lots of muscle features, underlying bone, folded wrinkly skins", "And detail that look like pores or
+    # goosebumps?": the body's dense anatomy, and the even pore bump replaced by detail that follows it
+    (27, "dense", "A dense body: bundles, fibres, ribs, knuckles and folds"),
 ]
 
 OVERLAY_FROM = 26          # from this step on the console is an overlay: no backdrop, a transparent film
@@ -687,11 +691,16 @@ def clay(name, muscle):
     return m
 
 
-def anatomy(name, step):
+def anatomy(name, step, detail=1.0, bone_gain=1.0):
     """The sculpted body's one material, its layers blended by masks the sculpt wrote (m1: bone showing through thin
     skin, raw muscle in the hollows, veins; m2: creases, webs in tension, pustules, depth). Before step 20 it is plain
     leather (only the veins' and sacs' light show); step 20 blends; step 21 makes it wet where flesh is wet; step 22
-    sinks the cavern into shadow; step 23 darkens the whole ladder."""
+    sinks the cavern into shadow; step 23 darkens the whole ladder.
+
+    detail: how many times larger the surface detail is drawn (pores, grain, blotches, wrinkles, bump depth). The study is
+    seen at 2 px per mm (detail 1); a console kit is seen at about 0.65 px per mm on the page, where the study's detail
+    falls under a pixel and averages into flat brown, so a kit draws it larger (tools/blender/build_ui_vhorr_organic.py).
+    bone_gain: how strongly bone shows through thin skin (a kit's thinner frames have less crest to show it on)."""
     on = lambda k: step >= k  # noqa: E731
     dark = on(23)
     m = principled(name, PAL["flesh"], rough=0.6, coat=0.4, coat_rough=0.25, sss=0.06, sss_scale_mm=1.5)
@@ -703,14 +712,14 @@ def anatomy(name, step):
     ao.samples = 16
     ao.inputs["Distance"].default_value = 10 * MM
     pores = n.new("ShaderNodeTexVoronoi")
-    pores.inputs["Scale"].default_value = 520.0
+    pores.inputs["Scale"].default_value = 520.0 / detail
     l.new(obj_co(m), pores.inputs["Vector"])
-    grain = noise(m, 220.0, 8.0).outputs["Fac"]
-    blot = noise(m, 40.0, 3.0).outputs["Fac"]
+    grain = noise(m, 220.0 / detail, 8.0).outputs["Fac"]
+    blot = noise(m, 40.0 / detail, 3.0).outputs["Fac"]
     wr = n.new("ShaderNodeTexWave")            # leather wrinkles, strongest where the skin is stretched over a gap
     wr.wave_type = "BANDS"
     wr.bands_direction = "DIAGONAL"
-    wr.inputs["Scale"].default_value = 120.0
+    wr.inputs["Scale"].default_value = 120.0 / detail
     wr.inputs["Distortion"].default_value = 22.0
     wr.inputs["Detail"].default_value = 5.0
     l.new(obj_co(m), wr.inputs["Vector"])
@@ -726,7 +735,7 @@ def anatomy(name, step):
         c = mixc(m, mathn(m, "MULTIPLY", vein, 0.8), c, "#1c1028")
         # bone where the skin thins over a crest: stained ivory, worn brighter on the very top, blended through the leather
         bonec = mixc(m, mathn(m, "MULTIPLY", grain, 1.2, clamp=True), "#7d6b4c", "#cfc2a2" if not dark else "#b3a585")
-        bm = mathn(m, "POWER", bone_m, 1.6)
+        bm = mathn(m, "MULTIPLY", mathn(m, "POWER", bone_m, 1.6), bone_gain, clamp=True)
         patch = mathn(m, "MULTIPLY", mathn(m, "SUBTRACT", blot, 0.3), 2.2, clamp=True)   # leather still clings in patches
         c = mixc(m, mathn(m, "MULTIPLY", bm, patch, clamp=True), c, bonec)
         # grime and dried fluid in the creases
@@ -755,13 +764,22 @@ def anatomy(name, step):
         l.new(mathn(m, "ADD", 0.08, mathn(m, "MULTIPLY", grain, 0.4)), b.inputs["Coat Roughness"])
         l.new(mathn(m, "ADD", 0.48, mathn(m, "MULTIPLY", bone_m, 0.25)), b.inputs["Roughness"])
         b.inputs["Subsurface Weight"].default_value = 0.12
-    # bump: pores everywhere, wrinkles where stretched, a fine grain
-    h = mathn(m, "MULTIPLY", pores.outputs["Distance"], 0.6)
-    h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", wr.outputs["Fac"], mathn(m, "ADD", 0.25, mathn(m, "MULTIPLY", web, 1.2))))
-    h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", grain, 0.4))
+    if on(27):
+        # the owner, of step 26's even bump: "And detail that look like pores or goosebumps?" From step 27 the skin's
+        # detail is the sculpt's own (bundles, fibres, folds, which follow the anatomy); the material keeps only a faint
+        # pore broken up by the blotch (never an even all-over bump) and the stretch wrinkles where the skin spans a gap
+        broken = mathn(m, "MULTIPLY", mathn(m, "SUBTRACT", blot, 0.45), 3.0, clamp=True)
+        h = mathn(m, "MULTIPLY", pores.outputs["Distance"], mathn(m, "MULTIPLY", broken, 0.12))
+        h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", wr.outputs["Fac"], mathn(m, "MULTIPLY", web, 1.0)))
+        h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", crease, 0.5))
+    else:
+        # bump: pores everywhere, wrinkles where stretched, a fine grain
+        h = mathn(m, "MULTIPLY", pores.outputs["Distance"], 0.6)
+        h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", wr.outputs["Fac"], mathn(m, "ADD", 0.25, mathn(m, "MULTIPLY", web, 1.2))))
+        h = mathn(m, "ADD", h, mathn(m, "MULTIPLY", grain, 0.4))
     bump = n.new("ShaderNodeBump")
     bump.inputs["Strength"].default_value = 0.8
-    bump.inputs["Distance"].default_value = 0.7 * MM
+    bump.inputs["Distance"].default_value = 0.7 * MM * detail
     l.new(h, bump.inputs["Height"])
     l.new(bump.outputs["Normal"], b.inputs["Normal"])
     return m
@@ -771,7 +789,8 @@ def sculpted_frame(step):
     """The frame as one sculpted surface, as far as `step` takes it: bone (16), muscle (17), skin (18), what lies under
     the skin (19), the cavern behind (22). Returns (the sculpt, its mesh object)."""
     layers = {"bone"} | ({"muscle"} if step >= 17 else set()) | ({"skin"} if step >= 18 else set()) | \
-             ({"detail"} if step >= 19 else set()) | ({"cavern"} if 22 <= step < OVERLAY_FROM else set())
+             ({"detail"} if step >= 19 else set()) | ({"cavern"} if 22 <= step < OVERLAY_FROM else set()) | \
+             ({"dense"} if step >= 27 else set())
     sc = oa.Sculpt((VIEW[0] - 10, VIEW[1] - 10, VIEW[2] + 10, VIEW[3] + 10), SCULPT_RES_MM, WIN, PORT, KEYS, NEIGH,
                         CRADLE, pustules=(PUSTULES[:1] if step >= OVERLAY_FROM else PUSTULES) if step >= 19 else (),
                         overlay=step >= OVERLAY_FROM)
@@ -1082,11 +1101,7 @@ def build(step):
 
     # ---------------------------------------------------------------- light
     if on(5):
-        kw = KEY_W * (0.7 if on(23) else 1.0)   # step 23: dark, so the screens and keys carry the light
-        area("key", (-40, 420, 260), (0, 0, 0), kw, 180, (1.0, 0.82, 0.62))       # warm, from above
-        area("rimL", (-520, 60, -20), (-150, 20, 10), kw * 0.3, 200, (1.0, 0.72, 0.55))  # grazes the wet ridges
-        area("rimR", (560, 40, -10), (200, 20, 10), kw * 0.2, 200, (0.85, 0.75, 1.0))
-        area("fill", (100, -420, 300), (0, 0, 0), kw * 0.03, 600, (0.45, 0.55, 1.0))  # dim and cool, hollows stay deep
+        light_rig(KEY_W * (0.7 if on(23) else 1.0))   # step 23: dark, so the screens and keys carry the light
     else:
         sun = bpy.data.lights.new("front", "SUN")
         sun.energy = 1.4
@@ -1094,6 +1109,22 @@ def build(step):
         so = link(bpy.data.objects.new("front", sun))
         so.rotation_euler = (math.radians(8), math.radians(-6), 0)
     return growth, protected
+
+
+def light_rig(kw, centre=(0.0, 0.0), scale=1.0):
+    """The bible's light: a warm soft key from above, two rims grazing the wet ridges (warm from the left, cooler from the
+    right) and a dim cool fill from below, so the hollows stay deep. Laid out round the study's panel (centre (0, 0) mm,
+    545 mm wide); centre and scale place the same rig round any other region (a console kit's slot), its power scaled with
+    its area so every region is lit alike. One implementation: the study and every organic kit light with it."""
+    cx, cy = centre
+
+    def at(p):
+        return (cx + p[0] * scale, cy + p[1] * scale, p[2] * scale)
+    k = kw * scale * scale
+    area("key", at((-40, 420, 260)), at((0, 0, 0)), k, 180 * scale, (1.0, 0.82, 0.62))
+    area("rimL", at((-520, 60, -20)), at((-150, 20, 10)), k * 0.3, 200 * scale, (1.0, 0.72, 0.55))
+    area("rimR", at((560, 40, -10)), at((200, 20, 10)), k * 0.2, 200 * scale, (0.85, 0.75, 1.0))
+    area("fill", at((100, -420, 300)), at((0, 0, 0)), k * 0.03, 600 * scale, (0.45, 0.55, 1.0))
 
 
 def crystal_heart(cx, cy, cz, scale, frosted=True):

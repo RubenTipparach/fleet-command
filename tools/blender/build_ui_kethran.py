@@ -400,13 +400,21 @@ def bar_fill(role):
     return build
 
 
+PRESS_MM = 3.0   # how far a pressed cap drops down the face-on image (3 px at the kit's 1x)
+
+
 def button(state):
     def build(K):
         w, h = 160, 56
         z = 3.0 if state == "pressed" else 9.0      # 6 mm of travel
         # A plain cap: hover lifts its steel a shade; the pressed key sinks into its socket's shadow and
-        # reads darker, not just lower.
-        keycap(K, (0, w, 0, 12, w - 12, h), (9.5, w - 9.5, 8, 18.5, w - 18.5, 48), z, None,
+        # reads darker, not just lower. The face-on camera cannot see depth, so the pressed cap also drops
+        # PRESS_MM down the image (owner, 2026-10-31: "render the 3d state of the button being pressed with the
+        # frame unmoved, and the label should sync with the amount of travel that button took"); the bezel and
+        # socket do not move. The travel the page's label follows is measured from these renders
+        # (tools/mockups/press_travel.py), never typed in.
+        dy = PRESS_MM if state == "pressed" else 0.0
+        keycap(K, (0, w, 0, 12, w - 12, h), (9.5, w - 9.5, 8 + dy, 18.5, w - 18.5, 48 + dy), z, None,
                key_role={"idle": "iron", "hover": "iron_hi", "pressed": "gunmetal"}[state])
     return build
 

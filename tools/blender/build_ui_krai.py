@@ -143,6 +143,8 @@ def piece(name):
             glass = K.film(None, shape=[tuple(p) for p in f], m=K.m[kind])
             glass.location.y -= sink * MM   # an engaged key's glass is pushed in: down the screen and back, frame still
             glass.location.z -= sink * MM
+            if sink:
+                K.press_wall(_w, sink, K.dz - sink)   # the well's inner wall the sunken glass uncovers
         K.plate([plate] + [w for _k, w in wells])
         for _kind, w in wells:
             gap = min(min(math.hypot(x - px, y - py) for px, py in plate) for x, y in w)
