@@ -226,6 +226,33 @@ Units: the scene is 1 unit = 100 m; ranges in km, speeds in m/s, energy in energ
 charge times, costs, shield strengths) are placeholders written in the page's `WEAPONS` and `CLASSES` tables, as they
 will be in `data/`.
 
+## 4a. Mines and the tractor contest
+
+Owner, 2026-11-01: "Mine laying should have a cool down system of 3 seconds. Then let's review tractor beam system.
+Initial tractor beam grip is at about 50%. Tractor beam will have an amount of time that ticks down.. let's say 10
+seconds. By this time, each ship will have picked what the next beam value will be. A higher value from each ship will
+result in grip increasing or decreasing. Grip decreasing to 0 or below the ship being restrained breaks free."
+
+**Mines.** After a mine is dropped the next waits 3 s (`MINE.cooldown_s`). The transport station's Drop mine key shows
+"Next mine in 2.4 s" in the weapons' cooldown format (x.x under 10 s) and is disabled until then. A mine still arms 3 s
+after it is dropped and goes off within 1.2 km of an enemy.
+
+**The tractor contest** (`TRACTOR` in the page, every number data):
+
+| Step | What happens |
+|---|---|
+| Take hold | The captain sets Hold, Pull or Push with energy in the tractor and the target inside 3 km: the beam takes hold at a grip of **50 %** |
+| A round | **10 s**, counted down on the panel ("Round 2 ends in 6.6 s") |
+| The picks | Each ship's **beam value** is the energy in its tractor when the round ends, times its tractor's health (and the brownout share). The holder sets its pick with the tractor panel's energy boxes, the same boxes as the power station; the held ship's crew picks how much to resist with, taking energy from its weapons when it has none spare. **Neither side sees the other's pick until the round ends** (built as recommended, B10) |
+| The result | The grip moves toward the higher pick, **10 % per energy point of difference** (5.0 E against 4.3 E: +7 %), between 0 and 100 % (B8); the panel shows the last round: "5.0 vs 4.3 · +7 %" |
+| Breaking free | A grip at **0** frees the held ship; the beam switches Off, and the same holder cannot take that ship again for one round, 10 s (B9) |
+| Its pull | The grip scales the beam: Hold damps the held ship's speed by 80 % a second at full grip; Pull and Push move it 200 m/s at full grip |
+| Dropped | The beam drops if the target leaves reach (3.2 km), dies, the tractor loses its energy, or the captain sets Off |
+
+The energy in the tractor is drawn every second like any other system, so holding someone costs weapons or shields.
+In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. In the mockup only the
+player holds; enemies only resist (B11 asks whether they should hold you).
+
 ## 5. Costs
 
 Measured in the page (`window.MOCKUP_INFO`) on the battle shot at 1920 x 1080, SwiftShader: see the table in the
@@ -244,3 +271,7 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B5 | (Deferred: no mobile mockup yet.) Phone landscape: a rail of four panel keys and quick keys (Next, Port, Fire, Stbd) in the view, panels opening expanded; or the desktop column scaled down? | **The rail and quick keys**: the desktop column scaled to a phone is too small to read or touch |
 | B6 | Add allocation cells and eleven icons to the kit (so every skin must draw them)? | **Yes**, they are needed by every console; Concord's are drawn now |
 | B7 | Power and Systems ticks on reactors from 12 E to 60 E and more? | **Fixed slots (32)**, 1 E a tick to 32 E, then 2 E, then 5 E; slots past the rating outlined and room for overdraw shown red (the mockup has one tick per E today) |
+| B8 | Tractor: how far does the grip move after a round? | **10 % per energy point of difference** between the picks (a close round moves it a little, a lopsided one a lot); the other option is a fixed 10 % to whoever picked higher |
+| B9 | Tractor: after a ship breaks free, how soon can the same holder beam it again? | **One round (10 s)**, so switching the beam straight back on does not hand the holder a fresh 50 % |
+| B10 | Tractor: does either side see the other's pick before the round ends? | **No**, both picks are shown when the round ends (a blind bid); the other option shows the opponent's pick as it changes |
+| B11 | Tractor: can enemy ships hold yours, so you resist with the same boxes? | **Yes, in the next version**: the tractor panel would show "Held by" with the grip on you (the mockup has only your beam today) |

@@ -14,3 +14,4 @@
 - 2026-11-01, desktop session for the cloud session (commit e960a32): version 11, section W replaces section V (each Vhorr Brood style option is a picture of that exact component, 48 pictures inlined as data URIs); database capability kept; version id `1793508311-c274`.
 - 2026-11-01, desktop session for the cloud session (commit 1d90092): version 12, question W8 added (what fills the space between the Brood panels, three pictures); 51 pictures inlined; database capability kept; version id `1793514833-d1db`.
 - 2026-11-01, cloud session (battle console thread): questions B1-B6 added (B1 decided: a speed handle), republished from the cloud session; version id `1793521414-93d4`.
+- 2026-11-01, cloud session (battle console thread): B7 (tick scaling), section R (reactor, R1-R4) and B8-B11 (tractor contest) added; capabilities kept; version id `1793570080-4c09`.

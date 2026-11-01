@@ -128,3 +128,26 @@ glyph or seconds) above the ship schematic, and pointing at a mount SHALL outlin
 #### Scenario: A long cooldown
 - **WHEN** a mount has 12.3 s left
 - **THEN** its box shows 13
+
+### Requirement: Mines are dropped no faster than one every 3 s
+After a mine is dropped, the next SHALL wait the mine cooldown (3 s), and the Drop mine key SHALL show the seconds left in
+the weapons' cooldown format and be disabled until then.
+
+#### Scenario: Two mines in a row
+- **WHEN** the captain drops a mine and presses Drop mine again 0.6 s later
+- **THEN** no second mine is dropped and the key reads "Next mine in 2.4 s"
+
+### Requirement: The tractor beam is a contest of rounds
+A tractor beam SHALL take hold of a target inside reach at a grip of 50 %. Every round (10 s) SHALL end with each
+ship's beam value (the energy in its tractor, times its tractor's health) compared, and the grip SHALL move toward the
+higher value by 10 % for each energy point of difference, between 0 and 100 %. A grip of 0 SHALL free the held ship and
+switch the beam off, and the same holder SHALL NOT take that ship again for one round. The panel SHALL show the grip,
+the seconds left in the round and the last round's two values, all from the rule that resolves the round.
+
+#### Scenario: A round won
+- **WHEN** the holder puts 5 E in its tractor and the held ship resists with 4.3 E when the round ends
+- **THEN** the grip moves from 50 % to 57 % and the panel shows "5.0 vs 4.3 · +7%"
+
+#### Scenario: Breaking free
+- **WHEN** the grip is 34 % and the held ship out-picks the holder by 3.4 E or more
+- **THEN** the held ship breaks free, the beam switches off, and switching it back on does not take hold for 10 s
