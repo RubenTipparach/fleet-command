@@ -1,7 +1,6 @@
 # Mockup 2: Battle Console
 
-- Link: not yet published. A cloud session cannot publish without a manual approval, so the desktop session publishes
-  it (CLAUDE.md section 8) and records the link here, in the mockup tracker and in `mockup-work.md`.
+- Link: https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs (slug `48b217b4-8632-4ff8-bd62-913e6dadd23a`), on the owner's current account.
 - Shows: the battle console in the Concord skin around a stand-in battle. The left column (name plate with the fleet
   switch; the stations panel with helm, power, tactical, point defence, science, comms, repair, transport and fleet on
   a rail; the ship panel with the systems display, shields, sensors, tractor and craft; the weapons panel; the radar row
@@ -18,5 +17,5 @@
   draw calls a frame, main view and target camera together. The stand-in ships and sky are mockup 1's; mockup 3 sets
   the real budgets.
 - Stage: drafted.
-- Published: version 1 to publish (2026-11-01); version 2 to publish (2026-11-01: icon tabs in narrow columns named on
+- Published: version 1 not published; version 2 published 2026-11-01 from the cloud session, version id `1793521024-5061` (2026-11-01: icon tabs in narrow columns named on
   hover, the ship below the centre, a speed handle, Power over Systems, desktop only).

@@ -270,6 +270,43 @@ def _area(pts):
     return abs(sum(pts[i - 1][0] * p[1] - p[0] * pts[i - 1][1] for i, p in enumerate(pts))) / 2
 
 
+def lip_runs(well, seg, faces=None, min_len=0.5):
+    """Where a well's lamps go: walks the closed outline `well` (px, y down) and groups the edges `faces(nx, ny, length)`
+    accepts (all of them when None) into runs about `seg` px long. Yields (x0, y0, x1, y1, nx, ny): a run's ends and the
+    length-weighted inward normal of its edges; a run shorter than min_len is dropped. One implementation for every
+    skin's lighting option (the bible's chapter 10): rim light takes every edge, bottom light the lower lips (ny < 0),
+    side light the left lips (nx > 0). The inward side comes from the outline's winding, so any shape works."""
+    n = len(well)
+    area = sum(well[i - 1][0] * well[i][1] - well[i][0] * well[i - 1][1] for i in range(n)) / 2
+    sgn = 1.0 if area > 0 else -1.0   # y down: a positive area runs clockwise on screen, so inward is to the right
+    start, end, acc, nrm = None, None, 0.0, [0.0, 0.0]
+
+    def flush():
+        if start is not None and math.hypot(end[0] - start[0], end[1] - start[1]) > min_len:
+            k = math.hypot(*nrm) or 1.0
+            yield start[0], start[1], end[0], end[1], nrm[0] / k, nrm[1] / k
+
+    for i in range(n):
+        a, b = well[i], well[(i + 1) % n]
+        tx, ty = b[0] - a[0], b[1] - a[1]
+        ln = math.hypot(tx, ty)
+        if ln == 0:
+            continue
+        nx, ny = -ty / ln * sgn, tx / ln * sgn
+        if faces is None or faces(nx, ny, ln):
+            if start is None:
+                start, acc, nrm = a, 0.0, [0.0, 0.0]
+            end, acc = b, acc + ln
+            nrm = [nrm[0] + nx * ln, nrm[1] + ny * ln]
+            if acc >= seg:
+                yield from flush()
+                start = None
+        else:
+            yield from flush()
+            start = None
+    yield from flush()
+
+
 def offset_poly(pts, d):
     """Move a closed outline d px inward (negative: outward), each point along its mitred normal. Works on any
     smooth outline, which is what lets a plate's roll follow a formed shape."""
@@ -343,6 +380,22 @@ def satin(name, col="#bdb8ae"):
     k.set(Base_Color=col, Metallic=0.75, Roughness=0.22, Coat_Weight=0.3, Coat_Roughness=0.1)
     k.bump(w.outputs["Fac"], 0.04)
     return k.mat
+
+
+def clip_rows(poly, y0, y1):
+    """A polygon (slot px, y down) clipped to the rows y0..y1 (Sutherland-Hodgman against two horizontal lines)."""
+    def cut(pts, keep, at):
+        out = []
+        for i, p in enumerate(pts):
+            q = pts[(i + 1) % len(pts)]
+            if keep(p):
+                out.append(p)
+            if keep(p) != keep(q):
+                t = (at - p[1]) / (q[1] - p[1])
+                out.append((p[0] + (q[0] - p[0]) * t, at))
+        return out
+    pts = cut(poly, lambda p: p[1] >= y0, y0)
+    return cut(pts, lambda p: p[1] <= y1, y1) if pts else []
 
 
 def printed(name, col, rough=0.55):
@@ -536,6 +589,23 @@ class Panel(Shaper):
                 r = max(r, pr - 4)
             shape = rrect(x0, y0, x1, y1, min(r, (x1 - x0) / 2, (y1 - y0) / 2), seg=16)
         return self.slab([shape] + list(holes), z - 2.0, z, m or self.m["film"], bevel=0.4)
+
+    def press_wall(self, win, press, z, col="#0a0806", hidden=0.0):
+        """The socket's inner wall that a pressed key's sunken glass uncovers under the well's top lip: a dark band
+        press px deep along the top of the well win, laid just over the sunken glass at z (mm). A face-on render cannot
+        see depth, so without it flat glass pushed in looks unchanged (owner, 2026-10-31: "render the 3d state of the
+        button being pressed with the frame unmoved, and the label should sync with the amount of travel that button
+        took"). The band is the well clipped to rows [top, top + hidden + press], hidden being how far the bezel's lip
+        overhangs the well's top edge, so press px of it show; nothing outside the well is drawn. The travel that shows
+        is measured from the renders by tools/mockups/press_travel.py."""
+        top = min(y for _x, y in win)
+        band = clip_rows(list(win), top - 1.0, top + hidden + press)
+        if len(band) < 3:
+            return None
+        m = self.mat("press_wall", lambda: printed("press_wall", col, rough=0.8))
+        ob = self.slab([band], z + 0.02, z + 0.05, m, bevel=0.0)
+        ob.visible_shadow = False
+        return ob
 
     def flat(self, outlines, m, z=None):
         """A flat printed shape on the film: closed outlines filled with no depth and no bevel, casting no shadow."""

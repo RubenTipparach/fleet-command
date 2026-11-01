@@ -30,7 +30,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ui_render  # noqa: E402  (the render harness every Blender skin shares)
-from ui_shapes import NodeKit, Panel, film_mat, link_layers, metal, printed  # noqa: E402  (shared modelling and shading)
+from ui_shapes import NodeKit, Panel, film_mat, link_layers, lip_runs, metal, printed  # noqa: E402  (shared modelling and shading)
 
 SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "aelith", "shapes.json")))["pieces"]
 
@@ -38,7 +38,8 @@ SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "aelith", "
 # design.md). The shell is gold and pearl; the wells are void; the light in them is holo cyan.
 PAL = dict(gold="#c9a646", gold_hi="#f0d58a", pearl="#ece6da", void="#0c3340", void_deep="#010a0d", wall="#03100f")
 RIM = (0.42, 0.95, 1.0)   # the rim lamps' colour: holo cyan
-RIM_W = float(os.environ.get("RIM_W", 0.0008))       # rim lamp power per mm of well edge (times the lamp scale)
+RIM_W = float(os.environ.get("RIM_W", 0.0004))       # rim lamp power per mm of well edge (times the lamp scale); 0.0008
+# was tuned while most lamps were aimed out of their wells (fixed by ui_shapes.lip_runs, 2026-10-31)
 RIM_SPREAD = float(os.environ.get("RIM_SPREAD", 120))  # their spread, deg: wide enough that the lamps blend into one glow
 MAIN = (0.8, 60.0)        # the main light on the wells: strength and angular size (deg), a soft upper-left shadow
 
@@ -60,33 +61,12 @@ def pearl(name):
     return k.mat
 
 
-def inward(poly, a, b):
-    """The inward unit normal of the edge a-b of a closed outline (screen px, y down)."""
-    tx, ty = b[0] - a[0], b[1] - a[1]
-    n = math.hypot(tx, ty) or 1.0
-    nx, ny = -ty / n, tx / n
-    mx, my = (a[0] + b[0]) / 2 + nx * 0.5, (a[1] + b[1]) / 2 + ny * 0.5
-    inside = False
-    for i in range(len(poly)):
-        (x0, y0), (x1, y1) = poly[i - 1], poly[i]
-        if (y0 > my) != (y1 > my) and mx < x0 + (my - y0) * (x1 - x0) / (y1 - y0):
-            inside = not inside
-    return (nx, ny) if inside else (-nx, -ny)
-
-
 def rim(K, well, seg):
-    """Rim light: short strip lamps all the way round the well's edge, under the lip, aimed inward along the void with
-    a narrow spread, so the void glows at its rim and stays dark in the middle where the holograms are drawn."""
-    run, start = 0.0, 0
-    for i in range(1, len(well) + 1):
-        a, b = well[i - 1], well[i % len(well)]
-        run += math.hypot(b[0] - a[0], b[1] - a[1])
-        if run >= seg or i == len(well):
-            p, q = well[start], well[i % len(well)]
-            if math.hypot(q[0] - p[0], q[1] - p[1]) > 0.5:
-                nx, ny = inward(well, p, q)
-                K.edge_lamp(p[0], p[1], q[0], q[1], nx, ny, RIM_W, spread=RIM_SPREAD, depth=K.dz + min(3.0, -K.dz * 0.4), colour=RIM)
-            run, start = 0.0, i % len(well)
+    """Rim light: short strip lamps all the way round the well's edge (ui_shapes.lip_runs, every edge), under the lip,
+    aimed inward along the void with a narrow spread, so the void glows at its rim and stays dark in the middle where
+    the holograms are drawn."""
+    for x0, y0, x1, y1, nx, ny in lip_runs(well, seg):
+        K.edge_lamp(x0, y0, x1, y1, nx, ny, RIM_W, spread=RIM_SPREAD, depth=K.dz + min(3.0, -K.dz * 0.4), colour=RIM)
 
 
 def piece(name):

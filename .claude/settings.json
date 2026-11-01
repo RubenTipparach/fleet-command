@@ -13,7 +13,16 @@
   },
   "permissions": {
     "allow": [
-      "Artifact"
+      "Artifact",
+      "mcp__claude-artifacts__*",
+      "mcp__claude-artifacts",
+      "mcp__claude-artifacts__publish_files",
+      "mcp__claude-artifacts__publish_version",
+      "mcp__claude-artifacts__edit_version",
+      "mcp__claude-artifacts__declare_capabilities",
+      "Bash(openspec validate *)",
+      "mcp__github__pull_request_read",
+      "mcp__claude-code-remote__read_documentation"
     ]
   }
 }

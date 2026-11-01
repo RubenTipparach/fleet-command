@@ -95,34 +95,42 @@ def pieces():
         engrave=[[(x, y) for x, y in list(rbox(9, 9, 171, 131, 8).exterior.coords)]], margins=(28, 28, 28, 28), stretch="xy", roll=3.5)
     add("frame.inset", "nine", (72, 56), rbox(0.5, 0.5, 71.5, 55.5, 10), [("tray", rbox(7.5, 7.5, 64.5, 48.5, 5))],
         margins=(14, 14, 14, 14), stretch="xy", roll=2.0, dz=-3.0)
-    # The bar: an EQ-style slot rolled through the plate, a dim unlit streak down its middle; the fill is the lit streak
-    # the page lays over it at inset (7, 3).
-    slot = rbox(5, 3, 91, 13, 5)
-    add("bar.track", "nine", (96, 16), rbox(0.5, 0.5, 95.5, 15.5, 7.5), [("slot", slot)],
-        prints=[("streak", [[(10, 8), (86, 8)]], 1.6, "unlit")], live=[("fill", box(12, 6.6, 84, 9.4))],
-        margins=(0, 14, 0, 14), stretch="x", roll=0.8, land=0.9, inset=(7, 3), dz=-2.5, pad=0.8)
+    # The bar: a slot rolled through the plate holding a row of jewel lamps, the instrument's indicator row (owner,
+    # 2026-10-31: "have different repeated symbols for them"); the page lays the lamps (bar.cell.*) at inset (10, 4).
+    slot = rbox(5, 3, 91, 17, 6)
+    add("bar.track", "nine", (96, 20), rbox(0.5, 0.5, 95.5, 19.5, 9.5), [("slot", slot)],
+        live=[("cells", box(10, 4, 86, 16))],
+        margins=(0, 14, 0, 14), stretch="x", roll=0.8, land=0.9, inset=(10, 4), dz=-2.5, pad=0.8)
     # Keys: a domed key in a pressed dimple beside a small amber window that holds the key's name (never a knob jammed
     # at a frame's edge). The key and dimple stay in the 46 px left end, the window's ends in the margins.
+    # The window is the key's state (owner, 2026-10-31: "these need to switch back light on off based on hover/click
+    # state"): unlit film and no lamp at rest, backlit amber on hover, brighter with a stronger lamp when pressed. The
+    # plate, glass and dimple are the same in every state; only the light changes.
     win = rbox(44, 9, 140, 39, 5)
-    for state in ("idle", "hover", "pressed"):
-        add(f"button.{state}", "nine", (150, 48), rbox(0.5, 2.5, 149.5, 45.5, 10), [("amber", win)],
+    for state, film, lamps in (("idle", "dim", []), ("hover", "amber", [(92, 9, 0.05)]), ("pressed", "hot", [(92, 9, 0.08)])):
+        add(f"button.{state}", "nine", (150, 48), rbox(0.5, 2.5, 149.5, 45.5, 10), [(film, win)],
             studs=[(22, 24, 9.0, "key")], dimples=[(22, 24, 13.0)], live=[("label", box(48, 15, 136, 33))],
-            margins=(20, 16, 20, 46), stretch="x", roll=1.6, dz=-5.0, lamps=[(92, 9, 0.05)], pad=2.5)
-    # Tabs: a plate with one long amber window; the selected tab's window is lit, the others dim.
+            margins=(20, 16, 20, 46), stretch="x", roll=1.6, dz=-5.0, lamps=lamps, pad=2.5)
+    # Tabs are the console's toggles: a plate with a jewel pilot lamp in a dimple at its left (owner, 2026-10-31: "some
+    # of the togle buttons for instutues having lights on would be cool") and one long amber window. The selected tab's
+    # lamp glows and its window is lit; the others' lamps are dark glass and their windows dim. Same glass in both.
     for state in ("idle", "active"):
-        add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 8), [("amber" if state == "active" else "dim", rbox(8, 10, 112, 30, 5))],
-            live=[("label", box(14, 13, 106, 27))], margins=(12, 14, 12, 14), stretch="x", roll=1.4, dz=-4.0, pad=2.5,
-            lamps=[(60, 10, 0.05)] if state == "active" else [])
+        add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 8), [("amber" if state == "active" else "dim", rbox(28, 10, 112, 30, 5))],
+            studs=[(15, 20, 3.6, "jewel_on" if state == "active" else "jewel_off")], dimples=[(15, 20, 5.0)],
+            live=[("label", box(32, 13, 106, 27))], margins=(12, 14, 12, 28), stretch="x", roll=1.4, dz=-4.0, pad=2.5,
+            lamps=[(70, 10, 0.05)] if state == "active" else [])
     # Strips: a long plate; at its left end a bay holds a small needle meter on amber film (an arched window grown up
     # out of a box), at its right end a knurled knob in a dimple and two screws. The middle is plain metal that stretches.
-    bay = soft(unary_union([rbox(14, 24, 78, 46, 5), disc(46, 34, 24)]).intersection(box(0, 0, 512, 46)), 4)
-    meter = [arc_pts(46, 42, 22, math.radians(205), math.radians(335), 20)] + \
-        [[(46 + math.cos(a) * 18, 42 + math.sin(a) * 18), (46 + math.cos(a) * 22, 42 + math.sin(a) * 22)] for a in [math.radians(205 + 13 * i) for i in range(11)]]
+    # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the bay, knob and screws keep their size,
+    # moved down 8 px to centre on row 36; the plain middle the readouts sit on grows.
+    bay = soft(unary_union([rbox(14, 32, 78, 54, 5), disc(46, 42, 24)]).intersection(box(0, 0, 512, 54)), 4)
+    meter = [arc_pts(46, 50, 22, math.radians(205), math.radians(335), 20)] + \
+        [[(46 + math.cos(a) * 18, 50 + math.sin(a) * 18), (46 + math.cos(a) * 22, 50 + math.sin(a) * 22)] for a in [math.radians(205 + 13 * i) for i in range(11)]]
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 56), rbox(0.5, 0.5, 511.5, 55.5, 12), [("amber", bay)],
-            studs=[(468, 28, 12.0, "knurl"), (497, 13, 2.5, "screw"), (497, 43, 2.5, "screw")], dimples=[(468, 28, 15.0)],
-            prints=[("scale", meter, 1.0, "ink"), ("needle", [[(46, 42), (46 + math.cos(math.radians(250)) * 20, 42 + math.sin(math.radians(250)) * 20)]], 1.2, "red")],
-            margins=(10, 88, 10, 90), stretch="x", roll=2.5, dz=-6.0, lamps=[(46, 10, 0.06)], pad=2.0)
+        add(name, "nine", (512, 72), rbox(0.5, 0.5, 511.5, 71.5, 12), [("amber", bay)],
+            studs=[(468, 36, 12.0, "knurl"), (497, 15, 2.5, "screw"), (497, 57, 2.5, "screw")], dimples=[(468, 36, 15.0)],
+            prints=[("scale", meter, 1.0, "ink"), ("needle", [[(46, 50), (46 + math.cos(math.radians(250)) * 20, 50 + math.sin(math.radians(250)) * 20)]], 1.2, "red")],
+            margins=(10, 88, 10, 90), stretch="x", roll=2.5, dz=-6.0, lamps=[(46, 18, 0.06)], pad=2.0)
     add("divider", "nine", (128, 10), rbox(0.5, 1.5, 127.5, 8.5, 3.5), [], margins=(0, 12, 0, 12), stretch="x", roll=3.0)
     # Heroes. The name plate: an amber window for the live name, an engraved fork-and-wave mark at its left, a jewel and
     # a domed key in dimples at its right.
@@ -138,15 +146,13 @@ def pieces():
     add("helm.pad", "hero", (300, 300), Point(150, 150).buffer(149.5, quad_segs=48), [("phos", disc(150, 150, 50))],
         studs=keys + screws, cradle=(150, 150, 92.0, 24.0, 2.5), prints=[("graticule", graticule(150, 150, 44, [18, 34]), 0.8, "grat")],
         live=[("stop", box(126, 140, 174, 160))], roll=3.5, dz=-10.0)
-    # The ship display: a large round phosphor scope held at its sides by two ears of the plate, a screw in each; two
-    # knurled knobs to its left, two jewel lamps in dimples to its right. The live shield rings fill radius 106.
-    ears = unary_union([disc(100, 150, 18), disc(360, 150, 18)])
-    scope = soft(disc(230, 150, 124).difference(ears), 5)
+    # The ship display: one big phosphor screen, an oscilloscope's rounded-rectangle CRT, filling the panel (owner,
+    # 2026-10-31: "ship display should take up 90% of the panel or more"): 443 x 283 of 460 x 300, 91% of its area, in a
+    # thin rolled rim (roll 2.5 mm, the most rule R allows at this land). The live shield rings fill radius 137.
+    scope = rbox(8.5, 8.5, 451.5, 291.5, 20)
     add("ssd.bezel", "hero", (460, 300), rbox(0.5, 0.5, 459.5, 299.5, 24), [("phos", scope)],
-        studs=[(107, 150, 3.0, "screw"), (353, 150, 3.0, "screw"), (52, 82, 13.0, "knurl"), (52, 218, 13.0, "knurl"),
-               (408, 82, 5.0, "jewel"), (408, 218, 5.0, "jewel")], dimples=[(408, 82, 8.5), (408, 218, 8.5)],
-        prints=[("graticule", graticule(230, 150, 104, [36, 70, 104], 6), 0.8, "grat")], live=[("rings", disc(230, 150, 106))],
-        roll=3.5, dz=-10.0)
+        prints=[("graticule", graticule(230, 150, 135, [45, 90, 135], 6), 0.8, "grat")], live=[("rings", disc(230, 150, 137))],
+        roll=2.5, dz=-10.0)
     add("dial", "hero", (120, 120), Point(60, 60).buffer(59.5, quad_segs=48), [("phos", disc(60, 60, 51.5))],
         prints=[("graticule", graticule(60, 60, 46, [16, 32]), 0.7, "grat")], live=[("scope", disc(60, 60, 47))], roll=2.2, dz=-8.0)
     for c in ("green", "yellow", "red"):

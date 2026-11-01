@@ -17,9 +17,12 @@ F.register('kelvane', {
   name: 'Kelvane Institute', kind: 'An NLog-style instrument kit in Blender: champagne plates, amber readouts, phosphor scopes', bg: KV.bg, sampleBg: KV.champagne,
   css: { '--s-ink': KV.engrave, '--s-dim': KV.dim, '--s-num': KV.engrave, '--s-body': '"Courier Prime", monospace', '--btn-ink': KV.ink, '--btn-justify': 'center',
     '--btn-shadow': '0 0 3px rgba(255, 226, 160, 0.55)', '--btn-font': '400 17px/1 "Share Tech Mono", monospace', '--btn-track': '0.12em', '--btn-case': 'uppercase',
-    '--btn-motion': 'none', '--btn-press': 'none', '--tab-font': '400 13px/1 "Share Tech Mono", monospace', '--tab-ink': '#2a1d0a', '--tab-ink-on': KV.inkOn,
+    '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1.5px', '--tab-font': '400 13px/1 "Share Tech Mono", monospace', '--tab-pb': '1px', '--tab-ink': '#2a1d0a', '--tab-ink-on': KV.inkOn,
     '--title-font': '700 13px/1 "Courier Prime", monospace', '--title-ink': KV.engrave, '--lbl-font': '700 12px/1 "Courier Prime", monospace',
-    '--num-font': '400 27px/1 "Share Tech Mono", monospace' },
+    '--num-font': '400 27px/1 "Share Tech Mono", monospace',
+    // The strips are 72 px (owner, 2026-10-31: "we need to make parent taller"); their open band is the plate inside its rolled rim, rows 4-69,
+    // measured by tools/mockups/console_fit.mjs, so each label sits over its bar with 3 px clear of the art.
+    '--stt-pt': '4px', '--stt-pb': '3px', '--stb-pt': '4px', '--stb-pb': '3px', '--strip-lamp': '44px' },
   accent: KV.phos, warn: KV.needle,
   // The title is engraved inside the panel's fine line (it ends 10 px in), starting 13 px clear of the corner screw (18 +/- 3 px).
   title: (t, m) => { t.style.cssText = `left:${34 - m[3]}px;top:${12 - m[0]}px;letter-spacing:0.16em;`; },
@@ -34,8 +37,10 @@ F.register('kelvane', {
     // STOP glows on the helm's phosphor scope (radius 50), well inside it.
     helmCentre: (x, c) => { x.save(); x.shadowColor = KV.phos; x.shadowBlur = 8; x.fillStyle = KV.phosHi; x.font = '400 17px "Share Tech Mono"'; x.textAlign = 'center'; x.fillText('STOP', c, c + 6); x.restore(); },
     // The ship as a phosphor trace on the scope (radius 124, rings at 96): a rounded research hull with dishes; shields as dotted arcs.
+    // The ship display fills its screen (owner: "ship display should take up 90% of the panel or more"): drawn at 1.4x
+    // the old scope's scale, so the shield rings ride radius 134 on the 135 px graticule.
     ssd: (x, cx, cy, sh, col) => {
-      x.save(); x.shadowBlur = 6;
+      x.save(); x.translate(cx, cy); x.scale(1.4, 1.4); x.translate(-cx, -cy); x.shadowBlur = 6;
       for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.shadowColor = col(sh[i]); x.strokeStyle = col(sh[i]); x.lineWidth = 2.4; x.setLineDash([2, 3]); x.beginPath(); x.arc(cx, cy, 96, a - P / 6 + 0.08, a + P / 6 - 0.08); x.stroke(); }
       x.setLineDash([]); x.shadowColor = KV.phos; x.strokeStyle = KV.phos; x.lineWidth = 1.8;
       x.beginPath(); x.ellipse(cx, cy, 30, 62, 0, 0, 2 * P); x.stroke();

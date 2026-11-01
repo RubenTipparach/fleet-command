@@ -2,7 +2,7 @@
 # SessionStart hook for Claude Code cloud sessions: make the repository's tools and checks
 # runnable from the first prompt (CLAUDE.md section 11). Adapted from Crab Breeze's hook.
 # Idempotent and synchronous. Blender (scripts/install-blender.sh), LMMS (the music-authoring
-# skill) and Material Maker (material-maker-headless) are installed on demand: each takes a minute
+# skill), Material Maker (material-maker-headless) and Krita (krita-brushwork) are installed on demand: each takes a minute
 # and most sessions need none of them.
 set -euo pipefail
 

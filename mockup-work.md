@@ -12,18 +12,19 @@ passes two approvals before it reaches the game (CLAUDE.md section 4):
 Every mockup is checked into the repository, the page in `docs/mockups/` and its record in
 `docs/artifacts/<name>/` (owner, 2026-10-30: "All mockups are to be checked into repo especially when
 they are html claude artifacts"). The **mockup tracker** lists every link and stage, and is where the
-owner approves: https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F (record in `docs/artifacts/mockup-tracker/`).
+owner approves: https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu (record in `docs/artifacts/mockup-tracker/`).
 It is the master artifact (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"): game
-mockups, guides (the Analog Panel Bible, https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w) and misc.
+mockups, guides (the Analog Panel Bible, https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF, and the Organic Panel
+Bible, https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD, `docs/design/organic-bible.html`) and misc.
 If the owner changes accounts, every mockup, the tracker and the survey are republished from the new
 account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
-| 2 | In-game UI | Drafted (2026-11-01, v2, to publish) | `battle-console` | `docs/mockups/battle-console.html` | (published by the desktop session) |
+| 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
+| 2 | In-game UI | Drafted (2026-11-01, v2) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-10-31, v15) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
+| 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -190,6 +191,18 @@ else's art):
   institute", then "They were inspired by the nucleo look. So.lets update that". Version 15 rebuilds the Kelvane Institute on the
   Nucleo NLog construction, our own design: pillowed champagne plates over amber backlit readout windows and green phosphor scopes,
   keys in pressed dimples, the helm's keys in a pressed cradle, meters in bays. The Conclave is to be revisited.
+- 2026-10-31, of the Vhorr Brood's version 23: "Nah that's bad lol. Let's make a new design system for organic", which became
+  the Organic Panel Bible; then "Looks dope, now let's see if this new design system can be applied to the design
+  language/brood skins design system", "Go" (on the blockout), and "If you structured your sculpting tools well. Then we
+  should be able to sculpt panels, buttons and elements of any size". Version 25 rebuilds the Vhorr Brood on the bible:
+  every slot sculpted at its exact, pinned size by parametric sculptors (`tools/blender/organic_components.py`, run by
+  `tools/blender/build_ui_vhorr_organic.py` over the blockout), no nine-slice, floating over the game, the portrait
+  live under the hex filter (design.md, "The Vhorr Brood on the organic bible").
+- 2026-11-01, survey section W (one picture per option): strips H (ridge and tentacles), ship systems display E (hanging
+  tentacles), helm D, weapons D and the bottom row D (tentacle wrap), name plate B (plain heavy leather), keys "both"
+  (larvae for the big keys, low warts for the small ones and the tabs); then "survey completed, this is a good start, I
+  still dont want a plain black backround on the ui area though". The space between the panels is survey W8 (tissue,
+  tendrils or lattice). Recorded in design.md, "The Brood's picks from the survey"; not yet built into the page (rule 0).
 
 What the mockup shows:
 

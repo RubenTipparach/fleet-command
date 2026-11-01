@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <title>Fleet Command Mockups</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,30 +108,31 @@ code { font: 500 0.9em var(--mono); }
 // The mockups, in the order of mockup-work.md. Reviews live in the db collection `reviews`, one document per id.
 const MOCKUPS = [
   { id: 'M1', title: 'Primary game flow', change: 'game-flow', page: 'docs/mockups/game-flow.html',
-    url: 'https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk', published: '2026-10-30', version: 5,
+    url: 'https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt', published: '2026-10-30', version: 5,
     summary: 'Main menu, skirmish (scenario, point budget, fleet and loadout), the campaign hex map with standees, port panels and missions, deploy, a stand-in battle, results, and back to the map.' },
   { id: 'M2', title: 'In-game UI', change: 'battle-console', page: 'docs/mockups/battle-console.html',
-    url: '', published: '', version: 0,
-    summary: 'The battle console in the Concord skin around a stand-in battle: nine stations (helm, power, tactical, point defence, science, comms, repair, transport, fleet), the ship systems display and its pages, weapons, radar and tactical map, the strips, right-click targeting, the target camera and the 3D shield display. Every panel works and expands; desktop only for now. Awaiting its first publish from the desktop session.' },
+    url: 'https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs', published: '2026-11-01', version: 2,
+    summary: 'The battle console in the Concord skin around a live stand-in battle, desktop first: nine stations and five ship pages on narrow columns of icon tabs named on hover, the ship systems display, weapons, radar and tactical map, a speed handle, power over systems, right-click targeting, the target camera and the 3D shield display, the ship held below the centre. Every panel works and expands.' },
   { id: 'M3', title: 'Look dev', change: 'look-dev', page: 'docs/mockups/look-dev.html',
     url: '', published: '', version: 0,
     summary: 'Ship detail level, faction design language, destructible hulls and interiors, engines and effects, and hull lighting.' },
   { id: 'M4', title: 'Console skins', change: 'console-skins', page: 'docs/mockups/console-skins.html',
-    url: 'https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW', published: '2026-10-31', version: 15,
-    summary: 'One UI kit in ten faction design languages: Concord flat back-lit vector after LCARS, the Vos hand-drawn, the rest modelled and rendered in Blender; the Aelith Conclave a gold shell with holograms drawn into its wells; the Kelvane Institute champagne plates over amber readouts and phosphor scopes. No two share a button, palette or icon shape.' },
+    url: 'https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb', published: '2026-10-31', version: 25,
+    summary: 'One UI kit in ten faction design languages: Concord flat back-lit vector after LCARS, the Vos hand-drawn, the rest modelled and rendered in Blender; the Aelith Conclave a gold shell with holograms drawn into its wells; the Kelvane Institute champagne plates over amber readouts and phosphor scopes; a pressed key pushes its inner part in on every rendered skin; the Vhorr Brood sculpted on the Organic Panel Bible: every slot at its exact size by parametric sculptors, no nine-slice, an overlay over the game. No two share a button, palette or icon shape. Every label, bar, key and title measured to sit clear of its frame in every skin.' },
 ];
 
 // Every other published artifact, by section. Each also has a record in docs/artifacts/<name>/README.md.
 const GUIDES = [
-  { title: 'Analog Panel Bible', page: 'docs/design/ui-bible.html', url: 'https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w',
+  { title: 'Analog Panel Bible', page: 'docs/design/ui-bible.html', url: 'https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF',
     published: '2026-10-31', version: 3,
     summary: 'Building 1990s-style instrument panels in Blender: named parts, depth, light, readability, measured fit rules (rolled edges never meet, layers stay inside their plate), formed metal rendered in 3D, seven lighting options, and the worked example that taught it.' },
+  { title: 'Organic Panel Bible', page: 'docs/design/organic-bible.html', url: 'https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD',
+    published: '2026-10-31', version: 3,
+    summary: 'Reviewed, still growing. Grown console panels in Blender: never raw primitives; one surface sculpted in layers (bone, muscle, leather stretched over both, veins under the skin); screens as live pixels under a fine hex filter; no nine-slice, so a console is blocked out with placeholders and then sculpted piece by piece; an overlay over the game, never a backdrop. A 26-step study shows how, with your rejected and accepted iterations marked.' },
 ];
 const MISC = [
-  { title: 'Survey', page: 'docs/design/survey.html', url: 'https://claude.ai/artifact/JE8gf8sUcGwwAoD9qCguRD',
-    published: '2026-10-30', version: 8, summary: 'Open questions for you, with a recommendation each. A blank answer accepts the recommendation.' },
-  { title: 'Mockup Tracker', page: 'docs/mockups/tracker.html', url: 'https://claude.ai/artifact/1fgArACeshJ4CAo9aXZV5F',
-    published: '2026-10-31', version: 20, summary: 'This page: every artifact, and the approvals for each mockup.' },
+  { title: 'Survey', page: 'docs/design/survey.html', url: 'https://claude.ai/artifact/81ey21Ngrr8WPTdhce7y8a',
+    published: '2026-11-01', version: 12, summary: 'Open questions for you, with a recommendation each. A blank answer accepts the recommendation.' },
 ];
 
 const reviews = {}; // id -> { build, implementation, note }

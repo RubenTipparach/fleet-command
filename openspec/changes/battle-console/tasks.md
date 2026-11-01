@@ -9,7 +9,7 @@
 - [x] 1.5 Survey questions B1-B6 in `docs/design/survey.html`
 - [x] 1.5a Owner's first notes (2026-11-01): icon tabs in narrow columns named on hover; the ship below the centre; a speed handle; Power over Systems; desktop only
 - [x] 1.6 Listed in `mockup-work.md`, the mockup tracker and `docs/artifacts/battle-console/`
-- [ ] 1.7 Published by the desktop session (CLAUDE.md section 8), the link recorded in the tracker, `mockup-work.md` and `docs/artifacts/battle-console/README.md`
+- [x] 1.7 Published (version 2, https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs), the link recorded in the tracker, `mockup-work.md` and `docs/artifacts/battle-console/README.md`
 
 ## 2. Iteration with the owner (before approval for build)
 

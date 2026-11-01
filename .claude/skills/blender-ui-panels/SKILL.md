@@ -11,7 +11,7 @@ metadata:
 New in this repository (owner, 2026-10-30: "Start writing up a guide/bible. UI design Bible for using blender to
 render UI stuff the way they did in the 90s ... The Bible should compliment the skill"). This skill is the procedure;
 the bible is the shared vocabulary and the diagrams: the Analog Panel Bible, `docs/design/ui-bible.html`,
-published at https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w (record in `docs/artifacts/ui-bible/README.md`;
+published at https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF (record in `docs/artifacts/ui-bible/README.md`;
 its diagrams come from `tools/mockups/ui_bible_svgs.py`). Use the bible's part names and numbers (P1 plate, W3 lip, N2 shoulder and so
 on) when talking to the owner, so "the shoulder is too tight" means one thing.
 
@@ -83,6 +83,12 @@ def plate(outlines, z0, z1, m, edge):        # outlines[0] is the outside, the r
 checks the result's area to pick the inward side. It works on any shape, which is what makes formed metal possible.
 
 - A window inset 8 px from the plate edge with `ROLL` 3.8 mm leaves one round bar between them: the frame bar.
+- **Corners rounder than twice the roll** (found rebuilding the Krai, 2026-10-31): `plate` offsets the outline by the roll and
+  then bevels by the roll, so a corner tighter than about 2 x roll turns inside out and spikes. Ease every corner at least
+  that round, and clean each outline of near-duplicate points before it is offset (the mitred offset has no defence
+  against them).
+- **Lamps round a well come from one helper**, `lip_runs(well, seg, faces)` in `ui_shapes.py`: every edge for rim light,
+  `ny < 0` for the lower lips (bottom light), `nx > 0` for the left lips (side light). Never walk a rim by hand.
 - Flat faces must shade flat (`f.smooth = abs(f.normal.z) < 0.999`), or the fill's long triangles pick up the
   bevel's normals and show a streak across the plate.
 
@@ -274,6 +280,13 @@ The study's sampled palette: film `#eacf9f` (ours `#e9ce9f`), plate `#bdb8ae` me
 
 ## 9. Before calling it done
 
+- On the page, the whole skin passes `tools/mockups/console_fit.mjs` (owner, 2026-10-31: "remember the overlap rule?"):
+  every live label, bar, key, title and lamp lies on plain art 3 px clear of every edge. It found, and the kits now
+  avoid: a strip whose open band (between rail and lip) is thinner than a label over a bar (lay the label beside the bar,
+  `--bar-flow: column`, and set the strip padding to the measured band); a bar groove narrower than its fill; a title
+  set on a frame's bevel; a 9-slice key whose noise texture or whose top and bottom margins leave seams across its face
+  (a stretched piece's centre is plain, and an x-stretch key's vertical margins are 0); and a 154 px panel that grew
+  into the 3D view because its frame and key caps needed more.
 - Every formed shape and every kit piece passes the fit check (K, R, L, P, B) before it is rendered; look at its check
   map. After rendering, no lit pixel outside the plates (rule B).
 - Render the top band at 24 samples while tuning (render border), the whole panel at 64 to finish.

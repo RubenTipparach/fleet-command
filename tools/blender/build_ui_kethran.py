@@ -386,8 +386,10 @@ def frame_inset(K):
 
 def bar_track(K):
     w, h = 96, 16
-    K.prism([(0, 8), (5, 0), (w - 5, 0), (w, 8), (w - 5, h), (5, h)], 0, 5, "gunmetal", bevel=1.5,
-            holes=[[(4.5, 8), (7.5, 3.5), (w - 7.5, 3.5), (w - 4.5, 8), (w - 7.5, 12.5), (7.5, 12.5)]])
+    # The groove (2.5-13.5) is wider than the 10 px fill laid in it at y 3-13 (the kit's inset), so the fill never
+    # covers the rim (the console fit check, tools/mockups/console_fit.mjs). It was 3.5-12.5: the fill sat on the rim.
+    K.prism([(0, 8), (5, 0), (w - 5, 0), (w, 8), (w - 5, h), (5, h)], 0, 5, "gunmetal", bevel=1.0,
+            holes=[[(3.5, 8), (7.0, 2.5), (w - 7.0, 2.5), (w - 3.5, 8), (w - 7.0, 13.5), (7.0, 13.5)]])
     K.prism(rect(4, 2, w - 4, h - 2), -3, -1, "socket")
 
 
@@ -398,13 +400,21 @@ def bar_fill(role):
     return build
 
 
+PRESS_MM = 3.0   # how far a pressed cap drops down the face-on image (3 px at the kit's 1x)
+
+
 def button(state):
     def build(K):
         w, h = 160, 56
         z = 3.0 if state == "pressed" else 9.0      # 6 mm of travel
         # A plain cap: hover lifts its steel a shade; the pressed key sinks into its socket's shadow and
-        # reads darker, not just lower.
-        keycap(K, (0, w, 0, 12, w - 12, h), (9.5, w - 9.5, 8, 18.5, w - 18.5, 48), z, None,
+        # reads darker, not just lower. The face-on camera cannot see depth, so the pressed cap also drops
+        # PRESS_MM down the image (owner, 2026-10-31: "render the 3d state of the button being pressed with the
+        # frame unmoved, and the label should sync with the amount of travel that button took"); the bezel and
+        # socket do not move. The travel the page's label follows is measured from these renders
+        # (tools/mockups/press_travel.py), never typed in.
+        dy = PRESS_MM if state == "pressed" else 0.0
+        keycap(K, (0, w, 0, 12, w - 12, h), (9.5, w - 9.5, 8 + dy, 18.5, w - 18.5, 48 + dy), z, None,
                key_role={"idle": "iron", "hover": "iron_hi", "pressed": "gunmetal"}[state])
     return build
 
@@ -426,7 +436,9 @@ def tab(active):
 
 def strip(bottom):
     def build(K):
-        w, h = 512, 56
+        # 72 px tall since 2026-10-31 (owner: "text and progress bar overlapping with parent bevels, we need to make
+        # parent taller"): the conduit rail and lip trim keep their size; the open band between them grows to rows 17-59.
+        w, h = 512, 72
 
         def Y(y):
             return h - y if bottom else y
@@ -439,26 +451,26 @@ def strip(bottom):
 
         # the rail body: a plate whose screen-side corners (bottom for the top strip) are cut as prows
         body = chamfer([(0, 0), (w, 0), (w, h), (0, h)], [0, 0, 20, 20])
-        K.prism(poly(body), 0, 6, "gunmetal", bevel=2.0, holes=[poly(chamfer(rect(60, 13, w - 60, 44), 4))])
-        K.prism(poly(rect(56, 11, w - 56, 46)), -3, -1, "gunmetal2")
+        K.prism(poly(body), 0, 6, "gunmetal", bevel=2.0, holes=[poly(chamfer(rect(60, 13, w - 60, 60), 4))])
+        K.prism(poly(rect(56, 11, w - 56, 62)), -3, -1, "gunmetal2")
         # the conduit rail along the outer edge, and the steel trim along the inner lip
         K.prism(poly(rect(0, 0, w, 10)), 4, 8, "iron", bevel=1.5)
         K.pipe(30, w - 30, Y(5.0), 2.6, 9.0, "steel")
-        K.prism(poly(rect(40, 48.5, w - 40, 50.5)), 5, 6.6, "iron", bevel=0.5)
+        K.prism(poly(rect(40, 64.5, w - 40, 66.5)), 5, 6.6, "iron", bevel=0.5)
         # the end caps: armoured wedges pointing in toward the field, bolted, red-ranked, hazard-notched
         # (the cap's prow stops at 84 px so its shadow ends inside the 96 px margin)
-        cap = chamfer([(2, 1), (66, 1), (84, 19), (84, 37), (68, 54), (22, 54), (2, 34)], [0, 3, 2, 2, 3, 2, 0])
+        cap = chamfer([(2, 1), (66, 1), (84, 19), (84, 53), (68, 70), (22, 70), (2, 50)], [0, 3, 2, 2, 3, 2, 0])
         haz = [(12, 14), (38, 14), (32, 24), (6, 24)]
-        rank = [(44, 12), (53, 12), (64, 28), (53, 44), (44, 44), (55, 28)]
+        rank = [(44, 20), (53, 20), (64, 36), (53, 52), (44, 52), (55, 36)]
         for fx in (False, True):
             K.prism(poly(cap, fx), 5, 11.5, "iron", bevel=2.2)
             K.prism(poly(chamfer(haz, 1), fx), 10.9, 12.1, "hazard", bevel=0.5)
             K.prism(poly(rank, fx), 10.9, 12.3, "signal", bevel=0.6)
-            for bx, by in ((14, 38), (32, 44), (73, 28)):
+            for bx, by in ((14, 54), (32, 60), (73, 36)):
                 X = w - bx if fx else bx
                 K.bolt(X, Y(by), 11.5, r=3.0)
-            K.prism(poly(rect(16, 31, 30, 33), fx), 11.1, 11.9, "bone")
-            K.prism(poly(rect(16, 35, 24, 37), fx), 11.1, 11.9, "bone")
+            K.prism(poly(rect(16, 41, 30, 43), fx), 11.1, 11.9, "bone")
+            K.prism(poly(rect(16, 45, 24, 47), fx), 11.1, 11.9, "bone")
     return build
 
 
@@ -486,10 +498,12 @@ def nameplate(K):
     for x in range(96, 420, 28):
         K.cone(x, 5.5, 2.0, 1.3, 5.5, 7.4, "steel", seg=8)
         K.cone(x, 50.5, 2.0, 1.3, 5.5, 7.4, "steel", seg=8)
-    K.prism(chamfer([(428, 28), (452, 28), (452, 50), (428, 50)], [0, 4, 0, 0]), 5.5, 8, "iron", bevel=1.2)
-    K.prism([(431, 32), (449, 32), (449, 38), (431, 38)], 7.6, 8.6, "hazard", bevel=0.3)
-    K.bolt(436, 44, 8, r=2.6)
-    K.bolt(446, 44, 8, r=2.6)
+    # The prow block keeps an even land from the field (6 px) and from the plate's chamfered edges (at least 8 px):
+    # it sat 2 px from the bottom-right chamfer and read as stuck on the edge.
+    K.prism(chamfer([(426, 26), (446, 26), (446, 46), (426, 46)], [0, 4, 0, 0]), 5.5, 8, "iron", bevel=1.2)
+    K.prism([(429, 30), (443, 30), (443, 35), (429, 35)], 7.6, 8.6, "hazard", bevel=0.3)
+    K.bolt(431, 41, 8, r=2.4)
+    K.bolt(441, 41, 8, r=2.4)
 
 
 def helm_pad(K):
@@ -617,8 +631,8 @@ PIECES = {
     "button.pressed": ("nine", (160, 56), (14, 26, 14, 26), "x", button("pressed")),
     "tab.idle":      ("nine", (120, 44), (16, 16, 16, 16), "x", tab(False)),
     "tab.active":    ("nine", (120, 44), (16, 16, 16, 16), "x", tab(True)),
-    "strip.top":     ("nine", (512, 56), (10, 96, 10, 96), "x", strip(False)),
-    "strip.bottom":  ("nine", (512, 56), (10, 96, 10, 96), "x", strip(True)),
+    "strip.top":     ("nine", (512, 72), (10, 96, 10, 96), "x", strip(False)),
+    "strip.bottom":  ("nine", (512, 72), (10, 96, 10, 96), "x", strip(True)),
     "divider":       ("nine", (128, 10), (0, 16, 0, 16), "x", divider),
     "nameplate":     ("hero", (460, 56), None, None, nameplate),
     "helm.pad":      ("hero", (300, 300), None, None, helm_pad),

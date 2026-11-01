@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Analog Panel Bible</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -160,11 +161,14 @@ svg .fillbad { fill: var(--red); }
   .ddpair { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+.master { display: inline-flex; align-items: center; justify-self: start; min-height: 44px; padding: 0 14px; border: 1px solid currentColor; border-radius: 8px; font: 600 14px/1 system-ui, sans-serif; color: inherit; text-decoration: none; opacity: 0.85; }
+.master:hover { opacity: 1; }
 </style>
 
 <div class="wrap">
   <header class="top">
     <div class="eyebrow">Fleet Command · design guide · panels rendered in Blender</div>
+    <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <h1>Analog Panel Bible</h1>
     <p class="lede">How to build interface panels the way 1990s skins and dashboards looked: a formed metal plate over a recessed, backlit display. Every part has a name and a code, so you can point at it and say what to change: "the N2 shoulder is too tight", "the F4 spill is too hot", "lower SPILL".</p>
     <p class="note">This guide goes with the skill <code>.claude/skills/blender-ui-panels</code>, which holds the Blender procedure. This page holds the vocabulary, the principles and the story of how we learnt them. The diagrams of parameters and sections are drawn by <code>tools/mockups/ui_bible_svgs.py</code>; every example of how a panel looks is a real Blender render.</p>

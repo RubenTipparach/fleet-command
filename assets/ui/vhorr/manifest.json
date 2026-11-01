@@ -5,38 +5,38 @@
     "frame.panel": {
       "kind": "nine",
       "size": [
-        200,
-        150
+        160,
+        120
       ],
       "file": "frame.panel.png",
       "margins": [
-        40,
-        40,
-        40,
-        40
+        34,
+        34,
+        34,
+        34
       ],
       "stretch": "xy"
     },
     "frame.inset": {
       "kind": "nine",
       "size": [
-        80,
-        60
+        64,
+        48
       ],
       "file": "frame.inset.png",
       "margins": [
-        16,
-        16,
-        16,
-        16
+        14,
+        14,
+        14,
+        14
       ],
       "stretch": "xy"
     },
     "bar.track": {
       "kind": "nine",
       "size": [
-        120,
-        16
+        96,
+        20
       ],
       "file": "bar.track.png",
       "margins": [
@@ -45,12 +45,16 @@
         0,
         14
       ],
-      "stretch": "x"
+      "stretch": "x",
+      "inset": [
+        9,
+        3
+      ]
     },
     "bar.fill": {
       "kind": "nine",
       "size": [
-        80,
+        64,
         10
       ],
       "file": "bar.fill.png",
@@ -65,7 +69,7 @@
     "bar.fill.red": {
       "kind": "nine",
       "size": [
-        80,
+        64,
         10
       ],
       "file": "bar.fill.red.png",
@@ -77,78 +81,105 @@
       ],
       "stretch": "x"
     },
+    "bar.cell.off": {
+      "kind": "cell",
+      "size": [
+        10,
+        14
+      ],
+      "file": "bar.cell.off.png",
+      "gap": 2
+    },
+    "bar.cell.on": {
+      "kind": "cell",
+      "size": [
+        10,
+        14
+      ],
+      "file": "bar.cell.on.png",
+      "gap": 2
+    },
+    "bar.cell.warn": {
+      "kind": "cell",
+      "size": [
+        10,
+        14
+      ],
+      "file": "bar.cell.warn.png",
+      "gap": 2
+    },
     "button.idle": {
       "kind": "nine",
       "size": [
-        160,
+        140,
         52
       ],
       "file": "button.idle.png",
       "margins": [
         24,
         30,
-        24,
-        46
+        12,
+        30
       ],
       "stretch": "x"
     },
     "button.hover": {
       "kind": "nine",
       "size": [
-        160,
+        140,
         52
       ],
       "file": "button.hover.png",
       "margins": [
         24,
         30,
-        24,
-        46
+        12,
+        30
       ],
       "stretch": "x"
     },
     "button.pressed": {
       "kind": "nine",
       "size": [
-        160,
+        140,
         52
       ],
       "file": "button.pressed.png",
       "margins": [
         24,
         30,
-        24,
-        46
+        12,
+        30
       ],
       "stretch": "x"
     },
     "tab.idle": {
       "kind": "nine",
       "size": [
-        130,
+        120,
         40
       ],
       "file": "tab.idle.png",
       "margins": [
+        12,
         14,
-        28,
-        14,
-        28
+        12,
+        14
       ],
       "stretch": "x"
     },
     "tab.active": {
       "kind": "nine",
       "size": [
-        130,
+        120,
         40
       ],
       "file": "tab.active.png",
       "margins": [
+        12,
         14,
-        28,
-        14,
-        28
+        12,
+        14
       ],
       "stretch": "x"
     },
@@ -156,14 +187,14 @@
       "kind": "nine",
       "size": [
         512,
-        56
+        72
       ],
       "file": "strip.top.png",
       "margins": [
-        8,
-        110,
-        8,
-        110
+        10,
+        100,
+        10,
+        100
       ],
       "stretch": "x"
     },
@@ -171,14 +202,14 @@
       "kind": "nine",
       "size": [
         512,
-        56
+        72
       ],
       "file": "strip.bottom.png",
       "margins": [
-        8,
-        110,
-        8,
-        110
+        10,
+        100,
+        10,
+        100
       ],
       "stretch": "x"
     },
@@ -191,9 +222,9 @@
       "file": "divider.png",
       "margins": [
         0,
-        14,
+        16,
         0,
-        14
+        16
       ],
       "stretch": "x"
     },

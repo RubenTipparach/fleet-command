@@ -1,6 +1,6 @@
 # Analog Panel Bible
 
-- Link: https://claude.ai/artifact/3Ugnrjvx2ajVMxvR3kRm6w
+- Link: https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF
 - Shows: the guide to building 1990s-style instrument panels in Blender (owner, 2026-10-30: "Start writing up a
   guide/bible. UI design Bible for using blender to render UI stuff the way they did in the 90s"). Named and
   numbered parts, depth, light, readability, analog feel, children inside their parents, formed metal (the notch
@@ -19,3 +19,5 @@
   rendered", "Add alternatives like all sides, bottom lit, rim lighting etc"): the drawn catalogue replaced by 3D
   renders that pass the fit check, a fit-rules chapter (9) and a lighting-options chapter (10), close-up renders of a
   well and the notch, the light chapter and settings table brought up to the final study, and step 19.
+- Account move: Republished 2026-10-31 on the owner's current account (the earlier links were made from another account and cannot be read from here); every link updated.
+- 2026-10-31, republished from the desktop session (owner: "Make sure all published pages link back to the master", commit 7200539): the page links back to the mockup tracker; version id `1793462717-c534`.

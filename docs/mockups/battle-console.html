@@ -209,8 +209,8 @@ const concordKit = {
   // A tab is a button that grew a flat side: one cap on the left, square on the right.
   'tab.idle': { size: [120, 40], m: [18, 6, 18, 20], draw: (x, w, h) => { x.fillStyle = CC.deep; rr(x, 0, 0, w, h, [20, 2, 2, 20]); x.fill(); } },
   'tab.active': { size: [120, 40], m: [18, 6, 18, 20], draw: (x, w, h) => { x.fillStyle = CC.accord; rr(x, 0, 0, w, h, [20, 2, 2, 20]); x.fill(); } },
-  'strip.top': { size: [512, 56], m: [10, 96, 16, 96], draw: (x, w, h) => ccStrip(x, w, h, false) },
-  'strip.bottom': { size: [512, 56], m: [16, 96, 10, 96], draw: (x, w, h) => ccStrip(x, w, h, true) },
+  'strip.top': { size: [512, 72], m: [10, 96, 16, 96], draw: (x, w, h) => ccStrip(x, w, h, false) },
+  'strip.bottom': { size: [512, 72], m: [16, 96, 10, 96], draw: (x, w, h) => ccStrip(x, w, h, true) },
   'divider': { size: [128, 10], m: [0, 18, 0, 18], draw: (x, w, h) => { x.fillStyle = CC.deep; rr(x, 16, 3, w - 32, 4, 2); x.fill(); x.fillStyle = CC.signal; rr(x, 0, 2, 12, 6, 3); x.fill(); rr(x, w - 12, 2, 12, 6, 3); x.fill(); } },
 };
 // Proposed kit pieces for the battle console (openspec/changes/battle-console): an allocation cell, the discrete box of
