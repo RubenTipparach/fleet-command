@@ -18,3 +18,4 @@
 - 2026-11-01, desktop session: the survey at version 11 (section W, a picture per option); version id `1793508323-a138`.
 - 2026-11-01, desktop session: the survey at version 12 (question W8); version id `1793514841-5af9`.
 - 2026-11-01, cloud session (battle console thread): republished with mockup 2 linked (https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs); version id `1793521410-0998`.
+- 2026-11-01, cloud session: battle console v5 listed; version id `1793525435-29d7`.

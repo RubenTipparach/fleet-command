@@ -1836,7 +1836,8 @@ function buildViewUI() {
   const q = el('div'); q.id = 'quick';
   q.append(btn('Port', () => A.turn(-30)), btn(() => `Fire · ${tgt(W.player) ? W.player.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(W.player, m, tgt(W.player)) && inRange(W.player, m, tgt(W.player))).length : 0}`, A.fire), btn('Stbd', () => A.turn(30)));
   const vb = btn('Next', A.nextTarget); q.prepend(vb);
-  const badge = el('div'); badge.id = 'badge'; badge.append(el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V4'), btn('Reset', A.reset, { sm: true }));
+  const badge = el('div'); badge.id = 'badge'; const home = el('a', '', 'All Fleet Command mockups (the tracker)'); home.href = 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu'; home.target = '_blank'; css(home, 'color:#b7a6f2;text-decoration:none;pointer-events:auto;');
+  badge.append(home, el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V5'), btn('Reset', A.reset, { sm: true }));
   const sl = el('div', 'vtext'); sl.id = 'striplabel'; sl.textContent = 'Live · tap to return';
   R.view.append(tools, ro, msg, pz, inset, lp, q, badge, sl);
 }
