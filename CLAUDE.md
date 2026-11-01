@@ -168,7 +168,8 @@ build, and then need to be approved for actual game implementation after"):
   (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"), in three sections: game
   mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A new
   artifact goes on it when it is first published. Its link is in `mockup-work.md` and
-  `docs/design/README.md`. An approval counts only when it is in the tracker or in the owner's own
+  `docs/design/README.md`, and **every published page links back to it** (owner, 2026-10-31: "Make sure all
+  published pages link back to the master"): an "All Fleet Command mockups (the tracker)" link near the page's top. An approval counts only when it is in the tracker or in the owner's own
   words in the conversation; record it in `mockup-work.md` either way.
 - **Every mockup is checked into the repository** (owner, 2026-10-30: "All mockups are to be checked
   into repo especially when they are html claude artifacts"): the page in `docs/mockups/`, its shots in
@@ -296,6 +297,13 @@ else's artwork):
     pixels are recorded beside the image. Text and readouts are drawn live on top.
   - **Hero pieces**: one-off elements made whole at their final size: the helm pad, the ship systems
     display's bezel, the dials, the alert lamp, the faction crest.
+  - **Organic skins have no 9-slice pieces** (owner, 2026-10-31: "due to the nature of this ui, nine slice is not
+    possible and the UI will have to be bocked out using placeholders then a full detail agent will go in and sculpt
+    components manually", then "If you structured your sculpting tools well. Then we should be able to sculpt panels,
+    buttons and elements of any size"). Every piece of an organic skin (the Vhorr Brood first) is sculpted at its exact
+    slot size by parametric sculptors (`tools/blender/organic_components.py`), so any size is a re-run: the console is
+    blocked out with placeholder rectangles first, then each component is sculpted in place on the Organic Panel Bible's
+    rules (`docs/design/organic-bible.html`) by `tools/blender/build_ui_vhorr_organic.py` reading the layout.
 - **Each faction has its own console skin**, on the same layout and the same 9-slice and hero slots
   (owner, 2026-10-30, with screenshots of the reference games' skins: "I really like espeically the
   mirak ui design, its so playful and pirate like", "I also enjoy the sleek, utilitarian, LCARS blue
@@ -449,7 +457,7 @@ saying what changes here. Where a note and the copied text below it disagree, th
   sampled or modelled from another game's assets.
 - **No z-fighting, ever** (Undercity, Star Crew).
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
-  minute).
+  minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).
 
 ## 11. Sound and music
 
@@ -473,7 +481,7 @@ Before claiming anything is done, run what applies:
 | Dash check | section 5 |
 | Tests | `scripts/run-tests.sh` (headless simulation tests, then the layout test under Xvfb), once the project exists |
 | Data | the data validator, once it exists |
-| Mockups | screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 
 - **Know what is proven.** Keep implemented, validated and proposed work distinct in docs, PRs and
@@ -503,6 +511,8 @@ Before claiming anything is done, run what applies:
 | `playtest` | Running, watching, recording, uploading and reporting a playtest (section 9). |
 | `obs-record` | Recording a window with OBS and copying it to Google Drive (section 9). |
 | `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
+| `blender-organic-panels` | Organic, grown panels in Blender (the Vhorr Brood first): one body of flesh, chitin and bone round crisp instruments, black smoked screens, rim-lit keys, panels floating over the game with no backdrop, growth measured clear of readouts (sections 7, 10). Its companion guide is the Organic Panel Bible, `docs/design/organic-bible.html`. |
+| `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 
@@ -511,6 +521,9 @@ Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 Nothing is an exception until it is listed here with its reason.
 - **Tool-owned files keep their tool's text.** The OpenSpec CLI writes `.claude/skills/openspec-*`
   and `.claude/commands/opsx/*`; don't hand-edit them. The dash check excludes `.claude/`.
+- **Organic skins are not nine-sliced** (section 7; owner, 2026-10-31). Their frames are one sculpted body that cannot
+  stretch or tile, so every piece is sculpted at its exact slot size by parametric sculptors, so any size is a re-run,
+  blocked out with placeholders first. The kit's piece names and the rule that a missing piece is a build error still hold.
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from

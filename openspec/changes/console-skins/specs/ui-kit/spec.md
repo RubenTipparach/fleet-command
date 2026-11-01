@@ -24,6 +24,18 @@ A 9-slice piece SHALL draw its corners at their native size and stretch or repea
 - **WHEN** `frame.panel` is drawn at 96 x 96, 460 x 300 and 1200 x 140
 - **THEN** its corners are identical in all three and no corner detail is stretched
 
+### Requirement: Children sit inside their parents' open art
+
+Every live child on a skinned screen (a title, label, number, bar, fill, key, tab, icon, name, lamp) SHALL lie on its parent's plain art with at least 3 px of margin at the 1920 x 1080 reference, clear of every frame line (rail, bevel, rim, lip, 9-slice seam), and no panel SHALL grow past its slot to hold its content (owner, 2026-10-31: "remember the overlap rule?").
+
+#### Scenario: Every skin's console passes the fit check
+- **WHEN** `tools/mockups/console_fit.mjs` measures the console in each of the ten skins
+- **THEN** no leaf's grown pixels cover a frame line, every column piece stays inside the 460 px column, and no key, label or panel is clipped
+
+#### Scenario: A strip too thin for a label over a bar
+- **WHEN** a skin's strip art leaves an open band thinner than a label over a bar plus 6 px
+- **THEN** the skin lays each label beside its bar and its strip padding is the measured band
+
 ### Requirement: No two skins share a button shape
 
 Each skin SHALL have its own button outline, and validation SHALL fail when two skins' button images have the same silhouette (the owner, 2026-10-30: "NO skin uses the same button shape").

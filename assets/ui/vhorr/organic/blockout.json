@@ -1,0 +1,1149 @@
+{
+ "skin": "vhorr",
+ "method": "organic: no nine-slice; every slot a hero piece sculpted at its exact rect (Organic Panel Bible rule 4)",
+ "units": "CSS px of the 1920 x 1080 console",
+ "measured_from": "docs/mockups/console-skins.html, live DOM, by tools/mockups/vhorr_blockout.mjs",
+ "layouts": {
+  "desktop": {
+   "size": [
+    1920,
+    1080
+   ],
+   "slots": [
+    {
+     "id": "strip.top",
+     "piece": "strip.top",
+     "kind": "nine",
+     "rect": [
+      472,
+      0,
+      1448,
+      72
+     ],
+     "protected": [
+      {
+       "kind": "label",
+       "what": "Hull integrity",
+       "rect": [
+        572,
+        13.5,
+        100.5,
+        20
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "Weapon capacitor",
+       "rect": [
+        968.5,
+        13.5,
+        135.5,
+        20
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "Target hull",
+       "rect": [
+        1365.5,
+        13.5,
+        82.5,
+        20
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "04:12",
+       "rect": [
+        1762,
+        19.5,
+        58,
+        32
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "track.hull-integrity",
+       "rect": [
+        572,
+        36.5,
+        370.5,
+        20
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "track.weapon-capacitor",
+       "rect": [
+        968.5,
+        36.5,
+        370.5,
+        20
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "track.target-hull",
+       "rect": [
+        1365.5,
+        36.5,
+        370.5,
+        20
+       ]
+      }
+     ],
+     "sculpt": "strip.top 1448x72"
+    },
+    {
+     "id": "track.hull-integrity",
+     "piece": "bar.track",
+     "kind": "nine",
+     "rect": [
+      572,
+      36.5,
+      370.5,
+      20
+     ],
+     "protected": [
+      {
+       "kind": "bar-cells",
+       "what": "k-cells",
+       "rect": [
+        581,
+        39.5,
+        352.5,
+        14
+       ]
+      }
+     ],
+     "sculpt": "bar.track 370.5x20"
+    },
+    {
+     "id": "track.weapon-capacitor",
+     "piece": "bar.track",
+     "kind": "nine",
+     "rect": [
+      968.5,
+      36.5,
+      370.5,
+      20
+     ],
+     "protected": [
+      {
+       "kind": "bar-cells",
+       "what": "k-cells",
+       "rect": [
+        977.5,
+        39.5,
+        352.5,
+        14
+       ]
+      }
+     ],
+     "sculpt": "bar.track 370.5x20"
+    },
+    {
+     "id": "track.target-hull",
+     "piece": "bar.track",
+     "kind": "nine",
+     "rect": [
+      1365.5,
+      36.5,
+      370.5,
+      20
+     ],
+     "protected": [
+      {
+       "kind": "bar-cells",
+       "what": "k-cells",
+       "rect": [
+        1374.5,
+        39.5,
+        352.5,
+        14
+       ]
+      }
+     ],
+     "sculpt": "bar.track 370.5x20"
+    },
+    {
+     "id": "strip.bottom",
+     "piece": "strip.bottom",
+     "kind": "nine",
+     "rect": [
+      472,
+      1008,
+      1448,
+      72
+     ],
+     "protected": [
+      {
+       "kind": "label",
+       "what": "Speed",
+       "rect": [
+        572,
+        1033.5,
+        45.5,
+        20
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "17.8",
+       "rect": [
+        643.5,
+        1027.5,
+        44,
+        32
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "Power",
+       "rect": [
+        713.5,
+        1021.5,
+        46,
+        20
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "Systems",
+       "rect": [
+        1246.5,
+        1021.5,
+        62.5,
+        20
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "track.power",
+       "rect": [
+        713.5,
+        1044.5,
+        507.5,
+        20
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "track.systems",
+       "rect": [
+        1246.5,
+        1044.5,
+        507.5,
+        20
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "lamp.alert.yellow",
+       "rect": [
+        1780,
+        1024,
+        40,
+        40
+       ]
+      }
+     ],
+     "sculpt": "strip.bottom 1448x72"
+    },
+    {
+     "id": "track.power",
+     "piece": "bar.track",
+     "kind": "nine",
+     "rect": [
+      713.5,
+      1044.5,
+      507.5,
+      20
+     ],
+     "protected": [
+      {
+       "kind": "bar-cells",
+       "what": "k-cells",
+       "rect": [
+        722.5,
+        1047.5,
+        489.5,
+        14
+       ]
+      }
+     ],
+     "sculpt": "bar.track 507.5x20"
+    },
+    {
+     "id": "track.systems",
+     "piece": "bar.track",
+     "kind": "nine",
+     "rect": [
+      1246.5,
+      1044.5,
+      507.5,
+      20
+     ],
+     "protected": [
+      {
+       "kind": "bar-cells",
+       "what": "k-cells",
+       "rect": [
+        1255.5,
+        1047.5,
+        489.5,
+        14
+       ]
+      }
+     ],
+     "sculpt": "bar.track 507.5x20"
+    },
+    {
+     "id": "lamp.alert.yellow",
+     "piece": "lamp.alert.yellow",
+     "kind": "hero",
+     "rect": [
+      1780,
+      1024,
+      40,
+      40
+     ],
+     "protected": [],
+     "sculpt": "lamp.alert 40x40"
+    },
+    {
+     "id": "nameplate",
+     "piece": "nameplate",
+     "kind": "hero",
+     "rect": [
+      6,
+      6,
+      460,
+      56
+     ],
+     "protected": [
+      {
+       "kind": "label",
+       "what": "Sskarr · Matriarch Vhaal",
+       "rect": [
+        82,
+        20.5,
+        290,
+        26
+       ]
+      },
+      {
+       "kind": "portrait-window",
+       "what": "hex-filtered portrait",
+       "rect": [
+        12,
+        10,
+        62,
+        48
+       ]
+      }
+     ],
+     "sculpt": "nameplate 460x56"
+    },
+    {
+     "id": "helm.pad",
+     "piece": "helm.pad",
+     "kind": "hero",
+     "rect": [
+      6,
+      68,
+      264,
+      264
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "helm.pad",
+       "rect": [
+        50,
+        111,
+        176,
+        176
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 0",
+       "rect": [
+        110.5,
+        96,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 1",
+       "rect": [
+        186.5,
+        96,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 2",
+       "rect": [
+        186.5,
+        172,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 3",
+       "rect": [
+        186.5,
+        247.5,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 4",
+       "rect": [
+        110.5,
+        247.5,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 5",
+       "rect": [
+        35,
+        247.5,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 6",
+       "rect": [
+        35,
+        172,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm key 7",
+       "rect": [
+        35,
+        96,
+        54.5,
+        54.5
+       ]
+      },
+      {
+       "kind": "key-face",
+       "what": "helm centre (stop)",
+       "rect": [
+        110.5,
+        172,
+        54.5,
+        54.5
+       ]
+      }
+     ],
+     "sculpt": "helm.pad 264x264"
+    },
+    {
+     "id": "inset.helm-readout",
+     "piece": "frame.inset",
+     "kind": "nine",
+     "rect": [
+      276,
+      68,
+      190,
+      264
+     ],
+     "protected": [
+      {
+       "kind": "label",
+       "what": "To hit",
+       "rect": [
+        294,
+        103,
+        43.5,
+        20
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "83%",
+       "rect": [
+        294,
+        129,
+        46.5,
+        32
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "divider",
+       "rect": [
+        294,
+        169,
+        154,
+        10
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "key.engage",
+       "rect": [
+        294,
+        189,
+        154,
+        48
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "key.stop",
+       "rect": [
+        294,
+        247,
+        154,
+        48
+       ]
+      }
+     ],
+     "sculpt": "frame.inset 190x264"
+    },
+    {
+     "id": "divider",
+     "piece": "divider",
+     "kind": "nine",
+     "rect": [
+      294,
+      169,
+      154,
+      10
+     ],
+     "protected": [],
+     "sculpt": "divider 154x10"
+    },
+    {
+     "id": "key.engage",
+     "piece": "button.pressed",
+     "kind": "nine",
+     "rect": [
+      294,
+      189,
+      154,
+      48
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Engage",
+       "rect": [
+        337.5,
+        205.5,
+        67,
+        20
+       ]
+      }
+     ],
+     "sculpt": "button 154x48"
+    },
+    {
+     "id": "key.stop",
+     "piece": "button.idle",
+     "kind": "nine",
+     "rect": [
+      294,
+      247,
+      154,
+      48
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Stop",
+       "rect": [
+        351,
+        262,
+        40,
+        20
+       ]
+      }
+     ],
+     "sculpt": "button 154x48"
+    },
+    {
+     "id": "ssd.bezel",
+     "piece": "ssd.bezel",
+     "kind": "hero",
+     "rect": [
+      6,
+      338,
+      460,
+      300
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "ssd.bezel",
+       "rect": [
+        36,
+        366,
+        400,
+        226
+       ]
+      }
+     ],
+     "sculpt": "ssd.bezel 460x300"
+    },
+    {
+     "id": "panel.weapons",
+     "piece": "frame.panel",
+     "kind": "nine",
+     "rect": [
+      6,
+      644,
+      460,
+      174
+     ],
+     "protected": [
+      {
+       "kind": "label",
+       "what": "Weapons",
+       "rect": [
+        44,
+        660,
+        108,
+        26
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "key.fire",
+       "rect": [
+        40,
+        688,
+        192,
+        48
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "key.multiple",
+       "rect": [
+        240,
+        688,
+        192,
+        48
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "tab.offline",
+       "rect": [
+        40,
+        744,
+        126.5,
+        40
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "tab.normal",
+       "rect": [
+        172.5,
+        744,
+        126.5,
+        40
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "tab.overload",
+       "rect": [
+        305.5,
+        744,
+        126.5,
+        40
+       ]
+      }
+     ],
+     "sculpt": "frame.panel 460x174"
+    },
+    {
+     "id": "key.fire",
+     "piece": "button.hover",
+     "kind": "nine",
+     "rect": [
+      40,
+      688,
+      192,
+      48
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Fire",
+       "rect": [
+        118,
+        703,
+        36,
+        20
+       ]
+      }
+     ],
+     "sculpt": "button 192x48"
+    },
+    {
+     "id": "key.multiple",
+     "piece": "button.idle",
+     "kind": "nine",
+     "rect": [
+      240,
+      688,
+      192,
+      48
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Multiple",
+       "rect": [
+        299.5,
+        703,
+        73.5,
+        20
+       ]
+      }
+     ],
+     "sculpt": "button 192x48"
+    },
+    {
+     "id": "tab.offline",
+     "piece": "tab.idle",
+     "kind": "nine",
+     "rect": [
+      40,
+      744,
+      126.5,
+      40
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Offline",
+       "rect": [
+        79.5,
+        755.5,
+        47.5,
+        17
+       ]
+      }
+     ],
+     "sculpt": "tab 126.5x40"
+    },
+    {
+     "id": "tab.normal",
+     "piece": "tab.active",
+     "kind": "nine",
+     "rect": [
+      172.5,
+      744,
+      126.5,
+      40
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Normal",
+       "rect": [
+        209,
+        755.5,
+        54,
+        17
+       ]
+      }
+     ],
+     "sculpt": "tab 126.5x40"
+    },
+    {
+     "id": "tab.overload",
+     "piece": "tab.idle",
+     "kind": "nine",
+     "rect": [
+      305.5,
+      744,
+      126.5,
+      40
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Overload",
+       "rect": [
+        336.5,
+        755.5,
+        64,
+        17
+       ]
+      }
+     ],
+     "sculpt": "tab 126.5x40"
+    },
+    {
+     "id": "dial",
+     "piece": "dial",
+     "kind": "hero",
+     "rect": [
+      6,
+      889,
+      120,
+      120
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "dial",
+       "rect": [
+        29,
+        912,
+        74,
+        74
+       ]
+      }
+     ],
+     "sculpt": "dial 120x120"
+    },
+    {
+     "id": "inset.contacts",
+     "piece": "frame.inset",
+     "kind": "nine",
+     "rect": [
+      132,
+      889,
+      232,
+      120
+     ],
+     "protected": [
+      {
+       "kind": "label",
+       "what": "Contacts · 3 hostile",
+       "rect": [
+        150,
+        919.5,
+        149,
+        20
+       ]
+      },
+      {
+       "kind": "icon",
+       "what": "shields",
+       "rect": [
+        150,
+        944.5,
+        32,
+        32
+       ]
+      },
+      {
+       "kind": "icon",
+       "what": "tractor",
+       "rect": [
+        188,
+        944.5,
+        32,
+        32
+       ]
+      },
+      {
+       "kind": "icon",
+       "what": "transport",
+       "rect": [
+        226,
+        944.5,
+        32,
+        32
+       ]
+      },
+      {
+       "kind": "icon",
+       "what": "science",
+       "rect": [
+        264,
+        944.5,
+        32,
+        32
+       ]
+      },
+      {
+       "kind": "icon",
+       "what": "comms",
+       "rect": [
+        302,
+        944.5,
+        32,
+        32
+       ]
+      }
+     ],
+     "sculpt": "frame.inset 232x120"
+    },
+    {
+     "id": "crest",
+     "piece": "crest",
+     "kind": "hero",
+     "rect": [
+      370,
+      901,
+      96,
+      96
+     ],
+     "protected": [],
+     "sculpt": "crest 96x96"
+    }
+   ]
+  },
+  "phone_landscape": {
+   "note": "The console page lays out only the desktop reference; a phone in landscape shows that console scaled to fit, so its slots are the desktop slots at the same reference px. A phone-specific landscape layout, if one is designed, gets its own slot set and sculpts.",
+   "size": [
+    1920,
+    1080
+   ],
+   "slots": "same as desktop"
+  },
+  "phone_portrait": {
+   "note": "No mockup lays out the battle console in portrait yet (CLAUDE.md 7: the console stacks above the view). Its slot set is to be measured when that layout exists; until then it has no sizes.",
+   "slots": []
+  }
+ },
+ "sculpt_groups": [
+  {
+   "key": "strip.top 1448x72",
+   "piece": "strip.top",
+   "size": [
+    1448,
+    72
+   ],
+   "slots": [
+    "strip.top"
+   ],
+   "count": 1
+  },
+  {
+   "key": "bar.track 370.5x20",
+   "piece": "bar.track",
+   "size": [
+    370.5,
+    20
+   ],
+   "slots": [
+    "track.hull-integrity",
+    "track.weapon-capacitor",
+    "track.target-hull"
+   ],
+   "count": 3
+  },
+  {
+   "key": "strip.bottom 1448x72",
+   "piece": "strip.bottom",
+   "size": [
+    1448,
+    72
+   ],
+   "slots": [
+    "strip.bottom"
+   ],
+   "count": 1
+  },
+  {
+   "key": "bar.track 507.5x20",
+   "piece": "bar.track",
+   "size": [
+    507.5,
+    20
+   ],
+   "slots": [
+    "track.power",
+    "track.systems"
+   ],
+   "count": 2
+  },
+  {
+   "key": "lamp.alert 40x40",
+   "piece": "lamp.alert",
+   "size": [
+    40,
+    40
+   ],
+   "slots": [
+    "lamp.alert.yellow"
+   ],
+   "count": 1
+  },
+  {
+   "key": "nameplate 460x56",
+   "piece": "nameplate",
+   "size": [
+    460,
+    56
+   ],
+   "slots": [
+    "nameplate"
+   ],
+   "count": 1
+  },
+  {
+   "key": "helm.pad 264x264",
+   "piece": "helm.pad",
+   "size": [
+    264,
+    264
+   ],
+   "slots": [
+    "helm.pad"
+   ],
+   "count": 1
+  },
+  {
+   "key": "frame.inset 190x264",
+   "piece": "frame.inset",
+   "size": [
+    190,
+    264
+   ],
+   "slots": [
+    "inset.helm-readout"
+   ],
+   "count": 1
+  },
+  {
+   "key": "divider 154x10",
+   "piece": "divider",
+   "size": [
+    154,
+    10
+   ],
+   "slots": [
+    "divider"
+   ],
+   "count": 1
+  },
+  {
+   "key": "button 154x48",
+   "piece": "button",
+   "size": [
+    154,
+    48
+   ],
+   "slots": [
+    "key.engage",
+    "key.stop"
+   ],
+   "count": 2
+  },
+  {
+   "key": "ssd.bezel 460x300",
+   "piece": "ssd.bezel",
+   "size": [
+    460,
+    300
+   ],
+   "slots": [
+    "ssd.bezel"
+   ],
+   "count": 1
+  },
+  {
+   "key": "frame.panel 460x174",
+   "piece": "frame.panel",
+   "size": [
+    460,
+    174
+   ],
+   "slots": [
+    "panel.weapons"
+   ],
+   "count": 1
+  },
+  {
+   "key": "button 192x48",
+   "piece": "button",
+   "size": [
+    192,
+    48
+   ],
+   "slots": [
+    "key.fire",
+    "key.multiple"
+   ],
+   "count": 2
+  },
+  {
+   "key": "tab 126.5x40",
+   "piece": "tab",
+   "size": [
+    126.5,
+    40
+   ],
+   "slots": [
+    "tab.offline",
+    "tab.normal",
+    "tab.overload"
+   ],
+   "count": 3
+  },
+  {
+   "key": "dial 120x120",
+   "piece": "dial",
+   "size": [
+    120,
+    120
+   ],
+   "slots": [
+    "dial"
+   ],
+   "count": 1
+  },
+  {
+   "key": "frame.inset 232x120",
+   "piece": "frame.inset",
+   "size": [
+    232,
+    120
+   ],
+   "slots": [
+    "inset.contacts"
+   ],
+   "count": 1
+  },
+  {
+   "key": "crest 96x96",
+   "piece": "crest",
+   "size": [
+    96,
+    96
+   ],
+   "slots": [
+    "crest"
+   ],
+   "count": 1
+  }
+ ],
+ "helm_keys": {
+  "count": 9,
+  "face_px": 54.5,
+  "note": "Nine key faces inside helm.pad: one key cap shape (the bible: crisp dark caps with lit rims), placed nine times; the pad around them is one sculpt."
+ }
+}

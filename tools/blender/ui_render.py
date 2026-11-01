@@ -11,7 +11,7 @@ Units: 1 px of the 1x slot is 1 mm in Blender. A piece is modelled in the xy pla
 centre at the origin; the camera looks down from +z.
 
 Manifest (assets/ui/<skin>/manifest.json):
-    {"skin": "<skin>", "scale": 2, "pieces": {"<name>": {"kind": "nine"|"hero", "size": [w, h],
+    {"skin": "<skin>", "scale": 2, "pieces": {"<name>": {"kind": "nine"|"hero"|"cell", "size": [w, h],
      "margins": [t, r, b, l], "stretch": "x"|"xy", "file": "<name>.png"}}}
 """
 
@@ -107,13 +107,14 @@ def strip_png_metadata(path):
 
 def render_piece(name, spec, out_dir, samples, make_piece, render_setup):
     """Model one piece in a fresh scene, render it face on and return its manifest entry.
-    spec is (kind, (w, h), margins, stretch, build), optionally with a sixth item, a bar track's fill inset (x, y);
+    spec is (kind, (w, h), margins, stretch, build), optionally with a sixth item: a bar track's fill inset (x, y), or
+    for kind "cell" (a symbol bar's cell, drawn whole like a hero) the gap between cells in px;
     make_piece(name, w, h, hero) returns the modelling context build() draws into; render_setup(w_px, h_px, samples)
     sets render and lights."""
     kind, (w, h), margins, stretch, build = spec[:5]
     panel_kit.reset_scene()
     render_setup(w * SCALE, h * SCALE, samples)
-    K = make_piece(name, w, h, kind == "hero")
+    K = make_piece(name, w, h, kind in ("hero", "cell"))   # a cell is drawn whole, like a hero
     build(K)
     panel_kit.camera(w * MM, h * MM)
     sc = bpy.context.scene
@@ -121,6 +122,9 @@ def render_piece(name, spec, out_dir, samples, make_piece, render_setup):
     bpy.ops.render.render(write_still=True)
     strip_png_metadata(sc.render.filepath)
     entry = {"kind": kind, "size": [w, h], "file": f"{name}.png"}
+    if kind == "cell":
+        # a symbol bar's cell (bar.cell.off, .on, .warn): drawn whole; spec's sixth item is the gap between cells in px
+        entry["gap"] = spec[5] if len(spec) > 5 and spec[5] is not None else 2
     if kind == "nine":
         entry["margins"] = list(margins)
         entry["stretch"] = stretch

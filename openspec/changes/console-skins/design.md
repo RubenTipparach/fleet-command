@@ -38,7 +38,7 @@ the survey asks the owner to correct them.
 | **Light and shading** | None painted: flat colour that glows, on black | Harsh key light from the top left, rim light, deep occlusion, spec on bevels, emissive lenses | Drawn: hatching on the shadow side, a dry-brush highlight, a little ink bleed |
 | **Icons** | Open circles and arcs in an even thin line; nothing pointed (from the saucer and the circle of species) | Solid wedges, chevrons and blades pointing forward (from the prow); stencilled | Brush-drawn spirals, claws, eyes and teeth, a little crooked (from tattoos and trophies) |
 | **Type** | A tall condensed sans in capitals, right-aligned labels (Antonio) | A squared stencil face (Saira Stencil One) | A hand-lettered marker face (Permanent Marker) over a hand-written body (Patrick Hand) |
-| **Motion** | Snappy fades, at most 150 ms; nothing moves that a hand was reaching for | A mechanical press: the key travels 2 px with a hard stop | A wobble: a pressed tag tilts and springs back |
+| **Motion** | Snappy fades, at most 150 ms; nothing moves that a hand was reaching for | A mechanical press: the cap sinks into its socket; the frame never moves | A struck tag stays put; its ink darkens and its letters dip (no key moves, owner: "Vos buttons are still being rotated when I click") |
 | **Sound (U6)** | Soft chirps | Heavy clunks and servo whines | Rattles, a bell, a laugh |
 
 ### Concord: LCARS's principles, Starfleet's palette
@@ -103,6 +103,12 @@ After the reference game's pirate skin (the owner's favourite: "so playful and p
 inked and painted by its crew: wobbly ink outlines, a stained wash fill, hatching on the shadow side, a dry-brush
 highlight, spirals and knots in the corners, lopsided claw-tag buttons, a gauge drawn as an eye. Every piece is drawn
 by a committed script with a seeded wobble, so it is the same every time and never hand-painted.
+
+**More pirate factions may come** (owner, 2026-10-31: "Yea we might have more pirate factions. That's cool", on
+Krita painting the Vos skin). So the hand-drawn method is built to be reused, not tied to the Vos: Krita's brush
+engines driven by script (`krita-brushwork`, `tools/krita/brush.py`) are the shared painter, and each pirate faction
+would be its own skin module and design language on it (its own brushes, palette, button shape and icons; the three
+rules still hold: no two skins share a button shape). None is designed yet.
 
 | Colour | Hex | Role | Ideology |
 |---|---|---|---|
@@ -204,7 +210,7 @@ rendered shell around the UI panels and elements".
 | Ssarith Hunt | Hunter's jungle kit in Blender: worn gunmetal with chamfers and sunk hex bolts, canopy camouflage, vines and fronds, bone tally marks and reticles, CRT tube keys with scanlines | `tools/blender/build_ui_ssarith.py` |
 | Krai Warhost, Ombrai | In Blender | to come |
 | Aelith Conclave | Hybrid on the analog panel bible: pillowed satin-gold shells with formed wells (lozenges drawn to a point, knuckled corners, a scalloped rim, embracing arms), pearls on flat metal, each well a void rim-lit in cyan; the holograms drawn as vectors into the wells from the same shapes | `tools/blender/build_ui_aelith.py` from `assets/ui/aelith/shapes.json` (`tools/mockups/aelith_shapes.py`) |
-| Tarsine Remnant | Painted in the page for now; Blender recommended (survey U9) | |
+| Tarsine Remnant | On the bible since version 22: corroded iron, worn gold, grimy backlit glass, dim aged spots | `tools/mockups/tarsine_shapes.py`, `tools/blender/build_ui_tarsine.py` |
 
 ### The Aelith Conclave, rebuilt on the analog panel bible (version 14)
 
@@ -239,6 +245,448 @@ for holographic buttons and icons, but 3d rendered shell around the UI panels an
 Every generator shares `tools/blender/ui_render.py` (render settings, lights, the camera, byte-reproducible PNGs, the
 manifest), and the page loads any rendered kit with `FCK.fromManifest`; a kit may render its own icons (`icon.<name>`).
 
+## Children inside parents, measured on every skin (version 16)
+
+The owner, 2026-10-31, with a shot of the Kethran console's top strip: "remember the overlap rule? can you fix this
+too...and every other ui systems too, to be sure that you understand how to UI stuff". The rule (the analog panel
+bible, chapter 7; the `blender-ui-panels` skill): every child sits wholly inside its parent's open area with an even
+margin, and a panel never grows with its content (CLAUDE.md section 7). It is now measured on the page, not judged:
+
+- `tools/mockups/console_fit.mjs` shoots every leaf of every skin's console (a title, label, number, bar, fill, key,
+  tab, icon, the plate's name, the strip lamp) on its parent's art with and without it, takes the leaf's own pixels from
+  the difference, grows them by 3 px and looks under them for frame lines: a run of strong luminance steps (over 34 of
+  255) at least 14 px long under the leaf and 36 px long in the parent, that is not one of three or more parallel lines
+  at one pitch (scanlines, ribs). A fill may fill its groove but not cover its rim. Every column piece stays inside the
+  460 px column and no key, label or panel is clipped. On the page as it was it found 90 faults in ten skins; it passes
+  now. `tools/mockups/dom_fit.mjs` checks flat CSS pages (mockup 1, this page's proof rows) the same way on geometry.
+
+What it found, and the fix for each (one fix per cause, in the shared layout where the cause was shared):
+
+| Fault | Skins | Fix |
+|---|---|---|
+| A label over a bar (35 px) in a strip whose open band is 26-41 px, so labels touched the rail and bars sat on the lip | Kethran, Vos, Vhorr, Aelith, Tarsine, Ombrai | A skin may lay a label beside its bar (`--bar-flow: column`); each skin's strip padding is its art's open band, measured (Kethran's top strip: rows 17-43) |
+| The alert lamp (48 px) drawn over the bottom strip's rails | every skin but Ssarith and Krai | `--strip-lamp`: the lamp sized to the band less 6 px |
+| A panel title set on the frame's bevel or band | Kethran, Vos, Tarsine, Ombrai, Vhorr | Kethran and Vos title the open field; Tarsine and Ombrai move theirs clear of the band's edge; Vhorr's tag grows to hold its letters |
+| The helm readouts' 154 px panel grew 7-106 px into the 3D view: its frame and the key caps needed 161-260 px | every skin | The helm pad drawn at 264 px (its 2x render stays sharp), the readouts in a 190 px inset frame, fixed; radar icons 32 px so the row fits 460 px |
+| Kethran's bar groove (9 px) narrower than its 10 px fill | Kethran | Groove 11 px (2.5-13.5), re-rendered |
+| Kethran's prow block 2 px from the plate's chamfer | Kethran | Moved in to 8 px of land, re-rendered |
+| Vhorr keys: a vein texture and 24 px top and bottom margins left 9-slice seams across the face; the pressed pod creased; the face too thin for a label with descenders | Vhorr | A plain membrane on keys, vertical margins 0, one crown for every state, pod radius 21, re-rendered |
+| Vhorr's tab ridge and vein crossed its label | Vhorr | Moved to the shell's top and bottom edges, re-rendered |
+| Aelith's tab lens too thin for its label | Aelith | The lens as tall as rule R allows (land 6.2 mm), re-rendered and re-checked (K, R, L, P, B) |
+| Labels a few px low or wide in their key or tab | Aelith, Tarsine, Kelvane | `--btn-pb`, `--tab-pb` and smaller key type, per skin |
+
+Mockup 1's port panel covered the map's top bar and keys on desktop; the top bar now starts beside an open panel and
+the keys step aside, as they already did on a phone.
+
+## Symbol bars, the Remnant's dust, and three skins on the bible (version 17)
+
+The owner, 2026-10-31, with four screenshots of the reference game's skins (not committed; they set direction only, in
+order the Remnant, the Krai, the Ombrai and the Hunt): "Remnant: need to sync up dust with out and unlit button to give it
+that illusion. Id fix up health and power sliders for a lot of these factions: have different repeated symbols for them.
+Please use that instead of the same boring progress bar. The concord having them makes sense and sodoes kethran.and voss.
+Everybody else could use a little more character. In addition we need to update krai, onbrai, and hunt to use the new
+guildine standards".
+
+**The Remnant's dust.** Each tablet key drew its grime from a seed that included its light level, and its backlight drew a
+random number only when lit, so the idle, lit and pressed keys each carried different dirt and the tabs two different
+plates. Now one seed per piece draws the same dust at every level; only the light behind it changes, which is the
+illusion of a lamp coming on behind old glass. The rule holds for every skin: a piece's states share their texture, wear
+and dust, and differ only in light (and a pressed key's travel).
+
+**Symbol bars.** A skin may supply three optional kit pieces, `bar.cell.off`, `bar.cell.on` and `bar.cell.warn` (a
+rendered kit: kind `cell`, with the gap between cells); its bars then become a row of its own symbol in the track's
+groove, as many whole cells as fit at the groove's height, centred, the first `round(n x value)` lit. The track may be
+taller than 16 px (its image height is its slot height). Concord, the Kethran and the Vos keep the plain fill, as the
+owner said. The fit check measures a row of cells like a fill: it may fill its groove, never cover its rim.
+
+| Skin | Symbol | Unlit | Lit | Warning |
+|---|---|---|---|---|
+| Vhorr Brood | Spore egg, a swollen membrane | Dim olive | Bile glowing from its core | Blood |
+| Aelith Conclave | Lozenge of light, the key's own shape | Hollow outline in scanlines | Filled with light | Coral |
+| Tarsine Remnant | Arched window, the tablet key's in miniature, caked in the same dust | Dark grimy glass | Gold light behind the dirt | Ember |
+| Kelvane Institute | Jewel lamp in a brass bezel, an instrument's indicator row | Dark amber glass | Amber | Red |
+| Krai Warhost | Chevron, a blade's point | Dark glass | Forge orange | Red |
+| Ombrai | Eye | Dim lidded eye | Open, glowing pink | Crimson |
+| Ssarith Hunt | Claw mark on a phosphor tube | Dark tube | Green phosphor | Kill red |
+
+**Krai: cast volcanic gunmetal (version 23).** Owner, 2026-10-31: "edges of panels look kinda flat here. i also
+expected something like a rough gun metal, maybe sort of akin to volcanic magma type metal", and on keys "I actually prefer
+the more animated versions on click". The blade steel becomes cast volcanic gunmetal (`steel()` in
+`tools/blender/build_ui_krai.py`): near-black basalt-grey metal with a cooled-lava crust split by fissures, coarse pits,
+roughness from 0.5 to 0.9, and a dim ember glow (`MAGMA_ES` 0.7) in some fissures, deepest in the crevices. The roll
+grows from 1.6 mm to 2.0 mm (the land shrinks from 3.0 mm to 2.3 mm so rule R still holds), and the top of every roll is
+worn bright, picked out by the surface's own tilt. An engaged key's glass is pushed in 3 mm down and back while its frame
+stays put (`PRESS_MM`); krai.js sinks the label to match (`--btn-sink` 1.5 px, `--btn-motion` 0.06 s, `--btn-pb` 2 px).
+
+**Krai, Ombrai and the Hunt on the bible.** Each is now built the way the Aelith and Kelvane were: a shapes file of fit-
+checked outlines (rules K, L, R, P and B on every piece, written only if all pass, and `--verify` for rule B on the
+renders: 0 lit pixels outside any plate), a Blender generator on the shared panel kit (pillowed plates whose every edge
+rolls over, formed wells, a film layer behind the metal, light linking) and the skin module loading the rendered kit.
+Each takes a different one of the bible's lighting options, chosen from how the faction thinks:
+
+| Skin | Shapes, generator | The look | Light, and why |
+|---|---|---|---|
+| Krai Warhost | `tools/mockups/krai_shapes.py`, `tools/blender/build_ui_krai.py` | Blackened blade steel with a tight 1.6 mm honed roll, red enamel bezels and blades, a fang of metal grown into every well's corner; Blade keys dark ember at rest, red on hover, forge orange engaged; an octagonal war-shield helm round a red heart triangle; spikes driven into the ship display; a hexagonal radar | **Bottom**: forge lamps on each well's lower lips only, so the glow rises like faces round a forge, never from a calm sky |
+| Ombrai | `tools/mockups/ombrai_shapes.py`, `tools/blender/build_ui_ombrai.py` | Pillowed plum with a thin iridescent sheen and lilac rims; crescent-bitten keys with a moon jewel in the bite; an iris of eight petal wells round a slit-pupil eye; an eye-shaped ship display under two lids; a watching eye at each strip's end; moons for alert lamps | **Side**: lamps under each well's left lip, so every well is lit like a crescent moon with its far side in shadow, for a race that watches and is seldom seen |
+| Ssarith Hunt | `tools/mockups/ssarith_shapes.py`, `tools/blender/build_ui_ssarith.py` (rewritten) | Cut-cornered olive gunmetal, every edge rolled, the heroes pressed with a hide-scale texture; every well a small CRT tube with scanlines on its glass; hex bolts in counterbores, bone tally marks and reticles engraved, frond leaves on flat metal; caged jewel alert lamps | **Backlight only**: the tubes light themselves and no lamp hides under any lip, because a hunter shows nothing the quarry could see |
+
+All three share their states' texture (one model per key, tab and cell; only the light changes). Every well's lamps are
+placed by one helper, `ui_shapes.lip_runs` (every edge for rim light, the lower lips for bottom light, the left lips for
+side light). It replaced three copies; the Aelith's copy had been aiming its long lips' lamps out of the well, so its rim
+light now runs all the way round as designed, at half the power (0.0004 W per mm).
+
+Learnt on the way (now in the `blender-ui-panels` skill): a plate or well corner must be rounder than about twice the roll,
+or offsetting by the roll and bevelling by the roll turns it inside out into a spike; outlines are cleaned of
+near-duplicate points before they are offset.
+
+## Taller strips (version 18)
+
+The owner, 2026-10-31, with a shot of the Kethran top strip as it was before version 16: "text and progress bar
+overlapping with parent bevels, we need to make parent taller". Version 16 had laid each label beside its bar to fit the
+26-41 px open bands of 56 px strips; the owner's fix is the better one. The strips are now **72 px** (the 3D view's inset
+grows from 60 to 76 px top and bottom). Every skin's strip keeps its rails, lips and end ornaments at their size, centred
+on row 36, and its open band grows 16 px; the shaped skins' strips pass rules K, L, R, P and B again (the Krai's end blades
+moved back clear of its longer pointed channel). Each skin's strip padding is its measured band, the alert lamp is sized to
+it, and every label stands over its bar again, 3 px clear of the art (console fit: all ten pass).
+
+| Skin | Open band (top strip) | Was |
+|---|---|---|
+| Concord | 57 px beside the thin bar | 44 |
+| Kethran | 43 px, rows 17-59 | 27 |
+| Vos | 55 px | 41 |
+| Vhorr | 52 px | 36 |
+| Aelith | 47 px | 33 |
+| Tarsine | 46 px above the beam | 30 |
+| Krai | 45 px | 30 |
+| Ombrai | 49 px | 33 |
+| Kelvane, Ssarith | 66 px | 50, 55 |
+
+## The Kelvane's keys and toggles light up (version 19)
+
+The owner, 2026-10-31: "these need to switch back light on off based on hover/click state", then "some of the togle
+buttons for instutues having lights on would be cool". The Kelvane key's amber window was backlit in every state, so only
+its small pilot ring changed. Now the window is the state: unlit film and no lamp at rest, backlit amber on hover, brighter
+film and a stronger lamp when pressed, the pilot ring lit with it. Each tab, the console's toggles (Offline, Normal,
+Overload), carries a jewel pilot lamp in a pressed dimple at its left, inside the slice margin: dark glass when off,
+glowing when that setting is on. The plate, glass and dimple are the same in every state; only the light changes.
+
+## Keys never move (version 20)
+
+The owner, 2026-10-31: "Krai buttons shouldnt move position when I press them", then of the Kethran keys "these buttons
+should not move, the button should have a 3d animation where the inner part is pushed in and the frame stays put in the
+same spot". No pressed key is moved or squashed by the page any more (the Kethran and Hunt slid down, the Vhorr squashed,
+the Krai slid sideways), the Vos tag included (owner: "Vos buttons are still being rotated when I click", which corrected an earlier reading of
+their note on the Vos keys as asking for the tilt). Every skin's pressed image keeps its frame exactly where its idle
+image has it (measured: identical footprints in all seven rendered kits) with the cap sunk in its socket, so a press swaps
+to that image and the label rides the cap down by the skin's `--btn-sink` (2 px on the Kethran's long key travel, 1 px
+elsewhere).
+
+## Drawn on canvas, and live (version 21)
+
+The owner, 2026-10-31: "can you animate all the toggle and sliders? for every ui kit? that would be valuable to see the
+interaction. if you can, get rid of the slice lines, and use canvas rendering, or a game engine like phaser js or three js".
+
+- **No more slice lines.** The browser's CSS border-image samples across the lines between a 9-slice piece's corners,
+  edges and centre, and leaves faint seams. The page now paints every kit piece itself: each image is cut once into nine
+  canvases (so no slice ever samples its neighbour) and each element gets a canvas behind its content, sized to its box at
+  the console's scale and the screen's pixel ratio, its slices drawn on whole device pixels. Plain canvas is enough: no
+  engine is needed for 2D pieces, and the page stays one self-contained file. The borders stay only to lay content out.
+- **Live controls, in every skin.** A key lights on hover and is pushed in while held (its art cross-fades to the sunk cap
+  in 70 ms, its label rides down; the frame never moves); a toggle (the arming tabs) switches
+  with a 150 ms fade; every bar is a slider (drag along it and its fill slides, or its symbols light and go dark one by
+  one). For people, the bars fill from empty when a skin is shown and the weapon capacitor keeps charging and
+  discharging; headless checks see still frames.
+- The fit checks measure content without the art canvases, which cover the border box by design.
+- The Krai ship display is a wireframe schematic (owner: "The krai ship display should be a wire frame schematic"): the
+  blade hull top-down in glowing hairlines, a node at every vertex, its spine and frame ribs, the wing spars, the lower
+  hull in dashed hidden lines, the three weapon mounts boxed and called out, the engines as nozzle rings.
+
+## The Remnant on the bible, grime kept (version 22)
+
+The owner, 2026-10-31: "I love the Remnant ui, i htink it could use some polish from our guide, but please dont remove the
+grimey industrial feel, I love that story telling so much". The Tarsine Remnant is now built like the other rendered
+skins: fit-checked shapes (`tools/mockups/tarsine_shapes.py`, rules K, L, R, P and B on all 19 shaped pieces, `--verify`
+0 lit pixels outside any plate) rendered in Blender (`tools/blender/build_ui_tarsine.py`). The grime lives in the
+materials: corroded iron with rust blooms, verdigris and pitting, soot pooled where the plate's own occlusion collects it,
+great domed rivets with rust streaks running down the flat, worn gold on bezels, brackets and the crest, and one caked
+dirt layer laid over every window's glass, the same in every state, so only the backlight behind it changes. Keys stay
+arched tablets on a wider foot; tabs chipped lintels with a slot of glass; the strips a 72 px beam with a grimy glass
+channel; the helm nine tablets, the centre lit like a hearth; cracked glass over the ship display and dial; caged bulbs
+for the alert lamps; little arched windows for the bar's cells.
+
+**Light**: the bible's spots, dimmed and uneven: one or two old lamps under each window's lip, each with a fixed age
+between 35% and 100% power, because the Remnant never replaced its fixtures and not all of them still burn. The name
+plate's letters are pale and outlined dark, so they read over the lit gold and the stains alike.
+
+With ten rendered kits inlined as PNG the page reached 19 MB, past the artifact host's 16 MiB limit. The page now carries
+each kit image as high-quality WebP (quality 92, alpha kept; `tools/mockups/inline_data.py`), 2.4 MB in all, measured
+indistinguishable on the page (mean 0.33 of 255); the committed renders stay PNG.
+
+## The Vhorr Brood: assimilated tech (version 23)
+
+The owner, 2026-10-31, with two screenshots of StarCraft II's Zerg interface (not committed; direction only, take the
+shape, not the art): "The brood still needs work. Analyze elements in this UI system carefully", then "I like that some of
+the tech in zerg is human tech with an organic layer on top", then "Send it. If it's good, it's good; if not we're gonna
+repeat the same exercise we did with winamp" (the Nucleo NLog study: a reference studied element by element, then the
+skin rebuilt and compared pixel by pixel, the `blender-ui-panels` skill's section 8).
+
+**What the reference does that the Brood does not**:
+- **One organism.** Its panels share one continuous carapace and are joined by sinew cables; ours are isolated boxes.
+- **A silhouette that breaks the rectangle.** Domes, horns and ribs overhang the frames and cast shadow on the playfield;
+  ours are even bands with corner claws.
+- **Bone and chitin ridges.** Vertebral ridges and glossy bone against wet flesh; ours is mottled hide that reads as camo.
+- **Membrane windows.** Smoked glass with a thin bright inner rim, calm behind text; ours are flat dark interiors.
+- **Glowing nodules.** Pustules at the joints act as status lights; ours has none.
+- **A portrait pocket and a focal object.** A fleshy pocket holds a live portrait, and a large crystal is the heartbeat;
+  our name plate is a band and our crest is quiet.
+- **Crisp keys in a soft frame, and state by glow colour.** Our tabs are low contrast.
+- **A thick-and-thin rhythm.** Swollen knots alternate with thin tendrils.
+
+**The rebuild: assimilated tech.** The brood grows, consumes and adapts; it does not build consoles, it takes them. Two layers:
+1. **A captured machine**, built on the panel bible (plates with rolled edges, rivets, screens, real keys), fully legible.
+2. **The growth over it**:
+   - Creep and membrane spreading from the corners and seams, thinning toward the controls.
+   - Conduits wrapped in sinew, and tendrils bridging the gutters between panels.
+   - Bolts swallowed into glowing pustules that act as status lights.
+   - Bezels fogged by membrane, but each screen's middle clear.
+   - Keys with membrane over their edges.
+   - Bone and chitin ridges growing out of the metal over the frame tops, breaking the rectangle.
+   - A fleshy portrait pocket on the name plate.
+   - A large glowing egg or crystal as the focal hero piece.
+   - Contacts glowing by threat.
+
+**The fit rules extend naturally**: growth may cover frames and bezels, never a readout, a label or a key's face, and an
+overhang never covers another panel's content. Measured, like every other rule. A shared "growth overlay" kit idea
+(tendrils across the gutters between panels) is new and needs its fit rule.
+
+If the result is not right, the next step is the Winamp exercise: study the reference element by element, rebuild, and
+compare pixels.
+
+**Built (version 23, 2026-10-31)**: `tools/mockups/vhorr_shapes.py` writes and checks the shapes, `tools/blender/build_ui_vhorr.py`
+renders them, `docs/mockups/skins/vhorr.js` draws the live readouts.
+- **The captured machine**: gunmetal steel with a 3 mm roll (keys 2.4, tabs 2.0), machined wells (the frames' corners
+  chamfered 22 px to make land for a bolt), dark glass lit bile by a lamp under each top lip. Keys and tabs are backlit only,
+  because a lamp's hot spot under the lip crossed their labels. Its plates, wells and bolts pass rules K, L, R, P and B.
+- **The growth**: creep is a thick core of dark wet hide whose light runs through a web of thin veins (patches read as
+  camouflage), inside a translucent membrane that thins onto the steel; nodules swell on the larger creeps. Pustules sit
+  over the bolts, chitin spines with vertebral knobs and horns run along the helm's and the ship display's top edges and
+  out past the rounded corners, captured conduits carry sinew bands, the name plate's left end is a fleshy pocket holding
+  the brood's eye, and the crest is a glowing egg cradled by chitin ribs.
+- **Rule G**, new and measured: growth stays inside the piece's image (G1), at least 3 px from every live readout, label
+  and key face (G2), and on a 9-slice piece only in the cells the slicing never stretches (G3). Creep is grown from an
+  anchor and fitted by sliding and shrinking, never clipped, so it has no straight cut edge.
+- **Pressed keys move** (owner, 2026-10-31: "I actually prefer the more animated versions on click"): the glass is
+  pushed 3 mm in and 3 px down, the frame and growth unchanged; `--btn-sink` 1.5px moves the label with it.
+- Contacts on the dial glow by threat: bile far, amber nearer, blood nearest.
+- Not built yet: tendrils bridging the gutters between panels. They need a page-level growth overlay, a new kit idea
+  with its own fit rule (never over another panel's content).
+
+## An organic design system (version 24)
+
+The owner, 2026-10-31, of version 23: "Nah that's bad lol. Let's make a new design system for organic", then "The brood
+is overly simple. It's just metal with ameobas on top. Completely missing the zerg aesthetic". Version 23's assimilated
+tech is **superseded**: it started from a machine and added growth, so the growth read as decoration. This is the
+Winamp exercise the owner named, done for organic UI: a study refined one change at a time in Blender
+(`tools/blender/organic_study.py`, 14 steps), written up as the **Organic Panel Bible** (`docs/design/organic-bible.html`)
+with its skill (`blender-organic-panels`). Reference screenshots of another game's hive interface gave the direction
+and are not committed; the shapes, words and colours are our own.
+
+Its rules, in short (the bible has them in full):
+- **One organism holding instruments.** Each panel's frame is one body, with no grey metal. (The first round put a
+  ribbed wall of tissue behind the panels; that is superseded by the version 25 note below: the console is an overlay
+  with no backdrop.)
+- **Five materials.** Leathery maroon-brown flesh with a wet coat, near-black chitin plates sunk into it, ivory bone,
+  black smoked glass for every screen (with a thin bronze rim and a calm middle), and light.
+- **Grown form.** Metaball bodies, voxel remeshed and lumped; a ribcage rhythm; chitin overlapping like vertebrae;
+  bone spines and arches growing past the top edge and over neighbours; asymmetric.
+- **Crisp tech in a soft frame.** Screens are black with glowing content; keys are square dark caps with glowing amber
+  rims and clean icons set into the flesh (a press sinks the cap 3 mm, the flesh stays); the name plate is a tall pocket
+  under an arch holding a live portrait; the crest is a big faceted violet crystal.
+- **Light and palette.** A warm soft key from above, grazing rims, a dim cool fill; accents light their surroundings.
+  A value ladder: fold `#080303`, flesh `#33110f`, lit flesh `#6a2620`, chitin `#140c0e`, bone `#e2d6bb`, screen
+  `#050405`, bronze `#9a5a34`; light only in readout green `#b8f27a`, key amber `#ffb03a`, life green `#6fd82a`, hero
+  violet `#b35cff`.
+- **Fit, measured (G1-G4).** Growth may cover frames and neighbours' frames, never a screen, a key face or the portrait
+  window; the study measures it on the evaluated geometry (all clear in the final step).
+
+**Next:** the Vhorr Brood kit is rebuilt on the organic bible once the owner has seen it (a new
+`tools/blender/build_ui_vhorr.py` on the skill's method, its kit pieces measured by G1-G4 and the page's fit checks).
+
+## The organic guide reviewed, and no nine-slice for organic skins (version 25)
+
+The owner, 2026-10-31, after study steps 15-25 (the frame sculpted in layers: bone, muscle, leather stretched over both,
+veins under the skin, no raw primitives, and the portrait as live pixels under a fine hex-cell filter): "That looks
+amazing!", then "Now that looks good. Create the guide and update the console skins documentation. We need a note in
+there that due to the nature of this ui, nine slice is not possible and the UI will have to be bocked out using
+placeholders then a full detail agent will go in and sculpt components manually".
+
+- **The Organic Panel Bible is reviewed** and its draft hold lifted; it stays a living guide. Its rules: R1 never use raw
+  primitives, R2 layered anatomy sculpted as one surface, R3 screens as live pixels under a fine hex filter (2.0 mm
+  cells, 20% walls at 45% brightness, label contrast 11.5:1 at 1x), R4 no nine-slice.
+- **No nine-slice in an organic skin.** An organic frame is one sculpted body: its ribs change along their length,
+  growth crosses the gutters between panels, and no two corners are alike, so it cannot stretch or tile (stretched, the
+  sculpt smears; tiled, one vertebra repeats). Every organic kit piece is a **hero piece sculpted at its exact slot
+  size**, and each screen shape (desktop, phone landscape, phone portrait) gets its own sculpt. The kit's piece names
+  stay the same, so screens still draw only kit pieces by name; what changes is that an organic skin supplies a fixed
+  image per slot instead of one stretchable image. A slot without its sculpt is a build error, as for any missing
+  piece; nothing falls back to stretching.
+- **The build method: block out, then sculpt.**
+  1. **Blockout.** The whole console is laid out with plain placeholders: one flat, labelled rectangle per panel at its
+     exact slot size and place, with its protected rectangles marked (every screen, key face, label and the portrait
+     window). The page's layout and fit checks run on the blockout.
+  2. **Full-detail sculpt.** A full-detail agent then sculpts the components one at a time, by hand-directed sculpting on
+     the bible's rules: at final size, in place beside its neighbours so growth joins across the gutters, clear of every
+     protected rectangle. Live content (readouts, labels, the hex-filtered portrait) is drawn over the piece, never
+     sculpted in.
+  3. **Swap and measure.** Each sculpt replaces its placeholder; the fit checks run again and its close-up is looked at.
+- **Cost.** One sculpt per slot per screen shape instead of one stretchable image per piece: more pieces to make, and a
+  layout change to an organic skin means re-sculpting the slots it touches. Rendering is about 5 minutes per piece at
+  32 samples on the cloud machine.
+
+- **An overlay, not a scene** (the owner, 2026-10-31: "The one thing about UI is it's overlayed on top of gameplay so that background wouldn't make sense here", then of study step 25: "Only this new iteration is accepted. Minus the background there"). The
+  console sits over the live battle, so no wall, cavern or fill stands behind or between the panels; every organic
+  piece renders on a transparent film and is judged composited over the game view; only the panels' own bodies join
+  them (a tendril). The bible's rule 5, and its study step 26, which is the accepted design; step 14 (placed beads, a
+  white spine, a wall) is shown beside it as the owner's rejected iteration.
+
+**Next:** the Vhorr Brood is rebuilt this way, starting with the blockout of the desktop console.
+
+## The Vhorr Brood on the organic bible (page version 25)
+
+The owner, 2026-10-31, of the Organic Panel Bible v2: "Looks dope, now let's see if this new design system can be
+applied to the design language/brood skins design system". The Brood is rebuilt on the bible's rules: no raw
+primitives (R1), layered anatomy sculpted as one surface (R2), screens as live pixels under a fine hex filter (R3), no
+nine-slice, so block out first and then sculpt each component in place (R4), and an overlay over the game with no
+backdrop (R5). The owner saw the blockout and said "Go"; the page's Vhorr skin is now the sculpted kit (phase 2, below).
+
+**Phase 1, the blockout (done).** `tools/mockups/vhorr_blockout.mjs` measures the live page (the Vhorr skin at the
+1920 x 1080 desktop reference) and writes `assets/ui/vhorr/organic/blockout.json`: every slot the console draws with a
+kit piece, its rect in the console's own px, and its protected rectangles (labels, readouts, the inked extent of each
+live drawing, icons, bar cells, key and tab labels, the helm pad's nine key faces, the name plate's portrait window, and
+child slots). `tools/mockups/vhorr_blockout_draw.py` draws it over the page's own game view:
+`docs/screenshots/mockups/vhorr-blockout-desktop.png`.
+
+| Sculpt group | Slots | Size (px) | Notes |
+|---|---|---|---|
+| `strip.top` | 1 | 1448 x 72 | holds three tracks, three labels and the clock |
+| `strip.bottom` | 1 | 1448 x 72 | holds two tracks, labels, the speed readout and the lamp |
+| `bar.track` | 3 | 370.5 x 20 | top strip; cells drawn live on top |
+| `bar.track` | 2 | 507.5 x 20 | bottom strip |
+| `lamp.alert` | 1 slot, 3 states | 40 x 40 | in the bottom strip (shown 40 px, the kit piece is 64) |
+| `nameplate` | 1 | 460 x 56 | name field 290 x 26; portrait window 62 x 48 |
+| `helm.pad` | 1 | 264 x 264 | nine key faces of 54.5 px (one key cap, placed nine times) |
+| `frame.inset` (helm readout) | 1 | 190 x 264 | holds To hit, 83%, a divider and Engage and Stop |
+| `divider` | 1 | 154 x 10 | |
+| `button` | 2 slots, 3 states | 154 x 48 | Engage, Stop |
+| `ssd.bezel` | 1 | 460 x 300 | live drawing 215 x 217 |
+| `frame.panel` (weapons) | 1 | 460 x 174 | title, Fire, Multiple and three tabs |
+| `button` | 2 slots, 3 states | 192 x 48 | Fire, Multiple |
+| `tab` | 3 slots, 2 states | 126.5 x 40 | Offline, Normal, Overload |
+| `dial` | 1 | 120 x 120 | live drawing 74 x 74 |
+| `frame.inset` (contacts) | 1 | 232 x 120 | label and five icons |
+| `crest` | 1 | 96 x 96 | the violet crystal |
+
+24 slots in 17 sculpt groups at the desktop reference. Slots of one group share one sculpt only where they are a
+self-contained piece (a key, a tab, a bar track); frames are sculpted once each, in place, because their growth joins
+their neighbours'. A phone in landscape shows this same console scaled to fit, so it uses these slots; no mockup lays
+out the battle console in portrait yet, so that slot set waits for its layout.
+
+**Awkward for organic slots** (the console rules say panels are fixed rectangles; these come out of the page's flex and
+grid layout instead, and must be pinned before sculpting):
+- **Track widths come from content**: 370.5 and 507.5 px are what the strips' flex rows leave after the labels and
+  gaps; a different label or font would move them. Phase 2 pins them as fixed widths.
+- **The weapons panel's 174 px height comes from its content** (a grid with no set height), and the radar row's slots
+  sit wherever the column's leftover height centres them (the dial at y 889, the crest at y 901). Phase 2 pins every
+  column slot's y and height.
+- **Fractional sizes** (tabs 126.5 px from a three-column grid, the tracks): pinned to whole px, so a sculpt maps to
+  whole pixels at 2x.
+- **No portrait slot.** The bible's tall portrait pocket does not fit the 460 x 56 name plate; its pocket is 62 x 48. A
+  taller name plate is a layout change to the console, which needs the owner's approval of a mockup (CLAUDE.md 4).
+  Until then the hex-filtered portrait lives in the plate's 62 x 48 pocket.
+- **States multiply sculpts.** Keys have three states and tabs two, each a separate render of the same slot, and the
+  lamp three; because growth joins across slots, each state is rendered in place in the full scene, not alone.
+- **The lamp** shows at 40 px in the strip though its kit piece is 64 px (`--strip-lamp`); it is sculpted at 40.
+
+**Phase 2, the sculpt (built).** Two owner notes shaped it: the blockout's two choices accepted (pin every
+content-sized or fractional slot to whole px, in the page too; keep the 460 x 56 name plate and put the hex portrait in
+its 62 x 48 pocket), and "If you structured your sculpting tools well. Then we should be able to sculpt panels, buttons
+and elements of any size". So the sculpt is a library, not per-slot code:
+
+- **`tools/blender/organic_components.py`, the parametric sculptors** (numpy only, on `organic_anatomy.py`'s
+  primitives): a `Field` (bone, muscle and skin height fields over a region, openings, sacs of light, protected
+  rectangles, the instruments to place) and one sculptor per kind of piece: `panel` (a body grown round its windows and
+  the pieces set into it, a thick rolled lip round every window, a vertebral ridge with horn ends along the edge with
+  the most room, long muscle lobes between), `key` (a hard cap sized from its label in a collar of flesh with sinew
+  knots each side), `tab`, `strip` (a long body with glass channels, a spine along its outer edge and a knot at each
+  end), `bezel` (a deep pocket with a ribcage round it), `round_pocket` (the dial), `crest` (a cradle and the crystal
+  heart), `lamp` (a sac of light, green, amber or red), `cord` (the divider) and `helm` (the panel sculptor round nine
+  key faces). Every size is laid out in mm from the rectangle and its room (hug thickness from the window's size,
+  vertebrae about one per 19 mm, lobe count from the area), seeded from the slot id, so two keys of one size are
+  siblings, not clones, and a longer strip has more vertebrae, never stretched ones. `Field.finish` stretches one skin
+  over everything (a smooth maximum, then a blur that webs across gaps), raises veins and sacs, creases the hollows,
+  sinks every opening, and drops everything outside the bodies to the floor (cut by the renderer: R5).
+- **`tools/blender/build_ui_vhorr_organic.py` only reads a layout** (`blockout.json`, or any list of slots with a rect,
+  a kit piece and protected rectangles), pins it, and hands each slot to the sculptor its kit piece names. Each
+  top-level slot renders as a region (its neighbours' edges sculpted in an 8 mm margin, so light and shadow match),
+  through the study's own `field_mesh` and `crystal_heart` and materials (`organic_study.py`: one implementation), lit by
+  the bible's key, rims and fill as suns so every region is lit alike, at 2 px per mm on a transparent film. Children
+  (keys, tabs, tracks, the lamp, the divider) are cut from their parent's render; each other state is the same region
+  re-sculpted with only that state changed and rendered over the child alone.
+- **Pinned**: tracks 371 / 370 / 370 and 507 x 20, tabs 127 / 126 / 126 x 40, the weapons panel 460 x 174, the radar row
+  where it sits; the page's `organicPin` sets each slot element's size from the manifest (measured: every slot's size
+  exact, its position within 1 px of the sculpt, from the strips' and grid's half pixels).
+- **The page** (`console-skins.html`): every console element names its slot (`data-slot`); a skin with `organic` in its
+  kit draws each slot's own image, in its state, unsliced at its rect (`drawPiece`), keys and tabs swapping images as
+  they are hovered, pressed and switched; the portrait is drawn live in the plate's pocket with the hex filter
+  (`hexMask`, the same numbers and arithmetic as `hex_portrait.py`); the kit section shows every slot in every state at
+  its size. `skins/vhorr.js` lays the organic manifest over the version 23 kit, which still gives the symbol cells, the
+  icons and the layout margins the blockout was measured with.
+
+**Numbers.** 24 slots, 23 renders (9 regions, 14 state crops), 228 s of rendering at 24 samples (about 4 minutes for
+the whole desktop console on the cloud machine, against the hour estimated: regions are only the slots, not the whole
+screen). Rule G1 on the sculpted fields: every protected rectangle clear by 2.83 mm or more (the helm key
+faces, the tightest; labels 3.5 mm or more, key labels 6 mm or more). `console_fit` and `dom_fit` pass on all ten skins.
+The "any size" proof (`docs/design/organic-bible/any-size.jpg`): one key at 90, 160 and 260 px, one panel at three
+aspect ratios, one strip at 300 and 630 px, the same sculptors, each grown at its size.
+
+**Gaps, honestly.** The strips are mostly glass channels (their labels and bars fill the 72 px band, so little flesh
+shows); the name plate is glass with a thin rim, its portrait small; the symbol cells and the contacts icons are version
+23's renders; the helm pad's keys are one state (the helm's live glyphs do not press); the phone portrait layout has no
+slots yet; `vhorr_blockout.mjs` finds the helm by the version 23 hero images, so it needs to read `data-slot` before it
+can re-measure the organic page.
+
+## The Brood's picks from the survey (section W, not yet built into the page)
+
+The owner answered survey section W on 2026-11-01, each pick made from a picture of exactly that component in exactly
+that style, and said: "survey completed, this is a good start, I still dont want a plain black backround on the ui area
+though".
+
+| Id | Part | Pick |
+|---|---|---|
+| W1 | Top and bottom strips | H, ridge and tentacles |
+| W2 | Ship systems display | E, hanging tentacles |
+| W3 | Helm pad and the To hit / Engage / Stop panel | D, tentacle wrap |
+| W4 | Weapons panel | D, tentacle wrap |
+| W5 | Bottom row (radar, contacts, crest) | D, tentacle wrap |
+| W6 | Name plate | B, plain heavy leather |
+| W7 | Keys | Both: larvae for the big keys, low warts for the small keys and the tabs |
+
+- **The picks are data**, not code: `assets/ui/vhorr/organic/styles.json` names each slot's style and each key's body,
+  validated when `build_ui_vhorr_organic.py` loads it (an unknown slot key, style or body stops the build). The four
+  long keys (Engage, Stop, Fire, Multiple; 154-192 x 48 px) are larvae; the helm's nine keys and the three tabs are
+  warts. The owner's pick named Engage and Fire as the big keys; Stop and Multiple are the same size, so they are read
+  as big keys too (one line in the styles file to change).
+- **The space between the panels** (the owner's note) is a new piece, the column's backing, sculpted over the whole
+  left column and drawn under every panel (`organic_components.backing`). Three treatments, all within rule 5 (the
+  brood's own body, never a scene): **tissue** (one grown membrane over muscle with ribs across it, sinew cords and
+  veins, its free edge rolled into a lumpy lip over the battle), **tendrils** (no body: the battle shows under the
+  column, the panels held to each other only by tentacles over the gutters, the bottom row anchored off the screen's
+  edge) and **lattice** (a ribcage of bone bars across the column on a spine at each side, the battle seen through its
+  holes, the panels hung on it by tentacles). For tendrils and lattice the battle view runs under the whole console.
+  The owner picks one in survey W8, from whole-console screenshots.
+- **Rule 0 holds**: these renders are screenshots in `.tools/compare/` and the survey's pictures; the page, the kit
+  images and the bible are unchanged until the owner approves the result.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
@@ -252,7 +700,7 @@ piece and its own slice margins; a missing piece is a build error. Icons join th
 | `bar.fill` | 9-slice | any width x 10 | the bars' fills |
 | `button` | 9-slice, 3 states | min 44 x 44 | every key: idle, hover, pressed |
 | `tab` | 9-slice, 2 states | min 40 high | tab rows, the arming states |
-| `strip.top`, `strip.bottom` | 9-slice | full width x 56 | the top and bottom strips |
+| `strip.top`, `strip.bottom` | 9-slice | full width x 72 | the top and bottom strips |
 | `divider` | 9-slice | any x 10 | between stacked panels |
 | `nameplate` | hero | 460 x 56 | the captain's plate |
 | `helm.pad` | hero | 300 x 300 | the helm's 3 x 3 pad |
@@ -261,6 +709,8 @@ piece and its own slice margins; a missing piece is a build error. Icons join th
 | `lamp.alert` | hero, 3 states | 64 x 64 | condition green, yellow, red |
 | `crest` | hero | 96 x 96 | the faction's mark |
 | `icon.*` | hero, per skin | 48 x 48 | helm, fire, shields, tractor, transport, science, comms, repair, map, settings |
+
+**Organic skins are the exception** (version 25): every piece is sculpted at its exact slot size by parametric sculptors (`tools/blender/organic_components.py`), so any size is a re-run; blocked out with placeholders first, so their manifests record each slot's pinned rect, not margins.
 
 The margins differ by skin (a pill's caps, a wedge's slants and a claw tag's hook take different widths), so each skin's
 manifest records its own; the layout never depends on them.
@@ -290,3 +740,4 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 | U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | Skins only for now, with the names above; factions decided later (provisional) |
 | U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |
 | U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | A new race named the Ssarith Hunt: a skin now, a faction decided with the others under U8 (provisional) |
+| W8 | What fills the space between the Brood's panels (the owner: no plain black)? | Open in the survey: tissue, tendrils or lattice, see "The Brood's picks from the survey" |

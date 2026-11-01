@@ -1,0 +1,827 @@
+{
+ "skin": "vhorr",
+ "kind": "organic",
+ "scale": 2,
+ "layout": "desktop",
+ "size": [
+  1920,
+  1080
+ ],
+ "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice)",
+ "portrait": {
+  "rect": [
+   12,
+   10,
+   62,
+   48
+  ]
+ },
+ "hex": {
+  "pitch_mm": 2.0,
+  "wall": 0.2,
+  "wall_level": 0.45,
+  "dome": 0.1
+ },
+ "slots": {
+  "strip.top": {
+   "piece": "strip.top",
+   "rect": [
+    472,
+    0,
+    1448,
+    72
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "track.hull-integrity": {
+   "piece": "bar.track",
+   "rect": [
+    572,
+    37,
+    371,
+    20
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "strip.top"
+  },
+  "track.weapon-capacitor": {
+   "piece": "bar.track",
+   "rect": [
+    969,
+    37,
+    370,
+    20
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "strip.top"
+  },
+  "track.target-hull": {
+   "piece": "bar.track",
+   "rect": [
+    1366,
+    37,
+    370,
+    20
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "strip.top"
+  },
+  "strip.bottom": {
+   "piece": "strip.bottom",
+   "rect": [
+    472,
+    1008,
+    1448,
+    72
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "track.power": {
+   "piece": "bar.track",
+   "rect": [
+    714,
+    1045,
+    507,
+    20
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "strip.bottom"
+  },
+  "track.systems": {
+   "piece": "bar.track",
+   "rect": [
+    1247,
+    1045,
+    507,
+    20
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "strip.bottom"
+  },
+  "lamp.alert.yellow": {
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    1780,
+    1024,
+    40,
+    40
+   ],
+   "states": [
+    "green",
+    "yellow",
+    "red"
+   ],
+   "rest": "yellow",
+   "parent": "strip.bottom"
+  },
+  "nameplate": {
+   "piece": "nameplate",
+   "rect": [
+    6,
+    6,
+    460,
+    56
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "helm.pad": {
+   "piece": "helm.pad",
+   "rect": [
+    6,
+    68,
+    264,
+    264
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "inset.helm-readout": {
+   "piece": "frame.inset",
+   "rect": [
+    276,
+    68,
+    190,
+    264
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "divider": {
+   "piece": "divider",
+   "rect": [
+    294,
+    169,
+    154,
+    10
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "inset.helm-readout"
+  },
+  "key.engage": {
+   "piece": "button.pressed",
+   "rect": [
+    294,
+    189,
+    154,
+    48
+   ],
+   "states": [
+    "idle",
+    "hover",
+    "pressed"
+   ],
+   "rest": "pressed",
+   "parent": "inset.helm-readout"
+  },
+  "key.stop": {
+   "piece": "button.idle",
+   "rect": [
+    294,
+    247,
+    154,
+    48
+   ],
+   "states": [
+    "idle",
+    "hover",
+    "pressed"
+   ],
+   "rest": "idle",
+   "parent": "inset.helm-readout"
+  },
+  "ssd.bezel": {
+   "piece": "ssd.bezel",
+   "rect": [
+    6,
+    338,
+    460,
+    300
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "panel.weapons": {
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    644,
+    460,
+    174
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "key.fire": {
+   "piece": "button.hover",
+   "rect": [
+    40,
+    688,
+    192,
+    48
+   ],
+   "states": [
+    "idle",
+    "hover",
+    "pressed"
+   ],
+   "rest": "hover",
+   "parent": "panel.weapons"
+  },
+  "key.multiple": {
+   "piece": "button.idle",
+   "rect": [
+    240,
+    688,
+    192,
+    48
+   ],
+   "states": [
+    "idle",
+    "hover",
+    "pressed"
+   ],
+   "rest": "idle",
+   "parent": "panel.weapons"
+  },
+  "tab.offline": {
+   "piece": "tab.idle",
+   "rect": [
+    40,
+    744,
+    127,
+    40
+   ],
+   "states": [
+    "idle",
+    "active"
+   ],
+   "rest": "idle",
+   "parent": "panel.weapons"
+  },
+  "tab.normal": {
+   "piece": "tab.active",
+   "rect": [
+    173,
+    744,
+    126,
+    40
+   ],
+   "states": [
+    "idle",
+    "active"
+   ],
+   "rest": "active",
+   "parent": "panel.weapons"
+  },
+  "tab.overload": {
+   "piece": "tab.idle",
+   "rect": [
+    306,
+    744,
+    126,
+    40
+   ],
+   "states": [
+    "idle",
+    "active"
+   ],
+   "rest": "idle",
+   "parent": "panel.weapons"
+  },
+  "dial": {
+   "piece": "dial",
+   "rect": [
+    6,
+    889,
+    120,
+    120
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "inset.contacts": {
+   "piece": "frame.inset",
+   "rect": [
+    132,
+    889,
+    232,
+    120
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  },
+  "crest": {
+   "piece": "crest",
+   "rect": [
+    370,
+    901,
+    96,
+    96
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null
+  }
+ },
+ "pieces": {
+  "strip.top.idle": {
+   "file": "strip.top.idle.png",
+   "slot": "strip.top",
+   "state": "idle",
+   "piece": "strip.top",
+   "rect": [
+    472,
+    0,
+    1448,
+    72
+   ]
+  },
+  "track.hull-integrity.idle": {
+   "file": "track.hull-integrity.idle.png",
+   "slot": "track.hull-integrity",
+   "state": "idle",
+   "piece": "bar.track",
+   "rect": [
+    572,
+    37,
+    371,
+    20
+   ]
+  },
+  "track.weapon-capacitor.idle": {
+   "file": "track.weapon-capacitor.idle.png",
+   "slot": "track.weapon-capacitor",
+   "state": "idle",
+   "piece": "bar.track",
+   "rect": [
+    969,
+    37,
+    370,
+    20
+   ]
+  },
+  "track.target-hull.idle": {
+   "file": "track.target-hull.idle.png",
+   "slot": "track.target-hull",
+   "state": "idle",
+   "piece": "bar.track",
+   "rect": [
+    1366,
+    37,
+    370,
+    20
+   ]
+  },
+  "strip.bottom.idle": {
+   "file": "strip.bottom.idle.png",
+   "slot": "strip.bottom",
+   "state": "idle",
+   "piece": "strip.bottom",
+   "rect": [
+    472,
+    1008,
+    1448,
+    72
+   ]
+  },
+  "track.power.idle": {
+   "file": "track.power.idle.png",
+   "slot": "track.power",
+   "state": "idle",
+   "piece": "bar.track",
+   "rect": [
+    714,
+    1045,
+    507,
+    20
+   ]
+  },
+  "track.systems.idle": {
+   "file": "track.systems.idle.png",
+   "slot": "track.systems",
+   "state": "idle",
+   "piece": "bar.track",
+   "rect": [
+    1247,
+    1045,
+    507,
+    20
+   ]
+  },
+  "lamp.alert.yellow.green": {
+   "file": "lamp.alert.yellow.green.png",
+   "slot": "lamp.alert.yellow",
+   "state": "green",
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    1780,
+    1024,
+    40,
+    40
+   ]
+  },
+  "lamp.alert.yellow.yellow": {
+   "file": "lamp.alert.yellow.yellow.png",
+   "slot": "lamp.alert.yellow",
+   "state": "yellow",
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    1780,
+    1024,
+    40,
+    40
+   ]
+  },
+  "lamp.alert.yellow.red": {
+   "file": "lamp.alert.yellow.red.png",
+   "slot": "lamp.alert.yellow",
+   "state": "red",
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    1780,
+    1024,
+    40,
+    40
+   ]
+  },
+  "nameplate.idle": {
+   "file": "nameplate.idle.png",
+   "slot": "nameplate",
+   "state": "idle",
+   "piece": "nameplate",
+   "rect": [
+    6,
+    6,
+    460,
+    56
+   ]
+  },
+  "helm.pad.idle": {
+   "file": "helm.pad.idle.png",
+   "slot": "helm.pad",
+   "state": "idle",
+   "piece": "helm.pad",
+   "rect": [
+    6,
+    68,
+    264,
+    264
+   ]
+  },
+  "inset.helm-readout.idle": {
+   "file": "inset.helm-readout.idle.png",
+   "slot": "inset.helm-readout",
+   "state": "idle",
+   "piece": "frame.inset",
+   "rect": [
+    276,
+    68,
+    190,
+    264
+   ]
+  },
+  "divider.idle": {
+   "file": "divider.idle.png",
+   "slot": "divider",
+   "state": "idle",
+   "piece": "divider",
+   "rect": [
+    294,
+    169,
+    154,
+    10
+   ]
+  },
+  "key.engage.idle": {
+   "file": "key.engage.idle.png",
+   "slot": "key.engage",
+   "state": "idle",
+   "piece": "button.pressed",
+   "rect": [
+    294,
+    189,
+    154,
+    48
+   ]
+  },
+  "key.engage.hover": {
+   "file": "key.engage.hover.png",
+   "slot": "key.engage",
+   "state": "hover",
+   "piece": "button.pressed",
+   "rect": [
+    294,
+    189,
+    154,
+    48
+   ]
+  },
+  "key.engage.pressed": {
+   "file": "key.engage.pressed.png",
+   "slot": "key.engage",
+   "state": "pressed",
+   "piece": "button.pressed",
+   "rect": [
+    294,
+    189,
+    154,
+    48
+   ]
+  },
+  "key.stop.idle": {
+   "file": "key.stop.idle.png",
+   "slot": "key.stop",
+   "state": "idle",
+   "piece": "button.idle",
+   "rect": [
+    294,
+    247,
+    154,
+    48
+   ]
+  },
+  "key.stop.hover": {
+   "file": "key.stop.hover.png",
+   "slot": "key.stop",
+   "state": "hover",
+   "piece": "button.idle",
+   "rect": [
+    294,
+    247,
+    154,
+    48
+   ]
+  },
+  "key.stop.pressed": {
+   "file": "key.stop.pressed.png",
+   "slot": "key.stop",
+   "state": "pressed",
+   "piece": "button.idle",
+   "rect": [
+    294,
+    247,
+    154,
+    48
+   ]
+  },
+  "ssd.bezel.idle": {
+   "file": "ssd.bezel.idle.png",
+   "slot": "ssd.bezel",
+   "state": "idle",
+   "piece": "ssd.bezel",
+   "rect": [
+    6,
+    338,
+    460,
+    300
+   ]
+  },
+  "panel.weapons.idle": {
+   "file": "panel.weapons.idle.png",
+   "slot": "panel.weapons",
+   "state": "idle",
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    644,
+    460,
+    174
+   ]
+  },
+  "key.fire.idle": {
+   "file": "key.fire.idle.png",
+   "slot": "key.fire",
+   "state": "idle",
+   "piece": "button.hover",
+   "rect": [
+    40,
+    688,
+    192,
+    48
+   ]
+  },
+  "key.fire.hover": {
+   "file": "key.fire.hover.png",
+   "slot": "key.fire",
+   "state": "hover",
+   "piece": "button.hover",
+   "rect": [
+    40,
+    688,
+    192,
+    48
+   ]
+  },
+  "key.fire.pressed": {
+   "file": "key.fire.pressed.png",
+   "slot": "key.fire",
+   "state": "pressed",
+   "piece": "button.hover",
+   "rect": [
+    40,
+    688,
+    192,
+    48
+   ]
+  },
+  "key.multiple.idle": {
+   "file": "key.multiple.idle.png",
+   "slot": "key.multiple",
+   "state": "idle",
+   "piece": "button.idle",
+   "rect": [
+    240,
+    688,
+    192,
+    48
+   ]
+  },
+  "key.multiple.hover": {
+   "file": "key.multiple.hover.png",
+   "slot": "key.multiple",
+   "state": "hover",
+   "piece": "button.idle",
+   "rect": [
+    240,
+    688,
+    192,
+    48
+   ]
+  },
+  "key.multiple.pressed": {
+   "file": "key.multiple.pressed.png",
+   "slot": "key.multiple",
+   "state": "pressed",
+   "piece": "button.idle",
+   "rect": [
+    240,
+    688,
+    192,
+    48
+   ]
+  },
+  "tab.offline.idle": {
+   "file": "tab.offline.idle.png",
+   "slot": "tab.offline",
+   "state": "idle",
+   "piece": "tab.idle",
+   "rect": [
+    40,
+    744,
+    127,
+    40
+   ]
+  },
+  "tab.offline.active": {
+   "file": "tab.offline.active.png",
+   "slot": "tab.offline",
+   "state": "active",
+   "piece": "tab.idle",
+   "rect": [
+    40,
+    744,
+    127,
+    40
+   ]
+  },
+  "tab.normal.idle": {
+   "file": "tab.normal.idle.png",
+   "slot": "tab.normal",
+   "state": "idle",
+   "piece": "tab.active",
+   "rect": [
+    173,
+    744,
+    126,
+    40
+   ]
+  },
+  "tab.normal.active": {
+   "file": "tab.normal.active.png",
+   "slot": "tab.normal",
+   "state": "active",
+   "piece": "tab.active",
+   "rect": [
+    173,
+    744,
+    126,
+    40
+   ]
+  },
+  "tab.overload.idle": {
+   "file": "tab.overload.idle.png",
+   "slot": "tab.overload",
+   "state": "idle",
+   "piece": "tab.idle",
+   "rect": [
+    306,
+    744,
+    126,
+    40
+   ]
+  },
+  "tab.overload.active": {
+   "file": "tab.overload.active.png",
+   "slot": "tab.overload",
+   "state": "active",
+   "piece": "tab.idle",
+   "rect": [
+    306,
+    744,
+    126,
+    40
+   ]
+  },
+  "dial.idle": {
+   "file": "dial.idle.png",
+   "slot": "dial",
+   "state": "idle",
+   "piece": "dial",
+   "rect": [
+    6,
+    889,
+    120,
+    120
+   ]
+  },
+  "inset.contacts.idle": {
+   "file": "inset.contacts.idle.png",
+   "slot": "inset.contacts",
+   "state": "idle",
+   "piece": "frame.inset",
+   "rect": [
+    132,
+    889,
+    232,
+    120
+   ]
+  },
+  "crest.idle": {
+   "file": "crest.idle.png",
+   "slot": "crest",
+   "state": "idle",
+   "piece": "crest",
+   "rect": [
+    370,
+    901,
+    96,
+    96
+   ]
+  },
+  "portrait": {
+   "file": "portrait.png",
+   "slot": "nameplate",
+   "state": "live"
+  }
+ }
+}

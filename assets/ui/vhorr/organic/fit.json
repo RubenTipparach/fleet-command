@@ -1,0 +1,30 @@
+{
+ "rule": "G1: growth at least 2 mm clear of every protected rectangle",
+ "clearance_mm": {
+  "dial window": 5.5,
+  "helm.pad key 0": 2.83,
+  "helm.pad key 1": 2.83,
+  "helm.pad key 2": 2.83,
+  "helm.pad key 3": 2.83,
+  "helm.pad key 4": 2.83,
+  "helm.pad key 5": 2.83,
+  "helm.pad key 6": 2.83,
+  "helm.pad key 7": 2.83,
+  "helm.pad key 8": 2.83,
+  "inset.contacts label": 3.54,
+  "inset.contacts window": 3.54,
+  "inset.helm-readout label": 3.54,
+  "key.engage label": 6.0,
+  "key.fire label": 7.5,
+  "key.multiple label": 7.5,
+  "key.stop label": 7.5,
+  "nameplate label": 3.81,
+  "nameplate window": 4.0,
+  "panel.weapons label": 3.54,
+  "ssd.bezel window": 4.24,
+  "strip.bottom window": 3.54,
+  "strip.top window": 3.54
+ },
+ "min_mm": 2.83,
+ "pass": true
+}

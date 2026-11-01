@@ -11,3 +11,4 @@ tools/music/node_modules/
 __pycache__/
 # Material Maker renders (tools/materials/export_materials.sh), never committed.
 tools/materials/raw/
+.claude/settings.local.json

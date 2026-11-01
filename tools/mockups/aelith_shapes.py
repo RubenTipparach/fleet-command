@@ -67,22 +67,26 @@ def pieces():
     add("frame.inset", "nine", (72, 56), rbox(0.5, 0.5, 71.5, 55.5, 12), [soft(rbox(7, 7, 65, 49, 6).difference(small), 2.5)],
         margins=(14, 14, 14, 14), stretch="xy", roll=1.6)
     # The bar track: a capsule of gold with a channel the light fills; the fill sits at inset (16, 3).
-    add("bar.track", "nine", (96, 16), rbox(0.5, 0.5, 95.5, 15.5, 7.5), [rbox(8, 2.2, 88, 13.8, 5.8)],
-        holo=[("fill-slot", box(16, 3, 80, 13))], margins=(0, 14, 0, 14), stretch="x", roll=0.65, land=0.3, inset=(16, 3), dz=-2.5, pad=0.6)
+    # 20 px tall since 2026-10-31, so the symbol bar's holo lozenges (bar.cell.*, laid at inset (16, 4)) read at 12 px.
+    add("bar.track", "nine", (96, 20), rbox(0.5, 0.5, 95.5, 19.5, 9.5), [rbox(8, 2.4, 88, 17.6, 7.4)],
+        holo=[("fill-slot", box(16, 4, 80, 16))], margins=(0, 14, 0, 14), stretch="x", roll=0.65, land=0.3, inset=(16, 4), dz=-2.5, pad=0.6)
     # Keys: a pointed lozenge of light held between two gold claws, a pearl in each claw. The points and claws stay in
     # the 42 px ends, so the middle stretches.
     btn = soft(lozenge(22, 128, 10, 38, 14), 4)
     for state in ("idle", "hover", "pressed"):
         add(f"button.{state}", "nine", (150, 48), rbox(1, 2, 149, 46, 22), [btn], studs=[(11, 24, 3.5), (139, 24, 3.5)],
             holo=[("key", btn.buffer(-2, quad_segs=8))], margins=(20, 42, 20, 42), stretch="x", roll=2.0, dz=-6.0, pad=1.8)
-    tab = soft(rbox(14, 11, 106, 29, 9), 3)
+    # the window is as tall as rule R allows (land 3 px to the plate), so a label clears its lit rim (console fit check)
+    tab = soft(rbox(14, 10.3, 106, 29.7, 9.7), 3)
     for state in ("idle", "active"):
         add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 16), [tab], holo=[("tab", tab.buffer(-1.5, quad_segs=8))],
             margins=(12, 30, 12, 30), stretch="x", roll=1.6, dz=-5.0, pad=1.4)
     # The strips: a long channel the readouts sit in, drawn to a point at each end where a swept gold wing holds a pearl.
-    chan = soft(lozenge(60, 452, 9, 47, 30), 6)
+    # 72 px tall since 2026-10-31 (owner: "text and progress bar overlapping with parent bevels, we need to make parent
+    # taller"): the channel grows 16 px, the wings and pearls stay their size, centred on row 36.
+    chan = soft(lozenge(60, 452, 9, 63, 30), 6)
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 56), rbox(0.5, 0.5, 511.5, 55.5, 14), [chan], studs=[(30, 28, 7), (482, 28, 7)],
+        add(name, "nine", (512, 72), rbox(0.5, 0.5, 511.5, 71.5, 14), [chan], studs=[(30, 36, 7), (482, 36, 7)],
             holo=[("edge", chan.buffer(-1.5, quad_segs=8))], margins=(10, 110, 10, 110), stretch="x", roll=2.4, dz=-6.0, pad=1.4)
     add("divider", "nine", (128, 10), rbox(0.5, 0.5, 127.5, 9.5, 4.5), [rbox(10, 3, 118, 7, 2)],
         holo=[("line", box(13, 4.2, 115, 5.8))], margins=(0, 16, 0, 16), stretch="x", roll=0.6, land=1.0, dz=-2.0, pad=1.0)

@@ -1,0 +1,13 @@
+{
+ "source": "The owner's survey picks, section W (2026-11-01): W1 strips H, W2 ship systems display E, W3 helm D, W4 weapons D, W5 bottom row D, W6 name plate B, W7 keys: larvae for the big keys, low warts for the small keys and the tabs. The backing is open (survey W8).",
+ "styles": {
+  "strip.top": "mixed", "strip.bottom": "mixed",
+  "ssd.bezel": "hang",
+  "helm.pad": "wrap", "inset.helm-readout": "wrap",
+  "panel.weapons": "wrap",
+  "dial": "wrap", "inset.contacts": "wrap", "crest": "wrap",
+  "nameplate": "plain"
+ },
+ "key_body": {"key.engage": "larva", "key.stop": "larva", "key.fire": "larva", "key.multiple": "larva"},
+ "backing": null
+}
