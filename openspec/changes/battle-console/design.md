@@ -102,7 +102,7 @@ will be.
 the side, show subsystems, as well. Tooltips: when I hover over subsystem or weapon box: show what subsystem name is,
 health, status"). On the ship systems display (own and in the Target box, one drawing):
 
-- **A glyph per weapon type**, in Concord's open circles and arcs: lance, a dot with a short line along its arc's centre;
+- **A glyph per weapon type**, in Concord's open circles and arcs: lance, a dot with a short beam either side (fixed: no glyph turns with its mount's arc);
   pulse torpedo, a dot in a ring; disruptor, two dots; missile, a capsule; point defence, a dot in three arcs. Its colour
   is its state (offline deep, charging Signal with the charge drawn round it, ready Accord, overload Lilac, disabled or
   destroyed Alert); a selected mount is ringed in Sky.
@@ -118,8 +118,10 @@ icons here, instead of circle icons I prefer square with iconography inside", "s
 
 - The facing turned toward the enemy (yours toward your target, the target's toward you) has a **white arc** above it.
 - Mounts are **square boxes** with the weapon's glyph inside: glyph colour for its state, the box outlined in its status
-  colour when not Active, the charge as a bar under it, a Sky ring when selected. Mounts closer than a box, its selection ring and a 3 px gap are **pushed
-  apart** (a few passes, the same every frame), so no box overlaps another.
+  colour when not Active, the charge as a bar under it, a Sky ring when selected. Mounts sit on a **grid** (owner, 2026-11-01:
+  "They don't seem to align to a grid"): one cell is a box, its selection ring and a 3 px gap, centred on the ship's
+  spine. Each mount takes the cell nearest its hull position, rounded alike on both sides so pairs stay mirrored; a
+  taken cell sends it to the nearest free one, its own side first. Boxes line up in rows and columns and never overlap.
 - **Shield strength**: in the 3D view as layers, strong (over 66 %) three green bands, middling two amber, weak one
   red; on the console one band per facing in the same colour (owner: "to avoid clutter. The UI itself should display 1
   layer. Where the game should display multiple"). An empty or lowered facing is a single dark line.

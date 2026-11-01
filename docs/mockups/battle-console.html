@@ -1374,8 +1374,10 @@ function statusBox(x, bx, by, s2, st, rad) {
 // One glyph per weapon type, in Concord's open circles and arcs (nothing pointed).
 function weaponGlyph(x, m, mx, my, r, col) {
   x.fillStyle = col; x.strokeStyle = col; x.lineWidth = Math.max(1.8, r * 0.3);
-  const kind = WEAPONS[m.w].kind, a = -P / 2 + m.arc[0] * DEG;
-  if (kind === 'beam') { x.beginPath(); x.arc(mx, my, r * 0.62, 0, 2 * P); x.fill(); x.beginPath(); x.moveTo(mx + Math.cos(a) * r * 0.62, my + Math.sin(a) * r * 0.62); x.lineTo(mx + Math.cos(a) * r * 1.55, my + Math.sin(a) * r * 1.55); x.stroke(); }
+  const kind = WEAPONS[m.w].kind;
+  // Every glyph is fixed, never turned to its mount's arc (owner: "Phaser shouldn't have orientation because that would
+  // be difficult to standardize for all weapon icons"): the lance is a dot with a short beam either side.
+  if (kind === 'beam') { x.beginPath(); x.arc(mx, my, r * 0.5, 0, 2 * P); x.fill(); x.beginPath(); x.moveTo(mx - r * 1.4, my); x.lineTo(mx - r * 0.75, my); x.moveTo(mx + r * 0.75, my); x.lineTo(mx + r * 1.4, my); x.stroke(); }
   else if (kind === 'torpedo') { x.beginPath(); x.arc(mx, my, r * 0.45, 0, 2 * P); x.fill(); x.beginPath(); x.arc(mx, my, r, 0, 2 * P); x.stroke(); }
   else if (kind === 'bolt') { for (const d of [-1, 1]) { x.beginPath(); x.arc(mx + d * r * 0.5, my, r * 0.48, 0, 2 * P); x.fill(); } }
   else if (kind === 'missile') { x.beginPath(); x.roundRect(mx - r * 0.42, my - r, r * 0.84, r * 2, r * 0.42); x.fill(); }
@@ -1427,14 +1429,17 @@ function drawSSD(x, w, h, s, big, own) {
   // selected mount is ringed in Sky.
   // clearance: the box, its selection ring (4 px each side) and a gap of 3 px, so not even the rings touch
   const mounts = [], mb = big ? 28 : 17, clear = mb + 11;
-  // Boxes never overlap (owner: "make sure weapon icons dont overlap!"): mounts placed closer than a box are pushed
-  // apart, a few passes, the same way every frame.
-  const pos = s.mounts.map((m) => [cx + m.x * L * 0.9, cy - m.y * L]);
-  for (let it = 0; it < 60; it++) for (let a2 = 0; a2 < pos.length; a2++) for (let b2 = a2 + 1; b2 < pos.length; b2++) {
-    const dx = pos[b2][0] - pos[a2][0], dy = pos[b2][1] - pos[a2][1];
-    if (Math.abs(dx) >= clear || Math.abs(dy) >= clear) continue;
-    if (clear - Math.abs(dx) <= clear - Math.abs(dy)) { const pu = (clear - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1) || clear / 2; pos[a2][0] -= pu; pos[b2][0] += pu; }
-    else { const pu = (clear - Math.abs(dy)) / 2 * (dy < 0 ? -1 : 1) || clear / 2; pos[a2][1] -= pu; pos[b2][1] += pu; }
+  // Mounts sit on a grid (owner, 2026-11-01: "They don't seem to align to a grid"): one cell is a box and its
+  // clearance, centred on the ship's spine, so boxes line up in rows and columns and never overlap (owner: "make sure
+  // weapon icons dont overlap!"). Each mount takes the cell nearest its hull position, rounded the same way on both
+  // sides so a pair stays mirrored; a mount whose cell is taken moves to the nearest free one, on its own side first.
+  const snap = (v) => Math.sign(v) * Math.round(Math.abs(v) / clear), taken = new Set(), pos = [];
+  for (const m of s.mounts) {
+    const c0 = snap(m.x * L * 0.9), r0 = snap(-m.y * L), side = Math.sign(m.x), cand = [];
+    for (let dc = -3; dc <= 3; dc++) for (let dr = -3; dr <= 3; dr++) cand.push([c0 + dc, r0 + dr, Math.hypot(dc, dr) + (side && Math.sign(dc) === -side ? 0.01 : 0)]);
+    cand.sort((p1, p2) => p1[2] - p2[2]);
+    const [c, r] = cand.find(([c1, r1]) => !taken.has(c1 + ',' + r1));
+    taken.add(c + ',' + r); pos[m.i] = [cx + c * clear, cy + r * clear];
   }
   for (const m of s.mounts) {
     const [mx, my] = pos[m.i], bx = mx - mb / 2, by = my - mb / 2, st = mountStatus(s, m);
@@ -1786,7 +1791,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false)); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v14', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v15', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.
