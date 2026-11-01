@@ -120,8 +120,9 @@ icons here, instead of circle icons I prefer square with iconography inside", "s
 - Mounts are **square boxes** with the weapon's glyph inside: glyph colour for its state, the box outlined in its status
   colour when not Active, the charge as a bar under it, a Sky ring when selected. Mounts closer than a box are **pushed
   apart** (a few passes, the same every frame), so no box overlaps another.
-- **Shield strength as layers**, one rule for the systems display and the 3D view: strong (over 66 %) three green
-  bands, middling two amber, weak one red, an empty or lowered facing a single dark line.
+- **Shield strength**: in the 3D view as layers, strong (over 66 %) three green bands, middling two amber, weak one
+  red; on the console one band per facing in the same colour (owner: "to avoid clutter. The UI itself should display 1
+  layer. Where the game should display multiple"). An empty or lowered facing is a single dark line.
 - The **3D shield display is a flat hexagon** in the ship's plane, an edge toward the bow, each facing a stack of one to
   three glowing bands (its layers); a hit flashes the inner band.
 

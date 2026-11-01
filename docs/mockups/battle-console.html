@@ -1385,10 +1385,10 @@ function drawSSD(x, w, h, s, big, own) {
   const toward = own ? (tgt(s) ? facingFrom(s, tgt(s).x, tgt(s).z) : -1) : facingFrom(s, W.player.x, W.player.z);
   for (let i = 0; i < 6; i++) {
     const a = -P / 2 + i * P / 3;
-    const nl = shieldLayers(s, i), lw = big ? 5 : 3, lg = big ? 3.5 : 2;
-    x.strokeStyle = nl ? shieldCol(s, i) : CC.deep; x.lineWidth = lw; x.globalAlpha = Math.min(1, 0.85 + s.flash[i] * 0.5);
-    for (let l = 0; l < Math.max(1, nl); l++) { x.beginPath(); x.arc(cx, cy, Rr - (big ? 6 : 3.5) + l * (lw + lg), a - P / 6 + 0.09, a + P / 6 - 0.09); x.stroke(); }
-    x.globalAlpha = 1;
+    // One band per facing on the console, its colour the strength (owner: "to avoid clutter. The UI itself should
+    // display 1 layer. Where the game should display multiple"); the layers are the 3D view's.
+    x.strokeStyle = shieldLayers(s, i) ? shieldCol(s, i) : CC.deep; x.lineWidth = big ? 10 : 6; x.globalAlpha = Math.min(1, 0.85 + s.flash[i] * 0.5);
+    x.beginPath(); x.arc(cx, cy, Rr, a - P / 6 + 0.09, a + P / 6 - 0.09); x.stroke(); x.globalAlpha = 1;
     if (s.flash[i] > 0) { x.strokeStyle = '#fff'; x.globalAlpha = s.flash[i]; x.lineWidth = 3; x.beginPath(); x.arc(cx, cy, Rr + (big ? 10 : 7), a - P / 6 + 0.09, a + P / 6 - 0.09); x.stroke(); x.globalAlpha = 1; }
     if (own && s.reinforce === i) { x.strokeStyle = CC.lilac; x.lineWidth = 3; x.beginPath(); x.arc(cx, cy, Rr + (big ? 12 : 9), a - P / 6 + 0.12, a + P / 6 - 0.12); x.stroke(); }
     // The facing turned toward the enemy (yours toward your target; the target's toward you): a white arc above it.
@@ -1476,9 +1476,9 @@ function shieldHex(cx, cy, R, s, big, idp) {
     const [mx, my] = vert(am, R * 0.93), hw = R * 0.62, st = hit(`${idp}.${i}`, mx - hw / 2, my - hw / 2, hw, hw, { click: () => A.reinforce(i), tip: `${FACINGS[i]}: reinforce` });
     const seg = (r) => { const s0 = Math.cos(P / 6) / Math.cos(P / 6 - gap); const [x0, y0] = vert(a0, r * s0), [x1, y1] = vert(a1, r * s0); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
     g.lineCap = 'round'; g.strokeStyle = col; g.lineWidth = band; g.globalAlpha = 0.9 + s.flash[i] * 0.1;
-    for (let l = 0; l < Math.max(1, nl); l++) seg(R + l * step);
+    g.lineWidth = band * 2; seg(R + step); // one band on the console; the 3D view shows the layers
     g.globalAlpha = 1;
-    if (st.hot) { g.strokeStyle = CC.sky; g.globalAlpha = 0.35; g.lineWidth = band * 3.5; seg(R + step); g.globalAlpha = 1; }
+    if (st.hot) { g.strokeStyle = CC.sky; g.globalAlpha = 0.35; g.lineWidth = band * 4; seg(R + step); g.globalAlpha = 1; }
     if (s.reinforce === i) { g.strokeStyle = CC.lilac; g.lineWidth = 2 * k; seg(R + 3 * step + 2 * k); }
     if (i === toward) { g.strokeStyle = '#fff'; g.lineWidth = 2.5 * k; seg(R - 2.2 * step); }
     const [lx, ly] = vert(am, R + 3 * step + 14 * k);
@@ -1766,7 +1766,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false)); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v10', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v11', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // The in-game menu, and the battle's end: a sheet over everything that takes all input while it is up.
