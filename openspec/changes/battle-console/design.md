@@ -226,6 +226,32 @@ Units: the scene is 1 unit = 100 m; ranges in km, speeds in m/s, energy in energ
 charge times, costs, shield strengths) are placeholders written in the page's `WEAPONS` and `CLASSES` tables, as they
 will be in `data/`.
 
+## 4b. The helm by pointing
+
+Owner, 2026-11-01: "I need to be able to turn my ship, clicking left to turn ship left, click right of the ship to turn
+it right, see how this is designed in Fargo Game jam repo, or in the federation repo".
+
+Both reference games steer by pointing. The-federation (`src/ui/combat_screen.gd`, `_helm_click`) makes a left click in
+the battle view the helm: the click is projected onto the battle plane and the ship is ordered onto the bearing from its
+own position to that point; an earlier version only nudged the heading by a fixed step toward the side clicked, and was
+replaced because pointing somewhere did not take the ship there. The right button is the camera and targeting (drag to
+orbit, click to lock). Its ship rig draws a turn arc, the signed turn still to make (`TurnArc`). Fargo (`dark-neb`,
+`main.lua`) does the same with a right click raycast to the ground plane (`MovementSystem.set_target_heading`), turning
+at a fixed rate.
+
+The mockup takes the-federation's way, on the buttons it already has:
+
+| Input in the battle view | Does |
+|---|---|
+| Left click on empty space | **The helm**: the ship comes onto the bearing of the point clicked (left of the ship comes left, right comes right, as far as the point asks); the same heading order as the pad's turn keys, which also takes the ship off autopilot; the log says "Come to 307" |
+| Left click on a ship | Focuses it (unchanged) |
+| Right click on a ship | Locks it (unchanged) |
+| Left drag | Orbits the camera (unchanged; a move of over 6 px is a drag, not a click) |
+| A click on your own ship | Nothing: it has no direction |
+
+On the ship a faint ring (450 m) carries the **turn arc** from the heading to the ordered heading, with a tick at the
+order, and a ring marks the point clicked for 1.2 s.
+
 ## 4a. Mines and the tractor contest
 
 Owner, 2026-11-01: "Mine laying should have a cool down system of 3 seconds. Then let's review tractor beam system.
