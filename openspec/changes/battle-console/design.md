@@ -125,6 +125,9 @@ icons here, instead of circle icons I prefer square with iconography inside", "s
   cool do show x.x seconds to cool down. Target 2 decimal places so either xx or x.x ... we'll scale stuff down to fit if
   needed"): `(1 - charge) x charge_s`, the rate the simulation charges by, one decimal under 10 s (rounded up, so never
   0.0 while cooling), whole seconds from 10 s, three figures scaled to fit. It replaces the charge bar under the box.
+  While it cools the box is a **dark shade of its status colour** (34 % brightness) with the figures in the bright
+  status colour; ready, it returns to the full colour with the glyph (owner, 2026-11-01: "When cool down the status
+  color should be a darker shade to indicate that").
   The hover card adds "Ready in".
 - **Pointing at a mount outlines it in white**, outside its selection ring (owner: "If mouse hover over highlight
   outline"). Each mount is **one group** (hover outline, ring, status colour, glyph or seconds) drawn last, above the

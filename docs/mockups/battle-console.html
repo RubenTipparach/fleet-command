@@ -1372,9 +1372,16 @@ const subsysStatus = (s, key) => statusOf(healthOf(s, key), isOff(s, key));
 const mountStatus = (s, m) => statusOf(m.hp, m.state === 'offline' || (m.w !== 'pd' && s.power.weapons <= 0));
 // A status box: filled solid with the status colour (Active green, Damaged amber, Disabled red, Off dimmed Lilac,
 // Destroyed dark red with a red edge), so a hit shows at a glance.
-function statusBox(x, bx, by, s2, st, rad) {
+// A colour mixed toward black (f < 1) or toward white (f > 1, by f - 1), for the cooling shade and its figures.
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(f <= 1 ? v * f : v + (255 - v) * (f - 1)));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+// A box in its status colour; a cooling one in a darker shade of it (owner, 2026-11-01: "When cool down the status color
+// should be a darker shade to indicate that").
+function statusBox(x, bx, by, s2, st, rad, cooling) {
   x.beginPath(); x.roundRect(bx, by, s2, s2, rad);
-  x.fillStyle = st === 'Destroyed' ? '#3a0b09' : STATUS_COL[st]; x.globalAlpha = st === 'Off' ? 0.5 : 1; x.fill(); x.globalAlpha = 1;
+  x.fillStyle = st === 'Destroyed' ? '#3a0b09' : cooling ? shade(STATUS_COL[st], 0.34) : STATUS_COL[st]; x.globalAlpha = st === 'Off' ? 0.5 : 1; x.fill(); x.globalAlpha = 1;
   if (st === 'Destroyed') { x.strokeStyle = CC.alert; x.lineWidth = 1.5; x.stroke(); }
 }
 // One glyph per weapon type, in Concord's open circles and arcs (nothing pointed).
@@ -1486,14 +1493,15 @@ function drawSSD(x, w, h, s, big, own, idp) {
     if (sel) plate(lw, CC.sky);
     // The box filled solid with its status colour (owner: "Fill the icon boxes fully. And communicate icon system status
     // with different colors").
-    statusBox(x, bx, by, mb, st, rad);
     const cool = cooldownS(m);
+    statusBox(x, bx, by, mb, st, rad, cool !== null);
     if (cool !== null) {
       // Cooling: the seconds left in place of the glyph, scaled down to fit the box if it runs to three figures.
       const txt = fmtCool(cool); let fs = Math.round(mb * 0.72);
       x.font = `700 ${fs}px Antonio`; const tw = x.measureText(txt).width, room = mb - 4;
       if (tw > room) { fs = Math.floor(fs * room / tw); x.font = `700 ${fs}px Antonio`; }
-      x.fillStyle = st === 'Destroyed' ? CC.alert : '#000'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      // the figures in the full status colour, lifted a little, on the dark shade
+      x.fillStyle = shade(STATUS_COL[st], 1.3); x.textAlign = 'center'; x.textBaseline = 'middle';
       x.fillText(txt, mx, my + 0.5); x.textBaseline = 'alphabetic';
     } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : '#000');
     if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(String(m.i + 1), bx + mb + 12, by + 4); }
@@ -1826,7 +1834,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false, 'tgt')); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v19', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v20', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.

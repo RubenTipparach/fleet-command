@@ -115,7 +115,8 @@ power to run) and Destroyed (off line for good, cannot be restored).
 - **THEN** the box is dimmed and the card shows status Off
 
 ### Requirement: A cooling weapon shows the seconds until it is ready
-While a weapon mount charges, its box SHALL show the seconds until it is ready in place of its glyph, computed from the
+While a weapon mount charges, its box SHALL turn a darker shade of its status colour and SHALL show the seconds until
+it is ready in place of its glyph, computed from the
 same charge rate that charges the mount: one decimal under 10 s, whole seconds from 10 s, scaled down to fit the box
 when it runs to three figures. Each mount SHALL be drawn as one group (hover outline, selection ring, status colour,
 glyph or seconds) above the ship schematic, and pointing at a mount SHALL outline it in white.
