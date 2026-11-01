@@ -29,3 +29,4 @@
 - Version 9 published 2026-11-01, version id `1793557329-7d68`: white arc over the facing toward the enemy, square weapon boxes that never overlap, shield strength as 1-3 layers, the 3D shields a flat hexagon.
 - Version 10 published 2026-11-01, version id `1793558522-5cfa`: the shield page as a hexagon diagram (click a side to reinforce, colour-coded strengths) with the power station's shield row.
 - Version 11 published 2026-11-01, version id `1793558594-e747`: one band per shield facing on the console, layers only in the 3D view.
+- Version 12 published 2026-11-01, version id `1793560162-8b98`: the shield page's facings as big trapezoid keys, the reinforced one lit.

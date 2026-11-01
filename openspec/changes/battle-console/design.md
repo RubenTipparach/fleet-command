@@ -133,6 +133,13 @@ it (again to clear), the reinforced side outlined in Lilac, the side toward the 
 the regeneration and the reinforced side beside it; and under it the shields' row of energy boxes, the same control the
 power station draws (`powerRow`, one implementation).
 
+**Shield keys** (owner, 2026-11-01: "make shields like bigger buttons like in starfleet command where they were like
+trapezoids, with the base pointing outwards, and the sections getting highlighted when selected for reinforcement"):
+on the shield page the six facings are big trapezoid keys making a hexagonal ring round the ship, the wide side outward,
+each tinted by its strength with its name and strength inside; the reinforced key is lit Lilac with a white edge,
+pointing at a key lightens it, and the side toward the target is marked white on its outer edge. A key is hit by its
+exact outline (a control may give its polygon), so neighbouring keys never steal each other's clicks.
+
 **The five statuses** (owner's definitions; they drive the combat change's rules, which are not built here):
 
 | Status | Means | Colour |
