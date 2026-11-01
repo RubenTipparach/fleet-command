@@ -174,6 +174,11 @@ else's art):
   every slot sculpted at its exact, pinned size by parametric sculptors (`tools/blender/organic_components.py`, run by
   `tools/blender/build_ui_vhorr_organic.py` over the blockout), no nine-slice, floating over the game, the portrait
   live under the hex filter (design.md, "The Vhorr Brood on the organic bible").
+- 2026-11-01, survey section W (one picture per option): strips H (ridge and tentacles), ship systems display E (hanging
+  tentacles), helm D, weapons D and the bottom row D (tentacle wrap), name plate B (plain heavy leather), keys "both"
+  (larvae for the big keys, low warts for the small ones and the tabs); then "survey completed, this is a good start, I
+  still dont want a plain black backround on the ui area though". The space between the panels is survey W8 (tissue,
+  tendrils or lattice). Recorded in design.md, "The Brood's picks from the survey"; not yet built into the page (rule 0).
 
 What the mockup shows:
 

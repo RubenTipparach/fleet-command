@@ -655,6 +655,38 @@ shows); the name plate is glass with a thin rim, its portrait small; the symbol 
 slots yet; `vhorr_blockout.mjs` finds the helm by the version 23 hero images, so it needs to read `data-slot` before it
 can re-measure the organic page.
 
+## The Brood's picks from the survey (section W, not yet built into the page)
+
+The owner answered survey section W on 2026-11-01, each pick made from a picture of exactly that component in exactly
+that style, and said: "survey completed, this is a good start, I still dont want a plain black backround on the ui area
+though".
+
+| Id | Part | Pick |
+|---|---|---|
+| W1 | Top and bottom strips | H, ridge and tentacles |
+| W2 | Ship systems display | E, hanging tentacles |
+| W3 | Helm pad and the To hit / Engage / Stop panel | D, tentacle wrap |
+| W4 | Weapons panel | D, tentacle wrap |
+| W5 | Bottom row (radar, contacts, crest) | D, tentacle wrap |
+| W6 | Name plate | B, plain heavy leather |
+| W7 | Keys | Both: larvae for the big keys, low warts for the small keys and the tabs |
+
+- **The picks are data**, not code: `assets/ui/vhorr/organic/styles.json` names each slot's style and each key's body,
+  validated when `build_ui_vhorr_organic.py` loads it (an unknown slot key, style or body stops the build). The four
+  long keys (Engage, Stop, Fire, Multiple; 154-192 x 48 px) are larvae; the helm's nine keys and the three tabs are
+  warts. The owner's pick named Engage and Fire as the big keys; Stop and Multiple are the same size, so they are read
+  as big keys too (one line in the styles file to change).
+- **The space between the panels** (the owner's note) is a new piece, the column's backing, sculpted over the whole
+  left column and drawn under every panel (`organic_components.backing`). Three treatments, all within rule 5 (the
+  brood's own body, never a scene): **tissue** (one grown membrane over muscle with ribs across it, sinew cords and
+  veins, its free edge rolled into a lumpy lip over the battle), **tendrils** (no body: the battle shows under the
+  column, the panels held to each other only by tentacles over the gutters, the bottom row anchored off the screen's
+  edge) and **lattice** (a ribcage of bone bars across the column on a spine at each side, the battle seen through its
+  holes, the panels hung on it by tentacles). For tendrils and lattice the battle view runs under the whole console.
+  The owner picks one in survey W8, from whole-console screenshots.
+- **Rule 0 holds**: these renders are screenshots in `.tools/compare/` and the survey's pictures; the page, the kit
+  images and the bible are unchanged until the owner approves the result.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
@@ -708,3 +740,4 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 | U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | Skins only for now, with the names above; factions decided later (provisional) |
 | U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |
 | U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | A new race named the Ssarith Hunt: a skin now, a faction decided with the others under U8 (provisional) |
+| W8 | What fills the space between the Brood's panels (the owner: no plain black)? | Open in the survey: tissue, tendrils or lattice, see "The Brood's picks from the survey" |

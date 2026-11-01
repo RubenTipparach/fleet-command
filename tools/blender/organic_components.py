@@ -389,12 +389,12 @@ class Field:
 
     def clearance(self):
         """Rule G1 on the finished field: for each protected rectangle, the nearest distance (mm) from it to any surface
-        standing above the glass (negative: growth covers it)."""
+        standing above the glass, or above its own face for a raised face such as a key's metal button (the key's own
+        seat of flesh lies under the button, not over it) (negative: growth covers it)."""
         out = {}
-        up = self.height > GLASS_Z + 0.5
-        for label, x0, y0, x1, y1 in self.protected:
+        for label, x0, y0, x1, y1, *z in self.protected:   # z: a raised face's own height (a key's metal button), else glass
             s = self.win((x0, y0, x1, y1), 12)
-            u = up[s]
+            u = self.height[s] > (z[0] if z else GLASS_Z) + 0.5
             if not u.any():
                 out[label] = 12.0
                 continue
@@ -429,17 +429,20 @@ def smin(a, b, k):
 FLOOR_Z = -21.0   # a panel floor's depth (mm): deep enough that the anatomy material sinks it into shadow
 
 
-def rib_floor(f, r, rng, keep=()):
+def rib_floor(f, r, rng, keep=(), across=None, top=None, pitch=(9.0, 15.0)):
     """A panel's recessed floor: a mesh of bone bars receding into shadow (the study's rib cavern, steps 22-24, which the
     owner asked for as the background inside panels), laid in rectangle r (x0, y0, x1, y1). Bars run across the panel
     at an uneven pitch, each bowed and tilted its own way and thicker in the middle, tied by a few bars running the
     other way; between them the floor falls deep. Everything stays well under the keys, tendrils and readouts set over
-    it, and dark (the depth mask), so labels over it keep their contrast. keep: rectangles left plain (a label's glass)."""
+    it, and dark (the depth mask), so labels over it keep their contrast. keep: rectangles left plain (a label's glass).
+    across: True for bars across the x axis (a long rectangle's default), False along it; top: the bars' height (mm,
+    default the panel floor's); pitch: the bars' spacing range (mm, before FEATURE)."""
     x0, y0, x1, y1 = r
     w, h = x1 - x0, y1 - y0
     if w < 10 or h < 10:
         return
-    across_x = w >= h
+    across_x = (w >= h) if across is None else across
+    top = FLOOR_Z + 9.0 if top is None else top
     L0, L1, M0, M1 = (x0, x1, y0, y1) if across_x else (y0, y1, x0, x1)
     pos = M0 + rng.uniform(2.0, 6.0)
     while pos < M1 - 2.0:
@@ -452,12 +455,12 @@ def rib_floor(f, r, rng, keep=()):
             b = pos + bow * math.sin(math.pi * t) + rng.uniform(-0.8, 0.8) + (t - 0.5) * rng.uniform(-3, 3)
             pts.append((a, b) if across_x else (b, a))
         rad = [0.6 + 0.5 * math.sin(math.pi * k / (n - 1)) for k in range(n)]
-        f.ridge(pts, 3.0 * FEATURE * rng.uniform(0.8, 1.2), FLOOR_Z + 9.0 + rng.uniform(-2, 2), rad)
-        pos += rng.uniform(9.0, 15.0) * FEATURE
+        f.ridge(pts, 3.0 * FEATURE * rng.uniform(0.8, 1.2), top + rng.uniform(-2, 2), rad)
+        pos += rng.uniform(*pitch) * FEATURE
     for _k in range(max(1, int((L1 - L0) / 140.0))):   # a few tie bars the other way, deeper still
         a = rng.uniform(L0 + 10, L1 - 10)
         pts = [(a + rng.uniform(-4, 4), M0 + 2), (a + rng.uniform(-6, 6), (M0 + M1) / 2), (a + rng.uniform(-4, 4), M1 - 2)]
-        f.ridge([p if across_x else (p[1], p[0]) for p in pts], 2.4 * FEATURE, FLOOR_Z + 6.0, [0.8, 1.0, 0.8])
+        f.ridge([p if across_x else (p[1], p[0]) for p in pts], 2.4 * FEATURE, top - 3.0, [0.8, 1.0, 0.8])
 
 
 def hang(f, held, rim, rng, tentacles=False):
@@ -549,6 +552,7 @@ def frame_anatomy(f, q, T, rng, r):
 
 
 STYLES = ("ridge", "plain", "crown", "wrap", "hang", "web", "feelers", "mixed")
+KEY_BODIES = ("larva", "wart")
 
 
 def tentacle_styles(f, style, r, hugs, wins, rng):
@@ -614,6 +618,118 @@ def tentacle_styles(f, style, r, hugs, wins, rng):
             ang = math.atan2(ey - cy, ex - cx) + rng.uniform(-0.3, 0.3)
             tip = curl((ex, ey), ang, float(18.0 + f.bleed * 1.2), rng.choice([-1, 1]) * rng.uniform(2.0, 3.0), rng)
             f.tentacle(seg + tip[1:], float(np.clip(T * 1.15, 8.0, 15.0)), 1.6, height=14.0 + T * 0.5)
+
+
+BACKINGS = ("tissue", "tendrils", "lattice")
+
+
+def _bridges(f, panels, rng, r0=7.0):
+    """Tendrils joining neighbouring panels across the gutters between them (panels: their rectangles, x0, y0, x1, y1):
+    each pair one above the other, or side by side, overlapping along the gutter, gets a few tentacles rooted inside both
+    (their roots hidden under the panels' own images, so only the stretch over the gutter shows), thick at the upper or
+    left panel and thinning to the other, sagging and twisting as they cross; a wide gutter gets thicker, longer ones."""
+    for a in panels:
+        for b in panels:
+            if a is b:
+                continue
+            ox0, ox1 = max(a[0], b[0]), min(a[2], b[2])   # one above the other
+            gap = b[1] - a[3]
+            if ox1 - ox0 > 20 and 0 <= gap < 90:
+                n = 2 if gap < 20 else 3
+                for k in range(n):
+                    x = ox0 + (ox1 - ox0) * (k + 0.5) / n + rng.uniform(-12, 12)
+                    dx = rng.uniform(-24, 24) * (1 if gap > 20 else 0.4)
+                    p0, p3 = (x, a[3] - 10), (x + dx, b[1] + 10)
+                    sag = rng.choice([-1, 1]) * rng.uniform(4, 8 + gap * 0.2)   # one smooth bow, never an S
+                    p1 = (x + dx * 0.3 + sag, a[3] + gap * 0.33)
+                    p2 = (x + dx * 0.7 + sag * 0.8, a[3] + gap * 0.67)
+                    rr = r0 * (1.0 + min(gap, 70.0) / 70.0) * rng.uniform(0.8, 1.1)
+                    f.tentacle([p0, p1, p2, p3], rr, rr * 0.55, height=9.0 + rr * 0.6)
+            oy0, oy1 = max(a[1], b[1]), min(a[3], b[3])   # side by side
+            gap = b[0] - a[2]
+            if oy1 - oy0 > 20 and 0 <= gap < 40:
+                for k in range(2):
+                    y = oy0 + (oy1 - oy0) * (k + 0.5) / 2 + rng.uniform(-10, 10)
+                    dy = rng.uniform(-10, 10)
+                    f.tentacle([(a[2] - 10, y), (a[2] + gap * 0.4, y + rng.uniform(3, 8)), (b[0] + 10, y + dy)],
+                               r0 * rng.uniform(0.75, 1.0), r0 * 0.5, height=9.0 + r0 * 0.5)
+
+
+def ribcage(f, rect, rng, band=False):
+    """A ribcage over rect (x0, y0, x1, y1): a spine of vertebrae down the left edge, ribs springing from it every
+    45-60 mm, each lifting a little, then arching across and falling 40-70 mm as it goes, thick at the spine and tapering
+    to a free tip that curls down (most reach across, some stop short), no two alike; with band, a cord of cartilage
+    down the right edge catches the tips that reach it. Between the ribs the floor stays bare (cut away by the renderer)."""
+    x0, y0, x1, y1 = rect
+    sx = x0 + 12.0
+    spine = [(sx + 2.5 * math.sin(t * 0.7) + rng.uniform(-1, 1), y0 - 10 + (y1 - y0 + 20) * t / 40) for t in range(41)]
+    f.ridge(spine, 6.0 * FEATURE, -2.0, [0.85 + 0.3 * rng.random() for _ in spine])
+    f.vertebrae(spine[1:-1:2], 0.75, 0.95, 18.0, rng)
+    tips = []
+    y = y0 + rng.uniform(-20, 0)
+    while y < y1 + 10:
+        drop, lift = rng.uniform(40, 70), rng.uniform(8, 14)
+        reach = (x1 - 8.0 - sx) * (1.0 if rng.random() < 0.7 else rng.uniform(0.6, 0.85))
+        n = 12
+        pts = []
+        for k in range(n):
+            t = k / (n - 1)
+            pts.append((sx + reach * t, y - lift * math.sin(math.pi * min(t * 1.4, 1.0)) + drop * t ** 2.2
+                        + rng.uniform(-0.8, 0.8)))
+        ex, ey = pts[-1]
+        pts += [(ex + 5, ey + 7), (ex + 4, ey + 14)]   # the tip curling down
+        rad = [1.0 - 0.6 * (k / (len(pts) - 1)) ** 0.8 + 0.1 * math.sin(k * 1.9 + rng.uniform(0, 3)) for k in range(len(pts))]
+        f.ridge(pts, 7.0 * FEATURE * rng.uniform(0.85, 1.1), -4.0 + rng.uniform(-1.5, 1.5), rad)
+        if reach > (x1 - sx) * 0.9:
+            tips.append((ex, ey))
+        y += rng.uniform(45.0, 60.0)
+    if band and tips:
+        pts = [(x1 - 6.0, y0 - 10)] + [(x1 - 6.0 + rng.uniform(-2, 2), ty) for _tx, ty in tips] + [(x1 - 6.0, y1 + 10)]
+        f.ridge(pts, 3.4 * FEATURE, -6.0, [0.8 + 0.3 * rng.random() for _ in pts], bone=False)   # cartilage
+
+def backing(f, rect, panels, mode="tissue", seed="backing"):
+    """What fills the console's own area between and behind its panels (owner, 2026-11-01: "I still dont want a plain
+    black backround on the ui area though"), sculpted over rect (x0, y0, x1, y1: the left column) and drawn under every
+    panel; the panels' rectangles (panels) only tell it where the gutters are. The overlay rule (the bible's rule 5)
+    still holds: nothing here is a scene, only the brood's own body. mode:
+    "tissue": one grown body, a deep membrane of skin over muscle with ribs running across it, sinew cords and veins,
+      its free edge rolled into a lumpy lip over the battle, so the column is one creature with no black between panels;
+    "tendrils": no body at all, the battle seen under the column, the panels held to each other only by tentacles across
+      the gutters (and the bottom row's anchored off the screen's edge);
+    "lattice": a ribcage of bone bars across the column, tied by a spine at each side and webbed at the joints, the
+      battle seen through the holes between the ribs, the panels hung on it by tentacles."""
+    if mode not in BACKINGS:
+        raise ValueError(f"backing {seed}: mode {mode!r} is not one of {BACKINGS}")
+    rng = np.random.default_rng(sid(seed + mode))
+    x0, y0, x1, y1 = rect
+    if mode == "tissue":
+        s, X, Y, Xw, Yw = f.local(grow(rect, 14), 2)
+        d = oa.sd_box(Xw, Yw, rect, 10.0) + 3.0 * (f.lobes[s] - 0.5) * (X > x1 - 30)   # the free edge lumpy, not ruled
+        prof = np.clip(-d / 5.0, 0.0, 1.0)
+        f.mass[s] = np.maximum(f.mass[s], prof)
+        mem = -25.0 + 3.0 * f.swell[s] + 2.0 * f.lobes[s]           # deep: darker than the panels, so they stand out
+        f.B[s] = oa.rise(f.B[s], -27.0, np.clip(-d / 2.5, 0.0, 1.0))
+        f.M[s] = np.maximum(f.M[s], oa.rise(f.B[s], mem, prof ** 0.6))
+        f.muscles(rect, [], rng, 70.0, -19.0, axis=0.7)              # broad muscle bundles under the membrane
+        ribcage(f, rect, rng, band=True)                                       # the ribs arching across it
+        for _k in range(int((y1 - y0) / 220)):                       # a few sinew cords slanting over the ribs
+            ya = rng.uniform(y0 + 40, y1 - 40)
+            pts = [(x0 + 14, ya), (x0 + (x1 - x0) * 0.5, ya + rng.uniform(-20, 20)), (x1 - 8, ya + rng.uniform(20, 70))]
+            f.ridge(pts, 2.4 * FEATURE, -5.0, [0.7, 1.0, 0.6], bone=False)
+        f.ridge([(x1 + 2 + rng.uniform(-2, 2), y0 + (y1 - y0) * t / 20) for t in range(21)], 5.5, -5.0,
+                [0.8 + 0.4 * rng.random() for _ in range(21)], bone=False)   # the rolled lip of the free edge
+    if mode == "lattice":
+        ribcage(f, rect, rng)
+    if mode in ("tendrils", "lattice"):
+        _bridges(f, panels, rng, r0=7.0 if mode == "tendrils" else 5.5)
+        low = [q for q in panels if q[3] > y1 - 100]                    # the bottom row anchored off the screen's edge
+        for q in low:
+            for k in range(2 if q[2] - q[0] > 150 else 1):
+                x = q[0] + (q[2] - q[0]) * (k + 0.5) / (2 if q[2] - q[0] > 150 else 1) + rng.uniform(-10, 10)
+                f.tentacle([(x, q[3] - 10), (x + rng.uniform(-14, 14), (q[3] + y1) / 2), (x + rng.uniform(-20, 20), y1 + 12)],
+                           8.0 * rng.uniform(0.85, 1.1), 5.0, height=12.0)
+    if mode == "tissue":
+        _bridges(f, panels, rng, r0=5.0)   # the panels grown into the body: short tendons over the gutters
 
 
 def panel(f, rect, windows=(), seed="panel", spine="top", glass=True, labels=(), deep=0.0, avoid=(), style="ridge"):
@@ -766,11 +882,15 @@ def panel(f, rect, windows=(), seed="panel", spine="top", glass=True, labels=(),
         f.sac(best[0], best[1], min(5.0, best[2] * 0.35), LIFE)
 
 
-def key(f, rect, seed="key", state="idle", face=None, accent="amber", label=None):
+def key(f, rect, seed="key", state="idle", face=None, accent="amber", label=None, body="larva"):
     """A key: a collar of flesh round a socket, a bone lip round the socket, and a hard dark cap with a lit rim set in it
     (the cap is an instrument object for the renderer). state: idle, hover (the rim brighter), pressed (the cap sinks
     3 mm and drops 2 mm, the flesh stays). face: the cap's rectangle (x, y, w, h); else, given the label's rectangle,
-    the cap is the label with room round it, so the key keeps a collar of flesh; else inset from the key."""
+    the cap is the label with room round it, so the key keeps a collar of flesh; else inset from the key. body: "larva"
+    (a segmented grub, for a long key) or "wart" (a round swelling of skin) (owner's survey pick W7, 2026-11-01: larvae
+    for the big keys, low warts for the small keys and the tabs)."""
+    if body not in KEY_BODIES:
+        raise ValueError(f"key {seed}: body {body!r} is not one of {KEY_BODIES}")
     rng = np.random.default_rng(sid(seed))
     r = xyxy(rect)
     x0, y0, x1, y1 = r
@@ -786,8 +906,9 @@ def key(f, rect, seed="key", state="idle", face=None, accent="amber", label=None
     else:
         cap = (x0 + max(inset, w * 0.18), y0 + inset, x1 - max(inset, w * 0.18), y1 - inset)
     height = float(min(11.0, 6.0 + small * 0.1))
-    larva(f, grow(r, -2.5), cap, rng, state=state, height=height, segments=True)
-    cap_top = 0.8 * height
+    larva(f, grow(r, -2.5), cap, rng, state=state, height=height if body == "larva" else height * 0.8,
+          segments=body == "larva")
+    cap_top = 0.8 * (height if body == "larva" else height * 0.8)
     f.opening(cap, floor_z=cap_top - 4.0, label=None, lip=(0.4, 3.0))
     f.objects.append({"kind": "key", "rect": cap, "state": state, "accent": accent, "slot": seed, "top": cap_top})
 
@@ -988,7 +1109,7 @@ def helm(f, rect, faces, drawing=None, seed="helm.pad", style="ridge"):
         c = xyxy(q)
         larva(f, grow(c, 6.0), c, rng, state="idle", height=9.0, segments=False)
         f.opening(grow(c, 1.0), floor_z=0.8 * 9.0 - 4.0, lip=(0.4, 3.0))
-        f.protected.append((f"{seed} key {k}",) + c)
+        f.protected.append((f"{seed} key {k}",) + c + (0.8 * 9.0,))   # measured over its button, which sits on the wart
         f.objects.append({"kind": "key", "rect": (c[0] + 2.0, c[1] + 2.0, c[2] - 2.0, c[3] - 2.0), "state": "idle",
                           "accent": "amber", "slot": f"{seed}.{k}", "top": 0.8 * 9.0})
 

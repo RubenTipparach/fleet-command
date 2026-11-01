@@ -106,6 +106,56 @@ def keys_pictures(png, meta):
         save_jpg(bg, OUT / f"keys-{kind}.jpg")
 
 
+BACKINGS = {"A": "tissue", "B": "tendrils", "C": "lattice"}   # survey W8: what fills the space between the panels
+COMPARE = ROOT / ".tools" / "compare"
+
+
+def backing_pictures(console_dir, backing_dir, page, node_path, only=""):
+    """W8's options: the whole console, with the owner's W1-W7 picks (console_dir, rendered from
+    assets/ui/vhorr/organic/styles.json), over the battle filling the whole screen, with each backing
+    (backing_dir/backing.<mode>.png from `build_ui_vhorr_organic.py -- --backing <modes>`) under the panels. Writes the
+    survey picture (the column's lower half and the battle beside it, where the gutters are widest) as
+    docs/design/survey/backing-<letter>.jpg, and the whole console at desktop and phone size, and a close-up, into
+    .tools/compare/brood-w-bg-<letter>*.png for looking at before they are shown."""
+    COMPARE.mkdir(parents=True, exist_ok=True)
+    for letter, mode in BACKINGS.items():
+        if only and letter not in only:
+            continue
+        png = backing_dir / f"backing.{mode}.png"
+        meta = json.loads(png.with_suffix(".json").read_text())
+        work = backing_dir / "shots" / mode
+        work.mkdir(parents=True, exist_ok=True)
+        pg = work / "page.html"
+        style_page(page, console_dir, pg)
+        x, y, w, h = meta["image_rect"]
+        inj = "<script>window.BROOD_BACKING = " + json.dumps({"src": webp_uri(png), "rect": [x, y, w, h]}) + ";</script>"
+        text = pg.read_text()
+        i = text.index("<script")   # before the page's own scripts, which draw the battle at the console's size with it
+        text = text[:i] + inj + text[i:]
+        size = "vc.width = 1448; vc.height = 960;"
+        if size not in text:
+            raise SystemExit("backing: the page's battle view size line has changed")
+        text = text.replace(size, "vc.width = window.BROOD_BACKING ? 1920 : 1448; vc.height = window.BROOD_BACKING ? 1080 : 960;")
+        ro = "x.fillText(cs(s), 40, h - 150 + i * 32)"   # the target readout kept where it was, beside the column
+        if ro not in text:
+            raise SystemExit("backing: the page's target readout line has changed")
+        pg.write_text(text.replace(ro, "x.fillText(cs(s), window.BROOD_BACKING ? 512 : 40, h - (window.BROOD_BACKING ? 194 : 150) + i * 32)"))
+        r = subprocess.run(["node", str(ROOT / "tools" / "mockups" / "survey_option_shots.mjs"), str(pg), str(work), "console"],
+                           capture_output=True, text=True, env={**os.environ, "NODE_PATH": node_path})
+        if r.returncode:
+            raise SystemExit(f"backing {letter}: {r.stderr[-2000:]}")
+        info = json.loads(r.stdout.strip().splitlines()[-1])
+        if info["errors"]:
+            raise SystemExit(f"backing {letter}: page errors {info['errors']}")
+        full = Image.open(work / "console.png")
+        k = full.width / 1920.0
+        full.save(COMPARE / f"brood-w-bg-{letter.lower()}.png")
+        Image.open(work / "phone.png").save(COMPARE / f"brood-w-bg-{letter.lower()}-phone.png")
+        full.crop((0, round(560 * k), round(780 * k), round(1080 * k))).save(COMPARE / f"brood-w-bg-{letter.lower()}-zoom.png")
+        save_jpg(full.crop((0, round(520 * k), round(780 * k), round(1080 * k))), OUT / f"backing-{letter}.jpg")
+        print(f"backing {letter} ({mode}): pictures written")
+
+
 def inline():
     """Write every picture in docs/design/survey/ into survey.html between its IMGS markers, as data URIs."""
     imgs = {}
@@ -126,9 +176,15 @@ def main():
     ap.add_argument("--keys", default="/tmp/sv/keys.png")
     ap.add_argument("--only", default="", help="letters, e.g. AC")
     ap.add_argument("--inline-only", action="store_true")
+    ap.add_argument("--backings", default="", help="W8 only: the console renders with the picks (dir), then the backings "
+                    "dir, comma separated, e.g. /tmp/bw/console,/tmp/bw/backing")
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
-    if not a.inline_only:
+    if a.backings:
+        cd, bd = (pathlib.Path(x) for x in a.backings.split(","))
+        node_path = subprocess.run(["npm", "root", "-g"], capture_output=True, text=True).stdout.strip()
+        backing_pictures(cd, bd, pathlib.Path(a.page), node_path, a.only)
+    elif not a.inline_only:
         renders, page = pathlib.Path(a.renders), pathlib.Path(a.page)
         node_path = subprocess.run(["npm", "root", "-g"], capture_output=True, text=True).stdout.strip()
         for letter, style in STYLES.items():

@@ -101,12 +101,38 @@ def prot(s, kinds=None):
     return [p["rect"] for p in s["protected"] if kinds is None or p["kind"] in kinds]
 
 
-# The owner's picks from the style board (2026-11-01: "Go"): one style per panel (organic_components.STYLES; letters as on
-# the board). The strips wear a tentacle crown off their inner edge (C), the weapons panel hanging tentacles (E), the
-# ship systems display and the name plate plain heavy leather (B), the helm pad and its readout panel a ridge with
-# tentacles (H), the radar, contacts and crest row feelers (G).
-STYLE = {"strip.top": "crown", "strip.bottom": "crown", "panel.weapons": "hang", "ssd.bezel": "plain", "nameplate": "plain",
-         "helm.pad": "mixed", "inset.helm-readout": "mixed", "dial": "feelers", "inset.contacts": "feelers", "crest": "feelers"}
+# The owner's picks, one style per panel and a body per key (organic_components.STYLES and KEY_BODIES), are data: the
+# styles file beside the blockout (assets/ui/vhorr/organic/styles.json; survey section W, 2026-11-01), loaded by
+# load_styles(). A slot missing from it takes DEFAULT_STYLE; an unknown style or key body is an error.
+STYLES_FILE = os.path.join(OUT, "styles.json")
+DEFAULT_STYLE = "ridge"
+STYLE = {}
+KEY_BODY = {}
+BACKING = None   # the column's backing (organic_components.BACKINGS), from the styles file or --backing
+
+
+def load_styles(path):
+    """The per-slot styles, key bodies and backing from a styles file: {"styles": {slot: style}, "key_body": {slot:
+    body}, "backing": mode}. Validated on load: an unknown key, style, body or mode stops the build naming it."""
+    d = json.load(open(path))
+    extra = set(d) - {"source", "styles", "key_body", "backing"}
+    if extra:
+        raise SystemExit(f"{path}: unknown keys {sorted(extra)}")
+    for k, v in d.get("styles", {}).items():
+        if v not in oc.STYLES:
+            raise SystemExit(f"{path}: styles.{k} = {v!r} is not one of {oc.STYLES}")
+    for k, v in d.get("key_body", {}).items():
+        if v not in oc.KEY_BODIES:
+            raise SystemExit(f"{path}: key_body.{k} = {v!r} is not one of {oc.KEY_BODIES}")
+    if d.get("backing") is not None and d["backing"] not in oc.BACKINGS:
+        raise SystemExit(f"{path}: backing = {d['backing']!r} is not one of {oc.BACKINGS}")
+    STYLE.clear()
+    STYLE.update(d.get("styles", {}))
+    KEY_BODY.clear()
+    KEY_BODY.update(d.get("key_body", {}))
+    return d.get("backing")
+
+
 SLOT_BLEED = {"panel.weapons": 34.0, "strip.top": 44.0, "strip.bottom": 36.0, "dial": 24.0, "inset.contacts": 24.0,
               "crest": 24.0}
 
@@ -117,7 +143,7 @@ def sculpt_slot(f, s, state):
     if fam == "strip":
         outer = "top" if s["piece"] == "strip.top" else "bottom"
         wins = prot(s, {"label", "bar-cells"}) + [c["rect"] for c in s.get("child_rects", []) if c["family"] == "bar"]
-        sty = STYLE.get(sid, "ridge")
+        sty = STYLE.get(sid, DEFAULT_STYLE)
         oc.strip(f, r, windows=wins, seed=sid, outer=outer, spine=sty in ("ridge", "mixed"))
         allw = wins + [c["rect"] for c in s.get("child_rects", [])]
         if sty in ("crown", "mixed"):
@@ -139,23 +165,24 @@ def sculpt_slot(f, s, state):
         oc.lamp(f, r, state=state or "yellow", seed=sid)
     elif fam == "nameplate":
         oc.panel(f, r, windows=prot(s, {"portrait-window"}), labels=prot(s, {"label"}), seed=sid, deep=2.0,
-                 style=STYLE.get(sid, "ridge"))
+                 style=STYLE.get(sid, DEFAULT_STYLE))
     elif fam == "helm":
-        oc.helm(f, r, faces=prot(s, {"key-face"}), seed=sid, style=STYLE.get(sid, "ridge"))
+        oc.helm(f, r, faces=prot(s, {"key-face"}), seed=sid, style=STYLE.get(sid, DEFAULT_STYLE))
     elif fam in ("frame", "ssd") and s["piece"] == "ssd.bezel":
-        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid, style=STYLE.get(sid, "ridge"))
+        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid, style=STYLE.get(sid, DEFAULT_STYLE))
     elif fam == "frame":
-        oc.panel(f, r, windows=prot(s, {"icon", "live-drawing"}), labels=prot(s, {"label"}), seed=sid, style=STYLE.get(sid, "ridge"),
+        oc.panel(f, r, windows=prot(s, {"icon", "live-drawing"}), labels=prot(s, {"label"}), seed=sid, style=STYLE.get(sid, DEFAULT_STYLE),
                  avoid=[c["rect"] for c in s.get("child_rects", [])])
     elif fam == "ssd":
-        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid, style=STYLE.get(sid, "ridge"))
+        oc.bezel(f, r, window=prot(s, {"live-drawing"})[0], seed=sid, style=STYLE.get(sid, DEFAULT_STYLE))
     elif fam == "divider":
         oc.cord(f, r, seed=sid)
     elif fam == "button":
         lab = prot(s, {"key-label"})
-        oc.key(f, r, seed=sid, state=state or "idle", label=lab[0] if lab else None)
+        oc.key(f, r, seed=sid, state=state or "idle", label=lab[0] if lab else None, body=KEY_BODY.get(sid, "larva"))
+        top = f.objects[-1]["top"]   # the label is printed on the metal button: measured over the button's face
         for p in prot(s, {"key-label"}):
-            f.protected.append((f"{sid} label",) + oc.xyxy(p))
+            f.protected.append((f"{sid} label",) + oc.xyxy(p) + (top,))
     elif fam == "tab":
         oc.tab(f, r, seed=sid, state=state or "idle")
     elif fam == "dial":
@@ -355,6 +382,8 @@ def build(args):
         bled = [x - bl, y - bl, w + 2 * bl, h + 2 * bl]
         for label, d in f.clearance().items():
             fit[label] = min(d, fit.get(label, 99.0))
+        if args.fit_only:
+            continue
         full = os.path.join(args.out, f"{t['id']}.{t['rest'] or 'idle'}.png")
         times[t["id"]] = round(render(bled, f, full, args.samples), 1)
         print(f"VHORR {t['id']} {region} {times[t['id']]} s", flush=True)
@@ -386,6 +415,12 @@ def build(args):
                      "a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
            "portrait": {"rect": pin(portrait_rect) if portrait_rect else None}, "hex": st.hx.HEX,
            "slots": slot_list, "pieces": pieces}
+    if args.fit_only:
+        json.dump({"rule": "G1: growth at least 2 mm clear of every protected rectangle",
+                   "clearance_mm": dict(sorted(fit.items())), "min_mm": min(fit.values()) if fit else None,
+                   "pass": all(v >= oc.G1_MM for v in fit.values())}, open(os.path.join(args.out, "fit.json"), "w"), indent=1)
+        print("VHORR fit", json.dumps(fit), flush=True)
+        return
     if not want:
         json.dump(man, open(os.path.join(args.out, "manifest.json"), "w"), indent=1)
         json.dump({"rule": "G1: growth at least 2 mm clear of every protected rectangle",
@@ -393,6 +428,32 @@ def build(args):
                    "pass": all(v >= oc.G1_MM for v in fit.values())}, open(os.path.join(args.out, "fit.json"), "w"), indent=1)
         json.dump(times, open(os.path.join(args.out, "render-times.json"), "w"), indent=1)
     print("VHORR fit", json.dumps(fit), flush=True)
+
+
+COLUMN = "column"   # the backing's slot id: the left column (layout x 0 to the strips' left end, full height)
+
+
+def build_backing(args, mode):
+    """The column's backing (organic_components.backing) in mode, sculpted over the column and rendered as its own
+    image (backing.<mode>.png) with its rectangle and bleed, drawn under every panel."""
+    slots, size = load_layout(args.blockout, args.layout)
+    tops = [s for s in slots.values() if s["parent"] is None]
+    cw = min(s["rect"][0] for s in tops if s["family"] == "strip")
+    rect = (0.0, 0.0, float(cw), float(size[1]))
+    panels = [oc.xyxy(s["rect"]) for s in tops if s["rect"][0] < cw or s["family"] == "strip"]
+    bl = 14.0
+    region = [0, 0, cw + bl, size[1]]
+    pad = MARGIN + bl
+    f = oc.Field((-pad, -pad, region[2] + pad, size[1] + pad), RES, seed=oc.sid("vhorr.backing." + mode))
+    f.bleed = bl
+    oc.backing(f, rect, panels, mode=mode, seed="vhorr.column")
+    f.finish()
+    os.makedirs(args.out, exist_ok=True)
+    path = os.path.join(args.out, f"backing.{mode}.png")
+    t = render(region, f, path, args.samples)
+    json.dump({"slot": COLUMN, "mode": mode, "rect": [0, 0, cw, size[1]], "image_rect": region, "px_per_mm": PX,
+               "render_s": round(t, 1)}, open(os.path.splitext(path)[0] + ".json", "w"), indent=1)
+    print("VHORR backing", mode, path, round(t, 1), flush=True)
 
 
 def sheet(args):
@@ -468,9 +529,20 @@ def main():
     ap.add_argument("--style", default="", help="every slot in this one style (organic_components.STYLES): survey options")
     ap.add_argument("--rest-only", action="store_true", help="only each slot's resting state")
     ap.add_argument("--isolate", action="store_true", help="each slot sculpted alone, no neighbour kept clear (survey pictures)")
+    ap.add_argument("--fit-only", action="store_true", help="sculpt every slot and write fit.json (rule G1); no renders")
+    ap.add_argument("--styles", default=STYLES_FILE, help="the per-slot styles, key bodies and backing (JSON)")
+    ap.add_argument("--backing", default="", help="render only the column's backing in these modes (comma separated: "
+                    f"{', '.join(oc.BACKINGS)})")
     a = ap.parse_args(argv)
-    global ISOLATE
+    global ISOLATE, BACKING
     ISOLATE = a.isolate
+    BACKING = load_styles(a.styles)
+    if a.backing:
+        for mode in a.backing.split(","):
+            if mode not in oc.BACKINGS:
+                raise SystemExit(f"--backing {mode}: not one of {oc.BACKINGS}")
+            build_backing(a, mode)
+        return
     if a.style:
         if a.style not in oc.STYLES:
             raise SystemExit(f"--style {a.style}: not one of {oc.STYLES}")
