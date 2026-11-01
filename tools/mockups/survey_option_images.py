@@ -110,13 +110,33 @@ BACKINGS = {"A": "tissue", "B": "tendrils", "C": "lattice"}   # survey W8: what 
 COMPARE = ROOT / ".tools" / "compare"
 
 
-def backing_pictures(console_dir, backing_dir, page, node_path, only=""):
+SSD_RING_MM = 105.0   # the ship display drawing's outer reach from its centre: shield ring radius 100 + half its 9 px line
+BLOCKOUT = ROOT / "assets" / "ui" / "vhorr" / "organic" / "blockout.json"
+
+
+def ssd_to_glass(text):
+    """The page copy's ship display drawn centred in, and scaled to, the glass the blockout gives it (owner, 2026-11-01:
+    "this ship display should span the whole width"), as it would be in play, not at the page's own pocket size."""
+    slots = json.loads(BLOCKOUT.read_text())["layouts"]["desktop"]["slots"]
+    sl = next(s for s in slots if s["piece"] == "ssd.bezel")
+    gx, gy, gw, gh = next(q["rect"] for q in sl["protected"] if q["kind"] == "live-drawing")
+    cx, cy = gx - sl["rect"][0] + gw / 2, gy - sl["rect"][1] + gh / 2
+    k = (min(gw, gh) / 2 - 4.0) / SSD_RING_MM
+    old = "function ssdLive(x, S) { S.live.ssd(x, 230, 150,"
+    if old not in text:
+        raise SystemExit("backing: the page's ship display drawing line has changed")
+    return text.replace(old, f"function ssdLive(x, S) {{ x.translate({cx}, {cy}); x.scale({k:.4f}, {k:.4f}); "
+                             "x.translate(-230, -150); S.live.ssd(x, 230, 150,")
+
+
+def backing_pictures(console_dir, backing_dir, page, node_path, only="", name="brood-w-bg"):
     """W8's options: the whole console, with the owner's W1-W7 picks (console_dir, rendered from
     assets/ui/vhorr/organic/styles.json), over the battle filling the whole screen, with each backing
     (backing_dir/backing.<mode>.png from `build_ui_vhorr_organic.py -- --backing <modes>`) under the panels. Writes the
     survey picture (the column's lower half and the battle beside it, where the gutters are widest) as
     docs/design/survey/backing-<letter>.jpg, and the whole console at desktop and phone size, and a close-up, into
-    .tools/compare/brood-w-bg-<letter>*.png for looking at before they are shown."""
+    .tools/compare/<name>-<letter>*.png for looking at before they are shown. With a name other than the default, only
+    those compare shots are written (a look at a change, the survey's pictures untouched)."""
     COMPARE.mkdir(parents=True, exist_ok=True)
     for letter, mode in BACKINGS.items():
         if only and letter not in only:
@@ -140,6 +160,7 @@ def backing_pictures(console_dir, backing_dir, page, node_path, only=""):
         if ro not in text:
             raise SystemExit("backing: the page's target readout line has changed")
         pg.write_text(text.replace(ro, "x.fillText(cs(s), window.BROOD_BACKING ? 512 : 40, h - (window.BROOD_BACKING ? 194 : 150) + i * 32)"))
+        pg.write_text(ssd_to_glass(pg.read_text()))
         r = subprocess.run(["node", str(ROOT / "tools" / "mockups" / "survey_option_shots.mjs"), str(pg), str(work), "console"],
                            capture_output=True, text=True, env={**os.environ, "NODE_PATH": node_path})
         if r.returncode:
@@ -149,10 +170,12 @@ def backing_pictures(console_dir, backing_dir, page, node_path, only=""):
             raise SystemExit(f"backing {letter}: page errors {info['errors']}")
         full = Image.open(work / "console.png")
         k = full.width / 1920.0
-        full.save(COMPARE / f"brood-w-bg-{letter.lower()}.png")
-        Image.open(work / "phone.png").save(COMPARE / f"brood-w-bg-{letter.lower()}-phone.png")
-        full.crop((0, round(560 * k), round(780 * k), round(1080 * k))).save(COMPARE / f"brood-w-bg-{letter.lower()}-zoom.png")
-        save_jpg(full.crop((0, round(520 * k), round(780 * k), round(1080 * k))), OUT / f"backing-{letter}.jpg")
+        full.save(COMPARE / f"{name}-{letter.lower()}.png")
+        Image.open(work / "phone.png").save(COMPARE / f"{name}-{letter.lower()}-phone.png")
+        full.crop((0, round(560 * k), round(780 * k), round(1080 * k))).save(COMPARE / f"{name}-{letter.lower()}-zoom.png")
+        full.crop((0, round(300 * k), round(780 * k), round(700 * k))).save(COMPARE / f"{name}-{letter.lower()}-ssd.png")
+        if name == "brood-w-bg":
+            save_jpg(full.crop((0, round(520 * k), round(780 * k), round(1080 * k))), OUT / f"backing-{letter}.jpg")
         print(f"backing {letter} ({mode}): pictures written")
 
 
@@ -176,6 +199,7 @@ def main():
     ap.add_argument("--keys", default="/tmp/sv/keys.png")
     ap.add_argument("--only", default="", help="letters, e.g. AC")
     ap.add_argument("--inline-only", action="store_true")
+    ap.add_argument("--shots-name", default="brood-w-bg", help="W8: the compare shots' name; another name writes only those")
     ap.add_argument("--backings", default="", help="W8 only: the console renders with the picks (dir), then the backings "
                     "dir, comma separated, e.g. /tmp/bw/console,/tmp/bw/backing")
     a = ap.parse_args()
@@ -183,7 +207,7 @@ def main():
     if a.backings:
         cd, bd = (pathlib.Path(x) for x in a.backings.split(","))
         node_path = subprocess.run(["npm", "root", "-g"], capture_output=True, text=True).stdout.strip()
-        backing_pictures(cd, bd, pathlib.Path(a.page), node_path, a.only)
+        backing_pictures(cd, bd, pathlib.Path(a.page), node_path, a.only, a.shots_name)
     elif not a.inline_only:
         renders, page = pathlib.Path(a.renders), pathlib.Path(a.page)
         node_path = subprocess.run(["npm", "root", "-g"], capture_output=True, text=True).stdout.strip()

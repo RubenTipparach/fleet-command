@@ -27,6 +27,11 @@ const OUT = path.join(ROOT, 'assets/ui/vhorr/organic');
 // skin's helmKeys, plus the pad's centre key); a key face is 62 px of the 300 px pad (the v23 kit's key wells,
 // tools/mockups/vhorr_shapes.py), drawn at the pad's displayed size.
 const HELM_PAD_PX = 300, HELM_CENTRE = [150, 149], KEY_FACE_PX = 62;
+// A live drawing's glass is the tight box of what it draws, except where a piece's glass is set wider here: [sides,
+// top, bottom] px in from its canvas's edges. The ship systems display spans the whole column (owner, 2026-11-01: "this
+// ship display should span the whole width"), its drawing scaled to the glass in play, not a pocket round the drawing's
+// ink; its deeper bottom band holds the tentacles its style hangs (survey W2: E), clear of the weapons panel 6 px below.
+const GLASS_INSET = { 'ssd.bezel': [30, 28, 46] };
 
 // The skin's own data, read from its module (the page's script is a closure, so nothing of it is global).
 const SKIN_JS = fs.readFileSync(path.join(ROOT, 'docs/mockups/skins/vhorr.js'), 'utf8');
@@ -42,7 +47,7 @@ await page.waitForFunction(() => window.MOCKUP_READY, null, { timeout: 60000 });
 await page.evaluate(() => window.MOCKUP_SHOTS.vhorr());
 await page.waitForTimeout(1500);
 
-const data = await page.evaluate(({ HELM_PAD_PX, HELM_CENTRE, KEY_FACE_PX, HELM_KEYS, PLATE_LEFT }) => {
+const data = await page.evaluate(({ HELM_PAD_PX, HELM_CENTRE, KEY_FACE_PX, HELM_KEYS, PLATE_LEFT, GLASS_INSET }) => {
   const con = document.getElementById('console');
   const s = +(/scale\(([\d.]+)\)/.exec(con.style.transform) || [0, 1])[1];
   const r0 = con.getBoundingClientRect();
@@ -93,7 +98,9 @@ const data = await page.evaluate(({ HELM_PAD_PX, HELM_CENTRE, KEY_FACE_PX, HELM_
     for (const d of e.querySelectorAll('.lbl, .num, .ptitle, .ovl, img, canvas.live, .k-cells')) {
       if (!mine(d) || (d.tagName === 'IMG' && (d.parentElement === e || d.closest('.k-cells')))) continue;
       const kind = d.matches('canvas.live') ? 'live-drawing' : d.matches('.k-cells') ? 'bar-cells' : d.tagName === 'IMG' ? 'icon' : 'label';
-      const r = d.matches('canvas.live') ? inked(d) : d.matches('.lbl, .num, .ptitle, .ovl') ? textRect(d) : d.getBoundingClientRect();
+      const gi = d.matches('canvas.live') && GLASS_INSET[sl.piece];
+      const glass = (c, [ix, it, ib]) => { const b = c.getBoundingClientRect(); return { left: b.left + ix * s, top: b.top + it * s, width: b.width - 2 * ix * s, height: b.height - (it + ib) * s }; };
+      const r = gi ? glass(d, gi) : d.matches('canvas.live') ? inked(d) : d.matches('.lbl, .num, .ptitle, .ovl') ? textRect(d) : d.getBoundingClientRect();
       if (r && r.width) prot.push({ kind, what: d.matches('canvas.live') ? sl.piece : (d.alt || text(d) || d.className), rect: rel(r) });
     }
     if (e.matches('.k-button, .k-tab')) { const r = textRect(e); if (r) prot.push({ kind: 'key-label', what: text(e), rect: rel(r) }); }
@@ -112,7 +119,7 @@ const data = await page.evaluate(({ HELM_PAD_PX, HELM_CENTRE, KEY_FACE_PX, HELM_
   // The game view the console floats over (rule 5): the page's own painted view.
   return { scale: s, view: con.querySelector('.view canvas').toDataURL('image/png'),
     slots: slots.map(({ id, piece, kind, rect, protected: p }) => ({ id, piece, kind, rect, protected: p })) };
-}, { HELM_PAD_PX, HELM_CENTRE, KEY_FACE_PX, HELM_KEYS, PLATE_LEFT });
+}, { HELM_PAD_PX, HELM_CENTRE, KEY_FACE_PX, HELM_KEYS, PLATE_LEFT, GLASS_INSET });
 await browser.close();
 if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
 
