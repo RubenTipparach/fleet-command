@@ -8,7 +8,7 @@
   with the tactical map), the top and bottom strips, and the 3D view with the target bracket, right-click targeting,
   the target camera, the 3D shield display, officer messages and the readout. Every control works against a seeded
   battle (three Concord ships against two Kethran and a Vos raider, wingmen with configurable behaviours, pause with
-  orders); every panel expands with the battle beside it, at desktop, phone landscape and phone portrait.
+  orders); every panel expands with the battle beside it. Desktop only for now (the owner: no mobile mockup yet).
 - Made by: `docs/mockups/battle-console.html` (the page source, one copy), written up in
   `openspec/changes/battle-console/`. Shared code inlined by `tools/mockups/inline_data.py`:
   `docs/mockups/lib/kitdraw.js`, `docs/mockups/lib/concord.js` (the Concord skin, also used by mockup 4) and
@@ -18,4 +18,5 @@
   draw calls a frame, main view and target camera together. The stand-in ships and sky are mockup 1's; mockup 3 sets
   the real budgets.
 - Stage: drafted.
-- Published: version 1 to publish (2026-11-01).
+- Published: version 1 to publish (2026-11-01); version 2 to publish (2026-11-01: icon tabs in narrow columns named on
+  hover, the ship below the centre, a speed handle, Power over Systems, desktop only).

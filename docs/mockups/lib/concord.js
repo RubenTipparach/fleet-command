@@ -91,9 +91,10 @@ const concordHero = {
 };
 function ccLamp(x, w, col) { const c = w / 2; x.fillStyle = CC.deep; x.beginPath(); x.arc(c, c, 30, 0, 2 * P); x.fill(); x.fillStyle = '#000'; x.beginPath(); x.arc(c, c, 25, 0, 2 * P); x.fill(); x.fillStyle = col; x.beginPath(); x.arc(c, c, 21, 0, 2 * P); x.fill(); }
 // Concord icons: open circles and arcs in one even line. Nothing pointed (the saucer, the circle of species).
-function ccIcon(name) {
+// col: the ink, Sky by default; black on a lit (active) tab, as the pill keys' labels are.
+function ccIcon(name, col = CC.sky) {
   return paint(48, 48, (x) => {
-    x.strokeStyle = CC.sky; x.fillStyle = CC.sky; x.lineWidth = 3;
+    x.strokeStyle = col; x.fillStyle = col; x.lineWidth = 3;
     const C = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
     const D = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); };
     const A = (cx, cy, r, a0, a1) => { x.beginPath(); x.arc(cx, cy, r, a0, a1); x.stroke(); };

@@ -53,6 +53,9 @@ button:focus-visible { outline: 2px solid var(--s-num); outline-offset: 2px; }
 .cell.warn { border-image-source: var(--cw); }
 .cell.locked { border-image-source: var(--ck); cursor: default; }
 .cells { display: flex; gap: 3px; min-width: 0; }
+.spd { position: relative; flex: 1; height: 40px; display: flex; align-items: center; cursor: ew-resize; touch-action: none; }
+.spd .cells { flex: 1; pointer-events: none; }
+.spd-h { position: absolute; top: 2px; width: 22px; height: 36px !important; padding: 0 !important; border-image-width: 11px; cursor: ew-resize; }
 
 .lbl { font: var(--lbl-font); letter-spacing: 0.1em; text-transform: uppercase; color: var(--s-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .num { font: var(--num-font); color: var(--s-num); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -73,12 +76,16 @@ button:focus-visible { outline: 2px solid var(--s-num); outline-offset: 2px; }
 .ptitle { position: absolute; right: 6px; top: -29px; z-index: 2; background: #000; padding: 0 8px; display: flex; gap: 10px; align-items: center; height: 26px;
   font: var(--title-font); color: var(--title-ink); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
 .ptitle .k-button.sm { height: 26px; font-size: 15px; padding: 0 10px; border-image-width: 13px; }
-.rail { display: flex; flex-direction: column; gap: 2px; flex: none; width: 92px; overflow-y: auto; scrollbar-width: none; }
+.rail { display: flex; flex-direction: column; gap: 2px; flex: none; width: 48px; overflow-y: auto; scrollbar-width: none; }
 .rail .k-tab { flex: none; font-size: 18px; padding: 0 8px 0 12px; }
 .k-strip .cells .cell { height: 16px; border-image-width: 6px; }
 .k-strip.bottom .cells .cell { height: 24px; }
 .tabs { display: flex; gap: 4px; flex: none; }
 .tabs .k-tab { flex: 1 1 0; padding: 0 8px 0 12px; }
+/* Icon tabs: the panel tabs carry the skin's icon, not a word; the panel's title names the page. */
+.k-tab.ic { justify-content: center; padding: 0 2px 0 8px; }
+#tip { position: absolute; z-index: 30; pointer-events: none; display: none; height: 30px; font-size: 17px; padding: 0 14px; border-image-width: 15px; justify-content: center; }
+.k-tab.ic img { width: 30px; height: 30px; flex: none; pointer-events: none; }
 .hero { position: relative; flex: none; }
 .hero > img, .hero > canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
 canvas.live { cursor: pointer; }
@@ -112,13 +119,14 @@ canvas.live { cursor: pointer; }
 /* Phone modes: the column is replaced by a rail of panel keys; panels open expanded (CLAUDE.md section 7, survey U1, U2). */
 #prail { display: none; gap: 4px; }
 #prail .k-tab { height: auto; flex: 1 1 0; justify-content: center; padding: 0 6px; flex-direction: column; gap: 2px; font-size: 16px; }
-#prail .k-tab img { width: 28px; height: 28px; }
+#prail .k-tab img { width: 34px; height: 34px; }
 [data-mode="land"] #prail, [data-mode="port"] #prail { display: flex; }
 [data-mode="land"] #prail { flex-direction: column; }
 [data-mode="land"] #quick, [data-mode="port"] #quick { display: flex; }
 [data-mode="port"] #quick { left: 8px; right: 8px; }
 [data-mode="port"] #quick .k-button { flex: 1 1 0; padding: 0 14px; justify-content: center; }
-[data-mode="land"] #readout, [data-mode="port"] #readout { bottom: 72px; }
+[data-mode="port"] #readout { bottom: 72px; }
+[data-mode="land"] #readout { bottom: auto; top: 82px; }
 [data-mode="land"] #badge, [data-mode="port"] #badge { display: none; }
 [data-mode="land"] .vtext, [data-mode="port"] .vtext { font-size: 16px; }
 [data-mode="land"] #paused, [data-mode="port"] #paused { font-size: 20px; top: 54px; }
@@ -259,9 +267,10 @@ const concordHero = {
 };
 function ccLamp(x, w, col) { const c = w / 2; x.fillStyle = CC.deep; x.beginPath(); x.arc(c, c, 30, 0, 2 * P); x.fill(); x.fillStyle = '#000'; x.beginPath(); x.arc(c, c, 25, 0, 2 * P); x.fill(); x.fillStyle = col; x.beginPath(); x.arc(c, c, 21, 0, 2 * P); x.fill(); }
 // Concord icons: open circles and arcs in one even line. Nothing pointed (the saucer, the circle of species).
-function ccIcon(name) {
+// col: the ink, Sky by default; black on a lit (active) tab, as the pill keys' labels are.
+function ccIcon(name, col = CC.sky) {
   return paint(48, 48, (x) => {
-    x.strokeStyle = CC.sky; x.fillStyle = CC.sky; x.lineWidth = 3;
+    x.strokeStyle = col; x.fillStyle = col; x.lineWidth = 3;
     const C = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
     const D = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); };
     const A = (cx, cy, r, a0, a1) => { x.beginPath(); x.arc(cx, cy, r, a0, a1); x.stroke(); };
@@ -542,7 +551,7 @@ const FACINGS = ['F', 'FR', 'AR', 'A', 'AL', 'FL'];
 const CLASSES = {
   ca: { name: 'Heavy cruiser', code: 'CA', shape: 'saucer', len_m: 320, hull: 140, speed_max_m_s: 300, accel_m_s2: 45, turn_deg_s: 26, reactor_e: 22,
     capacitor_e: 14, battery_e: 10, shields: [42, 32, 28, 26, 28, 32], marines: 12, mines: 4, fighters: 4,
-    power: { weapons: 7, shields: 5, engines: 6, sensors: 2, tractor: 0, transport: 0, repair: 2 },
+    power: { weapons: 7, shields: 5, engines: 6, sensors: 2, tractor: 0, transport: 0, repair: 1 },
     mounts: [['lance', -0.42, 0.62, -50, 200], ['lance', 0.42, 0.62, 50, 200], ['lance', -0.62, 0.05, -90, 180], ['lance', 0.62, 0.05, 90, 180],
       ['torpedo', -0.14, 0.86, 0, 90], ['torpedo', 0.14, 0.86, 0, 90], ['lance', 0, -0.72, 180, 160], ['pd', -0.32, -0.3, 0, 360], ['pd', 0.32, -0.3, 0, 360]] },
   dd: { name: 'Destroyer', code: 'DD', shape: 'saucer', len_m: 230, hull: 95, speed_max_m_s: 330, accel_m_s2: 55, turn_deg_s: 34, reactor_e: 16,
@@ -875,7 +884,7 @@ addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen 
 // =================================================================================================================
 // The kit: Concord's pieces, painted once to images (docs/mockups/lib/concord.js), set as CSS variables for 9-slicing.
 // =================================================================================================================
-const KIT = { nine: { ...CON.kit, ...CON.cells }, hero: {}, icons: {} };
+const KIT = { nine: { ...CON.kit, ...CON.cells }, hero: {}, icons: {}, iconsOn: {} };
 const VARS = { 'frame.panel': 'fp', 'frame.inset': 'fi', 'bar.track': 'bt', 'bar.fill': 'bf', 'bar.fill.red': 'bfw', 'button.idle': 'bi', 'button.hover': 'bh', 'button.pressed': 'bp',
   'tab.idle': 'ti', 'tab.active': 'ta', 'strip.top': 'st', 'strip.bottom': 'sb', 'divider': 'dv', 'cell.idle': 'ci', 'cell.lit': 'cl', 'cell.warn': 'cw', 'cell.locked': 'ck' };
 const SLOT_H = { button: 48, tab: 40 };
@@ -890,7 +899,7 @@ function buildKit() {
     R.setProperty(`--${v}-w`, p.m.map((n) => n * k + 'px').join(' ')); R.setProperty(`--${v}-l`, p.m[3] * k + 'px'); R.setProperty(`--${v}-r`, p.m[1] * k + 'px');
   }
   for (const [id, [w, h]] of Object.entries(HERO)) KIT.hero[id] = png(paint(w, h, CON.hero[id]));
-  for (const n of ICONS) KIT.icons[n] = png(CON.icon(n));
+  for (const n of ICONS) { KIT.icons[n] = png(CON.icon(n)); KIT.iconsOn[n] = png(CON.icon(n, '#000')); }
   const css = { '--s-ink': CC.text, '--s-dim': CC.lilac, '--s-num': CC.sky, '--s-body': '"Antonio", sans-serif', '--btn-ink': '#000', '--btn-justify': 'flex-end',
     '--btn-font': '600 22px/1 "Antonio", sans-serif', '--btn-track': '0.04em', '--btn-motion': 'border-image-source 0.08s', '--tab-font': '600 19px/1 "Antonio", sans-serif',
     '--tab-ink': CC.text, '--tab-ink-on': '#000', '--title-font': '700 24px/1 "Antonio", sans-serif', '--title-ink': CC.sky, '--lbl-font': '600 15px/1 "Antonio", sans-serif',
@@ -920,6 +929,24 @@ function tab(label, onClick, sel, dis) {
   bind(() => { b.classList.toggle('sel', !!sel()); if (dis) b.disabled = !!dis(); });
   return b;
 }
+// A tab that shows an icon instead of a word: Sky ink when idle, black when lit. Its name is its accessible label.
+function itab(ic, label, onClick, sel, dis) {
+  const b = el('button', 'nine k-tab ic'); b.type = 'button'; b.setAttribute('aria-label', label); b.title = label;
+  const i = new Image(); i.alt = ''; b.append(i); b.onclick = (e) => { e.stopPropagation(); onClick(); tickUI(); };
+  b.onpointerenter = () => showTip(b, label); b.onpointerleave = hideTip;
+  bind(() => { const on = !!sel(); b.classList.toggle('sel', on); const src = (on ? KIT.iconsOn : KIT.icons)[ic]; if (i.src !== src) i.src = src; if (dis) b.disabled = !!dis(); });
+  return b;
+}
+// The name of an icon tab, shown above it while the pointer is over it (a lit pill, the kit's pressed button).
+function showTip(b, label) {
+  const t = document.getElementById('tip'); if (!t) return;
+  const r = b.getBoundingClientRect(), o = root.getBoundingClientRect();
+  t.textContent = label; t.style.display = 'flex';
+  const w = t.offsetWidth, cx = (r.left + r.width / 2 - o.left) / S, top = (r.top - o.top) / S - 34;
+  css(t, `left:${clamp(cx - w / 2, 4, RW - w - 4)}px;top:${Math.max(4, top)}px;`);
+}
+function hideTip() { const t = document.getElementById('tip'); if (t) t.style.display = 'none'; }
+function itabs(list, cur, set) { const r = el('div', 'tabs'); for (const [id, label, ic] of list) r.append(itab(ic, label, () => set(id), () => cur() === id)); return r; }
 function tabs(list, cur, set, dis) { const r = el('div', 'tabs'); for (const [id, label] of list) r.append(tab(label, () => set(id), () => cur() === id, dis ? () => dis(id) : null)); return r; }
 function bar(label, frac, warn) {
   const b = el('div', 'barbox'); if (label) b.append(typeof label === 'function' ? txt(label, 'lbl') : el('div', 'lbl', label));
@@ -953,10 +980,9 @@ const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(Mat
 // The console's regions and panels.
 // =================================================================================================================
 const root = document.getElementById('root');
-let NARROW = false, mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20, ssdTarget = false, speedStyle = 'boxes';
-const STATIONS = [['helm', 'Helm'], ['power', 'Power'], ['tactical', 'Tactical'], ['pd', 'P. Def'], ['science', 'Science'], ['comms', 'Comms'], ['repair', 'Repair'], ['transport', 'Transport'], ['fleet', 'Fleet']];
-const SHIPTABS = [['ssd', 'Systems'], ['shields', 'Shields'], ['sensors', 'Sensors'], ['tractor', 'Tractor'], ['craft', 'Craft']];
-const SHIPTABS_SHORT = [['ssd', 'SSD'], ['shields', 'Shld'], ['sensors', 'Sens'], ['tractor', 'Trac'], ['craft', 'Craft']];
+let NARROW = false, mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20, ssdTarget = false;
+const STATIONS = [['helm', 'Helm', 'helm'], ['power', 'Power', 'power'], ['tactical', 'Tactical', 'tactical'], ['pd', 'Point defence', 'pd'], ['science', 'Science', 'science'], ['comms', 'Comms', 'comms'], ['repair', 'Repair', 'repair'], ['transport', 'Transport', 'transport'], ['fleet', 'Fleet', 'fleet']];
+const SHIPTABS = [['ssd', 'Systems', 'ship'], ['shields', 'Shields', 'shields'], ['sensors', 'Sensors', 'sensors'], ['tractor', 'Tractor', 'tractor'], ['craft', 'Craft', 'craft']];
 const PANELS = { station: 'Helm', ship: 'Ship', weapons: 'Weapons', radar: 'Map' };
 const R = {}; // region elements
 function makeRegions() {
@@ -967,7 +993,8 @@ function makeRegions() {
   for (const id of Object.keys(PANELS)) { R[id] = el('section', 'nine k-panel panel'); R[id].dataset.id = id; }
   R.radarRow = el('div', 'region');
   R.sheet = el('div', 'sheet');
-  root.append(R.view, R.top, R.bottom, R.plate, R.station, R.ship, R.weapons, R.radar, R.radarRow, R.prail, R.sheet);
+  R.tip = el('div', 'nine k-button pressed'); R.tip.id = 'tip';
+  root.append(R.view, R.top, R.bottom, R.plate, R.station, R.ship, R.weapons, R.radar, R.radarRow, R.prail, R.sheet, R.tip);
 }
 function place(n, r) { if (!r) { n.style.display = 'none'; return; } n.style.display = ''; css(n, `left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;`); }
 // Rectangles, in reference pixels, for each screen shape (CLAUDE.md section 7; survey U1 and U2).
@@ -989,7 +1016,9 @@ function rects() {
 }
 function layout() {
   const w = innerWidth, h = innerHeight;
-  mode = w >= 1000 && h >= 600 ? 'desk' : w > h ? 'land' : 'port';
+  // Desktop first (owner, 2026-11-01: "lets first only care about the desktop experience FIRST", "DO NOT MOCKUP MOBILE YET"):
+  // every window gets the desktop layout, scaled. The phone layouts below stay dormant until the owner asks for them.
+  mode = MOBILE && !(w >= 1000 && h >= 600) ? (w > h ? 'land' : 'port') : 'desk';
   S = mode === 'desk' ? Math.min(h / 1080, w / 1500) : mode === 'land' ? Math.min(w / 844, h / 390) : Math.min(w / 390, h / 844);
   RW = w / S; RH = h / S;
   css(root, `width:${RW}px;height:${RH}px;transform:scale(${S});`);
@@ -1002,12 +1031,13 @@ function layout() {
   rebuild();
 }
 function rebuild() {
+  hideTip();
   buildTop(); buildBottom(); buildPlate(); buildPhoneRail();
   for (const id of Object.keys(PANELS)) buildPanel(id);
   buildRadarRow(); buildViewUI(); renderSheet(); tickUI();
 }
 function panelShell(id, title) {
-  const p = R[id]; p.replaceChildren(); region = id; binders[id] = [];
+  hideTip(); const p = R[id]; p.replaceChildren(); region = id; binders[id] = [];
   const t = el('div', 'ptitle'); t.append(typeof title === 'function' ? txt(title, '') : el('span', '', title));
   const big = expanded === id;
   t.append(btn(big ? 'Return' : 'Expand', () => A.expand(id), { sm: true }));
@@ -1037,21 +1067,40 @@ function buildBottom() {
   const sp = el('div', 'row'); css(sp, `flex:${c ? 1.6 : 1.5};gap:10px;`);
   sp.append(el('div', 'lbl', 'Speed'), txt(() => `${Math.round(s().v)}`, 'num'));
   if (c) sp.append(btn('−', () => A.speedStep(-1), { sm: true }));
-  if (speedStyle === 'slider' && !c) {
-    const r = el('input'); r.type = 'range'; r.min = -60; r.max = 360; r.step = 1; css(r, 'flex:1;accent-color:' + CC.sky);
-    r.oninput = () => { A.setSpeed(+r.value); }; bind(() => { if (document.activeElement !== r) r.value = s().vOrder; }); sp.append(r);
-  } else {
-    const cl = cells(10, () => Math.max(0, s().vOrder) / SPEED_PER_BOX_M_S, (k) => A.setSpeed(k * SPEED_PER_BOX_M_S), () => Math.floor(maxSpeed(s()) / SPEED_PER_BOX_M_S + 1e-6));
-    css(cl, 'flex:1;'); sp.append(cl);
-  }
+  sp.append(speedSlider(s));
   if (c) sp.append(btn('+', () => A.speedStep(1), { sm: true }));
   R.bottom.append(sp);
-  if (mode !== 'port') R.bottom.append(bar(() => `Power ${used(s())} / ${output(s())} E`, () => used(s()) / output(s())));
-  if (!c) R.bottom.append(bar('Systems', () => Object.values(s().sys).reduce((a, b) => a + b, 0) / 6, (v) => v < 0.6));
+  // Power over systems, on one scale (the reactor's rating), so the systems' drain reads against the output at a glance
+  // (owner, 2026-11-01: "power and systems need to sit on top of each other so we can see how much power our systems
+  // are draining"). A drain past the output turns the systems bar red.
+  const ps = el('div', 'grid'); css(ps, 'grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:5px;flex:1.4;');
+  const rated = () => CLASSES[s().cls].reactor_e;
+  for (const [label, val, warn] of [['Power', () => output(s()), null], ['Systems', () => used(s()), () => used(s()) > output(s())]]) {
+    const bx = bar(null, () => val() / rated(), warn ? () => warn() : null); css(bx, 'gap:0;');
+    ps.append(el('div', 'lbl', label), bx, txt(() => `${val()} E`, 'num'));
+  }
+  ps.querySelectorAll('.num').forEach((n) => css(n, 'font-size:18px;'));
+  if (mode !== 'port') R.bottom.append(ps);
   if (!c) R.bottom.append(btn('Next target', A.nextTarget, { sm: true }));
   const lamp = el('div', 'hero'); css(lamp, `width:${c ? 34 : 44}px;height:${c ? 34 : 44}px;`); const li = new Image(); li.alt = ''; lamp.append(li);
   bind(() => { const k = alertLevel(); const src = KIT.hero['lamp.alert.' + k]; if (li.src !== src) li.src = src; });
   R.bottom.append(lamp);
+}
+// Speed: the ten engine boxes are the track (lit up to the ordered speed, locked past what the engines' power allows),
+// and a handle on them is dragged to order a speed (owner, 2026-11-01: "speed needs a slider handle"). The handle
+// stops at the engines' limit; one box is 30 m/s.
+function speedSlider(s) {
+  const top = SPEED_PER_BOX_M_S * 10, w = el('div', 'spd');
+  const cl = cells(10, () => Math.max(0, s().vOrder) / SPEED_PER_BOX_M_S, () => {}, () => Math.floor(maxSpeed(s()) / SPEED_PER_BOX_M_S + 1e-6));
+  const h = el('div', 'nine k-button pressed spd-h'); h.setAttribute('role', 'slider'); h.setAttribute('aria-label', 'Speed'); h.tabIndex = 0;
+  w.append(cl, h);
+  const at = (e) => { const r = cl.getBoundingClientRect(); A.setSpeed(Math.round(clamp((e.clientX - r.left) / r.width, 0, 1) * top / 5) * 5); tickUI(); };
+  w.onpointerdown = (e) => { e.stopPropagation(); w.setPointerCapture(e.pointerId); w.dataset.drag = '1'; at(e); };
+  w.onpointermove = (e) => { if (w.dataset.drag) at(e); };
+  w.onpointerup = w.onpointercancel = () => { delete w.dataset.drag; };
+  h.onkeydown = (e) => { if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); A.speedStep(e.code === 'ArrowRight' ? 1 : -1); tickUI(); } };
+  bind(() => { const f = clamp(s().vOrder / top, 0, 1); h.style.left = `calc(${f * 100}% - 11px)`; h.setAttribute('aria-valuenow', String(Math.round(s().vOrder))); });
+  return w;
 }
 function alertLevel() { const s = W.player, foes = enemiesOf(s); if (!foes.length) return 'green'; const d = Math.min(...foes.map((f) => distKm(s, f))); return d < 15 ? 'red' : d < 30 ? 'yellow' : 'green'; }
 function buildPlate() {
@@ -1067,7 +1116,7 @@ function buildPhoneRail() {
   region = 'prail'; binders.prail = []; R.prail.replaceChildren();
   if (mode === 'desk' || expanded) return;
   for (const [id, label, ic] of [['station', 'Stations', 'helm'], ['ship', 'Ship', 'ship'], ['weapons', 'Weapons', 'weapons'], ['radar', 'Map', 'map']]) {
-    const b = tab('', () => A.expand(id), () => false); b.append(icon(ic, 26), el('span', '', label)); R.prail.append(b);
+    const b = itab(ic, label, () => A.expand(id), () => false); R.prail.append(b);
   }
 }
 
@@ -1075,10 +1124,10 @@ function buildPhoneRail() {
 function buildStation() {
   const { pin, big } = panelShell('station', () => STATIONS.find((s) => s[0] === station)[1]);
   // Narrow (a phone in portrait): the rail becomes a 3 x 3 grid of tabs above the station.
-  const narrow = R.station.getBoundingClientRect().width / S < 520;
-  const rail = el('div', 'rail'); if (big && mode !== 'desk') css(rail, 'width:96px;');
-  if (narrow) { css(pin, 'flex-direction:column;'); css(rail, 'display:grid;grid-template-columns:repeat(3,1fr);width:auto;gap:4px;overflow:visible;'); }
-  for (const [id, label] of STATIONS) { const t = tab(label, () => A.station(id), () => station === id); if (mode !== 'desk') css(t, 'height:44px;'); rail.append(t); }
+  const narrow = mode === 'port';
+  const rail = el('div', 'rail'); if (big && mode !== 'desk') css(rail, 'width:72px;');
+  if (narrow) { css(pin, 'flex-direction:column;'); css(rail, 'display:grid;grid-template-columns:repeat(5,1fr);width:auto;gap:4px;overflow:visible;'); }
+  for (const [id, label, ic] of STATIONS) { const t = itab(ic, label, () => A.station(id), () => station === id); if (mode !== 'desk') css(t, 'height:44px;'); rail.append(t); }
   const body = el('div', 'col fill'); pin.append(rail, body);
   NARROW = narrow;
   ({ helm: stHelm, power: stPower, tactical: stTactical, pd: stPD, science: stScience, comms: stComms, repair: stRepair, transport: stTransport, fleet: stFleet })[station](body, big);
@@ -1219,10 +1268,10 @@ function stFleet(b, big) {
 // ---- Ship panel: the ship systems display and the other overview pages ----------------------------------------------
 function buildShip() {
   const { pin, big } = panelShell('ship', () => `${SHIPTABS.find((s) => s[0] === shipTab)[1]} · ${ssdTarget && shipTab === 'ssd' && tgt(W.player) ? tgt(W.player).name : W.player.name}`);
-  const body = el('div', 'col fill'); pin.append(body);
+  const rail = el('div', 'rail'); for (const [id, label, ic] of SHIPTABS) rail.append(itab(ic, label, () => A.shipTab(id), () => shipTab === id));
+  const body = el('div', 'col fill'); pin.append(rail, body);
   const r = R.ship.getBoundingClientRect();
-  body.append(tabs(r.width / S < 520 && big ? SHIPTABS_SHORT : SHIPTABS, () => shipTab, A.shipTab));
-  const wpx = big ? (r.width / S - 72 - 40) : 396, hpx = big ? (r.height / S - 44 - 60) : 186;
+  const wpx = big ? (r.width / S - 72 - 56 - 40) : 340, hpx = big ? (r.height / S - 44 - 20) : 232;
   ({ ssd: shSSD, shields: shShields, sensors: shSensors, tractor: shTractor, craft: shCraft })[shipTab](body, big, wpx, hpx);
 }
 // The ship systems display: one drawing for own ship and target, used docked and expanded (CLAUDE.md section 6.1).
@@ -1456,12 +1505,19 @@ function syncScene(dt) {
   for (const b of booms) { b.t += dt; const k = b.t / 1.4; b.sp.scale.setScalar(b.size * (1 + k * 4)); b.sp.material.opacity = Math.max(0, 1 - k); if (k >= 1) { scene.remove(b.sp); b.done = true; } }
   for (let i = booms.length - 1; i >= 0; i--) if (booms[i].done) booms.splice(i, 1);
 }
+// Where the commanded ship sits, as a share of the view's height from the top: below the centre, clear of the readouts.
+const MOBILE = false;
+const SHIP_Y = { desk: 0.74, land: 0.6, port: 0.68 };
 let VIEW = [0, 0, 100, 100], showShields = true, showTargetCam = true, lastFollow = null;
 function sizeView(r) {
   VIEW = r; css(renderer.domElement, `width:${r[2]}px;height:${r[3]}px;`); renderer.setSize(r[2] * S, r[3] * S, false);
   css(renderer.domElement, `width:${r[2]}px;height:${r[3]}px;`);
   ovl.width = Math.round(r[2] * S * Math.min(devicePixelRatio, 2)); ovl.height = Math.round(r[3] * S * Math.min(devicePixelRatio, 2)); css(ovl, `width:${r[2]}px;height:${r[3]}px;`);
-  camera.aspect = r[2] / r[3]; camera.updateProjectionMatrix();
+  camera.aspect = r[2] / r[3];
+  // The ship you command sits below the centre, at SHIP_Y of the view's height, at every zoom (the owner's reference,
+  // 2026-11-01): the projection is shifted, so orbiting and zooming keep it there and nothing moves the camera.
+  camera.setViewOffset(r[2], r[3], 0, -(SHIP_Y[mode] - 0.5) * r[3], r[2], r[3]);
+  camera.updateProjectionMatrix();
 }
 function follow() {
   const s = W.player, p = new THREE.Vector3(s.x, 0, s.z);
@@ -1495,7 +1551,7 @@ function buildViewUI() {
     const inArcN = s.mounts.filter((m) => m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t) && inRange(s, m, t)), rd = inArcN.filter(ready).length;
     return `<b>${t.name}</b> ${CLASSES[t.cls].name} · range <b>${distKm(s, t).toFixed(1)} km</b> · speed <b>${Math.round(t.v)}</b><br>in arc <b>${inArcN.length}</b> · charged <b>${rd}</b> · to hit <b>${pct(bestChance())}</b>`;
   }, 'vtext'); ro.id = 'readout';
-  const msg = txt(() => { const m = W.log[W.log.length - 1]; return m && W.t - m.t < 5 ? `${m.who}: ${m.text}` : ''; }, 'vtext'); msg.id = 'msg'; css(msg, `bottom:${mode === 'desk' ? 80 : 128}px;`);
+  const msg = txt(() => { const m = W.log[W.log.length - 1]; return m && W.t - m.t < 5 ? `${m.who}: ${m.text}` : ''; }, 'vtext'); msg.id = 'msg'; css(msg, mode === 'land' ? 'top:58px;' : `bottom:${mode === 'desk' ? 80 : 128}px;`);
   const pz = txt(() => (paused ? 'Paused · orders still taken' : ''), 'vtext'); pz.id = 'paused';
   const inset = el('div', 'nine k-inset'); inset.id = 'inset'; inset.append(txt(() => (tgt(W.player) ? `Target · ${tgt(W.player).name}` : ''), 'vtext'));
   bind(() => { const on = showTargetCam && !!tgt(W.player) && !expanded; inset.style.display = on ? '' : 'none'; const ir = insetRect(); css(inset, `left:${ir[0]}px;top:${ir[1]}px;width:${ir[2]}px;height:${ir[3]}px;`); });
@@ -1503,7 +1559,7 @@ function buildViewUI() {
   const q = el('div'); q.id = 'quick';
   q.append(btn('Port', () => A.turn(-30)), btn(() => `Fire · ${tgt(W.player) ? W.player.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(W.player, m, tgt(W.player)) && inRange(W.player, m, tgt(W.player))).length : 0}`, A.fire), btn('Stbd', () => A.turn(30)));
   const vb = btn('Next', A.nextTarget); q.prepend(vb);
-  const badge = el('div'); badge.id = 'badge'; badge.append(el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V1'), btn('Reset', A.reset, { sm: true }));
+  const badge = el('div'); badge.id = 'badge'; badge.append(el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V2'), btn('Reset', A.reset, { sm: true }));
   const sl = el('div', 'vtext'); sl.id = 'striplabel'; sl.textContent = 'Live · tap to return';
   R.view.append(tools, ro, msg, pz, inset, lp, q, badge, sl);
 }
@@ -1568,8 +1624,7 @@ function renderSheet() {
     if (W.over === 'lost' && alive.length) pin.append(btn(`Take command of ${alive[0].name}`, () => { W.over = null; A.command(alive[0].id); }));
     pin.append(btn('Restart', A.reset));
   } else {
-    pin.append(btn('Resume', A.menu), el('div', 'lbl', 'Speed control'), tabs([['boxes', 'Boxes'], ['slider', 'Slider']], () => speedStyle, (v) => { speedStyle = v; buildBottom(); }),
-      el('div', 'lbl', 'Mockup'), btn('Restart battle', () => { A.reset(); menuOpen = false; renderSheet(); }), btn('Quit to campaign map', () => {}, { dis: () => true }));
+    pin.append(btn('Resume', A.menu), el('div', 'lbl', 'Mockup'), btn('Restart battle', () => { A.reset(); menuOpen = false; renderSheet(); }), btn('Quit to campaign map', () => {}, { dis: () => true }));
   }
   R.sheet.append(p);
 }

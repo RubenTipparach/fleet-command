@@ -21,7 +21,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/FhyyMm5JL58SwRFAKRRBbk |
-| 2 | In-game UI | Drafted (2026-11-01, v1, to publish) | `battle-console` | `docs/mockups/battle-console.html` | (published by the desktop session) |
+| 2 | In-game UI | Drafted (2026-11-01, v2, to publish) | `battle-console` | `docs/mockups/battle-console.html` | (published by the desktop session) |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v15) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/PngN8P4W8RxrZeeZEda7GW |
 
@@ -100,6 +100,14 @@ tactical map, the strips, right-click targeting with a tap equivalent, the targe
 working against a seeded stand-in battle with a three-ship fleet and configurable wingmen; every panel expands with the
 battle beside it, at desktop, phone landscape and portrait. The speed slider question is survey B1 (boxes built, a
 Boxes or Slider switch in the menu to compare).
+
+Owner's notes on version 1, 2026-11-01: "lets focus on iconography instead of text for the different tabs"; "the ship you
+are controlling should always be at a certain Y height (in screen coords) despite the zoom level. It shouldnt be
+centered, it should be below center" (with the reference screenshot); "text will show as you hover over above these
+tabs, group icons into a narrow column, lets first only care about the desktop experience FIRST"; "DO NOT MOCKUP MOBILE
+YET"; "speed needs a slider handle"; "power and systems need to sit on top of each other so we can see how much power
+our systems are draining". Version 2: icon tabs in narrow columns with their names shown above on hover, the ship held
+at 74% of the view's height, a handle on the speed boxes (B1 decided), Power over Systems on one scale, desktop only.
 
 ## 3. Look dev
 

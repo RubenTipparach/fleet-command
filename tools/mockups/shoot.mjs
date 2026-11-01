@@ -16,11 +16,12 @@ if (!target || !outDir) {
   console.error('usage: node tools/mockups/shoot.mjs <page.html|url> <out dir> [only,names]');
   process.exit(2);
 }
+// SHOOT_SIZES=desktop (a comma list) shoots only those sizes, for a page that is desktop-only for now.
 const SIZES = [
   ['desktop', { width: 1920, height: 1080 }],
   ['phone', { width: 844, height: 390 }],
   ['portrait', { width: 390, height: 844 }],
-];
+].filter(([n]) => !process.env.SHOOT_SIZES || process.env.SHOOT_SIZES.split(',').includes(n));
 const pageName = path.basename(target).replace(/\.html$/, '') || 'page';
 fs.mkdirSync(outDir, { recursive: true });
 

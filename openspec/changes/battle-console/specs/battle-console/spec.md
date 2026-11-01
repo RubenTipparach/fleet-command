@@ -21,9 +21,9 @@ Every panel SHALL have an Expand key. Expanded, the panel SHALL take the left tw
 battle the right third (in portrait, the top two thirds and the bottom third). The battle SHALL keep running, and a tap
 on it, Return or Esc SHALL bring the console back.
 
-#### Scenario: Expanding the power station on a phone in landscape
-- **WHEN** the player taps Stations, then Power, on an 844 x 390 screen
-- **THEN** the power station fills the left two thirds, the battle plays in the right third, and a tap on the battle returns to the console
+#### Scenario: Expanding the power station on the desktop
+- **WHEN** the player opens Power and presses Expand at 1920 x 1080
+- **THEN** the power station fills the left two thirds, the battle plays in the right third, and a click on the battle returns to the console
 
 ### Requirement: Energy is allocated in boxes
 
@@ -36,7 +36,7 @@ repair in whole boxes, never more in total than the output, and SHALL show outpu
 
 #### Scenario: Engine boxes set the speed limit
 - **WHEN** the player lowers engines from 6 boxes to 4
-- **THEN** the speed limit falls from 180 m/s to 120 m/s and the bottom strip locks the speed boxes above it
+- **THEN** the speed limit falls from 180 m/s to 120 m/s, the bottom strip locks the speed boxes above it, and the speed handle cannot be dragged past them
 
 ### Requirement: Readouts call the rule that resolves the outcome
 
@@ -72,3 +72,29 @@ take command of any ship in the fleet, the ship left behind then following its o
 #### Scenario: Taking command of a wingman
 - **WHEN** the player chooses Tallis in the fleet station and presses Take command
 - **THEN** the console shows Tallis's systems, the camera follows Tallis, and Resolute fights under its orders
+
+### Requirement: Panel tabs are icons named on hover
+
+The stations and ship panels SHALL pick their pages from a narrow column of icon tabs. Pointing at a tab SHALL show its
+name above it, and the panel's title SHALL name the open page.
+
+#### Scenario: Pointing at a station tab
+- **WHEN** the pointer rests on the science icon in the stations column
+- **THEN** "Science" shows in a pill above the icon, and disappears when the pointer leaves
+
+### Requirement: The commanded ship sits below the centre of the view
+
+The ship under the player's command SHALL be drawn at 74% of the view's height from the top at every zoom and orbit,
+without the game moving the camera.
+
+#### Scenario: Zooming out keeps the ship's height
+- **WHEN** the player zooms the chase view from its nearest to its farthest
+- **THEN** the ship stays at 74% of the view's height
+
+### Requirement: Power and systems draw are compared on one scale
+
+The bottom strip SHALL show the reactor's output (Power) above the allocation's draw (Systems), on one scale.
+
+#### Scenario: Spare energy shows as a gap
+- **WHEN** 21 E of a 22 E output is allocated
+- **THEN** the Systems bar is one twenty-second shorter than the Power bar

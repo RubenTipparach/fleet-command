@@ -168,9 +168,6 @@ const SECTIONS = [
   { tag: 'B', name: 'Battle console (mockup 2)',
     lead: 'Mockup 2 is built in the Concord skin: every panel works against a stand-in battle and expands with the battle beside it. These choices are built as recommended; say if any should change.',
     qs: [
-      { id: 'B1', q: 'Speed: your brief said a speed slider; the console rule prefers discrete boxes for whole counts. Which?',
-        options: ['Boxes: one per engine energy box, 30 m/s each, those past the engines\' power locked', 'A slider, limited by the engines\' power', 'Both: boxes on phones, a slider on desktop'], rec: 0,
-        why: 'Speed is bought with engine energy in whole boxes, so boxes show the cost. The mockup\'s Menu has a Boxes or Slider switch to compare.' },
       { id: 'B2', q: 'Targeting with a mouse: how do you lock a target?',
         options: ['Right click locks; left click focuses and shows a Lock target key (also how a tap works)', 'Left click locks', 'Either click locks'], rec: 0,
         why: 'Your words were "point and right click"; the focus step gives touch screens the same action.' },
@@ -180,7 +177,7 @@ const SECTIONS = [
       { id: 'B4', q: 'The helm pad: fixed steps or hold to turn?',
         options: ['Fixed steps (turn 15, 45 or 90 degrees; speed one box) plus autopilot orders with Engage', 'Hold a key to keep turning', 'Both'], rec: 0,
         why: 'Steps are orders, so they work while paused (your answer G2).' },
-      { id: 'B5', q: 'Phones: the left column cannot fit legibly. What replaces it?',
+      { id: 'B5', q: 'Later, when mobile is mocked up (not yet): the left column cannot fit a phone legibly. What replaces it?',
         options: ['A rail of four panel keys (Stations, Ship, Weapons, Map) that open panels expanded, and quick keys (Next, Port, Fire, Stbd) in the view', 'The desktop column scaled down', 'Only the view, with panels from a menu'], rec: 0,
         why: 'Scaled to a phone the column\'s 40 px tabs become 14 px, too small to read or touch.' },
       { id: 'B6', q: 'Add an allocation cell (four states) and eleven icons to the UI kit, so every faction skin must draw them?',
@@ -212,6 +209,7 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'B1: speed is a handle dragged along the engine boxes ("speed needs a slider handle"); desktop first, no mobile mockup yet; panel tabs are icons named on hover', where: 'openspec/changes/battle-console, mockup 2' },
   { text: 'U5: the Kethran skin is modelled hard surface rendered in Blender, "like starcraft"; Concord is built on LCARS\'s principles with a palette from Starfleet Command and Starfleet Academy; the Vos are hand-drawn; no two skins share a button shape (2026-10-30)', where: 'CLAUDE.md section 7, openspec/changes/console-skins, mockup 4' },
   { text: 'F6: a sale pays a quarter, more from a rival of the builder, less from pirates who raise your standing; prizes can be repaired into the fleet ("depends who you sell it to as well...")', where: 'openspec/changes/game-flow (design, specs), mockup 1' },
   { text: 'F1-F5 (recommendations confirmed): all port facilities need a friendly port; turn-based map with 3 move points; deploy from the mission\'s hex; Small, Standard, Large budgets; up to four ships', where: 'openspec/changes/game-flow' },

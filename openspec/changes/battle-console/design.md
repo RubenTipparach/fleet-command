@@ -29,32 +29,41 @@ trimmed with an ellipsis).
 | Region | Rectangle (x, y, w, h) | Content box |
 |---|---|---|
 | Name plate | 10, 6, 460, 56 | Ship and captain; Fleet n/m cycles the ship you command |
-| Stations panel | 6, 68, 468, 420 | Rail 92 wide, nine tabs of 40; body 304 x 376 |
-| Ship panel | 6, 494, 468, 276 | Five tabs across; body 396 x 186 |
+| Stations panel | 6, 68, 468, 420 | A narrow column of nine icon tabs (48 wide, 40 high); body 348 x 376 |
+| Ship panel | 6, 494, 468, 276 | A narrow column of five icon tabs; body 340 x 232 |
 | Weapons panel | 6, 776, 468, 160 | Two rows: Fire and Multiple (48), arming tabs (40) |
 | Radar row | 6, 942, 468, 132 | Dial 120, inset, crest |
 | Top strip | 480, 0, rest, 56 | |
-| Bottom strip | 480, bottom 56, rest, 56 | |
+| Bottom strip | 480, bottom 56, rest, 56 | Speed (boxes with a handle), Power over Systems, Next target, alert |
 | 3D view | 480, 56, rest, rest | |
 
 **Expanded** (any panel, any size; survey U1, U2): the panel takes the left two thirds and the battle runs in the right
 third, full height; in portrait the panel takes the top two thirds and the battle the bottom third. A tap on the battle,
 Return, or Esc brings the console back. The stations rail stays, so a captain can move between stations while expanded.
 
-**Phones.** Below 1000 x 600 the left column does not fit at a legible size (scaled to 390 px tall it would put 40 px
-tabs at 14 px). So phones get their own reference: landscape 844 x 390, portrait 390 x 844, at one CSS pixel each.
+**Phones: not mocked up yet** (owner, 2026-11-01: "lets first only care about the desktop experience FIRST", "DO NOT
+MOCKUP MOBILE YET"). Every window gets the desktop layout, scaled, and the page is shot at 1920 x 1080 only. Phone
+layouts (a rail of panel keys, quick keys in the view, panels opening expanded) are sketched in the page's code behind
+`MOBILE = false` and are not part of this version; they come back as their own step when the owner asks.
 
-| | Phone landscape 844 x 390 | Phone portrait 390 x 844 |
-|---|---|---|
-| Top strip | 44 high: ship, hull, capacitor, target, clock, Pause, Menu | 44 high: hull, capacitor, target, clock, Pause, Menu |
-| Panel keys | A rail of four (Stations, Ship, Weapons, Map) down the left, 84 wide | A row of four under the top strip, 62 high |
-| Quick keys in the view | Next, Port, Fire, Stbd, 48 high | The same, across the bottom of the view |
-| Bottom strip | Speed, minus, ten boxes, plus, power, alert | Speed, minus, ten boxes, plus, alert |
-| A panel | Opens expanded only | Opens expanded only |
+**Tabs are icons** (owner, 2026-11-01: "lets focus on iconography instead of text for the different tabs", "text will
+show as you hover over above these tabs, group icons into a narrow column"). The stations panel and the ship panel each
+have a narrow column of icon tabs down their left side, Sky ink idle and black on the lit (active) tab. Pointing at a tab
+shows its name above it in a lit pill; the panel's title names the open page, so the name is never hover-only.
 
-Touch targets on phones are 44 x 44 CSS px or larger, except the speed boxes in portrait (about 18 px wide), which have
-the minus and plus keys beside them. Nothing is reachable by hover alone: right click to lock has a tap equivalent
-(tap a ship, then Lock target).
+**The ship you command sits below the centre** (owner, 2026-11-01, with the reference screenshot: "the ship you are
+controlling should always be at a certain Y height (in screen coords) despite the zoom level. It shouldnt be centered,
+it should be below center"): at 74% of the view's height from the top, at every zoom and orbit. The projection is
+shifted (`setViewOffset`); the camera is never moved for it, so the player still owns the camera (CLAUDE.md section 8).
+
+**Speed has a handle** (owner, 2026-11-01: "speed needs a slider handle"): the ten engine boxes are the track (one box
+30 m/s, lit to the ordered speed, locked past the engines' power) and a lit pill handle on them is dragged to order a
+speed in 5 m/s steps; it stops at the engines' limit. Arrow keys step it a box. This answers survey B1.
+
+**Power over Systems** (owner, 2026-11-01: "power and systems need to sit on top of each other so we can see how much
+power our systems are draining"): two bars stacked on one scale, the reactor's rating. Power is the output; Systems is
+what the allocation draws. The gap between them is the spare energy that charges the battery; a drain past the output
+turns Systems red. Systems' health moved out of the strip; it is in the repair station.
 
 ## 3. The Concord skin on this layout
 
@@ -105,9 +114,9 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
-| B1 | Speed: discrete boxes (one per engine energy point, 30 m/s each) or a slider? The owner's brief said "speed slider"; CLAUDE.md section 7 prefers boxes for whole counts | **Boxes**, because speed is bought with engine energy in whole boxes; the menu has a Boxes or Slider switch to compare |
+| B1 | Speed: discrete boxes or a slider? | **Decided** (owner, 2026-11-01: "speed needs a slider handle"): a handle dragged along the engine boxes |
 | B2 | Targeting with a mouse: left click focuses and right click locks, or left click locks? | **Right click locks** (the owner's "point and right click"); left click or a tap focuses and shows a Lock target key |
-| B3 | Nine stations in one panel on a rail of tabs, or fewer stations merged? | **Nine on one rail**: helm, power, tactical, point defence, science, comms, repair, transport, fleet |
+| B3 | Nine stations in one panel on a column of icon tabs, or fewer stations merged? | **Nine on one rail**: helm, power, tactical, point defence, science, comms, repair, transport, fleet |
 | B4 | The helm pad: fixed steps (turn 15, 45, 90 degrees; speed one box) or hold to keep turning? | **Fixed steps**, which work as orders while paused (G2), and autopilot orders (approach, keep range, circle, evade) with Engage |
-| B5 | Phone landscape: a rail of four panel keys and quick keys (Next, Port, Fire, Stbd) in the view, panels opening expanded; or the desktop column scaled down? | **The rail and quick keys**: the desktop column scaled to a phone is too small to read or touch |
+| B5 | (Deferred: no mobile mockup yet.) Phone landscape: a rail of four panel keys and quick keys (Next, Port, Fire, Stbd) in the view, panels opening expanded; or the desktop column scaled down? | **The rail and quick keys**: the desktop column scaled to a phone is too small to read or touch |
 | B6 | Add allocation cells and eleven icons to the kit (so every skin must draw them)? | **Yes**, they are needed by every console; Concord's are drawn now |
