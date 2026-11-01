@@ -144,6 +144,13 @@ need to be inside the shield buttons", "or instead you can have a fill amount to
 colour, with only its facing's name inside; pointing at a key shows a card with its strength, how charged it is and
 whether it is reinforced.
 
+**Solid status boxes** (owner, 2026-11-01: "Fill the icon boxes fully. Please. And communicate icon system status with
+different colors. Show that as the ship gets hit and takes damage"): every weapon and subsystem box is filled solid with
+its status colour (the table below), its glyph or icon black on it (a destroyed box dark red with a red edge and a red
+glyph); a selected weapon has a Sky edge instead of a separate ring; the charge stays the bar under a weapon box. The
+boxes change as hits land. The menu's Mockup section has **Take a hit**, which puts three heavy hits on your ship from
+the nearest enemy so the colours can be watched changing (a mockup tool, not a game control).
+
 **The five statuses** (owner's definitions; they drive the combat change's rules, which are not built here):
 
 | Status | Means | Colour |
