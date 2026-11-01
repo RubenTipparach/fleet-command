@@ -87,17 +87,10 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
 
 ## 2. The stack: Godot
 
-> **Under review: Godot or Bevy** (owner, 2026-10-30: "I'm notr convinced with godot actually because I
-> really want high fidelity rendering... soooo maybe bevy if it supports android?", then in the survey: "can
-> godot handle a lot of the graphical and simulation aspects?"). Bevy builds for Android (GameActivity, API
-> 31 and up) and ships a path tracer for RTX cards; mainline Godot 4.7 has rich raster lighting (SDFGI,
-> VoxelGI, lightmaps, volumetric fog, HDR output, area lights) but only groundwork for ray tracing, and has
-> the more mature UI (nine-slice, themes) and Android export. Survey `T4a` decides; Godot is the
-> recommendation, for the baked, nine-sliced, faction-skinned console and the phones. Until it is
-> answered, write no engine code and nothing new that only one engine can use. The mockups are three.js
-> and carry over either way. If `T4a` lands on Bevy, this section, the Godot skills (`godot-architecture`,
-> `clean-code`, `testing-practices`, `playtest`) and `build.config` are rewritten from Crab Breeze's Bevy
-> versions in one change.
+> **Decided: Godot** (owner, survey T4a, 2026-11-01, picking "Godot 4.7: the console and phones first; rich raster lighting and
+> baked hull lights"), after reviewing Bevy for its path tracer (owner, 2026-10-30: "I'm notr convinced with godot
+> actually because I really want high fidelity rendering... soooo maybe bevy if it supports android?"). Engine code
+> still waits for each mockup's approval for implementation (section 4).
 
 - **Godot 4.7.1-stable, standard (GDScript) build**, pinned in `build.config`, the one place a
   toolchain version is written. `scripts/install-godot.sh` installs that editor into `.tools/godot/`.

@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-01, v24) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-01, v25) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -148,6 +148,17 @@ the white arc over the facing toward the enemy, square weapon boxes with glyphs,
 (3D), "going from red 1 layer -> yellow 2 layers -> green 3 layers", "make sure weapon icons dont overlap!". Version 9. Then: "this should be a shield diagram that I can
 pick what sides to reinforce" and "adjust how much energy I want to allocate - same energy slider as the one found in the
 power menu". Version 10: the shield page is a hexagon diagram, click a side to reinforce, the power station's shield row. Then: "Color coding and numbers still help" (each facing's number coloured), and "to avoid clutter. The UI itself should display 1 layer. Where the game should display multiple": version 11, one band per facing on the console, layers only in 3D. Then: "make shields like bigger buttons like in starfleet command where they were like trapezoids, with the base pointing outwards, and the sections getting highlighted when selected for reinforcement": version 12. Then: "those shield numbers need to be inside the shield buttons", "or instead you can have a fill amount to show how much of that shield is charged", "and show numbers when you hover over it": version 13, keys fill with their charge, numbers in a hover card. Then: "Fill the icon boxes fully. Please. And communicate icon system status with different colors. Show that as the ship gets hit and takes damage": version 14, solid status-coloured boxes, a Take a hit key in the menu.
+
+Versions 15-24 (2026-11-01): the lance glyph fixed, mounts on a grid, the selection ring flush (measured), cooldown
+seconds in a darker shade, mines on a 3 s cooldown, the tractor contest (Hold and Break, power-up, the beam turning),
+the helm by pointing (after the-federation), and test scenes for mines, the tractor and boarding. Version 25: the
+transporter's three modes (Capture, Hit & run, Inventory) with crews by role (survey B14, B15), reeling (B16), stations
+and planets, and four more scenes: Delivery, VIP, Shuttle, Fighters.
+
+**Queued from the survey (2026-11-01), not built yet:** the camera lock on the first right click (B2); the helm redesign
+after the reference game's nav modes, from the owner's screenshots and the manual (B4); power ticks per ship scaled to
+fit (B7); enemies starting tractor holds (B11); meltdown from a material temperature limit, a scram, coils aligned by
+dragging (R1, R2, R4). The kit's cells and icons wait for the Concord master UI (B6).
 
 ## 3. Look dev
 

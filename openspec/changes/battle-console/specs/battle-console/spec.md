@@ -198,3 +198,26 @@ side is down. A ship whose defenders are all down SHALL join the captain's fleet
 #### Scenario: A capture
 - **WHEN** 12 marines board the Rattlejaw against 8 defenders and win the volleys
 - **THEN** the Rattlejaw strikes its colours, joins the fleet on Escort, and can be commanded
+
+### Requirement: The transporter has three modes
+The transport station SHALL offer Capture (a boarding party picked by role), Hit & run (a squad on one subsystem) and
+Inventory (goods, a VIP and mines to or from a friendly ship, station or planet in reach). A capture SHALL take a ship
+only when, with its defenders down, an engineer, a pilot and a hacker or the VIP are aboard. Demolition marines SHALL be
+lost more often the fewer combat marines escort them.
+
+#### Scenario: No pilot aboard
+- **WHEN** a party without a pilot puts the last defender down
+- **THEN** the deck is held, the log says a pilot is needed, and the ship is taken once a pilot beams over
+
+#### Scenario: A delivery
+- **WHEN** the captain takes 10 crates from Harbor Nine, flies within 4 km of Tessaly's surface and sends them
+- **THEN** Tessaly reports the delivery received in full
+
+### Requirement: Craft strip defences and missiles finish the job
+Fighters on the Defences mission SHALL damage the target's point defence first, then its guns; a missile barrage SHALL
+be intercepted by working point defence and land when it is gone. A disguised shuttle SHALL pass the target's shields
+and damage its hull, unless the crew sees through it on the way in.
+
+#### Scenario: Fighters, then a barrage
+- **WHEN** the Ironhold's three point-defence mounts are knocked out by fighters and a barrage is fired
+- **THEN** the barrage's missiles land instead of being intercepted

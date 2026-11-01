@@ -247,5 +247,5 @@ trivial next to a battle. Campaign state is plain data: a few kilobytes to save.
 | F4 | Can the player change a scenario's point budget? | **Decided**: yes, Small, Standard, Large |
 | F5 | How many ships in a fleet? | **Decided**: up to four, the flagship and three wingmen |
 | F6 | What does selling return in the campaign? | **Decided**: a quarter, more from a rival of the builder, less from pirates who raise your standing; prizes can be repaired into the fleet |
-| F6a | Where can you sell to another faction? | At its ports, open while your standing with it is 0 or above (provisional) |
-| F7 | How does standing work? | -100 to 100 per faction; sales and missions move it; below 0 its ports close (provisional) |
+| F6a | Where can you sell to another faction? | **Decided** (survey, 2026-11-01): at that faction's ports, open while your standing with it is 0 or above |
+| F7 | How does standing work? | **Decided** (survey, 2026-11-01): per faction, -100 to 100, as recommended |

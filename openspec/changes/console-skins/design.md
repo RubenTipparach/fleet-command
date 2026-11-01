@@ -735,10 +735,10 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
-| U4 | When does the player see another faction's skin? | Both: a captured ship keeps its builder's console, and Options can pin one (provisional) |
+| U4 | When does the player see another faction's skin? | **Decided** (survey, 2026-11-01): flying a ship of that faction (a captured ship keeps its builder's console) |
 | U5 | The Kethran skin's direction? | Answered by the owner: modelled in Blender, "like starcraft" |
-| U6 | Does a skin change only images, or also sounds and type? | Images, colours, type, icons, motion and button sounds (provisional) |
-| U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | Skins only for now, with the names above; factions decided later (provisional) |
-| U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |
-| U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | A new race named the Ssarith Hunt: a skin now, a faction decided with the others under U8 (provisional) |
+| U6 | Does a skin change only images, or also sounds and type? | **Decided** (survey, 2026-11-01): pictures, colours, type and button sounds; the owner adds "Some ships have features that other ships do not" |
+| U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | **Closed** (survey, 2026-11-01): "They are factions. This question is irrelevant." |
+| U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | **Decided** (survey, 2026-11-01): yes, as written; the owner: "I'm not gonna let you make any cultural or story decisions without consulting me first" |
+| U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | **Closed** (survey, 2026-11-01): outdated |
 | W8 | What fills the space between the Brood's panels (the owner: no plain black)? | **Decided** (survey, 2026-11-01): tissue, one grown body over the column, see "The Brood's picks from the survey" |

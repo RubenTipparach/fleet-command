@@ -306,6 +306,44 @@ Raids and boarding need what the-federation's `beam_check` needs: the target ins
 **facing toward you at 0**, the transporter **charged**, and marines to send; the panel shows range and that facing's
 shield in green when met. The transporter recharges from its power (Power station), so energy spent there is the cost.
 
+## 4d. Transporter modes, crews, and four more scenes (version 25)
+
+Owner, 2026-11-01: "transport vip scene using inventory transporter instead of combat transporter. Another one to
+transport goods onto a planet. A delivery mission from a station to a planet. The vip one is similar but you transport
+him on a ship with Marines and he works to capture a station. Transporters ui have 3 modes - capture transport mode,
+target hit and turn mode, and inventory transporter mode. Shuttle scene - a disguised shuttle leaves your ship and
+suicide bombs a station. Fighters scene. Deploy fighters to take down another ships defenses, and fire a missile barage
+to take it down." With the survey answers B14 (marine types), B15 (what a capture needs) and B16 (reeling).
+
+**The transport station's three modes**, each a tab, with what the combat transporter needs (range, the facing's
+shield) under the first two:
+
+| Mode | What it does |
+|---|---|
+| **Capture** | A boarding party picked by role with count keys: combat marines, medics, engineers, hackers, pilots (each against how many are aboard). Board sends it; a party aboard can be **reinforced** or recalled. Volleys every 2 s: each combat marine fires at 50 %; a **medic** saves a casualty at 50 %; a **hacker** locks one of the guard out at 50 %; the **VIP** talks one defender down at 50 %. With the defenders down, the ship is taken only if an **engineer**, a **pilot** and a **hacker or the VIP** are aboard; otherwise the deck is held and the log names who is missing |
+| **Hit & run** | The target's subsystems as keys, Shoot or Bomb, and a squad of **combat marines** and **demolition marines**. Shooting takes 20 % off the system per combat marine standing (at most 60 %); bombing takes 80 % if a demolition marine lives to set the charge. Demolition marines cannot defend themselves: each is lost at 60 % divided by (1 + escorts), so one alone sets the charge about 4 times in 10, and with two marines escorting about 8 in 10 (measured 3 and 7 in 10) |
+| **Inventory** | The inventory transporter: a destination (friendly ships, stations and planets, nearest first; the nearest in reach is picked when the one chosen is out of reach), then **goods** (5 crates a beam, Take or Send), the **VIP** (Take or Send) and **mines** (Place mine by transporter, Drop astern). Friendly destinations need no downed shield |
+
+Every beam spends the transporter's charge; it recharges from the transporter's power. A ship's specialists are a
+`team` in its class (the Resolute: 12 marines, 4 demolition, 2 medics, 3 engineers, 2 hackers, 2 pilots).
+
+**Reeling** (B16): while holding, Reel in and Let out move the tether 200 m a press; it changes at 150 m/s at full grip
+times the holder's hull over the held ship's (at most 1), so a light ship holding a heavy one barely moves it.
+
+**Stations and planets.** A station is a ship that does not move or turn (class `SB`: a ring on spokes, lances all round,
+two point-defence mounts). A planet is a sphere below the battle plane, solid like a rock, its name and any delivery
+shown over it; transporter reach to a planet is measured to its surface.
+
+| Scene | Set-up | Played through (measured) |
+|---|---|---|
+| **Delivery** | Harbor Nine (friendly station, 20 crates) 1.4 km off; Tessaly 14 km away needs 10 | Take 5, Take 5, fly (67 s at 180 m/s), Send 5, Send 5: "Tessaly: delivery received in full" |
+| **VIP** | Envoy Saros aboard; the troop ship Corrin (14 marines, engineers, a pilot, no hacker) 0.8 km off; Varn Outpost (Kethran station, weak shields that do not regenerate, most guns out) 7 km away | Send the VIP to the Corrin; it closes on the outpost and, once a facing is down (the Resolute's guns), boards with its company and the envoy; the envoy is the specialist and talks defenders down; the outpost strikes its colours with the envoy aboard |
+| **Shuttle** | Three disguised shuttles; Varn Outpost 10 km away at full strength | Each flies at 500 m/s as civilian traffic, through the shields, and goes off against the hull for 110; inside 1.5 km the crew may see through it (25 % a second): two of three got through (hull 260 to 40). Shown in the view as "SHUTTLE · DISGUISED" |
+| **Fighters** | Six fighters, 12 missiles; the Ironhold with three point-defence mounts 6 km away | A barrage first: all 6 missiles intercepted. Fighters on the **Defences** mission strafe point defence, then the guns, from inside the shields: all three mounts out in 25 s. A second barrage: 6 of 6 land (hull 105 to 66) |
+
+Barrage: 6 missiles, one every 0.2 s, each hitting at 85 % unless point defence takes it. Craft panel: fighters
+(Attack, Defend, Defences; Launch, Recall), Barrage and Shuttle.
+
 ## 5. Costs
 
 Measured in the page (`window.MOCKUP_INFO`) on the battle shot at 1920 x 1080, SwiftShader: see the table in the
@@ -318,18 +356,18 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
 | B1 | Speed: discrete boxes or a slider? | **Decided** (owner, 2026-11-01: "speed needs a slider handle"): a handle dragged along the engine boxes |
-| B2 | Targeting with a mouse: left click focuses and right click locks, or left click locks? | **Right click locks** (the owner's "point and right click"); left click or a tap focuses and shows a Lock target key |
-| B3 | Nine stations in one panel on a column of icon tabs, or fewer stations merged? | **Nine on one rail**: helm, power, tactical, point defence, science, comms, repair, transport, fleet |
-| B4 | The helm pad: fixed steps (turn 15, 45, 90 degrees; speed one box) or hold to keep turning? | **Fixed steps**, which work as orders while paused (G2), and autopilot orders (approach, keep range, circle, evade) with Engage |
-| B5 | (Deferred: no mobile mockup yet.) Phone landscape: a rail of four panel keys and quick keys (Next, Port, Fire, Stbd) in the view, panels opening expanded; or the desktop column scaled down? | **The rail and quick keys**: the desktop column scaled to a phone is too small to read or touch |
-| B6 | Add allocation cells and eleven icons to the kit (so every skin must draw them)? | **Yes**, they are needed by every console; Concord's are drawn now |
-| B7 | Power and Systems ticks on reactors from 12 E to 60 E and more? | **Fixed slots (32)**, 1 E a tick to 32 E, then 2 E, then 5 E; slots past the rating outlined and room for overdraw shown red (the mockup has one tick per E today) |
-| B8 | Tractor: how far does the grip move after a round? | **10 % per energy point of difference** between the picks (a close round moves it a little, a lopsided one a lot); the other option is a fixed 10 % to whoever picked higher |
-| B9 | Tractor: after a ship breaks free, how soon can the same holder beam it again? | **One round (10 s)**, so switching the beam straight back on does not hand the holder a fresh 50 % |
-| B10 | Tractor: does either side see the other's pick before the round ends? | **No**, both picks are shown when the round ends (a blind bid); the other option shows the opponent's pick as it changes |
-| B11 | Tractor: should enemy ships start a hold on their own (power up and take you), not only by turning your beam? | **Yes, in the next version**, when they are inside 3 km and have energy to spare; today an enemy holds you only after breaking your beam |
-| B12 | Tractor: when a beam turns, does the new holder start at 50 % at once, or power up for 10 s first? | **At once, at 50 %**: turning the beam is the reward for out-picking the holder by double |
-| B13 | Mines placed by transporter: how far out? | **The transporter's range, 4 km**, one mine per charge, with the 3 s mine cooldown |
-| B14 | Raids: Shoot (40 % off, 1 in 5 marines lost) against Bomb (80 % off, 1 in 2 lost)? | **As built**, two marines a raid, 6 s aboard |
-| B15 | A captured ship: joins the fleet at once, or is a prize to hold and tow home? | **Joins the fleet on Escort** in the battle, its survivors as prize crew; towing it home is the campaign's (the-federation docs/01 8, aftermath) |
-| B16 | The tow: a tether that holds the distance (dragging the held ship, rigid at full grip)? | **As built**; reeling it in closer is the next step if wanted |
+| B2 | Targeting with a mouse: left click focuses and right click locks, or left click locks? | **Decided** (survey, 2026-11-01): right click locks, and the first right click also locks the camera on the target; dragging the camera frees it; it locks again from the Target box (top right). *Queued*: the camera lock |
+| B3 | Nine stations in one panel on a column of icon tabs, or fewer stations merged? | **Decided** (survey, 2026-11-01): nine on one rail |
+| B4 | The helm pad: fixed steps (turn 15, 45, 90 degrees; speed one box) or hold to keep turning? | **Decided** (survey, 2026-11-01), the owner's note: the reference game's helm had free heading, intercept, follow and match speed, orbit (clockwise or anticlockwise), high-energy turns, hard left, hard right and 180; lay it out from the owner's screenshots and the manual's nav icons. *Queued*: the helm redesign (citing the manual's pages) |
+| B5 | (Deferred: no mobile mockup yet.) Phone landscape: a rail of four panel keys and quick keys (Next, Port, Fire, Stbd) in the view, panels opening expanded; or the desktop column scaled down? | **Decided** (survey, 2026-11-01): the rail and quick keys (mobile still deferred) |
+| B6 | Add allocation cells and eleven icons to the kit (so every skin must draw them)? | **Decided** (survey, 2026-11-01): yes, but not started until the Concord master UI is final |
+| B7 | Power and Systems ticks on reactors from 12 E to 60 E and more? | **Decided** (survey, 2026-11-01): a different number of ticks per ship, the width of a tick scaled so the row fits. *Queued* |
+| B8 | Tractor: how far does the grip move after a round? | **Decided** (survey, 2026-11-01): 10 % per energy point of difference, as built |
+| B9 | Tractor: after a ship breaks free, how soon can the same holder beam it again? | **Decided** (survey, 2026-11-01): one round, as built |
+| B10 | Tractor: does either side see the other's pick before the round ends? | **Decided** (survey, 2026-11-01): hidden until the round ends, as built |
+| B11 | Tractor: should enemy ships start a hold on their own (power up and take you), not only by turning your beam? | **Decided** (survey, 2026-11-01): yes, enemies start holds on their own. *Queued* |
+| B12 | Tractor: when a beam turns, does the new holder start at 50 % at once, or power up for 10 s first? | **Decided** (survey, 2026-11-01): at once at 50 % ("This is if the tug of war is 2:1 in the breaking ships favor, this can happen!"), as built |
+| B13 | Mines placed by transporter: how far out? | **Decided** (survey, 2026-11-01): 4 km, as built ("We'll play around with this range") |
+| B14 | Raids: Shoot (40 % off, 1 in 5 marines lost) against Bomb (80 % off, 1 in 2 lost)? | **Decided** (survey, 2026-11-01): "It depends the type of marines you send. Demolition marines cannot defend themselves..so a boarding party must be well rounded to actually successfully bomb the ship." Built in version 25 (section 4d) |
+| B15 | A captured ship: joins the fleet at once, or is a prize to hold and tow home? | **Decided** (survey, 2026-11-01): joins the fleet; a capture needs "combat marines, medics (optional), engineers, specialist (hackers), and a pilot (or nav officer)". Built in version 25 (section 4d) |
+| B16 | The tow: a tether that holds the distance (dragging the held ship, rigid at full grip)? | **Decided** (survey, 2026-11-01): yes, "distance is adjustable at any time by the holder ... based on difference in ship mass". Built in version 25 (Reel in, Let out) |

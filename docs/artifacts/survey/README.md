@@ -18,3 +18,4 @@
 - 2026-11-01, cloud session: B11 reworded (enemies starting a hold on their own), B12 added (a turned beam starts at once); version id `1793571049-ea5e`.
 - 2026-11-01, cloud session (owner: "clean up the survey to stuff that is remaining, move answered stuff to answered set"): answers read from the database (W1-W8 answered; V1 left from the retired V section); section W moved to "Already decided" (W8: A, tissue, recorded in console-skins design.md), its 51 inlined pictures dropped (1.9 MB to 38 KB; the JPGs stay in docs/design/survey/); 24 open questions remain; version id `1793571139-f0a4`.
 - 2026-11-01, cloud session: B13-B16 added (test scenes: mine reach, raids, captured ships, the tow); version id `1793573871-5c86`.
+- 2026-11-01, cloud session: every answer folded in (B2-B16, F6a, F7, R1-R4, T4a, U4-U10 into "Already decided"); new questions B17-B19; version id `1793577333-c702`.

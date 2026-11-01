@@ -60,7 +60,7 @@ brown out.
 
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
-| R1 | Is 20 s from coolant loss to meltdown right? | **20 s**, long enough to act, short enough to fear |
-| R2 | An emergency shutdown (scram): drop the output to zero to stop a meltdown? | **Not yet**; add it if meltdowns feel unfair in play |
-| R3 | Can enemy and wingman reactors melt down too? | **Yes**: one rule for every ship; AI crews tend theirs |
-| R4 | Coil alignment by minus and plus keys, or by dragging the dot? | **Keys**, which work while paused and under fire; dragging could be added |
+| R1 | Is 20 s from coolant loss to meltdown right? | **Decided** (survey, 2026-11-01): "Depends on how much output the reactor generates and heat build up. This should be temperature based and the amount of heat tolerance the materials into the reactor can withstand." *Queued*: meltdown from a material temperature limit, not a fixed time |
+| R2 | An emergency shutdown (scram): drop the output to zero to stop a meltdown? | **Decided** (survey, 2026-11-01): yes, a scram now. *Queued* |
+| R3 | Can enemy and wingman reactors melt down too? | **Decided** (survey, 2026-11-01): one rule for every ship, as built |
+| R4 | Coil alignment by minus and plus keys, or by dragging the dot? | **Decided** (survey, 2026-11-01): drag the dot. *Queued* |

@@ -435,7 +435,10 @@ const MINE = { cooldown_s: 3, arm_s: 3, trigger_u: 12, dmg: 30 };
 // held ship, and if the holder's tractor is down (off, disabled or destroyed) or its value is under reverse_ratio of
 // the breaker's, the breaker takes hold of the holder ("The ship breaking the beam then becomes the holder"). The
 // holder can Break at any time. A ship that broke free cannot be taken by the same holder again for relock_s.
-const TRACTOR = { reach_km: 3, powerup_s: 10, grip_start: 0.5, round_s: 10, step_per_e: 0.1, reverse_ratio: 0.5, hold_damp: 0.8, relock_s: 10 };
+// The holder can reel the held ship in or let it out at any time (owner, survey B16: "Changing distance is based on
+// difference in ship mass. A small ship might hold a large ship but probably can't do much to change distance"):
+// reel_u_s at full grip, times the holder's hull over the held ship's, at most 1.
+const TRACTOR = { reach_km: 3, powerup_s: 10, grip_start: 0.5, round_s: 10, step_per_e: 0.1, reverse_ratio: 0.5, hold_damp: 0.8, relock_s: 10, reel_u_s: 1.5, reel_step_u: 2, min_u: 3 };
 const WEAPONS = {
   lance: { name: 'Lance', kind: 'beam', range_km: 12, charge_s: 3.5, cost_e: 2, dmg: 7, color: 0x6fc4ff },
   torpedo: { name: 'Pulse torpedo', kind: 'torpedo', range_km: 18, charge_s: 8, cost_e: 5, dmg: 14, speed_m_s: 2600, color: 0x9fd0ff,
@@ -457,7 +460,7 @@ const FACINGS = ['F', 'FR', 'AR', 'A', 'AL', 'FL'];
 // Mount x is to starboard, y forward, in half-lengths of the hull. arc: [centre bearing, width], degrees.
 const CLASSES = {
   ca: { name: 'Heavy cruiser', code: 'CA', shape: 'saucer', len_m: 320, hull: 140, speed_max_m_s: 300, accel_m_s2: 45, turn_deg_s: 26, reactor_e: 22,
-    capacitor_e: 14, battery_e: 10, shields: [42, 32, 28, 26, 28, 32], marines: 12, mines: 4, fighters: 4,
+    capacitor_e: 14, battery_e: 10, shields: [42, 32, 28, 26, 28, 32], marines: 12, mines: 4, fighters: 4, team: { demo: 4, medics: 2, engineers: 3, hackers: 2, pilots: 2 },
     power: { weapons: 6, shields: 5, engines: 6, sensors: 1, tractor: 0, transport: 0, repair: 1 },
     mounts: [['lance', -0.42, 0.62, -50, 200], ['lance', 0.42, 0.62, 50, 200], ['lance', -0.62, 0.05, -90, 180], ['lance', 0.62, 0.05, 90, 180],
       ['torpedo', -0.14, 0.86, 0, 90], ['torpedo', 0.14, 0.86, 0, 90], ['lance', 0, -0.72, 180, 160], ['pd', -0.32, -0.3, 0, 360], ['pd', 0.32, -0.3, 0, 360]] },
@@ -481,7 +484,23 @@ const CLASSES = {
     capacitor_e: 10, battery_e: 6, shields: [28, 22, 18, 16, 18, 22], marines: 10, mines: 2, fighters: 0,
     power: { weapons: 5, shields: 2, engines: 5, sensors: 0, tractor: 0, transport: 0, repair: 0 },
     mounts: [['missile', -0.3, 0.5, 0, 180], ['missile', 0.3, 0.5, 0, 180], ['lance', 0, 0.8, 0, 120]] },
+  // A troop ship: a fast hull for a large marine company (the VIP scene).
+  tr: { name: 'Troop ship', code: 'TR', shape: 'saucer', len_m: 180, hull: 55, speed_max_m_s: 320, accel_m_s2: 60, turn_deg_s: 40, reactor_e: 12,
+    capacitor_e: 6, battery_e: 4, shields: [22, 18, 16, 14, 16, 18], marines: 14, mines: 0, fighters: 0, team: { engineers: 2, pilots: 1, medics: 2 },
+    power: { weapons: 2, shields: 3, engines: 6, sensors: 0, tractor: 0, transport: 1, repair: 0 },
+    mounts: [['lance', 0, 0.7, 0, 160], ['pd', 0, -0.3, 0, 360]] },
+  // A station: it does not move or turn; lances all round and point defence.
+  sb: { name: 'Starbase', code: 'SB', shape: 'station', len_m: 420, hull: 260, speed_max_m_s: 0, accel_m_s2: 0, turn_deg_s: 0, reactor_e: 30,
+    capacitor_e: 16, battery_e: 10, shields: [40, 40, 40, 40, 40, 40], marines: 10, mines: 0, fighters: 0, team: { engineers: 3, pilots: 2, hackers: 1 },
+    power: { weapons: 8, shields: 6, engines: 0, sensors: 2, tractor: 0, transport: 1, repair: 1 },
+    mounts: [['lance', 0, 0.8, 0, 120], ['lance', 0.7, 0.4, 60, 120], ['lance', 0.7, -0.4, 120, 120], ['lance', 0, -0.8, 180, 120], ['lance', -0.7, -0.4, 240, 120], ['lance', -0.7, 0.4, 300, 120],
+      ['pd', 0.3, 0, 0, 360], ['pd', -0.3, 0, 0, 360]] },
 };
+// The specialists aboard besides combat marines (owner, survey B14 and B15: demolition marines "cannot defend
+// themselves"; a capture needs "combat marines, medics (optional), engineers, specialist (hackers), and a pilot (or nav
+// officer)"). A class's `team` overrides these counts.
+const TEAM_DEFAULT = { demo: 2, medics: 1, engineers: 1, hackers: 1, pilots: 1 };
+const ROLES = [['marines', 'Marines'], ['demo', 'Demolition'], ['medics', 'Medics'], ['engineers', 'Engineers'], ['hackers', 'Hackers'], ['pilots', 'Pilots']];
 const FACTION = {
   concord: { name: 'Concord', trim: 0x4f8fe8, hull: 0xb9c6d6, dot: CC.accord },
   kethran: { name: 'Kethran Hegemony', trim: 0xd9483b, hull: 0x8c6a64, dot: CC.alert },
@@ -506,12 +525,27 @@ const TRANSPORT = { range_km: 4 };
 // per ship per cooldown_s. A ship towed by a tractor beam hits at the speed it is dragged, which is what makes
 // swinging a prisoner into a rock a piloting problem.
 const ROCK = { dmg: 14, speed_ref_m_s: 150, speed_floor: 0.35, speed_frac: 0.3, cooldown_s: 1.5 };
-// Boarding (after the-federation's boarding.gd and docs/01 section 8): marines beam through a downed shield facing,
-// inside transporter range. A raid sends raid_team to one subsystem for raid_s, then the survivors come home: a bomb
-// wrecks the system and costs more of the team than shooting it up. Capture sends every marine; both sides trade a
-// volley every volley_s (each marine one shot at hit_chance, simultaneous), and when the defenders (marines and
-// guard_crew armed crew) are all down the ship strikes its colours and joins the fleet.
-const BOARD = { raid_team: 2, raid_s: 6, bomb_dmg: 0.8, shoot_dmg: 0.4, bomb_loss: 0.5, shoot_loss: 0.2, volley_s: 2, hit_chance: 0.5, guard_crew: 2 };
+// Boarding (after the-federation's boarding.gd and docs/01 section 8, and the owner's survey answers B14 and B15):
+// marines beam through a downed shield facing, inside transporter range. Hit and run: a squad of combat marines and
+// demolition marines goes to one subsystem for raid_s. Shooting it up takes shoot_per_marine off it for each combat
+// marine still standing; bombing it takes bomb_dmg if a demolition marine lives to set the charge. Demolition marines
+// cannot defend themselves: each is lost with demo_loss divided by (1 + the combat marines escorting); a combat marine
+// is lost with marine_loss. Capture: the party trades a volley with the defenders (marines and guard_crew armed crew)
+// every volley_s, each combat marine one shot at hit_chance, both sides at once; a medic saves a casualty at medic_save,
+// a hacker locks out one of the guard at hacker_lock, a VIP talks one defender into giving up at vip_persuade. With
+// the defenders down the ship is taken only if an engineer, a pilot and a hacker (or the VIP) are aboard.
+const BOARD = { raid_s: 6, shoot_per_marine: 0.2, bomb_dmg: 0.8, demo_loss: 0.6, marine_loss: 0.2, volley_s: 2, hit_chance: 0.5, guard_crew: 2,
+  medic_save: 0.5, hacker_lock: 0.5, vip_persuade: 0.5 };
+// The inventory transporter: goods, a VIP or a mine, to or from a friendly ship, a station or a planet in reach; one
+// beam moves per_beam crates and spends the transporter's charge.
+const INV = { per_beam: 5 };
+// A disguised shuttle (owner: "a disguised shuttle leaves your ship and suicide bombs a station"): it flies at
+// speed_u_s posing as civilian traffic, so shields and guns let it through; inside suspect_km the target's crew may see
+// through it (catch_p_s a second); arriving, it detonates against the hull for dmg.
+const SHUTTLE = { speed_u_s: 5, dmg: 110, suspect_km: 1.5, catch_p_s: 0.25 };
+// A missile barrage (owner: "Deploy fighters to take down another ships defenses, and fire a missile barage"): one
+// missile every interval_s from the racks, each hitting at hit_p unless point defence takes it.
+const BARRAGE = { salvo: 6, interval_s: 0.2, hit_p: 0.85 };
 // The test scenes (owner, 2026-11-01: "I also want different test scenes"): picked from the menu, each a seeded world.
 // `ships` override SCENARIO's list, `rocks` are asteroids { x, z, r } in units, `setup` adjusts the world once made.
 const SCENES = {
@@ -545,6 +579,46 @@ const SCENES = {
       r.shUp = false; r.shields = r.shields.map(() => 0); r.power.shields = 0; r.sys.engines = 0; r.marines = 6; r.ai.stance = 'hold'; r.hull = 30;
       r.mounts.forEach((m, i) => { if (i) { m.hp = 0; m.charge = 0; } }); },
     say: ['Tactical', 'Rattlejaw is crippled, shields down. Raid its systems, or board and take it.'] },
+  // Owner, 2026-11-01: "A delivery mission from a station to a planet".
+  delivery: { name: 'Delivery', target: null, endless: true,
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'harbor', name: 'Harbor Nine', captain: 'Stationmaster Pell', cls: 'sb', faction: 'concord', side: 0, x: 8, z: -12, h: 0, v: 0 },
+    ],
+    planets: [{ id: 'tessaly', name: 'Tessaly', x: 50, z: -150, r: 16, col: 0x4f7fa8, need: 10 }],
+    setup: (W) => { const s = W.player, h = ship('harbor'); s.cargo = 0; s.power.transport = 3; s.transporter = 1; h.cargo = 20; h.cargoCap = 40; invDest = 'harbor'; },
+    say: ['Comms', 'Harbor Nine: ten crates of medical stores for Tessaly. Beam them aboard and take them down.'] },
+  // Owner: "The vip one is similar but you transport him on a ship with Marines and he works to capture a station".
+  vip: { name: 'VIP', target: 'varn', endless: true,
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'corrin', name: 'Corrin', captain: 'Major Vale', cls: 'tr', faction: 'concord', side: 0, x: -7, z: 4, h: 0, v: 0 },
+      { id: 'varn', name: 'Varn Outpost', captain: 'Castellan Dorr', cls: 'sb', faction: 'kethran', side: 1, x: 10, z: -70, h: 0, v: 0 },
+    ],
+    setup: (W) => { const s = W.player, c = ship('corrin'), v = ship('varn'); s.vip = 'Envoy Saros'; s.vipName = 'Envoy Saros'; s.power.transport = 3; s.transporter = 1; invDest = 'corrin';
+      c.ai.capture = 'varn'; c.vipName = 'Envoy Saros';
+      // the outpost is worn down: weak shields that do not regenerate, most of its guns out
+      v.shields = v.shields.map(() => 8); v.power.shields = 0; v.marines = 8; v.mounts.forEach((m, i) => { if (i > 1 && m.w !== 'pd') { m.hp = 0; m.charge = 0; } }); },
+    say: ['Comms', 'Envoy Saros is aboard. Beam him to the Corrin; it takes him and its marines to Varn Outpost. Knock a shield facing down for them.'] },
+  // Owner: "Shuttle scene - a disguised shuttle leaves your ship and suicide bombs a station."
+  shuttle: { name: 'Shuttle', target: 'varn', endless: true,
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'varn', name: 'Varn Outpost', captain: 'Castellan Dorr', cls: 'sb', faction: 'kethran', side: 1, x: 0, z: -100, h: 0, v: 0 },
+    ],
+    setup: (W) => { const s = W.player; s.shuttles = 3; },
+    say: ['Flight deck', 'Three shuttles fitted out as freighters, charges aboard. Launch them at Varn Outpost from the Craft panel.'] },
+  // Owner: "Fighters scene. Deploy fighters to take down another ships defenses, and fire a missile barage to take it
+  // down."
+  fighters: { name: 'Fighters', target: 'ironhold', endless: true,
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'ironhold', name: 'Ironhold', captain: 'Warlord Brask', cls: 'kdd', faction: 'kethran', side: 1, x: 0, z: -60, h: 180, v: 0 },
+    ],
+    setup: (W) => { const s = W.player, t = ship('ironhold'); s.fighters = 6; s.missiles = 12; s.mission = 'defences'; t.ai.stance = 'hold';
+      // three point-defence mounts that eat missiles until the fighters take them out
+      for (const [x, y] of [[-0.3, 0.1], [0.3, 0.1], [0, -0.4]]) t.mounts.push({ i: t.mounts.length, w: 'pd', x, y, arc: [0, 360], state: 'normal', charge: 1, sel: false, hp: 1 }); },
+    say: ['Flight deck', 'Ironhold has three point-defence mounts. Launch fighters on Defences, then fire a missile barrage.'] },
 };
 const AI_CHOICES = {
   stance: [['attack', 'Attack'], ['escort', 'Escort'], ['hold', 'Hold'], ['hunt', 'Hunt']],
@@ -616,19 +690,23 @@ function makeShip(d) {
     mounts: c.mounts.map(([w, x, y, ac, aw], i) => ({ i, w, x, y, arc: [ac, aw], state: 'normal', charge: 0.6 + (i % 3) * 0.15, sel: w !== 'pd', hp: 1 })),
     sys: { weapons: 1, shields: 1, engines: 1, sensors: 1, tractor: 1, transport: 1 }, target: null, aim: 'hull', order: 'approach', engaged: false,
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
-    scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
+    scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false }, brown: 1, overdraw: false,
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
 let sceneId = 'battle';
 function newWorld(id = sceneId) {
   const sc = SCENES[id]; sceneId = id;
-  W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', rocks: (sc.rocks || []).map((r) => ({ ...r })),
+  const planets = (sc.planets || []).map((pl) => ({ got: 0, need: 0, ...pl }));
+  W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', planets,
+    // a planet is solid too: it joins the rocks for collisions
+    rocks: (sc.rocks || []).map((r) => ({ ...r })).concat(planets.map((pl) => ({ x: pl.x, z: pl.z, r: pl.r, name: pl.name, planet: true }))),
     rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4) } };
   W.player = W.ships[0];
   W.player.target = sc.target;
   for (const s of W.ships) if (s.side === 1) s.ecm = 1;
   if (sc.setup) sc.setup(W);
+  W.hadFoes = W.ships.some((o) => o.side === 1);
   say(sc.say[0], sc.say[1]);
 }
 const ship = (id) => W.ships.find((s) => s.id === id) || null;
@@ -650,7 +728,7 @@ function step() {
   pdStep(); shotsStep(); minesStep(); craftStep();
   const foes = W.ships.filter((s) => s.side === 1 && s.alive).length;
   // test scenes run on after the last enemy is gone (a capture should be seen joining the fleet); restart from the menu
-  if (!foes && SCENES[sceneId].endless) { if (!W.endSaid) { W.endSaid = true; say('Tactical', W.overWhy || 'No hostile ships left. Restart the scene from the menu.'); } }
+  if (!foes && SCENES[sceneId].endless) { if (!W.endSaid && W.hadFoes) { W.endSaid = true; say('Tactical', W.overWhy || 'No hostile ships left. Restart the scene from the menu.'); } }
   else if (!foes) { W.over = 'won'; if (!W.overWhy) { W.overWhy = 'All hostile ships destroyed'; say('Tactical', 'All hostile ships destroyed.'); } }
   else if (!W.player.alive) W.over = 'lost';
 }
@@ -688,7 +766,7 @@ function systemsStep(s) {
   const sensors = Math.max(0, s.power.sensors - s.ecm - s.eccm);
   if (s.scan.id) { if (s.scan.id !== s.target) s.scan = { id: null, p: 0 }; else s.scan.p = Math.min(1, s.scan.p + DT * (0.08 + 0.05 * sensors) * (s.sensorMode === 'passive' ? 0.5 : 1) * s.sys.sensors); }
   s.mineCool = Math.max(0, s.mineCool - DT); s.bumpT = Math.max(0, s.bumpT - DT);
-  tractorStep(s); boardingStep(s);
+  tractorStep(s); boardingStep(s); barrageStep(s);
 }
 // The beam's value for a round: the energy a ship puts into its tractor, scaled by the tractor's health. The holder's
 // value holds; the held ship's resists. One rule for both sides and for the panel's readout.
@@ -698,7 +776,7 @@ function tractorDown(s) { return s.power.tractor <= 0 || s.sys.tractor < 0.35; }
 // A beam taking hold: at the start grip, a fresh round.
 function takeHold(s, h, why) {
   s.tractor = 'hold'; s.powerT = 0;
-  s.beam = { on: h.id, grip: TRACTOR.grip_start, roundT: TRACTOR.round_s, round: 1, last: null, len: distU(s, h) };
+  s.beam = { on: h.id, grip: TRACTOR.grip_start, roundT: TRACTOR.round_s, round: 1, last: null, len: distU(s, h), want: distU(s, h) };
   say('Tractor', `${s.name} ${why} ${h.name}, grip ${pct(TRACTOR.grip_start)}.`);
 }
 // The tractor beam, every step. Modes: 'off', 'power' (powering up after Hold), 'hold' (powered; holding, or waiting
@@ -743,6 +821,9 @@ function tractorStep(s) {
 // swing it into rocks; at full grip the tether is rigid. Its own engines are damped by the grip.
 function towStep(s) {
   const b = s.beam, h = ship(b.on); if (!h || !h.alive) return;
+  // reeling: the tether's length moves toward the length asked for, slower when the held ship outweighs the holder
+  const rate = TRACTOR.reel_u_s * b.grip * Math.min(1, CLASSES[s.cls].hull / CLASSES[h.cls].hull) * DT;
+  b.len += clamp(b.want - b.len, -rate, rate);
   const d = distU(s, h); h.v *= 1 - TRACTOR.hold_damp * b.grip * DT;
   if (d > b.len) { const k = (d - b.len) * b.grip, ux = (h.x - s.x) / d, uz = (h.z - s.z) / d; h.x -= ux * k; h.z -= uz * k; }
 }
@@ -761,7 +842,7 @@ function rocksStep() {
       if (s.bumpT > 0) continue;
       s.bumpT = ROCK.cooldown_s; s.v *= ROCK.speed_frac;
       const dmg = Math.round(ROCK.dmg * Math.max(ROCK.speed_floor, spd / ROCK.speed_ref_m_s));
-      say('Tactical', `${s.name} hits an asteroid at ${Math.round(spd)} m/s: ${dmg} damage.`);
+      say('Tactical', `${s.name} hits ${r.name || 'an asteroid'} at ${Math.round(spd)} m/s: ${dmg} damage.`);
       damage(s, { x: r.x, z: r.z, side: -1 }, dmg, 'hull');
     }
   }
@@ -811,7 +892,23 @@ function steer(s, order, t, rangeKm) {
   else if (order === 'hold') s.vOrder = 0;
 }
 // Every ship but the player's thinks twice a second: pick a target by its rule, steer by its stance, fire if free.
+// A ship ordered to take a station with the VIP (the VIP scene): it waits for the VIP, then closes and boards with its
+// whole company and the VIP as soon as its transporter can reach a downed facing.
+function aiCapture(s) {
+  const st = ship(s.ai.capture);
+  if (!st || !st.alive || st.side === s.side) return false;
+  if (!s.vip && !s.party) { s.vOrder = 0; return true; }
+  s.target = st.id; steer(s, 'approach', st, 2);
+  if (!s.party && canBoard(s, st)) {
+    const tm = { marines: s.marines, demo: 0, medics: s.team.medics, engineers: s.team.engineers, hackers: s.team.hackers, pilots: s.team.pilots, vip: 1 };
+    s.marines = 0; for (const r of ['medics', 'engineers', 'hackers', 'pilots']) s.team[r] = 0; s.vip = null; s.transporter = 0;
+    s.party = { on: st.id, team: tm, volleyT: BOARD.volley_s, last: null, loud: true };
+    say('Comms', `${s.name}: boarding ${st.name} with ${tm.marines} marines and the envoy.`);
+  }
+  return true;
+}
 function think(s) {
+  if (s.ai.capture && aiCapture(s)) return;
   const foes = enemiesOf(s); if (!foes.length) { s.vOrder = 60; return; }
   const near = foes.reduce((a, b) => distU(s, a) <= distU(s, b) ? a : b);
   const ai = s.ai, lead = W.player.alive ? W.player : null;
@@ -911,6 +1008,7 @@ function minesStep() {
 }
 function craftStep() {
   for (const c of W.craft) {
+    if (c.kind === 'shuttle') { shuttleStep(c); continue; }
     const home = ship(c.home); let t = c.recall || !home || !home.alive ? home : c.mission === 'defend' ? home : tgt(home);
     if (!t || !t.alive) t = home;
     if (!t) { c.gone = true; continue; }
@@ -918,7 +1016,10 @@ function craftStep() {
     if (d > sp) { c.x += (gx - c.x) / d * sp; c.z += (gz - c.z) / d * sp; } else { c.x = gx; c.z = gz; }
     if (c.recall && d < 1) { c.gone = true; home.fighters++; continue; }
     c.cool -= DT;
-    if (!c.recall && t !== home && t.side !== home.side && c.cool <= 0 && d < 3) { c.cool = 2; if (W.rand.hit() < 0.5) damage(t, c, 1.5, 'hull'); }
+    if (!c.recall && t !== home && t.side !== home.side && c.cool <= 0 && d < 3) { c.cool = 2; if (W.rand.hit() < 0.5) {
+      // the Defences mission strafes point defence first, then the guns, flying inside the shields
+      if (c.mission === 'defences') { const m = t.mounts.find((q) => q.w === 'pd' && q.hp > 0) || t.mounts.find((q) => q.hp > 0); if (m) { m.hp = Math.max(0, m.hp - 0.25); if (m.hp <= 0) { m.charge = 0; if (home === W.player) say('Flight deck', `${t.name}'s ${WEAPONS[m.w].name.toLowerCase()} ${m.i + 1} knocked out.`); } } }
+      damage(t, c, 1.5, 'hull'); } }
     if (!c.recall && c.mission === 'defend' && c.cool <= 0) { const th = W.shots.find((sh) => sh.to === home.id && sh.kind !== 'beam' && !sh.spent && Math.hypot(sh.x - c.x, sh.z - c.z) < 6); if (th) { c.cool = 2; if (W.rand.hit() < 0.3) { th.spent = true; th.life = 0; } } }
   }
   W.craft = W.craft.filter((c) => !c.gone);
@@ -975,13 +1076,40 @@ const A = {
   hail: () => { const t = tgt(W.player); if (!t) return; say(t.name, t.faction === 'vos' ? 'Your cargo or your hull. Choose quickly, Concord.' : 'The Hegemony does not parley with the weak.'); },
   fleetOrder: (stance) => { for (const s of W.ships) if (s.side === 0 && s !== W.player && s.alive) s.ai.stance = stance; say('Comms', `Fleet: ${AI_CHOICES.stance.find((c) => c[0] === stance)[1]}.`); },
   priority: (k) => { W.player.priority = k; },
-  // A hit-and-run raid on one of the target's subsystems (owner: "boarding parties hit and run on various subsystems
-  // (bombing or shooting them)").
-  raid: () => { const s = W.player, t = tgt(s); if (!canBoard(s, t)) return; s.transporter = 0; s.marines -= BOARD.raid_team; s.raid = { on: t.id, sys: raidSys, kind: raidKind, n: BOARD.raid_team, t: BOARD.raid_s };
-    say('Transport', `Raid team away to ${t.name}'s ${SUBSYS.find((q) => q[0] === raidSys)[1].toLowerCase()}, to ${raidKind === 'bomb' ? 'bomb' : 'shoot'} it.`); },
-  // Board to capture, with every marine aboard (owner: "board and capture a ship").
-  board: () => { const s = W.player, t = tgt(s); if (!canBoard(s, t)) return; s.transporter = 0; s.party = { on: t.id, n: s.marines, volleyT: BOARD.volley_s, last: null }; say('Transport', `${s.marines} marines boarding ${t.name}.`); s.marines = 0; },
-  recallParty: () => { const s = W.player; if (!s.party) return; say('Transport', `${s.party.n} marines recalled.`); s.marines += s.party.n; s.party = null; },
+  // Hit and run (owner: "boarding parties hit and run on various subsystems (bombing or shooting them)"): the squad
+  // picked (combat marines as escorts, demolition marines for a bomb) goes to the picked subsystem.
+  raid: () => { const s = W.player, t = tgt(s), pk = raidPick; if (!canBoard(s, t) || s.party) return;
+    const n = { marines: Math.min(pk.marines, s.marines), demo: Math.min(pk.demo, s.team.demo) }; if (raidKind === 'bomb' ? !n.demo : !n.marines) return;
+    s.transporter = 0; s.marines -= n.marines; s.team.demo -= n.demo; s.raid = { on: t.id, sys: raidSys, kind: raidKind, team: n, t: BOARD.raid_s };
+    say('Transport', `Raid team away to ${t.name}'s ${SUBSYS.find((q) => q[0] === raidSys)[1].toLowerCase()}: ${n.marines} marines, ${n.demo} demolition, to ${raidKind === 'bomb' ? 'bomb' : 'shoot'} it.`); },
+  // Capture (owner, survey B15): the party picked by role beams aboard; a party already aboard is reinforced.
+  board: () => { const s = W.player, t = tgt(s); if (!canBoard(s, t)) return;
+    const n = {}; for (const [r] of ROLES) { n[r] = Math.min(capPick[r] || 0, have(s, r)); addRole(s, r, -n[r]); } n.vip = 0;
+    if (!teamSize(n)) { for (const [r] of ROLES) addRole(s, r, n[r]); return; }
+    s.transporter = 0;
+    if (s.party) { for (const [r] of ROLES) s.party.team[r] += n[r]; s.party.held = false; say('Transport', `${teamSize(n)} more aboard ${t.name}.`); }
+    else { s.party = { on: t.id, team: n, volleyT: BOARD.volley_s, last: null }; say('Transport', `Boarding ${t.name}: ${ROLES.filter(([r]) => n[r]).map(([r, l]) => `${n[r]} ${l.toLowerCase()}`).join(', ')}.`); } },
+  recallParty: () => { const s = W.player; if (!s.party) return; const tm = s.party.team; for (const [r] of ROLES) addRole(s, r, tm[r]); if (tm.vip) s.vip = s.vip || 'Envoy Saros'; say('Transport', `${teamSize(tm)} recalled.`); s.party = null; },
+  // The inventory transporter (owner: "transport vip scene using inventory transporter instead of combat
+  // transporter", "transport goods onto a planet"): goods or the VIP, to or from the destination picked.
+  transfer: (what, dir) => { const s = W.player, d = invPick(s); if (!invReach(s, d)) return;
+    const o = d.ship, pl = d.planet;
+    if (what === 'goods') {
+      if (dir > 0) { const n = Math.min(INV.per_beam, s.cargo, pl ? pl.need - pl.got : (o.cargoCap - o.cargo)); if (n <= 0) return; s.cargo -= n; if (pl) pl.got += n; else o.cargo += n;
+        say('Transport', `${n} crates beamed to ${d.name}${pl ? ` (${pl.got} of ${pl.need})` : ''}.`); if (pl && pl.got >= pl.need) say('Comms', `${pl.name}: delivery received in full. Thank you, Resolute.`); }
+      else { if (!o) return; const n = Math.min(INV.per_beam, o.cargo, s.cargoCap - s.cargo); if (n <= 0) return; o.cargo -= n; s.cargo += n; say('Transport', `${n} crates beamed aboard from ${d.name}.`); }
+    } else if (what === 'vip') {
+      if (dir > 0) { if (!s.vip || !o) return; o.vip = s.vip; s.vip = null; say('Transport', `${o.vip} beamed to ${o.name}.`); }
+      else { if (!o || !o.vip) return; s.vip = o.vip; o.vip = null; say('Transport', `${s.vip} beamed aboard.`); }
+    } else return;
+    s.transporter = 0; },
+  // A disguised shuttle launched at the target (owner: "a disguised shuttle leaves your ship and suicide bombs a
+  // station").
+  shuttle: () => { const s = W.player, t = tgt(s); if (!t || s.shuttles <= 0) return; s.shuttles--; W.craft.push({ kind: 'shuttle', home: s.id, to: t.id, x: s.x, z: s.z, side: s.side });
+    say('Flight deck', `Disguised shuttle away toward ${t.name}, squawking a freighter's call sign.`); },
+  barrage: () => { const s = W.player; if (!tgt(s) || s.missiles <= 0 || s.barrage > 0) return; s.barrage = Math.min(BARRAGE.salvo, s.missiles); s.barrageT = 0; say('Tactical', `Missile barrage: ${s.barrage} away.`); },
+  // Reel the held ship in or let it out (owner, survey B16).
+  reel: (dir) => { const b = W.player.beam; if (!b) return; b.want = clamp(b.want + dir * TRACTOR.reel_step_u, TRACTOR.min_u, TRACTOR.reach_km * 10); },
   // A mine placed by transporter (owner: "the player can transport mines to different locations within a certain
   // radius of the ship"): Place mine arms the click, the next left click in the view beams a mine there.
   mineMode: () => { placingMine = !placingMine; },
@@ -1006,10 +1134,29 @@ const A = {
   menu: () => { menuOpen = !menuOpen; renderSheet(); },
   reset: () => { newWorld(); paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
 };
-// Whether s can beam marines onto t now: inside transporter range, the facing toward s down, the pads charged, marines
-// to send (the-federation's beam_check). One rule for raids and boarding.
-function canBoard(s, t, n = BOARD.raid_team) { return !!t && t.alive && t.side !== s.side && !s.raid && !s.party && s.marines >= n && s.transporter >= 1 && distKm(s, t) <= TRANSPORT.range_km && t.shields[facingFrom(t, s.x, s.z)] <= 0.5; }
+// How many of a role are aboard s (combat marines are s.marines; the rest are s.team).
+const have = (s, role) => role === 'marines' ? s.marines : role === 'vip' ? (s.vip ? 1 : 0) : s.team[role] || 0;
+function addRole(s, role, n) { if (role === 'marines') s.marines += n; else if (role === 'vip') { if (n > 0) s.vip = s.vip || 'Envoy Saros'; else s.vip = null; } else s.team[role] = (s.team[role] || 0) + n; }
+const teamSize = (team) => Object.entries(team).reduce((a, [k, v]) => a + (k === 'vip' ? 0 : v), 0);
+// Whether s's transporter can reach t now (the-federation's beam_check): inside range, the pads charged, and for an
+// enemy its facing toward s down. One rule for capture, hit and run and the inventory transporter (6.1).
+function beamReach(s, t) { return !!t && t.alive && s.transporter >= 1 && distKm(s, t) <= TRANSPORT.range_km && (t.side === s.side || t.shields[facingFrom(t, s.x, s.z)] <= 0.5); }
+function canBoard(s, t) { return beamReach(s, t) && t.side !== s.side && !s.raid && (!s.party || s.party.on === t.id); }
 const defenders = (t) => t.marines + t.guard;
+const canTake = (team) => team.engineers > 0 && team.pilots > 0 && (team.hackers > 0 || team.vip > 0);
+// One hit on a boarding party: a medic may save it; otherwise a random member falls, the VIP only when no one else is left.
+function partyHit(team, R) {
+  const n = teamSize(team);
+  if (team.medics > 0 && R() < BOARD.medic_save) return;
+  if (n <= 0) { team.vip = 0; return; }
+  let k = R() * n; for (const [role] of ROLES) { if (k < team[role]) { team[role]--; return; } k -= team[role]; }
+}
+function capture(s, t, team) {
+  t.side = s.side; t.captured = true; t.target = null; t.ai.stance = 'escort'; t.ai.fire = 'free';
+  t.marines = team.marines; for (const [r] of ROLES.slice(1)) t.team[r] = team[r]; t.vip = team.vip ? (s.vipName || 'Envoy Saros') : null; s.party = null;
+  for (const o of W.ships) if (o.target === t.id) o.target = null;
+  say('Transport', `${t.name} strikes its colours. ${team.marines} marines hold it${team.vip ? ', the envoy aboard' : ''}.`);
+}
 // Raids and boarding parties, every step, for the ship that sent them.
 function boardingStep(s) {
   const R = W.rand.dmg;
@@ -1017,31 +1164,79 @@ function boardingStep(s) {
     const r = s.raid, t = ship(r.on);
     if (!t || !t.alive) { s.raid = null; }
     else if ((r.t -= DT) <= 0) {
-      const name = SUBSYS.find((q) => q[0] === r.sys)[1], hit = r.kind === 'bomb' ? BOARD.bomb_dmg : BOARD.shoot_dmg;
-      if (r.sys === 'reactor') { t.reactor.conf = Math.max(0, t.reactor.conf - hit); t.reactor.coils = t.reactor.coils.map((o) => clamp(o + (R() - 0.5) * hit, -1, 1)); }
-      else { t.sys[r.sys] = Math.max(0, t.sys[r.sys] - hit); if (r.sys === 'weapons') for (const m of t.mounts) if (R() < hit) { m.hp = Math.max(0, m.hp - hit); if (m.hp <= 0) m.charge = 0; } }
-      let back = 0; for (let i = 0; i < r.n; i++) if (R() >= (r.kind === 'bomb' ? BOARD.bomb_loss : BOARD.shoot_loss)) back++;
-      s.marines += back; s.raid = null;
-      if (s === W.player || t === W.player) say('Transport', `Raid on ${t.name}: ${name} ${r.kind === 'bomb' ? 'bombed' : 'shot up'}. ${back} of ${r.n} marines back.`);
+      const name = SUBSYS.find((q) => q[0] === r.sys)[1], esc = r.team.marines;
+      let marines = 0, demo = 0;
+      for (let i = 0; i < r.team.marines; i++) if (R() >= BOARD.marine_loss) marines++;
+      for (let i = 0; i < r.team.demo; i++) if (R() >= BOARD.demo_loss / (1 + esc)) demo++;
+      const hit = r.kind === 'bomb' ? (demo > 0 ? BOARD.bomb_dmg : 0) : Math.min(0.6, marines * BOARD.shoot_per_marine);
+      if (hit > 0) {
+        if (r.sys === 'reactor') { t.reactor.conf = Math.max(0, t.reactor.conf - hit); t.reactor.coils = t.reactor.coils.map((o) => clamp(o + (R() - 0.5) * hit, -1, 1)); }
+        else { t.sys[r.sys] = Math.max(0, t.sys[r.sys] - hit); if (r.sys === 'weapons') for (const m of t.mounts) if (R() < hit) { m.hp = Math.max(0, m.hp - hit); if (m.hp <= 0) m.charge = 0; } }
+      }
+      s.marines += marines; s.team.demo += demo; s.raid = null;
+      if (s === W.player || t === W.player) say('Transport', hit > 0 ? `Raid on ${t.name}: ${name} ${r.kind === 'bomb' ? 'bombed' : 'shot up'}. ${marines + demo} of ${r.team.marines + r.team.demo} back.`
+        : `Raid on ${t.name} failed: ${r.kind === 'bomb' ? 'no demolition marine lived to set the charge' : 'no one left to shoot'}. ${marines + demo} back.`);
     }
   }
   if (s.party) {
-    const pt = s.party, t = ship(pt.on);
+    const pt = s.party, t = ship(pt.on), tm = pt.team;
     if (!t || !t.alive) { s.party = null; return; }
+    if (defenders(t) <= 0) { if (canTake(tm)) capture(s, t, tm); else if (!pt.held) { pt.held = true; say('Transport', `${t.name}'s deck is ours, but to take it we need ${['engineers', 'pilots'].filter((k) => !tm[k]).concat(tm.hackers || tm.vip ? [] : ['a hacker']).join(', ').replace('engineers', 'an engineer').replace('pilots', 'a pilot')}.`); } return; }
     if ((pt.volleyT -= DT) > 0) return;
     pt.volleyT += BOARD.volley_s;
     // Simultaneous: both sides' shots counted before any hit lands.
-    let att = 0, def = 0; for (let i = 0; i < pt.n; i++) if (R() < BOARD.hit_chance) att++; for (let i = 0; i < defenders(t); i++) if (R() < BOARD.hit_chance) def++;
-    const fromMarines = Math.min(att, t.marines); t.marines -= fromMarines; t.guard = Math.max(0, t.guard - (att - fromMarines));
-    pt.n = Math.max(0, pt.n - def); pt.last = { att, def };
-    if (defenders(t) <= 0) {
-      t.side = s.side; t.captured = true; t.target = null; t.ai.stance = 'escort'; t.ai.fire = 'free'; t.marines = pt.n; s.party = null;
-      for (const o of W.ships) if (o.target === t.id) o.target = null;
-      say('Transport', `${t.name} strikes its colours. Prize crew of ${t.marines} aboard.`);
-      if (!W.ships.some((o) => o.alive && o.side === 1)) W.overWhy = `${t.name} captured`;
-    } else if (pt.n <= 0) { s.party = null; say('Transport', `Boarding party on ${t.name} lost.`); }
-    else if (s === W.player) say('Transport', `Volley aboard ${t.name}: ${att} hits, ${def} taken. ${pt.n} against ${defenders(t)}.`);
+    let att = 0, def = 0; for (let i = 0; i < tm.marines; i++) if (R() < BOARD.hit_chance) att++; for (let i = 0; i < defenders(t); i++) if (R() < BOARD.hit_chance) def++;
+    let locked = 0, talked = 0; for (let i = 0; i < tm.hackers; i++) if (R() < BOARD.hacker_lock) locked++; if (tm.vip && R() < BOARD.vip_persuade) talked = 1;
+    t.guard = Math.max(0, t.guard - locked);
+    const down = att + talked, fromMarines = Math.min(down, t.marines); t.marines -= fromMarines; t.guard = Math.max(0, t.guard - (down - fromMarines));
+    for (let i = 0; i < def; i++) partyHit(tm, R);
+    pt.last = { att, def, locked, talked };
+    if (defenders(t) <= 0 && canTake(tm)) capture(s, t, tm);
+    else if (teamSize(tm) <= 0) { s.party = null; say('Transport', `Boarding party on ${t.name} lost.`); }
+    else if (s === W.player || pt.loud) say('Transport', `Volley aboard ${t.name}: ${att} hits${locked ? `, ${locked} locked out` : ''}${talked ? ', 1 talked down' : ''}, ${def} taken. ${tm.marines} marines against ${defenders(t)}.`);
   }
+}
+// Inventory destinations in reach: friendly ships and stations, and planets (reach measured to the surface).
+function invDests(s) {
+  const out = [];
+  for (const o of W.ships) if (o.alive && o !== s && o.side === s.side) out.push({ id: o.id, name: o.name, km: distKm(s, o), ship: o });
+  for (const pl of W.planets) out.push({ id: pl.id, name: pl.name, km: Math.max(0, Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r) / 10, planet: pl });
+  return out.sort((a, b) => a.km - b.km);
+}
+const invReach = (s, d) => !!d && s.transporter >= 1 && d.km <= TRANSPORT.range_km;
+// The inventory destination in use: the one picked, unless it is out of reach and the nearest is in reach (fly to a
+// planet and it is picked). The panel and the transfer both ask this (6.1).
+function invPick(s) {
+  const ds = invDests(s), cur = ds.find((q) => q.id === invDest);
+  if ((!cur || (cur.km > TRANSPORT.range_km && ds[0] && ds[0].km <= TRANSPORT.range_km)) && ds[0]) invDest = ds[0].id;
+  return ds.find((q) => q.id === invDest) || null;
+}
+// A disguised shuttle, every step: it flies at the target; inside suspect_km the crew may see through it; arriving, it
+// goes off against the hull (past the shields: it was let in as civilian traffic).
+function shuttleStep(c) {
+  const t = ship(c.to);
+  if (!t || !t.alive) { c.gone = true; return; }
+  const d = Math.hypot(t.x - c.x, t.z - c.z), sp = SHUTTLE.speed_u_s * DT;
+  if (d / 10 <= SHUTTLE.suspect_km && !c.caught && W.rand.hit() < SHUTTLE.catch_p_s * DT) {
+    c.caught = true; c.gone = true; boomAt(c.x, c.z, 0.6); say('Tactical', `${t.name} saw through the shuttle and shot it down.`); return;
+  }
+  if (d <= sp + hullR(t)) {
+    c.gone = true; boomAt(c.x, c.z, 2.2); t.hull -= SHUTTLE.dmg;
+    const keys = Object.keys(t.sys); t.sys[keys[Math.floor(W.rand.dmg() * keys.length)]] *= 0.4;
+    say('Tactical', `Shuttle detonated against ${t.name}: ${SHUTTLE.dmg} damage to the hull.`);
+    if (t.hull <= 0) { t.hull = 0; t.alive = false; t.v = 0; boom(t); say('Tactical', `${t.name} destroyed.`); for (const o of W.ships) if (o.target === t.id) o.target = null; }
+    return;
+  }
+  c.x += (t.x - c.x) / d * sp; c.z += (t.z - c.z) / d * sp;
+}
+// The barrage, every step: one missile from the racks every interval_s while the salvo lasts.
+function barrageStep(s) {
+  if (s.barrage <= 0) return;
+  const t = tgt(s); if (!t || s.missiles <= 0) { s.barrage = 0; return; }
+  if ((s.barrageT -= DT) > 0) return;
+  s.barrageT = BARRAGE.interval_s; s.barrage--; s.missiles--;
+  const w = WEAPONS.missile, side = s.barrage % 2 ? 1 : -1, r = rightOf(s.h);
+  W.shots.push({ kind: 'missile', x: s.x + r[0] * side, z: s.z + r[1] * side, to: t.id, from: s.id, hit: W.rand.hit() < BARRAGE.hit_p, dmg: w.dmg, speed: w.speed_m_s / M_PER_U, color: w.color, life: 30, aim: 'hull' });
 }
 const KEYS = { KeyA: () => A.turn(-15), KeyD: () => A.turn(15), KeyQ: () => A.turn(-45), KeyE: () => A.turn(45), KeyW: () => A.speedStep(1), KeyS: () => A.speedStep(-1),
   KeyX: () => A.allStop(), Space: () => A.fire(), Tab: () => A.nextTarget(), KeyP: () => A.pause(), Escape: () => (expanded ? A.expand(expanded) : A.menu()), KeyM: () => A.volley() };
@@ -1528,42 +1723,70 @@ function stRepair(b) {
   for (const [k, v] of rows) { bar(b.x, y, b.w - 100, k, v, v < 0.5); tab(`rep.${k}`, b.x + b.w - 92, y + 2, 92, 34, 'Priority', () => A.priority(k), s.priority === k); y += 42; }
   pairs('rep.c', b.x, y + 18, [['Crews', String(s.power.repair)], ['Weapons damaged', String(s.mounts.filter((m) => m.hp < 1).length)]], b.w);
 }
-// The transport station: raids, boarding and mines, each its own tab; what the transporter needs (range, the facing's
-// shield, a charge) is shown under them, from the same canBoard rule that gates the keys (6.1).
-let trTab = 'raid';
+// A count picker: the label, how many are aboard, minus and plus keys, the count picked.
+function stepper(id, x, y, w, label, avail, val, set) {
+  LBL(label, x, y + 20, w * 0.4); NUM(`/${avail}`, x + w * 0.52, y + 22, 0, CC.lilac, 'right', 16);
+  button(`${id}.m`, x + w - 112, y, 36, 30, '−', () => set(Math.max(0, val - 1)), { center: true, dis: () => val <= 0 });
+  NUM(String(Math.min(val, avail)), x + w - 52, y + 23, 0, CC.sky, 'center', 20);
+  button(`${id}.p`, x + w - 36, y, 36, 30, '+', () => set(Math.min(avail, val + 1)), { center: true, dis: () => val >= avail });
+}
+// The transport station, three modes (owner, 2026-11-01: "Transporters ui have 3 modes - capture transport mode, target
+// hit and turn mode, and inventory transporter mode"): Capture (a boarding party picked by role), Hit and run (a
+// squad on one subsystem) and Inventory (goods, the VIP and mines). What the transporter needs is shown under them,
+// green when met, from the same beamReach rule that gates the keys (6.1).
+let trTab = 'hit';
 function stTransport(b) {
   const s = W.player, t = tgt(s); let y = b.y;
-  y += bar(b.x, y, b.w, s.transporter >= 1 ? 'Transporter · charged' : 'Transporter · charging', s.transporter) + 8;
-  tabs('tr.tab', b.x, y, b.w, 36, [['raid', 'Raid'], ['board', 'Board'], ['mines', 'Mines']], trTab, (k) => { trTab = k; }); y += 46;
-  if (trTab === 'raid') {
+  y += bar(b.x, y, b.w, s.transporter >= 1 ? 'Transporter · charged' : 'Transporter · charging', s.transporter) + 6;
+  tabs('tr.tab', b.x, y, b.w, 34, [['capture', 'Capture'], ['hit', 'Hit & run'], ['inv', 'Inventory']], trTab, (k) => { trTab = k; placingMine = false; }); y += 42;
+  if (trTab === 'hit') {
     // the target's subsystems as keys, coloured by their status; the picked one ringed in Sky
-    const n = SUBSYS.length, bs = Math.min(44, (b.w - (n - 1) * 6) / n);
+    const n = SUBSYS.length, bs = Math.min(40, (b.w - (n - 1) * 6) / n);
     SUBSYS.forEach(([key, name], i) => {
       const bx = b.x + i * (bs + 6), st = t ? subsysStatus(t, key) : 'Off';
       if (raidSys === key) { g.fillStyle = CC.sky; g.beginPath(); g.roundRect(bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
       statusBox(g, bx, y, bs, st, bs * 0.28); g.drawImage(KIT.iconOn[SUBSYS_ICON[key]], bx + bs * 0.15, y + bs * 0.15, bs * 0.7, bs * 0.7);
       hit(`tr.sys.${key}`, bx, y, bs, bs, { click: () => { raidSys = key; }, tip: { title: name, rows: t ? [['Health', pct(clamp(healthOf(t, key), 0, 1))], ['Status', st, STATUS_COL[st]]] : [['Target', '--']] } });
     });
-    y += bs + 10;
-    tabs('tr.kind', b.x, y, b.w, 36, [['shoot', 'Shoot'], ['bomb', 'Bomb']], raidKind, (k) => { raidKind = k; }); y += 44;
-    if (s.raid) { y += bar(b.x, y + 4, b.w, `Raid ${s.raid.kind === 'bomb' ? 'bombing' : 'shooting'} ${SUBSYS.find((q) => q[0] === s.raid.sys)[1]} · ${fmtCool(Math.max(0.05, s.raid.t))} S`, 1 - s.raid.t / BOARD.raid_s) + 18; }
-    else { button('tr.raid', b.x, y, b.w, 44, `Send raid · ${BOARD.raid_team} marines`, A.raid, { dis: () => !canBoard(s, t) }); y += 54; }
-  } else if (trTab === 'board') {
+    y += bs + 8;
+    tabs('tr.kind', b.x, y, b.w, 32, [['shoot', 'Shoot'], ['bomb', 'Bomb']], raidKind, (k) => { raidKind = k; }); y += 38;
+    stepper('tr.rm', b.x, y, b.w, 'Marines', s.marines, raidPick.marines, (v) => { raidPick.marines = v; }); y += 34;
+    stepper('tr.rd', b.x, y, b.w, 'Demolition', s.team.demo, raidPick.demo, (v) => { raidPick.demo = v; }); y += 36;
+    if (s.raid) { y += bar(b.x, y + 2, b.w, `Raid ${s.raid.kind === 'bomb' ? 'bombing' : 'shooting'} ${SUBSYS.find((q) => q[0] === s.raid.sys)[1]} · ${fmtCool(Math.max(0.05, s.raid.t))} S`, 1 - s.raid.t / BOARD.raid_s) + 14; }
+    else { const ok = raidKind === 'bomb' ? raidPick.demo > 0 && s.team.demo > 0 : raidPick.marines > 0 && s.marines > 0;
+      button('tr.raid', b.x, y, b.w, 40, raidKind === 'bomb' && raidPick.demo > 0 && !raidPick.marines ? 'Send raid · demolition unescorted' : 'Send raid', A.raid, { center: true, dis: () => !ok || !canBoard(s, t) || !!s.party }); y += 48; }
+  } else if (trTab === 'capture') {
     const pt = s.party, on = pt ? ship(pt.on) : t;
-    pairs('tr.b', b.x, y + 14, [['Marines', String(pt ? pt.n : s.marines)], ['Defenders', on ? String(defenders(on)) : '--', CC.alert]], b.w, 20); y += 30;
     if (pt) {
-      y += bar(b.x, y, b.w, `Aboard ${on.name} · next volley ${fmtCool(Math.max(0.05, pt.volleyT))} S`, pt.n / Math.max(1, pt.n + defenders(on))) + 8;
-      button('tr.recall', b.x, y, b.w, 44, 'Recall', A.recallParty); y += 54;
-    } else { button('tr.board', b.x, y, b.w, 44, `Board · ${s.marines} marines`, A.board, { dis: () => !canBoard(s, t) }); y += 54; }
+      const tm = pt.team;
+      y += bar(b.x, y, b.w, `Aboard ${on.name}: ${tm.marines} marines against ${defenders(on)}${tm.vip ? ' · envoy' : ''}`, tm.marines / Math.max(1, tm.marines + defenders(on)), defenders(on) > tm.marines) + 6;
+      LBL(`${tm.medics} medics · ${tm.engineers} engineers · ${tm.hackers} hackers · ${tm.pilots} pilots`, b.x, y + 14, b.w, canTake(tm) ? CC.accord : CC.caution); y += 24;
+    }
+    for (const [r, l] of ROLES) { if (r === 'demo') continue; stepper(`tr.c.${r}`, b.x, y, b.w, l, have(s, r), capPick[r], (v) => { capPick[r] = v; }); y += 32; }
+    const hw = (b.w - 6) / 2;
+    button('tr.board', b.x, y, pt ? hw : b.w, 40, pt ? 'Reinforce' : 'Board', A.board, { center: true, dis: () => !canBoard(s, t) }); if (pt) button('tr.recall', b.x + hw + 6, y, hw, 40, 'Recall', A.recallParty, { center: true }); y += 48;
   } else {
-    button('tr.place', b.x, y, b.w, 44, placingMine ? 'Click the view · cancel' : `Place mine · reach ${km(TRANSPORT.range_km)}`, A.mineMode, { sel: () => placingMine, dis: () => !placingMine && (s.mines <= 0 || s.mineCool > 0 || s.transporter < 1) }); y += 52;
-    button('tr.mine', b.x, y, b.w, 44, s.mineCool > 0 ? `Next mine in ${fmtCool(s.mineCool)} s` : `Drop mine astern · ${s.mines} left`, A.mine, { dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 54;
+    // inventory: where to (friendly ships, stations and planets, nearest first), then what
+    invPick(s); const ds = invDests(s).slice(0, 3);
+    if (ds.length) { tabs('tr.dest', b.x, y, b.w, 32, ds.map((q) => [q.id, `${q.name} ${q.km.toFixed(1)}`]), invDest, (k) => { invDest = k; }); y += 38; }
+    const d = ds.find((q) => q.id === invDest), reach = invReach(s, d), cw = 84;
+    const row = (id, label, val, keys) => { LBL(label, b.x, y + 20, b.w - keys.length * (cw + 6)); NUM(val, b.x + b.w - keys.length * (cw + 6) - 8, y + 22, 0, CC.sky, 'right', 18);
+      keys.forEach(([k, l, fn, ok], i) => button(`${id}.${k}`, b.x + b.w - (keys.length - i) * (cw + 6) + 6, y, cw, 30, l, fn, { center: true, dis: () => !reach || !ok })); y += 36; };
+    if (d) {
+      row('tr.goods', 'Goods', `${s.cargo}/${s.cargoCap}`, [['in', 'Take', () => A.transfer('goods', -1), !!d.ship && d.ship.cargo > 0 && s.cargo < s.cargoCap], ['out', 'Send', () => A.transfer('goods', 1), s.cargo > 0 && (d.planet ? d.planet.got < d.planet.need : d.ship.cargo < d.ship.cargoCap)]]);
+      row('tr.vip', s.vip || (d.ship && d.ship.vip) || 'VIP', s.vip ? 'aboard' : d.ship && d.ship.vip ? 'there' : '--', [['in', 'Take', () => A.transfer('vip', -1), !!d.ship && !!d.ship.vip], ['out', 'Send', () => A.transfer('vip', 1), !!s.vip && !!d.ship]]);
+      if (d.planet) { LBL(d.planet.got >= d.planet.need ? `${d.planet.name}: delivered` : `${d.planet.name} needs ${d.planet.need - d.planet.got} crates`, b.x, y + 14, b.w, d.planet.got >= d.planet.need ? CC.accord : CC.lilac); y += 24; }
+      if (!reach) { LBL(d.km > TRANSPORT.range_km ? `Out of reach: ${km(d.km)} of ${km(TRANSPORT.range_km)}` : 'Transporter charging', b.x, y + 14, b.w, CC.caution); y += 24; }
+    } else { LBL('Nothing friendly in range', b.x, y + 14); y += 24; }
+    const hw = (b.w - 6) / 2;
+    button('tr.place', b.x, y, hw, 40, placingMine ? 'Cancel' : 'Place mine', A.mineMode, { center: true, sel: () => placingMine, dis: () => !placingMine && (s.mines <= 0 || s.mineCool > 0 || s.transporter < 1) });
+    button('tr.mine', b.x + hw + 6, y, hw, 40, s.mineCool > 0 ? `Mine ${fmtCool(s.mineCool)} s` : 'Drop astern', A.mine, { center: true, dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 46;
   }
-  // what the transporter needs, green when met
-  if (t && trTab !== 'mines') { const f = facingFrom(t, s.x, s.z), d = distKm(s, t); pairs('tr.t', b.x, y + 8, [['Range', km(d), d <= TRANSPORT.range_km ? CC.accord : CC.alert], [`Their ${FACINGS[f]} shield`, String(Math.round(t.shields[f])), t.shields[f] <= 0.5 ? CC.accord : CC.alert]], b.w, 20); }
-  else if (!t && trTab !== 'mines') LBL('No target', b.x, y + 8);
-  y += 26; divider(b.x, y, b.w); y += 12;
-  pairs('tr.c', b.x, y + 12, [['Marines', String(s.marines)], ['Mines', String(s.mines)], ['Fighters', String(s.fighters)]], b.w, 20);
+  // what the combat transporter needs, green when met
+  if (t && trTab !== 'inv') { const f = facingFrom(t, s.x, s.z), dk = distKm(s, t); pairs('tr.t', b.x, y + 8, [['Range', km(dk), dk <= TRANSPORT.range_km ? CC.accord : CC.alert], [`Their ${FACINGS[f]} shield`, String(Math.round(t.shields[f])), t.shields[f] <= 0.5 ? CC.accord : CC.alert]], b.w, 18); y += 24; }
+  else if (!t && trTab !== 'inv') { LBL('No target', b.x, y + 8); y += 24; }
+  // stores, when there is room under the mode
+  if (y + 16 <= b.y + b.h - 6) pairs('tr.c', b.x, b.y + b.h - 6, [['Mines', String(s.mines)], ['Fighters', String(s.fighters)], ['Shuttles', String(s.shuttles)]], b.w, 18);
 }
 function stFleet(b, big) {
   const own = W.ships.filter((x) => x.side === 0); let y = b.y;
@@ -1679,6 +1902,9 @@ function drawSSD(x, w, h, s, big, own, idp) {
     x.beginPath(); x.arc(cx, cy - L * 0.42, L * 0.42, 0, 2 * P); x.stroke();
     x.beginPath(); x.roundRect(cx - L * 0.1, cy - L * 0.05, L * 0.2, L * 0.6, L * 0.1); x.stroke();
     for (const sd of [-1, 1]) { x.beginPath(); x.roundRect(cx + sd * L * 0.5 - L * 0.07, cy + L * 0.05, L * 0.14, L * 0.85, L * 0.07); x.stroke(); x.beginPath(); x.moveTo(cx + sd * L * 0.1, cy + L * 0.3); x.lineTo(cx + sd * L * 0.43, cy + L * 0.38); x.stroke(); }
+  } else if (sh === 'station') {
+    x.beginPath(); x.arc(cx, cy, L * 0.72, 0, 2 * P); x.stroke(); x.beginPath(); x.arc(cx, cy, L * 0.22, 0, 2 * P); x.stroke();
+    for (let i = 0; i < 4; i++) { const a = i * P / 2 + P / 4; x.beginPath(); x.moveTo(cx + Math.cos(a) * L * 0.22, cy + Math.sin(a) * L * 0.22); x.lineTo(cx + Math.cos(a) * L * 0.72, cy + Math.sin(a) * L * 0.72); x.stroke(); }
   } else if (sh === 'wedge') {
     x.beginPath(); x.moveTo(cx, cy - L * 0.95); x.lineTo(cx + L * 0.55, cy + L * 0.7); x.lineTo(cx, cy + L * 0.45); x.lineTo(cx - L * 0.55, cy + L * 0.7); x.closePath(); x.stroke();
   } else {
@@ -1830,6 +2056,7 @@ function shTractor(b, big) {
     // Holding: our grip on them, green; held: their grip on us, red.
     y += bar(b.x, y, b.w, s.beam ? `Grip on ${other.name} · ${pct(bm.grip)}` : `Held by ${other.name} · ${pct(bm.grip)}`, bm.grip, !s.beam || bm.grip < 0.25) + 8;
     const L = bm.last, ours = L && (s.beam ? L.mine : L.theirs), theirs = L && (s.beam ? L.theirs : L.mine), gain = L ? (s.beam ? L.d : -L.d) : 0;
+    if (s.beam) { const hw3 = (b.w - 12) / 3; LBL(`Tether ${km(bm.len / 10)}${Math.abs(bm.want - bm.len) > 0.05 ? ` to ${km(bm.want / 10)}` : ''}`, b.x, y + 20, hw3 + 20); button('trc.in', b.x + hw3 + 6, y, hw3, 30, 'Reel in', () => A.reel(-1), { center: true }); button('trc.out', b.x + 2 * (hw3 + 6), y, hw3, 30, 'Let out', () => A.reel(1), { center: true }); y += 36; }
     pairs('trc.r', b.x, y + 12, [[`Round ${bm.round} ends in`, `${fmtCool(Math.max(0.05, bm.roundT))} S`], ['Last', L ? `${ours.toFixed(1)} vs ${theirs.toFixed(1)} · ${gain > 0 ? '+' : ''}${Math.round(gain * 100)}%` : '--', L ? (gain > 0 ? CC.accord : gain < 0 ? CC.alert : CC.sky) : CC.sky]], b.w, 20);
   } else if (s.power.tractor <= 0) LBL('No tractor power', b.x, y + 14, b.w);
   else if (t && s.relock && s.relock.on === t.id) pairs('trc.l', b.x, y + 14, [[`${t.name} broke free`, ''], ['Beam again in', `${fmtCool(s.relock.t)} S`, CC.caution]], b.w, 20);
@@ -1838,13 +2065,17 @@ function shTractor(b, big) {
   // The pick for the round, to hold or to resist: the energy in the tractor, the same boxes as the power station.
   powerRow('trc.pw', b.x, b.y + b.h - 30, b.w, 26, 'tractor', 82);
 }
+// The craft panel: fighters (mission Attack, Defend or Defences, which strafes point defence and guns), the missile
+// barrage, and disguised shuttles.
 function shCraft(b) {
-  const s = W.player; let y = b.y + 22;
-  pairs('cr.1', b.x, y, [['In bay', String(s.fighters)], ['Flying', String(W.craft.filter((c) => c.home === s.id).length)]], b.w); y += 14;
-  tabs('cr.m', b.x, y, b.w, 40, [['attack', 'Attack'], ['defend', 'Defend']], s.mission, A.mission); y += 48;
+  const s = W.player, t = tgt(s); let y = b.y + 18;
+  pairs('cr.1', b.x, y, [['In bay', String(s.fighters)], ['Flying', String(W.craft.filter((c) => c.home === s.id && c.kind !== 'shuttle').length)], ['Missiles', String(s.missiles)], ['Shuttles', String(s.shuttles)]], b.w, 18); y += 12;
+  tabs('cr.m', b.x, y, b.w, 34, [['attack', 'Attack'], ['defend', 'Defend'], ['defences', 'Defences']], s.mission, A.mission); y += 40;
   const hw = (b.w - 6) / 2;
-  button('cr.l', b.x, y, hw, 48, 'Launch', A.launch, { dis: () => s.fighters <= 0 || !s.alive });
-  button('cr.r', b.x + hw + 6, y, hw, 48, 'Recall', A.recall, { dis: () => !W.craft.some((c) => c.home === s.id) });
+  button('cr.l', b.x, y, hw, 38, 'Launch', A.launch, { center: true, dis: () => s.fighters <= 0 || !s.alive });
+  button('cr.r', b.x + hw + 6, y, hw, 38, 'Recall', A.recall, { center: true, dis: () => !W.craft.some((c) => c.home === s.id && c.kind !== 'shuttle') }); y += 44;
+  button('cr.b', b.x, y, hw, 38, s.barrage > 0 ? `Barrage · ${s.barrage}` : 'Barrage', A.barrage, { center: true, sel: () => s.barrage > 0, dis: () => !t || s.missiles <= 0 });
+  button('cr.s', b.x + hw + 6, y, hw, 38, 'Shuttle', A.shuttle, { center: true, dis: () => !t || s.shuttles <= 0 });
 }
 
 // ---- Weapons panel ------------------------------------------------------------------------------------------------
@@ -1966,10 +2197,26 @@ function shieldShell(s) {
   }
   return g2;
 }
+// A station: a ring on spokes round a hub, lit windows in the faction's trim (a stand-in; mockup 3 sets the look).
+function stationModel(s, F) {
+  const R = CLASSES[s.cls].len_m / M_PER_U / 2, g = new THREE.Group(), hull = new THREE.MeshStandardMaterial({ color: 0xb8bcc4, roughness: 0.6, metalness: 0.3 }), trim = new THREE.MeshBasicMaterial({ color: F.trim });
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(R * 0.85, R * 0.12, 10, 40), hull); ring.rotation.x = P / 2; g.add(ring);
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.28, R * 0.34, R * 0.5, 16), hull); g.add(hub);
+  const lit = new THREE.Mesh(new THREE.TorusGeometry(R * 0.85, R * 0.03, 6, 40), trim); lit.rotation.x = P / 2; lit.position.y = R * 0.11; g.add(lit);
+  for (let i = 0; i < 4; i++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(R * 1.6, R * 0.06, R * 0.08), hull); sp.rotation.y = i * P / 4; g.add(sp); }
+  return g;
+}
+// Planets: a sphere each, below the battle plane so ships pass over its limb.
+let PLANETS3D = null, planetsFor = null;
+function syncPlanets() {
+  if (planetsFor === W) return; planetsFor = W;
+  if (PLANETS3D) scene.remove(PLANETS3D); PLANETS3D = new THREE.Group(); scene.add(PLANETS3D);
+  for (const pl of W.planets) { const m = new THREE.Mesh(new THREE.SphereGeometry(pl.r, 48, 32), new THREE.MeshStandardMaterial({ color: pl.col, roughness: 0.85 })); m.position.set(pl.x, -pl.r * 0.35, pl.z); PLANETS3D.add(m); }
+}
 function modelFor(s) {
   let o = MODELS.get(s.id);
   if (!o) {
-    const F = FACTION[s.faction], g = new THREE.Group(), m = shipModel(F.trim, CLASSES[s.cls].len_m / 510, F.hull);
+    const F = FACTION[s.faction], g = new THREE.Group(), m = CLASSES[s.cls].shape === 'station' ? stationModel(s, F) : shipModel(F.trim, CLASSES[s.cls].len_m / 510, F.hull);
     const sh = shieldShell(s); g.add(m, sh); scene.add(g);
     o = { g, m, sh }; MODELS.set(s.id, o);
   }
@@ -1988,6 +2235,7 @@ function syncRocks() {
   if (ROCKS3D) scene.remove(ROCKS3D); ROCKS3D = new THREE.Group(); scene.add(ROCKS3D);
   const R = rng(SCENARIO.seed + 9);
   for (const r of W.rocks) {
+    if (r.planet) continue;
     const geo = new THREE.IcosahedronGeometry(r.r, 1), pos = geo.attributes.position;
     for (let i = 0; i < pos.count; i++) { const k = 0.8 + R() * 0.35; pos.setXYZ(i, pos.getX(i) * k, pos.getY(i) * k * 0.8, pos.getZ(i) * k); }
     geo.computeVertexNormals();
@@ -1996,7 +2244,7 @@ function syncRocks() {
   }
 }
 function syncScene(dt) {
-  syncRocks();
+  syncRocks(); syncPlanets();
   for (const s of W.ships) {
     const o = modelFor(s); o.g.visible = s.alive; if (!s.alive) continue;
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
@@ -2046,7 +2294,9 @@ function pick(e) {
   for (const s of W.ships) { if (!s.alive) continue; const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z > 1) continue; const px = r.left + (v.x + 1) / 2 * r.width, py = r.top + (1 - v.y) / 2 * r.height, d = Math.hypot(px - e.clientX, py - e.clientY); if (d < bd) { bd = d; best = s; } }
   return best;
 }
-let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidKind = 'shoot';
+let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidKind = 'shoot', invDest = null;
+// The squads the transport station sends: hit and run, and capture (per role).
+const raidPick = { marines: 2, demo: 0 }, capPick = { marines: 8, demo: 0, medics: 1, engineers: 1, hackers: 1, pilots: 1 };
 // The point on the battle plane (y = 0) under the pointer, or null when the ray misses it.
 const RAY = new THREE.Raycaster(), PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function planeAt(e) {
@@ -2119,6 +2369,13 @@ function uiView() {
     g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? 58 : 34));
     if (f && !locked && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id];
   }
+  for (const pl of W.planets) { const v = new THREE.Vector3(pl.x, 0, pl.z).project(camera); if (v.z >= 1) continue;
+    const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.fillStyle = CC.sky; g.font = '600 16px Antonio'; g.textAlign = 'center';
+    g.fillText(`${pl.name}${pl.need ? ` · ${pl.got} of ${pl.need} crates` : ''}`.toUpperCase(), px, py); }
+  // disguised shuttles: our own know them for what they are
+  for (const c of W.craft) { if (c.kind !== 'shuttle') continue; const v = new THREE.Vector3(c.x, 0, c.z).project(camera); if (v.z >= 1) continue;
+    const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.strokeStyle = CC.caution; g.lineWidth = 2; g.beginPath(); g.arc(px, py, 9, 0, 2 * P); g.stroke();
+    g.fillStyle = CC.caution; g.font = '600 14px Antonio'; g.textAlign = 'center'; g.fillText('SHUTTLE · DISGUISED', px, py - 16); }
   if (!expanded) helmArc(vw, vh, s);
   g.restore();
   if (expanded) { LBL('Live · tap to return', vx + vw / 2, vy + 28, 0, CC.sky, 'center', 18); return; }
@@ -2142,7 +2399,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false, 'tgt')); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v24', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v25', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.
@@ -2152,7 +2409,7 @@ function uiSheet() {
   const end = W.over && !menuOpen;
   if (!menuOpen && !W.over) return;
   g.fillStyle = 'rgba(0,0,0,0.78)'; g.fillRect(0, 0, RW, RH); hit('sheet.block', 0, 0, RW, RH, {});
-  const w = 560, h = end ? 300 : 470, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? (W.over === 'won' ? 'Victory' : 'Ship lost') : 'Menu', false, true);
+  const w = 600, h = end ? 300 : 524, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? (W.over === 'won' ? 'Victory' : 'Ship lost') : 'Menu', false, true);
   let yy = P0.y + 8;
   if (end) {
     TXT(W.over === 'won' ? W.overWhy : `${W.player.name} is lost`, P0.x, yy + 20, P0.w); LBL(`Battle time ${mmss(W.t)}`, P0.x, yy + 46); yy += 64;
@@ -2161,7 +2418,8 @@ function uiSheet() {
     button('sheet.restart', P0.x, yy, P0.w, 48, 'Restart', A.reset);
   } else {
     button('sheet.resume', P0.x, yy, P0.w, 48, 'Resume', A.menu); yy += 66; LBL('Test scene', P0.x, yy); yy += 10;
-    tabs('sheet.scene', P0.x, yy, P0.w, 44, Object.entries(SCENES).map(([k, v]) => [k, v.name]), sceneId, A.scene); yy += 70; LBL('Mockup', P0.x, yy); yy += 10;
+    const sl = Object.entries(SCENES).map(([k, v]) => [k, v.name]);
+    tabs('sheet.scene', P0.x, yy, P0.w, 44, sl.slice(0, 4), sceneId, A.scene); yy += 50; tabs('sheet.scene2', P0.x, yy, P0.w, 44, sl.slice(4), sceneId, A.scene); yy += 70; LBL('Mockup', P0.x, yy); yy += 10;
     button('sheet.hit', P0.x, yy, P0.w, 48, 'Take a hit', () => { takeHit(); menuOpen = false; }); yy += 56;
     button('sheet.restart', P0.x, yy, P0.w, 48, `Restart ${SCENES[sceneId].name.toLowerCase()}`, () => { A.reset(); menuOpen = false; }); yy += 56;
     button('sheet.quit', P0.x, yy, P0.w, 48, 'Quit to campaign map', () => {}, { dis: () => true });
@@ -2221,7 +2479,7 @@ function frame(now) {
 
 // Named shots for tools/mockups/shoot.mjs: each replays the battle from its seed for a fixed number of steps.
 function scripted(steps, then, sc = 'battle') {
-  frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'raid';
+  frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(raidPick, { marines: 2, demo: 0 }); Object.assign(capPick, { marines: 8, demo: 0, medics: 1, engineers: 1, hackers: 1, pilots: 1 });
   newWorld(sc); focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
   if (sc === 'battle') { W.player.engaged = true; W.player.order = 'approach'; }
@@ -2258,15 +2516,23 @@ window.MOCKUP_SHOTS = {
   ssd_tip: () => { scripted(600, () => { damagedSystems(); }); HOT = 'ssd.sys.engines'; },
   battle: () => scripted(600),
   // The test scenes (menu: Test scene).
-  scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'mines'; placingMine = true; }, 'mines'),
-  scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'mines'; const s = W.player;
+  scene_delivery: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; A.transfer('goods', -1); for (let i = 0; i < Math.round(8 / DT); i++) step(); A.transfer('goods', -1); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'delivery'),
+  scene_delivered: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; const s = W.player, pl = W.planets[0];
+    A.transfer('goods', -1); for (let i = 0; i < Math.round(8 / DT); i++) step(); A.transfer('goods', -1);
+    A.helmTo(pl.x, pl.z); A.setSpeed(300); for (let n = 0; Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r > 35 && n < 9000; n++) step(); A.setSpeed(0);
+    for (let k = 0; k < 2; k++) { for (let i = 0; i < Math.round(8 / DT); i++) step(); A.transfer('goods', 1); } for (let i = 0; i < Math.round(1 / DT); i++) step(); }, 'delivery'),
+  scene_vip: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; }, 'vip'),
+  scene_shuttle: () => scripted(30, () => { shipTab = 'craft'; A.shuttle(); for (let i = 0; i < Math.round(12 / DT); i++) step(); }, 'shuttle'),
+  scene_fighters: () => scripted(30, () => { shipTab = 'craft'; A.launch(); for (let i = 0; i < Math.round(25 / DT); i++) step(); }, 'fighters'),
+  scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'inv'; placingMine = true; }, 'mines'),
+  scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; const s = W.player;
     for (const [x, z] of [[-6, -34], [8, -36]]) { A.placeMine(s.x + x, s.z + z); for (let i = 0; i < Math.round(7 / DT); i++) step(); }
     for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'mines'),
   // Hold the Vorrak, then run: the tow drags it into the rock between them.
   scene_tractor: () => scripted(30, () => { shipTab = 'tractor'; A.tractorHold(); for (let i = 0; i < Math.round(11 / DT); i++) step();
     A.setSpeed(250); for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'tractor'),
-  scene_raid: () => scripted(30, () => { station = 'transport'; trTab = 'raid'; raidSys = 'engines'; raidKind = 'bomb'; A.raid(); for (let i = 0; i < Math.round(3 / DT); i++) step(); }, 'boarding'),
-  scene_board: () => scripted(30, () => { station = 'transport'; trTab = 'board'; A.board(); for (let i = 0; i < Math.round(2.5 / DT); i++) step(); }, 'boarding'),
+  scene_raid: () => scripted(30, () => { station = 'transport'; trTab = 'hit'; raidSys = 'engines'; raidKind = 'bomb'; raidPick.marines = 2; raidPick.demo = 1; A.raid(); for (let i = 0; i < Math.round(3 / DT); i++) step(); }, 'boarding'),
+  scene_board: () => scripted(30, () => { station = 'transport'; trTab = 'capture'; A.board(); for (let i = 0; i < Math.round(2.5 / DT); i++) step(); }, 'boarding'),
   scene_captured: () => scripted(30, () => { station = 'fleet'; A.board(); for (let i = 0; i < Math.round(8 / DT); i++) step(); fleetPick = 'rattlejaw'; }, 'boarding'),
   // The helm pointed at a spot ahead and to the left of the ship, half a second into the turn.
   helm_click: () => scripted(600, () => { const s = W.player, f = fwd(s.h), r = rightOf(s.h); A.helmTo(s.x + f[0] * 12 - r[0] * 14, s.z + f[1] * 12 - r[1] * 14); for (let i = 0; i < 15; i++) step(); }),
@@ -2282,7 +2548,7 @@ window.MOCKUP_SHOTS = {
 };
 window.MOCKUP_SCENE = scene;
 // For headless checks of the stand-in battle's rules (tools, not the page's UI).
-window.MOCKUP_SIM = { step, A, get W() { return W; }, REACTOR, output, used, cooling, cooldownS, fmtCool, WEAPONS, get HOT() { return HOT; } };
+window.MOCKUP_SIM = { step, A, get W() { return W; }, REACTOR, output, used, cooling, cooldownS, fmtCool, WEAPONS, get HOT() { return HOT; }, capPick, raidPick };
 let lastInfo = { triangles: 0, calls: 0 };
 window.MOCKUP_INFO = () => lastInfo;
 // The rectangles the console registered last frame, for headless checks (no overlaps, sizes).
