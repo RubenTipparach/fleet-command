@@ -18,135 +18,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&display=swap">
 <style>
+/* The console is drawn in the engine (a canvas over the 3D view); the page itself only holds the two canvases and the
+   link back to the tracker. */
 :root { color-scheme: dark; }
 html, body { margin: 0; height: 100%; background: #000; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
-#root { position: absolute; left: 0; top: 0; transform-origin: 0 0; color: var(--s-ink); font-family: var(--s-body); background: #000; overflow: hidden; }
-#root * { box-sizing: border-box; }
-button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; }
-button:disabled { opacity: 0.35; cursor: default; }
-button:focus-visible { outline: 2px solid var(--s-num); outline-offset: 2px; }
-
-/* 9-slice pieces from the skin's kit, composed per element by nineFor() at its device-pixel size into --n0..--n3 (one
-   image per state). CSS border-image is not used: scaled to a fractional size it left seams between the slices. */
-.nine { border-style: solid; border-color: transparent; background-repeat: no-repeat; background-size: 100% 100%; background-origin: border-box; background-clip: border-box; background-image: var(--n0); }
-.k-panel { border-width: var(--fp-w); }
-.k-inset { border-width: var(--fi-w); }
-.k-track { border-width: 0; position: relative; height: 16px; }
-.k-fill { border-width: 0; position: absolute; height: 10px; }
-.k-fill.warn { background-image: var(--n1); }
-.k-button { border-width: 0; padding: 0 var(--bi-r) 0 var(--bi-l);
-  height: 48px; display: inline-flex; align-items: center; justify-content: var(--btn-justify); color: var(--btn-ink); font: var(--btn-font); letter-spacing: var(--btn-track);
-  text-transform: uppercase; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: var(--btn-motion); min-width: 0; }
-.k-button:hover:not(:disabled) { background-image: var(--n1); }
-.k-button:active:not(:disabled), .k-button.pressed { background-image: var(--n2); }
-.k-button.sm { height: 30px; font-size: 17px; padding: 0 12px; }
-.k-tab { border-width: 0; padding: 0 8px 0 14px; height: 40px;
-  display: flex; align-items: center; justify-content: flex-end; font: var(--tab-font); text-transform: uppercase; color: var(--tab-ink); white-space: nowrap; overflow: hidden;
-  text-overflow: ellipsis; cursor: pointer; min-width: 0; letter-spacing: 0.03em; }
-.k-tab.sel { background-image: var(--n1); color: var(--tab-ink-on); }
-.k-strip { position: absolute; height: 56px; border-width: 0; padding: 0 var(--st-r) 0 var(--st-l);
-  display: flex; align-items: center; gap: 22px; }
-.k-strip.top { padding-bottom: 12px; }
-.k-strip.bottom { padding-top: 12px; }
-.k-divider { height: 10px; border-width: 0; flex: none; }
-.cell { border-width: 0; height: 28px; flex: 1 1 0; min-width: 8px; cursor: pointer; }
-.cell.lit { background-image: var(--n1); }
-.cell.warn { background-image: var(--n2); }
-.cell.locked { background-image: var(--n3); cursor: default; }
-.cell.ok { background-image: var(--n4); }
-.ticks { gap: 2px; }
-.ticks .cell, .k-strip.bottom .cells.ticks .cell { height: 12px; min-width: 3px; cursor: default; }
-.alertkey { width: 40px; height: 40px; flex: none; cursor: pointer; border-radius: 20px; opacity: 0.28; transition: none; }
-.alertkey.on { opacity: 1; }
-.alertkey img { width: 100%; height: 100%; display: block; pointer-events: none; }
-#inset { background-color: #000; }
-.cells { display: flex; gap: 3px; min-width: 0; }
-.spd { position: relative; flex: 1; height: 40px; display: flex; align-items: center; cursor: ew-resize; touch-action: none; }
-.spd .cells { flex: 1; pointer-events: none; }
-.spd-h { position: absolute; top: 2px; width: 22px; height: 36px !important; padding: 0 !important; cursor: ew-resize; }
-
-.lbl { font: var(--lbl-font); letter-spacing: 0.1em; text-transform: uppercase; color: var(--s-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.num { font: var(--num-font); color: var(--s-num); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.txt { font: 600 18px/1.15 "Antonio", sans-serif; color: var(--s-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; letter-spacing: 0.03em; }
-.dim { color: var(--s-dim); }
-.ok { color: #2fbf5a; } .bad { color: #e8352b; } .warnc { color: #f0b43c; }
-.barbox { display: grid; gap: 4px; min-width: 0; flex: 1; }
-.row { display: flex; gap: 8px; align-items: center; min-width: 0; }
-.col { display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 0; }
-.grid { display: grid; gap: 6px; min-width: 0; }
-.fill { flex: 1 1 0; min-width: 0; min-height: 0; }
-.col > .barbox { flex: none; }
-
-/* Panels: fixed rectangles (CLAUDE.md section 7). Content is clipped and never resizes a panel. */
-.region { position: absolute; overflow: hidden; }
-.panel { position: absolute; overflow: visible; }
-.panel > .pin { position: absolute; inset: 0; overflow: hidden; display: flex; gap: 8px; }
-.ptitle { position: absolute; right: 6px; top: -29px; z-index: 2; background: #000; padding: 0 8px; display: flex; gap: 10px; align-items: center; height: 26px;
-  font: var(--title-font); color: var(--title-ink); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-.ptitle .k-button.sm { height: 26px; font-size: 15px; padding: 0 10px; }
-.rail { display: flex; flex-direction: column; gap: 2px; flex: none; width: 48px; overflow-y: auto; scrollbar-width: none; }
-.rail .k-tab { flex: none; font-size: 18px; padding: 0 8px 0 12px; }
-.k-strip .cells .cell { height: 16px; }
-.k-strip.bottom .cells .cell { height: 24px; }
-.tabs { display: flex; gap: 4px; flex: none; }
-.tabs .k-tab { flex: 1 1 0; padding: 0 8px 0 12px; }
-/* Icon tabs: the panel tabs carry the skin's icon, not a word; the panel's title names the page. */
-.k-tab.ic { justify-content: center; padding: 0 2px 0 8px; }
-#tip { position: absolute; z-index: 30; pointer-events: none; display: none; height: 30px; font-size: 17px; padding: 0 14px; justify-content: center; }
-.k-tab.ic img { width: 30px; height: 30px; flex: none; pointer-events: none; }
-.hero { position: relative; flex: none; }
-.hero > img, .hero > canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
-canvas.live { cursor: pointer; }
-.list { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
-.listrow { display: flex; gap: 8px; align-items: center; height: 40px; flex: none; padding: 0 8px; cursor: pointer; border-radius: 20px 4px 4px 20px; }
-.listrow.sel { background: #1b2a6b; }
-.dot { width: 14px; height: 14px; border-radius: 7px; flex: none; }
-
-/* The 3D view and what is drawn over it. */
-#view { position: absolute; overflow: hidden; background: #000; }
-#view canvas { position: absolute; left: 0; top: 0; display: block; }
-#ovl { pointer-events: none; }
-.vtext { position: absolute; font: 600 22px/1.2 "Antonio", sans-serif; text-transform: uppercase; letter-spacing: 0.03em; pointer-events: none; white-space: nowrap; }
-#readout { left: 18px; bottom: 16px; color: var(--s-dim); }
-#readout b { color: var(--s-num); font-weight: 600; }
-#msg { left: 18px; color: #b7a6f2; transition: opacity 0.15s; }
-#paused { left: 50%; top: 18px; transform: translateX(-50%); color: #f0b43c; font-size: 30px; letter-spacing: 0.2em; }
-#vtools { position: absolute; left: 14px; top: 12px; display: flex; gap: 8px; }
-#inset { position: absolute; pointer-events: none; }
-#inset .vtext { left: 18px; top: 14px; font-size: 18px; color: var(--s-num); }
-#lockpill { position: absolute; }
-#quick { position: absolute; right: 12px; bottom: 12px; display: none; gap: 8px; align-items: flex-end; }
-#badge { position: absolute; right: 14px; bottom: 12px; display: flex; gap: 10px; align-items: center; font: 500 13px/1 "Antonio", sans-serif; letter-spacing: 0.14em; color: #6f7fb4; }
-#striplabel { display: none; left: 50%; top: 14px; transform: translateX(-50%); color: var(--s-num); font-size: 18px; }
-.sheet { position: absolute; inset: 0; background: rgba(0,0,0,0.78); display: none; align-items: center; justify-content: center; z-index: 20; }
-.sheet.on { display: flex; }
-.sheet .k-panel { width: min(560px, 92%); min-height: 280px; max-height: 96%; position: relative; }
-.sheet .pin { overflow-y: auto; }
-.sheet .pin { display: flex; flex-direction: column; gap: 10px; padding: 8px 4px; }
-
-/* Phone modes: the column is replaced by a rail of panel keys; panels open expanded (CLAUDE.md section 7, survey U1, U2). */
-#prail { display: none; gap: 4px; }
-#prail .k-tab { height: auto; flex: 1 1 0; justify-content: center; padding: 0 6px; flex-direction: column; gap: 2px; font-size: 16px; }
-#prail .k-tab img { width: 34px; height: 34px; }
-[data-mode="land"] #prail, [data-mode="port"] #prail { display: flex; }
-[data-mode="land"] #prail { flex-direction: column; }
-[data-mode="land"] #quick, [data-mode="port"] #quick { display: flex; }
-[data-mode="port"] #quick { left: 8px; right: 8px; }
-[data-mode="port"] #quick .k-button { flex: 1 1 0; padding: 0 14px; justify-content: center; }
-[data-mode="port"] #readout { bottom: 72px; }
-[data-mode="land"] #readout { bottom: auto; top: 82px; }
-[data-mode="land"] #badge, [data-mode="port"] #badge { display: none; }
-[data-mode="land"] .vtext, [data-mode="port"] .vtext { font-size: 16px; }
-[data-mode="land"] #paused, [data-mode="port"] #paused { font-size: 20px; top: 54px; }
-.k-strip.compact { height: 44px; gap: 10px; padding: 0 12px 0 46px; }
-.k-strip.compact.top { padding-bottom: 6px; }
-.k-strip.compact.bottom { padding-top: 6px; }
-.k-strip.compact .lbl { font-size: 12px; }
-.k-strip.compact .num { font-size: 18px; }
-.k-strip.compact .k-button.sm { height: 34px; min-width: 44px; }
-[data-exp] #vtools, [data-exp] #readout, [data-exp] #msg, [data-exp] #inset, [data-exp] #quick, [data-exp] #badge, [data-exp] #lockpill { display: none !important; }
-[data-exp] #striplabel { display: block; }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+#root { position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: #000; overflow: hidden; }
+#ui { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; }
+#home { position: absolute; z-index: 3; color: #b7a6f2; font-family: "Antonio", sans-serif; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -954,303 +832,262 @@ const KEYS = { KeyA: () => A.turn(-15), KeyD: () => A.turn(15), KeyQ: () => A.tu
 addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen && e.code !== 'Escape') return; e.preventDefault(); f(); tickUI(); });
 
 // =================================================================================================================
-// The kit: Concord's pieces, painted once to images (docs/mockups/lib/concord.js), set as CSS variables for 9-slicing.
+// The console, drawn in the engine (owner, 2026-11-01: "can you render this ui in engine as opposed to html? there are
+// some issues with html rendering that causes components to twitch and change sizes"). One canvas over the 3D view is
+// redrawn every frame in reference pixels: kit pieces composed whole at their device-pixel size (no seams), text at
+// fixed sizes trimmed with an ellipsis, numbers in slots that only ever grow, so nothing moves or resizes itself.
+// Input is immediate mode: each control registers its rectangle as it is drawn, and a press, drag or click is matched
+// against the rectangles of the last frame drawn. The game's Godot console will work the same way (fixed rectangles).
 // =================================================================================================================
-const KIT = { nine: { ...CON.kit, ...CON.cells }, src: {}, hero: {}, icons: {}, iconsOn: {} };
-const VARS = { 'frame.panel': 'fp', 'frame.inset': 'fi', 'bar.track': 'bt', 'bar.fill': 'bf', 'bar.fill.red': 'bfw', 'button.idle': 'bi', 'button.hover': 'bh', 'button.pressed': 'bp',
-  'tab.idle': 'ti', 'tab.active': 'ta', 'strip.top': 'st', 'strip.bottom': 'sb', 'divider': 'dv', 'cell.idle': 'ci', 'cell.lit': 'cl', 'cell.warn': 'cw', 'cell.locked': 'ck' };
-const SLOT_H = { button: 48, tab: 40 };
+const KIT = { nine: { ...CON.kit, ...CON.cells }, src: {}, hero: {}, icon: {}, iconOn: {} };
 const HERO = { 'nameplate': [460, 56], 'helm.pad': [300, 300], 'dial': [120, 120], 'lamp.alert.green': [64, 64], 'lamp.alert.yellow': [64, 64], 'lamp.alert.red': [64, 64], 'crest': [96, 96] };
 const ICONS = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'map', 'pause', 'menu', 'fire'];
 function buildKit() {
-  const R = document.documentElement.style;
-  for (const [piece, v] of Object.entries(VARS)) {
-    const p = KIT.nine[piece], slot = SLOT_H[piece.split('.')[0]], k = slot ? slot / p.size[1] : 1;
-    R.setProperty(`--${v}-s`, p.m.map((n) => n * 2).join(' '));
-    R.setProperty(`--${v}-w`, p.m.map((n) => n * k + 'px').join(' ')); R.setProperty(`--${v}-l`, p.m[3] * k + 'px'); R.setProperty(`--${v}-r`, p.m[1] * k + 'px');
-  }
   for (const [piece, p] of Object.entries(KIT.nine)) KIT.src[piece] = paint(p.size[0], p.size[1], p.draw);
-  for (const [id, [w, h]] of Object.entries(HERO)) KIT.hero[id] = png(paint(w, h, CON.hero[id]));
-  for (const n of ICONS) { KIT.icons[n] = png(CON.icon(n)); KIT.iconsOn[n] = png(CON.icon(n, '#000')); }
-  const css = { '--s-ink': CC.text, '--s-dim': CC.lilac, '--s-num': CC.sky, '--s-body': '"Antonio", sans-serif', '--btn-ink': '#000', '--btn-justify': 'flex-end',
-    '--btn-font': '600 22px/1 "Antonio", sans-serif', '--btn-track': '0.04em', '--btn-motion': 'none', '--tab-font': '600 19px/1 "Antonio", sans-serif',
-    '--tab-ink': CC.text, '--tab-ink-on': '#000', '--title-font': '700 24px/1 "Antonio", sans-serif', '--title-ink': CC.sky, '--lbl-font': '600 15px/1 "Antonio", sans-serif',
-    '--num-font': '600 24px/1 "Antonio", sans-serif' };
-  for (const [k, v] of Object.entries(css)) R.setProperty(k, v);
+  for (const [id, [w, h]] of Object.entries(HERO)) KIT.hero[id] = paint(w, h, CON.hero[id]);
+  for (const n of ICONS) { KIT.icon[n] = CON.icon(n); KIT.iconOn[n] = CON.icon(n, '#000'); }
 }
-
-// ---- The 9-slice compositor --------------------------------------------------------------------------------------
-// Each kit element is drawn whole at its own device-pixel size: the piece's four corners at their margins (scaled down
-// only when the slot is smaller than the piece), edges and centre stretched, every slice on whole pixels, so no seam
-// can show between slices at any console scale (owner, 2026-11-01: "see these slice lines?"). One image per state,
-// cached by piece and size; a ResizeObserver redraws an element when its size changes (a bar's fill growing).
-const STATES = [
-  ['k-button', ['button.idle', 'button.hover', 'button.pressed']], ['k-tab', ['tab.idle', 'tab.active']],
-  ['cell', ['cell.idle', 'cell.lit', 'cell.warn', 'cell.locked', 'cell.accord']], ['k-fill-ok', ['bar.fill.accord', 'bar.fill.red']], ['k-fill', ['bar.fill', 'bar.fill.red']],
-  ['k-panel', ['frame.panel']], ['k-inset', ['frame.inset']], ['k-track', ['bar.track']], ['k-divider', ['divider']],
-  ['top', ['strip.top']], ['bottom', ['strip.bottom']],
-];
-const NINE_IMG = new Map();
-function nineImage(piece, w, h) {
-  const p = KIT.nine[piece], dpr = Math.min(devicePixelRatio, 2) * S;
-  const W = Math.max(1, Math.round(w * dpr)), H = Math.max(1, Math.round(h * dpr)), key = `${piece}|${W}|${H}`;
-  let url = NINE_IMG.get(key); if (url) return url;
-  const src = KIT.src[piece], sk = src.width / p.size[0], [mt, mr, mb, ml] = p.m;
-  let k = Math.min(1, h / p.size[1]) * dpr;
-  k = Math.min(k, W / Math.max(1, (ml + mr)), H / Math.max(1, (mt + mb)));
-  const d = [mt, mr, mb, ml].map((n) => Math.round(n * k));
-  const sx = [0, ml * sk, src.width - mr * sk, src.width], sy = [0, mt * sk, src.height - mb * sk, src.height];
-  const dx = [0, d[3], W - d[1], W], dy = [0, d[0], H - d[2], H];
-  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
-    const sw = sx[j + 1] - sx[j], sh = sy[i + 1] - sy[i], dw = dx[j + 1] - dx[j], dh = dy[i + 1] - dy[i];
-    if (sw > 0 && sh > 0 && dw > 0 && dh > 0) x.drawImage(src, sx[j], sy[i], sw, sh, dx[j], dy[i], dw, dh);
-  }
-  url = `url(${c.toDataURL()})`; NINE_IMG.set(key, url);
-  return url;
-}
-function nineFor(n) {
-  const row = STATES.find(([cls]) => n.classList.contains(cls)); if (!row) return;
-  const w = n.offsetWidth, h = n.offsetHeight; if (!w || !h) return;
-  row[1].forEach((piece, i) => { const u = nineImage(piece, w, h); if (n.style.getPropertyValue(`--n${i}`) !== u) n.style.setProperty(`--n${i}`, u); });
-}
-const nineRO = new ResizeObserver((list) => { for (const e of list) nineFor(e.target); });
-function watchNine() { for (const n of root.querySelectorAll('.nine:not([data-ro])')) { n.dataset.ro = '1'; nineRO.observe(n); } }
-
-// =================================================================================================================
-// UI helpers. A panel is built once (on a tab change, an expand or a change of ship); its readouts are binders that
-// read the simulation ten times a second, so nothing is rebuilt under the hand.
-// =================================================================================================================
-const binders = {};
-let region = 'none';
-const bind = (fn) => { (binders[region] ||= []).push(fn); fn(); };
 function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
 function css(n, s) { n.style.cssText += s; return n; }
-function txt(fn, cls = 'txt') { const n = el('div', cls); bind(() => { const v = fn(); if (n.textContent !== v) n.textContent = v; }); return n; }
-function htm(fn, cls) { const n = el('div', cls); bind(() => { const v = fn(); if (n.innerHTML !== v) n.innerHTML = v; }); return n; }
-function btn(label, onClick, o = {}) {
-  const b = el('button', 'nine k-button' + (o.sm ? ' sm' : ''), typeof label === 'function' ? '' : label); b.type = 'button';
-  b.onclick = (e) => { e.stopPropagation(); onClick(); tickUI(); };
-  if (o.sel || o.dis || typeof label === 'function') bind(() => { if (o.sel) b.classList.toggle('pressed', !!o.sel()); if (o.dis) b.disabled = !!o.dis(); if (typeof label === 'function') { const v = label(); if (b.textContent !== v) b.textContent = v; } });
-  return b;
-}
-function tab(label, onClick, sel, dis) {
-  const b = el('button', 'nine k-tab', label); b.type = 'button'; b.onclick = (e) => { e.stopPropagation(); onClick(); tickUI(); };
-  bind(() => { b.classList.toggle('sel', !!sel()); if (dis) b.disabled = !!dis(); });
-  return b;
-}
-// A tab that shows an icon instead of a word: Sky ink when idle, black when lit. Its name is its accessible label.
-function itab(ic, label, onClick, sel, dis) {
-  const b = el('button', 'nine k-tab ic'); b.type = 'button'; b.setAttribute('aria-label', label); b.title = label;
-  const i = new Image(); i.alt = ''; b.append(i); b.onclick = (e) => { e.stopPropagation(); onClick(); tickUI(); };
-  b.onpointerenter = () => showTip(b, label); b.onpointerleave = hideTip;
-  bind(() => { const on = !!sel(); b.classList.toggle('sel', on); const src = (on ? KIT.iconsOn : KIT.icons)[ic]; if (i.src !== src) i.src = src; if (dis) b.disabled = !!dis(); });
-  return b;
-}
-// The name of an icon tab, shown above it while the pointer is over it (a lit pill, the kit's pressed button).
-function showTip(b, label) {
-  const t = document.getElementById('tip'); if (!t) return;
-  const r = b.getBoundingClientRect(), o = root.getBoundingClientRect();
-  t.textContent = label; t.style.display = 'flex';
-  const w = t.offsetWidth, cx = (r.left + r.width / 2 - o.left) / S, top = (r.top - o.top) / S - 34;
-  css(t, `left:${clamp(cx - w / 2, 4, RW - w - 4)}px;top:${Math.max(4, top)}px;`);
-}
-function hideTip() { const t = document.getElementById('tip'); if (t) t.style.display = 'none'; }
-function itabs(list, cur, set) { const r = el('div', 'tabs'); for (const [id, label, ic] of list) r.append(itab(ic, label, () => set(id), () => cur() === id)); return r; }
-function tabs(list, cur, set, dis) { const r = el('div', 'tabs'); for (const [id, label] of list) r.append(tab(label, () => set(id), () => cur() === id, dis ? () => dis(id) : null)); return r; }
-function bar(label, frac, warn, ok) {
-  const b = el('div', 'barbox'); if (label) b.append(typeof label === 'function' ? txt(label, 'lbl') : el('div', 'lbl', label));
-  const tr = el('div', 'nine k-track'), f = el('div', 'nine k-fill' + (ok ? ' k-fill-ok' : '')); css(f, 'left:3px;top:3px;'); tr.append(f); b.append(tr);
-  bind(() => { const v = clamp(frac(), 0, 1); f.style.width = `calc((100% - 6px) * ${v})`; f.style.display = v > 0.005 ? '' : 'none'; f.classList.toggle('warn', !!(warn && warn(v))); });
-  return b;
-}
-// A row of discrete boxes (CLAUDE.md section 7): n cells, value() lit, cells at or past cap() locked, set(k) on a tap.
-function cells(n, value, set, cap, warn, litCls = 'lit') {
-  const r = el('div', 'cells'), cs = [];
-  for (let i = 0; i < n; i++) { const c = el('div', 'nine cell'); c.onclick = (e) => { e.stopPropagation(); if (!c.classList.contains('locked')) { set(i + 1 === Math.round(value()) ? i : i + 1); tickUI(); } }; cs.push(c); r.append(c); }
-  bind(() => { const v = value(), k = cap ? cap() : n; cs.forEach((c, i) => { c.className = 'nine cell' + (i < v ? (warn && warn(i) ? ' warn' : ' ' + litCls) : i >= k ? ' locked' : ''); }); });
-  return r;
-}
-function icon(name, size = 28) { const i = new Image(); i.src = KIT.icons[name]; i.alt = ''; css(i, `width:${size}px;height:${size}px;flex:none;`); return i; }
-function hero(id, w, h) { const d = el('div', 'hero'); css(d, `width:${w}px;height:${h}px;`); const i = new Image(); i.src = KIT.hero[id]; i.alt = ''; d.append(i); return d; }
-// A canvas drawn live at twice its size; draw(x, w, h) in its own pixels; tap(x, y) on a click.
-function live(w, h, draw, tap) {
-  const c = el('canvas', 'live'); c.width = w * 2; c.height = h * 2; css(c, `width:${w}px;height:${h}px;flex:none;`);
-  const x = c.getContext('2d');
-  bind(() => { x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, w, h); x.lineCap = 'round'; x.lineJoin = 'round'; draw(x, w, h); });
-  if (tap) c.onclick = (e) => { e.stopPropagation(); const r = c.getBoundingClientRect(); tap((e.clientX - r.left) / r.width * w, (e.clientY - r.top) / r.height * h); tickUI(); };
-  return c;
-}
 const pct = (v) => `${Math.round(v * 100)}%`;
 const km = (v) => `${v.toFixed(1)} KM`;
 const shieldCol = (s, i) => !s.shUp ? CC.deep : s.shields[i] / shieldMax(s, i) > 0.66 ? CC.accord : s.shields[i] / shieldMax(s, i) > 0.33 ? CC.caution : CC.alert;
 const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 
+// ---- The drawing surface ------------------------------------------------------------------------------------------
+const root = document.getElementById('root');
+const ui = document.createElement('canvas'); ui.id = 'ui';
+const g = ui.getContext('2d');
+let DPR = 1;
+function sizeUI() { DPR = Math.min(devicePixelRatio, 2); ui.width = Math.round(innerWidth * DPR); ui.height = Math.round(innerHeight * DPR); css(ui, `width:${innerWidth}px;height:${innerHeight}px;`); }
+
+// A kit piece composed whole at its device-pixel rectangle, its corners at their margins (keys, tabs, cells and fills
+// shrink their margins with their height, as the CSS kit did), every slice on whole pixels; cached by piece and size.
+const NINE_IMG = new Map();
+function nineCanvas(piece, W2, H2, sc, h) {
+  const key = `${piece}|${W2}|${H2}`; let c = NINE_IMG.get(key); if (c) return c;
+  if (NINE_IMG.size > 900) NINE_IMG.clear();
+  const p = KIT.nine[piece], src = KIT.src[piece], sk = src.width / p.size[0], [mt, mr, mb, ml] = p.m;
+  let k = (/^(button|tab|cell|bar\.fill)/.test(piece) ? Math.min(1, h / p.size[1]) : 1) * sc;
+  k = Math.min(k, W2 / Math.max(1, ml + mr), H2 / Math.max(1, mt + mb));
+  const d = [mt, mr, mb, ml].map((n) => Math.round(n * k));
+  const sx = [0, ml * sk, src.width - mr * sk, src.width], sy = [0, mt * sk, src.height - mb * sk, src.height];
+  const dx = [0, d[3], W2 - d[1], W2], dy = [0, d[0], H2 - d[2], H2];
+  c = document.createElement('canvas'); c.width = W2; c.height = H2; const x = c.getContext('2d');
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    const sw = sx[j + 1] - sx[j], sh = sy[i + 1] - sy[i], dw = dx[j + 1] - dx[j], dh = dy[i + 1] - dy[i];
+    if (sw > 0 && sh > 0 && dw > 0 && dh > 0) x.drawImage(src, sx[j], sy[i], sw, sh, dx[j], dy[i], dw, dh);
+  }
+  NINE_IMG.set(key, c); return c;
+}
+function nine(piece, x, y, w, h, alpha) {
+  const sc = S * DPR, X = Math.round(x * sc), Y = Math.round(y * sc), W2 = Math.round((x + w) * sc) - X, H2 = Math.round((y + h) * sc) - Y;
+  if (W2 < 1 || H2 < 1) return;
+  const c = nineCanvas(piece, W2, H2, sc, h);
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (alpha != null) g.globalAlpha = alpha; g.drawImage(c, X, Y); g.restore();
+}
+// Text: one font per role, trimmed with an ellipsis to its room, never reflowed.
+function fit(str, max) {
+  if (!(max > 0) || g.measureText(str).width <= max) return str;
+  let s = str; while (s.length > 1 && g.measureText(s + '…').width > max) s = s.slice(0, -1); return s + '…';
+}
+function text(str, x, y, font, color, align = 'left', max = 0, spacing = '0px') {
+  g.font = font; g.letterSpacing = spacing; g.fillStyle = color; g.textAlign = align; g.textBaseline = 'alphabetic';
+  g.fillText(fit(String(str), max), x, y); g.letterSpacing = '0px';
+}
+const LBL = (s, x, y, max = 0, col = CC.lilac, align = 'left', size = 15) => text(String(s).toUpperCase(), x, y, `600 ${size}px Antonio`, col, align, max, '1.5px');
+const NUM = (s, x, y, max = 0, col = CC.sky, align = 'left', size = 24) => text(String(s), x, y, `600 ${size}px Antonio`, col, align, max);
+const TXT = (s, x, y, max = 0, col = CC.text, align = 'left', size = 18) => text(String(s).toUpperCase(), x, y, `600 ${size}px Antonio`, col, align, max, '0.5px');
+// Label and value pairs in a line; each value's slot only ever grows, so a changing number never moves what follows.
+const SLOT = new Map();
+function pairs(id, x, y, items, max = 0, size = 24) {
+  g.save(); if (max) { g.beginPath(); g.rect(x - 2, y - size - 4, max + 4, size + 12); g.clip(); }
+  let cx = x;
+  items.forEach(([l, v, col], i) => {
+    g.font = '600 15px Antonio'; g.letterSpacing = '1.5px'; const lw = l ? g.measureText(String(l).toUpperCase()).width : 0; g.letterSpacing = '0px';
+    if (l) { LBL(l, cx, y); cx += lw + 7; }
+    g.font = `600 ${size}px Antonio`; const k = id + '.' + i, vw = Math.max(SLOT.get(k) || 0, g.measureText(String(v)).width); SLOT.set(k, vw);
+    NUM(v, cx, y, 0, col || CC.sky, 'left', size); cx += vw + 16;
+  });
+  g.restore(); return cx - x;
+}
+// A line of text in several colours.
+function rich(x, y, segs, font, max = 0) {
+  g.save(); if (max) { g.beginPath(); g.rect(x - 2, y - 30, max + 4, 40); g.clip(); }
+  g.font = font; g.letterSpacing = '0.5px'; g.textAlign = 'left'; let cx = x;
+  for (const [t, col] of segs) { const s = String(t).toUpperCase(); g.fillStyle = col; g.fillText(s, cx, y); cx += g.measureText(s).width; }
+  g.letterSpacing = '0px'; g.restore();
+}
+
+// ---- Input, immediate mode ----------------------------------------------------------------------------------------
+let HITS = [], PREV = [], HOT = null, ACTIVE = null, DRAG = null, PX = -1, PY = -1;
+function hit(id, x, y, w, h, o = {}) { HITS.push({ id, x, y, w, h, ...o }); return { hot: HOT === id, down: ACTIVE === id && HOT === id }; }
+function topAt(px, py) { for (let i = PREV.length - 1; i >= 0; i--) { const h = PREV[i]; if (px >= h.x && px <= h.x + h.w && py >= h.y && py <= h.y + h.h) return h; } return null; }
+const refXY = (e) => [e.clientX / S, e.clientY / S];
+const inView = (px, py) => px >= VIEW[0] && px < VIEW[0] + VIEW[2] && py >= VIEW[1] && py < VIEW[1] + VIEW[3];
+function wireInput() {
+  addEventListener('pointerdown', (e) => {
+    const [px, py] = refXY(e); PX = px; PY = py; const h = topAt(px, py);
+    if (h) { e.stopPropagation(); e.preventDefault(); ACTIVE = h.id; HOT = h.id; if (h.drag) { DRAG = h; h.drag(px, py, true); } return; }
+    if (!inView(px, py)) e.stopPropagation();
+  }, true);
+  addEventListener('pointermove', (e) => {
+    const [px, py] = refXY(e); PX = px; PY = py;
+    if (DRAG) { DRAG.drag(px, py, false); e.stopPropagation(); return; }
+    const h = topAt(px, py); HOT = h ? h.id : null;
+    root.style.cursor = h ? (h.cursor || (h.click || h.drag ? 'pointer' : 'default')) : '';
+  }, true);
+  addEventListener('pointerup', (e) => {
+    const [px, py] = refXY(e), h = topAt(px, py), was = ACTIVE; ACTIVE = null;
+    if (DRAG) { DRAG = null; e.stopPropagation(); return; }
+    if (was) { e.stopPropagation(); if (h && h.id === was && h.click) h.click(px, py, e.button); }
+  }, true);
+  addEventListener('contextmenu', (e) => { const [px, py] = refXY(e); if (topAt(px, py) || !inView(px, py)) e.preventDefault(); }, true);
+  addEventListener('wheel', (e) => { const [px, py] = refXY(e); if (topAt(px, py) || !inView(px, py)) e.stopPropagation(); }, { capture: true, passive: true });
+}
+// The actions used to rebuild DOM panels; the canvas redraws every frame, so they have nothing to do.
+const tickUI = () => {}, buildPanel = () => {}, rebuild = () => {}, renderSheet = () => {};
+
+// ---- Controls -----------------------------------------------------------------------------------------------------
+// A key: the kit's pill, idle, hover or pressed (pressed also when it is on); its label black, right-aligned.
+function button(id, x, y, w, h, label, click, o = {}) {
+  const dis = !!(o.dis && o.dis()), st = dis ? { hot: false, down: false } : hit(id, x, y, w, h, { click, tip: o.tip });
+  const on = o.sel && o.sel();
+  nine(dis ? 'button.idle' : st.down || on ? 'button.pressed' : st.hot ? 'button.hover' : 'button.idle', x, y, w, h, dis ? 0.35 : null);
+  const size = h >= 44 ? 22 : h >= 30 ? 17 : 15, pad = h >= 44 ? 24 : 12;
+  g.save(); if (dis) g.globalAlpha = 0.35;
+  text(String(label).toUpperCase(), o.center ? x + w / 2 : x + w - pad, y + h / 2 + size * 0.36, `600 ${size}px Antonio`, '#000', o.center ? 'center' : 'right', o.center ? w - 8 : w - pad - 12, '0.8px');
+  g.restore();
+}
+// A tab: one cap, a flat end; lit (Accord) when chosen. With an icon it shows the icon and names itself on hover.
+function tab(id, x, y, w, h, label, click, on, o = {}) {
+  const dis = !!(o.dis && o.dis()), st = dis ? { hot: false } : hit(id, x, y, w, h, { click, tip: o.icon ? label : o.tip });
+  nine(on ? 'tab.active' : 'tab.idle', x, y, w, h, dis ? 0.35 : null);
+  if (!on && st.hot) nine('tab.active', x, y, w, h, 0.22);
+  if (o.icon) { const s2 = Math.min(30, h - 8); g.drawImage((on ? KIT.iconOn : KIT.icon)[o.icon], x + (w - s2) / 2 + 3, y + (h - s2) / 2, s2, s2); return; }
+  g.save(); if (dis) g.globalAlpha = 0.35;
+  text(String(label).toUpperCase(), x + w - 8, y + h / 2 + 7, '600 19px Antonio', on ? '#000' : CC.text, 'right', w - 22, '0.6px');
+  g.restore();
+}
+function tabs(idp, x, y, w, h, list, cur, set, dis) {
+  const n = list.length, gap = 4, tw = (w - gap * (n - 1)) / n;
+  list.forEach(([id, label, ic], i) => tab(`${idp}.${id}`, x + i * (tw + gap), y, tw, h, label, () => set(id), cur === id, { dis: dis ? () => dis(id) : null, icon: ic }));
+}
+// A row of discrete boxes (CLAUDE.md section 7): value lit, those at or past cap locked, a tap sets the count.
+function cellRow(idp, x, y, w, h, n, value, set, cap, warn, litPiece = 'cell.lit', gap = 3) {
+  const cw = (w - gap * (n - 1)) / n, k = cap == null ? n : cap;
+  for (let i = 0; i < n; i++) {
+    const cx = x + i * (cw + gap), lit = i < value, locked = !lit && i >= k;
+    if (set && !locked) hit(`${idp}.${i}`, cx, y, cw, h, { click: () => set(i + 1 === Math.round(value) ? i : i + 1) });
+    nine(lit ? (warn && warn(i) ? 'cell.warn' : litPiece) : locked ? 'cell.locked' : 'cell.idle', cx, y, cw, h);
+  }
+}
+// A bar: its label above, the track, the fill (red for a warning, green when asked). Returns the height used.
+function bar(x, y, w, label, frac, warn, ok) {
+  let yy = y; if (label) { LBL(label, x, y + 13, w); yy = y + 19; }
+  nine('bar.track', x, yy, w, 16);
+  const v = clamp(frac, 0, 1); if (v > 0.005) nine(warn ? 'bar.fill.red' : ok ? 'bar.fill.accord' : 'bar.fill', x + 3, yy + 3, Math.max(10, Math.round((w - 6) * v)), 10);
+  return yy + 16 - y;
+}
+function divider(x, y, w) { nine('divider', x, y, w, 10); }
+function heroImg(id, x, y, w, h, alpha) { g.save(); if (alpha != null) g.globalAlpha = alpha; g.drawImage(KIT.hero[id], x, y, w, h); g.restore(); }
+// Draw with a function made for a canvas of its own, at (x, y), clipped to (w, h).
+function inBox(x, y, w, h, fn) { g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.translate(x, y); g.lineCap = 'round'; g.lineJoin = 'round'; const r = fn(g, w, h); g.restore(); return r; }
+
 // =================================================================================================================
 // The console's regions and panels.
 // =================================================================================================================
-const root = document.getElementById('root');
-let powerMode = 'alloc', NARROW = false, mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20;
+let powerMode = 'alloc', mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20;
 const STATIONS = [['helm', 'Helm', 'helm'], ['power', 'Power', 'power'], ['tactical', 'Tactical', 'tactical'], ['pd', 'Point defence', 'pd'], ['science', 'Science', 'science'], ['comms', 'Comms', 'comms'], ['repair', 'Repair', 'repair'], ['transport', 'Transport', 'transport'], ['fleet', 'Fleet', 'fleet']];
 const SHIPTABS = [['ssd', 'Systems', 'ship'], ['shields', 'Shields', 'shields'], ['sensors', 'Sensors', 'sensors'], ['tractor', 'Tractor', 'tractor'], ['craft', 'Craft', 'craft']];
 const PANELS = { station: 'Helm', ship: 'Ship', weapons: 'Weapons', radar: 'Map' };
-const R = {}; // region elements
-function makeRegions() {
-  root.replaceChildren();
-  R.view = el('div'); R.view.id = 'view';
-  R.top = el('div', 'nine k-strip top'); R.bottom = el('div', 'nine k-strip bottom');
-  R.plate = el('div', 'region'); R.prail = el('div', 'region'); R.prail.id = 'prail';
-  for (const id of Object.keys(PANELS)) { R[id] = el('section', 'nine k-panel panel'); R[id].dataset.id = id; }
-  R.radarRow = el('div', 'region');
-  R.sheet = el('div', 'sheet');
-  R.tip = el('div', 'nine k-button pressed'); R.tip.id = 'tip';
-  root.append(R.view, R.top, R.bottom, R.plate, R.station, R.ship, R.weapons, R.radar, R.radarRow, R.prail, R.sheet, R.tip);
-}
-function place(n, r) { if (!r) { n.style.display = 'none'; return; } n.style.display = ''; css(n, `left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;`); }
-// Rectangles, in reference pixels, for each screen shape (CLAUDE.md section 7; survey U1 and U2).
+// Rectangles, in reference pixels (1920 x 1080; CLAUDE.md section 7). Desktop only for now (owner, 2026-11-01:
+// "DO NOT MOCKUP MOBILE YET"). Expanded, a panel takes the left two thirds and the battle the right third (survey U1).
+let O = {};
 function rects() {
-  const o = {}, E = expanded;
-  if (mode === 'desk') {
-    const cw = 480;
-    o.top = [cw, 0, RW - cw, 56]; o.bottom = [cw, RH - 56, RW - cw, 56]; o.view = [cw, 56, RW - cw, RH - 112];
-    o.plate = [10, 6, 460, 56]; o.station = [6, 68, 468, 420]; o.ship = [6, 494, 468, 276]; o.weapons = [6, 776, 468, 160]; o.radarRow = [6, 942, 468, 132];
-    if (E) { for (const k of ['top', 'bottom', 'plate', 'station', 'ship', 'weapons', 'radarRow']) o[k] = null; o[E] = [6, 34, RW * 2 / 3 - 12, RH - 40]; o.view = [RW * 2 / 3, 0, RW / 3, RH]; }
-  } else if (mode === 'land') {
-    o.top = [0, 0, RW, 44]; o.bottom = [0, RH - 48, RW, 48]; o.prail = [4, 48, 84, RH - 100]; o.view = [92, 44, RW - 92, RH - 92];
-    if (E) { o.top = o.bottom = o.prail = null; o[E] = [4, 32, RW * 2 / 3 - 8, RH - 36]; o.view = [RW * 2 / 3, 0, RW / 3, RH]; }
-  } else {
-    o.top = [0, 0, RW, 44]; o.prail = [4, 46, RW - 8, 62]; o.bottom = [0, RH - 52, RW, 52]; o.view = [0, 112, RW, RH - 164];
-    if (E) { o.top = o.bottom = o.prail = null; o[E] = [4, 32, RW - 8, RH * 2 / 3 - 36]; o.view = [0, RH * 2 / 3, RW, RH / 3]; }
-  }
+  const o = {}, E = expanded, cw = 480;
+  o.top = [cw, 0, RW - cw, 56]; o.bottom = [cw, RH - 56, RW - cw, 56]; o.view = [cw, 56, RW - cw, RH - 112];
+  o.plate = [10, 6, 460, 56]; o.station = [6, 68, 468, 420]; o.ship = [6, 494, 468, 276]; o.weapons = [6, 776, 468, 160]; o.radarRow = [6, 942, 468, 132];
+  if (E) { for (const k of ['top', 'bottom', 'plate', 'station', 'ship', 'weapons', 'radarRow']) o[k] = null; o[E] = [6, 34, RW * 2 / 3 - 12, RH - 40]; o.view = [RW * 2 / 3, 0, RW / 3, RH]; }
   return o;
 }
 function layout() {
   const w = innerWidth, h = innerHeight;
-  // Desktop first (owner, 2026-11-01: "lets first only care about the desktop experience FIRST", "DO NOT MOCKUP MOBILE YET"):
-  // every window gets the desktop layout, scaled. The phone layouts below stay dormant until the owner asks for them.
-  mode = MOBILE && !(w >= 1000 && h >= 600) ? (w > h ? 'land' : 'port') : 'desk';
-  S = mode === 'desk' ? Math.min(h / 1080, w / 1500) : mode === 'land' ? Math.min(w / 844, h / 390) : Math.min(w / 390, h / 844);
-  RW = w / S; RH = h / S;
-  css(root, `width:${RW}px;height:${RH}px;transform:scale(${S});`);
-  root.dataset.mode = mode; if (expanded) root.dataset.exp = expanded; else delete root.dataset.exp;
-  const o = rects();
-  for (const k of ['top', 'bottom', 'view', 'plate', 'prail', 'radarRow']) place(R[k], o[k]);
-  for (const k of Object.keys(PANELS)) place(R[k], o[k] || null);
-  for (const k of ['top', 'bottom']) R[k].classList.toggle('compact', mode !== 'desk');
-  sizeView(o.view);
-  rebuild();
-  watchNine(); for (const n of root.querySelectorAll('.nine')) nineFor(n); // a new scale needs new pixels
+  mode = 'desk'; S = Math.min(h / 1080, w / 1500); RW = w / S; RH = h / S;
+  O = rects(); sizeView(O.view); sizeUI();
+  const home = document.getElementById('home');
+  if (home) css(home, `display:${expanded ? 'none' : 'block'};right:${14 * S}px;bottom:${(56 + 50) * S}px;font-size:${13 * S}px;`);
 }
-function rebuild() {
-  hideTip();
-  buildTop(); buildBottom(); buildPlate(); buildPhoneRail();
-  for (const id of Object.keys(PANELS)) buildPanel(id);
-  buildRadarRow(); buildViewUI(); renderSheet(); tickUI();
+// A panel: the kit frame, its title in a notch that breaks the top arm (LCARS's habit), Expand beside it.
+const FP = CON.kit['frame.panel'].m;
+function panel(id, r, title, big, noX) {
+  const [x, y, w, h] = r; nine('frame.panel', x, y, w, h);
+  const cx = x + FP[3], cy = y + FP[0], cw = w - FP[1] - FP[3], ch = h - FP[0] - FP[2];
+  g.font = '700 24px Antonio'; g.letterSpacing = '1px'; const tw = Math.min(g.measureText(title.toUpperCase()).width, cw - 160); g.letterSpacing = '0px';
+  const bl = big ? 'Return' : 'Expand'; g.font = '600 15px Antonio'; const bw = noX ? -10 : Math.ceil(g.measureText(bl.toUpperCase()).width) + 24;
+  const x1 = cx + cw - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, ty = cy - 29;
+  g.fillStyle = '#000'; g.fillRect(x0, ty, total, 26);
+  text(title.toUpperCase(), x0 + 8, ty + 22, '700 24px Antonio', CC.sky, 'left', tw, '1px');
+  if (!noX) button(`${id}.xp`, x1 - 8 - bw, ty, bw, 26, bl, () => A.expand(id), { center: true });
+  return { x: cx, y: cy, w: cw, h: ch };
 }
-function panelShell(id, title) {
-  hideTip(); const p = R[id]; p.replaceChildren(); region = id; binders[id] = [];
-  const t = el('div', 'ptitle'); t.append(typeof title === 'function' ? txt(title, '') : el('span', '', title));
-  const big = expanded === id;
-  t.append(btn(big ? 'Return' : 'Expand', () => A.expand(id), { sm: true }));
-  const pin = el('div', 'pin'); p.append(t, pin);
-  return { pin, big };
+// A column of icon tabs down a panel's left side (owner: "group icons into a narrow column"); names show on hover.
+function rail(idp, x, y, list, cur, set) { list.forEach(([id, label, ic], i) => tab(`${idp}.${id}`, x, y + i * 42, 48, 40, label, () => set(id), cur === id, { icon: ic })); }
+function clipped(b, fn) { g.save(); g.beginPath(); g.rect(b.x - 2, b.y - 2, b.w + 4, b.h + 4); g.clip(); fn(); g.restore(); }
+
+// ---- Strips and plate ---------------------------------------------------------------------------------------------
+function uiTop(r) {
+  const [x, y, w, h] = r, s = W.player; nine('strip.top', x, y, w, h);
+  const cx = x + 96, cw = w - 192, cy = y + (44 - 35) / 2, fixed = 70 + 100 + 80, gap = 22, rest = cw - fixed - gap * 5, u = rest / 3.2;
+  let xx = cx;
+  bar(xx, cy, u, 'Hull integrity', s.hull / CLASSES[s.cls].hull, s.hull / CLASSES[s.cls].hull < 0.35); xx += u + gap;
+  LBL('Weapon capacitor', xx, cy + 13, u * 1.2); cellRow('cap', xx, cy + 19, u * 1.2, 16, 14, s.cap / CLASSES[s.cls].capacitor_e * 14, null, null); xx += u * 1.2 + gap;
+  const t = tgt(s); bar(xx, cy, u, t ? `Target hull · ${t.name}` : 'Target hull', t ? t.hull / CLASSES[t.cls].hull : 0, true); xx += u + gap;
+  NUM(mmss(W.t), xx + 70, cy + 30, 0, CC.sky, 'right'); xx += 70 + gap;
+  button('pause', xx, cy + 4, 100, 30, paused ? 'Resume' : 'Pause', A.pause, { sel: () => paused, center: true }); xx += 100 + gap;
+  button('menu', xx, cy + 4, 80, 30, 'Menu', A.menu, { center: true });
 }
-function buildPanel(id) {
-  if (R[id].style.display === 'none') { R[id].replaceChildren(); binders[id] = []; return; }
-  ({ station: buildStation, ship: buildShip, weapons: buildWeapons, radar: buildMap })[id]();
+// Speed: the ten engine boxes are the track, a handle on them is dragged (owner: "speed needs a slider handle").
+function speedSlider(x, y, w, h) {
+  const s = W.player, top = SPEED_PER_BOX_M_S * 10;
+  cellRow('spd', x, y + (h - 24) / 2, w, 24, 10, Math.max(0, s.vOrder) / SPEED_PER_BOX_M_S, null, Math.floor(maxSpeed(s) / SPEED_PER_BOX_M_S + 1e-6));
+  hit('spd', x - 8, y, w + 16, h, { drag: (px) => A.setSpeed(Math.round(clamp((px - x) / w, 0, 1) * top / 5) * 5), cursor: 'ew-resize', tip: 'Speed' });
+  const f = clamp(s.vOrder / top, 0, 1); nine('button.pressed', x + f * w - 11, y + (h - 36) / 2, 22, 36);
+}
+function uiBottom(r) {
+  const [x, y, w, h] = r, s = W.player; nine('strip.bottom', x, y, w, h);
+  const cx = x + 96, cw = w - 192, cy = y + 12, ch = 44, gap = 22, fixed = 120 + 138, rest = cw - fixed - gap * 4, u = rest / 3.45;
+  let xx = cx;
+  LBL('Speed', xx, cy + 28); NUM(String(Math.round(s.v)), xx + 58, cy + 31, 46, CC.sky, 'left'); speedSlider(xx + 112, cy, u * 1.5 - 112, ch); xx += u * 1.5 + gap;
+  // Power and Systems as ticks, one per energy point of the reactor's rating (owner: "can you show this as discrete
+  // marks/ticks?"): Power blue, lit to the output; Systems green, lit to the draw, red past the output.
+  const n = CLASSES[s.cls].reactor_e, outN = Math.floor(output(s) + 1e-6), tw = u * 1.4 - 68 - 60;
+  LBL('Power', xx, cy + 17, 0, CC.lilac, 'left', 12); cellRow('pt', xx + 68, cy + 6, tw, 12, n, outN, null, null, null, 'cell.lit', 2);
+  NUM(`${output(s).toFixed(1)} E`, xx + 68 + tw + 58, cy + 17, 0, CC.sky, 'right', 14);
+  LBL('Systems', xx, cy + 34, 0, CC.lilac, 'left', 12); cellRow('st', xx + 68, cy + 23, tw, 12, n, Math.min(n, Math.ceil(used(s) - 1e-6)), null, null, (i) => i >= outN, 'cell.accord', 2);
+  NUM(`${used(s).toFixed(1)} E`, xx + 68 + tw + 58, cy + 34, 0, used(s) > output(s) + 1e-6 ? CC.alert : CC.sky, 'right', 14);
+  xx += u * 1.4 + gap;
+  bar(xx, cy + 4, u * 0.55, `Battery ${s.battery.toFixed(1)} E`, s.battery / CLASSES[s.cls].battery_e, s.battery / CLASSES[s.cls].battery_e < 0.25); xx += u * 0.55 + gap;
+  button('next', xx, cy + 7, 120, 30, 'Next target', A.nextTarget, { center: true }); xx += 120 + gap;
+  // Alert condition: three lamps, the set one lit (owner: "can I get red, yellow, green alerts?").
+  [['green', 'Condition green'], ['yellow', 'Yellow alert'], ['red', 'Red alert']].forEach(([lv, name], i) => {
+    const lx = xx + i * 46, on = s.alert === lv, st = hit(`alert.${lv}`, lx, cy + 2, 40, 40, { click: () => A.alert(lv), tip: name });
+    heroImg(`lamp.alert.${lv}`, lx, cy + 2, 40, 40, on ? 1 : st.hot ? 0.6 : 0.28);
+  });
+}
+function uiPlate(r) {
+  const [x, y] = r, s = W.player, own = W.ships.filter((o) => o.side === 0 && o.alive);
+  heroImg('nameplate', x, y, 460, 56);
+  text(`${s.name} · ${s.captain}`.toUpperCase(), x + 108, y + 36, '700 28px Antonio', CC.text, 'left', 250);
+  button('fleet', x + 460 - 90, y + 6, 86, 30, `Fleet ${own.indexOf(s) + 1}/${own.length}`, () => A.command(own[(own.indexOf(s) + 1) % own.length].id), { center: true });
 }
 
-// ---- Top and bottom strips -------------------------------------------------------------------------------------
-function buildTop() {
-  region = 'top'; binders.top = []; R.top.replaceChildren();
-  const c = mode !== 'desk';
-  if (mode === 'land') R.top.append(txt(() => W.player.name, 'num'));
-  R.top.append(bar(c ? 'Hull' : 'Hull integrity', () => W.player.hull / CLASSES[W.player.cls].hull, (v) => v < 0.35));
-  const cap = el('div', 'barbox'); cap.append(el('div', 'lbl', c ? 'Capacitor' : 'Weapon capacitor'),
-    cells(c ? 7 : 14, () => W.player.cap / CLASSES[W.player.cls].capacitor_e * (c ? 7 : 14), () => {}, null)); if (!c) css(cap, 'flex:1.2;'); R.top.append(cap);
-  R.top.append(bar(() => { const t = tgt(W.player); return c ? 'Target' : t ? `Target hull · ${t.name}` : 'Target hull'; }, () => { const t = tgt(W.player); return t ? t.hull / CLASSES[t.cls].hull : 0; }, () => true));
-  R.top.append(txt(() => mmss(W.t), 'num'));
-  R.top.append(btn(() => (paused ? 'Resume' : 'Pause'), A.pause, { sm: true, sel: () => paused }), btn('Menu', A.menu, { sm: true }));
-}
-function buildBottom() {
-  region = 'bottom'; binders.bottom = []; R.bottom.replaceChildren();
-  const c = mode !== 'desk', s = () => W.player;
-  const sp = el('div', 'row'); css(sp, `flex:${c ? 1.6 : 1.5};gap:10px;`);
-  sp.append(el('div', 'lbl', 'Speed'), txt(() => `${Math.round(s().v)}`, 'num'));
-  if (c) sp.append(btn('−', () => A.speedStep(-1), { sm: true }));
-  sp.append(speedSlider(s));
-  if (c) sp.append(btn('+', () => A.speedStep(1), { sm: true }));
-  R.bottom.append(sp);
-  // Power over systems, on one scale (the reactor's rating), so the systems' drain reads against the output at a glance
-  // (owner, 2026-11-01: "power and systems need to sit on top of each other so we can see how much power our systems
-  // are draining"). A drain past the output turns the systems bar red.
-  // Power and Systems as ticks, one per energy point of the reactor's rating (owner, 2026-11-01: "can you show this as
-  // discrete marks/ticks?"): Power blue, lit to the output; Systems green, lit to the draw, red past the output.
-  const ps = el('div', 'grid'); css(ps, 'grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:3px;flex:1.4;');
-  const rated = () => CLASSES[s().cls].reactor_e, n = CLASSES[W.player.cls].reactor_e;
-  const pt = cells(n, () => Math.floor(output(s()) + 1e-6), () => {}, null, null, 'lit');
-  const st = cells(n, () => Math.min(n, Math.ceil(used(s()) - 1e-6)), () => {}, null, (i) => i >= Math.floor(output(s()) + 1e-6), 'ok');
-  for (const r2 of [pt, st]) r2.classList.add('ticks');
-  ps.append(el('div', 'lbl', 'Power'), pt, txt(() => `${output(s()).toFixed(1)} E`, 'num'), el('div', 'lbl', 'Systems'), st, txt(() => `${used(s()).toFixed(1)} E`, 'num'));
-  ps.querySelectorAll('.num').forEach((n) => css(n, 'font-size:14px;line-height:14px;')); ps.querySelectorAll('.lbl').forEach((n) => css(n, 'font-size:12px;line-height:12px;')); css(ps, 'align-self:center;');
-  if (mode !== 'port') R.bottom.append(ps);
-  // The battery: what is stored, which a drain past the output empties.
-  const bat = bar(() => `Battery ${s().battery.toFixed(1)} E`, () => s().battery / CLASSES[s().cls].battery_e, (v) => v < 0.25); css(bat, 'flex:0.55;');
-  R.bottom.append(bat);
-  if (!c) R.bottom.append(btn('Next target', A.nextTarget, { sm: true }));
-  // Three alert lamps, the kit's hero pieces: the set condition lit, the others dim. Their names show on hover.
-  const lamps = el('div', 'row'); css(lamps, 'gap:6px;flex:none;');
-  for (const [lv, name] of [['green', 'Condition green'], ['yellow', 'Yellow alert'], ['red', 'Red alert']]) {
-    const k2 = el('button', 'alertkey'); k2.type = 'button'; k2.setAttribute('aria-label', name); const im = new Image(); im.src = KIT.hero['lamp.alert.' + lv]; im.alt = ''; k2.append(im);
-    k2.onclick = (e) => { e.stopPropagation(); A.alert(lv); tickUI(); }; k2.onpointerenter = () => showTip(k2, name); k2.onpointerleave = hideTip;
-    bind(() => k2.classList.toggle('on', W.player.alert === lv)); lamps.append(k2);
-  }
-  R.bottom.append(lamps);
-}
-// Speed: the ten engine boxes are the track (lit up to the ordered speed, locked past what the engines' power allows),
-// and a handle on them is dragged to order a speed (owner, 2026-11-01: "speed needs a slider handle"). The handle
-// stops at the engines' limit; one box is 30 m/s.
-function speedSlider(s) {
-  const top = SPEED_PER_BOX_M_S * 10, w = el('div', 'spd');
-  const cl = cells(10, () => Math.max(0, s().vOrder) / SPEED_PER_BOX_M_S, () => {}, () => Math.floor(maxSpeed(s()) / SPEED_PER_BOX_M_S + 1e-6));
-  const h = el('div', 'nine k-button pressed spd-h'); h.setAttribute('role', 'slider'); h.setAttribute('aria-label', 'Speed'); h.tabIndex = 0;
-  w.append(cl, h);
-  const at = (e) => { const r = cl.getBoundingClientRect(); A.setSpeed(Math.round(clamp((e.clientX - r.left) / r.width, 0, 1) * top / 5) * 5); tickUI(); };
-  w.onpointerdown = (e) => { e.stopPropagation(); w.setPointerCapture(e.pointerId); w.dataset.drag = '1'; at(e); };
-  w.onpointermove = (e) => { if (w.dataset.drag) at(e); };
-  w.onpointerup = w.onpointercancel = () => { delete w.dataset.drag; };
-  h.onkeydown = (e) => { if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); A.speedStep(e.code === 'ArrowRight' ? 1 : -1); tickUI(); } };
-  bind(() => { const f = clamp(s().vOrder / top, 0, 1); h.style.left = `calc(${f * 100}% - 11px)`; h.setAttribute('aria-valuenow', String(Math.round(s().vOrder))); });
-  return w;
-}
-function buildPlate() {
-  region = 'plate'; binders.plate = []; R.plate.replaceChildren();
-  if (mode !== 'desk' || expanded) return;
-  const p = hero('nameplate', 460, 56); const t = txt(() => `${W.player.name} · ${W.player.captain}`, 'num');
-  css(t, 'position:absolute;left:108px;top:8px;width:250px;height:34px;font:700 28px/34px "Antonio",sans-serif;color:' + CC.text + ';text-transform:uppercase;');
-  const f = btn(() => `Fleet ${W.ships.filter((x) => x.side === 0 && x.alive).indexOf(W.player) + 1}/${W.ships.filter((x) => x.side === 0 && x.alive).length}`, () => { const own = W.ships.filter((x) => x.side === 0 && x.alive); A.command(own[(own.indexOf(W.player) + 1) % own.length].id); }, { sm: true });
-  css(f, 'position:absolute;right:4px;top:6px;');
-  p.append(t, f); R.plate.append(p);
-}
-function buildPhoneRail() {
-  region = 'prail'; binders.prail = []; R.prail.replaceChildren();
-  if (mode === 'desk' || expanded) return;
-  for (const [id, label, ic] of [['station', 'Stations', 'helm'], ['ship', 'Ship', 'ship'], ['weapons', 'Weapons', 'weapons'], ['radar', 'Map', 'map']]) {
-    const b = itab(ic, label, () => A.expand(id), () => false); R.prail.append(b);
-  }
-}
-
-// ---- Station panel: the officers' stations, a rail of tabs broken out of the frame (LCARS's habit) ----------------
-function buildStation() {
-  const { pin, big } = panelShell('station', () => STATIONS.find((s) => s[0] === station)[1]);
-  // Narrow (a phone in portrait): the rail becomes a 3 x 3 grid of tabs above the station.
-  const narrow = mode === 'port';
-  const rail = el('div', 'rail'); if (big && mode !== 'desk') css(rail, 'width:72px;');
-  if (narrow) { css(pin, 'flex-direction:column;'); css(rail, 'display:grid;grid-template-columns:repeat(5,1fr);width:auto;gap:4px;overflow:visible;'); }
-  for (const [id, label, ic] of STATIONS) { const t = itab(ic, label, () => A.station(id), () => station === id); if (mode !== 'desk') css(t, 'height:44px;'); rail.append(t); }
-  const body = el('div', 'col fill'); pin.append(rail, body);
-  NARROW = narrow;
-  ({ helm: stHelm, power: stPower, tactical: stTactical, pd: stPD, science: stScience, comms: stComms, repair: stRepair, transport: stTransport, fleet: stFleet })[station](body, big);
+// ---- Stations ------------------------------------------------------------------------------------------------------
+function uiStation(r, big) {
+  const st = STATIONS.find((s) => s[0] === station), P0 = panel('station', r, st[1], big);
+  rail('st', P0.x, P0.y, STATIONS, station, A.station);
+  const b = { x: P0.x + 56, y: P0.y, w: P0.w - 56, h: P0.h };
+  clipped(b, () => ({ helm: stHelm, power: stPower, tactical: stTactical, pd: stPD, science: stScience, comms: stComms, repair: stRepair, transport: stTransport, fleet: stFleet })[station](b, big));
 }
 function helmKey(x, y, size) {
   const c = size / 2, dx = x - c, dy = y - c, r = Math.hypot(dx, dy) / size * 300;
@@ -1258,326 +1095,259 @@ function helmKey(x, y, size) {
   return Math.round(((Math.atan2(dy, dx) + P / 2) / (P / 4) + 8)) % 8;
 }
 const HELM_KEYS = [['+30', () => A.speedStep(1)], ['15°', () => A.turn(15)], ['45°', () => A.turn(45)], ['90°', () => A.turn(90)], ['−30', () => A.speedStep(-1)], ['90°', () => A.turn(-90)], ['45°', () => A.turn(-45)], ['15°', () => A.turn(-15)]];
-function helmPad(size) {
-  const h = hero('helm.pad', size, size); let lit = -1, litT = 0;
-  h.append(live(size, size, (x) => {
-    const k = size / 300; x.save(); x.scale(k, k);
-    if (lit >= 0 && performance.now() - litT < 160) { x.fillStyle = CC.sky; if (lit === 8) { x.beginPath(); x.arc(150, 150, 46, 0, 2 * P); x.fill(); } else { const a = -P / 2 + (lit - 0.5) * P / 4; CON.arcSeg(x, 150, 150, 58, 128, a + 0.06, a + P / 4 - 0.06); x.fill(); } }
-    for (let i = 0; i < 8; i++) {
-      const a = -P / 2 + i * P / 4, px = 150 + Math.cos(a) * 93, py = 150 + Math.sin(a) * 93;
-      x.save(); x.translate(px, py); x.rotate(a); x.translate(-8, 0); CON.live.arrow(x); x.restore();
-      x.fillStyle = '#000'; x.font = '700 17px Antonio'; x.textAlign = 'center'; x.fillText(HELM_KEYS[i][0], 150 + Math.cos(a) * 93, 150 + Math.sin(a) * 93 + (Math.sin(a) > 0.5 ? -14 : 24));
-    }
-    CON.live.helmCentre(x, 150); x.restore();
-  }, (x, y) => { const key = helmKey(x, y, size); if (key == null) return; lit = key === 'stop' ? 8 : key; litT = performance.now(); if (key === 'stop') A.allStop(); else HELM_KEYS[key][1](); }));
-  return h;
+let helmLit = -1, helmLitT = 0;
+function helmPad(px, py, size) {
+  heroImg('helm.pad', px, py, size, size);
+  const st = hit('helm', px, py, size, size, { click: (qx, qy) => { const k = helmKey(qx - px, qy - py, size); if (k == null) return; helmLit = k === 'stop' ? 8 : k; helmLitT = performance.now(); if (k === 'stop') A.allStop(); else HELM_KEYS[k][1](); } });
+  const hk = st.hot ? helmKey(PX - px, PY - py, size) : null;
+  g.save(); g.translate(px, py); g.scale(size / 300, size / 300);
+  const lightKey = (key, a2) => { g.globalAlpha = a2; g.fillStyle = CC.sky; if (key === 'stop' || key === 8) { g.beginPath(); g.arc(150, 150, 46, 0, 2 * P); g.fill(); } else { const a = -P / 2 + (key - 0.5) * P / 4; CON.arcSeg(g, 150, 150, 58, 128, a + 0.06, a + P / 4 - 0.06); g.fill(); } g.globalAlpha = 1; };
+  if (hk != null) lightKey(hk, 0.35);
+  if (helmLit >= 0 && performance.now() - helmLitT < 160) lightKey(helmLit, 1);
+  for (let i = 0; i < 8; i++) {
+    const a = -P / 2 + i * P / 4, qx = 150 + Math.cos(a) * 93, qy = 150 + Math.sin(a) * 93;
+    g.save(); g.translate(qx, qy); g.rotate(a); g.translate(-8, 0); CON.live.arrow(g); g.restore();
+    g.fillStyle = '#000'; g.font = '700 17px Antonio'; g.textAlign = 'center'; g.fillText(HELM_KEYS[i][0], qx, qy + (Math.sin(a) > 0.5 ? -14 : 24));
+  }
+  CON.live.helmCentre(g, 150); g.restore();
 }
 function bestChance() { const s = W.player, t = tgt(s); if (!t) return 0; return Math.max(0, ...s.mounts.filter((m) => m.sel && m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t)).map((m) => hitChance(s, m, t))); }
 function stHelm(b, big) {
-  const s = () => W.player, pad = helmPad(big ? Math.min(420, (RH - 120) * 0.6) : 196);
-  const read = el('div', 'row'); css(read, 'justify-content:space-between;');
-  read.append(htm(() => `<span class="lbl">To hit</span> <span class="num">${tgt(s()) ? pct(bestChance()) : '--'}</span>`, 'row'),
-    htm(() => `<span class="lbl">Hdg</span> <span class="num">${String(Math.round(((s().h / DEG) + 360) % 360)).padStart(3, '0')}</span>`, 'row'),
-    htm(() => `<span class="lbl">Order</span> <span class="num">${Math.round(s().vOrder)}</span>`, 'row'));
-  const ord = el('div', 'grid'); css(ord, 'grid-template-columns:1fr 1fr;');
-  for (const [id, label] of ORDERS) ord.append(tab(label, () => A.order(id), () => s().order === id));
-  const eng = btn(() => (s().engaged ? 'Engaged' : 'Engage'), A.engage, { sel: () => s().engaged, dis: () => !tgt(s()) });
-  if (!big) { css(pad, 'align-self:center;'); b.append(pad, read, ord, eng); return; }
-  const r = el('div', 'row fill'); css(r, 'align-items:flex-start;gap:20px;');
-  const side = el('div', 'col fill'); css(side, 'gap:10px;');
-  side.append(read, el('div', 'nine k-divider'), el('div', 'lbl', 'Autopilot'), ord, eng, el('div', 'nine k-divider'),
-    htm(() => { const t = tgt(s()); return t ? `<span class="lbl">Target</span> <span class="num">${t.name}</span> <span class="lbl">${km(distKm(s(), t))} · ${Math.round(t.v)} M/S</span>` : '<span class="lbl">No target</span>'; }, 'row'),
-    htm(() => `<span class="lbl">Max speed</span> <span class="num">${Math.round(maxSpeed(s()))} M/S</span> <span class="lbl">from ${s().power.engines} engine boxes</span>`, 'row'));
-  r.append(pad, side); b.append(r);
+  const s = W.player, size = big ? Math.min(420, b.h * 0.62) : 196;
+  helmPad(big ? b.x : b.x + (b.w - size) / 2, b.y, size);
+  const rx = big ? b.x + size + 28 : b.x, rw = big ? b.w - size - 28 : b.w;
+  let y = big ? b.y + 24 : b.y + size + 26;
+  const hdg = String(Math.round(((s.h / DEG) + 360) % 360)).padStart(3, '0');
+  if (big) pairs('helm.r', rx, y, [['To hit', tgt(s) ? pct(bestChance()) : '--'], ['Heading', hdg], ['Ordered', `${Math.round(s.vOrder)} M/S`]], rw);
+  else { pairs('helm.a', rx, y, [['To hit', tgt(s) ? pct(bestChance()) : '--']]); pairs('helm.b', rx + rw * 0.4, y, [['Hdg', hdg]]); pairs('helm.c', rx + rw * 0.69, y, [['Order', String(Math.round(s.vOrder))]]); }
+  y += 10;
+  if (big) { divider(rx, y, rw); y += 18; LBL('Autopilot', rx, y + 13); y += 22; }
+  const hw = (rw - 6) / 2;
+  ORDERS.forEach(([id, label], i) => tab(`helm.o.${id}`, rx + (i % 2) * (hw + 6), y + Math.floor(i / 2) * 46, hw, 40, label, () => A.order(id), s.order === id));
+  y += 92;
+  button('helm.eng', rx, y, rw, 48, s.engaged ? 'Engaged' : 'Engage', A.engage, { sel: () => s.engaged, dis: () => !tgt(s) });
+  if (!big) return;
+  y += 60; divider(rx, y, rw); y += 40;
+  const t = tgt(s);
+  if (t) pairs('helm.t', rx, y, [['Target', t.name], ['Range', km(distKm(s, t))], ['Speed', `${Math.round(t.v)} M/S`]], rw); else LBL('No target', rx, y);
+  pairs('helm.m', rx, y + 34, [['Max speed', `${Math.round(maxSpeed(s))} M/S`], ['Engine boxes', String(s.power.engines)]], rw);
 }
+const iconOf = (k) => ({ engines: 'helm', weapons: 'weapons', shields: 'shields', sensors: 'sensors', tractor: 'tractor', transport: 'transport', repair: 'repair' })[k];
 // The power station has two modes: Allocation (the reference game's energy page) and Reactor (our own).
 function stPower(b, big) {
-  b.append(tabs([['alloc', 'Allocation'], ['reactor', 'Reactor']], () => powerMode, A.powerMode));
-  if (powerMode === 'reactor') { stReactor(b, big); return; }
-  const s = () => W.player;
-  const spare = () => output(s()) - used(s());
-  b.append(htm(() => `<span class="lbl">Out</span> <span class="num">${output(s()).toFixed(1)}</span> <span class="lbl">Used</span> <span class="num">${used(s())}</span> <span class="lbl">Spare</span> <span class="num ${spare() >= 0 ? 'ok' : 'bad'}">${spare().toFixed(1)}</span>`, 'row'));
-  const wide = big && !NARROW;
-  const g = el('div', 'grid'); css(g, `grid-template-columns:${wide ? '120px 1fr 60px' : '72px 1fr 26px'};align-items:center;row-gap:${wide ? 10 : 6}px;`);
+  tabs('pw.mode', b.x, b.y, b.w, 40, [['alloc', 'Allocation'], ['reactor', 'Reactor']], powerMode, A.powerMode);
+  const c = { x: b.x, y: b.y + 46, w: b.w, h: b.h - 46 };
+  if (powerMode === 'reactor') { stReactor(c, big); return; }
+  const s = W.player, spare = output(s) - used(s);
+  pairs('pw.h', c.x, c.y + 22, [['Out', output(s).toFixed(1)], ['Used', String(used(s))], ['Spare', spare.toFixed(1), spare >= 0 ? CC.accord : CC.alert]]);
+  let y = c.y + 34; const rowH = big ? 40 : 26, gap = big ? 10 : 6, lw = big ? 160 : 82, nw = big ? 50 : 26;
   for (const k of SYSTEMS) {
-    const lab = el('div', 'row'); if (wide) lab.append(icon(k === 'engines' ? 'helm' : k === 'transport' ? 'transport' : k === 'weapons' ? 'weapons' : k === 'sensors' ? 'sensors' : k, 26)); lab.append(el('span', 'lbl', k));
-    const row = cells(10, () => s().power[k], (n) => A.power(k, n), () => Math.min(10, powerRoom(s(), s().power[k])));
-    if (big) row.querySelectorAll('.cell').forEach((c) => css(c, `height:${NARROW ? 30 : 40}px;`));
-    g.append(lab, row, txt(() => String(s().power[k]), 'num'));
+    if (big) g.drawImage(KIT.icon[iconOf(k)], c.x, y + (rowH - 26) / 2, 26, 26);
+    LBL(k, c.x + (big ? 36 : 0), y + rowH / 2 + 5, lw - (big ? 40 : 4));
+    cellRow(`pw.${k}`, c.x + lw, y, c.w - lw - nw - 6, rowH, 10, s.power[k], (nn) => A.power(k, nn), Math.min(10, powerRoom(s, s.power[k])));
+    NUM(String(s.power[k]), c.x + c.w, y + rowH / 2 + 8, 0, CC.sky, 'right', big ? 24 : 20);
+    y += rowH + gap;
   }
-  b.append(g, htm(() => `<span class="lbl">Coolant pumps</span> <span class="num" style="font-size:18px">${coolantDraw(s())} E</span> <span class="lbl">set in Reactor</span>`, 'row'),
-    bar(() => `Battery ${W.player.battery.toFixed(1)} / ${CLASSES[W.player.cls].battery_e} E`, () => s().battery / CLASSES[s().cls].battery_e, (v) => v < 0.25));
-  if (big && !NARROW) b.append(css(htm(() => `<span class="lbl">Speed limit</span> <span class="num">${Math.round(maxSpeed(s()))} M/S</span> <span class="lbl">Capacitor</span> <span class="num">${s().cap.toFixed(1)} E</span> <span class="lbl">Shield regen</span> <span class="num">${(s().power.shields * 0.6).toFixed(1)}/S</span>`, 'row'), 'flex-wrap:wrap;'));
+  pairs('pw.c', c.x, y + 16, [['Coolant pumps', `${coolantDraw(s)} E`]], 0, 18); LBL('set in Reactor', c.x + c.w, y + 16, 0, CC.lilac, 'right', 13);
+  y += 26; bar(c.x, y, c.w, `Battery ${s.battery.toFixed(1)} / ${CLASSES[s.cls].battery_e} E`, s.battery / CLASSES[s.cls].battery_e, s.battery / CLASSES[s.cls].battery_e < 0.25);
+  if (big) pairs('pw.x', c.x, y + 70, [['Speed limit', `${Math.round(maxSpeed(s))} M/S`], ['Capacitor', `${s.cap.toFixed(1)} E`], ['Shield regen', `${(s.power.shields * 0.6).toFixed(1)}/S`]], c.w);
 }
-// Reactor: the confinement coils' alignment, the coolant loops' flow, the core temperature and the meltdown clock,
-// and the setting that lets the allocation draw past the output (off by default).
-function coilGauge(i, w, h) {
-  return live(w, h, (x) => {
-    const o = W.player.reactor.coils[i], cx = w / 2, half = w / 2 - 10, y = h / 2, safe = 0.1;
-    x.fillStyle = 'rgba(47,191,90,0.18)'; x.fillRect(cx - half * safe, 2, half * safe * 2, h - 4);
-    x.strokeStyle = CC.deep; x.lineWidth = 4; x.beginPath(); x.moveTo(cx - half, y); x.lineTo(cx + half, y); x.stroke();
-    x.strokeStyle = CC.sky; x.lineWidth = 2; x.beginPath(); x.moveTo(cx, 3); x.lineTo(cx, h - 3); x.stroke();
-    const a = Math.abs(o); x.fillStyle = a < safe ? CC.accord : a < 0.3 ? CC.caution : CC.alert;
-    x.beginPath(); x.arc(cx + o * half, y, h / 2 - 3, 0, 2 * P); x.fill();
-  });
+// Reactor: the diagram worked by hand (owner: "an actual diagram of the nuclear reactor ... interact with it", then
+// "simpler please!"), and the setting that lets the allocation draw past the output (off by default).
+function coilGauge(x, y, w, h, i) {
+  const o = W.player.reactor.coils[i], cx = x + w / 2, half = w / 2 - 10, yy = y + h / 2, safe = 0.1;
+  g.fillStyle = 'rgba(47,191,90,0.18)'; g.fillRect(cx - half * safe, y + 2, half * safe * 2, h - 4);
+  g.strokeStyle = CC.deep; g.lineWidth = 4; g.beginPath(); g.moveTo(cx - half, yy); g.lineTo(cx + half, yy); g.stroke();
+  g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.moveTo(cx, y + 3); g.lineTo(cx, y + h - 3); g.stroke();
+  const a = Math.abs(o); g.fillStyle = a < safe ? CC.accord : a < 0.3 ? CC.caution : CC.alert; g.beginPath(); g.arc(cx + o * half, yy, h / 2 - 3, 0, 2 * P); g.fill();
 }
-// The reactor diagram (owner, 2026-11-01: "I want like an actual diagram of the nuclear reactor and be able to like
-// interact with it"): the core seen from above, its plasma ring glowing by temperature and pushed off centre by the
-// coils' misalignment; three confinement coils round it, each dragged back onto its mark; two coolant loops running
-// out through a pump to a radiator and back, the coolant moving at the loop's flow, amber when damaged, broken and red
-// when offline; minus and plus on each pump set its flow. Drawn in Concord's hand: flat lines and pills on black.
-function reactorDiagram(w, h, big) {
-  const c = el('canvas', 'live'); c.width = Math.round(w * 2); c.height = Math.round(h * 2); css(c, `width:${w}px;height:${h}px;flex:none;touch-action:none;`);
-  const x = c.getContext('2d'), k = big ? 1.6 : 1;
-  // Geometry: the vessel on the left, the coolant loops to the right, the power bus off the lower left.
-  const R = Math.min(w * 0.2, h * 0.33), cx = Math.max(w * 0.29, R + 46 * (big ? 1.6 : 1)), cy = h * 0.5, Ri = R * 0.56, mid = (R + Ri) / 2, chan = R - Ri, travel = R * 0.28;
+function drawReactor(ox, oy, w, h, big) {
+  const k = big ? 1.6 : 1, rx = W.player.reactor, s = W.player, t = performance.now() / 1000;
+  const R = Math.min(w * 0.2, h * 0.33), cx = Math.max(w * 0.29, R + 46 * k), cy = h * 0.5, Ri = R * 0.56, mid = (R + Ri) / 2, chan = R - Ri, travel = R * 0.28;
   const coilDir = (i) => [-P / 2, P, P / 2][i];
-  const coilAt = (i) => { const a = coilDir(i), d = mid + W.player.reactor.coils[i] * travel; return [cx + Math.cos(a) * d, cy + Math.sin(a) * d]; };
-  const portA = (j) => (j ? 0.62 : -0.62), port = (j, rr) => [cx + Math.cos(portA(j)) * rr, cy + Math.sin(portA(j)) * rr];
-  // Each coolant loop is a closed circuit (owner, 2026-11-01: "the loop a and loop b should look like loops"): a rounded
-  // loop whose inner side runs through the vessel, out along its outer side through the pump, round the radiator on the
-  // far side and back along its inner side. Loop A above the core, loop B below.
+  const coilAt = (i) => { const a = coilDir(i), d = mid + rx.coils[i] * travel; return [cx + Math.cos(a) * d, cy + Math.sin(a) * d]; };
+  // Each coolant loop a closed circuit through the core (owner: "the loop a and loop b should look like loops").
   const loopGeom = (j) => {
-    const s = j ? 1 : -1, x0 = cx + R * 0.45, x1 = w - 20 * k, yO = cy + s * h * 0.4, yI = cy + s * h * 0.12, rad = 14 * k;
-    // sampled outline, clockwise for A and anticlockwise for B, starting where the outer side leaves the vessel
-    const pts = [], arc = (ax, ay, a0, a1) => { for (let n = 0; n <= 6; n++) { const a = a0 + (a1 - a0) * n / 6; pts.push([ax + Math.cos(a) * rad, ay + Math.sin(a) * rad]); } };
-    const sy = (y) => y; // y as given
-    pts.push([x0 + rad, yO]);
-    arc(x1 - rad, yO - s * rad, s < 0 ? -P / 2 : P / 2, 0);          // outer far corner
-    const hotEnd = pts.length;                                        // the radiator sits on the far side, between the corners
-    arc(x1 - rad, yI + s * rad, 0, s < 0 ? P / 2 : -P / 2);          // inner far corner
-    arc(x0 + rad, yI + s * rad, s < 0 ? P / 2 : -P / 2, s < 0 ? P : -P); // inner near corner
-    arc(x0 + rad, yO - s * rad, s < 0 ? P : -P, s < 0 ? 1.5 * P : -1.5 * P); // outer near corner
-    return { s, x0, x1, yO, yI, pts, hotEnd, pump: [w * 0.62, yO], rad: [x1, (yO + yI) / 2] };
+    const sg = j ? 1 : -1, x0 = cx + R * 0.45, x1 = w - 20 * k, yO = cy + sg * h * 0.4, yI = cy + sg * h * 0.12, rad = 14 * k, pts = [];
+    const arc = (ax, ay, a0, a1) => { for (let n = 0; n <= 6; n++) { const a = a0 + (a1 - a0) * n / 6; pts.push([ax + Math.cos(a) * rad, ay + Math.sin(a) * rad]); } };
+    pts.push([x0 + rad, yO]); arc(x1 - rad, yO - sg * rad, sg < 0 ? -P / 2 : P / 2, 0);
+    const hotEnd = pts.length;
+    arc(x1 - rad, yI + sg * rad, 0, sg < 0 ? P / 2 : -P / 2); arc(x0 + rad, yI + sg * rad, sg < 0 ? P / 2 : -P / 2, sg < 0 ? P : -P); arc(x0 + rad, yO - sg * rad, sg < 0 ? P : -P, sg < 0 ? 1.5 * P : -1.5 * P);
+    return { sg, yO, yI, pts, hotEnd, pump: [w * 0.62, yO], rad: [x1, (yO + yI) / 2] };
   };
-  const pumpAt = (j) => loopGeom(j).pump, radAt = (j) => loopGeom(j).rad;
-  // Minus and plus inside the loop, under loop A's pump and over loop B's.
-  const keysAt = (j) => { const g = loopGeom(j), y = g.yO - g.s * 27 * k; return [[g.pump[0] - 16 * k, y, -1], [g.pump[0] + 16 * k, y, 1]]; };
-  const bus = () => { const a = P * 0.78; return [[cx + Math.cos(a) * (R + 4 * k), cy + Math.sin(a) * (R + 4 * k)], [8 * k, h - 26 * k]]; };
-  let drag = -1, hover = null;
-  const hit = (px, py) => {
-    for (let i = 0; i < REACTOR.coils; i++) { const [qx, qy] = coilAt(i); if (Math.hypot(px - qx, py - qy) < 20 * k) return { coil: i }; }
-    for (let j = 0; j < REACTOR.loops; j++) for (const [qx, qy, d] of keysAt(j)) if (Math.hypot(px - qx, py - qy) < 15 * k) return { loop: j, d };
-    for (let j = 0; j < REACTOR.loops; j++) { const [qx, qy] = pumpAt(j); if (Math.hypot(px - qx, py - qy) < 18 * k) return { pump: j }; }
-    return null;
-  };
-  const at = (e) => { const b2 = c.getBoundingClientRect(); return [(e.clientX - b2.left) / b2.width * w, (e.clientY - b2.top) / b2.height * h]; };
-  c.onpointerdown = (e) => {
-    e.stopPropagation(); const [px, py] = at(e), t = hit(px, py); if (!t) return;
-    if (t.coil != null) { drag = t.coil; c.setPointerCapture(e.pointerId); }
-    else if (t.loop != null) { A.flow(t.loop, W.player.reactor.loops[t.loop].flow + t.d); tickUI(); }
-  };
-  c.onpointermove = (e) => {
-    const [px, py] = at(e);
-    if (drag >= 0) { const a = coilDir(drag), along = (px - cx) * Math.cos(a) + (py - cy) * Math.sin(a); A.setCoil(drag, (along - mid) / travel); tickUI(); }
-    else { hover = hit(px, py); c.style.cursor = hover ? (hover.coil != null ? 'grab' : hover.loop != null ? 'pointer' : 'default') : 'default'; }
-  };
-  c.onpointerup = c.onpointercancel = () => { drag = -1; };
-  c.onpointerleave = () => { if (drag < 0) hover = null; };
-  const path = (pts) => { x.beginPath(); pts.forEach(([px, py], n) => (n ? x.lineTo(px, py) : x.moveTo(px, py))); };
-  const along = (pts, f) => { // the point a share f of the way along a polyline
+  const keysAt = (j) => { const lg = loopGeom(j), y = lg.yO - lg.sg * 27 * k; return [[lg.pump[0] - 16 * k, y, -1], [lg.pump[0] + 16 * k, y, 1]]; };
+  const path = (pts) => { g.beginPath(); pts.forEach(([px, py], n) => (n ? g.lineTo(px, py) : g.moveTo(px, py))); };
+  const along = (pts, f) => {
     const seg = []; let tot = 0; for (let n = 1; n < pts.length; n++) { const l = Math.hypot(pts[n][0] - pts[n - 1][0], pts[n][1] - pts[n - 1][1]); seg.push(l); tot += l; }
     let d = (((f % 1) + 1) % 1) * tot; for (let n = 0; n < seg.length; n++) { if (d <= seg[n]) { const q = d / (seg[n] || 1); return [pts[n][0] + (pts[n + 1][0] - pts[n][0]) * q, pts[n][1] + (pts[n + 1][1] - pts[n][1]) * q]; } d -= seg[n]; }
     return pts[pts.length - 1];
   };
-  const heatCol = (t) => (t >= 85 ? CC.alert : t >= 65 ? CC.caution : CC.sky);
-  // A pipe with what flows in it: a dark sleeve, a coloured core, and beads that move at the flow.
-  const pipe = (pts, col, l, t, phase) => {
-    x.lineWidth = 10 * k; x.strokeStyle = CC.deep; path(pts); x.stroke();
-    if (l.hp <= 0) { x.lineWidth = 3 * k; x.strokeStyle = CC.alert; x.setLineDash([3 * k, 9 * k]); path(pts); x.stroke(); x.setLineDash([]); return; }
-    x.lineWidth = 3 * k; x.strokeStyle = col; x.globalAlpha = l.hp < 0.5 ? 0.55 : 0.85; path(pts); x.stroke(); x.globalAlpha = 1;
-    const n = 2 + l.flow * 2, speed = l.flow * 0.09;
-    x.fillStyle = col; for (let m = 0; m < n; m++) { const [bx, by] = along(pts, m / n + t * speed + phase); x.beginPath(); x.arc(bx, by, 2.6 * k, 0, 2 * P); x.fill(); }
-  };
-  const label = (text, lx, ly, col = CC.lilac, align = 'center', size = 11) => { x.fillStyle = col; x.font = `600 ${size * k}px Antonio`; x.textAlign = align; x.fillText(text, lx, ly); };
-  const draw = () => {
-    if (!c.isConnected) return;
-    const s = W.player, rx = s.reactor, t = performance.now() / 1000, tc = heatCol(rx.temp);
-    x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, w, h); x.lineCap = 'round'; x.lineJoin = 'round';
-    // Coolant loops.
-    rx.loops.forEach((l, j) => {
-      const g = loopGeom(j), [px, py] = g.pump, [qx, qy] = g.rad, sgn = g.s, closed = [...g.pts, g.pts[0]];
-      // The circuit: a dark sleeve; coolant hot (by core temperature) from the vessel to the radiator, cold after it.
-      x.lineWidth = 10 * k; x.strokeStyle = CC.deep; path(closed); x.stroke();
-      if (l.hp <= 0) { x.lineWidth = 3 * k; x.strokeStyle = CC.alert; x.setLineDash([3 * k, 9 * k]); path(closed); x.stroke(); x.setLineDash([]); }
-      else {
-        const hot = g.pts.slice(0, g.hotEnd + 1), cold = [...g.pts.slice(g.hotEnd), g.pts[0]];
-        x.globalAlpha = l.hp < 0.5 ? 0.55 : 0.85; x.lineWidth = 3 * k;
-        x.strokeStyle = tc; path(hot); x.stroke(); x.strokeStyle = CC.sky; path(cold); x.stroke(); x.globalAlpha = 1;
-        const n = 2 + l.flow * 2, speed = l.flow * 0.045;
-        for (let m = 0; m < n; m++) {
-          const f = (((m / n + t * speed) % 1) + 1) % 1, [bx, by] = along(closed, f);
-          x.fillStyle = f < g.hotEnd / g.pts.length ? tc : CC.sky; x.beginPath(); x.arc(bx, by, 2.6 * k, 0, 2 * P); x.fill();
-        }
-      }
-      // Radiator: a fin bank on the far side of the loop, glowing with the heat it sheds.
-      const shed = clamp(l.flow * l.hp * rx.temp / 250, 0, 1), rh = Math.abs(g.yO - g.yI) * 0.62;
-      x.fillStyle = CC.deep; x.beginPath(); x.roundRect(qx - 13 * k, qy - rh / 2, 26 * k, rh, 9 * k); x.fill();
-      for (let f = 0; f < 4; f++) { x.strokeStyle = l.hp <= 0 ? CC.alert : CC.signal; x.globalAlpha = 1; x.lineWidth = 2 * k; const fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; x.beginPath(); x.moveTo(qx - 8 * k, fy); x.lineTo(qx + 8 * k, fy); x.stroke(); }
-      x.globalAlpha = 1; if (big) label('RADIATOR', qx - 18 * k, qy + 4 * k, CC.lilac, 'right');
-      // Pump: a ring on the outer side with an impeller turning at the flow, its flow in the middle.
-      const pc = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.signal, hv = hover && hover.pump === j;
-      x.fillStyle = '#000'; x.strokeStyle = pc; x.lineWidth = (hv ? 5 : 4) * k; x.beginPath(); x.arc(px, py, 16 * k, 0, 2 * P); x.fill(); x.stroke();
-      x.fillStyle = CC.text; x.font = `700 ${15 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(l.flow), px, py + 5 * k);
-      label(`LOOP ${'AB'[j]} · ${l.hp <= 0 ? 'OFFLINE' : pct(l.hp)}`, (px + qx) / 2 + 6 * k, g.yI + sgn * 12 * k + 4 * k, l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.lilac);
-      for (const [bx, by, d] of keysAt(j)) {
-        const on = hover && hover.loop === j && hover.d === d;
-        x.fillStyle = on ? CC.sky : CC.signal; x.beginPath(); x.arc(bx, by, 11 * k, 0, 2 * P); x.fill();
-        x.fillStyle = '#000'; x.font = `700 ${16 * k}px Antonio`; x.textAlign = 'center'; x.fillText(d < 0 ? '−' : '+', bx, by + 5.5 * k);
-      }
-    });
-    // The vessel: outer and inner walls, the field-coil cage, the plasma in the channel.
-    x.lineWidth = 3 * k; x.strokeStyle = CC.signal; x.beginPath(); x.arc(cx, cy, R, 0, 2 * P); x.stroke(); x.beginPath(); x.arc(cx, cy, Ri, 0, 2 * P); x.stroke();
-    const off = rx.coils.reduce(([ax, ay], o, i) => [ax + Math.cos(coilDir(i)) * o, ay + Math.sin(coilDir(i)) * o], [0, 0]), offN = Math.hypot(off[0], off[1]);
-    const ox = off[0] * chan * 0.42, oy = off[1] * chan * 0.42, pulse = rx.melt > 0 ? 0.55 + 0.45 * Math.sin(t * 9) : 0.85 + 0.15 * Math.sin(t * 2.3);
-    x.save(); x.beginPath(); x.arc(cx, cy, R - 1.5 * k, 0, 2 * P); x.arc(cx, cy, Ri + 1.5 * k, 0, 2 * P, true); x.clip();
-    x.strokeStyle = tc;
-    x.globalAlpha = 0.95 * pulse; x.lineWidth = chan * 0.22; x.beginPath(); x.arc(cx + ox, cy + oy, mid, 0, 2 * P); x.stroke();
-    x.globalAlpha = 1; x.restore();
-    // Centre: temperature, the word CORE.
-    x.fillStyle = rx.temp >= 85 ? CC.alert : CC.text; x.textAlign = 'center'; x.font = `700 ${(big ? 26 : 20) * k / (big ? 1.25 : 1)}px Antonio`; x.fillText(`${Math.round(rx.temp)}%`, cx, cy + 6 * k);
-    label('CORE', cx, cy - 18 * k);
-    // Confinement coils: a short track across the vessel, a green ring where each belongs, the coil numbered on its face.
-    for (let i = 0; i < REACTOR.coils; i++) {
-      const a = coilDir(i), mx = cx + Math.cos(a) * mid, my = cy + Math.sin(a) * mid, [qx, qy] = coilAt(i), o = rx.coils[i], ao = Math.abs(o);
-      x.strokeStyle = CC.accord; x.lineWidth = 2 * k; x.beginPath(); x.arc(mx, my, 13 * k, 0, 2 * P); x.stroke();
-      const col = ao < 0.1 ? CC.accord : ao < 0.3 ? CC.caution : CC.alert, act = (hover && hover.coil === i) || drag === i;
-      x.save(); x.translate(qx, qy); x.rotate(a + P / 2); x.fillStyle = col; x.beginPath(); x.roundRect(-17 * k, -8 * k, 34 * k, 16 * k, 8 * k); x.fill();
-      if (act) { x.strokeStyle = CC.text; x.lineWidth = 2 * k; x.stroke(); }
-      x.rotate(-(a + P / 2)); x.fillStyle = '#000'; x.font = `700 ${12 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(i + 1), 0, 4.5 * k); x.restore();
-      const vr = R + 22 * k; if (act) label(`${o >= 0 ? '+' : ''}${o.toFixed(2)}`, cx + Math.cos(a) * vr, cy + Math.sin(a) * vr + 4 * k, col, 'center', 12);
+  const tc = rx.temp >= 85 ? CC.alert : rx.temp >= 65 ? CC.caution : CC.sky;
+  const label = (str, lx, ly, col = CC.lilac, align = 'center', size = 11) => { g.fillStyle = col; g.font = `600 ${size * k}px Antonio`; g.textAlign = align; g.fillText(str, lx, ly); };
+  // Hits first (absolute rectangles), so the drawing can show what is pointed at.
+  const hot = (id) => HOT === id || (DRAG && DRAG.id === id);
+  for (let i = 0; i < REACTOR.coils; i++) {
+    const [qx, qy] = coilAt(i), a = coilDir(i);
+    hit(`rx.coil.${i}`, ox + qx - 20 * k, oy + qy - 20 * k, 40 * k, 40 * k, { cursor: 'grab', tip: `Coil ${i + 1}: drag onto its ring`,
+      drag: (px, py) => { const along2 = (px - ox - cx) * Math.cos(a) + (py - oy - cy) * Math.sin(a); A.setCoil(i, (along2 - mid) / travel); } });
+  }
+  for (let j = 0; j < REACTOR.loops; j++) for (const [bx, by, d] of keysAt(j)) hit(`rx.key.${j}.${d}`, ox + bx - 13 * k, oy + by - 13 * k, 26 * k, 26 * k, { click: () => A.flow(j, rx.loops[j].flow + d), tip: d < 0 ? `Loop ${'AB'[j]} flow down` : `Loop ${'AB'[j]} flow up` });
+  g.save(); g.translate(ox, oy); g.lineCap = 'round'; g.lineJoin = 'round';
+  rx.loops.forEach((l, j) => {
+    const lg = loopGeom(j), [px, py] = lg.pump, [qx, qy] = lg.rad, closed = [...lg.pts, lg.pts[0]];
+    g.lineWidth = 10 * k; g.strokeStyle = CC.deep; path(closed); g.stroke();
+    if (l.hp <= 0) { g.lineWidth = 3 * k; g.strokeStyle = CC.alert; g.setLineDash([3 * k, 9 * k]); path(closed); g.stroke(); g.setLineDash([]); }
+    else {
+      g.globalAlpha = l.hp < 0.5 ? 0.55 : 0.85; g.lineWidth = 3 * k;
+      g.strokeStyle = tc; path(lg.pts.slice(0, lg.hotEnd + 1)); g.stroke(); g.strokeStyle = CC.sky; path([...lg.pts.slice(lg.hotEnd), lg.pts[0]]); g.stroke(); g.globalAlpha = 1;
+      const n = 2 + l.flow * 2, speed = l.flow * 0.045;
+      for (let m = 0; m < n; m++) { const f = (((m / n + t * speed) % 1) + 1) % 1, [bx, by] = along(closed, f); g.fillStyle = f < lg.hotEnd / lg.pts.length ? tc : CC.sky; g.beginPath(); g.arc(bx, by, 2.6 * k, 0, 2 * P); g.fill(); }
     }
-    // The meltdown clock, across the top.
-    if (rx.melt > 0) { x.fillStyle = CC.alert; x.globalAlpha = 0.6 + 0.4 * Math.sin(t * 9); x.font = `700 ${15 * k}px Antonio`; x.textAlign = 'left'; x.fillText(`MELTDOWN IN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 16 * k); x.globalAlpha = 1; }
-    else if (cooling(s) < 1.5) label('COOLING LOW', 6, 16 * k, CC.caution, 'left', 13);
-    requestAnimationFrame(draw);
-  };
-  requestAnimationFrame(draw);
-  return c;
-}
-function stReactor(b, big) {
-  const s = () => W.player, rx = () => W.player.reactor, rated = () => CLASSES[W.player.cls].reactor_e;
-  const out = htm(() => `<span class="lbl">Output</span> <span class="num">${output(s()).toFixed(1)} / ${rated()} E</span> <span class="lbl">Efficiency</span> <span class="num">${pct(efficiency(s()))}</span>`, 'row');
-  const temp = bar(() => (rx().melt > 0 ? `Core ${Math.round(rx().temp)}% · meltdown in ${Math.ceil(REACTOR.meltdown_s - rx().melt)} s` : `Core temperature ${Math.round(rx().temp)}%`),
-    () => rx().temp / 120, () => rx().temp >= 85 || rx().melt > 0);
-  const cfg = el('div', 'row'); cfg.append(el('div', 'lbl', 'Draw past output'), css(tabs([[false, 'Off'], [true, 'On']], () => s().overdraw, A.overdraw), 'flex:1;'));
-  if (!big) { b.append(reactorDiagram(348, 276, false), cfg); return; }
-  b.append(out);
-  // Expanded: the diagram large, and beside it the same controls as numbers (coil gauges, loop flow boxes).
-  const r = R.station.getBoundingClientRect(), dw = Math.min(820, r.width / S - 72 - 56 - 420), dh = Math.min(dw * 0.72, r.height / S - 170);
-  const row = el('div', 'row'); css(row, 'align-items:flex-start;gap:20px;');
-  const side = el('div', 'col'); css(side, 'width:400px;flex:none;gap:10px;');
-  const g = el('div', 'grid'); css(g, 'grid-template-columns:54px 190px auto auto 1fr;align-items:center;column-gap:6px;row-gap:6px;');
-  for (let i = 0; i < REACTOR.coils; i++) g.append(el('div', 'lbl', `Coil ${i + 1}`), coilGauge(i, 190, 26), btn('−', () => A.align(i, -1), { sm: true }), btn('+', () => A.align(i, 1), { sm: true }),
-    txt(() => `${rx().coils[i] >= 0 ? '+' : ''}${rx().coils[i].toFixed(2)}`, 'num'));
-  g.querySelectorAll('.num').forEach((n) => css(n, 'font-size:16px;text-align:right;'));
-  const lg = el('div', 'grid'); css(lg, 'grid-template-columns:54px 1fr 70px;align-items:center;column-gap:6px;row-gap:6px;');
-  for (let j = 0; j < REACTOR.loops; j++) {
-    const cl = cells(REACTOR.flow_max, () => rx().loops[j].flow, (n) => A.flow(j, n), () => Math.min(REACTOR.flow_max, powerRoom(s(), rx().loops[j].flow)));
-    lg.append(el('div', 'lbl', `Loop ${'AB'[j]}`), cl, htm(() => { const l = rx().loops[j]; return l.hp <= 0 ? '<span class="num bad" style="font-size:16px">OFFLINE</span>' : `<span class="num ${l.hp < 0.5 ? 'warnc' : ''}" style="font-size:16px">${pct(l.hp)}</span>`; }, 'row'));
-  }
-  side.append(temp, el('div', 'lbl', 'Magnetic confinement'), g, el('div', 'lbl', 'Coolant'), lg, cfg,
-    css(htm(() => `<span class="lbl">Confinement</span> <span class="num">${pct(rx().conf)}</span> <span class="lbl">Cooling</span> <span class="num">${cooling(s()).toFixed(1)}</span> <span class="lbl">Battery</span> <span class="num">${s().battery.toFixed(1)} E</span> <span class="lbl">Brownout</span> <span class="num ${s().brown < 1 ? 'bad' : ''}">${s().brown < 1 ? pct(s().brown) : 'None'}</span>`, 'row'), 'flex-wrap:wrap;'));
-  row.append(reactorDiagram(dw, dh, true), side); b.append(row);
-}
-function contactRows(n, big) {
-  const s = () => W.player, list = el('div', 'list fill'), rows = [];
-  for (let i = 0; i < n; i++) {
-    const r = el('div', 'listrow'), d = el('div', 'dot'), nm = el('div', 'txt fill'), rg = el('div', 'num'); css(rg, 'font-size:20px;');
-    const br = el('div', 'lbl'); r.append(d, nm, br, rg); r.onclick = (e) => { e.stopPropagation(); if (r.dataset.id) A.lock(r.dataset.id); tickUI(); }; rows.push({ r, d, nm, rg, br }); list.append(r);
-  }
-  bind(() => {
-    const foes = enemiesOf(s()).sort((a, b) => distU(s(), a) - distU(s(), b));
-    rows.forEach((o, i) => { const f = foes[i]; o.r.style.visibility = f ? '' : 'hidden'; if (!f) return; o.r.dataset.id = f.id; o.r.classList.toggle('sel', s().target === f.id);
-      o.d.style.background = FACTION[f.faction].dot; o.nm.textContent = big ? `${f.name} · ${CLASSES[f.cls].name}` : f.name; o.rg.textContent = km(distKm(s(), f));
-      o.br.textContent = `${String(Math.round((bearing(s(), f.x, f.z) / DEG + 360) % 360)).padStart(3, '0')}`; });
+    const rh = Math.abs(lg.yO - lg.yI) * 0.62;
+    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(qx - 13 * k, qy - rh / 2, 26 * k, rh, 9 * k); g.fill();
+    for (let f = 0; f < 4; f++) { g.strokeStyle = l.hp <= 0 ? CC.alert : CC.signal; g.lineWidth = 2 * k; const fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; g.beginPath(); g.moveTo(qx - 8 * k, fy); g.lineTo(qx + 8 * k, fy); g.stroke(); }
+    if (big) label('RADIATOR', qx - 18 * k, qy + 4 * k, CC.lilac, 'right');
+    g.fillStyle = '#000'; g.strokeStyle = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.signal; g.lineWidth = 4 * k; g.beginPath(); g.arc(px, py, 16 * k, 0, 2 * P); g.fill(); g.stroke();
+    g.fillStyle = CC.text; g.font = `700 ${15 * k}px Antonio`; g.textAlign = 'center'; g.fillText(String(l.flow), px, py + 5 * k);
+    label(`LOOP ${'AB'[j]} · ${l.hp <= 0 ? 'OFFLINE' : pct(l.hp)}`, (px + qx) / 2 + 6 * k, lg.yI + lg.sg * 12 * k + 4 * k, l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.lilac);
+    for (const [bx, by, d] of keysAt(j)) {
+      g.fillStyle = hot(`rx.key.${j}.${d}`) ? CC.sky : CC.signal; g.beginPath(); g.arc(bx, by, 11 * k, 0, 2 * P); g.fill();
+      g.fillStyle = '#000'; g.font = `700 ${16 * k}px Antonio`; g.textAlign = 'center'; g.fillText(d < 0 ? '−' : '+', bx, by + 5.5 * k);
+    }
   });
-  return list;
+  g.lineWidth = 3 * k; g.strokeStyle = CC.signal; g.beginPath(); g.arc(cx, cy, R, 0, 2 * P); g.stroke(); g.beginPath(); g.arc(cx, cy, Ri, 0, 2 * P); g.stroke();
+  const off = rx.coils.reduce(([ax, ay], o, i) => [ax + Math.cos(coilDir(i)) * o, ay + Math.sin(coilDir(i)) * o], [0, 0]);
+  const pulse = rx.melt > 0 ? 0.55 + 0.45 * Math.sin(t * 9) : 0.85 + 0.15 * Math.sin(t * 2.3);
+  g.save(); g.beginPath(); g.arc(cx, cy, R - 1.5 * k, 0, 2 * P); g.arc(cx, cy, Ri + 1.5 * k, 0, 2 * P, true); g.clip();
+  g.strokeStyle = tc; g.globalAlpha = 0.95 * pulse; g.lineWidth = chan * 0.22; g.beginPath(); g.arc(cx + off[0] * chan * 0.42, cy + off[1] * chan * 0.42, mid, 0, 2 * P); g.stroke(); g.restore();
+  g.fillStyle = rx.temp >= 85 ? CC.alert : CC.text; g.textAlign = 'center'; g.font = `700 ${(big ? 26 : 20) * k / (big ? 1.25 : 1)}px Antonio`; g.fillText(`${Math.round(rx.temp)}%`, cx, cy + 6 * k);
+  label('CORE', cx, cy - 18 * k);
+  for (let i = 0; i < REACTOR.coils; i++) {
+    const a = coilDir(i), [qx, qy] = coilAt(i), o = rx.coils[i], ao = Math.abs(o), act = hot(`rx.coil.${i}`);
+    g.strokeStyle = CC.accord; g.lineWidth = 2 * k; g.beginPath(); g.arc(cx + Math.cos(a) * mid, cy + Math.sin(a) * mid, 13 * k, 0, 2 * P); g.stroke();
+    const col = ao < 0.1 ? CC.accord : ao < 0.3 ? CC.caution : CC.alert;
+    g.save(); g.translate(qx, qy); g.rotate(a + P / 2); g.fillStyle = col; g.beginPath(); g.roundRect(-17 * k, -8 * k, 34 * k, 16 * k, 8 * k); g.fill();
+    if (act) { g.strokeStyle = CC.text; g.lineWidth = 2 * k; g.stroke(); }
+    g.rotate(-(a + P / 2)); g.fillStyle = '#000'; g.font = `700 ${12 * k}px Antonio`; g.textAlign = 'center'; g.fillText(String(i + 1), 0, 4.5 * k); g.restore();
+    if (act) label(`${o >= 0 ? '+' : ''}${o.toFixed(2)}`, cx + Math.cos(a) * (R + 22 * k), cy + Math.sin(a) * (R + 22 * k) + 4 * k, col, 'center', 12);
+  }
+  if (rx.melt > 0) { g.fillStyle = CC.alert; g.globalAlpha = 0.6 + 0.4 * Math.sin(t * 9); g.font = `700 ${15 * k}px Antonio`; g.textAlign = 'left'; g.fillText(`MELTDOWN IN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 16 * k); g.globalAlpha = 1; }
+  else if (cooling(s) < 1.5) label('COOLING LOW', 6, 16 * k, CC.caution, 'left', 13);
+  g.restore();
+}
+function stReactor(c, big) {
+  const s = W.player, rx = s.reactor;
+  const cfg = (x, y, w) => { LBL('Draw past output', x, y + 26); tabs('rx.od', x + 170, y, w - 170, 40, [[false, 'Off'], [true, 'On']], s.overdraw, A.overdraw); };
+  if (!big) { drawReactor(c.x, c.y, c.w, c.h - 46, false); cfg(c.x, c.y + c.h - 40, c.w); return; }
+  pairs('rx.o', c.x, c.y + 22, [['Output', `${output(s).toFixed(1)} / ${CLASSES[s.cls].reactor_e} E`], ['Efficiency', pct(efficiency(s))]], c.w);
+  const sw = 420, dw = Math.min(820, c.w - sw - 24), dh = Math.min(dw * 0.72, c.h - 60);
+  drawReactor(c.x, c.y + 40, dw, dh, true);
+  const x = c.x + dw + 24; let y = c.y + 40;
+  y += bar(x, y, sw, rx.melt > 0 ? `Core ${Math.round(rx.temp)}% · meltdown in ${Math.ceil(REACTOR.meltdown_s - rx.melt)} s` : `Core temperature ${Math.round(rx.temp)}%`, rx.temp / 120, rx.temp >= 85 || rx.melt > 0) + 14;
+  LBL('Magnetic confinement', x, y + 13); y += 24;
+  for (let i = 0; i < REACTOR.coils; i++) {
+    LBL(`Coil ${i + 1}`, x, y + 19); coilGauge(x + 60, y, 190, 26, i);
+    button(`rx.m.${i}`, x + 258, y - 2, 34, 30, '−', () => A.align(i, -1), { center: true }); button(`rx.p.${i}`, x + 298, y - 2, 34, 30, '+', () => A.align(i, 1), { center: true });
+    NUM(`${rx.coils[i] >= 0 ? '+' : ''}${rx.coils[i].toFixed(2)}`, x + sw, y + 20, 0, CC.sky, 'right', 16); y += 36;
+  }
+  LBL('Coolant', x, y + 13); y += 24;
+  for (let j = 0; j < REACTOR.loops; j++) {
+    const l = rx.loops[j]; LBL(`Loop ${'AB'[j]}`, x, y + 19);
+    cellRow(`rx.f.${j}`, x + 60, y, sw - 60 - 80, 28, REACTOR.flow_max, l.flow, (n) => A.flow(j, n), Math.min(REACTOR.flow_max, powerRoom(s, l.flow)));
+    NUM(l.hp <= 0 ? 'OFFLINE' : pct(l.hp), x + sw, y + 20, 0, l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.sky, 'right', 16); y += 36;
+  }
+  cfg(x, y + 4, sw); y += 70;
+  pairs('rx.x1', x, y, [['Confinement', pct(rx.conf)], ['Cooling', cooling(s).toFixed(1)]], sw);
+  pairs('rx.x2', x, y + 32, [['Battery', `${s.battery.toFixed(1)} E`], ['Brownout', s.brown < 1 ? pct(s.brown) : 'None', s.brown < 1 ? CC.alert : CC.sky]], sw);
 }
 function stTactical(b, big) {
-  b.append(el('div', 'lbl', 'Aim at'), tabs(AIMS, () => W.player.aim, A.aim), el('div', 'lbl', 'Contacts'), contactRows(big ? 8 : 5, big));
-  b.append(btn('Next target', A.nextTarget));
+  const s = W.player; let y = b.y;
+  LBL('Aim at', b.x, y + 13); y += 20; tabs('aim', b.x, y, b.w, 40, AIMS, s.aim, A.aim); y += 46;
+  LBL('Contacts', b.x, y + 13); y += 20;
+  const foes = enemiesOf(s).sort((a, c) => distU(s, a) - distU(s, c)).slice(0, big ? 12 : 5);
+  for (const f of foes) {
+    const on = s.target === f.id, st = hit(`ct.${f.id}`, b.x, y, b.w, 40, { click: () => A.lock(f.id) });
+    if (on || st.hot) { g.fillStyle = on ? CC.deep : 'rgba(27,42,107,0.5)'; g.beginPath(); g.roundRect(b.x, y, b.w, 40, [20, 4, 4, 20]); g.fill(); }
+    g.fillStyle = FACTION[f.faction].dot; g.beginPath(); g.arc(b.x + 18, y + 20, 7, 0, 2 * P); g.fill();
+    TXT(big ? `${f.name} · ${CLASSES[f.cls].name}` : f.name, b.x + 34, y + 27, b.w - 34 - 150);
+    LBL(String(Math.round((bearing(s, f.x, f.z) / DEG + 360) % 360)).padStart(3, '0'), b.x + b.w - 96, y + 26, 0, CC.lilac, 'right');
+    NUM(km(distKm(s, f)), b.x + b.w - 8, y + 28, 0, CC.sky, 'right', 20); y += 44;
+  }
+  button('tac.next', b.x, b.y + b.h - 48, b.w, 48, 'Next target', A.nextTarget);
 }
 function stPD(b) {
-  const s = () => W.player;
-  b.append(el('div', 'lbl', 'Mode'), tabs([['auto', 'Auto'], ['missiles', 'Missiles'], ['craft', 'Craft'], ['off', 'Off']], () => s().pd, A.pd));
-  const g = el('div', 'col'); css(g, 'gap:10px;margin-top:6px;');
-  for (const m of s().mounts.filter((m) => m.w === 'pd')) g.append(bar(`PD mount ${m.i + 1}`, () => m.charge * m.hp, () => m.hp < 0.5));
-  g.append(htm(() => `<span class="lbl">Intercepts</span> <span class="num">${s().intercepts}</span>`, 'row'),
-    htm(() => `<span class="lbl">Inbound</span> <span class="num">${W.shots.filter((sh) => sh.to === s().id && sh.kind !== 'beam' && !sh.spent).length}</span>`, 'row'));
-  b.append(g);
+  const s = W.player; let y = b.y;
+  LBL('Mode', b.x, y + 13); y += 20; tabs('pd', b.x, y, b.w, 40, [['auto', 'Auto'], ['missiles', 'Missiles'], ['craft', 'Craft'], ['off', 'Off']], s.pd, A.pd); y += 52;
+  for (const m of s.mounts.filter((mm) => mm.w === 'pd')) { y += bar(b.x, y, b.w, `PD mount ${m.i + 1}`, m.charge * m.hp, m.hp < 0.5) + 12; }
+  pairs('pd.i', b.x, y + 20, [['Intercepts', String(s.intercepts)], ['Inbound', String(W.shots.filter((sh) => sh.to === s.id && sh.kind !== 'beam' && !sh.spent).length)]], b.w);
 }
 function stScience(b, big) {
-  const s = () => W.player;
-  b.append(btn(() => { const sc = s().scan; return sc.id && sc.id === s().target ? (sc.p >= 1 ? 'Scan complete' : 'Scanning') : 'Scan target'; }, A.scan, { dis: () => !tgt(s()), sel: () => s().scan.id && s().scan.p < 1 }));
-  b.append(bar('Scan', () => (s().scan.id === s().target ? s().scan.p : 0)));
-  b.append(el('div', 'lbl', 'Sensors'), tabs([['active', 'Active'], ['passive', 'Passive']], () => s().sensorMode, A.sensorMode));
-  const g = el('div', 'grid'); css(g, 'grid-template-columns:52px 1fr;align-items:center;');
-  g.append(el('div', 'lbl', 'ECM'), cells(5, () => s().ecm, (n) => A.ecm('ecm', n), () => s().power.sensors - s().eccm + 0), el('div', 'lbl', 'ECCM'), cells(5, () => s().eccm, (n) => A.ecm('eccm', n), () => s().power.sensors - s().ecm));
-  b.append(g);
-  b.append(htm(() => {
-    const t = tgt(s()); if (!t) return '<span class="lbl">No target</span>';
-    if (s().scan.id !== t.id || s().scan.p < 1) return `<span class="lbl">${t.name}: scan for detail</span>`;
-    const weak = t.shields.indexOf(Math.min(...t.shields)), ws = {}; for (const m of t.mounts) ws[WEAPONS[m.w].name] = (ws[WEAPONS[m.w].name] || 0) + 1;
-    return `<div class="txt">${t.name} · ${CLASSES[t.cls].name}</div><div class="lbl">Shields ${t.shields.map((v, i) => FACINGS[i] + ' ' + Math.round(v)).join(' · ')}</div>`
-      + `<div class="lbl">Weakest <span class="num" style="font-size:18px">${FACINGS[weak]}</span> · ${Object.entries(ws).map(([k, v]) => v + 'x ' + k).join(' · ')}</div>`;
-  }, 'col'));
+  const s = W.player, t = tgt(s), sc = s.scan; let y = b.y;
+  button('sci.scan', b.x, y, b.w, 48, sc.id && sc.id === s.target ? (sc.p >= 1 ? 'Scan complete' : 'Scanning') : 'Scan target', A.scan, { dis: () => !t, sel: () => sc.id && sc.p < 1 }); y += 54;
+  y += bar(b.x, y, b.w, 'Scan', sc.id === s.target ? sc.p : 0) + 10;
+  LBL('Sensors', b.x, y + 13); y += 20; tabs('sens', b.x, y, b.w, 40, [['active', 'Active'], ['passive', 'Passive']], s.sensorMode, A.sensorMode); y += 48;
+  LBL('ECM', b.x, y + 19); cellRow('ecm', b.x + 60, y, b.w - 60, 26, 5, s.ecm, (n) => A.ecm('ecm', n), s.power.sensors - s.eccm); y += 32;
+  LBL('ECCM', b.x, y + 19); cellRow('eccm', b.x + 60, y, b.w - 60, 26, 5, s.eccm, (n) => A.ecm('eccm', n), s.power.sensors - s.ecm); y += 40;
+  if (!t) { LBL('No target', b.x, y + 14); return; }
+  if (sc.id !== t.id || sc.p < 1) { LBL(`${t.name}: scan for detail`, b.x, y + 14, b.w); return; }
+  const weak = t.shields.indexOf(Math.min(...t.shields)), ws = {}; for (const m of t.mounts) ws[WEAPONS[m.w].name] = (ws[WEAPONS[m.w].name] || 0) + 1;
+  TXT(`${t.name} · ${CLASSES[t.cls].name}`, b.x, y + 16, b.w); LBL(`Shields ${t.shields.map((v, i) => FACINGS[i] + ' ' + Math.round(v)).join(' · ')}`, b.x, y + 38, b.w);
+  LBL(`Weakest ${FACINGS[weak]} · ${Object.entries(ws).map(([kk, v]) => v + 'x ' + kk).join(' · ')}`, b.x, y + 58, b.w);
 }
 function stComms(b, big) {
-  b.append(btn('Hail target', A.hail, { dis: () => !tgt(W.player) }));
-  const g = el('div', 'grid'); css(g, 'grid-template-columns:1fr 1fr;');
-  g.append(btn('All attack', () => A.fleetOrder('attack'), { sm: true }), btn('Form on me', () => A.fleetOrder('escort'), { sm: true }), btn('All hold', () => A.fleetOrder('hold'), { sm: true }), btn('Hunt', () => A.fleetOrder('hunt'), { sm: true }));
-  b.append(el('div', 'lbl', 'Fleet orders'), g, el('div', 'lbl', 'Log'));
-  const n = big ? 16 : 6;
-  b.append(htm(() => W.log.slice(-n).reverse().map((m) => `<div class="txt" style="font-size:17px"><span class="dim">${mmss(m.t)} ${m.who}:</span> ${m.text}</div>`).join(''), 'col'));
+  let y = b.y; button('com.hail', b.x, y, b.w, 48, 'Hail target', A.hail, { dis: () => !tgt(W.player) }); y += 56;
+  LBL('Fleet orders', b.x, y + 13); y += 20;
+  const hw = (b.w - 6) / 2;
+  [['All attack', 'attack'], ['Form on me', 'escort'], ['All hold', 'hold'], ['Hunt', 'hunt']].forEach(([l, st], i) => button(`com.${st}`, b.x + (i % 2) * (hw + 6), y + Math.floor(i / 2) * 36, hw, 30, l, () => A.fleetOrder(st), { center: true }));
+  y += 76; LBL('Log', b.x, y + 13); y += 22;
+  const n = big ? 22 : 6;
+  for (const m of W.log.slice(-n).reverse()) { rich(b.x, y + 16, [[`${mmss(m.t)} ${m.who}: `, CC.lilac], [m.text, CC.text]], '600 17px Antonio', b.w); y += 24; }
 }
 function stRepair(b) {
-  const s = () => W.player;
-  const g = el('div', 'grid'); css(g, 'grid-template-columns:1fr 92px;align-items:center;');
-  for (const k of Object.keys(W.player.sys)) g.append(bar(k, () => s().sys[k], (v) => v < 0.5), tab('Priority', () => A.priority(k), () => s().priority === k));
-  g.append(bar('Reactor', () => Math.min(s().reactor.conf, ...s().reactor.loops.map((l) => l.hp)), (v) => v < 0.5), tab('Priority', () => A.priority('reactor'), () => s().priority === 'reactor'));
-  b.append(g, htm(() => `<span class="lbl">Crews</span> <span class="num">${s().power.repair}</span> <span class="lbl">Weapons damaged</span> <span class="num">${s().mounts.filter((m) => m.hp < 1).length}</span>`, 'row'));
+  const s = W.player; let y = b.y;
+  const rows = [...Object.keys(s.sys).map((k) => [k, s.sys[k]]), ['reactor', Math.min(s.reactor.conf, ...s.reactor.loops.map((l) => l.hp))]];
+  for (const [k, v] of rows) { bar(b.x, y, b.w - 100, k, v, v < 0.5); tab(`rep.${k}`, b.x + b.w - 92, y + 2, 92, 34, 'Priority', () => A.priority(k), s.priority === k); y += 42; }
+  pairs('rep.c', b.x, y + 18, [['Crews', String(s.power.repair)], ['Weapons damaged', String(s.mounts.filter((m) => m.hp < 1).length)]], b.w);
 }
 function stTransport(b) {
-  const s = () => W.player;
-  b.append(bar('Transporter', () => s().transporter), btn('Beam marines', A.marines, { dis: () => !canBoard(s(), tgt(s())) }),
-    htm(() => { const t = tgt(s()); if (!t) return '<span class="lbl">No target</span>'; const f = facingFrom(t, s().x, s().z); return `<span class="lbl">Range</span> <span class="num">${km(distKm(s(), t))}</span> <span class="lbl">Their ${FACINGS[f]} shield</span> <span class="num">${Math.round(t.shields[f])}</span>`; }, 'row'),
-    btn(() => `Drop mine · ${s().mines} left`, A.mine, { dis: () => s().mines <= 0 }), el('div', 'nine k-divider'), el('div', 'lbl', 'Cargo'),
-    htm(() => `<span class="lbl">Marines</span> <span class="num">${s().marines}</span> <span class="lbl">Mines</span> <span class="num">${s().mines}</span> <span class="lbl">Fighters</span> <span class="num">${s().fighters}</span>`, 'row'));
+  const s = W.player, t = tgt(s); let y = b.y;
+  y += bar(b.x, y, b.w, 'Transporter', s.transporter) + 10;
+  button('tr.mar', b.x, y, b.w, 48, 'Beam marines', A.marines, { dis: () => !canBoard(s, t) }); y += 74;
+  if (t) { const f = facingFrom(t, s.x, s.z); pairs('tr.t', b.x, y, [['Range', km(distKm(s, t))], [`Their ${FACINGS[f]} shield`, String(Math.round(t.shields[f]))]], b.w); } else LBL('No target', b.x, y);
+  y += 14; button('tr.mine', b.x, y, b.w, 48, `Drop mine · ${s.mines} left`, A.mine, { dis: () => s.mines <= 0 }); y += 58;
+  divider(b.x, y, b.w); y += 18; LBL('Cargo', b.x, y + 13); y += 40;
+  pairs('tr.c', b.x, y, [['Marines', String(s.marines)], ['Mines', String(s.mines)], ['Fighters', String(s.fighters)]], b.w);
 }
 function stFleet(b, big) {
-  const own = W.ships.filter((x) => x.side === 0);
-  b.append(tabs(own.map((x) => [x.id, x.name]), () => fleetPick, (id) => { fleetPick = id; buildPanel('station'); }, (id) => !ship(id).alive));
+  const own = W.ships.filter((x) => x.side === 0); let y = b.y;
+  tabs('fl', b.x, y, b.w, 40, own.map((x) => [x.id, x.name]), fleetPick, (id) => { fleetPick = id; }, (id) => !ship(id).alive); y += 46;
   const f = ship(fleetPick) || W.player;
-  b.append(bar(() => `${f.name} · ${CLASSES[f.cls].name} · hull`, () => f.hull / CLASSES[f.cls].hull, (v) => v < 0.35));
-  if (f === W.player) { b.append(el('div', 'txt', 'Under your command'), el('div', 'lbl', 'Choose a wingman above to set its orders')); return; }
+  y += bar(b.x, y, b.w, `${f.name} · ${CLASSES[f.cls].name} · hull`, f.hull / CLASSES[f.cls].hull, f.hull / CLASSES[f.cls].hull < 0.35) + 12;
+  if (f === W.player) { TXT('Under your command', b.x, y + 18, b.w); LBL('Choose a wingman above to set its orders', b.x, y + 42, b.w); return; }
   if (!big) {
-    b.append(el('div', 'lbl', 'Stance'), tabs(AI_CHOICES.stance, () => f.ai.stance, (v) => A.ai(f.id, 'stance', v)),
-      css(htm(() => ['rule', 'range', 'retreat', 'fire'].map((k) => `<span class="lbl">${k === 'rule' ? 'Target' : k}</span><span class="num" style="font-size:18px">${AI_CHOICES[k].find((c) => c[0] === f.ai[k])[1]}</span>`).join(''), 'grid'), 'grid-template-columns:auto 1fr auto 1fr;align-items:baseline;column-gap:8px;row-gap:4px;'),
-      btn('Take command', () => A.command(f.id), { dis: () => !f.alive }));
-    return;
+    LBL('Stance', b.x, y + 13); y += 20; tabs('fl.st', b.x, y, b.w, 40, AI_CHOICES.stance, f.ai.stance, (v) => A.ai(f.id, 'stance', v)); y += 64;
+    pairs('fl.s1', b.x, y, [['Target', AI_CHOICES.rule.find((c) => c[0] === f.ai.rule)[1]], ['Range', AI_CHOICES.range.find((c) => c[0] === f.ai.range)[1]]], b.w, 18);
+    pairs('fl.s2', b.x, y + 26, [['Retreat', AI_CHOICES.retreat.find((c) => c[0] === f.ai.retreat)[1]], ['Fire', AI_CHOICES.fire.find((c) => c[0] === f.ai.fire)[1]]], b.w, 18);
+    button('fl.cmd', b.x, b.y + b.h - 48, b.w, 48, 'Take command', () => A.command(f.id), { dis: () => !f.alive }); return;
   }
-  const g = el('div', 'grid'); css(g, 'grid-template-columns:110px 1fr;align-items:center;row-gap:6px;');
-  for (const [key, list] of Object.entries(AI_CHOICES)) g.append(el('div', 'lbl', key === 'rule' ? 'Target' : key), tabs(list, () => f.ai[key], (v) => A.ai(f.id, key, v)));
-  b.append(g, btn('Take command', () => A.command(f.id), { dis: () => !f.alive }));
+  for (const [key, list] of Object.entries(AI_CHOICES)) { LBL(key === 'rule' ? 'Target' : key, b.x, y + 26); tabs(`fl.${key}`, b.x + 110, y, b.w - 110, 40, list, f.ai[key], (v) => A.ai(f.id, key, v)); y += 46; }
+  button('fl.cmd', b.x, y + 10, b.w, 48, 'Take command', () => A.command(f.id), { dis: () => !f.alive });
 }
 
 // ---- Ship panel: the ship systems display and the other overview pages ----------------------------------------------
-function buildShip() {
-  const { pin, big } = panelShell('ship', () => `${SHIPTABS.find((s) => s[0] === shipTab)[1]} · ${W.player.name}`);
-  const rail = el('div', 'rail'); for (const [id, label, ic] of SHIPTABS) rail.append(itab(ic, label, () => A.shipTab(id), () => shipTab === id));
-  const body = el('div', 'col fill'); pin.append(rail, body);
-  const r = R.ship.getBoundingClientRect();
-  const wpx = big ? (r.width / S - 72 - 56 - 40) : 340, hpx = big ? (r.height / S - 44 - 20) : 232;
-  ({ ssd: shSSD, shields: shShields, sensors: shSensors, tractor: shTractor, craft: shCraft })[shipTab](body, big, wpx, hpx);
+function uiShip(r, big) {
+  const P0 = panel('ship', r, `${SHIPTABS.find((s) => s[0] === shipTab)[1]} · ${W.player.name}`, big);
+  rail('sh', P0.x, P0.y, SHIPTABS, shipTab, A.shipTab);
+  const b = { x: P0.x + 56, y: P0.y, w: P0.w - 56, h: P0.h };
+  clipped(b, () => ({ ssd: shSSD, shields: shShields, sensors: shSensors, tractor: shTractor, craft: shCraft })[shipTab](b, big));
 }
-// The ship systems display: one drawing for own ship and target, used docked and expanded (CLAUDE.md section 6.1).
+// The ship systems display: one drawing for own ship and target, used docked, expanded and in the Target box (6.1).
 function drawSSD(x, w, h, s, big, own) {
   const cx = w / 2, cy = h / 2 + 4, k = Math.min(w * 0.7, h - (big ? 60 : 44)) / 2 * 0.92, Rr = k * 0.95;
   const toward = own ? (tgt(s) ? facingFrom(s, tgt(s).x, tgt(s).z) : -1) : facingFrom(s, W.player.x, W.player.z);
   for (let i = 0; i < 6; i++) {
     const a = -P / 2 + i * P / 3;
-    x.strokeStyle = shieldCol(s, i); x.globalAlpha = 0.45 + 0.55 * (s.shUp ? Math.max(0.15, s.shields[i] / shieldMax(s, i)) : 0.3) + s.flash[i] * 0.5;
+    x.strokeStyle = shieldCol(s, i); x.globalAlpha = Math.min(1, 0.45 + 0.55 * (s.shUp ? Math.max(0.15, s.shields[i] / shieldMax(s, i)) : 0.3) + s.flash[i] * 0.5);
     x.lineWidth = big ? 12 : 7; x.beginPath(); x.arc(cx, cy, Rr, a - P / 6 + 0.09, a + P / 6 - 0.09); x.stroke(); x.globalAlpha = 1;
     if (s.flash[i] > 0) { x.strokeStyle = '#fff'; x.globalAlpha = s.flash[i]; x.lineWidth = 3; x.beginPath(); x.arc(cx, cy, Rr + (big ? 10 : 7), a - P / 6 + 0.09, a + P / 6 - 0.09); x.stroke(); x.globalAlpha = 1; }
     if (own && s.reinforce === i) { x.strokeStyle = CC.lilac; x.lineWidth = 3; x.beginPath(); x.arc(cx, cy, Rr + (big ? 12 : 9), a - P / 6 + 0.12, a + P / 6 - 0.12); x.stroke(); }
@@ -1587,11 +1357,9 @@ function drawSSD(x, w, h, s, big, own) {
       x.fillText(String(Math.round(s.shields[i])), cx + Math.cos(a) * (Rr + (big ? 34 : 20)), cy + Math.sin(a) * (Rr + (big ? 34 : 20)) + (big ? 8 : 5));
     }
   }
-  // Fire arcs of the selected mounts, faint.
   if (own) for (const m of s.mounts) if (m.sel && m.w !== 'pd' && m.arc[1] < 360) {
     x.fillStyle = 'rgba(63,169,240,0.06)'; x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, Rr - 4, -P / 2 + (m.arc[0] - m.arc[1] / 2) * DEG, -P / 2 + (m.arc[0] + m.arc[1] / 2) * DEG); x.closePath(); x.fill();
   }
-  // The hull, by its class's shape.
   const L = k * 0.78, sh = CLASSES[s.cls].shape;
   x.strokeStyle = CC.sky; x.lineWidth = big ? 3 : 2;
   if (sh === 'saucer') {
@@ -1603,7 +1371,6 @@ function drawSSD(x, w, h, s, big, own) {
   } else {
     x.beginPath(); x.moveTo(cx - L * 0.35, cy - L * 0.9); x.quadraticCurveTo(cx - L * 0.6, cy, cx - L * 0.25, cy + L * 0.75); x.lineTo(cx + L * 0.25, cy + L * 0.75); x.quadraticCurveTo(cx + L * 0.6, cy, cx + L * 0.35, cy - L * 0.9); x.stroke();
   }
-  // Mounts: offline deep, charging signal with its charge, ready green, overload lilac; selected ringed in sky.
   for (const m of s.mounts) {
     const mx = cx + m.x * L * 0.9, my = cy - m.y * L, r = big ? 9 : 5.5;
     x.fillStyle = m.hp <= 0 ? '#000' : m.state === 'offline' ? CC.deep : ready(m) ? (m.state === 'overload' ? CC.lilac : CC.accord) : CC.signal;
@@ -1615,67 +1382,71 @@ function drawSSD(x, w, h, s, big, own) {
   }
   return { cx, cy, Rr, L };
 }
-// The own ship's systems display. The target's is the Target box in the view (owner, 2026-11-01: "change this box to
-// 'target' that way we dont need to toggle between the two on the ship systems display").
-function shSSD(b, big, w, h) {
-  let geo = null;
-  const c = live(w, h, (x) => { geo = drawSSD(x, w, h, W.player, big, true); }, (px, py) => {
-    if (!geo) return; const s = W.player;
-    for (const m of s.mounts) if (Math.hypot(px - (geo.cx + m.x * geo.L * 0.9), py - (geo.cy - m.y * geo.L)) < (big ? 22 : 14)) { A.selectMount(m.i); return; }
-    const d = Math.hypot(px - geo.cx, py - geo.cy);
-    if (Math.abs(d - geo.Rr) < (big ? 24 : 16)) { const a = Math.atan2(py - geo.cy, px - geo.cx) + P / 2; A.reinforce(Math.floor((((a / DEG + 30) % 360) + 360) % 360 / 60)); }
-  });
-  b.append(c);
+// The own ship's display: tap a mount to select it for firing, tap a shield arc to reinforce that facing.
+function shSSD(b, big) {
+  const geo = inBox(b.x, b.y, b.w, b.h, (x, w, h) => drawSSD(x, w, h, W.player, big, true));
+  hit('ssd', b.x, b.y, b.w, b.h, { cursor: 'crosshair', click: (px, py) => {
+    const lx = px - b.x, ly = py - b.y, s = W.player;
+    for (const m of s.mounts) if (Math.hypot(lx - (geo.cx + m.x * geo.L * 0.9), ly - (geo.cy - m.y * geo.L)) < (big ? 22 : 14)) { A.selectMount(m.i); return; }
+    const d = Math.hypot(lx - geo.cx, ly - geo.cy);
+    if (Math.abs(d - geo.Rr) < (big ? 24 : 16)) { const a = Math.atan2(ly - geo.cy, lx - geo.cx) + P / 2; A.reinforce(Math.floor((((a / DEG + 30) % 360) + 360) % 360 / 60)); }
+  } });
 }
 function shShields(b, big) {
-  const s = () => W.player;
-  b.append(btn(() => (s().shUp ? 'Shields up' : 'Shields down'), A.shields, { sel: () => !s().shUp }));
-  const g = el('div', 'grid'); css(g, `grid-template-columns:1fr 1fr${big ? ' 1fr' : ''};`);
-  FACINGS.forEach((f, i) => { const c = el('div', 'row'); c.append(bar(() => `${f} ${Math.round(s().shields[i])}/${shieldMax(s(), i)}`, () => s().shields[i] / shieldMax(s(), i), (v) => v < 0.33)); const t = tab('+', () => A.reinforce(i), () => s().reinforce === i); css(t, 'width:44px;flex:none;'); c.append(t); g.append(c); });
-  b.append(g, htm(() => `<span class="lbl">Regen</span> <span class="num">${(s().power.shields * 0.6).toFixed(1)}/S</span> <span class="lbl">Reinforced</span> <span class="num">${s().reinforce >= 0 ? FACINGS[s().reinforce] : 'None'}</span>`, 'row'));
+  const s = W.player; let y = b.y;
+  button('sh.up', b.x, y, b.w, 48, s.shUp ? 'Shields up' : 'Shields down', A.shields, { sel: () => !s.shUp }); y += 56;
+  const cols = big ? 3 : 2, cw = (b.w - (cols - 1) * 10) / cols;
+  FACINGS.forEach((f, i) => {
+    const x = b.x + (i % cols) * (cw + 10), yy = y + Math.floor(i / cols) * 42;
+    bar(x, yy, cw - 50, `${f} ${Math.round(s.shields[i])}/${shieldMax(s, i)}`, s.shields[i] / shieldMax(s, i), s.shields[i] / shieldMax(s, i) < 0.33);
+    tab(`sh.r.${i}`, x + cw - 44, yy + 2, 44, 34, '+', () => A.reinforce(i), s.reinforce === i);
+  });
+  y += Math.ceil(6 / cols) * 42 + 18;
+  pairs('sh.x', b.x, y, [['Regen', `${(s.power.shields * 0.6).toFixed(1)}/S`], ['Reinforced', s.reinforce >= 0 ? FACINGS[s.reinforce] : 'None']], b.w);
 }
 function shSensors(b) {
-  const s = () => W.player;
-  b.append(bar('Sensor health', () => s().sys.sensors, (v) => v < 0.5),
-    htm(() => `<span class="lbl">Mode</span> <span class="num">${s().sensorMode.toUpperCase()}</span> <span class="lbl">ECM</span> <span class="num">${s().ecm}</span> <span class="lbl">ECCM</span> <span class="num">${s().eccm}</span>`, 'row'),
-    htm(() => `<span class="lbl">Contacts</span> <span class="num">${enemiesOf(s()).length}</span> <span class="lbl">hostile</span> <span class="num">${W.ships.filter((o) => o.alive && o.side === 0).length - 1}</span> <span class="lbl">friendly</span>`, 'row'),
-    htm(() => { const t = tgt(s()); return t ? `<span class="lbl">Lock</span> <span class="num">${t.name}</span> <span class="lbl">Their ECM ${t.ecm}</span>` : '<span class="lbl">No lock</span>'; }, 'row'));
+  const s = W.player, t = tgt(s); let y = b.y;
+  y += bar(b.x, y, b.w, 'Sensor health', s.sys.sensors, s.sys.sensors < 0.5) + 28;
+  pairs('se.1', b.x, y, [['Mode', s.sensorMode.toUpperCase()], ['ECM', String(s.ecm)], ['ECCM', String(s.eccm)]], b.w); y += 34;
+  pairs('se.2', b.x, y, [['Hostile', String(enemiesOf(s).length)], ['Friendly', String(W.ships.filter((o) => o.alive && o.side === 0).length - 1)]], b.w); y += 34;
+  if (t) pairs('se.3', b.x, y, [['Lock', t.name], ['Their ECM', String(t.ecm)]], b.w); else LBL('No lock', b.x, y);
 }
 function shTractor(b) {
-  const s = () => W.player;
-  b.append(tabs([['off', 'Off'], ['hold', 'Hold'], ['pull', 'Pull'], ['push', 'Push']], () => s().tractor, A.tractor, () => s().power.tractor <= 0),
-    htm(() => { const t = tgt(s()); if (s().power.tractor <= 0) return '<span class="lbl">No tractor power: set it in Power</span>'; if (!t) return '<span class="lbl">No target</span>'; const d = distKm(s(), t); return `<span class="lbl">${t.name}</span> <span class="num ${d <= 3 ? 'ok' : 'bad'}">${km(d)}</span> <span class="lbl">${d <= 3 ? 'in reach' : 'reach 3.0 km'}</span>`; }, 'row'),
-    bar(() => `Strength ${s().power.tractor} E`, () => s().power.tractor / 10));
+  const s = W.player, t = tgt(s); let y = b.y;
+  tabs('trc', b.x, y, b.w, 40, [['off', 'Off'], ['hold', 'Hold'], ['pull', 'Pull'], ['push', 'Push']], s.tractor, A.tractor, () => s.power.tractor <= 0); y += 72;
+  if (s.power.tractor <= 0) LBL('No tractor power: set it in Power', b.x, y, b.w);
+  else if (!t) LBL('No target', b.x, y);
+  else { const d = distKm(s, t); pairs('trc.d', b.x, y, [[t.name, km(d), d <= 3 ? CC.accord : CC.alert], [d <= 3 ? 'in reach' : 'reach 3.0 km', '']], b.w); }
+  bar(b.x, y + 20, b.w, `Strength ${s.power.tractor} E`, s.power.tractor / 10);
 }
 function shCraft(b) {
-  const s = () => W.player;
-  b.append(htm(() => `<span class="lbl">In bay</span> <span class="num">${s().fighters}</span> <span class="lbl">Flying</span> <span class="num">${W.craft.filter((c) => c.home === s().id).length}</span>`, 'row'),
-    tabs([['attack', 'Attack'], ['defend', 'Defend']], () => s().mission, A.mission));
-  const r = el('div', 'grid'); css(r, 'grid-template-columns:1fr 1fr;'); r.append(btn('Launch', A.launch, { dis: () => s().fighters <= 0 || !s().alive }), btn('Recall', A.recall, { dis: () => !W.craft.some((c) => c.home === s().id) }));
-  b.append(r);
+  const s = W.player; let y = b.y + 22;
+  pairs('cr.1', b.x, y, [['In bay', String(s.fighters)], ['Flying', String(W.craft.filter((c) => c.home === s.id).length)]], b.w); y += 14;
+  tabs('cr.m', b.x, y, b.w, 40, [['attack', 'Attack'], ['defend', 'Defend']], s.mission, A.mission); y += 48;
+  const hw = (b.w - 6) / 2;
+  button('cr.l', b.x, y, hw, 48, 'Launch', A.launch, { dis: () => s.fighters <= 0 || !s.alive });
+  button('cr.r', b.x + hw + 6, y, hw, 48, 'Recall', A.recall, { dis: () => !W.craft.some((c) => c.home === s.id) });
 }
 
 // ---- Weapons panel ------------------------------------------------------------------------------------------------
-function buildWeapons() {
-  const { pin, big } = panelShell('weapons', 'Weapons');
-  const s = () => W.player, body = el('div', 'col fill'); pin.append(body);
-  const sel = () => s().mounts.filter((m) => m.sel && m.w !== 'pd');
-  const armState = () => { const st = [...new Set(sel().map((m) => m.state))]; return st.length === 1 ? st[0] : null; };
-  const r1 = el('div', 'grid'); css(r1, 'grid-template-columns:1.6fr 1fr;');
-  r1.append(btn(() => { const t = tgt(s()), n = t ? s().mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(s(), m, t) && inRange(s(), m, t)).length : 0; return `Fire · ${n}`; }, A.fire),
-    btn(() => (s().volley ? 'Multiple' : 'Single'), A.volley, { sel: () => s().volley }));
-  const r2 = tabs([['offline', 'Offline'], ['normal', 'Normal'], ['overload', 'Overload']], armState, A.arm, (id) => id === 'overload' && !sel().some((m) => WEAPONS[m.w].overload));
-  body.append(r1, r2);
+function uiWeapons(r, big) {
+  const P0 = panel('weapons', r, 'Weapons', big), s = W.player, t = tgt(s), b = P0;
+  const sel = s.mounts.filter((m) => m.sel && m.w !== 'pd'), states = [...new Set(sel.map((m) => m.state))];
+  const n = t ? s.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(s, m, t) && inRange(s, m, t)).length : 0;
+  const w1 = (b.w - 6) * 0.62;
+  button('w.fire', b.x, b.y, w1, 48, `Fire · ${n}`, A.fire); button('w.multi', b.x + w1 + 6, b.y, b.w - w1 - 6, 48, s.volley ? 'Multiple' : 'Single', A.volley, { sel: () => s.volley });
+  tabs('w.arm', b.x, b.y + 54, b.w, 40, [['offline', 'Offline'], ['normal', 'Normal'], ['overload', 'Overload']], states.length === 1 ? states[0] : null, A.arm, (id) => id === 'overload' && !sel.some((m) => WEAPONS[m.w].overload));
   if (!big) return;
-  body.append(el('div', 'lbl', 'Select'), tabs([['all', 'All'], ['lance', 'Lances'], ['torpedo', 'Torpedoes']], () => null, A.group), el('div', 'nine k-divider'));
-  const g = el('div', 'grid'); css(g, 'grid-template-columns:90px 1fr 1fr 120px 1.4fr;align-items:center;row-gap:8px;');
-  for (const h of ['Mount', 'Weapon', 'State', 'Arc', 'Charge']) g.append(el('div', 'lbl', h));
-  for (const m of s().mounts) {
-    const pick = tab(`${m.i + 1}`, () => A.selectMount(m.i), () => m.sel, () => m.w === 'pd');
-    g.append(pick, el('div', 'txt', WEAPONS[m.w].name), txt(() => (m.hp <= 0 ? 'Destroyed' : m.state), 'txt'), el('div', 'lbl', m.arc[1] >= 360 ? 'All round' : `${m.arc[0]}° ± ${m.arc[1] / 2}°`),
-      bar(null, () => m.charge, () => m.hp < 1));
+  let y = b.y + 106; LBL('Select', b.x, y + 13); y += 20;
+  tabs('w.grp', b.x, y, b.w, 40, [['all', 'All'], ['lance', 'Lances'], ['torpedo', 'Torpedoes']], null, A.group); y += 52; divider(b.x, y, b.w); y += 26;
+  const cols = [0, 110, 0.36, 0.55, 0.72].map((c) => (c < 1 ? b.x + b.w * c : b.x + c));
+  ['Mount', 'Weapon', 'State', 'Arc', 'Charge'].forEach((hh, i) => LBL(hh, cols[i], y)); y += 14;
+  for (const m of s.mounts) {
+    tab(`w.m.${m.i}`, cols[0], y, 90, 36, String(m.i + 1), () => A.selectMount(m.i), m.sel, { dis: () => m.w === 'pd' });
+    TXT(WEAPONS[m.w].name, cols[1], y + 25, cols[2] - cols[1] - 10); TXT(m.hp <= 0 ? 'Destroyed' : m.state, cols[2], y + 25, cols[3] - cols[2] - 10, m.hp <= 0 ? CC.alert : CC.text);
+    LBL(m.arc[1] >= 360 ? 'All round' : `${m.arc[0]}° ± ${m.arc[1] / 2}°`, cols[3], y + 24, cols[4] - cols[3] - 10);
+    bar(cols[4], y + 10, b.x + b.w - cols[4], null, m.charge, m.hp < 1); y += 44;
   }
-  body.append(g);
 }
 
 // ---- Radar and the tactical map ----------------------------------------------------------------------------------
@@ -1690,28 +1461,26 @@ function radarDraw(x, size, scaleKm) {
   }
   x.fillStyle = CC.sky; x.beginPath(); x.arc(c, c, size * 0.03, 0, 2 * P); x.fill();
 }
-function buildRadarRow() {
-  region = 'radarRow'; binders.radarRow = []; R.radarRow.replaceChildren();
-  if (mode !== 'desk' || expanded) return;
-  const row = el('div', 'row'); css(row, 'height:100%;gap:8px;');
-  const d = hero('dial', 120, 120); d.append(live(120, 120, (x) => radarDraw(x, 120, 15), () => A.expand('radar')));
-  const box = el('div', 'nine k-inset fill'); css(box, 'height:120px;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:0 6px;');
-  box.append(htm(() => `<span class="num">${enemiesOf(W.player).length}</span> <span class="lbl">hostile · 15 km</span>`, 'row'));
-  const r2 = el('div', 'row'); r2.append(btn('Map', () => A.expand('radar'), { sm: true }), btn('Next target', A.nextTarget, { sm: true })); box.append(r2);
-  const crest = hero('crest', 72, 72);
-  row.append(d, box, crest); R.radarRow.append(row);
+function uiRadarRow(r) {
+  const [x, y] = r;
+  heroImg('dial', x, y + 6, 120, 120); inBox(x, y + 6, 120, 120, (c) => radarDraw(c, 120, 15));
+  hit('radar', x, y + 6, 120, 120, { click: () => A.expand('radar'), tip: 'Tactical map' });
+  const bx = x + 128, bw = 468 - 128 - 80; nine('frame.inset', bx, y + 6, bw, 120);
+  pairs('rr', bx + 14, y + 52, [['', String(enemiesOf(W.player).length)], ['hostile · 15 km', '']], bw - 20);
+  button('rr.map', bx + 14, y + 72, 70, 30, 'Map', () => A.expand('radar'), { center: true });
+  button('rr.next', bx + 92, y + 72, 120, 30, 'Next target', A.nextTarget, { center: true });
+  heroImg('crest', x + 468 - 74, y + 30, 72, 72);
 }
-function buildMap() {
-  const { pin } = panelShell('radar', 'Tactical map');
-  const body = el('div', 'col fill'); pin.append(body);
-  body.append(tabs([[10, '10 km'], [20, '20 km'], [40, '40 km']], () => mapScale, (v) => { mapScale = v; }));
-  const r = R.radar.getBoundingClientRect(), w = r.width / S - 72, h = r.height / S - 44 - 56;
-  let view = null;
-  body.append(live(w, h, (x) => { view = drawMap(x, w, h); }, (px, py) => {
-    if (!view) return; let best = null, bd = 30;
-    for (const o of W.ships) if (o.alive) { const [sx, sy] = view(o.x, o.z), d = Math.hypot(sx - px, sy - py); if (d < bd) { bd = d; best = o; } }
+function uiMap(r) {
+  const P0 = panel('radar', r, 'Tactical map', true);
+  tabs('map.s', P0.x, P0.y, P0.w, 40, [[10, '10 km'], [20, '20 km'], [40, '40 km']], mapScale, (v) => { mapScale = v; });
+  const b = { x: P0.x, y: P0.y + 50, w: P0.w, h: P0.h - 50 };
+  const view = inBox(b.x, b.y, b.w, b.h, (c, w, h) => drawMap(c, w, h));
+  hit('map', b.x, b.y, b.w, b.h, { cursor: 'crosshair', click: (px, py) => {
+    let best = null, bd = 30;
+    for (const o of W.ships) if (o.alive) { const [sx, sy] = view(o.x, o.z), d = Math.hypot(sx + b.x - px, sy + b.y - py); if (d < bd) { bd = d; best = o; } }
     if (best && best.side !== W.player.side) A.lock(best.id); else if (best) { fleetPick = best.id; station = 'fleet'; }
-  }));
+  } });
 }
 function drawMap(x, w, h) {
   const s = W.player, c = [w / 2, h / 2], k = Math.min(w, h) / 2 / (mapScale * 1000 / M_PER_U);
@@ -1751,7 +1520,6 @@ scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x201010, 0.55));
 const sun = new THREE.DirectionalLight(0xfff0dd, 1.3); sun.position.set(-40, 60, 30); scene.add(sun);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enablePan = false; controls.minDistance = 4; controls.maxDistance = 90; controls.enableDamping = true;
-const ovl = el('canvas'); ovl.id = 'ovl';
 const MODELS = new Map();
 const glowTex = (() => { const c = paint(32, 32, (x) => { const g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(255,255,255,0.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); }); const t = new THREE.CanvasTexture(c); return t; })();
 function shieldShell(s) {
@@ -1801,13 +1569,11 @@ function syncScene(dt) {
   for (let i = booms.length - 1; i >= 0; i--) if (booms[i].done) booms.splice(i, 1);
 }
 // Where the commanded ship sits, as a share of the view's height from the top: below the centre, clear of the readouts.
-const MOBILE = false;
-const SHIP_Y = { desk: 0.74, land: 0.6, port: 0.68 };
+const SHIP_Y = { desk: 0.74 };
 let VIEW = [0, 0, 100, 100], showShields = true, showTargetCam = true, lastFollow = null;
 function sizeView(r) {
-  VIEW = r; css(renderer.domElement, `width:${r[2]}px;height:${r[3]}px;`); renderer.setSize(r[2] * S, r[3] * S, false);
-  css(renderer.domElement, `width:${r[2]}px;height:${r[3]}px;`);
-  ovl.width = Math.round(r[2] * S * Math.min(devicePixelRatio, 2)); ovl.height = Math.round(r[3] * S * Math.min(devicePixelRatio, 2)); css(ovl, `width:${r[2]}px;height:${r[3]}px;`);
+  VIEW = r; renderer.setSize(r[2] * S, r[3] * S, false);
+  css(renderer.domElement, `position:absolute;left:${r[0] * S}px;top:${r[1] * S}px;width:${r[2] * S}px;height:${r[3] * S}px;`);
   camera.aspect = r[2] / r[3];
   // The ship you command sits below the centre, at SHIP_Y of the view's height, at every zoom (the owner's reference,
   // 2026-11-01): the projection is shifted, so orbiting and zooming keep it there and nothing moves the camera.
@@ -1827,65 +1593,103 @@ function pick(e) {
   return best;
 }
 let down = null;
-function buildViewUI() {
-  region = 'view'; binders.view = [];
-  R.view.replaceChildren(renderer.domElement, ovl);
+function wireView() {
   renderer.domElement.onpointerdown = (e) => { down = [e.clientX, e.clientY]; };
   renderer.domElement.onpointerup = (e) => {
     if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
     if (expanded) { A.expand(expanded); return; }
     const s = pick(e); if (!s) return;
     if (e.button === 2) A.lock(s.id); else focus = s.id;
-    tickUI();
   };
   renderer.domElement.oncontextmenu = (e) => e.preventDefault();
-  const tools = el('div'); tools.id = 'vtools';
-  tools.append(btn('Shield view', () => { showShields = !showShields; }, { sm: true, sel: () => showShields }), btn('Target', () => { showTargetCam = !showTargetCam; }, { sm: true, sel: () => showTargetCam }));
-  const ro = htm(() => {
-    const s = W.player, t = tgt(s); if (!t) return '<b>No target</b> · right click a ship to lock';
-    const inArcN = s.mounts.filter((m) => m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t) && inRange(s, m, t)), rd = inArcN.filter(ready).length;
-    return `<b>${t.name}</b> ${CLASSES[t.cls].name} · range <b>${distKm(s, t).toFixed(1)} km</b> · speed <b>${Math.round(t.v)}</b><br>in arc <b>${inArcN.length}</b> · charged <b>${rd}</b> · to hit <b>${pct(bestChance())}</b>`;
-  }, 'vtext'); ro.id = 'readout';
-  const msg = txt(() => { const m = W.log[W.log.length - 1]; return m && W.t - m.t < 5 ? `${m.who}: ${m.text}` : ''; }, 'vtext'); msg.id = 'msg'; css(msg, mode === 'land' ? 'top:58px;' : `bottom:${mode === 'desk' ? 80 : 128}px;`);
-  const pz = txt(() => (paused ? 'Paused · orders still taken' : ''), 'vtext'); pz.id = 'paused';
-  // The Target box: the locked target's systems display, drawn by the same drawSSD as the ship panel (CLAUDE.md 6.1):
-  // its shields (numbers once scanned), its mounts, and the facing it shows you marked in red.
-  const inset = el('div', 'nine k-inset'); inset.id = 'inset'; inset.append(txt(() => (tgt(W.player) ? `Target · ${tgt(W.player).name}` : ''), 'vtext'));
-  { const ir = insetRect(), tw = ir[2] - 28, th = ir[3] - 52; const tc = live(tw, th, (x) => { const t = tgt(W.player); if (t) drawSSD(x, tw, th, t, false, false); });
-    css(tc, 'position:absolute;left:14px;top:44px;'); inset.append(tc); }
-  bind(() => { const on = showTargetCam && !!tgt(W.player) && !expanded; inset.style.display = on ? '' : 'none'; const ir = insetRect(); css(inset, `left:${ir[0]}px;top:${ir[1]}px;width:${ir[2]}px;height:${ir[3]}px;`); });
-  const lp = btn('Lock target', () => A.lock(focus), { sm: true }); lp.id = 'lockpill';
-  const q = el('div'); q.id = 'quick';
-  q.append(btn('Port', () => A.turn(-30)), btn(() => `Fire · ${tgt(W.player) ? W.player.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(W.player, m, tgt(W.player)) && inRange(W.player, m, tgt(W.player))).length : 0}`, A.fire), btn('Stbd', () => A.turn(30)));
-  const vb = btn('Next', A.nextTarget); q.prepend(vb);
-  const badge = el('div'); badge.id = 'badge'; const home = el('a', '', 'All Fleet Command mockups (the tracker)'); home.href = 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu'; home.target = '_blank'; css(home, 'color:#b7a6f2;text-decoration:none;pointer-events:auto;');
-  badge.append(home, el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V6'), btn('Reset', A.reset, { sm: true }));
-  const sl = el('div', 'vtext'); sl.id = 'striplabel'; sl.textContent = 'Live · tap to return';
-  R.view.append(tools, ro, msg, pz, inset, lp, q, badge, sl);
 }
-function insetRect() { const w = Math.min(320, VIEW[2] * (mode === 'port' ? 0.5 : 0.3)), h = w * 0.86; return mode === 'desk' ? [VIEW[2] - w - 16, 14, w, h] : [VIEW[2] - w - 8, 8, w, h]; }
-// Draw what sits over the 3D view: brackets, names, the focus ring, and place the lock pill.
-function drawOverlay() {
-  const x = ovl.getContext('2d'), k = ovl.width / VIEW[2]; x.setTransform(k, 0, 0, k, 0, 0); x.clearRect(0, 0, VIEW[2], VIEW[3]);
-  const lp = document.getElementById('lockpill'); let lpShown = false;
-  for (const s of W.ships) {
-    if (!s.alive || s === W.player) continue;
-    const v = new THREE.Vector3(s.x, 0, s.z).project(camera), on = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
-    let px = (v.x + 1) / 2 * VIEW[2], py = (1 - v.y) / 2 * VIEW[3];
-    const locked = s.id === W.player.target, f = s.id === focus, col = FACTION[s.faction].dot;
+function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; return [VIEW[2] - w - 16, 14, w, h]; }
+// Over the 3D view: brackets and names, the readout, the last message, the Target box, the lock key, the mockup badge.
+function uiView() {
+  const [vx, vy, vw, vh] = VIEW, s = W.player, t = tgt(s);
+  let lock = null;
+  g.save(); g.beginPath(); g.rect(vx, vy, vw, vh); g.clip(); g.translate(vx, vy); g.lineCap = 'round';
+  for (const o of W.ships) {
+    if (!o.alive || o === s) continue;
+    const v = new THREE.Vector3(o.x, 0, o.z).project(camera), on = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
+    let px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh;
+    const locked = o.id === s.target, f = o.id === focus, col = o.side === s.side ? CC.accord : FACTION[o.faction].dot;
+    if (o.side === s.side) { if (v.z < 1) { g.fillStyle = CC.accord; g.font = '600 14px Antonio'; g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 26); } continue; }
     if (!on) {
       if (!locked) continue;
-      const a = Math.atan2(py - VIEW[3] / 2, px - VIEW[2] / 2) * (v.z > 1 ? -1 : 1) + (v.z > 1 ? P : 0); px = VIEW[2] / 2 + Math.cos(a) * (VIEW[2] / 2 - 40); py = VIEW[3] / 2 + Math.sin(a) * (VIEW[3] / 2 - 40);
-      x.strokeStyle = CC.sky; x.lineWidth = 3; x.beginPath(); x.arc(px, py, 14, 0, 2 * P); x.stroke(); x.fillStyle = CC.sky; x.font = '600 16px Antonio'; x.textAlign = 'center'; x.fillText(s.name.toUpperCase(), px, py + 32); continue;
+      const a = Math.atan2(py - vh / 2, px - vw / 2) * (v.z > 1 ? -1 : 1) + (v.z > 1 ? P : 0); px = vw / 2 + Math.cos(a) * (vw / 2 - 40); py = vh / 2 + Math.sin(a) * (vh / 2 - 40);
+      g.strokeStyle = CC.sky; g.lineWidth = 3; g.beginPath(); g.arc(px, py, 14, 0, 2 * P); g.stroke(); g.fillStyle = CC.sky; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 32); continue;
     }
-    if (locked) CON.live.bracket(x, px - 46, py - 36, 92, 72);
-    else { x.strokeStyle = col; x.lineWidth = f ? 2.5 : 1.5; x.globalAlpha = f ? 1 : 0.7; x.beginPath(); x.arc(px, py, f ? 26 : 16, 0, 2 * P); x.stroke(); x.globalAlpha = 1; }
-    x.fillStyle = locked ? CC.text : col; x.font = `600 ${locked ? 20 : 16}px Antonio`; x.textAlign = 'center';
-    x.fillText(locked && !expanded ? `${s.name} · ${CLASSES[s.cls].code} · ${distKm(W.player, s).toFixed(1)} KM · ${Math.round(s.v)}`.toUpperCase() : s.name.toUpperCase(), px, py + (locked ? 58 : 34));
-    if (f && !locked && s.side !== W.player.side && !expanded) { lpShown = true; css(lp, `left:${clamp(px + 30, 0, VIEW[2] - 150)}px;top:${clamp(py - 15, 0, VIEW[3] - 40)}px;`); }
+    if (locked) CON.live.bracket(g, px - 46, py - 36, 92, 72);
+    else { g.strokeStyle = col; g.lineWidth = f ? 2.5 : 1.5; g.globalAlpha = f ? 1 : 0.7; g.beginPath(); g.arc(px, py, f ? 26 : 16, 0, 2 * P); g.stroke(); g.globalAlpha = 1; }
+    g.fillStyle = locked ? CC.text : col; g.font = `600 ${locked ? 20 : 16}px Antonio`; g.textAlign = 'center';
+    g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? 58 : 34));
+    if (f && !locked && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id];
   }
-  for (const s of W.ships) if (s.alive && s.side === 0 && s !== W.player) { const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z < 1) { x.fillStyle = CC.accord; x.font = '600 14px Antonio'; x.textAlign = 'center'; x.fillText(s.name.toUpperCase(), (v.x + 1) / 2 * VIEW[2], (1 - v.y) / 2 * VIEW[3] + 26); } }
-  if (lp) lp.style.display = lpShown ? '' : 'none';
+  g.restore();
+  if (expanded) { LBL('Live · tap to return', vx + vw / 2, vy + 28, 0, CC.sky, 'center', 18); return; }
+  button('v.shields', vx + 14, vy + 12, 120, 30, 'Shield view', () => { showShields = !showShields; }, { sel: () => showShields, center: true });
+  button('v.target', vx + 140, vy + 12, 90, 30, 'Target', () => { showTargetCam = !showTargetCam; }, { sel: () => showTargetCam, center: true });
+  if (paused) LBL('Paused · orders still taken', vx + vw / 2, vy + 40, 0, CC.caution, 'center', 28);
+  // The readout and the last officer's message, bottom left.
+  const ry = vy + vh - 16;
+  if (t) {
+    const arcN = s.mounts.filter((m) => m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t) && inRange(s, m, t)), rd = arcN.filter(ready).length;
+    rich(vx + 18, ry - 28, [[t.name, CC.sky], [` ${CLASSES[t.cls].name} · range `, CC.lilac], [`${distKm(s, t).toFixed(1)} km`, CC.sky], [' · speed ', CC.lilac], [String(Math.round(t.v)), CC.sky]], '600 22px Antonio', vw * 0.6);
+    rich(vx + 18, ry, [['in arc ', CC.lilac], [String(arcN.length), CC.sky], [' · charged ', CC.lilac], [String(rd), CC.sky], [' · to hit ', CC.lilac], [pct(bestChance()), CC.sky]], '600 22px Antonio', vw * 0.6);
+  } else rich(vx + 18, ry, [['No target', CC.sky], [' · right click a ship to lock', CC.lilac]], '600 22px Antonio', vw * 0.6);
+  const m = W.log[W.log.length - 1];
+  if (m && W.t - m.t < 5) rich(vx + 18, ry - 64, [[`${m.who}: ${m.text}`, CC.lilac]], '600 22px Antonio', vw * 0.7);
+  // The Target box: the locked target's systems display, drawn by the same drawSSD as the ship panel (CLAUDE.md 6.1).
+  if (showTargetCam && t) {
+    const ir = insetRect(), bx = vx + ir[0], by = vy + ir[1];
+    g.fillStyle = '#000'; g.fillRect(bx + 2, by + 2, ir[2] - 4, ir[3] - 4); nine('frame.inset', bx, by, ir[2], ir[3]);
+    LBL(`Target · ${t.name}`, bx + 18, by + 34, ir[2] - 36, CC.sky, 'left', 18);
+    inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false));
+  }
+  if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
+  LBL('Mockup 2 · Battle console · Concord · v7', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
+}
+// The in-game menu, and the battle's end: a sheet over everything that takes all input while it is up.
+function uiSheet() {
+  const end = W.over && !menuOpen;
+  if (!menuOpen && !W.over) return;
+  g.fillStyle = 'rgba(0,0,0,0.78)'; g.fillRect(0, 0, RW, RH); hit('sheet.block', 0, 0, RW, RH, {});
+  const w = 560, h = end ? 300 : 330, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? (W.over === 'won' ? 'Victory' : 'Ship lost') : 'Menu', false, true);
+  let yy = P0.y + 8;
+  if (end) {
+    TXT(W.over === 'won' ? 'All hostile ships destroyed' : `${W.player.name} is lost`, P0.x, yy + 20, P0.w); LBL(`Battle time ${mmss(W.t)}`, P0.x, yy + 46); yy += 64;
+    const alive = W.ships.filter((o) => o.side === 0 && o.alive);
+    if (W.over === 'lost' && alive.length) { button('sheet.cmd', P0.x, yy, P0.w, 48, `Take command of ${alive[0].name}`, () => { W.over = null; A.command(alive[0].id); }); yy += 56; }
+    button('sheet.restart', P0.x, yy, P0.w, 48, 'Restart', A.reset);
+  } else {
+    button('sheet.resume', P0.x, yy, P0.w, 48, 'Resume', A.menu); yy += 66; LBL('Mockup', P0.x, yy); yy += 10;
+    button('sheet.restart', P0.x, yy, P0.w, 48, 'Restart battle', () => { A.reset(); menuOpen = false; }); yy += 56;
+    button('sheet.quit', P0.x, yy, P0.w, 48, 'Quit to campaign map', () => {}, { dis: () => true });
+  }
+}
+// The name of what is pointed at, in a lit pill above it (owner: "text will show as you hover over above these tabs").
+function uiTip() {
+  if (DRAG || !HOT) return; const h = PREV.find((q) => q.id === HOT); if (!h || !h.tip) return;
+  g.font = '600 17px Antonio'; g.letterSpacing = '0.8px'; const tw = g.measureText(h.tip.toUpperCase()).width + 28; g.letterSpacing = '0px';
+  const x = clamp(h.x + h.w / 2 - tw / 2, 4, RW - tw - 4), y = Math.max(4, h.y - 36);
+  nine('button.pressed', x, y, tw, 30); text(h.tip.toUpperCase(), x + tw / 2, y + 21, '600 17px Antonio', '#000', 'center', 0, '0.8px');
+}
+function drawUI() {
+  g.setTransform(DPR * S, 0, 0, DPR * S, 0, 0); g.clearRect(0, 0, RW, RH); g.lineCap = 'round'; g.lineJoin = 'round';
+  HITS = [];
+  if (!expanded) {
+    // the column's black, so the 3D view never shows through it
+    g.fillStyle = '#000'; g.fillRect(0, 0, 480, RH);
+    uiTop(O.top); uiBottom(O.bottom); uiPlate(O.plate);
+    uiStation(O.station, false); uiShip(O.ship, false); uiWeapons(O.weapons, false); uiRadarRow(O.radarRow);
+  } else {
+    g.fillStyle = '#000'; g.fillRect(0, 0, VIEW[0], RH);
+    const r = O[expanded]; ({ station: uiStation, ship: uiShip, weapons: uiWeapons, radar: uiMap })[expanded](r, true);
+  }
+  uiView(); uiSheet(); uiTip();
+  PREV = HITS;
 }
 function render(dt) {
   follow(); controls.update();
@@ -1895,38 +1699,16 @@ function render(dt) {
   skyMain.userData.update(camera, dt);
   renderer.render(scene, camera);
   lastInfo = { triangles: renderer.info.render.triangles, calls: renderer.info.render.calls };
-  drawOverlay();
+  drawUI();
 }
 
 // =================================================================================================================
-// The menu sheet (in-game menu and settings), and the battle's end.
+// The loop: fixed simulation steps, then the 3D view and the console drawn every frame.
 // =================================================================================================================
-function renderSheet() {
-  region = 'sheet'; binders.sheet = []; R.sheet.replaceChildren();
-  const end = W.over && !menuOpen;
-  R.sheet.classList.toggle('on', menuOpen || !!W.over);
-  if (!menuOpen && !W.over) return;
-  const p = el('div', 'nine k-panel'); const t = el('div', 'ptitle', end ? (W.over === 'won' ? 'Victory' : 'Ship lost') : 'Menu'); const pin = el('div', 'pin'); p.append(t, pin);
-  if (end) {
-    pin.append(el('div', 'txt', W.over === 'won' ? 'All hostile ships destroyed' : `${W.player.name} is lost`), el('div', 'lbl', `Battle time ${mmss(W.t)}`));
-    const alive = W.ships.filter((s) => s.side === 0 && s.alive);
-    if (W.over === 'lost' && alive.length) pin.append(btn(`Take command of ${alive[0].name}`, () => { W.over = null; A.command(alive[0].id); }));
-    pin.append(btn('Restart', A.reset));
-  } else {
-    pin.append(btn('Resume', A.menu), el('div', 'lbl', 'Mockup'), btn('Restart battle', () => { A.reset(); menuOpen = false; renderSheet(); }), btn('Quit to campaign map', () => {}, { dis: () => true }));
-  }
-  R.sheet.append(p);
-}
-
-// =================================================================================================================
-// The loop: fixed simulation steps, the UI's binders ten times a second, a render every frame.
-// =================================================================================================================
-let acc = 0, uiT = 0, last = performance.now(), frozen = false;
-function tickUI() { watchNine(); for (const k of Object.keys(binders)) for (const f of binders[k]) f(); if (W.over && !R.sheet.classList.contains('on')) renderSheet(); }
+let acc = 0, last = performance.now(), frozen = false;
 function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (!paused && !menuOpen && !frozen) { acc += dt; while (acc >= DT) { step(); acc -= DT; } }
-  uiT += dt; if (uiT > 0.1) { uiT = 0; tickUI(); }
   render(frozen ? 0 : dt);
   requestAnimationFrame(frame);
 }
@@ -1963,7 +1745,10 @@ window.MOCKUP_INFO = () => lastInfo;
 window.MOCKUP_PLAY = () => { frozen = false; };
 
 document.fonts.load('600 20px Antonio').then(() => document.fonts.load('700 20px Antonio')).catch(() => {}).then(() => {
-  buildKit(); newWorld(); makeRegions(); layout();
+  buildKit(); newWorld();
+  const home = el('a', '', 'All Fleet Command mockups (the tracker)'); home.id = 'home'; home.href = 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu'; home.target = '_blank';
+  root.append(renderer.domElement, ui, home);
+  wireInput(); wireView(); layout();
   addEventListener('resize', layout);
   requestAnimationFrame((t) => { last = t; frame(t); window.MOCKUP_READY = true; });
 });

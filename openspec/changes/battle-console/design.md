@@ -80,6 +80,24 @@ systems display, drawn by the same `drawSSD` as the ship panel: its shields (num
 facing it shows you, marked red. The ship panel shows only your own ship; its Own and Target switch is gone. The view's
 Target key shows or hides the box.
 
+**Drawn in the engine** (owner, 2026-11-01: "can you render this ui in engine as opposed to html? there are some issues
+with html rendering that causes components to twitch and change sizes. (by engine I mean js engine)"). From version 7
+the console is not HTML: one canvas over the 3D view is redrawn every frame in reference pixels, as the game's console
+will be.
+
+- **Kit pieces** are composed whole at their device-pixel rectangle (corners at their margins, every slice on whole
+  pixels) and cached by piece and size, so no seam shows and nothing is resampled differently from frame to frame.
+- **Text** is drawn at fixed sizes and trimmed with an ellipsis to its room; it never reflows anything.
+- **Numbers** sit in slots that only ever grow (the widest value seen), so a changing number never moves what follows.
+- **Input is immediate mode**: every control registers its rectangle as it is drawn; a press, a drag or a click is
+  matched against the rectangles of the last frame. A press on the console never reaches the 3D view; elsewhere the
+  view keeps its orbit, left-click focus and right-click lock. Names show above icon tabs and alert lamps on hover.
+- The page's HTML is now two canvases and the link back to the tracker. Checked headless with real mouse input: the
+  helm's +15 key turns the ordered heading by 15 degrees, Stop zeroes the speed, the speed handle drags to the engines'
+  limit (180 m/s), the red lamp sets red alert, a power box sets weapons to 3, a coil drags home, plus on loop A raises
+  its flow, a right click locks Ashkar, Expand and a click on the battle swap the layout.
+- The dormant phone layouts were removed with the HTML; mobile comes back as its own step.
+
 ## 3. The Concord skin on this layout
 
 Everything is drawn from the kit's named pieces (`console-skins` design): `frame.panel` for every panel, `tab` for every

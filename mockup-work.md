@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-01, v6) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-01, v7) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -134,6 +134,11 @@ Version 5 published at the owner's request ("publish it so I can play with this"
 marks/ticks?" (Power and Systems), "can I get red, yellow, green alerts?", and "change this box to 'target' that way we
 dont need to toggle between the two on the ship systems display". Version 6: Power and Systems as ticks, three alert
 lamps the captain sets, the Target box showing the target's systems display, the ship panel's toggle gone.
+
+Then: "how would this work with various amounts of power?" (survey B7), "falling off the screen, please fix" (the
+ticks), and "can you render this ui in engine as opposed to html? there are some issues with html rendering that causes
+components to twitch and change sizes. (by engine I mean js engine)". Version 7 draws the whole console on a canvas in
+the page's own loop: kit pieces composed at their pixel size, fixed text, grow-only number slots, immediate-mode input.
 
 ## 3. Look dev
 
