@@ -220,6 +220,7 @@ const ccCells = {
   'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.deep; rr(x, 0, 0, w, h, 8); x.fill(); } },
   'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.sky; rr(x, 0, 0, w, h, 8); x.fill(); } },
   'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.alert; rr(x, 0, 0, w, h, 8); x.fill(); } },
+  'bar.fill.accord': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => { x.fillStyle = CC.accord; rr(x, 0, 0, w, h, 5); x.fill(); } },
   'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.strokeStyle = CC.deep; x.lineWidth = 2; rr(x, 1, 1, w - 2, h - 2, 7); x.stroke(); } },
 };
 function ccStrip(x, w, h, flip) {
@@ -546,34 +547,40 @@ const WEAPONS = {
   pd: { name: 'Point defence', kind: 'pd', range_km: 2, charge_s: 1.5, cost_e: 0.5, dmg: 0, color: 0xffffff },
 };
 const SYSTEMS = ['weapons', 'shields', 'engines', 'sensors', 'tractor', 'transport', 'repair'];
+// The reactor (owner, 2026-11-01: a new system of our own, not in the reference game): magnetic confinement coils that
+// lose alignment as the reactor takes damage, and coolant loops whose pumps draw energy. Misalignment cuts the output
+// and adds heat; coolant carries heat away in proportion to the core temperature. Coolant offline, or the core at its
+// limit, for meltdown_s seconds, and the reactor explodes. Temperatures in percent of the core's limit.
+const REACTOR = { coils: 3, loops: 2, flow_max: 5, flow_e: 1, efficiency_loss: 0.6, heat_full_pct_s: 4, heat_misalign_pct_s: 12,
+  cool_per_flow: 0.04, temp_floor_pct: 20, critical_pct: 100, meltdown_s: 20, drift_per_s: 0.05, nudge: 0.05, blast_km: 3, blast_dmg: 45 };
 const SPEED_PER_BOX_M_S = 30;
 const FACINGS = ['F', 'FR', 'AR', 'A', 'AL', 'FL'];
 // Mount x is to starboard, y forward, in half-lengths of the hull. arc: [centre bearing, width], degrees.
 const CLASSES = {
   ca: { name: 'Heavy cruiser', code: 'CA', shape: 'saucer', len_m: 320, hull: 140, speed_max_m_s: 300, accel_m_s2: 45, turn_deg_s: 26, reactor_e: 22,
     capacitor_e: 14, battery_e: 10, shields: [42, 32, 28, 26, 28, 32], marines: 12, mines: 4, fighters: 4,
-    power: { weapons: 7, shields: 5, engines: 6, sensors: 2, tractor: 0, transport: 0, repair: 1 },
+    power: { weapons: 6, shields: 5, engines: 6, sensors: 1, tractor: 0, transport: 0, repair: 1 },
     mounts: [['lance', -0.42, 0.62, -50, 200], ['lance', 0.42, 0.62, 50, 200], ['lance', -0.62, 0.05, -90, 180], ['lance', 0.62, 0.05, 90, 180],
       ['torpedo', -0.14, 0.86, 0, 90], ['torpedo', 0.14, 0.86, 0, 90], ['lance', 0, -0.72, 180, 160], ['pd', -0.32, -0.3, 0, 360], ['pd', 0.32, -0.3, 0, 360]] },
   dd: { name: 'Destroyer', code: 'DD', shape: 'saucer', len_m: 230, hull: 95, speed_max_m_s: 330, accel_m_s2: 55, turn_deg_s: 34, reactor_e: 16,
     capacitor_e: 10, battery_e: 6, shields: [32, 24, 22, 20, 22, 24], marines: 6, mines: 2, fighters: 0,
-    power: { weapons: 6, shields: 4, engines: 5, sensors: 1, tractor: 0, transport: 0, repair: 0 },
+    power: { weapons: 5, shields: 3, engines: 5, sensors: 1, tractor: 0, transport: 0, repair: 0 },
     mounts: [['lance', -0.4, 0.6, -40, 180], ['lance', 0.4, 0.6, 40, 180], ['torpedo', 0, 0.85, 0, 90], ['lance', 0, -0.7, 180, 160], ['pd', 0, -0.2, 0, 360]] },
   ff: { name: 'Frigate', code: 'FF', shape: 'saucer', len_m: 160, hull: 60, speed_max_m_s: 360, accel_m_s2: 70, turn_deg_s: 44, reactor_e: 12,
     capacitor_e: 8, battery_e: 4, shields: [24, 18, 16, 14, 16, 18], marines: 4, mines: 2, fighters: 0,
-    power: { weapons: 5, shields: 3, engines: 4, sensors: 0, tractor: 0, transport: 0, repair: 0 },
+    power: { weapons: 4, shields: 3, engines: 3, sensors: 0, tractor: 0, transport: 0, repair: 0 },
     mounts: [['lance', -0.35, 0.6, -30, 160], ['lance', 0.35, 0.6, 30, 160], ['pd', 0, -0.3, 0, 360]] },
   kdd: { name: 'Kethran destroyer', code: 'KDD', shape: 'wedge', len_m: 250, hull: 105, speed_max_m_s: 300, accel_m_s2: 50, turn_deg_s: 30, reactor_e: 18,
     capacitor_e: 12, battery_e: 6, shields: [36, 26, 22, 18, 22, 26], marines: 8, mines: 0, fighters: 0,
-    power: { weapons: 8, shields: 4, engines: 5, sensors: 1, tractor: 0, transport: 0, repair: 0 },
+    power: { weapons: 7, shields: 3, engines: 5, sensors: 1, tractor: 0, transport: 0, repair: 0 },
     mounts: [['disruptor', -0.3, 0.7, 0, 120], ['disruptor', 0.3, 0.7, 0, 120], ['disruptor', 0, 0.9, 0, 60], ['lance', 0, -0.6, 180, 180]] },
   kff: { name: 'Kethran frigate', code: 'KFF', shape: 'wedge', len_m: 170, hull: 65, speed_max_m_s: 350, accel_m_s2: 65, turn_deg_s: 40, reactor_e: 12,
     capacitor_e: 8, battery_e: 4, shields: [26, 18, 16, 12, 16, 18], marines: 4, mines: 0, fighters: 0,
-    power: { weapons: 5, shields: 3, engines: 4, sensors: 0, tractor: 0, transport: 0, repair: 0 },
+    power: { weapons: 4, shields: 3, engines: 3, sensors: 0, tractor: 0, transport: 0, repair: 0 },
     mounts: [['disruptor', -0.25, 0.7, 0, 120], ['disruptor', 0.25, 0.7, 0, 120], ['pd', 0, -0.3, 0, 360]] },
   vcr: { name: 'Vos corsair', code: 'VCR', shape: 'claw', len_m: 200, hull: 80, speed_max_m_s: 340, accel_m_s2: 60, turn_deg_s: 38, reactor_e: 14,
     capacitor_e: 10, battery_e: 6, shields: [28, 22, 18, 16, 18, 22], marines: 10, mines: 2, fighters: 0,
-    power: { weapons: 6, shields: 3, engines: 5, sensors: 0, tractor: 0, transport: 0, repair: 0 },
+    power: { weapons: 5, shields: 2, engines: 5, sensors: 0, tractor: 0, transport: 0, repair: 0 },
     mounts: [['missile', -0.3, 0.5, 0, 180], ['missile', 0.3, 0.5, 0, 180], ['lance', 0, 0.8, 0, 120]] },
 };
 const FACTION = {
@@ -638,9 +645,16 @@ function hitChance(s, m, t) {
   p *= 0.5 + 0.5 * s.sys.sensors;
   return clamp(p, 0.05, 0.95);
 }
-function maxSpeed(s) { const c = CLASSES[s.cls]; return Math.min(c.speed_max_m_s, s.power.engines * SPEED_PER_BOX_M_S) * (0.4 + 0.6 * s.sys.engines); }
-function output(s) { return CLASSES[s.cls].reactor_e; }
-function used(s) { return SYSTEMS.reduce((n, k) => n + s.power[k], 0); }
+function maxSpeed(s) { const c = CLASSES[s.cls]; return Math.min(c.speed_max_m_s, s.power.engines * SPEED_PER_BOX_M_S) * (0.4 + 0.6 * s.sys.engines) * s.brown; }
+// The reactor's output this moment: its rating, less what misaligned coils lose.
+function efficiency(s) { const c = s.reactor.coils; return clamp(1 - REACTOR.efficiency_loss * c.reduce((a, o) => a + Math.abs(o), 0) / c.length, 0, 1); }
+function output(s) { return CLASSES[s.cls].reactor_e * efficiency(s); }
+const coolantDraw = (s) => s.reactor.loops.reduce((n, l) => n + l.flow * REACTOR.flow_e, 0);
+function used(s) { return SYSTEMS.reduce((n, k) => n + s.power[k], 0) + coolantDraw(s); }
+const cooling = (s) => s.reactor.loops.reduce((n, l) => n + l.flow * l.hp, 0);
+// What a system may still be given: up to ten boxes, and (unless the captain allows drawing past the output) no more
+// than the output leaves.
+function powerRoom(s, extra) { return s.overdraw ? Infinity : Math.floor(output(s) + 1e-6) - used(s) + extra; }
 function shieldMax(s, i) { return CLASSES[s.cls].shields[i]; }
 
 function makeShip(d) {
@@ -651,11 +665,12 @@ function makeShip(d) {
     sys: { weapons: 1, shields: 1, engines: 1, sensors: 1, tractor: 1, transport: 1 }, target: null, aim: 'hull', order: 'approach', engaged: false,
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
     scan: { id: null, p: 0 }, tractor: 'off', pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
+    reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false }, brown: 1, overdraw: false,
     priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
 function newWorld() {
   W = { t: 0, ships: SCENARIO.ships.map(makeShip), shots: [], mines: [], craft: [], log: [], over: null,
-    rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3) } };
+    rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4) } };
   W.player = W.ships[0];
   W.player.target = 'vorrak';
   for (const s of W.ships) if (s.side === 1) s.ecm = 1;
@@ -681,9 +696,13 @@ function step() {
 }
 function systemsStep(s) {
   const c = CLASSES[s.cls];
-  // Spare energy charges the battery; the weapons' share fills the capacitor.
-  s.battery = Math.min(c.battery_e, s.battery + Math.max(0, output(s) - used(s)) * DT * 0.25);
-  s.cap = Math.min(c.capacitor_e, s.cap + s.power.weapons * DT * s.sys.weapons);
+  reactorStep(s);
+  // Spare energy charges the battery; a drain past the output empties it, and with it empty every system browns out to
+  // the share the output can carry. The weapons' share fills the capacitor.
+  const spare = output(s) - used(s);
+  if (spare >= 0) { s.battery = Math.min(c.battery_e, s.battery + spare * DT * 0.5); s.brown = 1; }
+  else { s.battery = Math.max(0, s.battery + spare * DT); s.brown = s.battery > 0 ? 1 : output(s) / used(s); }
+  s.cap = Math.min(c.capacitor_e, s.cap + s.power.weapons * s.brown * DT * s.sys.weapons);
   for (const m of s.mounts) {
     if (m.state === 'offline' || m.charge >= 1 || m.hp <= 0) continue;
     const w = spec(m), need = w.cost_e * DT / w.charge_s;
@@ -692,7 +711,7 @@ function systemsStep(s) {
   }
   // Shields: the shields' share regenerates; a reinforced facing takes half of it.
   if (s.shUp) {
-    const r = s.power.shields * 0.6 * DT * s.sys.shields;
+    const r = s.power.shields * s.brown * 0.6 * DT * s.sys.shields;
     for (let i = 0; i < 6; i++) s.shields[i] = Math.min(shieldMax(s, i), s.shields[i] + (s.reinforce >= 0 ? r * 0.5 / 6 + (i === s.reinforce ? r * 0.5 : 0) : r / 6));
   }
   for (let i = 0; i < 6; i++) s.flash[i] = Math.max(0, s.flash[i] - DT * 2);
@@ -700,7 +719,9 @@ function systemsStep(s) {
   if (s.power.repair > 0) {
     const keys = Object.keys(s.sys), worst = keys.reduce((a, k) => s.sys[k] < s.sys[a] ? k : a, keys[0]);
     const k = s.sys[s.priority] < 1 ? s.priority : worst;
-    s.sys[k] = Math.min(1, s.sys[k] + s.power.repair * 0.004 * DT);
+    const rate = s.power.repair * s.brown * 0.004 * DT, rx = s.reactor, worstLoop = rx.loops.reduce((a, l) => l.hp < a.hp ? l : a);
+    if (s.priority === 'reactor' && (rx.conf < 1 || worstLoop.hp < 1)) { if (worstLoop.hp < 1) worstLoop.hp = Math.min(1, worstLoop.hp + rate); else rx.conf = Math.min(1, rx.conf + rate); }
+    else s.sys[k] = Math.min(1, s.sys[k] + rate);
     for (const m of s.mounts) if (m.hp < 1) m.hp = Math.min(1, m.hp + s.power.repair * 0.003 * DT);
   }
   s.transporter = Math.min(1, s.transporter + s.power.transport * 0.08 * DT * s.sys.transport);
@@ -713,6 +734,28 @@ function systemsStep(s) {
     if (s.tractor === 'hold') t.v *= 1 - 0.8 * k * DT;
     else { const dir = s.tractor === 'pull' ? -1 : 1; t.x += ux * dir * 2 * k * DT; t.z += uz * dir * 2 * k * DT; }
   }
+}
+// The reactor, every step: coils drift while confinement is damaged; heat comes from the output and from
+// misalignment; coolant carries it off in proportion to the core temperature; coolant offline or the core at its
+// limit counts toward a meltdown, and cooling down again counts back.
+function reactorStep(s) {
+  const rx = s.reactor, Rr = W.rand.reactor, rated = CLASSES[s.cls].reactor_e;
+  if (rx.conf < 1) for (let i = 0; i < rx.coils.length; i++) rx.coils[i] = clamp(rx.coils[i] + (Rr() - 0.5) * 2 * REACTOR.drift_per_s * (1 - rx.conf) * DT * 10, -1, 1);
+  const mis = rx.coils.reduce((a, o) => a + Math.abs(o), 0) / rx.coils.length;
+  const heatIn = REACTOR.heat_full_pct_s * output(s) / rated + REACTOR.heat_misalign_pct_s * mis;
+  rx.temp = Math.max(REACTOR.temp_floor_pct, rx.temp + (heatIn - REACTOR.cool_per_flow * cooling(s) * rx.temp) * DT);
+  const critical = cooling(s) <= 0.01 || rx.temp >= REACTOR.critical_pct;
+  rx.melt = critical ? rx.melt + DT : Math.max(0, rx.melt - DT * 0.5);
+  if (s === W.player && critical && !rx.warned) { rx.warned = true; say('Engineering', cooling(s) <= 0.01 ? 'Coolant offline. The core will melt down.' : 'Core temperature critical.'); }
+  if (!critical && rx.melt === 0) rx.warned = false;
+  if (rx.melt >= REACTOR.meltdown_s) meltdown(s);
+}
+function meltdown(s) {
+  s.alive = false; s.hull = 0; s.v = 0;
+  boomAt(s.x, s.z, CLASSES[s.cls].len_m / M_PER_U * 2.5); const o = MODELS.get(s.id); if (o) o.g.visible = false;
+  say('Engineering', `${s.name}: reactor meltdown.`);
+  for (const t of W.ships) if (t.alive && distKm(s, t) <= REACTOR.blast_km) damage(t, s, REACTOR.blast_dmg * (1 - distKm(s, t) / REACTOR.blast_km), 'hull');
+  for (const o2 of W.ships) if (o2.target === s.id) o2.target = null;
 }
 function move(s) {
   const c = CLASSES[s.cls], turn = c.turn_deg_s * DEG * DT * (0.5 + 0.5 * s.sys.engines), dh = wrap(s.hOrder - s.h);
@@ -748,6 +791,9 @@ function think(s) {
   else if (ai.stance === 'hold') steer(s, 'hold', t, range);
   else if (ai.stance === 'escort' && lead && s.side === 0) steer(s, distKm(s, t) < range ? 'circle' : 'follow', distKm(s, t) < range ? t : lead, range);
   else steer(s, distKm(s, t) > range * 1.3 ? 'approach' : 'circle', t, range);
+  // The crew tends the reactor: coils nudged back toward centre, flow moved off a failing loop.
+  s.reactor.coils = s.reactor.coils.map((o) => o - clamp(o, -REACTOR.nudge, REACTOR.nudge));
+  const [la, lb] = s.reactor.loops; if (la.hp < 0.3 && lb.flow < REACTOR.flow_max) { lb.flow++; la.flow = Math.max(0, la.flow - 1); } else if (lb.hp < 0.3 && la.flow < REACTOR.flow_max) { la.flow++; lb.flow = Math.max(0, lb.flow - 1); }
   if (ai.fire === 'free') for (const m of s.mounts) if (m.w !== 'pd' && ready(m) && inArc(s, m, t) && hitChance(s, m, t) >= 0.35) fireMount(s, m, t);
   if (s.side === 1 && s.ecm === 0 && s.power.sensors > 0) s.ecm = 1;
 }
@@ -774,6 +820,11 @@ function damage(t, src, dmg, aim) {
   const R = W.rand.dmg, keys = Object.keys(t.sys);
   const k = aim && aim !== 'hull' ? aim : R() < 0.35 ? keys[Math.floor(R() * keys.length)] : null;
   if (k) t.sys[k] = Math.max(0, t.sys[k] - rest * 0.02);
+  // The reactor: a hit may knock a confinement coil out of alignment or damage a coolant loop.
+  if (R() < 0.3) { const i = Math.floor(R() * REACTOR.coils); t.reactor.coils[i] = clamp(t.reactor.coils[i] + (R() - 0.5) * 0.8, -1, 1); t.reactor.conf = Math.max(0, t.reactor.conf - rest * 0.012);
+    if (t === W.player) say('Engineering', `Confinement coil ${i + 1} out of alignment.`); }
+  if (R() < 0.18) { const j = Math.floor(R() * REACTOR.loops), l = t.reactor.loops[j]; l.hp = Math.max(0, l.hp - 0.35 - R() * 0.35);
+    if (t === W.player) say('Engineering', l.hp <= 0 ? `Coolant loop ${'AB'[j]} offline.` : `Coolant loop ${'AB'[j]} damaged.`); }
   if (R() < 0.15 + (aim === 'weapons' ? 0.25 : 0)) { const m = t.mounts[Math.floor(R() * t.mounts.length)]; m.hp = Math.max(0, m.hp - 0.6); if (m.hp <= 0) m.charge = 0; }
   if (t.side === 0 || src.side === 0) if (t === W.player || src === W.player) say(t === W.player ? 'Engineering' : 'Tactical', t === W.player ? `Hull hit through the ${FACINGS[f]} shield.` : `Hit on ${t.name}, ${FACINGS[f]} facing.`);
   if (t.hull <= 0) { t.hull = 0; t.alive = false; t.v = 0; boom(t); say('Tactical', `${t.name} destroyed.`); for (const o of W.ships) if (o.target === t.id) o.target = null; }
@@ -851,7 +902,12 @@ const A = {
   group: (g) => { for (const m of W.player.mounts) if (m.w !== 'pd') m.sel = g === 'all' || m.w === g; },
   lock: (id) => { const s = W.player, t = ship(id); if (!t || !t.alive || t.side === s.side) return; s.target = id; focus = id; say('Tactical', `Target locked: ${t.name}.`); },
   nextTarget: () => { const s = W.player, foes = enemiesOf(s).sort((a, b) => distU(s, a) - distU(s, b)); if (!foes.length) return; const i = foes.findIndex((f) => f.id === s.target); A.lock(foes[(i + 1) % foes.length].id); },
-  power: (sys, n) => { const s = W.player, others = used(s) - s.power[sys]; s.power[sys] = clamp(n, 0, Math.min(10, output(s) - others)); if (sys === 'sensors') { s.ecm = Math.min(s.ecm, s.power.sensors); s.eccm = Math.min(s.eccm, s.power.sensors - s.ecm); } if (sys === 'engines') s.vOrder = Math.min(s.vOrder, maxSpeed(s)); },
+  power: (sys, n) => { const s = W.player; s.power[sys] = clamp(n, 0, Math.max(Math.min(s.power[sys], n), Math.min(10, powerRoom(s, s.power[sys])))); if (sys === 'sensors') { s.ecm = Math.min(s.ecm, s.power.sensors); s.eccm = Math.min(s.eccm, s.power.sensors - s.ecm); } if (sys === 'engines') s.vOrder = Math.min(s.vOrder, maxSpeed(s)); },
+  setCoil: (i, o) => { const c = W.player.reactor.coils; c[i] = clamp(o, -1, 1); },
+  align: (i, dir) => { const c = W.player.reactor.coils; c[i] = clamp(c[i] + dir * REACTOR.nudge, -1, 1); },
+  flow: (j, n) => { const s = W.player, l = s.reactor.loops[j]; l.flow = clamp(n, 0, Math.max(Math.min(l.flow, n), Math.min(REACTOR.flow_max, powerRoom(s, l.flow)))); },
+  overdraw: (on) => { W.player.overdraw = on; },
+  powerMode: (m) => { powerMode = m; buildPanel('station'); },
   ecm: (k, n) => { const s = W.player, other = k === 'ecm' ? s.eccm : s.ecm; s[k] = clamp(n, 0, s.power.sensors - other); },
   reinforce: (i) => { W.player.reinforce = W.player.reinforce === i ? -1 : i; },
   shields: () => { W.player.shUp = !W.player.shUp; say('Tactical', W.player.shUp ? 'Shields up.' : 'Shields down.'); },
@@ -895,10 +951,10 @@ function buildKit() {
   const R = document.documentElement.style;
   for (const [piece, v] of Object.entries(VARS)) {
     const p = KIT.nine[piece], slot = SLOT_H[piece.split('.')[0]], k = slot ? slot / p.size[1] : 1;
-    KIT.src[piece] = paint(p.size[0], p.size[1], p.draw);
     R.setProperty(`--${v}-s`, p.m.map((n) => n * 2).join(' '));
     R.setProperty(`--${v}-w`, p.m.map((n) => n * k + 'px').join(' ')); R.setProperty(`--${v}-l`, p.m[3] * k + 'px'); R.setProperty(`--${v}-r`, p.m[1] * k + 'px');
   }
+  for (const [piece, p] of Object.entries(KIT.nine)) KIT.src[piece] = paint(p.size[0], p.size[1], p.draw);
   for (const [id, [w, h]] of Object.entries(HERO)) KIT.hero[id] = png(paint(w, h, CON.hero[id]));
   for (const n of ICONS) { KIT.icons[n] = png(CON.icon(n)); KIT.iconsOn[n] = png(CON.icon(n, '#000')); }
   const css = { '--s-ink': CC.text, '--s-dim': CC.lilac, '--s-num': CC.sky, '--s-body': '"Antonio", sans-serif', '--btn-ink': '#000', '--btn-justify': 'flex-end',
@@ -915,7 +971,7 @@ function buildKit() {
 // cached by piece and size; a ResizeObserver redraws an element when its size changes (a bar's fill growing).
 const STATES = [
   ['k-button', ['button.idle', 'button.hover', 'button.pressed']], ['k-tab', ['tab.idle', 'tab.active']],
-  ['cell', ['cell.idle', 'cell.lit', 'cell.warn', 'cell.locked']], ['k-fill', ['bar.fill', 'bar.fill.red']],
+  ['cell', ['cell.idle', 'cell.lit', 'cell.warn', 'cell.locked']], ['k-fill-ok', ['bar.fill.accord', 'bar.fill.red']], ['k-fill', ['bar.fill', 'bar.fill.red']],
   ['k-panel', ['frame.panel']], ['k-inset', ['frame.inset']], ['k-track', ['bar.track']], ['k-divider', ['divider']],
   ['top', ['strip.top']], ['bottom', ['strip.bottom']],
 ];
@@ -987,9 +1043,9 @@ function showTip(b, label) {
 function hideTip() { const t = document.getElementById('tip'); if (t) t.style.display = 'none'; }
 function itabs(list, cur, set) { const r = el('div', 'tabs'); for (const [id, label, ic] of list) r.append(itab(ic, label, () => set(id), () => cur() === id)); return r; }
 function tabs(list, cur, set, dis) { const r = el('div', 'tabs'); for (const [id, label] of list) r.append(tab(label, () => set(id), () => cur() === id, dis ? () => dis(id) : null)); return r; }
-function bar(label, frac, warn) {
+function bar(label, frac, warn, ok) {
   const b = el('div', 'barbox'); if (label) b.append(typeof label === 'function' ? txt(label, 'lbl') : el('div', 'lbl', label));
-  const tr = el('div', 'nine k-track'), f = el('div', 'nine k-fill'); css(f, 'left:3px;top:3px;'); tr.append(f); b.append(tr);
+  const tr = el('div', 'nine k-track'), f = el('div', 'nine k-fill' + (ok ? ' k-fill-ok' : '')); css(f, 'left:3px;top:3px;'); tr.append(f); b.append(tr);
   bind(() => { const v = clamp(frac(), 0, 1); f.style.width = `calc((100% - 6px) * ${v})`; f.style.display = v > 0.005 ? '' : 'none'; f.classList.toggle('warn', !!(warn && warn(v))); });
   return b;
 }
@@ -1019,7 +1075,7 @@ const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(Mat
 // The console's regions and panels.
 // =================================================================================================================
 const root = document.getElementById('root');
-let NARROW = false, mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20, ssdTarget = false;
+let powerMode = 'alloc', NARROW = false, mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20, ssdTarget = false;
 const STATIONS = [['helm', 'Helm', 'helm'], ['power', 'Power', 'power'], ['tactical', 'Tactical', 'tactical'], ['pd', 'Point defence', 'pd'], ['science', 'Science', 'science'], ['comms', 'Comms', 'comms'], ['repair', 'Repair', 'repair'], ['transport', 'Transport', 'transport'], ['fleet', 'Fleet', 'fleet']];
 const SHIPTABS = [['ssd', 'Systems', 'ship'], ['shields', 'Shields', 'shields'], ['sensors', 'Sensors', 'sensors'], ['tractor', 'Tractor', 'tractor'], ['craft', 'Craft', 'craft']];
 const PANELS = { station: 'Helm', ship: 'Ship', weapons: 'Weapons', radar: 'Map' };
@@ -1113,14 +1169,18 @@ function buildBottom() {
   // Power over systems, on one scale (the reactor's rating), so the systems' drain reads against the output at a glance
   // (owner, 2026-11-01: "power and systems need to sit on top of each other so we can see how much power our systems
   // are draining"). A drain past the output turns the systems bar red.
+  // Power is blue, Systems green (owner, 2026-11-01: "power generated = blue, systems = green"); Systems past Power is red.
   const ps = el('div', 'grid'); css(ps, 'grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:2px;flex:1.4;');
   const rated = () => CLASSES[s().cls].reactor_e;
-  for (const [label, val, warn] of [['Power', () => output(s()), null], ['Systems', () => used(s()), () => used(s()) > output(s())]]) {
-    const bx = bar(null, () => val() / rated(), warn ? () => warn() : null); css(bx, 'gap:0;');
-    ps.append(el('div', 'lbl', label), bx, txt(() => `${val()} E`, 'num'));
+  for (const [label, val, warn, ok] of [['Power', () => output(s()), null, false], ['Systems', () => used(s()), () => used(s()) > output(s()) + 1e-6, true]]) {
+    const bx = bar(null, () => val() / rated(), warn ? () => warn() : null, ok); css(bx, 'gap:0;');
+    ps.append(el('div', 'lbl', label), bx, txt(() => `${val().toFixed(1)} E`, 'num'));
   }
   ps.querySelectorAll('.num').forEach((n) => css(n, 'font-size:16px;')); ps.querySelectorAll('.lbl').forEach((n) => css(n, 'font-size:13px;'));
   if (mode !== 'port') R.bottom.append(ps);
+  // The battery: what is stored, which a drain past the output empties.
+  const bat = bar(() => `Battery ${s().battery.toFixed(1)} E`, () => s().battery / CLASSES[s().cls].battery_e, (v) => v < 0.25); css(bat, 'flex:0.55;');
+  R.bottom.append(bat);
   if (!c) R.bottom.append(btn('Next target', A.nextTarget, { sm: true }));
   const lamp = el('div', 'hero'); css(lamp, `width:${c ? 34 : 44}px;height:${c ? 34 : 44}px;`); const li = new Image(); li.alt = ''; lamp.append(li);
   bind(() => { const k = alertLevel(); const src = KIT.hero['lamp.alert.' + k]; if (li.src !== src) li.src = src; });
@@ -1210,19 +1270,148 @@ function stHelm(b, big) {
     htm(() => `<span class="lbl">Max speed</span> <span class="num">${Math.round(maxSpeed(s()))} M/S</span> <span class="lbl">from ${s().power.engines} engine boxes</span>`, 'row'));
   r.append(pad, side); b.append(r);
 }
+// The power station has two modes: Allocation (the reference game's energy page) and Reactor (our own).
 function stPower(b, big) {
+  b.append(tabs([['alloc', 'Allocation'], ['reactor', 'Reactor']], () => powerMode, A.powerMode));
+  if (powerMode === 'reactor') { stReactor(b, big); return; }
   const s = () => W.player;
-  b.append(htm(() => `<span class="lbl">Out</span> <span class="num">${output(s())}</span> <span class="lbl">Used</span> <span class="num">${used(s())}</span> <span class="lbl">Spare</span> <span class="num ${output(s()) - used(s()) > 0 ? 'ok' : ''}">${output(s()) - used(s())}</span>`, 'row'));
+  const spare = () => output(s()) - used(s());
+  b.append(htm(() => `<span class="lbl">Out</span> <span class="num">${output(s()).toFixed(1)}</span> <span class="lbl">Used</span> <span class="num">${used(s())}</span> <span class="lbl">Spare</span> <span class="num ${spare() >= 0 ? 'ok' : 'bad'}">${spare().toFixed(1)}</span>`, 'row'));
   const wide = big && !NARROW;
   const g = el('div', 'grid'); css(g, `grid-template-columns:${wide ? '120px 1fr 60px' : '72px 1fr 26px'};align-items:center;row-gap:${wide ? 10 : 6}px;`);
   for (const k of SYSTEMS) {
     const lab = el('div', 'row'); if (wide) lab.append(icon(k === 'engines' ? 'helm' : k === 'transport' ? 'transport' : k === 'weapons' ? 'weapons' : k === 'sensors' ? 'sensors' : k, 26)); lab.append(el('span', 'lbl', k));
-    const row = cells(10, () => s().power[k], (n) => A.power(k, n), () => s().power[k] + output(s()) - used(s()));
+    const row = cells(10, () => s().power[k], (n) => A.power(k, n), () => Math.min(10, powerRoom(s(), s().power[k])));
     if (big) row.querySelectorAll('.cell').forEach((c) => css(c, `height:${NARROW ? 30 : 40}px;`));
     g.append(lab, row, txt(() => String(s().power[k]), 'num'));
   }
-  b.append(g, bar(() => `Battery ${W.player.battery.toFixed(1)} / ${CLASSES[W.player.cls].battery_e} E`, () => s().battery / CLASSES[s().cls].battery_e));
+  b.append(g, htm(() => `<span class="lbl">Coolant pumps</span> <span class="num" style="font-size:18px">${coolantDraw(s())} E</span> <span class="lbl">set in Reactor</span>`, 'row'),
+    bar(() => `Battery ${W.player.battery.toFixed(1)} / ${CLASSES[W.player.cls].battery_e} E`, () => s().battery / CLASSES[s().cls].battery_e, (v) => v < 0.25));
   if (big && !NARROW) b.append(css(htm(() => `<span class="lbl">Speed limit</span> <span class="num">${Math.round(maxSpeed(s()))} M/S</span> <span class="lbl">Capacitor</span> <span class="num">${s().cap.toFixed(1)} E</span> <span class="lbl">Shield regen</span> <span class="num">${(s().power.shields * 0.6).toFixed(1)}/S</span>`, 'row'), 'flex-wrap:wrap;'));
+}
+// Reactor: the confinement coils' alignment, the coolant loops' flow, the core temperature and the meltdown clock,
+// and the setting that lets the allocation draw past the output (off by default).
+function coilGauge(i, w, h) {
+  return live(w, h, (x) => {
+    const o = W.player.reactor.coils[i], cx = w / 2, half = w / 2 - 10, y = h / 2, safe = 0.1;
+    x.fillStyle = 'rgba(47,191,90,0.18)'; x.fillRect(cx - half * safe, 2, half * safe * 2, h - 4);
+    x.strokeStyle = CC.deep; x.lineWidth = 4; x.beginPath(); x.moveTo(cx - half, y); x.lineTo(cx + half, y); x.stroke();
+    x.strokeStyle = CC.sky; x.lineWidth = 2; x.beginPath(); x.moveTo(cx, 3); x.lineTo(cx, h - 3); x.stroke();
+    const a = Math.abs(o); x.fillStyle = a < safe ? CC.accord : a < 0.3 ? CC.caution : CC.alert;
+    x.beginPath(); x.arc(cx + o * half, y, h / 2 - 3, 0, 2 * P); x.fill();
+  });
+}
+// The reactor diagram (owner, 2026-11-01: "I want like an actual diagram of the nuclear reactor and be able to like
+// interact with it"): the core seen from above, its plasma ring glowing by temperature and pushed off centre by the
+// coils' misalignment; three confinement coils round it, each dragged back onto its mark; two coolant loops running
+// out through a pump to a radiator and back, the coolant moving at the loop's flow, amber when damaged, broken and red
+// when offline; minus and plus on each pump set its flow. Drawn in Concord's hand: flat lines and pills on black.
+function reactorDiagram(w, h, big) {
+  const c = el('canvas', 'live'); c.width = Math.round(w * 2); c.height = Math.round(h * 2); css(c, `width:${w}px;height:${h}px;flex:none;touch-action:none;`);
+  const x = c.getContext('2d'), k = big ? 1.5 : 1;
+  const cx = w * 0.3, cy = h * 0.5, r = Math.min(w * 0.15, h * 0.2), coilR = r * 1.55, travel = r * 0.45;
+  // Coils at the top, the left and the bottom, clear of the coolant pipes on the right.
+  const coilDir = (i) => [-P / 2, P, P / 2][i];
+  const coilAt = (i) => { const a = coilDir(i), d = coilR + W.player.reactor.coils[i] * travel; return [cx + Math.cos(a) * d, cy + Math.sin(a) * d]; };
+  const pumpAt = (j) => [w * 0.62, j ? cy + h * 0.27 : cy - h * 0.27], radAt = (j) => [w * 0.86, j ? cy + h * 0.27 : cy - h * 0.27];
+  const keysAt = (j) => { const [px, py] = pumpAt(j), d = 30 * k; return [[px - d, py + 26 * k, -1], [px + d, py + 26 * k, 1]]; };
+  let drag = -1, hover = null;
+  const hit = (px, py) => {
+    for (let i = 0; i < REACTOR.coils; i++) { const [qx, qy] = coilAt(i); if (Math.hypot(px - qx, py - qy) < 22 * k) return { coil: i }; }
+    for (let j = 0; j < REACTOR.loops; j++) for (const [qx, qy, d] of keysAt(j)) if (Math.hypot(px - qx, py - qy) < 16 * k) return { loop: j, d };
+    return null;
+  };
+  const at = (e) => { const b2 = c.getBoundingClientRect(); return [(e.clientX - b2.left) / b2.width * w, (e.clientY - b2.top) / b2.height * h]; };
+  c.onpointerdown = (e) => {
+    e.stopPropagation(); const [px, py] = at(e), t = hit(px, py); if (!t) return;
+    if (t.coil != null) { drag = t.coil; c.setPointerCapture(e.pointerId); }
+    else { A.flow(t.loop, W.player.reactor.loops[t.loop].flow + t.d); tickUI(); }
+  };
+  c.onpointermove = (e) => {
+    const [px, py] = at(e);
+    if (drag >= 0) { const a = coilDir(drag), along = (px - cx) * Math.cos(a) + (py - cy) * Math.sin(a); A.setCoil(drag, (along - coilR) / travel); tickUI(); }
+    else { hover = hit(px, py); c.style.cursor = hover ? (hover.coil != null ? 'grab' : 'pointer') : 'default'; }
+  };
+  c.onpointerup = c.onpointercancel = () => { drag = -1; };
+  const pipe = (pts, l, t) => {
+    const col = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.sky;
+    x.lineWidth = 9 * k; x.strokeStyle = CC.deep; x.beginPath(); pts.forEach(([px, py], n) => (n ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke();
+    x.lineWidth = 3.5 * k; x.strokeStyle = col; x.setLineDash(l.hp <= 0 ? [4 * k, 14 * k] : [10 * k, 8 * k]); x.lineDashOffset = -t * l.flow * 14 * k;
+    x.beginPath(); pts.forEach(([px, py], n) => (n ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); x.setLineDash([]);
+  };
+  const draw = () => {
+    if (!c.isConnected) return;
+    const s = W.player, rx = s.reactor, t = performance.now() / 1000;
+    x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, w, h); x.lineCap = 'round'; x.lineJoin = 'round';
+    // Coolant loops: out of the core, through the pump, round the radiator, back.
+    rx.loops.forEach((l, j) => {
+      const [px, py] = pumpAt(j), [qx, qy] = radAt(j), sgn = j ? 1 : -1, ex = cx + r * 0.9, ey = cy + sgn * r * 0.45;
+      pipe([[ex, ey], [ex + 20 * k, py - 10 * k * sgn], [px, py - 10 * k * sgn], [qx, qy - 10 * k * sgn]], l, t);
+      pipe([[qx, qy + 10 * k * sgn], [px, py + 10 * k * sgn], [ex + 34 * k, py + 10 * k * sgn], [cx + r * 0.75, cy + sgn * r * 0.75]], l, t);
+      // radiator: a pill with fins; pump: a ring with its flow
+      x.fillStyle = CC.deep; x.beginPath(); x.roundRect(qx - 10 * k, qy - 26 * k, 34 * k, 52 * k, 10 * k); x.fill();
+      x.strokeStyle = l.hp <= 0 ? CC.alert : CC.signal; x.lineWidth = 2.5 * k; for (let f = 0; f < 4; f++) { x.beginPath(); x.moveTo(qx - 4 * k + f * 8 * k, qy - 18 * k); x.lineTo(qx - 4 * k + f * 8 * k, qy + 18 * k); x.stroke(); }
+      x.fillStyle = '#000'; x.strokeStyle = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.signal; x.lineWidth = 4 * k; x.beginPath(); x.arc(px, py, 17 * k, 0, 2 * P); x.fill(); x.stroke();
+      x.fillStyle = CC.text; x.font = `700 ${16 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(l.flow), px, py + 6 * k);
+      x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.fillText(`LOOP ${'AB'[j]} · ${l.hp <= 0 ? 'OFFLINE' : pct(l.hp)}`, px, py - 24 * k - (j ? 0 : 0));
+      for (const [bx, by, d] of keysAt(j)) {
+        const on = hover && hover.loop === j && hover.d === d;
+        x.fillStyle = on ? CC.sky : CC.signal; x.beginPath(); x.arc(bx, by, 12 * k, 0, 2 * P); x.fill();
+        x.fillStyle = '#000'; x.font = `700 ${16 * k}px Antonio`; x.fillText(d < 0 ? '−' : '+', bx, by + 6 * k);
+      }
+      x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.fillText('RADIATOR', qx + 7 * k, qy + 40 * k);
+    });
+    // Core: the vessel, the plasma ring off centre by the coils' misalignment, coloured by temperature.
+    const off = rx.coils.reduce(([ax, ay], o, i) => [ax + Math.cos(coilDir(i)) * o, ay + Math.sin(coilDir(i)) * o], [0, 0]);
+    const hot = rx.temp >= 85 || rx.melt > 0, warm = rx.temp >= 65, pulse = rx.melt > 0 ? 0.5 + 0.5 * Math.sin(t * 8) : 1;
+    x.strokeStyle = CC.deep; x.lineWidth = 6 * k; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke();
+    x.strokeStyle = CC.signal; x.lineWidth = 2 * k; x.beginPath(); x.arc(cx, cy, r * 0.62, 0, 2 * P); x.stroke();
+    const px0 = cx + off[0] * r * 0.32, py0 = cy + off[1] * r * 0.32;
+    x.globalAlpha = 0.35 * pulse; x.strokeStyle = hot ? CC.alert : warm ? CC.caution : CC.sky; x.lineWidth = 16 * k; x.beginPath(); x.arc(px0, py0, r * 0.8, 0, 2 * P); x.stroke();
+    x.globalAlpha = pulse; x.lineWidth = 5 * k; x.beginPath(); x.arc(px0, py0, r * 0.8, 0, 2 * P); x.stroke(); x.globalAlpha = 1;
+    x.fillStyle = hot ? CC.alert : CC.text; x.textAlign = 'center'; x.font = `700 ${22 * k}px Antonio`; x.fillText(`${Math.round(rx.temp)}%`, cx, cy + 4 * k);
+    x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.fillText(`${output(s).toFixed(1)} E`, cx, cy + 20 * k);
+    if (rx.melt > 0) { x.fillStyle = CC.alert; x.font = `700 ${16 * k}px Antonio`; x.textAlign = 'left'; x.fillText(`MELTDOWN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 18 * k); x.textAlign = 'center'; }
+    // Coils: a mark where each belongs, the coil where it is, joined by a thin line; green when home.
+    for (let i = 0; i < REACTOR.coils; i++) {
+      const a = coilDir(i), mx = cx + Math.cos(a) * coilR, my = cy + Math.sin(a) * coilR, [qx, qy] = coilAt(i), o = Math.abs(rx.coils[i]);
+      x.strokeStyle = CC.deep; x.lineWidth = 3 * k; x.beginPath(); x.moveTo(cx + Math.cos(a) * (coilR - travel), cy + Math.sin(a) * (coilR - travel)); x.lineTo(cx + Math.cos(a) * (coilR + travel), cy + Math.sin(a) * (coilR + travel)); x.stroke();
+      x.strokeStyle = CC.accord; x.lineWidth = 2 * k; x.beginPath(); x.arc(mx, my, 16 * k, 0, 2 * P); x.stroke();
+      const col = o < 0.1 ? CC.accord : o < 0.3 ? CC.caution : CC.alert;
+      x.save(); x.translate(qx, qy); x.rotate(a + P / 2); x.fillStyle = col; x.beginPath(); x.roundRect(-20 * k, -8 * k, 40 * k, 16 * k, 8 * k); x.fill();
+      if ((hover && hover.coil === i) || drag === i) { x.strokeStyle = CC.text; x.lineWidth = 2 * k; x.stroke(); } x.restore();
+      x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.textAlign = 'center';
+      const lx = cx + Math.cos(a) * coilR + (Math.abs(Math.cos(a)) < 0.5 ? 46 * k : 0), ly = cy + Math.sin(a) * coilR + (Math.abs(Math.cos(a)) < 0.5 ? 4 * k : -24 * k);
+      x.fillText(`COIL ${i + 1}`, lx, ly);
+    }
+    requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+  return c;
+}
+function stReactor(b, big) {
+  const s = () => W.player, rx = () => W.player.reactor, rated = () => CLASSES[W.player.cls].reactor_e;
+  b.append(htm(() => `<span class="lbl">Output</span> <span class="num">${output(s()).toFixed(1)} / ${rated()} E</span> <span class="lbl">Efficiency</span> <span class="num">${pct(efficiency(s()))}</span>`, 'row'));
+  const temp = bar(() => (rx().melt > 0 ? `Core ${Math.round(rx().temp)}% · meltdown in ${Math.ceil(REACTOR.meltdown_s - rx().melt)} s` : `Core temperature ${Math.round(rx().temp)}%`),
+    () => rx().temp / 120, () => rx().temp >= 85 || rx().melt > 0);
+  const cfg = el('div', 'row'); cfg.append(el('div', 'lbl', 'Draw past output'), css(tabs([[false, 'Off'], [true, 'On']], () => s().overdraw, A.overdraw), 'flex:1;'));
+  if (!big) { b.append(reactorDiagram(348, 196, false), temp, cfg); return; }
+  // Expanded: the diagram large, and beside it the same controls as numbers (coil gauges, loop flow boxes).
+  const r = R.station.getBoundingClientRect(), dw = Math.min(820, r.width / S - 72 - 56 - 420), dh = Math.min(dw * 0.72, r.height / S - 170);
+  const row = el('div', 'row'); css(row, 'align-items:flex-start;gap:20px;');
+  const side = el('div', 'col'); css(side, 'width:400px;flex:none;gap:10px;');
+  const g = el('div', 'grid'); css(g, 'grid-template-columns:54px 190px auto auto 1fr;align-items:center;column-gap:6px;row-gap:6px;');
+  for (let i = 0; i < REACTOR.coils; i++) g.append(el('div', 'lbl', `Coil ${i + 1}`), coilGauge(i, 190, 26), btn('−', () => A.align(i, -1), { sm: true }), btn('+', () => A.align(i, 1), { sm: true }),
+    txt(() => `${rx().coils[i] >= 0 ? '+' : ''}${rx().coils[i].toFixed(2)}`, 'num'));
+  g.querySelectorAll('.num').forEach((n) => css(n, 'font-size:16px;text-align:right;'));
+  const lg = el('div', 'grid'); css(lg, 'grid-template-columns:54px 1fr 70px;align-items:center;column-gap:6px;row-gap:6px;');
+  for (let j = 0; j < REACTOR.loops; j++) {
+    const cl = cells(REACTOR.flow_max, () => rx().loops[j].flow, (n) => A.flow(j, n), () => Math.min(REACTOR.flow_max, powerRoom(s(), rx().loops[j].flow)));
+    lg.append(el('div', 'lbl', `Loop ${'AB'[j]}`), cl, htm(() => { const l = rx().loops[j]; return l.hp <= 0 ? '<span class="num bad" style="font-size:16px">OFFLINE</span>' : `<span class="num ${l.hp < 0.5 ? 'warnc' : ''}" style="font-size:16px">${pct(l.hp)}</span>`; }, 'row'));
+  }
+  side.append(temp, el('div', 'lbl', 'Magnetic confinement'), g, el('div', 'lbl', 'Coolant'), lg, cfg,
+    css(htm(() => `<span class="lbl">Confinement</span> <span class="num">${pct(rx().conf)}</span> <span class="lbl">Cooling</span> <span class="num">${cooling(s()).toFixed(1)}</span> <span class="lbl">Battery</span> <span class="num">${s().battery.toFixed(1)} E</span> <span class="lbl">Brownout</span> <span class="num ${s().brown < 1 ? 'bad' : ''}">${s().brown < 1 ? pct(s().brown) : 'None'}</span>`, 'row'), 'flex-wrap:wrap;'));
+  row.append(reactorDiagram(dw, dh, true), side); b.append(row);
 }
 function contactRows(n, big) {
   const s = () => W.player, list = el('div', 'list fill'), rows = [];
@@ -1279,6 +1468,7 @@ function stRepair(b) {
   const s = () => W.player;
   const g = el('div', 'grid'); css(g, 'grid-template-columns:1fr 92px;align-items:center;');
   for (const k of Object.keys(W.player.sys)) g.append(bar(k, () => s().sys[k], (v) => v < 0.5), tab('Priority', () => A.priority(k), () => s().priority === k));
+  g.append(bar('Reactor', () => Math.min(s().reactor.conf, ...s().reactor.loops.map((l) => l.hp)), (v) => v < 0.5), tab('Priority', () => A.priority('reactor'), () => s().priority === 'reactor'));
   b.append(g, htm(() => `<span class="lbl">Crews</span> <span class="num">${s().power.repair}</span> <span class="lbl">Weapons damaged</span> <span class="num">${s().mounts.filter((m) => m.hp < 1).length}</span>`, 'row'));
 }
 function stTransport(b) {
@@ -1599,7 +1789,7 @@ function buildViewUI() {
   const q = el('div'); q.id = 'quick';
   q.append(btn('Port', () => A.turn(-30)), btn(() => `Fire · ${tgt(W.player) ? W.player.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(W.player, m, tgt(W.player)) && inRange(W.player, m, tgt(W.player))).length : 0}`, A.fire), btn('Stbd', () => A.turn(30)));
   const vb = btn('Next', A.nextTarget); q.prepend(vb);
-  const badge = el('div'); badge.id = 'badge'; badge.append(el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V3'), btn('Reset', A.reset, { sm: true }));
+  const badge = el('div'); badge.id = 'badge'; badge.append(el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V4'), btn('Reset', A.reset, { sm: true }));
   const sl = el('div', 'vtext'); sl.id = 'striplabel'; sl.textContent = 'Live · tap to return';
   R.view.append(tools, ro, msg, pz, inset, lp, q, badge, sl);
 }
@@ -1684,7 +1874,7 @@ function frame(now) {
 
 // Named shots for tools/mockups/shoot.mjs: each replays the battle from its seed for a fixed number of steps.
 function scripted(steps, then) {
-  frozen = true; expanded = null; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; ssdTarget = false; lastFollow = null;
+  frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; ssdTarget = false; lastFollow = null;
   newWorld(); focus = 'ashkar'; fleetPick = 'tallis';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
   W.player.engaged = true; W.player.order = 'approach';
@@ -1692,6 +1882,8 @@ function scripted(steps, then) {
   camera.position.set(0, 5, 13).add(new THREE.Vector3(W.player.x, 0, W.player.z)); controls.target.set(W.player.x, 0, W.player.z); lastFollow = null;
   if (then) then(); layout();
 }
+// A reactor hit hard: two coils knocked out, loop B failing, the heat and battery let run on for 8 s.
+function damagedReactor() { const r = W.player.reactor; r.coils = [0.42, -0.18, 0.04]; r.conf = 0.7; r.loops[1].hp = 0.15; W.player.overdraw = true; W.player.power.shields = 7; for (let i = 0; i < 240; i++) step(); }
 window.MOCKUP_SHOTS = {
   battle: () => scripted(600),
   power: () => scripted(600, () => { station = 'power'; }),
@@ -1701,8 +1893,12 @@ window.MOCKUP_SHOTS = {
   weapons_expanded: () => scripted(600, () => { expanded = 'weapons'; }),
   map_expanded: () => scripted(600, () => { expanded = 'radar'; }),
   menu: () => scripted(600, () => { menuOpen = true; }),
+  reactor: () => scripted(600, () => { station = 'power'; powerMode = 'reactor'; damagedReactor(); }),
+  reactor_expanded: () => scripted(600, () => { station = 'power'; powerMode = 'reactor'; expanded = 'station'; damagedReactor(); }),
 };
 window.MOCKUP_SCENE = scene;
+// For headless checks of the stand-in battle's rules (tools, not the page's UI).
+window.MOCKUP_SIM = { step, A, get W() { return W; }, REACTOR, output, used, cooling };
 let lastInfo = { triangles: 0, calls: 0 };
 window.MOCKUP_INFO = () => lastInfo;
 window.MOCKUP_PLAY = () => { frozen = false; };

@@ -232,6 +232,18 @@ const SECTIONS = [
         options: ['Yes', 'No: draw them from existing pieces'], rec: 0,
         why: 'Every console needs boxes for energy, ECM and speed; a skin that lacks them would fall back to another skin\'s look.' },
     ] },
+  { tag: 'R', name: 'The reactor (mockup 2)',
+    lead: 'Your reactor is in the power station\'s Reactor mode: three confinement coils that lose alignment under fire, two coolant loops, a meltdown clock, and the Draw past output switch (off by default). These are built as recommended.',
+    qs: [
+      { id: 'R1', q: 'How long from coolant loss (or the core at its limit) to meltdown?', options: ['20 s', '10 s', '40 s'], rec: 0,
+        why: 'Long enough to reroute coolant or call for repairs, short enough to fear.' },
+      { id: 'R2', q: 'Add an emergency shutdown (scram) that drops the output to zero to stop a meltdown?', options: ['Not yet: add it if meltdowns feel unfair', 'Yes, now', 'Never'], rec: 0,
+        why: 'Your brief asked for alignment and coolant as the tools; a scram would make both less urgent.' },
+      { id: 'R3', q: 'Can enemy and wingman reactors melt down too?', options: ['Yes: one rule for every ship; AI crews tend theirs', 'Only the player\'s'], rec: 0,
+        why: 'One implementation of every rule, and a burning enemy reactor is a target worth choosing.' },
+      { id: 'R4', q: 'How are the coils aligned?', options: ['Minus and plus keys per coil', 'Drag the dot', 'Both'], rec: 0,
+        why: 'Keys work while paused and under fire; dragging can be added.' },
+    ] },
   { tag: 'U', name: 'The console',
     lead: 'The console is one kit of nine-slice and hero pieces with a skin per faction, and each skin is a design language of its own (your three rules): Concord built on LCARS\'s principles with Starfleet Command\'s palette, Kethran modelled in Blender like StarCraft, Vos hand-drawn. To give each skin its shapes and colours, U7 writes down who each faction is. Mockup 4 (Console Skins) shows all three.',
     qs: [

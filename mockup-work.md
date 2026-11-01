@@ -114,6 +114,18 @@ Then: "gotta get rid of the lines, from now on, hold off the publishing stuff, j
 manually approve artifacts publish apparently", and "see these slice lines?" (a close-up of seams in the tabs and keys).
 Version 3 composes each kit element whole at its pixel size, so no seam shows; shown as screenshots, not published.
 
+Then, on the power station: "power generated = blue, systems = green"; "need a config to allow generation rate to go
+negative, I'd like to also show how much power is in batteries, which can drain if systems drain more than is
+generated, but by default this config will be off, should be in the reactor tab"; "reactor tab will be found under
+'power' which will have a button to swap between allocation and reactor. reactor will be a special new mode for our
+game specifically. (it didnt exist in sfc)"; "reactor has two components: magnetic confinement, and coolant systems";
+"the generator as it takes damage will lose alignment, so the player has to adjust alignment, and balance coolant
+systems to keep the reactor from melting down. a meltdown can happen if coolant systems are offline for a duration, and
+result in an explosion of the reactor". Version 4 adds the Reactor mode (OpenSpec change `reactor`), Power blue over
+Systems green with a Battery bar, and the Draw past output setting; shown as screenshots. Then: "I want like an actual diagram of the
+nuclear reactor and be able to like interact with it": the Reactor mode is now a diagram of the core, coils and coolant
+loops, worked by dragging the coils home and pressing minus and plus on the pumps.
+
 ## 3. Look dev
 
 Owner, 2026-10-30: "this is the look dev area".

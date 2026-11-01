@@ -278,6 +278,7 @@ const ccCells = {
   'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.deep; rr(x, 0, 0, w, h, 8); x.fill(); } },
   'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.sky; rr(x, 0, 0, w, h, 8); x.fill(); } },
   'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.alert; rr(x, 0, 0, w, h, 8); x.fill(); } },
+  'bar.fill.accord': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => { x.fillStyle = CC.accord; rr(x, 0, 0, w, h, 5); x.fill(); } },
   'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.strokeStyle = CC.deep; x.lineWidth = 2; rr(x, 1, 1, w - 2, h - 2, 7); x.stroke(); } },
 };
 function ccStrip(x, w, h, flip) {
