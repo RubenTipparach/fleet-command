@@ -118,7 +118,7 @@ icons here, instead of circle icons I prefer square with iconography inside", "s
 
 - The facing turned toward the enemy (yours toward your target, the target's toward you) has a **white arc** above it.
 - Mounts are **square boxes** with the weapon's glyph inside: glyph colour for its state, the box outlined in its status
-  colour when not Active, the charge as a bar under it, a Sky ring when selected. Mounts sit on a **grid** (owner, 2026-11-01:
+  colour when not Active, the charge as a bar under it, a Sky ring when selected, flush on the box with the box's corner radius (owner: "Still gaps here on the weapon box"). Mounts sit on a **grid** (owner, 2026-11-01:
   "They don't seem to align to a grid"): one cell is a box, its selection ring and a 3 px gap, centred on the ship's
   spine. Each mount takes the cell nearest its hull position, rounded alike on both sides so pairs stay mirrored; a
   taken cell sends it to the nearest free one, its own side first. Boxes line up in rows and columns and never overlap. The grid is drawn faintly behind the ship, clipped to the shield ring (owner: "Grid").

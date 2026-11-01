@@ -1460,7 +1460,9 @@ function drawSSD(x, w, h, s, big, own) {
     statusBox(x, bx, by, mb, st, mb * 0.22);
     weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : '#000');
     if (m.hp > 0 && m.state !== 'offline' && !ready(m)) { x.fillStyle = CC.deep; x.fillRect(bx, by + mb + 2, mb, big ? 4 : 2.5); x.fillStyle = CC.sky; x.fillRect(bx, by + mb + 2, mb * m.charge, big ? 4 : 2.5); }
-    if (own && m.sel) { x.strokeStyle = CC.sky; x.lineWidth = big ? 3 : 2; x.beginPath(); x.roundRect(bx - 1.5, by - 1.5, mb + 3, mb + 3, mb * 0.26); x.stroke(); }
+    // The selection ring hugs the box (owner, 2026-11-01: "Still gaps here on the weapon box"): its inner edge sits on
+    // the box's edge and its corners follow the box's radius, so no black shows between them.
+    if (own && m.sel) { const lw = big ? 3 : 2; x.strokeStyle = CC.sky; x.lineWidth = lw; x.beginPath(); x.roundRect(bx - lw / 2, by - lw / 2, mb + lw, mb + lw, mb * 0.22 + lw / 2); x.stroke(); }
     if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(String(m.i + 1), bx + mb + 10, by + 4); }
     mounts.push([mx, my, mb / 2 + 5, m]);
   }
@@ -1803,7 +1805,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false)); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v16', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v17', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.
