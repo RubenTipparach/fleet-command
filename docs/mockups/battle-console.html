@@ -1412,6 +1412,18 @@ function drawSSD(x, w, h, s, big, own) {
   if (own) for (const m of s.mounts) if (m.sel && m.w !== 'pd' && m.arc[1] < 360) {
     x.fillStyle = 'rgba(63,169,240,0.06)'; x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, Rr - 4, -P / 2 + (m.arc[0] - m.arc[1] / 2) * DEG, -P / 2 + (m.arc[0] + m.arc[1] / 2) * DEG); x.closePath(); x.fill();
   }
+  // The mount grid drawn faintly behind the ship (owner, 2026-11-01: "Grid"): the same cells the weapon boxes snap to,
+  // clipped to the shield ring, lines between cells so every box sits centred in one.
+  {
+    const cell = (big ? 28 : 17) + 11;
+    x.save(); x.beginPath(); x.arc(cx, cy, Rr - (big ? 8 : 5), 0, 2 * P); x.clip();
+    x.strokeStyle = CC.sky; x.globalAlpha = 0.14; x.lineWidth = 1; x.beginPath();
+    for (let g = -Math.ceil(Rr / cell); g <= Math.ceil(Rr / cell); g++) {
+      const o = (g + 0.5) * cell;
+      x.moveTo(cx + o, cy - Rr); x.lineTo(cx + o, cy + Rr); x.moveTo(cx - Rr, cy + o); x.lineTo(cx + Rr, cy + o);
+    }
+    x.stroke(); x.restore();
+  }
   const L = k * 0.78, sh = CLASSES[s.cls].shape;
   x.strokeStyle = CC.sky; x.lineWidth = big ? 3 : 2;
   if (sh === 'saucer') {
@@ -1791,7 +1803,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false)); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v15', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v16', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.

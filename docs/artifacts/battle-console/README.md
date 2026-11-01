@@ -33,3 +33,4 @@
 - Version 13 published 2026-11-01 (version ids `1793560287-49e6`, then the overlap fix): shield keys fill with their charge, numbers on hover; weapon boxes spaced so even their selection rings never touch (checked headless: no two weapon rectangles overlap).
 - Version 14 published 2026-11-01, version id `1793563480-96e9`: weapon and subsystem boxes filled solid in their status colour; Take a hit in the menu.
 - Version 15 published 2026-11-01, version id `1793564103-a559`: weapon mounts snapped to a grid (rows and columns, mirrored pairs); the lance glyph fixed, no longer turned to its arc.
+- Version 16 published 2026-11-01, version id `1793564157-a675`: the mount grid drawn faintly behind the ship, clipped to the shield ring.
