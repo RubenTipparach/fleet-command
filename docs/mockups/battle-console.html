@@ -426,7 +426,7 @@ for (const el of document.querySelectorAll('script[type="application/json"][data
 // =================================================================================================================
 const M_PER_U = 100;
 // Mine laying (owner, 2026-11-01: "Mine laying should have a cool down system of 3 seconds").
-const MINE = { cooldown_s: 3, arm_s: 3, trigger_u: 12, dmg: 20 };
+const MINE = { cooldown_s: 3, arm_s: 3, trigger_u: 12, dmg: 30 };
 // The tractor beam is a contest of rounds (owner, 2026-11-01). Two keys only, Hold and Break ("Hold and break should be
 // only two options"): Hold powers the beam up for powerup_s ("Tractor beam does take 10 seconds to power up"), then it
 // takes the target inside reach at a grip of 50 %. A round lasts round_s; by its end each ship has picked a beam value,
@@ -499,6 +499,53 @@ const SCENARIO = {
     { id: 'rattlejaw', name: 'Rattlejaw', captain: 'Mother Skeel', cls: 'vcr', faction: 'vos', side: 1, x: 70, z: -60, h: 240, v: 140 },
   ],
 };
+// The transporter's reach, shared by boarding, raids and mines placed by transporter (one rule, 6.1).
+const TRANSPORT = { range_km: 4 };
+// Asteroids (after the-federation, docs/13 section 3.2): a rock is solid. Touching one costs hull on the facing that met
+// it, scaled by the speed of the impact (floored, so a nudge still counts), and cuts the ship's speed; one collision
+// per ship per cooldown_s. A ship towed by a tractor beam hits at the speed it is dragged, which is what makes
+// swinging a prisoner into a rock a piloting problem.
+const ROCK = { dmg: 14, speed_ref_m_s: 150, speed_floor: 0.35, speed_frac: 0.3, cooldown_s: 1.5 };
+// Boarding (after the-federation's boarding.gd and docs/01 section 8): marines beam through a downed shield facing,
+// inside transporter range. A raid sends raid_team to one subsystem for raid_s, then the survivors come home: a bomb
+// wrecks the system and costs more of the team than shooting it up. Capture sends every marine; both sides trade a
+// volley every volley_s (each marine one shot at hit_chance, simultaneous), and when the defenders (marines and
+// guard_crew armed crew) are all down the ship strikes its colours and joins the fleet.
+const BOARD = { raid_team: 2, raid_s: 6, bomb_dmg: 0.8, shoot_dmg: 0.4, bomb_loss: 0.5, shoot_loss: 0.2, volley_s: 2, hit_chance: 0.5, guard_crew: 2 };
+// The test scenes (owner, 2026-11-01: "I also want different test scenes"): picked from the menu, each a seeded world.
+// `ships` override SCENARIO's list, `rocks` are asteroids { x, z, r } in units, `setup` adjusts the world once made.
+const SCENES = {
+  battle: { name: 'Battle', ships: null, target: 'vorrak', say: ['Helm', 'Kethran and Vos contacts ahead. Shields up.'] },
+  mines: { name: 'Mines', endless: true, target: 'ashkar',
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'ashkar', name: 'Ashkar', captain: 'Blade Oru', cls: 'kff', faction: 'kethran', side: 1, x: -6, z: -75, h: 178, v: 160 },
+      { id: 'skarn', name: 'Skarn', captain: 'Blade Vey', cls: 'kff', faction: 'kethran', side: 1, x: 8, z: -84, h: 182, v: 160 },
+    ],
+    // the frigates make lane runs: full speed on a straight course past you, turning back 12 km out; they hold fire,
+    // so the scene tests the mines, not a gunfight
+    setup: (W) => { const s = W.player; s.mines = 8; s.power.weapons = 3; s.power.transport = 3; s.transporter = 1; for (const o of W.ships) if (o.side === 1) { o.ai.stance = 'run'; o.ai.fire = 'hold'; } },
+    say: ['Tactical', 'Two Kethran frigates on a scouting run down the lane. Beam mines into their path.'] },
+  tractor: { name: 'Tractor', endless: true, target: 'vorrak',
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 180, v: 0 },
+      { id: 'vorrak', name: 'Vorrak', captain: 'Warlord Tesk', cls: 'kdd', faction: 'kethran', side: 1, x: 2, z: -22, h: 90, v: 60 },
+    ],
+    // one rock sits between the two ships, the Resolute facing away: hold the Vorrak, run, and the tow drags it in
+    rocks: [{ x: 1, z: -12, r: 2.4 }, { x: -14, z: -30, r: 3 }, { x: 13, z: -36, r: 3.6 }, { x: -3, z: -50, r: 2.6 }, { x: 21, z: -16, r: 2.2 }, { x: -22, z: -12, r: 2.8 }, { x: 7, z: -62, r: 4 }, { x: -17, z: -58, r: 3.1 }, { x: 26, z: -48, r: 2.4 }],
+    setup: (W) => { const s = W.player, v = ship('vorrak'); s.power.weapons = 2; s.power.tractor = 6; v.ai.stance = 'hold'; v.ai.fire = 'hold'; v.sys.tractor = 0.6; },
+    say: ['Tactical', 'The Vorrak is astern, a rock between us. Hold it, then run and drag it into the rocks.'] },
+  boarding: { name: 'Boarding', endless: true, target: 'rattlejaw',
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'rattlejaw', name: 'Rattlejaw', captain: 'Mother Skeel', cls: 'vcr', faction: 'vos', side: 1, x: 5, z: -18, h: 200, v: 0 },
+    ],
+    setup: (W) => { const s = W.player, r = ship('rattlejaw'); s.power.weapons = 3; s.power.transport = 3; s.transporter = 1;
+      // crippled: shields down and unpowered, engines dead, guns all but one wrecked, half its marines lost
+      r.shUp = false; r.shields = r.shields.map(() => 0); r.power.shields = 0; r.sys.engines = 0; r.marines = 6; r.ai.stance = 'hold'; r.hull = 30;
+      r.mounts.forEach((m, i) => { if (i) { m.hp = 0; m.charge = 0; } }); },
+    say: ['Tactical', 'Rattlejaw is crippled, shields down. Raid its systems, or board and take it.'] },
+};
 const AI_CHOICES = {
   stance: [['attack', 'Attack'], ['escort', 'Escort'], ['hold', 'Hold'], ['hunt', 'Hunt']],
   rule: [['mine', 'My target'], ['nearest', 'Nearest'], ['weakest', 'Weakest']],
@@ -569,17 +616,20 @@ function makeShip(d) {
     mounts: c.mounts.map(([w, x, y, ac, aw], i) => ({ i, w, x, y, arc: [ac, aw], state: 'normal', charge: 0.6 + (i % 3) * 0.15, sel: w !== 'pd', hp: 1 })),
     sys: { weapons: 1, shields: 1, engines: 1, sensors: 1, tractor: 1, transport: 1 }, target: null, aim: 'hull', order: 'approach', engaged: false,
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
-    scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
+    scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false }, brown: 1, overdraw: false,
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
-function newWorld() {
-  W = { t: 0, ships: SCENARIO.ships.map(makeShip), shots: [], mines: [], craft: [], log: [], over: null,
+let sceneId = 'battle';
+function newWorld(id = sceneId) {
+  const sc = SCENES[id]; sceneId = id;
+  W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', rocks: (sc.rocks || []).map((r) => ({ ...r })),
     rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4) } };
   W.player = W.ships[0];
-  W.player.target = 'vorrak';
+  W.player.target = sc.target;
   for (const s of W.ships) if (s.side === 1) s.ecm = 1;
-  say('Helm', 'Kethran and Vos contacts ahead. Shields up.');
+  if (sc.setup) sc.setup(W);
+  say(sc.say[0], sc.say[1]);
 }
 const ship = (id) => W.ships.find((s) => s.id === id) || null;
 const tgt = (s) => { const t = ship(s.target); return t && t.alive ? t : null; };
@@ -593,10 +643,15 @@ function step() {
   for (const s of W.ships) if (s.alive) systemsStep(s);
   for (const s of W.ships) if (s.alive && s !== W.player) { s.thinkT -= DT; if (s.thinkT <= 0) { s.thinkT = 0.5; think(s); } }
   if (W.player.alive && W.player.engaged) steer(W.player, W.player.order, tgt(W.player), AI_RANGE_KM.mid);
+  for (const s of W.ships) { s.px = s.x; s.pz = s.z; }
   for (const s of W.ships) if (s.alive) move(s);
+  for (const s of W.ships) if (s.alive && s.beam) towStep(s);
+  rocksStep();
   pdStep(); shotsStep(); minesStep(); craftStep();
   const foes = W.ships.filter((s) => s.side === 1 && s.alive).length;
-  if (!foes) { W.over = 'won'; say('Tactical', 'All hostile ships destroyed.'); }
+  // test scenes run on after the last enemy is gone (a capture should be seen joining the fleet); restart from the menu
+  if (!foes && SCENES[sceneId].endless) { if (!W.endSaid) { W.endSaid = true; say('Tactical', W.overWhy || 'No hostile ships left. Restart the scene from the menu.'); } }
+  else if (!foes) { W.over = 'won'; if (!W.overWhy) { W.overWhy = 'All hostile ships destroyed'; say('Tactical', 'All hostile ships destroyed.'); } }
   else if (!W.player.alive) W.over = 'lost';
 }
 function systemsStep(s) {
@@ -632,8 +687,8 @@ function systemsStep(s) {
   s.transporter = Math.min(1, s.transporter + s.power.transport * 0.08 * DT * s.sys.transport);
   const sensors = Math.max(0, s.power.sensors - s.ecm - s.eccm);
   if (s.scan.id) { if (s.scan.id !== s.target) s.scan = { id: null, p: 0 }; else s.scan.p = Math.min(1, s.scan.p + DT * (0.08 + 0.05 * sensors) * (s.sensorMode === 'passive' ? 0.5 : 1) * s.sys.sensors); }
-  s.mineCool = Math.max(0, s.mineCool - DT);
-  tractorStep(s);
+  s.mineCool = Math.max(0, s.mineCool - DT); s.bumpT = Math.max(0, s.bumpT - DT);
+  tractorStep(s); boardingStep(s);
 }
 // The beam's value for a round: the energy a ship puts into its tractor, scaled by the tractor's health. The holder's
 // value holds; the held ship's resists. One rule for both sides and for the panel's readout.
@@ -643,7 +698,7 @@ function tractorDown(s) { return s.power.tractor <= 0 || s.sys.tractor < 0.35; }
 // A beam taking hold: at the start grip, a fresh round.
 function takeHold(s, h, why) {
   s.tractor = 'hold'; s.powerT = 0;
-  s.beam = { on: h.id, grip: TRACTOR.grip_start, roundT: TRACTOR.round_s, round: 1, last: null };
+  s.beam = { on: h.id, grip: TRACTOR.grip_start, roundT: TRACTOR.round_s, round: 1, last: null, len: distU(s, h) };
   say('Tractor', `${s.name} ${why} ${h.name}, grip ${pct(TRACTOR.grip_start)}.`);
 }
 // The tractor beam, every step. Modes: 'off', 'power' (powering up after Hold), 'hold' (powered; holding, or waiting
@@ -682,7 +737,34 @@ function tractorStep(s) {
     }
     say('Tractor', `Round: ${mine.toFixed(1)} E against ${theirs.toFixed(1)} E, grip ${pct(b.grip)}.`);
   }
-  h.v *= 1 - TRACTOR.hold_damp * b.grip * DT;
+}
+// The tow (after the-federation docs/13 6.3, "range control belongs to the holder"): the held ship is tethered at the
+// distance the beam took hold at, drawn back toward it by the grip every step, so the holder drags it along and can
+// swing it into rocks; at full grip the tether is rigid. Its own engines are damped by the grip.
+function towStep(s) {
+  const b = s.beam, h = ship(b.on); if (!h || !h.alive) return;
+  const d = distU(s, h); h.v *= 1 - TRACTOR.hold_damp * b.grip * DT;
+  if (d > b.len) { const k = (d - b.len) * b.grip, ux = (h.x - s.x) / d, uz = (h.z - s.z) / d; h.x -= ux * k; h.z -= uz * k; }
+}
+// A ship's collision radius, in units: the simulation's number, used by rocks.
+function hullR(s) { return CLASSES[s.cls].len_m / M_PER_U * 0.35; }
+// Asteroids, every step: a ship inside a rock is set back on its surface; if its collision cooldown has run out it takes
+// the hit, scaled by how fast it was moving this step (its own speed or the tow), and loses speed.
+function rocksStep() {
+  for (const s of W.ships) {
+    if (!s.alive) continue;
+    for (const r of W.rocks) {
+      const dx = s.x - r.x, dz = s.z - r.z, d = Math.hypot(dx, dz) || 1e-6, R = r.r + hullR(s);
+      if (d >= R) continue;
+      const spd = Math.hypot(s.x - s.px, s.z - s.pz) / DT * M_PER_U;
+      s.x = r.x + dx / d * R; s.z = r.z + dz / d * R;
+      if (s.bumpT > 0) continue;
+      s.bumpT = ROCK.cooldown_s; s.v *= ROCK.speed_frac;
+      const dmg = Math.round(ROCK.dmg * Math.max(ROCK.speed_floor, spd / ROCK.speed_ref_m_s));
+      say('Tactical', `${s.name} hits an asteroid at ${Math.round(spd)} m/s: ${dmg} damage.`);
+      damage(s, { x: r.x, z: r.z, side: -1 }, dmg, 'hull');
+    }
+  }
 }
 // The ship a beam is holding this one, or null.
 function heldBy(s) { return W.ships.find((o) => o.alive && o.beam && o.beam.on === s.id) || null; }
@@ -740,6 +822,8 @@ function think(s) {
   const range = AI_RANGE_KM[ai.range];
   if (s.hull / CLASSES[s.cls].hull < AI_RETREAT[ai.retreat]) steer(s, 'evade', near, range);
   else if (ai.stance === 'hold') steer(s, 'hold', t, range);
+  // a lane run (test scenes): straight on at full speed, turning back for another pass once 12 km out
+  else if (ai.stance === 'run') { if (distKm(s, t) > 12) steer(s, 'approach', t, range); else s.vOrder = maxSpeed(s); }
   else if (ai.stance === 'escort' && lead && s.side === 0) steer(s, distKm(s, t) < range ? 'circle' : 'follow', distKm(s, t) < range ? t : lead, range);
   else steer(s, distKm(s, t) > range * 1.3 ? 'approach' : 'circle', t, range);
   // The crew tends the reactor: coils nudged back toward centre, flow moved off a failing loop.
@@ -891,7 +975,21 @@ const A = {
   hail: () => { const t = tgt(W.player); if (!t) return; say(t.name, t.faction === 'vos' ? 'Your cargo or your hull. Choose quickly, Concord.' : 'The Hegemony does not parley with the weak.'); },
   fleetOrder: (stance) => { for (const s of W.ships) if (s.side === 0 && s !== W.player && s.alive) s.ai.stance = stance; say('Comms', `Fleet: ${AI_CHOICES.stance.find((c) => c[0] === stance)[1]}.`); },
   priority: (k) => { W.player.priority = k; },
-  marines: () => { const s = W.player, t = tgt(s); if (!canBoard(s, t)) return; s.transporter = 0; s.marines -= 2; const k = Object.keys(t.sys)[Math.floor(W.rand.dmg() * 6)]; t.sys[k] = Math.max(0, t.sys[k] - 0.5); say('Transport', `Marines aboard ${t.name}: ${k} sabotaged.`); },
+  // A hit-and-run raid on one of the target's subsystems (owner: "boarding parties hit and run on various subsystems
+  // (bombing or shooting them)").
+  raid: () => { const s = W.player, t = tgt(s); if (!canBoard(s, t)) return; s.transporter = 0; s.marines -= BOARD.raid_team; s.raid = { on: t.id, sys: raidSys, kind: raidKind, n: BOARD.raid_team, t: BOARD.raid_s };
+    say('Transport', `Raid team away to ${t.name}'s ${SUBSYS.find((q) => q[0] === raidSys)[1].toLowerCase()}, to ${raidKind === 'bomb' ? 'bomb' : 'shoot'} it.`); },
+  // Board to capture, with every marine aboard (owner: "board and capture a ship").
+  board: () => { const s = W.player, t = tgt(s); if (!canBoard(s, t)) return; s.transporter = 0; s.party = { on: t.id, n: s.marines, volleyT: BOARD.volley_s, last: null }; say('Transport', `${s.marines} marines boarding ${t.name}.`); s.marines = 0; },
+  recallParty: () => { const s = W.player; if (!s.party) return; say('Transport', `${s.party.n} marines recalled.`); s.marines += s.party.n; s.party = null; },
+  // A mine placed by transporter (owner: "the player can transport mines to different locations within a certain
+  // radius of the ship"): Place mine arms the click, the next left click in the view beams a mine there.
+  mineMode: () => { placingMine = !placingMine; },
+  placeMine: (x, z) => { const s = W.player; placingMine = false;
+    if (s.mines <= 0 || s.mineCool > 0 || s.transporter < 1) return;
+    const d = Math.hypot(x - s.x, z - s.z) / 10; if (d > TRANSPORT.range_km) { say('Transport', `Out of transporter range (${km(TRANSPORT.range_km)}).`); return; }
+    s.mines--; s.mineCool = MINE.cooldown_s; s.transporter = 0; W.mines.push({ x, z, side: s.side, arm: MINE.arm_s }); say('Transport', `Mine beamed out to ${km(d)}.`); },
+  scene: (id) => { sceneId = id; A.reset(); menuOpen = false; },
   mine: () => { const s = W.player; if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
   // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
   tractorHold: () => { const s = W.player; if (s.tractor !== 'off' || s.power.tractor <= 0 || heldBy(s)) return; s.tractor = 'power'; s.powerT = TRACTOR.powerup_s; say('Tractor', 'Beam powering up.'); },
@@ -906,9 +1004,45 @@ const A = {
   station: (id) => { station = id; if (expanded && expanded !== 'station') expanded = 'station'; buildPanel('station'); },
   shipTab: (id) => { shipTab = id; buildPanel('ship'); },
   menu: () => { menuOpen = !menuOpen; renderSheet(); },
-  reset: () => { newWorld(); paused = false; focus = 'vorrak'; fleetPick = 'resolute'; rebuild(); },
+  reset: () => { newWorld(); paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
 };
-function canBoard(s, t) { return !!t && s.marines >= 2 && s.transporter >= 1 && distKm(s, t) <= 4 && t.shields[facingFrom(t, s.x, s.z)] <= 0.5; }
+// Whether s can beam marines onto t now: inside transporter range, the facing toward s down, the pads charged, marines
+// to send (the-federation's beam_check). One rule for raids and boarding.
+function canBoard(s, t, n = BOARD.raid_team) { return !!t && t.alive && t.side !== s.side && !s.raid && !s.party && s.marines >= n && s.transporter >= 1 && distKm(s, t) <= TRANSPORT.range_km && t.shields[facingFrom(t, s.x, s.z)] <= 0.5; }
+const defenders = (t) => t.marines + t.guard;
+// Raids and boarding parties, every step, for the ship that sent them.
+function boardingStep(s) {
+  const R = W.rand.dmg;
+  if (s.raid) {
+    const r = s.raid, t = ship(r.on);
+    if (!t || !t.alive) { s.raid = null; }
+    else if ((r.t -= DT) <= 0) {
+      const name = SUBSYS.find((q) => q[0] === r.sys)[1], hit = r.kind === 'bomb' ? BOARD.bomb_dmg : BOARD.shoot_dmg;
+      if (r.sys === 'reactor') { t.reactor.conf = Math.max(0, t.reactor.conf - hit); t.reactor.coils = t.reactor.coils.map((o) => clamp(o + (R() - 0.5) * hit, -1, 1)); }
+      else { t.sys[r.sys] = Math.max(0, t.sys[r.sys] - hit); if (r.sys === 'weapons') for (const m of t.mounts) if (R() < hit) { m.hp = Math.max(0, m.hp - hit); if (m.hp <= 0) m.charge = 0; } }
+      let back = 0; for (let i = 0; i < r.n; i++) if (R() >= (r.kind === 'bomb' ? BOARD.bomb_loss : BOARD.shoot_loss)) back++;
+      s.marines += back; s.raid = null;
+      if (s === W.player || t === W.player) say('Transport', `Raid on ${t.name}: ${name} ${r.kind === 'bomb' ? 'bombed' : 'shot up'}. ${back} of ${r.n} marines back.`);
+    }
+  }
+  if (s.party) {
+    const pt = s.party, t = ship(pt.on);
+    if (!t || !t.alive) { s.party = null; return; }
+    if ((pt.volleyT -= DT) > 0) return;
+    pt.volleyT += BOARD.volley_s;
+    // Simultaneous: both sides' shots counted before any hit lands.
+    let att = 0, def = 0; for (let i = 0; i < pt.n; i++) if (R() < BOARD.hit_chance) att++; for (let i = 0; i < defenders(t); i++) if (R() < BOARD.hit_chance) def++;
+    const fromMarines = Math.min(att, t.marines); t.marines -= fromMarines; t.guard = Math.max(0, t.guard - (att - fromMarines));
+    pt.n = Math.max(0, pt.n - def); pt.last = { att, def };
+    if (defenders(t) <= 0) {
+      t.side = s.side; t.captured = true; t.target = null; t.ai.stance = 'escort'; t.ai.fire = 'free'; t.marines = pt.n; s.party = null;
+      for (const o of W.ships) if (o.target === t.id) o.target = null;
+      say('Transport', `${t.name} strikes its colours. Prize crew of ${t.marines} aboard.`);
+      if (!W.ships.some((o) => o.alive && o.side === 1)) W.overWhy = `${t.name} captured`;
+    } else if (pt.n <= 0) { s.party = null; say('Transport', `Boarding party on ${t.name} lost.`); }
+    else if (s === W.player) say('Transport', `Volley aboard ${t.name}: ${att} hits, ${def} taken. ${pt.n} against ${defenders(t)}.`);
+  }
+}
 const KEYS = { KeyA: () => A.turn(-15), KeyD: () => A.turn(15), KeyQ: () => A.turn(-45), KeyE: () => A.turn(45), KeyW: () => A.speedStep(1), KeyS: () => A.speedStep(-1),
   KeyX: () => A.allStop(), Space: () => A.fire(), Tab: () => A.nextTarget(), KeyP: () => A.pause(), Escape: () => (expanded ? A.expand(expanded) : A.menu()), KeyM: () => A.volley() };
 addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen && e.code !== 'Escape') return; e.preventDefault(); f(); tickUI(); });
@@ -1394,14 +1528,42 @@ function stRepair(b) {
   for (const [k, v] of rows) { bar(b.x, y, b.w - 100, k, v, v < 0.5); tab(`rep.${k}`, b.x + b.w - 92, y + 2, 92, 34, 'Priority', () => A.priority(k), s.priority === k); y += 42; }
   pairs('rep.c', b.x, y + 18, [['Crews', String(s.power.repair)], ['Weapons damaged', String(s.mounts.filter((m) => m.hp < 1).length)]], b.w);
 }
+// The transport station: raids, boarding and mines, each its own tab; what the transporter needs (range, the facing's
+// shield, a charge) is shown under them, from the same canBoard rule that gates the keys (6.1).
+let trTab = 'raid';
 function stTransport(b) {
   const s = W.player, t = tgt(s); let y = b.y;
-  y += bar(b.x, y, b.w, 'Transporter', s.transporter) + 10;
-  button('tr.mar', b.x, y, b.w, 48, 'Beam marines', A.marines, { dis: () => !canBoard(s, t) }); y += 74;
-  if (t) { const f = facingFrom(t, s.x, s.z); pairs('tr.t', b.x, y, [['Range', km(distKm(s, t))], [`Their ${FACINGS[f]} shield`, String(Math.round(t.shields[f]))]], b.w); } else LBL('No target', b.x, y);
-  y += 14; button('tr.mine', b.x, y, b.w, 48, s.mineCool > 0 ? `Next mine in ${fmtCool(s.mineCool)} s` : `Drop mine · ${s.mines} left`, A.mine, { dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 58;
-  divider(b.x, y, b.w); y += 18; LBL('Cargo', b.x, y + 13); y += 40;
-  pairs('tr.c', b.x, y, [['Marines', String(s.marines)], ['Mines', String(s.mines)], ['Fighters', String(s.fighters)]], b.w);
+  y += bar(b.x, y, b.w, s.transporter >= 1 ? 'Transporter · charged' : 'Transporter · charging', s.transporter) + 8;
+  tabs('tr.tab', b.x, y, b.w, 36, [['raid', 'Raid'], ['board', 'Board'], ['mines', 'Mines']], trTab, (k) => { trTab = k; }); y += 46;
+  if (trTab === 'raid') {
+    // the target's subsystems as keys, coloured by their status; the picked one ringed in Sky
+    const n = SUBSYS.length, bs = Math.min(44, (b.w - (n - 1) * 6) / n);
+    SUBSYS.forEach(([key, name], i) => {
+      const bx = b.x + i * (bs + 6), st = t ? subsysStatus(t, key) : 'Off';
+      if (raidSys === key) { g.fillStyle = CC.sky; g.beginPath(); g.roundRect(bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
+      statusBox(g, bx, y, bs, st, bs * 0.28); g.drawImage(KIT.iconOn[SUBSYS_ICON[key]], bx + bs * 0.15, y + bs * 0.15, bs * 0.7, bs * 0.7);
+      hit(`tr.sys.${key}`, bx, y, bs, bs, { click: () => { raidSys = key; }, tip: { title: name, rows: t ? [['Health', pct(clamp(healthOf(t, key), 0, 1))], ['Status', st, STATUS_COL[st]]] : [['Target', '--']] } });
+    });
+    y += bs + 10;
+    tabs('tr.kind', b.x, y, b.w, 36, [['shoot', 'Shoot'], ['bomb', 'Bomb']], raidKind, (k) => { raidKind = k; }); y += 44;
+    if (s.raid) { y += bar(b.x, y + 4, b.w, `Raid ${s.raid.kind === 'bomb' ? 'bombing' : 'shooting'} ${SUBSYS.find((q) => q[0] === s.raid.sys)[1]} · ${fmtCool(Math.max(0.05, s.raid.t))} S`, 1 - s.raid.t / BOARD.raid_s) + 18; }
+    else { button('tr.raid', b.x, y, b.w, 44, `Send raid · ${BOARD.raid_team} marines`, A.raid, { dis: () => !canBoard(s, t) }); y += 54; }
+  } else if (trTab === 'board') {
+    const pt = s.party, on = pt ? ship(pt.on) : t;
+    pairs('tr.b', b.x, y + 14, [['Marines', String(pt ? pt.n : s.marines)], ['Defenders', on ? String(defenders(on)) : '--', CC.alert]], b.w, 20); y += 30;
+    if (pt) {
+      y += bar(b.x, y, b.w, `Aboard ${on.name} · next volley ${fmtCool(Math.max(0.05, pt.volleyT))} S`, pt.n / Math.max(1, pt.n + defenders(on))) + 8;
+      button('tr.recall', b.x, y, b.w, 44, 'Recall', A.recallParty); y += 54;
+    } else { button('tr.board', b.x, y, b.w, 44, `Board · ${s.marines} marines`, A.board, { dis: () => !canBoard(s, t) }); y += 54; }
+  } else {
+    button('tr.place', b.x, y, b.w, 44, placingMine ? 'Click the view · cancel' : `Place mine · reach ${km(TRANSPORT.range_km)}`, A.mineMode, { sel: () => placingMine, dis: () => !placingMine && (s.mines <= 0 || s.mineCool > 0 || s.transporter < 1) }); y += 52;
+    button('tr.mine', b.x, y, b.w, 44, s.mineCool > 0 ? `Next mine in ${fmtCool(s.mineCool)} s` : `Drop mine astern · ${s.mines} left`, A.mine, { dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 54;
+  }
+  // what the transporter needs, green when met
+  if (t && trTab !== 'mines') { const f = facingFrom(t, s.x, s.z), d = distKm(s, t); pairs('tr.t', b.x, y + 8, [['Range', km(d), d <= TRANSPORT.range_km ? CC.accord : CC.alert], [`Their ${FACINGS[f]} shield`, String(Math.round(t.shields[f])), t.shields[f] <= 0.5 ? CC.accord : CC.alert]], b.w, 20); }
+  else if (!t && trTab !== 'mines') LBL('No target', b.x, y + 8);
+  y += 26; divider(b.x, y, b.w); y += 12;
+  pairs('tr.c', b.x, y + 12, [['Marines', String(s.marines)], ['Mines', String(s.mines)], ['Fighters', String(s.fighters)]], b.w, 20);
 }
 function stFleet(b, big) {
   const own = W.ships.filter((x) => x.side === 0); let y = b.y;
@@ -1749,6 +1911,7 @@ function drawMap(x, w, h) {
     x.fillStyle = 'rgba(63,169,240,0.05)'; x.beginPath(); x.moveTo(c[0], c[1]); x.arc(c[0], c[1], rr, a0, a1); x.closePath(); x.fill();
   }
   for (const sh of W.shots) if (sh.kind !== 'beam') { const [px, py] = view(sh.x, sh.z); x.fillStyle = '#' + sh.color.toString(16).padStart(6, '0'); x.fillRect(px - 2, py - 2, 4, 4); }
+  for (const r of W.rocks) { const [px, py] = view(r.x, r.z); x.fillStyle = '#6d6a66'; x.beginPath(); x.arc(px, py, Math.max(2, r.r * k), 0, 2 * P); x.fill(); }
   for (const mn of W.mines) { const [px, py] = view(mn.x, mn.z); x.strokeStyle = CC.caution; x.beginPath(); x.arc(px, py, 4, 0, 2 * P); x.stroke(); }
   for (const o of W.ships) {
     if (!o.alive) continue;
@@ -1818,7 +1981,22 @@ const booms = [];
 function boom(s) { boomAt(s.x, s.z, CLASSES[s.cls].len_m / M_PER_U); const o = MODELS.get(s.id); if (o) o.g.visible = false; }
 function boomAt(x, z, size) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb070, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); sp.position.set(x, 0, z); scene.add(sp); booms.push({ sp, t: 0, size }); }
 const SHOT_POOL = [];
+// Asteroids in the 3D view: a lumpy grey rock per W.rocks entry, rebuilt when the world changes.
+let ROCKS3D = null, rocksFor = null;
+function syncRocks() {
+  if (rocksFor === W) return; rocksFor = W;
+  if (ROCKS3D) scene.remove(ROCKS3D); ROCKS3D = new THREE.Group(); scene.add(ROCKS3D);
+  const R = rng(SCENARIO.seed + 9);
+  for (const r of W.rocks) {
+    const geo = new THREE.IcosahedronGeometry(r.r, 1), pos = geo.attributes.position;
+    for (let i = 0; i < pos.count; i++) { const k = 0.8 + R() * 0.35; pos.setXYZ(i, pos.getX(i) * k, pos.getY(i) * k * 0.8, pos.getZ(i) * k); }
+    geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x6d6a66, roughness: 0.95, flatShading: true }));
+    m.position.set(r.x, 0, r.z); m.rotation.set(R() * 3, R() * 3, R() * 3); ROCKS3D.add(m);
+  }
+}
 function syncScene(dt) {
+  syncRocks();
   for (const s of W.ships) {
     const o = modelFor(s); o.g.visible = s.alive; if (!s.alive) continue;
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
@@ -1868,7 +2046,7 @@ function pick(e) {
   for (const s of W.ships) { if (!s.alive) continue; const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z > 1) continue; const px = r.left + (v.x + 1) / 2 * r.width, py = r.top + (1 - v.y) / 2 * r.height, d = Math.hypot(px - e.clientX, py - e.clientY); if (d < bd) { bd = d; best = s; } }
   return best;
 }
-let down = null, helmMark = null;
+let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidKind = 'shoot';
 // The point on the battle plane (y = 0) under the pointer, or null when the ray misses it.
 const RAY = new THREE.Raycaster(), PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function planeAt(e) {
@@ -1882,9 +2060,9 @@ function wireView() {
     if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
     if (expanded) { A.expand(expanded); return; }
     // A ship under the pointer: left focuses, right locks. Empty space: left is the helm.
-    const s = pick(e);
+    const s = placingMine ? null : pick(e);
     if (s && s !== W.player) { if (e.button === 2) A.lock(s.id); else focus = s.id; return; }
-    if (e.button === 0) { const q = planeAt(e); if (q) A.helmTo(q.x, q.z); }
+    if (e.button === 0) { const q = planeAt(e); if (q) (placingMine ? A.placeMine(q.x, q.z) : A.helmTo(q.x, q.z)); }
   };
   renderer.domElement.oncontextmenu = (e) => e.preventDefault();
 }
@@ -1905,6 +2083,13 @@ function helmArc(vw, vh, s) {
   }
   const a = at(s.hOrder, R - 0.8), b = at(s.hOrder, R + 1.2);
   if (a && b) { g.strokeStyle = CC.sky; g.lineWidth = 3; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+  if (placingMine) {
+    // the transporter's reach, where a mine can be placed
+    const Rm = TRANSPORT.range_km * 10; g.strokeStyle = CC.caution; g.lineWidth = 2; g.setLineDash([10, 8]); g.beginPath();
+    for (let i = 0; i <= 96; i++) { const q = at(i / 96 * 2 * P, Rm); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); }
+    g.stroke(); g.setLineDash([]);
+    LBL(`Click to place a mine · reach ${km(TRANSPORT.range_km)}`, vw / 2, 92, 0, CC.caution, 'center', 18);
+  }
   if (helmMark && helmMark.t > 0) {
     const m = scr(helmMark.x, helmMark.z);
     if (m) { g.strokeStyle = CC.sky; g.globalAlpha = Math.min(1, helmMark.t); g.lineWidth = 2; g.beginPath(); g.arc(m[0], m[1], 10 + (1.2 - helmMark.t) * 14, 0, 2 * P); g.stroke();
@@ -1957,7 +2142,7 @@ function uiView() {
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false, 'tgt')); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v23', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v24', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.
@@ -1967,17 +2152,18 @@ function uiSheet() {
   const end = W.over && !menuOpen;
   if (!menuOpen && !W.over) return;
   g.fillStyle = 'rgba(0,0,0,0.78)'; g.fillRect(0, 0, RW, RH); hit('sheet.block', 0, 0, RW, RH, {});
-  const w = 560, h = end ? 300 : 386, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? (W.over === 'won' ? 'Victory' : 'Ship lost') : 'Menu', false, true);
+  const w = 560, h = end ? 300 : 470, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? (W.over === 'won' ? 'Victory' : 'Ship lost') : 'Menu', false, true);
   let yy = P0.y + 8;
   if (end) {
-    TXT(W.over === 'won' ? 'All hostile ships destroyed' : `${W.player.name} is lost`, P0.x, yy + 20, P0.w); LBL(`Battle time ${mmss(W.t)}`, P0.x, yy + 46); yy += 64;
+    TXT(W.over === 'won' ? W.overWhy : `${W.player.name} is lost`, P0.x, yy + 20, P0.w); LBL(`Battle time ${mmss(W.t)}`, P0.x, yy + 46); yy += 64;
     const alive = W.ships.filter((o) => o.side === 0 && o.alive);
     if (W.over === 'lost' && alive.length) { button('sheet.cmd', P0.x, yy, P0.w, 48, `Take command of ${alive[0].name}`, () => { W.over = null; A.command(alive[0].id); }); yy += 56; }
     button('sheet.restart', P0.x, yy, P0.w, 48, 'Restart', A.reset);
   } else {
-    button('sheet.resume', P0.x, yy, P0.w, 48, 'Resume', A.menu); yy += 66; LBL('Mockup', P0.x, yy); yy += 10;
+    button('sheet.resume', P0.x, yy, P0.w, 48, 'Resume', A.menu); yy += 66; LBL('Test scene', P0.x, yy); yy += 10;
+    tabs('sheet.scene', P0.x, yy, P0.w, 44, Object.entries(SCENES).map(([k, v]) => [k, v.name]), sceneId, A.scene); yy += 70; LBL('Mockup', P0.x, yy); yy += 10;
     button('sheet.hit', P0.x, yy, P0.w, 48, 'Take a hit', () => { takeHit(); menuOpen = false; }); yy += 56;
-    button('sheet.restart', P0.x, yy, P0.w, 48, 'Restart battle', () => { A.reset(); menuOpen = false; }); yy += 56;
+    button('sheet.restart', P0.x, yy, P0.w, 48, `Restart ${SCENES[sceneId].name.toLowerCase()}`, () => { A.reset(); menuOpen = false; }); yy += 56;
     button('sheet.quit', P0.x, yy, P0.w, 48, 'Quit to campaign map', () => {}, { dis: () => true });
   }
 }
@@ -2034,12 +2220,12 @@ function frame(now) {
 }
 
 // Named shots for tools/mockups/shoot.mjs: each replays the battle from its seed for a fixed number of steps.
-function scripted(steps, then) {
-  frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null;
-  newWorld(); focus = 'ashkar'; fleetPick = 'tallis';
+function scripted(steps, then, sc = 'battle') {
+  frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'raid';
+  newWorld(sc); focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
-  W.player.engaged = true; W.player.order = 'approach';
-  for (let i = 0; i < steps; i++) { step(); if (i === steps - 6) A.fire(); }
+  if (sc === 'battle') { W.player.engaged = true; W.player.order = 'approach'; }
+  for (let i = 0; i < steps; i++) { step(); if (sc === 'battle' && i === steps - 6) A.fire(); }
   camera.position.set(0, 5, 13).add(new THREE.Vector3(W.player.x, 0, W.player.z)); controls.target.set(W.player.x, 0, W.player.z); lastFollow = null;
   if (then) then(); layout();
 }
@@ -2071,6 +2257,17 @@ window.MOCKUP_SHOTS = {
   shields_tip: () => { scripted(600, () => { shipTab = 'shields'; const sh = W.player.shields; sh[0] = 12; sh[1] = 22; sh[4] = 6; W.player.reinforce = 0; }); HOT = 'shx.1'; },
   ssd_tip: () => { scripted(600, () => { damagedSystems(); }); HOT = 'ssd.sys.engines'; },
   battle: () => scripted(600),
+  // The test scenes (menu: Test scene).
+  scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'mines'; placingMine = true; }, 'mines'),
+  scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'mines'; const s = W.player;
+    for (const [x, z] of [[-6, -34], [8, -36]]) { A.placeMine(s.x + x, s.z + z); for (let i = 0; i < Math.round(7 / DT); i++) step(); }
+    for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'mines'),
+  // Hold the Vorrak, then run: the tow drags it into the rock between them.
+  scene_tractor: () => scripted(30, () => { shipTab = 'tractor'; A.tractorHold(); for (let i = 0; i < Math.round(11 / DT); i++) step();
+    A.setSpeed(250); for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'tractor'),
+  scene_raid: () => scripted(30, () => { station = 'transport'; trTab = 'raid'; raidSys = 'engines'; raidKind = 'bomb'; A.raid(); for (let i = 0; i < Math.round(3 / DT); i++) step(); }, 'boarding'),
+  scene_board: () => scripted(30, () => { station = 'transport'; trTab = 'board'; A.board(); for (let i = 0; i < Math.round(2.5 / DT); i++) step(); }, 'boarding'),
+  scene_captured: () => scripted(30, () => { station = 'fleet'; A.board(); for (let i = 0; i < Math.round(8 / DT); i++) step(); fleetPick = 'rattlejaw'; }, 'boarding'),
   // The helm pointed at a spot ahead and to the left of the ship, half a second into the turn.
   helm_click: () => scripted(600, () => { const s = W.player, f = fwd(s.h), r = rightOf(s.h); A.helmTo(s.x + f[0] * 12 - r[0] * 14, s.z + f[1] * 12 - r[1] * 14); for (let i = 0; i < 15; i++) step(); }),
   power: () => scripted(600, () => { station = 'power'; }),

@@ -284,6 +284,28 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4c. Test scenes
+
+Owner, 2026-11-01: "I also want different test scenes, I want a mine laying test scene, the player can transport mines to
+different locations with in a certain radius of the shipp. I tractor beam test scene, with asteroids nearby to smash
+ships into. A boarding ship test scene, to test out the transporter ship boarding feature. You can have boarding parties
+hit and run on various subssytems (bombinbing or shooting them) or have a scene where you board and capture a ship".
+
+The menu has a **Test scene** row: Battle (the original), Mines, Tractor, Boarding. Each is a seeded world in the page's
+`SCENES` table (ships, asteroids, a setup); Restart replays the scene picked. Test scenes do not end when the last enemy
+goes (a captured ship should be seen joining the fleet). The designs follow the-federation (docs/01 section 8,
+docs/13 sections 3 and 6, `src/sim/boarding.gd`).
+
+| Scene | Set-up | What it tests |
+|---|---|---|
+| **Mines** | The Resolute stopped, 8 mines; two Kethran frigates on lane runs (full speed straight past, back again from 12 km out), holding fire | **Mines placed by transporter**: Transport, Mines tab, Place mine, then a left click in the view puts a mine there if it is inside the transporter's reach (4 km, a dashed ring while placing). It spends the transporter's charge and the 3 s mine cooldown. Drop mine astern stays. A mine does 30 (was 20) when a ship comes within 1.2 km |
+| **Tractor** | The Resolute facing away from the Vorrak, a rock between them, a field of eight asteroids; the Vorrak holds still and holds fire | **Asteroids and the tow**. A rock is solid: touching it costs 14 x the impact speed over 150 m/s (at least 35 % of that) on the facing that met it, cuts speed to 30 %, once per 1.5 s per ship. The held ship is **tethered** at the distance the beam took hold at, drawn back by the grip every step (rigid at 100 %), so running drags it, and a rock in the way is hit at the speed it is dragged (the Vorrak at 172 m/s: 16 damage) |
+| **Boarding** | The Rattlejaw crippled 1.9 km off: shields down, engines dead, one gun left, 6 marines | **Raid**: pick one of the target's subsystems (its keys, coloured by status), Shoot or Bomb, Send raid: 2 marines for 6 s. Shoot takes 40 % off the system and loses each marine 1 time in 5; Bomb takes 80 % and loses each 1 time in 2. **Board**: every marine goes; a volley every 2 s, each marine one shot at 50 %, both sides at once; defenders are its marines plus 2 armed crew. All defenders down: the ship strikes its colours, joins your fleet on Escort with the survivors as prize crew, and can be commanded. Recall brings a party home |
+
+Raids and boarding need what the-federation's `beam_check` needs: the target inside **transporter range (4 km)**, its
+**facing toward you at 0**, the transporter **charged**, and marines to send; the panel shows range and that facing's
+shield in green when met. The transporter recharges from its power (Power station), so energy spent there is the cost.
+
 ## 5. Costs
 
 Measured in the page (`window.MOCKUP_INFO`) on the battle shot at 1920 x 1080, SwiftShader: see the table in the
@@ -307,3 +329,7 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B10 | Tractor: does either side see the other's pick before the round ends? | **No**, both picks are shown when the round ends (a blind bid); the other option shows the opponent's pick as it changes |
 | B11 | Tractor: should enemy ships start a hold on their own (power up and take you), not only by turning your beam? | **Yes, in the next version**, when they are inside 3 km and have energy to spare; today an enemy holds you only after breaking your beam |
 | B12 | Tractor: when a beam turns, does the new holder start at 50 % at once, or power up for 10 s first? | **At once, at 50 %**: turning the beam is the reward for out-picking the holder by double |
+| B13 | Mines placed by transporter: how far out? | **The transporter's range, 4 km**, one mine per charge, with the 3 s mine cooldown |
+| B14 | Raids: Shoot (40 % off, 1 in 5 marines lost) against Bomb (80 % off, 1 in 2 lost)? | **As built**, two marines a raid, 6 s aboard |
+| B15 | A captured ship: joins the fleet at once, or is a prize to hold and tow home? | **Joins the fleet on Escort** in the battle, its survivors as prize crew; towing it home is the campaign's (the-federation docs/01 8, aftermath) |
+| B16 | The tow: a tether that holds the distance (dragging the held ship, rigid at full grip)? | **As built**; reeling it in closer is the next step if wanted |

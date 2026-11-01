@@ -166,3 +166,35 @@ that resolves the round.
 #### Scenario: Break
 - **WHEN** the holder clicks Break during the power-up or while holding
 - **THEN** the beam lets go at once
+
+### Requirement: Test scenes are picked from the menu
+The menu SHALL offer test scenes (Battle, Mines, Tractor, Boarding), each a seeded world that Restart replays.
+
+#### Scenario: Picking the boarding scene
+- **WHEN** the captain opens the menu and picks Boarding
+- **THEN** the battle restarts with the crippled Rattlejaw 1.9 km off, shields down
+
+### Requirement: Mines can be placed by transporter
+A mine SHALL be placeable by transporter at a point the captain clicks inside the transporter's range, spending the
+transporter's charge and the mine cooldown; a point out of range SHALL place nothing.
+
+#### Scenario: Out of reach
+- **WHEN** the captain places a mine 5 km away with a 4 km transporter
+- **THEN** no mine is placed and the log says the point is out of transporter range
+
+### Requirement: Asteroids are solid and a held ship is towed
+A ship touching an asteroid SHALL take damage on the facing that met it, scaled by the impact speed, and lose speed. A
+held ship SHALL be tethered at the distance the beam took hold at, drawn back by the grip, so the holder drags it.
+
+#### Scenario: Dragged into a rock
+- **WHEN** the Resolute holds the Vorrak at full grip and runs with a rock between them
+- **THEN** the Vorrak is dragged into the rock and takes damage scaled by the speed it is dragged
+
+### Requirement: Marines raid subsystems or board to capture
+Through a downed facing inside transporter range, the captain SHALL be able to send a raid of two marines to one
+subsystem, to shoot or bomb it, after which the survivors return; or board with every marine, trading volleys until one
+side is down. A ship whose defenders are all down SHALL join the captain's fleet.
+
+#### Scenario: A capture
+- **WHEN** 12 marines board the Rattlejaw against 8 defenders and win the volleys
+- **THEN** the Rattlejaw strikes its colours, joins the fleet on Escort, and can be commanded
