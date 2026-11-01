@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-01, v7) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-01, v8) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -139,6 +139,11 @@ Then: "how would this work with various amounts of power?" (survey B7), "falling
 ticks), and "can you render this ui in engine as opposed to html? there are some issues with html rendering that causes
 components to twitch and change sizes. (by engine I mean js engine)". Version 7 draws the whole console on a canvas in
 the page's own loop: kit pieces composed at their pixel size, fixed text, grow-only number slots, immediate-mode input.
+
+Then: "we need some iconography for each weapon type, on the side, show subsystems, as well. Tooltips: when I hover over
+subsystem or weapon box: show what subsystem name is, health, status: Active/Disabled/Off/Damaged/Destroyed", with the
+five statuses defined ("all of the status description is for your spec ... we are currently only concerned with just ui
+- which will be driving gameplay spec in the future"). Version 8: weapon glyphs, subsystem columns, hover cards.
 
 ## 3. Look dev
 

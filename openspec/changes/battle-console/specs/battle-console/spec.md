@@ -98,3 +98,18 @@ The bottom strip SHALL show the reactor's output (Power) above the allocation's 
 #### Scenario: Spare energy shows as a gap
 - **WHEN** 21 E of a 22 E output is allocated
 - **THEN** the Systems bar is one twenty-second shorter than the Power bar
+
+### Requirement: Mounts and subsystems show their type and status
+
+The ship systems display SHALL draw each weapon mount as its weapon type's glyph and SHALL show the subsystems beside the
+ship. Pointing at a mount or a subsystem SHALL show its name, health and status, one of Active (on and working), Damaged
+(hit, still working, disabled if hit again), Disabled (damaged past working, repairable), Off (turned off, or without
+power to run) and Destroyed (off line for good, cannot be restored).
+
+#### Scenario: A disabled lance
+- **WHEN** mount 3, a lance, is at 20 % health and the captain points at it
+- **THEN** a card shows "3 · Lance", health 20 %, status Disabled in red
+
+#### Scenario: A subsystem turned off
+- **WHEN** the tractor beam has no power and the captain points at its box
+- **THEN** the box is dimmed and the card shows status Off

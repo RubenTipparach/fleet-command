@@ -98,6 +98,33 @@ will be.
   its flow, a right click locks Ashkar, Expand and a click on the battle swap the layout.
 - The dormant phone layouts were removed with the HTML; mobile comes back as its own step.
 
+**Weapon glyphs, subsystems and their status** (owner, 2026-11-01: "we need some iconography for each weapon type, on
+the side, show subsystems, as well. Tooltips: when I hover over subsystem or weapon box: show what subsystem name is,
+health, status"). On the ship systems display (own and in the Target box, one drawing):
+
+- **A glyph per weapon type**, in Concord's open circles and arcs: lance, a dot with a short line along its arc's centre;
+  pulse torpedo, a dot in a ring; disruptor, two dots; missile, a capsule; point defence, a dot in three arcs. Its colour
+  is its state (offline deep, charging Signal with the charge drawn round it, ready Accord, overload Lilac, disabled or
+  destroyed Alert); a selected mount is ringed in Sky.
+- **Subsystems** in two columns beside the ship, each an icon in a box: weapons control, shield generators, sensors and
+  the reactor on the left; engines, tractor beam and transporters on the right. Active boxes are plain; any other status
+  is outlined in its colour, Off is dimmed, Destroyed is darkened. New Concord icons: `engines`, `reactor`.
+- **Hovering a mount or a subsystem** shows a card: its name, its health, its status (and a mount's charge).
+
+**The five statuses** (owner's definitions; they drive the combat change's rules, which are not built here):
+
+| Status | Means | Colour |
+|---|---|---|
+| Active | On and working | Accord |
+| Damaged | Hit, still working; will be disabled if hit again | Amber |
+| Disabled | Damaged past working; usually can be repaired | Alert |
+| Off | Turned off by the captain, or not enough power to run it | Lilac, dimmed |
+| Destroyed | Completely off line; cannot be restored | Alert, darkened |
+
+In the mockup a status is read from the stand-in battle's numbers (health 0 destroyed, under 35 % disabled, under 100 %
+damaged; off when switched off or given no power). The stand-in still repairs a mount from 0, which the Destroyed rule
+forbids; the combat change sets the real rules.
+
 ## 3. The Concord skin on this layout
 
 Everything is drawn from the kit's named pieces (`console-skins` design): `frame.panel` for every panel, `tab` for every
