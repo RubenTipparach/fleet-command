@@ -118,7 +118,7 @@ icons here, instead of circle icons I prefer square with iconography inside", "s
 
 - The facing turned toward the enemy (yours toward your target, the target's toward you) has a **white arc** above it.
 - Mounts are **square boxes** with the weapon's glyph inside: glyph colour for its state, the box outlined in its status
-  colour when not Active, the charge as a bar under it, a Sky ring when selected. Mounts closer than a box are **pushed
+  colour when not Active, the charge as a bar under it, a Sky ring when selected. Mounts closer than a box, its selection ring and a 3 px gap are **pushed
   apart** (a few passes, the same every frame), so no box overlaps another.
 - **Shield strength**: in the 3D view as layers, strong (over 66 %) three green bands, middling two amber, weak one
   red; on the console one band per facing in the same colour (owner: "to avoid clutter. The UI itself should display 1
@@ -138,7 +138,11 @@ trapezoids, with the base pointing outwards, and the sections getting highlighte
 on the shield page the six facings are big trapezoid keys making a hexagonal ring round the ship, the wide side outward,
 each tinted by its strength with its name and strength inside; the reinforced key is lit Lilac with a white edge,
 pointing at a key lightens it, and the side toward the target is marked white on its outer edge. A key is hit by its
-exact outline (a control may give its polygon), so neighbouring keys never steal each other's clicks.
+exact outline (a control may give its polygon), so neighbouring keys never steal each other's clicks. Then (owner: "those shield numbers
+need to be inside the shield buttons", "or instead you can have a fill amount to show how much of that shield is charged",
+"and show numbers when you hover over it"): each key fills outward from its inner edge by its charge, in its strength's
+colour, with only its facing's name inside; pointing at a key shows a card with its strength, how charged it is and
+whether it is reinforced.
 
 **The five statuses** (owner's definitions; they drive the combat change's rules, which are not built here):
 
