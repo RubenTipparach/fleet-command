@@ -16,3 +16,4 @@
 - 2026-10-31, desktop session: Console skins at v25 and the Organic Panel Bible at v3; version id `1793486571-01bf`.
 - 2026-10-31, desktop session: the survey at version 10 (section V, the Vhorr Brood's panel styles); version id `1793500816-516b`.
 - 2026-11-01, desktop session: the survey at version 11 (section W, a picture per option); version id `1793508323-a138`.
+- 2026-11-01, desktop session: the survey at version 12 (question W8); version id `1793514841-5af9`.
