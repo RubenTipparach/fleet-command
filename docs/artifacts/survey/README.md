@@ -16,3 +16,4 @@
 - 2026-11-01, cloud session (battle console thread): questions B1-B6 added (B1 decided: a speed handle), republished from the cloud session; version id `1793521414-93d4`.
 - 2026-11-01, cloud session (battle console thread): B7 (tick scaling), section R (reactor, R1-R4) and B8-B11 (tractor contest) added; capabilities kept; version id `1793570080-4c09`.
 - 2026-11-01, cloud session: B11 reworded (enemies starting a hold on their own), B12 added (a turned beam starts at once); version id `1793571049-ea5e`.
+- 2026-11-01, cloud session (owner: "clean up the survey to stuff that is remaining, move answered stuff to answered set"): answers read from the database (W1-W8 answered; V1 left from the retired V section); section W moved to "Already decided" (W8: A, tissue, recorded in console-skins design.md), its 51 inlined pictures dropped (1.9 MB to 38 KB; the JPGs stay in docs/design/survey/); 24 open questions remain; version id `1793571139-f0a4`.

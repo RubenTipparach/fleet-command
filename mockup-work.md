@@ -240,8 +240,8 @@ else's art):
 - 2026-11-01, survey section W (one picture per option): strips H (ridge and tentacles), ship systems display E (hanging
   tentacles), helm D, weapons D and the bottom row D (tentacle wrap), name plate B (plain heavy leather), keys "both"
   (larvae for the big keys, low warts for the small ones and the tabs); then "survey completed, this is a good start, I
-  still dont want a plain black backround on the ui area though". The space between the panels is survey W8 (tissue,
-  tendrils or lattice). Recorded in design.md, "The Brood's picks from the survey"; not yet built into the page (rule 0).
+  still dont want a plain black backround on the ui area though". The space between the panels: survey W8 answered
+  2026-11-01, A, tissue (the recommendation). Recorded in design.md, "The Brood's picks from the survey"; not yet built into the page (rule 0).
 
 What the mockup shows:
 
