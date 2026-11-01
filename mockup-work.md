@@ -124,7 +124,10 @@ systems to keep the reactor from melting down. a meltdown can happen if coolant 
 result in an explosion of the reactor". Version 4 adds the Reactor mode (OpenSpec change `reactor`), Power blue over
 Systems green with a Battery bar, and the Draw past output setting; shown as screenshots. Then: "I want like an actual diagram of the
 nuclear reactor and be able to like interact with it": the Reactor mode is now a diagram of the core, coils and coolant
-loops, worked by dragging the coils home and pressing minus and plus on the pumps.
+loops, worked by dragging the coils home and pressing minus and plus on the pumps. Then: "please improve that diagram of a reactor", "the
+loop a and loop b should look like loops i think", "it would make more sense": the diagram redrawn as a schematic (a
+vessel with a field-coil cage and the plasma in its channel, a temperature dial, wall contact, closed coolant loops
+running through the vessel with hot and cold legs, turning pumps, glowing radiators, the power bus).
 
 ## 3. Look dev
 

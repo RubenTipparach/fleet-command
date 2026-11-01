@@ -1308,82 +1308,145 @@ function coilGauge(i, w, h) {
 // when offline; minus and plus on each pump set its flow. Drawn in Concord's hand: flat lines and pills on black.
 function reactorDiagram(w, h, big) {
   const c = el('canvas', 'live'); c.width = Math.round(w * 2); c.height = Math.round(h * 2); css(c, `width:${w}px;height:${h}px;flex:none;touch-action:none;`);
-  const x = c.getContext('2d'), k = big ? 1.5 : 1;
-  const cx = w * 0.3, cy = h * 0.5, r = Math.min(w * 0.15, h * 0.2), coilR = r * 1.55, travel = r * 0.45;
-  // Coils at the top, the left and the bottom, clear of the coolant pipes on the right.
+  const x = c.getContext('2d'), k = big ? 1.6 : 1;
+  // Geometry: the vessel on the left, the coolant loops to the right, the power bus off the lower left.
+  const R = Math.min(w * 0.2, h * 0.33), cx = Math.max(w * 0.29, R + 46 * (big ? 1.6 : 1)), cy = h * 0.5, Ri = R * 0.56, mid = (R + Ri) / 2, chan = R - Ri, travel = R * 0.28;
   const coilDir = (i) => [-P / 2, P, P / 2][i];
-  const coilAt = (i) => { const a = coilDir(i), d = coilR + W.player.reactor.coils[i] * travel; return [cx + Math.cos(a) * d, cy + Math.sin(a) * d]; };
-  const pumpAt = (j) => [w * 0.62, j ? cy + h * 0.27 : cy - h * 0.27], radAt = (j) => [w * 0.86, j ? cy + h * 0.27 : cy - h * 0.27];
-  const keysAt = (j) => { const [px, py] = pumpAt(j), d = 30 * k; return [[px - d, py + 26 * k, -1], [px + d, py + 26 * k, 1]]; };
+  const coilAt = (i) => { const a = coilDir(i), d = mid + W.player.reactor.coils[i] * travel; return [cx + Math.cos(a) * d, cy + Math.sin(a) * d]; };
+  const portA = (j) => (j ? 0.62 : -0.62), port = (j, rr) => [cx + Math.cos(portA(j)) * rr, cy + Math.sin(portA(j)) * rr];
+  // Each coolant loop is a closed circuit (owner, 2026-11-01: "the loop a and loop b should look like loops"): a rounded
+  // loop whose inner side runs through the vessel, out along its outer side through the pump, round the radiator on the
+  // far side and back along its inner side. Loop A above the core, loop B below.
+  const loopGeom = (j) => {
+    const s = j ? 1 : -1, x0 = cx + R * 0.45, x1 = w - 20 * k, yO = cy + s * h * 0.4, yI = cy + s * h * 0.12, rad = 14 * k;
+    // sampled outline, clockwise for A and anticlockwise for B, starting where the outer side leaves the vessel
+    const pts = [], arc = (ax, ay, a0, a1) => { for (let n = 0; n <= 6; n++) { const a = a0 + (a1 - a0) * n / 6; pts.push([ax + Math.cos(a) * rad, ay + Math.sin(a) * rad]); } };
+    const sy = (y) => y; // y as given
+    pts.push([x0 + rad, yO]);
+    arc(x1 - rad, yO - s * rad, s < 0 ? -P / 2 : P / 2, 0);          // outer far corner
+    const hotEnd = pts.length;                                        // the radiator sits on the far side, between the corners
+    arc(x1 - rad, yI + s * rad, 0, s < 0 ? P / 2 : -P / 2);          // inner far corner
+    arc(x0 + rad, yI + s * rad, s < 0 ? P / 2 : -P / 2, s < 0 ? P : -P); // inner near corner
+    arc(x0 + rad, yO - s * rad, s < 0 ? P : -P, s < 0 ? 1.5 * P : -1.5 * P); // outer near corner
+    return { s, x0, x1, yO, yI, pts, hotEnd, pump: [w * 0.62, yO], rad: [x1, (yO + yI) / 2] };
+  };
+  const pumpAt = (j) => loopGeom(j).pump, radAt = (j) => loopGeom(j).rad;
+  // Minus and plus inside the loop, under loop A's pump and over loop B's.
+  const keysAt = (j) => { const g = loopGeom(j), y = g.yO - g.s * 27 * k; return [[g.pump[0] - 16 * k, y, -1], [g.pump[0] + 16 * k, y, 1]]; };
+  const bus = () => { const a = P * 0.78; return [[cx + Math.cos(a) * (R + 4 * k), cy + Math.sin(a) * (R + 4 * k)], [8 * k, h - 26 * k]]; };
   let drag = -1, hover = null;
   const hit = (px, py) => {
-    for (let i = 0; i < REACTOR.coils; i++) { const [qx, qy] = coilAt(i); if (Math.hypot(px - qx, py - qy) < 22 * k) return { coil: i }; }
-    for (let j = 0; j < REACTOR.loops; j++) for (const [qx, qy, d] of keysAt(j)) if (Math.hypot(px - qx, py - qy) < 16 * k) return { loop: j, d };
+    for (let i = 0; i < REACTOR.coils; i++) { const [qx, qy] = coilAt(i); if (Math.hypot(px - qx, py - qy) < 20 * k) return { coil: i }; }
+    for (let j = 0; j < REACTOR.loops; j++) for (const [qx, qy, d] of keysAt(j)) if (Math.hypot(px - qx, py - qy) < 15 * k) return { loop: j, d };
+    for (let j = 0; j < REACTOR.loops; j++) { const [qx, qy] = pumpAt(j); if (Math.hypot(px - qx, py - qy) < 18 * k) return { pump: j }; }
     return null;
   };
   const at = (e) => { const b2 = c.getBoundingClientRect(); return [(e.clientX - b2.left) / b2.width * w, (e.clientY - b2.top) / b2.height * h]; };
   c.onpointerdown = (e) => {
     e.stopPropagation(); const [px, py] = at(e), t = hit(px, py); if (!t) return;
     if (t.coil != null) { drag = t.coil; c.setPointerCapture(e.pointerId); }
-    else { A.flow(t.loop, W.player.reactor.loops[t.loop].flow + t.d); tickUI(); }
+    else if (t.loop != null) { A.flow(t.loop, W.player.reactor.loops[t.loop].flow + t.d); tickUI(); }
   };
   c.onpointermove = (e) => {
     const [px, py] = at(e);
-    if (drag >= 0) { const a = coilDir(drag), along = (px - cx) * Math.cos(a) + (py - cy) * Math.sin(a); A.setCoil(drag, (along - coilR) / travel); tickUI(); }
-    else { hover = hit(px, py); c.style.cursor = hover ? (hover.coil != null ? 'grab' : 'pointer') : 'default'; }
+    if (drag >= 0) { const a = coilDir(drag), along = (px - cx) * Math.cos(a) + (py - cy) * Math.sin(a); A.setCoil(drag, (along - mid) / travel); tickUI(); }
+    else { hover = hit(px, py); c.style.cursor = hover ? (hover.coil != null ? 'grab' : hover.loop != null ? 'pointer' : 'default') : 'default'; }
   };
   c.onpointerup = c.onpointercancel = () => { drag = -1; };
-  const pipe = (pts, l, t) => {
-    const col = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.sky;
-    x.lineWidth = 9 * k; x.strokeStyle = CC.deep; x.beginPath(); pts.forEach(([px, py], n) => (n ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke();
-    x.lineWidth = 3.5 * k; x.strokeStyle = col; x.setLineDash(l.hp <= 0 ? [4 * k, 14 * k] : [10 * k, 8 * k]); x.lineDashOffset = -t * l.flow * 14 * k;
-    x.beginPath(); pts.forEach(([px, py], n) => (n ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); x.setLineDash([]);
+  c.onpointerleave = () => { if (drag < 0) hover = null; };
+  const path = (pts) => { x.beginPath(); pts.forEach(([px, py], n) => (n ? x.lineTo(px, py) : x.moveTo(px, py))); };
+  const along = (pts, f) => { // the point a share f of the way along a polyline
+    const seg = []; let tot = 0; for (let n = 1; n < pts.length; n++) { const l = Math.hypot(pts[n][0] - pts[n - 1][0], pts[n][1] - pts[n - 1][1]); seg.push(l); tot += l; }
+    let d = (((f % 1) + 1) % 1) * tot; for (let n = 0; n < seg.length; n++) { if (d <= seg[n]) { const q = d / (seg[n] || 1); return [pts[n][0] + (pts[n + 1][0] - pts[n][0]) * q, pts[n][1] + (pts[n + 1][1] - pts[n][1]) * q]; } d -= seg[n]; }
+    return pts[pts.length - 1];
   };
+  const heatCol = (t) => (t >= 85 ? CC.alert : t >= 65 ? CC.caution : CC.sky);
+  // A pipe with what flows in it: a dark sleeve, a coloured core, and beads that move at the flow.
+  const pipe = (pts, col, l, t, phase) => {
+    x.lineWidth = 10 * k; x.strokeStyle = CC.deep; path(pts); x.stroke();
+    if (l.hp <= 0) { x.lineWidth = 3 * k; x.strokeStyle = CC.alert; x.setLineDash([3 * k, 9 * k]); path(pts); x.stroke(); x.setLineDash([]); return; }
+    x.lineWidth = 3 * k; x.strokeStyle = col; x.globalAlpha = l.hp < 0.5 ? 0.55 : 0.85; path(pts); x.stroke(); x.globalAlpha = 1;
+    const n = 2 + l.flow * 2, speed = l.flow * 0.09;
+    x.fillStyle = col; for (let m = 0; m < n; m++) { const [bx, by] = along(pts, m / n + t * speed + phase); x.beginPath(); x.arc(bx, by, 2.6 * k, 0, 2 * P); x.fill(); }
+  };
+  const label = (text, lx, ly, col = CC.lilac, align = 'center', size = 11) => { x.fillStyle = col; x.font = `600 ${size * k}px Antonio`; x.textAlign = align; x.fillText(text, lx, ly); };
   const draw = () => {
     if (!c.isConnected) return;
-    const s = W.player, rx = s.reactor, t = performance.now() / 1000;
+    const s = W.player, rx = s.reactor, t = performance.now() / 1000, tc = heatCol(rx.temp);
     x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, w, h); x.lineCap = 'round'; x.lineJoin = 'round';
-    // Coolant loops: out of the core, through the pump, round the radiator, back.
+    // The power bus: output leaving the vessel, in Power's blue, beads at the output.
+    const bp = bus(); x.lineWidth = 8 * k; x.strokeStyle = CC.deep; path(bp); x.stroke(); x.lineWidth = 3 * k; x.strokeStyle = CC.signal; path(bp); x.stroke();
+    x.fillStyle = CC.sky; const nb = Math.max(1, Math.round(output(s) / 4)); for (let m = 0; m < nb; m++) { const [bx, by] = along(bp, m / nb + t * 0.25); x.beginPath(); x.arc(bx, by, 2.4 * k, 0, 2 * P); x.fill(); }
+    label(`POWER ${output(s).toFixed(1)} E`, 8 * k, h - 8 * k, CC.sky, 'left', 13);
+    // Coolant loops.
     rx.loops.forEach((l, j) => {
-      const [px, py] = pumpAt(j), [qx, qy] = radAt(j), sgn = j ? 1 : -1, ex = cx + r * 0.9, ey = cy + sgn * r * 0.45;
-      pipe([[ex, ey], [ex + 20 * k, py - 10 * k * sgn], [px, py - 10 * k * sgn], [qx, qy - 10 * k * sgn]], l, t);
-      pipe([[qx, qy + 10 * k * sgn], [px, py + 10 * k * sgn], [ex + 34 * k, py + 10 * k * sgn], [cx + r * 0.75, cy + sgn * r * 0.75]], l, t);
-      // radiator: a pill with fins; pump: a ring with its flow
-      x.fillStyle = CC.deep; x.beginPath(); x.roundRect(qx - 10 * k, qy - 26 * k, 34 * k, 52 * k, 10 * k); x.fill();
-      x.strokeStyle = l.hp <= 0 ? CC.alert : CC.signal; x.lineWidth = 2.5 * k; for (let f = 0; f < 4; f++) { x.beginPath(); x.moveTo(qx - 4 * k + f * 8 * k, qy - 18 * k); x.lineTo(qx - 4 * k + f * 8 * k, qy + 18 * k); x.stroke(); }
-      x.fillStyle = '#000'; x.strokeStyle = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.signal; x.lineWidth = 4 * k; x.beginPath(); x.arc(px, py, 17 * k, 0, 2 * P); x.fill(); x.stroke();
-      x.fillStyle = CC.text; x.font = `700 ${16 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(l.flow), px, py + 6 * k);
-      x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.fillText(`LOOP ${'AB'[j]} · ${l.hp <= 0 ? 'OFFLINE' : pct(l.hp)}`, px, py - 24 * k - (j ? 0 : 0));
+      const g = loopGeom(j), [px, py] = g.pump, [qx, qy] = g.rad, sgn = g.s, closed = [...g.pts, g.pts[0]];
+      // The circuit: a dark sleeve; coolant hot (by core temperature) from the vessel to the radiator, cold after it.
+      x.lineWidth = 10 * k; x.strokeStyle = CC.deep; path(closed); x.stroke();
+      if (l.hp <= 0) { x.lineWidth = 3 * k; x.strokeStyle = CC.alert; x.setLineDash([3 * k, 9 * k]); path(closed); x.stroke(); x.setLineDash([]); }
+      else {
+        const hot = g.pts.slice(0, g.hotEnd + 1), cold = [...g.pts.slice(g.hotEnd), g.pts[0]];
+        x.globalAlpha = l.hp < 0.5 ? 0.55 : 0.85; x.lineWidth = 3 * k;
+        x.strokeStyle = tc; path(hot); x.stroke(); x.strokeStyle = CC.sky; path(cold); x.stroke(); x.globalAlpha = 1;
+        const n = 4 + l.flow * 3, speed = l.flow * 0.045;
+        for (let m = 0; m < n; m++) {
+          const f = (((m / n + t * speed) % 1) + 1) % 1, [bx, by] = along(closed, f);
+          x.fillStyle = f < g.hotEnd / g.pts.length ? tc : CC.sky; x.beginPath(); x.arc(bx, by, 2.6 * k, 0, 2 * P); x.fill();
+        }
+      }
+      // Radiator: a fin bank on the far side of the loop, glowing with the heat it sheds.
+      const shed = clamp(l.flow * l.hp * rx.temp / 250, 0, 1), rh = Math.abs(g.yO - g.yI) * 0.62;
+      x.fillStyle = CC.deep; x.beginPath(); x.roundRect(qx - 13 * k, qy - rh / 2, 26 * k, rh, 9 * k); x.fill();
+      for (let f = 0; f < 4; f++) { x.strokeStyle = l.hp <= 0 ? CC.alert : shed > 0.6 ? CC.caution : CC.sky; x.globalAlpha = 0.35 + 0.65 * shed; x.lineWidth = 2 * k; const fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; x.beginPath(); x.moveTo(qx - 8 * k, fy); x.lineTo(qx + 8 * k, fy); x.stroke(); }
+      x.globalAlpha = 1; if (big) label('RADIATOR', qx - 18 * k, qy + 4 * k, CC.lilac, 'right');
+      // Pump: a ring on the outer side with an impeller turning at the flow, its flow in the middle.
+      const pc = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.signal, hv = hover && hover.pump === j;
+      x.fillStyle = '#000'; x.strokeStyle = pc; x.lineWidth = (hv ? 5 : 4) * k; x.beginPath(); x.arc(px, py, 16 * k, 0, 2 * P); x.fill(); x.stroke();
+      const spin = t * l.flow * 2.2 * (l.hp > 0 ? 1 : 0) * -sgn; x.strokeStyle = CC.deep; x.lineWidth = 3 * k;
+      for (let m = 0; m < 3; m++) { const a = spin + m * 2 * P / 3; x.beginPath(); x.arc(px, py, 11 * k, a, a + 0.9); x.stroke(); }
+      x.fillStyle = CC.text; x.font = `700 ${15 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(l.flow), px, py + 5 * k);
+      label(`LOOP ${'AB'[j]} · ${l.hp <= 0 ? 'OFFLINE' : pct(l.hp)}`, (px + qx) / 2 + 6 * k, g.yI + sgn * 12 * k + 4 * k, l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.lilac);
       for (const [bx, by, d] of keysAt(j)) {
         const on = hover && hover.loop === j && hover.d === d;
-        x.fillStyle = on ? CC.sky : CC.signal; x.beginPath(); x.arc(bx, by, 12 * k, 0, 2 * P); x.fill();
-        x.fillStyle = '#000'; x.font = `700 ${16 * k}px Antonio`; x.fillText(d < 0 ? '−' : '+', bx, by + 6 * k);
+        x.fillStyle = on ? CC.sky : CC.signal; x.beginPath(); x.arc(bx, by, 11 * k, 0, 2 * P); x.fill();
+        x.fillStyle = '#000'; x.font = `700 ${16 * k}px Antonio`; x.textAlign = 'center'; x.fillText(d < 0 ? '−' : '+', bx, by + 5.5 * k);
       }
-      x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.fillText('RADIATOR', qx + 7 * k, qy + 40 * k);
     });
-    // Core: the vessel, the plasma ring off centre by the coils' misalignment, coloured by temperature.
-    const off = rx.coils.reduce(([ax, ay], o, i) => [ax + Math.cos(coilDir(i)) * o, ay + Math.sin(coilDir(i)) * o], [0, 0]);
-    const hot = rx.temp >= 85 || rx.melt > 0, warm = rx.temp >= 65, pulse = rx.melt > 0 ? 0.5 + 0.5 * Math.sin(t * 8) : 1;
-    x.strokeStyle = CC.deep; x.lineWidth = 6 * k; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke();
-    x.strokeStyle = CC.signal; x.lineWidth = 2 * k; x.beginPath(); x.arc(cx, cy, r * 0.62, 0, 2 * P); x.stroke();
-    const px0 = cx + off[0] * r * 0.32, py0 = cy + off[1] * r * 0.32;
-    x.globalAlpha = 0.35 * pulse; x.strokeStyle = hot ? CC.alert : warm ? CC.caution : CC.sky; x.lineWidth = 16 * k; x.beginPath(); x.arc(px0, py0, r * 0.8, 0, 2 * P); x.stroke();
-    x.globalAlpha = pulse; x.lineWidth = 5 * k; x.beginPath(); x.arc(px0, py0, r * 0.8, 0, 2 * P); x.stroke(); x.globalAlpha = 1;
-    x.fillStyle = hot ? CC.alert : CC.text; x.textAlign = 'center'; x.font = `700 ${22 * k}px Antonio`; x.fillText(`${Math.round(rx.temp)}%`, cx, cy + 4 * k);
-    x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.fillText(`${output(s).toFixed(1)} E`, cx, cy + 20 * k);
-    if (rx.melt > 0) { x.fillStyle = CC.alert; x.font = `700 ${16 * k}px Antonio`; x.textAlign = 'left'; x.fillText(`MELTDOWN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 18 * k); x.textAlign = 'center'; }
-    // Coils: a mark where each belongs, the coil where it is, joined by a thin line; green when home.
+    // The temperature dial round the vessel, open on the right where the pipes leave: 0-120 %, clockwise from the lower
+    // right, ticks at the warning (85) and the limit (100).
+    const g0 = P * 0.25, gs = P * 1.5, gr = R + 11 * k, gv = clamp(rx.temp / 120, 0, 1);
+    x.lineWidth = 4 * k; x.strokeStyle = CC.deep; x.beginPath(); x.arc(cx, cy, gr, g0, g0 + gs); x.stroke();
+    x.strokeStyle = tc; x.beginPath(); x.arc(cx, cy, gr, g0, g0 + gs * gv); x.stroke();
+    for (const [v2, col] of [[85, CC.caution], [100, CC.alert]]) { const a = g0 + gs * v2 / 120; x.strokeStyle = col; x.lineWidth = 2 * k; x.beginPath(); x.moveTo(cx + Math.cos(a) * (gr - 5 * k), cy + Math.sin(a) * (gr - 5 * k)); x.lineTo(cx + Math.cos(a) * (gr + 5 * k), cy + Math.sin(a) * (gr + 5 * k)); x.stroke(); }
+    // The vessel: outer and inner walls, the field-coil cage, the plasma in the channel.
+    x.lineWidth = 3 * k; x.strokeStyle = CC.signal; x.beginPath(); x.arc(cx, cy, R, 0, 2 * P); x.stroke(); x.beginPath(); x.arc(cx, cy, Ri, 0, 2 * P); x.stroke();
+    x.strokeStyle = CC.deep; x.lineWidth = 4 * k; x.globalAlpha = 0.7;
+    for (let m = 0; m < 16; m++) { const a = m * P / 8 + P / 16; x.beginPath(); x.moveTo(cx + Math.cos(a) * (Ri - 4 * k), cy + Math.sin(a) * (Ri - 4 * k)); x.lineTo(cx + Math.cos(a) * (R + 4 * k), cy + Math.sin(a) * (R + 4 * k)); x.stroke(); }
+    x.globalAlpha = 1;
+    const off = rx.coils.reduce(([ax, ay], o, i) => [ax + Math.cos(coilDir(i)) * o, ay + Math.sin(coilDir(i)) * o], [0, 0]), offN = Math.hypot(off[0], off[1]);
+    const ox = off[0] * chan * 0.42, oy = off[1] * chan * 0.42, pulse = rx.melt > 0 ? 0.55 + 0.45 * Math.sin(t * 9) : 0.85 + 0.15 * Math.sin(t * 2.3);
+    x.save(); x.beginPath(); x.arc(cx, cy, R - 1.5 * k, 0, 2 * P); x.arc(cx, cy, Ri + 1.5 * k, 0, 2 * P, true); x.clip();
+    x.globalAlpha = 0.16 * pulse; x.strokeStyle = tc; x.lineWidth = chan * 0.8; x.beginPath(); x.arc(cx + ox, cy + oy, mid, 0, 2 * P); x.stroke();
+    x.globalAlpha = 0.95 * pulse; x.lineWidth = chan * 0.22; x.beginPath(); x.arc(cx + ox, cy + oy, mid, 0, 2 * P); x.stroke();
+    x.globalAlpha = 1; x.strokeStyle = '#fff'; x.lineWidth = 1.2 * k; x.globalAlpha = 0.6 * pulse; x.beginPath(); x.arc(cx + ox, cy + oy, mid, 0, 2 * P); x.stroke(); x.globalAlpha = 1; x.restore();
+    // Wall contact: the plasma pushed far enough to scrape the vessel sparks red where it touches.
+    if (offN > 0.3) { const a = Math.atan2(off[1], off[0]); x.strokeStyle = CC.alert; x.lineWidth = 4 * k; x.globalAlpha = 0.5 + 0.5 * Math.sin(t * 14); x.beginPath(); x.arc(cx, cy, R, a - 0.35, a + 0.35); x.stroke(); x.globalAlpha = 1; }
+    // Centre: temperature, the word CORE.
+    x.fillStyle = rx.temp >= 85 ? CC.alert : CC.text; x.textAlign = 'center'; x.font = `700 ${(big ? 26 : 20) * k / (big ? 1.25 : 1)}px Antonio`; x.fillText(`${Math.round(rx.temp)}%`, cx, cy + 6 * k);
+    label('CORE', cx, cy - 12 * k);
+    // Confinement coils: a short track across the vessel, a green ring where each belongs, the coil numbered on its face.
     for (let i = 0; i < REACTOR.coils; i++) {
-      const a = coilDir(i), mx = cx + Math.cos(a) * coilR, my = cy + Math.sin(a) * coilR, [qx, qy] = coilAt(i), o = Math.abs(rx.coils[i]);
-      x.strokeStyle = CC.deep; x.lineWidth = 3 * k; x.beginPath(); x.moveTo(cx + Math.cos(a) * (coilR - travel), cy + Math.sin(a) * (coilR - travel)); x.lineTo(cx + Math.cos(a) * (coilR + travel), cy + Math.sin(a) * (coilR + travel)); x.stroke();
-      x.strokeStyle = CC.accord; x.lineWidth = 2 * k; x.beginPath(); x.arc(mx, my, 16 * k, 0, 2 * P); x.stroke();
-      const col = o < 0.1 ? CC.accord : o < 0.3 ? CC.caution : CC.alert;
-      x.save(); x.translate(qx, qy); x.rotate(a + P / 2); x.fillStyle = col; x.beginPath(); x.roundRect(-20 * k, -8 * k, 40 * k, 16 * k, 8 * k); x.fill();
-      if ((hover && hover.coil === i) || drag === i) { x.strokeStyle = CC.text; x.lineWidth = 2 * k; x.stroke(); } x.restore();
-      x.fillStyle = CC.lilac; x.font = `600 ${12 * k}px Antonio`; x.textAlign = 'center';
-      const lx = cx + Math.cos(a) * coilR + (Math.abs(Math.cos(a)) < 0.5 ? 46 * k : 0), ly = cy + Math.sin(a) * coilR + (Math.abs(Math.cos(a)) < 0.5 ? 4 * k : -24 * k);
-      x.fillText(`COIL ${i + 1}`, lx, ly);
+      const a = coilDir(i), mx = cx + Math.cos(a) * mid, my = cy + Math.sin(a) * mid, [qx, qy] = coilAt(i), o = rx.coils[i], ao = Math.abs(o);
+      x.strokeStyle = CC.accord; x.lineWidth = 2 * k; x.beginPath(); x.arc(mx, my, 13 * k, 0, 2 * P); x.stroke();
+      const col = ao < 0.1 ? CC.accord : ao < 0.3 ? CC.caution : CC.alert, act = (hover && hover.coil === i) || drag === i;
+      x.save(); x.translate(qx, qy); x.rotate(a + P / 2); x.fillStyle = col; x.beginPath(); x.roundRect(-17 * k, -8 * k, 34 * k, 16 * k, 8 * k); x.fill();
+      if (act) { x.strokeStyle = CC.text; x.lineWidth = 2 * k; x.stroke(); }
+      x.rotate(-(a + P / 2)); x.fillStyle = '#000'; x.font = `700 ${12 * k}px Antonio`; x.textAlign = 'center'; x.fillText(String(i + 1), 0, 4.5 * k); x.restore();
+      const vr = R + 26 * k; if (act || ao >= 0.1) label(`${o >= 0 ? '+' : ''}${o.toFixed(2)}`, cx + Math.cos(a) * vr, cy + Math.sin(a) * vr + 4 * k, col, 'center', 12);
     }
+    // The meltdown clock, across the top.
+    if (rx.melt > 0) { x.fillStyle = CC.alert; x.globalAlpha = 0.6 + 0.4 * Math.sin(t * 9); x.font = `700 ${15 * k}px Antonio`; x.textAlign = 'left'; x.fillText(`MELTDOWN IN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 16 * k); x.globalAlpha = 1; }
+    else if (cooling(s) < 1.5) label('COOLING LOW', 6, 16 * k, CC.caution, 'left', 13);
     requestAnimationFrame(draw);
   };
   requestAnimationFrame(draw);
@@ -1391,11 +1454,12 @@ function reactorDiagram(w, h, big) {
 }
 function stReactor(b, big) {
   const s = () => W.player, rx = () => W.player.reactor, rated = () => CLASSES[W.player.cls].reactor_e;
-  b.append(htm(() => `<span class="lbl">Output</span> <span class="num">${output(s()).toFixed(1)} / ${rated()} E</span> <span class="lbl">Efficiency</span> <span class="num">${pct(efficiency(s()))}</span>`, 'row'));
+  const out = htm(() => `<span class="lbl">Output</span> <span class="num">${output(s()).toFixed(1)} / ${rated()} E</span> <span class="lbl">Efficiency</span> <span class="num">${pct(efficiency(s()))}</span>`, 'row');
   const temp = bar(() => (rx().melt > 0 ? `Core ${Math.round(rx().temp)}% · meltdown in ${Math.ceil(REACTOR.meltdown_s - rx().melt)} s` : `Core temperature ${Math.round(rx().temp)}%`),
     () => rx().temp / 120, () => rx().temp >= 85 || rx().melt > 0);
   const cfg = el('div', 'row'); cfg.append(el('div', 'lbl', 'Draw past output'), css(tabs([[false, 'Off'], [true, 'On']], () => s().overdraw, A.overdraw), 'flex:1;'));
-  if (!big) { b.append(reactorDiagram(348, 196, false), temp, cfg); return; }
+  if (!big) { b.append(reactorDiagram(348, 276, false), cfg); return; }
+  b.append(out);
   // Expanded: the diagram large, and beside it the same controls as numbers (coil gauges, loop flow boxes).
   const r = R.station.getBoundingClientRect(), dw = Math.min(820, r.width / S - 72 - 56 - 420), dh = Math.min(dw * 0.72, r.height / S - 170);
   const row = el('div', 'row'); css(row, 'align-items:flex-start;gap:20px;');
