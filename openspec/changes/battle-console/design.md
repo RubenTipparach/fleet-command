@@ -111,6 +111,20 @@ health, status"). On the ship systems display (own and in the Target box, one dr
   is outlined in its colour, Off is dimmed, Destroyed is darkened. New Concord icons: `engines`, `reactor`.
 - **Hovering a mount or a subsystem** shows a card: its name, its health, its status (and a mount's charge).
 
+**Then** (owner, 2026-11-01): "the shield side we are facing should have a white arc above it. the weapons should also be
+icons here, instead of circle icons I prefer square with iconography inside", "shield facing should be hexagons here" (the
+3D view, with the reference game's flat glowing facets), "going from red 1 layer -> yellow 2 layers -> green 3 layers",
+"make sure weapon icons dont overlap!":
+
+- The facing turned toward the enemy (yours toward your target, the target's toward you) has a **white arc** above it.
+- Mounts are **square boxes** with the weapon's glyph inside: glyph colour for its state, the box outlined in its status
+  colour when not Active, the charge as a bar under it, a Sky ring when selected. Mounts closer than a box are **pushed
+  apart** (a few passes, the same every frame), so no box overlaps another.
+- **Shield strength as layers**, one rule for the systems display and the 3D view: strong (over 66 %) three green
+  bands, middling two amber, weak one red, an empty or lowered facing a single dark line.
+- The **3D shield display is a flat hexagon** in the ship's plane, an edge toward the bow, each facing a stack of one to
+  three glowing bands (its layers); a hit flashes the inner band.
+
 **The five statuses** (owner's definitions; they drive the combat change's rules, which are not built here):
 
 | Status | Means | Colour |

@@ -26,3 +26,4 @@
 - Version 6 published 2026-11-01, version id `1793526785-4023`: Power and Systems as ticks, alert lamps, the Target box showing the target's systems display.
 - Version 7 published 2026-11-01, version id `1793527854-936c`: the console drawn in the engine (one canvas, kit pieces composed at pixel size, fixed text, grow-only number slots, immediate-mode input); no HTML layout left to twitch.
 - Version 8 published 2026-11-01, version id `1793528480-1a5b`: weapon glyphs, subsystem columns and status cards on hover on the systems display.
+- Version 9 published 2026-11-01, version id `1793557329-7d68`: white arc over the facing toward the enemy, square weapon boxes that never overlap, shield strength as 1-3 layers, the 3D shields a flat hexagon.

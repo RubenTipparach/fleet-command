@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-01, v8) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-01, v9) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -143,7 +143,9 @@ the page's own loop: kit pieces composed at their pixel size, fixed text, grow-o
 Then: "we need some iconography for each weapon type, on the side, show subsystems, as well. Tooltips: when I hover over
 subsystem or weapon box: show what subsystem name is, health, status: Active/Disabled/Off/Damaged/Destroyed", with the
 five statuses defined ("all of the status description is for your spec ... we are currently only concerned with just ui
-- which will be driving gameplay spec in the future"). Version 8: weapon glyphs, subsystem columns, hover cards.
+- which will be driving gameplay spec in the future"). Version 8: weapon glyphs, subsystem columns, hover cards. Then:
+the white arc over the facing toward the enemy, square weapon boxes with glyphs, "shield facing should be hexagons here"
+(3D), "going from red 1 layer -> yellow 2 layers -> green 3 layers", "make sure weapon icons dont overlap!". Version 9.
 
 ## 3. Look dev
 
