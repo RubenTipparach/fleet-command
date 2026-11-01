@@ -53,6 +53,13 @@ button:focus-visible { outline: 2px solid var(--s-num); outline-offset: 2px; }
 .cell.lit { background-image: var(--n1); }
 .cell.warn { background-image: var(--n2); }
 .cell.locked { background-image: var(--n3); cursor: default; }
+.cell.ok { background-image: var(--n4); }
+.ticks { gap: 2px; }
+.ticks .cell { height: 12px; min-width: 3px; cursor: default; }
+.alertkey { width: 40px; height: 40px; flex: none; cursor: pointer; border-radius: 20px; opacity: 0.28; transition: none; }
+.alertkey.on { opacity: 1; }
+.alertkey img { width: 100%; height: 100%; display: block; pointer-events: none; }
+#inset { background-color: #000; }
 .cells { display: flex; gap: 3px; min-width: 0; }
 .spd { position: relative; flex: 1; height: 40px; display: flex; align-items: center; cursor: ew-resize; touch-action: none; }
 .spd .cells { flex: 1; pointer-events: none; }
@@ -221,6 +228,7 @@ const ccCells = {
   'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.sky; rr(x, 0, 0, w, h, 8); x.fill(); } },
   'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.alert; rr(x, 0, 0, w, h, 8); x.fill(); } },
   'bar.fill.accord': { size: [64, 10], m: [0, 6, 0, 6], draw: (x, w, h) => { x.fillStyle = CC.accord; rr(x, 0, 0, w, h, 5); x.fill(); } },
+  'cell.accord': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.fillStyle = CC.accord; rr(x, 0, 0, w, h, 8); x.fill(); } },
   'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: (x, w, h) => { x.strokeStyle = CC.deep; x.lineWidth = 2; rr(x, 1, 1, w - 2, h - 2, 7); x.stroke(); } },
 };
 function ccStrip(x, w, h, flip) {
@@ -666,7 +674,7 @@ function makeShip(d) {
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
     scan: { id: null, p: 0 }, tractor: 'off', pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false }, brown: 1, overdraw: false,
-    priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
+    alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
 function newWorld() {
   W = { t: 0, ships: SCENARIO.ships.map(makeShip), shots: [], mines: [], craft: [], log: [], over: null,
@@ -908,6 +916,13 @@ const A = {
   flow: (j, n) => { const s = W.player, l = s.reactor.loops[j]; l.flow = clamp(n, 0, Math.max(Math.min(l.flow, n), Math.min(REACTOR.flow_max, powerRoom(s, l.flow)))); },
   overdraw: (on) => { W.player.overdraw = on; },
   powerMode: (m) => { powerMode = m; buildPanel('station'); },
+  // Alert condition, set by the captain (owner, 2026-11-01: "can I get red, yellow, green alerts?"; the reference game's
+  // alert indicators, SFC2 manual printed page 116). Yellow raises shields; red raises shields, arms every offline
+  // weapon and turns the sensors active; green changes nothing on its own.
+  alert: (lv) => { const s = W.player; s.alert = lv;
+    if (lv !== 'green') s.shUp = true;
+    if (lv === 'red') { for (const m of s.mounts) if (m.w !== 'pd' && m.state === 'offline') m.state = 'normal'; s.sensorMode = 'active'; }
+    say('Helm', lv === 'red' ? 'Red alert. All hands to battle stations.' : lv === 'yellow' ? 'Yellow alert. Shields up.' : 'Condition green.'); },
   ecm: (k, n) => { const s = W.player, other = k === 'ecm' ? s.eccm : s.ecm; s[k] = clamp(n, 0, s.power.sensors - other); },
   reinforce: (i) => { W.player.reinforce = W.player.reinforce === i ? -1 : i; },
   shields: () => { W.player.shUp = !W.player.shUp; say('Tactical', W.player.shUp ? 'Shields up.' : 'Shields down.'); },
@@ -971,7 +986,7 @@ function buildKit() {
 // cached by piece and size; a ResizeObserver redraws an element when its size changes (a bar's fill growing).
 const STATES = [
   ['k-button', ['button.idle', 'button.hover', 'button.pressed']], ['k-tab', ['tab.idle', 'tab.active']],
-  ['cell', ['cell.idle', 'cell.lit', 'cell.warn', 'cell.locked']], ['k-fill-ok', ['bar.fill.accord', 'bar.fill.red']], ['k-fill', ['bar.fill', 'bar.fill.red']],
+  ['cell', ['cell.idle', 'cell.lit', 'cell.warn', 'cell.locked', 'cell.accord']], ['k-fill-ok', ['bar.fill.accord', 'bar.fill.red']], ['k-fill', ['bar.fill', 'bar.fill.red']],
   ['k-panel', ['frame.panel']], ['k-inset', ['frame.inset']], ['k-track', ['bar.track']], ['k-divider', ['divider']],
   ['top', ['strip.top']], ['bottom', ['strip.bottom']],
 ];
@@ -1050,10 +1065,10 @@ function bar(label, frac, warn, ok) {
   return b;
 }
 // A row of discrete boxes (CLAUDE.md section 7): n cells, value() lit, cells at or past cap() locked, set(k) on a tap.
-function cells(n, value, set, cap, warn) {
+function cells(n, value, set, cap, warn, litCls = 'lit') {
   const r = el('div', 'cells'), cs = [];
   for (let i = 0; i < n; i++) { const c = el('div', 'nine cell'); c.onclick = (e) => { e.stopPropagation(); if (!c.classList.contains('locked')) { set(i + 1 === Math.round(value()) ? i : i + 1); tickUI(); } }; cs.push(c); r.append(c); }
-  bind(() => { const v = value(), k = cap ? cap() : n; cs.forEach((c, i) => { c.className = 'nine cell' + (i < v ? (warn && warn(i) ? ' warn' : ' lit') : i >= k ? ' locked' : ''); }); });
+  bind(() => { const v = value(), k = cap ? cap() : n; cs.forEach((c, i) => { c.className = 'nine cell' + (i < v ? (warn && warn(i) ? ' warn' : ' ' + litCls) : i >= k ? ' locked' : ''); }); });
   return r;
 }
 function icon(name, size = 28) { const i = new Image(); i.src = KIT.icons[name]; i.alt = ''; css(i, `width:${size}px;height:${size}px;flex:none;`); return i; }
@@ -1075,7 +1090,7 @@ const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(Mat
 // The console's regions and panels.
 // =================================================================================================================
 const root = document.getElementById('root');
-let powerMode = 'alloc', NARROW = false, mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20, ssdTarget = false;
+let powerMode = 'alloc', NARROW = false, mode = 'desk', S = 1, RW = 1920, RH = 1080, expanded = null, station = 'helm', shipTab = 'ssd', focus = 'vorrak', fleetPick = 'resolute', paused = false, menuOpen = false, mapScale = 20;
 const STATIONS = [['helm', 'Helm', 'helm'], ['power', 'Power', 'power'], ['tactical', 'Tactical', 'tactical'], ['pd', 'Point defence', 'pd'], ['science', 'Science', 'science'], ['comms', 'Comms', 'comms'], ['repair', 'Repair', 'repair'], ['transport', 'Transport', 'transport'], ['fleet', 'Fleet', 'fleet']];
 const SHIPTABS = [['ssd', 'Systems', 'ship'], ['shields', 'Shields', 'shields'], ['sensors', 'Sensors', 'sensors'], ['tractor', 'Tractor', 'tractor'], ['craft', 'Craft', 'craft']];
 const PANELS = { station: 'Helm', ship: 'Ship', weapons: 'Weapons', radar: 'Map' };
@@ -1169,22 +1184,28 @@ function buildBottom() {
   // Power over systems, on one scale (the reactor's rating), so the systems' drain reads against the output at a glance
   // (owner, 2026-11-01: "power and systems need to sit on top of each other so we can see how much power our systems
   // are draining"). A drain past the output turns the systems bar red.
-  // Power is blue, Systems green (owner, 2026-11-01: "power generated = blue, systems = green"); Systems past Power is red.
-  const ps = el('div', 'grid'); css(ps, 'grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:2px;flex:1.4;');
-  const rated = () => CLASSES[s().cls].reactor_e;
-  for (const [label, val, warn, ok] of [['Power', () => output(s()), null, false], ['Systems', () => used(s()), () => used(s()) > output(s()) + 1e-6, true]]) {
-    const bx = bar(null, () => val() / rated(), warn ? () => warn() : null, ok); css(bx, 'gap:0;');
-    ps.append(el('div', 'lbl', label), bx, txt(() => `${val().toFixed(1)} E`, 'num'));
-  }
-  ps.querySelectorAll('.num').forEach((n) => css(n, 'font-size:16px;')); ps.querySelectorAll('.lbl').forEach((n) => css(n, 'font-size:13px;'));
+  // Power and Systems as ticks, one per energy point of the reactor's rating (owner, 2026-11-01: "can you show this as
+  // discrete marks/ticks?"): Power blue, lit to the output; Systems green, lit to the draw, red past the output.
+  const ps = el('div', 'grid'); css(ps, 'grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:3px;flex:1.4;');
+  const rated = () => CLASSES[s().cls].reactor_e, n = CLASSES[W.player.cls].reactor_e;
+  const pt = cells(n, () => Math.floor(output(s()) + 1e-6), () => {}, null, null, 'lit');
+  const st = cells(n, () => Math.min(n, Math.ceil(used(s()) - 1e-6)), () => {}, null, (i) => i >= Math.floor(output(s()) + 1e-6), 'ok');
+  for (const r2 of [pt, st]) r2.classList.add('ticks');
+  ps.append(el('div', 'lbl', 'Power'), pt, txt(() => `${output(s()).toFixed(1)} E`, 'num'), el('div', 'lbl', 'Systems'), st, txt(() => `${used(s()).toFixed(1)} E`, 'num'));
+  ps.querySelectorAll('.num').forEach((n) => css(n, 'font-size:14px;line-height:14px;')); ps.querySelectorAll('.lbl').forEach((n) => css(n, 'font-size:12px;line-height:12px;')); css(ps, 'align-self:center;');
   if (mode !== 'port') R.bottom.append(ps);
   // The battery: what is stored, which a drain past the output empties.
   const bat = bar(() => `Battery ${s().battery.toFixed(1)} E`, () => s().battery / CLASSES[s().cls].battery_e, (v) => v < 0.25); css(bat, 'flex:0.55;');
   R.bottom.append(bat);
   if (!c) R.bottom.append(btn('Next target', A.nextTarget, { sm: true }));
-  const lamp = el('div', 'hero'); css(lamp, `width:${c ? 34 : 44}px;height:${c ? 34 : 44}px;`); const li = new Image(); li.alt = ''; lamp.append(li);
-  bind(() => { const k = alertLevel(); const src = KIT.hero['lamp.alert.' + k]; if (li.src !== src) li.src = src; });
-  R.bottom.append(lamp);
+  // Three alert lamps, the kit's hero pieces: the set condition lit, the others dim. Their names show on hover.
+  const lamps = el('div', 'row'); css(lamps, 'gap:6px;flex:none;');
+  for (const [lv, name] of [['green', 'Condition green'], ['yellow', 'Yellow alert'], ['red', 'Red alert']]) {
+    const k2 = el('button', 'alertkey'); k2.type = 'button'; k2.setAttribute('aria-label', name); const im = new Image(); im.src = KIT.hero['lamp.alert.' + lv]; im.alt = ''; k2.append(im);
+    k2.onclick = (e) => { e.stopPropagation(); A.alert(lv); tickUI(); }; k2.onpointerenter = () => showTip(k2, name); k2.onpointerleave = hideTip;
+    bind(() => k2.classList.toggle('on', W.player.alert === lv)); lamps.append(k2);
+  }
+  R.bottom.append(lamps);
 }
 // Speed: the ten engine boxes are the track (lit up to the ordered speed, locked past what the engines' power allows),
 // and a handle on them is dragged to order a speed (owner, 2026-11-01: "speed needs a slider handle"). The handle
@@ -1202,7 +1223,6 @@ function speedSlider(s) {
   bind(() => { const f = clamp(s().vOrder / top, 0, 1); h.style.left = `calc(${f * 100}% - 11px)`; h.setAttribute('aria-valuenow', String(Math.round(s().vOrder))); });
   return w;
 }
-function alertLevel() { const s = W.player, foes = enemiesOf(s); if (!foes.length) return 'green'; const d = Math.min(...foes.map((f) => distKm(s, f))); return d < 15 ? 'red' : d < 30 ? 'yellow' : 'green'; }
 function buildPlate() {
   region = 'plate'; binders.plate = []; R.plate.replaceChildren();
   if (mode !== 'desk' || expanded) return;
@@ -1544,7 +1564,7 @@ function stFleet(b, big) {
 
 // ---- Ship panel: the ship systems display and the other overview pages ----------------------------------------------
 function buildShip() {
-  const { pin, big } = panelShell('ship', () => `${SHIPTABS.find((s) => s[0] === shipTab)[1]} · ${ssdTarget && shipTab === 'ssd' && tgt(W.player) ? tgt(W.player).name : W.player.name}`);
+  const { pin, big } = panelShell('ship', () => `${SHIPTABS.find((s) => s[0] === shipTab)[1]} · ${W.player.name}`);
   const rail = el('div', 'rail'); for (const [id, label, ic] of SHIPTABS) rail.append(itab(ic, label, () => A.shipTab(id), () => shipTab === id));
   const body = el('div', 'col fill'); pin.append(rail, body);
   const r = R.ship.getBoundingClientRect();
@@ -1553,8 +1573,7 @@ function buildShip() {
 }
 // The ship systems display: one drawing for own ship and target, used docked and expanded (CLAUDE.md section 6.1).
 function drawSSD(x, w, h, s, big, own) {
-  if (!big) w -= 90;
-  const cx = w / 2, cy = h / 2 + 4, k = Math.min(w * 0.7, h) / 2 * 0.92, Rr = k * 0.95;
+  const cx = w / 2, cy = h / 2 + 4, k = Math.min(w * 0.7, h - (big ? 60 : 44)) / 2 * 0.92, Rr = k * 0.95;
   const toward = own ? (tgt(s) ? facingFrom(s, tgt(s).x, tgt(s).z) : -1) : facingFrom(s, W.player.x, W.player.z);
   for (let i = 0; i < 6; i++) {
     const a = -P / 2 + i * P / 3;
@@ -1596,18 +1615,17 @@ function drawSSD(x, w, h, s, big, own) {
   }
   return { cx, cy, Rr, L };
 }
+// The own ship's systems display. The target's is the Target box in the view (owner, 2026-11-01: "change this box to
+// 'target' that way we dont need to toggle between the two on the ship systems display").
 function shSSD(b, big, w, h) {
-  const own = () => !ssdTarget || !tgt(W.player);
-  const top = el('div', 'col'); css(top, 'position:absolute;right:0;top:0;z-index:1;width:84px;');
-  top.append(tab('Own', () => { ssdTarget = false; buildPanel('ship'); }, () => !ssdTarget), tab('Target', () => { ssdTarget = true; buildPanel('ship'); }, () => ssdTarget, () => !tgt(W.player)));
   let geo = null;
-  const c = live(w, h, (x) => { const s = own() ? W.player : tgt(W.player); geo = drawSSD(x, w, h, s, big, own()); }, (px, py) => {
-    if (!own() || !geo) return; const s = W.player;
+  const c = live(w, h, (x) => { geo = drawSSD(x, w, h, W.player, big, true); }, (px, py) => {
+    if (!geo) return; const s = W.player;
     for (const m of s.mounts) if (Math.hypot(px - (geo.cx + m.x * geo.L * 0.9), py - (geo.cy - m.y * geo.L)) < (big ? 22 : 14)) { A.selectMount(m.i); return; }
     const d = Math.hypot(px - geo.cx, py - geo.cy);
     if (Math.abs(d - geo.Rr) < (big ? 24 : 16)) { const a = Math.atan2(py - geo.cy, px - geo.cx) + P / 2; A.reinforce(Math.floor((((a / DEG + 30) % 360) + 360) % 360 / 60)); }
   });
-  const wrapEl = el('div', 'fill'); css(wrapEl, 'position:relative;'); wrapEl.append(top, c); b.append(wrapEl);
+  b.append(c);
 }
 function shShields(b, big) {
   const s = () => W.player;
@@ -1725,9 +1743,9 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.autoClear = false; renderer.info.autoReset = false;
 const { makeSpace, parallaxStars, shipModel } = window.FCSpace(THREE, renderer, DATA, rng);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 6000), camT = new THREE.PerspectiveCamera(30, 1.6, 0.1, 6000);
-const skyMain = makeSpace('ember', parallaxStars(new THREE.Vector3(0, 0, -40), 420, [[-70, -25, 500], [25, 70, 500]], 7)), skyT = makeSpace('ember');
-scene.add(skyMain, skyT);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 6000);
+const skyMain = makeSpace('ember', parallaxStars(new THREE.Vector3(0, 0, -40), 420, [[-70, -25, 500], [25, 70, 500]], 7));
+scene.add(skyMain);
 // three.js 0.147 uses the legacy light units: about pi times brighter than r155 and later for the same number.
 scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x201010, 0.55));
 const sun = new THREE.DirectionalLight(0xfff0dd, 1.3); sun.position.set(-40, 60, 30); scene.add(sun);
@@ -1822,7 +1840,7 @@ function buildViewUI() {
   };
   renderer.domElement.oncontextmenu = (e) => e.preventDefault();
   const tools = el('div'); tools.id = 'vtools';
-  tools.append(btn('Shield view', () => { showShields = !showShields; }, { sm: true, sel: () => showShields }), btn('Target view', () => { showTargetCam = !showTargetCam; }, { sm: true, sel: () => showTargetCam }));
+  tools.append(btn('Shield view', () => { showShields = !showShields; }, { sm: true, sel: () => showShields }), btn('Target', () => { showTargetCam = !showTargetCam; }, { sm: true, sel: () => showTargetCam }));
   const ro = htm(() => {
     const s = W.player, t = tgt(s); if (!t) return '<b>No target</b> · right click a ship to lock';
     const inArcN = s.mounts.filter((m) => m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t) && inRange(s, m, t)), rd = inArcN.filter(ready).length;
@@ -1830,18 +1848,22 @@ function buildViewUI() {
   }, 'vtext'); ro.id = 'readout';
   const msg = txt(() => { const m = W.log[W.log.length - 1]; return m && W.t - m.t < 5 ? `${m.who}: ${m.text}` : ''; }, 'vtext'); msg.id = 'msg'; css(msg, mode === 'land' ? 'top:58px;' : `bottom:${mode === 'desk' ? 80 : 128}px;`);
   const pz = txt(() => (paused ? 'Paused · orders still taken' : ''), 'vtext'); pz.id = 'paused';
+  // The Target box: the locked target's systems display, drawn by the same drawSSD as the ship panel (CLAUDE.md 6.1):
+  // its shields (numbers once scanned), its mounts, and the facing it shows you marked in red.
   const inset = el('div', 'nine k-inset'); inset.id = 'inset'; inset.append(txt(() => (tgt(W.player) ? `Target · ${tgt(W.player).name}` : ''), 'vtext'));
+  { const ir = insetRect(), tw = ir[2] - 28, th = ir[3] - 52; const tc = live(tw, th, (x) => { const t = tgt(W.player); if (t) drawSSD(x, tw, th, t, false, false); });
+    css(tc, 'position:absolute;left:14px;top:44px;'); inset.append(tc); }
   bind(() => { const on = showTargetCam && !!tgt(W.player) && !expanded; inset.style.display = on ? '' : 'none'; const ir = insetRect(); css(inset, `left:${ir[0]}px;top:${ir[1]}px;width:${ir[2]}px;height:${ir[3]}px;`); });
   const lp = btn('Lock target', () => A.lock(focus), { sm: true }); lp.id = 'lockpill';
   const q = el('div'); q.id = 'quick';
   q.append(btn('Port', () => A.turn(-30)), btn(() => `Fire · ${tgt(W.player) ? W.player.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(W.player, m, tgt(W.player)) && inRange(W.player, m, tgt(W.player))).length : 0}`, A.fire), btn('Stbd', () => A.turn(30)));
   const vb = btn('Next', A.nextTarget); q.prepend(vb);
   const badge = el('div'); badge.id = 'badge'; const home = el('a', '', 'All Fleet Command mockups (the tracker)'); home.href = 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu'; home.target = '_blank'; css(home, 'color:#b7a6f2;text-decoration:none;pointer-events:auto;');
-  badge.append(home, el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V5'), btn('Reset', A.reset, { sm: true }));
+  badge.append(home, el('span', '', 'MOCKUP 2 · BATTLE CONSOLE · CONCORD · V6'), btn('Reset', A.reset, { sm: true }));
   const sl = el('div', 'vtext'); sl.id = 'striplabel'; sl.textContent = 'Live · tap to return';
   R.view.append(tools, ro, msg, pz, inset, lp, q, badge, sl);
 }
-function insetRect() { const w = Math.min(380, VIEW[2] * (mode === 'port' ? 0.5 : 0.3)), h = w * 0.62; return mode === 'desk' ? [VIEW[2] - w - 16, 14, w, h] : [VIEW[2] - w - 8, 8, w, h]; }
+function insetRect() { const w = Math.min(320, VIEW[2] * (mode === 'port' ? 0.5 : 0.3)), h = w * 0.86; return mode === 'desk' ? [VIEW[2] - w - 16, 14, w, h] : [VIEW[2] - w - 8, 8, w, h]; }
 // Draw what sits over the 3D view: brackets, names, the focus ring, and place the lock pill.
 function drawOverlay() {
   const x = ovl.getContext('2d'), k = ovl.width / VIEW[2]; x.setTransform(k, 0, 0, k, 0, 0); x.clearRect(0, 0, VIEW[2], VIEW[3]);
@@ -1870,19 +1892,8 @@ function render(dt) {
   syncScene(dt);
   const w = VIEW[2] * S, h = VIEW[3] * S;
   renderer.info.reset(); renderer.setScissorTest(false); renderer.setViewport(0, 0, w, h); renderer.clear();
-  skyMain.visible = true; skyT.visible = false; skyMain.userData.update(camera, dt);
+  skyMain.userData.update(camera, dt);
   renderer.render(scene, camera);
-  const t = tgt(W.player);
-  if (showTargetCam && t && !expanded) {
-    const ir = insetRect(), s = W.player, L = CLASSES[t.cls].len_m / M_PER_U, d = Math.hypot(t.x - s.x, t.z - s.z) || 1;
-    camT.position.set(t.x - (t.x - s.x) / d * L * 3.2 + L * 1.2, L * 1.1, t.z - (t.z - s.z) / d * L * 3.2); camT.lookAt(t.x, 0, t.z); camT.aspect = ir[2] / ir[3]; camT.updateProjectionMatrix();
-    const vx = ir[0] * S, vy = (VIEW[3] - ir[1] - ir[3]) * S;
-    renderer.setScissorTest(true); renderer.setScissor(vx, vy, ir[2] * S, ir[3] * S); renderer.setViewport(vx, vy, ir[2] * S, ir[3] * S); renderer.clear();
-    skyMain.visible = false; skyT.visible = true; skyT.userData.update(camT, dt);
-    const shown = MODELS.get(s.id); if (shown) shown.sh.visible = false;
-    renderer.render(scene, camT); if (shown) shown.sh.visible = true;
-    renderer.setScissorTest(false);
-  }
   lastInfo = { triangles: renderer.info.render.triangles, calls: renderer.info.render.calls };
   drawOverlay();
 }
@@ -1922,7 +1933,7 @@ function frame(now) {
 
 // Named shots for tools/mockups/shoot.mjs: each replays the battle from its seed for a fixed number of steps.
 function scripted(steps, then) {
-  frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; ssdTarget = false; lastFollow = null;
+  frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null;
   newWorld(); focus = 'ashkar'; fleetPick = 'tallis';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
   W.player.engaged = true; W.player.order = 'approach';

@@ -23,3 +23,4 @@
   until asked): no seams between 9-slice pieces (each element composed whole at its pixel size); Power and Systems
   labels tightened.
 - Version 5 published 2026-11-01 from the cloud session at the owner's request ("publish it so I can play with this"), version id `1793525175-7698`: no slice seams, the Reactor mode with its diagram (owner's "simpler please!" version), Power blue over Systems green with the battery, the link back to the tracker.
+- Version 6 published 2026-11-01, version id `1793526785-4023`: Power and Systems as ticks, alert lamps, the Target box showing the target's systems display.

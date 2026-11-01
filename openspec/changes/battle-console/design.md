@@ -65,6 +65,21 @@ power our systems are draining"): two bars stacked on one scale, the reactor's r
 what the allocation draws. The gap between them is the spare energy that charges the battery; a drain past the output
 turns Systems red. Systems' health moved out of the strip; it is in the repair station.
 
+**Power and Systems as ticks** (owner, 2026-11-01: "can you show this as discrete marks/ticks?"): one tick per energy
+point of the reactor's rating (22 for the cruiser). Power's ticks lit blue to the output; Systems' lit green to the draw,
+red past the output. Proposed kit piece `cell.accord`.
+
+**Alert condition** (owner, 2026-11-01: "can I get red, yellow, green alerts?"; the reference game's alert indicators,
+SFC2 manual printed page 116): three lamps in the bottom strip, the kit's `lamp.alert.*` hero pieces, the set one lit
+and the others dim, each named on hover. The captain sets it. Yellow raises shields; red raises shields, arms every
+offline weapon and turns the sensors active; green changes nothing on its own. The battle starts at yellow.
+
+**The Target box** (owner, 2026-11-01: "change this box to 'target' that way we dont need to toggle between the two on
+the ship systems display"): the box at the view's top right, which was a target camera, now shows the locked target's
+systems display, drawn by the same `drawSSD` as the ship panel: its shields (numbers once scanned), its mounts and the
+facing it shows you, marked red. The ship panel shows only your own ship; its Own and Target switch is gone. The view's
+Target key shows or hides the box.
+
 ## 3. The Concord skin on this layout
 
 Everything is drawn from the kit's named pieces (`console-skins` design): `frame.panel` for every panel, `tab` for every

@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-01, v5) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-01, v6) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -129,6 +129,11 @@ loop a and loop b should look like loops i think", "it would make more sense": t
 vessel with a field-coil cage and the plasma in its channel, a temperature dial, wall contact, closed coolant loops
 running through the vessel with hot and cold legs, turning pumps, glowing radiators, the power bus). Then: "simpler please!": only the core,
 the three coils, the two loops with their pumps and radiators, and the warnings.
+
+Version 5 published at the owner's request ("publish it so I can play with this"). Then: "can you show this as discrete
+marks/ticks?" (Power and Systems), "can I get red, yellow, green alerts?", and "change this box to 'target' that way we
+dont need to toggle between the two on the ship systems display". Version 6: Power and Systems as ticks, three alert
+lamps the captain sets, the Target box showing the target's systems display, the ship panel's toggle gone.
 
 ## 3. Look dev
 
