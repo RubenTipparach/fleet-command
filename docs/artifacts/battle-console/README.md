@@ -62,3 +62,4 @@
 - Version 42 published 2026-11-02, version id `1793602709-c84d`: Target view and Camera lock as two keys under the Target box (the camera glides to the target and from ship to ship; camera lock brings it back to your ship, facing the target).
 - Version 43 published 2026-11-02, version id `1793604386-ad3e`: a blank grey key fills the HET pad's empty corner.
 - Version 44 published 2026-11-02, version id `1793604519-3064`: the chance to hit is per weapon, on each weapon's hover card and its details; removed from the helm and the view's readout line.
+- Version 45 (2026-11-02, built; published with version 46): placed mines keep their range bullseye; shots, mines and craft drawn from a pool per kind (no per-frame rebuilds).

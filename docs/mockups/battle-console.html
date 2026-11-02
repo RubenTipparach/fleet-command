@@ -2703,7 +2703,7 @@ function explosionsStep(dt) {
   for (let i = EXPLOSIONS.length - 1; i >= 0; i--) if (EXPLOSIONS[i].done) EXPLOSIONS.splice(i, 1);
 }
 function boomAt(x, z, size) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb070, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); sp.position.set(x, 0, z); scene.add(sp); booms.push({ sp, t: 0, size }); }
-const SHOT_POOL = [];
+const SHOT_POOL = {};
 // Asteroids in the 3D view: a lumpy grey rock per W.rocks entry, rebuilt when the world changes.
 let ROCKS3D = null, rocksFor = null;
 function syncRocks() {
@@ -2727,9 +2727,13 @@ function syncScene(dt) {
     const show = s === W.player ? showShields : false;
     o.sh.children.forEach((face, i) => { const nl = shieldLayers(s, i), col = shieldCol(s, i); face.children.forEach((m, l) => { m.material.opacity = Math.min(1, (show && l < nl ? 0.8 : 0) + (l === 0 ? s.flash[i] * 0.9 : 0)); m.material.color.set(col); }); });
   }
-  // Shots: beams as glowing cylinders, projectiles as glow sprites, from one pool.
-  let n = 0;
-  const take = (kind) => { let o = SHOT_POOL[n]; if (!o || o.kind !== kind) { if (o) fx.remove(o.obj); const obj = kind === 'beam' ? new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })) : new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); o = SHOT_POOL[n] = { kind, obj }; fx.add(obj); } o.obj.visible = true; n++; return o.obj; };
+  // Shots: beams as glowing cylinders, projectiles as glow sprites, each kind from its own pool, so an object is never
+  // thrown away and rebuilt because the slot it sat in changed kind (that churn made the view stutter with mines out).
+  const used = { beam: 0, glow: 0 };
+  const take = (kind) => { const pool = SHOT_POOL[kind] || (SHOT_POOL[kind] = []); let o = pool[used[kind]];
+    if (!o) { const obj = kind === 'beam' ? new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })) : new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+      o = { kind, obj }; fx.add(obj); pool.push(o); }
+    used[kind]++; o.obj.visible = true; return o.obj; };
   for (const sh of W.shots) {
     if (sh.kind === 'beam') {
       const t = sh.to ? ship(sh.to) : null, tx = t && !sh.miss ? t.x : sh.tx + (sh.miss ? 1.5 : 0), tz = t && !sh.miss ? t.z : sh.tz + (sh.miss ? 1.2 : 0);
@@ -2741,7 +2745,7 @@ function syncScene(dt) {
     const b = take('beam'), len = Math.hypot(h.x - s.x, h.z - s.z); b.position.set(s.x, 0.05, s.z); b.lookAt(h.x, 0.05, h.z); b.scale.set(2.5, 2.5, len); b.material.color.setHex(0x9fe8ff); b.material.opacity = 0.2 + s.beam.grip * 0.5; }
   for (const c of W.craft) { const sp = take('glow'); sp.position.set(c.x, 0.1, c.z); sp.scale.setScalar(0.35); sp.material.color.setHex(0x9fd0ff); }
   for (const mn of W.mines) { const sp = take('glow'); sp.position.set(mn.x, 0, mn.z); sp.scale.setScalar(0.5); sp.material.color.setHex(mn.arm > 0 ? 0x806020 : 0xffb030); }
-  for (let i = n; i < SHOT_POOL.length; i++) SHOT_POOL[i].obj.visible = false;
+  for (const kind of Object.keys(SHOT_POOL)) for (let i = used[kind] || 0; i < SHOT_POOL[kind].length; i++) SHOT_POOL[kind][i].obj.visible = false;
   explosionsStep(dt);
   for (const b of booms) { b.t += dt; const k = b.t / 1.4; b.sp.scale.setScalar(b.size * (1 + k * 4)); b.sp.material.opacity = Math.max(0, 1 - k); if (k >= 1) { scene.remove(b.sp); b.done = true; } }
   for (let i = booms.length - 1; i >= 0; i--) if (booms[i].done) booms.splice(i, 1);
@@ -2828,6 +2832,15 @@ function wireView() {
   };
   renderer.domElement.oncontextmenu = (e) => e.preventDefault();
 }
+// A mine's range on the battle plane, as a bullseye: its edge, and rings radiating out from the centre to it. One drawing
+// for the placement preview and the mines already laid (6.1). scr maps a plane point to the view.
+function bullseye(scr, mx, mz, col, alpha) {
+  const R0 = MINE.trigger_u, ph = (performance.now() / 1400) % 1;
+  const ring = (rad, a2, width) => { g.strokeStyle = col; g.globalAlpha = a2 * alpha; g.lineWidth = width; g.beginPath(); for (let i = 0; i <= 64; i++) { const a = i / 64 * 2 * P, q = scr(mx + Math.sin(a) * rad, mz - Math.cos(a) * rad); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); } g.stroke(); g.globalAlpha = 1; };
+  ring(R0, 0.9, 2.5);
+  for (let k2 = 0; k2 < 3; k2++) { const f = (ph + k2 / 3) % 1; ring(R0 * f, 0.85 * (1 - f), 2); }
+  const c0 = scr(mx, mz); if (c0) { g.fillStyle = col; g.globalAlpha = alpha; g.beginPath(); g.arc(c0[0], c0[1], 4, 0, 2 * P); g.fill(); g.globalAlpha = 1; }
+}
 // The turn still to make (after the-federation's TurnArc): an arc on the plane round your ship from its heading to the
 // ordered heading, with a tick at the order. (The mark where the helm was clicked is gone: owner, 2026-11-02, "should
 // get rid of plus sign".) The ring brightens under the pointer and while it is dragged to steer.
@@ -2846,6 +2859,10 @@ function helmArc(vw, vh, s) {
   }
   const a = at(s.hOrder, R - 0.8), b = at(s.hOrder, R + 1.2);
   if (a && b) { g.strokeStyle = CC.sky; g.lineWidth = 3; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+  // the mines already laid keep their range showing (owner, 2026-11-02: "mine needs range animation still here"): grey
+  // while arming, yellow once armed, red with a ship inside it
+  for (const mn of W.mines) { if (mn.side !== s.side) continue; const hot = W.ships.some((o) => o.alive && Math.hypot(o.x - mn.x, o.z - mn.z) <= MINE.trigger_u);
+    bullseye(scr, mn.x, mn.z, mn.arm > 0 ? '#8a8f9c' : hot ? CC.alert : CC.caution, 0.8); }
   if (placingHet) LBL('Click where the high energy turn should point', vw / 2, 92, 0, CC.caution, 'center', 18);
   if (placingMine) {
     // the transporter's reach
@@ -2861,11 +2878,9 @@ function helmArc(vw, vh, s) {
     // outwards"): its trigger radius on the battle plane, rings radiating out from the centre to it.
     if (mineCursor) {
       const mx = mineCursor.x, mz = mineCursor.z, valid = Math.hypot(mx - s.x, mz - s.z) <= Rm, hot = W.ships.some((o) => o.alive && Math.hypot(o.x - mx, o.z - mz) <= MINE.trigger_u);
-      const col = !valid ? '#8a8f9c' : hot ? CC.alert : CC.caution, R0 = MINE.trigger_u, ph = (performance.now() / 1400) % 1;
-      const ring = (rad, alpha, width) => { g.strokeStyle = col; g.globalAlpha = alpha; g.lineWidth = width; g.beginPath(); for (let i = 0; i <= 64; i++) { const a = i / 64 * 2 * P, q = scr(mx + Math.sin(a) * rad, mz - Math.cos(a) * rad); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); } g.stroke(); g.globalAlpha = 1; };
-      ring(R0, 0.9, 2.5);
-      for (let k2 = 0; k2 < 3; k2++) { const f = (ph + k2 / 3) % 1; ring(R0 * f, 0.85 * (1 - f), 2); }
-      const c0 = scr(mx, mz); if (c0) { g.fillStyle = col; g.beginPath(); g.arc(c0[0], c0[1], 4, 0, 2 * P); g.fill();
+      const col = !valid ? '#8a8f9c' : hot ? CC.alert : CC.caution;
+      bullseye(scr, mx, mz, col, 1);
+      const c0 = scr(mx, mz); if (c0) {
         if (!valid) LBL('Invalid position', c0[0], c0[1] - 16, 0, col, 'center', 16); else if (hot) LBL('Ship in mine range', c0[0], c0[1] - 16, 0, col, 'center', 14);
         else LBL(`Mine range ${km(MINE.trigger_u / 10)}`, c0[0], c0[1] - 16, 0, col, 'center', 14); }
     }
@@ -2963,7 +2978,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v44', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v45', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

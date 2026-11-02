@@ -288,6 +288,15 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4o. Mine ranges, and the view's object pools (version 45)
+
+Owner, 2026-11-02: "mine needs range animation still here, also why does it lag when i have mine and rotate the cam with
+right click?". Every mine of yours keeps its range on the battle plane as the same animated bullseye as the placement
+preview (one drawing): grey while arming, yellow once armed, red with a ship inside it. The lag: shots, mines and craft
+shared one pool of 3D objects, and a slot that changed kind (a beam where a glow had been) threw its object away and
+built a new one, every frame with mines out; each kind now has its own pool. Measured over 6 s of battle with four
+mines: 27 objects built before, 6 after (the first allocation only).
+
 ## 4n. Target view and camera lock (version 42)
 
 Owner, 2026-11-02: "break camera lock into two buttons, target view - this allows you to move camera to target view, the
