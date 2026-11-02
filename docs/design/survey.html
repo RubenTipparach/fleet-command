@@ -174,6 +174,20 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'J', name: 'Warp (mockup 2, Power, Warp)',
+    lead: 'The warp drive is built as recommended in version 29: nacelles charge the banks, a course is plotted, six factors make one jump risk, and a strong gravity field needs the safety override. Try the Warp scene.',
+    qs: [
+      { id: 'J1', q: 'Banks hold 60 E, a jump needs 40 E, a course takes 20 s to plot. Right scale?', options: ['As built', 'Bigger: jumps should take a minute of preparation', 'Smaller: jumps should be quick escapes'], rec: 0,
+        why: 'With 4 E in warp, charging from empty takes about 40 s, long enough to be a decision under fire.' },
+      { id: 'J2', q: 'The six risks (nacelles, coolant, banks, navigation, reactor, Q-G field) count as independent chances of failure, combined into one jump risk. Right?', options: ['As built', 'The worst factor alone sets the risk', 'Add them up, capped at 100 %'], rec: 0,
+        why: 'Every factor you fix lowers the risk, and no single good factor hides a bad one.' },
+      { id: 'J3', q: 'A failed jump damages the nacelles, coolant and hull in proportion to the risk; over 80 % risk a bad roll breaches the core. Right?', options: ['As built', 'Never a breach: only damage', 'A failed jump always strands you with the banks drained, no damage'], rec: 0,
+        why: 'Forcing a jump past the safeties near a neutron star should be a real gamble.' },
+      { id: 'J4', q: 'Where does the warp page live?', options: ['A mode of Power, beside Allocation and Reactor', 'Its own station on the rail (a tenth)', 'In the Helm station'], rec: 0,
+        why: 'The reactor powers the nacelles, and the survey kept nine stations on one rail (B3).' },
+      { id: 'J5', q: 'Do enemy ships jump out too, when they are beaten?', options: ['Yes, later: the same rule, the AI charging and plotting at its retreat threshold', 'No: enemies fight to the end'], rec: 0,
+        why: 'An enemy charging its drive is something you can see and stop, which makes the threat readable.' },
+    ] },
   { tag: 'B', name: 'Battle console: the new test scenes (mockup 2)',
     lead: 'Built as recommended in version 25; say if any should change. The numbers are the page\'s tables, easy to tune.',
     qs: [

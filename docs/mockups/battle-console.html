@@ -455,6 +455,16 @@ const SYSTEMS = ['weapons', 'shields', 'engines', 'sensors', 'tractor', 'transpo
 // limit, for meltdown_s seconds, and the reactor explodes. Temperatures in percent of the core's limit.
 const REACTOR = { coils: 3, loops: 2, flow_max: 5, flow_e: 1, efficiency_loss: 0.6, heat_full_pct_s: 4, heat_misalign_pct_s: 12,
   cool_per_flow: 0.04, temp_floor_pct: 20, critical_pct: 100, meltdown_s: 20, drift_per_s: 0.05, nudge: 0.05, blast_km: 3, blast_dmg: 45 };
+// The warp drive (owner, 2026-11-02: "the generator powers nacelles, with anti-matter reactions. nacelles need to show
+// how much power they draw and how much damage they've taken"). The energy put into warp is split between the nacelles,
+// which charge the banks at charge_k of what they draw times their health. A jump needs jump_e in the banks (of bank_e).
+// A course is plotted over plot_s (faster with healthy sensors) and holds while the ship stays within plot_drift_deg of
+// it. The reactor's coolant reserve leaks from damaged loops and a jump spends coolant_jump of it. Quantum-gravitational
+// instability comes from the surroundings (neutron stars, black holes, anomalies): above qg_block a jump needs the
+// safety override. Each factor adds a risk (weights in `risk`); the jump risk is 1 - the product of (1 - each), and the
+// jump rolls against that same number (6.1).
+const WARP = { bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, plot_drift_deg: 15, coolant_jump: 0.25, leak_per_s: 0.01, qg_block: 0.5, out_s: 1.2,
+  risk: { nacelles: 0.8, coolant: 1.2, coolant_ok: 0.5, banks: 0.3, nav: 0.6, reactor: 0.7, qg: 0.3, qg_override: 0.9 } };
 const SPEED_PER_BOX_M_S = 30;
 const FACINGS = ['F', 'FR', 'AR', 'A', 'AL', 'FL'];
 // Mount x is to starboard, y forward, in half-lengths of the hull. arc: [centre bearing, width], degrees.
@@ -579,6 +589,18 @@ const SCENES = {
       r.shUp = false; r.shields = r.shields.map(() => 0); r.power.shields = 0; r.sys.engines = 0; r.marines = 6; r.ai.stance = 'hold'; r.hull = 30;
       r.mounts.forEach((m, i) => { if (i) { m.hp = 0; m.charge = 0; } }); },
     say: ['Tactical', 'Rattlejaw is crippled, shields down. Raid its systems, or board and take it.'] },
+  // Owner, 2026-11-02: warp, with "quantum-gravitational stability - requires safety override if environment is highly
+  // unstable. this usually happens around neutron stars, black holes, and anomalies".
+  warp: { name: 'Warp', target: 'ashkar', endless: true,
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'ashkar', name: 'Ashkar', captain: 'Blade Oru', cls: 'kff', faction: 'kethran', side: 1, x: 40, z: 120, h: 300, v: 160 },
+      { id: 'skarn', name: 'Skarn', captain: 'Blade Vey', cls: 'kff', faction: 'kethran', side: 1, x: -50, z: 130, h: 60, v: 160 },
+    ],
+    wells: [{ name: 'Neutron star', x: 0, z: -30, r: 3, reach: 80, strength: 0.9 }],
+    rocks: [{ x: 0, z: -30, r: 3, name: 'the neutron star' }],
+    setup: (W) => { const s = W.player; s.warp.banks = 12; s.warp.nacelles[0].hp = 0.7; s.reactor.coolant = 0.8; s.power.warp = 4; s.power.weapons = 4; },
+    say: ['Helm', 'Kethran frigates closing from astern, and the neutron star ahead bends space. Charge the banks, plot a course and jump.'] },
   // Owner, 2026-11-01: "A delivery mission from a station to a planet".
   delivery: { name: 'Delivery', target: null, endless: true,
     ships: [
@@ -676,7 +698,7 @@ function maxSpeed(s) { const c = CLASSES[s.cls]; return Math.min(c.speed_max_m_s
 function efficiency(s) { const c = s.reactor.coils; return clamp(1 - REACTOR.efficiency_loss * c.reduce((a, o) => a + Math.abs(o), 0) / c.length, 0, 1); }
 function output(s) { return CLASSES[s.cls].reactor_e * efficiency(s); }
 const coolantDraw = (s) => s.reactor.loops.reduce((n, l) => n + l.flow * REACTOR.flow_e, 0);
-function used(s) { return SYSTEMS.reduce((n, k) => n + s.power[k], 0) + coolantDraw(s); }
+function used(s) { return SYSTEMS.reduce((n, k) => n + s.power[k], 0) + coolantDraw(s) + s.power.warp; }
 const cooling = (s) => s.reactor.loops.reduce((n, l) => n + l.flow * l.hp, 0);
 // What a system may still be given: up to ten boxes, and (unless the captain allows drawing past the output) no more
 // than the output leaves.
@@ -686,22 +708,23 @@ function shieldMax(s, i) { return CLASSES[s.cls].shields[i]; }
 function makeShip(d) {
   const c = CLASSES[d.cls];
   return { id: d.id, name: d.name, captain: d.captain, cls: d.cls, faction: d.faction, side: d.side, x: d.x, z: d.z, h: d.h * DEG, hOrder: d.h * DEG, v: d.v, vOrder: d.v,
-    hull: c.hull, shields: c.shields.slice(), shUp: true, reinforce: -1, power: { ...c.power }, cap: c.capacitor_e * 0.6, battery: c.battery_e * 0.5,
+    hull: c.hull, shields: c.shields.slice(), shUp: true, reinforce: -1, power: { ...c.power, warp: 0 }, cap: c.capacitor_e * 0.6, battery: c.battery_e * 0.5,
     mounts: c.mounts.map(([w, x, y, ac, aw], i) => ({ i, w, x, y, arc: [ac, aw], state: 'normal', charge: 0.6 + (i % 3) * 0.15, sel: w !== 'pd', hp: 1 })),
     sys: { weapons: 1, shields: 1, engines: 1, sensors: 1, tractor: 1, transport: 1 }, target: null, aim: 'hull', order: 'approach', engaged: false,
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
     scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
-    reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false }, brown: 1, overdraw: false,
+    reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
+    warp: { banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
 let sceneId = 'battle';
 function newWorld(id = sceneId) {
   const sc = SCENES[id]; sceneId = id;
   const planets = (sc.planets || []).map((pl) => ({ got: 0, need: 0, ...pl }));
-  W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', planets,
+  W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', planets, wells: (sc.wells || []).map((w) => ({ ...w })),
     // a planet is solid too: it joins the rocks for collisions
     rocks: (sc.rocks || []).map((r) => ({ ...r })).concat(planets.map((pl) => ({ x: pl.x, z: pl.z, r: pl.r, name: pl.name, planet: true }))),
-    rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4) } };
+    rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4), warp: rng(Math.imul(SCENARIO.seed + 5, 0x9e3779b1) >>> 0) } }; // the warp stream's seed is mixed: a plain seed + 5 starts on 0.014, failing nearly any first jump
   W.player = W.ships[0];
   W.player.target = sc.target;
   for (const s of W.ships) if (s.side === 1) s.ecm = 1;
@@ -730,7 +753,7 @@ function step() {
   // test scenes run on after the last enemy is gone (a capture should be seen joining the fleet); restart from the menu
   if (!foes && SCENES[sceneId].endless) { if (!W.endSaid && W.hadFoes) { W.endSaid = true; say('Tactical', W.overWhy || 'No hostile ships left. Restart the scene from the menu.'); } }
   else if (!foes) { W.over = 'won'; if (!W.overWhy) { W.overWhy = 'All hostile ships destroyed'; say('Tactical', 'All hostile ships destroyed.'); } }
-  else if (!W.player.alive) W.over = 'lost';
+  else if (!W.player.alive && !W.player.jumped) W.over = 'lost';
 }
 function systemsStep(s) {
   const c = CLASSES[s.cls];
@@ -766,7 +789,7 @@ function systemsStep(s) {
   const sensors = Math.max(0, s.power.sensors - s.ecm - s.eccm);
   if (s.scan.id) { if (s.scan.id !== s.target) s.scan = { id: null, p: 0 }; else s.scan.p = Math.min(1, s.scan.p + DT * (0.08 + 0.05 * sensors) * (s.sensorMode === 'passive' ? 0.5 : 1) * s.sys.sensors); }
   s.mineCool = Math.max(0, s.mineCool - DT); s.bumpT = Math.max(0, s.bumpT - DT);
-  tractorStep(s); boardingStep(s); barrageStep(s);
+  tractorStep(s); boardingStep(s); barrageStep(s); warpStep(s);
 }
 // The beam's value for a round: the energy a ship puts into its tractor, scaled by the tractor's health. The holder's
 // value holds; the held ship's resists. One rule for both sides and for the panel's readout.
@@ -849,6 +872,60 @@ function rocksStep() {
 }
 // The ship a beam is holding this one, or null.
 function heldBy(s) { return W.ships.find((o) => o.alive && o.beam && o.beam.on === s.id) || null; }
+// Quantum-gravitational instability at a point, 0 to 1: each gravity well (W.wells) gives its strength at its centre,
+// falling to 0 at its reach.
+function qgAt(x, z) { return W.wells.reduce((q, w) => Math.max(q, w.strength * clamp(1 - Math.hypot(x - w.x, z - w.z) / w.reach, 0, 1)), 0); }
+// What each nacelle draws now, E: the warp energy split between the nacelles still working.
+function nacelleDraw(s) { const live = s.warp.nacelles.filter((n) => n.hp > 0).length; return s.warp.nacelles.map((n) => n.hp > 0 && live ? s.power.warp * s.brown / live : 0); }
+// The reactor's stability, 0 to 1: confinement, coil alignment and the core's distance from its limit together.
+function reactorStability(s) {
+  const rx = s.reactor, mis = rx.coils.reduce((a, o) => a + Math.abs(o), 0) / rx.coils.length;
+  return clamp(rx.conf * (1 - mis) * clamp((REACTOR.critical_pct - rx.temp) / (REACTOR.critical_pct - 50), 0, 1), 0, 1);
+}
+// The jump risk and each factor in it, the one rule the Warp page shows and the jump rolls against (6.1).
+function warpRisk(s) {
+  const w = s.warp, R = WARP.risk, n = w.nacelles, avg = n.reduce((a, q) => a + Math.max(0, q.hp), 0) / n.length, q = qgAt(s.x, s.z);
+  const f = [
+    { key: 'nacelles', label: 'Nacelles', state: avg, risk: n.some((q2) => q2.hp <= 0) ? 0.95 : (1 - avg) * R.nacelles },
+    { key: 'coolant', label: 'Coolant', state: s.reactor.coolant, risk: Math.max(0, R.coolant_ok - s.reactor.coolant) * R.coolant },
+    { key: 'banks', label: 'Banks', state: w.banks / WARP.bank_e, risk: (1 - w.banks / WARP.bank_e) * R.banks },
+    { key: 'nav', label: 'Navigation', state: w.plot, risk: (1 - w.plot) * R.nav },
+    { key: 'reactor', label: 'Reactor', state: reactorStability(s), risk: (1 - reactorStability(s)) * R.reactor },
+    { key: 'qg', label: 'Q-G field', state: 1 - q, risk: q * (q > WARP.qg_block ? R.qg_override : R.qg) },
+  ];
+  const total = 1 - f.reduce((a, x) => a * (1 - clamp(x.risk, 0, 1)), 1);
+  const why = w.out > 0 ? 'Jumping' : w.banks < WARP.jump_e ? `Banks need ${WARP.jump_e} E` : q > WARP.qg_block && !w.override ? 'Q-G field: override needed' : '';
+  return { f, total, q, why };
+}
+// The warp drive, every step: nacelles charge the banks, the course plot builds or drifts, coolant leaks, and a ship
+// jumping streaks away.
+function warpStep(s) {
+  const w = s.warp;
+  if (w.out > 0) { const f = fwd(s.h); s.x += f[0] * 60 * DT; s.z += f[1] * 60 * DT; if ((w.out -= DT) <= 0) { s.alive = false; s.jumped = true; boomAt(s.x, s.z, 1.5);
+    say('Helm', `${s.name} jumped to warp.`); if (s === W.player) { W.over = 'jumped'; W.overWhy = `${s.name} jumped to warp`; } } return; }
+  const draw = nacelleDraw(s);
+  w.banks = Math.min(WARP.bank_e, w.banks + draw.reduce((a, d, i) => a + d * w.nacelles[i].hp, 0) * WARP.charge_k * DT);
+  s.reactor.coolant = Math.max(0, s.reactor.coolant - s.reactor.loops.reduce((a, l) => a + (1 - l.hp), 0) * WARP.leak_per_s * DT);
+  if (w.plotting) {
+    // off course means a new heading ordered, not the ship still coming round onto the plotted one
+    if (Math.abs(wrap(s.hOrder - w.plotH)) > WARP.plot_drift_deg * DEG) { w.plot = Math.max(0, w.plot - 0.2 * DT); if (!w.drift) { w.drift = true; if (s === W.player) say('Navigation', 'Off the plotted course: the plot is degrading.'); } }
+    else { w.drift = false; w.plot = Math.min(1, w.plot + DT / WARP.plot_s * (0.5 + 0.5 * s.sys.sensors)); }
+  }
+}
+// The jump: refused with the reason the panel shows; otherwise one roll against the risk. A failure is a mishap
+// scaled by how bad the odds were; a very bad one breaches the core.
+function jump(s) {
+  const r = warpRisk(s), w = s.warp; if (r.why) { if (s === W.player) say('Helm', `Cannot jump: ${r.why}.`); return; }
+  const R = W.rand.warp;
+  w.banks -= WARP.jump_e; s.reactor.coolant = Math.max(0, s.reactor.coolant - WARP.coolant_jump);
+  if (R() >= r.total) { w.out = WARP.out_s; say('Helm', `Warp field up. Jumping (risk ${pct(r.total)}).`); return; }
+  const sev = R();
+  for (const n of w.nacelles) n.hp = Math.max(0, n.hp - (0.2 + 0.4 * sev) * r.total * 1.5);
+  s.reactor.coolant = Math.max(0, s.reactor.coolant - 0.3 * sev); w.banks = 0; w.plot = 0;
+  damage(s, { x: s.x, z: s.z - 1, side: -1 }, Math.round(10 + 30 * r.total * sev), 'hull');
+  say('Engineering', `Warp field collapsed (risk was ${pct(r.total)}): nacelles damaged, banks drained.`);
+  if (r.total > 0.8 && sev > 0.6) { say('Engineering', 'Warp core breach.'); meltdown(s); }
+}
 // The reactor, every step: coils drift while confinement is damaged; heat comes from the output and from
 // misalignment; coolant carries it off in proportion to the core temperature; coolant offline or the core at its
 // limit counts toward a meltdown, and cooling down again counts back.
@@ -966,6 +1043,8 @@ function damage(t, src, dmg, aim) {
     if (t === W.player) say('Engineering', `Confinement coil ${i + 1} out of alignment.`); }
   if (R() < 0.18) { const j = Math.floor(R() * REACTOR.loops), l = t.reactor.loops[j]; l.hp = Math.max(0, l.hp - 0.35 - R() * 0.35);
     if (t === W.player) say('Engineering', l.hp <= 0 ? `Coolant loop ${'AB'[j]} offline.` : `Coolant loop ${'AB'[j]} damaged.`); }
+  // a hit may damage a warp nacelle
+  if (R() < 0.15) { const n = t.warp.nacelles[Math.floor(R() * t.warp.nacelles.length)]; n.hp = Math.max(0, n.hp - 0.25); if (t === W.player) say('Engineering', n.hp <= 0 ? 'A warp nacelle is out.' : 'Warp nacelle damaged.'); }
   if (R() < 0.15 + (aim === 'weapons' ? 0.25 : 0)) { const m = t.mounts[Math.floor(R() * t.mounts.length)]; m.hp = Math.max(0, m.hp - 0.6); if (m.hp <= 0) m.charge = 0; }
   if (t.side === 0 || src.side === 0) if (t === W.player || src === W.player) say(t === W.player ? 'Engineering' : 'Tactical', t === W.player ? `Hull hit through the ${FACINGS[f]} shield.` : `Hit on ${t.name}, ${FACINGS[f]} facing.`);
   if (t.hull <= 0) { t.hull = 0; t.alive = false; t.v = 0; boom(t); say('Tactical', `${t.name} destroyed.`); for (const o of W.ships) if (o.target === t.id) o.target = null; }
@@ -1122,6 +1201,10 @@ const A = {
     const d = Math.hypot(x - s.x, z - s.z) / 10; if (d > TRANSPORT.range_km) { say('Transport', `Out of transporter range (${km(TRANSPORT.range_km)}).`); return; }
     s.mines--; s.mineCool = MINE.cooldown_s; s.transporter = 0; W.mines.push({ x, z, side: s.side, arm: MINE.arm_s }); say('Transport', `Mine beamed out to ${km(d)}.`); },
   scene: (id) => { sceneId = id; A.reset(); menuOpen = false; },
+  // Warp: plot a course on the heading ordered now, the safety override, and the jump.
+  plot: () => { const w = W.player.warp; w.plotting = true; w.plotH = W.player.hOrder; w.plot = 0; w.drift = false; say('Navigation', `Plotting a course on ${String(Math.round(((w.plotH / DEG) + 360) % 360)).padStart(3, '0')}.`); },
+  override: () => { const w = W.player.warp; w.override = !w.override; say('Helm', w.override ? 'Safety override on.' : 'Safety override off.'); },
+  jump: () => jump(W.player),
   mine: () => { const s = W.player; if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
   // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
   tractorHold: () => { const s = W.player; if (s.tractor !== 'off' || s.power.tractor <= 0 || heldBy(s)) return; s.tractor = 'power'; s.powerT = TRACTOR.powerup_s; say('Tractor', 'Beam powering up.'); },
@@ -1569,10 +1652,49 @@ function stHelm(b, big) {
 }
 const iconOf = (k) => ({ engines: 'helm', weapons: 'weapons', shields: 'shields', sensors: 'sensors', tractor: 'tractor', transport: 'transport', repair: 'repair' })[k];
 // The power station has two modes: Allocation (the reference game's energy page) and Reactor (our own).
+// The warp page (Power, Warp): the two nacelles with their draw and damage, the banks with the jump threshold, the
+// course plot, the six risk factors and the total, the safety override and the jump; the warp energy boxes at the foot.
+// Every figure comes from warpRisk, nacelleDraw and warpStep's state (6.1).
+function stWarp(c, big) {
+  const s = W.player, w = s.warp, r = warpRisk(s), draw = nacelleDraw(s), dh = big ? Math.min(c.h * 0.42, 320) : 96, nw = big ? 48 : 22;
+  // nacelles, port and starboard, each filled from the bottom by its health in its status colour, the draw beside it
+  w.nacelles.forEach((n, i) => {
+    const x = c.x + (i ? 2 * nw + 70 : 0), y = c.y + 4, st = statusOf(n.hp, false), hp = clamp(n.hp, 0, 1);
+    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(x, y, nw, dh, nw / 2); g.fill();
+    g.save(); g.beginPath(); g.roundRect(x, y, nw, dh, nw / 2); g.clip(); g.fillStyle = STATUS_COL[st]; g.fillRect(x, y + dh * (1 - hp), nw, dh * hp); g.restore();
+    if (draw[i] > 0) { g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.roundRect(x - 2, y - 2, nw + 4, dh + 4, nw / 2 + 2); g.stroke(); }
+    hit(`wp.n${i}`, x, y, nw, dh, { tip: { title: i ? 'Starboard nacelle' : 'Port nacelle', rows: [['Health', pct(hp)], ['Status', st, STATUS_COL[st]], ['Draw', `${draw[i].toFixed(1)} E`]] } });
+    LBL(i ? 'Stbd' : 'Port', x + nw / 2, y + dh + 16, 0, CC.lilac, 'center', 13); NUM(`${draw[i].toFixed(1)} E`, x + nw / 2, y + dh + 34, 0, CC.sky, 'center', 15);
+  });
+  // the banks between them, with the jump threshold
+  const bx = c.x + nw + 22, bw = 26, by = c.y + 4, fill = w.banks / WARP.bank_e;
+  g.fillStyle = CC.deep; g.fillRect(bx, by, bw, dh); g.fillStyle = w.banks >= WARP.jump_e ? CC.accord : CC.sky; g.fillRect(bx, by + dh * (1 - fill), bw, dh * fill);
+  const ty = by + dh * (1 - WARP.jump_e / WARP.bank_e); g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath(); g.moveTo(bx - 4, ty); g.lineTo(bx + bw + 4, ty); g.stroke();
+  LBL('Banks', bx + bw / 2, by + dh + 16, 0, CC.lilac, 'center', 13); NUM(`${Math.floor(w.banks)}/${WARP.bank_e}`, bx + bw / 2, by + dh + 34, 0, w.banks >= WARP.jump_e ? CC.accord : CC.sky, 'center', 15);
+  // the risk factors, each a thin bar of its risk, and the total
+  const rx = c.x + 2 * nw + 70 + nw + 14, rw = c.x + c.w - rx, rh = big ? Math.min(44, dh / 7) : 17;
+  r.f.forEach((f, i) => {
+    const y = c.y + 2 + i * rh, rc = f.risk > 0.3 ? CC.alert : f.risk > 0.1 ? CC.caution : CC.accord;
+    LBL(f.label, rx, y + rh - 5, rw * 0.5, CC.lilac, 'left', big ? 15 : 12);
+    g.fillStyle = CC.deep; g.fillRect(rx + rw * 0.52, y + rh / 2 - 3, rw * 0.3, 6); g.fillStyle = rc; g.fillRect(rx + rw * 0.52, y + rh / 2 - 3, rw * 0.3 * clamp(f.risk, 0, 1), 6);
+    NUM(pct(f.risk), rx + rw, y + rh - 4, 0, rc, 'right', big ? 16 : 13);
+  });
+  const ry = c.y + 10 + 6 * rh, tc = r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord;
+  LBL('Jump risk', rx, ry + 18, 0, CC.sky, 'left', big ? 18 : 15); NUM(pct(r.total), rx + rw, ry + 20, 0, tc, 'right', big ? 26 : 20);
+  // plot, override, jump
+  let y = c.y + dh + 46; const kw = (c.w - 12) / 3, kh = big ? 44 : 34;
+  button('wp.plot', c.x, y, kw, kh, w.plotting ? `Plot ${pct(w.plot)}` : 'Plot course', A.plot, { center: true, sel: () => w.plotting && w.plot >= 1 });
+  button('wp.ovr', c.x + kw + 6, y, kw, kh, 'Override', A.override, { center: true, sel: () => w.override });
+  button('wp.jump', c.x + 2 * (kw + 6), y, kw, kh, w.out > 0 ? 'Jumping' : 'Jump', A.jump, { center: true, dis: () => !!r.why });
+  y += kh + 6;
+  LBL(r.why || (w.plotting && w.drift ? 'Off the plotted course' : `Q-G field ${pct(r.q)} · coolant ${pct(s.reactor.coolant)}`), c.x, y + 14, c.w, r.why ? CC.caution : CC.lilac, 'left', 13);
+  powerRow('wp.pw', c.x, c.y + c.h - 28, c.w, 26, 'warp', big ? 120 : 82);
+}
 function stPower(b, big) {
-  tabs('pw.mode', b.x, b.y, b.w, 40, [['alloc', 'Allocation'], ['reactor', 'Reactor']], powerMode, A.powerMode);
+  tabs('pw.mode', b.x, b.y, b.w, 40, [['alloc', 'Allocation'], ['reactor', 'Reactor'], ['warp', 'Warp']], powerMode, A.powerMode);
   const c = { x: b.x, y: b.y + 46, w: b.w, h: b.h - 46 };
   if (powerMode === 'reactor') { stReactor(c, big); return; }
+  if (powerMode === 'warp') { stWarp(c, big); return; }
   const s = W.player, spare = output(s) - used(s);
   pairs('pw.h', c.x, c.y + 22, [['Out', output(s).toFixed(1)], ['Used', String(used(s))], ['Spare', spare.toFixed(1), spare >= 0 ? CC.accord : CC.alert]]);
   let y = c.y + 34; const rowH = big ? 40 : 26, gap = big ? 10 : 6, lw = big ? 160 : 82, nw = big ? 50 : 26;
@@ -1581,7 +1703,7 @@ function stPower(b, big) {
     powerRow('pw', c.x + (big ? 36 : 0), y, c.w - (big ? 36 : 0), rowH, k, lw - (big ? 36 : 0));
     y += rowH + gap;
   }
-  pairs('pw.c', c.x, y + 16, [['Coolant pumps', `${coolantDraw(s)} E`]], 0, 18); LBL('set in Reactor', c.x + c.w, y + 16, 0, CC.lilac, 'right', 13);
+  pairs('pw.c', c.x, y + 16, [['Coolant pumps', `${coolantDraw(s)} E`], ['Warp', `${s.power.warp} E`]], 0, 18); LBL('set in Reactor, Warp', c.x + c.w, y + 16, 0, CC.lilac, 'right', 13);
   y += 26; bar(c.x, y, c.w, `Battery ${s.battery.toFixed(1)} / ${CLASSES[s.cls].battery_e} E`, s.battery / CLASSES[s.cls].battery_e, s.battery / CLASSES[s.cls].battery_e < 0.25);
   if (big) pairs('pw.x', c.x, y + 70, [['Speed limit', `${Math.round(maxSpeed(s))} M/S`], ['Capacitor', `${s.cap.toFixed(1)} E`], ['Shield regen', `${(s.power.shields * 0.6).toFixed(1)}/S`]], c.w);
 }
@@ -2225,6 +2347,15 @@ function stationModel(s, F) {
   for (let i = 0; i < 4; i++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(R * 1.6, R * 0.06, R * 0.08), hull); sp.rotation.y = i * P / 4; g.add(sp); }
   return g;
 }
+// Gravity wells: a small, white-hot star with a glow (neutron star); its name and the field strength at your ship over it.
+let WELLS3D = null, wellsFor = null;
+function syncWells() {
+  if (wellsFor === W) return; wellsFor = W;
+  if (WELLS3D) scene.remove(WELLS3D); WELLS3D = new THREE.Group(); scene.add(WELLS3D);
+  for (const w of W.wells) { const m = new THREE.Mesh(new THREE.SphereGeometry(w.r, 32, 24), new THREE.MeshBasicMaterial({ color: 0xe8f0ff })); m.position.set(w.x, 0, w.z); WELLS3D.add(m);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(w.reach * WARP.qg_block * 0.0 + w.reach * (1 - WARP.qg_block / w.strength) - 0.15, w.reach * (1 - WARP.qg_block / w.strength) + 0.15, 96), new THREE.MeshBasicMaterial({ color: 0xf0b43c, transparent: true, opacity: 0.5, side: THREE.DoubleSide }));
+    ring.rotation.x = -P / 2; ring.position.set(w.x, 0.02, w.z); WELLS3D.add(ring); }
+}
 // Planets: a sphere each, below the battle plane so ships pass over its limb.
 let PLANETS3D = null, planetsFor = null;
 function syncPlanets() {
@@ -2263,7 +2394,7 @@ function syncRocks() {
   }
 }
 function syncScene(dt) {
-  syncRocks(); syncPlanets();
+  syncRocks(); syncPlanets(); syncWells();
   for (const s of W.ships) {
     const o = modelFor(s); o.g.visible = s.alive; if (!s.alive) continue;
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
@@ -2407,6 +2538,8 @@ function uiView() {
     g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? 58 : 34));
     if (f && !locked && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id];
   }
+  for (const w of W.wells) { const v = new THREE.Vector3(w.x, 0, w.z).project(camera); if (v.z >= 1) continue;
+    g.fillStyle = CC.caution; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(`${w.name} · Q-G field here ${pct(qgAt(s.x, s.z))}`.toUpperCase(), (v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh - 30); }
   for (const pl of W.planets) { const v = new THREE.Vector3(pl.x, 0, pl.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.fillStyle = CC.sky; g.font = '600 16px Antonio'; g.textAlign = 'center';
     g.fillText(`${pl.name}${pl.need ? ` · ${pl.got} of ${pl.need} crates` : ''}`.toUpperCase(), px, py); }
@@ -2440,7 +2573,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v28', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v29', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -2457,10 +2590,10 @@ function uiSheet() {
   const end = W.over && !menuOpen;
   if (!menuOpen && !W.over) return;
   g.fillStyle = 'rgba(0,0,0,0.78)'; g.fillRect(0, 0, RW, RH); hit('sheet.block', 0, 0, RW, RH, {});
-  const w = 600, h = end ? 300 : 524, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? (W.over === 'won' ? 'Victory' : 'Ship lost') : 'Menu', false, true);
+  const w = 600, h = end ? 300 : 524, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? ({ won: 'Victory', jumped: 'Jumped' }[W.over] || 'Ship lost') : 'Menu', false, true);
   let yy = P0.y + 8;
   if (end) {
-    TXT(W.over === 'won' ? W.overWhy : `${W.player.name} is lost`, P0.x, yy + 20, P0.w); LBL(`Battle time ${mmss(W.t)}`, P0.x, yy + 46); yy += 64;
+    TXT(W.over === 'won' || W.over === 'jumped' ? W.overWhy : `${W.player.name} is lost`, P0.x, yy + 20, P0.w); LBL(`Battle time ${mmss(W.t)}`, P0.x, yy + 46); yy += 64;
     const alive = W.ships.filter((o) => o.side === 0 && o.alive);
     if (W.over === 'lost' && alive.length) { button('sheet.cmd', P0.x, yy, P0.w, 48, `Take command of ${alive[0].name}`, () => { W.over = null; A.command(alive[0].id); }); yy += 56; }
     button('sheet.restart', P0.x, yy, P0.w, 48, 'Restart', A.reset);
@@ -2573,6 +2706,9 @@ window.MOCKUP_SHOTS = {
   scene_vip: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; }, 'vip'),
   scene_shuttle: () => scripted(30, () => { shipTab = 'craft'; A.shuttle(); for (let i = 0; i < Math.round(12 / DT); i++) step(); }, 'shuttle'),
   scene_fighters: () => scripted(30, () => { shipTab = 'craft'; A.launch(); for (let i = 0; i < Math.round(25 / DT); i++) step(); }, 'fighters'),
+  warp: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; for (let i = 0; i < Math.round(6 / DT); i++) step(); }, 'warp'),
+  warp_expanded: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; expanded = 'station'; A.plot(); for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'warp'),
+  warp_jumped: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.turn(180); A.plot(); A.setSpeed(180); for (let i = 0; i < Math.round(30 / DT); i++) step(); A.jump(); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'warp'),
   scene_select: () => { scripted(600); sceneOpen = true; },
   scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'inv'; placingMine = true; }, 'mines'),
   scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; const s = W.player;

@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-02, v28) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-02, v29) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -154,6 +154,10 @@ seconds in a darker shade, mines on a 3 s cooldown, the tractor contest (Hold an
 the helm by pointing (after the-federation), and test scenes for mines, the tractor and boarding. Version 25: the
 transporter's three modes (Capture, Hit & run, Inventory) with crews by role (survey B14, B15), reeling (B16), stations
 and planets, and four more scenes: Delivery, VIP, Shuttle, Fighters.
+
+Versions 26-29 (2026-11-02): a scene selector in the view, the camera lock (smoothed), a round expand key, and the
+warp drive (change `warp`: Power, Warp mode; nacelles, banks, plot, six risk factors, the safety override near a
+neutron star, the jump; a Warp scene; survey J1-J5).
 
 **Queued from the survey (2026-11-01), not built yet:** the helm redesign
 after the reference game's nav modes, from the owner's screenshots and the manual (B4); power ticks per ship scaled to

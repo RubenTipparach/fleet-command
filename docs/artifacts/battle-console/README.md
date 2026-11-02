@@ -46,3 +46,4 @@
 - Version 26 published 2026-11-02, version id `1793578903-e903`: a scene selector in the view's top left (Scene key and its list).
 - Version 27 published 2026-11-02, version id `1793580688-9bf9`: the camera lock (locking a target yaws the chase camera to face it, smoothed by a critically damped spring; a drag frees it; Lock camera under the Target box), after Fargo's CameraSystem.
 - Version 28 published 2026-11-02, version id `1793580890-bd74`: the panels' Expand pill replaced by a small round key with diagonal arrows (pointing in to return), names on hover.
+- Version 29 published 2026-11-02, version id `1793581929-1c47`: the warp drive (Power, Warp mode): nacelles with draw and damage, banks, course plot, six risk factors and the jump risk, the safety override near a neutron star, the jump and its mishaps; a Warp test scene (change `warp`).
