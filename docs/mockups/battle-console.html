@@ -464,7 +464,7 @@ const REACTOR = { coils: 3, loops: 2, flow_max: 5, flow_e: 1, efficiency_loss: 0
 // instability comes from the surroundings (neutron stars, black holes, anomalies): above qg_block a jump needs the
 // safety override. Each factor adds a risk (weights in `risk`); the jump risk is 1 - the product of (1 - each), and the
 // jump rolls against that same number (6.1).
-// coil_e: what the warp coils take once armed (owner, 2026-11-02: "warp requires lots of energy, it should start out as
+// coil_e: the reactor energy the warp drive takes once on (owner, 2026-11-02: "warp requires lots of energy, it should start out as
 // disabled, then when you click on it, you have to power stuff down to charge warp coils"): an armed drive takes the
 // reactor's free energy, up to coil_e, and gives way first when the systems need more than the output.
 const WARP = { coil_e: 8, bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, coolant_jump: 0.25, leak_per_s: 0.01, qg_block: 0.5, out_s: 1.2,
@@ -782,7 +782,10 @@ function newWorld(id = sceneId) {
 const ship = (id) => W.ships.find((s) => s.id === id) || null;
 const tgt = (s) => { const t = ship(s.target); return t && t.alive ? t : null; };
 const enemiesOf = (s) => W.ships.filter((o) => o.alive && o.side !== s.side);
-function say(who, text) { W.log.push({ t: W.t, who, text }); if (W.log.length > 40) W.log.shift(); }
+// The battle log. A refusal (an order that cannot be carried out) is a warning: shown in Caution, held longer in the
+// view, and marked in the log (owner, 2026-11-02: "is there game log of some kind? I CLICKED JUMP AND NOTHING HAPPENED").
+const WARN_RE = /^(Cannot|Warp field collapsed|Warp core breach|Out of|No target|Not during|The queue is empty|Pads charging|Their shield|That ship is ours|A raid is out|A boarding party is out)/;
+function say(who, text) { W.log.push({ t: W.t, who, text, warn: WARN_RE.test(text) }); if (W.log.length > 80) W.log.shift(); }
 
 // One fixed step of the whole battle.
 function step() {
@@ -950,7 +953,7 @@ function warpRisk(s) {
     { key: 'qg', label: 'Q-G field', state: 1 - q, risk: q * (q > WARP.qg_block ? R.qg_override : R.qg) },
   ];
   const total = 1 - f.reduce((a, x) => a * (1 - clamp(x.risk, 0, 1)), 1);
-  const why = w.out > 0 ? 'Jumping' : w.banks < WARP.jump_e ? `Banks need ${WARP.jump_e} E` : q > WARP.qg_block && !w.override ? 'Q-G field: override needed' : '';
+  const why = w.out > 0 ? 'Jumping' : w.banks < WARP.jump_e ? `not enough energy stored: ${Math.floor(w.banks)} of ${WARP.jump_e} E` : q > WARP.qg_block && !w.override ? 'gravity field too strong: turn on the safety override (Power, Warp)' : '';
   return { f, total, q, why };
 }
 // The warp drive, every step: nacelles charge the banks, the course plot builds or drifts, coolant leaks, and a ship
@@ -978,17 +981,27 @@ function warpStep(s) {
 // 2026-11-02: "I clicked when it was GREEN", "if plotting it shouldnt glow, and be ready"). Green means this.
 const warpReady = (s) => s.warp.armed && s.warp.banks >= WARP.jump_e && s.warp.plot >= 1 && !warpRisk(s).why;
 function jump(s) {
-  const r = warpRisk(s), w = s.warp; if (r.why) { if (s === W.player) say('Helm', `Cannot jump: ${r.why}.`); return; }
+  const r = warpRisk(s), w = s.warp, me = s === W.player;
+  // every outcome is announced in the middle of the view with its reason (owner, 2026-11-02: "YOU NEED TO NOTIFY PLAYERS
+  // WHY A JUMP FAILED WHERE IT SAYS RISK 0 %")
+  if (r.why) { if (me) { say('Helm', `Cannot jump: ${r.why}.`); notice('Jump refused', r.why, CC.caution); } return; }
   const R = W.rand.warp;
   w.banks -= WARP.jump_e; s.reactor.coolant = Math.max(0, s.reactor.coolant - WARP.coolant_jump);
-  if (R() >= r.total) { w.out = WARP.out_s; say('Helm', `Warp field up. Jumping (risk ${pct(r.total)}).`); return; }
+  const roll = R();
+  if (roll >= r.total) { w.out = WARP.out_s; say('Helm', `Warp field up. Jumping (risk ${pct(r.total)}).`); if (me) notice('Jumping', `Risk was ${pct(r.total)}`, CC.accord); return; }
   const sev = R();
   for (const n of w.nacelles) n.hp = Math.max(0, n.hp - (0.2 + 0.4 * sev) * r.total * 1.5);
-  s.reactor.coolant = Math.max(0, s.reactor.coolant - 0.3 * sev); w.banks = 0; w.plot = 0;
+  s.reactor.coolant = Math.max(0, s.reactor.coolant - 0.3 * sev); w.banks = 0; w.plot = 0; w.plotting = false;
   damage(s, { x: s.x, z: s.z - 1, side: -1 }, Math.round(10 + 30 * r.total * sev), 'hull');
-  say('Engineering', `Warp field collapsed (risk was ${pct(r.total)}): nacelles damaged, banks drained.`);
+  // the factor that weighed most, so the captain knows what to fix
+  const worst = r.f.slice().sort((a, b) => b.risk - a.risk)[0];
+  say('Engineering', `Warp field collapsed (risk was ${pct(r.total)}, mostly ${worst.label.toLowerCase()} at ${pct(worst.risk)}): nacelles damaged, banks drained, course lost.`);
+  if (me) notice('Jump failed', `Warp field collapsed at ${pct(r.total)} risk, mostly ${worst.label.toLowerCase()} (${pct(worst.risk)}). Nacelles damaged, banks drained, course lost.`, CC.alert);
   if (r.total > 0.8 && sev > 0.6) { say('Engineering', 'Warp core breach.'); meltdown(s); }
 }
+// A notice in the middle of the view: a title and its reason, for notice_s seconds.
+const NOTICE = { notice_s: 6 };
+function notice(title, text, col) { W.notice = { title, text, col, t: W.t }; }
 // The reactor, every step: coils drift while confinement is damaged; heat comes from the output and from
 // misalignment; coolant carries it off in proportion to the core temperature; coolant offline or the core at its
 // limit counts toward a meltdown, and cooling down again counts back.
@@ -1158,7 +1171,7 @@ function pdStep() {
       if (!threat) continue;
       m.charge = 0;
       W.shots.push({ kind: 'beam', x: s.x, z: s.z, tx: threat.x, tz: threat.z, life: 0.15, color: 0xffffff, to: null });
-      if (W.rand.hit() < 0.45) { threat.spent = true; threat.life = 0; s.intercepts++; if (s === W.player) say('Tactical', 'Point defence: intercept.'); }
+      if (W.rand.hit() < 0.45) { threat.spent = true; threat.life = 0; s.intercepts++; }
     }
   }
 }
@@ -1318,12 +1331,12 @@ const A = {
   // coils down); ready, a click jumps.
   warpKey: () => { const s = W.player, w = s.warp;
     if (!w.armed) { w.armed = true; w.want = WARP.coil_e; if (!w.plotting) A.plot();
-      say('Engineering', output(s) - used(s) >= 1 ? 'Warp coils charging.' : 'Warp coils armed. Power down systems to free energy for them.'); return; }
+      say('Engineering', output(s) - used(s) >= 1 ? 'Warp drive on: charging the banks and plotting a course.' : 'Warp drive on, but no reactor energy is free: power systems down to charge it.'); return; }
     if (warpReady(s)) { jump(s); return; }
     const why = warpRisk(s).why;
     const course = s.sys.sensors <= 0 && w.plot < 1 ? 'stopped: sensors out' : pct(w.plot);
-    say('Engineering', w.banks >= WARP.jump_e ? (w.plot < 1 ? `Warp coils charged; plotting the course, ${course}.` : `Cannot jump: ${why}.`)
-      : `Warp coils ${Math.floor(w.banks)} of ${WARP.jump_e} E${s.power.warp > 0 ? `, ${s.power.warp} E in` : ': no free energy, power systems down'}; course ${course}.`); },
+    say('Engineering', w.banks >= WARP.jump_e ? (w.plot < 1 ? `Warp banks charged; still plotting the course, ${course}.` : `Cannot jump: ${why}.`)
+      : `Warp banks ${Math.floor(w.banks)} of ${WARP.jump_e} E${s.power.warp > 0 ? `, charging on ${s.power.warp} E` : ', not charging: no free energy, power systems down'}; course ${course}.`); },
   jump: () => jump(W.player),
   mine: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
   // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
@@ -1756,9 +1769,9 @@ function warpKey(x, y, w, h) {
   const s = W.player, wp = s.warp, r = warpRisk(s), f = clamp(wp.banks / WARP.jump_e, 0, 1), anomaly = r.q > WARP.qg_block;
   const ready = warpReady(s), starved = wp.armed && !ready && s.power.warp <= 0 && wp.banks < WARP.jump_e;
   const plotting = wp.armed && wp.plotting && wp.plot < 1, blocked = wp.armed && !ready && !plotting && wp.banks >= WARP.jump_e && !!r.why;
-  const st = hit('warp.key', x, y, w, h, { click: A.warpKey, tip: { title: !wp.armed ? 'Warp offline · click to charge' : ready ? 'Warp ready · click to jump' : starved ? 'Warp: power down systems' : plotting ? 'Warp: plotting the course' : blocked ? `Warp: ${r.why}` : 'Warp charging',
-    rows: [['Banks', `${Math.floor(wp.banks)}/${WARP.jump_e} E`], ['Coils', `${s.power.warp} of ${WARP.coil_e} E`], ['Course', wp.plotting ? (s.sys.sensors <= 0 && wp.plot < 1 ? 'stopped: sensors out' : pct(wp.plot)) : 'none'],
-    ['Jump risk', pct(r.total), r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord], ...(r.why && wp.armed ? [['Needs', r.why, CC.caution]] : [])] } });
+  const st = hit('warp.key', x, y, w, h, { click: A.warpKey, tip: { title: !wp.armed ? 'Warp off · click to start charging' : ready ? 'Warp ready · click to jump' : starved ? 'Warp: no free reactor power · lower another system' : plotting ? 'Warp: plotting the course' : blocked ? `Warp: ${r.why}` : 'Warp charging',
+    rows: [['Stored for the jump', `${Math.floor(wp.banks)}/${WARP.jump_e} E`], ['Reactor power in', `${s.power.warp} of ${WARP.coil_e} E`], ['Course', wp.plotting ? (s.sys.sensors <= 0 && wp.plot < 1 ? 'stopped: sensors out' : pct(wp.plot)) : 'none'],
+    r.why ? ['Jump', 'blocked', CC.caution] : ['Jump risk', pct(r.total), r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord], ...(r.why ? [['Needs', r.why, CC.caution]] : [])] } });
   const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 1000 * 2 * P * 0.9);
   // glow: a steady one while charging on a plotted course, a pulse when ready; none while plotting or in a Q-G field
   const glow = wp.armed && !starved && !plotting && !blocked && !anomaly;
@@ -1773,7 +1786,7 @@ function warpKey(x, y, w, h) {
   if (plotting) { g.fillStyle = CC.lilac; g.fillRect(x, y + h - 4, w * wp.plot, 4); }
   g.restore();
   if (st.hot) { g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.roundRect(x - 1, y - 1, w + 2, h + 2, h / 2 + 1); g.stroke(); }
-  const lab = wp.out > 0 ? 'JUMPING' : starved ? 'POWER DOWN' : blocked ? (anomaly ? 'Q-G FIELD' : 'BLOCKED') : plotting && f >= 1 ? `PLOT ${Math.floor(wp.plot * 100)}%` : 'WARP';
+  const lab = wp.out > 0 ? 'JUMPING' : starved ? 'NEED POWER' : blocked ? (anomaly ? 'Q-G FIELD' : 'BLOCKED') : plotting && f >= 1 ? `PLOT ${Math.floor(wp.plot * 100)}%` : 'WARP';
   const col = !wp.armed ? '#3a4a80' : starved || blocked ? CC.caution : ready || f > 0.55 ? '#000' : CC.sky;
   text(lab, x + w / 2, y + h * 0.68, `700 ${starved || blocked ? 14 : 17}px Antonio`, col, 'center', w - 10, '1px');
 }
@@ -2010,12 +2023,12 @@ function stWarp(c, big) {
     NUM(pct(f.risk), rx + rw, y + rh - 4, 0, rc, 'right', big ? 16 : 13);
   });
   const ry = c.y + 10 + 6 * rh, tc = r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord;
-  LBL('Jump risk', rx, ry + 18, 0, CC.sky, 'left', big ? 18 : 15); NUM(pct(r.total), rx + rw, ry + 20, 0, tc, 'right', big ? 26 : 20);
+  LBL('Jump risk', rx, ry + 18, 0, CC.sky, 'left', big ? 18 : 15); NUM(r.why ? 'Blocked' : pct(r.total), rx + rw, ry + 20, 0, r.why ? CC.caution : tc, 'right', big ? 26 : 20);
   // plot, override, jump
   let y = c.y + dh + 46; const kw = (c.w - 12) / 3, kh = big ? 44 : 34;
   button('wp.plot', c.x, y, kw, kh, w.plotting ? `Plot ${pct(w.plot)}` : 'Plot course', A.plot, { center: true, sel: () => w.plotting && w.plot >= 1 });
   button('wp.ovr', c.x + kw + 6, y, kw, kh, 'Override', A.override, { center: true, sel: () => w.override });
-  button('wp.jump', c.x + 2 * (kw + 6), y, kw, kh, w.out > 0 ? 'Jumping' : 'Jump', A.jump, { center: true, dis: () => !!r.why });
+  button('wp.jump', c.x + 2 * (kw + 6), y, kw, kh, w.out > 0 ? 'Jumping' : 'Jump', A.jump, { center: true, sel: () => !r.why });
   y += kh + 6;
   LBL(r.why || (`Q-G field ${pct(r.q)} · coolant ${pct(s.reactor.coolant)}`), c.x, y + 14, c.w, r.why ? CC.caution : CC.lilac, 'left', 13);
   powerRow('wp.pw', c.x, c.y + c.h - 28, c.w, 26, 'warp', big ? 120 : 82);
@@ -2187,7 +2200,7 @@ function stComms(b, big) {
   [['All attack', 'attack'], ['Form on me', 'escort'], ['All hold', 'hold'], ['Hunt', 'hunt']].forEach(([l, st], i) => button(`com.${st}`, b.x + (i % 2) * (hw + 6), y + Math.floor(i / 2) * 36, hw, 30, l, () => A.fleetOrder(st), { center: true }));
   y += 76; LBL('Log', b.x, y + 13); y += 22;
   const n = big ? 22 : 6;
-  for (const m of W.log.slice(-n).reverse()) { rich(b.x, y + 16, [[`${mmss(m.t)} ${m.who}: `, CC.lilac], [m.text, CC.text]], '600 17px Antonio', b.w); y += 24; }
+  for (const m of W.log.slice(-n).reverse()) { rich(b.x, y + 16, [[`${mmss(m.t)} ${m.who}: `, m.warn ? CC.caution : CC.lilac], [m.text, m.warn ? CC.caution : CC.text]], '600 17px Antonio', b.w); y += 24; }
 }
 function stRepair(b) {
   const s = W.player; let y = b.y;
@@ -3142,7 +3155,7 @@ function pick(e) {
   for (const s of W.ships) { if (!s.alive) continue; const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z > 1) continue; const px = r.left + (v.x + 1) / 2 * r.width, py = r.top + (1 - v.y) / 2 * r.height, d = Math.hypot(px - e.clientX, py - e.clientY); if (d < bd) { bd = d; best = s; } }
   return best;
 }
-let sceneOpen = false;
+let sceneOpen = false, logOpen = false;
 // The camera lock (owner, 2026-11-02: "lock target camera is not working, camera needs to yaw to face the enemy target,
 // this is how it works in my reference repos"; after Fargo's CameraSystem.update): while locked, the chase camera
 // yaws round the ship each frame toward the bearing from the ship to the target, so the target is ahead, beyond the
@@ -3314,6 +3327,14 @@ function uiView() {
     g.font = '700 17px Antonio'; g.fillText(SCENES[sceneId].name.toUpperCase(), sx + 62, vy + 33);
     g.beginPath(); const ax = sx + sw - 20, ay = vy + 27; if (sceneOpen) { g.moveTo(ax - 6, ay + 3); g.lineTo(ax + 6, ay + 3); g.lineTo(ax, ay - 4); } else { g.moveTo(ax - 6, ay - 3); g.lineTo(ax + 6, ay - 3); g.lineTo(ax, ay + 4); } g.closePath(); g.fill();
     const ob = SCENES[sceneId].objective; if (ob && !sceneOpen) rich(vx + 14, vy + 64, [[W.objDone ? 'COMPLETE · ' : 'OBJECTIVE · ', W.objDone ? CC.accord : CC.lilac], [ob.toUpperCase(), W.objDone ? CC.accord : CC.text]], '600 16px Antonio', vw * 0.62); }
+  // the log key: the whole battle log over the view
+  button('v.log', vx + 474, vy + 12, 70, 30, 'Log', () => { logOpen = !logOpen; sceneOpen = false; }, { sel: () => logOpen, center: true });
+  if (W.notice && W.t - W.notice.t < NOTICE.notice_s) { const n = W.notice, nw = Math.min(620, vw - 60), nx = vx + (vw - nw) / 2, ny = vy + 120;
+    g.font = '600 20px Antonio'; const words = n.text.toUpperCase().split(' '), lines = []; let cur = '';
+    for (const wd of words) { const tr = cur ? cur + ' ' + wd : wd; if (g.measureText(tr).width > nw - 40 && cur) { lines.push(cur); cur = wd; } else cur = tr; } if (cur) lines.push(cur);
+    const nh = 60 + lines.length * 26; g.fillStyle = 'rgba(0,0,0,0.88)'; g.beginPath(); g.roundRect(nx, ny, nw, nh, 12); g.fill(); g.strokeStyle = n.col; g.lineWidth = 3; g.stroke();
+    text(n.title.toUpperCase(), nx + nw / 2, ny + 38, '700 30px Antonio', n.col, 'center', nw - 40, '2px');
+    lines.forEach((l, i) => text(l, nx + nw / 2, ny + 68 + i * 26, '600 20px Antonio', CC.text, 'center', nw - 40, '0.5px')); }
   if (paused) LBL('Paused · orders still taken', vx + vw / 2, vy + 40, 0, CC.caution, 'center', 28);
   // The readout and the last officer's message, bottom left.
   const ry = vy + vh - 16;
@@ -3323,7 +3344,9 @@ function uiView() {
     rich(vx + 18, ry, [['in arc ', CC.lilac], [String(arcN.length), CC.sky], [' · charged ', CC.lilac], [String(rd), CC.sky]], '600 22px Antonio', vw * 0.6);
   } else rich(vx + 18, ry, [['No target', CC.sky], [' · right click a ship to lock', CC.lilac]], '600 22px Antonio', vw * 0.6);
   const m = W.log[W.log.length - 1];
-  if (m && W.t - m.t < 5) rich(vx + 18, ry - 64, [[`${m.who}: ${m.text}`, CC.lilac]], '600 22px Antonio', vw * 0.7);
+  if (m && W.t - m.t < (m.warn ? 8 : 5)) rich(vx + 18, ry - 64, [[`${m.who}: ${m.text}`, m.warn ? CC.caution : CC.lilac]], '600 22px Antonio', vw * 0.7);
+  // a refusal stays up for 8 s even when routine messages follow it
+  const lw2 = W.log.slice().reverse().find((q) => q.warn && W.t - q.t < 8); if (lw2 && lw2 !== m) rich(vx + 18, ry - 94, [[`${lw2.who}: ${lw2.text}`, CC.caution]], '600 22px Antonio', vw * 0.7);
   // The Target box: the locked target's systems display, drawn by the same drawSSD as the ship panel (CLAUDE.md 6.1).
   if (showTargetCam && t) {
     const ir = insetRect(), bx = vx + ir[0], by = vy + ir[1];
@@ -3347,8 +3370,18 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v54', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v55', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
+  if (logOpen) {
+    // the battle log, newest first, refusals in Caution; a click anywhere else closes it
+    hit('v.log.off', vx, vy, vw, vh, { click: () => { logOpen = false; } });
+    const lx = vx + 14, ly = vy + 50, lw = Math.min(1040, vw - 28), rows = Math.max(4, Math.floor((vh - 180) / 26)), list = W.log.slice(-rows).reverse(), lh = 44 + Math.max(1, list.length) * 26;
+    hit('v.log.box', lx, ly, lw, lh, {});
+    g.fillStyle = 'rgba(0,0,0,0.9)'; g.beginPath(); g.roundRect(lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
+    LBL(`Battle log · ${W.log.length} messages`, lx + 16, ly + 26, lw - 32, CC.sky, 'left', 16);
+    if (!list.length) LBL('Nothing yet', lx + 16, ly + 56, lw - 32);
+    list.forEach((q, i) => rich(lx + 16, ly + 56 + i * 26, [[`${mmss(q.t)}  ${q.who}: `, q.warn ? CC.caution : CC.lilac], [q.text, q.warn ? CC.caution : CC.text]], '600 18px Antonio', lw - 32));
+  }
   if (sceneOpen) {
     // a click anywhere else closes the list
     hit('v.scene.off', vx, vy, vw, vh, { click: () => { sceneOpen = false; } });

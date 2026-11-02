@@ -313,7 +313,7 @@ past it it falls steeply toward the reach; overload stays a short-range double-d
 1.2 km (2/30 of the reach); proximity would be a third mode, half damage, usable only past the effective band, with a
 flatter long-range chance. Survey B26 asks whether to build it.
 
-## 4s. The warp key on the speed slider (versions 50 to 54)
+## 4s. The warp key on the speed slider (versions 50 to 55)
 
 Owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed slider". A Warp key now ends the speed
 slider in the bottom strip. It fills in the Concord blue as the banks charge toward the 40 E a jump needs, lights green
@@ -352,6 +352,18 @@ in a gravitational anomaly however", "slim it down height wise", "this box can b
   - Banks full but refused (a Q-G field without the override): "Q-G field" in Caution, no glow; with the override on it
     turns green without glowing.
   - Checked in Battle: armed, turned 120 degrees while it plotted, jumped at 0 % risk 20 s later.
+- **Every jump outcome says why, and a battle log** (version 55; owner: "is there game log of some kind? I CLICKED JUMP
+  AND NOTHING HAPPENED", "YOU NEED TO NOTIFY PLAYERS WHY A JUMP FAILED WHERE IT SAYS RISK 0 %", "WHAT IS COILS?").
+  - A banner in the middle of the view for 6 s: **Jump refused** (Caution) with the reason, **Jump failed** (red) with
+    the risk and the factor that weighed most ("mostly navigation, 60 %") and what it cost, or **Jumping** (green).
+  - Reasons in plain words: "not enough energy stored: 12 of 40 E", "gravity field too strong: turn on the safety
+    override (Power, Warp)". Where a jump is refused the risk readouts say "Blocked", never a percentage.
+  - The Warp page's Jump key is never greyed out, so a click always answers.
+  - **The log**: a Log key beside the scene picker opens the battle log over the view, newest first; refusals and
+    failures are in Caution, there and in Comms, and the latest stays up in the view for 8 s. Point-defence intercepts
+    are no longer logged one by one (the Point defence station counts them).
+  - **No "coils" on the warp key**: its card reads "Stored for the jump" and "Reactor power in"; with no free energy the
+    key reads "Need power". (The reactor's confinement coils, on the Reactor page, are a different thing.)
 
 ## 4r. Weapon ids, raids on one weapon, the held deck, 10 s volleys (version 49)
 
