@@ -288,6 +288,31 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
+
+Owner, 2026-11-02: "check the starfleet command manual for torpedo hit/miss ranges". Read from the manuals, in our words:
+
+- **Starfleet Command 2 manual, printed pages 24-25** (heavy weapons): the photon torpedo is a direct-fire weapon that
+  hits or misses at once when fired. Its reach is 30 range units (one unit is 10,000 km, printed page 15), it is "most
+  effective" at 8 or less, and its damage does not fall with range: a hit at 30 does what a hit at 2 does.
+- **Printed pages 185-186** (weapons reference): the damage is fixed and the chance to hit falls with range, sharply past
+  8. Normal: reach 30, 8 damage, 2 E a turn for two turns to arm and 1 E a turn to hold; fired inside 2 it feeds back
+  minor damage onto the firer's facing shield. Overload: reach cut to 8, 4 E a turn for two turns, 2 E to hold, 16
+  damage, feedback when fired at 0 or 1. Proximity: the warhead bursts near the target, 4 damage, better odds at long
+  range, and cannot be used at 8 or closer. Normal and proximity switch freely before firing; switching to overload keeps
+  the energy already in the tube. Photons are very vulnerable to the target's ECM (an ECCM edge restores them).
+- **Starfleet Command 3 manual**: no numbers; the weapons chapter says only that Federation torpedoes are far less
+  accurate from long range and can be set to proximity.
+- **Neither manual prints a hit-chance table**, so the exact percentages by range are not in them. Range brackets are
+  whole units (0 is 0.00-0.99, printed page 15).
+
+**What the mockup does today**: every weapon's chance falls in a straight line from 92 % at 0 to 42 % at its reach, and
+the pulse torpedo's damage is fixed (reach 18 km; overload 7 km, 26 damage). **The reference's shape, mapped onto our
+reach**: the effective band is 8/30 of the reach, so about 4.8 km for an 18 km torpedo; inside it the chance stays high,
+past it it falls steeply toward the reach; overload stays a short-range double-damage shot with feedback inside about
+1.2 km (2/30 of the reach); proximity would be a third mode, half damage, usable only past the effective band, with a
+flatter long-range chance. Survey B26 asks whether to build it.
+
 ## 4s. The warp key on the speed slider (versions 50 and 51)
 
 Owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed slider". A Warp key now ends the speed
@@ -675,3 +700,4 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B23 | Pads recharge 8 s at 1 E alone, the energy shared among the pads charging? | **As built** (provisional, survey B23) |
 | B24 | Pads per class: frigate 2, destroyer 3, cruiser 4, troop ship 6, starbase 8? | **As built** (provisional, survey B24) |
 | B25 | A queued crew member leaves the roster until beamed or removed? | **As built** (provisional, survey B25) |
+| B26 | Torpedo chance to hit by range after the reference (high to 8/30 of the reach, then a steep fall; proximity mode)? | Open (survey B26); not built |
