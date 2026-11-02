@@ -25,7 +25,7 @@ account and every link here is updated.
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
-| 5 | Concord ships and damage | Drafted (2026-11-02, v2) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
+| 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -237,6 +237,9 @@ with charred edges. It is the first part of mockup 3 (look dev), for one faction
   "can walls also be scorched with this reddish orange flame? while the orange flames on the edges be more pronounced?";
   "im also not seeing any interior paralax in the holes"; "shots from the ship should have lighting, shots hitting the ship
   should also have lighting (explosions + whatever weapon was fired)".
+  Then: "Paralax should be on by default for damage scars"; "Some missing geometry on this corner. There should be a big
+  explosion when a chunk falls off". Version 3: parallax by default, cut faces that reach the corners, a big blast for
+  every chunk.
   Version 2 breaks the saucer and engineering hull into random cells and closes every break with a scorched cut face
   that shows decks, bulkheads and interior-mapped rooms square to the break, burn rims on the dividers, flame-scorched room
   walls, wires that stretch, arc and snap, a 3.6 s breach in which pieces come off before the main blast, chunks knocked off

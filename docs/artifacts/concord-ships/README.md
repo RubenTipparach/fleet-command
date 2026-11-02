@@ -14,3 +14,4 @@
 - Stage: drafted. Approvals are given in the mockup tracker.
 - Published: 2026-11-02, version 1, from the cloud session (no desktop session was running; publishing is permanently approved), icon `ship`, from the page file as it is (no data to inline); version id `1793584804-1479`.
 - 2026-11-02, version 2, cloud session: random break-up chunks with scorched, interior-mapped cut faces (rooms square to the break, burn rims on the dividers, flame-scorched walls), wires that arc and snap, a staged core breach, chunks knocked off by heavy hits, a tougher reactor, phasers that burn through, light from every shot and blast and a Ship fires button; version id `1793592706-6c26`.
+- 2026-11-02, version 3, cloud session: parallax holes by default, cut faces that reach the corners, a big blast for every chunk that comes off; version id `1793606132-93b5`.

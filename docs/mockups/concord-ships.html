@@ -729,7 +729,7 @@ function fracture(ship, b, rng) {
   });
   // Neighbouring cells, found by sampling the body; each pair gets a cut face on its shared plane, one for each side.
   const pairs = new Map(), p = V3();
-  for (let k = 0; k < 24000; k++) {
+  for (let k = 0; k < 90000; k++) {
     p.set(lo.x + rng() * size.x, lo.y + rng() * size.y, lo.z + rng() * size.z); if (!insideBody(b, p)) continue;
     let a = -1, da = 1e9, c = -1, dc = 1e9;
     seeds.forEach((sd, i) => { const d = p.distanceTo(sd); if (d < da) { c = a; dc = da; a = i; da = d; } else if (d < dc) { c = i; dc = d; } });
@@ -803,7 +803,7 @@ function cutFace(ship, b, a, c, pts) {
   const u = Math.abs(n.y) < 0.9 ? V3(0, 1, 0).cross(n).normalize() : V3(1, 0, 0).cross(n).normalize(), v = n.clone().cross(u);
   let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9;
   for (const q of pts) { const d = q.clone().sub(mid), x = d.dot(u), y = d.dot(v); u0 = Math.min(u0, x); u1 = Math.max(u1, x); v0 = Math.min(v0, y); v1 = Math.max(v1, y); }
-  u0 -= 3; u1 += 3; v0 -= 3; v1 += 3;
+  u0 -= 7; u1 += 7; v0 -= 7; v1 += 7; // generous: the shader clips it to the body and the border, a short face leaves a gap
   const g = new THREE.PlaneGeometry(u1 - u0, v1 - v0); g.translate((u0 + u1) / 2, (v0 + v1) / 2, 0); g.applyMatrix4(new THREE.Matrix4().makeBasis(u, v, n).setPosition(mid));
   // The room frame: z straight back into this piece, x across the face, y up.
   const nh = V3(n.x, 0, n.z); const depth = nh.length() > 0.3 ? nh.normalize().negate() : V3(1, 0, 0), across = V3(0, 1, 0).cross(depth).normalize();
@@ -1396,8 +1396,10 @@ function blowOff(ship, P, speed = 1) {
   const s = ship.C.length / 312, core = ship.corePos.clone(), out = P.center.clone().sub(core); out.y *= 1.4; out.normalize();
   detach(ship, P, out.clone().multiplyScalar((4 + 5 * fxRng()) * s * speed).add(V3(rr(fxRng, -1, 1), rr(fxRng, -1, 1), rr(fxRng, -1, 1)).multiplyScalar(s)),
     V3(rr(fxRng, -0.25, 0.25), rr(fxRng, -0.25, 0.25), rr(fxRng, -0.25, 0.25)));
+  // A big blast (owner: "There should be a big explosion when a chunk falls off"): fireball, flash, a small shockwave, debris, smoke.
   const w = P.center.clone().applyMatrix4(ship.root.matrixWorld);
-  emit('fireball', w, out, 70, 0.55 * s); emit('sparks', w, out, 110, 1); flash(w, 55 * s, 0.4);
+  emit('fireball', w, out, 280, 1.0 * s); emit('fireball', w, V3(0, 1, 0), 120, 0.7 * s); emit('sparks', w, out, 220, 1.2); emit('smoke', w, out, 60, 1.2 * s);
+  flash(w, 150 * s, 0.7); shockwave(ship, w, 110 * s); debrisAdd(w, 90, ship.C.length, 0.08);
   addEmitter(ship, P, P.center, out, [{ type: 'fire', rate: 40, dur: 2.5, scale: 0.5 * s, light: true }, { type: 'smoke', rate: 8, dur: 6, scale: 0.6 * s }, { type: 'embers', rate: 3, dur: 1e9 }], 'debris');
 }
 // A heavy hit on a badly damaged saucer knocks off the outer piece it lands on.
@@ -1533,6 +1535,15 @@ const shardGeo = new THREE.TetrahedronGeometry(1, 0);
 const shards = new THREE.InstancedMesh(shardGeo, new THREE.MeshStandardMaterial({ color: 0x7d7a74, metalness: 0.6, roughness: 0.6, emissive: 0x200800 }), 400);
 shards.count = 0; shards.frustumCulled = false; scene.add(shards);
 const shardData = [];
+let shardNext = 0;
+function debrisAdd(pos, n, L, spread = 0.15) {
+  for (let i = 0; i < n; i++) {
+    const d = { p: pos.clone().add(V3(rr(fxRng, -1, 1), rr(fxRng, -1, 1), rr(fxRng, -1, 1)).multiplyScalar(L * spread * 0.4)), v: V3(rr(fxRng, -1, 1), rr(fxRng, -0.6, 0.6), rr(fxRng, -1, 1)).normalize().multiplyScalar(rr(fxRng, 6, 40) * L / 312),
+      q: new THREE.Quaternion(), w: V3(rr(fxRng, -3, 3), rr(fxRng, -3, 3), rr(fxRng, -3, 3)), s: rr(fxRng, 0.3, 1.4) * L / 312 };
+    if (shardData.length < 400) shardData.push(d); else shardData[shardNext++ % 400] = d;
+  }
+  shards.count = shardData.length;
+}
 function debrisBurst(pos, L) {
   shardData.length = 0;
   for (let i = 0; i < 400; i++) shardData.push({ p: pos.clone().add(V3(rr(fxRng, -1, 1), rr(fxRng, -1, 1), rr(fxRng, -1, 1)).multiplyScalar(L * 0.15)), v: V3(rr(fxRng, -1, 1), rr(fxRng, -0.6, 0.6), rr(fxRng, -1, 1)).normalize().multiplyScalar(rr(fxRng, 8, 60) * L / 312),
@@ -1674,7 +1685,7 @@ function stepBeams() {
 
 // ---------------------------------------------------------------------------------------------------------------
 // The page: ships, light presets, views, scenarios, the systems list, and shots.
-let showNav = true, showYard = false, holeMode = 'modelled', weapon = 'phaser', shieldsUp = false, paused = false, slow = false, mode = 'bastion';
+let showNav = true, showYard = false, holeMode = 'parallax', weapon = 'phaser', shieldsUp = false, paused = false, slow = false, mode = 'bastion';
 const yard = new THREE.Group(); scene.add(yard);
 function clearAll() {
   for (const s of ships) { scene.remove(s.root); s.root.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); }); }
@@ -1770,8 +1781,8 @@ btn('weaponRow', 'Torpedo (holes)', () => { weapon = 'torpedo'; refreshButtons()
 btn('weaponRow', 'Ship fires', () => returnFire(active));
 btn('weaponRow', 'Shields up', () => { shieldsUp = !shieldsUp; for (const s of ships) s.shield.visible = shieldsUp && s.sys.shields.health > 0; refreshButtons(); }, { key: 'shields' });
 btn('weaponRow', 'Judge by eye', () => { document.body.classList.toggle('byeye'); refreshButtons(); }, { key: 'eye' });
-btn('holeRow', 'Modelled', () => setHoles('modelled'), { key: 'h:modelled' });
 btn('holeRow', 'Parallax', () => setHoles('parallax'), { key: 'h:parallax' });
+btn('holeRow', 'Modelled', () => setHoles('modelled'), { key: 'h:modelled' });
 for (const [k, s] of Object.entries(SCEN)) btn('scenRow', s.label, () => { s.go(active); }, { warn: s.warn });
 btn('scenRow', 'Repair all', () => repairAll());
 btn('timeRow', 'Pause', () => { paused = !paused; refreshButtons(); }, { key: 'pause' });
@@ -1852,7 +1863,7 @@ tip.textContent = 'Click the hull to fire. The Damage tab has every system.';
 // Named shots (tools/mockups/shoot.mjs): each puts the ship, the light, the damage and the time in a known state.
 function shot(m, light, v, setup, seconds, opts = {}) {
   return () => {
-    paused = false; holeMode = opts.holes || 'modelled'; shieldsUp = false; showYard = !!opts.yard; slow = false;
+    paused = false; holeMode = opts.holes || 'parallax'; shieldsUp = false; showYard = !!opts.yard; slow = false;
     document.body.classList.remove('byeye'); applyLight(light); setMode(m); setView(v);
     if (setup) setup(active);
     const n = Math.round(seconds / DT); for (let i = 0; i < n; i++) stepAll(DT);
@@ -1873,7 +1884,7 @@ window.MOCKUP_SHOTS = {
   nacelle_venting: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 75), 2.5, { tab: 'damage', cam: (s) => frame(230, V3(1, 0.5, 0.2), V3(38, 2, -80)) }),
   bridge_fire: shot('bastion', 'shadow', 'hero', (s) => { hurt(s, 'bridge', 80); hurt(s, 'life', 40); }, 2.5, { tab: 'damage', cam: () => frame(170, V3(0.7, 0.55, 1), V3(0, 25, 86)) }),
   scorch: shot('bastion', 'sunlit', 'hero', (s) => phasers(s, 14), 1.0, { tab: 'damage', cam: () => frame(190, V3(0.25, 1, 0.6), V3(0, 20, 86)) }),
-  holes_modelled: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', cam: (s) => { const h = s.holes[0]; frame(26, h.normal.clone().add(V3(0.3, 0.1, 0.5)), h.point.clone()); } }),
+  holes_modelled: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', holes: 'modelled', cam: (s) => { const h = s.holes[0]; frame(26, h.normal.clone().add(V3(0.3, 0.1, 0.5)), h.point.clone()); } }),
   holes_parallax: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', holes: 'parallax', cam: (s) => { const h = s.holes[0]; frame(26, h.normal.clone().add(V3(0.3, 0.1, 0.5)), h.point.clone()); } }),
   holes_wide: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 1.6, { tab: 'damage', cam: () => frame(300, V3(0.6, 0.8, 0.8), V3(0, 10, 50)) }),
   nacelle_lost: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 100), 2.2, { tab: 'damage', cam: () => frame(440, V3(1, 0.65, -0.25), V3(30, 0, -50)) }),
@@ -1882,6 +1893,7 @@ window.MOCKUP_SHOTS = {
   breakup: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 999), 4.4, { tab: 'damage', cam: () => frame(620, V3(0.9, 0.6, 1)) }),
   breakup_late: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 999), 13, { tab: 'damage', cam: () => frame(700, V3(0.9, 0.7, 1)) }),
   breakup_close: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 999), 8, { tab: 'damage', cam: (s) => { const P = s.frags[2]; P.pivot.updateMatrixWorld(true); frame(95, V3(0.5, 0.45, 1), P.pivot.getWorldPosition(V3())); } }),
+  chunk_blast: shot('bastion', 'sunlit', 'hero', (s) => { s.hull = 50; torpedoes(s); }, 0.45, { tab: 'damage', cam: () => frame(330, V3(0.7, 0.75, 0.9), V3(0, 10, 60)) }),
   chunk_off: shot('bastion', 'sunlit', 'hero', (s) => { s.hull = 50; torpedoes(s); }, 3, { tab: 'damage', cam: () => frame(330, V3(0.7, 0.75, 0.9), V3(0, 10, 60)) }),
   ship_fires: shot('bastion', 'shadow', 'hero', (s) => { weapon = 'torpedo'; returnFire(s); weapon = 'phaser'; returnFire(s); }, 0.15, { tab: 'damage', cam: () => frame(300, V3(0.8, 0.55, 1)) }),
   notes: shot('bastion', 'shadow', 'side', null, 0.2, { tab: 'notes' }),

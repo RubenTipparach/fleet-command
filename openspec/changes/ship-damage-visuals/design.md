@@ -34,7 +34,8 @@ ember line along it that cools over about 30 s.
 
 ### Holes: modelled or parallax
 
-The page shows both, on the same hits (the Holes toggle), for survey A3:
+Parallax is the default for damage scars (owner, 2026-11-02: "Paralax should be on by default for damage scars"); the page
+still shows the modelled version on the same hits (the Holes toggle), for survey A3:
 
 | | Modelled | Parallax |
 |---|---|---|
@@ -84,6 +85,8 @@ actual interiors", pointing at interior mapping in Spider-Man PS4 (polycount.com
   there are blackened, and an ember line runs along every broken edge and cools over about 30 s. The skin is charred
   over the last 11 m before the break.
 
+- **A big blast for every chunk** (owner: "There should be a big explosion when a chunk falls off"): a fireball, a flash
+  that lights the hull, a small shockwave ring, debris shards, sparks and smoke.
 - **Pieces fall off first** (owner: "I also expect pieces to fall off the ship before the main piece"). A core breach
   is a 3.6 s sequence: secondary blasts, then the outer saucer pieces (outermost first), the crown, the nacelles and the
   fin come off one by one, then the main blast throws the rest apart. Before any breach, a torpedo hit on a saucer whose
