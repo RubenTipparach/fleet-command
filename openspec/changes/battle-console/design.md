@@ -288,6 +288,26 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4m. Objectives, unarmed test ships, decisive tools (version 41)
+
+Owner, 2026-11-02: "show proper scene selection here, and show the objective of current scene. In mine scene, no weapons
+on my player ship please, enemies should be destroyed by one mine, same with other missions in this demo. transport
+missions will also not have weapons on ship etc...", and "current scene always says scene battle right now".
+
+- **The scene selector is a drop-down**: SCENE, the scene in play, an arrow; its list opens under it. The scene picked is
+  remembered in this browser, so a reload keeps it (the likely cause of "always says battle": a reload restarted the page
+  in Battle).
+- **Each scene has an objective**, shown under the selector, turning green and marked COMPLETE when met (and announced in
+  the log): Battle, destroy the Kethran and Vos ships; Mines, destroy both frigates with mines; Tractor, drag the Vorrak
+  into the rocks; Boarding, take the Rattlejaw; Warp, jump before the frigates catch you; Delivery, 10 crates to
+  Tessaly; VIP, see Varn Outpost taken; Shuttle, destroy Varn Outpost with a shuttle; Fighters, strip the Ironhold's
+  point defence, then destroy it with a barrage.
+- **In every test scene the Resolute carries no weapons**; the scene's tool does the work.
+- **The tool is decisive**: one mine destroys a frigate; a ship dragged into a rock breaks up; one disguised shuttle
+  destroys the outpost; each barrage missile that lands takes a third of the target's hull, so a barrage past the point
+  defence finishes it. The VIP scene's outpost has lost its shields and holds fire; the shuttle scene's outpost holds fire.
+- Measured: every scene played through to its objective with an unarmed Resolute.
+
 ## 4l. The mine placement preview (version 40)
 
 Owner, 2026-11-02: "when placing mines, need to draw radius of mine when mouse hovers over the battle field, mine
