@@ -182,6 +182,7 @@ function ccIcon(name, col = CC.sky) {
       cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) C(cx, cy, 7); },
       craft: () => { C(30, 18, 9); C(14, 34, 4.5); C(24, 40, 3); D(30, 18, 3); },
       weapons: () => { C(18, 24, 10); D(18, 24, 3); x.beginPath(); x.moveTo(28, 24); x.lineTo(40, 24); x.stroke(); D(42, 24, 3.5); },
+      warp: () => { C(33, 24, 8); D(33, 24, 2.5); x.beginPath(); x.moveTo(5, 15); x.lineTo(21, 15); x.moveTo(2, 24); x.lineTo(21, 24); x.moveTo(5, 33); x.lineTo(21, 33); x.stroke(); },
       engines: () => { x.beginPath(); x.roundRect(9, 10, 8, 26, 4); x.stroke(); x.beginPath(); x.roundRect(31, 10, 8, 26, 4); x.stroke(); A(13, 40, 5, 0.2, P - 0.2); A(35, 40, 5, 0.2, P - 0.2); },
       reactor: () => { C(24, 24, 17); C(24, 24, 8); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; D(24 + Math.cos(a) * 12.5, 24 + Math.sin(a) * 12.5, 2.8); } },
       pause: () => { x.beginPath(); x.roundRect(13, 10, 8, 28, 4); x.fill(); x.beginPath(); x.roundRect(27, 10, 8, 28, 4); x.fill(); },
@@ -1492,7 +1493,7 @@ addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen 
 // =================================================================================================================
 const KIT = { nine: { ...CON.kit, ...CON.cells }, src: {}, hero: {}, icon: {}, iconOn: {} };
 const HERO = { 'nameplate': [460, 56], 'helm.pad': [300, 300], 'dial': [120, 120], 'lamp.alert.green': [64, 64], 'lamp.alert.yellow': [64, 64], 'lamp.alert.red': [64, 64], 'crest': [96, 96] };
-const ICONS = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'map', 'pause', 'menu', 'fire', 'engines', 'reactor'];
+const ICONS = ['warp', 'helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'map', 'pause', 'menu', 'fire', 'engines', 'reactor'];
 function buildKit() {
   for (const [piece, p] of Object.entries(KIT.nine)) KIT.src[piece] = paint(p.size[0], p.size[1], p.draw);
   for (const [id, [w, h]] of Object.entries(HERO)) KIT.hero[id] = paint(w, h, CON.hero[id]);
@@ -1963,7 +1964,7 @@ function stHelm(b, big) {
   if (t) pairs('helm.t', b.x, y, [['Target', t.name], ['Range', km(distKm(s, t))], ['Speed', `${Math.round(t.v)} M/S`]], b.w); else LBL('No target', b.x, y);
   pairs('helm.m', b.x, y + 34, [['Max speed', `${Math.round(maxSpeed(s))} M/S`], ['Engine boxes', String(s.power.engines)]], b.w);
 }
-const iconOf = (k) => ({ engines: 'helm', weapons: 'weapons', shields: 'shields', sensors: 'sensors', tractor: 'tractor', transport: 'transport', repair: 'repair' })[k];
+const iconOf = (k) => ({ warp: 'warp', engines: 'engines', weapons: 'weapons', shields: 'shields', sensors: 'sensors', tractor: 'tractor', transport: 'transport', repair: 'repair' })[k];
 // The power station has two modes: Allocation (the reference game's energy page) and Reactor (our own).
 // The warp page (Power, Warp): the two nacelles with their draw and damage, the banks with the jump threshold, the
 // course plot, the six risk factors and the total, the safety override and the jump; the warp energy boxes at the foot.
@@ -2010,10 +2011,11 @@ function stPower(b, big) {
   if (powerMode === 'warp') { stWarp(c, big); return; }
   const s = W.player, spare = output(s) - used(s);
   pairs('pw.h', c.x, c.y + 22, [['Out', output(s).toFixed(1)], ['Used', String(used(s))], ['Spare', spare.toFixed(1), spare >= 0 ? CC.accord : CC.alert]]);
-  let y = c.y + 32; const rowH = big ? 40 : 24, gap = big ? 10 : 5, lw = big ? 160 : 82, nw = big ? 50 : 26;
+  let y = c.y + 32; const rowH = big ? 40 : 24, gap = big ? 10 : 5, lw = big ? 160 : 112, nw = big ? 50 : 26, io = big ? 36 : 26, is = big ? 26 : 20;
   for (const k of SYSTEMS.concat(['warp'])) {
-    if (big && iconOf(k)) g.drawImage(KIT.icon[iconOf(k)], c.x, y + (rowH - 26) / 2, 26, 26);
-    powerRow('pw', c.x + (big ? 36 : 0), y, c.w - (big ? 36 : 0), rowH, k, lw - (big ? 36 : 0));
+    // each system's icon beside its name (owner, 2026-11-02: "can you show system icons next to the name?")
+    g.drawImage(KIT.icon[iconOf(k)], c.x, y + (rowH - is) / 2, is, is);
+    powerRow('pw', c.x + io, y, c.w - io, rowH, k, lw - io);
     y += rowH + gap;
   }
   pairs('pw.c', c.x, y + 16, [['Coolant pumps', `${coolantDraw(s)} E`]], 0, 18); LBL('set in Reactor', c.x + c.w, y + 16, 0, CC.lilac, 'right', 13);
@@ -3329,7 +3331,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v52', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v53', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

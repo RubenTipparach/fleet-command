@@ -313,7 +313,7 @@ past it it falls steeply toward the reach; overload stays a short-range double-d
 1.2 km (2/30 of the reach); proximity would be a third mode, half damage, usable only past the effective band, with a
 flatter long-range chance. Survey B26 asks whether to build it.
 
-## 4s. The warp key on the speed slider (versions 50 to 52)
+## 4s. The warp key on the speed slider (versions 50 to 53)
 
 Owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed slider". A Warp key now ends the speed
 slider in the bottom strip. It fills in the Concord blue as the banks charge toward the 40 E a jump needs, lights green
@@ -336,6 +336,9 @@ in a gravitational anomaly however", "slim it down height wise", "this box can b
 - **Warp in the allocation** (version 52; owner: "warp should be in here to allocate power for"): Warp is the last row of
   Power, Allocation, set like any system. A value set there is what the coils want, and arms them while it is above 0;
   the key's arm asks for the full 8 E. The coolant pumps stay set in Reactor.
+- **Icons by the names** (version 53; owner: "can you show system icons next to the name?"): every Allocation row has its
+  system's icon before its name, docked and expanded. Engines now uses the engines icon (two nacelles), and warp has its
+  own in the Concord kit (`lib/concord.js`): a ring with three speed lines behind it.
 
 ## 4r. Weapon ids, raids on one weapon, the held deck, 10 s volleys (version 49)
 

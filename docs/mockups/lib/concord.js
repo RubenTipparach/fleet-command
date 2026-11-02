@@ -120,6 +120,7 @@ function ccIcon(name, col = CC.sky) {
       cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) C(cx, cy, 7); },
       craft: () => { C(30, 18, 9); C(14, 34, 4.5); C(24, 40, 3); D(30, 18, 3); },
       weapons: () => { C(18, 24, 10); D(18, 24, 3); x.beginPath(); x.moveTo(28, 24); x.lineTo(40, 24); x.stroke(); D(42, 24, 3.5); },
+      warp: () => { C(33, 24, 8); D(33, 24, 2.5); x.beginPath(); x.moveTo(5, 15); x.lineTo(21, 15); x.moveTo(2, 24); x.lineTo(21, 24); x.moveTo(5, 33); x.lineTo(21, 33); x.stroke(); },
       engines: () => { x.beginPath(); x.roundRect(9, 10, 8, 26, 4); x.stroke(); x.beginPath(); x.roundRect(31, 10, 8, 26, 4); x.stroke(); A(13, 40, 5, 0.2, P - 0.2); A(35, 40, 5, 0.2, P - 0.2); },
       reactor: () => { C(24, 24, 17); C(24, 24, 8); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; D(24 + Math.cos(a) * 12.5, 24 + Math.sin(a) * 12.5, 2.8); } },
       pause: () => { x.beginPath(); x.roundRect(13, 10, 8, 28, 4); x.fill(); x.beginPath(); x.roundRect(27, 10, 8, 28, 4); x.fill(); },
