@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-02, v32) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-02, v33) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -159,8 +159,11 @@ Versions 26-29 (2026-11-02): a scene selector in the view, the camera lock (smoo
 warp drive (change `warp`: Power, Warp mode; nacelles, banks, plot, six risk factors, the safety override near a
 neutron star, the jump; a Warp scene; survey J1-J5).
 
-**Queued from the survey (2026-11-01), not built yet:** the helm redesign
-after the reference game's nav modes, from the owner's screenshots and the manual (B4); power ticks per ship scaled to
+Version 33 (2026-11-02): the helm rebuilt from the manual's Helm Officer display (B4), a red target bracket with a
+double frame on a seeker lock, fresnel shield keys, the weapons page as the ship with Fire keys and a detail half, ready
+weapons outlined, ships four times tougher.
+
+**Queued from the survey (2026-11-01), not built yet:** power ticks per ship scaled to
 fit (B7); enemies starting tractor holds (B11); meltdown from a material temperature limit, a scram, coils aligned by
 dragging (R1, R2, R4). The kit's cells and icons wait for the Concord master UI (B6).
 

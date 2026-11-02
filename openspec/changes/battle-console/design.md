@@ -288,6 +288,65 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4h. The helm, rebuilt (version 33)
+
+Owner, survey B4: "The original game had free heading, intercept, follow+match speed, orbit (ccw/cw toggle). High energy
+turns, hard left, hard right, 180. Please look at screenshots I submitted or manuals linked for nav iconography and
+layout"; then, 2026-11-02: "I want buttons that express types of maneuvers towards the target or toggles for self, or
+triggers for High Energy turns".
+
+**The reference** (Starfleet Command 2 manual): normal turns are a left click in the 3D view, a click on an enemy sets a
+course for it, and an arc shows the turn still to make (printed page 17); special movement lives on the Helm Officer
+display (page 117): emergency deceleration (stop as fast as possible, then a delay before moving), erratic manoeuvres
+(harder to hit and to hit with; no shuttles, fighters, missiles, mines or tractors; turns slower; high energy turns about
+17 % likelier to fail; pages 19 and 118), six high energy turn keys (90 left and right, 135 hard left and right, 180,
+and a free angle set by clicking the view; page 119), the HET chance of success shown and recovering slowly after each
+use (page 120), orbit target, intercept target (the helm steers, the captain keeps the speed) and normal manoeuvring
+(page 120). Taken in shape, not art: our own glyphs and layout.
+
+**The panel**, three groups of icon keys (names on hover, the order in force lit green):
+
+| Group | Keys |
+|---|---|
+| Toward the target (toggles; pressing the lit one returns to free heading) | **Intercept** (leads the target; the captain keeps the speed), **Trail and match speed** (sits 600 m astern, matching its speed), **Orbit** (round it at 4 km; the captain keeps the speed), **Orbit direction** (CW or CCW) |
+| High energy turns (triggers) | A 3 x 3 pad: hard left 135, 180, hard right 135; left 90, **Free heading** (the middle key, cancelling helm orders), right 90; the angle printed in each turn key's corner |
+| Self (toggles and triggers) | **Erratic manoeuvres** (toggle), **Emergency stop**, **HET free angle** (then click the view) |
+
+Beside the pad: chance to hit, **HET chance** (red "Broken" during a breakdown), heading, ordered speed. The helm ring,
+pointing and the speed strip still steer by hand (free heading).
+
+**The rules** (`HET`, `HELM` in the page): a HET turns at 240 degrees a second and costs 3 E from the battery; its
+chance starts at the class's best (0.95 less the hull's length over 2 km: 79 % for the Resolute, 87 % for a frigate),
+drops 20 points each HET and recovers 1 point a second; erratic manoeuvres take 17 points off. A failure is a
+**breakdown**: speed cut to 30 %, engines damaged 30 %, no manoeuvring for 6 s. Erratic manoeuvres: hit chances to and
+from the ship x 0.75, turn rate x 0.8, no launches, mines or tractors. Emergency stop: five times the deceleration, then
+the engines hold for 4 s.
+
+Measured (headless): intercept closed on the Vorrak; orbit settled near it; trail caught it up; a 90 left HET turned 90
+degrees in under a second (79 % to 60 %); six back to back all broke down; the emergency stop went from 240 m/s to 0 in
+a second and held; erratic manoeuvres refused a launch.
+
+## 4i. Target bracket, shields, weapons page, toughness (version 33)
+
+- **The target bracket is bright red** (owner, 2026-11-02: "selected enemy target should be bright red, and if torpedo or
+  missile lock is possible to have double frames like in ace combat"): four red corners; when a torpedo or missile mount
+  is charged with the target in its arc and range (`seekerLock`, the rules the shot uses), a second, pulsing outer frame
+  and SEEKER LOCK. The off-screen marker of the locked target is red too.
+- **Shield keys** (owner: "use a inner gradient shading on shields, like a fresnel shading almost for each shield face,
+  also center text, they should be middle of the shield object"): each face darkens toward its middle and brightens to
+  its rim in its colour; the facing's name sits at the middle of the key.
+- **The expanded weapons panel** (owner: "show weapons as they are on the ship in the expanded menu, then when you hover
+  over them and click on them, detail menu appears on the lower half. Also add a fire button underneath each weapon, and
+  also bold the weapon box with a dashed white outline when they are ready to be fired"): its upper half is the ship
+  systems display (the one component), its grid rows taller so a **Fire** key sits under each mount; hovering a mount
+  names it, clicking it fills the lower half with its details (status, health, arc, range, damage, charge, ready in,
+  cost; its own Offline, Normal, Overload; the target, chance to hit, in arc, in range; in the volley; Fire). On every
+  ship systems display a mount **ready to fire** (charged, the target in its arc and range) has a bold dashed white
+  outline. The old table is gone.
+- **Ships four times tougher** (owner: "make ships in this demo like 4x tankier, the battle loop is over too quickly"):
+  every class's hull x 4 (`DEMO.tough_x`), the disguised shuttle's charge with it. The battle scene, fought on intercept
+  with the guns, now lasts about 6 minutes.
+
 ## 4g. Stars behind ships, and space dust (version 31)
 
 Owner, 2026-11-02: "stars should draw behind ship always btw, it doesnt make sense if they draw in front. we should also
@@ -399,7 +458,7 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B1 | Speed: discrete boxes or a slider? | **Decided** (owner, 2026-11-01: "speed needs a slider handle"): a handle dragged along the engine boxes |
 | B2 | Targeting with a mouse: left click focuses and right click locks, or left click locks? | **Decided** (survey, 2026-11-01): right click locks, and the first right click also locks the camera on the target; dragging the camera frees it; it locks again from the Target box (top right). Built in version 27 (section 4e) |
 | B3 | Nine stations in one panel on a column of icon tabs, or fewer stations merged? | **Decided** (survey, 2026-11-01): nine on one rail |
-| B4 | The helm pad: fixed steps (turn 15, 45, 90 degrees; speed one box) or hold to keep turning? | **Decided** (survey, 2026-11-01), the owner's note: the reference game's helm had free heading, intercept, follow and match speed, orbit (clockwise or anticlockwise), high-energy turns, hard left, hard right and 180; lay it out from the owner's screenshots and the manual's nav icons. *Queued*: the helm redesign (citing the manual's pages) |
+| B4 | The helm pad: fixed steps (turn 15, 45, 90 degrees; speed one box) or hold to keep turning? | **Decided** (survey, 2026-11-01), the owner's note: the reference game's helm had free heading, intercept, follow and match speed, orbit (clockwise or anticlockwise), high-energy turns, hard left, hard right and 180; lay it out from the owner's screenshots and the manual's nav icons. Built in version 33 (section 4h) |
 | B5 | (Deferred: no mobile mockup yet.) Phone landscape: a rail of four panel keys and quick keys (Next, Port, Fire, Stbd) in the view, panels opening expanded; or the desktop column scaled down? | **Decided** (survey, 2026-11-01): the rail and quick keys (mobile still deferred) |
 | B6 | Add allocation cells and eleven icons to the kit (so every skin must draw them)? | **Decided** (survey, 2026-11-01): yes, but not started until the Concord master UI is final |
 | B7 | Power and Systems ticks on reactors from 12 E to 60 E and more? | **Decided** (survey, 2026-11-01): a different number of ticks per ship, the width of a tick scaled so the row fits. *Queued* |
@@ -412,3 +471,6 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B14 | Raids: Shoot (40 % off, 1 in 5 marines lost) against Bomb (80 % off, 1 in 2 lost)? | **Decided** (survey, 2026-11-01): "It depends the type of marines you send. Demolition marines cannot defend themselves..so a boarding party must be well rounded to actually successfully bomb the ship." Built in version 25 (section 4d) |
 | B15 | A captured ship: joins the fleet at once, or is a prize to hold and tow home? | **Decided** (survey, 2026-11-01): joins the fleet; a capture needs "combat marines, medics (optional), engineers, specialist (hackers), and a pilot (or nav officer)". Built in version 25 (section 4d) |
 | B16 | The tow: a tether that holds the distance (dragging the held ship, rigid at full grip)? | **Decided** (survey, 2026-11-01): yes, "distance is adjustable at any time by the holder ... based on difference in ship mass". Built in version 25 (Reel in, Let out) |
+| B20 | High energy turns: 240 degrees a second, 3 E, a chance that drops 20 points a turn and recovers 1 a second, a 6 s breakdown on failure? | **As built** (section 4h) |
+| B21 | Erratic manoeuvres: hit chances x 0.75 both ways, turn rate x 0.8, no launches, mines or tractors? | **As built**, after the reference game's restrictions |
+| B22 | Ships four times tougher for the demo: keep it as the game's scale, or a demo setting only? | **A demo setting** until combat is tuned in its own change |

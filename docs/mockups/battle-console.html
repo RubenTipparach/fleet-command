@@ -465,6 +465,18 @@ const REACTOR = { coils: 3, loops: 2, flow_max: 5, flow_e: 1, efficiency_loss: 0
 // jump rolls against that same number (6.1).
 const WARP = { bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, plot_drift_deg: 15, coolant_jump: 0.25, leak_per_s: 0.01, qg_block: 0.5, out_s: 1.2,
   risk: { nacelles: 0.8, coolant: 1.2, coolant_ok: 0.5, banks: 0.3, nav: 0.6, reactor: 0.7, qg: 0.3, qg_override: 0.9 } };
+// The helm officer's manoeuvres (owner, survey B4: "The original game had free heading, intercept, follow+match speed,
+// orbit (ccw/cw toggle). High energy turns, hard left, hard right, 180"; then "I want buttons that express types of
+// maneuvers towards the target or toggles for self, or triggers for High Energy turns"). After the Starfleet Command 2
+// manual, printed pages 17-20 and 117-120: a high energy turn (HET) turns the ship far faster than its turn rate; its
+// chance of success is shown, drops with each HET and recovers slowly; a failure is a breakdown (the ship stops, the
+// engines are damaged, no manoeuvring for a while). Erratic manoeuvres make the ship harder to hit and its own fire
+// worse, forbid launches, mines and tractors, and make HETs about 17 points likelier to fail. Emergency deceleration
+// stops the ship as fast as it can, then holds it a while. Our numbers, the page's own.
+const HET = { rate_deg_s: 240, cost_e: 3, chance_drop: 0.2, recover_per_s: 0.01, erratic_penalty: 0.17, breakdown_s: 6, breakdown_engines: 0.3 };
+const HELM = { estop_decel_x: 5, estop_hold_s: 4, erratic_hit: 0.75, erratic_turn: 0.8, orbit_km: 4 };
+// A class's best HET chance: smaller hulls turn hard more safely.
+const hetMax = (s) => clamp(0.95 - CLASSES[s.cls].len_m / 2000, 0.6, 0.95);
 const SPEED_PER_BOX_M_S = 30;
 const FACINGS = ['F', 'FR', 'AR', 'A', 'AL', 'FL'];
 // Mount x is to starboard, y forward, in half-lengths of the hull. arc: [centre bearing, width], degrees.
@@ -511,6 +523,10 @@ const CLASSES = {
 // officer)"). A class's `team` overrides these counts.
 const TEAM_DEFAULT = { demo: 2, medics: 1, engineers: 1, hackers: 1, pilots: 1 };
 const ROLES = [['marines', 'Marines'], ['demo', 'Demolition'], ['medics', 'Medics'], ['engineers', 'Engineers'], ['hackers', 'Hackers'], ['pilots', 'Pilots']];
+// The demo's toughness (owner, 2026-11-02: "make ships in this demo like 4x tankier, the battle loop is over too
+// quickly"): every class's hull, and the disguised shuttle's charge with it, times tough_x.
+const DEMO = { tough_x: 4 };
+for (const c of Object.values(CLASSES)) c.hull *= DEMO.tough_x;
 const FACTION = {
   concord: { name: 'Concord', trim: 0x4f8fe8, hull: 0xb9c6d6, dot: CC.accord },
   kethran: { name: 'Kethran Hegemony', trim: 0xd9483b, hull: 0x8c6a64, dot: CC.alert },
@@ -552,7 +568,7 @@ const INV = { per_beam: 5 };
 // A disguised shuttle (owner: "a disguised shuttle leaves your ship and suicide bombs a station"): it flies at
 // speed_u_s posing as civilian traffic, so shields and guns let it through; inside suspect_km the target's crew may see
 // through it (catch_p_s a second); arriving, it detonates against the hull for dmg.
-const SHUTTLE = { speed_u_s: 5, dmg: 110, suspect_km: 1.5, catch_p_s: 0.25 };
+const SHUTTLE = { speed_u_s: 5, dmg: 110 * 4, suspect_km: 1.5, catch_p_s: 0.25 }; // the charge scales with the demo's toughness (DEMO.tough_x)
 // A missile barrage (owner: "Deploy fighters to take down another ships defenses, and fire a missile barage"): one
 // missile every interval_s from the racks, each hitting at hit_p unless point defence takes it.
 const BARRAGE = { salvo: 6, interval_s: 0.2, hit_p: 0.85 };
@@ -691,6 +707,8 @@ function hitChance(s, m, t) {
   if (s.aim !== 'hull' && s.side === 0) p -= 0.1;
   if (t.sensorMode === 'passive') p -= 0.05;
   p *= 0.5 + 0.5 * s.sys.sensors;
+  // erratic manoeuvres: harder to hit, and harder to hit with
+  if (t.erratic) p *= HELM.erratic_hit; if (s.erratic) p *= HELM.erratic_hit;
   return clamp(p, 0.05, 0.95);
 }
 function maxSpeed(s) { const c = CLASSES[s.cls]; return Math.min(c.speed_max_m_s, s.power.engines * SPEED_PER_BOX_M_S) * (0.4 + 0.6 * s.sys.engines) * s.brown; }
@@ -715,6 +733,7 @@ function makeShip(d) {
     scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
     warp: { banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
+    het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1,
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
 let sceneId = 'battle';
@@ -724,7 +743,7 @@ function newWorld(id = sceneId) {
   W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', planets, wells: (sc.wells || []).map((w) => ({ ...w })),
     // a planet is solid too: it joins the rocks for collisions
     rocks: (sc.rocks || []).map((r) => ({ ...r })).concat(planets.map((pl) => ({ x: pl.x, z: pl.z, r: pl.r, name: pl.name, planet: true }))),
-    rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4), warp: rng(Math.imul(SCENARIO.seed + 5, 0x9e3779b1) >>> 0) } }; // the warp stream's seed is mixed: a plain seed + 5 starts on 0.014, failing nearly any first jump
+    rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4), warp: rng(Math.imul(SCENARIO.seed + 5, 0x9e3779b1) >>> 0), helm: rng(Math.imul(SCENARIO.seed + 6, 0x9e3779b1) >>> 0) } }; // the warp stream's seed is mixed: a plain seed + 5 starts on 0.014, failing nearly any first jump
   W.player = W.ships[0];
   W.player.target = sc.target;
   for (const s of W.ships) if (s.side === 1) s.ecm = 1;
@@ -743,7 +762,7 @@ function step() {
   W.t += DT;
   for (const s of W.ships) if (s.alive) systemsStep(s);
   for (const s of W.ships) if (s.alive && s !== W.player) { s.thinkT -= DT; if (s.thinkT <= 0) { s.thinkT = 0.5; think(s); } }
-  if (W.player.alive && W.player.engaged) steer(W.player, W.player.order, tgt(W.player), AI_RANGE_KM.mid);
+  if (W.player.alive && W.player.engaged && !W.player.het && W.player.broke <= 0) steer(W.player, W.player.order, tgt(W.player), AI_RANGE_KM.mid);
   for (const s of W.ships) { s.px = s.x; s.pz = s.z; }
   for (const s of W.ships) if (s.alive) move(s);
   for (const s of W.ships) if (s.alive && s.beam) towStep(s);
@@ -789,6 +808,7 @@ function systemsStep(s) {
   const sensors = Math.max(0, s.power.sensors - s.ecm - s.eccm);
   if (s.scan.id) { if (s.scan.id !== s.target) s.scan = { id: null, p: 0 }; else s.scan.p = Math.min(1, s.scan.p + DT * (0.08 + 0.05 * sensors) * (s.sensorMode === 'passive' ? 0.5 : 1) * s.sys.sensors); }
   s.mineCool = Math.max(0, s.mineCool - DT); s.bumpT = Math.max(0, s.bumpT - DT);
+  s.hetChance = Math.min(hetMax(s), s.hetChance + HET.recover_per_s * DT); s.broke = Math.max(0, s.broke - DT); s.estopT = Math.max(0, s.estopT - DT);
   tractorStep(s); boardingStep(s); barrageStep(s); warpStep(s);
 }
 // The beam's value for a round: the energy a ship puts into its tractor, scaled by the tractor's health. The holder's
@@ -822,7 +842,7 @@ function tractorStep(s) {
     if (!tractorDown(h) && distKm(s, h) <= TRACTOR.reach_km) takeHold(h, s, 'breaks free and takes hold of'); else say('Tractor', `${h.name} broke free.`);
     return;
   }
-  if (s.tractor !== 'hold' || !h || !h.alive || distKm(s, h) > TRACTOR.reach_km + 0.2) {
+  if (s.tractor !== 'hold' || !h || !h.alive || s.erratic || distKm(s, h) > TRACTOR.reach_km + 0.2) {
     s.beam = null; s.tractor = 'off'; say('Tractor', `${s.name}: beam lost.`); return;
   }
   b.roundT -= DT;
@@ -949,10 +969,18 @@ function meltdown(s) {
   for (const o2 of W.ships) if (o2.target === s.id) o2.target = null;
 }
 function move(s) {
-  const c = CLASSES[s.cls], turn = c.turn_deg_s * DEG * DT * (0.5 + 0.5 * s.sys.engines), dh = wrap(s.hOrder - s.h);
-  s.h = wrap(s.h + clamp(dh, -turn, turn));
-  const vmax = maxSpeed(s), goal = clamp(s.vOrder, -60, vmax), a = c.accel_m_s2 * DT;
+  const c = CLASSES[s.cls];
+  if (s.het) {
+    // a high energy turn: far faster than the turn rate, the order following it round
+    const st = Math.sign(s.het.left) * Math.min(Math.abs(s.het.left), HET.rate_deg_s * DEG * DT); s.h = wrap(s.h + st); s.het.left -= st; s.hOrder = s.h;
+    if (Math.abs(s.het.left) < 1e-4) s.het = null;
+  } else if (s.broke > 0) s.hOrder = s.h;
+  else { const turn = c.turn_deg_s * DEG * DT * (0.5 + 0.5 * s.sys.engines) * (s.erratic ? HELM.erratic_turn : 1), dh = wrap(s.hOrder - s.h); s.h = wrap(s.h + clamp(dh, -turn, turn)); }
+  if (s.broke > 0 || s.estop || s.estopT > 0) s.vOrder = 0;
+  const vmax = maxSpeed(s), goal = clamp(s.vOrder, -60, vmax), a = c.accel_m_s2 * DT * (s.estop ? HELM.estop_decel_x : 1);
   s.v += clamp(goal - s.v, -a, a);
+  // emergency deceleration: once stopped, the engines hold for a while
+  if (s.estop && Math.abs(s.v) < 1) { s.v = 0; s.estop = false; s.estopT = HELM.estop_hold_s; }
   const f = fwd(s.h); s.x += f[0] * s.v / M_PER_U * DT; s.z += f[1] * s.v / M_PER_U * DT;
 }
 // Steering shared by the player's autopilot, wingmen and enemies.
@@ -967,6 +995,12 @@ function steer(s, order, t, rangeKm) {
   else if (order === 'follow') { const ax = t.x - fwd(t.h)[0] * 8 + rightOf(t.h)[0] * 6, az = t.z - fwd(t.h)[1] * 8 + rightOf(t.h)[1] * 6;
     s.hOrder = Math.hypot(ax - s.x, az - s.z) > 2 ? Math.atan2(ax - s.x, -(az - s.z)) : t.h; s.vOrder = clamp(Math.abs(t.v) + Math.hypot(ax - s.x, az - s.z) * 20, 0, vmax); }
   else if (order === 'hold') s.vOrder = 0;
+  // the player's helm officer: intercept (lead the target; the captain keeps the speed), trail (sit astern of it and
+  // match its speed) and orbit (round it at 4 km, the way s.orbitDir says; the captain keeps the speed)
+  else if (order === 'intercept') { const tti = distU(s, t) / Math.max(1, Math.abs(s.v) / M_PER_U), f = fwd(t.h), lx = t.x + f[0] * t.v / M_PER_U * tti, lz = t.z + f[1] * t.v / M_PER_U * tti; s.hOrder = Math.atan2(lx - s.x, -(lz - s.z)); }
+  else if (order === 'trail') { const f = fwd(t.h), ax = t.x - f[0] * 6, az = t.z - f[1] * 6, d2 = Math.hypot(ax - s.x, az - s.z);
+    s.hOrder = d2 > 2 ? Math.atan2(ax - s.x, -(az - s.z)) : t.h; s.vOrder = clamp(Math.abs(t.v) + (d2 > 2 ? d2 * 20 : 0), 0, vmax); }
+  else if (order === 'orbit') { const c2 = clamp((d - HELM.orbit_km) / HELM.orbit_km, -1, 1); s.hOrder = wrap(toT + s.orbitDir * (P / 2 - c2 * P / 4)); }
 }
 // Every ship but the player's thinks twice a second: pick a target by its rule, steer by its stance, fire if free.
 // A ship ordered to take a station with the VIP (the VIP scene): it waits for the VIP, then closes and boards with its
@@ -1109,14 +1143,27 @@ function craftStep() {
 // =================================================================================================================
 const A = {
   turn: (deg) => { const s = W.player; s.engaged = false; s.hOrder = wrap(s.hOrder + deg * DEG); },
+  // The helm officer's orders toward the target, toggles: pressing the lit one returns to free heading.
+  helmOrder: (o) => { const s = W.player; if (o === 'free' || (s.engaged && s.order === o)) { s.engaged = false; say('Helm', 'Free heading.'); return; }
+    if (!tgt(s)) { say('Helm', 'No target.'); return; } s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting' }[o]} ${tgt(s).name}.`); },
+  orbitDir: () => { const s = W.player; s.orbitDir = -s.orbitDir; },
+  // A high energy turn by deg (negative to port), rolled against the HET chance; erratic manoeuvres make it harder.
+  het: (deg) => { const s = W.player; if (s.het || s.broke > 0 || !s.alive) return;
+    if (s.battery < HET.cost_e) { say('Helm', 'Not enough power for a high energy turn.'); return; }
+    s.battery -= HET.cost_e; s.engaged = false; const p = s.hetChance - (s.erratic ? HET.erratic_penalty : 0); s.hetChance = Math.max(0, s.hetChance - HET.chance_drop);
+    if (W.rand.helm() < p) { s.het = { left: deg * DEG }; say('Helm', `High energy turn, ${Math.abs(deg)} degrees ${deg < 0 ? 'to port' : 'to starboard'}.`); }
+    else { s.broke = HET.breakdown_s; s.sys.engines = Math.max(0, s.sys.engines - HET.breakdown_engines); s.v *= 0.3; say('Engineering', 'Breakdown on the high energy turn: engines damaged, helm out for a few seconds.'); } },
+  hetFree: () => { placingHet = !placingHet; placingMine = false; },
+  erratic: () => { const s = W.player; s.erratic = !s.erratic; say('Helm', s.erratic ? 'Erratic manoeuvres.' : 'Erratic manoeuvres off.'); },
+  estop: () => { const s = W.player; if (s.estopT > 0) return; s.engaged = false; s.estop = true; say('Helm', 'Emergency deceleration.'); },
   // The helm by pointing (owner, 2026-11-01: "clicking left to turn ship left, click right of the ship to turn it
   // right", after the-federation's combat_screen.gd _helm_click): the ship is ordered onto the bearing from itself to
   // the point clicked on the battle plane, so a click left of it comes left and a click right comes right, as far as
   // the point asks. It is the same heading order the pad's turn keys give; a click on the ship itself has no direction.
   helmTo: (x, z, quiet) => { const s = W.player, dx = x - s.x, dz = z - s.z; if (Math.hypot(dx, dz) < 1.5) return; s.engaged = false; s.hOrder = Math.atan2(dx, -dz);
     if (quiet) return; say('Helm', `Come to ${String(Math.round(((s.hOrder / DEG) + 360) % 360)).padStart(3, '0')}.`); },
-  speedStep: (n) => { const s = W.player; s.engaged = false; s.vOrder = clamp(Math.round(s.vOrder / SPEED_PER_BOX_M_S + n) * SPEED_PER_BOX_M_S, -60, maxSpeed(s)); },
-  setSpeed: (v) => { const s = W.player; s.engaged = false; s.vOrder = clamp(v, -60, maxSpeed(s)); },
+  speedStep: (n) => { const s = W.player; if (s.engaged && s.order === 'trail') s.engaged = false; s.vOrder = clamp(Math.round(s.vOrder / SPEED_PER_BOX_M_S + n) * SPEED_PER_BOX_M_S, -60, maxSpeed(s)); },
+  setSpeed: (v) => { const s = W.player; if (s.engaged && s.order === 'trail') s.engaged = false; s.vOrder = clamp(v, -60, maxSpeed(s)); },
   allStop: () => { W.player.engaged = false; W.player.vOrder = 0; },
   order: (o) => { W.player.order = o; },
   engage: () => { const s = W.player; s.engaged = !s.engaged && !!tgt(s); if (s.engaged) say('Helm', `${ORDERS.find((o) => o[0] === s.order)[1]}: ${tgt(s).name}.`); },
@@ -1129,6 +1176,9 @@ const A = {
   volley: () => { W.player.volley = !W.player.volley; },
   arm: (state) => { for (const m of W.player.mounts) if (m.sel && m.w !== 'pd' && (state !== 'overload' || WEAPONS[m.w].overload)) { if (m.state !== state) m.charge = state === 'offline' ? 0 : Math.min(m.charge, 0.5); m.state = state; } },
   selectMount: (i) => { const m = W.player.mounts[i]; if (m && m.w !== 'pd') m.sel = !m.sel; },
+  // One mount: fire it alone at the target, or set its arming state alone (the expanded weapons panel).
+  fireOne: (i) => { const s = W.player, m = s.mounts[i], t = tgt(s); if (!m || !t) return; if (fireMount(s, m, t)) say('Tactical', `${WEAPONS[m.w].name} ${i + 1} fired.`); },
+  armOne: (i, state) => { const m = W.player.mounts[i]; if (!m || m.w === 'pd' || (state === 'overload' && !WEAPONS[m.w].overload)) return; if (m.state !== state) m.charge = state === 'offline' ? 0 : Math.min(m.charge, 0.5); m.state = state; },
   group: (g) => { for (const m of W.player.mounts) if (m.w !== 'pd') m.sel = g === 'all' || m.w === g; },
   // Locking a target also locks the camera on it (owner, survey B2: "Lock camera on target is automatic when you first
   // right click. Clicking and dragging camera around frees up the lock").
@@ -1188,15 +1238,15 @@ const A = {
     s.transporter = 0; },
   // A disguised shuttle launched at the target (owner: "a disguised shuttle leaves your ship and suicide bombs a
   // station").
-  shuttle: () => { const s = W.player, t = tgt(s); if (!t || s.shuttles <= 0) return; s.shuttles--; W.craft.push({ kind: 'shuttle', home: s.id, to: t.id, x: s.x, z: s.z, side: s.side });
+  shuttle: () => { const s = W.player, t = tgt(s); if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (!t || s.shuttles <= 0) return; s.shuttles--; W.craft.push({ kind: 'shuttle', home: s.id, to: t.id, x: s.x, z: s.z, side: s.side });
     say('Flight deck', `Disguised shuttle away toward ${t.name}, squawking a freighter's call sign.`); },
-  barrage: () => { const s = W.player; if (!tgt(s) || s.missiles <= 0 || s.barrage > 0) return; s.barrage = Math.min(BARRAGE.salvo, s.missiles); s.barrageT = 0; say('Tactical', `Missile barrage: ${s.barrage} away.`); },
+  barrage: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (!tgt(s) || s.missiles <= 0 || s.barrage > 0) return; s.barrage = Math.min(BARRAGE.salvo, s.missiles); s.barrageT = 0; say('Tactical', `Missile barrage: ${s.barrage} away.`); },
   // Reel the held ship in or let it out (owner, survey B16).
   reel: (dir) => { const b = W.player.beam; if (!b) return; b.want = clamp(b.want + dir * TRACTOR.reel_step_u, TRACTOR.min_u, TRACTOR.reach_km * 10); },
   // A mine placed by transporter (owner: "the player can transport mines to different locations within a certain
   // radius of the ship"): Place mine arms the click, the next left click in the view beams a mine there.
   mineMode: () => { placingMine = !placingMine; },
-  placeMine: (x, z) => { const s = W.player; placingMine = false;
+  placeMine: (x, z) => { const s = W.player; placingMine = false; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; }
     if (s.mines <= 0 || s.mineCool > 0 || s.transporter < 1) return;
     const d = Math.hypot(x - s.x, z - s.z) / 10; if (d > TRANSPORT.range_km) { say('Transport', `Out of transporter range (${km(TRANSPORT.range_km)}).`); return; }
     s.mines--; s.mineCool = MINE.cooldown_s; s.transporter = 0; W.mines.push({ x, z, side: s.side, arm: MINE.arm_s }); say('Transport', `Mine beamed out to ${km(d)}.`); },
@@ -1205,11 +1255,11 @@ const A = {
   plot: () => { const w = W.player.warp; w.plotting = true; w.plotH = W.player.hOrder; w.plot = 0; w.drift = false; say('Navigation', `Plotting a course on ${String(Math.round(((w.plotH / DEG) + 360) % 360)).padStart(3, '0')}.`); },
   override: () => { const w = W.player.warp; w.override = !w.override; say('Helm', w.override ? 'Safety override on.' : 'Safety override off.'); },
   jump: () => jump(W.player),
-  mine: () => { const s = W.player; if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
+  mine: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
   // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
-  tractorHold: () => { const s = W.player; if (s.tractor !== 'off' || s.power.tractor <= 0 || heldBy(s)) return; s.tractor = 'power'; s.powerT = TRACTOR.powerup_s; say('Tractor', 'Beam powering up.'); },
+  tractorHold: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (s.tractor !== 'off' || s.power.tractor <= 0 || heldBy(s)) return; s.tractor = 'power'; s.powerT = TRACTOR.powerup_s; say('Tractor', 'Beam powering up.'); },
   tractorBreak: () => { const s = W.player; if (s.tractor === 'off') return; if (s.beam) say('Tractor', `Beam on ${ship(s.beam.on).name} released.`); s.tractor = 'off'; s.powerT = 0; s.beam = null; },
-  launch: () => { const s = W.player; if (s.fighters <= 0) return; const n = s.fighters; s.fighters = 0; for (let i = 0; i < n; i++) W.craft.push({ home: s.id, x: s.x, z: s.z, a: i * P / 2, cool: 1 + i * 0.5, mission: s.mission, recall: false, side: s.side }); say('Flight deck', `${n} fighters launched.`); },
+  launch: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (s.fighters <= 0) return; const n = s.fighters; s.fighters = 0; for (let i = 0; i < n; i++) W.craft.push({ home: s.id, x: s.x, z: s.z, a: i * P / 2, cool: 1 + i * 0.5, mission: s.mission, recall: false, side: s.side }); say('Flight deck', `${n} fighters launched.`); },
   recall: () => { for (const c of W.craft) if (c.home === W.player.id) c.recall = true; },
   mission: (m) => { W.player.mission = m; for (const c of W.craft) if (c.home === W.player.id) c.mission = m; },
   ai: (id, key, val) => { const s = ship(id); if (s) s.ai[key] = val; },
@@ -1434,7 +1484,7 @@ function wireInput() {
     if (h) { e.stopPropagation(); e.preventDefault(); ACTIVE = h.id; HOT = h.id; if (h.drag) { DRAG = h; h.drag(px, py, true); } return; }
     if (!inView(px, py)) e.stopPropagation();
     // a press (left button or a touch) on or near the helm ring steers: the ship's ordered heading follows the pointer
-    else if (e.button === 0 && !expanded && nearRing(e)) { STEER = true; down = null; e.stopPropagation(); e.preventDefault(); const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); }
+    else if (e.button === 0 && !expanded && !placingHet && !placingMine && nearRing(e)) { STEER = true; down = null; e.stopPropagation(); e.preventDefault(); const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); }
   }, true);
   addEventListener('pointermove', (e) => {
     const [px, py] = refXY(e); PX = px; PY = py;
@@ -1638,25 +1688,80 @@ function helmPad(px, py, size) {
   CON.live.helmCentre(g, 150); g.restore();
 }
 function bestChance() { const s = W.player, t = tgt(s); if (!t) return 0; return Math.max(0, ...s.mounts.filter((m) => m.sel && m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t)).map((m) => hitChance(s, m, t))); }
+// Helm icons, drawn as line glyphs in black on the key: turns are curved arrows (a ship going up, then turning by the
+// angle), orders toward the target show the target as a ringed dot, self toggles their own sign.
+function helmGlyph(kind, cx, cy, r, col) {
+  const G = g; G.strokeStyle = col; G.fillStyle = col; G.lineWidth = Math.max(2, r * 0.13); G.lineCap = 'round'; G.lineJoin = 'round';
+  const head = (x, y, a, l = r * 0.32) => { G.beginPath(); G.moveTo(x + Math.cos(a + 2.6) * l, y + Math.sin(a + 2.6) * l); G.lineTo(x, y); G.lineTo(x + Math.cos(a - 2.6) * l, y + Math.sin(a - 2.6) * l); G.stroke(); };
+  const target = (x, y) => { G.beginPath(); G.arc(x, y, r * 0.2, 0, 2 * P); G.stroke(); G.beginPath(); G.arc(x, y, r * 0.06, 0, 2 * P); G.fill(); };
+  // a turn of deg degrees, dir -1 port or 1 starboard: up first, then round a circle of radius rr
+  const turn = (deg, dir, rr = r * 0.5) => {
+    const th = deg * DEG, sx = cx - dir * rr * (deg > 100 ? 0.45 : 0.6), sy = cy + rr * (deg > 100 ? 0.25 : 0.55), C = [sx + dir * rr, sy];
+    G.beginPath(); G.moveTo(sx, sy + r * 0.45); G.lineTo(sx, sy);
+    for (let i = 1; i <= 24; i++) { const a = th * i / 24; G.lineTo(C[0] - dir * rr * Math.cos(a), C[1] - rr * Math.sin(a)); }
+    G.stroke(); const ex = C[0] - dir * rr * Math.cos(th), ey = C[1] - rr * Math.sin(th); head(ex, ey, Math.atan2(-Math.cos(th), dir * Math.sin(th)));
+  };
+  if (kind === 'het.l90') turn(90, -1); else if (kind === 'het.r90') turn(90, 1);
+  else if (kind === 'het.l135') turn(135, -1); else if (kind === 'het.r135') turn(135, 1);
+  else if (kind === 'het.180') turn(180, -1, r * 0.42);
+  else if (kind === 'het.free') { turn(60, 1); G.setLineDash([3, 3]); G.beginPath(); G.arc(cx, cy, r * 0.82, 0, 2 * P); G.stroke(); G.setLineDash([]); }
+  else if (kind === 'intercept') { target(cx + r * 0.42, cy - r * 0.42); G.beginPath(); G.moveTo(cx - r * 0.6, cy + r * 0.6); G.quadraticCurveTo(cx - r * 0.3, cy - r * 0.2, cx + r * 0.15, cy - r * 0.55); G.stroke(); head(cx + r * 0.15, cy - r * 0.55, -0.3); }
+  else if (kind === 'trail') { target(cx, cy - r * 0.45); G.beginPath(); G.moveTo(cx, cy + r * 0.65); G.lineTo(cx, cy - r * 0.05); G.stroke(); head(cx, cy - r * 0.05, -P / 2);
+    G.beginPath(); G.moveTo(cx - r * 0.55, cy + r * 0.15); G.lineTo(cx - r * 0.25, cy + r * 0.15); G.moveTo(cx - r * 0.55, cy + r * 0.32); G.lineTo(cx - r * 0.25, cy + r * 0.32); G.stroke(); }
+  else if (kind === 'orbit' || kind === 'orbit.dir') { const d = W.player.orbitDir; if (kind === 'orbit') target(cx, cy);
+    const R2 = r * (kind === 'orbit' ? 0.62 : 0.5), a0 = -P / 2, a1 = a0 + d * 1.6 * P; G.beginPath(); G.arc(cx, cy, R2, a0, a1, d < 0); G.stroke();
+    head(cx + Math.cos(a1) * R2, cy + Math.sin(a1) * R2, a1 + d * P / 2); if (kind === 'orbit.dir') { G.font = `700 ${r * 0.5}px Antonio`; G.textAlign = 'center'; G.fillText(d > 0 ? 'CW' : 'CCW', cx, cy + r * 0.18); } }
+  else if (kind === 'free') { G.beginPath(); G.arc(cx, cy, r * 0.6, 0, 2 * P); G.stroke(); G.beginPath(); G.moveTo(cx, cy + r * 0.3); G.lineTo(cx, cy - r * 0.35); G.stroke(); head(cx, cy - r * 0.35, -P / 2, r * 0.25); }
+  else if (kind === 'erratic') { G.beginPath(); G.moveTo(cx - r * 0.1, cy + r * 0.7); G.lineTo(cx + r * 0.3, cy + r * 0.35); G.lineTo(cx - r * 0.3, cy); G.lineTo(cx + r * 0.3, cy - r * 0.35); G.lineTo(cx, cy - r * 0.6); G.stroke(); head(cx, cy - r * 0.6, -P / 2 - 0.6, r * 0.26); }
+  else if (kind === 'estop') { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r * 0.62, cy + Math.sin(a) * r * 0.62); } G.closePath(); G.stroke(); G.beginPath(); G.moveTo(cx - r * 0.3, cy); G.lineTo(cx + r * 0.3, cy); G.stroke(); }
+}
+// One helm key: a rounded square in the Concord blue (lit lilac when its order or toggle is on, green when it is the
+// order in force), its glyph in black, its name on hover.
+function helmKey(id, x, y, sz, kind, name, click, o = {}) {
+  const dis = o.dis && o.dis(), st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: name });
+  const on = o.on && o.on();
+  g.fillStyle = dis ? CC.deep : st.down ? CC.lilac : on ? (o.onCol || CC.accord) : st.hot ? CC.sky : CC.signal; g.globalAlpha = dis ? 0.5 : 1;
+  g.beginPath(); g.roundRect(x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
+  helmGlyph(kind, x + sz / 2, y + sz / 2, sz * 0.42, dis ? '#2a3a7a' : '#000');
+  // the turn's angle, small in the corner, so 90 and 135 never read alike
+  const ang = { 'het.l90': '90', 'het.r90': '90', 'het.l135': '135', 'het.r135': '135', 'het.180': '180' }[kind];
+  if (ang) { g.fillStyle = dis ? '#2a3a7a' : '#000'; g.font = `700 ${Math.round(sz * 0.2)}px Antonio`; g.textAlign = kind.includes('.l') ? 'right' : 'left'; g.fillText(ang, kind.includes('.l') ? x + sz - sz * 0.1 : x + sz * 0.1, y + sz - sz * 0.1); }
+}
+// The helm (owner, survey B4 and 2026-11-02; the Starfleet Command 2 manual's Helm Officer display, printed pages
+// 117-120, taken in shape, not art): a row of orders toward the target (intercept, trail and match speed, orbit and its
+// direction), a 3 x 3 pad of high energy turns round free heading, and the self toggles (erratic manoeuvres, emergency
+// deceleration, a free-angle HET). The readouts: chance to hit, HET chance, heading and ordered speed.
 function stHelm(b, big) {
-  const s = W.player, size = big ? Math.min(420, b.h * 0.62) : 196;
-  helmPad(big ? b.x : b.x + (b.w - size) / 2, b.y, size);
-  const rx = big ? b.x + size + 28 : b.x, rw = big ? b.w - size - 28 : b.w;
-  let y = big ? b.y + 24 : b.y + size + 26;
-  const hdg = String(Math.round(((s.h / DEG) + 360) % 360)).padStart(3, '0');
-  if (big) pairs('helm.r', rx, y, [['To hit', tgt(s) ? pct(bestChance()) : '--'], ['Heading', hdg], ['Ordered', `${Math.round(s.vOrder)} M/S`]], rw);
-  else { pairs('helm.a', rx, y, [['To hit', tgt(s) ? pct(bestChance()) : '--']]); pairs('helm.b', rx + rw * 0.4, y, [['Hdg', hdg]]); pairs('helm.c', rx + rw * 0.69, y, [['Order', String(Math.round(s.vOrder))]]); }
-  y += 10;
-  if (big) { divider(rx, y, rw); y += 18; LBL('Autopilot', rx, y + 13); y += 22; }
-  const hw = (rw - 6) / 2;
-  ORDERS.forEach(([id, label], i) => tab(`helm.o.${id}`, rx + (i % 2) * (hw + 6), y + Math.floor(i / 2) * 46, hw, 40, label, () => A.order(id), s.order === id));
-  y += 92;
-  button('helm.eng', rx, y, rw, 48, s.engaged ? 'Engaged' : 'Engage', A.engage, { sel: () => s.engaged, dis: () => !tgt(s) });
+  const s = W.player, t = tgt(s), k = big ? 1.5 : 1, gap = 8 * k, row = (b.w - 3 * gap) / 4, ks = Math.min(row, big ? 84 : 62);
+  let y = b.y;
+  LBL('Target', b.x, y + 12, 0, CC.lilac, 'left', 13 * k); y += 18 * k;
+  const ordOn = (o) => () => s.engaged && s.order === o, noT = () => !t;
+  helmKey('helm.int', b.x, y, ks, 'intercept', 'Intercept', () => A.helmOrder('intercept'), { on: ordOn('intercept'), dis: noT });
+  helmKey('helm.trail', b.x + (ks + gap), y, ks, 'trail', 'Trail and match speed', () => A.helmOrder('trail'), { on: ordOn('trail'), dis: noT });
+  helmKey('helm.orbit', b.x + 2 * (ks + gap), y, ks, 'orbit', `Orbit (${s.orbitDir > 0 ? 'clockwise' : 'anticlockwise'})`, () => A.helmOrder('orbit'), { on: ordOn('orbit'), dis: noT });
+  helmKey('helm.odir', b.x + 3 * (ks + gap), y, ks, 'orbit.dir', 'Orbit direction', A.orbitDir, {});
+  y += ks + 12 * k;
+  LBL('High energy turns', b.x, y + 12, 0, CC.lilac, 'left', 13 * k); y += 18 * k;
+  const busy = () => !!s.het || s.broke > 0 || s.battery < HET.cost_e;
+  const pad = [[['het.l135', 'HET hard left 135', -135], ['het.180', 'HET 180', 180], ['het.r135', 'HET hard right 135', 135]],
+    [['het.l90', 'HET left 90', -90], ['free', 'Free heading', 0], ['het.r90', 'HET right 90', 90]],
+    [['erratic', 'Erratic manoeuvres', 0], ['estop', 'Emergency stop', 0], ['het.free', 'HET free angle: click the view', 0]]];
+  pad.forEach((r2, ri) => r2.forEach(([kind, name, deg], ci) => {
+    const x = b.x + ci * (ks + gap), yy = y + ri * (ks + gap);
+    if (kind === 'free') helmKey('helm.free', x, yy, ks, 'free', name, () => A.helmOrder('free'), { on: () => !s.engaged, onCol: CC.sky });
+    else if (kind === 'erratic') helmKey('helm.err', x, yy, ks, 'erratic', name, A.erratic, { on: () => s.erratic, onCol: CC.lilac });
+    else if (kind === 'estop') helmKey('helm.stop', x, yy, ks, 'estop', s.estopT > 0 ? `Engines holding ${fmtCool(s.estopT)} s` : name, A.estop, { on: () => s.estop || s.estopT > 0, onCol: CC.caution });
+    else if (kind === 'het.free') helmKey('helm.hetf', x, yy, ks, 'het.free', name, A.hetFree, { on: () => placingHet, onCol: CC.lilac, dis: busy });
+    else helmKey(`helm.${kind}`, x, yy, ks, kind, name, () => A.het(deg), { dis: busy });
+  }));
+  // the readouts beside the pad
+  const rx = b.x + 3 * (ks + gap), rw = b.x + b.w - rx, hdg = String(Math.round(((s.h / DEG) + 360) % 360)).padStart(3, '0'), hc = s.hetChance - (s.erratic ? HET.erratic_penalty : 0);
+  const rows = [['To hit', t ? pct(bestChance()) : '--', CC.sky], ['HET', s.broke > 0 ? 'Broken' : pct(Math.max(0, hc)), s.broke > 0 ? CC.alert : hc < 0.5 ? CC.caution : CC.accord], ['Hdg', hdg, CC.sky], ['Order', String(Math.round(s.vOrder)), CC.sky]];
+  rows.forEach(([l, v, c2], i) => { const yy = y + i * (3 * ks + 2 * gap) / 4; LBL(l, rx, yy + 14 * k, 0, CC.lilac, 'left', 13 * k); NUM(v, rx, yy + 36 * k, rw, c2, 'left', 22 * k); });
   if (!big) return;
-  y += 60; divider(rx, y, rw); y += 40;
-  const t = tgt(s);
-  if (t) pairs('helm.t', rx, y, [['Target', t.name], ['Range', km(distKm(s, t))], ['Speed', `${Math.round(t.v)} M/S`]], rw); else LBL('No target', rx, y);
-  pairs('helm.m', rx, y + 34, [['Max speed', `${Math.round(maxSpeed(s))} M/S`], ['Engine boxes', String(s.power.engines)]], rw);
+  y += 3 * (ks + gap) + 20;
+  if (t) pairs('helm.t', b.x, y, [['Target', t.name], ['Range', km(distKm(s, t))], ['Speed', `${Math.round(t.v)} M/S`]], b.w); else LBL('No target', b.x, y);
+  pairs('helm.m', b.x, y + 34, [['Max speed', `${Math.round(maxSpeed(s))} M/S`], ['Engine boxes', String(s.power.engines)]], b.w);
 }
 const iconOf = (k) => ({ engines: 'helm', weapons: 'weapons', shields: 'shields', sensors: 'sensors', tractor: 'tractor', transport: 'transport', repair: 'repair' })[k];
 // The power station has two modes: Allocation (the reference game's energy page) and Reactor (our own).
@@ -2076,13 +2181,15 @@ function drawSSD(x, w, h, s, big, own, idp) {
   // clearance, centred on the ship's spine, so boxes line up in rows and columns and never overlap (owner: "make sure
   // weapon icons dont overlap!"). Each mount takes the cell nearest its hull position, rounded the same way on both
   // sides so a pair stays mirrored; a mount whose cell is taken moves to the nearest free one, on its own side first.
-  const snap = (v) => Math.sign(v) * Math.round(Math.abs(v) / clear), taken = new Set(), pos = [];
+  // on the expanded weapons page each mount has a Fire key under it, so the rows are taller there
+  const clearY = idp === 'wx' ? clear + 24 : clear;
+  const snap = (v, c = clear) => Math.sign(v) * Math.round(Math.abs(v) / c), taken = new Set(), pos = [];
   for (const m of s.mounts) {
-    const c0 = snap(m.x * L * 0.9), r0 = snap(-m.y * L), side = Math.sign(m.x), cand = [];
+    const c0 = snap(m.x * L * 0.9), r0 = snap(-m.y * L, clearY), side = Math.sign(m.x), cand = [];
     for (let dc = -3; dc <= 3; dc++) for (let dr = -3; dr <= 3; dr++) cand.push([c0 + dc, r0 + dr, Math.hypot(dc, dr) + (side && Math.sign(dc) === -side ? 0.01 : 0)]);
     cand.sort((p1, p2) => p1[2] - p2[2]);
     const [c, r] = cand.find(([c1, r1]) => !taken.has(c1 + ',' + r1));
-    taken.add(c + ',' + r); pos[m.i] = [cx + c * clear, cy + r * clear];
+    taken.add(c + ',' + r); pos[m.i] = [cx + c * clear, cy + r * clearY];
   }
   // Subsystems in two columns beside the ship (owner: "on the side, show subsystems as well"), each an icon in a box
   // coloured by its status.
@@ -2113,6 +2220,9 @@ function drawSSD(x, w, h, s, big, own, idp) {
     // with different colors").
     const cool = cooldownS(m);
     statusBox(x, bx, by, mb, st, rad, cool !== null, m.charge);
+    // ready to fire (charged, the target in its arc and range): a bold dashed white outline (owner, 2026-11-02)
+    const tt = own ? tgt(s) : null;
+    if (tt && m.w !== 'pd' && ready(m) && inArc(s, m, tt) && inRange(s, m, tt)) { const gr2 = (sel ? lw : 0) + 3.5; x.save(); x.setLineDash([4, 3]); x.strokeStyle = '#fff'; x.lineWidth = 2.5; x.beginPath(); x.roundRect(bx - gr2, by - gr2, mb + 2 * gr2, mb + 2 * gr2, rad + gr2); x.stroke(); x.restore(); }
     if (cool !== null) {
       // Cooling: the seconds left in place of the glyph, scaled down to fit the box if it runs to three figures.
       const txt = fmtCool(cool); let fs = Math.round(mb * 0.72);
@@ -2165,11 +2275,17 @@ function shieldHex(cx, cy, R, s, big, idp) {
     g.lineJoin = 'round';
     shape(poly); g.fillStyle = on ? CC.lilac : CC.deep; g.globalAlpha = on ? 0.3 : st.hot ? 0.75 : 0.5; g.fill(); g.globalAlpha = 1;
     if (frac > 0.01 && s.shUp) { const rf = Ri + (R - Ri) * frac; shape([side(a0, Ri), side(a1, Ri), side(a1, rf), side(a0, rf)]); g.fillStyle = col; g.globalAlpha = 0.85; g.fill(); g.globalAlpha = 1; }
+    // an inner gradient, almost a fresnel (owner, 2026-11-02: "use a inner gradient shading on shields, like a fresnel
+    // shading almost for each shield face"): dark at the face's middle, the colour brightening toward its rim
+    { const mx = xs.reduce((a, v) => a + v, 0) / 4, my = ys.reduce((a, v) => a + v, 0) / 4, rr = Math.hypot(Math.max(...xs) - bx, Math.max(...ys) - by) / 2;
+      const gr = g.createRadialGradient(mx, my, rr * 0.1, mx, my, rr); gr.addColorStop(0, 'rgba(0,0,0,0.35)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.05)'); gr.addColorStop(1, shade(col === CC.deep ? CC.signal : col, 1.45));
+      g.save(); shape(poly); g.clip(); g.fillStyle = gr; g.globalAlpha = 0.75; g.fillRect(bx - 2, by - 2, rr * 2 + 4, rr * 2 + 4); g.restore(); }
     if (s.flash[i] > 0) { shape(poly); g.fillStyle = '#fff'; g.globalAlpha = s.flash[i] * 0.5; g.fill(); g.globalAlpha = 1; }
     shape(poly); g.strokeStyle = on ? CC.lilac : st.hot ? CC.sky : col === CC.deep ? CC.signal : col; g.lineWidth = (on ? 3.5 : 2) * k; g.stroke();
     if (i === toward) { const [x0, y0] = side(a0, R + 6 * k), [x1, y1] = side(a1, R + 6 * k); g.strokeStyle = '#fff'; g.lineWidth = 2.5 * k; g.lineCap = 'round'; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
-    const mr = (R + Ri) / 2, lx = cx + nx * mr, ly = cy + ny * mr;
-    text(FACINGS[i], lx, ly + 6 * k, `700 ${17 * k}px Antonio`, on ? CC.lilac : CC.text, 'center', 0, '1.2px');
+    // the facing's name in the middle of its key (owner: "center text, they should be middle of the shield object")
+    const lx = xs.reduce((a, v) => a + v, 0) / 4, ly = ys.reduce((a, v) => a + v, 0) / 4;
+    g.textBaseline = 'middle'; text(FACINGS[i], lx, ly + 1, `700 ${17 * k}px Antonio`, on ? CC.lilac : CC.text, 'center', 0, '1.2px'); g.textBaseline = 'alphabetic';
   }
   // the ship, small, in the middle
   g.save(); g.translate(cx, cy); g.strokeStyle = CC.sky; g.lineWidth = 1.6 * k; const L = Ri * 0.7;
@@ -2244,15 +2360,36 @@ function uiWeapons(r, big) {
   tabs('w.arm', b.x, b.y + 54, b.w, 40, [['offline', 'Offline'], ['normal', 'Normal'], ['overload', 'Overload']], states.length === 1 ? states[0] : null, A.arm, (id) => id === 'overload' && !sel.some((m) => WEAPONS[m.w].overload));
   if (!big) return;
   let y = b.y + 106; LBL('Select', b.x, y + 13); y += 20;
-  tabs('w.grp', b.x, y, b.w, 40, [['all', 'All'], ['lance', 'Lances'], ['torpedo', 'Torpedoes']], null, A.group); y += 52; divider(b.x, y, b.w); y += 26;
-  const cols = [0, 110, 0.36, 0.55, 0.72].map((c) => (c < 1 ? b.x + b.w * c : b.x + c));
-  ['Mount', 'Weapon', 'State', 'Arc', 'Charge'].forEach((hh, i) => LBL(hh, cols[i], y)); y += 14;
-  for (const m of s.mounts) {
-    tab(`w.m.${m.i}`, cols[0], y, 90, 36, String(m.i + 1), () => A.selectMount(m.i), m.sel, { dis: () => m.w === 'pd' });
-    TXT(WEAPONS[m.w].name, cols[1], y + 25, cols[2] - cols[1] - 10); TXT(m.hp <= 0 ? 'Destroyed' : m.state, cols[2], y + 25, cols[3] - cols[2] - 10, m.hp <= 0 ? CC.alert : CC.text);
-    LBL(m.arc[1] >= 360 ? 'All round' : `${m.arc[0]}° ± ${m.arc[1] / 2}°`, cols[3], y + 24, cols[4] - cols[3] - 10);
-    bar(cols[4], y + 10, b.x + b.w - cols[4], null, m.charge, m.hp < 1); y += 44;
+  tabs('w.grp', b.x, y, b.w, 40, [['all', 'All'], ['lance', 'Lances'], ['torpedo', 'Torpedoes']], null, A.group); y += 52;
+  // The weapons as they sit on the ship (owner, 2026-11-02: "show weapons as they are on the ship in the expanded menu,
+  // then when you hover over them and click on them, detail menu appears on the lower half. Also add a fire button
+  // underneath each weapon"): the ship systems display (the one component, 6.1), a Fire key under each mount, and the
+  // picked mount's details below.
+  const top = { x: b.x, y, w: b.w, h: (b.y + b.h - y) * 0.55 };
+  const geo = inBox(top.x, top.y, top.w, top.h, (c, w, h) => drawSSD(c, w, h, s, true, true, 'wx'));
+  for (const [mx, my, rr, m] of geo.mounts) {
+    const st = mountStatus(s, m), ax = top.x + mx, ay = top.y + my;
+    hit(`wx.m.${m.i}`, ax - rr, ay - rr, rr * 2, rr * 2, { click: () => { wDetail = m.i; }, cursor: 'pointer',
+      tip: { title: `${m.i + 1} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]]] } });
+    if (m.w !== 'pd') button(`wx.f.${m.i}`, ax - 24, ay + rr - 1, 48, 20, 'Fire', () => A.fireOne(m.i), { center: true, dis: () => !t || !ready(m) || !inArc(s, m, t) || !inRange(s, m, t) });
   }
+  y = top.y + top.h + 8; divider(b.x, y, b.w); y += 14;
+  weaponDetail({ x: b.x, y, w: b.w, h: b.y + b.h - y }, s, t);
+}
+// The picked mount's details (the lower half of the expanded weapons panel): every figure from the rules the shot uses.
+let wDetail = 0;
+function weaponDetail(r, s, t) {
+  const m = s.mounts[wDetail] || s.mounts[0], w = spec(m), st = mountStatus(s, m), cool = cooldownS(m), x0 = r.x, cw = r.w / 2 - 12;
+  text(`${m.i + 1} · ${WEAPONS[m.w].name}`.toUpperCase(), x0, r.y + 26, '700 26px Antonio', CC.sky, 'left', cw, '1px');
+  pairs('wd.a', x0, r.y + 62, [['Status', st, STATUS_COL[st]], ['Health', pct(clamp(m.hp, 0, 1))]], cw, 20);
+  pairs('wd.b', x0, r.y + 92, [['Arc', m.arc[1] >= 360 ? 'All round' : `${m.arc[0]}° ± ${m.arc[1] / 2}°`], ['Range', km(w.range_km)], ['Damage', String(w.dmg)]], cw, 20);
+  pairs('wd.c', x0, r.y + 122, [['Charge', m.hp <= 0 || m.state === 'offline' ? '--' : pct(m.charge)], ['Ready in', cool === null ? (ready(m) ? 'Ready' : '--') : `${fmtCool(cool)} s`], ['Cost', `${w.cost_e} E`]], cw, 20);
+  const rx = x0 + r.w / 2 + 12, rw = r.w / 2 - 12;
+  if (m.w !== 'pd') tabs(`wd.arm`, rx, r.y + 6, rw, 36, [['offline', 'Offline'], ['normal', 'Normal'], ['overload', 'Overload']], m.state, (k2) => A.armOne(m.i, k2), (id) => id === 'overload' && !WEAPONS[m.w].overload);
+  if (t) pairs('wd.t', rx, r.y + 62, [['Target', t.name], ['To hit', pct(hitChance(s, m, t))], ['In arc', inArc(s, m, t) ? 'Yes' : 'No', inArc(s, m, t) ? CC.accord : CC.alert], ['In range', inRange(s, m, t) ? 'Yes' : 'No', inRange(s, m, t) ? CC.accord : CC.alert]], rw, 20);
+  else LBL('No target', rx, r.y + 62);
+  if (m.w !== 'pd') { tab(`wd.sel`, rx, r.y + 84, rw * 0.45, 40, m.sel ? 'In the volley' : 'Not in volley', () => A.selectMount(m.i), m.sel);
+    button('wd.fire', rx + rw * 0.45 + 8, r.y + 84, rw * 0.55 - 8, 40, 'Fire', () => A.fireOne(m.i), { center: true, dis: () => !t || !ready(m) || !inArc(s, m, t) || !inRange(s, m, t) }); }
 }
 
 // ---- Radar and the tactical map ----------------------------------------------------------------------------------
@@ -2506,7 +2643,7 @@ function camLockStep(dt) {
 }
 // Steering by the ring: the ring's radius in units and how near a press must land to grab it.
 const HELM_RING = { r_u: 4.5, grab_u: 1.6 };
-let STEER = false, ringHot = false;
+let STEER = false, ringHot = false, placingHet = false;
 function nearRing(e) { const q = planeAt(e), s = W.player; if (!q || !s.alive) return false; return Math.abs(Math.hypot(q.x - s.x, q.z - s.z) - HELM_RING.r_u) <= HELM_RING.grab_u; }
 let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidKind = 'shoot', invDest = null;
 // The squads the transport station sends: hit and run, and capture (per role).
@@ -2526,9 +2663,11 @@ function wireView() {
     if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
     if (expanded) { A.expand(expanded); return; }
     // A ship under the pointer: left focuses, right locks. Empty space: left is the helm.
-    const s = placingMine ? null : pick(e);
+    const s = placingMine || placingHet ? null : pick(e);
     if (s && s !== W.player) { if (e.button === 2) A.lock(s.id); else focus = s.id; return; }
-    if (e.button === 0) { const q = planeAt(e); if (q) (placingMine ? A.placeMine(q.x, q.z) : A.helmTo(q.x, q.z)); }
+    if (e.button === 0) { const q = planeAt(e); if (q) { const s = W.player;
+      if (placingHet) { placingHet = false; A.het(Math.round(wrap(Math.atan2(q.x - s.x, -(q.z - s.z)) - s.h) / DEG)); }
+      else if (placingMine) A.placeMine(q.x, q.z); else A.helmTo(q.x, q.z); } }
   };
   renderer.domElement.oncontextmenu = (e) => e.preventDefault();
 }
@@ -2550,6 +2689,7 @@ function helmArc(vw, vh, s) {
   }
   const a = at(s.hOrder, R - 0.8), b = at(s.hOrder, R + 1.2);
   if (a && b) { g.strokeStyle = CC.sky; g.lineWidth = 3; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+  if (placingHet) LBL('Click where the high energy turn should point', vw / 2, 92, 0, CC.caution, 'center', 18);
   if (placingMine) {
     // the transporter's reach, where a mine can be placed
     const Rm = TRANSPORT.range_km * 10; g.strokeStyle = CC.caution; g.lineWidth = 2; g.setLineDash([10, 8]); g.beginPath();
@@ -2557,6 +2697,19 @@ function helmArc(vw, vh, s) {
     g.stroke(); g.setLineDash([]);
     LBL(`Click to place a mine · reach ${km(TRANSPORT.range_km)}`, vw / 2, 92, 0, CC.caution, 'center', 18);
   }
+}
+// Whether a torpedo or missile could lock now: a seeker mount charged, the target in its arc and range (the rules the
+// shot itself uses, 6.1).
+function seekerLock(s, t) { return s.mounts.some((m) => (WEAPONS[m.w].kind === 'torpedo' || WEAPONS[m.w].kind === 'missile') && ready(m) && inArc(s, m, t) && inRange(s, m, t)); }
+// The target bracket (owner, 2026-11-02: "selected enemy target should be bright red, and if torpedo or missile lock is
+// possible to have double frames like in ace combat"): four bright red corners; a second, outer frame and SEEKER LOCK
+// when a torpedo or missile could lock.
+function targetBracket(px, py, lock) {
+  const corners = (w, h, c, lw) => { g.strokeStyle = CC.alert; g.lineWidth = lw; g.lineCap = 'square';
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const x0 = px + sx * w / 2, y0 = py + sy * h / 2; g.beginPath(); g.moveTo(x0 - sx * c, y0); g.lineTo(x0, y0); g.lineTo(x0, y0 - sy * c); g.stroke(); } };
+  corners(92, 72, 20, 3.5);
+  if (lock) { const pulse = 0.65 + 0.35 * Math.sin(performance.now() / 160); g.globalAlpha = pulse; corners(116, 96, 16, 2.5); g.globalAlpha = 1;
+    g.fillStyle = CC.alert; g.font = '700 14px Antonio'; g.textAlign = 'center'; g.fillText('SEEKER LOCK', px, py - 56); }
 }
 function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; return [VIEW[2] - w - 16, 14, w, h]; }
 // Over the 3D view: brackets and names, the readout, the last message, the Target box, the lock key, the mockup badge.
@@ -2573,12 +2726,12 @@ function uiView() {
     if (!on) {
       if (!locked) continue;
       const a = Math.atan2(py - vh / 2, px - vw / 2) * (v.z > 1 ? -1 : 1) + (v.z > 1 ? P : 0); px = vw / 2 + Math.cos(a) * (vw / 2 - 40); py = vh / 2 + Math.sin(a) * (vh / 2 - 40);
-      g.strokeStyle = CC.sky; g.lineWidth = 3; g.beginPath(); g.arc(px, py, 14, 0, 2 * P); g.stroke(); g.fillStyle = CC.sky; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 32); continue;
+      g.strokeStyle = CC.alert; g.lineWidth = 3; g.beginPath(); g.arc(px, py, 14, 0, 2 * P); g.stroke(); g.fillStyle = CC.alert; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 32); continue;
     }
-    if (locked) CON.live.bracket(g, px - 46, py - 36, 92, 72);
+    if (locked) targetBracket(px, py, seekerLock(s, o));
     else { g.strokeStyle = col; g.lineWidth = f ? 2.5 : 1.5; g.globalAlpha = f ? 1 : 0.7; g.beginPath(); g.arc(px, py, f ? 26 : 16, 0, 2 * P); g.stroke(); g.globalAlpha = 1; }
     g.fillStyle = locked ? CC.text : col; g.font = `600 ${locked ? 20 : 16}px Antonio`; g.textAlign = 'center';
-    g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? 58 : 34));
+    g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? (seekerLock(s, o) ? 72 : 58) : 34));
     if (f && !locked && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id];
   }
   for (const w of W.wells) { const v = new THREE.Vector3(w.x, 0, w.z).project(camera); if (v.z >= 1) continue;
@@ -2616,7 +2769,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v32', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v33', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -2706,7 +2859,8 @@ function scripted(steps, then, sc = 'battle') {
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(raidPick, { marines: 2, demo: 0 }); Object.assign(capPick, { marines: 8, demo: 0, medics: 1, engineers: 1, hackers: 1, pilots: 1 });
   newWorld(sc); camLock = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
-  if (sc === 'battle') { W.player.engaged = true; W.player.order = 'approach'; }
+  if (sc === 'battle') { W.player.engaged = true; W.player.order = 'intercept'; W.player.vOrder = maxSpeed(W.player); }
+  placingHet = false;
   for (let i = 0; i < steps; i++) { step(); if (sc === 'battle' && i === steps - 6) A.fire(); }
   camera.position.set(0, 5, 13).add(new THREE.Vector3(W.player.x, 0, W.player.z)); controls.target.set(W.player.x, 0, W.player.z); lastFollow = null;
   if (then) then(); layout();
@@ -2739,6 +2893,8 @@ window.MOCKUP_SHOTS = {
   shields_tip: () => { scripted(600, () => { shipTab = 'shields'; const sh = W.player.shields; sh[0] = 12; sh[1] = 22; sh[4] = 6; W.player.reinforce = 0; }); HOT = 'shx.1'; },
   ssd_tip: () => { scripted(600, () => { damagedSystems(); }); HOT = 'ssd.sys.engines'; },
   battle: () => scripted(600),
+  // the target bracket with a seeker lock: the torpedoes charged, the Vorrak ahead inside 18 km
+  seeker_lock: () => scripted(600, () => { const s = W.player, v = ship('vorrak'); s.target = 'vorrak'; focus = 'vorrak'; s.h = 0; s.hOrder = 0; v.x = s.x; v.z = s.z - 110; for (const m of s.mounts) if (WEAPONS[m.w].kind === 'torpedo') m.charge = 1; }),
   cam_locked: () => { scripted(600); camLock = true; },
   // The test scenes (menu: Test scene).
   scene_delivery: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; A.transfer('goods', -1); for (let i = 0; i < Math.round(8 / DT); i++) step(); A.transfer('goods', -1); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'delivery'),
