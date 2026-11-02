@@ -1745,7 +1745,12 @@ function helmGlyph(kind, cx, cy, r, col) {
     const p0 = [cx - r * 0.62, cy + r * 0.8], ctl = [cx + r * 0.02, cy - r * 0.62], p3 = [cx + r * 0.45, cy + r * 0.42];
     G.beginPath(); G.moveTo(p0[0], p0[1]); G.quadraticCurveTo(ctl[0], ctl[1], p3[0], p3[1]); G.stroke();
     const a = Math.atan2(p3[1] - ctl[1], p3[0] - ctl[0]); head(p3[0] + Math.cos(a) * r * 0.36, p3[1] + Math.sin(a) * r * 0.36, a, r * 0.4, r * 0.32); }
-  else if (kind === 'erratic') { line([[cx - r * 0.1, cy + r * 0.8], [cx + r * 0.35, cy + r * 0.4], [cx - r * 0.35, cy], [cx + r * 0.3, cy - r * 0.38]]); head(cx + r * 0.05, cy - r * 0.78, -P / 2 - 0.45, r * 0.42, r * 0.34); }
+  else if (kind === 'erratic') {
+    // evasive: a bold zigzag climbing the key, the head aimed along its last stroke (owner, 2026-11-02: "review evasive,
+    // i cant read the arrow")
+    const pts = [[cx - r * 0.05, cy + r * 0.85], [cx + r * 0.5, cy + r * 0.38], [cx - r * 0.5, cy - r * 0.02], [cx + r * 0.12, cy - r * 0.42]];
+    const [ax, ay] = pts[2], [bx2, by2] = pts[3], a = Math.atan2(by2 - ay, bx2 - ax);
+    line(pts); head(bx2 + Math.cos(a) * r * 0.4, by2 + Math.sin(a) * r * 0.4, a, r * 0.48, r * 0.38); }
   else if (kind === 'estop') { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.8); } G.closePath(); G.fill();
     G.fillStyle = CC.signal; G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText('STOP', cx, cy + r * 0.03); G.textBaseline = 'alphabetic'; }
 }
@@ -2901,7 +2906,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v37', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v38', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

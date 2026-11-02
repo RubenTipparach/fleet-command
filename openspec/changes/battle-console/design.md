@@ -360,7 +360,8 @@ a second and held; erratic manoeuvres refused a launch.
 airport or something, they are way too weird looking I dont even understand them"): thick strokes and filled triangular
 heads; the turns are road-sign turn arrows (a stem, the bend, a short run, the head), 180 the U-turn sign, free heading
 the straight-ahead arrow, intercept an arrow into a target, trail two ships in line, approach and hold an arrow stopped
-at a bar before a target, orbit a circular arrow round a dot, erratic a zigzag arrow, emergency stop an octagon with
+at a bar before a target, orbit a circular arrow round a dot, erratic (evasive) a bold three-stroke zigzag climbing to a head aimed along its last stroke (version 38, owner:
+"review evasive, i cant read the arrow"), emergency stop an octagon with
 STOP, the free-angle turn a turn arrow to a crosshair. Measured: holding 3 km, the Resolute closed from 7.5 km and held
 3.2-3.3 km.
 
