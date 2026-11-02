@@ -342,13 +342,18 @@ use (page 120), orbit target, intercept target (the helm steers, the captain kee
 | High energy turns (triggers) | A 3 x 3 pad: hard left 135, 180, hard right 135; left 90, **Free heading** (the middle key, cancelling helm orders), right 90; the angle printed in each turn key's corner |
 | Self (toggles and triggers) | **Erratic manoeuvres** (toggle), **Emergency stop**, **HET free angle** (then click the view) |
 
-Beside the pad: chance to hit, **HET chance** (red "Broken" during a breakdown), heading, ordered speed. The helm ring,
+Beside the pad: **To hit** (the best chance among the selected weapons of hitting the locked target now, the number
+the shot rolls), **HET** (the chance the next high energy turn succeeds; during a breakdown the seconds left), **Heading**
+(the ship's heading in degrees, 000 up the map) and **Speed** (the ordered speed, m/s); "Hdg" and "Order" were renamed
+in version 39 for being cryptic. The helm ring,
 pointing and the speed strip still steer by hand (free heading).
 
 **The rules** (`HET`, `HELM` in the page): a HET turns at 240 degrees a second and costs 3 E from the battery; its
 chance starts at the class's best (0.95 less the hull's length over 2 km: 79 % for the Resolute, 87 % for a frigate),
 drops 20 points each HET and recovers 1 point a second; erratic manoeuvres take 17 points off. A failure is a
-**breakdown**: speed cut to 30 %, engines damaged 30 %, no manoeuvring for 6 s. Erratic manoeuvres: hit chances to and
+**breakdown** (version 39, owner, 2026-11-02: "failure to do so damages impulse engines, and knocks the ship out for 15
+seconds, unable to move or rotate"): the impulse engines lose 30 % of their health and the ship is dead in space for
+15 s, no speed and no turning; the HET readout counts it down in red ("Out 12 s"). Erratic manoeuvres: hit chances to and
 from the ship x 0.75, turn rate x 0.8, no launches, mines or tractors. Emergency stop: five times the deceleration, then
 the engines hold for 4 s.
 

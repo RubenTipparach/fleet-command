@@ -473,7 +473,10 @@ const WARP = { bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, plot_drift_deg
 // engines are damaged, no manoeuvring for a while). Erratic manoeuvres make the ship harder to hit and its own fire
 // worse, forbid launches, mines and tractors, and make HETs about 17 points likelier to fail. Emergency deceleration
 // stops the ship as fast as it can, then holds it a while. Our numbers, the page's own.
-const HET = { rate_deg_s: 240, cost_e: 3, chance_drop: 0.2, recover_per_s: 0.01, erratic_penalty: 0.17, breakdown_s: 6, breakdown_engines: 0.3 };
+// A failed HET (owner, 2026-11-02: "failure to do so damages impulse engines, and knocks the ship out for 15 seconds,
+// unable to move or rotate"): the impulse engines lose breakdown_engines of their health and the ship is dead in space for
+// breakdown_s, no speed and no turning.
+const HET = { rate_deg_s: 240, cost_e: 3, chance_drop: 0.2, recover_per_s: 0.01, erratic_penalty: 0.17, breakdown_s: 15, breakdown_engines: 0.3 };
 const HELM = { estop_decel_x: 5, estop_hold_s: 4, erratic_hit: 0.75, erratic_turn: 0.8, orbit_km: 4, hold_min_km: 1, hold_max_km: 12 };
 // A class's best HET chance: smaller hulls turn hard more safely.
 const hetMax = (s) => clamp(0.95 - CLASSES[s.cls].len_m / 2000, 0.6, 0.95);
@@ -976,7 +979,8 @@ function move(s) {
     if (Math.abs(s.het.left) < 1e-4) s.het = null;
   } else if (s.broke > 0) s.hOrder = s.h;
   else { const turn = c.turn_deg_s * DEG * DT * (0.5 + 0.5 * s.sys.engines) * (s.erratic ? HELM.erratic_turn : 1), dh = wrap(s.hOrder - s.h); s.h = wrap(s.h + clamp(dh, -turn, turn)); }
-  if (s.broke > 0 || s.estop || s.estopT > 0) s.vOrder = 0;
+  if (s.broke > 0) { s.v = 0; s.vOrder = 0; }
+  if (s.estop || s.estopT > 0) s.vOrder = 0;
   const vmax = maxSpeed(s), goal = clamp(s.vOrder, -60, vmax), a = c.accel_m_s2 * DT * (s.estop ? HELM.estop_decel_x : 1);
   s.v += clamp(goal - s.v, -a, a);
   // emergency deceleration: once stopped, the engines hold for a while
@@ -1160,7 +1164,7 @@ const A = {
     if (s.battery < HET.cost_e) { say('Helm', 'Not enough power for a high energy turn.'); return; }
     s.battery -= HET.cost_e; s.engaged = false; const p = s.hetChance - (s.erratic ? HET.erratic_penalty : 0); s.hetChance = Math.max(0, s.hetChance - HET.chance_drop);
     if (W.rand.helm() < p) { s.het = { left: deg * DEG }; say('Helm', `High energy turn, ${Math.abs(deg)} degrees ${deg < 0 ? 'to port' : 'to starboard'}.`); }
-    else { s.broke = HET.breakdown_s; s.sys.engines = Math.max(0, s.sys.engines - HET.breakdown_engines); s.v *= 0.3; say('Engineering', 'Breakdown on the high energy turn: engines damaged, helm out for a few seconds.'); } },
+    else { s.broke = HET.breakdown_s; s.sys.engines = Math.max(0, s.sys.engines - HET.breakdown_engines); s.v = 0; s.vOrder = 0; say('Engineering', `High energy turn failed: impulse engines damaged, the ship is dead in space for ${HET.breakdown_s} s.`); } },
   hetFree: () => { placingHet = !placingHet; placingMine = false; },
   erratic: () => { const s = W.player; s.erratic = !s.erratic; say('Helm', s.erratic ? 'Erratic manoeuvres.' : 'Erratic manoeuvres off.'); },
   estop: () => { const s = W.player; if (s.estopT > 0) return; s.engaged = false; s.estop = true; say('Helm', 'Emergency deceleration.'); },
@@ -1831,7 +1835,7 @@ function stHelm(b, big) {
   }));
   // the readouts beside the pad
   const rx = b.x + 3 * (ks + gap), rw = b.x + b.w - rx, hdg = String(Math.round(((s.h / DEG) + 360) % 360)).padStart(3, '0'), hc = s.hetChance - (s.erratic ? HET.erratic_penalty : 0);
-  const rows = [['To hit', t ? pct(bestChance()) : '--', CC.sky], ['HET', s.broke > 0 ? 'Broken' : pct(Math.max(0, hc)), s.broke > 0 ? CC.alert : hc < 0.5 ? CC.caution : CC.accord], ['Hdg', hdg, CC.sky], ['Order', String(Math.round(s.vOrder)), CC.sky]];
+  const rows = [['To hit', t ? pct(bestChance()) : '--', CC.sky], ['HET', s.broke > 0 ? `Out ${fmtCool(s.broke)} s` : pct(Math.max(0, hc)), s.broke > 0 ? CC.alert : hc < 0.5 ? CC.caution : CC.accord], ['Heading', `${hdg}°`, CC.sky], ['Speed', `${Math.round(s.vOrder)} M/S`, CC.sky]];
   rows.forEach(([l, v, c2], i) => { const yy = y + i * (3 * ks + 2 * gap) / 4; LBL(l, rx, yy + 14 * k, 0, CC.lilac, 'left', 13 * k); NUM(v, rx, yy + 36 * k, rw, c2, 'left', 22 * k); });
   if (!big) return;
   y += 3 * (ks + gap) + 20;
@@ -2906,7 +2910,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v38', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v39', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

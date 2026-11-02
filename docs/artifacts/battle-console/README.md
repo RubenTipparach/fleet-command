@@ -56,3 +56,4 @@
 - Version 36 published 2026-11-02, version id `1793595050-ad9c`: a big ship explosion (white-hot core, blue shockwave ring, plasma cloud, sparks, burning chunks; Destroy target in the menu); the helm's target orders in the left half, Hit and run with a two-handled range slider and Evasive manoeuvres (a toggle, out of the HET pad) in the right.
 - Version 37 published 2026-11-02, version id `1793595346-a7ae`: the hit and run icon redrawn as a strafing pass (up toward a target, a tight turn short of it, back down and away).
 - Version 38 published 2026-11-02, version id `1793601438-8fb3`: the evasive icon redrawn (a bold zigzag with its head aimed along the last stroke).
+- Version 39 published 2026-11-02, version id `1793601524-e678`: a failed high energy turn damages the impulse engines and leaves the ship dead in space for 15 s (the owner's rule); the readouts renamed To hit, HET (counting a breakdown down), Heading, Speed.

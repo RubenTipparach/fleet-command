@@ -21,3 +21,4 @@
 - 2026-11-01, cloud session: every answer folded in (B2-B16, F6a, F7, R1-R4, T4a, U4-U10 into "Already decided"); new questions B17-B19; version id `1793577333-c702`.
 - 2026-11-02, cloud session: section J (warp, J1-J5) added; version id `1793581930-af71`.
 - 2026-11-02, cloud session: B20-B22 added; merged onto the live version 1793584895-3b88 (section A from the Concord ships thread kept); version id `1793590173-e4c8`.
+- 2026-11-02, cloud session: B20 reworded to the owner's HET failure rule; merged onto the live version 1793592744-74a0 (A10 from the ships thread kept); version id `1793601543-7f47`.
