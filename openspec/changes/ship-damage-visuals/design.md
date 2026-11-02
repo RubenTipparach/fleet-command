@@ -55,10 +55,34 @@ still disengage; with none, impulse only and no escape). Survey A5 asks which pi
 
 ### Breaking apart
 
-At a core breach or zero hull the ship comes apart along the lines it was built in: eight saucer wedges, the crown,
-the neck, the engineering hull's two halves, both nacelles and their pylons. Each piece gets an outward velocity and a
-spin, its broken faces charred with ember lines, a fire on it that dies within about 10 s. A flash, a shockwave ring
-in the ship's plane, a burst of fire, 300 debris shards and a coolant cloud from the core.
+The owner, 2026-11-02, on version 1 (eight equal saucer wedges with hollow insides): "interiors are hollowed, this is
+not what I want", then "the ship breaks very programmatically, how do we make these chunks look more structurally
+random?", then "hull pieces look interesting, I think they should look more scorched, and have paralax so they look like
+actual interiors", pointing at interior mapping in Spider-Man PS4 (polycount.com discussion 204601).
+
+- **Random chunks.** Each body (the saucer, the engineering hull) is split by fracture seeds scattered through its volume,
+  seeded per class so the same ship always breaks the same way: 11 saucer pieces on the cruiser, 9 on the frigate, 7 on
+  the corvette, 3 or 4 in the engineering hull. A piece is the body clipped to its seed's cell (the points nearer that
+  seed than any other), so pieces vary in size and shape and some split the saucer through its thickness. The skin's
+  edge is torn by noise of about 1 m. The crown, the neck, the pylons and nacelles stay whole pieces: they are
+  subsystems and break where the subsystem does.
+- **No hollow shells.** Where two cells meet, each piece gets a cut face on their shared plane, clipped to the body's
+  outline and to that pair's border. It shows what the break cut through: the skin edge on, deck plates every 3.4 m,
+  bulkheads at a room width that changes deck by deck (6, 9 or 12 m, staggered so no two decks line up), and machinery
+  spaces packed solid.
+- **Interiors with depth (interior mapping).** Between the deck plates and bulkheads the cut face draws rooms behind
+  it without any geometry: a ray from the eye is traced into the room grid and the first floor, ceiling or wall it meets
+  is shaded, so the rooms shift with parallax as the piece tumbles. Rooms are dark (power out, about half), red
+  (emergency light), burning (flickering orange) or still lit, with ceiling light strips, crates on the floor, light that
+  falls off toward the back.
+- **Scorched.** The whole cut face is sooty; soot and char deepen over the last 12 m toward each broken edge, rooms
+  there are blackened, and an ember line runs along every broken edge and cools over about 30 s. The skin is charred
+  over the last 11 m before the break.
+
+Each piece gets an outward velocity and a spin, a fire on it that dies within about 10 s. A flash, a shockwave ring in
+the ship's plane, a burst of fire, 300 debris shards and a coolant cloud from the core. In the game the cells are
+pre-cut in Blender (Voronoi fracture of each body, seeded per class) and the cut faces carry the same interior-mapping
+shader; survey A3 decides where modelled breaks and parallax are used.
 
 ## One implementation
 
@@ -80,5 +104,6 @@ spatial shader, on the phone only the nearest 4 scorches, and particles on the G
 | A2 | How do you read subsystem damage by looking at the ship? | A signature per subsystem (the table above) |
 | A3 | Holes: modelled, parallax, or both? | Both: parallax for hits, modelled at fracture lines |
 | A4 | Venting fire: brief and cinematic, realistic, or long-burning? | Brief: jets while air vents, then smoke and embers |
+| A10 | The break-up: random chunks with interior-mapped cut faces, as in version 2? | As shown |
 | A5 | Which pieces can be shot off? | Nacelles, the bridge crown and saucer sections; whole break-up only at a core breach or zero hull |
 | A6 | One nacelle left: how does the ship fly? | Half top speed, slower turns, can still disengage; none: impulse only |

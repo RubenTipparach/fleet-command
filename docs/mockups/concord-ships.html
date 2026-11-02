@@ -654,6 +654,7 @@ uniform vec4 uHoles[8]; uniform vec4 uHoleN[8]; uniform int uHoleCount;
 uniform vec4 uScorch[24]; uniform float uScorchHeat[24]; uniform int uScorchCount;
 uniform vec4 uCuts[4]; uniform vec4 uCutC[4]; uniform int uCutCount; uniform float uCutHeat;
 uniform float uLight; uniform float uTime; uniform float uParallax;
+uniform int uCell; uniform vec3 uSeeds[16]; uniform int uSeedN; uniform float uSec[8]; uniform vec3 uSecC; uniform float uSecOn;
 varying vec3 vObj; varying vec3 vCamObj;
 float dh3(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float dn3(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
@@ -679,11 +680,146 @@ vec3 interiorRoom(vec3 p, vec3 V, vec4 h, vec4 hn){
   float fl = 0.85+0.15*sin(uTime*9.0+hit.x*0.7);
   return col*holeLight(hn.w)*1.9*fl*exp(-t*0.09);
 }`;
+const NO_SEEDS = { uSeeds: { value: Array.from({ length: 16 }, () => V3()) }, uSeedN: { value: 0 } };
+// Random fracture (owner, 2026-11-02: "the ship breaks very programmatically, how do we make these chunks look more structurally
+// random?"). Seeds scattered through a body (the saucer, the engineering hull) split it into cells: every piece is the body
+// clipped to one cell, its skin torn a little at the edge by noise. Where two cells meet, a cut face closes the piece.
+function bodyRH(b, p) { const q = p.clone().sub(b.c); return b.axis === 0 ? [Math.hypot(q.x / b.s[0], q.z / b.s[1]), q.y] : [Math.hypot(q.x / b.s[0], q.y / b.s[1]), q.z]; }
+function inPoly(poly, x, y) { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; }
+function insideBody(b, p) { const [r, h] = bodyRH(b, p); return inPoly(b.prof, r, h); }
+function bodyBox(b) {
+  const rmax = Math.max(...b.prof.map((q) => q[0])), hs = b.prof.map((q) => q[1]), h0 = Math.min(...hs), h1 = Math.max(...hs);
+  return b.axis === 0 ? [V3(-rmax * b.s[0], h0, -rmax * b.s[1]).add(b.c), V3(rmax * b.s[0], h1, rmax * b.s[1]).add(b.c)]
+    : [V3(-rmax * b.s[0], -rmax * b.s[1], h0).add(b.c), V3(rmax * b.s[0], rmax * b.s[1], h1).add(b.c)];
+}
+function subsetGeo(g, i, seeds, margin) {
+  const P = g.attributes.position, near = new Float32Array(P.count), v = V3();
+  for (let k = 0; k < P.count; k++) { v.fromBufferAttribute(P, k); let dmin = 1e9; for (const sd of seeds) dmin = Math.min(dmin, v.distanceTo(sd)); near[k] = v.distanceTo(seeds[i]) - dmin; }
+  const idx = g.index.array, out = [];
+  for (let t = 0; t < idx.length; t += 3) if (near[idx[t]] < margin || near[idx[t + 1]] < margin || near[idx[t + 2]] < margin) out.push(idx[t], idx[t + 1], idx[t + 2]);
+  if (!out.length) return null;
+  const o = new THREE.BufferGeometry(); for (const k in g.attributes) o.setAttribute(k, g.attributes[k]); o.setIndex(out); return o;
+}
+function fracture(ship, b, rng) {
+  const [lo, hi] = bodyBox(b), size = hi.clone().sub(lo), seeds = [];
+  const spacing = Math.cbrt(size.x * size.y * size.z / b.n) * 0.55;
+  for (let tries = 0; seeds.length < b.n && tries < 6000; tries++) {
+    const p = V3(lo.x + rng() * size.x, lo.y + rng() * size.y, lo.z + rng() * size.z);
+    if (insideBody(b, p) && seeds.every((q) => q.distanceTo(p) > spacing * (0.6 + rng() * 0.8))) seeds.push(p);
+  }
+  b.seeds = seeds; b.u = { uSeeds: { value: Array.from({ length: 16 }, (_, k) => (seeds[k] || V3()).clone()) }, uSeedN: { value: seeds.length } };
+  b.frags = [];
+  const dark = glowMat(0x000000, 0x23262c); dark.emissiveIntensity = 0;
+  seeds.forEach((sd, i) => {
+    const pivot = new THREE.Group(), inner = new THREE.Group(); pivot.position.copy(sd); inner.position.copy(sd).negate(); pivot.add(inner); ship.root.add(pivot); pivot.visible = false;
+    const P = { id: b.name + i, pivot, inner, center: sd.clone(), vel: V3(), spin: V3(), detached: false, mats: [], sys: b.sys, cuts: [], caps: [], frag: true, body: b, cell: i };
+    ship.pieces[P.id] = P; b.frags.push(P); ship.frags.push(P);
+    for (const [g, maps] of b.geos) {
+      const sub = subsetGeo(g, i, seeds, 3); if (!sub) continue;
+      const m = hullMat(maps, ship); m.userData.u.uCell.value = i; m.userData.u.uSeeds = b.u.uSeeds; m.userData.u.uSeedN = b.u.uSeedN;
+      const mesh = new THREE.Mesh(sub, m); mesh.userData = { ship, sys: b.sys, piece: P }; inner.add(mesh); P.mats.push(m); ship.mats.push(m);
+    }
+    for (const g of b.rings) { const sub = subsetGeo(g, i, seeds, 0.5); if (sub) inner.add(new THREE.Mesh(sub, dark)); }
+  });
+  // Neighbouring cells, found by sampling the body; each pair gets a cut face on its shared plane, one for each side.
+  const pairs = new Set(), p = V3();
+  for (let k = 0; k < 24000; k++) {
+    p.set(lo.x + rng() * size.x, lo.y + rng() * size.y, lo.z + rng() * size.z); if (!insideBody(b, p)) continue;
+    let a = -1, da = 1e9, c = -1, dc = 1e9;
+    seeds.forEach((sd, i) => { const d = p.distanceTo(sd); if (d < da) { c = a; dc = da; a = i; da = d; } else if (d < dc) { c = i; dc = d; } });
+    if (c >= 0 && dc - da < 1.5) pairs.add(Math.min(a, c) + ':' + Math.max(a, c));
+  }
+  const ext = size.length();
+  for (const key of pairs) { const [a, c] = key.split(':').map(Number); cutFace(ship, b, a, c, ext); cutFace(ship, b, c, a, ext); }
+}
+// A cut face: the plane between two cells, clipped in the shader to the body and to this pair's shared border. It shows the
+// structure it cuts through (deck plates every 3.4 m, bulkheads every 6 m, the skin's thickness), and between them rooms with
+// depth, drawn by interior mapping (owner, 2026-11-02: "have paralax so they look like actual interiors", after Spider-Man
+// PS4's interior mapping): a ray from the eye into a room grid, no extra polygons. Soot over all of it, char and embers
+// toward the broken edges.
+const CUTFACE_GLSL = `
+uniform vec3 uSeeds[16]; uniform int uSeedN; uniform int uA; uniform int uB;
+uniform int uAxis; uniform vec3 uBodyC; uniform vec2 uBodyS; uniform vec2 uProf[48]; uniform int uProfN;
+uniform float uHeat; uniform float uTime;
+varying vec3 vObj; varying vec3 vCamObj;
+float fh(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float fn(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(mix(fh(i),fh(i+vec3(1,0,0)),f.x),mix(fh(i+vec3(0,1,0)),fh(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(fh(i+vec3(0,0,1)),fh(i+vec3(1,0,1)),f.x),mix(fh(i+vec3(0,1,1)),fh(i+vec3(1,1,1)),f.x),f.y),f.z); }
+vec2 bodyRH(vec3 p){ vec3 q = p - uBodyC; return uAxis == 0 ? vec2(length(vec2(q.x/uBodyS.x, q.z/uBodyS.y)), q.y) : vec2(length(vec2(q.x/uBodyS.x, q.y/uBodyS.y)), q.z); }
+bool inPoly(vec2 q){ bool c = false; for (int i = 0; i < 48; i++) { if (i >= uProfN) break; vec2 a = uProf[i], b = uProf[(i + 1) % uProfN];
+  if (((a.y > q.y) != (b.y > q.y)) && (q.x < (b.x - a.x)*(q.y - a.y)/(b.y - a.y) + a.x)) c = !c; } return c; }
+float surfDist(vec2 q){ float d = 1e9; for (int i = 0; i < 47; i++) { if (i >= uProfN - 1) break; vec2 a = uProf[i], b = uProf[i + 1];
+  if (a.x < 0.01 && b.x < 0.01) continue; vec2 pa = q - a, ba = b - a; float h = clamp(dot(pa, ba)/max(dot(ba, ba), 1e-6), 0.0, 1.0); d = min(d, length(pa - ba*h)); } return d; }
+float band(float v, float period, float w){ float m = mod(v + 1000.0*period, period); return 1.0 - smoothstep(w*0.5, w, min(m, period - m)); }
+// Each deck has its own room width (6, 9 or 12 m) and its bulkheads staggered, so no two decks line up.
+vec3 deckCell(float deckN){ float w = 6.0 + 3.0*floor(fh(vec3(deckN, 4.1, 0.7))*3.0); return vec3(w, 3.4, 6.0 + 3.0*floor(fh(vec3(deckN, 8.3, 1.9))*3.0)); }
+vec3 deckShift(float deckN){ return vec3(fh(vec3(deckN, 2.0, 5.0))*12.0, 0.0, fh(vec3(deckN, 6.0, 3.0))*12.0); }
+float cutFrame(vec3 p){ float deckN = floor(p.y/3.4); vec3 cell = deckCell(deckN), q = p + deckShift(deckN);
+  return max(band(p.y, 3.4, 0.32), max(band(q.x, cell.x, 0.26), band(q.z, cell.z, 0.26))); }
+vec3 interiorCut(vec3 p, vec3 V, out float solid){
+  float deckN = floor((p.y + V.y*0.03)/3.4); vec3 cell = deckCell(deckN), sh = deckShift(deckN);
+  vec3 q = p + sh + V*0.03; vec3 room = floor(q/cell); float rh = fh(room + vec3(0.37, 1.3, 2.9) + deckN*0.11);
+  solid = step(rh, 0.16); // machinery spaces are packed, not hollow
+  vec3 t3;
+  for (int a = 0; a < 3; a++) { float va = V[a]; if (abs(va) < 1e-4) { t3[a] = 1e5; continue; }
+    float b = va > 0. ? (room[a] + 1.0)*cell[a] : room[a]*cell[a]; t3[a] = (b - q[a])/va; }
+  float t = min(t3.x, min(t3.y, t3.z)); vec3 hit = q + V*t; vec3 local = hit - room*cell; vec3 base;
+  if (t == t3.y) base = V.y < 0. ? vec3(0.32, 0.30, 0.27)*(0.85 + 0.15*step(0.5, fract(local.x*0.5 + 0.5*step(0.5, fract(local.z*0.5)))))
+                               * (1.0 - 0.7*step(0.72, fh(floor(local*0.9) + room)))                        // crates and consoles on the floor
+                               : vec3(0.05) + vec3(0.7, 0.66, 0.58)*step(0.8, fract(local.x/cell.x*2.0 + 0.1))*step(0.5, rh); // ceiling light strips
+  else base = vec3(0.17, 0.165, 0.16)*(0.75 + 0.25*fh(floor(local*0.5) + room)) * (1.0 - 0.55*step(local.y, 0.25));      // walls, dark kick plate
+  // Lit from the ceiling: bright near the top of the room and near the cut, dark at the back.
+  float lamp = 0.35 + 0.65*clamp(local.y/3.4, 0.0, 1.0);
+  float fl = 0.85 + 0.15*sin(uTime*(6.0 + rh*9.0) + rh*30.0); vec3 L;
+  if (rh < 0.55) L = vec3(0.03, 0.035, 0.05);                                       // power out
+  else if (rh < 0.78) L = vec3(1.0, 0.14, 0.06)*1.5*fl;                             // emergency red
+  else if (rh < 0.9) L = vec3(1.0, 0.45, 0.12)*(1.6 + 0.9*sin(uTime*13.0 + hit.x))*fl; // on fire
+  else L = vec3(0.78, 0.84, 0.95);                                                  // still lit
+  return base*L*2.2*lamp*exp(-t*0.13);
+}`;
+function cutFace(ship, b, a, c, ext) {
+  const sa = b.seeds[a], sb = b.seeds[c], n = sb.clone().sub(sa).normalize(), mid = sa.clone().add(sb).multiplyScalar(0.5);
+  const u = Math.abs(n.y) < 0.9 ? V3(0, 1, 0).cross(n).normalize() : V3(1, 0, 0).cross(n).normalize(), v = n.clone().cross(u);
+  const g = new THREE.PlaneGeometry(ext, ext); g.applyMatrix4(new THREE.Matrix4().makeBasis(u, v, n).setPosition(mid));
+  const P = b.frags[a], prof = new Array(48).fill(0).map((_, i) => new THREE.Vector2(...(b.prof[i] || [0, 0])));
+  const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.3, roughness: 0.85, emissive: 0xffffff, envMapIntensity: LIGHTS[lightKey].env });
+  const U = { uSeeds: b.u.uSeeds, uSeedN: b.u.uSeedN, uA: { value: a }, uB: { value: c }, uAxis: { value: b.axis }, uBodyC: { value: b.c.clone() },
+    uBodyS: { value: new THREE.Vector2(...b.s) }, uProf: { value: prof }, uProfN: { value: Math.min(48, b.prof.length) }, uHeat: P.mats[0] ? P.mats[0].userData.u.uCutHeat : { value: 0 }, uTime: sharedTime };
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, U);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vObj; varying vec3 vCamObj;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj = position; vCamObj = (inverse(modelMatrix) * vec4(cameraPosition, 1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + CUTFACE_GLSL)
+      .replace('#include <map_fragment>', `#include <map_fragment>
+        vec2 rhq = bodyRH(vObj); if (!inPoly(rhq)) discard;
+        vec3 sA = uSeeds[uA]; float dA = length(vObj - sA); float edgeC = 1e9;
+        for (int k = 0; k < 16; k++) { if (k >= uSeedN) break; if (k == uA || k == uB) continue; vec3 sk = uSeeds[k]; float dk = length(vObj - sk);
+          if (dk < dA - 0.02) discard; edgeC = min(edgeC, (dk*dk - dA*dA)/(2.0*length(sk - sA))); }
+        float sd = surfDist(rhq), ed = min(sd, edgeC); float nz = 0.6*fn(vObj*0.35) + 0.4*fn(vObj*1.3 + 5.0);
+        float frame = cutFrame(vObj);
+        float skin = 1.0 - smoothstep(0.45, 1.1, sd);
+        float solid; vec3 roomCol = interiorCut(vObj, normalize(vObj - vCamObj), solid);
+        float soot = clamp(1.0 - smoothstep(0.0, 12.0, ed + nz*5.0), 0.0, 1.0);
+        float isStruct = max(max(step(0.5, frame), step(0.5, skin)), solid);
+        vec3 metal = mix(vec3(0.33, 0.32, 0.30), vec3(0.58, 0.57, 0.54), skin);
+        if (solid > 0.5 && frame < 0.5 && skin < 0.5) metal = vec3(0.17, 0.16, 0.15)*(0.6 + 0.7*band(vObj.y + vObj.x*0.31 + vObj.z*0.17, 0.9, 0.35));
+        metal = mix(metal, vec3(0.018, 0.016, 0.015), clamp(0.35 + 0.6*soot + 0.25*(nz - 0.5), 0.0, 1.0));
+        diffuseColor.rgb = isStruct > 0.5 ? metal : vec3(0.0);
+        vec3 capEmit = isStruct > 0.5 ? vec3(0.0) : roomCol*(1.0 - 0.8*soot);
+        float capEmber = (1.0 - smoothstep(0.0, 1.6, ed + nz*1.2))*uHeat;
+        float capHot = isStruct*soot*uHeat*step(0.62, nz);`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        totalEmissiveRadiance = capEmit + vec3(1.0, 0.36, 0.07)*(capEmber*2.4 + capHot*0.35);`);
+  };
+  m.customProgramCacheKey = () => 'fleet-cutface';
+  const mesh = new THREE.Mesh(g, m); mesh.visible = false; P.inner.add(mesh); P.caps.push(mesh);
+}
 function hullMat(maps, ship, o = {}) {
   const m = new THREE.MeshStandardMaterial({ map: maps.map, emissiveMap: maps.emissiveMap, roughnessMap: maps.roughnessMap,
     emissive: 0xffffff, emissiveIntensity: o.emis ?? 1.0, metalness: o.metal ?? 0.5, roughness: 0.95, side: THREE.DoubleSide,
     envMapIntensity: LIGHTS[lightKey].env, color: o.color ?? 0xffffff });
-  const u = { uLight: { value: 1 }, uCuts: { value: [0, 0, 0, 0].map(() => new THREE.Vector4()) }, uCutC: { value: [0, 0, 0, 0].map(() => new THREE.Vector4()) }, uCutCount: { value: 0 }, uCutHeat: { value: 0 } };
+  const u = { uCell: { value: -1 }, uSeeds: NO_SEEDS.uSeeds, uSeedN: NO_SEEDS.uSeedN, uSecOn: { value: 0 }, uLight: { value: 1 }, uCuts: { value: [0, 0, 0, 0].map(() => new THREE.Vector4()) }, uCutC: { value: [0, 0, 0, 0].map(() => new THREE.Vector4()) }, uCutCount: { value: 0 }, uCutHeat: { value: 0 } };
   m.userData.u = u; m.userData.ship = ship;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, ship.dmgU, u);
@@ -703,6 +839,13 @@ function hullMat(maps, ship, o = {}) {
           float near = 1.0 - smoothstep(uCutC[i].w*0.85, uCutC[i].w, length(vObj - uCutC[i].xyz));
           dChar = max(dChar, near*(1.0 - smoothstep(0.0, 7.0, d)));
           dEmber = max(dEmber, near*uCutHeat*(1.0 - smoothstep(0.0, 1.6, d))); }
+        if (uCell >= 0) { // a random break-up piece: keep this cell, torn a little at its edge, charred toward the break
+          vec3 si = uSeeds[uCell]; float di = length(vObj - si) + 1.1*(dn3(vObj*0.32 + float(uCell)*7.13) - 0.5); float edge = 1e9;
+          for (int k = 0; k < 16; k++) { if (k >= uSeedN) break; if (k == uCell) continue; vec3 sk = uSeeds[k];
+            float dk = length(vObj - sk) + 1.1*(dn3(vObj*0.32 + float(k)*7.13) - 0.5); if (dk < di) discard;
+            edge = min(edge, (dot(vObj - sk, vObj - sk) - dot(vObj - si, vObj - si))/(2.0*length(sk - si))); }
+          dChar = max(dChar, 1.0 - smoothstep(0.0, 11.0, edge + nz*4.0));
+          dEmber = max(dEmber, (1.0 - smoothstep(0.0, 1.5, edge + nz*1.3))*uCutHeat); }
         dChar = clamp(dChar, 0.0, 1.0);`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03,0.026,0.024)*(0.6+0.8*nz2), smoothstep(0.0, 0.7, dChar));
@@ -711,6 +854,7 @@ function hullMat(maps, ship, o = {}) {
       .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor *= 1.0 - 0.85*dChar*dChar;')
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance *= uLight * (1.0 - clamp(dChar*1.4, 0.0, 1.0));
+        if (uSecOn > 0.5) { float sa = atan(vObj.x - uSecC.x, vObj.z - uSecC.z); totalEmissiveRadiance *= uSec[int(mod(floor(sa/6.2831853*8.0) + 8.0, 8.0))]; }
         if (!gl_FrontFacing) totalEmissiveRadiance = vec3(0.08, 0.008, 0.0);
         totalEmissiveRadiance += vec3(1.0, 0.36, 0.07)*dEmber*1.8*(0.75 + 0.25*sin(uTime*21.0 + nz*30.0));
         if (holeIdx >= 0) { totalEmissiveRadiance = interiorRoom(vObj, normalize(vObj - vCamObj), uHoles[holeIdx], uHoleN[holeIdx]);
@@ -718,6 +862,62 @@ function hullMat(maps, ship, o = {}) {
   };
   m.customProgramCacheKey = () => 'fleet-hull';
   return m;
+}
+// A break never shows a hollow shell (owner, 2026-11-02: "interiors are hollowed, this is not what I want"). Every place a
+// piece can break is closed by a cross-section: the skin cut edge on, deck plates every 3.4 m and bulkheads every 6 m (the
+// grid the holes use), rooms between them, some lit red by emergency light, charred toward the broken edge with an ember
+// line that cools with the piece. Hidden while the piece is whole; shown when it breaks away.
+const CAP_GLSL = `
+uniform vec2 uPoly[48]; uniform int uPolyN; uniform float uHeat; uniform float uTime;
+varying vec2 vRH;
+float ch3(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float cn3(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(mix(ch3(i),ch3(i+vec3(1,0,0)),f.x),mix(ch3(i+vec3(0,1,0)),ch3(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(ch3(i+vec3(0,0,1)),ch3(i+vec3(1,0,1)),f.x),mix(ch3(i+vec3(0,1,1)),ch3(i+vec3(1,1,1)),f.x),f.y),f.z); }
+float polyDist(vec2 p){ float d = 1e9;
+  for (int i = 0; i < 48; i++) { if (i >= uPolyN) break; vec2 a = uPoly[i], b = uPoly[(i + 1) % uPolyN];
+    vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba)/max(dot(ba, ba), 1e-6), 0.0, 1.0); d = min(d, length(pa - ba*h)); }
+  return d; }`;
+function dedupe(pts) { return pts.filter((q, i) => i === 0 || Math.hypot(q[0] - pts[i - 1][0], q[1] - pts[i - 1][1]) > 1e-3); }
+function ellipse(a, b, n) { return Array.from({ length: n }, (_, i) => [Math.cos(i / n * TAU) * a, Math.sin(i / n * TAU) * b]); }
+function addCap(ship, P, poly, to3D, nOut) {
+  const g = new THREE.ShapeGeometry(new THREE.Shape(poly.map(([x, y]) => new THREE.Vector2(x, y))));
+  const Pp = g.attributes.position, rh = new Float32Array(Pp.count * 2);
+  for (let i = 0; i < Pp.count; i++) { const x = Pp.getX(i), y = Pp.getY(i), v = to3D(x, y); rh[i * 2] = x; rh[i * 2 + 1] = y; Pp.setXYZ(i, v.x, v.y, v.z); }
+  g.setAttribute('aRH', new THREE.BufferAttribute(rh, 2));
+  const idx = g.index.array, A = V3(), B = V3(), C = V3();
+  A.fromBufferAttribute(Pp, idx[0]); B.fromBufferAttribute(Pp, idx[1]); C.fromBufferAttribute(Pp, idx[2]);
+  if (B.clone().sub(A).cross(C.clone().sub(A)).dot(nOut) < 0) for (let t = 0; t < idx.length; t += 3) { const k = idx[t + 1]; idx[t + 1] = idx[t + 2]; idx[t + 2] = k; }
+  g.index.needsUpdate = true; g.computeVertexNormals();
+  const flat = new Array(48).fill(0).map((_, i) => new THREE.Vector2(...(poly[i] || [0, 0])));
+  const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.35, roughness: 0.8, emissive: 0xffffff, envMapIntensity: LIGHTS[lightKey].env });
+  const u = { uPoly: { value: flat }, uPolyN: { value: Math.min(48, poly.length) }, uHeat: P.mats[0].userData.u.uCutHeat, uTime: sharedTime };
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, u);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aRH; varying vec2 vRH;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRH = aRH;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + CAP_GLSL)
+      .replace('#include <map_fragment>', `#include <map_fragment>
+        vec2 p = vRH; float ed = polyDist(p); float nz = 0.6*cn3(vec3(p*0.7, 3.0)) + 0.4*cn3(vec3(p*2.3, 9.0));
+        float deck = 1.0 - smoothstep(0.14, 0.32, abs(mod(p.y + 340.0, 3.4) - 0.2));
+        float deckN = floor((p.y + 340.0)/3.4); float wx = p.x + 600.0 + ch3(vec3(deckN, 2.0, 5.0))*6.0; // bulkheads stagger deck to deck
+        float wall = 1.0 - smoothstep(0.10, 0.26, abs(mod(wx, 6.0) - 0.15));
+        vec2 cell = vec2(floor(wx/6.0), deckN); float roomH = ch3(vec3(cell, 7.0));
+        float frame = max(deck, wall);
+        vec3 col = mix(vec3(0.07, 0.068, 0.066), vec3(0.46, 0.45, 0.43), frame);
+        float skin = 1.0 - smoothstep(0.35, 0.9, ed); col = mix(col, vec3(0.62, 0.61, 0.58), skin);
+        float charK = 1.0 - smoothstep(0.6, 6.0, ed + nz*2.5);
+        col = mix(col, vec3(0.025, 0.022, 0.02), charK*0.9);
+        diffuseColor.rgb = col;
+        float glowRoom = step(roomH, 0.16) * (1.0 - frame) * (1.0 - charK);`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        float fl = 0.8 + 0.2*sin(uTime*7.0 + roomH*40.0);
+        totalEmissiveRadiance = vec3(0.75, 0.1, 0.04)*glowRoom*fl*(0.2 + 0.5*uHeat)
+          + vec3(1.0, 0.36, 0.07)*(1.0 - smoothstep(0.0, 1.3, ed + nz*0.9))*uHeat*2.2;`);
+  };
+  m.customProgramCacheKey = () => 'fleet-cap';
+  const mesh = new THREE.Mesh(g, m); mesh.visible = false; P.inner.add(mesh); P.caps.push(mesh);
+  return mesh;
 }
 // Lit parts (grilles, dishes, vents, phaser strips, the core): a flat emissive, driven by the subsystem's look.
 function glowMat(hex, base = 0x111318) { return new THREE.MeshStandardMaterial({ color: base, emissive: hex, emissiveIntensity: 1, metalness: 0.3, roughness: 0.4 }); }
@@ -734,7 +934,7 @@ const SYS = [
 function makeDmgUniforms() {
   return { uHoles: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleN: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleCount: { value: 0 },
     uScorch: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uScorchHeat: { value: new Array(24).fill(0) }, uScorchCount: { value: 0 },
-    uTime: { value: 0 }, uParallax: { value: holeMode === 'parallax' ? 1 : 0 } };
+    uTime: { value: 0 }, uParallax: { value: holeMode === 'parallax' ? 1 : 0 }, uSec: { value: new Array(8).fill(1) }, uSecC: { value: V3() } };
 }
 function buildShip(id, offset = V3()) {
   const C = CLASSES[id], T = texturesFor(id), sc = C.saucer, c0 = V3(...sc.c), R = sc.R;
@@ -745,7 +945,7 @@ function buildShip(id, offset = V3()) {
   const piece = (pid, center, sysId) => {
     const pivot = new THREE.Group(), inner = new THREE.Group(); pivot.position.copy(center); inner.position.copy(center).negate();
     pivot.add(inner); ship.root.add(pivot);
-    return (ship.pieces[pid] = { id: pid, pivot, inner, center: center.clone(), vel: V3(), spin: V3(), detached: false, mats: [], sys: sysId, cuts: [] });
+    return (ship.pieces[pid] = { id: pid, pivot, inner, center: center.clone(), vel: V3(), spin: V3(), detached: false, mats: [], sys: sysId, cuts: [], caps: [] });
   };
   const add = (P, geo, mat, sysId, zone = sysId) => {
     const m = new THREE.Mesh(geo, mat); m.userData = { ship, sys: zone, piece: P }; P.inner.add(m);
@@ -757,37 +957,33 @@ function buildShip(id, offset = V3()) {
   const Rx = R, Rz = R * sc.sz;
   const uvTop = (p) => [0.5 - (p.x - c0.x) / (2 * Rx * Math.max(1, sc.sz)), 0.5 + (p.z - c0.z) / (2 * Rx * Math.max(1, sc.sz))];
   const uvBot = (p) => [0.5 + (p.x - c0.x) / (2 * Rx * Math.max(1, sc.sz)), 0.5 + (p.z - c0.z) / (2 * Rx * Math.max(1, sc.sz))];
-  // Saucer: eight wedges, each with its top, rim, bottom and phaser arcs (one life-support section each).
-  ship.wedges = [];
-  for (let w = 0; w < 8; w++) {
-    const p0 = w / 8 * TAU, p1 = (w + 1) / 8 * TAU, pm = (p0 + p1) / 2;
-    const P = piece('w' + w, V3(c0.x + Math.sin(pm) * Rx * 0.55, c0.y, c0.z + Math.cos(pm) * Rz * 0.55), 'life');
-    P.wedge = w;
-    const mt = tmat(T.top), mr = tmat(T.rim), mb = tmat(T.bottom);
-    add(P, latheGeo(sc.upper, { phi0: p0, phi1: p1, segs: 18, matrix: sM, uv: uvTop }), mt, 'life');
-    add(P, latheGeo(sc.rim, { phi0: p0, phi1: p1, segs: 18, matrix: sM, uv: (p, f, t) => [f, 1 - t] }), mr, 'life');
-    add(P, latheGeo(sc.lower, { phi0: p0, phi1: p1, segs: 18, matrix: sM, uv: uvBot }), mb, 'life');
-    for (const [rad, top] of [[sc.phaserTop, true], [sc.phaserBot, false]]) {
-      const prof = top ? sc.upper : sc.lower, hAt = interpH(prof, rad);
-      const tor = new THREE.TorusGeometry(rad, R * 0.0075, 6, 16, p1 - p0);
-      tor.applyMatrix4(new THREE.Matrix4().makeRotationX(-PI / 2)); tor.applyMatrix4(new THREE.Matrix4().makeRotationY(p0 - PI / 2));
-      tor.applyMatrix4(new THREE.Matrix4().makeTranslation(0, hAt + (top ? 0.15 : -0.15), 0)); tor.applyMatrix4(sM);
-      const gm = glowMat(0xffa23a, 0x2a2d36); gm.emissiveIntensity = 0.25;
-      add(P, tor, gm, 'weapons'); (ship.glows.phaser ||= []).push(gm);
-    }
-    // Radial break lines through the saucer's axis, for when it comes apart.
-    for (const ph of [p0, p1]) { const n = V3(Math.cos(ph), 0, -Math.sin(ph)); P.cuts.push({ n, d: n.dot(c0), c: c0.clone(), r: R * 1.2 }); }
-    P.cuts.push({ n: V3(Math.sin(pm), 0, Math.cos(pm)), d: V3(Math.sin(pm), 0, Math.cos(pm)).dot(c0) + R * 0.12, c: c0.clone(), r: R * 0.25 });
-    ship.wedges.push(P);
+  // Saucer, whole: top, rim, bottom and phaser rings as one piece; its eight life-support sections are lit by the shader.
+  // Its random break-up pieces are made below (fracture()) and only shown when the ship comes apart.
+  const sau = piece('saucer', c0.clone(), 'life'); sau.intact = true;
+  const upperFull = [[0.001, sc.upper[0][1]], ...sc.upper], lowerFull = [...sc.lower, [0.001, sc.lower[sc.lower.length - 1][1]]];
+  const gU = latheGeo(upperFull, { segs: 96, matrix: sM, uv: uvTop }), gR = latheGeo(sc.rim, { segs: 96, matrix: sM, uv: (p, f, t) => [f, 1 - t] }), gL = latheGeo(lowerFull, { segs: 96, matrix: sM, uv: uvBot });
+  for (const [g, maps] of [[gU, T.top], [gR, T.rim], [gL, T.bottom]]) { const m = tmat(maps); m.userData.u.uSecOn.value = 1; add(sau, g, m, 'life').userData.skin = true; }
+  const rings = [];
+  for (const [rad, top] of [[sc.phaserTop, true], [sc.phaserBot, false]]) {
+    const hAt = interpH(top ? sc.upper : sc.lower, rad), tor = new THREE.TorusGeometry(rad, R * 0.0075, 6, 160);
+    tor.applyMatrix4(new THREE.Matrix4().makeRotationX(-PI / 2)); tor.applyMatrix4(new THREE.Matrix4().makeTranslation(0, hAt + (top ? 0.15 : -0.15), 0)); tor.applyMatrix4(sM);
+    const gm = glowMat(0xffa23a, 0x2a2d36); gm.emissiveIntensity = 0.25; add(sau, tor, gm, 'weapons').userData.skin = true; (ship.glows.phaser ||= []).push(gm); rings.push(tor);
   }
+  ship.dmgU.uSecC.value.copy(c0);
+  ship.bodies = [];
+  const saucerBody = { name: 'sf', sys: 'life', intact: sau, axis: 0, c: c0.clone(), s: [1, sc.sz],
+    prof: dedupe([[0, sc.upper[0][1]], ...sc.upper, ...sc.rim, ...sc.lower, [0, sc.lower[sc.lower.length - 1][1]]]),
+    geos: [[gU, T.top], [gR, T.rim], [gL, T.bottom]], rings, n: C.length > 250 ? 11 : C.length > 150 ? 9 : 7 };
+  ship.bodies.push(saucerBody);
   // Crown (the bridge, the brain) and ventral dome.
   {
     const P = piece('crown', c0.clone().add(V3(0, sc.crown[0][1] * 0.8, 0)), 'bridge');
     const m = tmat(T.crown, { metal: 0.4 }); ship.crownMat = m;
     add(P, latheGeo(sc.crown, { segs: 48, matrix: sM, uv: (p, f, t) => [f, 1 - t] }), m, 'bridge');
+    { const cb = sc.crown[sc.crown.length - 1]; addCap(ship, P, ellipse(cb[0], cb[0] * sc.sz, 32), (x, y) => V3(c0.x + x, c0.y + cb[1], c0.z + y), V3(0, -1, 0)); }
     const n = V3(0, 1, 0); P.cuts.push({ n, d: c0.y + sc.crown[sc.crown.length - 1][1] + 0.5, c: c0.clone().add(V3(0, sc.crown[4][1], 0)), r: sc.crown[4][0] * 1.6 });
     const bcn = nav(ship, P, c0.clone().add(V3(0, sc.crown[0][1] + 0.6, 0)), 0xff2a1a, 'beacon');
-    const P2 = ship.wedges[0];
+    const P2 = ship.pieces.saucer;
     const dm = glowMat(0x6fc6ff, 0x1a2230); dm.emissiveIntensity = C.hull.dish ? 0.35 : 1.0;
     add(P2, latheGeo(sc.dome, { segs: 48, matrix: sM, uv: () => [0, 0] }), dm, C.hull.dish ? 'life' : 'shields');
     if (!C.hull.dish) ship.glows.dish = [dm];
@@ -797,24 +993,19 @@ function buildShip(id, offset = V3()) {
   {
     const H = C.hull, hc = V3(...H.c), M = new THREE.Matrix4().makeTranslation(hc.x, hc.y, hc.z).multiply(new THREE.Matrix4().makeScale(H.sx, H.sy, 1)).multiply(new THREE.Matrix4().makeRotationX(PI / 2));
     const zMin = H.prof[0][1], zMax = H.prof[H.prof.length - 1][1];
-    const front = H.prof.filter(([, z]) => z >= H.split), back = H.prof.filter(([, z]) => z <= H.split), rAt = interpR(H.prof, H.split);
-    if (front[0][1] !== H.split) front.unshift([rAt, H.split]); if (back[back.length - 1][1] !== H.split) back.push([rAt, H.split]);
-    // Profiles run along +h (z after the rotation); flip so the lathe's outward rule holds (top, out, down).
-    for (const [pid, prof, zc] of [['hullA', back, (zMin + H.split) / 2], ['hullF', front, (H.split + zMax) / 2]]) {
-      const P = piece(pid, V3(hc.x, hc.y, zc), 'reactor');
-      const pr = prof.slice().reverse(); // fore first: the lathe's outward rule (top, out, down) with h along +z
-      const m = tmat(T.hull);
-      add(P, latheGeo(pr, { segs: 64, matrix: M, uv: (p, f) => [f, (p.z - zMin) / H.texLen] }), m, 'reactor');
-      const n = V3(0, 0, 1); P.cuts.push({ n, d: H.split, c: V3(hc.x, hc.y, H.split), r: rAt * 2.2 });
-      if (pid === 'hullA') nav(ship, P, V3(hc.x, hc.y, zMin - 0.6), 0xffffff, 'aft');
-    }
+    const P = piece('hull', V3(hc.x, hc.y, (zMin + zMax) / 2), 'reactor'); P.intact = true;
+    const gH = latheGeo(H.prof.slice().reverse(), { segs: 64, matrix: M, uv: (p, f) => [f, (p.z - zMin) / H.texLen] }); // fore first: the lathe's outward rule
+    add(P, gH, tmat(T.hull), 'reactor').userData.skin = true;
+    nav(ship, P, V3(hc.x, hc.y, zMin - 0.6), 0xffffff, 'aft');
+    ship.hullBody = { name: 'hf', sys: 'reactor', intact: P, axis: 1, c: hc.clone(), s: [H.sx, H.sy],
+      prof: dedupe([...H.prof, [0, zMax]]), geos: [[gH, T.hull]], rings: [], n: C.length > 250 ? 4 : 3 };
     if (H.dish) {
-      const P = ship.pieces.hullF;
+      const P = ship.pieces.hull;
       const dg = latheGeo([[0.0001, -0.9], [H.dish * 0.55, -0.6], [H.dish, 0]], { segs: 48, matrix: new THREE.Matrix4().makeTranslation(hc.x, hc.y, zMax - 0.3).multiply(new THREE.Matrix4().makeRotationX(PI / 2)), uv: () => [0, 0] });
       const dm = glowMat(0x6fc6ff, 0x1a2230); add(P, dg, dm, 'shields'); ship.glows.dish = [dm];
     }
     const cm = glowMat(0x48e0ff, 0x10151c); const cg = new THREE.BoxGeometry(...C.core.size); cg.translate(...C.core.pos);
-    const coreP = ship.pieces[C.core.pos[2] >= H.split ? 'hullF' : 'hullA']; add(coreP, cg, cm, 'reactor'); ship.glows.core = [cm];
+    add(ship.pieces.hull, cg, cm, 'reactor'); ship.glows.core = [cm];
     ship.corePos = V3(...C.core.pos);
   }
   // Neck and fin (generic plating).
@@ -827,7 +1018,7 @@ function buildShip(id, offset = V3()) {
     for (const t of C.torpedo) for (const sx of [1, -1]) { const g = new THREE.BoxGeometry(1.6, 1.2, 1.2); g.translate(t[0] * sx, t[1], t[2]); add(P, g, tm, 'weapons'); }
     ship.glows.torpedo = [tm];
   } else {
-    const tm = glowMat(0xff5a2a, 0x22252c), P = ship.pieces.hullF;
+    const tm = glowMat(0xff5a2a, 0x22252c), P = ship.pieces.hull;
     for (const t of C.torpedo) for (const sx of (t[0] ? [1, -1] : [1])) { const g = new THREE.BoxGeometry(1.4, 1.0, 1.0); g.translate(t[0] * sx, t[1], t[2]); add(P, g, tm, 'weapons'); }
     ship.glows.torpedo = [tm];
   }
@@ -837,7 +1028,7 @@ function buildShip(id, offset = V3()) {
     const im = glowMat(0xff3a1c, 0x2a1a18); ship.glows.impulse = [];
     for (const p of C.impulse) for (const sx of [1, -1]) {
       const g = new THREE.BoxGeometry(...C.impulseSize); g.translate(p[0] * sx, p[1], p[2]);
-      const m = im.clone(); ship.glows.impulse.push(m); add(ship.wedges[4], g, m, 'impulse');
+      const m = im.clone(); ship.glows.impulse.push(m); add(ship.pieces.saucer, g, m, 'impulse');
     }
   }
   // Legs and nacelles, port (+x) and starboard (-x). The shin, nacelle, grille and strobe are one piece.
@@ -867,8 +1058,8 @@ function buildShip(id, offset = V3()) {
     ship.knee = ship.knee || {}; ship.knee[side] = { knee, foot, dir, mid: V3(nx, N.y, mid), top: V3(nx, N.y + r, N.z0 + len * 0.3) };
   }
   // Position lights on the saucer rim: port red, starboard green.
-  nav(ship, ship.wedges[2], V3(c0.x + Rx + 0.8, c0.y, c0.z), 0xff2a1a, 'port');
-  nav(ship, ship.wedges[6], V3(c0.x - Rx - 0.8, c0.y, c0.z), 0x22ff66, 'stbd');
+  nav(ship, ship.pieces.saucer, V3(c0.x + Rx + 0.8, c0.y, c0.z), 0xff2a1a, 'port');
+  nav(ship, ship.pieces.saucer, V3(c0.x - Rx - 0.8, c0.y, c0.z), 0x22ff66, 'stbd');
   // Four fire lights per ship, made now so the shaders never recompile mid-battle.
   for (let i = 0; i < 4; i++) { const l = new THREE.PointLight(0xff7a2a, 0, R * 0.9, 1.6); ship.root.add(l); ship.lights.push({ l, until: 0, at: null, anchor: null }); }
   // The shield bubble.
@@ -877,6 +1068,9 @@ function buildShip(id, offset = V3()) {
   ship.shield = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), shieldMat()); ship.shield.scale.set(bs.x * 0.62, bs.y * 0.9 + 10, bs.z * 0.6); ship.shield.position.copy(bc);
   ship.shield.userData.hits = []; ship.root.add(ship.shield);
   ship.center = bc;
+  ship.frags = [];
+  const frng = mulberry(C.reg.length * 977 + C.length);
+  fracture(ship, saucerBody, frng); fracture(ship, ship.hullBody, frng);
   scene.add(ship.root);
   return ship;
 }
@@ -978,7 +1172,7 @@ function damage(ship, sysId, amount, hit = null) {
     shieldHit(ship, hit.point); S === ship.sys.shields || hurt(ship, 'shields', amount * 0.45); return;
   }
   if (hit) { scorch(ship, hit.point, hit.big ? 5 : 3.2); if (hit.big) hole(ship, hit); emit('sparks', toWorld(hit.mesh, hit.point), hit.worldNormal, 40); }
-  if (sysId === 'life' && hit && hit.mesh.userData.piece.wedge !== undefined) { const w = hit.mesh.userData.piece.wedge; ship.wedgePower[w] = clamp(ship.wedgePower[w] - amount / 60, 0, 1); }
+  if (sysId === 'life' && hit) { const w = secOf(ship, hit.point); ship.wedgePower[w] = clamp(ship.wedgePower[w] - amount / 60, 0, 1); }
   hurt(ship, sysId, amount);
   ship.hull = clamp(ship.hull - amount * 0.35, 0, 100);
   if (ship.hull <= 0) breakup(ship);
@@ -1014,7 +1208,7 @@ function applyLook(ship, sysId) {
     if (st === 'destroyed') snapNacelle(ship, side);
   }
   if (sysId === 'reactor') {
-    const belly = ship.corePos.clone().add(V3(0, -1, 0)), P = ship.pieces[ship.corePos.z >= C.hull.split ? 'hullF' : 'hullA'], sc2 = C.length / 312;
+    const belly = ship.corePos.clone().add(V3(0, -1, 0)), P = ship.pieces.hull, sc2 = C.length / 312;
     if (st === 'damaged') E(P, belly, V3(0, -1, -0.3), [{ type: 'coolant', rate: 80, dur: 1e9, scale: sc2 }]);
     if (st === 'critical') { E(P, belly, V3(0, -1, -0.2), [{ type: 'coolant', rate: 110, dur: 1e9, scale: sc2 }]);
       for (const sx of [1, -1]) E(P, belly.clone().add(V3(sx * C.core.size[0] * 2, 2, 4)), V3(sx, -0.4, 0), [{ type: 'coolant', rate: 40, dur: 1e9, scale: sc2 * 0.8 }]); }
@@ -1031,12 +1225,12 @@ function applyLook(ship, sysId) {
     if (st === 'damaged' || st === 'critical') mounts.slice(0, st === 'damaged' ? 2 : 4).forEach((m, i) => E(wedgeAt(ship, m), m, V3(0, 1, 0), [{ type: 'sparks', rate: 14, dur: 1e9 }]));
     if (st === 'destroyed') mounts.forEach((m) => { const h = hitAt(ship, m, V3(0, 1, 0)); if (h) { h.big = true; h.r = C.saucer.R * 0.045; hole(ship, h); } });
   }
-  if (sysId === 'shields') { const P = C.hull.dish ? ship.pieces.hullF : ship.wedges[0];
+  if (sysId === 'shields') { const P = C.hull.dish ? ship.pieces.hull : ship.pieces.saucer;
     if (st === 'critical' || st === 'destroyed') E(P, C.hull.dish ? V3(C.hull.c[0], C.hull.c[1], C.hull.prof[C.hull.prof.length - 1][1]) : c0.clone().add(V3(0, sc.dome[3][1], 0)), V3(0, -0.2, 1), [{ type: 'sparks', rate: st === 'critical' ? 20 : 6, dur: 1e9 }]);
     ship.shield.visible = shieldsUp && st !== 'destroyed'; }
   if (sysId === 'impulse') {
     C.impulse.forEach((p) => [1, -1].forEach((sx, i) => {
-      const at = V3(p[0] * sx, p[1], p[2] - C.impulseSize[2]), P = ship.wedges[4];
+      const at = V3(p[0] * sx, p[1], p[2] - C.impulseSize[2]), P = ship.pieces.saucer;
       if (st === 'damaged') E(P, at, V3(0, 0.2, -1), [{ type: 'smoke', rate: 10, dur: 1e9, scale: C.length / 312 }]);
       if (st === 'critical' && i === 0) E(P, at, V3(0, 0.2, -1), [{ type: 'fire', rate: 45, dur: 1e9, scale: C.length / 312 }]);
       if (st === 'destroyed') E(P, at, V3(0, 0.3, -1), [{ type: 'fire', rate: 40, dur: 1e9, scale: C.length / 312 }]);
@@ -1044,7 +1238,8 @@ function applyLook(ship, sysId) {
   }
   if (sysId === 'life' && st === 'destroyed') ship.wedgePower.fill(0);
 }
-function wedgeAt(ship, p) { const c0 = V3(...ship.C.saucer.c); let a = Math.atan2(p.x - c0.x, p.z - c0.z); if (a < 0) a += TAU; return ship.wedges[Math.floor(a / TAU * 8) % 8]; }
+function secOf(ship, p) { const c0 = V3(...ship.C.saucer.c); let a = Math.atan2(p.x - c0.x, p.z - c0.z); if (a < 0) a += TAU; return Math.floor(a / TAU * 8) % 8; }
+function wedgeAt(ship, p) { return ship.pieces.saucer; }
 // Find the hull under a point, looking along a direction (for scenarios: deterministic hits on the real surface).
 const ray = new THREE.Raycaster();
 function hitAt(ship, pLocal, dirLocal) {
@@ -1052,7 +1247,7 @@ function hitAt(ship, pLocal, dirLocal) {
   const o = pLocal.clone().add(dirLocal.clone().normalize().multiplyScalar(400)).applyMatrix4(ship.root.matrixWorld);
   const d = dirLocal.clone().normalize().negate().transformDirection(ship.root.matrixWorld);
   ray.set(o, d); ray.far = 900;
-  const hits = ray.intersectObjects(ship.meshes.filter((m) => !m.userData.piece.detached), false);
+  const hits = ray.intersectObjects(ship.meshes.filter((m) => !m.userData.piece.detached && !m.userData.piece.gone), false);
   return hits.length ? hitInfo(hits[0]) : null;
 }
 function hitInfo(h) {
@@ -1072,7 +1267,7 @@ function hole(ship, hit) {
   const type = hit.sys === 'nacP' || hit.sys === 'nacS' ? 1 : hit.sys === 'reactor' ? 2 : 0;
   U.uHoles.value[i].set(hit.point.x, hit.point.y, hit.point.z, r); U.uHoleN.value[i].set(hit.normal.x, hit.normal.y, hit.normal.z, type); U.uHoleCount.value = i + 1;
   const P = hit.mesh.userData.piece;
-  const interior = holeInterior(hit.point, hit.normal, r, type); P.inner.add(interior); interior.visible = holeMode === 'modelled';
+  const interior = holeInterior(hit.point, hit.normal, r, type); interior.userData.center = hit.point.clone(); P.inner.add(interior); interior.visible = holeMode === 'modelled';
   ship.holes.push({ ...hit, r, type, interior });
   const vent = type === 1 ? 'plasma' : type === 2 ? 'coolant' : 'fire', s = r / 3.5;
   addEmitter(ship, P, hit.point.clone().add(hit.normal.clone().multiplyScalar(0.4)), hit.normal,
@@ -1116,6 +1311,7 @@ function detach(ship, P, vel, spin, heat = 1) {
   if (P.detached) return; P.detached = true; P.vel.copy(vel); P.spin.copy(spin);
   for (const m of P.mats) { const u = m.userData.u; u.uCutCount.value = Math.min(4, P.cuts.length); P.cuts.slice(0, 4).forEach((c, i) => { u.uCuts.value[i].set(c.n.x, c.n.y, c.n.z, c.d); u.uCutC.value[i].set(c.c.x, c.c.y, c.c.z, c.r); }); u.uCutHeat.value = heat; }
   P.dieAt = ship.t; P.lightLeft = 1;
+  for (const c of P.caps) c.visible = true;
 }
 function charStump(ship, P, cut) { // the part left on the ship is charred at the break too
   for (const m of P.mats) { const u = m.userData.u, i = u.uCutCount.value; if (i >= 4) continue; u.uCuts.value[i].set(cut.n.x, cut.n.y, cut.n.z, cut.d); u.uCutC.value[i].set(cut.c.x, cut.c.y, cut.c.z, cut.c.r ?? cut.r); u.uCutCount.value = i + 1; u.uCutHeat.value = 1; }
@@ -1140,12 +1336,24 @@ function blowCrown(ship) {
   const w = base.clone().applyMatrix4(ship.root.matrixWorld); emit('fireball', w, V3(0, 1, 0), 90, 0.7 * s); flash(w, 50 * s, 0.6);
   addEmitter(ship, P, base, V3(0, -1, 0), [{ type: 'fire', rate: 50, dur: 3, scale: 0.5 * s }, { type: 'smoke', rate: 10, dur: 6, scale: 0.6 * s }], 'debris');
 }
+function nearestFrag(b, p) { let best = b.frags[0], d = 1e9; for (const f of b.frags) { const k = f.center.distanceTo(p); if (k < d) { d = k; best = f; } } return best; }
+function centerOf(o) { if (o.userData.center) return o.userData.center; if (o.geometry) { o.geometry.computeBoundingSphere(); return o.geometry.boundingSphere.center.clone(); } return o.position.clone(); }
+function swapToPieces(ship) {
+  for (const b of [ship.bodies[0], ship.hullBody]) {
+    const I = b.intact; if (I.gone) continue; I.gone = true; I.pivot.visible = false;
+    for (const o of I.inner.children.slice()) { if (o.userData.skin) continue; nearestFrag(b, centerOf(o)).inner.add(o); }
+    for (const e of ship.emitters) if (e.P === I) e.P = nearestFrag(b, e.pos);
+    for (const n of ship.navs) if (n.P === I) n.P = nearestFrag(b, n.s.position);
+    for (const f of b.frags) f.pivot.visible = true;
+  }
+}
 function breakup(ship) {
   if (ship.broken) return; ship.broken = true; ship.hull = 0;
+  swapToPieces(ship);
   for (const k in ship.sys) { ship.sys[k].health = 0; ship.sys[k].state = 'destroyed'; }
   const s = ship.C.length / 312, core = ship.corePos.clone(), cw = core.clone().applyMatrix4(ship.root.matrixWorld);
   for (const P of Object.values(ship.pieces)) {
-    if (P.detached) continue;
+    if (P.detached || P.gone) continue;
     const out = P.center.clone().sub(core); out.y *= 1.6; const d = out.length() || 1; out.normalize();
     const sp = (6 + 10 * fxRng()) * s * (1 + 40 / (d + 30));
     detach(ship, P, out.multiplyScalar(sp).add(V3(rr(fxRng, -2, 2), rr(fxRng, -2, 2), rr(fxRng, -2, 2)).multiplyScalar(s)),
@@ -1204,9 +1412,10 @@ function stepShip(ship, dt) {
   // Power: the window light of each section, the crown, flicker when the reactor or a section is failing.
   const reactor = ship.sys.reactor.state, life = ship.sys.life.state, t = ship.t;
   const shipFlick = reactor === 'critical' ? (flick(t, 1, 0.5) < 0.18 ? 0.25 : 1) : 1;
+  for (let w = 0; w < 8; w++) { const p = ship.wedgePower[w]; ship.dmgU.uSec.value[w] = p >= 1 ? 1 : p <= 0 ? 0 : (flick(t, w, 0.6) < 0.35 * (1 - p) + 0.1 ? 0.15 : p); }
   for (const P of Object.values(ship.pieces)) {
     let L = ship.broken ? 0 : 1;
-    if (P.wedge !== undefined) { const p = ship.wedgePower[P.wedge]; L = p >= 1 ? 1 : p <= 0 ? 0 : (flick(t, P.wedge, 0.6) < 0.35 * (1 - p) + 0.1 ? 0.15 : p); }
+    if (P.gone) continue;
     if (P.id === 'crown') { const b = ship.sys.bridge.state; L = b === 'healthy' ? 1 : b === 'damaged' ? (flick(t, 9) < 0.25 ? 0.2 : 1) : 0; }
     if (P.detached) L = P.lightLeft * (flick(t, P.id.length * 3) < 0.4 ? 0.2 : 1);
     else if (ship.broken) L = 0;
@@ -1436,7 +1645,7 @@ renderer.domElement.addEventListener('pointerup', (e) => {
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) { down = null; return; } down = null;
   const r = renderer.domElement.getBoundingClientRect(), p = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(p, camera); ray.far = 1e5;
-  const hits = ray.intersectObjects(ships.flatMap((s) => s.meshes.filter((m) => !m.userData.piece.detached)), false);
+  const hits = ray.intersectObjects(ships.flatMap((s) => s.meshes.filter((m) => !m.userData.piece.detached && !m.userData.piece.gone)), false);
   if (hits.length) fireAt(hitInfo(hits[0]));
 });
 
@@ -1497,6 +1706,7 @@ window.MOCKUP_SHOTS = {
   crown_off: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'bridge', 100), 2.5, { tab: 'damage', cam: () => frame(230, V3(0.8, 0.6, 0.9), V3(0, 30, 80)) }),
   breakup: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 1.4, { tab: 'damage', cam: () => frame(620, V3(0.9, 0.6, 1)) }),
   breakup_late: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 9, { tab: 'damage', cam: () => frame(700, V3(0.9, 0.7, 1)) }),
+  breakup_close: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 5, { tab: 'damage', cam: (s) => { const P = s.frags[2]; P.pivot.updateMatrixWorld(true); frame(95, V3(0.5, 0.45, 1), P.pivot.getWorldPosition(V3())); } }),
   notes: shot('bastion', 'shadow', 'side', null, 0.2, { tab: 'notes' }),
 };
 window.MOCKUP_SCENE = scene;

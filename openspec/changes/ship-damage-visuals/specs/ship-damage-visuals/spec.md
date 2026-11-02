@@ -26,7 +26,15 @@ A piece broken off a ship SHALL be charred more strongly the nearer it is to the
 
 #### Scenario: The break-up
 - **WHEN** the reactor is destroyed
-- **THEN** the ship comes apart into its build pieces, each charred toward its broken edges
+- **THEN** the ship comes apart into irregular chunks of mixed size, each charred toward its broken edges
+
+### Requirement: A broken piece is never hollow
+
+Every face a break exposes SHALL show the ship's interior structure (skin, deck plates, bulkheads) and rooms with depth, never the inside of an empty shell.
+
+#### Scenario: Looking into a chunk
+- **WHEN** a saucer chunk tumbles and its broken face turns toward the camera
+- **THEN** decks and bulkheads are visible in the face and rooms behind it shift with parallax as it turns
 
 ### Requirement: One damage function
 

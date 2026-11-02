@@ -25,7 +25,7 @@ account and every link here is updated.
 | 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
-| 5 | Concord ships and damage | Drafted (2026-11-02, v1) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
+| 5 | Concord ships and damage | Drafted (2026-11-02, v2) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -226,6 +226,12 @@ registry, grazing hull floods and navigation lights in three light presets; then
 fire phasers or torpedoes, shields, a signature per subsystem in four states, scorch marks, holes modelled or parallax,
 venting fire, coolant and plasma, a nacelle shot off (the ship limps), the bridge crown blown off, and the break-up
 with charred edges. It is the first part of mockup 3 (look dev), for one faction.
+
+- On version 1, 2026-11-02, of the break-up: "interiors are hollowed, this is not what I want"; "the ship breaks very
+  programmatically, how do we make these chunks look more structurally random?"; "hull pieces look interesting, I think
+  they should look more scorched, and have paralax so they look like actual interiors" (Spider-Man PS4's interior mapping).
+  Version 2 breaks the saucer and engineering hull into random cells and closes every break with a scorched cut face
+  that shows decks, bulkheads and interior-mapped rooms.
 
 Design: `openspec/changes/concord-ship-look/` and `openspec/changes/ship-damage-visuals/`.
 
