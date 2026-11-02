@@ -25,6 +25,7 @@ account and every link here is updated.
 | 2 | In-game UI | Drafted (2026-11-02, v52) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
+| 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -281,3 +282,53 @@ What the mockup shows:
 - At desktop and phone sizes, panels expanded (CLAUDE.md section 7).
 
 Order: it follows mockup 2, whose layout it dresses; a first skin can be shown on mockup 2's page.
+
+## 5. Concord ships and damage
+
+Owner, 2026-11-02, with five screenshots of fan-made starship models (not committed: someone else's art): "let's
+develop the concord ships in 3 js artifact". Their notes, in their words:
+
+- "take notes on how: windows communicate scale."
+- "ships have liveries and markings that make it feel lived in"
+- "branding is super important, from sillhoute to colors of features, lighting, which emphasizes registry numbers and
+  ship features in low lighting conditions"
+- "damage is very purposeful, ships break into pieces, damage texture has burnmarks towards the dges"
+- "some ships have more markings than ohters, depends on how much they emphasize it"
+- "ship textures vary from differnt metallic patterns to show ship construction processes, and what kinds of features
+  they want to emphasize"
+- "federation emphasizes nacelles like legs and disc like head or brain"; "romulan and klingon emphasizes bird like
+  head with bird wings"; "gorn emphasizes claw like features, since they enjoy hunting"
+- "make some mockups, make sure they are destryuctible, the more detailed the descrtuction the better, emphasize how we
+  can communicate subsuustem destruction with ship destruction"
+- The question to ask: "how can I understand ship subsystem damage by looking at it?", including coolant leaks, "ship
+  systems on fire (venting fire)", scorch marks, "paralx shader that shows holes in ships, or actual holes in ships
+  modeled?", and "chunks of ships being shot off - nacelles can be lost in the game, you only really need 1 nacelle to
+  limp away" (survey A2-A9).
+
+What the mockup shows: the Bastion cruiser (312 m), Lantern frigate (196 m) and Swift corvette (118 m) on one builder,
+at true scale with a 1.8 m figure by the windows; livery and markings by class density; plating by class; floodlit
+registry, grazing hull floods and navigation lights in three light presets; then the Damage tab: click the hull to
+fire phasers or torpedoes, shields, a signature per subsystem in four states, scorch marks, holes modelled or parallax,
+venting fire, coolant and plasma, a nacelle shot off (the ship limps), the bridge crown blown off, and the break-up
+with charred edges. It is the first part of mockup 3 (look dev), for one faction.
+
+- On version 1, 2026-11-02, of the break-up: "interiors are hollowed, this is not what I want"; "the ship breaks very
+  programmatically, how do we make these chunks look more structurally random?"; "hull pieces look interesting, I think
+  they should look more scorched, and have paralax so they look like actual interiors" (Spider-Man PS4's interior mapping).
+  Then: "The walls seems slanted there. Also I think all the wall sections should be glowing slightly from the heat ... add a
+  shader for like wires and sparks as they fly apart. I also expect pieces to fall off the ship before the main piece to fall
+  off..also please give the rector some more health before exploding"; "no orange rooms"; "I like the orange burn highlights, I
+  wanted something like that for the room wall dividers"; "these stripy pattern rooms, can they just be like other rooms?";
+  "can walls also be scorched with this reddish orange flame? while the orange flames on the edges be more pronounced?";
+  "im also not seeing any interior paralax in the holes"; "shots from the ship should have lighting, shots hitting the ship
+  should also have lighting (explosions + whatever weapon was fired)".
+  Then: "Paralax should be on by default for damage scars"; "Some missing geometry on this corner. There should be a big
+  explosion when a chunk falls off". Version 3: parallax by default, cut faces that reach the corners, a big blast for
+  every chunk.
+  Version 2 breaks the saucer and engineering hull into random cells and closes every break with a scorched cut face
+  that shows decks, bulkheads and interior-mapped rooms square to the break, burn rims on the dividers, flame-scorched room
+  walls, wires that stretch, arc and snap, a 3.6 s breach in which pieces come off before the main blast, chunks knocked off
+  by heavy hits, a tougher reactor, phasers that burn through, and light from every shot and blast, including the ship's own.
+
+Design: `openspec/changes/concord-ship-look/` and `openspec/changes/ship-damage-visuals/`.
+

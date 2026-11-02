@@ -24,3 +24,5 @@
 - 2026-11-02, cloud session: B20 reworded to the owner's HET failure rule; merged onto the live version 1793592744-74a0 (A10 from the ships thread kept); version id `1793601543-7f47`.
 - 2026-11-02, cloud session: B23-B25 added (transporter pads and the boarding queue); version id `1793650672-d53d`.
 - 2026-11-02, cloud session: B26 added (torpedo hit chance by range, from the SFC2 manual); version id `1793651778-5ffd`.
+- 2026-11-02, cloud session (Concord ships thread): section A (A2-A9, Concord ships and damage, mockup 5) added on top of the live version (sections J and B from the battle console thread kept); version 14, version id `1793584895-3b88`.
+- 2026-11-02, cloud session (Concord ships thread): A10 added (the break-up direction) on top of the live version 15 (the battle console thread's B20-B22 kept); version 16, version id `1793592744-74a0`.

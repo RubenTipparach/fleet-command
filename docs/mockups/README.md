@@ -12,6 +12,7 @@ recorded in `docs/artifacts/<name>/`.
 | `console-skins.html` | 4: console skins |
 | `lib/kitdraw.js`, `lib/concord.js` | the kit's drawing helpers and the Concord skin, shared by mockups 2 and 4 |
 | `lib/space.js` | the nebula sky, streaking stars and stand-in ship, shared by mockups 1 and 2 |
+| `concord-ships.html` | 5: Concord ships and damage |
 | `tracker.html` | the mockup tracker |
 | `lib/template.html` | the starting skeleton for a new page |
 
