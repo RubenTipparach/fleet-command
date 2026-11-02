@@ -1721,11 +1721,24 @@ function speedSlider(x, y, w, h) {
   hit('spd', x - 8, y, w + 16, h, { drag: (px) => A.setSpeed(Math.round(clamp((px - x) / w, 0, 1) * top / 5) * 5), cursor: 'ew-resize', tip: 'Speed' });
   const f = clamp(s.vOrder / top, 0, 1); nine('button.pressed', x + f * w - 11, y + (h - 36) / 2, 22, 36);
 }
+// The warp key at the top of the speed range (owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed
+// slider"): it fills as the banks charge toward a jump, lights green when a jump can be made, and jumps; refused, the
+// helm says why (the same warpRisk and jump as the Warp page, 6.1). The hover card gives the risk or what is missing.
+function warpKey(x, y, w, h) {
+  const s = W.player, wp = s.warp, r = warpRisk(s), ok = !r.why, f = clamp(wp.banks / WARP.jump_e, 0, 1);
+  const st = hit('warp.key', x, y, w, h, { click: A.jump, tip: { title: ok ? 'Warp: jump' : 'Warp', rows: [['Banks', `${Math.floor(wp.banks)}/${WARP.jump_e} E`], ['Plot', wp.plotting ? pct(wp.plot) : 'none'], ['Jump risk', pct(r.total), r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord], ...(ok ? [] : [['Needs', r.why, CC.caution]])] } });
+  g.save(); g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.clip();
+  g.fillStyle = CC.deep; g.fillRect(x, y, w, h);
+  g.fillStyle = ok ? (st.down ? CC.lilac : st.hot ? CC.sky : CC.accord) : CC.signal; g.fillRect(x, y, w * (ok ? 1 : f), h);
+  g.restore();
+  text(wp.out > 0 ? 'JUMPING' : 'WARP', x + w / 2, y + h * 0.66, '700 19px Antonio', ok || f > 0.5 ? '#000' : CC.sky, 'center', w - 10, '1px');
+}
 function uiBottom(r) {
   const [x, y, w, h] = r, s = W.player; nine('strip.bottom', x, y, w, h);
   const cx = x + 96, cw = w - 192, cy = y + 12, ch = 44, gap = 22, fixed = 120 + 138, rest = cw - fixed - gap * 4, u = rest / 3.45;
   let xx = cx;
-  LBL('Speed', xx, cy + 28); NUM(String(Math.round(s.v)), xx + 58, cy + 31, 46, CC.sky, 'left'); speedSlider(xx + 112, cy, u * 1.5 - 112, ch); xx += u * 1.5 + gap;
+  const wk = 78; LBL('Speed', xx, cy + 28); NUM(String(Math.round(s.v)), xx + 58, cy + 31, 46, CC.sky, 'left'); speedSlider(xx + 112, cy, u * 1.5 - 112 - wk - 10, ch);
+  warpKey(xx + u * 1.5 - wk, cy, wk, ch); xx += u * 1.5 + gap;
   // Power and Systems as ticks, one per energy point of the reactor's rating (owner: "can you show this as discrete
   // marks/ticks?"): Power blue, lit to the output; Systems green, lit to the draw, red past the output.
   const n = CLASSES[s.cls].reactor_e, outN = Math.floor(output(s) + 1e-6), tw = u * 1.4 - 68 - 60;
@@ -3289,7 +3302,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v49', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v50', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

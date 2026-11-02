@@ -288,6 +288,14 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4s. The warp key on the speed slider (version 50)
+
+Owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed slider". A Warp key now ends the speed
+slider in the bottom strip. It fills in the Concord blue as the banks charge toward the 40 E a jump needs, lights green
+when a jump can be made, and jumps on a click; refused, the helm says why. Its hover card gives the banks, the plot, the
+jump risk and anything missing. It calls the same `warpRisk` and `jump` as the Warp page under Power (6.1), which keeps
+the plotting, override and risk detail.
+
 ## 4r. Weapon ids, raids on one weapon, the held deck, 10 s volleys (version 49)
 
 Owner, 2026-11-02: "need a drop down or something to pick from weapons. weapon tool tips need id, so when I hover over
