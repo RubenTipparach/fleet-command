@@ -397,6 +397,8 @@ def build(args):
                 p = os.path.join(args.out, f"{c}.{state}.png")
                 times[f"{c}.{state}"] = round(render(cs["rect"], fs, p, args.samples), 1)
                 print(f"VHORR {c}.{state} {times[f'{c}.{state}']} s", flush=True)
+    if BACKING and not want and not args.fit_only:   # the column's backing (survey W8), drawn under every panel
+        build_backing(args, BACKING)
     # the manifest of every image present
     for s in slots.values():
         for state in s["states"]:
@@ -407,7 +409,9 @@ def build(args):
     shutil.copyfile(portrait, os.path.join(args.out, "portrait.png"))
     pieces["portrait"] = {"file": "portrait.png", "slot": "nameplate", "state": "live"}
     slot_list = {s["id"]: {"piece": s["piece"], "rect": s["rect"], "states": s["states"], "rest": s["rest"] or "idle",
-                           "parent": s["parent"], "bleed": SLOT_BLEED.get(s["id"], BLEED) if s["parent"] is None else 0.0}
+                           "parent": s["parent"], "bleed": SLOT_BLEED.get(s["id"], BLEED) if s["parent"] is None else 0.0,
+                           # the glass a live drawing fills (the ship systems display, the radar), so the page draws to it
+                           "live": next((pin(p["rect"]) for p in s["protected"] if p["kind"] == "live-drawing"), None)}
                   for s in slots.values()}
     portrait_rect = next((p["rect"] for p in slots["nameplate"]["protected"] if p["kind"] == "portrait-window"), None)
     man = {"skin": "vhorr", "kind": "organic", "scale": PX, "layout": args.layout, "size": size,
@@ -415,6 +419,11 @@ def build(args):
                      "a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
            "portrait": {"rect": pin(portrait_rect) if portrait_rect else None}, "hex": st.hx.HEX,
            "slots": slot_list, "pieces": pieces}
+    bk = os.path.join(args.out, f"backing.{BACKING}.json") if BACKING else ""
+    if bk and os.path.exists(bk):   # the backing: its image and where it goes (its rectangle grown by its bleed)
+        b = json.load(open(bk))
+        pieces["backing"] = {"file": f"backing.{BACKING}.png", "slot": COLUMN, "state": BACKING, "rect": b["image_rect"]}
+        man["backing"] = {"mode": BACKING, "rect": b["rect"], "image_rect": b["image_rect"]}
     if args.fit_only:
         json.dump({"rule": "G1: growth at least 2 mm clear of every protected rectangle",
                    "clearance_mm": dict(sorted(fit.items())), "min_mm": min(fit.values()) if fit else None,
@@ -428,6 +437,24 @@ def build(args):
                    "pass": all(v >= oc.G1_MM for v in fit.values())}, open(os.path.join(args.out, "fit.json"), "w"), indent=1)
         json.dump(times, open(os.path.join(args.out, "render-times.json"), "w"), indent=1)
     print("VHORR fit", json.dumps(fit), flush=True)
+
+
+BACKING_GAIN = 0.55   # the backing's colour values against the panels' (owner, 2026-11-01, approving backing A, which was
+                      # darkened a step so the panels stand off it: the same light gave its flesh a median L* of 21.9 against
+                      # the panels' 19.6-20.6; graded down after rendering, highlights included, it measures 14.8)
+
+
+def grade(path, gain):
+    """Scale an RGBA PNG's colour values by gain (alpha kept), in place."""
+    img = bpy.data.images.load(path)
+    px = np.array(img.pixels[:], dtype=np.float32).reshape(-1, 4)
+    px[:, :3] *= gain
+    img.pixels.foreach_set(px.ravel())
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+    bpy.data.images.remove(img)
+    ui_render.strip_png_metadata(path)
 
 
 COLUMN = "column"   # the backing's slot id: the left column (layout x 0 to the strips' left end, full height)
@@ -451,35 +478,51 @@ def build_backing(args, mode):
     os.makedirs(args.out, exist_ok=True)
     path = os.path.join(args.out, f"backing.{mode}.png")
     t = render(region, f, path, args.samples)
+    grade(path, BACKING_GAIN)
     json.dump({"slot": COLUMN, "mode": mode, "rect": [0, 0, cw, size[1]], "image_rect": region, "px_per_mm": PX,
                "render_s": round(t, 1)}, open(os.path.splitext(path)[0] + ".json", "w"), indent=1)
     print("VHORR backing", mode, path, round(t, 1), flush=True)
 
 
 def sheet(args):
-    """The any-size proof: the same sculptors at several sizes, laid out on one transparent sheet."""
-    items = [  # (sculptor, rect (x, y, w, h), extra) in mm: one sculptor at several sizes, nothing else changed
-        ("key", (10, 10, 90, 48), {}), ("key", (110, 10, 160, 48), {}), ("key", (280, 10, 260, 48), {}),
-        ("panel", (10, 70, 160, 160), {"labels": [(40, 100, 60, 16)], "windows": [(40, 122, 90, 76)]}),
-        ("panel", (180, 70, 330, 140), {"labels": [(215, 100, 80, 16)], "windows": [(215, 122, 260, 56)]}),
-        ("panel", (520, 70, 120, 260), {"labels": [(545, 100, 60, 16)], "windows": [(545, 122, 70, 176)]}),
-        ("strip", (10, 340, 300, 60), {"labels": [(60, 352, 90, 16)], "windows": [(60, 372, 200, 14)]}),
-        ("strip", (10, 410, 630, 60), {"labels": [(60, 422, 90, 16), (360, 422, 90, 16)],
-                                       "windows": [(60, 442, 250, 14), (360, 442, 230, 14)]}),
+    """The any-size proof: the console's own slots, in the owner's approved styles (survey W, 2026-11-01), sculpted at
+    several sizes by the same dispatch the console uses (sculpt_slot), laid out on one transparent sheet."""
+    def slot(sid, fam, piece, r, style=None, body=None, label=None, window=None):
+        pr = []
+        if label:
+            pr.append({"kind": "key-label" if fam == "button" else "label", "rect": label})
+        if window:
+            pr.append({"kind": "bar-cells" if fam == "strip" else "live-drawing", "rect": window})
+        if style:
+            STYLE[sid] = style
+        if body:
+            KEY_BODY[sid] = body
+        return {"id": sid, "family": fam, "piece": piece, "rect": r, "protected": pr, "children": [], "child_rects": []}
+    items = [  # rect (x, y, w, h) in mm: one sculptor at several sizes, in the console's approved styles
+        slot("sheet.key0", "button", "button.idle", (14, 14, 90, 48), body="wart", label=(39, 28, 40, 20)),
+        slot("sheet.key1", "button", "button.idle", (118, 14, 160, 48), body="larva", label=(168, 28, 60, 20)),
+        slot("sheet.key2", "button", "button.idle", (292, 14, 260, 48), body="larva", label=(392, 28, 60, 20)),
+        slot("sheet.panel0", "frame", "frame.panel", (24, 96, 160, 160), "wrap", label=(54, 120, 60, 16),
+             window=(54, 144, 100, 84)),
+        slot("sheet.panel1", "frame", "frame.panel", (214, 96, 330, 150), "hang", label=(244, 120, 80, 16),
+             window=(244, 144, 270, 72)),
+        slot("sheet.panel2", "frame", "frame.panel", (574, 96, 120, 270), "plain", label=(594, 120, 60, 16),
+             window=(594, 144, 80, 196)),
+        slot("sheet.strip0", "strip", "strip.top", (24, 380, 300, 60), "mixed", label=(74, 392, 90, 16),
+             window=(74, 412, 200, 14)),
+        slot("sheet.strip1", "strip", "strip.top", (24, 460, 670, 60), "mixed", label=(74, 472, 90, 16),
+             window=(74, 492, 560, 14)),
     ]
-    region = (0, 0, 650, 480)
-    f = oc.Field((-MARGIN, -MARGIN, 650 + MARGIN, 480 + MARGIN), RES, seed=11)
-    for k, (kind, r, ex) in enumerate(items):
-        if kind == "key":
-            oc.key(f, r, seed=f"sheet.key{k}", label=(r[0] + r[2] / 2 - 25, r[1] + 14, 50, 20))
-        elif kind == "panel":
-            oc.panel(f, r, windows=ex["windows"], labels=ex["labels"], seed=f"sheet.panel{k}")
-        else:
-            oc.strip(f, r, windows=ex["windows"], labels=ex["labels"], seed=f"sheet.strip{k}", outer="top")
+    region = (0, 0, 720, 560)
+    f = oc.Field((-MARGIN, -MARGIN, region[2] + MARGIN, region[3] + MARGIN), RES, seed=11)
+    f.bleed = 10.0
+    for it in items:
+        sculpt_slot(f, it, None)
     f.finish()
     t = render(region, f, args.sheet, args.samples)
-    json.dump({"items": [[k, list(r)] for k, r, _ in items], "region": region, "px_per_mm": PX, "render_s": round(t, 1),
-               "clearance_mm": f.clearance()}, open(os.path.splitext(args.sheet)[0] + ".json", "w"), indent=1)
+    json.dump({"items": [[it["id"], STYLE.get(it["id"]) or KEY_BODY.get(it["id"]), list(it["rect"])] for it in items],
+               "region": region, "px_per_mm": PX, "render_s": round(t, 1), "clearance_mm": f.clearance()},
+              open(os.path.splitext(args.sheet)[0] + ".json", "w"), indent=1)
     print("VHORR sheet", args.sheet, round(t, 1), flush=True)
 
 

@@ -683,9 +683,18 @@ though".
   column, the panels held to each other only by tentacles over the gutters, the bottom row anchored off the screen's
   edge) and **lattice** (a ribcage of bone bars across the column on a spine at each side, the battle seen through its
   holes, the panels hung on it by tentacles). For tendrils and lattice the battle view runs under the whole console.
-  The owner picks one in survey W8, from whole-console screenshots.
-- **Rule 0 holds**: these renders are screenshots in `.tools/compare/` and the survey's pictures; the page, the kit
-  images and the bible are unchanged until the owner approves the result.
+  The owner picked **tissue** in survey W8 (2026-11-01), from whole-console screenshots. It is graded darker than the
+  panels after rendering (`BACKING_GAIN` 0.55 on its colour values: its flesh's median L* 14.8 against the panels'
+  19.6-20.6, where the same light gave it 21.9), so the panels stand off it.
+- **The ship systems display spans the column** (owner, 2026-11-01: "this ship display should span the whole width"):
+  its glass is 400 x 226 px in a 460 x 300 slot (30 px of rim at the sides, 28 at the top, 46 at the bottom for the
+  hanging tentacles), the bezel's body fills the slot, and its ribs grow on both sides when the glass is centred
+  (`organic_components.SYMMETRIC_MM`). The manifest names each slot's live glass (`live`), and the page centres the
+  drawing in it and scales it to its height.
+- **Approved** (owner, 2026-11-01, after the whole-console shots: "nice, survey andswered, make changes and publish
+  that"): version 26 of the page builds the Brood from these picks, with the tissue backing and the full-width ship
+  systems display. A pressed key's cap drops 2 mm and its label rides it down the same 2 px (`--btn-sink` 1 px, padding
+  doubled).
 
 ## The kit
 
@@ -740,4 +749,4 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 | U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | Skins only for now, with the names above; factions decided later (provisional) |
 | U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |
 | U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | A new race named the Ssarith Hunt: a skin now, a faction decided with the others under U8 (provisional) |
-| W8 | What fills the space between the Brood's panels (the owner: no plain black)? | Open in the survey: tissue, tendrils or lattice, see "The Brood's picks from the survey" |
+| W8 | What fills the space between the Brood's panels (the owner: no plain black)? | Answered 2026-11-01: A, tissue (built in version 26) |

@@ -7,7 +7,7 @@
   1920,
   1080
  ],
- "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice)",
+ "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice); a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
  "portrait": {
   "rect": [
    12,
@@ -35,7 +35,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 44.0,
+   "live": null
   },
   "track.hull-integrity": {
    "piece": "bar.track",
@@ -49,7 +51,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": "strip.top"
+   "parent": "strip.top",
+   "bleed": 0.0,
+   "live": null
   },
   "track.weapon-capacitor": {
    "piece": "bar.track",
@@ -63,7 +67,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": "strip.top"
+   "parent": "strip.top",
+   "bleed": 0.0,
+   "live": null
   },
   "track.target-hull": {
    "piece": "bar.track",
@@ -77,7 +83,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": "strip.top"
+   "parent": "strip.top",
+   "bleed": 0.0,
+   "live": null
   },
   "strip.bottom": {
    "piece": "strip.bottom",
@@ -91,7 +99,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 36.0,
+   "live": null
   },
   "track.power": {
    "piece": "bar.track",
@@ -105,7 +115,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": "strip.bottom"
+   "parent": "strip.bottom",
+   "bleed": 0.0,
+   "live": null
   },
   "track.systems": {
    "piece": "bar.track",
@@ -119,7 +131,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": "strip.bottom"
+   "parent": "strip.bottom",
+   "bleed": 0.0,
+   "live": null
   },
   "lamp.alert.yellow": {
    "piece": "lamp.alert.yellow",
@@ -135,7 +149,9 @@
     "red"
    ],
    "rest": "yellow",
-   "parent": "strip.bottom"
+   "parent": "strip.bottom",
+   "bleed": 0.0,
+   "live": null
   },
   "nameplate": {
    "piece": "nameplate",
@@ -149,7 +165,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 16.0,
+   "live": null
   },
   "helm.pad": {
    "piece": "helm.pad",
@@ -163,7 +181,14 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 16.0,
+   "live": [
+    50,
+    111,
+    176,
+    176
+   ]
   },
   "inset.helm-readout": {
    "piece": "frame.inset",
@@ -177,7 +202,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 16.0,
+   "live": null
   },
   "divider": {
    "piece": "divider",
@@ -191,7 +218,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": "inset.helm-readout"
+   "parent": "inset.helm-readout",
+   "bleed": 0.0,
+   "live": null
   },
   "key.engage": {
    "piece": "button.pressed",
@@ -207,7 +236,9 @@
     "pressed"
    ],
    "rest": "pressed",
-   "parent": "inset.helm-readout"
+   "parent": "inset.helm-readout",
+   "bleed": 0.0,
+   "live": null
   },
   "key.stop": {
    "piece": "button.idle",
@@ -223,7 +254,9 @@
     "pressed"
    ],
    "rest": "idle",
-   "parent": "inset.helm-readout"
+   "parent": "inset.helm-readout",
+   "bleed": 0.0,
+   "live": null
   },
   "ssd.bezel": {
    "piece": "ssd.bezel",
@@ -237,7 +270,14 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 16.0,
+   "live": [
+    36,
+    366,
+    400,
+    226
+   ]
   },
   "panel.weapons": {
    "piece": "frame.panel",
@@ -251,7 +291,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 34.0,
+   "live": null
   },
   "key.fire": {
    "piece": "button.hover",
@@ -267,7 +309,9 @@
     "pressed"
    ],
    "rest": "hover",
-   "parent": "panel.weapons"
+   "parent": "panel.weapons",
+   "bleed": 0.0,
+   "live": null
   },
   "key.multiple": {
    "piece": "button.idle",
@@ -283,7 +327,9 @@
     "pressed"
    ],
    "rest": "idle",
-   "parent": "panel.weapons"
+   "parent": "panel.weapons",
+   "bleed": 0.0,
+   "live": null
   },
   "tab.offline": {
    "piece": "tab.idle",
@@ -298,7 +344,9 @@
     "active"
    ],
    "rest": "idle",
-   "parent": "panel.weapons"
+   "parent": "panel.weapons",
+   "bleed": 0.0,
+   "live": null
   },
   "tab.normal": {
    "piece": "tab.active",
@@ -313,7 +361,9 @@
     "active"
    ],
    "rest": "active",
-   "parent": "panel.weapons"
+   "parent": "panel.weapons",
+   "bleed": 0.0,
+   "live": null
   },
   "tab.overload": {
    "piece": "tab.idle",
@@ -328,7 +378,9 @@
     "active"
    ],
    "rest": "idle",
-   "parent": "panel.weapons"
+   "parent": "panel.weapons",
+   "bleed": 0.0,
+   "live": null
   },
   "dial": {
    "piece": "dial",
@@ -342,7 +394,14 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 24.0,
+   "live": [
+    29,
+    912,
+    74,
+    74
+   ]
   },
   "inset.contacts": {
    "piece": "frame.inset",
@@ -356,7 +415,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 24.0,
+   "live": null
   },
   "crest": {
    "piece": "crest",
@@ -370,7 +431,9 @@
     "idle"
    ],
    "rest": "idle",
-   "parent": null
+   "parent": null,
+   "bleed": 24.0,
+   "live": null
   }
  },
  "pieces": {
@@ -822,6 +885,32 @@
    "file": "portrait.png",
    "slot": "nameplate",
    "state": "live"
+  },
+  "backing": {
+   "file": "backing.tissue.png",
+   "slot": "column",
+   "state": "tissue",
+   "rect": [
+    0,
+    0,
+    486.0,
+    1080
+   ]
   }
+ },
+ "backing": {
+  "mode": "tissue",
+  "rect": [
+   0,
+   0,
+   472,
+   1080
+  ],
+  "image_rect": [
+   0,
+   0,
+   486.0,
+   1080
+  ]
  }
 }

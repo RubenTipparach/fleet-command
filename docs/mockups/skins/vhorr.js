@@ -123,7 +123,7 @@ F.register('vhorr', {
     if (!d || !o) return null;
     const K = F.fromManifest(d, () => F.paint(48, 48, () => {})), img = {};
     for (const [k, p] of Object.entries(o.pieces)) img[k] = p.data;
-    K.organic = { slots: o.slots, img, portrait: img.portrait, portraitRect: o.portrait.rect, hex: o.hex };
+    K.organic = { slots: o.slots, img, portrait: img.portrait, portraitRect: o.portrait.rect, hex: o.hex, backing: o.backing ? { src: img.backing, rect: o.backing.image_rect } : null };
     for (const id of Object.keys(K.hero)) {   // the hero pieces are sculpted slots too (the lamp's three colours are one slot's states)
       const lamp = id.startsWith('lamp.alert.'), sl = lamp ? 'lamp.alert.yellow' : id, so = o.slots[sl];
       const src = so && img[`${sl}.${lamp ? id.split('.').pop() : so.rest}`];
