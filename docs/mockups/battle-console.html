@@ -733,7 +733,7 @@ function makeShip(d) {
     scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
     warp: { banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
-    het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1, holdKm: 6,
+    het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1, holdKm: 6, runMin: 2, runMax: 8, runPhase: 'in',
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
 let sceneId = 'battle';
@@ -963,7 +963,7 @@ function reactorStep(s) {
 }
 function meltdown(s) {
   s.alive = false; s.hull = 0; s.v = 0;
-  boomAt(s.x, s.z, CLASSES[s.cls].len_m / M_PER_U * 2.5); const o = MODELS.get(s.id); if (o) o.g.visible = false;
+  bigBoom(s.x, s.z, CLASSES[s.cls].len_m / M_PER_U * 1.6, FACTION[s.faction].hull); const o = MODELS.get(s.id); if (o) o.g.visible = false;
   say('Engineering', `${s.name}: reactor meltdown.`);
   for (const t of W.ships) if (t.alive && distKm(s, t) <= REACTOR.blast_km) damage(t, s, REACTOR.blast_dmg * (1 - distKm(s, t) / REACTOR.blast_km), 'hull');
   for (const o2 of W.ships) if (o2.target === s.id) o2.target = null;
@@ -1002,6 +1002,10 @@ function steer(s, order, t, rangeKm) {
     s.hOrder = d2 > 2 ? Math.atan2(ax - s.x, -(az - s.z)) : t.h; s.vOrder = clamp(Math.abs(t.v) + (d2 > 2 ? d2 * 20 : 0), 0, vmax); }
   // approach and hold a distance (owner, 2026-11-02: "also need approach and maintain distance"), set by its slider
   else if (order === 'hold_range') { s.hOrder = d > s.holdKm * 1.1 ? toT : d < s.holdKm * 0.9 ? wrap(toT + P) : wrap(toT + P / 2); s.vOrder = d > s.holdKm * 1.1 || d < s.holdKm * 0.9 ? vmax : Math.max(60, Math.abs(t.v)); }
+  // hit and run (owner, 2026-11-02: "hit and run, to move attack, and move away"): run in at full speed to the minimum
+  // range, then away to the maximum, and again
+  else if (order === 'hit_run') { if (s.runPhase === 'in' && d <= s.runMin) s.runPhase = 'out'; else if (s.runPhase === 'out' && d >= s.runMax) s.runPhase = 'in';
+    s.hOrder = s.runPhase === 'in' ? toT : wrap(toT + P); s.vOrder = vmax; }
   else if (order === 'orbit') { const c2 = clamp((d - HELM.orbit_km) / HELM.orbit_km, -1, 1); s.hOrder = wrap(toT + s.orbitDir * (P / 2 - c2 * P / 4)); }
 }
 // Every ship but the player's thinks twice a second: pick a target by its rule, steer by its stance, fire if free.
@@ -1146,9 +1150,10 @@ function craftStep() {
 const A = {
   turn: (deg) => { const s = W.player; s.engaged = false; s.hOrder = wrap(s.hOrder + deg * DEG); },
   // The helm officer's orders toward the target, toggles: pressing the lit one returns to free heading.
+  runRange: (lo, hi) => { const s = W.player, r2 = (v) => clamp(Math.round(v * 2) / 2, HELM.hold_min_km, HELM.hold_max_km); s.runMin = Math.min(r2(lo), r2(hi) - 0.5); s.runMax = Math.max(r2(hi), s.runMin + 0.5); },
   holdKm: (v) => { W.player.holdKm = clamp(Math.round(v * 2) / 2, HELM.hold_min_km, HELM.hold_max_km); },
   helmOrder: (o) => { const s = W.player; if (o === 'free' || (s.engaged && s.order === o)) { s.engaged = false; say('Helm', 'Free heading.'); return; }
-    if (!tgt(s)) { say('Helm', 'No target.'); return; } s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting', hold_range: `Holding ${km(s.holdKm)} from` }[o]} ${tgt(s).name}.`); },
+    if (!tgt(s)) { say('Helm', 'No target.'); return; } s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting', hold_range: `Holding ${km(s.holdKm)} from`, hit_run: `Hit and run, ${s.runMin}-${s.runMax} km, on` }[o]} ${tgt(s).name}.`); if (o === 'hit_run') s.runPhase = 'in'; },
   orbitDir: () => { const s = W.player; s.orbitDir = -s.orbitDir; },
   // A high energy turn by deg (negative to port), rolled against the HET chance; erratic manoeuvres make it harder.
   het: (deg) => { const s = W.player; if (s.het || s.broke > 0 || !s.alive) return;
@@ -1734,6 +1739,9 @@ function helmGlyph(kind, cx, cy, r, col) {
     if (kind === 'orbit.dir') { G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText(d > 0 ? 'CW' : 'CCW', cx, cy + r * 0.04); G.textBaseline = 'alphabetic'; } }
   else if (kind === 'hold_range') { target(cx + r * 0.42, cy, r * 0.36); line([[cx - r * 0.8, cy], [cx - r * 0.35, cy]]); head(cx - r * 0.12, cy, 0, r * 0.32, r * 0.3);
     G.lineWidth = lw * 0.7; line([[cx - r * 0.02, cy - r * 0.45], [cx - r * 0.02, cy + r * 0.45]]); G.lineWidth = lw; }
+  else if (kind === 'hit_run') { target(cx + r * 0.45, cy - r * 0.3, r * 0.3);
+    line([[cx - r * 0.75, cy + r * 0.55], [cx + r * 0.05, cy - r * 0.08]]); head(cx + r * 0.2, cy - r * 0.2, -0.65, r * 0.32, r * 0.28);
+    line([[cx + r * 0.25, cy + r * 0.2], [cx - r * 0.35, cy + r * 0.72]]); head(cx - r * 0.55, cy + r * 0.9, 2.4, r * 0.32, r * 0.28); }
   else if (kind === 'erratic') { line([[cx - r * 0.1, cy + r * 0.8], [cx + r * 0.35, cy + r * 0.4], [cx - r * 0.35, cy], [cx + r * 0.3, cy - r * 0.38]]); head(cx + r * 0.05, cy - r * 0.78, -P / 2 - 0.45, r * 0.42, r * 0.34); }
   else if (kind === 'estop') { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.8); } G.closePath(); G.fill();
     G.fillStyle = CC.signal; G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText('STOP', cx, cy + r * 0.03); G.textBaseline = 'alphabetic'; }
@@ -1757,39 +1765,58 @@ function helmKey(id, x, y, sz, kind, name, click, o = {}) {
 function stHelm(b, big) {
   const s = W.player, t = tgt(s), k = big ? 1.5 : 1, gap = 8 * k, row = (b.w - 3 * gap) / 4, ks = Math.min(row, big ? 84 : 52);
   let y = b.y;
-  LBL('Target', b.x, y + 12, 0, CC.lilac, 'left', 13 * k); y += 18 * k;
-  const ordOn = (o) => () => s.engaged && s.order === o, noT = () => !t, ts = Math.round(40 * k), tg = 6 * k;
-  // intercept and trail, then approach with its distance slider and orbit with its direction switch (owner, 2026-11-02:
-  // "add a config button with a slider to change distance. Combine orbit button with cw button, where cw button is a
-  // toggle slider. Do the same for approach button and its slider config as well")
+  // Orders toward the target in the left half; hit and run and evasive manoeuvres in the right (owner, 2026-11-02:
+  // "shrink the target maneuvers so it takes up half the panel, that way we can use the other half for more maneuver
+  // types like hit and run ... this will require a slider with two handles to pick min and max range", and "evasive
+  // maneuvers technically isn't an HET ability ... clicking it is a toggle")
+  const ordOn = (o) => () => s.engaged && s.order === o, noT = () => !t, ts = Math.round(34 * k), tg = 5 * k, half = (b.w - 12 * k) / 2, xr = b.x + half + 12 * k;
+  LBL('Target', b.x, y + 12, 0, CC.lilac, 'left', 13 * k); LBL('Runs and evasion', xr, y + 12, 0, CC.lilac, 'left', 13 * k); y += 18 * k;
+  const y0 = y;
+  // a slider: one handle, or two (min and max) when lo/hi are given
+  const slider = (id, x, yy, w, h, f0, f1, set, label) => {
+    const sy = yy + h / 2, two = f1 !== null;
+    hit(id, x - 8, yy, w + 16, h, { cursor: 'ew-resize', tip: label, drag: (px) => set(clamp((px - x) / w, 0, 1)), click: (px) => set(clamp((px - x) / w, 0, 1)) });
+    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(x, sy - 3, w, 6, 3); g.fill();
+    g.fillStyle = CC.sky; g.beginPath(); g.roundRect(x + (two ? w * f0 : 0), sy - 3, w * ((two ? f1 : f0) - (two ? f0 : 0)), 6, 3); g.fill();
+    for (const f of two ? [f0, f1] : [f0]) { g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(x + w * f - 7, sy - 11, 14, 22, 6); g.fill(); }
+  };
+  const span = HELM.hold_max_km - HELM.hold_min_km, frac = (v) => (v - HELM.hold_min_km) / span, val = (f) => HELM.hold_min_km + f * span;
   helmKey('helm.int', b.x, y, ts, 'intercept', 'Intercept', () => A.helmOrder('intercept'), { on: ordOn('intercept'), dis: noT });
   helmKey('helm.trail', b.x + ts + tg, y, ts, 'trail', 'Trail and match speed', () => A.helmOrder('trail'), { on: ordOn('trail'), dis: noT });
   y += ts + tg;
   helmKey('helm.hold', b.x, y, ts, 'hold_range', 'Approach and hold distance', () => A.helmOrder('hold_range'), { on: ordOn('hold_range'), dis: noT });
-  { const sx = b.x + ts + tg + 6, sw = b.w - (ts + tg + 6) - 70 * k, sy = y + ts / 2, f = (s.holdKm - HELM.hold_min_km) / (HELM.hold_max_km - HELM.hold_min_km);
-    hit('helm.holdkm', sx - 8, y, sw + 16, ts, { drag: (px) => A.holdKm(HELM.hold_min_km + clamp((px - sx) / sw, 0, 1) * (HELM.hold_max_km - HELM.hold_min_km)), click: (px) => A.holdKm(HELM.hold_min_km + clamp((px - sx) / sw, 0, 1) * (HELM.hold_max_km - HELM.hold_min_km)), cursor: 'ew-resize', tip: 'Distance to hold' });
-    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(sx, sy - 4, sw, 8, 4); g.fill(); g.fillStyle = CC.sky; g.beginPath(); g.roundRect(sx, sy - 4, sw * f, 8, 4); g.fill();
-    g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(sx + sw * f - 9, sy - 14, 18, 28, 7); g.fill();
-    NUM(km(s.holdKm), b.x + b.w, sy + 8 * k, 70 * k, CC.sky, 'right', 18 * k); }
+  { const sx = b.x + ts + tg + 8, sw = half - ts - tg - 16; slider('helm.holdkm', sx, y, sw, ts * 0.6, frac(s.holdKm), null, (f) => A.holdKm(val(f)), 'Distance to hold');
+    LBL(km(s.holdKm), sx + sw, y + ts - 2, 0, CC.sky, 'right', 13 * k); }
   y += ts + tg;
   helmKey('helm.orbit', b.x, y, ts, 'orbit', `Orbit (${s.orbitDir > 0 ? 'clockwise' : 'anticlockwise'})`, () => A.helmOrder('orbit'), { on: ordOn('orbit'), dis: noT });
   { // the direction switch: a two-way toggle, the lit half the way the orbit goes
-    const sx = b.x + ts + tg + 6, sw = Math.min(b.w - (ts + tg + 6), 170 * k), sh = ts - 10, sy = y + 5, half = sw / 2, cw = s.orbitDir > 0;
+    const sx = b.x + ts + tg + 4, sw = half - ts - tg - 4, sh = ts - 8, sy = y + 4, hh = sw / 2, cw = s.orbitDir > 0;
     hit('helm.odir', sx, sy, sw, sh, { click: A.orbitDir, tip: 'Orbit direction' });
     g.fillStyle = CC.deep; g.beginPath(); g.roundRect(sx, sy, sw, sh, sh / 2); g.fill();
-    g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(sx + (cw ? 0 : half), sy, half, sh, sh / 2); g.fill();
-    g.font = `700 ${Math.round(15 * k)}px Antonio`; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillStyle = cw ? '#000' : CC.sky; g.fillText('CW', sx + half / 2, sy + sh / 2 + 1); g.fillStyle = cw ? CC.sky : '#000'; g.fillText('CCW', sx + half * 1.5, sy + sh / 2 + 1); g.textBaseline = 'alphabetic'; }
+    g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(sx + (cw ? 0 : hh), sy, hh, sh, sh / 2); g.fill();
+    g.font = `700 ${Math.round(13 * k)}px Antonio`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = cw ? '#000' : CC.sky; g.fillText('CW', sx + hh / 2, sy + sh / 2 + 1); g.fillStyle = cw ? CC.sky : '#000'; g.fillText('CCW', sx + hh * 1.5, sy + sh / 2 + 1); g.textBaseline = 'alphabetic'; }
+  // the right half: hit and run with its two-handled range slider, then evasive manoeuvres (a toggle)
+  let yr = y0;
+  helmKey('helm.run', xr, yr, ts, 'hit_run', `Hit and run (${s.runPhase === 'in' ? 'running in' : 'pulling away'})`, () => A.helmOrder('hit_run'), { on: ordOn('hit_run'), dis: noT });
+  LBL(`${s.runMin.toFixed(1)}-${s.runMax.toFixed(1)} KM`, xr + ts + tg + 4, yr + ts * 0.62, half - ts - tg, CC.sky, 'left', 14 * k);
+  yr += ts + tg;
+  { const sx = xr + 8, sw = half - 16, f0 = frac(s.runMin), f1 = frac(s.runMax);
+    slider('helm.runkm', sx, yr, sw, ts * 0.7, f0, f1, (f) => { const v = val(f); if (Math.abs(f - f0) <= Math.abs(f - f1)) A.runRange(v, s.runMax); else A.runRange(s.runMin, v); }, 'Hit and run: nearest and farthest range');
+    LBL('Min', sx, yr + ts - 2, 0, CC.lilac, 'left', 12 * k); LBL('Max', sx + sw, yr + ts - 2, 0, CC.lilac, 'right', 12 * k); }
+  yr += ts + tg;
+  helmKey('helm.err', xr, yr, ts, 'erratic', 'Evasive manoeuvres', A.erratic, { on: () => s.erratic, onCol: CC.lilac });
+  LBL(s.erratic ? 'Evasive: on' : 'Evasive', xr + ts + tg + 4, yr + ts * 0.62, half - ts - tg, s.erratic ? CC.lilac : CC.sky, 'left', 14 * k);
   y += ts + 12 * k;
   LBL('High energy turns', b.x, y + 12, 0, CC.lilac, 'left', 13 * k); y += 18 * k;
   const busy = () => !!s.het || s.broke > 0 || s.battery < HET.cost_e;
   const pad = [[['het.l135', 'HET hard left 135', -135], ['het.180', 'HET 180', 180], ['het.r135', 'HET hard right 135', 135]],
     [['het.l90', 'HET left 90', -90], ['free', 'Free heading', 0], ['het.r90', 'HET right 90', 90]],
-    [['erratic', 'Erratic manoeuvres', 0], ['estop', 'Emergency stop', 0], ['het.free', 'HET free angle: click the view', 0]]];
+    [['none', '', 0], ['estop', 'Emergency stop', 0], ['het.free', 'HET free angle: click the view', 0]]];
   pad.forEach((r2, ri) => r2.forEach(([kind, name, deg], ci) => {
     const x = b.x + ci * (ks + gap), yy = y + ri * (ks + gap);
+    if (kind === 'none') return;
     if (kind === 'free') helmKey('helm.free', x, yy, ks, 'free', name, () => A.helmOrder('free'), { on: () => !s.engaged, onCol: CC.sky });
-    else if (kind === 'erratic') helmKey('helm.err', x, yy, ks, 'erratic', name, A.erratic, { on: () => s.erratic, onCol: CC.lilac });
     else if (kind === 'estop') helmKey('helm.stop', x, yy, ks, 'estop', s.estopT > 0 ? `Engines holding ${fmtCool(s.estopT)} s` : name, A.estop, { on: () => s.estop || s.estopT > 0, onCol: CC.caution });
     else if (kind === 'het.free') helmKey('helm.hetf', x, yy, ks, 'het.free', name, A.hetFree, { on: () => placingHet, onCol: CC.lilac, dis: busy });
     else helmKey(`helm.${kind}`, x, yy, ks, kind, name, () => A.het(deg), { dis: busy });
@@ -2595,7 +2622,55 @@ function modelFor(s) {
 const fx = new THREE.Group(); scene.add(fx);
 const beamGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 6, 1, true); beamGeo.translate(0, 0.5, 0); beamGeo.rotateX(P / 2);
 const booms = [];
-function boom(s) { boomAt(s.x, s.z, CLASSES[s.cls].len_m / M_PER_U); const o = MODELS.get(s.id); if (o) o.g.visible = false; }
+function boom(s) { bigBoom(s.x, s.z, CLASSES[s.cls].len_m / M_PER_U, FACTION[s.faction].hull); const o = MODELS.get(s.id); if (o) o.g.visible = false; }
+// A ship's death (owner, 2026-11-02: "can we design a big cool looking explosion like this?", with a reference shot of
+// a starship blowing apart): our own layers, all additive light except the debris. A white-hot core that flashes and
+// fades through pink; a plasma cloud of magenta, violet and blue puffs that swell and drift; a flat blue shockwave ring
+// racing out across the battle plane; sparks flung out fast; and the hull broken into tumbling dark chunks, each
+// burning for a while. Timings and sizes in EXPLODE (seconds, and multiples of the ship's length in units).
+const EXPLODE = { core_s: 1.6, core_x: 5, ring_s: 2.4, ring_x: 9, cloud_s: 5, cloud_x: 5.5, sparks: 60, sparks_s: 1.8, chunks: 9, chunks_s: 8, chunk_speed_u_s: 2.2 };
+const cloudTex = (() => { const R = rng(SCENARIO.seed + 21); const c = paint(128, 128, (x) => { for (let i = 0; i < 26; i++) { const px = 64 + (R() - 0.5) * 70, py = 64 + (R() - 0.5) * 70, rr = 14 + R() * 30, g2 = x.createRadialGradient(px, py, 0, px, py, rr);
+  g2.addColorStop(0, `rgba(255,255,255,${0.25 + R() * 0.25})`); g2.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g2; x.fillRect(0, 0, 128, 128); }
+  // faded to nothing at the border, so no square edge shows
+  x.globalCompositeOperation = 'destination-in'; const m = x.createRadialGradient(64, 64, 20, 64, 64, 64); m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = m; x.fillRect(0, 0, 128, 128); }); const tx = new THREE.CanvasTexture(c); return tx; })();
+const ringTex = (() => { const c = paint(256, 256, (x) => { const g2 = x.createRadialGradient(128, 128, 0, 128, 128, 128); g2.addColorStop(0, 'rgba(120,170,255,0)'); g2.addColorStop(0.55, 'rgba(90,150,255,0.15)');
+  g2.addColorStop(0.86, 'rgba(150,200,255,0.9)'); g2.addColorStop(0.93, 'rgba(255,255,255,1)'); g2.addColorStop(1, 'rgba(120,170,255,0)'); x.fillStyle = g2; x.fillRect(0, 0, 256, 256); }); return new THREE.CanvasTexture(c); })();
+const EXPLOSIONS = [];
+function bigBoom(x, z, size, hullCol) {
+  const R = rng(Math.floor(x * 131 + z * 71 + W.t * 1000) >>> 0), add = (m) => { scene.add(m); return m; };
+  // the explosion's light is kept out of tone mapping, so its colours stay saturated instead of blowing out to white
+  const spr = (tex, col) => add(new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: col, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false })));
+  const e = { t: 0, x, z, size, core: spr(glowTex, 0xffffff), ring: null, clouds: [], sparks: null, chunks: [] };
+  e.core.position.set(x, 0.3, z);
+  e.ring = add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: ringTex, color: 0x4f8cff, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, side: THREE.DoubleSide, toneMapped: false })));
+  e.ring.rotation.x = -P / 2; e.ring.position.set(x, 0.05, z);
+  for (const [i, col] of [0xff3fa0, 0xb04dff, 0x4f7bff, 0xff6ac8, 0x7a4dff, 0xff9ad8].entries()) {
+    const c = spr(cloudTex, col); c.userData = { dx: (R() - 0.5) * size * 0.8, dz: (R() - 0.5) * size * 0.8, dy: 0.2 + R() * 0.6, s: 0.7 + R() * 0.6, spin: (R() - 0.5) * 0.6 }; c.material.rotation = R() * 6.28; e.clouds.push(c); }
+  const n = EXPLODE.sparks, pos = new Float32Array(n * 3), vel = []; for (let i = 0; i < n; i++) { const a = R() * 2 * P, el = (R() - 0.3) * 0.8, sp = (3 + R() * 9) * size / 3; vel.push([Math.cos(a) * sp, el * sp, Math.sin(a) * sp]); pos.set([x, 0.3, z], i * 3); }
+  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  e.sparks = add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffc070, size: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false }))); e.sparks.userData = { vel, pos, sg };
+  for (let i = 0; i < EXPLODE.chunks; i++) {
+    const sz = size * (0.12 + R() * 0.22), m = add(new THREE.Mesh(new THREE.BoxGeometry(sz * (1 + R()), sz * 0.5, sz * (0.6 + R() * 1.4)), new THREE.MeshStandardMaterial({ color: hullCol, roughness: 0.7, metalness: 0.3, emissive: 0x401000, emissiveIntensity: 0.6 })));
+    const a = R() * 2 * P, sp = EXPLODE.chunk_speed_u_s * (0.4 + R()); m.position.set(x, 0, z); m.userData = { v: [Math.cos(a) * sp, (R() - 0.5) * 0.4, Math.sin(a) * sp], w: [(R() - 0.5) * 3, (R() - 0.5) * 3, (R() - 0.5) * 3], fire: spr(glowTex, 0xff8a40) };
+    e.chunks.push(m); }
+  EXPLOSIONS.push(e); return e;
+}
+// Every frame: each explosion's layers by its age.
+function explosionsStep(dt) {
+  const E = EXPLODE;
+  for (const e of EXPLOSIONS) {
+    e.t += dt; const t = e.t, sz = e.size;
+    const kc = t / E.core_s; e.core.scale.setScalar(sz * E.core_x * (0.4 + Math.min(1, kc * 3) * 0.8 + kc * 0.6)); e.core.material.opacity = Math.max(0, 1 - kc * kc) * 0.9;
+    e.core.material.color.setRGB(1, 1 - Math.min(1, kc) * 0.45, 1 - Math.min(1, kc) * 0.2);
+    const kr = t / E.ring_s, ease = 1 - Math.pow(1 - Math.min(1, kr), 3); e.ring.scale.setScalar(Math.max(0.01, sz * E.ring_x * ease)); e.ring.material.opacity = Math.max(0, 1 - kr);
+    const kl = t / E.cloud_s; for (const c of e.clouds) { const u = c.userData; c.position.set(e.x + u.dx * (1 + kl * 2), u.dy, e.z + u.dz * (1 + kl * 2)); c.scale.setScalar(sz * E.cloud_x * u.s * (0.35 + Math.sqrt(Math.min(1, kl)) * 0.9)); c.material.rotation += u.spin * dt; c.material.opacity = Math.max(0, Math.min(1, kl * 6) * (1 - kl)) * 0.42; }
+    const ks = t / E.sparks_s, sd = e.sparks.userData; for (let i = 0; i < sd.vel.length; i++) { sd.pos[i * 3] += sd.vel[i][0] * dt; sd.pos[i * 3 + 1] += sd.vel[i][1] * dt; sd.pos[i * 3 + 2] += sd.vel[i][2] * dt; } sd.sg.attributes.position.needsUpdate = true; e.sparks.material.opacity = Math.max(0, 1 - ks);
+    const kd = t / E.chunks_s; for (const m of e.chunks) { const u = m.userData; m.position.x += u.v[0] * dt; m.position.y += u.v[1] * dt; m.position.z += u.v[2] * dt; m.rotation.x += u.w[0] * dt; m.rotation.y += u.w[1] * dt; m.rotation.z += u.w[2] * dt;
+      u.fire.position.copy(m.position); u.fire.scale.setScalar(sz * 0.5 * (1 - kd * 0.7)); u.fire.material.opacity = Math.max(0, 0.9 - kd * 1.2); m.material.emissiveIntensity = Math.max(0, 0.6 - kd); m.material.transparent = kd > 0.8; m.material.opacity = Math.max(0, 1 - Math.max(0, kd - 0.8) * 5); }
+    if (t > Math.max(E.cloud_s, E.chunks_s)) { e.done = true; for (const o of [e.core, e.ring, e.sparks, ...e.clouds, ...e.chunks, ...e.chunks.map((m) => m.userData.fire)]) scene.remove(o); }
+  }
+  for (let i = EXPLOSIONS.length - 1; i >= 0; i--) if (EXPLOSIONS[i].done) EXPLOSIONS.splice(i, 1);
+}
 function boomAt(x, z, size) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb070, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); sp.position.set(x, 0, z); scene.add(sp); booms.push({ sp, t: 0, size }); }
 const SHOT_POOL = [];
 // Asteroids in the 3D view: a lumpy grey rock per W.rocks entry, rebuilt when the world changes.
@@ -2636,6 +2711,7 @@ function syncScene(dt) {
   for (const c of W.craft) { const sp = take('glow'); sp.position.set(c.x, 0.1, c.z); sp.scale.setScalar(0.35); sp.material.color.setHex(0x9fd0ff); }
   for (const mn of W.mines) { const sp = take('glow'); sp.position.set(mn.x, 0, mn.z); sp.scale.setScalar(0.5); sp.material.color.setHex(mn.arm > 0 ? 0x806020 : 0xffb030); }
   for (let i = n; i < SHOT_POOL.length; i++) SHOT_POOL[i].obj.visible = false;
+  explosionsStep(dt);
   for (const b of booms) { b.t += dt; const k = b.t / 1.4; b.sp.scale.setScalar(b.size * (1 + k * 4)); b.sp.material.opacity = Math.max(0, 1 - k); if (k >= 1) { scene.remove(b.sp); b.done = true; } }
   for (let i = booms.length - 1; i >= 0; i--) if (booms[i].done) booms.splice(i, 1);
 }
@@ -2822,7 +2898,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v35', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v36', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -2850,7 +2926,9 @@ function uiSheet() {
     button('sheet.resume', P0.x, yy, P0.w, 48, 'Resume', A.menu); yy += 66; LBL('Test scene', P0.x, yy); yy += 10;
     const sl = Object.entries(SCENES).map(([k, v]) => [k, v.name]);
     tabs('sheet.scene', P0.x, yy, P0.w, 44, sl.slice(0, 4), sceneId, A.scene); yy += 50; tabs('sheet.scene2', P0.x, yy, P0.w, 44, sl.slice(4), sceneId, A.scene); yy += 70; LBL('Mockup', P0.x, yy); yy += 10;
-    button('sheet.hit', P0.x, yy, P0.w, 48, 'Take a hit', () => { takeHit(); menuOpen = false; }); yy += 56;
+    const hw4 = (P0.w - 8) / 2;
+    button('sheet.hit', P0.x, yy, hw4, 48, 'Take a hit', () => { takeHit(); menuOpen = false; }, { center: true });
+    button('sheet.boom', P0.x + hw4 + 8, yy, hw4, 48, 'Destroy target', () => { const t = tgt(W.player); if (t) { t.hull = 0; t.alive = false; t.v = 0; boom(t); say('Tactical', `${t.name} destroyed.`); for (const o of W.ships) if (o.target === t.id) o.target = null; } menuOpen = false; }, { center: true, dis: () => !tgt(W.player) }); yy += 56;
     button('sheet.restart', P0.x, yy, P0.w, 48, `Restart ${SCENES[sceneId].name.toLowerCase()}`, () => { A.reset(); menuOpen = false; }); yy += 56;
     button('sheet.quit', P0.x, yy, P0.w, 48, 'Quit to campaign map', () => {}, { dis: () => true });
   }
@@ -2946,6 +3024,9 @@ window.MOCKUP_SHOTS = {
   shields_tip: () => { scripted(600, () => { shipTab = 'shields'; const sh = W.player.shields; sh[0] = 12; sh[1] = 22; sh[4] = 6; W.player.reinforce = 0; }); HOT = 'shx.1'; },
   ssd_tip: () => { scripted(600, () => { damagedSystems(); }); HOT = 'ssd.sys.engines'; },
   battle: () => scripted(600),
+  // the explosion, frozen at a given age (seconds), the Vorrak destroyed in front of the camera
+  explosion: () => { scripted(600, () => { const s = W.player, v = ship('vorrak'); s.h = 0; s.hOrder = 0; v.x = s.x + 3; v.z = s.z - 26; v.hull = 0; v.alive = false; boom(v); }); explosionsStep(0.7); },
+  explosion_late: () => { scripted(600, () => { const s = W.player, v = ship('vorrak'); s.h = 0; s.hOrder = 0; v.x = s.x + 3; v.z = s.z - 26; v.hull = 0; v.alive = false; boom(v); }); explosionsStep(2.2); },
   // the target bracket with a seeker lock: the torpedoes charged, the Vorrak ahead inside 18 km
   seeker_lock: () => scripted(600, () => { const s = W.player, v = ship('vorrak'); s.target = 'vorrak'; focus = 'vorrak'; s.h = 0; s.hOrder = 0; v.x = s.x; v.z = s.z - 110; for (const m of s.mounts) if (WEAPONS[m.w].kind === 'torpedo') m.charge = 1; }),
   cam_locked: () => { scripted(600); camLock = true; },

@@ -288,6 +288,26 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4k. The explosion, and the helm's second half (version 36)
+
+**A ship's death** (owner, 2026-11-02: "can we design a big cool looking explosion like this?", with a shot of a starship
+blowing apart in the reference game; our own layers, not its art): a white-hot **core** that flashes to five ship lengths
+and fades through pink in 1.6 s; a flat blue **shockwave ring** racing out across the battle plane to nine ship lengths in
+2.4 s, easing out; a **plasma cloud** of six magenta, violet and blue puffs that swell and drift for 5 s; 60 **sparks**
+flung out for 1.8 s; and the hull broken into nine dark **chunks** that tumble away, each burning for a while, over 8 s.
+The light is kept out of tone mapping so its colours stay saturated. A meltdown uses the same explosion, larger. The
+menu's **Destroy target** key shows it on demand; the shots `explosion` (0.7 s) and `explosion_late` (2.2 s) hold it.
+
+**The helm's target section takes the left half** (owner: "shrink the target maneuvers so it takes up half the panel, that
+way we can use the other half for more maneuver types like hit and run, to move attack, and move away. this will require
+a slider with two handles to pick min and max range"). The right half, **Runs and evasion**: **Hit and run** runs in at
+full speed to the minimum range, then away to the maximum, and again, its range set by a **two-handled slider** (the
+handle nearest the pointer moves; at least 0.5 km apart); measured with 3-6 km: in from 9.3 km, out at 3.0, in at 6.0,
+repeating every 45-50 s. **Evasive manoeuvres** moved here from the HET pad (owner: "evasive maneuvers technically isn't
+an HET ability btw, so clicking it is a toggle and doesn't consume HET ability"): a toggle; it never spends the HET
+chance (it still makes a HET likelier to fail while it is on, after the reference game). The pad's bottom row keeps the
+emergency stop (under free heading) and the free-angle HET.
+
 ## 4j. Hull bars in the view, and steering in the expanded view (version 34)
 
 Owner, 2026-11-02: "can you show enemy ship health in this? and my ship health too? always show current targeted enemy
