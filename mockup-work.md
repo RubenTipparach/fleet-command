@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-02, v26) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Drafted (2026-11-02, v27) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 
@@ -155,7 +155,7 @@ the helm by pointing (after the-federation), and test scenes for mines, the trac
 transporter's three modes (Capture, Hit & run, Inventory) with crews by role (survey B14, B15), reeling (B16), stations
 and planets, and four more scenes: Delivery, VIP, Shuttle, Fighters.
 
-**Queued from the survey (2026-11-01), not built yet:** the camera lock on the first right click (B2); the helm redesign
+**Queued from the survey (2026-11-01), not built yet:** the helm redesign
 after the reference game's nav modes, from the owner's screenshots and the manual (B4); power ticks per ship scaled to
 fit (B7); enemies starting tractor holds (B11); meltdown from a material temperature limit, a scram, coils aligned by
 dragging (R1, R2, R4). The kit's cells and icons wait for the Concord master UI (B6).

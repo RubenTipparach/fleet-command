@@ -284,6 +284,22 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4e. The camera lock (version 27)
+
+Owner, survey B2: "Lock camera on target is automatic when you first right click. Clicking and dragging camera around
+frees up the lock..you can lock again under the enemy ship systems view box in the upper right corner"; then, 2026-11-02:
+"lock target camera is not working, camera needs to yaw to face the enemy target, this is how it works in my reference
+repos" and "we'll want to smooth that rotation in this repo".
+
+Fargo's `CameraSystem.update` (dark-neb `src/systems/camera_system.lua`) yaws the locked camera each frame toward the
+bearing from the ship to the target at a fixed rate, keeping the pitch; a drag unlocks it. The mockup does the same with
+a **smoothed** turn: the yaw is a critically damped spring (natural rate 2.5 per second, at most 90 degrees a second),
+so it eases in and out, never overshoots, and follows a moving target without jitter. The chase camera ends behind the
+ship with the target ahead, beyond it; pitch and zoom stay the player's. Locking a target (right click, or the Lock target
+key) locks the camera too; a **drag** frees it (zoom does not); a **Lock camera** key under the Target box locks it
+again, and reads "Camera locked" while it holds. The player always has the camera back with one drag (CLAUDE.md 8: the
+camera is never taken from the player against their will; this lock is theirs to set).
+
 ## 4c. Test scenes
 
 Owner, 2026-11-01: "I also want different test scenes, I want a mine laying test scene, the player can transport mines to
@@ -358,7 +374,7 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
 | B1 | Speed: discrete boxes or a slider? | **Decided** (owner, 2026-11-01: "speed needs a slider handle"): a handle dragged along the engine boxes |
-| B2 | Targeting with a mouse: left click focuses and right click locks, or left click locks? | **Decided** (survey, 2026-11-01): right click locks, and the first right click also locks the camera on the target; dragging the camera frees it; it locks again from the Target box (top right). *Queued*: the camera lock |
+| B2 | Targeting with a mouse: left click focuses and right click locks, or left click locks? | **Decided** (survey, 2026-11-01): right click locks, and the first right click also locks the camera on the target; dragging the camera frees it; it locks again from the Target box (top right). Built in version 27 (section 4e) |
 | B3 | Nine stations in one panel on a column of icon tabs, or fewer stations merged? | **Decided** (survey, 2026-11-01): nine on one rail |
 | B4 | The helm pad: fixed steps (turn 15, 45, 90 degrees; speed one box) or hold to keep turning? | **Decided** (survey, 2026-11-01), the owner's note: the reference game's helm had free heading, intercept, follow and match speed, orbit (clockwise or anticlockwise), high-energy turns, hard left, hard right and 180; lay it out from the owner's screenshots and the manual's nav icons. *Queued*: the helm redesign (citing the manual's pages) |
 | B5 | (Deferred: no mobile mockup yet.) Phone landscape: a rail of four panel keys and quick keys (Next, Port, Fire, Stbd) in the view, panels opening expanded; or the desktop column scaled down? | **Decided** (survey, 2026-11-01): the rail and quick keys (mobile still deferred) |
