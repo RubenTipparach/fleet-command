@@ -754,7 +754,7 @@ function makeShip(d) {
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
     scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', pads: Array(c.pads || TRANSPORT.pads_default).fill(1), bq: { capture: [], hit: [] }, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
-    warp: { armed: false, banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
+    warp: { armed: false, want: 0, banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
     het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1, holdKm: 6, runMin: 2, runMax: 8, runPhase: 'in',
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
@@ -960,7 +960,7 @@ function warpStep(s) {
     say('Helm', `${s.name} jumped to warp.`); if (s === W.player) { W.over = 'jumped'; W.overWhy = `${s.name} jumped to warp`; } } return; }
   // an armed drive takes the free energy, whole points, up to coil_e; past the output it gives way first
   if (w.armed) { const free = output(s) - used(s);
-    if (free >= 1 && s.power.warp < WARP.coil_e) s.power.warp = Math.min(WARP.coil_e, s.power.warp + Math.floor(free));
+    if (free >= 1 && s.power.warp < w.want) s.power.warp = Math.min(w.want, s.power.warp + Math.floor(free));
     else if (free < 0 && s.power.warp > 0) s.power.warp = Math.max(0, s.power.warp - Math.ceil(-free)); }
   const draw = nacelleDraw(s);
   w.banks = Math.min(WARP.bank_e, w.banks + draw.reduce((a, d, i) => a + d * w.nacelles[i].hp, 0) * WARP.charge_k * DT);
@@ -1239,7 +1239,9 @@ const A = {
   // target view: the camera glides to the target and orbits it; off, it glides back to your ship
   targetView: () => { camTargetView = !camTargetView && !!tgt(W.player); if (camTargetView) camLock = false; },
   nextTarget: () => { const s = W.player, foes = enemiesOf(s).sort((a, b) => distU(s, a) - distU(s, b)); if (!foes.length) return; const i = foes.findIndex((f) => f.id === s.target); A.lock(foes[(i + 1) % foes.length].id); },
-  power: (sys, n) => { const s = W.player; s.power[sys] = clamp(n, 0, Math.max(Math.min(s.power[sys], n), Math.min(10, powerRoom(s, s.power[sys])))); if (sys === 'sensors') { s.ecm = Math.min(s.ecm, s.power.sensors); s.eccm = Math.min(s.eccm, s.power.sensors - s.ecm); } if (sys === 'engines') s.vOrder = Math.min(s.vOrder, maxSpeed(s)); },
+  power: (sys, n) => { const s = W.player; s.power[sys] = clamp(n, 0, Math.max(Math.min(s.power[sys], n), Math.min(10, powerRoom(s, s.power[sys]))));
+    // warp set by hand (owner, 2026-11-02: "warp should be in here to allocate power for"): the coils want that much, and are armed while it is above 0
+    if (sys === 'warp') { s.warp.want = s.power.warp; s.warp.armed = s.power.warp > 0; } if (sys === 'sensors') { s.ecm = Math.min(s.ecm, s.power.sensors); s.eccm = Math.min(s.eccm, s.power.sensors - s.ecm); } if (sys === 'engines') s.vOrder = Math.min(s.vOrder, maxSpeed(s)); },
   setCoil: (i, o) => { const c = W.player.reactor.coils; c[i] = clamp(o, -1, 1); },
   align: (i, dir) => { const c = W.player.reactor.coils; c[i] = clamp(c[i] + dir * REACTOR.nudge, -1, 1); },
   flow: (j, n) => { const s = W.player, l = s.reactor.loops[j]; l.flow = clamp(n, 0, Math.max(Math.min(l.flow, n), Math.min(REACTOR.flow_max, powerRoom(s, l.flow)))); },
@@ -1309,9 +1311,9 @@ const A = {
   // The warp key: offline, a click arms the coils (they take free energy); armed and charging, a click powers them down;
   // ready, a click jumps.
   warpKey: () => { const s = W.player, w = s.warp;
-    if (!w.armed) { w.armed = true; say('Engineering', output(s) - used(s) >= 1 ? 'Warp coils charging.' : 'Warp coils armed. Power down systems to free energy for them.'); return; }
+    if (!w.armed) { w.armed = true; w.want = WARP.coil_e; say('Engineering', output(s) - used(s) >= 1 ? 'Warp coils charging.' : 'Warp coils armed. Power down systems to free energy for them.'); return; }
     if (w.banks >= WARP.jump_e) { jump(s); return; }
-    w.armed = false; s.power.warp = 0; say('Engineering', 'Warp coils powered down.'); },
+    w.armed = false; w.want = 0; s.power.warp = 0; say('Engineering', 'Warp coils powered down.'); },
   jump: () => jump(W.player),
   mine: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
   // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
@@ -2008,13 +2010,13 @@ function stPower(b, big) {
   if (powerMode === 'warp') { stWarp(c, big); return; }
   const s = W.player, spare = output(s) - used(s);
   pairs('pw.h', c.x, c.y + 22, [['Out', output(s).toFixed(1)], ['Used', String(used(s))], ['Spare', spare.toFixed(1), spare >= 0 ? CC.accord : CC.alert]]);
-  let y = c.y + 34; const rowH = big ? 40 : 26, gap = big ? 10 : 6, lw = big ? 160 : 82, nw = big ? 50 : 26;
-  for (const k of SYSTEMS) {
-    if (big) g.drawImage(KIT.icon[iconOf(k)], c.x, y + (rowH - 26) / 2, 26, 26);
+  let y = c.y + 32; const rowH = big ? 40 : 24, gap = big ? 10 : 5, lw = big ? 160 : 82, nw = big ? 50 : 26;
+  for (const k of SYSTEMS.concat(['warp'])) {
+    if (big && iconOf(k)) g.drawImage(KIT.icon[iconOf(k)], c.x, y + (rowH - 26) / 2, 26, 26);
     powerRow('pw', c.x + (big ? 36 : 0), y, c.w - (big ? 36 : 0), rowH, k, lw - (big ? 36 : 0));
     y += rowH + gap;
   }
-  pairs('pw.c', c.x, y + 16, [['Coolant pumps', `${coolantDraw(s)} E`], ['Warp', `${s.power.warp} E`]], 0, 18); LBL('set in Reactor, Warp', c.x + c.w, y + 16, 0, CC.lilac, 'right', 13);
+  pairs('pw.c', c.x, y + 16, [['Coolant pumps', `${coolantDraw(s)} E`]], 0, 18); LBL('set in Reactor', c.x + c.w, y + 16, 0, CC.lilac, 'right', 13);
   y += 26; bar(c.x, y, c.w, `Battery ${s.battery.toFixed(1)} / ${CLASSES[s.cls].battery_e} E`, s.battery / CLASSES[s.cls].battery_e, s.battery / CLASSES[s.cls].battery_e < 0.25);
   if (big) pairs('pw.x', c.x, y + 70, [['Speed limit', `${Math.round(maxSpeed(s))} M/S`], ['Capacitor', `${s.cap.toFixed(1)} E`], ['Shield regen', `${(s.power.shields * 0.6).toFixed(1)}/S`]], c.w);
 }
@@ -3327,7 +3329,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v51', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v52', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
