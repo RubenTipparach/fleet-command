@@ -317,7 +317,7 @@ use (page 120), orbit target, intercept target (the helm steers, the captain kee
 
 | Group | Keys |
 |---|---|
-| Toward the target (toggles; pressing the lit one returns to free heading) | **Intercept** (leads the target; the captain keeps the speed), **Trail and match speed** (sits 600 m astern, matching its speed), **Orbit** (round it at 4 km; the captain keeps the speed), **Orbit direction** (CW or CCW) |
+| Toward the target (toggles; pressing the lit one returns to free heading) | **Intercept** (leads the target; the captain keeps the speed), **Trail and match speed** (sits 600 m astern, matching its speed), **Approach and hold distance** with its **distance slider** beside it (1-12 km in 0.5 km steps; closes, then holds within 10 %), **Orbit** (round it at 4 km; the captain keeps the speed) with its **CW / CCW switch** beside it (owner, 2026-11-02: "also need approach and maintain distance, add a config button with a slider to change distance. Combine orbit button with cw button, where cw button is a toggle slider") |
 | High energy turns (triggers) | A 3 x 3 pad: hard left 135, 180, hard right 135; left 90, **Free heading** (the middle key, cancelling helm orders), right 90; the angle printed in each turn key's corner |
 | Self (toggles and triggers) | **Erratic manoeuvres** (toggle), **Emergency stop**, **HET free angle** (then click the view) |
 
@@ -334,6 +334,14 @@ the engines hold for 4 s.
 Measured (headless): intercept closed on the Vorrak; orbit settled near it; trail caught it up; a 90 left HET turned 90
 degrees in under a second (79 % to 60 %); six back to back all broke down; the emergency stop went from 240 m/s to 0 in
 a second and held; erratic manoeuvres refused a launch.
+
+**Icons like signage** (version 35; owner, 2026-11-02: "please fix these icons to look like actual icons I'd see in an
+airport or something, they are way too weird looking I dont even understand them"): thick strokes and filled triangular
+heads; the turns are road-sign turn arrows (a stem, the bend, a short run, the head), 180 the U-turn sign, free heading
+the straight-ahead arrow, intercept an arrow into a target, trail two ships in line, approach and hold an arrow stopped
+at a bar before a target, orbit a circular arrow round a dot, erratic a zigzag arrow, emergency stop an octagon with
+STOP, the free-angle turn a turn arrow to a crosshair. Measured: holding 3 km, the Resolute closed from 7.5 km and held
+3.2-3.3 km.
 
 ## 4i. Target bracket, shields, weapons page, toughness (version 33)
 

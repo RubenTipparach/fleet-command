@@ -474,7 +474,7 @@ const WARP = { bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, plot_drift_deg
 // worse, forbid launches, mines and tractors, and make HETs about 17 points likelier to fail. Emergency deceleration
 // stops the ship as fast as it can, then holds it a while. Our numbers, the page's own.
 const HET = { rate_deg_s: 240, cost_e: 3, chance_drop: 0.2, recover_per_s: 0.01, erratic_penalty: 0.17, breakdown_s: 6, breakdown_engines: 0.3 };
-const HELM = { estop_decel_x: 5, estop_hold_s: 4, erratic_hit: 0.75, erratic_turn: 0.8, orbit_km: 4 };
+const HELM = { estop_decel_x: 5, estop_hold_s: 4, erratic_hit: 0.75, erratic_turn: 0.8, orbit_km: 4, hold_min_km: 1, hold_max_km: 12 };
 // A class's best HET chance: smaller hulls turn hard more safely.
 const hetMax = (s) => clamp(0.95 - CLASSES[s.cls].len_m / 2000, 0.6, 0.95);
 const SPEED_PER_BOX_M_S = 30;
@@ -733,7 +733,7 @@ function makeShip(d) {
     scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', transporter: 1, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
     warp: { banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
-    het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1,
+    het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1, holdKm: 6,
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
 let sceneId = 'battle';
@@ -1000,6 +1000,8 @@ function steer(s, order, t, rangeKm) {
   else if (order === 'intercept') { const tti = distU(s, t) / Math.max(1, Math.abs(s.v) / M_PER_U), f = fwd(t.h), lx = t.x + f[0] * t.v / M_PER_U * tti, lz = t.z + f[1] * t.v / M_PER_U * tti; s.hOrder = Math.atan2(lx - s.x, -(lz - s.z)); }
   else if (order === 'trail') { const f = fwd(t.h), ax = t.x - f[0] * 6, az = t.z - f[1] * 6, d2 = Math.hypot(ax - s.x, az - s.z);
     s.hOrder = d2 > 2 ? Math.atan2(ax - s.x, -(az - s.z)) : t.h; s.vOrder = clamp(Math.abs(t.v) + (d2 > 2 ? d2 * 20 : 0), 0, vmax); }
+  // approach and hold a distance (owner, 2026-11-02: "also need approach and maintain distance"), set by its slider
+  else if (order === 'hold_range') { s.hOrder = d > s.holdKm * 1.1 ? toT : d < s.holdKm * 0.9 ? wrap(toT + P) : wrap(toT + P / 2); s.vOrder = d > s.holdKm * 1.1 || d < s.holdKm * 0.9 ? vmax : Math.max(60, Math.abs(t.v)); }
   else if (order === 'orbit') { const c2 = clamp((d - HELM.orbit_km) / HELM.orbit_km, -1, 1); s.hOrder = wrap(toT + s.orbitDir * (P / 2 - c2 * P / 4)); }
 }
 // Every ship but the player's thinks twice a second: pick a target by its rule, steer by its stance, fire if free.
@@ -1144,8 +1146,9 @@ function craftStep() {
 const A = {
   turn: (deg) => { const s = W.player; s.engaged = false; s.hOrder = wrap(s.hOrder + deg * DEG); },
   // The helm officer's orders toward the target, toggles: pressing the lit one returns to free heading.
+  holdKm: (v) => { W.player.holdKm = clamp(Math.round(v * 2) / 2, HELM.hold_min_km, HELM.hold_max_km); },
   helmOrder: (o) => { const s = W.player; if (o === 'free' || (s.engaged && s.order === o)) { s.engaged = false; say('Helm', 'Free heading.'); return; }
-    if (!tgt(s)) { say('Helm', 'No target.'); return; } s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting' }[o]} ${tgt(s).name}.`); },
+    if (!tgt(s)) { say('Helm', 'No target.'); return; } s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting', hold_range: `Holding ${km(s.holdKm)} from` }[o]} ${tgt(s).name}.`); },
   orbitDir: () => { const s = W.player; s.orbitDir = -s.orbitDir; },
   // A high energy turn by deg (negative to port), rolled against the HET chance; erratic manoeuvres make it harder.
   het: (deg) => { const s = W.player; if (s.het || s.broke > 0 || !s.alive) return;
@@ -1689,32 +1692,51 @@ function helmPad(px, py, size) {
   CON.live.helmCentre(g, 150); g.restore();
 }
 function bestChance() { const s = W.player, t = tgt(s); if (!t) return 0; return Math.max(0, ...s.mounts.filter((m) => m.sel && m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t)).map((m) => hitChance(s, m, t))); }
-// Helm icons, drawn as line glyphs in black on the key: turns are curved arrows (a ship going up, then turning by the
-// angle), orders toward the target show the target as a ringed dot, self toggles their own sign.
+// Helm icons, drawn like signage (owner, 2026-11-02: "please fix these icons to look like actual icons I'd see in an
+// airport or something"): thick strokes, filled triangular arrowheads, familiar shapes. Turns are road-sign turn
+// arrows (a stem going up, then the bend); 180 is the U-turn sign; free heading is straight ahead; intercept an arrow
+// into a target; trail two ships in line; orbit a circular arrow round a dot; erratic a zigzag arrow; stop an octagon.
 function helmGlyph(kind, cx, cy, r, col) {
-  const G = g; G.strokeStyle = col; G.fillStyle = col; G.lineWidth = Math.max(2, r * 0.13); G.lineCap = 'round'; G.lineJoin = 'round';
-  const head = (x, y, a, l = r * 0.32) => { G.beginPath(); G.moveTo(x + Math.cos(a + 2.6) * l, y + Math.sin(a + 2.6) * l); G.lineTo(x, y); G.lineTo(x + Math.cos(a - 2.6) * l, y + Math.sin(a - 2.6) * l); G.stroke(); };
-  const target = (x, y) => { G.beginPath(); G.arc(x, y, r * 0.2, 0, 2 * P); G.stroke(); G.beginPath(); G.arc(x, y, r * 0.06, 0, 2 * P); G.fill(); };
-  // a turn of deg degrees, dir -1 port or 1 starboard: up first, then round a circle of radius rr
-  const turn = (deg, dir, rr = r * 0.5) => {
-    const th = deg * DEG, sx = cx - dir * rr * (deg > 100 ? 0.45 : 0.6), sy = cy + rr * (deg > 100 ? 0.25 : 0.55), C = [sx + dir * rr, sy];
-    G.beginPath(); G.moveTo(sx, sy + r * 0.45); G.lineTo(sx, sy);
-    for (let i = 1; i <= 24; i++) { const a = th * i / 24; G.lineTo(C[0] - dir * rr * Math.cos(a), C[1] - rr * Math.sin(a)); }
-    G.stroke(); const ex = C[0] - dir * rr * Math.cos(th), ey = C[1] - rr * Math.sin(th); head(ex, ey, Math.atan2(-Math.cos(th), dir * Math.sin(th)));
+  const G = g, lw = Math.max(3, r * 0.24); G.strokeStyle = col; G.fillStyle = col; G.lineWidth = lw; G.lineCap = 'butt'; G.lineJoin = 'round';
+  // a filled arrowhead with its tip at (x, y), pointing along angle a
+  const head = (x, y, a, l = r * 0.42, w = r * 0.36) => { G.beginPath(); G.moveTo(x, y); G.lineTo(x - Math.cos(a) * l - Math.sin(a) * w, y - Math.sin(a) * l + Math.cos(a) * w);
+    G.lineTo(x - Math.cos(a) * l + Math.sin(a) * w, y - Math.sin(a) * l - Math.cos(a) * w); G.closePath(); G.fill(); };
+  const line = (pts) => { G.beginPath(); pts.forEach(([x, y], i) => (i ? G.lineTo(x, y) : G.moveTo(x, y))); G.stroke(); };
+  const target = (x, y, rr) => { G.lineWidth = lw * 0.6; G.beginPath(); G.arc(x, y, rr, 0, 2 * P); G.stroke(); G.beginPath(); G.arc(x, y, rr * 0.35, 0, 2 * P); G.fill(); G.lineWidth = lw; };
+  // a road-sign turn: a stem up from the bottom, the bend by deg toward dir (-1 left, 1 right), a short straight run,
+  // then a filled head; built at the origin, measured, and centred in the key
+  const turn = (deg, dir, scale = 1) => {
+    const rr = r * 0.34 * scale, th = deg * DEG, stem = r * 0.55 * scale, run = r * 0.22 * scale, hl = r * 0.4 * scale, hw = r * 0.34 * scale;
+    const C = [dir * rr, 0], at = (a) => [C[0] - dir * rr * Math.cos(a), C[1] - rr * Math.sin(a)];
+    const ta = Math.atan2(-Math.cos(th), dir * Math.sin(th)), ux = Math.cos(ta), uy = Math.sin(ta);
+    const pts = [[0, stem], [0, 0]]; for (let i = 1; i <= 24; i++) pts.push(at(th * i / 24));
+    const E = pts[pts.length - 1], F = [E[0] + ux * run, E[1] + uy * run], tip = [F[0] + ux * hl, F[1] + uy * hl]; pts.push(F);
+    const wing = [[F[0] - uy * hw, F[1] + ux * hw], [F[0] + uy * hw, F[1] - ux * hw]];
+    const all = pts.concat([tip], wing), x0 = Math.min(...all.map((q) => q[0])), x1 = Math.max(...all.map((q) => q[0])), y0 = Math.min(...all.map((q) => q[1])), y1 = Math.max(...all.map((q) => q[1]));
+    const ox = cx - (x0 + x1) / 2, oy = cy - (y0 + y1) / 2, T = (q) => [q[0] + ox, q[1] + oy];
+    line(pts.map(T)); G.beginPath(); const tp = T(tip), w0 = T(wing[0]), w1 = T(wing[1]); G.moveTo(tp[0], tp[1]); G.lineTo(w0[0], w0[1]); G.lineTo(w1[0], w1[1]); G.closePath(); G.fill();
   };
   if (kind === 'het.l90') turn(90, -1); else if (kind === 'het.r90') turn(90, 1);
   else if (kind === 'het.l135') turn(135, -1); else if (kind === 'het.r135') turn(135, 1);
-  else if (kind === 'het.180') turn(180, -1, r * 0.42);
-  else if (kind === 'het.free') { turn(60, 1); G.setLineDash([3, 3]); G.beginPath(); G.arc(cx, cy, r * 0.82, 0, 2 * P); G.stroke(); G.setLineDash([]); }
-  else if (kind === 'intercept') { target(cx + r * 0.42, cy - r * 0.42); G.beginPath(); G.moveTo(cx - r * 0.6, cy + r * 0.6); G.quadraticCurveTo(cx - r * 0.3, cy - r * 0.2, cx + r * 0.15, cy - r * 0.55); G.stroke(); head(cx + r * 0.15, cy - r * 0.55, -0.3); }
-  else if (kind === 'trail') { target(cx, cy - r * 0.45); G.beginPath(); G.moveTo(cx, cy + r * 0.65); G.lineTo(cx, cy - r * 0.05); G.stroke(); head(cx, cy - r * 0.05, -P / 2);
-    G.beginPath(); G.moveTo(cx - r * 0.55, cy + r * 0.15); G.lineTo(cx - r * 0.25, cy + r * 0.15); G.moveTo(cx - r * 0.55, cy + r * 0.32); G.lineTo(cx - r * 0.25, cy + r * 0.32); G.stroke(); }
-  else if (kind === 'orbit' || kind === 'orbit.dir') { const d = W.player.orbitDir; if (kind === 'orbit') target(cx, cy);
-    const R2 = r * (kind === 'orbit' ? 0.62 : 0.5), a0 = -P / 2, a1 = a0 + d * 1.6 * P; G.beginPath(); G.arc(cx, cy, R2, a0, a1, d < 0); G.stroke();
-    head(cx + Math.cos(a1) * R2, cy + Math.sin(a1) * R2, a1 + d * P / 2); if (kind === 'orbit.dir') { G.font = `700 ${r * 0.5}px Antonio`; G.textAlign = 'center'; G.fillText(d > 0 ? 'CW' : 'CCW', cx, cy + r * 0.18); } }
-  else if (kind === 'free') { G.beginPath(); G.arc(cx, cy, r * 0.6, 0, 2 * P); G.stroke(); G.beginPath(); G.moveTo(cx, cy + r * 0.3); G.lineTo(cx, cy - r * 0.35); G.stroke(); head(cx, cy - r * 0.35, -P / 2, r * 0.25); }
-  else if (kind === 'erratic') { G.beginPath(); G.moveTo(cx - r * 0.1, cy + r * 0.7); G.lineTo(cx + r * 0.3, cy + r * 0.35); G.lineTo(cx - r * 0.3, cy); G.lineTo(cx + r * 0.3, cy - r * 0.35); G.lineTo(cx, cy - r * 0.6); G.stroke(); head(cx, cy - r * 0.6, -P / 2 - 0.6, r * 0.26); }
-  else if (kind === 'estop') { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r * 0.62, cy + Math.sin(a) * r * 0.62); } G.closePath(); G.stroke(); G.beginPath(); G.moveTo(cx - r * 0.3, cy); G.lineTo(cx + r * 0.3, cy); G.stroke(); }
+  else if (kind === 'het.180') turn(180, -1);
+  else if (kind === 'free') { line([[cx, cy + r * 0.75], [cx, cy - r * 0.3]]); head(cx, cy - r * 0.75, -P / 2, r * 0.48, r * 0.42); }
+  else if (kind === 'het.free') { turn(70, 1, 0.85); G.lineWidth = lw * 0.55; const x0 = cx + r * 0.55, y0 = cy - r * 0.55; G.beginPath(); G.moveTo(x0 - r * 0.3, y0); G.lineTo(x0 + r * 0.3, y0); G.moveTo(x0, y0 - r * 0.3); G.lineTo(x0, y0 + r * 0.3); G.stroke(); G.lineWidth = lw; }
+  else if (kind === 'intercept') { target(cx + r * 0.35, cy - r * 0.35, r * 0.42); line([[cx - r * 0.75, cy + r * 0.75], [cx - r * 0.12, cy + r * 0.12]]); head(cx + r * 0.08, cy - r * 0.08, -P / 4, r * 0.4, r * 0.32); }
+  else if (kind === 'trail') {
+    // two ships in line, the leader ahead, ours astern, with the matched-speed lines between
+    const ship2 = (y, s2) => { G.beginPath(); G.moveTo(cx, y - s2); G.lineTo(cx + s2 * 0.8, y + s2 * 0.7); G.lineTo(cx, y + s2 * 0.35); G.lineTo(cx - s2 * 0.8, y + s2 * 0.7); G.closePath(); G.fill(); };
+    ship2(cy - r * 0.45, r * 0.38); ship2(cy + r * 0.45, r * 0.38); G.lineWidth = lw * 0.5; line([[cx - r * 0.75, cy - r * 0.02], [cx - r * 0.45, cy - r * 0.02]]); line([[cx + r * 0.45, cy - r * 0.02], [cx + r * 0.75, cy - r * 0.02]]); G.lineWidth = lw; }
+  else if (kind === 'orbit' || kind === 'orbit.dir') {
+    const d = W.player.orbitDir, R2 = r * 0.6, a0 = -P / 2 + d * 0.35, a1 = a0 + d * 1.55 * P;
+    if (kind === 'orbit') { G.beginPath(); G.arc(cx, cy, r * 0.18, 0, 2 * P); G.fill(); }
+    G.beginPath(); G.arc(cx, cy, R2, a0, a1, d < 0); G.stroke();
+    head(cx + Math.cos(a1 + d * 0.32) * R2, cy + Math.sin(a1 + d * 0.32) * R2, a1 + d * (P / 2 + 0.16), r * 0.42, r * 0.34);
+    if (kind === 'orbit.dir') { G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText(d > 0 ? 'CW' : 'CCW', cx, cy + r * 0.04); G.textBaseline = 'alphabetic'; } }
+  else if (kind === 'hold_range') { target(cx + r * 0.42, cy, r * 0.36); line([[cx - r * 0.8, cy], [cx - r * 0.35, cy]]); head(cx - r * 0.12, cy, 0, r * 0.32, r * 0.3);
+    G.lineWidth = lw * 0.7; line([[cx - r * 0.02, cy - r * 0.45], [cx - r * 0.02, cy + r * 0.45]]); G.lineWidth = lw; }
+  else if (kind === 'erratic') { line([[cx - r * 0.1, cy + r * 0.8], [cx + r * 0.35, cy + r * 0.4], [cx - r * 0.35, cy], [cx + r * 0.3, cy - r * 0.38]]); head(cx + r * 0.05, cy - r * 0.78, -P / 2 - 0.45, r * 0.42, r * 0.34); }
+  else if (kind === 'estop') { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.8); } G.closePath(); G.fill();
+    G.fillStyle = CC.signal; G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText('STOP', cx, cy + r * 0.03); G.textBaseline = 'alphabetic'; }
 }
 // One helm key: a rounded square in the Concord blue (lit lilac when its order or toggle is on, green when it is the
 // order in force), its glyph in black, its name on hover.
@@ -1733,15 +1755,32 @@ function helmKey(id, x, y, sz, kind, name, click, o = {}) {
 // direction), a 3 x 3 pad of high energy turns round free heading, and the self toggles (erratic manoeuvres, emergency
 // deceleration, a free-angle HET). The readouts: chance to hit, HET chance, heading and ordered speed.
 function stHelm(b, big) {
-  const s = W.player, t = tgt(s), k = big ? 1.5 : 1, gap = 8 * k, row = (b.w - 3 * gap) / 4, ks = Math.min(row, big ? 84 : 62);
+  const s = W.player, t = tgt(s), k = big ? 1.5 : 1, gap = 8 * k, row = (b.w - 3 * gap) / 4, ks = Math.min(row, big ? 84 : 52);
   let y = b.y;
   LBL('Target', b.x, y + 12, 0, CC.lilac, 'left', 13 * k); y += 18 * k;
-  const ordOn = (o) => () => s.engaged && s.order === o, noT = () => !t;
-  helmKey('helm.int', b.x, y, ks, 'intercept', 'Intercept', () => A.helmOrder('intercept'), { on: ordOn('intercept'), dis: noT });
-  helmKey('helm.trail', b.x + (ks + gap), y, ks, 'trail', 'Trail and match speed', () => A.helmOrder('trail'), { on: ordOn('trail'), dis: noT });
-  helmKey('helm.orbit', b.x + 2 * (ks + gap), y, ks, 'orbit', `Orbit (${s.orbitDir > 0 ? 'clockwise' : 'anticlockwise'})`, () => A.helmOrder('orbit'), { on: ordOn('orbit'), dis: noT });
-  helmKey('helm.odir', b.x + 3 * (ks + gap), y, ks, 'orbit.dir', 'Orbit direction', A.orbitDir, {});
-  y += ks + 12 * k;
+  const ordOn = (o) => () => s.engaged && s.order === o, noT = () => !t, ts = Math.round(40 * k), tg = 6 * k;
+  // intercept and trail, then approach with its distance slider and orbit with its direction switch (owner, 2026-11-02:
+  // "add a config button with a slider to change distance. Combine orbit button with cw button, where cw button is a
+  // toggle slider. Do the same for approach button and its slider config as well")
+  helmKey('helm.int', b.x, y, ts, 'intercept', 'Intercept', () => A.helmOrder('intercept'), { on: ordOn('intercept'), dis: noT });
+  helmKey('helm.trail', b.x + ts + tg, y, ts, 'trail', 'Trail and match speed', () => A.helmOrder('trail'), { on: ordOn('trail'), dis: noT });
+  y += ts + tg;
+  helmKey('helm.hold', b.x, y, ts, 'hold_range', 'Approach and hold distance', () => A.helmOrder('hold_range'), { on: ordOn('hold_range'), dis: noT });
+  { const sx = b.x + ts + tg + 6, sw = b.w - (ts + tg + 6) - 70 * k, sy = y + ts / 2, f = (s.holdKm - HELM.hold_min_km) / (HELM.hold_max_km - HELM.hold_min_km);
+    hit('helm.holdkm', sx - 8, y, sw + 16, ts, { drag: (px) => A.holdKm(HELM.hold_min_km + clamp((px - sx) / sw, 0, 1) * (HELM.hold_max_km - HELM.hold_min_km)), click: (px) => A.holdKm(HELM.hold_min_km + clamp((px - sx) / sw, 0, 1) * (HELM.hold_max_km - HELM.hold_min_km)), cursor: 'ew-resize', tip: 'Distance to hold' });
+    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(sx, sy - 4, sw, 8, 4); g.fill(); g.fillStyle = CC.sky; g.beginPath(); g.roundRect(sx, sy - 4, sw * f, 8, 4); g.fill();
+    g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(sx + sw * f - 9, sy - 14, 18, 28, 7); g.fill();
+    NUM(km(s.holdKm), b.x + b.w, sy + 8 * k, 70 * k, CC.sky, 'right', 18 * k); }
+  y += ts + tg;
+  helmKey('helm.orbit', b.x, y, ts, 'orbit', `Orbit (${s.orbitDir > 0 ? 'clockwise' : 'anticlockwise'})`, () => A.helmOrder('orbit'), { on: ordOn('orbit'), dis: noT });
+  { // the direction switch: a two-way toggle, the lit half the way the orbit goes
+    const sx = b.x + ts + tg + 6, sw = Math.min(b.w - (ts + tg + 6), 170 * k), sh = ts - 10, sy = y + 5, half = sw / 2, cw = s.orbitDir > 0;
+    hit('helm.odir', sx, sy, sw, sh, { click: A.orbitDir, tip: 'Orbit direction' });
+    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(sx, sy, sw, sh, sh / 2); g.fill();
+    g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(sx + (cw ? 0 : half), sy, half, sh, sh / 2); g.fill();
+    g.font = `700 ${Math.round(15 * k)}px Antonio`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = cw ? '#000' : CC.sky; g.fillText('CW', sx + half / 2, sy + sh / 2 + 1); g.fillStyle = cw ? CC.sky : '#000'; g.fillText('CCW', sx + half * 1.5, sy + sh / 2 + 1); g.textBaseline = 'alphabetic'; }
+  y += ts + 12 * k;
   LBL('High energy turns', b.x, y + 12, 0, CC.lilac, 'left', 13 * k); y += 18 * k;
   const busy = () => !!s.het || s.broke > 0 || s.battery < HET.cost_e;
   const pad = [[['het.l135', 'HET hard left 135', -135], ['het.180', 'HET 180', 180], ['het.r135', 'HET hard right 135', 135]],
@@ -2783,7 +2822,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v34', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v35', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
