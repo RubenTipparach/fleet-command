@@ -64,3 +64,4 @@
 - Version 44 published 2026-11-02, version id `1793604519-3064`: the chance to hit is per weapon, on each weapon's hover card and its details; removed from the helm and the view's readout line.
 - Version 45 (2026-11-02, built; published with version 46): placed mines keep their range bullseye; shots, mines and craft drawn from a pool per kind (no per-frame rebuilds).
 - Version 46 published 2026-11-02, version id `1793605009-055c`: asteroids rebuilt (one smooth noise per rock, craters, dark grey-brown); micrometeor clouds round each rock that grind the shields by closeness and speed; no target at the start, and an X on the Target box to release one. (Includes version 45: laid mines show their range; a 3D object pool per kind.)
+- Version 47 published 2026-11-02, version id `1793649682-b6ce`: space dust in three layers that hand over as you zoom (near, middle, far), each wider field sparser, so dust fills the view zoomed out.

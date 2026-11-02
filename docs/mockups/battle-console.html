@@ -2574,27 +2574,49 @@ const skyMain = makeSpace('ember', parallaxStars(new THREE.Vector3(0, 0, -40), 4
 // The sky is drawn in its own pass before the battle, so stars always lie behind every ship (owner, 2026-11-02: "stars
 // should draw behind ship always btw, it doesnt make sense if they draw in front").
 const skyScene = new THREE.Scene(); skyScene.add(skyMain);
-// Space dust (owner: "we should also add space dust as it helps show motion as the ship moves"): faint motes in a box
-// round your ship, each drawn as a short streak along your velocity; the box wraps, so the field never ends. Being in
-// the battle pass, the motes pass in front of and behind ships as they really lie.
-const DUST = { count: 700, box_u: 60, height_u: 14, streak_s: 0.25, colour: 0xa8bcd8, opacity: 0.45 };
-const dust = (() => {
-  const R = rng(SCENARIO.seed + 11), base = new Float32Array(DUST.count * 3), pos = new Float32Array(DUST.count * 6);
-  for (let i = 0; i < DUST.count; i++) { base[i * 3] = R() * DUST.box_u; base[i * 3 + 1] = (R() - 0.5) * DUST.height_u; base[i * 3 + 2] = R() * DUST.box_u; }
+// Space dust (owner: "we should also add space dust as it helps show motion as the ship moves"): faint motes in boxes
+// round your ship, each drawn as a short streak along your velocity; a box wraps, so the field never ends. Being in
+// the battle pass, the motes pass in front of and behind ships as they really lie. Three layers of growing size and
+// falling density, each faded in over its own band of camera distance (owner, 2026-11-02: "dust field is only
+// surrounding immediate area of ship, if I zoom out, maybe lower the density and spread it out more"): close in you
+// see the fine near field; zoomed out it gives way to wider, sparser fields, so dust fills the view at every zoom.
+// fade_u: [fade in from, full at, full until, gone at] in camera distance (u); the wider boxes are also taller.
+const DUST = { streak_s: 0.25, colour: 0xa8bcd8, opacity: 0.45, layers: [
+  { count: 700, box_u: 60, height_u: 14, fade_u: [0, 0, 22, 45] },
+  { count: 900, box_u: 220, height_u: 50, fade_u: [14, 32, 60, 90] },
+  { count: 1100, box_u: 640, height_u: 140, fade_u: [45, 75, 999, 999] },
+] };
+const dustLayers = DUST.layers.map((Ly, k) => {
+  const R = rng(SCENARIO.seed + 11 + k * 7), base = new Float32Array(Ly.count * 3), pos = new Float32Array(Ly.count * 6);
+  for (let i = 0; i < Ly.count; i++) { base[i * 3] = R() * Ly.box_u; base[i * 3 + 1] = (R() - 0.5) * Ly.height_u; base[i * 3 + 2] = R() * Ly.box_u; }
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const m = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: DUST.colour, transparent: true, opacity: DUST.opacity, depthWrite: false }));
+  const mat = new THREE.LineBasicMaterial({ color: DUST.colour, transparent: true, opacity: DUST.opacity, depthWrite: false });
+  const m = new THREE.LineSegments(geo, mat);
   m.frustumCulled = false; scene.add(m);
-  return { base, pos, geo };
-})();
-// Every frame: each mote is placed in the box centred on your ship (wrapping), its streak drawn back along your velocity.
+  return { Ly, base, pos, geo, mat, m };
+});
+// A layer's weight at a camera distance: a trapezoid over its fade_u band.
+function dustWeight(f, d) {
+  if (d < f[0] || d > f[3]) return 0;
+  const up = f[1] > f[0] ? Math.min(1, (d - f[0]) / (f[1] - f[0])) : 1, down = f[3] > f[2] ? Math.min(1, (f[3] - d) / (f[3] - f[2])) : 1;
+  return Math.max(0, Math.min(up, down));
+}
+// Every frame: each mote is placed in its layer's box centred on your ship (wrapping), its streak drawn back along
+// your velocity; a layer that has faded out is hidden and not updated.
 function dustStep() {
-  const s = W.player, L = DUST.box_u, f = fwd(s.h), sp = (s.alive ? s.v : 0) / M_PER_U * DUST.streak_s, dx = f[0] * sp, dz = f[1] * sp, b = dust.base, q = dust.pos;
-  const wrapTo = (v, c) => c + ((((v - c) % L) + L * 1.5) % L) - L / 2;
-  for (let i = 0; i < DUST.count; i++) {
-    const x = wrapTo(b[i * 3], s.x), y = b[i * 3 + 1], z = wrapTo(b[i * 3 + 2], s.z), o = i * 6;
-    q[o] = x; q[o + 1] = y; q[o + 2] = z; q[o + 3] = x - dx - 0.04; q[o + 4] = y; q[o + 5] = z - dz - 0.04;
+  const s = W.player, f = fwd(s.h), sp = (s.alive ? s.v : 0) / M_PER_U * DUST.streak_s, dx = f[0] * sp, dz = f[1] * sp;
+  const camD = camera.position.distanceTo(controls.target);
+  for (const D of dustLayers) {
+    const w = dustWeight(D.Ly.fade_u, camD); D.m.visible = w > 0.01; if (!D.m.visible) continue;
+    D.mat.opacity = DUST.opacity * w;
+    const L = D.Ly.box_u, b = D.base, q = D.pos, tail = 0.04 * L / 60;
+    const wrapTo = (v, c) => c + ((((v - c) % L) + L * 1.5) % L) - L / 2;
+    for (let i = 0; i < D.Ly.count; i++) {
+      const x = wrapTo(b[i * 3], s.x), y = b[i * 3 + 1], z = wrapTo(b[i * 3 + 2], s.z), o = i * 6;
+      q[o] = x; q[o + 1] = y; q[o + 2] = z; q[o + 3] = x - dx - tail; q[o + 4] = y; q[o + 5] = z - dz - tail;
+    }
+    D.geo.attributes.position.needsUpdate = true;
   }
-  dust.geo.attributes.position.needsUpdate = true;
 }
 // three.js 0.147 uses the legacy light units: about pi times brighter than r155 and later for the same number.
 scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x201010, 0.55));
@@ -3019,7 +3041,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v46', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v47', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

@@ -472,6 +472,13 @@ across and 1.4 km deep round your ship, wrapping so the field never ends, each d
 velocity (a quarter of a second of travel), so speed and heading read even against a still sky; the motes are in the
 battle pass, so they pass in front of and behind ships as they lie. (Mockup 3 sets the final look.)
 
+**Dust at every zoom** (version 47; owner, 2026-11-02: "dust field is only surrounding immediate area of ship, if I zoom
+out, maybe lower the density and spread it out more"). The dust is three layers, each faded in over its own band of
+camera distance so one hands over to the next as you zoom: the near field (700 motes, 6 km box, full to 2.2 km of camera
+distance, gone by 4.5 km), a middle field (900 motes in 22 km by 5 km, in from 1.4 km, full 3.2-6 km, gone by 9 km) and a
+far field (1,100 motes in 64 km by 14 km, in from 4.5 km, full from 7.5 km). Each wider field is about a tenth as dense
+per area as the one inside it, so zoomed out the dust is sparser and spread over the whole view.
+
 ## 4f. The expand key (version 28)
 
 Owner, 2026-11-02: "expand button should look like this, be a circle, small", with a square icon of two diagonal arrows
