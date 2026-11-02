@@ -572,7 +572,9 @@ const ROCK = { dmg: 14, speed_ref_m_s: 150, speed_floor: 0.35, speed_frac: 0.3, 
 // every volley_s, each combat marine one shot at hit_chance, both sides at once; a medic saves a casualty at medic_save,
 // a hacker locks out one of the guard at hacker_lock, a VIP talks one defender into giving up at vip_persuade. With
 // the defenders down the ship is taken only if an engineer, a pilot and a hacker (or the VIP) are aboard.
-const BOARD = { raid_s: 6, shoot_per_marine: 0.2, bomb_dmg: 0.8, demo_loss: 0.6, marine_loss: 0.2, volley_s: 2, hit_chance: 0.5, guard_crew: 2,
+// volley_s: a round of the fight aboard, like the tractor contest's rounds (owner, 2026-11-02: "similar to tug of war
+// tractor beam, I think this battle simulation for boarding parties should update every 10 seconds").
+const BOARD = { raid_s: 6, shoot_per_marine: 0.2, bomb_dmg: 0.8, demo_loss: 0.6, marine_loss: 0.2, volley_s: 10, hit_chance: 0.5, guard_crew: 2,
   medic_save: 0.5, hacker_lock: 0.5, vip_persuade: 0.5 };
 // The inventory transporter: goods, a VIP or a mine, to or from a friendly ship, a station or a planet in reach; one
 // beam moves per_beam crates and spends the transporter's charge.
@@ -1260,6 +1262,9 @@ const A = {
   unqueue: (mode, i) => { const s = W.player, q = s.bq[mode]; if (i < 0 || i >= q.length) return; addRole(s, q.splice(i, 1)[0], 1); },
   // A pad energized beams the head of the queue (owner: "I can click on pads individually to command manual
   // transport"); Energize all fires every charged pad, one person each, in pad order.
+  // A raid aimed at one weapon (owner, 2026-11-02: "need a drop down or something to pick from weapons"): picked from
+  // the list under the subsystem keys, or by clicking the mount on the target's display; null aims at weapons control.
+  raidMount: (i) => { raidSys = 'weapons'; raidMount = i; raidMountOpen = false; },
   energize: (i, mode = trTab) => beamQueued(W.player, mode, [i]),
   energizeAll: (mode = trTab) => beamQueued(W.player, mode, W.player.pads.map((_, i) => i)),
   recallParty: () => { const s = W.player; if (!s.party) return; const tm = s.party.team; for (const [r] of ROLES) addRole(s, r, tm[r]); if (tm.vip) s.vip = s.vip || 'Envoy Saros'; say('Transport', `${teamSize(tm)} recalled.`); s.party = null; },
@@ -1309,7 +1314,7 @@ const A = {
   station: (id) => { station = id; if (expanded && expanded !== 'station') expanded = 'station'; buildPanel('station'); },
   shipTab: (id) => { shipTab = id; buildPanel('ship'); },
   menu: () => { menuOpen = !menuOpen; renderSheet(); },
-  reset: () => { newWorld(); camLock = false; camTargetView = false; paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
+  reset: () => { newWorld(); raidMount = null; raidMountOpen = false; camLock = false; camTargetView = false; paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
 };
 // The pads: ready when charged; using one spends it; every step the charging pads share the transporter's energy.
 const padReady = (s) => s.pads.some((c) => c >= 1);
@@ -1342,11 +1347,11 @@ function beamQueued(s, mode, pads) {
       else s.party = { on: t.id, team: { marines: 0, demo: 0, medics: 0, engineers: 0, hackers: 0, pilots: 0, vip: 0, [role]: 1 }, volleyT: BOARD.volley_s, last: null };
     } else {
       if (s.raid) s.raid.team[role]++;
-      else s.raid = { on: t.id, sys: raidSys, kind: raidKind, team: { marines: 0, demo: 0, [role]: 1 }, t: BOARD.raid_s };
+      else s.raid = { on: t.id, sys: raidSys, mount: raidSys === 'weapons' && raidMount !== null && t.mounts[raidMount] ? raidMount : null, kind: raidKind, team: { marines: 0, demo: 0, [role]: 1 }, t: BOARD.raid_s };
     }
   }
   if (s !== W.player) return n;
-  if (n) say('Transport', `Energizing: ${Object.entries(sent).map(([r, k]) => `${k} ${ROLE_ONE[r].toLowerCase()}${k > 1 && r !== 'demo' ? 's' : ''}`).join(', ')} to ${t.name}${mode === 'hit' ? `'s ${SUBSYS.find((x) => x[0] === s.raid.sys)[1].toLowerCase()}` : ''}.`);
+  if (n) say('Transport', `Energizing: ${Object.entries(sent).map(([r, k]) => `${k} ${ROLE_ONE[r].toLowerCase()}${k > 1 && r !== 'demo' ? 's' : ''}`).join(', ')} to ${t.name}${mode === 'hit' ? `'s ${raidName(s.raid, t)}` : ''}.`);
   else say('Transport', !q.length ? 'The queue is empty.' : !t ? 'No target.' : !pads.some((i) => s.pads[i] >= 1) ? 'Pads charging.' : distKm(s, t) > TRANSPORT.range_km ? `Out of reach (${km(TRANSPORT.range_km)}).`
     : t.side === s.side ? 'That ship is ours.' : mode === 'hit' && s.party ? 'A boarding party is out.' : mode === 'capture' && s.raid ? 'A raid is out.' : 'Their shield facing is up.');
   return n;
@@ -1361,6 +1366,8 @@ function beamReach(s, t) { return !!t && t.alive && padReady(s) && distKm(s, t) 
 function canBoard(s, t) { return beamReach(s, t) && t.side !== s.side && !s.raid && (!s.party || s.party.on === t.id); }
 const defenders = (t) => t.marines + t.guard;
 const canTake = (team) => team.engineers > 0 && team.pilots > 0 && (team.hackers > 0 || team.vip > 0);
+// The roles a party still lacks to take a ship (the same rule as canTake, 6.1).
+const missingRoles = (team) => ['engineers', 'pilots'].filter((k) => !(team[k] > 0)).concat(team.hackers > 0 || team.vip > 0 ? [] : ['hackers']);
 // One hit on a boarding party: a medic may save it; otherwise a random member falls, the VIP only when no one else is left.
 function partyHit(team, R) {
   const n = teamSize(team);
@@ -1381,13 +1388,14 @@ function boardingStep(s) {
     const r = s.raid, t = ship(r.on);
     if (!t || !t.alive) { s.raid = null; }
     else if ((r.t -= DT) <= 0) {
-      const name = SUBSYS.find((q) => q[0] === r.sys)[1], esc = r.team.marines;
+      const name = raidName(r, t).replace(/^./, (c) => c.toUpperCase()), esc = r.team.marines;
       let marines = 0, demo = 0;
       for (let i = 0; i < r.team.marines; i++) if (R() >= BOARD.marine_loss) marines++;
       for (let i = 0; i < r.team.demo; i++) if (R() >= BOARD.demo_loss / (1 + esc)) demo++;
       const hit = r.kind === 'bomb' ? (demo > 0 ? BOARD.bomb_dmg : 0) : Math.min(0.6, marines * BOARD.shoot_per_marine);
       if (hit > 0) {
         if (r.sys === 'reactor') { t.reactor.conf = Math.max(0, t.reactor.conf - hit); t.reactor.coils = t.reactor.coils.map((o) => clamp(o + (R() - 0.5) * hit, -1, 1)); }
+        else if (r.mount !== null && r.mount !== undefined && t.mounts[r.mount]) { const m = t.mounts[r.mount]; m.hp = Math.max(0, m.hp - hit); if (m.hp <= 0) m.charge = 0; }
         else { t.sys[r.sys] = Math.max(0, t.sys[r.sys] - hit); if (r.sys === 'weapons') for (const m of t.mounts) if (R() < hit) { m.hp = Math.max(0, m.hp - hit); if (m.hp <= 0) m.charge = 0; } }
       }
       s.marines += marines; s.team.demo += demo; s.raid = null;
@@ -1398,7 +1406,7 @@ function boardingStep(s) {
   if (s.party) {
     const pt = s.party, t = ship(pt.on), tm = pt.team;
     if (!t || !t.alive) { s.party = null; return; }
-    if (defenders(t) <= 0) { if (canTake(tm)) capture(s, t, tm); else if (!pt.held) { pt.held = true; say('Transport', `${t.name}'s deck is ours, but to take it we need ${['engineers', 'pilots'].filter((k) => !tm[k]).concat(tm.hackers || tm.vip ? [] : ['a hacker']).join(', ').replace('engineers', 'an engineer').replace('pilots', 'a pilot')}.`); } return; }
+    if (defenders(t) <= 0) { if (canTake(tm)) capture(s, t, tm); else if (!pt.held) { pt.held = true; say('Transport', `${t.name}'s deck is ours, but to take it we need ${missingRoles(tm).map((r) => ({ engineers: 'an engineer', pilots: 'a pilot', hackers: 'a hacker' })[r]).join(', ')}.`); } return; }
     if ((pt.volleyT -= DT) > 0) return;
     pt.volleyT += BOARD.volley_s;
     // Simultaneous: both sides' shots counted before any hit lands.
@@ -2129,7 +2137,7 @@ function stRepair(b) {
   for (const [k, v] of rows) { bar(b.x, y, b.w - 100, k, v, v < 0.5); tab(`rep.${k}`, b.x + b.w - 92, y + 2, 92, 34, 'Priority', () => A.priority(k), s.priority === k); y += 42; }
   pairs('rep.c', b.x, y + 18, [['Crews', String(s.power.repair)], ['Weapons damaged', String(s.mounts.filter((m) => m.hp < 1).length)]], b.w);
 }
-let trTab = 'hit';
+let trTab = 'hit', wpickAt = null;
 const qPage = { capture: 0, hit: 0 };
 // Role pictograms, drawn like the helm's signage: a marine with a rifle, a bomb, a medical cross, a wrench, a chip,
 // pilot's wings, a plain figure for the defenders' armed crew.
@@ -2235,16 +2243,20 @@ function padRow(id, x, y, w, s, mode, big) {
   for (let i = 0; i < n; i++) {
     const px = x + i * (ps + gap), c = s.pads[i], ready = c >= 1, eta = padEta(s, i);
     const st = hit(`${id}.${i}`, px, y, ps, ps, { click: q ? () => A.energize(i, mode) : undefined, tip: ready ? `Pad ${i + 1} · ${q ? `energize${q.length ? ` · ${ROLE_ONE[q[0]]}` : ''}` : 'charged'}` : `Pad ${i + 1} · charging${isFinite(eta) ? ` · ${fmtCool(eta)} s` : ' · no power'}` });
+    // recharging fills in the same blue as a charged pad (owner, 2026-11-02: "I prefer recharge to be same color as the
+    // standard value, it is hard to see otherwise"); the pictogram is black over the fill and Sky over the empty part
+    const fillY = ready ? y : y + ps * (1 - c), cx = px + ps / 2, cy = y + ps / 2;
+    const pad = (ink) => { g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = Math.max(2, ps * 0.06); g.beginPath(); g.arc(cx, cy, ps * 0.2, 0, 2 * P); g.stroke();
+      for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) { g.beginPath(); g.arc(cx + dx * ps * 0.33, cy + dy * ps * 0.33, ps * 0.055, 0, 2 * P); g.fill(); } };
     g.save(); g.beginPath(); g.roundRect(px, y, ps, ps, ps * 0.22); g.clip();
     g.fillStyle = CC.deep; g.fillRect(px, y, ps, ps);
-    if (ready) { g.fillStyle = st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.fillRect(px, y, ps, ps); }
-    else { g.fillStyle = shade(CC.signal, 0.55); g.fillRect(px, y + ps * (1 - c), ps, ps * c); }
+    g.fillStyle = ready && st.down ? CC.lilac : ready && st.hot ? CC.sky : CC.signal; g.fillRect(px, fillY, ps, y + ps - fillY);
+    g.save(); g.beginPath(); g.rect(px, y, ps, fillY - y); g.clip(); pad(CC.sky); g.restore();
+    g.save(); g.beginPath(); g.rect(px, fillY, ps, y + ps - fillY); g.clip(); pad('#000'); g.restore();
     g.restore();
-    // the pad: a ring with four emitters, black when lit
-    const ink = ready ? '#000' : CC.sky, cx = px + ps / 2, cy = y + (ready ? ps / 2 : ps * 0.36), pr = ready ? 1 : 0.72;
-    g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = Math.max(2, ps * 0.06); g.beginPath(); g.arc(cx, cy, ps * 0.2 * pr, 0, 2 * P); g.stroke();
-    for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) { g.beginPath(); g.arc(cx + dx * ps * 0.33 * pr, cy + dy * ps * 0.33 * pr, ps * 0.055, 0, 2 * P); g.fill(); }
-    if (!ready) NUM(isFinite(eta) ? fmtCool(eta) : '--', cx, y + ps - ps * 0.1, 0, CC.text, 'center', Math.round(ps * 0.26));
+    // the seconds left, white with a dark outline, legible on both the fill and the empty part (as the weapons' cooldown)
+    if (!ready) { const txt = isFinite(eta) ? fmtCool(eta) : '--', fs = Math.round(ps * 0.34); g.font = `700 ${fs}px Antonio`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+      g.strokeStyle = 'rgba(0,0,0,0.85)'; g.lineWidth = Math.max(2, fs * 0.22); g.strokeText(txt, cx, cy + 0.5); g.fillStyle = '#fff'; g.fillText(txt, cx, cy + 0.5); g.textBaseline = 'alphabetic'; }
     // expanded: who this pad will send on Energize all (the queue dealt to the charged pads in order)
     else if (big && q) { const k = s.pads.slice(0, i).filter((c2) => c2 >= 1).length, r = q[k];
       if (r) { const cs = ps * 0.34; g.fillStyle = k === 0 ? CC.accord : '#000'; g.beginPath(); g.roundRect(px + ps - cs - 4, y + 4, cs, cs, cs * 0.25); g.fill(); roleGlyph(r, px + ps - cs / 2 - 4, y + 4 + cs / 2, cs * 0.34, k === 0 ? '#000' : CC.sky); } }
@@ -2264,7 +2276,7 @@ function controlRow(id, x, y, w, s, t, mode, big) {
   let yy = y;
   if (!t) { LBL('No target', bx, yy + 20, bw); return pp; }
   if (mode === 'hit' && s.raid && s.raid.on === t.id) {
-    const r = s.raid; yy += bar(bx, yy, bw, `Raid ${r.kind === 'bomb' ? 'bombing' : 'shooting'} ${SUBSYS.find((q) => q[0] === r.sys)[1]} · ${fmtCool(Math.max(0.05, r.t))} s`, 1 - r.t / BOARD.raid_s) + 4;
+    const r = s.raid; yy += bar(bx, yy, bw, `Raid ${r.kind === 'bomb' ? 'bombing' : 'shooting'} ${raidName(r, t)} · ${fmtCool(Math.max(0.05, r.t))} s`, 1 - r.t / BOARD.raid_s) + 4;
     teamChips(bx, yy, bw, [['marines', r.team.marines], ['demo', r.team.demo]], CC.signal, big ? 34 : 24);
     return Math.max(pp, yy - y + (big ? 34 : 24));
   }
@@ -2272,15 +2284,23 @@ function controlRow(id, x, y, w, s, t, mode, big) {
   // our count, the label, their count
   { const st = hit(`${id}.us`, bx, yy, 70, nh + 4, { tip: { title: pt ? `Our party aboard ${t.name}` : 'No party aboard', team: pt ? partyList(pt.team) : [], col: CC.sky } });
     NUM(`${ours}`, bx, yy + nh, 0, st.hot ? CC.text : CC.sky, 'left', nh + 2); }
-  LBL(pt && !pt.held ? 'Fighting' : pt ? 'Deck held' : 'Control', bx + bw / 2, yy + nh - 2, bw - 140, CC.lilac, 'center', big ? 17 : 14);
+  LBL(pt && theirs > 0 ? `Volley in ${fmtCool(Math.max(0.05, pt.volleyT))} s` : pt ? 'Deck held' : 'Control', bx + bw / 2, yy + nh - 2, bw - 140, CC.lilac, 'center', big ? 17 : 14);
   { const st = hit(`${id}.them`, bx + bw - 70, yy, 70, nh + 4, { tip: { title: `${t.name}'s defenders`, team: defenderList(t), col: CC.alert } });
     NUM(`${theirs}`, bx + bw, yy + nh, 0, st.hot ? CC.text : CC.alert, 'right', nh + 2); }
-  yy += nh + 6; tugBar(bx, yy, bw, big ? 22 : 14, ours, theirs); yy += (big ? 22 : 14) + 6;
+  yy += nh + 6; tugBar(bx, yy, bw, big ? 22 : 14, ours, theirs); yy += (big ? 22 : 14) + 3;
+  // the round's clock, filling toward the next volley
+  if (pt && theirs > 0) { g.fillStyle = CC.deep; g.fillRect(bx, yy, bw, 3); g.fillStyle = CC.lilac; g.fillRect(bx, yy, bw * clamp(1 - pt.volleyT / BOARD.volley_s, 0, 1), 3); }
+  yy += 6;
   // expanded: who is aboard on each side, as chips
   if (big) { const hw = (bw - 12) / 2; const h1 = teamChips(bx, yy, hw, pt ? partyList(pt.team) : [], CC.sky, 48), h2 = teamChips(bx + hw + 12, yy, hw, defenderList(t), CC.alert, 48); yy += Math.max(h1, h2) + 10; }
   // what the transporter needs, then Recall
   const f = facingFrom(t, s.x, s.z), dk = distKm(s, t), up = t.side !== s.side && t.shields[f] > 0.5;
   const need = dk > TRANSPORT.range_km ? [`Out of reach ${km(dk)}`, CC.alert] : up ? [`${FACINGS[f]} shield up ${Math.round(t.shields[f])}`, CC.alert] : [`In reach ${km(dk)}`, CC.accord];
+  // a deck held but not taken (owner, 2026-11-02: "boarding succeeded but control has not been changed"): what is
+  // still missing, as role chips in Caution, so the captain knows whom to queue next
+  const miss = pt && theirs <= 0 ? missingRoles(pt.team) : [];
+  if (miss.length) { const sz = big ? 34 : 22; LBL('To take it, send', bx, yy + sz * 0.72, bw * 0.45, CC.caution, 'left', big ? 17 : 14);
+    teamChips(bx + bw * 0.45, yy, bw * 0.55, miss.map((r) => [r, 1]), CC.caution, sz); yy += sz + 6; }
   if (pt && mode === 'capture') { const rw = big ? 120 : 84; LBL(need[0], bx, yy + 18, bw - rw - 8, need[1], 'left', big ? 17 : 15); button(`${id}.recall`, bx + bw - rw, yy, rw, big ? 34 : 26, 'Recall', A.recallParty, { center: true }); yy += big ? 34 : 26; }
   else { LBL(need[0], bx, yy + 16, bw, need[1], 'left', big ? 17 : 15); yy += 20; }
   return Math.max(pp, yy - y);
@@ -2302,15 +2322,30 @@ function stTransport(b, big) {
         const bx = b.x + i * (bs + 6), st = t ? subsysStatus(t, key) : 'Off';
         if (raidSys === key) { g.fillStyle = CC.sky; g.beginPath(); g.roundRect(bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
         statusBox(g, bx, y, bs, st, bs * 0.28); g.drawImage(KIT.iconOn[SUBSYS_ICON[key]], bx + bs * 0.15, y + bs * 0.15, bs * 0.7, bs * 0.7);
-        hit(`tr.sys.${key}`, bx, y, bs, bs, { click: () => { raidSys = key; }, tip: { title: name, rows: t ? [['Health', pct(clamp(healthOf(t, key), 0, 1))], ['Status', st, STATUS_COL[st]]] : [['Target', '--']] } });
+        hit(`tr.sys.${key}`, bx, y, bs, bs, { click: () => { raidSys = key; if (key !== 'weapons') raidMountOpen = false; }, tip: { title: name, rows: t ? [['Health', pct(clamp(healthOf(t, key), 0, 1))], ['Status', st, STATUS_COL[st]]] : [['Target', '--']] } });
       });
       y += bs + gap;
+      // weapons: which one (owner: "need a drop down or something to pick from weapons"): a pill showing the pick, its
+      // list opening over the queue; each weapon by its id, name, health and status, or weapons control itself
+      if (raidSys === 'weapons') {
+        const m = t && raidMount !== null ? t.mounts[raidMount] : null, ph = big ? 40 : 30;
+        const st = hit('tr.wpick', b.x, y, b.w, ph, { click: () => { raidMountOpen = !raidMountOpen; }, tip: 'Pick the weapon to raid' });
+        g.fillStyle = st.hot || raidMountOpen ? CC.sky : CC.signal; g.beginPath(); g.roundRect(b.x, y, b.w, ph, ph / 2); g.fill();
+        const lab = m ? `${mountId(m)} · ${WEAPONS[m.w].name} · ${pct(clamp(m.hp, 0, 1))}` : 'Weapons control (any weapon)';
+        TXT(lab, b.x + 16, y + ph * 0.7, b.w - 48, '#000', 'left', big ? 20 : 16);
+        g.fillStyle = '#000'; g.beginPath(); const ax = b.x + b.w - 20, ay = y + ph / 2;
+        if (raidMountOpen) { g.moveTo(ax - 6, ay + 3); g.lineTo(ax + 6, ay + 3); g.lineTo(ax, ay - 4); } else { g.moveTo(ax - 6, ay - 3); g.lineTo(ax + 6, ay - 3); g.lineTo(ax, ay + 4); } g.closePath(); g.fill();
+        wpickAt = [b.x, y + ph + 4, b.w, big]; y += ph + gap;
+      } else wpickAt = null;
     }
     // the role keys (Hit and run: Shoot and Bomb share their row)
     const rs = Math.min(big ? 96 : 42, (b.w - 4 * 6) / 5);
     if (mode === 'hit') tabs('tr.kind', b.x, y + (rs - 32) / 2, b.w - 2 * (rs + 6) - 6, 32, [['shoot', 'Shoot'], ['bomb', 'Bomb']], raidKind, (k) => { raidKind = k; });
     const rx = mode === 'hit' ? b.x + b.w - roles.length * (rs + 6) + 6 : b.x;
-    roles.forEach((r, i) => roleKey(`tr.q.${mode}.${r}`, rx + i * (rs + 6), y, rs, r, have(s, r), () => A.queueRole(mode, r)));
+    const needR = mode === 'capture' && s.party && t && s.party.on === t.id ? missingRoles(s.party.team).filter((r) => !s.bq.capture.includes(r)) : [];
+    roles.forEach((r, i) => { const kx = rx + i * (rs + 6);
+      if (needR.includes(r)) { g.strokeStyle = CC.caution; g.lineWidth = 3; g.beginPath(); g.roundRect(kx - 3, y - 3, rs + 6, rs + 6, rs * 0.22 + 3); g.stroke(); }
+      roleKey(`tr.q.${mode}.${r}`, kx, y, rs, r, have(s, r), () => A.queueRole(mode, r)); });
     y += rs + gap;
     y += queueGrid(`tr.qg.${mode}`, b.x, y, b.w, s, mode, big) + gap + (big ? 10 : 4);
     // the line between the halves
@@ -2334,6 +2369,21 @@ function stTransport(b, big) {
     button('tr.place', b.x, y, hw, 40, placingMine ? 'Cancel' : 'Place mine', A.mineMode, { center: true, sel: () => placingMine, dis: () => !placingMine && (s.mines <= 0 || s.mineCool > 0 || !padReady(s)) });
     button('tr.mine', b.x + hw + 6, y, hw, 40, s.mineCool > 0 ? `Mine ${fmtCool(s.mineCool)} s` : 'Drop astern', A.mine, { center: true, dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 46;
     y += padRow('tr.pad.inv', b.x, y, b.w, s, 'inv', big) + gap;
+  }
+  // the weapon list, last so it lies over the queue
+  if (trTab === 'hit' && raidMountOpen && wpickAt) {
+    const [lx, ly, lw, bg] = wpickAt, rh = bg ? 38 : 28, list = [null].concat(t ? t.mounts : []);
+    hit('tr.wpick.off', b.x, b.y, b.w, b.h, { click: () => { raidMountOpen = false; } });
+    const lh = Math.min(list.length * rh + 8, b.y + b.h - ly - 4);
+    g.fillStyle = 'rgba(0,0,0,0.92)'; g.beginPath(); g.roundRect(lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
+    list.forEach((m, k) => { const ry = ly + 4 + k * rh; if (ry + rh > ly + lh) return;
+      const on = m ? raidMount === m.i : raidMount === null, st2 = hit(`tr.wpick.${k}`, lx + 4, ry, lw - 8, rh - 2, { click: () => A.raidMount(m ? m.i : null) });
+      if (st2.hot || on) { g.fillStyle = on ? CC.signal : CC.deep; g.beginPath(); g.roundRect(lx + 4, ry, lw - 8, rh - 2, (rh - 2) / 2); g.fill(); }
+      const ink = on ? '#000' : CC.text, fs = bg ? 19 : 15, by2 = ry + rh * 0.68;
+      if (!m) { TXT('Weapons control (any weapon)', lx + 16, by2, lw - 32, ink, 'left', fs); return; }
+      const ms = mountStatus(t, m);
+      NUM(mountId(m), lx + 16, by2, 0, on ? '#000' : CC.sky, 'left', fs); TXT(WEAPONS[m.w].name, lx + 16 + fs * 2.2, by2, lw * 0.45, ink, 'left', fs);
+      NUM(pct(clamp(m.hp, 0, 1)), lx + lw - 16 - fs * 4.6, by2, 0, on ? '#000' : CC.text, 'right', fs); TXT(ms, lx + lw - 16, by2, fs * 4.2, on ? '#000' : STATUS_COL[ms], 'right', fs); });
   }
   // stores, when there is room under the mode
   if (y + 16 <= b.y + b.h - 6) pairs('tr.c', b.x, b.y + b.h - 6, [['Mines', String(s.mines)], ['Fighters', String(s.fighters)], ['Shuttles', String(s.shuttles)]], b.w, 18);
@@ -2363,6 +2413,11 @@ function uiShip(r, big) {
 }
 // Subsystems and their status, as the console shows them (openspec/changes/battle-console, "Subsystem status"). The
 // rules that set a status belong to the combat change; here a status is read from what the stand-in battle tracks.
+// A weapon mount's id (owner, 2026-11-02: "weapon tool tips need id, so when I hover over enemy stuff I can find it"):
+// W and its place in the ship's mount list, the same on the display, its hover card, the weapons page and the raid pick.
+const mountId = (m) => `W${m.i + 1}`;
+// What a raid is aimed at, in words: a weapon by its id and name, or the subsystem.
+function raidName(r, t) { const m = r.mount !== null && r.mount !== undefined && t ? t.mounts[r.mount] : null; return m ? `${mountId(m)} ${WEAPONS[m.w].name.toLowerCase()}` : SUBSYS.find((q) => q[0] === r.sys)[1].toLowerCase(); }
 const SUBSYS = [['weapons', 'Weapons control'], ['shields', 'Shield generators'], ['sensors', 'Sensors'], ['reactor', 'Reactor'], ['engines', 'Engines'], ['tractor', 'Tractor beam'], ['transport', 'Transporters']];
 const SUBSYS_ICON = { weapons: 'weapons', shields: 'shields', sensors: 'sensors', reactor: 'reactor', engines: 'engines', tractor: 'tractor', transport: 'transport' };
 const STATUS_COL = { Active: CC.accord, Damaged: CC.caution, Disabled: CC.alert, Off: CC.lilac, Destroyed: CC.alert };
@@ -2416,8 +2471,8 @@ function weaponGlyph(x, m, mx, my, r, col) {
 // weapon box: show what subsystem name is, health, status"). Own mounts also select on a click.
 function ssdHits(idp, ox, oy, geo, s, own) {
   for (const [bx, by, bs, key] of geo.boxes) { const st = subsysStatus(s, key); hit(`${idp}.sys.${key}`, ox + bx, oy + by, bs, bs, { tip: { title: SUBSYS.find((q) => q[0] === key)[1], rows: [['Health', pct(clamp(healthOf(s, key), 0, 1))], ['Status', st, STATUS_COL[st]]] } }); }
-  for (const [mx, my, rr, m] of geo.mounts) { const st = mountStatus(s, m); hit(`${idp}.m.${m.i}`, ox + mx - rr, oy + my - rr, rr * 2, rr * 2, { click: own && m.w !== 'pd' ? () => A.selectMount(m.i) : null, cursor: own ? 'pointer' : 'default',
-    tip: { title: `${m.i + 1} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ['Charge', m.state === 'offline' || m.hp <= 0 ? '--' : pct(m.charge)],
+  for (const [mx, my, rr, m] of geo.mounts) { const st = mountStatus(s, m); hit(`${idp}.m.${m.i}`, ox + mx - rr, oy + my - rr, rr * 2, rr * 2, { click: own ? (m.w !== 'pd' ? () => A.selectMount(m.i) : null) : () => A.raidMount(m.i), cursor: 'pointer',
+    tip: { title: `${mountId(m)} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ['Charge', m.state === 'offline' || m.hp <= 0 ? '--' : pct(m.charge)],
       ...(own && m.w !== 'pd' ? [['To hit', tgt(s) && inArc(s, m, tgt(s)) && inRange(s, m, tgt(s)) ? pct(hitChance(s, m, tgt(s))) : '--']] : []), ['Ready in', cooldownS(m) === null ? (ready(m) ? 'Ready' : '--') : fmtCool(cooldownS(m)) + ' s']] } }); }
 }
 // The ship systems display: one drawing for own ship and target, used docked, expanded and in the Target box (6.1).
@@ -2529,7 +2584,7 @@ function drawSSD(x, w, h, s, big, own, idp) {
       x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.strokeStyle = 'rgba(0,0,0,0.85)'; x.lineWidth = Math.max(2, fs * 0.22);
       x.strokeText(txt, mx, my + 0.5); x.fillStyle = '#fff'; x.fillText(txt, mx, my + 0.5); x.textBaseline = 'alphabetic';
     } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : '#000');
-    if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(String(m.i + 1), bx + mb + 12, by + 4); }
+    if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(mountId(m), bx + mb + 14, by + 4); }
     mounts.push([mx, my, mb / 2 + 5, m]);
   }
   return { cx, cy, Rr, L, mounts, boxes };
@@ -2667,7 +2722,7 @@ function uiWeapons(r, big) {
   for (const [mx, my, rr, m] of geo.mounts) {
     const st = mountStatus(s, m), ax = top.x + mx, ay = top.y + my;
     hit(`wx.m.${m.i}`, ax - rr, ay - rr, rr * 2, rr * 2, { click: () => { wDetail = m.i; }, cursor: 'pointer',
-      tip: { title: `${m.i + 1} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ...(m.w !== 'pd' ? [['To hit', t && inArc(s, m, t) && inRange(s, m, t) ? pct(hitChance(s, m, t)) : '--']] : [])] } });
+      tip: { title: `${mountId(m)} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ...(m.w !== 'pd' ? [['To hit', t && inArc(s, m, t) && inRange(s, m, t) ? pct(hitChance(s, m, t)) : '--']] : [])] } });
     if (m.w !== 'pd') button(`wx.f.${m.i}`, ax - 24, ay + rr - 1, 48, 20, 'Fire', () => A.fireOne(m.i), { center: true, dis: () => !t || !ready(m) || !inArc(s, m, t) || !inRange(s, m, t) });
   }
   y = top.y + top.h + 8; divider(b.x, y, b.w); y += 14;
@@ -2678,7 +2733,7 @@ let wDetail = 0;
 function weaponDetail(r, s, t) {
   if (!s.mounts.length) { LBL('No weapons fitted', r.x, r.y + 26, 0, CC.lilac, 'left', 18); return; }
   const m = s.mounts[wDetail] || s.mounts[0], w = spec(m), st = mountStatus(s, m), cool = cooldownS(m), x0 = r.x, cw = r.w / 2 - 12;
-  text(`${m.i + 1} · ${WEAPONS[m.w].name}`.toUpperCase(), x0, r.y + 26, '700 26px Antonio', CC.sky, 'left', cw, '1px');
+  text(`${mountId(m)} · ${WEAPONS[m.w].name}`.toUpperCase(), x0, r.y + 26, '700 26px Antonio', CC.sky, 'left', cw, '1px');
   pairs('wd.a', x0, r.y + 62, [['Status', st, STATUS_COL[st]], ['Health', pct(clamp(m.hp, 0, 1))]], cw, 20);
   pairs('wd.b', x0, r.y + 92, [['Arc', m.arc[1] >= 360 ? 'All round' : `${m.arc[0]}° ± ${m.arc[1] / 2}°`], ['Range', km(w.range_km)], ['Damage', String(w.dmg)]], cw, 20);
   pairs('wd.c', x0, r.y + 122, [['Charge', m.hp <= 0 || m.state === 'offline' ? '--' : pct(m.charge)], ['Ready in', cool === null ? (ready(m) ? 'Ready' : '--') : `${fmtCool(cool)} s`], ['Cost', `${w.cost_e} E`]], cw, 20);
@@ -3050,7 +3105,7 @@ function camLockStep(dt) {
 const HELM_RING = { r_u: 4.5, grab_u: 1.6 };
 let STEER = false, ringHot = false, placingHet = false, mineCursor = null;
 function nearRing(e) { const q = planeAt(e), s = W.player; if (!q || !s.alive) return false; return Math.abs(Math.hypot(q.x - s.x, q.z - s.z) - HELM_RING.r_u) <= HELM_RING.grab_u; }
-let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidKind = 'shoot', invDest = null;
+let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidMount = null, raidMountOpen = false, raidKind = 'shoot', invDest = null;
 // The squads the transport station sends: hit and run, and capture (per role).
 
 // The point on the battle plane (y = 0) under the pointer, or null when the ray misses it.
@@ -3234,7 +3289,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v48', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v49', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -3329,7 +3384,7 @@ function frame(now) {
 
 // Named shots for tools/mockups/shoot.mjs: each replays the battle from its seed for a fixed number of steps.
 // A boarding party for the scripted shots: marines first, a medic among them, the specialists last.
-const queueParty = () => { for (const r of ['marines', 'marines', 'marines', 'medics', 'marines', 'marines', 'marines', 'marines', 'marines', 'hackers', 'engineers', 'pilots']) A.queueRole('capture', r); };
+const queueParty = () => { for (const r of ['marines', 'marines', 'marines', 'medics', 'marines', 'marines', 'marines', 'marines', 'marines', 'hackers', 'engineers', 'pilots', 'engineers', 'pilots']) A.queueRole('capture', r); };
 function scripted(steps, then, sc = 'battle') {
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(qPage, { capture: 0, hit: 0 });
   newWorld(sc); W.player.target = SCENES[sc].target; camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
@@ -3396,7 +3451,7 @@ window.MOCKUP_SHOTS = {
     A.setSpeed(250); for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'tractor'),
   scene_raid: () => scripted(30, () => { station = 'transport'; trTab = 'hit'; raidSys = 'engines'; raidKind = 'bomb'; for (const r of ['marines', 'marines', 'demo']) A.queueRole('hit', r); A.energizeAll('hit'); for (let i = 0; i < Math.round(3 / DT); i++) step(); }, 'boarding'),
   scene_board: () => scripted(30, () => { station = 'transport'; trTab = 'capture'; queueParty(); A.energizeAll('capture'); for (let i = 0; i < Math.round(2.5 / DT); i++) step(); }, 'boarding'),
-  scene_captured: () => scripted(30, () => { station = 'fleet'; queueParty(); for (let i = 0; i < Math.round(40 / DT) && W.player.bq.capture.length; i++) { if (padReady(W.player)) A.energizeAll('capture'); step(); } for (let i = 0; i < Math.round(10 / DT); i++) step(); fleetPick = 'rattlejaw'; }, 'boarding'),
+  scene_captured: () => scripted(30, () => { station = 'fleet'; queueParty(); for (let i = 0; i < Math.round(90 / DT) && ship('rattlejaw').side !== 0; i++) { if (padReady(W.player) && W.player.bq.capture.length) A.energizeAll('capture'); step(); } fleetPick = 'rattlejaw'; }, 'boarding'),
   // The helm pointed at a spot ahead and to the left of the ship, half a second into the turn.
   helm_click: () => scripted(600, () => { const s = W.player, f = fwd(s.h), r = rightOf(s.h); A.helmTo(s.x + f[0] * 12 - r[0] * 14, s.z + f[1] * 12 - r[1] * 14); for (let i = 0; i < 15; i++) step(); }),
   power: () => scripted(600, () => { station = 'power'; }),

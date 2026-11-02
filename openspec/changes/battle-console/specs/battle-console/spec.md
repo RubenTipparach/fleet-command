@@ -220,6 +220,14 @@ showing how many are still aboard), take any queued member off the queue, and en
 each sending the head of the queue. The transport panel and the Target box SHALL show the target's holder's emblem and a
 tug of war of our boarders against its defenders, each side's members shown by role on hover.
 
+#### Scenario: A deck held without a pilot
+- **WHEN** marines alone clear the Rattlejaw's defenders
+- **THEN** the panel says "To take it, send" with an engineer, a pilot and a hacker, and those role keys are ringed
+
+#### Scenario: A raid on one weapon
+- **WHEN** the captain picks W1 from the weapon list (or clicks W1 on the target's display) and a raid bombs it
+- **THEN** W1 alone loses the bomb's damage and the log names W1
+
 #### Scenario: Energize all with four pads
 - **WHEN** the Resolute (four pads, all charged) has six marines queued and the captain presses Energize all
 - **THEN** four marines beam aboard the target, two stay queued, and all four pads recharge together

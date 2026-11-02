@@ -288,6 +288,26 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4r. Weapon ids, raids on one weapon, the held deck, 10 s volleys (version 49)
+
+Owner, 2026-11-02: "need a drop down or something to pick from weapons. weapon tool tips need id, so when I hover over
+enemy stuff I can find it", "boarding succeeded but control has not been changed", "similar to tug of war tractor beam,
+I think this battle simulation for boarding parties should update every 10 seconds", "I prefer recharge to be same color
+as the standard value, it is hard to see otherwise".
+
+- **Weapon ids.** Every mount is W and its place in the ship's list (W1, W2, ...), on its hover card, the weapons page,
+  the expanded display and the raid list (`mountId`, one source).
+- **A raid on one weapon.** With Weapons picked in Hit and run, a pill under the subsystem keys opens a list of the
+  target's weapons (id, name, health, status) and "Weapons control (any weapon)". Clicking a weapon on the target's
+  display picks it too. A raid on a weapon takes its whole hit off that mount; on weapons control it works as before.
+- **The held deck.** A capture still needs an engineer, a pilot and a hacker (or the VIP) aboard once the defenders are
+  down (survey B15, B17). The panel now says so: "To take it, send" with the missing roles as chips in Caution, and
+  those role keys ringed, until they are queued. The log names them from the same rule (`missingRoles`, 6.1).
+- **Volleys every 10 s**, like the tractor contest's rounds: the bar's label counts down to the next volley and a thin
+  line under it fills toward it.
+- **Pad recharge** fills in the charged pads' blue, the pictogram black over the fill and Sky above it, the seconds in
+  white with a dark outline, as the weapons' cooldowns are drawn.
+
 ## 4q. Transporter pads, the boarding queue and the tug of war (version 48)
 
 Owner, 2026-11-02, with the reference game's boarding panel: "in target window neeed to show which faction emblem is
