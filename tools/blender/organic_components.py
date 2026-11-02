@@ -518,6 +518,9 @@ def larva(f, body, cap, rng, state="idle", height=10.0, segments=True):
     f.M[s] = np.maximum(f.M[s], oa.rise(np.maximum(f.B[s], f.M[s]), top, prof))
 
 
+SYMMETRIC_MM = 6.0   # a window whose side rooms differ by less than this is centred: its frame grows ribs on both sides
+
+
 def frame_anatomy(f, q, T, rng, r):
     """The accepted widget's frame round one window (tools/blender/organic_anatomy.py Sculpt.bone and .muscle, step 26),
     scaled from the room T (mm) the frame has round it instead of the widget's 38 mm: a bone ring under the skin, two
@@ -532,10 +535,14 @@ def frame_anatomy(f, q, T, rng, r):
         f.ring(q, 0.80 * T, max(2.0, 0.24 * T), 7.0 + 5.0 * k, round_mm=8.0, bone=False)               # outer bundle
     qw, qh = q[2] - q[0], q[3] - q[1]
     lroom, rroom = q[0] - x0, x1 - q[2]
-    side = 1 if rroom >= lroom else -1
-    room = max(lroom, rroom) + f.bleed
-    if room > 10.0 and qh > 24.0:     # ribs off the roomier side, curving down and back (asymmetry: one side only)
-        n = max(2, int(qh / (24.0 * FEATURE)))
+    # ribs off the roomier side, curving down and back (asymmetry: one side only); a window centred in its frame (the
+    # ship systems display, owner 2026-11-01) has no roomier side, so it grows them on both, mirrored
+    sides = [1, -1] if abs(rroom - lroom) < SYMMETRIC_MM else [1 if rroom >= lroom else -1]
+    n = max(2, int(qh / (24.0 * FEATURE)))
+    for side in sides:
+        room = (rroom if side > 0 else lroom) + f.bleed
+        if not (room > 10.0 and qh > 24.0):
+            continue
         xe = q[2] if side > 0 else q[0]
         reach = min(room - 3.0, 1.1 * T + 12.0)
         for kk in range(n):

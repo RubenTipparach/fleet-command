@@ -1,6 +1,6 @@
 ---
 name: blender-organic-panels
-description: Build and render organic, grown console panels for Fleet Command's living factions (the Vhorr Brood first) in Blender, headless - one surface sculpted in layers (bone, then muscle, then leather stretched over both, veins and sacs of light under the skin) as a height field, its materials blended by masks from the sculpt, never a raw primitive placed on the body, black smoked-glass screens with bronze rims, square dark keys with glowing rims, a portrait pocket, panels that float over the game with no backdrop (rendered on a transparent film; only their own bodies join them), bioluminescent accents that light their surroundings, a warm top light with grazing rims, a value-ladder palette, and growth measured clear of every readout and key face. Use whenever making or changing an organic, biological, hive, alien-flesh or grown skin, or when a render "looks like metal with blobs on it", "reads as camo", "looks like plastic or chocolate", or "is missing the hive aesthetic" ("organic UI", "flesh panel", "chitin", "tendrils", "Vhorr", "brood", "hive console").
+description: Build and render organic, grown console panels for Fleet Command's living factions (the Vhorr Brood first) in Blender, headless - one surface sculpted in layers (bone, then muscle, then leather stretched over both, veins and sacs of light under the skin) as a height field, its materials blended by masks from the sculpt, never a raw primitive placed on the body, black smoked-glass screens with bronze rims, square dark keys with glowing rims, a portrait pocket, panels over the game with no scenic backdrop (rendered on a transparent film), the column behind them one grown body of tissue, darker than the panels, never flat black, bioluminescent accents that light their surroundings, a warm top light with grazing rims, a value-ladder palette, and growth measured clear of every readout and key face. Use whenever making or changing an organic, biological, hive, alien-flesh or grown skin, or when a render "looks like metal with blobs on it", "reads as camo", "looks like plastic or chocolate", or "is missing the hive aesthetic" ("organic UI", "flesh panel", "chitin", "tendrils", "Vhorr", "brood", "hive console").
 metadata:
   author: Fleet Command (Claude Code)
   version: "1.0"
@@ -70,8 +70,13 @@ using placeholders then a full detail agent will go in and sculpt components man
 
 The owner, 2026-10-31: "The one thing about UI is it's overlayed on top of gameplay so that background wouldn't make sense here", and of study step 25: "Only this new iteration is accepted. Minus the background there".
 
-- The console sits over the live battle: no wall, cavern or fill of tissue behind or between the panels. The game
-  shows through every gap.
+- The console sits over the live battle: nothing scenic (a wall, a cavern, a room) behind it. The battle view stays
+  open.
+- The console's own area is the brood's own body, never flat black (the owner, 2026-11-01: "I still dont want a plain
+  black backround on the ui area though", then survey W8: tissue): the column is backed by one grown membrane
+  (`organic_components.backing`, mode "tissue"), its free edge a rolled lip over the battle, graded darker than the
+  panels (`BACKING_GAIN` in `tools/blender/build_ui_vhorr_organic.py`; its flesh about 5 L* below theirs) so they stand
+  off it.
 - Render every piece on a transparent film (`scene.render.film_transparent = True`, RGBA PNG) and judge it composited
   over the game view (`tools/mockups/overlay_composite.py`), never over flat black or a wall.
 - A height-field sculpt's bare floor is cut away: faces whose every corner is lower than 27 mm below the face are
@@ -85,8 +90,8 @@ The owner, 2026-10-31: "The one thing about UI is it's overlayed on top of gamep
 ## 1. The premise
 
 Start from the creature, never from a machine. An organic console is one body that holds instruments:
-- each panel is one body, and the body is all there is: no backdrop, the panels float over the game (rule 5), and
-  neighbours join only where their bodies reach each other (a tendril);
+- each panel is one body over the column's grown backing (rule 5), standing off it, with no scenic backdrop, and
+  neighbours join where their bodies reach each other (a tendril);
 - the tech is crisp (screens, keys, the portrait), the frame is soft (flesh, chitin, bone);
 - the body breaks the rectangle (spines, arches, horns past the top edge, asymmetric); the instruments never do.
 

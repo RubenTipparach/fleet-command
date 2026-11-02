@@ -17,5 +17,6 @@
 - 2026-10-31, desktop session: the survey at version 10 (section V, the Vhorr Brood's panel styles); version id `1793500816-516b`.
 - 2026-11-01, desktop session: the survey at version 11 (section W, a picture per option); version id `1793508323-a138`.
 - 2026-11-01, desktop session: the survey at version 12 (question W8); version id `1793514841-5af9`.
+- 2026-11-01, desktop session: Console skins at v26 and the Organic Panel Bible at v4; version id `1793519069-da51`.
 - 2026-11-01, cloud session (battle console thread): republished with mockup 2 linked (https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs); version id `1793521410-0998`.
 - 2026-11-01, cloud session: battle console v5 listed; version id `1793525435-29d7`.
