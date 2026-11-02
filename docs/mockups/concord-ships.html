@@ -1122,7 +1122,7 @@ function charStump(ship, P, cut) { // the part left on the ship is charred at th
 }
 function snapNacelle(ship, side) {
   const P = ship.pieces['shin' + side], T = ship.pieces['thigh' + side], k = ship.knee[side], sx = side === 'P' ? 1 : -1, s = ship.C.length / 312;
-  detach(ship, P, V3(sx * 7, 2.5, -5).multiplyScalar(s), V3(0.12, 0.05, sx * 0.35));
+  detach(ship, P, V3(sx * 15, 3, -7).multiplyScalar(s), V3(0.05, -sx * 0.025, sx * 0.25));
   charStump(ship, T, { n: k.dir, d: k.dir.dot(k.knee), c: k.knee, r: ship.C.legs.chord[0] * 1.2 });
   const w = k.knee.clone().applyMatrix4(ship.root.matrixWorld);
   emit('fireball', w, k.dir, 60, 0.6 * s); emit('sparks', w, k.dir, 120);
@@ -1493,7 +1493,7 @@ window.MOCKUP_SHOTS = {
   holes_modelled: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', cam: (s) => { const h = s.holes[0]; frame(26, h.normal.clone().add(V3(0.3, 0.1, 0.5)), h.point.clone()); } }),
   holes_parallax: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', holes: 'parallax', cam: (s) => { const h = s.holes[0]; frame(26, h.normal.clone().add(V3(0.3, 0.1, 0.5)), h.point.clone()); } }),
   holes_wide: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 1.6, { tab: 'damage', cam: () => frame(300, V3(0.6, 0.8, 0.8), V3(0, 10, 50)) }),
-  nacelle_lost: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 100), 4, { tab: 'damage', cam: () => frame(420, V3(1, 0.55, -0.35), V3(20, 0, -40)) }),
+  nacelle_lost: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 100), 2.2, { tab: 'damage', cam: () => frame(440, V3(1, 0.65, -0.25), V3(30, 0, -50)) }),
   crown_off: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'bridge', 100), 2.5, { tab: 'damage', cam: () => frame(230, V3(0.8, 0.6, 0.9), V3(0, 30, 80)) }),
   breakup: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 1.4, { tab: 'damage', cam: () => frame(620, V3(0.9, 0.6, 1)) }),
   breakup_late: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 9, { tab: 'damage', cam: () => frame(700, V3(0.9, 0.7, 1)) }),
