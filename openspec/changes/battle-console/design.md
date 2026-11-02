@@ -284,6 +284,13 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4f. The expand key (version 28)
+
+Owner, 2026-11-02: "expand button should look like this, be a circle, small", with a square icon of two diagonal arrows
+pointing out to its corners. Every panel's Expand pill becomes a small round key (26 px across, a 34 px touch area)
+beside the panel's title: two arrows pointing out to the top-right and bottom-left corners; on an expanded panel they
+point in, and the key returns the panel. Its name (Expand, Return) shows on hover, as every icon key's does.
+
 ## 4e. The camera lock (version 27)
 
 Owner, survey B2: "Lock camera on target is automatic when you first right click. Clicking and dragging camera around

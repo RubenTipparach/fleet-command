@@ -1444,12 +1444,27 @@ function panel(id, r, title, big, noX) {
   const [x, y, w, h] = r; nine('frame.panel', x, y, w, h);
   const cx = x + FP[3], cy = y + FP[0], cw = w - FP[1] - FP[3], ch = h - FP[0] - FP[2];
   g.font = '700 24px Antonio'; g.letterSpacing = '1px'; const tw = Math.min(g.measureText(title.toUpperCase()).width, cw - 160); g.letterSpacing = '0px';
-  const bl = big ? 'Return' : 'Expand'; g.font = '600 15px Antonio'; const bw = noX ? -10 : Math.ceil(g.measureText(bl.toUpperCase()).width) + 24;
+  const bw = noX ? -10 : 26;
   const x1 = cx + cw - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, ty = cy - 29;
   g.fillStyle = '#000'; g.fillRect(x0, ty, total, 26);
   text(title.toUpperCase(), x0 + 8, ty + 22, '700 24px Antonio', CC.sky, 'left', tw, '1px');
-  if (!noX) button(`${id}.xp`, x1 - 8 - bw, ty, bw, 26, bl, () => A.expand(id), { center: true });
+  if (!noX) expandKey(`${id}.xp`, x1 - 8 - bw / 2, ty + 13, 13, big, () => A.expand(id));
   return { x: cx, y: cy, w: cw, h: ch };
+}
+// The expand key (owner, 2026-11-02: "expand button should look like this, be a circle, small", with a square icon of
+// two diagonal arrows pointing out to the corners): a small round key; on an expanded panel the arrows point in and it
+// returns the panel. Its name shows on hover.
+function expandKey(id, cx, cy, r, inward, click) {
+  const st = hit(id, cx - r - 4, cy - r - 4, 2 * r + 8, 2 * r + 8, { click, tip: inward ? 'Return' : 'Expand' });
+  g.fillStyle = st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.beginPath(); g.arc(cx, cy, r, 0, 2 * P); g.fill();
+  g.strokeStyle = '#000'; g.lineWidth = Math.max(2, r * 0.18); g.lineCap = 'round'; g.lineJoin = 'round';
+  const a = r * 0.1, b = r * 0.6, hd = r * 0.34;
+  for (const s of [1, -1]) {
+    // one arrow along the diagonal, toward the top-right corner (s = 1) or the bottom-left (s = -1)
+    const x0 = cx + s * a, y0 = cy - s * a, x1 = cx + s * b, y1 = cy - s * b, [hx, hy] = inward ? [x0, y0] : [x1, y1], d = inward ? 1 : -1;
+    g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+    g.beginPath(); g.moveTo(hx + s * d * hd, hy); g.lineTo(hx, hy); g.lineTo(hx, hy - s * d * hd); g.stroke();
+  }
 }
 // A column of icon tabs down a panel's left side (owner: "group icons into a narrow column"); names show on hover.
 function rail(idp, x, y, list, cur, set) { list.forEach(([id, label, ic], i) => tab(`${idp}.${id}`, x, y + i * 42, 48, 40, label, () => set(id), cur === id, { icon: ic })); }
@@ -2425,7 +2440,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v27', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v28', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
