@@ -19,3 +19,4 @@
 - 2026-11-01, desktop session: the survey at version 12 (question W8); version id `1793514841-5af9`.
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 (Concord ships and damage, https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4) added, the survey at version 14, on top of the battle console thread's listing of mockup 2 at v31; version id `1793584906-7c1e`.
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 at v2, the survey at v16; version id `1793592753-6b4c`.
+- 2026-11-02, cloud session (Concord ships thread): mockup 5 at v3; version id `1793607843-26f1`.
