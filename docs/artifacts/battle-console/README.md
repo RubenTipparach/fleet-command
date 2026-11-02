@@ -57,3 +57,4 @@
 - Version 37 published 2026-11-02, version id `1793595346-a7ae`: the hit and run icon redrawn as a strafing pass (up toward a target, a tight turn short of it, back down and away).
 - Version 38 published 2026-11-02, version id `1793601438-8fb3`: the evasive icon redrawn (a bold zigzag with its head aimed along the last stroke).
 - Version 39 published 2026-11-02, version id `1793601524-e678`: a failed high energy turn damages the impulse engines and leaves the ship dead in space for 15 s (the owner's rule); the readouts renamed To hit, HET (counting a breakdown down), Heading, Speed.
+- Version 40 published 2026-11-02, version id `1793601692-846d`: the mine placement preview (an animated bullseye of the mine's 1.2 km range under the pointer: yellow, red with a ship in range, grey and "Invalid position" outside the 4 km transporter reach).

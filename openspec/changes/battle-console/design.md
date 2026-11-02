@@ -288,6 +288,18 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4l. The mine placement preview (version 40)
+
+Owner, 2026-11-02: "when placing mines, need to draw radius of mine when mouse hovers over the battle field, mine
+placement will be yellow, but turns red when it is in radius of any ship. It will grey if unable to be placed, and the
+letters 'invalid position' will show. invalid position is simply outside transporter range. the mine range display is
+like an animated bullseye radiating outwards", and "mine range is different than mine transport range just to be clear".
+While placing a mine, two ranges show and are named apart: the **transporter's reach** (4 km, the dashed ring round your
+ship: how far out a mine can be placed) and, under the pointer on the battle plane, the **mine's range** (1.2 km: how
+close a ship must come to set it off) as a bullseye whose rings radiate outward from its centre every 1.4 s. **Yellow**
+("Mine range 1.2 km") where it can go; **red** ("Ship in mine range") when any ship is inside that range; **grey**
+("Invalid position") outside the transporter's reach, where a click places nothing.
+
 ## 4k. The explosion, and the helm's second half (version 36)
 
 **A ship's death** (owner, 2026-11-02: "can we design a big cool looking explosion like this?", with a shot of a starship

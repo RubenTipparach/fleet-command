@@ -1503,6 +1503,8 @@ function wireInput() {
     const [px, py] = refXY(e); PX = px; PY = py;
     if (STEER) { const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); e.stopPropagation(); root.style.cursor = 'grabbing'; return; }
     ringHot = inView(px, py) && !topAt(px, py) && nearRing(e);
+    // where a mine would go, while placing one
+    mineCursor = placingMine && inView(px, py) && !topAt(px, py) ? planeAt(e) : null;
     if (DRAG) { DRAG.drag(px, py, false); e.stopPropagation(); return; }
     const h = topAt(px, py); HOT = h ? h.id : null;
     root.style.cursor = h ? (h.cursor || (h.click || h.drag ? 'pointer' : 'default')) : ringHot ? 'grab' : '';
@@ -2771,7 +2773,7 @@ function camLockStep(dt) {
 }
 // Steering by the ring: the ring's radius in units and how near a press must land to grab it.
 const HELM_RING = { r_u: 4.5, grab_u: 1.6 };
-let STEER = false, ringHot = false, placingHet = false;
+let STEER = false, ringHot = false, placingHet = false, mineCursor = null;
 function nearRing(e) { const q = planeAt(e), s = W.player; if (!q || !s.alive) return false; return Math.abs(Math.hypot(q.x - s.x, q.z - s.z) - HELM_RING.r_u) <= HELM_RING.grab_u; }
 let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidKind = 'shoot', invDest = null;
 // The squads the transport station sends: hit and run, and capture (per role).
@@ -2819,11 +2821,27 @@ function helmArc(vw, vh, s) {
   if (a && b) { g.strokeStyle = CC.sky; g.lineWidth = 3; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
   if (placingHet) LBL('Click where the high energy turn should point', vw / 2, 92, 0, CC.caution, 'center', 18);
   if (placingMine) {
-    // the transporter's reach, where a mine can be placed
+    // the transporter's reach
     const Rm = TRANSPORT.range_km * 10; g.strokeStyle = CC.caution; g.lineWidth = 2; g.setLineDash([10, 8]); g.beginPath();
     for (let i = 0; i <= 96; i++) { const q = at(i / 96 * 2 * P, Rm); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); }
     g.stroke(); g.setLineDash([]);
-    LBL(`Click to place a mine · reach ${km(TRANSPORT.range_km)}`, vw / 2, 92, 0, CC.caution, 'center', 18);
+    // two ranges, kept apart (owner: "mine range is different than mine transport range"): the dashed ring is how far the
+    // transporter can place a mine; the bullseye is how close a ship must come to set the mine off
+    LBL(`Place a mine: transporter reach ${km(TRANSPORT.range_km)} (dashed) · mine range ${km(MINE.trigger_u / 10)} (bullseye)`, vw / 2, 92, 0, CC.caution, 'center', 18);
+    // The mine under the pointer (owner, 2026-11-02: "need to draw radius of mine when mouse hovers over the battle field,
+    // mine placement will be yellow, but turns red when it is in radius of any ship. It will grey if unable to be placed,
+    // and the letters 'invalid position' will show ... the mine range display is like an animated bullseye radiating
+    // outwards"): its trigger radius on the battle plane, rings radiating out from the centre to it.
+    if (mineCursor) {
+      const mx = mineCursor.x, mz = mineCursor.z, valid = Math.hypot(mx - s.x, mz - s.z) <= Rm, hot = W.ships.some((o) => o.alive && Math.hypot(o.x - mx, o.z - mz) <= MINE.trigger_u);
+      const col = !valid ? '#8a8f9c' : hot ? CC.alert : CC.caution, R0 = MINE.trigger_u, ph = (performance.now() / 1400) % 1;
+      const ring = (rad, alpha, width) => { g.strokeStyle = col; g.globalAlpha = alpha; g.lineWidth = width; g.beginPath(); for (let i = 0; i <= 64; i++) { const a = i / 64 * 2 * P, q = scr(mx + Math.sin(a) * rad, mz - Math.cos(a) * rad); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); } g.stroke(); g.globalAlpha = 1; };
+      ring(R0, 0.9, 2.5);
+      for (let k2 = 0; k2 < 3; k2++) { const f = (ph + k2 / 3) % 1; ring(R0 * f, 0.85 * (1 - f), 2); }
+      const c0 = scr(mx, mz); if (c0) { g.fillStyle = col; g.beginPath(); g.arc(c0[0], c0[1], 4, 0, 2 * P); g.fill();
+        if (!valid) LBL('Invalid position', c0[0], c0[1] - 16, 0, col, 'center', 16); else if (hot) LBL('Ship in mine range', c0[0], c0[1] - 16, 0, col, 'center', 14);
+        else LBL(`Mine range ${km(MINE.trigger_u / 10)}`, c0[0], c0[1] - 16, 0, col, 'center', 14); }
+    }
   }
 }
 // Whether a torpedo or missile could lock now: a seeker mount charged, the target in its arc and range (the rules the
@@ -2910,7 +2928,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v39', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v40', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
