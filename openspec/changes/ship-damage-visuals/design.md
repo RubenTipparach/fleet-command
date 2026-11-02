@@ -75,14 +75,43 @@ actual interiors", pointing at interior mapping in Spider-Man PS4 (polycount.com
   is shaded, so the rooms shift with parallax as the piece tumbles. Rooms are dark (power out, about half), red
   (emergency light), burning (flickering orange) or still lit, with ceiling light strips, crates on the floor, light that
   falls off toward the back.
+- **Rooms square to the break.** Rooms are laid out in the face's own frame (decks level, bulkheads upright, rooms
+  running straight back 5-8 m), after the owner: "The walls seems slanted there". No room is orange (owner: "no orange
+  rooms"): they are dark, dim emergency red or cold-lit; their walls are sooty, with a reddish-orange flame licking up
+  them near the break. The deck plates and bulkheads of the face carry a ragged orange burn rim (owner: "I like the
+  orange burn highlights, I wanted something like that for the room wall dividers").
 - **Scorched.** The whole cut face is sooty; soot and char deepen over the last 12 m toward each broken edge, rooms
   there are blackened, and an ember line runs along every broken edge and cools over about 30 s. The skin is charred
   over the last 11 m before the break.
+
+- **Pieces fall off first** (owner: "I also expect pieces to fall off the ship before the main piece"). A core breach
+  is a 3.6 s sequence: secondary blasts, then the outer saucer pieces (outermost first), the crown, the nacelles and the
+  fin come off one by one, then the main blast throws the rest apart. Before any breach, a torpedo hit on a saucer whose
+  hull is below 60% knocks off the outer piece it lands on; the pieces still attached close their faces toward the gap.
+- **Wires and sparks.** Cables cross every border two pieces share; as the pieces separate the cables stretch, glow at
+  their hot ends and arc with blue-white sparks, then snap at a random length (2-16 m on the cruiser) and hang from each
+  piece, cooling over 25 s.
+- **A tougher reactor** (owner: "please give the rector some more health before exploding"): it takes 45% of each hit,
+  so it lasts about twice as long, and reaching zero starts the sequence above rather than an instant explosion.
 
 Each piece gets an outward velocity and a spin, a fire on it that dies within about 10 s. A flash, a shockwave ring in
 the ship's plane, a burst of fire, 300 debris shards and a coolant cloud from the core. In the game the cells are
 pre-cut in Blender (Voronoi fracture of each body, seeded per class) and the cut faces carry the same interior-mapping
 shader; survey A3 decides where modelled breaks and parallax are used.
+
+### Light from weapons and blasts
+
+Owner: "shots from the ship should have lighting, shots hitting the ship should also have lighting (explosions + whatever
+weapon was fired)". A pool of four lights is reused oldest first: a phaser beam lights the hull where it lands, a
+torpedo carries its red glow to the hit, every blast flashes the hull around it, and the ship's own fire (the page's
+"Ship fires" button: a phaser from the arc facing the enemy, or a torpedo from the launcher) lights its mount and the
+plating beside it. One `shoot()` draws and lights a shot in either direction. In the game these are a few dynamic lights
+over the baked hull lights (CLAUDE.md section 10), capped per frame on phones.
+
+### Holes, burnt through
+
+A torpedo opens a hole; three phaser hits within about 5 m burn one through too. A hole's parallax interior is the same
+room grid with crates on the deck, ceiling light strips and soot near the rim.
 
 ## One implementation
 

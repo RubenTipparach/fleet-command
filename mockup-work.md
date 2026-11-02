@@ -230,8 +230,17 @@ with charred edges. It is the first part of mockup 3 (look dev), for one faction
 - On version 1, 2026-11-02, of the break-up: "interiors are hollowed, this is not what I want"; "the ship breaks very
   programmatically, how do we make these chunks look more structurally random?"; "hull pieces look interesting, I think
   they should look more scorched, and have paralax so they look like actual interiors" (Spider-Man PS4's interior mapping).
+  Then: "The walls seems slanted there. Also I think all the wall sections should be glowing slightly from the heat ... add a
+  shader for like wires and sparks as they fly apart. I also expect pieces to fall off the ship before the main piece to fall
+  off..also please give the rector some more health before exploding"; "no orange rooms"; "I like the orange burn highlights, I
+  wanted something like that for the room wall dividers"; "these stripy pattern rooms, can they just be like other rooms?";
+  "can walls also be scorched with this reddish orange flame? while the orange flames on the edges be more pronounced?";
+  "im also not seeing any interior paralax in the holes"; "shots from the ship should have lighting, shots hitting the ship
+  should also have lighting (explosions + whatever weapon was fired)".
   Version 2 breaks the saucer and engineering hull into random cells and closes every break with a scorched cut face
-  that shows decks, bulkheads and interior-mapped rooms.
+  that shows decks, bulkheads and interior-mapped rooms square to the break, burn rims on the dividers, flame-scorched room
+  walls, wires that stretch, arc and snap, a 3.6 s breach in which pieces come off before the main blast, chunks knocked off
+  by heavy hits, a tougher reactor, phasers that burn through, and light from every shot and blast, including the ship's own.
 
 Design: `openspec/changes/concord-ship-look/` and `openspec/changes/ship-damage-visuals/`.
 
