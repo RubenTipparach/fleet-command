@@ -1170,13 +1170,13 @@ function shockwave(ship, pos, size) {
   oneshots.push({ obj: m, t: 0, dur: 2.6, step(o, k) { o.obj.scale.setScalar(size * Math.sqrt(k) + 1); o.obj.material.opacity = (1 - k) ** 2 * 0.55; } });
 }
 const shardGeo = new THREE.TetrahedronGeometry(1, 0);
-const shards = new THREE.InstancedMesh(shardGeo, new THREE.MeshStandardMaterial({ color: 0xbfbcb4, metalness: 0.6, roughness: 0.5, emissive: 0x200800 }), 400);
+const shards = new THREE.InstancedMesh(shardGeo, new THREE.MeshStandardMaterial({ color: 0x7d7a74, metalness: 0.6, roughness: 0.6, emissive: 0x200800 }), 400);
 shards.count = 0; shards.frustumCulled = false; scene.add(shards);
 const shardData = [];
 function debrisBurst(pos, L) {
   shardData.length = 0;
   for (let i = 0; i < 400; i++) shardData.push({ p: pos.clone().add(V3(rr(fxRng, -1, 1), rr(fxRng, -1, 1), rr(fxRng, -1, 1)).multiplyScalar(L * 0.15)), v: V3(rr(fxRng, -1, 1), rr(fxRng, -0.6, 0.6), rr(fxRng, -1, 1)).normalize().multiplyScalar(rr(fxRng, 8, 60) * L / 312),
-    q: new THREE.Quaternion(), w: V3(rr(fxRng, -3, 3), rr(fxRng, -3, 3), rr(fxRng, -3, 3)), s: rr(fxRng, 0.4, 3.5) * L / 312 });
+    q: new THREE.Quaternion(), w: V3(rr(fxRng, -3, 3), rr(fxRng, -3, 3), rr(fxRng, -3, 3)), s: rr(fxRng, 0.3, 1.8) * L / 312 });
   shards.count = 400;
 }
 
