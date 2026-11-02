@@ -722,15 +722,15 @@ function fracture(ship, b, rng) {
     for (const g of b.rings) { const sub = subsetGeo(g, i, seeds, 0.5); if (sub) inner.add(new THREE.Mesh(sub, dark)); }
   });
   // Neighbouring cells, found by sampling the body; each pair gets a cut face on its shared plane, one for each side.
-  const pairs = new Set(), p = V3();
+  const pairs = new Map(), p = V3();
   for (let k = 0; k < 24000; k++) {
     p.set(lo.x + rng() * size.x, lo.y + rng() * size.y, lo.z + rng() * size.z); if (!insideBody(b, p)) continue;
     let a = -1, da = 1e9, c = -1, dc = 1e9;
     seeds.forEach((sd, i) => { const d = p.distanceTo(sd); if (d < da) { c = a; dc = da; a = i; da = d; } else if (d < dc) { c = i; dc = d; } });
-    if (c >= 0 && dc - da < 1.5) pairs.add(Math.min(a, c) + ':' + Math.max(a, c));
+    if (c >= 0 && dc - da < 1.5) { const key = Math.min(a, c) + ':' + Math.max(a, c); if (!pairs.has(key)) pairs.set(key, []); pairs.get(key).push(p.clone()); }
   }
-  const ext = size.length();
-  for (const key of pairs) { const [a, c] = key.split(':').map(Number); cutFace(ship, b, a, c, ext); cutFace(ship, b, c, a, ext); }
+  // Each face is only as big as the border its two cells share (from the same samples), so the shader runs on little else.
+  for (const [key, pts] of pairs) { if (pts.length < 3) continue; const [a, c] = key.split(':').map(Number); cutFace(ship, b, a, c, pts); cutFace(ship, b, c, a, pts); }
 }
 // A cut face: the plane between two cells, clipped in the shader to the body and to this pair's shared border. It shows the
 // structure it cuts through (deck plates every 3.4 m, bulkheads every 6 m, the skin's thickness), and between them rooms with
@@ -778,10 +778,13 @@ vec3 interiorCut(vec3 p, vec3 V, out float solid){
   else L = vec3(0.78, 0.84, 0.95);                                                  // still lit
   return base*L*2.2*lamp*exp(-t*0.13);
 }`;
-function cutFace(ship, b, a, c, ext) {
+function cutFace(ship, b, a, c, pts) {
   const sa = b.seeds[a], sb = b.seeds[c], n = sb.clone().sub(sa).normalize(), mid = sa.clone().add(sb).multiplyScalar(0.5);
   const u = Math.abs(n.y) < 0.9 ? V3(0, 1, 0).cross(n).normalize() : V3(1, 0, 0).cross(n).normalize(), v = n.clone().cross(u);
-  const g = new THREE.PlaneGeometry(ext, ext); g.applyMatrix4(new THREE.Matrix4().makeBasis(u, v, n).setPosition(mid));
+  let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9;
+  for (const q of pts) { const d = q.clone().sub(mid), x = d.dot(u), y = d.dot(v); u0 = Math.min(u0, x); u1 = Math.max(u1, x); v0 = Math.min(v0, y); v1 = Math.max(v1, y); }
+  u0 -= 3; u1 += 3; v0 -= 3; v1 += 3;
+  const g = new THREE.PlaneGeometry(u1 - u0, v1 - v0); g.translate((u0 + u1) / 2, (v0 + v1) / 2, 0); g.applyMatrix4(new THREE.Matrix4().makeBasis(u, v, n).setPosition(mid));
   const P = b.frags[a], prof = new Array(48).fill(0).map((_, i) => new THREE.Vector2(...(b.prof[i] || [0, 0])));
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.3, roughness: 0.85, emissive: 0xffffff, envMapIntensity: LIGHTS[lightKey].env });
   const U = { uSeeds: b.u.uSeeds, uSeedN: b.u.uSeedN, uA: { value: a }, uB: { value: c }, uAxis: { value: b.axis }, uBodyC: { value: b.c.clone() },
