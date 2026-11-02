@@ -265,7 +265,7 @@ else's artwork):
 
 | Region | What it holds |
 |---|---|
-| **Left column** (about a quarter of the width, full height) | Stacked panels, top to bottom: the captain's name plate; the helm (a 3 x 3 pad of turn and manoeuvre buttons, the chance to hit, a big engage button); the **ship systems display** (the ship from above, its shield facings and weapon mounts); the weapons panel (fire, multiple fire, and each mount's arming state: offline, normal, overload, with charge pips); and a small radar or minimap at the bottom |
+| **Left column** (about a quarter of the width, full height) | Stacked panels, top to bottom: the captain's name plate; the helm (a 3 x 3 pad of turn and manoeuvre buttons, and orders toward the target; the chance to hit is per weapon, on each weapon's hover card and its details, not on the helm: owner, 2026-11-02); the **ship systems display** (the ship from above, its shield facings and weapon mounts); the weapons panel (fire, multiple fire, and each mount's arming state: offline, normal, overload, with charge pips, and each weapon's chance to hit); and a small radar or minimap at the bottom |
 | **Top strip** | Own hull integrity bar, the weapon capacitor bar, target hull integrity bar, the mission clock |
 | **Bottom strip** | Speed, power and systems bars |
 | **The 3D view** (everything else) | The battle: own ship in a chase view, the target bracketed with its name, class and speed, a readout of the target's range and own weapons in arc and charged, the pointer for picking targets |

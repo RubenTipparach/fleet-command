@@ -387,8 +387,9 @@ use (page 120), orbit target, intercept target (the helm steers, the captain kee
 | High energy turns (triggers) | A 3 x 3 pad: hard left 135, 180, hard right 135; left 90, **Free heading** (the middle key, cancelling helm orders), right 90; the angle printed in each turn key's corner |
 | Self (toggles and triggers) | **Erratic manoeuvres** (toggle), **Emergency stop**, **HET free angle** (then click the view) |
 
-Beside the pad: **To hit** (the best chance among the selected weapons of hitting the locked target now, the number
-the shot rolls), **HET** (the chance the next high energy turn succeeds; during a breakdown the seconds left), **Heading**
+Beside the pad (version 44: the chance to hit moved off the helm to each weapon's hover card and its details, owner,
+2026-11-02: "why is this in navigation? each weapon should have a to hit chance, to hit belongs in: weapon info
+tooltip, weapon details expanded modal"; the view's readout line lost its aggregate too): **HET** (the chance the next high energy turn succeeds; during a breakdown the seconds left), **Heading**
 (the ship's heading in degrees, 000 up the map) and **Speed** (the ordered speed, m/s); "Hdg" and "Order" were renamed
 in version 39 for being cryptic. The helm ring,
 pointing and the speed strip still steer by hand (free heading).
