@@ -71,3 +71,4 @@
 - Version 51 published 2026-11-02, version id `1793651717-3f4f`: warp starts offline; a click arms the coils, which take free energy (power systems down to feed them); charging glows, ready pulses green, no glow in a Q-G field; the key slimmed to 30 px; hover cards size to their text.
 - Version 52 published 2026-11-02, version id `1793651863-7208`: Warp is a row in Power, Allocation; setting it arms the coils at that amount.
 - Version 53 published 2026-11-02, version id `1793653035-1b6d`: system icons beside each name in Power, Allocation; a warp icon added to the Concord kit.
+- Version 54 published 2026-11-02, version id `1793658237-e7cb`: the warp key jumps when green (banks charged, course plotted, nothing refusing); arming plots the course; plotting ignores the heading and stops only with sensors out; clicks never cut power; no glow while plotting.

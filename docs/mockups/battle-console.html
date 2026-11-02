@@ -459,15 +459,15 @@ const REACTOR = { coils: 3, loops: 2, flow_max: 5, flow_e: 1, efficiency_loss: 0
 // The warp drive (owner, 2026-11-02: "the generator powers nacelles, with anti-matter reactions. nacelles need to show
 // how much power they draw and how much damage they've taken"). The energy put into warp is split between the nacelles,
 // which charge the banks at charge_k of what they draw times their health. A jump needs jump_e in the banks (of bank_e).
-// A course is plotted over plot_s (faster with healthy sensors) and holds while the ship stays within plot_drift_deg of
-// it. The reactor's coolant reserve leaks from damaged loops and a jump spends coolant_jump of it. Quantum-gravitational
+// A course is plotted over plot_s (slower with damaged sensors, stopped when they are out): navigation calculating the jump, whatever the ship
+// does meanwhile (owner, 2026-11-02: "plot should just calculate course, it shouldnt force me to hold a heading"). The reactor's coolant reserve leaks from damaged loops and a jump spends coolant_jump of it. Quantum-gravitational
 // instability comes from the surroundings (neutron stars, black holes, anomalies): above qg_block a jump needs the
 // safety override. Each factor adds a risk (weights in `risk`); the jump risk is 1 - the product of (1 - each), and the
 // jump rolls against that same number (6.1).
 // coil_e: what the warp coils take once armed (owner, 2026-11-02: "warp requires lots of energy, it should start out as
 // disabled, then when you click on it, you have to power stuff down to charge warp coils"): an armed drive takes the
 // reactor's free energy, up to coil_e, and gives way first when the systems need more than the output.
-const WARP = { coil_e: 8, bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, plot_drift_deg: 15, coolant_jump: 0.25, leak_per_s: 0.01, qg_block: 0.5, out_s: 1.2,
+const WARP = { coil_e: 8, bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, coolant_jump: 0.25, leak_per_s: 0.01, qg_block: 0.5, out_s: 1.2,
   risk: { nacelles: 0.8, coolant: 1.2, coolant_ok: 0.5, banks: 0.3, nav: 0.6, reactor: 0.7, qg: 0.3, qg_override: 0.9 } };
 // The helm officer's manoeuvres (owner, survey B4: "The original game had free heading, intercept, follow+match speed,
 // orbit (ccw/cw toggle). High energy turns, hard left, hard right, 180"; then "I want buttons that express types of
@@ -755,7 +755,7 @@ function makeShip(d) {
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
     scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', pads: Array(c.pads || TRANSPORT.pads_default).fill(1), bq: { capture: [], hit: [] }, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
-    warp: { armed: false, want: 0, banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
+    warp: { armed: false, want: 0, banks: 0, plot: 0, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
     het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1, holdKm: 6, runMin: 2, runMax: 8, runPhase: 'in',
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
@@ -967,13 +967,16 @@ function warpStep(s) {
   w.banks = Math.min(WARP.bank_e, w.banks + draw.reduce((a, d, i) => a + d * w.nacelles[i].hp, 0) * WARP.charge_k * DT);
   s.reactor.coolant = Math.max(0, s.reactor.coolant - s.reactor.loops.reduce((a, l) => a + (1 - l.hp), 0) * WARP.leak_per_s * DT);
   if (w.plotting) {
-    // off course means a new heading ordered, not the ship still coming round onto the plotted one
-    if (Math.abs(wrap(s.hOrder - w.plotH)) > WARP.plot_drift_deg * DEG) { w.plot = Math.max(0, w.plot - 0.2 * DT); if (!w.drift) { w.drift = true; if (s === W.player) say('Navigation', 'Off the plotted course: the plot is degrading.'); } }
-    else { w.drift = false; w.plot = Math.min(1, w.plot + DT / WARP.plot_s * (0.5 + 0.5 * s.sys.sensors)); }
+    // slowed by damaged sensors, stopped only when they are knocked out (owner, 2026-11-02: "the only way plotting can
+    // stop is if sensors are knocked out")
+    w.plot = Math.min(1, w.plot + DT / WARP.plot_s * clamp(s.sys.sensors, 0, 1));
   }
 }
 // The jump: refused with the reason the panel shows; otherwise one roll against the risk. A failure is a mishap
 // scaled by how bad the odds were; a very bad one breaches the core.
+// Whether the warp key will jump: armed, the banks at jump_e, the course plotted, nothing refusing the jump (owner,
+// 2026-11-02: "I clicked when it was GREEN", "if plotting it shouldnt glow, and be ready"). Green means this.
+const warpReady = (s) => s.warp.armed && s.warp.banks >= WARP.jump_e && s.warp.plot >= 1 && !warpRisk(s).why;
 function jump(s) {
   const r = warpRisk(s), w = s.warp; if (r.why) { if (s === W.player) say('Helm', `Cannot jump: ${r.why}.`); return; }
   const R = W.rand.warp;
@@ -1306,15 +1309,21 @@ const A = {
     const d = Math.hypot(x - s.x, z - s.z) / 10; if (d > TRANSPORT.range_km) { say('Transport', `Out of transporter range (${km(TRANSPORT.range_km)}).`); return; }
     s.mines--; s.mineCool = MINE.cooldown_s; usePad(s); W.mines.push({ x, z, side: s.side, arm: MINE.arm_s }); say('Transport', `Mine beamed out to ${km(d)}.`); },
   scene: (id) => { sceneId = id; try { localStorage.setItem('fc.battle.scene', id); } catch (e) { /* storage blocked */ } A.reset(); menuOpen = false; },
-  // Warp: plot a course on the heading ordered now, the safety override, and the jump.
-  plot: () => { const w = W.player.warp; w.plotting = true; w.plotH = W.player.hOrder; w.plot = 0; w.drift = false; say('Navigation', `Plotting a course on ${String(Math.round(((w.plotH / DEG) + 360) % 360)).padStart(3, '0')}.`); },
+  // Warp: plot a course (navigation calculating it, whatever the heading), the safety override, and the jump.
+  plot: () => { const w = W.player.warp; if (w.plotting && w.plot < 1) return; w.plotting = true; w.plot = 0; say('Navigation', 'Plotting a warp course.'); },
   override: () => { const w = W.player.warp; w.override = !w.override; say('Helm', w.override ? 'Safety override on.' : 'Safety override off.'); },
-  // The warp key: offline, a click arms the coils (they take free energy); armed and charging, a click powers them down;
-  // ready, a click jumps.
+  // The warp key (owner, 2026-11-02: "is warp button not actually warping me out", "warp button should NOT cut power"): offline, a click arms the coils
+  // (they take free energy) and plots a course on the heading ordered, so the jump's navigation risk falls while the
+  // banks charge; charging, a click reports the charge and plot and changes nothing (Warp 0 in Allocation powers the
+  // coils down); ready, a click jumps.
   warpKey: () => { const s = W.player, w = s.warp;
-    if (!w.armed) { w.armed = true; w.want = WARP.coil_e; say('Engineering', output(s) - used(s) >= 1 ? 'Warp coils charging.' : 'Warp coils armed. Power down systems to free energy for them.'); return; }
-    if (w.banks >= WARP.jump_e) { jump(s); return; }
-    w.armed = false; w.want = 0; s.power.warp = 0; say('Engineering', 'Warp coils powered down.'); },
+    if (!w.armed) { w.armed = true; w.want = WARP.coil_e; if (!w.plotting) A.plot();
+      say('Engineering', output(s) - used(s) >= 1 ? 'Warp coils charging.' : 'Warp coils armed. Power down systems to free energy for them.'); return; }
+    if (warpReady(s)) { jump(s); return; }
+    const why = warpRisk(s).why;
+    const course = s.sys.sensors <= 0 && w.plot < 1 ? 'stopped: sensors out' : pct(w.plot);
+    say('Engineering', w.banks >= WARP.jump_e ? (w.plot < 1 ? `Warp coils charged; plotting the course, ${course}.` : `Cannot jump: ${why}.`)
+      : `Warp coils ${Math.floor(w.banks)} of ${WARP.jump_e} E${s.power.warp > 0 ? `, ${s.power.warp} E in` : ': no free energy, power systems down'}; course ${course}.`); },
   jump: () => jump(W.player),
   mine: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
   // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
@@ -1745,21 +1754,28 @@ function speedSlider(x, y, w, h) {
 // page (6.1); its hover card gives the banks, the coils' draw, the risk and anything missing.
 function warpKey(x, y, w, h) {
   const s = W.player, wp = s.warp, r = warpRisk(s), f = clamp(wp.banks / WARP.jump_e, 0, 1), anomaly = r.q > WARP.qg_block;
-  const ready = wp.armed && wp.banks >= WARP.jump_e, starved = wp.armed && !ready && s.power.warp <= 0;
-  const st = hit('warp.key', x, y, w, h, { click: A.warpKey, tip: { title: !wp.armed ? 'Warp offline · click to charge' : ready ? 'Warp ready · click to jump' : starved ? 'Warp: power down systems' : 'Warp charging', rows: [['Banks', `${Math.floor(wp.banks)}/${WARP.jump_e} E`], ['Coils', `${s.power.warp} of ${WARP.coil_e} E`],
+  const ready = warpReady(s), starved = wp.armed && !ready && s.power.warp <= 0 && wp.banks < WARP.jump_e;
+  const plotting = wp.armed && wp.plotting && wp.plot < 1, blocked = wp.armed && !ready && !plotting && wp.banks >= WARP.jump_e && !!r.why;
+  const st = hit('warp.key', x, y, w, h, { click: A.warpKey, tip: { title: !wp.armed ? 'Warp offline · click to charge' : ready ? 'Warp ready · click to jump' : starved ? 'Warp: power down systems' : plotting ? 'Warp: plotting the course' : blocked ? `Warp: ${r.why}` : 'Warp charging',
+    rows: [['Banks', `${Math.floor(wp.banks)}/${WARP.jump_e} E`], ['Coils', `${s.power.warp} of ${WARP.coil_e} E`], ['Course', wp.plotting ? (s.sys.sensors <= 0 && wp.plot < 1 ? 'stopped: sensors out' : pct(wp.plot)) : 'none'],
     ['Jump risk', pct(r.total), r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord], ...(r.why && wp.armed ? [['Needs', r.why, CC.caution]] : [])] } });
   const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 1000 * 2 * P * 0.9);
+  // glow: a steady one while charging on a plotted course, a pulse when ready; none while plotting or in a Q-G field
+  const glow = wp.armed && !starved && !plotting && !blocked && !anomaly;
   g.save();
-  if (wp.armed && !starved && !anomaly) { g.shadowColor = ready ? CC.accord : CC.sky; g.shadowBlur = ready ? 8 + 16 * pulse : 8; }
+  if (glow) { g.shadowColor = ready ? CC.accord : CC.sky; g.shadowBlur = ready ? 8 + 16 * pulse : 8; }
   g.fillStyle = CC.deep; g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.fill(); g.restore();
   g.save(); g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.clip();
   if (!wp.armed) { g.fillStyle = '#0d1430'; g.fillRect(x, y, w, h); }
-  else { g.fillStyle = ready ? (st.down ? CC.lilac : anomaly ? shade(CC.accord, 0.7) : CC.accord) : CC.signal; g.fillRect(x, y, w * (ready ? 1 : f), h);
+  else { g.fillStyle = ready ? (st.down ? CC.lilac : CC.accord) : CC.signal; g.fillRect(x, y, w * (ready ? 1 : f), h);
     if (ready && !anomaly) { g.fillStyle = `rgba(255,255,255,${0.28 * pulse})`; g.fillRect(x, y, w, h); } }
+  // the plot's progress, a thin line along the key's foot
+  if (plotting) { g.fillStyle = CC.lilac; g.fillRect(x, y + h - 4, w * wp.plot, 4); }
   g.restore();
   if (st.hot) { g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.roundRect(x - 1, y - 1, w + 2, h + 2, h / 2 + 1); g.stroke(); }
-  const lab = wp.out > 0 ? 'JUMPING' : starved ? 'POWER DOWN' : 'WARP', col = !wp.armed ? '#3a4a80' : starved ? CC.caution : ready || f > 0.55 ? '#000' : CC.sky;
-  text(lab, x + w / 2, y + h * 0.7, `700 ${starved ? 14 : 17}px Antonio`, col, 'center', w - 10, '1px');
+  const lab = wp.out > 0 ? 'JUMPING' : starved ? 'POWER DOWN' : blocked ? (anomaly ? 'Q-G FIELD' : 'BLOCKED') : plotting && f >= 1 ? `PLOT ${Math.floor(wp.plot * 100)}%` : 'WARP';
+  const col = !wp.armed ? '#3a4a80' : starved || blocked ? CC.caution : ready || f > 0.55 ? '#000' : CC.sky;
+  text(lab, x + w / 2, y + h * 0.68, `700 ${starved || blocked ? 14 : 17}px Antonio`, col, 'center', w - 10, '1px');
 }
 function uiBottom(r) {
   const [x, y, w, h] = r, s = W.player; nine('strip.bottom', x, y, w, h);
@@ -2001,7 +2017,7 @@ function stWarp(c, big) {
   button('wp.ovr', c.x + kw + 6, y, kw, kh, 'Override', A.override, { center: true, sel: () => w.override });
   button('wp.jump', c.x + 2 * (kw + 6), y, kw, kh, w.out > 0 ? 'Jumping' : 'Jump', A.jump, { center: true, dis: () => !!r.why });
   y += kh + 6;
-  LBL(r.why || (w.plotting && w.drift ? 'Off the plotted course' : `Q-G field ${pct(r.q)} · coolant ${pct(s.reactor.coolant)}`), c.x, y + 14, c.w, r.why ? CC.caution : CC.lilac, 'left', 13);
+  LBL(r.why || (`Q-G field ${pct(r.q)} · coolant ${pct(s.reactor.coolant)}`), c.x, y + 14, c.w, r.why ? CC.caution : CC.lilac, 'left', 13);
   powerRow('wp.pw', c.x, c.y + c.h - 28, c.w, 26, 'warp', big ? 120 : 82);
 }
 function stPower(b, big) {
@@ -3331,7 +3347,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v53', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v54', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

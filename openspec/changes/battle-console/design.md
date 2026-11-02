@@ -313,7 +313,7 @@ past it it falls steeply toward the reach; overload stays a short-range double-d
 1.2 km (2/30 of the reach); proximity would be a third mode, half damage, usable only past the effective band, with a
 flatter long-range chance. Survey B26 asks whether to build it.
 
-## 4s. The warp key on the speed slider (versions 50 to 53)
+## 4s. The warp key on the speed slider (versions 50 to 54)
 
 Owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed slider". A Warp key now ends the speed
 slider in the bottom strip. It fills in the Concord blue as the banks charge toward the 40 E a jump needs, lights green
@@ -339,6 +339,19 @@ in a gravitational anomaly however", "slim it down height wise", "this box can b
 - **Icons by the names** (version 53; owner: "can you show system icons next to the name?"): every Allocation row has its
   system's icon before its name, docked and expanded. Engines now uses the engines icon (two nacelles), and warp has its
   own in the Concord kit (`lib/concord.js`): a ring with three speed lines behind it.
+- **The key that warps** (version 54; owner: "is warp button not actually warping me out", "that makes no sense, I
+  clicked when it was GREEN", "warp button should NOT cut power", "what is plot? plot should just calculate course, it
+  shouldnt force me to hold a heading", "if plotting it shouldnt glow, and be ready", "the only way plotting can stop is
+  if sensors are knocked out"). Before, a click while charging powered the coils down, green meant only that the banks
+  were full, and an unplotted jump carried about 60 % risk, so most clicks on green ended in a collapsed field.
+  - Arming also plots the course. **Plotting is navigation calculating the jump**: it no longer cares about the heading,
+    runs at the sensors' health, and stops only when the sensors are knocked out.
+  - **Green means it will jump** (`warpReady`): armed, the banks at 40 E, the course plotted, nothing refusing the jump.
+    While the course is still plotting the key shows "Plot 40 %" with a line filling along its foot, and no glow.
+  - A click never cuts power: before ready it reports the charge and course; Warp 0 in Allocation powers the coils down.
+  - Banks full but refused (a Q-G field without the override): "Q-G field" in Caution, no glow; with the override on it
+    turns green without glowing.
+  - Checked in Battle: armed, turned 120 degrees while it plotted, jumped at 0 % risk 20 s later.
 
 ## 4r. Weapon ids, raids on one weapon, the held deck, 10 s volleys (version 49)
 

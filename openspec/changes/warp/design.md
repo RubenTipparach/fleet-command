@@ -9,7 +9,7 @@ table); every number is data and provisional (open questions below).
 |---|---|---|
 | Nacelles | Two, port and starboard. The energy put into warp (a 0-10 E row, counted in Systems) is split between the nacelles still working; each charges the banks at 0.5 of what it draws times its health. A hit damages a nacelle 1 time in 7, by 25 % | `charge_k` 0.5 |
 | Banks | Hold 60 E; a jump needs 40 E (a white line on the gauge) and spends it | `bank_e` 60, `jump_e` 40 |
-| Course plot | Plot course takes the ordered heading and builds over 20 s (faster with healthy sensors). If a new heading more than 15 degrees off is ordered, the plot degrades at 20 % a second until the heading is back | `plot_s` 20, `plot_drift_deg` 15 |
+| Course plot | Navigation calculates the jump over 20 s at the sensors' health, whatever the ship's heading; it stops only while the sensors are knocked out (owner, 2026-11-02: "plot should just calculate course, it shouldnt force me to hold a heading"). The warp key on the speed slider arms the coils, which take free energy up to 8 E, and starts the plot; it is green (and jumps) only when the banks hold 40 E, the plot is done and nothing refuses the jump | `plot_s` 20, `coil_e` 8 |
 | Coolant reserve | The reactor's coolant reserve, 0 to 100 %; damaged loops leak it (1 % a second per lost loop's worth of health); a jump spends 25 % | `leak_per_s` 0.01, `coolant_jump` 0.25 |
 | Reactor stability | Confinement times coil alignment times the core's distance from its limit, 0 to 1 | from the reactor |
 | Q-G field | Each gravity well has a strength at its centre, falling to 0 at its reach; the field at the ship is the strongest. Above 0.5 the jump needs the safety override | `qg_block` 0.5 |
