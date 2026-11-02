@@ -48,3 +48,4 @@
 - Version 28 published 2026-11-02, version id `1793580890-bd74`: the panels' Expand pill replaced by a small round key with diagonal arrows (pointing in to return), names on hover.
 - Version 29 published 2026-11-02, version id `1793581929-1c47`: the warp drive (Power, Warp mode): nacelles with draw and damage, banks, course plot, six risk factors and the jump risk, the safety override near a neutron star, the jump and its mishaps; a Warp test scene (change `warp`).
 - Version 30 published 2026-11-02, version id `1793582380-60b2`: panel titles' black plate starts at the frame's top edge (no longer cutting the panel above); expand key 20 % smaller (21 px).
+- Version 31 published 2026-11-02, version id `1793583166-34de`: the click mark (blue plus) removed; drag on or near the helm ring to steer; right drag turns the camera; one finger turns it on touch (or steers from the ring); the sky drawn behind every ship; space dust streaking with your velocity.

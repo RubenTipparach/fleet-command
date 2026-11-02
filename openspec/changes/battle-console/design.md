@@ -246,11 +246,13 @@ The mockup takes the-federation's way, on the buttons it already has:
 | Left click on empty space | **The helm**: the ship comes onto the bearing of the point clicked (left of the ship comes left, right comes right, as far as the point asks); the same heading order as the pad's turn keys, which also takes the ship off autopilot; the log says "Come to 307" |
 | Left click on a ship | Focuses it (unchanged) |
 | Right click on a ship | Locks it (unchanged) |
-| Left drag | Orbits the camera (unchanged; a move of over 6 px is a drag, not a click) |
+| Left drag on or near the helm ring (within 160 m of its 450 m radius) | **Steers**: the ordered heading follows the pointer round the ring (owner, 2026-11-02: "I want to be able to click and drag to rotate ship. clicking near the ring should rotate my ship"); the ring brightens under the pointer, with a grab cursor |
+| Right drag | Turns the camera ("otherwise I can pan stuff around using right click"); a left drag elsewhere does nothing to the camera |
+| One finger (touch) | On the ring, steers; anywhere else, turns the camera ("make sure that on mobile i can still rotate camera by regular touch"); two fingers zoom |
 | A click on your own ship | Nothing: it has no direction |
 
 On the ship a faint ring (450 m) carries the **turn arc** from the heading to the ordered heading, with a tick at the
-order, and a ring marks the point clicked for 1.2 s.
+order. The mark that showed where the helm was clicked is gone (owner, 2026-11-02: "should get rid of plus sign").
 
 ## 4a. Mines and the tractor contest
 
@@ -283,6 +285,15 @@ beam does take 10 seconds to power up".
 The energy in the tractor is drawn every second like any other system, so holding someone, or resisting, costs weapons or
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
+
+## 4g. Stars behind ships, and space dust (version 31)
+
+Owner, 2026-11-02: "stars should draw behind ship always btw, it doesnt make sense if they draw in front. we should also
+add space dust as it helps show motion as the ship moves". The sky (nebula, far stars and the parallax stars) is drawn in
+its own pass first and the depth cleared, so no star ever lies over a ship. **Space dust**: 700 faint motes in a box 6 km
+across and 1.4 km deep round your ship, wrapping so the field never ends, each drawn as a short streak back along your
+velocity (a quarter of a second of travel), so speed and heading read even against a still sky; the motes are in the
+battle pass, so they pass in front of and behind ships as they lie. (Mockup 3 sets the final look.)
 
 ## 4f. The expand key (version 28)
 

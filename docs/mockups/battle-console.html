@@ -1113,8 +1113,8 @@ const A = {
   // right", after the-federation's combat_screen.gd _helm_click): the ship is ordered onto the bearing from itself to
   // the point clicked on the battle plane, so a click left of it comes left and a click right comes right, as far as
   // the point asks. It is the same heading order the pad's turn keys give; a click on the ship itself has no direction.
-  helmTo: (x, z) => { const s = W.player, dx = x - s.x, dz = z - s.z; if (Math.hypot(dx, dz) < 1.5) return; s.engaged = false; s.hOrder = Math.atan2(dx, -dz);
-    helmMark = { x, z, t: 1.2 }; say('Helm', `Come to ${String(Math.round(((s.hOrder / DEG) + 360) % 360)).padStart(3, '0')}.`); },
+  helmTo: (x, z, quiet) => { const s = W.player, dx = x - s.x, dz = z - s.z; if (Math.hypot(dx, dz) < 1.5) return; s.engaged = false; s.hOrder = Math.atan2(dx, -dz);
+    if (quiet) return; say('Helm', `Come to ${String(Math.round(((s.hOrder / DEG) + 360) % 360)).padStart(3, '0')}.`); },
   speedStep: (n) => { const s = W.player; s.engaged = false; s.vOrder = clamp(Math.round(s.vOrder / SPEED_PER_BOX_M_S + n) * SPEED_PER_BOX_M_S, -60, maxSpeed(s)); },
   setSpeed: (v) => { const s = W.player; s.engaged = false; s.vOrder = clamp(v, -60, maxSpeed(s)); },
   allStop: () => { W.player.engaged = false; W.player.vOrder = 0; },
@@ -1433,14 +1433,19 @@ function wireInput() {
     const [px, py] = refXY(e); PX = px; PY = py; const h = topAt(px, py);
     if (h) { e.stopPropagation(); e.preventDefault(); ACTIVE = h.id; HOT = h.id; if (h.drag) { DRAG = h; h.drag(px, py, true); } return; }
     if (!inView(px, py)) e.stopPropagation();
+    // a press (left button or a touch) on or near the helm ring steers: the ship's ordered heading follows the pointer
+    else if (e.button === 0 && !expanded && nearRing(e)) { STEER = true; down = null; e.stopPropagation(); e.preventDefault(); const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); }
   }, true);
   addEventListener('pointermove', (e) => {
     const [px, py] = refXY(e); PX = px; PY = py;
+    if (STEER) { const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); e.stopPropagation(); root.style.cursor = 'grabbing'; return; }
+    ringHot = inView(px, py) && !expanded && !topAt(px, py) && nearRing(e);
     if (DRAG) { DRAG.drag(px, py, false); e.stopPropagation(); return; }
     const h = topAt(px, py); HOT = h ? h.id : null;
-    root.style.cursor = h ? (h.cursor || (h.click || h.drag ? 'pointer' : 'default')) : '';
+    root.style.cursor = h ? (h.cursor || (h.click || h.drag ? 'pointer' : 'default')) : ringHot ? 'grab' : '';
   }, true);
   addEventListener('pointerup', (e) => {
+    if (STEER) { STEER = false; e.stopPropagation(); const s = W.player; say('Helm', `Come to ${String(Math.round(((s.hOrder / DEG) + 360) % 360)).padStart(3, '0')}.`); return; }
     const [px, py] = refXY(e), h = topAt(px, py), was = ACTIVE; ACTIVE = null;
     if (DRAG) { DRAG = null; e.stopPropagation(); return; }
     if (was) { e.stopPropagation(); if (h && h.id === was && h.click) h.click(px, py, e.button); }
@@ -2309,12 +2314,40 @@ const { makeSpace, parallaxStars, shipModel } = window.FCSpace(THREE, renderer, 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 6000);
 const skyMain = makeSpace('ember', parallaxStars(new THREE.Vector3(0, 0, -40), 420, [[-70, -25, 500], [25, 70, 500]], 7));
-scene.add(skyMain);
+// The sky is drawn in its own pass before the battle, so stars always lie behind every ship (owner, 2026-11-02: "stars
+// should draw behind ship always btw, it doesnt make sense if they draw in front").
+const skyScene = new THREE.Scene(); skyScene.add(skyMain);
+// Space dust (owner: "we should also add space dust as it helps show motion as the ship moves"): faint motes in a box
+// round your ship, each drawn as a short streak along your velocity; the box wraps, so the field never ends. Being in
+// the battle pass, the motes pass in front of and behind ships as they really lie.
+const DUST = { count: 700, box_u: 60, height_u: 14, streak_s: 0.25, colour: 0xa8bcd8, opacity: 0.45 };
+const dust = (() => {
+  const R = rng(SCENARIO.seed + 11), base = new Float32Array(DUST.count * 3), pos = new Float32Array(DUST.count * 6);
+  for (let i = 0; i < DUST.count; i++) { base[i * 3] = R() * DUST.box_u; base[i * 3 + 1] = (R() - 0.5) * DUST.height_u; base[i * 3 + 2] = R() * DUST.box_u; }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const m = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: DUST.colour, transparent: true, opacity: DUST.opacity, depthWrite: false }));
+  m.frustumCulled = false; scene.add(m);
+  return { base, pos, geo };
+})();
+// Every frame: each mote is placed in the box centred on your ship (wrapping), its streak drawn back along your velocity.
+function dustStep() {
+  const s = W.player, L = DUST.box_u, f = fwd(s.h), sp = (s.alive ? s.v : 0) / M_PER_U * DUST.streak_s, dx = f[0] * sp, dz = f[1] * sp, b = dust.base, q = dust.pos;
+  const wrapTo = (v, c) => c + ((((v - c) % L) + L * 1.5) % L) - L / 2;
+  for (let i = 0; i < DUST.count; i++) {
+    const x = wrapTo(b[i * 3], s.x), y = b[i * 3 + 1], z = wrapTo(b[i * 3 + 2], s.z), o = i * 6;
+    q[o] = x; q[o + 1] = y; q[o + 2] = z; q[o + 3] = x - dx - 0.04; q[o + 4] = y; q[o + 5] = z - dz - 0.04;
+  }
+  dust.geo.attributes.position.needsUpdate = true;
+}
 // three.js 0.147 uses the legacy light units: about pi times brighter than r155 and later for the same number.
 scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x201010, 0.55));
 const sun = new THREE.DirectionalLight(0xfff0dd, 1.3); sun.position.set(-40, 60, 30); scene.add(sun);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enablePan = false; controls.minDistance = 4; controls.maxDistance = 90; controls.enableDamping = true;
+// The camera turns on a right drag (owner, 2026-11-02: "otherwise I can pan stuff around using right click"); the left
+// button is the helm. One finger still turns it on a touch screen ("make sure that on mobile i can still rotate camera
+// by regular touch"), unless the touch starts on the helm ring.
+controls.mouseButtons = { LEFT: -1, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE }; controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
 const MODELS = new Map();
 const glowTex = (() => { const c = paint(32, 32, (x) => { const g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(255,255,255,0.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); }); const t = new THREE.CanvasTexture(c); return t; })();
 // The 3D shield display (owner, 2026-11-01: "shield facing should be hexagons here", with the reference game's flat
@@ -2464,6 +2497,10 @@ function camLockStep(dt) {
   camYawVel = clamp(camYawVel + (w * w * d - 2 * w * camYawVel) * dt, -vmax, vmax);
   off.applyAxisAngle(new THREE.Vector3(0, 1, 0), camYawVel * dt); camera.position.copy(controls.target).add(off);
 }
+// Steering by the ring: the ring's radius in units and how near a press must land to grab it.
+const HELM_RING = { r_u: 4.5, grab_u: 1.6 };
+let STEER = false, ringHot = false;
+function nearRing(e) { const q = planeAt(e), s = W.player; if (!q || !s.alive) return false; return Math.abs(Math.hypot(q.x - s.x, q.z - s.z) - HELM_RING.r_u) <= HELM_RING.grab_u; }
 let down = null, helmMark = null, placingMine = false, raidSys = 'weapons', raidKind = 'shoot', invDest = null;
 // The squads the transport station sends: hit and run, and capture (per role).
 const raidPick = { marines: 2, demo: 0 }, capPick = { marines: 8, demo: 0, medics: 1, engineers: 1, hackers: 1, pilots: 1 };
@@ -2489,13 +2526,14 @@ function wireView() {
   renderer.domElement.oncontextmenu = (e) => e.preventDefault();
 }
 // The turn still to make (after the-federation's TurnArc): an arc on the plane round your ship from its heading to the
-// ordered heading, with a tick at the order, and a fading mark where the helm was last pointed.
+// ordered heading, with a tick at the order. (The mark where the helm was clicked is gone: owner, 2026-11-02, "should
+// get rid of plus sign".) The ring brightens under the pointer and while it is dragged to steer.
 function helmArc(vw, vh, s) {
   const scr = (x, z) => { const v = new THREE.Vector3(x, 0, z).project(camera); return v.z < 1 ? [(v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh] : null; };
-  const R = 4.5, dh = wrap(s.hOrder - s.h), n = Math.max(2, Math.ceil(Math.abs(dh) / 0.08));
+  const R = HELM_RING.r_u, dh = wrap(s.hOrder - s.h), n = Math.max(2, Math.ceil(Math.abs(dh) / 0.08));
   const at = (h, r) => scr(s.x + Math.sin(h) * r, s.z - Math.cos(h) * r);
   // the helm ring, faint, so the arc reads as part of the ship
-  g.strokeStyle = CC.sky; g.lineWidth = 1.5; g.globalAlpha = 0.3; g.beginPath();
+  g.strokeStyle = CC.sky; g.lineWidth = ringHot || STEER ? 3 : 1.5; g.globalAlpha = ringHot || STEER ? 0.75 : 0.3; g.beginPath();
   for (let i = 0; i <= 72; i++) { const q = at(i / 72 * 2 * P, R); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); }
   g.stroke(); g.globalAlpha = 1;
   if (Math.abs(dh) > 0.02) {
@@ -2511,11 +2549,6 @@ function helmArc(vw, vh, s) {
     for (let i = 0; i <= 96; i++) { const q = at(i / 96 * 2 * P, Rm); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); }
     g.stroke(); g.setLineDash([]);
     LBL(`Click to place a mine · reach ${km(TRANSPORT.range_km)}`, vw / 2, 92, 0, CC.caution, 'center', 18);
-  }
-  if (helmMark && helmMark.t > 0) {
-    const m = scr(helmMark.x, helmMark.z);
-    if (m) { g.strokeStyle = CC.sky; g.globalAlpha = Math.min(1, helmMark.t); g.lineWidth = 2; g.beginPath(); g.arc(m[0], m[1], 10 + (1.2 - helmMark.t) * 14, 0, 2 * P); g.stroke();
-      g.beginPath(); g.moveTo(m[0] - 6, m[1]); g.lineTo(m[0] + 6, m[1]); g.moveTo(m[0], m[1] - 6); g.lineTo(m[0], m[1] + 6); g.stroke(); g.globalAlpha = 1; }
   }
 }
 function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; return [VIEW[2] - w - 16, 14, w, h]; }
@@ -2576,7 +2609,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v30', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v31', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -2643,7 +2676,8 @@ function render(dt) {
   syncScene(dt);
   const w = VIEW[2] * S, h = VIEW[3] * S;
   renderer.info.reset(); renderer.setScissorTest(false); renderer.setViewport(0, 0, w, h); renderer.clear();
-  skyMain.userData.update(camera, dt);
+  skyMain.userData.update(camera, dt); dustStep();
+  renderer.render(skyScene, camera); renderer.clearDepth();
   renderer.render(scene, camera);
   lastInfo = { triangles: renderer.info.render.triangles, calls: renderer.info.render.calls };
   drawUI();
@@ -2656,7 +2690,6 @@ let acc = 0, last = performance.now(), frozen = false;
 function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (!paused && !menuOpen && !frozen) { acc += dt; while (acc >= DT) { step(); acc -= DT; } }
-  if (helmMark && !frozen) helmMark.t -= dt;
   render(frozen ? 0 : dt);
   requestAnimationFrame(frame);
 }
