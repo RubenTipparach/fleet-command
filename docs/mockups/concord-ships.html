@@ -289,7 +289,7 @@ const sun = new THREE.DirectionalLight(0xfff1dc, 1.6); sun.position.set(600, 420
 const rim = new THREE.DirectionalLight(0x86a6ff, 0.5); rim.position.set(-500, 150, -700); scene.add(rim);
 const LIGHTS = {
   sunlit: { label: 'Sunlit', sun: 1.7, sunPos: [600, 420, 520], hemi: 0.3, rim: 0.5, env: 0.55 },
-  shadow: { label: 'Shadow side', sun: 1.3, sunPos: [-420, 260, -650], hemi: 0.05, rim: 0.0, env: 0.18 },
+  shadow: { label: 'Shadow side', sun: 1.3, sunPos: [-420, -160, -650], hemi: 0.05, rim: 0.0, env: 0.18 },
   nosun: { label: 'No sun', sun: 0.0, sunPos: [0, 1, 0], hemi: 0.03, rim: 0.12, env: 0.08 },
 };
 let lightKey = 'sunlit';
@@ -705,10 +705,10 @@ function hullMat(maps, ship, o = {}) {
           dEmber = max(dEmber, near*uCutHeat*(1.0 - smoothstep(0.0, 1.6, d))); }
         dChar = clamp(dChar, 0.0, 1.0);`)
       .replace('#include <map_fragment>', `#include <map_fragment>
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03,0.026,0.024), dChar);
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03,0.026,0.024)*(0.6+0.8*nz2), smoothstep(0.0, 0.7, dChar));
         if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.05,0.045,0.042);`)
-      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 1.0, dChar);')
-      .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor *= 1.0 - 0.85*dChar;')
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 1.0, smoothstep(0.0, 0.7, dChar));')
+      .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor *= 1.0 - 0.85*dChar*dChar;')
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance *= uLight * (1.0 - clamp(dChar*1.4, 0.0, 1.0));
         if (!gl_FrontFacing) totalEmissiveRadiance = vec3(0.08, 0.008, 0.0);
@@ -943,9 +943,9 @@ class Pool {
 const glowPool = new Pool(6000, true), smokePool = new Pool(3000, false);
 // Each effect's look, in one table: what the colour means is fixed (orange fire, cyan-white coolant, violet plasma).
 const FX = {
-  fire: { pool: glowPool, life: [0.5, 1.1], speed: [16, 30], spread: 0.35, size: [2.5, 9], c0: [1, 0.82, 0.45, 1], c1: [0.7, 0.12, 0.02, 0], drag: 1.3, also: ['smoke', 0.25] },
-  plasma: { pool: glowPool, life: [0.8, 1.5], speed: [18, 34], spread: 0.25, size: [2, 8], c0: [0.8, 0.6, 1, 1], c1: [0.25, 0.12, 0.9, 0], drag: 0.8 },
-  coolant: { pool: smokePool, life: [2.2, 3.6], speed: [8, 18], spread: 0.3, size: [2, 15], c0: [0.92, 0.98, 1, 0.6], c1: [0.7, 0.88, 1, 0], drag: 0.9, also: ['glitter', 0.5] },
+  fire: { pool: glowPool, life: [0.45, 0.9], speed: [34, 60], spread: 0.16, size: [1.6, 7.5], c0: [1, 0.82, 0.45, 1], c1: [0.7, 0.12, 0.02, 0], drag: 1.9, also: ['smoke', 0.25] },
+  plasma: { pool: glowPool, life: [0.8, 1.5], speed: [30, 52], spread: 0.14, size: [2.5, 13], c0: [0.8, 0.6, 1, 1], c1: [0.25, 0.12, 0.9, 0], drag: 0.8 },
+  coolant: { pool: smokePool, life: [1.6, 3.0], speed: [26, 46], spread: 0.15, size: [1.4, 13], c0: [0.92, 0.98, 1, 0.5], c1: [0.7, 0.88, 1, 0], drag: 0.9, also: ['glitter', 0.9] },
   glitter: { pool: glowPool, life: [1, 2], speed: [4, 10], spread: 1.0, size: [0.7, 0.3], c0: [0.85, 0.97, 1, 1], c1: [0.6, 0.85, 1, 0], drag: 0.6 },
   sparks: { pool: glowPool, life: [0.25, 0.6], speed: [22, 55], spread: 1.0, size: [0.9, 0.3], c0: [1, 0.95, 0.6, 1], c1: [1, 0.4, 0.1, 0], drag: 2 },
   embers: { pool: glowPool, life: [1, 2.5], speed: [2, 6], spread: 1.0, size: [0.8, 0.3], c0: [1, 0.6, 0.2, 1], c1: [0.6, 0.1, 0, 0], drag: 0.4 },
@@ -1010,12 +1010,12 @@ function applyLook(ship, sysId) {
   if (sysId === 'nacP' || sysId === 'nacS') {
     const side = sysId.slice(3), k = ship.knee[side], P = ship.pieces['shin' + side];
     if (st === 'damaged') E(P, k.top, V3(0, 1, -0.6), [{ type: 'plasma', rate: 8, dur: 1e9, scale: C.nacelle.r / 6.5 }]);
-    if (st === 'critical') { E(P, k.top, V3(0, 1, -0.4), [{ type: 'plasma', rate: 70, dur: 1e9, scale: C.nacelle.r / 6.5 }]); E(P, k.mid.clone().add(V3(0, -C.nacelle.r, 0)), V3(0, -1, 0), [{ type: 'sparks', rate: 18, dur: 1e9 }]); }
+    if (st === 'critical') { E(P, k.top, V3(0, 1, -0.4), [{ type: 'plasma', rate: 130, dur: 1e9, scale: C.nacelle.r / 6.5 }]); E(P, k.mid.clone().add(V3(0, -C.nacelle.r, 0)), V3(0, -1, 0), [{ type: 'sparks', rate: 18, dur: 1e9 }]); }
     if (st === 'destroyed') snapNacelle(ship, side);
   }
   if (sysId === 'reactor') {
     const belly = ship.corePos.clone().add(V3(0, -1, 0)), P = ship.pieces[ship.corePos.z >= C.hull.split ? 'hullF' : 'hullA'], sc2 = C.length / 312;
-    if (st === 'damaged') E(P, belly, V3(0, -1, -0.3), [{ type: 'coolant', rate: 45, dur: 1e9, scale: sc2 }]);
+    if (st === 'damaged') E(P, belly, V3(0, -1, -0.3), [{ type: 'coolant', rate: 80, dur: 1e9, scale: sc2 }]);
     if (st === 'critical') { E(P, belly, V3(0, -1, -0.2), [{ type: 'coolant', rate: 110, dur: 1e9, scale: sc2 }]);
       for (const sx of [1, -1]) E(P, belly.clone().add(V3(sx * C.core.size[0] * 2, 2, 4)), V3(sx, -0.4, 0), [{ type: 'coolant', rate: 40, dur: 1e9, scale: sc2 * 0.8 }]); }
     if (st === 'destroyed') breakup(ship);
@@ -1083,16 +1083,16 @@ function hole(ship, hit) {
 function holeInterior(c, n, r, type) {
   const g = new THREE.Group();
   const mat = new THREE.ShaderMaterial({ side: THREE.DoubleSide,
-    uniforms: { uC: { value: new THREE.Vector4(c.x, c.y, c.z, r * 1.25) }, uN: { value: new THREE.Vector4(n.x, n.y, n.z, type) }, uTime: sharedTime },
+    uniforms: { uC: { value: new THREE.Vector4(c.x, c.y, c.z, r * 0.98) }, uN: { value: new THREE.Vector4(n.x, n.y, n.z, type) }, uTime: sharedTime },
     vertexShader: 'varying vec3 vObj; varying vec3 vN; void main(){ vObj = position; vN = normal; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader: `uniform vec4 uC; uniform vec4 uN; uniform float uTime; varying vec3 vObj; varying vec3 vN;
       void main(){ vec3 d = vObj - uC.xyz; float dl = length(d); float s = dot(d, uN.xyz);
-        if (dl > uC.w || s > 0.25 || s < -uC.w*1.3) discard;
+        if (dl > uC.w || s > -0.35 || s < -uC.w*1.3) discard;
         vec3 L = uN.w < 0.5 ? vec3(1.0,0.16,0.06) : (uN.w < 1.5 ? vec3(0.55,0.32,1.0) : vec3(0.35,0.85,1.0));
         vec3 base = abs(vN.y) > 0.5 ? (gl_FrontFacing ? vec3(0.28,0.25,0.23) : vec3(0.06)) : vec3(0.13);
-        float fall = 1.0 - dl/uC.w; float fl = 0.85 + 0.15*sin(uTime*9.0 + vObj.x);
-        gl_FragColor = vec4(base*(0.1 + 2.2*L*fall*fl), 1.0); }` });
-  const R = r * 1.25, cell = [6, 3.4, 6];
+        float fall = 1.0 - dl/(uC.w*1.3); float fl = 0.85 + 0.15*sin(uTime*9.0 + vObj.x);
+        gl_FragColor = vec4(base*(0.15 + 3.6*L*fall*fl), 1.0); }` });
+  const R = r * 0.98, cell = [6, 3.4, 6];
   const back = new THREE.Mesh(new THREE.SphereGeometry(R * 0.98, 20, 12), mat.clone()); back.material.side = THREE.BackSide; back.material.uniforms = mat.uniforms; back.position.copy(c); g.add(back);
   for (let y = Math.ceil((c.y - R) / cell[1]) * cell[1]; y < c.y + R; y += cell[1]) {
     const ch = Math.sqrt(Math.max(0, R * R - (y - c.y) ** 2)); if (ch < 0.5) continue;
@@ -1323,7 +1323,7 @@ function buildYard() {
   const s = active, c0 = V3(...s.C.saucer.c), R = s.C.saucer.R * s.C.saucer.sz;
   const fig = new THREE.Group(), fm = new THREE.MeshStandardMaterial({ color: 0xffc94d, emissive: 0x553300 });
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.3, 4, 8), fm); body.position.y = 0.87; fig.add(body);
-  fig.position.copy(s.offset).add(V3(c0.x + 6, c0.y + s.C.saucer.rim[0][1] + 0.2, c0.z + R - 1.2)); fig.add(label('1.8 m', V3(0, 2.6, 0), 1.2));
+  const fa = 0.62; fig.position.copy(s.offset).add(V3(c0.x + Math.sin(fa) * (s.C.saucer.R - 1.2), c0.y + s.C.saucer.rim[0][1] + 0.25, c0.z + Math.cos(fa) * (R - 1.2))); fig.add(label('1.8 m', V3(0, 2.6, 0), 1.2));
   yard.add(fig); yard.userData.fig = fig;
   yard.visible = true; yard.children.forEach((c) => { c.visible = c === fig || showYard; });
 }
@@ -1342,11 +1342,11 @@ function frame(dist, dir, target) {
   camera.position.copy(t).add(dir.clone().normalize().multiplyScalar(dist)); controls.target.copy(t); controls.update();
 }
 const VIEWS = {
-  hero: { label: 'Three quarter', go: () => mode === 'lineup' ? frame(560, V3(0.9, 0.55, 1), V3(30, 0, 0)) : frame(active.C.length * 1.35, V3(0.95, 0.5, 1.05)) },
+  hero: { label: 'Three quarter', go: () => mode === 'lineup' ? frame(560, V3(0.9, 0.55, 1), V3(30, 0, 0)) : frame(active.C.length * 1.12, V3(0.95, 0.5, 1.05)) },
   top: { label: 'Top', go: () => mode === 'lineup' ? frame(620, V3(0.001, 1, 0.001), V3(30, 0, 0)) : frame(active.C.length * 1.45, V3(0.001, 1, 0.0001)) },
   side: { label: 'Side', go: () => mode === 'lineup' ? frame(560, V3(1, 0.08, 0.001), V3(30, 0, 0)) : frame(active.C.length * 1.3, V3(1, 0.05, 0.001)) },
   under: { label: 'Under', go: () => frame((mode === 'lineup' ? 560 : active.C.length * 1.3), V3(-0.7, -0.9, 0.8)) },
-  scale: { label: 'Scale', go: () => { const f = yard.userData.fig.position; frame(16, V3(0.55, 0.12, 1), f.clone().add(V3(-2.5, -1.6, 0))); } },
+  scale: { label: 'Scale', go: () => { const f = yard.userData.fig.position; frame(16, V3(Math.sin(0.62) + 0.25, 0.12, Math.cos(0.62)), f.clone().add(V3(0, -1.8, 0))); } },
   stern: { label: 'Stern', go: () => frame(active.C.length * 1.1, V3(-0.8, 0.4, -1)) },
 };
 let view = 'hero';
