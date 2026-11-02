@@ -110,25 +110,6 @@ BACKINGS = {"A": "tissue", "B": "tendrils", "C": "lattice"}   # survey W8: what 
 COMPARE = ROOT / ".tools" / "compare"
 
 
-SSD_RING_MM = 105.0   # the ship display drawing's outer reach from its centre: shield ring radius 100 + half its 9 px line
-BLOCKOUT = ROOT / "assets" / "ui" / "vhorr" / "organic" / "blockout.json"
-
-
-def ssd_to_glass(text):
-    """The page copy's ship display drawn centred in, and scaled to, the glass the blockout gives it (owner, 2026-11-01:
-    "this ship display should span the whole width"), as it would be in play, not at the page's own pocket size."""
-    slots = json.loads(BLOCKOUT.read_text())["layouts"]["desktop"]["slots"]
-    sl = next(s for s in slots if s["piece"] == "ssd.bezel")
-    gx, gy, gw, gh = next(q["rect"] for q in sl["protected"] if q["kind"] == "live-drawing")
-    cx, cy = gx - sl["rect"][0] + gw / 2, gy - sl["rect"][1] + gh / 2
-    k = (min(gw, gh) / 2 - 4.0) / SSD_RING_MM
-    old = "function ssdLive(x, S) { S.live.ssd(x, 230, 150,"
-    if old not in text:
-        raise SystemExit("backing: the page's ship display drawing line has changed")
-    return text.replace(old, f"function ssdLive(x, S) {{ x.translate({cx}, {cy}); x.scale({k:.4f}, {k:.4f}); "
-                             "x.translate(-230, -150); S.live.ssd(x, 230, 150,")
-
-
 def backing_pictures(console_dir, backing_dir, page, node_path, only="", name="brood-w-bg"):
     """W8's options: the whole console, with the owner's W1-W7 picks (console_dir, rendered from
     assets/ui/vhorr/organic/styles.json), over the battle filling the whole screen, with each backing
@@ -160,7 +141,7 @@ def backing_pictures(console_dir, backing_dir, page, node_path, only="", name="b
         if ro not in text:
             raise SystemExit("backing: the page's target readout line has changed")
         pg.write_text(text.replace(ro, "x.fillText(cs(s), window.BROOD_BACKING ? 512 : 40, h - (window.BROOD_BACKING ? 194 : 150) + i * 32)"))
-        pg.write_text(ssd_to_glass(pg.read_text()))
+        # (the page draws the ship systems display to its glass itself, from the manifest's live rectangle)
         r = subprocess.run(["node", str(ROOT / "tools" / "mockups" / "survey_option_shots.mjs"), str(pg), str(work), "console"],
                            capture_output=True, text=True, env={**os.environ, "NODE_PATH": node_path})
         if r.returncode:

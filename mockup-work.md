@@ -179,7 +179,11 @@ else's art):
   tentacles), helm D, weapons D and the bottom row D (tentacle wrap), name plate B (plain heavy leather), keys "both"
   (larvae for the big keys, low warts for the small ones and the tabs); then "survey completed, this is a good start, I
   still dont want a plain black backround on the ui area though". The space between the panels is survey W8 (tissue,
-  tendrils or lattice). Recorded in design.md, "The Brood's picks from the survey"; not yet built into the page (rule 0).
+  tendrils or lattice). Recorded in design.md, "The Brood's picks from the survey".
+- 2026-11-01: "this ship display should span the whole width", then survey W8 tissue and "nice, survey andswered, make
+  changes and publish that" (the approval of the Brood console under rule 0). Version 26 builds the Brood from the picks:
+  the tissue backing under the column, darkened so the panels stand off it, and the ship systems display across the
+  column's width.
 
 What the mockup shows:
 

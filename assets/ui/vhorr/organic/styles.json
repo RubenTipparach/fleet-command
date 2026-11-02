@@ -1,5 +1,5 @@
 {
- "source": "The owner's survey picks, section W (2026-11-01): W1 strips H, W2 ship systems display E, W3 helm D, W4 weapons D, W5 bottom row D, W6 name plate B, W7 keys: larvae for the big keys, low warts for the small keys and the tabs. The backing is open (survey W8).",
+ "source": "The owner's survey picks, section W (2026-11-01): W1 strips H, W2 ship systems display E, W3 helm D, W4 weapons D, W5 bottom row D, W6 name plate B, W7 keys: larvae for the big keys, low warts for the small keys and the tabs. W8 backing A, tissue (owner, 2026-11-01: \"nice, survey andswered, make changes and publish that\").",
  "styles": {
   "strip.top": "mixed", "strip.bottom": "mixed",
   "ssd.bezel": "hang",
@@ -9,5 +9,5 @@
   "nameplate": "plain"
  },
  "key_body": {"key.engage": "larva", "key.stop": "larva", "key.fire": "larva", "key.multiple": "larva"},
- "backing": null
+ "backing": "tissue"
 }
