@@ -8,6 +8,7 @@ recorded in `docs/artifacts/<name>/`.
 | Page | Mockup |
 |---|---|
 | `game-flow.html` | 1: primary game flow |
+| `concord-ships.html` | 5: Concord ships and damage |
 | `tracker.html` | the mockup tracker |
 | `lib/template.html` | the starting skeleton for a new page |
 
