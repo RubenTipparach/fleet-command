@@ -287,9 +287,12 @@ only by turning your beam; whether enemies should start a hold on their own is B
 ## 4f. The expand key (version 28)
 
 Owner, 2026-11-02: "expand button should look like this, be a circle, small", with a square icon of two diagonal arrows
-pointing out to its corners. Every panel's Expand pill becomes a small round key (26 px across, a 34 px touch area)
+pointing out to its corners. Every panel's Expand pill becomes a small round key (21 px across after the owner's "it should be 20% smaller", a
+29 px touch area)
 beside the panel's title: two arrows pointing out to the top-right and bottom-left corners; on an expanded panel they
-point in, and the key returns the panel. Its name (Expand, Return) shows on hover, as every icon key's does.
+point in, and the key returns the panel. Its name (Expand, Return) shows on hover, as every icon key's does. The title's black plate starts at the
+frame's top edge and stops at the content (22 px), so it breaks only its own frame's top arm, never the gap or the panel
+above (owner, 2026-11-02: "whatever background is around 'systems - resolute' is overlapping the upper border").
 
 ## 4e. The camera lock (version 27)
 

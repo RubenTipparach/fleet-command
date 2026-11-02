@@ -1526,12 +1526,15 @@ const FP = CON.kit['frame.panel'].m;
 function panel(id, r, title, big, noX) {
   const [x, y, w, h] = r; nine('frame.panel', x, y, w, h);
   const cx = x + FP[3], cy = y + FP[0], cw = w - FP[1] - FP[3], ch = h - FP[0] - FP[2];
-  g.font = '700 24px Antonio'; g.letterSpacing = '1px'; const tw = Math.min(g.measureText(title.toUpperCase()).width, cw - 160); g.letterSpacing = '0px';
-  const bw = noX ? -10 : 26;
-  const x1 = cx + cw - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, ty = cy - 29;
-  g.fillStyle = '#000'; g.fillRect(x0, ty, total, 26);
-  text(title.toUpperCase(), x0 + 8, ty + 22, '700 24px Antonio', CC.sky, 'left', tw, '1px');
-  if (!noX) expandKey(`${id}.xp`, x1 - 8 - bw / 2, ty + 13, 13, big, () => A.expand(id));
+  g.font = '700 22px Antonio'; g.letterSpacing = '1px'; const tw = Math.min(g.measureText(title.toUpperCase()).width, cw - 160); g.letterSpacing = '0px';
+  // the expand key, 20 % smaller than the 26 px first drawn (owner, 2026-11-02: "it should be 20% smaller")
+  const bw = noX ? -10 : 21;
+  // the title's plate starts at the frame's top edge, never above it (owner: "whatever background is around 'systems -
+  // resolute' is overlapping the upper border"): it breaks the top arm and stops short of the content
+  const x1 = cx + cw - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, ty = y;
+  g.fillStyle = '#000'; g.fillRect(x0, ty, total, 22);
+  text(title.toUpperCase(), x0 + 8, ty + 19, '700 22px Antonio', CC.sky, 'left', tw, '1px');
+  if (!noX) expandKey(`${id}.xp`, x1 - 8 - bw / 2, ty + 11, bw / 2, big, () => A.expand(id));
   return { x: cx, y: cy, w: cw, h: ch };
 }
 // The expand key (owner, 2026-11-02: "expand button should look like this, be a circle, small", with a square icon of
@@ -2573,7 +2576,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v29', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v30', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
