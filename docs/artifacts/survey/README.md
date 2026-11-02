@@ -26,3 +26,4 @@
 - 2026-11-02, cloud session: B26 added (torpedo hit chance by range, from the SFC2 manual); version id `1793651778-5ffd`.
 - 2026-11-02, cloud session (Concord ships thread): section A (A2-A9, Concord ships and damage, mockup 5) added on top of the live version (sections J and B from the battle console thread kept); version 14, version id `1793584895-3b88`.
 - 2026-11-02, cloud session (Concord ships thread): A10 added (the break-up direction) on top of the live version 15 (the battle console thread's B20-B22 kept); version 16, version id `1793592744-74a0`.
+- 2026-11-02, cloud session: B27 added (warp key colour by risk); version id `1793658956-e618`.

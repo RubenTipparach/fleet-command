@@ -73,3 +73,4 @@
 - Version 53 published 2026-11-02, version id `1793653035-1b6d`: system icons beside each name in Power, Allocation; a warp icon added to the Concord kit.
 - Version 54 published 2026-11-02, version id `1793658237-e7cb`: the warp key jumps when green (banks charged, course plotted, nothing refusing); arming plots the course; plotting ignores the heading and stops only with sensors out; clicks never cut power; no glow while plotting.
 - Version 55 published 2026-11-02, version id `1793658630-3165`: a banner names why a jump was refused or failed (risk and its biggest factor); plain-word reasons; Blocked instead of a risk while refused; a Log key opening the battle log; refusals in Caution; no more "coils" on the warp key.
+- Version 56 published 2026-11-02, version id `1793658994-5c72`: an Event log key in Comms opening the full log over the view (the view key renamed Event log).

@@ -313,7 +313,7 @@ past it it falls steeply toward the reach; overload stays a short-range double-d
 1.2 km (2/30 of the reach); proximity would be a third mode, half damage, usable only past the effective band, with a
 flatter long-range chance. Survey B26 asks whether to build it.
 
-## 4s. The warp key on the speed slider (versions 50 to 55)
+## 4s. The warp key on the speed slider (versions 50 to 56)
 
 Owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed slider". A Warp key now ends the speed
 slider in the bottom strip. It fills in the Concord blue as the banks charge toward the 40 E a jump needs, lights green
@@ -364,6 +364,9 @@ in a gravitational anomaly however", "slim it down height wise", "this box can b
     are no longer logged one by one (the Point defence station counts them).
   - **No "coils" on the warp key**: its card reads "Stored for the jump" and "Reactor power in"; with no free energy the
     key reads "Need power". (The reactor's confinement coils, on the Reactor page, are a different thing.)
+  - **Event log in Comms** (version 56; owner: "I need an event log button in comms somewhere", "a button to expand it
+    would be nice"): an Event log key in Comms opens the whole log over the view (the same panel as the view's Event log
+    key), and Comms keeps the latest few lines under it.
 
 ## 4r. Weapon ids, raids on one weapon, the held deck, 10 s volleys (version 49)
 
@@ -732,3 +735,4 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B24 | Pads per class: frigate 2, destroyer 3, cruiser 4, troop ship 6, starbase 8? | **As built** (provisional, survey B24) |
 | B25 | A queued crew member leaves the roster until beamed or removed? | **As built** (provisional, survey B25) |
 | B26 | Torpedo chance to hit by range after the reference (high to 8/30 of the reach, then a steep fall; proximity mode)? | Open (survey B26); not built |
+| B27 | Warp key colour by risk (green under 10 %, yellow to 30 %, red above) and the card naming the biggest factor? | Open (survey B27); not built |

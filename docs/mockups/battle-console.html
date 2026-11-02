@@ -2198,8 +2198,11 @@ function stComms(b, big) {
   LBL('Fleet orders', b.x, y + 13); y += 20;
   const hw = (b.w - 6) / 2;
   [['All attack', 'attack'], ['Form on me', 'escort'], ['All hold', 'hold'], ['Hunt', 'hunt']].forEach(([l, st], i) => button(`com.${st}`, b.x + (i % 2) * (hw + 6), y + Math.floor(i / 2) * 36, hw, 30, l, () => A.fleetOrder(st), { center: true }));
-  y += 76; LBL('Log', b.x, y + 13); y += 22;
-  const n = big ? 22 : 6;
+  // the event log (owner, 2026-11-02: "I need an event log button in comms somewhere"): opens the whole log over the view,
+  // the same panel as the Log key there; the latest lines stay listed here
+  y += 76; button('com.log', b.x, y, b.w, 36, 'Event log', () => { logOpen = true; sceneOpen = false; if (expanded) A.expand(expanded); }, { center: true, sel: () => logOpen }); y += 44;
+  LBL('Latest', b.x, y + 13); y += 22;
+  const n = big ? 22 : 4;
   for (const m of W.log.slice(-n).reverse()) { rich(b.x, y + 16, [[`${mmss(m.t)} ${m.who}: `, m.warn ? CC.caution : CC.lilac], [m.text, m.warn ? CC.caution : CC.text]], '600 17px Antonio', b.w); y += 24; }
 }
 function stRepair(b) {
@@ -3328,7 +3331,7 @@ function uiView() {
     g.beginPath(); const ax = sx + sw - 20, ay = vy + 27; if (sceneOpen) { g.moveTo(ax - 6, ay + 3); g.lineTo(ax + 6, ay + 3); g.lineTo(ax, ay - 4); } else { g.moveTo(ax - 6, ay - 3); g.lineTo(ax + 6, ay - 3); g.lineTo(ax, ay + 4); } g.closePath(); g.fill();
     const ob = SCENES[sceneId].objective; if (ob && !sceneOpen) rich(vx + 14, vy + 64, [[W.objDone ? 'COMPLETE · ' : 'OBJECTIVE · ', W.objDone ? CC.accord : CC.lilac], [ob.toUpperCase(), W.objDone ? CC.accord : CC.text]], '600 16px Antonio', vw * 0.62); }
   // the log key: the whole battle log over the view
-  button('v.log', vx + 474, vy + 12, 70, 30, 'Log', () => { logOpen = !logOpen; sceneOpen = false; }, { sel: () => logOpen, center: true });
+  button('v.log', vx + 474, vy + 12, 110, 30, 'Event log', () => { logOpen = !logOpen; sceneOpen = false; }, { sel: () => logOpen, center: true });
   if (W.notice && W.t - W.notice.t < NOTICE.notice_s) { const n = W.notice, nw = Math.min(620, vw - 60), nx = vx + (vw - nw) / 2, ny = vy + 120;
     g.font = '600 20px Antonio'; const words = n.text.toUpperCase().split(' '), lines = []; let cur = '';
     for (const wd of words) { const tr = cur ? cur + ' ' + wd : wd; if (g.measureText(tr).width > nw - 40 && cur) { lines.push(cur); cur = wd; } else cur = tr; } if (cur) lines.push(cur);
@@ -3370,7 +3373,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v55', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v56', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
@@ -3378,7 +3381,7 @@ function uiView() {
     const lx = vx + 14, ly = vy + 50, lw = Math.min(1040, vw - 28), rows = Math.max(4, Math.floor((vh - 180) / 26)), list = W.log.slice(-rows).reverse(), lh = 44 + Math.max(1, list.length) * 26;
     hit('v.log.box', lx, ly, lw, lh, {});
     g.fillStyle = 'rgba(0,0,0,0.9)'; g.beginPath(); g.roundRect(lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
-    LBL(`Battle log · ${W.log.length} messages`, lx + 16, ly + 26, lw - 32, CC.sky, 'left', 16);
+    LBL(`Event log · ${W.log.length} message${W.log.length === 1 ? '' : 's'}`, lx + 16, ly + 26, lw - 32, CC.sky, 'left', 16);
     if (!list.length) LBL('Nothing yet', lx + 16, ly + 56, lw - 32);
     list.forEach((q, i) => rich(lx + 16, ly + 56 + i * 26, [[`${mmss(q.t)}  ${q.who}: `, q.warn ? CC.caution : CC.lilac], [q.text, q.warn ? CC.caution : CC.text]], '600 18px Antonio', lw - 32));
   }
