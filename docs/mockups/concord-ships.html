@@ -1141,7 +1141,7 @@ function blowCrown(ship) {
   addEmitter(ship, P, base, V3(0, -1, 0), [{ type: 'fire', rate: 50, dur: 3, scale: 0.5 * s }, { type: 'smoke', rate: 10, dur: 6, scale: 0.6 * s }], 'debris');
 }
 function breakup(ship) {
-  if (ship.broken) return; ship.broken = true;
+  if (ship.broken) return; ship.broken = true; ship.hull = 0;
   for (const k in ship.sys) { ship.sys[k].health = 0; ship.sys[k].state = 'destroyed'; }
   const s = ship.C.length / 312, core = ship.corePos.clone(), cw = core.clone().applyMatrix4(ship.root.matrixWorld);
   for (const P of Object.values(ship.pieces)) {
@@ -1165,9 +1165,9 @@ function flash(pos, size, dur) {
   s.position.copy(pos); scene.add(s); oneshots.push({ obj: s, t: 0, dur, step(o, k) { o.obj.scale.setScalar(size * (0.4 + k)); o.obj.material.opacity = (1 - k) ** 2; } });
 }
 function shockwave(ship, pos, size) {
-  const m = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 96), new THREE.MeshBasicMaterial({ color: 0x9fd0ff, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.965, 1, 128), new THREE.MeshBasicMaterial({ color: 0x6fb4ff, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
   m.rotation.x = -PI / 2; m.position.copy(pos); scene.add(m);
-  oneshots.push({ obj: m, t: 0, dur: 2.6, step(o, k) { o.obj.scale.setScalar(size * Math.sqrt(k) + 1); o.obj.material.opacity = (1 - k) ** 1.5 * 0.8; } });
+  oneshots.push({ obj: m, t: 0, dur: 2.6, step(o, k) { o.obj.scale.setScalar(size * Math.sqrt(k) + 1); o.obj.material.opacity = (1 - k) ** 2 * 0.55; } });
 }
 const shardGeo = new THREE.TetrahedronGeometry(1, 0);
 const shards = new THREE.InstancedMesh(shardGeo, new THREE.MeshStandardMaterial({ color: 0xbfbcb4, metalness: 0.6, roughness: 0.5, emissive: 0x200800 }), 400);
