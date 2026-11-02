@@ -288,6 +288,40 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4q. Transporter pads, the boarding queue and the tug of war (version 48)
+
+Owner, 2026-11-02, with the reference game's boarding panel: "in target window neeed to show which faction emblem is
+controlling, and show their numbers vs mine", "you can only transport a few at a time, 1,2,3,4,5 up to 8 depending on ship
+size, for this medium ship size I recommend a pad of 4, cooldown depends on amount o energy allocated and how many pads
+are active. I can click on pads individually to command maual transport. transport will follow a queue pattern",
+"instad of showing full names, I recommend showing a set of buttons with icons representing rolls. and a group of boxes
+with some scrolling arrows that light up if it can page up or page down on the list", "top half queuing mechanism and
+rolls to queue, bottom half the pads to enegerize, or energize all and the portrait with a control bar (another tug of
+war display) ... no need for that grid, we have our queuing system for that, if I hover over the number show me boarding
+party composition", then "boarding party composition can be more "visual" same with the expanded view".
+
+- **Pads.** Each class has `pads` (frigates 2, destroyers and the Vos corsair 3, cruisers 4, troop ships 6, starbases 8).
+  A pad beams one person, or one load for the inventory transporter and mines, then recharges. The transporter's energy
+  is shared by the pads recharging: a pad takes `pad_charge_s` 8 s at 1 energy point alone, times the number charging
+  at once (four fired together at 8 points: 4 s each). One rule replaces the old single transporter charge, so
+  capture, raids, the inventory transporter and mines all spend pads (6.1).
+- **The queue.** Capture queues marines, medics, engineers, hackers and pilots; Hit and run queues marines and
+  demolition. A role key (a pictogram, the count still aboard in its corner) takes one off the roster into the queue;
+  a box clicked puts them back. Ten boxes show, two rows of five, the head in green; the arrows beside them page by ten
+  and light only when there is a page that way. Up to 30 queued per mode.
+- **Energizing.** A charged pad clicked beams the head of the queue; Energize all deals the queue to every charged pad in
+  order. In Capture each joins the party aboard (the first makes it); in Hit and run each joins the raid on the picked
+  subsystem (the first starts its clock). The order matters: specialists sent before marines face the defenders alone.
+  Expanded, each charged pad shows who it will send.
+- **The portrait and the tug of war.** The holder's emblem (the Concord's ring of five, the Kethran's slotted wedge, the
+  Vos's three rakes; ours once captured) in a frame, and beside it the bar: our party from the left in Sky, its
+  defenders from the right in red, the counts at the ends. Hovering a count shows that side as role chips (pictogram and
+  count). Expanded, the chips show under the bar, and the role keys, queue boxes and pads grow. The same bar and emblem
+  sit in the Target box, so the fight reads from the view (one `tugBar`, 6.1).
+- **The boarding scene** gives the Resolute 8 points in the transporter and leaves the Rattlejaw 3 marines, so a capture
+  in waves of four is winnable; the scripted shot queues 8 marines, a medic, a hacker, an engineer and a pilot.
+- Open questions B23 (the pad pace), B24 (pads per class) and B25 (queued crew leave the roster) are in the survey.
+
 ## 4p. Asteroids rebuilt, micrometeor clouds, choosing the target (version 46)
 
 - **Asteroid meshes** (owner, 2026-11-02: "asteroid meshes need work!"): the first version jittered each triangle's
@@ -597,3 +631,6 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B20 | High energy turns: 240 degrees a second, 3 E, a chance that drops 20 points a turn and recovers 1 a second, a 6 s breakdown on failure? | **As built** (section 4h) |
 | B21 | Erratic manoeuvres: hit chances x 0.75 both ways, turn rate x 0.8, no launches, mines or tractors? | **As built**, after the reference game's restrictions |
 | B22 | Ships four times tougher for the demo: keep it as the game's scale, or a demo setting only? | **A demo setting** until combat is tuned in its own change |
+| B23 | Pads recharge 8 s at 1 E alone, the energy shared among the pads charging? | **As built** (provisional, survey B23) |
+| B24 | Pads per class: frigate 2, destroyer 3, cruiser 4, troop ship 6, starbase 8? | **As built** (provisional, survey B24) |
+| B25 | A queued crew member leaves the roster until beamed or removed? | **As built** (provisional, survey B25) |

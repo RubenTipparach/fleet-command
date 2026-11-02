@@ -200,7 +200,7 @@ side is down. A ship whose defenders are all down SHALL join the captain's fleet
 - **THEN** the Rattlejaw strikes its colours, joins the fleet on Escort, and can be commanded
 
 ### Requirement: The transporter has three modes
-The transport station SHALL offer Capture (a boarding party picked by role), Hit & run (a squad on one subsystem) and
+The transport station SHALL offer Capture (a boarding party queued by role), Hit & run (a squad queued for one subsystem) and
 Inventory (goods, a VIP and mines to or from a friendly ship, station or planet in reach). A capture SHALL take a ship
 only when, with its defenders down, an engineer, a pilot and a hacker or the VIP are aboard. Demolition marines SHALL be
 lost more often the fewer combat marines escort them.
@@ -212,6 +212,21 @@ lost more often the fewer combat marines escort them.
 #### Scenario: A delivery
 - **WHEN** the captain takes 10 crates from Harbor Nine, flies within 4 km of Tessaly's surface and sends them
 - **THEN** Tessaly reports the delivery received in full
+
+### Requirement: Boarding goes by queue through the transporter pads
+A ship SHALL have a number of transporter pads set by its class (2 to 8), each beaming one person and then recharging,
+the transporter's energy shared among the pads recharging. The captain SHALL queue boarders by role (the role keys
+showing how many are still aboard), take any queued member off the queue, and energize one pad or all charged pads,
+each sending the head of the queue. The transport panel and the Target box SHALL show the target's holder's emblem and a
+tug of war of our boarders against its defenders, each side's members shown by role on hover.
+
+#### Scenario: Energize all with four pads
+- **WHEN** the Resolute (four pads, all charged) has six marines queued and the captain presses Energize all
+- **THEN** four marines beam aboard the target, two stay queued, and all four pads recharge together
+
+#### Scenario: A pad on its own
+- **WHEN** one pad is charged and the captain clicks it with a hacker at the head of the queue
+- **THEN** the hacker alone beams over and the pad recharges
 
 ### Requirement: Craft strip defences and missiles finish the job
 Fighters on the Defences mission SHALL damage the target's point defence first, then its guns; a missile barrage SHALL
