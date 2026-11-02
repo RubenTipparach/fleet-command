@@ -1739,9 +1739,12 @@ function helmGlyph(kind, cx, cy, r, col) {
     if (kind === 'orbit.dir') { G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText(d > 0 ? 'CW' : 'CCW', cx, cy + r * 0.04); G.textBaseline = 'alphabetic'; } }
   else if (kind === 'hold_range') { target(cx + r * 0.42, cy, r * 0.36); line([[cx - r * 0.8, cy], [cx - r * 0.35, cy]]); head(cx - r * 0.12, cy, 0, r * 0.32, r * 0.3);
     G.lineWidth = lw * 0.7; line([[cx - r * 0.02, cy - r * 0.45], [cx - r * 0.02, cy + r * 0.45]]); G.lineWidth = lw; }
-  else if (kind === 'hit_run') { target(cx + r * 0.45, cy - r * 0.3, r * 0.3);
-    line([[cx - r * 0.75, cy + r * 0.55], [cx + r * 0.05, cy - r * 0.08]]); head(cx + r * 0.2, cy - r * 0.2, -0.65, r * 0.32, r * 0.28);
-    line([[cx + r * 0.25, cy + r * 0.2], [cx - r * 0.35, cy + r * 0.72]]); head(cx - r * 0.55, cy + r * 0.9, 2.4, r * 0.32, r * 0.28); }
+  else if (kind === 'hit_run') {
+    // a strafing pass: up toward the target, a tight turn just short of it, and back down and away
+    target(cx + r * 0.05, cy - r * 0.62, r * 0.26);
+    const p0 = [cx - r * 0.62, cy + r * 0.8], ctl = [cx + r * 0.02, cy - r * 0.62], p3 = [cx + r * 0.45, cy + r * 0.42];
+    G.beginPath(); G.moveTo(p0[0], p0[1]); G.quadraticCurveTo(ctl[0], ctl[1], p3[0], p3[1]); G.stroke();
+    const a = Math.atan2(p3[1] - ctl[1], p3[0] - ctl[0]); head(p3[0] + Math.cos(a) * r * 0.36, p3[1] + Math.sin(a) * r * 0.36, a, r * 0.4, r * 0.32); }
   else if (kind === 'erratic') { line([[cx - r * 0.1, cy + r * 0.8], [cx + r * 0.35, cy + r * 0.4], [cx - r * 0.35, cy], [cx + r * 0.3, cy - r * 0.38]]); head(cx + r * 0.05, cy - r * 0.78, -P / 2 - 0.45, r * 0.42, r * 0.34); }
   else if (kind === 'estop') { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.8); } G.closePath(); G.fill();
     G.fillStyle = CC.signal; G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText('STOP', cx, cy + r * 0.03); G.textBaseline = 'alphabetic'; }
@@ -2898,7 +2901,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v36', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v37', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

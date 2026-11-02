@@ -303,7 +303,8 @@ way we can use the other half for more maneuver types like hit and run, to move 
 a slider with two handles to pick min and max range"). The right half, **Runs and evasion**: **Hit and run** runs in at
 full speed to the minimum range, then away to the maximum, and again, its range set by a **two-handled slider** (the
 handle nearest the pointer moves; at least 0.5 km apart); measured with 3-6 km: in from 9.3 km, out at 3.0, in at 6.0,
-repeating every 45-50 s. **Evasive manoeuvres** moved here from the HET pad (owner: "evasive maneuvers technically isn't
+repeating every 45-50 s. Its icon (version 37, owner: "hit and run icons sucks") is a strafing pass: a path rising toward a
+target, a tight turn just short of it, and back down and away. **Evasive manoeuvres** moved here from the HET pad (owner: "evasive maneuvers technically isn't
 an HET ability btw, so clicking it is a toggle and doesn't consume HET ability"): a toggle; it never spends the HET
 chance (it still makes a HET likelier to fail while it is on, after the reference game). The pad's bottom row keeps the
 emergency stop (under free heading) and the free-angle HET.

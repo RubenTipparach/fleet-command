@@ -54,3 +54,4 @@
 - Version 34 published 2026-11-02, version id `1793590854-3845`: hull bars in the view under the targeted enemy and your ship (docked and expanded); the helm ring steers in the expanded view.
 - Version 35 published 2026-11-02, version id `1793591099-eefd`: helm icons redrawn like signage (road-sign turn arrows, U-turn, straight ahead, STOP); Approach and hold distance with its distance slider; Orbit with a CW/CCW switch.
 - Version 36 published 2026-11-02, version id `1793595050-ad9c`: a big ship explosion (white-hot core, blue shockwave ring, plasma cloud, sparks, burning chunks; Destroy target in the menu); the helm's target orders in the left half, Hit and run with a two-handled range slider and Evasive manoeuvres (a toggle, out of the HET pad) in the right.
+- Version 37 published 2026-11-02, version id `1793595346-a7ae`: the hit and run icon redrawn as a strafing pass (up toward a target, a tight turn short of it, back down and away).
