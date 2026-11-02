@@ -288,6 +288,18 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4n. Target view and camera lock (version 42)
+
+Owner, 2026-11-02: "break camera lock into two buttons, target view - this allows you to move camera to target view, the
+camera slerps to target in this case. untoggling it slerps back to the player. targeting other ships while in target
+view lets you kind of leap around to other ships this way. camera lock, focuses camera on the player from target view".
+Two keys under the Target box. **Target view** (a toggle): the camera's orbit centre glides to the targeted ship over
+1.1 s, eased in and out, keeping the camera's angle and distance, then follows that ship; locking another target glides
+it there in turn; switching it off glides back to your ship. **Camera lock**: from target view it brings the camera
+back to your ship, and it turns the camera to face the target (the smoothed yaw of section 4e), as before; a drag frees
+it. Measured: target view settled on the Vorrak, leapt to the Ashkar when it was targeted, came back to the Resolute
+when switched off, and camera lock from target view landed on the Resolute, locked.
+
 ## 4m. Objectives, unarmed test ships, decisive tools (version 41)
 
 Owner, 2026-11-02: "show proper scene selection here, and show the objective of current scene. In mine scene, no weapons

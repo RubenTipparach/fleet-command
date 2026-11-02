@@ -1205,7 +1205,10 @@ const A = {
   // right click. Clicking and dragging camera around frees up the lock").
   lock: (id) => { const s = W.player, t = ship(id); if (!t || !t.alive || t.side === s.side) return; s.target = id; focus = id; camLock = true; say('Tactical', `Target locked: ${t.name}.`); },
   // The camera lock on its own, from the Target box ("you can lock again under the enemy ship systems view box").
-  camLock: () => { camLock = !camLock && !!tgt(W.player); },
+  // camera lock: back to your own ship (out of target view) and turned to face the target
+  camLock: () => { const on = !camLock || camTargetView; camTargetView = false; camLock = on && !!tgt(W.player); },
+  // target view: the camera glides to the target and orbits it; off, it glides back to your ship
+  targetView: () => { camTargetView = !camTargetView && !!tgt(W.player); if (camTargetView) camLock = false; },
   nextTarget: () => { const s = W.player, foes = enemiesOf(s).sort((a, b) => distU(s, a) - distU(s, b)); if (!foes.length) return; const i = foes.findIndex((f) => f.id === s.target); A.lock(foes[(i + 1) % foes.length].id); },
   power: (sys, n) => { const s = W.player; s.power[sys] = clamp(n, 0, Math.max(Math.min(s.power[sys], n), Math.min(10, powerRoom(s, s.power[sys])))); if (sys === 'sensors') { s.ecm = Math.min(s.ecm, s.power.sensors); s.eccm = Math.min(s.eccm, s.power.sensors - s.ecm); } if (sys === 'engines') s.vOrder = Math.min(s.vOrder, maxSpeed(s)); },
   setCoil: (i, o) => { const c = W.player.reactor.coils; c[i] = clamp(o, -1, 1); },
@@ -1290,7 +1293,7 @@ const A = {
   station: (id) => { station = id; if (expanded && expanded !== 'station') expanded = 'station'; buildPanel('station'); },
   shipTab: (id) => { shipTab = id; buildPanel('ship'); },
   menu: () => { menuOpen = !menuOpen; renderSheet(); },
-  reset: () => { newWorld(); camLock = false; paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
+  reset: () => { newWorld(); camLock = false; camTargetView = false; paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
 };
 // How many of a role are aboard s (combat marines are s.marines; the rest are s.team).
 const have = (s, role) => role === 'marines' ? s.marines : role === 'vip' ? (s.vip ? 1 : 0) : s.team[role] || 0;
@@ -2751,11 +2754,21 @@ function sizeView(r) {
   camera.setViewOffset(r[2], r[3], 0, -(SHIP_Y[mode] - 0.5) * r[3], r[2], r[3]);
   camera.updateProjectionMatrix();
 }
-function follow() {
-  const s = W.player, p = new THREE.Vector3(s.x, 0, s.z);
-  if (!lastFollow || lastFollow.id !== s.id) { const off = lastFollow ? camera.position.clone().sub(controls.target) : new THREE.Vector3(0, 5, 13); controls.target.copy(p); camera.position.copy(p).add(off); }
-  else { const d = p.clone().sub(lastFollow.p); camera.position.add(d); controls.target.add(d); }
-  lastFollow = { id: s.id, p };
+// The camera's focus (owner, 2026-11-02: "break camera lock into two buttons, target view - this allows you to move
+// camera to target view, the camera slerps to target in this case. untoggling it slerps back to the player. targeting
+// other ships while in target view lets you kind of leap around to other ships this way. camera lock, focuses camera on
+// the player from target view"): the orbit centre is your ship, or the target in target view. When the focus changes
+// the centre glides from where it was to the new ship over CAM.glide_s, eased in and out, the camera keeping its angle
+// and distance; then it follows that ship exactly.
+const CAM = { glide_s: 1.1 };
+let camTargetView = false, camGlide = null;
+function follow(dt = 0) {
+  const s = W.player, t = tgt(s), f = camTargetView && t ? t : s, p = new THREE.Vector3(f.x, 0, f.z);
+  if (!lastFollow) { controls.target.copy(p); camera.position.copy(p).add(new THREE.Vector3(0, 5, 13)); camGlide = null; lastFollow = { id: f.id }; return; }
+  if (lastFollow.id !== f.id) { camGlide = { from: controls.target.clone(), k: 0 }; lastFollow = { id: f.id }; }
+  let at = p;
+  if (camGlide) { camGlide.k = Math.min(1, camGlide.k + dt / CAM.glide_s); const e = camGlide.k * camGlide.k * (3 - 2 * camGlide.k); at = camGlide.from.clone().lerp(p, e); if (camGlide.k >= 1) camGlide = null; }
+  const off = camera.position.clone().sub(controls.target); controls.target.copy(at); camera.position.copy(at).add(off);
 }
 // Click picks a ship: left click or tap focuses it; right click locks it (the owner's "point and right click"); a left
 // click on empty space is the helm (A.helmTo).
@@ -2775,7 +2788,7 @@ let camLock = false, camYawVel = 0;
 const CAM_LOCK = { omega_s: 2.5, max_deg_s: 90 };
 function camLockStep(dt) {
   const s = W.player, t = tgt(s);
-  if (!camLock || !t || dt <= 0) { if (!camLock) camYawVel = 0; return; }
+  if (!camLock || camTargetView || !t || dt <= 0) { if (!camLock) camYawVel = 0; return; }
   const off = camera.position.clone().sub(controls.target), want = Math.atan2(-(t.x - s.x), -(t.z - s.z)), cur = Math.atan2(off.x, off.z);
   const d = wrap(want - cur), w = CAM_LOCK.omega_s, vmax = CAM_LOCK.max_deg_s * DEG;
   camYawVel = clamp(camYawVel + (w * w * d - 2 * w * camYawVel) * dt, -vmax, vmax);
@@ -2941,10 +2954,12 @@ function uiView() {
     g.fillStyle = '#000'; g.fillRect(bx + 2, by + 2, ir[2] - 4, ir[3] - 4); nine('frame.inset', bx, by, ir[2], ir[3]);
     LBL(`Target · ${t.name}`, bx + 18, by + 34, ir[2] - 36, CC.sky, 'left', 18);
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false, 'tgt')); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
-    button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
+    const hw5 = (ir[2] - 6) / 2;
+    button('v.tview', bx, by + ir[3] + 6, hw5, 30, 'Target view', A.targetView, { sel: () => camTargetView, center: true });
+    button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v41', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v42', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -3009,7 +3024,7 @@ function drawUI() {
   PREV = HITS;
 }
 function render(dt) {
-  follow(); camLockStep(dt); controls.update();
+  follow(dt); camLockStep(dt); controls.update();
   syncScene(dt);
   const w = VIEW[2] * S, h = VIEW[3] * S;
   renderer.info.reset(); renderer.setScissorTest(false); renderer.setViewport(0, 0, w, h); renderer.clear();
@@ -3034,7 +3049,7 @@ function frame(now) {
 // Named shots for tools/mockups/shoot.mjs: each replays the battle from its seed for a fixed number of steps.
 function scripted(steps, then, sc = 'battle') {
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(raidPick, { marines: 2, demo: 0 }); Object.assign(capPick, { marines: 8, demo: 0, medics: 1, engineers: 1, hackers: 1, pilots: 1 });
-  newWorld(sc); camLock = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
+  newWorld(sc); camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
   if (sc === 'battle') { W.player.engaged = true; W.player.order = 'intercept'; W.player.vOrder = maxSpeed(W.player); }
   placingHet = false;
