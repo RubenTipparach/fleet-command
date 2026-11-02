@@ -1484,12 +1484,13 @@ function wireInput() {
     if (h) { e.stopPropagation(); e.preventDefault(); ACTIVE = h.id; HOT = h.id; if (h.drag) { DRAG = h; h.drag(px, py, true); } return; }
     if (!inView(px, py)) e.stopPropagation();
     // a press (left button or a touch) on or near the helm ring steers: the ship's ordered heading follows the pointer
-    else if (e.button === 0 && !expanded && !placingHet && !placingMine && nearRing(e)) { STEER = true; down = null; e.stopPropagation(); e.preventDefault(); const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); }
+    // the ring steers in the expanded view too (owner, 2026-11-02: "I cant turn the ship in expanded view either")
+    else if (e.button === 0 && !placingHet && !placingMine && nearRing(e)) { STEER = true; down = null; e.stopPropagation(); e.preventDefault(); const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); }
   }, true);
   addEventListener('pointermove', (e) => {
     const [px, py] = refXY(e); PX = px; PY = py;
     if (STEER) { const q = planeAt(e); if (q) A.helmTo(q.x, q.z, true); e.stopPropagation(); root.style.cursor = 'grabbing'; return; }
-    ringHot = inView(px, py) && !expanded && !topAt(px, py) && nearRing(e);
+    ringHot = inView(px, py) && !topAt(px, py) && nearRing(e);
     if (DRAG) { DRAG.drag(px, py, false); e.stopPropagation(); return; }
     const h = topAt(px, py); HOT = h ? h.id : null;
     root.style.cursor = h ? (h.cursor || (h.click || h.drag ? 'pointer' : 'default')) : ringHot ? 'grab' : '';
@@ -2711,6 +2712,14 @@ function targetBracket(px, py, lock) {
   if (lock) { const pulse = 0.65 + 0.35 * Math.sin(performance.now() / 160); g.globalAlpha = pulse; corners(116, 96, 16, 2.5); g.globalAlpha = 1;
     g.fillStyle = CC.alert; g.font = '700 14px Antonio'; g.textAlign = 'center'; g.fillText('SEEKER LOCK', px, py - 56); }
 }
+// A ship's hull in the view: a short bar and its percentage, green above 60 %, amber above 30 %, red below; the hull
+// fraction is the same one the top strip's hull bars show (6.1).
+function hullBar(px, py, o) {
+  const f = clamp(o.hull / CLASSES[o.cls].hull, 0, 1), col = f > 0.6 ? CC.accord : f > 0.3 ? CC.caution : CC.alert, w = 92, h = 7;
+  g.fillStyle = 'rgba(0,0,0,0.6)'; g.fillRect(px - w / 2 - 2, py - 2, w + 4, h + 4);
+  g.fillStyle = CC.deep; g.fillRect(px - w / 2, py, w, h); g.fillStyle = col; g.fillRect(px - w / 2, py, w * f, h);
+  g.fillStyle = col; g.font = '700 14px Antonio'; g.textAlign = 'left'; g.fillText(`${Math.round(f * 100)}%`, px + w / 2 + 6, py + h);
+}
 function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; return [VIEW[2] - w - 16, 14, w, h]; }
 // Over the 3D view: brackets and names, the readout, the last message, the Target box, the lock key, the mockup badge.
 function uiView() {
@@ -2732,6 +2741,9 @@ function uiView() {
     else { g.strokeStyle = col; g.lineWidth = f ? 2.5 : 1.5; g.globalAlpha = f ? 1 : 0.7; g.beginPath(); g.arc(px, py, f ? 26 : 16, 0, 2 * P); g.stroke(); g.globalAlpha = 1; }
     g.fillStyle = locked ? CC.text : col; g.font = `600 ${locked ? 20 : 16}px Antonio`; g.textAlign = 'center';
     g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? (seekerLock(s, o) ? 72 : 58) : 34));
+    // the targeted enemy's hull, always, under its bracket and name (owner, 2026-11-02: "always show current targeted
+    // enemy health ... even in the un-expanded view")
+    if (locked) hullBar(px, py + (seekerLock(s, o) ? 84 : 70), o);
     if (f && !locked && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id];
   }
   for (const w of W.wells) { const v = new THREE.Vector3(w.x, 0, w.z).project(camera); if (v.z >= 1) continue;
@@ -2743,7 +2755,9 @@ function uiView() {
   for (const c of W.craft) { if (c.kind !== 'shuttle') continue; const v = new THREE.Vector3(c.x, 0, c.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.strokeStyle = CC.caution; g.lineWidth = 2; g.beginPath(); g.arc(px, py, 9, 0, 2 * P); g.stroke();
     g.fillStyle = CC.caution; g.font = '600 14px Antonio'; g.textAlign = 'center'; g.fillText('SHUTTLE · DISGUISED', px, py - 16); }
-  if (!expanded) helmArc(vw, vh, s);
+  // your own hull under your ship ("and my ship health too")
+  if (s.alive) { const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z < 1) hullBar((v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh + 74, s); }
+  helmArc(vw, vh, s);
   g.restore();
   if (expanded) { LBL('Live · tap to return', vx + vw / 2, vy + 28, 0, CC.sky, 'center', 18); return; }
   button('v.shields', vx + 14, vy + 12, 120, 30, 'Shield view', () => { showShields = !showShields; }, { sel: () => showShields, center: true });
@@ -2769,7 +2783,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v33', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v34', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

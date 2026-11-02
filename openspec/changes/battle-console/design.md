@@ -288,6 +288,15 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4j. Hull bars in the view, and steering in the expanded view (version 34)
+
+Owner, 2026-11-02: "can you show enemy ship health in this? and my ship health too? always show current targeted enemy
+health in this please? (even in the un-expanded view)", and "I cant turn the ship in expanded view either". The 3D view
+draws a **hull bar** (92 px, green above 60 %, amber above 30 %, red below, with the percentage) under the targeted
+enemy's bracket and name, and under your own ship, both docked and in the expanded view's strip; the fraction is the
+same one the top strip's hull bars show. In the **expanded view** the helm ring is drawn and steers by dragging it, as
+docked; a click elsewhere in the strip still returns the panel.
+
 ## 4h. The helm, rebuilt (version 33)
 
 Owner, survey B4: "The original game had free heading, intercept, follow+match speed, orbit (ccw/cw toggle). High energy
