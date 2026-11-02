@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Concord Ships</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Mockup 5 (OpenSpec changes concord-ship-look and ship-damage-visuals, mockup-work.md): the Concord's three ship
+   classes at true scale, their livery, markings, plating and baked hull lights, and how each subsystem shows its
+   damage on the ship, up to a nacelle shot off and the ship breaking apart.
+   Layout: the battle fills the screen; one panel of tabs sits down the left (a bottom sheet in portrait) and the
+   camera's centre is shifted so the ship sits in the free area. One dark look: space, and the Concord's own palette
+   (console-skins design: Signal, Sky, Lilac, Accord, Alert on black). */
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: rgba(6, 10, 22, 0.9); --rule: #1b2a6b;
+  --ink: #eef3ff; --dim: #93a2c8; --faint: #5b6890;
+  --signal: #2f62e0; --sky: #3fa9f0; --lilac: #b7a6f2; --accord: #2fbf5a; --alert: #e8352b; --amber: #f2a33a;
+  --display: "Antonio", "Arial Narrow", sans-serif;
+  --body: "Barlow Semi Condensed", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --pw: 360px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.4 var(--body); overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+#panel { position: fixed; left: 0; top: 0; bottom: 0; width: var(--pw); z-index: 2; display: flex; flex-direction: column;
+  background: var(--panel); border-right: 2px solid var(--rule);
+  padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 14px; }
+#panel header { display: grid; gap: 4px; padding-bottom: 8px; }
+#panel h1 { margin: 0; font: 700 26px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
+#panel h1 span { color: var(--sky); }
+.master { color: var(--lilac); font-size: 13px; }
+.sub { margin: 0; color: var(--dim); font-size: 13px; }
+.sub code { font: 500 11px/1 var(--mono); color: var(--faint); }
+.tabs { display: flex; gap: 6px; padding-bottom: 8px; }
+.tabs button { flex: 1; min-height: 44px; border: 0; border-radius: 22px; background: var(--rule); color: var(--dim);
+  font: 600 16px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.tabs button[aria-selected="true"] { background: var(--signal); color: var(--ink); }
+.scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 4px; }
+.tab { display: grid; gap: 14px; padding-bottom: 12px; }
+.grp { display: grid; gap: 6px; }
+.grp h2 { margin: 0; font: 600 14px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--lilac); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.row button, .sys button { min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--rule); border-radius: 22px;
+  background: transparent; color: var(--ink); font: 500 14px/1 var(--body); }
+.row button[aria-pressed="true"] { background: var(--signal); border-color: var(--signal); }
+.row button.warn { border-color: #6b1f1a; }
+.row button:hover, .sys button:hover { border-color: var(--sky); }
+.hint { margin: 0; color: var(--dim); font-size: 13px; }
+.sys { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px; }
+.sysname { min-width: 0; display: grid; gap: 3px; }
+.sysname b { font: 600 15px/1.1 var(--display); letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar { height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: var(--accord); }
+.state { font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.byeye .bar, .byeye .state { visibility: hidden; }
+.notes { display: grid; gap: 10px; font-size: 14px; }
+.notes h3 { margin: 0; font: 600 15px/1.1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--sky); }
+.notes p { margin: 0; color: var(--dim); }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: grid; gap: 4px; }
+.tablewrap { overflow-x: auto; }
+.notes table { border-collapse: collapse; font-size: 12px; min-width: 520px; }
+.notes th, .notes td { text-align: left; vertical-align: top; padding: 4px 6px; border-bottom: 1px solid var(--rule); color: var(--dim); }
+.notes th { color: var(--ink); font-weight: 600; }
+
+#hud { position: fixed; z-index: 2; top: max(10px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: min(460px, calc(100vw - var(--pw) - 48px)); display: grid; gap: 4px; justify-items: end; pointer-events: none; text-align: right; }
+#status { font: 600 18px/1.15 var(--display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink); text-shadow: 0 0 6px #000; }
+#status.bad { color: var(--amber); }
+#tip { font-size: 13px; color: var(--dim); text-shadow: 0 0 4px #000; }
+#meter { font: 500 11px/1 var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 900px) { :root { --pw: 300px; } #panel h1 { font-size: 22px; } }
+@media (max-width: 900px) and (max-height: 500px) { .sub { display: none; } }
+@media (max-aspect-ratio: 3/4) {
+  #panel { top: auto; width: auto; right: 0; height: 50%; border-right: 0; border-top: 2px solid var(--rule);
+    padding-top: 10px; padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  #panel header { grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 10px; }
+  .sub { display: none; }
+  #hud { max-width: calc(100vw - 32px); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div id="stage"></div>
+<aside id="panel" aria-label="Controls">
+  <header>
+    <h1>Concord <span>Ships</span></h1>
+    <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+    <p class="sub">Mockup 5. <code>concord-ship-look</code>, <code>ship-damage-visuals</code>. Drag to orbit, pinch or scroll to zoom, click the hull to fire.</p>
+  </header>
+  <div class="tabs" role="tablist">
+    <button id="tab-ships" role="tab" aria-selected="true" data-tab="ships">Ships</button>
+    <button id="tab-damage" role="tab" aria-selected="false" data-tab="damage">Damage</button>
+    <button id="tab-notes" role="tab" aria-selected="false" data-tab="notes">Notes</button>
+  </div>
+  <div class="scroll">
+    <section class="tab" id="pane-ships">
+      <div class="grp"><h2>Ship</h2><div class="row" id="shipRow"></div></div>
+      <div class="grp"><h2>Light</h2><div class="row" id="lightRow"></div></div>
+      <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
+      <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
+      <p class="hint" id="classNote"></p>
+    </section>
+    <section class="tab" id="pane-damage" hidden>
+      <div class="grp"><h2>Fire with a click</h2><div class="row" id="weaponRow"></div></div>
+      <div class="grp"><h2>Holes</h2><div class="row" id="holeRow"></div></div>
+      <div class="grp"><h2>Scenarios</h2><div class="row" id="scenRow"></div></div>
+      <div class="grp"><h2>Systems</h2><div id="sysList" class="grp"></div></div>
+      <div class="grp"><h2>Time</h2><div class="row" id="timeRow"></div></div>
+    </section>
+    <section class="tab notes" id="pane-notes" hidden>
+      <h3>Windows give the scale</h3>
+      <p>Every window is person sized, 1.1 by 0.6 m, on every class, and every row is one deck, 3.4 m apart. Count them: two rows on a corvette's rim, five decks through the cruiser's saucer. Runs of 4 to 12 are rooms, gaps are ribs, about one in five is dark. The Scale view stands a 1.8 m figure beside them.</p>
+      <h3>Head and legs</h3>
+      <p>The disc is the head, the crown on it the brain (the bridge); the nacelles hang on bent pylons like legs. Rival empires will read as a bird's head and wings, the hunters as claws (survey A8).</p>
+      <h3>Livery and markings</h3>
+      <ul>
+        <li>Bastion cruiser: ceremonial. Twin Signal bands, a Lilac pinstripe, the crest, few service marks.</li>
+        <li>Lantern frigate: working. Hatch numbers, pod rings, docking targets, walkways, red rescue marks.</li>
+        <li>Swift corvette: minimal. One racing stripe and the registry.</li>
+      </ul>
+      <h3>Plating tells how it was built</h3>
+      <p>Cruiser: rings laid in a yard. Frigate: patchwork, plates replaced in the field. Corvette: long strakes that lead the eye forward. Each plate has its own shine.</p>
+      <h3>Lit for the dark</h3>
+      <p>Registry, name and crest sit in floodlight pools; lamps in the hull graze the plating; windows glow; port red, starboard green, white strobes, red beacons. Try Shadow side and No sun.</p>
+      <h3>Reading damage by eye</h3>
+      <div class="tablewrap"><table>
+        <tr><th>System</th><th>Damaged</th><th>Critical</th><th>Destroyed</th></tr>
+        <tr><td>Nacelle</td><td>grille flickers, wisps</td><td>violet plasma jets</td><td>snaps at the knee, tumbles away</td></tr>
+        <tr><td>Reactor</td><td>coolant leak, white-cyan gas</td><td>core pulses red, ship lights flicker</td><td>core breach, ship breaks apart</td></tr>
+        <tr><td>Bridge</td><td>smoke, windows flicker</td><td>dark, fire venting</td><td>crown blown off</td></tr>
+        <tr><td>Weapons</td><td>sparks at mounts</td><td>strips dark</td><td>mounts cratered</td></tr>
+        <tr><td>Shields</td><td>dish flickers</td><td>dish dark, sparks</td><td>no bubble, hits reach the hull</td></tr>
+        <tr><td>Impulse</td><td>sputter, black smoke</td><td>a vent dark, fire</td><td>dark, burning</td></tr>
+        <tr><td>Life support</td><td>a section flickers</td><td>section dark, red light inside</td><td>every section dark</td></tr>
+      </table></div>
+      <p>Orange is fire, cyan-white is coolant, violet is plasma, red light in a hole is people, sparks are power. Broken edges are charred toward the break.</p>
+    </section>
+  </div>
+</aside>
+<div id="hud"><div id="status"></div><div id="tip"></div><div id="meter"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(async function () {
+'use strict';
+const { OrbitControls } = THREE;
+const PI = Math.PI, TAU = Math.PI * 2;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// ---------------------------------------------------------------------------------------------------------------
+// Seeded randomness: every texture, hit and particle comes from a seeded generator, so a shot is the same every run.
+function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+let fxRng = mulberry(7);
+const rr = (rng, a, b) => a + (b - a) * rng();
+
+// ---------------------------------------------------------------------------------------------------------------
+// Palette (console-skins design, Concord) and the ship classes. One table; the builder reads nothing else.
+const COL = { pearl: '#e4e2dc', signal: '#2f62e0', deep: '#1b2a6b', lilac: '#b7a6f2', sky: '#3fa9f0', alert: '#e8352b', glass: '#141a26' };
+const WIN = { w: 1.1, h: 0.6, deck: 3.4, obs: 3.0 }; // metres: the person-sized window and one deck
+
+const CLASSES = {
+  bastion: {
+    label: 'Bastion', cls: 'Bastion-class cruiser', name: 'CS MERIDIAN', reg: 'CS-1207', length: 312,
+    density: 'ceremonial', plating: 'radial', topPx: 2048,
+    note: 'Bastion-class cruiser, 312 m. Ceremonial livery, radial ring plating laid in a yard, five decks through the saucer.',
+    saucer: { c: [0, 20, 86], R: 72, sz: 1,
+      upper: [[9, 8.2], [20, 7.6], [35, 6.4], [50, 5.0], [62, 4.0], [70, 3.3], [72, 3.0]],
+      rim: [[72, 3.0], [72.7, 0], [72, -3.0]],
+      lower: [[72, -3.0], [70, -3.6], [58, -5.4], [40, -7.6], [22, -9.2], [10, -10.2]],
+      dome: [[10.4, -10.1], [7, -11.6], [3.5, -12.5], [0, -12.8]],
+      crown: [[0, 14.6], [4, 14.3], [7.2, 12.6], [9.6, 9.8], [10.8, 7.9]],
+      phaserTop: 48, phaserBot: 44 },
+    neck: { poly: [[24, -4], [70, 13.5], [46, 13.5], [-10, -4]], thick: 9 },
+    hull: { c: [0, -16, 0], prof: [[0, -112], [5, -110], [9, -100], [12, -70], [13, -30], [13, 0], [12, 18], [10, 26], [8, 28.5], [7.6, 27.8]], split: -40, sx: 1, sy: 1, dish: 7.4, texLen: 141 },
+    legs: { hip: [9, -18, -62], knee: [27, -13, -76], foot: [38, -2, -86], chord: [16, 13], thick: 2.6 },
+    nacelle: { x: 38, y: 2, z0: -154, z1: -3, r: 6.5 },
+    impulse: [[13, 20.6, 15.6]], impulseSize: [9, 2.6, 2.2],
+    core: { pos: [0, -28.8, -12], size: [3, 0.8, 34] },
+    torpedo: [[2.2, 4.2, 47.2]],
+    fin: null,
+  },
+  lantern: {
+    label: 'Lantern', cls: 'Lantern-class frigate', name: 'CS WAYFARER', reg: 'CS-0514', length: 196,
+    density: 'working', plating: 'patch', topPx: 2048,
+    note: 'Lantern-class frigate, 196 m. Working markings and patchwork plating, plates replaced in the field.',
+    saucer: { c: [0, 8, 48], R: 50, sz: 1,
+      upper: [[7, 6.6], [16, 6.1], [28, 5.0], [38, 4.0], [46, 3.2], [50, 2.9]],
+      rim: [[50, 2.9], [50.6, 0], [50, -2.9]],
+      lower: [[50, -2.9], [48, -3.5], [38, -5.0], [24, -6.6], [9, -7.8]],
+      dome: [[9.4, -7.7], [6, -9.2], [3, -10], [0, -10.2]],
+      crown: [[0, 11.6], [3.4, 11.3], [5.8, 10.0], [7.8, 7.6], [8.8, 6.3]],
+      phaserTop: 34, phaserBot: 30 },
+    neck: null,
+    hull: { c: [0, 0, 0], prof: [[0, -44], [5, -42], [9, -34], [11, -20], [11, 2], [9, 10], [6, 14], [0, 15]], split: -14, sx: 1.7, sy: 0.65, dish: 0, texLen: 59 },
+    legs: { hip: [16, -3, -20], knee: [29, -9, -28], foot: [34, -14, -36], chord: [12, 10], thick: 2.0 },
+    nacelle: { x: 34, y: -17, z0: -98, z1: 10, r: 5 },
+    impulse: [[10, 8.4, -1.4]], impulseSize: [7, 2.2, 1.8],
+    core: { pos: [0, -7.0, -10], size: [2.4, 0.7, 20] },
+    torpedo: [[2, 0.5, 14.6]],
+    fin: { poly: [[-40, 5], [-12, 5], [-30, 19], [-44, 19]], thick: 1.6 },
+  },
+  swift: {
+    label: 'Swift', cls: 'Swift-class corvette', name: 'CS KESTREL', reg: 'CS-2231', length: 118,
+    density: 'minimal', plating: 'strake', topPx: 1024,
+    note: 'Swift-class corvette, 118 m. A minimal livery (one racing stripe) and long strake plating built for speed; two decks on the rim.',
+    saucer: { c: [0, 4, 28], R: 31, sz: 1.15,
+      upper: [[5, 4.6], [12, 4.2], [20, 3.4], [27, 2.8], [31, 2.5]],
+      rim: [[31, 2.5], [31.5, 0], [31, -2.5]],
+      lower: [[31, -2.5], [29, -3.0], [20, -4.2], [8, -5.2]],
+      dome: [[8.3, -5.1], [5, -6.2], [2.4, -6.8], [0, -7.0]],
+      crown: [[0, 8.4], [2.6, 8.2], [4.2, 7.2], [5.6, 5.4], [6.3, 4.4]],
+      phaserTop: 21, phaserBot: 19 },
+    neck: null,
+    hull: { c: [0, -1.5, 0], prof: [[0, -22], [3, -21], [5, -16], [6, -6], [6, 6], [4.5, 11], [0, 12.5]], split: -6, sx: 1.3, sy: 0.7, dish: 0, texLen: 34.5 },
+    legs: { hip: [16, 1, 4], knee: [23, -2, -6], foot: [26, -4.5, -12], chord: [8, 6.5], thick: 1.4 },
+    nacelle: { x: 26, y: -5, z0: -54.5, z1: 15.5, r: 3.6 },
+    impulse: [[7, 4.4, -7.2]], impulseSize: [5, 1.6, 1.4],
+    core: { pos: [0, -5.6, -3], size: [1.8, 0.6, 12] },
+    torpedo: [[0, -1.5, 12.4]],
+    fin: null,
+  },
+};
+
+// ---------------------------------------------------------------------------------------------------------------
+// Renderer, scene, camera.
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+stage.append(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.3, 30000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 4; controls.maxDistance = 3000;
+
+// Sky: stars and a faint nebula, for depth only.
+(function sky() {
+  const rng = mulberry(99), n = 5000, pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const u = rng() * 2 - 1, a = rng() * TAU, s = Math.sqrt(1 - u * u), r = 12000;
+    pos.set([Math.cos(a) * s * r, u * r, Math.sin(a) * s * r], i * 3);
+    const b = 0.35 + rng() ** 3 * 1.2, t = rng();
+    col.set([b * (t < 0.2 ? 0.8 : 1), b * (t < 0.2 ? 0.85 : 0.97), b * (t > 0.85 ? 0.8 : 1)], i * 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, vertexColors: true, depthWrite: false })));
+  const neb = new THREE.Mesh(new THREE.SphereGeometry(14000, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false,
+    vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+    fragmentShader: `varying vec3 vD;
+      float h(vec3 p){ p=fract(p*0.3183+.1); p*=17.; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+      float n(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f); return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z); }
+      void main(){ vec3 p = vD*3.0; float v = n(p)*0.5+n(p*2.1)*0.3+n(p*4.3)*0.2; float band = exp(-pow(vD.y*2.4-0.3*sin(vD.x*3.),2.));
+        vec3 c = mix(vec3(0.02,0.03,0.09), vec3(0.16,0.07,0.2), v) * band * smoothstep(0.35,0.8,v);
+        gl_FragColor = vec4(c, 1.); }` }));
+  scene.add(neb);
+})();
+
+// Environment for metal reflections: a soft gradient room with a sun disc, filtered once.
+(function env() {
+  const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide,
+    vertexShader: 'varying vec3 vD; void main(){ vD=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+    fragmentShader: 'varying vec3 vD; void main(){ float t=vD.y*0.5+0.5; vec3 c=mix(vec3(0.02,0.02,0.035), vec3(0.32,0.36,0.46), pow(t,1.6)); c += vec3(3.0,2.8,2.5)*pow(max(dot(vD, normalize(vec3(0.6,0.5,0.6))),0.),220.); gl_FragColor=vec4(c,1.); }' })));
+  const pm = new THREE.PMREMGenerator(renderer);
+  scene.environment = pm.fromScene(s, 0.02).texture;
+})();
+
+const hemi = new THREE.HemisphereLight(0x9fb4ff, 0x0b0a10, 0.3); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff1dc, 1.6); sun.position.set(600, 420, 520); scene.add(sun);
+const rim = new THREE.DirectionalLight(0x86a6ff, 0.5); rim.position.set(-500, 150, -700); scene.add(rim);
+const LIGHTS = {
+  sunlit: { label: 'Sunlit', sun: 1.7, sunPos: [600, 420, 520], hemi: 0.3, rim: 0.5, env: 0.55 },
+  shadow: { label: 'Shadow side', sun: 1.3, sunPos: [-420, 260, -650], hemi: 0.05, rim: 0.0, env: 0.18 },
+  nosun: { label: 'No sun', sun: 0.0, sunPos: [0, 1, 0], hemi: 0.03, rim: 0.12, env: 0.08 },
+};
+let lightKey = 'sunlit';
+
+// ---------------------------------------------------------------------------------------------------------------
+// The painter: every surface's colour, emission (baked floodlights and windows) and roughness, drawn into canvases.
+function cv(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+const FONT = (px, w = 700) => `${w} ${Math.max(1, px)}px Antonio, "Arial Narrow", sans-serif`;
+function shade(hex, k) { const n = parseInt(hex.slice(1), 16); const f = (v) => clamp(Math.round(v * k), 0, 255); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; }
+function surface(w, h) {
+  const a = cv(w, h), m = cv(w, h), r = cv(w, h), win = cv(w, h);
+  const ax = a.getContext('2d'), mx = m.getContext('2d'), rx = r.getContext('2d'), wx = win.getContext('2d');
+  mx.fillStyle = '#000'; mx.fillRect(0, 0, w, h);
+  return { w, h, a, m, r, win, ax, mx, rx, wx };
+}
+// Emission = colour x floodlight pool, plus lit windows: a dark letter stays dark inside its pool, as under a real lamp.
+function finish(s) {
+  const e = cv(s.w, s.h), ex = e.getContext('2d');
+  ex.drawImage(s.a, 0, 0); ex.globalCompositeOperation = 'multiply'; ex.drawImage(s.m, 0, 0);
+  ex.globalCompositeOperation = 'lighter'; ex.drawImage(s.win, 0, 0);
+  const tex = (c, srgb) => { const t = new THREE.CanvasTexture(c); t.anisotropy = 8; if (srgb) t.encoding = THREE.sRGBEncoding; return t; };
+  return { map: tex(s.a, true), emissiveMap: tex(e, true), roughnessMap: tex(s.r, false) };
+}
+function pool(s, x, y, rx, ry, a, rot = 0) {
+  const g = s.mx; g.save(); g.translate(x, y); g.rotate(rot); g.scale(1, ry / rx);
+  const gr = g.createRadialGradient(0, 0, 0, 0, 0, rx);
+  gr.addColorStop(0, `rgba(255,246,228,${a})`); gr.addColorStop(0.55, `rgba(255,246,228,${a * 0.55})`); gr.addColorStop(1, 'rgba(255,246,228,0)');
+  g.fillStyle = gr; g.globalCompositeOperation = 'lighter'; g.beginPath(); g.arc(0, 0, rx, 0, TAU); g.fill(); g.restore();
+}
+function panelTone(rng, pattern) {
+  const k = pattern === 'patch' ? 0.9 + rng() * 0.15 : pattern === 'strake' ? 0.95 + rng() * 0.07 : 0.96 + rng() * 0.06;
+  const swap = rng() < (pattern === 'patch' ? 0.14 : 0.04);
+  return { col: swap ? (rng() < 0.5 ? shade('#eef0f3', 1) : shade('#d6d1c6', 1)) : shade(COL.pearl, k), rough: Math.round(70 + rng() * (pattern === 'patch' ? 120 : 70)) };
+}
+function fillBoth(s, path, tone, seam) {
+  s.ax.fillStyle = tone.col; s.ax.fill(path);
+  s.rx.fillStyle = `rgb(${tone.rough},${tone.rough},${tone.rough})`; s.rx.fill(path);
+  s.ax.strokeStyle = 'rgba(52,56,70,0.55)'; s.ax.lineWidth = seam; s.ax.stroke(path);
+  s.rx.strokeStyle = 'rgb(210,210,210)'; s.rx.lineWidth = seam; s.rx.stroke(path);
+}
+// Plating on a disc (saucer top or bottom), in the class's pattern. ppm is pixels per metre.
+function discPlating(s, R, ppm, pattern, rng, rIn) {
+  const cx = s.w / 2, cy = s.h / 2, seam = Math.max(1, 0.12 * ppm);
+  if (pattern === 'strake') {
+    let x = -R;
+    while (x < R) {
+      const w = 1.6 + rng() * 2.6; let z = -R * 1.2;
+      while (z < R * 1.2) { const l = 7 + rng() * 14; const p = new Path2D(); p.rect(cx + x * ppm, cy + z * ppm, w * ppm, l * ppm); fillBoth(s, p, panelTone(rng, pattern), seam); z += l; }
+      s.ax.fillStyle = 'rgba(60,62,72,0.35)';
+      for (let z2 = -R; z2 < R; z2 += 0.9) s.ax.fillRect(cx + (x + 0.25) * ppm, cy + z2 * ppm, Math.max(1, 0.08 * ppm), Math.max(1, 0.08 * ppm));
+      x += w;
+    }
+    return;
+  }
+  let r = rIn, ring = 0;
+  while (r < R + 2) {
+    const w = pattern === 'patch' ? 3.2 + rng() * 5.5 : 6, r2 = r + w, circ = TAU * (r + w / 2);
+    const target = pattern === 'patch' ? 5.5 : 9, n = Math.max(6, Math.round(circ / target));
+    let a = (ring % 2) * (TAU / n) * 0.5, end = a + TAU;
+    while (a < end - 1e-4) {
+      let da = TAU / n; if (pattern === 'patch') da *= 0.45 + rng() * 1.3; da = Math.min(da, end - a);
+      const p = new Path2D(); p.arc(cx, cy, r2 * ppm, a, a + da); p.arc(cx, cy, r * ppm, a + da, a, true); p.closePath();
+      fillBoth(s, p, panelTone(rng, pattern), seam); a += da;
+    }
+    r = r2; ring++;
+  }
+}
+// A row of person-sized windows round a disc at radius r (metres), in runs with gaps.
+function discWindows(s, R, ppm, r, rng, ribs = 24, lit = 0.8) {
+  const cx = s.w / 2, cy = s.h / 2, ww = WIN.w * ppm, wh = WIN.h * ppm, step = 2.4 / r;
+  for (let k = 0; k < ribs; k++) {
+    const a0 = (k / ribs) * TAU + 2.2 / r, a1 = ((k + 1) / ribs) * TAU - 2.2 / r;
+    let a = a0;
+    while (a < a1) {
+      const run = 4 + Math.floor(rng() * 9), on = rng() < lit, warm = rng() < 0.6;
+      for (let i = 0; i < run && a < a1; i++, a += step) {
+        for (const [g, col] of [[s.ax, COL.glass], [on ? s.wx : null, warm ? '#ffdca0' : '#d8ecff']]) {
+          if (!g) continue;
+          g.save(); g.translate(cx + Math.cos(a) * r * ppm, cy + Math.sin(a) * r * ppm); g.rotate(a + PI / 2);
+          g.fillStyle = col; g.fillRect(-ww / 2, -wh / 2, ww, wh); g.restore();
+        }
+      }
+      a += step * (1 + rng() * 2);
+    }
+  }
+}
+function text(g, str, x, y, px, fill, rot = 0, stroke = null, w = 700, spacing = 0) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.font = FONT(px, w); g.textAlign = 'center'; g.textBaseline = 'middle';
+  if (spacing) g.letterSpacing = spacing + 'px';
+  if (stroke) { g.strokeStyle = stroke; g.lineWidth = px * 0.12; g.lineJoin = 'round'; g.strokeText(str, 0, 0); }
+  g.fillStyle = fill; g.fillText(str, 0, 0); g.restore();
+}
+// The Concord crest: seven open rings round a centre ring (the circle of species); open circles and arcs only.
+function crest(g, x, y, rad, col, col2) {
+  g.save(); g.translate(x, y); g.lineWidth = rad * 0.07; g.strokeStyle = col;
+  g.beginPath(); g.arc(0, 0, rad, 0, TAU); g.stroke();
+  g.beginPath(); g.arc(0, 0, rad * 0.3, 0, TAU); g.stroke();
+  g.strokeStyle = col2;
+  for (let i = 0; i < 7; i++) { const a = -PI / 2 + i * TAU / 7; g.beginPath(); g.arc(Math.cos(a) * rad * 0.64, Math.sin(a) * rad * 0.64, rad * 0.15, 0, TAU); g.stroke(); }
+  g.restore();
+}
+// Service markings for a working ship (and a few on a ceremonial one).
+function serviceMarks(s, R, ppm, rng, n, kinds) {
+  const cx = s.w / 2, cy = s.h / 2, g = s.ax;
+  for (let i = 0; i < n; i++) {
+    const a = rng() * TAU, r = R * (0.3 + rng() * 0.62), x = cx + Math.cos(a) * r * ppm, y = cy + Math.sin(a) * r * ppm;
+    const kind = kinds[Math.floor(rng() * kinds.length)];
+    g.save(); g.translate(x, y); g.rotate(a + PI / 2); g.lineWidth = Math.max(1, 0.1 * ppm);
+    if (kind === 'pod') { g.strokeStyle = COL.alert; g.beginPath(); g.arc(0, 0, 1.1 * ppm, 0, TAU); g.stroke(); text(g, 'ESC ' + (10 + i), 0, 1.9 * ppm, 0.45 * ppm, COL.alert, 0, null, 600); }
+    else if (kind === 'hatch') { g.strokeStyle = 'rgba(40,44,60,0.8)'; g.strokeRect(-0.5 * ppm, -1 * ppm, ppm, 2 * ppm); text(g, 'A-' + (100 + Math.floor(rng() * 400)), 0, 1.6 * ppm, 0.35 * ppm, COL.deep, 0, null, 600); }
+    else if (kind === 'dock') { g.strokeStyle = COL.deep; g.beginPath(); g.arc(0, 0, 1.4 * ppm, 0, TAU); g.moveTo(-2 * ppm, 0); g.lineTo(2 * ppm, 0); g.moveTo(0, -2 * ppm); g.lineTo(0, 2 * ppm); g.stroke(); }
+    else if (kind === 'keep') { text(g, 'KEEP CLEAR', 0, 0, 0.55 * ppm, COL.alert, 0, null, 600, 0.1 * ppm); g.strokeStyle = COL.alert; g.strokeRect(-2.4 * ppm, -0.55 * ppm, 4.8 * ppm, 1.1 * ppm); }
+    else if (kind === 'rescue') { g.fillStyle = COL.alert; g.fillRect(-1.6 * ppm, -0.35 * ppm, 3.2 * ppm, 0.7 * ppm); text(g, 'RESCUE', 0, 1.1 * ppm, 0.5 * ppm, COL.alert, 0, null, 600); }
+    else if (kind === 'vent') { g.fillStyle = 'rgba(30,32,40,0.85)'; for (let k = 0; k < 5; k++) g.fillRect(-1.2 * ppm, (-0.8 + k * 0.4) * ppm, 2.4 * ppm, 0.18 * ppm);
+      const gr = g.createLinearGradient(0, -1 * ppm, 0, -9 * ppm); gr.addColorStop(0, 'rgba(40,36,30,0.28)'); gr.addColorStop(1, 'rgba(40,36,30,0)'); g.fillStyle = gr; g.fillRect(-1.2 * ppm, -9 * ppm, 2.4 * ppm, 8 * ppm); }
+    g.restore();
+  }
+}
+function walkway(s, r, ppm) {
+  const g = s.ax; g.save(); g.setLineDash([1.2 * ppm, 0.8 * ppm]); g.strokeStyle = 'rgba(27,42,107,0.55)'; g.lineWidth = Math.max(1, 0.12 * ppm);
+  g.beginPath(); g.arc(s.w / 2, s.h / 2, r * ppm, 0, TAU); g.stroke(); g.restore();
+}
+function weather(s, rng, n, ppm) {
+  const g = s.ax;
+  for (let i = 0; i < n; i++) {
+    const x = rng() * s.w, y = rng() * s.h, r = (2 + rng() * 9) * ppm, gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, `rgba(70,64,56,${0.05 + rng() * 0.06})`); gr.addColorStop(1, 'rgba(70,64,56,0)');
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+}
+
+// Saucer top: plating, livery by density, registry, name, crest, windows, floodlight pools and grazing hull floods.
+function paintTop(C) {
+  const S = C.topPx, R = C.saucer.R * Math.max(1, C.saucer.sz), ppm = S / (2 * R), s = surface(S, S), rng = mulberry(C.reg.length * 131 + S);
+  const cx = S / 2, cy = S / 2;
+  s.ax.fillStyle = COL.pearl; s.ax.fillRect(0, 0, S, S); s.rx.fillStyle = '#888'; s.rx.fillRect(0, 0, S, S);
+  discPlating(s, R, ppm, C.plating, rng, 4);
+  weather(s, rng, C.density === 'working' ? 140 : 50, ppm);
+  const g = s.ax;
+  // Livery.
+  if (C.density === 'ceremonial') {
+    for (const [r0, r1, col] of [[0.62, 0.655, COL.signal], [0.672, 0.68, COL.lilac], [0.697, 0.73, COL.signal]]) {
+      g.beginPath(); g.arc(cx, cy, r1 * R * ppm, 0, TAU); g.arc(cx, cy, r0 * R * ppm, TAU, 0, true); g.fillStyle = col; g.fill();
+    }
+  } else if (C.density === 'working') {
+    g.beginPath(); g.arc(cx, cy, 0.71 * R * ppm, 0, TAU); g.arc(cx, cy, 0.66 * R * ppm, TAU, 0, true); g.fillStyle = COL.signal; g.fill();
+    for (const r of [0.45, 0.86]) walkway(s, r * R, ppm);
+    serviceMarks(s, R, ppm, rng, 90, ['pod', 'pod', 'hatch', 'hatch', 'hatch', 'dock', 'keep', 'rescue', 'vent', 'vent']);
+  } else {
+    const w = 0.15 * R * ppm; g.fillStyle = COL.signal; g.fillRect(cx - w / 2, 0, w, S);
+    g.fillStyle = COL.lilac; g.fillRect(cx - w / 2 - 0.5 * ppm, 0, 0.3 * ppm, S); g.fillRect(cx + w / 2 + 0.2 * ppm, 0, 0.3 * ppm, S);
+  }
+  if (C.density === 'ceremonial') serviceMarks(s, R, ppm, rng, 14, ['pod', 'vent']);
+  // Windows: rings on the upper surface (the rim carries more).
+  const rings = C.density === 'minimal' ? [0.62 * R] : [0.4 * R, 0.52 * R, 0.84 * R, 0.9 * R];
+  for (const r of rings) discWindows(s, R, ppm, r, rng, 24);
+  // Canvas top is the bow, canvas left is port. The registry runs fore to aft on the port half and reads from the
+  // port side; the name reads from starboard; the crest sits forward of the crown.
+  const regPx = R * (C.density === 'minimal' ? 0.24 : 0.2) * ppm, rx = 0.42 * R * ppm;
+  text(g, C.reg, cx - rx, cy + 0.04 * R * ppm, regPx, COL.deep, PI / 2, C.density === 'minimal' ? COL.pearl : null, 700, regPx * 0.04);
+  text(g, C.name, cx + 0.36 * R * ppm, cy, regPx * 0.36, COL.deep, -PI / 2, null, 600, regPx * 0.03);
+  text(g, 'CONCORD STARSHIP', cx + 0.36 * R * ppm + regPx * 0.34, cy, regPx * 0.18, COL.deep, -PI / 2, null, 400, regPx * 0.04);
+  if (C.density !== 'minimal') crest(g, cx, cy - 0.4 * R * ppm, 0.11 * R * ppm, COL.signal, COL.lilac);
+  // Floodlight pools on the markings, and lamps that graze the plating outward from the crown.
+  pool(s, cx - rx, cy + 0.04 * R * ppm, 0.36 * R * ppm, 0.15 * R * ppm, 0.5, PI / 2);
+  pool(s, cx + 0.38 * R * ppm, cy, 0.24 * R * ppm, 0.08 * R * ppm, 0.42, PI / 2);
+  if (C.density !== 'minimal') pool(s, cx, cy - 0.4 * R * ppm, 0.15 * R * ppm, 0.15 * R * ppm, 0.45);
+  const lamps = C.density === 'working' ? 12 : 8;
+  for (let i = 0; i < lamps; i++) {
+    const a = (i + 0.5) / lamps * TAU, L = 0.5 * R * ppm;
+    pool(s, cx + Math.cos(a) * (0.2 * R * ppm + L * 0.55), cy + Math.sin(a) * (0.2 * R * ppm + L * 0.55), L * 0.6, L * 0.13, 0.24, a);
+  }
+  return finish(s);
+}
+function paintBottom(C) {
+  const S = Math.min(1024, C.topPx), R = C.saucer.R * Math.max(1, C.saucer.sz), ppm = S / (2 * R), s = surface(S, S), rng = mulberry(C.reg.length * 71 + 3);
+  const cx = S / 2, cy = S / 2, g = s.ax;
+  g.fillStyle = shade(COL.pearl, 0.92); g.fillRect(0, 0, S, S); s.rx.fillStyle = '#999'; s.rx.fillRect(0, 0, S, S);
+  discPlating(s, R, ppm, C.plating === 'strake' ? 'strake' : 'radial', rng, 4);
+  weather(s, rng, 60, ppm);
+  for (const r of [0.55 * R, 0.66 * R, 0.8 * R]) discWindows(s, R, ppm, r, rng, 24, 0.75);
+  if (C.density === 'working') serviceMarks(s, R, ppm, rng, 40, ['pod', 'hatch', 'dock', 'rescue']);
+  const regPx = R * 0.17 * ppm;
+  text(g, C.reg, cx, cy + 0.4 * R * ppm, regPx, COL.deep, 0, null, 700, regPx * 0.04);
+  pool(s, cx, cy + 0.4 * R * ppm, 0.3 * R * ppm, 0.13 * R * ppm, 0.45);
+  for (let i = 0; i < 8; i++) { const a = (i + 0.5) / 8 * TAU, L = 0.45 * R * ppm; pool(s, cx + Math.cos(a) * L * 0.9, cy + Math.sin(a) * L * 0.9, L * 0.55, L * 0.12, 0.2, a); }
+  return finish(s);
+}
+// The rim: two decks of windows (rows 3.4 m apart), structural ribs every 15 degrees, observation windows forward.
+function paintRim(C) {
+  const R = C.saucer.R, circ = TAU * R, W = 4096, H = 128, s = surface(W, H), rng = mulberry(C.reg.length * 17 + 5);
+  const hgt = C.saucer.rim[0][1] - C.saucer.rim[2][1], ppmX = W / circ, ppmY = H / hgt, g = s.ax;
+  g.fillStyle = shade(COL.pearl, 0.97); g.fillRect(0, 0, W, H); s.rx.fillStyle = '#7a7a7a'; s.rx.fillRect(0, 0, W, H);
+  let x = 0;
+  while (x < W) { const l = (5 + rng() * 6) * ppmX; const p = new Path2D(); p.rect(x, 0, l, H); fillBoth(s, p, panelTone(rng, C.plating), 1); x += l; }
+  const rows = [hgt / 2 - 1.5, hgt / 2 + 1.9].map((m) => m * ppmY);
+  if (C.density === 'ceremonial') { g.fillStyle = COL.signal; g.fillRect(0, H * 0.47, W, Math.max(2, 0.35 * ppmY)); }
+  for (let k = 0; k < 24; k++) {
+    const u0 = k / 24 * W + 2.4 * ppmX, u1 = (k + 1) / 24 * W - 2.4 * ppmX;
+    g.fillStyle = 'rgba(70,74,90,0.45)'; g.fillRect(k / 24 * W - 0.4 * ppmX, 0, 0.8 * ppmX, H);
+    const aft = Math.abs(k + 0.5 - 12) < 1.2; // impulse vents aft: no windows there
+    if (aft) continue;
+    for (const ry of rows) {
+      let u = u0;
+      while (u < u1) {
+        const run = 4 + Math.floor(rng() * 9), on = rng() < 0.82, warm = rng() < 0.6;
+        const big = (k === 0 || k === 23) && ry === rows[0] && rng() < 0.7;
+        const ww = (big ? WIN.obs : WIN.w) * ppmX, wh = (big ? 1.3 : WIN.h) * ppmY;
+        for (let i = 0; i < (big ? 3 : run) && u < u1; i++, u += ww + (big ? 0.6 : 1.3) * ppmX) {
+          g.fillStyle = COL.glass; g.fillRect(u, ry - wh / 2, ww, wh);
+          if (on) { s.wx.fillStyle = warm ? '#ffdca0' : '#d8ecff'; s.wx.fillRect(u, ry - wh / 2, ww, wh); }
+        }
+        u += (1.5 + rng() * 3) * ppmX;
+      }
+    }
+  }
+  for (let k = 0; k < 24; k++) pool(s, (k + 0.5) / 24 * W, H * 0.9, 9 * ppmX, H * 0.5, 0.14);
+  return finish(s);
+}
+// A hull of revolution (engineering hull, nacelle, pod): u runs round it (0 belly, 0.25 port, 0.5 top, 0.75 starboard),
+// v along it (0 aft, 1 fore). Text on the sides reads from either side.
+function paintCyl(C, kind) {
+  const isNac = kind === 'nacelle', len = isNac ? C.nacelle.z1 - C.nacelle.z0 : C.hull.texLen;
+  const r = isNac ? C.nacelle.r : Math.max(...C.hull.prof.map((q) => q[0])) * (C.hull.sx + C.hull.sy) / 2, circ = TAU * r, W = isNac ? 512 : 1024, H = 2048;
+  const s = surface(W, H), ppmU = W / circ, ppmV = H / len, g = s.ax, rng = mulberry(C.reg.length * 7 + (isNac ? 11 : 13));
+  g.fillStyle = COL.pearl; g.fillRect(0, 0, W, H); s.rx.fillStyle = '#808080'; s.rx.fillRect(0, 0, W, H);
+  let u = 0;
+  while (u < W) { const w = (1.6 + rng() * 2.4) * ppmU; let v = 0;
+    while (v < H) { const l = (5 + rng() * 12) * ppmV; const p = new Path2D(); p.rect(u, v, w, l); fillBoth(s, p, panelTone(rng, isNac ? 'strake' : C.plating), Math.max(1, 0.1 * ppmU)); v += l; }
+    u += w; }
+  weather(s, rng, 30, ppmV);
+  // Livery: a stripe along the top.
+  if (C.density === 'minimal' || isNac) { const w = (C.density === 'minimal' ? 0.18 : 0.06) * W; g.fillStyle = COL.signal; g.fillRect(W * 0.5 - w / 2, 0, w, H); }
+  if (C.density === 'ceremonial' && !isNac) { g.fillStyle = COL.signal; g.fillRect(0, H * 0.18, W, 1.6 * ppmV); g.fillStyle = COL.lilac; g.fillRect(0, H * 0.18 + 2.1 * ppmV, W, 0.3 * ppmV); }
+  // Windows on hull sides: one row per deck (rows at heights k x 3.4 m), runs along the length.
+  if (!isNac) {
+    for (let side of [0.25, 0.75]) {
+      for (let k = -2; k <= 2; k++) {
+        const y = k * WIN.deck * 0.9, uu = (side + (side === 0.25 ? 1 : -1) * Math.asin(clamp(y / r, -0.9, 0.9)) / TAU) * W;
+        let v = H * 0.32;
+        while (v < H * 0.88) { const run = 3 + Math.floor(rng() * 8), on = rng() < 0.8, warm = rng() < 0.6;
+          for (let i = 0; i < run && v < H * 0.88; i++, v += 2.4 * ppmV) { g.fillStyle = COL.glass; g.fillRect(uu - WIN.h * ppmU / 2, v, WIN.h * ppmU, WIN.w * ppmV); if (on) { s.wx.fillStyle = warm ? '#ffdca0' : '#d8ecff'; s.wx.fillRect(uu - WIN.h * ppmU / 2, v, WIN.h * ppmU, WIN.w * ppmV); } }
+          v += (3 + rng() * 5) * ppmV; }
+      }
+    }
+  }
+  // Registry (hull) or name placard (nacelle) on both sides, floodlit.
+  const lines = isNac ? [[C.name, 1], ['CONCORD STARSHIP', 0.42]] : [[C.reg, 1]];
+  const px = isNac ? Math.min(1.35 * ppmU * r * 0.6, 3.2 * ppmV) : Math.min(r * 0.55 * ppmU, 8 * ppmV);
+  const vAt = isNac ? H * 0.2 : H * 0.55;
+  for (const [side, rot] of [[0.25, PI / 2], [0.75, -PI / 2]]) {
+    const uu = side * W;
+    if (isNac) { g.fillStyle = shade('#f4f3ef', 1); g.fillRect(uu - px * 0.9, vAt - px * 4.2, px * 1.8, px * 8.4); }
+    lines.forEach(([t, k], i) => text(g, t, uu + (rot > 0 ? 1 : -1) * (i ? -px * 0.55 : px * 0.12), vAt, px * k, COL.deep, rot, null, i ? 400 : 700));
+    pool(s, uu, vAt, px * 5, px * 1.6, 0.55, PI / 2);
+  }
+  if (C.density === 'working' && !isNac) serviceMarksCyl(s, rng, ppmU, ppmV);
+  for (let k = 0; k < 6; k++) pool(s, (k % 2 ? 0.3 : 0.7) * W, (0.15 + k * 0.14) * H, 6 * ppmU, 14 * ppmV, 0.16);
+  return finish(s);
+}
+function serviceMarksCyl(s, rng, pu, pv) {
+  const g = s.ax;
+  for (let i = 0; i < 40; i++) {
+    const x = rng() * s.w, y = rng() * s.h;
+    g.save(); g.translate(x, y); g.lineWidth = Math.max(1, 0.1 * pu);
+    if (rng() < 0.5) { g.strokeStyle = 'rgba(40,44,60,0.8)'; g.strokeRect(-0.5 * pu, -1 * pv, pu, 2 * pv); }
+    else { g.strokeStyle = COL.alert; g.beginPath(); g.arc(0, 0, 1.1 * pu, 0, TAU); g.stroke(); }
+    g.restore();
+  }
+}
+function paintCrown(C) {
+  const W = 1024, H = 128, s = surface(W, H), rng = mulberry(5), g = s.ax;
+  g.fillStyle = shade(COL.pearl, 1.02); g.fillRect(0, 0, W, H); s.rx.fillStyle = '#6a6a6a'; s.rx.fillRect(0, 0, W, H);
+  g.fillStyle = COL.signal; g.fillRect(0, H * 0.18, W, H * 0.05);
+  for (let i = 0; i < 28; i++) { const u = (i + 0.5) / 28 * W, on = rng() < 0.92; g.fillStyle = COL.glass; g.fillRect(u - 10, H * 0.5, 20, H * 0.12); if (on) { s.wx.fillStyle = '#e2f0ff'; s.wx.fillRect(u - 10, H * 0.5, 20, H * 0.12); } }
+  for (let i = 0; i < 6; i++) pool(s, (i + 0.5) / 6 * W, H * 0.8, 70, 40, 0.3);
+  return finish(s);
+}
+function paintTile() {
+  const S = 512, s = surface(S, S), rng = mulberry(3), ppm = S / 16;
+  s.ax.fillStyle = COL.pearl; s.ax.fillRect(0, 0, S, S);
+  for (let y = 0; y < S; y += 4 * ppm) for (let x = 0; x < S;) { const w = (2 + rng() * 4) * ppm; const p = new Path2D(); p.rect(x, y, w, 4 * ppm); fillBoth(s, p, panelTone(rng, 'radial'), 2); x += w; }
+  for (let i = 0; i < 4; i++) pool(s, rng() * S, rng() * S, 4 * ppm, 2 * ppm, 0.18);
+  const t = finish(s);
+  for (const k of ['map', 'emissiveMap', 'roughnessMap']) { t[k].wrapS = t[k].wrapT = THREE.RepeatWrapping; }
+  return t;
+}
+const texCache = {};
+function texturesFor(id) {
+  if (texCache[id]) return texCache[id];
+  const C = CLASSES[id];
+  return (texCache[id] = { top: paintTop(C), bottom: paintBottom(C), rim: paintRim(C), hull: paintCyl(C, 'hull'), nac: paintCyl(C, 'nacelle'), crown: paintCrown(C), tile: paintTile() });
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Geometry. Every piece is built in ship space (the mesh sits at identity inside its piece), so the damage shader's
+// object-space position is ship space even after a piece breaks away.
+function latheGeo(profile, { phi0 = 0, phi1 = TAU, segs = 96, matrix = null, uv }) {
+  const n = profile.length, cols = segs + 1, pos = [], nor = [], uvs = [], idx = [];
+  const len = [0]; for (let i = 1; i < n; i++) len.push(len[i - 1] + Math.hypot(profile[i][0] - profile[i - 1][0], profile[i][1] - profile[i - 1][1]));
+  const total = len[n - 1] || 1, nm = matrix ? new THREE.Matrix3().getNormalMatrix(matrix) : null, p = V3(), q = V3();
+  for (let i = 0; i < n; i++) {
+    const a = profile[Math.max(0, i - 1)], b = profile[Math.min(n - 1, i + 1)];
+    let tr = b[0] - a[0], th = b[1] - a[1]; const tl = Math.hypot(tr, th) || 1; tr /= tl; th /= tl;
+    const nr = -th, nh = tr; // outward when the profile runs top, out, then down and in
+    for (let j = 0; j < cols; j++) {
+      const f = j / segs, phi = phi0 + (phi1 - phi0) * f, sn = Math.sin(phi), cs = Math.cos(phi);
+      p.set(profile[i][0] * sn, profile[i][1], profile[i][0] * cs); q.set(nr * sn, nh, nr * cs);
+      if (matrix) { p.applyMatrix4(matrix); q.applyMatrix3(nm).normalize(); }
+      pos.push(p.x, p.y, p.z); nor.push(q.x, q.y, q.z);
+      const [u, v] = uv(p, phi / TAU, len[i] / total); uvs.push(u, v);
+    }
+  }
+  for (let i = 0; i < n - 1; i++) for (let j = 0; j < segs; j++) { const a = i * cols + j, b = a + cols; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(idx);
+  // Wind every triangle to face its outward normal (the shader uses gl_FrontFacing for the inside of the skin).
+  const P = g.attributes.position, N = g.attributes.normal, A = V3(), B = V3(), Cc = V3(), fn = V3(), vn = V3();
+  for (let t = 0; t < idx.length; t += 3) {
+    A.fromBufferAttribute(P, idx[t]); B.fromBufferAttribute(P, idx[t + 1]); Cc.fromBufferAttribute(P, idx[t + 2]);
+    fn.subVectors(B, A).cross(Cc.clone().sub(A)); vn.fromBufferAttribute(N, idx[t]);
+    if (fn.lengthSq() > 1e-12 && fn.dot(vn) < 0) { const k = idx[t + 1]; idx[t + 1] = idx[t + 2]; idx[t + 2] = k; }
+  }
+  g.setIndex(idx);
+  return g;
+}
+function boxUV(g, tile) {
+  const P = g.attributes.position, N = g.attributes.normal, uv = new Float32Array(P.count * 2);
+  for (let i = 0; i < P.count; i++) {
+    const nx = Math.abs(N.getX(i)), ny = Math.abs(N.getY(i)), nz = Math.abs(N.getZ(i)), x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const [a, b] = nx > ny && nx > nz ? [z, y] : ny > nz ? [x, z] : [x, y];
+    uv[i * 2] = a / tile; uv[i * 2 + 1] = b / tile;
+  }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return g;
+}
+function finBetween(A, B, chord, thick) {
+  const L = A.distanceTo(B), g = new THREE.BoxGeometry(thick, L, chord, 1, 4, 1);
+  const P = g.attributes.position; // taper the edges to an aerofoil
+  for (let i = 0; i < P.count; i++) { const z = P.getZ(i) / (chord / 2); P.setX(i, P.getX(i) * (1 - 0.65 * z * z)); }
+  g.computeVertexNormals();
+  const y = B.clone().sub(A).normalize(), z = V3(0, 0, 1).sub(y.clone().multiplyScalar(y.z)).normalize(), x = y.clone().cross(z);
+  g.applyMatrix4(new THREE.Matrix4().makeBasis(x, y, z).setPosition(A.clone().add(B).multiplyScalar(0.5)));
+  return boxUV(g, 16);
+}
+function extrudeSide(poly, thick) {
+  const sh = new THREE.Shape(poly.map(([z, y]) => new THREE.Vector2(z, y)));
+  const g = new THREE.ExtrudeGeometry(sh, { depth: thick, bevelEnabled: true, bevelThickness: 0.8, bevelSize: 0.8, bevelSegments: 2 });
+  g.applyMatrix4(new THREE.Matrix4().set(0, 0, -1, thick / 2, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1));
+  g.computeVertexNormals();
+  return boxUV(g, 16);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The hull shader: MeshStandardMaterial plus damage. Holes (cut away, or drawn by interior mapping), scorch marks,
+// broken edges charred toward the break with a cooling ember line, and the power level of the windows.
+const DAMAGE_GLSL = `
+uniform vec4 uHoles[8]; uniform vec4 uHoleN[8]; uniform int uHoleCount;
+uniform vec4 uScorch[24]; uniform float uScorchHeat[24]; uniform int uScorchCount;
+uniform vec4 uCuts[4]; uniform vec4 uCutC[4]; uniform int uCutCount; uniform float uCutHeat;
+uniform float uLight; uniform float uTime; uniform float uParallax;
+varying vec3 vObj; varying vec3 vCamObj;
+float dh3(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float dn3(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(mix(dh3(i),dh3(i+vec3(1,0,0)),f.x),mix(dh3(i+vec3(0,1,0)),dh3(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(dh3(i+vec3(0,0,1)),dh3(i+vec3(1,0,1)),f.x),mix(dh3(i+vec3(0,1,1)),dh3(i+vec3(1,1,1)),f.x),f.y),f.z); }
+float dfbm(vec3 p){ return 0.5*dn3(p)+0.3*dn3(p*2.03)+0.2*dn3(p*4.1); }
+vec3 holeLight(float type){ return type < 0.5 ? vec3(1.0,0.16,0.06) : (type < 1.5 ? vec3(0.55,0.32,1.0) : vec3(0.35,0.85,1.0)); }
+// Interior mapping: a room grid (decks every 3.4 m, walls every 6 m) and a back wall, seen through the skin.
+vec3 interiorRoom(vec3 p, vec3 V, vec4 h, vec4 hn){
+  vec3 cell = vec3(6.0, 3.4, 6.0); vec3 q = p + V*0.01; vec3 t3;
+  for (int a = 0; a < 3; a++) {
+    float va = V[a];
+    if (abs(va) < 1e-4) { t3[a] = 1e5; continue; }
+    float b = va > 0. ? (floor(q[a]/cell[a])+1.)*cell[a] : floor(q[a]/cell[a])*cell[a];
+    t3[a] = (b - q[a]) / va;
+  }
+  float depth = h.w*1.4; float vn = dot(V, hn.xyz);
+  float tb = vn < -1e-3 ? max((-depth - dot(q-h.xyz, hn.xyz)) / vn, 0.0) : 1e5;
+  float t = min(min(t3.x, t3.y), min(t3.z, tb)); vec3 hit = q + V*t; vec3 col;
+  if (t == tb) col = vec3(0.03);
+  else if (t == t3.y) col = V.y < 0. ? vec3(0.26,0.24,0.22)*(0.75+0.25*step(0.5,fract(hit.x*0.5))) : vec3(0.05)+vec3(0.6,0.5,0.4)*step(0.9,fract(hit.z*0.25));
+  else col = vec3(0.14,0.13,0.12)*(0.8+0.2*step(0.5,fract(hit.y*0.6)));
+  float fl = 0.85+0.15*sin(uTime*9.0+hit.x*0.7);
+  return col*holeLight(hn.w)*1.9*fl*exp(-t*0.09);
+}`;
+function hullMat(maps, ship, o = {}) {
+  const m = new THREE.MeshStandardMaterial({ map: maps.map, emissiveMap: maps.emissiveMap, roughnessMap: maps.roughnessMap,
+    emissive: 0xffffff, emissiveIntensity: o.emis ?? 1.0, metalness: o.metal ?? 0.5, roughness: 0.95, side: THREE.DoubleSide,
+    envMapIntensity: LIGHTS[lightKey].env, color: o.color ?? 0xffffff });
+  const u = { uLight: { value: 1 }, uCuts: { value: [0, 0, 0, 0].map(() => new THREE.Vector4()) }, uCutC: { value: [0, 0, 0, 0].map(() => new THREE.Vector4()) }, uCutCount: { value: 0 }, uCutHeat: { value: 0 } };
+  m.userData.u = u; m.userData.ship = ship;
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, ship.dmgU, u);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vObj; varying vec3 vCamObj;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj = position; vCamObj = (inverse(modelMatrix) * vec4(cameraPosition, 1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + DAMAGE_GLSL)
+      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
+        float dChar = 0.0, dEmber = 0.0; int holeIdx = -1; float nz = dfbm(vObj*0.45);
+        for (int i = 0; i < 8; i++) { if (i >= uHoleCount) break; vec4 h = uHoles[i]; float d = length(vObj - h.xyz); float r = h.w*(0.72+0.56*nz);
+          if (d < r) holeIdx = i; dChar = max(dChar, 1.0 - smoothstep(r, r*2.4, d)); dEmber = max(dEmber, step(r, d)*(1.0 - smoothstep(r, r*1.2, d))); }
+        if (holeIdx >= 0 && uParallax < 0.5) discard;
+        float nz2 = dfbm(vObj*0.9+7.0);
+        for (int i = 0; i < 24; i++) { if (i >= uScorchCount) break; vec4 s = uScorch[i]; float d = length(vObj - s.xyz); float r = s.w*(0.55+0.9*nz2);
+          dChar = max(dChar, 0.92*(1.0 - smoothstep(r*0.25, r, d)));
+          dEmber = max(dEmber, uScorchHeat[i]*smoothstep(r*0.45, r*0.75, d)*(1.0 - smoothstep(r*0.75, r, d))); }
+        for (int i = 0; i < 4; i++) { if (i >= uCutCount) break; float d = abs(dot(vObj, uCuts[i].xyz) - uCuts[i].w) + nz*2.5 - 0.8;
+          float near = 1.0 - smoothstep(uCutC[i].w*0.85, uCutC[i].w, length(vObj - uCutC[i].xyz));
+          dChar = max(dChar, near*(1.0 - smoothstep(0.0, 7.0, d)));
+          dEmber = max(dEmber, near*uCutHeat*(1.0 - smoothstep(0.0, 1.6, d))); }
+        dChar = clamp(dChar, 0.0, 1.0);`)
+      .replace('#include <map_fragment>', `#include <map_fragment>
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03,0.026,0.024), dChar);
+        if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.05,0.045,0.042);`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 1.0, dChar);')
+      .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor *= 1.0 - 0.85*dChar;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        totalEmissiveRadiance *= uLight * (1.0 - clamp(dChar*1.4, 0.0, 1.0));
+        if (!gl_FrontFacing) totalEmissiveRadiance = vec3(0.08, 0.008, 0.0);
+        totalEmissiveRadiance += vec3(1.0, 0.36, 0.07)*dEmber*1.8*(0.75 + 0.25*sin(uTime*21.0 + nz*30.0));
+        if (holeIdx >= 0) { totalEmissiveRadiance = interiorRoom(vObj, normalize(vObj - vCamObj), uHoles[holeIdx], uHoleN[holeIdx]);
+          diffuseColor.rgb = vec3(0.0); roughnessFactor = 1.0; metalnessFactor = 0.0; }`);
+  };
+  m.customProgramCacheKey = () => 'fleet-hull';
+  return m;
+}
+// Lit parts (grilles, dishes, vents, phaser strips, the core): a flat emissive, driven by the subsystem's look.
+function glowMat(hex, base = 0x111318) { return new THREE.MeshStandardMaterial({ color: base, emissive: hex, emissiveIntensity: 1, metalness: 0.3, roughness: 0.4 }); }
+const navTex = (() => { const c = cv(64, 64), g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.18, 'rgba(255,255,255,0.8)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.15)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+
+// ---------------------------------------------------------------------------------------------------------------
+// Ship builder: one function for every class, reading CLASSES.
+const SYS = [
+  ['bridge', 'Bridge'], ['weapons', 'Weapons'], ['shields', 'Shields'], ['impulse', 'Impulse engines'],
+  ['reactor', 'Reactor (warp core)'], ['nacP', 'Port nacelle'], ['nacS', 'Starboard nacelle'], ['life', 'Life support'],
+];
+function makeDmgUniforms() {
+  return { uHoles: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleN: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleCount: { value: 0 },
+    uScorch: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uScorchHeat: { value: new Array(24).fill(0) }, uScorchCount: { value: 0 },
+    uTime: { value: 0 }, uParallax: { value: holeMode === 'parallax' ? 1 : 0 } };
+}
+function buildShip(id, offset = V3()) {
+  const C = CLASSES[id], T = texturesFor(id), sc = C.saucer, c0 = V3(...sc.c), R = sc.R;
+  const ship = { id, C, root: new THREE.Group(), pieces: {}, mats: [], meshes: [], emitters: [], navs: [], glows: {}, holes: [], scorchN: 0,
+    sys: {}, wedgePower: new Array(8).fill(1), hull: 100, broken: false, t: 0, lights: [], dmgU: makeDmgUniforms(), offset: offset.clone(), tilt: 0 };
+  ship.root.position.copy(offset);
+  for (const [k, n] of SYS) ship.sys[k] = { id: k, name: n, health: 100, state: 'healthy' };
+  const piece = (pid, center, sysId) => {
+    const pivot = new THREE.Group(), inner = new THREE.Group(); pivot.position.copy(center); inner.position.copy(center).negate();
+    pivot.add(inner); ship.root.add(pivot);
+    return (ship.pieces[pid] = { id: pid, pivot, inner, center: center.clone(), vel: V3(), spin: V3(), detached: false, mats: [], sys: sysId, cuts: [] });
+  };
+  const add = (P, geo, mat, sysId, zone = sysId) => {
+    const m = new THREE.Mesh(geo, mat); m.userData = { ship, sys: zone, piece: P }; P.inner.add(m);
+    if (mat.userData.u) { ship.mats.push(mat); P.mats.push(mat); ship.meshes.push(m); }
+    return m;
+  };
+  const tmat = (maps, o) => hullMat(maps, ship, o);
+  const sM = new THREE.Matrix4().makeTranslation(c0.x, c0.y, c0.z).multiply(new THREE.Matrix4().makeScale(1, 1, sc.sz));
+  const Rx = R, Rz = R * sc.sz;
+  const uvTop = (p) => [0.5 - (p.x - c0.x) / (2 * Rx * Math.max(1, sc.sz)), 0.5 + (p.z - c0.z) / (2 * Rx * Math.max(1, sc.sz))];
+  const uvBot = (p) => [0.5 + (p.x - c0.x) / (2 * Rx * Math.max(1, sc.sz)), 0.5 + (p.z - c0.z) / (2 * Rx * Math.max(1, sc.sz))];
+  // Saucer: eight wedges, each with its top, rim, bottom and phaser arcs (one life-support section each).
+  ship.wedges = [];
+  for (let w = 0; w < 8; w++) {
+    const p0 = w / 8 * TAU, p1 = (w + 1) / 8 * TAU, pm = (p0 + p1) / 2;
+    const P = piece('w' + w, V3(c0.x + Math.sin(pm) * Rx * 0.55, c0.y, c0.z + Math.cos(pm) * Rz * 0.55), 'life');
+    P.wedge = w;
+    const mt = tmat(T.top), mr = tmat(T.rim), mb = tmat(T.bottom);
+    add(P, latheGeo(sc.upper, { phi0: p0, phi1: p1, segs: 18, matrix: sM, uv: uvTop }), mt, 'life');
+    add(P, latheGeo(sc.rim, { phi0: p0, phi1: p1, segs: 18, matrix: sM, uv: (p, f, t) => [f, 1 - t] }), mr, 'life');
+    add(P, latheGeo(sc.lower, { phi0: p0, phi1: p1, segs: 18, matrix: sM, uv: uvBot }), mb, 'life');
+    for (const [rad, top] of [[sc.phaserTop, true], [sc.phaserBot, false]]) {
+      const prof = top ? sc.upper : sc.lower, hAt = interpH(prof, rad);
+      const tor = new THREE.TorusGeometry(rad, R * 0.0075, 6, 16, p1 - p0);
+      tor.applyMatrix4(new THREE.Matrix4().makeRotationX(-PI / 2)); tor.applyMatrix4(new THREE.Matrix4().makeRotationY(p0 - PI / 2));
+      tor.applyMatrix4(new THREE.Matrix4().makeTranslation(0, hAt + (top ? 0.15 : -0.15), 0)); tor.applyMatrix4(sM);
+      const gm = glowMat(0xffa23a, 0x2a2d36); gm.emissiveIntensity = 0.25;
+      add(P, tor, gm, 'weapons'); (ship.glows.phaser ||= []).push(gm);
+    }
+    // Radial break lines through the saucer's axis, for when it comes apart.
+    for (const ph of [p0, p1]) { const n = V3(Math.cos(ph), 0, -Math.sin(ph)); P.cuts.push({ n, d: n.dot(c0), c: c0.clone(), r: R * 1.2 }); }
+    P.cuts.push({ n: V3(Math.sin(pm), 0, Math.cos(pm)), d: V3(Math.sin(pm), 0, Math.cos(pm)).dot(c0) + R * 0.12, c: c0.clone(), r: R * 0.25 });
+    ship.wedges.push(P);
+  }
+  // Crown (the bridge, the brain) and ventral dome.
+  {
+    const P = piece('crown', c0.clone().add(V3(0, sc.crown[0][1] * 0.8, 0)), 'bridge');
+    const m = tmat(T.crown, { metal: 0.4 }); ship.crownMat = m;
+    add(P, latheGeo(sc.crown, { segs: 48, matrix: sM, uv: (p, f, t) => [f, 1 - t] }), m, 'bridge');
+    const n = V3(0, 1, 0); P.cuts.push({ n, d: c0.y + sc.crown[sc.crown.length - 1][1] + 0.5, c: c0.clone().add(V3(0, sc.crown[4][1], 0)), r: sc.crown[4][0] * 1.6 });
+    const bcn = nav(ship, P, c0.clone().add(V3(0, sc.crown[0][1] + 0.6, 0)), 0xff2a1a, 'beacon');
+    const P2 = ship.wedges[0];
+    const dm = glowMat(0x6fc6ff, 0x1a2230); dm.emissiveIntensity = C.hull.dish ? 0.35 : 1.0;
+    add(P2, latheGeo(sc.dome, { segs: 48, matrix: sM, uv: () => [0, 0] }), dm, C.hull.dish ? 'life' : 'shields');
+    if (!C.hull.dish) ship.glows.dish = [dm];
+    nav(ship, P2, c0.clone().add(V3(0, sc.dome[sc.dome.length - 1][1] - 0.6, 0)), 0xff2a1a, 'beacon');
+  }
+  // Engineering hull (two halves) or block, with deflector dish and core strip.
+  {
+    const H = C.hull, hc = V3(...H.c), M = new THREE.Matrix4().makeTranslation(hc.x, hc.y, hc.z).multiply(new THREE.Matrix4().makeScale(H.sx, H.sy, 1)).multiply(new THREE.Matrix4().makeRotationX(PI / 2));
+    const zMin = H.prof[0][1], zMax = H.prof[H.prof.length - 1][1];
+    const front = H.prof.filter(([, z]) => z >= H.split), back = H.prof.filter(([, z]) => z <= H.split), rAt = interpR(H.prof, H.split);
+    if (front[0][1] !== H.split) front.unshift([rAt, H.split]); if (back[back.length - 1][1] !== H.split) back.push([rAt, H.split]);
+    // Profiles run along +h (z after the rotation); flip so the lathe's outward rule holds (top, out, down).
+    for (const [pid, prof, zc] of [['hullA', back, (zMin + H.split) / 2], ['hullF', front, (H.split + zMax) / 2]]) {
+      const P = piece(pid, V3(hc.x, hc.y, zc), 'reactor');
+      const pr = prof.slice().reverse(); // fore first: the lathe's outward rule (top, out, down) with h along +z
+      const m = tmat(T.hull);
+      add(P, latheGeo(pr, { segs: 64, matrix: M, uv: (p, f) => [f, (p.z - zMin) / H.texLen] }), m, 'reactor');
+      const n = V3(0, 0, 1); P.cuts.push({ n, d: H.split, c: V3(hc.x, hc.y, H.split), r: rAt * 2.2 });
+      if (pid === 'hullA') nav(ship, P, V3(hc.x, hc.y, zMin - 0.6), 0xffffff, 'aft');
+    }
+    if (H.dish) {
+      const P = ship.pieces.hullF;
+      const dg = latheGeo([[0.0001, -0.9], [H.dish * 0.55, -0.6], [H.dish, 0]], { segs: 48, matrix: new THREE.Matrix4().makeTranslation(hc.x, hc.y, zMax - 0.3).multiply(new THREE.Matrix4().makeRotationX(PI / 2)), uv: () => [0, 0] });
+      const dm = glowMat(0x6fc6ff, 0x1a2230); add(P, dg, dm, 'shields'); ship.glows.dish = [dm];
+    }
+    const cm = glowMat(0x48e0ff, 0x10151c); const cg = new THREE.BoxGeometry(...C.core.size); cg.translate(...C.core.pos);
+    const coreP = ship.pieces[C.core.pos[2] >= H.split ? 'hullF' : 'hullA']; add(coreP, cg, cm, 'reactor'); ship.glows.core = [cm];
+    ship.corePos = V3(...C.core.pos);
+  }
+  // Neck and fin (generic plating).
+  if (C.neck) {
+    const pts = C.neck.poly; const P = piece('neck', V3(0, (pts[0][1] + pts[1][1]) / 2, (pts[0][0] + pts[1][0] + pts[2][0] + pts[3][0]) / 4), 'reactor');
+    add(P, extrudeSide(pts, C.neck.thick), tmat(T.tile), 'reactor');
+    P.cuts.push({ n: V3(0, 1, 0), d: pts[1][1] - 0.5, c: V3(0, pts[1][1], (pts[1][0] + pts[2][0]) / 2), r: 30 });
+    P.cuts.push({ n: V3(0, 1, 0), d: pts[0][1] + 0.5, c: V3(0, pts[0][1], (pts[0][0] + pts[3][0]) / 2), r: 30 });
+    const tm = glowMat(0xff5a2a, 0x22252c);
+    for (const t of C.torpedo) for (const sx of [1, -1]) { const g = new THREE.BoxGeometry(1.6, 1.2, 1.2); g.translate(t[0] * sx, t[1], t[2]); add(P, g, tm, 'weapons'); }
+    ship.glows.torpedo = [tm];
+  } else {
+    const tm = glowMat(0xff5a2a, 0x22252c), P = ship.pieces.hullF;
+    for (const t of C.torpedo) for (const sx of (t[0] ? [1, -1] : [1])) { const g = new THREE.BoxGeometry(1.4, 1.0, 1.0); g.translate(t[0] * sx, t[1], t[2]); add(P, g, tm, 'weapons'); }
+    ship.glows.torpedo = [tm];
+  }
+  if (C.fin) { const P = piece('fin', V3(0, 12, -30), 'reactor'); add(P, extrudeSide(C.fin.poly, C.fin.thick), tmat(T.tile), 'reactor'); P.cuts.push({ n: V3(0, 1, 0), d: C.fin.poly[0][1] + 0.4, c: V3(0, C.fin.poly[0][1], -26), r: 30 }); }
+  // Impulse vents on the saucer's aft rim.
+  {
+    const im = glowMat(0xff3a1c, 0x2a1a18); ship.glows.impulse = [];
+    for (const p of C.impulse) for (const sx of [1, -1]) {
+      const g = new THREE.BoxGeometry(...C.impulseSize); g.translate(p[0] * sx, p[1], p[2]);
+      const m = im.clone(); ship.glows.impulse.push(m); add(ship.wedges[4], g, m, 'impulse');
+    }
+  }
+  // Legs and nacelles, port (+x) and starboard (-x). The shin, nacelle, grille and strobe are one piece.
+  for (const [side, sx] of [['P', 1], ['S', -1]]) {
+    const L = C.legs, hip = V3(L.hip[0] * sx, L.hip[1], L.hip[2]), knee = V3(L.knee[0] * sx, L.knee[1], L.knee[2]), foot = V3(L.foot[0] * sx, L.foot[1], L.foot[2]);
+    const N = C.nacelle, nx = N.x * sx, mid = (N.z0 + N.z1) / 2;
+    const thigh = piece('thigh' + side, hip.clone().add(knee).multiplyScalar(0.5), 'nac' + side);
+    add(thigh, finBetween(hip, knee, L.chord[0], L.thick), tmat(T.tile), 'nac' + side);
+    const shin = piece('shin' + side, V3(nx, N.y, mid), 'nac' + side);
+    add(shin, finBetween(knee.clone().lerp(foot, -0.04), foot, L.chord[1], L.thick), tmat(T.tile), 'nac' + side);
+    const r = N.r, len = N.z1 - N.z0;
+    const prof = [[0.001, len], [r * 0.46, len - 0.5], [r * 0.74, len - 2], [r * 0.92, len - 7], [r, len - 17], [r, 13], [r * 0.85, 5], [r * 0.54, 1], [0.001, 0]];
+    const M = new THREE.Matrix4().makeTranslation(nx, N.y, N.z0).multiply(new THREE.Matrix4().makeRotationX(PI / 2));
+    const nm = tmat(T.nac);
+    add(shin, latheGeo(prof, { segs: 40, matrix: M, uv: (p, f) => [f, (p.z - N.z0) / len] }), nm, 'nac' + side);
+    const gm = glowMat(0x5aa8ff, 0x0d1830);
+    const gg = new THREE.BoxGeometry(r * 0.16, r * 0.42, len * 0.62); gg.translate(nx - sx * r * 0.93, N.y, N.z0 + len * 0.47);
+    add(shin, gg, gm, 'nac' + side);
+    const ring = new THREE.TorusGeometry(r * 0.82, r * 0.1, 8, 40); ring.translate(nx, N.y, N.z1 - 2.6);
+    const rm = glowMat(0x7cc8ff, 0x0d1830); add(shin, ring, rm, 'nac' + side);
+    ship.glows['grille' + side] = [gm, rm];
+    nav(ship, shin, V3(nx, N.y, N.z0 - 0.7), 0xffffff, 'strobe');
+    const dir = foot.clone().sub(knee).normalize();
+    shin.cuts.push({ n: dir, d: dir.dot(knee), c: knee.clone(), r: L.chord[1] * 1.2 });
+    thigh.cuts.push({ n: dir, d: dir.dot(knee), c: knee.clone(), r: L.chord[0] * 1.2 });
+    const tdir = knee.clone().sub(hip).normalize(); thigh.cuts.push({ n: tdir, d: tdir.dot(hip), c: hip.clone(), r: L.chord[0] * 1.2 });
+    ship.knee = ship.knee || {}; ship.knee[side] = { knee, foot, dir, mid: V3(nx, N.y, mid), top: V3(nx, N.y + r, N.z0 + len * 0.3) };
+  }
+  // Position lights on the saucer rim: port red, starboard green.
+  nav(ship, ship.wedges[2], V3(c0.x + Rx + 0.8, c0.y, c0.z), 0xff2a1a, 'port');
+  nav(ship, ship.wedges[6], V3(c0.x - Rx - 0.8, c0.y, c0.z), 0x22ff66, 'stbd');
+  // Four fire lights per ship, made now so the shaders never recompile mid-battle.
+  for (let i = 0; i < 4; i++) { const l = new THREE.PointLight(0xff7a2a, 0, R * 0.9, 1.6); ship.root.add(l); ship.lights.push({ l, until: 0, at: null, anchor: null }); }
+  // The shield bubble.
+  ship.bounds = new THREE.Box3().setFromObject(ship.root); ship.bounds.translate(offset.clone().negate());
+  const bs = ship.bounds.getSize(V3()), bc = ship.bounds.getCenter(V3());
+  ship.shield = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), shieldMat()); ship.shield.scale.set(bs.x * 0.62, bs.y * 0.9 + 10, bs.z * 0.6); ship.shield.position.copy(bc);
+  ship.shield.userData.hits = []; ship.root.add(ship.shield);
+  ship.center = bc;
+  scene.add(ship.root);
+  return ship;
+}
+function interpH(prof, r) { for (let i = 1; i < prof.length; i++) { const [r0, h0] = prof[i - 1], [r1, h1] = prof[i]; if ((r - r0) * (r - r1) <= 0) return lerp(h0, h1, (r - r0) / ((r1 - r0) || 1)); } return prof[0][1]; }
+function interpR(prof, z) { for (let i = 1; i < prof.length; i++) { const [r0, z0] = prof[i - 1], [r1, z1] = prof[i]; if ((z - z0) * (z - z1) <= 0) return lerp(r0, r1, (z - z0) / ((z1 - z0) || 1)); } return prof[0][0]; }
+function nav(ship, P, pos, hex, kind) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: navTex, color: hex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  s.position.copy(pos); const k = ship.C.length / 312; s.scale.setScalar((kind === 'strobe' ? 7 : 5) * Math.max(0.6, k)); P.inner.add(s);
+  ship.navs.push({ s, kind, P, alive: 1 });
+  return s;
+}
+function shieldMat() {
+  return new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    uniforms: { uHits: { value: Array.from({ length: 6 }, () => new THREE.Vector4(0, 0, 0, -10)) }, uTime: { value: 0 } },
+    vertexShader: 'varying vec3 vP; varying vec3 vN; varying vec3 vV; void main(){ vP = position; vec4 w = modelMatrix*vec4(position,1.); vN = normalize(mat3(modelMatrix)*normal); vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix*viewMatrix*w; }',
+    fragmentShader: `uniform vec4 uHits[6]; uniform float uTime; varying vec3 vP; varying vec3 vN; varying vec3 vV;
+      void main(){ float a = 0.0; for (int i = 0; i < 6; i++) { float age = uTime - uHits[i].w; if (age < 0.0 || age > 1.6) continue;
+        float d = length(vP - uHits[i].xyz); float ring = exp(-pow((d - age*1.1)*9.0, 2.0)); float core = exp(-d*d*30.0)*(1.0 - age/1.6);
+        vec2 hx = abs(fract(vP.xz*14.0 + vP.y*7.0) - 0.5); float hex = step(0.42, max(hx.x, hx.y));
+        a += (ring*(0.6 + 0.4*hex) + core*1.5)*(1.0 - age/1.6) * smoothstep(0.9, 0.0, d); }
+        float fres = pow(1.0 - abs(dot(vN, vV)), 3.0);
+        gl_FragColor = vec4(vec3(0.35, 0.65, 1.0)*a*(0.4 + fres), 1.0); }` });
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Particles: two pools (glowing and smoky), one draw call each, stepped on the fixed step.
+const partTex = (() => { const c = cv(64, 64), g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.4, 'rgba(255,255,255,0.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+class Pool {
+  constructor(max, additive) {
+    this.max = max; this.n = 0; this.next = 0;
+    this.p = new Float32Array(max * 3); this.v = new Float32Array(max * 3); this.life = new Float32Array(max); this.ttl = new Float32Array(max);
+    this.s0 = new Float32Array(max); this.s1 = new Float32Array(max); this.c0 = new Float32Array(max * 4); this.c1 = new Float32Array(max * 4); this.drag = new Float32Array(max);
+    this.col = new Float32Array(max * 4); this.size = new Float32Array(max);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(this.p, 3).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('aColor', new THREE.BufferAttribute(this.col, 4).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('aSize', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));
+    this.mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      uniforms: { uTex: { value: partTex }, uScale: { value: 500 } },
+      vertexShader: 'attribute vec4 aColor; attribute float aSize; uniform float uScale; varying vec4 vC; void main(){ vec4 mv = modelViewMatrix*vec4(position,1.); gl_PointSize = clamp(aSize*uScale/max(-mv.z, 0.1), 0.0, 600.0); gl_Position = projectionMatrix*mv; vC = aColor; }',
+      fragmentShader: 'uniform sampler2D uTex; varying vec4 vC; void main(){ float a = texture2D(uTex, gl_PointCoord).a; gl_FragColor = vec4(vC.rgb, vC.a*a); }' });
+    this.points = new THREE.Points(g, this.mat); this.points.frustumCulled = false; this.points.renderOrder = additive ? 3 : 2; scene.add(this.points);
+  }
+  spawn(pos, vel, ttl, s0, s1, c0, c1, drag) {
+    const i = this.next; this.next = (this.next + 1) % this.max;
+    this.p.set([pos.x, pos.y, pos.z], i * 3); this.v.set([vel.x, vel.y, vel.z], i * 3);
+    this.life[i] = 0; this.ttl[i] = ttl; this.s0[i] = s0; this.s1[i] = s1; this.c0.set(c0, i * 4); this.c1.set(c1, i * 4); this.drag[i] = drag;
+  }
+  step(dt) {
+    for (let i = 0; i < this.max; i++) {
+      if (this.ttl[i] <= 0) { this.size[i] = 0; continue; }
+      this.life[i] += dt; const t = this.life[i] / this.ttl[i];
+      if (t >= 1) { this.ttl[i] = 0; this.size[i] = 0; continue; }
+      const k = Math.exp(-this.drag[i] * dt);
+      for (let a = 0; a < 3; a++) { this.v[i * 3 + a] *= k; this.p[i * 3 + a] += this.v[i * 3 + a] * dt; }
+      this.size[i] = lerp(this.s0[i], this.s1[i], Math.sqrt(t));
+      for (let a = 0; a < 4; a++) this.col[i * 4 + a] = lerp(this.c0[i * 4 + a], this.c1[i * 4 + a], t);
+    }
+  }
+  upload() { const a = this.points.geometry.attributes; a.position.needsUpdate = a.aColor.needsUpdate = a.aSize.needsUpdate = true; }
+  clear() { this.ttl.fill(0); this.size.fill(0); this.upload(); }
+}
+const glowPool = new Pool(6000, true), smokePool = new Pool(3000, false);
+// Each effect's look, in one table: what the colour means is fixed (orange fire, cyan-white coolant, violet plasma).
+const FX = {
+  fire: { pool: glowPool, life: [0.5, 1.1], speed: [16, 30], spread: 0.35, size: [2.5, 9], c0: [1, 0.82, 0.45, 1], c1: [0.7, 0.12, 0.02, 0], drag: 1.3, also: ['smoke', 0.25] },
+  plasma: { pool: glowPool, life: [0.8, 1.5], speed: [18, 34], spread: 0.25, size: [2, 8], c0: [0.8, 0.6, 1, 1], c1: [0.25, 0.12, 0.9, 0], drag: 0.8 },
+  coolant: { pool: smokePool, life: [2.2, 3.6], speed: [8, 18], spread: 0.3, size: [2, 15], c0: [0.92, 0.98, 1, 0.6], c1: [0.7, 0.88, 1, 0], drag: 0.9, also: ['glitter', 0.5] },
+  glitter: { pool: glowPool, life: [1, 2], speed: [4, 10], spread: 1.0, size: [0.7, 0.3], c0: [0.85, 0.97, 1, 1], c1: [0.6, 0.85, 1, 0], drag: 0.6 },
+  sparks: { pool: glowPool, life: [0.25, 0.6], speed: [22, 55], spread: 1.0, size: [0.9, 0.3], c0: [1, 0.95, 0.6, 1], c1: [1, 0.4, 0.1, 0], drag: 2 },
+  embers: { pool: glowPool, life: [1, 2.5], speed: [2, 6], spread: 1.0, size: [0.8, 0.3], c0: [1, 0.6, 0.2, 1], c1: [0.6, 0.1, 0, 0], drag: 0.4 },
+  smoke: { pool: smokePool, life: [2.5, 4.5], speed: [3, 9], spread: 0.6, size: [4, 16], c0: [0.1, 0.09, 0.085, 0.5], c1: [0.05, 0.05, 0.05, 0], drag: 0.5 },
+  fireball: { pool: glowPool, life: [0.8, 2.0], speed: [10, 70], spread: 1.0, size: [8, 26], c0: [1, 0.9, 0.6, 1], c1: [0.6, 0.1, 0.02, 0], drag: 1.6, also: ['smoke', 0.3] },
+};
+const _d = V3(), _o = V3(), _q = V3();
+function emit(type, pos, dir, count, scale = 1, inherit = null) {
+  const f = FX[type];
+  for (let i = 0; i < count; i++) {
+    _d.set(rr(fxRng, -1, 1), rr(fxRng, -1, 1), rr(fxRng, -1, 1)).normalize().multiplyScalar(f.spread).add(dir).normalize();
+    const sp = rr(fxRng, ...f.speed) * scale; const v = _d.clone().multiplyScalar(sp); if (inherit) v.add(inherit);
+    f.pool.spawn(pos, v, rr(fxRng, ...f.life), f.size[0] * scale, f.size[1] * scale, f.c0, f.c1, f.drag);
+    if (f.also && fxRng() < f.also[1]) emit(f.also[0], pos, dir, 1, scale, inherit);
+  }
+}
+// An emitter on the ship: a programme of phases (fire for 3 s, then smoke, then embers), carried by its piece.
+function addEmitter(ship, P, pos, dir, phases, tag) {
+  const e = { P, pos: pos.clone(), dir: dir.clone().normalize(), phases, t: 0, acc: 0, tag };
+  ship.emitters.push(e); return e;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Damage: one function for every source (a click, a system button, a scenario), and one place a state becomes a look.
+const stateOf = (h) => h <= 0 ? 'destroyed' : h < 33 ? 'critical' : h < 66 ? 'damaged' : 'healthy';
+function damage(ship, sysId, amount, hit = null) {
+  if (ship.broken) return;
+  const S = ship.sys[sysId];
+  if (hit && ship.sys.shields.health > 0 && shieldsUp && !hit.bypass) { // the bubble takes it
+    shieldHit(ship, hit.point); S === ship.sys.shields || hurt(ship, 'shields', amount * 0.45); return;
+  }
+  if (hit) { scorch(ship, hit.point, hit.big ? 5 : 3.2); if (hit.big) hole(ship, hit); emit('sparks', toWorld(hit.mesh, hit.point), hit.worldNormal, 40); }
+  if (sysId === 'life' && hit && hit.mesh.userData.piece.wedge !== undefined) { const w = hit.mesh.userData.piece.wedge; ship.wedgePower[w] = clamp(ship.wedgePower[w] - amount / 60, 0, 1); }
+  hurt(ship, sysId, amount);
+  ship.hull = clamp(ship.hull - amount * 0.35, 0, 100);
+  if (ship.hull <= 0) breakup(ship);
+}
+function hurt(ship, sysId, amount) {
+  const S = ship.sys[sysId]; if (S.health <= 0) return;
+  S.health = clamp(S.health - amount, 0, 100);
+  const before = S.state; S.state = stateOf(S.health);
+  if (sysId === 'life') { // spread the loss over the sections, worst first
+    const lost = 1 - S.health / 100; const order = [3, 1, 6, 0, 5, 2, 7, 4];
+    order.forEach((w, i) => { ship.wedgePower[w] = Math.min(ship.wedgePower[w], clamp(1 - (lost * 8 - i) , 0, 1)); });
+  }
+  if (S.state !== before) applyLook(ship, sysId);
+  refreshPanel();
+}
+function repair(ship, sysId, amount) {
+  const S = ship.sys[sysId]; if (S.health <= 0 || ship.broken) return;
+  S.health = clamp(S.health + amount, 0, 100); S.state = stateOf(S.health);
+  if (sysId === 'life') ship.wedgePower = ship.wedgePower.map((p) => Math.max(p, S.health / 100));
+  applyLook(ship, sysId); refreshPanel();
+}
+function toWorld(mesh, p) { return p.clone().applyMatrix4(mesh.matrixWorld); }
+function systemEmitters(ship, tag) { ship.emitters = ship.emitters.filter((e) => e.tag !== tag); }
+// The one place a subsystem's state becomes its look on the ship (design.md, "Reading damage by eye").
+function applyLook(ship, sysId) {
+  const S = ship.sys[sysId], st = S.state, C = ship.C, c0 = V3(...C.saucer.c), sc = C.saucer;
+  systemEmitters(ship, sysId);
+  const E = (P, pos, dir, phases) => addEmitter(ship, P, pos, dir, phases, sysId);
+  if (sysId === 'nacP' || sysId === 'nacS') {
+    const side = sysId.slice(3), k = ship.knee[side], P = ship.pieces['shin' + side];
+    if (st === 'damaged') E(P, k.top, V3(0, 1, -0.6), [{ type: 'plasma', rate: 8, dur: 1e9, scale: C.nacelle.r / 6.5 }]);
+    if (st === 'critical') { E(P, k.top, V3(0, 1, -0.4), [{ type: 'plasma', rate: 70, dur: 1e9, scale: C.nacelle.r / 6.5 }]); E(P, k.mid.clone().add(V3(0, -C.nacelle.r, 0)), V3(0, -1, 0), [{ type: 'sparks', rate: 18, dur: 1e9 }]); }
+    if (st === 'destroyed') snapNacelle(ship, side);
+  }
+  if (sysId === 'reactor') {
+    const belly = ship.corePos.clone().add(V3(0, -1, 0)), P = ship.pieces[ship.corePos.z >= C.hull.split ? 'hullF' : 'hullA'], sc2 = C.length / 312;
+    if (st === 'damaged') E(P, belly, V3(0, -1, -0.3), [{ type: 'coolant', rate: 45, dur: 1e9, scale: sc2 }]);
+    if (st === 'critical') { E(P, belly, V3(0, -1, -0.2), [{ type: 'coolant', rate: 110, dur: 1e9, scale: sc2 }]);
+      for (const sx of [1, -1]) E(P, belly.clone().add(V3(sx * C.core.size[0] * 2, 2, 4)), V3(sx, -0.4, 0), [{ type: 'coolant', rate: 40, dur: 1e9, scale: sc2 * 0.8 }]); }
+    if (st === 'destroyed') breakup(ship);
+  }
+  if (sysId === 'bridge') {
+    const top = c0.clone().add(V3(0, sc.crown[0][1], 0)), P = ship.pieces.crown, s2 = C.saucer.R / 72;
+    if (st === 'damaged') E(P, top, V3(0, 1, -0.3), [{ type: 'smoke', rate: 14, dur: 1e9, scale: s2 }]);
+    if (st === 'critical') { E(P, c0.clone().add(V3(sc.crown[3][0] * 0.9, sc.crown[3][1], 0)), V3(1, 0.5, 0), [{ type: 'fire', rate: 70, dur: 1e9, scale: s2 }]); E(P, top, V3(0, 1, 0), [{ type: 'smoke', rate: 25, dur: 1e9, scale: s2 }]); }
+    if (st === 'destroyed') blowCrown(ship);
+  }
+  if (sysId === 'weapons') {
+    const mounts = [0.6, 2.4, 4.0, 5.5].map((a) => c0.clone().add(V3(Math.sin(a) * sc.phaserTop, interpH(sc.upper, sc.phaserTop) + 0.3, Math.cos(a) * sc.phaserTop * sc.sz)));
+    if (st === 'damaged' || st === 'critical') mounts.slice(0, st === 'damaged' ? 2 : 4).forEach((m, i) => E(wedgeAt(ship, m), m, V3(0, 1, 0), [{ type: 'sparks', rate: 14, dur: 1e9 }]));
+    if (st === 'destroyed') mounts.forEach((m) => { const h = hitAt(ship, m, V3(0, 1, 0)); if (h) { h.big = true; h.r = C.saucer.R * 0.045; hole(ship, h); } });
+  }
+  if (sysId === 'shields') { const P = C.hull.dish ? ship.pieces.hullF : ship.wedges[0];
+    if (st === 'critical' || st === 'destroyed') E(P, C.hull.dish ? V3(C.hull.c[0], C.hull.c[1], C.hull.prof[C.hull.prof.length - 1][1]) : c0.clone().add(V3(0, sc.dome[3][1], 0)), V3(0, -0.2, 1), [{ type: 'sparks', rate: st === 'critical' ? 20 : 6, dur: 1e9 }]);
+    ship.shield.visible = shieldsUp && st !== 'destroyed'; }
+  if (sysId === 'impulse') {
+    C.impulse.forEach((p) => [1, -1].forEach((sx, i) => {
+      const at = V3(p[0] * sx, p[1], p[2] - C.impulseSize[2]), P = ship.wedges[4];
+      if (st === 'damaged') E(P, at, V3(0, 0.2, -1), [{ type: 'smoke', rate: 10, dur: 1e9, scale: C.length / 312 }]);
+      if (st === 'critical' && i === 0) E(P, at, V3(0, 0.2, -1), [{ type: 'fire', rate: 45, dur: 1e9, scale: C.length / 312 }]);
+      if (st === 'destroyed') E(P, at, V3(0, 0.3, -1), [{ type: 'fire', rate: 40, dur: 1e9, scale: C.length / 312 }]);
+    }));
+  }
+  if (sysId === 'life' && st === 'destroyed') ship.wedgePower.fill(0);
+}
+function wedgeAt(ship, p) { const c0 = V3(...ship.C.saucer.c); let a = Math.atan2(p.x - c0.x, p.z - c0.z); if (a < 0) a += TAU; return ship.wedges[Math.floor(a / TAU * 8) % 8]; }
+// Find the hull under a point, looking along a direction (for scenarios: deterministic hits on the real surface).
+const ray = new THREE.Raycaster();
+function hitAt(ship, pLocal, dirLocal) {
+  ship.root.updateMatrixWorld(true);
+  const o = pLocal.clone().add(dirLocal.clone().normalize().multiplyScalar(400)).applyMatrix4(ship.root.matrixWorld);
+  const d = dirLocal.clone().normalize().negate().transformDirection(ship.root.matrixWorld);
+  ray.set(o, d); ray.far = 900;
+  const hits = ray.intersectObjects(ship.meshes.filter((m) => !m.userData.piece.detached), false);
+  return hits.length ? hitInfo(hits[0]) : null;
+}
+function hitInfo(h) {
+  const mesh = h.object, inv = new THREE.Matrix4().copy(mesh.matrixWorld).invert();
+  const point = h.point.clone().applyMatrix4(inv); // ship space (mesh space)
+  const n = h.face.normal.clone(); // already in mesh space
+  const worldNormal = n.clone().transformDirection(mesh.matrixWorld);
+  return { mesh, point, normal: n, worldNormal, ship: mesh.userData.ship, sys: mesh.userData.sys };
+}
+function scorch(ship, p, r) {
+  const U = ship.dmgU, i = ship.scorchN++ % 24;
+  U.uScorch.value[i].set(p.x, p.y, p.z, r * ship.C.length / 312 + 1.2); U.uScorchHeat.value[i] = 1; U.uScorchCount.value = Math.min(24, ship.scorchN);
+}
+function hole(ship, hit) {
+  if (ship.holes.length >= 8) return;
+  const U = ship.dmgU, i = ship.holes.length, r = hit.r ?? (2.6 + fxRng() * 1.8) * Math.max(0.6, ship.C.length / 312);
+  const type = hit.sys === 'nacP' || hit.sys === 'nacS' ? 1 : hit.sys === 'reactor' ? 2 : 0;
+  U.uHoles.value[i].set(hit.point.x, hit.point.y, hit.point.z, r); U.uHoleN.value[i].set(hit.normal.x, hit.normal.y, hit.normal.z, type); U.uHoleCount.value = i + 1;
+  const P = hit.mesh.userData.piece;
+  const interior = holeInterior(hit.point, hit.normal, r, type); P.inner.add(interior); interior.visible = holeMode === 'modelled';
+  ship.holes.push({ ...hit, r, type, interior });
+  const vent = type === 1 ? 'plasma' : type === 2 ? 'coolant' : 'fire', s = r / 3.5;
+  addEmitter(ship, P, hit.point.clone().add(hit.normal.clone().multiplyScalar(0.4)), hit.normal,
+    [{ type: vent, rate: 110, dur: 3.2, scale: s, light: type === 0 }, { type: 'smoke', rate: 14, dur: 7, scale: s }, { type: 'embers', rate: 3, dur: 1e9, scale: s }], 'hole');
+}
+// A modelled hole's inside: deck plates every 3.4 m and walls every 6 m (the same grid the parallax shader draws),
+// clipped to the hole, lit by emergency light.
+function holeInterior(c, n, r, type) {
+  const g = new THREE.Group();
+  const mat = new THREE.ShaderMaterial({ side: THREE.DoubleSide,
+    uniforms: { uC: { value: new THREE.Vector4(c.x, c.y, c.z, r * 1.25) }, uN: { value: new THREE.Vector4(n.x, n.y, n.z, type) }, uTime: sharedTime },
+    vertexShader: 'varying vec3 vObj; varying vec3 vN; void main(){ vObj = position; vN = normal; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+    fragmentShader: `uniform vec4 uC; uniform vec4 uN; uniform float uTime; varying vec3 vObj; varying vec3 vN;
+      void main(){ vec3 d = vObj - uC.xyz; float dl = length(d); float s = dot(d, uN.xyz);
+        if (dl > uC.w || s > 0.25 || s < -uC.w*1.3) discard;
+        vec3 L = uN.w < 0.5 ? vec3(1.0,0.16,0.06) : (uN.w < 1.5 ? vec3(0.55,0.32,1.0) : vec3(0.35,0.85,1.0));
+        vec3 base = abs(vN.y) > 0.5 ? (gl_FrontFacing ? vec3(0.28,0.25,0.23) : vec3(0.06)) : vec3(0.13);
+        float fall = 1.0 - dl/uC.w; float fl = 0.85 + 0.15*sin(uTime*9.0 + vObj.x);
+        gl_FragColor = vec4(base*(0.1 + 2.2*L*fall*fl), 1.0); }` });
+  const R = r * 1.25, cell = [6, 3.4, 6];
+  const back = new THREE.Mesh(new THREE.SphereGeometry(R * 0.98, 20, 12), mat.clone()); back.material.side = THREE.BackSide; back.material.uniforms = mat.uniforms; back.position.copy(c); g.add(back);
+  for (let y = Math.ceil((c.y - R) / cell[1]) * cell[1]; y < c.y + R; y += cell[1]) {
+    const ch = Math.sqrt(Math.max(0, R * R - (y - c.y) ** 2)); if (ch < 0.5) continue;
+    const d = new THREE.CircleGeometry(ch, 20); d.rotateX(-PI / 2); d.translate(c.x, y, c.z); g.add(new THREE.Mesh(d, mat));
+  }
+  for (const ax of ['x', 'z']) for (let v = Math.ceil((c[ax] - R) / 6) * 6; v < c[ax] + R; v += 6) {
+    const pl = new THREE.PlaneGeometry(R * 2, R * 2); if (ax === 'x') pl.rotateY(PI / 2); pl.translate(ax === 'x' ? v : c.x, c.y, ax === 'z' ? v : c.z);
+    g.add(new THREE.Mesh(pl, mat));
+  }
+  return g;
+}
+const sharedTime = { value: 0 };
+function shieldHit(ship, pLocal) {
+  const sh = ship.shield, inv = V3().copy(pLocal).sub(sh.position).divide(sh.scale).normalize();
+  sh.userData.hits.push(inv); const u = sh.material.uniforms; const i = (sh.userData.n = ((sh.userData.n || 0) + 1) % 6);
+  u.uHits.value[i].set(inv.x, inv.y, inv.z, ship.t);
+  emit('sparks', pLocal.clone().applyMatrix4(ship.root.matrixWorld), inv.clone(), 25);
+}
+// A piece breaks away: it gets its own motion, its broken edges are charred toward the break, its lights die.
+function detach(ship, P, vel, spin, heat = 1) {
+  if (P.detached) return; P.detached = true; P.vel.copy(vel); P.spin.copy(spin);
+  for (const m of P.mats) { const u = m.userData.u; u.uCutCount.value = Math.min(4, P.cuts.length); P.cuts.slice(0, 4).forEach((c, i) => { u.uCuts.value[i].set(c.n.x, c.n.y, c.n.z, c.d); u.uCutC.value[i].set(c.c.x, c.c.y, c.c.z, c.r); }); u.uCutHeat.value = heat; }
+  P.dieAt = ship.t; P.lightLeft = 1;
+}
+function charStump(ship, P, cut) { // the part left on the ship is charred at the break too
+  for (const m of P.mats) { const u = m.userData.u, i = u.uCutCount.value; if (i >= 4) continue; u.uCuts.value[i].set(cut.n.x, cut.n.y, cut.n.z, cut.d); u.uCutC.value[i].set(cut.c.x, cut.c.y, cut.c.z, cut.c.r ?? cut.r); u.uCutCount.value = i + 1; u.uCutHeat.value = 1; }
+}
+function snapNacelle(ship, side) {
+  const P = ship.pieces['shin' + side], T = ship.pieces['thigh' + side], k = ship.knee[side], sx = side === 'P' ? 1 : -1, s = ship.C.length / 312;
+  detach(ship, P, V3(sx * 7, 2.5, -5).multiplyScalar(s), V3(0.12, 0.05, sx * 0.35));
+  charStump(ship, T, { n: k.dir, d: k.dir.dot(k.knee), c: k.knee, r: ship.C.legs.chord[0] * 1.2 });
+  const w = k.knee.clone().applyMatrix4(ship.root.matrixWorld);
+  emit('fireball', w, k.dir, 60, 0.6 * s); emit('sparks', w, k.dir, 120);
+  addEmitter(ship, P, k.knee, k.dir, [{ type: 'fire', rate: 70, dur: 4, scale: 0.6 * s, light: true }, { type: 'smoke', rate: 12, dur: 8, scale: s }, { type: 'embers', rate: 4, dur: 1e9 }], 'debris');
+  addEmitter(ship, T, k.knee, k.dir, [{ type: 'plasma', rate: 90, dur: 3, scale: 0.7 * s }, { type: 'sparks', rate: 20, dur: 6 }, { type: 'embers', rate: 3, dur: 1e9 }], 'stump');
+  systemEmitters(ship, 'nac' + side);
+  flash(w, 40 * s, 0.5);
+}
+function blowCrown(ship) {
+  const P = ship.pieces.crown, s = ship.C.length / 312, c0 = V3(...ship.C.saucer.c), sc = ship.C.saucer;
+  detach(ship, P, V3(1.5, 14, -3).multiplyScalar(s), V3(0.6, 0.2, 0.4));
+  const base = c0.clone().add(V3(0, sc.crown[4][1] + 0.2, 0));
+  const h = hitAt(ship, base.clone().add(V3(sc.crown[4][0] * 0.5, 0, 0)), V3(0, 1, 0));
+  if (h) { h.big = true; h.r = sc.crown[4][0] * 0.9; hole(ship, h); }
+  const w = base.clone().applyMatrix4(ship.root.matrixWorld); emit('fireball', w, V3(0, 1, 0), 90, 0.7 * s); flash(w, 50 * s, 0.6);
+  addEmitter(ship, P, base, V3(0, -1, 0), [{ type: 'fire', rate: 50, dur: 3, scale: 0.5 * s }, { type: 'smoke', rate: 10, dur: 6, scale: 0.6 * s }], 'debris');
+}
+function breakup(ship) {
+  if (ship.broken) return; ship.broken = true;
+  for (const k in ship.sys) { ship.sys[k].health = 0; ship.sys[k].state = 'destroyed'; }
+  const s = ship.C.length / 312, core = ship.corePos.clone(), cw = core.clone().applyMatrix4(ship.root.matrixWorld);
+  for (const P of Object.values(ship.pieces)) {
+    if (P.detached) continue;
+    const out = P.center.clone().sub(core); out.y *= 1.6; const d = out.length() || 1; out.normalize();
+    const sp = (6 + 10 * fxRng()) * s * (1 + 40 / (d + 30));
+    detach(ship, P, out.multiplyScalar(sp).add(V3(rr(fxRng, -2, 2), rr(fxRng, -2, 2), rr(fxRng, -2, 2)).multiplyScalar(s)),
+      V3(rr(fxRng, -0.35, 0.35), rr(fxRng, -0.35, 0.35), rr(fxRng, -0.35, 0.35)));
+    const ec = P.cuts[0] ? P.cuts[0].c.clone().lerp(P.center, 0.5) : P.center.clone();
+    if (fxRng() < 0.75) addEmitter(ship, P, ec, out, [{ type: 'fire', rate: 30 + 40 * fxRng(), dur: 2 + 3 * fxRng(), scale: 0.55 * s }, { type: 'smoke', rate: 8, dur: 6, scale: 0.7 * s }, { type: 'embers', rate: 3, dur: 1e9 }], 'debris');
+  }
+  ship.emitters = ship.emitters.filter((e) => e.tag === 'debris' || e.tag === 'hole');
+  emit('fireball', cw, V3(0, 1, 0), 500, 1.4 * s); emit('coolant', cw, V3(0, 0, 1), 260, 2.2 * s); emit('sparks', cw, V3(0, 1, 0), 300, 1.4);
+  flash(cw, 260 * s, 1.4); shockwave(ship, cw, ship.C.length * 1.6); debrisBurst(cw, ship.C.length);
+  ship.shield.visible = false; refreshPanel();
+}
+// One-shot effects: flashes, the shockwave ring and debris shards.
+const oneshots = [];
+function flash(pos, size, dur) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: navTex, color: 0xffe2b0, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  s.position.copy(pos); scene.add(s); oneshots.push({ obj: s, t: 0, dur, step(o, k) { o.obj.scale.setScalar(size * (0.4 + k)); o.obj.material.opacity = (1 - k) ** 2; } });
+}
+function shockwave(ship, pos, size) {
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 96), new THREE.MeshBasicMaterial({ color: 0x9fd0ff, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  m.rotation.x = -PI / 2; m.position.copy(pos); scene.add(m);
+  oneshots.push({ obj: m, t: 0, dur: 2.6, step(o, k) { o.obj.scale.setScalar(size * Math.sqrt(k) + 1); o.obj.material.opacity = (1 - k) ** 1.5 * 0.8; } });
+}
+const shardGeo = new THREE.TetrahedronGeometry(1, 0);
+const shards = new THREE.InstancedMesh(shardGeo, new THREE.MeshStandardMaterial({ color: 0xbfbcb4, metalness: 0.6, roughness: 0.5, emissive: 0x200800 }), 400);
+shards.count = 0; shards.frustumCulled = false; scene.add(shards);
+const shardData = [];
+function debrisBurst(pos, L) {
+  shardData.length = 0;
+  for (let i = 0; i < 400; i++) shardData.push({ p: pos.clone().add(V3(rr(fxRng, -1, 1), rr(fxRng, -1, 1), rr(fxRng, -1, 1)).multiplyScalar(L * 0.15)), v: V3(rr(fxRng, -1, 1), rr(fxRng, -0.6, 0.6), rr(fxRng, -1, 1)).normalize().multiplyScalar(rr(fxRng, 8, 60) * L / 312),
+    q: new THREE.Quaternion(), w: V3(rr(fxRng, -3, 3), rr(fxRng, -3, 3), rr(fxRng, -3, 3)), s: rr(fxRng, 0.4, 3.5) * L / 312 });
+  shards.count = 400;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The fixed step: pieces move, emitters run their programmes, lights blink and flicker, particles age.
+const DT = 1 / 60;
+let ships = [], active = null, simT = 0;
+const _m = new THREE.Matrix4(), _qq = new THREE.Quaternion(), _e = new THREE.Euler();
+function flick(t, seed, rate = 1) { const x = Math.sin(t * 12.9898 * rate + seed * 78.233) * 43758.5453; return x - Math.floor(x); }
+function stepShip(ship, dt) {
+  ship.t += dt; ship.dmgU.uTime.value = ship.t;
+  ship.dmgU.uParallax.value = holeMode === 'parallax' ? 1 : 0;
+  for (let i = 0; i < 24; i++) ship.dmgU.uScorchHeat.value[i] = Math.max(0, ship.dmgU.uScorchHeat.value[i] - dt / 20);
+  ship.root.updateMatrixWorld(true);
+  // Limping on one nacelle: a slow list toward the lost side.
+  const lost = (ship.sys.nacP.health <= 0 ? 1 : 0) - (ship.sys.nacS.health <= 0 ? 1 : 0);
+  if (!ship.broken) { ship.tilt = lerp(ship.tilt, lost * 0.07, dt * 0.6); ship.root.rotation.z = ship.tilt + Math.sin(ship.t * 0.7) * 0.004 * Math.abs(lost); }
+  for (const P of Object.values(ship.pieces)) {
+    if (!P.detached) continue;
+    P.pivot.position.addScaledVector(P.vel, dt);
+    _qq.setFromEuler(_e.set(P.spin.x * dt, P.spin.y * dt, P.spin.z * dt)); P.pivot.quaternion.multiply(_qq);
+    for (const m of P.mats) m.userData.u.uCutHeat.value = Math.max(0, m.userData.u.uCutHeat.value - dt / 30);
+    P.lightLeft = Math.max(0, P.lightLeft - dt / 2.2);
+  }
+  // Power: the window light of each section, the crown, flicker when the reactor or a section is failing.
+  const reactor = ship.sys.reactor.state, life = ship.sys.life.state, t = ship.t;
+  const shipFlick = reactor === 'critical' ? (flick(t, 1, 0.5) < 0.18 ? 0.25 : 1) : 1;
+  for (const P of Object.values(ship.pieces)) {
+    let L = ship.broken ? 0 : 1;
+    if (P.wedge !== undefined) { const p = ship.wedgePower[P.wedge]; L = p >= 1 ? 1 : p <= 0 ? 0 : (flick(t, P.wedge, 0.6) < 0.35 * (1 - p) + 0.1 ? 0.15 : p); }
+    if (P.id === 'crown') { const b = ship.sys.bridge.state; L = b === 'healthy' ? 1 : b === 'damaged' ? (flick(t, 9) < 0.25 ? 0.2 : 1) : 0; }
+    if (P.detached) L = P.lightLeft * (flick(t, P.id.length * 3) < 0.4 ? 0.2 : 1);
+    else if (ship.broken) L = 0;
+    L *= shipFlick;
+    for (const m of P.mats) m.userData.u.uLight.value = L;
+  }
+  // Glowing parts follow their subsystem.
+  const gl = (arr, v) => arr && arr.forEach((m) => { m.emissiveIntensity = v; });
+  for (const side of ['P', 'S']) {
+    const st = ship.sys['nac' + side].state, P = ship.pieces['shin' + side];
+    let v = st === 'healthy' ? 1.6 : st === 'damaged' ? (flick(t, side === 'P' ? 3 : 4) < 0.3 ? 0.3 : 1.4) : st === 'critical' ? 0.45 * (flick(t, 5) < 0.5 ? 0.3 : 1) : 1.2 * P.lightLeft * (flick(t, 6) < 0.5 ? 0.2 : 1);
+    if (ship.broken) v = 1.2 * P.lightLeft;
+    gl(ship.glows['grille' + side], v);
+  }
+  { const st = reactor, m = ship.glows.core[0];
+    if (st === 'critical' || st === 'destroyed') { const k = 0.5 + 0.5 * Math.sin(t * 6); m.emissive.setRGB(1, 0.3 + 0.2 * k, 0.1); m.emissiveIntensity = ship.broken ? 0 : 1 + 2 * k; }
+    else { m.emissive.setHex(0x48e0ff); m.emissiveIntensity = st === 'damaged' ? 1.2 + 0.6 * Math.sin(t * 2.3) : 1.6; } }
+  { const st = ship.sys.shields.state; gl(ship.glows.dish, ship.broken ? 0 : st === 'healthy' ? 1.3 : st === 'damaged' ? (flick(t, 7) < 0.3 ? 0.25 : 1.2) : st === 'critical' ? 0.15 : 0); }
+  { const st = ship.sys.impulse.state; ship.glows.impulse.forEach((m, i) => { m.emissiveIntensity = ship.broken ? 0 : st === 'healthy' ? 1.4 : st === 'damaged' ? (flick(t, 10 + i, 0.8) < 0.35 ? 0.2 : 1.2) : st === 'critical' ? (i % 2 ? 0.9 : 0) : 0; }); }
+  { const st = ship.sys.weapons.state; gl(ship.glows.phaser, ship.broken ? 0 : st === 'healthy' ? (ship.firing > 0 ? 3 : 0.25) : st === 'damaged' ? 0.2 : 0); gl(ship.glows.torpedo, ship.broken ? 0 : st === 'healthy' || st === 'damaged' ? 1.2 : 0); }
+  ship.firing = Math.max(0, (ship.firing || 0) - dt);
+  // Navigation lights (mockup 3's airliner table): strobes double-flash, beacons pulse, position lights steady.
+  for (const n of ship.navs) {
+    const live = n.P.detached ? n.P.lightLeft : ship.broken ? 0 : 1;
+    let v = 1; const ph = (t + (n.kind === 'strobe' ? 0 : 0.3)) % 1.4;
+    if (n.kind === 'strobe') v = ph < 0.06 || (ph > 0.18 && ph < 0.24) ? 1.6 : 0;
+    if (n.kind === 'beacon') v = 0.25 + 0.75 * Math.max(0, Math.sin(t * 2.6)) ** 3;
+    n.s.material.opacity = v * live * (live < 1 && flick(t, 11) < 0.5 ? 0.2 : 1);
+    n.s.visible = showNav;
+  }
+  // Emitters.
+  for (const L of ship.lights) { L.l.intensity = 0; }
+  let li = 0;
+  for (const e of ship.emitters) {
+    e.t += dt;
+    let acc = 0, ph = null; for (const p of e.phases) { if (e.t < acc + p.dur) { ph = p; break; } acc += p.dur; }
+    if (!ph) continue;
+    e.acc += ph.rate * dt; const n = Math.floor(e.acc); e.acc -= n;
+    e.P.inner.updateMatrixWorld(true);
+    const w = e.pos.clone().applyMatrix4(e.P.inner.matrixWorld), d = e.dir.clone().transformDirection(e.P.inner.matrixWorld);
+    const inh = e.P.detached ? e.P.vel.clone().applyQuaternion(ship.root.quaternion) : null;
+    if (n) emit(ph.type, w, d, n, ph.scale || 1, inh);
+    if (ph.light && li < 4) { const L = ship.lights[li++]; L.l.position.copy(e.pos.clone().applyMatrix4(e.P.inner.matrixWorld)).sub(ship.root.position); L.l.intensity = 2.2 * (0.7 + 0.3 * flick(t, li, 2)); }
+  }
+  ship.shield.material.uniforms.uTime.value = ship.t;
+}
+function stepAll(dt) {
+  simT += dt; sharedTime.value = simT;
+  for (const s of ships) stepShip(s, dt);
+  glowPool.step(dt); smokePool.step(dt);
+  for (let i = oneshots.length - 1; i >= 0; i--) { const o = oneshots[i]; o.t += dt; const k = o.t / o.dur; if (k >= 1) { scene.remove(o.obj); oneshots.splice(i, 1); continue; } o.step(o, k); }
+  for (let i = 0; i < shards.count; i++) { const d = shardData[i]; d.p.addScaledVector(d.v, dt); _qq.setFromEuler(_e.set(d.w.x * dt, d.w.y * dt, d.w.z * dt)); d.q.multiply(_qq); _m.compose(d.p, d.q, V3(d.s, d.s, d.s)); shards.setMatrixAt(i, _m); }
+  if (shards.count) shards.instanceMatrix.needsUpdate = true;
+  for (const b of beams) b.t += dt;
+  stepBeams();
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Weapons fired by a click: a phaser beam or a torpedo from off screen, then damage() at the hit.
+const beams = [];
+const beamMat = new THREE.MeshBasicMaterial({ color: 0xffb35a, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false });
+function fireAt(h) {
+  const ship = h.ship, from = camera.position.clone().add(V3(1, 0.6, 0).applyQuaternion(camera.quaternion).multiplyScalar(ship.C.length * 1.2));
+  const to = toWorld(h.mesh, h.point);
+  if (weapon === 'phaser') {
+    const L = from.distanceTo(to), g = new THREE.CylinderGeometry(0.5, 0.5, L, 6, 1, true); g.rotateX(PI / 2);
+    const m = new THREE.Mesh(g, beamMat.clone()); m.position.copy(from).lerp(to, 0.5); m.lookAt(to); scene.add(m);
+    beams.push({ m, t: 0, dur: 0.35, hit: null });
+    damage(ship, h.sys, 12, h);
+  } else {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: navTex, color: 0xff6a3a, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+    s.scale.setScalar(8); s.position.copy(from); scene.add(s);
+    beams.push({ m: s, t: 0, dur: 0.5, from, to, hit: () => { h.big = true; damage(ship, h.sys, 30, h); emit('fireball', to, h.worldNormal, 40, 0.5); flash(to, 30, 0.35); } });
+  }
+}
+function stepBeams() {
+  for (let i = beams.length - 1; i >= 0; i--) {
+    const b = beams[i], k = b.t / b.dur;
+    if (b.from) b.m.position.copy(b.from).lerp(b.to, Math.min(1, k)); else b.m.material.opacity = 1 - k;
+    if (k >= 1) { scene.remove(b.m); beams.splice(i, 1); b.hit && b.hit(); }
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The page: ships, light presets, views, scenarios, the systems list, and shots.
+let showNav = true, showYard = false, holeMode = 'modelled', weapon = 'phaser', shieldsUp = false, paused = false, slow = false, mode = 'bastion';
+const yard = new THREE.Group(); scene.add(yard);
+function clearAll() {
+  for (const s of ships) { scene.remove(s.root); s.root.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); }); }
+  ships = []; glowPool.clear(); smokePool.clear(); shards.count = 0;
+  for (const o of oneshots) scene.remove(o.obj); oneshots.length = 0; for (const b of beams) scene.remove(b.m); beams.length = 0;
+}
+function setMode(m, seed = 7) {
+  clearAll(); fxRng = mulberry(seed); simT = 0; mode = m;
+  if (m === 'lineup') {
+    ships = [buildShip('swift', V3(170, 0, 0)), buildShip('lantern', V3(65, 0, 0)), buildShip('bastion', V3(-110, 0, 0))];
+    active = ships[2];
+  } else { ships = [buildShip(m)]; active = ships[0]; }
+  for (const s of ships) s.shield.visible = shieldsUp && s.sys.shields.health > 0;
+  applyLight(lightKey); buildYard(); buildPanel(); refreshButtons();
+  document.getElementById('classNote').textContent = m === 'lineup' ? 'All three classes at true scale: 118 m, 196 m and 312 m. The windows are the same size on each.' : CLASSES[m].note;
+}
+function buildYard() {
+  yard.clear();
+  for (const s of ships) {
+    const L = s.C.length, b = s.bounds, y = b.min.y - 8, z0 = b.min.z, g = new THREE.Group();
+    const mat = new THREE.MeshBasicMaterial({ color: 0x3fa9f0 });
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, L), mat); bar.position.set(0, y, z0 + L / 2); g.add(bar);
+    for (let z = 0; z <= L; z += 10) { const t = new THREE.Mesh(new THREE.BoxGeometry(z % 50 ? 1.6 : 4, 0.4, 0.4), mat); t.position.set(0, y, z0 + z); g.add(t); }
+    g.add(label(`${L} m`, V3(0, y - 6, z0 - 26), 16));
+    g.position.copy(s.offset); yard.add(g);
+  }
+  // The 1.8 m figure, standing on the rim of the active ship's saucer by a run of windows.
+  const s = active, c0 = V3(...s.C.saucer.c), R = s.C.saucer.R * s.C.saucer.sz;
+  const fig = new THREE.Group(), fm = new THREE.MeshStandardMaterial({ color: 0xffc94d, emissive: 0x553300 });
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.3, 4, 8), fm); body.position.y = 0.87; fig.add(body);
+  fig.position.copy(s.offset).add(V3(c0.x + 6, c0.y + s.C.saucer.rim[0][1] + 0.2, c0.z + R - 1.2)); fig.add(label('1.8 m', V3(0, 2.6, 0), 1.2));
+  yard.add(fig); yard.userData.fig = fig;
+  yard.visible = true; yard.children.forEach((c) => { c.visible = c === fig || showYard; });
+}
+function label(str, pos, h) {
+  const c = cv(256, 64), g = c.getContext('2d'); g.font = FONT(44, 600); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#9fd0ff'; g.fillText(str, 128, 34);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false })); s.position.copy(pos); s.scale.set(h * 4, h, 1); return s;
+}
+function applyLight(k) {
+  lightKey = k; const L = LIGHTS[k];
+  sun.intensity = L.sun; sun.position.set(...L.sunPos); hemi.intensity = L.hemi; rim.intensity = L.rim;
+  for (const s of ships) for (const m of s.mats) m.envMapIntensity = L.env;
+  refreshButtons();
+}
+function frame(dist, dir, target) {
+  const t = (target || active.center.clone().add(active.offset));
+  camera.position.copy(t).add(dir.clone().normalize().multiplyScalar(dist)); controls.target.copy(t); controls.update();
+}
+const VIEWS = {
+  hero: { label: 'Three quarter', go: () => mode === 'lineup' ? frame(560, V3(0.9, 0.55, 1), V3(30, 0, 0)) : frame(active.C.length * 1.35, V3(0.95, 0.5, 1.05)) },
+  top: { label: 'Top', go: () => mode === 'lineup' ? frame(620, V3(0.001, 1, 0.001), V3(30, 0, 0)) : frame(active.C.length * 1.45, V3(0.001, 1, 0.0001)) },
+  side: { label: 'Side', go: () => mode === 'lineup' ? frame(560, V3(1, 0.08, 0.001), V3(30, 0, 0)) : frame(active.C.length * 1.3, V3(1, 0.05, 0.001)) },
+  under: { label: 'Under', go: () => frame((mode === 'lineup' ? 560 : active.C.length * 1.3), V3(-0.7, -0.9, 0.8)) },
+  scale: { label: 'Scale', go: () => { const f = yard.userData.fig.position; frame(16, V3(0.55, 0.12, 1), f.clone().add(V3(-2.5, -1.6, 0))); } },
+  stern: { label: 'Stern', go: () => frame(active.C.length * 1.1, V3(-0.8, 0.4, -1)) },
+};
+let view = 'hero';
+function setView(v) { view = v; VIEWS[v].go(); refreshButtons(); }
+
+const SCEN = {
+  venting: { label: 'Nacelle venting', go: (s) => { hurt(s, 'nacP', 75); } },
+  coolant: { label: 'Coolant leak', go: (s) => { hurt(s, 'reactor', 45); } },
+  bridge: { label: 'Bridge fire', go: (s) => { hurt(s, 'bridge', 80); } },
+  holes: { label: 'Torpedo hits', go: (s) => torpedoes(s) },
+  weapons: { label: 'Weapons out', go: (s) => { hurt(s, 'weapons', 100); } },
+  dark: { label: 'Sections dark', go: (s) => { hurt(s, 'life', 55); } },
+  lose: { label: 'Lose a nacelle', go: (s) => { hurt(s, 'nacP', 100); } },
+  crown: { label: 'Bridge blown off', go: (s) => { hurt(s, 'bridge', 100); } },
+  breach: { label: 'Core breach', warn: true, go: (s) => { hurt(s, 'reactor', 100); } },
+};
+function torpedoes(s) {
+  const c0 = V3(...s.C.saucer.c), R = s.C.saucer.R;
+  const spots = [[V3(c0.x + R * 0.55, c0.y, c0.z + R * 0.45), V3(0.2, 1, 0.3), 'life'], [V3(c0.x - R * 0.99, c0.y, c0.z + R * 0.2), V3(-1, 0.05, 0.2), 'life'], [V3(c0.x + R * 0.3, c0.y, c0.z - R * 0.62), V3(0.1, 1, -0.2), 'life'], [s.corePos.clone().add(V3(s.C.core.size[0] * 3, 3, -10)), V3(1, -0.3, 0), 'reactor']];
+  for (const [p, d] of spots) { const h = hitAt(s, p, d); if (h) { h.big = true; h.bypass = true; damage(s, h.sys, 18, h); } }
+}
+function phasers(s, n) {
+  const rng = mulberry(31);
+  for (let i = 0; i < n; i++) { const c0 = V3(...s.C.saucer.c), a = rng() * TAU, r = s.C.saucer.R * (0.3 + rng() * 0.6);
+    const h = hitAt(s, V3(c0.x + Math.sin(a) * r, c0.y, c0.z + Math.cos(a) * r), V3(rng() - 0.5, 1, rng() - 0.5)); if (h) { h.bypass = true; damage(s, h.sys, 4, h); } }
+}
+function repairAll() { setMode(mode); setView(view); }
+
+// Panel.
+const $ = (id) => document.getElementById(id);
+function btn(row, labelTxt, on, opts = {}) { const b = document.createElement('button'); b.type = 'button'; b.textContent = labelTxt; b.addEventListener('click', on); if (opts.warn) b.className = 'warn'; if (opts.key) b.dataset.key = opts.key; $(row).append(b); return b; }
+for (const [k, l] of [['bastion', 'Bastion cruiser'], ['lantern', 'Lantern frigate'], ['swift', 'Swift corvette'], ['lineup', 'Line-up']]) btn('shipRow', l, () => { setMode(k); setView(k === 'lineup' && view === 'scale' ? 'hero' : view); }, { key: 'ship:' + k });
+for (const [k, L] of Object.entries(LIGHTS)) btn('lightRow', L.label, () => applyLight(k), { key: 'light:' + k });
+for (const [k, v] of Object.entries(VIEWS)) btn('viewRow', v.label, () => setView(k), { key: 'view:' + k });
+btn('showRow', 'Nav lights', () => { showNav = !showNav; refreshButtons(); }, { key: 'nav' });
+btn('showRow', 'Yardstick', () => { showYard = !showYard; buildYard(); refreshButtons(); }, { key: 'yard' });
+btn('weaponRow', 'Phaser', () => { weapon = 'phaser'; refreshButtons(); }, { key: 'w:phaser' });
+btn('weaponRow', 'Torpedo', () => { weapon = 'torpedo'; refreshButtons(); }, { key: 'w:torpedo' });
+btn('weaponRow', 'Shields up', () => { shieldsUp = !shieldsUp; for (const s of ships) s.shield.visible = shieldsUp && s.sys.shields.health > 0; refreshButtons(); }, { key: 'shields' });
+btn('weaponRow', 'Judge by eye', () => { document.body.classList.toggle('byeye'); refreshButtons(); }, { key: 'eye' });
+btn('holeRow', 'Modelled', () => setHoles('modelled'), { key: 'h:modelled' });
+btn('holeRow', 'Parallax', () => setHoles('parallax'), { key: 'h:parallax' });
+for (const [k, s] of Object.entries(SCEN)) btn('scenRow', s.label, () => { s.go(active); }, { warn: s.warn });
+btn('scenRow', 'Repair all', () => repairAll());
+btn('timeRow', 'Pause', () => { paused = !paused; refreshButtons(); }, { key: 'pause' });
+btn('timeRow', 'Slow motion', () => { slow = !slow; refreshButtons(); }, { key: 'slow' });
+function setHoles(m) { holeMode = m; for (const s of ships) for (const h of s.holes) h.interior.visible = m === 'modelled'; refreshButtons(); }
+function refreshButtons() {
+  const on = { ['ship:' + mode]: 1, ['light:' + lightKey]: 1, ['view:' + view]: 1, nav: showNav, yard: showYard, ['w:' + weapon]: 1, shields: shieldsUp, eye: document.body.classList.contains('byeye'), ['h:' + holeMode]: 1, pause: paused, slow };
+  document.querySelectorAll('button[data-key]').forEach((b) => b.setAttribute('aria-pressed', on[b.dataset.key] ? 'true' : 'false'));
+}
+for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('click', () => showTab(b.dataset.tab));
+function showTab(t) { for (const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'); for (const k of ['ships', 'damage', 'notes']) $('pane-' + k).hidden = k !== t; }
+const sysRows = {};
+function buildPanel() {
+  const list = $('sysList'); list.textContent = '';
+  for (const [k, n] of [['hull', 'Hull'], ...SYS]) {
+    const row = document.createElement('div'); row.className = 'sys';
+    const name = document.createElement('div'); name.className = 'sysname';
+    const b = document.createElement('b'); b.textContent = n; const bar = document.createElement('div'); bar.className = 'bar'; const i = document.createElement('i'); bar.append(i);
+    const st = document.createElement('span'); st.className = 'state'; name.append(b, bar, st); row.append(name);
+    if (k !== 'hull') {
+      const hit = document.createElement('button'); hit.type = 'button'; hit.textContent = 'Hit'; hit.setAttribute('aria-label', 'Hit ' + n); hit.onclick = () => hurt(active, k, 25);
+      const fix = document.createElement('button'); fix.type = 'button'; fix.textContent = 'Fix'; fix.setAttribute('aria-label', 'Fix ' + n); fix.onclick = () => repair(active, k, 25);
+      row.append(hit, fix);
+    }
+    list.append(row); sysRows[k] = { i, st };
+  }
+  refreshPanel();
+}
+function refreshPanel() {
+  if (!active) return;
+  for (const [k, r] of Object.entries(sysRows)) {
+    const h = k === 'hull' ? active.hull : active.sys[k].health, st = k === 'hull' ? (active.broken ? 'destroyed' : stateOf(h)) : active.sys[k].state;
+    r.i.style.width = h + '%'; r.i.style.background = st === 'healthy' ? 'var(--accord)' : st === 'damaged' ? 'var(--amber)' : 'var(--alert)';
+    r.st.textContent = `${Math.round(h)}%  ${st}`;
+  }
+  const s = active, P = s.sys.nacP.health <= 0, S = s.sys.nacS.health <= 0, st = $('status');
+  st.textContent = s.broken ? `${s.C.name} destroyed` : P && S ? 'No nacelles: impulse only, cannot disengage' : P || S ? 'Limping on one nacelle: half speed, can still disengage' : `${s.C.name}  ${s.C.reg}`;
+  st.className = s.broken || P || S ? 'bad' : '';
+}
+
+// Clicks fire at the hull (a drag orbits instead).
+let down = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) { down = null; return; } down = null;
+  const r = renderer.domElement.getBoundingClientRect(), p = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(p, camera); ray.far = 1e5;
+  const hits = ray.intersectObjects(ships.flatMap((s) => s.meshes.filter((m) => !m.userData.piece.detached)), false);
+  if (hits.length) fireAt(hitInfo(hits[0]));
+});
+
+// Layout: the camera's centre sits in the free area beside or above the panel (CLAUDE.md 7: the view keeps playing).
+function resize() {
+  const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h;
+  const pr = $('panel').getBoundingClientRect(), portrait = pr.width >= w - 1;
+  if (portrait) camera.setViewOffset(w, h, 0, pr.height / 2, w, h); else camera.setViewOffset(w, h, -pr.width / 2, 0, w, h);
+  camera.updateProjectionMatrix();
+  const scale = h / (2 * Math.tan(camera.fov * PI / 360)) * renderer.getPixelRatio(); glowPool.mat.uniforms.uScale.value = smokePool.mat.uniforms.uScale.value = scale;
+}
+addEventListener('resize', resize);
+
+// Wait for the Concord typeface so the registry is painted in it (falls back after 3 s).
+try { await Promise.race([Promise.all([document.fonts.load('700 100px Antonio'), document.fonts.load('600 100px Antonio'), document.fonts.load('400 100px Antonio')]), new Promise((r) => setTimeout(r, 3000))]); } catch (e) { /* fallback face */ }
+
+setMode('bastion'); resize(); setView('hero'); refreshButtons();
+let acc = 0, last = performance.now();
+const meter = $('meter'), tip = $('tip');
+renderer.setAnimationLoop((now) => {
+  const real = Math.min(0.1, (now - last) / 1000); last = now;
+  if (!paused) { acc += real * (slow ? 0.25 : 1); while (acc >= DT) { stepAll(DT); acc -= DT; } }
+  glowPool.upload(); smokePool.upload();
+  controls.update();
+  renderer.render(scene, camera);
+  meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws`;
+});
+tip.textContent = 'Click the hull to fire. The Damage tab has every system.';
+
+// Named shots (tools/mockups/shoot.mjs): each puts the ship, the light, the damage and the time in a known state.
+function shot(m, light, v, setup, seconds, opts = {}) {
+  return () => {
+    paused = false; holeMode = opts.holes || 'modelled'; shieldsUp = false; showYard = !!opts.yard; slow = false;
+    document.body.classList.remove('byeye'); applyLight(light); setMode(m); setView(v);
+    if (setup) setup(active);
+    const n = Math.round(seconds / DT); for (let i = 0; i < n; i++) stepAll(DT);
+    if (opts.cam) opts.cam(active);
+    showTab(opts.tab || 'ships'); paused = true; refreshButtons(); resize();
+  };
+}
+window.MOCKUP_SHOTS = {
+  hero: shot('bastion', 'sunlit', 'hero', null, 0.2),
+  lineup: shot('lineup', 'sunlit', 'hero', null, 0.2, { yard: true }),
+  shadow: shot('bastion', 'shadow', 'hero', null, 0.2),
+  nosun: shot('lantern', 'nosun', 'hero', null, 0.25),
+  markings: shot('lantern', 'sunlit', 'top', null, 0.2),
+  corvette: shot('swift', 'sunlit', 'hero', null, 0.2),
+  underside: shot('bastion', 'sunlit', 'under', null, 0.2),
+  scale: shot('bastion', 'sunlit', 'scale', null, 0.2),
+  coolant: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 45), 3, { tab: 'damage', cam: (s) => frame(210, V3(0.9, -0.35, 0.6), V3(0, -20, -10)) }),
+  nacelle_venting: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 75), 2.5, { tab: 'damage', cam: (s) => frame(230, V3(1, 0.5, 0.2), V3(38, 2, -80)) }),
+  bridge_fire: shot('bastion', 'shadow', 'hero', (s) => { hurt(s, 'bridge', 80); hurt(s, 'life', 40); }, 2.5, { tab: 'damage', cam: () => frame(170, V3(0.7, 0.55, 1), V3(0, 25, 86)) }),
+  scorch: shot('bastion', 'sunlit', 'hero', (s) => phasers(s, 14), 1.0, { tab: 'damage', cam: () => frame(190, V3(0.25, 1, 0.6), V3(0, 20, 86)) }),
+  holes_modelled: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', cam: (s) => { const h = s.holes[0]; frame(26, h.normal.clone().add(V3(0.3, 0.1, 0.5)), h.point.clone()); } }),
+  holes_parallax: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', holes: 'parallax', cam: (s) => { const h = s.holes[0]; frame(26, h.normal.clone().add(V3(0.3, 0.1, 0.5)), h.point.clone()); } }),
+  holes_wide: shot('bastion', 'sunlit', 'hero', (s) => torpedoes(s), 1.6, { tab: 'damage', cam: () => frame(300, V3(0.6, 0.8, 0.8), V3(0, 10, 50)) }),
+  nacelle_lost: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 100), 4, { tab: 'damage', cam: () => frame(420, V3(1, 0.55, -0.35), V3(20, 0, -40)) }),
+  crown_off: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'bridge', 100), 2.5, { tab: 'damage', cam: () => frame(230, V3(0.8, 0.6, 0.9), V3(0, 30, 80)) }),
+  breakup: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 1.4, { tab: 'damage', cam: () => frame(620, V3(0.9, 0.6, 1)) }),
+  breakup_late: shot('bastion', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 9, { tab: 'damage', cam: () => frame(700, V3(0.9, 0.7, 1)) }),
+  notes: shot('bastion', 'shadow', 'side', null, 0.2, { tab: 'notes' }),
+};
+window.MOCKUP_SCENE = scene;
+window.MOCKUP_READY = true;
+})();
+</script>
