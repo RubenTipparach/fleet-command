@@ -463,7 +463,10 @@ const REACTOR = { coils: 3, loops: 2, flow_max: 5, flow_e: 1, efficiency_loss: 0
 // instability comes from the surroundings (neutron stars, black holes, anomalies): above qg_block a jump needs the
 // safety override. Each factor adds a risk (weights in `risk`); the jump risk is 1 - the product of (1 - each), and the
 // jump rolls against that same number (6.1).
-const WARP = { bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, plot_drift_deg: 15, coolant_jump: 0.25, leak_per_s: 0.01, qg_block: 0.5, out_s: 1.2,
+// coil_e: what the warp coils take once armed (owner, 2026-11-02: "warp requires lots of energy, it should start out as
+// disabled, then when you click on it, you have to power stuff down to charge warp coils"): an armed drive takes the
+// reactor's free energy, up to coil_e, and gives way first when the systems need more than the output.
+const WARP = { coil_e: 8, bank_e: 60, jump_e: 40, charge_k: 0.5, plot_s: 20, plot_drift_deg: 15, coolant_jump: 0.25, leak_per_s: 0.01, qg_block: 0.5, out_s: 1.2,
   risk: { nacelles: 0.8, coolant: 1.2, coolant_ok: 0.5, banks: 0.3, nav: 0.6, reactor: 0.7, qg: 0.3, qg_override: 0.9 } };
 // The helm officer's manoeuvres (owner, survey B4: "The original game had free heading, intercept, follow+match speed,
 // orbit (ccw/cw toggle). High energy turns, hard left, hard right, 180"; then "I want buttons that express types of
@@ -634,7 +637,7 @@ const SCENES = {
     ],
     wells: [{ name: 'Neutron star', x: 0, z: -30, r: 3, reach: 80, strength: 0.9 }],
     rocks: [{ x: 0, z: -30, r: 3, name: 'the neutron star' }],
-    setup: (W) => { const s = W.player; s.warp.banks = 12; s.warp.nacelles[0].hp = 0.7; s.reactor.coolant = 0.8; s.power.warp = 4; s.power.weapons = 4; },
+    setup: (W) => { const s = W.player; s.warp.banks = 12; s.warp.nacelles[0].hp = 0.7; s.reactor.coolant = 0.8; s.power.warp = 0; s.power.weapons = 4; },
     say: ['Helm', 'Kethran frigates closing from astern, and the neutron star ahead bends space. Charge the banks, plot a course and jump.'] },
   // Owner, 2026-11-01: "A delivery mission from a station to a planet".
   delivery: { name: 'Delivery', objective: 'Take 10 crates from Harbor Nine and beam them down to Tessaly', armed: false, done: (W) => W.planets[0].got >= W.planets[0].need, target: null, endless: true,
@@ -751,7 +754,7 @@ function makeShip(d) {
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
     scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', pads: Array(c.pads || TRANSPORT.pads_default).fill(1), bq: { capture: [], hit: [] }, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
-    warp: { banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
+    warp: { armed: false, banks: 0, plot: 0, plotH: null, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
     het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1, holdKm: 6, runMin: 2, runMax: 8, runPhase: 'in',
     alert: 'yellow', priority: 'engines', alive: true, flash: [0, 0, 0, 0, 0, 0], thinkT: 0, volley: true, intercepts: 0 };
 }
@@ -955,6 +958,10 @@ function warpStep(s) {
   const w = s.warp;
   if (w.out > 0) { const f = fwd(s.h); s.x += f[0] * 60 * DT; s.z += f[1] * 60 * DT; if ((w.out -= DT) <= 0) { s.alive = false; s.jumped = true; boomAt(s.x, s.z, 1.5);
     say('Helm', `${s.name} jumped to warp.`); if (s === W.player) { W.over = 'jumped'; W.overWhy = `${s.name} jumped to warp`; } } return; }
+  // an armed drive takes the free energy, whole points, up to coil_e; past the output it gives way first
+  if (w.armed) { const free = output(s) - used(s);
+    if (free >= 1 && s.power.warp < WARP.coil_e) s.power.warp = Math.min(WARP.coil_e, s.power.warp + Math.floor(free));
+    else if (free < 0 && s.power.warp > 0) s.power.warp = Math.max(0, s.power.warp - Math.ceil(-free)); }
   const draw = nacelleDraw(s);
   w.banks = Math.min(WARP.bank_e, w.banks + draw.reduce((a, d, i) => a + d * w.nacelles[i].hp, 0) * WARP.charge_k * DT);
   s.reactor.coolant = Math.max(0, s.reactor.coolant - s.reactor.loops.reduce((a, l) => a + (1 - l.hp), 0) * WARP.leak_per_s * DT);
@@ -1299,6 +1306,12 @@ const A = {
   // Warp: plot a course on the heading ordered now, the safety override, and the jump.
   plot: () => { const w = W.player.warp; w.plotting = true; w.plotH = W.player.hOrder; w.plot = 0; w.drift = false; say('Navigation', `Plotting a course on ${String(Math.round(((w.plotH / DEG) + 360) % 360)).padStart(3, '0')}.`); },
   override: () => { const w = W.player.warp; w.override = !w.override; say('Helm', w.override ? 'Safety override on.' : 'Safety override off.'); },
+  // The warp key: offline, a click arms the coils (they take free energy); armed and charging, a click powers them down;
+  // ready, a click jumps.
+  warpKey: () => { const s = W.player, w = s.warp;
+    if (!w.armed) { w.armed = true; say('Engineering', output(s) - used(s) >= 1 ? 'Warp coils charging.' : 'Warp coils armed. Power down systems to free energy for them.'); return; }
+    if (w.banks >= WARP.jump_e) { jump(s); return; }
+    w.armed = false; s.power.warp = 0; say('Engineering', 'Warp coils powered down.'); },
   jump: () => jump(W.player),
   mine: () => { const s = W.player; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (s.mines <= 0 || s.mineCool > 0) return; s.mines--; s.mineCool = MINE.cooldown_s; const f = fwd(s.h); W.mines.push({ x: s.x - f[0] * 3, z: s.z - f[1] * 3, side: s.side, arm: MINE.arm_s }); say('Transport', 'Mine away.'); },
   // Hold powers the beam up (10 s), then holds; Break lets go of a beam held or powering up, at any time.
@@ -1721,24 +1734,36 @@ function speedSlider(x, y, w, h) {
   hit('spd', x - 8, y, w + 16, h, { drag: (px) => A.setSpeed(Math.round(clamp((px - x) / w, 0, 1) * top / 5) * 5), cursor: 'ew-resize', tip: 'Speed' });
   const f = clamp(s.vOrder / top, 0, 1); nine('button.pressed', x + f * w - 11, y + (h - 36) / 2, 22, 36);
 }
-// The warp key at the top of the speed range (owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed
-// slider"): it fills as the banks charge toward a jump, lights green when a jump can be made, and jumps; refused, the
-// helm says why (the same warpRisk and jump as the Warp page, 6.1). The hover card gives the risk or what is missing.
+// The warp key at the end of the speed slider (owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed
+// slider", then "it should start out as disabled ... then it begins charging and glows, pulsating when its ready. it
+// wont glow in a gravitational anomaly however"). Offline: dark, its name dim. Armed with no free energy: "Power down"
+// in Caution. Charging: filling in blue toward the 40 E a jump needs, a soft glow. Ready: green and pulsing; inside a
+// Q-G field strong enough to need the override it neither glows nor pulses. The same warpRisk and jump as the Warp
+// page (6.1); its hover card gives the banks, the coils' draw, the risk and anything missing.
 function warpKey(x, y, w, h) {
-  const s = W.player, wp = s.warp, r = warpRisk(s), ok = !r.why, f = clamp(wp.banks / WARP.jump_e, 0, 1);
-  const st = hit('warp.key', x, y, w, h, { click: A.jump, tip: { title: ok ? 'Warp: jump' : 'Warp', rows: [['Banks', `${Math.floor(wp.banks)}/${WARP.jump_e} E`], ['Plot', wp.plotting ? pct(wp.plot) : 'none'], ['Jump risk', pct(r.total), r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord], ...(ok ? [] : [['Needs', r.why, CC.caution]])] } });
+  const s = W.player, wp = s.warp, r = warpRisk(s), f = clamp(wp.banks / WARP.jump_e, 0, 1), anomaly = r.q > WARP.qg_block;
+  const ready = wp.armed && wp.banks >= WARP.jump_e, starved = wp.armed && !ready && s.power.warp <= 0;
+  const st = hit('warp.key', x, y, w, h, { click: A.warpKey, tip: { title: !wp.armed ? 'Warp offline · click to charge' : ready ? 'Warp ready · click to jump' : starved ? 'Warp: power down systems' : 'Warp charging', rows: [['Banks', `${Math.floor(wp.banks)}/${WARP.jump_e} E`], ['Coils', `${s.power.warp} of ${WARP.coil_e} E`],
+    ['Jump risk', pct(r.total), r.total > 0.3 ? CC.alert : r.total > 0.1 ? CC.caution : CC.accord], ...(r.why && wp.armed ? [['Needs', r.why, CC.caution]] : [])] } });
+  const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 1000 * 2 * P * 0.9);
+  g.save();
+  if (wp.armed && !starved && !anomaly) { g.shadowColor = ready ? CC.accord : CC.sky; g.shadowBlur = ready ? 8 + 16 * pulse : 8; }
+  g.fillStyle = CC.deep; g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.fill(); g.restore();
   g.save(); g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.clip();
-  g.fillStyle = CC.deep; g.fillRect(x, y, w, h);
-  g.fillStyle = ok ? (st.down ? CC.lilac : st.hot ? CC.sky : CC.accord) : CC.signal; g.fillRect(x, y, w * (ok ? 1 : f), h);
+  if (!wp.armed) { g.fillStyle = '#0d1430'; g.fillRect(x, y, w, h); }
+  else { g.fillStyle = ready ? (st.down ? CC.lilac : anomaly ? shade(CC.accord, 0.7) : CC.accord) : CC.signal; g.fillRect(x, y, w * (ready ? 1 : f), h);
+    if (ready && !anomaly) { g.fillStyle = `rgba(255,255,255,${0.28 * pulse})`; g.fillRect(x, y, w, h); } }
   g.restore();
-  text(wp.out > 0 ? 'JUMPING' : 'WARP', x + w / 2, y + h * 0.66, '700 19px Antonio', ok || f > 0.5 ? '#000' : CC.sky, 'center', w - 10, '1px');
+  if (st.hot) { g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.roundRect(x - 1, y - 1, w + 2, h + 2, h / 2 + 1); g.stroke(); }
+  const lab = wp.out > 0 ? 'JUMPING' : starved ? 'POWER DOWN' : 'WARP', col = !wp.armed ? '#3a4a80' : starved ? CC.caution : ready || f > 0.55 ? '#000' : CC.sky;
+  text(lab, x + w / 2, y + h * 0.7, `700 ${starved ? 14 : 17}px Antonio`, col, 'center', w - 10, '1px');
 }
 function uiBottom(r) {
   const [x, y, w, h] = r, s = W.player; nine('strip.bottom', x, y, w, h);
   const cx = x + 96, cw = w - 192, cy = y + 12, ch = 44, gap = 22, fixed = 120 + 138, rest = cw - fixed - gap * 4, u = rest / 3.45;
   let xx = cx;
-  const wk = 78; LBL('Speed', xx, cy + 28); NUM(String(Math.round(s.v)), xx + 58, cy + 31, 46, CC.sky, 'left'); speedSlider(xx + 112, cy, u * 1.5 - 112 - wk - 10, ch);
-  warpKey(xx + u * 1.5 - wk, cy, wk, ch); xx += u * 1.5 + gap;
+  const wk = 96; LBL('Speed', xx, cy + 28); NUM(String(Math.round(s.v)), xx + 58, cy + 31, 46, CC.sky, 'left'); speedSlider(xx + 112, cy, u * 1.5 - 112 - wk - 10, ch);
+  warpKey(xx + u * 1.5 - wk, cy + 7, wk, 30); xx += u * 1.5 + gap;
   // Power and Systems as ticks, one per energy point of the reactor's rating (owner: "can you show this as discrete
   // marks/ticks?"): Power blue, lit to the output; Systems green, lit to the draw, red past the output.
   const n = CLASSES[s.cls].reactor_e, outN = Math.floor(output(s) + 1e-6), tw = u * 1.4 - 68 - 60;
@@ -3302,7 +3327,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v50', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v51', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -3347,7 +3372,9 @@ function uiTip() {
     return;
   }
   if (typeof h.tip === 'object') { // a card: the name, then rows of label and value
-    const rows = h.tip.rows, w = 230, ht = 40 + rows.length * 24, x = clamp(h.x + h.w / 2 - w / 2, 4, RW - w - 4), y = h.y - ht - 8 > 4 ? h.y - ht - 8 : h.y + h.h + 8;
+    // as wide as its longest row needs (owner, 2026-11-02: "this box can be bigger to add more text"), 230 at least
+    g.font = '600 18px Antonio'; const vw2 = Math.max(0, ...h.tip.rows.map(([l, v]) => (g.measureText(String(v)).width + g.measureText(String(l).toUpperCase()).width) * 1.15 + 60));
+    const rows = h.tip.rows, w = clamp(Math.max(230, vw2, g.measureText(String(h.tip.title).toUpperCase()).width * 1.12 + 44), 230, 460), ht = 40 + rows.length * 24, x = clamp(h.x + h.w / 2 - w / 2, 4, RW - w - 4), y = h.y - ht - 8 > 4 ? h.y - ht - 8 : h.y + h.h + 8;
     g.fillStyle = '#000'; g.fillRect(x + 2, y + 2, w - 4, ht - 4); nine('frame.inset', x, y, w, ht);
     TXT(h.tip.title, x + 14, y + 27, w - 28, CC.sky, 'left', 18);
     rows.forEach(([l, v, col], i) => { LBL(l, x + 14, y + 52 + i * 24); NUM(v, x + w - 14, y + 53 + i * 24, 0, col || CC.text, 'right', 18); });
@@ -3451,9 +3478,9 @@ window.MOCKUP_SHOTS = {
   scene_vip: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; }, 'vip'),
   scene_shuttle: () => scripted(30, () => { shipTab = 'craft'; A.shuttle(); for (let i = 0; i < Math.round(12 / DT); i++) step(); }, 'shuttle'),
   scene_fighters: () => scripted(30, () => { shipTab = 'craft'; A.launch(); for (let i = 0; i < Math.round(25 / DT); i++) step(); }, 'fighters'),
-  warp: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; for (let i = 0; i < Math.round(6 / DT); i++) step(); }, 'warp'),
+  warp: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.warpKey(); for (let i = 0; i < Math.round(6 / DT); i++) step(); }, 'warp'),
   warp_expanded: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; expanded = 'station'; A.plot(); for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'warp'),
-  warp_jumped: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.turn(180); A.plot(); A.setSpeed(180); for (let i = 0; i < Math.round(30 / DT); i++) step(); A.jump(); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'warp'),
+  warp_jumped: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.warpKey(); A.turn(180); A.plot(); A.setSpeed(180); for (let i = 0; i < Math.round(30 / DT); i++) step(); A.jump(); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'warp'),
   scene_select: () => { scripted(600); sceneOpen = true; },
   scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'inv'; placingMine = true; }, 'mines'),
   scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; const s = W.player;

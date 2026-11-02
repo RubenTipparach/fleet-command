@@ -288,13 +288,26 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
-## 4s. The warp key on the speed slider (version 50)
+## 4s. The warp key on the speed slider (versions 50 and 51)
 
 Owner, 2026-11-02: "wheres the warp button? I expect it to be end of speed slider". A Warp key now ends the speed
 slider in the bottom strip. It fills in the Concord blue as the banks charge toward the 40 E a jump needs, lights green
 when a jump can be made, and jumps on a click; refused, the helm says why. Its hover card gives the banks, the plot, the
 jump risk and anything missing. It calls the same `warpRisk` and `jump` as the Warp page under Power (6.1), which keeps
 the plotting, override and risk detail.
+
+Then (version 51; owner: "warp requires lots of energy, it should start out as disabled, then when you click on it, you
+have to power stuff down to charge warp coils. then it begins charging and glows, pulsating when its ready. it wont glow
+in a gravitational anomaly however", "slim it down height wise", "this box can be bigger to add more text"):
+- **Offline at the start**: dark, its name dim. A click arms the coils, which take the reactor's free energy in whole
+  points up to `coil_e` 8 E, and give way first when the systems need more than the output. With nothing free the key
+  reads "Power down" in Caution and Engineering says to power systems down. A click while charging powers the coils
+  down.
+- **Charging** fills in blue toward 40 E with a soft glow; **ready** is green and pulses (a glow and a sheen at 0.9 Hz),
+  and a click jumps. **Inside a Q-G field** strong enough to need the override it shows a darker green with no glow or
+  pulse.
+- The key is 30 px tall, clear of the strip's edges, and 96 px wide. Hover cards size to their longest row.
+- The Warp scene starts with the drive offline.
 
 ## 4r. Weapon ids, raids on one weapon, the held deck, 10 s volleys (version 49)
 
