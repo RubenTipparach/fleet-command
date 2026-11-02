@@ -1841,7 +1841,9 @@ function stHelm(b, big) {
     [['none', '', 0], ['estop', 'Emergency stop', 0], ['het.free', 'HET free angle: click the view', 0]]];
   pad.forEach((r2, ri) => r2.forEach(([kind, name, deg], ci) => {
     const x = b.x + ci * (ks + gap), yy = y + ri * (ks + gap);
-    if (kind === 'none') return;
+    // a blank grey key fills the corner, so the pad reads as a full 3 x 3 (owner, 2026-11-02: "we need like a grey
+    // button in the corner to offset it"); it does nothing
+    if (kind === 'none') { g.fillStyle = '#3a4152'; g.beginPath(); g.roundRect(x, yy, ks, ks, ks * 0.22); g.fill(); return; }
     if (kind === 'free') helmKey('helm.free', x, yy, ks, 'free', name, () => A.helmOrder('free'), { on: () => !s.engaged, onCol: CC.sky });
     else if (kind === 'estop') helmKey('helm.stop', x, yy, ks, 'estop', s.estopT > 0 ? `Engines holding ${fmtCool(s.estopT)} s` : name, A.estop, { on: () => s.estop || s.estopT > 0, onCol: CC.caution });
     else if (kind === 'het.free') helmKey('helm.hetf', x, yy, ks, 'het.free', name, A.hetFree, { on: () => placingHet, onCol: CC.lilac, dis: busy });
@@ -2959,7 +2961,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v42', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v43', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list

@@ -351,7 +351,8 @@ repeating every 45-50 s. Its icon (version 37, owner: "hit and run icons sucks")
 target, a tight turn just short of it, and back down and away. **Evasive manoeuvres** moved here from the HET pad (owner: "evasive maneuvers technically isn't
 an HET ability btw, so clicking it is a toggle and doesn't consume HET ability"): a toggle; it never spends the HET
 chance (it still makes a HET likelier to fail while it is on, after the reference game). The pad's bottom row keeps the
-emergency stop (under free heading) and the free-angle HET.
+emergency stop (under free heading) and the free-angle HET; a blank grey key fills its corner so the pad reads as a
+full 3 x 3 (version 43, owner: "we need like a grey button in the corner to offset it").
 
 ## 4j. Hull bars in the view, and steering in the expanded view (version 34)
 
