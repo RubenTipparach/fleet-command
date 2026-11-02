@@ -6,7 +6,7 @@
 - [x] 1.2 Survey questions A7-A9 in `docs/design/survey.html`
 - [x] 1.3 `docs/mockups/concord-ships.html`: three classes on one builder, livery, markings by density, plating by class, windows at true scale with a figure, baked floodlights and hull floods, navigation lights, three light presets, line-up at true scale
 - [x] 1.4 Named shots at desktop and phone sizes, looked at; `dom_fit.mjs` passes
-- [ ] 1.5 Published, recorded in `docs/artifacts/concord-ships/`, listed in the tracker and `mockup-work.md`
+- [x] 1.5 Published (https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4), recorded in `docs/artifacts/concord-ships/`, listed in the tracker and `mockup-work.md`
 
 ## 2. After approval for build
 

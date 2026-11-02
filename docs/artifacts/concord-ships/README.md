@@ -1,6 +1,6 @@
 # Mockup 5: Concord Ships
 
-- Link: (not yet published; the desktop session publishes, CLAUDE.md section 8)
+- Link: https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4
 - Shows: the Concord's three classes (Bastion cruiser 312 m, Lantern frigate 196 m, Swift corvette 118 m) at true
   scale with a 1.8 m figure by the windows; livery and markings by class density; plating by class; floodlit registry,
   grazing hull floods and navigation lights in three light presets. The Damage tab: click the hull to fire phasers or
@@ -12,4 +12,4 @@
   Shots: `docs/screenshots/mockups/concord-ships-*.png`, from `tools/mockups/shoot.mjs` then
   `tools/mockups/shrink_png.py`.
 - Stage: drafted. Approvals are given in the mockup tracker.
-- Publish with icon `ship`, from the page file as it is (no data to inline).
+- Published: 2026-11-02, version 1, from the cloud session (no desktop session was running; publishing is permanently approved), icon `ship`, from the page file as it is (no data to inline); version id `1793584804-1479`.

@@ -6,7 +6,7 @@
 - [x] 1.2 Survey questions A2-A6 in `docs/design/survey.html`
 - [x] 1.3 In `docs/mockups/concord-ships.html`: a signature per subsystem in four states, scorch marks, modelled and parallax holes, venting fire, coolant and plasma, a nacelle shot off, the break-up; one damage function for clicks, buttons and scenarios
 - [x] 1.4 Named shots for each signature, looked at
-- [ ] 1.5 Published with mockup 5
+- [x] 1.5 Published with mockup 5 (https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4)
 
 ## 2. After approval for build
 
