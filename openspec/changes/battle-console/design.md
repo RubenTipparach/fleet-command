@@ -291,7 +291,9 @@ different locations with in a certain radius of the shipp. I tractor beam test s
 ships into. A boarding ship test scene, to test out the transporter ship boarding feature. You can have boarding parties
 hit and run on various subssytems (bombinbing or shooting them) or have a scene where you board and capture a ship".
 
-The menu has a **Test scene** row: Battle (the original), Mines, Tractor, Boarding. Each is a seeded world in the page's
+The menu has a **Test scene** row: Battle (the original), Mines, Tractor, Boarding. A **scene selector** sits in the
+view's top left as well (owner, 2026-11-02: "I would like a scene selector"): a Scene key naming the scene in play,
+opening the list of scenes; a pick starts it, a click elsewhere closes the list. Each is a seeded world in the page's
 `SCENES` table (ships, asteroids, a setup); Restart replays the scene picked. Test scenes do not end when the last enemy
 goes (a captured ship should be seen joining the fleet). The designs follow the-federation (docs/01 section 8,
 docs/13 sections 3 and 6, `src/sim/boarding.gd`).

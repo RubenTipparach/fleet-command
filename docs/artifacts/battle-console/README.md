@@ -43,3 +43,4 @@
 - Version 23 published 2026-11-01, version id `1793573215-0c15`: the helm by pointing (a left click on empty space orders the ship onto the bearing of the point, after the-federation `_helm_click`), a turn arc on a faint ring round the ship, a mark where the helm was pointed.
 - Version 24 published 2026-11-01, version id `1793573870-8c46`: test scenes in the menu (Battle, Mines, Tractor, Boarding); mines placed by transporter within 4 km; asteroids and the tractor tow; raids (shoot or bomb a subsystem) and boarding to capture.
 - Version 25 published 2026-11-01, version id `1793577332-e905`: the transporter's three modes (Capture by role, Hit & run with marine types, Inventory), reeling, stations and planets, and scenes Delivery, VIP, Shuttle and Fighters (eight test scenes in the menu).
+- Version 26 published 2026-11-02, version id `1793578903-e903`: a scene selector in the view's top left (Scene key and its list).
