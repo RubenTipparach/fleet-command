@@ -1986,8 +1986,15 @@ function shade(hex, f) {
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
 // A box in its status colour; a cooling one in a darker shade of it (owner, 2026-11-01: "When cool down the status color
-// should be a darker shade to indicate that").
-function statusBox(x, bx, by, s2, st, rad, cooling) {
+// should be a darker shade to indicate that"), filled from the bottom in the bright colour as it charges (owner,
+// 2026-11-02: "show progress like shade 50% a bright color as it is recharging"): `charge` 0 to 1.
+function statusBox(x, bx, by, s2, st, rad, cooling, charge) {
+  if (cooling && st !== 'Destroyed') {
+    x.save(); x.beginPath(); x.roundRect(bx, by, s2, s2, rad); x.clip();
+    x.fillStyle = shade(STATUS_COL[st], 0.34); x.fillRect(bx, by, s2, s2);
+    const f = clamp(charge || 0, 0, 1); x.fillStyle = STATUS_COL[st]; x.fillRect(bx, by + s2 * (1 - f), s2, s2 * f + 1);
+    x.restore(); return;
+  }
   x.beginPath(); x.roundRect(bx, by, s2, s2, rad);
   x.fillStyle = st === 'Destroyed' ? '#3a0b09' : cooling ? shade(STATUS_COL[st], 0.34) : STATUS_COL[st]; x.globalAlpha = st === 'Off' ? 0.5 : 1; x.fill(); x.globalAlpha = 1;
   if (st === 'Destroyed') { x.strokeStyle = CC.alert; x.lineWidth = 1.5; x.stroke(); }
@@ -2105,15 +2112,15 @@ function drawSSD(x, w, h, s, big, own, idp) {
     // The box filled solid with its status colour (owner: "Fill the icon boxes fully. And communicate icon system status
     // with different colors").
     const cool = cooldownS(m);
-    statusBox(x, bx, by, mb, st, rad, cool !== null);
+    statusBox(x, bx, by, mb, st, rad, cool !== null, m.charge);
     if (cool !== null) {
       // Cooling: the seconds left in place of the glyph, scaled down to fit the box if it runs to three figures.
       const txt = fmtCool(cool); let fs = Math.round(mb * 0.72);
       x.font = `700 ${fs}px Antonio`; const tw = x.measureText(txt).width, room = mb - 4;
       if (tw > room) { fs = Math.floor(fs * room / tw); x.font = `700 ${fs}px Antonio`; }
-      // the figures in the full status colour, lifted a little, on the dark shade
-      x.fillStyle = shade(STATUS_COL[st], 1.3); x.textAlign = 'center'; x.textBaseline = 'middle';
-      x.fillText(txt, mx, my + 0.5); x.textBaseline = 'alphabetic';
+      // white figures with a dark outline, legible on both the dark shade and the bright fill
+      x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.strokeStyle = 'rgba(0,0,0,0.85)'; x.lineWidth = Math.max(2, fs * 0.22);
+      x.strokeText(txt, mx, my + 0.5); x.fillStyle = '#fff'; x.fillText(txt, mx, my + 0.5); x.textBaseline = 'alphabetic';
     } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : '#000');
     if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(String(m.i + 1), bx + mb + 12, by + 4); }
     mounts.push([mx, my, mb / 2 + 5, m]);
@@ -2609,7 +2616,7 @@ function uiView() {
     button('v.camlock', bx, by + ir[3] + 6, ir[2], 30, camLock ? 'Camera locked' : 'Lock camera', A.camLock, { sel: () => camLock, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v31', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v32', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
