@@ -288,6 +288,23 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4p. Asteroids rebuilt, micrometeor clouds, choosing the target (version 46)
+
+- **Asteroid meshes** (owner, 2026-11-02: "asteroid meshes need work!"): the first version jittered each triangle's
+  corners on their own, tearing the faces apart into shards. Each rock's surface is now pushed in and out by one smooth
+  noise of direction (eight waves) with crater dents, squashed and leaning per rock, in a dark grey-brown that varies
+  from rock to rock, so the faces stay joined.
+- **Micrometeor clouds** (owner: "near asteroids are micro meteor clouds which can damage hull/ship. they are scattered
+  by density depending on how close you fly to a rock"; after the-federation docs/13 3.1, "the halo grinds"): fine grit
+  round each rock, densest at the rock and thinning to three rock radii, drifting slowly. Inside the halo a ship takes up
+  to 6 points a second, from nothing at the halo's edge to full at the rock, times its speed over 150 m/s (at least 20 %
+  of it), on the facing along its course, shields first; the log says so as you enter. Measured: 5 s through a cloud at
+  250 m/s took 11 points off the shields.
+- **No target at the start** (owner: "I cant really tell if I selected an enemy because you autoselected from the start,
+  can I manually select or deselect an enemy? add a little x to the corner of target view"): the captain picks a target
+  (right click, or Next target), and an **X** in the Target box's corner releases it (the camera back on your ship, any
+  helm order toward it cancelled). The scripted shots still set their target.
+
 ## 4o. Mine ranges, and the view's object pools (version 45)
 
 Owner, 2026-11-02: "mine needs range animation still here, also why does it lag when i have mine and rotate the cam with

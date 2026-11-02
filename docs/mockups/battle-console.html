@@ -553,7 +553,11 @@ const TRANSPORT = { range_km: 4 };
 // it, scaled by the speed of the impact (floored, so a nudge still counts), and cuts the ship's speed; one collision
 // per ship per cooldown_s. A ship towed by a tractor beam hits at the speed it is dragged, which is what makes
 // swinging a prisoner into a rock a piloting problem.
-const ROCK = { dmg: 14, speed_ref_m_s: 150, speed_floor: 0.35, speed_frac: 0.3, cooldown_s: 1.5 };
+// The micrometeor cloud round each rock (owner, 2026-11-02: "near asteroids are micro meteor clouds which can damage
+// hull/ship. they are scattered by density depending on how close you fly to a rock"; after the-federation docs/13 3.1,
+// "the halo grinds"): out to halo_x times the rock's radius; inside it a ship takes grind_dps, from 0 at the halo's edge
+// to full at the rock, times its speed over speed_ref (at least grind_floor of it), on the facing along its course.
+const ROCK = { dmg: 14, speed_ref_m_s: 150, speed_floor: 0.35, speed_frac: 0.3, cooldown_s: 1.5, halo_x: 3, grind_dps: 6, grind_floor: 0.2, grit_per_u: 90 };
 // Boarding (after the-federation's boarding.gd and docs/01 section 8, and the owner's survey answers B14 and B15):
 // marines beam through a downed shield facing, inside transporter range. Hit and run: a squad of combat marines and
 // demolition marines goes to one subsystem for raid_s. Shooting it up takes shoot_per_marine off it for each combat
@@ -754,7 +758,9 @@ function newWorld(id = sceneId) {
     rocks: (sc.rocks || []).map((r) => ({ ...r })).concat(planets.map((pl) => ({ x: pl.x, z: pl.z, r: pl.r, name: pl.name, planet: true }))),
     rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4), warp: rng(Math.imul(SCENARIO.seed + 5, 0x9e3779b1) >>> 0), helm: rng(Math.imul(SCENARIO.seed + 6, 0x9e3779b1) >>> 0) } }; // the warp stream's seed is mixed: a plain seed + 5 starts on 0.014, failing nearly any first jump
   W.player = W.ships[0];
-  W.player.target = sc.target;
+  // no target at the start: the captain picks one (owner, 2026-11-02: "I cant really tell if I selected an enemy because
+  // you autoselected from the start"); the scripted shots set theirs
+  W.player.target = null;
   for (const s of W.ships) if (s.side === 1) s.ecm = 1;
   if (sc.setup) sc.setup(W);
   if (sc.armed === false) W.player.mounts = [];
@@ -889,6 +895,13 @@ function hullR(s) { return CLASSES[s.cls].len_m / M_PER_U * 0.35; }
 function rocksStep() {
   for (const s of W.ships) {
     if (!s.alive) continue;
+    // the grind of the micrometeor clouds, gathered and dealt in whole points so the log does not chatter
+    let grind = 0, inCloud = false;
+    for (const r of W.rocks) { if (r.planet) continue; const d = Math.hypot(s.x - r.x, s.z - r.z), halo = r.r * ROCK.halo_x;
+      if (d < halo) { inCloud = true; const f = clamp((halo - d) / (halo - r.r), 0, 1), spd = Math.max(ROCK.grind_floor, Math.abs(s.v) / ROCK.speed_ref_m_s); grind = Math.max(grind, ROCK.grind_dps * f * spd * DT); } }
+    if (inCloud && !s.inCloud && s === W.player) say('Helm', 'Into a micrometeor cloud: the shields are taking grit.');
+    s.inCloud = inCloud; s.grit = (s.grit || 0) + grind;
+    if (s.grit >= 2) { const f = fwd(s.h), dmgG = Math.floor(s.grit); s.grit -= dmgG; damage(s, { x: s.x + f[0] * 5, z: s.z + f[1] * 5, side: -1 }, dmgG, 'hull'); }
     for (const r of W.rocks) {
       const dx = s.x - r.x, dz = s.z - r.z, d = Math.hypot(dx, dz) || 1e-6, R = r.r + hullR(s);
       if (d >= R) continue;
@@ -1205,6 +1218,8 @@ const A = {
   // right click. Clicking and dragging camera around frees up the lock").
   lock: (id) => { const s = W.player, t = ship(id); if (!t || !t.alive || t.side === s.side) return; s.target = id; focus = id; camLock = true; say('Tactical', `Target locked: ${t.name}.`); },
   // The camera lock on its own, from the Target box ("you can lock again under the enemy ship systems view box").
+  // release the target (the X on the Target box): no target, the camera back on your ship
+  unlock: () => { const s = W.player, t = tgt(s); if (!t) return; s.target = null; camLock = false; camTargetView = false; s.engaged = false; say('Tactical', `Target released: ${t.name}.`); },
   // camera lock: back to your own ship (out of target view) and turned to face the target
   camLock: () => { const on = !camLock || camTargetView; camTargetView = false; camLock = on && !!tgt(W.player); },
   // target view: the camera glides to the target and orbits it; off, it glides back to your ship
@@ -2704,23 +2719,45 @@ function explosionsStep(dt) {
 }
 function boomAt(x, z, size) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb070, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); sp.position.set(x, 0, z); scene.add(sp); booms.push({ sp, t: 0, size }); }
 const SHOT_POOL = {};
-// Asteroids in the 3D view: a lumpy grey rock per W.rocks entry, rebuilt when the world changes.
-let ROCKS3D = null, rocksFor = null;
+// The rocks (owner, 2026-11-02: "asteroid meshes need work!"): each rock's surface is pushed in and out by one smooth
+// noise of direction, so neighbouring faces stay joined (the first version jittered every triangle's corners apart, and
+// the rocks read as shattered shards); a squash and a lean per rock, craters as dents, a mottled grey-brown per rock.
+// Round each, its micrometeor cloud: fine grit, densest near the rock, thinning to its halo, drifting slowly.
+let ROCKS3D = null, rocksFor = null, GRIT = [];
 function syncRocks() {
   if (rocksFor === W) return; rocksFor = W;
-  if (ROCKS3D) scene.remove(ROCKS3D); ROCKS3D = new THREE.Group(); scene.add(ROCKS3D);
+  if (ROCKS3D) scene.remove(ROCKS3D); ROCKS3D = new THREE.Group(); scene.add(ROCKS3D); GRIT = [];
   const R = rng(SCENARIO.seed + 9);
   for (const r of W.rocks) {
     if (r.planet) continue;
-    const geo = new THREE.IcosahedronGeometry(r.r, 1), pos = geo.attributes.position;
-    for (let i = 0; i < pos.count; i++) { const k = 0.8 + R() * 0.35; pos.setXYZ(i, pos.getX(i) * k, pos.getY(i) * k * 0.8, pos.getZ(i) * k); }
+    // a smooth noise of direction: a few random waves over the sphere, plus craters as smooth dents
+    const waves = Array.from({ length: 8 }, () => [R() * 2 - 1, R() * 2 - 1, R() * 2 - 1, 1.2 + R() * 3.5, R() * 6.28, 0.06 + R() * 0.09]);
+    const craters = Array.from({ length: 4 }, () => { const v = new THREE.Vector3(R() - 0.5, R() - 0.5, R() - 0.5).normalize(); return [v, 0.25 + R() * 0.25, 0.08 + R() * 0.06]; });
+    const sq = [1, 0.55 + R() * 0.25, 0.7 + R() * 0.45];
+    const geo = new THREE.IcosahedronGeometry(r.r, 3), pos = geo.attributes.position, v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.set(pos.getX(i), pos.getY(i), pos.getZ(i)).normalize();
+      let k = 1; for (const [a, b, c, f, ph, amp] of waves) k += amp * Math.sin(f * (a * v.x + b * v.y + c * v.z) + ph);
+      for (const [cv, cr, depth] of craters) { const d = v.distanceTo(cv); if (d < cr) k -= depth * (1 - (d / cr) ** 2); }
+      pos.setXYZ(i, v.x * r.r * k * sq[0], v.y * r.r * k * sq[1], v.z * r.r * k * sq[2]);
+    }
     geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x6d6a66, roughness: 0.95, flatShading: true }));
+    // a dark grey-brown (linear values, so they read darker than they look in numbers)
+    const shadeK = 0.7 + R() * 0.5, col = new THREE.Color(0.075 * shadeK, 0.066 * shadeK, 0.058 * shadeK);
+    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: 1, metalness: 0.05, flatShading: true }));
     m.position.set(r.x, 0, r.z); m.rotation.set(R() * 3, R() * 3, R() * 3); ROCKS3D.add(m);
+    // the micrometeor cloud
+    const n = Math.round(ROCK.grit_per_u * r.r), gp = new Float32Array(n * 3), halo = r.r * ROCK.halo_x, base = [];
+    for (let i = 0; i < n; i++) { const a = R() * 2 * P, u = R(), rad = r.r * 1.05 + (halo - r.r) * u * u, y = (R() - 0.5) * r.r * 1.2 * (1 - u); base.push([a, rad, y, 0.05 + R() * 0.1]); gp.set([r.x + Math.cos(a) * rad, y, r.z + Math.sin(a) * rad], i * 3); }
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(gp, 3));
+    const pts = new THREE.Points(gg, new THREE.PointsMaterial({ color: 0xb8a68f, size: 0.13, transparent: true, opacity: 0.85, depthWrite: false })); pts.frustumCulled = false;
+    ROCKS3D.add(pts); GRIT.push({ r, base, gp, gg });
   }
 }
+// The grit drifts slowly round its rock.
+function gritStep(dt) { for (const c of GRIT) { for (let i = 0; i < c.base.length; i++) { const b = c.base[i]; b[0] += b[3] * dt / Math.max(1, b[1] * 0.3); c.gp[i * 3] = c.r.x + Math.cos(b[0]) * b[1]; c.gp[i * 3 + 2] = c.r.z + Math.sin(b[0]) * b[1]; } c.gg.attributes.position.needsUpdate = true; } }
 function syncScene(dt) {
-  syncRocks(); syncPlanets(); syncWells();
+  syncRocks(); gritStep(dt); syncPlanets(); syncWells();
   for (const s of W.ships) {
     const o = modelFor(s); o.g.visible = s.alive; if (!s.alive) continue;
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
@@ -2971,14 +3008,18 @@ function uiView() {
   if (showTargetCam && t) {
     const ir = insetRect(), bx = vx + ir[0], by = vy + ir[1];
     g.fillStyle = '#000'; g.fillRect(bx + 2, by + 2, ir[2] - 4, ir[3] - 4); nine('frame.inset', bx, by, ir[2], ir[3]);
-    LBL(`Target · ${t.name}`, bx + 18, by + 34, ir[2] - 36, CC.sky, 'left', 18);
+    LBL(`Target · ${t.name}`, bx + 18, by + 34, ir[2] - 60, CC.sky, 'left', 18);
+    // the X that releases the target
+    { const xs = bx + ir[2] - 34, ys = by + 14, st = hit('v.untarget', xs, ys, 24, 24, { click: A.unlock, tip: 'Release target' });
+      g.fillStyle = st.hot ? CC.alert : CC.signal; g.beginPath(); g.arc(xs + 12, ys + 12, 12, 0, 2 * P); g.fill();
+      g.strokeStyle = '#000'; g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 7, ys + 7); g.lineTo(xs + 17, ys + 17); g.moveTo(xs + 17, ys + 7); g.lineTo(xs + 7, ys + 17); g.stroke(); }
     const tg = inBox(bx + 14, by + 44, ir[2] - 28, ir[3] - 52, (c, w, h) => drawSSD(c, w, h, t, false, false, 'tgt')); ssdHits('tgt', bx + 14, by + 44, tg, t, false);
     const hw5 = (ir[2] - 6) / 2;
     button('v.tview', bx, by + ir[3] + 6, hw5, 30, 'Target view', A.targetView, { sel: () => camTargetView, center: true });
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v45', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v46', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (sceneOpen) {
     // a click anywhere else closes the list
@@ -3068,7 +3109,7 @@ function frame(now) {
 // Named shots for tools/mockups/shoot.mjs: each replays the battle from its seed for a fixed number of steps.
 function scripted(steps, then, sc = 'battle') {
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(raidPick, { marines: 2, demo: 0 }); Object.assign(capPick, { marines: 8, demo: 0, medics: 1, engineers: 1, hackers: 1, pilots: 1 });
-  newWorld(sc); camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
+  newWorld(sc); W.player.target = SCENES[sc].target; camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
   if (sc === 'battle') { W.player.engaged = true; W.player.order = 'intercept'; W.player.vOrder = maxSpeed(W.player); }
   placingHet = false;
