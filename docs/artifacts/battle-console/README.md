@@ -80,3 +80,4 @@
 - Version 60 published 2026-11-03, version id `1793667984-54b4`: a Mines tab of its own; Space pauses and resumes (F fires); the transporter effect (a shader column of climbing motes, a ring and a flash) at both ends of every beam.
 - Version 61 published 2026-11-03, version id `1793669229-ccc9`: helm manoeuvres steer toward a selected friendly ship, station or planet; Transport regrouped to Capture, Hit and run, Cargo (Supplies / Misc toggle inside) and Mines.
 - Version 62 published 2026-11-03, version id `1793691514-dbd5`: the nine station icons redrawn as pictures of their jobs (a wheel, a bolt, a turret, a shield with a burst, an atom, a dish, a wrench, a figure dissolving into slices, three chevrons).
+- Version 63 published 2026-11-03, version id `1793693251-28bb`: the transport figure solid above the waist, dissolving below, no pad; Engines drawn as a thruster.

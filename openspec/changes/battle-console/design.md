@@ -352,6 +352,9 @@ should have a little X".
   over a pad, Fleet three chevrons in formation. The transport icon also marks the transporter subsystem on the systems
   display. Console skins (mockup 4) draws from the same kit and picks them up at its next publish; its live page is an
   older build than this branch's copy, so it is not republished from here.
+  Then (version 63; owner: "top half of the transporter guy is solid, no ring at the bottom", "engines icon is
+  misleading, should be a thruster icon"): the transport figure is solid above the waist and breaks into thinning
+  slices below it, with no pad; Engines is a thruster, a nozzle with its flame.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 
