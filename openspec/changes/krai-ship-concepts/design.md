@@ -100,6 +100,33 @@ Rule X1 of the guide (the hull complements the console) is a guide, not a check 
 console requirements", "I said compliment, so not a hard rule"): the page shows the two palettes side by side and
 measures nothing between them.
 
+## Brought to the Concord line's standard (owner, 2026-11-03)
+
+Owner: "now bring the ship up to standrads, detailed normal maps/panels, paralx windows, detailed thrusters, lighting
+etc", then "this is an alien ship, so consider cultural differences, use wrmer orangy lighting".
+
+- **One implementation.** The Concord line's detail tile generator, its tri-planar GLSL, its room ray and its thruster
+  move into `docs/mockups/lib/ship-skin.js` (style `strake`, the Concord's); mockup 6 now uses the module, and renders pixel-identical before and after
+  (hero, windows, detail and thrusters shots compared, no pixel differing). The Krai page uses the same module.
+- **Panels.** The chevron seams are gone (owner: "the diagonal plating kinda bugs me", with references of square-cut
+  sci-fi plating, taken for their shape only). The shared tile generator gains a style `kit` (the Krai's, 8 m square,
+  seed 913): plates split and split again, every line square to the hull, one or two corners cut at 45 degrees, raised
+  or set in, and on each plate at most one feature (a bank of vent slots, a round hatch, a row of bolt holes, a smaller
+  inset panel, or a recessed conduit with a pipe and its clamps); as a normal map and a grime map, the seams tinted
+  bronze.
+- **Windows.** Each window from the plan is a pane of dark glass in a bronze rim, with a room behind it by interior
+  mapping. The rooms are the Krai's, provisional until the owner sets the culture (U7): bare blued-steel walls ribbed
+  like a rib cage, a grating floor, no carpet or plants, forge-orange strip lamps and braziers or dark red for a sleeping
+  watch; a barracks of racked bunks, an armoury wall of blades, a mess round a brazier, and a command room (a lit war
+  table and consoles) wherever a pane meets a command room.
+- **Thrusters.** The shared bell with six sides (faceted, not turned), blued and ribbed, white-hot at the throat to forge
+  orange at the lip, an orange plume: a main bell and two smaller in the stern face, and one at each nacelle's tail.
+- **Lighting.** Warm orange (#ff8a3c) floodlights as real spotlights with 90 degree cones: four down each flank grazing
+  the plating (these eight cast shadows), a logo flood on each flank marking, an inspection flood on each nacelle, one
+  along the crest and one up the keel blade; on in every light preset, brightest with no sun. Position lights, amber
+  strobes on the nacelle tips that double-flash, red beacons top and bottom that pulse. A Shadow side light preset, as
+  on the Concord line.
+
 ## Open questions
 
 Survey A15-A17 were withdrawn with the old directions (owner, 2026-11-03: "nuke, the krai survey since we're redoing

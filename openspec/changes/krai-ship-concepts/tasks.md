@@ -9,6 +9,7 @@
 - [x] 1.5 v2 (owner: "Those are fighter jets, not spaceships. Think about how we defined culture and story"): spaceships from the culture as written: A Standing blade, B Lance, C Three-edged dagger; no wings or fins; survey A15-A17 rewritten
 
 - [x] 1.6 v4 on the Ship Design Bible: the frigate's rooms as data (`data/ships/krai/frigate_plan.json`), the hull fitted round them by `lib/ship-plan.js`, the Krai's own parts and exterior, Build it up and the deck plans; survey A15-A17 withdrawn
+- [x] 1.7 The frigate to the Concord line's standard on the shared `lib/ship-skin.js`: detail and normal maps, the chevron seams as grooves, interior-mapped windows with Krai rooms, six-sided thrusters, warm orange floodlights with shadows, strobes and beacons
 
 ## 2. After the frigate is approved
 

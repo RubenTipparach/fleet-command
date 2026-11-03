@@ -43,3 +43,4 @@
 - 2026-11-03, cloud session (Concord ships thread): versions 50 and 51, version id `1793740476-97a2`, on the live version (M8 v8 kept): M7 v5, the alien bayonet.
 - 2026-11-03, cloud session (Concord ships thread): version 52, version id `1793740914-b977`: M7 v7.
 - 2026-11-03, cloud session (Concord ships thread): version 53, version id `1793741037-8a38`: M7 v8.
+- 2026-11-03, cloud session (Concord ships thread): version 54, version id `1793742998-d03e`: M7 v9 (the Krai frigate to the Concord standard), M6 v14 (shared skin module).
