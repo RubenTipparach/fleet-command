@@ -1,8 +1,7 @@
-# Mockup 7: Battle Console, Krai Warhost
+# Mockup 8: Battle Console, Krai Warhost
 
-- Link: not yet published (the desktop session publishes; CLAUDE.md section 8). Publish
-  `docs/mockups/battle-console-krai.html` as a new artifact titled "Krai Battle Console", icon `console`, then record
-  the link here, in `mockup-work.md`, `docs/design/README.md` and the mockup tracker.
+- Link: https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv (slug `D6PacxkhuY6Q2n8TGHKDTv`), on the owner's current account; M8 on the
+  mockup tracker.
 - Shows: the battle console of mockup 2 in the Krai Warhost skin, every control working against the same seeded
   stand-in battle and test scenes. The Krai kit rendered in Blender (frames, keys, tabs, strips, name plate, dial, lamps,
   crest, symbol bars, allocation cells), the column as one plate with the panels formed into it as joined wells and a
@@ -21,4 +20,6 @@
 ## Publishes
 
 - Version 1 (first pass, clamps and a backplate): not published.
-- Version 2 (the joined column and strips, no clamps): not yet published.
+- Version 2 (the joined column and strips, no clamps): published 2026-11-03 from the cloud session at the owner's request
+  ("artifact so I can play this mockup?"; no desktop session was reachable), version id `1793715999-c961`, then
+  republished as mockup 8 (another session's branch holds mockup 7), version id `1793716070-4027`.

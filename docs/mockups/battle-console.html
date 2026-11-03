@@ -726,7 +726,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // 2026-11-03: "Some of the elements on the bottom bar ... don't fit in the container. Shrink.the elements or grow
 // container height"). SDY centres the strips' 56 px of content in a taller strip.
 const SH = CON.stripH || 56, SDY = (SH - 56) / 2;
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v67', krai: 'Mockup 7 · Battle console · Krai Warhost · v2' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v68', krai: 'Mockup 8 · Battle console · Krai Warhost · v2' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 

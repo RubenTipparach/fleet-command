@@ -2,7 +2,7 @@
 
 ## Why
 
-Mockup 7 in `mockup-work.md`: the battle console (mockup 2) played in the Krai Warhost skin (mockup 4). The owner,
+Mockup 8 in `mockup-work.md`: the battle console (mockup 2) played in the Krai Warhost skin (mockup 4). The owner,
 2026-11-01, starting the battle console: "the first design system we will implement will be the concord, we will then
 reuse this design once it has been fully approved across all other factions, and each faction's implementation will be
 manually verified such that all of it is functional and readable." Then, 2026-11-03: "Krai Warhost - start work on
@@ -47,7 +47,7 @@ red alerts energy, battery, warp button don't fit in the container. Shrink.the e
 
 ## Impact
 
-- Pages: `docs/mockups/battle-console.html` (v67), `docs/mockups/battle-console-krai.html` (new, written),
+- Pages: `docs/mockups/battle-console.html` (v68), `docs/mockups/battle-console-krai.html` (new, written),
   `docs/mockups/console-skins.html` (re-inlined; its Krai icons are now the full icon-guide set).
 - Libraries: `docs/mockups/lib/concord.js` (skin fields), `docs/mockups/lib/krai.js` (new), `docs/mockups/skins/krai.js`
   (now a thin registration).

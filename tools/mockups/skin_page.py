@@ -22,7 +22,7 @@ SOURCE = ROOT / "docs/mockups/battle-console.html"
 SKINS = {
     "krai": {
         "title": "Krai Battle Console",
-        "what": "Mockup 7: the battle console in the Krai Warhost skin (OpenSpec change krai-battle-console)",
+        "what": "Mockup 8: the battle console in the Krai Warhost skin (OpenSpec change krai-battle-console)",
         "fonts": "family=Antonio:wght@400;600;700&family=Teko:wght@400;500;600;700&family=Russo+One",
         "inline": ["assets/ui/krai/manifest.json", "docs/mockups/lib/krai.js"],
     },
