@@ -33,3 +33,4 @@
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 9, the survey at v28, merged onto another session's live version (M2 at v64, the icon guide added); version 35, version id `1793697390-e5c8`.
 - 2026-11-03, cloud session (battle console thread): Fleet Command Icons added to Guides, mockup 2 at v64, merged onto the live version 1793696583-fd49 (mockup 6 and the survey at v27 from other threads kept); version id `1793697271-5c3f`.
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 11 and named the standard, mockup 5 marked retired, M2 at v65 merged from main; version 36, version id `1793699693-719b`.
+- 2026-11-03, cloud session (Concord ships thread): M1 at v6 and M2 at v66 with the Concord line's ships, M6 at v12; version 37, version id `1793700065-3eb9`.
