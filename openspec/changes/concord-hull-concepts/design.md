@@ -196,6 +196,19 @@ carrier: "it has doors on each side, its a diamond cross section, with the main 
 The hangar hull's diamond is the station loft with a large chamfer (the chamfer may now reach the half height less 0.3 m), so
 it is nearly all sloped faces with a narrow ridge and keel; the doors sit on the upper slopes.
 
+## Phaser holes and burning wrecks
+
+The owner, 2026-11-03: "phaser fire SHOULD SHOW PARALLAX AS THEY CARVE HOLES", "but their holes should be smaller and just
+scorch marks instead of burns", then, with a film still of a wreck burning along its broken faces: "we need more fire when
+ship pieces break off, more particles and flames trailing off".
+
+- Every phaser hit carves a hole about 0.7 m across (larger ships a little more) that shows the deck behind it by interior
+  mapping, inside a cold scorch mark: no flames, no embers, no glowing rim, only a puff of smoke. A hit beside an earlier hole
+  widens it, up to twice its size, instead of punching another. A ship holds 24 holes.
+- A piece that breaks away burns along its broken border: a flash, then flames for about 30 s that keep only 30 % of the
+  piece's motion so they stream behind it, blue electrical arcs crackling in the break, and embers after. Its broken faces
+  burn more than twice as long as before, with flames licking further into the rooms they cut through.
+
 ## Cost
 
 A frigate is about 1,500 triangles of hull and fittings before its fracture pieces (hidden until it breaks), and 40-90 draws on the page. That is under the

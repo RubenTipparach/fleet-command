@@ -894,7 +894,7 @@ vec3 interiorCut(vec3 f, vec3 V, out float solid){
   else L = vec3(0.55, 0.65, 0.85);
   float sootP = smoothstep(0.42, 0.7, fn(hit*0.7 + room*3.1)) * (1.0 - smoothstep(0.0, 4.5, local.z));
   base *= 1.0 - 0.8*sootP;
-  float lick = (1.0 - smoothstep(0.0, 1.6, local.z)) * smoothstep(0.66, 0.86, fn(vec3(hit.x*0.9, hit.y*1.7 - uTime*1.6, hit.z*0.9 + room.x)));
+  float lick = (1.0 - smoothstep(0.0, 2.4, local.z)) * smoothstep(0.5, 0.8, fn(vec3(hit.x*0.9, hit.y*1.7 - uTime*1.6, hit.z*0.9 + room.x)));
   vec3 flame = vec3(1.0, 0.3, 0.07)*lick*(1.0 - step(t3.y, t)*step(V.y, 0.0)*0.5);
   return base*L*2.0*lamp*exp(-t*0.13) + flame*(0.35 + 0.35*uHeat)*(0.85 + 0.15*sin(uTime*14.0 + hit.y*3.0));
 }`;
@@ -1410,7 +1410,7 @@ class Pool {
   upload() { const a = this.points.geometry.attributes; a.position.needsUpdate = a.aColor.needsUpdate = a.aSize.needsUpdate = true; }
   clear() { this.ttl.fill(0); this.size.fill(0); this.upload(); }
 }
-const glowPool = new Pool(6000, true), smokePool = new Pool(3000, false);
+const glowPool = new Pool(12000, true), smokePool = new Pool(5000, false);
 // Each effect's look, in one table: what the colour means is fixed (orange fire, cyan-white coolant, violet plasma).
 const FX = {
   fire: { pool: glowPool, life: [0.45, 0.9], speed: [34, 60], spread: 0.16, size: [1.6, 7.5], c0: [1, 0.82, 0.45, 1], c1: [0.7, 0.12, 0.02, 0], drag: 1.9, also: ['smoke', 0.25] },
@@ -1421,6 +1421,8 @@ const FX = {
   arc: { pool: glowPool, life: [0.12, 0.35], speed: [8, 30], spread: 1.0, size: [0.9, 0.2], c0: [0.75, 0.88, 1, 1], c1: [0.35, 0.5, 1, 0], drag: 3 },
   embers: { pool: glowPool, life: [1, 2.5], speed: [2, 6], spread: 1.0, size: [0.8, 0.3], c0: [1, 0.6, 0.2, 1], c1: [0.6, 0.1, 0, 0], drag: 0.4 },
   smoke: { pool: smokePool, life: [2.5, 4.5], speed: [3, 9], spread: 0.6, size: [4, 16], c0: [0.1, 0.09, 0.085, 0.5], c1: [0.05, 0.05, 0.05, 0], drag: 0.5 },
+  // a wreck's flames: long-lived, slow, broad, so a piece in motion leaves them streaming behind it
+  flame: { pool: glowPool, life: [1.0, 2.2], speed: [3, 9], spread: 0.55, size: [3, 8], c0: [1, 0.78, 0.38, 1], c1: [0.55, 0.08, 0.02, 0], drag: 0.7, also: ['smoke', 0.12] },
   fireball: { pool: glowPool, life: [0.8, 2.0], speed: [10, 70], spread: 1.0, size: [8, 26], c0: [1, 0.9, 0.6, 1], c1: [0.6, 0.1, 0.02, 0], drag: 1.6, also: ['smoke', 0.3] },
 };
 const _d = V3(), _o = V3(), _q = V3();
@@ -1534,6 +1536,7 @@ function snapNacelle(ship, side) {
   charStump(ship, T, { n: k.dir, d: k.dir.dot(k.knee), c: k.knee, r: k.chord * 0.8 });
   const w = k.knee.clone().applyMatrix4(ship.root.matrixWorld);
   emit('fireball', w, k.dir, 60, 0.6 * s); emit('sparks', w, k.dir, 120);
+  wreckFire(ship, P, [k.knee]);
   addEmitter(ship, P, k.knee, k.dir, [{ type: 'fire', rate: 70, dur: 4, scale: 0.5 * s, light: true }, { type: 'smoke', rate: 12, dur: 8, scale: 0.8 * s }, { type: 'embers', rate: 4, dur: 1e9 }], 'debris');
   addEmitter(ship, T, k.knee, k.dir, [{ type: 'plasma', rate: 90, dur: 3, scale: 0.6 * s }, { type: 'sparks', rate: 20, dur: 6 }, { type: 'embers', rate: 3, dur: 1e9 }], 'stump');
   systemEmitters(ship, 'nac' + side);
@@ -1549,6 +1552,19 @@ function blowCrown(ship) {
   if (h) { h.big = true; h.r = (ship.C.command ? ship.C.command.hb : 3) * 0.75; hole(ship, h); }
   const w = base.clone().applyMatrix4(ship.root.matrixWorld); emit('fireball', w, V3(0, 1, 0), 90, 0.7 * s); flash(w, 50 * s, 0.6);
   if (P) addEmitter(ship, P, base, V3(0, -1, 0), [{ type: 'fire', rate: 50, dur: 3, scale: 0.5 * s }, { type: 'smoke', rate: 10, dur: 6, scale: 0.6 * s }], 'debris');
+}
+// A broken piece burns (owner, 2026-11-03: "more fire when ship pieces break off, more particles and flames trailing off"):
+// flames along its broken border for about 30 s that stream behind it as it drifts, blue electrical arcs crackling in the
+// break, and embers after. Points are taken from the border the piece shared with its neighbours, or from where it was cut.
+function wreckFire(ship, P, at = null) {
+  const s = Math.max(0.5, ship.C.length / 150), pts = at ? at.map((p) => p.clone()) : [];
+  if (!at && P.frag && P.body.pairs) for (const pr of P.body.pairs) if ((pr.a === P.cell || pr.c === P.cell) && pts.length < 5) pts.push(pr.pts[Math.floor(fxRng() * pr.pts.length)].clone());
+  if (!pts.length) pts.push(P.cuts[0] ? P.cuts[0].c.clone() : P.center.clone());
+  pts.forEach((p, i) => {
+    const out = p.clone().sub(P.center); if (out.lengthSq() < 1e-3) out.set(0, 1, 0); out.normalize();
+    addEmitter(ship, P, p, out, [{ type: 'fireball', rate: 30, dur: 0.6, scale: 0.35 * s, light: i === 0 }, { type: 'flame', rate: 55, dur: 9, scale: 0.75 * s, light: i === 0 }, { type: 'flame', rate: 20, dur: 22, scale: 0.6 * s }, { type: 'embers', rate: 5, dur: 1e9, scale: s }], 'debris');
+    addEmitter(ship, P, p, out, [{ type: 'arc', rate: 6, dur: 18 }, { type: 'sparks', rate: 2, dur: 1e9 }], 'debris');
+  });
 }
 function swapToPieces(ship) { for (const b of ship.bodies) swapBody(ship, b); }
 // A heavy hit on a badly damaged hull knocks off the outer piece it lands on.
@@ -1676,7 +1692,7 @@ function blowOff(ship, P, speed = 1) {
   const w = P.center.clone().applyMatrix4(ship.root.matrixWorld);
   emit('fireball', w, out, 280, 1.0 * s); emit('fireball', w, V3(0, 1, 0), 120, 0.7 * s); emit('sparks', w, out, 220, 1.2); emit('smoke', w, out, 60, 1.2 * s);
   flash(w, 150 * s, 0.7); shockwave(ship, w, 110 * s); debrisAdd(w, 90, ship.C.length, 0.08);
-  addEmitter(ship, P, P.center, out, [{ type: 'fire', rate: 40, dur: 2.5, scale: 0.5 * s, light: true }, { type: 'smoke', rate: 8, dur: 6, scale: 0.6 * s }, { type: 'embers', rate: 3, dur: 1e9 }], 'debris');
+  wreckFire(ship, P);
 }
 function stepBreach(ship, dt) {
   const B = ship.breach; if (!B || B.done) return;
@@ -1696,7 +1712,7 @@ function mainBlast(ship) {
     detach(ship, P, out.multiplyScalar(sp).add(V3(rr(fxRng, -2, 2), rr(fxRng, -2, 2), rr(fxRng, -2, 2)).multiplyScalar(s)),
       V3(rr(fxRng, -0.35, 0.35), rr(fxRng, -0.35, 0.35), rr(fxRng, -0.35, 0.35)));
     const ec = P.cuts[0] ? P.cuts[0].c.clone().lerp(P.center, 0.5) : P.center.clone();
-    if (fxRng() < 0.75) addEmitter(ship, P, ec, out, [{ type: 'fire', rate: 30 + 40 * fxRng(), dur: 2 + 3 * fxRng(), scale: 0.55 * s }, { type: 'smoke', rate: 8, dur: 6, scale: 0.7 * s }, { type: 'embers', rate: 3, dur: 1e9 }], 'debris');
+    wreckFire(ship, P);
   }
   ship.emitters = ship.emitters.filter((e) => e.tag === 'debris' || e.tag === 'hole');
   emit('fireball', cw, V3(0, 1, 0), 500, 1.4 * s); emit('coolant', cw, V3(0, 0, 1), 260, 2.2 * s); emit('sparks', cw, V3(0, 1, 0), 300, 1.4);
@@ -1837,7 +1853,7 @@ function stepShip(ship, dt) {
     if (!P.detached) continue;
     P.pivot.position.addScaledVector(P.vel, dt);
     _qq.setFromEuler(_e.set(P.spin.x * dt, P.spin.y * dt, P.spin.z * dt)); P.pivot.quaternion.multiply(_qq);
-    for (const m of P.mats) m.userData.u.uCutHeat.value = Math.max(0, m.userData.u.uCutHeat.value - dt / 30);
+    for (const m of P.mats) m.userData.u.uCutHeat.value = Math.max(0, m.userData.u.uCutHeat.value - dt / 70);
     { const d = ship.t - P.dieAt; P.lightLeft = d >= 1.1 ? 0 : inFlick(d) ? 0.12 : 1; } // a broken-off piece's lights stutter, then go out
   }
   // Power: the window light of each section, the bridge, flicker when the reactor or a section is failing.
@@ -1891,7 +1907,7 @@ function stepShip(ship, dt) {
     e.acc += ph.rate * dt; const n = Math.floor(e.acc); e.acc -= n;
     e.P.inner.updateMatrixWorld(true);
     const w = e.pos.clone().applyMatrix4(e.P.inner.matrixWorld), d = e.dir.clone().transformDirection(e.P.inner.matrixWorld);
-    const inh = e.P.detached ? e.P.vel.clone().applyQuaternion(ship.root.quaternion) : null;
+    const inh = e.P.detached ? e.P.vel.clone().applyQuaternion(ship.root.quaternion).multiplyScalar(0.3) : null; // flames lag behind a drifting piece
     if (n) emit(ph.type, w, d, n, ph.scale || 1, inh);
     if (ph.light && li < 2) { const L = ship.lights[li++]; L.l.position.copy(e.pos.clone().applyMatrix4(e.P.inner.matrixWorld)).sub(ship.root.position); L.l.intensity = 2.2 * (0.7 + 0.3 * flick(t, li, 2)); }
   }
