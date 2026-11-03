@@ -93,7 +93,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Krai <span>Warhost</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 7, v9. <code>krai-ship-concepts</code>. The Krai frigate redone on the Ship Design Bible: rooms first, the hull fitted round them, then the Krai's own parts and an exterior of its own. Drag to orbit, pinch or scroll to zoom.</p>
+    <p class="sub">Mockup 7, v10. <code>krai-ship-concepts</code>. The Krai frigate redone on the Ship Design Bible: rooms first, the hull fitted round them, then the Krai's own parts and an exterior of its own. Drag to orbit, pinch or scroll to zoom.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -1034,7 +1034,7 @@ const WINS = SP.windows(PLAN, ROOMS, FIT, LIT);
 // warmer orangy lighting"). Real spotlights with a 90 degree cone, set just off the plating and aimed along it so they
 // graze it and every seam, bolt and inset catches them (L1), pools that do not overlap (L2), the first eight casting
 // shadows: four down each flank, a logo flood on each flank marking, an inspection flood on each nacelle from the
-// strut, one along the crest and one up the keel blade; the eight flank lamps cast shadows. On in every light, brightest with no sun.
+// strut, and a pair either side of the crest and of the keel blade; the eight flank lamps cast shadows. On in every light, brightest with no sun.
 const floods = [];
 { const lamp = (p, aim, range, k, shadow, ang = PI / 4) => { const l = new THREE.SpotLight(0xff8a3c, 0, range, ang, 0.4, 1.4); l.position.copy(p); l.target.position.copy(aim);
     if (shadow) { l.castShadow = true; l.shadow.mapSize.set(512, 512); l.shadow.camera.near = 0.3; l.shadow.bias = -0.0006; l.shadow.normalBias = 0.04; }
@@ -1044,8 +1044,11 @@ const floods = [];
   for (const sx of [1, -1]) for (const z of [34, 4, -14, -32]) { const h = H(z); lamp(V3(sx * (h[1] + 2.4), h[2] - 1.5, z + 3), V3(sx * h[1], (h[2] + h[3]) / 2 - 1, z), 30, 1.3, false, PI / 6); }
   for (const sx of [1, -1]) { const z = 20, y = PLAN.deck_floor_m[2] + 1.2, s0 = SP.sideAt(H(z), y); lamp(V3(sx * (s0.x + 2.6), y + 2.6, z + 2.5), V3(sx * s0.x, y, z), 12, 0.8, true, PI / 6); }       // the marking
   for (const sx of [1, -1]) lamp(V3(sx * (NAC.x - 2.2), NAC.y + NAC.hh + 1.2, NAC.z + 12), V3(sx * NAC.x, NAC.y, NAC.z - 8), 34, 0.9, false);                                     // nacelle inspection
-  { const z = -16, h = H(z); lamp(V3(0, h[2] + 4.5, z), V3(0, h[2], z + 20), 40, 0.8, false); }
-  { const z = -6, h = H(z); lamp(V3(0, h[3] - 5.5, z), V3(0, h[3], z + 22), 40, 0.8, false); } } // the keel blade, from below                                                                                // the crest
+  // The crest and the keel blade stand on the centreline, so one lamp over a fin lights only one face of it and the fin cuts
+  // its pool in half (owner, 2026-11-03: "fin lights appear to be cut in half ... break this up into two lights on ether
+  // side of the fin"): a pair each, one either side, each aimed forward along its own face of the fin.
+  for (const sx of [1, -1]) { const z = -16, h = H(z); lamp(V3(sx * 2.6, h[2] + 2.4, z), V3(sx * 1.2, h[2] + 0.6, z + 16), 30, 0.7, false, PI / 6);
+    const k = -8, hk = H(k); lamp(V3(sx * 2.8, hk[3] - 3.0, k), V3(sx * 1.3, hk[3] - 1.2, k + 18), 30, 0.7, false, PI / 6); } }                                                                                // the crest
 // The Concord Petrel beside it, for scale.
 const concord = CL.plainModel('petrel_level'); { const b = new THREE.Box3().setFromObject(concord), c = b.getCenter(V3()); concord.position.set(-34 - c.x, -c.y, -c.z); } scene.add(concord);
 
@@ -1053,7 +1056,7 @@ const concord = CL.plainModel('petrel_level'); { const b = new THREE.Box3().setF
 // Checks: P1 (the plan), H1 (rooms inside the hull) and the nacelles' daylight. The console colours are a guide (X1), not checked.
 // L2: each lamp's pool on the hull, a circle round its aim point of radius distance * tan(half angle); two pools on the
 // same face (a flank, the top, the bottom, a nacelle) must not meet.
-const faceOf = (c) => Math.abs(c.x) > 10 ? 'nacelle' + Math.sign(c.x) : Math.abs(c.x) > 3 ? 'flank' + Math.sign(c.x) : c.y > 0 ? 'top' : 'bottom';
+const faceOf = (c) => Math.abs(c.x) > 10 ? 'nacelle' + Math.sign(c.x) : Math.abs(c.x) > 3 ? 'flank' + Math.sign(c.x) : (c.y > 0 ? 'top' : 'bottom') + Math.sign(Math.round(c.x * 10)); // a fin's two faces are two faces
 const poolClash = (() => { const P = floods.map((l, i) => ({ i, c: l.userData.aim, r: l.position.distanceTo(l.userData.aim) * Math.tan(l.angle), side: faceOf(l.userData.aim) })), out = [];
   for (let a = 0; a < P.length; a++) for (let b = a + 1; b < P.length; b++) if (P[a].side === P[b].side && P[a].c.distanceTo(P[b].c) < P[a].r + P[b].r) out.push(`${P[a].i}/${P[b].i}`);
   return out; })();
@@ -1134,6 +1137,7 @@ window.MOCKUP_SHOTS = {
   thrusters_close: () => { pick('all', 'sunlit', 'stern', false)(); controls.target.set(0, -4, -36); camera.position.set(-16, 2, -62); controls.update(); },
   window_rooms: () => { pick('all', 'nosun', 'three_quarter', false)(); controls.target.set(-7.6, 3.25, 4); camera.position.set(-13.5, 4.2, 9.5); controls.update(); },
   window_macro: () => { pick('all', 'nosun', 'three_quarter', false)(); controls.target.set(-7.6, 3.25, 6); camera.position.set(-10.5, 3.6, 8.2); controls.update(); },
+  fin_lights: () => { pick('all', 'nosun', 'three_quarter', false)(); controls.target.set(0, 9, -6); camera.position.set(-16, 18, -34); controls.update(); },
   frigate_close: () => { pick('all', 'sunlit', 'three_quarter', false)(); controls.target.set(0, 2, 22); camera.position.set(-26, 10, 52); controls.update(); },
   plan: () => { document.querySelector('[data-tab="plan"]').click(); pick('rooms', 'sunlit', 'top', false)(); },
 };

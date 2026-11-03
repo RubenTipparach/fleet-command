@@ -122,8 +122,8 @@ etc", then "this is an alien ship, so consider cultural differences, use wrmer o
 - **Thrusters.** The shared bell with six sides (faceted, not turned), blued and ribbed, white-hot at the throat to forge
   orange at the lip, an orange plume: a main bell and two smaller in the stern face, and one at each nacelle's tail.
 - **Lighting.** Warm orange (#ff8a3c) floodlights as real spotlights with 90 degree cones: four down each flank grazing
-  the plating (these eight cast shadows), a logo flood on each flank marking, an inspection flood on each nacelle, one
-  along the crest and one up the keel blade; on in every light preset, brightest with no sun. Position lights, amber
+  the plating (these eight cast shadows), a logo flood on each flank marking, an inspection flood on each nacelle, and a
+  pair either side of the crest and of the keel blade (one lamp over a fin lit only one face of it); on in every light preset, brightest with no sun. Position lights, amber
   strobes on the nacelle tips that double-flash, red beacons top and bottom that pulse. A Shadow side light preset, as
   on the Concord line.
 
