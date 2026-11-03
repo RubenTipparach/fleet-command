@@ -8,6 +8,11 @@ const { paint, P, rr } = window.FCDraw;
 // CONCORD: flat back-lit vector on LCARS's principles. Palette sampled from Starfleet Command and Starfleet Academy.
 // ===============================================================================================================
 const CC = { deep: '#1b2a6b', signal: '#2f62e0', sky: '#3fa9f0', accord: '#2fbf5a', lilac: '#b7a6f2', caution: '#f0b43c', alert: '#e8352b', text: '#eef3ff' };
+// The roles the battle console once wrote as bare colours (openspec/changes/krai-battle-console): ink on a lit key, ink on
+// a disabled one, the dark fills of empty slots and unarmed keys, the title plate, the column behind the panels, and the
+// panel title. Another skin (lib/krai.js) gives the same names its own colours.
+Object.assign(CC, { ink: '#000', inkDis: '#2a3a7a', night: '#0d1430', ghost: '#3a4a80', void: '#060a1c', slate: '#26325e', mute: '#3a4152', ver: '#6f7fb4',
+  char: '#3a0b09', plate: '#000', bg: '#000', title: CC.sky });
 // The sweep: a thick bar on the left joined by outer-rounded elbows to thin arms along the top and bottom, which end in
 // a small rounded cap of another colour. Thick to thin at every turn (the LCARS rule).
 function ccSweep(x, X, Y, W, H, o) {
@@ -149,5 +154,12 @@ const ccLive = {
   dial: (x, c, cts) => { x.strokeStyle = CC.sky; x.lineWidth = 3; x.beginPath(); x.arc(c, c, 46, -P / 2, 0.4); x.stroke(); for (const [dx, dy] of cts) { x.fillStyle = CC.alert; x.beginPath(); x.arc(c + dx * 36, c + dy * 36, 4, 0, 2 * P); x.fill(); } },
   bracket: (x, bx, by, bw, bh) => { x.strokeStyle = CC.sky; x.lineWidth = 3; for (const [px, py, a] of [[bx, by, P], [bx + bw, by, 1.5 * P], [bx + bw, by + bh, 0], [bx, by + bh, P / 2]]) { x.beginPath(); x.arc(px + (a === P || a === P / 2 ? 30 : -30), py + (a === P || a === 1.5 * P ? 30 : -30), 30, a, a + P / 2); x.stroke(); } },
 };
-return { cells: ccCells, live: ccLive, CC, sweep: ccSweep, arcSeg: ccArcSeg, strip: ccStrip, lamp: ccLamp, kit: concordKit, hero: concordHero, icon: ccIcon };
+// The skin hooks the battle console reads (the same fields as lib/krai.js): the Concord's keys are lit pills, so every
+// label and glyph on them is black; Antonio is its type as written; panels pad to the sweep's own margins.
+const api = { id: 'concord', name: 'Concord', cells: ccCells, live: ccLive, CC, sweep: ccSweep, arcSeg: ccArcSeg, strip: ccStrip, lamp: ccLamp, kit: concordKit, hero: concordHero, icon: ccIcon,
+  ink: () => '#000', keyInk: { idle: '#000', hover: '#000', pressed: '#000', tabOn: '#000', tabOff: CC.text }, font: (s) => s, fonts: ['600 20px Antonio', '700 20px Antonio'],
+  load: () => Promise.resolve(), pad: concordKit['frame.panel'].m, plate: { x: 108, y: 36, max: 250, font: '700 28px Antonio', col: CC.text },
+  ring: ['rgba(120,170,255,0)', 'rgba(90,150,255,0.15)', 'rgba(150,200,255,0.9)'], player: null, emblem: null, barCells: null, link: CC.lilac, family: '"Antonio", sans-serif' };
+window.FCSkins = window.FCSkins || {}; window.FCSkins.concord = api;
+return api;
 })();

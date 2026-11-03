@@ -184,6 +184,23 @@ def fill(col, es):
     return build
 
 
+def alloc(col, es, lit=True):
+    """An allocation cell of the battle console (CLAUDE.md section 7: discrete boxes; openspec/changes/krai-battle-console):
+    a slanted blade of glass in a dark steel setting, a larger cousin of the bar's chevron. Idle, lit, warning, ok and
+    locked share the outline and the setting; a locked cell's socket is empty (no glass, only the dark floor)."""
+    def build(K):
+        w, h = K.w, K.h
+        out = [(6.5, 1.0), (w - 1.0, 1.0), (w - 6.5, h - 1.0), (1.0, h - 1.0)]
+        cx, cy = w / 2, h / 2
+        inner = [(cx + (x - cx) * 0.8, cy + (y - cy) * 0.74) for x, y in out]
+        K.slab([out], 0.0, 1.2, K.mat("setting", lambda: steel("setting")), bevel=0.4)
+        if lit:
+            K.slab([inner], 1.2, 1.7, K.mat("cellglass", lambda: glass("cellglass", col, es)), bevel=0.25)
+        else:
+            K.slab([inner], 1.2, 1.25, K.mat("socket", lambda: printed("socket", PAL["wall"])), bevel=0.0)
+    return build
+
+
 PIECES = {}
 for name, s in SHAPES.items():
     PIECES[name] = (s["kind"], tuple(s["size"]), tuple(s["margins"]) if s["margins"] else None, s["stretch"], piece(name), s["inset"])
@@ -193,9 +210,19 @@ CS = tuple(CELL["size"])
 PIECES["bar.cell.off"] = ("cell", CS, None, None, cell(PAL["ember"], 0.3), CELL["gap"])
 PIECES["bar.cell.on"] = ("cell", CS, None, None, cell(PAL["forge"], 3.2), CELL["gap"])
 PIECES["bar.cell.warn"] = ("cell", CS, None, None, cell(PAL["red"], 3.2), CELL["gap"])
+# The battle console's allocation cells and the green bar fill (openspec/changes/krai-battle-console): the state colours are
+# the Krai kit's own alert lamps' (green, yellow, red), so a status reads the same in every skin.
+ACCORD = "#5aff7a"
+for name, col, es, lit in (("cell.idle", PAL["ember"], 0.3, True), ("cell.lit", PAL["forge"], 3.2, True), ("cell.warn", PAL["red"], 3.2, True),
+                           ("cell.accord", ACCORD, 2.6, True), ("cell.locked", PAL["wall"], 0.0, False)):
+    PIECES[name] = ("nine", (32, 28), (10, 10, 10, 10), "xy", alloc(col, es, lit))
+PIECES["bar.fill.accord"] = ("nine", (64, 10), (0, 10, 0, 4), "x", fill(ACCORD, 2.6))
 ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "button.idle", "button.hover", "button.pressed",
          "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate", "helm.pad", "ssd.bezel", "dial",
-         "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest", "bar.cell.off", "bar.cell.on", "bar.cell.warn"]
+         "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest", "bar.cell.off", "bar.cell.on", "bar.cell.warn",
+         # the battle console's own (openspec/changes/krai-battle-console)
+         "plate.label", "plate.title", "console.column", "join.bridge", "join.gusset",
+         "cell.idle", "cell.lit", "cell.warn", "cell.accord", "cell.locked", "bar.fill.accord"]
 PIECES = {k: PIECES[k] for k in ORDER}
 
 # A soft room light from the upper left on the steel, and a weak forge-red light rising from below (link_layers adds

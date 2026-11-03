@@ -70,6 +70,11 @@ const { paint, P, rr } = window.FCDraw;
 // CONCORD: flat back-lit vector on LCARS's principles. Palette sampled from Starfleet Command and Starfleet Academy.
 // ===============================================================================================================
 const CC = { deep: '#1b2a6b', signal: '#2f62e0', sky: '#3fa9f0', accord: '#2fbf5a', lilac: '#b7a6f2', caution: '#f0b43c', alert: '#e8352b', text: '#eef3ff' };
+// The roles the battle console once wrote as bare colours (openspec/changes/krai-battle-console): ink on a lit key, ink on
+// a disabled one, the dark fills of empty slots and unarmed keys, the title plate, the column behind the panels, and the
+// panel title. Another skin (lib/krai.js) gives the same names its own colours.
+Object.assign(CC, { ink: '#000', inkDis: '#2a3a7a', night: '#0d1430', ghost: '#3a4a80', void: '#060a1c', slate: '#26325e', mute: '#3a4152', ver: '#6f7fb4',
+  char: '#3a0b09', plate: '#000', bg: '#000', title: CC.sky });
 // The sweep: a thick bar on the left joined by outer-rounded elbows to thin arms along the top and bottom, which end in
 // a small rounded cap of another colour. Thick to thin at every turn (the LCARS rule).
 function ccSweep(x, X, Y, W, H, o) {
@@ -211,7 +216,14 @@ const ccLive = {
   dial: (x, c, cts) => { x.strokeStyle = CC.sky; x.lineWidth = 3; x.beginPath(); x.arc(c, c, 46, -P / 2, 0.4); x.stroke(); for (const [dx, dy] of cts) { x.fillStyle = CC.alert; x.beginPath(); x.arc(c + dx * 36, c + dy * 36, 4, 0, 2 * P); x.fill(); } },
   bracket: (x, bx, by, bw, bh) => { x.strokeStyle = CC.sky; x.lineWidth = 3; for (const [px, py, a] of [[bx, by, P], [bx + bw, by, 1.5 * P], [bx + bw, by + bh, 0], [bx, by + bh, P / 2]]) { x.beginPath(); x.arc(px + (a === P || a === P / 2 ? 30 : -30), py + (a === P || a === 1.5 * P ? 30 : -30), 30, a, a + P / 2); x.stroke(); } },
 };
-return { cells: ccCells, live: ccLive, CC, sweep: ccSweep, arcSeg: ccArcSeg, strip: ccStrip, lamp: ccLamp, kit: concordKit, hero: concordHero, icon: ccIcon };
+// The skin hooks the battle console reads (the same fields as lib/krai.js): the Concord's keys are lit pills, so every
+// label and glyph on them is black; Antonio is its type as written; panels pad to the sweep's own margins.
+const api = { id: 'concord', name: 'Concord', cells: ccCells, live: ccLive, CC, sweep: ccSweep, arcSeg: ccArcSeg, strip: ccStrip, lamp: ccLamp, kit: concordKit, hero: concordHero, icon: ccIcon,
+  ink: () => '#000', keyInk: { idle: '#000', hover: '#000', pressed: '#000', tabOn: '#000', tabOff: CC.text }, font: (s) => s, fonts: ['600 20px Antonio', '700 20px Antonio'],
+  load: () => Promise.resolve(), pad: concordKit['frame.panel'].m, plate: { x: 108, y: 36, max: 250, font: '700 28px Antonio', col: CC.text },
+  ring: ['rgba(120,170,255,0)', 'rgba(90,150,255,0.15)', 'rgba(150,200,255,0.9)'], player: null, emblem: null, barCells: null, link: CC.lilac, family: '"Antonio", sans-serif' };
+window.FCSkins = window.FCSkins || {}; window.FCSkins.concord = api;
+return api;
 })();
 </script>
 <!-- /INLINE -->
@@ -422,7 +434,18 @@ return { makeSpace, parallaxStars, shipModel, nebulaMesh };
 (function () {
 'use strict';
 const { rng, paint, png, P } = window.FCDraw;
-const CON = window.FCConcord, CC = CON.CC;
+// The skin (openspec/changes/krai-battle-console): the page's <meta name="fc-skin"> names one of window.FCSkins
+// (docs/mockups/lib/concord.js, docs/mockups/lib/krai.js); Concord when there is none. tools/mockups/skin_page.py writes
+// a faction's page from this one, so every rule, panel and control below is the same code in every skin. A skin gives
+// the kit, the icons, the colour roles (CC), the ink that reads on a fill (INK), the ink on its keys (KINK), its type
+// (FNT maps the Concord sizes written below), the blade or round shape of drawn keys (RR, KNOB) and the panel padding.
+const SKIN_ID = (document.querySelector('meta[name="fc-skin"]') || {}).content || 'concord';
+const CON = (window.FCSkins || {})[SKIN_ID] || window.FCConcord, CC = CON.CC;
+const INK = CON.ink, KINK = CON.keyInk, FNT = CON.font;
+const RR = CON.rr || ((G, ...a) => { G.beginPath(); G.roundRect(...a); });
+const KNOB = CON.knob || ((G, cx, cy, r) => { G.beginPath(); G.arc(cx, cy, r, 0, 2 * P); });
+const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v66', krai: 'Mockup 6 · Battle console · Krai Warhost · v1' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -540,7 +563,7 @@ const ROLES = [['marines', 'Marines'], ['demo', 'Demolition'], ['medics', 'Medic
 const DEMO = { tough_x: 4 };
 for (const c of Object.values(CLASSES)) c.hull *= DEMO.tough_x;
 const FACTION = {
-  concord: { name: 'Concord', trim: 0x4f8fe8, hull: 0xb9c6d6, dot: CC.accord },
+  concord: { name: CON.player ? CON.player.faction : 'Concord', trim: CON.player ? CON.player.trim : 0x4f8fe8, hull: CON.player ? CON.player.hull : 0xb9c6d6, dot: CC.accord },
   kethran: { name: 'Kethran Hegemony', trim: 0xd9483b, hull: 0x8c6a64, dot: CC.alert },
   vos: { name: 'Vos Syndicate', trim: 0xe3a33a, hull: 0xb39a6e, dot: CC.caution },
 };
@@ -805,6 +828,8 @@ function newWorld(id = sceneId) {
     rocks: (sc.rocks || []).map((r) => ({ ...r })).concat(planets.map((pl) => ({ x: pl.x, z: pl.z, r: pl.r, name: pl.name, planet: true }))),
     rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4), warp: rng(Math.imul(SCENARIO.seed + 5, 0x9e3779b1) >>> 0), helm: rng(Math.imul(SCENARIO.seed + 6, 0x9e3779b1) >>> 0) } }; // the warp stream's seed is mixed: a plain seed + 5 starts on 0.014, failing nearly any first jump
   W.player = W.ships[0];
+  // the player's side under the skin's own names (the ids and every rule stay the same)
+  if (CON.player) for (const o of W.ships) { const nm = CON.player.ships[o.id]; if (nm) [o.name, o.captain] = nm; }
   // no target at the start: the captain picks one (owner, 2026-11-02: "I cant really tell if I selected an enemy because
   // you autoselected from the start"); the scripted shots set theirs
   W.player.target = null;
@@ -1334,7 +1359,7 @@ const A = {
   pd: (mode) => { W.player.pd = mode; },
   scan: () => { const s = W.player; if (tgt(s)) s.scan = { id: s.target, p: s.scan.id === s.target ? s.scan.p : 0 }; },
   sensorMode: (m) => { W.player.sensorMode = m; },
-  hail: () => { const t = tgt(W.player); if (!t) return; say(t.name, t.faction === 'vos' ? 'Your cargo or your hull. Choose quickly, Concord.' : 'The Hegemony does not parley with the weak.'); },
+  hail: () => { const t = tgt(W.player); if (!t) return; say(t.name, t.faction === 'vos' ? `Your cargo or your hull. Choose quickly, ${CON.player ? CON.player.call : 'Concord'}.` : 'The Hegemony does not parley with the weak.'); },
   fleetOrder: (stance) => { for (const s of W.ships) if (s.side === 0 && s !== W.player && s.alive) s.ai.stance = stance; say('Comms', `Fleet: ${AI_CHOICES.stance.find((c) => c[0] === stance)[1]}.`); },
   priority: (k) => { W.player.priority = k; },
   // The boarding queue (owner, 2026-11-02: "transport will follow a queue pattern, so you'll want to set up a queue
@@ -1537,7 +1562,7 @@ function boardingStep(s) {
 function holdBar(x, y, w, s, big) {
   const sup = SUPPLY_KEYS.reduce((n, k) => n + s.hold[k], 0), car = CARGO_KEYS.reduce((n, k) => n + s.hold[k], 0), cap = Math.max(1, s.holdCap), free = Math.max(0, s.holdCap - sup - car), h = big ? 14 : 10;
   rich(x, y + 15, [['Hold ', CC.lilac], [`supplies ${sup}`, CC.sky], [' · ', CC.lilac], [`misc ${car}`, CC.lilac], [' · ', CC.lilac], [`free ${free}`, free ? CC.text : CC.caution], [` of ${s.holdCap}`, CC.lilac]], `600 ${big ? 18 : 15}px Antonio`, w);
-  const by = y + 22; g.save(); g.beginPath(); g.roundRect(x, by, w, h, h / 2); g.clip(); g.fillStyle = CC.deep; g.fillRect(x, by, w, h);
+  const by = y + 22; g.save(); RR(g, x, by, w, h, h / 2); g.clip(); g.fillStyle = CC.deep; g.fillRect(x, by, w, h);
   g.fillStyle = CC.sky; g.fillRect(x, by, w * sup / cap, h); g.fillStyle = CC.lilac; g.fillRect(x + w * sup / cap, by, w * car / cap, h); g.restore();
   return 22 + h;
 }
@@ -1602,13 +1627,17 @@ addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen 
 // Input is immediate mode: each control registers its rectangle as it is drawn, and a press, drag or click is matched
 // against the rectangles of the last frame drawn. The game's Godot console will work the same way (fixed rectangles).
 // =================================================================================================================
-const KIT = { nine: { ...CON.kit, ...CON.cells }, src: {}, hero: {}, icon: {}, iconOn: {} };
+const KIT = { nine: {}, src: {}, hero: {}, icon: {}, iconOn: {}, cell: {} };
 const HERO = { 'nameplate': [460, 56], 'helm.pad': [300, 300], 'dial': [120, 120], 'lamp.alert.green': [64, 64], 'lamp.alert.yellow': [64, 64], 'lamp.alert.red': [64, 64], 'crest': [96, 96] };
 const ICONS = ['warp', 'helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'map', 'pause', 'menu', 'fire', 'engines', 'reactor'];
 function buildKit() {
+  Object.assign(KIT.nine, CON.kit, CON.cells);
+  // a skin with symbol bars (owner, 2026-10-31: "have different repeated symbols for them"): its cells, lit, unlit, warning, ok
+  if (CON.barCells) for (const [id, p] of Object.entries(CON.barCells)) KIT.cell[id] = paint(p.size[0], p.size[1], p.draw);
   for (const [piece, p] of Object.entries(KIT.nine)) KIT.src[piece] = paint(p.size[0], p.size[1], p.draw);
-  for (const [id, [w, h]] of Object.entries(HERO)) KIT.hero[id] = paint(w, h, CON.hero[id]);
-  for (const n of ICONS) { KIT.icon[n] = CON.icon(n); KIT.iconOn[n] = CON.icon(n, '#000'); }
+  // the hero pieces the page draws, and any more a skin's kit carries (the Krai's clamps and gussets)
+  for (const [id, [w, h]] of Object.entries({ ...HERO, ...(CON.heroSize || {}) })) if (CON.hero[id]) KIT.hero[id] = paint(w, h, CON.hero[id]);
+  for (const n of ICONS) { KIT.icon[n] = CON.icon(n); KIT.iconOn[n] = CON.icon(n, KINK.tabOn); }
 }
 function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
 function css(n, s) { n.style.cssText += s; return n; }
@@ -1658,10 +1687,20 @@ function fit(str, max) {
   let s = str; while (s.length > 1 && g.measureText(s + '…').width > max) s = s.slice(0, -1); return s + '…';
 }
 function text(str, x, y, font, color, align = 'left', max = 0, spacing = '0px') {
-  g.font = font; g.letterSpacing = spacing; g.fillStyle = color; g.textAlign = align; g.textBaseline = 'alphabetic';
+  g.font = FNT(font); g.letterSpacing = spacing; g.fillStyle = color; g.textAlign = align; g.textBaseline = 'alphabetic';
   g.fillText(fit(String(str), max), x, y); g.letterSpacing = '0px';
 }
-const LBL = (s, x, y, max = 0, col = CC.lilac, align = 'left', size = 15) => text(String(s).toUpperCase(), x, y, `600 ${size}px Antonio`, col, align, max, '1.5px');
+// A label; a kit with a label placard (owner, 2026-11-03, of the Krai: "Labels ... should have a metallic background")
+// sets each label, not each value, on one: its pip in the left margin, the letters on the metal.
+const LBL = (s, x, y, max = 0, col = CC.lilac, align = 'left', size = 15) => {
+  const str = String(s).toUpperCase(), font = `600 ${size}px Antonio`;
+  if (KIT.nine['plate.label'] && col === CC.lilac && str) {
+    g.font = FNT(font); g.letterSpacing = '1.5px'; let w = g.measureText(str).width; g.letterSpacing = '0px'; if (max > 0) w = Math.min(w, max);
+    const h = Math.round(size * 0.82 + 5), x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+    nine('plate.label', x0 - 13, y - size * 0.72 - 3, w + 19, h);
+  }
+  text(str, x, y, font, col, align, max, '1.5px');
+};
 const NUM = (s, x, y, max = 0, col = CC.sky, align = 'left', size = 24) => text(String(s), x, y, `600 ${size}px Antonio`, col, align, max);
 const TXT = (s, x, y, max = 0, col = CC.text, align = 'left', size = 18) => text(String(s).toUpperCase(), x, y, `600 ${size}px Antonio`, col, align, max, '0.5px');
 // Label and value pairs in a line; each value's slot only ever grows, so a changing number never moves what follows.
@@ -1670,9 +1709,9 @@ function pairs(id, x, y, items, max = 0, size = 24) {
   g.save(); if (max) { g.beginPath(); g.rect(x - 2, y - size - 4, max + 4, size + 12); g.clip(); }
   let cx = x;
   items.forEach(([l, v, col], i) => {
-    g.font = '600 15px Antonio'; g.letterSpacing = '1.5px'; const lw = l ? g.measureText(String(l).toUpperCase()).width : 0; g.letterSpacing = '0px';
+    g.font = FNT('600 15px Antonio'); g.letterSpacing = '1.5px'; const lw = l ? g.measureText(String(l).toUpperCase()).width : 0; g.letterSpacing = '0px';
     if (l) { LBL(l, cx, y); cx += lw + 7; }
-    g.font = `600 ${size}px Antonio`; const k = id + '.' + i, vw = Math.max(SLOT.get(k) || 0, g.measureText(String(v)).width); SLOT.set(k, vw);
+    g.font = FNT(`600 ${size}px Antonio`); const k = id + '.' + i, vw = Math.max(SLOT.get(k) || 0, g.measureText(String(v)).width); SLOT.set(k, vw);
     NUM(v, cx, y, 0, col || CC.sky, 'left', size); cx += vw + 16;
   });
   g.restore(); return cx - x;
@@ -1680,7 +1719,7 @@ function pairs(id, x, y, items, max = 0, size = 24) {
 // A line of text in several colours.
 function rich(x, y, segs, font, max = 0) {
   g.save(); if (max) { g.beginPath(); g.rect(x - 2, y - 30, max + 4, 40); g.clip(); }
-  g.font = font; g.letterSpacing = '0.5px'; g.textAlign = 'left'; let cx = x;
+  g.font = FNT(font); g.letterSpacing = '0.5px'; g.textAlign = 'left'; let cx = x;
   for (const [t, col] of segs) { const s = String(t).toUpperCase(); g.fillStyle = col; g.fillText(s, cx, y); cx += g.measureText(s).width; }
   g.letterSpacing = '0px'; g.restore();
 }
@@ -1729,10 +1768,12 @@ const tickUI = () => {}, buildPanel = () => {}, rebuild = () => {}, renderSheet 
 function button(id, x, y, w, h, label, click, o = {}) {
   const dis = !!(o.dis && o.dis()), st = dis ? { hot: false, down: false } : hit(id, x, y, w, h, { click, tip: o.tip });
   const on = o.sel && o.sel();
-  nine(dis ? 'button.idle' : st.down || on ? 'button.pressed' : st.hot ? 'button.hover' : 'button.idle', x, y, w, h, dis ? 0.35 : null);
-  const size = h >= 44 ? 22 : h >= 30 ? 17 : 15, pad = h >= 44 ? 24 : 12;
+  const kst = dis ? 'idle' : st.down || on ? 'pressed' : st.hot ? 'hover' : 'idle';
+  nine('button.' + kst, x, y, w, h, dis ? 0.35 : null);
+  // a skin whose keys end in a point (the Krai blade) centres every label, clear of the point (keyCenter)
+  const size = h >= 44 ? 22 : h >= 30 ? 17 : 15, pad = h >= 44 ? 24 : 12, ctr = o.center || !!CON.keyCenter;
   g.save(); if (dis) g.globalAlpha = 0.35;
-  text(String(label).toUpperCase(), o.center ? x + w / 2 : x + w - pad, y + h / 2 + size * 0.36, `600 ${size}px Antonio`, '#000', o.center ? 'center' : 'right', o.center ? w - 8 : w - pad - 12, '0.8px');
+  text(String(label).toUpperCase(), ctr ? x + w / 2 : x + w - pad, y + h / 2 + size * 0.36, `600 ${size}px Antonio`, KINK[kst], ctr ? 'center' : 'right', ctr ? w - (CON.keyCenter ? pad : 8) : w - pad - 12, '0.8px');
   g.restore();
 }
 // A tab: one cap, a flat end; lit (Accord) when chosen. With an icon it shows the icon and names itself on hover.
@@ -1742,7 +1783,8 @@ function tab(id, x, y, w, h, label, click, on, o = {}) {
   if (!on && st.hot) nine('tab.active', x, y, w, h, 0.22);
   if (o.icon) { const s2 = Math.min(30, h - 8); g.drawImage((on ? KIT.iconOn : KIT.icon)[o.icon], x + (w - s2) / 2 + 3, y + (h - s2) / 2, s2, s2); return; }
   g.save(); if (dis) g.globalAlpha = 0.35;
-  text(String(label).toUpperCase(), x + w - 8, y + h / 2 + 7, '600 19px Antonio', on ? '#000' : CC.text, 'right', w - 22, '0.6px');
+  if (CON.keyCenter) text(String(label).toUpperCase(), x + w / 2, y + h / 2 + 7, '600 19px Antonio', on ? KINK.tabOn : KINK.tabOff, 'center', w - 28, '0.6px');
+  else text(String(label).toUpperCase(), x + w - 8, y + h / 2 + 7, '600 19px Antonio', on ? KINK.tabOn : KINK.tabOff, 'right', w - 22, '0.6px');
   g.restore();
 }
 function tabs(idp, x, y, w, h, list, cur, set, dis) {
@@ -1762,7 +1804,13 @@ function cellRow(idp, x, y, w, h, n, value, set, cap, warn, litPiece = 'cell.lit
 function bar(x, y, w, label, frac, warn, ok) {
   let yy = y; if (label) { LBL(label, x, y + 13, w); yy = y + 19; }
   nine('bar.track', x, yy, w, 16);
-  const v = clamp(frac, 0, 1); if (v > 0.005) nine(warn ? 'bar.fill.red' : ok ? 'bar.fill.accord' : 'bar.fill', x + 3, yy + 3, Math.max(10, Math.round((w - 6) * v)), 10);
+  const v = clamp(frac, 0, 1);
+  if (CON.barCells) {
+    // a row of the skin's symbol in the track's groove: as many whole cells as fit, the first ones lit
+    const tr = KIT.nine['bar.track'], ix = tr.inset[0] * 16 / tr.size[1], ch = 10, on = CON.barCells['bar.cell.on'], cw = on.size[0] * ch / on.size[1], gp = on.gap * ch / on.size[1];
+    const gw = w - 2 * ix, n = Math.max(1, Math.floor((gw + gp) / (cw + gp))), x0 = x + ix + (gw - (n * cw + (n - 1) * gp)) / 2, lit = Math.round(n * v);
+    for (let i = 0; i < n; i++) g.drawImage(KIT.cell[i < lit ? (warn ? 'bar.cell.warn' : ok ? 'bar.cell.ok' : 'bar.cell.on') : 'bar.cell.off'], x0 + i * (cw + gp), yy + 3, cw, ch);
+  } else if (v > 0.005) nine(warn ? 'bar.fill.red' : ok ? 'bar.fill.accord' : 'bar.fill', x + 3, yy + 3, Math.max(10, Math.round((w - 6) * v)), 10);
   return yy + 16 - y;
 }
 function divider(x, y, w) { nine('divider', x, y, w, 10); }
@@ -1795,18 +1843,19 @@ function layout() {
   if (home) css(home, `display:${expanded ? 'none' : 'block'};right:${14 * S}px;bottom:${(56 + 50) * S}px;font-size:${13 * S}px;`);
 }
 // A panel: the kit frame, its title in a notch that breaks the top arm (LCARS's habit), Expand beside it.
-const FP = CON.kit['frame.panel'].m;
+const FP = CON.pad;
 function panel(id, r, title, big, noX) {
   const [x, y, w, h] = r; nine('frame.panel', x, y, w, h);
   const cx = x + FP[3], cy = y + FP[0], cw = w - FP[1] - FP[3], ch = h - FP[0] - FP[2];
-  g.font = '700 22px Antonio'; g.letterSpacing = '1px'; const tw = Math.min(g.measureText(title.toUpperCase()).width, cw - 160); g.letterSpacing = '0px';
+  g.font = FNT('700 22px Antonio'); g.letterSpacing = '1px'; const tw = Math.min(g.measureText(title.toUpperCase()).width, cw - 160); g.letterSpacing = '0px';
   // the expand key, 20 % smaller than the 26 px first drawn (owner, 2026-11-02: "it should be 20% smaller")
   const bw = noX ? -10 : 21;
   // the title's plate starts at the frame's top edge, never above it (owner: "whatever background is around 'systems -
   // resolute' is overlapping the upper border"): it breaks the top arm and stops short of the content
   const x1 = cx + cw - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, ty = y;
-  g.fillStyle = '#000'; g.fillRect(x0, ty, total, 22);
-  text(title.toUpperCase(), x0 + 8, ty + 19, '700 22px Antonio', CC.sky, 'left', tw, '1px');
+  // a kit with a title placard (the Krai's, rendered) sets the title on it; otherwise a plate of the panel's dark
+  if (KIT.nine['plate.title']) nine('plate.title', x0 - 18, ty - 1, total + 22, 24); else { g.fillStyle = CC.plate; g.fillRect(x0, ty, total, 22); }
+  text(title.toUpperCase(), x0 + 8, ty + 19, '700 22px Antonio', CC.title, 'left', tw, '1px');
   if (!noX) expandKey(`${id}.xp`, x1 - 8 - bw / 2, ty + 11, bw / 2, big, () => A.expand(id));
   return { x: cx, y: cy, w: cw, h: ch };
 }
@@ -1815,8 +1864,8 @@ function panel(id, r, title, big, noX) {
 // returns the panel. Its name shows on hover.
 function expandKey(id, cx, cy, r, inward, click) {
   const st = hit(id, cx - r - 4, cy - r - 4, 2 * r + 8, 2 * r + 8, { click, tip: inward ? 'Return' : 'Expand' });
-  g.fillStyle = st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.beginPath(); g.arc(cx, cy, r, 0, 2 * P); g.fill();
-  g.strokeStyle = '#000'; g.lineWidth = Math.max(2, r * 0.18); g.lineCap = 'round'; g.lineJoin = 'round';
+  const fill = st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.fillStyle = fill; KNOB(g, cx, cy, r); g.fill();
+  g.strokeStyle = INK(fill); g.lineWidth = Math.max(2, r * 0.18); g.lineCap = 'round'; g.lineJoin = 'round';
   const a = r * 0.1, b = r * 0.6, hd = r * 0.34;
   for (const s of [1, -1]) {
     // one arrow along the diagonal, toward the top-right corner (s = 1) or the bottom-left (s = -1)
@@ -1866,17 +1915,17 @@ function warpKey(x, y, w, h) {
   const glow = wp.armed && !starved && !plotting && !blocked && !anomaly;
   g.save();
   if (glow) { g.shadowColor = ready ? CC.accord : CC.sky; g.shadowBlur = ready ? 8 + 16 * pulse : 8; }
-  g.fillStyle = CC.deep; g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.fill(); g.restore();
-  g.save(); g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.clip();
-  if (!wp.armed) { g.fillStyle = '#0d1430'; g.fillRect(x, y, w, h); }
+  g.fillStyle = CC.deep; RR(g, x, y, w, h, h / 2); g.fill(); g.restore();
+  g.save(); RR(g, x, y, w, h, h / 2); g.clip();
+  if (!wp.armed) { g.fillStyle = CC.night; g.fillRect(x, y, w, h); }
   else { g.fillStyle = ready ? (st.down ? CC.lilac : CC.accord) : CC.signal; g.fillRect(x, y, w * (ready ? 1 : f), h);
     if (ready && !anomaly) { g.fillStyle = `rgba(255,255,255,${0.28 * pulse})`; g.fillRect(x, y, w, h); } }
   // the plot's progress, a thin line along the key's foot
   if (plotting) { g.fillStyle = CC.lilac; g.fillRect(x, y + h - 4, w * wp.plot, 4); }
   g.restore();
-  if (st.hot) { g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.roundRect(x - 1, y - 1, w + 2, h + 2, h / 2 + 1); g.stroke(); }
+  if (st.hot) { g.strokeStyle = CC.sky; g.lineWidth = 2; RR(g, x - 1, y - 1, w + 2, h + 2, h / 2 + 1); g.stroke(); }
   const lab = wp.out > 0 ? 'JUMPING' : starved ? 'NEED POWER' : blocked ? (anomaly ? 'Q-G FIELD' : 'BLOCKED') : plotting && f >= 1 ? `PLOT ${Math.floor(wp.plot * 100)}%` : 'WARP';
-  const col = !wp.armed ? '#3a4a80' : starved || blocked ? CC.caution : ready || f > 0.55 ? '#000' : CC.sky;
+  const col = !wp.armed ? CC.ghost : starved || blocked ? CC.caution : ready || f > 0.55 ? INK(ready ? CC.accord : CC.signal) : CC.sky;
   text(lab, x + w / 2, y + h * 0.68, `700 ${starved || blocked ? 14 : 17}px Antonio`, col, 'center', w - 10, '1px');
 }
 function uiBottom(r) {
@@ -1902,10 +1951,12 @@ function uiBottom(r) {
   });
 }
 function uiPlate(r) {
+  // own: the ships the Fleet key steps through; none left after the player's last ship jumps out or dies, and the key is
+  // then dark (found by tools/mockups/skin_parity.mjs: a press after a warp jump threw)
   const [x, y] = r, s = W.player, own = W.ships.filter((o) => o.side === 0 && o.alive);
   heroImg('nameplate', x, y, 460, 56);
-  text(`${s.name} · ${s.captain}`.toUpperCase(), x + 108, y + 36, '700 28px Antonio', CC.text, 'left', 250);
-  button('fleet', x + 460 - 90, y + 6, 86, 30, `Fleet ${own.indexOf(s) + 1}/${own.length}`, () => A.command(own[(own.indexOf(s) + 1) % own.length].id), { center: true });
+  text(`${s.name} · ${s.captain}`.toUpperCase(), x + CON.plate.x, y + CON.plate.y, CON.plate.font, CON.plate.col, 'left', CON.plate.max);
+  button('fleet', x + 460 - 90, y + 6, 86, 30, `Fleet ${own.indexOf(s) + 1}/${own.length}`, () => { if (own.length) A.command(own[(own.indexOf(s) + 1) % own.length].id); }, { center: true, dis: () => !own.length });
 }
 
 // ---- Stations ------------------------------------------------------------------------------------------------------
@@ -1933,7 +1984,7 @@ function helmPad(px, py, size) {
   for (let i = 0; i < 8; i++) {
     const a = -P / 2 + i * P / 4, qx = 150 + Math.cos(a) * 93, qy = 150 + Math.sin(a) * 93;
     g.save(); g.translate(qx, qy); g.rotate(a); g.translate(-8, 0); CON.live.arrow(g); g.restore();
-    g.fillStyle = '#000'; g.font = '700 17px Antonio'; g.textAlign = 'center'; g.fillText(HELM_KEYS[i][0], qx, qy + (Math.sin(a) > 0.5 ? -14 : 24));
+    g.fillStyle = '#000'; g.font = FNT('700 17px Antonio'); g.textAlign = 'center'; g.fillText(HELM_KEYS[i][0], qx, qy + (Math.sin(a) > 0.5 ? -14 : 24));
   }
   CON.live.helmCentre(g, 150); g.restore();
 }
@@ -1976,7 +2027,7 @@ function helmGlyph(kind, cx, cy, r, col) {
     if (kind === 'orbit') { G.beginPath(); G.arc(cx, cy, r * 0.18, 0, 2 * P); G.fill(); }
     G.beginPath(); G.arc(cx, cy, R2, a0, a1, d < 0); G.stroke();
     head(cx + Math.cos(a1 + d * 0.32) * R2, cy + Math.sin(a1 + d * 0.32) * R2, a1 + d * (P / 2 + 0.16), r * 0.42, r * 0.34);
-    if (kind === 'orbit.dir') { G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText(d > 0 ? 'CW' : 'CCW', cx, cy + r * 0.04); G.textBaseline = 'alphabetic'; } }
+    if (kind === 'orbit.dir') { G.font = FNT(`700 ${Math.round(r * 0.46)}px Antonio`); G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText(d > 0 ? 'CW' : 'CCW', cx, cy + r * 0.04); G.textBaseline = 'alphabetic'; } }
   else if (kind === 'hold_range') { target(cx + r * 0.42, cy, r * 0.36); line([[cx - r * 0.8, cy], [cx - r * 0.35, cy]]); head(cx - r * 0.12, cy, 0, r * 0.32, r * 0.3);
     G.lineWidth = lw * 0.7; line([[cx - r * 0.02, cy - r * 0.45], [cx - r * 0.02, cy + r * 0.45]]); G.lineWidth = lw; }
   else if (kind === 'hit_run') {
@@ -1992,19 +2043,19 @@ function helmGlyph(kind, cx, cy, r, col) {
     const [ax, ay] = pts[2], [bx2, by2] = pts[3], a = Math.atan2(by2 - ay, bx2 - ax);
     line(pts); head(bx2 + Math.cos(a) * r * 0.4, by2 + Math.sin(a) * r * 0.4, a, r * 0.48, r * 0.38); }
   else if (kind === 'estop') { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.8); } G.closePath(); G.fill();
-    G.fillStyle = CC.signal; G.font = `700 ${Math.round(r * 0.46)}px Antonio`; G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText('STOP', cx, cy + r * 0.03); G.textBaseline = 'alphabetic'; }
+    G.fillStyle = CC.signal; G.font = FNT(`700 ${Math.round(r * 0.46)}px Antonio`); G.textAlign = 'center'; G.textBaseline = 'middle'; G.fillText('STOP', cx, cy + r * 0.03); G.textBaseline = 'alphabetic'; }
 }
 // One helm key: a rounded square in the Concord blue (lit lilac when its order or toggle is on, green when it is the
 // order in force), its glyph in black, its name on hover.
 function helmKey(id, x, y, sz, kind, name, click, o = {}) {
   const dis = o.dis && o.dis(), st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: name });
   const on = o.on && o.on();
-  g.fillStyle = dis ? CC.deep : st.down ? CC.lilac : on ? (o.onCol || CC.accord) : st.hot ? CC.sky : CC.signal; g.globalAlpha = dis ? 0.5 : 1;
-  g.beginPath(); g.roundRect(x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
-  helmGlyph(kind, x + sz / 2, y + sz / 2, sz * 0.42, dis ? '#2a3a7a' : '#000');
+  const fill = dis ? CC.deep : st.down ? CC.lilac : on ? (o.onCol || CC.accord) : st.hot ? CC.sky : CC.signal; g.fillStyle = fill; g.globalAlpha = dis ? 0.5 : 1;
+  RR(g, x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
+  helmGlyph(kind, x + sz / 2, y + sz / 2, sz * 0.42, dis ? CC.inkDis : INK(fill));
   // the turn's angle, small in the corner, so 90 and 135 never read alike
   const ang = { 'het.l90': '90', 'het.r90': '90', 'het.l135': '135', 'het.r135': '135', 'het.180': '180' }[kind];
-  if (ang) { g.fillStyle = dis ? '#2a3a7a' : '#000'; g.font = `700 ${Math.round(sz * 0.2)}px Antonio`; g.textAlign = kind.includes('.l') ? 'right' : 'left'; g.fillText(ang, kind.includes('.l') ? x + sz - sz * 0.1 : x + sz * 0.1, y + sz - sz * 0.1); }
+  if (ang) { g.fillStyle = dis ? CC.inkDis : INK(fill); g.font = FNT(`700 ${Math.round(sz * 0.2)}px Antonio`); g.textAlign = kind.includes('.l') ? 'right' : 'left'; g.fillText(ang, kind.includes('.l') ? x + sz - sz * 0.1 : x + sz * 0.1, y + sz - sz * 0.1); }
 }
 // The helm (owner, survey B4 and 2026-11-02; the Starfleet Command 2 manual's Helm Officer display, printed pages
 // 117-120, taken in shape, not art): a row of orders toward the target (intercept, trail and match speed, orbit and its
@@ -2024,9 +2075,9 @@ function stHelm(b, big) {
   const slider = (id, x, yy, w, h, f0, f1, set, label) => {
     const sy = yy + h / 2, two = f1 !== null;
     hit(id, x - 8, yy, w + 16, h, { cursor: 'ew-resize', tip: label, drag: (px) => set(clamp((px - x) / w, 0, 1)), click: (px) => set(clamp((px - x) / w, 0, 1)) });
-    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(x, sy - 3, w, 6, 3); g.fill();
-    g.fillStyle = CC.sky; g.beginPath(); g.roundRect(x + (two ? w * f0 : 0), sy - 3, w * ((two ? f1 : f0) - (two ? f0 : 0)), 6, 3); g.fill();
-    for (const f of two ? [f0, f1] : [f0]) { g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(x + w * f - 7, sy - 11, 14, 22, 6); g.fill(); }
+    g.fillStyle = CC.deep; RR(g, x, sy - 3, w, 6, 3); g.fill();
+    g.fillStyle = CC.sky; RR(g, x + (two ? w * f0 : 0), sy - 3, w * ((two ? f1 : f0) - (two ? f0 : 0)), 6, 3); g.fill();
+    for (const f of two ? [f0, f1] : [f0]) { g.fillStyle = CC.lilac; RR(g, x + w * f - 7, sy - 11, 14, 22, 6); g.fill(); }
   };
   const span = HELM.hold_max_km - HELM.hold_min_km, frac = (v) => (v - HELM.hold_min_km) / span, val = (f) => HELM.hold_min_km + f * span;
   helmKey('helm.int', b.x, y, ts, 'intercept', 'Intercept', () => A.helmOrder('intercept'), { on: ordOn('intercept'), dis: noT });
@@ -2040,10 +2091,10 @@ function stHelm(b, big) {
   { // the direction switch: a two-way toggle, the lit half the way the orbit goes
     const sx = b.x + ts + tg + 4, sw = half - ts - tg - 4, sh = ts - 8, sy = y + 4, hh = sw / 2, cw = s.orbitDir > 0;
     hit('helm.odir', sx, sy, sw, sh, { click: A.orbitDir, tip: 'Orbit direction' });
-    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(sx, sy, sw, sh, sh / 2); g.fill();
-    g.fillStyle = CC.lilac; g.beginPath(); g.roundRect(sx + (cw ? 0 : hh), sy, hh, sh, sh / 2); g.fill();
-    g.font = `700 ${Math.round(13 * k)}px Antonio`; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillStyle = cw ? '#000' : CC.sky; g.fillText('CW', sx + hh / 2, sy + sh / 2 + 1); g.fillStyle = cw ? CC.sky : '#000'; g.fillText('CCW', sx + hh * 1.5, sy + sh / 2 + 1); g.textBaseline = 'alphabetic'; }
+    g.fillStyle = CC.deep; RR(g, sx, sy, sw, sh, sh / 2); g.fill();
+    g.fillStyle = CC.lilac; RR(g, sx + (cw ? 0 : hh), sy, hh, sh, sh / 2); g.fill();
+    g.font = FNT(`700 ${Math.round(13 * k)}px Antonio`); g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = cw ? INK(CC.lilac) : CC.sky; g.fillText('CW', sx + hh / 2, sy + sh / 2 + 1); g.fillStyle = cw ? CC.sky : INK(CC.lilac); g.fillText('CCW', sx + hh * 1.5, sy + sh / 2 + 1); g.textBaseline = 'alphabetic'; }
   // the right half: hit and run with its two-handled range slider, then evasive manoeuvres (a toggle)
   let yr = y0;
   helmKey('helm.run', xr, yr, ts, 'hit_run', `Hit and run (${s.runPhase === 'in' ? 'running in' : 'pulling away'})`, () => A.helmOrder('hit_run'), { on: ordOn('hit_run'), dis: () => !tgt(s) });
@@ -2065,7 +2116,7 @@ function stHelm(b, big) {
     const x = b.x + ci * (ks + gap), yy = y + ri * (ks + gap);
     // a blank grey key fills the corner, so the pad reads as a full 3 x 3 (owner, 2026-11-02: "we need like a grey
     // button in the corner to offset it"); it does nothing
-    if (kind === 'none') { g.fillStyle = '#3a4152'; g.beginPath(); g.roundRect(x, yy, ks, ks, ks * 0.22); g.fill(); return; }
+    if (kind === 'none') { g.fillStyle = CC.mute; RR(g, x, yy, ks, ks, ks * 0.22); g.fill(); return; }
     if (kind === 'free') helmKey('helm.free', x, yy, ks, 'free', name, () => A.helmOrder('free'), { on: () => !s.engaged, onCol: CC.sky });
     else if (kind === 'estop') helmKey('helm.stop', x, yy, ks, 'estop', s.estopT > 0 ? `Engines holding ${fmtCool(s.estopT)} s` : name, A.estop, { on: () => s.estop || s.estopT > 0, onCol: CC.caution });
     else if (kind === 'het.free') helmKey('helm.hetf', x, yy, ks, 'het.free', name, A.hetFree, { on: () => placingHet, onCol: CC.lilac, dis: busy });
@@ -2092,9 +2143,9 @@ function stWarp(c, big) {
   // nacelles, port and starboard, each filled from the bottom by its health in its status colour, the draw beside it
   w.nacelles.forEach((n, i) => {
     const x = c.x + (i ? 2 * nw + 70 : 0), y = c.y + 4, st = statusOf(n.hp, false), hp = clamp(n.hp, 0, 1);
-    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(x, y, nw, dh, nw / 2); g.fill();
-    g.save(); g.beginPath(); g.roundRect(x, y, nw, dh, nw / 2); g.clip(); g.fillStyle = STATUS_COL[st]; g.fillRect(x, y + dh * (1 - hp), nw, dh * hp); g.restore();
-    if (draw[i] > 0) { g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.roundRect(x - 2, y - 2, nw + 4, dh + 4, nw / 2 + 2); g.stroke(); }
+    g.fillStyle = CC.deep; RR(g, x, y, nw, dh, nw / 2); g.fill();
+    g.save(); RR(g, x, y, nw, dh, nw / 2); g.clip(); g.fillStyle = STATUS_COL[st]; g.fillRect(x, y + dh * (1 - hp), nw, dh * hp); g.restore();
+    if (draw[i] > 0) { g.strokeStyle = CC.sky; g.lineWidth = 2; RR(g, x - 2, y - 2, nw + 4, dh + 4, nw / 2 + 2); g.stroke(); }
     hit(`wp.n${i}`, x, y, nw, dh, { tip: { title: i ? 'Starboard nacelle' : 'Port nacelle', rows: [['Health', pct(hp)], ['Status', st, STATUS_COL[st]], ['Draw', `${draw[i].toFixed(1)} E`]] } });
     LBL(i ? 'Stbd' : 'Port', x + nw / 2, y + dh + 16, 0, CC.lilac, 'center', 13); NUM(`${draw[i].toFixed(1)} E`, x + nw / 2, y + dh + 34, 0, CC.sky, 'center', 15);
   });
@@ -2144,7 +2195,7 @@ function stPower(b, big) {
 // "simpler please!"), and the setting that lets the allocation draw past the output (off by default).
 function coilGauge(x, y, w, h, i) {
   const o = W.player.reactor.coils[i], cx = x + w / 2, half = w / 2 - 10, yy = y + h / 2, safe = 0.1;
-  g.fillStyle = 'rgba(47,191,90,0.18)'; g.fillRect(cx - half * safe, y + 2, half * safe * 2, h - 4);
+  g.fillStyle = al(CC.accord, 0.18); g.fillRect(cx - half * safe, y + 2, half * safe * 2, h - 4);
   g.strokeStyle = CC.deep; g.lineWidth = 4; g.beginPath(); g.moveTo(cx - half, yy); g.lineTo(cx + half, yy); g.stroke();
   g.strokeStyle = CC.sky; g.lineWidth = 2; g.beginPath(); g.moveTo(cx, y + 3); g.lineTo(cx, y + h - 3); g.stroke();
   const a = Math.abs(o); g.fillStyle = a < safe ? CC.accord : a < 0.3 ? CC.caution : CC.alert; g.beginPath(); g.arc(cx + o * half, yy, h / 2 - 3, 0, 2 * P); g.fill();
@@ -2171,7 +2222,7 @@ function drawReactor(ox, oy, w, h, big) {
     return pts[pts.length - 1];
   };
   const tc = rx.temp >= 85 ? CC.alert : rx.temp >= 65 ? CC.caution : CC.sky;
-  const label = (str, lx, ly, col = CC.lilac, align = 'center', size = 11) => { g.fillStyle = col; g.font = `600 ${size * k}px Antonio`; g.textAlign = align; g.fillText(str, lx, ly); };
+  const label = (str, lx, ly, col = CC.lilac, align = 'center', size = 11) => { g.fillStyle = col; g.font = FNT(`600 ${size * k}px Antonio`); g.textAlign = align; g.fillText(str, lx, ly); };
   // Hits first (absolute rectangles), so the drawing can show what is pointed at.
   const hot = (id) => HOT === id || (DRAG && DRAG.id === id);
   for (let i = 0; i < REACTOR.coils; i++) {
@@ -2192,15 +2243,15 @@ function drawReactor(ox, oy, w, h, big) {
       for (let m = 0; m < n; m++) { const f = (((m / n + t * speed) % 1) + 1) % 1, [bx, by] = along(closed, f); g.fillStyle = f < lg.hotEnd / lg.pts.length ? tc : CC.sky; g.beginPath(); g.arc(bx, by, 2.6 * k, 0, 2 * P); g.fill(); }
     }
     const rh = Math.abs(lg.yO - lg.yI) * 0.62;
-    g.fillStyle = CC.deep; g.beginPath(); g.roundRect(qx - 13 * k, qy - rh / 2, 26 * k, rh, 9 * k); g.fill();
+    g.fillStyle = CC.deep; RR(g, qx - 13 * k, qy - rh / 2, 26 * k, rh, 9 * k); g.fill();
     for (let f = 0; f < 4; f++) { g.strokeStyle = l.hp <= 0 ? CC.alert : CC.signal; g.lineWidth = 2 * k; const fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; g.beginPath(); g.moveTo(qx - 8 * k, fy); g.lineTo(qx + 8 * k, fy); g.stroke(); }
     if (big) label('RADIATOR', qx - 18 * k, qy + 4 * k, CC.lilac, 'right');
     g.fillStyle = '#000'; g.strokeStyle = l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.signal; g.lineWidth = 4 * k; g.beginPath(); g.arc(px, py, 16 * k, 0, 2 * P); g.fill(); g.stroke();
-    g.fillStyle = CC.text; g.font = `700 ${15 * k}px Antonio`; g.textAlign = 'center'; g.fillText(String(l.flow), px, py + 5 * k);
+    g.fillStyle = CC.text; g.font = FNT(`700 ${15 * k}px Antonio`); g.textAlign = 'center'; g.fillText(String(l.flow), px, py + 5 * k);
     label(`LOOP ${'AB'[j]} · ${l.hp <= 0 ? 'OFFLINE' : pct(l.hp)}`, (px + qx) / 2 + 6 * k, lg.yI + lg.sg * 12 * k + 4 * k, l.hp <= 0 ? CC.alert : l.hp < 0.5 ? CC.caution : CC.lilac);
     for (const [bx, by, d] of keysAt(j)) {
-      g.fillStyle = hot(`rx.key.${j}.${d}`) ? CC.sky : CC.signal; g.beginPath(); g.arc(bx, by, 11 * k, 0, 2 * P); g.fill();
-      g.fillStyle = '#000'; g.font = `700 ${16 * k}px Antonio`; g.textAlign = 'center'; g.fillText(d < 0 ? '−' : '+', bx, by + 5.5 * k);
+      const kf = hot(`rx.key.${j}.${d}`) ? CC.sky : CC.signal; g.fillStyle = kf; KNOB(g, bx, by, 11 * k); g.fill();
+      g.fillStyle = INK(kf); g.font = FNT(`700 ${16 * k}px Antonio`); g.textAlign = 'center'; g.fillText(d < 0 ? '−' : '+', bx, by + 5.5 * k);
     }
   });
   g.lineWidth = 3 * k; g.strokeStyle = CC.signal; g.beginPath(); g.arc(cx, cy, R, 0, 2 * P); g.stroke(); g.beginPath(); g.arc(cx, cy, Ri, 0, 2 * P); g.stroke();
@@ -2208,18 +2259,18 @@ function drawReactor(ox, oy, w, h, big) {
   const pulse = rx.melt > 0 ? 0.55 + 0.45 * Math.sin(t * 9) : 0.85 + 0.15 * Math.sin(t * 2.3);
   g.save(); g.beginPath(); g.arc(cx, cy, R - 1.5 * k, 0, 2 * P); g.arc(cx, cy, Ri + 1.5 * k, 0, 2 * P, true); g.clip();
   g.strokeStyle = tc; g.globalAlpha = 0.95 * pulse; g.lineWidth = chan * 0.22; g.beginPath(); g.arc(cx + off[0] * chan * 0.42, cy + off[1] * chan * 0.42, mid, 0, 2 * P); g.stroke(); g.restore();
-  g.fillStyle = rx.temp >= 85 ? CC.alert : CC.text; g.textAlign = 'center'; g.font = `700 ${(big ? 26 : 20) * k / (big ? 1.25 : 1)}px Antonio`; g.fillText(`${Math.round(rx.temp)}%`, cx, cy + 6 * k);
+  g.fillStyle = rx.temp >= 85 ? CC.alert : CC.text; g.textAlign = 'center'; g.font = FNT(`700 ${(big ? 26 : 20) * k / (big ? 1.25 : 1)}px Antonio`); g.fillText(`${Math.round(rx.temp)}%`, cx, cy + 6 * k);
   label('CORE', cx, cy - 18 * k);
   for (let i = 0; i < REACTOR.coils; i++) {
     const a = coilDir(i), [qx, qy] = coilAt(i), o = rx.coils[i], ao = Math.abs(o), act = hot(`rx.coil.${i}`);
     g.strokeStyle = CC.accord; g.lineWidth = 2 * k; g.beginPath(); g.arc(cx + Math.cos(a) * mid, cy + Math.sin(a) * mid, 13 * k, 0, 2 * P); g.stroke();
     const col = ao < 0.1 ? CC.accord : ao < 0.3 ? CC.caution : CC.alert;
-    g.save(); g.translate(qx, qy); g.rotate(a + P / 2); g.fillStyle = col; g.beginPath(); g.roundRect(-17 * k, -8 * k, 34 * k, 16 * k, 8 * k); g.fill();
+    g.save(); g.translate(qx, qy); g.rotate(a + P / 2); g.fillStyle = col; RR(g, -17 * k, -8 * k, 34 * k, 16 * k, 8 * k); g.fill();
     if (act) { g.strokeStyle = CC.text; g.lineWidth = 2 * k; g.stroke(); }
-    g.rotate(-(a + P / 2)); g.fillStyle = '#000'; g.font = `700 ${12 * k}px Antonio`; g.textAlign = 'center'; g.fillText(String(i + 1), 0, 4.5 * k); g.restore();
+    g.rotate(-(a + P / 2)); g.fillStyle = INK(col); g.font = FNT(`700 ${12 * k}px Antonio`); g.textAlign = 'center'; g.fillText(String(i + 1), 0, 4.5 * k); g.restore();
     if (act) label(`${o >= 0 ? '+' : ''}${o.toFixed(2)}`, cx + Math.cos(a) * (R + 22 * k), cy + Math.sin(a) * (R + 22 * k) + 4 * k, col, 'center', 12);
   }
-  if (rx.melt > 0) { g.fillStyle = CC.alert; g.globalAlpha = 0.6 + 0.4 * Math.sin(t * 9); g.font = `700 ${15 * k}px Antonio`; g.textAlign = 'left'; g.fillText(`MELTDOWN IN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 16 * k); g.globalAlpha = 1; }
+  if (rx.melt > 0) { g.fillStyle = CC.alert; g.globalAlpha = 0.6 + 0.4 * Math.sin(t * 9); g.font = FNT(`700 ${15 * k}px Antonio`); g.textAlign = 'left'; g.fillText(`MELTDOWN IN ${Math.ceil(REACTOR.meltdown_s - rx.melt)} S`, 6, 16 * k); g.globalAlpha = 1; }
   else if (cooling(s) < 1.5) label('COOLING LOW', 6, 16 * k, CC.caution, 'left', 13);
   g.restore();
 }
@@ -2255,7 +2306,7 @@ function stTactical(b, big) {
   const foes = enemiesOf(s).sort((a, c) => distU(s, a) - distU(s, c)).slice(0, big ? 12 : 5);
   for (const f of foes) {
     const on = s.target === f.id, st = hit(`ct.${f.id}`, b.x, y, b.w, 40, { click: () => A.lock(f.id) });
-    if (on || st.hot) { g.fillStyle = on ? CC.deep : 'rgba(27,42,107,0.5)'; g.beginPath(); g.roundRect(b.x, y, b.w, 40, [20, 4, 4, 20]); g.fill(); }
+    if (on || st.hot) { g.fillStyle = on ? CC.deep : al(CC.deep, 0.5); RR(g, b.x, y, b.w, 40, [20, 4, 4, 20]); g.fill(); }
     g.fillStyle = FACTION[f.faction].dot; g.beginPath(); g.arc(b.x + 18, y + 20, 7, 0, 2 * P); g.fill();
     TXT(big ? `${f.name} · ${CLASSES[f.cls].name}` : f.name, b.x + 34, y + 27, b.w - 34 - 150);
     LBL(String(Math.round((bearing(s, f.x, f.z) / DEG + 360) % 360)).padStart(3, '0'), b.x + b.w - 96, y + 26, 0, CC.lilac, 'right');
@@ -2307,7 +2358,7 @@ const qPage = { capture: 0, hit: 0 };
 function roleGlyph(role, cx, cy, r, col) {
   const G = g, lw = Math.max(2.2, r * 0.22); G.save(); G.strokeStyle = col; G.fillStyle = col; G.lineWidth = lw; G.lineCap = 'round'; G.lineJoin = 'round';
   const line = (pts) => { G.beginPath(); pts.forEach(([x, y], i) => (i ? G.lineTo(x, y) : G.moveTo(x, y))); G.stroke(); };
-  const person = (ox) => { G.beginPath(); G.arc(cx + ox, cy - r * 0.6, r * 0.25, 0, 2 * P); G.fill(); G.beginPath(); G.roundRect(cx + ox - r * 0.34, cy - r * 0.28, r * 0.68, r * 1.12, r * 0.2); G.fill(); };
+  const person = (ox) => { G.beginPath(); G.arc(cx + ox, cy - r * 0.6, r * 0.25, 0, 2 * P); G.fill(); RR(G, cx + ox - r * 0.34, cy - r * 0.28, r * 0.68, r * 1.12, r * 0.2); G.fill(); };
   if (role === 'marines') { person(-r * 0.2); G.lineWidth = lw * 1.15; line([[cx - r * 0.55, cy + r * 0.62], [cx + r * 0.85, cy - r * 0.78]]);
     G.beginPath(); G.arc(cx - r * 0.2, cy - r * 0.62, r * 0.36, P * 1.05, P * 1.95); G.lineWidth = lw * 0.8; G.stroke(); }
   else if (role === 'demo') { G.beginPath(); G.arc(cx - r * 0.15, cy + r * 0.22, r * 0.62, 0, 2 * P); G.fill();
@@ -2330,7 +2381,8 @@ const holder = (t) => t.side === 0 ? 'concord' : t.faction;
 // Each faction's emblem (our own designs): the Concord's ring of five, the Kethran's slotted wedge, the Vos's three rakes.
 function factionEmblem(fac, cx, cy, r) {
   const G = g; G.save(); G.lineCap = 'round'; G.lineJoin = 'round';
-  if (fac === 'concord') {
+  if (fac === 'concord' && CON.emblem) CON.emblem(G, cx, cy, r);
+  else if (fac === 'concord') {
     G.strokeStyle = CC.sky; G.lineWidth = r * 0.12; G.beginPath(); G.arc(cx, cy, r * 0.86, 0, 2 * P); G.stroke();
     G.fillStyle = CC.signal; for (let i = 0; i < 5; i++) { const a = -P / 2 + i * 2 * P / 5; G.beginPath(); G.arc(cx + Math.cos(a) * r * 0.52, cy + Math.sin(a) * r * 0.52, r * 0.14, 0, 2 * P); G.fill(); }
     G.strokeStyle = CC.lilac; G.lineWidth = r * 0.07; G.beginPath(); G.arc(cx, cy, r * 0.2, 0, 2 * P); G.stroke();
@@ -2348,7 +2400,7 @@ function factionEmblem(fac, cx, cy, r) {
 // panel and the Target box (6.1).
 function tugBar(x, y, w, h, ours, theirs) {
   const f = ours + theirs > 0 ? ours / (ours + theirs) : 0.5, r = h / 2;
-  g.save(); g.beginPath(); g.roundRect(x, y, w, h, r); g.clip();
+  g.save(); RR(g, x, y, w, h, r); g.clip();
   g.fillStyle = CC.deep; g.fillRect(x, y, w, h);
   if (ours) { g.fillStyle = CC.sky; g.fillRect(x, y, w * f, h); }
   if (theirs) { g.fillStyle = CC.alert; g.fillRect(x + w * f, y, w * (1 - f), h); }
@@ -2362,7 +2414,7 @@ function teamChips(x, y, w, list, col, sz = 34) {
   const items = list.filter(([, n]) => n > 0), cw = sz + sz * 1.2, per = Math.max(1, Math.floor(w / cw));
   if (!items.length) { LBL('None', x, y + sz * 0.65, w); return sz; }
   items.forEach(([r, n], i) => { const cx = x + (i % per) * cw, cy = y + Math.floor(i / per) * (sz + 6);
-    g.fillStyle = col; g.beginPath(); g.roundRect(cx, cy, sz, sz, sz * 0.22); g.fill(); roleGlyph(r, cx + sz / 2, cy + sz / 2, sz * 0.36, '#000');
+    g.fillStyle = col; RR(g, cx, cy, sz, sz, sz * 0.22); g.fill(); roleGlyph(r, cx + sz / 2, cy + sz / 2, sz * 0.36, INK(col));
     NUM(`×${n}`, cx + sz + 6, cy + sz * 0.7, 0, CC.text, 'left', Math.round(sz * 0.55)); });
   return Math.ceil(items.length / per) * (sz + 6) - 6;
 }
@@ -2371,10 +2423,10 @@ function teamChips(x, y, w, list, col, sz = 34) {
 function iconKey(id, x, y, sz, glyph, count, click, o = {}) {
   const dis = count <= 0 || !!o.dis, st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: o.tip });
   if (dis && o.tip) hit(id, x, y, sz, sz, { tip: o.tip });
-  if (o.ring) { g.strokeStyle = CC.caution; g.lineWidth = 3; g.beginPath(); g.roundRect(x - 3, y - 3, sz + 6, sz + 6, sz * 0.22 + 3); g.stroke(); }
-  g.globalAlpha = dis ? 0.5 : 1; g.fillStyle = dis ? CC.deep : st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.beginPath(); g.roundRect(x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
-  glyph(x + sz * 0.44, y + sz * 0.44, sz * 0.3, dis ? '#2a3a7a' : '#000');
-  g.fillStyle = dis ? '#2a3a7a' : '#000'; g.font = `700 ${Math.round(sz * 0.27)}px Antonio`; g.textAlign = 'right'; g.fillText(String(count), x + sz - sz * 0.08, y + sz - sz * 0.07);
+  if (o.ring) { g.strokeStyle = CC.caution; g.lineWidth = 3; RR(g, x - 3, y - 3, sz + 6, sz + 6, sz * 0.22 + 3); g.stroke(); }
+  const fill = dis ? CC.deep : st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.globalAlpha = dis ? 0.5 : 1; g.fillStyle = fill; RR(g, x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
+  glyph(x + sz * 0.44, y + sz * 0.44, sz * 0.3, dis ? CC.inkDis : INK(fill));
+  g.fillStyle = dis ? CC.inkDis : INK(fill); g.font = FNT(`700 ${Math.round(sz * 0.27)}px Antonio`); g.textAlign = 'right'; g.fillText(String(count), x + sz - sz * 0.08, y + sz - sz * 0.07);
 }
 // A role key: how many of the role are left aboard.
 function roleKey(id, x, y, sz, role, avail, click) { iconKey(id, x, y, sz, (cx, cy, r, col) => roleGlyph(role, cx, cy, r, col), avail, click, { tip: `Queue ${ROLE_ONE[role]} · ${avail} aboard` }); }
@@ -2387,9 +2439,9 @@ function itemGlyph(item, cx, cy, r, col) {
     G.globalCompositeOperation = 'destination-out'; G.beginPath(); G.arc(cx, cy, r * 0.3, 0, 2 * P); G.fill(); G.globalCompositeOperation = 'source-over'; }
   else if (item === 'rations') { G.beginPath(); G.moveTo(cx - r * 0.85, cy); G.lineTo(cx + r * 0.85, cy); G.arc(cx, cy, r * 0.85, 0, P); G.closePath(); G.fill();
     for (const k of [-0.4, 0, 0.4]) { G.beginPath(); G.moveTo(cx + k * r, cy - r * 0.2); G.quadraticCurveTo(cx + k * r + r * 0.18, cy - r * 0.5, cx + k * r, cy - r * 0.8); G.stroke(); } }
-  else if (item === 'medicine') { G.save(); G.translate(cx, cy); G.rotate(-P / 4); G.beginPath(); G.roundRect(-r * 0.9, -r * 0.36, r * 1.8, r * 0.72, r * 0.36); G.stroke();
-    G.beginPath(); G.roundRect(-r * 0.9, -r * 0.36, r * 0.9, r * 0.72, [r * 0.36, 0, 0, r * 0.36]); G.fill(); G.restore(); }
-  else { G.beginPath(); G.arc(cx, cy - r * 0.32, r * 0.22, 0, 2 * P); G.fill(); G.beginPath(); G.roundRect(cx - r * 0.32, cy - r * 0.04, r * 0.64, r * 0.92, r * 0.18); G.fill();
+  else if (item === 'medicine') { G.save(); G.translate(cx, cy); G.rotate(-P / 4); RR(G, -r * 0.9, -r * 0.36, r * 1.8, r * 0.72, r * 0.36); G.stroke();
+    RR(G, -r * 0.9, -r * 0.36, r * 0.9, r * 0.72, [r * 0.36, 0, 0, r * 0.36]); G.fill(); G.restore(); }
+  else { G.beginPath(); G.arc(cx, cy - r * 0.32, r * 0.22, 0, 2 * P); G.fill(); RR(G, cx - r * 0.32, cy - r * 0.04, r * 0.64, r * 0.92, r * 0.18); G.fill();
     G.beginPath(); for (let i = 0; i < 10; i++) { const a = -P / 2 + i * P / 5, rr = i % 2 ? r * 0.12 : r * 0.28; G.lineTo(cx + Math.cos(a) * rr, cy - r * 0.86 + Math.sin(a) * rr); } G.closePath(); G.fill(); }
   G.restore();
 }
@@ -2402,18 +2454,18 @@ function queueGrid(id, x, y, w, s, mode, big) {
   const qs = Math.min(big ? 96 : 38, (w - aw - gap - (cols - 1) * gap) / cols);
   for (let k = 0; k < per; k++) {
     const i = pg * per + k, bx = x + (k % cols) * (qs + gap), by = y + Math.floor(k / cols) * (qs + gap), role = q[i];
-    if (!role) { g.fillStyle = '#060a1c'; g.beginPath(); g.roundRect(bx, by, qs, qs, qs * 0.22); g.fill(); g.strokeStyle = CC.deep; g.lineWidth = 2; g.stroke();
-      NUM(String(i + 1), bx + qs / 2, by + qs * 0.62, 0, '#26325e', 'center', Math.round(qs * 0.36)); continue; }
+    if (!role) { g.fillStyle = CC.void; RR(g, bx, by, qs, qs, qs * 0.22); g.fill(); g.strokeStyle = CC.deep; g.lineWidth = 2; g.stroke();
+      NUM(String(i + 1), bx + qs / 2, by + qs * 0.62, 0, CC.slate, 'center', Math.round(qs * 0.36)); continue; }
     const st = hit(`${id}.${k}`, bx, by, qs, qs, { click: () => A.unqueue(mode, i), tip: `${i + 1}. ${ROLE_ONE[role]}${i === 0 ? ' · next' : ''} · remove` });
-    g.fillStyle = st.hot ? CC.lilac : i === 0 ? CC.accord : CC.signal; g.beginPath(); g.roundRect(bx, by, qs, qs, qs * 0.22); g.fill();
-    roleGlyph(role, bx + qs / 2, by + qs * 0.54, qs * 0.3, '#000');
-    g.fillStyle = '#000'; g.font = `700 ${Math.round(qs * 0.26)}px Antonio`; g.textAlign = 'left'; g.fillText(String(i + 1), bx + qs * 0.09, by + qs * 0.3);
+    const qf = st.hot ? CC.lilac : i === 0 ? CC.accord : CC.signal; g.fillStyle = qf; RR(g, bx, by, qs, qs, qs * 0.22); g.fill();
+    roleGlyph(role, bx + qs / 2, by + qs * 0.54, qs * 0.3, INK(qf));
+    g.fillStyle = INK(qf); g.font = FNT(`700 ${Math.round(qs * 0.26)}px Antonio`); g.textAlign = 'left'; g.fillText(String(i + 1), bx + qs * 0.09, by + qs * 0.3);
   }
   // the page arrows, a counter between them
   const ax = x + cols * (qs + gap), ah = qs, arrow = (k, ay, up, on) => {
     const st = on ? hit(`${id}.${k}`, ax, ay, aw, ah, { click: () => { qPage[mode] += up ? -1 : 1; }, tip: up ? 'Page up' : 'Page down' }) : { hot: false };
-    g.fillStyle = on ? (st.hot ? CC.sky : CC.signal) : '#0d1430'; g.beginPath(); g.roundRect(ax, ay, aw, ah, aw * 0.3); g.fill();
-    const c = ax + aw / 2, m = ay + ah / 2, d = Math.min(aw, ah) * 0.22; g.fillStyle = on ? '#000' : '#26325e'; g.beginPath();
+    const af = on ? (st.hot ? CC.sky : CC.signal) : CC.night; g.fillStyle = af; RR(g, ax, ay, aw, ah, aw * 0.3); g.fill();
+    const c = ax + aw / 2, m = ay + ah / 2, d = Math.min(aw, ah) * 0.22; g.fillStyle = on ? INK(af) : CC.slate; g.beginPath();
     if (up) { g.moveTo(c - d * 1.3, m + d * 0.7); g.lineTo(c + d * 1.3, m + d * 0.7); g.lineTo(c, m - d * 0.8); } else { g.moveTo(c - d * 1.3, m - d * 0.7); g.lineTo(c + d * 1.3, m - d * 0.7); g.lineTo(c, m + d * 0.8); }
     g.closePath(); g.fill(); };
   arrow('up', y, true, pg > 0); arrow('dn', y + qs + gap, false, pg < pages - 1);
@@ -2431,18 +2483,18 @@ function padRow(id, x, y, w, s, mode, big) {
     const fillY = ready ? y : y + ps * (1 - c), cx = px + ps / 2, cy = y + ps / 2;
     const pad = (ink) => { g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = Math.max(2, ps * 0.06); g.beginPath(); g.arc(cx, cy, ps * 0.2, 0, 2 * P); g.stroke();
       for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) { g.beginPath(); g.arc(cx + dx * ps * 0.33, cy + dy * ps * 0.33, ps * 0.055, 0, 2 * P); g.fill(); } };
-    g.save(); g.beginPath(); g.roundRect(px, y, ps, ps, ps * 0.22); g.clip();
+    g.save(); RR(g, px, y, ps, ps, ps * 0.22); g.clip();
     g.fillStyle = CC.deep; g.fillRect(px, y, ps, ps);
-    g.fillStyle = ready && st.down ? CC.lilac : ready && st.hot ? CC.sky : CC.signal; g.fillRect(px, fillY, ps, y + ps - fillY);
+    const pf = ready && st.down ? CC.lilac : ready && st.hot ? CC.sky : CC.signal; g.fillStyle = pf; g.fillRect(px, fillY, ps, y + ps - fillY);
     g.save(); g.beginPath(); g.rect(px, y, ps, fillY - y); g.clip(); pad(CC.sky); g.restore();
-    g.save(); g.beginPath(); g.rect(px, fillY, ps, y + ps - fillY); g.clip(); pad('#000'); g.restore();
+    g.save(); g.beginPath(); g.rect(px, fillY, ps, y + ps - fillY); g.clip(); pad(INK(pf)); g.restore();
     g.restore();
     // the seconds left, white with a dark outline, legible on both the fill and the empty part (as the weapons' cooldown)
-    if (!ready) { const txt = isFinite(eta) ? fmtCool(eta) : '--', fs = Math.round(ps * 0.34); g.font = `700 ${fs}px Antonio`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    if (!ready) { const txt = isFinite(eta) ? fmtCool(eta) : '--', fs = Math.round(ps * 0.34); g.font = FNT(`700 ${fs}px Antonio`); g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
       g.strokeStyle = 'rgba(0,0,0,0.85)'; g.lineWidth = Math.max(2, fs * 0.22); g.strokeText(txt, cx, cy + 0.5); g.fillStyle = '#fff'; g.fillText(txt, cx, cy + 0.5); g.textBaseline = 'alphabetic'; }
     // expanded: who this pad will send on Energize all (the queue dealt to the charged pads in order)
     else if (big && q) { const k = s.pads.slice(0, i).filter((c2) => c2 >= 1).length, r = q[k];
-      if (r) { const cs = ps * 0.34; g.fillStyle = k === 0 ? CC.accord : '#000'; g.beginPath(); g.roundRect(px + ps - cs - 4, y + 4, cs, cs, cs * 0.25); g.fill(); roleGlyph(r, px + ps - cs / 2 - 4, y + 4 + cs / 2, cs * 0.34, k === 0 ? '#000' : CC.sky); } }
+      if (r) { const cs = ps * 0.34; g.fillStyle = k === 0 ? CC.accord : '#000'; RR(g, px + ps - cs - 4, y + 4, cs, cs, cs * 0.25); g.fill(); roleGlyph(r, px + ps - cs / 2 - 4, y + 4 + cs / 2, cs * 0.34, k === 0 ? INK(CC.accord) : CC.sky); } }
   }
   if (q) button(`${id}.all`, x + n * (ps + gap) + (big ? 12 : 0), y + (big ? ps * 0.2 : 0), bw - (big ? 12 : 0), big ? ps * 0.6 : ps, 'Energize all', () => A.energizeAll(mode), { center: true, dis: () => !q.length || !padReady(s) });
   else LBL('Pads', x + n * (ps + gap) + 4, y + ps / 2 + 6, w - n * (ps + gap) - 4, CC.lilac);
@@ -2455,7 +2507,7 @@ function controlRow(id, x, y, w, s, t, mode, big) {
   g.fillStyle = '#000'; g.fillRect(x + 2, y + 2, pp - 4, pp - 4); nine('frame.inset', x, y, pp, pp);
   if (t) { factionEmblem(holder(t), x + pp / 2, y + pp / 2 - (big ? 12 : 0), pp * (big ? 0.3 : 0.32)); hit(`${id}.por`, x, y, pp, pp, { tip: `${t.name} · held by ${FACTION[holder(t)].name}` });
     if (big) LBL(t.name, x + pp / 2, y + pp - 12, pp - 12, CC.sky, 'center', 16); }
-  else LBL('--', x + pp / 2, y + pp / 2 + 6, 0, '#26325e', 'center', 20);
+  else LBL('--', x + pp / 2, y + pp / 2 + 6, 0, CC.slate, 'center', 20);
   let yy = y;
   if (!t) { LBL(mode === 'capture' ? 'No target · or select a friendly for troops' : 'No target', bx, yy + 20, bw); return pp; }
   // a friendly ship: troops beamed over to it (owner, 2026-11-03: "be asked to supply troops for an assault (combat
@@ -2517,7 +2569,7 @@ function stTransport(b, big) {
       const n = SUBSYS.length, bs = Math.min(big ? 56 : 34, (b.w - (n - 1) * 6) / n);
       SUBSYS.forEach(([key, name], i) => {
         const bx = b.x + i * (bs + 6), st = t ? subsysStatus(t, key) : 'Off';
-        if (raidSys === key) { g.fillStyle = CC.sky; g.beginPath(); g.roundRect(bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
+        if (raidSys === key) { g.fillStyle = CC.sky; RR(g, bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
         statusBox(g, bx, y, bs, st, bs * 0.28); g.drawImage(KIT.iconOn[SUBSYS_ICON[key]], bx + bs * 0.15, y + bs * 0.15, bs * 0.7, bs * 0.7);
         hit(`tr.sys.${key}`, bx, y, bs, bs, { click: () => { raidSys = key; if (key !== 'weapons') raidMountOpen = false; }, tip: { title: name, rows: t ? [['Health', pct(clamp(healthOf(t, key), 0, 1))], ['Status', st, STATUS_COL[st]]] : [['Target', '--']] } });
       });
@@ -2527,10 +2579,10 @@ function stTransport(b, big) {
       if (raidSys === 'weapons') {
         const m = t && raidMount !== null ? t.mounts[raidMount] : null, ph = big ? 40 : 30;
         const st = hit('tr.wpick', b.x, y, b.w, ph, { click: () => { raidMountOpen = !raidMountOpen; }, tip: 'Pick the weapon to raid' });
-        g.fillStyle = st.hot || raidMountOpen ? CC.sky : CC.signal; g.beginPath(); g.roundRect(b.x, y, b.w, ph, ph / 2); g.fill();
+        const wf = st.hot || raidMountOpen ? CC.sky : CC.signal; g.fillStyle = wf; RR(g, b.x, y, b.w, ph, ph / 2); g.fill();
         const lab = m ? `${mountId(m)} · ${WEAPONS[m.w].name} · ${pct(clamp(m.hp, 0, 1))}` : 'Weapons control (any weapon)';
-        TXT(lab, b.x + 16, y + ph * 0.7, b.w - 48, '#000', 'left', big ? 20 : 16);
-        g.fillStyle = '#000'; g.beginPath(); const ax = b.x + b.w - 20, ay = y + ph / 2;
+        TXT(lab, b.x + 16, y + ph * 0.7, b.w - 48, INK(wf), 'left', big ? 20 : 16);
+        g.fillStyle = INK(wf); g.beginPath(); const ax = b.x + b.w - 20, ay = y + ph / 2;
         if (raidMountOpen) { g.moveTo(ax - 6, ay + 3); g.lineTo(ax + 6, ay + 3); g.lineTo(ax, ay - 4); } else { g.moveTo(ax - 6, ay - 3); g.lineTo(ax + 6, ay - 3); g.lineTo(ax, ay + 4); } g.closePath(); g.fill();
         wpickAt = [b.x, y + ph + 4, b.w, big]; y += ph + gap;
       } else wpickAt = null;
@@ -2541,7 +2593,7 @@ function stTransport(b, big) {
     const rx = mode === 'hit' ? b.x + b.w - roles.length * (rs + 6) + 6 : b.x;
     const needR = mode === 'capture' && s.party && t && s.party.on === t.id ? missingRoles(s.party.team).filter((r) => !s.bq.capture.includes(r)) : [];
     roles.forEach((r, i) => { const kx = rx + i * (rs + 6);
-      if (needR.includes(r)) { g.strokeStyle = CC.caution; g.lineWidth = 3; g.beginPath(); g.roundRect(kx - 3, y - 3, rs + 6, rs + 6, rs * 0.22 + 3); g.stroke(); }
+      if (needR.includes(r)) { g.strokeStyle = CC.caution; g.lineWidth = 3; RR(g, kx - 3, y - 3, rs + 6, rs + 6, rs * 0.22 + 3); g.stroke(); }
       roleKey(`tr.q.${mode}.${r}`, kx, y, rs, r, have(s, r), () => A.queueRole(mode, r)); });
     y += rs + gap;
     y += queueGrid(`tr.qg.${mode}`, b.x, y, b.w, s, mode, big) + gap + (big ? 10 : 4);
@@ -2580,7 +2632,7 @@ function stTransport(b, big) {
     else if (d && d.planet) { const want = ITEMS.filter(([k]) => keys.includes(k) && (dest.needs || {})[k]);
       LBL(want.length ? `${d.name} needs` : `${d.name} needs nothing`, b.x, y + 13, b.w, CC.lilac, 'left', 13); y += 18;
       if (want.length) { want.forEach(([k], i) => { const cx = b.x + i * (ks * 1.9), left = stillNeeds(dest, k), sz2 = Math.round(ks * 0.7);
-        g.fillStyle = left ? CC.caution : CC.accord; g.beginPath(); g.roundRect(cx, y, sz2, sz2, sz2 * 0.22); g.fill(); itemGlyph(k, cx + sz2 / 2, y + sz2 / 2, sz2 * 0.32, '#000');
+        g.fillStyle = left ? CC.caution : CC.accord; RR(g, cx, y, sz2, sz2, sz2 * 0.22); g.fill(); itemGlyph(k, cx + sz2 / 2, y + sz2 / 2, sz2 * 0.32, INK(left ? CC.caution : CC.accord));
         NUM(left ? `${left}` : 'done', cx + sz2 + 6, y + sz2 * 0.72, 0, left ? CC.caution : CC.accord, 'left', Math.round(sz2 * 0.55)); }); y += Math.round(ks * 0.7) + 8; } }
     y += padRow('tr.pad.inv', b.x, y, b.w, s, 'inv', big) + gap;
   }
@@ -2589,15 +2641,15 @@ function stTransport(b, big) {
     const [lx, ly, lw, bg] = wpickAt, rh = bg ? 38 : 28, list = [null].concat(t ? t.mounts : []);
     hit('tr.wpick.off', b.x, b.y, b.w, b.h, { click: () => { raidMountOpen = false; } });
     const lh = Math.min(list.length * rh + 8, b.y + b.h - ly - 4);
-    g.fillStyle = 'rgba(0,0,0,0.92)'; g.beginPath(); g.roundRect(lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
+    g.fillStyle = 'rgba(0,0,0,0.92)'; RR(g, lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
     list.forEach((m, k) => { const ry = ly + 4 + k * rh; if (ry + rh > ly + lh) return;
       const on = m ? raidMount === m.i : raidMount === null, st2 = hit(`tr.wpick.${k}`, lx + 4, ry, lw - 8, rh - 2, { click: () => A.raidMount(m ? m.i : null) });
-      if (st2.hot || on) { g.fillStyle = on ? CC.signal : CC.deep; g.beginPath(); g.roundRect(lx + 4, ry, lw - 8, rh - 2, (rh - 2) / 2); g.fill(); }
-      const ink = on ? '#000' : CC.text, fs = bg ? 19 : 15, by2 = ry + rh * 0.68;
+      if (st2.hot || on) { g.fillStyle = on ? CC.signal : CC.deep; RR(g, lx + 4, ry, lw - 8, rh - 2, (rh - 2) / 2); g.fill(); }
+      const ink = on ? INK(CC.signal) : CC.text, fs = bg ? 19 : 15, by2 = ry + rh * 0.68;
       if (!m) { TXT('Weapons control (any weapon)', lx + 16, by2, lw - 32, ink, 'left', fs); return; }
       const ms = mountStatus(t, m);
-      NUM(mountId(m), lx + 16, by2, 0, on ? '#000' : CC.sky, 'left', fs); TXT(WEAPONS[m.w].name, lx + 16 + fs * 2.2, by2, lw * 0.45, ink, 'left', fs);
-      NUM(pct(clamp(m.hp, 0, 1)), lx + lw - 16 - fs * 4.6, by2, 0, on ? '#000' : CC.text, 'right', fs); TXT(ms, lx + lw - 16, by2, fs * 4.2, on ? '#000' : STATUS_COL[ms], 'right', fs); });
+      NUM(mountId(m), lx + 16, by2, 0, on ? ink : CC.sky, 'left', fs); TXT(WEAPONS[m.w].name, lx + 16 + fs * 2.2, by2, lw * 0.45, ink, 'left', fs);
+      NUM(pct(clamp(m.hp, 0, 1)), lx + lw - 16 - fs * 4.6, by2, 0, on ? ink : CC.text, 'right', fs); TXT(ms, lx + lw - 16, by2, fs * 4.2, on ? ink : STATUS_COL[ms], 'right', fs); });
   }
   // stores, when there is room under the mode
   if (y + 16 <= b.y + b.h - 6) pairs('tr.c', b.x, b.y + b.h - 6, [['Mines', String(s.mines)], ['Fighters', String(s.fighters)], ['Shuttles', String(s.shuttles)]], b.w, 18);
@@ -2660,13 +2712,13 @@ function shade(hex, f) {
 // 2026-11-02: "show progress like shade 50% a bright color as it is recharging"): `charge` 0 to 1.
 function statusBox(x, bx, by, s2, st, rad, cooling, charge) {
   if (cooling && st !== 'Destroyed') {
-    x.save(); x.beginPath(); x.roundRect(bx, by, s2, s2, rad); x.clip();
+    x.save(); RR(x, bx, by, s2, s2, rad); x.clip();
     x.fillStyle = shade(STATUS_COL[st], 0.34); x.fillRect(bx, by, s2, s2);
     const f = clamp(charge || 0, 0, 1); x.fillStyle = STATUS_COL[st]; x.fillRect(bx, by + s2 * (1 - f), s2, s2 * f + 1);
     x.restore(); return;
   }
-  x.beginPath(); x.roundRect(bx, by, s2, s2, rad);
-  x.fillStyle = st === 'Destroyed' ? '#3a0b09' : cooling ? shade(STATUS_COL[st], 0.34) : STATUS_COL[st]; x.globalAlpha = st === 'Off' ? 0.5 : 1; x.fill(); x.globalAlpha = 1;
+  RR(x, bx, by, s2, s2, rad);
+  x.fillStyle = st === 'Destroyed' ? CC.char : cooling ? shade(STATUS_COL[st], 0.34) : STATUS_COL[st]; x.globalAlpha = st === 'Off' ? 0.5 : 1; x.fill(); x.globalAlpha = 1;
   if (st === 'Destroyed') { x.strokeStyle = CC.alert; x.lineWidth = 1.5; x.stroke(); }
 }
 // One glyph per weapon type, in Concord's open circles and arcs (nothing pointed).
@@ -2678,7 +2730,7 @@ function weaponGlyph(x, m, mx, my, r, col) {
   if (kind === 'beam') { x.beginPath(); x.arc(mx, my, r * 0.5, 0, 2 * P); x.fill(); x.beginPath(); x.moveTo(mx - r * 1.4, my); x.lineTo(mx - r * 0.75, my); x.moveTo(mx + r * 0.75, my); x.lineTo(mx + r * 1.4, my); x.stroke(); }
   else if (kind === 'torpedo') { x.beginPath(); x.arc(mx, my, r * 0.45, 0, 2 * P); x.fill(); x.beginPath(); x.arc(mx, my, r, 0, 2 * P); x.stroke(); }
   else if (kind === 'bolt') { for (const d of [-1, 1]) { x.beginPath(); x.arc(mx + d * r * 0.5, my, r * 0.48, 0, 2 * P); x.fill(); } }
-  else if (kind === 'missile') { x.beginPath(); x.roundRect(mx - r * 0.42, my - r, r * 0.84, r * 2, r * 0.42); x.fill(); }
+  else if (kind === 'missile') { RR(x, mx - r * 0.42, my - r, r * 0.84, r * 2, r * 0.42); x.fill(); }
   else { x.beginPath(); x.arc(mx, my, r * 0.4, 0, 2 * P); x.fill(); for (let i = 0; i < 3; i++) { const b = -P / 2 + i * 2 * P / 3; x.beginPath(); x.arc(mx, my, r, b - 0.55, b + 0.55); x.stroke(); } }
 }
 // Hover names for the display's mounts and subsystems: name, health, status (owner: "when I hover over subsystem or
@@ -2704,12 +2756,12 @@ function drawSSD(x, w, h, s, big, own, idp) {
     // The facing turned toward the enemy (yours toward your target; the target's toward you): a white arc above it.
     if (i === toward) { x.strokeStyle = '#fff'; x.lineWidth = big ? 4 : 2.5; x.beginPath(); x.arc(cx, cy, Rr + (big ? 15 : 9), a - P / 6 + 0.12, a + P / 6 - 0.12); x.stroke(); }
     if (big || own || (W.player.scan.id === s.id && W.player.scan.p >= 1)) {
-      x.fillStyle = CC.text; x.font = `600 ${big ? 22 : 14}px Antonio`; x.textAlign = 'center';
+      x.fillStyle = CC.text; x.font = FNT(`600 ${big ? 22 : 14}px Antonio`); x.textAlign = 'center';
       x.fillText(String(Math.round(s.shields[i])), cx + Math.cos(a) * (Rr + (big ? 34 : 20)), cy + Math.sin(a) * (Rr + (big ? 34 : 20)) + (big ? 8 : 5));
     }
   }
   if (own) for (const m of s.mounts) if (m.sel && m.w !== 'pd' && m.arc[1] < 360) {
-    x.fillStyle = 'rgba(63,169,240,0.06)'; x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, Rr - 4, -P / 2 + (m.arc[0] - m.arc[1] / 2) * DEG, -P / 2 + (m.arc[0] + m.arc[1] / 2) * DEG); x.closePath(); x.fill();
+    x.fillStyle = al(CC.sky, 0.06); x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, Rr - 4, -P / 2 + (m.arc[0] - m.arc[1] / 2) * DEG, -P / 2 + (m.arc[0] + m.arc[1] / 2) * DEG); x.closePath(); x.fill();
   }
   // The mount grid drawn faintly behind the ship (owner, 2026-11-01: "Grid"): the same cells the weapon boxes snap to,
   // clipped to the shield ring, lines between cells so every box sits centred in one.
@@ -2727,8 +2779,8 @@ function drawSSD(x, w, h, s, big, own, idp) {
   x.strokeStyle = CC.sky; x.lineWidth = big ? 3 : 2;
   if (sh === 'saucer') {
     x.beginPath(); x.arc(cx, cy - L * 0.42, L * 0.42, 0, 2 * P); x.stroke();
-    x.beginPath(); x.roundRect(cx - L * 0.1, cy - L * 0.05, L * 0.2, L * 0.6, L * 0.1); x.stroke();
-    for (const sd of [-1, 1]) { x.beginPath(); x.roundRect(cx + sd * L * 0.5 - L * 0.07, cy + L * 0.05, L * 0.14, L * 0.85, L * 0.07); x.stroke(); x.beginPath(); x.moveTo(cx + sd * L * 0.1, cy + L * 0.3); x.lineTo(cx + sd * L * 0.43, cy + L * 0.38); x.stroke(); }
+    RR(x, cx - L * 0.1, cy - L * 0.05, L * 0.2, L * 0.6, L * 0.1); x.stroke();
+    for (const sd of [-1, 1]) { RR(x, cx + sd * L * 0.5 - L * 0.07, cy + L * 0.05, L * 0.14, L * 0.85, L * 0.07); x.stroke(); x.beginPath(); x.moveTo(cx + sd * L * 0.1, cy + L * 0.3); x.lineTo(cx + sd * L * 0.43, cy + L * 0.38); x.stroke(); }
   } else if (sh === 'station') {
     x.beginPath(); x.arc(cx, cy, L * 0.72, 0, 2 * P); x.stroke(); x.beginPath(); x.arc(cx, cy, L * 0.22, 0, 2 * P); x.stroke();
     for (let i = 0; i < 4; i++) { const a = i * P / 2 + P / 4; x.beginPath(); x.moveTo(cx + Math.cos(a) * L * 0.22, cy + Math.sin(a) * L * 0.22); x.lineTo(cx + Math.cos(a) * L * 0.72, cy + Math.sin(a) * L * 0.72); x.stroke(); }
@@ -2778,7 +2830,7 @@ function drawSSD(x, w, h, s, big, own, idp) {
     // whole pixels, so the box's edges land on the pixel grid
     const bx = Math.round(pos[m.i][0] - mb / 2), by = Math.round(pos[m.i][1] - mb / 2), mx = bx + mb / 2, my = by + mb / 2, st = mountStatus(s, m);
     const lw = big ? 3 : 2, rad = mb * 0.22, sel = own && m.sel, hov = idp && HOT === `${idp}.m.${m.i}`;
-    const plate = (grow, col) => { x.fillStyle = col; x.beginPath(); x.roundRect(bx - grow, by - grow, mb + 2 * grow, mb + 2 * grow, rad + grow); x.fill(); };
+    const plate = (grow, col) => { x.fillStyle = col; RR(x, bx - grow, by - grow, mb + 2 * grow, mb + 2 * grow, rad + grow); x.fill(); };
     // Hover outlines the group in white (owner: "If mouse hover over highlight outline").
     if (hov) plate(sel ? 2 * lw : lw, '#fff');
     if (sel) plate(lw, CC.sky);
@@ -2788,17 +2840,17 @@ function drawSSD(x, w, h, s, big, own, idp) {
     statusBox(x, bx, by, mb, st, rad, cool !== null, m.charge);
     // ready to fire (charged, the target in its arc and range): a bold dashed white outline (owner, 2026-11-02)
     const tt = own ? tgt(s) : null;
-    if (tt && m.w !== 'pd' && ready(m) && inArc(s, m, tt) && inRange(s, m, tt)) { const gr2 = (sel ? lw : 0) + 3.5; x.save(); x.setLineDash([4, 3]); x.strokeStyle = '#fff'; x.lineWidth = 2.5; x.beginPath(); x.roundRect(bx - gr2, by - gr2, mb + 2 * gr2, mb + 2 * gr2, rad + gr2); x.stroke(); x.restore(); }
+    if (tt && m.w !== 'pd' && ready(m) && inArc(s, m, tt) && inRange(s, m, tt)) { const gr2 = (sel ? lw : 0) + 3.5; x.save(); x.setLineDash([4, 3]); x.strokeStyle = '#fff'; x.lineWidth = 2.5; RR(x, bx - gr2, by - gr2, mb + 2 * gr2, mb + 2 * gr2, rad + gr2); x.stroke(); x.restore(); }
     if (cool !== null) {
       // Cooling: the seconds left in place of the glyph, scaled down to fit the box if it runs to three figures.
       const txt = fmtCool(cool); let fs = Math.round(mb * 0.72);
-      x.font = `700 ${fs}px Antonio`; const tw = x.measureText(txt).width, room = mb - 4;
-      if (tw > room) { fs = Math.floor(fs * room / tw); x.font = `700 ${fs}px Antonio`; }
+      x.font = FNT(`700 ${fs}px Antonio`); const tw = x.measureText(txt).width, room = mb - 4;
+      if (tw > room) { fs = Math.floor(fs * room / tw); x.font = FNT(`700 ${fs}px Antonio`); }
       // white figures with a dark outline, legible on both the dark shade and the bright fill
       x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.strokeStyle = 'rgba(0,0,0,0.85)'; x.lineWidth = Math.max(2, fs * 0.22);
       x.strokeText(txt, mx, my + 0.5); x.fillStyle = '#fff'; x.fillText(txt, mx, my + 0.5); x.textBaseline = 'alphabetic';
-    } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : '#000');
-    if (big) { x.fillStyle = CC.lilac; x.font = '600 15px Antonio'; x.textAlign = 'center'; x.fillText(mountId(m), bx + mb + 14, by + 4); }
+    } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : INK(STATUS_COL[st]));
+    if (big) { x.fillStyle = CC.lilac; x.font = FNT('600 15px Antonio'); x.textAlign = 'center'; x.fillText(mountId(m), bx + mb + 14, by + 4); }
     mounts.push([mx, my, mb / 2 + 5, m]);
   }
   return { cx, cy, Rr, L, mounts, boxes };
@@ -2855,8 +2907,8 @@ function shieldHex(cx, cy, R, s, big, idp) {
   }
   // the ship, small, in the middle
   g.save(); g.translate(cx, cy); g.strokeStyle = CC.sky; g.lineWidth = 1.6 * k; const L = Ri * 0.7;
-  g.beginPath(); g.arc(0, -L * 0.42, L * 0.42, 0, 2 * P); g.stroke(); g.beginPath(); g.roundRect(-L * 0.1, -L * 0.05, L * 0.2, L * 0.6, L * 0.1); g.stroke();
-  for (const sd of [-1, 1]) { g.beginPath(); g.roundRect(sd * L * 0.5 - L * 0.07, L * 0.05, L * 0.14, L * 0.85, L * 0.07); g.stroke(); }
+  g.beginPath(); g.arc(0, -L * 0.42, L * 0.42, 0, 2 * P); g.stroke(); RR(g, -L * 0.1, -L * 0.05, L * 0.2, L * 0.6, L * 0.1); g.stroke();
+  for (const sd of [-1, 1]) { RR(g, sd * L * 0.5 - L * 0.07, L * 0.05, L * 0.14, L * 0.85, L * 0.07); g.stroke(); }
   g.restore();
 }
 // One row of energy boxes for a system: the same control as the power station's (one implementation).
@@ -2995,11 +3047,11 @@ function uiMap(r) {
 function drawMap(x, w, h) {
   const s = W.player, c = [w / 2, h / 2], k = Math.min(w, h) / 2 / (mapScale * 1000 / M_PER_U);
   const view = (wx, wz) => [c[0] + (wx - s.x) * k, c[1] + (wz - s.z) * k];
-  x.strokeStyle = CC.deep; x.lineWidth = 1.5; x.fillStyle = CC.lilac; x.font = '600 14px Antonio'; x.textAlign = 'left';
+  x.strokeStyle = CC.deep; x.lineWidth = 1.5; x.fillStyle = CC.lilac; x.font = FNT('600 14px Antonio'); x.textAlign = 'left';
   for (let r = 5; r <= mapScale * 1.5; r += 5) { x.beginPath(); x.arc(c[0], c[1], r * 10 * k, 0, 2 * P); x.stroke(); x.fillText(`${r} KM`, c[0] + r * 10 * k + 4, c[1] - 4); }
   for (const m of s.mounts) if (m.sel && m.w !== 'pd' && m.arc[1] < 360) {
     const a0 = s.h + (m.arc[0] - m.arc[1] / 2) * DEG - P / 2, a1 = s.h + (m.arc[0] + m.arc[1] / 2) * DEG - P / 2, rr = spec(m).range_km * 10 * k;
-    x.fillStyle = 'rgba(63,169,240,0.05)'; x.beginPath(); x.moveTo(c[0], c[1]); x.arc(c[0], c[1], rr, a0, a1); x.closePath(); x.fill();
+    x.fillStyle = al(CC.sky, 0.05); x.beginPath(); x.moveTo(c[0], c[1]); x.arc(c[0], c[1], rr, a0, a1); x.closePath(); x.fill();
   }
   for (const sh of W.shots) if (sh.kind !== 'beam') { const [px, py] = view(sh.x, sh.z); x.fillStyle = '#' + sh.color.toString(16).padStart(6, '0'); x.fillRect(px - 2, py - 2, 4, 4); }
   for (const r of W.rocks) { const [px, py] = view(r.x, r.z); x.fillStyle = '#6d6a66'; x.beginPath(); x.arc(px, py, Math.max(2, r.r * k), 0, 2 * P); x.fill(); }
@@ -3010,7 +3062,7 @@ function drawMap(x, w, h) {
     x.strokeStyle = col; x.fillStyle = col; x.lineWidth = 2; x.beginPath(); x.arc(px, py, 7, 0, 2 * P); x.stroke();
     x.beginPath(); x.moveTo(px + f[0] * 7, py + f[1] * 7); x.lineTo(px + f[0] * 20, py + f[1] * 20); x.stroke();
     if (o.id === s.target) CON.live.bracket(x, px - 34, py - 34, 68, 68);
-    x.fillStyle = CC.text; x.font = '600 16px Antonio'; x.fillText(o.name.toUpperCase(), px + 12, py + 18);
+    x.fillStyle = CC.text; x.font = FNT('600 16px Antonio'); x.fillText(o.name.toUpperCase(), px + 12, py + 18);
   }
   return view;
 }
@@ -3155,8 +3207,8 @@ const cloudTex = (() => { const R = rng(SCENARIO.seed + 21); const c = paint(128
   g2.addColorStop(0, `rgba(255,255,255,${0.25 + R() * 0.25})`); g2.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g2; x.fillRect(0, 0, 128, 128); }
   // faded to nothing at the border, so no square edge shows
   x.globalCompositeOperation = 'destination-in'; const m = x.createRadialGradient(64, 64, 20, 64, 64, 64); m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = m; x.fillRect(0, 0, 128, 128); }); const tx = new THREE.CanvasTexture(c); return tx; })();
-const ringTex = (() => { const c = paint(256, 256, (x) => { const g2 = x.createRadialGradient(128, 128, 0, 128, 128, 128); g2.addColorStop(0, 'rgba(120,170,255,0)'); g2.addColorStop(0.55, 'rgba(90,150,255,0.15)');
-  g2.addColorStop(0.86, 'rgba(150,200,255,0.9)'); g2.addColorStop(0.93, 'rgba(255,255,255,1)'); g2.addColorStop(1, 'rgba(120,170,255,0)'); x.fillStyle = g2; x.fillRect(0, 0, 256, 256); }); return new THREE.CanvasTexture(c); })();
+const ringTex = (() => { const c = paint(256, 256, (x) => { const g2 = x.createRadialGradient(128, 128, 0, 128, 128, 128); g2.addColorStop(0, CON.ring[0]); g2.addColorStop(0.55, CON.ring[1]);
+  g2.addColorStop(0.86, CON.ring[2]); g2.addColorStop(0.93, 'rgba(255,255,255,1)'); g2.addColorStop(1, CON.ring[0]); x.fillStyle = g2; x.fillRect(0, 0, 256, 256); }); return new THREE.CanvasTexture(c); })();
 const EXPLOSIONS = [];
 function bigBoom(x, z, size, hullCol) {
   const R = rng(Math.floor(x * 131 + z * 71 + W.t * 1000) >>> 0), add = (m) => { scene.add(m); return m; };
@@ -3480,7 +3532,7 @@ function helmArc(vw, vh, s) {
       const now = performance.now(), dtl = Math.min(0.1, (now - (reachLabel.t || now)) / 1000); reachLabel.t = now;
       if (reachLabel.a === null || Math.abs(wrap(ta - reachLabel.a)) > 1) reachLabel.a = ta; else reachLabel.a += wrap(ta - reachLabel.a) * (1 - Math.exp(-dtl * 8));
       ta = reachLabel.a; }
-    const top = ta !== null ? at(ta, Rm) : null, c0 = scr(s.x, s.z); if (top && c0) { g.save(); g.font = '700 15px Antonio'; g.fillStyle = col; g.textAlign = 'center'; g.letterSpacing = '2px';
+    const top = ta !== null ? at(ta, Rm) : null, c0 = scr(s.x, s.z); if (top && c0) { g.save(); g.font = FNT('700 15px Antonio'); g.fillStyle = col; g.textAlign = 'center'; g.letterSpacing = '2px';
       const q0 = at(ta - 0.08, Rm), q1 = at(ta + 0.08, Rm); const ang = q0 && q1 ? Math.atan2(q1[1] - q0[1], q1[0] - q0[0]) : 0;
       g.translate(top[0], top[1]); g.rotate(ang > P / 2 || ang < -P / 2 ? ang + P : ang); g.fillStyle = '#000'; const tw2 = g.measureText(label).width + 16; g.fillRect(-tw2 / 2, -12, tw2, 18);
       g.fillStyle = col; g.fillText(label, 0, 2); g.restore(); } };
@@ -3523,11 +3575,11 @@ function friendMark(id, name, px, py, dk, o, f, hov) {
     g.lineCap = 'round'; }
   // the same ring as an enemy's, in green (owner, 2026-11-03: "friendlys dont have that nice border around their target box")
   else markRing(px, py, CC.accord, f, hov);
-  g.fillStyle = CC.accord; g.font = `600 ${sel ? 18 : 14}px Antonio`; g.textAlign = 'center';
+  g.fillStyle = CC.accord; g.font = FNT(`600 ${sel ? 18 : 14}px Antonio`); g.textAlign = 'center';
   g.fillText((sel ? `${name} · ${dk.toFixed(1)} km${dk <= TRANSPORT.range_km ? ' · in reach' : ''}` : name).toUpperCase(), px, py + (sel ? 50 : 26));
   const want = ITEMS.filter(([k]) => stillNeeds(o, k) > 0).map(([k, l]) => `${stillNeeds(o, k)} ${l.toLowerCase()}`);
   if (o.ai && o.ai.needMarines && o.marines < o.ai.needMarines) want.push(`${o.ai.needMarines - o.marines} marines`);
-  if (want.length) { g.fillStyle = CC.caution; g.font = '600 15px Antonio'; g.fillText(`Needs ${want.join(', ')}`.toUpperCase(), px, py + (sel ? 70 : 44)); }
+  if (want.length) { g.fillStyle = CC.caution; g.font = FNT('600 15px Antonio'); g.fillText(`Needs ${want.join(', ')}`.toUpperCase(), px, py + (sel ? 70 : 44)); }
 }
 // The ring round a ship or planet in the view: wider when focused; under the pointer a little larger, thicker and
 // brighter. Enemies, friendlies and planets share it (6.1).
@@ -3542,7 +3594,7 @@ function targetBracket(px, py, lock, hov) {
     for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const x0 = px + sx * w / 2, y0 = py + sy * h / 2; g.beginPath(); g.moveTo(x0 - sx * c, y0); g.lineTo(x0, y0); g.lineTo(x0, y0 - sy * c); g.stroke(); } };
   corners(92, 72, 20, 3.5);
   if (lock) { const pulse = 0.65 + 0.35 * Math.sin(performance.now() / 160); g.globalAlpha = pulse; corners(116, 96, 16, 2.5); g.globalAlpha = 1;
-    g.fillStyle = CC.alert; g.font = '700 14px Antonio'; g.textAlign = 'center'; g.fillText('SEEKER LOCK', px, py - 56); }
+    g.fillStyle = CC.alert; g.font = FNT('700 14px Antonio'); g.textAlign = 'center'; g.fillText('SEEKER LOCK', px, py - 56); }
 }
 // A ship's hull in the view: a short bar and its percentage, green above 60 %, amber above 30 %, red below; the hull
 // fraction is the same one the top strip's hull bars show (6.1).
@@ -3550,7 +3602,7 @@ function hullBar(px, py, o) {
   const f = clamp(o.hull / CLASSES[o.cls].hull, 0, 1), col = f > 0.6 ? CC.accord : f > 0.3 ? CC.caution : CC.alert, w = 92, h = 7;
   g.fillStyle = 'rgba(0,0,0,0.6)'; g.fillRect(px - w / 2 - 2, py - 2, w + 4, h + 4);
   g.fillStyle = CC.deep; g.fillRect(px - w / 2, py, w, h); g.fillStyle = col; g.fillRect(px - w / 2, py, w * f, h);
-  g.fillStyle = col; g.font = '700 14px Antonio'; g.textAlign = 'left'; g.fillText(`${Math.round(f * 100)}%`, px + w / 2 + 6, py + h);
+  g.fillStyle = col; g.font = FNT('700 14px Antonio'); g.textAlign = 'left'; g.fillText(`${Math.round(f * 100)}%`, px + w / 2 + 6, py + h);
 }
 function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; return [VIEW[2] - w - 16, 14, w, h]; }
 // Over the 3D view: brackets and names, the readout, the last message, the Target box, the lock key, the mockup badge.
@@ -3569,26 +3621,26 @@ function uiView() {
     if (!on) {
       if (!locked) continue;
       const a = Math.atan2(py - vh / 2, px - vw / 2) * (v.z > 1 ? -1 : 1) + (v.z > 1 ? P : 0); px = vw / 2 + Math.cos(a) * (vw / 2 - 40); py = vh / 2 + Math.sin(a) * (vh / 2 - 40);
-      g.strokeStyle = CC.alert; g.lineWidth = 3; g.beginPath(); g.arc(px, py, 14, 0, 2 * P); g.stroke(); g.fillStyle = CC.alert; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 32); continue;
+      g.strokeStyle = CC.alert; g.lineWidth = 3; g.beginPath(); g.arc(px, py, 14, 0, 2 * P); g.stroke(); g.fillStyle = CC.alert; g.font = FNT('600 16px Antonio'); g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 32); continue;
     }
     const hov = hovAt(px, py, locked ? 50 : f ? 30 : 22);
     if (locked) targetBracket(px, py, seekerLock(s, o), hov);
     else markRing(px, py, col, f, hov);
-    g.fillStyle = locked ? CC.text : col; g.font = `600 ${locked ? 20 : 16}px Antonio`; g.textAlign = 'center';
+    g.fillStyle = locked ? CC.text : col; g.font = FNT(`600 ${locked ? 20 : 16}px Antonio`); g.textAlign = 'center';
     g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? (seekerLock(s, o) ? 72 : 58) : 34));
     // the targeted enemy's hull, always, under its bracket and name (owner, 2026-11-02: "always show current targeted
     // enemy health ... even in the un-expanded view")
     if (locked) hullBar(px, py + (seekerLock(s, o) ? 84 : 70), o);
   }
   for (const w of W.wells) { const v = new THREE.Vector3(w.x, 0, w.z).project(camera); if (v.z >= 1) continue;
-    g.fillStyle = CC.caution; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(`${w.name} · Q-G field here ${pct(qgAt(s.x, s.z))}`.toUpperCase(), (v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh - 30); }
+    g.fillStyle = CC.caution; g.font = FNT('600 16px Antonio'); g.textAlign = 'center'; g.fillText(`${w.name} · Q-G field here ${pct(qgAt(s.x, s.z))}`.toUpperCase(), (v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh - 30); }
   for (const pl of W.planets) { const v = new THREE.Vector3(pl.x, 0, pl.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh, dk = Math.max(0, Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r) / 10;
     friendMark(pl.id, pl.name, px, py, dk, pl, focus === pl.id, hovAt(px, py, invDest === pl.id ? 46 : 30)); }
   // disguised shuttles: our own know them for what they are
   for (const c of W.craft) { if (c.kind !== 'shuttle') continue; const v = new THREE.Vector3(c.x, 0, c.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.strokeStyle = CC.caution; g.lineWidth = 2; g.beginPath(); g.arc(px, py, 9, 0, 2 * P); g.stroke();
-    g.fillStyle = CC.caution; g.font = '600 14px Antonio'; g.textAlign = 'center'; g.fillText('SHUTTLE · DISGUISED', px, py - 16); }
+    g.fillStyle = CC.caution; g.font = FNT('600 14px Antonio'); g.textAlign = 'center'; g.fillText('SHUTTLE · DISGUISED', px, py - 16); }
   // your own hull under your ship ("and my ship health too")
   if (s.alive) { const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z < 1) hullBar((v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh + 74, s); }
   helmArc(vw, vh, s);
@@ -3599,15 +3651,15 @@ function uiView() {
   // The scene selector (owner, 2026-11-02: "I would like a scene selector"): the scene in play, and a list to pick from.
   { // a drop-down: the label, the scene in play, an arrow; the objective under it, green and marked once met
     const sx = vx + 236, sw = 230, st = hit('v.scene', sx, vy + 12, sw, 30, { click: () => { sceneOpen = !sceneOpen; }, tip: 'Pick a test scene' });
-    g.fillStyle = st.hot || sceneOpen ? CC.sky : CC.signal; g.beginPath(); g.roundRect(sx, vy + 12, sw, 30, 15); g.fill();
-    g.fillStyle = '#000'; g.font = '600 13px Antonio'; g.textAlign = 'left'; g.fillText('SCENE', sx + 14, vy + 32);
-    g.font = '700 17px Antonio'; g.fillText(SCENES[sceneId].name.toUpperCase(), sx + 62, vy + 33);
+    const sf = st.hot || sceneOpen ? CC.sky : CC.signal; g.fillStyle = sf; RR(g, sx, vy + 12, sw, 30, 15); g.fill();
+    g.fillStyle = INK(sf); g.font = FNT('600 13px Antonio'); g.textAlign = 'left'; g.fillText('SCENE', sx + 14, vy + 32);
+    g.font = FNT('700 17px Antonio'); g.fillText(SCENES[sceneId].name.toUpperCase(), sx + 62, vy + 33);
     g.beginPath(); const ax = sx + sw - 20, ay = vy + 27; if (sceneOpen) { g.moveTo(ax - 6, ay + 3); g.lineTo(ax + 6, ay + 3); g.lineTo(ax, ay - 4); } else { g.moveTo(ax - 6, ay - 3); g.lineTo(ax + 6, ay - 3); g.lineTo(ax, ay + 4); } g.closePath(); g.fill();
     const ob = SCENES[sceneId].objective; if (ob && !sceneOpen) rich(vx + 14, vy + 64, [[W.objDone ? 'COMPLETE · ' : 'OBJECTIVE · ', W.objDone ? CC.accord : CC.lilac], [ob.toUpperCase(), W.objDone ? CC.accord : CC.text]], '600 16px Antonio', vw * 0.62); }
   if (W.notice && W.t - W.notice.t < NOTICE.notice_s) { const n = W.notice, nw = Math.min(620, vw - 60), nx = vx + (vw - nw) / 2, ny = vy + 120;
-    g.font = '600 20px Antonio'; const words = n.text.toUpperCase().split(' '), lines = []; let cur = '';
+    g.font = FNT('600 20px Antonio'); const words = n.text.toUpperCase().split(' '), lines = []; let cur = '';
     for (const wd of words) { const tr = cur ? cur + ' ' + wd : wd; if (g.measureText(tr).width > nw - 40 && cur) { lines.push(cur); cur = wd; } else cur = tr; } if (cur) lines.push(cur);
-    const nh = 60 + lines.length * 26; g.fillStyle = 'rgba(0,0,0,0.88)'; g.beginPath(); g.roundRect(nx, ny, nw, nh, 12); g.fill(); g.strokeStyle = n.col; g.lineWidth = 3; g.stroke();
+    const nh = 60 + lines.length * 26; g.fillStyle = 'rgba(0,0,0,0.88)'; RR(g, nx, ny, nw, nh, 12); g.fill(); g.strokeStyle = n.col; g.lineWidth = 3; g.stroke();
     text(n.title.toUpperCase(), nx + nw / 2, ny + 38, '700 30px Antonio', n.col, 'center', nw - 40, '2px');
     lines.forEach((l, i) => text(l, nx + nw / 2, ny + 68 + i * 26, '600 20px Antonio', CC.text, 'center', nw - 40, '0.5px')); }
   if (paused) LBL('Paused · orders still taken', vx + vw / 2, vy + 40, 0, CC.caution, 'center', 28);
@@ -3630,8 +3682,8 @@ function uiView() {
     // the X that releases the target
     const xs0 = bx + ir[2] - 34;
     { const xs = xs0, ys = by + 14, st = hit('v.untarget', xs, ys, 24, 24, { click: A.unlock, tip: 'Release target' });
-      g.fillStyle = st.hot ? CC.alert : CC.signal; g.beginPath(); g.arc(xs + 12, ys + 12, 12, 0, 2 * P); g.fill();
-      g.strokeStyle = '#000'; g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 7, ys + 7); g.lineTo(xs + 17, ys + 17); g.moveTo(xs + 17, ys + 7); g.lineTo(xs + 7, ys + 17); g.stroke(); }
+      const xf = st.hot ? CC.alert : CC.signal; g.fillStyle = xf; KNOB(g, xs + 12, ys + 12, 12); g.fill();
+      g.strokeStyle = INK(xf); g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 7, ys + 7); g.lineTo(xs + 17, ys + 17); g.moveTo(xs + 17, ys + 7); g.lineTo(xs + 7, ys + 17); g.stroke(); }
     // who holds it (owner, 2026-11-02: "in target window need to show which faction emblem is controlling, and show
     // their numbers vs mine"): the holder's emblem by the X, and the tug of war along the bottom
     factionEmblem(holder(t), xs0 - 20, by + 26, 13); hit('v.holder', xs0 - 34, by + 12, 28, 28, { tip: `Held by ${FACTION[holder(t)].name}` });
@@ -3644,20 +3696,20 @@ function uiView() {
     button('v.tview', bx, by + ir[3] + 6, hw5, 30, 'Target view', A.targetView, { sel: () => camTargetView, center: true });
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
-  LBL('Mockup 2 · Battle console · Concord · v65', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL(LABEL, vx + vw - 104, vy + vh - 20, 0, CC.ver, 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
     hit('v.log.off', vx, vy, vw, vh, { click: () => { logOpen = false; } });
     const lx = vx + 14, ly = vy + 50, lw = Math.min(1040, vw - 28), rows = Math.max(4, Math.floor((vh - 180) / 26)), list = W.log.slice(-rows).reverse(), lh = 44 + Math.max(1, list.length) * 26;
     hit('v.log.box', lx, ly, lw, lh, {});
-    g.fillStyle = 'rgba(0,0,0,0.9)'; g.beginPath(); g.roundRect(lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
+    g.fillStyle = 'rgba(0,0,0,0.9)'; RR(g, lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
     LBL(`Event log · ${W.log.length} message${W.log.length === 1 ? '' : 's'}`, lx + 16, ly + 26, lw - 60, CC.sky, 'left', 16);
     // the X that closes it (owner, 2026-11-03: "expanded event log should have a little X to close the panel"); the log
     // opens only from Comms ("just one place is good enough")
     { const xs = lx + lw - 34, ys = ly + 8, st = hit('v.log.x', xs, ys, 26, 26, { click: () => { logOpen = false; }, tip: 'Close' });
-      g.fillStyle = st.hot ? CC.alert : CC.signal; g.beginPath(); g.arc(xs + 13, ys + 13, 13, 0, 2 * P); g.fill();
-      g.strokeStyle = '#000'; g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 8, ys + 8); g.lineTo(xs + 18, ys + 18); g.moveTo(xs + 18, ys + 8); g.lineTo(xs + 8, ys + 18); g.stroke(); }
+      const xf = st.hot ? CC.alert : CC.signal; g.fillStyle = xf; KNOB(g, xs + 13, ys + 13, 13); g.fill();
+      g.strokeStyle = INK(xf); g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 8, ys + 8); g.lineTo(xs + 18, ys + 18); g.moveTo(xs + 18, ys + 8); g.lineTo(xs + 8, ys + 18); g.stroke(); }
     if (!list.length) LBL('Nothing yet', lx + 16, ly + 56, lw - 32);
     list.forEach((q, i) => rich(lx + 16, ly + 56 + i * 26, [[`${mmss(q.t)}  ${q.who}: `, q.warn ? CC.caution : CC.lilac], [q.text, q.warn ? CC.caution : CC.text]], '600 18px Antonio', lw - 32));
   }
@@ -3665,7 +3717,7 @@ function uiView() {
     // a click anywhere else closes the list
     hit('v.scene.off', vx, vy, vw, vh, { click: () => { sceneOpen = false; } });
     const list = Object.entries(SCENES), lx = vx + 236, ly = vy + 48, lw = 230;
-    g.fillStyle = 'rgba(0,0,0,0.85)'; g.beginPath(); g.roundRect(lx - 6, ly - 6, lw + 12, list.length * 38 + 8, 10); g.fill();
+    g.fillStyle = 'rgba(0,0,0,0.85)'; RR(g, lx - 6, ly - 6, lw + 12, list.length * 38 + 8, 10); g.fill();
     list.forEach(([k, v], i) => button(`v.scene.${k}`, lx, ly + i * 38, lw, 32, v.name, () => { sceneOpen = false; A.scene(k); }, { sel: () => k === sceneId, center: true }));
   }
 }
@@ -3705,31 +3757,45 @@ function uiTip() {
   }
   if (typeof h.tip === 'object') { // a card: the name, then rows of label and value
     // as wide as its longest row needs (owner, 2026-11-02: "this box can be bigger to add more text"), 230 at least
-    g.font = '600 18px Antonio'; const vw2 = Math.max(0, ...h.tip.rows.map(([l, v]) => (g.measureText(String(v)).width + g.measureText(String(l).toUpperCase()).width) * 1.15 + 60));
+    g.font = FNT('600 18px Antonio'); const vw2 = Math.max(0, ...h.tip.rows.map(([l, v]) => (g.measureText(String(v)).width + g.measureText(String(l).toUpperCase()).width) * 1.15 + 60));
     const rows = h.tip.rows, w = clamp(Math.max(230, vw2, g.measureText(String(h.tip.title).toUpperCase()).width * 1.12 + 44), 230, 460), ht = 40 + rows.length * 24, x = clamp(h.x + h.w / 2 - w / 2, 4, RW - w - 4), y = h.y - ht - 8 > 4 ? h.y - ht - 8 : h.y + h.h + 8;
     g.fillStyle = '#000'; g.fillRect(x + 2, y + 2, w - 4, ht - 4); nine('frame.inset', x, y, w, ht);
     TXT(h.tip.title, x + 14, y + 27, w - 28, CC.sky, 'left', 18);
     rows.forEach(([l, v, col], i) => { LBL(l, x + 14, y + 52 + i * 24); NUM(v, x + w - 14, y + 53 + i * 24, 0, col || CC.text, 'right', 18); });
     return;
   }
-  g.font = '600 17px Antonio'; g.letterSpacing = '0.8px'; const tw = g.measureText(h.tip.toUpperCase()).width + 28; g.letterSpacing = '0px';
+  g.font = FNT('600 17px Antonio'); g.letterSpacing = '0.8px'; const tw = g.measureText(h.tip.toUpperCase()).width + 28; g.letterSpacing = '0px';
   const x = clamp(h.x + h.w / 2 - tw / 2, 4, RW - tw - 4), y = Math.max(4, h.y - 36);
-  nine('button.pressed', x, y, tw, 30); text(h.tip.toUpperCase(), x + tw / 2, y + 21, '600 17px Antonio', '#000', 'center', 0, '0.8px');
+  nine('button.pressed', x, y, tw, 30); text(h.tip.toUpperCase(), x + tw / 2, y + 21, '600 17px Antonio', KINK.pressed, 'center', 0, '0.8px');
 }
 function drawUI() {
   g.setTransform(DPR * S, 0, 0, DPR * S, 0, 0); g.clearRect(0, 0, RW, RH); g.lineCap = 'round'; g.lineJoin = 'round';
   HITS = [];
   if (!expanded) {
     // the column's black, so the 3D view never shows through it
-    g.fillStyle = '#000'; g.fillRect(0, 0, 480, RH);
+    g.fillStyle = CC.bg; g.fillRect(0, 0, 480, RH); if (KIT.nine['console.column']) nine('console.column', 0, 0, 480, RH);
     uiTop(O.top); uiBottom(O.bottom); uiPlate(O.plate);
     uiStation(O.station, false); uiShip(O.ship, false); uiWeapons(O.weapons, false); uiRadarRow(O.radarRow);
+    joins([O.plate, O.station, O.ship, O.weapons, O.radarRow]);
   } else {
-    g.fillStyle = '#000'; g.fillRect(0, 0, VIEW[0], RH);
+    g.fillStyle = CC.bg; g.fillRect(0, 0, VIEW[0], RH); if (KIT.nine['console.column']) nine('console.column', 0, 0, VIEW[0], RH);
     const r = O[expanded]; ({ station: uiStation, ship: uiShip, weapons: uiWeapons, radar: uiMap })[expanded](r, true);
   }
   uiView(); uiSheet(); uiTip();
   PREV = HITS;
+}
+// A kit with clamps (the Krai's, rendered; owner, 2026-11-03: "The UI panels should be somewhat connected like they are
+// part of the same console") bolts each panel to the next across the gap, on the left half, clear of the titles at the
+// top rail's right end, and braces the column's spine to the top and bottom strips with a gusset.
+function joins(rects) {
+  if (!KIT.hero['join.bridge']) return;
+  const rs = rects.filter(Boolean).slice().sort((a, b) => a[1] - b[1]);
+  for (let i = 0; i + 1 < rs.length; i++) {
+    const a = rs[i], b = rs[i + 1], gap = b[1] - (a[1] + a[3]); if (gap > 20) continue;
+    const l = Math.max(a[0], b[0]), r = Math.min(a[0] + a[2], b[0] + b[2]), gy = a[1] + a[3] + gap / 2;
+    for (const f of [0.14, 0.4]) heroImg('join.bridge', Math.round(l + (r - l) * f - 26), Math.round(gy - 12), 52, 24);
+  }
+  if (KIT.hero['join.gusset']) { heroImg('join.gusset', 458, 10, 34, 36); g.save(); g.translate(458, RH - 10); g.scale(1, -1); g.drawImage(KIT.hero['join.gusset'], 0, 0, 34, 36); g.restore(); }
 }
 function render(dt) {
   follow(dt); camLockStep(dt); controls.update();
@@ -3758,6 +3824,8 @@ function frame(now) {
 // A boarding party for the scripted shots: marines first, a medic among them, the specialists last.
 const queueParty = () => { for (const r of ['marines', 'marines', 'marines', 'medics', 'marines', 'marines', 'marines', 'marines', 'marines', 'hackers', 'engineers', 'pilots', 'engineers', 'pilots']) A.queueRole('capture', r); };
 function scripted(steps, then, sc = 'battle') {
+  // each shot from a clean console: no explosion, scene list, log or hover left over from the shot before
+  explosionsStep(60); sceneOpen = false; logOpen = false; HOT = null;
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(qPage, { capture: 0, hit: 0 });
   newWorld(sc); W.player.target = SCENES[sc].target; camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
@@ -3845,10 +3913,17 @@ window.MOCKUP_INFO = () => lastInfo;
 // The rectangles the console registered last frame, for headless checks (no overlaps, sizes).
 window.MOCKUP_HITS = () => PREV.map(({ id, x, y, w, h }) => ({ id, x, y, w, h }));
 window.MOCKUP_PLAY = () => { frozen = false; };
+// For tools/mockups/skin_parity.mjs: the console's own state, a press on a control by its id (as a click at its centre,
+// or a drag to it), and one console frame drawn now, so a check can work every control in every skin.
+window.MOCKUP_SKIN = SKIN_ID;
+window.MOCKUP_UI = () => ({ station, shipTab, expanded, powerMode, paused, menuOpen, trTab, sceneId, sceneOpen, logOpen, placingMine, placingHet, showShields, showTargetCam, camLock, raidSys, raidKind, raidMount, raidMountOpen, focus, fleetPick });
+window.MOCKUP_PRESS = (id, button = 0) => { const h = PREV.find((q) => q.id === id); if (!h) return false; const cx = h.x + h.w / 2, cy = h.y + h.h / 2;
+  if (h.click) h.click(cx, cy, button); else if (h.drag) { h.drag(cx, cy, true); h.drag(cx, cy, false); } else return false; return true; };
+window.MOCKUP_DRAW = () => drawUI();
 
-document.fonts.load('600 20px Antonio').then(() => document.fonts.load('700 20px Antonio')).catch(() => {}).then(() => {
+Promise.all(CON.fonts.map((f) => document.fonts.load(f))).catch(() => {}).then(() => CON.load()).then(() => {
   buildKit(); newWorld();
-  const home = el('a', '', 'All Fleet Command mockups (the tracker)'); home.id = 'home'; home.href = 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu'; home.target = '_blank';
+  const home = el('a', '', 'All Fleet Command mockups (the tracker)'); home.id = 'home'; home.href = 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu'; home.target = '_blank'; css(home, `color:${CON.link};font-family:${CON.family};`);
   root.append(renderer.domElement, ui, home);
   wireInput(); wireView(); layout();
   addEventListener('resize', layout);

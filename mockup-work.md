@@ -26,6 +26,7 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
+| 6 | Battle console: Krai Warhost | Drafted (2026-11-03, v1; not yet published) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | to come (the desktop session publishes) |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -332,3 +333,24 @@ with charred edges. It is the first part of mockup 3 (look dev), for one faction
 
 Design: `openspec/changes/concord-ship-look/` and `openspec/changes/ship-damage-visuals/`.
 
+## 6. Battle console: Krai Warhost
+
+Owner, 2026-11-01, of the battle console: "the first design system we will implement will be the concord, we will then
+reuse this design once it has been fully approved across all other factions, and each faction's implementation will be
+manually verified such that all of it is functional and readable". Then, 2026-11-03: "Krai Warhost - start work on
+mocking up gameplay with this UI now", and "verify all functionality from concord works here".
+
+- The battle console of mockup 2, played in the Krai Warhost skin of mockup 4: the same page source, every rule, panel
+  and control unchanged, written for the Krai by `tools/mockups/skin_page.py`. The Krai kit rendered in Blender, its
+  palette, type (Teko and Russo One), blade-cut drawn keys, the full icon subject list in its language, and the player's
+  side named as the Warhost (Kharz, Vekk, Ruhn).
+- Verified by `tools/mockups/skin_parity.mjs`: every control of every one of the 40 named shots pressed in both skins
+  (2,175 presses of 270 controls), the console and the battle identical a second later, press for press.
+- On version 1 (2026-11-03): "Labels on the krai UI need better integration. They should have a metallic background. The
+  UI panels should be somewhat connected like they are part of the same console", then "Cool but you didn't render the
+  stitching elements in blender like you are supposed to". Every label and panel title now sits on a metal placard, the
+  column is one cast backplate with a spine of red light, steel clamps bolt each panel to the next and gussets brace the
+  column to the strips, all rendered in Blender (`tools/blender/build_ui_krai.py`) from fit-checked shapes, with the
+  allocation cells.
+
+Design: `openspec/changes/krai-battle-console/`.

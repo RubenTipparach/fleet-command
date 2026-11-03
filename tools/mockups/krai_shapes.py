@@ -153,6 +153,26 @@ def pieces():
     # The crest (original): a falling blade of red light in a steel triangle, two enamel fangs beside it.
     add("crest", "hero", (96, 96), soft(Polygon([(48, 3), (93, 89), (3, 89)]), 3.6), [("red", soft(Polygon([(41, 33), (55, 33), (48, 76)]), 3.6))],
         inlays=[Polygon([(25, 62), (33, 62), (31, 80)]), Polygon([(63, 62), (71, 62), (65, 80)])], dz=-6.0)
+    # ---- The battle console's own pieces (openspec/changes/krai-battle-console). The owner, 2026-11-03: "Labels on the
+    # krai UI need better integration. They should have a metallic background. The UI panels should be somewhat
+    # connected like they are part of the same console", then "you didn't render the stitching elements in blender".
+    # Placards: a label struck on a plate of the same cast steel, a red pip glowing at its head; a panel's title on a
+    # longer placard set into the frame's top rail, an enamel blade along its foot. The text is drawn live on the metal.
+    add("plate.label", "nine", (64, 18), soft(cut(0.5, 0.5, 63.5, 17.5, 5), 1.0), [("red", soft(Polygon([(4.5, 5.5), (9.5, 9), (4.5, 12.5)]), 0.5))],
+        margins=(0, 8, 0, 12), stretch="x", roll=0.8, land=0.6, dz=-1.5, pad=0.5)
+    add("plate.title", "nine", (140, 24), soft(cut(0.5, 0.5, 139.5, 23.5, 7), 2.0), [("red", soft(Polygon([(8, 7), (15, 12), (8, 17)]), 0.6))],
+        inlays=[box(24, 19.4, 116, 20.8)], margins=(0, 24, 0, 24), stretch="x", roll=1.2, land=1.0, dz=-2.0, pad=0.5)
+    # The column: one cast slab every panel is bolted to, a channel of red light down its spine where it meets the
+    # battle, honed pyramids pinning the spine. Its edges and corners are in the margins; the face stretches.
+    spine = soft(box(462, 40, 468, 1040), 1.5)
+    add("console.column", "nine", (480, 1080), soft(box(0.5, 0.5, 479.5, 1079.5), 3.0), [("red", spine)],
+        studs=[(465, y, 2.4) for y in (18, 1062)], margins=(36, 36, 36, 36), stretch="xy", dz=-3.0)
+    # Clamps: a steel bridge across the gap between two stacked panels, a seam of red light in it, a pyramid at each
+    # end; and a gusset bracing the column's spine to the top and bottom strips.
+    add("join.bridge", "hero", (52, 24), soft(cut(0.5, 0.5, 51.5, 23.5, 6), 2.0), [("red", soft(box(15, 9.5, 37, 14.5), 1.0))],
+        studs=[(7.5, 12, 2.2), (44.5, 12, 2.2)], roll=1.6, land=1.6, dz=-3.0, pad=1.0)
+    add("join.gusset", "hero", (34, 36), soft(Polygon([(0.5, 0.5), (33.5, 0.5), (33.5, 35.5), (16, 35.5), (0.5, 20)]), 2.0),
+        [("red", soft(Polygon([(18, 7), (27.5, 7), (27.5, 22)]), 1.0))], studs=[(8.5, 8, 2.2)], roll=1.6, land=1.6, dz=-3.0, pad=1.0)
     return P
 
 
