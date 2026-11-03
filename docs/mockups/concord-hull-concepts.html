@@ -1057,7 +1057,7 @@ function buildShip(id, liv, offset = V3()) {
   // pieces are made below (fracture()) and shown only when it comes apart.
   const hullP = piece('hull', V3(0, 0, (zMax + zMin) / 2), 'life'); hullP.intact = true;
   ship.dmgU.uSecC.value.set(zMin, zMax, 0);
-  const TPP = C.glb ? { tern_hull: { ...ppHull, winOn: false }, screen: { mode: 0, decks: C.decks, pane: true }, // its own panes, with rooms by the parallax trick (no modelled interiors) tern_nacelle: { mode: 2 }, tern_rim: { mode: 3 }, accent: { mode: 4 }, hazard: { mode: 5 } } : null;
+  const TPP = C.glb ? { tern_hull: { ...ppHull, winOn: false }, screen: { mode: 0, decks: C.decks, pane: true }, tern_nacelle: { mode: 2 }, tern_rim: { mode: 3 }, accent: { mode: 4 }, hazard: { mode: 5 } } : null;
   const ternGlow = (k) => (k === 'light_panel' ? glowMat(0xff6a1f, 0x3a1a08) : k === 'screen_glow' ? glowMat(0x2fb8ff, 0x0d1830) : null);
   if (C.glb) { // the Tern's own hull, every part painted by the page's shader
     const geos = [];
