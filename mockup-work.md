@@ -73,7 +73,9 @@ weapons, radar, the strips and the stand-in battle) is in `src/`, with stills in
 stage for this mockup still needs updating from the desktop session (cloud sessions do not publish).
 
 Version 66 (2026-11-03; owner: "Pause menu should have a background"): the menu sheet has a solid background inside its
-frame, in the mockup and the game alike. Committed from the cloud session; the desktop session publishes it.
+frame, in the mockup and the game alike. Then (owner: "Re move shield view toggle"): the Shield view key is gone and the 3D
+shield display is always shown; the Target key (show or hide the Target box) moves to the corner. Committed from the cloud
+session; the desktop session publishes it.
 
 Owner, 2026-10-30. Ship systems on the left.
 

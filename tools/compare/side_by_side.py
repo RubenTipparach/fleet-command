@@ -27,7 +27,7 @@ def main(mock_dir: Path, game_dir: Path, out_dir: Path) -> None:
         sheet.paste(a, (0, 60))
         sheet.paste(b, (980, 60))
         d = ImageDraw.Draw(sheet)
-        d.text((10, 12), f"MOCKUP v65 (three.js): {mock}", font=font, fill=(183, 166, 242))
+        d.text((10, 12), f"MOCKUP (three.js): {mock}", font=font, fill=(183, 166, 242))
         d.text((990, 12), f"GAME (Godot 4.7 C#): {game}", font=font, fill=(63, 169, 240))
         sheet.save(out_dir / f"{game}.png")
         print("sheet", out_dir / f"{game}.png")

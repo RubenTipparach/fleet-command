@@ -3594,11 +3594,11 @@ function uiView() {
   helmArc(vw, vh, s);
   g.restore();
   if (expanded) { LBL('Live · tap to return', vx + vw / 2, vy + 28, 0, CC.sky, 'center', 18); return; }
-  button('v.shields', vx + 14, vy + 12, 120, 30, 'Shield view', () => { showShields = !showShields; }, { sel: () => showShields, center: true });
-  button('v.target', vx + 140, vy + 12, 90, 30, 'Target', () => { showTargetCam = !showTargetCam; }, { sel: () => showTargetCam, center: true });
+  // no Shield view key (owner, 2026-11-03: "Re move shield view toggle"): the 3D shield display is always shown
+  button('v.target', vx + 14, vy + 12, 90, 30, 'Target', () => { showTargetCam = !showTargetCam; }, { sel: () => showTargetCam, center: true });
   // The scene selector (owner, 2026-11-02: "I would like a scene selector"): the scene in play, and a list to pick from.
   { // a drop-down: the label, the scene in play, an arrow; the objective under it, green and marked once met
-    const sx = vx + 236, sw = 230, st = hit('v.scene', sx, vy + 12, sw, 30, { click: () => { sceneOpen = !sceneOpen; }, tip: 'Pick a test scene' });
+    const sx = vx + 110, sw = 230, st = hit('v.scene', sx, vy + 12, sw, 30, { click: () => { sceneOpen = !sceneOpen; }, tip: 'Pick a test scene' });
     g.fillStyle = st.hot || sceneOpen ? CC.sky : CC.signal; g.beginPath(); g.roundRect(sx, vy + 12, sw, 30, 15); g.fill();
     g.fillStyle = '#000'; g.font = '600 13px Antonio'; g.textAlign = 'left'; g.fillText('SCENE', sx + 14, vy + 32);
     g.font = '700 17px Antonio'; g.fillText(SCENES[sceneId].name.toUpperCase(), sx + 62, vy + 33);
@@ -3664,7 +3664,7 @@ function uiView() {
   if (sceneOpen) {
     // a click anywhere else closes the list
     hit('v.scene.off', vx, vy, vw, vh, { click: () => { sceneOpen = false; } });
-    const list = Object.entries(SCENES), lx = vx + 236, ly = vy + 48, lw = 230;
+    const list = Object.entries(SCENES), lx = vx + 110, ly = vy + 48, lw = 230;
     g.fillStyle = 'rgba(0,0,0,0.85)'; g.beginPath(); g.roundRect(lx - 6, ly - 6, lw + 12, list.length * 38 + 8, 10); g.fill();
     list.forEach(([k, v], i) => button(`v.scene.${k}`, lx, ly + i * 38, lw, 32, v.name, () => { sceneOpen = false; A.scene(k); }, { sel: () => k === sceneId, center: true }));
   }

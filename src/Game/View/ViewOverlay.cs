@@ -132,7 +132,7 @@ public sealed partial class ViewOverlay : Control
     }
 
     // Over the 3D view, after the mockup's uiView (v65): markers and names, the locked target's bracket and hull, your
-    // own hull, the helm ring, the 3D shield display, the Shield view and Target keys, the objective, the readout and the
+    // own hull, the helm ring, the 3D shield display, the Target key, the objective, the readout and the
     // last message bottom left, and the Target box.
     private void DrawView()
     {
@@ -142,7 +142,8 @@ public sealed partial class ViewOverlay : Control
         Ship? t = b.TargetOf(me);
         var view = new Rect2(Vector2.Zero, Size);
 
-        if (_x.State.ShowShields) ShieldHex(me);
+        // the 3D shield display is always shown (owner, 2026-11-03: "Re move shield view toggle")
+        ShieldHex(me);
 
         // the helm ring and the turn still to make
         bool ringHot = _steering || (!_leftDown && !_rightDown && ShipAt(_mouse) == null && NearRing(_mouse));
@@ -216,8 +217,7 @@ public sealed partial class ViewOverlay : Control
 
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
-        Key("v.shields", new Rect2(14, 12, 120, 30), "Shield view", () => _x.State.ShowShields = !_x.State.ShowShields, _x.State.ShowShields);
-        Key("v.target", new Rect2(140, 12, 90, 30), "Target", () => _x.State.ShowTarget = !_x.State.ShowTarget, _x.State.ShowTarget);
+        Key("v.target", new Rect2(14, 12, 90, 30), "Target", () => _x.State.ShowTarget = !_x.State.ShowTarget, _x.State.ShowTarget, "Show or hide the Target box");
         f.DrawRich(this, new[] { ("Objective · ", C.Lilac), (b.Data.Skirmish.Objective, C.Text) }, 14, 64, 16, Size.X * 0.62f);
         if (_x.State.Paused) f.Draw(this, "PAUSED · ORDERS STILL TAKEN", Size.X / 2, 40, 28, C.Caution, HorizontalAlignment.Center, 0, 600, 1);
         if (_x.State.PlacingHet) f.Draw(this, "CLICK WHERE TO TURN", Size.X / 2, 74, 20, C.Lilac, HorizontalAlignment.Center, 0, 600, 1);
@@ -255,9 +255,9 @@ public sealed partial class ViewOverlay : Control
     }
 
     /// <summary>A pill key over the view, lit when on.</summary>
-    private void Key(string id, Rect2 r, string label, Action click, bool on)
+    private void Key(string id, Rect2 r, string label, Action click, bool on, string? tip = null)
     {
-        HitState st = _ui.Reg(id, r, _ => click());
+        HitState st = _ui.Reg(id, r, _ => click(), null, tip != null ? new Tip(tip) : null);
         _x.Kit.Piece(this, st.Down || on ? "button.pressed" : st.Hot ? "button.hover" : "button.idle", r);
         _x.Fonts.Draw(this, label.ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + 6, 17, Colors.Black, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
     }

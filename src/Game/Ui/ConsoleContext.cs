@@ -17,8 +17,8 @@ public sealed class ConsoleState
     public bool MenuOpen;
     /// <summary>The helm's free-angle high energy turn is waiting for a click in the view.</summary>
     public bool PlacingHet;
-    /// <summary>The view's toggles: the 3D shield display and the Target box.</summary>
-    public bool ShowShields = true, ShowTarget = true;
+    /// <summary>The view's Target key: shows or hides the Target box (the locked target's systems display).</summary>
+    public bool ShowTarget = true;
 }
 
 public sealed class ConsoleContext
