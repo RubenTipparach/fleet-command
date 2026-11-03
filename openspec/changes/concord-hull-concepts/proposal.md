@@ -13,22 +13,25 @@ raider (`openspec/changes/ship-exteriors/`, `data/ships/exteriors.json`, `data/s
 in `docs/screenshots/exteriors-*`). The Concord's ships are built as members of that family.
 
 Then, on v2 while it was being built: "try some vertically aligned pulons too, i thnkn those from sfc was interesting
-- 1 pylon vertical, 2 pulons vertical".
+- 1 pylon vertical, 2 pulons vertical". And on v3: "swift having 1 below would be better, petrel having 1 above and
+below", "albatross is a bid long, I would prefer it to have like a secondary hull where pulons extend outr of", then
+"instead of opptions. please just apply the variants for both petrel and swift and include horizontal aligned ones aas
+well".
 
 ## What Changes
 
 - Version 1's three directions are withdrawn.
 - **The Concord line, in the Tern family** (mockup 6, v2, `docs/mockups/concord-hull-concepts.html`):
-  - **Swift-class corvette** (51 m): the Osprey's proportions, a broad command body forward, a narrow spine aft,
-    nacelles slung low.
+  - **Swift-class corvette** (51 m): the Osprey's proportions, a broad command body forward, a narrow spine aft.
   - **Petrel-class frigate** (88 m): the Tern's proportions at the Concord's colours.
-  - **Albatross-class cruiser** (131 m): the family at cruiser size, four decks, two nacelle pairs.
+  - **Albatross-class cruiser** (112 m): a shorter primary hull with a secondary hull under it on a neck; the nacelle
+    pylons sweep out of the secondary hull.
   - **The SCS Tern itself**, drawn from its own data at true scale, as the yardstick.
-- Three pylon arrangements on every Concord class: **Level** (the family's own), **One upright** (one nacelle on the
-  centreline above the hull on one vertical pylon) and **Two upright** (a nacelle pair above the hull on two vertical
-  pylons), after the owner's note on the reference game's ships.
+- The Swift and the Petrel each shown as three ships, one per nacelle layout: **one below** (one nacelle under the
+  centreline on an upright pylon), **above and below** (one over, one under) and **level** (the family's pair on level
+  swept pylons). The line-up shows all eight at true scale.
 - Four liveries: Concord (ours) and the Tern's Copper, Cyan and Rescue for comparison.
-- Survey A11 (pylons) and A12 (sizes) rewritten for v2.
+- Survey A11 (which layout each class keeps) and A12 (sizes).
 
 ## Impact
 

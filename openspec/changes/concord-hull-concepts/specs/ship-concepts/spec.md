@@ -18,16 +18,16 @@ A window SHALL be placed only along a class's lived-in length, 1.5 m above a dec
 
 ### Requirement: Nacelles stand clear of the hull
 
-Every nacelle SHALL be held on a pylon with daylight between it and the hull, in every pylon arrangement (level, one upright, two upright), and the page SHALL show the measured daylight.
+Every nacelle SHALL be held on a pylon with at least 3.0 m of daylight between it and every hull along its whole length, in every layout (one below, above and below, level), and the page SHALL show the measured daylight.
 
-#### Scenario: An upright nacelle
-- **WHEN** a class is shown with one upright pylon
-- **THEN** its nacelle's underside is at least 3.0 m above the highest hull point beneath it
+#### Scenario: A nacelle under the hull
+- **WHEN** the Swift is shown with one nacelle below
+- **THEN** the nacelle's top is at least 3.0 m below the lowest hull point above it
 
-### Requirement: A class is counted by its nacelles
+### Requirement: The cruiser's pylons come out of a secondary hull
 
-A larger Concord class SHALL carry more nacelles in pairs or the same count, never thicker nacelles than its shape rule gives.
+The Albatross SHALL be two hulls, a primary hull holding the decks and a secondary hull under it joined by a neck, and its nacelle pylons SHALL root in the secondary hull.
 
-#### Scenario: Corvette to cruiser
-- **WHEN** the corvette, frigate and cruiser stand side by side in the level arrangement
-- **THEN** the corvette and frigate carry two nacelles and the cruiser four
+#### Scenario: Where the pylons start
+- **WHEN** the Albatross is built
+- **THEN** each pylon's root lies inside the secondary hull's beam and its tip at the nacelle

@@ -97,7 +97,6 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-o
   <div class="scroll">
     <section class="tab" id="pane-ships">
       <div class="grp"><h2>Ship</h2><div class="row" id="shipRow"></div><p class="tell" id="tellText"></p></div>
-      <div class="grp"><h2>Pylons</h2><div class="row" id="pylonRow"></div></div>
       <div class="grp"><h2>Livery</h2><div class="row" id="liveryRow"></div></div>
       <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
       <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
@@ -105,7 +104,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-o
     </section>
     <section class="tab notes" id="pane-notes" hidden>
       <h3>At 40 pixels</h3>
-      <p>Each ship from above and from the side, as a silhouette, at 40 px and 100 px. The family reads as a faceted hull with two long nacelles held off it on level pylons.</p>
+      <p>Each ship from above and from the side, as a silhouette, at 40 px. The family reads as a faceted hull with long nacelles held clear of it on pylons.</p>
       <div class="sil" id="sil"></div>
       <h3>What every ship takes from the Tern</h3>
       <ul>
@@ -119,7 +118,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-o
       <ul>
         <li>The livery: Concord sky blue stripes, dark seams either side (the Tern's other liveries are one tap away for comparison).</li>
         <li>A raised command block on every class, glazed at the front, so the bridge is always the first thing you find.</li>
-        <li>A class is counted by its nacelles: the corvette and frigate carry one pair, the cruiser two (a level pair and a ventral pair).</li>
+        <li>Nacelles on upright pylons under the hull, or one over and one under, as well as the family's level pair: each Swift and Petrel is shown all three ways.</li>
+        <li>The cruiser in two hulls: a secondary hull under the primary, on a neck, with the nacelle pylons sweeping out of it.</li>
         <li>Bird names, as the Tern family has: Swift, Petrel, Albatross.</li>
       </ul>
       <p>The Tern itself is drawn from its own data at Star Crew revision 95a49b2, as the yardstick for the family.</p>
@@ -141,7 +141,7 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const DECKS = [3.5, 0, -3.5];
 const SHIPS = {
   swift: {
-    label: 'Swift', name: 'CNS SWIFT', reg: 'CC-031', cls: 'Swift-class corvette', tell: 'A broad command body forward, a narrow spine aft and one pair of nacelles slung low beneath it, the Osprey\'s proportions.',
+    label: 'Swift', name: 'CNS SWIFT', reg: 'CC-031', cls: 'Swift-class corvette', tell: 'A broad command body forward and a narrow spine aft, the Osprey\'s proportions.',
     stations: [[25, 2.6, 2.4, -1.6, 0.8], [21, 5.8, 3.9, -2.6, 1.2], [13, 8.0, 4.6, -3.0, 1.3], [3, 7.6, 4.5, -3.0, 1.3], [-5, 4.4, 3.6, -2.6, 1.0], [-20, 4.0, 3.3, -2.4, 0.9], [-25, 3.2, 2.5, -1.9, 0.7]],
     decks: [0], live: [[-2, 20]], band: [-0.9, 0.0], channels: [2.6], stripes: [8.5, -12],
     command: { z: [19, 7], hb: 4.2, top: 6.4, ch: 0.8 },
@@ -150,7 +150,7 @@ const SHIPS = {
     radiators: [[-11, 1.4, 5.0]], turrets: [[0, 14, 'top'], [0, 4, 'bottom']], bells: { z: -25, y: 0.3, x: 1.4, r: 0.9 },
   },
   petrel: {
-    label: 'Petrel', name: 'CNS PETREL', reg: 'CC-117', cls: 'Petrel-class frigate', tell: 'The Tern\'s own build at the Concord\'s colours: a short broad bow, three decks of windows and a nacelle pair on level pylons at the waist.',
+    label: 'Petrel', name: 'CNS PETREL', reg: 'CC-117', cls: 'Petrel-class frigate', tell: 'The Tern\'s own build at the Concord\'s colours: a short broad bow and three decks of windows.',
     stations: [[43, 4.2, 3.6, -2.6, 1.2], [38, 7.6, 6.2, -4.0, 1.6], [30, 10.0, 7.4, -5.0, 1.8], [14, 11.6, 7.6, -5.4, 1.8], [-6, 12.0, 7.8, -5.6, 2.2], [-24, 11.4, 7.8, -5.6, 2.2], [-36, 9.6, 7.0, -4.8, 2.0], [-43, 7.6, 5.4, -3.4, 1.6]],
     decks: DECKS, live: [[-8, 30]], band: [-0.65, 0.35], channels: [5.0], stripes: [21, -2, -28],
     command: { z: [33, 15], hb: 6.2, top: 10.2, ch: 1.2 },
@@ -159,13 +159,16 @@ const SHIPS = {
     radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 9, 'top'], [6.2, -14, 'top'], [-6.2, -14, 'top'], [0, 10, 'bottom']], bells: { z: -43, y: 1.0, x: 3.2, r: 1.6 },
   },
   albatross: {
-    label: 'Albatross', name: 'CNS ALBATROSS', reg: 'CC-002', cls: 'Albatross-class cruiser', tell: 'The family at cruiser size: a deeper hull, four decks of windows and two nacelle pairs, one level at the waist and one ventral.',
-    stations: [[64, 5.2, 4.4, -3.2, 1.4], [58, 9.6, 7.6, -5.0, 2.0], [46, 13.6, 9.4, -6.6, 2.4], [20, 15.6, 10.0, -7.4, 2.6], [-10, 16.0, 10.2, -7.6, 2.8], [-38, 15.0, 10.0, -7.4, 2.8], [-54, 12.4, 8.6, -6.0, 2.4], [-64, 9.6, 6.6, -4.4, 2.0]],
-    decks: [7.0, 3.5, 0, -3.5], live: [[-20, 50]], band: [-0.65, 0.35], channels: [4.0, 9.0], stripes: [38, 8, -20, -46],
-    command: { z: [48, 24], hb: 8.0, top: 13.2, ch: 1.4 },
-    pylons: [{ root: [14, 1.5, -24], tip: [27, 1.5, -36], rc: 22, tc: 13, t: 1.6 }, { root: [10, -6, -16], tip: [19, -13, -24], rc: 18, tc: 10, t: 1.4 }],
-    nacelles: [{ x: 27, y: 1.5, z: -26, len: 76, hw: 3.0, hh: 2.9 }, { x: 19, y: -13, z: -20, len: 56, hw: 2.4, hh: 2.3 }],
-    radiators: [[-44, 6.5, 12], [-44, 0, 12], [-44, -6.5, 12]], turrets: [[0, 14, 'top'], [9, -6, 'top'], [-9, -6, 'top'], [9, 8, 'bottom'], [-9, 8, 'bottom'], [0, -30, 'bottom']], bells: { z: -64, y: 1.0, x: 4.4, r: 2.2 },
+    label: 'Albatross', name: 'CNS ALBATROSS', reg: 'CC-002', cls: 'Albatross-class cruiser', tell: 'The family at cruiser size, in two hulls: a shorter primary hull with four decks of windows, and a secondary hull beneath it on a neck, its pylons swept out and up to a nacelle pair at the primary hull\'s waist.',
+    stations: [[50, 5.2, 4.4, -3.2, 1.4], [44, 9.6, 7.6, -5.0, 2.0], [34, 13.6, 9.4, -6.6, 2.4], [14, 15.6, 10.0, -7.4, 2.6], [-8, 16.0, 10.2, -7.6, 2.8], [-24, 14.4, 9.6, -7.0, 2.6], [-34, 11.0, 7.8, -5.4, 2.2]],
+    decks: [7.0, 3.5, 0, -3.5], live: [[-20, 38]], band: [-0.65, 0.35], channels: [4.0, 9.0], stripes: [28, 4, -18],
+    command: { z: [36, 16], hb: 8.0, top: 13.2, ch: 1.4 },
+    // The secondary hull: stations in the same [z, half beam, top, bottom, chamfer] form, at their own height; the neck joins the two.
+    secondary: { stations: [[-6, 4.0, -11.0, -17.0, 1.2], [-12, 7.0, -10.4, -20.4, 1.8], [-30, 7.6, -10.4, -21.0, 2.0], [-48, 7.0, -10.8, -20.4, 1.8], [-58, 5.0, -12.0, -19.0, 1.4]],
+      band: [-16.3, -15.3], channels: [2.6], stripes: [-40], neck: { z: [-10, -14, -28, -32], hb: [2.4, 4.0, 4.0, 2.8], top: -6.0, bottom: -11.5 } },
+    pylons: [{ root: [6.5, -15.0, -30], tip: [24, -4.0, -38], rc: 18, tc: 11, t: 1.5 }],
+    nacelles: [{ x: 24, y: -4.0, z: -30, len: 64, hw: 2.8, hh: 2.7 }],
+    radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 12, 'top'], [9, -6, 'top'], [-9, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
   },
   // Star Crew's SCS Tern, from its own data (star-crew-bridge-simulator 95a49b2: data/ships/tern/layout.json hull.sections,
   // data/ships/exteriors.json ships[tern] pylon, nacelle and service_band). The yardstick for the family; not a Concord ship.
@@ -178,7 +181,18 @@ const SHIPS = {
     radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 8, 'top'], [0, 4, 'bottom']], bells: { z: -42, y: 1.0, x: 3.0, r: 1.5 },
   },
 };
-const ORDER = ['swift', 'petrel', 'albatross', 'tern'];
+// Nacelle variants (owner, 2026-11-03: "swift having 1 below would be better, petrel having 1 above and below", then "instead of
+// opptions. please just apply the variants for both petrel and swift and include horizontal aligned ones aas well"):
+// each of the Swift and the Petrel as its own ship three ways. One below: one nacelle on the centreline under the hull on an
+// upright pylon. Above and below: one over and one under. Level: the family's nacelle pair on level swept pylons.
+const VARIANTS = [
+  ['swift_below', 'swift', 'below1', 'Swift, one below'], ['swift_updown', 'swift', 'updown', 'Swift, above and below'], ['swift_level', 'swift', 'level', 'Swift, level'],
+  ['petrel_updown', 'petrel', 'updown', 'Petrel, above and below'], ['petrel_below', 'petrel', 'below1', 'Petrel, one below'], ['petrel_level', 'petrel', 'level', 'Petrel, level'],
+  ['albatross', 'albatross', 'level', 'Albatross'], ['tern', 'tern', 'level', 'Tern (Star Crew)'],
+];
+const MODE_NAMES = { level: 'Level pair', below1: 'One below', updown: 'One above, one below' };
+for (const [id, base, mode, label] of VARIANTS) SHIPS[id] = { ...SHIPS[base], label, mode, base, tell: SHIPS[base].tell + (base === 'swift' || base === 'petrel' ? ' Nacelles: ' + MODE_NAMES[mode].toLowerCase() + '.' : '') };
+const ORDER = VARIANTS.map((v) => v[0]);
 // Liveries: Concord is ours; Copper, Cyan and Rescue are the Tern's (exteriors.json liveries), for comparison.
 const LIVERIES = {
   concord: { label: 'Concord', stripe: [0.10, 0.40, 0.86], seam: [0.04, 0.08, 0.22] },
@@ -341,49 +355,45 @@ function regTex(name, reg) {
   const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
 }
 function makeLabel(text, col) {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 96; const x = c.getContext('2d');
-  x.font = '600 52px Antonio, "Arial Narrow", sans-serif'; x.fillStyle = col; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text.toUpperCase(), 256, 50);
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 96; const x = c.getContext('2d');
+  x.font = '600 52px Antonio, "Arial Narrow", sans-serif'; x.fillStyle = col; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text.toUpperCase(), 512, 50, 1010);
   const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
   return new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true }));
 }
 
-// Pylon arrangements (owner, 2026-11-03: "try some vertically aligned pylons too ... 1 pylon vertical, 2 pylons vertical").
-// level: the data's own pylons. up1: one nacelle on the centreline above the hull on one upright pylon. up2: a nacelle
-// pair held above the hull on two upright pylons. A second (ventral) pair goes under the centreline on one upright
-// pylon in up1 and stays level in up2. The first nacelle's size and station are kept in every arrangement.
-const GAP_UP = 3.0; // metres of daylight between hull top and an upright nacelle
-const PYLON_MODES = { level: 'Level', up1: 'One upright', up2: 'Two upright' };
+// Nacelle arrangements. level: the data's own pylons and nacelles. below1: one nacelle on the centreline under the hull on one
+// upright pylon. updown: one over the hull and one under it, each on an upright pylon. The class's first nacelle keeps its
+// size and station in every arrangement; GAP_UP is the daylight to the nearest hull along the nacelle's whole length.
+const GAP_UP = 3.0; // metres
+const hullsOf = (S) => [S.stations].concat(S.secondary ? [S.secondary.stations] : []);
+function alongNacelle(S, n, fn) { // fn(station) over every hull station the nacelle passes, reduced to [max top, min bottom]
+  let top = -Infinity, bot = Infinity;
+  for (const st of hullsOf(S)) { const zMax = Math.max(...st.map((q) => q[0])), zMin = Math.min(...st.map((q) => q[0]));
+    for (let z = Math.max(zMin, n.z - n.len / 2); z <= Math.min(zMax, n.z + n.len / 2); z += 0.5) { const h = hullAt(st, z); top = Math.max(top, h[2]); bot = Math.min(bot, h[3]); } }
+  return { top, bot };
+}
 function arrange(S, mode) {
   if (mode === 'level') return { pylons: S.pylons, nacelles: S.nacelles };
-  const n0 = S.nacelles[0], p0 = S.pylons[0], pylons = [], nacelles = [];
+  const n0 = S.nacelles[0], p0 = S.pylons[0], pylons = [], nacelles = [], { top, bot } = alongNacelle(S, n0);
   const zs = [n0.z - n0.len * 0.15, n0.z - n0.len * 0.35]; // the pylon's root and tip stations, swept aft like the level ones
-  const topAt = (z) => hullAt(S.stations, z)[2], hbAt = (z) => hullAt(S.stations, z)[1];
-  const zMax = Math.max(...S.stations.map((q) => q[0])), zMin = Math.min(...S.stations.map((q) => q[0]));
-  const span = (n, fn) => { let v = -Infinity; for (let z = Math.max(zMin, n.z - n.len / 2); z <= Math.min(zMax, n.z + n.len / 2); z += 0.5) v = Math.max(v, fn(z)); return v; };
-  const y = span(n0, topAt) + GAP_UP + n0.hh;
-  if (mode === 'up1') {
-    nacelles.push({ ...n0, x: 0, y, single: true, over: true });
-    pylons.push({ root: [0, topAt(zs[0]) - 0.4, zs[0] + 3], tip: [0, y, zs[1]], rc: p0.rc, tc: p0.tc, t: p0.t, up: true, single: true });
-  } else {
-    const x = Math.max(hbAt(n0.z) * 0.62, n0.hw + 2.5), rx = x * 0.8;
-    const ry = hullAt(S.stations, zs[0]); const rootY = ry[2] - (rx > ry[1] - ry[4] ? (rx - (ry[1] - ry[4])) : 0) - 0.4;
-    nacelles.push({ ...n0, x, y, over: true });
-    pylons.push({ root: [rx, rootY, zs[0] + 3], tip: [x, y, zs[1]], rc: p0.rc, tc: p0.tc, t: p0.t, up: true });
-  }
-  if (S.nacelles[1]) {
-    const n1 = S.nacelles[1], p1 = S.pylons[1];
-    if (mode === 'up1') { const bot = -span(n1, (z) => -hullAt(S.stations, z)[3]), yb = bot - GAP_UP - n1.hh, z0 = n1.z - n1.len * 0.15;
-      nacelles.push({ ...n1, x: 0, y: yb, single: true, under: true });
-      pylons.push({ root: [0, hullAt(S.stations, z0)[3] + 0.4, z0 + 3], tip: [0, yb, n1.z - n1.len * 0.35], rc: p1.rc, tc: p1.tc, t: p1.t, up: true, single: true });
-    } else { nacelles.push(n1); pylons.push(p1); }
-  }
+  const at = hullAt(S.stations, zs[0]);
+  const upright = (y, rootY) => { nacelles.push({ ...n0, x: 0, y, single: true }); pylons.push({ root: [0, rootY, zs[0] + 3], tip: [0, y, zs[1]], rc: p0.rc, tc: p0.tc, t: p0.t, up: true, single: true }); };
+  if (mode === 'updown') upright(top + GAP_UP + n0.hh, at[2] - 0.4);
+  upright(bot - GAP_UP - n0.hh, at[3] + 0.4);
   return { pylons, nacelles };
 }
 
-function buildShip(id, liv, mode) {
-  const S = SHIPS[id], G = new THREE.Group(); G.userData.id = id;
+function buildShip(id, liv) {
+  const S = SHIPS[id], mode = S.mode || 'level', G = new THREE.Group(); G.userData.id = id;
   const hullMat = paintMat(0, S, liv), pyMat = paintMat(1, S, liv);
   G.add(new THREE.Mesh(hullGeo(S.stations), hullMat));
+  // A secondary hull, painted by the same rules at its own waterline, joined to the primary by a neck.
+  if (S.secondary) {
+    const D = S.secondary, P2 = { ...S, band: D.band, stripes: D.stripes, channels: D.channels };
+    G.add(new THREE.Mesh(hullGeo(D.stations), paintMat(0, P2, liv)));
+    const N = D.neck, rings = N.z.map((z, i) => octRing(z, N.hb[i], N.top, N.bottom, Math.min(1.2, N.hb[i] * 0.4)));
+    G.add(new THREE.Mesh(loft(rings, (m) => V3(0, (N.top + N.bottom) / 2, m.z)), paintMat(1, P2, liv)));
+  }
   // Command block: a raised octagonal deck forward, its front glazed.
   if (S.command) {
     const C = S.command, [z0, z1] = C.z, base = hullAt(S.stations, (z0 + z1) / 2)[2] - 0.6;
@@ -436,7 +446,7 @@ function buildShip(id, liv, mode) {
     T.position.set(x, y, z); G.add(T);
   }
   // Engine bells at the stern.
-  const B = S.bells, sz = Math.min(...S.stations.map((s) => s[0]));
+  const B = S.bells, sz = B.z !== undefined ? B.z : Math.min(...S.stations.map((s) => s[0]));
   for (const sd of [1, -1]) {
     const bell = new THREE.Mesh(new THREE.CylinderGeometry(B.r * 0.75, B.r, B.r * 1.2, 12, 1, true), darkMat); bell.rotation.x = PI / 2; bell.position.set(sd * B.x, B.y, sz - B.r * 0.55); G.add(bell);
     const gl = new THREE.Mesh(new THREE.CircleGeometry(B.r * 0.72, 12), bellMat); gl.rotation.y = PI; gl.position.set(sd * B.x, B.y, sz - 0.05); G.add(gl);
@@ -454,41 +464,44 @@ function buildShip(id, liv, mode) {
   G.traverse((o) => { if (o.isMesh) { const g = o.geometry, n = (g.index ? g.index.count : g.attributes.position.count) / 3; tris += o.isInstancedMesh ? n * o.count : n; } });
   const hb = Math.max(...S.stations.map((s) => s[1]));
   // Daylight: the least clearance between hull and any nacelle along its length: sideways, above or below, whichever is open.
-  const gap = Math.min(...A.nacelles.map((n) => { let g = Infinity; for (let z = n.z - n.len / 2; z <= n.z + n.len / 2; z += 1) { const h = hullAt(S.stations, z);
-    if (z > Math.max(...S.stations.map((q) => q[0])) || z < Math.min(...S.stations.map((q) => q[0]))) continue;
+  const gap = Math.min(...A.nacelles.map((n) => { let g = Infinity; for (const st of hullsOf(S)) for (let z = n.z - n.len / 2; z <= n.z + n.len / 2; z += 1) {
+    if (z > Math.max(...st.map((q) => q[0])) || z < Math.min(...st.map((q) => q[0]))) continue; const h = hullAt(st, z);
     g = Math.min(g, Math.max((n.y - n.hh) - h[2], h[3] - (n.y + n.hh), (Math.abs(n.x) - n.hw) - h[1])); } return g; }));
   G.userData.facts = { length: size.z, beam: size.x, height: size.y, hullBeam: hb * 2, gap, windows: wins.length, decks: S.decks.length, nacelles: A.nacelles.reduce((k, n) => k + (n.single ? 1 : 2), 0), tris: Math.round(tris), box };
   return G;
 }
 
 // State.
-let ship = 'petrel', livery = 'concord', mode = 'level', lineup = false, view = 'hero', showLabels = true, showFig = true;
+let ship = 'petrel_updown', livery = 'concord', lineup = false, view = 'hero', showLabels = true, showFig = true;
 const cache = {};
-const modeOf = (id) => (SHIPS[id].ref ? 'level' : mode);
-const get = (id, liv) => { const k = id + ':' + liv + ':' + modeOf(id); return cache[k] || (cache[k] = buildShip(id, liv, modeOf(id))); };
+const get = (id, liv) => cache[id + ':' + liv] || (cache[id + ':' + liv] = buildShip(id, liv));
 const world = new THREE.Group(); scene.add(world);
-const figure = (() => { const g = new THREE.Group(), m = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.3, 4, 8), new THREE.MeshStandardMaterial({ color: 0xffc94d, emissive: 0x553300 })); m.position.y = 0.87; g.add(m); const l = makeLabel('1.8 m', '#ffc94d'); l.scale.set(5, 0.95, 1); l.position.y = 3.2; g.add(l); return g; })();
+const figure = (() => { const g = new THREE.Group(), m = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.3, 4, 8), new THREE.MeshStandardMaterial({ color: 0xffc94d, emissive: 0x553300 })); m.position.y = 0.87; g.add(m); const l = makeLabel('1.8 m', '#ffc94d'); l.scale.set(10, 0.95, 1); l.position.y = 3.2; g.add(l); return g; })();
 const shipLiv = (id) => (SHIPS[id].ref && livery === 'concord' ? SHIPS[id].livery : livery);
 function show() {
   world.clear();
   const ids = lineup ? ORDER : [ship];
-  let x = 0;
-  ids.forEach((id, i) => {
-    const G = get(id, shipLiv(id)), f = G.userData.facts, wrap = new THREE.Group(); wrap.add(G);
-    if (lineup) { const w = f.beam; if (i) x += w / 2; wrap.position.x = -x; x += w / 2 + 14; }
-    if (showLabels) { const l = makeLabel(SHIPS[id].label + '  ' + f.length.toFixed(0) + ' m', SHIPS[id].ref ? '#f2a33a' : '#3fa9f0'); const ls = Math.max(18, f.length * 0.32); l.scale.set(ls, ls * 0.1875, 1); l.position.set(0, f.box.max.y + ls * 0.35, lineup ? f.box.min.z : 0); wrap.add(l); }
+  // The line-up is a grid at true scale: a row of Swifts, a row of Petrels, then the Albatross and the Tern; rows step aft.
+  const ROW = { swift: 0, petrel: 1, albatross: 2, tern: 2 }, rowX = [0, 0, 0], rowZ = [0, 0, 0], rowLen = [0, 0, 0];
+  for (const id of ids) rowLen[ROW[SHIPS[id].base]] = Math.max(rowLen[ROW[SHIPS[id].base]], get(id, shipLiv(id)).userData.facts.length);
+  for (let r = 1; r < 3; r++) rowZ[r] = rowZ[r - 1] - (rowLen[r - 1] + rowLen[r]) / 2 - 24;
+  ids.forEach((id) => {
+    const G = get(id, shipLiv(id)), f = G.userData.facts, wrap = new THREE.Group(), r = ROW[SHIPS[id].base]; wrap.add(G);
+    if (lineup) { const w = f.beam; if (rowX[r]) rowX[r] += w / 2; wrap.position.set(-rowX[r], 0, rowZ[r]); rowX[r] += w / 2 + 16; }
+    if (showLabels) { const l = makeLabel(SHIPS[id].label + '  ' + f.length.toFixed(0) + ' m', SHIPS[id].ref ? '#f2a33a' : '#3fa9f0'); const ls = lineup ? Math.max(18, f.beam * 0.5) : Math.max(18, f.length * 0.32); l.scale.set(ls * 2, ls * 0.1875, 1); l.position.set(0, f.box.max.y + ls * 0.3, lineup ? f.box.max.z + 6 : 0); wrap.add(l); }
     world.add(wrap);
   });
-  if (lineup) { const b = new THREE.Box3().setFromObject(world), c = b.getCenter(V3()); world.children.forEach((w) => (w.position.x -= c.x)); }
+  if (lineup) for (let r = 0; r < 3; r++) { const row = world.children.filter((w) => ROW[SHIPS[w.children[0].userData.id].base] === r); if (!row.length) continue;
+    const b = new THREE.Box3(); row.forEach((w) => b.expandByObject(w.children[0])); const cx = b.getCenter(V3()).x; row.forEach((w) => (w.position.x -= cx)); }
   if (showFig) { const f = get(ids[0], shipLiv(ids[0])).userData.facts; figure.position.set(lineup ? 0 : f.box.max.x + 4, f.box.min.y - 0.5, lineup ? f.box.max.z + 10 : 20); world.add(figure); }
   refreshFacts(); refreshButtons();
   $('status').textContent = lineup ? 'The line at true scale' : SHIPS[ship].name + ', ' + SHIPS[ship].cls;
-  $('tellText').textContent = lineup ? 'Swift, Petrel and Albatross beside Star Crew\'s Tern, at true scale.' : SHIPS[ship].tell;
+  $('tellText').textContent = lineup ? 'Every Swift and Petrel variant and the Albatross, beside Star Crew\'s Tern, at true scale.' : SHIPS[ship].tell;
 }
 function refreshFacts() {
   const f = get(ship, shipLiv(ship)).userData.facts, d = $('facts'); d.innerHTML = '';
   const rows = [['Length', f.length.toFixed(1) + ' m'], ['Span over nacelles', f.beam.toFixed(1) + ' m'], ['Height', f.height.toFixed(1) + ' m'], ['Hull beam', f.hullBeam.toFixed(1) + ' m'],
-    ['Daylight, hull to nacelle', f.gap.toFixed(1) + ' m'], ['Pylons', PYLON_MODES[modeOf(ship)]], ['Decks with windows', String(f.decks)], ['Windows', String(f.windows)], ['Nacelles', String(f.nacelles)], ['Triangles', f.tris.toLocaleString()]];
+    ['Daylight, hull to nacelle', f.gap.toFixed(1) + ' m'], ['Nacelles on', MODE_NAMES[SHIPS[ship].mode]], ['Decks with windows', String(f.decks)], ['Windows', String(f.windows)], ['Nacelles', String(f.nacelles)], ['Triangles', f.tris.toLocaleString()]];
   for (const [k, v] of rows) { const t = document.createElement('dt'), u = document.createElement('dd'); t.textContent = k; u.textContent = v; d.append(t, u); }
 }
 function frame(dist, dir, target) { dist *= Math.max(1, 1.15 / camera.aspect); const t = target || V3(); camera.position.copy(t).add(dir.clone().normalize().multiplyScalar(dist)); controls.target.copy(t); controls.update(); }
@@ -531,12 +544,11 @@ function btn(row, text, on, key) { const b = document.createElement('button'); b
 for (const id of ORDER) btn('shipRow', SHIPS[id].label, () => { ship = id; lineup = false; show(); setView(view); }, 's:' + id);
 btn('shipRow', 'Line-up', () => { lineup = true; show(); setView(view === 'detail' ? 'hero' : view); }, 'lineup');
 for (const [k, L] of Object.entries(LIVERIES)) btn('liveryRow', L.label, () => { livery = k; show(); }, 'l:' + k);
-for (const [k, l] of Object.entries(PYLON_MODES)) btn('pylonRow', l, () => { mode = k; show(); setView(view); }, 'p:' + k);
 for (const [k, v] of Object.entries(VIEWS)) btn('viewRow', v.label, () => setView(k), 'v:' + k);
 btn('showRow', 'Labels', () => { showLabels = !showLabels; show(); }, 'labels');
 btn('showRow', '1.8 m figure', () => { showFig = !showFig; show(); }, 'fig');
 function refreshButtons() {
-  const on = { ['s:' + ship]: !lineup, lineup, ['l:' + livery]: 1, ['p:' + mode]: 1, ['v:' + view]: 1, labels: showLabels, fig: showFig };
+  const on = { ['s:' + ship]: !lineup, lineup, ['l:' + livery]: 1, ['v:' + view]: 1, labels: showLabels, fig: showFig };
   document.querySelectorAll('button[data-key]').forEach((b) => b.setAttribute('aria-pressed', on[b.dataset.key] ? 'true' : 'false'));
 }
 function showTab(t) { for (const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'); for (const k of ['ships', 'notes']) $('pane-' + k).hidden = k !== t; }
@@ -552,14 +564,14 @@ show(); resize(); setView('hero'); silhouettes();
 $('tip').textContent = 'Tern (Star Crew) is the yardstick, from its own data. Livery switches the stripe.';
 const meter = $('meter');
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws`; });
-function shot(s, v, opts = {}) { return () => { ship = s; lineup = !!opts.lineup; livery = opts.livery || 'concord'; mode = opts.mode || 'level'; showLabels = opts.labels !== false; showTab(opts.tab || 'ships'); show(); resize(); setView(v); }; }
+function shot(s, v, opts = {}) { return () => { ship = s; lineup = !!opts.lineup; livery = opts.livery || 'concord';  showLabels = opts.labels !== false; showTab(opts.tab || 'ships'); show(); resize(); setView(v); }; }
 window.MOCKUP_SHOTS = {
-  petrel_hero: shot('petrel', 'hero'), petrel_top: shot('petrel', 'top'), petrel_side: shot('petrel', 'side'), petrel_bow: shot('petrel', 'detail'), petrel_stern: shot('petrel', 'stern'),
-  swift_hero: shot('swift', 'hero'), albatross_hero: shot('albatross', 'hero'), albatross_side: shot('albatross', 'side'),
-  tern_hero: shot('tern', 'hero'), lineup_hero: shot('petrel', 'hero', { lineup: true }), lineup_top: shot('petrel', 'top', { lineup: true }),
-  petrel_up1: shot('petrel', 'hero', { mode: 'up1' }), petrel_up2: shot('petrel', 'hero', { mode: 'up2' }), petrel_up2_front: shot('petrel', 'front', { mode: 'up2' }), petrel_up1_side: shot('petrel', 'side', { mode: 'up1' }),
-  albatross_up1: shot('albatross', 'hero', { mode: 'up1' }), albatross_up2: shot('albatross', 'hero', { mode: 'up2' }), swift_up2: shot('swift', 'hero', { mode: 'up2' }), lineup_up2: shot('petrel', 'hero', { lineup: true, mode: 'up2' }),
-  petrel_copper: shot('petrel', 'hero', { livery: 'copper' }), silhouettes: shot('petrel', 'hero', { tab: 'notes' }),
+  petrel_updown: shot('petrel_updown', 'hero'), petrel_updown_side: shot('petrel_updown', 'side'), petrel_updown_front: shot('petrel_updown', 'front'),
+  petrel_below: shot('petrel_below', 'hero'), petrel_level: shot('petrel_level', 'hero'), petrel_top: shot('petrel_level', 'top'), petrel_bow: shot('petrel_level', 'detail'), petrel_stern: shot('petrel_updown', 'stern'),
+  swift_below: shot('swift_below', 'hero'), swift_below_side: shot('swift_below', 'side'), swift_updown: shot('swift_updown', 'hero'), swift_level: shot('swift_level', 'hero'),
+  albatross_hero: shot('albatross', 'hero'), albatross_side: shot('albatross', 'side'), albatross_stern: shot('albatross', 'stern'),
+  tern_hero: shot('tern', 'hero'), lineup_hero: shot('petrel_updown', 'hero', { lineup: true }), lineup_top: shot('petrel_updown', 'top', { lineup: true }),
+  petrel_copper: shot('petrel_updown', 'hero', { livery: 'copper' }), silhouettes: shot('petrel_updown', 'hero', { tab: 'notes' }),
 };
 window.MOCKUP_SCENE = scene;
 window.MOCKUP_READY = true;

@@ -172,15 +172,15 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
-  { tag: 'A', name: 'The Concord line (mockup 6, version 2)',
-    lead: 'You said the first concepts did not fit your Star Crew ships at all. Version 2 of mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships as members of the Tern\'s family from Star Crew Bridge Simulator: the same octagonal lofted hull, white armour over a grey service band, copper-rimmed windows on decks, long nacelles on pylons. The Tern itself stands beside them from its own data. Try the Pylons row: Level, One upright, Two upright.',
+  { tag: 'A', name: 'The Concord line (mockup 6)',
+    lead: 'Mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships in your Tern\'s family from Star Crew Bridge Simulator. Version 4 applies your notes: the Swift and the Petrel each as three ships (one nacelle below, one above and one below, and the level pair), and the Albatross shortened to 112 m with a secondary hull its pylons sweep out of. Open Line-up to see all eight at true scale beside the Tern.',
     qs: [
-      { id: 'A11', q: 'Which pylons for the Concord? Level: a nacelle pair on level swept pylons at the waist, as the Tern has. One upright: one nacelle on the centreline above the hull on one vertical pylon. Two upright: a nacelle pair above the hull on two vertical pylons.',
-        options: ['Per class: corvette one upright, frigate level, cruiser two upright over a level ventral pair', 'Level on every class (the Tern family\'s own)', 'One upright on every class', 'Two upright on every class', 'Different (say which in the notes)'], rec: 0,
-        why: 'The family stays the Tern\'s (the frigate is level, like the Tern), and the pylons then name the class at a glance: one nacelle up is the small ship, two up over two below is the big one.' },
-      { id: 'A12', q: 'Concord sizes: corvette 51 m, frigate 88 m, cruiser 131 m, beside the Tern at 86 m?',
-        options: ['Yes, as built', 'Bigger: a cruiser of about 200 m', 'Smaller (say in the notes)'], rec: 0,
-        why: 'The frigate then stands beside your Tern at its size, so its decks, windows and a 1.8 m figure read the same way.' },
+      { id: 'A11', q: 'Which nacelle layout does each class keep? Swift: one below, above and below, or level. Petrel: the same three. The Albatross keeps its secondary hull and level pair.',
+        options: ['Your picks: Swift one below, Petrel above and below', 'Both level (the Tern family\'s own)', 'Swift one below, Petrel level', 'Different (say which in the notes)'], rec: 0,
+        why: 'You picked these; the other layouts stay on the page beside them for comparison until you choose.' },
+      { id: 'A12', q: 'Concord sizes: corvette 51 m, frigate 88 m, cruiser 112 m (in two hulls), beside the Tern at 86 m?',
+        options: ['Yes, as built', 'Bigger cruiser (say how long in the notes)', 'Smaller (say in the notes)'], rec: 0,
+        why: 'The frigate then stands beside your Tern at its size, and the cruiser is long enough for four decks without reading as stretched.' },
     ] },
   { tag: 'A', name: 'Concord ships and damage (mockup 5)',
     lead: 'Mockup 5 (Concord Ships, https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4) shows the Bastion cruiser, the Lantern frigate and the Swift corvette at true scale, and how each subsystem shows its damage on the ship. Try the Damage tab: click the hull to fire, or use the scenarios. Your question was "how can I understand ship subsystem damage by looking at it?"; A2 to A6 answer it.',

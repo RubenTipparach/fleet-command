@@ -7,7 +7,8 @@
 - [x] 1.3 `docs/mockups/concord-hull-concepts.html` v2: Swift, Petrel, Albatross and the Tern at true scale, three pylon arrangements, four liveries, 40 px silhouettes, measured facts
 - [x] 1.4 Survey A11 (pylons) and A12 (sizes) rewritten
 - [x] 1.5 Named shots, looked at; `dom_fit.mjs` passes
-- [x] 1.6 Republished to the same link, recorded in `docs/artifacts/concord-hull-concepts/`, the tracker and `mockup-work.md`
+- [x] 1.6 v4: the Swift and Petrel as three ships each (one below, above and below, level), the Albatross shortened into two hulls
+- [x] 1.7 Republished to the same link, recorded in `docs/artifacts/concord-hull-concepts/`, the tracker and `mockup-work.md`
 
 ## 2. After approval for build
 

@@ -26,7 +26,7 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
-| 6 | Concord line (hull concepts) | Drafted (2026-11-03, v3: the Tern family; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 6 | Concord line (hull concepts) | Drafted (2026-11-03, v4: the Tern family; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -272,7 +272,13 @@ through stations, white armour over a grey subhull and service band, dorsal chan
 long octagonal nacelles on swept pylons, radiators, turrets, engine bells, painted registry): the Swift corvette (51 m),
 Petrel frigate (88 m) and Albatross cruiser (131 m), with the Tern itself from its own data as the yardstick. Three pylon
 arrangements on every Concord class (level, one upright, two upright), four liveries (Concord, and the Tern's Copper,
-Cyan, Rescue), measured facts and 40 px silhouettes. Survey A11 (pylons), A12 (sizes).
+Cyan, Rescue), measured facts and 40 px silhouettes. Survey A11 (layouts), A12 (sizes).
+
+Version 4, on the owner's notes ("swift having 1 below would be better, petrel having 1 above and below", "albatross is a
+bid long, I would prefer it to have like a secondary hull where pulons extend outr of", "instead of opptions. please just
+apply the variants for both petrel and swift and include horizontal aligned ones aas well"): the Swift and the Petrel each
+shown as three ships (one below, above and below, level), and the Albatross shortened to 112 m in two hulls, its nacelle
+pylons sweeping out of a secondary hull. The line-up is a grid of all eight at true scale.
 
 Design: `openspec/changes/concord-hull-concepts/`.
 

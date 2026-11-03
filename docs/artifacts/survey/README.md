@@ -17,3 +17,4 @@
 - 2026-11-02, cloud session (Concord ships thread): A10 added (the break-up direction) on top of the live version 15 (the battle console thread's B20-B22 kept); version 16, version id `1793592744-74a0`.
 - 2026-11-03, cloud session (Concord ships thread): A11-A12 (Concord hull concepts, mockup 6) added on top of the live version (the battle console thread's B20-B28 kept); version 22, version id `1793670409-fc66`.
 - 2026-11-03, cloud session (Concord ships thread): A11-A12 rewritten for mockup 6 version 2 (pylons, sizes), on top of the live version 22 (nothing newer); version 23, version id `1793689715-845c`.
+- 2026-11-03, cloud session (Concord ships thread): A11-A12 rewritten for mockup 6 version 4 (layouts per class, sizes), on top of the live version 23; version 24, version id `1793690341-74f5`.
