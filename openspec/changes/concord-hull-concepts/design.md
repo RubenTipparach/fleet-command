@@ -164,20 +164,24 @@ same way once and stays lit. Fire and the reactor's red warning pulse are not li
 ## The battleship and the carrier
 
 The owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", then "please make these somewhat
-different than the standard ship shape, carrier needs bays for fighters, battleship needs an array of cannons", "large
-cannons".
+different than the standard ship shape, carrier needs bays for fighters, battleship needs an array of cannons", and on the
+first build: "you overdid it with the battle cruiser, more subtle cannons, instead of long nozzles short nozzles, more
+geometric housing", with a heavy space-battleship turret as the reference shape; "battleship only has 4 main cannons, 2 on top
+and 2 on bottom, the remainder should be pdcs"; "the carrier doesnt need a landing pad, this is space", with a reference
+carrier: "it has doors on each side, its a diamond cross section, with the main ship crew area in front".
 
 | | Condor-class battleship | Pelican-class carrier |
 |---|---|---|
-| Length | 184 m | 132 m |
-| Shape | A long armoured hull round a tall citadel amidships | A catamaran: a narrow spine and two hangar pods 23 m out, joined by a flight deck |
-| Weapons | Five turrets of three 16 m cannons: three forward stepped up 0, 3.2 and 6.4 m so each fires over the one ahead, two aft facing aft; a sponson down each flank with five 9 m broadside cannons; point defence turrets | Point defence turrets on the pods |
-| Craft | none | Nine lit fighter bays down each pod's outer flank and a launch mouth at each pod's bow; ten fighters parked on the flight deck; a runway with a dashed centre line, threshold bars, chevrons and edge lights on the spine |
-| Nacelles | Two pairs: level at the waist, and ventral | One pair, slung under the pods on upright pylons |
-| Bridge | The citadel's roof | An island aft on the spine |
+| Length | 184 m | 128 m |
+| Shape | A long armoured hull round a tall citadel amidships | The crew hull forward, as the family's, and a long hangar hull of diamond cross section behind it |
+| Main guns | Four: two on the back, the second raised 3 m to fire over the first, and the same two mirrored under the keel. Each a low faceted gun house with a livery plate on its roof, angled cheek guards and two short stepped barrels, 5 m in all | none |
+| Point defence | Fifteen point-defence cannons along the top and bottom shoulders: a faceted ball on an octagonal base, twin short barrels | Five turrets |
+| Craft | none | Three numbered fighter bay doors down each side of the hangar hull, each lit inside and under its own lamp |
+| Nacelles | Two pairs: level at the waist, and ventral | One pair on level pylons from the hangar hull |
+| Bridge | The citadel's roof | A command block on the crew hull |
 
-Both are built by the same builder from station data; the carrier's pods are lofted hulls of their own, each a fracture
-body, so the carrier breaks up like the rest.
+The hangar hull's diamond is the station loft with a large chamfer (the chamfer may now reach the half beam less 0.3 m), which
+leaves a narrow vertical band at the waist where the doors sit.
 
 ## Cost
 
