@@ -26,6 +26,7 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
+| 6 | Concord hull concepts | Drafted (2026-11-03, v1) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -250,4 +251,20 @@ with charred edges. It is the first part of mockup 3 (look dev), for one faction
   by heavy hits, a tougher reactor, phasers that burn through, and light from every shot and blast, including the ship's own.
 
 Design: `openspec/changes/concord-ship-look/` and `openspec/changes/ship-damage-visuals/`.
+
+## 6. Concord hull concepts
+
+Owner, 2026-11-03, on mockup 5's ships: "ship designs suck, I want somethign more original ,check out star crew and
+adventure con repos for how ships are designed".
+
+From Star Crew (`federation-ship-concepts`, `grabon-ship-concepts`, `ship-exteriors`): ships designed inside out, zones
+first, a hull wrapped round them, then the two fitted; windows only on real rooms; three alternatives reviewed in three
+stages with measured checks. From Adventure (CLAUDE.md 13.2 and 13.2b, `mockups/fleet/`): one shape language per faction
+that reads at 40 px, the player's faction the one you can see through, classes counted by a repeated element.
+
+What the mockup shows: three original Concord directions (A Halo, B Lantern spine, C Light sail), each in three stages
+(zones, hull, fitted), as a corvette, frigate and cruiser, with measured length, beam, decks, zones in hull and windows,
+and 40 px silhouettes. Mockup 5's damage system takes the chosen direction once it is approved. Survey A11, A12.
+
+Design: `openspec/changes/concord-hull-concepts/`.
 

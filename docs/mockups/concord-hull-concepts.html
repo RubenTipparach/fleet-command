@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Concord Hull Concepts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Mockup 6 (OpenSpec change concord-hull-concepts, mockup-work.md): three original Concord ship directions, each built
+   inside out after Star Crew (zones first, a hull wrapped round them, then fitted) and given a faction tell after
+   Adventure (an opening you see the stars through, a class counted by a repeated element, read at 40 px).
+   Layout: the 3D view fills the screen; one panel of tabs down the left (a bottom sheet in portrait). One dark look,
+   the Concord's palette (console-skins design). */
+:root {
+  color-scheme: dark;
+  --bg: #000000; --panel: rgba(6, 10, 22, 0.92); --rule: #1b2a6b;
+  --ink: #eef3ff; --dim: #93a2c8; --faint: #5b6890;
+  --signal: #2f62e0; --sky: #3fa9f0; --lilac: #b7a6f2; --accord: #2fbf5a; --alert: #e8352b; --amber: #f2a33a;
+  --display: "Antonio", "Arial Narrow", sans-serif;
+  --body: "Barlow Semi Condensed", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --pw: 360px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.4 var(--body); overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+#panel { position: fixed; left: 0; top: 0; bottom: 0; width: var(--pw); z-index: 2; display: flex; flex-direction: column;
+  background: var(--panel); border-right: 2px solid var(--rule);
+  padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 14px; }
+#panel header { display: grid; gap: 4px; padding-bottom: 8px; }
+#panel h1 { margin: 0; font: 700 26px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
+#panel h1 span { color: var(--sky); }
+.master { color: var(--lilac); font-size: 13px; }
+.sub { margin: 0; color: var(--dim); font-size: 13px; }
+.sub code { font: 500 11px/1 var(--mono); color: var(--faint); }
+.tabs { display: flex; gap: 6px; padding-bottom: 8px; }
+.tabs button { flex: 1; min-height: 44px; border: 0; border-radius: 22px; background: var(--rule); color: var(--dim);
+  font: 600 16px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.tabs button[aria-selected="true"] { background: var(--signal); color: var(--ink); }
+.scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 4px; }
+.tab { display: grid; gap: 14px; padding-bottom: 12px; }
+.grp { display: grid; gap: 6px; }
+.grp h2 { margin: 0; font: 600 14px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--lilac); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.row button { min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--rule); border-radius: 22px;
+  background: transparent; color: var(--ink); font: 500 14px/1 var(--body); }
+.row button[aria-pressed="true"] { background: var(--signal); border-color: var(--signal); }
+.row button:hover { border-color: var(--sky); }
+.tell { margin: 0; color: var(--ink); font-size: 14px; }
+.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; margin: 0; font-size: 13px; }
+.facts dt { color: var(--dim); }
+.facts dd { margin: 0; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--dim); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.notes { display: grid; gap: 10px; font-size: 14px; }
+.notes h3 { margin: 0; font: 600 15px/1.1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--sky); }
+.notes p { margin: 0; color: var(--dim); }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: grid; gap: 4px; }
+.sil { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.sil figure { margin: 0; display: grid; gap: 4px; justify-items: center; text-align: center; }
+.sil figcaption { font-size: 12px; color: var(--dim); }
+.sil .pair { display: flex; gap: 6px; align-items: flex-end; }
+.sil canvas { background: #000; border: 1px solid var(--rule); image-rendering: pixelated; }
+#hud { position: fixed; z-index: 2; top: max(10px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: min(520px, calc(100vw - var(--pw) - 48px)); display: grid; gap: 4px; justify-items: end; pointer-events: none; text-align: right; }
+#status { font: 600 20px/1.15 var(--display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink); text-shadow: 0 0 6px #000; }
+#tip { font-size: 13px; color: var(--dim); text-shadow: 0 0 4px #000; }
+#meter { font: 500 11px/1 var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) { :root { --pw: 300px; } #panel h1 { font-size: 22px; } }
+@media (max-width: 900px) and (max-height: 500px) { .sub { display: none; } }
+@media (max-aspect-ratio: 3/4) {
+  #panel { top: auto; width: auto; right: 0; height: 50%; border-right: 0; border-top: 2px solid var(--rule);
+    padding-top: 10px; padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  #panel header { grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 10px; }
+  .sub { display: none; }
+  #hud { max-width: calc(100vw - 32px); }
+}
+</style>
+
+<div id="stage"></div>
+<aside id="panel" aria-label="Controls">
+  <header>
+    <h1>Hull <span>Concepts</span></h1>
+    <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+    <p class="sub">Mockup 6. <code>concord-hull-concepts</code>. Three Concord directions, built inside out. Drag to orbit, scroll or pinch to zoom.</p>
+  </header>
+  <div class="tabs" role="tablist">
+    <button id="tab-concepts" role="tab" aria-selected="true" data-tab="concepts">Concepts</button>
+    <button id="tab-notes" role="tab" aria-selected="false" data-tab="notes">Method</button>
+  </div>
+  <div class="scroll">
+    <section class="tab" id="pane-concepts">
+      <div class="grp"><h2>Direction</h2><div class="row" id="conceptRow"></div><p class="tell" id="tellText"></p></div>
+      <div class="grp"><h2>Stage</h2><div class="row" id="stageRow"></div></div>
+      <div class="grp"><h2>Class</h2><div class="row" id="classRow"></div></div>
+      <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
+      <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
+      <div class="grp"><h2>Measured</h2><dl class="facts" id="facts"></dl></div>
+      <div class="grp"><h2>Zones</h2><div class="legend" id="legend"></div></div>
+    </section>
+    <section class="tab notes" id="pane-notes" hidden>
+      <h3>At 40 pixels</h3>
+      <p>Each frigate from above and from the side, as a silhouette, at 40 px and at 100 px. The Concord's tell is an opening the stars show through.</p>
+      <div class="sil" id="sil"></div>
+      <h3>From Star Crew</h3>
+      <ul>
+        <li>Inside out: the zones first (rooms and spaces, each with a kind, a size and decks), then a hull wrapped round them with 0.7 m clearance, then the two fitted. The Fitted stage shows the zones through the hull.</li>
+        <li>Windows only where a room is: they are cast from inside crew, commons, medical and command zones to the hull, one row per 3.4 m deck.</li>
+        <li>Three alternatives, three stages, measured: the panel's Measured block checks that every zone lies inside its hull.</li>
+      </ul>
+      <h3>From Adventure</h3>
+      <ul>
+        <li>One shape language per faction, from how it thinks. The Concord decides by consent and houses every kind of body.</li>
+        <li>The player's faction has negative space: you can see through a Concord ship, and no rival will have a hole in it.</li>
+        <li>A class is counted, never fattened: rings, lantern pairs or sail pairs.</li>
+        <li>Measured, not intended: lengths and beams come off the built geometry.</li>
+      </ul>
+      <h3>The three directions</h3>
+      <ul>
+        <li><b>A, Halo.</b> The crew live in a ring you can see through, round a hub that holds the reactor, with the bridge raised on it at the centre of the circle. Drive pods hang outboard on short pylons.</li>
+        <li><b>B, Lantern spine.</b> An open lattice keel strung with lit habitat lanterns, each pair its own shape, for the bodies that live in it.</li>
+        <li><b>C, Light sail.</b> A slim keel between outboard booms, with glowing shield sails stretched between them.</li>
+      </ul>
+      <p>Take the shape, not the text: the method is from your two projects; the ships are the Concord's own.</p>
+    </section>
+  </div>
+</aside>
+<div id="hud"><div id="status"></div><div id="tip"></div><div id="meter"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/math/ConvexHull.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/geometries/ConvexGeometry.js"></script>
+<script>
+(async function () {
+'use strict';
+const PI = Math.PI, TAU = PI * 2, V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const DECK = 3.4, PAD = 0.7; // metres: one deck; hull clearance round every zone
+function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+// Zone kinds: what a space is for, and its colour on the page.
+const KIND = {
+  command: { col: '#2f62e0', label: 'Command' }, crew: { col: '#e6cc9a', label: 'Crew' }, commons: { col: '#b7a6f2', label: 'Commons' },
+  medical: { col: '#9fe0c0', label: 'Medical' }, machinery: { col: '#f2a33a', label: 'Machinery' }, weapons: { col: '#e8352b', label: 'Weapons' },
+  hangar: { col: '#7f9bb8', label: 'Hangar' }, corridor: { col: '#5b6890', label: 'Corridors' },
+};
+const LIVED = new Set(['command', 'crew', 'commons', 'medical']); // windows only where people are
+const CLASSES = ['Corvette', 'Frigate', 'Cruiser'];
+
+// ------------------------------------------------------------------------------------------------------------------
+// The three directions. Each generator returns zones (rooms and spaces, metres, +Z bow, +Y up, +X port), hull pieces
+// (each the convex wrap of its zones plus extra shape points) and uninhabited structure. Classes differ by count.
+const Z = (id, label, kind, c, s, yaw = 0) => ({ id, label, kind, c: V3(...c), s: V3(...s), yaw });
+
+function genHalo(cls) {
+  const R = [15, 26, 30][cls], segs = [16, 24, 24][cls], rings = cls === 2 ? 2 : 1, w = [6.5, 8, 8][cls], h = 2 * DECK;
+  const zones = [], hulls = [], parts = [];
+  const ringZ = rings === 1 ? [0] : [30, -36];
+  ringZ.forEach((z0, r) => {
+    const segL = TAU * R / segs * 1.02;
+    for (let i = 0; i < segs; i++) {
+      const a = i / segs * TAU, c = [Math.sin(a) * R, 0, Math.cos(a) * R + z0];
+      let kind = 'crew', label = 'Quarters';
+      if (i === 0 || i === segs / 2) { kind = 'corridor'; label = 'Junction'; }
+      else if (i === segs / 4) { kind = 'medical'; label = 'Medbay'; }
+      else if (i === 3 * segs / 4) { kind = 'commons'; label = 'Mess'; }
+      else if (r === 0 && i === 1) { kind = 'commons'; label = 'Council chamber'; }
+      else if (r === 0 && i === segs - 1) { kind = 'commons'; label = 'Arboretum'; }
+      const zz = Z(`r${r}s${i}`, label, kind, c, [w, h, segL], a + PI / 2); zones.push(zz); hulls.push({ zones: [zz.id] });
+      if (r === 0 && (i === 3 || i === segs - 3)) { const wz = Z(`r${r}w${i}`, 'Phaser battery', 'weapons', [c[0], h / 2 + 1.4, c[2]], [w * 0.5, 2.2, segL * 0.5], a + PI / 2); zones.push(wz); hulls.push({ zones: [wz.id] }); }
+    }
+    // The hub: reactor below, and on the first ring the bridge raised above it, at the centre of the circle.
+    const hub = Z(`hub${r}`, r === 0 ? 'Reactor' : 'Engineering', 'machinery', [0, 0, z0], [12, h, 12]); zones.push(hub); hulls.push({ zones: [hub.id] });
+    if (r === 0) { const br = Z('bridge', 'Bridge', 'command', [0, h / 2 + DECK / 2 + 0.4, z0], [10, DECK, 11]); zones.push(br); hulls.push({ zones: [br.id] }); }
+    for (const a of [PI / 4, 3 * PI / 4, 5 * PI / 4, 7 * PI / 4]) {
+      const L = R - w / 2 - 7, rr = 7 + L / 2, sp = Z(`sp${r}${a.toFixed(2)}`, 'Spoke', 'corridor', [Math.sin(a) * rr, 0, Math.cos(a) * rr + z0], [3, DECK, L], a);
+      zones.push(sp); hulls.push({ zones: [sp.id] });
+    }
+    for (const sgn of [1, -1]) { // the spine through the ring, hub to junction
+      const L = R - w / 2 - 6, sp = Z(`spn${r}${sgn}`, 'Spine corridor', 'corridor', [0, 0, z0 + sgn * (6 + L / 2)], [4, DECK, L]); zones.push(sp); hulls.push({ zones: [sp.id] });
+    }
+    // Drive pods outboard of the ring on short pylons, with daylight between pod and ring.
+    const pr = [2.6, 4, 4][cls], pl = [18, 38, 34][cls], px = R + w / 2 + 3 + pr;
+    for (const sx of [1, -1]) parts.push({ type: 'pod', at: V3(sx * px, 0, z0 - R * 0.25), len: pl, r: pr, pylon: [V3(sx * (R + w / 2 - 0.5), 0, z0 - R * 0.25), V3(sx * (px - pr + 0.3), 0, z0 - R * 0.25)] });
+  });
+  if (rings === 2) { const L = 36 - 30 + 30 + 36 - 2 * (R + w / 2) + 6; const c = Z('link', 'Spine corridor', 'corridor', [0, 0, (30 - 36) / 2], [4, DECK, Math.max(4, (30 - R - w / 2) - (-36 + R + w / 2) + 4)]); zones.push(c); hulls.push({ zones: [c.id] }); }
+  const fz = ringZ[0] + R + w / 2 - 1.5, az = ringZ[ringZ.length - 1] - R - w / 2 + 1.5, k = [0.55, 1, 1.15][cls];
+  const mag = Z('mag', 'Torpedo magazine', 'weapons', [0, 0, fz + 5 * k], [7 * k, h, 10 * k]);
+  const sen = Z('sensors', 'Sensors', 'command', [0, 0, fz + 15 * k], [6 * k, DECK, 10 * k]);
+  zones.push(mag, sen); hulls.push({ zones: ['mag', 'sensors'] });
+  const eng = Z('eng', 'Engineering', 'machinery', [0, 0, az - 7 * k], [9 * k, h, 14 * k]);
+  const hang = Z('hangar', 'Hangar', 'hangar', [0, -0.2, az - 22 * k], [14 * k, h, 16 * k]);
+  const drv = Z('drive', 'Drive', 'machinery', [0, 0, az - 33 * k], [10 * k, h, 6 * k]);
+  zones.push(eng, hang, drv); hulls.push({ zones: ['eng', 'hangar', 'drive'] });
+  parts.push({ type: 'dish', at: V3(0, 0, fz + 20 * k + 0.6), r: 3.6 * k });
+  parts.push({ type: 'bells', at: V3(0, 0, az - 36 * k), n: 2, r: 2.4 * k, span: 5 * k });
+  return { zones, hulls, parts };
+}
+
+function genSpine(cls) {
+  const L = [64, 120, 210][cls], pairs = [1, 2, 3][cls], zones = [], hulls = [], parts = [];
+  const z0 = -L / 2 + 14, z1 = L / 2 - 12, tw = 10, th = 8;
+  // The open lattice keel, and the pressurised corridor that runs inside it.
+  parts.push({ type: 'truss', z0, z1, w: tw, h: th, bay: 6 });
+  const cor = Z('keel', 'Keel corridor', 'corridor', [0, 0, (z0 + z1) / 2], [3.4, DECK, z1 - z0 - 2]); zones.push(cor); hulls.push({ zones: [cor.id] });
+  const br = Z('bridge', 'Bridge', 'command', [0, th / 2 + DECK / 2 + 0.8, z1 - 7], [11, DECK, 11]);
+  const sen = Z('sensors', 'Sensors', 'command', [0, 0, z1 + 4], [6, DECK, 8]);
+  const mag = Z('mag', 'Torpedo magazine', 'weapons', [0, -th / 2 - DECK / 2 - 0.8, z1 - 8], [8, DECK, 10]);
+  zones.push(br, sen, mag); hulls.push({ zones: [br.id] }, { zones: [sen.id], extra: [V3(0, 0, z1 + 11)] }, { zones: [mag.id] });
+  const rea = Z('reactor', 'Reactor', 'machinery', [0, 0, z0 + 10], [7, 2 * DECK, 14]);
+  const eng = Z('eng', 'Engineering', 'machinery', [0, th / 2 + DECK / 2 + 0.8, z0 + 10], [10, DECK, 14]);
+  const hang = Z('hangar', 'Hangar', 'hangar', [0, -th / 2 - DECK - 1, z0 + 10], [14, 2 * DECK, 18]);
+  zones.push(rea, eng, hang); hulls.push({ zones: [rea.id] }, { zones: [eng.id] }, { zones: [hang.id] });
+  parts.push({ type: 'bells', at: V3(0, 0, z0 - 4), n: 3, r: [2, 2.6, 3][cls], span: 6 });
+  parts.push({ type: 'fins', at: V3(0, 0, z0 + 2), len: 14, h: [8, 12, 14][cls] });
+  // Lantern pairs: each pair its own shape, for the bodies that live in it.
+  const shapes = ['sphere', 'hex', 'drum', 'octa'], span = (z1 - 22) - (z0 + 24);
+  for (let p = 0; p < pairs; p++) {
+    const z = z0 + 24 + (pairs === 1 ? span / 2 : span * p / (pairs - 1)), size = [6.5, 8, 9][cls] + (p % 2) * 1, shape = shapes[p % 4];
+    const kinds = p === 1 ? [['commons', 'Mess and commons'], ['medical', 'Medbay']] : [['crew', 'Quarters'], ['crew', 'Quarters']];
+    [1, -1].forEach((sx, k) => {
+      const cx = sx * (tw / 2 + 3 + size);
+      const lz = Z(`lan${p}${k}`, kinds[k][1], kinds[k][0], [cx, 0, z], [size * 1.05, 2 * DECK, size * 1.05]);
+      const arm = Z(`arm${p}${k}`, 'Arm', 'corridor', [sx * (tw / 2 + 1.5 + size * 0.15), 0, z], [3 + size * 0.3, DECK, 3]);
+      zones.push(lz, arm); hulls.push({ zones: [lz.id], shape, r: size, at: V3(cx, 0, z) }, { zones: [arm.id] });
+    });
+  }
+  return { zones, hulls, parts };
+}
+
+function genSail(cls) {
+  const L = [64, 120, 214][cls], k = L / 120, zones = [], hulls = [], parts = [];
+  const zf = L / 2 - 4, za = -L / 2 + 6;
+  const br = Z('bridge', 'Bridge', 'command', [0, DECK + 0.6, zf - 14 * k], [9 * k, DECK, 12 * k]);
+  const sen = Z('sensors', 'Sensors', 'command', [0, 0, zf - 4 * k], [6 * k, DECK, 8 * k]);
+  const mag = Z('mag', 'Torpedo magazine', 'weapons', [0, 0, zf - 16 * k], [8 * k, DECK, 10 * k]);
+  const qtr = Z('quarters', 'Quarters', 'crew', [0, 0, (zf - 22 * k + (-12 * k)) / 2], [14 * k, 2 * DECK, zf - 22 * k + 12 * k]);
+  const mess = Z('mess', 'Mess', 'commons', [0, DECK / 2, -18 * k], [14 * k, DECK, 10 * k]);
+  const med = Z('med', 'Medbay', 'medical', [0, -DECK / 2, -18 * k], [14 * k, DECK, 10 * k]);
+  const rea = Z('reactor', 'Reactor', 'machinery', [0, 0, -32 * k], [12 * k, 2 * DECK, 18 * k]);
+  const eng = Z('eng', 'Engineering', 'machinery', [0, 0, (za + -41 * k) / 2], [11 * k, 2 * DECK, Math.max(6, -41 * k - za)]);
+  const hang = Z('hangar', 'Hangar', 'hangar', [0, -2 * DECK - 0.4, -30 * k], [15 * k, 2 * DECK, 20 * k]);
+  zones.push(br, sen, mag, qtr, mess, med, rea, eng, hang);
+  hulls.push({ zones: ['sensors', 'mag', 'quarters', 'mess', 'med', 'reactor', 'eng'] }, { zones: ['bridge'] }, { zones: ['hangar'] });
+  const booms = cls === 2 ? [[24, 1], [40, 0.62]] : [[[16, 30][cls], 1]];
+  booms.forEach(([bx, f], b) => {
+    for (const sx of [1, -1]) {
+      const bz0 = za + 2, bz1 = za + L * 0.72 * f, r = [2, 3.2, 3.4][cls] * (b ? 0.8 : 1);
+      parts.push({ type: 'boom', x: sx * bx, z0: bz0, z1: bz1, r });
+      const inner = b === 0 ? 7.5 * k : booms[0][0] + 3.5;
+      parts.push({ type: 'sail', x0: sx * inner, x1: sx * (bx - r - 0.4), z0: bz0 + 6, z1: bz1 - 4 });
+      for (let i = 0; i < 3; i++) { const z = lerp(bz0 + 6, bz1 - 6, i / 2); parts.push({ type: 'rib', a: V3(sx * (inner - 1.5), 0, z), b: V3(sx * (bx - r * 0.6), 0, z) }); }
+    }
+  });
+  parts.push({ type: 'fins', at: V3(0, 2 * DECK - 1, -36 * k), len: 18 * k, h: 7 * k, single: true });
+  return { zones, hulls, parts };
+}
+const lerp = (a, b, t) => a + (b - a) * t;
+
+const CONCEPTS = {
+  halo: { label: 'A Halo', name: 'Halo', gen: genHalo, hull: '#e2e0da', accent: '#2f62e0',
+    tell: 'The crew live in a ring you can see through, round a hub with the bridge raised at its centre. Drive pods hang outboard. A class is counted in rings.' },
+  spine: { label: 'B Lantern spine', name: 'Lantern spine', gen: genSpine, hull: '#dcdad4', accent: '#2f62e0',
+    tell: 'An open lattice keel strung with lit habitat lanterns, each pair its own shape. A class is counted in lantern pairs.' },
+  sail: { label: 'C Light sail', name: 'Light sail', gen: genSail, hull: '#e4e2dc', accent: '#2f62e0',
+    tell: 'A slim keel between outboard booms, with glowing shield sails stretched between them. A class is counted in sail pairs.' },
+};
+
+// ------------------------------------------------------------------------------------------------------------------
+// Renderer and scene.
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+stage.append(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x000000);
+const camera = new THREE.PerspectiveCamera(40, 1, 0.3, 20000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement); controls.enableDamping = true;
+(function sky() {
+  const rng = mulberry(5), n = 4000, pos = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { const u = rng() * 2 - 1, a = rng() * TAU, s = Math.sqrt(1 - u * u); pos.set([Math.cos(a) * s * 9000, u * 9000, Math.sin(a) * s * 9000], i * 3); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xaab4cc, size: 1.4, sizeAttenuation: false })));
+})();
+(function env() {
+  const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide,
+    vertexShader: 'varying vec3 vD; void main(){ vD=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+    fragmentShader: 'varying vec3 vD; void main(){ float t=vD.y*0.5+0.5; vec3 c=mix(vec3(0.02,0.02,0.035), vec3(0.32,0.36,0.46), pow(t,1.6)); c += vec3(3.0,2.8,2.5)*pow(max(dot(vD, normalize(vec3(0.6,0.5,0.6))),0.),220.); gl_FragColor=vec4(c,1.); }' })));
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(s, 0.02).texture;
+})();
+scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x0b0a10, 0.35));
+const sun = new THREE.DirectionalLight(0xfff1dc, 1.05); sun.position.set(500, 420, 600); scene.add(sun);
+const rim = new THREE.DirectionalLight(0x86a6ff, 0.5); rim.position.set(-500, 150, -700); scene.add(rim);
+
+// Plating: one tiled panel texture for every hull piece (box-projected, 16 m a tile).
+function plating() {
+  const S = 512, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d'), rng = mulberry(3), ppm = S / 16;
+  g.fillStyle = '#e4e2dc'; g.fillRect(0, 0, S, S);
+  for (let y = 0; y < S; y += 4 * ppm) for (let x = 0; x < S;) { const w = (2 + rng() * 4) * ppm, k = 0.93 + rng() * 0.09;
+    g.fillStyle = `rgb(${Math.round(228 * k)},${Math.round(226 * k)},${Math.round(220 * k)})`; g.fillRect(x, y, w, 4 * ppm);
+    g.strokeStyle = 'rgba(52,56,70,0.5)'; g.lineWidth = 2; g.strokeRect(x, y, w, 4 * ppm); x += w; }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+}
+const PLATE = plating();
+function boxUV(g, tile) {
+  const P = g.attributes.position, N = g.attributes.normal, uv = new Float32Array(P.count * 2);
+  for (let i = 0; i < P.count; i++) { const nx = Math.abs(N.getX(i)), ny = Math.abs(N.getY(i)), nz = Math.abs(N.getZ(i)), x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const [a, b] = nx > ny && nx > nz ? [z, y] : ny > nz ? [x, z] : [x, y]; uv[i * 2] = a / tile; uv[i * 2 + 1] = b / tile; }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return g;
+}
+
+// ------------------------------------------------------------------------------------------------------------------
+// Building a concept: zones as coloured blocks, each hull piece the chamfered convex wrap of its zones (+0.7 m),
+// windows cast from inside lived-in zones to the hull, and the uninhabited structure.
+function zoneCorners(z, pad = 0, bevel = 0) {
+  const pts = [], hx = z.s.x / 2 + pad, hy = z.s.y / 2 + pad, hz = z.s.z / 2 + pad, cy = Math.cos(z.yaw), sy = Math.sin(z.yaw);
+  for (const ax of [-1, 1]) for (const ay of [-1, 1]) for (const az of [-1, 1]) {
+    const opts = bevel ? [[ax * (hx - bevel), ay * hy, az * hz], [ax * hx, ay * (hy - bevel), az * hz], [ax * hx, ay * hy, az * (hz - bevel)]] : [[ax * hx, ay * hy, az * hz]];
+    for (const [x, y, zz] of opts) pts.push(V3(z.c.x + x * cy + zz * sy, z.c.y + y, z.c.z - x * sy + zz * cy));
+  }
+  return pts;
+}
+function shapePoints(shape, r, at) {
+  const pts = [];
+  if (shape === 'sphere') { const g = new THREE.IcosahedronGeometry(r, 1), P = g.attributes.position; for (let i = 0; i < P.count; i++) pts.push(V3(P.getX(i), P.getY(i), P.getZ(i)).add(at)); }
+  else if (shape === 'octa') { for (const v of [[r, 0, 0], [-r, 0, 0], [0, r * 0.9, 0], [0, -r * 0.9, 0], [0, 0, r], [0, 0, -r]]) pts.push(V3(...v).add(at)); }
+  else { const n = shape === 'hex' ? 6 : 12, hh = shape === 'hex' ? r * 0.62 : r * 0.7; for (let i = 0; i < n; i++) { const a = i / n * TAU + (shape === 'hex' ? PI / 6 : 0); for (const y of [-hh, hh]) pts.push(V3(Math.cos(a) * r, y, Math.sin(a) * r).add(at)); } }
+  return pts;
+}
+function makeLabel(text, col) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 96; const g = c.getContext('2d');
+  g.font = '600 52px Antonio, "Arial Narrow", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineWidth = 8; g.strokeStyle = 'rgba(0,0,0,0.8)'; g.strokeText(text, 256, 50); g.fillStyle = col; g.fillText(text, 256, 50);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false }));
+  s.renderOrder = 10; return s;
+}
+const winGeo = new THREE.PlaneGeometry(1.1, 0.6);
+function buildConcept(id, cls) {
+  const C = CONCEPTS[id], D = C.gen(cls), group = new THREE.Group(), zoneG = new THREE.Group(), hullG = new THREE.Group(), partG = new THREE.Group(), labelG = new THREE.Group(), winG = new THREE.Group();
+  group.add(zoneG, hullG, partG, labelG, winG);
+  const byId = Object.fromEntries(D.zones.map((z) => [z.id, z]));
+  const hullMat = new THREE.MeshStandardMaterial({ map: PLATE, color: C.hull, metalness: 0.45, roughness: 0.55, envMapIntensity: 0.6, flatShading: true });
+  const out = { id, cls, group, zoneG, hullG, partG, labelG, winG, zones: D.zones, pieces: [], hullMat, windows: 0, contained: true, outside: [], mats: [] };
+  // Zones.
+  for (const z of D.zones) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(z.s.x, z.s.y, z.s.z), new THREE.MeshStandardMaterial({ color: KIND[z.kind].col, roughness: 0.7, metalness: 0.05, emissive: KIND[z.kind].col, emissiveIntensity: 0.12 }));
+    m.position.copy(z.c); m.rotation.y = z.yaw; zoneG.add(m);
+    if (z.s.x * z.s.z > 60 || z.kind === 'command') { const l = makeLabel(z.label, KIND[z.kind].col); l.position.copy(z.c).add(V3(0, z.s.y / 2 + 2.2, 0)); const k = Math.max(6, Math.min(14, z.s.x + 2)); l.scale.set(k, k * 96 / 512, 1); labelG.add(l); }
+  }
+  // Hull pieces.
+  for (const hp of D.hulls) {
+    let pts = [];
+    for (const zid of hp.zones) { const z = byId[zid]; pts.push(...zoneCorners(z, PAD, Math.min(1.2, 0.18 * Math.min(z.s.x, z.s.y, z.s.z)))); }
+    if (hp.shape) pts.push(...shapePoints(hp.shape, hp.r, hp.at));
+    if (hp.extra) pts.push(...hp.extra);
+    const geo = new THREE.ConvexGeometry(pts); boxUV(geo, 16);
+    const kinds = hp.zones.map((k) => byId[k].kind), has = (k) => kinds.includes(k);
+    const tint = has('command') ? '#7f9be6' : (has('crew') || has('commons') || has('medical')) ? '#f0ede6' : has('hangar') || has('machinery') ? '#6c727d' : has('weapons') ? '#a4a9b3' : '#8d94a1';
+    const mat = hullMat.clone(); mat.color.set(tint); out.mats.push(mat);
+    const mesh = new THREE.Mesh(geo, mat); hullG.add(mesh);
+    // Measured: every corner of every zone it wraps lies inside it.
+    const ch = new THREE.ConvexHull().setFromPoints(pts);
+    for (const zid of hp.zones) for (const p of zoneCorners(byId[zid])) if (!ch.containsPoint(p)) { out.contained = false; out.outside.push(zid); break; }
+    out.pieces.push({ mesh, zones: hp.zones.map((k) => byId[k]) });
+  }
+  // Accent: a Signal band round each piece that holds the bridge or a hub.
+  // Structure.
+  const struct = new THREE.MeshStandardMaterial({ map: PLATE, color: '#9da3ae', metalness: 0.6, roughness: 0.45, flatShading: true, side: THREE.DoubleSide });
+  const glow = new THREE.MeshStandardMaterial({ color: 0x111827, emissive: 0x5fc0ff, emissiveIntensity: 1.6 });
+  for (const p of D.parts) addPart(partG, p, struct, glow, C);
+  // Windows: cast from inside lived-in zones to their hull piece, one row per deck.
+  group.updateMatrixWorld(true);
+  const ray = new THREE.Raycaster(), lit = [], dark = [], rng = mulberry(id.length * 31 + cls);
+  for (const pc of out.pieces) for (const z of pc.zones) {
+    if (!LIVED.has(z.kind)) continue;
+    const decks = Math.round(z.s.y / DECK), cy = Math.cos(z.yaw), sy = Math.sin(z.yaw);
+    const dirs = [V3(cy, 0, -sy), V3(-cy, 0, sy)]; // the zone's two long sides
+    if (z.s.x > z.s.z * 1.4) dirs.push(V3(sy, 0, cy), V3(-sy, 0, -cy));
+    for (let d = 0; d < decks; d++) {
+      const y = z.c.y - z.s.y / 2 + DECK * (d + 0.55);
+      for (const dir of dirs) {
+        const along = Math.abs(dir.x * cy - dir.z * sy) > 0.5 ? z.s.z : z.s.x, tang = Math.abs(dir.x * cy - dir.z * sy) > 0.5 ? V3(sy, 0, cy) : V3(cy, 0, -sy);
+        for (let t = -along / 2 + 1.6; t <= along / 2 - 1.6; t += 2.4) {
+          if (rng() < 0.18) continue; // gaps: ribs and store rooms
+          const o = z.c.clone().add(tang.clone().multiplyScalar(t)); o.y = y;
+          // From outside inward, so the ray meets the hull's outer face (rays ignore back faces).
+          ray.set(o.clone().addScaledVector(dir, 16), dir.clone().negate()); ray.far = 16; const hit = ray.intersectObject(pc.mesh, false)[0];
+          if (!hit) continue;
+          const n = hit.face.normal.clone(); if (Math.abs(n.y) > 0.7) continue;
+          const m4 = new THREE.Matrix4().lookAt(V3(), n, V3(0, 1, 0)); const q = new THREE.Quaternion().setFromRotationMatrix(m4);
+          const mat = new THREE.Matrix4().compose(hit.point.clone().addScaledVector(n, 0.05), q, V3(1, 1, 1));
+          (rng() < 0.85 ? lit : dark).push(mat);
+        }
+      }
+    }
+  }
+  for (const [list, col] of [[lit, 0xffdca0], [dark, 0x0]]) {
+    if (!list.length) continue;
+    const im = new THREE.InstancedMesh(winGeo, new THREE.MeshBasicMaterial({ color: col ? col : 0x141a26, side: THREE.DoubleSide, toneMapped: false }), list.length);
+    list.forEach((m, i) => im.setMatrixAt(i, m)); winG.add(im);
+  }
+  out.windows = lit.length + dark.length;
+  // Measured size.
+  out.box = new THREE.Box3(); out.box.expandByObject(hullG); out.box.expandByObject(partG);
+  out.size = out.box.getSize(V3()); out.center = out.box.getCenter(V3());
+  out.decks = Math.round((Math.max(...D.zones.map((z) => z.c.y + z.s.y / 2)) - Math.min(...D.zones.map((z) => z.c.y - z.s.y / 2))) / DECK);
+  return out;
+}
+function finBetween(A, B, chord, thick, mat) {
+  const L = A.distanceTo(B), g = new THREE.BoxGeometry(thick, L, chord);
+  const y = B.clone().sub(A).normalize(), zc = V3(0, 0, 1).sub(y.clone().multiplyScalar(y.z)).normalize(), x = y.clone().cross(zc);
+  g.applyMatrix4(new THREE.Matrix4().makeBasis(x, y, zc).setPosition(A.clone().add(B).multiplyScalar(0.5)));
+  return new THREE.Mesh(boxUV(g, 16), mat);
+}
+const sailMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+  uniforms: { uTime: { value: 0 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+  fragmentShader: `varying vec2 vUv; uniform float uTime;
+    void main(){ vec2 g = abs(fract(vUv*vec2(6.0, 18.0)) - 0.5); float grid = smoothstep(0.46, 0.5, max(g.x, g.y));
+      float edge = smoothstep(0.08, 0.0, min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y)));
+      float shimmer = 0.5 + 0.5*sin(vUv.y*40.0 - uTime*2.0);
+      gl_FragColor = vec4(vec3(0.35, 0.7, 1.0)*(0.14 + 0.35*grid + 0.9*edge + 0.06*shimmer), 1.0); }` });
+function addPart(G, p, struct, glow, C) {
+  if (p.type === 'pod') {
+    const prof = []; const L = p.len, r = p.r;
+    for (const [a, b] of [[0.001, L / 2], [r * 0.6, L / 2 - 0.4], [r * 0.95, L / 2 - 3], [r, L / 2 - 8], [r, -L / 2 + 5], [r * 0.8, -L / 2 + 1], [r * 0.5, -L / 2], [0.001, -L / 2]]) prof.push(new THREE.Vector2(a, b));
+    const g = new THREE.LatheGeometry(prof, 14); g.rotateX(PI / 2); g.translate(p.at.x, p.at.y, p.at.z); G.add(new THREE.Mesh(boxUV(g, 16), struct));
+    const s = new THREE.Mesh(new THREE.BoxGeometry(0.5, r * 0.5, L * 0.6), glow); s.position.copy(p.at).add(V3(-Math.sign(p.at.x) * (r - 0.05), 0, -L * 0.05)); G.add(s);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(r * 0.8, r * 0.1, 8, 24), glow); ring.position.copy(p.at).add(V3(0, 0, L / 2 - 1.6)); G.add(ring);
+    G.add(finBetween(p.pylon[0], p.pylon[1], Math.min(10, L * 0.35), 1.2, struct));
+  } else if (p.type === 'dish') {
+    const d = new THREE.Mesh(new THREE.CircleGeometry(p.r, 24), glow); d.position.copy(p.at); G.add(d);
+  } else if (p.type === 'bells') {
+    for (let i = 0; i < p.n; i++) {
+      const x = p.n === 1 ? 0 : lerp(-p.span / 2, p.span / 2, i / (p.n - 1)) * (p.n === 3 && i === 1 ? 0 : 1), y = p.n === 3 && i === 1 ? p.span * 0.45 : 0;
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(p.r * 0.7, p.r, p.r * 1.6, 12, 1, true), struct); b.rotation.x = PI / 2; b.position.set(x, y, p.at.z); G.add(b);
+      const f = new THREE.Mesh(new THREE.CircleGeometry(p.r * 0.85, 12), glow); f.position.set(x, y, p.at.z - p.r * 0.7); f.rotation.y = PI; G.add(f);
+    }
+  } else if (p.type === 'truss') {
+    const members = [], { z0, z1, w, h, bay } = p, cs = [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]];
+    for (const [x, y] of cs) members.push([V3(x, y, z0), V3(x, y, z1)]);
+    for (let z = z0; z <= z1 + 0.01; z += bay) { for (let i = 0; i < 4; i++) { const [ax, ay] = cs[i], [bx, by] = cs[(i + 1) % 4]; members.push([V3(ax, ay, z), V3(bx, by, z)]); }
+      if (z + bay <= z1 + 0.01) for (let i = 0; i < 4; i++) { const [ax, ay] = cs[i], [bx, by] = cs[(i + 1) % 4]; members.push([V3(ax, ay, z), V3(bx, by, z + bay)]); } }
+    const im = new THREE.InstancedMesh(new THREE.BoxGeometry(0.7, 1, 0.7), struct, members.length);
+    members.forEach(([A, B], i) => { const L = A.distanceTo(B), y = B.clone().sub(A).normalize(), ref = Math.abs(y.y) < 0.9 ? V3(0, 1, 0) : V3(1, 0, 0), x = ref.clone().cross(y).normalize(), zz = x.clone().cross(y);
+      im.setMatrixAt(i, new THREE.Matrix4().makeBasis(x, y, zz).scale(V3(1, L, 1)).setPosition(A.clone().add(B).multiplyScalar(0.5))); });
+    G.add(im);
+  } else if (p.type === 'fins') {
+    for (const s of p.single ? [1] : [1, -1]) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.5, p.h, p.len), struct); f.position.set(p.at.x, p.at.y + s * (p.h / 2 + 3), p.at.z); G.add(f);
+      const e = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, p.len * 0.9), glow); e.position.set(p.at.x, p.at.y + s * (p.h + 3), p.at.z); G.add(e); }
+  } else if (p.type === 'boom') {
+    const L = p.z1 - p.z0, g = new THREE.CylinderGeometry(p.r * 0.7, p.r, L, 10); g.rotateX(PI / 2); g.translate(p.x, 0, (p.z0 + p.z1) / 2); G.add(new THREE.Mesh(boxUV(g, 16), struct));
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(p.r * 0.75, 10, 8), glow); tip.position.set(p.x, 0, p.z1 + 0.5); G.add(tip);
+    const bell = new THREE.Mesh(new THREE.CylinderGeometry(p.r * 0.8, p.r * 1.25, p.r * 2, 10, 1, true), struct); bell.rotation.x = PI / 2; bell.position.set(p.x, 0, p.z0 - p.r); G.add(bell);
+    const fl = new THREE.Mesh(new THREE.CircleGeometry(p.r * 1.05, 10), glow); fl.position.set(p.x, 0, p.z0 - p.r * 1.9); fl.rotation.y = PI; G.add(fl);
+  } else if (p.type === 'sail') {
+    const w = Math.abs(p.x1 - p.x0), L = p.z1 - p.z0, g = new THREE.PlaneGeometry(w, L); g.rotateX(-PI / 2); g.translate((p.x0 + p.x1) / 2, 0, (p.z0 + p.z1) / 2);
+    const m = new THREE.Mesh(g, sailMat); m.renderOrder = 3; m.userData.sail = true; G.add(m);
+  } else if (p.type === 'rib') { G.add(finBetween(p.a, p.b, 2.2, 0.8, struct)); }
+}
+
+// ------------------------------------------------------------------------------------------------------------------
+// Page state.
+const built = {}; // `${id}:${cls}` -> built concept
+const get = (id, cls) => built[id + ':' + cls] || (built[id + ':' + cls] = buildConcept(id, cls));
+let concept = 'halo', klass = 1, stageKey = 'hull', lineup = false, view = 'hero', showLabels = true, showFig = true;
+const world = new THREE.Group(); scene.add(world);
+const figure = (() => { const g = new THREE.Group(), m = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.3, 4, 8), new THREE.MeshStandardMaterial({ color: 0xffc94d, emissive: 0x553300 })); m.position.y = 0.87; g.add(m); const l = makeLabel('1.8 m', '#ffc94d'); l.scale.set(5, 0.95, 1); l.position.y = 3.2; g.add(l); return g; })();
+let shown = [];
+function show() {
+  world.clear(); shown = [];
+  const list = lineup ? [0, 1, 2].map((c) => get(concept, c)) : [get(concept, klass)];
+  let x = 0;
+  list.forEach((b, i) => {
+    const w = b.size.x; if (lineup) { x += i ? (list[i - 1].size.x / 2 + w / 2 + 30) : 0; b.group.position.set(x - b.center.x, 0, -b.center.z); } else b.group.position.set(0, 0, 0);
+    world.add(b.group); shown.push(b);
+    b.zoneG.visible = stageKey !== 'hull'; b.labelG.visible = showLabels && stageKey !== 'hull' && !lineup;
+    b.hullG.visible = stageKey !== 'zones'; b.partG.visible = stageKey !== 'zones'; b.winG.visible = stageKey !== 'zones';
+    for (const m of b.mats) { m.transparent = stageKey === 'fitted'; m.opacity = stageKey === 'fitted' ? 0.22 : 1; m.depthWrite = stageKey !== 'fitted'; m.needsUpdate = true; }
+  });
+  if (lineup) { const tot = list.reduce((s, b, i) => s + b.size.x + (i ? 30 : 0), 0); world.position.x = -tot / 2 + list[0].size.x / 2; } else world.position.x = 0;
+  // The figure stands on top of the bridge.
+  const b = list[lineup ? 1 : 0], br = b.zones.find((z) => z.id === 'bridge');
+  figure.visible = showFig && !lineup; if (br) { figure.position.copy(br.c).add(V3(br.s.x / 2 + 1.5, br.s.y / 2 + 0.75, 0)); b.group.add(figure); }
+  refreshFacts(); refreshButtons();
+  document.getElementById('status').textContent = `${CONCEPTS[concept].name}  ${lineup ? 'line-up' : CLASSES[klass].toLowerCase()}`;
+  document.getElementById('tellText').textContent = CONCEPTS[concept].tell;
+}
+function refreshFacts() {
+  const rows = (lineup ? [0, 1, 2] : [klass]).map((c) => get(concept, c));
+  const f = document.getElementById('facts'); f.textContent = '';
+  const add = (k, v) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v; f.append(dt, dd); };
+  for (const b of rows) {
+    if (lineup) add(CLASSES[b.cls], '');
+    add('Length x beam', `${b.size.z.toFixed(0)} x ${b.size.x.toFixed(0)} m`); add('Height', `${b.size.y.toFixed(0)} m`);
+    add('Decks', String(b.decks)); add('Zones', String(b.zones.length)); add('Windows', String(b.windows));
+    add('Zones in hull', b.contained ? 'all inside, measured' : `outside: ${[...new Set(b.outside)].join(', ')}`);
+  }
+}
+function frame(dist, dir, target) { const t = target || V3(0, 0, 0); camera.position.copy(t).add(dir.clone().normalize().multiplyScalar(dist)); controls.target.copy(t); controls.update(); }
+function span() { const b = new THREE.Box3().setFromObject(world); return { s: b.getSize(V3()), c: b.getCenter(V3()) }; }
+const VIEWS = {
+  hero: { label: 'Three quarter', go: () => { const { s, c } = span(); frame(Math.max(s.x, s.z) * 1.25, V3(0.95, 0.6, 1.05), c); } },
+  top: { label: 'Top', go: () => { const { s, c } = span(); frame(Math.max(s.x, s.z) * 1.35, V3(0, 1, 0.02), c); } },
+  side: { label: 'Side', go: () => { const { s, c } = span(); frame(Math.max(s.x, s.z) * 1.25, V3(1, 0.06, 0.0001), c); } },
+  front: { label: 'Front', go: () => { const { s, c } = span(); frame(Math.max(s.x, s.y) * 1.8, V3(0.0001, 0.12, 1), c); } },
+};
+function setView(v) { view = v; VIEWS[v].go(); refreshButtons(); }
+
+// Silhouettes at 40 and 100 px, from above and the side: the tell has to survive this.
+function silhouettes() {
+  const box = document.getElementById('sil'); box.textContent = '';
+  const rt = new THREE.WebGLRenderTarget(200, 200), white = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }), px = new Uint8Array(200 * 200 * 4);
+  const keep = world.visible, bg = scene.background; world.visible = false; scene.background = new THREE.Color(0x000000);
+  for (const id of Object.keys(CONCEPTS)) {
+    const b = get(id, 1), fig = document.createElement('figure'), pair = document.createElement('div'); pair.className = 'pair';
+    const tmp = new THREE.Group(); tmp.add(b.hullG.clone(), b.partG.clone()); tmp.traverse((o) => { if (o.isMesh || o.isInstancedMesh) o.material = o.userData.sail ? new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }) : white; });
+    scene.add(tmp);
+    for (const [vname, dir] of [['top', V3(0, 1, 0.0001)], ['side', V3(1, 0, 0.0001)]]) {
+      const bb = new THREE.Box3().setFromObject(tmp), c = bb.getCenter(V3()), sz = bb.getSize(V3()), half = Math.max(sz.x, sz.y, sz.z) * 0.55;
+      const cam = new THREE.OrthographicCamera(-half, half, half, -half, 0.1, 5000); cam.position.copy(c).addScaledVector(dir, 1000); cam.up.set(0, 0, vname === 'top' ? 1 : 0); if (vname === 'side') cam.up.set(0, 1, 0); cam.lookAt(c);
+      renderer.setRenderTarget(rt); renderer.render(scene, cam); renderer.readRenderTargetPixels(rt, 0, 0, 200, 200, px); renderer.setRenderTarget(null);
+      const src = document.createElement('canvas'); src.width = src.height = 200; const sg = src.getContext('2d'), img = sg.createImageData(200, 200);
+      for (let y = 0; y < 200; y++) for (let x = 0; x < 200; x++) { const i = ((199 - y) * 200 + x) * 4, o = (y * 200 + x) * 4, v = px[i] > 20 ? 230 : 0; img.data[o] = v; img.data[o + 1] = v; img.data[o + 2] = v; img.data[o + 3] = 255; }
+      sg.putImageData(img, 0, 0);
+      for (const n of [40, 100]) { const c2 = document.createElement('canvas'); c2.width = c2.height = n; c2.style.width = c2.style.height = Math.min(n, 64) + 'px'; c2.getContext('2d').drawImage(src, 0, 0, n, n); c2.setAttribute('aria-label', `${CONCEPTS[id].name} ${vname}, ${n} px`); pair.append(c2); }
+    }
+    scene.remove(tmp);
+    const cap = document.createElement('figcaption'); cap.textContent = CONCEPTS[id].label + ': top, side'; fig.append(pair, cap); box.append(fig);
+  }
+  world.visible = keep; scene.background = bg; rt.dispose();
+}
+
+// Panel.
+const $ = (id) => document.getElementById(id);
+function btn(row, text, on, key) { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.dataset.key = key; b.addEventListener('click', on); $(row).append(b); return b; }
+for (const [k, C] of Object.entries(CONCEPTS)) btn('conceptRow', C.label, () => { concept = k; show(); setView(view); }, 'c:' + k);
+for (const [k, l] of [['zones', '1 Zones'], ['hull', '2 Hull'], ['fitted', '3 Fitted']]) btn('stageRow', l, () => { stageKey = k; show(); }, 's:' + k);
+CLASSES.forEach((l, i) => btn('classRow', l, () => { klass = i; lineup = false; show(); setView(view); }, 'k:' + i));
+btn('classRow', 'Line-up', () => { lineup = true; show(); setView(view); }, 'lineup');
+for (const [k, v] of Object.entries(VIEWS)) btn('viewRow', v.label, () => setView(k), 'v:' + k);
+btn('showRow', 'Labels', () => { showLabels = !showLabels; show(); }, 'labels');
+btn('showRow', '1.8 m figure', () => { showFig = !showFig; show(); }, 'fig');
+for (const [k, v] of Object.entries(KIND)) { const s = document.createElement('span'), i = document.createElement('i'); i.style.background = v.col; s.append(i, v.label); $('legend').append(s); }
+function refreshButtons() {
+  const on = { ['c:' + concept]: 1, ['s:' + stageKey]: 1, ['k:' + klass]: !lineup, lineup, ['v:' + view]: 1, labels: showLabels, fig: showFig };
+  document.querySelectorAll('button[data-key]').forEach((b) => b.setAttribute('aria-pressed', on[b.dataset.key] ? 'true' : 'false'));
+}
+function showTab(t) { for (const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'); for (const k of ['concepts', 'notes']) $('pane-' + k).hidden = k !== t; }
+for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('click', () => showTab(b.dataset.tab));
+
+function resize() {
+  const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h;
+  const pr = $('panel').getBoundingClientRect(); if (pr.width >= w - 1) camera.setViewOffset(w, h, 0, pr.height / 2, w, h); else camera.setViewOffset(w, h, -pr.width / 2, 0, w, h);
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+try { await Promise.race([document.fonts.load('600 52px Antonio'), new Promise((r) => setTimeout(r, 3000))]); } catch (e) { /* fallback face */ }
+show(); resize(); setView('hero'); silhouettes();
+const meter = $('meter'), t0 = performance.now();
+$('tip').textContent = 'Stage 1 is the rooms, 2 the hull wrapped round them, 3 the two together.';
+renderer.setAnimationLoop(() => {
+  sailMat.uniforms.uTime.value = (performance.now() - t0) / 1000;
+  controls.update(); renderer.render(scene, camera);
+  meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws`;
+});
+function shot(c, k, st, v, opts = {}) { return () => { concept = c; klass = k; lineup = !!opts.lineup; stageKey = st; showLabels = opts.labels !== false; showTab(opts.tab || 'concepts'); show(); resize(); setView(v); }; }
+window.MOCKUP_SHOTS = {
+  halo_hull: shot('halo', 1, 'hull', 'hero'), halo_zones: shot('halo', 1, 'zones', 'hero'), halo_fitted: shot('halo', 1, 'fitted', 'hero'), halo_top: shot('halo', 1, 'hull', 'top'), halo_line: shot('halo', 1, 'hull', 'hero', { lineup: true }),
+  spine_hull: shot('spine', 1, 'hull', 'hero'), spine_zones: shot('spine', 1, 'zones', 'hero'), spine_fitted: shot('spine', 1, 'fitted', 'hero'), spine_line: shot('spine', 1, 'hull', 'hero', { lineup: true }),
+  sail_hull: shot('sail', 1, 'hull', 'hero'), sail_zones: shot('sail', 1, 'zones', 'hero'), sail_fitted: shot('sail', 1, 'fitted', 'hero'), sail_line: shot('sail', 1, 'hull', 'hero', { lineup: true }),
+  halo_front: shot('halo', 1, 'hull', 'front'), silhouettes: shot('halo', 1, 'hull', 'hero', { tab: 'notes' }),
+};
+window.MOCKUP_SCENE = scene;
+window.MOCKUP_READY = true;
+})();
+</script>

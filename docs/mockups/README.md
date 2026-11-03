@@ -9,6 +9,7 @@ recorded in `docs/artifacts/<name>/`.
 |---|---|
 | `game-flow.html` | 1: primary game flow |
 | `concord-ships.html` | 5: Concord ships and damage |
+| `concord-hull-concepts.html` | 6: Concord hull concepts |
 | `tracker.html` | the mockup tracker |
 | `lib/template.html` | the starting skeleton for a new page |
 
