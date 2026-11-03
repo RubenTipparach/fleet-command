@@ -384,6 +384,9 @@ else's artwork):
 - **Every pushed branch has a pull request** (Crab Breeze, owner 2026-10-25), and **a session
   produces one combined pull request** (Crab Breeze, owner 2026-10-26). Every task in a session
   goes onto one branch as new commits. The PR body says which session owns it.
+- **A session keeps only one pull request open at a time** (owner, 2026-11-03: "sessions should maintain only one pr
+  at a time"). New work goes onto the open PR's branch. A new PR is opened only once the previous one is merged or
+  closed, from a branch restarted on the latest `main`.
 - **No scheduled PR check-ins** (owner rule in Pale Blue Dot, Star Crew, Mining Mike, the-federation).
   The one exception is the five-minute check on a running desktop playtest (section 9).
 - **When the owner is using the computer, do not playtest** (Crab Breeze, owner 2026-10-24) on
