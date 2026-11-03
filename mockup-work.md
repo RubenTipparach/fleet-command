@@ -396,4 +396,19 @@ game. Numbered 9 because 7 (Krai Warhost ships) and 8 (the Krai battle console) 
 - The Krai frigate's placeholder flank marking (mockup 7) is replaced by the Krai thread once the Krai emblem is
   approved; this mockup does not touch that page.
 
+Later direction, the owner, 2026-11-03 (with the reference game's box art and its empire badges): "emblems are poor
+quality, I expected better 3d renders from all of them. extract the details from these, and build a guideline for
+them. start with the concord render first"; "these are quintessential to the cultural ideologies of the factions"; "get
+material maker too"; on the first Concord render (a ring of five domes): "I'm not a fan of the circle design here", "its
+too simple and easy to make, see our rules about just slapping on primitives", "this is bad design", "make a few
+different designs", "make an emblem design guide to keep track of my notes"; "when you design something cultural, I
+want you tell me why you did it that way, sketch a 2d figure out of svg first", "the shapes matter before we go 3d with
+it", "make a single image with text pointing to design elements and choices"; with the STARFLEET Visual Standards Manual
+2026: "add a link to references for this, and compile a design guide for emplems from this".
+
+So each faction's emblem is now designed on the **Emblem Design Guide** (https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V,
+`docs/design/emblem-guide.html`): flat SVG sketches, each one image with its choices labelled, the owner's pick, then 3D
+(Blender, swept and cut forms, surfaces from Material Maker graphs). The Concord's four sketches wait for a pick; 3D is
+on hold until then. The flat drafts on this mockup are placeholders.
+
 Design: `openspec/changes/faction-emblems/`. Shapes: `docs/mockups/lib/emblems.js`.

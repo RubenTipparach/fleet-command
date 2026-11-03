@@ -1,0 +1,260 @@
+{
+ "connections": [
+  {
+   "from": "fbm2_0",
+   "from_port": 0,
+   "to": "shader_3",
+   "to_port": 0
+  },
+  {
+   "from": "fbm2_1",
+   "from_port": 0,
+   "to": "shader_3",
+   "to_port": 1
+  },
+  {
+   "from": "fbm2_2",
+   "from_port": 0,
+   "to": "shader_3",
+   "to_port": 2
+  },
+  {
+   "from": "shader_3",
+   "from_port": 0,
+   "to": "normal_map_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_3",
+   "from_port": 0,
+   "to": "occlusion2_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_3",
+   "from_port": 1,
+   "to": "Material",
+   "to_port": 0
+  },
+  {
+   "from": "shader_3",
+   "from_port": 3,
+   "to": "Material",
+   "to_port": 1
+  },
+  {
+   "from": "shader_3",
+   "from_port": 2,
+   "to": "Material",
+   "to_port": 2
+  },
+  {
+   "from": "normal_map_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 4
+  },
+  {
+   "from": "occlusion2_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 5
+  },
+  {
+   "from": "shader_3",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 6
+  }
+ ],
+ "label": "Emblem Platinum",
+ "name": "Material",
+ "node_position": {
+  "x": 0,
+  "y": 0
+ },
+ "nodes": [
+  {
+   "name": "fbm2_0",
+   "node_position": {
+    "x": 220,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 5,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.55,
+    "scale_x": 6,
+    "scale_y": 6
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_1",
+   "node_position": {
+    "x": 440,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 2,
+    "scale_y": 96
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_2",
+   "node_position": {
+    "x": 660,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 128,
+    "scale_y": 3
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "shader_3",
+   "node_position": {
+    "x": 880,
+    "y": 0
+   },
+   "parameters": {},
+   "seed_int": 0,
+   "shader_model": {
+    "code": "",
+    "global": "",
+    "inputs": [
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "n",
+      "longdesc": "n",
+      "name": "n",
+      "shortdesc": "n",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "hx",
+      "longdesc": "hx",
+      "name": "hx",
+      "shortdesc": "hx",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "hy",
+      "longdesc": "hy",
+      "name": "hy",
+      "shortdesc": "hy",
+      "type": "f"
+     }
+    ],
+    "instance": "\nfloat hs_$name(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\nfloat sat_$name(float x) { return clamp(x, 0.0, 1.0); }\n\nfloat lines_$name(vec2 uv) { return max(smoothstep(0.78, 0.86, $hx(uv)), 0.6 * smoothstep(0.8, 0.88, $hy(uv))); }\nfloat height_$name(vec2 uv) { return 0.5 - 0.15 * lines_$name(uv) + 0.02 * ($n(uv) - 0.5); }\nvec3 albedo_$name(vec2 uv) { float v = 0.86 + 0.03 * ($n(uv) - 0.5) - 0.04 * lines_$name(uv); return vec3(v * 0.97, v * 0.985, v); }\nfloat rough_$name(vec2 uv) { return 0.2 + 0.06 * $n(uv) + 0.12 * lines_$name(uv); }\nfloat metal_$name(vec2 uv) { return 1.0; }\n",
+    "longdesc": "emblem platinum",
+    "name": "emblem platinum",
+    "outputs": [
+     {
+      "f": "sat_$name(height_$name($uv))",
+      "longdesc": "out0",
+      "shortdesc": "out0",
+      "type": "f"
+     },
+     {
+      "longdesc": "out1",
+      "rgba": "vec4(clamp(albedo_$name($uv), vec3(0.0), vec3(1.0)), 1.0)",
+      "shortdesc": "out1",
+      "type": "rgba"
+     },
+     {
+      "f": "sat_$name(rough_$name($uv))",
+      "longdesc": "out2",
+      "shortdesc": "out2",
+      "type": "f"
+     },
+     {
+      "f": "sat_$name(metal_$name($uv))",
+      "longdesc": "out3",
+      "shortdesc": "out3",
+      "type": "f"
+     }
+    ],
+    "parameters": [],
+    "shortdesc": "emblem platinum"
+   },
+   "type": "shader"
+  },
+  {
+   "name": "normal_map_0",
+   "node_position": {
+    "x": 1100,
+    "y": 0
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 0.0144,
+    "param2": 0,
+    "param4": 1
+   },
+   "type": "normal_map"
+  },
+  {
+   "name": "occlusion2_0",
+   "node_position": {
+    "x": 1320,
+    "y": 0
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 4,
+    "param2": 0.66,
+    "param3": 1
+   },
+   "type": "occlusion2"
+  },
+  {
+   "export_paths": {},
+   "name": "Material",
+   "node_position": {
+    "x": 1540,
+    "y": 0
+   },
+   "parameters": {
+    "albedo_color": {
+     "a": 1.0,
+     "b": 1,
+     "g": 1,
+     "r": 1,
+     "type": "Color"
+    },
+    "ao": 1.0,
+    "depth_scale": 0.0,
+    "emission_energy": 1.0,
+    "flags_transparent": false,
+    "metallic": 1.0,
+    "normal": 1.0,
+    "roughness": 1.0,
+    "size": 11,
+    "sss": 0.0
+   },
+   "type": "material"
+  }
+ ],
+ "parameters": {},
+ "type": "graph"
+}

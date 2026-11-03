@@ -12,6 +12,17 @@
 - [ ] 1.7 Published from the desktop session, and the link recorded in the tracker, `mockup-work.md` and
       `docs/artifacts/faction-emblems/README.md`
 
+## 1b. The Emblem Design Guide (owner, 2026-11-03: sketch first, explain why, shapes before 3D)
+
+- [x] 1b.1 `docs/design/emblem-guide.html`: the owner's notes, the method, what the reference badges and the STARFLEET
+      Visual Standards Manual 2026 teach (cited by page), sixteen rules, references; published with a notes database
+- [x] 1b.2 The Concord's four sketches (A Many Hands, B The Saucer, C The Open Door, D Beacon and Wings), each one image
+      with its choices labelled, at 96, 40 and 20 px
+- [x] 1b.3 Emblem materials as Material Maker graphs (`emblem_platinum`, `emblem_enamel_signal`, `emblem_enamel_night`)
+      and the shared Blender harness `tools/blender/emblem_render.py`
+- [ ] 1b.4 The owner picks a Concord sketch; then it is sculpted in 3D from that sketch and checked small
+- [ ] 1b.5 The other nine factions, the same way
+
 ## 2. After approval for build
 
 - [ ] 2.1 Fold in the E answers and the owner's notes; redraw any emblem whose meaning changed

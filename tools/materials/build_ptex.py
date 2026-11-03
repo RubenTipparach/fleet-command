@@ -68,8 +68,78 @@ float metal_$name(vec2 uv) { return 0.1; }
     return finish(g, "hull plate", ins, body, tile_m=2.0, depth_m=0.006, ao_radius=8, ao_strength=0.8)
 
 
+# ---- faction emblem materials (openspec/changes/faction-emblems; the Emblem Render Guide, docs/design/emblem-guide.html)
+# An emblem is a badge about 0.1 m across; these tile every 0.05 m and are projected flat onto the badge's face by
+# tools/blender/emblem_render.py. The clear coat of enamel and the glass of a cabochon are Blender's, on top.
+
+def emblem_platinum():
+    """Polished platinum, the Concord's metal (its pearl-white hulls): a mirror finish with the faint hairlines of
+    polishing in two directions and a soft cloud of wear. One tile is 0.05 m."""
+    g = Graph("Emblem Platinum")
+    ins = [("n", "f", fbm(g, 6, iterations=5, offset=0.0)),
+           ("hx", "f", g.node("fbm2", noise=2, scale_x=2, scale_y=96, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("hy", "f", g.node("fbm2", noise=2, scale_x=128, scale_y=3, folds=0, iterations=3, persistence=0.5, offset=0.0))]
+    body = """
+float lines_$name(vec2 uv) { return max(smoothstep(0.78, 0.86, $hx(uv)), 0.6 * smoothstep(0.8, 0.88, $hy(uv))); }
+float height_$name(vec2 uv) { return 0.5 - 0.15 * lines_$name(uv) + 0.02 * ($n(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) { float v = 0.86 + 0.03 * ($n(uv) - 0.5) - 0.04 * lines_$name(uv); return vec3(v * 0.97, v * 0.985, v); }
+float rough_$name(vec2 uv) { return 0.2 + 0.06 * $n(uv) + 0.12 * lines_$name(uv); }
+float metal_$name(vec2 uv) { return 1.0; }
+"""
+    return finish(g, "emblem platinum", ins, body, tile_m=0.05, depth_m=0.00003, ao_radius=4, ao_strength=0.3)
+
+
+def emblem_enamel_signal():
+    """Fired enamel in the Concord's Signal blue (#2f62e0, its flag): the faint orange peel of a fired glaze, a slow
+    cloud of deeper and lighter colour, and a fine speckle of grains in the glass. One tile is 0.05 m."""
+    g = Graph("Emblem Enamel Signal")
+    ins = [("peel", "f", fbm(g, 40, iterations=3, persistence=0.5)), ("cloud", "f", fbm(g, 3, iterations=4)),
+           ("grain", "f", fbm(g, 160, iterations=2, persistence=0.5))]
+    body = """
+float height_$name(vec2 uv) { return 0.5 + 0.12 * ($peel(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 base = vec3(0.184, 0.384, 0.878);
+	vec3 c = base * (0.9 + 0.2 * $cloud(uv));
+	return mix(c, vec3(0.42, 0.62, 1.0), 0.5 * smoothstep(0.72, 0.8, $grain(uv)));
+}
+float rough_$name(vec2 uv) { return 0.22 + 0.08 * $peel(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem enamel signal", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.2)
+
+
+def emblem_enamel_night():
+    """Enamel in the Concord's Deep blue (#1b2a6b) scattered with fine lit flecks: the night sky every homeworld
+    shares (console skins design, the Concord palette). The flecks also go to the emission map. One tile is 0.05 m."""
+    g = Graph("Emblem Enamel Night")
+    ins = [("peel", "f", fbm(g, 40, iterations=3, persistence=0.5)), ("cloud", "f", fbm(g, 2, iterations=5))]
+    body = """
+// Stars: one candidate per cell of a 48 x 48 grid (tiles), lit where the cell's hash is high, jittered in its cell.
+float star_$name(vec2 uv) {
+	vec2 q = uv * 48.0; vec2 c = floor(q); vec2 f = fract(q);
+	float h = hs_$name(c + 3.0);
+	vec2 p = vec2(hs_$name(c + 11.0), hs_$name(c + 29.0)) * 0.6 + 0.2;
+	float r = mix(0.05, 0.13, hs_$name(c + 47.0));
+	return step(0.86, h) * (1.0 - smoothstep(r * 0.4, r, length(f - p)));
+}
+float height_$name(vec2 uv) { return 0.5 + 0.12 * ($peel(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 c = vec3(0.106, 0.165, 0.42) * (0.75 + 0.4 * $cloud(uv));
+	return mix(c, vec3(0.85, 0.9, 1.0), star_$name(uv));
+}
+vec3 emit_$name(vec2 uv) { return vec3(0.8, 0.88, 1.0) * star_$name(uv); }
+float rough_$name(vec2 uv) { return 0.2 + 0.08 * $peel(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem enamel night", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.2,
+                  emission=True)
+
+
 GRAPHS = {
     "hull_plate": hull_plate,
+    "emblem_platinum": emblem_platinum,
+    "emblem_enamel_signal": emblem_enamel_signal,
+    "emblem_enamel_night": emblem_enamel_night,
 }
 
 

@@ -34,12 +34,14 @@ const DEFS = [
     mark: { field: '#2f62e0', device: '#3fa9f0', ground: '#000000' },
     crest: { base: '#2f62e0', light: '#3fa9f0', dark: '#1b2a6b', device: '#3fa9f0', glow: 0, flat: true },
     hull: { plate: '#e4e6ea', field: '#1d3b8f', device: '#2f62e0', lit: false },
-    ops: () => {
-      const worlds = []; for (let i = 0; i < 5; i++) { const a = -P / 2 + i * 2 * P / 5; worlds.push(circle(50 + Math.cos(a) * 24, 50 + Math.sin(a) * 24, 7)); }
+    // The shapes as numbers (grid units), read by these ops and by the 3D render (tools/blender/emblem_concord.py).
+    geo: { ring: [38, 46], worlds: { count: 5, orbit: 24, r: 7, first_deg: -90 }, hub: [5, 9] },
+    ops: (g) => {
+      const worlds = []; for (let i = 0; i < g.worlds.count; i++) { const a = (g.worlds.first_deg * P / 180) + i * 2 * P / g.worlds.count; worlds.push(circle(50 + Math.cos(a) * g.worlds.orbit, 50 + Math.sin(a) * g.worlds.orbit, g.worlds.r)); }
       return [
-        { op: 'field', path: many(circle(50, 50, 46), circle(50, 50, 38)) },
+        { op: 'field', path: many(circle(50, 50, g.ring[1]), circle(50, 50, g.ring[0])) },
         { op: 'device', path: many(...worlds) },
-        { op: 'device', path: circle(50, 50, 7), stroke: 4 },
+        { op: 'device', path: many(circle(50, 50, g.hub[1]), circle(50, 50, g.hub[0])) },
       ];
     },
   },
@@ -176,7 +178,7 @@ const DEFS = [
 const BY_ID = Object.fromEntries(DEFS.map((d) => [d.id, d]));
 const OPS = {}; // id -> ops, built once
 
-function opsOf(id) { return OPS[id] || (OPS[id] = BY_ID[id].ops()); }
+function opsOf(id) { return OPS[id] || (OPS[id] = BY_ID[id].ops(BY_ID[id].geo)); }
 
 // Draw one op's shape: filled with even-odd (so a ring is one path), or stroked when it has a stroke width.
 function shape(x, o, grow = 0) {

@@ -21,6 +21,14 @@ the shape, not the art); no shape is traced from another game, a film, or a real
 The reference manuals (SFC2, SFC3) show the reference games' empire symbols only as art on their screens; nothing of
 them is taken here.
 
+## Superseded in part (owner, 2026-11-03)
+
+The owner rejected the first Concord render ("I'm not a fan of the circle design here", "its too simple and easy to
+make") and set a method: each faction's emblem is sketched flat in SVG with every choice labelled, picked by the owner,
+and only then sculpted in 3D. That method, sixteen rules compiled from the owner's notes, the reference badges and the
+STARFLEET Visual Standards Manual 2026, and the Concord's four sketches live on the Emblem Design Guide
+(`docs/design/emblem-guide.html`). The ten flat emblems below are placeholders until each faction's sketch is picked.
+
 ## The rules for an emblem
 
 | Rule | Says | Why |

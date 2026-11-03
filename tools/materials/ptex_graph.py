@@ -208,14 +208,18 @@ def vor(g, scale, randomness=1.0, intensity=1.0):
                   randomness=randomness)
 
 
-def finish(g, label, inputs, body, tile_m, depth_m, ao_radius=16, ao_strength=1.2):
+def finish(g, label, inputs, body, tile_m, depth_m, ao_radius=16, ao_strength=1.2, emission=False):
     """Wire the shader node (height, albedo, roughness, metal) to the normal, occlusion and material nodes.
 
-    body must define height_$name, albedo_$name (vec3, sRGB), rough_$name and metal_$name, each taking the uv."""
-    s = shader(g, label, inputs, PRELUDE + body,
-               [("f", "sat_$name(height_$name($uv))"), ("rgba", "vec4(clamp(albedo_$name($uv), vec3(0.0), vec3(1.0)), 1.0)"),
-                ("f", "sat_$name(rough_$name($uv))"), ("f", "sat_$name(metal_$name($uv))")])
+    body must define height_$name, albedo_$name (vec3, sRGB), rough_$name and metal_$name, each taking the uv; with
+    emission=True it also defines emit_$name (vec3, sRGB), wired to the material's emission port."""
+    outs = [("f", "sat_$name(height_$name($uv))"), ("rgba", "vec4(clamp(albedo_$name($uv), vec3(0.0), vec3(1.0)), 1.0)"),
+            ("f", "sat_$name(rough_$name($uv))"), ("f", "sat_$name(metal_$name($uv))")]
+    if emission:
+        outs.append(("rgba", "vec4(clamp(emit_$name($uv), vec3(0.0), vec3(1.0)), 1.0)"))
+    s = shader(g, label, inputs, PRELUDE + body, outs)
     normal = g.normal_map((s, 0), strength=round(EXAGGERATION * 16.0 * depth_m / tile_m, 4))
     ao = g.occlusion((s, 0), strength=round(AO_GAIN * ao_strength, 3), radius=ao_radius)
-    g.material(albedo=(s, 1), roughness=(s, 2), metallic=(s, 3), normal=normal, ao=ao, depth=(s, 0))
+    g.material(albedo=(s, 1), roughness=(s, 2), metallic=(s, 3), normal=normal, ao=ao, depth=(s, 0),
+               emission=(s, 4) if emission else None)
     return g

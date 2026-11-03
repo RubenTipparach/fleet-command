@@ -1,0 +1,260 @@
+{
+ "connections": [
+  {
+   "from": "fbm2_0",
+   "from_port": 0,
+   "to": "shader_3",
+   "to_port": 0
+  },
+  {
+   "from": "fbm2_1",
+   "from_port": 0,
+   "to": "shader_3",
+   "to_port": 1
+  },
+  {
+   "from": "fbm2_2",
+   "from_port": 0,
+   "to": "shader_3",
+   "to_port": 2
+  },
+  {
+   "from": "shader_3",
+   "from_port": 0,
+   "to": "normal_map_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_3",
+   "from_port": 0,
+   "to": "occlusion2_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_3",
+   "from_port": 1,
+   "to": "Material",
+   "to_port": 0
+  },
+  {
+   "from": "shader_3",
+   "from_port": 3,
+   "to": "Material",
+   "to_port": 1
+  },
+  {
+   "from": "shader_3",
+   "from_port": 2,
+   "to": "Material",
+   "to_port": 2
+  },
+  {
+   "from": "normal_map_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 4
+  },
+  {
+   "from": "occlusion2_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 5
+  },
+  {
+   "from": "shader_3",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 6
+  }
+ ],
+ "label": "Emblem Enamel Signal",
+ "name": "Material",
+ "node_position": {
+  "x": 0,
+  "y": 0
+ },
+ "nodes": [
+  {
+   "name": "fbm2_0",
+   "node_position": {
+    "x": 220,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 40,
+    "scale_y": 40
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_1",
+   "node_position": {
+    "x": 440,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 4,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.55,
+    "scale_x": 3,
+    "scale_y": 3
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_2",
+   "node_position": {
+    "x": 660,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 2,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 160,
+    "scale_y": 160
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "shader_3",
+   "node_position": {
+    "x": 880,
+    "y": 0
+   },
+   "parameters": {},
+   "seed_int": 0,
+   "shader_model": {
+    "code": "",
+    "global": "",
+    "inputs": [
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "peel",
+      "longdesc": "peel",
+      "name": "peel",
+      "shortdesc": "peel",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "cloud",
+      "longdesc": "cloud",
+      "name": "cloud",
+      "shortdesc": "cloud",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "grain",
+      "longdesc": "grain",
+      "name": "grain",
+      "shortdesc": "grain",
+      "type": "f"
+     }
+    ],
+    "instance": "\nfloat hs_$name(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\nfloat sat_$name(float x) { return clamp(x, 0.0, 1.0); }\n\nfloat height_$name(vec2 uv) { return 0.5 + 0.12 * ($peel(uv) - 0.5); }\nvec3 albedo_$name(vec2 uv) {\n\tvec3 base = vec3(0.184, 0.384, 0.878);\n\tvec3 c = base * (0.9 + 0.2 * $cloud(uv));\n\treturn mix(c, vec3(0.42, 0.62, 1.0), 0.5 * smoothstep(0.72, 0.8, $grain(uv)));\n}\nfloat rough_$name(vec2 uv) { return 0.22 + 0.08 * $peel(uv); }\nfloat metal_$name(vec2 uv) { return 0.0; }\n",
+    "longdesc": "emblem enamel signal",
+    "name": "emblem enamel signal",
+    "outputs": [
+     {
+      "f": "sat_$name(height_$name($uv))",
+      "longdesc": "out0",
+      "shortdesc": "out0",
+      "type": "f"
+     },
+     {
+      "longdesc": "out1",
+      "rgba": "vec4(clamp(albedo_$name($uv), vec3(0.0), vec3(1.0)), 1.0)",
+      "shortdesc": "out1",
+      "type": "rgba"
+     },
+     {
+      "f": "sat_$name(rough_$name($uv))",
+      "longdesc": "out2",
+      "shortdesc": "out2",
+      "type": "f"
+     },
+     {
+      "f": "sat_$name(metal_$name($uv))",
+      "longdesc": "out3",
+      "shortdesc": "out3",
+      "type": "f"
+     }
+    ],
+    "parameters": [],
+    "shortdesc": "emblem enamel signal"
+   },
+   "type": "shader"
+  },
+  {
+   "name": "normal_map_0",
+   "node_position": {
+    "x": 1100,
+    "y": 0
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 0.024,
+    "param2": 0,
+    "param4": 1
+   },
+   "type": "normal_map"
+  },
+  {
+   "name": "occlusion2_0",
+   "node_position": {
+    "x": 1320,
+    "y": 0
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 4,
+    "param2": 0.44,
+    "param3": 1
+   },
+   "type": "occlusion2"
+  },
+  {
+   "export_paths": {},
+   "name": "Material",
+   "node_position": {
+    "x": 1540,
+    "y": 0
+   },
+   "parameters": {
+    "albedo_color": {
+     "a": 1.0,
+     "b": 1,
+     "g": 1,
+     "r": 1,
+     "type": "Color"
+    },
+    "ao": 1.0,
+    "depth_scale": 0.0,
+    "emission_energy": 1.0,
+    "flags_transparent": false,
+    "metallic": 1.0,
+    "normal": 1.0,
+    "roughness": 1.0,
+    "size": 11,
+    "sss": 0.0
+   },
+   "type": "material"
+  }
+ ],
+ "parameters": {},
+ "type": "graph"
+}
