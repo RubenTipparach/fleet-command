@@ -545,7 +545,7 @@ vec3 paint(vec3 p, vec3 n){
   else if (uMode < 0.5) {                                                                                     // hull
     bool inBand = side && p.y > uBand.x && p.y < uBand.y;
     if (inBand) { c = sub; if (abs(p.y - mix(uBand.x, uBand.y, 0.48)) < 0.06) c = dark; if (seamL(p.z, 8.0, 0.18) > 0.5) c = dark; }
-    if (top) for (int i = 0; i < 2; i++) { float x = i == 0 ? uChan.x : uChan.y; if (x > 0.0 && abs(abs(p.x) - x) < 0.55) c = dark; }
+    if (top) for (int i = 0; i < 2; i++) { float x = i == 0 ? uChan.x : uChan.y; if (x > 0.0 && abs(abs(p.x) - x) < 0.2) c = mix(c, sub, 0.75); } // thin grey seams, not black channels
     for (int i = 0; i < 4; i++) { if (float(i) >= uStripeN) break; float d = abs(p.z - uStripes[i]);
       if (!inBand && d < 1.1) c = uStripe*(0.92 + 0.08*ph1(cell)); else if (!inBand && d < 1.32) c = uSeam; }
   }
@@ -1314,20 +1314,24 @@ function buildShip(id, liv, offset = V3()) {
   // Floodlight pools, the baked hull lights (owner, 2026-10-30: logo lights, and hull floods that graze the plating so its detail
   // reads in shadow): the registry, the command block, each nacelle's flank, and lamps along the waist that light the hull up.
   // The registry, lit from a lamp just ahead of it, throwing its fan aft along the dorsal plating.
-  addSpot(ship, V3(0, hr[2] + 0.6, zr - rw * 0.2 - 2), V3(0, -0.07, 1), rw * 1.4, 1.1);
+  addSpot(ship, V3(0, hr[2] + 2.0, zr - rw * 0.55 - 2), V3(0, -0.32, 1), rw * 1.6, 1.1);
   // The command block's face, from a lamp on the hull ahead of it.
-  if (C.command) { const K = C.command, hz = hullAt(S, K.z[0] + 4); addSpot(ship, V3(0, K.top + 0.4, K.z[0] - 1), V3(0, -0.12, 1), 16, 0.9); }
+  if (C.command) { const K = C.command, hz = hullAt(S, K.z[0] + 4); addSpot(ship, V3(0, K.top + 1.5, K.z[0] - 1), V3(0, -0.4, 1), 18, 0.9); }
   // Each nacelle's flank, from a lamp at its intake end, raking aft along it.
   for (const K of ship.sides) { const k = ship.knee[K], n = k.n, out = K[0] === 'P' ? 1 : K[0] === 'S' ? -1 : 0, up = K[0] === 'D' ? 1 : K[0] === 'V' ? -1 : 0;
     if (out) addSpot(ship, k.mid.clone().add(V3(out * (n.hw + 0.4), n.hh + 0.4, 0)), V3(0, -1, 0), n.hh * 4.5, 0.9); // a side: aimed down
-    else addSpot(ship, k.mid.clone().add(V3(0, up * (n.hh + 0.4), -n.len * 0.42)), V3(0, -up * 0.06, 1), n.len * 0.8, 0.9); }  // top or bottom: facing forward
+    else addSpot(ship, k.mid.clone().add(V3(0, up * (n.hh + 1.6), -n.len * 0.42)), V3(0, -up * 0.25, 1), n.len * 0.8, 0.9); }  // top or bottom: facing forward
   // Lamps in the service band that throw their fans up the hull's sides, and lamps on the shoulders that rake the dorsal plating.
   if (C.carrier && C.carrier.doors) for (const z of C.carrier.doors) { const h = hullAt(C.secondary.stations, z), ch = chOf(h[1], h[2], h[3], h[4]), up = C.carrier.door.h / 2 + 1.4;
     for (const sd of [1, -1]) { const N = V3(sd, 1, 0).normalize(), Vv = V3(-sd, 1, 0).normalize(); addSpot(ship, V3(sd * (h[1] - ch / 2), h[2] - ch / 2, z).addScaledVector(Vv, up).addScaledVector(N, 0.4), Vv.clone().negate(), 9, 0.9); } } // a lamp over each bay door, aimed down the slope
-  if (!C.carrier) { const n = Math.max(2, Math.round((C.live[1] - C.live[0]) / 18)); for (let i = 0; i < n && ship.dmgU.uPoolN.value < 15; i++) {
-    const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); const ch = chOf(h[1], h[2], h[3], h[4]); for (const sd of [1, -1]) addSpot(ship, V3(sd * (h[1] + 0.35), h[2] - ch - 0.2, z), V3(0, -1, 0), (h[2] - h[3]) * 1.6, 0.85); } }
-  for (const sd of [1, -1]) { if (ship.dmgU.uPoolN.value >= 16) break; const z = zMin + 6, h = hullAt(S, z); addSpot(ship, V3(sd * h[1] * 0.6, h[2] + 0.35, z), V3(0, -0.06, 1), C.length * 0.35, 0.6); }
-  { const z = (zMin + zMax) / 2, h = hullAt(S, z); for (const fw of [1, -1]) addSpot(ship, V3(0, h[3] - 0.35, z + fw * 0.5), V3(0, 0.05, fw), C.length * 0.45, 0.7); } // the belly, mid-hull: one forward, one aft (owner: "on the bottom, maybe a light aiming forward and backward")
+  if (!C.carrier) { const n = Math.max(1, Math.round((C.live[1] - C.live[0]) / 26)); for (let i = 0; i < n && ship.dmgU.uPoolN.value < 10; i++) { // leaves room for the stern and belly lamps
+    const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); const ch = chOf(h[1], h[2], h[3], h[4]); for (const sd of [1, -1]) addSpot(ship, V3(sd * (h[1] + 1.4), h[2] - ch + 0.4, z), V3(-sd * 0.3, -1, 0), (h[2] - h[3]) * 1.6, 0.85); } }
+  for (const sd of [1, -1]) { if (ship.dmgU.uPoolN.value >= 16) break; const z = zMin + 6, h = hullAt(S, z); addSpot(ship, V3(sd * h[1] * 0.6, h[2] + 1.6, z), V3(0, -0.28, 1), C.length * 0.35, 0.7); }
+  // The belly (owner: "on the bottom, maybe a light aiming forward and backward", then "a lot of ships are missing lights on
+  // bottom"): a pair at mid-hull, one forward and one aft, and one under the bow throwing aft, each standing 1.8 m off the
+  // plating and tilted into it so its light lands.
+  { const z = (zMin + zMax) / 2, h = hullFor(C, z); for (const fw of [1, -1]) addSpot(ship, V3(0, h[3] - 1.8, z + fw * 0.5), V3(0, 0.3, fw), C.length * 0.45, 0.8);
+    const zb = zMax - C.length * 0.12, hb2 = hullAt(S, zb); addSpot(ship, V3(0, hb2[3] - 1.8, zb), V3(0, 0.3, -1), C.length * 0.4, 0.8); }
   // Two fire lights per ship, made now so the shaders never recompile mid-battle.
   for (let i = 0; i < 2; i++) { const l = new THREE.PointLight(0xff7a2a, 0, C.length * 0.5, 1.6); ship.root.add(l); ship.lights.push({ l, until: 0, at: null, anchor: null }); }
   // The shield bubble.
@@ -1945,7 +1949,7 @@ function applyLight(k) {
 // Real hull lamps for the ship in view: each spot a SpotLight with a 90 degree cone on the hull (so it moves and dies with it),
 // the first eight casting shadows (the texture units a phone has); the painted pools are switched off for this ship so nothing
 // is lit twice. Every mesh casts and receives shadows; the sun's shadow box is fitted to the ship.
-const SPOT_SHADOWS = 8, SPOT_MAX = 12, SPOT_K = 2.6; // lamps with shadows; lamps in all; intensity per unit of pool strength
+const SPOT_SHADOWS = 8, SPOT_MAX = 16, SPOT_K = 2.6; // lamps with shadows; lamps in all; intensity per unit of pool strength
 function lightShip(ship) {
   const P = ship.pieces.hull; ship.lamps = [];
   (ship.spots || []).slice(0, SPOT_MAX).forEach((sp, i) => {
@@ -2187,7 +2191,7 @@ window.MOCKUP_SHOTS = {
   scale: shot('petrel_updown', 'sunlit', 'scale', null, 0.2),
   swift_below: shot('swift_below', 'sunlit', 'hero', null, 0.2), swift_updown: shot('swift_updown', 'sunlit', 'hero', null, 0.2), swift_level: shot('swift_level', 'sunlit', 'hero', null, 0.2),
   petrel_level: shot('petrel_level', 'sunlit', 'hero', null, 0.2), albatross: shot('albatross', 'sunlit', 'hero', null, 0.2), condor: shot('condor', 'sunlit', 'hero', null, 0.2), condor_guns: shot('condor', 'sunlit', 'hero', null, 0.2, { cam: (s) => frame(42, V3(-0.8, 0.45, 0.9), at(s, V3(0, 11, 54))) }), condor_under: shot('condor', 'sunlit', 'under', null, 0.2), pelican: shot('pelican', 'sunlit', 'hero', null, 0.2), pelican_bays: shot('pelican', 'shadow', 'hero', null, 0.2, { cam: (s) => frame(55, V3(-1, 0.7, 0.35), at(s, V3(-9, 4, -10))) }), pelican_front: shot('pelican', 'sunlit', 'bow', null, 0.2), albatross_main: shot('albatross_main', 'sunlit', 'hero', null, 0.2), albatross_main_front: shot('albatross_main', 'sunlit', 'bow', null, 0.2), albatross_side: shot('albatross', 'sunlit', 'side', null, 0.2),
-  albatross_under: shot('albatross', 'sunlit', 'under', null, 0.2), belly_lights: shot('petrel_level', 'nosun', 'under', null, 0.2), tern: shot('tern', 'sunlit', 'hero', null, 0.2),
+  albatross_under: shot('albatross', 'sunlit', 'under', null, 0.2), belly_lights: shot('petrel_level', 'nosun', 'under', null, 0.2), condor_belly: shot('condor', 'nosun', 'under', null, 0.2), condor_top: shot('condor', 'nosun', 'hero', null, 0.2, { cam: (s) => frame(60, V3(-0.3, 1, 0.3), at(s, V3(0, 11, -20))) }), tern: shot('tern', 'sunlit', 'hero', null, 0.2),
   coolant: shot('albatross', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 3, { tab: 'damage', cam: (s) => frame(90, V3(-0.9, -0.4, 0.6), at(s, s.corePos)) }),
   nacelle_venting: shot('petrel_level', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 75), 2.5, { tab: 'damage', cam: (s) => frame(70, V3(1, 0.5, 0.3), kneeW(s, 'P')) }),
   bridge_fire: shot('petrel_updown', 'shadow', 'hero', (s) => { hurt(s, 'bridge', 80); hurt(s, 'life', 40); }, 2.5, { tab: 'damage', cam: (s) => frame(55, V3(-0.7, 0.55, 1), at(s, s.bridgeTop)) }),

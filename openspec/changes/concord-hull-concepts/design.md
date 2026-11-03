@@ -10,7 +10,7 @@ is the owner's own, and the Concord ships take its build rules; their names, siz
 | Octagonal hull lofted linearly through stations along Z, every corner chamfered at 45 degrees | `data/ships/tern/layout.json` hull.note and hull.sections; `exteriors.json` ships[osprey, shrike].sections_m as `[z, half beam, top, bottom, chamfer]` | Every Concord hull is a list of such stations, lofted the same way |
 | White armour over a grey subhull | ship-exteriors design ("broad angular white/ivory armor over a grey subhull") and the Copper hero capture | Shader rule: top and side faces armour, bottom faces subhull |
 | A narrow grey service band at the waterline with a pipe and clamps | `exteriors.json` tern.service_band (y -0.65 to 0.35 m, pipe at -0.18 m, clamps every 8 m) | The same band, the same pipe line and a dark clamp every 8 m |
-| Grey dorsal channels | the Tern top capture | One channel pair (two on the cruiser) down the back |
+| Grey dorsal channels | the Tern top capture | One pair (two on the larger classes) of thin grey seams down the back (owner, 2026-11-03: "clean up the hull, these black lines on top is a bit much") |
 | An identification stripe that wraps the hull, outlined | `exteriors.json` liveries; Copper and Cyan hero captures | Livery stripes at two to four stations, with a dark seam each side; they skip the service band |
 | Windows on decks 3.5 m apart, warm panes in copper rims, only where crew live | `layout.json` decks (floors 3.5, 0, -3.5 m); `window_rim_m` 0.12 | Rows 1.5 m above each deck floor along the lived-in length; rims 0.12 m; a frame every fifth window |
 | Level swept pylons at mid-height; long octagonal nacelles with a profile along their length | `exteriors.json` tern.pylon and tern.nacelle (`profile_t_scale`) | The same pylon shape and the Tern's nacelle profile on every class |
@@ -121,7 +121,10 @@ side aim down":
 | Nacelle, above or below the hull | At its aft end | Forward along it |
 | Waist | On the shoulders, every 18 m, both sides | Straight down the hull's side |
 | Stern, dorsal | On the plating aft | Forward along it |
-| Belly | A pair at mid-hull on the ventral plating (owner: "on the bottom, maybe a light aiming forward and backward") | One forward, one aft |
+| Belly | A pair at mid-hull and one under the bow (owner: "on the bottom, maybe a light aiming forward and backward", "a lot of ships are missing lights on bottom") | Forward and aft from mid-hull, aft from the bow |
+
+Each lamp stands 1.5-2 m off the plating and tilts 15-20 degrees into it, so its light lands on the surface it is meant to
+light rather than skimming past it.
 
 ### Geometry blocks the light
 
