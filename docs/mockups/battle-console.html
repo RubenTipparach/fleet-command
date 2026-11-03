@@ -1118,7 +1118,7 @@ function aiCapture(s) {
   s.target = st.id; steer(s, 'approach', st, 2);
   if (!s.party && canBoard(s, st)) {
     const tm = { marines: s.marines, demo: 0, medics: s.team.medics, engineers: s.team.engineers, hackers: s.team.hackers, pilots: s.team.pilots, vip: s.vip ? 1 : 0 };
-    s.marines = 0; for (const r of ['medics', 'engineers', 'hackers', 'pilots']) s.team[r] = 0; s.vip = null; usePad(s);
+    s.marines = 0; for (const r of ['medics', 'engineers', 'hackers', 'pilots']) s.team[r] = 0; s.vip = null; usePad(s); beamPair(s, st);
     s.party = { on: st.id, team: tm, volleyT: BOARD.volley_s, last: null, loud: true };
     say('Comms', `${s.name}: boarding ${st.name} with ${tm.marines} marines${tm.vip ? ' and the envoy' : ''}.`);
   }
@@ -1346,7 +1346,7 @@ const A = {
       if (!d.ship) { say('Transport', 'Cannot beam the envoy to a planet here.'); return; }
       if (dir > 0) { if (!s.vip) return; o.vip = s.vip; s.vip = null; say('Transport', `${o.vip} beamed to ${o.name}.`); }
       else { if (!o.vip) return; s.vip = o.vip; o.vip = null; say('Transport', `${s.vip} beamed aboard.`); }
-      usePad(s); return;
+      usePad(s); beamPair(s, o); return;
     }
     const label = ITEMS.find((q) => q[0] === what)[1].toLowerCase();
     if (dir > 0) {
@@ -1361,7 +1361,7 @@ const A = {
       const n = Math.min(INV.per_beam, o.hold[what], s.holdCap - holdUsed(s)); if (n <= 0) { say('Transport', o.hold[what] <= 0 ? `${name} has no ${label}.` : 'Our hold is full.'); return; }
       o.hold[what] -= n; s.hold[what] += n; say('Transport', `${n} ${label} beamed aboard from ${name}.`);
     }
-    usePad(s); },
+    usePad(s); beamPair(s, o); },
   // A disguised shuttle launched at the target (owner: "a disguised shuttle leaves your ship and suicide bombs a
   // station").
   shuttle: () => { const s = W.player, t = tgt(s); if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (!t || s.shuttles <= 0) return; s.shuttles--; W.craft.push({ kind: 'shuttle', home: s.id, to: t.id, x: s.x, z: s.z, side: s.side });
@@ -1375,7 +1375,7 @@ const A = {
   placeMine: (x, z) => { const s = W.player; placingMine = false; if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; }
     if (s.mines <= 0 || s.mineCool > 0 || !padReady(s)) return;
     const d = Math.hypot(x - s.x, z - s.z) / 10; if (d > TRANSPORT.range_km) { say('Transport', `Out of transporter range (${km(TRANSPORT.range_km)}).`); return; }
-    s.mines--; s.mineCool = MINE.cooldown_s; usePad(s); W.mines.push({ x, z, side: s.side, arm: MINE.arm_s }); say('Transport', `Mine beamed out to ${km(d)}.`); },
+    s.mines--; s.mineCool = MINE.cooldown_s; usePad(s); W.mines.push({ x, z, side: s.side, arm: MINE.arm_s }); beamPair(s, { x, z }, CC.caution); say('Transport', `Mine beamed out to ${km(d)}.`); },
   scene: (id) => { sceneId = id; try { localStorage.setItem('fc.battle.scene', id); } catch (e) { /* storage blocked */ } A.reset(); menuOpen = false; },
   // Warp: plot a course (navigation calculating it, whatever the heading), the safety override, and the jump.
   plot: () => { const w = W.player.warp; if (w.plotting && w.plot < 1) return; w.plotting = true; w.plot = 0; say('Navigation', 'Plotting a warp course.'); },
@@ -1448,6 +1448,7 @@ function beamQueued(s, mode, pads) {
       else s.raid = { on: t.id, sys: raidSys, mount: raidSys === 'weapons' && raidMount !== null && t.mounts[raidMount] ? raidMount : null, kind: raidKind, team: { marines: 0, demo: 0, [role]: 1 }, t: BOARD.raid_s };
     }
   }
+  if (n) beamPair(s, t);
   if (s !== W.player) return n;
   if (n) say('Transport', `Energizing: ${Object.entries(sent).map(([r, k]) => `${k} ${ROLE_ONE[r].toLowerCase()}${k > 1 && r !== 'demo' ? 's' : ''}`).join(', ')} to ${t.name}${mode === 'hit' ? `'s ${raidName(s.raid, t)}` : ''}${friend ? ` (${t.marines} marines aboard)` : ''}.`);
   else say('Transport', !q.length ? 'The queue is empty.' : !t ? 'No target.' : !pads.some((i) => s.pads[i] >= 1) ? 'Pads charging.' : distKm(s, t) > TRANSPORT.range_km ? `Out of reach (${km(TRANSPORT.range_km)}).`
@@ -1576,7 +1577,8 @@ function barrageStep(s) {
   W.shots.push({ kind: 'missile', x: s.x + r[0] * side, z: s.z + r[1] * side, to: t.id, from: s.id, hit: W.rand.hit() < BARRAGE.hit_p, dmg: W.lethal.has('barrage') ? CLASSES[t.cls].hull / 3 : w.dmg, speed: w.speed_m_s / M_PER_U, color: w.color, life: 30, aim: 'hull' });
 }
 const KEYS = { KeyA: () => A.turn(-15), KeyD: () => A.turn(15), KeyQ: () => A.turn(-45), KeyE: () => A.turn(45), KeyW: () => A.speedStep(1), KeyS: () => A.speedStep(-1),
-  KeyX: () => A.allStop(), Space: () => A.fire(), Tab: () => A.nextTarget(), KeyP: () => A.pause(), Escape: () => (expanded ? A.expand(expanded) : A.menu()), KeyM: () => A.volley() };
+  // Space pauses and resumes (owner, 2026-11-03: "space should pause/resume"); F fires
+  KeyX: () => A.allStop(), Space: () => A.pause(), KeyF: () => A.fire(), Tab: () => A.nextTarget(), KeyP: () => A.pause(), Escape: () => (expanded ? A.expand(expanded) : A.menu()), KeyM: () => A.volley() };
 addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen && e.code !== 'Escape') return; e.preventDefault(); f(); tickUI(); });
 
 // =================================================================================================================
@@ -2489,8 +2491,9 @@ function controlRow(id, x, y, w, s, t, mode, big) {
 // Inventory moves goods, the VIP and mines, a pad at a time.
 function stTransport(b, big) {
   const s = W.player, t = tgt(s); let y = b.y; const gap = big ? 14 : 8;
-  const TT = [['capture', 'Capture'], ['hit', 'Hit & run'], ['sup', 'Supplies'], ['cargo', 'Cargo']], setT = (k) => { trTab = k; placingMine = false; };
-  // four modes: one row expanded, two rows docked so every name reads in full
+  const TT = [['capture', 'Capture'], ['hit', 'Hit & run'], ['sup', 'Supplies'], ['cargo', 'Cargo'], ['mines', 'Mines']], setT = (k) => { trTab = k; placingMine = false; };
+  // five modes: one row expanded, two rows docked so every name reads in full (mines on their own tab: owner, 2026-11-03,
+  // "mine should be on a seperate tab called mines")
   if (big) { tabs('tr.tab', b.x, y, b.w, 34, TT, trTab, setT); y += 34 + gap; }
   else { tabs('tr.tab', b.x, y, b.w, 30, TT.slice(0, 2), trTab, setT); tabs('tr.tab2', b.x, y + 34, b.w, 30, TT.slice(2), trTab, setT); y += 64 + gap; }
   if (trTab === 'capture' || trTab === 'hit') {
@@ -2532,11 +2535,19 @@ function stTransport(b, big) {
     g.fillStyle = CC.deep; g.fillRect(b.x, y - gap / 2 - (big ? 5 : 2), b.w, 2);
     y += padRow(`tr.pad.${mode}`, b.x, y, b.w, s, mode, big) + gap;
     y += controlRow(`tr.ctl.${mode}`, b.x, y, b.w, s, mode === 'capture' ? captureDest(s) : t, mode, big) + gap;
+  } else if (trTab === 'mines') {
+    // mines: beamed out to a point clicked inside the transporter's range, or dropped astern; the count and cooldown
+    const hw = (b.w - 6) / 2;
+    pairs('tr.mn', b.x, y + 18, [['Mines', String(s.mines)], ['Reach', km(TRANSPORT.range_km)], ['Cooldown', s.mineCool > 0 ? `${fmtCool(s.mineCool)} s` : 'ready', s.mineCool > 0 ? CC.caution : CC.accord]], b.w, 18); y += 30;
+    button('tr.place', b.x, y, hw, 40, placingMine ? 'Cancel' : 'Place mine', A.mineMode, { center: true, sel: () => placingMine, dis: () => !placingMine && (s.mines <= 0 || s.mineCool > 0 || !padReady(s)) });
+    button('tr.mine', b.x + hw + 6, y, hw, 40, s.mineCool > 0 ? `Mine ${fmtCool(s.mineCool)} s` : 'Drop astern', A.mine, { center: true, dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 48;
+    LBL(placingMine ? 'Click in the view inside the dashed ring' : 'Placed by pad · dropped astern without one', b.x, y + 12, b.w, placingMine ? CC.caution : CC.lilac, 'left', 13); y += 22;
+    y += padRow('tr.pad.mn', b.x, y, b.w, s, 'inv', big) + gap;
   } else {
     // Supplies and Cargo (owner, 2026-11-03: "insted of 10/20 goods, show goods as an icon button, same with VIP", then
     // "dont mix important cargo with regular cargo, regular cargo will have its own tab too, and we should see how much
     // cargo the ship has vs extra cargo space"): Supplies holds what missions ask for (spare parts, rations, medicine,
-    // the envoy); Cargo holds trade goods, and the mines. Both: where to (the friendly ship, station or planet selected
+    // the envoy); Cargo holds trade goods (mines have their own tab). Both: where to (the friendly ship, station or planet selected
     // in the view), the hold split into supplies, cargo and free space, then a key per item: ours to send, theirs to take
     const d = invPick(s), reach = invReach(s, d), ks = Math.min(big ? 76 : 44, (b.w - 4 * 6) / 5), keys = trTab === 'cargo' ? CARGO_KEYS : SUPPLY_KEYS.concat(['vip']);
     const dest = d ? d.ship || d.planet : null, nameOf = (k) => k === 'vip' ? 'Envoy' : ITEMS.find((q) => q[0] === k)[1];
@@ -2555,10 +2566,6 @@ function stTransport(b, big) {
       if (want.length) { want.forEach(([k], i) => { const cx = b.x + i * (ks * 1.9), left = stillNeeds(dest, k), sz2 = Math.round(ks * 0.7);
         g.fillStyle = left ? CC.caution : CC.accord; g.beginPath(); g.roundRect(cx, y, sz2, sz2, sz2 * 0.22); g.fill(); itemGlyph(k, cx + sz2 / 2, y + sz2 / 2, sz2 * 0.32, '#000');
         NUM(left ? `${left}` : 'done', cx + sz2 + 6, y + sz2 * 0.72, 0, left ? CC.caution : CC.accord, 'left', Math.round(sz2 * 0.55)); }); y += Math.round(ks * 0.7) + 8; } }
-    const hw = (b.w - 6) / 2;
-    if (trTab === 'cargo') {
-    button('tr.place', b.x, y, hw, 40, placingMine ? 'Cancel' : 'Place mine', A.mineMode, { center: true, sel: () => placingMine, dis: () => !placingMine && (s.mines <= 0 || s.mineCool > 0 || !padReady(s)) });
-    button('tr.mine', b.x + hw + 6, y, hw, 40, s.mineCool > 0 ? `Mine ${fmtCool(s.mineCool)} s` : 'Drop astern', A.mine, { center: true, dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 46; }
     y += padRow('tr.pad.inv', b.x, y, b.w, s, 'inv', big) + gap;
   }
   // the weapon list, last so it lies over the queue
@@ -3170,6 +3177,47 @@ function explosionsStep(dt) {
   }
   for (let i = EXPLOSIONS.length - 1; i >= 0; i--) if (EXPLOSIONS[i].done) EXPLOSIONS.splice(i, 1);
 }
+// The transporter effect (owner, 2026-11-03: "there should be some shader + vfx for transporting stuff"): at each end of a
+// beam, a column of light on the plane, filled with twinkling motes that climb it (a shader: hashed cells blinking in
+// time, scrolled upward), a bright band sweeping up as it materialises, a ring spreading on the plane and a flash, over
+// beam_s. Sky for crew and cargo, Caution for a mine. r_u and h_u: the column for a ship; a planet's is wider.
+const BEAM_FX = { beam_s: 1.6, r_u: 0.9, h_u: 3.2 };
+const BEAM_SHADER = {
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform float uT; uniform float uK; uniform vec3 uCol; varying vec2 vUv;
+    float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    void main() {
+      vec2 g = vec2(vUv.x * 48.0, vUv.y * 22.0 - uT * 6.0), c = floor(g), f = fract(g) - 0.5;
+      float r = h(c), tw = step(0.8, r) * (0.5 + 0.5 * sin(uT * 18.0 + r * 40.0));
+      float spark = tw * smoothstep(0.34, 0.0, length(f));
+      float body = smoothstep(0.0, 0.12, vUv.y) * (1.0 - vUv.y);
+      float life = sin(3.14159 * clamp(uK, 0.0, 1.0));
+      float sw = uK * 1.3 - 0.15, sweep = smoothstep(sw - 0.25, sw, vUv.y) * (1.0 - smoothstep(sw, sw + 0.12, vUv.y));
+      gl_FragColor = vec4(uCol * (1.0 + spark * 1.5), (spark * 2.2 + body * 0.3 + sweep * 0.7) * life);
+    }` };
+const BEAMS = [];
+const tpColGeo = new THREE.CylinderGeometry(1, 0.7, 1, 32, 1, true).translate(0, 0.5, 0), beamRingGeo = new THREE.RingGeometry(0.82, 1, 48).rotateX(-P / 2);
+function beamFx(x, z, col = CC.sky, r = BEAM_FX.r_u) {
+  const mat = new THREE.ShaderMaterial({ ...BEAM_SHADER, uniforms: { uT: { value: 0 }, uK: { value: 0 }, uCol: { value: new THREE.Color(col) } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const col3 = new THREE.Mesh(tpColGeo, mat); col3.position.set(x, -0.2, z); col3.scale.set(r, BEAM_FX.h_u * Math.max(1, r / BEAM_FX.r_u * 0.6), r); scene.add(col3);
+  const ring = new THREE.Mesh(beamRingGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(col), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); ring.position.set(x, 0.02, z); scene.add(ring);
+  const fl = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(col), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); fl.position.set(x, 0.6, z); scene.add(fl);
+  BEAMS.push({ t: 0, col3, ring, fl, r });
+}
+// Both ends of a beam: from a ship to a ship, a planet's surface nearest the ship, or a point (a mine).
+function beamPair(s, o, col) {
+  beamFx(s.x, s.z, col);
+  if (!o) return;
+  if (o.r && !o.hull) { const d = Math.hypot(s.x - o.x, s.z - o.z) || 1; beamFx(o.x + (s.x - o.x) / d * o.r, o.z + (s.z - o.z) / d * o.r, col, BEAM_FX.r_u * 2.2); }
+  else beamFx(o.x, o.z, col);
+}
+function beamsStep(dt) {
+  for (const b of BEAMS) { b.t += dt; const k = b.t / BEAM_FX.beam_s, u = b.col3.material.uniforms; u.uT.value = b.t; u.uK.value = k;
+    b.ring.scale.setScalar(b.r * (0.6 + k * 1.6)); b.ring.material.opacity = Math.max(0, 0.8 * (1 - k));
+    b.fl.scale.setScalar(b.r * 3 * Math.sin(Math.PI * Math.min(1, k))); b.fl.material.opacity = Math.max(0, 0.7 * (1 - k));
+    if (k >= 1) { b.done = true; scene.remove(b.col3); scene.remove(b.ring); scene.remove(b.fl); b.col3.material.dispose(); b.ring.material.dispose(); b.fl.material.dispose(); } }
+  for (let i = BEAMS.length - 1; i >= 0; i--) if (BEAMS[i].done) BEAMS.splice(i, 1);
+}
 function boomAt(x, z, size) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb070, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); sp.position.set(x, 0, z); scene.add(sp); booms.push({ sp, t: 0, size }); }
 const SHOT_POOL = {};
 // The rocks (owner, 2026-11-02: "asteroid meshes need work!"): each rock's surface is pushed in and out by one smooth
@@ -3236,7 +3284,7 @@ function syncScene(dt) {
   for (const c of W.craft) { const sp = take('glow'); sp.position.set(c.x, 0.1, c.z); sp.scale.setScalar(0.35); sp.material.color.setHex(0x9fd0ff); }
   for (const mn of W.mines) { const sp = take('glow'); sp.position.set(mn.x, 0, mn.z); sp.scale.setScalar(0.5); sp.material.color.setHex(mn.arm > 0 ? 0x806020 : 0xffb030); }
   for (const kind of Object.keys(SHOT_POOL)) for (let i = used[kind] || 0; i < SHOT_POOL[kind].length; i++) SHOT_POOL[kind][i].obj.visible = false;
-  explosionsStep(dt);
+  explosionsStep(dt); beamsStep(dt);
   for (const b of booms) { b.t += dt; const k = b.t / 1.4; b.sp.scale.setScalar(b.size * (1 + k * 4)); b.sp.material.opacity = Math.max(0, 1 - k); if (k >= 1) { scene.remove(b.sp); b.done = true; } }
   for (let i = booms.length - 1; i >= 0; i--) if (booms[i].done) booms.splice(i, 1);
 }
@@ -3347,6 +3395,8 @@ function bullseye(scr, mx, mz, col, alpha) {
 // The turn still to make (after the-federation's TurnArc): an arc on the plane round your ship from its heading to the
 // ordered heading, with a tick at the order. (The mark where the helm was clicked is gone: owner, 2026-11-02, "should
 // get rid of plus sign".) The ring brightens under the pointer and while it is dragged to steer.
+// where the transport range's label sits on its ring (an angle round the ship), eased frame to frame
+const reachLabel = { a: null, t: 0 };
 function helmArc(vw, vh, s) {
   const scr = (x, z) => { const v = new THREE.Vector3(x, 0, z).project(camera); return v.z < 1 ? [(v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh] : null; };
   const R = HELM_RING.r_u, dh = wrap(s.hOrder - s.h), n = Math.max(2, Math.ceil(Math.abs(dh) / 0.08));
@@ -3376,13 +3426,22 @@ function helmArc(vw, vh, s) {
     g.stroke(); g.setLineDash([]);
     // the label on the ring at its top on screen, following its curve
     // the point of the ring highest on screen but still in the view, wherever the camera has been turned
-    let ta = null, ty2 = Infinity; for (let i = 0; i < 96; i++) { const a2 = i / 96 * 2 * P, q = at(a2, Rm); if (q && q[0] > 60 && q[0] < vw - 60 && q[1] > 110 && q[1] < ty2) { ty2 = q[1]; ta = a2; } }
+    // (owner, 2026-11-03: "can we make this text move smoother? it has some jittery motion"): the coarse search is refined
+    // to the true highest point between samples, then the label's angle eases toward it, so it glides instead of
+    // stepping from sample to sample
+    let ta = null, ty2 = Infinity; const ok = (q) => q && q[0] > 60 && q[0] < vw - 60 && q[1] > 110;
+    for (let i = 0; i < 96; i++) { const a2 = i / 96 * 2 * P, q = at(a2, Rm); if (ok(q) && q[1] < ty2) { ty2 = q[1]; ta = a2; } }
+    if (ta !== null) { let lo = ta - 2 * P / 96, hi = ta + 2 * P / 96; const yAt = (a2) => { const q = at(a2, Rm); return ok(q) ? q[1] : Infinity; };
+      for (let k = 0; k < 24; k++) { const m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3; if (yAt(m1) < yAt(m2)) hi = m2; else lo = m1; } ta = (lo + hi) / 2;
+      const now = performance.now(), dtl = Math.min(0.1, (now - (reachLabel.t || now)) / 1000); reachLabel.t = now;
+      if (reachLabel.a === null || Math.abs(wrap(ta - reachLabel.a)) > 1) reachLabel.a = ta; else reachLabel.a += wrap(ta - reachLabel.a) * (1 - Math.exp(-dtl * 8));
+      ta = reachLabel.a; }
     const top = ta !== null ? at(ta, Rm) : null, c0 = scr(s.x, s.z); if (top && c0) { g.save(); g.font = '700 15px Antonio'; g.fillStyle = col; g.textAlign = 'center'; g.letterSpacing = '2px';
       const q0 = at(ta - 0.08, Rm), q1 = at(ta + 0.08, Rm); const ang = q0 && q1 ? Math.atan2(q1[1] - q0[1], q1[0] - q0[0]) : 0;
       g.translate(top[0], top[1]); g.rotate(ang > P / 2 || ang < -P / 2 ? ang + P : ang); g.fillStyle = '#000'; const tw2 = g.measureText(label).width + 16; g.fillRect(-tw2 / 2, -12, tw2, 18);
       g.fillStyle = col; g.fillText(label, 0, 2); g.restore(); } };
   if (station === 'transport' && !placingMine && s.alive) {
-    const inv = trTab === 'sup' || trTab === 'cargo', d = inv || (trTab === 'capture' && !tgt(s)) ? invPick(s) : null, t2 = !inv ? (trTab === 'capture' ? captureDest(s) : tgt(s)) : null;
+    const inv = trTab === 'sup' || trTab === 'cargo' || trTab === 'mines', d = inv || (trTab === 'capture' && !tgt(s)) ? invPick(s) : null, t2 = !inv ? (trTab === 'capture' ? captureDest(s) : tgt(s)) : null;
     const dk = d ? d.km : t2 ? distKm(s, t2) : Infinity;
     reachRing(dk <= TRANSPORT.range_km ? CC.accord : CC.sky, dk <= TRANSPORT.range_km ? 'TRANSPORT RANGE · IN REACH' : 'TRANSPORT RANGE');
   }
@@ -3545,7 +3604,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, lock[3] === 'select' ? 'Select' : 'Lock target', () => (lock[3] === 'select' ? selectDest(lock[2]) : A.lock(lock[2])), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v58', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v60', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
@@ -3715,8 +3774,8 @@ window.MOCKUP_SHOTS = {
   warp_expanded: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; expanded = 'station'; A.plot(); for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'warp'),
   warp_jumped: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.warpKey(); A.turn(180); A.plot(); A.setSpeed(180); for (let i = 0; i < Math.round(30 / DT); i++) step(); A.jump(); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'warp'),
   scene_select: () => { scripted(600); sceneOpen = true; },
-  scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'cargo'; placingMine = true; }, 'mines'),
-  scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'cargo'; const s = W.player;
+  scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'mines'; placingMine = true; }, 'mines'),
+  scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'mines'; const s = W.player;
     for (const [x, z] of [[-6, -10], [8, -10]]) { A.placeMine(s.x + x, s.z + z); for (let i = 0; i < Math.round(7 / DT); i++) step(); }
     for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'mines'),
   // Hold the Vorrak, then run: the tow drags it into the rock between them.

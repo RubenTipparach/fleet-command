@@ -76,3 +76,5 @@
 - Version 56 published 2026-11-02, version id `1793658994-5c72`: an Event log key in Comms opening the full log over the view (the view key renamed Event log).
 - Version 57 published 2026-11-03, version id `1793666305-3c99`: friendly ships, stations and planets selected by right click as the transport destination; a dashed "Transport range" ring at 1.5 km; Supplies (spare parts, rations, medicine, envoy) and Cargo (goods, mines) tabs with icon keys and a hold bar split into supplies, cargo and free; needs and relief; troops beamed to a friendly; Relief, Distress and Assault scenes; the event log only in Comms, with an X.
 - Version 58 published 2026-11-03, version id `1793666953-3f17`: friendly ships, stations and planets ringed like enemies, in green; every ring and bracket grows and brightens under the pointer.
+- Version 59 (2026-11-03, built; published with version 60): the Transport range label glides along its ring.
+- Version 60 published 2026-11-03, version id `1793667984-54b4`: a Mines tab of its own; Space pauses and resumes (F fires); the transporter effect (a shader column of climbing motes, a ring and a flash) at both ends of every beam.

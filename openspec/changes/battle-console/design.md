@@ -327,6 +327,16 @@ should have a little X".
   ships, stations and planets get the same ring as an enemy, in green (`markRing`, one drawing for all). Under the
   pointer a ring grows 18 %, thickens a pixel and brightens; a locked target's red corners and a selected friendly's
   green corners grow 8-10 % and brighten the same way.
+- **Versions 59 and 60** (owner, 2026-11-03: "can we make this text move smoother? it has some jittery motion", "supplies
+  and cargo are under cargo tab, mine should be on a seperate tab called mines", "space should pause/resume", "there
+  should be some shader + vfx for transporting stuff"):
+  - The "Transport range" label finds the ring's true highest point between samples and eases toward it, so it glides.
+  - **Mines** is a fifth Transport tab (count, reach, cooldown, Place mine, Drop astern, the pads); Cargo is goods only,
+    Supplies stays apart.
+  - **Space pauses and resumes**; F fires (P still pauses).
+  - **The transporter effect** at both ends of every beam (crew, cargo, supplies, the envoy, mines, a troop ship
+    boarding): a column of light whose shader twinkles hashed motes climbing it, a bright band sweeping up, a ring
+    spreading on the plane and a flash, over 1.6 s; Sky, Caution for a mine, wider at a planet's surface.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 
