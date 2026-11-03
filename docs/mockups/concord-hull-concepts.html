@@ -689,8 +689,8 @@ function hullMat(pp, ship, o = {}) {
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + DAMAGE_GLSL + PAINT_GLSL)
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
         float dChar = 0.0, dEmber = 0.0; int holeIdx = -1; float nz = dfbm(vObj*0.45);
-        for (int i = 0; i < 8; i++) { if (i >= uHoleCount) break; vec4 h = uHoles[i]; float d = length(vObj - h.xyz); float r = h.w*(0.72+0.56*nz);
-          if (d < r) holeIdx = i; dChar = max(dChar, 1.0 - smoothstep(r, r*2.4, d)); dEmber = max(dEmber, step(r, d)*(1.0 - smoothstep(r, r*1.2, d))); }
+        for (int i = 0; i < 24; i++) { if (i >= uHoleCount) break; vec4 h = uHoles[i]; float d = length(vObj - h.xyz); float r = h.w*(0.72+0.56*nz);
+          if (d < r) holeIdx = i; dChar = max(dChar, 1.0 - smoothstep(r, r*2.4, d)); dEmber = max(dEmber, step(uHoleN[i].w, 2.5)*step(r, d)*(1.0 - smoothstep(r, r*1.2, d))); }
         if (holeIdx >= 0 && uParallax < 0.5) discard;
         float nz2 = dfbm(vObj*0.9+7.0);
         for (int i = 0; i < 24; i++) { if (i >= uScorchCount) break; vec4 s = uScorch[i]; float d = length(vObj - s.xyz); float r = s.w*(0.55+0.9*nz2);
@@ -756,7 +756,7 @@ function countWindows(C) {
 // The hull shader: MeshStandardMaterial plus damage. Holes (cut away, or drawn by interior mapping), scorch marks,
 // broken edges charred toward the break with a cooling ember line, and the power level of the windows.
 const DAMAGE_GLSL = `
-uniform vec4 uHoles[8]; uniform vec4 uHoleN[8]; uniform int uHoleCount;
+uniform vec4 uHoles[24]; uniform vec4 uHoleN[24]; uniform int uHoleCount;
 uniform vec4 uScorch[24]; uniform float uScorchHeat[24]; uniform int uScorchCount;
 uniform vec4 uCuts[4]; uniform vec4 uCutC[4]; uniform int uCutCount; uniform float uCutHeat;
 uniform float uLight; uniform float uTime; uniform float uParallax;
@@ -767,7 +767,7 @@ float dn3(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
   return mix(mix(mix(dh3(i),dh3(i+vec3(1,0,0)),f.x),mix(dh3(i+vec3(0,1,0)),dh3(i+vec3(1,1,0)),f.x),f.y),
              mix(mix(dh3(i+vec3(0,0,1)),dh3(i+vec3(1,0,1)),f.x),mix(dh3(i+vec3(0,1,1)),dh3(i+vec3(1,1,1)),f.x),f.y),f.z); }
 float dfbm(vec3 p){ return 0.5*dn3(p)+0.3*dn3(p*2.03)+0.2*dn3(p*4.1); }
-vec3 holeLight(float type){ return type < 0.5 ? vec3(1.0,0.16,0.06) : (type < 1.5 ? vec3(0.55,0.32,1.0) : vec3(0.35,0.85,1.0)); }
+vec3 holeLight(float type){ return type < 0.5 ? vec3(1.0,0.16,0.06) : (type < 1.5 ? vec3(0.55,0.32,1.0) : (type < 2.5 ? vec3(0.35,0.85,1.0) : vec3(0.85,0.72,0.55))); }
 // Interior mapping: a room grid (decks every 3.4 m, walls every 6 m) and a back wall, seen through the skin.
 vec3 interiorRoom(vec3 p, vec3 V, vec4 h, vec4 hn){
   vec3 cell = vec3(6.0, 3.4, 6.0); vec3 q = p + V*0.01; vec3 t3;
@@ -1130,7 +1130,7 @@ function hangarTex() {
 
 // Ship builder: one function for every class, reading CLASSES.
 function makeDmgUniforms() {
-  return { uHoles: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleN: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleCount: { value: 0 },
+  return { uHoles: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uHoleN: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uHoleCount: { value: 0 },
     uScorch: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uScorchHeat: { value: new Array(24).fill(0) }, uScorchCount: { value: 0 },
     uTime: { value: 0 }, uParallax: { value: holeMode === 'parallax' ? 1 : 0 }, uSec: { value: new Array(8).fill(1) }, uSecC: { value: V3() }, ...makePoolUniforms() };
 }
@@ -1447,12 +1447,14 @@ function damage(ship, sysId, amount, hit = null) {
   if (hit && ship.sys.shields.health > 0 && shieldsUp && !hit.bypass) { // the bubble takes it
     shieldHit(ship, hit.point); S === ship.sys.shields || hurt(ship, 'shields', amount * 0.45); return;
   }
-  if (hit && !hit.big) { // the third phaser hit within a few metres burns through
-    const U = ship.dmgU, rr2 = 5 * Math.max(0.6, ship.C.length / 150); let near = 0;
-    for (let i = 0; i < Math.min(24, ship.scorchN); i++) { const v = U.uScorch.value[i]; if (Math.hypot(v.x - hit.point.x, v.y - hit.point.y, v.z - hit.point.z) < rr2) near++; }
-    if (near >= 2 && !ship.holes.some((h) => h.point.distanceTo(hit.point) < rr2)) { hit.big = true; hit.r = 2.2 * Math.max(0.6, ship.C.length / 150); }
+  // Every phaser hit carves a hole and shows the deck behind it by parallax (owner, 2026-11-03: "phaser fire SHOULD SHOW
+  // PARALLAX AS THEY CARVE HOLES"); a hit near an earlier hole widens that one instead of punching a second beside it.
+  if (hit && !hit.big) {
+    const r0 = 0.7 * Math.max(1, ship.C.length / 150), prev = ship.holes.find((h) => h.point.distanceTo(hit.point) < h.r * 1.6);
+    if (prev) { prev.r = Math.min(prev.r * 1.2, r0 * 2); const i = ship.holes.indexOf(prev); ship.dmgU.uHoles.value[i].w = prev.r; scorch(ship, hit.point, 1.6, 0); emit('sparks', toWorld(hit.mesh, hit.point), hit.worldNormal, 30); hurt(ship, sysId, amount); ship.hull = clamp(ship.hull - amount * 0.35, 0, 100); if (ship.hull <= 0) breakup(ship); return; }
+    hit.big = true; hit.r = r0; hit.phaser = true;
   }
-  if (hit) { scorch(ship, hit.point, hit.big ? 5 : 3.2); if (hit.big) { hole(ship, hit); if (!hit.r) chunkOff(ship, hit); } emit('sparks', toWorld(hit.mesh, hit.point), hit.worldNormal, 40); }
+  if (hit) { scorch(ship, hit.point, hit.phaser ? 1.6 : hit.big ? 5 : 3.2, hit.phaser ? 0 : 1); if (hit.big) { hole(ship, hit); if (!hit.r) chunkOff(ship, hit); } emit('sparks', toWorld(hit.mesh, hit.point), hit.worldNormal, 40); }
   if (sysId === 'life' && hit) { const w = secOf(ship, hit.point); ship.wedgePower[w] = clamp(ship.wedgePower[w] - amount / 60, 0, 1); }
   hurt(ship, sysId, amount);
   ship.hull = clamp(ship.hull - amount * 0.35, 0, 100);
@@ -1588,20 +1590,21 @@ function hitInfo(h) {
   const worldNormal = n.clone().transformDirection(mesh.matrixWorld);
   return { mesh, point, normal: n, worldNormal, ship: mesh.userData.ship, sys: mesh.userData.sys };
 }
-function scorch(ship, p, r) {
+function scorch(ship, p, r, heat = 1) {
   const U = ship.dmgU, i = ship.scorchN++ % 24;
-  U.uScorch.value[i].set(p.x, p.y, p.z, r * ship.C.length / 150 + 1.2); U.uScorchHeat.value[i] = 1; U.uScorchCount.value = Math.min(24, ship.scorchN);
+  U.uScorch.value[i].set(p.x, p.y, p.z, r * ship.C.length / 150 + 1.2); U.uScorchHeat.value[i] = heat; U.uScorchCount.value = Math.min(24, ship.scorchN);
 }
 function hole(ship, hit) {
-  if (ship.holes.length >= 8) return;
+  if (ship.holes.length >= 24) return;
   const U = ship.dmgU, i = ship.holes.length, r = hit.r ?? (2.6 + fxRng() * 1.8) * Math.max(0.6, ship.C.length / 150);
-  const type = String(hit.sys).startsWith('nac') ? 1 : hit.sys === 'reactor' ? 2 : 0;
+  const type = hit.phaser ? 3 : String(hit.sys).startsWith('nac') ? 1 : hit.sys === 'reactor' ? 2 : 0;
   U.uHoles.value[i].set(hit.point.x, hit.point.y, hit.point.z, r); U.uHoleN.value[i].set(hit.normal.x, hit.normal.y, hit.normal.z, type); U.uHoleCount.value = i + 1;
   const P = hit.mesh.userData.piece;
   const interior = holeInterior(hit.point, hit.normal, r, type); interior.userData.center = hit.point.clone(); P.inner.add(interior); interior.visible = holeMode === 'modelled';
   ship.holes.push({ ...hit, r, type, interior });
   const vent = type === 1 ? 'plasma' : type === 2 ? 'coolant' : 'fire', s = r / 3.5;
-  addEmitter(ship, P, hit.point.clone().add(hit.normal.clone().multiplyScalar(0.4)), hit.normal,
+  // a phaser hole is clean: a puff of smoke, no fire, no embers (owner: "their holes should be smaller and just scorch marks instead of burns")
+  addEmitter(ship, P, hit.point.clone().add(hit.normal.clone().multiplyScalar(0.4)), hit.normal, type === 3 ? [{ type: 'smoke', rate: 10, dur: 1.2, scale: 0.4 }] :
     [{ type: vent, rate: 110, dur: 3.2, scale: s, light: type === 0 }, { type: 'smoke', rate: 14, dur: 7, scale: s }, { type: 'embers', rate: 3, dur: 1e9, scale: s }], 'hole');
 }
 // A modelled hole's inside: deck plates every 3.4 m and walls every 6 m (the same grid the parallax shader draws),
@@ -1614,7 +1617,7 @@ function holeInterior(c, n, r, type) {
     fragmentShader: `uniform vec4 uC; uniform vec4 uN; uniform float uTime; varying vec3 vObj; varying vec3 vN;
       void main(){ vec3 d = vObj - uC.xyz; float dl = length(d); float s = dot(d, uN.xyz);
         if (dl > uC.w || s > -0.35 || s < -uC.w*1.3) discard;
-        vec3 L = uN.w < 0.5 ? vec3(1.0,0.16,0.06) : (uN.w < 1.5 ? vec3(0.55,0.32,1.0) : vec3(0.35,0.85,1.0));
+        vec3 L = uN.w < 0.5 ? vec3(1.0,0.16,0.06) : (uN.w < 1.5 ? vec3(0.55,0.32,1.0) : (uN.w < 2.5 ? vec3(0.35,0.85,1.0) : vec3(0.85,0.72,0.55)));
         vec3 base = abs(vN.y) > 0.5 ? (gl_FrontFacing ? vec3(0.28,0.25,0.23) : vec3(0.06)) : vec3(0.13);
         float fall = 1.0 - dl/(uC.w*1.3); float fl = 1.0;
         gl_FragColor = vec4(base*(0.15 + 3.6*L*fall*fl), 1.0); }` });
