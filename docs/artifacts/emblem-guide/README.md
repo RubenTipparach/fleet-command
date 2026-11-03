@@ -23,3 +23,6 @@
   (`window.EMBLEM_CHECK`, run headless by `tools/emblems/sketch_check.mjs`); rule 17 added; pressing a picked design
   again removes the pick. The stray pick of B in the `notes` collection was deleted at the owner's word ("unpick that,
   I didnt pick anything yet").
+- Version 3 published 2026-11-03: B restored to its first shape (owner: "that changed the jellyfish design to much, the
+  jelly fish has a tiny small tail"): three separate legs and the tiny tail, only rooted under the saucer so no wedge
+  gaps show; the web of hull from version 2 removed.
