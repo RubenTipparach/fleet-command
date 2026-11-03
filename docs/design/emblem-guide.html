@@ -207,6 +207,8 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-03', q: 'those colors are no good either, hard to read from far away', means: 'Colours are now measured: the emblem and its field contrast at least 7:1 (rule 18). B is pearl white on night blue (11.9:1); two other colourways shown with their numbers and a 12 px view.' },
+  { when: '2026-11-03', q: 'dont like any of those shapes, though b-e2 is a good direction', means: 'The sweep frame (B-E1) and the hex (B-E3) dropped; four arches grown from B-E2 (B-E4 to B-E7), every one measured for joins.' },
   { when: '2026-11-03', q: 'the saucer is nice, but i dont like the way its colored. B2 has these thin lines inside of the legs. To make it an emblem that would go on a patch or something, I\'d like to seesome sort of shape encompassing that. B1\'s darker color can be removed so that it is a solid color, and the star in the middle can be impressed', means: 'B: the saucer one solid blue, no lines in the legs, the star pressed in; three patch shapes round it (B-E1 to B-E3), the sweep frame in the sketch.' },
   { when: '2026-11-03', q: 'can you label each feature A1, A2, A3 etc', means: 'Every feature on a sketch has an id (A1, A2, B1 ...), in its label and in a badge on the element, to refer to in notes.' },
   { when: '2026-11-03', q: 'that changed the jellyfish design to much, the jelly fish has a tiny small tail', means: 'B keeps its first shape (three separate legs, a tiny tail); only the joins under the saucer were closed. A fix mends the flaw and changes nothing else.' },
@@ -250,6 +252,7 @@ const RULES = [
   ['No pictured starships', 'A ship appears only abstracted into a mark, never as a recognisable craft.', 'manual p. 14'],
   ['Keep clear of protected marks', 'No arrowhead-delta, no starfield in a ring of laurels, nothing from the reference game. Near one, change the contour, the proportions, the colour and the inner symbol.', 'manual p. 15-16; CLAUDE.md section 1'],
   ['One body, no slivers', 'Every part grows out of the part it joins; parts meant to stand apart stand at least 4 grid units clear. Measured on every sketch.', 'your notes'],
+  ['Readable from far away', 'The emblem and its field contrast at least 7:1, measured, and every emblem is checked at 12 px.', 'your notes'],
   ['No lettering inside', 'The faction\'s name is set beside the emblem in its skin\'s display face, never inside it.', 'manual p. 4; the icon standard'],
 ];
 const rulesEl = document.getElementById('rules');
@@ -297,40 +300,73 @@ const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}" ${extra}/>`
 // The saucer on the 100 grid, before any frame (owner, 2026-11-03: the saucer one solid colour, no lines inside the legs,
 // the star pressed in, and "some sort of shape encompassing that" so it works as a patch). ink: the shapes only, for
 // measuring joins (no star detail, no running light).
-function saucer(ink) {
+// The colourways (owner, 2026-11-03: "those colors are no good either, hard to read from far away"): the emblem and its
+// field must differ by at least MIN_CONTRAST (the WCAG contrast ratio, measured below), so the patch reads from across
+// a room or a battle. floor, shadow and lit are the pressed star's floor, upper-left wall and lower-right rim.
+const MIN_CONTRAST = 7;
+const COLOURWAYS = [
+  { key: 'B-K1', name: 'Pearl on night', rec: true, ink: '#eef3ff', field: '#1b2a6b', floor: '#b8c4e2', shadow: '#7a8ab4', lit: '#ffffff',
+    why: 'Pearl white, the colour of every Concord hull, on the night sky every homeworld shares. The ship looks like itself.' },
+  { key: 'B-K2', name: 'Pearl on flag blue', ink: '#eef3ff', field: '#2f62e0', floor: '#c3d0f0', shadow: '#8fa3d6', lit: '#ffffff',
+    why: 'Pearl on Signal blue, the flag itself as the ground. Brighter, but below the contrast the patch needs from far away.' },
+  { key: 'B-K3', name: 'Night on pearl', ink: '#1b2a6b', field: '#eef3ff', floor: '#34479a', shadow: '#0e1840', lit: '#6077c6',
+    why: 'The reverse: a dark ship on a pearl field. As readable as K1; it reads as paperwork rather than a uniform patch.' },
+];
+const KREC = COLOURWAYS.find((k) => k.rec);
+function lum(hex) { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+function contrast(a, b) { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); }
+function saucer(ink, k = KREC) {
   let s = '';
-  for (const sx of [1, -1]) { const X = (x) => 50 + sx * x; s += path(ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7), C.signal); }
-  s += path(ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4), C.signal);
-  s += path('M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z', C.signal);
+  for (const sx of [1, -1]) { const X = (x) => 50 + sx * x; s += path(ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7), k.ink); }
+  s += path(ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4), k.ink);
+  s += path('M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z', k.ink);
   if (ink) return s;
   // Pressed in, lit from the upper left: the upper-left wall in shadow, the lower-right wall catching the light.
   const st = glint(50, 32, 9.5, 7.5, 1.7);
-  s += `<path d="${st}" fill="#163a94" transform="translate(-0.7 -0.7)"/><path d="${st}" fill="#6f96f2" transform="translate(0.8 0.8)"/>`;
-  s += path(st, '#1b42a8');
+  s += `<path d="${st}" fill="${k.shadow}" transform="translate(-0.7 -0.7)"/><path d="${st}" fill="${k.lit}" transform="translate(0.8 0.8)"/>`;
+  s += path(st, k.floor);
   s += `<circle cx="50" cy="20.5" r="1.8" fill="${C.accord}"/>`;
   return s;
 }
 // Each patch: its frame (even-odd), the field inside it, and the scale the saucer takes inside it (about 50, 52).
 const ENCLOSURES = [
-  { key: 'B-E1', name: 'The sweep frame', rec: true, scale: 0.875, pieces: 1,
-    frame: 'M20 4H80A16 16 0 0 1 96 20V80A16 16 0 0 1 80 96H20A16 16 0 0 1 4 80V20A16 16 0 0 1 20 4ZM21 9H82A10 10 0 0 1 92 19V82A3 3 0 0 1 89 85H14A3 3 0 0 1 11 82V19A10 10 0 0 1 21 9Z',
-    field: 'M21 9H82A10 10 0 0 1 92 19V82A3 3 0 0 1 89 85H14A3 3 0 0 1 11 82V19A10 10 0 0 1 21 9Z',
-    why: 'A rounded square whose band changes thickness at every turn (foot 11, left 7, top 5, right 4): the Concord\'s own frame rule, never a circle. The nacelles stand on its foot.' },
-  { key: 'B-E2', name: 'The mission arch', scale: 0.78, pieces: 2,
+  { key: 'B-E2', name: 'The mission arch', liked: true, scale: 0.78, pieces: 2,
     frame: 'M6 96V46A44 44 0 0 1 94 46V96ZM14 88V46A36 36 0 0 1 86 46V88Z',
     field: 'M14 88V46A36 36 0 0 1 86 46V88Z',
-    why: 'A flat foot and a round top, the shape of an explorer\'s mission patch; the round top answers the saucer. Watch: an arch is near C\'s door and the Kelvane\'s gauge.' },
-  { key: 'B-E3', name: 'The sector hex', scale: 0.65, pieces: 1,
-    frame: 'M3 50L26 9H74L97 50L74 91H26ZM11 50L30.5 15H69.5L89 50L69.5 85H30.5Z',
-    field: 'M11 50L30.5 15H69.5L89 50L69.5 85H30.5Z',
-    why: 'One hex of the campaign map: every Concord world is a sector on the shared map, and the ship stands on two of its edges. Watch: the saucer is smallest in this one.' },
+    why: 'A flat foot and a round top, the shape of an explorer\'s mission patch; the round top answers the saucer. You called it a good direction: the four below grow from it.' },
+  { key: 'B-E4', name: 'The thickening arch', rec: true, scale: 0.8625, pieces: 1,
+    frame: 'M5 96V44A45 40 0 0 1 95 44V96ZM11 84V48A39 40 0 0 1 89 48V84Z',
+    field: 'M11 84V48A39 40 0 0 1 89 48V84Z',
+    why: 'B-E2\'s arch with the Concord\'s frame rule: thin at the crown (4), thicker down the sides (6), thickest at the foot (12). The nacelles stand on the foot, so the patch is one piece.' },
+  { key: 'B-E5', name: 'The hangar door', scale: 0.8, pieces: 1,
+    frame: 'M4 96V46H12V34A38 30 0 0 1 88 34V46H96V96ZM10 83V52H18V38A32 26 0 0 1 82 38V52H90V83Z',
+    field: 'M10 83V52H18V38A32 26 0 0 1 82 38V52H90V83Z',
+    why: 'A wide door with stepped shoulders under a round top: the hangar door every Concord ship opens to anyone who asks for help. The steps change the band\'s line at every turn.' },
+  { key: 'B-E6', name: 'The flared arch', scale: 0.8625, pieces: 1,
+    frame: 'M2 96C6 80 8 64 8 46A42 42 0 0 1 92 46C92 64 94 80 98 96ZM12 85C14 74 15 62 15 47A35 35 0 0 1 85 47C85 62 86 74 88 85Z',
+    field: 'M12 85C14 74 15 62 15 47A35 35 0 0 1 85 47C85 62 86 74 88 85Z',
+    why: 'The arch\'s sides flare outward to the foot the way the nacelles flare, so the frame and the ship share one gesture: reaching out.' },
+  { key: 'B-E7', name: 'The saucer arch', scale: 0.8625, pieces: 1,
+    frame: 'M4 96V50L1 44C13 -2 87 -2 99 44L96 50V96ZM11 85V48C20 6 80 6 89 48V85Z',
+    field: 'M11 85V48C20 6 80 6 89 48V85Z',
+    why: 'The top is the saucer\'s own curve, ending in the same sharp points at the shoulders: the patch is shaped by the ship it holds.' },
 ];
-function enclosed(e, ink) {
-  const g = `<g transform="translate(50 52) scale(${e.scale}) translate(-50 -52)">${saucer(ink)}</g>`;
-  return (ink ? '' : path(e.field, '#0c1640')) + `<path d="${e.frame}" fill="${C.signal}" fill-rule="evenodd"/>` + g;
+const REC = ENCLOSURES.findIndex((e) => e.rec);
+function enclosed(e, ink, k = KREC) {
+  const g = `<g transform="translate(50 52) scale(${e.scale}) translate(-50 -52)">${saucer(ink, k)}</g>`;
+  return (ink ? '' : path(e.field, k.field)) + `<path d="${e.frame}" fill="${k.ink}" fill-rule="evenodd"/>` + g;
+}
+// The colourways side by side on the arch in the sketch, each at 96 px and at 12 px (far away), with its measured contrast.
+function colourRow() {
+  const e = ENCLOSURES[REC];
+  return `<div class="encl"><h4>Colours for B</h4><p class="muted" style="font-size:14px">Blue on navy was too close to read from far away. Each colourway below is measured: the emblem and its field must contrast at least ${MIN_CONTRAST}:1.</p><div class="encl-row">${COLOURWAYS.map((k) => { const c = contrast(k.ink, k.field); return `<figure>
+    <svg viewBox="0 0 100 100" width="132" height="132" aria-hidden="true">${enclosed(e, false, k)}</svg>
+    <figcaption><b>${k.key} ${k.name}</b>${k.rec ? '<span><span class="chip rec">In the sketch above</span></span>' : ''}<span>${k.why}</span>
+    <span class="joins${c >= MIN_CONTRAST ? '' : ' bad'}">Contrast ${c.toFixed(1)}:1 ${c >= MIN_CONTRAST ? 'passes' : 'fails'} (at least ${MIN_CONTRAST}:1)</span>
+    <span class="mini">Far away: ${['dk', 'lt'].map((bg) => `<span class="${bg}" style="width:22px;height:22px"><svg width="12" height="12" viewBox="0 0 100 100">${enclosed(e, false, k)}</svg></span>`).join('')}</span></figcaption></figure>`; }).join('')}</div></div>`;
 }
 // A point of the bare saucer moved to where it sits inside enclosure i.
-function encT(i, x, y) { const k = ENCLOSURES[i].scale; return [+(50 + (x - 50) * k).toFixed(2), +(52 + (y - 52) * k).toFixed(2)]; }
+function encT(i, x, y) { const k = ENCLOSURES[i < 0 ? REC : i].scale; return [+(50 + (x - 50) * k).toFixed(2), +(52 + (y - 52) * k).toFixed(2)]; }
 
 // ---- the Concord's four directions -----------------------------------------------------------------------------------
 // Each: id, name, outline (its silhouette class), recommended?, risk (anything it might be mistaken for), draw() returning
@@ -371,19 +407,19 @@ const DESIGNS = [
     ],
   },
   {
-    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a patch', pieces: 1,
+    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in an arch', pieces: 1,
     risk: 'A pictured starship: the manual allows one only when abstracted into a mark (p. 14), and a saucer with nacelles is the shape most likely to be read as borrowed from a famous ship. The weakest of the four on rule 15.',
-    draw() { return enclosed(ENCLOSURES[0], false); },
-    ink() { return enclosed(ENCLOSURES[0], true); },
+    draw() { return enclosed(ENCLOSURES[REC], false); },
+    ink() { return enclosed(ENCLOSURES[REC], true); },
     callouts: [
-      [...encT(0, 24, 33), 'L', 'One solid saucer', 'Every crew in one shared disc, in one colour: Signal blue, the flag. Drawn as a lens, so the outline is never a circle.'],
-      [...encT(0, 20, 80), 'L', 'Two nacelles, solid', 'Plain and solid, thick at the saucer and thin at the tips, sweeping back and out to explore.'],
-      [...encT(0, 15, 90.5), 'L', 'Standing on the frame', 'The nacelles plant on the patch\'s foot: the ship stands on its home, and the patch is one piece to cut or stitch.'],
-      [...encT(0, 50, 62), 'L', 'The tiny tail', 'A small keel growing out of the saucer between the nacelles, kept small so the saucer leads.'],
-      [...encT(0, 50, 20.5), 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
-      [...encT(0, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. It reads by its shadow and its lit edge, in the saucer\'s own blue.'],
-      [86, 40, 'R', 'The night behind', 'A deep night blue, the sky every homeworld shares: the only dark colour in the emblem, dark enough that the blue saucer reads at 20 px.'],
-      [94, 62, 'R', 'A frame thick to thin', 'Thick at the foot (11), then the left (7), the top (5) and the right (4): the Concord\'s frame rule, so the patch speaks the Concord\'s own language.'],
+      [...encT(-1, 24, 33), 'L', 'One solid saucer', 'Every crew in one shared disc, in one colour: pearl white, the colour of Concord hulls, so the ship looks like itself. Drawn as a lens, never a circle.'],
+      [...encT(-1, 20, 80), 'L', 'Two nacelles, solid', 'Plain and solid, thick at the saucer and thin at the tips, sweeping back and out to explore.'],
+      [...encT(-1, 15, 90.5), 'L', 'Standing on the frame', 'The nacelles plant on the patch\'s foot: the ship stands on its home, and the patch is one piece to cut or stitch.'],
+      [...encT(-1, 50, 62), 'L', 'The tiny tail', 'A small keel growing out of the saucer between the nacelles, kept small so the saucer leads.'],
+      [...encT(-1, 50, 20.5), 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
+      [...encT(-1, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. It reads by its shadow and its lit edge, in the saucer\'s own pearl.'],
+      [84, 44, 'R', 'The night behind', 'Deep night blue, the sky every homeworld shares. Pearl on it measures 11.9:1, so the patch reads from far away.'],
+      [92, 62, 'R', 'An arch, thin to thick', 'The mission arch you liked (B-E2), thin at the crown, thicker down the sides, thickest at the foot: the Concord\'s frame rule, so the patch speaks its own language.'],
     ],
   },
   {
@@ -437,10 +473,10 @@ const DESIGNS = [
 
 // The three patch shapes for B, side by side, each with its reason.
 function enclosureRow() {
-  return `<div class="encl"><h4>Patch shapes for B</h4><div class="encl-row">${ENCLOSURES.map((e) => `<figure>
+  return `<div class="encl"><h4>Arches for B</h4><p class="muted" style="font-size:14px">The sweep frame (B-E1) and the sector hex (B-E3) are gone; the mission arch (B-E2) was the direction you liked, and B-E4 to B-E7 grow from it.</p><div class="encl-row">${ENCLOSURES.map((e) => `<figure>
     <svg viewBox="0 0 100 100" width="132" height="132" aria-hidden="true">${enclosed(e, false)}</svg>
-    <figcaption><b>${e.key} ${e.name}</b>${e.rec ? '<span><span class="chip rec">In the sketch above</span></span>' : ''}<span>${e.why}</span>
-    <span class="mini">${['dk', 'lt'].map((bg) => [40, 20].map((px) => `<span class="${bg}" style="width:${px + 10}px;height:${px + 10}px"><svg width="${px}" height="${px}" viewBox="0 0 100 100">${enclosed(e, false)}</svg></span>`).join('')).join('')}</span></figcaption></figure>`).join('')}</div></div>`;
+    <figcaption><b>${e.key} ${e.name}</b>${e.rec ? '<span><span class="chip rec">In the sketch above</span></span>' : ''}${e.liked ? '<span><span class="chip">Your direction</span></span>' : ''}<span>${e.why}</span>
+    <span class="joins" data-joins-enc="${e.key}">Measuring joins...</span><span class="mini">${['dk', 'lt'].map((bg) => [40, 20].map((px) => `<span class="${bg}" style="width:${px + 10}px;height:${px + 10}px"><svg width="${px}" height="${px}" viewBox="0 0 100 100">${enclosed(e, false)}</svg></span>`).join('')).join('')}</span></figcaption></figure>`).join('')}</div></div>`;
 }
 // One image per design: the sketch in the middle (the 100 grid at 4 px a unit), callouts in two columns, each with a
 // leader line to the element it explains and a dot on it.
@@ -494,7 +530,7 @@ for (const d of DESIGNS) {
     <div class="figure">${figure(d)}</div>
     <div class="small">At 96, 40 and 20 px: ${mark(d, 96, 'dk')}${mark(d, 40, 'dk')}${mark(d, 20, 'dk')}${mark(d, 40, 'lt')}${mark(d, 20, 'lt')}</div>
     <p class="joins" data-joins>Measuring joins...</p>
-    ${d.id === 'concord-b' ? enclosureRow() : ''}
+    ${d.id === 'concord-b' ? colourRow() + enclosureRow() : ''}
     ${d.risk ? `<p class="risk">Watch: ${d.risk}</p>` : ''}
     <div class="notebox"><label for="note-${d.id}">Your note on ${d.name.split(' · ')[1]}</label>
       <textarea id="note-${d.id}" placeholder="What to keep, what to change. Refer to a feature by its id, such as ${d.name[0]}2."></textarea>
@@ -541,6 +577,11 @@ async function measureJoins(d) {
 }
 window.EMBLEM_CHECK = async () => {
   const out = [];
+  for (const e of ENCLOSURES) {
+    const r = await measureJoins({ pieces: e.pieces, draw: () => enclosed(e, true) }); out.push({ id: 'concord-b ' + e.key, ...r });
+    const el = document.querySelector(`[data-joins-enc="${e.key}"]`);
+    if (el) { el.classList.toggle('bad', !r.ok); el.textContent = (r.ok ? 'Joins measured: ' : 'Joins FAIL: ') + `${r.pieces} piece${r.pieces === 1 ? '' : 's'} (designed ${r.expected})` + (Number.isFinite(r.nearest) ? `, parts ${r.nearest.toFixed(1)} apart` : ''); }
+  }
   for (const d of DESIGNS) {
     const r = await measureJoins(d); out.push({ id: d.id, ...r });
     const el = document.querySelector(`#${d.id} [data-joins]`);

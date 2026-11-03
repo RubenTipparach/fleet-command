@@ -33,3 +33,8 @@
   solid Signal blue, no lines in the legs, the star pressed in (a shaded floor with a lit lower-right rim), the
   nacelles standing on a patch frame; three patch shapes shown with reasons (B-E1 the sweep frame, in the sketch; B-E2
   the mission arch; B-E3 the sector hex); B's joins measured on the emblem and frame without the field.
+- Version 6 published 2026-11-03: B's frames and colours (owner: "dont like any of those shapes, though b-e2 is a good
+  direction", "those colors are no good either, hard to read from far away"): the sweep frame and the hex dropped; four
+  arches grown from B-E2 (B-E4 the thickening arch, in the sketch; B-E5 the hangar door; B-E6 the flared arch; B-E7 the
+  saucer arch), each one's joins measured; colourways measured for contrast (at least 7:1, rule 18): B-K1 pearl on
+  night (11.9:1, in the sketch), B-K2 pearl on flag blue (4.8:1, fails), B-K3 night on pearl (11.9:1), each at 12 px.
