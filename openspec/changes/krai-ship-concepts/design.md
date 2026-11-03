@@ -127,8 +127,45 @@ etc", then "this is an alien ship, so consider cultural differences, use wrmer o
   strobes on the nacelle tips that double-flash, red beacons top and bottom that pulse. A Shadow side light preset, as
   on the Concord line.
 
+## The classes (owner, 2026-11-03: "sketch out various ship classes")
+
+Four classes on one builder (`buildKrai` in the page): each is its plan and a few numbers for its parts; the hull, the
+bayonet, the crest and keel blade, the guns, the nacelles, the bells, the windows, the marking and the lamps are fitted
+from the plan, scaled by the class's length against the frigate's 87 m.
+
+| Class | Length | Decks | Rooms | Crew | Weapons | Nacelles | Notes |
+|---|---|---|---|---|---|---|---|
+| Corvette | 47 m | 3 | 22 | 14 | twin bow guns | one pair | the smallest |
+| Frigate | 87 m | 4 | 24 | 36 | one spinal cannon | one pair | plan laid by hand, the pattern |
+| Cruiser | 126 m | 5 | 84 | 120 | two spinal cannons | two pairs | |
+| Dreadnought | 211 m | 7 | 166 | 420 | three spinal cannons, broadside batteries | two pairs | raises a command block (B1, a super capital) |
+
+- The corvette's, cruiser's and dreadnought's plans are written by `tools/mockups/krai_plans.py` from a list of rooms per
+  deck (bow room, port and starboard runs, a keel weapon band with a corridor either side, stern room); it checks P1 as
+  it writes, and `--check` fails when a committed plan differs from its list. Rooms are functional only (U7).
+- The line-up shows the four one above another, sterns level, so a side view reads their true lengths.
+- Every class passes the page's checks: P1, H1 (every room 1.05 m inside), nacelle daylight of 3 m at least, and L2 (no
+  two lamp pools on one face meet).
+
+## Damage (owner, 2026-11-03: "Implement damage systems")
+
+- **One implementation.** The Concord line's generic damage code moves into `docs/mockups/lib/ship-fx.js`: the particle
+  pools and the table of looks, emitters and their programmes, weapon light, flashes, the shockwave, debris, beams and
+  torpedoes, the "flicker a couple of times, then hold" rule, and the hull shader's hole and scorch rules with the decks
+  seen through a hole. Mockup 6 uses the module; its damage scenarios render as before (compared shot for shot).
+- **What is the Krai's own** is how a Krai ship fails: systems reactor, bridge, guns, drive, nacelles port and starboard,
+  and life support, each healthy, damaged, critical or destroyed. A hit takes the system of the room the plan puts under
+  it (D1), and its hole is lit by that room: violet plasma at a nacelle, cyan-white coolant at the reactor, fire
+  elsewhere (D2). Nacelles vent, spark, then break away and drift burning; the reactor leaks coolant from the belly under
+  its room, jets it, the lamps stutter, then breaches; the bridge smokes, burns, then blows out; the guns spark, then burn
+  at their muzzles; the bells cool and stutter; life support darkens the windows a section at a time.
+- **A core breach** is three seconds of secondary blasts while the nacelles, the crest and the bayonet come away, then the
+  main blast. The Concord line also breaks its hull into fracture cells; a Krai hull blows apart whole for now (a later
+  step, if the owner wants it).
+- The Damage tab: fire a phaser or a torpedo by clicking the ship (or Fire at it), hurt or destroy one system, repair (a
+  new ship), and each system's health. Scenario shots replay from a seed.
+
 ## Open questions
 
 Survey A15-A17 were withdrawn with the old directions (owner, 2026-11-03: "nuke, the krai survey since we're redoing
-them"). None are open. The other classes follow the frigate once it is approved; names and markings stay placeholders
-until the owner sets them.
+them"). None are open. Class names, ship names and markings stay placeholders until the owner sets them.

@@ -17,6 +17,7 @@
 - [x] 1.12 The Concord line is the standard for Concord ships and mockup 5 is retired (owner, 2026-11-03: "Concord line (hull concepts) - new standard, get rid of the old concord ships")
 - [x] 1.13 The ship table and hull geometry are one module, `docs/mockups/lib/concord-line.js`, inlined into mockup 6 and, through `lib/space.js`, into the battle console and the game flow, whose Concord ships are now the line's (owner: "start applying these spaceships into the ui mockup stuff"); console pairings CA Albatross, DD Petrel, FF Swift, TR Pelican, provisional
 - [ ] 1.14 The battle console's ship systems display drawn from the active ship's own plan (its hull stations, pylons and nacelles) instead of the stand-in outline
+- [x] 1.15 The generic damage code (particles, effects, weapon light, beams and torpedoes, the hull shader's hole and scorch rules, light flicker, emitter programmes) and the detail tile, tri-planar GLSL, room ray and thruster are shared modules, `docs/mockups/lib/ship-fx.js` and `docs/mockups/lib/ship-skin.js`, used by the Krai line too; mockup 6 renders as before (compared shot for shot)
 
 ## 2. After approval for build
 
