@@ -24,4 +24,12 @@
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 at v2, the survey at v16; version id `1793592753-6b4c`.
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 at v3; version id `1793607843-26f1`.
 - 2026-11-02, cloud session (Concord ships thread), merging main: the live tracker carries every thread's entries (mockup 2 at v31, Console skins at v26, the Organic Panel Bible at v4, mockup 5 at v3, the survey at v16); version id `1793647725-c952`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 (Concord hull concepts, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) added, the survey at v22; version id `1793670428-d70d`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 2 (the Concord line in the Tern family), the survey at v23; version 26, version id `1793689716-11d8`; then version 27 (mockup 6 at v3), version id `1793689786-97b0`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 4, the survey at v24; version 28, version id `1793690342-59d0`; then version 29 (the survey row at v24), version id `1793690355-5f03`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 5, the survey at v25; versions 30-31, version id `1793692315-1067`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 6, the survey at v26; version 32, version id `1793695155-9f31`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 8, the survey at v27; version 33, version id `1793696583-fd49`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 9, the survey at v28, merged onto another session's live version (M2 at v64, the icon guide added); version 35, version id `1793697390-e5c8`.
 - 2026-11-03, cloud session (battle console thread): Fleet Command Icons added to Guides, mockup 2 at v64, merged onto the live version 1793696583-fd49 (mockup 6 and the survey at v27 from other threads kept); version id `1793697271-5c3f`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 11 and named the standard, mockup 5 marked retired, M2 at v65 merged from main; version 36, version id `1793699693-719b`.

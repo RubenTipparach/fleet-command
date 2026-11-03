@@ -26,5 +26,12 @@
 - 2026-11-02, cloud session: B26 added (torpedo hit chance by range, from the SFC2 manual); version id `1793651778-5ffd`.
 - 2026-11-02, cloud session (Concord ships thread): section A (A2-A9, Concord ships and damage, mockup 5) added on top of the live version (sections J and B from the battle console thread kept); version 14, version id `1793584895-3b88`.
 - 2026-11-02, cloud session (Concord ships thread): A10 added (the break-up direction) on top of the live version 15 (the battle console thread's B20-B22 kept); version 16, version id `1793592744-74a0`.
+- 2026-11-03, cloud session (Concord ships thread): A11-A12 (Concord hull concepts, mockup 6) added on top of the live version (the battle console thread's B20-B28 kept); version 22, version id `1793670409-fc66`.
+- 2026-11-03, cloud session (Concord ships thread): A11-A12 rewritten for mockup 6 version 2 (pylons, sizes), on top of the live version 22 (nothing newer); version 23, version id `1793689715-845c`.
+- 2026-11-03, cloud session (Concord ships thread): A11-A12 rewritten for mockup 6 version 4 (layouts per class, sizes), on top of the live version 23; version 24, version id `1793690341-74f5`.
+- 2026-11-03, cloud session (Concord ships thread): A11-A12 lead updated for mockup 6 version 5, on top of the live version 24; version 25, version id `1793692310-396d`.
+- 2026-11-03, cloud session (Concord ships thread): A13 (which Albatross) added, on top of the live version 25; version 26, version id `1793695143-a6e0`.
+- 2026-11-03, cloud session (Concord ships thread): A14 (the battleship and the carrier) added, on top of the live version 26; version 27, version id `1793696573-24eb`.
+- 2026-11-03, cloud session (Concord ships thread): A14 rewritten for the reworked battleship and carrier, on top of the live version 27; version 28, version id `1793697353-21d8`.
 - 2026-11-02, cloud session: B27 added (warp key colour by risk); version id `1793658956-e618`.
 - 2026-11-03, cloud session: B28 added (holds per class); version id `1793666306-6e15`.
