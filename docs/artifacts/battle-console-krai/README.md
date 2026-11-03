@@ -26,3 +26,6 @@
 - Version 3 (the gaps closed to a rib; icon keys and status boxes rendered in the rail tabs' style): published 2026-11-03, version id `1793717243-818b`.
 - Version 4 (one unbroken 20 px divider between panels with the title on it; the backlight red, the whole kit re-rendered): published 2026-11-03, version id `1793722302-b4c0`.
 - Version 5 (states in the Krai palette, no green; glyphs orange on dark glass; no white marks; panel tab icons red): published 2026-11-03, version id `1793736690-394d`.
+- Version 6 (nothing white on a key: orange ink on dark keys, red mode tab names): published 2026-11-03, version id `1793737624-3c64`.
+- Version 7 (the top strip re-rendered at 60 px): published 2026-11-03, version id `1793738755-e645`.
+- Version 8 (a bloom experiment on the column's channel of red light, with a Bloom key to compare): published 2026-11-03, version id `1793739594-563e`.

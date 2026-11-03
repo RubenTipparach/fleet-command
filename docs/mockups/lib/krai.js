@@ -36,10 +36,13 @@ const CC = {
   ink: '#160806', inkDis: '#6a3a32', night: '#1a0b09', ghost: '#6a4038', void: '#120706', slate: '#4a2622', mute: '#2e2220', ver: '#8a6a60',
   char: '#3a0b09', plate: '#0a0707', bg: '#0a0707', title: KR.red, bone: KR.bone,
 };
-// The ink that reads on a fill: dark on the lit colours, bone on blood and steel.
-const ink = (fill) => (lum(fill) > 0.2 ? CC.ink : CC.text);
-// Ink on the rendered keys and tabs: bone on the dark ember key at rest, dark on the red hover and the orange engaged key.
-const keyInk = { idle: CC.text, hover: CC.ink, pressed: CC.ink, tabOn: CC.ink, tabOff: CC.text };
+// The ink that reads on a fill: dark on the lit colours, forge orange on blood and steel. Nothing on a key is white
+// (owner, 2026-11-03: "White icons on buttons look bad").
+const GLYPH = '#ff8a2a';
+const ink = (fill) => (lum(fill) > 0.2 ? CC.ink : GLYPH);
+// Ink on the rendered keys and tabs: forge orange on the dark ember key at rest, dark on the red hover and the orange
+// engaged key; a mode tab's name at rest in red, like the panel tabs' icons.
+const keyInk = { idle: GLYPH, hover: CC.ink, pressed: CC.ink, tabOn: CC.ink, tabOff: '#ff4a3a' };
 // Type: "Russo One" for titles and the name plate, "Teko" for everything else (the skin's own pair). The page asks for
 // Antonio sizes; Teko is sized to Antonio's width (measured: Teko 500 at 1.1x is as wide as Antonio 600), so every slot
 // that fits a Concord label fits a Krai one. Weight 700 at 22 px and up is a heading: Russo One at 0.75x.
@@ -230,9 +233,13 @@ const api = {
   // drawn in the Krai's colours (owner, 2026-11-03: "White shadows on buttons like bad")
   // panel tabs' icons at rest in red, apart from the functional icons' orange (owner, 2026-11-03)
   tabIcon: KR.red,
-  glyphOnDark: '#ff8a2a', mark: { hover: '#ffb070', ready: '#ff2a2a', count: '#ffd9b0' },
-  // the strips are 80 px (the rendered strip.top.join and strip.bottom.join), so the strip's content fits its open channel
-  stripH: 80,
+  glyphOnDark: GLYPH, mark: { hover: '#ffb070', ready: '#ff2a2a', count: '#ffd9b0' },
+  // the strips' heights and where their content sits (the rendered strip.top.join, 60 px, channel rows 9-51; strip.bottom.join,
+  // 80 px, rows 10-70)
+  stripTop: { h: 60, dy: 8 }, stripBottom: { h: 80, dy: 12 },
+  // bloom on the column's light (an experiment, owner, 2026-11-03): the render's bright, strongly red pixels (the channel
+  // of red light down its edge), blurred by spread device px and added at strength
+  bloom: { min: 140, ratio: 3, spread: 16, strength: 1.1 },
 };
 window.FCSkins = window.FCSkins || {}; window.FCSkins.krai = api;
 return api;

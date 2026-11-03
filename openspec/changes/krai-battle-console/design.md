@@ -110,6 +110,18 @@ This answers open question K1 the other way.
   (`mark`): a weapon box's hover outline in hot orange, its ready-to-fire outline in red, countdown figures in pale ember.
 - The panel tabs' icons at rest are red (`tabIcon`; owner: "Panel icons should be red. Just to differentiate it from
   functional icons"), so a tab that switches a panel reads apart from a key that acts; the chosen tab still lights orange.
+- Nothing on a key is white (owner: "White icons on buttons look bad I.mean", version 6): the ink on a dark key, drawn or
+  rendered, is forge orange (the blade keys' labels, the expand arrows, the close crosses), dark on a lit one; a mode tab's
+  name at rest is red, like the panel tabs' icons.
+- The top strip is 60 px (owner: "top bar is way thicker than it needs to be", version 7): it holds only a label over
+  a bar per readout, so `strip.top.join` is re-rendered at 60 px (channel rows 9-51) and the column's flange under it
+  shortened to match; the bottom strip keeps its 80 px for its taller row. The page reads each strip's height and the
+  offset of its content from the skin (`stripTop`, `stripBottom`).
+- Bloom, an experiment (owner, of the column's channel of red light: "lets do an experiment and try bloom on this led
+  strip?", version 8): the page picks the bright, strongly red pixels out of the column's render once (`bloom`: red at
+  least 140 and three times its green and blue, so only the channel's light), blurs them twice (16 and 5.6 device px)
+  and adds them back over the console, spilling past the column's edge onto the battle. A Bloom key in the view turns
+  it on and off to compare; it is on by default. A Krai-only control: the parity check presses the Concord's controls.
 
 ### 8. Every Krai piece is rendered in Blender
 

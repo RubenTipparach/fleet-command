@@ -38,3 +38,4 @@
 - 2026-11-03, cloud session (Krai battle console thread): M8 at version 3, merged onto the live version `1793716289-6a4e` (mockup 5 moved to Misc, M7 at v3); version 43, version id `1793717266-cad2`.
 - 2026-11-03, cloud session (Krai battle console thread): M8 at version 4; version 44, version id `1793722308-ee58`.
 - 2026-11-03, cloud session (Krai battle console thread): M8 at version 5, merged onto the live version `1793722621-f8f8` (the Ship Design Bible guide, survey v32), and the M8 summary's unescaped apostrophe (from version 43 of this session) escaped so the page's script parses; version 46, version id `1793736724-0cfc`.
+- 2026-11-03, cloud session (Krai battle console thread): M8 at version 6 (tracker version 47, `1793737629-9deb`), then 7 (version 48, `1793738755-9fdf`), then 8, merged onto the live version `1793739217-06ad` (M7 at v4, the Ship Design Bible at v2, survey v33); version 50, version id `1793739612-c98f`.

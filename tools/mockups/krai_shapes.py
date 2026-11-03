@@ -189,7 +189,8 @@ def pieces():
              for i, (x, y, w, h) in enumerate(panels)]
     dividers = [((ay + ah) + by) / 2 for (ax, ay, aw, ah), (bx, by, bw, bh) in zip(panels, panels[1:])]
     spine = soft(box(465, 92, 470, 988), 1.5)
-    col_plate = Polygon([(0.5, 0.5), (494, 0.5), (494, 80), (479.5, 80), (479.5, 1000), (494, 1000), (494, 1079.5), (0.5, 1079.5)])
+    # the flanges run under the strips' rows: the top strip is 60 px, the bottom 80
+    col_plate = Polygon([(0.5, 0.5), (494, 0.5), (494, 60), (479.5, 60), (479.5, 1000), (494, 1000), (494, 1079.5), (0.5, 1079.5)])
     add("console.column", "hero", (480, 1080), soft(col_plate, 3.0), [("ember", soft(w, 3.6)) for w in wells] + [("red", spine)],
         studs=[(9.5, y, 2.4) for y in (40, 939, 1040)] + [(467.5, y, 2.4) for y in (40, 1040)],
         inlays=[Polygon([(30, d - 2), (196, d - 2), (204, d), (196, d + 2), (30, d + 2), (24, d)]) for d in dividers], dz=-8.0)
@@ -209,11 +210,15 @@ def pieces():
     # battery, warp button don't fit in the container. Shrink.the elements or grow container height"); the plate runs on
     # off the left edge into the column, so there is no rolled edge at the join.
     chan80 = soft(Polygon([(64, 10), (448, 10), (478, 40), (448, 70), (64, 70), (34, 40)]), 3.6)
-    for name in ("strip.top.join", "strip.bottom.join"):
-        add(name, "nine", (512, 80), soft(box(-16, 0.5, 511.5, 79.5), 3.6), [("ember", chan80)],
-            studs=[(498, 14, 2.6), (498, 66, 2.6)],
-            inlays=[Polygon([(487, 24), (497, 24), (492, 36)]), Polygon([(487, 56), (497, 56), (492, 44)])],
-            live=[("readouts", box(90, 13, 422, 67))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
+    add("strip.bottom.join", "nine", (512, 80), soft(box(-16, 0.5, 511.5, 79.5), 3.6), [("ember", chan80)],
+        studs=[(498, 14, 2.6), (498, 66, 2.6)],
+        inlays=[Polygon([(487, 24), (497, 24), (492, 36)]), Polygon([(487, 56), (497, 56), (492, 44)])],
+        live=[("readouts", box(90, 13, 422, 67))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
+    # The top strip holds only a label over a bar on each readout, so it is 60 px (owner, 2026-11-03: "top bar is way
+    # thicker than it needs to be"), its channel rows 9-51.
+    chan60 = soft(Polygon([(60, 9), (452, 9), (476, 30), (452, 51), (60, 51), (36, 30)]), 3.6)
+    add("strip.top.join", "nine", (512, 60), soft(box(-16, 0.5, 511.5, 59.5), 3.6), [("ember", chan60)],
+        studs=[(498, 30, 2.6)], live=[("readouts", box(90, 12, 422, 48))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
     return P
 
 

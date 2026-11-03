@@ -27,7 +27,7 @@ account and every link here is updated.
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v11: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
-| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v5) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v8) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -416,6 +416,10 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
   the forge backlight and the ember glass red, the whole Krai kit re-rendered.
 - Then: "White shadows on buttons like bad. Same with green buttons we have as color palletes guide". Version 5: states in
   the Krai palette (orange whole, gold damaged, red down), glyphs orange on dark glass, no white outlines or figures. Then
-  "Panel icons should be red. Just to differentiate it from functional icons": the panel tabs' icons red at rest.
+  "Panel icons should be red. Just to differentiate it from functional icons": the panel tabs' icons red at rest. Then
+  "White icons on buttons look bad I.mean": version 6, every label and glyph on a dark key forge orange, never white.
+  Then "top bar is way thicker than it needs to be": version 7, the top strip re-rendered at 60 px. Then "lets do an
+  experiment and try bloom on this led strip?": version 8, bloom on the column's channel of red light, with a Bloom key in
+  the view to compare.
 
 Design: `openspec/changes/krai-battle-console/`.
