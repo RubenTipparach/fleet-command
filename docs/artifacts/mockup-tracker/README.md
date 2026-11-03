@@ -18,6 +18,8 @@
 - 2026-11-01, desktop session: the survey at version 11 (section W, a picture per option); version id `1793508323-a138`.
 - 2026-11-01, desktop session: the survey at version 12 (question W8); version id `1793514841-5af9`.
 - 2026-11-01, desktop session: Console skins at v26 and the Organic Panel Bible at v4; version id `1793519069-da51`.
+- 2026-11-01, cloud session (battle console thread): republished with mockup 2 linked (https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs); version id `1793521410-0998`.
+- 2026-11-01, cloud session: battle console v5 listed; version id `1793525435-29d7`.
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 (Concord ships and damage, https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4) added, the survey at version 14, on top of the battle console thread's listing of mockup 2 at v31; version id `1793584906-7c1e`.
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 at v2, the survey at v16; version id `1793592753-6b4c`.
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 at v3; version id `1793607843-26f1`.
@@ -29,3 +31,4 @@
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 6, the survey at v26; version 32, version id `1793695155-9f31`.
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 8, the survey at v27; version 33, version id `1793696583-fd49`.
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 9, the survey at v28, merged onto another session's live version (M2 at v64, the icon guide added); version 35, version id `1793697390-e5c8`.
+- 2026-11-03, cloud session (battle console thread): Fleet Command Icons added to Guides, mockup 2 at v64, merged onto the live version 1793696583-fd49 (mockup 6 and the survey at v27 from other threads kept); version id `1793697271-5c3f`.

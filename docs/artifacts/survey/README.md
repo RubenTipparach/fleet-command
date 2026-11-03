@@ -13,6 +13,17 @@
 - 2026-10-31, desktop session for the cloud session (commit bdf754f): version 10, section V added (the Vhorr Brood's panel styles: board A-H, a pick per panel type, keys, what next); database capability kept; version id `1793500807-486e`.
 - 2026-11-01, desktop session for the cloud session (commit e960a32): version 11, section W replaces section V (each Vhorr Brood style option is a picture of that exact component, 48 pictures inlined as data URIs); database capability kept; version id `1793508311-c274`.
 - 2026-11-01, desktop session for the cloud session (commit 1d90092): version 12, question W8 added (what fills the space between the Brood panels, three pictures); 51 pictures inlined; database capability kept; version id `1793514833-d1db`.
+- 2026-11-01, cloud session (battle console thread): questions B1-B6 added (B1 decided: a speed handle), republished from the cloud session; version id `1793521414-93d4`.
+- 2026-11-01, cloud session (battle console thread): B7 (tick scaling), section R (reactor, R1-R4) and B8-B11 (tractor contest) added; capabilities kept; version id `1793570080-4c09`.
+- 2026-11-01, cloud session: B11 reworded (enemies starting a hold on their own), B12 added (a turned beam starts at once); version id `1793571049-ea5e`.
+- 2026-11-01, cloud session (owner: "clean up the survey to stuff that is remaining, move answered stuff to answered set"): answers read from the database (W1-W8 answered; V1 left from the retired V section); section W moved to "Already decided" (W8: A, tissue, recorded in console-skins design.md), its 51 inlined pictures dropped (1.9 MB to 38 KB; the JPGs stay in docs/design/survey/); 24 open questions remain; version id `1793571139-f0a4`.
+- 2026-11-01, cloud session: B13-B16 added (test scenes: mine reach, raids, captured ships, the tow); version id `1793573871-5c86`.
+- 2026-11-01, cloud session: every answer folded in (B2-B16, F6a, F7, R1-R4, T4a, U4-U10 into "Already decided"); new questions B17-B19; version id `1793577333-c702`.
+- 2026-11-02, cloud session: section J (warp, J1-J5) added; version id `1793581930-af71`.
+- 2026-11-02, cloud session: B20-B22 added; merged onto the live version 1793584895-3b88 (section A from the Concord ships thread kept); version id `1793590173-e4c8`.
+- 2026-11-02, cloud session: B20 reworded to the owner's HET failure rule; merged onto the live version 1793592744-74a0 (A10 from the ships thread kept); version id `1793601543-7f47`.
+- 2026-11-02, cloud session: B23-B25 added (transporter pads and the boarding queue); version id `1793650672-d53d`.
+- 2026-11-02, cloud session: B26 added (torpedo hit chance by range, from the SFC2 manual); version id `1793651778-5ffd`.
 - 2026-11-02, cloud session (Concord ships thread): section A (A2-A9, Concord ships and damage, mockup 5) added on top of the live version (sections J and B from the battle console thread kept); version 14, version id `1793584895-3b88`.
 - 2026-11-02, cloud session (Concord ships thread): A10 added (the break-up direction) on top of the live version 15 (the battle console thread's B20-B22 kept); version 16, version id `1793592744-74a0`.
 - 2026-11-03, cloud session (Concord ships thread): A11-A12 (Concord hull concepts, mockup 6) added on top of the live version (the battle console thread's B20-B28 kept); version 22, version id `1793670409-fc66`.
@@ -22,3 +33,5 @@
 - 2026-11-03, cloud session (Concord ships thread): A13 (which Albatross) added, on top of the live version 25; version 26, version id `1793695143-a6e0`.
 - 2026-11-03, cloud session (Concord ships thread): A14 (the battleship and the carrier) added, on top of the live version 26; version 27, version id `1793696573-24eb`.
 - 2026-11-03, cloud session (Concord ships thread): A14 rewritten for the reworked battleship and carrier, on top of the live version 27; version 28, version id `1793697353-21d8`.
+- 2026-11-02, cloud session: B27 added (warp key colour by risk); version id `1793658956-e618`.
+- 2026-11-03, cloud session: B28 added (holds per class); version id `1793666306-6e15`.
