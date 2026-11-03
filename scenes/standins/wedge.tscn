@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="PrismMesh" id="wedge"]
+left_to_right = 0.5
+size = Vector3(0.6, 1.0, 0.1)
+
+[sub_resource type="BoxMesh" id="spine"]
+size = Vector3(0.08, 0.1, 0.7)
+
+[node name="Wedge" type="Node3D"]
+
+[node name="HullWedge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("wedge")
+
+[node name="TrimSpine" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 0.05)
+mesh = SubResource("spine")
