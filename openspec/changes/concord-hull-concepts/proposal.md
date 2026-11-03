@@ -3,35 +3,34 @@
 ## Why
 
 The owner, 2026-11-03, on mockup 5's Concord ships: "ship designs suck, I want somethign more original ,check out star
-crew and adventure con repos for how ships are designed".
+crew and adventure con repos for how ships are designed". Then, on this change's first version (Halo, Lantern spine,
+Light sail): "those concepts are all bad. didnt you take a look at the otehr star crew repos?", "they dont fit my star
+crrew ships atall", "star crew bridge sim", "star crew 64 and star raster are irrelevant".
 
-Mockup 5 started from the reference game's saucer and nacelles and decorated them. Both of the owner's other ship
-projects work the other way round, and their method is what this change adopts:
+So the reference is one project: **Star Crew Bridge Simulator** (`RubenTipparach/star-crew-bridge-simulator`) and its
+ships, the SCS Tern (Heron-class frigate, the player ship) and its two companions, the Osprey courier and the Shrike
+raider (`openspec/changes/ship-exteriors/`, `data/ships/exteriors.json`, `data/ships/tern/layout.json`, the captures
+in `docs/screenshots/exteriors-*`). The Concord's ships are built as members of that family.
 
-- **Star Crew** (`RubenTipparach/Star-Crew-Bridge-Simulator`, `openspec/changes/federation-ship-concepts/` and
-  `grabon-ship-concepts/`): design from the inside out. Mission, crew, decks, rooms and circulation first; then a hull
-  wrapped around the occupied volume; then the rooms refitted to the hull. Windows only where a real room is. Three
-  alternatives per brief, reviewed in those three stages, with measured checks.
-- **Adventure** (`RubenTipparach/adventure-2dcon-26`, CLAUDE.md 13.2 and 13.2b, `mockups/fleet/`): each faction has
-  one shape language, drawn from how it thinks and fights, that survives at 40 pixels. The player's faction is the one
-  with negative space you can see through. A class is countable by a repeated element, and each class has one mark no
-  other class carries.
+Then, on v2 while it was being built: "try some vertically aligned pulons too, i thnkn those from sfc was interesting
+- 1 pylon vertical, 2 pulons vertical".
 
 ## What Changes
 
-- Three original Concord directions, each built inside out for the frigate and grown to a corvette and a cruiser:
-  - **A, Halo**: the crew live in a ring you can see through; the bridge is a raised block on the hub at the ring's
-    centre; drive pods hang outboard on short pylons. A class is counted in rings.
-  - **B, Lantern spine**: an open lattice keel strung with lit habitat lanterns, each pair a different shape (every
-    body in the Concord gets a home shaped for it). A class is counted in lantern pairs.
-  - **C, Light sail**: a slim keel between outboard booms, with glowing shield sails stretched between them. A class
-    is counted in sail pairs.
-- Each shown in three stages (zones, hull, fitted), at true scale with a 1.8 m figure, with measured length, beam,
-  decks, zones contained in the hull, and window count; 40 px silhouettes from above and the side.
-- Mockup 6, `docs/mockups/concord-hull-concepts.html`. Mockup 5's damage system stays and takes the chosen hull later.
-- Survey A11 (which direction) and A12 (the Concord's sizes).
+- Version 1's three directions are withdrawn.
+- **The Concord line, in the Tern family** (mockup 6, v2, `docs/mockups/concord-hull-concepts.html`):
+  - **Swift-class corvette** (51 m): the Osprey's proportions, a broad command body forward, a narrow spine aft,
+    nacelles slung low.
+  - **Petrel-class frigate** (88 m): the Tern's proportions at the Concord's colours.
+  - **Albatross-class cruiser** (131 m): the family at cruiser size, four decks, two nacelle pairs.
+  - **The SCS Tern itself**, drawn from its own data at true scale, as the yardstick.
+- Three pylon arrangements on every Concord class: **Level** (the family's own), **One upright** (one nacelle on the
+  centreline above the hull on one vertical pylon) and **Two upright** (a nacelle pair above the hull on two vertical
+  pylons), after the owner's note on the reference game's ships.
+- Four liveries: Concord (ours) and the Tern's Copper, Cyan and Rescue for comparison.
+- Survey A11 (pylons) and A12 (sizes) rewritten for v2.
 
 ## Impact
 
 - Supersedes the silhouette and class shapes in `concord-ship-look` (its livery, markings, windows-as-scale and
-  lighting rules stand). No game code.
+  lighting rules stand). Mockup 5's damage system takes the chosen hull later. No game code.

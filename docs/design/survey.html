@@ -172,15 +172,15 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
-  { tag: 'A', name: 'Concord hull concepts (mockup 6)',
-    lead: 'You said: "ship designs suck, I want something more original, check out star crew and adventure con repos for how ships are designed". Mockup 6 (Concord Hull Concepts, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds three new directions their way: inside out (rooms first, then a hull wrapped round them), with an opening you can see the stars through, and classes counted by a repeated element.',
+  { tag: 'A', name: 'The Concord line (mockup 6, version 2)',
+    lead: 'You said the first concepts did not fit your Star Crew ships at all. Version 2 of mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships as members of the Tern\'s family from Star Crew Bridge Simulator: the same octagonal lofted hull, white armour over a grey service band, copper-rimmed windows on decks, long nacelles on pylons. The Tern itself stands beside them from its own data. Try the Pylons row: Level, One upright, Two upright.',
     qs: [
-      { id: 'A11', q: 'Which direction for the Concord? A Halo: the crew live in a ring you can see through, round a hub with the bridge raised at its centre, drive pods outboard. B Lantern spine: an open lattice keel strung with lit habitat lanterns, each pair its own shape. C Light sail: a slim keel between outboard booms with glowing shield sails between them.',
-        options: ['A Halo', 'B Lantern spine', 'C Light sail', 'A mix (say which parts in the notes)', 'None yet: show me more directions'], rec: 0,
-        why: 'Its tell is the strongest at 40 px (a circle with a hole in it is unlike any wedge or blade), the ring is the Concord\'s idea of itself (many species round one table), and classes count cleanly by rings.' },
-      { id: 'A12', q: 'How big are Concord ships? Mockup 5 used 118 m (corvette) to 312 m (cruiser). The concepts use 60 m, 120 m and 220 m, closer to Star Crew\'s 45-80 m and Adventure\'s 12-104 m, where rooms and windows still read.',
-        options: ['The concept sizes: 60, 120, 220 m', 'Mockup 5\'s sizes: 118, 196, 312 m', 'Smaller still (say in the notes)'], rec: 0,
-        why: 'At 120 m a frigate\'s decks, windows and a 1.8 m figure are all readable in the chase view, and the fleets of your other games sit near that scale.' },
+      { id: 'A11', q: 'Which pylons for the Concord? Level: a nacelle pair on level swept pylons at the waist, as the Tern has. One upright: one nacelle on the centreline above the hull on one vertical pylon. Two upright: a nacelle pair above the hull on two vertical pylons.',
+        options: ['Per class: corvette one upright, frigate level, cruiser two upright over a level ventral pair', 'Level on every class (the Tern family\'s own)', 'One upright on every class', 'Two upright on every class', 'Different (say which in the notes)'], rec: 0,
+        why: 'The family stays the Tern\'s (the frigate is level, like the Tern), and the pylons then name the class at a glance: one nacelle up is the small ship, two up over two below is the big one.' },
+      { id: 'A12', q: 'Concord sizes: corvette 51 m, frigate 88 m, cruiser 131 m, beside the Tern at 86 m?',
+        options: ['Yes, as built', 'Bigger: a cruiser of about 200 m', 'Smaller (say in the notes)'], rec: 0,
+        why: 'The frigate then stands beside your Tern at its size, so its decks, windows and a 1.8 m figure read the same way.' },
     ] },
   { tag: 'A', name: 'Concord ships and damage (mockup 5)',
     lead: 'Mockup 5 (Concord Ships, https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4) shows the Bastion cruiser, the Lantern frigate and the Swift corvette at true scale, and how each subsystem shows its damage on the ship. Try the Damage tab: click the hull to fire, or use the scenarios. Your question was "how can I understand ship subsystem damage by looking at it?"; A2 to A6 answer it.',

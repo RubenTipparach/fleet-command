@@ -1,33 +1,33 @@
 ## ADDED Requirements
 
-### Requirement: Concord hulls are built inside out
+### Requirement: Concord hulls belong to the Tern family
 
-A Concord hull SHALL be the wrap of its zones (rooms and spaces with a kind, a size and a deck count) plus clearance, and every zone SHALL lie inside its hull, measured.
+A Concord hull SHALL be an octagonal hull lofted through stations of `[z, half beam, top, bottom, chamfer]` in metres, the format of Star Crew Bridge Simulator's ship data, painted with white armour over a grey subhull, a grey service band at the waterline and grey dorsal channels.
 
-#### Scenario: A zone outside its hull is caught
-- **WHEN** a zone's corner lies outside the hull piece that wraps it
-- **THEN** the containment check reports it and names the zone
+#### Scenario: A station is read the family's way
+- **WHEN** a Concord class's stations are lofted
+- **THEN** each station is an octagon with its four corners chamfered by the station's chamfer, and the hull passes through every station
 
-### Requirement: Windows only where a room is
+### Requirement: Windows only where crew live
 
-A window SHALL be placed only where a crew, commons, medical or command zone meets the hull, one row per deck.
+A window SHALL be placed only along a class's lived-in length, 1.5 m above a deck floor, and never on a livery stripe or the service band.
 
-#### Scenario: Machinery has no windows
-- **WHEN** a hull piece wraps only machinery
-- **THEN** it carries no windows
+#### Scenario: The stripe is clear
+- **WHEN** a window would fall within 2.2 m of a livery stripe's station
+- **THEN** no window is placed there
 
-### Requirement: The Concord reads at 40 pixels
+### Requirement: Nacelles stand clear of the hull
 
-A Concord hull SHALL show its faction tell (an opening the stars show through) in a 40 pixel silhouette from above.
+Every nacelle SHALL be held on a pylon with daylight between it and the hull, in every pylon arrangement (level, one upright, two upright), and the page SHALL show the measured daylight.
 
-#### Scenario: The silhouette test
-- **WHEN** the frigate is rendered as a 40 pixel silhouette from above
-- **THEN** the opening is visible as background inside the outline
+#### Scenario: An upright nacelle
+- **WHEN** a class is shown with one upright pylon
+- **THEN** its nacelle's underside is at least 3.0 m above the highest hull point beneath it
 
-### Requirement: A class is counted, not fattened
+### Requirement: A class is counted by its nacelles
 
-A larger Concord class SHALL differ from a smaller one by the count of its repeated element (rings, lantern pairs or sail pairs), not by thicker parts.
+A larger Concord class SHALL carry more nacelles in pairs or the same count, never thicker nacelles than its shape rule gives.
 
 #### Scenario: Corvette to cruiser
-- **WHEN** the corvette, frigate and cruiser stand side by side
-- **THEN** the count of the repeated element rises with the class
+- **WHEN** the corvette, frigate and cruiser stand side by side in the level arrangement
+- **THEN** the corvette and frigate carry two nacelles and the cruiser four

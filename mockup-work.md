@@ -26,7 +26,7 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
-| 6 | Concord hull concepts | Drafted (2026-11-03, v1) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 6 | Concord line (hull concepts) | Drafted (2026-11-03, v3: the Tern family; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -262,9 +262,17 @@ first, a hull wrapped round them, then the two fitted; windows only on real room
 stages with measured checks. From Adventure (CLAUDE.md 13.2 and 13.2b, `mockups/fleet/`): one shape language per faction
 that reads at 40 px, the player's faction the one you can see through, classes counted by a repeated element.
 
-What the mockup shows: three original Concord directions (A Halo, B Lantern spine, C Light sail), each in three stages
-(zones, hull, fitted), as a corvette, frigate and cruiser, with measured length, beam, decks, zones in hull and windows,
-and 40 px silhouettes. Mockup 5's damage system takes the chosen direction once it is approved. Survey A11, A12.
+Version 1 (three directions, Halo, Lantern spine, Light sail) was rejected the same day: "those concepts are all bad.
+didnt you take a look at the otehr star crew repos?", "they dont fit my star crrew ships atall", "star crew bridge sim",
+"star crew 64 and star raster are irrelevant". Then: "try some vertically aligned pulons too ... 1 pylon vertical, 2
+pulons vertical".
+
+What version 2 shows: the Concord line built in Star Crew Bridge Simulator's Tern family (octagonal hulls lofted
+through stations, white armour over a grey subhull and service band, dorsal channels, copper-rimmed windows on decks,
+long octagonal nacelles on swept pylons, radiators, turrets, engine bells, painted registry): the Swift corvette (51 m),
+Petrel frigate (88 m) and Albatross cruiser (131 m), with the Tern itself from its own data as the yardstick. Three pylon
+arrangements on every Concord class (level, one upright, two upright), four liveries (Concord, and the Tern's Copper,
+Cyan, Rescue), measured facts and 40 px silhouettes. Survey A11 (pylons), A12 (sizes).
 
 Design: `openspec/changes/concord-hull-concepts/`.
 
