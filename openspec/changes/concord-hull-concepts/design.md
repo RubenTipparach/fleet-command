@@ -153,11 +153,14 @@ own shader and detail maps (hull, nacelles, copper rims, livery accents, dark tr
 same interior mapping as the Concord ships. It is split at load into the hull, the inner half of each pylon and the outer
 half with its nacelle, so it breaks up and loses nacelles like the others.
 
-## The Albatross, two ways
+## The Albatross's pylons come from its main hull
 
 The owner: "albatross is a cool ship, can we try placing pylons attached to the main hull instead? I just wanna see if I
-like that better". A second Albatross carries the same nacelle pair on level pylons swept from the primary hull's waist
-(roots 14.5 m out, nacelles 25 m out, 6.2 m of daylight), with the secondary hull clear beneath.
+like that better", then (2026-11-03) "I asked for the albatross pylons to be connected to the main hull instead". The
+Albatross carries its nacelle pair on level pylons swept from the primary hull's waist (roots 14.5 m out, nacelles 25 m
+out, 6.2 m of daylight), with the secondary hull clear beneath. It is the only Albatross: the pylons out of the
+secondary hull are gone from `docs/mockups/lib/concord-line.js`, so the battle console and the game flow fly this one too.
+Survey A13 is closed.
 
 ## Thrusters
 
@@ -219,5 +222,5 @@ instanced meshes. In the game each class is a Blender generator (`blender-hard-s
 
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
-| A11 | Which nacelle layout does each class keep? | The owner's picks: Swift one below, Petrel above and below, the Albatross its secondary hull and level pair (provisional until the owner chooses from the eight on the page) |
+| A11 | Which nacelle layout does each class keep? | The owner's picks: Swift one below, Petrel above and below, the Albatross its secondary hull, pylons from the main hull (decided; provisional until the owner chooses from the eight on the page) |
 | A12 | Concord sizes: corvette 51 m, frigate 88 m, cruiser 112 m? | Yes, so the frigate stands beside the 86 m Tern |

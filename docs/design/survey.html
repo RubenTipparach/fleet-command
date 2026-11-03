@@ -175,14 +175,11 @@ function styleQ(id, comp, q, rec, why, skip = []) {
 }
 const SECTIONS = [
   { tag: 'A', name: 'The Concord line (mockup 6)',
-    lead: 'Mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships in your Tern\'s family from Star Crew Bridge Simulator. Version 5 applies your notes: the Swift three ways (one nacelle below, one above and one below, the level pair), the Petrel two ways (above and below, level), the Albatross at 112 m with a secondary hull its pylons sweep out of, all with mockup 5\'s lighting and damage, detail and normal maps and windows with rooms. Open Line-up to see them at true scale beside the Tern.',
+    lead: 'Mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships in your Tern\'s family from Star Crew Bridge Simulator. Version 5 applies your notes: the Swift three ways (one nacelle below, one above and one below, the level pair), the Petrel two ways (above and below, level), the Albatross at 112 m with a secondary hull and its pylons from the main hull, all with mockup 5\'s lighting and damage, detail and normal maps and windows with rooms. Open Line-up to see them at true scale beside the Tern.',
     qs: [
-      { id: 'A11', q: 'Which nacelle layout does each class keep? Swift: one below, above and below, or level. Petrel: above and below, or level. The Albatross keeps its secondary hull and level pair.',
+      { id: 'A11', q: 'Which nacelle layout does each class keep? Swift: one below, above and below, or level. Petrel: above and below, or level. The Albatross keeps its secondary hull, with its pylons from the main hull.',
         options: ['Your picks: Swift one below, Petrel above and below', 'Both level (the Tern family\'s own)', 'Swift one below, Petrel level', 'Different (say which in the notes)'], rec: 0,
         why: 'You picked these; the other layouts stay on the page beside them for comparison until you choose.' },
-      { id: 'A13', q: 'The Albatross: its nacelle pylons swept out of the secondary hull, or level from the primary hull\'s waist with the secondary hull clear beneath? Both are on the page (Albatross, and Albatross, pylons on the main hull).',
-        options: ['From the secondary hull', 'From the main hull', 'Show me another arrangement (say which in the notes)'], rec: 0,
-        why: 'Pylons from the secondary hull make the two hulls one machine and give the cruiser a silhouette no other class has; from the main hull it reads as a larger Tern. You asked to see the second; either is built.' },
       { id: 'A14', q: 'The two new classes: the Condor battleship (184 m: four main guns, two on top and two under the keel, short stepped barrels in faceted gun houses, the rest point-defence cannons) and the Pelican carrier (128 m: the crew hull forward, a diamond-section hangar hull behind it with three numbered bay doors each side). Are these the directions?',
         options: ['Yes, both as built', 'Battleship yes, carrier different (say how in the notes)', 'Carrier yes, battleship different (say how in the notes)', 'Neither yet (say what in the notes)'], rec: 0,
         why: 'Both follow your notes and references, and both keep the family\'s hull, paint, windows and nacelles.' },
@@ -266,6 +263,9 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'A18: a bridge block of its own on larger super-capital ships; on other classes it depends on players\' feedback (owner, 2026-11-03: "larger super captial ships, otherwise it depends based on human feedback")', where: 'docs/design/ship-bible.html chapter 5' },
+  { text: 'A15-A17 (Krai ship direction, sizes, names): withdrawn, the Krai ships are being redone on the Ship Design Bible (owner, 2026-11-03: "nuke the krai survey since we\'re redoing them")', where: 'openspec/changes/krai-ship-concepts' },
+  { text: 'A13: the Albatross hangs its nacelle pylons from its main hull, the secondary hull clear beneath (owner, 2026-11-03: "I asked for the albatross pylons to be connected to the main hull instead")', where: 'openspec/changes/concord-hull-concepts' },
   { text: 'T4a: Godot 4.7 for the game (the console and phones first; baked hull lights)', where: 'CLAUDE.md section 2' },
   { text: 'F6a, F7: sell to a faction at its ports while your standing with it is 0 or above; standing per faction, -100 to 100', where: 'openspec/changes/game-flow' },
   { text: 'B2-B5: right click locks and also locks the camera on the target (dragging frees it, the Target box locks it again); nine stations on one rail; the helm to follow the reference game (free heading, intercept, follow and match, orbit either way, high-energy turns, hard left, hard right, 180); mobile later with a rail and quick keys', where: 'openspec/changes/battle-console (B2 and B4 queued)' },

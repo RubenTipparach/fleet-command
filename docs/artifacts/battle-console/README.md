@@ -87,3 +87,5 @@
 - Version 66 published 2026-11-03, version id `1793700904-20b8`: ship and planet names sit below their rings at the hovered size, so the highlight never crosses the name. Published from the cloud session: no desktop session was reachable.
 - 2026-11-03, version 67 (cloud session, not yet published): the menu sheet gets a solid background inside its frame (owner: "Pause menu should have a background"). The desktop session publishes it to the existing slug. Also: the Shield view key removed, the 3D shield display always shown, the Target key moved to the corner (owner: "Re move shield view toggle").
 - 2026-11-03, version 68 (cloud session, in the repo, not yet published): version 67 with version 66's names clear of their rings, merged.
+- Page version 67 published 2026-11-03, version id `1793702206-7282` (Concord ships thread, built on the battle console thread's live v66 `1793700904-20b8`): the Albatross in the 3D view hangs its pylons from its main hull.
+- 2026-11-03, version 69 (merging PR #11 into main, not yet published): main's version 68 with the Concord ships thread's Albatross pylons from the main hull (its page version 67, live).
