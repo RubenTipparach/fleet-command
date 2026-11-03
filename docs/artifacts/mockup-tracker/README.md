@@ -45,3 +45,8 @@
 - 2026-11-03, cloud session (Concord ships thread): version 53, version id `1793741037-8a38`: M7 v8.
 - 2026-11-03, cloud session (Concord ships thread): version 54, version id `1793742998-d03e`: M7 v9 (the Krai frigate to the Concord standard), M6 v14 (shared skin module).
 - 2026-11-03, cloud session (Concord ships thread): version 56, version id `1793746492-524e`, on the live version (the emblem session's M9 and Emblem Design Guide kept): M7 v10.
+- 2026-11-03, cloud session (Krai battle console thread): M8 added (the battle console in the Krai Warhost skin), built on the live version 40 (M7 Krai ships from the Concord ships thread's branch, not yet on main); version 41, version id `1793716083-c3f7`.
+- 2026-11-03, cloud session (Krai battle console thread): M8 at version 3, merged onto the live version `1793716289-6a4e` (mockup 5 moved to Misc, M7 at v3); version 43, version id `1793717266-cad2`.
+- 2026-11-03, cloud session (Krai battle console thread): M8 at version 4; version 44, version id `1793722308-ee58`.
+- 2026-11-03, cloud session (Krai battle console thread): M8 at version 5, merged onto the live version `1793722621-f8f8` (the Ship Design Bible guide, survey v32), and the M8 summary's unescaped apostrophe (from version 43 of this session) escaped so the page's script parses; version 46, version id `1793736724-0cfc`.
+- 2026-11-03, cloud session (Krai battle console thread): M8 at version 6 (tracker version 47, `1793737629-9deb`), then 7 (version 48, `1793738755-9fdf`), then 8, merged onto the live version `1793739217-06ad` (M7 at v4, the Ship Design Bible at v2, survey v33); version 50, version id `1793739612-c98f`.

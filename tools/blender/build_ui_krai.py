@@ -43,10 +43,12 @@ SHAPES = SHAPES["pieces"]
 PAL = dict(steel="#2b2628", basalt="#1a1718", gunmetal="#55504f", magma="#ff3a0c", honed="#c9d0d8", blood="#9a1016", red="#ff2a20", forge="#ff7a1a", ember="#3a0c0a",
            ember_lo="#080202", slot="#120505", wall="#0a0606")
 # The films: (colour, its shadow in the well, emission). Ember at rest, red on hover, forge orange when engaged.
-FILMS = dict(ember=("#2a0806", "#050101", 0.14), red=("#ff2a20", "#3a0505", 1.1), forge=("#ff7a1a", "#5a1a04", 1.7),
+FILMS = dict(ember=("#4c0705", "#080101", 0.24),   # ember glass, redder since 2026-11-03 (was #2a0806, 0.14)
+             red=("#ff2a20", "#3a0505", 1.1), forge=("#ff7a1a", "#5a1a04", 1.7),
              slot=("#120505", "#050101", 0.2), lamp_green=("#5aff7a", "#0a3a12", 2.4), lamp_yellow=("#ffc23a", "#3a2a05", 2.4),
              lamp_red=("#ff2a20", "#3a0505", 2.4))
-FORGE = (1.0, 0.42, 0.15)                        # the forge lamps' colour
+# the forge lamps' colour: red since 2026-11-03 (owner: "back light more red please?"; was 1.0, 0.42, 0.15 orange)
+FORGE = (1.0, 0.13, 0.05)
 FORGE_W = float(os.environ.get("FORGE_W", 0.0003))   # forge lamp power per mm of lower lip (times the lamp scale)
 MAGMA_ES = float(os.environ.get("MAGMA_ES", 0.7))   # the fissures' ember glow at full (a dim seam, never a readout)
 PRESS_MM = 3.0   # how far an engaged key's glass is pushed in (owner: "the inner part is pushed in and the frame stays put");
@@ -184,6 +186,23 @@ def fill(col, es):
     return build
 
 
+def alloc(col, es, lit=True):
+    """An allocation cell of the battle console (CLAUDE.md section 7: discrete boxes; openspec/changes/krai-battle-console):
+    a slanted blade of glass in a dark steel setting, a larger cousin of the bar's chevron. Idle, lit, warning, ok and
+    locked share the outline and the setting; a locked cell's socket is empty (no glass, only the dark floor)."""
+    def build(K):
+        w, h = K.w, K.h
+        out = [(6.5, 1.0), (w - 1.0, 1.0), (w - 6.5, h - 1.0), (1.0, h - 1.0)]
+        cx, cy = w / 2, h / 2
+        inner = [(cx + (x - cx) * 0.8, cy + (y - cy) * 0.74) for x, y in out]
+        K.slab([out], 0.0, 1.2, K.mat("setting", lambda: steel("setting")), bevel=0.4)
+        if lit:
+            K.slab([inner], 1.2, 1.7, K.mat("cellglass", lambda: glass("cellglass", col, es)), bevel=0.25)
+        else:
+            K.slab([inner], 1.2, 1.25, K.mat("socket", lambda: printed("socket", PAL["wall"])), bevel=0.0)
+    return build
+
+
 PIECES = {}
 for name, s in SHAPES.items():
     PIECES[name] = (s["kind"], tuple(s["size"]), tuple(s["margins"]) if s["margins"] else None, s["stretch"], piece(name), s["inset"])
@@ -193,9 +212,21 @@ CS = tuple(CELL["size"])
 PIECES["bar.cell.off"] = ("cell", CS, None, None, cell(PAL["ember"], 0.3), CELL["gap"])
 PIECES["bar.cell.on"] = ("cell", CS, None, None, cell(PAL["forge"], 3.2), CELL["gap"])
 PIECES["bar.cell.warn"] = ("cell", CS, None, None, cell(PAL["red"], 3.2), CELL["gap"])
+# The battle console's allocation cells and its second bar fill (openspec/changes/krai-battle-console). No green: the Krai
+# palette only (owner, 2026-11-03: "Same with green buttons we have as color palletes guide"). The second row of ticks
+# (Systems under Power) is bone glass; the "ok" fill is forge orange.
+BONE = "#e8dccb"
+for name, col, es, lit in (("cell.idle", PAL["ember"], 0.3, True), ("cell.lit", PAL["forge"], 3.2, True), ("cell.warn", PAL["red"], 3.2, True),
+                           ("cell.accord", BONE, 1.6, True), ("cell.locked", PAL["wall"], 0.0, False)):
+    PIECES[name] = ("nine", (32, 28), (10, 10, 10, 10), "xy", alloc(col, es, lit))
+PIECES["bar.fill.accord"] = ("nine", (64, 10), (0, 10, 0, 4), "x", fill(PAL["forge"], 3.0))
 ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "button.idle", "button.hover", "button.pressed",
          "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate", "helm.pad", "ssd.bezel", "dial",
-         "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest", "bar.cell.off", "bar.cell.on", "bar.cell.warn"]
+         "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest", "bar.cell.off", "bar.cell.on", "bar.cell.warn",
+         # the battle console's own (openspec/changes/krai-battle-console)
+         "plate.label", "plate.title", "console.column", "strip.top.join", "strip.bottom.join",
+         "key.idle", "key.hover", "key.on", "key.ok", "key.warn", "key.alert", "key.off",
+         "cell.idle", "cell.lit", "cell.warn", "cell.accord", "cell.locked", "bar.fill.accord"]
 PIECES = {k: PIECES[k] for k in ORDER}
 
 # A soft room light from the upper left on the steel, and a weak forge-red light rising from below (link_layers adds
