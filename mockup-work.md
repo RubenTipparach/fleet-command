@@ -29,6 +29,7 @@ account and every link here is updated.
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | Drafted (2026-11-03, v10: the frigate rooms first on the Ship Design Bible, brought to the Concord standard: square-cut plates, windows with Krai rooms, thrusters, warm floods) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
 | 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v8) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -446,3 +447,35 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
   the view to compare.
 
 Design: `openspec/changes/krai-battle-console/`.
+
+## 9. Faction emblems
+
+Owner, 2026-11-03: a session dedicated to designing the emblems (faction crests and insignia) for every faction in the
+game. Numbered 9 because 7 (Krai Warhost ships) and 8 (the Krai battle console) are taken on other threads' branches.
+
+- **Every faction's emblem**: Concord, Kethran Hegemony, Vos Syndicate, Vhorr Brood, Aelith Conclave, Tarsine Remnant,
+  Krai Warhost, Ombrai, Kelvane Institute, Ssarith Hunt; each keeps the idea its console crest already had.
+- **At every size it is seen**: the console crest (96 x 96 px), 40 px and 20 px, in colour and in one colour, beside the
+  console's icons (the icon standard, `docs/design/icon-guide.html`).
+- **On a ship's flank**: a stand-in hull section in 3D at true scale, the marking at 6 % of ship length (5.3 m on an
+  88 m frigate, 20 px on a phone at battle distance).
+- What each emblem means is the owner's (survey E1-E12); the recommendations are drawn and provisional.
+- The Krai frigate's placeholder flank marking (mockup 7) is replaced by the Krai thread once the Krai emblem is
+  approved; this mockup does not touch that page.
+
+Later direction, the owner, 2026-11-03 (with the reference game's box art and its empire badges): "emblems are poor
+quality, I expected better 3d renders from all of them. extract the details from these, and build a guideline for
+them. start with the concord render first"; "these are quintessential to the cultural ideologies of the factions"; "get
+material maker too"; on the first Concord render (a ring of five domes): "I'm not a fan of the circle design here", "its
+too simple and easy to make, see our rules about just slapping on primitives", "this is bad design", "make a few
+different designs", "make an emblem design guide to keep track of my notes"; "when you design something cultural, I
+want you tell me why you did it that way, sketch a 2d figure out of svg first", "the shapes matter before we go 3d with
+it", "make a single image with text pointing to design elements and choices"; with the STARFLEET Visual Standards Manual
+2026: "add a link to references for this, and compile a design guide for emplems from this".
+
+So each faction's emblem is now designed on the **Emblem Design Guide** (https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V,
+`docs/design/emblem-guide.html`): flat SVG sketches, each one image with its choices labelled, the owner's pick, then 3D
+(Blender, swept and cut forms, surfaces from Material Maker graphs). The Concord's four sketches wait for a pick; 3D is
+on hold until then. The flat drafts on this mockup are placeholders.
+
+Design: `openspec/changes/faction-emblems/`. Shapes: `docs/mockups/lib/emblems.js`.

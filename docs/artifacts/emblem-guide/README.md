@@ -1,0 +1,52 @@
+# Emblem Design Guide (guide)
+
+- Link: https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V
+- Shows: how faction emblems are designed and the owner's notes on them (newest first, in their words); the method
+  (ideology, then a flat SVG sketch with every choice labelled, then the owner's pick, then 3D); what the reference
+  badges teach; what the STARFLEET Visual Standards Manual 2026 teaches (cited by printed page); sixteen rules compiled
+  from all three; the references; and the Concord's four annotated sketches (A Many Hands, recommended; B The Saucer;
+  C The Open Door; D Beacon and Wings), each one image with labels on its elements, small sizes, a note box and a pick.
+  The rejected first Concord render (a ring of five domes) is kept with the owner's words.
+- Made by: `docs/design/emblem-guide.html` (the render inlined from `docs/design/emblem-guide/renders.json` by
+  `tools/mockups/inline_data.py`), published with the `db` and `user` capabilities. The owner's notes and picks are in
+  its database, collection `notes`: one document per design id (`concord-a` ... `concord-d`, `general`) holding
+  `{text, updatedAt}`, and `concord-pick` holding `{design, updatedAt}`.
+- Change: `openspec/changes/faction-emblems/`.
+
+## Publishes
+
+- Version 1 published 2026-11-03 (cloud session, faction emblems thread), version id `1793743795-415c`. Its `notes`
+  collection read back empty after publishing.
+- Version 2 published 2026-11-03, version id `1793744559-d16f`: the joins fixed (owner: "you can see gaps in the shape,
+  this is low quality work"): B's nacelles and keel grow out of the saucer as one web of hull, C's walls end in its sill
+  and its founders stand on it, A's tips blend out of their arms; every sketch's joins measured on the page
+  (`window.EMBLEM_CHECK`, run headless by `tools/emblems/sketch_check.mjs`); rule 17 added; pressing a picked design
+  again removes the pick. The stray pick of B in the `notes` collection was deleted at the owner's word ("unpick that,
+  I didnt pick anything yet").
+- Version 3 published 2026-11-03: B restored to its first shape (owner: "that changed the jellyfish design to much, the
+  jelly fish has a tiny small tail"): three separate legs and the tiny tail, only rooted under the saucer so no wedge
+  gaps show; the web of hull from version 2 removed.
+- Version 4 published 2026-11-03: every feature on a sketch has an id (A1, A2 ... D5; owner: "can you label each
+  feature A1, A2, A3 etc"), in its label and in a badge on the element; anchors moved onto the features they name.
+- Version 5 published 2026-11-03: B reworked on the owner's notes ("i dont like the way its colored", the thin lines in the
+  legs, "some sort of shape encompassing that" for a patch, B1 one solid colour, the star impressed): the saucer one
+  solid Signal blue, no lines in the legs, the star pressed in (a shaded floor with a lit lower-right rim), the
+  nacelles standing on a patch frame; three patch shapes shown with reasons (B-E1 the sweep frame, in the sketch; B-E2
+  the mission arch; B-E3 the sector hex); B's joins measured on the emblem and frame without the field.
+- Version 6 published 2026-11-03: B's frames and colours (owner: "dont like any of those shapes, though b-e2 is a good
+  direction", "those colors are no good either, hard to read from far away"): the sweep frame and the hex dropped; four
+  arches grown from B-E2 (B-E4 the thickening arch, in the sketch; B-E5 the hangar door; B-E6 the flared arch; B-E7 the
+  saucer arch), each one's joins measured; colourways measured for contrast (at least 7:1, rule 18): B-K1 pearl on
+  night (11.9:1, in the sketch), B-K2 pearl on flag blue (4.8:1, fails), B-K3 night on pearl (11.9:1), each at 12 px.
+- Version 7 published 2026-11-03: B-E4 to B-E7 retired (owner: "dont like any of those shapes, though b-e2 is a good
+  direction (but I still DONT LIKE IT)"); B-E2 back in the sketch; six variations on it (B-E8 to B-E13), each changing
+  one thing. Every emblem now has a version for black and one for white (owner: "the colors are bad, they dont read on
+  the white background", "need different versions for white and black background"), each measured: B pearl on night on
+  black (ship on field 11.9:1, outline 17.8:1), night on pearl on white (11.9:1, 13.2:1); A, C and D pearl on black
+  (17.8:1) and night blue on white (13.2:1).
+- Version 8 published 2026-11-03: B-E8 to B-E13 retired (owner: "the shape on e-9 is still the exact same, you just
+  changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a
+  uniform"). Rule 19, one closed outline, measured on every patch (the printed patch one piece, the background one
+  region). Three different outlines beside B-E2: B-E14 the capsule, B-E15 the keyhole, B-E16 the five-sided house.
+- Version 9 published 2026-11-03: two rounded triangles for B (owner: "can we try a triangle shape with cruved ends?"):
+  B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.

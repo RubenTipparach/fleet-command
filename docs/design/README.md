@@ -9,7 +9,7 @@ Open questions for the owner live in one survey page (CLAUDE.md section 8):
 - Answers: the artifact's `answers` collection, read with `ArtifactData`.
 
 Question id prefixes: `G` game and feel, `U` the console and screens, `T` tech and platforms, `A` art,
-`S` sound and music, `P` playtesting, `F` the game flow (mockup 1), `B` the battle console (mockup 2), `R` the reactor (mockup 2). Ids are
+`S` sound and music, `P` playtesting, `F` the game flow (mockup 1), `B` the battle console (mockup 2), `R` the reactor (mockup 2), `E` faction emblems (mockup 9). Ids are
 never reused.
 
 ## Mockups
@@ -22,6 +22,9 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
 
 ## Guides
 
+- Emblem Design Guide: https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V (source `docs/design/emblem-guide.html`, record in
+  `docs/artifacts/emblem-guide/`). How faction emblems are designed: sketch first with every choice explained, the
+  owner picks, then 3D; the rules; the owner's notes, kept on the page.
 - Fleet Command Icons: https://claude.ai/artifact/RWE6nzNQpPHE2LGTGCYCMb (source `docs/design/icon-guide.html`, record in
   `docs/artifacts/icon-guide/`). The icon standard for every skin and the sheet of every icon.
 - Analog Panel Bible: https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF (source `docs/design/ui-bible.html`, record in

@@ -1,0 +1,61 @@
+{
+ "note": "The console skins' rendered crest pieces (the kit's crest hero piece, 96 x 96), listed for the faction emblems page (docs/mockups/faction-emblems.html) so it can show each beside its emblem. Concord's is drawn by docs/mockups/lib/concord.js.",
+ "pieces": {
+  "aelith": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/aelith/crest.png"
+  },
+  "kelvane": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/kelvane/crest.png"
+  },
+  "kethran": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/kethran/crest.png"
+  },
+  "krai": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/krai/crest.png"
+  },
+  "ombrai": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/ombrai/crest.png"
+  },
+  "ssarith": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/ssarith/crest.png"
+  },
+  "tarsine": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/tarsine/crest.png"
+  },
+  "vhorr": {
+   "size": [
+    96,
+    96
+   ],
+   "file": "../../../assets/ui/vhorr/crest.png"
+  }
+ }
+}

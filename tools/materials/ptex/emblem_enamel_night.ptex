@@ -1,0 +1,240 @@
+{
+ "connections": [
+  {
+   "from": "fbm2_0",
+   "from_port": 0,
+   "to": "shader_2",
+   "to_port": 0
+  },
+  {
+   "from": "fbm2_1",
+   "from_port": 0,
+   "to": "shader_2",
+   "to_port": 1
+  },
+  {
+   "from": "shader_2",
+   "from_port": 0,
+   "to": "normal_map_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_2",
+   "from_port": 0,
+   "to": "occlusion2_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_2",
+   "from_port": 1,
+   "to": "Material",
+   "to_port": 0
+  },
+  {
+   "from": "shader_2",
+   "from_port": 3,
+   "to": "Material",
+   "to_port": 1
+  },
+  {
+   "from": "shader_2",
+   "from_port": 2,
+   "to": "Material",
+   "to_port": 2
+  },
+  {
+   "from": "shader_2",
+   "from_port": 4,
+   "to": "Material",
+   "to_port": 3
+  },
+  {
+   "from": "normal_map_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 4
+  },
+  {
+   "from": "occlusion2_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 5
+  },
+  {
+   "from": "shader_2",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 6
+  }
+ ],
+ "label": "Emblem Enamel Night",
+ "name": "Material",
+ "node_position": {
+  "x": 0,
+  "y": 0
+ },
+ "nodes": [
+  {
+   "name": "fbm2_0",
+   "node_position": {
+    "x": 220,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 40,
+    "scale_y": 40
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_1",
+   "node_position": {
+    "x": 440,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 5,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.55,
+    "scale_x": 2,
+    "scale_y": 2
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "shader_2",
+   "node_position": {
+    "x": 660,
+    "y": 0
+   },
+   "parameters": {},
+   "seed_int": 0,
+   "shader_model": {
+    "code": "",
+    "global": "",
+    "inputs": [
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "peel",
+      "longdesc": "peel",
+      "name": "peel",
+      "shortdesc": "peel",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "cloud",
+      "longdesc": "cloud",
+      "name": "cloud",
+      "shortdesc": "cloud",
+      "type": "f"
+     }
+    ],
+    "instance": "\nfloat hs_$name(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\nfloat sat_$name(float x) { return clamp(x, 0.0, 1.0); }\n\n// Stars: one candidate per cell of a 48 x 48 grid (tiles), lit where the cell's hash is high, jittered in its cell.\nfloat star_$name(vec2 uv) {\n\tvec2 q = uv * 48.0; vec2 c = floor(q); vec2 f = fract(q);\n\tfloat h = hs_$name(c + 3.0);\n\tvec2 p = vec2(hs_$name(c + 11.0), hs_$name(c + 29.0)) * 0.6 + 0.2;\n\tfloat r = mix(0.05, 0.13, hs_$name(c + 47.0));\n\treturn step(0.86, h) * (1.0 - smoothstep(r * 0.4, r, length(f - p)));\n}\nfloat height_$name(vec2 uv) { return 0.5 + 0.12 * ($peel(uv) - 0.5); }\nvec3 albedo_$name(vec2 uv) {\n\tvec3 c = vec3(0.106, 0.165, 0.42) * (0.75 + 0.4 * $cloud(uv));\n\treturn mix(c, vec3(0.85, 0.9, 1.0), star_$name(uv));\n}\nvec3 emit_$name(vec2 uv) { return vec3(0.8, 0.88, 1.0) * star_$name(uv); }\nfloat rough_$name(vec2 uv) { return 0.2 + 0.08 * $peel(uv); }\nfloat metal_$name(vec2 uv) { return 0.0; }\n",
+    "longdesc": "emblem enamel night",
+    "name": "emblem enamel night",
+    "outputs": [
+     {
+      "f": "sat_$name(height_$name($uv))",
+      "longdesc": "out0",
+      "shortdesc": "out0",
+      "type": "f"
+     },
+     {
+      "longdesc": "out1",
+      "rgba": "vec4(clamp(albedo_$name($uv), vec3(0.0), vec3(1.0)), 1.0)",
+      "shortdesc": "out1",
+      "type": "rgba"
+     },
+     {
+      "f": "sat_$name(rough_$name($uv))",
+      "longdesc": "out2",
+      "shortdesc": "out2",
+      "type": "f"
+     },
+     {
+      "f": "sat_$name(metal_$name($uv))",
+      "longdesc": "out3",
+      "shortdesc": "out3",
+      "type": "f"
+     },
+     {
+      "longdesc": "out4",
+      "rgba": "vec4(clamp(emit_$name($uv), vec3(0.0), vec3(1.0)), 1.0)",
+      "shortdesc": "out4",
+      "type": "rgba"
+     }
+    ],
+    "parameters": [],
+    "shortdesc": "emblem enamel night"
+   },
+   "type": "shader"
+  },
+  {
+   "name": "normal_map_0",
+   "node_position": {
+    "x": 880,
+    "y": 0
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 0.024,
+    "param2": 0,
+    "param4": 1
+   },
+   "type": "normal_map"
+  },
+  {
+   "name": "occlusion2_0",
+   "node_position": {
+    "x": 1100,
+    "y": 0
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 4,
+    "param2": 0.44,
+    "param3": 1
+   },
+   "type": "occlusion2"
+  },
+  {
+   "export_paths": {},
+   "name": "Material",
+   "node_position": {
+    "x": 1320,
+    "y": 0
+   },
+   "parameters": {
+    "albedo_color": {
+     "a": 1.0,
+     "b": 1,
+     "g": 1,
+     "r": 1,
+     "type": "Color"
+    },
+    "ao": 1.0,
+    "depth_scale": 0.0,
+    "emission_energy": 1.0,
+    "flags_transparent": false,
+    "metallic": 1.0,
+    "normal": 1.0,
+    "roughness": 1.0,
+    "size": 11,
+    "sss": 0.0
+   },
+   "type": "material"
+  }
+ ],
+ "parameters": {},
+ "type": "graph"
+}

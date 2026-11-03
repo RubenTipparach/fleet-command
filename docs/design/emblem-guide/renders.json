@@ -1,0 +1,6 @@
+{
+ "note": "3D renders shown on the Emblem Design Guide (docs/design/emblem-guide.html), inlined by tools/mockups/inline_data.py. concord-v1: the first Concord render, rejected by the owner on 2026-11-03.",
+ "pieces": {
+  "concord-v1": {"size": [1024, 1024], "file": "../../../assets/emblems/concord/rejected-v1-ring.png"}
+ }
+}
