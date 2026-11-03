@@ -170,25 +170,29 @@ def pieces():
     # cavities run into each other, and a channel of red light down the right land crossing every panel. Its top and
     # bottom right corners run on past x 480 under the strips (strip.top.join, strip.bottom.join), so the metal is one
     # piece there: no rolled edge where the column meets a strip.
-    def fanged(x0, y0, x1, y1):
+    def fanged(x0, y0, x1, y1, top=True, bottom=True):
+        """A well with the frame's fangs at its outer corners; where it meets a divider its corners are only cut, so the
+        divider runs into the side lands at full width, unpinched."""
         w = cut(x0, y0, x1, y1, 4)
         f = Polygon([(0, 0), (0, 14), (32, 32), (14, 0)])
         for sx, sy, cx, cy in ((1, 1, x0, y0), (-1, 1, x1, y0), (1, -1, x0, y1), (-1, -1, x1, y1)):
-            w = w.difference(affinity.translate(affinity.scale(f, sx, sy, origin=(0, 0)), cx, cy))
+            if (sy == 1 and top) or (sy == -1 and bottom):
+                w = w.difference(affinity.translate(affinity.scale(f, sx, sy, origin=(0, 0)), cx, cy))
         return w
-    # Version 3 (owner, 2026-11-03: "I dont like the gaps between panels, I think that gap should close"): neighbouring
-    # wells meet at a thin rib (8 px) where their rectangles meet, instead of a 32 px band of metal.
+    # Version 4 (owner, 2026-11-03, of version 3's 8 px rib: "bring back the thicker divider and make this connected
+    # rather than seperated"): neighbouring panels are parted by a 20 px divider of the plate's own metal, one unbroken
+    # piece from the left land to the spine (no neck cut through it, no fangs pinching its ends), a blade of red enamel
+    # along it; the page sets the next panel's title placard on it.
     panels = [(6, 68, 468, 420), (6, 494, 468, 276), (6, 776, 468, 160)]
-    wells = [fanged(x + 13, y + (13 if i == 0 else 1), x + w - 16, y + h - (13 if i == len(panels) - 1 else 1)) for i, (x, y, w, h) in enumerate(panels)]
-    joined = wells[0]
-    for (ax, ay, aw, ah), (bx, by, bw, bh), wb in zip(panels, panels[1:], wells[1:]):
-        top, bot, mid = ay + ah - 1, by + 1, (ay + ah + by) / 2
-        neck = Polygon([(92, top - 8), (184, top - 8), (170, mid), (184, bot + 8), (92, bot + 8), (106, mid)])
-        joined = joined.union(neck).union(wb)
+    last = len(panels) - 1
+    wells = [fanged(x + 13, y + (13 if i == 0 else 7), x + w - 16, y + h - (13 if i == last else 7), top=i == 0, bottom=i == last)
+             for i, (x, y, w, h) in enumerate(panels)]
+    dividers = [((ay + ah) + by) / 2 for (ax, ay, aw, ah), (bx, by, bw, bh) in zip(panels, panels[1:])]
     spine = soft(box(465, 92, 470, 988), 1.5)
     col_plate = Polygon([(0.5, 0.5), (494, 0.5), (494, 80), (479.5, 80), (479.5, 1000), (494, 1000), (494, 1079.5), (0.5, 1079.5)])
-    add("console.column", "hero", (480, 1080), soft(col_plate, 3.0), [("ember", soft(joined, 3.6)), ("red", spine)],
-        studs=[(9.5, y, 2.4) for y in (40, 491, 773, 939, 1040)] + [(467.5, y, 2.4) for y in (40, 1040)], dz=-8.0)
+    add("console.column", "hero", (480, 1080), soft(col_plate, 3.0), [("ember", soft(w, 3.6)) for w in wells] + [("red", spine)],
+        studs=[(9.5, y, 2.4) for y in (40, 939, 1040)] + [(467.5, y, 2.4) for y in (40, 1040)],
+        inlays=[Polygon([(30, d - 2), (196, d - 2), (204, d), (196, d + 2), (30, d + 2), (24, d)]) for d in dividers], dz=-8.0)
     # Icon keys (owner, 2026-11-03: "the buttons with icons need work ... make custom design for this skin. Just changing
     # the color to red or leaving it green doesnt work. I love the buttons you did for chaning the panels. repeating that
     # design style is prefered"): the rail tab's slanted steel bezel made square round a well of glass, one render per

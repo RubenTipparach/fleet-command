@@ -83,7 +83,20 @@ chaning the panels. repeating that design style is prefered".
   mounts); the Concord keeps its filled shapes. A status box is unlit glass lit in its status colour, a cooling mount is
   lit from the bottom up as it charges, and the icon's ink follows the glass: dark on lit glass, bone or orange on dark.
 
-### 6. Every Krai piece is rendered in Blender
+### 6. One divider, a red backlight (version 4)
+
+The owner, 2026-11-03, of version 3's 8 px rib (with a crop of it): "bring back the thicker divider and make this
+connected rather than seperated", then "back light more red please?".
+
+- Neighbouring panels are parted by a 20 px divider of the plate's own metal: one unbroken piece from the left land to
+  the spine. The neck no longer cuts through it, and the wells' corners at a divider are only cut, with no fangs
+  pinching its ends (the fangs stay on the column's outer corners). A blade of red enamel runs along each divider, and
+  the next panel's title placard sits centred on it.
+- The Krai backlight is red: the forge lamps under every well's lips go from orange (1.0, 0.42, 0.15) to red
+  (1.0, 0.13, 0.05), and the ember glass at rest from `#2a0806` at 0.14 to `#4c0705` at 0.24. The whole kit is
+  re-rendered, so every frame, key, tab and strip, and mockup 4's Krai skin, carries it. Engaged keys stay forge orange.
+
+### 7. Every Krai piece is rendered in Blender
 
 The owner, 2026-11-03: "you didn't render the stitching elements in blender like you are supposed to". The placards,
 the joined column, the joined strips and the allocation cells are modelled by `tools/blender/build_ui_krai.py` in the
@@ -91,7 +104,7 @@ skin's cast volcanic gunmetal, the shaped ones from outlines in `tools/mockups/k
 P and B (every shaped render passes rule B). Render cost at 48 samples on the cloud CPU: the small pieces 0.2-2.6 s
 each, the joined strips 23 s each, the column (960 x 2160 px) 271 s. The page carries the kit as WebP: the Krai page is 1.3 MiB.
 
-### 7. Verification of function: press every control in both skins
+### 8. Verification of function: press every control in both skins
 
 `tools/mockups/skin_parity.mjs` replays each of the 40 named shots, then for every control the Concord registered in
 it: replays the shot again, presses the control at its centre (click, or a drag to it), steps the battle 30 steps
@@ -100,9 +113,9 @@ battle state (every ship's position, heading, speed, hull, shields, power, syste
 hold, warp; mines, craft, shots, log length). The faction's page must give the same record press for press; the Concord
 is first checked against itself so a difference cannot come from the check. Result: 2,175 presses of 270 distinct
 controls in 40 shots, every one identical; 28 presses changed nothing a second later in either skin (toggles that act
-later or hover cards). It found one Concord bug (decision 8).
+later or hover cards). It found one Concord bug (decision 9).
 
-### 8. Concord fixes
+### 9. Concord fixes
 
 - The Fleet key stepped through `own[(own.indexOf(s) + 1) % own.length]` and threw when `own` was empty (the player's
   last ship jumped out). It is now dark and does nothing when no ship is left.

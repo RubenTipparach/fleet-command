@@ -43,10 +43,12 @@ SHAPES = SHAPES["pieces"]
 PAL = dict(steel="#2b2628", basalt="#1a1718", gunmetal="#55504f", magma="#ff3a0c", honed="#c9d0d8", blood="#9a1016", red="#ff2a20", forge="#ff7a1a", ember="#3a0c0a",
            ember_lo="#080202", slot="#120505", wall="#0a0606")
 # The films: (colour, its shadow in the well, emission). Ember at rest, red on hover, forge orange when engaged.
-FILMS = dict(ember=("#2a0806", "#050101", 0.14), red=("#ff2a20", "#3a0505", 1.1), forge=("#ff7a1a", "#5a1a04", 1.7),
+FILMS = dict(ember=("#4c0705", "#080101", 0.24),   # ember glass, redder since 2026-11-03 (was #2a0806, 0.14)
+             red=("#ff2a20", "#3a0505", 1.1), forge=("#ff7a1a", "#5a1a04", 1.7),
              slot=("#120505", "#050101", 0.2), lamp_green=("#5aff7a", "#0a3a12", 2.4), lamp_yellow=("#ffc23a", "#3a2a05", 2.4),
              lamp_red=("#ff2a20", "#3a0505", 2.4))
-FORGE = (1.0, 0.42, 0.15)                        # the forge lamps' colour
+# the forge lamps' colour: red since 2026-11-03 (owner: "back light more red please?"; was 1.0, 0.42, 0.15 orange)
+FORGE = (1.0, 0.13, 0.05)
 FORGE_W = float(os.environ.get("FORGE_W", 0.0003))   # forge lamp power per mm of lower lip (times the lamp scale)
 MAGMA_ES = float(os.environ.get("MAGMA_ES", 0.7))   # the fissures' ember glow at full (a dim seam, never a readout)
 PRESS_MM = 3.0   # how far an engaged key's glass is pushed in (owner: "the inner part is pushed in and the frame stays put");

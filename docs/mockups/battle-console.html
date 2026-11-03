@@ -726,7 +726,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // 2026-11-03: "Some of the elements on the bottom bar ... don't fit in the container. Shrink.the elements or grow
 // container height"). SDY centres the strips' 56 px of content in a taller strip.
 const SH = CON.stripH || 56, SDY = (SH - 56) / 2;
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v68', krai: 'Mockup 8 · Battle console · Krai Warhost · v3' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v68', krai: 'Mockup 8 · Battle console · Krai Warhost · v4' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -2152,7 +2152,10 @@ function panel(id, r, title, big, noX) {
   const bw = noX ? -10 : 21;
   // the title's plate starts at the frame's top edge, never above it (owner: "whatever background is around 'systems -
   // resolute' is overlapping the upper border"): it breaks the top arm and stops short of the content
-  const x1 = cx + cw - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, ty = y;
+  // under a kit's column the ship and weapons panels' titles sit centred on the 20 px divider above them (the Krai's;
+  // owner, 2026-11-03: "bring back the thicker divider and make this connected")
+  const onDivider = !big && KIT.hero['console.column'] && (id === 'ship' || id === 'weapons');
+  const x1 = cx + cw - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, ty = onDivider ? y - 14 : y;
   // a kit with a title placard (the Krai's, rendered) sets the title on it; otherwise a plate of the panel's dark
   if (KIT.nine['plate.title']) nine('plate.title', x0 - 18, ty - 1, total + 22, 24); else { g.fillStyle = CC.plate; g.fillRect(x0, ty, total, 22); }
   text(title.toUpperCase(), x0 + 8, ty + 19, '700 22px Antonio', CC.title, 'left', tw, '1px');

@@ -24,3 +24,4 @@
   ("artifact so I can play this mockup?"; no desktop session was reachable), version id `1793715999-c961`, then
   republished as mockup 8 (another session's branch holds mockup 7), version id `1793716070-4027`.
 - Version 3 (the gaps closed to a rib; icon keys and status boxes rendered in the rail tabs' style): published 2026-11-03, version id `1793717243-818b`.
+- Version 4 (one unbroken 20 px divider between panels with the title on it; the backlight red, the whole kit re-rendered): published 2026-11-03, version id `1793722302-b4c0`.
