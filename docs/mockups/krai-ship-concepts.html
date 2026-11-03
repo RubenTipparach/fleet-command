@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Krai Warhost Ships</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Mockup 7 (OpenSpec change krai-ship-concepts, mockup-work.md): the Krai Warhost's ships, first concepts. Three
+   directions at frigate size, then the recommended one as a line of four classes, at true scale beside the Concord line
+   (mockup 6). The look is the Krai console skin's (console-skins design: cast volcanic gunmetal, red enamel, forge
+   orange). Layout as mockup 6: the ships fill the screen, one panel of tabs down the left (a bottom sheet in portrait).
+   One dark look: space, in the Krai palette (docs/mockups/skins/krai.js). */
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: rgba(14, 9, 8, 0.92); --rule: #3a2321;
+  --ink: #f1e6da; --dim: #b39d92; --faint: #7c6660;
+  --blood: #b3121b; --red: #ff2a2a; --orange: #ff7a1a; --hot: #ffb070; --bone: #e8dccb;
+  --display: "Oswald", "Arial Narrow", sans-serif;
+  --body: "Barlow Semi Condensed", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --pw: 360px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.4 var(--body); overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+#panel { position: fixed; left: 0; top: 0; bottom: 0; width: var(--pw); z-index: 2; display: flex; flex-direction: column;
+  background: var(--panel); border-right: 2px solid var(--rule);
+  padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 14px; }
+#panel header { display: grid; gap: 4px; padding-bottom: 8px; }
+#panel h1 { margin: 0; font: 700 26px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
+#panel h1 span { color: var(--red); }
+.master { color: var(--hot); font-size: 13px; }
+.sub { margin: 0; color: var(--dim); font-size: 13px; }
+.sub code { font: 500 11px/1 var(--mono); color: var(--faint); }
+.tabs { display: flex; gap: 6px; padding-bottom: 8px; }
+.tabs button { flex: 1; min-height: 44px; border: 0; background: var(--rule); color: var(--dim);
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  font: 600 16px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.tabs button[aria-selected="true"] { background: var(--blood); color: var(--ink); }
+.scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 4px; }
+.tab { display: grid; gap: 14px; padding-bottom: 12px; }
+.grp { display: grid; gap: 6px; }
+.grp h2 { margin: 0; font: 600 14px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.row button { min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--rule); background: transparent; color: var(--ink);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); font: 500 14px/1 var(--body); }
+.row button[aria-pressed="true"] { background: var(--blood); border-color: var(--blood); }
+.row button:hover { border-color: var(--orange); }
+.hint { margin: 0; color: var(--dim); font-size: 13px; }
+.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; margin: 0; font-size: 13px; }
+.facts dt { color: var(--dim); }
+.facts dd { margin: 0; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+.notes { display: grid; gap: 10px; font-size: 14px; }
+.notes h3 { margin: 0; font: 600 15px/1.1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--hot); }
+.notes p { margin: 0; color: var(--dim); }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: grid; gap: 4px; }
+
+#hud { position: fixed; z-index: 2; top: max(10px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: min(460px, calc(100vw - var(--pw) - 48px)); display: grid; gap: 4px; justify-items: end; pointer-events: none; text-align: right; }
+#status { font: 600 18px/1.15 var(--display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink); text-shadow: 0 0 6px #000; }
+#tip { font-size: 13px; color: var(--dim); text-shadow: 0 0 4px #000; }
+#meter { font: 500 11px/1 var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
+
+/* The 40 px silhouettes: every ship drawn black on bone, top and side, its length 40 px, as a player sees it far off. */
+#sil { position: fixed; z-index: 1; left: calc(var(--pw) + 16px); right: 16px; bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  background: rgba(14, 9, 8, 0.9); border: 1px solid var(--rule); padding: 10px 12px; display: grid; gap: 8px; }
+#sil h2 { margin: 0; font: 600 14px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); }
+#silGrid { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.silc { display: grid; gap: 3px; justify-items: center; min-width: 0; }
+.silc canvas { background: var(--bone); width: 96px; height: 48px; image-rendering: pixelated; }
+.silc span { font: 500 11px/1.1 var(--mono); color: var(--dim); text-align: center; max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 900px) { :root { --pw: 300px; } #panel h1 { font-size: 22px; } }
+@media (max-width: 900px) and (max-height: 500px) { .sub { display: none; } }
+@media (max-aspect-ratio: 3/4) {
+  #panel { top: auto; width: auto; right: 0; height: 50%; border-right: 0; border-top: 2px solid var(--rule);
+    padding-top: 10px; padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  #panel header { grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 10px; }
+  .sub { display: none; }
+  #hud { max-width: calc(100vw - 32px); }
+  #sil { left: 16px; bottom: calc(50% + 12px); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div id="stage"></div>
+<aside id="panel" aria-label="Controls">
+  <header>
+    <h1>Krai <span>Warhost</span></h1>
+    <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+    <p class="sub">Mockup 7, v1. <code>krai-ship-concepts</code>. First concepts: three directions at frigate size, then direction A as a line of four classes, at true scale beside the Concord line. Drag to orbit, pinch or scroll to zoom.</p>
+  </header>
+  <div class="tabs" role="tablist">
+    <button id="tab-ships" role="tab" aria-selected="true" data-tab="ships">Ships</button>
+    <button id="tab-notes" role="tab" aria-selected="false" data-tab="notes">Notes</button>
+  </div>
+  <div class="scroll">
+    <section class="tab" id="pane-ships">
+      <div class="grp"><h2>Three directions (frigate)</h2><div class="row" id="dirRow"></div></div>
+      <div class="grp"><h2>The line (direction A)</h2><div class="row" id="lineRow"></div></div>
+      <div class="grp"><h2>Side by side</h2><div class="row" id="groupRow"></div></div>
+      <p class="hint" id="classNote"></p>
+      <div class="grp"><h2>Light</h2><div class="row" id="lightRow"></div></div>
+      <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
+      <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
+      <div class="grp"><h2>Measured</h2><dl class="facts" id="facts"></dl></div>
+    </section>
+    <section class="tab notes" id="pane-notes" hidden>
+      <h3>Where this comes from</h3>
+      <p>The Krai console skin set the language: war as the only honest test, lean predators, forged steel, blades and triangles, angry red, keys lit forge orange. Survey A8's recommendation gives the Krai a bird's head and wings. So every Krai hull is a raptor cut from blades.</p>
+      <h3>The rules, provisional</h3>
+      <ul>
+        <li>Everything is a blade: a diamond-section spine and flat faceted blades, sharp at every edge, no curves.</li>
+        <li>Cast volcanic gunmetal, as the console: near black, pitted, cooled-lava fissures that glow faintly in places.</li>
+        <li>A red-enamel war mask on the head, and red on the leading edge of every blade.</li>
+        <li>Forge orange for light: engines, gun tips and window slits. No blue or white anywhere.</li>
+        <li>A class grows by adding blade pairs: two pairs on a corvette (wings and tail), up to four on a dreadnought.</li>
+        <li>Lean, never bulky: the Krai should read thinner and sharper than the Kethran, the other bird.</li>
+      </ul>
+      <h3>Three directions</h3>
+      <ul>
+        <li>A, Stoop: a raptor diving. A dagger head on a thin neck, wings swept back and angled down, a tail blade up.</li>
+        <li>B, Crossed blades: four forward-swept blades in an X round a short body; from the front it is two crossed knives.</li>
+        <li>C, Spearhead: one flat delta, its point the head, with forward-raked talons at the rear corners.</li>
+      </ul>
+      <h3>Windows give the scale</h3>
+      <p>The same person-sized window as the Concord's, 3.4 m a deck, but as narrow forge-lit slits.</p>
+      <h3>Not decided</h3>
+      <p>Names, ranks and what the classes are called are the Krai's culture: placeholders here, questions in the survey (A15 to A17). No damage or hull lamps yet: those come once a direction is chosen.</p>
+    </section>
+  </div>
+</aside>
+<div id="hud"><div id="status"></div><div id="tip"></div><div id="meter"></div></div>
+<div id="sil" hidden><h2>At 40 px, top and side</h2><div id="silGrid"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<!-- INLINE docs/mockups/lib/concord-line.js -->
+<script data-src="docs/mockups/lib/concord-line.js">
+// Fleet Command mockups: the Concord line, the standard for Concord ships (owner, 2026-11-03: "Concord line (hull concepts) -
+// new standard, get rid of the old concord ships"). One implementation (CLAUDE.md section 6.1) of the ship table and its hull
+// geometry, shared by every page that shows a Concord ship: docs/mockups/concord-hull-concepts.html (mockup 6, lit and damaged)
+// and, through docs/mockups/lib/space.js, the battle console and the game flow. Edit it here, then re-run
+// tools/mockups/inline_data.py on each page that inlines it.
+//
+// FCConcordLine(THREE) returns the table (COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELLE_PROFILE,
+// GAP_UP, SIDE_NAMES), the station arithmetic (chOf, hullAt, loftDist, hullsOf, alongNacelle, arrange, sideName), the geometry
+// (pushTri, geoFrom, octRing, loft, hullGeo, nacelleGeo, pylonGeo, boxGeo) and plainModel(id), a ship built from the same
+// geometry with plain materials for pages that show it small (no windows, damage or lamps).
+window.FCConcordLine = function FCConcordLine(THREE) {
+'use strict';
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// ---------------------------------------------------------------------------------------------------------------
+// The ships: the Concord line in Star Crew Bridge Simulator's Tern family. Axes and units follow Star Crew's
+// exteriors.json: +X port, +Y dorsal, +Z bow, metres. A station is [z, half beam, top, bottom, chamfer]; decks are floor
+// heights, and windows sit 1.5 m above a floor. One table; the builder reads nothing else.
+const COL = { pearl: '#e4e2dc', signal: '#2f62e0', deep: '#1b2a6b', lilac: '#b7a6f2', sky: '#3fa9f0', alert: '#e8352b', glass: '#141a26' };
+const DECKS = [3.5, 0, -3.5];
+const BASES = {
+  swift: {
+    cls: 'Swift-class corvette', name: 'CNS SWIFT', reg: 'CC-031', length: 51, tell: 'A broad command body forward and a narrow spine aft, the Osprey\'s proportions.',
+    stations: [[25, 2.6, 2.4, -1.6, 0.8], [21, 5.8, 3.9, -2.6, 1.2], [13, 8.0, 4.6, -3.0, 1.3], [3, 7.6, 4.5, -3.0, 1.3], [-5, 4.4, 3.6, -2.6, 1.0], [-20, 4.0, 3.3, -2.4, 0.9], [-25, 3.2, 2.5, -1.9, 0.7]],
+    decks: [0], live: [-2, 20], band: [-0.9, 0.0], channels: [2.6], stripes: [8.5, -12],
+    command: { z: [19, 7], hb: 4.2, top: 6.4, ch: 0.8 },
+    pylons: [{ root: [3.4, -0.6, -8], tip: [12.5, -3.0, -14], rc: 10, tc: 5, t: 0.8 }],
+    nacelles: [{ x: 12.5, y: -3.0, z: -9, len: 30, hw: 1.6, hh: 1.5 }],
+    radiators: [[-11, 1.4, 5.0]], turrets: [[0, 14, 'cmd'], [0, 4, 'bottom']], bells: { z: -25, y: 0.3, x: 1.4, r: 0.9 },
+    core: { pos: [0, -2.9, -4], size: [1.2, 0.4, 14] }, torpedo: [0, -0.6, 25.1], deflector: [0, 0.4, 25.05, 1.4],
+  },
+  petrel: {
+    cls: 'Petrel-class frigate', name: 'CNS PETREL', reg: 'CC-117', length: 88, tell: 'The Tern\'s own build at the Concord\'s colours: a short broad bow and three decks of windows.',
+    stations: [[43, 4.2, 3.6, -2.6, 1.2], [38, 7.6, 6.2, -4.0, 1.6], [30, 10.0, 7.4, -5.0, 1.8], [14, 11.6, 7.6, -5.4, 1.8], [-6, 12.0, 7.8, -5.6, 2.2], [-24, 11.4, 7.8, -5.6, 2.2], [-36, 9.6, 7.0, -4.8, 2.0], [-43, 7.6, 5.4, -3.4, 1.6]],
+    decks: DECKS, live: [-8, 30], band: [-0.65, 0.35], channels: [5.0], stripes: [21, -2, -28],
+    command: { z: [33, 15], hb: 6.2, top: 10.2, ch: 1.2 },
+    pylons: [{ root: [11, 1.2, -12], tip: [21, 1.2, -22], rc: 16, tc: 10, t: 1.2 }],
+    nacelles: [{ x: 21, y: 1.2, z: -14, len: 54, hw: 2.3, hh: 2.2 }],
+    radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 25, 'cmd'], [8.6, -14, 'top'], [-8.6, -14, 'top'], [0, 10, 'bottom']], bells: { z: -43, y: 1.0, x: 3.2, r: 1.6 },
+    core: { pos: [0, -5.45, -8], size: [1.8, 0.5, 26] }, torpedo: [0, -1.4, 43.05], deflector: [0, 0.9, 43.05, 2.2],
+  },
+  albatross: {
+    cls: 'Albatross-class cruiser', name: 'CNS ALBATROSS', reg: 'CC-002', length: 112, tell: 'The family at cruiser size, in two hulls: a shorter primary hull with four decks of windows, and a secondary hull beneath it on a neck, its pylons swept out and up to a nacelle pair at the primary hull\'s waist.',
+    stations: [[50, 5.2, 4.4, -3.2, 1.4], [44, 9.6, 7.6, -5.0, 2.0], [34, 13.6, 9.4, -6.6, 2.4], [14, 15.6, 10.0, -7.4, 2.6], [-8, 16.0, 10.2, -7.6, 2.8], [-24, 14.4, 9.6, -7.0, 2.6], [-34, 11.0, 7.8, -5.4, 2.2]],
+    decks: [7.0, 3.5, 0, -3.5], live: [-20, 38], band: [-0.65, 0.35], channels: [4.0, 9.0], stripes: [28, 4, -18],
+    command: { z: [36, 16], hb: 8.0, top: 13.2, ch: 1.4 },
+    // The secondary hull, in the same station form at its own height; the neck joins the two.
+    secondary: { stations: [[-6, 4.0, -11.0, -17.0, 1.2], [-12, 7.0, -10.4, -20.4, 1.8], [-30, 7.6, -10.4, -21.0, 2.0], [-48, 7.0, -10.8, -20.4, 1.8], [-58, 5.0, -12.0, -19.0, 1.4]],
+      band: [-16.3, -15.3], channels: [2.6], stripes: [-40], neck: { z: [-10, -14, -28, -32], hb: [2.4, 4.0, 4.0, 2.8], top: -6.0, bottom: -11.5 } },
+    pylons: [{ root: [6.5, -15.0, -30], tip: [24, -4.0, -38], rc: 18, tc: 11, t: 1.5 }],
+    nacelles: [{ x: 24, y: -4.0, z: -30, len: 64, hw: 2.8, hh: 2.7 }],
+    // The other way to hang them (owner, 2026-11-03: "can we try placing pylons attached to the main hull instead?"): level and
+    // swept from the primary hull's waist, as the Tern's are, with the secondary hull left clear beneath.
+    mainPylons: [{ root: [14.5, 0.6, -14], tip: [25, 0.6, -26], rc: 18, tc: 11, t: 1.5 }],
+    mainNacelles: [{ x: 25, y: 0.6, z: -24, len: 64, hw: 2.8, hh: 2.7 }],
+    radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 27, 'cmd'], [11.5, -6, 'top'], [-11.5, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
+    core: { pos: [0, -20.9, -30], size: [2.2, 0.5, 30] }, torpedo: [0, -1.8, 50.05], deflector: [0, 1.0, 50.05, 2.6],
+  },
+  // The battleship (owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", "please make these
+  // somewhat different than the standard ship shape ... battleship needs an array of cannons", "large cannons"): a long armoured
+  // hull round a tall citadel, three triple-gun turrets forward stepped up so each fires over the one ahead, two aft facing aft,
+  // and a sponson down each flank carrying a row of broadside cannons; two nacelle pairs aft.
+  condor: {
+    cls: 'Condor-class battleship', name: 'CNS CONDOR', reg: 'CC-001', length: 184, tell: 'A long armoured hull round a tall citadel: four main guns, two on the back (the second raised to fire over the first) and two under the keel, fifteen point-defence cannons along its shoulders, and two nacelle pairs.',
+    stations: [[92, 3.0, 4.0, -3.0, 1.0], [74, 12.0, 8.5, -7.0, 2.2], [40, 17.0, 10.5, -9.0, 2.8], [-40, 17.0, 10.5, -9.0, 2.8], [-78, 14.0, 9.0, -7.5, 2.6], [-92, 10.0, 7.0, -5.5, 2.0]],
+    decks: [7.0, 3.5, 0, -3.5, -7.0], live: [-40, 50], band: [-0.65, 0.35], channels: [5.0, 12.0], stripes: [60, -32, -66],
+    command: { z: [24, -6], hb: 9.0, top: 18.0, ch: 1.6 },
+    // Four main guns (owner, 2026-11-03: "battleship only has 4 main cannons, 2 on top and 2 on bottom, the remainder should be
+    // pdcs"): two on the back, the second raised to fire over the first, and the same two mirrored under the keel.
+    guns: [{ z: 62, face: 1, lift: 0 }, { z: 46, face: 1, lift: 3.0 }, { z: 62, face: 1, lift: 0, under: true }, { z: 46, face: 1, lift: 3.0, under: true }],
+    pdc: true,
+    pylons: [{ root: [16, 2.0, -48], tip: [30, 2.0, -60], rc: 24, tc: 15, t: 1.8 }, { root: [12, -8.0, -40], tip: [24, -17.0, -52], rc: 20, tc: 12, t: 1.6 }],
+    nacelles: [{ x: 30, y: 2.0, z: -54, len: 80, hw: 3.2, hh: 3.1 }, { x: 24, y: -17.0, z: -48, len: 64, hw: 2.6, hh: 2.6 }],
+    radiators: [[-66, 6, 12], [-66, -6, 12]], turrets: [[9, 70, 'top'], [-9, 70, 'top'], [12, 20, 'top'], [-12, 20, 'top'], [12, -20, 'top'], [-12, -20, 'top'], [11, -52, 'top'], [-11, -52, 'top'], [0, -70, 'top'], [12, 30, 'bottom'], [-12, 30, 'bottom'], [12, -10, 'bottom'], [-12, -10, 'bottom'], [11, -50, 'bottom'], [-11, -50, 'bottom']],
+    bells: { z: -92, y: 0.6, x: 5.0, r: 2.6 }, core: { pos: [0, -9.45, -10], size: [2.4, 0.5, 40] }, torpedo: [0, -1.6, 92.05], deflector: [0, 1.4, 92.05, 1.6],
+  },
+  // The carrier (owner, 2026-11-03: "carrier needs bays for fighters", then "the carrier doesnt need a landing pad, this is
+  // space ... it has doors on each side, its a diamond cross section, with the main ship crew area in front"): the crew hull
+  // forward, as the family's, and behind it a long hangar hull of diamond cross section (broad sloped flanks, a narrow vertical
+  // band at the waist), three numbered bay doors down each side lit by lamps above them, the nacelle pair on level pylons aft.
+  pelican: {
+    cls: 'Pelican-class carrier', name: 'CNS PELICAN', reg: 'CC-040', length: 128, tell: 'The crew hull forward, as the family\'s, and behind it a long hangar hull of diamond cross section, three numbered fighter bay doors down each side under their own lamps, the nacelle pair on level pylons from the hangar hull.',
+    stations: [[66, 4.0, 4.0, -3.0, 1.2], [58, 10.0, 6.5, -5.0, 1.8], [40, 13.0, 7.0, -5.6, 2.0], [20, 12.0, 6.6, -5.2, 2.0]],
+    secondary: { stations: [[24, 9.0, 7.0, -7.0, 6.6], [14, 13.0, 9.0, -9.0, 8.6], [-38, 13.0, 9.0, -9.0, 8.6], [-62, 9.0, 6.0, -6.0, 5.6]], band: [-0.65, 0.35], channels: [], stripes: [-50] },
+    decks: [3.5, 0, -3.5], live: [24, 56], band: [-0.65, 0.35], channels: [4.5], stripes: [48],
+    command: { z: [56, 40], hb: 6.0, top: 10.0, ch: 1.2 },
+    pylons: [{ root: [10, 1.0, -36], tip: [27, 1.0, -48], rc: 20, tc: 12, t: 1.5 }],
+    nacelles: [{ x: 27, y: 1.0, z: -38, len: 66, hw: 2.6, hh: 2.5 }],
+    radiators: [[-50, 2.4, 8], [-50, -2.4, 8]], turrets: [[0, 30, 'top'], [0, -20, 'top'], [0, 0, 'bottom'], [8, 46, 'bottom'], [-8, 46, 'bottom']],
+    bells: { z: -62, y: 0.0, x: 3.0, r: 2.0 }, core: { pos: [0, -9.45, -10], size: [2.0, 0.5, 36] }, torpedo: [0, -1.0, 66.05], deflector: [0, 1.4, 66.05, 1.4],
+    carrier: { doors: [6, -10, -26], door: { w: 12.0, h: 4.6 } },
+  },
+  // Star Crew's SCS Tern, from its own data (star-crew-bridge-simulator 95a49b2: data/ships/tern/layout.json hull.sections,
+  // data/ships/exteriors.json ships[tern] pylon, nacelle and service_band). The yardstick for the family; not a Concord ship.
+  tern: {
+    cls: 'Heron-class frigate, Star Crew', name: 'SCS TERN', reg: 'SC-084', length: 86, ref: true, livery: 'copper', glb: true, tell: 'Star Crew\'s player ship from its own data, at true scale: the family the Concord line is built in.',
+    stations: [[42, 1.2, 2.2, -0.8, 0.4], [37, 4.5, 4.5, -2.8, 1.5], [32, 8.6, 7.9, -4.6, 1.8], [20, 10.8, 7.8, -5.4, 1.6], [8, 12.2, 7.8, -5.6, 1.6], [-2, 12.2, 8.0, -5.8, 2.2], [-18, 11.6, 8.2, -5.8, 2.2], [-32, 10.6, 8.2, -5.2, 2.0], [-38, 8.0, 6.0, -3.6, 1.8], [-42, 6.5, 4.6, -2.6, 1.4]],
+    decks: DECKS, live: [-6, 26], band: [-0.65, 0.35], channels: [5.2], stripes: [16, -17],
+    pylons: [{ root: [10, 1.2, -15], tip: [20, 1.2, -24], rc: 16, tc: 10, t: 1.2 }],
+    nacelles: [{ x: 20, y: 1.2, z: -16, len: 56, hw: 2.3, hh: 2.2 }],
+    radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 8, 'top'], [0, 4, 'bottom']], bells: { z: -42, y: 1.0, x: 3.0, r: 1.5 },
+    core: { pos: [0, -5.65, -8], size: [1.8, 0.5, 24] }, torpedo: [0, -0.4, 39.0], deflector: [0, 1.2, 36.0, 1.6],
+  },
+};
+// Nacelle variants (owner, 2026-11-03: "swift having 1 below would be better, petrel having 1 above and below", then "instead of
+// opptions. please just apply the variants for both petrel and swift and include horizontal aligned ones aas well", then
+// "remove petrel with 1 pylon"). One below: one nacelle under the centreline on an upright pylon. Above and below: one over and
+// one under. Level: the family's nacelle pair on level swept pylons.
+const VARIANTS = [
+  ['swift_below', 'swift', 'below1', 'Swift, one below'], ['swift_updown', 'swift', 'updown', 'Swift, above and below'], ['swift_level', 'swift', 'level', 'Swift, level'],
+  ['petrel_updown', 'petrel', 'updown', 'Petrel, above and below'], ['petrel_level', 'petrel', 'level', 'Petrel, level'],
+  ['albatross', 'albatross', 'level', 'Albatross'], ['albatross_main', 'albatross', 'mainpylon', 'Albatross, pylons on the main hull'], ['condor', 'condor', 'level', 'Condor battleship'], ['pelican', 'pelican', 'level', 'Pelican carrier'], ['tern', 'tern', 'level', 'Tern (Star Crew)'],
+];
+const MODE_NAMES = { level: 'Level pair', below1: 'One below', updown: 'One above, one below', mainpylon: 'Level pair, from the main hull' };
+const CLASSES = {};
+for (const [id, base, mode, label] of VARIANTS) CLASSES[id] = { ...BASES[base], id, base, mode, label,
+  tell: mode === 'mainpylon' ? 'The Albatross with its nacelle pair on level pylons swept from the primary hull\'s waist, as the Tern\'s are, and the secondary hull clear beneath.' : BASES[base].tell + (base === 'swift' || base === 'petrel' ? ' Nacelles: ' + MODE_NAMES[mode].toLowerCase() + '.' : '') };
+// Liveries: Concord is ours; Copper, Cyan and Rescue are the Tern's (exteriors.json liveries), for comparison.
+const LIVERIES = {
+  concord: { label: 'Concord', stripe: [0.10, 0.40, 0.86], seam: [0.04, 0.08, 0.22] },
+  copper: { label: 'Copper', stripe: [0.82, 0.31, 0.09], seam: [0.30, 0.12, 0.05] },
+  cyan: { label: 'Cyan', stripe: [0.008, 0.655, 0.851], seam: [0.03, 0.20, 0.28] },
+  rescue: { label: 'Rescue', stripe: [1.0, 0.75, 0.05], seam: [0.86, 0.15, 0.09] },
+};
+const TERN_NACELLE_PROFILE = [[-0.5, 0.48], [-0.44, 0.68], [-0.29, 1.0], [0.44, 1.0], [0.5, 0.9]]; // exteriors.json nacelle.profile_t_scale
+
+// Station arithmetic: the chamfer is clamped the same way everywhere (geometry, inside tests, the cut-face shader).
+const chOf = (hb, top, bot, ch) => Math.min(ch, hb - 0.3, (top - bot) / 2 - 0.3); // a large chamfer makes a diamond with narrow flats
+function hullAt(S, z) {
+  const s = [...S].sort((a, b) => b[0] - a[0]);
+  if (z >= s[0][0]) return s[0]; if (z <= s[s.length - 1][0]) return s[s.length - 1];
+  for (let i = 0; i + 1 < s.length; i++) if (z <= s[i][0] && z >= s[i + 1][0]) { const t = (s[i][0] - z) / (s[i][0] - s[i + 1][0]); return s[i].map((v, j) => lerp(v, s[i + 1][j], t)); }
+}
+// Signed distance into a lofted hull (positive inside), the octagon at z: four sides and four 45 degree chamfers.
+function loftDist(S, p) {
+  const zs = S.map((q) => q[0]), z0 = Math.min(...zs), z1 = Math.max(...zs);
+  if (p.z > z1 || p.z < z0) return -1;
+  const [, hb, top, bot, c] = hullAt(S, p.z), ch = chOf(hb, top, bot, c), ax = Math.abs(p.x);
+  return Math.min(hb - ax, top - p.y, p.y - bot, (hb + top - ch - ax - p.y) * Math.SQRT1_2, (hb - bot - ch - ax + p.y) * Math.SQRT1_2, z1 - p.z, p.z - z0);
+}
+
+// Nacelle arrangements. level: the data's own pylons and nacelles. below1: one nacelle on the centreline under the hull on one
+// upright pylon. updown: one over the hull and one under it. GAP_UP is the daylight to the nearest hull along the nacelle.
+const GAP_UP = 5.5; // metres (owner, 2026-11-03: "would also be nice for the vertical pyons to extend out a little further")
+const hullsOf = (C) => [C.stations].concat(C.secondary ? [C.secondary.stations] : []);
+function alongNacelle(C, n) {
+  let top = -Infinity, bot = Infinity;
+  for (const st of hullsOf(C)) { const zs = st.map((q) => q[0]), zMax = Math.max(...zs), zMin = Math.min(...zs);
+    for (let z = Math.max(zMin, n.z - n.len / 2); z <= Math.min(zMax, n.z + n.len / 2); z += 0.5) { const h = hullAt(st, z); top = Math.max(top, h[2]); bot = Math.min(bot, h[3]); } }
+  return { top, bot };
+}
+// Each nacelle gets a side key: P port, S starboard, D dorsal, V ventral; its system is 'nac' + side.
+function arrange(C) {
+  if (C.mode === 'mainpylon') return { pylons: C.mainPylons.flatMap((p) => [{ ...p, side: 'P', sx: 1 }, { ...p, side: 'S', sx: -1 }]), nacelles: C.mainNacelles.flatMap((n) => [{ ...n, side: 'P', sx: 1 }, { ...n, side: 'S', sx: -1 }]) };
+  const sfx = (i) => (i ? String(i + 1) : ''); // a second pair is P2 and S2
+  if (C.mode === 'level') return { pylons: C.pylons.flatMap((p, i) => [{ ...p, side: 'P' + sfx(i), sx: 1 }, { ...p, side: 'S' + sfx(i), sx: -1 }]), nacelles: C.nacelles.flatMap((n, i) => [{ ...n, side: 'P' + sfx(i), sx: 1 }, { ...n, side: 'S' + sfx(i), sx: -1 }]) };
+  const n0 = C.nacelles[0], p0 = C.pylons[0], pylons = [], nacelles = [], { top, bot } = alongNacelle(C, n0);
+  const zs = [n0.z - n0.len * 0.15, n0.z - n0.len * 0.35], at = hullAt(C.stations, zs[0]);
+  const upright = (side, y, rootY) => { nacelles.push({ ...n0, x: 0, y, side, sx: 1 }); pylons.push({ root: [0, rootY, zs[0] + 3], tip: [0, y, zs[1]], rc: p0.rc, tc: p0.tc, t: p0.t, up: true, side, sx: 1 }); };
+  if (C.mode === 'updown') upright('D', top + GAP_UP + n0.hh, at[2] - 0.4);
+  upright('V', bot - GAP_UP - n0.hh, at[3] + 0.4);
+  return { pylons, nacelles };
+}
+const SIDE_NAMES = { P: 'Port nacelle', S: 'Starboard nacelle', D: 'Dorsal nacelle', V: 'Ventral nacelle' };
+const sideName = (k) => SIDE_NAMES[k[0]] + (k.length > 1 ? ' ' + k.slice(1) : '');
+
+// ---------------------------------------------------------------------------------------------------------------
+// Geometry. Every piece is built in ship space (the mesh sits at identity inside its piece), so the damage shader's
+// object-space position is ship space even after a piece breaks away. Flat faces, each triangle turned to face away from
+// its centre line so winding never matters (the shader uses gl_FrontFacing for the inside of the skin).
+function pushTri(out, a, b, c, centre) {
+  const n = V3().subVectors(b, a).cross(V3().subVectors(c, a)), m = V3().addVectors(a, b).add(c).multiplyScalar(1 / 3);
+  if (n.dot(m.sub(centre(m))) < 0) out.push(a, c, b); else out.push(a, b, c);
+}
+function geoFrom(tris) {
+  const g = new THREE.BufferGeometry().setFromPoints(tris); g.computeVertexNormals();
+  g.setIndex(Array.from({ length: tris.length }, (_, i) => i)); return g;
+}
+function octRing(z, hb, top, bot, ch) {
+  ch = chOf(hb, top, bot, ch);
+  return [V3(hb - ch, top, z), V3(hb, top - ch, z), V3(hb, bot + ch, z), V3(hb - ch, bot, z), V3(-(hb - ch), bot, z), V3(-hb, bot + ch, z), V3(-hb, top - ch, z), V3(-(hb - ch), top, z)];
+}
+// A loft through rings; long spans are split every `step` metres so the damage shader has vertices to work with.
+function loft(rings, axis, step = 4) {
+  const R = [rings[0]];
+  for (let i = 1; i < rings.length; i++) { const a = rings[i - 1], b = rings[i], k = Math.max(1, Math.ceil(Math.abs(a[0].z - b[0].z) / step));
+    for (let j = 1; j <= k; j++) R.push(a.map((p, q) => p.clone().lerp(b[q], j / k))); }
+  const t = [];
+  for (let i = 0; i + 1 < R.length; i++) for (let k = 0; k < 8; k++) {
+    const a = R[i][k], b = R[i][(k + 1) % 8], c = R[i + 1][(k + 1) % 8], d = R[i + 1][k];
+    pushTri(t, a, b, c, axis); pushTri(t, a, c, d, axis);
+  }
+  for (const [r, nb] of [[R[0], R[1]], [R[R.length - 1], R[R.length - 2]]]) {
+    const cen = r.reduce((s, p) => s.add(p), V3()).multiplyScalar(1 / 8), out = V3(0, 0, Math.sign(r[0].z - nb[0].z));
+    for (let k = 0; k < 8; k++) pushTri(t, cen, r[k], r[(k + 1) % 8], (m) => m.clone().sub(out));
+  }
+  return geoFrom(t);
+}
+function hullGeo(S, ox = 0) {
+  if (ox) { const g = hullGeo(S); g.translate(ox, 0, 0); return g; }
+  const s = [...S].sort((a, b) => b[0] - a[0]);
+  return loft(s.map(([z, hb, top, bot, ch]) => octRing(z, hb, top, bot, ch)), (m) => { const h = hullAt(S, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); });
+}
+function nacelleGeo(n, x, y) {
+  const ch = Math.min(n.hw, n.hh) * 0.42, rings = [];
+  for (const [t, k] of TERN_NACELLE_PROFILE) rings.push(octRing(n.z - t * n.len, n.hw * k, n.hh * k, -n.hh * k, ch * k).map((p) => p.add(V3(x, y, 0))));
+  rings.reverse();
+  return loft(rings, (m) => V3(x, y, m.z), 5);
+}
+// A pylon from root to tip, split at `f0..f1` of its length (0..0.5 the inner half, 0.5..1 the outer). A level pylon is thick
+// in Y; an upright one is thick in X.
+function pylonGeo(p, sx, f0 = 0, f1 = 1) {
+  const r = V3(p.root[0] * sx, p.root[1], p.root[2]), tp = V3(p.tip[0] * sx, p.tip[1], p.tip[2]), h = p.t / 2;
+  const A = r.clone().lerp(tp, f0), B = r.clone().lerp(tp, f1), ca = lerp(p.rc, p.tc, f0), cb = lerp(p.rc, p.tc, f1);
+  const off = p.up ? V3(h, 0, 0) : V3(0, h, 0);
+  const P = [A.clone().add(V3(0, 0, ca / 2)), A.clone().add(V3(0, 0, -ca / 2)), B.clone().add(V3(0, 0, -cb / 2)), B.clone().add(V3(0, 0, cb / 2))].map((v) => v.add(off));
+  const Q = P.map((v) => v.clone().sub(off).sub(off));
+  const c = P.concat(Q).reduce((s, v) => s.add(v), V3()).multiplyScalar(1 / 8), t = [];
+  const quad = (a, b, cc, d) => { pushTri(t, a, b, cc, () => c); pushTri(t, a, cc, d, () => c); };
+  quad(P[0], P[1], P[2], P[3]); quad(Q[0], Q[1], Q[2], Q[3]);
+  for (let i = 0; i < 4; i++) quad(P[i], P[(i + 1) % 4], Q[(i + 1) % 4], Q[i]);
+  return geoFrom(t);
+}
+function boxGeo(sx, sy, sz, x, y, z) { const g = new THREE.BoxGeometry(sx, sy, sz); g.translate(x, y, z); return g; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// A plain model for pages that show the ship small (the battle console's view, the game flow): the same hulls, neck,
+// command block, pylons and nacelles as mockup 6, in pearl with the livery's stripes, lit grilles, drive bells and the
+// deflector. Units are metres, +Z the bow; userData.length_m is the class's length.
+function plainModel(id, o = {}) {
+  const C = CLASSES[id]; if (!C) throw new Error('FCConcordLine: no class ' + id);
+  const L = LIVERIES[o.livery || 'concord'], g = new THREE.Group(), A = arrange(C);
+  const pearl = new THREE.MeshStandardMaterial({ color: o.hull ?? 0xe4e2dc, metalness: 0.35, roughness: 0.5, flatShading: true });
+  const stripe = new THREE.MeshStandardMaterial({ color: new THREE.Color(...L.stripe), metalness: 0.3, roughness: 0.5, flatShading: true });
+  const glow = (hex) => new THREE.MeshStandardMaterial({ color: 0x10141c, emissive: hex, emissiveIntensity: 1.6 });
+  const mesh = (geo, m) => { const k = new THREE.Mesh(geo, m); g.add(k); return k; };
+  const bands = (S, zs) => { for (const z of zs || []) { const zz = S.map((q) => q[0]); if (z > Math.max(...zz) - 1 || z < Math.min(...zz) + 1) continue;
+    const ring = (dz) => { const h = hullAt(S, z + dz); return octRing(z + dz, h[1] + 0.06, h[2] + 0.06, h[3] - 0.06, h[4]); };
+    mesh(loft([ring(1.2), ring(-1.2)], (m) => { const h = hullAt(S, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); }), stripe); } };
+  mesh(hullGeo(C.stations), pearl); bands(C.stations, C.stripes);
+  if (C.secondary) { const D = C.secondary; mesh(hullGeo(D.stations), pearl); bands(D.stations, D.stripes);
+    if (D.neck) { const N = D.neck; mesh(loft(N.z.map((z, i) => octRing(z, N.hb[i], N.top, N.bottom, Math.min(1.2, N.hb[i] * 0.4))), (m) => V3(0, (N.top + N.bottom) / 2, m.z)), pearl); } }
+  if (C.command) { const K = C.command, [z0, z1] = K.z, base = hullAt(C.stations, (z0 + z1) / 2)[2] - 0.6;
+    mesh(loft([octRing(z0, K.hb * 0.62, K.top - 0.8, base, K.ch), octRing(z0 - 3, K.hb, K.top, base, K.ch), octRing(z1, K.hb, K.top, base, K.ch), octRing(z1 - 2.5, K.hb * 0.8, K.top - 1.2, base, K.ch)], (m) => V3(0, (K.top + base) / 2, m.z), 3), pearl);
+    mesh(boxGeo(K.hb * 1.12, 0.7, 0.25, 0, K.top - 1.3, z0 - 1.45), glow(0xd8ecff)); }
+  for (const p of A.pylons) mesh(pylonGeo(p, p.sx), pearl);
+  for (const n of A.nacelles) { const x = n.x * n.sx; mesh(nacelleGeo(n, x, n.y), pearl);
+    for (const s2 of [1, -1]) mesh(boxGeo(0.14, n.hh * 0.32, n.len * 0.72, x + s2 * (n.hw + 0.02), n.y, n.z), glow(0x2fb8ff));
+    const cap = new THREE.CircleGeometry(n.hh * 0.38, 16); cap.translate(x, n.y, n.z + n.len / 2 + 0.03); mesh(cap, glow(0xff6a1f)); }
+  { const b = C.bells; for (const sx of b.x ? [1, -1] : [1]) { const d = new THREE.CircleGeometry(b.r, 20); d.rotateY(Math.PI); d.translate(sx * b.x, b.y, b.z - 0.05); mesh(d, glow(0xffb070)); } }
+  { const [x, y, z, r] = C.deflector; mesh(boxGeo(r * 2, r * 1.1, 0.25, x, y, z), glow(0x6fc6ff)); }
+  g.userData.length_m = C.length; g.userData.cls = C.cls;
+  return g;
+}
+
+return { COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELLE_PROFILE, GAP_UP, SIDE_NAMES,
+  chOf, hullAt, loftDist, hullsOf, alongNacelle, arrange, sideName, pushTri, geoFrom, octRing, loft, hullGeo, nacelleGeo, pylonGeo, boxGeo, plainModel };
+};
+</script>
+<!-- /INLINE -->
+<script>
+(function () {
+'use strict';
+const { OrbitControls } = THREE;
+const PI = Math.PI;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const CL = window.FCConcordLine(THREE); // the Concord line (yardstick) and the shared loft geometry: one implementation
+const { octRing, loft, hullAt } = CL;
+function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// The ships, in frigate units (metres at frigate size; a class scales them by `s`). Axes as the Concord line's: +X port,
+// +Y dorsal, +Z bow. spine: diamond-section stations [z, half beam, top, bottom]. A blade is a flat faceted plate: `at` its
+// root, `dir` 'wing' (out to the side at `dih` degrees, mirrored port and starboard), 'up' or 'down' (on the centreline);
+// `pts` its outline as [out, along]; `t` its thickness at the ridge; `red` the edges painted red; `gun` the corner that
+// carries a gun. tag: which blade pairs a class carries. One table; the builder reads nothing else.
+const KR = { black: 0x15100f, steel: 0x2a2526, blood: 0xb3121b, orange: 0xff7a1a, hot: 0xffb070 }; // docs/mockups/skins/krai.js
+const DIRS = {
+  stoop: {
+    label: 'A Stoop', len: 82, mask: 29,
+    tell: 'A raptor diving: a dagger head on a thin neck, wings swept back and angled down, a tail blade standing up.',
+    spine: [[41, 0.3, 0.5, -0.7], [37, 2.0, 1.8, -2.2], [31, 3.4, 2.8, -3.0], [25, 2.3, 2.0, -2.0], [15, 2.5, 2.2, -2.3], [7, 6.0, 4.2, -4.0], [-12, 7.0, 4.6, -4.4], [-30, 4.6, 3.6, -3.4], [-41, 3.0, 2.4, -2.4]],
+    blades: [
+      { tag: 'main', at: [5, -0.6, -4], dir: 'wing', dih: -16, pts: [[0, 10], [34, -30], [30, -33], [0, -22]], t: 2.2, red: [0], gun: 1 },
+      { tag: 'canard', at: [2.2, 0.2, 19], dir: 'wing', dih: 6, pts: [[0, 4], [9, -4], [7, -5.5], [0, -5]], t: 0.9, red: [0] },
+      { tag: 'aft', at: [4.2, -1.0, -27], dir: 'wing', dih: 12, pts: [[0, 4], [16, -12], [13, -14], [0, -9]], t: 1.3, red: [0], gun: 1 },
+      { tag: 'tail', at: [0, 3.4, -26], dir: 'up', pts: [[0, 6], [10, -12], [8, -14], [0, -14]], t: 1.2, red: [0] },
+      { tag: 'tail2', at: [0, 4.2, -8], dir: 'up', pts: [[0, 5], [7, -6], [0, -8]], t: 1.0, red: [0] },
+      { tag: 'keel', at: [0, -3.6, -4], dir: 'down', pts: [[0, 9], [7, -10], [0, -14]], t: 1.4, red: [] },
+    ],
+    engines: [[1.6, 0, -41, 1.3], [-1.6, 0, -41, 1.3]], nose: [0, -1.4, 39.5, 6], win: [[27, 35], [-22, 6]],
+  },
+  cross: {
+    label: 'B Crossed blades', len: 74, mask: 25,
+    tell: 'Four forward-swept blades in an X round a short body: from the front, two crossed knives.',
+    spine: [[37, 0.3, 0.5, -0.7], [33, 2.0, 1.8, -2.2], [27, 3.2, 2.8, -3.0], [21, 2.4, 2.0, -2.0], [12, 3.0, 2.4, -2.4], [2, 5.4, 4.0, -4.0], [-22, 5.6, 4.0, -4.0], [-37, 3.4, 2.6, -2.6]],
+    blades: [
+      { tag: 'main', at: [3, 1.6, -10], dir: 'wing', dih: 32, pts: [[0, -16], [26, 9], [23, 12], [0, 4]], t: 1.8, red: [2], gun: 2 },
+      { tag: 'main', at: [3, -1.6, -10], dir: 'wing', dih: -32, pts: [[0, -16], [26, 9], [23, 12], [0, 4]], t: 1.8, red: [2], gun: 2 },
+    ],
+    engines: [[0, 0, -37, 1.8]], nose: [0, -1.4, 35.5, 5], win: [[23, 31], [-18, 2]],
+  },
+  spear: {
+    label: 'C Spearhead', len: 82, mask: 14,
+    tell: 'One flat delta whose point is the head, a raised ridge down its back, and forward-raked talons at the rear corners.',
+    spine: [[30, 0.4, 3.0, 0.4], [20, 2.4, 4.4, 0.2], [0, 3.4, 5.2, 0.2], [-30, 3.6, 5.2, 0.2], [-41, 2.6, 4.0, 0.2]],
+    blades: [
+      { tag: 'main', at: [0, 0, 0], dir: 'wing', dih: 0, pts: [[0, 41], [22, -41], [0, -41]], t: 6.0, red: [0] },
+      { tag: 'main', at: [20.5, -0.2, -36], dir: 'wing', dih: -12, pts: [[0, 0], [12, 20], [9, 23], [-1, 6]], t: 1.6, red: [1], gun: 2 },
+      { tag: 'tail', at: [0, 4.4, -24], dir: 'up', pts: [[0, 6], [8, -10], [0, -14]], t: 1.0, red: [0] },
+    ],
+    engines: [[4.5, 0.6, -41, 1.2], [-4.5, 0.6, -41, 1.2], [11, 0.4, -41, 1.0], [-11, 0.4, -41, 1.0]], nose: null, win: [[-24, 24]],
+  },
+};
+// The line, in direction A: a class grows by adding blade pairs (provisional, survey A16). Names are placeholders: what the
+// Krai call their ships is the owner's to decide (survey A17).
+const SHIPS = {
+  dir_a: { dir: 'stoop', s: 1, tags: ['main', 'canard', 'tail', 'keel'], label: 'A Stoop', cls: 'Direction A, frigate' },
+  dir_b: { dir: 'cross', s: 1, tags: ['main'], label: 'B Crossed blades', cls: 'Direction B, frigate' },
+  dir_c: { dir: 'spear', s: 1, tags: ['main', 'tail'], label: 'C Spearhead', cls: 'Direction C, frigate' },
+  corvette: { dir: 'stoop', s: 0.58, tags: ['main', 'tail'], label: 'Corvette', cls: 'Krai corvette (direction A)', note: 'Two blade pairs: wings and tail. The raider.' },
+  frigate: { dir: 'stoop', s: 1, tags: ['main', 'canard', 'tail', 'keel'], label: 'Frigate', cls: 'Krai frigate (direction A)', note: 'Canards added ahead of the wings, a keel blade under them.' },
+  cruiser: { dir: 'stoop', s: 1.5, tags: ['main', 'canard', 'aft', 'tail', 'keel'], label: 'Cruiser', cls: 'Krai cruiser (direction A)', note: 'An aft pair, angled up against the wings\' droop, so the cruiser shows three pairs from the front.' },
+  dreadnought: { dir: 'stoop', s: 2.3, tags: ['main', 'canard', 'aft', 'tail', 'tail2', 'keel'], label: 'Dreadnought', cls: 'Krai dreadnought (direction A)', note: 'A second dorsal blade, the war crest over the shoulders: every blade the line has.' },
+};
+
+// ---------------------------------------------------------------------------------------------------------------
+// Renderer, scene, camera, light.
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.append(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 40000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 6; controls.maxDistance = 4000;
+
+(function sky() {
+  const rng = mulberry(31), n = 4000, pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { const u = rng() * 2 - 1, a = rng() * PI * 2, s = Math.sqrt(1 - u * u), r = 15000;
+    pos.set([Math.cos(a) * s * r, u * r, Math.sin(a) * s * r], i * 3); const b = 0.3 + rng() ** 3; col.set([b, b * 0.94, b * 0.88], i * 3); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 1.5, sizeAttenuation: false, vertexColors: true, depthWrite: false })));
+})();
+(function env() { // a dim warm room for the metal to reflect: Krai steel never shows a blue sky
+  const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide,
+    vertexShader: 'varying vec3 vD; void main(){ vD=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+    fragmentShader: 'varying vec3 vD; void main(){ float t=vD.y*0.5+0.5; vec3 c=mix(vec3(0.03,0.02,0.02), vec3(0.42,0.36,0.32), pow(t,1.7)); c += vec3(3.0,2.6,2.2)*pow(max(dot(vD, normalize(vec3(0.6,0.5,0.6))),0.),200.); gl_FragColor=vec4(c,1.); }' })));
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(s, 0.02).texture;
+})();
+const hemi = new THREE.HemisphereLight(0xffd9c4, 0x1a0c0a, 0.3); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 1.7); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; scene.add(sun); scene.add(sun.target);
+const rim = new THREE.DirectionalLight(0xff9a70, 0.5); scene.add(rim);
+const LIGHTS = {
+  sunlit: { label: 'Sunlit', sun: 1.7, dir: [0.6, 0.55, 0.5], hemi: 0.3, rim: 0.5, env: 0.6, ember: 0.35 },
+  shadow: { label: 'Shadow side', sun: 1.2, dir: [-0.5, -0.2, -0.7], hemi: 0.06, rim: 0.0, env: 0.2, ember: 0.7 },
+  nosun: { label: 'No sun', sun: 0.0, dir: [0, 1, 0], hemi: 0.03, rim: 0.1, env: 0.08, ember: 1.0 },
+};
+let lightKey = 'sunlit';
+const EMBER = { value: 0.35 };
+
+// ---------------------------------------------------------------------------------------------------------------
+// Materials. Krai steel is the console's cast volcanic gunmetal (console-skins design, version 23): near-black metal,
+// pitted, a cooled-lava crust split by fissures that glow faintly in places, drawn from the surface's own position so it
+// needs no texture. Red enamel and steel come in as vertex colours on flat facets.
+const NOISE = `float kh(vec3 p){ p=fract(p*0.3183099+.1); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float kn(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(mix(kh(i),kh(i+vec3(1,0,0)),f.x),mix(kh(i+vec3(0,1,0)),kh(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(kh(i+vec3(0,0,1)),kh(i+vec3(1,0,1)),f.x),mix(kh(i+vec3(0,1,1)),kh(i+vec3(1,1,1)),f.x),f.y),f.z); }
+float kfbm(vec3 p){ return 0.5*kn(p)+0.3*kn(p*2.03)+0.2*kn(p*4.1); }`;
+const steelMats = [];
+function steelMat() {
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.78, roughness: 0.55, flatShading: true, envMapIntensity: LIGHTS[lightKey].env });
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uEmber = EMBER;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vK;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvK = position;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vK; uniform float uEmber;\n' + NOISE)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        float nA = kfbm(vK*0.55), nB = kfbm(vK*0.24 + 7.3);
+        float crack = 1.0 - smoothstep(0.0, 0.028, abs(nB - 0.5));
+        diffuseColor.rgb *= (0.72 + 0.56*nA)*(1.0 - 0.6*crack);`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = clamp(0.42 + 0.5*kfbm(vK*1.1 + 3.1), 0.35, 0.92);')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(1.0, 0.33, 0.07)*crack*uEmber*smoothstep(0.52, 0.72, kfbm(vK*0.06 + 1.7));');
+  };
+  m.customProgramCacheKey = () => 'krai-steel';
+  steelMats.push(m); return m;
+}
+const glowMat = (hex, k = 1.6) => new THREE.MeshStandardMaterial({ color: 0x120706, emissive: hex, emissiveIntensity: k, roughness: 0.6 });
+const darkMat = new THREE.MeshStandardMaterial({ color: 0x0c0808, metalness: 0.7, roughness: 0.5 });
+
+// ---------------------------------------------------------------------------------------------------------------
+// Geometry. Faceted: every triangle has its own vertices and colour, and faces away from the part's own centre.
+const STEEL = new THREE.Color(KR.steel).convertSRGBToLinear().multiplyScalar(1.6), BLOOD = new THREE.Color(KR.blood).convertSRGBToLinear();
+const HONED = new THREE.Color(0x6a6060).convertSRGBToLinear(), BEVEL_M = 2.0; // the honed edge band: 2 m wide at frigate size, at most a fifth of the way in
+function facetGeo(tris) { // tris: [a, b, c, colour, centre]
+  const pos = [], col = [];
+  for (const [a, b, c, k, cen] of tris) {
+    const n = V3().subVectors(b, a).cross(V3().subVectors(c, a)), m = V3().addVectors(a, b).add(c).multiplyScalar(1 / 3);
+    const [p, q, r] = n.dot(m.sub(cen)) < 0 ? [a, c, b] : [a, b, c];
+    for (const v of [p, q, r]) { pos.push(v.x, v.y, v.z); col.push(k.r, k.g, k.b); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals(); return g;
+}
+// A blade: its outline in its own plane, with a honed bevel band round every edge (worn bright, as the console's rolled
+// edges; red on the edges `red` names) and a low ridge fanned from the centroid inside it, top and bottom: a flat faceted
+// plate sharp at every edge, a knife's cross-section. sx mirrors it to starboard.
+function blade(b, s, sx) {
+  const dih = (b.dih || 0) * PI / 180;
+  const u = b.dir === 'up' ? V3(0, 1, 0) : b.dir === 'down' ? V3(0, -1, 0) : V3(sx * Math.cos(dih), Math.sin(dih), 0), v = V3(0, 0, 1);
+  const n = u.clone().cross(v).normalize(), R = V3(b.at[0] * sx * s, b.at[1] * s, b.at[2] * s), t = b.t * s;
+  const P = b.pts.map(([a, c]) => R.clone().addScaledVector(u, a * s).addScaledVector(v, c * s));
+  const cen = P.reduce((q, p) => q.add(p), V3()).multiplyScalar(1 / P.length), tris = [];
+  for (const side of [1, -1]) {
+    const apex = cen.clone().addScaledVector(n, side * t / 2), I = P.map((p) => { const d = cen.clone().sub(p), L = d.length();
+      return p.clone().addScaledVector(d, Math.min(0.2, BEVEL_M * s / L)).addScaledVector(n, side * t * 0.32); });
+    P.forEach((a, i) => { const k = (i + 1) % P.length, c = P[k], band = (b.red || []).includes(i) ? BLOOD : HONED;
+      tris.push([a, c, I[k], band, cen], [a, I[k], I[i], band, cen], [apex, I[i], I[k], STEEL, cen]); });
+  }
+  return { geo: facetGeo(tris), gun: b.gun != null ? { at: P[b.gun], back: P[(b.gun + P.length - 1) % P.length] } : null };
+}
+// The spine: the shared loft through diamond stations (a chamfer larger than the section clamps to a diamond), recoloured
+// facet by facet: the head's upper facets take the red war mask.
+function spine(D, s) {
+  const st = D.spine.map(([z, hb, top, bot]) => [z * s, hb * s, top * s, bot * s, 99]);
+  const sorted = [...st].sort((a, b) => b[0] - a[0]);
+  const g = loft(sorted.map(([z, hb, top, bot, ch]) => octRing(z, hb, top, bot, ch)), (m) => { const h = hullAt(st, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); });
+  const P = g.attributes.position, col = new Float32Array(P.count * 3), A = V3(), B = V3(), C = V3();
+  for (let i = 0; i < P.count; i += 3) {
+    A.fromBufferAttribute(P, i); B.fromBufferAttribute(P, i + 1); C.fromBufferAttribute(P, i + 2);
+    const nrm = V3().subVectors(B, A).cross(V3().subVectors(C, A)).normalize(), z = (A.z + B.z + C.z) / 3;
+    const k = z > D.mask * s && nrm.y > 0.15 ? BLOOD : STEEL;
+    for (let j = 0; j < 3; j++) col.set([k.r, k.g, k.b], (i + j) * 3);
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return { geo: g, stations: st };
+}
+// Window slits: person-sized windows (1.1 m by 0.6 m, Concord standard) cut as narrow forge-lit slits along the diamond's
+// upper flanks, one row a deck (3.4 m), in runs with gaps; seeded so a shot is the same every run.
+function windows(D, st, s, add) {
+  const rng = mulberry(D.len * 7), wm = glowMat(KR.orange, 1.2), wd = glowMat(0x3a1408, 0.3);
+  for (const [z0, z1] of D.win) {
+    for (let z = z0 * s; z < z1 * s; ) {
+      const run = 3 + Math.floor(rng() * 6), lit = rng() < 0.82;
+      for (let k = 0; k < run && z < z1 * s; k++, z += 2.0) {
+        const h = hullAt(st, z), mid = (h[2] + h[3]) / 2, hh = (h[2] - h[3]) / 2;
+        for (let y = mid + 1.2; y < h[2] - 0.6; y += 3.4) {
+          const x = h[1] * (1 - Math.abs(y - mid) / hh); if (x < 0.8) continue;
+          for (const sx of [1, -1]) { const g = new THREE.BoxGeometry(0.12, 0.6, 1.1), ang = Math.atan2(h[1], hh);
+            g.rotateZ(sx * ang); g.translate(sx * (x + 0.04), y, z); add(g, lit ? wm : wd); }
+        }
+      }
+      z += 2.0 * (1 + Math.floor(rng() * 3));
+    }
+  }
+}
+// Build one ship: spine, blades, gun spikes (forward, a forge-hot tip), triangular engine nozzles (aft, forge orange).
+function buildShip(id) {
+  const S = SHIPS[id], D = DIRS[S.dir], s = S.s, root = new THREE.Group(), steel = steelMat();
+  let tris = 0;
+  const add = (g, m) => { const o = new THREE.Mesh(g, m); o.castShadow = o.receiveShadow = true; root.add(o); tris += (g.index ? g.index.count : g.attributes.position.count) / 3; return o; };
+  const sp = spine(D, s); add(sp.geo, steel);
+  const tipMat = glowMat(KR.hot, 2.2), guns = [];
+  for (const b of D.blades) {
+    if (!S.tags.includes(b.tag)) continue;
+    for (const sx of b.dir === 'wing' ? [1, -1] : [1]) { const r = blade(b, s, sx); add(r.geo, steel); if (r.gun) guns.push(r.gun.at); }
+  }
+  const gun = (at, len) => { const c = new THREE.ConeGeometry(0.42 * s, len * s, 3); c.rotateX(PI / 2); c.translate(at.x, at.y, at.z + len * s / 2); add(c, darkMat);
+    const t = new THREE.OctahedronGeometry(0.32 * s, 0); t.translate(at.x, at.y, at.z + len * s + 0.1); add(t, tipMat); };
+  for (const g of guns) gun(g, 5);
+  if (D.nose) gun(V3(D.nose[0] * s, D.nose[1] * s, D.nose[2] * s), D.nose[3]);
+  const em = glowMat(KR.orange, 2.4);
+  for (const [x, y, z, r] of D.engines) {
+    const h = new THREE.CylinderGeometry(r * 0.8 * s, r * s, 3.2 * s, 3, 1, true); h.rotateX(PI / 2); h.rotateZ(PI); h.translate(x * s, y * s, z * s - 1.2 * s); add(h, darkMat);
+    const d = new THREE.CircleGeometry(r * 0.78 * s, 3); d.rotateY(PI); d.rotateZ(PI); d.translate(x * s, y * s, z * s - 2.75 * s); add(d, em);
+  }
+  windows(D, sp.stations, s, add);
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root), size = box.getSize(V3());
+  root.userData = { id, S, D, box, size, tris };
+  return root;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The scene's contents: one ship, a group in a row, the Concord yardstick beside, and a 10 m grid under it all.
+let grid = null; // a 10 m grid under what is shown, sized to it
+let content = new THREE.Group(); scene.add(content);
+let mode = 'dir_a', showConcord = true, showSil = false;
+const GROUPS = {
+  directions: { label: 'Three directions', ids: ['dir_a', 'dir_b', 'dir_c'], concord: ['petrel_level'], note: 'The three directions at frigate size, the Concord Petrel (88 m) beside them.' },
+  lineup: { label: 'The line', ids: ['corvette', 'frigate', 'cruiser', 'dreadnought'], concord: ['swift_level', 'petrel_level', 'albatross', 'condor'], note: 'Direction A from corvette to dreadnought, each beside the Concord ship of its rank.' },
+};
+const CONCORD_NAME = { swift_level: 'Concord Swift', petrel_level: 'Concord Petrel', albatross: 'Concord Albatross', condor: 'Concord Condor' };
+let current = null;
+function place() {
+  scene.remove(content); content = new THREE.Group(); scene.add(content); current = null;
+  const G = GROUPS[mode];
+  const ids = G ? G.ids : [mode], partners = G ? G.concord : [SHIPS[mode].s > 1.8 ? 'condor' : SHIPS[mode].s > 1.2 ? 'albatross' : SHIPS[mode].s < 0.8 ? 'swift_level' : 'petrel_level'];
+  let x = 0, maxLen = 0; const placed = [];
+  ids.forEach((id, i) => {
+    const k = buildShip(id), sz = k.userData.size, c = k.userData.box.getCenter(V3());
+    const krai = new THREE.Group(); krai.add(k); k.position.set(-c.x, -k.userData.box.min.y, -c.z);
+    let cg = null, left = 0;
+    if (showConcord && partners[i]) { cg = CL.plainModel(partners[i]); cg.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+      const cb = new THREE.Box3().setFromObject(cg), cs = cb.getSize(V3()), cc = cb.getCenter(V3());
+      cg.position.set(sz.x / 2 + 14 + cs.x / 2 - cc.x, -cb.min.y, -cc.z); krai.add(cg); left = 14 + cs.x; cg.userData.len = cs.z; cg.userData.name = CONCORD_NAME[partners[i]] || partners[i]; }
+    krai.position.set(x + sz.x / 2, 6, 0); const w = left + sz.x;
+    content.add(krai); placed.push({ k, cg }); x += w + 40; maxLen = Math.max(maxLen, sz.z);
+  });
+  const cb = new THREE.Box3().setFromObject(content), cc = cb.getCenter(V3());
+  content.position.x -= cc.x; content.updateMatrixWorld(true);
+  current = { placed, box: new THREE.Box3().setFromObject(content) };
+  if (grid) scene.remove(grid);
+  const gs = Math.ceil(Math.max(current.box.max.x - current.box.min.x, current.box.max.z - current.box.min.z) * 1.2 / 20) * 20;
+  grid = new THREE.GridHelper(gs, gs / 10, 0x4a2a26, 0x24130f); grid.material.transparent = true; grid.material.opacity = 0.35; scene.add(grid);
+  facts(placed); note(); fitSun(); applyView(view); drawSil();
+}
+function facts(placed) {
+  const dl = document.getElementById('facts'); dl.textContent = '';
+  const row = (k, v) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; dl.append(dt, dd); };
+  for (const { k, cg } of placed) {
+    const u = k.userData;
+    row(SHIPS[u.id].label, `${u.size.z.toFixed(1)} m long, ${u.size.x.toFixed(1)} m span, ${u.size.y.toFixed(1)} m high, ${Math.round(u.tris).toLocaleString()} tris`);
+    if (cg) row(cg.userData.name, `${cg.userData.len.toFixed(1)} m long, for scale`);
+  }
+}
+function note() {
+  const G = GROUPS[mode], S = SHIPS[mode];
+  document.getElementById('classNote').textContent = G ? G.note : `${S.cls}. ${DIRS[S.dir].tell}${S.note ? ' ' + S.note : ''}`;
+  document.getElementById('status').textContent = G ? G.label : S.cls;
+  document.getElementById('tip').textContent = showConcord ? 'Grey: the Concord line, for scale' : '';
+}
+function fitSun() {
+  const L = LIGHTS[lightKey], b = current.box, c = b.getCenter(V3()), r = b.getSize(V3()).length() / 2 + 20;
+  sun.position.copy(c).add(V3(...L.dir).normalize().multiplyScalar(r * 2)); sun.target.position.copy(c);
+  const cam = sun.shadow.camera; cam.left = -r; cam.right = r; cam.top = r; cam.bottom = -r; cam.near = 1; cam.far = r * 4; cam.updateProjectionMatrix();
+  rim.position.copy(c).add(V3(-L.dir[0], 0.2, -L.dir[2]).normalize().multiplyScalar(r * 2));
+}
+function applyLight(k) {
+  lightKey = k; const L = LIGHTS[k];
+  sun.intensity = L.sun; hemi.intensity = L.hemi; rim.intensity = L.rim; EMBER.value = L.ember;
+  for (const m of steelMats) m.envMapIntensity = L.env;
+  if (current) fitSun();
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Views: framed on what is shown, from fixed directions; the player's drag frees the camera.
+let view = 'three_quarter';
+const VIEWDIR = { three_quarter: [-0.9, 0.55, 1], top: [0, 1, 0.001], side: [-1, 0.05, 0], front: [0, 0.15, 1], stern: [0.3, 0.3, -1], under: [-0.6, -0.8, 0.5] };
+function applyView(v) {
+  view = v; if (!current) return;
+  const b = current.box, c = b.getCenter(V3()), sz = b.getSize(V3()), d = V3(...VIEWDIR[v]).normalize();
+  const r = Math.max(sz.x, sz.z, sz.y * 2) * 0.48, dist = r / Math.tan(camera.fov * PI / 360) * Math.max(1, 1.3 / camera.aspect);
+  controls.target.copy(c); camera.position.copy(c).addScaledVector(d, dist); camera.near = Math.max(0.5, dist / 400); camera.far = dist * 20; camera.updateProjectionMatrix();
+  controls.update(); refresh();
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Silhouettes at 40 px: every ship's own triangles projected and filled, black on bone, its length 40 px (the Adventure
+// repository's check: a faction must read at 40 px).
+function silCanvas(id, axis) {
+  const k = buildShip(id), u = k.userData, cvs = document.createElement('canvas'); cvs.width = 48; cvs.height = 24;
+  const x = cvs.getContext('2d'); x.fillStyle = '#e8dccb'; x.fillRect(0, 0, 48, 24); x.fillStyle = '#15100f';
+  const sc = 40 / u.size.z, c = u.box.getCenter(V3()), A = V3();
+  k.traverse((o) => { if (!o.isMesh) return; const P = o.geometry.attributes.position, I = o.geometry.index, n = I ? I.count : P.count;
+    o.updateMatrixWorld(true);
+    for (let t = 0; t < n; t += 3) { x.beginPath();
+      for (let j = 0; j < 3; j++) { A.fromBufferAttribute(P, I ? I.getX(t + j) : t + j).applyMatrix4(o.matrixWorld).sub(c);
+        const px = 24 - A.z * sc, py = 12 + (axis === 'top' ? A.x : -A.y) * sc; j ? x.lineTo(px, py) : x.moveTo(px, py); }
+      x.closePath(); x.fill(); } });
+  return cvs;
+}
+function drawSil() {
+  const el = document.getElementById('sil'); el.hidden = !showSil; if (!showSil) return;
+  const gridEl = document.getElementById('silGrid'); gridEl.textContent = '';
+  for (const id of ['dir_a', 'dir_b', 'dir_c', 'corvette', 'cruiser', 'dreadnought']) for (const axis of ['top', 'side']) {
+    const d = document.createElement('div'); d.className = 'silc'; d.append(silCanvas(id, axis));
+    const s = document.createElement('span'); s.textContent = `${SHIPS[id].label}, ${axis}`; d.append(s); gridEl.append(d);
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The panel.
+const btns = {};
+function btn(row, label, on, key) { const b = document.createElement('button'); b.textContent = label; b.onclick = () => { on(); refresh(); }; document.getElementById(row).append(b); btns[key] = b; return b; }
+for (const id of ['dir_a', 'dir_b', 'dir_c']) btn('dirRow', SHIPS[id].label, () => { mode = id; place(); }, 'm:' + id);
+for (const id of ['corvette', 'frigate', 'cruiser', 'dreadnought']) btn('lineRow', SHIPS[id].label, () => { mode = id; place(); }, 'm:' + id);
+for (const [id, G] of Object.entries(GROUPS)) btn('groupRow', G.label, () => { mode = id; place(); }, 'm:' + id);
+for (const [k, L] of Object.entries(LIGHTS)) btn('lightRow', L.label, () => applyLight(k), 'l:' + k);
+for (const v of Object.keys(VIEWDIR)) btn('viewRow', v.replace('_', ' ').replace(/^./, (c) => c.toUpperCase()), () => applyView(v), 'v:' + v);
+btn('showRow', 'Concord beside', () => { showConcord = !showConcord; place(); }, 's:concord');
+btn('showRow', '40 px silhouettes', () => { showSil = !showSil; drawSil(); }, 's:sil');
+function refresh() {
+  for (const [k, b] of Object.entries(btns)) {
+    const [t, v] = k.split(':');
+    const on = t === 'm' ? mode === v : t === 'l' ? lightKey === v : t === 'v' ? view === v : v === 'concord' ? showConcord : showSil;
+    b.setAttribute('aria-pressed', String(on));
+  }
+}
+for (const t of document.querySelectorAll('.tabs button')) t.onclick = () => {
+  for (const u of document.querySelectorAll('.tabs button')) u.setAttribute('aria-selected', String(u === t));
+  for (const p of ['ships', 'notes']) document.getElementById('pane-' + p).hidden = t.dataset.tab !== p;
+};
+
+function resize() {
+  // The ships sit in the free area: right of the panel in landscape, above it in portrait (the panel is a bottom sheet).
+  const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false);
+  const portrait = w / h <= 0.75, pw = portrait ? 0 : document.getElementById('panel').offsetWidth;
+  if (portrait) { camera.aspect = w / (h * 1.5); camera.setViewOffset(w, h * 1.5, 0, h * 0.5, w, h); }
+  else { camera.aspect = (w + pw) / h; camera.setViewOffset(w + pw, h, 0, 0, w, h); }
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', () => { resize(); applyView(view); });
+resize();
+applyLight('sunlit');
+place();
+
+const meter = document.getElementById('meter');
+renderer.setAnimationLoop(() => {
+  controls.update(); renderer.render(scene, camera);
+  meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws`;
+});
+
+// Named shots (tools/mockups/shoot.mjs).
+const pick = (m, l = 'sunlit', v = 'three_quarter', o = {}) => () => {
+  showConcord = o.concord ?? true; showSil = !!o.sil; mode = m; applyLight(l); place(); applyView(v); refresh();
+};
+window.MOCKUP_SHOTS = {
+  dir_a: pick('dir_a'), dir_b: pick('dir_b'), dir_c: pick('dir_c'),
+  dir_a_front: pick('dir_a', 'sunlit', 'front', { concord: false }), dir_b_front: pick('dir_b', 'sunlit', 'front', { concord: false }), dir_c_front: pick('dir_c', 'sunlit', 'front', { concord: false }),
+  directions: pick('directions'), directions_top: pick('directions', 'sunlit', 'top'),
+  corvette: pick('corvette'), frigate: pick('frigate'), cruiser: pick('cruiser'), dreadnought: pick('dreadnought'),
+  lineup: pick('lineup'), lineup_side: pick('lineup', 'sunlit', 'side'),
+  frigate_shadow: pick('frigate', 'shadow', 'three_quarter', { concord: false }), frigate_nosun: pick('frigate', 'nosun', 'stern', { concord: false }),
+  frigate_close: () => { pick('frigate', 'sunlit', 'three_quarter', { concord: false })(); const c = current.box.getCenter(V3()); controls.target.set(c.x, c.y, c.z + 22); camera.position.set(c.x - 30, c.y + 14, c.z + 52); controls.update(); },
+  silhouettes: pick('lineup', 'sunlit', 'three_quarter', { sil: true }),
+};
+refresh();
+window.MOCKUP_SCENE = scene;
+window.MOCKUP_READY = true;
+})();
+</script>

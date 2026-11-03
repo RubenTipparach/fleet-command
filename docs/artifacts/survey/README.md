@@ -35,3 +35,4 @@
 - 2026-11-03, cloud session (Concord ships thread): A14 rewritten for the reworked battleship and carrier, on top of the live version 27; version 28, version id `1793697353-21d8`.
 - 2026-11-02, cloud session: B27 added (warp key colour by risk); version id `1793658956-e618`.
 - 2026-11-03, cloud session: B28 added (holds per class); version id `1793666306-6e15`.
+- 2026-11-03, cloud session (Concord ships thread): A15-A17 (Krai ships, mockup 7) added on top of the live version 28; version 29, version id `1793700858-be66`.
