@@ -216,6 +216,38 @@ const BASES = {
     radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 27, 'cmd'], [11.5, -6, 'top'], [-11.5, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
     core: { pos: [0, -20.9, -30], size: [2.2, 0.5, 30] }, torpedo: [0, -1.8, 50.05], deflector: [0, 1.0, 50.05, 2.6],
   },
+  // The battleship (owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", "please make these
+  // somewhat different than the standard ship shape ... battleship needs an array of cannons", "large cannons"): a long armoured
+  // hull round a tall citadel, three triple-gun turrets forward stepped up so each fires over the one ahead, two aft facing aft,
+  // and a sponson down each flank carrying a row of broadside cannons; two nacelle pairs aft.
+  condor: {
+    cls: 'Condor-class battleship', name: 'CNS CONDOR', reg: 'CC-001', length: 184, tell: 'A long armoured hull round a tall citadel: three triple-gun turrets forward, stepped up so each fires over the one ahead, two more aft, a row of broadside cannons in a sponson down each flank, and two nacelle pairs.',
+    stations: [[92, 3.0, 4.0, -3.0, 1.0], [74, 12.0, 8.5, -7.0, 2.2], [40, 17.0, 10.5, -9.0, 2.8], [-40, 17.0, 10.5, -9.0, 2.8], [-78, 14.0, 9.0, -7.5, 2.6], [-92, 10.0, 7.0, -5.5, 2.0]],
+    decks: [7.0, 3.5, 0, -3.5, -7.0], live: [-40, 50], band: [-0.65, 0.35], channels: [5.0, 12.0], stripes: [60, -32, -66],
+    command: { z: [24, -6], hb: 9.0, top: 18.0, ch: 1.6 },
+    guns: [{ z: 64, face: 1, lift: 0 }, { z: 50, face: 1, lift: 3.2 }, { z: 36, face: 1, lift: 6.4 }, { z: -24, face: -1, lift: 3.2 }, { z: -40, face: -1, lift: 0 }],
+    sponsons: { z: [22, -22], cannons: [16, 8, 0, -8, -16] },
+    pylons: [{ root: [16, 2.0, -48], tip: [30, 2.0, -60], rc: 24, tc: 15, t: 1.8 }, { root: [12, -8.0, -40], tip: [24, -17.0, -52], rc: 20, tc: 12, t: 1.6 }],
+    nacelles: [{ x: 30, y: 2.0, z: -54, len: 80, hw: 3.2, hh: 3.1 }, { x: 24, y: -17.0, z: -48, len: 64, hw: 2.6, hh: 2.6 }],
+    radiators: [[-66, 6, 12], [-66, -6, 12]], turrets: [[12, 60, 'bottom'], [-12, 60, 'bottom'], [0, -62, 'top']],
+    bells: { z: -92, y: 0.6, x: 5.0, r: 2.6 }, core: { pos: [0, -9.45, -10], size: [2.4, 0.5, 40] }, torpedo: [0, -1.6, 92.05], deflector: [0, 1.4, 92.05, 1.6],
+  },
+  // The carrier ("carrier needs bays for fighters"): a catamaran. A narrow spine carries the bridge island, the runway and the
+  // engines; two long hangar pods sit outboard, joined to it by a flight deck where fighters wait; each pod has a row of lit bay
+  // doors down its outer flank and a launch mouth at its bow; the nacelles hang under the pods on upright pylons.
+  pelican: {
+    cls: 'Pelican-class carrier', name: 'CNS PELICAN', reg: 'CC-040', length: 132, tell: 'A catamaran: a narrow spine with the bridge island and the runway, two hangar pods outboard joined to it by a flight deck of parked fighters, a row of lit fighter bays down each pod\'s flank and a launch mouth at each pod\'s bow, the nacelles slung under the pods.',
+    stations: [[66, 3.5, 4.0, -2.5, 1.0], [56, 7.0, 6.0, -4.0, 1.4], [-40, 7.5, 6.0, -4.0, 1.6], [-64, 5.5, 5.0, -3.0, 1.2]],
+    pods: { x: 23, stations: [[60, 4.5, 3.5, -5.0, 1.0], [52, 8.0, 4.0, -6.0, 1.6], [-50, 8.0, 4.0, -6.0, 1.6], [-62, 6.0, 3.0, -4.5, 1.2]] },
+    wing: { z: [44, -38], hb: 16, top: 1.6, bottom: -1.0 },
+    decks: [0], live: [-30, 50], band: [-0.65, 0.35], channels: [], stripes: [58, -56],
+    command: { z: [-14, -32], hb: 5.0, top: 12.0, ch: 1.2 },
+    pylons: [{ root: [23, -5.6, -20], tip: [23, -11.6, -30], rc: 16, tc: 10, t: 1.3, up: true }],
+    nacelles: [{ x: 23, y: -11.6, z: -24, len: 62, hw: 2.4, hh: 2.4 }],
+    radiators: [[-52, 0, 8]], turrets: [[23, 30, 'at', 4.0], [-23, 30, 'at', 4.0], [23, -36, 'at', 4.0], [-23, -36, 'at', 4.0]],
+    bells: { z: -64, y: 1.0, x: 2.5, r: 1.6 }, core: { pos: [0, -4.45, -10], size: [1.8, 0.5, 40] }, torpedo: [0, -1.0, 66.05], deflector: [0, 1.8, 66.05, 1.2],
+    carrier: { deck: { z: [50, -8], w: 9 }, bays: [40, 30, 20, 10, 0, -10, -20, -30, -40], fighters: [[-11, 36], [11, 36], [-11, 24], [11, 24], [-11, 12], [11, 12], [-11, 0], [11, 0], [-11, -12], [11, -12]] },
+  },
   // Star Crew's SCS Tern, from its own data (star-crew-bridge-simulator 95a49b2: data/ships/tern/layout.json hull.sections,
   // data/ships/exteriors.json ships[tern] pylon, nacelle and service_band). The yardstick for the family; not a Concord ship.
   tern: {
@@ -235,7 +267,7 @@ const BASES = {
 const VARIANTS = [
   ['swift_below', 'swift', 'below1', 'Swift, one below'], ['swift_updown', 'swift', 'updown', 'Swift, above and below'], ['swift_level', 'swift', 'level', 'Swift, level'],
   ['petrel_updown', 'petrel', 'updown', 'Petrel, above and below'], ['petrel_level', 'petrel', 'level', 'Petrel, level'],
-  ['albatross', 'albatross', 'level', 'Albatross'], ['albatross_main', 'albatross', 'mainpylon', 'Albatross, pylons on the main hull'], ['tern', 'tern', 'level', 'Tern (Star Crew)'],
+  ['albatross', 'albatross', 'level', 'Albatross'], ['albatross_main', 'albatross', 'mainpylon', 'Albatross, pylons on the main hull'], ['condor', 'condor', 'level', 'Condor battleship'], ['pelican', 'pelican', 'level', 'Pelican carrier'], ['tern', 'tern', 'level', 'Tern (Star Crew)'],
 ];
 const MODE_NAMES = { level: 'Level pair', below1: 'One below', updown: 'One above, one below', mainpylon: 'Level pair, from the main hull' };
 const CLASSES = {};
@@ -284,7 +316,8 @@ function alongNacelle(C, n) {
 // Each nacelle gets a side key: P port, S starboard, D dorsal, V ventral; its system is 'nac' + side.
 function arrange(C) {
   if (C.mode === 'mainpylon') return { pylons: C.mainPylons.flatMap((p) => [{ ...p, side: 'P', sx: 1 }, { ...p, side: 'S', sx: -1 }]), nacelles: C.mainNacelles.flatMap((n) => [{ ...n, side: 'P', sx: 1 }, { ...n, side: 'S', sx: -1 }]) };
-  if (C.mode === 'level') return { pylons: C.pylons.flatMap((p) => [{ ...p, side: 'P', sx: 1 }, { ...p, side: 'S', sx: -1 }]), nacelles: C.nacelles.flatMap((n) => [{ ...n, side: 'P', sx: 1 }, { ...n, side: 'S', sx: -1 }]) };
+  const sfx = (i) => (i ? String(i + 1) : ''); // a second pair is P2 and S2
+  if (C.mode === 'level') return { pylons: C.pylons.flatMap((p, i) => [{ ...p, side: 'P' + sfx(i), sx: 1 }, { ...p, side: 'S' + sfx(i), sx: -1 }]), nacelles: C.nacelles.flatMap((n, i) => [{ ...n, side: 'P' + sfx(i), sx: 1 }, { ...n, side: 'S' + sfx(i), sx: -1 }]) };
   const n0 = C.nacelles[0], p0 = C.pylons[0], pylons = [], nacelles = [], { top, bot } = alongNacelle(C, n0);
   const zs = [n0.z - n0.len * 0.15, n0.z - n0.len * 0.35], at = hullAt(C.stations, zs[0]);
   const upright = (side, y, rootY) => { nacelles.push({ ...n0, x: 0, y, side, sx: 1 }); pylons.push({ root: [0, rootY, zs[0] + 3], tip: [0, y, zs[1]], rc: p0.rc, tc: p0.tc, t: p0.t, up: true, side, sx: 1 }); };
@@ -293,6 +326,7 @@ function arrange(C) {
   return { pylons, nacelles };
 }
 const SIDE_NAMES = { P: 'Port nacelle', S: 'Starboard nacelle', D: 'Dorsal nacelle', V: 'Ventral nacelle' };
+const sideName = (k) => SIDE_NAMES[k[0]] + (k.length > 1 ? ' ' + k.slice(1) : '');
 
 // ---------------------------------------------------------------------------------------------------------------
 // Geometry. Every piece is built in ship space (the mesh sits at identity inside its piece), so the damage shader's
@@ -326,7 +360,8 @@ function loft(rings, axis, step = 4) {
   }
   return geoFrom(t);
 }
-function hullGeo(S) {
+function hullGeo(S, ox = 0) {
+  if (ox) { const g = hullGeo(S); g.translate(ox, 0, 0); return g; }
   const s = [...S].sort((a, b) => b[0] - a[0]);
   return loft(s.map(([z, hb, top, bot, ch]) => octRing(z, hb, top, bot, ch)), (m) => { const h = hullAt(S, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); });
 }
@@ -756,10 +791,10 @@ const NO_SEEDS = { uSeeds: { value: Array.from({ length: 16 }, () => V3()) }, uS
 // random?"). Seeds scattered through a body (the primary hull, the secondary hull) split it into cells: every piece is the body
 // clipped to one cell, its skin torn a little at the edge by noise. Where two cells meet, a cut face closes the piece. A body is
 // a lofted hull, so "inside" is the signed distance into its stations (loftDist), the same test the cut-face shader runs.
-function insideBody(b, p) { return loftDist(b.stations, p) > 0; }
+function insideBody(b, p) { return loftDist(b.stations, V3(p.x - (b.ox || 0), p.y, p.z)) > 0; }
 function bodyBox(b) {
   const S = b.stations, hb = Math.max(...S.map((q) => q[1]));
-  return [V3(-hb, Math.min(...S.map((q) => q[3])), Math.min(...S.map((q) => q[0]))), V3(hb, Math.max(...S.map((q) => q[2])), Math.max(...S.map((q) => q[0])))];
+  const o = b.ox || 0; return [V3(o - hb, Math.min(...S.map((q) => q[3])), Math.min(...S.map((q) => q[0]))), V3(o + hb, Math.max(...S.map((q) => q[2])), Math.max(...S.map((q) => q[0])))];
 }
 function subsetGeo(g, i, seeds, margin) {
   const P = g.attributes.position, near = new Float32Array(P.count), v = V3();
@@ -805,7 +840,7 @@ function fracture(ship, b, rng) {
 // embers toward the broken edges, flame licking up the walls near the break.
 const CUTFACE_GLSL = `
 uniform vec3 uSeeds[16]; uniform int uSeedN; uniform int uA; uniform int uB;
-uniform vec4 uSt[12]; uniform float uCh[12]; uniform int uStN;
+uniform vec4 uSt[12]; uniform float uCh[12]; uniform int uStN; uniform float uOx;
 uniform float uHeat; uniform float uTime; uniform vec3 uAcross; uniform vec3 uDepth; uniform vec3 uMid;
 varying vec3 vObj; varying vec3 vCamObj;
 float fh(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
@@ -814,6 +849,7 @@ float fn(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
              mix(mix(fh(i+vec3(0,0,1)),fh(i+vec3(1,0,1)),f.x),mix(fh(i+vec3(0,1,1)),fh(i+vec3(1,1,1)),f.x),f.y),f.z); }
 // Signed distance into the lofted body (positive inside): the octagon at z, as loftDist() in the page's script.
 float loftD(vec3 p){
+  p.x -= uOx;
   if (p.z > uSt[0].x || p.z < uSt[uStN - 1].x) return -1.0;
   vec4 s = uSt[0]; float ch = uCh[0];
   for (int i = 0; i < 11; i++) { if (i >= uStN - 1) break; vec4 a = uSt[i], b = uSt[i + 1];
@@ -868,7 +904,7 @@ function cutFace(ship, b, a, c, pts) {
   const st = Array.from({ length: 12 }, (_, i) => new THREE.Vector4(...(S[i] ? [S[i][0], S[i][1], S[i][2], S[i][3]] : [0, 0, 0, 0])));
   const ch = Array.from({ length: 12 }, (_, i) => (S[i] ? chOf(S[i][1], S[i][2], S[i][3], S[i][4]) : 0));
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.3, roughness: 0.85, emissive: 0xffffff, envMapIntensity: LIGHTS[lightKey].env });
-  const U = { uSeeds: b.u.uSeeds, uSeedN: b.u.uSeedN, uA: { value: a }, uB: { value: c }, uSt: { value: st }, uCh: { value: ch }, uStN: { value: Math.min(12, S.length) },
+  const U = { uSeeds: b.u.uSeeds, uSeedN: b.u.uSeedN, uA: { value: a }, uB: { value: c }, uSt: { value: st }, uCh: { value: ch }, uStN: { value: Math.min(12, S.length) }, uOx: { value: b.ox || 0 },
     uHeat: P.mats[0] ? P.mats[0].userData.u.uCutHeat : { value: 0 }, uTime: sharedTime, uAcross: { value: across }, uDepth: { value: depth }, uMid: { value: mid.clone() } };
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
@@ -1000,6 +1036,68 @@ function thruster(ship, P, at, r) {
   return [tm];
 }
 
+// The battleship's main guns ("an array of cannons", "large cannons"): a turret of three 16 m cannons with muzzle rings on a
+// barbette `lift` metres above the deck, facing fore (face 1) or aft (-1). The muzzles flash when the ship fires.
+function bigGun(ship, P, base, face, lift) {
+  const add = (g, m, sys = 'weapons') => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys, piece: P }; P.inner.add(o); if (m.userData.u) { ship.mats.push(m); P.mats.push(m); ship.meshes.push(o); } return o; };
+  const y0 = base.y - 0.3, y = base.y + lift;
+  if (lift > 0) { const b = new THREE.CylinderGeometry(3.4, 3.8, lift + 0.3, 12); b.translate(base.x, y0 + (lift + 0.3) / 2, base.z); add(b, hullMat({ mode: 1 }, ship)); }
+  const hous = new THREE.CylinderGeometry(4.0, 4.4, 2.6, 10); hous.translate(base.x, y + 1.3, base.z); add(hous, hullMat({ mode: 1 }, ship));
+  add(boxGeo(6.4, 2.2, 3.0, base.x, y + 1.2, base.z + face * 3.4), hullMat({ mode: 1 }, ship));
+  const pm = glowMat(0xffb04a, 0x2a2d36); pm.emissiveIntensity = 0.0; ship.glows.phaser.push(pm);
+  for (const dx of [-1.7, 0, 1.7]) {
+    const bar = new THREE.CylinderGeometry(0.5, 0.65, 16, 12); bar.rotateX(PI / 2); bar.translate(base.x + dx, y + 1.3, base.z + face * (4.9 + 8)); add(bar, greyMat);
+    const m = new THREE.TorusGeometry(0.62, 0.18, 6, 14); m.translate(base.x + dx, y + 1.3, base.z + face * (4.9 + 16)); add(m, darkMat);
+    const mz = new THREE.CircleGeometry(0.45, 12); if (face < 0) mz.rotateY(PI); mz.translate(base.x + dx, y + 1.3, base.z + face * (4.95 + 16)); add(mz, pm);
+  }
+  ship.turrets.push(V3(base.x, y + 1.3, base.z + face * 6));
+}
+// A fighter bay ("carrier needs bays for fighters"): a frame standing proud of the hull round a lit hangar, guide lights under
+// it; nrm is the way it faces (along x on a pod's flank, along z at a pod's bow).
+function bay(ship, P, c, nrm, w, h) {
+  const add = (g, m) => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys: 'life', piece: P }; P.inner.add(o); return o; };
+  const sideways = Math.abs(nrm.x) > 0.5, rot = sideways ? (nrm.x > 0 ? PI / 2 : -PI / 2) : (nrm.z > 0 ? 0 : PI);
+  // du runs across the door, dv up it, dn out from the hull
+  const place = (g, du, dv, dn) => { g.rotateY(rot); const off = sideways ? V3(nrm.x * dn, dv, -nrm.x * du) : V3(nrm.z * du, dv, nrm.z * dn); g.translate(c.x + off.x, c.y + off.y, c.z + off.z); return g; };
+  const hm = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: hangarTex(), emissiveIntensity: 1.0, roughness: 0.9 }); (ship.glows.hangar ||= []).push(hm);
+  add(place(new THREE.PlaneGeometry(w, h), 0, 0, 0.14), hm);
+  const fr = 0.4;
+  for (const [bw, bh, du, dv] of [[w + 2 * fr, fr, 0, h / 2 + fr / 2], [w + 2 * fr, fr, 0, -h / 2 - fr / 2], [fr, h, -w / 2 - fr / 2, 0], [fr, h, w / 2 + fr / 2, 0]]) add(place(new THREE.BoxGeometry(bw, bh, 0.6), du, dv, 0.25), darkMat);
+  const gl = glowMat(0xf2a33a, 0x2a1a08); ship.glows.hangar.push(gl);
+  for (let i = 0; i < 4; i++) add(place(new THREE.BoxGeometry(0.35, 0.2, 0.2), (i - 1.5) * w / 4, -h / 2 - fr - 0.25, 0.2), gl);
+}
+// A parked fighter: a flat wedge with swept wings and a lit cockpit.
+function fighter(P, x, y, z, ship) {
+  const add = (g, m) => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys: 'life', piece: P }; P.inner.add(o); return o; };
+  const g = new THREE.ConeGeometry(1.1, 5.0, 4); g.rotateX(PI / 2); g.scale(1, 0.4, 1); g.translate(x, y + 0.5, z); add(g, greyMat);
+  const w = new THREE.BoxGeometry(4.4, 0.12, 1.6); w.translate(x, y + 0.42, z - 1.0); add(w, greyMat);
+  const c = new THREE.BoxGeometry(0.5, 0.25, 0.9); c.translate(x, y + 0.85, z + 0.6); add(c, glowMat(0x7cc8ff, 0x0d1830));
+}
+// The runway painted on the carrier's spine: a dashed centre line, threshold bars, approach chevrons, edge lines.
+function deckTex(len, w) {
+  const ppm = 16, c = cv(Math.round(w * ppm), Math.round(len * ppm)), x = c.getContext('2d'), W = c.width, H = c.height, rng = mulberry(77);
+  x.fillStyle = '#3a3f47'; x.fillRect(0, 0, W, H);
+  x.fillStyle = 'rgba(255,255,255,0.05)'; for (let i = 0; i < 400; i++) x.fillRect(rng() * W, rng() * H, 2, 2);
+  x.strokeStyle = '#e8e4d8'; x.lineWidth = 0.25 * ppm; x.setLineDash([3 * ppm, 3 * ppm]); x.beginPath(); x.moveTo(W / 2, 4 * ppm); x.lineTo(W / 2, H - 4 * ppm); x.stroke(); x.setLineDash([]);
+  x.fillStyle = '#e8e4d8'; for (let i = 0; i < 5; i++) x.fillRect(W * 0.12 + i * W * 0.16, 1 * ppm, W * 0.1, 2.4 * ppm);
+  x.strokeStyle = '#f2a33a'; x.lineWidth = 0.35 * ppm; for (let k = 0; k < 4; k++) { const y = H - (8 + k * 3) * ppm; x.beginPath(); x.moveTo(W * 0.2, y + 1.5 * ppm); x.lineTo(W / 2, y); x.lineTo(W * 0.8, y + 1.5 * ppm); x.stroke(); }
+  x.fillStyle = '#e8e4d8'; x.fillRect(0.4 * ppm, 0, 0.2 * ppm, H); x.fillRect(W - 0.6 * ppm, 0, 0.2 * ppm, H);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+}
+// A hangar seen through its door: a lit far wall, ceiling lights, guide lights down the floor, two parked fighters.
+let hangarTexC = null;
+function hangarTex() {
+  if (hangarTexC) return hangarTexC;
+  const c = cv(512, 256), x = c.getContext('2d'), W = 512, H = 256;
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a1e26'); g.addColorStop(0.55, '#2c323c'); g.addColorStop(1, '#4a4234'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#6e7a8c'; x.fillRect(W * 0.3, H * 0.28, W * 0.4, H * 0.34);
+  x.strokeStyle = 'rgba(160,170,190,0.5)'; x.lineWidth = 2; for (const [a, b] of [[0, W * 0.3], [W, W * 0.7]]) { x.beginPath(); x.moveTo(a, 0); x.lineTo(b, H * 0.28); x.moveTo(a, H); x.lineTo(b, H * 0.62); x.stroke(); }
+  x.fillStyle = '#fff4d6'; for (let i = 0; i < 5; i++) { const k = i / 5; x.fillRect(W * (0.5 - 0.22 * (1 - k)), H * (0.06 + k * 0.2), W * 0.44 * (1 - k), 4); }
+  x.fillStyle = '#f2a33a'; for (let i = 0; i < 7; i++) { const k = i / 7; x.fillRect(W * 0.5 - 3, H * (0.95 - k * 0.32), 6, 4); }
+  x.fillStyle = '#20242c'; for (const fx of [0.36, 0.56]) { x.beginPath(); x.moveTo(W * fx, H * 0.6); x.lineTo(W * (fx + 0.05), H * 0.5); x.lineTo(W * (fx + 0.1), H * 0.6); x.closePath(); x.fill(); }
+  hangarTexC = new THREE.CanvasTexture(c); hangarTexC.encoding = THREE.sRGBEncoding; return hangarTexC;
+}
+
 // Ship builder: one function for every class, reading CLASSES.
 function makeDmgUniforms() {
   return { uHoles: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleN: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) }, uHoleCount: { value: 0 },
@@ -1039,7 +1137,7 @@ function buildShip(id, liv, offset = V3()) {
   ship.root.position.copy(offset);
   ship.sides = A.nacelles.map((n) => n.side);
   ship.SYS = [['bridge', 'Bridge'], ['weapons', 'Weapons'], ['shields', 'Shields'], ['impulse', 'Impulse engines'], ['reactor', 'Reactor (warp core)'],
-    ...ship.sides.map((k) => ['nac' + k, SIDE_NAMES[k]]), ['life', 'Life support']];
+    ...ship.sides.map((k) => ['nac' + k, sideName(k)]), ['life', 'Life support']];
   for (const [k, n] of ship.SYS) ship.sys[k] = { id: k, name: n, health: 100, state: 'healthy' };
   const piece = (pid, center, sysId) => {
     const pivot = new THREE.Group(), inner = new THREE.Group(); pivot.position.copy(center); inner.position.copy(center).negate();
@@ -1103,13 +1201,39 @@ function buildShip(id, liv, offset = V3()) {
     ship.bridgeTop = V3(0, K.top, (z0 + z1) / 2);
   } else ship.bridgeTop = V3(0, hullAt(S, zMax - 10)[2], zMax - 10);
   // Turrets: a faceted housing with twin barrels and a phaser emitter strip that glows when it fires.
-  for (const [x, z, face] of C.turrets) {
-    const h = hullAt(S, z), up = face === 'bottom' ? -1 : 1, y = face === 'cmd' ? C.command.top : up > 0 ? h[2] : h[3];
+  for (const [x, z, face, yAt] of C.turrets) {
+    const h = hullAt(S, z), up = face === 'bottom' ? -1 : 1, y = face === 'at' ? yAt : face === 'cmd' ? C.command.top : up > 0 ? h[2] : h[3];
     ship.turrets.push(V3(x, y + 0.6 * up, z)); if (C.glb) continue; // the Tern's own turret housings are in its model
     const body = new THREE.CylinderGeometry(1.0, 1.3, 0.8, 8); body.translate(x, y + 0.4 * up, z); add(hullP, body, greyMat, 'weapons');
     for (const bx of [-0.35, 0.35]) add(hullP, boxGeo(0.2, 0.2, 2.4, x + bx, y + 0.55 * up, z + 1.4), darkMat, 'weapons');
     const pm = glowMat(0xffa23a, 0x2a2d36); pm.emissiveIntensity = 0.25; ship.glows.phaser.push(pm); add(hullP, boxGeo(1.6, 0.12, 0.3, x, y + 0.82 * up, z - 0.6), pm, 'weapons');
   }
+  // Side hulls (the carrier's pods), each its own fracture body; the flight deck joining them; big guns; sponsons; the runway.
+  if (C.pods) for (const sx of [1, -1]) {
+    const D = C.pods, ox = D.x * sx, z2 = D.stations.map((q) => q[0]), pp = { mode: 0, band: C.band, chan: [], stripes: C.stripes, winOn: false };
+    const P = piece('pod' + (sx > 0 ? 'P' : 'S'), V3(ox, -1, (Math.max(...z2) + Math.min(...z2)) / 2), 'life'); P.intact = true;
+    const g = hullGeo(D.stations, ox); add(P, g, hullMat(pp, ship), 'life').userData.skin = true;
+    ship.bodies.push({ name: 'pd' + (sx > 0 ? 'p' : 's'), sys: 'life', intact: P, stations: D.stations, ox, geos: [[g, pp]], n: 4 });
+    for (const z of C.carrier.bays) bay(ship, P, V3(ox + sx * hullAt(D.stations, z)[1], -1.0, z), V3(sx, 0, 0), 6.0, 3.6);
+    bay(ship, P, V3(ox, -1.0, Math.max(...z2)), V3(0, 0, 1), 6.0, 3.6);
+  }
+  if (C.wing) { const W = C.wing, P = piece('wing', V3(0, (W.top + W.bottom) / 2, (W.z[0] + W.z[1]) / 2), 'life');
+    add(P, loft([octRing(W.z[0], W.hb, W.top, W.bottom, 0.4), octRing(W.z[1], W.hb, W.top, W.bottom, 0.4)], (m) => V3(0, (W.top + W.bottom) / 2, m.z)), hullMat({ mode: 1 }, ship), 'life');
+    for (const [x, z] of C.carrier.fighters) fighter(P, x, W.top, z, ship); }
+  if (C.guns) for (const G of C.guns) { const h = hullAt(S, G.z); bigGun(ship, hullP, V3(0, h[2], G.z), G.face, G.lift); }
+  if (C.sponsons) for (const sx of [1, -1]) {
+    const Z = C.sponsons, h = hullAt(S, (Z.z[0] + Z.z[1]) / 2), x0 = sx * (h[1] - 0.6), x1 = sx * (h[1] + 3.2);
+    add(hullP, boxGeo(Math.abs(x1 - x0), 4.8, Z.z[0] - Z.z[1], (x0 + x1) / 2, -0.4, (Z.z[0] + Z.z[1]) / 2), hullMat({ mode: 1 }, ship), 'weapons');
+    for (const z of Z.cannons) { add(hullP, boxGeo(1.6, 2.0, 2.4, x1 + sx * 0.6, 0.2, z), darkMat, 'weapons');
+      const b = new THREE.CylinderGeometry(0.42, 0.5, 9, 10); b.rotateZ(PI / 2); b.translate(x1 + sx * 5.2, 0.2, z); add(hullP, b, greyMat, 'weapons');
+      const mz = new THREE.TorusGeometry(0.5, 0.14, 6, 12); mz.rotateY(PI / 2); mz.translate(x1 + sx * 9.6, 0.2, z); add(hullP, mz, darkMat, 'weapons');
+      ship.turrets.push(V3(x1 + sx * 2, 0.2, z)); }
+  }
+  if (C.carrier) { const K = C.carrier, [z0, z1] = K.deck.z, len = z0 - z1, top = hullAt(S, (z0 + z1) / 2)[2];
+    const deck = new THREE.Mesh(new THREE.PlaneGeometry(K.deck.w, len), new THREE.MeshStandardMaterial({ map: deckTex(len, K.deck.w), roughness: 0.8, metalness: 0.3, polygonOffset: true, polygonOffsetFactor: -2, envMapIntensity: LIGHTS[lightKey].env }));
+    deck.rotation.x = -PI / 2; deck.position.set(0, top + 0.03, (z0 + z1) / 2); deck.userData.center = deck.position.clone(); hullP.inner.add(deck);
+    const lm = glowMat(0x6fd0ff, 0x10202a); ship.glows.deck = [lm];
+    for (let z = z1 + 2; z <= z0 - 2; z += 6) for (const sx of [-1, 1]) add(hullP, boxGeo(0.3, 0.16, 0.3, sx * (K.deck.w / 2 + 0.3), top + 0.05, z), lm, 'life'); }
   // Radiator banks on the back, aft.
   if (!C.glb) for (const [z, x, len] of C.radiators) { const h = hullAt(S, z), mt = new THREE.MeshStandardMaterial({ map: grilleTex.clone(), roughness: 0.7, metalness: 0.4 });
     mt.map.needsUpdate = true; mt.map.repeat.set(1, len / 1.2); mt.map.rotation = PI / 2; add(hullP, boxGeo(3.2, 0.5, len, x, h[2] + 0.2, z), mt, 'life'); }
@@ -1158,7 +1282,7 @@ function buildShip(id, liv, offset = V3()) {
   // The command block's face, from a lamp on the hull ahead of it.
   if (C.command) { const K = C.command, hz = hullAt(S, K.z[0] + 4); addSpot(ship, V3(0, K.top + 0.4, K.z[0] - 1), V3(0, -0.12, 1), 16, 0.9); }
   // Each nacelle's flank, from a lamp at its intake end, raking aft along it.
-  for (const K of ship.sides) { const k = ship.knee[K], n = k.n, out = K === 'P' ? 1 : K === 'S' ? -1 : 0, up = K === 'D' ? 1 : K === 'V' ? -1 : 0;
+  for (const K of ship.sides) { const k = ship.knee[K], n = k.n, out = K[0] === 'P' ? 1 : K[0] === 'S' ? -1 : 0, up = K[0] === 'D' ? 1 : K[0] === 'V' ? -1 : 0;
     if (out) addSpot(ship, k.mid.clone().add(V3(out * (n.hw + 0.4), n.hh + 0.4, 0)), V3(0, -1, 0), n.hh * 4.5, 0.9); // a side: aimed down
     else addSpot(ship, k.mid.clone().add(V3(0, up * (n.hh + 0.4), -n.len * 0.42)), V3(0, -up * 0.06, 1), n.len * 0.8, 0.9); }  // top or bottom: facing forward
   // Lamps in the service band that throw their fans up the hull's sides, and lamps on the shoulders that rake the dorsal plating.
@@ -1362,7 +1486,7 @@ function wedgeAt(ship) { return ship.pieces.hull; }
 function snapNacelle(ship, side) {
   const P = ship.pieces['shin' + side], T = ship.pieces['thigh' + side], k = ship.knee[side], s = ship.C.length / 150;
   const out = k.dir.clone(); if (Math.abs(out.y) > 0.8) out.add(V3(0.4, 0, 0));
-  detach(ship, P, out.clone().multiplyScalar(12 * s).add(V3(0, 0, -4 * s)), V3(0.05, -0.03, (side === 'S' ? -1 : 1) * 0.25));
+  detach(ship, P, out.clone().multiplyScalar(12 * s).add(V3(0, 0, -4 * s)), V3(0.05, -0.03, (side[0] === 'S' ? -1 : 1) * 0.25));
   charStump(ship, T, { n: k.dir, d: k.dir.dot(k.knee), c: k.knee, r: k.chord * 0.8 });
   const w = k.knee.clone().applyMatrix4(ship.root.matrixWorld);
   emit('fireball', w, k.dir, 60, 0.6 * s); emit('sparks', w, k.dir, 120);
@@ -1700,6 +1824,7 @@ function stepShip(ship, dt) {
   { const st = ship.sys.shields.state; gl(ship.glows.dish, ship.broken ? 0 : settle(ship, 'dish', st === 'healthy' || st === 'damaged' ? 1.3 : 0) * (burst(ship, 'dishD', st === 'damaged') ? 0.2 : 1)); }
   { const st = ship.sys.impulse.state; ship.glows.impulse.forEach((m, i) => { if (m.userData.heat) m.userData.heat.value = m.emissiveIntensity / 1.4; m.emissiveIntensity = ship.broken ? 0 : settle(ship, 'bell' + i, st === 'healthy' || st === 'damaged' || (st === 'critical' && i % 2) ? 1.4 : 0) * (burst(ship, 'bellD' + i, st === 'damaged') ? 0.2 : 1); }); }
   { const st = ship.sys.weapons.state; gl(ship.glows.phaser, ship.broken ? 0 : st === 'healthy' ? (ship.firing > 0 ? 2.2 : 0.25) : st === 'damaged' ? 0.2 : 0); gl(ship.glows.torpedo, ship.broken ? 0 : st === 'healthy' || st === 'damaged' ? 1.2 : 0); }
+  { const hL = ship.broken ? 0 : settle(ship, 'hangar', ship.sys.life.state === 'destroyed' ? 0 : 1); gl(ship.glows.hangar, hL); gl(ship.glows.deck, hL * 1.4); }
   ship.firing = Math.max(0, (ship.firing || 0) - dt);
   // Navigation lights: strobes double-flash, beacons pulse, position lights steady.
   for (const n of ship.navs) {
@@ -1804,16 +1929,16 @@ function clearAll() {
   for (const o of oneshots) scene.remove(o.obj); oneshots.length = 0; for (const b of beams) scene.remove(b.m); beams.length = 0;
 }
 // The line-up is a grid at true scale: a row of Swifts, a row of Petrels, then the Albatross and the Tern; rows step aft.
-const ROW = { swift: 0, petrel: 1, albatross: 2, tern: 2 };
+const ROW = { swift: 0, petrel: 1, albatross: 2, tern: 2, condor: 3, pelican: 3 };
 function setMode(m, seed = 7) {
   clearAll(); fxRng = mulberry(seed); simT = 0; mode = m;
   if (m === 'lineup') {
     ships = VARIANTS.map(([id]) => buildShip(id, livery));
-    const rowX = [0, 0, 0], rowZ = [0, 0, 0], rowLen = [0, 0, 0];
+    const rowX = [0, 0, 0, 0], rowZ = [0, 0, 0, 0], rowLen = [0, 0, 0, 0];
     for (const s of ships) rowLen[ROW[s.C.base]] = Math.max(rowLen[ROW[s.C.base]], s.facts.length);
-    for (let r = 1; r < 3; r++) rowZ[r] = rowZ[r - 1] - (rowLen[r - 1] + rowLen[r]) / 2 - 24;
+    for (let r = 1; r < 4; r++) rowZ[r] = rowZ[r - 1] - (rowLen[r - 1] + rowLen[r]) / 2 - 24;
     for (const s of ships) { const r = ROW[s.C.base], w = s.facts.beam; if (rowX[r]) rowX[r] += w / 2; s.offset.set(-rowX[r], 0, rowZ[r]); rowX[r] += w / 2 + 16; }
-    for (let r = 0; r < 3; r++) { const row = ships.filter((s) => ROW[s.C.base] === r), cx = (row[0].offset.x + row[row.length - 1].offset.x) / 2; row.forEach((s) => { s.offset.x -= cx; s.root.position.copy(s.offset); }); }
+    for (let r = 0; r < 4; r++) { const row = ships.filter((s) => ROW[s.C.base] === r); if (!row.length) continue; const  cx = (row[0].offset.x + row[row.length - 1].offset.x) / 2; row.forEach((s) => { s.offset.x -= cx; s.root.position.copy(s.offset); }); }
     active = ships.find((s) => s.id === 'petrel_updown');
   } else { ships = [buildShip(m, livery)]; active = ships[0]; }
   for (const s of ships) s.shield.visible = shieldsUp && s.sys.shields.health > 0;
@@ -2005,7 +2130,7 @@ window.MOCKUP_SHOTS = {
   detail: shot('petrel_level', 'sunlit', 'hero', null, 0.2, { cam: (s) => frame(22, V3(-0.5, 0.8, 0.4), at(s, V3(0, 7.6, 0))) }),
   scale: shot('petrel_updown', 'sunlit', 'scale', null, 0.2),
   swift_below: shot('swift_below', 'sunlit', 'hero', null, 0.2), swift_updown: shot('swift_updown', 'sunlit', 'hero', null, 0.2), swift_level: shot('swift_level', 'sunlit', 'hero', null, 0.2),
-  petrel_level: shot('petrel_level', 'sunlit', 'hero', null, 0.2), albatross: shot('albatross', 'sunlit', 'hero', null, 0.2), albatross_main: shot('albatross_main', 'sunlit', 'hero', null, 0.2), albatross_main_front: shot('albatross_main', 'sunlit', 'bow', null, 0.2), albatross_side: shot('albatross', 'sunlit', 'side', null, 0.2),
+  petrel_level: shot('petrel_level', 'sunlit', 'hero', null, 0.2), albatross: shot('albatross', 'sunlit', 'hero', null, 0.2), condor: shot('condor', 'sunlit', 'hero', null, 0.2), condor_guns: shot('condor', 'sunlit', 'hero', null, 0.2, { cam: (s) => frame(70, V3(-0.8, 0.5, 0.9), at(s, V3(0, 12, 50))) }), pelican: shot('pelican', 'sunlit', 'hero', null, 0.2), pelican_bays: shot('pelican', 'sunlit', 'hero', null, 0.2, { cam: (s) => frame(60, V3(-1, 0.25, 0.4), at(s, V3(-31, -1, 0))) }), albatross_main: shot('albatross_main', 'sunlit', 'hero', null, 0.2), albatross_main_front: shot('albatross_main', 'sunlit', 'bow', null, 0.2), albatross_side: shot('albatross', 'sunlit', 'side', null, 0.2),
   albatross_under: shot('albatross', 'sunlit', 'under', null, 0.2), belly_lights: shot('petrel_level', 'nosun', 'under', null, 0.2), tern: shot('tern', 'sunlit', 'hero', null, 0.2),
   coolant: shot('albatross', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 3, { tab: 'damage', cam: (s) => frame(90, V3(-0.9, -0.4, 0.6), at(s, s.corePos)) }),
   nacelle_venting: shot('petrel_level', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 75), 2.5, { tab: 'damage', cam: (s) => frame(70, V3(1, 0.5, 0.3), kneeW(s, 'P')) }),
