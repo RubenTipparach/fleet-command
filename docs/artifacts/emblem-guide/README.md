@@ -26,3 +26,5 @@
 - Version 3 published 2026-11-03: B restored to its first shape (owner: "that changed the jellyfish design to much, the
   jelly fish has a tiny small tail"): three separate legs and the tiny tail, only rooted under the saucer so no wedge
   gaps show; the web of hull from version 2 removed.
+- Version 4 published 2026-11-03: every feature on a sketch has an id (A1, A2 ... D5; owner: "can you label each
+  feature A1, A2, A3 etc"), in its label and in a badge on the element; anchors moved onto the features they name.

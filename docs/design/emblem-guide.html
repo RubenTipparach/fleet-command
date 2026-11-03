@@ -197,6 +197,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-03', q: 'can you label each feature A1, A2, A3 etc', means: 'Every feature on a sketch has an id (A1, A2, B1 ...), in its label and in a badge on the element, to refer to in notes.' },
   { when: '2026-11-03', q: 'that changed the jellyfish design to much, the jelly fish has a tiny small tail', means: 'B keeps its first shape (three separate legs, a tiny tail); only the joins under the saucer were closed. A fix mends the flaw and changes nothing else.' },
   { when: '2026-11-03', q: 'unpick that, I didnt pick anything yet', means: 'The saved pick (B, from a stray click) was removed; pressing a picked design again now undoes it.' },
   { when: '2026-11-03', q: 'you can see gaps in the shape, this is low quality work', means: 'Every part grows out of the one it joins, and each sketch\'s joins are measured on the page: one body where it should be, and parts that stand apart at least 4 grid units clear (rule 17).' },
@@ -311,12 +312,12 @@ const DESIGNS = [
       return s;
     },
     callouts: [
-      [50, 14, 'R', 'Five arms', 'Five founding peoples. The arms are the same size because the founders are equals.'],
-      [92, 47, 'R', 'Every arm ends in a different hand', 'A palm, a claw, a curl, two fingers and a wing tip: the Concord is many bodies, and its consoles are made for all of them.'],
-      [24, 82, 'L', 'All five turn the same way', 'One motion, chosen together. Consent, not a leader pulling the rest.'],
+      [59, 22.9, 'R', 'Five arms', 'Five founding peoples. The arms are the same size because the founders are equals.'],
+      [86, 79, 'R', 'Every arm ends in a different hand', 'A palm, a claw, a curl, two fingers and a wing tip: the Concord is many bodies, and its consoles are made for all of them.'],
+      [26.8, 66.6, 'L', 'All five turn the same way', 'One motion, chosen together. Consent, not a leader pulling the rest.'],
       [50, 50, 'L', 'Nothing in the middle', 'No throne, no capital world. The centre is left open for whoever joins next.'],
-      [72, 35, 'R', 'Each arm swells, then thins', 'The Concord\'s frame rule: a stroke never keeps one thickness after it turns.'],
-      [15, 33, 'L', 'Signal blue with a Sky spine', 'Trust (the flag\'s blue) carrying clarity (the readouts\' sky). The Lilac pentagon joining the roots is the species mixed.'],
+      [70.9, 45.7, 'R', 'Each arm swells, then thins', 'The Concord\'s frame rule: a stroke never keeps one thickness after it turns.'],
+      [27.1, 31.8, 'L', 'Signal blue with a Sky spine', 'Trust (the flag\'s blue) carrying clarity (the readouts\' sky). The Lilac pentagon joining the roots is the species mixed.'],
     ],
   },
   {
@@ -399,8 +400,11 @@ const DESIGNS = [
 function figure(d) {
   const W = 1000, H = 520, S = 4.4, ox = (W - 100 * S) / 2, oy = (H - 100 * S) / 2;
   const colW = 255, lx = 16, rx = W - colW - 16;
+  // Each feature gets an id (A1, A2, ...): the left column top to bottom, then the right, so the ids read in order.
+  const letter = d.name[0];
   const left = d.callouts.filter((c) => c[2] === 'L').sort((a, b) => a[1] - b[1]);
   const right = d.callouts.filter((c) => c[2] === 'R').sort((a, b) => a[1] - b[1]);
+  [...left, ...right].forEach((c, i) => { c.fid = letter + (i + 1); });
   const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   // Word-wrap a line of text to about `chars` characters a line.
   const wrap = (t, chars) => { const out = []; let line = ''; for (const w of t.split(' ')) { if ((line + ' ' + w).trim().length > chars) { out.push(line); line = w; } else line = (line + ' ' + w).trim(); } if (line) out.push(line); return out; };
@@ -410,7 +414,7 @@ function figure(d) {
   const column = (items, x, anchorSide) => {
     const slot = H / Math.max(items.length, 1);
     items.forEach((c, i) => {
-      const [ax, ay, , title, why] = c;
+      const [ax, ay, , title0, why] = c; const title = `${c.fid}  ${title0}`;
       const px = ox + ax * S, py = oy + ay * S;
       const titleLines = wrap(title, 30), whyLines = wrap(why, 40);
       const blockH = titleLines.length * 18 + whyLines.length * 16;
@@ -419,7 +423,8 @@ function figure(d) {
       const lineX = anchorSide === 'L' ? x + colW - 6 : x;
       const lineY = ty + 10;
       s += `<path d="M${lineX} ${lineY}L${anchorSide === 'L' ? lineX + 14 : lineX - 14} ${lineY}L${px} ${py}" fill="none" stroke="#6f7fa6" stroke-width="1.2"/>`;
-      s += `<circle cx="${px}" cy="${py}" r="4.2" fill="#070a12" stroke="#dfe7fb" stroke-width="1.6"/>`;
+      s += `<circle cx="${px}" cy="${py}" r="9.5" fill="#070a12" stroke="#dfe7fb" stroke-width="1.6"/>`;
+      s += `<text x="${px}" y="${py + 3.6}" text-anchor="middle" fill="#dfe7fb" font-size="10" font-weight="700">${c.fid}</text>`;
       let y = ty + 14;
       for (const l of titleLines) { s += `<text x="${textX}" y="${y}" fill="#dfe7fb" font-size="15" font-weight="600">${esc(l)}</text>`; y += 18; }
       for (const l of whyLines) { s += `<text x="${textX}" y="${y}" fill="#8d9abb" font-size="13">${esc(l)}</text>`; y += 16; }
@@ -444,7 +449,7 @@ for (const d of DESIGNS) {
     <p class="joins" data-joins>Measuring joins...</p>
     ${d.risk ? `<p class="risk">Watch: ${d.risk}</p>` : ''}
     <div class="notebox"><label for="note-${d.id}">Your note on ${d.name.split(' · ')[1]}</label>
-      <textarea id="note-${d.id}" placeholder="What to keep, what to change."></textarea>
+      <textarea id="note-${d.id}" placeholder="What to keep, what to change. Refer to a feature by its id, such as ${d.name[0]}2."></textarea>
       <div class="row"><button class="btn primary" type="button" data-save>Save note</button><button class="btn" type="button" data-pick>Pick this one</button><span class="status" data-status></span></div></div>`;
   host.append(el);
 }
