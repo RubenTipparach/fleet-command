@@ -18,3 +18,4 @@
 - Republished: 2026-11-03, version 3 (every nacelle at least 3.0 m clear of the hull, measured along its length), cloud session; version id `1793689777-dd88`.
 - Republished: 2026-11-03, version 4 (Swift and Petrel in three nacelle layouts each, the Albatross in two hulls), cloud session; version id `1793690341-6827`.
 - Republished: 2026-11-03, version 5 (mockup 5's lighting and damage, detail and normal maps, windows with rooms; the one-below Petrel removed), cloud session; version id `1793692292-0a03`.
+- Republished: 2026-11-03, version 6 (furnished window rooms, 90 degree hull spotlights, detailed thrusters, the Tern from its latest model in our paint, main-hull Albatross, lights settle on or off), cloud session; version id `1793695142-34b0`.

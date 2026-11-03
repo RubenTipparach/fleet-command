@@ -990,10 +990,10 @@ function plumeMat(heat) {
 }
 function thruster(ship, P, at, r) {
   const L = r * 1.5, heat = { value: 1 }, prof = [[r, 0], [r * 0.97, L * 0.12], [r * 0.86, L * 0.38], [r * 0.7, L * 0.68], [r * 0.58, L * 0.9], [r * 0.55, L]].map(([x, y]) => new THREE.Vector2(x, y));
-  const lip = at.z - r * 0.55, add = (g, m, skin) => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys: 'impulse', piece: P }; P.inner.add(o); return o; };
+  const lip = at.z - 0.15 - L, add = (g, m, skin) => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys: 'impulse', piece: P }; P.inner.add(o); return o; };
   const bell = new THREE.LatheGeometry(prof, 28); bell.rotateX(PI / 2); bell.translate(at.x, at.y, lip); add(bell, thrusterMat(heat));
   const lipRing = new THREE.TorusGeometry(r * 1.0, r * 0.07, 6, 28); lipRing.translate(at.x, at.y, lip); add(lipRing, greyMat);
-  const collar = new THREE.CylinderGeometry(r * 1.18, r * 1.24, r * 0.5, 8, 1, true); collar.rotateX(PI / 2); collar.translate(at.x, at.y, at.z - 0.1); add(collar, new THREE.MeshStandardMaterial({ color: 0x2a2f36, roughness: 0.6, metalness: 0.5, side: THREE.DoubleSide }));
+  const collar = new THREE.CylinderGeometry(r * 1.18, r * 1.24, r * 0.5, 8, 1, true); collar.rotateX(PI / 2); collar.translate(at.x, at.y, at.z - 0.15 - r * 0.25); add(collar, new THREE.MeshStandardMaterial({ color: 0x2a2f36, roughness: 0.6, metalness: 0.5, side: THREE.DoubleSide }));
   const tm = glowMat(0xffc27a, 0x3a1a08); const throat = new THREE.CircleGeometry(r * 0.56, 20); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - 0.05); add(throat, tm);
   const pl = new THREE.ConeGeometry(r * 0.85, r * 3.2, 20, 1, true); pl.rotateX(PI / 2); pl.translate(at.x, at.y, lip - r * 1.6); const po = add(pl, plumeMat(heat)); po.renderOrder = 4;
   tm.userData.heat = heat;
@@ -1116,7 +1116,7 @@ function buildShip(id, liv, offset = V3()) {
   // Engine bells (impulse) at the stern of the primary hull, or of the secondary hull on the cruiser.
   { const B = C.bells, sz = B.z, P = C.secondary ? ship.pieces.sec : hullP; ship.bellPos = [];
     for (const sd of [1, -1]) {
-      ship.bellPos.push(V3(sd * B.x, B.y, sz - B.r * 1.1)); if (C.glb) continue;
+      ship.bellPos.push(V3(sd * B.x, B.y, sz - 0.45 - B.r * 1.5)); if (C.glb) continue;
       for (const m of thruster(ship, P, V3(sd * B.x, B.y, sz), B.r)) ship.glows.impulse.push(m);
     } }
   // Painted registry on the dorsal plating, under its own floodlight.
