@@ -369,6 +369,8 @@ should have a little X".
 - **Clicking selects** (version 65; owner, 2026-11-03: "no need for select button when targeting, clicking should just
   select"): a click with either button, or a tap, on an enemy locks it; on a friendly ship, station or planet it selects
   it for transport and the helm. The floating Lock target and Select keys are gone.
+- **Names clear of their rings** (version 66; owner, 2026-11-03: "The highlighted circle overlaps the name"): a ship's or
+  planet's name sits below its ring at the ring's hovered size (`nameBelow`), so growing on hover never crosses it.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 
