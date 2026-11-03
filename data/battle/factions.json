@@ -1,0 +1,6 @@
+{
+  "_doc": "Factions in the stand-in battle: name and the stand-in hull and trim colours (mockup 3 sets the real look).",
+  "concord": { "name": "Concord", "hull": "#b9c6d6", "trim": "#4f8fe8" },
+  "kethran": { "name": "Kethran Hegemony", "hull": "#8c6a64", "trim": "#d9483b" },
+  "vos": { "name": "Vos Syndicate", "hull": "#b39a6e", "trim": "#e3a33a" }
+}

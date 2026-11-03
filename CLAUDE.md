@@ -91,14 +91,20 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
 > baked hull lights"), after reviewing Bevy for its path tracer (owner, 2026-10-30: "I'm notr convinced with godot
 > actually because I really want high fidelity rendering... soooo maybe bevy if it supports android?"). Engine code
 > still waits for each mockup's approval for implementation (section 4).
+>
+> **Decided: C#** (owner, 2026-11-03: "we have chosen Godot 4.7 with c# so begin integration now"). This replaces the
+> earlier GDScript choice. The .NET build cannot export to the web, which no target needs (survey T1: Windows desktop
+> and native Android).
 
-- **Godot 4.7.1-stable, standard (GDScript) build**, pinned in `build.config`, the one place a
-  toolchain version is written. `scripts/install-godot.sh` installs that editor into `.tools/godot/`.
+- **Godot 4.7.1-stable, .NET (mono) build**, pinned in `build.config`, the one place a
+  toolchain version is written, with the .NET SDK channel (8.0). `scripts/install-godot.sh` installs that editor into
+  `.tools/godot/` and `scripts/install-dotnet.sh` the SDK into `.tools/dotnet/`.
   The SessionStart hook runs it in cloud sessions. Upgrading Godot is its own change: read the
   migration notes, and run a playtest afterwards.
-- **GDScript, statically typed.** Every variable, parameter and return carries a type, and the
-  project's untyped-declaration warnings are errors. The .NET build is not used, because it cannot
-  export to the web (the-federation, measured on 4.7.1).
+- **C#, nullable reference types on, warnings are errors** (`TreatWarningsAsErrors` in every `.csproj`). Two
+  projects: `src/Core/FleetCommand.Core.csproj`, plain .NET with no Godot reference (the simulation, the data loader,
+  the console's layout model), and `FleetCommand.csproj`, the Godot project (`src/Game`), which references it.
+  Classes deriving from a Godot type are `partial`. Where a skill or older doc says GDScript, read C#.
 - **Read the docs for the pinned version.** The class reference and migration guide for 4.7 are
   the source; never write Godot API calls from memory of another version.
 - **the-federation is the reference Godot project** (`RubenTipparach/the-federation`). It has a
@@ -216,7 +222,7 @@ engineering rule in every owner repository.
 
 ### 6.2 SOLID, and a simulation that runs without a scene
 
-- **The simulation is plain GDScript** (`src/sim/`, `RefCounted` classes, no `Node`). It covers
+- **The simulation is plain C#** (`src/Core/Sim/`, no Godot reference at all). It covers
   movement, energy, shields, weapons, damage, AI and stable ids. It runs and is tested headless,
   without instantiating a scene (the-federation 5.2).
 - **Scenes are structure; code is behaviour.** A `.tscn` says what exists and how it is arranged.
@@ -248,7 +254,7 @@ fails validation stops startup naming its path and field.
 - Every script opens with a comment block saying what it owns and why it lives there. Every public
   function is documented. Units go in names or docs.
 - Tests sit beside the rule they test and read as sentences. A bug fix brings its regression test.
-- Godot's script warnings are errors in `project.godot`, and the test run fails on any warning.
+- C# warnings are errors in every project file, and the test run fails on any warning.
 - Guard the edges: reject non-finite input, check indices, and an operation that does not fit
   changes nothing.
 - When two things must agree, validate the real artifacts: a check loads both, never a hand-written
@@ -476,7 +482,8 @@ Before claiming anything is done, run what applies:
 |---|---|
 | Specs | `openspec validate --all` |
 | Dash check | section 5 |
-| Tests | `scripts/run-tests.sh` (headless simulation tests, then the layout test under Xvfb), once the project exists |
+| Tests | `scripts/run-tests.sh` (headless C# tests of `src/Core`, a warnings-as-errors build, then the layout test in the engine) |
+| Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
@@ -493,9 +500,9 @@ Before claiming anything is done, run what applies:
 | `openspec-*` and `/opsx:*` | The OpenSpec workflow (section 3). Tool-owned: `openspec update` rewrites them. |
 | `html-survey` | The owner's question system (section 8). |
 | `mockup-tracker` | The master page listing every artifact (game mockups with their approval stages, guides, misc); republishing after an account change (section 4). |
-| `clean-code` | One implementation, SOLID in GDScript, conventions, review checklist (section 6). |
+| `clean-code` | One implementation, SOLID (written for GDScript; read it as C#), conventions, review checklist (section 6). |
 | `godot-architecture` | Where code goes: simulation, scenes, autoloads, input, the console, determinism (sections 2, 6, 7). |
-| `testing-practices` | Headless GDScript tests, the layout test, golden seeds, the checks before a push (sections 6, 12). |
+| `testing-practices` | Headless tests (now xUnit over `src/Core`), the layout test, golden seeds, the checks before a push (sections 6, 12). |
 | `game-ui-frontend` | OpenAI's game UI skill: visual direction, hierarchy, readable overlays, motion (section 7 overrides its playfield budget). |
 | `ui-ux-pro-max` | UI/UX design intelligence: styles, palettes, type pairings, UX and accessibility rules, searchable (`scripts/search.py`). |
 | `threejs-mockups` | Interactive three.js mockups as artifact pages, before game code (section 4). |

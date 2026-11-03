@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-03, v65) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03, v65) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
@@ -65,6 +65,12 @@ campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish 
 hardpoint, resupply, officers, hex facilities, missions).
 
 ## 2. In-game UI
+
+**Approved for implementation** (owner, 2026-11-03, in conversation: "based on the ui mockup start implmenting this ui
+stuff in game, we have chosen Godot 4.7 with c# so begin integration now"). The game build is the change
+`battle-console-engine`; its first slice (the console layout, the Concord kit, helm, power, the systems display, shields,
+weapons, radar, the strips and the stand-in battle) is in `src/`, with stills in `docs/screenshots/game/`. The tracker's
+stage for this mockup still needs updating from the desktop session (cloud sessions do not publish).
 
 Owner, 2026-10-30. Ship systems on the left.
 
