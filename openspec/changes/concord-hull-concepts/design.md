@@ -1,4 +1,4 @@
-# Design: concord-hull-concepts (v4)
+# Design: concord-hull-concepts (v5)
 
 ## The family, from Star Crew Bridge Simulator
 
@@ -52,7 +52,7 @@ having 1 below would be better, petrel having 1 above and below", then "instead 
 variants for both petrel and swift and include horizontal aligned ones aas well". The reference game's federation ships
 often carry nacelles on upright pylons (Starfleet Command 2 manual, the ship pages; taken as a shape only).
 
-Each of the two classes is shown as three ships, side by side in the line-up:
+The Swift is shown as three ships and the Petrel as two (the owner, 2026-11-03: "remove petrel with 1 pylon"):
 
 | Layout | What it is | Rule |
 |---|---|---|
@@ -64,9 +64,36 @@ The owner's picks are one below for the Swift and above and below for the Petrel
 comparison. The page measures the daylight between each nacelle and every hull along the nacelle's whole length (sideways,
 above or below, whichever is open) and shows it; every ship holds at least 3.0 m.
 
+## Built on mockup 5
+
+The owner, 2026-11-03: "need to bring lighting standards up to what we had before, and damage systems". The page is mockup 5's
+page with the ship builder replaced; everything else is the same code:
+
+| From mockup 5, unchanged | Adapted to the lofted hulls |
+|---|---|
+| Light presets (sunlit, shadow side, no sun), environment reflections, navigation lights, the shield bubble | Life support runs in eight sections along the primary hull, bow to stern, instead of round a saucer |
+| Holes (cut away or drawn by interior mapping), scorch marks, venting fire, coolant, plasma, sparks, smoke | Fracture seeds and cut faces test "inside" with the signed distance into the hull's stations (`loftDist`, and the same octagon test in the cut-face shader) |
+| Random fracture into cells, cut faces with decks, bulkheads and rooms, burn rims and embers, wires that stretch, arc and snap | The nacelle snaps at the middle of its pylon; the outer half goes with it |
+| The staged core breach, chunks knocked off, the main blast, debris and shockwave | The bridge is the command block, blown off with a cap under it and a hole in the hull below |
+| Weapon and blast lighting, the ship firing back | The ship fires from its nearest turret, or the torpedo launcher in the bow |
+
+## Detail, normal maps and windows
+
+The owner: "add detail textures, norrmal maps, fix up windows". One detail tile, 8 m along the hull by 7.8 m round it, so its
+plate seams fall on the paint's own grid (every 4 m and every 2.6 m), drawn once from a seeded generator: a height field
+(seams, inset and raised sub-panels, rivet rows every 0.25 m, hatches, vent grilles) turned into a normal map by a Sobel
+filter, and a wear map (plate shades, grime streaks, speckle, scratches) that multiplies the paint. Both are projected from
+three sides in ship space and blended by the face normal, so the flat-faced hulls need no UVs.
+
+Windows are no longer boxes on the hull. Each is drawn in the skin: a 1.0 by 0.62 m pane in a 0.12 m copper rim, on the
+vertical sides only, one row 1.5 m above each deck floor, every 2.2 m with a frame after each run of four, never on a
+stripe. The glass is smooth and reflects; behind it a room 2.2 m wide, 3 m high and 3.5 m deep is drawn by interior mapping
+(floor, ceiling light panels, side walls, a back wall with a screen), lit warm, cold or dark, and it follows its
+life-support section's power.
+
 ## Cost
 
-A frigate is about 2,500-2,900 triangles and 40 draws on the page; the cruiser about 3,700. That is under the
+A frigate is about 1,500 triangles of hull and fittings before its fracture pieces (hidden until it breaks), and 40-90 draws on the page. That is under the
 12,000-triangle full-detail budget Star Crew sets per ship (`exteriors.json` budget_triangles). Windows are two
 instanced meshes. In the game each class is a Blender generator (`blender-hard-surface`) from the same station data.
 

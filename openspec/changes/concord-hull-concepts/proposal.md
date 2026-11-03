@@ -16,7 +16,8 @@ Then, on v2 while it was being built: "try some vertically aligned pulons too, i
 - 1 pylon vertical, 2 pulons vertical". And on v3: "swift having 1 below would be better, petrel having 1 above and
 below", "albatross is a bid long, I would prefer it to have like a secondary hull where pulons extend outr of", then
 "instead of opptions. please just apply the variants for both petrel and swift and include horizontal aligned ones aas
-well".
+well". And on v4: "remove petrel with 1 pylon, add detail textures, norrmal maps, fix up windows, need to bring lighting
+standards up to what we had before, and damage systems".
 
 ## What Changes
 
@@ -27,9 +28,14 @@ well".
   - **Albatross-class cruiser** (112 m): a shorter primary hull with a secondary hull under it on a neck; the nacelle
     pylons sweep out of the secondary hull.
   - **The SCS Tern itself**, drawn from its own data at true scale, as the yardstick.
-- The Swift and the Petrel each shown as three ships, one per nacelle layout: **one below** (one nacelle under the
-  centreline on an upright pylon), **above and below** (one over, one under) and **level** (the family's pair on level
-  swept pylons). The line-up shows all eight at true scale.
+- The Swift shown as three ships, one per nacelle layout: **one below** (one nacelle under the centreline on an upright
+  pylon), **above and below** (one over, one under) and **level** (the family's pair on level swept pylons); the Petrel two
+  ways, above and below and level. The line-up shows all seven at true scale.
+- **Mockup 5's standards** on every ship (v5): its light presets, environment reflections, floodlight pools and
+  navigation lights, and its whole damage system (a signature per subsystem, scorch, holes cut or drawn by interior mapping,
+  venting fire, coolant and plasma, nacelles snapping off, random fracture with cut faces, wires, the staged core breach,
+  weapon and blast lighting). New: **detail and normal maps**, and **real windows**: a copper rim, reflecting glass and a
+  room behind each pane drawn by interior mapping.
 - Four liveries: Concord (ours) and the Tern's Copper, Cyan and Rescue for comparison.
 - Survey A11 (which layout each class keeps) and A12 (sizes).
 

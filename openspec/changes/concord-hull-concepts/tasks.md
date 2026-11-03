@@ -8,7 +8,8 @@
 - [x] 1.4 Survey A11 (pylons) and A12 (sizes) rewritten
 - [x] 1.5 Named shots, looked at; `dom_fit.mjs` passes
 - [x] 1.6 v4: the Swift and Petrel as three ships each (one below, above and below, level), the Albatross shortened into two hulls
-- [x] 1.7 Republished to the same link, recorded in `docs/artifacts/concord-hull-concepts/`, the tracker and `mockup-work.md`
+- [x] 1.7 v5: the one-below Petrel removed; mockup 5's lighting and damage on every ship; detail and normal maps; windows with rooms
+- [x] 1.8 Republished to the same link, recorded in `docs/artifacts/concord-hull-concepts/`, the tracker and `mockup-work.md`
 
 ## 2. After approval for build
 

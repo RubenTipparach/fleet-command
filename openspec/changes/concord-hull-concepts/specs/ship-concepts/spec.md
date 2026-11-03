@@ -31,3 +31,19 @@ The Albatross SHALL be two hulls, a primary hull holding the decks and a seconda
 #### Scenario: Where the pylons start
 - **WHEN** the Albatross is built
 - **THEN** each pylon's root lies inside the secondary hull's beam and its tip at the nacelle
+
+### Requirement: Concord ships take mockup 5's lighting and damage
+
+Every Concord ship on the page SHALL be lit and damaged by mockup 5's code: its light presets, floodlight pools and navigation lights, and every damage signature, holes, fracture with cut faces and the staged core breach.
+
+#### Scenario: A core breach on a lofted hull
+- **WHEN** the reactor of a Concord ship is destroyed
+- **THEN** pieces of its hull come away first, each closed by a cut face showing decks and rooms, and then the main blast throws the rest apart
+
+### Requirement: Windows are openings with rooms behind them
+
+A window SHALL be drawn in the skin as a pane in a copper rim with a room behind it seen in depth, and its light SHALL follow its life-support section's power.
+
+#### Scenario: A section loses power
+- **WHEN** life support is damaged
+- **THEN** the windows of the failing sections flicker and go dark
