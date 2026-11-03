@@ -72,6 +72,9 @@ stuff in game, we have chosen Godot 4.7 with c# so begin integration now"). The 
 weapons, radar, the strips and the stand-in battle) is in `src/`, with stills in `docs/screenshots/game/`. The tracker's
 stage for this mockup still needs updating from the desktop session (cloud sessions do not publish).
 
+Version 66 (2026-11-03; owner: "Pause menu should have a background"): the menu sheet has a solid background inside its
+frame, in the mockup and the game alike. Committed from the cloud session; the desktop session publishes it.
+
 Owner, 2026-10-30. Ship systems on the left.
 
 - **Main panels**: helm, repairs, science, transport, tactical, comms, point defense, map, fleet, power,

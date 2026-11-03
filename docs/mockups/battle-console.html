@@ -3671,12 +3671,15 @@ function uiView() {
 }
 // Mockup only: a heavy hit on your ship from the nearest enemy, to watch the boxes change as damage lands.
 function takeHit() { const s = W.player, foe = enemiesOf(s)[0] || { x: s.x, z: s.z - 10, side: 1 }; for (let n = 0; n < 3; n++) { s.shields[facingFrom(s, foe.x, foe.z)] = 0; damage(s, foe, 9, 'hull'); const k = SUBSYS[Math.floor(W.rand.dmg() * SUBSYS.length)][0]; if (k !== 'reactor') s.sys[k] = Math.max(0, s.sys[k] - 0.3); const m = s.mounts[Math.floor(W.rand.dmg() * s.mounts.length)]; m.hp = Math.max(0, m.hp - 0.45); } }
+// The sheet's solid background inside its frame (owner, 2026-11-03: "Pause menu should have a background"), stopping
+// short of the frame's end caps; the game draws the same (src/Game/Ui/Panels.cs, MenuCard).
+function sheetBg(x, y, w, h) { g.fillStyle = '#070b1c'; g.beginPath(); g.roundRect(x, y, w - 21, h, [24, 0, 0, 24]); g.fill(); }
 // The in-game menu, and the battle's end: a sheet over everything that takes all input while it is up.
 function uiSheet() {
   const end = W.over && !menuOpen;
   if (!menuOpen && !W.over) return;
   g.fillStyle = 'rgba(0,0,0,0.78)'; g.fillRect(0, 0, RW, RH); hit('sheet.block', 0, 0, RW, RH, {});
-  const w = 600, h = end ? 300 : 524, x = (RW - w) / 2, y = (RH - h) / 2, P0 = panel('sheet', [x, y, w, h], end ? ({ won: 'Victory', jumped: 'Jumped' }[W.over] || 'Ship lost') : 'Menu', false, true);
+  const w = 600, h = end ? 300 : 524, x = (RW - w) / 2, y = (RH - h) / 2, P0 = (sheetBg(x, y, w, h), panel('sheet', [x, y, w, h], end ? ({ won: 'Victory', jumped: 'Jumped' }[W.over] || 'Ship lost') : 'Menu', false, true));
   let yy = P0.y + 8;
   if (end) {
     TXT(W.over === 'won' || W.over === 'jumped' ? W.overWhy : `${W.player.name} is lost`, P0.x, yy + 20, P0.w); LBL(`Battle time ${mmss(W.t)}`, P0.x, yy + 46); yy += 64;

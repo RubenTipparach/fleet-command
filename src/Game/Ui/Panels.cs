@@ -217,12 +217,19 @@ public sealed partial class BottomStrip : ConsolePanel
 /// (the mockup's uiSheet): resume, restart the battle, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
+    /// <summary>The sheet's background: near black with the Concord deep blue in it, so it reads as a panel over the dim.</summary>
+    private static readonly Color MenuBackground = new("#070b1c");
+
     protected override void DrawPanel()
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("sheet.block", new Rect2(Vector2.Zero, Size));
         float w = 600, h = 300;
-        Rect2 b = Frame(new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h), "Menu", false);
+        var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
+        // a solid background inside the frame (owner, 2026-11-03: "Pause menu should have a background"), so the dimmed
+        // console does not show through the keys; it stops short of the frame's end caps
+        Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, h)), MenuBackground, 24, 0, 0, 24);
+        Rect2 b = Frame(at, "Menu", false);
         float y = b.Position.Y + 8, bw = b.Size.X;
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
         Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false); y += 56;
