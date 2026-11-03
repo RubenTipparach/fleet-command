@@ -242,7 +242,7 @@ const BASES = {
   pelican: {
     cls: 'Pelican-class carrier', name: 'CNS PELICAN', reg: 'CC-040', length: 128, tell: 'The crew hull forward, as the family\'s, and behind it a long hangar hull of diamond cross section, three numbered fighter bay doors down each side under their own lamps, the nacelle pair on level pylons from the hangar hull.',
     stations: [[66, 4.0, 4.0, -3.0, 1.2], [58, 10.0, 6.5, -5.0, 1.8], [40, 13.0, 7.0, -5.6, 2.0], [20, 12.0, 6.6, -5.2, 2.0]],
-    secondary: { stations: [[24, 9.0, 7.0, -7.0, 5.2], [14, 13.0, 9.0, -9.0, 6.8], [-38, 13.0, 9.0, -9.0, 6.8], [-62, 9.0, 6.0, -6.0, 4.6]], band: [-0.65, 0.35], channels: [], stripes: [-50] },
+    secondary: { stations: [[24, 9.0, 7.0, -7.0, 6.6], [14, 13.0, 9.0, -9.0, 8.6], [-38, 13.0, 9.0, -9.0, 8.6], [-62, 9.0, 6.0, -6.0, 5.6]], band: [-0.65, 0.35], channels: [], stripes: [-50] },
     decks: [3.5, 0, -3.5], live: [24, 56], band: [-0.65, 0.35], channels: [4.5], stripes: [48],
     command: { z: [56, 40], hb: 6.0, top: 10.0, ch: 1.2 },
     pylons: [{ root: [10, 1.0, -36], tip: [27, 1.0, -48], rc: 20, tc: 12, t: 1.5 }],
@@ -1080,9 +1080,9 @@ function bigGun(ship, P, base, face, lift, under = false) {
 // it; nrm is the way it faces (along x on a pod's flank, along z at a pod's bow).
 function bay(ship, P, c, nrm, w, h, num) {
   const add = (g, m) => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys: 'life', piece: P }; P.inner.add(o); return o; };
-  const sideways = Math.abs(nrm.x) > 0.5, rot = sideways ? (nrm.x > 0 ? PI / 2 : -PI / 2) : (nrm.z > 0 ? 0 : PI);
-  // du runs across the door, dv up it, dn out from the hull
-  const place = (g, du, dv, dn) => { g.rotateY(rot); const off = sideways ? V3(nrm.x * dn, dv, -nrm.x * du) : V3(nrm.z * du, dv, nrm.z * dn); g.translate(c.x + off.x, c.y + off.y, c.z + off.z); return g; };
+  // du runs across the door, dv up it, dn out from the hull; the frame (U, V, N) works for a door facing any way
+  const N = nrm.clone().normalize(), U = Math.abs(N.z) > 0.5 ? V3(Math.sign(N.z), 0, 0) : V3(0, 0, -Math.sign(N.x)), Vv = N.clone().cross(U).normalize(), M = new THREE.Matrix4().makeBasis(U, Vv, N);
+  const place = (g, du, dv, dn) => { g.translate(du, dv, dn); g.applyMatrix4(M); g.translate(c.x, c.y, c.z); return g; };
   const hm = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: hangarTex(), emissiveIntensity: 1.0, roughness: 0.9 }); (ship.glows.hangar ||= []).push(hm);
   add(place(new THREE.PlaneGeometry(w, h), 0, 0, 0.14), hm);
   const fr = 0.4;
@@ -1204,7 +1204,8 @@ function buildShip(id, liv, offset = V3()) {
     const secP = piece('sec', V3(0, (D.stations[0][2] + D.stations[0][3]) / 2, (Math.max(...z2) + Math.min(...z2)) / 2), 'reactor'); secP.intact = true;
     const gS = hullGeo(D.stations); add(secP, gS, hullMat(ppSec, ship), 'reactor').userData.skin = true;
     ship.bodies.push({ name: 'sf', sys: 'reactor', intact: secP, stations: D.stations, geos: [[gS, ppSec]], n: 4 });
-    if (C.carrier && C.carrier.doors) for (const sx of [1, -1]) C.carrier.doors.forEach((z, i) => bay(ship, secP, V3(sx * hullAt(D.stations, z)[1], 0, z), V3(sx, 0, 0), C.carrier.door.w, C.carrier.door.h, String(i + 1)));
+    if (C.carrier && C.carrier.doors) for (const sx of [1, -1]) C.carrier.doors.forEach((z, i) => { const h = hullAt(D.stations, z), ch = chOf(h[1], h[2], h[3], h[4]);
+      bay(ship, secP, V3(sx * (h[1] - ch / 2), h[2] - ch / 2, z), V3(sx, 1, 0).normalize(), C.carrier.door.w, C.carrier.door.h, String(i + 1)); }); // on the diamond's upper sloped faces
     coreP = secP;
     if (D.neck) {
     const N = D.neck, rings = N.z.map((z, i) => octRing(z, N.hb[i], N.top, N.bottom, Math.min(1.2, N.hb[i] * 0.4)));
@@ -1318,7 +1319,8 @@ function buildShip(id, liv, offset = V3()) {
     if (out) addSpot(ship, k.mid.clone().add(V3(out * (n.hw + 0.4), n.hh + 0.4, 0)), V3(0, -1, 0), n.hh * 4.5, 0.9); // a side: aimed down
     else addSpot(ship, k.mid.clone().add(V3(0, up * (n.hh + 0.4), -n.len * 0.42)), V3(0, -up * 0.06, 1), n.len * 0.8, 0.9); }  // top or bottom: facing forward
   // Lamps in the service band that throw their fans up the hull's sides, and lamps on the shoulders that rake the dorsal plating.
-  if (C.carrier && C.carrier.doors) for (const z of C.carrier.doors) { const h = hullAt(C.secondary.stations, z); for (const sd of [1, -1]) addSpot(ship, V3(sd * (h[1] + 0.4), C.carrier.door.h / 2 + 1.6, z), V3(0, -1, 0), 9, 0.9); } // a lamp over each bay door, aimed down
+  if (C.carrier && C.carrier.doors) for (const z of C.carrier.doors) { const h = hullAt(C.secondary.stations, z), ch = chOf(h[1], h[2], h[3], h[4]), up = C.carrier.door.h / 2 + 1.4;
+    for (const sd of [1, -1]) { const N = V3(sd, 1, 0).normalize(), Vv = V3(-sd, 1, 0).normalize(); addSpot(ship, V3(sd * (h[1] - ch / 2), h[2] - ch / 2, z).addScaledVector(Vv, up).addScaledVector(N, 0.4), Vv.clone().negate(), 9, 0.9); } } // a lamp over each bay door, aimed down the slope
   if (!C.carrier) { const n = Math.max(2, Math.round((C.live[1] - C.live[0]) / 18)); for (let i = 0; i < n && ship.dmgU.uPoolN.value < 15; i++) {
     const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); const ch = chOf(h[1], h[2], h[3], h[4]); for (const sd of [1, -1]) addSpot(ship, V3(sd * (h[1] + 0.35), h[2] - ch - 0.2, z), V3(0, -1, 0), (h[2] - h[3]) * 1.6, 0.85); } }
   for (const sd of [1, -1]) { if (ship.dmgU.uPoolN.value >= 16) break; const z = zMin + 6, h = hullAt(S, z); addSpot(ship, V3(sd * h[1] * 0.6, h[2] + 0.35, z), V3(0, -0.06, 1), C.length * 0.35, 0.6); }
@@ -2163,7 +2165,7 @@ window.MOCKUP_SHOTS = {
   detail: shot('petrel_level', 'sunlit', 'hero', null, 0.2, { cam: (s) => frame(22, V3(-0.5, 0.8, 0.4), at(s, V3(0, 7.6, 0))) }),
   scale: shot('petrel_updown', 'sunlit', 'scale', null, 0.2),
   swift_below: shot('swift_below', 'sunlit', 'hero', null, 0.2), swift_updown: shot('swift_updown', 'sunlit', 'hero', null, 0.2), swift_level: shot('swift_level', 'sunlit', 'hero', null, 0.2),
-  petrel_level: shot('petrel_level', 'sunlit', 'hero', null, 0.2), albatross: shot('albatross', 'sunlit', 'hero', null, 0.2), condor: shot('condor', 'sunlit', 'hero', null, 0.2), condor_guns: shot('condor', 'sunlit', 'hero', null, 0.2, { cam: (s) => frame(42, V3(-0.8, 0.45, 0.9), at(s, V3(0, 11, 54))) }), condor_under: shot('condor', 'sunlit', 'under', null, 0.2), pelican: shot('pelican', 'sunlit', 'hero', null, 0.2), pelican_bays: shot('pelican', 'shadow', 'hero', null, 0.2, { cam: (s) => frame(55, V3(-1, 0.2, 0.35), at(s, V3(-13, 0, -10))) }), albatross_main: shot('albatross_main', 'sunlit', 'hero', null, 0.2), albatross_main_front: shot('albatross_main', 'sunlit', 'bow', null, 0.2), albatross_side: shot('albatross', 'sunlit', 'side', null, 0.2),
+  petrel_level: shot('petrel_level', 'sunlit', 'hero', null, 0.2), albatross: shot('albatross', 'sunlit', 'hero', null, 0.2), condor: shot('condor', 'sunlit', 'hero', null, 0.2), condor_guns: shot('condor', 'sunlit', 'hero', null, 0.2, { cam: (s) => frame(42, V3(-0.8, 0.45, 0.9), at(s, V3(0, 11, 54))) }), condor_under: shot('condor', 'sunlit', 'under', null, 0.2), pelican: shot('pelican', 'sunlit', 'hero', null, 0.2), pelican_bays: shot('pelican', 'shadow', 'hero', null, 0.2, { cam: (s) => frame(55, V3(-1, 0.7, 0.35), at(s, V3(-9, 4, -10))) }), pelican_front: shot('pelican', 'sunlit', 'bow', null, 0.2), albatross_main: shot('albatross_main', 'sunlit', 'hero', null, 0.2), albatross_main_front: shot('albatross_main', 'sunlit', 'bow', null, 0.2), albatross_side: shot('albatross', 'sunlit', 'side', null, 0.2),
   albatross_under: shot('albatross', 'sunlit', 'under', null, 0.2), belly_lights: shot('petrel_level', 'nosun', 'under', null, 0.2), tern: shot('tern', 'sunlit', 'hero', null, 0.2),
   coolant: shot('albatross', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 3, { tab: 'damage', cam: (s) => frame(90, V3(-0.9, -0.4, 0.6), at(s, s.corePos)) }),
   nacelle_venting: shot('petrel_level', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 75), 2.5, { tab: 'damage', cam: (s) => frame(70, V3(1, 0.5, 0.3), kneeW(s, 'P')) }),

@@ -176,12 +176,12 @@ carrier: "it has doors on each side, its a diamond cross section, with the main 
 | Shape | A long armoured hull round a tall citadel amidships | The crew hull forward, as the family's, and a long hangar hull of diamond cross section behind it |
 | Main guns | Four: two on the back, the second raised 3 m to fire over the first, and the same two mirrored under the keel. Each a low faceted gun house with a livery plate on its roof, angled cheek guards and two short stepped barrels, 5 m in all | none |
 | Point defence | Fifteen point-defence cannons along the top and bottom shoulders: a faceted ball on an octagonal base, twin short barrels | Five turrets |
-| Craft | none | Three numbered fighter bay doors down each side of the hangar hull, each lit inside and under its own lamp |
+| Craft | none | Three numbered fighter bay doors on each of the hangar hull's upper sloped faces, each lit inside and under its own lamp shining down the slope |
 | Nacelles | Two pairs: level at the waist, and ventral | One pair on level pylons from the hangar hull |
 | Bridge | The citadel's roof | A command block on the crew hull |
 
-The hangar hull's diamond is the station loft with a large chamfer (the chamfer may now reach the half beam less 0.3 m), which
-leaves a narrow vertical band at the waist where the doors sit.
+The hangar hull's diamond is the station loft with a large chamfer (the chamfer may now reach the half height less 0.3 m), so
+it is nearly all sloped faces with a narrow ridge and keel; the doors sit on the upper slopes.
 
 ## Cost
 
