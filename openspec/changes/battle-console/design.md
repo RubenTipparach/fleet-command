@@ -355,6 +355,17 @@ should have a little X".
   Then (version 63; owner: "top half of the transporter guy is solid, no ring at the bottom", "engines icon is
   misleading, should be a thruster icon"): the transport figure is solid above the waist and breaks into thinning
   slices below it, with no pad; Engines is a thruster, a nozzle with its flame.
+- **Version 64** (owner, 2026-11-03: "these icons need a similar standard as well", "add these icon notes to the main
+  guide", "theyre generic enough to be used on any other ui system", "I want particles flying from one ship to the other
+  in addition to this transport glitter, so that I can tell what ship transported to what other ship"):
+  - The ship panel's tabs and the systems display's boxes follow the station icons' standard: Systems a starship from
+    above, Shields six facings, Sensors a radar sweep, Tractor an emitter's widening beam, Craft a fighter, Weapons an
+    emitter's bursting bolt, Reactor the radiation trefoil.
+  - **The icon standard is its own guide**, for every skin: `docs/design/icon-guide.html` (Fleet Command Icons), with
+    the seven rules and the sheet of every icon, drawn live from the kit; listed on the tracker under Guides.
+  - **A stream of particles** flies from the sender to the receiver of every beam (56 motes over 0.9 s, each crossing
+    in 1.1 s on a low arc with a wobble), so the direction of a transfer reads at a glance; taking cargo streams the
+    other way.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 

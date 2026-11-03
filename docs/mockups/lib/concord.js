@@ -95,7 +95,9 @@ function ccLamp(x, w, col) { const c = w / 2; x.fillStyle = CC.deep; x.beginPath
 // Concord icons: open circles and arcs in one even line. The station icons are pictures of their jobs (owner,
 // 2026-11-03: "make icons more unique and interesting, transporter should be a guy dematerializing with horizontal lines
 // for example. fleet should be a formation of 3 chevrons, repair should be a wrench"): a ship's wheel, a bolt, a
-// turret (owner: "tactical should be a turret?"), a shield with a burst, an atom, a dish, a wrench, a figure solid above the waist and dissolving into slices below it, three chevrons.
+// turret (owner: "tactical should be a turret?"), a shield with a burst, an atom, a dish, a wrench, a figure solid above the waist and dissolving into slices below it, three chevrons. The ship
+// panel's tabs and the systems display follow the same standard: a starship from above, six shield facings, a radar
+// sweep, an emitter's widening beam, a fighter, an emitter's bursting bolt, the radiation trefoil, a thruster.
 // col: the ink, Sky by default; black on a lit (active) tab, as the pill keys' labels are.
 function ccIcon(name, col = CC.sky) {
   return paint(48, 48, (x) => {
@@ -106,8 +108,8 @@ function ccIcon(name, col = CC.sky) {
     ({
       helm: () => { C(24, 24, 12); D(24, 24, 4); for (let i = 0; i < 8; i++) { const a = i * P / 4, c = Math.cos(a), sn = Math.sin(a); x.beginPath(); x.moveTo(24 + c * 4, 24 + sn * 4); x.lineTo(24 + c * 19, 24 + sn * 19); x.stroke(); D(24 + c * 20, 24 + sn * 20, 2.6); } },
       fire: () => { C(24, 24, 18); C(24, 24, 10); D(24, 24, 3.5); },
-      shields: () => { A(24, 30, 19, P * 1.12, P * 1.88); A(24, 30, 12, P * 1.15, P * 1.85); D(24, 32, 4); },
-      tractor: () => { C(10, 24, 6); C(38, 24, 6); x.beginPath(); x.moveTo(17, 20); x.lineTo(31, 20); x.moveTo(17, 28); x.lineTo(31, 28); x.stroke(); },
+      shields: () => { x.lineWidth = 4.5; for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; A(24, 24, 18, a - P / 6 + 0.16, a + P / 6 - 0.16); } x.lineWidth = 3; D(24, 24, 5); },
+      tractor: () => { x.fillRect(3, 19, 9, 10); x.beginPath(); x.moveTo(12, 21); x.lineTo(32, 10); x.moveTo(12, 27); x.lineTo(32, 38); x.stroke(); x.lineWidth = 2; A(10, 24, 12, -0.45, 0.45); A(10, 24, 18, -0.42, 0.42); x.lineWidth = 3; x.strokeRect(34, 15, 11, 18); },
       transport: () => { x.beginPath(); x.arc(24, 9, 5.5, 0, 2 * P); x.fill(); x.beginPath(); x.moveTo(14, 36); x.lineTo(15, 21); x.quadraticCurveTo(24, 15, 33, 21); x.lineTo(34, 36); x.closePath(); x.fill(); x.fillRect(16, 35, 6, 9); x.fillRect(26, 35, 6, 9); x.globalCompositeOperation = 'destination-out'; for (let yy = 26, k = 0; yy < 46; yy += 3.4, k++) x.fillRect(0, yy, 48, 1 + k * 0.32); x.globalCompositeOperation = 'source-over'; for (const [sx, sy] of [[9, 30], [39, 33], [10, 40], [38, 42]]) x.fillRect(sx - 3, sy - 0.9, 6, 1.8); },
       science: () => { for (const r of [0, P / 3, -P / 3]) { x.beginPath(); x.ellipse(24, 24, 20, 7.5, r, 0, 2 * P); x.stroke(); } D(24, 24, 4); },
       comms: () => { x.beginPath(); x.arc(17, 27, 12, P * 0.75, P * 1.75, true); x.closePath(); x.stroke(); x.beginPath(); x.moveTo(17, 27); x.lineTo(12, 44); x.moveTo(17, 27); x.lineTo(22, 44); x.moveTo(9, 44); x.lineTo(25, 44); x.stroke(); D(26, 18, 2.5); A(26, 18, 8, -P * 0.5, 0); A(26, 18, 15, -P * 0.5, 0); },
@@ -118,14 +120,14 @@ function ccIcon(name, col = CC.sky) {
       tactical: () => { x.fillRect(7, 39, 34, 5); x.beginPath(); x.roundRect(12, 27, 24, 13, [7, 7, 2, 2]); x.fill(); x.lineWidth = 3.5; x.lineCap = 'round'; x.beginPath(); x.moveTo(25, 31); x.lineTo(42, 14); x.moveTo(21, 29); x.lineTo(38, 12); x.stroke(); x.fillRect(19, 22, 10, 6); x.lineWidth = 3; },
       pd: () => { x.beginPath(); x.moveTo(24, 5); x.lineTo(40, 11); x.quadraticCurveTo(40, 33, 24, 43); x.quadraticCurveTo(8, 33, 8, 11); x.closePath(); x.stroke(); x.beginPath(); for (let i = 0; i < 12; i++) { const a = -P / 2 + i * P / 6, r = i % 2 ? 4 : 9; x.lineTo(24 + Math.cos(a) * r, 23 + Math.sin(a) * r); } x.closePath(); x.fill(); },
       fleet: () => { const chev = (cx, cy, k) => { x.beginPath(); x.moveTo(cx, cy - 8 * k); x.lineTo(cx + 8 * k, cy + 6 * k); x.lineTo(cx, cy + 2 * k); x.lineTo(cx - 8 * k, cy + 6 * k); x.closePath(); x.fill(); }; chev(24, 13, 1.35); chev(11, 33, 1.15); chev(37, 33, 1.15); },
-      ship: () => { C(24, 16, 10); x.beginPath(); x.roundRect(11, 26, 6, 18, 3); x.stroke(); x.beginPath(); x.roundRect(31, 26, 6, 18, 3); x.stroke(); D(24, 32, 3); },
-      sensors: () => { D(24, 24, 4); C(24, 24, 11); A(24, 24, 19, -P * 0.8, -P * 0.2); A(24, 24, 19, P * 0.2, P * 0.8); },
+      ship: () => { D(24, 14, 10); x.fillRect(22, 22, 4, 10); x.beginPath(); x.roundRect(17, 28, 14, 8, 4); x.fill(); x.beginPath(); x.roundRect(6, 24, 6, 20, 3); x.fill(); x.beginPath(); x.roundRect(36, 24, 6, 20, 3); x.fill(); x.lineWidth = 2.5; x.beginPath(); x.moveTo(17, 32); x.lineTo(12, 30); x.moveTo(31, 32); x.lineTo(36, 30); x.stroke(); x.lineWidth = 3; },
+      sensors: () => { C(24, 24, 19); x.lineWidth = 2; C(24, 24, 10); x.lineWidth = 3; x.beginPath(); x.moveTo(24, 24); x.arc(24, 24, 19, -P / 2, -P / 2 + 1.0); x.closePath(); x.fill(); D(34, 31, 2.6); D(15, 33, 2.2); },
       cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) C(cx, cy, 7); },
-      craft: () => { C(30, 18, 9); C(14, 34, 4.5); C(24, 40, 3); D(30, 18, 3); },
-      weapons: () => { C(18, 24, 10); D(18, 24, 3); x.beginPath(); x.moveTo(28, 24); x.lineTo(40, 24); x.stroke(); D(42, 24, 3.5); },
+      craft: () => { x.beginPath(); x.roundRect(21, 5, 6, 34, 3); x.fill(); x.beginPath(); x.moveTo(21, 18); x.lineTo(5, 33); x.lineTo(5, 37); x.lineTo(21, 30); x.closePath(); x.fill(); x.beginPath(); x.moveTo(27, 18); x.lineTo(43, 33); x.lineTo(43, 37); x.lineTo(27, 30); x.closePath(); x.fill(); x.beginPath(); x.moveTo(21, 36); x.lineTo(15, 44); x.lineTo(21, 42); x.closePath(); x.fill(); x.beginPath(); x.moveTo(27, 36); x.lineTo(33, 44); x.lineTo(27, 42); x.closePath(); x.fill(); },
+      weapons: () => { D(11, 36, 6); x.lineWidth = 4; x.beginPath(); x.moveTo(15, 32); x.lineTo(33, 14); x.stroke(); x.lineWidth = 3; x.beginPath(); for (let i = 0; i < 12; i++) { const a = i * P / 6, r = i % 2 ? 3.5 : 8; x.lineTo(36 + Math.cos(a) * r, 11 + Math.sin(a) * r); } x.closePath(); x.fill(); },
       warp: () => { C(33, 24, 8); D(33, 24, 2.5); x.beginPath(); x.moveTo(5, 15); x.lineTo(21, 15); x.moveTo(2, 24); x.lineTo(21, 24); x.moveTo(5, 33); x.lineTo(21, 33); x.stroke(); },
       engines: () => { x.fillRect(19, 4, 10, 9); x.beginPath(); x.moveTo(18, 13); x.lineTo(30, 13); x.lineTo(37, 28); x.lineTo(11, 28); x.closePath(); x.fill(); x.beginPath(); x.moveTo(13, 31); x.quadraticCurveTo(15, 41, 24, 46); x.quadraticCurveTo(33, 41, 35, 31); x.stroke(); x.beginPath(); x.moveTo(19, 31); x.quadraticCurveTo(20, 37, 24, 40); x.quadraticCurveTo(28, 37, 29, 31); x.closePath(); x.fill(); },
-      reactor: () => { C(24, 24, 17); C(24, 24, 8); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; D(24 + Math.cos(a) * 12.5, 24 + Math.sin(a) * 12.5, 2.8); } },
+      reactor: () => { D(24, 24, 3.5); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; x.beginPath(); x.arc(24, 24, 18, a - 0.52, a + 0.52); x.arc(24, 24, 7, a + 0.52, a - 0.52, true); x.closePath(); x.fill(); } },
       pause: () => { x.beginPath(); x.roundRect(13, 10, 8, 28, 4); x.fill(); x.beginPath(); x.roundRect(27, 10, 8, 28, 4); x.fill(); },
       menu: () => { for (const y of [12, 22, 32]) { x.beginPath(); x.roundRect(10, y, 28, 6, 3); x.fill(); } },
       settings: () => { C(24, 24, 8); for (let i = 0; i < 6; i++) { const a = i * P / 3; D(24 + Math.cos(a) * 17, 24 + Math.sin(a) * 17, 3.5); } },

@@ -157,7 +157,9 @@ function ccLamp(x, w, col) { const c = w / 2; x.fillStyle = CC.deep; x.beginPath
 // Concord icons: open circles and arcs in one even line. The station icons are pictures of their jobs (owner,
 // 2026-11-03: "make icons more unique and interesting, transporter should be a guy dematerializing with horizontal lines
 // for example. fleet should be a formation of 3 chevrons, repair should be a wrench"): a ship's wheel, a bolt, a
-// turret (owner: "tactical should be a turret?"), a shield with a burst, an atom, a dish, a wrench, a figure solid above the waist and dissolving into slices below it, three chevrons.
+// turret (owner: "tactical should be a turret?"), a shield with a burst, an atom, a dish, a wrench, a figure solid above the waist and dissolving into slices below it, three chevrons. The ship
+// panel's tabs and the systems display follow the same standard: a starship from above, six shield facings, a radar
+// sweep, an emitter's widening beam, a fighter, an emitter's bursting bolt, the radiation trefoil, a thruster.
 // col: the ink, Sky by default; black on a lit (active) tab, as the pill keys' labels are.
 function ccIcon(name, col = CC.sky) {
   return paint(48, 48, (x) => {
@@ -168,8 +170,8 @@ function ccIcon(name, col = CC.sky) {
     ({
       helm: () => { C(24, 24, 12); D(24, 24, 4); for (let i = 0; i < 8; i++) { const a = i * P / 4, c = Math.cos(a), sn = Math.sin(a); x.beginPath(); x.moveTo(24 + c * 4, 24 + sn * 4); x.lineTo(24 + c * 19, 24 + sn * 19); x.stroke(); D(24 + c * 20, 24 + sn * 20, 2.6); } },
       fire: () => { C(24, 24, 18); C(24, 24, 10); D(24, 24, 3.5); },
-      shields: () => { A(24, 30, 19, P * 1.12, P * 1.88); A(24, 30, 12, P * 1.15, P * 1.85); D(24, 32, 4); },
-      tractor: () => { C(10, 24, 6); C(38, 24, 6); x.beginPath(); x.moveTo(17, 20); x.lineTo(31, 20); x.moveTo(17, 28); x.lineTo(31, 28); x.stroke(); },
+      shields: () => { x.lineWidth = 4.5; for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; A(24, 24, 18, a - P / 6 + 0.16, a + P / 6 - 0.16); } x.lineWidth = 3; D(24, 24, 5); },
+      tractor: () => { x.fillRect(3, 19, 9, 10); x.beginPath(); x.moveTo(12, 21); x.lineTo(32, 10); x.moveTo(12, 27); x.lineTo(32, 38); x.stroke(); x.lineWidth = 2; A(10, 24, 12, -0.45, 0.45); A(10, 24, 18, -0.42, 0.42); x.lineWidth = 3; x.strokeRect(34, 15, 11, 18); },
       transport: () => { x.beginPath(); x.arc(24, 9, 5.5, 0, 2 * P); x.fill(); x.beginPath(); x.moveTo(14, 36); x.lineTo(15, 21); x.quadraticCurveTo(24, 15, 33, 21); x.lineTo(34, 36); x.closePath(); x.fill(); x.fillRect(16, 35, 6, 9); x.fillRect(26, 35, 6, 9); x.globalCompositeOperation = 'destination-out'; for (let yy = 26, k = 0; yy < 46; yy += 3.4, k++) x.fillRect(0, yy, 48, 1 + k * 0.32); x.globalCompositeOperation = 'source-over'; for (const [sx, sy] of [[9, 30], [39, 33], [10, 40], [38, 42]]) x.fillRect(sx - 3, sy - 0.9, 6, 1.8); },
       science: () => { for (const r of [0, P / 3, -P / 3]) { x.beginPath(); x.ellipse(24, 24, 20, 7.5, r, 0, 2 * P); x.stroke(); } D(24, 24, 4); },
       comms: () => { x.beginPath(); x.arc(17, 27, 12, P * 0.75, P * 1.75, true); x.closePath(); x.stroke(); x.beginPath(); x.moveTo(17, 27); x.lineTo(12, 44); x.moveTo(17, 27); x.lineTo(22, 44); x.moveTo(9, 44); x.lineTo(25, 44); x.stroke(); D(26, 18, 2.5); A(26, 18, 8, -P * 0.5, 0); A(26, 18, 15, -P * 0.5, 0); },
@@ -180,14 +182,14 @@ function ccIcon(name, col = CC.sky) {
       tactical: () => { x.fillRect(7, 39, 34, 5); x.beginPath(); x.roundRect(12, 27, 24, 13, [7, 7, 2, 2]); x.fill(); x.lineWidth = 3.5; x.lineCap = 'round'; x.beginPath(); x.moveTo(25, 31); x.lineTo(42, 14); x.moveTo(21, 29); x.lineTo(38, 12); x.stroke(); x.fillRect(19, 22, 10, 6); x.lineWidth = 3; },
       pd: () => { x.beginPath(); x.moveTo(24, 5); x.lineTo(40, 11); x.quadraticCurveTo(40, 33, 24, 43); x.quadraticCurveTo(8, 33, 8, 11); x.closePath(); x.stroke(); x.beginPath(); for (let i = 0; i < 12; i++) { const a = -P / 2 + i * P / 6, r = i % 2 ? 4 : 9; x.lineTo(24 + Math.cos(a) * r, 23 + Math.sin(a) * r); } x.closePath(); x.fill(); },
       fleet: () => { const chev = (cx, cy, k) => { x.beginPath(); x.moveTo(cx, cy - 8 * k); x.lineTo(cx + 8 * k, cy + 6 * k); x.lineTo(cx, cy + 2 * k); x.lineTo(cx - 8 * k, cy + 6 * k); x.closePath(); x.fill(); }; chev(24, 13, 1.35); chev(11, 33, 1.15); chev(37, 33, 1.15); },
-      ship: () => { C(24, 16, 10); x.beginPath(); x.roundRect(11, 26, 6, 18, 3); x.stroke(); x.beginPath(); x.roundRect(31, 26, 6, 18, 3); x.stroke(); D(24, 32, 3); },
-      sensors: () => { D(24, 24, 4); C(24, 24, 11); A(24, 24, 19, -P * 0.8, -P * 0.2); A(24, 24, 19, P * 0.2, P * 0.8); },
+      ship: () => { D(24, 14, 10); x.fillRect(22, 22, 4, 10); x.beginPath(); x.roundRect(17, 28, 14, 8, 4); x.fill(); x.beginPath(); x.roundRect(6, 24, 6, 20, 3); x.fill(); x.beginPath(); x.roundRect(36, 24, 6, 20, 3); x.fill(); x.lineWidth = 2.5; x.beginPath(); x.moveTo(17, 32); x.lineTo(12, 30); x.moveTo(31, 32); x.lineTo(36, 30); x.stroke(); x.lineWidth = 3; },
+      sensors: () => { C(24, 24, 19); x.lineWidth = 2; C(24, 24, 10); x.lineWidth = 3; x.beginPath(); x.moveTo(24, 24); x.arc(24, 24, 19, -P / 2, -P / 2 + 1.0); x.closePath(); x.fill(); D(34, 31, 2.6); D(15, 33, 2.2); },
       cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) C(cx, cy, 7); },
-      craft: () => { C(30, 18, 9); C(14, 34, 4.5); C(24, 40, 3); D(30, 18, 3); },
-      weapons: () => { C(18, 24, 10); D(18, 24, 3); x.beginPath(); x.moveTo(28, 24); x.lineTo(40, 24); x.stroke(); D(42, 24, 3.5); },
+      craft: () => { x.beginPath(); x.roundRect(21, 5, 6, 34, 3); x.fill(); x.beginPath(); x.moveTo(21, 18); x.lineTo(5, 33); x.lineTo(5, 37); x.lineTo(21, 30); x.closePath(); x.fill(); x.beginPath(); x.moveTo(27, 18); x.lineTo(43, 33); x.lineTo(43, 37); x.lineTo(27, 30); x.closePath(); x.fill(); x.beginPath(); x.moveTo(21, 36); x.lineTo(15, 44); x.lineTo(21, 42); x.closePath(); x.fill(); x.beginPath(); x.moveTo(27, 36); x.lineTo(33, 44); x.lineTo(27, 42); x.closePath(); x.fill(); },
+      weapons: () => { D(11, 36, 6); x.lineWidth = 4; x.beginPath(); x.moveTo(15, 32); x.lineTo(33, 14); x.stroke(); x.lineWidth = 3; x.beginPath(); for (let i = 0; i < 12; i++) { const a = i * P / 6, r = i % 2 ? 3.5 : 8; x.lineTo(36 + Math.cos(a) * r, 11 + Math.sin(a) * r); } x.closePath(); x.fill(); },
       warp: () => { C(33, 24, 8); D(33, 24, 2.5); x.beginPath(); x.moveTo(5, 15); x.lineTo(21, 15); x.moveTo(2, 24); x.lineTo(21, 24); x.moveTo(5, 33); x.lineTo(21, 33); x.stroke(); },
       engines: () => { x.fillRect(19, 4, 10, 9); x.beginPath(); x.moveTo(18, 13); x.lineTo(30, 13); x.lineTo(37, 28); x.lineTo(11, 28); x.closePath(); x.fill(); x.beginPath(); x.moveTo(13, 31); x.quadraticCurveTo(15, 41, 24, 46); x.quadraticCurveTo(33, 41, 35, 31); x.stroke(); x.beginPath(); x.moveTo(19, 31); x.quadraticCurveTo(20, 37, 24, 40); x.quadraticCurveTo(28, 37, 29, 31); x.closePath(); x.fill(); },
-      reactor: () => { C(24, 24, 17); C(24, 24, 8); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; D(24 + Math.cos(a) * 12.5, 24 + Math.sin(a) * 12.5, 2.8); } },
+      reactor: () => { D(24, 24, 3.5); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; x.beginPath(); x.arc(24, 24, 18, a - 0.52, a + 0.52); x.arc(24, 24, 7, a + 0.52, a - 0.52, true); x.closePath(); x.fill(); } },
       pause: () => { x.beginPath(); x.roundRect(13, 10, 8, 28, 4); x.fill(); x.beginPath(); x.roundRect(27, 10, 8, 28, 4); x.fill(); },
       menu: () => { for (const y of [12, 22, 32]) { x.beginPath(); x.roundRect(10, y, 28, 6, 3); x.fill(); } },
       settings: () => { C(24, 24, 8); for (let i = 0; i < 6; i++) { const a = i * P / 3; D(24 + Math.cos(a) * 17, 24 + Math.sin(a) * 17, 3.5); } },
@@ -1357,7 +1359,7 @@ const A = {
       if (!d.ship) { say('Transport', 'Cannot beam the envoy to a planet here.'); return; }
       if (dir > 0) { if (!s.vip) return; o.vip = s.vip; s.vip = null; say('Transport', `${o.vip} beamed to ${o.name}.`); }
       else { if (!o.vip) return; s.vip = o.vip; o.vip = null; say('Transport', `${s.vip} beamed aboard.`); }
-      usePad(s); beamPair(s, o); return;
+      usePad(s); if (dir > 0) beamPair(s, o); else beamPair(o, s); return;
     }
     const label = ITEMS.find((q) => q[0] === what)[1].toLowerCase();
     if (dir > 0) {
@@ -1372,7 +1374,7 @@ const A = {
       const n = Math.min(INV.per_beam, o.hold[what], s.holdCap - holdUsed(s)); if (n <= 0) { say('Transport', o.hold[what] <= 0 ? `${name} has no ${label}.` : 'Our hold is full.'); return; }
       o.hold[what] -= n; s.hold[what] += n; say('Transport', `${n} ${label} beamed aboard from ${name}.`);
     }
-    usePad(s); beamPair(s, o); },
+    usePad(s); if (dir > 0) beamPair(s, o); else beamPair(o, s); },
   // A disguised shuttle launched at the target (owner: "a disguised shuttle leaves your ship and suicide bombs a
   // station").
   shuttle: () => { const s = W.player, t = tgt(s); if (s.erratic) { say('Helm', 'Not during erratic manoeuvres.'); return; } if (!t || s.shuttles <= 0) return; s.shuttles--; W.craft.push({ kind: 'shuttle', home: s.id, to: t.id, x: s.x, z: s.z, side: s.side });
@@ -3218,12 +3220,40 @@ function beamFx(x, z, col = CC.sky, r = BEAM_FX.r_u) {
   const fl = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(col), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); fl.position.set(x, 0.6, z); scene.add(fl);
   BEAMS.push({ t: 0, col3, ring, fl, r });
 }
-// Both ends of a beam: from a ship to a ship, a planet's surface nearest the ship, or a point (a mine).
-function beamPair(s, o, col) {
-  beamFx(s.x, s.z, col);
-  if (!o) return;
-  if (o.r && !o.hull) { const d = Math.hypot(s.x - o.x, s.z - o.z) || 1; beamFx(o.x + (s.x - o.x) / d * o.r, o.z + (s.z - o.z) / d * o.r, col, BEAM_FX.r_u * 2.2); }
-  else beamFx(o.x, o.z, col);
+// Both ends of a beam, sender first: a ship, a planet's surface nearest the other end, or a point (a mine); and a stream
+// of particles flying from the sender to the receiver (owner, 2026-11-03: "I want particles flying from one ship to the
+// other in addition to this transport glitter, so that I can tell what ship transported to what other ship").
+function beamEnd(o, other) { if (o.r && !o.hull) { const d = Math.hypot(other.x - o.x, other.z - o.z) || 1; return { x: o.x + (other.x - o.x) / d * o.r, z: o.z + (other.z - o.z) / d * o.r, big: true }; } return { x: o.x, z: o.z }; }
+function beamPair(from, to, col = CC.sky) {
+  if (!to) { beamFx(from.x, from.z, col); return; }
+  const a = beamEnd(from, to), b = beamEnd(to, from);
+  beamFx(a.x, a.z, col, a.big ? BEAM_FX.r_u * 2.2 : BEAM_FX.r_u); beamFx(b.x, b.z, col, b.big ? BEAM_FX.r_u * 2.2 : BEAM_FX.r_u);
+  beamStream(a, b, col);
+}
+// The stream: count motes leave the sender over spread_s, each crossing in travel_s along a low arc with its own
+// sideways wobble, bright in the middle of its flight; additive, so a stream reads as a line of light with a direction.
+const STREAM = { count: 56, spread_s: 0.9, travel_s: 1.1, arc_u: 1.4, wobble_u: 0.5, size_u: 0.8 };
+const STREAMS = [];
+function beamStream(a, b, col) {
+  const n = STREAM.count, pos = new Float32Array(n * 3), cols = new Float32Array(n * 3), geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  const mat = new THREE.PointsMaterial({ size: STREAM.size_u, map: glowTex, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; scene.add(pts);
+  const seeds = Array.from({ length: n }, (_, i) => ({ d: i / n * STREAM.spread_s, ph: i * 2.399, w: 0.4 + (i * 0.618) % 1 }));
+  STREAMS.push({ t: 0, a, b, pts, pos, cols, seeds, c: new THREE.Color(col) });
+}
+function streamsStep(dt) {
+  for (const st of STREAMS) {
+    st.t += dt; const dx = st.b.x - st.a.x, dz = st.b.z - st.a.z, L = Math.hypot(dx, dz) || 1, px = -dz / L, pz = dx / L;
+    st.seeds.forEach((q, i) => { const u = (st.t - q.d) / STREAM.travel_s, o = i * 3;
+      if (u <= 0 || u >= 1) { st.cols[o] = st.cols[o + 1] = st.cols[o + 2] = 0; return; }
+      const wob = Math.sin(u * 9 + q.ph) * STREAM.wobble_u * q.w * Math.sin(Math.PI * u);
+      st.pos[o] = st.a.x + dx * u + px * wob; st.pos[o + 1] = 0.6 + Math.sin(Math.PI * u) * STREAM.arc_u; st.pos[o + 2] = st.a.z + dz * u + pz * wob;
+      const k = Math.sin(Math.PI * u) * 1.2; st.cols[o] = st.c.r * k; st.cols[o + 1] = st.c.g * k; st.cols[o + 2] = st.c.b * k; });
+    st.pts.geometry.attributes.position.needsUpdate = true; st.pts.geometry.attributes.color.needsUpdate = true;
+    if (st.t > STREAM.spread_s + STREAM.travel_s) { st.done = true; scene.remove(st.pts); st.pts.geometry.dispose(); st.pts.material.dispose(); }
+  }
+  for (let i = STREAMS.length - 1; i >= 0; i--) if (STREAMS[i].done) STREAMS.splice(i, 1);
 }
 function beamsStep(dt) {
   for (const b of BEAMS) { b.t += dt; const k = b.t / BEAM_FX.beam_s, u = b.col3.material.uniforms; u.uT.value = b.t; u.uK.value = k;
@@ -3298,7 +3328,7 @@ function syncScene(dt) {
   for (const c of W.craft) { const sp = take('glow'); sp.position.set(c.x, 0.1, c.z); sp.scale.setScalar(0.35); sp.material.color.setHex(0x9fd0ff); }
   for (const mn of W.mines) { const sp = take('glow'); sp.position.set(mn.x, 0, mn.z); sp.scale.setScalar(0.5); sp.material.color.setHex(mn.arm > 0 ? 0x806020 : 0xffb030); }
   for (const kind of Object.keys(SHOT_POOL)) for (let i = used[kind] || 0; i < SHOT_POOL[kind].length; i++) SHOT_POOL[kind][i].obj.visible = false;
-  explosionsStep(dt); beamsStep(dt);
+  explosionsStep(dt); beamsStep(dt); streamsStep(dt);
   for (const b of booms) { b.t += dt; const k = b.t / 1.4; b.sp.scale.setScalar(b.size * (1 + k * 4)); b.sp.material.opacity = Math.max(0, 1 - k); if (k >= 1) { scene.remove(b.sp); b.done = true; } }
   for (let i = booms.length - 1; i >= 0; i--) if (booms[i].done) booms.splice(i, 1);
 }
@@ -3618,7 +3648,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, lock[3] === 'select' ? 'Select' : 'Lock target', () => (lock[3] === 'select' ? selectDest(lock[2]) : A.lock(lock[2])), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v63', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v64', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it

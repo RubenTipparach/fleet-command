@@ -336,6 +336,10 @@ else's artwork):
   keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
   carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
   dashboards, dials, switches".
+- **Icons follow one standard in every skin** (owner, 2026-11-03: "these icons need a similar standard", "theyre generic
+  enough to be used on any other ui system"): a picture of the job, one subject one icon everywhere, readable at 20 px,
+  solid for the thing and lines for what it gives off, colour for state only, and every skin drawing the same subject
+  list. The rules and the sheet are the Fleet Command Icons guide, `docs/design/icon-guide.html`.
 - **One UI kit, swapped per faction** (owner, 2026-10-30: "whatever we do, we gotta design it for like
   UI kit that we can sweap out between factions"). The kit is a fixed list of named pieces (each 9-slice
   frame, bar, button, tab and hero piece, with its slot size and margins), and a skin is one set of
