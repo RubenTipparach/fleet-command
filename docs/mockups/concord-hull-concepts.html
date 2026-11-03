@@ -98,7 +98,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   <header>
     <h1>Concord <span>Line</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 6, v7. <code>concord-hull-concepts</code>. The Concord's ships in Star Crew's Tern family, lit and damaged as in mockup 5. Drag to orbit, pinch or scroll to zoom, click the hull to fire.</p>
+    <p class="sub">Mockup 6, v11. <code>concord-hull-concepts</code>. New in v11: one belly light pair per ship (no overlapping pools), and phaser hits leave burning scorch marks again instead of holes. v10 added the battleship, the diamond carrier, shadows and burning wreckage. The Concord's ships in Star Crew's Tern family, lit and damaged as in mockup 5. Drag to orbit, pinch or scroll to zoom, click the hull to fire.</p>
   </header>
   <div class="tabs" role="tablist">
     <button id="tab-ships" role="tab" aria-selected="true" data-tab="ships">Ships</button>
@@ -128,7 +128,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
       <h3>The Concord's own</h3>
       <ul>
         <li>Concord blue stripes; a raised, glazed command block on every class.</li>
-        <li>The Swift and the Petrel each three ways: one nacelle below, one above and one below, and the family's level pair.</li>
+        <li>The Swift three ways (one nacelle below, one above and one below, the level pair); the Petrel two ways (above and below, level).</li>
         <li>The Condor battleship: four main guns, two on top and two under the keel, the rest point-defence cannons. The Pelican carrier: the crew hull forward and a diamond-section hangar hull behind it, three numbered bay doors each side.</li>
         <li>The Albatross in two hulls: a secondary hull under the primary on a neck, its pylons sweeping out of it, or (the second Albatross) from the main hull's waist.</li>
       </ul>
@@ -441,7 +441,7 @@ controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistan
   scene.environment = pm.fromScene(s, 0.02).texture;
 })();
 
-const hemi = new THREE.HemisphereLight(0x9fb4ff, 0x0b0a10, 0.3); scene.add(hemi);
+const hemi = new THREE.HemisphereLight(0x9fb4ff, 0x2a2622, 0.3); // a faint warm bounce from below, so a belly is never pure black scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff1dc, 1.6); sun.position.set(600, 420, 520); scene.add(sun);
 sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.06; sun.shadow.camera.near = 1; sun.shadow.camera.far = 3000;
 const rim = new THREE.DirectionalLight(0x86a6ff, 0.5); rim.position.set(-500, 150, -700); scene.add(rim);
@@ -1035,7 +1035,12 @@ function thruster(ship, P, at, r) {
   const lip = at.z - 0.15 - L, add = (g, m, skin) => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys: 'impulse', piece: P }; P.inner.add(o); return o; };
   const bell = new THREE.LatheGeometry(prof, 28); bell.rotateX(PI / 2); bell.translate(at.x, at.y, lip); add(bell, thrusterMat(heat));
   const lipRing = new THREE.TorusGeometry(r * 1.0, r * 0.07, 6, 28); lipRing.translate(at.x, at.y, lip); add(lipRing, greyMat);
-  const collar = new THREE.CylinderGeometry(r * 1.18, r * 1.24, r * 0.5, 8, 1, true); collar.rotateX(PI / 2); collar.translate(at.x, at.y, at.z - 0.15 - r * 0.25); add(collar, new THREE.MeshStandardMaterial({ color: 0x2a2f36, roughness: 0.6, metalness: 0.5, side: THREE.DoubleSide }));
+  // The mounting ring (owner, 2026-11-03: "the thruster mounting ring needs to be fixed"): a closed, round fairing that seats
+  // on the hull and narrows onto the bell's neck, so the bell grows out of it; a bolt flange where it meets the plating.
+  const neck = (y) => { for (let k = 1; k < prof.length; k++) if (prof[k].y >= y) { const a = prof[k - 1], b = prof[k], t = (y - a.y) / (b.y - a.y); return a.x + (b.x - a.x) * t; } return prof[prof.length - 1].x; };
+  const yE = L * 0.62, mount = [[neck(L) * 0.9, L], [r * 0.98, L], [r * 0.98, L * 0.93], [neck(yE) + r * 0.1, yE + L * 0.04], [neck(yE) - 0.02, yE]].map(([x, y]) => new THREE.Vector2(x, y));
+  const mg = new THREE.LatheGeometry(mount, 32); mg.rotateX(PI / 2); mg.translate(at.x, at.y, lip); add(mg, new THREE.MeshStandardMaterial({ color: 0x3a4049, roughness: 0.55, metalness: 0.6, side: THREE.DoubleSide, envMapIntensity: LIGHTS[lightKey].env }));
+  for (let k = 0; k < 10; k++) { const a = k / 10 * 2 * PI, bo = new THREE.BoxGeometry(r * 0.09, r * 0.09, r * 0.12); bo.translate(at.x + Math.cos(a) * r * 0.99, at.y + Math.sin(a) * r * 0.99, lip + L - r * 0.06); add(bo, darkMat); }
   const tm = glowMat(0xffc27a, 0x3a1a08); const throat = new THREE.CircleGeometry(r * 0.56, 20); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - 0.05); add(throat, tm);
   const pl = new THREE.ConeGeometry(r * 0.85, r * 3.2, 20, 1, true); pl.rotateX(PI / 2); pl.translate(at.x, at.y, lip - r * 1.6); const po = add(pl, plumeMat(heat)); po.renderOrder = 4;
   tm.userData.heat = heat;
@@ -1328,10 +1333,10 @@ function buildShip(id, liv, offset = V3()) {
     const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); const ch = chOf(h[1], h[2], h[3], h[4]); for (const sd of [1, -1]) addSpot(ship, V3(sd * (h[1] + 1.4), h[2] - ch + 0.4, z), V3(-sd * 0.3, -1, 0), (h[2] - h[3]) * 1.6, 0.85); } }
   for (const sd of [1, -1]) { if (ship.dmgU.uPoolN.value >= 16) break; const z = zMin + 6, h = hullAt(S, z); addSpot(ship, V3(sd * h[1] * 0.6, h[2] + 1.6, z), V3(0, -0.28, 1), C.length * 0.35, 0.7); }
   // The belly (owner: "on the bottom, maybe a light aiming forward and backward", then "a lot of ships are missing lights on
-  // bottom"): a pair at mid-hull, one forward and one aft, and one under the bow throwing aft, each standing 1.8 m off the
-  // plating and tilted into it so its light lands.
-  { const z = (zMin + zMax) / 2, h = hullFor(C, z); for (const fw of [1, -1]) addSpot(ship, V3(0, h[3] - 1.8, z + fw * 0.5), V3(0, 0.3, fw), C.length * 0.45, 0.8);
-    const zb = zMax - C.length * 0.12, hb2 = hullAt(S, zb); addSpot(ship, V3(0, hb2[3] - 1.8, zb), V3(0, 0.3, -1), C.length * 0.4, 0.8); }
+  // bottom"): one pair at mid-hull, back to back, one throwing forward and one aft, standing 1.8 m off the plating and tilted
+  // into it so its light lands. Only the pair (owner, 2026-11-03: "the two in the middle look correct, we should avoid
+  // overlapping lights"): the bow and stern belly lamps that threw back into their fans are gone.
+  { const z = (zMin + zMax) / 2, h = hullFor(C, z); for (const fw of [1, -1]) addSpot(ship, V3(0, h[3] - 1.8, z + fw * 0.5), V3(0, 0.3, fw), C.length * 0.45, 0.8); }
   // Two fire lights per ship, made now so the shaders never recompile mid-battle.
   for (let i = 0; i < 2; i++) { const l = new THREE.PointLight(0xff7a2a, 0, C.length * 0.5, 1.6); ship.root.add(l); ship.lights.push({ l, until: 0, at: null, anchor: null }); }
   // The shield bubble.
@@ -1449,13 +1454,9 @@ function damage(ship, sysId, amount, hit = null) {
   if (hit && ship.sys.shields.health > 0 && shieldsUp && !hit.bypass) { // the bubble takes it
     shieldHit(ship, hit.point); S === ship.sys.shields || hurt(ship, 'shields', amount * 0.45); return;
   }
-  // Every phaser hit carves a hole and shows the deck behind it by parallax (owner, 2026-11-03: "phaser fire SHOULD SHOW
-  // PARALLAX AS THEY CARVE HOLES"); a hit near an earlier hole widens that one instead of punching a second beside it.
-  if (hit && !hit.big) {
-    const r0 = 0.7 * Math.max(1, ship.C.length / 150), prev = ship.holes.find((h) => h.point.distanceTo(hit.point) < h.r * 1.6);
-    if (prev) { prev.r = Math.min(prev.r * 1.2, r0 * 2); const i = ship.holes.indexOf(prev); ship.dmgU.uHoles.value[i].w = prev.r; scorch(ship, hit.point, 1.6, 0); emit('sparks', toWorld(hit.mesh, hit.point), hit.worldNormal, 30); hurt(ship, sysId, amount); ship.hull = clamp(ship.hull - amount * 0.35, 0, 100); if (ship.hull <= 0) breakup(ship); return; }
-    hit.big = true; hit.r = r0; hit.phaser = true;
-  }
+  // A phaser hit leaves a scorch mark that glows hot and cools; it never cuts a hole (owner, 2026-11-03: "I liked the scorch
+  // marks with burns more, lets go back to that instead of holes in the ship with phaser"). Holes come from torpedoes and
+  // breaches only, and those still show the deck behind them by parallax.
   if (hit) { scorch(ship, hit.point, hit.phaser ? 1.6 : hit.big ? 5 : 3.2, hit.phaser ? 0 : 1); if (hit.big) { hole(ship, hit); if (!hit.r) chunkOff(ship, hit); } emit('sparks', toWorld(hit.mesh, hit.point), hit.worldNormal, 40); }
   if (sysId === 'life' && hit) { const w = secOf(ship, hit.point); ship.wedgePower[w] = clamp(ship.wedgePower[w] - amount / 60, 0, 1); }
   hurt(ship, sysId, amount);
