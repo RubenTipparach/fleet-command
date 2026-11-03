@@ -1,0 +1,384 @@
+{
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x).",
+ "ca": {
+  "name": "Heavy cruiser",
+  "code": "CA",
+  "shape": "saucer",
+  "length_m": 320,
+  "speed_max_m_s": 300,
+  "accel_m_s2": 45,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140
+ },
+ "dd": {
+  "name": "Destroyer",
+  "code": "DD",
+  "shape": "saucer",
+  "length_m": 230,
+  "speed_max_m_s": 330,
+  "accel_m_s2": 55,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95
+ },
+ "ff": {
+  "name": "Frigate",
+  "code": "FF",
+  "shape": "saucer",
+  "length_m": 160,
+  "speed_max_m_s": 360,
+  "accel_m_s2": 70,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60
+ },
+ "kdd": {
+  "name": "Kethran destroyer",
+  "code": "KDD",
+  "shape": "wedge",
+  "length_m": 250,
+  "speed_max_m_s": 300,
+  "accel_m_s2": 50,
+  "turn_deg_s": 30,
+  "reactor_e": 18,
+  "capacitor_e": 12,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": -0.3,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.3,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0,
+    "y": 0.9,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 180
+   }
+  ],
+  "shields_hp": [
+   36,
+   26,
+   22,
+   18,
+   22,
+   26
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 105
+ },
+ "kff": {
+  "name": "Kethran frigate",
+  "code": "KFF",
+  "shape": "wedge",
+  "length_m": 170,
+  "speed_max_m_s": 350,
+  "accel_m_s2": 65,
+  "turn_deg_s": 40,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": -0.25,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.25,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   26,
+   18,
+   16,
+   12,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 65
+ },
+ "vcr": {
+  "name": "Vos corsair",
+  "code": "VCR",
+  "shape": "claw",
+  "length_m": 200,
+  "speed_max_m_s": 340,
+  "accel_m_s2": 60,
+  "turn_deg_s": 38,
+  "reactor_e": 14,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "missile",
+    "x": -0.3,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "missile",
+    "x": 0.3,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 120
+   }
+  ],
+  "shields_hp": [
+   28,
+   22,
+   18,
+   16,
+   18,
+   22
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 2,
+   "engines": 5,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 80
+ }
+}

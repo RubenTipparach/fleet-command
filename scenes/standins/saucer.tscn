@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3]
+
+[sub_resource type="CylinderMesh" id="disc"]
+top_radius = 0.3
+bottom_radius = 0.26
+height = 0.06
+radial_segments = 32
+
+[sub_resource type="BoxMesh" id="hull"]
+size = Vector3(0.12, 0.1, 0.42)
+
+[sub_resource type="BoxMesh" id="nacelle"]
+size = Vector3(0.07, 0.07, 0.46)
+
+[sub_resource type="BoxMesh" id="pylon"]
+size = Vector3(0.32, 0.03, 0.08)
+
+[node name="Saucer" type="Node3D"]
+
+[node name="HullDisc" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.22)
+mesh = SubResource("disc")
+
+[node name="HullBody" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.12)
+mesh = SubResource("hull")
+
+[node name="HullPylonL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.03, 0.18)
+mesh = SubResource("pylon")
+
+[node name="HullPylonR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 0.03, 0.18)
+mesh = SubResource("pylon")
+
+[node name="TrimNacelleL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.06, 0.24)
+mesh = SubResource("nacelle")
+
+[node name="TrimNacelleR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.06, 0.24)
+mesh = SubResource("nacelle")

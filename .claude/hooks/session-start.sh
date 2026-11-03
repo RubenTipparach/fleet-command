@@ -17,7 +17,8 @@ if ! command -v openspec >/dev/null 2>&1 || [ "$(openspec --version 2>/dev/null)
 fi
 openspec --version >/dev/null
 
-# The pinned Godot editor, headless (build.config).
+# The pinned .NET SDK and Godot .NET editor, headless (build.config).
+scripts/install-dotnet.sh >/dev/null 2>&1 || echo "session-start: .NET install failed; run scripts/install-dotnet.sh" >&2
 scripts/install-godot.sh >/dev/null 2>&1 || echo "session-start: Godot install failed; run scripts/install-godot.sh" >&2
 
 # Headless stills render through Mesa's software Vulkan (lavapipe) or OpenGL under Xvfb, and the
