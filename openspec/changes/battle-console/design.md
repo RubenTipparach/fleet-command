@@ -366,6 +366,9 @@ should have a little X".
   - **A stream of particles** flies from the sender to the receiver of every beam (56 motes over 0.9 s, each crossing
     in 1.1 s on a low arc with a wobble), so the direction of a transfer reads at a glance; taking cargo streams the
     other way.
+- **Clicking selects** (version 65; owner, 2026-11-03: "no need for select button when targeting, clicking should just
+  select"): a click with either button, or a tap, on an enemy locks it; on a friendly ship, station or planet it selects
+  it for transport and the helm. The floating Lock target and Select keys are gone.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 

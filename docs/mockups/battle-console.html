@@ -685,7 +685,7 @@ const SCENES = {
     ],
     setup: (W) => { const s = W.player, l = ship('lark'); s.power.transport = 3; chargePads(s); s.hold.parts = 15; s.hold.rations = 5;
       l.needs = { parts: 10 }; l.distress = true; l.sys.engines = 0; l.sys.sensors = 0.3; l.ai.stance = 'hold'; l.ai.fire = 'hold'; },
-    say: ['Comms', 'Lark: engines dead, drifting. We need ten spare parts. Right click us to select us, close to transporter range and beam them over.'] },
+    say: ['Comms', 'Lark: engines dead, drifting. We need ten spare parts. Click us to select us, close to transporter range and beam them over.'] },
   // Owner, 2026-11-03: "be asked to supply troops for an assault (combat transport tab)".
   assault: { name: 'Assault', objective: 'Beam 8 marines to the Corrin and see Varn Outpost taken', armed: false, done: (W) => ship('varn').side === 0, target: null, endless: true,
     ships: [
@@ -1265,7 +1265,7 @@ const A = {
   runRange: (lo, hi) => { const s = W.player, r2 = (v) => clamp(Math.round(v * 2) / 2, HELM.hold_min_km, HELM.hold_max_km); s.runMin = Math.min(r2(lo), r2(hi) - 0.5); s.runMax = Math.max(r2(hi), s.runMin + 0.5); },
   holdKm: (v) => { W.player.holdKm = clamp(Math.round(v * 2) / 2, HELM.hold_min_km, HELM.hold_max_km); },
   helmOrder: (o) => { const s = W.player; if (o === 'free' || (s.engaged && s.order === o)) { s.engaged = false; say('Helm', 'Free heading.'); return; }
-    const nt = navTarget(s); if (!nt) { say('Helm', 'No target: right click a ship, station or planet.'); return; } if (o === 'hit_run' && !tgt(s)) { say('Helm', 'Hit and run needs an enemy target.'); return; }
+    const nt = navTarget(s); if (!nt) { say('Helm', 'No target: click a ship, station or planet.'); return; } if (o === 'hit_run' && !tgt(s)) { say('Helm', 'Hit and run needs an enemy target.'); return; }
     s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting', hold_range: `Holding ${km(s.holdKm)} from`, hit_run: `Hit and run, ${s.runMin}-${s.runMax} km, on` }[o]} ${nt.name}.`); if (o === 'hit_run') s.runPhase = 'in'; },
   orbitDir: () => { const s = W.player; s.orbitDir = -s.orbitDir; },
   // A high energy turn by deg (negative to port), rolled against the HET chance; erratic manoeuvres make it harder.
@@ -1352,7 +1352,7 @@ const A = {
   recallParty: () => { const s = W.player; if (!s.party) return; const tm = s.party.team; for (const [r] of ROLES) addRole(s, r, tm[r]); if (tm.vip) s.vip = s.vip || 'Envoy Saros'; say('Transport', `${teamSize(tm)} recalled.`); s.party = null; },
   // The inventory transporter (owner: "transport vip scene using inventory transporter instead of combat
   // transporter", "transport goods onto a planet"): goods or the VIP, to or from the destination picked.
-  transfer: (what, dir) => { const s = W.player, d = invPick(s); if (!d) { say('Transport', 'No destination: right click a friendly ship, station or planet.'); return; }
+  transfer: (what, dir) => { const s = W.player, d = invPick(s); if (!d) { say('Transport', 'No destination: click a friendly ship, station or planet.'); return; }
     if (!invReach(s, d)) { say('Transport', d.km > TRANSPORT.range_km ? `Out of transporter range: ${d.name} is ${km(d.km)} away (${km(TRANSPORT.range_km)}).` : 'Pads charging.'); return; }
     const o = d.ship || d.planet, name = d.name;
     if (what === 'vip') {
@@ -2568,7 +2568,7 @@ function stTransport(b, big) {
     const d = invPick(s), reach = invReach(s, d), ks = Math.min(big ? 76 : 44, (b.w - 4 * 6) / 5), keys = cargoView === 'misc' ? CARGO_KEYS : SUPPLY_KEYS.concat(['vip']);
     const dest = d ? d.ship || d.planet : null, nameOf = (k) => k === 'vip' ? 'Envoy' : ITEMS.find((q) => q[0] === k)[1];
     if (d) { rich(b.x, y + 18, [[d.name, CC.accord], [` · ${km(d.km)} · `, CC.lilac], [d.km <= TRANSPORT.range_km ? (padReady(s) ? 'in reach' : 'pads charging') : `out of reach (${km(TRANSPORT.range_km)})`, d.km <= TRANSPORT.range_km ? CC.accord : CC.caution]], '600 18px Antonio', b.w); }
-    else LBL('Right click a friendly ship, station or planet', b.x, y + 18, b.w, CC.caution);
+    else LBL('Click a friendly ship, station or planet', b.x, y + 18, b.w, CC.caution);
     y += 28;
     y += holdBar(b.x, y, b.w, s, big) + 6;
     const row = (label, who, click, count, ring) => { LBL(label, b.x, y + 13, b.w, CC.lilac, 'left', 13); y += 18;
@@ -3360,7 +3360,7 @@ function follow(dt = 0) {
   if (camGlide) { camGlide.k = Math.min(1, camGlide.k + dt / CAM.glide_s); const e = camGlide.k * camGlide.k * (3 - 2 * camGlide.k); at = camGlide.from.clone().lerp(p, e); if (camGlide.k >= 1) camGlide = null; }
   const off = camera.position.clone().sub(controls.target); controls.target.copy(at); camera.position.copy(at).add(off);
 }
-// Click picks a ship: left click or tap focuses it; right click locks it (the owner's "point and right click"); a left
+// Click picks a ship: either button or a tap selects it (an enemy locked, a friendly selected for transport); a left
 // click on empty space is the helm (A.helmTo).
 // What is under the pointer: a ship, or else a planet (its disc on screen).
 function pickPlanet(e) {
@@ -3415,12 +3415,12 @@ function wireView() {
     if (expanded) { A.expand(expanded); return; }
     // A ship under the pointer: left focuses, right locks. Empty space: left is the helm.
     const s = placingMine || placingHet ? null : pick(e);
-    // an enemy: right click locks it as the target; a friendly ship or station: right click selects it for transport;
-    // left click focuses either (owner, 2026-11-03: "allow my ship to select planets, stations and friendly ships. same
-    // as enemy ships")
-    if (s && s !== W.player) { if (e.button === 2) { if (s.side === W.player.side) selectDest(s.id); else A.lock(s.id); } else focus = s.id; return; }
+    // a click on a ship selects it, either button (owner, 2026-11-03: "no need for select button when targeting,
+    // clicking should just select"): an enemy is locked as the target, a friendly ship, station or planet is selected
+    // for transport and the helm
+    if (s && s !== W.player) { focus = s.id; if (s.side === W.player.side) selectDest(s.id); else A.lock(s.id); return; }
     const pl = placingMine || placingHet ? null : pickPlanet(e);
-    if (pl) { if (e.button === 2) selectDest(pl.id); else focus = pl.id; return; }
+    if (pl) { focus = pl.id; selectDest(pl.id); return; }
     if (e.button === 0) { const q = planeAt(e); if (q) { const s = W.player;
       if (placingHet) { placingHet = false; A.het(Math.round(wrap(Math.atan2(q.x - s.x, -(q.z - s.z)) - s.h) / DEG)); }
       else if (placingMine) A.placeMine(q.x, q.z); else A.helmTo(q.x, q.z); } }
@@ -3556,7 +3556,6 @@ function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; ret
 // Over the 3D view: brackets and names, the readout, the last message, the Target box, the lock key, the mockup badge.
 function uiView() {
   const [vx, vy, vw, vh] = VIEW, s = W.player, t = tgt(s);
-  let lock = null;
   // a marker under the pointer reacts (owner, 2026-11-03: "make target boxes react to my mouse hovering over them, slight
   // scale, brightness in color"): hovAt says whether the pointer is within rr of a marker drawn at (px, py)
   const hovAt = (px, py, rr) => !DRAG && Math.hypot(PX - vx - px, PY - vy - py) < rr;
@@ -3566,7 +3565,7 @@ function uiView() {
     const v = new THREE.Vector3(o.x, 0, o.z).project(camera), on = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
     let px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh;
     const locked = o.id === s.target, f = o.id === focus, col = o.side === s.side ? CC.accord : FACTION[o.faction].dot;
-    if (o.side === s.side) { if (v.z < 1) friendMark(o.id, o.name, px, py, distKm(s, o), o, f, hovAt(px, py, invDest === o.id ? 46 : f ? 30 : 22)); if (f && invDest !== o.id && !expanded && v.z < 1) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id, 'select']; continue; }
+    if (o.side === s.side) { if (v.z < 1) friendMark(o.id, o.name, px, py, distKm(s, o), o, f, hovAt(px, py, invDest === o.id ? 46 : f ? 30 : 22)); continue; }
     if (!on) {
       if (!locked) continue;
       const a = Math.atan2(py - vh / 2, px - vw / 2) * (v.z > 1 ? -1 : 1) + (v.z > 1 ? P : 0); px = vw / 2 + Math.cos(a) * (vw / 2 - 40); py = vh / 2 + Math.sin(a) * (vh / 2 - 40);
@@ -3580,14 +3579,12 @@ function uiView() {
     // the targeted enemy's hull, always, under its bracket and name (owner, 2026-11-02: "always show current targeted
     // enemy health ... even in the un-expanded view")
     if (locked) hullBar(px, py + (seekerLock(s, o) ? 84 : 70), o);
-    if (f && !locked && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id];
   }
   for (const w of W.wells) { const v = new THREE.Vector3(w.x, 0, w.z).project(camera); if (v.z >= 1) continue;
     g.fillStyle = CC.caution; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(`${w.name} · Q-G field here ${pct(qgAt(s.x, s.z))}`.toUpperCase(), (v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh - 30); }
   for (const pl of W.planets) { const v = new THREE.Vector3(pl.x, 0, pl.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh, dk = Math.max(0, Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r) / 10;
-    friendMark(pl.id, pl.name, px, py, dk, pl, focus === pl.id, hovAt(px, py, invDest === pl.id ? 46 : 30));
-    if (focus === pl.id && invDest !== pl.id && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), pl.id, 'select']; }
+    friendMark(pl.id, pl.name, px, py, dk, pl, focus === pl.id, hovAt(px, py, invDest === pl.id ? 46 : 30)); }
   // disguised shuttles: our own know them for what they are
   for (const c of W.craft) { if (c.kind !== 'shuttle') continue; const v = new THREE.Vector3(c.x, 0, c.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.strokeStyle = CC.caution; g.lineWidth = 2; g.beginPath(); g.arc(px, py, 9, 0, 2 * P); g.stroke();
@@ -3620,7 +3617,7 @@ function uiView() {
     const arcN = s.mounts.filter((m) => m.w !== 'pd' && m.state !== 'offline' && inArc(s, m, t) && inRange(s, m, t)), rd = arcN.filter(ready).length;
     rich(vx + 18, ry - 28, [[t.name, CC.sky], [` ${CLASSES[t.cls].name} · range `, CC.lilac], [`${distKm(s, t).toFixed(1)} km`, CC.sky], [' · speed ', CC.lilac], [String(Math.round(t.v)), CC.sky]], '600 22px Antonio', vw * 0.6);
     rich(vx + 18, ry, [['in arc ', CC.lilac], [String(arcN.length), CC.sky], [' · charged ', CC.lilac], [String(rd), CC.sky]], '600 22px Antonio', vw * 0.6);
-  } else rich(vx + 18, ry, [['No target', CC.sky], [' · right click a ship to lock', CC.lilac]], '600 22px Antonio', vw * 0.6);
+  } else rich(vx + 18, ry, [['No target', CC.sky], [' · click a ship to select it', CC.lilac]], '600 22px Antonio', vw * 0.6);
   const m = W.log[W.log.length - 1];
   if (m && W.t - m.t < (m.warn ? 8 : 5)) rich(vx + 18, ry - 64, [[`${m.who}: ${m.text}`, m.warn ? CC.caution : CC.lilac]], '600 22px Antonio', vw * 0.7);
   // a refusal stays up for 8 s even when routine messages follow it
@@ -3647,8 +3644,7 @@ function uiView() {
     button('v.tview', bx, by + ir[3] + 6, hw5, 30, 'Target view', A.targetView, { sel: () => camTargetView, center: true });
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
-  if (lock) button('v.lock', lock[0], lock[1], 140, 30, lock[3] === 'select' ? 'Select' : 'Lock target', () => (lock[3] === 'select' ? selectDest(lock[2]) : A.lock(lock[2])), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v64', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v65', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
