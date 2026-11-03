@@ -44,3 +44,7 @@
   the white background", "need different versions for white and black background"), each measured: B pearl on night on
   black (ship on field 11.9:1, outline 17.8:1), night on pearl on white (11.9:1, 13.2:1); A, C and D pearl on black
   (17.8:1) and night blue on white (13.2:1).
+- Version 8 published 2026-11-03: B-E8 to B-E13 retired (owner: "the shape on e-9 is still the exact same, you just
+  changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a
+  uniform"). Rule 19, one closed outline, measured on every patch (the printed patch one piece, the background one
+  region). Three different outlines beside B-E2: B-E14 the capsule, B-E15 the keyhole, B-E16 the five-sided house.

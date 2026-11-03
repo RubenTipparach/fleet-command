@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-03', q: 'the shape on e-9 is still the exact same, you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a uniform', means: 'B-E8 to B-E13 retired (restyles, and three broke the outline). Rule 19: one closed outline, measured. Three different outlines: B-E14 capsule, B-E15 keyhole, B-E16 five-sided house.' },
   { when: '2026-11-03', q: 'the colors are bad, they dont read on the white background; need different versions for white and black background', means: 'Every emblem now has a version for black and one for white, each measured (rule 18): B pearl on night for black, night on pearl for white; A, C and D pearl on black and night blue on white.' },
   { when: '2026-11-03', q: 'dont like any of those shapes, though b-e2 is a good direction (but I still DONT LIKE IT)', means: 'B-E4 to B-E7 retired; B-E2 back in the sketch as the direction, not the answer; six variations on it (B-E8 to B-E13), each changing one thing, to find what is wrong with it.' },
   { when: '2026-11-03', q: 'those colors are no good either, hard to read from far away', means: 'Colours are now measured: the emblem and its field contrast at least 7:1 (rule 18). B is pearl white on night blue (11.9:1); two other colourways shown with their numbers and a 12 px view.' },
@@ -255,6 +256,7 @@ const RULES = [
   ['Keep clear of protected marks', 'No arrowhead-delta, no starfield in a ring of laurels, nothing from the reference game. Near one, change the contour, the proportions, the colour and the inner symbol.', 'manual p. 15-16; CLAUDE.md section 1'],
   ['One body, no slivers', 'Every part grows out of the part it joins; parts meant to stand apart stand at least 4 grid units clear. Measured on every sketch.', 'your notes'],
   ['Readable from far away, on black and on white', 'Every emblem has a version for black backgrounds and one for white. In each, the emblem and its field contrast at least 7:1, and the outline and the background at least 7:1, measured; checked at 12 px.', 'your notes'],
+  ['One closed outline', 'The patch\'s edge is one closed line: nothing outside it, nothing cut through it, so it can be cut as a patch or struck as a pin. Measured: the printed patch is one piece and the background one region.', 'your notes'],
   ['No lettering inside', 'The faction\'s name is set beside the emblem in its skin\'s display face, never inside it.', 'manual p. 4; the icon standard'],
 ];
 const rulesEl = document.getElementById('rules');
@@ -342,59 +344,28 @@ function saucer(ink, k = KREC) {
   return s;
 }
 // Each patch: its frame (even-odd), the field inside it, and the scale the saucer takes inside it (about 50, 52).
-// The five-segment arch's band: E2's band centreline (x 10 to 90, foot at y 92, corners rounded 6) cut into five equal
-// pieces with 4.5 unit gaps, one piece centred on the crown.
-function segmentedArch() {
-  const pts = [];
-  const line = (a, b) => { const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.5); for (let i = 0; i < n; i++) pts.push([a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n]); };
-  const arc = (cx, cy, r, a0, a1) => { const n = Math.ceil(Math.abs(a1 - a0) * r / 0.5); for (let i = 0; i < n; i++) { const a = a0 + (a1 - a0) * i / n; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } };
-  const D = Math.PI / 180;
-  line([50, 92], [16, 92]); arc(16, 86, 6, 90 * D, 180 * D); line([10, 86], [10, 46]); arc(50, 46, 40, 180 * D, 360 * D); line([90, 46], [90, 86]); arc(84, 86, 6, 0, 90 * D); line([84, 92], [50, 92]);
-  const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
-  const total = cum[cum.length - 1] + Math.hypot(pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]);
-  const crown = cum[pts.findIndex((p) => p[1] <= 6.01 && Math.abs(p[0] - 50) < 1)];
-  const gap = 4.5, seg = (total - 5 * gap) / 5;
-  let d = '';
-  for (let k = 0; k < 5; k++) {
-    const a = crown - seg / 2 + k * (seg + gap), b = a + seg;
-    const run = []; for (let i = 0; i < pts.length; i++) { let c = cum[i]; for (const o of [0, total, -total]) { const cc = c + o; if (cc >= a && cc <= b) { run.push([cc, pts[i]]); break; } } }
-    run.sort((m, n) => m[0] - n[0]);
-    d += ribbonPts(run.map((r) => r[1]), () => 4);
-  }
-  return d;
-}
-// B's frames. B-E1 and B-E3 were dropped (owner: "dont like any of those shapes, though b-e2 is a good direction"), then
-// B-E4 to B-E7 ("dont like any of those shapes, though b-e2 is a good direction (but I still DONT LIKE IT)"). The six
-// below each keep B-E2's flat foot, round top and free-flying ship, and change one thing. cy: the height the ship is
-// centred on; scale: its size.
+// B's frames. Retired, with the owner's words: B-E1 and B-E3 ("dont like any of those shapes, though b-e2 is a good
+// direction"), B-E4 to B-E7 ("(but I still DONT LIKE IT)"), B-E8 to B-E13 ("the shape on e-9 is still the exact same,
+// you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a
+// patch on a uniform"). Every frame below is a different outline, and each is one closed line (rule 19, measured).
+// cy: the height the ship is centred on; scale: its size.
 const ENCLOSURES = [
-  { key: 'B-E2', name: 'The mission arch', liked: true, rec: true, scale: 0.78, cy: 52, pieces: 2,
+  { key: 'B-E2', name: 'The mission arch', rec: true, scale: 0.78, cy: 52, pieces: 2,
     frame: 'M6 96V46A44 44 0 0 1 94 46V96ZM14 88V46A36 36 0 0 1 86 46V88Z',
     field: 'M14 88V46A36 36 0 0 1 86 46V88Z',
-    why: 'A flat foot and a round top, the shape of an explorer\'s mission patch; the round top answers the saucer. Your direction, but not yet right: the six below each change one thing about it.' },
-  { key: 'B-E8', name: 'Thin band and keyline', scale: 0.7, cy: 50, pieces: 3,
-    frame: 'M6 96V46A44 44 0 0 1 94 46V96ZM11 91V46A39 39 0 0 1 89 46V91ZM15 87V46A35 35 0 0 1 85 46V87ZM16.6 85.4V46A33.4 33.4 0 0 1 83.4 46V85.4Z',
-    field: 'M11 91V46A39 39 0 0 1 89 46V91Z',
-    why: 'B-E2 lighter: a thinner band and a fine keyline inside it, as an embroidered patch is edged. Less heavy, more crafted.' },
-  { key: 'B-E9', name: 'The wide arch', scale: 0.68, cy: 50, pieces: 2,
-    frame: 'M3 92V50A47 40 0 0 1 97 50V92ZM9 86V50A41 34 0 0 1 91 50V86Z',
-    field: 'M9 86V50A41 34 0 0 1 91 50V86Z',
-    why: 'B-E2 wider than it is tall, like a view out over a landscape: the saucer is wide, and the frame gives it room to fly sideways.' },
-  { key: 'B-E10', name: 'Arch and name tab', scale: 0.66, cy: 46, pieces: 3,
-    frame: 'M6 84V44A44 44 0 0 1 94 44V84ZM13 78V44A37 37 0 0 1 87 44V78ZM9 89H91A4.5 4.5 0 0 1 91 98H9A4.5 4.5 0 0 1 9 89Z',
-    field: 'M13 78V44A37 37 0 0 1 87 44V78Z',
-    why: 'A shorter arch over a separate tab, as a unit patch carries a name tab under it. The name goes on the tab, never inside the emblem (rule 16).' },
-  { key: 'B-E11', name: 'The canopy', scale: 0.78, cy: 54, pieces: 2,
-    frame: 'M6 54V46A44 44 0 0 1 94 46V54A3.5 3.5 0 0 1 87 54V46A37 37 0 0 0 13 46V54A3.5 3.5 0 0 1 6 54Z',
-    field: 'M6 96V46A44 44 0 0 1 94 46V96Z',
-    why: 'Only the arch\'s top, a canopy of sky over the ship, the rest open: the Concord shelters, it does not wall in.' },
-  { key: 'B-E12', name: 'Five-part arch', scale: 0.78, cy: 52, pieces: 6, frame: segmentedArch(),
-    field: 'M14 88V46A36 36 0 0 1 86 46V88Z',
-    why: 'B-E2\'s band in five equal parts round the ship, one at the crown: the five founding peoples together making the frame.' },
-  { key: 'B-E13', name: 'Arch on a step', scale: 0.78, cy: 52, pieces: 2,
-    frame: 'M6 88V46A44 44 0 0 1 94 46V88H98V96H2V88ZM14 88V46A36 36 0 0 1 86 46V88Z',
-    field: 'M14 88V46A36 36 0 0 1 86 46V88Z',
-    why: 'B-E2 standing on a wider step, a door set on solid ground: the Concord is open, and it is also built to last.' },
+    why: 'A flat foot and a round top, the shape of an explorer\'s mission patch. Your direction, not yet right. The three below are different outlines, not restyles of it.' },
+  { key: 'B-E14', name: 'The capsule', scale: 0.6, cy: 48, pieces: 2,
+    frame: 'M10 44A40 40 0 0 1 90 44V56A40 40 0 0 1 10 56ZM16 44A34 34 0 0 1 84 44V56A34 34 0 0 1 16 56Z',
+    field: 'M16 44A34 34 0 0 1 84 44V56A34 34 0 0 1 16 56Z',
+    why: 'Round at the top and at the foot: the rounded cap that ends every Concord frame and key, stood on end. The arch\'s round top kept, its square foot rounded off. Watch: it comes out close to an oval, and you have not liked round shapes.' },
+  { key: 'B-E15', name: 'The keyhole', scale: 0.7, cy: 52, pieces: 2,
+    frame: 'M18.2 52A34 34 0 1 1 81.8 52L92 96H8ZM24.7 52A28 28 0 1 1 75.3 52L84 90H16Z',
+    field: 'M24.7 52A28 28 0 1 1 75.3 52L84 90H16Z',
+    why: 'A round head over a base that widens to the foot: a keyhole. The Concord holds the key and opens the door to any people who ask. The saucer sits in the head, the nacelles spread in the base.' },
+  { key: 'B-E16', name: 'The five-sided house', scale: 0.72, cy: 56, pieces: 2,
+    frame: 'M8 96V40L50 4L92 40V96ZM14 90V42.5L50 11.6L86 42.5V90Z',
+    field: 'M14 90V42.5L50 11.6L86 42.5V90Z',
+    why: 'Five sides for the five founding peoples, and the gable of a house: the Concord as a home its members share. Upright sides and a low roof keep it well clear of an arrowhead.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {
@@ -519,7 +490,7 @@ const DESIGNS = [
 
 // The three patch shapes for B, side by side, each with its reason.
 function enclosureRow() {
-  return `<div class="encl"><h4>Variations on B-E2</h4><p class="muted" style="font-size:14px">You liked B-E2\'s direction but not B-E2 itself, and none of B-E4 to B-E7 (retired). Each variation below keeps its flat foot, round top and free-flying ship, and changes one thing. Say which is closest, and what about B-E2 is still wrong.</p><div class="encl-row">${ENCLOSURES.map((e) => `<figure>
+  return `<div class="encl"><h4>Outlines for B</h4><p class="muted" style="font-size:14px">B-E8 to B-E13 only restyled B-E2, and three of them broke the outline (a tab outside it, an open canopy, gaps through it). They are retired. Below, B-E2 and three different outlines, each one closed line that can be cut as a patch or struck as a pin (rule 19, measured).</p><div class="encl-row">${ENCLOSURES.map((e) => `<figure>
     <svg viewBox="0 0 100 100" width="132" height="132" aria-hidden="true">${enclosed(e, false, VERSIONS.dk)}</svg>
     <figcaption><b>${e.key} ${e.name}</b>${e.rec ? '<span><span class="chip rec">In the sketch above</span></span>' : ''}<span>${e.why}</span>
     <span class="joins" data-joins-enc="${e.key}">Measuring joins...</span><span class="mini">${['dk', 'lt'].map((bg) => [40, 20].map((px) => `<span class="${bg}" style="width:${px + 10}px;height:${px + 10}px"><svg width="${px}" height="${px}" viewBox="0 0 100 100">${enclosed(e, false, VERSIONS[bg])}</svg></span>`).join('')).join('')}</span></figcaption></figure>`).join('')}</div></div>`;
@@ -622,12 +593,30 @@ async function measureJoins(d) {
   }
   return { pieces, expected: d.pieces, nearest, ok: pieces === d.pieces && !(nearest < MIN_GAP) };
 }
+// The outline, measured (rule 19): the whole patch as printed (field, frame and ship together) must be one piece, and
+// the background must be one region (the outside), so nothing floats outside the edge and nothing is cut through it.
+async function measureOutline(svgInner) {
+  const N = 300, svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}" viewBox="0 0 100 100">${svgInner}</svg>`;
+  const img = new Image();
+  await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
+  const c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const a = x.getImageData(0, 0, N, N).data;
+  const count = (want) => { const seen = new Uint8Array(N * N); let n = 0;
+    for (let i = 0; i < N * N; i++) { if (seen[i] || (a[i * 4 + 3] >= 128) !== want) continue; n++; const q = [i]; seen[i] = 1;
+      while (q.length) { const p = q.pop(), px = p % N, py = (p / N) | 0;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = px + dx, ny = py + dy; if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue; const m = ny * N + nx; if (!seen[m] && (a[m * 4 + 3] >= 128) === want) { seen[m] = 1; q.push(m); } } } }
+    return n; };
+  const parts = count(true), regions = count(false);
+  return { parts, holes: regions - 1, ok: parts === 1 && regions === 1 };
+}
 window.EMBLEM_CHECK = async () => {
   const out = [];
   for (const e of ENCLOSURES) {
-    const r = await measureJoins({ pieces: e.pieces, draw: () => enclosed(e, true) }); out.push({ id: 'concord-b ' + e.key, ...r });
+    const r = await measureJoins({ pieces: e.pieces, draw: () => enclosed(e, true) });
+    const o = await measureOutline(enclosed(e, false, VERSIONS.dk));
+    out.push({ id: 'concord-b ' + e.key, ...r, outline: o, ok: r.ok && o.ok });
     const el = document.querySelector(`[data-joins-enc="${e.key}"]`);
-    if (el) { el.classList.toggle('bad', !r.ok); el.textContent = (r.ok ? 'Joins measured: ' : 'Joins FAIL: ') + `${r.pieces} piece${r.pieces === 1 ? '' : 's'} (designed ${r.expected})` + (Number.isFinite(r.nearest) ? `, parts ${r.nearest.toFixed(1)} apart` : ''); }
+    if (el) { el.classList.toggle('bad', !(r.ok && o.ok)); el.textContent = (o.ok ? 'One closed outline' : `Outline FAIL: ${o.parts} parts, ${o.holes} holes`) + '. ' + (r.ok ? 'Joins: ' : 'Joins FAIL: ') + `${r.pieces} piece${r.pieces === 1 ? '' : 's'} (designed ${r.expected})` + (Number.isFinite(r.nearest) ? `, parts ${r.nearest.toFixed(1)} apart` : ''); }
   }
   for (const d of DESIGNS) {
     const r = await measureJoins(d); out.push({ id: d.id, ...r });
