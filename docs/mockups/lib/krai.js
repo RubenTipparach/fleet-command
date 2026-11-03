@@ -185,7 +185,7 @@ function rr(G, X, Y, W, H, r) {
 function knob(G, cx, cy, r) { G.beginPath(); for (let i = 0; i < 6; i++) { const a = i * P / 3; G.lineTo(cx + Math.cos(a) * r * 1.08, cy + Math.sin(a) * r * 1.08); } G.closePath(); }
 
 // ---- The battle console's kit -----------------------------------------------------------------------------------
-// Every piece, the battle console's own included (the placards, the column, the clamps and gussets, the allocation
+// Every piece, the battle console's own included (the placards, the joined column, the joined strips, the allocation
 // cells; owner, 2026-11-03: "you didn't render the stitching elements in blender"), is rendered in Blender by
 // tools/blender/build_ui_krai.py and comes from the inlined manifest (tools/mockups/inline_data.py); load() decodes
 // them once.
@@ -226,6 +226,8 @@ const api = {
   link: '#ff8a2a',
   // labels centred on the keys and tabs, clear of the blade's point (the skin's --btn-justify: center)
   keyCenter: true,
+  // the strips are 80 px (the rendered strip.top.join and strip.bottom.join), so the strip's content fits its open channel
+  stripH: 80,
 };
 window.FCSkins = window.FCSkins || {}; window.FCSkins.krai = api;
 return api;

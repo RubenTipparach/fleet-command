@@ -445,7 +445,11 @@ const INK = CON.ink, KINK = CON.keyInk, FNT = CON.font;
 const RR = CON.rr || ((G, ...a) => { G.beginPath(); G.roundRect(...a); });
 const KNOB = CON.knob || ((G, cx, cy, r) => { G.beginPath(); G.arc(cx, cy, r, 0, 2 * P); });
 const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v66', krai: 'Mockup 6 · Battle console · Krai Warhost · v1' }[SKIN_ID] || `Battle console · ${CON.name}`;
+// The strips' height: 56 px, or a skin's own (the Krai's are 80, so every element sits in the open channel; owner,
+// 2026-11-03: "Some of the elements on the bottom bar ... don't fit in the container. Shrink.the elements or grow
+// container height"). SDY centres the strips' 56 px of content in a taller strip.
+const SH = CON.stripH || 56, SDY = (SH - 56) / 2;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v66', krai: 'Mockup 6 · Battle console · Krai Warhost · v2' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -1635,7 +1639,7 @@ function buildKit() {
   // a skin with symbol bars (owner, 2026-10-31: "have different repeated symbols for them"): its cells, lit, unlit, warning, ok
   if (CON.barCells) for (const [id, p] of Object.entries(CON.barCells)) KIT.cell[id] = paint(p.size[0], p.size[1], p.draw);
   for (const [piece, p] of Object.entries(KIT.nine)) KIT.src[piece] = paint(p.size[0], p.size[1], p.draw);
-  // the hero pieces the page draws, and any more a skin's kit carries (the Krai's clamps and gussets)
+  // the hero pieces the page draws, and any more a skin's kit carries (the Krai's joined column)
   for (const [id, [w, h]] of Object.entries({ ...HERO, ...(CON.heroSize || {}) })) if (CON.hero[id]) KIT.hero[id] = paint(w, h, CON.hero[id]);
   for (const n of ICONS) { KIT.icon[n] = CON.icon(n); KIT.iconOn[n] = CON.icon(n, KINK.tabOn); }
 }
@@ -1830,7 +1834,7 @@ const PANELS = { station: 'Helm', ship: 'Ship', weapons: 'Weapons', radar: 'Map'
 let O = {};
 function rects() {
   const o = {}, E = expanded, cw = 480;
-  o.top = [cw, 0, RW - cw, 56]; o.bottom = [cw, RH - 56, RW - cw, 56]; o.view = [cw, 56, RW - cw, RH - 112];
+  o.top = [cw, 0, RW - cw, SH]; o.bottom = [cw, RH - SH, RW - cw, SH]; o.view = [cw, SH, RW - cw, RH - 2 * SH];
   o.plate = [10, 6, 460, 56]; o.station = [6, 68, 468, 420]; o.ship = [6, 494, 468, 276]; o.weapons = [6, 776, 468, 160]; o.radarRow = [6, 942, 468, 132];
   if (E) { for (const k of ['top', 'bottom', 'plate', 'station', 'ship', 'weapons', 'radarRow']) o[k] = null; o[E] = [6, 34, RW * 2 / 3 - 12, RH - 40]; o.view = [RW * 2 / 3, 0, RW / 3, RH]; }
   return o;
@@ -1840,12 +1844,14 @@ function layout() {
   mode = 'desk'; S = Math.min(h / 1080, w / 1500); RW = w / S; RH = h / S;
   O = rects(); sizeView(O.view); sizeUI();
   const home = document.getElementById('home');
-  if (home) css(home, `display:${expanded ? 'none' : 'block'};right:${14 * S}px;bottom:${(56 + 50) * S}px;font-size:${13 * S}px;`);
+  if (home) css(home, `display:${expanded ? 'none' : 'block'};right:${14 * S}px;bottom:${(SH + 50) * S}px;font-size:${13 * S}px;`);
 }
 // A panel: the kit frame, its title in a notch that breaks the top arm (LCARS's habit), Expand beside it.
 const FP = CON.pad;
 function panel(id, r, title, big, noX) {
-  const [x, y, w, h] = r; nine('frame.panel', x, y, w, h);
+  // docked under a kit's column (the Krai's: one plate with the panels formed into it as joined wells) the panel has no
+  // frame of its own; expanded, or in a kit without one, it has
+  const [x, y, w, h] = r; if (big || !KIT.hero['console.column'] || !['station', 'ship', 'weapons'].includes(id)) nine('frame.panel', x, y, w, h);
   const cx = x + FP[3], cy = y + FP[0], cw = w - FP[1] - FP[3], ch = h - FP[0] - FP[2];
   g.font = FNT('700 22px Antonio'); g.letterSpacing = '1px'; const tw = Math.min(g.measureText(title.toUpperCase()).width, cw - 160); g.letterSpacing = '0px';
   // the expand key, 20 % smaller than the 26 px first drawn (owner, 2026-11-02: "it should be 20% smaller")
@@ -1880,8 +1886,9 @@ function clipped(b, fn) { g.save(); g.beginPath(); g.rect(b.x - 2, b.y - 2, b.w 
 
 // ---- Strips and plate ---------------------------------------------------------------------------------------------
 function uiTop(r) {
-  const [x, y, w, h] = r, s = W.player; nine('strip.top', x, y, w, h);
-  const cx = x + 96, cw = w - 192, cy = y + (44 - 35) / 2, fixed = 70 + 100 + 80, gap = 22, rest = cw - fixed - gap * 5, u = rest / 3.2;
+  // a kit with strips that join the column (the Krai's) uses them: the metal runs on into the column with no edge between
+  const [x, y, w, h] = r, s = W.player; nine(KIT.nine['strip.top.join'] ? 'strip.top.join' : 'strip.top', x, y, w, h);
+  const cx = x + 96, cw = w - 192, cy = y + SDY + (44 - 35) / 2, fixed = 70 + 100 + 80, gap = 22, rest = cw - fixed - gap * 5, u = rest / 3.2;
   let xx = cx;
   bar(xx, cy, u, 'Hull integrity', s.hull / CLASSES[s.cls].hull, s.hull / CLASSES[s.cls].hull < 0.35); xx += u + gap;
   LBL('Weapon capacitor', xx, cy + 13, u * 1.2); cellRow('cap', xx, cy + 19, u * 1.2, 16, 14, s.cap / CLASSES[s.cls].capacitor_e * 14, null, null); xx += u * 1.2 + gap;
@@ -1929,8 +1936,8 @@ function warpKey(x, y, w, h) {
   text(lab, x + w / 2, y + h * 0.68, `700 ${starved || blocked ? 14 : 17}px Antonio`, col, 'center', w - 10, '1px');
 }
 function uiBottom(r) {
-  const [x, y, w, h] = r, s = W.player; nine('strip.bottom', x, y, w, h);
-  const cx = x + 96, cw = w - 192, cy = y + 12, ch = 44, gap = 22, fixed = 120 + 138, rest = cw - fixed - gap * 4, u = rest / 3.45;
+  const [x, y, w, h] = r, s = W.player; nine(KIT.nine['strip.bottom.join'] ? 'strip.bottom.join' : 'strip.bottom', x, y, w, h);
+  const cx = x + 96, cw = w - 192, cy = y + SDY + 12, ch = 44, gap = 22, fixed = 120 + 138, rest = cw - fixed - gap * 4, u = rest / 3.45;
   let xx = cx;
   const wk = 96; LBL('Speed', xx, cy + 28); NUM(String(Math.round(s.v)), xx + 58, cy + 31, 46, CC.sky, 'left'); speedSlider(xx + 112, cy, u * 1.5 - 112 - wk - 10, ch);
   warpKey(xx + u * 1.5 - wk, cy + 7, wk, 30); xx += u * 1.5 + gap;
@@ -3773,29 +3780,15 @@ function drawUI() {
   HITS = [];
   if (!expanded) {
     // the column's black, so the 3D view never shows through it
-    g.fillStyle = CC.bg; g.fillRect(0, 0, 480, RH); if (KIT.nine['console.column']) nine('console.column', 0, 0, 480, RH);
+    g.fillStyle = CC.bg; g.fillRect(0, 0, 480, RH); if (KIT.hero['console.column']) heroImg('console.column', 0, 0, 480, 1080);
     uiTop(O.top); uiBottom(O.bottom); uiPlate(O.plate);
     uiStation(O.station, false); uiShip(O.ship, false); uiWeapons(O.weapons, false); uiRadarRow(O.radarRow);
-    joins([O.plate, O.station, O.ship, O.weapons, O.radarRow]);
   } else {
-    g.fillStyle = CC.bg; g.fillRect(0, 0, VIEW[0], RH); if (KIT.nine['console.column']) nine('console.column', 0, 0, VIEW[0], RH);
+    g.fillStyle = CC.bg; g.fillRect(0, 0, VIEW[0], RH);
     const r = O[expanded]; ({ station: uiStation, ship: uiShip, weapons: uiWeapons, radar: uiMap })[expanded](r, true);
   }
   uiView(); uiSheet(); uiTip();
   PREV = HITS;
-}
-// A kit with clamps (the Krai's, rendered; owner, 2026-11-03: "The UI panels should be somewhat connected like they are
-// part of the same console") bolts each panel to the next across the gap, on the left half, clear of the titles at the
-// top rail's right end, and braces the column's spine to the top and bottom strips with a gusset.
-function joins(rects) {
-  if (!KIT.hero['join.bridge']) return;
-  const rs = rects.filter(Boolean).slice().sort((a, b) => a[1] - b[1]);
-  for (let i = 0; i + 1 < rs.length; i++) {
-    const a = rs[i], b = rs[i + 1], gap = b[1] - (a[1] + a[3]); if (gap > 20) continue;
-    const l = Math.max(a[0], b[0]), r = Math.min(a[0] + a[2], b[0] + b[2]), gy = a[1] + a[3] + gap / 2;
-    for (const f of [0.14, 0.4]) heroImg('join.bridge', Math.round(l + (r - l) * f - 26), Math.round(gy - 12), 52, 24);
-  }
-  if (KIT.hero['join.gusset']) { heroImg('join.gusset', 458, 10, 34, 36); g.save(); g.translate(458, RH - 10); g.scale(1, -1); g.drawImage(KIT.hero['join.gusset'], 0, 0, 34, 36); g.restore(); }
 }
 function render(dt) {
   follow(dt); camLockStep(dt); controls.update();

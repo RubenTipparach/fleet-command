@@ -46,20 +46,36 @@ The page draws a piece only when the skin's kit carries it, so the Concord is un
 |---|---|---|
 | `plate.label` | 9-slice, any x 18 | every label (lilac ink) sits on a placard, its red pip ahead of the letters |
 | `plate.title` | 9-slice, any x 24 | a panel's title on a placard set into the frame's top rail |
-| `console.column` | 9-slice, 480 x 1080 | the column behind the panels, and the left two thirds behind an expanded panel |
-| `join.bridge` | hero 52 x 24 | two clamps across each gap between stacked panels, on the left half, clear of the titles |
-| `join.gusset` | hero 34 x 36 | braces the column's spine to the top strip, and flipped to the bottom strip |
+| `console.column` | hero 480 x 1080 | the whole column: one plate with the station, ship and weapons panels formed into it as joined wells; a docked panel then draws no frame of its own |
+| `strip.top.join`, `strip.bottom.join` | 9-slice, any x 80 | the strips, their metal running on into the column; with `stripH` 80 the strips' 56 px of content is centred in the open channel |
 | `bar.cell.on`, `.off`, `.warn` | cells | every bar becomes a row of the skin's symbol (the owner's 2026-10-31 rule) |
 
-### 4. Every Krai piece is rendered in Blender
+### 4. The column flows as one console
+
+The owner, 2026-11-03, of the first pass (separate frames held by rendered clamps): "One of they key principals is to make
+the UI flow well. These more metallic interfaces should use some connected shapes across panels", and "Some of the
+little clamps also obscure the text labels on the panels". The clamps are gone. The column is one plate: the three
+docked panels are wells formed into it at their exact rectangles (inset 13 px, 16 on the right), each with the frame's
+fangs at its corners, neighbouring wells joined through a waisted neck (x 92-184) so the cavities run into each other, a
+channel of red light down the right land (x 465-470, y 92-988) crossing every panel, enamel blades and pyramids on the
+bands between the wells, and flanges past x 480 at the strips' rows so the plate has no rolled edge where it meets
+them. The strips' plates likewise run off their left edge into the column.
+
+The bottom strip did not hold its row (owner: "Some of the elements on the bottom bar like red alerts energy, battery,
+warp button don't fit in the container"): the Krai strip art is 72 px with a 45 px channel, squeezed to the page's
+56 px. The joined strips are rendered at 80 px with a 60 px channel (rows 10-70), and the page centres its 56 px of
+strip content in a taller strip (`SDY`), so the alert lamps, the power and systems ticks, the battery and the warp key
+all sit inside it. The 3D view is 48 px shorter in the Krai.
+
+### 5. Every Krai piece is rendered in Blender
 
 The owner, 2026-11-03: "you didn't render the stitching elements in blender like you are supposed to". The placards,
-the column, the clamps, the gussets and the allocation cells are modelled by `tools/blender/build_ui_krai.py` in the
+the joined column, the joined strips and the allocation cells are modelled by `tools/blender/build_ui_krai.py` in the
 skin's cast volcanic gunmetal, the shaped ones from outlines in `tools/mockups/krai_shapes.py` that pass rules K, L, R,
-P and B (24 of 24 renders pass rule B). Render cost at 48 samples on the cloud CPU: the small pieces 0.2-2.6 s each, the
-column (960 x 2160 px) 343 s. The page carries the kit as WebP: the Krai page is 1.3 MiB.
+P and B (every shaped render passes rule B). Render cost at 48 samples on the cloud CPU: the small pieces 0.2-2.6 s
+each, the joined strips 23 s each, the column (960 x 2160 px) 271 s. The page carries the kit as WebP: the Krai page is 1.3 MiB.
 
-### 5. Verification of function: press every control in both skins
+### 6. Verification of function: press every control in both skins
 
 `tools/mockups/skin_parity.mjs` replays each of the 40 named shots, then for every control the Concord registered in
 it: replays the shot again, presses the control at its centre (click, or a drag to it), steps the battle 30 steps
@@ -68,9 +84,9 @@ battle state (every ship's position, heading, speed, hull, shields, power, syste
 hold, warp; mines, craft, shots, log length). The faction's page must give the same record press for press; the Concord
 is first checked against itself so a difference cannot come from the check. Result: 2,175 presses of 270 distinct
 controls in 40 shots, every one identical; 28 presses changed nothing a second later in either skin (toggles that act
-later or hover cards). It found one Concord bug (decision 6).
+later or hover cards). It found one Concord bug (decision 7).
 
-### 6. Concord fixes
+### 7. Concord fixes
 
 - The Fleet key stepped through `own[(own.indexOf(s) + 1) % own.length]` and threw when `own` was empty (the player's
   last ship jumped out). It is now dark and does nothing when no ship is left.

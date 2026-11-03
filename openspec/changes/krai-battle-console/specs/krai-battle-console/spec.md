@@ -16,9 +16,9 @@ control the Concord shows SHALL exist in the faction's console and do the same t
 
 ### Requirement: The Krai Warhost console is one cast console
 
-The Krai Warhost console SHALL draw its column on one rendered backplate, clamp each stacked panel to the next with
-rendered bridges, brace the column to the strips with rendered gussets, and set every label and panel title on a
-rendered metal placard. Every Krai piece with material and depth SHALL be rendered in Blender from fit-checked shapes.
+The Krai Warhost console SHALL draw its column as one rendered plate with its docked panels formed into it as joined
+wells, its strips' metal SHALL run on into the column with no edge at the join, every element of a strip SHALL sit
+inside the strip's open channel, and every label and panel title SHALL sit on a rendered metal placard. Every Krai piece with material and depth SHALL be rendered in Blender from fit-checked shapes.
 
 #### Scenario: A label on the Krai console
 - **WHEN** the Krai console draws a label (not a value)

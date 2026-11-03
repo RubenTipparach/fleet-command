@@ -5,8 +5,9 @@
   the link here, in `mockup-work.md`, `docs/design/README.md` and the mockup tracker.
 - Shows: the battle console of mockup 2 in the Krai Warhost skin, every control working against the same seeded
   stand-in battle and test scenes. The Krai kit rendered in Blender (frames, keys, tabs, strips, name plate, dial, lamps,
-  crest, symbol bars, allocation cells), the column as one cast backplate with clamps between panels and gussets to the
-  strips, every label and title on a metal placard, the full icon set in the Krai's language, Teko and Russo One type,
+  crest, symbol bars, allocation cells), the column as one plate with the panels formed into it as joined wells and a
+  channel of red light crossing them, 80 px strips whose metal runs into the column, every label and title on a metal
+  placard, the full icon set in the Krai's language, Teko and Russo One type,
   blade-cut drawn keys, and the player's side named as the Warhost.
 - Made by: `docs/mockups/battle-console-krai.html`, written by `tools/mockups/skin_page.py krai` from
   `docs/mockups/battle-console.html` (never edit the written page). The Krai look is `docs/mockups/lib/krai.js`; the
@@ -19,4 +20,5 @@
 
 ## Publishes
 
-- Version 1: not yet published.
+- Version 1 (first pass, clamps and a backplate): not published.
+- Version 2 (the joined column and strips, no clamps): not yet published.

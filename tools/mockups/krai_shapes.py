@@ -162,17 +162,43 @@ def pieces():
         margins=(0, 8, 0, 12), stretch="x", roll=0.8, land=0.6, dz=-1.5, pad=0.5)
     add("plate.title", "nine", (140, 24), soft(cut(0.5, 0.5, 139.5, 23.5, 7), 2.0), [("red", soft(Polygon([(8, 7), (15, 12), (8, 17)]), 0.6))],
         inlays=[box(24, 19.4, 116, 20.8)], margins=(0, 24, 0, 24), stretch="x", roll=1.2, land=1.0, dz=-2.0, pad=0.5)
-    # The column: one cast slab every panel is bolted to, a channel of red light down its spine where it meets the
-    # battle, honed pyramids pinning the spine. Its edges and corners are in the margins; the face stretches.
-    spine = soft(box(462, 40, 468, 1040), 1.5)
-    add("console.column", "nine", (480, 1080), soft(box(0.5, 0.5, 479.5, 1079.5), 3.0), [("red", spine)],
-        studs=[(465, y, 2.4) for y in (18, 1062)], margins=(36, 36, 36, 36), stretch="xy", dz=-3.0)
-    # Clamps: a steel bridge across the gap between two stacked panels, a seam of red light in it, a pyramid at each
-    # end; and a gusset bracing the column's spine to the top and bottom strips.
-    add("join.bridge", "hero", (52, 24), soft(cut(0.5, 0.5, 51.5, 23.5, 6), 2.0), [("red", soft(box(15, 9.5, 37, 14.5), 1.0))],
-        studs=[(7.5, 12, 2.2), (44.5, 12, 2.2)], roll=1.6, land=1.6, dz=-3.0, pad=1.0)
-    add("join.gusset", "hero", (34, 36), soft(Polygon([(0.5, 0.5), (33.5, 0.5), (33.5, 35.5), (16, 35.5), (0.5, 20)]), 2.0),
-        [("red", soft(Polygon([(18, 7), (27.5, 7), (27.5, 22)]), 1.0))], studs=[(8.5, 8, 2.2)], roll=1.6, land=1.6, dz=-3.0, pad=1.0)
+    # The column (owner, 2026-11-03: "One of the key principals is to make the UI flow well. These more metallic interfaces
+    # should use some connected shapes across panels", and of the first pass's clamps: "Some of the little clamps also
+    # obscure the text labels"): one cast plate, 480 x 1080, the battle console's three docked panels formed into it as
+    # wells at their exact rectangles (station 6,68 468 x 420; ship 6,494 468 x 276; weapons 6,776 468 x 160), each
+    # well's corners grown with the frame's fangs, neighbouring wells joined through a waisted neck on the left so the
+    # cavities run into each other, and a channel of red light down the right land crossing every panel. Its top and
+    # bottom right corners run on past x 480 under the strips (strip.top.join, strip.bottom.join), so the metal is one
+    # piece there: no rolled edge where the column meets a strip.
+    def fanged(x0, y0, x1, y1):
+        w = cut(x0, y0, x1, y1, 4)
+        f = Polygon([(0, 0), (0, 14), (32, 32), (14, 0)])
+        for sx, sy, cx, cy in ((1, 1, x0, y0), (-1, 1, x1, y0), (1, -1, x0, y1), (-1, -1, x1, y1)):
+            w = w.difference(affinity.translate(affinity.scale(f, sx, sy, origin=(0, 0)), cx, cy))
+        return w
+    panels = [(6, 68, 468, 420), (6, 494, 468, 276), (6, 776, 468, 160)]
+    wells = [fanged(x + 13, y + 13, x + w - 16, y + h - 13) for x, y, w, h in panels]
+    joined = wells[0]
+    for (ax, ay, aw, ah), (bx, by, bw, bh), wb in zip(panels, panels[1:], wells[1:]):
+        top, bot, mid = ay + ah - 13, by + 13, (ay + ah + by) / 2
+        neck = Polygon([(92, top - 6), (184, top - 6), (164, mid), (184, bot + 6), (92, bot + 6), (112, mid)])
+        joined = joined.union(neck).union(wb)
+    spine = soft(box(465, 92, 470, 988), 1.5)
+    col_plate = Polygon([(0.5, 0.5), (494, 0.5), (494, 80), (479.5, 80), (479.5, 1000), (494, 1000), (494, 1079.5), (0.5, 1079.5)])
+    add("console.column", "hero", (480, 1080), soft(col_plate, 3.0), [("ember", soft(joined, 3.6)), ("red", spine)],
+        studs=[(9.5, y, 2.4) for y in (40, 491, 773, 939, 1040)] + [(467.5, y, 2.4) for y in (40, 1040)],
+        inlays=[Polygon([(30, 488), (78, 488), (84, 491), (78, 494), (30, 494)]), Polygon([(30, 770), (78, 770), (84, 773), (78, 776), (30, 776)])],
+        dz=-8.0)
+    # The strips as the battle console joins them to the column: 80 px tall, so a bar's label, its bar and the alert lamps
+    # sit inside the open channel (owner, 2026-11-03: "Some of the elements on the bottom bar like red alerts energy,
+    # battery, warp button don't fit in the container. Shrink.the elements or grow container height"); the plate runs on
+    # off the left edge into the column, so there is no rolled edge at the join.
+    chan80 = soft(Polygon([(64, 10), (448, 10), (478, 40), (448, 70), (64, 70), (34, 40)]), 3.6)
+    for name in ("strip.top.join", "strip.bottom.join"):
+        add(name, "nine", (512, 80), soft(box(-16, 0.5, 511.5, 79.5), 3.6), [("ember", chan80)],
+            studs=[(498, 14, 2.6), (498, 66, 2.6)],
+            inlays=[Polygon([(487, 24), (497, 24), (492, 36)]), Polygon([(487, 56), (497, 56), (492, 44)])],
+            live=[("readouts", box(90, 13, 422, 67))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
     return P
 
 

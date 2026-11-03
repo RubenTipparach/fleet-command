@@ -26,7 +26,7 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
-| 6 | Battle console: Krai Warhost | Drafted (2026-11-03, v1; not yet published) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | to come (the desktop session publishes) |
+| 6 | Battle console: Krai Warhost | Drafted (2026-11-03, v2; not yet published) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | to come (the desktop session publishes) |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -352,5 +352,12 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
   column is one cast backplate with a spine of red light, steel clamps bolt each panel to the next and gussets brace the
   column to the strips, all rendered in Blender (`tools/blender/build_ui_krai.py`) from fit-checked shapes, with the
   allocation cells.
+- Then: "Didn't be afraid to rerender stuff in blender. One of they key principals is to make the UI flow well. These more
+  metallic interfaces should use some connected shapes across panels", "Some of the little clamps also obscure the text
+  labels on the panels", "Some of the elements on the bottom bar like red alerts energy, battery, warp button don't fit in
+  the container. Shrink.the elements or grow container height". Version 2: the clamps gone; the column re-rendered as
+  one plate with the three panels formed into it as wells joined through necks and a channel of red light down its edge
+  crossing every panel; the strips re-rendered 80 px tall with their metal running on into the column, every bottom-bar
+  element inside the channel.
 
 Design: `openspec/changes/krai-battle-console/`.

@@ -323,35 +323,42 @@
       "stretch": "x"
     },
     "console.column": {
-      "kind": "nine",
+      "kind": "hero",
       "size": [
         480,
         1080
       ],
-      "file": "console.column.png",
+      "file": "console.column.png"
+    },
+    "strip.top.join": {
+      "kind": "nine",
+      "size": [
+        512,
+        80
+      ],
+      "file": "strip.top.join.png",
       "margins": [
-        36,
-        36,
-        36,
-        36
+        10,
+        100,
+        10,
+        100
       ],
-      "stretch": "xy"
+      "stretch": "x"
     },
-    "join.bridge": {
-      "kind": "hero",
+    "strip.bottom.join": {
+      "kind": "nine",
       "size": [
-        52,
-        24
+        512,
+        80
       ],
-      "file": "join.bridge.png"
-    },
-    "join.gusset": {
-      "kind": "hero",
-      "size": [
-        34,
-        36
+      "file": "strip.bottom.join.png",
+      "margins": [
+        10,
+        100,
+        10,
+        100
       ],
-      "file": "join.gusset.png"
+      "stretch": "x"
     },
     "cell.idle": {
       "kind": "nine",

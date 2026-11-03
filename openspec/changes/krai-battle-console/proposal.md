@@ -11,7 +11,10 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
 On the first pass (2026-11-03): "Labels on the krai UI need better integration. They should have a metallic background.
 The UI panels should be somewhat connected like they are part of the same console", then "Cool but you didn't render
 the stitching elements in blender like you are supposed to" (CLAUDE.md section 7: everything with material and depth is
-modelled and rendered in Blender).
+modelled and rendered in Blender). On the second pass: "Didn't be afraid to rerender stuff in blender. One of they key
+principals is to make the UI flow well. These more metallic interfaces should use some connected shapes across panels",
+"Some of the little clamps also obscure the text labels on the panels", and "Some of the elements on the bottom bar like
+red alerts energy, battery, warp button don't fit in the container. Shrink.the elements or grow container height".
 
 ## What Changes
 
@@ -27,9 +30,10 @@ modelled and rendered in Blender).
   sized to Antonio's width, Russo One for headings), its keys' ink, blade-cut shapes for drawn keys, hexagonal knobs, the
   player's side named as the Warhost, and the full icon subject list of the icon guide in the Krai's language.
 - **New Krai kit pieces rendered in Blender** (`tools/mockups/krai_shapes.py`, `tools/blender/build_ui_krai.py`):
-  the label and title placards, the column's cast backplate with its spine of red light, clamp bridges between stacked
-  panels, gussets bracing the column to the strips, and the allocation cells (idle, lit, warning, ok, locked) with the
-  green bar fill. Every shaped piece passes the fit rules and rule B on its render.
+  the label and title placards; the column as one cast plate with the three docked panels formed into it as wells,
+  neighbouring wells joined through a waisted neck and a channel of red light down its edge crossing every panel; strips
+  80 px tall whose metal runs on into the column with no edge at the join; and the allocation cells (idle, lit, warning,
+  ok, locked) with the green bar fill. Every shaped piece passes the fit rules and rule B on its render.
 - **`tools/mockups/skin_parity.mjs`**: the functional check. Every control of every named shot is pressed, from a fresh
   replay of the shot, in the Concord and in the faction's page, and the console and battle state a second later must
   match exactly.
