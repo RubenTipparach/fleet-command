@@ -1,5 +1,7 @@
 # Proposal: concord-ship-look
 
+> **Superseded** (owner, 2026-11-03: "Concord line (hull concepts) - new standard, get rid of the old concord ships"). The Concord's ship designs are `concord-hull-concepts` (mockup 6). This change is kept for its record and is not to be built; its damage systems carry on in `ship-damage-visuals` and mockup 6.
+
 ## Why
 
 The owner, 2026-11-02, with five screenshots of fan-made starship models (not committed: someone else's art): "let's

@@ -176,8 +176,22 @@ function makeSpace(skyId, finiteStars) {
   };
   return g;
 }
-// A stand-in ship, our own shape (a spine, a wedge bow, two drive pods): the look is mockup 3's to decide.
-function shipModel(color, scale = 1, hullColor = 0xb9c2cc) {
+// A ship. With `line` (a class id of the Concord line, docs/mockups/lib/concord-line.js, which the page inlines), the Concord
+// line's own model (owner, 2026-11-03: "start applying these spaceships into the ui mockup stuff"), sized to the stand-in's
+// length at this scale so every page keeps its framing. Without it, the stand-in: our own shape (a spine, a wedge bow, two
+// drive pods) for the factions whose ships are not designed yet.
+let standInLen = 0, concordLine = null;
+function shipModel(color, scale = 1, hullColor = 0xb9c2cc, line = null) {
+  if (line && window.FCConcordLine) {
+    concordLine ||= window.FCConcordLine(THREE);
+    if (!standInLen) standInLen = new THREE.Box3().setFromObject(standIn(color, 1, hullColor)).getSize(new THREE.Vector3()).z;
+    const outer = new THREE.Group(), m = concordLine.plainModel(line);
+    m.scale.setScalar(standInLen * scale / m.userData.length_m); outer.add(m); outer.userData.line = line;
+    return outer;
+  }
+  return standIn(color, scale, hullColor);
+}
+function standIn(color, scale, hullColor) {
   const g = new THREE.Group();
   const hull = new THREE.MeshStandardMaterial({ color: hullColor, metalness: 0.55, roughness: 0.42 });
   const trim = new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.5 });

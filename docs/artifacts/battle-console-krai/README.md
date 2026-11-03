@@ -1,4 +1,4 @@
-# Mockup 6: Battle Console, Krai Warhost
+# Mockup 7: Battle Console, Krai Warhost
 
 - Link: not yet published (the desktop session publishes; CLAUDE.md section 8). Publish
   `docs/mockups/battle-console-krai.html` as a new artifact titled "Krai Battle Console", icon `console`, then record
