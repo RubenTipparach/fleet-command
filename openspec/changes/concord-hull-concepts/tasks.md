@@ -11,7 +11,8 @@
 - [x] 1.7 v5: the one-below Petrel removed; mockup 5's lighting and damage on every ship; detail and normal maps; windows with rooms
 - [x] 1.8 v6: furnished rooms behind the windows, phaser burn-throughs show a room, 90 degree spotlights along the hull, upright pylons 5.5 m out, turrets clear of the command block, the command block cap off its floor
 - [x] 1.9 v7: the Tern from its latest model's geometry in our paint, a second Albatross with main-hull pylons, detailed thrusters, lights that settle on or off
-- [x] 1.10 Republished to the same link, recorded in `docs/artifacts/concord-hull-concepts/`, the tracker and `mockup-work.md`
+- [x] 1.10 The Condor battleship and the Pelican carrier
+- [x] 1.11 Republished to the same link, recorded in `docs/artifacts/concord-hull-concepts/`, the tracker and `mockup-work.md`
 
 ## 2. After approval for build
 

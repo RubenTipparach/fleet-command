@@ -19,3 +19,4 @@
 - Republished: 2026-11-03, version 4 (Swift and Petrel in three nacelle layouts each, the Albatross in two hulls), cloud session; version id `1793690341-6827`.
 - Republished: 2026-11-03, version 5 (mockup 5's lighting and damage, detail and normal maps, windows with rooms; the one-below Petrel removed), cloud session; version id `1793692292-0a03`.
 - Republished: 2026-11-03, version 6 (furnished window rooms, 90 degree hull spotlights, detailed thrusters, the Tern from its latest model in our paint, main-hull Albatross, lights settle on or off), cloud session; version id `1793695142-34b0`.
+- Republished: 2026-11-03, versions 7 and 8 (lamps aimed forward on the top and bottom and down on the sides, a belly lamp pair, the Condor battleship and the Pelican carrier), cloud session; version id `1793696572-e1ca`.

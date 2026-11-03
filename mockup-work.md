@@ -292,5 +292,10 @@ command block, no z-fighting under the command block, the Tern from its latest m
 Albatross with pylons from the main hull, detailed thrusters, and lights that flicker a couple of times and then hold. Survey
 A13 (which Albatross).
 
+Then: hull lamps on the top and bottom face forward and side lamps aim down, a belly lamp pair forward and aft, and two new
+classes (owner: "we need 2 additional ship classes: a battle ship and a carrier", "somewhat different than the standard ship
+shape, carrier needs bays for fighters, battleship needs an array of cannons", "large cannons"): the Condor battleship and the
+Pelican carrier. Survey A14.
+
 Design: `openspec/changes/concord-hull-concepts/`.
 

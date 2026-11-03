@@ -27,6 +27,8 @@ standards up to what we had before, and damage systems".
   - **Petrel-class frigate** (88 m): the Tern's proportions at the Concord's colours.
   - **Albatross-class cruiser** (112 m): a shorter primary hull with a secondary hull under it on a neck; the nacelle
     pylons sweep out of the secondary hull.
+  - **Condor-class battleship** (184 m): stepped triple-gun turrets fore and aft, broadside cannon sponsons, two nacelle pairs.
+  - **Pelican-class carrier** (132 m): a catamaran of a spine and two hangar pods, fighter bays down the pods, a flight deck and runway.
   - **The SCS Tern itself**, drawn from its own data at true scale, as the yardstick.
 - The Swift shown as three ships, one per nacelle layout: **one below** (one nacelle under the centreline on an upright
   pylon), **above and below** (one over, one under) and **level** (the family's pair on level swept pylons); the Petrel two

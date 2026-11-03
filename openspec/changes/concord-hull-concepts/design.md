@@ -161,6 +161,24 @@ power, the bridge, a nacelle's strip, the deflector, an engine, a broken-off pie
 in the first 1.06 s, showing its old state, then holds its new one. A system that is damaged but still working stutters the
 same way once and stays lit. Fire and the reactor's red warning pulse are not lights and keep moving.
 
+## The battleship and the carrier
+
+The owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", then "please make these somewhat
+different than the standard ship shape, carrier needs bays for fighters, battleship needs an array of cannons", "large
+cannons".
+
+| | Condor-class battleship | Pelican-class carrier |
+|---|---|---|
+| Length | 184 m | 132 m |
+| Shape | A long armoured hull round a tall citadel amidships | A catamaran: a narrow spine and two hangar pods 23 m out, joined by a flight deck |
+| Weapons | Five turrets of three 16 m cannons: three forward stepped up 0, 3.2 and 6.4 m so each fires over the one ahead, two aft facing aft; a sponson down each flank with five 9 m broadside cannons; point defence turrets | Point defence turrets on the pods |
+| Craft | none | Nine lit fighter bays down each pod's outer flank and a launch mouth at each pod's bow; ten fighters parked on the flight deck; a runway with a dashed centre line, threshold bars, chevrons and edge lights on the spine |
+| Nacelles | Two pairs: level at the waist, and ventral | One pair, slung under the pods on upright pylons |
+| Bridge | The citadel's roof | An island aft on the spine |
+
+Both are built by the same builder from station data; the carrier's pods are lofted hulls of their own, each a fracture
+body, so the carrier breaks up like the rest.
+
 ## Cost
 
 A frigate is about 1,500 triangles of hull and fittings before its fracture pieces (hidden until it breaks), and 40-90 draws on the page. That is under the
