@@ -110,13 +110,17 @@ sits about 0.35 m off the plating and throws a 90 degree cone along it: full ins
 bright at the lamp and fading to nothing at its range. It is taken against the detail normal, so the fan grazes the plating
 and every seam and rivet in it catches the light.
 
+The owner, 2026-11-03: "I would prefer lights aim forward and down", "so lights on top and bottom face forward, and lights on
+side aim down":
+
 | Lamp | Where | Throws |
 |---|---|---|
-| Registry | On the dorsal plating just ahead of the name | Aft along the plating, over the name |
-| Command block | On the hull ahead of the block | Up and aft onto its glazed face |
-| Nacelles | At each nacelle's intake end, outboard (or above, or below) | Aft along its flank |
-| Waist | In the service band, every 18 m, both sides | Up the hull's side |
-| Stern | On the shoulders aft | Forward along the dorsal plating |
+| Registry | On the dorsal plating behind the name | Forward along the plating, over the name |
+| Command block | On the block's roof, at its front | Forward over the bow |
+| Nacelle, on its side | Above the outboard flank | Down the flank |
+| Nacelle, above or below the hull | At its aft end | Forward along it |
+| Waist | On the shoulders, every 18 m, both sides | Straight down the hull's side |
+| Stern, dorsal and ventral | On the plating aft | Forward along it |
 
 ## Turrets have a clear line of fire
 
