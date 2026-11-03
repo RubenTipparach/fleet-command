@@ -17,3 +17,9 @@
 
 - Version 1 published 2026-11-03 (cloud session, faction emblems thread), version id `1793743795-415c`. Its `notes`
   collection read back empty after publishing.
+- Version 2 published 2026-11-03, version id `1793744559-d16f`: the joins fixed (owner: "you can see gaps in the shape,
+  this is low quality work"): B's nacelles and keel grow out of the saucer as one web of hull, C's walls end in its sill
+  and its founders stand on it, A's tips blend out of their arms; every sketch's joins measured on the page
+  (`window.EMBLEM_CHECK`, run headless by `tools/emblems/sketch_check.mjs`); rule 17 added; pressing a picked design
+  again removes the pick. The stray pick of B in the `notes` collection was deleted at the owner's word ("unpick that,
+  I didnt pick anything yet").

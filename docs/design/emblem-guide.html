@@ -58,6 +58,8 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 .small span { display: inline-grid; place-items: center; border-radius: 6px; }
 .small .dk { background: #070a12; } .small .lt { background: #f4f6fa; border: 1px solid #d6dbe7; }
 .risk { font-size: 14px; color: var(--warn); }
+.joins { font: 500 12px/1.5 var(--mono); color: var(--ok); }
+.joins.bad { color: var(--warn); }
 .notebox { display: grid; gap: 8px; }
 .notebox label { font: 600 13px var(--body); }
 .notebox textarea { width: 100%; min-height: 76px; resize: vertical; font: 400 15px/1.45 var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
@@ -195,6 +197,8 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-03', q: 'unpick that, I didnt pick anything yet', means: 'The saved pick (B, from a stray click) was removed; pressing a picked design again now undoes it.' },
+  { when: '2026-11-03', q: 'you can see gaps in the shape, this is low quality work', means: 'Every part grows out of the one it joins, and each sketch\'s joins are measured on the page: one body where it should be, and parts that stand apart at least 4 grid units clear (rule 17).' },
   { when: '2026-11-03', q: 'add a link to references for this, and compile a design guide for emplems from this', means: 'The STARFLEET Visual Standards Manual is under References, summarised with page numbers, and folded into The rules for every emblem.' },
   { when: '2026-11-03', q: 'make a single image with text pointing to design elements and choices', means: 'Each sketch is one image with labels and leader lines on the elements they explain.' },
   { when: '2026-11-03', q: 'when you design something cultural, I want you tell me why you did it that way, sketch a 2d figure out of svg first', means: 'Every cultural design comes with its reasons, and starts as a flat SVG sketch.' },
@@ -232,6 +236,7 @@ const RULES = [
   ['Status is added', 'Honours, tallies and flagship marks are added to an emblem, never a redesign of it.', 'manual p. 13'],
   ['No pictured starships', 'A ship appears only abstracted into a mark, never as a recognisable craft.', 'manual p. 14'],
   ['Keep clear of protected marks', 'No arrowhead-delta, no starfield in a ring of laurels, nothing from the reference game. Near one, change the contour, the proportions, the colour and the inner symbol.', 'manual p. 15-16; CLAUDE.md section 1'],
+  ['One body, no slivers', 'Every part grows out of the part it joins; parts meant to stand apart stand at least 4 grid units clear. Measured on every sketch.', 'your notes'],
   ['No lettering inside', 'The faction\'s name is set beside the emblem in its skin\'s display face, never inside it.', 'manual p. 4; the icon standard'],
 ];
 const rulesEl = document.getElementById('rules');
@@ -280,24 +285,25 @@ const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}" ${extra}/>`
 // SVG markup on the 100 grid, and callouts: [anchor x, anchor y (grid), side 'L' or 'R', label, why].
 const DESIGNS = [
   {
-    id: 'concord-a', name: 'A · Many Hands', outline: 'Five-armed pinwheel', rec: true,
+    id: 'concord-a', name: 'A · Many Hands', outline: 'Five-armed pinwheel', rec: true, pieces: 1,
     risk: '',
     draw() {
       let s = '';
       const tips = ['palm', 'claw', 'curl', 'fork', 'wing'];
       for (let k = 0; k < 5; k++) {
         const th = -90 + 72 * k;
-        const p = [pol(9, th), pol(24, th - 8), pol(40, th + 22), pol(45, th + 56)];
-        s += path(ribbon(p, (t) => 1.4 + 5.2 * Math.sin(Math.PI * Math.pow(t, 0.75)) * (1 - 0.45 * t)), C.signal);
+        const tip = tips[k];
+        // The wing is the arm itself run out to a point; every other arm ends at 1.4 units and grows its own hand.
+        const p = tip === 'wing' ? [pol(9, th), pol(24, th - 8), pol(42, th + 22), pol(50, th + 64)] : [pol(9, th), pol(24, th - 8), pol(40, th + 22), pol(45, th + 56)];
+        const armW = tip === 'wing' ? (t) => (1.4 + 5.2 * Math.sin(Math.PI * Math.pow(t, 0.75)) * (1 - 0.45 * t)) * Math.pow(1 - t, 0.35) : (t) => 1.4 + 5.2 * Math.sin(Math.PI * Math.pow(t, 0.75)) * (1 - 0.45 * t);
+        s += path(ribbon(p, armW), C.signal);
         s += path(ribbon(p, (t) => 0.55 * Math.sin(Math.PI * Math.min(1, t * 1.05))), C.sky);
         const end = p[3], d = tangent(p, 1), nIn = [-d[1], d[0]];
         const at = (a, b) => [end[0] + d[0] * a + nIn[0] * b, end[1] + d[1] * a + nIn[1] * b];
-        const tip = tips[k];
-        if (tip === 'palm') s += path(ribbonPts([at(-2, 0), at(1.5, 0), at(4.5, 0), at(6.5, 0)], (t) => 1.6 + 2.8 * Math.sin(Math.PI * Math.min(t * 0.9 + 0.25, 1))), C.signal);
-        if (tip === 'claw') s += path(ribbon([at(-0.5, 0), at(5, 0.3), at(7, 5), at(3.5, 7.5)], (t) => 1.5 * (1 - t) + 0.05), C.signal);
-        if (tip === 'curl') { const pts = []; for (let i = 0; i <= 30; i++) { const a = i / 30 * 1.6 * Math.PI, r = 4.4 * (1 - i / 38); pts.push(at(-0.5 + Math.sin(a) * r, 4.4 - Math.cos(a) * r)); } s += path(ribbonPts(pts, (t) => 1.5 * (1 - t * 0.85)), C.signal); }
-        if (tip === 'fork') { s += path(ribbon([at(-1, 0.6), at(3, 1.2), at(5.5, 2.4), at(8, 3.6)], (t) => 1.1 * (1 - t) + 0.05), C.signal); s += path(ribbon([at(-1, -0.6), at(3, -1.2), at(5.5, -2.4), at(8, -3.6)], (t) => 1.1 * (1 - t) + 0.05), C.signal); }
-        if (tip === 'wing') s += path(ribbon([at(-1, 0), at(4, -0.6), at(7.5, -1.2), at(10, -2.4)], (t) => 1.4 * (1 - t)), C.signal);
+        if (tip === 'palm') { const pts = []; for (let i = 0; i <= 24; i++) pts.push(at(-4 + i * 11 / 24, 0)); s += path(ribbonPts(pts, (t) => (1.45 + 3.0 * Math.sin(Math.PI * t)) * (1 - 0.65 * Math.pow(t, 3))), C.signal); }
+        if (tip === 'claw') s += path(ribbon([at(-3, 0), at(4, 0.2), at(7, 5), at(3.5, 7.5)], (t) => 1.45 * (1 - t) + 0.05), C.signal);
+        if (tip === 'curl') { const pts = []; for (let i = 0; i <= 30; i++) { const a = i / 30 * 1.6 * Math.PI, r = 4.4 * (1 - i / 38); pts.push(at(-0.5 + Math.sin(a) * r, 4.4 - Math.cos(a) * r)); } pts.unshift(at(-3, 0), at(-1.5, 0)); s += path(ribbonPts(pts, (t) => 1.5 * (1 - t * 0.85)), C.signal); }
+        if (tip === 'fork') { s += path(ribbon([at(-3, 0), at(2, 0.6), at(5.5, 2.4), at(8, 3.6)], (t) => 1.2 * (1 - t) + 0.05), C.signal); s += path(ribbon([at(-3, 0), at(2, -0.6), at(5.5, -2.4), at(8, -3.6)], (t) => 1.2 * (1 - t) + 0.05), C.signal); }
       }
       const ring = []; for (let k = 0; k < 5; k++) ring.push(pol(9.6, -90 + 72 * k));
       s += `<path d="M${ring.map(([x, y]) => `${f(x)} ${f(y)}`).join('L')}Z" fill="none" stroke="${C.lilac}" stroke-width="1.3" stroke-linejoin="round"/>`;
@@ -313,20 +319,21 @@ const DESIGNS = [
     ],
   },
   {
-    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above',
+    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above', pieces: 1,
     risk: 'A pictured starship: the manual allows one only when abstracted into a mark (p. 14), and a saucer with nacelles is the shape most likely to be read as borrowed from a famous ship. The weakest of the four on rule 15.',
     draw() {
       let s = '';
       for (const sx of [1, -1]) {
         const X = (x) => 50 + sx * x;
-        s += path(ribbon([[X(10), 44], [X(14), 60], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7), C.signal);
-        s += path(ribbon([[X(10), 44], [X(14), 60], [X(24), 76], [X(38), 92]], (t) => 0.6 * (1 - t)), C.sky);
+        s += path(ribbon([[X(8), 36], [X(13), 56], [X(24), 76], [X(38), 92]], (t) => 5.4 * (1 - t) + 0.7), C.signal);
+        s += path(ribbon([[X(8), 36], [X(13), 56], [X(24), 76], [X(38), 92]], (t) => 0.6 * (1 - t)), C.sky);
       }
+      s += path(ribbon([[50, 38], [50, 50], [50, 60], [50, 70]], (t) => 6.5 * Math.pow(1 - t, 1.4) + 0.4), C.signal);
+      s += path('M36 40C39 50 44 58 50 66C56 58 61 50 64 40Z', C.signal);
       const lens = 'M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z';
       s += path(lens, C.signal);
       s += path('M27 33C33 22 67 22 73 33C67 42 33 42 27 33Z', C.deep);
       s += path(glint(50, 32, 9, 7, 1.6), C.sky);
-      s += path(ribbon([[50, 47], [50, 55], [50, 62], [50, 70]], (t) => 3 * (1 - t) + 0.4), C.signal);
       s += `<circle cx="50" cy="20.5" r="1.8" fill="${C.accord}"/>`;
       return s;
     },
@@ -335,21 +342,21 @@ const DESIGNS = [
       [50, 32, 'R', 'The Accord\'s light inside', 'The agreement at the heart of the ship, in Sky blue on the night sky every homeworld shares.'],
       [20, 80, 'L', 'Two nacelles, thick to thin', 'They sweep back and out, thinning as they go: the frame rule, and a ship reaching outward to explore.'],
       [50, 20.5, 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
-      [50, 64, 'R', 'The keel below', 'A short spine joining the nacelles: the hull that holds them, kept small so the saucer leads.'],
+      [50, 60, 'R', 'The keel below', 'One web of hull grows out of the saucer, holds both nacelles and runs down to a point: the ship is one body, kept small so the saucer leads.'],
     ],
   },
   {
-    id: 'concord-c', name: 'C · The Open Door', outline: 'A tall open arch',
+    id: 'concord-c', name: 'C · The Open Door', outline: 'A tall open arch', pieces: 2,
     risk: 'A tall arch sits nearer the Kelvane\'s gauge and the Aelith\'s drop than A does; its open top is what keeps it apart.',
     draw() {
       let s = '';
       for (const sx of [1, -1]) {
         const X = (x) => 50 + sx * x;
-        s += path(ribbon([[X(20), 90], [X(32), 58], [X(24), 22], [X(6), 8]], (t) => 6.2 * Math.pow(1 - t, 1.1) + 0.6), C.signal);
-        s += path(ribbon([[X(20), 90], [X(32), 58], [X(24), 22], [X(6), 8]], (t) => 0.8 * (1 - t)), C.sky);
+        s += path(ribbon([[X(19), 94], [X(32), 60], [X(24), 22], [X(6), 8]], (t) => 6.2 * Math.pow(1 - t, 1.1) + 0.6), C.signal);
+        s += path(ribbon([[X(19), 94], [X(32), 60], [X(24), 22], [X(6), 8]], (t) => 0.8 * (1 - t)), C.sky);
       }
-      s += path(ribbon([[22, 92], [38, 94.5], [62, 94.5], [78, 92]], (t) => 2.6), C.signal);
-      for (let i = 0; i < 5; i++) s += path(star(34 + i * 8, 87, 2.4, 1.0, 4, -90), C.lilac);
+      s += path(ribbon([[20, 92.5], [38, 95], [62, 95], [80, 92.5]], (t) => 3.6), C.signal);
+      for (let i = 0; i < 5; i++) s += path(star(34 + i * 8, 89.8, 2.6, 1.1, 4, -90), C.lilac);
       s += path(ribbon([[50, 80], [50, 70], [50, 58], [50, 48]], (t) => 0.35 + 2.0 * t), C.lilac);
       s += path(glint(50, 40, 8, 12, 1.6), C.sky);
       return s;
@@ -358,12 +365,12 @@ const DESIGNS = [
       [50, 8, 'R', 'The top never closes', 'A door any people may walk through by their own choice, and leave by again. The Accord is entered by consent.'],
       [21, 60, 'L', 'Walls thick at the foot, thin at the top', 'Built solid on the ground it defends, opening to the sky it explores: the frame rule, read upward.'],
       [50, 40, 'R', 'A star rising through the door', 'Exploration: the Concord goes out through the same door everyone comes in by.'],
-      [42, 87, 'L', 'Five founders on the threshold', 'They stand at the door, not on a throne, to welcome whoever comes.'],
+      [42, 89.8, 'L', 'Five founders on the threshold', 'They stand at the door, not on a throne, to welcome whoever comes.'],
       [50, 66, 'R', 'The trail of the star', 'Lilac, the species mixed: everyone who passed through before lifts the next one up.'],
     ],
   },
   {
-    id: 'concord-d', name: 'D · Beacon and Wings', outline: 'A winged star',
+    id: 'concord-d', name: 'D · Beacon and Wings', outline: 'A winged star', pieces: 4,
     risk: 'Winged stars are common on real military and police insignia; its wings must stay open and never grip the star, or it reads as one of them.',
     draw() {
       let s = '';
@@ -434,6 +441,7 @@ for (const d of DESIGNS) {
   el.innerHTML = `<header><h3>${d.name}</h3><span class="chip">${d.outline}</span>${d.rec ? '<span class="chip rec">Recommended</span>' : ''}<span class="chip picked" data-picked hidden>Your pick</span></header>
     <div class="figure">${figure(d)}</div>
     <div class="small">At 96, 40 and 20 px: ${mark(d, 96, 'dk')}${mark(d, 40, 'dk')}${mark(d, 20, 'dk')}${mark(d, 40, 'lt')}${mark(d, 20, 'lt')}</div>
+    <p class="joins" data-joins>Measuring joins...</p>
     ${d.risk ? `<p class="risk">Watch: ${d.risk}</p>` : ''}
     <div class="notebox"><label for="note-${d.id}">Your note on ${d.name.split(' · ')[1]}</label>
       <textarea id="note-${d.id}" placeholder="What to keep, what to change."></textarea>
@@ -443,6 +451,54 @@ for (const d of DESIGNS) {
 const rec = DESIGNS.find((d) => d.rec);
 if (rec) { const p = document.createElement('p'); p.className = 'muted'; p.textContent = `Recommended: ${rec.name.split(' · ')[1]}. It is the only one that says "many different peoples, one choice" in its shape alone, it needs no ship or star to explain it, and its turning outline is like no other faction's at 20 px.`; host.prepend(p); }
 
+// ---- joins, measured (owner, 2026-11-03: "you can see gaps in the shape, this is low quality work") ------------------
+// Each sketch is drawn as one silhouette at 4 px a grid unit. Its pieces (connected parts) must number what the design
+// says (everything meant to be one body is one piece), and any two pieces that stand apart must be at least MIN_GAP
+// grid units apart: anything closer is a sliver gap, the defect the owner saw.
+const MIN_GAP = 4, PX = 4;
+async function measureJoins(d) {
+  const N = 100 * PX;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}" viewBox="0 0 100 100">${d.draw()}</svg>`;
+  const img = new Image();
+  await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
+  const c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const a = x.getImageData(0, 0, N, N).data;
+  const label = new Int32Array(N * N).fill(-1); let pieces = 0;
+  for (let i = 0; i < N * N; i++) {
+    if (a[i * 4 + 3] < 128 || label[i] >= 0) continue;
+    const q = [i]; label[i] = pieces;
+    while (q.length) { const p = q.pop(), px = p % N, py = (p / N) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) { const nx = px + dx, ny = py + dy; if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue; const n = ny * N + nx; if (label[n] < 0 && a[n * 4 + 3] >= 128) { label[n] = label[p]; q.push(n); } } }
+    pieces++;
+  }
+  // Grow every piece outward together, one pixel a step; where two pieces' growth meets, the gap between them is the
+  // sum of their distances. The smallest such gap is the nearest miss.
+  const owner = Int32Array.from(label), dist = new Int32Array(N * N).fill(0);
+  let front = []; for (let i = 0; i < N * N; i++) if (owner[i] >= 0) front.push(i);
+  let nearest = Infinity;
+  for (let step = 1; front.length && step <= MIN_GAP * PX; step++) {
+    const next = [];
+    for (const p of front) { const px = p % N, py = (p / N) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = px + dx, ny = py + dy; if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue; const n = ny * N + nx;
+        if (owner[n] < 0) { owner[n] = owner[p]; dist[n] = step; next.push(n); }
+        else if (owner[n] !== owner[p]) nearest = Math.min(nearest, (dist[n] + dist[p] + 1) / PX); } }
+    front = next;
+  }
+  return { pieces, expected: d.pieces, nearest, ok: pieces === d.pieces && !(nearest < MIN_GAP) };
+}
+window.EMBLEM_CHECK = async () => {
+  const out = [];
+  for (const d of DESIGNS) {
+    const r = await measureJoins(d); out.push({ id: d.id, ...r });
+    const el = document.querySelector(`#${d.id} [data-joins]`);
+    if (el) {
+      el.classList.toggle('bad', !r.ok);
+      el.textContent = (r.ok ? 'Joins measured: ' : 'Joins FAIL: ') + `${r.pieces} piece${r.pieces === 1 ? '' : 's'} (designed as ${r.expected})` +
+        (Number.isFinite(r.nearest) ? `, nearest separate parts ${r.nearest.toFixed(1)} units apart (at least ${MIN_GAP})` : ', no separate parts within ' + MIN_GAP + ' units');
+    }
+  }
+  return out;
+};
 // The rejected render.
 try {
   const renders = JSON.parse(document.querySelector('script[data-src="docs/design/emblem-guide/renders.json"]').textContent).pieces;
@@ -451,12 +507,13 @@ try {
 
 // ---- notes and picks, saved in the page's database (collection `notes`, one document per design) -------------------
 const boxesAll = document.querySelectorAll('[data-id]');
+let currentPick = null;
 const setStatus = (box, t) => { const s = box.querySelector('[data-status]'); if (s) s.textContent = t; };
 function showPick(picked) {
   for (const box of document.querySelectorAll('article.design')) {
     const on = box.dataset.id === picked;
     box.querySelector('[data-picked]').hidden = !on;
-    const b = box.querySelector('[data-pick]'); b.textContent = on ? 'Picked' : 'Pick this one'; b.setAttribute('aria-pressed', String(on));
+    const b = box.querySelector('[data-pick]'); b.textContent = on ? 'Picked (press to undo)' : 'Pick this one'; b.setAttribute('aria-pressed', String(on));
   }
 }
 boxesAll.forEach((b) => b.querySelectorAll('button').forEach((x) => (x.disabled = true)));
@@ -476,11 +533,13 @@ boxesAll.forEach((b) => b.querySelectorAll('button').forEach((x) => (x.disabled 
     });
     const pick = box.querySelector('[data-pick]');
     if (pick) pick.addEventListener('click', async () => {
-      try { await pickDoc.set({ design: id, updatedAt: new Date().toISOString() }); showPick(id); setStatus(box, 'Picked'); }
-      catch (e) { setStatus(box, 'Not saved: ' + (e && e.message ? e.message : 'try again')); }
+      try {
+        if (currentPick === id) { await pickDoc.delete(); currentPick = null; showPick(null); setStatus(box, 'Pick removed'); }
+        else { await pickDoc.set({ design: id, updatedAt: new Date().toISOString() }); currentPick = id; showPick(id); setStatus(box, 'Picked'); }
+      } catch (e) { setStatus(box, 'Not saved: ' + (e && e.message ? e.message : 'try again')); }
     });
   }
-  try { const p = await pickDoc.get(); if (p && p.exists) showPick(p.data().design); } catch (e) { /* no pick yet */ }
+  try { const p = await pickDoc.get(); if (p && p.exists) { currentPick = p.data().design; showPick(currentPick); } } catch (e) { /* no pick yet */ }
 })();
 
 window.MOCKUP_SHOTS = {
@@ -491,6 +550,6 @@ window.MOCKUP_SHOTS = {
   concord_c: () => document.getElementById('concord-c').scrollIntoView(),
   concord_d: () => document.getElementById('concord-d').scrollIntoView(),
 };
-window.MOCKUP_READY = true;
+window.EMBLEM_CHECK().finally(() => { window.MOCKUP_READY = true; });
 })();
 </script>
