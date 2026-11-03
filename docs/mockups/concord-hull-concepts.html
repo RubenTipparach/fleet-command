@@ -503,7 +503,7 @@ function refreshFacts() {
     add('Zones in hull', b.contained ? 'all inside, measured' : `outside: ${[...new Set(b.outside)].join(', ')}`);
   }
 }
-function frame(dist, dir, target) { const t = target || V3(0, 0, 0); camera.position.copy(t).add(dir.clone().normalize().multiplyScalar(dist)); controls.target.copy(t); controls.update(); }
+function frame(dist, dir, target) { dist *= Math.max(1, 1.15 / camera.aspect); const t = target || V3(0, 0, 0); camera.position.copy(t).add(dir.clone().normalize().multiplyScalar(dist)); controls.target.copy(t); controls.update(); }
 function span() { const b = new THREE.Box3().setFromObject(world); return { s: b.getSize(V3()), c: b.getCenter(V3()) }; }
 const VIEWS = {
   hero: { label: 'Three quarter', go: () => { const { s, c } = span(); frame(Math.max(s.x, s.z) * 1.25, V3(0.95, 0.6, 1.05), c); } },

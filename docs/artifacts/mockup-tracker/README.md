@@ -22,3 +22,4 @@
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 at v2, the survey at v16; version id `1793592753-6b4c`.
 - 2026-11-02, cloud session (Concord ships thread): mockup 5 at v3; version id `1793607843-26f1`.
 - 2026-11-02, cloud session (Concord ships thread), merging main: the live tracker carries every thread's entries (mockup 2 at v31, Console skins at v26, the Organic Panel Bible at v4, mockup 5 at v3, the survey at v16); version id `1793647725-c952`.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 (Concord hull concepts, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) added, the survey at v22; version id `1793670428-d70d`.

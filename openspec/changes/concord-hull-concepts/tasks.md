@@ -6,7 +6,7 @@
 - [x] 1.2 Survey A11, A12
 - [x] 1.3 `docs/mockups/concord-hull-concepts.html`: three directions, three stages, three classes, 40 px silhouettes, measured facts
 - [x] 1.4 Named shots, looked at; `dom_fit.mjs` passes
-- [ ] 1.5 Published, recorded in `docs/artifacts/concord-hull-concepts/`, listed in the tracker and `mockup-work.md`
+- [x] 1.5 Published (https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP), recorded in `docs/artifacts/concord-hull-concepts/`, listed in the tracker and `mockup-work.md`
 
 ## 2. After approval for build
 
