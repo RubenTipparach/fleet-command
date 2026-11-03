@@ -1,0 +1,23 @@
+<!-- Fleet Command's Godot project (CLAUDE.md section 2): the scene scripts in src/Game. The simulation, the data loader
+     and the layout model are the plain library src/Core (no Godot), referenced here and tested headless. -->
+<Project Sdk="Godot.NET.Sdk/4.7.1">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>FleetCommand</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="src/Core/**" />
+    <Compile Remove="tests/**" />
+    <Compile Remove="tools/**" />
+    <Compile Remove=".tools/**" />
+    <Compile Remove="docs/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="src/Core/FleetCommand.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,14 @@
+<!-- FleetCommand.Core: the simulation, the data loader and the console's layout model. Plain .NET with no Godot
+     reference, so it runs and is tested headless without a scene (CLAUDE.md section 6.2). The Godot project
+     (FleetCommand.csproj) references it. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <RootNamespace>FleetCommand</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+</Project>

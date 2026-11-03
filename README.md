@@ -21,3 +21,18 @@ npm install -g @fission-ai/openspec@1.14.0
 
 Mockups: copy `docs/mockups/lib/template.html`, then screenshot with
 `NODE_PATH=$(npm root -g) node tools/mockups/shoot.mjs docs/mockups/<page>.html docs/screenshots/mockups`.
+
+## The game (Godot 4.7, C#)
+
+The battle console is being built in the engine (OpenSpec change `battle-console-engine`). To run it:
+
+```bash
+scripts/install-dotnet.sh && scripts/install-godot.sh
+```
+
+```bash
+DOTNET_ROOT=$PWD/.tools/dotnet PATH=$PWD/.tools/dotnet:$PATH .tools/godot/godot --path .
+```
+
+On Windows, open the folder in the Godot 4.7.1 .NET editor (with the .NET 8 SDK installed) and press Play. Checks:
+`scripts/run-tests.sh`; stills: `scripts/game-stills.sh` (into `docs/screenshots/game/`).
