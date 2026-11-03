@@ -27,11 +27,11 @@ function enamel(x, pts, col = KR.blood, glow = 0) {
 
 // ---- The battle console's colour roles -------------------------------------------------------------------------
 // The same role names as the Concord's (lib/concord.js), so the page's rules pick a role, never a colour. Krai: blood
-// keys at rest, the forge orange for readouts and hover, ash labels, bone text, black steel. The state colours (accord,
-// caution, alert) are the Krai kit's own alert lamps, green, yellow and red, so a status reads the same in every skin
-// (the icon guide: "colour carries state").
+// keys at rest, the forge orange for readouts and hover, ash labels, bone text, black steel. The state colours come from
+// the Krai palette, not a traffic light (owner, 2026-11-03: "Same with green buttons we have as color palletes guide"):
+// whole in forge orange, damaged in gold, down in red, the ramp the skin's shields already used.
 const CC = {
-  deep: '#3b1714', signal: '#a3161a', sky: '#ff8a2a', accord: '#6fe39a', lilac: '#b8a097', caution: '#ffd23a', alert: '#ff2a2a', text: '#efe2d0',
+  deep: '#3b1714', signal: '#a3161a', sky: '#ff8a2a', accord: '#ff7a1a', lilac: '#b8a097', caution: '#ffc23a', alert: '#ff2a2a', text: '#efe2d0',
   // the roles the Concord page had written as bare colours
   ink: '#160806', inkDis: '#6a3a32', night: '#1a0b09', ghost: '#6a4038', void: '#120706', slate: '#4a2622', mute: '#2e2220', ver: '#8a6a60',
   char: '#3a0b09', plate: '#0a0707', bg: '#0a0707', title: KR.red, bone: KR.bone,
@@ -226,6 +226,11 @@ const api = {
   link: '#ff8a2a',
   // labels centred on the keys and tabs, clear of the blade's point (the skin's --btn-justify: center)
   keyCenter: true,
+  // glyphs on dark glass in forge orange, as on the rail tabs (never near-white), and the marks the Concord draws in white
+  // drawn in the Krai's colours (owner, 2026-11-03: "White shadows on buttons like bad")
+  // panel tabs' icons at rest in red, apart from the functional icons' orange (owner, 2026-11-03)
+  tabIcon: KR.red,
+  glyphOnDark: '#ff8a2a', mark: { hover: '#ffb070', ready: '#ff2a2a', count: '#ffd9b0' },
   // the strips are 80 px (the rendered strip.top.join and strip.bottom.join), so the strip's content fits its open channel
   stripH: 80,
 };

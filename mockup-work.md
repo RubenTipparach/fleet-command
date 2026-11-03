@@ -27,7 +27,7 @@ account and every link here is updated.
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v11: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
-| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v4) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v5) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -414,5 +414,8 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
 - Then, of version 3's rib: "bring back the thicker divider and make this connected rather than seperated", and "back
   light more red please?". Version 4: one unbroken 20 px divider between panels with an enamel blade and the title on it;
   the forge backlight and the ember glass red, the whole Krai kit re-rendered.
+- Then: "White shadows on buttons like bad. Same with green buttons we have as color palletes guide". Version 5: states in
+  the Krai palette (orange whole, gold damaged, red down), glyphs orange on dark glass, no white outlines or figures. Then
+  "Panel icons should be red. Just to differentiate it from functional icons": the panel tabs' icons red at rest.
 
 Design: `openspec/changes/krai-battle-console/`.

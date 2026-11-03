@@ -96,7 +96,22 @@ connected rather than seperated", then "back light more red please?".
   (1.0, 0.13, 0.05), and the ember glass at rest from `#2a0806` at 0.14 to `#4c0705` at 0.24. The whole kit is
   re-rendered, so every frame, key, tab and strip, and mockup 4's Krai skin, carries it. Engaged keys stay forge orange.
 
-### 7. Every Krai piece is rendered in Blender
+### 7. The Krai palette only, nothing white (version 5)
+
+The owner, 2026-11-03: "White shadows on buttons like bad. Same with green buttons we have as color palletes guide".
+This answers open question K1 the other way.
+
+- The state colours come from the Krai palette, the ramp its shields already used: whole in forge orange (`#ff7a1a`),
+  damaged in gold (`#ffc23a`), down in red. The status keys' "ok" glass is forge orange (re-rendered), the second row of
+  ticks (Systems under Power) bone glass, the ok bar fill forge orange. No green anywhere in the Krai console except the
+  alert condition lamp named green.
+- Glyphs on dark glass are forge orange, as on the rail tabs (`glyphOnDark`), never near-white bone. The slider handles
+  and the orbit direction switch are rendered keys. The marks the Concord draws in white take the skin's colours
+  (`mark`): a weapon box's hover outline in hot orange, its ready-to-fire outline in red, countdown figures in pale ember.
+- The panel tabs' icons at rest are red (`tabIcon`; owner: "Panel icons should be red. Just to differentiate it from
+  functional icons"), so a tab that switches a panel reads apart from a key that acts; the chosen tab still lights orange.
+
+### 8. Every Krai piece is rendered in Blender
 
 The owner, 2026-11-03: "you didn't render the stitching elements in blender like you are supposed to". The placards,
 the joined column, the joined strips and the allocation cells are modelled by `tools/blender/build_ui_krai.py` in the
@@ -104,7 +119,7 @@ skin's cast volcanic gunmetal, the shaped ones from outlines in `tools/mockups/k
 P and B (every shaped render passes rule B). Render cost at 48 samples on the cloud CPU: the small pieces 0.2-2.6 s
 each, the joined strips 23 s each, the column (960 x 2160 px) 271 s. The page carries the kit as WebP: the Krai page is 1.3 MiB.
 
-### 8. Verification of function: press every control in both skins
+### 9. Verification of function: press every control in both skins
 
 `tools/mockups/skin_parity.mjs` replays each of the 40 named shots, then for every control the Concord registered in
 it: replays the shot again, presses the control at its centre (click, or a drag to it), steps the battle 30 steps
@@ -113,9 +128,9 @@ battle state (every ship's position, heading, speed, hull, shields, power, syste
 hold, warp; mines, craft, shots, log length). The faction's page must give the same record press for press; the Concord
 is first checked against itself so a difference cannot come from the check. Result: 2,175 presses of 270 distinct
 controls in 40 shots, every one identical; 28 presses changed nothing a second later in either skin (toggles that act
-later or hover cards). It found one Concord bug (decision 9).
+later or hover cards). It found one Concord bug (decision 10).
 
-### 9. Concord fixes
+### 10. Concord fixes
 
 - The Fleet key stepped through `own[(own.indexOf(s) + 1) % own.length]` and threw when `own` was empty (the player's
   last ship jumped out). It is now dark and does nothing when no ship is left.
@@ -125,6 +140,6 @@ later or hover cards). It found one Concord bug (decision 9).
 
 | # | Question | Provisional answer |
 |---|---|---|
-| K1 | The Krai's state colours: green, yellow and red (the Krai kit's own alert lamps), or the skin's first shield ramp (orange, gold, red)? | Green, yellow, red: a status reads the same in every skin; the Krai's orange stays the readouts' and engaged keys' colour |
+| K1 | The Krai's state colours: green, yellow and red, or the skin's shield ramp (orange, gold, red)? | **Decided** (owner, 2026-11-03: "Same with green buttons we have as color palletes guide"): the Krai palette's orange, gold and red |
 | K2 | Vector pieces the console draws itself (helm keys, role keys, the warp key, the reactor diagram, the ship schematic) take the Krai's colours and blade shape; should they become rendered pieces too? | Yes, piece by piece as the owner reviews; the kit already decides which pieces a skin renders |
 | K3 | The player's ships keep the stand-in Concord hulls in the 3D view | Kept until mockup 3 (look dev) gives the Krai their own ships |

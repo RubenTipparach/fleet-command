@@ -25,3 +25,4 @@
   republished as mockup 8 (another session's branch holds mockup 7), version id `1793716070-4027`.
 - Version 3 (the gaps closed to a rib; icon keys and status boxes rendered in the rail tabs' style): published 2026-11-03, version id `1793717243-818b`.
 - Version 4 (one unbroken 20 px divider between panels with the title on it; the backlight red, the whole kit re-rendered): published 2026-11-03, version id `1793722302-b4c0`.
+- Version 5 (states in the Krai palette, no green; glyphs orange on dark glass; no white marks; panel tab icons red): published 2026-11-03, version id `1793736690-394d`.

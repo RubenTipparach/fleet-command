@@ -212,13 +212,14 @@ CS = tuple(CELL["size"])
 PIECES["bar.cell.off"] = ("cell", CS, None, None, cell(PAL["ember"], 0.3), CELL["gap"])
 PIECES["bar.cell.on"] = ("cell", CS, None, None, cell(PAL["forge"], 3.2), CELL["gap"])
 PIECES["bar.cell.warn"] = ("cell", CS, None, None, cell(PAL["red"], 3.2), CELL["gap"])
-# The battle console's allocation cells and the green bar fill (openspec/changes/krai-battle-console): the state colours are
-# the Krai kit's own alert lamps' (green, yellow, red), so a status reads the same in every skin.
-ACCORD = "#5aff7a"
+# The battle console's allocation cells and its second bar fill (openspec/changes/krai-battle-console). No green: the Krai
+# palette only (owner, 2026-11-03: "Same with green buttons we have as color palletes guide"). The second row of ticks
+# (Systems under Power) is bone glass; the "ok" fill is forge orange.
+BONE = "#e8dccb"
 for name, col, es, lit in (("cell.idle", PAL["ember"], 0.3, True), ("cell.lit", PAL["forge"], 3.2, True), ("cell.warn", PAL["red"], 3.2, True),
-                           ("cell.accord", ACCORD, 2.6, True), ("cell.locked", PAL["wall"], 0.0, False)):
+                           ("cell.accord", BONE, 1.6, True), ("cell.locked", PAL["wall"], 0.0, False)):
     PIECES[name] = ("nine", (32, 28), (10, 10, 10, 10), "xy", alloc(col, es, lit))
-PIECES["bar.fill.accord"] = ("nine", (64, 10), (0, 10, 0, 4), "x", fill(ACCORD, 2.6))
+PIECES["bar.fill.accord"] = ("nine", (64, 10), (0, 10, 0, 4), "x", fill(PAL["forge"], 3.0))
 ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "button.idle", "button.hover", "button.pressed",
          "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate", "helm.pad", "ssd.bezel", "dial",
          "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest", "bar.cell.off", "bar.cell.on", "bar.cell.warn",

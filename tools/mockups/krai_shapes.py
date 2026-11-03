@@ -196,11 +196,13 @@ def pieces():
     # Icon keys (owner, 2026-11-03: "the buttons with icons need work ... make custom design for this skin. Just changing
     # the color to red or leaving it green doesnt work. I love the buttons you did for chaning the panels. repeating that
     # design style is prefered"): the rail tab's slanted steel bezel made square round a well of glass, one render per
-    # light. A control: ember dark at rest, red on hover, forge orange engaged; a status: the Krai alert lamps' green,
-    # yellow and red; off: an unlit slot. The page draws the icon live on the glass.
+    # light. A control: ember dark at rest, red on hover, forge orange engaged; a status: forge orange, gold or red;
+    # off: an unlit slot. The page draws the icon live on the glass.
     kplate = soft(Polygon([(8, 1.5), (46.5, 1.5), (40, 46.5), (1.5, 46.5)]), 2.5)
     kwell = soft(Polygon([(12.4, 5.6), (42.2, 5.6), (36.4, 42.4), (6.6, 42.4)]), 2.0)
-    for state, film in (("idle", "ember"), ("hover", "red"), ("on", "forge"), ("ok", "lamp_green"), ("warn", "lamp_yellow"), ("alert", "lamp_red"), ("off", "slot")):
+    # Status glass from the Krai palette (owner, 2026-11-03: "Same with green buttons we have as color palletes guide"):
+    # whole is forge orange, damaged gold, down red; no green.
+    for state, film in (("idle", "ember"), ("hover", "red"), ("on", "forge"), ("ok", "forge"), ("warn", "lamp_yellow"), ("alert", "lamp_red"), ("off", "slot")):
         add(f"key.{state}", "hero", (48, 48), kplate, [(film, kwell)], roll=1.2, land=1.0, dz=-4.0, pad=1.0)
     # The strips as the battle console joins them to the column: 80 px tall, so a bar's label, its bar and the alert lamps
     # sit inside the open channel (owner, 2026-11-03: "Some of the elements on the bottom bar like red alerts energy,

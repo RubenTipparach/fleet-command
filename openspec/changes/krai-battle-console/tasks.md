@@ -9,6 +9,7 @@
 - [x] 1.5 `tools/mockups/skin_parity.mjs`: every control of every shot pressed in both skins, identical outcomes
 - [x] 1.5a Version 3: the column's gaps closed to a rib; icon keys and status boxes as rendered square keys in the rail tab's style
 - [x] 1.5b Version 4: one continuous 20 px divider between panels, titles on it; the backlight red, the whole kit re-rendered
+- [x] 1.5c Version 5: the Krai palette for states (no green), glyphs orange on dark glass, no white marks
 - [x] 1.6 Concord fixes: the Fleet key with no ship left; clean named shots
 - [x] 1.7 Shots of all 40 named views looked at; listed in `mockup-work.md` and `docs/artifacts/battle-console-krai/`
 - [ ] 1.8 Published by the desktop session and added to the mockup tracker
