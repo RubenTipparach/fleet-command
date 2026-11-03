@@ -93,7 +93,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Krai <span>Warhost</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 7, v7. <code>krai-ship-concepts</code>. The Krai frigate redone on the Ship Design Bible: rooms first, the hull fitted round them, then the Krai's own parts and an exterior of its own. Drag to orbit, pinch or scroll to zoom.</p>
+    <p class="sub">Mockup 7, v8. <code>krai-ship-concepts</code>. The Krai frigate redone on the Ship Design Bible: rooms first, the hull fitted round them, then the Krai's own parts and an exterior of its own. Drag to orbit, pinch or scroll to zoom.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -643,8 +643,10 @@ const MUZZLE_Y = PLAN.deck_floor_m[3] + 1.4;
   steel.userData.envK = 1.8; mats.push(steel);
   add(G.parts, g, steel);
   const fuller = new THREE.BoxGeometry(0.8, 0.22, 13 * K); fuller.translate(0, dy - 2.35 * KY, 44 + 11 * K); add(G.parts, fuller, glow(HULL.light, 0.8)); }
-// The crest: a long low blade along the dorsal line, its bevel bronze.
-add(G.parts, blade(V3(0, top0(4) - 0.5, 0), V3(0, 1, 0), V3(0, 0, 1), [[0, 26], [3.2, 6], [3.6, -22], [0, -30]], 1.0), hm);
+// The crest: a long low blade along the dorsal line, its bevel bronze, set 8 m forward so its whole length (z -22 to 34 m)
+// sits on the full-height top deck and never overhangs the stepped stern (owner: "nudge it forward so it doesnt extend
+// beyond the hull").
+add(G.parts, blade(V3(0, top0(4) - 0.5, 8), V3(0, 1, 0), V3(0, 0, 1), [[0, 26], [3.2, 6], [3.6, -22], [0, -30]], 1.0), hm);
 // The keel blade: deeper, under the cannon deck.
 add(G.parts, blade(V3(0, bot0(0) + 0.5, 0), V3(0, -1, 0), V3(0, 0, 1), [[0, 30], [3.8, 14], [4.6, -20], [0, -26]], 1.4), hm);
 // The cannon's muzzle at the bow (the spinal cannon room runs to z = 42 on the keel deck).

@@ -42,3 +42,4 @@
 - 2026-11-03, cloud session (Concord ships thread): version 49, version id `1793739217-06ad`, on the live version 48: M7 v4 (the Krai frigate rooms first), the Ship Design Bible v2, survey v33.
 - 2026-11-03, cloud session (Concord ships thread): versions 50 and 51, version id `1793740476-97a2`, on the live version (M8 v8 kept): M7 v5, the alien bayonet.
 - 2026-11-03, cloud session (Concord ships thread): version 52, version id `1793740914-b977`: M7 v7.
+- 2026-11-03, cloud session (Concord ships thread): version 53, version id `1793741037-8a38`: M7 v8.
