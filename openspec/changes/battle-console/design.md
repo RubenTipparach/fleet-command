@@ -308,7 +308,7 @@ should have a little X".
   Transport station open, a dashed ring at that radius round your ship, "Transport range" written on it at its highest
   point on screen, green with "in reach" when the destination is inside. Crossing it either way is logged ("in
   transporter range: transporters active").
-- **Four modes**: Capture, Hit and run, **Supplies** and **Cargo** (two rows of tabs when docked). Supplies carries what
+- **Four modes** (version 57; regrouped in 60 and 61, below): Capture, Hit and run, **Supplies** and **Cargo** (two rows of tabs when docked). Supplies carries what
   missions ask for: spare parts, rations, medicine and the envoy. Cargo carries trade goods, and the mine keys.
 - **The hold**: each class has `hold_t` places (cruiser 20, destroyer 12, frigate 8, troop ship 30, starbase 200), one
   per unit. One bar splits it into supplies (Sky), cargo (Lilac) and free space, with the counts.
@@ -337,6 +337,13 @@ should have a little X".
   - **The transporter effect** at both ends of every beam (crew, cargo, supplies, the envoy, mines, a troop ship
     boarding): a column of light whose shader twinkles hashed motes climbing it, a bright band sweeping up, a ring
     spreading on the plane and a flash, over 1.6 s; Sky, Caution for a mine, wider at a planet's surface.
+- **Version 61** (owner, 2026-11-03: "nav buttons not working when targeting friendly", "I asked for supplies and cargo
+  combined, supplies is a tab you can toggle vs misc"):
+  - The helm's manoeuvres (intercept, trail, hold distance, orbit) steer toward the enemy target or, with none, the
+    selected friendly ship, station or planet (`navTarget`); hit and run still needs an enemy.
+  - Transport has four modes: Capture, Hit and run, **Cargo** and Mines. Cargo holds supplies and the rest together,
+    with a **Supplies / Misc** toggle (lilac keys) choosing which item keys show; the hold bar reads supplies, misc and
+    free.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 

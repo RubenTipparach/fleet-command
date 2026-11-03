@@ -812,6 +812,13 @@ function newWorld(id = sceneId) {
 }
 const ship = (id) => W.ships.find((s) => s.id === id) || null;
 const tgt = (s) => { const t = ship(s.target); return t && t.alive ? t : null; };
+// What the helm's manoeuvres steer toward (owner, 2026-11-03: "nav buttons not working when targeting friendly"): the
+// enemy target, or else the friendly ship, station or planet selected for transport (a planet as a still point).
+function navTarget(s) {
+  const t = tgt(s); if (t || s !== W.player) return t;
+  const d = invPick(s); if (!d) return null; if (d.ship) return d.ship;
+  const pl = d.planet; return { id: pl.id, name: pl.name, x: pl.x, z: pl.z, h: 0, v: 0, planet: true };
+}
 const enemiesOf = (s) => W.ships.filter((o) => o.alive && o.side !== s.side);
 // The battle log. A refusal (an order that cannot be carried out) is a warning: shown in Caution, held longer in the
 // view, and marked in the log (owner, 2026-11-02: "is there game log of some kind? I CLICKED JUMP AND NOTHING HAPPENED").
@@ -832,7 +839,7 @@ function step() {
   W.t += DT;
   for (const s of W.ships) if (s.alive) systemsStep(s);
   for (const s of W.ships) if (s.alive && s !== W.player) { s.thinkT -= DT; if (s.thinkT <= 0) { s.thinkT = 0.5; think(s); } }
-  if (W.player.alive && W.player.engaged && !W.player.het && W.player.broke <= 0) steer(W.player, W.player.order, tgt(W.player), AI_RANGE_KM.mid);
+  if (W.player.alive && W.player.engaged && !W.player.het && W.player.broke <= 0) steer(W.player, W.player.order, navTarget(W.player), AI_RANGE_KM.mid);
   for (const s of W.ships) { s.px = s.x; s.pz = s.z; }
   for (const s of W.ships) if (s.alive) move(s);
   for (const s of W.ships) if (s.alive && s.beam) towStep(s);
@@ -1253,7 +1260,8 @@ const A = {
   runRange: (lo, hi) => { const s = W.player, r2 = (v) => clamp(Math.round(v * 2) / 2, HELM.hold_min_km, HELM.hold_max_km); s.runMin = Math.min(r2(lo), r2(hi) - 0.5); s.runMax = Math.max(r2(hi), s.runMin + 0.5); },
   holdKm: (v) => { W.player.holdKm = clamp(Math.round(v * 2) / 2, HELM.hold_min_km, HELM.hold_max_km); },
   helmOrder: (o) => { const s = W.player; if (o === 'free' || (s.engaged && s.order === o)) { s.engaged = false; say('Helm', 'Free heading.'); return; }
-    if (!tgt(s)) { say('Helm', 'No target.'); return; } s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting', hold_range: `Holding ${km(s.holdKm)} from`, hit_run: `Hit and run, ${s.runMin}-${s.runMax} km, on` }[o]} ${tgt(s).name}.`); if (o === 'hit_run') s.runPhase = 'in'; },
+    const nt = navTarget(s); if (!nt) { say('Helm', 'No target: right click a ship, station or planet.'); return; } if (o === 'hit_run' && !tgt(s)) { say('Helm', 'Hit and run needs an enemy target.'); return; }
+    s.order = o; s.engaged = true; say('Helm', `${{ intercept: 'Intercepting', trail: 'Trailing', orbit: 'Orbiting', hold_range: `Holding ${km(s.holdKm)} from`, hit_run: `Hit and run, ${s.runMin}-${s.runMax} km, on` }[o]} ${nt.name}.`); if (o === 'hit_run') s.runPhase = 'in'; },
   orbitDir: () => { const s = W.player; s.orbitDir = -s.orbitDir; },
   // A high energy turn by deg (negative to port), rolled against the HET chance; erratic manoeuvres make it harder.
   het: (deg) => { const s = W.player; if (s.het || s.broke > 0 || !s.alive) return;
@@ -1274,7 +1282,7 @@ const A = {
   setSpeed: (v) => { const s = W.player; if (s.engaged && s.order === 'trail') s.engaged = false; s.vOrder = clamp(v, -60, maxSpeed(s)); },
   allStop: () => { W.player.engaged = false; W.player.vOrder = 0; },
   order: (o) => { W.player.order = o; },
-  engage: () => { const s = W.player; s.engaged = !s.engaged && !!tgt(s); if (s.engaged) say('Helm', `${ORDERS.find((o) => o[0] === s.order)[1]}: ${tgt(s).name}.`); },
+  engage: () => { const s = W.player; s.engaged = !s.engaged && !!navTarget(s); if (s.engaged) say('Helm', `${ORDERS.find((o) => o[0] === s.order)[1]}: ${navTarget(s).name}.`); },
   fire: () => {
     const s = W.player, t = tgt(s); if (!t) { say('Tactical', 'No target locked.'); return; }
     const able = s.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(s, m, t) && inRange(s, m, t));
@@ -1520,10 +1528,10 @@ function boardingStep(s) {
     else if (s === W.player || pt.loud) say('Transport', `Volley aboard ${t.name}: ${att} hits${locked ? `, ${locked} locked out` : ''}${talked ? ', 1 talked down' : ''}, ${def} taken. ${tm.marines} marines against ${defenders(t)}.`);
   }
 }
-// The hold as one bar split three ways: supplies (Sky), cargo (Lilac) and the free space left (dark), with the counts.
+// The hold as one bar split three ways: supplies (Sky), misc cargo (Lilac) and the free space left (dark), with the counts.
 function holdBar(x, y, w, s, big) {
   const sup = SUPPLY_KEYS.reduce((n, k) => n + s.hold[k], 0), car = CARGO_KEYS.reduce((n, k) => n + s.hold[k], 0), cap = Math.max(1, s.holdCap), free = Math.max(0, s.holdCap - sup - car), h = big ? 14 : 10;
-  rich(x, y + 15, [['Hold ', CC.lilac], [`supplies ${sup}`, CC.sky], [' · ', CC.lilac], [`cargo ${car}`, CC.lilac], [' · ', CC.lilac], [`free ${free}`, free ? CC.text : CC.caution], [` of ${s.holdCap}`, CC.lilac]], `600 ${big ? 18 : 15}px Antonio`, w);
+  rich(x, y + 15, [['Hold ', CC.lilac], [`supplies ${sup}`, CC.sky], [' · ', CC.lilac], [`misc ${car}`, CC.lilac], [' · ', CC.lilac], [`free ${free}`, free ? CC.text : CC.caution], [` of ${s.holdCap}`, CC.lilac]], `600 ${big ? 18 : 15}px Antonio`, w);
   const by = y + 22; g.save(); g.beginPath(); g.roundRect(x, by, w, h, h / 2); g.clip(); g.fillStyle = CC.deep; g.fillRect(x, by, w, h);
   g.fillStyle = CC.sky; g.fillRect(x, by, w * sup / cap, h); g.fillStyle = CC.lilac; g.fillRect(x + w * sup / cap, by, w * car / cap, h); g.restore();
   return 22 + h;
@@ -1998,7 +2006,7 @@ function helmKey(id, x, y, sz, kind, name, click, o = {}) {
 // direction), a 3 x 3 pad of high energy turns round free heading, and the self toggles (erratic manoeuvres, emergency
 // deceleration, a free-angle HET). The readouts: chance to hit, HET chance, heading and ordered speed.
 function stHelm(b, big) {
-  const s = W.player, t = tgt(s), k = big ? 1.5 : 1, gap = 8 * k, row = (b.w - 3 * gap) / 4, ks = Math.min(row, big ? 84 : 52);
+  const s = W.player, t = navTarget(s), k = big ? 1.5 : 1, gap = 8 * k, row = (b.w - 3 * gap) / 4, ks = Math.min(row, big ? 84 : 52);
   let y = b.y;
   // Orders toward the target in the left half; hit and run and evasive manoeuvres in the right (owner, 2026-11-02:
   // "shrink the target maneuvers so it takes up half the panel, that way we can use the other half for more maneuver
@@ -2033,7 +2041,7 @@ function stHelm(b, big) {
     g.fillStyle = cw ? '#000' : CC.sky; g.fillText('CW', sx + hh / 2, sy + sh / 2 + 1); g.fillStyle = cw ? CC.sky : '#000'; g.fillText('CCW', sx + hh * 1.5, sy + sh / 2 + 1); g.textBaseline = 'alphabetic'; }
   // the right half: hit and run with its two-handled range slider, then evasive manoeuvres (a toggle)
   let yr = y0;
-  helmKey('helm.run', xr, yr, ts, 'hit_run', `Hit and run (${s.runPhase === 'in' ? 'running in' : 'pulling away'})`, () => A.helmOrder('hit_run'), { on: ordOn('hit_run'), dis: noT });
+  helmKey('helm.run', xr, yr, ts, 'hit_run', `Hit and run (${s.runPhase === 'in' ? 'running in' : 'pulling away'})`, () => A.helmOrder('hit_run'), { on: ordOn('hit_run'), dis: () => !tgt(s) });
   LBL(`${s.runMin.toFixed(1)}-${s.runMax.toFixed(1)} KM`, xr + ts + tg + 4, yr + ts * 0.62, half - ts - tg, CC.sky, 'left', 14 * k);
   yr += ts + tg;
   { const sx = xr + 8, sw = half - 16, f0 = frac(s.runMin), f1 = frac(s.runMax);
@@ -2287,7 +2295,7 @@ function stRepair(b) {
   for (const [k, v] of rows) { bar(b.x, y, b.w - 100, k, v, v < 0.5); tab(`rep.${k}`, b.x + b.w - 92, y + 2, 92, 34, 'Priority', () => A.priority(k), s.priority === k); y += 42; }
   pairs('rep.c', b.x, y + 18, [['Crews', String(s.power.repair)], ['Weapons damaged', String(s.mounts.filter((m) => m.hp < 1).length)]], b.w);
 }
-let trTab = 'hit', wpickAt = null;
+let trTab = 'hit', wpickAt = null, cargoView = 'sup';
 const qPage = { capture: 0, hit: 0 };
 // Role pictograms, drawn like the helm's signage: a marine with a rifle, a bomb, a medical cross, a wrench, a chip,
 // pilot's wings, a plain figure for the defenders' armed crew.
@@ -2491,9 +2499,10 @@ function controlRow(id, x, y, w, s, t, mode, big) {
 // Inventory moves goods, the VIP and mines, a pad at a time.
 function stTransport(b, big) {
   const s = W.player, t = tgt(s); let y = b.y; const gap = big ? 14 : 8;
-  const TT = [['capture', 'Capture'], ['hit', 'Hit & run'], ['sup', 'Supplies'], ['cargo', 'Cargo'], ['mines', 'Mines']], setT = (k) => { trTab = k; placingMine = false; };
-  // five modes: one row expanded, two rows docked so every name reads in full (mines on their own tab: owner, 2026-11-03,
-  // "mine should be on a seperate tab called mines")
+  const TT = [['capture', 'Capture'], ['hit', 'Hit & run'], ['cargo', 'Cargo'], ['mines', 'Mines']], setT = (k) => { trTab = k; placingMine = false; };
+  // four modes: one row expanded, two rows docked so every name reads in full (mines on their own tab: owner, 2026-11-03,
+  // "mine should be on a seperate tab called mines"; supplies and the rest of the cargo together on Cargo, toggled
+  // inside it: "I asked for supplies and cargo combined, supplies is a tab you can toggle vs misc")
   if (big) { tabs('tr.tab', b.x, y, b.w, 34, TT, trTab, setT); y += 34 + gap; }
   else { tabs('tr.tab', b.x, y, b.w, 30, TT.slice(0, 2), trTab, setT); tabs('tr.tab2', b.x, y + 34, b.w, 30, TT.slice(2), trTab, setT); y += 64 + gap; }
   if (trTab === 'capture' || trTab === 'hit') {
@@ -2549,7 +2558,9 @@ function stTransport(b, big) {
     // cargo the ship has vs extra cargo space"): Supplies holds what missions ask for (spare parts, rations, medicine,
     // the envoy); Cargo holds trade goods (mines have their own tab). Both: where to (the friendly ship, station or planet selected
     // in the view), the hold split into supplies, cargo and free space, then a key per item: ours to send, theirs to take
-    const d = invPick(s), reach = invReach(s, d), ks = Math.min(big ? 76 : 44, (b.w - 4 * 6) / 5), keys = trTab === 'cargo' ? CARGO_KEYS : SUPPLY_KEYS.concat(['vip']);
+    // the Supplies / Misc toggle: a pair of lilac keys, set apart from the mode tabs above
+    { const tw = (b.w - 6) / 2, th = big ? 30 : 24; [['sup', 'Supplies'], ['misc', 'Misc']].forEach(([k, l], i) => button(`tr.cv.${k}`, b.x + i * (tw + 6), y, tw, th, l, () => { cargoView = k; }, { center: true, sel: () => cargoView === k })); y += th + 8; }
+    const d = invPick(s), reach = invReach(s, d), ks = Math.min(big ? 76 : 44, (b.w - 4 * 6) / 5), keys = cargoView === 'misc' ? CARGO_KEYS : SUPPLY_KEYS.concat(['vip']);
     const dest = d ? d.ship || d.planet : null, nameOf = (k) => k === 'vip' ? 'Envoy' : ITEMS.find((q) => q[0] === k)[1];
     if (d) { rich(b.x, y + 18, [[d.name, CC.accord], [` · ${km(d.km)} · `, CC.lilac], [d.km <= TRANSPORT.range_km ? (padReady(s) ? 'in reach' : 'pads charging') : `out of reach (${km(TRANSPORT.range_km)})`, d.km <= TRANSPORT.range_km ? CC.accord : CC.caution]], '600 18px Antonio', b.w); }
     else LBL('Right click a friendly ship, station or planet', b.x, y + 18, b.w, CC.caution);
@@ -3441,7 +3452,7 @@ function helmArc(vw, vh, s) {
       g.translate(top[0], top[1]); g.rotate(ang > P / 2 || ang < -P / 2 ? ang + P : ang); g.fillStyle = '#000'; const tw2 = g.measureText(label).width + 16; g.fillRect(-tw2 / 2, -12, tw2, 18);
       g.fillStyle = col; g.fillText(label, 0, 2); g.restore(); } };
   if (station === 'transport' && !placingMine && s.alive) {
-    const inv = trTab === 'sup' || trTab === 'cargo' || trTab === 'mines', d = inv || (trTab === 'capture' && !tgt(s)) ? invPick(s) : null, t2 = !inv ? (trTab === 'capture' ? captureDest(s) : tgt(s)) : null;
+    const inv = trTab === 'cargo' || trTab === 'mines', d = inv || (trTab === 'capture' && !tgt(s)) ? invPick(s) : null, t2 = !inv ? (trTab === 'capture' ? captureDest(s) : tgt(s)) : null;
     const dk = d ? d.km : t2 ? distKm(s, t2) : Infinity;
     reachRing(dk <= TRANSPORT.range_km ? CC.accord : CC.sky, dk <= TRANSPORT.range_km ? 'TRANSPORT RANGE · IN REACH' : 'TRANSPORT RANGE');
   }
@@ -3604,7 +3615,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, lock[3] === 'select' ? 'Select' : 'Lock target', () => (lock[3] === 'select' ? selectDest(lock[2]) : A.lock(lock[2])), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v60', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v61', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
@@ -3762,12 +3773,12 @@ window.MOCKUP_SHOTS = {
   seeker_lock: () => scripted(600, () => { const s = W.player, v = ship('vorrak'); s.target = 'vorrak'; focus = 'vorrak'; s.h = 0; s.hOrder = 0; v.x = s.x; v.z = s.z - 110; for (const m of s.mounts) if (WEAPONS[m.w].kind === 'torpedo') m.charge = 1; }),
   cam_locked: () => { scripted(600); camLock = true; },
   // The test scenes (menu: Test scene).
-  scene_delivery: () => scripted(30, () => { station = 'transport'; trTab = 'sup'; selectDest('harbor'); A.transfer('rations', -1); for (let i = 0; i < Math.round(3 / DT); i++) step(); A.transfer('medicine', -1); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'delivery'),
-  scene_delivered: () => scripted(30, () => { station = 'transport'; trTab = 'sup'; const s = W.player, pl = W.planets[0]; selectDest('harbor');
+  scene_delivery: () => scripted(30, () => { station = 'transport'; trTab = 'cargo'; selectDest('harbor'); A.transfer('rations', -1); for (let i = 0; i < Math.round(3 / DT); i++) step(); A.transfer('medicine', -1); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'delivery'),
+  scene_delivered: () => scripted(30, () => { station = 'transport'; trTab = 'cargo'; const s = W.player, pl = W.planets[0]; selectDest('harbor');
     for (const k of ['rations', 'rations', 'medicine']) { while (!padReady(s)) step(); A.transfer(k, -1); }
     A.helmTo(pl.x, pl.z); A.setSpeed(300); for (let n = 0; Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r > 12 && n < 9000; n++) step(); A.setSpeed(0); selectDest('tessaly');
     for (const k of ['rations', 'rations', 'medicine']) { while (!padReady(s)) step(); A.transfer(k, 1); } for (let i = 0; i < Math.round(1 / DT); i++) step(); }, 'delivery'),
-  scene_vip: () => scripted(30, () => { station = 'transport'; trTab = 'sup'; selectDest('corrin'); }, 'vip'),
+  scene_vip: () => scripted(30, () => { station = 'transport'; trTab = 'cargo'; selectDest('corrin'); }, 'vip'),
   scene_shuttle: () => scripted(30, () => { shipTab = 'craft'; A.shuttle(); for (let i = 0; i < Math.round(12 / DT); i++) step(); }, 'shuttle'),
   scene_fighters: () => scripted(30, () => { shipTab = 'craft'; A.launch(); for (let i = 0; i < Math.round(25 / DT); i++) step(); }, 'fighters'),
   warp: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.warpKey(); for (let i = 0; i < Math.round(6 / DT); i++) step(); }, 'warp'),

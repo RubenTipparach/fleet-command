@@ -78,3 +78,4 @@
 - Version 58 published 2026-11-03, version id `1793666953-3f17`: friendly ships, stations and planets ringed like enemies, in green; every ring and bracket grows and brightens under the pointer.
 - Version 59 (2026-11-03, built; published with version 60): the Transport range label glides along its ring.
 - Version 60 published 2026-11-03, version id `1793667984-54b4`: a Mines tab of its own; Space pauses and resumes (F fires); the transporter effect (a shader column of climbing motes, a ring and a flash) at both ends of every beam.
+- Version 61 published 2026-11-03, version id `1793669229-ccc9`: helm manoeuvres steer toward a selected friendly ship, station or planet; Transport regrouped to Capture, Hit and run, Cargo (Supplies / Misc toggle inside) and Mines.
