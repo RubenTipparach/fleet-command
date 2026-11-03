@@ -10,6 +10,15 @@ with no curved surface anywhere.
 - **WHEN** a Krai blade is built
 - **THEN** every edge of its outline carries a bevel band, red where the blade's data names the edge red and honed steel elsewhere
 
+### Requirement: Krai ships do not fly
+
+A Krai hull SHALL carry no wing, canard or tail fin: every blade on it SHALL be the hull's own section, a vane folded
+against the hull, a ram or a gun house, and its thrust SHALL be on the ship's axis.
+
+#### Scenario: A vane
+- **WHEN** a vane is added to a Krai hull
+- **THEN** it lies folded along the hull, closer to the hull's side than to a spread wing's
+
 ### Requirement: Krai colours keep one meaning each
 
 Blood red SHALL appear only on leading edges and the head's war mask, and forge orange only as light (engines, window

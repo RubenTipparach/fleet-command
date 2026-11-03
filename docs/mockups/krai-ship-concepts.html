@@ -97,7 +97,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--orange); outlin
   <header>
     <h1>Krai <span>Warhost</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 7, v1. <code>krai-ship-concepts</code>. First concepts: three directions at frigate size, then direction A as a line of four classes, at true scale beside the Concord line. Drag to orbit, pinch or scroll to zoom.</p>
+    <p class="sub">Mockup 7, v2. <code>krai-ship-concepts</code>. Spaceships, not aircraft: the hull is the weapon. Three directions at frigate size, then direction A as a line of four classes, at true scale beside the Concord line. Drag to orbit, pinch or scroll to zoom.</p>
   </header>
   <div class="tabs" role="tablist">
     <button id="tab-ships" role="tab" aria-selected="true" data-tab="ships">Ships</button>
@@ -115,27 +115,26 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--orange); outlin
       <div class="grp"><h2>Measured</h2><dl class="facts" id="facts"></dl></div>
     </section>
     <section class="tab notes" id="pane-notes" hidden>
-      <h3>Where this comes from</h3>
-      <p>The Krai console skin set the language: war as the only honest test, lean predators, forged steel, blades and triangles, angry red, keys lit forge orange. Survey A8's recommendation gives the Krai a bird's head and wings. So every Krai hull is a raptor cut from blades.</p>
-      <h3>The rules, provisional</h3>
+      <h3>From the culture, not from aircraft</h3>
+      <p>Version 1 was fighter jets: wings and tail fins, things that fly in air. Nothing here flies. Each line of the Krai as we wrote them becomes part of the ship:</p>
       <ul>
-        <li>Everything is a blade: a diamond-section spine and flat faceted blades, sharp at every edge, no curves.</li>
-        <li>Cast volcanic gunmetal, as the console: near black, pitted, cooled-lava fissures that glow faintly in places.</li>
-        <li>A red-enamel war mask on the head, and red on the leading edge of every blade.</li>
-        <li>Forge orange for light: engines, gun tips and window slits. No blue or white anywhere.</li>
-        <li>A class grows by adding blade pairs: two pairs on a corvette (wings and tail), up to four on a dreadnought.</li>
-        <li>Lean, never bulky: the Krai should read thinner and sharper than the Kethran, the other bird.</li>
+        <li>War is the only honest test: they meet the enemy face to face, so every hull is thin head-on and armoured edge first, and every direction is a weapon you charge with (a blade, a thrown lance, a dagger).</li>
+        <li>Forged steel, edged everything: the hull is one forged blade in volcanic gunmetal, honed bright at every edge, with no curves.</li>
+        <li>Knife-blade hulls, swept triangles: the blade is the hull itself, and the triangles are vanes, warheads and gun houses.</li>
+        <li>The forge: one drive like a furnace mouth, window slits and fissures lit forge orange.</li>
+        <li>A bird's head and wings (survey A8): a hooked beak for a ram, and vanes folded along the hull like a raptor's wings in a stoop, not spread to fly.</li>
+        <li>Rank is won in blood: a class grows by adding blades (the line, direction A). What the Krai call their ships, and whether a ship wears its kills, is yours to decide.</li>
       </ul>
       <h3>Three directions</h3>
       <ul>
-        <li>A, Stoop: a raptor diving. A dagger head on a thin neck, wings swept back and angled down, a tail blade up.</li>
-        <li>B, Crossed blades: four forward-swept blades in an X round a short body; from the front it is two crossed knives.</li>
-        <li>C, Spearhead: one flat delta, its point the head, with forward-raked talons at the rear corners.</li>
+        <li>A, Standing blade: a sword stood on its edge, diamond in section; beak ram forward, crest along its back, keel edge below.</li>
+        <li>B, Lance: a triangular warhead on a shaft, the crew block behind it, three fletching vanes.</li>
+        <li>C, Three-edged dagger: three blades round one core; the triangle in section, no up or down.</li>
       </ul>
       <h3>Windows give the scale</h3>
-      <p>The same person-sized window as the Concord's, 3.4 m a deck, but as narrow forge-lit slits.</p>
+      <p>The same person-sized window as the Concord's, one row a deck 3.4 m apart, cut as narrow forge-lit slits on the hull's flats.</p>
       <h3>Not decided</h3>
-      <p>Names, ranks and what the classes are called are the Krai's culture: placeholders here, questions in the survey (A15 to A17). No damage or hull lamps yet: those come once a direction is chosen.</p>
+      <p>Names, ranks and any marks of kills are the Krai's culture: questions in the survey (A15 to A17). No damage or hull lamps yet: those come once a direction is chosen.</p>
     </section>
   </div>
 </aside>
@@ -425,52 +424,54 @@ function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5
 // carries a gun. tag: which blade pairs a class carries. One table; the builder reads nothing else.
 const KR = { black: 0x15100f, steel: 0x2a2526, blood: 0xb3121b, orange: 0xff7a1a, hot: 0xffb070 }; // docs/mockups/skins/krai.js
 const DIRS = {
-  stoop: {
-    label: 'A Stoop', len: 82, mask: 29,
-    tell: 'A raptor diving: a dagger head on a thin neck, wings swept back and angled down, a tail blade standing up.',
-    spine: [[41, 0.3, 0.5, -0.7], [37, 2.0, 1.8, -2.2], [31, 3.4, 2.8, -3.0], [25, 2.3, 2.0, -2.0], [15, 2.5, 2.2, -2.3], [7, 6.0, 4.2, -4.0], [-12, 7.0, 4.6, -4.4], [-30, 4.6, 3.6, -3.4], [-41, 3.0, 2.4, -2.4]],
+  // Version 2 (owner, 2026-11-03, on version 1: "Those are fighter jets, not spaceships. Think about how we defined culture and
+  // story"). Nothing here flies: no wings, no tail fins. The hull itself is the weapon, as the culture says (console-skins:
+  // "war is the only honest test", "forged steel, edged everything", "knife-blade hulls, swept triangles").
+  sword: {
+    label: 'A Standing blade', len: 92, mask: 30,
+    tell: 'The hull is the blade: a forged sword standing on its edge, diamond in section, its edge down and forward to a hooked beak, a ram. Thin head-on, a wall from the side. Blade vanes fold along its flanks like a raptor\'s wings in a stoop; one forge drive at the hilt.',
+    spine: [[46, 0.3, -4, -7], [40, 2.0, 6, -12], [31, 3.6, 11, -16], [23, 3.0, 9, -14], [6, 4.6, 14, -20], [-24, 4.4, 13, -18], [-40, 3.6, 9, -12], [-46, 3.0, 6, -8]],
     blades: [
-      { tag: 'main', at: [5, -0.6, -4], dir: 'wing', dih: -16, pts: [[0, 10], [34, -30], [30, -33], [0, -22]], t: 2.2, red: [0], gun: 1 },
-      { tag: 'canard', at: [2.2, 0.2, 19], dir: 'wing', dih: 6, pts: [[0, 4], [9, -4], [7, -5.5], [0, -5]], t: 0.9, red: [0] },
-      { tag: 'aft', at: [4.2, -1.0, -27], dir: 'wing', dih: 12, pts: [[0, 4], [16, -12], [13, -14], [0, -9]], t: 1.3, red: [0], gun: 1 },
-      { tag: 'tail', at: [0, 3.4, -26], dir: 'up', pts: [[0, 6], [10, -12], [8, -14], [0, -14]], t: 1.2, red: [0] },
-      { tag: 'tail2', at: [0, 4.2, -8], dir: 'up', pts: [[0, 5], [7, -6], [0, -8]], t: 1.0, red: [0] },
-      { tag: 'keel', at: [0, -3.6, -4], dir: 'down', pts: [[0, 9], [7, -10], [0, -14]], t: 1.4, red: [] },
+      { tag: 'vane', at: [4.0, -3, -2], dir: 'wing', dih: -62, pts: [[0, 6], [10, -28], [0, -32]], t: 1.4, red: [0] },
+      { tag: 'vane2', at: [3.8, 5, -10], dir: 'wing', dih: 55, pts: [[0, 4], [8, -20], [0, -22]], t: 1.2, red: [0] },
+      { tag: 'vane3', at: [3.6, -10, -26], dir: 'wing', dih: -72, pts: [[0, 3], [7, -13], [0, -15]], t: 1.0, red: [0] },
+      { tag: 'crest', at: [0, 13.2, 2], dir: 'up', pts: [[0, 10], [5, -20], [0, -24]], t: 1.2, red: [0] },
+      { tag: 'keel', at: [0, -19.2, 0], dir: 'down', pts: [[0, 14], [5, -18], [0, -22]], t: 1.4, red: [0] },
     ],
-    engines: [[1.6, 0, -41, 1.3], [-1.6, 0, -41, 1.3]], nose: [0, -1.4, 39.5, 6], win: [[27, 35], [-22, 6]],
+    turrets: [[0, 14.0, 15, 1], [0, 13.2, -15, 1], [0, -19.6, -9, -1]], engines: [[0, -1, -46, 3.4]], nose: null, win: [[24, 38], [-36, 10]],
   },
-  cross: {
-    label: 'B Crossed blades', len: 74, mask: 25,
-    tell: 'Four forward-swept blades in an X round a short body: from the front, two crossed knives.',
-    spine: [[37, 0.3, 0.5, -0.7], [33, 2.0, 1.8, -2.2], [27, 3.2, 2.8, -3.0], [21, 2.4, 2.0, -2.0], [12, 3.0, 2.4, -2.4], [2, 5.4, 4.0, -4.0], [-22, 5.6, 4.0, -4.0], [-37, 3.4, 2.6, -2.6]],
+  lance: {
+    label: 'B Lance', len: 92, mask: 99,
+    tell: 'The ship is thrown: a triangular warhead, the ram, on a long shaft, the crew in a block behind it, three fletching vanes and the forge drive at the end. A spear cast at the enemy.',
+    spine: [[15, 2.6, 2.6, -2.6], [9, 7, 7, -7], [-18, 7, 7, -7], [-24, 2.6, 2.6, -2.6], [-44, 2.2, 2.2, -2.2]],
+    head: { apex: 48, base: 14, r: 13 },
     blades: [
-      { tag: 'main', at: [3, 1.6, -10], dir: 'wing', dih: 32, pts: [[0, -16], [26, 9], [23, 12], [0, 4]], t: 1.8, red: [2], gun: 2 },
-      { tag: 'main', at: [3, -1.6, -10], dir: 'wing', dih: -32, pts: [[0, -16], [26, 9], [23, 12], [0, 4]], t: 1.8, red: [2], gun: 2 },
+      { tag: 'vane', at: [0, 2, -30], dir: 'up', pts: [[0, 4], [9, -12], [0, -14]], t: 1.0, red: [0] },
+      { tag: 'vane', at: [1.7, -1, -30], dir: 'wing', dih: -30, pts: [[0, 4], [9, -12], [0, -14]], t: 1.0, red: [0] },
     ],
-    engines: [[0, 0, -37, 1.8]], nose: [0, -1.4, 35.5, 5], win: [[23, 31], [-18, 2]],
+    turrets: [[0, 7.0, 2, 1], [0, -7.0, -8, -1]], engines: [[0, 0, -44, 2.0]], nose: null, win: [[-17, 8]],
   },
-  spear: {
-    label: 'C Spearhead', len: 82, mask: 14,
-    tell: 'One flat delta whose point is the head, a raised ridge down its back, and forward-raked talons at the rear corners.',
-    spine: [[30, 0.4, 3.0, 0.4], [20, 2.4, 4.4, 0.2], [0, 3.4, 5.2, 0.2], [-30, 3.6, 5.2, 0.2], [-41, 2.6, 4.0, 0.2]],
+  dagger: {
+    label: 'C Three-edged dagger', len: 86, mask: 30,
+    tell: 'Three blades round one core, a triangular stiletto: from the front a three-pointed star, the same from every side, no up or down. Crew in the core, a forge drive between each pair of blades.',
+    spine: [[44, 0.3, 0.3, -0.3], [30, 3, 3, -3], [0, 5.5, 5.5, -5.5], [-30, 5, 5, -5], [-42, 3.6, 3.6, -3.6]],
     blades: [
-      { tag: 'main', at: [0, 0, 0], dir: 'wing', dih: 0, pts: [[0, 41], [22, -41], [0, -41]], t: 6.0, red: [0] },
-      { tag: 'main', at: [20.5, -0.2, -36], dir: 'wing', dih: -12, pts: [[0, 0], [12, 20], [9, 23], [-1, 6]], t: 1.6, red: [1], gun: 2 },
-      { tag: 'tail', at: [0, 4.4, -24], dir: 'up', pts: [[0, 6], [8, -10], [0, -14]], t: 1.0, red: [0] },
+      { tag: 'main', at: [0, 4, 0], dir: 'up', pts: [[0, 38], [13, -30], [11, -42], [0, -42]], t: 3.0, red: [0] },
+      { tag: 'main', at: [3.5, -2, 0], dir: 'wing', dih: -30, pts: [[0, 38], [13, -30], [11, -42], [0, -42]], t: 3.0, red: [0] },
     ],
-    engines: [[4.5, 0.6, -41, 1.2], [-4.5, 0.6, -41, 1.2], [11, 0.4, -41, 1.0], [-11, 0.4, -41, 1.0]], nose: null, win: [[-24, 24]],
+    turrets: [], engines: [[2.6, 1.5, -42, 1.6], [-2.6, 1.5, -42, 1.6], [0, -3, -42, 1.6]], nose: null, win: [[-28, 26]],
   },
 };
 // The line, in direction A: a class grows by adding blade pairs (provisional, survey A16). Names are placeholders: what the
 // Krai call their ships is the owner's to decide (survey A17).
 const SHIPS = {
-  dir_a: { dir: 'stoop', s: 1, tags: ['main', 'canard', 'tail', 'keel'], label: 'A Stoop', cls: 'Direction A, frigate' },
-  dir_b: { dir: 'cross', s: 1, tags: ['main'], label: 'B Crossed blades', cls: 'Direction B, frigate' },
-  dir_c: { dir: 'spear', s: 1, tags: ['main', 'tail'], label: 'C Spearhead', cls: 'Direction C, frigate' },
-  corvette: { dir: 'stoop', s: 0.58, tags: ['main', 'tail'], label: 'Corvette', cls: 'Krai corvette (direction A)', note: 'Two blade pairs: wings and tail. The raider.' },
-  frigate: { dir: 'stoop', s: 1, tags: ['main', 'canard', 'tail', 'keel'], label: 'Frigate', cls: 'Krai frigate (direction A)', note: 'Canards added ahead of the wings, a keel blade under them.' },
-  cruiser: { dir: 'stoop', s: 1.5, tags: ['main', 'canard', 'aft', 'tail', 'keel'], label: 'Cruiser', cls: 'Krai cruiser (direction A)', note: 'An aft pair, angled up against the wings\' droop, so the cruiser shows three pairs from the front.' },
-  dreadnought: { dir: 'stoop', s: 2.3, tags: ['main', 'canard', 'aft', 'tail', 'tail2', 'keel'], label: 'Dreadnought', cls: 'Krai dreadnought (direction A)', note: 'A second dorsal blade, the war crest over the shoulders: every blade the line has.' },
+  dir_a: { dir: 'sword', s: 1, tags: ['vane', 'crest', 'keel'], label: 'A Standing blade', cls: 'Direction A, frigate' },
+  dir_b: { dir: 'lance', s: 1, tags: ['vane'], label: 'B Lance', cls: 'Direction B, frigate' },
+  dir_c: { dir: 'dagger', s: 1, tags: ['main'], label: 'C Three-edged dagger', cls: 'Direction C, frigate' },
+  corvette: { dir: 'sword', s: 0.6, tags: ['vane', 'keel'], label: 'Corvette', cls: 'Krai corvette (direction A)', note: 'One vane pair and the keel edge.' },
+  frigate: { dir: 'sword', s: 1, tags: ['vane', 'crest', 'keel'], label: 'Frigate', cls: 'Krai frigate (direction A)', note: 'A dorsal crest added along the blade\'s back.' },
+  cruiser: { dir: 'sword', s: 1.5, tags: ['vane', 'vane2', 'crest', 'keel'], label: 'Cruiser', cls: 'Krai cruiser (direction A)', note: 'A second vane pair, folded up along the upper flanks.' },
+  dreadnought: { dir: 'sword', s: 2.3, tags: ['vane', 'vane2', 'vane3', 'crest', 'keel'], label: 'Dreadnought', cls: 'Krai dreadnought (direction A)', note: 'A third vane pair aft: every blade the line has.' },
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -506,7 +507,7 @@ const hemi = new THREE.HemisphereLight(0xffd9c4, 0x1a0c0a, 0.3); scene.add(hemi)
 const sun = new THREE.DirectionalLight(0xfff0dc, 1.7); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; scene.add(sun); scene.add(sun.target);
 const rim = new THREE.DirectionalLight(0xff9a70, 0.5); scene.add(rim);
 const LIGHTS = {
-  sunlit: { label: 'Sunlit', sun: 1.7, dir: [0.6, 0.55, 0.5], hemi: 0.3, rim: 0.5, env: 0.6, ember: 0.35 },
+  sunlit: { label: 'Sunlit', sun: 1.7, dir: [0.6, 0.55, 0.5], hemi: 0.3, rim: 0.5, env: 0.6, ember: 0.18 },
   shadow: { label: 'Shadow side', sun: 1.2, dir: [-0.5, -0.2, -0.7], hemi: 0.06, rim: 0.0, env: 0.2, ember: 0.7 },
   nosun: { label: 'No sun', sun: 0.0, dir: [0, 1, 0], hemi: 0.03, rim: 0.1, env: 0.08, ember: 1.0 },
 };
@@ -532,9 +533,9 @@ function steelMat() {
       .replace('#include <color_fragment>', `#include <color_fragment>
         float nA = kfbm(vK*0.55), nB = kfbm(vK*0.24 + 7.3);
         float crack = 1.0 - smoothstep(0.0, 0.028, abs(nB - 0.5));
-        diffuseColor.rgb *= (0.72 + 0.56*nA)*(1.0 - 0.6*crack);`)
+        diffuseColor.rgb *= (0.8 + 0.4*nA)*(1.0 - 0.4*crack);`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = clamp(0.42 + 0.5*kfbm(vK*1.1 + 3.1), 0.35, 0.92);')
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(1.0, 0.33, 0.07)*crack*uEmber*smoothstep(0.52, 0.72, kfbm(vK*0.06 + 1.7));');
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(1.0, 0.33, 0.07)*crack*uEmber*smoothstep(0.58, 0.74, kfbm(vK*0.06 + 1.7));');
   };
   m.customProgramCacheKey = () => 'krai-steel';
   steelMats.push(m); return m;
@@ -599,10 +600,10 @@ function windows(D, st, s, add) {
       const run = 3 + Math.floor(rng() * 6), lit = rng() < 0.82;
       for (let k = 0; k < run && z < z1 * s; k++, z += 2.0) {
         const h = hullAt(st, z), mid = (h[2] + h[3]) / 2, hh = (h[2] - h[3]) / 2;
-        for (let y = mid + 1.2; y < h[2] - 0.6; y += 3.4) {
+        for (let y = h[3] + 1.6; y < h[2] - 1.2; y += 3.4) {
           const x = h[1] * (1 - Math.abs(y - mid) / hh); if (x < 0.8) continue;
           for (const sx of [1, -1]) { const g = new THREE.BoxGeometry(0.12, 0.6, 1.1), ang = Math.atan2(h[1], hh);
-            g.rotateZ(sx * ang); g.translate(sx * (x + 0.04), y, z); add(g, lit ? wm : wd); }
+            g.rotateZ(sx * (y > mid ? ang : -ang)); g.translate(sx * (x + 0.04), y, z); add(g, lit ? wm : wd); }
         }
       }
       z += 2.0 * (1 + Math.floor(rng() * 3));
@@ -624,6 +625,17 @@ function buildShip(id) {
     const t = new THREE.OctahedronGeometry(0.32 * s, 0); t.translate(at.x, at.y, at.z + len * s + 0.1); add(t, tipMat); };
   for (const g of guns) gun(g, 5);
   if (D.nose) gun(V3(D.nose[0] * s, D.nose[1] * s, D.nose[2] * s), D.nose[3]);
+  if (D.head) { // the warhead: a three-sided point, red at its tip (the war mask), a dark base
+    const H = D.head, A = V3(0, 0, H.apex * s), B = [90, 210, 330].map((a) => V3(Math.cos(a * PI / 180) * H.r * s, Math.sin(a * PI / 180) * H.r * s, H.base * s));
+    const M = B.map((b) => A.clone().lerp(b, 0.3)), cen = V3(0, 0, (H.apex + H.base) / 2 * s), tris = [];
+    for (let i = 0; i < 3; i++) { const k = (i + 1) % 3; tris.push([A, M[i], M[k], BLOOD, cen], [M[i], B[i], B[k], STEEL, cen], [M[i], B[k], M[k], STEEL, cen]); }
+    tris.push([B[0], B[1], B[2], STEEL, cen]); add(facetGeo(tris), steel);
+  }
+  for (const [x, y, z, up] of D.turrets || []) { // a three-sided gun house with two short barrels, firing forward
+    const t = new THREE.ConeGeometry(1.8 * s, 2.2 * s, 3); if (up < 0) t.rotateX(PI); t.translate(x * s, y * s + up * 1.1 * s, z * s); add(t, darkMat);
+    for (const dx of [-0.5, 0.5]) { const b = new THREE.CylinderGeometry(0.22 * s, 0.28 * s, 4.5 * s, 6); b.rotateX(PI / 2); b.translate((x + dx) * s, y * s + up * 1.0 * s, z * s + 2.6 * s); add(b, darkMat);
+      const m = new THREE.OctahedronGeometry(0.2 * s, 0); m.translate((x + dx) * s, y * s + up * 1.0 * s, z * s + 4.9 * s); add(m, tipMat); }
+  }
   const em = glowMat(KR.orange, 2.4);
   for (const [x, y, z, r] of D.engines) {
     const h = new THREE.CylinderGeometry(r * 0.8 * s, r * s, 3.2 * s, 3, 1, true); h.rotateX(PI / 2); h.rotateZ(PI); h.translate(x * s, y * s, z * s - 1.2 * s); add(h, darkMat);
@@ -782,12 +794,13 @@ const pick = (m, l = 'sunlit', v = 'three_quarter', o = {}) => () => {
 };
 window.MOCKUP_SHOTS = {
   dir_a: pick('dir_a'), dir_b: pick('dir_b'), dir_c: pick('dir_c'),
+  dir_a_side: pick('dir_a', 'sunlit', 'side', { concord: false }), dir_b_side: pick('dir_b', 'sunlit', 'side', { concord: false }), dir_c_side: pick('dir_c', 'sunlit', 'side', { concord: false }),
   dir_a_front: pick('dir_a', 'sunlit', 'front', { concord: false }), dir_b_front: pick('dir_b', 'sunlit', 'front', { concord: false }), dir_c_front: pick('dir_c', 'sunlit', 'front', { concord: false }),
   directions: pick('directions'), directions_top: pick('directions', 'sunlit', 'top'),
   corvette: pick('corvette'), frigate: pick('frigate'), cruiser: pick('cruiser'), dreadnought: pick('dreadnought'),
   lineup: pick('lineup'), lineup_side: pick('lineup', 'sunlit', 'side'),
   frigate_shadow: pick('frigate', 'shadow', 'three_quarter', { concord: false }), frigate_nosun: pick('frigate', 'nosun', 'stern', { concord: false }),
-  frigate_close: () => { pick('frigate', 'sunlit', 'three_quarter', { concord: false })(); const c = current.box.getCenter(V3()); controls.target.set(c.x, c.y, c.z + 22); camera.position.set(c.x - 30, c.y + 14, c.z + 52); controls.update(); },
+  frigate_close: () => { pick('frigate', 'sunlit', 'three_quarter', { concord: false })(); const c = current.box.getCenter(V3()); controls.target.set(c.x, c.y, c.z + 18); camera.position.set(c.x - 46, c.y + 8, c.z + 56); controls.update(); },
   silhouettes: pick('lineup', 'sunlit', 'three_quarter', { sil: true }),
 };
 refresh();

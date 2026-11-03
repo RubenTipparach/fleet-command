@@ -14,10 +14,11 @@ head and wings.
 
 - **Mockup 7**, `docs/mockups/krai-ship-concepts.html`: the first Krai concepts, at true scale beside the Concord line
   (mockup 6), which is the yardstick through `docs/mockups/lib/concord-line.js`.
-  - Three directions at frigate size:
-    - **A Stoop**: a raptor diving; a dagger head on a thin neck, wings swept back and angled down, a tail blade up.
-    - **B Crossed blades**: four forward-swept blades in an X round a short body.
-    - **C Spearhead**: one flat delta whose point is the head, with forward-raked talons.
+  - Version 1 (blade wings and tail fins on a body) was rejected: "Those are fighter jets, not spaceships. Think about how
+    we defined culture and story". Version 2 builds spaceships from the culture as written, the hull itself the weapon:
+    - **A Standing blade**: a forged sword stood on its edge, a hooked beak ram, vanes folded along its flanks.
+    - **B Lance**: a triangular warhead on a shaft, the crew block behind it, three fletching vanes.
+    - **C Three-edged dagger**: three blades round one core, no up or down.
   - Direction A built out as a line of four classes (corvette, frigate, cruiser, dreadnought), each beside the Concord
     ship of its rank.
   - The 40 px silhouettes, top and side, of every direction and class.

@@ -27,7 +27,7 @@ account and every link here is updated.
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v11: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
-| 7 | Krai Warhost ships | Drafted (2026-11-03, v1: three directions, direction A as four classes) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
+| 7 | Krai Warhost ships | Drafted (2026-11-03, v2: spaceships from the culture; v1's fighter jets rejected) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -388,3 +388,6 @@ there: "combat focused ... triangular motifs, angry red ... orange lit buttons .
 to volcanic magma type metal") and survey A8's recommendation (a bird's head and wings). Version 1: three directions at
 frigate size (A Stoop, B Crossed blades, C Spearhead), direction A as a corvette, frigate, cruiser and dreadnought, each
 beside the Concord ship of its rank, and 40 px silhouettes. Names are placeholders (U7); survey A15-A17 ask the rest.
+- On version 1: "Those are fighter jets, not spaceships. Think about how we defined culture and story". Version 2 builds
+  spaceships from the culture as written (war as the only honest test, forged steel and edged everything, knife-blade
+  hulls): A Standing blade, B Lance, C Three-edged dagger; nothing flies, the hull is the weapon.

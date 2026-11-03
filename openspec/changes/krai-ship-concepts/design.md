@@ -13,42 +13,49 @@ game's ships, names or art.
 | Survey A8 (blank, so its recommendation stands) | A bird's head and wings |
 | The skin's world view (written for the skin, provisional): war is the only honest test; lean predators | Lean, sharp, never bulky |
 
+## Version 2: spaceships, from the culture (owner, 2026-11-03)
+
+On version 1: "Those are fighter jets, not spaceships. Think about how we defined culture and story". Version 1 read
+"blades and swept triangles" as wings, canards and tail fins: things that fly in air. They are withdrawn. Version 2 takes
+each line of the culture as written in the console skin and turns it into part of a spaceship:
+
+| As written (console-skins design, Krai column) | In the ship |
+|---|---|
+| World view: "War is the only honest test" | They meet the enemy face to face: every hull is thin head-on, armoured edge first, and every direction is a weapon you charge with |
+| Bodies and technology: "Lean predators; forged steel, edged everything" | One forged blade of volcanic gunmetal, honed bright at every edge, no curves |
+| Ships: "Knife-blade hulls, swept triangles" | The blade is the hull itself, not wings on a body; triangles are vanes, warheads and gun houses |
+| Method: "Black blade steel with red, lit orange when engaged"; version 23: "volcanic magma type metal" | Red only on edges and the war mask; forge orange for the furnace-mouth drive, window slits and fissures |
+| Survey A8: a bird's head and wings | A hooked beak, the ram; vanes folded along the hull like a raptor's wings in a stoop, never spread to fly |
+| "Rank is won in blood" | A class grows by adding blades; names and any marks of kills are the owner's to decide (A17, U7) |
+
 ## The rules, provisional
 
-1. **Everything is a blade.** A diamond-section spine (the Concord's shared loft with a chamfer larger than the section,
-   so it clamps to a diamond) and flat faceted blades: each blade's outline is fanned from a low ridge, with a honed
-   bevel band 2 m wide at frigate size round every edge. No curves anywhere.
-2. **Colour has meanings, as on the console.** Blade steel `#2a2526` everywhere; honed steel on the bevels (the
-   console's worn-bright rolls); blood red `#b3121b` only on leading edges and the head's war mask; forge orange
-   `#ff7a1a` only for light (engines, window slits, the fissures' glow); hot `#ffb070` at gun tips.
-3. **A class grows by adding blade pairs.** Corvette: wings and tail. Frigate: canards and a keel blade added. Cruiser:
-   an aft pair angled up against the wings' droop. Dreadnought: a second dorsal blade. A player counts blades to rank a
-   Krai ship, as they count nacelles on a Concord one.
-4. **Leaner than the Kethran.** Both empires take the bird (A8). The Kethran skin is armoured plate and trapezoid wedges,
-   so its ships should be heavy; the Krai are thin blades with daylight between them.
+1. **Nothing flies.** No wings, canards or tail fins: every surface is armour, a vane folded against the hull, a ram or
+   a gun house. Thrust is one drive (or one per blade, C) on the ship's axis.
+2. **The hull is the blade.** Its section is a blade's: a tall diamond (A), a shaft under a warhead (B) or three blades
+   round a core (C).
+3. **Colour has meanings, as on the console.** Blade steel; honed steel on the bevels; blood red only on edges and the
+   war mask; forge orange only as light.
+4. **A class grows by adding blades.** Direction A: one vane pair and the keel edge on a corvette, a dorsal crest on a
+   frigate, a second vane pair on a cruiser, a third on a dreadnought.
+5. **Edge first.** Thin head-on, a wall from the side: the opposite of the Concord, which shows its broad face.
 
-## The three directions (frigate, about 82 m)
+## The three directions (frigate)
 
-| | A Stoop | B Crossed blades | C Spearhead |
+| | A Standing blade | B Lance | C Three-edged dagger |
 |---|---|---|---|
-| Body | Dagger head on a thin neck, a deeper chest | Short body, same head | One flat delta, a raised ridge down its back |
-| Blades | Wings swept back, 16 degrees down; canards; tail blade up; keel blade down | Four forward-swept blades in an X, 32 degrees up and down | Forward-raked talons at the rear corners; tail blade |
-| Reads as | A raptor diving | Two crossed knives, head-on | A spear point |
-| Measured | 89.7 m long (gun spikes included), 76.1 m span, 24.0 m high | 80.7 m, 50.1 m, 30.8 m | 84.8 m, 64.5 m, 15.4 m |
+| Section | A tall diamond: a sword stood on its edge | A shaft, a crew block, a three-sided warhead | Three blades at 120 degrees round a core |
+| Forward | A hooked beak, the ram | The warhead, the ram, red at its point | The three blades meet in one point |
+| Blades | Vanes folded along the flanks, a crest on the back, the keel edge below | Three fletching vanes at the stern | The three blades themselves |
+| Guns | Three-sided gun houses on the back and keel | Gun houses on the crew block | None yet |
+| Drive | One furnace-mouth drive | One | One between each pair of blades |
 
-A is recommended: it is the clearest bird's head and wings (A8), and it grows by blade pairs without changing shape.
+A is recommended: it is the most direct reading of "knife-blade hulls", it carries the bird, and it grows by blades
+without changing shape. The page measures every length, span, height and triangle count from the built geometry.
 
-## The line, direction A
+## Version 1 (withdrawn)
 
-| Class | Scale of the frigate | Blade pairs | Concord partner |
-|---|---|---|---|
-| Corvette | 0.58 (about 52 m) | wings, tail | Swift (51 m) |
-| Frigate | 1.0 (about 90 m) | canards, wings, tail, keel | Petrel (88 m) |
-| Cruiser | 1.5 (about 134 m) | adds the aft pair | Albatross (112 m) |
-| Dreadnought | 2.3 (about 206 m) | adds the dorsal crest | Condor (184 m) |
-
-Each Krai class is a little longer than its Concord partner and much lighter in volume: predators, not bricks. The page
-measures every length, span, height and triangle count from the built geometry.
+A Stoop, B Crossed blades, C Spearhead: blade wings and tail fins on a body. Rejected as fighter jets.
 
 ## Windows
 
@@ -73,6 +80,6 @@ About 1,000 triangles a frigate and 2,000 a dreadnought, before detail: well ins
 
 | # | Question | Recommendation (provisional until answered) |
 |---|---|---|
-| A15 | Which direction do the Krai take: A Stoop, B Crossed blades or C Spearhead? | A Stoop |
-| A16 | Sizes and growth: corvette 52 m to dreadnought 206 m, a class growing by blade pairs? | Yes |
-| A17 | What the Krai call their ship classes and ships (culture, the owner's to decide, U7) | Placeholders (corvette, frigate, cruiser, dreadnought) until the owner names them |
+| A15 | Which direction do the Krai take: A Standing blade, B Lance or C Three-edged dagger? | A Standing blade |
+| A16 | Sizes and growth: corvette about 55 m to dreadnought 212 m, a class growing by blades? | Yes |
+| A17 | What the Krai call their ships and classes, and whether a ship wears its record (kill marks, captured blades) (culture, the owner's to decide, U7) | Placeholders and no marks until the owner decides |

@@ -6,6 +6,7 @@
 - [x] 1.2 `docs/mockups/krai-ship-concepts.html` v1: three directions at frigate size, direction A as four classes, the Concord line beside them, 40 px silhouettes, three light presets
 - [x] 1.3 Named shots looked at; `dom_fit.mjs` passes
 - [x] 1.4 Survey A15-A17, the tracker, `mockup-work.md`, `docs/artifacts/krai-ship-concepts/`
+- [x] 1.5 v2 (owner: "Those are fighter jets, not spaceships. Think about how we defined culture and story"): spaceships from the culture as written: A Standing blade, B Lance, C Three-edged dagger; no wings or fins; survey A15-A17 rewritten
 
 ## 2. After the owner picks a direction
 

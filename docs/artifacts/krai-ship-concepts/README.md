@@ -11,3 +11,4 @@
 - 2026-11-03, cloud session (Concord ships thread; owner: "Let's start mocking up krai ships"): version 1, version id
   `1793700821-7d34`. Three directions at frigate size, direction A as four classes beside the Concord line, 40 px
   silhouettes, three light presets.
+- 2026-11-03, cloud session (Concord ships thread; owner on v1: "Those are fighter jets, not spaceships. Think about how we defined culture and story"): version 2, version id `1793701292-38fe`. Spaceships from the culture as written: A Standing blade, B Lance, C Three-edged dagger; nothing flies.
