@@ -93,7 +93,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Krai <span>Warhost</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 7, v4. <code>krai-ship-concepts</code>. The Krai frigate redone on the Ship Design Bible: rooms first, the hull fitted round them, then the Krai's own parts and an exterior of its own. Drag to orbit, pinch or scroll to zoom.</p>
+    <p class="sub">Mockup 7, v5. <code>krai-ship-concepts</code>. The Krai frigate redone on the Ship Design Bible: rooms first, the hull fitted round them, then the Krai's own parts and an exterior of its own. Drag to orbit, pinch or scroll to zoom.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -125,7 +125,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <ul>
         <li>Rooms: 24 functional rooms on four decks, the middle two wide and the top and keel decks narrow, so the hull fitted round them is a blade's lozenge in section; the spinal cannon runs forward along the keel deck, so the bow is a wedge led from below.</li>
         <li>Hull: fitted round them with the shared fitter, its chamfers cut as deep as the rooms allow, so the section is a blade standing on its edge.</li>
-        <li>Parts: a ram bow, a dorsal crest and a keel blade (the Krai's distinct features), two blade nacelles standing on edge on swept struts, one tall forge drive. A frigate's bridge stays inside the hull (survey A18: a bridge block only on super-capitals).</li>
+        <li>Parts: a bayonet fixed under the cannon's muzzle, a dorsal crest and a keel blade (the Krai's distinct features), two blade nacelles standing on edge on swept struts, one tall forge drive. A frigate's bridge stays inside the hull (survey A18: a bridge block only on super-capitals).</li>
         <li>Windows: person-sized, one row a deck, only where crew and command rooms meet the hull.</li>
         <li>Exterior: blued steel with chevron plates pointing forward and tempered bronze edges, pale gold light: the forge said a second way, chosen to complement the console (rule X1, a guide; nothing measures it).</li>
       </ul>
@@ -616,14 +616,25 @@ const hullGeo = CL.hullGeo(FIT); { const col = new Float32Array(hullGeo.attribut
 const hullMesh = add(G.hull, hullGeo, hullMat());
 // 3. Parts: the Krai's distinct features on top of the fitted hull (rule H2), never cut into a room.
 const hm = hullMat(), bow = H(zMax - 0.01), bowMid = (bow[2] + bow[3]) / 2, top0 = (z) => H(z)[2], bot0 = (z) => H(z)[3];
-// The ram: a blade forward and down from the bow, the cannon's muzzle above it.
-add(G.parts, blade(V3(0, bowMid - 1, zMax - 6), V3(0, -1, 0), V3(0, 0, 1), [[-3, 0], [6, 2], [9, 14], [2, 12]], 1.6), hm);
-// The crest: a long low blade along the dorsal line, its bevel bronze.
-add(G.parts, blade(V3(0, top0(4) - 0.5, 0), V3(0, 1, 0), V3(0, 0, 1), [[0, 26], [3.2, 6], [3.6, -22], [0, -30]], 1.0), hm);
+// The ram is a bayonet fixed under the spinal cannon's muzzle, as on a rifle, and an alien one (owner: "make it more
+// like a weapon, a bayonette if you will", "an alien bayonette, not a human one"): no guard, no muzzle ring, no grip.
+// It grows from a socket plate clamped under the barrel, its spine raked with backward barbs, its belly a row of teeth
+// that rake back like a predator's, the point a talon hooked down, and a line of light along its fuller.
+// Drawn in metres (x forward from the muzzle, y up from the barrel's axis), then extruded and bevelled into steel.
+const MUZZLE_Y = PLAN.deck_floor_m[3] + 1.4;
+{ const pts = [[-2.5, -0.8], [5, -0.9], [7, -0.95], [6.2, -0.1], [8.2, -1.0], [12, -1.1], [11.2, -0.3], [13.2, -1.15], [17, -1.3], [16.2, -0.5],
+    [18.2, -1.35], [21, -1.6], [24, -2.4], [26.5, -4.6], [24.6, -3.8], [22.5, -3.6]];
+  for (let x = 21; x >= 3; x -= 2) pts.push([x, -3.55 - (21 - x) * 0.03], [x - 1.1, -3.05 - (21 - x) * 0.03]);
+  pts.push([1.5, -4.2], [-2.5, -3.0]);
+  const sh = new THREE.Shape(); pts.forEach(([x, y], i) => (i ? sh.lineTo(x, y) : sh.moveTo(x, y)));
+  const g = new THREE.ExtrudeGeometry(sh, { depth: 0.4, bevelEnabled: true, bevelThickness: 0.18, bevelSize: 0.14, bevelSegments: 1 });
+  const K = 0.75, KY = 1.7; g.translate(0, 0, -0.2); g.scale(K, KY, 1); g.rotateY(-PI / 2); g.translate(0, MUZZLE_Y, 44);
+  add(G.parts, g, new THREE.MeshStandardMaterial({ color: PLATE, roughness: 0.3, metalness: 0.75, flatShading: true }));
+  const fuller = new THREE.BoxGeometry(0.8, 0.22, 13 * K); fuller.translate(0, MUZZLE_Y - 2.35 * KY, 44 + 11 * K); add(G.parts, fuller, glow(HULL.light, 0.8)); }
 // The keel blade: deeper, under the cannon deck.
 add(G.parts, blade(V3(0, bot0(0) + 0.5, 0), V3(0, -1, 0), V3(0, 0, 1), [[0, 30], [3.8, 14], [4.6, -20], [0, -26]], 1.4), hm);
 // The cannon's muzzle at the bow (the spinal cannon room runs to z = 42 on the keel deck).
-{ const y = PLAN.deck_floor_m[3] + 1.4; const b = new THREE.CylinderGeometry(0.9, 1.2, 7, 6); b.rotateX(PI / 2); b.translate(0, y, 44.5); add(G.parts, b, dark);
+{ const y = MUZZLE_Y; const b = new THREE.CylinderGeometry(0.9, 1.2, 7, 6); b.rotateX(PI / 2); b.translate(0, y, 44.5); add(G.parts, b, dark);
   const m = new THREE.CircleGeometry(0.7, 6); m.translate(0, y, 48.05); add(G.parts, m, glow(HULL.drive, 2.4)); }
 // Nacelles: two blades standing on edge (tall and thin, not the Concord's round pods), held off the hull on swept struts.
 const NAC = { x: 15, y: -4, z: -14, len: 56, hw: 0.8, hh: 3.2 }, nacelleDaylight = [];
@@ -648,8 +659,10 @@ const WINS = SP.windows(PLAN, ROOMS, FIT, LIT);
 { const wm = glow(HULL.light, 1.3); for (const w of WINS) { const g = new THREE.BoxGeometry(0.1, 0.6, 1.1); g.rotateZ(w.side * w.tilt); g.translate(w.x, w.y, w.z); add(G.skin, g, wm); }
   for (const sx of [1, -1]) { const z = 20, y = PLAN.deck_floor_m[2] + 1.2, s = SP.sideAt(H(z), y); // the marking: a crimson chevron, a placeholder (the owner names the Krai's marks)
     add(G.skin, blade(V3(sx * (s.x + 0.06), y, z), V3(0, 1, 0), V3(0, 0, 1), [[-1.6, -2], [0, 2.4], [1.6, -2], [0, 0]], 0.05, MARK), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.2 })); }
-  const nav = (p, hex) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), glow(hex, 3)); m.position.copy(p); G.skin.add(m); };
-  const w = H(-14); nav(V3(w[1] + 0.3, (w[2] + w[3]) / 2, -14), 0xff3b2a); nav(V3(-w[1] - 0.3, (w[2] + w[3]) / 2, -14), 0x2aff6a); nav(V3(0, w[2] + 0.4, zMin + 2), 0xffffff); }
+  const nav = (p, hex) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 6), glow(hex, 1.1)); m.position.copy(p); G.skin.add(m); };
+  // Position lights sit on the hull's own surface (port red, starboard green, white aft on the stern face), never off it.
+  const w = H(-14), my = (w[2] + w[3]) / 2, sd = SP.sideAt(w, my), st = H(zMin);
+  nav(V3(sd.x + 0.12, my, -14), 0xff3b2a); nav(V3(-sd.x - 0.12, my, -14), 0x1fd65a); nav(V3(0, st[2] - 0.6, zMin - 0.1), 0xffffff); }
 // 5. Lights: floods that graze the flanks from off the hull, aimed down along the plating, pools not overlapping (L1, L2).
 const floods = [];
 for (const sx of [1, -1]) for (const z of [18, -12]) { const h = H(z), l = new THREE.SpotLight(0xfff0d8, 0, 34, PI / 4, 0.4, 1.4); l.position.set(sx * (h[1] + 2.2), h[2] + 1.2, z); l.target.position.set(sx * h[1], (h[2] + h[3]) / 2 - 2, z - 4);
@@ -685,8 +698,8 @@ for (const { svg, caption } of SP.planSVGs(PLAN, ROOMS, KINDS, 7)) { const fig =
 const STEPS = [
   ['rooms', '1 Rooms', 'The rooms as blocks: 24 rooms on four decks, the middle two wide and the top and keel decks narrow, the spinal cannon running forward along the keel.'],
   ['hull', '2 Hull', 'The hull fitted round them, every room 1.05 m inside, its chamfers cut as deep as the rooms allow: a blade on its edge.'],
-  ['parts', '3 Parts', 'The Krai\'s own parts on top: a ram bow, a crest, a keel blade, blade nacelles on swept struts, a forge drive. The frigate\'s bridge stays inside (A18).'],
-  ['skin', '4 Skin', 'Windows where crew and command rooms meet the hull, a placeholder marking, nav lights, and the chevron plates of the hull.'],
+  ['parts', '3 Parts', 'The Krai\'s own parts on top: a bayonet under the cannon\'s muzzle, a crest, a keel blade, blade nacelles on swept struts, a forge drive. The frigate\'s bridge stays inside (A18).'],
+  ['skin', '4 Skin', 'Windows where crew and command rooms meet the hull, a placeholder marking, nav lights on the hull, and the chevron plates of the hull.'],
   ['all', '5 Finished', 'The finished frigate, in its own colours and plates.'],
 ];
 let step = 'all';
@@ -725,6 +738,7 @@ window.MOCKUP_SHOTS = {
   frigate: pick('all', 'sunlit', 'three_quarter'), frigate_side: pick('all', 'sunlit', 'side', false), frigate_front: pick('all', 'sunlit', 'front', false),
   frigate_top: pick('all', 'sunlit', 'top', false), frigate_stern: pick('all', 'sunlit', 'stern', false), frigate_nosun: pick('all', 'nosun', 'three_quarter', false),
   step_rooms: pick('rooms', 'sunlit', 'three_quarter', false), step_hull: pick('hull', 'sunlit', 'three_quarter', false), step_parts: pick('parts', 'sunlit', 'three_quarter', false), step_skin: pick('skin', 'sunlit', 'side', false),
+  bayonet: () => { pick('all', 'sunlit', 'three_quarter', false)(); controls.target.set(0, -6, 54); camera.position.set(-30, 0, 74); controls.update(); },
   frigate_close: () => { pick('all', 'sunlit', 'three_quarter', false)(); controls.target.set(0, 2, 22); camera.position.set(-26, 10, 52); controls.update(); },
   plan: () => { document.querySelector('[data-tab="plan"]').click(); pick('rooms', 'sunlit', 'top', false)(); },
 };

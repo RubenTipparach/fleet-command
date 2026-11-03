@@ -89,7 +89,9 @@ for one class, the frigate:
 2. **Hull.** Fitted round the rooms by `docs/mockups/lib/ship-plan.js` (one module, shared with the guide) in its
    `blade` section: the chamfers are cut as deep as the rooms allow, so it is a blade on its edge. Every room is
    1.05 m inside (0.45 m clearance plus 0.6 m structure), measured on the page.
-3. **Parts.** A ram blade at the bow, a crest along the spine, a keel blade, a muzzle for the spinal cannon, edge-on
+3. **Parts.** An alien bayonet fixed under the spinal cannon's muzzle as the ram (owner: "make it more like a weapon, a
+   bayonette if you will", "an alien bayonette, not a human one": no guard, ring or grip; a serrated belly raking back,
+   a barbed spine, a hooked talon point, a lit fuller), a crest along the spine, a keel blade, a muzzle for the spinal cannon, edge-on
    blade nacelles at 15 m either side on swept struts (6.6 m of daylight to the hull), a forge-slot drive.
 4. **Skin.** Blued steel with forward-pointing chevron plates, tempered bronze edges, one crimson marking (placeholder),
    pale gold light; 52 windows on crew and command rooms only; nav lights and four floods.
