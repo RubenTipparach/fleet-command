@@ -148,8 +148,8 @@ public sealed partial class Main : Node
         _overlay.Size = V(v.W, v.H);
         _column.Position = Vector2.Zero;
         _column.Size = V(v.X, size.Y);
-        _menu.Size = new Vector2(320, 240);
-        _menu.Position = V(v.X + v.W / 2 - 160, v.Y + v.H / 2 - 120);
+        _menu.Position = Vector2.Zero;
+        _menu.Size = size;
         _view.SetViewRect(new Rect2(V(v.X, v.Y), V(v.W, v.H)), size);
         _view.Sync();
     }
@@ -175,7 +175,7 @@ public sealed partial class Main : Node
         var fails = new List<string>();
         LayoutDef l = _x.Data.Layout;
         foreach (Vector2 size in new[] { new Vector2(1920, 1080), new Vector2(2560, 1080), new Vector2(1500, 1080) })
-            foreach (Region? ex in new Region?[] { null, Region.Station, Region.Ship, Region.Weapons, Region.Radar })
+            foreach (Region? ex in new Region?[] { null, Region.Station, Region.Ship, Region.Weapons })
             {
                 _x.State.Expanded = ex;
                 Relayout(size);
@@ -207,17 +207,22 @@ public sealed partial class Main : Node
         Region.Plate => l.Plate, Region.Station => l.Station, Region.Ship => l.Ship, Region.Weapons => l.Weapons, _ => l.Radar,
     };
 
-    /// <summary>Plays the battle for --steps (default 600) with the target locked, sets the console as asked, saves a PNG and
+    /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked, saves a PNG and
     /// quits. The window size is Godot's own --resolution flag.</summary>
     private async System.Threading.Tasks.Task Still(string path)
     {
         int steps = _args.TryGetValue("steps", out string? n) ? int.Parse(n) : 600;
+        // the same set-up as the mockup's scripted shots: target locked, intercepting at full speed, a volley six
+        // steps before the end
         Battle b = _x.Battle;
         b.Lock(_args.GetValueOrDefault("target", "vorrak"));
-        for (int i = 0; i < steps; i++) { if (i % 30 == 0) b.Fire(); b.Step(); }
+        b.HelmOrder("intercept");
+        b.SetSpeed(b.Rules.MaxSpeed(b.Player));
+        for (int i = 0; i < steps; i++) { b.Step(); if (i == steps - 6) b.Fire(); }
         if (_args.TryGetValue("station", out string? st)) _x.State.Station = st;
         if (_args.TryGetValue("page", out string? pg)) _x.State.ShipPage = pg;
         if (_args.TryGetValue("expand", out string? ex) && Enum.TryParse(ex, true, out Region er)) _x.State.Expanded = er;
+        if (_args.TryGetValue("reinforce", out string? rf)) b.Reinforce(int.Parse(rf));
         if (_args.ContainsKey("menu")) _x.State.MenuOpen = true;
         if (_args.ContainsKey("paused")) _x.State.Paused = true;
         for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);

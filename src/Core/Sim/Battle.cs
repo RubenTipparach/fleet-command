@@ -43,7 +43,7 @@ public sealed partial class Battle
     private readonly List<Ship> _ships = new();
     private readonly List<Shot> _shots = new();
     private readonly List<LogLine> _log = new();
-    private readonly Rng _hit, _dmg, _ai;
+    private readonly Rng _hit, _dmg, _ai, _helm;
 
     public Battle(GameData data, Scenario scenario)
     {
@@ -52,6 +52,7 @@ public sealed partial class Battle
         _hit = Rng.Fork(scenario.Seed, "hit");
         _dmg = Rng.Fork(scenario.Seed, "damage");
         _ai = Rng.Fork(scenario.Seed, "ai");
+        _helm = Rng.Fork(scenario.Seed, "helm");
         for (int i = 0; i < scenario.Ships.Count; i++) _ships.Add(MakeShip(scenario.Ships[i], i));
         Player = _ships[0];
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
@@ -68,6 +69,7 @@ public sealed partial class Battle
             Capacitor = c.CapacitorE * Tuning.StartCapacitorFrac, Battery = c.BatteryE * Tuning.StartBatteryFrac,
         };
         s.HOrder = s.H;
+        s.HetChance = Rules.HetMax(s);
         Array.Copy(c.ShieldsHp, s.Shields, 6);
         foreach (string k in Rules.Systems) s.Power[k] = c.PowerE.GetValueOrDefault(k);
         foreach (string k in Rules.Subsystems) s.Sys[k] = 1;
@@ -107,6 +109,8 @@ public sealed partial class Battle
             s.ThinkT -= dt;
             if (s.ThinkT <= 0) { s.ThinkT = Tuning.AiThinkS; Think(s); }
         }
+        Ship p = Player;
+        if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
         foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
         PointDefenceStep();
         ShotsStep(dt);
@@ -141,6 +145,9 @@ public sealed partial class Battle
             }
         }
         for (int i = 0; i < 6; i++) s.Flash[i] = Math.Max(0, s.Flash[i] - dt * 2);
+        s.HetChance = Math.Min(Rules.HetMax(s), s.HetChance + Tuning.HetRecoverPerS * dt);
+        s.Broke = Math.Max(0, s.Broke - dt);
+        s.EstopT = Math.Max(0, s.EstopT - dt);
         if (s.Power["repair"] > 0)
         {
             string worst = Rules.Subsystems.OrderBy(k => s.Sys[k]).First();
@@ -152,11 +159,25 @@ public sealed partial class Battle
     private void Move(Ship s, double dt)
     {
         ShipClass c = s.Class;
-        double turn = c.TurnDegS * Geometry.Deg * dt * (0.5 + 0.5 * s.Sys["engines"]);
-        double dh = Geometry.Wrap(s.HOrder - s.H);
-        s.H = Geometry.Wrap(s.H + Math.Clamp(dh, -turn, turn));
-        double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt;
+        if (s.Het is { } left)
+        {
+            double st = Math.Sign(left) * Math.Min(Math.Abs(left), Tuning.HetRateDegS * Geometry.Deg * dt);
+            s.H = Geometry.Wrap(s.H + st);
+            s.HOrder = s.H;
+            s.Het = Math.Abs(left - st) < 1e-4 ? null : left - st;
+        }
+        else if (s.Broke > 0) s.HOrder = s.H;
+        else
+        {
+            double turn = c.TurnDegS * Geometry.Deg * dt * (0.5 + 0.5 * s.Sys["engines"]) * (s.Erratic ? Tuning.ErraticTurn : 1);
+            double dh = Geometry.Wrap(s.HOrder - s.H);
+            s.H = Geometry.Wrap(s.H + Math.Clamp(dh, -turn, turn));
+        }
+        if (s.Broke > 0) { s.V = 0; s.VOrder = 0; }
+        if (s.Estop || s.EstopT > 0) s.VOrder = 0;
+        double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1);
         s.V += Math.Clamp(goal - s.V, -a, a);
+        if (s.Estop && Math.Abs(s.V) < 1) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
         var f = Geometry.Forward(s.H);
         s.X += f.X * s.V * dt;
         s.Z += f.Z * s.V * dt;
@@ -178,6 +199,37 @@ public sealed partial class Battle
                 double ax = t.X - f.X * 800 + r.X * 600, az = t.Z - f.Z * 800 + r.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
                 s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
                 s.VOrder = Math.Clamp(Math.Abs(t.V) + gap * 0.2, 0, vmax);
+                break;
+            }
+            case "intercept":
+            {
+                double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(100, Math.Abs(s.V));
+                var f = Geometry.Forward(t.H);
+                s.HOrder = Geometry.HeadingTo(s.X, s.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+                break;
+            }
+            case "trail":
+            {
+                var f = Geometry.Forward(t.H);
+                double ax = t.X - f.X * 600, az = t.Z - f.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
+                s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
+                s.VOrder = Math.Clamp(Math.Abs(t.V) + (gap > 200 ? gap * 0.2 : 0), 0, vmax);
+                break;
+            }
+            case "hold_range":
+                s.HOrder = d > s.HoldKm * 1.1 ? toT : d < s.HoldKm * 0.9 ? Geometry.Wrap(toT + Math.PI) : Geometry.Wrap(toT + Math.PI / 2);
+                s.VOrder = d > s.HoldKm * 1.1 || d < s.HoldKm * 0.9 ? vmax : Math.Max(60, Math.Abs(t.V));
+                break;
+            case "hit_run":
+                if (s.RunPhase == "in" && d <= s.RunMinKm) s.RunPhase = "out";
+                else if (s.RunPhase == "out" && d >= s.RunMaxKm) s.RunPhase = "in";
+                s.HOrder = s.RunPhase == "in" ? toT : Geometry.Wrap(toT + Math.PI);
+                s.VOrder = vmax;
+                break;
+            case "orbit":
+            {
+                double c2 = Math.Clamp((d - Tuning.OrbitKm) / Tuning.OrbitKm, -1, 1);
+                s.HOrder = Geometry.Wrap(toT + s.OrbitDir * (Math.PI / 2 - c2 * Math.PI / 4));
                 break;
             }
             default: s.VOrder = 0; break;

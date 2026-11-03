@@ -54,6 +54,20 @@ public sealed class Fonts
         line.Draw(c.GetCanvasItem(), new Vector2(left, y - line.GetLineAscent()), col);
     }
 
+    /// <summary>A line in several colours, upper case, left to right from x, cut off at max pixels.</summary>
+    public void DrawRich(CanvasItem c, (string Text, Color Col)[] segs, float x, float y, int size, float max)
+    {
+        float cx = x;
+        foreach (var (t, col) in segs)
+        {
+            string u = t.ToUpperInvariant();
+            float room = max - (cx - x);
+            if (room <= 8) return;
+            Draw(c, u, cx, y, size, col, HorizontalAlignment.Left, room, 600, 1);
+            cx += Width(u, size, 600, 1);
+        }
+    }
+
     /// <summary>Draws a line with a dark outline, so it reads over both a bright and a dark fill.</summary>
     public void DrawOutlined(CanvasItem c, string s, float x, float y, int size, Color col, Color outline, int outlinePx, HorizontalAlignment align = HorizontalAlignment.Center)
     {

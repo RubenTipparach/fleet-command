@@ -64,4 +64,25 @@ public sealed class Ship
     public int Ecm;
     public Stance Stance = Stance.Attack;
     public double ThinkT;
+
+    // The helm officer (battle-console design: helm orders, high energy turns, evasive, emergency stop).
+    /// <summary>True while an order toward the target steers the ship (the autopilot); false is free heading.</summary>
+    public bool Engaged;
+    /// <summary>intercept, trail, hold_range, orbit or hit_run.</summary>
+    public string Manoeuvre = "intercept";
+    /// <summary>1 clockwise, -1 anticlockwise.</summary>
+    public int OrbitDir = 1;
+    public double HoldKm = 6, RunMinKm = 2, RunMaxKm = 8;
+    /// <summary>Hit and run: "in" closing to RunMinKm, "out" opening to RunMaxKm.</summary>
+    public string RunPhase = "in";
+    public bool Erratic;
+    /// <summary>Emergency deceleration under way; then the engines hold for EstopT seconds.</summary>
+    public bool Estop;
+    public double EstopT;
+    /// <summary>The turn still to make in a high energy turn, radians; null when none.</summary>
+    public double? Het;
+    /// <summary>The chance the next high energy turn succeeds.</summary>
+    public double HetChance;
+    /// <summary>Seconds left dead in space after a failed high energy turn.</summary>
+    public double Broke;
 }

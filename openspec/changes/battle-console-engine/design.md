@@ -38,6 +38,12 @@ shot, shown on hover cards, the weapons table and the view's readout), `Rules.Fa
 display's white arc), `Rules.MaxSpeed` (movement and the locked speed boxes). The reactor's coils, warp, tractor,
 transport and boarding are not ported yet, so `Output` is the reactor's rating.
 
+## 3a. Checked against the mockup
+
+Every built screen is compared side by side with the mockup's own named shot (`docs/screenshots/compare/`, made by
+`tools/compare/side_by_side.py`), and the differences that remain are listed there. The game's stills use the mockup's
+set-up for its scripted shots: the target locked, intercepting at full speed, a volley six steps before the end.
+
 ## 4. Costs
 
 Measured on the cloud container's software renderer only (Mesa llvmpipe); no frame time is claimed (CLAUDE.md

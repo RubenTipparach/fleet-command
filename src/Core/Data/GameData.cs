@@ -28,7 +28,7 @@ public sealed record Faction(string Id, string Name, string Hull, string Trim);
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS);
 
-public sealed record Scenario(ulong Seed, IReadOnlyList<ShipStart> Ships);
+public sealed record Scenario(ulong Seed, string Objective, IReadOnlyList<ShipStart> Ships);
 
 /// <summary>Every tuning number of the stand-in battle (data/battle/tuning.json), units in the names.</summary>
 public sealed record Tuning(
@@ -38,7 +38,10 @@ public sealed record Tuning(
     double RepairPerES, double MountRepairPerES, double AiThinkS, double AiFireMinChance,
     double AiRangeCloseKm, double AiRangeMidKm, double AiRangeLongKm, double ShotHitRadiusM, double BeamLifeS,
     double PdInterceptChance, double StatusDisabledBelow, double SubsystemHitChance, double SubsystemDamagePerHp,
-    double MountHitChance, double MountDamage);
+    double MountHitChance, double MountDamage,
+    double HetRateDegS, double HetCostE, double HetChanceDrop, double HetRecoverPerS, double HetErraticPenalty,
+    double HetBreakdownS, double HetBreakdownEngines, double EstopDecelX, double EstopHoldS, double ErraticHit, double ErraticTurn,
+    double OrbitKm, double HoldMinKm, double HoldMaxKm);
 
 /// <summary>The console's layout in reference pixels (data/console/layout.json).</summary>
 public sealed record LayoutDef(

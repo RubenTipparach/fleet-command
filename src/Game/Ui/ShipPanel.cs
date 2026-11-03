@@ -21,12 +21,12 @@ public sealed partial class ShipPanel : ConsolePanel
     {
         string cur = X.State.ShipPage;
         var pg = Array.Find(Pages, p => p.Id == cur);
-        Rect2 p = Frame(cur == "systems" ? $"Systems · {Me.Name}" : pg.Label);
+        Rect2 p = Frame(cur is "systems" or "shields" ? $"{pg.Label} · {Me.Name}" : pg.Label);
         Rail("sh", p.Position.X, p.Position.Y, Pages, cur, X.Act.ShipPage);
         var b = new Rect2(p.Position.X + 56, p.Position.Y, p.Size.X - 56, p.Size.Y);
         switch (cur)
         {
-            case "systems": SystemsDisplay.Draw(this, Ui, X, Me, b, true, "ssd"); break;
+            case "systems": SystemsDisplay.Draw(this, Ui, X, Me, b, true, "ssd", Big); break;
             case "shields": Shields(b); break;
             default:
                 Kit.Icon(this, pg.Icon, new Rect2(b.GetCenter().X - 30, b.Position.Y + 40, 60, 60), C.Deep);
@@ -86,29 +86,37 @@ public sealed partial class ShipPanel : ConsolePanel
 /// <summary>The ship systems display, one drawing for every place that shows a ship's systems.</summary>
 public static class SystemsDisplay
 {
-    private static readonly string[] Left = { "weapons", "shields", "sensors" };
+    private static readonly string[] Left = { "weapons", "shields", "sensors", "reactor" };
     private static readonly string[] Right = { "engines", "tractor", "transport" };
     private static readonly Dictionary<string, string> SysIcon = new()
     {
-        ["weapons"] = "weapons", ["shields"] = "shields", ["sensors"] = "sensors", ["engines"] = "engines", ["tractor"] = "tractor", ["transport"] = "transport",
+        ["weapons"] = "weapons", ["shields"] = "shields", ["sensors"] = "sensors", ["engines"] = "engines", ["tractor"] = "tractor", ["transport"] = "transport", ["reactor"] = "reactor",
     };
 
     /// <param name="own">True for your own ship (mounts can be selected); false for a target seen from outside.</param>
-    public static void Draw(ConsolePanel ci, Imm ui, ConsoleContext x, Ship s, Rect2 b, bool own, string idp)
+    /// <returns>Each mount's box, for callers that add to it (the expanded weapons panel's Fire keys).</returns>
+    public static List<(Mount M, Rect2 R)> Draw(CanvasItem ci, Imm ui, ConsoleContext x, Ship s, Rect2 b, bool own, string idp, bool big = false, Action<Mount>? pick = null)
     {
         var c = x.Kit.C;
         Battle bt = x.Battle;
-        float box = 30, col = box + 6;
+        var boxes = new List<(Mount, Rect2)>();
+        float box = big ? 36 : Math.Min(30, (b.Size.Y - 8 - 3 * 6) / 4f), col = box + 6;
         var centre = new Vector2(b.GetCenter().X, b.GetCenter().Y);
-        float R = Math.Min(b.Size.Y / 2 - 8, (b.Size.X - 2 * col) / 2 - 8);
+        float R = big ? Math.Min(b.Size.Y * 0.34f, (b.Size.X - 2 * col) / 2 - 40) : Math.Min(b.Size.Y / 2 - 24, (b.Size.X - 2 * col) / 2 - 24);
+        centre.Y += big ? 0 : 6;
         Ship? t = bt.TargetOf(bt.Player);
         Ship? other = own ? t : bt.Player;
         int toward = other != null ? Rules.FacingFrom(s, other.X, other.Z) : -1;
 
-        // the grid, faintly, behind the ship
-        float g = 26;
-        for (float gx = -R; gx <= R; gx += g) ci.DrawLine(centre + new Vector2(gx, -R * 0.8f), centre + new Vector2(gx, R * 0.8f), new Color(c.Deep, 0.35f), 1);
-        for (float gy = -R * 0.8f; gy <= R * 0.8f; gy += g) ci.DrawLine(centre + new Vector2(-R * 0.8f, gy), centre + new Vector2(R * 0.8f, gy), new Color(c.Deep, 0.35f), 1);
+        // a dark disk inside the shield ring, and the grid faintly on it, clipped to the ring
+        ci.DrawCircle(centre, R - 4, new Color(c.Deep, 0.35f), true, -1, true);
+        float g = big ? 34 : 26;
+        for (float gv = -MathF.Floor((R - 6) / g) * g; gv <= R - 6; gv += g)
+        {
+            float half = MathF.Sqrt(Math.Max(0, (R - 6) * (R - 6) - gv * gv));
+            ci.DrawLine(centre + new Vector2(gv, -half), centre + new Vector2(gv, half), new Color(c.Sky, 0.12f), 1);
+            ci.DrawLine(centre + new Vector2(-half, gv), centre + new Vector2(half, gv), new Color(c.Sky, 0.12f), 1);
+        }
 
         // the six facings: one band each in its strength's colour; a white arc over the facing toward the enemy
         for (int i = 0; i < 6; i++)
@@ -119,6 +127,9 @@ public static class SystemsDisplay
             if (s.Flash[i] > 0) sc = sc.Lerp(Colors.White, (float)s.Flash[i] * 0.6f);
             ci.DrawArc(centre, R, a - Mathf.Pi / 6 + 0.08f, a + Mathf.Pi / 6 - 0.08f, 18, sc, frac > 0.01 ? 7 : 2, true);
             if (i == toward) ci.DrawArc(centre, R + 8, a - Mathf.Pi / 6 + 0.16f, a + Mathf.Pi / 6 - 0.16f, 14, Colors.White, 2.5f, true);
+            // each facing's strength beside it
+            Vector2 np = centre + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (R + (big ? 26 : 15));
+            x.Fonts.Draw(ci, Math.Round(s.ShieldsUp ? s.Shields[i] : 0).ToString(), np.X, np.Y + (big ? 7 : 5), big ? 20 : 13, c.Text, HorizontalAlignment.Center, 0, 600);
         }
 
         // the ship from above, a stand-in schematic by hull shape
@@ -133,7 +144,8 @@ public static class SystemsDisplay
             for (int i = 0; i < list.Length; i++)
             {
                 string k = list[i];
-                var r = new Rect2(sx, b.Position.Y + 8 + i * (box + 10), box, box);
+                float top = big ? centre.Y - (list.Length * (box + 10)) / 2 : b.Position.Y + 4;
+                var r = new Rect2(sx, top + i * (box + (big ? 10 : 6)), box, box);
                 SystemStatus st = bt.Rules.Status(s, k);
                 HitState hs = ui.Reg($"{idp}.sys.{k}", r, null, null, new Tip(Title(k), new (string, string, Color?)[] { ("Health", $"{Math.Round(s.Sys[k] * 100)} %", null), ("Status", st.ToString(), StatusColorOf(c, st)) }));
                 Shapes.RoundRect(ci, r, StatusColorOf(c, st), 6);
@@ -143,7 +155,7 @@ public static class SystemsDisplay
         }
 
         // the mounts: square boxes on the grid, drawn last, above the schematic
-        float mb = 22;
+        float mb = big ? 28 : 22;
         var taken = new HashSet<(int, int)>();
         foreach (Mount m in s.Mounts)
         {
@@ -159,7 +171,10 @@ public static class SystemsDisplay
             if (cd is { } secs) rows.Add(("Ready in", Rules.FormatCooldown(secs) + " s", null));
             if (own && t != null) rows.Add(("To hit " + t.Name, $"{Math.Round(bt.Rules.HitChance(s, m, t) * 100)} %", null));
             int idx = m.Index;
-            HitState hs = ui.Reg($"{idp}.m{m.Index}", r.Grow(2), own ? _ => bt.ToggleMount(idx) : null, null, new Tip($"{m.Label} {m.Weapon.Name}", rows));
+            Action<Vector2>? click = pick != null ? _ => pick(m) : own ? _ => bt.ToggleMount(idx) : null;
+            HitState hs = ui.Reg($"{idp}.m{m.Index}", r.Grow(2), click, null, new Tip($"{m.Label} {m.Weapon.Name}", rows));
+            boxes.Add((m, r));
+            if (big) x.Fonts.Draw(ci, m.Label, r.End.X + 5, r.Position.Y + 9, 12, c.Lilac, HorizontalAlignment.Left, 0, 600);
             if (hs.Hot) Shapes.RoundRectLine(ci, r.Grow(5), Colors.White, 7, 2);
             if (m.Selected && own) Shapes.RoundRect(ci, r.Grow(3), c.Sky, 6);
             if (cd != null && st != SystemStatus.Destroyed)
@@ -167,7 +182,7 @@ public static class SystemsDisplay
                 Shapes.RoundRect(ci, r, sc.Darkened(0.66f), 4);
                 float f = (float)Math.Clamp(m.Charge, 0, 1);
                 if (f > 0.02f) Shapes.RoundRect(ci, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), sc, 4);
-                x.Fonts.DrawOutlined(ci, Rules.FormatCooldown(cd.Value), r.GetCenter().X, r.GetCenter().Y + 5, 13, Colors.White, new Color(0, 0, 0, 0.85f), 3);
+                x.Fonts.DrawOutlined(ci, Rules.FormatCooldown(cd.Value), r.GetCenter().X, r.GetCenter().Y + (big ? 6 : 5), big ? 16 : 13, Colors.White, new Color(0, 0, 0, 0.85f), 3);
             }
             else
             {
@@ -175,6 +190,7 @@ public static class SystemsDisplay
                 Glyph(ci, m.Weapon.Kind, r.GetCenter(), mb / 2 - 3, st == SystemStatus.Destroyed ? c.Alert : Colors.Black);
             }
         }
+        return boxes;
     }
 
     private static (int, int) NearestFree((int, int) cell, HashSet<(int, int)> taken, int side)

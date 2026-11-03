@@ -15,6 +15,10 @@ public sealed class ConsoleState
     public Region? Expanded;
     public bool Paused;
     public bool MenuOpen;
+    /// <summary>The helm's free-angle high energy turn is waiting for a click in the view.</summary>
+    public bool PlacingHet;
+    /// <summary>The view's toggles: the 3D shield display and the Target box.</summary>
+    public bool ShowShields = true, ShowTarget = true;
 }
 
 public sealed class ConsoleContext

@@ -120,13 +120,13 @@ public abstract partial class ConsolePanel : Control
     }
 
     /// <summary>A row of tabs across a width.</summary>
-    protected void Tabs(string idp, Rect2 r, (string Id, string Label)[] list, string cur, Action<string> set)
+    protected void Tabs(string idp, Rect2 r, (string Id, string Label)[] list, string cur, Action<string> set, Func<string, bool>? dis = null)
     {
         int n = list.Length; float gap = 4, tw = (r.Size.X - gap * (n - 1)) / n;
         for (int i = 0; i < n; i++)
         {
             string id = list[i].Id;
-            Tab($"{idp}.{id}", new Rect2(r.Position.X + i * (tw + gap), r.Position.Y, tw, r.Size.Y), list[i].Label, () => set(id), cur == id);
+            Tab($"{idp}.{id}", new Rect2(r.Position.X + i * (tw + gap), r.Position.Y, tw, r.Size.Y), list[i].Label, () => set(id), cur == id, null, dis != null && dis(id));
         }
     }
 
@@ -167,17 +167,20 @@ public abstract partial class ConsolePanel : Control
     }
 
     /// <summary>The panel's frame, its title in a black notch that breaks the top arm, and the Expand key. Returns the content box.</summary>
-    protected Rect2 Frame(string title, bool expandable = true)
+    protected Rect2 Frame(string title, bool expandable = true) => Frame(new Rect2(Vector2.Zero, Size), title, expandable);
+
+    /// <summary>A frame at a rectangle inside the panel (the menu sheet's).</summary>
+    protected Rect2 Frame(Rect2 at, string title, bool expandable)
     {
-        Kit.Piece(this, "frame.panel", new Rect2(Vector2.Zero, Size));
+        Kit.Piece(this, "frame.panel", at);
         var (t, r, b, l) = Kit.Margins("frame.panel");
-        var content = new Rect2(l, t, Size.X - r - l, Size.Y - t - b);
+        var content = new Rect2(at.Position.X + l, at.Position.Y + t, at.Size.X - r - l, at.Size.Y - t - b);
         string up = title.ToUpperInvariant();
         float tw = Math.Min(X.Fonts.Width(up, 22, 700, 1), content.Size.X - 160);
-        float bw = expandable ? 21 : -10, x1 = content.End.X - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total;
-        DrawRect(new Rect2(x0, 0, total, 22), Colors.Black);
-        Text(up, x0 + 8, 19, 22, C.Sky, HorizontalAlignment.Left, tw, 700, 1);
-        if (expandable) ExpandKey($"{Region}.xp", new Vector2(x1 - 8 - bw / 2, 11), bw / 2, Big, () => X.Act.Expand(Region));
+        float bw = expandable ? 21 : -10, x1 = content.End.X - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
+        DrawRect(new Rect2(x0, y0, total, 22), Colors.Black);
+        Text(up, x0 + 8, y0 + 19, 22, C.Sky, HorizontalAlignment.Left, tw, 700, 1);
+        if (expandable) ExpandKey($"{Region}.xp", new Vector2(x1 - 8 - bw / 2, y0 + 11), bw / 2, Big, () => X.Act.Expand(Region));
         return content;
     }
 

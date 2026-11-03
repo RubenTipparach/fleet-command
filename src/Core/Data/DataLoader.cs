@@ -105,6 +105,7 @@ public static class DataLoader
     {
         double seed = root.Num("seed");
         if (seed < 0 || seed != Math.Floor(seed)) throw new DataError($"{root.Where}.seed: expected a whole number at or above 0");
+        string objective = root.Str("objective");
         var ships = new List<ShipStart>();
         var ids = new HashSet<string>();
         foreach (StrictJson s in root.ObjList("ships"))
@@ -120,7 +121,7 @@ public static class DataLoader
         }
         if (ships.Count == 0 || ships[0].Side != 0) throw new DataError($"{root.Where}.ships: the first ship is the player's and must be on side 0");
         root.Done();
-        return new Scenario((ulong)seed, ships);
+        return new Scenario((ulong)seed, objective, ships);
     }
 
     public static Tuning LoadTuning(StrictJson o)
@@ -132,7 +133,10 @@ public static class DataLoader
             NonNeg(o, "repair_per_e_s"), NonNeg(o, "mount_repair_per_e_s"), Positive(o, "ai_think_s"), Frac(o, "ai_fire_min_chance"),
             Positive(o, "ai_range_close_km"), Positive(o, "ai_range_mid_km"), Positive(o, "ai_range_long_km"), Positive(o, "shot_hit_radius_m"), Positive(o, "beam_life_s"),
             Frac(o, "pd_intercept_chance"), Frac(o, "status_disabled_below"), Frac(o, "subsystem_hit_chance"), NonNeg(o, "subsystem_damage_per_hp"),
-            Frac(o, "mount_hit_chance"), Frac(o, "mount_damage"));
+            Frac(o, "mount_hit_chance"), Frac(o, "mount_damage"),
+            Positive(o, "het_rate_deg_s"), NonNeg(o, "het_cost_e"), Frac(o, "het_chance_drop"), NonNeg(o, "het_recover_per_s"), Frac(o, "het_erratic_penalty"),
+            NonNeg(o, "het_breakdown_s"), Frac(o, "het_breakdown_engines"), Positive(o, "estop_decel_x"), NonNeg(o, "estop_hold_s"), Frac(o, "erratic_hit"), Frac(o, "erratic_turn"),
+            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"));
         o.Done();
         return t;
     }

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using FleetCommand.ConsoleModel;
+using FleetCommand.Data;
 using FleetCommand.Sim;
 using Godot;
 
@@ -23,84 +24,111 @@ public sealed partial class PlatePanel : ConsolePanel
     }
 }
 
-/// <summary>Fire, Multiple or Single, and the arming state of the selected mounts.</summary>
+/// <summary>Fire, Multiple or Single, and the arming state of the selected mounts. Expanded (owner, 2026-11-02: "show
+/// weapons as they are on the ship in the expanded menu, then when you hover over them and click on them, detail menu
+/// appears on the lower half. Also add a fire button underneath each weapon"): groups to select, the systems display
+/// with a Fire key under each mount, and the picked mount's details.</summary>
 public sealed partial class WeaponsPanel : ConsolePanel
 {
+    private int _detail;
+
     protected override void DrawPanel()
     {
         Rect2 b = Frame("Weapons");
-        int n = B.WouldFire().Length;
-        Ship? t = B.TargetOf(Me);
-        float half = (b.Size.X - 10) / 2;
-        Button("fire", new Rect2(b.Position, new Vector2(half, 48)), n > 0 ? $"Fire {n}" : "Fire", () => B.Fire(), dis: t == null,
-            tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {t.Name}"));
-        Button("volley", new Rect2(b.Position.X + half + 10, b.Position.Y, half, 48), Me.Volley ? "Multiple" : "Single", () => B.ToggleVolley(), Me.Volley,
-            tip: new Tip(Me.Volley ? "Multiple: every ready weapon fires" : "Single: one weapon per press"));
-        Mount[] sel = Me.Mounts.Where(m => m.Selected && m.Hp > 0).ToArray();
+        Ship s = Me;
+        Ship? t = B.TargetOf(s);
+        Mount[] sel = s.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence).ToArray();
         string cur = sel.Length > 0 && sel.All(m => m.State == sel[0].State) ? sel[0].State.ToString().ToLowerInvariant() : "";
-        Tabs("arm", new Rect2(b.Position.X, b.Position.Y + 56, b.Size.X, 40),
-            new[] { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload") }, cur,
+        float w1 = (b.Size.X - 6) * 0.62f, x0 = b.Position.X, y0 = b.Position.Y;
+        Button("fire", new Rect2(x0, y0, w1, 48), $"Fire · {B.WouldFire().Length}", () => B.Fire(), center: false,
+            tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {t.Name} (F)"));
+        Button("volley", new Rect2(x0 + w1 + 6, y0, b.Size.X - w1 - 6, 48), s.Volley ? "Multiple" : "Single", () => B.ToggleVolley(), s.Volley, center: false,
+            tip: new Tip(s.Volley ? "Multiple: every ready weapon fires (M)" : "Single: one weapon per press (M)"));
+        Tabs("arm", new Rect2(x0, y0 + 54, b.Size.X, 40), new[] { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload") }, cur,
             id => B.SetArming(Enum.Parse<Arming>(id, true)));
-        if (Big)
+        if (!Big) return;
+        float y = y0 + 106;
+        Lbl("Select", x0, y + 13);
+        y += 20;
+        Tabs("grp", new Rect2(x0, y, b.Size.X, 40), new[] { ("all", "All"), ("lance", "Lances"), ("torpedo", "Torpedoes") }, "", id => B.SelectGroup(id == "all" ? null : id));
+        y += 52;
+        var top = new Rect2(x0, y, b.Size.X, (b.End.Y - y) * 0.55f);
+        foreach (var (m, r) in SystemsDisplay.Draw(this, Ui, X, s, top, true, "wx", true, mm => _detail = mm.Index))
         {
-            float y = b.Position.Y + 130;
-            Lbl("Mount", b.Position.X, y); Lbl("Weapon", b.Position.X + 70, y); Lbl("State", b.Position.X + 260, y); Lbl("Charge", b.Position.X + 380, y);
-            Lbl("Status", b.Position.X + 520, y); Lbl("To hit", b.Position.X + 660, y);
-            foreach (Mount m in Me.Mounts)
-            {
-                y += 34;
-                Color sc = StatusColor(B.Rules.Status(m));
-                Num(m.Label, b.Position.X, y, 0, m.Selected ? C.Sky : C.Lilac, HorizontalAlignment.Left, 20);
-                Text(m.Weapon.Name.ToUpperInvariant(), b.Position.X + 70, y, 18, C.Text, HorizontalAlignment.Left, 180);
-                Text(m.State.ToString().ToUpperInvariant(), b.Position.X + 260, y, 18, C.Text);
-                double? cd = Rules.CooldownS(m);
-                Num(cd is { } s ? Rules.FormatCooldown(s) + " S" : m.Charge >= 1 ? "READY" : "-", b.Position.X + 380, y, 0, null, HorizontalAlignment.Left, 20);
-                Text(B.Rules.Status(m).ToString().ToUpperInvariant(), b.Position.X + 520, y, 18, sc);
-                Num(t != null ? Pct(B.Rules.HitChance(Me, m, t)) : "-", b.Position.X + 660, y, 0, null, HorizontalAlignment.Left, 20);
-            }
+            if (m.Weapon.IsPointDefence) continue;
+            int i = m.Index;
+            Button($"wx.f.{i}", new Rect2(r.GetCenter().X - 24, r.End.Y + 3, 48, 20), "Fire", () => B.FireOne(i), dis: !B.CanFire(m));
+        }
+        y = top.End.Y + 8;
+        Kit.Piece(this, "divider", new Rect2(x0, y, b.Size.X, 10));
+        y += 14;
+        Detail(new Rect2(x0, y, b.Size.X, b.End.Y - y), s, t);
+    }
+
+    // The picked mount's details: every figure from the rules the shot uses.
+    private void Detail(Rect2 r, Ship s, Ship? t)
+    {
+        if (s.Mounts.Count == 0) { Lbl("No weapons fitted", r.Position.X, r.Position.Y + 26, 0, null, HorizontalAlignment.Left, 18); return; }
+        Mount m = s.Mounts[Math.Clamp(_detail, 0, s.Mounts.Count - 1)];
+        WeaponMode w = Rules.Mode(m);
+        SystemStatus st = B.Rules.Status(m);
+        double? cool = Rules.CooldownS(m);
+        float x0 = r.Position.X, y = r.Position.Y, cw = r.Size.X / 2 - 12;
+        Text($"{m.Label} · {m.Weapon.Name}".ToUpperInvariant(), x0, y + 26, 26, C.Sky, HorizontalAlignment.Left, cw, 700, 1);
+        Pairs("wd.a", x0, y + 62, new (string, string, Color?)[] { ("Status", st.ToString(), StatusColor(st)), ("Health", Pct(Math.Clamp(m.Hp, 0, 1)), null) }, 20);
+        Pairs("wd.b", x0, y + 92, new (string, string, Color?)[] { ("Arc", m.Def.ArcWidthDeg >= 360 ? "All round" : $"{m.Def.ArcCentreDeg:0}° ± {m.Def.ArcWidthDeg / 2:0}°", null), ("Range", $"{w.RangeKm:0.0} km", null), ("Damage", w.Damage.ToString("0"), null) }, 20);
+        Pairs("wd.c", x0, y + 122, new (string, string, Color?)[] { ("Charge", m.Hp <= 0 || m.State == Arming.Offline ? "--" : Pct(m.Charge), null),
+            ("Ready in", cool is { } c ? $"{Rules.FormatCooldown(c)} s" : Rules.Ready(m) ? "Ready" : "--", null), ("Cost", $"{w.CostE:0.#} E", null) }, 20);
+        float rx = x0 + r.Size.X / 2 + 12, rw = r.Size.X / 2 - 12;
+        if (!m.Weapon.IsPointDefence)
+            Tabs("wd.arm", new Rect2(rx, y + 6, rw, 36), new[] { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload") }, m.State.ToString().ToLowerInvariant(),
+                id => B.ArmOne(m.Index, Enum.Parse<Arming>(id, true)));
+        if (t != null)
+        {
+            bool arc = Rules.InArc(s, m, t), rng = Rules.InRange(s, m, t);
+            Pairs("wd.t", rx, y + 62, new (string, string, Color?)[] { ("Target", t.Name, null), ("To hit", Pct(B.Rules.HitChance(s, m, t)), null),
+                ("In arc", arc ? "Yes" : "No", arc ? C.Accord : C.Alert), ("In range", rng ? "Yes" : "No", rng ? C.Accord : C.Alert) }, 20);
+        }
+        else Lbl("No target", rx, y + 62);
+        if (!m.Weapon.IsPointDefence)
+        {
+            int i = m.Index;
+            Tab("wd.sel", new Rect2(rx, y + 84, rw * 0.45f, 40), m.Selected ? "In the volley" : "Not in volley", () => B.ToggleMount(i), m.Selected);
+            Button("wd.fire", new Rect2(rx + rw * 0.45f + 8, y + 84, rw * 0.55f - 8, 40), "Fire", () => B.FireOne(i), dis: !B.CanFire(m));
         }
     }
 }
 
-/// <summary>The radar dial of contacts round your heading, the contact count, Next target and the crest.</summary>
+/// <summary>The radar row: the dial of contacts round your heading (a click opens the tactical map when it is built),
+/// the hostile count, Map and Next target, and the crest.</summary>
 public sealed partial class RadarPanel : ConsolePanel
 {
-    private const double ReachKm = 25;
+    private const double ScaleKm = 15;
 
     protected override void DrawPanel()
     {
-        float dial = Big ? Math.Min(Size.Y - 60, Size.X * 0.6f) : 120;
-        var dr = new Rect2(8, Big ? 40 : 6, dial, dial);
+        float x = 0, y = 0;
+        var dr = new Rect2(x, y + 6, 120, 120);
         Kit.Hero(this, "dial", dr);
         Vector2 c = dr.GetCenter();
-        float k = dial / 120f;
-        DrawArc(c, 46 * k, -Mathf.Pi / 2, 0.4f, 24, C.Sky, 3 * k, true);
-        Ship? t = B.TargetOf(Me);
-        int count = 0;
+        float rr = 120 * 0.4f;
+        foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
         foreach (Ship o in B.Ships)
         {
             if (!o.Alive || o == Me) continue;
-            double km = Rules.DistKm(Me, o);
-            if (km > ReachKm) continue;
-            if (o.Side != Me.Side) count++;
-            double br = Rules.Bearing(Me, o.X, o.Z), rr = Math.Min(1, km / ReachKm) * 50 * k;
-            var p = c + new Vector2((float)(Math.Sin(br) * rr), (float)(-Math.Cos(br) * rr));
-            DrawCircle(p, 4 * k, o.Side == Me.Side ? C.Accord : C.Alert, true, -1, true);
-            if (o == t) DrawArc(p, 8 * k, 0, Mathf.Tau, 20, C.Text, 2, true);
+            double km = Rules.DistKm(Me, o), br = Rules.Bearing(Me, o.X, o.Z), r = Math.Min(1.08, km / ScaleKm) * rr;
+            var p = c + new Vector2((float)(Math.Sin(br) * r), (float)(-Math.Cos(br) * r));
+            Color dot = o.Side == Me.Side ? C.Accord : o.Faction.Id == "vos" ? C.Caution : C.Alert;
+            DrawCircle(p, 120 * 0.035f, dot, true, -1, true);
+            if (o.Id == Me.Target) DrawArc(p, 120 * 0.07f, 0, Mathf.Tau, 20, C.Sky, 2, true);
         }
-        DrawCircle(c, 3 * k, C.Sky, true, -1, true);
-        float x = dr.End.X + 18;
-        float y = dr.Position.Y + 26;
-        Pairs("rd", x, y, new (string, string, Color?)[] { ("Contacts", count.ToString(), count > 0 ? C.Alert : null) }, 22);
-        Ship? near = B.EnemiesOf(Me).OrderBy(o => Rules.DistKm(Me, o)).FirstOrDefault();
-        Pairs("rd.n", x, y + 30, new (string, string, Color?)[] { ("Nearest", near != null ? $"{Rules.DistKm(Me, near):0.0} km" : "-", null) }, 22);
-        Button("rd.next", new Rect2(x, y + 46, 120, 30), "Next target", () => B.NextTarget(), tip: new Tip("Lock the next enemy, nearest first"));
-        if (!Big) Kit.Hero(this, "crest", new Rect2(Size.X - 104, 18, 96, 96));
-        else
-        {
-            Kit.Hero(this, "crest", new Rect2(Size.X - 160, 40, 140, 140));
-            Button("rd.return", new Rect2(Size.X - 160, Size.Y - 60, 140, 40), "Return", () => X.Act.Return());
-        }
+        DrawCircle(c, 120 * 0.03f, C.Sky, true, -1, true);
+        float bx = x + 128, bw = Size.X - 128 - 80;
+        Kit.Piece(this, "frame.inset", new Rect2(bx, y + 6, bw, 120));
+        Pairs("rr", bx + 14, y + 52, new (string, string, Color?)[] { ("", B.EnemiesOf(Me).Count().ToString(), null), ($"hostile · {ScaleKm:0} km", "", null) });
+        Button("rr.map", new Rect2(bx + 14, y + 72, 70, 30), "Map", null, dis: true, tip: new Tip("Tactical map: not yet in the game"));
+        Button("rr.next", new Rect2(bx + 92, y + 72, 120, 30), "Next target", () => B.NextTarget(), tip: new Tip("Lock the next enemy (Tab)"));
+        Kit.Hero(this, "crest", new Rect2(Size.X - 74, y + 30, 72, 72));
     }
 }
 
@@ -135,7 +163,10 @@ public sealed partial class BottomStrip : ConsolePanel
         float cx = 96, cw = Size.X - 192, cy = 12, ch = 44, gap = 22, fix = 120 + 138, u = (cw - fix - gap * 4) / 3.45f, xx = cx;
         Lbl("Speed", xx, cy + 28);
         Num(Math.Round(s.V).ToString(), xx + 58, cy + 31, 46);
-        SpeedSlider(xx + 112, cy, u * 1.5f - 112, ch); xx += u * 1.5f + gap;
+        const float wk = 96;
+        SpeedSlider(xx + 112, cy, u * 1.5f - 112 - wk - 10, ch);
+        WarpKey(new Rect2(xx + u * 1.5f - wk, cy + 7, wk, 30));
+        xx += u * 1.5f + gap;
         int n = s.Class.ReactorE, outN = (int)Math.Floor(B.Rules.Output(s) + 1e-6), used = B.Rules.Used(s);
         float tw = u * 1.4f - 68 - 60;
         Lbl("Power", xx, cy + 17, 0, null, HorizontalAlignment.Left, 12);
@@ -158,6 +189,17 @@ public sealed partial class BottomStrip : ConsolePanel
         }
     }
 
+    // The warp key at the end of the speed slider, drawn offline (dark, its name dim) as the mockup's drive starts: the
+    // warp drive is not in the game yet, so the key does nothing.
+    private void WarpKey(Rect2 r)
+    {
+        HitState st = Ui.Reg("warp.key", r, null, null, new Tip("Warp: not yet in the game"));
+        Shapes.RoundRect(this, r, C.Deep, r.Size.Y / 2);
+        Shapes.RoundRect(this, r.Grow(-1), new Color("#0d1430"), r.Size.Y / 2);
+        if (st.Hot) Shapes.RoundRectLine(this, r.Grow(1), C.Sky, r.Size.Y / 2 + 1, 2);
+        Text("WARP", r.GetCenter().X, r.Position.Y + r.Size.Y * 0.68f, 17, new Color("#3a4a80"), HorizontalAlignment.Center, r.Size.X - 10, 700, 1);
+    }
+
     // Speed: the ten engine boxes are the track, a handle on them is dragged (owner: "speed needs a slider handle").
     private void SpeedSlider(float x, float y, float w, float h)
     {
@@ -171,16 +213,20 @@ public sealed partial class BottomStrip : ConsolePanel
     }
 }
 
-/// <summary>The in-battle menu, over the view: resume, restart the battle, quit.</summary>
+/// <summary>The in-battle menu: a sheet over everything that dims the console and takes all input while it is up
+/// (the mockup's uiSheet): resume, restart the battle, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
     protected override void DrawPanel()
     {
-        Rect2 b = Frame("Menu", false);
-        float y = b.Position.Y + 8, w = b.Size.X;
-        Button("m.resume", new Rect2(b.Position.X, y, w, 44), "Resume", X.Act.Menu); y += 54;
-        Button("m.restart", new Rect2(b.Position.X, y, w, 44), "Restart battle", X.Act.Restart); y += 54;
-        Button("m.quit", new Rect2(b.Position.X, y, w, 44), "Quit", X.Act.Quit);
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
+        Ui.Reg("sheet.block", new Rect2(Vector2.Zero, Size));
+        float w = 600, h = 300;
+        Rect2 b = Frame(new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h), "Menu", false);
+        float y = b.Position.Y + 8, bw = b.Size.X;
+        Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
+        Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false); y += 56;
+        Button("m.quit", new Rect2(b.Position.X, y, bw, 44), "Quit", X.Act.Quit, center: false);
     }
 }
 

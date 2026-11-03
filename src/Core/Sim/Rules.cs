@@ -14,7 +14,7 @@ public sealed class Rules
     /// <summary>The systems energy is allocated to, in the power station's order.</summary>
     public static readonly string[] Systems = { "weapons", "shields", "engines", "sensors", "tractor", "transport", "repair" };
     /// <summary>The subsystems that take damage and show a status box on the systems display.</summary>
-    public static readonly string[] Subsystems = { "weapons", "shields", "sensors", "engines", "tractor", "transport" };
+    public static readonly string[] Subsystems = { "weapons", "shields", "sensors", "reactor", "engines", "tractor", "transport" };
     /// <summary>Boxes in one system's allocation row.</summary>
     public const int BoxesPerSystem = 10;
     /// <summary>Facing names, clockwise from the bow.</summary>
@@ -89,6 +89,9 @@ public sealed class Rules
         p -= _t.EcmStep * t.Ecm;
         p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
         p *= 0.5 + 0.5 * s.Sys["sensors"];
+        // erratic manoeuvres: harder to hit, and harder to hit with
+        if (t.Erratic) p *= _t.ErraticHit;
+        if (s.Erratic) p *= _t.ErraticHit;
         return Math.Clamp(p, _t.HitChanceMin, _t.HitChanceMax);
     }
 
@@ -98,7 +101,7 @@ public sealed class Rules
         double hp = s.Sys[subsystem];
         if (hp <= 0) return SystemStatus.Destroyed;
         if (hp < _t.StatusDisabledBelow) return SystemStatus.Disabled;
-        bool off = s.Power.GetValueOrDefault(subsystem) <= 0 || (subsystem == "shields" && !s.ShieldsUp);
+        bool off = (Array.IndexOf(Systems, subsystem) >= 0 && s.Power.GetValueOrDefault(subsystem) <= 0) || (subsystem == "shields" && !s.ShieldsUp);
         if (off) return SystemStatus.Off;
         return hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
     }
@@ -111,6 +114,12 @@ public sealed class Rules
         if (m.State == Arming.Offline) return SystemStatus.Off;
         return m.Hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
     }
+
+    /// <summary>A class's best high energy turn chance: smaller hulls turn hard more safely.</summary>
+    public static double HetMax(Ship s) => Math.Clamp(0.95 - s.Class.LengthM / 2000, 0.6, 0.95);
+
+    /// <summary>The chance the next high energy turn succeeds, as the helm shows it and Battle.Het rolls it.</summary>
+    public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0));
 
     /// <summary>Range in km an AI captain closes to for its range setting.</summary>
     public double AiRangeKm() => _t.AiRangeMidKm;

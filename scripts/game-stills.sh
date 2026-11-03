@@ -20,8 +20,10 @@ shot() { # name size args...
 }
 shot battle 1920x1080 --steps=600
 shot power 1920x1080 --steps=600 --station=power
-shot shields 1920x1080 --steps=900 --page=shields
+shot shields 1920x1080 --steps=600 --page=shields --reinforce=0
 shot station-expanded 1920x1080 --steps=600 --expand=station
+shot power-expanded 1920x1080 --steps=600 --station=power --expand=station
+shot ship-expanded 1920x1080 --steps=600 --expand=ship
 shot weapons-expanded 1920x1080 --steps=600 --expand=weapons
 shot menu 1920x1080 --steps=300 --menu
 shot wide-2560 2560x1080 --steps=1200

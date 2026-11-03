@@ -25,7 +25,7 @@ public sealed partial class BattleView : Node3D
     private Vector2 _screen;
 
     /// <summary>Camera orbit: yaw round the ship (radians, 0 looking north from the south), pitch above the plane, distance in units.</summary>
-    public float Yaw, Pitch = 0.55f, Dist = 34;
+    public float Yaw, Pitch = 0.367f, Dist = 13.9f;
 
     public void Init(ConsoleContext ctx)
     {
@@ -133,5 +133,5 @@ public sealed partial class BattleView : Node3D
         Pitch = Mathf.Clamp(Pitch + drag.Y * 0.004f, 0.08f, 1.45f);
     }
 
-    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, 8, 220);
+    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, 5, 220);
 }

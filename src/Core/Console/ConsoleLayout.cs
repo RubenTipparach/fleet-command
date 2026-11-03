@@ -17,7 +17,8 @@ public sealed record ConsoleFrame(double Scale, double W, double H, IReadOnlyDic
 public static class ConsoleLayout
 {
     /// <summary>The panels a captain can expand (the strips cannot).</summary>
-    public static readonly Region[] Expandable = { Region.Station, Region.Ship, Region.Weapons, Region.Radar };
+    // The radar row expands into the tactical map, which is not built yet.
+    public static readonly Region[] Expandable = { Region.Station, Region.Ship, Region.Weapons };
 
     /// <summary>The scale from reference pixels to window pixels.</summary>
     public static double Scale(LayoutDef l, double windowW, double windowH) => Math.Min(windowH / l.ReferenceH, windowW / l.MinW);

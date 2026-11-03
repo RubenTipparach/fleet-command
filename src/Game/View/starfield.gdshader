@@ -1,4 +1,5 @@
-// The stand-in sky: hashed stars over a faint blue haze (mockup 3, look dev, sets the real one).
+// The stand-in sky: hashed stars over a warm dust nebula, after the battle console mockup's backdrop (mockup 3, look
+// dev, sets the real one).
 shader_type sky;
 
 uniform float density = 0.012;
@@ -13,6 +14,13 @@ float hash(vec3 p) {
 void sky() {
 	vec3 d = normalize(EYEDIR);
 	vec3 col = vec3(0.004, 0.006, 0.014) + vec3(0.01, 0.014, 0.03) * pow(1.0 - abs(d.y), 3.0);
+	// a warm dust cloud: a few layers of smooth waves over the sphere, brightest toward the horizon
+	float n = 0.0;
+	n += 0.5 + 0.5 * sin(d.x * 3.1 + d.z * 2.3 + sin(d.y * 4.0 + d.x * 2.0));
+	n += 0.5 * (0.5 + 0.5 * sin(d.z * 7.3 - d.x * 5.1 + sin(d.y * 9.0) * 1.5));
+	n += 0.25 * (0.5 + 0.5 * sin(d.x * 15.0 + d.y * 13.0 - d.z * 11.0));
+	n = smoothstep(0.55, 1.6, n) * (0.35 + 0.65 * pow(1.0 - abs(d.y), 2.0));
+	col += vec3(0.20, 0.13, 0.08) * n;
 	vec3 p = d * scale;
 	vec3 c = floor(p);
 	vec3 f = fract(p);

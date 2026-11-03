@@ -28,5 +28,19 @@
   "subsystem_hit_chance": 0.35,
   "subsystem_damage_per_hp": 0.02,
   "mount_hit_chance": 0.15,
-  "mount_damage": 0.6
+  "mount_damage": 0.6,
+  "het_rate_deg_s": 240,
+  "het_cost_e": 3,
+  "het_chance_drop": 0.2,
+  "het_recover_per_s": 0.01,
+  "het_erratic_penalty": 0.17,
+  "het_breakdown_s": 15,
+  "het_breakdown_engines": 0.3,
+  "estop_decel_x": 5,
+  "estop_hold_s": 4,
+  "erratic_hit": 0.75,
+  "erratic_turn": 0.8,
+  "orbit_km": 4,
+  "hold_min_km": 1,
+  "hold_max_km": 12
 }

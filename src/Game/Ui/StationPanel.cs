@@ -1,5 +1,6 @@
 // StationPanel: the stations panel (battle-console design section 1): one panel whose page is picked by a narrow column
-// of nine icon tabs. Built in the game so far: Helm (the pad of turn and speed keys) and Power (energy in boxes). The
+// of nine icon tabs. Built in the game so far: Helm (orders toward the target, high energy turns) and Power (energy in
+// boxes). The
 // other seven stations are on the rail and show that they are not built yet; each comes in its own change.
 using System;
 using FleetCommand.Sim;
@@ -17,16 +18,6 @@ public sealed partial class StationPanel : ConsolePanel
     };
 
     private static readonly string[] SystemIcons = { "weapons", "shields", "engines", "sensors", "tractor", "transport", "repair" };
-
-    // The pad's eight keys clockwise from the top (the mockup's HELM_KEYS): speed up, starboard 15, 45, 90, speed down,
-    // port 90, 45, 15.
-    private static readonly (string Label, Action<Battle> Do)[] HelmKeys =
-    {
-        ("+30", b => b.SpeedStep(1)), ("15°", b => b.Turn(15)), ("45°", b => b.Turn(45)), ("90°", b => b.Turn(90)),
-        ("-30", b => b.SpeedStep(-1)), ("90°", b => b.Turn(-90)), ("45°", b => b.Turn(-45)), ("15°", b => b.Turn(-15)),
-    };
-    private int _lit = -1;
-    private ulong _litAt;
 
     protected override void DrawPanel()
     {
@@ -50,63 +41,147 @@ public sealed partial class StationPanel : ConsolePanel
         Lbl("Not yet in the game", b.Position.X + b.Size.X / 2, b.Position.Y + 198, b.Size.X - 10, null, HorizontalAlignment.Center);
     }
 
+    // The helm (battle-console design 4b and the helm page, v65; the Starfleet Command 2 manual's Helm Officer display,
+    // printed pages 117-120, taken in shape, not art): orders toward the target in the left half (intercept, trail,
+    // hold distance with its slider, orbit with its direction), hit and run with its two-handled range slider and
+    // evasive in the right, then a 3 x 3 pad of high energy turns round free heading with emergency stop and a free-angle
+    // turn; the HET chance, heading and ordered speed beside it.
     private void Helm(Rect2 b)
     {
         Ship s = Me;
-        float size = Math.Min(b.Size.X, b.Size.Y - 70);
-        if (Big) size = Math.Min(b.Size.X * 0.6f, b.Size.Y - 80);
-        var pad = new Rect2(b.Position.X + (Big ? 0 : (b.Size.X - size) / 2), b.Position.Y, size, size);
-        Kit.Hero(this, "helm.pad", pad);
-        int? Key(Vector2 q)
+        Ship? t = B.NavTarget(s);
+        float k = Big ? 1.5f : 1, gap = 8 * k, row = (b.Size.X - 3 * gap) / 4, ks = Math.Min(row, Big ? 84 : 52);
+        float x0 = b.Position.X, y = b.Position.Y, ts = MathF.Round(34 * k), tg = 5 * k, half = (b.Size.X - 12 * k) / 2, xr = x0 + half + 12 * k;
+        int lbl = (int)(13 * k);
+        Func<bool> ordOn(string o) => () => s.Engaged && s.Manoeuvre == o;
+        bool noT = t == null;
+        Lbl("Target", x0, y + 12, 0, null, HorizontalAlignment.Left, lbl);
+        Lbl("Runs and evasion", xr, y + 12, 0, null, HorizontalAlignment.Left, lbl);
+        y += 18 * k;
+        float y0 = y;
+        double span = B.Tuning.HoldMaxKm - B.Tuning.HoldMinKm;
+        float Frac(double v) => (float)((v - B.Tuning.HoldMinKm) / span);
+        double Val(float f) => B.Tuning.HoldMinKm + f * span;
+        HelmKey("helm.int", x0, y, ts, "intercept", "Intercept", () => B.HelmOrder("intercept"), ordOn("intercept")(), noT);
+        HelmKey("helm.trail", x0 + ts + tg, y, ts, "trail", "Trail and match speed", () => B.HelmOrder("trail"), ordOn("trail")(), noT);
+        y += ts + tg;
+        HelmKey("helm.hold", x0, y, ts, "hold_range", "Approach and hold distance", () => B.HelmOrder("hold_range"), ordOn("hold_range")(), noT);
         {
-            Vector2 d = q - pad.GetCenter();
-            float r = d.Length() / size * 300;
-            if (r < 50) return 8;
-            if (r > 135) return null;
-            return (int)Math.Round((Mathf.Atan2(d.Y, d.X) + Mathf.Pi / 2) / (Mathf.Pi / 4) + 8) % 8;
+            float sx = x0 + ts + tg + 8, sw = half - ts - tg - 16;
+            Slider("helm.holdkm", sx, y, sw, ts * 0.6f, Frac(s.HoldKm), null, f => B.SetHoldKm(Val(f)), "Distance to hold");
+            Lbl($"{s.HoldKm:0.0} km", sx + sw, y + ts - 2, 0, C.Sky, HorizontalAlignment.Right, lbl);
         }
-        HitState hs = Ui.Reg("helm", pad, q =>
+        y += ts + tg;
+        HelmKey("helm.orbit", x0, y, ts, "orbit", $"Orbit ({(s.OrbitDir > 0 ? "clockwise" : "anticlockwise")})", () => B.HelmOrder("orbit"), ordOn("orbit")(), noT);
         {
-            if (Key(q) is not { } k) return;
-            _lit = k; _litAt = Time.GetTicksMsec();
-            if (k == 8) B.AllStop(); else HelmKeys[k].Do(B);
-        });
-        float sc = size / 300f;
-        Vector2 c = pad.GetCenter();
-        void Light(int key, float alpha)
-        {
-            var col = new Color(C.Sky, alpha);
-            if (key == 8) DrawCircle(c, 46 * sc, col, true, -1, true);
-            else { float a = -Mathf.Pi / 2 + (key - 0.5f) * Mathf.Pi / 4; Pen.FillAbs(this, Shapes.ArcSeg(c, 58 * sc, 128 * sc, a + 0.06f, a + Mathf.Pi / 4 - 0.06f), col); }
+            // the direction switch: a two-way toggle, the lit half the way the orbit goes
+            float sx = x0 + ts + tg + 4, sw = half - ts - tg - 4, sh = ts - 8, sy = y + 4, hh = sw / 2;
+            bool cw = s.OrbitDir > 0;
+            Ui.Reg("helm.odir", new Rect2(sx, sy, sw, sh), _ => B.ToggleOrbitDir(), null, new Tip("Orbit direction"));
+            Shapes.RoundRect(this, new Rect2(sx, sy, sw, sh), C.Deep, sh / 2);
+            Shapes.RoundRect(this, new Rect2(sx + (cw ? 0 : hh), sy, hh, sh), C.Lilac, sh / 2);
+            Text("CW", sx + hh / 2, sy + sh / 2 + 5 * k, lbl, cw ? Colors.Black : C.Sky, HorizontalAlignment.Center, 0, 700);
+            Text("CCW", sx + hh * 1.5f, sy + sh / 2 + 5 * k, lbl, cw ? C.Sky : Colors.Black, HorizontalAlignment.Center, 0, 700);
         }
-        if (hs.Hot && Key(Ui.Mouse) is { } hk) Light(hk, 0.35f);
-        if (_lit >= 0 && Time.GetTicksMsec() - _litAt < 160) Light(_lit, 1);
-        for (int i = 0; i < 8; i++)
+        float yr = y0;
+        HelmKey("helm.run", xr, yr, ts, "hit_run", $"Hit and run ({(s.RunPhase == "in" ? "running in" : "pulling away")})", () => B.HelmOrder("hit_run"), ordOn("hit_run")(), B.TargetOf(s) == null);
+        Lbl($"{s.RunMinKm:0.0}-{s.RunMaxKm:0.0} km", xr + ts + tg + 4, yr + ts * 0.62f, half - ts - tg, C.Sky, HorizontalAlignment.Left, (int)(14 * k));
+        yr += ts + tg;
         {
-            float a = -Mathf.Pi / 2 + i * Mathf.Pi / 4;
-            Vector2 q = c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 93 * sc;
-            // the arrow: a dot with a tail, pointing outward along the key
-            Vector2 dir = new(Mathf.Cos(a), Mathf.Sin(a));
-            Vector2 tip = q + dir * (-2) * sc;
-            DrawCircle(tip, 6 * sc, Colors.Black, true, -1, true);
-            DrawLine(tip - dir * 12 * sc, tip - dir * 6 * sc, Colors.Black, 3 * sc, true);
-            Text(HelmKeys[i].Label, q.X, q.Y + (Mathf.Sin(a) > 0.5f ? -14 : 24) * sc, Math.Max(12, (int)(17 * sc)), Colors.Black, HorizontalAlignment.Center, 0, 700);
+            float sx = xr + 8, sw = half - 16, f0 = Frac(s.RunMinKm), f1 = Frac(s.RunMaxKm);
+            Slider("helm.runkm", sx, yr, sw, ts * 0.7f, f0, f1, f =>
+            {
+                double v = Val(f);
+                if (Math.Abs(f - f0) <= Math.Abs(f - f1)) B.SetRunRange(v, s.RunMaxKm); else B.SetRunRange(s.RunMinKm, v);
+            }, "Hit and run: nearest and farthest range");
+            Lbl("Min", sx, yr + ts - 2, 0, null, HorizontalAlignment.Left, (int)(12 * k));
+            Lbl("Max", sx + sw, yr + ts - 2, 0, null, HorizontalAlignment.Right, (int)(12 * k));
         }
-        Text("STOP", c.X, c.Y + 8 * sc, Math.Max(12, (int)(22 * sc)), Colors.Black, HorizontalAlignment.Center, 0, 700);
-        // readouts: heading, ordered heading, speed and its limit
-        float y = Big ? pad.Position.Y + 30 : pad.End.Y + 26, x = Big ? pad.End.X + 30 : b.Position.X;
-        Pairs("hd", x, y, new (string, string, Color?)[] { ("Heading", Geometry.HeadingDeg(s.H).ToString("000"), null), ("Ordered", Geometry.HeadingDeg(s.HOrder).ToString("000"), C.Lilac) }, 22);
-        Pairs("sp", x, y + 30, new (string, string, Color?)[] { ("Speed", $"{Math.Round(s.V)}", null), ("Of", $"{Math.Round(B.Rules.MaxSpeed(s))} m/s", null) }, 22);
-        if (Big)
+        yr += ts + tg;
+        HelmKey("helm.err", xr, yr, ts, "erratic", "Evasive manoeuvres", () => B.ToggleErratic(), s.Erratic, false, C.Lilac);
+        Lbl(s.Erratic ? "Evasive: on" : "Evasive", xr + ts + tg + 4, yr + ts * 0.62f, half - ts - tg, s.Erratic ? C.Lilac : C.Sky, HorizontalAlignment.Left, (int)(14 * k));
+        y += ts + 12 * k;
+        Lbl("High energy turns", x0, y + 12, 0, null, HorizontalAlignment.Left, lbl);
+        y += 18 * k;
+        bool busy = B.HetBusy(s);
+        (string Kind, string Name, int Deg)[,] pad =
         {
-            Lbl("Keys: A D turn 15, Q E turn 45, W S speed, X all stop", x, y + 70, b.End.X - x);
-            Lbl("Click in the battle to come to that bearing", x, y + 94, b.End.X - x);
+            { ("het.l135", "HET hard left 135", -135), ("het.180", "HET 180", 180), ("het.r135", "HET hard right 135", 135) },
+            { ("het.l90", "HET left 90", -90), ("free", "Free heading", 0), ("het.r90", "HET right 90", 90) },
+            { ("none", "", 0), ("estop", "Emergency stop", 0), ("het.free", "HET free angle: click the view", 0) },
+        };
+        for (int ri = 0; ri < 3; ri++)
+            for (int ci = 0; ci < 3; ci++)
+            {
+                var (kind, name, deg) = pad[ri, ci];
+                float x = x0 + ci * (ks + gap), yy = y + ri * (ks + gap);
+                switch (kind)
+                {
+                    // a blank grey key fills the corner, so the pad reads as a full 3 x 3; it does nothing
+                    case "none": Shapes.RoundRect(this, new Rect2(x, yy, ks, ks), new Color("#3a4152"), ks * 0.22f); break;
+                    case "free": HelmKey("helm.free", x, yy, ks, "free", name, () => B.HelmOrder("free"), !s.Engaged, false, C.Sky); break;
+                    case "estop": HelmKey("helm.stop", x, yy, ks, "estop", s.EstopT > 0 ? $"Engines holding {Rules.FormatCooldown(s.EstopT)} s" : name, () => B.EmergencyStop(), s.Estop || s.EstopT > 0, false, C.Caution); break;
+                    case "het.free": HelmKey("helm.hetf", x, yy, ks, "het.free", name, () => X.State.PlacingHet = !X.State.PlacingHet, X.State.PlacingHet, busy, C.Lilac); break;
+                    default: int d = deg; HelmKey($"helm.{kind}", x, yy, ks, kind, name, () => B.Het(d), false, busy); break;
+                }
+            }
+        float rx = x0 + 3 * (ks + gap), rw = b.End.X - rx;
+        double hc = B.Rules.HetChanceNow(s);
+        (string L, string V, Color Col)[] rows =
+        {
+            ("HET", s.Broke > 0 ? $"Out {Rules.FormatCooldown(s.Broke)} s" : Pct(hc), s.Broke > 0 ? C.Alert : hc < 0.5 ? C.Caution : C.Accord),
+            ("Heading", $"{Geometry.HeadingDeg(s.H):000}°", C.Sky),
+            ("Speed", $"{Math.Round(s.VOrder)} M/S", C.Sky),
+        };
+        for (int i = 0; i < rows.Length; i++)
+        {
+            float yy = y + i * (3 * ks + 2 * gap) / 3;
+            Lbl(rows[i].L, rx, yy + 14 * k, 0, null, HorizontalAlignment.Left, lbl);
+            Num(rows[i].V, rx, yy + 36 * k, rw, rows[i].Col, HorizontalAlignment.Left, (int)(22 * k));
         }
+        if (!Big) return;
+        y += 3 * (ks + gap) + 20;
+        if (t != null) Pairs("helm.t", x0, y, new (string, string, Color?)[] { ("Target", t.Name, null), ("Range", $"{Rules.DistKm(s, t):0.0} km", null), ("Speed", $"{Math.Round(t.V)} M/S", null) });
+        else Lbl("No target", x0, y);
+        Pairs("helm.m", x0, y + 34, new (string, string, Color?)[] { ("Max speed", $"{Math.Round(B.Rules.MaxSpeed(s))} M/S", null), ("Engine boxes", s.Power["engines"].ToString(), null) });
+    }
+
+    /// <summary>One helm key: a rounded square in the Concord blue (lit when its order or toggle is on), its glyph black, its name on hover.</summary>
+    private void HelmKey(string id, float x, float y, float sz, string kind, string name, Action click, bool on, bool dis, Color? onCol = null)
+    {
+        var r = new Rect2(x, y, sz, sz);
+        HitState st = dis ? default : Ui.Reg(id, r, _ => click(), null, new Tip(name));
+        Color fill = dis ? new Color(C.Deep, 0.5f) : st.Down ? C.Lilac : on ? onCol ?? C.Accord : st.Hot ? C.Sky : C.Signal;
+        Shapes.RoundRect(this, r, fill, sz * 0.22f);
+        Color ink = dis ? new Color("#2a3a7a") : Colors.Black;
+        HelmGlyphs.Draw(this, X.Fonts, kind, x + sz / 2, y + sz / 2, sz * 0.42f, ink, Me.OrbitDir, C.Signal);
+        // the turn's angle, small in the corner, so 90 and 135 never read alike
+        string? ang = kind switch { "het.l90" or "het.r90" => "90", "het.l135" or "het.r135" => "135", "het.180" => "180", _ => null };
+        if (ang != null)
+        {
+            bool left = kind.Contains(".l");
+            Text(ang, left ? x + sz - sz * 0.1f : x + sz * 0.1f, y + sz - sz * 0.1f, Math.Max(8, (int)Math.Round(sz * 0.2f)), ink, left ? HorizontalAlignment.Right : HorizontalAlignment.Left, 0, 700);
+        }
+    }
+
+    /// <summary>A slider: one handle, or two (min and max) when f1 is given.</summary>
+    private void Slider(string id, float x, float y, float w, float h, float f0, float? f1, Action<float> set, string label)
+    {
+        float sy = y + h / 2;
+        Ui.Reg(id, new Rect2(x - 8, y, w + 16, h), p => set(Math.Clamp((p.X - x) / w, 0, 1)), (p, _) => set(Math.Clamp((p.X - x) / w, 0, 1)), new Tip(label));
+        Shapes.RoundRect(this, new Rect2(x, sy - 3, w, 6), C.Deep, 3);
+        float a = f1 != null ? f0 : 0, bb = f1 ?? f0;
+        Shapes.RoundRect(this, new Rect2(x + w * a, sy - 3, w * (bb - a), 6), C.Sky, 3);
+        foreach (float f in f1 != null ? new[] { f0, f1.Value } : new[] { f0 })
+            Shapes.RoundRect(this, new Rect2(x + w * f - 7, sy - 11, 14, 22), C.Lilac, 6);
     }
 
     private void Power(Rect2 b)
     {
         Ship s = Me;
+        // the power station's modes: Allocation is built; Reactor and Warp are not in the game yet
+        Tabs("pw.mode", new Rect2(b.Position, new Vector2(b.Size.X, 40)), new[] { ("alloc", "Allocation"), ("reactor", "Reactor"), ("warp", "Warp") }, "alloc", _ => { }, id => id != "alloc");
+        b = new Rect2(b.Position.X, b.Position.Y + 46, b.Size.X, b.Size.Y - 46);
         double outE = B.Rules.Output(s);
         int used = B.Rules.Used(s);
         double spare = outE - used;

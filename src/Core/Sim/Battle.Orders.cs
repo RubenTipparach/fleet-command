@@ -13,6 +13,7 @@ public sealed partial class Battle
     public void Turn(double deg)
     {
         if (!double.IsFinite(deg) || !Player.Alive) return;
+        Player.Engaged = false;
         Player.HOrder = Geometry.Wrap(Player.HOrder + deg * Geometry.Deg);
     }
 
@@ -21,6 +22,7 @@ public sealed partial class Battle
     {
         if (!double.IsFinite(x) || !double.IsFinite(z) || !Player.Alive) return;
         if (Geometry.Dist(Player.X, Player.Z, x, z) < 1) return;
+        Player.Engaged = false;
         Player.HOrder = Geometry.HeadingTo(Player.X, Player.Z, x, z);
     }
 
@@ -28,13 +30,102 @@ public sealed partial class Battle
     public void SetSpeed(double mS)
     {
         if (!double.IsFinite(mS) || !Player.Alive) return;
+        if (Player.Engaged && Player.Manoeuvre == "trail") Player.Engaged = false;
         Player.VOrder = Math.Clamp(mS, -Tuning.ReverseMaxMS, Rules.MaxSpeed(Player));
     }
 
     /// <summary>Steps the ordered speed by whole engine boxes.</summary>
-    public void SpeedStep(int boxes) => SetSpeed(Player.VOrder + boxes * Tuning.SpeedPerBoxMS);
+    public void SpeedStep(int boxes) => SetSpeed((Math.Round(Player.VOrder / Tuning.SpeedPerBoxMS) + boxes) * Tuning.SpeedPerBoxMS);
 
-    public void AllStop() { if (Player.Alive) { Player.VOrder = 0; Say("Helm", "All stop."); } }
+    public void AllStop() { if (Player.Alive) { Player.Engaged = false; Player.VOrder = 0; Say("Helm", "All stop."); } }
+
+    /// <summary>What the helm's manoeuvres steer toward: the locked enemy (friendly destinations come with transport).</summary>
+    public Ship? NavTarget(Ship s) => TargetOf(s);
+
+    /// <summary>An order toward the target: intercept, trail, hold_range, orbit or hit_run. The lit order again, or
+    /// "free", returns to free heading.</summary>
+    public void HelmOrder(string order)
+    {
+        Ship s = Player;
+        if (order == "free" || (s.Engaged && s.Manoeuvre == order)) { s.Engaged = false; Say("Helm", "Free heading."); return; }
+        if (order is not ("intercept" or "trail" or "hold_range" or "orbit" or "hit_run")) return;
+        Ship? t = NavTarget(s);
+        if (t == null) { Say("Helm", "No target: click a ship."); return; }
+        s.Manoeuvre = order;
+        s.Engaged = true;
+        if (order == "hit_run") s.RunPhase = "in";
+        string what = order switch
+        {
+            "intercept" => "Intercepting", "trail" => "Trailing", "orbit" => "Orbiting",
+            "hold_range" => $"Holding {s.HoldKm:0.0} km from", _ => $"Hit and run, {s.RunMinKm:0.0}-{s.RunMaxKm:0.0} km, on",
+        };
+        Say("Helm", $"{what} {t.Name}.");
+    }
+
+    public void ToggleOrbitDir() => Player.OrbitDir = -Player.OrbitDir;
+
+    private double HalfKm(double v) => Math.Clamp(Math.Round(v * 2) / 2, Tuning.HoldMinKm, Tuning.HoldMaxKm);
+
+    /// <summary>The distance hold range keeps, in half kilometres.</summary>
+    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = HalfKm(km); }
+
+    /// <summary>Hit and run's nearest and farthest range, at least half a kilometre apart.</summary>
+    public void SetRunRange(double lo, double hi)
+    {
+        if (!double.IsFinite(lo) || !double.IsFinite(hi)) return;
+        Player.RunMinKm = Math.Min(HalfKm(lo), HalfKm(hi) - 0.5);
+        Player.RunMaxKm = Math.Max(HalfKm(hi), Player.RunMinKm + 0.5);
+    }
+
+    /// <summary>True while a high energy turn cannot be ordered (one under way, broken down, or the battery short).</summary>
+    public bool HetBusy(Ship s) => s.Het != null || s.Broke > 0 || s.Battery < Tuning.HetCostE || !s.Alive;
+
+    /// <summary>A high energy turn by deg (negative to port), rolled against Rules.HetChanceNow. A failure leaves the
+    /// impulse engines damaged and the ship dead in space for het_breakdown_s.</summary>
+    public void Het(double deg)
+    {
+        Ship s = Player;
+        if (!double.IsFinite(deg) || s.Het != null || s.Broke > 0 || !s.Alive) return;
+        if (s.Battery < Tuning.HetCostE) { Say("Helm", "Not enough power for a high energy turn."); return; }
+        s.Battery -= Tuning.HetCostE;
+        s.Engaged = false;
+        double p = Rules.HetChanceNow(s);
+        s.HetChance = Math.Max(0, s.HetChance - Tuning.HetChanceDrop);
+        if (_helm.Next() < p)
+        {
+            s.Het = deg * Geometry.Deg;
+            Say("Helm", $"High energy turn, {Math.Abs(deg):0} degrees {(deg < 0 ? "to port" : "to starboard")}.");
+        }
+        else
+        {
+            s.Broke = Tuning.HetBreakdownS;
+            s.Sys["engines"] = Math.Max(0, s.Sys["engines"] - Tuning.HetBreakdownEngines);
+            s.V = 0; s.VOrder = 0;
+            Say("Engineering", $"High energy turn failed: impulse engines damaged, the ship is dead in space for {Tuning.HetBreakdownS:0} s.");
+        }
+    }
+
+    /// <summary>A high energy turn onto the bearing of a point on the plane (the free-angle key, then a click in the view).</summary>
+    public void HetTo(double x, double z)
+    {
+        if (!double.IsFinite(x) || !double.IsFinite(z)) return;
+        Het(Math.Round(Geometry.Wrap(Geometry.HeadingTo(Player.X, Player.Z, x, z) - Player.H) / Geometry.Deg));
+    }
+
+    public void ToggleErratic()
+    {
+        Player.Erratic = !Player.Erratic;
+        Say("Helm", Player.Erratic ? "Erratic manoeuvres." : "Erratic manoeuvres off.");
+    }
+
+    /// <summary>Emergency deceleration: stops as fast as the engines can, then holds them for estop_hold_s.</summary>
+    public void EmergencyStop()
+    {
+        if (Player.EstopT > 0 || !Player.Alive) return;
+        Player.Engaged = false;
+        Player.Estop = true;
+        Say("Helm", "Emergency deceleration.");
+    }
 
     /// <summary>Gives a system <paramref name="boxes"/> energy boxes, within ten and the reactor's output.</summary>
     public void SetPower(string system, int boxes)
@@ -68,6 +159,33 @@ public sealed partial class Battle
 
     public void ToggleVolley() => Player.Volley = !Player.Volley;
 
+    /// <summary>Selects the mounts of one weapon type for the volley (null: every weapon but point defence).</summary>
+    public void SelectGroup(string? weapon)
+    {
+        foreach (Mount m in Player.Mounts) if (!m.Weapon.IsPointDefence) m.Selected = weapon == null || m.Weapon.Id == weapon;
+    }
+
+    /// <summary>Sets one mount's arming state.</summary>
+    public void ArmOne(int index, Arming state)
+    {
+        if (index < 0 || index >= Player.Mounts.Count) return;
+        Mount m = Player.Mounts[index];
+        if (m.Hp <= 0 || (state == Arming.Overload && m.Weapon.Overload == null) || m.State == state) return;
+        if (state == Arming.Offline) m.Charge = 0;
+        m.State = state;
+    }
+
+    /// <summary>True when one mount could fire at the locked target now.</summary>
+    public bool CanFire(Mount m) => TargetOf(Player) is { } t && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
+
+    /// <summary>Fires one mount at the locked target.</summary>
+    public bool FireOne(int index)
+    {
+        if (index < 0 || index >= Player.Mounts.Count || TargetOf(Player) is not { } t) return false;
+        Mount m = Player.Mounts[index];
+        return !m.Weapon.IsPointDefence && FireMount(Player, m, t);
+    }
+
     /// <summary>The mounts Fire would loose now at the locked target: selected, ready, in arc and in range.</summary>
     public Mount[] WouldFire()
     {
@@ -96,6 +214,9 @@ public sealed partial class Battle
         Player.Target = t.Id;
         Say("Tactical", $"Target locked: {t.Name}, {t.Class.Name}.");
     }
+
+    /// <summary>Releases the locked target.</summary>
+    public void Unlock() { if (Player.Target != null) { Player.Target = null; if (Player.Engaged) Player.Engaged = false; } }
 
     /// <summary>Locks the next enemy by range, nearest first, after the one locked now.</summary>
     public void NextTarget()
