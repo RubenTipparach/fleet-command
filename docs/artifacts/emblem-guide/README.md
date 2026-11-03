@@ -28,3 +28,8 @@
   gaps show; the web of hull from version 2 removed.
 - Version 4 published 2026-11-03: every feature on a sketch has an id (A1, A2 ... D5; owner: "can you label each
   feature A1, A2, A3 etc"), in its label and in a badge on the element; anchors moved onto the features they name.
+- Version 5 published 2026-11-03: B reworked on the owner's notes ("i dont like the way its colored", the thin lines in the
+  legs, "some sort of shape encompassing that" for a patch, B1 one solid colour, the star impressed): the saucer one
+  solid Signal blue, no lines in the legs, the star pressed in (a shaded floor with a lit lower-right rim), the
+  nacelles standing on a patch frame; three patch shapes shown with reasons (B-E1 the sweep frame, in the sketch; B-E2
+  the mission arch; B-E3 the sector hex); B's joins measured on the emblem and frame without the field.

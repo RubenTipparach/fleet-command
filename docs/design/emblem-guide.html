@@ -58,6 +58,16 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 .small span { display: inline-grid; place-items: center; border-radius: 6px; }
 .small .dk { background: #070a12; } .small .lt { background: #f4f6fa; border: 1px solid #d6dbe7; }
 .risk { font-size: 14px; color: var(--warn); }
+.encl { display: grid; gap: 10px; }
+.encl h4 { margin: 0; font: 700 18px/1.1 var(--display); letter-spacing: 0.05em; text-transform: uppercase; }
+.encl-row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.encl figure { margin: 0; display: grid; grid-template-columns: 132px 1fr; gap: 12px; align-items: start; background: var(--bg); border-radius: 10px; padding: 10px; min-width: 0; }
+.encl figure > svg { background: #070a12; border-radius: 8px; }
+.encl figcaption { display: grid; gap: 6px; font-size: 14px; min-width: 0; }
+.encl figcaption b { font-weight: 600; }
+.encl .mini { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.encl .mini span { display: inline-grid; place-items: center; border-radius: 5px; }
+.encl .mini .dk { background: #070a12; } .encl .mini .lt { background: #f4f6fa; border: 1px solid #d6dbe7; }
 .joins { font: 500 12px/1.5 var(--mono); color: var(--ok); }
 .joins.bad { color: var(--warn); }
 .notebox { display: grid; gap: 8px; }
@@ -197,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-03', q: 'the saucer is nice, but i dont like the way its colored. B2 has these thin lines inside of the legs. To make it an emblem that would go on a patch or something, I\'d like to seesome sort of shape encompassing that. B1\'s darker color can be removed so that it is a solid color, and the star in the middle can be impressed', means: 'B: the saucer one solid blue, no lines in the legs, the star pressed in; three patch shapes round it (B-E1 to B-E3), the sweep frame in the sketch.' },
   { when: '2026-11-03', q: 'can you label each feature A1, A2, A3 etc', means: 'Every feature on a sketch has an id (A1, A2, B1 ...), in its label and in a badge on the element, to refer to in notes.' },
   { when: '2026-11-03', q: 'that changed the jellyfish design to much, the jelly fish has a tiny small tail', means: 'B keeps its first shape (three separate legs, a tiny tail); only the joins under the saucer were closed. A fix mends the flaw and changes nothing else.' },
   { when: '2026-11-03', q: 'unpick that, I didnt pick anything yet', means: 'The saved pick (B, from a stray click) was removed; pressing a picked design again now undoes it.' },
@@ -282,6 +293,45 @@ function glint(cx, cy, rx, ry, waist) {
 }
 const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}" ${extra}/>`;
 
+// ---- B's saucer and the patch shapes that hold it ------------------------------------------------------------------
+// The saucer on the 100 grid, before any frame (owner, 2026-11-03: the saucer one solid colour, no lines inside the legs,
+// the star pressed in, and "some sort of shape encompassing that" so it works as a patch). ink: the shapes only, for
+// measuring joins (no star detail, no running light).
+function saucer(ink) {
+  let s = '';
+  for (const sx of [1, -1]) { const X = (x) => 50 + sx * x; s += path(ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7), C.signal); }
+  s += path(ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4), C.signal);
+  s += path('M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z', C.signal);
+  if (ink) return s;
+  // Pressed in, lit from the upper left: the upper-left wall in shadow, the lower-right wall catching the light.
+  const st = glint(50, 32, 9.5, 7.5, 1.7);
+  s += `<path d="${st}" fill="#163a94" transform="translate(-0.7 -0.7)"/><path d="${st}" fill="#6f96f2" transform="translate(0.8 0.8)"/>`;
+  s += path(st, '#1b42a8');
+  s += `<circle cx="50" cy="20.5" r="1.8" fill="${C.accord}"/>`;
+  return s;
+}
+// Each patch: its frame (even-odd), the field inside it, and the scale the saucer takes inside it (about 50, 52).
+const ENCLOSURES = [
+  { key: 'B-E1', name: 'The sweep frame', rec: true, scale: 0.875, pieces: 1,
+    frame: 'M20 4H80A16 16 0 0 1 96 20V80A16 16 0 0 1 80 96H20A16 16 0 0 1 4 80V20A16 16 0 0 1 20 4ZM21 9H82A10 10 0 0 1 92 19V82A3 3 0 0 1 89 85H14A3 3 0 0 1 11 82V19A10 10 0 0 1 21 9Z',
+    field: 'M21 9H82A10 10 0 0 1 92 19V82A3 3 0 0 1 89 85H14A3 3 0 0 1 11 82V19A10 10 0 0 1 21 9Z',
+    why: 'A rounded square whose band changes thickness at every turn (foot 11, left 7, top 5, right 4): the Concord\'s own frame rule, never a circle. The nacelles stand on its foot.' },
+  { key: 'B-E2', name: 'The mission arch', scale: 0.78, pieces: 2,
+    frame: 'M6 96V46A44 44 0 0 1 94 46V96ZM14 88V46A36 36 0 0 1 86 46V88Z',
+    field: 'M14 88V46A36 36 0 0 1 86 46V88Z',
+    why: 'A flat foot and a round top, the shape of an explorer\'s mission patch; the round top answers the saucer. Watch: an arch is near C\'s door and the Kelvane\'s gauge.' },
+  { key: 'B-E3', name: 'The sector hex', scale: 0.65, pieces: 1,
+    frame: 'M3 50L26 9H74L97 50L74 91H26ZM11 50L30.5 15H69.5L89 50L69.5 85H30.5Z',
+    field: 'M11 50L30.5 15H69.5L89 50L69.5 85H30.5Z',
+    why: 'One hex of the campaign map: every Concord world is a sector on the shared map, and the ship stands on two of its edges. Watch: the saucer is smallest in this one.' },
+];
+function enclosed(e, ink) {
+  const g = `<g transform="translate(50 52) scale(${e.scale}) translate(-50 -52)">${saucer(ink)}</g>`;
+  return (ink ? '' : path(e.field, '#0c1640')) + `<path d="${e.frame}" fill="${C.signal}" fill-rule="evenodd"/>` + g;
+}
+// A point of the bare saucer moved to where it sits inside enclosure i.
+function encT(i, x, y) { const k = ENCLOSURES[i].scale; return [+(50 + (x - 50) * k).toFixed(2), +(52 + (y - 52) * k).toFixed(2)]; }
+
 // ---- the Concord's four directions -----------------------------------------------------------------------------------
 // Each: id, name, outline (its silhouette class), recommended?, risk (anything it might be mistaken for), draw() returning
 // SVG markup on the 100 grid, and callouts: [anchor x, anchor y (grid), side 'L' or 'R', label, why].
@@ -321,29 +371,19 @@ const DESIGNS = [
     ],
   },
   {
-    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above', pieces: 1,
+    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a patch', pieces: 1,
     risk: 'A pictured starship: the manual allows one only when abstracted into a mark (p. 14), and a saucer with nacelles is the shape most likely to be read as borrowed from a famous ship. The weakest of the four on rule 15.',
-    draw() {
-      let s = '';
-      for (const sx of [1, -1]) {
-        const X = (x) => 50 + sx * x;
-        s += path(ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7), C.signal);
-        s += path(ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 0.6 * (1 - t)), C.sky);
-      }
-      s += path(ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4), C.signal);
-      const lens = 'M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z';
-      s += path(lens, C.signal);
-      s += path('M27 33C33 22 67 22 73 33C67 42 33 42 27 33Z', C.deep);
-      s += path(glint(50, 32, 9, 7, 1.6), C.sky);
-      s += `<circle cx="50" cy="20.5" r="1.8" fill="${C.accord}"/>`;
-      return s;
-    },
+    draw() { return enclosed(ENCLOSURES[0], false); },
+    ink() { return enclosed(ENCLOSURES[0], true); },
     callouts: [
-      [22, 33, 'L', 'A saucer, drawn as a lens', 'Concord ships carry every crew in one shared disc. Drawn wide and pointed at the sides, so the outline is never a circle.'],
-      [50, 32, 'R', 'The Accord\'s light inside', 'The agreement at the heart of the ship, in Sky blue on the night sky every homeworld shares.'],
-      [20, 80, 'L', 'Two nacelles, thick to thin', 'They sweep back and out, thinning as they go: the frame rule, and a ship reaching outward to explore.'],
-      [50, 20.5, 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
-      [50, 62, 'R', 'The tail below', 'A tiny keel growing out of the saucer between the nacelles: kept small so the saucer leads.'],
+      [...encT(0, 24, 33), 'L', 'One solid saucer', 'Every crew in one shared disc, in one colour: Signal blue, the flag. Drawn as a lens, so the outline is never a circle.'],
+      [...encT(0, 20, 80), 'L', 'Two nacelles, solid', 'Plain and solid, thick at the saucer and thin at the tips, sweeping back and out to explore.'],
+      [...encT(0, 15, 90.5), 'L', 'Standing on the frame', 'The nacelles plant on the patch\'s foot: the ship stands on its home, and the patch is one piece to cut or stitch.'],
+      [...encT(0, 50, 62), 'L', 'The tiny tail', 'A small keel growing out of the saucer between the nacelles, kept small so the saucer leads.'],
+      [...encT(0, 50, 20.5), 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
+      [...encT(0, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. It reads by its shadow and its lit edge, in the saucer\'s own blue.'],
+      [86, 40, 'R', 'The night behind', 'A deep night blue, the sky every homeworld shares: the only dark colour in the emblem, dark enough that the blue saucer reads at 20 px.'],
+      [94, 62, 'R', 'A frame thick to thin', 'Thick at the foot (11), then the left (7), the top (5) and the right (4): the Concord\'s frame rule, so the patch speaks the Concord\'s own language.'],
     ],
   },
   {
@@ -395,6 +435,13 @@ const DESIGNS = [
   },
 ];
 
+// The three patch shapes for B, side by side, each with its reason.
+function enclosureRow() {
+  return `<div class="encl"><h4>Patch shapes for B</h4><div class="encl-row">${ENCLOSURES.map((e) => `<figure>
+    <svg viewBox="0 0 100 100" width="132" height="132" aria-hidden="true">${enclosed(e, false)}</svg>
+    <figcaption><b>${e.key} ${e.name}</b>${e.rec ? '<span><span class="chip rec">In the sketch above</span></span>' : ''}<span>${e.why}</span>
+    <span class="mini">${['dk', 'lt'].map((bg) => [40, 20].map((px) => `<span class="${bg}" style="width:${px + 10}px;height:${px + 10}px"><svg width="${px}" height="${px}" viewBox="0 0 100 100">${enclosed(e, false)}</svg></span>`).join('')).join('')}</span></figcaption></figure>`).join('')}</div></div>`;
+}
 // One image per design: the sketch in the middle (the 100 grid at 4 px a unit), callouts in two columns, each with a
 // leader line to the element it explains and a dot on it.
 function figure(d) {
@@ -447,6 +494,7 @@ for (const d of DESIGNS) {
     <div class="figure">${figure(d)}</div>
     <div class="small">At 96, 40 and 20 px: ${mark(d, 96, 'dk')}${mark(d, 40, 'dk')}${mark(d, 20, 'dk')}${mark(d, 40, 'lt')}${mark(d, 20, 'lt')}</div>
     <p class="joins" data-joins>Measuring joins...</p>
+    ${d.id === 'concord-b' ? enclosureRow() : ''}
     ${d.risk ? `<p class="risk">Watch: ${d.risk}</p>` : ''}
     <div class="notebox"><label for="note-${d.id}">Your note on ${d.name.split(' · ')[1]}</label>
       <textarea id="note-${d.id}" placeholder="What to keep, what to change. Refer to a feature by its id, such as ${d.name[0]}2."></textarea>
@@ -463,7 +511,7 @@ if (rec) { const p = document.createElement('p'); p.className = 'muted'; p.textC
 const MIN_GAP = 4, PX = 4;
 async function measureJoins(d) {
   const N = 100 * PX;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}" viewBox="0 0 100 100">${d.draw()}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}" viewBox="0 0 100 100">${(d.ink || d.draw).call(d)}</svg>`;
   const img = new Image();
   await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
   const c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
