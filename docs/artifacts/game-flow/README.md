@@ -14,3 +14,4 @@
 - Account move: Republished 2026-10-31 on the owner's current account (the earlier links were made from another account and cannot be read from here); every link updated.
 - 2026-10-31, republished from the desktop session (owner: "Make sure all published pages link back to the master", commit 7200539): the page links back to the mockup tracker; version id `1793462716-81fa`.
 - Version 6 published 2026-11-03, version id `1793700035-b9e5` (from the Concord ships thread, on top of live version `1793462716-81fa`): the Concord ships on the menu, the campaign map's standees and the stand-in battle are the Concord line's (mockup 6).
+- Version 7 published 2026-11-03, version id `1793702168-f28d` (Concord ships thread): the Albatross standees and ships hang their pylons from the main hull.

@@ -37,3 +37,4 @@
 - 2026-11-03, cloud session: B28 added (holds per class); version id `1793666306-6e15`.
 - 2026-11-03, cloud session (Concord ships thread): A15-A17 (Krai ships, mockup 7) added on top of the live version 28; version 29, version id `1793700858-be66`.
 - 2026-11-03, cloud session (Concord ships thread): A15-A17 rewritten for Krai version 2, on top of the live version 29; version 30, version id `1793701299-3b50`.
+- 2026-11-03, cloud session (Concord ships thread): A13 closed (the Albatross's pylons from the main hull), on top of the live version 30; version 31, version id `1793702165-b129`.

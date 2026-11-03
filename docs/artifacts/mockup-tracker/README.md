@@ -36,3 +36,4 @@
 - 2026-11-03, cloud session (Concord ships thread): M1 at v6 and M2 at v66 with the Concord line's ships, M6 at v12; version 37, version id `1793700065-3eb9`.
 - 2026-11-03, cloud session (Concord ships thread): M7 (Krai Warhost ships) added, the survey at v29; version 38, version id `1793700880-f4eb`.
 - 2026-11-03, cloud session (Concord ships thread): M7 at version 2, the survey at v30; version 39, version id `1793701320-5ee9`.
+- 2026-11-03, cloud session (Concord ships thread): M6 at v13, M2 at v67, M1 at v7, survey v31; version 40, version id `1793702207-df30`.

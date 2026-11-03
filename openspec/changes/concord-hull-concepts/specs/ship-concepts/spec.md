@@ -24,13 +24,13 @@ Every nacelle SHALL be held on a pylon with at least 3.0 m of daylight between i
 - **WHEN** the Swift is shown with one nacelle below
 - **THEN** the nacelle's top is at least 3.0 m below the lowest hull point above it
 
-### Requirement: The cruiser's pylons come out of a secondary hull
+### Requirement: The cruiser's pylons come out of its main hull
 
-The Albatross SHALL be two hulls, a primary hull holding the decks and a secondary hull under it joined by a neck, and its nacelle pylons SHALL root in the secondary hull.
+The Albatross SHALL be two hulls, a primary hull holding the decks and a secondary hull under it joined by a neck, and its nacelle pylons SHALL root in the primary hull's waist, level and swept, with the secondary hull clear beneath.
 
 #### Scenario: Where the pylons start
 - **WHEN** the Albatross is built
-- **THEN** each pylon's root lies inside the secondary hull's beam and its tip at the nacelle
+- **THEN** each pylon's root lies inside the primary hull's beam and its tip at the nacelle, and no pylon touches the secondary hull
 
 ### Requirement: Concord ships take mockup 5's lighting and damage
 

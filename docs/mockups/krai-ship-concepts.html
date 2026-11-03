@@ -188,19 +188,18 @@ const BASES = {
     core: { pos: [0, -5.45, -8], size: [1.8, 0.5, 26] }, torpedo: [0, -1.4, 43.05], deflector: [0, 0.9, 43.05, 2.2],
   },
   albatross: {
-    cls: 'Albatross-class cruiser', name: 'CNS ALBATROSS', reg: 'CC-002', length: 112, tell: 'The family at cruiser size, in two hulls: a shorter primary hull with four decks of windows, and a secondary hull beneath it on a neck, its pylons swept out and up to a nacelle pair at the primary hull\'s waist.',
+    cls: 'Albatross-class cruiser', name: 'CNS ALBATROSS', reg: 'CC-002', length: 112, tell: 'The family at cruiser size, in two hulls: a shorter primary hull with four decks of windows, and a secondary hull beneath it on a neck, and its nacelle pair on level pylons swept from the primary hull\'s waist, the secondary hull clear beneath.',
     stations: [[50, 5.2, 4.4, -3.2, 1.4], [44, 9.6, 7.6, -5.0, 2.0], [34, 13.6, 9.4, -6.6, 2.4], [14, 15.6, 10.0, -7.4, 2.6], [-8, 16.0, 10.2, -7.6, 2.8], [-24, 14.4, 9.6, -7.0, 2.6], [-34, 11.0, 7.8, -5.4, 2.2]],
     decks: [7.0, 3.5, 0, -3.5], live: [-20, 38], band: [-0.65, 0.35], channels: [4.0, 9.0], stripes: [28, 4, -18],
     command: { z: [36, 16], hb: 8.0, top: 13.2, ch: 1.4 },
     // The secondary hull, in the same station form at its own height; the neck joins the two.
     secondary: { stations: [[-6, 4.0, -11.0, -17.0, 1.2], [-12, 7.0, -10.4, -20.4, 1.8], [-30, 7.6, -10.4, -21.0, 2.0], [-48, 7.0, -10.8, -20.4, 1.8], [-58, 5.0, -12.0, -19.0, 1.4]],
       band: [-16.3, -15.3], channels: [2.6], stripes: [-40], neck: { z: [-10, -14, -28, -32], hb: [2.4, 4.0, 4.0, 2.8], top: -6.0, bottom: -11.5 } },
-    pylons: [{ root: [6.5, -15.0, -30], tip: [24, -4.0, -38], rc: 18, tc: 11, t: 1.5 }],
-    nacelles: [{ x: 24, y: -4.0, z: -30, len: 64, hw: 2.8, hh: 2.7 }],
-    // The other way to hang them (owner, 2026-11-03: "can we try placing pylons attached to the main hull instead?"): level and
-    // swept from the primary hull's waist, as the Tern's are, with the secondary hull left clear beneath.
-    mainPylons: [{ root: [14.5, 0.6, -14], tip: [25, 0.6, -26], rc: 18, tc: 11, t: 1.5 }],
-    mainNacelles: [{ x: 25, y: 0.6, z: -24, len: 64, hw: 2.8, hh: 2.7 }],
+    // The nacelle pylons come from the primary hull's waist, level and swept as the Tern's, with the secondary hull clear
+    // beneath (owner, 2026-11-03: "can we try placing pylons attached to the main hull instead?", then "I asked for the
+    // albatross pylons to be connected to the main hull instead"). The earlier pylons out of the secondary hull are gone.
+    pylons: [{ root: [14.5, 0.6, -14], tip: [25, 0.6, -26], rc: 18, tc: 11, t: 1.5 }],
+    nacelles: [{ x: 25, y: 0.6, z: -24, len: 64, hw: 2.8, hh: 2.7 }],
     radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 27, 'cmd'], [11.5, -6, 'top'], [-11.5, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
     core: { pos: [0, -20.9, -30], size: [2.2, 0.5, 30] }, torpedo: [0, -1.8, 50.05], deflector: [0, 1.0, 50.05, 2.6],
   },
@@ -257,12 +256,12 @@ const BASES = {
 const VARIANTS = [
   ['swift_below', 'swift', 'below1', 'Swift, one below'], ['swift_updown', 'swift', 'updown', 'Swift, above and below'], ['swift_level', 'swift', 'level', 'Swift, level'],
   ['petrel_updown', 'petrel', 'updown', 'Petrel, above and below'], ['petrel_level', 'petrel', 'level', 'Petrel, level'],
-  ['albatross', 'albatross', 'level', 'Albatross'], ['albatross_main', 'albatross', 'mainpylon', 'Albatross, pylons on the main hull'], ['condor', 'condor', 'level', 'Condor battleship'], ['pelican', 'pelican', 'level', 'Pelican carrier'], ['tern', 'tern', 'level', 'Tern (Star Crew)'],
+  ['albatross', 'albatross', 'level', 'Albatross'], ['condor', 'condor', 'level', 'Condor battleship'], ['pelican', 'pelican', 'level', 'Pelican carrier'], ['tern', 'tern', 'level', 'Tern (Star Crew)'],
 ];
-const MODE_NAMES = { level: 'Level pair', below1: 'One below', updown: 'One above, one below', mainpylon: 'Level pair, from the main hull' };
+const MODE_NAMES = { level: 'Level pair', below1: 'One below', updown: 'One above, one below' };
 const CLASSES = {};
 for (const [id, base, mode, label] of VARIANTS) CLASSES[id] = { ...BASES[base], id, base, mode, label,
-  tell: mode === 'mainpylon' ? 'The Albatross with its nacelle pair on level pylons swept from the primary hull\'s waist, as the Tern\'s are, and the secondary hull clear beneath.' : BASES[base].tell + (base === 'swift' || base === 'petrel' ? ' Nacelles: ' + MODE_NAMES[mode].toLowerCase() + '.' : '') };
+  tell: BASES[base].tell + (base === 'swift' || base === 'petrel' ? ' Nacelles: ' + MODE_NAMES[mode].toLowerCase() + '.' : '') };
 // Liveries: Concord is ours; Copper, Cyan and Rescue are the Tern's (exteriors.json liveries), for comparison.
 const LIVERIES = {
   concord: { label: 'Concord', stripe: [0.10, 0.40, 0.86], seam: [0.04, 0.08, 0.22] },
@@ -299,7 +298,6 @@ function alongNacelle(C, n) {
 }
 // Each nacelle gets a side key: P port, S starboard, D dorsal, V ventral; its system is 'nac' + side.
 function arrange(C) {
-  if (C.mode === 'mainpylon') return { pylons: C.mainPylons.flatMap((p) => [{ ...p, side: 'P', sx: 1 }, { ...p, side: 'S', sx: -1 }]), nacelles: C.mainNacelles.flatMap((n) => [{ ...n, side: 'P', sx: 1 }, { ...n, side: 'S', sx: -1 }]) };
   const sfx = (i) => (i ? String(i + 1) : ''); // a second pair is P2 and S2
   if (C.mode === 'level') return { pylons: C.pylons.flatMap((p, i) => [{ ...p, side: 'P' + sfx(i), sx: 1 }, { ...p, side: 'S' + sfx(i), sx: -1 }]), nacelles: C.nacelles.flatMap((n, i) => [{ ...n, side: 'P' + sfx(i), sx: 1 }, { ...n, side: 'S' + sfx(i), sx: -1 }]) };
   const n0 = C.nacelles[0], p0 = C.pylons[0], pylons = [], nacelles = [], { top, bot } = alongNacelle(C, n0);
