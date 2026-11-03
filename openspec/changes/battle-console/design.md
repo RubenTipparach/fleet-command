@@ -322,6 +322,11 @@ should have a little X".
   **Distress** (10 spare parts to the Lark, adrift) and **Assault** (8 marines to the Corrin, which then takes Varn
   Outpost). The Boarding scene's Rattlejaw starts 1.2 km off to sit inside the new range. All complete in tests.
 - **The event log** opens only from Comms, with an X to close it.
+- **Rings for friendlies, and hover** (version 58; owner: "friendlys dont have that nice border around their target box,
+  also please make target boxes react to my mouse hovering over them, slight scale, brightness in color"): friendly
+  ships, stations and planets get the same ring as an enemy, in green (`markRing`, one drawing for all). Under the
+  pointer a ring grows 18 %, thickens a pixel and brightens; a locked target's red corners and a selected friendly's
+  green corners grow 8-10 % and brighten the same way.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 

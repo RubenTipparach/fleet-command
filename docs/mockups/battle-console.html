@@ -3413,20 +3413,29 @@ function seekerLock(s, t) { return s.mounts.some((m) => (WEAPONS[m.w].kind === '
 // when a torpedo or missile could lock.
 // A friendly ship, station or planet in the view: its name in green; selected for transport, green corners with its name,
 // its distance and what it still needs; focused, a ring.
-function friendMark(id, name, px, py, dk, o, f) {
-  const sel = invDest === id;
-  if (sel) { g.strokeStyle = CC.accord; g.lineWidth = 3; g.lineCap = 'square';
-    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const x0 = px + sx * 40, y0 = py + sy * 30; g.beginPath(); g.moveTo(x0 - sx * 16, y0); g.lineTo(x0, y0); g.lineTo(x0, y0 - sy * 16); g.stroke(); }
+function friendMark(id, name, px, py, dk, o, f, hov) {
+  const sel = invDest === id, k = hov ? 1.1 : 1;
+  if (sel) { g.strokeStyle = hov ? shade(CC.accord, 1.4) : CC.accord; g.lineWidth = hov ? 4 : 3; g.lineCap = 'square';
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const x0 = px + sx * 40 * k, y0 = py + sy * 30 * k; g.beginPath(); g.moveTo(x0 - sx * 16, y0); g.lineTo(x0, y0); g.lineTo(x0, y0 - sy * 16); g.stroke(); }
     g.lineCap = 'round'; }
-  else if (f) { g.strokeStyle = CC.accord; g.lineWidth = 2; g.beginPath(); g.arc(px, py, 24, 0, 2 * P); g.stroke(); }
+  // the same ring as an enemy's, in green (owner, 2026-11-03: "friendlys dont have that nice border around their target box")
+  else markRing(px, py, CC.accord, f, hov);
   g.fillStyle = CC.accord; g.font = `600 ${sel ? 18 : 14}px Antonio`; g.textAlign = 'center';
   g.fillText((sel ? `${name} · ${dk.toFixed(1)} km${dk <= TRANSPORT.range_km ? ' · in reach' : ''}` : name).toUpperCase(), px, py + (sel ? 50 : 26));
   const want = ITEMS.filter(([k]) => stillNeeds(o, k) > 0).map(([k, l]) => `${stillNeeds(o, k)} ${l.toLowerCase()}`);
   if (o.ai && o.ai.needMarines && o.marines < o.ai.needMarines) want.push(`${o.ai.needMarines - o.marines} marines`);
   if (want.length) { g.fillStyle = CC.caution; g.font = '600 15px Antonio'; g.fillText(`Needs ${want.join(', ')}`.toUpperCase(), px, py + (sel ? 70 : 44)); }
 }
-function targetBracket(px, py, lock) {
-  const corners = (w, h, c, lw) => { g.strokeStyle = CC.alert; g.lineWidth = lw; g.lineCap = 'square';
+// The ring round a ship or planet in the view: wider when focused; under the pointer a little larger, thicker and
+// brighter. Enemies, friendlies and planets share it (6.1).
+function markRing(px, py, col, f, hov) {
+  const r = (f ? 26 : 16) * (hov ? 1.18 : 1);
+  g.strokeStyle = hov ? shade(col, 1.4) : col; g.lineWidth = (f ? 2.5 : 1.5) + (hov ? 1 : 0); g.globalAlpha = f || hov ? 1 : 0.7;
+  g.beginPath(); g.arc(px, py, r, 0, 2 * P); g.stroke(); g.globalAlpha = 1;
+}
+function targetBracket(px, py, lock, hov) {
+  const k = hov ? 1.08 : 1, col = hov ? shade(CC.alert, 1.35) : CC.alert;
+  const corners = (w, h, c, lw) => { w *= k; h *= k; g.strokeStyle = col; g.lineWidth = lw + (hov ? 1 : 0); g.lineCap = 'square';
     for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const x0 = px + sx * w / 2, y0 = py + sy * h / 2; g.beginPath(); g.moveTo(x0 - sx * c, y0); g.lineTo(x0, y0); g.lineTo(x0, y0 - sy * c); g.stroke(); } };
   corners(92, 72, 20, 3.5);
   if (lock) { const pulse = 0.65 + 0.35 * Math.sin(performance.now() / 160); g.globalAlpha = pulse; corners(116, 96, 16, 2.5); g.globalAlpha = 1;
@@ -3445,20 +3454,24 @@ function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; ret
 function uiView() {
   const [vx, vy, vw, vh] = VIEW, s = W.player, t = tgt(s);
   let lock = null;
+  // a marker under the pointer reacts (owner, 2026-11-03: "make target boxes react to my mouse hovering over them, slight
+  // scale, brightness in color"): hovAt says whether the pointer is within rr of a marker drawn at (px, py)
+  const hovAt = (px, py, rr) => !DRAG && Math.hypot(PX - vx - px, PY - vy - py) < rr;
   g.save(); g.beginPath(); g.rect(vx, vy, vw, vh); g.clip(); g.translate(vx, vy); g.lineCap = 'round';
   for (const o of W.ships) {
     if (!o.alive || o === s) continue;
     const v = new THREE.Vector3(o.x, 0, o.z).project(camera), on = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
     let px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh;
     const locked = o.id === s.target, f = o.id === focus, col = o.side === s.side ? CC.accord : FACTION[o.faction].dot;
-    if (o.side === s.side) { if (v.z < 1) friendMark(o.id, o.name, px, py, distKm(s, o), o, f); if (f && invDest !== o.id && !expanded && v.z < 1) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id, 'select']; continue; }
+    if (o.side === s.side) { if (v.z < 1) friendMark(o.id, o.name, px, py, distKm(s, o), o, f, hovAt(px, py, invDest === o.id ? 46 : f ? 30 : 22)); if (f && invDest !== o.id && !expanded && v.z < 1) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id, 'select']; continue; }
     if (!on) {
       if (!locked) continue;
       const a = Math.atan2(py - vh / 2, px - vw / 2) * (v.z > 1 ? -1 : 1) + (v.z > 1 ? P : 0); px = vw / 2 + Math.cos(a) * (vw / 2 - 40); py = vh / 2 + Math.sin(a) * (vh / 2 - 40);
       g.strokeStyle = CC.alert; g.lineWidth = 3; g.beginPath(); g.arc(px, py, 14, 0, 2 * P); g.stroke(); g.fillStyle = CC.alert; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 32); continue;
     }
-    if (locked) targetBracket(px, py, seekerLock(s, o));
-    else { g.strokeStyle = col; g.lineWidth = f ? 2.5 : 1.5; g.globalAlpha = f ? 1 : 0.7; g.beginPath(); g.arc(px, py, f ? 26 : 16, 0, 2 * P); g.stroke(); g.globalAlpha = 1; }
+    const hov = hovAt(px, py, locked ? 50 : f ? 30 : 22);
+    if (locked) targetBracket(px, py, seekerLock(s, o), hov);
+    else markRing(px, py, col, f, hov);
     g.fillStyle = locked ? CC.text : col; g.font = `600 ${locked ? 20 : 16}px Antonio`; g.textAlign = 'center';
     g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? (seekerLock(s, o) ? 72 : 58) : 34));
     // the targeted enemy's hull, always, under its bracket and name (owner, 2026-11-02: "always show current targeted
@@ -3470,7 +3483,7 @@ function uiView() {
     g.fillStyle = CC.caution; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(`${w.name} · Q-G field here ${pct(qgAt(s.x, s.z))}`.toUpperCase(), (v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh - 30); }
   for (const pl of W.planets) { const v = new THREE.Vector3(pl.x, 0, pl.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh, dk = Math.max(0, Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r) / 10;
-    friendMark(pl.id, pl.name, px, py, dk, pl, focus === pl.id);
+    friendMark(pl.id, pl.name, px, py, dk, pl, focus === pl.id, hovAt(px, py, invDest === pl.id ? 46 : 30));
     if (focus === pl.id && invDest !== pl.id && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), pl.id, 'select']; }
   // disguised shuttles: our own know them for what they are
   for (const c of W.craft) { if (c.kind !== 'shuttle') continue; const v = new THREE.Vector3(c.x, 0, c.z).project(camera); if (v.z >= 1) continue;
@@ -3532,7 +3545,7 @@ function uiView() {
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
   if (lock) button('v.lock', lock[0], lock[1], 140, 30, lock[3] === 'select' ? 'Select' : 'Lock target', () => (lock[3] === 'select' ? selectDest(lock[2]) : A.lock(lock[2])), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v57', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v58', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
