@@ -33,6 +33,9 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
 - Organic Panel Bible: https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD (source `docs/design/organic-bible.html`, record in
   `docs/artifacts/organic-bible/`). Building grown, organic panels in Blender (the Vhorr Brood first); goes with the
   `blender-organic-panels` skill.
+- Ship Design Bible: https://claude.ai/artifact/QxFV2qGabbN2chE3zd8km7 (source `docs/design/ship-bible.html`, record in
+  `docs/artifacts/ship-bible/`). How every ship is designed, worked on the Concord line: rooms first as block floor
+  plans (`data/ships/`), the hull fitted round them, then parts, windows, lights, markings, material and damage.
 
 ## The screen
 

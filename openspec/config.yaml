@@ -2,7 +2,7 @@ schema: spec-driven
 
 # The project's rules are in CLAUDE.md (the only copy). Read it before writing any artifact.
 context: |
-  Fleet Command: a real-time tactical starship combat game in Godot 4.7 (GDScript), played from a
+  Fleet Command: a real-time tactical starship combat game in Godot 4.7 (C#), played from a
   console of panels beside a 3D view, on desktop and phones (a panel expands to full screen with the
   view at the side). CLAUDE.md is binding: write it up and mock it up in three.js before code, one
   implementation of every rule, a simulation that runs without a scene, tuning in data with units,

@@ -21,12 +21,14 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-03, v65) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v67, v69 in the repo) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
-| 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
-| 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v11: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
+| 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 7 | Krai Warhost ships | Drafted (2026-11-03, v10: the frigate rooms first on the Ship Design Bible, brought to the Concord standard: square-cut plates, windows with Krai rooms, thrusters, warm floods) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
+| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v8) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
@@ -67,6 +69,17 @@ campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish 
 hardpoint, resupply, officers, hex facilities, missions).
 
 ## 2. In-game UI
+
+**Approved for implementation** (owner, 2026-11-03, in conversation: "based on the ui mockup start implmenting this ui
+stuff in game, we have chosen Godot 4.7 with c# so begin integration now"). The game build is the change
+`battle-console-engine`; its first slice (the console layout, the Concord kit, helm, power, the systems display, shields,
+weapons, radar, the strips and the stand-in battle) is in `src/`, with stills in `docs/screenshots/game/`. The tracker's
+stage for this mockup still needs updating from the desktop session (cloud sessions do not publish).
+
+Version 67 (2026-11-03; owner: "Pause menu should have a background"): the menu sheet has a solid background inside its
+frame, in the mockup and the game alike. Then (owner: "Re move shield view toggle"): the Shield view key is gone and the 3D
+shield display is always shown; the Target key (show or hide the Target box) moves to the corner. Committed from the cloud
+session; the desktop session publishes it.
 
 Owner, 2026-10-30. Ship systems on the left.
 
@@ -380,6 +393,60 @@ shape, carrier needs bays for fighters, battleship needs an array of cannons", "
 Pelican carrier. Survey A14.
 
 Design: `openspec/changes/concord-hull-concepts/`.
+
+## 7. Krai Warhost ships
+
+Owner, 2026-11-03: "Let's start mocking up krai ships". Built on the Krai console skin's language (the owner's words
+there: "combat focused ... triangular motifs, angry red ... orange lit buttons ... blade like", "rough gun metal ... akin
+to volcanic magma type metal") and survey A8's recommendation (a bird's head and wings). Version 1: three directions at
+frigate size (A Stoop, B Crossed blades, C Spearhead), direction A as a corvette, frigate, cruiser and dreadnought, each
+beside the Concord ship of its rank, and 40 px silhouettes. Names are placeholders (U7); survey A15-A17 ask the rest.
+- On version 1: "Those are fighter jets, not spaceships. Think about how we defined culture and story". Version 2 builds
+  spaceships from the culture as written (war as the only honest test, forged steel and edged everything, knife-blade
+  hulls): A Standing blade, B Lance, C Three-edged dagger; nothing flies, the hull is the weapon.
+
+## 8. Battle console: Krai Warhost
+
+Owner, 2026-11-01, of the battle console: "the first design system we will implement will be the concord, we will then
+reuse this design once it has been fully approved across all other factions, and each faction's implementation will be
+manually verified such that all of it is functional and readable". Then, 2026-11-03: "Krai Warhost - start work on
+mocking up gameplay with this UI now", and "verify all functionality from concord works here".
+
+- The battle console of mockup 2, played in the Krai Warhost skin of mockup 4: the same page source, every rule, panel
+  and control unchanged, written for the Krai by `tools/mockups/skin_page.py`. The Krai kit rendered in Blender, its
+  palette, type (Teko and Russo One), blade-cut drawn keys, the full icon subject list in its language, and the player's
+  side named as the Warhost (Kharz, Vekk, Ruhn).
+- Verified by `tools/mockups/skin_parity.mjs`: every control of every one of the 40 named shots pressed in both skins
+  (2,175 presses of 270 controls), the console and the battle identical a second later, press for press.
+- On version 1 (2026-11-03): "Labels on the krai UI need better integration. They should have a metallic background. The
+  UI panels should be somewhat connected like they are part of the same console", then "Cool but you didn't render the
+  stitching elements in blender like you are supposed to". Every label and panel title now sits on a metal placard, the
+  column is one cast backplate with a spine of red light, steel clamps bolt each panel to the next and gussets brace the
+  column to the strips, all rendered in Blender (`tools/blender/build_ui_krai.py`) from fit-checked shapes, with the
+  allocation cells.
+- Then: "Didn't be afraid to rerender stuff in blender. One of they key principals is to make the UI flow well. These more
+  metallic interfaces should use some connected shapes across panels", "Some of the little clamps also obscure the text
+  labels on the panels", "Some of the elements on the bottom bar like red alerts energy, battery, warp button don't fit in
+  the container. Shrink.the elements or grow container height". Version 2: the clamps gone; the column re-rendered as
+  one plate with the three panels formed into it as wells joined through necks and a channel of red light down its edge
+  crossing every panel; the strips re-rendered 80 px tall with their metal running on into the column, every bottom-bar
+  element inside the channel.
+- Then, of version 2: "I dont like the gaps between panels, I think that gap should close", and "the buttons with icons
+  need work ... Just changing the color to red or leaving it green doesnt work. I love the buttons you did for chaning the
+  panels. repeating that design style is prefered". Version 3: the panels meet at a thin rib; every icon key and status box
+  is a rendered square key in the rail tabs' style, its state the light in its glass.
+- Then, of version 3's rib: "bring back the thicker divider and make this connected rather than seperated", and "back
+  light more red please?". Version 4: one unbroken 20 px divider between panels with an enamel blade and the title on it;
+  the forge backlight and the ember glass red, the whole Krai kit re-rendered.
+- Then: "White shadows on buttons like bad. Same with green buttons we have as color palletes guide". Version 5: states in
+  the Krai palette (orange whole, gold damaged, red down), glyphs orange on dark glass, no white outlines or figures. Then
+  "Panel icons should be red. Just to differentiate it from functional icons": the panel tabs' icons red at rest. Then
+  "White icons on buttons look bad I.mean": version 6, every label and glyph on a dark key forge orange, never white.
+  Then "top bar is way thicker than it needs to be": version 7, the top strip re-rendered at 60 px. Then "lets do an
+  experiment and try bloom on this led strip?": version 8, bloom on the column's channel of red light, with a Bloom key in
+  the view to compare.
+
+Design: `openspec/changes/krai-battle-console/`.
 
 ## 9. Faction emblems
 
