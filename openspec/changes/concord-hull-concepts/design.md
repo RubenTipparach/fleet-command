@@ -1,4 +1,4 @@
-# Design: concord-hull-concepts (v6)
+# Design: concord-hull-concepts (v7)
 
 ## The family, from Star Crew Bridge Simulator
 
@@ -123,6 +123,38 @@ and every seam and rivet in it catches the light.
 The owner: "this turret's line of sight is obscured btw". The dorsal turret that sat behind the command block is on the
 block's roof now, and the shoulder turrets sit outboard of the block's sides, so nothing on the ship stands in front of a
 barrel.
+
+## The Tern is its latest model, in our paint
+
+The owner, 2026-11-03: "we are using the wrong tern model, I'd like to use the latest tern model, but with our standard
+texture, instead of the custom texture the tern is using right now in star crew repo", and on its windows: "I meant no
+internal geometry for rooms, use same room parallax trick". `tools/mockups/tern_geometry.py` copies the positions, normals
+and triangles of Star Crew's `assets/models/exteriors/tern.glb` (one part per material) into the page between marker
+comments, with the source revision; its textures, UVs and vertex colours stay behind. The page paints every part with its
+own shader and detail maps (hull, nacelles, copper rims, livery accents, dark trim), and its window panes show rooms by the
+same interior mapping as the Concord ships. It is split at load into the hull, the inner half of each pylon and the outer
+half with its nacelle, so it breaks up and loses nacelles like the others.
+
+## The Albatross, two ways
+
+The owner: "albatross is a cool ship, can we try placing pylons attached to the main hull instead? I just wanna see if I
+like that better". A second Albatross carries the same nacelle pair on level pylons swept from the primary hull's waist
+(roots 14.5 m out, nacelles 25 m out, 6.2 m of daylight), with the secondary hull clear beneath.
+
+## Thrusters
+
+The owner: "fix thrusters, make them more detailed, properly texture them". Each engine is a bell lathed from a flared
+profile (lip radius r, 1.5 r deep, narrowing to 0.55 r at the throat), dark metal outside with 32 ribs and 7 rings, a lip
+ring and an octagonal mounting collar; inside it is lit by its own heat, red at the lip to white-orange at the throat, the
+throat glowing and a faint additive plume behind. All of it follows the impulse engines' state.
+
+## Lights are on or off
+
+The owner: "I dont like lights flickering constantly when a ship take damage, flicker a couple times, then no more
+flickering. lights are either on or off, not flickering indefinitely". When a light's state changes (a section losing
+power, the bridge, a nacelle's strip, the deflector, an engine, a broken-off piece) it flickers through four short windows
+in the first 1.06 s, showing its old state, then holds its new one. A system that is damaged but still working stutters the
+same way once and stays lit. Fire and the reactor's red warning pulse are not lights and keep moving.
 
 ## Cost
 
