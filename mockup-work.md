@@ -26,7 +26,7 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
-| 6 | Concord line (hull concepts) | Drafted (2026-11-03, v5: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 6 | Concord line (hull concepts) | Drafted (2026-11-03, v6 page version: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -285,6 +285,12 @@ lighting standards up to what we had before, and damage systems"): the one-below
 page with the Tern-family builder, so every ship has its light presets, floodlights, navigation lights and the whole damage
 system (holes, venting, nacelles snapping off at the pylon, fracture with cut faces, wires, the staged breach); detail and
 normal maps in the paint's plate grid; windows drawn as openings with a copper rim, reflecting glass and a room behind.
+
+Then, the same day: furnished rooms behind the windows (carpet, sci-fi wall panels, furniture, a plant), phaser burn-throughs
+that show a room, 90 degree spotlights grazing the hull instead of round pools, upright pylons 5.5 m out, turrets clear of the
+command block, no z-fighting under the command block, the Tern from its latest model's geometry in our paint, a second
+Albatross with pylons from the main hull, detailed thrusters, and lights that flicker a couple of times and then hold. Survey
+A13 (which Albatross).
 
 Design: `openspec/changes/concord-hull-concepts/`.
 

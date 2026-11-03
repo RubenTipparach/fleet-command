@@ -993,7 +993,7 @@ function thruster(ship, P, at, r) {
   const lip = at.z - r * 0.55, add = (g, m, skin) => { const o = new THREE.Mesh(g, m); o.userData = { ship, sys: 'impulse', piece: P }; P.inner.add(o); return o; };
   const bell = new THREE.LatheGeometry(prof, 28); bell.rotateX(PI / 2); bell.translate(at.x, at.y, lip); add(bell, thrusterMat(heat));
   const lipRing = new THREE.TorusGeometry(r * 1.0, r * 0.07, 6, 28); lipRing.translate(at.x, at.y, lip); add(lipRing, greyMat);
-  const collar = new THREE.CylinderGeometry(r * 1.18, r * 1.24, r * 0.5, 8); collar.rotateX(PI / 2); collar.translate(at.x, at.y, at.z - 0.1); add(collar, darkMat);
+  const collar = new THREE.CylinderGeometry(r * 1.18, r * 1.24, r * 0.5, 8, 1, true); collar.rotateX(PI / 2); collar.translate(at.x, at.y, at.z - 0.1); add(collar, new THREE.MeshStandardMaterial({ color: 0x2a2f36, roughness: 0.6, metalness: 0.5, side: THREE.DoubleSide }));
   const tm = glowMat(0xffc27a, 0x3a1a08); const throat = new THREE.CircleGeometry(r * 0.56, 20); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - 0.05); add(throat, tm);
   const pl = new THREE.ConeGeometry(r * 0.85, r * 3.2, 20, 1, true); pl.rotateX(PI / 2); pl.translate(at.x, at.y, lip - r * 1.6); const po = add(pl, plumeMat(heat)); po.renderOrder = 4;
   tm.userData.heat = heat;
@@ -2010,7 +2010,7 @@ window.MOCKUP_SHOTS = {
   bridge_fire: shot('petrel_updown', 'shadow', 'hero', (s) => { hurt(s, 'bridge', 80); hurt(s, 'life', 40); }, 2.5, { tab: 'damage', cam: (s) => frame(55, V3(-0.7, 0.55, 1), at(s, s.bridgeTop)) }),
   scorch: shot('petrel_level', 'sunlit', 'hero', (s) => phasers(s, 14), 1.0, { tab: 'damage', cam: (s) => frame(70, V3(-0.25, 1, 0.6), at(s, V3(0, 7, 10))) }),
   holes_parallax: shot('petrel_level', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', holes: 'parallax', cam: (s) => { const h = s.holes[0]; frame(16, h.normal.clone().add(V3(0.3, 0.1, 0.5)), at(s, h.point)); } }),
-  phaser_burn: shot('petrel_level', 'sunlit', 'hero', (s) => { for (let i = 0; i < 3; i++) { const z = 6, h = hullAt(s.C.stations, z); const hh = hitAt(s, V3(-h[1], 2.0, z), V3(-1, 0.05, 0.1)); if (hh) { hh.bypass = true; damage(s, hh.sys, 12, hh); } } }, 1.5,
+  phaser_burn: shot('petrel_level', 'sunlit', 'hero', (s) => { for (let i = 0; i < 3; i++) { const z = 6, h = hullAt(s.C.stations, z); const hh = hitAt(s, V3(-h[1], 2.0, z), V3(-1, 0.05, 0.1)); if (hh) { hh.bypass = true; damage(s, hh.sys, 12, hh); } } }, 6,
     { tab: 'damage', cam: (s) => { const h = s.holes[0]; if (h) frame(9, h.normal.clone().add(V3(0.2, 0.15, 0.45)), at(s, h.point)); } }),
   rooms: shot('petrel_level', 'shadow', 'hero', null, 0.2, { cam: (s) => { const C = s.C, z = lerp(C.live[0], C.live[1], 0.5), h = hullAt(C.stations, z); frame(4.2, V3(-1, 0.22, 0.12), at(s, V3(-h[1], 1.5, z))); } }),
   thrusters: shot('petrel_level', 'shadow', 'hero', null, 0.2, { cam: (s) => frame(16, V3(-0.45, 0.2, -1), at(s, V3(0, s.C.bells.y, s.C.bells.z))) }),

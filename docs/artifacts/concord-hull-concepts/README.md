@@ -1,13 +1,15 @@
 # Mockup 6: Concord Hull Concepts
 
 - Link: https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP
-- Shows: version 5, the Concord line built as members of Star Crew Bridge Simulator's Tern family: the Swift corvette
+- Shows: page version 6, the Concord line built as members of Star Crew Bridge Simulator's Tern family: the Swift corvette
   (51 m) three ways (one nacelle below, above and below, level), the Petrel frigate (88 m) two ways (above and below,
   level), the Albatross cruiser (112 m, two hulls), beside the SCS Tern drawn from its own data. Mockup 5's lighting and
   damage on every ship (light presets, floodlight pools, nav lights; holes, scorch, venting, nacelles snapping off, fracture
-  with cut faces, wires, the staged breach, weapon lighting), detail and normal maps, windows with rooms behind them,
-  measured facts. Desktop, phone landscape and phone portrait. Version 1 (Halo, Lantern spine, Light sail) was rejected.
-- Made by: `docs/mockups/concord-hull-concepts.html` (the page source, one copy; hulls lofted from station data at load), written up in `openspec/changes/concord-hull-concepts/`. Shots:
+  with cut faces, wires, the staged breach, weapon lighting), detail and normal maps, windows with furnished rooms behind them,
+  90 degree hull spotlights, detailed thrusters, the Tern from its latest model in our paint, a second Albatross with
+  main-hull pylons, measured facts. Desktop, phone landscape and phone portrait. Version 1 (Halo, Lantern spine, Light sail) was rejected.
+- Made by: `docs/mockups/concord-hull-concepts.html` (the page source, one copy; hulls lofted from station data at load, the
+  Tern's geometry copied in by `tools/mockups/tern_geometry.py`), written up in `openspec/changes/concord-hull-concepts/`. Shots:
   `docs/screenshots/mockups/concord-hull-concepts-*.png`, from `tools/mockups/shoot.mjs` then
   `tools/mockups/shrink_png.py`.
 - Stage: drafted. Approvals are given in the mockup tracker.
