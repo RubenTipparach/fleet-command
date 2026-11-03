@@ -360,6 +360,62 @@
       ],
       "stretch": "x"
     },
+    "key.idle": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.idle.png"
+    },
+    "key.hover": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.hover.png"
+    },
+    "key.on": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.on.png"
+    },
+    "key.ok": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.ok.png"
+    },
+    "key.warn": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.warn.png"
+    },
+    "key.alert": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.alert.png"
+    },
+    "key.off": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.off.png"
+    },
     "cell.idle": {
       "kind": "nine",
       "size": [

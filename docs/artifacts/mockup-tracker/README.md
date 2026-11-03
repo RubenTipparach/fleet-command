@@ -35,3 +35,4 @@
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 11 and named the standard, mockup 5 marked retired, M2 at v65 merged from main; version 36, version id `1793699693-719b`.
 - 2026-11-03, cloud session (Concord ships thread): M1 at v6 and M2 at v66 with the Concord line's ships, M6 at v12; version 37, version id `1793700065-3eb9`.
 - 2026-11-03, cloud session (Krai battle console thread): M8 added (the battle console in the Krai Warhost skin), built on the live version 40 (M7 Krai ships from the Concord ships thread's branch, not yet on main); version 41, version id `1793716083-c3f7`.
+- 2026-11-03, cloud session (Krai battle console thread): M8 at version 3, merged onto the live version `1793716289-6a4e` (mockup 5 moved to Misc, M7 at v3); version 43, version id `1793717266-cad2`.

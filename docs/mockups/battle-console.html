@@ -726,7 +726,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // 2026-11-03: "Some of the elements on the bottom bar ... don't fit in the container. Shrink.the elements or grow
 // container height"). SDY centres the strips' 56 px of content in a taller strip.
 const SH = CON.stripH || 56, SDY = (SH - 56) / 2;
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v68', krai: 'Mockup 8 · Battle console · Krai Warhost · v2' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v68', krai: 'Mockup 8 · Battle console · Krai Warhost · v3' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -2097,6 +2097,21 @@ function bar(x, y, w, label, frac, warn, ok) {
   return yy + 16 - y;
 }
 function divider(x, y, w) { nine('divider', x, y, w, 10); }
+// A key's face (owner, 2026-11-03, of the Krai: "the buttons with icons need work ... Just changing the color to red or
+// leaving it green doesnt work. I love the buttons you did for chaning the panels. repeating that design style is
+// prefered"). A kit with rendered square keys (key.idle, .hover, .on, .ok, .warn, .alert, .off: a bezel round a well of
+// glass) shows the key's state as the light in its glass; otherwise the key is the skin's shape filled with the colour.
+// `status`: a status box (accord is a green lamp) rather than a control (accord is the key engaged).
+function facePiece(fill, status) {
+  if (status) return fill === CC.accord ? 'key.ok' : fill === CC.caution ? 'key.warn' : fill === CC.alert ? 'key.alert' : 'key.off';
+  return fill === CC.signal ? 'key.idle' : fill === CC.sky ? 'key.hover' : fill === CC.lilac || fill === CC.accord ? 'key.on' : fill === CC.caution ? 'key.warn' : fill === CC.alert ? 'key.alert' : 'key.off';
+}
+function face(G, x, y, w, h, r, fill, status) {
+  if (!KIT.hero['key.idle']) { G.fillStyle = fill; RR(G, x, y, w, h, r); G.fill(); return; }
+  G.drawImage(KIT.hero[facePiece(fill, status)], x, y, w, h);
+}
+// The ink that reads on a key's face: on rendered glass, dark on lit glass and bone on dark glass.
+const faceInk = (fill, status) => !KIT.hero['key.idle'] ? INK(fill) : /key\.(idle|off)$/.test(facePiece(fill, status)) ? CC.text : CC.ink;
 function heroImg(id, x, y, w, h, alpha) { g.save(); if (alpha != null) g.globalAlpha = alpha; g.drawImage(KIT.hero[id], x, y, w, h); g.restore(); }
 // Draw with a function made for a canvas of its own, at (x, y), clipped to (w, h).
 function inBox(x, y, w, h, fn) { g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.translate(x, y); g.lineCap = 'round'; g.lineJoin = 'round'; const r = fn(g, w, h); g.restore(); return r; }
@@ -2336,12 +2351,12 @@ function helmGlyph(kind, cx, cy, r, col) {
 function helmKey(id, x, y, sz, kind, name, click, o = {}) {
   const dis = o.dis && o.dis(), st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: name });
   const on = o.on && o.on();
-  const fill = dis ? CC.deep : st.down ? CC.lilac : on ? (o.onCol || CC.accord) : st.hot ? CC.sky : CC.signal; g.fillStyle = fill; g.globalAlpha = dis ? 0.5 : 1;
-  RR(g, x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
-  helmGlyph(kind, x + sz / 2, y + sz / 2, sz * 0.42, dis ? CC.inkDis : INK(fill));
+  const fill = dis ? CC.deep : st.down ? CC.lilac : on ? (o.onCol || CC.accord) : st.hot ? CC.sky : CC.signal; g.globalAlpha = dis ? 0.5 : 1;
+  face(g, x, y, sz, sz, sz * 0.22, fill); g.globalAlpha = 1;
+  helmGlyph(kind, x + sz / 2, y + sz / 2, sz * 0.42, dis ? CC.inkDis : faceInk(fill));
   // the turn's angle, small in the corner, so 90 and 135 never read alike
   const ang = { 'het.l90': '90', 'het.r90': '90', 'het.l135': '135', 'het.r135': '135', 'het.180': '180' }[kind];
-  if (ang) { g.fillStyle = dis ? CC.inkDis : INK(fill); g.font = FNT(`700 ${Math.round(sz * 0.2)}px Antonio`); g.textAlign = kind.includes('.l') ? 'right' : 'left'; g.fillText(ang, kind.includes('.l') ? x + sz - sz * 0.1 : x + sz * 0.1, y + sz - sz * 0.1); }
+  if (ang) { g.fillStyle = dis ? CC.inkDis : faceInk(fill); g.font = FNT(`700 ${Math.round(sz * 0.2)}px Antonio`); g.textAlign = kind.includes('.l') ? 'right' : 'left'; g.fillText(ang, kind.includes('.l') ? x + sz - sz * 0.1 : x + sz * 0.1, y + sz - sz * 0.1); }
 }
 // The helm (owner, survey B4 and 2026-11-02; the Starfleet Command 2 manual's Helm Officer display, printed pages
 // 117-120, taken in shape, not art): a row of orders toward the target (intercept, trail and match speed, orbit and its
@@ -2402,7 +2417,7 @@ function stHelm(b, big) {
     const x = b.x + ci * (ks + gap), yy = y + ri * (ks + gap);
     // a blank grey key fills the corner, so the pad reads as a full 3 x 3 (owner, 2026-11-02: "we need like a grey
     // button in the corner to offset it"); it does nothing
-    if (kind === 'none') { g.fillStyle = CC.mute; RR(g, x, yy, ks, ks, ks * 0.22); g.fill(); return; }
+    if (kind === 'none') { face(g, x, yy, ks, ks, ks * 0.22, CC.mute); return; }
     if (kind === 'free') helmKey('helm.free', x, yy, ks, 'free', name, () => A.helmOrder('free'), { on: () => !s.engaged, onCol: CC.sky });
     else if (kind === 'estop') helmKey('helm.stop', x, yy, ks, 'estop', s.estopT > 0 ? `Engines holding ${fmtCool(s.estopT)} s` : name, A.estop, { on: () => s.estop || s.estopT > 0, onCol: CC.caution });
     else if (kind === 'het.free') helmKey('helm.hetf', x, yy, ks, 'het.free', name, A.hetFree, { on: () => placingHet, onCol: CC.lilac, dis: busy });
@@ -2700,7 +2715,7 @@ function teamChips(x, y, w, list, col, sz = 34) {
   const items = list.filter(([, n]) => n > 0), cw = sz + sz * 1.2, per = Math.max(1, Math.floor(w / cw));
   if (!items.length) { LBL('None', x, y + sz * 0.65, w); return sz; }
   items.forEach(([r, n], i) => { const cx = x + (i % per) * cw, cy = y + Math.floor(i / per) * (sz + 6);
-    g.fillStyle = col; RR(g, cx, cy, sz, sz, sz * 0.22); g.fill(); roleGlyph(r, cx + sz / 2, cy + sz / 2, sz * 0.36, INK(col));
+    face(g, cx, cy, sz, sz, sz * 0.22, col); roleGlyph(r, cx + sz / 2, cy + sz / 2, sz * 0.36, faceInk(col));
     NUM(`×${n}`, cx + sz + 6, cy + sz * 0.7, 0, CC.text, 'left', Math.round(sz * 0.55)); });
   return Math.ceil(items.length / per) * (sz + 6) - 6;
 }
@@ -2710,9 +2725,9 @@ function iconKey(id, x, y, sz, glyph, count, click, o = {}) {
   const dis = count <= 0 || !!o.dis, st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: o.tip });
   if (dis && o.tip) hit(id, x, y, sz, sz, { tip: o.tip });
   if (o.ring) { g.strokeStyle = CC.caution; g.lineWidth = 3; RR(g, x - 3, y - 3, sz + 6, sz + 6, sz * 0.22 + 3); g.stroke(); }
-  const fill = dis ? CC.deep : st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.globalAlpha = dis ? 0.5 : 1; g.fillStyle = fill; RR(g, x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
-  glyph(x + sz * 0.44, y + sz * 0.44, sz * 0.3, dis ? CC.inkDis : INK(fill));
-  g.fillStyle = dis ? CC.inkDis : INK(fill); g.font = FNT(`700 ${Math.round(sz * 0.27)}px Antonio`); g.textAlign = 'right'; g.fillText(String(count), x + sz - sz * 0.08, y + sz - sz * 0.07);
+  const fill = dis ? CC.deep : st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.globalAlpha = dis ? 0.5 : 1; face(g, x, y, sz, sz, sz * 0.22, fill); g.globalAlpha = 1;
+  glyph(x + sz * 0.44, y + sz * 0.44, sz * 0.3, dis ? CC.inkDis : faceInk(fill));
+  g.fillStyle = dis ? CC.inkDis : faceInk(fill); g.font = FNT(`700 ${Math.round(sz * 0.27)}px Antonio`); g.textAlign = 'right'; g.fillText(String(count), x + sz - sz * 0.08, y + sz - sz * 0.07);
 }
 // A role key: how many of the role are left aboard.
 function roleKey(id, x, y, sz, role, avail, click) { iconKey(id, x, y, sz, (cx, cy, r, col) => roleGlyph(role, cx, cy, r, col), avail, click, { tip: `Queue ${ROLE_ONE[role]} · ${avail} aboard` }); }
@@ -2740,18 +2755,18 @@ function queueGrid(id, x, y, w, s, mode, big) {
   const qs = Math.min(big ? 96 : 38, (w - aw - gap - (cols - 1) * gap) / cols);
   for (let k = 0; k < per; k++) {
     const i = pg * per + k, bx = x + (k % cols) * (qs + gap), by = y + Math.floor(k / cols) * (qs + gap), role = q[i];
-    if (!role) { g.fillStyle = CC.void; RR(g, bx, by, qs, qs, qs * 0.22); g.fill(); g.strokeStyle = CC.deep; g.lineWidth = 2; g.stroke();
+    if (!role) { if (KIT.hero['key.idle']) face(g, bx, by, qs, qs, qs * 0.22, CC.void); else { g.fillStyle = CC.void; RR(g, bx, by, qs, qs, qs * 0.22); g.fill(); g.strokeStyle = CC.deep; g.lineWidth = 2; g.stroke(); }
       NUM(String(i + 1), bx + qs / 2, by + qs * 0.62, 0, CC.slate, 'center', Math.round(qs * 0.36)); continue; }
     const st = hit(`${id}.${k}`, bx, by, qs, qs, { click: () => A.unqueue(mode, i), tip: `${i + 1}. ${ROLE_ONE[role]}${i === 0 ? ' · next' : ''} · remove` });
-    const qf = st.hot ? CC.lilac : i === 0 ? CC.accord : CC.signal; g.fillStyle = qf; RR(g, bx, by, qs, qs, qs * 0.22); g.fill();
-    roleGlyph(role, bx + qs / 2, by + qs * 0.54, qs * 0.3, INK(qf));
-    g.fillStyle = INK(qf); g.font = FNT(`700 ${Math.round(qs * 0.26)}px Antonio`); g.textAlign = 'left'; g.fillText(String(i + 1), bx + qs * 0.09, by + qs * 0.3);
+    const qf = st.hot ? CC.lilac : i === 0 ? CC.accord : CC.signal; face(g, bx, by, qs, qs, qs * 0.22, qf);
+    roleGlyph(role, bx + qs / 2, by + qs * 0.54, qs * 0.3, faceInk(qf));
+    g.fillStyle = faceInk(qf); g.font = FNT(`700 ${Math.round(qs * 0.26)}px Antonio`); g.textAlign = 'left'; g.fillText(String(i + 1), bx + qs * 0.09, by + qs * 0.3);
   }
   // the page arrows, a counter between them
   const ax = x + cols * (qs + gap), ah = qs, arrow = (k, ay, up, on) => {
     const st = on ? hit(`${id}.${k}`, ax, ay, aw, ah, { click: () => { qPage[mode] += up ? -1 : 1; }, tip: up ? 'Page up' : 'Page down' }) : { hot: false };
-    const af = on ? (st.hot ? CC.sky : CC.signal) : CC.night; g.fillStyle = af; RR(g, ax, ay, aw, ah, aw * 0.3); g.fill();
-    const c = ax + aw / 2, m = ay + ah / 2, d = Math.min(aw, ah) * 0.22; g.fillStyle = on ? INK(af) : CC.slate; g.beginPath();
+    const af = on ? (st.hot ? CC.sky : CC.signal) : CC.night; face(g, ax, ay, aw, ah, aw * 0.3, af);
+    const c = ax + aw / 2, m = ay + ah / 2, d = Math.min(aw, ah) * 0.22; g.fillStyle = on ? faceInk(af) : CC.slate; g.beginPath();
     if (up) { g.moveTo(c - d * 1.3, m + d * 0.7); g.lineTo(c + d * 1.3, m + d * 0.7); g.lineTo(c, m - d * 0.8); } else { g.moveTo(c - d * 1.3, m - d * 0.7); g.lineTo(c + d * 1.3, m - d * 0.7); g.lineTo(c, m + d * 0.8); }
     g.closePath(); g.fill(); };
   arrow('up', y, true, pg > 0); arrow('dn', y + qs + gap, false, pg < pages - 1);
@@ -2856,7 +2871,7 @@ function stTransport(b, big) {
       SUBSYS.forEach(([key, name], i) => {
         const bx = b.x + i * (bs + 6), st = t ? subsysStatus(t, key) : 'Off';
         if (raidSys === key) { g.fillStyle = CC.sky; RR(g, bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
-        statusBox(g, bx, y, bs, st, bs * 0.28); g.drawImage(KIT.iconOn[SUBSYS_ICON[key]], bx + bs * 0.15, y + bs * 0.15, bs * 0.7, bs * 0.7);
+        statusBox(g, bx, y, bs, st, bs * 0.28); { const ik = KIT.hero['key.idle'] ? 0.21 : 0.15; g.drawImage((KIT.hero['key.idle'] && st === 'Off' ? KIT.icon : KIT.iconOn)[SUBSYS_ICON[key]], bx + bs * ik, y + bs * ik, bs * (1 - 2 * ik), bs * (1 - 2 * ik)); }
         hit(`tr.sys.${key}`, bx, y, bs, bs, { click: () => { raidSys = key; if (key !== 'weapons') raidMountOpen = false; }, tip: { title: name, rows: t ? [['Health', pct(clamp(healthOf(t, key), 0, 1))], ['Status', st, STATUS_COL[st]]] : [['Target', '--']] } });
       });
       y += bs + gap;
@@ -2918,7 +2933,7 @@ function stTransport(b, big) {
     else if (d && d.planet) { const want = ITEMS.filter(([k]) => keys.includes(k) && (dest.needs || {})[k]);
       LBL(want.length ? `${d.name} needs` : `${d.name} needs nothing`, b.x, y + 13, b.w, CC.lilac, 'left', 13); y += 18;
       if (want.length) { want.forEach(([k], i) => { const cx = b.x + i * (ks * 1.9), left = stillNeeds(dest, k), sz2 = Math.round(ks * 0.7);
-        g.fillStyle = left ? CC.caution : CC.accord; RR(g, cx, y, sz2, sz2, sz2 * 0.22); g.fill(); itemGlyph(k, cx + sz2 / 2, y + sz2 / 2, sz2 * 0.32, INK(left ? CC.caution : CC.accord));
+        face(g, cx, y, sz2, sz2, sz2 * 0.22, left ? CC.caution : CC.accord, true); itemGlyph(k, cx + sz2 / 2, y + sz2 / 2, sz2 * 0.32, faceInk(left ? CC.caution : CC.accord, true));
         NUM(left ? `${left}` : 'done', cx + sz2 + 6, y + sz2 * 0.72, 0, left ? CC.caution : CC.accord, 'left', Math.round(sz2 * 0.55)); }); y += Math.round(ks * 0.7) + 8; } }
     y += padRow('tr.pad.inv', b.x, y, b.w, s, 'inv', big) + gap;
   }
@@ -2997,6 +3012,13 @@ function shade(hex, f) {
 // should be a darker shade to indicate that"), filled from the bottom in the bright colour as it charges (owner,
 // 2026-11-02: "show progress like shade 50% a bright color as it is recharging"): `charge` 0 to 1.
 function statusBox(x, bx, by, s2, st, rad, cooling, charge) {
+  if (KIT.hero['key.idle']) {
+    // rendered glass: an unlit key, lit in the status colour; a cooling one lit from the bottom up as it charges
+    const lit = KIT.hero[facePiece(STATUS_COL[st], true)];
+    if (!cooling || st === 'Destroyed' || st === 'Off') { x.save(); if (st === 'Off') x.globalAlpha = 0.7; x.drawImage(st === 'Destroyed' || st === 'Off' ? KIT.hero['key.off'] : lit, bx, by, s2, s2); x.restore(); return; }
+    x.drawImage(KIT.hero['key.off'], bx, by, s2, s2);
+    const f = clamp(charge || 0, 0, 1); x.save(); x.beginPath(); x.rect(bx, by + s2 * (1 - f), s2, s2 * f + 1); x.clip(); x.drawImage(lit, bx, by, s2, s2); x.restore(); return;
+  }
   if (cooling && st !== 'Destroyed') {
     x.save(); RR(x, bx, by, s2, s2, rad); x.clip();
     x.fillStyle = shade(STATUS_COL[st], 0.34); x.fillRect(bx, by, s2, s2);
@@ -3103,7 +3125,7 @@ function drawSSD(x, w, h, s, big, own, idp) {
     list.forEach(([key], i) => {
       const by = y0 + i * (bs + gap), st = subsysStatus(s, key), col = STATUS_COL[st];
       statusBox(x, bx, by, bs, st, bs * 0.28);
-      x.globalAlpha = st === 'Off' ? 0.7 : 1; x.drawImage((st === 'Destroyed' ? KIT.icon : KIT.iconOn)[SUBSYS_ICON[key]], bx + bs * 0.15, by + bs * 0.15, bs * 0.7, bs * 0.7); x.globalAlpha = 1;
+      x.globalAlpha = st === 'Off' ? 0.7 : 1; { const ik = KIT.hero['key.idle'] ? 0.21 : 0.15; x.drawImage((st === 'Destroyed' || (KIT.hero['key.idle'] && st === 'Off') ? KIT.icon : KIT.iconOn)[SUBSYS_ICON[key]], bx + bs * ik, by + bs * ik, bs * (1 - 2 * ik), bs * (1 - 2 * ik)); } x.globalAlpha = 1;
       boxes.push([bx, by, bs, key]);
     });
   });
@@ -3135,7 +3157,7 @@ function drawSSD(x, w, h, s, big, own, idp) {
       // white figures with a dark outline, legible on both the dark shade and the bright fill
       x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.strokeStyle = 'rgba(0,0,0,0.85)'; x.lineWidth = Math.max(2, fs * 0.22);
       x.strokeText(txt, mx, my + 0.5); x.fillStyle = '#fff'; x.fillText(txt, mx, my + 0.5); x.textBaseline = 'alphabetic';
-    } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : INK(STATUS_COL[st]));
+    } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : KIT.hero['key.idle'] ? faceInk(STATUS_COL[st], true) : INK(STATUS_COL[st]));
     if (big) { x.fillStyle = CC.lilac; x.font = FNT('600 15px Antonio'); x.textAlign = 'center'; x.fillText(mountId(m), bx + mb + 14, by + 4); }
     mounts.push([mx, my, mb / 2 + 5, m]);
   }

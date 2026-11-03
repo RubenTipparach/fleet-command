@@ -176,19 +176,28 @@ def pieces():
         for sx, sy, cx, cy in ((1, 1, x0, y0), (-1, 1, x1, y0), (1, -1, x0, y1), (-1, -1, x1, y1)):
             w = w.difference(affinity.translate(affinity.scale(f, sx, sy, origin=(0, 0)), cx, cy))
         return w
+    # Version 3 (owner, 2026-11-03: "I dont like the gaps between panels, I think that gap should close"): neighbouring
+    # wells meet at a thin rib (8 px) where their rectangles meet, instead of a 32 px band of metal.
     panels = [(6, 68, 468, 420), (6, 494, 468, 276), (6, 776, 468, 160)]
-    wells = [fanged(x + 13, y + 13, x + w - 16, y + h - 13) for x, y, w, h in panels]
+    wells = [fanged(x + 13, y + (13 if i == 0 else 1), x + w - 16, y + h - (13 if i == len(panels) - 1 else 1)) for i, (x, y, w, h) in enumerate(panels)]
     joined = wells[0]
     for (ax, ay, aw, ah), (bx, by, bw, bh), wb in zip(panels, panels[1:], wells[1:]):
-        top, bot, mid = ay + ah - 13, by + 13, (ay + ah + by) / 2
-        neck = Polygon([(92, top - 6), (184, top - 6), (164, mid), (184, bot + 6), (92, bot + 6), (112, mid)])
+        top, bot, mid = ay + ah - 1, by + 1, (ay + ah + by) / 2
+        neck = Polygon([(92, top - 8), (184, top - 8), (170, mid), (184, bot + 8), (92, bot + 8), (106, mid)])
         joined = joined.union(neck).union(wb)
     spine = soft(box(465, 92, 470, 988), 1.5)
     col_plate = Polygon([(0.5, 0.5), (494, 0.5), (494, 80), (479.5, 80), (479.5, 1000), (494, 1000), (494, 1079.5), (0.5, 1079.5)])
     add("console.column", "hero", (480, 1080), soft(col_plate, 3.0), [("ember", soft(joined, 3.6)), ("red", spine)],
-        studs=[(9.5, y, 2.4) for y in (40, 491, 773, 939, 1040)] + [(467.5, y, 2.4) for y in (40, 1040)],
-        inlays=[Polygon([(30, 488), (78, 488), (84, 491), (78, 494), (30, 494)]), Polygon([(30, 770), (78, 770), (84, 773), (78, 776), (30, 776)])],
-        dz=-8.0)
+        studs=[(9.5, y, 2.4) for y in (40, 491, 773, 939, 1040)] + [(467.5, y, 2.4) for y in (40, 1040)], dz=-8.0)
+    # Icon keys (owner, 2026-11-03: "the buttons with icons need work ... make custom design for this skin. Just changing
+    # the color to red or leaving it green doesnt work. I love the buttons you did for chaning the panels. repeating that
+    # design style is prefered"): the rail tab's slanted steel bezel made square round a well of glass, one render per
+    # light. A control: ember dark at rest, red on hover, forge orange engaged; a status: the Krai alert lamps' green,
+    # yellow and red; off: an unlit slot. The page draws the icon live on the glass.
+    kplate = soft(Polygon([(8, 1.5), (46.5, 1.5), (40, 46.5), (1.5, 46.5)]), 2.5)
+    kwell = soft(Polygon([(12.4, 5.6), (42.2, 5.6), (36.4, 42.4), (6.6, 42.4)]), 2.0)
+    for state, film in (("idle", "ember"), ("hover", "red"), ("on", "forge"), ("ok", "lamp_green"), ("warn", "lamp_yellow"), ("alert", "lamp_red"), ("off", "slot")):
+        add(f"key.{state}", "hero", (48, 48), kplate, [(film, kwell)], roll=1.2, land=1.0, dz=-4.0, pad=1.0)
     # The strips as the battle console joins them to the column: 80 px tall, so a bar's label, its bar and the alert lamps
     # sit inside the open channel (owner, 2026-11-03: "Some of the elements on the bottom bar like red alerts energy,
     # battery, warp button don't fit in the container. Shrink.the elements or grow container height"); the plate runs on

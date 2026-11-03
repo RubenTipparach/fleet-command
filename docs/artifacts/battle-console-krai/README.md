@@ -23,3 +23,4 @@
 - Version 2 (the joined column and strips, no clamps): published 2026-11-03 from the cloud session at the owner's request
   ("artifact so I can play this mockup?"; no desktop session was reachable), version id `1793715999-c961`, then
   republished as mockup 8 (another session's branch holds mockup 7), version id `1793716070-4027`.
+- Version 3 (the gaps closed to a rib; icon keys and status boxes rendered in the rail tabs' style): published 2026-11-03, version id `1793717243-818b`.

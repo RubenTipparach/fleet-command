@@ -67,7 +67,23 @@ warp button don't fit in the container"): the Krai strip art is 72 px with a 45 
 strip content in a taller strip (`SDY`), so the alert lamps, the power and systems ticks, the battery and the warp key
 all sit inside it. The 3D view is 48 px shorter in the Krai.
 
-### 5. Every Krai piece is rendered in Blender
+### 5. Closed gaps and rendered icon keys (version 3)
+
+The owner, 2026-11-03, on version 2: "I dont like the gaps between panels, I think that gap should close", and "the
+buttons with icons need work. we need to come up with a much more immersive way to in corporate those, make custom
+design for this skin. Just changing the color to red or leaving it green doesnt work. I love the buttons you did for
+chaning the panels. repeating that design style is prefered".
+
+- The column's wells now run to 1 px of their panels' rectangles where two panels meet, so neighbouring panels are
+  parted by an 8 px rib (with the neck still cut through it), not a 32 px band.
+- Square keys rendered in the rail tab's style: its slanted steel bezel made square round a well of glass, one render
+  per light (`key.idle` ember, `key.hover` red, `key.on` forge orange, `key.ok` green, `key.warn` yellow, `key.alert`
+  red, `key.off` unlit). The page's `face()` draws every icon key from them when the kit has them (helm keys, role and
+  cargo keys, the queue, team chips, needs, and the status boxes of the ship systems display, the raid picker and the
+  mounts); the Concord keeps its filled shapes. A status box is unlit glass lit in its status colour, a cooling mount is
+  lit from the bottom up as it charges, and the icon's ink follows the glass: dark on lit glass, bone or orange on dark.
+
+### 6. Every Krai piece is rendered in Blender
 
 The owner, 2026-11-03: "you didn't render the stitching elements in blender like you are supposed to". The placards,
 the joined column, the joined strips and the allocation cells are modelled by `tools/blender/build_ui_krai.py` in the
@@ -75,7 +91,7 @@ skin's cast volcanic gunmetal, the shaped ones from outlines in `tools/mockups/k
 P and B (every shaped render passes rule B). Render cost at 48 samples on the cloud CPU: the small pieces 0.2-2.6 s
 each, the joined strips 23 s each, the column (960 x 2160 px) 271 s. The page carries the kit as WebP: the Krai page is 1.3 MiB.
 
-### 6. Verification of function: press every control in both skins
+### 7. Verification of function: press every control in both skins
 
 `tools/mockups/skin_parity.mjs` replays each of the 40 named shots, then for every control the Concord registered in
 it: replays the shot again, presses the control at its centre (click, or a drag to it), steps the battle 30 steps
@@ -84,9 +100,9 @@ battle state (every ship's position, heading, speed, hull, shields, power, syste
 hold, warp; mines, craft, shots, log length). The faction's page must give the same record press for press; the Concord
 is first checked against itself so a difference cannot come from the check. Result: 2,175 presses of 270 distinct
 controls in 40 shots, every one identical; 28 presses changed nothing a second later in either skin (toggles that act
-later or hover cards). It found one Concord bug (decision 7).
+later or hover cards). It found one Concord bug (decision 8).
 
-### 7. Concord fixes
+### 8. Concord fixes
 
 - The Fleet key stepped through `own[(own.indexOf(s) + 1) % own.length]` and threw when `own` was empty (the player's
   last ship jumped out). It is now dark and does nothing when no ship is left.

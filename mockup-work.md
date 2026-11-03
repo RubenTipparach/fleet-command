@@ -27,7 +27,7 @@ account and every link here is updated.
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v11: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
-| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v2) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v3) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -407,5 +407,9 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
   one plate with the three panels formed into it as wells joined through necks and a channel of red light down its edge
   crossing every panel; the strips re-rendered 80 px tall with their metal running on into the column, every bottom-bar
   element inside the channel.
+- Then, of version 2: "I dont like the gaps between panels, I think that gap should close", and "the buttons with icons
+  need work ... Just changing the color to red or leaving it green doesnt work. I love the buttons you did for chaning the
+  panels. repeating that design style is prefered". Version 3: the panels meet at a thin rib; every icon key and status box
+  is a rendered square key in the rail tabs' style, its state the light in its glass.
 
 Design: `openspec/changes/krai-battle-console/`.

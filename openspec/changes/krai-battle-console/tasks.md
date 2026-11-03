@@ -7,6 +7,7 @@
 - [x] 1.3 `tools/mockups/skin_page.py` writes `docs/mockups/battle-console-krai.html`
 - [x] 1.4 Placards, the joined column, the joined 80 px strips and allocation cells shaped (`krai_shapes.py`, all fit rules pass) and rendered in Blender (`build_ui_krai.py`, rule B passes)
 - [x] 1.5 `tools/mockups/skin_parity.mjs`: every control of every shot pressed in both skins, identical outcomes
+- [x] 1.5a Version 3: the column's gaps closed to a rib; icon keys and status boxes as rendered square keys in the rail tab's style
 - [x] 1.6 Concord fixes: the Fleet key with no ship left; clean named shots
 - [x] 1.7 Shots of all 40 named views looked at; listed in `mockup-work.md` and `docs/artifacts/battle-console-krai/`
 - [ ] 1.8 Published by the desktop session and added to the mockup tracker
