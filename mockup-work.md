@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Drafted (2026-11-03, v67) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v67, v69 in the repo) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
@@ -67,6 +67,17 @@ campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish 
 hardpoint, resupply, officers, hex facilities, missions).
 
 ## 2. In-game UI
+
+**Approved for implementation** (owner, 2026-11-03, in conversation: "based on the ui mockup start implmenting this ui
+stuff in game, we have chosen Godot 4.7 with c# so begin integration now"). The game build is the change
+`battle-console-engine`; its first slice (the console layout, the Concord kit, helm, power, the systems display, shields,
+weapons, radar, the strips and the stand-in battle) is in `src/`, with stills in `docs/screenshots/game/`. The tracker's
+stage for this mockup still needs updating from the desktop session (cloud sessions do not publish).
+
+Version 67 (2026-11-03; owner: "Pause menu should have a background"): the menu sheet has a solid background inside its
+frame, in the mockup and the game alike. Then (owner: "Re move shield view toggle"): the Shield view key is gone and the 3D
+shield display is always shown; the Target key (show or hide the Target box) moves to the corner. Committed from the cloud
+session; the desktop session publishes it.
 
 Owner, 2026-10-30. Ship systems on the left.
 
