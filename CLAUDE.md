@@ -87,17 +87,10 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
 
 ## 2. The stack: Godot
 
-> **Under review: Godot or Bevy** (owner, 2026-10-30: "I'm notr convinced with godot actually because I
-> really want high fidelity rendering... soooo maybe bevy if it supports android?", then in the survey: "can
-> godot handle a lot of the graphical and simulation aspects?"). Bevy builds for Android (GameActivity, API
-> 31 and up) and ships a path tracer for RTX cards; mainline Godot 4.7 has rich raster lighting (SDFGI,
-> VoxelGI, lightmaps, volumetric fog, HDR output, area lights) but only groundwork for ray tracing, and has
-> the more mature UI (nine-slice, themes) and Android export. Survey `T4a` decides; Godot is the
-> recommendation, for the baked, nine-sliced, faction-skinned console and the phones. Until it is
-> answered, write no engine code and nothing new that only one engine can use. The mockups are three.js
-> and carry over either way. If `T4a` lands on Bevy, this section, the Godot skills (`godot-architecture`,
-> `clean-code`, `testing-practices`, `playtest`) and `build.config` are rewritten from Crab Breeze's Bevy
-> versions in one change.
+> **Decided: Godot** (owner, survey T4a, 2026-11-01, picking "Godot 4.7: the console and phones first; rich raster lighting and
+> baked hull lights"), after reviewing Bevy for its path tracer (owner, 2026-10-30: "I'm notr convinced with godot
+> actually because I really want high fidelity rendering... soooo maybe bevy if it supports android?"). Engine code
+> still waits for each mockup's approval for implementation (section 4).
 
 - **Godot 4.7.1-stable, standard (GDScript) build**, pinned in `build.config`, the one place a
   toolchain version is written. `scripts/install-godot.sh` installs that editor into `.tools/godot/`.
@@ -272,7 +265,7 @@ else's artwork):
 
 | Region | What it holds |
 |---|---|
-| **Left column** (about a quarter of the width, full height) | Stacked panels, top to bottom: the captain's name plate; the helm (a 3 x 3 pad of turn and manoeuvre buttons, the chance to hit, a big engage button); the **ship systems display** (the ship from above, its shield facings and weapon mounts); the weapons panel (fire, multiple fire, and each mount's arming state: offline, normal, overload, with charge pips); and a small radar or minimap at the bottom |
+| **Left column** (about a quarter of the width, full height) | Stacked panels, top to bottom: the captain's name plate; the helm (a 3 x 3 pad of turn and manoeuvre buttons, and orders toward the target; the chance to hit is per weapon, on each weapon's hover card and its details, not on the helm: owner, 2026-11-02); the **ship systems display** (the ship from above, its shield facings and weapon mounts); the weapons panel (fire, multiple fire, and each mount's arming state: offline, normal, overload, with charge pips, and each weapon's chance to hit); and a small radar or minimap at the bottom |
 | **Top strip** | Own hull integrity bar, the weapon capacitor bar, target hull integrity bar, the mission clock |
 | **Bottom strip** | Speed, power and systems bars |
 | **The 3D view** (everything else) | The battle: own ship in a chase view, the target bracketed with its name, class and speed, a readout of the target's range and own weapons in arc and charged, the pointer for picking targets |
@@ -343,6 +336,10 @@ else's artwork):
   keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
   carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
   dashboards, dials, switches".
+- **Icons follow one standard in every skin** (owner, 2026-11-03: "these icons need a similar standard", "theyre generic
+  enough to be used on any other ui system"): a picture of the job, one subject one icon everywhere, readable at 20 px,
+  solid for the thing and lines for what it gives off, colour for state only, and every skin drawing the same subject
+  list. The rules and the sheet are the Fleet Command Icons guide, `docs/design/icon-guide.html`.
 - **One UI kit, swapped per faction** (owner, 2026-10-30: "whatever we do, we gotta design it for like
   UI kit that we can sweap out between factions"). The kit is a fixed list of named pieces (each 9-slice
   frame, bar, button, tab and hero piece, with its slot size and margins), and a skin is one set of

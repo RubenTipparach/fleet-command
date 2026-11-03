@@ -670,6 +670,7 @@ though".
 | W5 | Bottom row (radar, contacts, crest) | D, tentacle wrap |
 | W6 | Name plate | B, plain heavy leather |
 | W7 | Keys | Both: larvae for the big keys, low warts for the small keys and the tabs |
+| W8 | The space between the panels | A, tissue: one grown body, a membrane over muscle with ribs across it, so no black shows (answered 2026-11-01, the recommendation) |
 
 - **The picks are data**, not code: `assets/ui/vhorr/organic/styles.json` names each slot's style and each key's body,
   validated when `build_ui_vhorr_organic.py` loads it (an unknown slot key, style or body stops the build). The four
@@ -743,10 +744,10 @@ ways, hero pieces); a side-by-side of the three buttons and icon sets to prove r
 
 | Id | Question | Recommendation (built in the mockup) |
 |---|---|---|
-| U4 | When does the player see another faction's skin? | Both: a captured ship keeps its builder's console, and Options can pin one (provisional) |
+| U4 | When does the player see another faction's skin? | **Decided** (survey, 2026-11-01): flying a ship of that faction (a captured ship keeps its builder's console) |
 | U5 | The Kethran skin's direction? | Answered by the owner: modelled in Blender, "like starcraft" |
-| U6 | Does a skin change only images, or also sounds and type? | Images, colours, type, icons, motion and button sounds (provisional) |
-| U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | Skins only for now, with the names above; factions decided later (provisional) |
-| U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | As written above (provisional) |
-| U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | A new race named the Ssarith Hunt: a skin now, a faction decided with the others under U8 (provisional) |
-| W8 | What fills the space between the Brood's panels (the owner: no plain black)? | Answered 2026-11-01: A, tissue (built in version 26) |
+| U6 | Does a skin change only images, or also sounds and type? | **Decided** (survey, 2026-11-01): pictures, colours, type and button sounds; the owner adds "Some ships have features that other ships do not" |
+| U8 | The six new races (including the Kelvane Institute): names, whether they join the campaign, and whether the combat race is the Kethran Hegemony's own direction? | **Closed** (survey, 2026-11-01): "They are factions. This question is irrelevant." |
+| U7 | Are the factions' world views, bodies, technology and ships as the skins read them? | **Decided** (survey, 2026-11-01): yes, as written; the owner: "I'm not gonna let you make any cultural or story decisions without consulting me first" |
+| U10 | The hunter race: a new race, and is "Ssarith Hunt" the name? | **Closed** (survey, 2026-11-01): outdated |
+| W8 | What fills the space between the Brood's panels (the owner: no plain black)? | **Decided** (survey, 2026-11-01): tissue, one grown body over the column (built in version 26), see "The Brood's picks from the survey" |

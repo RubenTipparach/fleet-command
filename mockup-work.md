@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Listed | `battle-console` (to write) | `docs/mockups/battle-console.html` | |
+| 2 | In-game UI | Drafted (2026-11-03, v65) | `battle-console` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
@@ -86,6 +86,87 @@ Owner, 2026-10-30. Ship systems on the left.
 Notes for its write-up: CLAUDE.md section 7 bans sliders for whole-number allocation; speed is a
 continuous value, so the write-up argues the speed slider as an exception (the-federation allowed one
 for tow distance) or proposes discrete boxes, for the owner to choose.
+
+Owner, 2026-11-01, starting the UI thread with a screenshot of the reference game's battle screen: "we're gonna start a
+thread to handle the ui design mockup of the game, the first design system we will implement will be the concord, we
+will then reuse this design once it has been fully approved across all other factions, and each faction's implementation
+will be manually verified such that all of it is functional and readable." And: "review this starfleet command ui
+implementation and my initial prompt on how we would go about this, break down the elements, create a javascript three
+js mockup, 3d gameplay can be placeholder of a ship moving through space for now, but the ui must be fully interactive.
+I'll walk you through and iterate the fine details, but lets get something built so we can begin the iteration process."
+
+Version 1 (2026-11-01): the reference screen broken down element by element (design section 1, with the SFC2 manual's
+printed pages); the console in the Concord skin, drawn from the kit's pieces by the shared `docs/mockups/lib/concord.js`;
+nine stations on a rail, the ship panel (systems display, shields, sensors, tractor, craft), weapons, the radar row and
+tactical map, the strips, right-click targeting with a tap equivalent, the target camera and the 3D shield display, all
+working against a seeded stand-in battle with a three-ship fleet and configurable wingmen; every panel expands with the
+battle beside it, at desktop, phone landscape and portrait. The speed slider question is survey B1 (boxes built, a
+Boxes or Slider switch in the menu to compare).
+
+Owner's notes on version 1, 2026-11-01: "lets focus on iconography instead of text for the different tabs"; "the ship you
+are controlling should always be at a certain Y height (in screen coords) despite the zoom level. It shouldnt be
+centered, it should be below center" (with the reference screenshot); "text will show as you hover over above these
+tabs, group icons into a narrow column, lets first only care about the desktop experience FIRST"; "DO NOT MOCKUP MOBILE
+YET"; "speed needs a slider handle"; "power and systems need to sit on top of each other so we can see how much power
+our systems are draining". Version 2: icon tabs in narrow columns with their names shown above on hover, the ship held
+at 74% of the view's height, a handle on the speed boxes (B1 decided), Power over Systems on one scale, desktop only.
+
+Then: "gotta get rid of the lines, from now on, hold off the publishing stuff, just take screenshots for me, I have to
+manually approve artifacts publish apparently", and "see these slice lines?" (a close-up of seams in the tabs and keys).
+Version 3 composes each kit element whole at its pixel size, so no seam shows; shown as screenshots, not published.
+
+Then, on the power station: "power generated = blue, systems = green"; "need a config to allow generation rate to go
+negative, I'd like to also show how much power is in batteries, which can drain if systems drain more than is
+generated, but by default this config will be off, should be in the reactor tab"; "reactor tab will be found under
+'power' which will have a button to swap between allocation and reactor. reactor will be a special new mode for our
+game specifically. (it didnt exist in sfc)"; "reactor has two components: magnetic confinement, and coolant systems";
+"the generator as it takes damage will lose alignment, so the player has to adjust alignment, and balance coolant
+systems to keep the reactor from melting down. a meltdown can happen if coolant systems are offline for a duration, and
+result in an explosion of the reactor". Version 4 adds the Reactor mode (OpenSpec change `reactor`), Power blue over
+Systems green with a Battery bar, and the Draw past output setting; shown as screenshots. Then: "I want like an actual diagram of the
+nuclear reactor and be able to like interact with it": the Reactor mode is now a diagram of the core, coils and coolant
+loops, worked by dragging the coils home and pressing minus and plus on the pumps. Then: "please improve that diagram of a reactor", "the
+loop a and loop b should look like loops i think", "it would make more sense": the diagram redrawn as a schematic (a
+vessel with a field-coil cage and the plasma in its channel, a temperature dial, wall contact, closed coolant loops
+running through the vessel with hot and cold legs, turning pumps, glowing radiators, the power bus). Then: "simpler please!": only the core,
+the three coils, the two loops with their pumps and radiators, and the warnings.
+
+Version 5 published at the owner's request ("publish it so I can play with this"). Then: "can you show this as discrete
+marks/ticks?" (Power and Systems), "can I get red, yellow, green alerts?", and "change this box to 'target' that way we
+dont need to toggle between the two on the ship systems display". Version 6: Power and Systems as ticks, three alert
+lamps the captain sets, the Target box showing the target's systems display, the ship panel's toggle gone.
+
+Then: "how would this work with various amounts of power?" (survey B7), "falling off the screen, please fix" (the
+ticks), and "can you render this ui in engine as opposed to html? there are some issues with html rendering that causes
+components to twitch and change sizes. (by engine I mean js engine)". Version 7 draws the whole console on a canvas in
+the page's own loop: kit pieces composed at their pixel size, fixed text, grow-only number slots, immediate-mode input.
+
+Then: "we need some iconography for each weapon type, on the side, show subsystems, as well. Tooltips: when I hover over
+subsystem or weapon box: show what subsystem name is, health, status: Active/Disabled/Off/Damaged/Destroyed", with the
+five statuses defined ("all of the status description is for your spec ... we are currently only concerned with just ui
+- which will be driving gameplay spec in the future"). Version 8: weapon glyphs, subsystem columns, hover cards. Then:
+the white arc over the facing toward the enemy, square weapon boxes with glyphs, "shield facing should be hexagons here"
+(3D), "going from red 1 layer -> yellow 2 layers -> green 3 layers", "make sure weapon icons dont overlap!". Version 9. Then: "this should be a shield diagram that I can
+pick what sides to reinforce" and "adjust how much energy I want to allocate - same energy slider as the one found in the
+power menu". Version 10: the shield page is a hexagon diagram, click a side to reinforce, the power station's shield row. Then: "Color coding and numbers still help" (each facing's number coloured), and "to avoid clutter. The UI itself should display 1 layer. Where the game should display multiple": version 11, one band per facing on the console, layers only in 3D. Then: "make shields like bigger buttons like in starfleet command where they were like trapezoids, with the base pointing outwards, and the sections getting highlighted when selected for reinforcement": version 12. Then: "those shield numbers need to be inside the shield buttons", "or instead you can have a fill amount to show how much of that shield is charged", "and show numbers when you hover over it": version 13, keys fill with their charge, numbers in a hover card. Then: "Fill the icon boxes fully. Please. And communicate icon system status with different colors. Show that as the ship gets hit and takes damage": version 14, solid status-coloured boxes, a Take a hit key in the menu.
+
+Versions 15-24 (2026-11-01): the lance glyph fixed, mounts on a grid, the selection ring flush (measured), cooldown
+seconds in a darker shade, mines on a 3 s cooldown, the tractor contest (Hold and Break, power-up, the beam turning),
+the helm by pointing (after the-federation), and test scenes for mines, the tractor and boarding. Version 25: the
+transporter's three modes (Capture, Hit & run, Inventory) with crews by role (survey B14, B15), reeling (B16), stations
+and planets, and four more scenes: Delivery, VIP, Shuttle, Fighters.
+
+Versions 26-29 (2026-11-02): a scene selector in the view, the camera lock (smoothed), a round expand key, and the
+warp drive (change `warp`: Power, Warp mode; nacelles, banks, plot, six risk factors, the safety override near a
+neutron star, the jump; a Warp scene; survey J1-J5).
+
+Version 33 (2026-11-02): the helm rebuilt from the manual's Helm Officer display (B4), a red target bracket with a
+double frame on a seeker lock, fresnel shield keys, the weapons page as the ship with Fire keys and a detail half, ready
+weapons outlined, ships four times tougher.
+
+**Queued from the survey (2026-11-01), not built yet:** power ticks per ship scaled to
+fit (B7); enemies starting tractor holds (B11); meltdown from a material temperature limit, a scram, coils aligned by
+dragging (R1, R2, R4). The kit's cells and icons wait for the Concord master UI (B6).
 
 ## 3. Look dev
 
