@@ -123,6 +123,16 @@ side aim down":
 | Stern, dorsal | On the plating aft | Forward along it |
 | Belly | A pair at mid-hull on the ventral plating (owner: "on the bottom, maybe a light aiming forward and backward") | One forward, one aft |
 
+### Geometry blocks the light
+
+The owner, 2026-11-03: "light geometry is kind of questionable here as it wraps around and ignores normals", then "geometry
+should block light". On the ship in view, every hull lamp is a real spotlight with a 90 degree cone, fixed to the hull so it
+moves and goes dark with it; the first eight cast shadows from 512 px maps (eight is what a phone's texture units allow beside
+the hull's own maps), and the sun casts shadows from a 2048 px map fitted to the ship. Every hull part casts and receives
+shadows, so nacelles, command blocks, turrets and gun houses shade the plating behind them, and a face turned away from a lamp
+gets none of its light. The line-up of every class keeps the painted pools, which do not cast shadows, to keep nine ships
+drawable. The game sets its own shadow budget per platform (survey T3).
+
 ## Turrets have a clear line of fire
 
 The owner: "this turret's line of sight is obscured btw". The dorsal turret that sat behind the command block is on the

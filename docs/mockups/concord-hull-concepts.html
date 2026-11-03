@@ -398,6 +398,8 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
+// Geometry blocks light (owner, 2026-11-03: "geometry should block light"): shadow maps for the sun and the hull lamps.
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.append(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
@@ -441,6 +443,7 @@ controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistan
 
 const hemi = new THREE.HemisphereLight(0x9fb4ff, 0x0b0a10, 0.3); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff1dc, 1.6); sun.position.set(600, 420, 520); scene.add(sun);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.06; sun.shadow.camera.near = 1; sun.shadow.camera.far = 3000;
 const rim = new THREE.DirectionalLight(0x86a6ff, 0.5); rim.position.set(-500, 150, -700); scene.add(rim);
 const LIGHTS = {
   sunlit: { label: 'Sunlit', sun: 1.7, sunPos: [600, 420, 520], hemi: 0.3, rim: 0.5, env: 0.55 },
@@ -659,12 +662,12 @@ float pools(vec3 p, vec3 n){ float a = 0.0;
   for (int i = 0; i < 16; i++) { if (i >= uPoolN) break; vec4 P = uPools[i]; vec3 d = p - P.xyz; float dist = length(d); vec3 dl = d/max(dist, 1e-3);
     float cone = smoothstep(0.64, 0.76, dot(dl, uPoolD[i].xyz));
     float fall = (1.0 - smoothstep(P.w*0.55, P.w, dist))/(1.0 + pow(dist/P.w*2.4, 2.0));
-    float face = 0.22 + 1.7*max(dot(n, -dl), 0.0);
+    float ndl = dot(n, -dl), face = smoothstep(-0.02, 0.12, ndl)*(0.45 + 1.6*max(ndl, 0.0)); // only faces turned toward the lamp
     a += uPoolA[i]*cone*fall*face; }
   return a; }`;
 // A ship's floodlight pools (one table per ship, shared by its materials).
 function makePoolUniforms() { return { uPools: { value: Array.from({ length: 16 }, () => new THREE.Vector4()) }, uPoolD: { value: Array.from({ length: 16 }, () => new THREE.Vector4()) }, uPoolA: { value: new Array(16).fill(0) }, uPoolN: { value: 0 } }; }
-function addSpot(ship, p, dir, range, a) { const U = ship.dmgU, i = U.uPoolN.value; if (i >= 16) return; const d = dir.clone().normalize(); U.uPools.value[i].set(p.x, p.y, p.z, range); U.uPoolD.value[i].set(d.x, d.y, d.z, 0); U.uPoolA.value[i] = a; U.uPoolN.value = i + 1; }
+function addSpot(ship, p, dir, range, a) { const U = ship.dmgU, i = U.uPoolN.value; if (i >= 16) return; const d = dir.clone().normalize(); (ship.spots ||= []).push({ p: p.clone(), d: d.clone(), range, a }); U.uPools.value[i].set(p.x, p.y, p.z, range); U.uPoolD.value[i].set(d.x, d.y, d.z, 0); U.uPoolA.value[i] = a; U.uPoolN.value = i + 1; }
 
 // The hull material: MeshStandardMaterial with the paint, the detail maps, the windows and the pools, plus every damage rule
 // of mockup 5 (holes cut away or drawn by interior mapping, scorch marks, broken edges charred toward the break with a cooling
@@ -1860,6 +1863,7 @@ function stepShip(ship, dt) {
   { const st = ship.sys.impulse.state; ship.glows.impulse.forEach((m, i) => { if (m.userData.heat) m.userData.heat.value = m.emissiveIntensity / 1.4; m.emissiveIntensity = ship.broken ? 0 : settle(ship, 'bell' + i, st === 'healthy' || st === 'damaged' || (st === 'critical' && i % 2) ? 1.4 : 0) * (burst(ship, 'bellD' + i, st === 'damaged') ? 0.2 : 1); }); }
   { const st = ship.sys.weapons.state; gl(ship.glows.phaser, ship.broken ? 0 : st === 'healthy' ? (ship.firing > 0 ? 2.2 : 0.25) : st === 'damaged' ? 0.2 : 0); gl(ship.glows.torpedo, ship.broken ? 0 : st === 'healthy' || st === 'damaged' ? 1.2 : 0); }
   { const hL = ship.broken ? 0 : settle(ship, 'hangar', ship.sys.life.state === 'destroyed' ? 0 : 1); gl(ship.glows.hangar, hL); gl(ship.glows.deck, hL * 1.4); }
+  if (ship.lamps) { const lp = ship.broken ? 0 : shipFlick; for (const L of ship.lamps) L.l.intensity = L.i0 * lp; }
   ship.firing = Math.max(0, (ship.firing || 0) - dt);
   // Navigation lights: strobes double-flash, beacons pulse, position lights steady.
   for (const n of ship.navs) {
@@ -1938,6 +1942,22 @@ function applyLight(k) {
   for (const s of ships) for (const m of s.mats) m.envMapIntensity = L.env;
   refreshButtons();
 }
+// Real hull lamps for the ship in view: each spot a SpotLight with a 90 degree cone on the hull (so it moves and dies with it),
+// the first eight casting shadows (the texture units a phone has); the painted pools are switched off for this ship so nothing
+// is lit twice. Every mesh casts and receives shadows; the sun's shadow box is fitted to the ship.
+const SPOT_SHADOWS = 8, SPOT_MAX = 12, SPOT_K = 2.6; // lamps with shadows; lamps in all; intensity per unit of pool strength
+function lightShip(ship) {
+  const P = ship.pieces.hull; ship.lamps = [];
+  (ship.spots || []).slice(0, SPOT_MAX).forEach((sp, i) => {
+    const l = new THREE.SpotLight(0xfff0dc, sp.a * SPOT_K, sp.range * 1.25, PI / 4, 0.35, 1.4);
+    l.position.copy(sp.p); l.target.position.copy(sp.p.clone().add(sp.d.clone().multiplyScalar(10)));
+    if (i < SPOT_SHADOWS) { l.castShadow = true; l.shadow.mapSize.set(512, 512); l.shadow.camera.near = 0.3; l.shadow.camera.far = sp.range * 1.3; l.shadow.bias = -0.0006; l.shadow.normalBias = 0.04; }
+    P.inner.add(l, l.target); ship.lamps.push({ l, i0: l.intensity });
+  });
+  ship.dmgU.uPoolN.value = 0;
+  ship.root.traverse((o) => { if (o.isMesh && o !== ship.shield && !(o.material && (o.material.blending === THREE.AdditiveBlending || o.material.isShaderMaterial))) { o.castShadow = true; o.receiveShadow = true; } });
+  const L = ship.facts.length, c = sun.shadow.camera; c.left = c.bottom = -L * 0.75; c.right = c.top = L * 0.75; c.updateProjectionMatrix();
+}
 // The ship fires back at the enemy: a phaser from the turret nearest it, or a torpedo from the bow launcher; the mount flashes
 // and lights the hull (one implementation of a shot for both directions: shoot()).
 function returnFire(ship) {
@@ -1977,6 +1997,7 @@ function setMode(m, seed = 7) {
     active = ships.find((s) => s.id === 'petrel_updown');
   } else { ships = [buildShip(m, livery)]; active = ships[0]; }
   for (const s of ships) s.shield.visible = shieldsUp && s.sys.shields.health > 0;
+  if (m !== 'lineup') lightShip(active);
   applyLight(lightKey); buildYard(); buildPanel(); refreshButtons(); refreshFacts();
   $('classNote').textContent = m === 'lineup' ? 'Every Swift and Petrel variant and the Albatross, beside Star Crew\'s Tern, at true scale. The windows are the same size on each.' : CLASSES[m].tell;
 }
