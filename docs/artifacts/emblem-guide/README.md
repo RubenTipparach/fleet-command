@@ -38,3 +38,9 @@
   arches grown from B-E2 (B-E4 the thickening arch, in the sketch; B-E5 the hangar door; B-E6 the flared arch; B-E7 the
   saucer arch), each one's joins measured; colourways measured for contrast (at least 7:1, rule 18): B-K1 pearl on
   night (11.9:1, in the sketch), B-K2 pearl on flag blue (4.8:1, fails), B-K3 night on pearl (11.9:1), each at 12 px.
+- Version 7 published 2026-11-03: B-E4 to B-E7 retired (owner: "dont like any of those shapes, though b-e2 is a good
+  direction (but I still DONT LIKE IT)"); B-E2 back in the sketch; six variations on it (B-E8 to B-E13), each changing
+  one thing. Every emblem now has a version for black and one for white (owner: "the colors are bad, they dont read on
+  the white background", "need different versions for white and black background"), each measured: B pearl on night on
+  black (ship on field 11.9:1, outline 17.8:1), night on pearl on white (11.9:1, 13.2:1); A, C and D pearl on black
+  (17.8:1) and night blue on white (13.2:1).
