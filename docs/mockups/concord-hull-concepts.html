@@ -1165,7 +1165,7 @@ function buildShip(id, liv, offset = V3()) {
   { const n = Math.max(2, Math.round((C.live[1] - C.live[0]) / 18)); for (let i = 0; i < n && ship.dmgU.uPoolN.value < 15; i++) {
     const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); const ch = chOf(h[1], h[2], h[3], h[4]); for (const sd of [1, -1]) addSpot(ship, V3(sd * (h[1] + 0.35), h[2] - ch - 0.2, z), V3(0, -1, 0), (h[2] - h[3]) * 1.6, 0.85); } }
   for (const sd of [1, -1]) { if (ship.dmgU.uPoolN.value >= 16) break; const z = zMin + 6, h = hullAt(S, z); addSpot(ship, V3(sd * h[1] * 0.6, h[2] + 0.35, z), V3(0, -0.06, 1), C.length * 0.35, 0.6); }
-  for (const sd of [1, -1]) { if (ship.dmgU.uPoolN.value >= 16) break; const z = zMin + 8, h = hullAt(S, z); addSpot(ship, V3(sd * h[1] * 0.5, h[3] - 0.35, z), V3(0, 0.06, 1), C.length * 0.35, 0.55); } // the belly: facing forward
+  { const z = (zMin + zMax) / 2, h = hullAt(S, z); for (const fw of [1, -1]) addSpot(ship, V3(0, h[3] - 0.35, z + fw * 0.5), V3(0, 0.05, fw), C.length * 0.45, 0.7); } // the belly, mid-hull: one forward, one aft (owner: "on the bottom, maybe a light aiming forward and backward")
   // Two fire lights per ship, made now so the shaders never recompile mid-battle.
   for (let i = 0; i < 2; i++) { const l = new THREE.PointLight(0xff7a2a, 0, C.length * 0.5, 1.6); ship.root.add(l); ship.lights.push({ l, until: 0, at: null, anchor: null }); }
   // The shield bubble.
@@ -2006,7 +2006,7 @@ window.MOCKUP_SHOTS = {
   scale: shot('petrel_updown', 'sunlit', 'scale', null, 0.2),
   swift_below: shot('swift_below', 'sunlit', 'hero', null, 0.2), swift_updown: shot('swift_updown', 'sunlit', 'hero', null, 0.2), swift_level: shot('swift_level', 'sunlit', 'hero', null, 0.2),
   petrel_level: shot('petrel_level', 'sunlit', 'hero', null, 0.2), albatross: shot('albatross', 'sunlit', 'hero', null, 0.2), albatross_main: shot('albatross_main', 'sunlit', 'hero', null, 0.2), albatross_main_front: shot('albatross_main', 'sunlit', 'bow', null, 0.2), albatross_side: shot('albatross', 'sunlit', 'side', null, 0.2),
-  albatross_under: shot('albatross', 'sunlit', 'under', null, 0.2), tern: shot('tern', 'sunlit', 'hero', null, 0.2),
+  albatross_under: shot('albatross', 'sunlit', 'under', null, 0.2), belly_lights: shot('petrel_level', 'nosun', 'under', null, 0.2), tern: shot('tern', 'sunlit', 'hero', null, 0.2),
   coolant: shot('albatross', 'sunlit', 'hero', (s) => hurt(s, 'reactor', 100), 3, { tab: 'damage', cam: (s) => frame(90, V3(-0.9, -0.4, 0.6), at(s, s.corePos)) }),
   nacelle_venting: shot('petrel_level', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 75), 2.5, { tab: 'damage', cam: (s) => frame(70, V3(1, 0.5, 0.3), kneeW(s, 'P')) }),
   bridge_fire: shot('petrel_updown', 'shadow', 'hero', (s) => { hurt(s, 'bridge', 80); hurt(s, 'life', 40); }, 2.5, { tab: 'damage', cam: (s) => frame(55, V3(-0.7, 0.55, 1), at(s, s.bridgeTop)) }),

@@ -120,7 +120,8 @@ side aim down":
 | Nacelle, on its side | Above the outboard flank | Down the flank |
 | Nacelle, above or below the hull | At its aft end | Forward along it |
 | Waist | On the shoulders, every 18 m, both sides | Straight down the hull's side |
-| Stern, dorsal and ventral | On the plating aft | Forward along it |
+| Stern, dorsal | On the plating aft | Forward along it |
+| Belly | A pair at mid-hull on the ventral plating (owner: "on the bottom, maybe a light aiming forward and backward") | One forward, one aft |
 
 ## Turrets have a clear line of fire
 
