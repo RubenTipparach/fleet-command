@@ -82,3 +82,4 @@
 - Version 62 published 2026-11-03, version id `1793691514-dbd5`: the nine station icons redrawn as pictures of their jobs (a wheel, a bolt, a turret, a shield with a burst, an atom, a dish, a wrench, a figure dissolving into slices, three chevrons).
 - Version 63 published 2026-11-03, version id `1793693251-28bb`: the transport figure solid above the waist, dissolving below, no pad; Engines drawn as a thruster.
 - Version 64 published 2026-11-03, version id `1793697270-2da4`: ship panel and systems display icons to the same standard; a particle stream flies from the sender to the receiver of every beam.
+- Version 65 published 2026-11-03, version id `1793698757-f1e7`: a click selects (enemy locked, friendly or planet selected), no floating Lock target or Select keys. Published from the cloud session: no desktop session was reachable.
