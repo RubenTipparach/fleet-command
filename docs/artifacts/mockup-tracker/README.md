@@ -38,3 +38,4 @@
 - 2026-11-03, cloud session (Concord ships thread): M7 at version 2, the survey at v30; version 39, version id `1793701320-5ee9`.
 - 2026-11-03, cloud session (Concord ships thread): M6 at v13, M2 at v67, M1 at v7, survey v31; version 40, version id `1793702207-df30`.
 - 2026-11-03, cloud session (Concord ships thread; owner: "Concord ships and damage remove this from the main mockups mpage"): M5 off the game mockups list, one retired link kept under Misc; M8 (the Krai battle console, from the battle console thread's live `1793716083-c3f7`) kept; M7 at v3; version 42, version id `1793716289-6a4e`.
+- 2026-11-03, cloud session (Concord ships thread): the Ship Design Bible added to Guides, the survey at v32, merged onto the battle console thread's live `1793722308-ee58` (M8 at v4, its summary's unescaped apostrophe escaped so the page's script parses); version 45, version id `1793722621-f8f8`.

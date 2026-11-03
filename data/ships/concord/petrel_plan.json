@@ -1,0 +1,41 @@
+{
+  "schema": "fleetcommand.ship-plan/1",
+  "_doc": "A Concord ship's rooms as blocks, the first step of designing it inside out (Ship Design Bible, docs/design/ship-bible.html; owner, 2026-11-03: \"map out approximate floor plans out of blocks, and enclose the structure with the hull shape\"). Axes as the Concord line's: +X port, +Y dorsal, +Z bow, metres. A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top). deck_floor_m is each deck's floor height, headroom_m the clear height above a floor, clearance_m the air between a room and the hull's inner skin, structure_m the hull's own thickness (frames, plating), nose_m and tail_m how far the hull runs past the first and last rooms to its bow and stern. Read by the guide, which fits the hull from these numbers.",
+  "ship": "petrel_level",
+  "crew": 42,
+  "deck_floor_m": [
+    3.5,
+    0,
+    -3.5
+  ],
+  "headroom_m": 2.8,
+  "clearance_m": 0.45,
+  "structure_m": 0.6,
+  "nose_m": 6,
+  "tail_m": 3,
+  "rooms": [
+    {"id": "bridge", "name": "Bridge", "kind": "command", "decks": [0], "x_m": [-5, 5], "z_m": [22, 32]},
+    {"id": "ready_room", "name": "Captain's ready room", "kind": "command", "decks": [0], "x_m": [1.2, 6], "z_m": [15, 22]},
+    {"id": "computer_core", "name": "Computer core", "kind": "systems", "decks": [0], "x_m": [-6, -1.2], "z_m": [15, 22]},
+    {"id": "a_corridor", "name": "Command passage", "kind": "corridor", "decks": [0], "x_m": [-1.2, 1.2], "z_m": [-6, 22]},
+    {"id": "officers_p", "name": "Officers' quarters, port", "kind": "crew", "decks": [0], "x_m": [1.2, 9], "z_m": [-6, 15]},
+    {"id": "officers_s", "name": "Officers' quarters, starboard", "kind": "crew", "decks": [0], "x_m": [-9, -1.2], "z_m": [-6, 15]},
+    {"id": "sensors", "name": "Sensor bay", "kind": "systems", "decks": [0], "x_m": [-5, 5], "z_m": [-18, -6]},
+    {"id": "torpedo_room", "name": "Torpedo room", "kind": "weapons", "decks": [1], "x_m": [-3, 3], "z_m": [34, 40]},
+    {"id": "medbay", "name": "Medbay", "kind": "crew", "decks": [1], "x_m": [1.2, 9], "z_m": [18, 30]},
+    {"id": "damage_control", "name": "Damage control", "kind": "systems", "decks": [1], "x_m": [-9, -1.2], "z_m": [18, 30]},
+    {"id": "b_spine", "name": "Main corridor", "kind": "corridor", "decks": [1], "x_m": [-1.2, 1.2], "z_m": [-14, 34]},
+    {"id": "quarters", "name": "Crew quarters", "kind": "crew", "decks": [1], "x_m": [1.2, 10.5], "z_m": [2, 18]},
+    {"id": "mess", "name": "Mess", "kind": "crew", "decks": [1], "x_m": [-10.5, -1.2], "z_m": [2, 18]},
+    {"id": "life_support", "name": "Life support", "kind": "systems", "decks": [1], "x_m": [1.2, 10.5], "z_m": [-14, 2]},
+    {"id": "cargo", "name": "Cargo and stores", "kind": "systems", "decks": [1], "x_m": [-10.5, -1.2], "z_m": [-14, 2]},
+    {"id": "engineering", "name": "Engineering", "kind": "engineering", "decks": [1], "x_m": [-9, 9], "z_m": [-36, -14]},
+    {"id": "shield_room", "name": "Shield generator", "kind": "systems", "decks": [2], "x_m": [-6, 6], "z_m": [26, 36]},
+    {"id": "magazine", "name": "Magazine", "kind": "weapons", "decks": [2], "x_m": [-7, -1.2], "z_m": [10, 26]},
+    {"id": "switchboard", "name": "Forward switchboard", "kind": "systems", "decks": [2], "x_m": [1.2, 7], "z_m": [10, 26]},
+    {"id": "c_spine", "name": "Lower corridor", "kind": "corridor", "decks": [2], "x_m": [-1.2, 1.2], "z_m": [-14, 26]},
+    {"id": "hangar", "name": "Shuttle bay (port door)", "kind": "bay", "decks": [2], "x_m": [-9, -1.2], "z_m": [-12, 8]},
+    {"id": "stores", "name": "Stores", "kind": "systems", "decks": [2], "x_m": [1.2, 9], "z_m": [-12, 8]},
+    {"id": "reactor", "name": "Reactor", "kind": "engineering", "decks": [2], "x_m": [-6, 6], "z_m": [-36, -14]}
+  ]
+}

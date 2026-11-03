@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Ship Design Bible</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:wght@600;800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a shipwright's manual on drafting paper, the companion of the Analog and Organic Panel Bibles; part codes in
+   boxes, Concord signal blue as the one accent, live 3D figures built from the same code and data as mockup 6. */
+:root {
+  --paper: #e9ebe6; --sheet: #f5f6f2; --ink: #1d2230; --muted: #5a6273; --rule: #c7ccd4;
+  --accent: #2f62e0; --accent-soft: #dce5fb; --warn: #b23a2a; --ok: #3c7a46; --amber: #a8700c;
+  --stage: #0b0f18;
+  --display: "Saira Extra Condensed", "Arial Narrow", Impact, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12151c; --sheet: #1a1e27; --ink: #e3e7ef; --muted: #9aa3b4; --rule: #2d3442;
+    --accent: #6f9bff; --accent-soft: #1d2a48; --warn: #e3624e; --ok: #84c48e; --amber: #e8b448; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12151c; --sheet: #1a1e27; --ink: #e3e7ef; --muted: #9aa3b4; --rule: #2d3442;
+  --accent: #6f9bff; --accent-soft: #1d2a48; --warn: #e3624e; --ok: #84c48e; --amber: #e8b448; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-bottom: 64px; }
+.wrap { max-width: 900px; margin: 0 auto; display: grid; gap: 40px; }
+header.top { padding-top: 32px; display: grid; gap: 14px; }
+.kicker { font: 500 12px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 800 clamp(48px, 11vw, 92px)/0.86 var(--display); margin: 0; text-transform: uppercase; text-wrap: balance; }
+h2 { font: 800 clamp(30px, 6vw, 44px)/0.95 var(--display); margin: 0; text-transform: uppercase; text-wrap: balance; }
+h3 { font: 600 22px/1.1 var(--display); margin: 0; text-transform: uppercase; letter-spacing: 0.02em; }
+p { margin: 0; max-width: 70ch; }
+.lede { font-size: 18px; color: var(--muted); }
+.master { display: inline-flex; align-items: center; justify-self: start; min-height: 44px; padding: 0 14px; border: 1px solid currentColor; border-radius: 8px; font: 600 14px/1 var(--body); color: inherit; text-decoration: none; opacity: 0.85; }
+.master:hover { opacity: 1; }
+nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+nav.toc a { color: inherit; }
+section.ch { display: grid; gap: 16px; padding-top: 28px; border-top: 2px solid var(--ink); }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.cap { font-size: 14px; color: var(--muted); }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 70ch; }
+code, .mono { font: 500 0.88em var(--mono); }
+blockquote { margin: 0; padding: 8px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-style: italic; max-width: 70ch; border-radius: 0 4px 4px 0; }
+blockquote span.who { font: 500 11px/1 var(--mono); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 11px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.rule { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: baseline; }
+.rule b.code { font: 500 12px/1 var(--mono); border: 1px solid var(--ink); border-radius: 3px; padding: 3px 5px; white-space: nowrap; }
+.fig { position: relative; background: var(--stage); border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 9; touch-action: none; }
+.fig canvas { display: block; width: 100%; height: 100%; }
+.fig .hud { position: absolute; left: 10px; top: 8px; right: 10px; color: #cfd8ea; font: 500 12px/1.4 var(--mono); pointer-events: none; text-shadow: 0 0 4px #000; }
+.ctrl { display: flex; flex-wrap: wrap; gap: 6px; }
+.ctrl button { min-height: 44px; min-width: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); font: 600 14px/1 var(--body); cursor: pointer; }
+.ctrl button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ctrl button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.plans { display: grid; gap: 12px; }
+.plans svg { width: 100%; height: auto; display: block; background: var(--stage); border-radius: 4px; }
+.plans figcaption { font: 500 12px/1.3 var(--mono); color: var(--muted); }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 12px; }
+.shots img { width: 100%; height: auto; display: block; border-radius: 4px; background: var(--stage); }
+.check { font: 500 13px/1.5 var(--mono); }
+.check .ok { color: var(--ok); } .check .bad { color: var(--warn); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px; }
+@media (max-width: 640px) { nav.toc ol { columns: 1; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">Fleet Command · shipwright's manual</div>
+    <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+    <h1>Ship Design Bible</h1>
+    <p class="lede">How a Fleet Command ship is designed, worked on the Concord line. A ship is built from the inside out: the rooms first, then the hull wrapped round them, then the parts that make its class, and only then the skin, windows, lights, markings and damage. Every faction follows the method; each changes the shapes.</p>
+    <blockquote><span class="who">Owner, 2026-11-03</span>"ship designs are terrible. we need to develop a guide based on concord ships. hull lighting, markings, liveries, windows (this is a must), parallax interiors, parallax damage fx, nacelles (most factions will have these), decide on discrete components (struts to connect nacelles, primary/secondary hull). Does bridge need a shape? map out approximate floor plans out of blocks, and enclose the structure with the hull shape"</blockquote>
+    <nav class="toc" aria-label="Chapters"><ol>
+      <li><a href="#method">The method: inside out</a></li>
+      <li><a href="#plans">Floor plans from blocks</a></li>
+      <li><a href="#enclose">Enclose them in the hull</a></li>
+      <li><a href="#parts">The discrete parts</a></li>
+      <li><a href="#bridge">Does the bridge need a shape?</a></li>
+      <li><a href="#nacelles">Nacelles and struts</a></li>
+      <li><a href="#windows">Windows</a></li>
+      <li><a href="#interiors">Parallax interiors</a></li>
+      <li><a href="#lighting">Hull lighting</a></li>
+      <li><a href="#markings">Markings and liveries</a></li>
+      <li><a href="#exterior">Exterior: complement the console</a></li>
+      <li><a href="#damage">Parallax damage</a></li>
+      <li><a href="#factions">Other factions</a></li>
+      <li><a href="#checklist">Before you call it done</a></li>
+    </ol></nav>
+  </header>
+
+  <section class="ch" id="method">
+    <div class="kicker">Chapter 1</div><h2>The method: inside out</h2>
+    <p>A hull drawn first is a shape with nothing in it: it reads as a model, and its windows, doors and damage have nowhere true to go. A hull drawn round its rooms reads as a ship, because everything on its skin is the outside of something inside. Star Crew Bridge Simulator designs its ships this way (its <code>federation-ship-concepts</code> change); Fleet Command does too.</p>
+    <ol>
+      <li><b>Rooms.</b> List what the ship does and who is aboard; turn that into rooms as blocks, deck by deck (chapter 2).</li>
+      <li><b>Hull.</b> Wrap the blocks in a lofted hull with a measured clearance; the hull's stations come out of the blocks, not out of a sketch (chapter 3).</li>
+      <li><b>Parts.</b> Split the ship into its named parts: primary hull, secondary hull, neck, bridge block, struts, nacelles, drive (chapters 4 to 6).</li>
+      <li><b>Skin.</b> Windows only where a room meets the hull (7), rooms seen through them (8), lights that graze the plating (9), markings and livery (10).</li>
+      <li><b>Material.</b> The exterior complements the faction's console without sharing its materials or colours (11).</li>
+      <li><b>Damage.</b> What breaks shows the decks and rooms behind it (12).</li>
+    </ol>
+    <div class="rule"><b class="code">M1</b><span>Never draw a hull without the rooms it holds. A change to the hull starts as a change to a room.</span></div>
+    <div class="rule"><b class="code">M2</b><span>Every number is in metres and comes from data (<code>data/ships/</code>), read by the page and later by the Blender generator: one source.</span></div>
+  </section>
+
+  <section class="ch" id="plans">
+    <div class="kicker">Chapter 2</div><h2>Floor plans from blocks</h2>
+    <p>A room is a box: its width across the ship, its length along it, and the decks it spans. Decks are 3.5 m apart with 2.8 m of headroom; corridors are 2.4 m wide down the centreline; doors are 1.2 by 2.1 m. The worked example is the Petrel frigate, 42 crew, three decks (<code>data/ships/concord/petrel_plan.json</code>). The plans below are drawn from that file.</p>
+    <div class="legend" id="kindLegend"></div>
+    <div class="plans" id="plans"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Kind</th><th>Rooms</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td>Command</td><td>Bridge, ready room</td><td>Top deck, forward: the bridge looks ahead and is the hardest place to reach</td></tr>
+        <tr><td>Crew</td><td>Quarters, mess, medbay, officers</td><td>Outboard, mid-ship: they get the windows</td></tr>
+        <tr><td>Systems</td><td>Computer, sensors, life support, damage control, shields, switchboard</td><td>Inboard or where their emitter must reach the skin</td></tr>
+        <tr><td>Weapons</td><td>Torpedo room, magazine</td><td>Forward and low, near their launchers</td></tr>
+        <tr><td>Engineering</td><td>Engineering, reactor</td><td>Aft and low, on the drive's axis; the reactor deepest</td></tr>
+        <tr><td>Bay</td><td>Shuttle bay</td><td>Low, with a door to the skin</td></tr>
+        <tr><td>Corridor</td><td>One spine a deck</td><td>Centreline, 2.4 m wide, joining every room on its deck</td></tr>
+      </tbody></table></div>
+    <div class="rule"><b class="code">P1</b><span>No two rooms on a deck overlap; every room touches its deck's corridor. The page checks both: <span class="check" id="planCheck"></span></span></div>
+    <div class="rule"><b class="code">P2</b><span>Rooms that want daylight (crew, command) go outboard; rooms that want armour (reactor, magazine) go inboard and low.</span></div>
+  </section>
+
+  <section class="ch" id="enclose">
+    <div class="kicker">Chapter 3</div><h2>Enclose them in the hull</h2>
+    <p>The hull is fitted, not drawn. Every 2 m along the ship, the page takes the rooms at that station and sets the hull's half beam, top and bottom to clear them by <b>1.05 m</b>: 0.45 m of air between room and inner skin (Star Crew's clearance) plus 0.6 m of frames and plating. The corners are chamfered only as far as the rooms allow. The bow runs 6 m past the first room and tapers; the stern ends 3 m past the last, square, where the drive is. Then every room corner is measured against the hull.</p>
+    <div class="fig" id="figHull"><canvas></canvas><div class="hud" id="hullHud"></div></div>
+    <div class="ctrl" id="hullCtrl"></div>
+    <p class="cap">Rooms coloured by kind, the fitted hull as a shell, and the Petrel as mockup 6 builds it today for comparison. Drag to orbit, scroll or pinch to zoom.</p>
+    <div class="check" id="fitCheck"></div>
+    <div class="rule"><b class="code">H1</b><span>Every room corner lies at least 1.05 m inside the hull. A room that fails moves, or the hull grows: never both by eye.</span></div>
+    <div class="rule"><b class="code">H2</b><span>The fitted hull is the minimum. A class's character is added on top (a longer bow, a swept stern, a raised command block), never by cutting into a room.</span></div>
+    <div class="rule"><b class="code">H3</b><span>Measure the as-built hull against its rooms the same way. Mockup 6's Petrel was drawn before its rooms: the comparison above shows where it is too tight or too loose, and its stations get refitted from the plan.</span></div>
+  </section>
+
+  <section class="ch" id="parts">
+    <div class="kicker">Chapter 4</div><h2>The discrete parts</h2>
+    <p>A ship is a short list of named parts, each with one job, so a player can read the class and the game can aim at, light and break each part on its own. Mockup 6 builds every Concord ship from this list.</p>
+    <div class="fig" id="figParts"><canvas></canvas><div class="hud" id="partsHud"></div></div>
+    <div class="ctrl" id="partsCtrl"></div>
+    <div class="legend" id="partLegend"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Part</th><th>Holds</th><th>When a class has one</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td>Primary hull</td><td>Decks, crew, command</td><td>Always</td><td>Fitted to its rooms (chapter 3); carries the windows, registry and livery</td></tr>
+        <tr><td>Secondary hull</td><td>Engineering, reactor, bays</td><td>At cruiser size and up, or when the drive and reactor need their own armour (the Albatross; the Pelican's hangar hull)</td><td>Below the primary hull, fitted to its own rooms; never wider than the primary</td></tr>
+        <tr><td>Neck</td><td>A passage and the power trunk</td><td>Whenever there is a secondary hull</td><td>At least one corridor wide (2.4 m) plus clearance; set back from the bow so it reads as a join, not a wall</td></tr>
+        <tr><td>Bridge block</td><td>The bridge</td><td>Always (chapter 5)</td><td>Raised on the dorsal centreline, forward of mid-ship, glazed forward and at the sides</td></tr>
+        <tr><td>Strut (pylon)</td><td>A power conduit</td><td>One per nacelle</td><td>Roots in a hull's structure (a deck or bulkhead line), never in empty skin (chapter 6)</td></tr>
+        <tr><td>Nacelle</td><td>The warp field</td><td>In pairs, or one above and one below (chapter 6)</td><td>Never touches a hull: at least 3 m of daylight</td></tr>
+        <tr><td>Drive</td><td>Impulse thrust</td><td>Always</td><td>On the stern, behind the reactor, on the axis of the ship's mass</td></tr>
+        <tr><td>Deflector</td><td>The shield emitter forward</td><td>Always</td><td>At the bow, on the centreline</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section class="ch" id="bridge">
+    <div class="kicker">Chapter 5</div><h2>Does the bridge need a shape?</h2>
+    <p><b>Yes.</b> The bridge is the one room a player looks for: it is where the captain stands, it is the target that ends a fight, and in the battle it is what the bracket, the crown-blown-off damage and the bridge-fire signature land on. A bridge lost inside the hull's outline cannot be read, aimed at or broken. So every Fleet Command ship gives its bridge a shape of its own: <b>the bridge block</b>. Toggle it off in the figure above to see the ship lose its face.</p>
+    <div class="rule"><b class="code">B1</b><span>The bridge is a raised block on the dorsal centreline, forward of mid-ship, standing at least one deck proud of the hull.</span></div>
+    <div class="rule"><b class="code">B2</b><span>It is glazed: a lit band forward and along its sides, the only windows on the ship wider than a person.</span></div>
+    <div class="rule"><b class="code">B3</b><span>Each faction shapes it its own way (the Concord's is a chamfered block; another faction's might be a crest, a dome or a beak) but every faction has one, in the same place relative to its decks.</span></div>
+    <p>Survey A18 asks you to confirm this.</p>
+  </section>
+
+  <section class="ch" id="nacelles">
+    <div class="kicker">Chapter 6</div><h2>Nacelles and struts</h2>
+    <p>Most factions fly with nacelles: long pods that hold the warp field, held off the hull by struts. They are the strongest silhouette a ship has, so their count and placement say its class.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Rule</th><th>Number</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Daylight between a nacelle and every hull</td><td>3.0 m at least, along its whole length</td><td>The gap is what makes a ship read as built of parts; it is measured, not drawn</td></tr>
+        <tr><td>Nacelle length</td><td>0.6 to 0.75 of the ship's length</td><td>Shorter reads as a pod, longer as a second ship</td></tr>
+        <tr><td>Section</td><td>Octagonal, its profile from the Tern: thickest forward of mid-length, tapering aft</td><td>One family</td></tr>
+        <tr><td>Grille</td><td>A lit strip down each flank, 0.32 of its height</td><td>The nacelle's state reads from across the battle</td></tr>
+        <tr><td>Cap</td><td>A glowing disc at the forward end</td><td>Warp field on</td></tr>
+        <tr><td>Strut root</td><td>In the hull, on a deck or bulkhead line, at its widest station</td><td>Structure, not decoration</td></tr>
+        <tr><td>Strut chord</td><td>Wider at the root than at the tip (about 16 m to 10 m on a frigate)</td><td>A strut tapers like a wing root; it carries the nacelle's weight</td></tr>
+        <tr><td>Layout</td><td>Level pair (most classes), one above and one below, or one below</td><td>A class keeps one layout across its line</td></tr>
+        <tr><td>Growth</td><td>A heavier class adds a second pair; it never fattens a nacelle</td><td>Rank is counted in nacelles</td></tr>
+      </tbody></table></div>
+    <div class="shots" id="shotsNacelle"></div>
+  </section>
+
+  <section class="ch" id="windows">
+    <div class="kicker">Chapter 7</div><h2>Windows</h2>
+    <p>Windows are a must: they are the only thing on a hull that says how big it is. Every faction's windows are the same size, a person's (1.1 m wide, 0.6 m tall), so a player who knows one ship knows the size of every ship.</p>
+    <div class="rule"><b class="code">W1</b><span>A window only where a room with people in it meets the hull. Never on a corridor's end, a reactor, a magazine, a bay, a stripe or the service band.</span></div>
+    <div class="rule"><b class="code">W2</b><span>One row per deck, 1.5 m above the floor, so the rows are 3.5 m apart: count the rows and you count the decks.</span></div>
+    <div class="rule"><b class="code">W3</b><span>Windows run in groups of 4 to 12 (a room) with gaps (frames and bulkheads); about one in five is dark.</span></div>
+    <div class="rule"><b class="code">W4</b><span>Each window is a real opening onto its room (chapter 8), lit warm or cool by the room, and goes dark with the room's power.</span></div>
+    <div class="rule"><b class="code">W5</b><span>The bridge block's glazing is the one exception to the person-sized rule (chapter 5).</span></div>
+    <p>The fitted hull in chapter 3 places its windows by these rules from the plan: turn on <i>Windows</i> there to see them follow the crew rooms and stop at engineering.</p>
+    <div class="shots" id="shotsWindows"></div>
+  </section>
+
+  <section class="ch" id="interiors">
+    <div class="kicker">Chapter 8</div><h2>Parallax interiors</h2>
+    <p>Behind every window is a room, drawn without a single extra triangle: the hull's shader casts a ray from the eye through the glass into a box the size of the room behind it and paints the floor, ceiling, walls and furniture it hits (interior mapping). The room shifts with the viewpoint as a real room would.</p>
+    <ul>
+      <li>The box is the room's own size, taken from the plan: 3.5 m a deck, the room's width and length. A window on a 6 m cabin shows a 6 m cabin.</li>
+      <li>Each kind of room has its own furnishing: quarters (bunks, carpet, a plant), mess (tables), medbay (beds, white light), engineering (consoles, warm light), bridge (stations, a viewscreen).</li>
+      <li>Light follows power: a room whose section loses power goes dark or to red emergency light, and its windows with it.</li>
+      <li>Cost: one shader on the hull material, no geometry. On a phone, rooms beyond 600 m fall back to a flat lit pane.</li>
+    </ul>
+    <div class="shots" id="shotsRooms"></div>
+  </section>
+
+  <section class="ch" id="lighting">
+    <div class="kicker">Chapter 9</div><h2>Hull lighting</h2>
+    <p>Ships are lit like aircraft at night (owner, 2026-10-30): the lights show the ship's shape and detail in the dark, and each light has one job.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Light</th><th>Where</th><th>Aim and rule</th></tr></thead>
+      <tbody>
+        <tr><td>Registry flood</td><td>A lamp ahead of the registry</td><td>Thrown aft along the dorsal plating onto the name and number</td></tr>
+        <tr><td>Bridge flood</td><td>On the hull ahead of the bridge block</td><td>Up and back onto its face</td></tr>
+        <tr><td>Hull floods</td><td>In the service band, every 26 m along the lived-in length</td><td>Spotlights tangent to the hull (90 degree cones) that graze the plating so its panels read in shadow</td></tr>
+        <tr><td>Nacelle floods</td><td>At each nacelle</td><td>Side nacelles lit from above, aimed down; top and bottom nacelles lit facing forward</td></tr>
+        <tr><td>Belly pair</td><td>One pair at mid-ship under the hull</td><td>One forward, one aft; their pools never overlap</td></tr>
+        <tr><td>Position lights</td><td>Widest frame</td><td>Port red, starboard green; white aft</td></tr>
+        <tr><td>Beacons and strobes</td><td>Top and bottom; extremities</td><td>Red beacons, white strobes</td></tr>
+        <tr><td>Windows</td><td>Rooms (chapter 7)</td><td>Warm or cool by room, dark with the room's power</td></tr>
+      </tbody></table></div>
+    <div class="rule"><b class="code">L1</b><span>Lamps stand off the hull and tilt into it; a light respects the surface's facing (a face turned away from it gets none), and the hull casts shadows.</span></div>
+    <div class="rule"><b class="code">L2</b><span>No two pools overlap. A ship that needs more light gets more lamps, spaced.</span></div>
+    <div class="rule"><b class="code">L3</b><span>On damage a light flickers a couple of times and then stays on or off. Nothing flickers forever.</span></div>
+    <div class="rule"><b class="code">L4</b><span>In the game these are baked into the hull's emission and light maps (the <code>light-baking</code> skill); a few live lights play over the bake.</span></div>
+    <div class="shots" id="shotsLight"></div>
+  </section>
+
+  <section class="ch" id="markings">
+    <div class="kicker">Chapter 10</div><h2>Markings and liveries</h2>
+    <p>A livery is a faction's paint; markings are the ship's own name and number. Both sit where the rooms leave the hull plain.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Mark</th><th>Concord</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td>Hull colour</td><td>Pearl white armour over a grey subhull</td><td>One field colour per faction, from its ideology</td></tr>
+        <tr><td>Stripes</td><td>Blue bands round the hull at set stations</td><td>Bands sit on bulkhead lines, never across a window row</td></tr>
+        <tr><td>Service band</td><td>Grey band at the waterline</td><td>Holds the hull floods; no windows on it</td></tr>
+        <tr><td>Registry and name</td><td>Deep blue lettering on the dorsal plating, reading fore to aft; name on both flanks</td><td>Floodlit (chapter 9); never on a nacelle's grille or a window row</td></tr>
+        <tr><td>Crest</td><td>The faction's crest forward of the bridge</td><td>One per ship</td></tr>
+        <tr><td>Service marks</td><td>Hatch numbers, docking targets, rescue marks in red</td><td>Red means danger or rescue and nothing else</td></tr>
+      </tbody></table></div>
+    <p>A livery change (Concord, Copper, Cyan, Rescue on mockup 6) swaps the stripe and seam colours only; the shapes and marks stay.</p>
+    <div class="shots" id="shotsMarks"></div>
+  </section>
+
+  <section class="ch" id="exterior">
+    <div class="kicker">Chapter 11</div><h2>Exterior: complement the console, never copy it</h2>
+    <blockquote><span class="who">Owner, 2026-11-03</span>"ship exterior material should compliment the UI, not share materials or colors directly. Ship exterior depending on the faction should focus on distinct features, color scheme and unique paneling"</blockquote>
+    <p>A faction's console and its ships come from the same people, so they belong together, but they are seen at different sizes and for different reasons. The console is read up close, under the captain's hand. The ship is read across a battle, against space and against other ships. So a ship's exterior is designed to sit beside its faction's console as a partner: the same ideology said a second way, never the console's surface pasted on a hull.</p>
+    <div class="rule"><b class="code">X1</b><span>No shared materials. A hull never uses a console skin's material, texture or shader (the Concord's flat back-lit panels, the Kethran's plated gunmetal, the Krai's cast volcanic metal stay on their consoles).</span></div>
+    <div class="rule"><b class="code">X2</b><span>No shared colours. A hull's palette is its own, chosen to complement the console's: related in temperature or idea, never the same swatches. The Concord console is blue and lilac light on black; its ships are pearl white with blue bands, a partner to the console. Measured against this rule, mockup 6's band blue (sRGB 0.10, 0.40, 0.86) is too close to the console's Signal (#2f62e0): it moves to a hull blue of its own when the Concord exterior is next revised.</span></div>
+    <div class="rule"><b class="code">X3</b><span>Every faction's exterior is set apart by three things, and needs all three: <b>distinct features</b> (the parts and shapes only it has: its bridge, its nacelles or their absence, its prow), <b>its colour scheme</b> (field colour, stripe colour, light colour) and <b>unique paneling</b> (how its plates are cut and laid: the Concord's straight strakes and ring bands; another faction's plates are cut another way).</span></div>
+    <div class="rule"><b class="code">X4</b><span>Test it side by side: the faction's console skin and its ship on one screen read as one people, and neither looks like a piece of the other.</span></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Faction</th><th>Console (stays there)</th><th>Ship exterior (its own)</th></tr></thead>
+      <tbody>
+        <tr><td>Concord</td><td>Flat back-lit vector panels, blue and lilac on black</td><td>Pearl armour, blue bands (to separate from the console's Signal, X2), straight panel strakes, warm-lit windows</td></tr>
+        <tr><td>Kethran Hegemony</td><td>Armoured gunmetal plates, bolts, plain wedge keys</td><td>To design: its own field colour and plate cut, complementing the gunmetal</td></tr>
+        <tr><td>Krai Warhost</td><td>Cast volcanic gunmetal, red enamel, forge orange</td><td>To design: mockup 7 used the console's own metal and colours on its hulls, which this rule forbids</td></tr>
+        <tr><td>Every other faction</td><td>Its skin (console-skins design)</td><td>Designed on this chapter before its ships are modelled</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section class="ch" id="damage">
+    <div class="kicker">Chapter 12</div><h2>Parallax damage</h2>
+    <p>Damage is read by eye, and what it opens shows the rooms behind it, by the same interior mapping as the windows (chapter 8).</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Hit</th><th>What shows</th></tr></thead>
+      <tbody>
+        <tr><td>Phaser</td><td>A scorch mark that glows hot and cools; no hole</td></tr>
+        <tr><td>Torpedo</td><td>A hole whose depth shows the deck and room behind it, lit by the room's light or by fire, rimmed with char and a cooling ember line</td></tr>
+        <tr><td>A part breaks off</td><td>The broken faces show the decks and bulkheads at their real heights; the pieces burn along their edges and trail flame</td></tr>
+        <tr><td>Subsystem signatures</td><td>Each system fails in its own colour and place: nacelles flicker then vent violet plasma, the reactor leaks white-cyan coolant then breaches, the bridge smokes then burns, weapons spark</td></tr>
+      </tbody></table></div>
+    <div class="rule"><b class="code">D1</b><span>A hole opens onto the room the plan puts there: a torpedo through the crew quarters shows bunks, through engineering shows machinery.</span></div>
+    <div class="rule"><b class="code">D2</b><span>Colours keep one meaning: orange fire, cyan-white coolant, violet plasma, sparks for power.</span></div>
+    <div class="shots" id="shotsDamage"></div>
+  </section>
+
+  <section class="ch" id="factions">
+    <div class="kicker">Chapter 13</div><h2>Other factions</h2>
+    <p>The method and the rules above are universal. What a faction changes is its shapes, never the inside-out order or the person-sized window.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Universal (every faction)</th><th>Per faction</th></tr></thead>
+      <tbody>
+        <tr><td>Rooms first, hull fitted with 1.05 m clearance</td><td>The hull's section (octagon, diamond, curve) and how far character is added on top</td></tr>
+        <tr><td>Named parts: hulls, neck, bridge block, struts, nacelles, drive</td><td>Which parts a faction uses (most have nacelles; a faction without them says so in its design)</td></tr>
+        <tr><td>Person-sized windows, one row a deck, only on lived-in rooms</td><td>The window's frame and light colour (Concord white and warm, Krai forge orange slits)</td></tr>
+        <tr><td>A bridge with a shape of its own, on the dorsal centreline</td><td>That shape</td></tr>
+        <tr><td>Lights with one job each, no overlapping pools</td><td>Light colours from the faction's palette</td></tr>
+        <tr><td>An exterior that complements its console without sharing its materials or colours (X1, X2)</td><td>Distinct features, colour scheme and unique paneling (X3)</td></tr>
+        <tr><td>Damage that shows the rooms behind it</td><td>Its material's char and fire colour</td></tr>
+      </tbody></table></div>
+    <p>The Krai ships (mockup 7) were drawn hull first and painted in their console's own metal and colours, which is why they did not read: they are to be redesigned on this method, rooms first, with their culture setting the shapes and an exterior of their own (chapter 11).</p>
+  </section>
+
+  <section class="ch" id="checklist">
+    <div class="kicker">Chapter 14</div><h2>Before you call it done</h2>
+    <ol>
+      <li>The plan is data, rooms do not overlap, every room meets its corridor (P1).</li>
+      <li>The hull is fitted from the plan and every room clears it by 1.05 m (H1), measured on the page.</li>
+      <li>Every part is named; struts root in structure; nacelles clear every hull by 3 m.</li>
+      <li>The bridge has its block (B1).</li>
+      <li>Windows sit only on lived-in rooms, one row a deck (W1, W2).</li>
+      <li>Lights: each with a job, no overlapping pools, shadows on (L1, L2).</li>
+      <li>Markings on plain plating, red only for danger.</li>
+      <li>Nothing on the hull shares a material or colour with the faction's console; its features, colours and paneling are its own (X1 to X3), checked side by side with the console (X4).</li>
+      <li>A torpedo through each room kind shows that room (D1).</li>
+      <li>At 40 px, top and side, the class reads.</li>
+      <li>Triangles inside the class's budget (survey A1, T3).</li>
+    </ol>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<!-- INLINE docs/mockups/lib/concord-line.js -->
+<script data-src="docs/mockups/lib/concord-line.js">
+// Fleet Command mockups: the Concord line, the standard for Concord ships (owner, 2026-11-03: "Concord line (hull concepts) -
+// new standard, get rid of the old concord ships"). One implementation (CLAUDE.md section 6.1) of the ship table and its hull
+// geometry, shared by every page that shows a Concord ship: docs/mockups/concord-hull-concepts.html (mockup 6, lit and damaged)
+// and, through docs/mockups/lib/space.js, the battle console and the game flow. Edit it here, then re-run
+// tools/mockups/inline_data.py on each page that inlines it.
+//
+// FCConcordLine(THREE) returns the table (COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELLE_PROFILE,
+// GAP_UP, SIDE_NAMES), the station arithmetic (chOf, hullAt, loftDist, hullsOf, alongNacelle, arrange, sideName), the geometry
+// (pushTri, geoFrom, octRing, loft, hullGeo, nacelleGeo, pylonGeo, boxGeo) and plainModel(id), a ship built from the same
+// geometry with plain materials for pages that show it small (no windows, damage or lamps).
+window.FCConcordLine = function FCConcordLine(THREE) {
+'use strict';
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// ---------------------------------------------------------------------------------------------------------------
+// The ships: the Concord line in Star Crew Bridge Simulator's Tern family. Axes and units follow Star Crew's
+// exteriors.json: +X port, +Y dorsal, +Z bow, metres. A station is [z, half beam, top, bottom, chamfer]; decks are floor
+// heights, and windows sit 1.5 m above a floor. One table; the builder reads nothing else.
+const COL = { pearl: '#e4e2dc', signal: '#2f62e0', deep: '#1b2a6b', lilac: '#b7a6f2', sky: '#3fa9f0', alert: '#e8352b', glass: '#141a26' };
+const DECKS = [3.5, 0, -3.5];
+const BASES = {
+  swift: {
+    cls: 'Swift-class corvette', name: 'CNS SWIFT', reg: 'CC-031', length: 51, tell: 'A broad command body forward and a narrow spine aft, the Osprey\'s proportions.',
+    stations: [[25, 2.6, 2.4, -1.6, 0.8], [21, 5.8, 3.9, -2.6, 1.2], [13, 8.0, 4.6, -3.0, 1.3], [3, 7.6, 4.5, -3.0, 1.3], [-5, 4.4, 3.6, -2.6, 1.0], [-20, 4.0, 3.3, -2.4, 0.9], [-25, 3.2, 2.5, -1.9, 0.7]],
+    decks: [0], live: [-2, 20], band: [-0.9, 0.0], channels: [2.6], stripes: [8.5, -12],
+    command: { z: [19, 7], hb: 4.2, top: 6.4, ch: 0.8 },
+    pylons: [{ root: [3.4, -0.6, -8], tip: [12.5, -3.0, -14], rc: 10, tc: 5, t: 0.8 }],
+    nacelles: [{ x: 12.5, y: -3.0, z: -9, len: 30, hw: 1.6, hh: 1.5 }],
+    radiators: [[-11, 1.4, 5.0]], turrets: [[0, 14, 'cmd'], [0, 4, 'bottom']], bells: { z: -25, y: 0.3, x: 1.4, r: 0.9 },
+    core: { pos: [0, -2.9, -4], size: [1.2, 0.4, 14] }, torpedo: [0, -0.6, 25.1], deflector: [0, 0.4, 25.05, 1.4],
+  },
+  petrel: {
+    cls: 'Petrel-class frigate', name: 'CNS PETREL', reg: 'CC-117', length: 88, tell: 'The Tern\'s own build at the Concord\'s colours: a short broad bow and three decks of windows.',
+    stations: [[43, 4.2, 3.6, -2.6, 1.2], [38, 7.6, 6.2, -4.0, 1.6], [30, 10.0, 7.4, -5.0, 1.8], [14, 11.6, 7.6, -5.4, 1.8], [-6, 12.0, 7.8, -5.6, 2.2], [-24, 11.4, 7.8, -5.6, 2.2], [-36, 9.6, 7.0, -4.8, 2.0], [-43, 7.6, 5.4, -3.4, 1.6]],
+    decks: DECKS, live: [-8, 30], band: [-0.65, 0.35], channels: [5.0], stripes: [21, -2, -28],
+    command: { z: [33, 15], hb: 6.2, top: 10.2, ch: 1.2 },
+    pylons: [{ root: [11, 1.2, -12], tip: [21, 1.2, -22], rc: 16, tc: 10, t: 1.2 }],
+    nacelles: [{ x: 21, y: 1.2, z: -14, len: 54, hw: 2.3, hh: 2.2 }],
+    radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 25, 'cmd'], [8.6, -14, 'top'], [-8.6, -14, 'top'], [0, 10, 'bottom']], bells: { z: -43, y: 1.0, x: 3.2, r: 1.6 },
+    core: { pos: [0, -5.45, -8], size: [1.8, 0.5, 26] }, torpedo: [0, -1.4, 43.05], deflector: [0, 0.9, 43.05, 2.2],
+  },
+  albatross: {
+    cls: 'Albatross-class cruiser', name: 'CNS ALBATROSS', reg: 'CC-002', length: 112, tell: 'The family at cruiser size, in two hulls: a shorter primary hull with four decks of windows, and a secondary hull beneath it on a neck, and its nacelle pair on level pylons swept from the primary hull\'s waist, the secondary hull clear beneath.',
+    stations: [[50, 5.2, 4.4, -3.2, 1.4], [44, 9.6, 7.6, -5.0, 2.0], [34, 13.6, 9.4, -6.6, 2.4], [14, 15.6, 10.0, -7.4, 2.6], [-8, 16.0, 10.2, -7.6, 2.8], [-24, 14.4, 9.6, -7.0, 2.6], [-34, 11.0, 7.8, -5.4, 2.2]],
+    decks: [7.0, 3.5, 0, -3.5], live: [-20, 38], band: [-0.65, 0.35], channels: [4.0, 9.0], stripes: [28, 4, -18],
+    command: { z: [36, 16], hb: 8.0, top: 13.2, ch: 1.4 },
+    // The secondary hull, in the same station form at its own height; the neck joins the two.
+    secondary: { stations: [[-6, 4.0, -11.0, -17.0, 1.2], [-12, 7.0, -10.4, -20.4, 1.8], [-30, 7.6, -10.4, -21.0, 2.0], [-48, 7.0, -10.8, -20.4, 1.8], [-58, 5.0, -12.0, -19.0, 1.4]],
+      band: [-16.3, -15.3], channels: [2.6], stripes: [-40], neck: { z: [-10, -14, -28, -32], hb: [2.4, 4.0, 4.0, 2.8], top: -6.0, bottom: -11.5 } },
+    // The nacelle pylons come from the primary hull's waist, level and swept as the Tern's, with the secondary hull clear
+    // beneath (owner, 2026-11-03: "can we try placing pylons attached to the main hull instead?", then "I asked for the
+    // albatross pylons to be connected to the main hull instead"). The earlier pylons out of the secondary hull are gone.
+    pylons: [{ root: [14.5, 0.6, -14], tip: [25, 0.6, -26], rc: 18, tc: 11, t: 1.5 }],
+    nacelles: [{ x: 25, y: 0.6, z: -24, len: 64, hw: 2.8, hh: 2.7 }],
+    radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 27, 'cmd'], [11.5, -6, 'top'], [-11.5, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
+    core: { pos: [0, -20.9, -30], size: [2.2, 0.5, 30] }, torpedo: [0, -1.8, 50.05], deflector: [0, 1.0, 50.05, 2.6],
+  },
+  // The battleship (owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", "please make these
+  // somewhat different than the standard ship shape ... battleship needs an array of cannons", "large cannons"): a long armoured
+  // hull round a tall citadel, three triple-gun turrets forward stepped up so each fires over the one ahead, two aft facing aft,
+  // and a sponson down each flank carrying a row of broadside cannons; two nacelle pairs aft.
+  condor: {
+    cls: 'Condor-class battleship', name: 'CNS CONDOR', reg: 'CC-001', length: 184, tell: 'A long armoured hull round a tall citadel: four main guns, two on the back (the second raised to fire over the first) and two under the keel, fifteen point-defence cannons along its shoulders, and two nacelle pairs.',
+    stations: [[92, 3.0, 4.0, -3.0, 1.0], [74, 12.0, 8.5, -7.0, 2.2], [40, 17.0, 10.5, -9.0, 2.8], [-40, 17.0, 10.5, -9.0, 2.8], [-78, 14.0, 9.0, -7.5, 2.6], [-92, 10.0, 7.0, -5.5, 2.0]],
+    decks: [7.0, 3.5, 0, -3.5, -7.0], live: [-40, 50], band: [-0.65, 0.35], channels: [5.0, 12.0], stripes: [60, -32, -66],
+    command: { z: [24, -6], hb: 9.0, top: 18.0, ch: 1.6 },
+    // Four main guns (owner, 2026-11-03: "battleship only has 4 main cannons, 2 on top and 2 on bottom, the remainder should be
+    // pdcs"): two on the back, the second raised to fire over the first, and the same two mirrored under the keel.
+    guns: [{ z: 62, face: 1, lift: 0 }, { z: 46, face: 1, lift: 3.0 }, { z: 62, face: 1, lift: 0, under: true }, { z: 46, face: 1, lift: 3.0, under: true }],
+    pdc: true,
+    pylons: [{ root: [16, 2.0, -48], tip: [30, 2.0, -60], rc: 24, tc: 15, t: 1.8 }, { root: [12, -8.0, -40], tip: [24, -17.0, -52], rc: 20, tc: 12, t: 1.6 }],
+    nacelles: [{ x: 30, y: 2.0, z: -54, len: 80, hw: 3.2, hh: 3.1 }, { x: 24, y: -17.0, z: -48, len: 64, hw: 2.6, hh: 2.6 }],
+    radiators: [[-66, 6, 12], [-66, -6, 12]], turrets: [[9, 70, 'top'], [-9, 70, 'top'], [12, 20, 'top'], [-12, 20, 'top'], [12, -20, 'top'], [-12, -20, 'top'], [11, -52, 'top'], [-11, -52, 'top'], [0, -70, 'top'], [12, 30, 'bottom'], [-12, 30, 'bottom'], [12, -10, 'bottom'], [-12, -10, 'bottom'], [11, -50, 'bottom'], [-11, -50, 'bottom']],
+    bells: { z: -92, y: 0.6, x: 5.0, r: 2.6 }, core: { pos: [0, -9.45, -10], size: [2.4, 0.5, 40] }, torpedo: [0, -1.6, 92.05], deflector: [0, 1.4, 92.05, 1.6],
+  },
+  // The carrier (owner, 2026-11-03: "carrier needs bays for fighters", then "the carrier doesnt need a landing pad, this is
+  // space ... it has doors on each side, its a diamond cross section, with the main ship crew area in front"): the crew hull
+  // forward, as the family's, and behind it a long hangar hull of diamond cross section (broad sloped flanks, a narrow vertical
+  // band at the waist), three numbered bay doors down each side lit by lamps above them, the nacelle pair on level pylons aft.
+  pelican: {
+    cls: 'Pelican-class carrier', name: 'CNS PELICAN', reg: 'CC-040', length: 128, tell: 'The crew hull forward, as the family\'s, and behind it a long hangar hull of diamond cross section, three numbered fighter bay doors down each side under their own lamps, the nacelle pair on level pylons from the hangar hull.',
+    stations: [[66, 4.0, 4.0, -3.0, 1.2], [58, 10.0, 6.5, -5.0, 1.8], [40, 13.0, 7.0, -5.6, 2.0], [20, 12.0, 6.6, -5.2, 2.0]],
+    secondary: { stations: [[24, 9.0, 7.0, -7.0, 6.6], [14, 13.0, 9.0, -9.0, 8.6], [-38, 13.0, 9.0, -9.0, 8.6], [-62, 9.0, 6.0, -6.0, 5.6]], band: [-0.65, 0.35], channels: [], stripes: [-50] },
+    decks: [3.5, 0, -3.5], live: [24, 56], band: [-0.65, 0.35], channels: [4.5], stripes: [48],
+    command: { z: [56, 40], hb: 6.0, top: 10.0, ch: 1.2 },
+    pylons: [{ root: [10, 1.0, -36], tip: [27, 1.0, -48], rc: 20, tc: 12, t: 1.5 }],
+    nacelles: [{ x: 27, y: 1.0, z: -38, len: 66, hw: 2.6, hh: 2.5 }],
+    radiators: [[-50, 2.4, 8], [-50, -2.4, 8]], turrets: [[0, 30, 'top'], [0, -20, 'top'], [0, 0, 'bottom'], [8, 46, 'bottom'], [-8, 46, 'bottom']],
+    bells: { z: -62, y: 0.0, x: 3.0, r: 2.0 }, core: { pos: [0, -9.45, -10], size: [2.0, 0.5, 36] }, torpedo: [0, -1.0, 66.05], deflector: [0, 1.4, 66.05, 1.4],
+    carrier: { doors: [6, -10, -26], door: { w: 12.0, h: 4.6 } },
+  },
+  // Star Crew's SCS Tern, from its own data (star-crew-bridge-simulator 95a49b2: data/ships/tern/layout.json hull.sections,
+  // data/ships/exteriors.json ships[tern] pylon, nacelle and service_band). The yardstick for the family; not a Concord ship.
+  tern: {
+    cls: 'Heron-class frigate, Star Crew', name: 'SCS TERN', reg: 'SC-084', length: 86, ref: true, livery: 'copper', glb: true, tell: 'Star Crew\'s player ship from its own data, at true scale: the family the Concord line is built in.',
+    stations: [[42, 1.2, 2.2, -0.8, 0.4], [37, 4.5, 4.5, -2.8, 1.5], [32, 8.6, 7.9, -4.6, 1.8], [20, 10.8, 7.8, -5.4, 1.6], [8, 12.2, 7.8, -5.6, 1.6], [-2, 12.2, 8.0, -5.8, 2.2], [-18, 11.6, 8.2, -5.8, 2.2], [-32, 10.6, 8.2, -5.2, 2.0], [-38, 8.0, 6.0, -3.6, 1.8], [-42, 6.5, 4.6, -2.6, 1.4]],
+    decks: DECKS, live: [-6, 26], band: [-0.65, 0.35], channels: [5.2], stripes: [16, -17],
+    pylons: [{ root: [10, 1.2, -15], tip: [20, 1.2, -24], rc: 16, tc: 10, t: 1.2 }],
+    nacelles: [{ x: 20, y: 1.2, z: -16, len: 56, hw: 2.3, hh: 2.2 }],
+    radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 8, 'top'], [0, 4, 'bottom']], bells: { z: -42, y: 1.0, x: 3.0, r: 1.5 },
+    core: { pos: [0, -5.65, -8], size: [1.8, 0.5, 24] }, torpedo: [0, -0.4, 39.0], deflector: [0, 1.2, 36.0, 1.6],
+  },
+};
+// Nacelle variants (owner, 2026-11-03: "swift having 1 below would be better, petrel having 1 above and below", then "instead of
+// opptions. please just apply the variants for both petrel and swift and include horizontal aligned ones aas well", then
+// "remove petrel with 1 pylon"). One below: one nacelle under the centreline on an upright pylon. Above and below: one over and
+// one under. Level: the family's nacelle pair on level swept pylons.
+const VARIANTS = [
+  ['swift_below', 'swift', 'below1', 'Swift, one below'], ['swift_updown', 'swift', 'updown', 'Swift, above and below'], ['swift_level', 'swift', 'level', 'Swift, level'],
+  ['petrel_updown', 'petrel', 'updown', 'Petrel, above and below'], ['petrel_level', 'petrel', 'level', 'Petrel, level'],
+  ['albatross', 'albatross', 'level', 'Albatross'], ['condor', 'condor', 'level', 'Condor battleship'], ['pelican', 'pelican', 'level', 'Pelican carrier'], ['tern', 'tern', 'level', 'Tern (Star Crew)'],
+];
+const MODE_NAMES = { level: 'Level pair', below1: 'One below', updown: 'One above, one below' };
+const CLASSES = {};
+for (const [id, base, mode, label] of VARIANTS) CLASSES[id] = { ...BASES[base], id, base, mode, label,
+  tell: BASES[base].tell + (base === 'swift' || base === 'petrel' ? ' Nacelles: ' + MODE_NAMES[mode].toLowerCase() + '.' : '') };
+// Liveries: Concord is ours; Copper, Cyan and Rescue are the Tern's (exteriors.json liveries), for comparison.
+const LIVERIES = {
+  concord: { label: 'Concord', stripe: [0.10, 0.40, 0.86], seam: [0.04, 0.08, 0.22] },
+  copper: { label: 'Copper', stripe: [0.82, 0.31, 0.09], seam: [0.30, 0.12, 0.05] },
+  cyan: { label: 'Cyan', stripe: [0.008, 0.655, 0.851], seam: [0.03, 0.20, 0.28] },
+  rescue: { label: 'Rescue', stripe: [1.0, 0.75, 0.05], seam: [0.86, 0.15, 0.09] },
+};
+const TERN_NACELLE_PROFILE = [[-0.5, 0.48], [-0.44, 0.68], [-0.29, 1.0], [0.44, 1.0], [0.5, 0.9]]; // exteriors.json nacelle.profile_t_scale
+
+// Station arithmetic: the chamfer is clamped the same way everywhere (geometry, inside tests, the cut-face shader).
+const chOf = (hb, top, bot, ch) => Math.min(ch, hb - 0.3, (top - bot) / 2 - 0.3); // a large chamfer makes a diamond with narrow flats
+function hullAt(S, z) {
+  const s = [...S].sort((a, b) => b[0] - a[0]);
+  if (z >= s[0][0]) return s[0]; if (z <= s[s.length - 1][0]) return s[s.length - 1];
+  for (let i = 0; i + 1 < s.length; i++) if (z <= s[i][0] && z >= s[i + 1][0]) { const t = (s[i][0] - z) / (s[i][0] - s[i + 1][0]); return s[i].map((v, j) => lerp(v, s[i + 1][j], t)); }
+}
+// Signed distance into a lofted hull (positive inside), the octagon at z: four sides and four 45 degree chamfers.
+function loftDist(S, p) {
+  const zs = S.map((q) => q[0]), z0 = Math.min(...zs), z1 = Math.max(...zs);
+  if (p.z > z1 || p.z < z0) return -1;
+  const [, hb, top, bot, c] = hullAt(S, p.z), ch = chOf(hb, top, bot, c), ax = Math.abs(p.x);
+  return Math.min(hb - ax, top - p.y, p.y - bot, (hb + top - ch - ax - p.y) * Math.SQRT1_2, (hb - bot - ch - ax + p.y) * Math.SQRT1_2, z1 - p.z, p.z - z0);
+}
+
+// Nacelle arrangements. level: the data's own pylons and nacelles. below1: one nacelle on the centreline under the hull on one
+// upright pylon. updown: one over the hull and one under it. GAP_UP is the daylight to the nearest hull along the nacelle.
+const GAP_UP = 5.5; // metres (owner, 2026-11-03: "would also be nice for the vertical pyons to extend out a little further")
+const hullsOf = (C) => [C.stations].concat(C.secondary ? [C.secondary.stations] : []);
+function alongNacelle(C, n) {
+  let top = -Infinity, bot = Infinity;
+  for (const st of hullsOf(C)) { const zs = st.map((q) => q[0]), zMax = Math.max(...zs), zMin = Math.min(...zs);
+    for (let z = Math.max(zMin, n.z - n.len / 2); z <= Math.min(zMax, n.z + n.len / 2); z += 0.5) { const h = hullAt(st, z); top = Math.max(top, h[2]); bot = Math.min(bot, h[3]); } }
+  return { top, bot };
+}
+// Each nacelle gets a side key: P port, S starboard, D dorsal, V ventral; its system is 'nac' + side.
+function arrange(C) {
+  const sfx = (i) => (i ? String(i + 1) : ''); // a second pair is P2 and S2
+  if (C.mode === 'level') return { pylons: C.pylons.flatMap((p, i) => [{ ...p, side: 'P' + sfx(i), sx: 1 }, { ...p, side: 'S' + sfx(i), sx: -1 }]), nacelles: C.nacelles.flatMap((n, i) => [{ ...n, side: 'P' + sfx(i), sx: 1 }, { ...n, side: 'S' + sfx(i), sx: -1 }]) };
+  const n0 = C.nacelles[0], p0 = C.pylons[0], pylons = [], nacelles = [], { top, bot } = alongNacelle(C, n0);
+  const zs = [n0.z - n0.len * 0.15, n0.z - n0.len * 0.35], at = hullAt(C.stations, zs[0]);
+  const upright = (side, y, rootY) => { nacelles.push({ ...n0, x: 0, y, side, sx: 1 }); pylons.push({ root: [0, rootY, zs[0] + 3], tip: [0, y, zs[1]], rc: p0.rc, tc: p0.tc, t: p0.t, up: true, side, sx: 1 }); };
+  if (C.mode === 'updown') upright('D', top + GAP_UP + n0.hh, at[2] - 0.4);
+  upright('V', bot - GAP_UP - n0.hh, at[3] + 0.4);
+  return { pylons, nacelles };
+}
+const SIDE_NAMES = { P: 'Port nacelle', S: 'Starboard nacelle', D: 'Dorsal nacelle', V: 'Ventral nacelle' };
+const sideName = (k) => SIDE_NAMES[k[0]] + (k.length > 1 ? ' ' + k.slice(1) : '');
+
+// ---------------------------------------------------------------------------------------------------------------
+// Geometry. Every piece is built in ship space (the mesh sits at identity inside its piece), so the damage shader's
+// object-space position is ship space even after a piece breaks away. Flat faces, each triangle turned to face away from
+// its centre line so winding never matters (the shader uses gl_FrontFacing for the inside of the skin).
+function pushTri(out, a, b, c, centre) {
+  const n = V3().subVectors(b, a).cross(V3().subVectors(c, a)), m = V3().addVectors(a, b).add(c).multiplyScalar(1 / 3);
+  if (n.dot(m.sub(centre(m))) < 0) out.push(a, c, b); else out.push(a, b, c);
+}
+function geoFrom(tris) {
+  const g = new THREE.BufferGeometry().setFromPoints(tris); g.computeVertexNormals();
+  g.setIndex(Array.from({ length: tris.length }, (_, i) => i)); return g;
+}
+function octRing(z, hb, top, bot, ch) {
+  ch = chOf(hb, top, bot, ch);
+  return [V3(hb - ch, top, z), V3(hb, top - ch, z), V3(hb, bot + ch, z), V3(hb - ch, bot, z), V3(-(hb - ch), bot, z), V3(-hb, bot + ch, z), V3(-hb, top - ch, z), V3(-(hb - ch), top, z)];
+}
+// A loft through rings; long spans are split every `step` metres so the damage shader has vertices to work with.
+function loft(rings, axis, step = 4) {
+  const R = [rings[0]];
+  for (let i = 1; i < rings.length; i++) { const a = rings[i - 1], b = rings[i], k = Math.max(1, Math.ceil(Math.abs(a[0].z - b[0].z) / step));
+    for (let j = 1; j <= k; j++) R.push(a.map((p, q) => p.clone().lerp(b[q], j / k))); }
+  const t = [];
+  for (let i = 0; i + 1 < R.length; i++) for (let k = 0; k < 8; k++) {
+    const a = R[i][k], b = R[i][(k + 1) % 8], c = R[i + 1][(k + 1) % 8], d = R[i + 1][k];
+    pushTri(t, a, b, c, axis); pushTri(t, a, c, d, axis);
+  }
+  for (const [r, nb] of [[R[0], R[1]], [R[R.length - 1], R[R.length - 2]]]) {
+    const cen = r.reduce((s, p) => s.add(p), V3()).multiplyScalar(1 / 8), out = V3(0, 0, Math.sign(r[0].z - nb[0].z));
+    for (let k = 0; k < 8; k++) pushTri(t, cen, r[k], r[(k + 1) % 8], (m) => m.clone().sub(out));
+  }
+  return geoFrom(t);
+}
+function hullGeo(S, ox = 0) {
+  if (ox) { const g = hullGeo(S); g.translate(ox, 0, 0); return g; }
+  const s = [...S].sort((a, b) => b[0] - a[0]);
+  return loft(s.map(([z, hb, top, bot, ch]) => octRing(z, hb, top, bot, ch)), (m) => { const h = hullAt(S, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); });
+}
+function nacelleGeo(n, x, y) {
+  const ch = Math.min(n.hw, n.hh) * 0.42, rings = [];
+  for (const [t, k] of TERN_NACELLE_PROFILE) rings.push(octRing(n.z - t * n.len, n.hw * k, n.hh * k, -n.hh * k, ch * k).map((p) => p.add(V3(x, y, 0))));
+  rings.reverse();
+  return loft(rings, (m) => V3(x, y, m.z), 5);
+}
+// A pylon from root to tip, split at `f0..f1` of its length (0..0.5 the inner half, 0.5..1 the outer). A level pylon is thick
+// in Y; an upright one is thick in X.
+function pylonGeo(p, sx, f0 = 0, f1 = 1) {
+  const r = V3(p.root[0] * sx, p.root[1], p.root[2]), tp = V3(p.tip[0] * sx, p.tip[1], p.tip[2]), h = p.t / 2;
+  const A = r.clone().lerp(tp, f0), B = r.clone().lerp(tp, f1), ca = lerp(p.rc, p.tc, f0), cb = lerp(p.rc, p.tc, f1);
+  const off = p.up ? V3(h, 0, 0) : V3(0, h, 0);
+  const P = [A.clone().add(V3(0, 0, ca / 2)), A.clone().add(V3(0, 0, -ca / 2)), B.clone().add(V3(0, 0, -cb / 2)), B.clone().add(V3(0, 0, cb / 2))].map((v) => v.add(off));
+  const Q = P.map((v) => v.clone().sub(off).sub(off));
+  const c = P.concat(Q).reduce((s, v) => s.add(v), V3()).multiplyScalar(1 / 8), t = [];
+  const quad = (a, b, cc, d) => { pushTri(t, a, b, cc, () => c); pushTri(t, a, cc, d, () => c); };
+  quad(P[0], P[1], P[2], P[3]); quad(Q[0], Q[1], Q[2], Q[3]);
+  for (let i = 0; i < 4; i++) quad(P[i], P[(i + 1) % 4], Q[(i + 1) % 4], Q[i]);
+  return geoFrom(t);
+}
+function boxGeo(sx, sy, sz, x, y, z) { const g = new THREE.BoxGeometry(sx, sy, sz); g.translate(x, y, z); return g; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// A plain model for pages that show the ship small (the battle console's view, the game flow): the same hulls, neck,
+// command block, pylons and nacelles as mockup 6, in pearl with the livery's stripes, lit grilles, drive bells and the
+// deflector. Units are metres, +Z the bow; userData.length_m is the class's length; every mesh's userData.part names its
+// component (primary, secondary, neck, command, strut, nacelle, drive, deflector) for the Ship Design Bible's exploded view.
+function plainModel(id, o = {}) {
+  const C = CLASSES[id]; if (!C) throw new Error('FCConcordLine: no class ' + id);
+  const L = LIVERIES[o.livery || 'concord'], g = new THREE.Group(), A = arrange(C);
+  const pearl = new THREE.MeshStandardMaterial({ color: o.hull ?? 0xe4e2dc, metalness: 0.35, roughness: 0.5, flatShading: true });
+  const stripe = new THREE.MeshStandardMaterial({ color: new THREE.Color(...L.stripe), metalness: 0.3, roughness: 0.5, flatShading: true });
+  const glow = (hex) => new THREE.MeshStandardMaterial({ color: 0x10141c, emissive: hex, emissiveIntensity: 1.6 });
+  const mesh = (geo, m, part) => { const k = new THREE.Mesh(geo, m); k.userData.part = part; g.add(k); return k; };
+  const bands = (S, zs, part) => { for (const z of zs || []) { const zz = S.map((q) => q[0]); if (z > Math.max(...zz) - 1 || z < Math.min(...zz) + 1) continue;
+    const ring = (dz) => { const h = hullAt(S, z + dz); return octRing(z + dz, h[1] + 0.06, h[2] + 0.06, h[3] - 0.06, h[4]); };
+    mesh(loft([ring(1.2), ring(-1.2)], (m) => { const h = hullAt(S, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); }), stripe, part); } };
+  mesh(hullGeo(C.stations), pearl, 'primary'); bands(C.stations, C.stripes, 'primary');
+  if (C.secondary) { const D = C.secondary; mesh(hullGeo(D.stations), pearl, 'secondary'); bands(D.stations, D.stripes, 'secondary');
+    if (D.neck) { const N = D.neck; mesh(loft(N.z.map((z, i) => octRing(z, N.hb[i], N.top, N.bottom, Math.min(1.2, N.hb[i] * 0.4))), (m) => V3(0, (N.top + N.bottom) / 2, m.z)), pearl, 'neck'); } }
+  if (C.command) { const K = C.command, [z0, z1] = K.z, base = hullAt(C.stations, (z0 + z1) / 2)[2] - 0.6;
+    mesh(loft([octRing(z0, K.hb * 0.62, K.top - 0.8, base, K.ch), octRing(z0 - 3, K.hb, K.top, base, K.ch), octRing(z1, K.hb, K.top, base, K.ch), octRing(z1 - 2.5, K.hb * 0.8, K.top - 1.2, base, K.ch)], (m) => V3(0, (K.top + base) / 2, m.z), 3), pearl, 'command');
+    mesh(boxGeo(K.hb * 1.12, 0.7, 0.25, 0, K.top - 1.3, z0 - 1.45), glow(0xd8ecff), 'command'); }
+  for (const p of A.pylons) mesh(pylonGeo(p, p.sx), pearl, 'strut');
+  for (const n of A.nacelles) { const x = n.x * n.sx; mesh(nacelleGeo(n, x, n.y), pearl, 'nacelle');
+    for (const s2 of [1, -1]) mesh(boxGeo(0.14, n.hh * 0.32, n.len * 0.72, x + s2 * (n.hw + 0.02), n.y, n.z), glow(0x2fb8ff), 'nacelle');
+    const cap = new THREE.CircleGeometry(n.hh * 0.38, 16); cap.translate(x, n.y, n.z + n.len / 2 + 0.03); mesh(cap, glow(0xff6a1f), 'nacelle'); }
+  { const b = C.bells; for (const sx of b.x ? [1, -1] : [1]) { const d = new THREE.CircleGeometry(b.r, 20); d.rotateY(Math.PI); d.translate(sx * b.x, b.y, b.z - 0.05); mesh(d, glow(0xffb070), 'drive'); } }
+  { const [x, y, z, r] = C.deflector; mesh(boxGeo(r * 2, r * 1.1, 0.25, x, y, z), glow(0x6fc6ff), 'deflector'); }
+  g.userData.length_m = C.length; g.userData.cls = C.cls;
+  return g;
+}
+
+return { COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELLE_PROFILE, GAP_UP, SIDE_NAMES,
+  chOf, hullAt, loftDist, hullsOf, alongNacelle, arrange, sideName, pushTri, geoFrom, octRing, loft, hullGeo, nacelleGeo, pylonGeo, boxGeo, plainModel };
+};
+</script>
+<!-- /INLINE -->
+<!-- INLINE data/ships/concord/petrel_plan.json -->
+<script type="application/json" data-src="data/ships/concord/petrel_plan.json">{"schema":"fleetcommand.ship-plan/1","_doc":"A Concord ship's rooms as blocks, the first step of designing it inside out (Ship Design Bible, docs/design/ship-bible.html; owner, 2026-11-03: \"map out approximate floor plans out of blocks, and enclose the structure with the hull shape\"). Axes as the Concord line's: +X port, +Y dorsal, +Z bow, metres. A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top). deck_floor_m is each deck's floor height, headroom_m the clear height above a floor, clearance_m the air between a room and the hull's inner skin, structure_m the hull's own thickness (frames, plating), nose_m and tail_m how far the hull runs past the first and last rooms to its bow and stern. Read by the guide, which fits the hull from these numbers.","ship":"petrel_level","crew":42,"deck_floor_m":[3.5,0,-3.5],"headroom_m":2.8,"clearance_m":0.45,"structure_m":0.6,"nose_m":6,"tail_m":3,"rooms":[{"id":"bridge","name":"Bridge","kind":"command","decks":[0],"x_m":[-5,5],"z_m":[22,32]},{"id":"ready_room","name":"Captain's ready room","kind":"command","decks":[0],"x_m":[1.2,6],"z_m":[15,22]},{"id":"computer_core","name":"Computer core","kind":"systems","decks":[0],"x_m":[-6,-1.2],"z_m":[15,22]},{"id":"a_corridor","name":"Command passage","kind":"corridor","decks":[0],"x_m":[-1.2,1.2],"z_m":[-6,22]},{"id":"officers_p","name":"Officers' quarters, port","kind":"crew","decks":[0],"x_m":[1.2,9],"z_m":[-6,15]},{"id":"officers_s","name":"Officers' quarters, starboard","kind":"crew","decks":[0],"x_m":[-9,-1.2],"z_m":[-6,15]},{"id":"sensors","name":"Sensor bay","kind":"systems","decks":[0],"x_m":[-5,5],"z_m":[-18,-6]},{"id":"torpedo_room","name":"Torpedo room","kind":"weapons","decks":[1],"x_m":[-3,3],"z_m":[34,40]},{"id":"medbay","name":"Medbay","kind":"crew","decks":[1],"x_m":[1.2,9],"z_m":[18,30]},{"id":"damage_control","name":"Damage control","kind":"systems","decks":[1],"x_m":[-9,-1.2],"z_m":[18,30]},{"id":"b_spine","name":"Main corridor","kind":"corridor","decks":[1],"x_m":[-1.2,1.2],"z_m":[-14,34]},{"id":"quarters","name":"Crew quarters","kind":"crew","decks":[1],"x_m":[1.2,10.5],"z_m":[2,18]},{"id":"mess","name":"Mess","kind":"crew","decks":[1],"x_m":[-10.5,-1.2],"z_m":[2,18]},{"id":"life_support","name":"Life support","kind":"systems","decks":[1],"x_m":[1.2,10.5],"z_m":[-14,2]},{"id":"cargo","name":"Cargo and stores","kind":"systems","decks":[1],"x_m":[-10.5,-1.2],"z_m":[-14,2]},{"id":"engineering","name":"Engineering","kind":"engineering","decks":[1],"x_m":[-9,9],"z_m":[-36,-14]},{"id":"shield_room","name":"Shield generator","kind":"systems","decks":[2],"x_m":[-6,6],"z_m":[26,36]},{"id":"magazine","name":"Magazine","kind":"weapons","decks":[2],"x_m":[-7,-1.2],"z_m":[10,26]},{"id":"switchboard","name":"Forward switchboard","kind":"systems","decks":[2],"x_m":[1.2,7],"z_m":[10,26]},{"id":"c_spine","name":"Lower corridor","kind":"corridor","decks":[2],"x_m":[-1.2,1.2],"z_m":[-14,26]},{"id":"hangar","name":"Shuttle bay (port door)","kind":"bay","decks":[2],"x_m":[-9,-1.2],"z_m":[-12,8]},{"id":"stores","name":"Stores","kind":"systems","decks":[2],"x_m":[1.2,9],"z_m":[-12,8]},{"id":"reactor","name":"Reactor","kind":"engineering","decks":[2],"x_m":[-6,6],"z_m":[-36,-14]}]}</script>
+<!-- /INLINE -->
+<script>
+(function () {
+'use strict';
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const CL = window.FCConcordLine(THREE);
+const PLAN = JSON.parse(document.querySelector('script[data-src="data/ships/concord/petrel_plan.json"]').textContent);
+const KINDS = { command: ['Command', '#2f62e0'], crew: ['Crew', '#3fa96a'], systems: ['Systems', '#8d7cf0'], weapons: ['Weapons', '#e8352b'],
+  engineering: ['Engineering', '#f2a33a'], bay: ['Bay', '#9aa3b4'], corridor: ['Corridor', '#5a6273'] };
+const LIT = { command: true, crew: true, systems: true }; // rooms with people in them: they get windows (W1)
+const PARTS = { primary: ['Primary hull', '#e4e2dc'], secondary: ['Secondary hull', '#c2b48f'], neck: ['Neck', '#9aa3b4'], command: ['Bridge block', '#2f62e0'],
+  strut: ['Strut', '#f2a33a'], nacelle: ['Nacelle', '#3fa9f0'], drive: ['Drive', '#ff7a1a'], deflector: ['Deflector', '#6fc6ff'] };
+const legend = (el, map) => { const d = document.getElementById(el); for (const [, [n, c]] of Object.entries(map)) { const s = document.createElement('span'); s.innerHTML = `<i style="background:${c}"></i>`; s.append(n); d.append(s); } };
+legend('kindLegend', KINDS); legend('partLegend', PARTS);
+
+// ---------------------------------------------------------------------------------------------------------------
+// The plan: room boxes in metres (P1 checked here, on the real data).
+const F = PLAN.deck_floor_m, HEAD = PLAN.headroom_m, C = PLAN.clearance_m + PLAN.structure_m;
+const box = (r) => ({ x0: r.x_m[0], x1: r.x_m[1], z0: r.z_m[0], z1: r.z_m[1], y0: Math.min(...r.decks.map((d) => F[d])), y1: Math.max(...r.decks.map((d) => F[d])) + HEAD });
+const ROOMS = PLAN.rooms.map((r) => ({ ...r, b: box(r) }));
+(function checkPlan() {
+  const bad = [];
+  for (let i = 0; i < ROOMS.length; i++) for (let j = i + 1; j < ROOMS.length; j++) { const a = ROOMS[i], b = ROOMS[j];
+    if (a.decks.some((d) => b.decks.includes(d)) && a.b.x0 < b.b.x1 && b.b.x0 < a.b.x1 && a.b.z0 < b.b.z1 && b.b.z0 < a.b.z1) bad.push(`${a.id}/${b.id} overlap`); }
+  for (const r of ROOMS) { if (r.kind === 'corridor') continue;
+    const touches = ROOMS.some((c) => c.kind === 'corridor' && c.decks.some((d) => r.decks.includes(d)) && r.b.x0 <= c.b.x1 + 0.01 && c.b.x0 <= r.b.x1 + 0.01 && r.b.z0 <= c.b.z1 + 0.01 && c.b.z0 <= r.b.z1 + 0.01);
+    if (!touches) bad.push(`${r.id} off its corridor`); }
+  const el = document.getElementById('planCheck');
+  el.innerHTML = bad.length ? `<span class="bad">${bad.length} failing: ${bad.join(', ')}</span>` : `<span class="ok">${ROOMS.length} rooms, no overlaps, every room on its corridor.</span>`;
+})();
+// Deck plans as drawings, from the same boxes.
+(function drawPlans() {
+  const zMin = Math.min(...ROOMS.map((r) => r.b.z0)) - PLAN.tail_m, zMax = Math.max(...ROOMS.map((r) => r.b.z1)) + PLAN.nose_m, X = 12;
+  const W = 860, sc = W / (zMax - zMin), H = Math.round(2 * X * sc);
+  const host = document.getElementById('plans');
+  F.forEach((fy, d) => {
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Deck ${String.fromCharCode(65 + d)} plan">`;
+    for (const r of ROOMS) if (r.decks.includes(d)) { const [, c] = KINDS[r.kind];
+      const x = (r.b.z0 - zMin) * sc, y = (X - r.b.x1) * sc, w = (r.b.z1 - r.b.z0) * sc, h = (r.b.x1 - r.b.x0) * sc;
+      svg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${c}" fill-opacity="0.8" stroke="#0b0f18" stroke-width="1.5"><title>${r.name}</title></rect>`;
+      if (r.kind !== 'corridor') { const label = r.name.replace(/ \(.*\)/, ''), fit = Math.floor(w / 7.2);
+        if (fit >= 4 && h > 14) svg += `<text x="${(x + w / 2).toFixed(1)}" y="${(y + h / 2 + 4).toFixed(1)}" font-size="12" fill="#0b0f18" text-anchor="middle" font-family="IBM Plex Mono">${label.length > fit ? label.slice(0, fit - 1) + '.' : label}</text>`; } }
+    svg += `<text x="${W - 8}" y="16" font-size="12" fill="#cfd8ea" text-anchor="end" font-family="IBM Plex Mono">BOW</text><text x="8" y="16" font-size="12" fill="#cfd8ea" font-family="IBM Plex Mono">PORT</text></svg>`;
+    const fig = document.createElement('figure'); fig.innerHTML = svg + `<figcaption>Deck ${String.fromCharCode(65 + d)}, floor ${fy.toFixed(1)} m: bow right, port up, 10 m is ${(10 * sc / W * 100).toFixed(1)}% of the width</figcaption>`; host.append(fig);
+  });
+})();
+
+// ---------------------------------------------------------------------------------------------------------------
+// Fitting: every 2 m along the ship the hull clears the rooms at that station by C, its chamfer limited so no room corner
+// is cut (H1). The bow tapers over nose_m; the stern is square tail_m past the last room.
+function fitHull() {
+  const zMin = Math.min(...ROOMS.map((r) => r.b.z0)), zMax = Math.max(...ROOMS.map((r) => r.b.z1)), st = [];
+  const at = (z) => ROOMS.filter((r) => r.b.z0 <= z + 1 && r.b.z1 >= z - 1);
+  const zs = []; for (let z = zMin - PLAN.tail_m; z < zMax; z += 2) zs.push(z); zs.push(zMax); // the last station on the first room's front face
+  for (const z of zs) {
+    const rs = at(Math.min(Math.max(z, zMin), zMax)); if (!rs.length) continue;
+    const hb = Math.max(...rs.map((r) => Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1)))) + C, top = Math.max(...rs.map((r) => r.b.y1)) + C, bot = Math.min(...rs.map((r) => r.b.y0)) - C;
+    let ch = Math.min(hb, (top - bot) / 2) * 0.45;
+    for (const r of rs) { const ax = Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1));
+      ch = Math.min(ch, hb + top - (ax + r.b.y1) - C * Math.SQRT2, hb - bot - (ax - r.b.y0) - C * Math.SQRT2); }
+    st.push([z, hb, top, bot, Math.max(0.3, ch)]);
+  }
+  const f = st[st.length - 1]; // the bow: taper to a point nose_m ahead, kept above the keel line
+  for (const k of [0.5, 0.15]) st.push([f[0] + PLAN.nose_m * (k === 0.5 ? 0.6 : 1), f[1] * k, f[3] + (f[2] - f[3]) * (0.5 + k * 0.6), f[3] + (f[2] - f[3]) * (0.5 - k * 0.6), f[4] * k]);
+  // a 3-station running maximum, so the hull does not hug every step of the plan
+  return st.map((s, i) => { const n = st.slice(Math.max(0, i - 1), i + 2); return i >= st.length - 2 ? s : [s[0], Math.max(...n.map((q) => q[1])), Math.max(...n.map((q) => q[2])), Math.min(...n.map((q) => q[3])), Math.min(...n.map((q) => q[4]))]; });
+}
+const FIT = fitHull();
+// H1 measured: each room's eight corners against the fitted hull (and, for comparison, against mockup 6's Petrel).
+function margins(stations) {
+  return ROOMS.map((r) => { let m = Infinity;
+    for (const x of [r.b.x0, r.b.x1]) for (const y of [r.b.y0, r.b.y1]) for (const z of [r.b.z0, r.b.z1]) m = Math.min(m, CL.loftDist(stations, V3(x, y, z)));
+    return { r, m }; });
+}
+(function report() {
+  const fit = margins(FIT), built = margins(CL.CLASSES.petrel_level.stations);
+  const ok = fit.filter((q) => q.m >= C - 0.01).length, inB = built.filter((q) => q.m >= C - 0.01).length, outB = built.filter((q) => q.m < 0).map((q) => q.r.name);
+  document.getElementById('fitCheck').innerHTML =
+    `<span class="${ok === fit.length ? 'ok' : 'bad'}">Fitted hull: ${ok} of ${fit.length} rooms clear by ${C.toFixed(2)} m or more (least ${Math.min(...fit.map((q) => q.m)).toFixed(2)} m).</span><br>` +
+    `<span class="${inB === built.length ? 'ok' : 'bad'}">Mockup 6's Petrel: ${inB} of ${built.length} rooms clear; ${outB.length} stick out of it${outB.length ? ' (' + outB.join(', ') + ')' : ''}.</span>`;
+  const L = FIT[FIT.length - 1][0] - FIT[0][0], B = Math.max(...FIT.map((s) => s[1])) * 2, Hh = Math.max(...FIT.map((s) => s[2])) - Math.min(...FIT.map((s) => s[3]));
+  document.getElementById('hullHud').textContent = `Fitted from ${ROOMS.length} rooms: ${L.toFixed(1)} m long, ${B.toFixed(1)} m beam, ${Hh.toFixed(1)} m deep`;
+})();
+
+// ---------------------------------------------------------------------------------------------------------------
+// The two live figures share one way of making a stage.
+function stage(id, opts) {
+  const host = document.getElementById(id), canvas = host.querySelector('canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0f18);
+  const camera = new THREE.PerspectiveCamera(36, 16 / 9, 0.5, 4000), controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true;
+  scene.add(new THREE.HemisphereLight(0xcfdcff, 0x1a1e27, 0.55));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.4); sun.position.set(120, 160, 140); scene.add(sun);
+  const rim = new THREE.DirectionalLight(0x8fb0ff, 0.5); rim.position.set(-140, 40, -160); scene.add(rim);
+  const resize = () => { const w = host.clientWidth, h = host.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+  addEventListener('resize', resize); resize();
+  const frame = (c, r, dir) => { controls.target.copy(c); camera.position.copy(c).addScaledVector(dir.normalize(), r / Math.tan(camera.fov * Math.PI / 360) * Math.max(1, 1.2 / camera.aspect)); controls.update(); };
+  return { scene, camera, controls, renderer, frame, draw: () => { controls.update(); renderer.render(scene, camera); } };
+}
+const btns = (id, defs) => { const host = document.getElementById(id), out = {};
+  for (const [k, label, on] of defs) { const b = document.createElement('button'); b.textContent = label; b.onclick = () => on(b); host.append(b); out[k] = b; } return out; };
+
+// Figure: rooms, the fitted hull, windows, and mockup 6's Petrel.
+const H = stage('figHull');
+const roomG = new THREE.Group(), fitG = new THREE.Group(), winG = new THREE.Group(), builtG = new THREE.Group();
+for (const r of ROOMS) { const b = r.b, g = new THREE.BoxGeometry(b.x1 - b.x0 - 0.2, b.y1 - b.y0 - 0.2, b.z1 - b.z0 - 0.2); g.translate((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2);
+  roomG.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: new THREE.Color(KINDS[r.kind][1]).convertSRGBToLinear(), roughness: 0.7, transparent: r.kind === 'corridor', opacity: r.kind === 'corridor' ? 0.5 : 1 }))); }
+{ const g = CL.hullGeo(FIT);
+  fitG.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xe4e2dc, roughness: 0.5, metalness: 0.2, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide, flatShading: true })));
+  fitG.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 25), new THREE.LineBasicMaterial({ color: 0x9fb4ff, transparent: true, opacity: 0.5 }))); }
+// Windows from the plan (W1, W2): a row 1.5 m above each floor wherever a lived-in room reaches the hull's flank.
+let winCount = 0;
+{ const wm = new THREE.MeshStandardMaterial({ color: 0x141a26, emissive: 0xffdca0, emissiveIntensity: 1.4 });
+  for (const r of ROOMS) { if (!LIT[r.kind]) continue;
+    for (const d of r.decks) { const y = F[d] + 1.5;
+      for (let z = r.b.z0 + 1.2; z <= r.b.z1 - 1.2; z += 2.4) { const h = CL.hullAt(FIT, z), ch = CL.chOf(h[1], h[2], h[3], h[4]);
+        if (y > h[2] - ch || y < h[3] + ch) continue; // on the chamfer, not the flank
+        for (const sx of [1, -1]) { const reach = sx > 0 ? r.b.x1 : -r.b.x0; if (reach < h[1] - C - 0.6) continue; // the room does not meet this flank
+          const g = new THREE.BoxGeometry(0.1, 0.6, 1.1); g.translate(sx * (h[1] + 0.03), y, z); winG.add(new THREE.Mesh(g, wm)); winCount++; } } } } }
+{ const m = CL.plainModel('petrel_level'); m.traverse((o) => { if (o.isMesh && o.userData.part !== 'primary') o.visible = false; else if (o.isMesh) { o.material = new THREE.MeshBasicMaterial({ color: 0xff7a1a, wireframe: true, transparent: true, opacity: 0.35 }); } }); builtG.add(m); }
+H.scene.add(roomG, fitG, winG, builtG); builtG.visible = false; winG.visible = false;
+const hullBox = new THREE.Box3().setFromObject(fitG), hc = hullBox.getCenter(V3()), hr = hullBox.getSize(V3()).length() / 2;
+const hb = btns('hullCtrl', [
+  ['rooms', 'Rooms', (b) => { roomG.visible = !roomG.visible; sync(); }],
+  ['fit', 'Fitted hull', (b) => { fitG.visible = !fitG.visible; sync(); }],
+  ['win', 'Windows', (b) => { winG.visible = !winG.visible; sync(); }],
+  ['built', "Mockup 6's Petrel", (b) => { builtG.visible = !builtG.visible; sync(); }],
+  ['top', 'Top', () => H.frame(hc, hr, V3(0, 1, 0.001))],
+  ['side', 'Side', () => H.frame(hc, hr, V3(-1, 0.05, 0))],
+  ['three', 'Three quarter', () => H.frame(hc, hr, V3(-0.9, 0.6, 0.8))],
+]);
+function sync() { hb.rooms.setAttribute('aria-pressed', roomG.visible); hb.fit.setAttribute('aria-pressed', fitG.visible); hb.win.setAttribute('aria-pressed', winG.visible); hb.built.setAttribute('aria-pressed', builtG.visible);
+  document.getElementById('hullHud').dataset.w = winCount; }
+sync(); H.frame(hc, hr, V3(-0.9, 0.6, 0.8));
+
+// Figure: the parts, together or exploded, the bridge block on or off.
+const Pt = stage('figParts'); Pt.renderer.toneMapping = THREE.NoToneMapping; // the part colours are a key: shown as the legend shows them
+let partShip = null, exploded = false, bridgeOn = true, partId = 'albatross';
+const OUT = { command: V3(0, 7, 0), secondary: V3(0, -12, 0), neck: V3(0, -6, 0), drive: V3(0, 0, -10), deflector: V3(0, 0, 8) };
+function buildParts() {
+  if (partShip) Pt.scene.remove(partShip);
+  partShip = CL.plainModel(partId);
+  partShip.traverse((o) => { if (!o.isMesh) return; const p = o.userData.part || 'primary';
+    if (!o.material.emissive || o.material.emissive.getHex() === 0) o.material = new THREE.MeshStandardMaterial({ color: new THREE.Color(PARTS[p][1]).convertSRGBToLinear(), roughness: 0.6, metalness: 0.05, flatShading: true });
+    o.geometry.computeBoundingBox(); const c = o.geometry.boundingBox.getCenter(V3());
+    o.userData.out = (OUT[p] || (p === 'strut' ? V3(Math.sign(c.x) * 6, 0, 0) : p === 'nacelle' ? V3(Math.sign(c.x) * 14, Math.sign(c.y) * (Math.abs(c.x) < 1 ? 8 : 0), 0) : V3())).clone(); });
+  Pt.scene.add(partShip); applyParts();
+  const b = new THREE.Box3().setFromObject(partShip); Pt.frame(b.getCenter(V3()), b.getSize(V3()).length() / 2 * 1.6, V3(-0.9, 0.35, 0.8));
+  document.getElementById('partsHud').textContent = CL.CLASSES[partId].cls;
+}
+function applyParts() { partShip.traverse((o) => { if (!o.isMesh) return; o.position.copy(exploded ? o.userData.out.clone().multiplyScalar(CL.CLASSES[partId].length / 40) : V3()); if (o.userData.part === 'command') o.visible = bridgeOn; }); syncParts(); }
+const pb = btns('partsCtrl', [
+  ['petrel_level', 'Petrel', () => { partId = 'petrel_level'; buildParts(); }],
+  ['albatross', 'Albatross', () => { partId = 'albatross'; buildParts(); }],
+  ['condor', 'Condor', () => { partId = 'condor'; buildParts(); }],
+  ['pelican', 'Pelican', () => { partId = 'pelican'; buildParts(); }],
+  ['explode', 'Exploded', () => { exploded = !exploded; applyParts(); }],
+  ['bridge', 'Bridge block', () => { bridgeOn = !bridgeOn; applyParts(); }],
+]);
+function syncParts() { for (const k of ['petrel_level', 'albatross', 'condor', 'pelican']) pb[k].setAttribute('aria-pressed', partId === k); pb.explode.setAttribute('aria-pressed', exploded); pb.bridge.setAttribute('aria-pressed', bridgeOn); }
+buildParts();
+
+renderer: { const loop = () => { H.draw(); Pt.draw(); requestAnimationFrame(loop); }; loop(); }
+
+// Captures from mockup 6 (docs/design/ship-bible/*.jpg), each the chapter's evidence.
+const SHOTS = {
+  shotsNacelle: [['nacelle_venting', 'A nacelle venting plasma: the grille and cap show its state'], ['thrusters', 'The drive: bells on a closed mounting fairing, behind the reactor']],
+  shotsWindows: [['windows', 'Person-sized windows, one row a deck, in runs with gaps'], ['windows_dark', 'With no sun the windows give the ship its size']],
+  shotsRooms: [['rooms', 'Rooms behind the windows by interior mapping: carpet, panels, furniture, a plant']],
+  shotsLight: [['nosun', 'No sun: the hull floods, registry flood and position lights draw the ship'], ['belly_lights', 'One belly pair, forward and aft, no overlap'], ['shadow', 'Lamps and sun cast real shadows']],
+  shotsMarks: [['hero', 'Pearl armour, blue bands on bulkhead lines, registry and name floodlit'], ['lineup', 'The line together: one livery, one family']],
+  shotsDamage: [['scorch', 'Phaser hits: scorch marks that glow and cool'], ['holes_parallax', 'Torpedo holes show the deck behind by parallax'], ['breakup_close', 'A broken piece shows decks and bulkheads at their real heights'], ['bridge_fire', 'The bridge burning: its block is what the damage lands on']],
+};
+for (const [id, list] of Object.entries(SHOTS)) { const host = document.getElementById(id);
+  for (const [f, cap] of list) { const fig = document.createElement('figure'); fig.innerHTML = `<img src="ship-bible/${f}.jpg" alt="${cap}" loading="lazy"><figcaption class="cap">${cap}</figcaption>`; host.append(fig); } }
+
+window.MOCKUP_SHOTS = {
+  top: () => window.scrollTo(0, 0),
+  plans: () => document.getElementById('plans').scrollIntoView(),
+  hull: () => { document.getElementById('figHull').scrollIntoView(); },
+  hull_windows: () => { winG.visible = true; roomG.visible = false; sync(); H.frame(hc, hr, V3(-1, 0.25, 0.3)); document.getElementById('figHull').scrollIntoView(); },
+  hull_built: () => { builtG.visible = true; winG.visible = false; roomG.visible = true; sync(); H.frame(hc, hr, V3(-1, 0.05, 0)); document.getElementById('figHull').scrollIntoView(); },
+  parts: () => { exploded = true; applyParts(); document.getElementById('figParts').scrollIntoView(); },
+  parts_nobridge: () => { exploded = false; bridgeOn = false; applyParts(); document.getElementById('figParts').scrollIntoView(); },
+};
+window.MOCKUP_READY = true;
+})();
+</script>

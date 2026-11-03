@@ -386,29 +386,30 @@ function boxGeo(sx, sy, sz, x, y, z) { const g = new THREE.BoxGeometry(sx, sy, s
 // ---------------------------------------------------------------------------------------------------------------
 // A plain model for pages that show the ship small (the battle console's view, the game flow): the same hulls, neck,
 // command block, pylons and nacelles as mockup 6, in pearl with the livery's stripes, lit grilles, drive bells and the
-// deflector. Units are metres, +Z the bow; userData.length_m is the class's length.
+// deflector. Units are metres, +Z the bow; userData.length_m is the class's length; every mesh's userData.part names its
+// component (primary, secondary, neck, command, strut, nacelle, drive, deflector) for the Ship Design Bible's exploded view.
 function plainModel(id, o = {}) {
   const C = CLASSES[id]; if (!C) throw new Error('FCConcordLine: no class ' + id);
   const L = LIVERIES[o.livery || 'concord'], g = new THREE.Group(), A = arrange(C);
   const pearl = new THREE.MeshStandardMaterial({ color: o.hull ?? 0xe4e2dc, metalness: 0.35, roughness: 0.5, flatShading: true });
   const stripe = new THREE.MeshStandardMaterial({ color: new THREE.Color(...L.stripe), metalness: 0.3, roughness: 0.5, flatShading: true });
   const glow = (hex) => new THREE.MeshStandardMaterial({ color: 0x10141c, emissive: hex, emissiveIntensity: 1.6 });
-  const mesh = (geo, m) => { const k = new THREE.Mesh(geo, m); g.add(k); return k; };
-  const bands = (S, zs) => { for (const z of zs || []) { const zz = S.map((q) => q[0]); if (z > Math.max(...zz) - 1 || z < Math.min(...zz) + 1) continue;
+  const mesh = (geo, m, part) => { const k = new THREE.Mesh(geo, m); k.userData.part = part; g.add(k); return k; };
+  const bands = (S, zs, part) => { for (const z of zs || []) { const zz = S.map((q) => q[0]); if (z > Math.max(...zz) - 1 || z < Math.min(...zz) + 1) continue;
     const ring = (dz) => { const h = hullAt(S, z + dz); return octRing(z + dz, h[1] + 0.06, h[2] + 0.06, h[3] - 0.06, h[4]); };
-    mesh(loft([ring(1.2), ring(-1.2)], (m) => { const h = hullAt(S, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); }), stripe); } };
-  mesh(hullGeo(C.stations), pearl); bands(C.stations, C.stripes);
-  if (C.secondary) { const D = C.secondary; mesh(hullGeo(D.stations), pearl); bands(D.stations, D.stripes);
-    if (D.neck) { const N = D.neck; mesh(loft(N.z.map((z, i) => octRing(z, N.hb[i], N.top, N.bottom, Math.min(1.2, N.hb[i] * 0.4))), (m) => V3(0, (N.top + N.bottom) / 2, m.z)), pearl); } }
+    mesh(loft([ring(1.2), ring(-1.2)], (m) => { const h = hullAt(S, m.z); return V3(0, (h[2] + h[3]) / 2, m.z); }), stripe, part); } };
+  mesh(hullGeo(C.stations), pearl, 'primary'); bands(C.stations, C.stripes, 'primary');
+  if (C.secondary) { const D = C.secondary; mesh(hullGeo(D.stations), pearl, 'secondary'); bands(D.stations, D.stripes, 'secondary');
+    if (D.neck) { const N = D.neck; mesh(loft(N.z.map((z, i) => octRing(z, N.hb[i], N.top, N.bottom, Math.min(1.2, N.hb[i] * 0.4))), (m) => V3(0, (N.top + N.bottom) / 2, m.z)), pearl, 'neck'); } }
   if (C.command) { const K = C.command, [z0, z1] = K.z, base = hullAt(C.stations, (z0 + z1) / 2)[2] - 0.6;
-    mesh(loft([octRing(z0, K.hb * 0.62, K.top - 0.8, base, K.ch), octRing(z0 - 3, K.hb, K.top, base, K.ch), octRing(z1, K.hb, K.top, base, K.ch), octRing(z1 - 2.5, K.hb * 0.8, K.top - 1.2, base, K.ch)], (m) => V3(0, (K.top + base) / 2, m.z), 3), pearl);
-    mesh(boxGeo(K.hb * 1.12, 0.7, 0.25, 0, K.top - 1.3, z0 - 1.45), glow(0xd8ecff)); }
-  for (const p of A.pylons) mesh(pylonGeo(p, p.sx), pearl);
-  for (const n of A.nacelles) { const x = n.x * n.sx; mesh(nacelleGeo(n, x, n.y), pearl);
-    for (const s2 of [1, -1]) mesh(boxGeo(0.14, n.hh * 0.32, n.len * 0.72, x + s2 * (n.hw + 0.02), n.y, n.z), glow(0x2fb8ff));
-    const cap = new THREE.CircleGeometry(n.hh * 0.38, 16); cap.translate(x, n.y, n.z + n.len / 2 + 0.03); mesh(cap, glow(0xff6a1f)); }
-  { const b = C.bells; for (const sx of b.x ? [1, -1] : [1]) { const d = new THREE.CircleGeometry(b.r, 20); d.rotateY(Math.PI); d.translate(sx * b.x, b.y, b.z - 0.05); mesh(d, glow(0xffb070)); } }
-  { const [x, y, z, r] = C.deflector; mesh(boxGeo(r * 2, r * 1.1, 0.25, x, y, z), glow(0x6fc6ff)); }
+    mesh(loft([octRing(z0, K.hb * 0.62, K.top - 0.8, base, K.ch), octRing(z0 - 3, K.hb, K.top, base, K.ch), octRing(z1, K.hb, K.top, base, K.ch), octRing(z1 - 2.5, K.hb * 0.8, K.top - 1.2, base, K.ch)], (m) => V3(0, (K.top + base) / 2, m.z), 3), pearl, 'command');
+    mesh(boxGeo(K.hb * 1.12, 0.7, 0.25, 0, K.top - 1.3, z0 - 1.45), glow(0xd8ecff), 'command'); }
+  for (const p of A.pylons) mesh(pylonGeo(p, p.sx), pearl, 'strut');
+  for (const n of A.nacelles) { const x = n.x * n.sx; mesh(nacelleGeo(n, x, n.y), pearl, 'nacelle');
+    for (const s2 of [1, -1]) mesh(boxGeo(0.14, n.hh * 0.32, n.len * 0.72, x + s2 * (n.hw + 0.02), n.y, n.z), glow(0x2fb8ff), 'nacelle');
+    const cap = new THREE.CircleGeometry(n.hh * 0.38, 16); cap.translate(x, n.y, n.z + n.len / 2 + 0.03); mesh(cap, glow(0xff6a1f), 'nacelle'); }
+  { const b = C.bells; for (const sx of b.x ? [1, -1] : [1]) { const d = new THREE.CircleGeometry(b.r, 20); d.rotateY(Math.PI); d.translate(sx * b.x, b.y, b.z - 0.05); mesh(d, glow(0xffb070), 'drive'); } }
+  { const [x, y, z, r] = C.deflector; mesh(boxGeo(r * 2, r * 1.1, 0.25, x, y, z), glow(0x6fc6ff), 'deflector'); }
   g.userData.length_m = C.length; g.userData.cls = C.cls;
   return g;
 }
