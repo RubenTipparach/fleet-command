@@ -26,7 +26,7 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
-| 6 | Concord line (hull concepts) | Drafted (2026-11-03, v4: the Tern family; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 6 | Concord line (hull concepts) | Drafted (2026-11-03, v5: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -279,6 +279,12 @@ bid long, I would prefer it to have like a secondary hull where pulons extend ou
 apply the variants for both petrel and swift and include horizontal aligned ones aas well"): the Swift and the Petrel each
 shown as three ships (one below, above and below, level), and the Albatross shortened to 112 m in two hulls, its nacelle
 pylons sweeping out of a secondary hull. The line-up is a grid of all eight at true scale.
+
+Version 5, on the owner's note ("remove petrel with 1 pylon, add detail textures, norrmal maps, fix up windows, need to bring
+lighting standards up to what we had before, and damage systems"): the one-below Petrel is gone; the page is now mockup 5's
+page with the Tern-family builder, so every ship has its light presets, floodlights, navigation lights and the whole damage
+system (holes, venting, nacelles snapping off at the pylon, fracture with cut faces, wires, the staged breach); detail and
+normal maps in the paint's plate grid; windows drawn as openings with a copper rim, reflecting glass and a room behind.
 
 Design: `openspec/changes/concord-hull-concepts/`.
 

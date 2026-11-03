@@ -173,9 +173,9 @@ function styleQ(id, comp, q, rec, why, skip = []) {
 }
 const SECTIONS = [
   { tag: 'A', name: 'The Concord line (mockup 6)',
-    lead: 'Mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships in your Tern\'s family from Star Crew Bridge Simulator. Version 4 applies your notes: the Swift and the Petrel each as three ships (one nacelle below, one above and one below, and the level pair), and the Albatross shortened to 112 m with a secondary hull its pylons sweep out of. Open Line-up to see all eight at true scale beside the Tern.',
+    lead: 'Mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships in your Tern\'s family from Star Crew Bridge Simulator. Version 5 applies your notes: the Swift three ways (one nacelle below, one above and one below, the level pair), the Petrel two ways (above and below, level), the Albatross at 112 m with a secondary hull its pylons sweep out of, all with mockup 5\'s lighting and damage, detail and normal maps and windows with rooms. Open Line-up to see them at true scale beside the Tern.',
     qs: [
-      { id: 'A11', q: 'Which nacelle layout does each class keep? Swift: one below, above and below, or level. Petrel: the same three. The Albatross keeps its secondary hull and level pair.',
+      { id: 'A11', q: 'Which nacelle layout does each class keep? Swift: one below, above and below, or level. Petrel: above and below, or level. The Albatross keeps its secondary hull and level pair.',
         options: ['Your picks: Swift one below, Petrel above and below', 'Both level (the Tern family\'s own)', 'Swift one below, Petrel level', 'Different (say which in the notes)'], rec: 0,
         why: 'You picked these; the other layouts stay on the page beside them for comparison until you choose.' },
       { id: 'A12', q: 'Concord sizes: corvette 51 m, frigate 88 m, cruiser 112 m (in two hulls), beside the Tern at 86 m?',

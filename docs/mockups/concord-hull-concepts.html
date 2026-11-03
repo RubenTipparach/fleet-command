@@ -985,7 +985,7 @@ function buildShip(id, liv, offset = V3()) {
   if (C.command) addPool(ship, V3(0, C.command.top - 1.5, C.command.z[0] - 2), C.command.hb * 1.2, 0.4);
   for (const K of ship.sides) { const k = ship.knee[K]; addPool(ship, k.mid.clone().add(V3(0, k.n.hh, k.n.len * 0.15)), k.n.len * 0.32, 0.45); }
   { const n = Math.max(2, Math.round((C.live[1] - C.live[0]) / 16)); for (let i = 0; i < n && ship.dmgU.uPoolN.value < 15; i++) {
-    const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); for (const sd of [1, -1]) addPool(ship, V3(sd * h[1], C.band[1] + 0.2, z), 7, 0.5); } }
+    const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); for (const sd of [1, -1]) addPool(ship, V3(sd * h[1], C.band[1] + 0.2, z), 5, 0.28); } }
   // Two fire lights per ship, made now so the shaders never recompile mid-battle.
   for (let i = 0; i < 2; i++) { const l = new THREE.PointLight(0xff7a2a, 0, C.length * 0.5, 1.6); ship.root.add(l); ship.lights.push({ l, until: 0, at: null, anchor: null }); }
   // The shield bubble.
