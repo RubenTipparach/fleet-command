@@ -28,4 +28,4 @@
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 5, the survey at v25; versions 30-31, version id `1793692315-1067`.
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 6, the survey at v26; version 32, version id `1793695155-9f31`.
 - 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 8, the survey at v27; version 33, version id `1793696583-fd49`.
-- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 9, the survey at v28; version 34.
+- 2026-11-03, cloud session (Concord ships thread): mockup 6 at version 9, the survey at v28, merged onto another session's live version (M2 at v64, the icon guide added); version 35, version id `1793697390-e5c8`.
