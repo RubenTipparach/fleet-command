@@ -14,6 +14,10 @@
 - [x] 1.10 The Condor battleship and the Pelican carrier
 - [x] 1.11 Republished to the same link, recorded in `docs/artifacts/concord-hull-concepts/`, the tracker and `mockup-work.md`
 
+- [x] 1.12 The Concord line is the standard for Concord ships and mockup 5 is retired (owner, 2026-11-03: "Concord line (hull concepts) - new standard, get rid of the old concord ships")
+- [x] 1.13 The ship table and hull geometry are one module, `docs/mockups/lib/concord-line.js`, inlined into mockup 6 and, through `lib/space.js`, into the battle console and the game flow, whose Concord ships are now the line's (owner: "start applying these spaceships into the ui mockup stuff"); console pairings CA Albatross, DD Petrel, FF Swift, TR Pelican, provisional
+- [ ] 1.14 The battle console's ship systems display drawn from the active ship's own plan (its hull stations, pylons and nacelles) instead of the stand-in outline
+
 ## 2. After approval for build
 
 - [ ] 2.1 The chosen line carried into mockup 5 (ships, damage pieces along their decks)
