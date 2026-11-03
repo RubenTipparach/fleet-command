@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-03', q: 'can we try a triangle shape with cruved ends?', means: 'Two rounded triangles for B: B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.' },
   { when: '2026-11-03', q: 'the shape on e-9 is still the exact same, you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a uniform', means: 'B-E8 to B-E13 retired (restyles, and three broke the outline). Rule 19: one closed outline, measured. Three different outlines: B-E14 capsule, B-E15 keyhole, B-E16 five-sided house.' },
   { when: '2026-11-03', q: 'the colors are bad, they dont read on the white background; need different versions for white and black background', means: 'Every emblem now has a version for black and one for white, each measured (rule 18): B pearl on night for black, night on pearl for white; A, C and D pearl on black and night blue on white.' },
   { when: '2026-11-03', q: 'dont like any of those shapes, though b-e2 is a good direction (but I still DONT LIKE IT)', means: 'B-E4 to B-E7 retired; B-E2 back in the sketch as the direction, not the answer; six variations on it (B-E8 to B-E13), each changing one thing, to find what is wrong with it.' },
@@ -344,6 +345,29 @@ function saucer(ink, k = KREC) {
   return s;
 }
 // Each patch: its frame (even-odd), the field inside it, and the scale the saucer takes inside it (about 50, 52).
+// A triangle with rounded corners, as a frame: outer corners rounded r, the band b thick (the inner triangle is the outer
+// one moved in by b toward its incentre, its corners rounded r - b). Vertices clockwise from the apex.
+function roundPoly(pts, r) {
+  const n = pts.length, unit = (a, b) => { const d = [b[0] - a[0], b[1] - a[1]], l = Math.hypot(d[0], d[1]); return [d[0] / l, d[1] / l]; };
+  let d = '';
+  pts.forEach((v, i) => {
+    const u1 = unit(v, pts[(i + n - 1) % n]), u2 = unit(v, pts[(i + 1) % n]);
+    const th = Math.acos(u1[0] * u2[0] + u1[1] * u2[1]), k = r / Math.tan(th / 2);
+    const A = [v[0] + u1[0] * k, v[1] + u1[1] * k], B = [v[0] + u2[0] * k, v[1] + u2[1] * k];
+    d += `${i ? 'L' : 'M'}${f(A[0])} ${f(A[1])}A${r} ${r} 0 0 1 ${f(B[0])} ${f(B[1])}`;
+  });
+  return d + 'Z';
+}
+function triFrame(pts, r, b) {
+  const side = (a, c) => Math.hypot(c[0] - a[0], c[1] - a[1]);
+  const [A, B, Cc] = pts, a = side(B, Cc), bb = side(A, Cc), c = side(A, B), per = a + bb + c;
+  const I = [(a * A[0] + bb * B[0] + c * Cc[0]) / per, (a * A[1] + bb * B[1] + c * Cc[1]) / per];
+  const area = Math.abs((B[0] - A[0]) * (Cc[1] - A[1]) - (Cc[0] - A[0]) * (B[1] - A[1])) / 2, rho = 2 * area / per;
+  const inner = pts.map((v) => [I[0] + (v[0] - I[0]) * (rho - b) / rho, I[1] + (v[1] - I[1]) * (rho - b) / rho]);
+  const fieldD = roundPoly(inner, Math.max(2, r - b));
+  return { frame: roundPoly(pts, r) + fieldD, field: fieldD };
+}
+const TRI = [[50, 4], [99, 95], [1, 95]];
 // B's frames. Retired, with the owner's words: B-E1 and B-E3 ("dont like any of those shapes, though b-e2 is a good
 // direction"), B-E4 to B-E7 ("(but I still DONT LIKE IT)"), B-E8 to B-E13 ("the shape on e-9 is still the exact same,
 // you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a
@@ -366,6 +390,10 @@ const ENCLOSURES = [
     frame: 'M8 96V40L50 4L92 40V96ZM14 90V42.5L50 11.6L86 42.5V90Z',
     field: 'M14 90V42.5L50 11.6L86 42.5V90Z',
     why: 'Five sides for the five founding peoples, and the gable of a house: the Concord as a home its members share. Upright sides and a low roof keep it well clear of an arrowhead.' },
+  { key: 'B-E17', name: 'The rounded triangle', scale: 0.5, cy: 70, pieces: 1, ...triFrame(TRI, 10, 6),
+    why: 'Your triangle, its corners rounded: broad and flat-footed, the ship low in it with its nacelles standing on the base. Three corners, three things the Concord does: explore, mediate, defend. Watch: a triangle pointing up must never read as an arrowhead; the broad base and round corners keep it apart.' },
+  { key: 'B-E18', name: 'The soft triangle', scale: 0.5, cy: 70, pieces: 1, ...triFrame(TRI, 20, 6),
+    why: 'The same triangle with its corners rounded much further, so it reads softer and further still from an arrowhead, nearer a guitar pick. Watch: rounded much more, it starts to read as a circle.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {

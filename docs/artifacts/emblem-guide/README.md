@@ -48,3 +48,5 @@
   changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a
   uniform"). Rule 19, one closed outline, measured on every patch (the printed patch one piece, the background one
   region). Three different outlines beside B-E2: B-E14 the capsule, B-E15 the keyhole, B-E16 the five-sided house.
+- Version 9 published 2026-11-03: two rounded triangles for B (owner: "can we try a triangle shape with cruved ends?"):
+  B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.
