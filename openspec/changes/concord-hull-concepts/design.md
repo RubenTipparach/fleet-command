@@ -1,4 +1,4 @@
-# Design: concord-hull-concepts (v5)
+# Design: concord-hull-concepts (v6)
 
 ## The family, from Star Crew Bridge Simulator
 
@@ -56,8 +56,8 @@ The Swift is shown as three ships and the Petrel as two (the owner, 2026-11-03: 
 
 | Layout | What it is | Rule |
 |---|---|---|
-| One below | One nacelle on the centreline under the hull, on one vertical swept pylon | The class's nacelle at its own size and station; 3.0 m daylight below the lowest hull point along its whole length |
-| Above and below | One nacelle over the hull and one under it, each on a vertical swept pylon | 3.0 m daylight above the highest and below the lowest hull point |
+| One below | One nacelle on the centreline under the hull, on one vertical swept pylon | The class's nacelle at its own size and station; 5.5 m daylight below the lowest hull point along its whole length (owner: "would also be nice for the vertical pyons to extend out a little further") |
+| Above and below | One nacelle over the hull and one under it, each on a vertical swept pylon | 5.5 m daylight above the highest and below the lowest hull point |
 | Level | The family's own: a nacelle pair on level swept pylons at the waist | `exteriors.json` pylon and nacelle |
 
 The owner's picks are one below for the Swift and above and below for the Petrel; the other layouts stay beside them for
@@ -87,9 +87,42 @@ three sides in ship space and blended by the face normal, so the flat-faced hull
 
 Windows are no longer boxes on the hull. Each is drawn in the skin: a 1.0 by 0.62 m pane in a 0.12 m copper rim, on the
 vertical sides only, one row 1.5 m above each deck floor, every 2.2 m with a frame after each run of four, never on a
-stripe. The glass is smooth and reflects; behind it a room 2.2 m wide, 3 m high and 3.5 m deep is drawn by interior mapping
-(floor, ceiling light panels, side walls, a back wall with a screen), lit warm, cold or dark, and it follows its
-life-support section's power.
+stripe. The glass is smooth and reflects; behind it a room 4 m wide, 3 m high and 4 m deep, set off-centre, is drawn by interior
+mapping and its power follows its life-support section (owner, 2026-11-03: "make the interiors more interesting? like a
+room with furniture, and sci fi wall panels? carpet? maybe a plant in the corner?"):
+
+| Part | How it is drawn |
+|---|---|
+| Carpet | One of four colours (navy, burgundy, teal, olive), a woven pattern, a darker border |
+| Walls | Sci-fi panels in 0.8 m bays with grooves, a dark dado to 0.9 m, a light strip at 2.35 m, the odd vent; a wall display in the mess and the office |
+| Ceiling | Light panels in a 2 m grid |
+| Furniture | Ray against boxes and a sphere: quarters (a bed with pillow and blanket, a desk with a glowing screen), a mess (a table on a pedestal, four chairs) or an office (a long desk, two screens, a chair) |
+| A plant | A pot and its foliage in the far front corner of every room |
+| Light | Warm, cold or dark from the ceiling; screens and strips glow in the room's accent colour |
+
+A hole in the hull (a torpedo, or a phaser's third hit burning through) shows the deck behind it the same way; its back
+plane sits at least 5 m in and is lit, so a small burn-through shows a room, not a black disc.
+
+## Floodlights are spotlights along the hull
+
+The owner, 2026-11-03: "these are all point lights, can we have 90 degree tangent spotlights like in sfc?". Each hull lamp
+sits about 0.35 m off the plating and throws a 90 degree cone along it: full inside 40 degrees of its axis, gone by 50,
+bright at the lamp and fading to nothing at its range. It is taken against the detail normal, so the fan grazes the plating
+and every seam and rivet in it catches the light.
+
+| Lamp | Where | Throws |
+|---|---|---|
+| Registry | On the dorsal plating just ahead of the name | Aft along the plating, over the name |
+| Command block | On the hull ahead of the block | Up and aft onto its glazed face |
+| Nacelles | At each nacelle's intake end, outboard (or above, or below) | Aft along its flank |
+| Waist | In the service band, every 18 m, both sides | Up the hull's side |
+| Stern | On the shoulders aft | Forward along the dorsal plating |
+
+## Turrets have a clear line of fire
+
+The owner: "this turret's line of sight is obscured btw". The dorsal turret that sat behind the command block is on the
+block's roof now, and the shoulder turrets sit outboard of the block's sides, so nothing on the ship stands in front of a
+barrel.
 
 ## Cost
 

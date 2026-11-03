@@ -186,7 +186,7 @@ const BASES = {
     command: { z: [19, 7], hb: 4.2, top: 6.4, ch: 0.8 },
     pylons: [{ root: [3.4, -0.6, -8], tip: [12.5, -3.0, -14], rc: 10, tc: 5, t: 0.8 }],
     nacelles: [{ x: 12.5, y: -3.0, z: -9, len: 30, hw: 1.6, hh: 1.5 }],
-    radiators: [[-11, 1.4, 5.0]], turrets: [[0, 14, 'top'], [0, 4, 'bottom']], bells: { z: -25, y: 0.3, x: 1.4, r: 0.9 },
+    radiators: [[-11, 1.4, 5.0]], turrets: [[0, 14, 'cmd'], [0, 4, 'bottom']], bells: { z: -25, y: 0.3, x: 1.4, r: 0.9 },
     core: { pos: [0, -2.9, -4], size: [1.2, 0.4, 14] }, torpedo: [0, -0.6, 25.1], deflector: [0, 0.4, 25.05, 1.4],
   },
   petrel: {
@@ -196,7 +196,7 @@ const BASES = {
     command: { z: [33, 15], hb: 6.2, top: 10.2, ch: 1.2 },
     pylons: [{ root: [11, 1.2, -12], tip: [21, 1.2, -22], rc: 16, tc: 10, t: 1.2 }],
     nacelles: [{ x: 21, y: 1.2, z: -14, len: 54, hw: 2.3, hh: 2.2 }],
-    radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 9, 'top'], [6.2, -14, 'top'], [-6.2, -14, 'top'], [0, 10, 'bottom']], bells: { z: -43, y: 1.0, x: 3.2, r: 1.6 },
+    radiators: [[-30, 3.1, 8.0], [-30, -3.1, 8.0]], turrets: [[0, 25, 'cmd'], [8.6, -14, 'top'], [-8.6, -14, 'top'], [0, 10, 'bottom']], bells: { z: -43, y: 1.0, x: 3.2, r: 1.6 },
     core: { pos: [0, -5.45, -8], size: [1.8, 0.5, 26] }, torpedo: [0, -1.4, 43.05], deflector: [0, 0.9, 43.05, 2.2],
   },
   albatross: {
@@ -209,7 +209,7 @@ const BASES = {
       band: [-16.3, -15.3], channels: [2.6], stripes: [-40], neck: { z: [-10, -14, -28, -32], hb: [2.4, 4.0, 4.0, 2.8], top: -6.0, bottom: -11.5 } },
     pylons: [{ root: [6.5, -15.0, -30], tip: [24, -4.0, -38], rc: 18, tc: 11, t: 1.5 }],
     nacelles: [{ x: 24, y: -4.0, z: -30, len: 64, hw: 2.8, hh: 2.7 }],
-    radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 12, 'top'], [9, -6, 'top'], [-9, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
+    radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 27, 'cmd'], [11.5, -6, 'top'], [-11.5, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
     core: { pos: [0, -20.9, -30], size: [2.2, 0.5, 30] }, torpedo: [0, -1.8, 50.05], deflector: [0, 1.0, 50.05, 2.6],
   },
   // Star Crew's SCS Tern, from its own data (star-crew-bridge-simulator 95a49b2: data/ships/tern/layout.json hull.sections,
@@ -263,7 +263,7 @@ function loftDist(S, p) {
 
 // Nacelle arrangements. level: the data's own pylons and nacelles. below1: one nacelle on the centreline under the hull on one
 // upright pylon. updown: one over the hull and one under it. GAP_UP is the daylight to the nearest hull along the nacelle.
-const GAP_UP = 3.0; // metres
+const GAP_UP = 5.5; // metres (owner, 2026-11-03: "would also be nice for the vertical pyons to extend out a little further")
 const hullsOf = (C) => [C.stations].concat(C.secondary ? [C.secondary.stations] : []);
 function alongNacelle(C, n) {
   let top = -Infinity, bot = Infinity;
@@ -468,7 +468,7 @@ const DETAIL = (() => {
 const PAINT_GLSL = `
 uniform float uMode; uniform vec2 uBand; uniform vec2 uChan; uniform vec4 uStripes; uniform float uStripeN;
 uniform vec3 uStripe; uniform vec3 uSeam; uniform vec2 uWinZ; uniform vec4 uDecks; uniform float uDeckN; uniform float uWinOn;
-uniform vec4 uPools[16]; uniform float uPoolA[16]; uniform int uPoolN;
+uniform vec4 uPools[16]; uniform vec4 uPoolD[16]; uniform float uPoolA[16]; uniform int uPoolN;
 uniform sampler2D uDetA; uniform sampler2D uDetN; uniform mat3 normalMatrix;
 varying vec3 vNo;
 float ph1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453); }
@@ -510,24 +510,108 @@ float winAt(vec3 p, vec3 n, out vec3 q, out vec3 room){
   return 0.0;
 }
 // The room behind a pane, by interior mapping: 2.2 m wide, 3 m floor to ceiling, 3.5 m deep, lit from its ceiling.
+// Ray against an axis-aligned box: distance to the near face (1e9 if missed), and that face's normal.
+float bHit(vec3 ro, vec3 rd, vec3 b0, vec3 b1, inout vec3 nOut, float tBest){
+  vec3 t0 = (b0 - ro)/rd, t1 = (b1 - ro)/rd, tn3 = min(t0, t1), tf3 = max(t0, t1);
+  float tn = max(max(tn3.x, tn3.y), tn3.z), tf = min(min(tf3.x, tf3.y), tf3.z);
+  if (tn > tf || tn < 0.0 || tn >= tBest) return tBest;
+  nOut = tn == tn3.x ? vec3(-sign(rd.x), 0.0, 0.0) : tn == tn3.y ? vec3(0.0, -sign(rd.y), 0.0) : vec3(0.0, 0.0, -sign(rd.z));
+  return tn; }
+// The room behind a pane, by interior mapping (owner, 2026-11-03: "make the interiors more interesting? like a room with
+// furniture, and sci fi wall panels? carpet? maybe a plant in the corner?"). A room 4 m wide, 3 m floor to ceiling and 4 m
+// deep, set off-centre behind its window. Carpet in one of four colours with a woven pattern; sci-fi wall panels with
+// grooves, a dark dado and a light strip; ceiling light panels. One of three layouts: quarters (a bed with a pillow and a
+// blanket, a desk with a glowing screen, a plant in a pot in the corner), a mess (a table, chairs, a plant) or an office
+// (a long desk with two screens, a chair, a plant). Lit by its ceiling, warm, cold or dark, with the screens glowing.
 vec3 winRoom(vec3 q, vec3 room, vec3 V, float side){
   vec3 D = vec3(V.z, V.y, -side*V.x); if (D.z <= 0.0) return vec3(0.0);
-  q.y += 0.0; vec3 lo = vec3(-1.1, -1.5, 0.0), hi = vec3(1.1, 1.5, 3.5);
-  vec3 tA = (mix(lo, hi, step(0.0, D)) - q)/D; float t = min(tA.x, min(tA.y, tA.z)); vec3 h = q + D*t;
-  float r = ph1(room.xy + room.z*17.3), r2 = ph1(room.yx*3.1 + 9.0); vec3 base;
-  if (t == tA.z) base = vec3(0.42, 0.40, 0.36)*(0.75 + 0.25*step(0.45, fract(h.x*0.7 + r*3.0)))*(1.0 - 0.6*step(abs(h.x - (r - 0.5)*1.2), 0.25)*step(abs(h.y - 0.2), 0.35)); // back wall, a screen or picture
-  else if (t == tA.y) base = D.y < 0.0 ? vec3(0.26, 0.22, 0.19)*(1.0 - 0.5*step(0.6, ph1(floor(h.xz*1.4) + r))) : vec3(0.5)*(0.3 + 0.7*step(0.6, fract(h.z*0.5 + 0.1)));   // floor with furniture, ceiling light panels
-  else base = vec3(0.34, 0.33, 0.31)*(0.85 + 0.15*step(0.5, fract(h.z*0.6)));                                  // side walls
-  vec3 L = r < 0.16 ? vec3(0.02, 0.022, 0.03) : r < 0.32 ? vec3(0.45, 0.62, 0.95) : vec3(1.0, 0.76, 0.48);
-  float lamp = 0.45 + 0.55*clamp((h.y + 1.5)/3.0, 0.0, 1.0);
-  return base*L*lamp*2.2*exp(-t*0.12);
+  D = normalize(D + vec3(1e-4));
+  float r = ph1(room.xy + room.z*17.3), r2 = ph1(room.yx*3.1 + 9.0 + room.z), r3 = ph1(room.xy*7.7 + 2.0);
+  float xa = -1.1 - floor(r2*3.0)*0.6, xb = xa + 4.0; // the room's side walls (it is wider than its window)
+  vec3 lo = vec3(xa, -1.5, 0.0), hi = vec3(xb, 1.5, 4.0);
+  vec3 tA = (mix(lo, hi, step(0.0, D)) - q)/D; float t = min(tA.x, min(tA.y, tA.z));
+  vec3 n = t == tA.x ? vec3(-sign(D.x), 0.0, 0.0) : t == tA.y ? vec3(0.0, -sign(D.y), 0.0) : vec3(0.0, 0.0, -1.0);
+  int kind = r3 < 0.45 ? 0 : r3 < 0.72 ? 1 : 2; int obj = 0; // 0 shell; 1 bed; 2 pillow; 3 blanket; 4 desk; 5 screen; 6 pot; 7 plant; 8 table; 9 chair
+  vec3 nb; float tb;
+  // the plant in its corner (front corner on the far side), in every layout
+  vec3 pc = vec3(xb - 0.38, -1.5, 0.45);
+  tb = bHit(q, D, pc + vec3(-0.22, 0.0, -0.22), pc + vec3(0.22, 0.42, 0.22), nb, t); if (tb < t) { t = tb; n = nb; obj = 6; }
+  { vec3 c = pc + vec3(0.0, 0.85, 0.0), oc = q - c; float bq = dot(oc, D), cq = dot(oc, oc) - 0.2; float hq = bq*bq - cq;
+    if (hq > 0.0) { float ts = -bq - sqrt(hq); if (ts > 0.0 && ts < t) { t = ts; n = normalize(q + D*ts - c); obj = 7; } } }
+  if (kind == 0) {        // quarters
+    tb = bHit(q, D, vec3(xa, -1.5, 1.6), vec3(xa + 1.1, -1.05, 3.95), nb, t); if (tb < t) { t = tb; n = nb; obj = 1; }
+    tb = bHit(q, D, vec3(xa + 0.1, -1.05, 3.4), vec3(xa + 1.0, -0.88, 3.9), nb, t); if (tb < t) { t = tb; n = nb; obj = 2; }
+    tb = bHit(q, D, vec3(xa - 0.01, -1.08, 1.6), vec3(xa + 1.12, -0.98, 2.9), nb, t); if (tb < t) { t = tb; n = nb; obj = 3; }
+    tb = bHit(q, D, vec3(xb - 1.4, -0.78, 3.4), vec3(xb, -0.72, 4.0), nb, t); if (tb < t) { t = tb; n = nb; obj = 4; }
+    tb = bHit(q, D, vec3(xb - 1.35, -1.5, 3.45), vec3(xb - 1.25, -0.78, 3.95), nb, t); if (tb < t) { t = tb; n = nb; obj = 4; }
+    tb = bHit(q, D, vec3(xb - 1.0, -0.72, 3.88), vec3(xb - 0.3, -0.25, 3.92), nb, t); if (tb < t) { t = tb; n = nb; obj = 5; }
+  } else if (kind == 1) { // mess: a table and chairs
+    float cx = (xa + xb)*0.5;
+    tb = bHit(q, D, vec3(cx - 0.9, -0.78, 1.7), vec3(cx + 0.9, -0.72, 2.9), nb, t); if (tb < t) { t = tb; n = nb; obj = 8; }
+    tb = bHit(q, D, vec3(cx - 0.08, -1.5, 2.2), vec3(cx + 0.08, -0.78, 2.4), nb, t); if (tb < t) { t = tb; n = nb; obj = 8; }
+    for (int i = 0; i < 4; i++) { float fx = cx + (float(i/2) - 0.5)*1.1, fz = i % 2 == 0 ? 1.35 : 3.25;
+      tb = bHit(q, D, vec3(fx - 0.22, -1.5, fz - 0.22), vec3(fx + 0.22, -1.05, fz + 0.22), nb, t); if (tb < t) { t = tb; n = nb; obj = 9; }
+      float bz = i % 2 == 0 ? fz - 0.22 : fz + 0.16;
+      tb = bHit(q, D, vec3(fx - 0.22, -1.05, bz), vec3(fx + 0.22, -0.5, bz + 0.06), nb, t); if (tb < t) { t = tb; n = nb; obj = 9; } }
+  } else {                // office: a long desk with two screens and a chair
+    tb = bHit(q, D, vec3(xa + 0.3, -0.78, 3.2), vec3(xb - 0.3, -0.72, 4.0), nb, t); if (tb < t) { t = tb; n = nb; obj = 4; }
+    tb = bHit(q, D, vec3(xa + 0.3, -1.5, 3.3), vec3(xa + 0.42, -0.78, 3.9), nb, t); if (tb < t) { t = tb; n = nb; obj = 4; }
+    for (int i = 0; i < 2; i++) { float sx = xa + 1.0 + float(i)*1.3;
+      tb = bHit(q, D, vec3(sx, -0.72, 3.86), vec3(sx + 1.0, -0.12, 3.9), nb, t); if (tb < t) { t = tb; n = nb; obj = 5; } }
+    tb = bHit(q, D, vec3(xa + 1.4, -1.5, 2.4), vec3(xa + 1.9, -1.0, 2.9), nb, t); if (tb < t) { t = tb; n = nb; obj = 9; }
+    tb = bHit(q, D, vec3(xa + 1.4, -1.0, 2.85), vec3(xa + 1.9, -0.35, 2.92), nb, t); if (tb < t) { t = tb; n = nb; obj = 9; }
+  }
+  vec3 h = q + D*t, col; float emit = 0.0;
+  vec3 carpet = r2 < 0.25 ? vec3(0.13, 0.17, 0.36) : r2 < 0.5 ? vec3(0.34, 0.09, 0.10) : r2 < 0.75 ? vec3(0.07, 0.27, 0.27) : vec3(0.26, 0.24, 0.12);
+  vec3 accent = r < 0.5 ? vec3(0.25, 0.75, 1.0) : vec3(1.0, 0.62, 0.28);
+  if (obj == 0) {
+    if (n.y > 0.5) { // carpet: woven, a border, fibre noise
+      float weave = 0.85 + 0.15*step(0.5, fract(h.x*6.0))*step(0.5, fract(h.z*6.0)) + 0.06*ph1(floor(h.xz*40.0));
+      float border = step(min(min(h.x - xa, xb - h.x), min(h.z, 4.0 - h.z)), 0.3);
+      col = mix(carpet*weave, carpet*0.55, border);
+    } else if (n.y < -0.5) { // ceiling with light panels
+      vec2 cp = fract(vec2(h.x*0.5, h.z*0.5)); float panel = step(0.2, cp.x)*step(cp.x, 0.8)*step(0.25, cp.y)*step(cp.y, 0.75);
+      col = vec3(0.32); emit = panel*1.6;
+    } else { // sci-fi wall panels: 0.8 m bays, grooves, a dark dado, a light strip, the odd vent or hatch
+      float u = abs(n.z) > 0.5 ? h.x : h.z, bay = floor(u/0.8), fu = fract(u/0.8), y = h.y + 1.5;
+      float groove = max(step(fu, 0.04), step(0.96, fu)) + step(abs(y - 0.9), 0.03) + step(abs(y - 2.55), 0.03);
+      col = y < 0.9 ? vec3(0.16, 0.17, 0.19) : vec3(0.52, 0.55, 0.58)*(0.9 + 0.1*ph1(vec2(bay, n.x + n.z*3.0)));
+      if (ph1(vec2(bay, 4.0 + n.x)) > 0.78 && y > 1.2 && y < 2.2 && fu > 0.15 && fu < 0.85) col = mix(col, vec3(0.1), step(0.5, fract(y*8.0))*0.6);   // vent
+      col *= 1.0 - 0.6*clamp(groove, 0.0, 1.0);
+      float strip = step(abs(y - 2.35), 0.04); emit = strip*2.2;
+      if (n.z < -0.5 && kind != 0 && abs(h.x - (xa + xb)*0.5) < 1.0 && abs(y - 1.75) < 0.45) { col = vec3(0.02, 0.03, 0.06); emit = 1.0; } // a wall display
+    }
+  } else if (obj == 1) col = vec3(0.6, 0.6, 0.62);
+  else if (obj == 2) col = vec3(0.9, 0.9, 0.88);
+  else if (obj == 3) col = carpet*1.6 + 0.1;
+  else if (obj == 4) col = vec3(0.32, 0.30, 0.28);
+  else if (obj == 5) { col = vec3(0.02); emit = 1.0; }
+  else if (obj == 6) col = vec3(0.55, 0.32, 0.18);
+  else if (obj == 7) col = vec3(0.10, 0.36, 0.10)*(0.6 + 0.6*ph1(floor(h.xy*14.0 + h.zx*9.0)));
+  else if (obj == 8) col = vec3(0.45, 0.43, 0.40);
+  else col = accent*0.45 + 0.08;
+  vec3 L = r < 0.12 ? vec3(0.02, 0.022, 0.03) : r < 0.3 ? vec3(0.5, 0.66, 0.95) : vec3(1.0, 0.78, 0.52);
+  float shade = 0.45 + 0.55*max(n.y, 0.0) + 0.2*max(-n.z, 0.0);
+  float lamp = 0.55 + 0.45*clamp((h.y + 1.5)/3.0, 0.0, 1.0);
+  vec3 lit = col*L*shade*lamp*2.4;
+  if (obj == 5 || (obj == 0 && emit > 0.9 && emit < 1.5)) lit += (r < 0.12 ? vec3(0.0) : accent)*0.9*(0.75 + 0.25*step(0.5, fract(h.y*14.0)));  // screens
+  else if (emit > 0.0) lit += (r < 0.12 ? vec3(0.0) : (emit > 2.0 ? accent : L))*emit*0.55;
+  return lit*exp(-t*0.06);
 }
-float pools(vec3 p){ float a = 0.0;
-  for (int i = 0; i < 16; i++) { if (i >= uPoolN) break; vec4 P = uPools[i]; float d = length(p - P.xyz); a += uPoolA[i]*(1.0 - smoothstep(P.w*0.25, P.w, d)); }
+// Hull floodlights as spotlights (owner, 2026-11-03: "these are all point lights, can we have 90 degree tangent spotlights like
+// in sfc?"): each lamp sits just off the plating and throws a 90 degree cone along it, bright at the lamp and fading with
+// distance, with a soft edge to the cone. The light is taken against the detail normal, so it grazes the plating and every
+// seam, rivet and panel edge in its fan catches it.
+float pools(vec3 p, vec3 n){ float a = 0.0;
+  for (int i = 0; i < 16; i++) { if (i >= uPoolN) break; vec4 P = uPools[i]; vec3 d = p - P.xyz; float dist = length(d); vec3 dl = d/max(dist, 1e-3);
+    float cone = smoothstep(0.64, 0.76, dot(dl, uPoolD[i].xyz));
+    float fall = (1.0 - smoothstep(P.w*0.55, P.w, dist))/(1.0 + pow(dist/P.w*2.4, 2.0));
+    float face = 0.22 + 1.7*max(dot(n, -dl), 0.0);
+    a += uPoolA[i]*cone*fall*face; }
   return a; }`;
 // A ship's floodlight pools (one table per ship, shared by its materials).
-function makePoolUniforms() { return { uPools: { value: Array.from({ length: 16 }, () => new THREE.Vector4()) }, uPoolA: { value: new Array(16).fill(0) }, uPoolN: { value: 0 } }; }
-function addPool(ship, p, r, a) { const U = ship.dmgU, i = U.uPoolN.value; if (i >= 16) return; U.uPools.value[i].set(p.x, p.y, p.z, r); U.uPoolA.value[i] = a; U.uPoolN.value = i + 1; }
+function makePoolUniforms() { return { uPools: { value: Array.from({ length: 16 }, () => new THREE.Vector4()) }, uPoolD: { value: Array.from({ length: 16 }, () => new THREE.Vector4()) }, uPoolA: { value: new Array(16).fill(0) }, uPoolN: { value: 0 } }; }
+function addSpot(ship, p, dir, range, a) { const U = ship.dmgU, i = U.uPoolN.value; if (i >= 16) return; const d = dir.clone().normalize(); U.uPools.value[i].set(p.x, p.y, p.z, range); U.uPoolD.value[i].set(d.x, d.y, d.z, 0); U.uPoolA.value[i] = a; U.uPoolN.value = i + 1; }
 
 // The hull material: MeshStandardMaterial with the paint, the detail maps, the windows and the pools, plus every damage rule
 // of mockup 5 (holes cut away or drawn by interior mapping, scorch marks, broken edges charred toward the break with a cooling
@@ -568,7 +652,7 @@ function hullMat(pp, ship, o = {}) {
           dChar = max(dChar, 1.0 - smoothstep(0.0, 11.0, edge + nz*4.0));
           dEmber = max(dEmber, (1.0 - smoothstep(0.0, 1.6, edge + nz*1.6))*(0.45 + 0.55*uCutHeat)*1.6); }
         dChar = clamp(dChar, 0.0, 1.0);
-        vec3 nO = normalize(vNo); vec3 wq; vec3 wroom; float win = winAt(vObj, nO, wq, wroom);`)
+        vec3 nO = normalize(vNo); vec3 nDet = nO; vec3 wq; vec3 wroom; float win = winAt(vObj, nO, wq, wroom);`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         float detA = detailA(vObj, nO);
         diffuseColor.rgb = paint(vObj, nO)*mix(1.0, detA, 0.9);
@@ -577,7 +661,7 @@ function hullMat(pp, ship, o = {}) {
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03,0.026,0.024)*(0.6+0.8*nz2), smoothstep(0.0, 0.7, dChar));
         if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.05,0.045,0.042);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-        { vec3 nD = win > 1.5 ? nO : detailN(vObj, nO, win > 0.5 ? 0.0 : 1.0); if (!gl_FrontFacing) nD = -nD; normal = normalize(normalMatrix*nD); }`)
+        { vec3 nD = win > 1.5 ? nO : detailN(vObj, nO, win > 0.5 ? 0.0 : 1.0); nDet = nD; if (!gl_FrontFacing) nD = -nD; normal = normalize(normalMatrix*nD); }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = win > 1.5 ? 0.06 : win > 0.5 ? 0.32 : 0.48 + 0.3*(1.0 - detA);
         roughnessFactor = mix(roughnessFactor, 1.0, smoothstep(0.0, 0.7, dChar));`)
@@ -585,7 +669,7 @@ function hullMat(pp, ship, o = {}) {
         metalnessFactor = win > 1.5 ? 0.0 : win > 0.5 ? 0.9 : metalnessFactor;
         metalnessFactor *= 1.0 - 0.85*dChar*dChar;`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        totalEmissiveRadiance = baseCol*pools(vObj)*(win > 1.5 ? 0.0 : 1.0);
+        totalEmissiveRadiance = baseCol*pools(vObj, nDet)*(win > 1.5 ? 0.0 : 1.0);
         if (win > 1.5) totalEmissiveRadiance += winRoom(wq, wroom, normalize(vObj - vCamObj), wroom.z);
         totalEmissiveRadiance *= uLight * (1.0 - clamp(dChar*1.4, 0.0, 1.0));
         if (uSecOn > 0.5) { float zf = (vObj.z - uSecC.x)/max(uSecC.y - uSecC.x, 1.0); totalEmissiveRadiance *= uSec[int(clamp(floor(zf*8.0), 0.0, 7.0))]; }
@@ -634,11 +718,11 @@ vec3 interiorRoom(vec3 p, vec3 V, vec4 h, vec4 hn){
     float b = va > 0. ? (floor(q[a]/cell[a])+1.)*cell[a] : floor(q[a]/cell[a])*cell[a];
     t3[a] = (b - q[a]) / va;
   }
-  float depth = h.w*1.4; float vn = dot(V, hn.xyz);
+  float depth = max(h.w*1.4, 5.0); float vn = dot(V, hn.xyz);
   float tb = vn < -1e-3 ? max((-depth - dot(q-h.xyz, hn.xyz)) / vn, 0.0) : 1e5;
   float t = min(min(t3.x, t3.y), min(t3.z, tb)); vec3 hit = q + V*t; vec3 col; vec3 room = floor(q/cell); vec3 local = hit - room*cell;
   float rh = dh3(room + 0.37);
-  if (t == tb) col = vec3(0.025);
+  if (t == tb) col = vec3(0.14, 0.13, 0.12)*(0.7 + 0.3*dh3(floor(hit*0.8)));
   else if (t == t3.y) col = V.y < 0. ? vec3(0.30, 0.28, 0.25)*(0.85 + 0.15*step(0.5, fract(local.x*0.5 + 0.5*step(0.5, fract(local.z*0.5)))))
                                      * (1.0 - 0.7*step(0.7, dh3(floor(local*0.9) + room)))        // crates and consoles on the deck
                                    : vec3(0.05) + vec3(0.7, 0.66, 0.58)*step(0.82, fract(local.x/6.0*2.0 + 0.1));   // ceiling light strips
@@ -646,7 +730,7 @@ vec3 interiorRoom(vec3 p, vec3 V, vec4 h, vec4 hn){
   float lamp = 0.4 + 0.6*clamp(local.y/3.4, 0.0, 1.0);
   float fl = 0.85 + 0.15*sin(uTime*9.0 + hit.x*0.7);
   vec3 L = rh < 0.7 || hn.w > 0.5 ? holeLight(hn.w)*1.4*fl : vec3(0.55, 0.65, 0.85);
-  float sootIn = 1.0 - 0.6*smoothstep(h.w*0.9, h.w*0.2, length(p - h.xyz));
+  float sootIn = 1.0 - 0.6*(1.0 - smoothstep(h.w*0.2, h.w*0.9, length(p - h.xyz)));
   return col*L*2.4*lamp*sootIn*exp(-t*0.08);
 }`;
 const NO_SEEDS = { uSeeds: { value: Array.from({ length: 16 }, () => V3()) }, uSeedN: { value: 0 }, uOpen: { value: new Array(16).fill(0) } };
@@ -930,14 +1014,14 @@ function buildShip(id, liv, offset = V3()) {
     add(P, boxGeo(K.hb * 1.12, 0.7, 0.25, 0, K.top - 1.3, z0 - 1.45), gm, 'bridge');
     for (const sx of [-1, 1]) add(P, boxGeo(0.2, 0.7, (z0 - z1) * 0.55, sx * (K.hb + 0.04), K.top - 1.7, (z0 + z1) / 2 + 1.5), gm, 'bridge');
     const hb = K.hb, poly = [[-hb * 0.6, z0], [hb * 0.6, z0], [hb, z0 - 3], [hb, z1], [hb * 0.8, z1 - 2.5], [-hb * 0.8, z1 - 2.5], [-hb, z1], [-hb, z0 - 3]];
-    addCap(ship, P, poly, (x, y) => V3(x, base, y), V3(0, -1, 0));
+    addCap(ship, P, poly, (x, y) => V3(x, base - 0.05, y), V3(0, -1, 0)); // 5 cm under the block's own floor: never coplanar (CLAUDE.md 10)
     P.cuts.push({ n: V3(0, 1, 0), d: base + 0.6, c: V3(0, base, (z0 + z1) / 2), r: hb * 2 });
     nav(ship, P, V3(0, K.top + 0.4, (z0 + z1) / 2), 0xff2a1a, 'beacon');
     ship.bridgeTop = V3(0, K.top, (z0 + z1) / 2);
   } else ship.bridgeTop = V3(0, hullAt(S, zMax - 10)[2], zMax - 10);
   // Turrets: a faceted housing with twin barrels and a phaser emitter strip that glows when it fires.
   for (const [x, z, face] of C.turrets) {
-    const h = hullAt(S, z), up = face === 'top' ? 1 : -1, y = up > 0 ? h[2] : h[3];
+    const h = hullAt(S, z), up = face === 'bottom' ? -1 : 1, y = face === 'cmd' ? C.command.top : up > 0 ? h[2] : h[3];
     const body = new THREE.CylinderGeometry(1.0, 1.3, 0.8, 8); body.translate(x, y + 0.4 * up, z); add(hullP, body, greyMat, 'weapons');
     for (const bx of [-0.35, 0.35]) add(hullP, boxGeo(0.2, 0.2, 2.4, x + bx, y + 0.55 * up, z + 1.4), darkMat, 'weapons');
     const pm = glowMat(0xffa23a, 0x2a2d36); pm.emissiveIntensity = 0.25; ship.glows.phaser.push(pm); add(hullP, boxGeo(1.6, 0.12, 0.3, x, y + 0.82 * up, z - 0.6), pm, 'weapons');
@@ -981,11 +1065,17 @@ function buildShip(id, liv, offset = V3()) {
     nav(ship, hullP, V3(0, hullAt(S, 0)[3] - 0.4, 0), 0xff2a1a, 'beacon'); nav(ship, hullP, V3(0, hullAt(S, zMin)[2] - 0.6, zMin - 0.4), 0xffffff, 'aft'); }
   // Floodlight pools, the baked hull lights (owner, 2026-10-30: logo lights, and hull floods that graze the plating so its detail
   // reads in shadow): the registry, the command block, each nacelle's flank, and lamps along the waist that light the hull up.
-  addPool(ship, V3(0, hr[2], zr), rw * 0.62, 0.65);
-  if (C.command) addPool(ship, V3(0, C.command.top - 1.5, C.command.z[0] - 2), C.command.hb * 1.2, 0.4);
-  for (const K of ship.sides) { const k = ship.knee[K]; addPool(ship, k.mid.clone().add(V3(0, k.n.hh, k.n.len * 0.15)), k.n.len * 0.32, 0.45); }
-  { const n = Math.max(2, Math.round((C.live[1] - C.live[0]) / 16)); for (let i = 0; i < n && ship.dmgU.uPoolN.value < 15; i++) {
-    const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); for (const sd of [1, -1]) addPool(ship, V3(sd * h[1], C.band[1] + 0.2, z), 5, 0.28); } }
+  // The registry, lit from a lamp just ahead of it, throwing its fan aft along the dorsal plating.
+  addSpot(ship, V3(0, hr[2] + 0.35, zr + rw * 0.2 + 2), V3(0, -0.12, -1), rw * 1.4, 1.1);
+  // The command block's face, from a lamp on the hull ahead of it.
+  if (C.command) { const K = C.command, hz = hullAt(S, K.z[0] + 4); addSpot(ship, V3(0, hz[2] + 0.4, K.z[0] + 4), V3(0, 0.45, -1), 14, 0.9); }
+  // Each nacelle's flank, from a lamp at its intake end, raking aft along it.
+  for (const K of ship.sides) { const k = ship.knee[K], n = k.n, out = K === 'P' ? 1 : K === 'S' ? -1 : 0, up = K === 'D' ? 1 : K === 'V' ? -1 : 0;
+    addSpot(ship, k.mid.clone().add(V3(out * (n.hw + 0.5), up * (n.hh + 0.5) + (out ? n.hh * 0.6 : 0), n.len * 0.42)), V3(0, out ? -0.1 : -up * 0.1, -1), n.len * 0.8, 0.9); }
+  // Lamps in the service band that throw their fans up the hull's sides, and lamps on the shoulders that rake the dorsal plating.
+  { const n = Math.max(2, Math.round((C.live[1] - C.live[0]) / 18)); for (let i = 0; i < n && ship.dmgU.uPoolN.value < 15; i++) {
+    const z = lerp(C.live[0], C.live[1], (i + 0.5) / n), h = hullAt(S, z); for (const sd of [1, -1]) addSpot(ship, V3(sd * (h[1] + 0.35), C.band[1] + 0.1, z), V3(0, 1, 0.05), (h[2] - C.band[1]) * 2.2, 0.85); } }
+  for (const sd of [1, -1]) { if (ship.dmgU.uPoolN.value >= 16) break; const z = zMin + 6, h = hullAt(S, z); addSpot(ship, V3(sd * h[1] * 0.6, h[2] + 0.35, z), V3(0, -0.08, 1), C.length * 0.35, 0.6); }
   // Two fire lights per ship, made now so the shaders never recompile mid-battle.
   for (let i = 0; i < 2; i++) { const l = new THREE.PointLight(0xff7a2a, 0, C.length * 0.5, 1.6); ship.root.add(l); ship.lights.push({ l, until: 0, at: null, anchor: null }); }
   // The shield bubble.
@@ -1817,6 +1907,9 @@ window.MOCKUP_SHOTS = {
   bridge_fire: shot('petrel_updown', 'shadow', 'hero', (s) => { hurt(s, 'bridge', 80); hurt(s, 'life', 40); }, 2.5, { tab: 'damage', cam: (s) => frame(55, V3(-0.7, 0.55, 1), at(s, s.bridgeTop)) }),
   scorch: shot('petrel_level', 'sunlit', 'hero', (s) => phasers(s, 14), 1.0, { tab: 'damage', cam: (s) => frame(70, V3(-0.25, 1, 0.6), at(s, V3(0, 7, 10))) }),
   holes_parallax: shot('petrel_level', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', holes: 'parallax', cam: (s) => { const h = s.holes[0]; frame(16, h.normal.clone().add(V3(0.3, 0.1, 0.5)), at(s, h.point)); } }),
+  phaser_burn: shot('petrel_level', 'sunlit', 'hero', (s) => { for (let i = 0; i < 3; i++) { const z = 6, h = hullAt(s.C.stations, z); const hh = hitAt(s, V3(-h[1], 2.0, z), V3(-1, 0.05, 0.1)); if (hh) { hh.bypass = true; damage(s, hh.sys, 12, hh); } } }, 1.5,
+    { tab: 'damage', cam: (s) => { const h = s.holes[0]; if (h) frame(9, h.normal.clone().add(V3(0.2, 0.15, 0.45)), at(s, h.point)); } }),
+  rooms: shot('petrel_level', 'nosun', 'hero', null, 0.2, { cam: (s) => { const C = s.C, z = lerp(C.live[0], C.live[1], 0.62), h = hullAt(C.stations, z); frame(6, V3(-1, 0.1, 0.25), at(s, V3(-h[1], 1.6, z))); } }),
   holes_modelled: shot('petrel_level', 'sunlit', 'hero', (s) => torpedoes(s), 12, { tab: 'damage', holes: 'modelled', cam: (s) => { const h = s.holes[0]; frame(16, h.normal.clone().add(V3(0.3, 0.1, 0.5)), at(s, h.point)); } }),
   nacelle_lost: shot('petrel_level', 'sunlit', 'hero', (s) => hurt(s, 'nacP', 100), 2.2, { tab: 'damage', cam: (s) => frame(150, V3(1, 0.65, -0.25), at(s, V3(15, 0, -15))) }),
   dorsal_lost: shot('petrel_updown', 'sunlit', 'hero', (s) => hurt(s, 'nacD', 100), 2.2, { tab: 'damage', cam: (s) => frame(150, V3(-1, 0.4, 0.4), at(s, V3(0, 8, -10))) }),
