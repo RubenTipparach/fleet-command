@@ -27,6 +27,7 @@ account and every link here is updated.
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v11: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -380,3 +381,19 @@ Pelican carrier. Survey A14.
 
 Design: `openspec/changes/concord-hull-concepts/`.
 
+## 9. Faction emblems
+
+Owner, 2026-11-03: a session dedicated to designing the emblems (faction crests and insignia) for every faction in the
+game. Numbered 9 because 7 (Krai Warhost ships) and 8 (the Krai battle console) are taken on other threads' branches.
+
+- **Every faction's emblem**: Concord, Kethran Hegemony, Vos Syndicate, Vhorr Brood, Aelith Conclave, Tarsine Remnant,
+  Krai Warhost, Ombrai, Kelvane Institute, Ssarith Hunt; each keeps the idea its console crest already had.
+- **At every size it is seen**: the console crest (96 x 96 px), 40 px and 20 px, in colour and in one colour, beside the
+  console's icons (the icon standard, `docs/design/icon-guide.html`).
+- **On a ship's flank**: a stand-in hull section in 3D at true scale, the marking at 6 % of ship length (5.3 m on an
+  88 m frigate, 20 px on a phone at battle distance).
+- What each emblem means is the owner's (survey E1-E12); the recommendations are drawn and provisional.
+- The Krai frigate's placeholder flank marking (mockup 7) is replaced by the Krai thread once the Krai emblem is
+  approved; this mockup does not touch that page.
+
+Design: `openspec/changes/faction-emblems/`. Shapes: `docs/mockups/lib/emblems.js`.
