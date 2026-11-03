@@ -344,6 +344,14 @@ should have a little X".
   - Transport has four modes: Capture, Hit and run, **Cargo** and Mines. Cargo holds supplies and the rest together,
     with a **Supplies / Misc** toggle (lilac keys) choosing which item keys show; the hold bar reads supplies, misc and
     free.
+- **Station icons** (version 62; owner, 2026-11-03: "make icons more unique and interesting, transporter should be a guy
+  dematerializing with horizontal lines for example. fleet should be a formation of 3 chevrons, repair should be a
+  wrench", "tactical should be a turret?"): the nine station icons in the Concord kit (`lib/concord.js`) are now
+  pictures of their jobs: Helm a ship's wheel, Power a bolt in a ring, Tactical a turret, Point defence a shield with a
+  burst, Science an atom, Comms a dish with waves, Repair a wrench, Transport a figure dissolving into horizontal slices
+  over a pad, Fleet three chevrons in formation. The transport icon also marks the transporter subsystem on the systems
+  display. Console skins (mockup 4) draws from the same kit and picks them up at its next publish; its live page is an
+  older build than this branch's copy, so it is not republished from here.
 
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 

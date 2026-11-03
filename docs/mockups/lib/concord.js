@@ -92,7 +92,10 @@ const concordHero = {
   },
 };
 function ccLamp(x, w, col) { const c = w / 2; x.fillStyle = CC.deep; x.beginPath(); x.arc(c, c, 30, 0, 2 * P); x.fill(); x.fillStyle = '#000'; x.beginPath(); x.arc(c, c, 25, 0, 2 * P); x.fill(); x.fillStyle = col; x.beginPath(); x.arc(c, c, 21, 0, 2 * P); x.fill(); }
-// Concord icons: open circles and arcs in one even line. Nothing pointed (the saucer, the circle of species).
+// Concord icons: open circles and arcs in one even line. The station icons are pictures of their jobs (owner,
+// 2026-11-03: "make icons more unique and interesting, transporter should be a guy dematerializing with horizontal lines
+// for example. fleet should be a formation of 3 chevrons, repair should be a wrench"): a ship's wheel, a bolt, a
+// turret (owner: "tactical should be a turret?"), a shield with a burst, an atom, a dish, a wrench, a figure in bars, three chevrons.
 // col: the ink, Sky by default; black on a lit (active) tab, as the pill keys' labels are.
 function ccIcon(name, col = CC.sky) {
   return paint(48, 48, (x) => {
@@ -101,20 +104,20 @@ function ccIcon(name, col = CC.sky) {
     const D = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); };
     const A = (cx, cy, r, a0, a1) => { x.beginPath(); x.arc(cx, cy, r, a0, a1); x.stroke(); };
     ({
-      helm: () => { C(24, 24, 18); D(24, 24, 3.5); x.beginPath(); x.moveTo(24, 24); x.lineTo(35, 13); x.stroke(); D(36.7, 11.3, 4.5); },
+      helm: () => { C(24, 24, 12); D(24, 24, 4); for (let i = 0; i < 8; i++) { const a = i * P / 4, c = Math.cos(a), sn = Math.sin(a); x.beginPath(); x.moveTo(24 + c * 4, 24 + sn * 4); x.lineTo(24 + c * 19, 24 + sn * 19); x.stroke(); D(24 + c * 20, 24 + sn * 20, 2.6); } },
       fire: () => { C(24, 24, 18); C(24, 24, 10); D(24, 24, 3.5); },
       shields: () => { A(24, 30, 19, P * 1.12, P * 1.88); A(24, 30, 12, P * 1.15, P * 1.85); D(24, 32, 4); },
       tractor: () => { C(10, 24, 6); C(38, 24, 6); x.beginPath(); x.moveTo(17, 20); x.lineTo(31, 20); x.moveTo(17, 28); x.lineTo(31, 28); x.stroke(); },
-      transport: () => { for (const [cx, cy] of [[24, 10], [14, 24], [34, 24], [24, 38]]) D(cx, cy, 3.5); C(24, 24, 7); },
-      science: () => { x.beginPath(); x.ellipse(24, 24, 19, 8, -0.6, 0, 2 * P); x.stroke(); x.beginPath(); x.ellipse(24, 24, 19, 8, 0.6, 0, 2 * P); x.stroke(); D(24, 24, 4); },
-      comms: () => { D(12, 36, 4); A(12, 36, 11, -P / 2, 0); A(12, 36, 20, -P / 2, 0); A(12, 36, 29, -P / 2 + 0.12, -0.12); },
-      repair: () => { A(24, 24, 15, 0.5, 2 * P - 0.5); D(24, 24, 4); x.beginPath(); x.moveTo(35, 18); x.lineTo(35, 30); x.stroke(); },
+      transport: () => { x.beginPath(); x.arc(24, 11, 5, 0, 2 * P); x.fill(); x.beginPath(); x.moveTo(15, 34); x.lineTo(16, 21); x.quadraticCurveTo(24, 16, 32, 21); x.lineTo(33, 34); x.closePath(); x.fill(); x.fillRect(17, 33, 5, 6); x.fillRect(26, 33, 5, 6); x.globalCompositeOperation = 'destination-out'; for (let yy = 5, k = 0; yy < 40; yy += 4, k++) x.fillRect(0, yy, 48, Math.max(0.6, 2.2 - k * 0.2)); x.globalCompositeOperation = 'source-over'; x.beginPath(); x.ellipse(24, 43, 14, 3.2, 0, 0, 2 * P); x.stroke(); for (const [sx, sy] of [[8, 13], [40, 17], [7, 27], [41, 30]]) x.fillRect(sx - 3, sy - 1, 6, 2); },
+      science: () => { for (const r of [0, P / 3, -P / 3]) { x.beginPath(); x.ellipse(24, 24, 20, 7.5, r, 0, 2 * P); x.stroke(); } D(24, 24, 4); },
+      comms: () => { x.beginPath(); x.arc(17, 27, 12, P * 0.75, P * 1.75, true); x.closePath(); x.stroke(); x.beginPath(); x.moveTo(17, 27); x.lineTo(12, 44); x.moveTo(17, 27); x.lineTo(22, 44); x.moveTo(9, 44); x.lineTo(25, 44); x.stroke(); D(26, 18, 2.5); A(26, 18, 8, -P * 0.5, 0); A(26, 18, 15, -P * 0.5, 0); },
+      repair: () => { x.lineWidth = 6; x.lineCap = 'round'; x.beginPath(); x.moveTo(11, 37); x.lineTo(26, 22); x.stroke(); x.lineWidth = 5; A(31, 17, 9, -P / 4 + 0.95, -P / 4 - 0.95 + 2 * P); x.lineWidth = 3; },
       map: () => { C(12, 14, 6); C(36, 20, 6); C(20, 36, 6); x.lineWidth = 2; x.beginPath(); x.moveTo(18, 15); x.lineTo(30, 19); x.moveTo(33, 25); x.lineTo(24, 32); x.moveTo(17, 30); x.lineTo(13, 20); x.stroke(); },
       // Proposed for the battle console (openspec/changes/battle-console): the same open circles and arcs, one even line.
-      power: () => { A(24, 26, 15, -P / 2 + 0.7, -P / 2 - 0.7 + 2 * P); x.beginPath(); x.moveTo(24, 6); x.lineTo(24, 22); x.stroke(); },
-      tactical: () => { C(24, 24, 15); D(24, 24, 3.5); for (const [cx, cy] of [[24, 4], [44, 24], [24, 44], [4, 24]]) D(cx, cy, 3); },
-      pd: () => { C(24, 24, 7); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; A(24, 24, 17, a - 0.6, a + 0.6); } },
-      fleet: () => { C(24, 12, 6); C(11, 34, 6); C(37, 34, 6); A(24, 28, 13, P * 0.15, P * 0.85); },
+      power: () => { C(24, 24, 19); x.beginPath(); x.moveTo(27, 7); x.lineTo(15, 26); x.lineTo(23, 26); x.lineTo(20, 41); x.lineTo(33, 20); x.lineTo(25, 20); x.closePath(); x.fill(); },
+      tactical: () => { x.fillRect(7, 39, 34, 5); x.beginPath(); x.roundRect(12, 27, 24, 13, [7, 7, 2, 2]); x.fill(); x.lineWidth = 3.5; x.lineCap = 'round'; x.beginPath(); x.moveTo(25, 31); x.lineTo(42, 14); x.moveTo(21, 29); x.lineTo(38, 12); x.stroke(); x.fillRect(19, 22, 10, 6); x.lineWidth = 3; },
+      pd: () => { x.beginPath(); x.moveTo(24, 5); x.lineTo(40, 11); x.quadraticCurveTo(40, 33, 24, 43); x.quadraticCurveTo(8, 33, 8, 11); x.closePath(); x.stroke(); x.beginPath(); for (let i = 0; i < 12; i++) { const a = -P / 2 + i * P / 6, r = i % 2 ? 4 : 9; x.lineTo(24 + Math.cos(a) * r, 23 + Math.sin(a) * r); } x.closePath(); x.fill(); },
+      fleet: () => { const chev = (cx, cy, k) => { x.beginPath(); x.moveTo(cx, cy - 8 * k); x.lineTo(cx + 8 * k, cy + 6 * k); x.lineTo(cx, cy + 2 * k); x.lineTo(cx - 8 * k, cy + 6 * k); x.closePath(); x.fill(); }; chev(24, 13, 1.35); chev(11, 33, 1.15); chev(37, 33, 1.15); },
       ship: () => { C(24, 16, 10); x.beginPath(); x.roundRect(11, 26, 6, 18, 3); x.stroke(); x.beginPath(); x.roundRect(31, 26, 6, 18, 3); x.stroke(); D(24, 32, 3); },
       sensors: () => { D(24, 24, 4); C(24, 24, 11); A(24, 24, 19, -P * 0.8, -P * 0.2); A(24, 24, 19, P * 0.2, P * 0.8); },
       cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) C(cx, cy, 7); },
