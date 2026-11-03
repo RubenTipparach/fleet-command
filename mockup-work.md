@@ -22,10 +22,11 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-10-30, v5) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03, v65) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v66, v67 in the repo) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
-| 5 | Concord ships and damage | Drafted (2026-11-02, v3) | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
+| 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
+| 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v11: the Tern family, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -72,7 +73,7 @@ stuff in game, we have chosen Godot 4.7 with c# so begin integration now"). The 
 weapons, radar, the strips and the stand-in battle) is in `src/`, with stills in `docs/screenshots/game/`. The tracker's
 stage for this mockup still needs updating from the desktop session (cloud sessions do not publish).
 
-Version 66 (2026-11-03; owner: "Pause menu should have a background"): the menu sheet has a solid background inside its
+Version 67 (2026-11-03; owner: "Pause menu should have a background"): the menu sheet has a solid background inside its
 frame, in the mockup and the game alike. Then (owner: "Re move shield view toggle"): the Shield view key is gone and the 3D
 shield display is always shown; the Target key (show or hide the Target box) moves to the corner. Committed from the cloud
 session; the desktop session publishes it.
@@ -342,4 +343,51 @@ with charred edges. It is the first part of mockup 3 (look dev), for one faction
   by heavy hits, a tougher reactor, phasers that burn through, and light from every shot and blast, including the ship's own.
 
 Design: `openspec/changes/concord-ship-look/` and `openspec/changes/ship-damage-visuals/`.
+
+## 6. Concord hull concepts
+
+Owner, 2026-11-03, on mockup 5's ships: "ship designs suck, I want somethign more original ,check out star crew and
+adventure con repos for how ships are designed".
+
+From Star Crew (`federation-ship-concepts`, `grabon-ship-concepts`, `ship-exteriors`): ships designed inside out, zones
+first, a hull wrapped round them, then the two fitted; windows only on real rooms; three alternatives reviewed in three
+stages with measured checks. From Adventure (CLAUDE.md 13.2 and 13.2b, `mockups/fleet/`): one shape language per faction
+that reads at 40 px, the player's faction the one you can see through, classes counted by a repeated element.
+
+Version 1 (three directions, Halo, Lantern spine, Light sail) was rejected the same day: "those concepts are all bad.
+didnt you take a look at the otehr star crew repos?", "they dont fit my star crrew ships atall", "star crew bridge sim",
+"star crew 64 and star raster are irrelevant". Then: "try some vertically aligned pulons too ... 1 pylon vertical, 2
+pulons vertical".
+
+What version 2 shows: the Concord line built in Star Crew Bridge Simulator's Tern family (octagonal hulls lofted
+through stations, white armour over a grey subhull and service band, dorsal channels, copper-rimmed windows on decks,
+long octagonal nacelles on swept pylons, radiators, turrets, engine bells, painted registry): the Swift corvette (51 m),
+Petrel frigate (88 m) and Albatross cruiser (131 m), with the Tern itself from its own data as the yardstick. Three pylon
+arrangements on every Concord class (level, one upright, two upright), four liveries (Concord, and the Tern's Copper,
+Cyan, Rescue), measured facts and 40 px silhouettes. Survey A11 (layouts), A12 (sizes).
+
+Version 4, on the owner's notes ("swift having 1 below would be better, petrel having 1 above and below", "albatross is a
+bid long, I would prefer it to have like a secondary hull where pulons extend outr of", "instead of opptions. please just
+apply the variants for both petrel and swift and include horizontal aligned ones aas well"): the Swift and the Petrel each
+shown as three ships (one below, above and below, level), and the Albatross shortened to 112 m in two hulls, its nacelle
+pylons sweeping out of a secondary hull. The line-up is a grid of all eight at true scale.
+
+Version 5, on the owner's note ("remove petrel with 1 pylon, add detail textures, norrmal maps, fix up windows, need to bring
+lighting standards up to what we had before, and damage systems"): the one-below Petrel is gone; the page is now mockup 5's
+page with the Tern-family builder, so every ship has its light presets, floodlights, navigation lights and the whole damage
+system (holes, venting, nacelles snapping off at the pylon, fracture with cut faces, wires, the staged breach); detail and
+normal maps in the paint's plate grid; windows drawn as openings with a copper rim, reflecting glass and a room behind.
+
+Then, the same day: furnished rooms behind the windows (carpet, sci-fi wall panels, furniture, a plant), phaser burn-throughs
+that show a room, 90 degree spotlights grazing the hull instead of round pools, upright pylons 5.5 m out, turrets clear of the
+command block, no z-fighting under the command block, the Tern from its latest model's geometry in our paint, a second
+Albatross with pylons from the main hull, detailed thrusters, and lights that flicker a couple of times and then hold. Survey
+A13 (which Albatross).
+
+Then: hull lamps on the top and bottom face forward and side lamps aim down, a belly lamp pair forward and aft, and two new
+classes (owner: "we need 2 additional ship classes: a battle ship and a carrier", "somewhat different than the standard ship
+shape, carrier needs bays for fighters, battleship needs an array of cannons", "large cannons"): the Condor battleship and the
+Pelican carrier. Survey A14.
+
+Design: `openspec/changes/concord-hull-concepts/`.
 

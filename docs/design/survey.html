@@ -174,6 +174,22 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'A', name: 'The Concord line (mockup 6)',
+    lead: 'Mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships in your Tern\'s family from Star Crew Bridge Simulator. Version 5 applies your notes: the Swift three ways (one nacelle below, one above and one below, the level pair), the Petrel two ways (above and below, level), the Albatross at 112 m with a secondary hull its pylons sweep out of, all with mockup 5\'s lighting and damage, detail and normal maps and windows with rooms. Open Line-up to see them at true scale beside the Tern.',
+    qs: [
+      { id: 'A11', q: 'Which nacelle layout does each class keep? Swift: one below, above and below, or level. Petrel: above and below, or level. The Albatross keeps its secondary hull and level pair.',
+        options: ['Your picks: Swift one below, Petrel above and below', 'Both level (the Tern family\'s own)', 'Swift one below, Petrel level', 'Different (say which in the notes)'], rec: 0,
+        why: 'You picked these; the other layouts stay on the page beside them for comparison until you choose.' },
+      { id: 'A13', q: 'The Albatross: its nacelle pylons swept out of the secondary hull, or level from the primary hull\'s waist with the secondary hull clear beneath? Both are on the page (Albatross, and Albatross, pylons on the main hull).',
+        options: ['From the secondary hull', 'From the main hull', 'Show me another arrangement (say which in the notes)'], rec: 0,
+        why: 'Pylons from the secondary hull make the two hulls one machine and give the cruiser a silhouette no other class has; from the main hull it reads as a larger Tern. You asked to see the second; either is built.' },
+      { id: 'A14', q: 'The two new classes: the Condor battleship (184 m: four main guns, two on top and two under the keel, short stepped barrels in faceted gun houses, the rest point-defence cannons) and the Pelican carrier (128 m: the crew hull forward, a diamond-section hangar hull behind it with three numbered bay doors each side). Are these the directions?',
+        options: ['Yes, both as built', 'Battleship yes, carrier different (say how in the notes)', 'Carrier yes, battleship different (say how in the notes)', 'Neither yet (say what in the notes)'], rec: 0,
+        why: 'Both follow your notes and references, and both keep the family\'s hull, paint, windows and nacelles.' },
+      { id: 'A12', q: 'Concord sizes: corvette 51 m, frigate 88 m, cruiser 112 m (in two hulls), beside the Tern at 86 m?',
+        options: ['Yes, as built', 'Bigger cruiser (say how long in the notes)', 'Smaller (say in the notes)'], rec: 0,
+        why: 'The frigate then stands beside your Tern at its size, and the cruiser is long enough for four decks without reading as stretched.' },
+    ] },
   { tag: 'A', name: 'Concord ships and damage (mockup 5)',
     lead: 'Mockup 5 (Concord Ships, https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4) shows the Bastion cruiser, the Lantern frigate and the Swift corvette at true scale, and how each subsystem shows its damage on the ship. Try the Damage tab: click the hull to fire, or use the scenarios. Your question was "how can I understand ship subsystem damage by looking at it?"; A2 to A6 answer it.',
     qs: [
