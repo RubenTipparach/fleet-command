@@ -76,10 +76,30 @@ Damage, hull lamps, a detail texture and the 40 px silhouette check against the 
 
 About 1,000 triangles a frigate and 2,000 a dreadnought, before detail: well inside a phone budget.
 
+## Version 4: the frigate on the Ship Design Bible (owner, 2026-11-03)
+
+Owner: "did you make new krai ships yet?", then "ok nuke, the krai survey since we're redoing them". Versions 1 to 3 were
+drawn hull first in the console's own volcanic metal; version 4 follows the guide (`ship-design-guide`) step by step,
+for one class, the frigate:
+
+1. **Rooms.** `data/ships/krai/frigate_plan.json`: 24 functional rooms on four decks 3.5 m apart (floors 5.25, 1.75,
+   -1.75 and -5.25 m), crew 36. The two middle decks are wide (to 6.5 m each side), the top and keel decks narrow, so
+   the section is a lozenge; the spinal cannon runs the keel deck from z -10 to 42 m beside its passage. The rooms are
+   functional only; what the Krai call them, and any room their culture adds, is the owner's (U7).
+2. **Hull.** Fitted round the rooms by `docs/mockups/lib/ship-plan.js` (one module, shared with the guide) in its
+   `blade` section: the chamfers are cut as deep as the rooms allow, so it is a blade on its edge. Every room is
+   1.05 m inside (0.45 m clearance plus 0.6 m structure), measured on the page.
+3. **Parts.** A ram blade at the bow, a crest along the spine, a keel blade, a muzzle for the spinal cannon, edge-on
+   blade nacelles at 15 m either side on swept struts (6.6 m of daylight to the hull), a forge-slot drive.
+4. **Skin.** Blued steel with forward-pointing chevron plates, tempered bronze edges, one crimson marking (placeholder),
+   pale gold light; 52 windows on crew and command rooms only; nav lights and four floods.
+
+Rule X1 of the guide (the hull complements the console) is a guide, not a check (owner: "remove the color hull to
+console requirements", "I said compliment, so not a hard rule"): the page shows the two palettes side by side and
+measures nothing between them.
+
 ## Open questions
 
-| # | Question | Recommendation (provisional until answered) |
-|---|---|---|
-| A15 | Which direction do the Krai take: A Standing blade, B Lance or C Three-edged dagger? | A Standing blade |
-| A16 | Sizes and growth: corvette about 55 m to dreadnought 212 m, a class growing by blades? | Yes |
-| A17 | What the Krai call their ships and classes, and whether a ship wears its record (kill marks, captured blades) (culture, the owner's to decide, U7) | Placeholders and no marks until the owner decides |
+Survey A15-A17 were withdrawn with the old directions (owner, 2026-11-03: "nuke, the krai survey since we're redoing
+them"). None are open. The other classes follow the frigate once it is approved; names and markings stay placeholders
+until the owner sets them.

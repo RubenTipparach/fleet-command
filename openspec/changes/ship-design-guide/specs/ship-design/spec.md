@@ -18,11 +18,11 @@ the floor, person-sized.
 - **WHEN** windows are placed from the Petrel's plan
 - **THEN** none falls on engineering, the reactor, the magazine, the shuttle bay or a corridor
 
-### Requirement: A ship's exterior complements its console without sharing its materials or colours
+### Requirement: A ship's exterior complements its console and has its own features
 
-A faction's hull SHALL NOT use a material, texture, shader or colour swatch of that faction's console skin, and SHALL
-be distinguished by its own features, colour scheme and paneling.
+A faction's hull SHALL be distinguished by its own features, colour scheme and paneling, and SHALL be shown beside
+its console skin; sharing a colour or material with the console is allowed (complementing is a guide, not a check).
 
 #### Scenario: A new faction's hull
 - **WHEN** a faction's ship exterior is designed
-- **THEN** its palette and materials are listed beside its console skin's and none is shared
+- **THEN** its page shows its palette beside its console skin's, and no colour-distance check is applied

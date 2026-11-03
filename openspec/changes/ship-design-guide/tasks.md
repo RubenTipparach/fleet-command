@@ -10,6 +10,6 @@
 
 ## 2. Following changes (each its own)
 
-- [ ] 2.1 Refit mockup 6's hulls from plans (a plan per class), and move the band blue off the console's Signal (X2)
+- [ ] 2.1 Refit mockup 6's hulls from plans (a plan per class)
 - [ ] 2.2 Redesign the Krai ships on the method: rooms first, their own exterior (X1-X3)
 - [ ] 2.3 Interior mapping sized per room from the plan (W4, chapter 8)

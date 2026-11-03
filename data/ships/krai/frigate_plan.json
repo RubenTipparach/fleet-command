@@ -1,0 +1,43 @@
+{
+  "schema": "fleetcommand.ship-plan/1",
+  "_doc": "The Krai frigate's rooms as blocks (Ship Design Bible chapter 2), the first Krai ship designed inside out. Functional rooms only: what the Krai call them, and any room their culture adds, is the owner's to decide (U7). Axes and units as data/ships/concord/petrel_plan.json. Four decks, narrow and tall, so the fitted hull is a blade on its edge; the spinal cannon runs along the keel deck to the bow.",
+  "ship": "krai_frigate",
+  "crew": 36,
+  "deck_floor_m": [
+    5.25,
+    1.75,
+    -1.75,
+    -5.25
+  ],
+  "headroom_m": 2.8,
+  "clearance_m": 0.45,
+  "structure_m": 0.6,
+  "nose_m": 8,
+  "tail_m": 3,
+  "rooms": [
+    {"id": "bridge", "name": "Bridge", "kind": "command", "decks": [0], "x_m": [-3, 3], "z_m": [26, 34]},
+    {"id": "captain", "name": "Captain's quarters", "kind": "command", "decks": [0], "x_m": [1.2, 3.5], "z_m": [14, 26]},
+    {"id": "tactical", "name": "Tactical room", "kind": "command", "decks": [0], "x_m": [-3.5, -1.2], "z_m": [14, 26]},
+    {"id": "a_corridor", "name": "Command passage", "kind": "corridor", "decks": [0], "x_m": [-1.2, 1.2], "z_m": [-12, 26]},
+    {"id": "officers_p", "name": "Officers' quarters, port", "kind": "crew", "decks": [0], "x_m": [1.2, 3.5], "z_m": [0, 14]},
+    {"id": "officers_s", "name": "Officers' quarters, starboard", "kind": "crew", "decks": [0], "x_m": [-3.5, -1.2], "z_m": [0, 14]},
+    {"id": "gun_control", "name": "Gun control", "kind": "weapons", "decks": [0], "x_m": [-3, 3], "z_m": [-20, -12]},
+    {"id": "b_corridor", "name": "Main corridor", "kind": "corridor", "decks": [1], "x_m": [-1.2, 1.2], "z_m": [-26, 30]},
+    {"id": "barracks_p", "name": "Barracks, port", "kind": "crew", "decks": [1], "x_m": [1.2, 6.5], "z_m": [-6, 14]},
+    {"id": "barracks_s", "name": "Barracks, starboard", "kind": "crew", "decks": [1], "x_m": [-6.5, -1.2], "z_m": [-6, 14]},
+    {"id": "mess", "name": "Mess", "kind": "crew", "decks": [1], "x_m": [1.2, 6.5], "z_m": [-24, -6]},
+    {"id": "medbay", "name": "Medbay", "kind": "crew", "decks": [1], "x_m": [-6.5, -1.2], "z_m": [-24, -6]},
+    {"id": "armoury", "name": "Armoury", "kind": "weapons", "decks": [1], "x_m": [1.2, 5], "z_m": [14, 30]},
+    {"id": "damage_control", "name": "Damage control", "kind": "systems", "decks": [1], "x_m": [-5, -1.2], "z_m": [14, 30]},
+    {"id": "c_corridor", "name": "Lower corridor", "kind": "corridor", "decks": [2], "x_m": [-1.2, 1.2], "z_m": [-30, 30]},
+    {"id": "shield_room", "name": "Shield generator", "kind": "systems", "decks": [2], "x_m": [-5, -1.2], "z_m": [10, 30]},
+    {"id": "magazine", "name": "Magazine", "kind": "weapons", "decks": [2], "x_m": [1.2, 5], "z_m": [10, 30]},
+    {"id": "boarding_bay", "name": "Boarding bay", "kind": "bay", "decks": [2], "x_m": [-6.5, -1.2], "z_m": [-10, 10]},
+    {"id": "stores", "name": "Stores", "kind": "systems", "decks": [2], "x_m": [1.2, 6.5], "z_m": [-10, 10]},
+    {"id": "life_support", "name": "Life support", "kind": "systems", "decks": [2], "x_m": [-6.5, -1.2], "z_m": [-30, -10]},
+    {"id": "engineering", "name": "Engineering", "kind": "engineering", "decks": [2], "x_m": [1.2, 6.5], "z_m": [-30, -10]},
+    {"id": "d_corridor", "name": "Cannon passage", "kind": "corridor", "decks": [3], "x_m": [1.6, 4.0], "z_m": [-10, 20]},
+    {"id": "spinal_cannon", "name": "Spinal cannon", "kind": "weapons", "decks": [3], "x_m": [-1.6, 1.6], "z_m": [-10, 42]},
+    {"id": "reactor", "name": "Reactor", "kind": "engineering", "decks": [3], "x_m": [-4, 4], "z_m": [-34, -10]}
+  ]
+}

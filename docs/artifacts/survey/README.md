@@ -39,3 +39,4 @@
 - 2026-11-03, cloud session (Concord ships thread): A15-A17 rewritten for Krai version 2, on top of the live version 29; version 30, version id `1793701299-3b50`.
 - 2026-11-03, cloud session (Concord ships thread): A13 closed (the Albatross's pylons from the main hull), on top of the live version 30; version 31, version id `1793702165-b129`.
 - 2026-11-03, cloud session (Concord ships thread): A18 (does the bridge need a shape) added on top of the live version 31; version 32, version id `1793722572-b53b`.
+- 2026-11-03, cloud session (Concord ships thread; owner: "nuke the krai survey since we're redoing them"): A15-A17 removed, A18 moved to decided with the owner's answer; version 33, version id `1793738368-a1c4`.

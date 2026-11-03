@@ -8,9 +8,11 @@
 - [x] 1.4 Survey A15-A17, the tracker, `mockup-work.md`, `docs/artifacts/krai-ship-concepts/`
 - [x] 1.5 v2 (owner: "Those are fighter jets, not spaceships. Think about how we defined culture and story"): spaceships from the culture as written: A Standing blade, B Lance, C Three-edged dagger; no wings or fins; survey A15-A17 rewritten
 
-## 2. After the owner picks a direction
+- [x] 1.6 v4 on the Ship Design Bible: the frigate's rooms as data (`data/ships/krai/frigate_plan.json`), the hull fitted round them by `lib/ship-plan.js`, the Krai's own parts and exterior, Build it up and the deck plans; survey A15-A17 withdrawn
 
-- [ ] 2.1 The chosen direction finished: detail texture, hull lamps, damage (mockup 6's systems)
+## 2. After the frigate is approved
+
+- [ ] 2.1 The corvette, cruiser and dreadnought planned and fitted the same way; the frigate finished: detail texture, hull lamps, damage (mockup 6's systems)
 - [ ] 2.2 The Krai ship display as a wireframe schematic of the chosen hull (console skins)
 - [ ] 2.3 The Krai builder moved into `docs/mockups/lib/` beside the Concord line, so the console can fly Krai ships
 

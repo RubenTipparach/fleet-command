@@ -174,26 +174,6 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
-  { tag: 'A', name: 'Ship Design Bible',
-    lead: 'The Ship Design Bible (in the tracker\'s Guides) sets how every ship is designed, worked on the Concord line: rooms as blocks first, the hull fitted round them, then the parts, windows, lights, markings, material and damage. You asked whether the bridge needs a shape.',
-    qs: [
-      { id: 'A18', q: 'Does the bridge need a shape of its own? Our answer: yes, a raised bridge block on the dorsal centreline, forward of mid-ship, one deck proud, glazed forward and at the sides, shaped differently by each faction.',
-        options: ['Yes, a bridge block on every ship', 'Only on some classes (say which in the notes)', 'No, the bridge stays inside the hull\'s outline'], rec: 0,
-        why: 'The bridge is the room a player looks for and the target that ends a fight; the bracket, the bridge fire and the crown blown off all land on it, and a bridge inside the outline cannot be read, aimed at or broken.' },
-    ] },
-  { tag: 'A', name: 'Krai Warhost ships (mockup 7)',
-    lead: 'Mockup 7 (Krai Warhost Ships, https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD), version 2. You said version 1 was fighter jets, not spaceships, and to think about how we defined their culture and story. So nothing flies now: the hull itself is the weapon. War is the only honest test, so every hull meets the enemy edge first and thin head-on; forged steel, edged everything, so the hull is one forged blade in volcanic gunmetal; knife-blade hulls and swept triangles; the forge in one furnace-mouth drive and forge-lit slits; and survey A8\'s bird as a hooked beak ram and vanes folded along the hull like a raptor\'s wings in a stoop.',
-    qs: [
-      { id: 'A15', q: 'Which direction do the Krai take? A Standing blade (a forged sword stood on its edge, beak ram forward, vanes folded along its flanks), B Lance (a triangular warhead on a shaft, crew block behind, fletching vanes) or C Three-edged dagger (three blades round one core, no up or down)?',
-        options: ['A Standing blade', 'B Lance', 'C Three-edged dagger', 'A mix (say which parts in the notes)', 'None yet (say what is missing in the notes)'], rec: 0,
-        why: 'A is the most direct reading of "knife-blade hulls": the hull is the blade, it carries the bird (beak and folded vanes), and it grows by adding blades without changing shape.' },
-      { id: 'A16', q: 'Krai sizes and growth: corvette about 55 m, frigate 92 m, cruiser 138 m, dreadnought 212 m, each a little longer than its Concord partner, and a class grows by adding blades (a player counts vanes to rank a Krai ship)?',
-        options: ['Yes, as built', 'Different sizes (say in the notes)', 'A different way to show rank (say in the notes)'], rec: 0,
-        why: 'Blades as rank follows "rank is won in blood" without deciding anything cultural beyond it, and vanes are as countable as Concord nacelles.' },
-      { id: 'A17', q: 'The Krai culture questions the ships raise, yours to decide (U7): what they call their ships and classes, and whether a ship wears its record (kill marks, captured blades) on its hull?',
-        options: ['Placeholders for now', 'I will decide (in the notes)', 'Propose options for me to pick from'], rec: 0,
-        why: 'Nothing cultural is decided without you; the ships use placeholder names and wear no marks until you say.' },
-    ] },
   { tag: 'A', name: 'The Concord line (mockup 6)',
     lead: 'Mockup 6 (Concord Line, https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP) builds the Concord ships in your Tern\'s family from Star Crew Bridge Simulator. Version 5 applies your notes: the Swift three ways (one nacelle below, one above and one below, the level pair), the Petrel two ways (above and below, level), the Albatross at 112 m with a secondary hull and its pylons from the main hull, all with mockup 5\'s lighting and damage, detail and normal maps and windows with rooms. Open Line-up to see them at true scale beside the Tern.',
     qs: [
@@ -283,6 +263,8 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'A18: a bridge block of its own on larger super-capital ships; on other classes it depends on players\' feedback (owner, 2026-11-03: "larger super captial ships, otherwise it depends based on human feedback")', where: 'docs/design/ship-bible.html chapter 5' },
+  { text: 'A15-A17 (Krai ship direction, sizes, names): withdrawn, the Krai ships are being redone on the Ship Design Bible (owner, 2026-11-03: "nuke the krai survey since we\'re redoing them")', where: 'openspec/changes/krai-ship-concepts' },
   { text: 'A13: the Albatross hangs its nacelle pylons from its main hull, the secondary hull clear beneath (owner, 2026-11-03: "I asked for the albatross pylons to be connected to the main hull instead")', where: 'openspec/changes/concord-hull-concepts' },
   { text: 'T4a: Godot 4.7 for the game (the console and phones first; baked hull lights)', where: 'CLAUDE.md section 2' },
   { text: 'F6a, F7: sell to a faction at its ports while your standing with it is 0 or above; standing per faction, -100 to 100', where: 'openspec/changes/game-flow' },

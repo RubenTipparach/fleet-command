@@ -159,7 +159,7 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
         <tr><td>Primary hull</td><td>Decks, crew, command</td><td>Always</td><td>Fitted to its rooms (chapter 3); carries the windows, registry and livery</td></tr>
         <tr><td>Secondary hull</td><td>Engineering, reactor, bays</td><td>At cruiser size and up, or when the drive and reactor need their own armour (the Albatross; the Pelican's hangar hull)</td><td>Below the primary hull, fitted to its own rooms; never wider than the primary</td></tr>
         <tr><td>Neck</td><td>A passage and the power trunk</td><td>Whenever there is a secondary hull</td><td>At least one corridor wide (2.4 m) plus clearance; set back from the bow so it reads as a join, not a wall</td></tr>
-        <tr><td>Bridge block</td><td>The bridge</td><td>Always (chapter 5)</td><td>Raised on the dorsal centreline, forward of mid-ship, glazed forward and at the sides</td></tr>
+        <tr><td>Bridge block</td><td>The bridge</td><td>Super-capitals (chapter 5); other classes only when players need it</td><td>Raised on the dorsal centreline, forward of mid-ship, glazed forward and at the sides</td></tr>
         <tr><td>Strut (pylon)</td><td>A power conduit</td><td>One per nacelle</td><td>Roots in a hull's structure (a deck or bulkhead line), never in empty skin (chapter 6)</td></tr>
         <tr><td>Nacelle</td><td>The warp field</td><td>In pairs, or one above and one below (chapter 6)</td><td>Never touches a hull: at least 3 m of daylight</td></tr>
         <tr><td>Drive</td><td>Impulse thrust</td><td>Always</td><td>On the stern, behind the reactor, on the axis of the ship's mass</td></tr>
@@ -169,11 +169,12 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
 
   <section class="ch" id="bridge">
     <div class="kicker">Chapter 5</div><h2>Does the bridge need a shape?</h2>
-    <p><b>Yes.</b> The bridge is the one room a player looks for: it is where the captain stands, it is the target that ends a fight, and in the battle it is what the bracket, the crown-blown-off damage and the bridge-fire signature land on. A bridge lost inside the hull's outline cannot be read, aimed at or broken. So every Fleet Command ship gives its bridge a shape of its own: <b>the bridge block</b>. Toggle it off in the figure above to see the ship lose its face.</p>
-    <div class="rule"><b class="code">B1</b><span>The bridge is a raised block on the dorsal centreline, forward of mid-ship, standing at least one deck proud of the hull.</span></div>
+    <blockquote><span class="who">Owner, survey A18, 2026-11-03</span>"larger super captial ships, otherwise it depends based on human feedback"</blockquote>
+    <p><b>On the largest ships, yes.</b> A super-capital (the Condor and up) gives its bridge a block of its own: at that size the bridge is a target worth picking out, and the bracket, the bridge fire and the crown blown off all land on it. On every other class the bridge stays inside the hull's outline, a room like the others, until players' feedback says a class needs one. Toggle the block in the figure above to compare.</p>
+    <div class="rule"><b class="code">B1</b><span>A super-capital's bridge is a raised block on the dorsal centreline, forward of mid-ship, standing at least one deck proud of the hull.</span></div>
     <div class="rule"><b class="code">B2</b><span>It is glazed: a lit band forward and along its sides, the only windows on the ship wider than a person.</span></div>
-    <div class="rule"><b class="code">B3</b><span>Each faction shapes it its own way (the Concord's is a chamfered block; another faction's might be a crest, a dome or a beak) but every faction has one, in the same place relative to its decks.</span></div>
-    <p>Survey A18 asks you to confirm this.</p>
+    <div class="rule"><b class="code">B3</b><span>Smaller classes keep the bridge inside the hull, its windows the only sign; a block is added to a class only when playtests show players need it.</span></div>
+    <div class="rule"><b class="code">B4</b><span>Each faction shapes its block its own way (the Concord's is a chamfered block; another faction's a crest, a dome or a beak).</span></div>
   </section>
 
   <section class="ch" id="nacelles">
@@ -259,19 +260,18 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
   </section>
 
   <section class="ch" id="exterior">
-    <div class="kicker">Chapter 11</div><h2>Exterior: complement the console, never copy it</h2>
+    <div class="kicker">Chapter 11</div><h2>Exterior: complement the console</h2>
     <blockquote><span class="who">Owner, 2026-11-03</span>"ship exterior material should compliment the UI, not share materials or colors directly. Ship exterior depending on the faction should focus on distinct features, color scheme and unique paneling"</blockquote>
     <p>A faction's console and its ships come from the same people, so they belong together, but they are seen at different sizes and for different reasons. The console is read up close, under the captain's hand. The ship is read across a battle, against space and against other ships. So a ship's exterior is designed to sit beside its faction's console as a partner: the same ideology said a second way, never the console's surface pasted on a hull.</p>
-    <div class="rule"><b class="code">X1</b><span>No shared materials. A hull never uses a console skin's material, texture or shader (the Concord's flat back-lit panels, the Kethran's plated gunmetal, the Krai's cast volcanic metal stay on their consoles).</span></div>
-    <div class="rule"><b class="code">X2</b><span>No shared colours. A hull's palette is its own, chosen to complement the console's: related in temperature or idea, never the same swatches. The Concord console is blue and lilac light on black; its ships are pearl white with blue bands, a partner to the console. Measured against this rule, mockup 6's band blue (sRGB 0.10, 0.40, 0.86) is too close to the console's Signal (#2f62e0): it moves to a hull blue of its own when the Concord exterior is next revised.</span></div>
+    <div class="rule"><b class="code">X1</b><span>Complement, as a guide, not a hard rule (owner, 2026-11-03: "I said compliment, so not a hard rule"). A hull's material and palette are chosen to sit well beside its console: they may share a colour or a material where that helps the faction read as one people, and nothing measures the distance between them.</span></div>
     <div class="rule"><b class="code">X3</b><span>Every faction's exterior is set apart by three things, and needs all three: <b>distinct features</b> (the parts and shapes only it has: its bridge, its nacelles or their absence, its prow), <b>its colour scheme</b> (field colour, stripe colour, light colour) and <b>unique paneling</b> (how its plates are cut and laid: the Concord's straight strakes and ring bands; another faction's plates are cut another way).</span></div>
     <div class="rule"><b class="code">X4</b><span>Test it side by side: the faction's console skin and its ship on one screen read as one people, and neither looks like a piece of the other.</span></div>
     <div class="tablewrap"><table>
       <thead><tr><th>Faction</th><th>Console (stays there)</th><th>Ship exterior (its own)</th></tr></thead>
       <tbody>
-        <tr><td>Concord</td><td>Flat back-lit vector panels, blue and lilac on black</td><td>Pearl armour, blue bands (to separate from the console's Signal, X2), straight panel strakes, warm-lit windows</td></tr>
+        <tr><td>Concord</td><td>Flat back-lit vector panels, blue and lilac on black</td><td>Pearl armour, blue bands , straight panel strakes, warm-lit windows</td></tr>
         <tr><td>Kethran Hegemony</td><td>Armoured gunmetal plates, bolts, plain wedge keys</td><td>To design: its own field colour and plate cut, complementing the gunmetal</td></tr>
-        <tr><td>Krai Warhost</td><td>Cast volcanic gunmetal, red enamel, forge orange</td><td>To design: mockup 7 used the console's own metal and colours on its hulls, which this rule forbids</td></tr>
+        <tr><td>Krai Warhost</td><td>Cast volcanic gunmetal, red enamel, forge orange</td><td>Mockup 7 v4: blued steel, chevron plates, tempered bronze edges, pale gold light</td></tr>
         <tr><td>Every other faction</td><td>Its skin (console-skins design)</td><td>Designed on this chapter before its ships are modelled</td></tr>
       </tbody></table></div>
   </section>
@@ -301,9 +301,9 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
         <tr><td>Rooms first, hull fitted with 1.05 m clearance</td><td>The hull's section (octagon, diamond, curve) and how far character is added on top</td></tr>
         <tr><td>Named parts: hulls, neck, bridge block, struts, nacelles, drive</td><td>Which parts a faction uses (most have nacelles; a faction without them says so in its design)</td></tr>
         <tr><td>Person-sized windows, one row a deck, only on lived-in rooms</td><td>The window's frame and light colour (Concord white and warm, Krai forge orange slits)</td></tr>
-        <tr><td>A bridge with a shape of its own, on the dorsal centreline</td><td>That shape</td></tr>
+        <tr><td>A bridge block on super-capitals, on the dorsal centreline</td><td>That shape</td></tr>
         <tr><td>Lights with one job each, no overlapping pools</td><td>Light colours from the faction's palette</td></tr>
-        <tr><td>An exterior that complements its console without sharing its materials or colours (X1, X2)</td><td>Distinct features, colour scheme and unique paneling (X3)</td></tr>
+        <tr><td>An exterior that complements its console (X1)</td><td>Distinct features, colour scheme and unique paneling (X3)</td></tr>
         <tr><td>Damage that shows the rooms behind it</td><td>Its material's char and fire colour</td></tr>
       </tbody></table></div>
     <p>The Krai ships (mockup 7) were drawn hull first and painted in their console's own metal and colours, which is why they did not read: they are to be redesigned on this method, rooms first, with their culture setting the shapes and an exterior of their own (chapter 11).</p>
@@ -315,11 +315,11 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
       <li>The plan is data, rooms do not overlap, every room meets its corridor (P1).</li>
       <li>The hull is fitted from the plan and every room clears it by 1.05 m (H1), measured on the page.</li>
       <li>Every part is named; struts root in structure; nacelles clear every hull by 3 m.</li>
-      <li>The bridge has its block (B1).</li>
+      <li>A super-capital's bridge has its block; a smaller class's bridge is inside the hull (B1, B3).</li>
       <li>Windows sit only on lived-in rooms, one row a deck (W1, W2).</li>
       <li>Lights: each with a job, no overlapping pools, shadows on (L1, L2).</li>
       <li>Markings on plain plating, red only for danger.</li>
-      <li>Nothing on the hull shares a material or colour with the faction's console; its features, colours and paneling are its own (X1 to X3), checked side by side with the console (X4).</li>
+      <li>The hull complements the faction's console (X1, a guide), its features, colours and paneling are its own (X3), and the two are looked at side by side (X4).</li>
       <li>A torpedo through each room kind shows that room (D1).</li>
       <li>At 40 px, top and side, the class reads.</li>
       <li>Triangles inside the class's budget (survey A1, T3).</li>
@@ -591,6 +591,112 @@ return { COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELL
 };
 </script>
 <!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/ship-plan.js -->
+<script data-src="docs/mockups/lib/ship-plan.js">
+// Fleet Command mockups: a ship's rooms as blocks, and the hull fitted round them (the Ship Design Bible's method, chapters 2
+// and 3; owner, 2026-11-03: "map out approximate floor plans out of blocks, and enclose the structure with the hull shape").
+// One implementation (CLAUDE.md section 6.1) shared by the guide (docs/design/ship-bible.html) and every faction's ship page
+// (docs/mockups/krai-ship-concepts.html first). Edit it here, then re-run tools/mockups/inline_data.py on each page.
+//
+// FCShipPlan(THREE, CL) takes three and the Concord line module (for its loft geometry and loftDist) and returns:
+//   rooms(plan)                the plan's rooms with their boxes in metres (x0 x1 y0 y1 z0 z1)
+//   check(rooms)               P1: the overlaps and rooms off their corridor, as a list of failures
+//   fit(plan, rooms, opts)     H1: hull stations [z, half beam, top, bottom, chamfer] clearing every room by the plan's
+//                              clearance plus structure; opts.section 'octagon' (Concord) or 'blade' (chamfers as deep as the rooms allow)
+//   margins(rooms, stations)   each room's least distance inside a hull (loftDist over its eight corners)
+//   windows(plan, rooms, stations, lit)  W1, W2: person-sized windows where a lived-in room meets the hull's side, one row
+//                              a deck 1.5 m above its floor, as { x, y, z, side, tilt } (tilt: the side's lean, radians)
+//   planSVGs(plan, rooms, kinds)  the deck plans as SVG drawings, one per deck
+window.FCShipPlan = function FCShipPlan(THREE, CL) {
+'use strict';
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const clear = (plan) => plan.clearance_m + plan.structure_m;
+
+function rooms(plan) {
+  const F = plan.deck_floor_m, H = plan.headroom_m;
+  return plan.rooms.map((r) => ({ ...r, b: { x0: r.x_m[0], x1: r.x_m[1], z0: r.z_m[0], z1: r.z_m[1],
+    y0: Math.min(...r.decks.map((d) => F[d])), y1: Math.max(...r.decks.map((d) => F[d])) + H } }));
+}
+
+function check(R) {
+  const bad = [], hit = (a, b, e = 0) => a.b.x0 < b.b.x1 + e && b.b.x0 < a.b.x1 + e && a.b.z0 < b.b.z1 + e && b.b.z0 < a.b.z1 + e;
+  for (let i = 0; i < R.length; i++) for (let j = i + 1; j < R.length; j++)
+    if (R[i].decks.some((d) => R[j].decks.includes(d)) && hit(R[i], R[j])) bad.push(`${R[i].id}/${R[j].id} overlap`);
+  for (const r of R) if (r.kind !== 'corridor' && !R.some((c) => c.kind === 'corridor' && c.decks.some((d) => r.decks.includes(d)) && hit(r, c, 0.01)))
+    bad.push(`${r.id} off its corridor`);
+  return bad;
+}
+
+// Every 2 m along the ship (and on the first room's front face) the hull clears the rooms at that station by C.
+// Half beam, top and bottom each clear by C, and the 45 degree chamfers are cut as deep as the room corners allow:
+// octagon (the Concord's) takes 0.45 of the section's half size at most; blade takes all it can, so the section is as
+// close to a blade's diamond as the rooms let it be.
+// The bow tapers over nose_m (kept above the keel line), the stern is square tail_m past the last room, and a
+// three-station running maximum keeps the hull from hugging every step of the plan.
+function fit(plan, R, opts = {}) {
+  const C = clear(plan), section = opts.section || 'octagon', st = [];
+  const zMin = Math.min(...R.map((r) => r.b.z0)), zMax = Math.max(...R.map((r) => r.b.z1));
+  const at = (z) => R.filter((r) => r.b.z0 <= z + 1 && r.b.z1 >= z - 1);
+  const zs = []; for (let z = zMin - plan.tail_m; z < zMax; z += 2) zs.push(z); zs.push(zMax);
+  for (const z of zs) {
+    const rs = at(Math.min(Math.max(z, zMin), zMax)); if (!rs.length) continue;
+    const ax = Math.max(...rs.map((r) => Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1)))), yT = Math.max(...rs.map((r) => r.b.y1)), yB = Math.min(...rs.map((r) => r.b.y0));
+    const hb = ax + C, top = yT + C, bot = yB - C; let ch = Math.min(hb, (top - bot) / 2) * (section === 'blade' ? 1 : 0.45);
+    for (const r of rs) { const a = Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1)); ch = Math.min(ch, hb + top - (a + r.b.y1) - C * Math.SQRT2, hb - bot - (a - r.b.y0) - C * Math.SQRT2); }
+    st.push([z, hb, top, bot, Math.max(0.3, ch)]);
+  }
+  const f = st[st.length - 1];
+  for (const k of [0.5, 0.15]) st.push([f[0] + plan.nose_m * (k === 0.5 ? 0.6 : 1), f[1] * k, f[3] + (f[2] - f[3]) * (0.5 + k * 0.6), f[3] + (f[2] - f[3]) * (0.5 - k * 0.6), f[4] * k]);
+  return st.map((s, i) => { const n = st.slice(Math.max(0, i - 1), i + 2); return i >= st.length - 2 ? s : [s[0], Math.max(...n.map((q) => q[1])), Math.max(...n.map((q) => q[2])), Math.min(...n.map((q) => q[3])), Math.min(...n.map((q) => q[4]))]; });
+}
+
+function margins(R, stations) {
+  return R.map((r) => { let m = Infinity;
+    for (const x of [r.b.x0, r.b.x1]) for (const y of [r.b.y0, r.b.y1]) for (const z of [r.b.z0, r.b.z1]) m = Math.min(m, CL.loftDist(stations, V3(x, y, z)));
+    return { r, m }; });
+}
+
+// The hull's half width at height y on station h (an octagon: flat sides between the chamfers, the chamfers at 45
+// degrees), and the lean of the surface there.
+function sideAt(h, y) {
+  const [, hb, top, bot, c] = h, ch = CL.chOf(hb, top, bot, c);
+  if (y > top || y < bot) return null;
+  if (y > top - ch) return { x: hb - (y - (top - ch)), tilt: Math.PI / 4 };
+  if (y < bot + ch) return { x: hb - ((bot + ch) - y), tilt: -Math.PI / 4 };
+  return { x: hb, tilt: 0 };
+}
+function windows(plan, R, stations, lit) {
+  const C = clear(plan), F = plan.deck_floor_m, out = [];
+  for (const r of R) { if (!lit[r.kind]) continue;
+    for (const d of r.decks) { const y = F[d] + 1.5;
+      for (let z = r.b.z0 + 1.2; z <= r.b.z1 - 1.2; z += 2.4) { const s = sideAt(CL.hullAt(stations, z), y); if (!s) continue;
+        for (const side of [1, -1]) { const reach = side > 0 ? r.b.x1 : -r.b.x0;
+          if (reach < s.x - C * 2 - 1.2) continue; // the room does not meet this side (allowing for a sloped side's offset)
+          out.push({ x: side * (s.x + 0.03), y, z, side, tilt: s.tilt }); } } } }
+  return out;
+}
+
+// Deck plans as SVG drawings from the same boxes: one per deck, bow right, port up. kinds maps a room kind to
+// [label, colour]; X is the half width shown, in metres.
+function planSVGs(plan, R, kinds, X = 12) {
+  const F = plan.deck_floor_m, zMin = Math.min(...R.map((r) => r.b.z0)) - plan.tail_m, zMax = Math.max(...R.map((r) => r.b.z1)) + plan.nose_m;
+  const W = 860, sc = W / (zMax - zMin), H = Math.round(2 * X * sc);
+  return F.map((fy, d) => {
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Deck ${String.fromCharCode(65 + d)} plan">`;
+    for (const r of R) if (r.decks.includes(d)) { const c = kinds[r.kind][1];
+      const x = (r.b.z0 - zMin) * sc, y = (X - r.b.x1) * sc, w = (r.b.z1 - r.b.z0) * sc, h = (r.b.x1 - r.b.x0) * sc;
+      svg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${c}" fill-opacity="0.8" stroke="#0b0f18" stroke-width="1.5"><title>${r.name}</title></rect>`;
+      if (r.kind !== 'corridor') { const label = r.name.replace(/ \(.*\)/, ''), fit = Math.floor(w / 7.2);
+        if (fit >= 4 && h > 14) svg += `<text x="${(x + w / 2).toFixed(1)}" y="${(y + h / 2 + 4).toFixed(1)}" font-size="12" fill="#0b0f18" text-anchor="middle" font-family="IBM Plex Mono">${label.length > fit ? label.slice(0, fit - 1) + '.' : label}</text>`; } }
+    svg += `<text x="${W - 8}" y="16" font-size="12" fill="#cfd8ea" text-anchor="end" font-family="IBM Plex Mono">BOW</text><text x="8" y="16" font-size="12" fill="#cfd8ea" font-family="IBM Plex Mono">PORT</text></svg>`;
+    return { svg, caption: `Deck ${String.fromCharCode(65 + d)}, floor ${fy.toFixed(2)} m: bow right, port up, 10 m is ${(10 * sc / W * 100).toFixed(1)}% of the width` };
+  });
+}
+
+return { rooms, check, fit, margins, windows, sideAt, clear, planSVGs };
+};
+</script>
+<!-- /INLINE -->
 <!-- INLINE data/ships/concord/petrel_plan.json -->
 <script type="application/json" data-src="data/ships/concord/petrel_plan.json">{"schema":"fleetcommand.ship-plan/1","_doc":"A Concord ship's rooms as blocks, the first step of designing it inside out (Ship Design Bible, docs/design/ship-bible.html; owner, 2026-11-03: \"map out approximate floor plans out of blocks, and enclose the structure with the hull shape\"). Axes as the Concord line's: +X port, +Y dorsal, +Z bow, metres. A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top). deck_floor_m is each deck's floor height, headroom_m the clear height above a floor, clearance_m the air between a room and the hull's inner skin, structure_m the hull's own thickness (frames, plating), nose_m and tail_m how far the hull runs past the first and last rooms to its bow and stern. Read by the guide, which fits the hull from these numbers.","ship":"petrel_level","crew":42,"deck_floor_m":[3.5,0,-3.5],"headroom_m":2.8,"clearance_m":0.45,"structure_m":0.6,"nose_m":6,"tail_m":3,"rooms":[{"id":"bridge","name":"Bridge","kind":"command","decks":[0],"x_m":[-5,5],"z_m":[22,32]},{"id":"ready_room","name":"Captain's ready room","kind":"command","decks":[0],"x_m":[1.2,6],"z_m":[15,22]},{"id":"computer_core","name":"Computer core","kind":"systems","decks":[0],"x_m":[-6,-1.2],"z_m":[15,22]},{"id":"a_corridor","name":"Command passage","kind":"corridor","decks":[0],"x_m":[-1.2,1.2],"z_m":[-6,22]},{"id":"officers_p","name":"Officers' quarters, port","kind":"crew","decks":[0],"x_m":[1.2,9],"z_m":[-6,15]},{"id":"officers_s","name":"Officers' quarters, starboard","kind":"crew","decks":[0],"x_m":[-9,-1.2],"z_m":[-6,15]},{"id":"sensors","name":"Sensor bay","kind":"systems","decks":[0],"x_m":[-5,5],"z_m":[-18,-6]},{"id":"torpedo_room","name":"Torpedo room","kind":"weapons","decks":[1],"x_m":[-3,3],"z_m":[34,40]},{"id":"medbay","name":"Medbay","kind":"crew","decks":[1],"x_m":[1.2,9],"z_m":[18,30]},{"id":"damage_control","name":"Damage control","kind":"systems","decks":[1],"x_m":[-9,-1.2],"z_m":[18,30]},{"id":"b_spine","name":"Main corridor","kind":"corridor","decks":[1],"x_m":[-1.2,1.2],"z_m":[-14,34]},{"id":"quarters","name":"Crew quarters","kind":"crew","decks":[1],"x_m":[1.2,10.5],"z_m":[2,18]},{"id":"mess","name":"Mess","kind":"crew","decks":[1],"x_m":[-10.5,-1.2],"z_m":[2,18]},{"id":"life_support","name":"Life support","kind":"systems","decks":[1],"x_m":[1.2,10.5],"z_m":[-14,2]},{"id":"cargo","name":"Cargo and stores","kind":"systems","decks":[1],"x_m":[-10.5,-1.2],"z_m":[-14,2]},{"id":"engineering","name":"Engineering","kind":"engineering","decks":[1],"x_m":[-9,9],"z_m":[-36,-14]},{"id":"shield_room","name":"Shield generator","kind":"systems","decks":[2],"x_m":[-6,6],"z_m":[26,36]},{"id":"magazine","name":"Magazine","kind":"weapons","decks":[2],"x_m":[-7,-1.2],"z_m":[10,26]},{"id":"switchboard","name":"Forward switchboard","kind":"systems","decks":[2],"x_m":[1.2,7],"z_m":[10,26]},{"id":"c_spine","name":"Lower corridor","kind":"corridor","decks":[2],"x_m":[-1.2,1.2],"z_m":[-14,26]},{"id":"hangar","name":"Shuttle bay (port door)","kind":"bay","decks":[2],"x_m":[-9,-1.2],"z_m":[-12,8]},{"id":"stores","name":"Stores","kind":"systems","decks":[2],"x_m":[1.2,9],"z_m":[-12,8]},{"id":"reactor","name":"Reactor","kind":"engineering","decks":[2],"x_m":[-6,6],"z_m":[-36,-14]}]}</script>
 <!-- /INLINE -->
@@ -598,7 +704,7 @@ return { COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELL
 (function () {
 'use strict';
 const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-const CL = window.FCConcordLine(THREE);
+const CL = window.FCConcordLine(THREE), SP = window.FCShipPlan(THREE, CL); // the line's geometry, and the plan and fit (docs/mockups/lib/ship-plan.js)
 const PLAN = JSON.parse(document.querySelector('script[data-src="data/ships/concord/petrel_plan.json"]').textContent);
 const KINDS = { command: ['Command', '#2f62e0'], crew: ['Crew', '#3fa96a'], systems: ['Systems', '#8d7cf0'], weapons: ['Weapons', '#e8352b'],
   engineering: ['Engineering', '#f2a33a'], bay: ['Bay', '#9aa3b4'], corridor: ['Corridor', '#5a6273'] };
@@ -610,63 +716,18 @@ legend('kindLegend', KINDS); legend('partLegend', PARTS);
 
 // ---------------------------------------------------------------------------------------------------------------
 // The plan: room boxes in metres (P1 checked here, on the real data).
-const F = PLAN.deck_floor_m, HEAD = PLAN.headroom_m, C = PLAN.clearance_m + PLAN.structure_m;
-const box = (r) => ({ x0: r.x_m[0], x1: r.x_m[1], z0: r.z_m[0], z1: r.z_m[1], y0: Math.min(...r.decks.map((d) => F[d])), y1: Math.max(...r.decks.map((d) => F[d])) + HEAD });
-const ROOMS = PLAN.rooms.map((r) => ({ ...r, b: box(r) }));
+const F = PLAN.deck_floor_m, C = SP.clear(PLAN), ROOMS = SP.rooms(PLAN);
 (function checkPlan() {
-  const bad = [];
-  for (let i = 0; i < ROOMS.length; i++) for (let j = i + 1; j < ROOMS.length; j++) { const a = ROOMS[i], b = ROOMS[j];
-    if (a.decks.some((d) => b.decks.includes(d)) && a.b.x0 < b.b.x1 && b.b.x0 < a.b.x1 && a.b.z0 < b.b.z1 && b.b.z0 < a.b.z1) bad.push(`${a.id}/${b.id} overlap`); }
-  for (const r of ROOMS) { if (r.kind === 'corridor') continue;
-    const touches = ROOMS.some((c) => c.kind === 'corridor' && c.decks.some((d) => r.decks.includes(d)) && r.b.x0 <= c.b.x1 + 0.01 && c.b.x0 <= r.b.x1 + 0.01 && r.b.z0 <= c.b.z1 + 0.01 && c.b.z0 <= r.b.z1 + 0.01);
-    if (!touches) bad.push(`${r.id} off its corridor`); }
-  const el = document.getElementById('planCheck');
+  const bad = SP.check(ROOMS), el = document.getElementById('planCheck');
   el.innerHTML = bad.length ? `<span class="bad">${bad.length} failing: ${bad.join(', ')}</span>` : `<span class="ok">${ROOMS.length} rooms, no overlaps, every room on its corridor.</span>`;
 })();
-// Deck plans as drawings, from the same boxes.
-(function drawPlans() {
-  const zMin = Math.min(...ROOMS.map((r) => r.b.z0)) - PLAN.tail_m, zMax = Math.max(...ROOMS.map((r) => r.b.z1)) + PLAN.nose_m, X = 12;
-  const W = 860, sc = W / (zMax - zMin), H = Math.round(2 * X * sc);
-  const host = document.getElementById('plans');
-  F.forEach((fy, d) => {
-    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Deck ${String.fromCharCode(65 + d)} plan">`;
-    for (const r of ROOMS) if (r.decks.includes(d)) { const [, c] = KINDS[r.kind];
-      const x = (r.b.z0 - zMin) * sc, y = (X - r.b.x1) * sc, w = (r.b.z1 - r.b.z0) * sc, h = (r.b.x1 - r.b.x0) * sc;
-      svg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${c}" fill-opacity="0.8" stroke="#0b0f18" stroke-width="1.5"><title>${r.name}</title></rect>`;
-      if (r.kind !== 'corridor') { const label = r.name.replace(/ \(.*\)/, ''), fit = Math.floor(w / 7.2);
-        if (fit >= 4 && h > 14) svg += `<text x="${(x + w / 2).toFixed(1)}" y="${(y + h / 2 + 4).toFixed(1)}" font-size="12" fill="#0b0f18" text-anchor="middle" font-family="IBM Plex Mono">${label.length > fit ? label.slice(0, fit - 1) + '.' : label}</text>`; } }
-    svg += `<text x="${W - 8}" y="16" font-size="12" fill="#cfd8ea" text-anchor="end" font-family="IBM Plex Mono">BOW</text><text x="8" y="16" font-size="12" fill="#cfd8ea" font-family="IBM Plex Mono">PORT</text></svg>`;
-    const fig = document.createElement('figure'); fig.innerHTML = svg + `<figcaption>Deck ${String.fromCharCode(65 + d)}, floor ${fy.toFixed(1)} m: bow right, port up, 10 m is ${(10 * sc / W * 100).toFixed(1)}% of the width</figcaption>`; host.append(fig);
-  });
-})();
+// Deck plans as drawings, from the same boxes (the shared module draws them).
+for (const { svg, caption } of SP.planSVGs(PLAN, ROOMS, KINDS)) { const fig = document.createElement('figure'); fig.innerHTML = svg + `<figcaption>${caption}</figcaption>`; document.getElementById('plans').append(fig); }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Fitting: every 2 m along the ship the hull clears the rooms at that station by C, its chamfer limited so no room corner
-// is cut (H1). The bow tapers over nose_m; the stern is square tail_m past the last room.
-function fitHull() {
-  const zMin = Math.min(...ROOMS.map((r) => r.b.z0)), zMax = Math.max(...ROOMS.map((r) => r.b.z1)), st = [];
-  const at = (z) => ROOMS.filter((r) => r.b.z0 <= z + 1 && r.b.z1 >= z - 1);
-  const zs = []; for (let z = zMin - PLAN.tail_m; z < zMax; z += 2) zs.push(z); zs.push(zMax); // the last station on the first room's front face
-  for (const z of zs) {
-    const rs = at(Math.min(Math.max(z, zMin), zMax)); if (!rs.length) continue;
-    const hb = Math.max(...rs.map((r) => Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1)))) + C, top = Math.max(...rs.map((r) => r.b.y1)) + C, bot = Math.min(...rs.map((r) => r.b.y0)) - C;
-    let ch = Math.min(hb, (top - bot) / 2) * 0.45;
-    for (const r of rs) { const ax = Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1));
-      ch = Math.min(ch, hb + top - (ax + r.b.y1) - C * Math.SQRT2, hb - bot - (ax - r.b.y0) - C * Math.SQRT2); }
-    st.push([z, hb, top, bot, Math.max(0.3, ch)]);
-  }
-  const f = st[st.length - 1]; // the bow: taper to a point nose_m ahead, kept above the keel line
-  for (const k of [0.5, 0.15]) st.push([f[0] + PLAN.nose_m * (k === 0.5 ? 0.6 : 1), f[1] * k, f[3] + (f[2] - f[3]) * (0.5 + k * 0.6), f[3] + (f[2] - f[3]) * (0.5 - k * 0.6), f[4] * k]);
-  // a 3-station running maximum, so the hull does not hug every step of the plan
-  return st.map((s, i) => { const n = st.slice(Math.max(0, i - 1), i + 2); return i >= st.length - 2 ? s : [s[0], Math.max(...n.map((q) => q[1])), Math.max(...n.map((q) => q[2])), Math.min(...n.map((q) => q[3])), Math.min(...n.map((q) => q[4]))]; });
-}
-const FIT = fitHull();
-// H1 measured: each room's eight corners against the fitted hull (and, for comparison, against mockup 6's Petrel).
-function margins(stations) {
-  return ROOMS.map((r) => { let m = Infinity;
-    for (const x of [r.b.x0, r.b.x1]) for (const y of [r.b.y0, r.b.y1]) for (const z of [r.b.z0, r.b.z1]) m = Math.min(m, CL.loftDist(stations, V3(x, y, z)));
-    return { r, m }; });
-}
+// Fitting (H1) and its measurement: docs/mockups/lib/ship-plan.js, the one implementation every ship page uses.
+const FIT = SP.fit(PLAN, ROOMS, { section: 'octagon' });
+const margins = (stations) => SP.margins(ROOMS, stations);
 (function report() {
   const fit = margins(FIT), built = margins(CL.CLASSES.petrel_level.stations);
   const ok = fit.filter((q) => q.m >= C - 0.01).length, inB = built.filter((q) => q.m >= C - 0.01).length, outB = built.filter((q) => q.m < 0).map((q) => q.r.name);
@@ -704,15 +765,10 @@ for (const r of ROOMS) { const b = r.b, g = new THREE.BoxGeometry(b.x1 - b.x0 - 
 { const g = CL.hullGeo(FIT);
   fitG.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xe4e2dc, roughness: 0.5, metalness: 0.2, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide, flatShading: true })));
   fitG.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 25), new THREE.LineBasicMaterial({ color: 0x9fb4ff, transparent: true, opacity: 0.5 }))); }
-// Windows from the plan (W1, W2): a row 1.5 m above each floor wherever a lived-in room reaches the hull's flank.
-let winCount = 0;
+// Windows from the plan (W1, W2), placed by the shared module where a lived-in room meets the hull's side.
+const WINS = SP.windows(PLAN, ROOMS, FIT, LIT), winCount = WINS.length;
 { const wm = new THREE.MeshStandardMaterial({ color: 0x141a26, emissive: 0xffdca0, emissiveIntensity: 1.4 });
-  for (const r of ROOMS) { if (!LIT[r.kind]) continue;
-    for (const d of r.decks) { const y = F[d] + 1.5;
-      for (let z = r.b.z0 + 1.2; z <= r.b.z1 - 1.2; z += 2.4) { const h = CL.hullAt(FIT, z), ch = CL.chOf(h[1], h[2], h[3], h[4]);
-        if (y > h[2] - ch || y < h[3] + ch) continue; // on the chamfer, not the flank
-        for (const sx of [1, -1]) { const reach = sx > 0 ? r.b.x1 : -r.b.x0; if (reach < h[1] - C - 0.6) continue; // the room does not meet this flank
-          const g = new THREE.BoxGeometry(0.1, 0.6, 1.1); g.translate(sx * (h[1] + 0.03), y, z); winG.add(new THREE.Mesh(g, wm)); winCount++; } } } } }
+  for (const w of WINS) { const g = new THREE.BoxGeometry(0.1, 0.6, 1.1); g.rotateZ(w.side * w.tilt); g.translate(w.x, w.y, w.z); winG.add(new THREE.Mesh(g, wm)); } }
 { const m = CL.plainModel('petrel_level'); m.traverse((o) => { if (o.isMesh && o.userData.part !== 'primary') o.visible = false; else if (o.isMesh) { o.material = new THREE.MeshBasicMaterial({ color: 0xff7a1a, wireframe: true, transparent: true, opacity: 0.35 }); } }); builtG.add(m); }
 H.scene.add(roomG, fitG, winG, builtG); builtG.visible = false; winG.visible = false;
 const hullBox = new THREE.Box3().setFromObject(fitG), hc = hullBox.getCenter(V3()), hr = hullBox.getSize(V3()).length() / 2;

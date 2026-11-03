@@ -44,12 +44,12 @@ deck proud. Each faction shapes that block its own way.
 
 ## Exterior against the console (owner, 2026-11-03)
 
-- **X1.** A hull never shares a material, texture or shader with its faction's console skin.
-- **X2.** It never shares a colour swatch either.
+- **X1.** A hull complements its faction's console skin. This is a guide, not a hard rule (owner, 2026-11-03: "I said
+  compliment, so not a hard rule"; "remove the color hull to console requirements"): shared colours and materials are
+  allowed, and no colour distance is measured. The earlier X2 (no shared swatch) is withdrawn.
 - **X3.** Each faction is set apart by three things: distinct features, its colour scheme and unique paneling.
 - **X4.** The console and the ship are tested side by side.
-- Measured against X2, mockup 6's band blue is too close to the Concord console's Signal (#2f62e0), and is to move to a
-  hull blue of its own. Mockup 7 (Krai) shares its console's material and colours outright.
+- Mockup 6's band blue stays as it is.
 
 ## Open questions
 
