@@ -21,3 +21,4 @@
 - 2026-11-03, cloud session (Concord ships thread): A11-A12 lead updated for mockup 6 version 5, on top of the live version 24; version 25, version id `1793692310-396d`.
 - 2026-11-03, cloud session (Concord ships thread): A13 (which Albatross) added, on top of the live version 25; version 26, version id `1793695143-a6e0`.
 - 2026-11-03, cloud session (Concord ships thread): A14 (the battleship and the carrier) added, on top of the live version 26; version 27, version id `1793696573-24eb`.
+- 2026-11-03, cloud session (Concord ships thread): A14 rewritten for the reworked battleship and carrier, on top of the live version 27; version 28, version id `1793697353-21d8`.
