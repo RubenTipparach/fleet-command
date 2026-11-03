@@ -3803,10 +3803,11 @@ function friendMark(id, name, px, py, dk, o, f, hov) {
   // the same ring as an enemy's, in green (owner, 2026-11-03: "friendlys dont have that nice border around their target box")
   else markRing(px, py, CC.accord, f, hov);
   g.fillStyle = CC.accord; g.font = `600 ${sel ? 18 : 14}px Antonio`; g.textAlign = 'center';
-  g.fillText((sel ? `${name} · ${dk.toFixed(1)} km${dk <= TRANSPORT.range_km ? ' · in reach' : ''}` : name).toUpperCase(), px, py + (sel ? 50 : 26));
+  const ny = sel ? 50 : nameBelow(f, 14);
+  g.fillText((sel ? `${name} · ${dk.toFixed(1)} km${dk <= TRANSPORT.range_km ? ' · in reach' : ''}` : name).toUpperCase(), px, py + ny);
   const want = ITEMS.filter(([k]) => stillNeeds(o, k) > 0).map(([k, l]) => `${stillNeeds(o, k)} ${l.toLowerCase()}`);
   if (o.ai && o.ai.needMarines && o.marines < o.ai.needMarines) want.push(`${o.ai.needMarines - o.marines} marines`);
-  if (want.length) { g.fillStyle = CC.caution; g.font = '600 15px Antonio'; g.fillText(`Needs ${want.join(', ')}`.toUpperCase(), px, py + (sel ? 70 : 44)); }
+  if (want.length) { g.fillStyle = CC.caution; g.font = '600 15px Antonio'; g.fillText(`Needs ${want.join(', ')}`.toUpperCase(), px, py + ny + (sel ? 20 : 18)); }
 }
 // The ring round a ship or planet in the view: wider when focused; under the pointer a little larger, thicker and
 // brighter. Enemies, friendlies and planets share it (6.1).
@@ -3814,7 +3815,11 @@ function markRing(px, py, col, f, hov) {
   const r = (f ? 26 : 16) * (hov ? 1.18 : 1);
   g.strokeStyle = hov ? shade(col, 1.4) : col; g.lineWidth = (f ? 2.5 : 1.5) + (hov ? 1 : 0); g.globalAlpha = f || hov ? 1 : 0.7;
   g.beginPath(); g.arc(px, py, r, 0, 2 * P); g.stroke(); g.globalAlpha = 1;
+  return r;
 }
+// Where a ring's name sits: its baseline clear of the ring at its largest (hovered), so the ring never crosses the name
+// (owner, 2026-11-03: "The highlighted circle overlaps the name"). size_px: the name's font size.
+const nameBelow = (f, size_px) => (f ? 26 : 16) * 1.18 + 6 + size_px;
 function targetBracket(px, py, lock, hov) {
   const k = hov ? 1.08 : 1, col = hov ? shade(CC.alert, 1.35) : CC.alert;
   const corners = (w, h, c, lw) => { w *= k; h *= k; g.strokeStyle = col; g.lineWidth = lw + (hov ? 1 : 0); g.lineCap = 'square';
@@ -3853,8 +3858,9 @@ function uiView() {
     const hov = hovAt(px, py, locked ? 50 : f ? 30 : 22);
     if (locked) targetBracket(px, py, seekerLock(s, o), hov);
     else markRing(px, py, col, f, hov);
+    const nameY = locked ? (seekerLock(s, o) ? 72 : 58) : nameBelow(f, 16);
     g.fillStyle = locked ? CC.text : col; g.font = `600 ${locked ? 20 : 16}px Antonio`; g.textAlign = 'center';
-    g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + (locked ? (seekerLock(s, o) ? 72 : 58) : 34));
+    g.fillText(locked && !expanded ? `${o.name} · ${CLASSES[o.cls].code} · ${distKm(s, o).toFixed(1)} KM · ${Math.round(o.v)}`.toUpperCase() : o.name.toUpperCase(), px, py + nameY);
     // the targeted enemy's hull, always, under its bracket and name (owner, 2026-11-02: "always show current targeted
     // enemy health ... even in the un-expanded view")
     if (locked) hullBar(px, py + (seekerLock(s, o) ? 84 : 70), o);
@@ -3923,7 +3929,7 @@ function uiView() {
     button('v.tview', bx, by + ir[3] + 6, hw5, 30, 'Target view', A.targetView, { sel: () => camTargetView, center: true });
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
-  LBL('Mockup 2 · Battle console · Concord · v67', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  LBL('Mockup 2 · Battle console · Concord · v68', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
