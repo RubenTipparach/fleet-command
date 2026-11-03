@@ -288,6 +288,41 @@ The energy in the tractor is drawn every second like any other system, so holdin
 shields. In the 3D view the beam is a pale line from holder to held, brighter as the grip tightens. An enemy holds you
 only by turning your beam; whether enemies should start a hold on their own is B11.
 
+## 4u. Selecting friendlies and planets, the transport range ring, supplies and cargo (version 57)
+
+Owner, 2026-11-03: "allow my ship to select planets, stations and friendly ships. same as enemy ships. This is how we
+commence transport. If the transport tab is open, show radius as a dotted line with the label "transport range" drawn
+on the radius. when crossing this range transporters become active", "insted of 10/20 goods, show goods as an icon
+button, same with VIP", "a ship's inventory will additionally have: Spare parts, rations, medicine ... max cargo holds,
+and sometimes you'll be asked to deliver food or medicine to an outpost or planet, give spare parts for a ship in
+distress or be asked to supply troops for an assault (combat transport tab)", "dont mix important cargo with regular
+cargo, regular cargo will have its own tab too, and we should see how much cargo the ship has vs extra cargo space",
+"transport range is too wide! 1.5 km only!", "dont show event log in the game part of the screen ... expanded event log
+should have a little X".
+
+- **Selecting.** Right click a friendly ship, station or planet to select it as the transport destination (left click
+  focuses it and offers a Select key), as an enemy is locked. A selected one has green corners, its name, distance and
+  "in reach", and what it still needs in Caution. `invPick` (the selection) is the one destination every transfer, the
+  ring and the troop beam use.
+- **Transporter range 1.5 km** (`range_km`, was 4 km; it is also the reach for mines placed by transporter). With the
+  Transport station open, a dashed ring at that radius round your ship, "Transport range" written on it at its highest
+  point on screen, green with "in reach" when the destination is inside. Crossing it either way is logged ("in
+  transporter range: transporters active").
+- **Four modes**: Capture, Hit and run, **Supplies** and **Cargo** (two rows of tabs when docked). Supplies carries what
+  missions ask for: spare parts, rations, medicine and the envoy. Cargo carries trade goods, and the mine keys.
+- **The hold**: each class has `hold_t` places (cruiser 20, destroyer 12, frigate 8, troop ship 30, starbase 200), one
+  per unit. One bar splits it into supplies (Sky), cargo (Lilac) and free space, with the counts.
+- **Icon keys** for every item (a strapped crate, a gear, a ration bowl, a capsule, the envoy under a star), the count in
+  the corner: "Aboard, click to send" and "At the destination, click to take"; a key is ringed in Caution where the
+  destination needs it. A planet shows what it needs, ticked off as it arrives. A beam moves up to 5 units and uses a pad.
+- **Needs**: a ship or planet can need items; once all arrive it thanks you, and a ship in distress repairs its engines.
+- **Troops for an assault**: in Capture, with no enemy target, the queue beams to the selected friendly ship; the
+  bottom shows "Troops for Corrin, 2 of 10 marines". A ship told to take a station waits for the marines it asked for.
+- **Scenes**: Delivery is now **Relief** (Tessaly needs 10 rations and 5 medicine from Harbor Nine), and two new ones:
+  **Distress** (10 spare parts to the Lark, adrift) and **Assault** (8 marines to the Corrin, which then takes Varn
+  Outpost). The Boarding scene's Rattlejaw starts 1.2 km off to sit inside the new range. All complete in tests.
+- **The event log** opens only from Comms, with an X to close it.
+
 ## 4t. Torpedo hit and miss by range: what the reference manuals say (research, not built)
 
 Owner, 2026-11-02: "check the starfleet command manual for torpedo hit/miss ranges". Read from the manuals, in our words:
@@ -736,3 +771,4 @@ built. The 3D view is a stand-in and costs nothing that the game will keep; mock
 | B25 | A queued crew member leaves the roster until beamed or removed? | **As built** (provisional, survey B25) |
 | B26 | Torpedo chance to hit by range after the reference (high to 8/30 of the reach, then a steep fall; proximity mode)? | Open (survey B26); not built |
 | B27 | Warp key colour by risk (green under 10 %, yellow to 30 %, red above) and the card naming the biggest factor? | Open (survey B27); not built |
+| B28 | Holds per class (cruiser 20, destroyer 12, frigate 8, troop ship 30, starbase 200) and 5 units a beam? | **As built** (provisional, survey B28) |

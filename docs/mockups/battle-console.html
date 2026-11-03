@@ -488,38 +488,38 @@ const SPEED_PER_BOX_M_S = 30;
 const FACINGS = ['F', 'FR', 'AR', 'A', 'AL', 'FL'];
 // Mount x is to starboard, y forward, in half-lengths of the hull. arc: [centre bearing, width], degrees.
 const CLASSES = {
-  ca: { name: 'Heavy cruiser', code: 'CA', pads: 4, shape: 'saucer', len_m: 320, hull: 140, speed_max_m_s: 300, accel_m_s2: 45, turn_deg_s: 26, reactor_e: 22,
+  ca: { name: 'Heavy cruiser', code: 'CA', hold_t: 20, pads: 4, shape: 'saucer', len_m: 320, hull: 140, speed_max_m_s: 300, accel_m_s2: 45, turn_deg_s: 26, reactor_e: 22,
     capacitor_e: 14, battery_e: 10, shields: [42, 32, 28, 26, 28, 32], marines: 12, mines: 4, fighters: 4, team: { demo: 4, medics: 2, engineers: 3, hackers: 2, pilots: 2 },
     power: { weapons: 6, shields: 5, engines: 6, sensors: 1, tractor: 0, transport: 0, repair: 1 },
     mounts: [['lance', -0.42, 0.62, -50, 200], ['lance', 0.42, 0.62, 50, 200], ['lance', -0.62, 0.05, -90, 180], ['lance', 0.62, 0.05, 90, 180],
       ['torpedo', -0.14, 0.86, 0, 90], ['torpedo', 0.14, 0.86, 0, 90], ['lance', 0, -0.72, 180, 160], ['pd', -0.32, -0.3, 0, 360], ['pd', 0.32, -0.3, 0, 360]] },
-  dd: { name: 'Destroyer', code: 'DD', pads: 3, shape: 'saucer', len_m: 230, hull: 95, speed_max_m_s: 330, accel_m_s2: 55, turn_deg_s: 34, reactor_e: 16,
+  dd: { name: 'Destroyer', code: 'DD', hold_t: 12, pads: 3, shape: 'saucer', len_m: 230, hull: 95, speed_max_m_s: 330, accel_m_s2: 55, turn_deg_s: 34, reactor_e: 16,
     capacitor_e: 10, battery_e: 6, shields: [32, 24, 22, 20, 22, 24], marines: 6, mines: 2, fighters: 0,
     power: { weapons: 5, shields: 3, engines: 5, sensors: 1, tractor: 0, transport: 0, repair: 0 },
     mounts: [['lance', -0.4, 0.6, -40, 180], ['lance', 0.4, 0.6, 40, 180], ['torpedo', 0, 0.85, 0, 90], ['lance', 0, -0.7, 180, 160], ['pd', 0, -0.2, 0, 360]] },
-  ff: { name: 'Frigate', code: 'FF', pads: 2, shape: 'saucer', len_m: 160, hull: 60, speed_max_m_s: 360, accel_m_s2: 70, turn_deg_s: 44, reactor_e: 12,
+  ff: { name: 'Frigate', code: 'FF', hold_t: 8, pads: 2, shape: 'saucer', len_m: 160, hull: 60, speed_max_m_s: 360, accel_m_s2: 70, turn_deg_s: 44, reactor_e: 12,
     capacitor_e: 8, battery_e: 4, shields: [24, 18, 16, 14, 16, 18], marines: 4, mines: 2, fighters: 0,
     power: { weapons: 4, shields: 3, engines: 3, sensors: 0, tractor: 0, transport: 0, repair: 0 },
     mounts: [['lance', -0.35, 0.6, -30, 160], ['lance', 0.35, 0.6, 30, 160], ['pd', 0, -0.3, 0, 360]] },
-  kdd: { name: 'Kethran destroyer', code: 'KDD', pads: 3, shape: 'wedge', len_m: 250, hull: 105, speed_max_m_s: 300, accel_m_s2: 50, turn_deg_s: 30, reactor_e: 18,
+  kdd: { name: 'Kethran destroyer', code: 'KDD', hold_t: 12, pads: 3, shape: 'wedge', len_m: 250, hull: 105, speed_max_m_s: 300, accel_m_s2: 50, turn_deg_s: 30, reactor_e: 18,
     capacitor_e: 12, battery_e: 6, shields: [36, 26, 22, 18, 22, 26], marines: 8, mines: 0, fighters: 0,
     power: { weapons: 7, shields: 3, engines: 5, sensors: 1, tractor: 0, transport: 0, repair: 0 },
     mounts: [['disruptor', -0.3, 0.7, 0, 120], ['disruptor', 0.3, 0.7, 0, 120], ['disruptor', 0, 0.9, 0, 60], ['lance', 0, -0.6, 180, 180]] },
-  kff: { name: 'Kethran frigate', code: 'KFF', pads: 2, shape: 'wedge', len_m: 170, hull: 65, speed_max_m_s: 350, accel_m_s2: 65, turn_deg_s: 40, reactor_e: 12,
+  kff: { name: 'Kethran frigate', code: 'KFF', hold_t: 8, pads: 2, shape: 'wedge', len_m: 170, hull: 65, speed_max_m_s: 350, accel_m_s2: 65, turn_deg_s: 40, reactor_e: 12,
     capacitor_e: 8, battery_e: 4, shields: [26, 18, 16, 12, 16, 18], marines: 4, mines: 0, fighters: 0,
     power: { weapons: 4, shields: 3, engines: 3, sensors: 0, tractor: 0, transport: 0, repair: 0 },
     mounts: [['disruptor', -0.25, 0.7, 0, 120], ['disruptor', 0.25, 0.7, 0, 120], ['pd', 0, -0.3, 0, 360]] },
-  vcr: { name: 'Vos corsair', code: 'VCR', pads: 3, shape: 'claw', len_m: 200, hull: 80, speed_max_m_s: 340, accel_m_s2: 60, turn_deg_s: 38, reactor_e: 14,
+  vcr: { name: 'Vos corsair', code: 'VCR', hold_t: 16, pads: 3, shape: 'claw', len_m: 200, hull: 80, speed_max_m_s: 340, accel_m_s2: 60, turn_deg_s: 38, reactor_e: 14,
     capacitor_e: 10, battery_e: 6, shields: [28, 22, 18, 16, 18, 22], marines: 10, mines: 2, fighters: 0,
     power: { weapons: 5, shields: 2, engines: 5, sensors: 0, tractor: 0, transport: 0, repair: 0 },
     mounts: [['missile', -0.3, 0.5, 0, 180], ['missile', 0.3, 0.5, 0, 180], ['lance', 0, 0.8, 0, 120]] },
   // A troop ship: a fast hull for a large marine company (the VIP scene).
-  tr: { name: 'Troop ship', code: 'TR', pads: 6, shape: 'saucer', len_m: 180, hull: 55, speed_max_m_s: 320, accel_m_s2: 60, turn_deg_s: 40, reactor_e: 12,
+  tr: { name: 'Troop ship', code: 'TR', hold_t: 30, pads: 6, shape: 'saucer', len_m: 180, hull: 55, speed_max_m_s: 320, accel_m_s2: 60, turn_deg_s: 40, reactor_e: 12,
     capacitor_e: 6, battery_e: 4, shields: [22, 18, 16, 14, 16, 18], marines: 14, mines: 0, fighters: 0, team: { engineers: 2, pilots: 1, medics: 2 },
     power: { weapons: 2, shields: 3, engines: 6, sensors: 0, tractor: 0, transport: 1, repair: 0 },
     mounts: [['lance', 0, 0.7, 0, 160], ['pd', 0, -0.3, 0, 360]] },
   // A station: it does not move or turn; lances all round and point defence.
-  sb: { name: 'Starbase', code: 'SB', pads: 8, shape: 'station', len_m: 420, hull: 260, speed_max_m_s: 0, accel_m_s2: 0, turn_deg_s: 0, reactor_e: 30,
+  sb: { name: 'Starbase', code: 'SB', hold_t: 200, pads: 8, shape: 'station', len_m: 420, hull: 260, speed_max_m_s: 0, accel_m_s2: 0, turn_deg_s: 0, reactor_e: 30,
     capacitor_e: 16, battery_e: 10, shields: [40, 40, 40, 40, 40, 40], marines: 10, mines: 0, fighters: 0, team: { engineers: 3, pilots: 2, hackers: 1 },
     power: { weapons: 8, shields: 6, engines: 0, sensors: 2, tractor: 0, transport: 1, repair: 1 },
     mounts: [['lance', 0, 0.8, 0, 120], ['lance', 0.7, 0.4, 60, 120], ['lance', 0.7, -0.4, 120, 120], ['lance', 0, -0.8, 180, 120], ['lance', -0.7, -0.4, 240, 120], ['lance', -0.7, 0.4, 300, 120],
@@ -557,7 +557,8 @@ const SCENARIO = {
 // pads are active"): a class's `pads` sets how many; one pad beams one person (or one load) and then recharges. The
 // transporter's energy is shared by the pads recharging, so a pad takes pad_charge_s at 1 energy point when it charges
 // alone, and that times the number charging at once. queue_max: the longest boarding queue, per mode.
-const TRANSPORT = { range_km: 4, pads_default: 2, pad_charge_s: 8, queue_max: 30 };
+// range_km (owner, 2026-11-03: "transport range is too wide! 1.5 km only!")
+const TRANSPORT = { range_km: 1.5, pads_default: 2, pad_charge_s: 8, queue_max: 30 };
 // Asteroids (after the-federation, docs/13 section 3.2): a rock is solid. Touching one costs hull on the facing that met
 // it, scaled by the speed of the impact (floored, so a nudge still counts), and cuts the ship's speed; one collision
 // per ship per cooldown_s. A ship towed by a tractor beam hits at the speed it is dragged, which is what makes
@@ -583,6 +584,16 @@ const BOARD = { raid_s: 6, shoot_per_marine: 0.2, bomb_dmg: 0.8, demo_loss: 0.6,
 // The inventory transporter: goods, a VIP or a mine, to or from a friendly ship, a station or a planet in reach; one
 // beam moves per_beam crates and spends the transporter's charge.
 const INV = { per_beam: 5 };
+// What a hold carries (owner, 2026-11-03: "a ship's inventory will additionally have: Spare parts, rations, medicine that
+// can be transported off/on the ship. and of course the ship will have max cargo holds"): each a count of units, one
+// unit one place in the hold (a class's hold_t); the VIP travels apart from the hold.
+const ITEMS = [['goods', 'Goods'], ['parts', 'Spare parts'], ['rations', 'Rations'], ['medicine', 'Medicine']];
+const SUPPLY_KEYS = ['parts', 'rations', 'medicine'], CARGO_KEYS = ['goods'];
+const emptyHold = () => Object.fromEntries(ITEMS.map(([k]) => [k, 0]));
+const holdUsed = (o) => ITEMS.reduce((n, [k]) => n + (o.hold[k] || 0), 0);
+// What a ship or planet still wants of an item (its needs less what it has been given).
+const stillNeeds = (o, k) => Math.max(0, ((o.needs || {})[k] || 0) - ((o.got || {})[k] || 0));
+const needsMet = (o) => !!o.needs && ITEMS.every(([k]) => stillNeeds(o, k) <= 0);
 // A disguised shuttle (owner: "a disguised shuttle leaves your ship and suicide bombs a station"): it flies at
 // speed_u_s posing as civilian traffic, so shields and guns let it through; inside suspect_km the target's crew may see
 // through it (catch_p_s a second); arriving, it detonates against the hull for dmg.
@@ -621,7 +632,7 @@ const SCENES = {
   boarding: { name: 'Boarding', objective: 'Board the Rattlejaw and take it (raid its systems first, if you like)', armed: false, done: (W) => ship('rattlejaw').side === 0, endless: true, target: 'rattlejaw',
     ships: [
       { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
-      { id: 'rattlejaw', name: 'Rattlejaw', captain: 'Mother Skeel', cls: 'vcr', faction: 'vos', side: 1, x: 5, z: -18, h: 200, v: 0 },
+      { id: 'rattlejaw', name: 'Rattlejaw', captain: 'Mother Skeel', cls: 'vcr', faction: 'vos', side: 1, x: 4, z: -11, h: 200, v: 0 },
     ],
     setup: (W) => { const s = W.player, r = ship('rattlejaw'); s.power.weapons = 2; s.power.transport = 8; chargePads(s);
       // crippled: shields down and unpowered, engines dead, guns all but one wrecked, most of its marines lost
@@ -641,14 +652,14 @@ const SCENES = {
     setup: (W) => { const s = W.player; s.warp.banks = 12; s.warp.nacelles[0].hp = 0.7; s.reactor.coolant = 0.8; s.power.warp = 0; s.power.weapons = 4; },
     say: ['Helm', 'Kethran frigates closing from astern, and the neutron star ahead bends space. Charge the banks, plot a course and jump.'] },
   // Owner, 2026-11-01: "A delivery mission from a station to a planet".
-  delivery: { name: 'Delivery', objective: 'Take 10 crates from Harbor Nine and beam them down to Tessaly', armed: false, done: (W) => W.planets[0].got >= W.planets[0].need, target: null, endless: true,
+  delivery: { name: 'Relief', objective: 'Take rations and medicine from Harbor Nine and beam them down to Tessaly', armed: false, done: (W) => needsMet(W.planets[0]), target: null, endless: true,
     ships: [
       { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
-      { id: 'harbor', name: 'Harbor Nine', captain: 'Stationmaster Pell', cls: 'sb', faction: 'concord', side: 0, x: 8, z: -12, h: 0, v: 0 },
+      { id: 'harbor', name: 'Harbor Nine', captain: 'Stationmaster Pell', cls: 'sb', faction: 'concord', side: 0, x: 6, z: -9, h: 0, v: 0 },
     ],
-    planets: [{ id: 'tessaly', name: 'Tessaly', x: 50, z: -150, r: 16, col: 0x4f7fa8, need: 10 }],
-    setup: (W) => { const s = W.player, h = ship('harbor'); s.cargo = 0; s.power.transport = 3; chargePads(s); h.cargo = 20; h.cargoCap = 40; invDest = 'harbor'; },
-    say: ['Comms', 'Harbor Nine: ten crates of medical stores for Tessaly. Beam them aboard and take them down.'] },
+    planets: [{ id: 'tessaly', name: 'Tessaly', x: 50, z: -150, r: 16, col: 0x4f7fa8, needs: { rations: 10, medicine: 5 } }],
+    setup: (W) => { const s = W.player, h = ship('harbor'); s.power.transport = 3; chargePads(s); Object.assign(h.hold, { rations: 20, medicine: 10, parts: 10, goods: 30 }); s.hold.goods = 4; },
+    say: ['Comms', 'Harbor Nine: Tessaly needs ten rations and five medicine. Select us, beam them aboard, then select Tessaly and take them down.'] },
   // Owner: "The vip one is similar but you transport him on a ship with Marines and he works to capture a station".
   vip: { name: 'VIP', objective: 'Beam the envoy to the Corrin and see Varn Outpost taken', armed: false, done: (W) => ship('varn').side === 0, target: 'varn', endless: true,
     ships: [
@@ -656,11 +667,31 @@ const SCENES = {
       { id: 'corrin', name: 'Corrin', captain: 'Major Vale', cls: 'tr', faction: 'concord', side: 0, x: -7, z: 4, h: 0, v: 0 },
       { id: 'varn', name: 'Varn Outpost', captain: 'Castellan Dorr', cls: 'sb', faction: 'kethran', side: 1, x: 10, z: -70, h: 0, v: 0 },
     ],
-    setup: (W) => { const s = W.player, c = ship('corrin'), v = ship('varn'); s.vip = 'Envoy Saros'; s.vipName = 'Envoy Saros'; s.power.transport = 3; chargePads(s); invDest = 'corrin';
+    setup: (W) => { const s = W.player, c = ship('corrin'), v = ship('varn'); s.vip = 'Envoy Saros'; s.vipName = 'Envoy Saros'; s.power.transport = 3; chargePads(s);
       c.ai.capture = 'varn'; c.vipName = 'Envoy Saros';
       // the outpost is worn down: weak shields that do not regenerate, most of its guns out
       v.shields = v.shields.map(() => 0); v.shUp = false; v.power.shields = 0; v.ai.fire = 'hold'; v.marines = 8; v.mounts.forEach((m, i) => { if (i > 1 && m.w !== 'pd') { m.hp = 0; m.charge = 0; } }); },
     say: ['Comms', 'Envoy Saros is aboard. Beam him to the Corrin; it takes him and its marines to Varn Outpost, whose shields have failed.'] },
+  // Owner, 2026-11-03: "give spare parts for a ship in distress".
+  distress: { name: 'Distress', objective: 'Beam 10 spare parts to the Lark, adrift with failed engines', armed: false, done: (W) => needsMet(ship('lark')), target: null, endless: true,
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'lark', name: 'Lark', captain: 'Master Ines', cls: 'tr', faction: 'concord', side: 0, x: 30, z: -90, h: 140, v: 0 },
+    ],
+    setup: (W) => { const s = W.player, l = ship('lark'); s.power.transport = 3; chargePads(s); s.hold.parts = 15; s.hold.rations = 5;
+      l.needs = { parts: 10 }; l.distress = true; l.sys.engines = 0; l.sys.sensors = 0.3; l.ai.stance = 'hold'; l.ai.fire = 'hold'; },
+    say: ['Comms', 'Lark: engines dead, drifting. We need ten spare parts. Right click us to select us, close to transporter range and beam them over.'] },
+  // Owner, 2026-11-03: "be asked to supply troops for an assault (combat transport tab)".
+  assault: { name: 'Assault', objective: 'Beam 8 marines to the Corrin and see Varn Outpost taken', armed: false, done: (W) => ship('varn').side === 0, target: null, endless: true,
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 0 },
+      { id: 'corrin', name: 'Corrin', captain: 'Major Vale', cls: 'tr', faction: 'concord', side: 0, x: -7, z: 4, h: 0, v: 0 },
+      { id: 'varn', name: 'Varn Outpost', captain: 'Castellan Dorr', cls: 'sb', faction: 'kethran', side: 1, x: 10, z: -70, h: 0, v: 0 },
+    ],
+    setup: (W) => { const s = W.player, c = ship('corrin'), v = ship('varn'); s.power.transport = 4; chargePads(s);
+      c.ai.capture = 'varn'; c.ai.needMarines = 10; c.marines = 2;
+      v.shields = v.shields.map(() => 0); v.shUp = false; v.power.shields = 0; v.ai.fire = 'hold'; v.marines = 6; v.mounts.forEach((m, i) => { if (i > 1 && m.w !== 'pd') { m.hp = 0; m.charge = 0; } }); },
+    say: ['Comms', 'Corrin: we have two marines left and need ten to take Varn Outpost. Select us, open Transport, Capture, queue marines and energize.'] },
   // Owner: "Shuttle scene - a disguised shuttle leaves your ship and suicide bombs a station."
   shuttle: { name: 'Shuttle', objective: 'Destroy Varn Outpost with a disguised shuttle', armed: false, lethal: ['shuttle'], done: (W) => !ship('varn').alive, target: 'varn', endless: true,
     ships: [
@@ -753,7 +784,7 @@ function makeShip(d) {
     mounts: c.mounts.map(([w, x, y, ac, aw], i) => ({ i, w, x, y, arc: [ac, aw], state: 'normal', charge: 0.6 + (i % 3) * 0.15, sel: w !== 'pd', hp: 1 })),
     sys: { weapons: 1, shields: 1, engines: 1, sensors: 1, tractor: 1, transport: 1 }, target: null, aim: 'hull', order: 'approach', engaged: false,
     ai: { stance: 'attack', rule: d.side === 0 ? 'mine' : 'nearest', range: 'mid', retreat: 'never', fire: 'free' }, ecm: 0, eccm: 0, sensorMode: 'active',
-    scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, cargo: 0, cargoCap: 20, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', pads: Array(c.pads || TRANSPORT.pads_default).fill(1), bq: { capture: [], hit: [] }, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
+    scan: { id: null, p: 0 }, tractor: 'off', powerT: 0, beam: null, relock: null, mineCool: 0, bumpT: 0, raid: null, party: null, guard: BOARD.guard_crew, captured: false, team: { ...TEAM_DEFAULT, ...(c.team || {}) }, hold: emptyHold(), holdCap: c.hold_t || 10, needs: null, got: {}, vip: null, shuttles: 0, missiles: 0, barrage: 0, barrageT: 0, pd: 'auto', pads: Array(c.pads || TRANSPORT.pads_default).fill(1), bq: { capture: [], hit: [] }, marines: c.marines, mines: c.mines, fighters: c.fighters, mission: 'attack',
     reactor: { coils: [0, 0, 0], conf: 1, loops: [{ flow: 1, hp: 1 }, { flow: 1, hp: 1 }], temp: 50, melt: 0, warned: false, coolant: 1 }, brown: 1, overdraw: false,
     warp: { armed: false, want: 0, banks: 0, plot: 0, plotting: false, override: false, nacelles: [{ hp: 1 }, { hp: 1 }], out: 0 },
     het: null, hetChance: clamp(0.95 - c.len_m / 2000, 0.6, 0.95), broke: 0, erratic: false, estop: false, estopT: 0, orbitDir: 1, holdKm: 6, runMin: 2, runMax: 8, runPhase: 'in',
@@ -763,7 +794,7 @@ function makeShip(d) {
 let sceneId = (() => { try { const v = localStorage.getItem('fc.battle.scene'); return v && SCENES[v] ? v : 'battle'; } catch (e) { return 'battle'; } })();
 function newWorld(id = sceneId) {
   const sc = SCENES[id]; sceneId = id;
-  const planets = (sc.planets || []).map((pl) => ({ got: 0, need: 0, ...pl }));
+  const planets = (sc.planets || []).map((pl) => ({ hold: emptyHold(), holdCap: 0, needs: null, ...pl, got: {} }));
   W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', planets, wells: (sc.wells || []).map((w) => ({ ...w })),
     // a planet is solid too: it joins the rocks for collisions
     rocks: (sc.rocks || []).map((r) => ({ ...r })).concat(planets.map((pl) => ({ x: pl.x, z: pl.z, r: pl.r, name: pl.name, planet: true }))),
@@ -787,8 +818,16 @@ const enemiesOf = (s) => W.ships.filter((o) => o.alive && o.side !== s.side);
 const WARN_RE = /^(Cannot|Warp field collapsed|Warp core breach|Out of|No target|Not during|The queue is empty|Pads charging|Their shield|That ship is ours|A raid is out|A boarding party is out)/;
 function say(who, text) { W.log.push({ t: W.t, who, text, warn: WARN_RE.test(text) }); if (W.log.length > 80) W.log.shift(); }
 
+// Crossing the transporter's range to the selected destination (owner, 2026-11-03: "when crossing this range transporters
+// become active"): said once each way.
+function reachStep() {
+  const d = invPick(W.player); if (!d) { W.inReach = null; return; }
+  const inR = d.km <= TRANSPORT.range_km; if (W.inReach !== null && W.inReach !== undefined && inR !== W.inReach) say('Transport', inR ? `${d.name} in transporter range: transporters active.` : `${d.name} out of transporter range.`);
+  W.inReach = inR;
+}
 // One fixed step of the whole battle.
 function step() {
+  reachStep();
   if (W.over) return;
   W.t += DT;
   for (const s of W.ships) if (s.alive) systemsStep(s);
@@ -1071,13 +1110,17 @@ function steer(s, order, t, rangeKm) {
 function aiCapture(s) {
   const st = ship(s.ai.capture);
   if (!st || !st.alive || st.side === s.side) return false;
-  if (!s.vip && !s.party) { s.vOrder = 0; return true; }
+  // it waits for the envoy (the VIP scene) or for the marines it asked for (the Assault scene: owner, 2026-11-03: "be asked
+  // to supply troops for an assault")
+  const ready = s.vip || (s.ai.needMarines && s.marines >= s.ai.needMarines);
+  if (!ready && !s.party) { s.vOrder = 0; return true; }
+  if (s.ai.needMarines && !s.ai.told) { s.ai.told = true; say('Comms', `${s.name}: ${s.marines} marines aboard. Moving on ${st.name}.`); }
   s.target = st.id; steer(s, 'approach', st, 2);
   if (!s.party && canBoard(s, st)) {
-    const tm = { marines: s.marines, demo: 0, medics: s.team.medics, engineers: s.team.engineers, hackers: s.team.hackers, pilots: s.team.pilots, vip: 1 };
+    const tm = { marines: s.marines, demo: 0, medics: s.team.medics, engineers: s.team.engineers, hackers: s.team.hackers, pilots: s.team.pilots, vip: s.vip ? 1 : 0 };
     s.marines = 0; for (const r of ['medics', 'engineers', 'hackers', 'pilots']) s.team[r] = 0; s.vip = null; usePad(s);
     s.party = { on: st.id, team: tm, volleyT: BOARD.volley_s, last: null, loud: true };
-    say('Comms', `${s.name}: boarding ${st.name} with ${tm.marines} marines and the envoy.`);
+    say('Comms', `${s.name}: boarding ${st.name} with ${tm.marines} marines${tm.vip ? ' and the envoy' : ''}.`);
   }
   return true;
 }
@@ -1296,16 +1339,28 @@ const A = {
   recallParty: () => { const s = W.player; if (!s.party) return; const tm = s.party.team; for (const [r] of ROLES) addRole(s, r, tm[r]); if (tm.vip) s.vip = s.vip || 'Envoy Saros'; say('Transport', `${teamSize(tm)} recalled.`); s.party = null; },
   // The inventory transporter (owner: "transport vip scene using inventory transporter instead of combat
   // transporter", "transport goods onto a planet"): goods or the VIP, to or from the destination picked.
-  transfer: (what, dir) => { const s = W.player, d = invPick(s); if (!invReach(s, d)) return;
-    const o = d.ship, pl = d.planet;
-    if (what === 'goods') {
-      if (dir > 0) { const n = Math.min(INV.per_beam, s.cargo, pl ? pl.need - pl.got : (o.cargoCap - o.cargo)); if (n <= 0) return; s.cargo -= n; if (pl) pl.got += n; else o.cargo += n;
-        say('Transport', `${n} crates beamed to ${d.name}${pl ? ` (${pl.got} of ${pl.need})` : ''}.`); if (pl && pl.got >= pl.need) say('Comms', `${pl.name}: delivery received in full. Thank you, Resolute.`); }
-      else { if (!o) return; const n = Math.min(INV.per_beam, o.cargo, s.cargoCap - s.cargo); if (n <= 0) return; o.cargo -= n; s.cargo += n; say('Transport', `${n} crates beamed aboard from ${d.name}.`); }
-    } else if (what === 'vip') {
-      if (dir > 0) { if (!s.vip || !o) return; o.vip = s.vip; s.vip = null; say('Transport', `${o.vip} beamed to ${o.name}.`); }
-      else { if (!o || !o.vip) return; s.vip = o.vip; o.vip = null; say('Transport', `${s.vip} beamed aboard.`); }
-    } else return;
+  transfer: (what, dir) => { const s = W.player, d = invPick(s); if (!d) { say('Transport', 'No destination: right click a friendly ship, station or planet.'); return; }
+    if (!invReach(s, d)) { say('Transport', d.km > TRANSPORT.range_km ? `Out of transporter range: ${d.name} is ${km(d.km)} away (${km(TRANSPORT.range_km)}).` : 'Pads charging.'); return; }
+    const o = d.ship || d.planet, name = d.name;
+    if (what === 'vip') {
+      if (!d.ship) { say('Transport', 'Cannot beam the envoy to a planet here.'); return; }
+      if (dir > 0) { if (!s.vip) return; o.vip = s.vip; s.vip = null; say('Transport', `${o.vip} beamed to ${o.name}.`); }
+      else { if (!o.vip) return; s.vip = o.vip; o.vip = null; say('Transport', `${s.vip} beamed aboard.`); }
+      usePad(s); return;
+    }
+    const label = ITEMS.find((q) => q[0] === what)[1].toLowerCase();
+    if (dir > 0) {
+      // a planet takes only what it asks for; a ship takes what its hold has room for
+      const room = d.planet ? stillNeeds(o, what) : o.holdCap - holdUsed(o) + stillNeeds(o, what);
+      const n = Math.min(INV.per_beam, s.hold[what], room); if (n <= 0) { say('Transport', s.hold[what] <= 0 ? `No ${label} aboard.` : `${name} cannot take more ${label}.`); return; }
+      s.hold[what] -= n; const used = Math.min(n, stillNeeds(o, what)); o.got[what] = (o.got[what] || 0) + used; if (n > used) o.hold[what] += n - used;
+      say('Transport', `${n} ${label} beamed to ${name}${o.needs && o.needs[what] ? ` (${o.got[what]} of ${o.needs[what]})` : ''}.`);
+      if (o.needs && needsMet(o) && !o.relieved) { o.relieved = true; relieved(o); }
+    } else {
+      if (!d.ship) { say('Transport', `${name} has nothing to send up.`); return; }
+      const n = Math.min(INV.per_beam, o.hold[what], s.holdCap - holdUsed(s)); if (n <= 0) { say('Transport', o.hold[what] <= 0 ? `${name} has no ${label}.` : 'Our hold is full.'); return; }
+      o.hold[what] -= n; s.hold[what] += n; say('Transport', `${n} ${label} beamed aboard from ${name}.`);
+    }
     usePad(s); },
   // A disguised shuttle launched at the target (owner: "a disguised shuttle leaves your ship and suicide bombs a
   // station").
@@ -1352,7 +1407,7 @@ const A = {
   station: (id) => { station = id; if (expanded && expanded !== 'station') expanded = 'station'; buildPanel('station'); },
   shipTab: (id) => { shipTab = id; buildPanel('ship'); },
   menu: () => { menuOpen = !menuOpen; renderSheet(); },
-  reset: () => { newWorld(); raidMount = null; raidMountOpen = false; camLock = false; camTargetView = false; paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
+  reset: () => { invDest = null; newWorld(); raidMount = null; raidMountOpen = false; camLock = false; camTargetView = false; paused = false; placingMine = false; focus = SCENES[sceneId].target; fleetPick = 'resolute'; lastFollow = null; rebuild(); },
 };
 // The pads: ready when charged; using one spends it; every step the charging pads share the transporter's energy.
 const padReady = (s) => s.pads.some((c) => c >= 1);
@@ -1374,10 +1429,15 @@ const canRaid = (s, t) => beamReach(s, t) && t.side !== s.side && !s.party && (!
 // Beam the head of s's queue for mode through each listed pad that is charged: in Capture each joins the party
 // aboard the target (made with the first), in Hit and run the raid on the subsystem picked. Says what went, or why
 // nothing did.
+// The ship a Capture beam goes to: the enemy target, or, with none, the friendly ship selected for transport (troops for
+// an assault: owner, 2026-11-03, "supply troops for an assault (combat transport tab)").
+function captureDest(s) { const t = tgt(s); if (t) return t; const d = s === W.player ? invPick(s) : null; return d && d.ship ? d.ship : null; }
+const canReinforce = (s, o) => !!o && o.alive && o.side === s.side && padReady(s) && distKm(s, o) <= TRANSPORT.range_km;
 function beamQueued(s, mode, pads) {
-  const t = tgt(s), q = s.bq[mode], sent = {}; let n = 0;
+  const t = mode === 'capture' ? captureDest(s) : tgt(s), q = s.bq[mode], sent = {}; let n = 0, friend = false;
   for (const i of pads) {
     if (!q.length) break; if (!(s.pads[i] >= 1)) continue;
+    if (mode === 'capture' && t && t.side === s.side) { if (!canReinforce(s, t)) break; const role = q.shift(); s.pads[i] = 0; sent[role] = (sent[role] || 0) + 1; n++; friend = true; addRole(t, role, 1); continue; }
     if (!(mode === 'capture' ? canBoard(s, t) : canRaid(s, t))) break;
     const role = q.shift(); s.pads[i] = 0; sent[role] = (sent[role] || 0) + 1; n++;
     if (mode === 'capture') {
@@ -1389,9 +1449,9 @@ function beamQueued(s, mode, pads) {
     }
   }
   if (s !== W.player) return n;
-  if (n) say('Transport', `Energizing: ${Object.entries(sent).map(([r, k]) => `${k} ${ROLE_ONE[r].toLowerCase()}${k > 1 && r !== 'demo' ? 's' : ''}`).join(', ')} to ${t.name}${mode === 'hit' ? `'s ${raidName(s.raid, t)}` : ''}.`);
+  if (n) say('Transport', `Energizing: ${Object.entries(sent).map(([r, k]) => `${k} ${ROLE_ONE[r].toLowerCase()}${k > 1 && r !== 'demo' ? 's' : ''}`).join(', ')} to ${t.name}${mode === 'hit' ? `'s ${raidName(s.raid, t)}` : ''}${friend ? ` (${t.marines} marines aboard)` : ''}.`);
   else say('Transport', !q.length ? 'The queue is empty.' : !t ? 'No target.' : !pads.some((i) => s.pads[i] >= 1) ? 'Pads charging.' : distKm(s, t) > TRANSPORT.range_km ? `Out of reach (${km(TRANSPORT.range_km)}).`
-    : t.side === s.side ? 'That ship is ours.' : mode === 'hit' && s.party ? 'A boarding party is out.' : mode === 'capture' && s.raid ? 'A raid is out.' : 'Their shield facing is up.');
+    : t.side === s.side ? `Out of reach (${km(TRANSPORT.range_km)}).` : mode === 'hit' && s.party ? 'A boarding party is out.' : mode === 'capture' && s.raid ? 'A raid is out.' : 'Their shield facing is up.');
   return n;
 }
 // How many of a role are aboard s (combat marines are s.marines; the rest are s.team).
@@ -1459,6 +1519,20 @@ function boardingStep(s) {
     else if (s === W.player || pt.loud) say('Transport', `Volley aboard ${t.name}: ${att} hits${locked ? `, ${locked} locked out` : ''}${talked ? ', 1 talked down' : ''}, ${def} taken. ${tm.marines} marines against ${defenders(t)}.`);
   }
 }
+// The hold as one bar split three ways: supplies (Sky), cargo (Lilac) and the free space left (dark), with the counts.
+function holdBar(x, y, w, s, big) {
+  const sup = SUPPLY_KEYS.reduce((n, k) => n + s.hold[k], 0), car = CARGO_KEYS.reduce((n, k) => n + s.hold[k], 0), cap = Math.max(1, s.holdCap), free = Math.max(0, s.holdCap - sup - car), h = big ? 14 : 10;
+  rich(x, y + 15, [['Hold ', CC.lilac], [`supplies ${sup}`, CC.sky], [' · ', CC.lilac], [`cargo ${car}`, CC.lilac], [' · ', CC.lilac], [`free ${free}`, free ? CC.text : CC.caution], [` of ${s.holdCap}`, CC.lilac]], `600 ${big ? 18 : 15}px Antonio`, w);
+  const by = y + 22; g.save(); g.beginPath(); g.roundRect(x, by, w, h, h / 2); g.clip(); g.fillStyle = CC.deep; g.fillRect(x, by, w, h);
+  g.fillStyle = CC.sky; g.fillRect(x, by, w * sup / cap, h); g.fillStyle = CC.lilac; g.fillRect(x + w * sup / cap, by, w * car / cap, h); g.restore();
+  return 22 + h;
+}
+// A ship or planet whose needs are all met (owner: "sometimes you'll be asked to deliver food or medicine to an outpost
+// or planet, give spare parts for a ship in distress"): it says so, and a ship in distress repairs its engines.
+function relieved(o) {
+  say('Comms', `${o.name}: everything we asked for is aboard. Thank you, ${W.player.name}.`);
+  if (o.sys) { o.sys.engines = 1; o.sys.sensors = 1; if (o.distress) { o.distress = false; o.vOrder = 120; say('Comms', `${o.name}: engines repaired, getting under way.`); } }
+}
 // Inventory destinations in reach: friendly ships and stations, and planets (reach measured to the surface).
 function invDests(s) {
   const out = [];
@@ -1467,13 +1541,13 @@ function invDests(s) {
   return out.sort((a, b) => a.km - b.km);
 }
 const invReach = (s, d) => !!d && padReady(s) && d.km <= TRANSPORT.range_km;
-// The inventory destination in use: the one picked, unless it is out of reach and the nearest is in reach (fly to a
-// planet and it is picked). The panel and the transfer both ask this (6.1).
-function invPick(s) {
-  const ds = invDests(s), cur = ds.find((q) => q.id === invDest);
-  if ((!cur || (cur.km > TRANSPORT.range_km && ds[0] && ds[0].km <= TRANSPORT.range_km)) && ds[0]) invDest = ds[0].id;
-  return ds.find((q) => q.id === invDest) || null;
-}
+// The transport destination: the friendly ship, station or planet the captain selected (owner, 2026-11-03: "allow my ship
+// to select planets, stations and friendly ships. same as enemy ships. This is how we commence transport"). The panel,
+// the transfers, the range ring and the troop beam all ask this (6.1).
+function invPick(s) { return invDests(s).find((q) => q.id === invDest) || null; }
+// Select a friendly ship, station or planet as the transport destination.
+function selectDest(id) { const d = invDests(W.player).find((q) => q.id === id); if (!d) return; invDest = id; W.inReach = d.km <= TRANSPORT.range_km;
+  say('Transport', `Selected ${d.name}: ${d.km <= TRANSPORT.range_km ? 'in transporter range' : `${km(d.km)} away, transporters reach ${km(TRANSPORT.range_km)}`}.`); }
 // A disguised shuttle, every step: it flies at the target; inside suspect_km the crew may see through it; arriving, it
 // goes off against the hull (past the shields: it was let in as civilian traffic).
 function shuttleStep(c) {
@@ -2199,7 +2273,7 @@ function stComms(b, big) {
   const hw = (b.w - 6) / 2;
   [['All attack', 'attack'], ['Form on me', 'escort'], ['All hold', 'hold'], ['Hunt', 'hunt']].forEach(([l, st], i) => button(`com.${st}`, b.x + (i % 2) * (hw + 6), y + Math.floor(i / 2) * 36, hw, 30, l, () => A.fleetOrder(st), { center: true }));
   // the event log (owner, 2026-11-02: "I need an event log button in comms somewhere"): opens the whole log over the view,
-  // the same panel as the Log key there; the latest lines stay listed here
+  // its only key (owner, 2026-11-03: "just one place is good enough"); the latest lines stay listed here
   y += 76; button('com.log', b.x, y, b.w, 36, 'Event log', () => { logOpen = true; sceneOpen = false; if (expanded) A.expand(expanded); }, { center: true, sel: () => logOpen }); y += 44;
   LBL('Latest', b.x, y + 13); y += 22;
   const n = big ? 22 : 4;
@@ -2277,12 +2351,32 @@ function teamChips(x, y, w, list, col, sz = 34) {
     NUM(`×${n}`, cx + sz + 6, cy + sz * 0.7, 0, CC.text, 'left', Math.round(sz * 0.55)); });
   return Math.ceil(items.length / per) * (sz + 6) - 6;
 }
-// A role key: lit Concord blue with the pictogram in black and how many are left aboard in its corner.
-function roleKey(id, x, y, sz, role, avail, click) {
-  const dis = avail <= 0, st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: `Queue ${ROLE_ONE[role]} · ${avail} aboard` });
+// An icon key: lit Concord blue with its pictogram in black and a count in its corner; dark when there is none; ringed
+// in Caution when wanted. The role keys, the cargo keys and the queue share it (6.1).
+function iconKey(id, x, y, sz, glyph, count, click, o = {}) {
+  const dis = count <= 0 || !!o.dis, st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: o.tip });
+  if (dis && o.tip) hit(id, x, y, sz, sz, { tip: o.tip });
+  if (o.ring) { g.strokeStyle = CC.caution; g.lineWidth = 3; g.beginPath(); g.roundRect(x - 3, y - 3, sz + 6, sz + 6, sz * 0.22 + 3); g.stroke(); }
   g.globalAlpha = dis ? 0.5 : 1; g.fillStyle = dis ? CC.deep : st.down ? CC.lilac : st.hot ? CC.sky : CC.signal; g.beginPath(); g.roundRect(x, y, sz, sz, sz * 0.22); g.fill(); g.globalAlpha = 1;
-  roleGlyph(role, x + sz * 0.44, y + sz * 0.44, sz * 0.3, dis ? '#2a3a7a' : '#000');
-  g.fillStyle = dis ? '#2a3a7a' : '#000'; g.font = `700 ${Math.round(sz * 0.27)}px Antonio`; g.textAlign = 'right'; g.fillText(String(avail), x + sz - sz * 0.08, y + sz - sz * 0.07);
+  glyph(x + sz * 0.44, y + sz * 0.44, sz * 0.3, dis ? '#2a3a7a' : '#000');
+  g.fillStyle = dis ? '#2a3a7a' : '#000'; g.font = `700 ${Math.round(sz * 0.27)}px Antonio`; g.textAlign = 'right'; g.fillText(String(count), x + sz - sz * 0.08, y + sz - sz * 0.07);
+}
+// A role key: how many of the role are left aboard.
+function roleKey(id, x, y, sz, role, avail, click) { iconKey(id, x, y, sz, (cx, cy, r, col) => roleGlyph(role, cx, cy, r, col), avail, click, { tip: `Queue ${ROLE_ONE[role]} · ${avail} aboard` }); }
+// Cargo pictograms, signage style like the roles: a strapped crate, a gear, a ration bowl with steam, a capsule, the
+// envoy (a figure under a star).
+function itemGlyph(item, cx, cy, r, col) {
+  const G = g, lw = Math.max(2.2, r * 0.2); G.save(); G.strokeStyle = col; G.fillStyle = col; G.lineWidth = lw; G.lineCap = 'round'; G.lineJoin = 'round';
+  if (item === 'goods') { G.strokeRect(cx - r * 0.75, cy - r * 0.6, r * 1.5, r * 1.3); G.beginPath(); G.moveTo(cx - r * 0.75, cy - r * 0.6); G.lineTo(cx + r * 0.75, cy + r * 0.7); G.moveTo(cx + r * 0.75, cy - r * 0.6); G.lineTo(cx - r * 0.75, cy + r * 0.7); G.stroke(); }
+  else if (item === 'parts') { G.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * 2 * P, rr = i % 2 ? r * 0.62 : r * 0.88; G.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } G.closePath(); G.fill();
+    G.globalCompositeOperation = 'destination-out'; G.beginPath(); G.arc(cx, cy, r * 0.3, 0, 2 * P); G.fill(); G.globalCompositeOperation = 'source-over'; }
+  else if (item === 'rations') { G.beginPath(); G.moveTo(cx - r * 0.85, cy); G.lineTo(cx + r * 0.85, cy); G.arc(cx, cy, r * 0.85, 0, P); G.closePath(); G.fill();
+    for (const k of [-0.4, 0, 0.4]) { G.beginPath(); G.moveTo(cx + k * r, cy - r * 0.2); G.quadraticCurveTo(cx + k * r + r * 0.18, cy - r * 0.5, cx + k * r, cy - r * 0.8); G.stroke(); } }
+  else if (item === 'medicine') { G.save(); G.translate(cx, cy); G.rotate(-P / 4); G.beginPath(); G.roundRect(-r * 0.9, -r * 0.36, r * 1.8, r * 0.72, r * 0.36); G.stroke();
+    G.beginPath(); G.roundRect(-r * 0.9, -r * 0.36, r * 0.9, r * 0.72, [r * 0.36, 0, 0, r * 0.36]); G.fill(); G.restore(); }
+  else { G.beginPath(); G.arc(cx, cy - r * 0.32, r * 0.22, 0, 2 * P); G.fill(); G.beginPath(); G.roundRect(cx - r * 0.32, cy - r * 0.04, r * 0.64, r * 0.92, r * 0.18); G.fill();
+    G.beginPath(); for (let i = 0; i < 10; i++) { const a = -P / 2 + i * P / 5, rr = i % 2 ? r * 0.12 : r * 0.28; G.lineTo(cx + Math.cos(a) * rr, cy - r * 0.86 + Math.sin(a) * rr); } G.closePath(); G.fill(); }
+  G.restore();
 }
 // The queue (owner: "a group of boxes with some scrolling arrows that light up if it can page up or page down on the
 // list", "10 boxes for you to queue"): two rows of five, the head in green, a box clicked takes its member off the
@@ -2348,7 +2442,16 @@ function controlRow(id, x, y, w, s, t, mode, big) {
     if (big) LBL(t.name, x + pp / 2, y + pp - 12, pp - 12, CC.sky, 'center', 16); }
   else LBL('--', x + pp / 2, y + pp / 2 + 6, 0, '#26325e', 'center', 20);
   let yy = y;
-  if (!t) { LBL('No target', bx, yy + 20, bw); return pp; }
+  if (!t) { LBL(mode === 'capture' ? 'No target · or select a friendly for troops' : 'No target', bx, yy + 20, bw); return pp; }
+  // a friendly ship: troops beamed over to it (owner, 2026-11-03: "be asked to supply troops for an assault (combat
+  // transport tab)"), its marines against what it asked for
+  if (t.side === s.side) {
+    const want = t.ai && t.ai.needMarines ? t.ai.needMarines : 0, dk = distKm(s, t);
+    LBL(`Troops for ${t.name}`, bx, yy + 16, bw, CC.accord, 'left', big ? 17 : 14); yy += 22;
+    NUM(want ? `${t.marines} of ${want} marines` : `${t.marines} marines aboard`, bx, yy + 18, bw, want && t.marines < want ? CC.caution : CC.accord, 'left', big ? 22 : 17); yy += 26;
+    LBL(dk <= TRANSPORT.range_km ? `In reach ${km(dk)}` : `Out of reach ${km(dk)}`, bx, yy + 14, bw, dk <= TRANSPORT.range_km ? CC.accord : CC.alert, 'left', big ? 17 : 15); yy += 20;
+    return Math.max(pp, yy - y);
+  }
   if (mode === 'hit' && s.raid && s.raid.on === t.id) {
     const r = s.raid; yy += bar(bx, yy, bw, `Raid ${r.kind === 'bomb' ? 'bombing' : 'shooting'} ${raidName(r, t)} · ${fmtCool(Math.max(0.05, r.t))} s`, 1 - r.t / BOARD.raid_s) + 4;
     teamChips(bx, yy, bw, [['marines', r.team.marines], ['demo', r.team.demo]], CC.signal, big ? 34 : 24);
@@ -2386,8 +2489,11 @@ function controlRow(id, x, y, w, s, t, mode, big) {
 // Inventory moves goods, the VIP and mines, a pad at a time.
 function stTransport(b, big) {
   const s = W.player, t = tgt(s); let y = b.y; const gap = big ? 14 : 8;
-  tabs('tr.tab', b.x, y, b.w, 34, [['capture', 'Capture'], ['hit', 'Hit & run'], ['inv', 'Inventory']], trTab, (k) => { trTab = k; placingMine = false; }); y += 34 + gap;
-  if (trTab !== 'inv') {
+  const TT = [['capture', 'Capture'], ['hit', 'Hit & run'], ['sup', 'Supplies'], ['cargo', 'Cargo']], setT = (k) => { trTab = k; placingMine = false; };
+  // four modes: one row expanded, two rows docked so every name reads in full
+  if (big) { tabs('tr.tab', b.x, y, b.w, 34, TT, trTab, setT); y += 34 + gap; }
+  else { tabs('tr.tab', b.x, y, b.w, 30, TT.slice(0, 2), trTab, setT); tabs('tr.tab2', b.x, y + 34, b.w, 30, TT.slice(2), trTab, setT); y += 64 + gap; }
+  if (trTab === 'capture' || trTab === 'hit') {
     const mode = trTab, roles = QUEUE_ROLES[mode];
     if (mode === 'hit') {
       // the target's subsystems as keys, coloured by their status; the picked one ringed in Sky
@@ -2425,23 +2531,34 @@ function stTransport(b, big) {
     // the line between the halves
     g.fillStyle = CC.deep; g.fillRect(b.x, y - gap / 2 - (big ? 5 : 2), b.w, 2);
     y += padRow(`tr.pad.${mode}`, b.x, y, b.w, s, mode, big) + gap;
-    y += controlRow(`tr.ctl.${mode}`, b.x, y, b.w, s, t, mode, big) + gap;
+    y += controlRow(`tr.ctl.${mode}`, b.x, y, b.w, s, mode === 'capture' ? captureDest(s) : t, mode, big) + gap;
   } else {
-    // inventory: where to (friendly ships, stations and planets, nearest first), then what
-    invPick(s); const ds = invDests(s).slice(0, 3);
-    if (ds.length) { tabs('tr.dest', b.x, y, b.w, 32, ds.map((q) => [q.id, `${q.name} ${q.km.toFixed(1)}`]), invDest, (k) => { invDest = k; }); y += 38; }
-    const d = ds.find((q) => q.id === invDest), reach = invReach(s, d), cw = 84;
-    const row = (id, label, val, keys) => { LBL(label, b.x, y + 20, b.w - keys.length * (cw + 6)); NUM(val, b.x + b.w - keys.length * (cw + 6) - 8, y + 22, 0, CC.sky, 'right', 18);
-      keys.forEach(([k, l, fn, ok], i) => button(`${id}.${k}`, b.x + b.w - (keys.length - i) * (cw + 6) + 6, y, cw, 30, l, fn, { center: true, dis: () => !reach || !ok })); y += 36; };
-    if (d) {
-      row('tr.goods', 'Goods', `${s.cargo}/${s.cargoCap}`, [['in', 'Take', () => A.transfer('goods', -1), !!d.ship && d.ship.cargo > 0 && s.cargo < s.cargoCap], ['out', 'Send', () => A.transfer('goods', 1), s.cargo > 0 && (d.planet ? d.planet.got < d.planet.need : d.ship.cargo < d.ship.cargoCap)]]);
-      row('tr.vip', s.vip || (d.ship && d.ship.vip) || 'VIP', s.vip ? 'aboard' : d.ship && d.ship.vip ? 'there' : '--', [['in', 'Take', () => A.transfer('vip', -1), !!d.ship && !!d.ship.vip], ['out', 'Send', () => A.transfer('vip', 1), !!s.vip && !!d.ship]]);
-      if (d.planet) { LBL(d.planet.got >= d.planet.need ? `${d.planet.name}: delivered` : `${d.planet.name} needs ${d.planet.need - d.planet.got} crates`, b.x, y + 14, b.w, d.planet.got >= d.planet.need ? CC.accord : CC.lilac); y += 24; }
-      if (!reach) { LBL(d.km > TRANSPORT.range_km ? `Out of reach: ${km(d.km)} of ${km(TRANSPORT.range_km)}` : 'Pads charging', b.x, y + 14, b.w, CC.caution); y += 24; }
-    } else { LBL('Nothing friendly in range', b.x, y + 14); y += 24; }
+    // Supplies and Cargo (owner, 2026-11-03: "insted of 10/20 goods, show goods as an icon button, same with VIP", then
+    // "dont mix important cargo with regular cargo, regular cargo will have its own tab too, and we should see how much
+    // cargo the ship has vs extra cargo space"): Supplies holds what missions ask for (spare parts, rations, medicine,
+    // the envoy); Cargo holds trade goods, and the mines. Both: where to (the friendly ship, station or planet selected
+    // in the view), the hold split into supplies, cargo and free space, then a key per item: ours to send, theirs to take
+    const d = invPick(s), reach = invReach(s, d), ks = Math.min(big ? 76 : 44, (b.w - 4 * 6) / 5), keys = trTab === 'cargo' ? CARGO_KEYS : SUPPLY_KEYS.concat(['vip']);
+    const dest = d ? d.ship || d.planet : null, nameOf = (k) => k === 'vip' ? 'Envoy' : ITEMS.find((q) => q[0] === k)[1];
+    if (d) { rich(b.x, y + 18, [[d.name, CC.accord], [` · ${km(d.km)} · `, CC.lilac], [d.km <= TRANSPORT.range_km ? (padReady(s) ? 'in reach' : 'pads charging') : `out of reach (${km(TRANSPORT.range_km)})`, d.km <= TRANSPORT.range_km ? CC.accord : CC.caution]], '600 18px Antonio', b.w); }
+    else LBL('Right click a friendly ship, station or planet', b.x, y + 18, b.w, CC.caution);
+    y += 28;
+    y += holdBar(b.x, y, b.w, s, big) + 6;
+    const row = (label, who, click, count, ring) => { LBL(label, b.x, y + 13, b.w, CC.lilac, 'left', 13); y += 18;
+      keys.forEach((k, i) => iconKey(`tr.inv.${who}.${k}`, b.x + i * (ks + 6), y, ks, (cx, cy, r, col) => itemGlyph(k, cx, cy, r, col), count(k), () => click(k),
+        { ring: ring(k), dis: !reach, tip: `${who === 'us' ? 'Send' : 'Take'} ${nameOf(k)}${k === 'vip' ? '' : ` · ${INV.per_beam} a beam`}${dest && stillNeeds(dest, k) > 0 ? ` · ${d.name} needs ${stillNeeds(dest, k)}` : ''}` }));
+      y += ks + 8; };
+    row('Aboard · click to send', 'us', (k) => A.transfer(k, 1), (k) => k === 'vip' ? (s.vip ? 1 : 0) : s.hold[k], (k) => !!dest && stillNeeds(dest, k) > 0 && (k === 'vip' ? !!s.vip : s.hold[k] > 0));
+    if (d && d.ship) row(`At ${d.name} · click to take`, 'them', (k) => A.transfer(k, -1), (k) => k === 'vip' ? (dest.vip ? 1 : 0) : dest.hold[k], () => false);
+    else if (d && d.planet) { const want = ITEMS.filter(([k]) => keys.includes(k) && (dest.needs || {})[k]);
+      LBL(want.length ? `${d.name} needs` : `${d.name} needs nothing`, b.x, y + 13, b.w, CC.lilac, 'left', 13); y += 18;
+      if (want.length) { want.forEach(([k], i) => { const cx = b.x + i * (ks * 1.9), left = stillNeeds(dest, k), sz2 = Math.round(ks * 0.7);
+        g.fillStyle = left ? CC.caution : CC.accord; g.beginPath(); g.roundRect(cx, y, sz2, sz2, sz2 * 0.22); g.fill(); itemGlyph(k, cx + sz2 / 2, y + sz2 / 2, sz2 * 0.32, '#000');
+        NUM(left ? `${left}` : 'done', cx + sz2 + 6, y + sz2 * 0.72, 0, left ? CC.caution : CC.accord, 'left', Math.round(sz2 * 0.55)); }); y += Math.round(ks * 0.7) + 8; } }
     const hw = (b.w - 6) / 2;
+    if (trTab === 'cargo') {
     button('tr.place', b.x, y, hw, 40, placingMine ? 'Cancel' : 'Place mine', A.mineMode, { center: true, sel: () => placingMine, dis: () => !placingMine && (s.mines <= 0 || s.mineCool > 0 || !padReady(s)) });
-    button('tr.mine', b.x + hw + 6, y, hw, 40, s.mineCool > 0 ? `Mine ${fmtCool(s.mineCool)} s` : 'Drop astern', A.mine, { center: true, dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 46;
+    button('tr.mine', b.x + hw + 6, y, hw, 40, s.mineCool > 0 ? `Mine ${fmtCool(s.mineCool)} s` : 'Drop astern', A.mine, { center: true, dis: () => s.mines <= 0 || s.mineCool > 0 }); y += 46; }
     y += padRow('tr.pad.inv', b.x, y, b.w, s, 'inv', big) + gap;
   }
   // the weapon list, last so it lies over the queue
@@ -3153,6 +3270,14 @@ function follow(dt = 0) {
 }
 // Click picks a ship: left click or tap focuses it; right click locks it (the owner's "point and right click"); a left
 // click on empty space is the helm (A.helmTo).
+// What is under the pointer: a ship, or else a planet (its disc on screen).
+function pickPlanet(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  for (const pl of W.planets) { const v = new THREE.Vector3(pl.x, 0, pl.z).project(camera); if (v.z > 1) continue; const px = r.left + (v.x + 1) / 2 * r.width, py = r.top + (1 - v.y) / 2 * r.height;
+    const e2 = new THREE.Vector3(pl.x + pl.r, 0, pl.z).project(camera), rr = Math.max(30 * S, Math.hypot((e2.x - v.x) / 2 * r.width, (e2.y - v.y) / 2 * r.height));
+    if (Math.hypot(px - e.clientX, py - e.clientY) <= rr) return pl; }
+  return null;
+}
 function pick(e) {
   const r = renderer.domElement.getBoundingClientRect(); let best = null, bd = 40 * S;
   for (const s of W.ships) { if (!s.alive) continue; const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z > 1) continue; const px = r.left + (v.x + 1) / 2 * r.width, py = r.top + (1 - v.y) / 2 * r.height, d = Math.hypot(px - e.clientX, py - e.clientY); if (d < bd) { bd = d; best = s; } }
@@ -3198,7 +3323,12 @@ function wireView() {
     if (expanded) { A.expand(expanded); return; }
     // A ship under the pointer: left focuses, right locks. Empty space: left is the helm.
     const s = placingMine || placingHet ? null : pick(e);
-    if (s && s !== W.player) { if (e.button === 2) A.lock(s.id); else focus = s.id; return; }
+    // an enemy: right click locks it as the target; a friendly ship or station: right click selects it for transport;
+    // left click focuses either (owner, 2026-11-03: "allow my ship to select planets, stations and friendly ships. same
+    // as enemy ships")
+    if (s && s !== W.player) { if (e.button === 2) { if (s.side === W.player.side) selectDest(s.id); else A.lock(s.id); } else focus = s.id; return; }
+    const pl = placingMine || placingHet ? null : pickPlanet(e);
+    if (pl) { if (e.button === 2) selectDest(pl.id); else focus = pl.id; return; }
     if (e.button === 0) { const q = planeAt(e); if (q) { const s = W.player;
       if (placingHet) { placingHet = false; A.het(Math.round(wrap(Math.atan2(q.x - s.x, -(q.z - s.z)) - s.h) / DEG)); }
       else if (placingMine) A.placeMine(q.x, q.z); else A.helmTo(q.x, q.z); } }
@@ -3237,11 +3367,27 @@ function helmArc(vw, vh, s) {
   for (const mn of W.mines) { if (mn.side !== s.side) continue; const hot = W.ships.some((o) => o.alive && Math.hypot(o.x - mn.x, o.z - mn.z) <= MINE.trigger_u);
     bullseye(scr, mn.x, mn.z, mn.arm > 0 ? '#8a8f9c' : hot ? CC.alert : CC.caution, 0.8); }
   if (placingHet) LBL('Click where the high energy turn should point', vw / 2, 92, 0, CC.caution, 'center', 18);
-  if (placingMine) {
-    // the transporter's reach
-    const Rm = TRANSPORT.range_km * 10; g.strokeStyle = CC.caution; g.lineWidth = 2; g.setLineDash([10, 8]); g.beginPath();
+  // the transporter's reach, a dashed ring named on itself (owner, 2026-11-03: "If the transport tab is open, show radius
+  // as a dotted line with the label "transport range" drawn on the radius. when crossing this range transporters become
+  // active"): green while the destination (the selected friendly, or the enemy target for Capture and Hit and run) is
+  // inside it, Sky otherwise, Caution while placing a mine
+  const reachRing = (col, label) => { const Rm = TRANSPORT.range_km * 10; g.strokeStyle = col; g.lineWidth = 2; g.setLineDash([10, 8]); g.beginPath();
     for (let i = 0; i <= 96; i++) { const q = at(i / 96 * 2 * P, Rm); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); }
     g.stroke(); g.setLineDash([]);
+    // the label on the ring at its top on screen, following its curve
+    // the point of the ring highest on screen but still in the view, wherever the camera has been turned
+    let ta = null, ty2 = Infinity; for (let i = 0; i < 96; i++) { const a2 = i / 96 * 2 * P, q = at(a2, Rm); if (q && q[0] > 60 && q[0] < vw - 60 && q[1] > 110 && q[1] < ty2) { ty2 = q[1]; ta = a2; } }
+    const top = ta !== null ? at(ta, Rm) : null, c0 = scr(s.x, s.z); if (top && c0) { g.save(); g.font = '700 15px Antonio'; g.fillStyle = col; g.textAlign = 'center'; g.letterSpacing = '2px';
+      const q0 = at(ta - 0.08, Rm), q1 = at(ta + 0.08, Rm); const ang = q0 && q1 ? Math.atan2(q1[1] - q0[1], q1[0] - q0[0]) : 0;
+      g.translate(top[0], top[1]); g.rotate(ang > P / 2 || ang < -P / 2 ? ang + P : ang); g.fillStyle = '#000'; const tw2 = g.measureText(label).width + 16; g.fillRect(-tw2 / 2, -12, tw2, 18);
+      g.fillStyle = col; g.fillText(label, 0, 2); g.restore(); } };
+  if (station === 'transport' && !placingMine && s.alive) {
+    const inv = trTab === 'sup' || trTab === 'cargo', d = inv || (trTab === 'capture' && !tgt(s)) ? invPick(s) : null, t2 = !inv ? (trTab === 'capture' ? captureDest(s) : tgt(s)) : null;
+    const dk = d ? d.km : t2 ? distKm(s, t2) : Infinity;
+    reachRing(dk <= TRANSPORT.range_km ? CC.accord : CC.sky, dk <= TRANSPORT.range_km ? 'TRANSPORT RANGE · IN REACH' : 'TRANSPORT RANGE');
+  }
+  if (placingMine) {
+    reachRing(CC.caution, 'TRANSPORT RANGE');
     // two ranges, kept apart (owner: "mine range is different than mine transport range"): the dashed ring is how far the
     // transporter can place a mine; the bullseye is how close a ship must come to set the mine off
     LBL(`Place a mine: transporter reach ${km(TRANSPORT.range_km)} (dashed) · mine range ${km(MINE.trigger_u / 10)} (bullseye)`, vw / 2, 92, 0, CC.caution, 'center', 18);
@@ -3265,6 +3411,20 @@ function seekerLock(s, t) { return s.mounts.some((m) => (WEAPONS[m.w].kind === '
 // The target bracket (owner, 2026-11-02: "selected enemy target should be bright red, and if torpedo or missile lock is
 // possible to have double frames like in ace combat"): four bright red corners; a second, outer frame and SEEKER LOCK
 // when a torpedo or missile could lock.
+// A friendly ship, station or planet in the view: its name in green; selected for transport, green corners with its name,
+// its distance and what it still needs; focused, a ring.
+function friendMark(id, name, px, py, dk, o, f) {
+  const sel = invDest === id;
+  if (sel) { g.strokeStyle = CC.accord; g.lineWidth = 3; g.lineCap = 'square';
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const x0 = px + sx * 40, y0 = py + sy * 30; g.beginPath(); g.moveTo(x0 - sx * 16, y0); g.lineTo(x0, y0); g.lineTo(x0, y0 - sy * 16); g.stroke(); }
+    g.lineCap = 'round'; }
+  else if (f) { g.strokeStyle = CC.accord; g.lineWidth = 2; g.beginPath(); g.arc(px, py, 24, 0, 2 * P); g.stroke(); }
+  g.fillStyle = CC.accord; g.font = `600 ${sel ? 18 : 14}px Antonio`; g.textAlign = 'center';
+  g.fillText((sel ? `${name} · ${dk.toFixed(1)} km${dk <= TRANSPORT.range_km ? ' · in reach' : ''}` : name).toUpperCase(), px, py + (sel ? 50 : 26));
+  const want = ITEMS.filter(([k]) => stillNeeds(o, k) > 0).map(([k, l]) => `${stillNeeds(o, k)} ${l.toLowerCase()}`);
+  if (o.ai && o.ai.needMarines && o.marines < o.ai.needMarines) want.push(`${o.ai.needMarines - o.marines} marines`);
+  if (want.length) { g.fillStyle = CC.caution; g.font = '600 15px Antonio'; g.fillText(`Needs ${want.join(', ')}`.toUpperCase(), px, py + (sel ? 70 : 44)); }
+}
 function targetBracket(px, py, lock) {
   const corners = (w, h, c, lw) => { g.strokeStyle = CC.alert; g.lineWidth = lw; g.lineCap = 'square';
     for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const x0 = px + sx * w / 2, y0 = py + sy * h / 2; g.beginPath(); g.moveTo(x0 - sx * c, y0); g.lineTo(x0, y0); g.lineTo(x0, y0 - sy * c); g.stroke(); } };
@@ -3291,7 +3451,7 @@ function uiView() {
     const v = new THREE.Vector3(o.x, 0, o.z).project(camera), on = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
     let px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh;
     const locked = o.id === s.target, f = o.id === focus, col = o.side === s.side ? CC.accord : FACTION[o.faction].dot;
-    if (o.side === s.side) { if (v.z < 1) { g.fillStyle = CC.accord; g.font = '600 14px Antonio'; g.textAlign = 'center'; g.fillText(o.name.toUpperCase(), px, py + 26); } continue; }
+    if (o.side === s.side) { if (v.z < 1) friendMark(o.id, o.name, px, py, distKm(s, o), o, f); if (f && invDest !== o.id && !expanded && v.z < 1) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), o.id, 'select']; continue; }
     if (!on) {
       if (!locked) continue;
       const a = Math.atan2(py - vh / 2, px - vw / 2) * (v.z > 1 ? -1 : 1) + (v.z > 1 ? P : 0); px = vw / 2 + Math.cos(a) * (vw / 2 - 40); py = vh / 2 + Math.sin(a) * (vh / 2 - 40);
@@ -3309,8 +3469,9 @@ function uiView() {
   for (const w of W.wells) { const v = new THREE.Vector3(w.x, 0, w.z).project(camera); if (v.z >= 1) continue;
     g.fillStyle = CC.caution; g.font = '600 16px Antonio'; g.textAlign = 'center'; g.fillText(`${w.name} · Q-G field here ${pct(qgAt(s.x, s.z))}`.toUpperCase(), (v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh - 30); }
   for (const pl of W.planets) { const v = new THREE.Vector3(pl.x, 0, pl.z).project(camera); if (v.z >= 1) continue;
-    const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.fillStyle = CC.sky; g.font = '600 16px Antonio'; g.textAlign = 'center';
-    g.fillText(`${pl.name}${pl.need ? ` · ${pl.got} of ${pl.need} crates` : ''}`.toUpperCase(), px, py); }
+    const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh, dk = Math.max(0, Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r) / 10;
+    friendMark(pl.id, pl.name, px, py, dk, pl, focus === pl.id);
+    if (focus === pl.id && invDest !== pl.id && !expanded) lock = [vx + clamp(px + 30, 0, vw - 150), vy + clamp(py - 15, 0, vh - 40), pl.id, 'select']; }
   // disguised shuttles: our own know them for what they are
   for (const c of W.craft) { if (c.kind !== 'shuttle') continue; const v = new THREE.Vector3(c.x, 0, c.z).project(camera); if (v.z >= 1) continue;
     const px = (v.x + 1) / 2 * vw, py = (1 - v.y) / 2 * vh; g.strokeStyle = CC.caution; g.lineWidth = 2; g.beginPath(); g.arc(px, py, 9, 0, 2 * P); g.stroke();
@@ -3330,8 +3491,6 @@ function uiView() {
     g.font = '700 17px Antonio'; g.fillText(SCENES[sceneId].name.toUpperCase(), sx + 62, vy + 33);
     g.beginPath(); const ax = sx + sw - 20, ay = vy + 27; if (sceneOpen) { g.moveTo(ax - 6, ay + 3); g.lineTo(ax + 6, ay + 3); g.lineTo(ax, ay - 4); } else { g.moveTo(ax - 6, ay - 3); g.lineTo(ax + 6, ay - 3); g.lineTo(ax, ay + 4); } g.closePath(); g.fill();
     const ob = SCENES[sceneId].objective; if (ob && !sceneOpen) rich(vx + 14, vy + 64, [[W.objDone ? 'COMPLETE · ' : 'OBJECTIVE · ', W.objDone ? CC.accord : CC.lilac], [ob.toUpperCase(), W.objDone ? CC.accord : CC.text]], '600 16px Antonio', vw * 0.62); }
-  // the log key: the whole battle log over the view
-  button('v.log', vx + 474, vy + 12, 110, 30, 'Event log', () => { logOpen = !logOpen; sceneOpen = false; }, { sel: () => logOpen, center: true });
   if (W.notice && W.t - W.notice.t < NOTICE.notice_s) { const n = W.notice, nw = Math.min(620, vw - 60), nx = vx + (vw - nw) / 2, ny = vy + 120;
     g.font = '600 20px Antonio'; const words = n.text.toUpperCase().split(' '), lines = []; let cur = '';
     for (const wd of words) { const tr = cur ? cur + ' ' + wd : wd; if (g.measureText(tr).width > nw - 40 && cur) { lines.push(cur); cur = wd; } else cur = tr; } if (cur) lines.push(cur);
@@ -3372,8 +3531,8 @@ function uiView() {
     button('v.tview', bx, by + ir[3] + 6, hw5, 30, 'Target view', A.targetView, { sel: () => camTargetView, center: true });
     button('v.camlock', bx + hw5 + 6, by + ir[3] + 6, hw5, 30, camLock && !camTargetView ? 'Camera locked' : 'Camera lock', A.camLock, { sel: () => camLock && !camTargetView, center: true });
   }
-  if (lock) button('v.lock', lock[0], lock[1], 140, 30, 'Lock target', () => A.lock(lock[2]), { center: true });
-  LBL('Mockup 2 · Battle console · Concord · v56', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
+  if (lock) button('v.lock', lock[0], lock[1], 140, 30, lock[3] === 'select' ? 'Select' : 'Lock target', () => (lock[3] === 'select' ? selectDest(lock[2]) : A.lock(lock[2])), { center: true });
+  LBL('Mockup 2 · Battle console · Concord · v57', vx + vw - 104, vy + vh - 20, 0, '#6f7fb4', 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
@@ -3381,7 +3540,12 @@ function uiView() {
     const lx = vx + 14, ly = vy + 50, lw = Math.min(1040, vw - 28), rows = Math.max(4, Math.floor((vh - 180) / 26)), list = W.log.slice(-rows).reverse(), lh = 44 + Math.max(1, list.length) * 26;
     hit('v.log.box', lx, ly, lw, lh, {});
     g.fillStyle = 'rgba(0,0,0,0.9)'; g.beginPath(); g.roundRect(lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
-    LBL(`Event log · ${W.log.length} message${W.log.length === 1 ? '' : 's'}`, lx + 16, ly + 26, lw - 32, CC.sky, 'left', 16);
+    LBL(`Event log · ${W.log.length} message${W.log.length === 1 ? '' : 's'}`, lx + 16, ly + 26, lw - 60, CC.sky, 'left', 16);
+    // the X that closes it (owner, 2026-11-03: "expanded event log should have a little X to close the panel"); the log
+    // opens only from Comms ("just one place is good enough")
+    { const xs = lx + lw - 34, ys = ly + 8, st = hit('v.log.x', xs, ys, 26, 26, { click: () => { logOpen = false; }, tip: 'Close' });
+      g.fillStyle = st.hot ? CC.alert : CC.signal; g.beginPath(); g.arc(xs + 13, ys + 13, 13, 0, 2 * P); g.fill();
+      g.strokeStyle = '#000'; g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 8, ys + 8); g.lineTo(xs + 18, ys + 18); g.moveTo(xs + 18, ys + 8); g.lineTo(xs + 8, ys + 18); g.stroke(); }
     if (!list.length) LBL('Nothing yet', lx + 16, ly + 56, lw - 32);
     list.forEach((q, i) => rich(lx + 16, ly + 56 + i * 26, [[`${mmss(q.t)}  ${q.who}: `, q.warn ? CC.caution : CC.lilac], [q.text, q.warn ? CC.caution : CC.text]], '600 18px Antonio', lw - 32));
   }
@@ -3526,21 +3690,21 @@ window.MOCKUP_SHOTS = {
   seeker_lock: () => scripted(600, () => { const s = W.player, v = ship('vorrak'); s.target = 'vorrak'; focus = 'vorrak'; s.h = 0; s.hOrder = 0; v.x = s.x; v.z = s.z - 110; for (const m of s.mounts) if (WEAPONS[m.w].kind === 'torpedo') m.charge = 1; }),
   cam_locked: () => { scripted(600); camLock = true; },
   // The test scenes (menu: Test scene).
-  scene_delivery: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; A.transfer('goods', -1); for (let i = 0; i < Math.round(8 / DT); i++) step(); A.transfer('goods', -1); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'delivery'),
-  scene_delivered: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; const s = W.player, pl = W.planets[0];
-    A.transfer('goods', -1); for (let i = 0; i < Math.round(8 / DT); i++) step(); A.transfer('goods', -1);
-    A.helmTo(pl.x, pl.z); A.setSpeed(300); for (let n = 0; Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r > 35 && n < 9000; n++) step(); A.setSpeed(0);
-    for (let k = 0; k < 2; k++) { for (let i = 0; i < Math.round(8 / DT); i++) step(); A.transfer('goods', 1); } for (let i = 0; i < Math.round(1 / DT); i++) step(); }, 'delivery'),
-  scene_vip: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; }, 'vip'),
+  scene_delivery: () => scripted(30, () => { station = 'transport'; trTab = 'sup'; selectDest('harbor'); A.transfer('rations', -1); for (let i = 0; i < Math.round(3 / DT); i++) step(); A.transfer('medicine', -1); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'delivery'),
+  scene_delivered: () => scripted(30, () => { station = 'transport'; trTab = 'sup'; const s = W.player, pl = W.planets[0]; selectDest('harbor');
+    for (const k of ['rations', 'rations', 'medicine']) { while (!padReady(s)) step(); A.transfer(k, -1); }
+    A.helmTo(pl.x, pl.z); A.setSpeed(300); for (let n = 0; Math.hypot(pl.x - s.x, pl.z - s.z) - pl.r > 12 && n < 9000; n++) step(); A.setSpeed(0); selectDest('tessaly');
+    for (const k of ['rations', 'rations', 'medicine']) { while (!padReady(s)) step(); A.transfer(k, 1); } for (let i = 0; i < Math.round(1 / DT); i++) step(); }, 'delivery'),
+  scene_vip: () => scripted(30, () => { station = 'transport'; trTab = 'sup'; selectDest('corrin'); }, 'vip'),
   scene_shuttle: () => scripted(30, () => { shipTab = 'craft'; A.shuttle(); for (let i = 0; i < Math.round(12 / DT); i++) step(); }, 'shuttle'),
   scene_fighters: () => scripted(30, () => { shipTab = 'craft'; A.launch(); for (let i = 0; i < Math.round(25 / DT); i++) step(); }, 'fighters'),
   warp: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.warpKey(); for (let i = 0; i < Math.round(6 / DT); i++) step(); }, 'warp'),
   warp_expanded: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; expanded = 'station'; A.plot(); for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'warp'),
   warp_jumped: () => scripted(30, () => { station = 'power'; powerMode = 'warp'; A.warpKey(); A.turn(180); A.plot(); A.setSpeed(180); for (let i = 0; i < Math.round(30 / DT); i++) step(); A.jump(); for (let i = 0; i < Math.round(2 / DT); i++) step(); }, 'warp'),
   scene_select: () => { scripted(600); sceneOpen = true; },
-  scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'inv'; placingMine = true; }, 'mines'),
-  scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'inv'; const s = W.player;
-    for (const [x, z] of [[-6, -34], [8, -36]]) { A.placeMine(s.x + x, s.z + z); for (let i = 0; i < Math.round(7 / DT); i++) step(); }
+  scene_mines: () => scripted(90, () => { station = 'transport'; trTab = 'cargo'; placingMine = true; }, 'mines'),
+  scene_mines_laid: () => scripted(30, () => { station = 'transport'; trTab = 'cargo'; const s = W.player;
+    for (const [x, z] of [[-6, -10], [8, -10]]) { A.placeMine(s.x + x, s.z + z); for (let i = 0; i < Math.round(7 / DT); i++) step(); }
     for (let i = 0; i < Math.round(8 / DT); i++) step(); }, 'mines'),
   // Hold the Vorrak, then run: the tow drags it into the rock between them.
   scene_tractor: () => scripted(30, () => { shipTab = 'tractor'; A.tractorHold(); for (let i = 0; i < Math.round(11 / DT); i++) step();
@@ -3563,7 +3727,7 @@ window.MOCKUP_SHOTS = {
 window.MOCKUP_SCENE = scene;
 window.MOCKUP_CAM = { camera, controls, renderer, THREE, locked: () => camLock };
 // For headless checks of the stand-in battle's rules (tools, not the page's UI).
-window.MOCKUP_SIM = { step, A, get W() { return W; }, REACTOR, output, used, cooling, cooldownS, fmtCool, WEAPONS, get HOT() { return HOT; } };
+window.MOCKUP_SIM = { step, A, selectDest, get W() { return W; }, get trTab() { return trTab; }, set trTab(v) { trTab = v; }, REACTOR, output, used, cooling, cooldownS, fmtCool, WEAPONS, get HOT() { return HOT; } };
 let lastInfo = { triangles: 0, calls: 0 };
 window.MOCKUP_INFO = () => lastInfo;
 // The rectangles the console registered last frame, for headless checks (no overlaps, sizes).

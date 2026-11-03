@@ -228,6 +228,14 @@ tug of war of our boarders against its defenders, each side's members shown by r
 - **WHEN** the captain picks W1 from the weapon list (or clicks W1 on the target's display) and a raid bombs it
 - **THEN** W1 alone loses the bomb's damage and the log names W1
 
+#### Scenario: Supplies to a selected planet
+- **WHEN** the captain right clicks Tessaly, closes within 1.5 km and clicks the rations key in Supplies twice
+- **THEN** 10 rations beam down, Tessaly's need for rations is met, and the hold bar shows 10 fewer supplies
+
+#### Scenario: Troops to a friendly ship
+- **WHEN** the Corrin is selected, no enemy is targeted, and the captain queues marines in Capture and energizes
+- **THEN** the marines join the Corrin's, and the panel counts them against the ten it asked for
+
 #### Scenario: Energize all with four pads
 - **WHEN** the Resolute (four pads, all charged) has six marines queued and the captain presses Energize all
 - **THEN** four marines beam aboard the target, two stay queued, and all four pads recharge together
