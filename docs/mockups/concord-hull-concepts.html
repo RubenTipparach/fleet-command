@@ -352,7 +352,7 @@ renderer.toneMappingExposure = 1.0;
 stage.append(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
-const camera = new THREE.PerspectiveCamera(42, 1, 0.3, 30000);
+const camera = new THREE.PerspectiveCamera(42, 1, 1.0, 30000); // a 1 m near plane keeps depth precise at range (no z-fighting)
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 4; controls.maxDistance = 3000;
 
@@ -1014,7 +1014,7 @@ function buildShip(id, liv, offset = V3()) {
     add(P, boxGeo(K.hb * 1.12, 0.7, 0.25, 0, K.top - 1.3, z0 - 1.45), gm, 'bridge');
     for (const sx of [-1, 1]) add(P, boxGeo(0.2, 0.7, (z0 - z1) * 0.55, sx * (K.hb + 0.04), K.top - 1.7, (z0 + z1) / 2 + 1.5), gm, 'bridge');
     const hb = K.hb, poly = [[-hb * 0.6, z0], [hb * 0.6, z0], [hb, z0 - 3], [hb, z1], [hb * 0.8, z1 - 2.5], [-hb * 0.8, z1 - 2.5], [-hb, z1], [-hb, z0 - 3]];
-    addCap(ship, P, poly, (x, y) => V3(x, base - 0.05, y), V3(0, -1, 0)); // 5 cm under the block's own floor: never coplanar (CLAUDE.md 10)
+    addCap(ship, P, poly, (x, y) => V3(x, base - 0.12, y), V3(0, -1, 0)); // 12 cm under the block's own floor: never coplanar (CLAUDE.md 10)
     P.cuts.push({ n: V3(0, 1, 0), d: base + 0.6, c: V3(0, base, (z0 + z1) / 2), r: hb * 2 });
     nav(ship, P, V3(0, K.top + 0.4, (z0 + z1) / 2), 0xff2a1a, 'beacon');
     ship.bridgeTop = V3(0, K.top, (z0 + z1) / 2);
@@ -1034,7 +1034,7 @@ function buildShip(id, liv, offset = V3()) {
   { const B = C.bells, sz = B.z, P = C.secondary ? ship.pieces.sec : hullP; ship.bellPos = [];
     for (const sd of [1, -1]) {
       const bell = new THREE.CylinderGeometry(B.r * 0.75, B.r, B.r * 1.2, 12, 1, true); bell.rotateX(PI / 2); bell.translate(sd * B.x, B.y, sz - B.r * 0.55); add(P, bell, darkMat, 'impulse');
-      const im = glowMat(0xff6a2a, 0x2a1a18); const disc = new THREE.CircleGeometry(B.r * 0.72, 12); disc.rotateY(PI); disc.translate(sd * B.x, B.y, sz - 0.05); add(P, disc, im, 'impulse');
+      const im = glowMat(0xff6a2a, 0x2a1a18); const disc = new THREE.CircleGeometry(B.r * 0.72, 12); disc.rotateY(PI); disc.translate(sd * B.x, B.y, sz - 0.12); add(P, disc, im, 'impulse');
       ship.glows.impulse.push(im); ship.bellPos.push(V3(sd * B.x, B.y, sz - B.r * 1.1));
     } }
   // Painted registry on the dorsal plating, under its own floodlight.
