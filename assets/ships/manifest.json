@@ -1,5 +1,5 @@
 {
- "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v20, sha256 ba104b49fd04; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 780ac7b20bfe): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
+ "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v20, sha256 18ad8d00452b; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 6d55fd597cab): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
  "conventions": {
   "units": "metres",
   "up": "+Y",
@@ -16,7 +16,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    },
    "detail": {
     "albedo": "concord/detail_albedo.png",
@@ -96,7 +96,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
    },
    "detail": {
     "albedo": "krai/detail_albedo.png",
@@ -387,6 +387,7 @@
      0.45
     ]
    },
+   "uv": "the lathe's own: u round the bell, v along it from the lip (0) to the throat (1); src/Game/View/bell.gdshader reads them",
    "name": "bell",
    "base_colour": [
     0.290196,
@@ -1709,6 +1710,7 @@
      0.62
     ]
    },
+   "uv": "the lathe's own: u round the bell, v along it from the lip (0) to the throat (1); src/Game/View/bell.gdshader reads them",
    "name": "bell",
    "base_colour": [
     0.235294,
@@ -2218,7 +2220,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -2479,7 +2481,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -2740,7 +2742,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -3003,7 +3005,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -3266,7 +3268,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -3281,8 +3283,8 @@
    "length_m": 111.003059,
    "beam_m": 55.779999,
    "height_m": 35.23,
-   "triangles": 3982,
-   "draw_calls": 28,
+   "triangles": 8506,
+   "draw_calls": 34,
    "origin_offset_m": [
     0,
     -3.535,
@@ -3307,6 +3309,12 @@
      "hull_weapons_metal_2a2f36",
      "hull_weapons_glow_phaser",
      "hull_radiator",
+     "hull_drive_paint_plain",
+     "hull_drive_bell",
+     "hull_drive_metal_8a9098",
+     "hull_drive_metal_3a4049",
+     "hull_drive_metal_2a2f36",
+     "hull_drive_glow_impulse",
      "hull_registry_6",
      "secondary_paint_hull_4",
      "secondary_glow_core",
@@ -3345,6 +3353,10 @@
      "mount_torpedo_0",
      "engine_0",
      "engine_1",
+     "engine_2",
+     "engine_3",
+     "engine_4",
+     "engine_5",
      "deflector",
      "reactor",
      "bridge",
@@ -3370,13 +3382,13 @@
     "concord/metal_2a2f36",
     "concord/glow_phaser",
     "concord/radiator",
-    "concord/registry_6",
-    "concord/paint_hull_4",
-    "concord/glow_core",
+    "concord/paint_plain",
     "concord/bell",
     "concord/metal_3a4049",
     "concord/glow_impulse",
-    "concord/paint_plain",
+    "concord/registry_6",
+    "concord/paint_hull_4",
+    "concord/glow_core",
     "concord/glow_bridge",
     "concord/paint_nacelle",
     "concord/glow_grille",
@@ -3559,13 +3571,13 @@
     "flipped_triangles": 0,
     "flipped_on_single_sided": 0,
     "skipped_meshes": {
-     "additive_glow": 2
+     "additive_glow": 6
     }
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -3924,7 +3936,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -4274,7 +4286,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 20,
-    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
    }
   },
   {
@@ -4409,7 +4421,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
    }
   },
   {
@@ -4547,7 +4559,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
    }
   },
   {
@@ -4686,7 +4698,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
    }
   },
   {
@@ -4852,7 +4864,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
    }
   }
  ]

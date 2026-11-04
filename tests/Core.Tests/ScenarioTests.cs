@@ -22,7 +22,7 @@ public class ScenarioTests
         + " {\"id\": \"b\", \"name\": \"B\", \"captain\": \"C\", \"class\": \"krai_ff\", \"faction\": \"krai\", \"side\": 1, \"x_m\": 0, \"z_m\": -5000, \"heading_deg\": 180, \"speed_m_s\": 0 STAND}]";
 
     private static string One(string side = "concord", string stand = "") =>
-        "{\"id\": \"t\", \"name\": \"T\", \"side\": \"" + side + "\", \"seed\": 1, \"objective\": \"O\", \"say\": [\"Comms\", \"Hello.\"], " + Ships.Replace(" STAND", stand) + "}";
+        "{\"id\": \"t\", \"name\": \"T\", \"side\": \"" + side + "\", \"sky\": \"quiet\", \"seed\": 1, \"objective\": \"O\", \"say\": [\"Comms\", \"Hello.\"], " + Ships.Replace(" STAND", stand) + "}";
 
     [Fact]
     public void Both_the_Concord_and_the_Krai_have_scenarios_and_each_starts_with_its_own_ship()
@@ -136,5 +136,18 @@ public class ScenarioTests
             Assert.True(now == src.GetProperty("sha256").GetString(),
                 $"{f.Name}: {page} changed since the ships were exported; re-run tools/mockups/export_ships.mjs");
         }
+    }
+
+    [Fact]
+    public void Every_scenario_is_fought_under_its_own_nebula_sky_and_its_sky_file_and_panorama_exist()
+    {
+        string root = Path.GetDirectoryName(TestData.DataDir)!;
+        foreach (Scenario s in TestData.Data.Scenarios)
+        {
+            Assert.True(File.Exists(Path.Combine(root, "data", "space", "skies", s.Sky + ".json")), $"{s.Id}: no sky data/space/skies/{s.Sky}.json");
+            Assert.True(File.Exists(Path.Combine(root, "assets", "skies", s.Sky + ".jpg")), $"{s.Id}: no panorama assets/skies/{s.Sky}.jpg (tools/space/sky_panorama.py)");
+        }
+        var shared = TestData.Data.Scenarios.GroupBy(s => s.Sky).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+        Assert.True(shared.Length == 0, $"skies used by more than one scenario: {string.Join(", ", shared)}");
     }
 }
