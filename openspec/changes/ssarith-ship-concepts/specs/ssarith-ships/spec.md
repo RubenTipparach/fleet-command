@@ -17,7 +17,16 @@ choices SHALL name its source in the Hunt's culture as the owner sets it (Ship D
 
 #### Scenario: The stereotype test
 - **WHEN** a Hunt design is described without naming the species
-- **THEN** the description is not a picture of a reptile's body
+- **THEN** the description is not a picture of a reptile's body, and the page shows that description for each direction
+
+### Requirement: Hunt ships show more than one tradition
+
+The Hunt page SHALL show at least two traditions of the Hunt as separate directions on the same rooms, each with its own
+plating, colours and distinct features, and each naming the source of every choice (Ship Design Bible C2, C3).
+
+#### Scenario: The traditions differ
+- **WHEN** the directions are compared
+- **THEN** no two share a plating style or a palette
 
 ### Requirement: Hunt ships are shown at true scale beside the Concord line
 

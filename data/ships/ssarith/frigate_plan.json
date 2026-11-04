@@ -1,6 +1,6 @@
 {
   "schema": "fleetcommand.ship-plan/1",
-  "_doc": "The Ssarith Hunt frigate's rooms as blocks, laid by tools/mockups/ssarith_plans.py on the Krai plan layer: three decks, squat and broad, a room across the whole prow on the two lower decks so the bow stays wide. Functional rooms; the trophy hall, the hunters' ready room and the dens are provisional (survey H6), the names the owner's (U7).",
+  "_doc": "The Ssarith Hunt frigate's rooms as blocks, laid by tools/mockups/ssarith_plans.py on the Krai plan layer: three decks, squat and broad, a room across the whole prow on the two lower decks so the bow stays wide. Functional rooms; the trophy hall and the hunters' ready room are provisional, their names the owner's (U7).",
   "ship": "ssarith_frigate",
   "crew": 40,
   "deck_floor_m": [
@@ -25,12 +25,12 @@
     {"id": "comms", "name": "Comms", "kind": "systems", "decks": [0], "x_m": [-3.8, -1.2], "z_m": [-22, -12]},
     {"id": "deck_a_corridor", "name": "Deck A corridor", "kind": "corridor", "decks": [0], "x_m": [-1.2, 1.2], "z_m": [-22, 14]},
     {"id": "forward_battery", "name": "Forward battery", "kind": "weapons", "decks": [1], "x_m": [-9.5, 9.5], "z_m": [23, 30]},
-    {"id": "dens", "name": "Dens", "kind": "crew", "decks": [1], "x_m": [1.2, 9.5], "z_m": [13, 23]},
+    {"id": "quarters", "name": "Quarters", "kind": "crew", "decks": [1], "x_m": [1.2, 9.5], "z_m": [13, 23]},
     {"id": "mess", "name": "Mess", "kind": "crew", "decks": [1], "x_m": [1.2, 9.2], "z_m": [4, 13]},
     {"id": "medbay", "name": "Medbay", "kind": "crew", "decks": [1], "x_m": [1.2, 8.4], "z_m": [-4, 4]},
     {"id": "hunters__ready_room", "name": "Hunters' ready room", "kind": "crew", "decks": [1], "x_m": [1.2, 7.6], "z_m": [-13, -4]},
     {"id": "life_support", "name": "Life support", "kind": "systems", "decks": [1], "x_m": [1.2, 6.8], "z_m": [-23, -13]},
-    {"id": "dens_2", "name": "Dens", "kind": "crew", "decks": [1], "x_m": [-9.5, -1.2], "z_m": [13, 23]},
+    {"id": "quarters_2", "name": "Quarters", "kind": "crew", "decks": [1], "x_m": [-9.5, -1.2], "z_m": [13, 23]},
     {"id": "armoury", "name": "Armoury", "kind": "weapons", "decks": [1], "x_m": [-9.2, -1.2], "z_m": [4, 13]},
     {"id": "shield_room", "name": "Shield room", "kind": "systems", "decks": [1], "x_m": [-8.4, -1.2], "z_m": [-4, 4]},
     {"id": "damage_control", "name": "Damage control", "kind": "systems", "decks": [1], "x_m": [-7.6, -1.2], "z_m": [-13, -4]},

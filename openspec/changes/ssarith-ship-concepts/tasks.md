@@ -13,9 +13,10 @@
 ## 1b. Withdrawn (owner, 2026-11-04)
 
 - [x] 1b.1 Version 1 withdrawn in the design, the page, `mockup-work.md` and the survey; the bible's chapter 13 (C1-C5) and CLAUDE.md section 1 hold the rule
-- [ ] 1b.2 The Hunt's culture set by the owner (survey H1), then new directions drawn from it, each choice naming its source (C3)
+- [x] 1b.2 Version 3: three traditions drafted inside the Hunt (H1 as recommended), each choice naming its source (C3), the stereotype test on the page (C5)
+- [ ] 1b.3 The owner picks, renames or replaces the traditions (survey H2)
 
-## 2. After a direction is chosen
+## 2. After a tradition is chosen (H2)
 
 - [ ] 2.1 The chosen direction to the Concord line's standard on the shared `lib/ship-skin.js`: a scute detail tile, interior-mapped windows with Hunt rooms, hooded floods as spotlights with shadows, the drive
 - [ ] 2.2 The classes (H5), their plans from `tools/mockups/ssarith_plans.py`, a line-up

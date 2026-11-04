@@ -6,10 +6,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 1: the Ssarith Hunt's first ship concepts,
+/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 3 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
    from the Hunt's culture as written (console-skins design, approved as written in survey U7) and on the Ship Design
    Bible (docs/design/ship-bible.html): one frigate's rooms as blocks (data/ships/ssarith/frigate_plan.json), the hull
-   fitted round them by the shared fitter (docs/mockups/lib/ship-plan.js), and three directions of claws on that one
+   fitted round them by the shared fitter (docs/mockups/lib/ship-plan.js), and (version 3) three traditions inside the Hunt on that one
    hull. Layout as mockups 6 and 7: the ship fills the screen, one panel of tabs down the left (a bottom sheet in portrait). */
 :root {
   color-scheme: dark;
@@ -96,7 +96,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v1, <b>withdrawn</b> (owner, 2026-11-04: it read the species' body into the ships). <code>ssarith-ship-concepts</code>. Kept as a record; see Notes.</p>
+    <p class="sub">Mockup 12, v3. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -107,7 +107,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     <section class="tab" id="pane-ship">
       <div class="grp"><h2>Direction</h2><div class="row" id="dirRow"></div></div>
       <p class="hint" id="dirNote"></p>
-      <div class="grp"><h2>Pose</h2><div class="row" id="poseRow"></div></div>
+      <div class="grp"><h2>Mode</h2><div class="row" id="poseRow"></div></div>
       <div class="grp"><h2>Light</h2><div class="row" id="lightRow"></div></div>
       <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
       <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
@@ -118,7 +118,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <div class="grp"><h2>Console and hull, side by side (X4)</h2>
         <div class="swatches">
           <div class="sw"><b>Console</b><div class="chips" id="consoleChips"></div><p class="hint">Pillowed olive gunmetal, hide scales, CRT tubes, backlight only.</p></div>
-          <div class="sw"><b>Hull</b><div class="chips" id="hullChips"></div><p class="hint">Matte gunmetal in keeled scutes under camouflage; green-white light; kill red only in Strike.</p></div>
+          <div class="sw"><b>Hull</b><div class="chips" id="hullChips"></div><p class="hint">The tradition's own plating and colours; green-white light; kill red only while hunting.</p></div>
         </div></div>
     </section>
     <section class="tab" id="pane-plan" hidden>
@@ -126,36 +126,28 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <div class="plans" id="plans"></div>
     </section>
     <section class="tab notes" id="pane-notes" hidden>
-      <h3>Withdrawn</h3>
-      <p>Owner, 2026-11-04: "you are over stereotyping an alien species which is extremely insensitive ... the look of an alien species is not their UI, not their spaceship ... no culture in the world follows a single line of thinking". This version took claws, scales and a reptile's sprawl from the species' body, and let one idea (the hunt) shape everything. The Ship Design Bible's chapter 13 (Culture, not anatomy, C1-C5) now forbids both. The readings below are the record of what was withdrawn; none of them stand. Next: the Hunt's culture, set by you (survey H1).</p>
-      <h3>From the culture (version 1, withdrawn)</h3>
-      <p>The readings version 1 made, kept as the record.</p>
+      <h3>Three traditions, drafted for you</h3>
+      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are three traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2).</p>
       <ul>
-        <li>"The quarry must be worthy": they hunt alone or in pairs, so a few heavy ships, never a swarm.</li>
-        <li>"The stalk patient", "built to wait unseen": a dark, matte, mottled hull that holds still with its lights shuttered (Stalk).</li>
-        <li>"Slow and silent until they strike": claws that move only when it strikes; kill red lit only then (Strike).</li>
-        <li>"Big-boned reptiles with heavy clawed hands", and your note "gorn emphasizes claw like features, since they enjoy hunting": a squat broad hull, and claws as the ship's own feature.</li>
-        <li>"The kill earned and counted": a bone notch cut into a claw for each worthy kill, as the emblem's fang is notched.</li>
-        <li>"Worn gunmetal, camouflage, tracking tubes": gunmetal laid in keeled scutes under canopy and moss camouflage, green phosphor behind the windows.</li>
-        <li>"Squat armoured hunting ships with broad prows": the bow keeps its width to its face, a shovel, never a point.</li>
+        <li><b>A Old Lodge</b>: ships handed down and refitted for generations. Plates of every age, riveted, bronze repairs, worn field camouflage; the top deck under a pitched roof; one original nacelle and one later refit; grapple emitters in the prow to hold the quarry close. From "worn gunmetal, camouflage", "the kill earned", "broad prows"; the lodge, the roof and the refits are ours.</li>
+        <li><b>B Trackers</b>: the hunt won by waiting and watching. Tracking tubes along the spine; radiators folded down the flanks while it holds its heat in, swung out only when it hunts; drive vented sideways; dark mottled louvres. From "the stalk patient", "tracking tubes", "built to wait unseen", "dark and mottled".</li>
+        <li><b>C Course</b>: a younger school that thinks the worthy hunt is the open chase. A rack of small hunting craft launched when it hunts; a long drive for the pursuit; pale clean panels and the hunt party's amber band, because it does not hide. From "the quarry must be worthy" and the plan's hunting craft bay; the school and its disagreement are ours.</li>
       </ul>
-      <h3>The three directions</h3>
-      <ul>
-        <li><b>A Grasp</b> (recommended): four hooked claws at the prow's corners, closed in front of the bow while it stalks, spread open when it strikes. The grapple projectors sit under them. A bigger class adds a pair.</li>
-        <li><b>B Jaw</b>: the prow split into two jaws lined with fangs, a gun in the throat; the nacelles splayed low like a reptile's legs, three talons at each one's bow.</li>
-        <li><b>C Crouch</b>: a hump of big scutes over a low prow; the nacelles folded under the belly like forelegs, a sickle claw at each.</li>
-      </ul>
+      <h3>The stereotype test (Ship Design Bible C5)</h3>
+      <p>Each described without naming the species:</p>
+      <ul id="tells"></ul>
       <h3>On the bible</h3>
       <ul>
-        <li>Rooms first: 34 rooms on three decks, crew 40, the middle deck widest and each room aft a little narrower, so the hull tapers aft like an animal toward its tail, and a room across the whole prow on the two lower decks, so the bow stays broad. The trophy hall, the hunters' ready room and the dens come from the culture and are placeholders.</li>
-        <li>The hull is the shared fitter's, then the Hunt's character goes on top of it (rule H2): no steps where a deck ends, only slopes, and a shovel prow; every room is measured 1.05 m inside.</li>
-        <li>Windows are the person-sized pane, one row a deck, on lived-in rooms only, lit dim phosphor green.</li>
-        <li>Lights keep every job the bible gives them, hooded and dimmer in Stalk so the ship still reads.</li>
+        <li>Rooms first: 34 rooms on three decks, crew 40, the middle deck widest and each room aft a little narrower, so the hull tapers aft, and a room across the whole prow on the two lower decks, so the bow stays broad ("broad prows").</li>
+        <li>The hull is the shared fitter's, then character on top of it (rule H2): no steps where a deck ends, only slopes, and a broad prow; every room is measured 1.05 m inside.</li>
+        <li>Windows are the person-sized pane, one row a deck, on lived-in rooms only, lit dim phosphor green (the console's tubes).</li>
       </ul>
+      <h3>Version 1, withdrawn</h3>
+      <p>Owner, 2026-11-04: "you are over stereotyping an alien species which is extremely insensitive ... the look of an alien species is not their UI, not their spaceship". Version 1 took claws, scales and a reptile's sprawl from the species' body; all of it is gone.</p>
       <h3>Not done yet</h3>
-      <p>Interior-mapped windows, the shared detail tile, flood shadows, damage and breakup, the other classes and the hull marking. They follow the direction you choose, on the code the Concord and Krai lines share.</p>
+      <p>Interior-mapped windows, the shared detail tile, flood shadows, damage and breakup, the other classes and the hull marking, on the code the Concord and Krai lines share, once you choose.</p>
       <h3>Your calls</h3>
-      <p>Survey section H (H1-H8): the direction, Stalk and Strike, how dark they run, kill notches, classes, the rooms the culture adds, cloaking, and the paneling. <a href="https://claude.ai/artifact/81ey21Ngrr8WPTdhce7y8a" target="_blank" rel="noopener">Open the survey</a>. A blank answer accepts the recommendation.</p>
+      <p>Survey section H: H2, which of these traditions stand and what to change. <a href="https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt" target="_blank" rel="noopener">Open the survey</a>.</p>
     </section>
   </div>
 </aside>
@@ -546,7 +538,7 @@ return { rooms, check, fit, margins, windows, sideAt, clear, planSVGs };
 </script>
 <!-- /INLINE -->
 <!-- INLINE data/ships/ssarith/frigate_plan.json -->
-<script type="application/json" data-src="data/ships/ssarith/frigate_plan.json">{"schema":"fleetcommand.ship-plan/1","_doc":"The Ssarith Hunt frigate's rooms as blocks, laid by tools/mockups/ssarith_plans.py on the Krai plan layer: three decks, squat and broad, a room across the whole prow on the two lower decks so the bow stays wide. Functional rooms; the trophy hall, the hunters' ready room and the dens are provisional (survey H6), the names the owner's (U7).","ship":"ssarith_frigate","crew":40,"deck_floor_m":[3.5,0.0,-3.5],"headroom_m":2.8,"clearance_m":0.45,"structure_m":0.6,"nose_m":7,"tail_m":3,"rooms":[{"id":"bridge","name":"Bridge","kind":"command","decks":[0],"x_m":[-5.0,5.0],"z_m":[14,22]},{"id":"hunt_master","name":"Hunt master","kind":"command","decks":[0],"x_m":[1.2,5.0],"z_m":[7,14]},{"id":"tracking_room","name":"Tracking room","kind":"systems","decks":[0],"x_m":[1.2,5.0],"z_m":[-2,7]},{"id":"officers","name":"Officers","kind":"crew","decks":[0],"x_m":[1.2,4.4],"z_m":[-12,-2]},{"id":"trophy_hall","name":"Trophy hall","kind":"crew","decks":[0],"x_m":[1.2,3.8],"z_m":[-22,-12]},{"id":"tactical","name":"Tactical","kind":"command","decks":[0],"x_m":[-5.0,-1.2],"z_m":[7,14]},{"id":"sensors","name":"Sensors","kind":"systems","decks":[0],"x_m":[-5.0,-1.2],"z_m":[-2,7]},{"id":"officers_2","name":"Officers","kind":"crew","decks":[0],"x_m":[-4.4,-1.2],"z_m":[-12,-2]},{"id":"comms","name":"Comms","kind":"systems","decks":[0],"x_m":[-3.8,-1.2],"z_m":[-22,-12]},{"id":"deck_a_corridor","name":"Deck A corridor","kind":"corridor","decks":[0],"x_m":[-1.2,1.2],"z_m":[-22,14]},{"id":"forward_battery","name":"Forward battery","kind":"weapons","decks":[1],"x_m":[-9.5,9.5],"z_m":[23,30]},{"id":"dens","name":"Dens","kind":"crew","decks":[1],"x_m":[1.2,9.5],"z_m":[13,23]},{"id":"mess","name":"Mess","kind":"crew","decks":[1],"x_m":[1.2,9.2],"z_m":[4,13]},{"id":"medbay","name":"Medbay","kind":"crew","decks":[1],"x_m":[1.2,8.4],"z_m":[-4,4]},{"id":"hunters__ready_room","name":"Hunters' ready room","kind":"crew","decks":[1],"x_m":[1.2,7.6],"z_m":[-13,-4]},{"id":"life_support","name":"Life support","kind":"systems","decks":[1],"x_m":[1.2,6.8],"z_m":[-23,-13]},{"id":"dens_2","name":"Dens","kind":"crew","decks":[1],"x_m":[-9.5,-1.2],"z_m":[13,23]},{"id":"armoury","name":"Armoury","kind":"weapons","decks":[1],"x_m":[-9.2,-1.2],"z_m":[4,13]},{"id":"shield_room","name":"Shield room","kind":"systems","decks":[1],"x_m":[-8.4,-1.2],"z_m":[-4,4]},{"id":"damage_control","name":"Damage control","kind":"systems","decks":[1],"x_m":[-7.6,-1.2],"z_m":[-13,-4]},{"id":"stores","name":"Stores","kind":"bay","decks":[1],"x_m":[-6.8,-1.2],"z_m":[-23,-13]},{"id":"deck_b_corridor","name":"Deck B corridor","kind":"corridor","decks":[1],"x_m":[-1.2,1.2],"z_m":[-23,23]},{"id":"engineering","name":"Engineering","kind":"engineering","decks":[1],"x_m":[-5.8,5.8],"z_m":[-33,-23]},{"id":"grapple_projectors","name":"Grapple projectors","kind":"weapons","decks":[2],"x_m":[-6.5,6.5],"z_m":[22,28]},{"id":"magazine","name":"Magazine","kind":"weapons","decks":[2],"x_m":[1.2,6.5],"z_m":[13,22]},{"id":"boarding_bay","name":"Boarding bay","kind":"bay","decks":[2],"x_m":[1.2,6.2],"z_m":[-1,13]},{"id":"fabricators","name":"Fabricators","kind":"engineering","decks":[2],"x_m":[1.2,5.4],"z_m":[-11,-1]},{"id":"stores_2","name":"Stores","kind":"bay","decks":[2],"x_m":[1.2,4.8],"z_m":[-22,-11]},{"id":"magazine_2","name":"Magazine","kind":"weapons","decks":[2],"x_m":[-6.5,-1.2],"z_m":[13,22]},{"id":"hunting_craft_bay","name":"Hunting craft bay","kind":"bay","decks":[2],"x_m":[-6.2,-1.2],"z_m":[-1,13]},{"id":"life_support_2","name":"Life support","kind":"systems","decks":[2],"x_m":[-5.4,-1.2],"z_m":[-11,-1]},{"id":"stores_3","name":"Stores","kind":"bay","decks":[2],"x_m":[-4.8,-1.2],"z_m":[-22,-11]},{"id":"deck_c_corridor","name":"Deck C corridor","kind":"corridor","decks":[2],"x_m":[-1.2,1.2],"z_m":[-22,22]},{"id":"reactor","name":"Reactor","kind":"engineering","decks":[2],"x_m":[-4.4,4.4],"z_m":[-34,-22]}]}</script>
+<script type="application/json" data-src="data/ships/ssarith/frigate_plan.json">{"schema":"fleetcommand.ship-plan/1","_doc":"The Ssarith Hunt frigate's rooms as blocks, laid by tools/mockups/ssarith_plans.py on the Krai plan layer: three decks, squat and broad, a room across the whole prow on the two lower decks so the bow stays wide. Functional rooms; the trophy hall and the hunters' ready room are provisional, their names the owner's (U7).","ship":"ssarith_frigate","crew":40,"deck_floor_m":[3.5,0.0,-3.5],"headroom_m":2.8,"clearance_m":0.45,"structure_m":0.6,"nose_m":7,"tail_m":3,"rooms":[{"id":"bridge","name":"Bridge","kind":"command","decks":[0],"x_m":[-5.0,5.0],"z_m":[14,22]},{"id":"hunt_master","name":"Hunt master","kind":"command","decks":[0],"x_m":[1.2,5.0],"z_m":[7,14]},{"id":"tracking_room","name":"Tracking room","kind":"systems","decks":[0],"x_m":[1.2,5.0],"z_m":[-2,7]},{"id":"officers","name":"Officers","kind":"crew","decks":[0],"x_m":[1.2,4.4],"z_m":[-12,-2]},{"id":"trophy_hall","name":"Trophy hall","kind":"crew","decks":[0],"x_m":[1.2,3.8],"z_m":[-22,-12]},{"id":"tactical","name":"Tactical","kind":"command","decks":[0],"x_m":[-5.0,-1.2],"z_m":[7,14]},{"id":"sensors","name":"Sensors","kind":"systems","decks":[0],"x_m":[-5.0,-1.2],"z_m":[-2,7]},{"id":"officers_2","name":"Officers","kind":"crew","decks":[0],"x_m":[-4.4,-1.2],"z_m":[-12,-2]},{"id":"comms","name":"Comms","kind":"systems","decks":[0],"x_m":[-3.8,-1.2],"z_m":[-22,-12]},{"id":"deck_a_corridor","name":"Deck A corridor","kind":"corridor","decks":[0],"x_m":[-1.2,1.2],"z_m":[-22,14]},{"id":"forward_battery","name":"Forward battery","kind":"weapons","decks":[1],"x_m":[-9.5,9.5],"z_m":[23,30]},{"id":"quarters","name":"Quarters","kind":"crew","decks":[1],"x_m":[1.2,9.5],"z_m":[13,23]},{"id":"mess","name":"Mess","kind":"crew","decks":[1],"x_m":[1.2,9.2],"z_m":[4,13]},{"id":"medbay","name":"Medbay","kind":"crew","decks":[1],"x_m":[1.2,8.4],"z_m":[-4,4]},{"id":"hunters__ready_room","name":"Hunters' ready room","kind":"crew","decks":[1],"x_m":[1.2,7.6],"z_m":[-13,-4]},{"id":"life_support","name":"Life support","kind":"systems","decks":[1],"x_m":[1.2,6.8],"z_m":[-23,-13]},{"id":"quarters_2","name":"Quarters","kind":"crew","decks":[1],"x_m":[-9.5,-1.2],"z_m":[13,23]},{"id":"armoury","name":"Armoury","kind":"weapons","decks":[1],"x_m":[-9.2,-1.2],"z_m":[4,13]},{"id":"shield_room","name":"Shield room","kind":"systems","decks":[1],"x_m":[-8.4,-1.2],"z_m":[-4,4]},{"id":"damage_control","name":"Damage control","kind":"systems","decks":[1],"x_m":[-7.6,-1.2],"z_m":[-13,-4]},{"id":"stores","name":"Stores","kind":"bay","decks":[1],"x_m":[-6.8,-1.2],"z_m":[-23,-13]},{"id":"deck_b_corridor","name":"Deck B corridor","kind":"corridor","decks":[1],"x_m":[-1.2,1.2],"z_m":[-23,23]},{"id":"engineering","name":"Engineering","kind":"engineering","decks":[1],"x_m":[-5.8,5.8],"z_m":[-33,-23]},{"id":"grapple_projectors","name":"Grapple projectors","kind":"weapons","decks":[2],"x_m":[-6.5,6.5],"z_m":[22,28]},{"id":"magazine","name":"Magazine","kind":"weapons","decks":[2],"x_m":[1.2,6.5],"z_m":[13,22]},{"id":"boarding_bay","name":"Boarding bay","kind":"bay","decks":[2],"x_m":[1.2,6.2],"z_m":[-1,13]},{"id":"fabricators","name":"Fabricators","kind":"engineering","decks":[2],"x_m":[1.2,5.4],"z_m":[-11,-1]},{"id":"stores_2","name":"Stores","kind":"bay","decks":[2],"x_m":[1.2,4.8],"z_m":[-22,-11]},{"id":"magazine_2","name":"Magazine","kind":"weapons","decks":[2],"x_m":[-6.5,-1.2],"z_m":[13,22]},{"id":"hunting_craft_bay","name":"Hunting craft bay","kind":"bay","decks":[2],"x_m":[-6.2,-1.2],"z_m":[-1,13]},{"id":"life_support_2","name":"Life support","kind":"systems","decks":[2],"x_m":[-5.4,-1.2],"z_m":[-11,-1]},{"id":"stores_3","name":"Stores","kind":"bay","decks":[2],"x_m":[-4.8,-1.2],"z_m":[-22,-11]},{"id":"deck_c_corridor","name":"Deck C corridor","kind":"corridor","decks":[2],"x_m":[-1.2,1.2],"z_m":[-22,22]},{"id":"reactor","name":"Reactor","kind":"engineering","decks":[2],"x_m":[-4.4,4.4],"z_m":[-34,-22]}]}</script>
 <!-- /INLINE -->
 <script>
 (function () {
@@ -560,7 +552,7 @@ function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5
 // ---------------------------------------------------------------------------------------------------------------
 // Colours. The console's (docs/mockups/skins/ssarith.js and the console-skins design's Hunt palette), shown beside the
 // hull's. The hull complements them (rule X1, a guide): matte gunmetal under canopy, moss and umber camouflage; bone for
-// kill notches only; a green-white light; kill red only as light, only in Strike (the design's rules 5 and 6).
+// the console's palette; each tradition's own hull colours are in TRAD below; kill red only as light, only while hunting.
 const CONSOLE = { gunmetal: '#3a4044', canopy: '#2f4a2a', moss: '#5b6340', phosphor: '#6dff8a', bone: '#d8cfb4', kill: '#c2412b' };
 const HULL = { field: '#33382f', canopy: '#2d4228', moss: '#4f5638', umber: '#3a3026', horn: '#262722', bone: '#d8cfb4', light: '#c8ffd6', kill: '#ff4a2e', window: '#6dff8a', drive: '#d9ffe2' };
 const KINDS = { command: ['Command', '#2f62e0'], crew: ['Crew', '#3fa96a'], systems: ['Systems', '#8d7cf0'], weapons: ['Weapons', '#e8352b'],
@@ -617,218 +609,192 @@ let lightKey = 'sunlit';
 const mats = [];
 
 // ---------------------------------------------------------------------------------------------------------------
-// The hull material: matte gunmetal laid as keeled scutes (the design's rule 4, X3's unique paneling), rows of oval plates
-// 2.6 m along and 1.9 m across, every other row half a plate along, each domed with a keel down its middle and the seams
-// dark, projected from the face's main axis in ship space; under a disruptive camouflage of canopy, moss and umber
-// (rule 5). The fine detail fades out below a few pixels so it never sparkles at a distance.
-const HUNT_GLSL = `varying vec3 vObj; varying vec3 vNObj; uniform mat3 normalMatrix;
+// Version 3: three traditions inside the Hunt, drafted for the owner to change or replace (survey H1, H2). A people builds
+// in more than one way (Ship Design Bible C2), so each tradition is its own ship on the same rooms. Every choice names its
+// source: a line of the culture as written (console-skins design, approved as written in U7) or, where it is ours, says
+// so. Nothing comes from the species' body (C1); each passes the stereotype test (C5) on the Notes tab.
+const TRAD = {
+  A: { field: '#3d4238', old: '#33372f', fresh: '#4b514b', repair: '#5c4d34', camo: '#2f4a2a' },
+  A2: { field: '#5d645e', old: '#535953', fresh: '#6a716b', repair: '#5d645e', camo: '#4f5a48' }, // the newer refit: mostly new steel
+  B: { field: '#23271f', mottle: '#2e3528', mottle2: '#181b15' },
+  C: { field: '#cbc4ac', band: '#b8792a', band2: '#3a4044' },
+};
+const STYLE = { A: 0, A2: 0, B: 1, C: 2 };
+const g3 = (hex) => `vec3(${glsl3(hex)})`;
+// The plating, one shader with three ways of cutting and laying plate (X3's unique paneling), each a tradition's:
+// 0 Old Lodge: plates of every age side by side, riveted, a few bronze repairs, worn field camouflage over them;
+// 1 Trackers: horizontal louvres in 6 m bays, dark and mottled; 2 Course: clean 4 m by 2.5 m panels in pale paint, the
+// hunt party's band along each flank. Projected from the face's main axis in ship space; fine detail fades out below a
+// few pixels.
+function hullGLSL(style, P) {
+  const def = Object.entries(P).map(([k, v]) => `#define C_${k.toUpperCase()} ${g3(v)}`).join('\n');
+  return `#define STYLE ${style}\n${def}
+varying vec3 vObj; varying vec3 vNObj; uniform mat3 normalMatrix;
 float h3(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
 float n3(vec3 p) { vec3 i = floor(p), f = fract(p); f = f*f*(3.0 - 2.0*f);
   return mix(mix(mix(h3(i), h3(i + vec3(1,0,0)), f.x), mix(h3(i + vec3(0,1,0)), h3(i + vec3(1,1,0)), f.x), f.y),
              mix(mix(h3(i + vec3(0,0,1)), h3(i + vec3(1,0,1)), f.x), mix(h3(i + vec3(0,1,1)), h3(i + vec3(1,1,1)), f.x), f.y), f.z); }
 float fbm(vec3 p) { float a = 0.5, s = 0.0; for (int i = 0; i < 4; i++) { s += a*n3(p); p = p*2.03 + 1.7; a *= 0.5; } return s; }
-// One scute at (u along the ship, v across): returns height in x, its gradient in yz (per metre), the seam in w.
-vec4 scute(float u, float v) {
-  float row = floor(v / 1.9), uu = u / 2.6 + 0.5*mod(row, 2.0);
-  float fu = fract(uu) - 0.5, fv = fract(v / 1.9) - 0.5;
-  float r2 = 4.0*fu*fu + 4.0*fv*fv, dome = max(0.0, 1.0 - r2);
-  float keel = max(0.0, 1.0 - abs(fv)*7.0) * smoothstep(-0.45, 0.3, fu) * (1.0 - smoothstep(0.3, 0.48, fu));
-  float h = (dome*0.7 + keel*0.5) * (0.8 + 0.4*h3(vec3(floor(uu), row, 3.0)));  // no two plates quite alike
-  vec2 g = vec2(-8.0*fu/2.6, -8.0*fv/1.9) * step(r2, 1.0) * 0.7 + vec2(0.0, -sign(fv)*7.0/1.9) * keel * 0.5;
-  return vec4(h, g, smoothstep(0.78, 1.0, r2));
+vec3 gCol; vec2 gG; float gSeam;
+void plating(float u, float v, vec3 nA) {
+  gG = vec2(0.0); gSeam = 0.0;
+#if STYLE == 0
+  float row = floor(v / 2.2), uu = (u + h3(vec3(row, 1.0, 0.0)) * 3.4) / 3.4, ci = floor(uu);
+  float fu = fract(uu), fv = fract(v / 2.2), r = h3(vec3(ci, row, 7.0));
+  float bu = min(fu, 1.0 - fu) * 3.4, bv = min(fv, 1.0 - fv) * 2.2;
+  gSeam = 1.0 - smoothstep(0.03, 0.08, min(bu, bv));
+  vec3 c = C_FIELD; if (r > 0.72) c = C_OLD; else if (r > 0.5) c = C_FRESH; if (r < 0.04) c = C_REPAIR;
+  float riv = step(0.1, bv) * step(bv, 0.22) * (1.0 - smoothstep(0.04, 0.07, abs(fract(u / 0.45) - 0.5) * 0.45));
+  c *= 1.0 + 0.45 * riv;
+  gG = vec2(bu < 0.12 ? sign(0.5 - fu) : 0.0, bv < 0.12 ? sign(0.5 - fv) : 0.0) * 0.33; // each plate's edge bevelled down to its seam
+  c = mix(c, C_CAMO, smoothstep(0.56, 0.6, fbm(vObj * 0.08)) * 0.5 * step(r, 0.9));
+  gCol = c;
+#elif STYLE == 1
+  float fv = fract(v / 0.7), fb = fract(u / 6.0);
+  gG = vec2(0.0, 0.36); // each louvre a ramp 0.25 m deep over its 0.7 m
+  gSeam = max(1.0 - smoothstep(0.0, 0.1, fv), step(fb, 0.02) + step(0.98, fb));
+  vec3 c = mix(C_MOTTLE2, C_FIELD, smoothstep(0.42, 0.52, fbm(vObj * 0.1)));
+  c = mix(c, C_MOTTLE, smoothstep(0.58, 0.62, fbm(vObj * 0.16 + 3.0)));
+  gCol = c * (0.88 + 0.24 * fv);
+#else
+  float fu = fract(u / 4.0), fv = fract(v / 2.5), r = h3(vec3(floor(u / 4.0), floor(v / 2.5), 3.0));
+  gSeam = 1.0 - smoothstep(0.02, 0.05, min(min(fu, 1.0 - fu) * 4.0, min(fv, 1.0 - fv) * 2.5));
+  if (r > 0.82) gSeam = max(gSeam, 1.0 - smoothstep(0.02, 0.05, abs(max(abs(fu - 0.5) * 4.0, abs(fv - 0.5) * 2.5) - 0.7))); // a hatch
+  vec3 c = C_FIELD * (0.95 + 0.08 * r);
+  if (nA.x > 0.5 && vObj.y > -0.7 && vObj.y < 0.55) c = C_BAND;          // the hunt party's band
+  if (nA.x > 0.5 && abs(vObj.y - 0.72) < 0.12) c = C_BAND2;
+  gCol = c;
+#endif
 }`;
-function hullMat() {
-  const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.4, roughness: 0.72, flatShading: true, envMapIntensity: LIGHTS[lightKey].env });
+}
+const MAT = {};
+function hullMat(key) {
+  const st = STYLE[key], m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: st === 2 ? 0.2 : 0.45, roughness: 0.7, flatShading: true, envMapIntensity: LIGHTS[lightKey].env });
   m.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vObj; varying vec3 vNObj;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj = position; vNObj = normal;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + HUNT_GLSL + '\nvec4 gSc; vec3 gU; vec3 gV; float gFine;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + hullGLSL(st, TRAD[key]) + '\nvec3 gU; vec3 gV; float gFine;')
       .replace('#include <color_fragment>', `#include <color_fragment>
-        vec3 nO = normalize(vNObj), nA = abs(nO);
-        // the face's projection: plates run along the ship (z) on every face but the bow and stern faces
-        float u, v;
+        vec3 nO = normalize(vNObj), nA = abs(nO); float u, v;
         if (nA.z > 0.8) { u = vObj.y; v = vObj.x; gU = vec3(0,1,0); gV = vec3(1,0,0); }
         else if (nA.y > nA.x) { u = vObj.z; v = vObj.x; gU = vec3(0,0,1); gV = vec3(1,0,0); }
         else { u = vObj.z; v = vObj.y; gU = vec3(0,0,1); gV = vec3(0,1,0); }
         gFine = 1.0 - smoothstep(0.04, 0.22, length(fwidth(vObj)));
-        gSc = scute(u, v);
-        vec3 p = vObj*0.085;
-        float c1 = fbm(p), c2 = fbm(p + 19.3), c3 = fbm(p*1.7 + 7.1);
-        vec3 col = vec3(${glsl3(HULL.field)});
-        col = mix(col, vec3(${glsl3(HULL.canopy)}), smoothstep(0.545, 0.555, c1));
-        col = mix(col, vec3(${glsl3(HULL.moss)}), smoothstep(0.575, 0.585, c2));
-        col = mix(col, vec3(${glsl3(HULL.umber)}), smoothstep(0.585, 0.595, c3) * (1.0 - smoothstep(0.545, 0.555, c1)));
-        col *= 0.86 + 0.26*gSc.x*gFine;                       // the keels and domes worn a little lighter
-        col *= mix(1.0, 0.5, gSc.w*gFine);                    // the seams dark
-        diffuseColor.rgb *= col;`)
+        plating(u, v, nA);
+        diffuseColor.rgb *= gCol * mix(1.0, 0.45, gSeam * gFine);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-        { vec3 nO2 = normalize(vNObj); vec3 nP = normalize(nO2 - 0.3*gFine*(gSc.y*gU + gSc.z*gV));
-          normal = normalize(normalMatrix*nP); }`)
+        { vec3 nP = normalize(normalize(vNObj) - gFine * (gG.x * gU + gG.y * gV)); normal = normalize(normalMatrix * nP); }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = mix(0.78, 0.5, gSc.x*gFine*0.6);    // an oiled sheen on the worn keels, matte elsewhere`);
+        roughnessFactor = ${st === 1 ? '0.88' : st === 2 ? '0.5' : '0.62'} + 0.15 * gSeam;`);
   };
-  m.customProgramCacheKey = () => 'hunt-hull-1'; mats.push(m); return m;
+  m.customProgramCacheKey = () => 'hunt-hull-3-' + key; mats.push(m); return m;
 }
-const HULLMAT = hullMat();
-// Claws, talons and fangs: dark horn with vertex colours (worn lighter toward the point, bone notches near the root).
-const HORNMAT = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.25, roughness: 0.5, flatShading: true }); mats.push(HORNMAT);
-const glowMat = (hex, k) => { const m = new THREE.MeshStandardMaterial({ color: 0x050605, emissive: hex, emissiveIntensity: k, roughness: 0.6 }); return m; };
-const KILL = []; // every kill red emitter: lit only in Strike (rule 6, the spec's "Kill red in Stalk")
+for (const k of Object.keys(TRAD)) MAT[k] = hullMat(k);
+const glowMat = (hex, k) => new THREE.MeshStandardMaterial({ color: 0x050605, emissive: hex, emissiveIntensity: k, roughness: 0.6 });
+const KILL = []; // every kill red emitter: lit only while hunting (the console's kill red, "the strike, given once")
 let building = ''; // the direction being built, so each kill red emitter knows its ship
 const killMat = () => { const m = glowMat(HULL.kill, 0); m.userData.ship = building; KILL.push(m); return m; };
 const WINMAT = glowMat(HULL.window, 0.5), GRILLE = glowMat(HULL.window, 0.4), DRIVE = glowMat(HULL.drive, 0.2);
+const TUBE = new THREE.MeshStandardMaterial({ color: 0x0c1a10, emissive: HULL.window, emissiveIntensity: 0.25, roughness: 0.15, metalness: 0.1 });
+const HEAT = glowMat('#ff8a3c', 0);
 const POSMATS = { red: glowMat('#ff2a20', 1), green: glowMat('#2aff5a', 1), white: glowMat('#ffffff', 1) };
 
 // ---------------------------------------------------------------------------------------------------------------
-// Faceted geometry with a colour per triangle, each turned to face away from its own centre.
-function facetGeo(tris) {
-  const pos = [], col = [];
-  for (const [a, b, c, k, cen] of tris) { const n = V3().subVectors(b, a).cross(V3().subVectors(c, a)), m = V3().addVectors(a, b).add(c).multiplyScalar(1 / 3);
-    const [p, q, r] = n.dot(m.sub(cen)) < 0 ? [a, c, b] : [a, b, c];
-    for (const v of [p, q, r]) { pos.push(v.x, v.y, v.z); col.push(k.r, k.g, k.b); } }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals(); return g;
-}
-const HORN = lin(HULL.horn), WORN = lin('#8d8a74'), BONE = lin(HULL.bone);
-// A hooked claw (the design's rule 1) in its own frame: it grows along +Z from the origin and curls toward -Y, its section
-// flattened side to side (flat) and keeled on the inside of the curl, tapering to a point. notches: bone bands near the root,
-// one per kill (survey H4, provisional). Returns the geometry and the tip in the claw's frame.
-function clawGeo(len, r0, curl, o = {}) {
-  const N = 26, sides = 6, flat = o.flat ?? 0.62, notches = o.notches ?? 0, rings = [], cen = [];
-  let p = V3(), th = 0; const ds = len / N;
-  for (let i = 0; i <= N; i++) { const t = i / N; th = curl * Math.pow(t, 1.6);
-    const dir = V3(0, -Math.sin(th), Math.cos(th)), nrm = V3(0, Math.cos(th), Math.sin(th)), bin = V3(1, 0, 0);
-    const r = i === N ? 0.02 : r0 * Math.pow(1 - t, 0.85) + 0.04, ring = [];
-    for (let k = 0; k < sides; k++) { const a = (k / sides) * PI * 2 + PI / 2, s = Math.sin(a), c = Math.cos(a);
-      ring.push(p.clone().addScaledVector(bin, c * r * flat).addScaledVector(nrm, s * r * (s < 0 ? 1.3 : 1))); }
-    rings.push(ring); cen.push(p.clone()); if (i < N) p = p.clone().addScaledVector(dir, ds); }
-  const tris = [];
-  for (let i = 0; i < N; i++) { const t = (i + 0.5) / N, band = notches && i >= 3 && i < 3 + notches * 2 && (i - 3) % 2 === 0; // one ring a kill, a plain ring between
-    const k = band ? BONE : HORN.clone().lerp(WORN, Math.pow(t, 2.4)), c = cen[i].clone().lerp(cen[i + 1], 0.5);
-    for (let j = 0; j < sides; j++) { const a = rings[i][j], b = rings[i][(j + 1) % sides], cc = rings[i + 1][(j + 1) % sides], d = rings[i + 1][j];
-      tris.push([a, b, cc, k, c], [a, cc, d, k, c]); } }
-  for (let j = 0; j < sides; j++) tris.push([cen[0], rings[0][j], rings[0][(j + 1) % sides], HORN, V3(0, 0, 1)]);
-  return { geo: facetGeo(tris), tip: cen[N], root: r0 };
-}
-// A low pyramid plate (an osteoderm on the spine, a fang on a jaw): base a diamond `w` across and `l` along at `at`, the apex
-// `h` out along `up`, raked aft by `rake` of its length.
-function pyramid(at, up, along, w, l, h, rake, k1, k2) {
-  const across = V3().crossVectors(up, along).normalize(), A = at.clone().addScaledVector(along, l / 2), B = at.clone().addScaledVector(across, w / 2),
-    C = at.clone().addScaledVector(along, -l / 2), D = at.clone().addScaledVector(across, -w / 2), T = at.clone().addScaledVector(up, h).addScaledVector(along, -l * rake), cen = at.clone().addScaledVector(up, h * 0.3);
-  return [[A, B, T, k1, cen], [B, C, T, k1, cen], [C, D, T, k2, cen], [D, A, T, k2, cen], [A, B, C, k2, cen.clone().addScaledVector(up, 1)], [A, C, D, k2, cen.clone().addScaledVector(up, 1)]];
-}
 const ring = (z, hb, top, bot, ch, x = 0, y = 0) => CL.octRing(z, hb, top, bot, ch).map((p) => p.add(V3(x, y, 0)));
 const loftAt = (rings, cx = 0, cy = null) => CL.loft(rings, (m) => V3(cx, cy ?? (rings[0][0].y + rings[0][3].y) / 2, m.z), 3);
-
-// ---------------------------------------------------------------------------------------------------------------
-// The nacelle: a flat pod (wider than tall, like a reptile's limb), its forward third fuller, a dim green grille on its
-// underside only (the side a quarry above would not see), a cap at the bow. Length 0.6 of the ship's (the bible).
+function add(g, geo, mat, part) { const k = new THREE.Mesh(geo, mat); k.userData.part = part; k.castShadow = true; k.receiveShadow = true; g.add(k); return k; }
+const along = (geo) => { geo.rotateX(PI / 2); return geo; }; // a cylinder laid along the ship
+// A pitched roof over a deck: walls `wall` high, then a roof rising `roof` to its ridge, gabled at both ends.
+function gableGeo(z0, z1, hw, yb, wall, roof) {
+  const sec = (z) => [V3(-hw, yb, z), V3(hw, yb, z), V3(hw, yb + wall, z), V3(0, yb + wall + roof, z), V3(-hw, yb + wall, z)];
+  const A = sec(z0), B = sec(z1), t = [], mid = V3(0, yb + (wall + roof) / 2, (z0 + z1) / 2);
+  for (let i = 0; i < 5; i++) { const j = (i + 1) % 5; CL.pushTri(t, A[i], A[j], B[j], () => mid); CL.pushTri(t, A[i], B[j], B[i], () => mid); }
+  for (const R of [A, B]) { const c = R.reduce((s, p) => s.add(p), V3()).multiplyScalar(1 / 5); for (let i = 0; i < 5; i++) CL.pushTri(t, c, R[i], R[(i + 1) % 5], () => mid); }
+  return CL.geoFrom(t);
+}
+// The nacelle (the bible's chapter 6), its profile, size and plating the tradition's.
 const NAC = { len: Math.round(LEN * 0.6), hw: 2.5, hh: 1.35, z: -8 };
 const NAC_PROFILE = [[-0.5, 0.45], [-0.4, 0.8], [-0.15, 1.0], [0.25, 1.0], [0.42, 0.82], [0.5, 0.5]];
-function nacelle(g, x, y, part) {
-  const rs = NAC_PROFILE.map(([t, k]) => ring(NAC.z + t * NAC.len, NAC.hw * k, NAC.hh * k, -NAC.hh * k, Math.min(NAC.hw, NAC.hh) * 0.5 * k, x, y));
-  add(g, loftAt(rs, x, y), HULLMAT, part);
-  add(g, CL.boxGeo(NAC.hw * 1.0, 0.08, NAC.len * 0.62, x, y - NAC.hh - 0.03, NAC.z - NAC.len * 0.04), GRILLE, part);
-  const cap = new THREE.CircleGeometry(NAC.hh * 0.42, 6); cap.translate(x, y, NAC.z + NAC.len / 2 + 0.03); add(g, cap, GRILLE, part);
-  return { x, y, z: NAC.z, len: NAC.len, hw: NAC.hw, hh: NAC.hh };
+function nacelle(g, x, y, part, o = {}) {
+  const n = { x, y, z: o.z ?? NAC.z, len: o.len ?? NAC.len, hw: o.hw ?? NAC.hw, hh: o.hh ?? NAC.hh, profile: o.profile ?? NAC_PROFILE };
+  add(g, loftAt(n.profile.map(([t, k]) => ring(n.z + t * n.len, n.hw * k, n.hh * k, -n.hh * k, Math.min(n.hw, n.hh) * 0.5 * k, x, y)), x, y), o.mat, part);
+  add(g, CL.boxGeo(n.hw * 1.0, 0.08, n.len * 0.62, x, y - n.hh - 0.03, n.z - n.len * 0.04), GRILLE, part);
+  const cap = new THREE.CircleGeometry(n.hh * 0.42, 8); cap.translate(x, y, n.z + n.len / 2 + 0.03); add(g, cap, GRILLE, part);
+  g.userData.nacelles.push(n); return n;
 }
-function add(g, geo, mat, part) { const k = new THREE.Mesh(geo, mat); k.userData.part = part; k.castShadow = true; k.receiveShadow = true; g.add(k); return k; }
+function strut(g, root, tip, rc, tc, t, up, mat) { add(g, CL.pylonGeo({ root, tip, rc, tc, t, up }, 1), mat, 'strut'); }
+// A part that moves between waiting and hunting: a group at `at`, rotated between poses.stalk and poses.strike, or moved
+// between pos.stalk and pos.strike.
+function pivot(g, at, pieces, poses, pos, part) {
+  const pv = new THREE.Group(); pv.position.copy(at); pv.userData = { poses, pos, part };
+  for (const [geo, mat] of pieces) { const k = new THREE.Mesh(geo, mat); k.castShadow = true; k.userData.part = part; pv.add(k); }
+  g.add(pv); g.userData.pivots.push(pv); return pv;
+}
+const topOver = (z0, z1) => { let y = Infinity; for (let z = z1; z <= z0; z += 1) y = Math.min(y, H(z)[2]); return y; };
 
-// ---------------------------------------------------------------------------------------------------------------
-// The parts every Hunt frigate shares: the fitted hull and its shovel prow, the windows, the spine's osteoderms, the drive,
-// the position lights. Each direction adds its own claws, nacelles and spine on top.
-function common(g, spine) {
-  add(g, CL.hullGeo(S), HULLMAT, 'hull');
+// The parts every Hunt frigate shares: the fitted hull and its broad prow ("broad prows", as written), the windows, the
+// position lights; the drive is the tradition's.
+function common(g, M, drive) {
+  add(g, CL.hullGeo(S), M, 'hull');
   // Windows (W1, W2): the bible's person-sized pane where a lived-in room meets the hull's side, one row a deck.
   const W = SP.windows(PLAN, ROOMS, S, LIT), pane = new THREE.PlaneGeometry(1.1, 0.6), inst = new THREE.InstancedMesh(pane, WINMAT, W.length), o = new THREE.Object3D();
   W.forEach((w, i) => { o.position.set(w.x, w.y, w.z); o.rotation.set(0, w.side * PI / 2, w.side * w.tilt, 'ZYX'); o.updateMatrix(); inst.setMatrixAt(i, o.matrix); });
   inst.userData.part = 'windows'; g.add(inst); g.userData.windows = W.length;
-  // The spine: a row (or rows) of keeled osteoderm plates down the top deck, raked aft so they shed like scales.
-  const tris = [];
-  for (const row of spine) for (let z = row.z0; z >= row.z1; z -= row.step) { const h = H(z), y0 = h[2] - 0.08;
-    tris.push(...pyramid(V3(row.x, y0, z), V3(0, 1, 0), V3(0, 0, 1), row.w, row.l, row.h * (0.75 + 0.25 * Math.sin((z - row.z1) / (row.z0 - row.z1) * PI)), 0.25, lin('#3c4236'), lin('#30352b'))); }
-  if (tris.length) add(g, facetGeo(tris), new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.4, roughness: 0.6, flatShading: true }), 'spine');
-  // The drive: a wide flat slot across the stern face, banked dark in Stalk (rule 6), and a dark lip over it.
-  const st = H(zStern + 0.01);
-  add(g, CL.boxGeo(st[1] * 1.2, 1.3, 0.2, 0, (st[2] + st[3]) / 2 - 0.4, zStern - 0.06), DRIVE, 'drive');
-  // Position lights (the bible): port red, starboard green at the widest frame, white aft; dim in Stalk, no strobes.
+  const st = H(zStern + 0.01), mid = (st[2] + st[3]) / 2;
+  if (drive === 'slot') add(g, CL.boxGeo(st[1] * 1.2, 1.3, 0.2, 0, mid - 0.4, zStern - 0.06), DRIVE, 'drive');
+  if (drive === 'vents') for (const sx of [1, -1]) { const h = H(zStern + 4); add(g, CL.boxGeo(0.2, 1.1, 5, sx * (h[1] + 0.05), (h[2] + h[3]) / 2 - 0.6, zStern + 4), DRIVE, 'drive'); }
+  // Position lights (the bible): port red, starboard green at the widest frame, white aft.
   const wz = widest[0], wy = (widest[2] + widest[3]) / 2;
   const dot = (mat, x, y, z) => { const s = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 8), mat); s.position.set(x, y, z); s.userData.part = 'lights'; g.add(s); };
   dot(POSMATS.red, widest[1] + 0.15, wy, wz); dot(POSMATS.green, -widest[1] - 0.15, wy, wz); dot(POSMATS.white, 0, st[2] - 0.6, zStern - 0.2);
 }
-// A claw mounted on a pivot: stalk and strike are its two rotations (Euler YXZ: roll, then pitch, then yaw); its kill red
-// lamp sits at the root. Returns the pivot.
-function mountClaw(g, at, c, poses, part, lamp = true) {
-  const pv = new THREE.Group(); pv.position.copy(at); pv.userData.poses = poses; pv.userData.part = part;
-  const k = new THREE.Mesh(c.geo, HORNMAT); k.castShadow = true; k.userData.part = part; pv.add(k);
-  if (lamp) { const r = c.root || 0.6, l = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.3, r * 0.38), 8, 6), killMat()); l.position.set(0, r * 1.02, r * 0.9); l.userData.part = part; pv.add(l); } // on the claw's outer face, by its root
-  g.add(pv); g.userData.pivots.push(pv); return pv;
-}
-const E = (yaw, pitch, roll) => new THREE.Euler(pitch * deg, yaw * deg, roll * deg, 'YXZ');
 
 // ---------------------------------------------------------------------------------------------------------------
-// The three directions on the one hull (design, "The three directions").
-function strut(g, root, tip, rc, tc, t, up, part) { add(g, CL.pylonGeo({ root, tip, rc, tc, t, up }, 1), HULLMAT, part); }
-const bowMid = (BOW[2] + BOW[3]) / 2;
+// The three traditions on the one hull (design, "Version 3").
 const DIRS = {
-  A: { label: 'A Grasp', note: 'Four hooked claws at the broad prow, closed in front of the bow while it stalks and spread open when it strikes; the grapple projectors sit under them. Nacelles flat and low under the flanks.',
+  A: { label: 'A Old Lodge', tell: 'A broad armoured ship whose top deck sits under a pitched roof, its plates patched over generations, two engines that do not match, and two grapple emitters in its blunt prow.',
+    note: 'The oldest tradition (ours, provisional): a ship is handed down and refitted for generations, so its plates are every age, riveted, some repaired in bronze, under worn field camouflage ("worn gunmetal, camouflage"). The top deck sits under a pitched roof, as the lodges roof their halls. Its two nacelles do not match: one is the original, one a later refit. Two grapple emitters in the prow hold the quarry close ("the kill earned").',
     build(g) {
-      common(g, [{ x: 0, z0: 18, z1: -26, step: 3.2, w: 2.2, l: 2.8, h: 0.9 }]);
-      const fz = zBow - 2.2, hz = H(fz);
-      const cl = [[1, 1], [-1, 1], [1, -1], [-1, -1]];
-      for (const [sx, sy] of cl) { const up = sy > 0, c = clawGeo(up ? 21 : 17, up ? 1.35 : 1.15, up ? 1.15 : 1.0, { notches: up ? 3 : 0 });
-        const at = V3(sx * (hz[1] - 1.0), up ? hz[2] - 0.7 : hz[3] + 0.6, fz);
-        const roll = up ? -sx * 45 : -sx * 135;
-        mountClaw(g, at, c, { stalk: E(-sx * 7, up ? 12 : -12, roll), strike: E(sx * 34, up ? -18 : 18, roll) }, 'claw'); }
+      const M = MAT.A; common(g, M, 'slot');
+      add(g, gableGeo(20, -20, 4.4, topOver(20, -20) - 0.5, 1.3, 2.3), M, 'hall');
+      const r = Math.min(1.1, (BOW[2] - BOW[3]) * 0.28), y = (BOW[2] + BOW[3]) / 2 - 0.2;
+      for (const sx of [1, -1]) { add(g, along(new THREE.CylinderGeometry(r, r * 1.2, 1.8, 10)).translate(sx * BOW[1] * 0.45, y, zBow + 0.5), M, 'grapple');
+        add(g, new THREE.CircleGeometry(r * 0.72, 10).translate(sx * BOW[1] * 0.45, y, zBow + 1.42), killMat(), 'grapple'); }
       const nx = maxHB + 4.6, ny = minBot - 2.2;
-      for (const sx of [1, -1]) { g.userData.nacelles.push(nacelle(g, sx * nx, ny, 'nacelle'));
-        strut(g, [sx * (maxHB - 1.2), -2.6, -4], [sx * nx, ny, -9], 15, 9, 1.1, false, 'strut'); }
+      nacelle(g, nx, ny, 'nacelle', { mat: M });
+      strut(g, [maxHB - 1.2, -2.6, -4], [nx, ny, -9], 16, 11, 1.4, false, M);
+      nacelle(g, -nx - 0.6, ny + 0.5, 'nacelle', { mat: MAT.A2, len: Math.round(LEN * 0.66), hw: 2.1, hh: 1.25, z: -10, profile: [[-0.5, 0.5], [-0.42, 0.9], [0.3, 1.0], [0.46, 0.75], [0.5, 0.4]] });
+      strut(g, [-(maxHB - 1.2), -2.6, -7], [-nx - 0.6, ny + 0.5, -13], 13, 8, 0.9, false, MAT.A2);
     } },
-  B: { label: 'B Jaw', note: 'The prow split into an upper and a lower jaw lined with fangs, a gun in the throat; the lower jaw drops open when it strikes. Nacelles splayed wide and low like a reptile\'s legs, three talons at each one\'s bow.',
+  B: { label: 'B Trackers', tell: 'A low, dark ship with louvred plating, a row of glowing glass tubes along its back, radiator panels that hang folded down its flanks and swing out level, and engines tucked close beneath it.',
+    note: 'A tradition of patience (ours, provisional): the hunt is won by waiting and watching ("the stalk patient", "built to wait unseen"). Its sensors are a row of tracking tubes along the spine ("tracking tubes"). While it waits it holds its heat in: radiators hang folded down its flanks and swing out level only when it hunts, and its drive vents sideways instead of glowing astern. Dark, mottled louvred plating ("dark and mottled").',
     build(g) {
-      common(g, [{ x: 1.5, z0: 16, z1: -26, step: 2.8, w: 1.6, l: 2.4, h: 0.7 }, { x: -1.5, z0: 14.6, z1: -26, step: 2.8, w: 1.6, l: 2.4, h: 0.7 }]);
-      const z0 = zBow - 5, z1 = zBow + 8, gap = 0.9, hb = BOW[1];
-      // upper jaw: over the prow and on past it
-      add(g, loftAt([ring(z0, hb * 1.02, BOW[2] + 0.5, bowMid + gap, 0.9), ring(zBow + 1, hb * 1.0, BOW[2] + 0.4, bowMid + gap, 0.9), ring(z1, hb * 0.72, BOW[2] - 0.6, bowMid + gap + 0.2, 0.6)]), HULLMAT, 'jaw');
-      // lower jaw: on a hinge at its root, so Strike drops it open
-      const hinge = V3(0, bowMid - gap, z0), jaw = new THREE.Group(); jaw.position.copy(hinge); jaw.userData.poses = { stalk: E(0, 0, 0), strike: E(0, 16, 0) }; jaw.userData.part = 'jaw';
-      const lj = loftAt([ring(z0, hb * 1.02, bowMid - gap, BOW[3] - 0.6, 0.9), ring(zBow + 1, hb * 1.0, bowMid - gap, BOW[3] - 0.5, 0.9), ring(z1, hb * 0.72, bowMid - gap - 0.2, BOW[3] + 0.4, 0.6)]);
-      lj.translate(-hinge.x, -hinge.y, -hinge.z); add(jaw, lj, HULLMAT, 'jaw'); g.add(jaw); g.userData.pivots.push(jaw);
-      // fangs along both jaws' edges, pointing into the gap
-      const fu = [], fl = [], k1 = HORN.clone().lerp(WORN, 0.5), k2 = HORN;
-      const edge = (t) => { const z = lerp(zBow + 1, z1, t), w = lerp(hb * 1.0, hb * 0.72, t); return { z, w }; };
-      for (let i = 0; i < 9; i++) { const x = lerp(-0.62, 0.62, i / 8) * hb * 0.72;
-        fu.push(...pyramid(V3(x, bowMid + gap + 0.2, z1 - 0.6), V3(0, -1, 0), V3(0, 0, 1), 0.8, 0.8, 1.5, 0, k1, k2));
-        fl.push(...pyramid(V3(x * 0.96, bowMid - gap - 0.2 - hinge.y, z1 - 0.9 - hinge.z), V3(0, 1, 0), V3(0, 0, 1), 0.8, 0.8, 1.3, 0, k1, k2)); }
-      for (let i = 0; i < 4; i++) for (const sx of [1, -1]) { const e = edge(0.15 + i * 0.22);
-        fu.push(...pyramid(V3(sx * (e.w - 0.6), bowMid + gap, e.z), V3(0, -1, 0), V3(0, 0, 1), 0.8, 0.8, 1.3, 0, k1, k2));
-        fl.push(...pyramid(V3(sx * (e.w - 0.6), bowMid - gap - hinge.y, e.z - hinge.z), V3(0, 1, 0), V3(0, 0, 1), 0.8, 0.8, 1.1, 0, k1, k2)); }
-      add(g, facetGeo(fu), HORNMAT, 'jaw'); add(jaw, facetGeo(fl), HORNMAT, 'jaw');
-      // the gun in the throat: kill red only in Strike
-      add(g, CL.boxGeo(hb * 0.9, gap * 1.6, 0.2, 0, bowMid, zBow + 0.4), killMat(), 'gun');
-      const nx = maxHB + 8.5, ny = -6.5;
-      for (const sx of [1, -1]) { const n = nacelle(g, sx * nx, ny, 'nacelle'); g.userData.nacelles.push(n);
-        strut(g, [sx * (maxHB - 1.4), -2.8, -5], [sx * nx, ny, -10], 14, 9, 1.0, false, 'strut');
-        for (const tx of [-1, 0, 1]) { const c = clawGeo(5.5, 0.6, 1.1);
-          mountClaw(g, V3(sx * nx + tx * 1.4, ny - 0.4, NAC.z + NAC.len / 2 - 1.5), c, { stalk: E(tx * 10, 30, 0), strike: E(tx * 22, -6, 0) }, 'talon', tx === 0); } }
+      const M = MAT.B; common(g, M, 'vents');
+      const yt = topOver(18, -22);
+      add(g, CL.boxGeo(3.6, 0.8, 42, 0, yt + 0.1, -2), M, 'cradle');
+      for (let i = 0; i < 6; i++) add(g, along(new THREE.CylinderGeometry(0.85, 0.85, 5.4, 12)).translate(0, yt + 1.3, 15.5 - i * 6.6), TUBE, 'tubes');
+      for (const sx of [1, -1]) for (const z of [9, -11]) { const s = SP.sideAt(H(z), -1.6) || { x: H(z)[1] };
+        pivot(g, V3(sx * (s.x + 0.2), -1.6, z), [[CL.boxGeo(4.6, 0.18, 12, sx * 2.3, 0, 0), M], [CL.boxGeo(4.2, 0.03, 11, sx * 2.3, -0.12, 0), HEAT]],
+          { stalk: new THREE.Euler(0, 0, -sx * PI / 2), strike: new THREE.Euler(0, 0, 0) }, null, 'radiator'); }
+      const ny = minBot - 3.2 - 1.0;
+      for (const sx of [1, -1]) { nacelle(g, sx * 6.6, ny, 'nacelle', { mat: M, hw: 2.9, hh: 1.0, profile: [[-0.5, 0.6], [-0.4, 0.95], [0.35, 1.0], [0.5, 0.7]] });
+        strut(g, [sx * 5.6, H(-3)[3] + 0.4, -3], [sx * 6.6, ny, -9], 14, 10, 1.0, true, M); }
     } },
-  C: { label: 'C Crouch', note: 'A hump of big scutes over a low prow; the nacelles folded under the belly like forelegs, a sickle claw at each that raises forward when it strikes.',
+  C: { label: 'C Course', tell: 'A pale ship banded in amber with four small craft racked along its back, a long drive section with three bells, and long engines held level on swept struts.',
+    note: 'A younger tradition that disagrees with the other two (ours, provisional): the worthy hunt is the open chase, not the ambush ("the quarry must be worthy"). It carries a party of small hunting craft on a rack along its back (the plan\'s hunting craft bay) and launches them when it hunts, and runs a long drive for the pursuit. It does not hide: pale clean panels and the hunt party\'s band in amber.',
     build(g) {
-      // the hump: a carapace over the top deck, highest just aft of the bridge, as a crouched animal's shoulders
-      const za = 20, zb = -28, rs = [];
-      for (let i = 0; i <= 8; i++) { const t = i / 8, z = lerp(za, zb, t), h = H(z), lift = 3.4 * Math.pow(Math.sin(PI * Math.min(1, t * 1.25)), 0.7);
-        rs.push(ring(z, Math.min(h[1] - CL.chOf(h[1], h[2], h[3], h[4]) + 0.7, 6.4) * (i === 0 || i === 8 ? 0.7 : 1), h[2] + Math.max(0.3, lift), h[2] - 1.0, 2.2)); }
-      add(g, loftAt(rs), HULLMAT, 'carapace');
-      common(g, []);
-      const tris = [];
-      for (let i = 1; i < 8; i++) { const t = i / 8, z = lerp(za, zb, t), h = H(z), lift = 3.4 * Math.pow(Math.sin(PI * Math.min(1, t * 1.25)), 0.7), top = h[2] + Math.max(0.3, lift);
-        tris.push(...pyramid(V3(0, top - 0.1, z), V3(0, 1, 0), V3(0, 0, 1), 3.4, 4.6, 1.7, 0.3, lin('#3c4236'), lin('#30352b')));
-        for (const sx of [1, -1]) tris.push(...pyramid(V3(sx * 3.1, top - 1.3, z - 2.2), V3(sx * 0.5, 0.86, 0).normalize(), V3(0, 0, 1), 2.4, 3.4, 1.1, 0.3, lin('#3c4236'), lin('#30352b'))); }
-      add(g, facetGeo(tris), new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.4, roughness: 0.6, flatShading: true }), 'spine');
-      const nx = 7.2, ny = minBot - 3.4 - NAC.hh;
-      for (const sx of [1, -1]) { const n = nacelle(g, sx * nx, ny, 'nacelle'); g.userData.nacelles.push(n);
-        strut(g, [sx * 6.2, H(-2)[3] + 0.4, -2], [sx * nx, ny, -9], 15, 10, 1.1, true, 'strut');
-        const c = clawGeo(12, 1.2, 1.35, { notches: 3 });
-        mountClaw(g, V3(sx * nx, ny - NAC.hh * 0.6, NAC.z + NAC.len / 2 - 3), c, { stalk: E(sx * 4, 62, 0), strike: E(sx * 8, -14, 0) }, 'claw'); }
+      const M = MAT.C; common(g, M, 'none');
+      const st = H(zStern + 0.01), bl = 12;
+      add(g, loftAt([ring(zStern + 0.5, st[1] * 0.55, st[2] - 1.2, st[3] + 0.8, 1.0), ring(zStern - bl, st[1] * 0.45, st[2] - 1.7, st[3] + 1.3, 0.9)]), M, 'drive');
+      for (const [x, y] of [[-1.9, 0], [1.9, 0], [0, 1.7]]) add(g, new THREE.CircleGeometry(1.05, 12).rotateY(PI).translate(x, (st[2] + st[3]) / 2 + y - 0.6, zStern - bl - 0.05), DRIVE, 'drive');
+      const yt = topOver(18, -24);
+      for (const sx of [1, -1]) add(g, CL.boxGeo(0.4, 0.5, 44, sx * 1.7, yt + 0.2, -3), M, 'rack');
+      const craft = () => CL.loft([CL.octRing(4.2, 0.5, 0.3, -0.2, 0.2), CL.octRing(2.2, 1.9, 0.75, -0.55, 0.5), CL.octRing(-2.8, 2.0, 0.8, -0.6, 0.5), CL.octRing(-4.0, 1.5, 0.6, -0.45, 0.4)], (m) => V3(0, 0.1, m.z), 2);
+      [14, 3, -8, -19].forEach((z, i) => { const y = yt + 1.2, home = V3(0, y, z);
+        pivot(g, home, [[craft(), M]], null, { stalk: home, strike: V3((i % 2 ? 1 : -1) * 6.5, y + 3.5, z + 5) }, 'craft'); });
+      const nx = maxHB + 4.8, ny = 0.4;
+      for (const sx of [1, -1]) { nacelle(g, sx * nx, ny, 'nacelle', { mat: M, len: Math.round(LEN * 0.72), hw: 1.9, hh: 1.7, z: -9 });
+        strut(g, [sx * (maxHB - 1.0), 0.4, -2], [sx * nx, ny, -12], 15, 9, 1.0, false, M); }
     } },
 };
 const SHIPS = {};
@@ -843,7 +809,7 @@ ROOMVIEW.add(new THREE.LineSegments(new THREE.EdgesGeometry(CL.hullGeo(S), 20), 
 
 // ---------------------------------------------------------------------------------------------------------------
 // Hull floods (the bible's chapter 9), hooded: each sits under a lip of armour on the flank and throws its pool aft along
-// the plating, so the camouflage and scutes read in shadow while the lamp is hidden from ahead (H3). They light the ship in
+// the plating, so the plating reads in shadow while the lamp is hidden from ahead (H3). They light the ship in
 // view; the line-up is lit by the sun alone.
 const FLOODS = [];
 for (const sx of [1, -1]) for (const z of [26, 4, -18]) { const h = H(z), L = new THREE.SpotLight(HULL.light, 1, 48, 48 * deg, 0.7, 1.0);
@@ -851,14 +817,16 @@ for (const sx of [1, -1]) for (const z of [26, 4, -18]) { const h = H(z), L = ne
 { const L = new THREE.SpotLight(HULL.light, 1, 52, 44 * deg, 0.7, 1.0); L.position.set(0, H(26)[2] + 1.8, 27); L.target.position.set(0, H(0)[2], -10); scene.add(L, L.target); FLOODS.push(L); }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Stalk and Strike (the design's rule 6): claws and jaw move only when it strikes; every light dims in Stalk, kill red off.
-const POSES = { stalk: { label: 'Stalk', win: 0.35, grille: 0.25, drive: 0.12, flood: 0.8, pos: 0.5, kill: 0 }, strike: { label: 'Strike', win: 0.8, grille: 1.1, drive: 2.4, flood: 2.4, pos: 1.6, kill: 3.2 } };
+// Waiting and hunting ("the stalk patient"): each tradition's moving parts (the Trackers' radiators, the Course's craft)
+// and every light change between the two; kill red is lit only while hunting.
+const POSES = { stalk: { label: 'Waiting', win: 0.35, grille: 0.25, drive: 0.12, flood: 0.8, pos: 0.5, kill: 0, tube: 0.25, heat: 0 }, strike: { label: 'Hunting', win: 0.8, grille: 1.1, drive: 2.4, flood: 2.4, pos: 1.6, kill: 3.2, tube: 1.1, heat: 0.45 } };
 let poseKey = 'stalk', poseT = 0, poseFrom = 0, poseTo = 0, poseStart = -1;
 function applyPose(t) { // t: 0 stalk to 1 strike
-  for (const g of Object.values(SHIPS)) for (const pv of g.userData.pivots) { const a = pv.userData.poses.stalk, b = pv.userData.poses.strike;
-    pv.quaternion.copy(new THREE.Quaternion().setFromEuler(a)).slerp(new THREE.Quaternion().setFromEuler(b), t); }
+  for (const g of Object.values(SHIPS)) for (const pv of g.userData.pivots) { const R = pv.userData.poses, P = pv.userData.pos;
+    if (R) pv.quaternion.copy(new THREE.Quaternion().setFromEuler(R.stalk)).slerp(new THREE.Quaternion().setFromEuler(R.strike), t);
+    if (P) pv.position.lerpVectors(P.stalk, P.strike, t); }
   const A = POSES.stalk, B = POSES.strike, m = (k) => lerp(A[k], B[k], t);
-  WINMAT.emissiveIntensity = m('win'); GRILLE.emissiveIntensity = m('grille'); DRIVE.emissiveIntensity = m('drive');
+  WINMAT.emissiveIntensity = m('win'); TUBE.emissiveIntensity = m('tube'); HEAT.emissiveIntensity = m('heat'); GRILLE.emissiveIntensity = m('grille'); DRIVE.emissiveIntensity = m('drive');
   for (const L of FLOODS) L.intensity = m('flood') * (lightKey === 'nosun' ? 1.6 : 1);
   for (const p of Object.values(POSMATS)) p.emissiveIntensity = m('pos');
   for (const k of KILL) k.emissiveIntensity = t > 0.999 ? B.kill : t * t * B.kill;
@@ -869,7 +837,7 @@ function setPose(k, instant) { poseKey = k; poseFrom = poseT; poseTo = k === 'st
 // ---------------------------------------------------------------------------------------------------------------
 // Views: one direction at a time at the origin, or the line-up (A, B, C and the Petrel side by side at true scale).
 let dirKey = 'A', viewKey = 'three', showRooms = false, showPetrel = false;
-const LINEUP = { A: -78, B: -26, C: 26 };
+const LINEUP = { A: -80, B: -27, C: 27 };
 function place() {
   const line = viewKey === 'lineup';
   for (const [k, g] of Object.entries(SHIPS)) { g.visible = !showRooms && (line || k === dirKey); g.position.set(line ? LINEUP[k] : 0, 0, 0); }
@@ -904,7 +872,7 @@ function outside(st, p) { // distance outside the hull's octagon at p.z (the max
   const [, hb, top, bot, c] = CL.hullAt(st, p.z), ch = CL.chOf(hb, top, bot, c), ax = Math.abs(p.x);
   return Math.max(ax - hb, p.y - top, bot - p.y, (ax + p.y - (hb + top - ch)) * Math.SQRT1_2, (ax - p.y - (hb - bot - ch)) * Math.SQRT1_2); }
 function daylight(n) { let m = Infinity;
-  for (let t = -0.5; t <= 0.5; t += 0.02) { const k = NAC_PROFILE.reduce((a, q, i, A) => (t >= q[0] && i + 1 < A.length && t <= A[i + 1][0] ? lerp(q[1], A[i + 1][1], (t - q[0]) / (A[i + 1][0] - q[0])) : a), 0.5);
+  for (let t = -0.5; t <= 0.5; t += 0.02) { const k = n.profile.reduce((a, q, i, A) => (t >= q[0] && i + 1 < A.length && t <= A[i + 1][0] ? lerp(q[1], A[i + 1][1], (t - q[0]) / (A[i + 1][0] - q[0])) : a), 0.5);
     for (const p of ring(n.z + t * n.len, n.hw * k, n.hh * k, -n.hh * k, Math.min(n.hw, n.hh) * 0.5 * k, n.x, n.y)) { const d = outside(S, p); if (d !== null) m = Math.min(m, d); } }
   return m; }
 function tris(g) { let n = 0; g.traverse((o) => { if (o.isMesh && o.geometry) { const c = o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count; n += (c / 3) * (o.isInstancedMesh ? o.count : 1); } }); return Math.round(n); }
@@ -924,11 +892,11 @@ function checks() {
     ok(maxHB * 2 / (maxTop - minBot) >= 1.6, `Squat: beam ${(maxHB * 2 / (maxTop - minBot)).toFixed(2)} times the height (about 2)`),
     ok(LEN / (maxHB * 2) < 4, `Short: length ${(LEN / (maxHB * 2)).toFixed(2)} beams (under 4)`),
     ok(d.day >= 3, `Nacelle daylight, ${DIRS[dirKey].label}: ${d.day.toFixed(2)} m (3 m)`),
-    ok(poseKey === 'strike' || killOn === 0, `Kill red in ${POSES[poseKey].label}: ${killOn} lit (none in Stalk)`),
+    ok(poseKey === 'strike' || killOn === 0, `Kill red ${POSES[poseKey].label.toLowerCase()}: ${killOn} lit (none while waiting)`),
   ].join('<br>');
   const f = (v) => v.toFixed(1) + ' m', rows = [
     ['Hull', `${f(LEN)} long, ${f(maxHB * 2)} beam, ${f(maxTop - minBot)} tall`],
-    ['With parts', `${f(d.stalk.z)} by ${f(d.stalk.x)} by ${f(d.stalk.y)} (Stalk); ${f(d.strike.z)} by ${f(d.strike.x)} by ${f(d.strike.y)} (Strike)`],
+    ['With parts', `${f(d.stalk.z)} by ${f(d.stalk.x)} by ${f(d.stalk.y)} (waiting); ${f(d.strike.z)} by ${f(d.strike.x)} by ${f(d.strike.y)} (hunting)`],
     ['Petrel', `${f(petrelL)} long (the yardstick)`],
     ['Decks, rooms, crew', `${PLAN.deck_floor_m.length}, ${ROOMS.length}, ${PLAN.crew}`],
     ['Windows', `${d.win}`], ['Triangles', `${d.tris.toLocaleString('en')}`]];
@@ -936,7 +904,7 @@ function checks() {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// 40 px silhouettes, top and side, rendered once per direction in Stalk, black on bone, each ship's length 40 px.
+// 40 px silhouettes, top and side, rendered once per direction while waiting, black on bone, each ship's length 40 px.
 function silhouettes() {
   const box = document.getElementById('sils'), r2 = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   const black = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide }), was = scene.overrideMaterial, bg = scene.background;
@@ -968,17 +936,18 @@ function syncRows() {
   $('showRow').innerHTML = `<button data-k="rooms" aria-pressed="${showRooms}">Rooms</button><button data-k="petrel" aria-pressed="${showPetrel}">Concord Petrel</button>`;
   $('showRow').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.k === 'rooms') showRooms = !showRooms; else showPetrel = !showPetrel; place(); syncRows(); status(); };
   $('dirNote').textContent = DIRS[dirKey].note; checks();
+  $('hullChips').innerHTML = Object.entries(TRAD[dirKey]).concat([['light', HULL.light], ['window', HULL.window]]).map(([k, v]) => `<i title="${k} ${v}" style="background:${v}"></i>`).join('');
 }
 function status() {
   $('status').textContent = viewKey === 'lineup' ? 'Line-up: A, B, C, Petrel' : `${DIRS[dirKey].label}, ${POSES[poseKey].label}${showRooms ? ', rooms' : ''}`;
-  $('tip').textContent = viewKey === 'lineup' ? 'Left to right: A Grasp, B Jaw, C Crouch, the Concord Petrel (88 m), at true scale.' : 'Drag to orbit, scroll or pinch to zoom. Stalk and Strike move the claws.';
+  $('tip').textContent = viewKey === 'lineup' ? 'Left to right: A Old Lodge, B Trackers, C Course, the Concord Petrel (88 m), at true scale.' : 'Drag to orbit, scroll or pinch to zoom. Waiting and Hunting change the moving parts and lights.';
 }
 document.querySelector('.tabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return;
   for (const t of document.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', t === b);
   for (const p of document.querySelectorAll('.tab')) p.hidden = p.id !== 'pane-' + b.dataset.tab; };
 $('consoleChips').innerHTML = Object.entries(CONSOLE).map(([k, v]) => `<i title="${k} ${v}" style="background:${v}"></i>`).join('');
-$('hullChips').innerHTML = ['field', 'canopy', 'moss', 'umber', 'bone', 'light', 'kill'].map((k) => `<i title="${k} ${HULL[k]}" style="background:${HULL[k]}"></i>`).join('');
-$('planNote').textContent = `${ROOMS.length} rooms on ${PLAN.deck_floor_m.length} decks 3.5 m apart, crew ${PLAN.crew} (data/ships/ssarith/frigate_plan.json, from tools/mockups/ssarith_plans.py). The middle deck is widest and each room aft a little narrower, so the hull is broadest at its shoulders and tapers aft; a room across the whole prow on the two lower decks keeps the bow broad. Trophy hall, hunters' ready room and dens are placeholders (survey H6).`;
+$('tells').innerHTML = Object.values(DIRS).map((d) => `<li><b>${d.label}</b>: ${d.tell}</li>`).join('');
+$('planNote').textContent = `${ROOMS.length} rooms on ${PLAN.deck_floor_m.length} decks 3.5 m apart, crew ${PLAN.crew} (data/ships/ssarith/frigate_plan.json, from tools/mockups/ssarith_plans.py). The middle deck is widest and each room aft a little narrower, so the hull is broadest at its shoulders and tapers aft; a room across the whole prow on the two lower decks keeps the bow broad. The trophy hall and the hunters' ready room are placeholders, their names yours.`;
 $('plans').innerHTML = SP.planSVGs(PLAN, ROOMS, KINDS, 11).map((p) => `<figure>${p.svg}<figcaption>${p.caption}</figcaption></figure>`).join('');
 
 // ---------------------------------------------------------------------------------------------------------------

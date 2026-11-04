@@ -1,5 +1,25 @@
 # Design: ssarith-ship-concepts
 
+## Version 3: three traditions inside the Hunt (owner, 2026-11-04: "now update the damn ships!", "Ssarith ships", "not anyother ships thoo lol, SSarith needs work")
+
+Built on survey H1's recommendation (a blank answer accepts it, and the owner asked for the ships): several traditions
+inside the Hunt, drafted for the owner to change or replace, none from the species' body (Ship Design Bible C1-C5).
+Each choice names its source: a line of the culture as written (the console-skins design's Ssarith Hunt table,
+approved as written in U7) or, where it is ours, says so. The rooms, the fitted hull and its broad prow ("squat armoured
+hunting ships with broad prows") are shared; the traditions differ in parts, plating, colour and what moves.
+
+| | A Old Lodge | B Trackers | C Course |
+|---|---|---|---|
+| The tradition (ours, provisional) | The oldest: ships handed down and refitted for generations | Patience: the hunt is won by waiting and watching | A younger school that disagrees: the worthy hunt is the open chase |
+| Plating (X3) | Plates of every age side by side, riveted, a few bronze repairs, worn field camouflage ("worn gunmetal, camouflage") | Horizontal louvres in 6 m bays, dark and mottled ("dark and mottled") | Clean 4 m by 2.5 m panels in pale paint, the hunt party's amber band (ours: it does not hide) |
+| Distinct features | The top deck under a pitched roof (ours: as the lodges roof their halls); one original nacelle and one later, longer refit; two grapple emitters in the prow over the plan's grapple projector room ("the kill earned": the quarry held close) | A row of tracking tubes along the spine ("tracking tubes"); radiators folded down the flanks while it waits, holding its heat in, swung out level when it hunts ("built to wait unseen"); the drive vented sideways; nacelles tucked close under it | A rack of four small hunting craft along its back, launched when it hunts (the plan's hunting craft bay); a long drive section with three bells for the pursuit; long nacelles level on swept struts |
+| Waiting to hunting ("the stalk patient") | Lights up; the grapple lenses lit kill red | The radiators swing out; the tubes and radiators glow | The craft lift off the rack and fan out |
+| Stereotype test (C5) | A broad armoured ship whose top deck sits under a pitched roof, its plates patched over generations, two engines that do not match, two grapple emitters in its blunt prow | A low, dark ship with louvred plating, glowing glass tubes along its back, radiators that swing out from its flanks, engines tucked beneath | A pale ship banded in amber, four small craft racked along its back, a long three-bell drive, long engines on swept struts |
+
+No recommendation among the three: which traditions stand, and what they are called, is the owner's (survey H2). Kill
+red (the console's "the strike, given once") is lit only while hunting, and only on the Old Lodge's grapple lenses. The
+plan's "Dens" are renamed Quarters (a word for animals' homes, so it is out under C1).
+
 ## Version 1 is withdrawn (owner, 2026-11-04)
 
 "part of me loves that these are space aligators, but at last, you are over stereotyping an alien species which is
@@ -166,4 +186,5 @@ Version 1's H1-H8 are withdrawn with it.
 
 | # | Question | Recommendation (provisional) |
 |---|---|---|
-| H1 | How is the Hunt's culture to be set before its ships are redrawn? | You set it; we offer several traditions inside the Hunt to choose from, none drawn from the species' body |
+| H1 | How is the Hunt's culture to be set before its ships are redrawn? | Accepted as recommended (owner, 2026-11-04: "now update the damn ships!"): we draft several traditions for the owner to pick and change |
+| H2 | Which of the three traditions (A Old Lodge, B Trackers, C Course) stand, and what are they called? | None recommended: the owner's to choose, rename or replace |

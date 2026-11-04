@@ -21,3 +21,8 @@
   version 2, version id `1793800832-dbd2`. Version 1 marked withdrawn on the page (subtitle and Notes); its readings kept
   as the record only. The survey's section H is now one question, H1 (how the Hunt's culture is set), still to publish
   from the desktop session.
+- 2026-11-04, cloud session (owner: "now update the damn ships!", "Ssarith ships", "not anyother ships thoo lol, SSarith
+  needs work"): version 3. The claws, jaw, scales and crouch are gone; three traditions drafted inside the Hunt on the same
+  rooms, A Old Lodge, B Trackers and C Course, each with its own plating, colours and moving parts, every choice naming its
+  line in the culture or marked ours, and the stereotype test (C5) shown on the Notes tab. Waiting and Hunting replace
+  Stalk and Strike. Shots in `docs/screenshots/mockups/ssarith-ship-concepts/`.
