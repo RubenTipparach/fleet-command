@@ -119,6 +119,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
       <li><b>The Fair Chase</b> (a school of law): a hunt that leaves the quarry no way out is slaughter, and shameful. Every Hunt court still asks one question first: was the gate left open?</li>
       <li><b>The Tally Keepers</b> (a guild of witnesses): nothing counts unless it is witnessed and recorded. They keep the Hunt's history as knotted cords and notched tablets, and a false count is the worst crime the Hunt knows.</li>
       <li><b>The Long Watch</b> (stargazers and navigators): the old seasons of the hunt were set by watching the sky, and patience is the first skill a hunter learns. The Watchers became the Hunt's first navigators, and its ships still wait rather than chase.</li>
+      <li><b>The Bow Rites</b> (yours, 2026-11-04: "bows and arrows lined up ... different sizes to represent their different stages of manhood"): at each stage of life a Ssarith makes a new bow of their own, a size larger, and keeps the old ones. A hunter's bows hang in a row, smallest first: a life you can read from left to right.</li>
     </ul>
     <p class="muted">Colours, each from a tradition: Bone, the Tally Keepers' tablets; Watch green, the phosphor of the tracking tubes lit through a long wait; Canopy, the dark of the hunting ground at night. All provisional until you set the Hunt's culture.</p>
     <div id="ssarith-designs" style="display:grid;gap:20px"></div>
@@ -234,6 +235,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'ssarith', when: '2026-11-04', q: 'bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and arrow / maybe different sizes to represent their different stages of manhood', means: 'SD, the Bow Rites, now recommended: three of the Hunt\'s own bows (cut from flat plate, a square-cut recurve, a one-barbed head), each braced with its arrow nocked, smallest to largest in a rack whose top steps up with them. A fourth tradition, yours: a new bow made at each stage of life, and the old ones kept.' },
   { f: 'ssarith', when: '2026-11-04', q: 'lets design an emblem for the SSarith', means: 'The Ssarith Hunt\'s section. Under your rule that a species\' looks are not its design, nothing is taken from their bodies: three traditions inside the Hunt are drafted (survey H1\'s recommendation), and each sketch names the one it comes from.' },
   { f: 'all', when: '2026-11-04', q: 'the look of an alien species is not their UI, not their spaceship ... none of those reflect the way they look', means: 'A rule for every emblem: culture, not anatomy. No shape from a species\' body; each sketch names the tradition it comes from.' },
   { f: 'krai', when: '2026-11-04', q: 'bro this version slaps / Thats it / the forge star you had was even better / keep that', means: 'The ring version is the Krai\'s emblem (KC+): the forge star (eight points), the founder\'s red fang and four fangs, the thin outer crescent and the ring, as first drawn, the torc a little smaller so the thin crescent clears the ring. The three-point emperor\'s star and the engraving are dropped.' },
@@ -853,9 +855,77 @@ function scArt(k, ink = false) {
   if (!ink) s += path(SC.fr.field, k.field);
   return s + path(SC.horizon, c(k.device)) + path(SC.arc, c(k.device)) + path(SC.star, c(k.accent));
 }
+
+// SD, the bow rites (owner, 2026-11-04: "bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and
+// arrow", "maybe different sizes to represent their different stages of manhood"). Three Ssarith bows in a row, smallest
+// to largest, each braced with its own arrow nocked and pointing up, standing in a rack whose top steps up with them. The
+// bow is the Hunt's own (cut from flat laminated plate, so its limbs are straight facets with a square-cut recurve at
+// each tip, and a heavy riser), never a picture of a body.
+const SD = (() => {
+  const S = 82, gap = 5.5, ws = [14, 20, 26], x0 = 14.5, LEN = 2;  // the string line, the bows' widths
+  // A thick polyline as a polygon: each vertex moved along its mitred normal by +-w/2 (w may vary per vertex).
+  const thick = (pts, wv) => {
+    const n = pts.length, L = [], Rr = [];
+    pts.forEach((p, i) => {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)], d = [b[0] - a[0], b[1] - a[1]], l = Math.hypot(...d);
+      let nx = -d[1] / l, ny = d[0] / l;
+      if (i > 0 && i < n - 1) { // mitre: the average of the two segment normals, lengthened to keep the width
+        const d1 = [p[0] - a[0], p[1] - a[1]], d2 = [b[0] - p[0], b[1] - p[1]], l1 = Math.hypot(...d1), l2 = Math.hypot(...d2);
+        const n1 = [-d1[1] / l1, d1[0] / l1], n2 = [-d2[1] / l2, d2[0] / l2], m = [n1[0] + n2[0], n1[1] + n2[1]], ml = Math.hypot(...m);
+        const k = 1 / Math.max(0.5, (m[0] * n1[0] + m[1] * n1[1]) / ml); nx = m[0] / ml * k; ny = m[1] / ml * k;
+      }
+      const w = (Array.isArray(wv) ? wv[i] : wv) / 2;
+      L.push([p[0] + nx * w, p[1] + ny * w]); Rr.push([p[0] - nx * w, p[1] - ny * w]);
+    });
+    return L.concat(Rr.reverse());
+  };
+  const bows = []; let x = x0;
+  ws.forEach((w, i) => {
+    const cx = x + w / 2, h = 0.8 * w, len = LEN * w;
+    // The limb's centre line, left tip to right tip: a square-cut recurve kicking out at each tip, straight facets up to
+    // the riser at the top (the bow is braced and aimed up, so its belly faces the string below).
+    const half = [[-0.5, -0.14], [-0.45, 0.01], [-0.37, -0.5], [-0.2, -0.88], [-0.07, -1]];
+    const line = half.map(([u, v]) => [cx + u * w, S + v * h]).concat(half.slice().reverse().map(([u, v]) => [cx - u * w, S + v * h]));
+    const limb = thick(line, [1.4, 1.7, 2.1, 2.6, 3.4, 3.4, 2.6, 2.1, 1.7, 1.4]);
+    const nockL = [cx - 0.45 * w, S], nockR = [cx + 0.45 * w, S];
+    const string = polyD([[nockL[0], S - 0.45], [nockR[0], S - 0.45], [nockR[0], S + 0.75], [nockL[0], S + 0.75]]);
+    // The arrow: a shaft from its nock just behind the string up past the riser, a narrow leaf head with one barb on the
+    // left (the Hunt's own head: it holds on one side only), and two square-cut vanes above the string.
+    const top = S - len, shaft = polyD([[cx - 0.8, S + 2.2], [cx + 0.8, S + 2.2], [cx + 0.8, top + 6], [cx - 0.8, top + 6]]);
+    const head = polyD([[cx, top], [cx + 2.2, top + 4.2], [cx + 0.8, top + 7], [cx - 0.8, top + 7], [cx - 3.4, top + 8.6], [cx - 2.2, top + 4.2]]);
+    const vanes = polyD([[cx - 0.8, S - 2.5], [cx - 2.4, S - 3.5], [cx - 2.4, S - 7], [cx - 0.8, S - 6]]) + polyD([[cx + 0.8, S - 2.5], [cx + 2.4, S - 3.5], [cx + 2.4, S - 7], [cx + 0.8, S - 6]]);
+    bows.push({ cx, w, top, limb: polyD(limb), string, shaft, head, vanes });
+    x += w + gap;
+  });
+  // The rack: its top steps up with the arrows, 9 units over each tip (4 clear of the field's edge, 5 of band).
+  const b = 5, stepX = [x0 + ws[0] + gap / 2, x0 + ws[0] + gap + ws[1] + gap / 2], tops = bows.map((q) => q.top - 4 - b);
+  const rack = [[5, 95], [5, tops[0]], [stepX[0], tops[0]], [stepX[0], tops[1]], [stepX[1], tops[1]], [stepX[1], tops[2]], [95, tops[2]], [95, 95]];
+  return { bows, fr: polyFrame(rack, 2.5, b), rack };
+})();
+function sdArt(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${SD.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(SD.fr.field, k.field);
+  SD.bows.forEach((q, i) => { s += path(q.limb + q.string + q.shaft + q.vanes, c(k.device)) + path(q.head, c(i === 0 ? k.accent : k.device)); });
+  return s;
+}
 const SSARITH_DESIGNS = [
   {
-    id: 'ssarith-a', tag: 'SA', faction: 'ssarith', name: 'SA · The Open Gate', outline: 'A marker stone', rec: true, own: true, pal: SSARITH, pieces: 7,
+    id: 'ssarith-d', tag: 'SD', faction: 'ssarith', name: 'SD · The Bow Rites', outline: 'A stepped rack', rec: true, own: true, pal: SSARITH, pieces: 4,
+    risk: 'A bow and arrow is a common archery mark; three in a row, growing, in the Hunt\'s own cut-plate bow with its one-barbed head, keep it the Ssarith\'s. Fine parts (strings, vanes) fill in below 40 px: the flat livery version may drop the strings.',
+    draw(bg = 'dk') { return sdArt(SSARITH[bg]); },
+    ink() { return sdArt(SSARITH.dk, true); },
+    callouts: [
+      [SD.bows[0].cx, SD.bows[0].top + 3, 'L', 'The first bow, its head in Watch green', 'The youngest stage: the bow made first, its arrow still lit because its first hunt is ahead of it.'],
+      [SD.bows[0].cx - SD.bows[0].w * 0.3, 82, 'L', 'Braced, arrow nocked', 'Every bow in the row is kept strung and ready, never retired: each stage stays part of the hunter.'],
+      [7, 72, 'L', 'A rack that steps up', 'Tradition: the Bow Rites (yours). The rack a hunter\'s bows hang in, its top rising with them.'],
+      [SD.bows[1].cx, SD.bows[1].top + 4, 'R', 'A barb on one side', 'The Hunt\'s own head: a narrow leaf that holds on one side only, so a fair hunter can draw it out.'],
+      [SD.bows[2].cx + SD.bows[2].w * 0.37, 82 - SD.bows[2].w * 0.4, 'R', 'Cut from flat plate', 'Straight facets and a square-cut recurve at each tip: the Hunt\'s makers laminate their bows from cut plate, as they build their gear.'],
+      [SD.bows[2].cx, SD.bows[2].top + 10, 'R', 'Each stage a size larger', 'Made by the hunter at each stage of life and kept: three stages here, smallest first, read from left to right.'],
+    ],
+  },
+  {
+    id: 'ssarith-a', tag: 'SA', faction: 'ssarith', name: 'SA · The Open Gate', outline: 'A marker stone', own: true, pal: SSARITH, pieces: 7,
     risk: 'Corner brackets are a common targeting reticle; here one is always missing, which is the whole point, and the stone outline keeps it off a gun sight.',
     draw(bg = 'dk') { return saArt(SSARITH[bg]); },
     ink() { return saArt(SSARITH.dk, true); },
