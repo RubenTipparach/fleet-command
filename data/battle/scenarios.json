@@ -2,7 +2,7 @@
  "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet.",
  "scenarios": [
   {
-   "id": "concord_battle",
+   "id": "concord_battle", "sky": "deep_indigo",
    "name": "Battle",
    "side": "concord",
    "seed": 20261104,
@@ -87,7 +87,7 @@
    ]
   },
   {
-   "id": "concord_duel",
+   "id": "concord_duel", "sky": "ice_halo",
    "name": "Duel",
    "side": "concord",
    "seed": 20261109,
@@ -124,7 +124,7 @@
    ]
   },
   {
-   "id": "concord_arming",
+   "id": "concord_arming", "sky": "twin_lights",
    "name": "Arming",
    "side": "concord",
    "seed": 20261105,
@@ -177,7 +177,7 @@
    ]
   },
   {
-   "id": "krai_battle",
+   "id": "krai_battle", "sky": "crimson_reach",
    "name": "Battle",
    "side": "krai",
    "seed": 20261106,
@@ -262,7 +262,7 @@
    ]
   },
   {
-   "id": "krai_duel",
+   "id": "krai_duel", "sky": "violet_storm",
    "name": "Duel",
    "side": "krai",
    "seed": 20261110,
@@ -299,7 +299,7 @@
    ]
   },
   {
-   "id": "krai_arming",
+   "id": "krai_arming", "sky": "solar_furnace",
    "name": "Arming",
    "side": "krai",
    "seed": 20261108,

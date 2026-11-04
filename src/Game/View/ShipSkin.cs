@@ -2,7 +2,8 @@
 // by tools/mockups/export_ships.mjs from the ship mockups). Every surface whose material the manifest marks hull_shader
 // gets src/Game/View/hull.gdshader with that material's values (base colour, vertex colours, metalness, the faction's
 // detail tile and its size) and the ship's own (its re-centring offset, the Krai livery's uLiv and uLiv2); every other
-// material keeps the stand-in the exporter wrote (glows, metals, bells, windows). Its lamps come from the named light
+// material keeps the stand-in the exporter wrote (glows, metals, windows), but the impulse bells, which take
+// src/Game/View/bell.gdshader from their heat_rgb (hot inside, ribbed outside, as the mockups draw them). Its lamps come from the named light
 // empties' glTF extras: a flood is a SpotLight3D down its -Z, a running light, strobe or beacon a small OmniLight3D;
 // strobes flash as their extras say ("double flash every 1.4 s"). It lives in the view because it only changes how a
 // ship looks: the simulation never reads it. One implementation for every ship of both factions.
@@ -61,9 +62,10 @@ public static class ShipSkin
                 {
                     Material? m = mi.Mesh.SurfaceGetMaterial(i);
                     if (m == null || !materials.TryGetProperty(faction + "/" + m.ResourceName, out JsonElement me)) continue;
-                    if (!me.GetProperty("hull_shader").GetBoolean()) continue;
+                    bool bell = me.TryGetProperty("heat_rgb", out _);
+                    if (!bell && !me.GetProperty("hull_shader").GetBoolean()) continue;
                     string key = m.ResourceName;
-                    if (!cache.TryGetValue(key, out Material? hm)) cache[key] = hm = HullMaterial(me, tex, offset, sp);
+                    if (!cache.TryGetValue(key, out Material? hm)) cache[key] = hm = bell ? BellMaterial(me) : HullMaterial(me, tex, offset, sp);
                     mi.SetSurfaceOverrideMaterial(i, hm);
                     hullSurfaces++;
                 }
@@ -88,6 +90,20 @@ public static class ShipSkin
         float ph = (float)(t % StrobePeriodS);
         bool on = ph < StrobeFlashS || (ph >= StrobeSecondS && ph < StrobeSecondS + StrobeFlashS);
         foreach (OmniLight3D s in strobes) s.Visible = on;
+    }
+
+    private static Shader? _bell;
+
+    // An impulse bell: hot inside, ribbed outside, from the manifest's heat_rgb (the mockup's thrusterMat).
+    private static ShaderMaterial BellMaterial(JsonElement me)
+    {
+        _bell ??= GD.Load<Shader>("res://src/Game/View/bell.gdshader");
+        JsonElement h = me.GetProperty("heat_rgb"), a = h.GetProperty("throat"), b = h.GetProperty("lip"), bc = me.GetProperty("base_colour");
+        var m = new ShaderMaterial { Shader = _bell };
+        m.SetShaderParameter("shell", new Color(F(bc[0]), F(bc[1]), F(bc[2])));
+        m.SetShaderParameter("heat_a", new Color(F(a[0]), F(a[1]), F(a[2])));
+        m.SetShaderParameter("heat_b", new Color(F(b[0]), F(b[1]), F(b[2])));
+        return m;
     }
 
     private static ShaderMaterial HullMaterial(JsonElement me, (Texture2D A, Texture2D N) tex, Vector3 offset, JsonElement? sp)
