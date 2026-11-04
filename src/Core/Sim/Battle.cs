@@ -37,6 +37,8 @@ public sealed partial class Battle
     public double T { get; private set; }
     /// <summary>Steps taken; T is Steps times the step.</summary>
     public long Steps { get; private set; }
+    /// <summary>The scenario this battle was made from.</summary>
+    public Scenario Scenario { get; }
     /// <summary>null while fighting, else "won" or "lost".</summary>
     public string? Over { get; private set; }
 
@@ -55,8 +57,9 @@ public sealed partial class Battle
         _helm = Rng.Fork(scenario.Seed, "helm");
         for (int i = 0; i < scenario.Ships.Count; i++) _ships.Add(MakeShip(scenario.Ships[i], i));
         Player = _ships[0];
+        Scenario = scenario;
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
-        Say("Comms", "Kethran and Vos contacts ahead. Weapons free.");
+        Say(scenario.SayWho, scenario.SayText);
     }
 
     private Ship MakeShip(ShipStart d, int order)
@@ -65,12 +68,13 @@ public sealed partial class Battle
         var s = new Ship
         {
             Id = d.Id, Order = order, Name = d.Name, Captain = d.Captain, Class = c, Faction = Data.Factions[d.Faction], Side = d.Side,
-            X = d.XM, Z = d.ZM, H = Geometry.Wrap(d.HeadingDeg * Geometry.Deg), V = d.SpeedMS, VOrder = d.SpeedMS, Hull = c.HullHp,
+            X = d.XM, Z = d.ZM, H = Geometry.Wrap(d.HeadingDeg * Geometry.Deg), V = d.SpeedMS, VOrder = d.SpeedMS, Hull = c.HullHp * d.HullFrac,
             Capacitor = c.CapacitorE * Tuning.StartCapacitorFrac, Battery = c.BatteryE * Tuning.StartBatteryFrac,
+            Stance = d.Stance, Range = d.Range, Erratic = d.Erratic, HoldFire = d.HoldFire,
         };
         s.HOrder = s.H;
         s.HetChance = Rules.HetMax(s);
-        Array.Copy(c.ShieldsHp, s.Shields, 6);
+        for (int i = 0; i < 6; i++) s.Shields[i] = c.ShieldsHp[i] * d.ShieldsFrac;
         foreach (string k in Rules.Systems) s.Power[k] = c.PowerE.GetValueOrDefault(k);
         foreach (string k in Rules.Subsystems) s.Sys[k] = 1;
         for (int i = 0; i < c.Mounts.Count; i++)
@@ -244,10 +248,11 @@ public sealed partial class Battle
         Ship t = near;
         if (s.Side == 0 && Player.Alive && TargetOf(Player) is { } pt) t = pt;
         s.Target = t.Id;
-        double range = Rules.AiRangeKm();
+        double range = Rules.AiRangeKm(s.Range);
         if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
         else if (s.Stance == Stance.Escort && s.Side == 0 && Player.Alive && s != Player) Steer(s, Rules.DistKm(s, t) < range ? "circle" : "follow", Rules.DistKm(s, t) < range ? t : Player, range);
         else Steer(s, Rules.DistKm(s, t) > range * 1.3 ? "approach" : "circle", t, range);
+        if (s.HoldFire) return;
         foreach (Mount m in s.Mounts)
             if (!m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(s, m, t) && Rules.HitChance(s, m, t) >= Tuning.AiFireMinChance) FireMount(s, m, t);
     }

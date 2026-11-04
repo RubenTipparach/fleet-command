@@ -9,8 +9,8 @@ public class DataTests
     public void The_real_data_files_load_and_validate()
     {
         GameData d = TestData.Data;
-        Assert.Equal(6, d.Skirmish.Ships.Count);
-        Assert.Equal("resolute", d.Skirmish.Ships[0].Id);
+        Assert.Equal(6, TestData.Raiders.Ships.Count);
+        Assert.Equal("resolute", TestData.Raiders.Ships[0].Id);
         Assert.Equal(9, d.Classes["ca"].Mounts.Count);
         Assert.Equal(140 * d.Tuning.DemoToughX, d.Classes["ca"].HullHp);
     }

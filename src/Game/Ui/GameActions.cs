@@ -14,6 +14,8 @@ public sealed class GameActions
     private readonly Func<ConsoleContext> _ctx;
     /// <summary>Set by the composition root: rebuilds the battle from its scenario.</summary>
     public Action? OnRestart;
+    /// <summary>Starts the scenario with this id (the composition root rebuilds the battle and, for another side, the skin).</summary>
+    public Action<string>? OnScene;
     /// <summary>Set by the composition root: re-lays out the console after a change of the expanded panel.</summary>
     public Action? OnLayout;
     public Action? OnQuit;
@@ -56,5 +58,7 @@ public sealed class GameActions
     }
 
     public void Restart() { S.MenuOpen = false; OnRestart?.Invoke(); }
+    /// <summary>Plays the scenario with this id, from its start.</summary>
+    public void Scene(string id) { S.SceneOpen = false; S.MenuOpen = false; OnScene?.Invoke(id); }
     public void Quit() => OnQuit?.Invoke();
 }

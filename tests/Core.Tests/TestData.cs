@@ -25,6 +25,9 @@ public static class TestData
     private static GameData? _data;
     public static GameData Data => _data ??= DataLoader.Load(Read);
 
-    /// <summary>A fresh skirmish from the real data.</summary>
-    public static Battle NewBattle() => new(Data, Data.Skirmish);
+    /// <summary>The golden seed's battle: the Concord's Raiders scenario (the battle console mockup's skirmish).</summary>
+    public static Scenario Raiders => Data.ScenarioById("concord_raiders");
+
+    /// <summary>A fresh Raiders battle from the real data.</summary>
+    public static Battle NewBattle() => new(Data, Raiders);
 }

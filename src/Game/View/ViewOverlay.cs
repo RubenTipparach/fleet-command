@@ -127,6 +127,7 @@ public sealed partial class ViewOverlay : Control
     {
         _ui.Begin();
         DrawView();
+        if (_x.State.SceneOpen && _x.State.Expanded == null) SceneList();
         _ui.End();
         _x.Tips.Offer(this, _ui.CurrentTip(), Position);
     }
@@ -218,7 +219,8 @@ public sealed partial class ViewOverlay : Control
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
         Key("v.target", new Rect2(14, 12, 90, 30), "Target", () => _x.State.ShowTarget = !_x.State.ShowTarget, _x.State.ShowTarget, "Show or hide the Target box");
-        f.DrawRich(this, new[] { ("Objective · ", C.Lilac), (b.Data.Skirmish.Objective, C.Text) }, 14, 64, 16, Size.X * 0.62f);
+        ScenePicker();
+        if (!_x.State.SceneOpen) f.DrawRich(this, new[] { ("OBJECTIVE · ", C.Lilac), (b.Scenario.Objective.ToUpperInvariant(), C.Text) }, 14, 64, 16, Size.X * 0.62f);
         if (_x.State.Paused) f.Draw(this, "PAUSED · ORDERS STILL TAKEN", Size.X / 2, 40, 28, C.Caution, HorizontalAlignment.Center, 0, 600, 1);
         if (_x.State.PlacingHet) f.Draw(this, "CLICK WHERE TO TURN", Size.X / 2, 74, 20, C.Lilac, HorizontalAlignment.Center, 0, 600, 1);
 
@@ -251,6 +253,48 @@ public sealed partial class ViewOverlay : Control
             DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), Colors.Black, 2.6f, true);
             DrawLine(xr.Position + new Vector2(17, 7), xr.Position + new Vector2(7, 17), Colors.Black, 2.6f, true);
             SystemsDisplay.Draw(this, _ui, _x, t, new Rect2(bx + 14, by + 44, w - 28, h - 58), false, "tgt");
+        }
+    }
+
+    private const float SceneX = 110, SceneW = 230, SceneRowH = 38, SceneHeadH = 26;
+
+    // The scene selector (the battle console mockup's, owner 2026-11-02: "I would like a scene selector"): a pill naming the
+    // scenario in play, with an arrow; a click opens the list. The objective sits under it while the list is shut.
+    private void ScenePicker()
+    {
+        var r = new Rect2(SceneX, 12, SceneW, 30);
+        HitState st = _ui.Reg("v.scene", r, _ => _x.State.SceneOpen = !_x.State.SceneOpen, null, new Tip("Pick a scenario"));
+        Color fill = st.Hot || _x.State.SceneOpen ? C.Sky : C.Signal;
+        Shapes.RoundRect(this, r, fill, 15);
+        _x.Fonts.Draw(this, "SCENE", r.Position.X + 14, r.Position.Y + 20, 13, Colors.Black, HorizontalAlignment.Left, 0, 600);
+        _x.Fonts.Draw(this, B.Scenario.Name.ToUpperInvariant(), r.Position.X + 62, r.Position.Y + 21, 17, Colors.Black, HorizontalAlignment.Left, SceneW - 96, 700);
+        float ax = r.End.X - 20, ay = r.Position.Y + 15;
+        Vector2[] arrow = _x.State.SceneOpen
+            ? new[] { new Vector2(ax - 6, ay + 3), new Vector2(ax + 6, ay + 3), new Vector2(ax, ay - 4) }
+            : new[] { new Vector2(ax - 6, ay - 3), new Vector2(ax + 6, ay - 3), new Vector2(ax, ay + 4) };
+        DrawColoredPolygon(arrow, Colors.Black);
+    }
+
+    // The open list, over everything in the view: the scenarios grouped by the side the player commands, each side under
+    // its faction's name (picking one of the other side's swaps the console to that faction's skin). A click anywhere else
+    // shuts it.
+    private void SceneList()
+    {
+        _ui.Reg("v.scene.off", new Rect2(Vector2.Zero, Size), _ => _x.State.SceneOpen = false);
+        var groups = _x.Data.Scenarios.GroupBy(s => s.Side).ToArray();
+        float lx = SceneX, ly = 48, h = groups.Sum(g => SceneHeadH + g.Count() * SceneRowH) + 8;
+        Shapes.RoundRect(this, new Rect2(lx - 6, ly - 6, SceneW + 12, h), new Color(0, 0, 0, 0.85f), 10);
+        float y = ly;
+        foreach (var g in groups)
+        {
+            _x.Fonts.Draw(this, _x.Data.Factions[g.Key].Name.ToUpperInvariant(), lx + 6, y + 18, 14, C.Lilac, HorizontalAlignment.Left, SceneW - 12, 600, 1);
+            y += SceneHeadH;
+            foreach (Data.Scenario sc in g)
+            {
+                string id = sc.Id;
+                Key("v.scene." + id, new Rect2(lx, y, SceneW, 32), sc.Name, () => _x.Act.Scene(id), id == B.Scenario.Id, sc.Objective);
+                y += SceneRowH;
+            }
         }
     }
 

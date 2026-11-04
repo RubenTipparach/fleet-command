@@ -1,5 +1,6 @@
-// Main: the composition root (CLAUDE.md section 6.2). It loads and validates the data, picks the skin, builds the battle,
-// the 3D view and the console, wires them together and runs the fixed step. Nothing else creates these; every other
+// Main: the composition root (CLAUDE.md section 6.2). It loads and validates the data, starts the scenario (--scenario=id,
+// or the first) with its side's skin, builds the battle, the 3D view and the console, wires them together and runs the
+// fixed step. Starting another scenario (the view's scene selector) rebuilds the battle and, for the other side, the skin. Nothing else creates these; every other
 // class gets what it needs passed in. It also runs the headless checks: --layout-test (every panel at its designed
 // rectangle, clipped, at several window sizes) and --still (a picture of the console after a number of steps, under
 // Xvfb in a cloud session).
@@ -42,10 +43,11 @@ public sealed partial class Main : Node
         _x = new ConsoleContext
         {
             Data = data, Kit = kit, Fonts = new Fonts("res://assets/fonts/Antonio-VariableFont_wght.ttf"), Tips = new TipBoard(),
-            State = new ConsoleState(), Act = act, Battle = new Battle(data, data.Skirmish),
+            State = new ConsoleState(), Act = act, Battle = new Battle(data, StartScenario(data)),
         };
         act.OnLayout = Relayout;
         act.OnRestart = Restart;
+        act.OnScene = id => Start(_x.Data.ScenarioById(id));
         act.OnQuit = () => GetTree().Quit();
         _bindings = act.Bindings.ToDictionary(kv => kv.Key, kv => kv.Value);
 
@@ -84,6 +86,10 @@ public sealed partial class Main : Node
         else if (_args.TryGetValue("still", out string? still)) _ = Still(still);
     }
 
+    /// <summary>The scenario the game opens in: --scenario=id, or the first in data/battle/scenarios.json.</summary>
+    private Scenario StartScenario(GameData data) =>
+        _args.TryGetValue("scenario", out string? id) ? data.ScenarioById(id) : data.StartScenario;
+
     private void Add(ConsolePanel p, Region r)
     {
         p.Init(_x, r);
@@ -99,11 +105,25 @@ public sealed partial class Main : Node
         return f.GetAsText();
     }
 
-    private void Restart()
+    private void Restart() => Start(_x.Battle.Scenario);
+
+    /// <summary>Starts a scenario from its beginning, in the skin of the side it is played from.</summary>
+    private void Start(Scenario sc)
     {
-        _x.Battle = new Battle(_x.Data, _x.Data.Skirmish);
+        _x.Battle = new Battle(_x.Data, sc);
+        _x.Kit = KitFor(_x.Data, sc);
+        _x.State.Expanded = null;
         _view.Rebuild();
         _acc = 0;
+        Relayout();
+    }
+
+    /// <summary>The console skin of the side a scenario is played from (its faction's skin).</summary>
+    private static IKit KitFor(GameData data, Scenario sc)
+    {
+        IKit kit = new ConcordKit();
+        KitPieces.Verify(kit);
+        return kit;
     }
 
     public override void _Process(double delta)
@@ -207,15 +227,16 @@ public sealed partial class Main : Node
         Region.Plate => l.Plate, Region.Station => l.Station, Region.Ship => l.Ship, Region.Weapons => l.Weapons, _ => l.Radar,
     };
 
-    /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked, saves a PNG and
-    /// quits. The window size is Godot's own --resolution flag.</summary>
+    /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked
+    /// (--station, --page, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor), saves a PNG and quits. The window size is
+    /// Godot's own --resolution flag.</summary>
     private async System.Threading.Tasks.Task Still(string path)
     {
         int steps = _args.TryGetValue("steps", out string? n) ? int.Parse(n) : 600;
         // the same set-up as the mockup's scripted shots: target locked, intercepting at full speed, a volley six
         // steps before the end
         Battle b = _x.Battle;
-        b.Lock(_args.GetValueOrDefault("target", "vorrak"));
+        b.Lock(_args.GetValueOrDefault("target", b.EnemiesOf(b.Player).First().Id));
         b.HelmOrder("intercept");
         b.SetSpeed(b.Rules.MaxSpeed(b.Player));
         for (int i = 0; i < steps; i++) { b.Step(); if (i == steps - 6) b.Fire(); }
@@ -225,6 +246,8 @@ public sealed partial class Main : Node
         if (_args.TryGetValue("reinforce", out string? rf)) b.Reinforce(int.Parse(rf));
         if (_args.ContainsKey("menu")) _x.State.MenuOpen = true;
         if (_args.ContainsKey("paused")) _x.State.Paused = true;
+        if (_args.ContainsKey("scene-list")) _x.State.SceneOpen = true;
+        if (_args.TryGetValue("zoom", out string? zm)) _view.Zoom(float.Parse(zm, System.Globalization.CultureInfo.InvariantCulture));
         for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         Relayout();
         for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);

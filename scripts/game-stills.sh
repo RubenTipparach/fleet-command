@@ -1,22 +1,31 @@
 #!/usr/bin/env bash
-# Headless stills of the running game under Xvfb (CLAUDE.md section 9: cloud sessions cannot record; they render stills
-# with Mesa's software renderer and say so). Each shot plays the stand-in battle from its seed for a number of steps,
+# Stills of the running game (CLAUDE.md section 9). On Linux (cloud sessions) headless under Xvfb with Mesa's software
+# renderer, said so; on Windows (the owner's PC) in a real window that opens for a few seconds a shot, so run it there
+# only when the owner has said Claude may use the screen. Each shot plays a scenario from its seed for a number of steps,
 # sets the console as named, and saves a PNG into docs/screenshots/game/ (or the folder given).
-# Usage: scripts/game-stills.sh [out_dir]
+# Usage: scripts/game-stills.sh [out_dir] [only,these,names]
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 OUT="${1:-docs/screenshots/game}"
+ONLY="${2:-}"
 mkdir -p "$OUT"
 DOTNET="$(scripts/install-dotnet.sh 2>/dev/null)"
 GODOT="$(scripts/install-godot.sh 2>/dev/null)"
 export DOTNET_ROOT="$(dirname "$DOTNET")" PATH="$(dirname "$DOTNET"):$PATH"
 "$DOTNET" build FleetCommand.csproj -v q --nologo >/dev/null
+case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) HOST=windows ;; *) HOST=linux ;; esac
 
 shot() { # name size args...
   local name="$1" size="$2"; shift 2
-  timeout 240 xvfb-run -a -s "-screen 0 ${size}x24" "$GODOT" --path . --rendering-driver opengl3 --resolution "$size" -- \
-    --still="$OUT/$name.png" "$@" 2>&1 | grep -E "^STILL" || { echo "FAILED $name"; return 1; }
+  [[ -z "$ONLY" || ",$ONLY," == *",$name,"* ]] || return 0
+  if [[ "$HOST" == windows ]]; then
+    timeout 240 "$GODOT" --path . --resolution "$size" --position 0,0 -- --still="$OUT/$name.png" "$@" 2>&1 \
+      | grep -E "^STILL" || { echo "FAILED $name"; return 1; }
+  else
+    timeout 240 xvfb-run -a -s "-screen 0 ${size}x24" "$GODOT" --path . --rendering-driver opengl3 --resolution "$size" -- \
+      --still="$OUT/$name.png" "$@" 2>&1 | grep -E "^STILL" || { echo "FAILED $name"; return 1; }
+  fi
 }
 shot battle 1920x1080 --steps=600
 shot power 1920x1080 --steps=600 --station=power
@@ -27,3 +36,12 @@ shot ship-expanded 1920x1080 --steps=600 --expand=ship
 shot weapons-expanded 1920x1080 --steps=600 --expand=weapons
 shot menu 1920x1080 --steps=300 --menu
 shot wide-2560 2560x1080 --steps=1200
+# the other side and the other scenes (change battle-scenarios)
+shot krai-battle 1920x1080 --steps=600 --scenario=krai_battle
+shot krai-power 1920x1080 --steps=600 --scenario=krai_battle --station=power
+shot krai-ship-expanded 1920x1080 --steps=600 --scenario=krai_battle --expand=ship
+shot krai-weapons-expanded 1920x1080 --steps=600 --scenario=krai_battle --expand=weapons
+shot krai-menu 1920x1080 --steps=300 --scenario=krai_battle --menu
+shot concord-raiders 1920x1080 --steps=600 --scenario=concord_raiders
+shot scene-list 1920x1080 --steps=300 --scene-list
+shot ships-close 1920x1080 --steps=900 --zoom=0.45

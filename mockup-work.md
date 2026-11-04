@@ -26,9 +26,9 @@ account and every link here is updated.
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
-| 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
-| 7 | Krai Warhost ships | Drafted (2026-11-04, v16: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
-| 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v13) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | **Approved for implementation** (2026-11-04, owner in conversation: "I've approved ships to be built", "we need to integrate proper ships in the game"; change `ship-models-engine`). Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
+| 7 | Krai Warhost ships | **Approved for implementation** (2026-11-04, owner in conversation, as mockup 6; change `ship-models-engine`). Drafted (2026-11-04, v16: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
+| 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v13) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
@@ -427,6 +427,11 @@ Pelican carrier. Survey A14.
 
 Design: `openspec/changes/concord-hull-concepts/`.
 
+**Approved for implementation** (owner, 2026-11-04, in conversation: "we need to integrate proper ships in the game. I've
+approved ships to be built, and we have some test scenarios ready to go"). The ships reach the game as glb files exported
+from this page's own builder (`tools/mockups/export_ships.mjs`, change `ship-models-engine`); the battle draws the Concord
+classes as the battle console mockup maps them (CA Albatross, DD Petrel level, FF Swift level).
+
 ## 7. Krai Warhost ships
 
 Owner, 2026-11-03: "Let's start mocking up krai ships". Built on the Krai console skin's language (the owner's words
@@ -437,6 +442,10 @@ beside the Concord ship of its rank, and 40 px silhouettes. Names are placeholde
 - On version 1: "Those are fighter jets, not spaceships. Think about how we defined culture and story". Version 2 builds
   spaceships from the culture as written (war as the only honest test, forged steel and edged everything, knife-blade
   hulls): A Standing blade, B Lance, C Three-edged dagger; nothing flies, the hull is the weapon.
+
+**Approved for implementation** (owner, 2026-11-04, in conversation, with mockup 6). The four classes reach the game as
+glb files exported from `buildKrai` (change `ship-models-engine`), with battle figures in `data/battle/classes.json`
+(change `battle-scenarios`).
 
 ## 8. Battle console: Krai Warhost
 
@@ -482,6 +491,11 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
   Panel Bible.
 
 Design: `openspec/changes/krai-battle-console/`.
+
+**Approved for implementation** (owner, 2026-11-04, in conversation: "make scenarios for both sides (concord and Krai), and
+keep the UI updated witht he mockups"). The game draws the console in the Krai kit whenever the player commands the Krai
+Warhost (change `krai-console-engine`); the scenarios for both sides are change `battle-scenarios`. What still differs from
+this mockup is in `docs/design/mockup-sync.md`.
 
 ## 9. Faction emblems
 

@@ -5,7 +5,7 @@ A real-time tactical starship combat game in Godot. You captain one ship from a 
 plays on desktop and phones: any panel can be expanded to full screen, with the battle view moved
 to the side.
 
-Status: ground rules, tools and skills are set up; the first three.js prototypes come next.
+Status: the battle console is in the engine with the approved Concord and Krai ships and scenarios for both sides; the mockups lead, and `docs/design/mockup-sync.md` lists what the game still lacks.
 
 - Rules for contributors (and Claude): [CLAUDE.md](CLAUDE.md)
 - Open questions: [docs/design/README.md](docs/design/README.md)
@@ -34,5 +34,15 @@ scripts/install-dotnet.sh && scripts/install-godot.sh
 DOTNET_ROOT=$PWD/.tools/dotnet PATH=$PWD/.tools/dotnet:$PATH .tools/godot/godot --path .
 ```
 
-On Windows, open the folder in the Godot 4.7.1 .NET editor (with the .NET 8 SDK installed) and press Play. Checks:
-`scripts/run-tests.sh`; stills: `scripts/game-stills.sh` (into `docs/screenshots/game/`).
+On Windows the same scripts run under Git Bash and install the win64 editor and the SDK into `.tools/`. Then open the
+editor (`.tools/godot/Godot_v4.7.1-stable_mono_win64.exe`, with the project folder) and press Play, or run it from Git
+Bash:
+
+```bash
+DOTNET_ROOT=$PWD/.tools/dotnet .tools/godot/Godot_v4.7.1-stable_mono_win64_console.exe --path .
+```
+
+Pick a scenario from the view's scene selector (the Concord's or the Krai Warhost's side), or start one with
+`-- --scenario=krai_battle`. Checks: `scripts/run-tests.sh`; stills: `scripts/game-stills.sh` (into
+`docs/screenshots/game/`). The ships are exported from the ship mockups with
+`NODE_PATH=$(npm root -g) node tools/mockups/export_ships.mjs` (into `assets/ships/`).

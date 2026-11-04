@@ -19,12 +19,15 @@ public sealed class ConsoleState
     public bool PlacingHet;
     /// <summary>The view's Target key: shows or hides the Target box (the locked target's systems display).</summary>
     public bool ShowTarget = true;
+    /// <summary>The view's scene selector is open.</summary>
+    public bool SceneOpen;
 }
 
 public sealed class ConsoleContext
 {
     public required GameData Data { get; init; }
-    public required IKit Kit { get; init; }
+    /// <summary>The console skin: the player's faction's, swapped when a scenario of another side starts.</summary>
+    public required IKit Kit { get; set; }
     public required Fonts Fonts { get; init; }
     public required TipBoard Tips { get; init; }
     public required ConsoleState State { get; init; }
