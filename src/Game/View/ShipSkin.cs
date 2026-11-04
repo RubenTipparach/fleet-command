@@ -19,6 +19,8 @@ public static class ShipSkin
     private const string ManifestPath = "res://assets/ships/manifest.json";
     private static JsonDocument? _manifest;
     private static Shader? _hull;
+    /// <summary>The hull shader every hull surface is dressed with (ShipDamage finds the hull surfaces by it).</summary>
+    public static Shader HullShader => _hull ??= GD.Load<Shader>("res://src/Game/View/hull.gdshader");
 
     /// <summary>Range of a running light, strobe or beacon, metres: enough to tint the plating round it, no more.</summary>
     public const float RunningLightRangeM = 6f;
@@ -64,8 +66,10 @@ public static class ShipSkin
                     if (m == null || !materials.TryGetProperty(faction + "/" + m.ResourceName, out JsonElement me)) continue;
                     bool bell = me.TryGetProperty("heat_rgb", out _);
                     if (!bell && !me.GetProperty("hull_shader").GetBoolean()) continue;
-                    string key = m.ResourceName;
-                    if (!cache.TryGetValue(key, out Material? hm)) cache[key] = hm = bell ? BellMaterial(me) : HullMaterial(me, tex, offset, sp);
+                    // the shader works in mockup ship space, so each piece's material carries its own pivot (the node's place in the ship)
+                    Vector3 piv = PlaceInShip(mi, ship), at = offset + new Vector3(-piv.X, piv.Y, -piv.Z);
+                    string key = m.ResourceName + "@" + piv.ToString("F4");
+                    if (!cache.TryGetValue(key, out Material? hm)) cache[key] = hm = bell ? BellMaterial(me) : HullMaterial(me, tex, at, sp);
                     mi.SetSurfaceOverrideMaterial(i, hm);
                     hullSurfaces++;
                 }
@@ -82,6 +86,14 @@ public static class ShipSkin
         });
         GD.Print($"SHIP_SKIN {file}: hull shader on {hullSurfaces} surfaces, {lamps} lamps ({strobes.Count} strobes)");
         return strobes;
+    }
+
+    /// <summary>Where a mesh's own origin sits in its ship's glb frame (metres): its parents' offsets, up to the ship node.</summary>
+    private static Vector3 PlaceInShip(Node3D n, Node3D ship)
+    {
+        Transform3D xf = Transform3D.Identity;
+        for (Node? p = n; p != null && p != ship; p = p.GetParent()) if (p is Node3D p3) xf = p3.Transform * xf;
+        return xf.Origin;
     }
 
     /// <summary>Turns each strobe on during its double flash at time t (seconds).</summary>
@@ -108,8 +120,7 @@ public static class ShipSkin
 
     private static ShaderMaterial HullMaterial(JsonElement me, (Texture2D A, Texture2D N) tex, Vector3 offset, JsonElement? sp)
     {
-        _hull ??= GD.Load<Shader>("res://src/Game/View/hull.gdshader");
-        var m = new ShaderMaterial { Shader = _hull };
+        var m = new ShaderMaterial { Shader = HullShader };
         JsonElement bc = me.GetProperty("base_colour"), tile = me.GetProperty("tile_m");
         m.SetShaderParameter("detail_albedo", tex.A);
         m.SetShaderParameter("detail_normal", tex.N);

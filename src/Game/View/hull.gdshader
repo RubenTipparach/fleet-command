@@ -12,7 +12,7 @@ uniform sampler2D detail_albedo : filter_linear_mipmap, repeat_enable;
 uniform sampler2D detail_normal : filter_linear_mipmap, repeat_enable;
 // the tile's size along and round the hull, metres
 uniform vec2 tile_m = vec2(8.0, 8.0);
-// the export's re-centring: mockup frame = (-x, y, -z) + mockup_offset
+// the export's re-centring and the piece's pivot: mockup frame = (-x, y, -z) + mockup_offset
 uniform vec3 mockup_offset = vec3(0.0);
 uniform vec4 base_color : source_color = vec4(1.0);
 uniform bool use_vertex_color = true;
@@ -30,12 +30,17 @@ uniform vec4 liv2 = vec4(0.0);
 uniform vec3 liv_crimson : source_color = vec3(0.478, 0.118, 0.173);
 uniform vec3 liv_bronze : source_color = vec3(0.725, 0.541, 0.306);
 
+#include "res://src/Game/View/damage.gdshaderinc"
+
 varying vec3 v_obj;
 varying vec3 v_nobj;
+varying vec3 v_cam;
 
 void vertex() {
 	v_obj = vec3(-VERTEX.x, VERTEX.y, -VERTEX.z) + mockup_offset;
 	v_nobj = vec3(-NORMAL.x, NORMAL.y, -NORMAL.z);
+	vec3 c = (inverse(MODEL_MATRIX) * vec4(CAMERA_POSITION_WORLD, 1.0)).xyz;
+	v_cam = vec3(-c.x, c.y, -c.z) + mockup_offset;
 }
 
 vec3 det_w(vec3 n) { vec3 w = pow(abs(n), vec3(6.0)); return w / (w.x + w.y + w.z); }
@@ -60,6 +65,13 @@ vec3 detail_n(vec3 p, vec3 n, float k) {
 }
 
 void fragment() {
+	// battle damage (damage.gdshaderinc): holes, scorch marks, and a broken piece's own cell
+	float d_char = 0.0, d_ember = 0.0; int hole_idx = -1; float nz = dfbm(v_obj * 0.45);
+	dmg_holes(v_obj, nz, d_char, d_ember, hole_idx);
+	float nz2 = dfbm(v_obj * 0.9 + 7.0);
+	dmg_scorch(v_obj, nz2, d_char, d_ember);
+	if (dmg_break(v_obj, nz, d_char, d_ember)) discard;
+	d_char = clamp(d_char, 0.0, 1.0);
 	vec3 n = normalize(v_nobj);
 	if (flat_shading) {
 		vec3 f = normalize(cross(dFdx(v_obj), dFdy(v_obj)));
@@ -90,11 +102,19 @@ void fragment() {
 		}
 	}
 	col = mix(col, paint_c * (0.55 + 0.45 * a) * mix(1.0, 0.85, seam), paint);
+	col = mix(col, vec3(0.03, 0.026, 0.024) * (0.6 + 0.8 * nz2), smoothstep(0.0, 0.7, d_char));
 	if (!FRONT_FACING) col = back_color;
 
 	ALBEDO = col;
-	METALLIC = metallic * (1.0 - 0.6 * paint);
-	ROUGHNESS = mix(0.3 + 0.3 * (1.0 - a) + 0.15 * seam, 0.55, paint);
+	METALLIC = metallic * (1.0 - 0.6 * paint) * (1.0 - 0.85 * d_char * d_char);
+	ROUGHNESS = mix(mix(0.3 + 0.3 * (1.0 - a) + 0.15 * seam, 0.55, paint), 1.0, smoothstep(0.0, 0.7, d_char));
+	vec3 glow = vec3(1.0, 0.36, 0.07) * d_ember * 1.8 * (0.75 + 0.25 * sin(TIME * 21.0 + nz * 30.0));
+	if (!FRONT_FACING) glow = vec3(0.08, 0.008, 0.0);
+	if (hole_idx >= 0) {
+		glow = interior_room(v_obj, normalize(v_obj - v_cam), holes[hole_idx], hole_n[hole_idx]);
+		ALBEDO = vec3(0.0); ROUGHNESS = 1.0; METALLIC = 0.0;
+	}
+	EMISSION = glow;
 	// fine detail fades as it shrinks below a few pixels, so seams and bolts never sparkle at a distance
 	float px = max(length(dFdx(v_obj)), length(dFdy(v_obj)));
 	float fine = 1.0 - smoothstep(0.012, 0.05, px);
