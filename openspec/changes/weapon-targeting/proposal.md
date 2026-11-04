@@ -20,13 +20,20 @@ Aim at row:
 - "We also need a nebula scenario to test out the ECM/ECCM systems."
 - "I'm not sure what other game mechanics I dont have yet, if you think of anything recommend some stuff"
 
+Then, 2026-11-04, with crops of the Krai's Tactical station and Target box:
+
+- "aim at should show status of subsystems"
+- "I should be able to click to aim at specific systems here too" (the Target box's systems display)
+
 ## What Changes
 
 - **Where a hit lands (the chopping block).** Every subsystem has a place in the hull, as the mounts do. A hit through a
   facing reaches what that side of the ship exposes. Torpedoes, missiles, mines and collisions land anywhere on that
   block; lances and disruptors (precise weapons) put the hit on the aimed subsystem half the time when it is on the
   block and spread the rest over it.
-- **Aim at as icons**: the hull and the seven subsystems, named on hover, in every skin's icon set.
+- **Aim at as icons**: the hull and the seven subsystems, named on hover, in every skin's icon set, each key lit in the
+  locked target's status for that subsystem (the target display's status boxes), the aim ringed and a bracket over each
+  one on the chopping block. On the Target box, clicking a subsystem aims at it.
 - **Hit details**: shift+click an aim or a weapon for a sheet of the target's exposed facing, what is on the block, and
   each weapon's way of aiming, arc, range, chance to hit and chance to put the hit on the aimed subsystem.
 - **The chopping block shown**: on the target's systems display, a small red bracket over every subsystem and mount the

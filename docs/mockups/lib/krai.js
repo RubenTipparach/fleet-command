@@ -225,7 +225,10 @@ const api = {
   ring: ['rgba(255,140,60,0)', 'rgba(255,110,40,0.15)', 'rgba(255,170,110,0.9)'],
   // Names and colours for the player's side, which the battle console's stand-in battle calls the Concord.
   player: { faction: 'Krai Warhost', call: 'Krai', trim: 0xd02a20, hull: 0x6a6062,
-    ships: { resolute: ['Kharz', 'Warlord Utrek'], tallis: ['Vekk', 'Blade Sora'], meridian: ['Ruhn', 'Fang Idra'] } },
+    ships: { resolute: ['Kharz', 'Warlord Utrek'], tallis: ['Vekk', 'Blade Sora'], meridian: ['Ruhn', 'Fang Idra'] },
+    // the officers under the Krai's names and ranks (the battle console's officers; ids and every rule the same)
+    ranks: ['Whelp', 'Fang', 'Blade', 'Warleader'],
+    officers: { o1: 'Drovek', o2: 'Ishka', o3: 'Tarn', o4: 'Vosk', o5: 'Ozren', o6: 'Hekka', o7: 'Brask', o8: 'Yarra', o9: 'Kolvar', o10: 'Rhet', o11: 'Senna', o12: 'Gorm', o13: 'Ulka' } },
   link: '#ff8a2a',
   // labels centred on the keys and tabs, clear of the blade's point (the skin's --btn-justify: center)
   keyCenter: true,

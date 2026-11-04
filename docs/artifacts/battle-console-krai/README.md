@@ -31,3 +31,4 @@
 - Version 8 (a bloom experiment on the column's channel of red light, with a Bloom key to compare): published 2026-11-03, version id `1793739594-563e`.
 - Version 9 (hover popups and pointed keys' labels sized by the key's own end caps; rule T): published 2026-11-04, version id `1793761414-3503`.
 - Version 10 (the shared weapon targeting of change `weapon-targeting`; parity 2,378 presses of 313 controls): published 2026-11-04, version id `1793763262-429a`.
+- Version 11 (the five new mechanics and the aim changes of version 72 of the source page; Krai officer names and ranks; bloom always on; parity 3,187 presses of 389 controls): published 2026-11-04, version id `1793777628-6b78`.

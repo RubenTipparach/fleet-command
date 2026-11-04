@@ -22,13 +22,13 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v67, v69 in the repo) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v72: the five new mechanics after the targeting change) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | Drafted (2026-11-03, v10: the frigate rooms first on the Ship Design Bible, brought to the Concord standard: square-cut plates, windows with Krai rooms, thrusters, warm floods) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
-| 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v10) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v11) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
@@ -191,6 +191,19 @@ spred)"; "an expand button to view viable targets to shoow with various weapons"
 several ships at once with "Pin weapon fire", and a nebula for ECM and ECCM. Version 71 (both skins; change
 `weapon-targeting`): the chopping block, precise and by-arc weapons, Aim at as icons, shift+click hit details, brackets on
 the target's display, pinned fire, the expanded Tactical grid, nebulae, and scenes Disable, Pinned fire and Nebula.
+
+Owner, 2026-11-04, on the recommendations: "Do 1, you narrowly escape a battle but damaged the reactor core and warp drive
+among other things prioritize repairs and quickly jump out", "2 cool", "3. Yes, we need both sides to cloak. And scan with
+eccm", "4. We need officer slots for stations. Then when you hover over officer. Slots it shows their rank and abilities",
+"10.. boarding def sounds cool. Put a high security officer, transport units around the ship to setup ambushes. We need
+to mock up units moving about the ship.in 3d space"; and "aim at should show status of subsystems", "I should be able to
+click to aim at specific systems here too", "get rid of bloom button, it works great no need for toggle", "this test scene
+menu is useless, I have them the drop down". Version 72 (both skins; changes `damage-control`, `weapon-arming`,
+`cloaking`, `officers`, `boarding-defence`, `weapon-targeting`): the repair queue with crews at work and the Escape scene;
+Proximity torpedoes and overloaded lances and the Arming scene; cloaks on both sides, the ECCM sweep and the Cloak scene;
+an officer slot on every station with its hover card; the Security page with the deck plan in 3D, teams walking or beamed
+to set ambushes, boarders, and the Repel boarders scene; Aim at keys lit in the target's subsystem status; target
+subsystems that aim on a click; the Bloom key and the menu's scene tabs removed.
 
 ## 3. Look dev
 

@@ -11,4 +11,5 @@
 - [x] 1.7 Nebulae (`NEBULA`, `nebulaAt()`, `canLock()`), drawn in the battle and on the map
 - [x] 1.8 Scenes Disable, Pinned fire, Nebula, with named shots; a scene may fail
 - [x] 1.9 Both skins (the Krai page written again); every control still matches the Concord press for press
-- [ ] 1.10 The owner's review; W1-W6
+- [x] 1.10 Aim keys lit in the target's subsystem status, with brackets; target display subsystems aim on click
+- [ ] 1.11 The owner's review; W1-W6
