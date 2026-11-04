@@ -25,4 +25,4 @@
   needs work"): version 3. The claws, jaw, scales and crouch are gone; three traditions drafted inside the Hunt on the same
   rooms, A Old Lodge, B Trackers and C Course, each with its own plating, colours and moving parts, every choice naming its
   line in the culture or marked ours, and the stereotype test (C5) shown on the Notes tab. Waiting and Hunting replace
-  Stalk and Strike. Shots in `docs/screenshots/mockups/ssarith-ship-concepts/`.
+  Stalk and Strike. Shots in `docs/screenshots/mockups/ssarith-ship-concepts/`. Published, version id `1793802161-a15d`; survey version 2 (H2 added), version id `1793802162-bb01`.
