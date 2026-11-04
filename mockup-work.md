@@ -31,6 +31,7 @@ account and every link here is updated.
 | 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v8) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E25 as a badge | Drafted (2026-11-04, v4) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
+| 11 | Concord emblem on the hull: B-E25 painted on the Petrel frigate | Drafted (2026-11-04, v2) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -502,3 +503,15 @@ holographic stars and nebula shader", then "Central shape should be like irrides
   need some small subtle details to.the 3d model.loke a double bevel on the saucer. A small layer of detail. Maybe some
   segment marks on the legs": the saucer has an upper tier inset 1.6 mm, each leg four segments with grooves 0.5 mm
   deep, both from the guide's shapes (v2).
+
+## 11. Concord emblem on the hull
+
+Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hull?", then "dont care about phone right now".
+
+- **The ship**: the Concord line's Petrel frigate (88 m, level nacelles) from the shared builder
+  `docs/mockups/lib/concord-line.js` (`plainModel`, plain pearl; mockup 6 keeps the windows, lamps and damage).
+- **The paint**: B-E25 from the guide's parts, flat in the guide's two versions (navy on a pearl field; pearl on a night
+  field), mixed into the hull's colour in its shader by a planar projection: no decal plane, no z-fighting.
+- **Where** (owner, 2026-11-04: "too many logos on the hull there", "1/2 size on the left side", "only one logo"): one
+  emblem, 2.6 m tall (3 % of 88 m, half of E7's 6 %), on the port side of the bow just ahead of the last windows, clear of
+  the swept pylons, under its own logo floodlight. v1 had a dorsal crest and one on each flank at 5.3 m.

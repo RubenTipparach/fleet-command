@@ -47,6 +47,16 @@ rim steps twice; each leg body 0.5 to 1.9 under four segments 0.5 to 2.4, so the
 tail 0.5 to 2.4. The upper tier and the segments come from the guide's own shapes (`lensTop`, `legSegments` in
 `window.EMBLEM_PARTS`), so the sketch, the render and the three.js badge stay one source.
 
+## On a Concord hull (2026-11-04)
+
+Mockup 11 paints B-E25 on the Concord line's Petrel frigate (88 m) in the hull's colour by a planar projection in its
+shader (no decal plane). The owner set the marking (2026-11-04: "too many logos on the hull there", "1/2 size on the left
+side", "only one logo"): **one emblem, on the port side, at half of E7's size**: 3 % of the ship's length (2.6 m on the
+Petrel). This replaces E7's 6 % and E12's three marks for Concord hulls. Measured placement: aft of the pylon root the
+swept pylon hides the side from view, so the emblem sits on the bow's flat side just ahead of the last windows (z 33 m).
+At battle distance on desktop it measures about 19 px tall (phones set aside for now, owner: "dont care about phone right
+now").
+
 ## The rules for an emblem
 
 | Rule | Says | Why |
@@ -123,4 +133,4 @@ The ship bible changes only if the owner accepts it.
 | E9 | Ombrai | An eye in a crescent, painted on their hulls |
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |
-| E12 | Where on a hull? | Dorsal forward of the bridge and on each flank, at least 6 % of ship length |
+| E12 | Where on a hull? | Decided for the Concord (owner, 2026-11-04): one emblem on the port side, 3 % of ship length |
