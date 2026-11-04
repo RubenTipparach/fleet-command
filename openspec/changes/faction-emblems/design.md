@@ -186,3 +186,22 @@ The ship bible changes only if the owner accepts it.
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |
 | E12 | Where on a hull? | Decided for the Concord (owner, 2026-11-04): one emblem on the port side, 3 % of ship length |
+
+## The Ssarith Hunt (2026-11-04)
+
+Owner, 2026-11-04: "lets design an emblem for the SSarith". Under the owner's rule that a species' looks are not its
+design (CLAUDE.md section 1; the Ship Design Bible chapter 13, C1-C5), nothing is taken from the Ssarith's bodies. The
+Hunt's culture is one line in the console skins design ("the hunt is the only honest sport: the quarry must be worthy, the
+stalk patient, the kill earned and counted"), too thin to design from, so, as survey H1 recommends (blank, so accepted),
+three traditions inside the Hunt are drafted for the owner to pick, change or reject, each with a sketch that names it:
+
+| Sketch | Tradition | Outline | What it shows |
+|---|---|---|---|
+| SA, the Open Gate (recommended) | The Fair Chase, a school of law: a hunt that leaves the quarry no way out is slaughter | A marker stone (a hunting ground's boundary stone) | Three closing brackets, the fourth left out, and three Watch green chevrons running out through the gap |
+| SB, the Witness Tally | The Tally Keepers, a guild of witnesses: nothing counts unless witnessed and recorded | A hanging tablet | A cord tied at the notch with the count across it (long marks the witness's, short the hunter's), three to a season, the newest in Watch green, the witness's seal below |
+| SC, the Long Watch | The Watchers, stargazers turned navigators: patience first | A low blind | The horizon joined to the blind, the four-point watch star over it, its path across the sky half travelled |
+
+Palette (provisional, from the Hunt console): Bone (the Tally Keepers' tablets), Watch green (the phosphor of the tracking
+tubes), Canopy (the hunting ground at night). Each sketch passes the stereotype test (C5) and the measured checks (joins,
+contrast on black and on white). The guide gains a rule for every emblem: Culture, not anatomy. The traditions are the
+owner's to set (C4); all three are provisional until H1 is answered or a sketch is picked.
