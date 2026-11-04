@@ -55,3 +55,13 @@ measured on the page.
 #### Scenario: The field hull
 - **WHEN** direction C is built in any layout
 - **THEN** every field hull room is at least 1.05 m inside its hull and the page shows the daylight between the hulls at 3 m or more
+
+### Requirement: Hunt plating is modelled and rendered into maps
+
+Each Hunt tradition's plating SHALL be a tile modelled out of real pieces and rendered face-on by
+`tools/blender/build_hull_tiles_ssarith.py` into albedo, tangent space normal and occlusion-roughness-metalness maps in
+`assets/textures/ssarith/`, with a manifest the page reads, and a fine metal tile SHALL be laid over every hull face.
+
+#### Scenario: The page and the maps agree
+- **WHEN** the page is built
+- **THEN** it carries the maps from the manifest by `tools/mockups/inline_data.py`, and `--check` finds the inlined maps equal to the files

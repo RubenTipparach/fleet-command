@@ -1,0 +1,96 @@
+{
+  "_doc": "The Ssarith Hunt's hull plating tiles, modelled and rendered by tools/blender/build_hull_tiles_ssarith.py (never edited by hand). u along the ship, v across the face, metres; the normal maps are tangent space (x along u, y along v).",
+  "blender": "4.4.3",
+  "pieces": {
+    "A_albedo": {
+      "file": "A_albedo.png",
+      "sha256": "34a070bd927ac94c2a9c8b10c2870f3eb1b9f322edff6896ebb99d80930c5f21"
+    },
+    "A_normal": {
+      "file": "A_normal.png",
+      "sha256": "d31ed111efa2ac33fa31ba7ee84f6f4c5eb2b7cffe45ea0f7313fe1a4e48adab"
+    },
+    "A_orm": {
+      "file": "A_orm.png",
+      "sha256": "ba4e4f8a54f77bb92f81b4f07a0df659700abe5c43f99a296c8ee7d50bb8cff0"
+    },
+    "B_albedo": {
+      "file": "B_albedo.png",
+      "sha256": "524315d60bb8648de35106dcefb2ec855cef75cec78a26c70c6aaed6b851c6ad"
+    },
+    "B_normal": {
+      "file": "B_normal.png",
+      "sha256": "b44233e8706f927592130aae329fc631c573768d62e915beeab7ab1159c7ce8f"
+    },
+    "B_orm": {
+      "file": "B_orm.png",
+      "sha256": "564800c5587d0254d84f3e290b15326c199e98ffeb90a52f58e298541a42aaf9"
+    },
+    "C_albedo": {
+      "file": "C_albedo.png",
+      "sha256": "a69d392a9be98a5a7716bc0f886e31a137b4bccdd38957f0e8c65ba1273c94d3"
+    },
+    "C_normal": {
+      "file": "C_normal.png",
+      "sha256": "58987159436e3bc39afa862aa4bcb33cf83066ea3898629a7dad8f0212e842dd"
+    },
+    "C_orm": {
+      "file": "C_orm.png",
+      "sha256": "721a38da7381d1ee0b06697f3ee84e95858c4ef7da80c8dff8be958920388344"
+    },
+    "metal_albedo": {
+      "file": "metal_albedo.png",
+      "sha256": "937dd51aaaa72e436a80f479ef3ac802472a97497bf2d006c9f898a9ce371050"
+    },
+    "metal_normal": {
+      "file": "metal_normal.png",
+      "sha256": "e114a21a7c6772aec9ac3d5b6fb3483d184bbe1cafcc58c658f56b26030c1298"
+    },
+    "metal_orm": {
+      "file": "metal_orm.png",
+      "sha256": "bfe4cbc00b7de5ed5c909cbc2f3fbcdbccd80efe928a730b522e872a3cec7ea7"
+    }
+  },
+  "tiles": {
+    "A": {
+      "albedo_mean_luminance": 0.2791,
+      "px": [
+        768,
+        768
+      ],
+      "samples": 32,
+      "u_m": 6.0,
+      "v_m": 6.0
+    },
+    "B": {
+      "albedo_mean_luminance": 0.2114,
+      "px": [
+        768,
+        538
+      ],
+      "samples": 32,
+      "u_m": 6.0,
+      "v_m": 4.2
+    },
+    "C": {
+      "albedo_mean_luminance": 0.2369,
+      "px": [
+        1024,
+        563
+      ],
+      "samples": 32,
+      "u_m": 8.0,
+      "v_m": 4.4
+    },
+    "metal": {
+      "albedo_mean_luminance": 0.4933,
+      "px": [
+        512,
+        512
+      ],
+      "samples": 32,
+      "u_m": 2.0,
+      "v_m": 2.0
+    }
+  }
+}

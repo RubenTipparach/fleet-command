@@ -44,3 +44,9 @@
   the bays meet the hull, attitude thruster blocks, the shared thruster bells, a forward emitter) and each tradition's own
   (A: rafters, a belt strake, patch plates, a mast; B: tube clamps, a sensor head, radiator fins, vent hoods; C: field
   hoops, neck conduits, a dish). `docs/mockups/lib/ship-skin.js` is now inlined for the bells. 5,100-6,200 triangles a frigate.
+- 2026-11-04, cloud session (owner: "Take a look at the originals textures. They packed it with 3d depth and details. Use
+  you skills with star crew bridge command to pack in those details by rendering a high poly model into textures", "Then
+  applying metal detail texture on top"): version 8, version id `1793831193-f961`. Each tradition's plating is a tile
+  modelled in Blender and rendered face-on into albedo, normal and ORM maps (`tools/blender/build_hull_tiles_ssarith.py`,
+  `assets/textures/ssarith/`, inlined from its manifest as WebP, 646 KB), with a 2 m fine metal tile over every face; a
+  Close view. Contact sheet `docs/screenshots/mockups/ssarith-ship-concepts/hull-tiles-contact-sheet.png`.

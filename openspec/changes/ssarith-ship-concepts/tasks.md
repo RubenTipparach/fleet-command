@@ -18,7 +18,10 @@
 - [x] 1b.4 Version 5: a fair hull (smooth outlines from above and in profile, one chamfer, no polygons added)
 - [x] 1b.5 Version 6: the plating laid on each face, true size on the chamfers
 - [x] 1b.6 Version 7: working detail (guns, bay doors, attitude thrusters, the shared thruster bells, an emitter, and each tradition's own parts)
-- [ ] 1b.7 The owner picks, renames or replaces the directions (survey H2) and C's layout (H3)
+- [x] 1b.7 Version 8: plating tiles modelled and rendered in Blender (`tools/blender/build_hull_tiles_ssarith.py`), the fine metal over them
+- [ ] 1b.8 Break C's 8 m repeat (a second tile or an offset per face)
+- [ ] 1b.9 The fine metal as a Material Maker graph (CLAUDE.md 10)
+- [ ] 1b.10 The owner picks, renames or replaces the directions (survey H2) and C's layout (H3)
 
 ## 2. After a tradition is chosen (H2)
 

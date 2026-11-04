@@ -1,5 +1,39 @@
 # Design: ssarith-ship-concepts
 
+## Version 8: plating modelled and rendered into textures (owner, 2026-11-04)
+
+"Take a look at the originals textures. They packed it with 3d depth and details. Use you skills with star crew bridge
+command to pack in those details by rendering a high poly model into textures", then "Then applying metal detail texture
+on top". The reference game's textures are not in this repository (someone else's art, CLAUDE.md section 1); what is
+taken is the method the owner named, the panel-textures skill (Star Crew's, on Fleet Command's `tools/blender/panel_kit.py`):
+a panel modelled out of real pieces and rendered face-on in Cycles into maps.
+
+- **The generator**: `tools/blender/build_hull_tiles_ssarith.py` (Blender 4.4.3 headless, 32 samples, 128 px per metre,
+  1 min 45 s for all four on this machine's CPU) writes `assets/textures/ssarith/` and its manifest (each tile's size in
+  metres, its mean albedo luminance, every file's sha256). Each tile writes albedo (the Diffuse Color pass), a tangent
+  space normal map (the Normal pass; x along the ship, y across the face) and occlusion-roughness-metalness (the AO pass
+  and two shader AOVs), from the kit's own passes, occlusion reaching 0.25 m at hull scale.
+- **The tiles**, each a tradition's own plating (X3), none from the species' body (C1):
+  - **A Old Lodge**, 6 m by 6 m: four rows of plates 1.0-2.2 m long and 1.5 m high, each 3-6.5 cm proud with chamfered
+    edges and a rivet row along both long edges; bolted access hatches with handles, small vents (a dark well with six
+    slats), conduits in clamps, and patch plates welded over the old ones (steel or bronze, a weld bead round each).
+  - **B Trackers**, 6 m by 4.2 m: two 3 m louvre bays between bolted ribs, twelve slats a bay, each a floor, a ramp and
+    a raised lip; sensor ports (a well and a lens); a cable tray of three cables.
+  - **C Field Hull**, 8 m by 4.4 m: two 4 m cast sections with 5 cm rounded edges, weld lines across them, an inspection
+    hatch with a bolt circle of twelve, flush service panels in frames, lugs and a grab rail.
+  - **Fine metal**, 2 m by 2 m at 256 px per metre: brushed streaks along the ship, scratches two ways and pits, from a
+    procedural shader rendered the same way.
+- **On the hull**: the tile is laid on each face as the plating already was (along the ship, across the face in metres).
+  It gives the relief (normal map), the crevices (its occlusion), the roughness and the metal; the tradition's colours tint
+  it by the tile's own brightness (A at 45 % of the bake's range, so its plates of many ages read as one hull, B at 80 %,
+  C at 70 %); bronze repairs keep a dulled colour of their own. The fine metal goes over every face where a pixel covers
+  under about 4 cm, so it shows up close (the Close view) and never shimmers far off.
+- **Cost**: the twelve maps travel in the page as WebP, 646 KB in all; no triangles added. The contact sheet is
+  `docs/screenshots/mockups/ssarith-ship-concepts/hull-tiles-contact-sheet.png`.
+- **Known**: C's tile repeats every 8 m along the ship, and its hatch shows the repeat down a long flank; a second C tile
+  or an offset per face would break it. The fine metal is a Blender shader, not yet a Material Maker graph (CLAUDE.md 10:
+  materials are Material Maker graphs); moving it is a task.
+
 ## Version 7: working detail (owner, 2026-11-04: "ships arent very complex")
 
 A ship reads as built of real parts when its jobs show on its skin, so the detail is the parts the plan and the bible
@@ -240,7 +274,7 @@ the Petrel's 88 m.
 
 ## Cost
 
-About 5,100 to 6,200 triangles a frigate with version 7's detail (measured on the page), inside a phone budget (survey A1, T3). The claws are the most
+About 5,100 to 6,200 triangles a frigate with version 7's detail (measured on the page); version 8's baked plating adds 646 KB of maps and no triangles, inside a phone budget (survey A1, T3). The claws are the most
 expensive part (about 300 triangles each).
 
 ## Not done yet
