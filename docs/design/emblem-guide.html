@@ -235,6 +235,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'ssarith', when: '2026-11-04', q: 'No the way I imagined was 3 bow and arrows overlapping pointed to the right', means: 'SD redrawn: the three bows overlap like a hand of cards, the largest behind on the left, the smallest in front on the right, every arrow aimed right and flying through the smaller bows ahead of it, in a pennon pointing the same way. The stepped rack is gone.' },
   { f: 'ssarith', when: '2026-11-04', q: 'bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and arrow / maybe different sizes to represent their different stages of manhood', means: 'SD, the Bow Rites, now recommended: three of the Hunt\'s own bows (cut from flat plate, a square-cut recurve, a one-barbed head), each braced with its arrow nocked, smallest to largest in a rack whose top steps up with them. A fourth tradition, yours: a new bow made at each stage of life, and the old ones kept.' },
   { f: 'ssarith', when: '2026-11-04', q: 'lets design an emblem for the SSarith', means: 'The Ssarith Hunt\'s section. Under your rule that a species\' looks are not its design, nothing is taken from their bodies: three traditions inside the Hunt are drafted (survey H1\'s recommendation), and each sketch names the one it comes from.' },
   { f: 'all', when: '2026-11-04', q: 'the look of an alien species is not their UI, not their spaceship ... none of those reflect the way they look', means: 'A rule for every emblem: culture, not anatomy. No shape from a species\' body; each sketch names the tradition it comes from.' },
@@ -857,19 +858,19 @@ function scArt(k, ink = false) {
 }
 
 // SD, the bow rites (owner, 2026-11-04: "bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and
-// arrow", "maybe different sizes to represent their different stages of manhood"). Three Ssarith bows in a row, smallest
-// to largest, each braced with its own arrow nocked and pointing up, standing in a rack whose top steps up with them. The
-// bow is the Hunt's own (cut from flat laminated plate, so its limbs are straight facets with a square-cut recurve at
-// each tip, and a heavy riser), never a picture of a body.
+// arrow", "maybe different sizes to represent their different stages of manhood", then "the way I imagined was 3 bow and
+// arrows overlapping pointed to the right"). Three Ssarith bows, smallest to largest, each braced with its arrow nocked and
+// aimed right, laid over one another, in a pennon that points the way they aim. The bow is the Hunt's own (cut from flat
+// laminated plate, so its limbs are straight facets with a square-cut recurve at each tip, and a heavy riser), never a
+// picture of a body.
 const SD = (() => {
-  const S = 82, gap = 5.5, ws = [14, 20, 26], x0 = 14.5, LEN = 2;  // the string line, the bows' widths
   // A thick polyline as a polygon: each vertex moved along its mitred normal by +-w/2 (w may vary per vertex).
   const thick = (pts, wv) => {
     const n = pts.length, L = [], Rr = [];
     pts.forEach((p, i) => {
       const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)], d = [b[0] - a[0], b[1] - a[1]], l = Math.hypot(...d);
       let nx = -d[1] / l, ny = d[0] / l;
-      if (i > 0 && i < n - 1) { // mitre: the average of the two segment normals, lengthened to keep the width
+      if (i > 0 && i < n - 1) {
         const d1 = [p[0] - a[0], p[1] - a[1]], d2 = [b[0] - p[0], b[1] - p[1]], l1 = Math.hypot(...d1), l2 = Math.hypot(...d2);
         const n1 = [-d1[1] / l1, d1[0] / l1], n2 = [-d2[1] / l2, d2[0] / l2], m = [n1[0] + n2[0], n1[1] + n2[1]], ml = Math.hypot(...m);
         const k = 1 / Math.max(0.5, (m[0] * n1[0] + m[1] * n1[1]) / ml); nx = m[0] / ml * k; ny = m[1] / ml * k;
@@ -879,49 +880,50 @@ const SD = (() => {
     });
     return L.concat(Rr.reverse());
   };
-  const bows = []; let x = x0;
-  ws.forEach((w, i) => {
-    const cx = x + w / 2, h = 0.8 * w, len = LEN * w;
-    // The limb's centre line, left tip to right tip: a square-cut recurve kicking out at each tip, straight facets up to
-    // the riser at the top (the bow is braced and aimed up, so its belly faces the string below).
-    const half = [[-0.5, -0.14], [-0.45, 0.01], [-0.37, -0.5], [-0.2, -0.88], [-0.07, -1]];
-    const line = half.map(([u, v]) => [cx + u * w, S + v * h]).concat(half.slice().reverse().map(([u, v]) => [cx - u * w, S + v * h]));
-    const limb = thick(line, [1.4, 1.7, 2.1, 2.6, 3.4, 3.4, 2.6, 2.1, 1.7, 1.4]);
-    const nockL = [cx - 0.45 * w, S], nockR = [cx + 0.45 * w, S];
-    const string = polyD([[nockL[0], S - 0.45], [nockR[0], S - 0.45], [nockR[0], S + 0.75], [nockL[0], S + 0.75]]);
-    // The arrow: a shaft from its nock just behind the string up past the riser, a narrow leaf head with one barb on the
-    // left (the Hunt's own head: it holds on one side only), and two square-cut vanes above the string.
-    const top = S - len, shaft = polyD([[cx - 0.8, S + 2.2], [cx + 0.8, S + 2.2], [cx + 0.8, top + 6], [cx - 0.8, top + 6]]);
-    const head = polyD([[cx, top], [cx + 2.2, top + 4.2], [cx + 0.8, top + 7], [cx - 0.8, top + 7], [cx - 3.4, top + 8.6], [cx - 2.2, top + 4.2]]);
-    const vanes = polyD([[cx - 0.8, S - 2.5], [cx - 2.4, S - 3.5], [cx - 2.4, S - 7], [cx - 0.8, S - 6]]) + polyD([[cx + 0.8, S - 2.5], [cx + 2.4, S - 3.5], [cx + 2.4, S - 7], [cx + 0.8, S - 6]]);
-    bows.push({ cx, w, top, limb: polyD(limb), string, shaft, head, vanes });
-    x += w + gap;
+  // The pennon: a long plaque whose right end comes to a point, the way the arrows fly.
+  const PEN = [[5, 10], [72, 10], [96, 50], [72, 90], [5, 90]];
+  // Each bow: [y of its arrow, height, x of its string, x of its arrow's tip]. Overlapping like a hand of cards: the
+  // largest behind on the left, the smallest in front on the right, their arrows close and parallel, so each arrow flies
+  // through the smaller bows ahead of it. Every tip stands clear of the pennon's slanted end.
+  const SPEC = [[43, 26, 47, 74], [50, 36, 33, 85], [57, 46, 19, 80]];
+  const bows = SPEC.map(([y, h, sx, tip]) => {
+    const d = 0.3 * h;                                      // the bow's depth from string to riser
+    // The limb's centre line, top tip to bottom tip: a square-cut recurve kicking back at each end, straight facets out
+    // to the riser at the front.
+    const half = [[-0.18, -0.5], [0, -0.44], [0.55, -0.3], [0.9, -0.12], [1, 0]];
+    const line = half.map(([u, v]) => [sx + u * d, y + v * h]).concat(half.slice(0, -1).reverse().map(([u, v]) => [sx + u * d, y - v * h]));
+    const limb = polyD(thick(line, [1.8, 2.1, 2.6, 3.2, 4, 3.2, 2.6, 2.1, 1.8]));
+    const string = polyD([[sx - 0.6, y - 0.44 * h], [sx + 0.6, y - 0.44 * h], [sx + 0.6, y + 0.44 * h], [sx - 0.6, y + 0.44 * h]]);
+    // The arrow: a shaft from its nock just behind the string, a narrow leaf head with one barb (below: it holds on one
+    // side only), and two square-cut vanes just ahead of the string.
+    const shaft = polyD([[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]]);
+    const head = polyD([[tip, y], [tip - 4.2, y + 2.2], [tip - 7, y + 0.8], [tip - 7, y - 0.8], [tip - 8.4, y - 2.8], [tip - 4.2, y - 2.2]]);
+    const vanes = polyD([[sx + 2.5, y - 0.8], [sx + 3.5, y - 2.4], [sx + 7, y - 2.4], [sx + 6, y - 0.8]]) + polyD([[sx + 2.5, y + 0.8], [sx + 3.5, y + 2.4], [sx + 7, y + 2.4], [sx + 6, y + 0.8]]);
+    return { y, h, sx, tip, d, limb, string, shaft, head, vanes };
   });
-  // The rack: its top steps up with the arrows, 9 units over each tip (4 clear of the field's edge, 5 of band).
-  const b = 5, stepX = [x0 + ws[0] + gap / 2, x0 + ws[0] + gap + ws[1] + gap / 2], tops = bows.map((q) => q.top - 4 - b);
-  const rack = [[5, 95], [5, tops[0]], [stepX[0], tops[0]], [stepX[0], tops[1]], [stepX[1], tops[1]], [stepX[1], tops[2]], [95, tops[2]], [95, 95]];
-  return { bows, fr: polyFrame(rack, 2.5, b), rack };
+  return { bows, fr: polyFrame(PEN, 2.5, 5) };
 })();
 function sdArt(k, ink = false) {
   const c = (x) => (ink ? '#000' : x);
   let s = `<path d="${SD.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
   if (!ink) s += path(SD.fr.field, k.field);
-  SD.bows.forEach((q, i) => { s += path(q.limb + q.string + q.shaft + q.vanes, c(k.device)) + path(q.head, c(i === 0 ? k.accent : k.device)); });
+  // Each part its own path: overlapping parts in one path would cancel into holes where their windings differ.
+  SD.bows.forEach((q, i) => { for (const part of [q.limb, q.string, q.shaft, q.vanes]) s += path(part, c(k.device)); s += path(q.head, c(i === 0 ? k.accent : k.device)); });
   return s;
 }
 const SSARITH_DESIGNS = [
   {
-    id: 'ssarith-d', tag: 'SD', faction: 'ssarith', name: 'SD · The Bow Rites', outline: 'A stepped rack', rec: true, own: true, pal: SSARITH, pieces: 4,
-    risk: 'A bow and arrow is a common archery mark; three in a row, growing, in the Hunt\'s own cut-plate bow with its one-barbed head, keep it the Ssarith\'s. Fine parts (strings, vanes) fill in below 40 px: the flat livery version may drop the strings.',
+    id: 'ssarith-d', tag: 'SD', faction: 'ssarith', name: 'SD · The Bow Rites', outline: 'A pennon', rec: true, own: true, pal: SSARITH, pieces: 2,
+    risk: 'A bow and arrow is a common archery mark; three overlapping, growing, in the Hunt\'s own cut-plate bow with its one-barbed head, keep it the Ssarith\'s. Fine parts (strings, vanes) fill in below 40 px: the flat livery version may drop the strings. A right-pointing outline is kept a pennon, square at the back, so it never reads as an arrowhead badge.',
     draw(bg = 'dk') { return sdArt(SSARITH[bg]); },
     ink() { return sdArt(SSARITH.dk, true); },
     callouts: [
-      [SD.bows[0].cx, SD.bows[0].top + 3, 'L', 'The first bow, its head in Watch green', 'The youngest stage: the bow made first, its arrow still lit because its first hunt is ahead of it.'],
-      [SD.bows[0].cx - SD.bows[0].w * 0.3, 82, 'L', 'Braced, arrow nocked', 'Every bow in the row is kept strung and ready, never retired: each stage stays part of the hunter.'],
-      [7, 72, 'L', 'A rack that steps up', 'Tradition: the Bow Rites (yours). The rack a hunter\'s bows hang in, its top rising with them.'],
-      [SD.bows[1].cx, SD.bows[1].top + 4, 'R', 'A barb on one side', 'The Hunt\'s own head: a narrow leaf that holds on one side only, so a fair hunter can draw it out.'],
-      [SD.bows[2].cx + SD.bows[2].w * 0.37, 82 - SD.bows[2].w * 0.4, 'R', 'Cut from flat plate', 'Straight facets and a square-cut recurve at each tip: the Hunt\'s makers laminate their bows from cut plate, as they build their gear.'],
-      [SD.bows[2].cx, SD.bows[2].top + 10, 'R', 'Each stage a size larger', 'Made by the hunter at each stage of life and kept: three stages here, smallest first, read from left to right.'],
+      [SD.bows[0].sx + SD.bows[0].d * 0.55, SD.bows[0].y - SD.bows[0].h * 0.3, 'L', 'The first bow, smallest, in front', 'The youngest stage: the bow made first. Its head in Watch green: its first hunt is still ahead of it.'],
+      [SD.bows[2].sx, SD.bows[2].y + SD.bows[2].h * 0.3, 'L', 'Braced, arrow nocked', 'Every bow is kept strung and ready, never retired: each stage stays part of the hunter.'],
+      [9, 30, 'L', 'A pennon, square at the back', 'Tradition: the Bow Rites (yours). The hunter\'s pennon flies the way the bows aim.'],
+      [SD.bows[1].tip - 7.5, SD.bows[1].y - 2.5, 'R', 'A barb on one side', 'The Hunt\'s own head: a narrow leaf that holds on one side only, so a fair hunter can draw it out.'],
+      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'Cut from flat plate', 'Straight facets and a square-cut recurve at each tip: the Hunt\'s makers laminate their bows from cut plate, as they build their gear.'],
+      [SD.bows[1].sx + SD.bows[1].d, SD.bows[1].y, 'R', 'Each stage a size larger, overlapping', 'A new bow at each stage of life, the old ones kept and laid over one another: three stages, all aimed the same way.'],
     ],
   },
   {
