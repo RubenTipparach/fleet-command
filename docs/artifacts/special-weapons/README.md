@@ -16,3 +16,6 @@
 - Version 1 published 2026-11-04 from a cloud session, version id `1793804570-14a8`. That session's account could not
   open the tracker or the survey, so this link is on the cloud account: the desktop session should republish the page on
   the owner's account, put that link on the tracker (`M12` in `docs/mockups/tracker.html`), `mockup-work.md` and here.
+- Version 2 published 2026-11-04 from the cloud session, version id `1793830836-df78`: the standard weapons (lance,
+  disruptor, pulse torpedo with its six-armed star and bead trail, missiles in four grades with point defence), one fixed
+  side-on view fitted to the free screen, shields half again as large and invisible until hit, no white on any weapon.
