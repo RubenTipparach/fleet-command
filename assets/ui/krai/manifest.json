@@ -416,6 +416,111 @@
       ],
       "file": "key.off.png"
     },
+    "keyw.idle": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.idle.png",
+      "margins": [
+        0,
+        20,
+        0,
+        20
+      ],
+      "stretch": "x"
+    },
+    "keyw.hover": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.hover.png",
+      "margins": [
+        0,
+        20,
+        0,
+        20
+      ],
+      "stretch": "x"
+    },
+    "keyw.on": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.on.png",
+      "margins": [
+        0,
+        20,
+        0,
+        20
+      ],
+      "stretch": "x"
+    },
+    "keyw.ok": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.ok.png",
+      "margins": [
+        0,
+        20,
+        0,
+        20
+      ],
+      "stretch": "x"
+    },
+    "keyw.warn": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.warn.png",
+      "margins": [
+        0,
+        20,
+        0,
+        20
+      ],
+      "stretch": "x"
+    },
+    "keyw.alert": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.alert.png",
+      "margins": [
+        0,
+        20,
+        0,
+        20
+      ],
+      "stretch": "x"
+    },
+    "keyw.off": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.off.png",
+      "margins": [
+        0,
+        20,
+        0,
+        20
+      ],
+      "stretch": "x"
+    },
     "cell.idle": {
       "kind": "nine",
       "size": [

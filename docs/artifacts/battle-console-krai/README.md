@@ -29,3 +29,8 @@
 - Version 6 (nothing white on a key: orange ink on dark keys, red mode tab names): published 2026-11-03, version id `1793737624-3c64`.
 - Version 7 (the top strip re-rendered at 60 px): published 2026-11-03, version id `1793738755-e645`.
 - Version 8 (a bloom experiment on the column's channel of red light, with a Bloom key to compare): published 2026-11-03, version id `1793739594-563e`.
+- Version 9 (hover popups and pointed keys' labels sized by the key's own end caps; rule T): published 2026-11-04, version id `1793761414-3503`.
+- Version 10 (the shared weapon targeting of change `weapon-targeting`; parity 2,378 presses of 313 controls): published 2026-11-04, version id `1793763262-429a`.
+- Version 11 (the five new mechanics and the aim changes of version 72 of the source page; Krai officer names and ranks; bloom always on; parity 3,187 presses of 389 controls): published 2026-11-04, version id `1793777628-6b78`.
+- Version 12 (drag-and-drop repairs, version 73 of the source page; parity 3,225 presses of 380 controls): published 2026-11-04, version id `1793778538-858d`.
+- Version 13 (wide keys `keyw.*` rendered in Blender and nine-sliced for the Tactical grid; weapon aims and independently powered weapons from version 74 of the source page; parity 3,261 presses of 391 controls): published 2026-11-04, version id `1793780737-78bf`.

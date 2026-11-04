@@ -205,6 +205,13 @@ def pieces():
     # whole is forge orange, damaged gold, down red; no green.
     for state, film in (("idle", "ember"), ("hover", "red"), ("on", "forge"), ("ok", "forge"), ("warn", "lamp_yellow"), ("alert", "lamp_red"), ("off", "slot")):
         add(f"key.{state}", "hero", (48, 48), kplate, [(film, kwell)], roll=1.2, land=1.0, dz=-4.0, pad=1.0)
+    # The wide key (owner, 2026-11-04, of the Tactical grid's cells drawn from the square key stretched: "this looks rough,
+    # can you better render a version of these butons? or slice them better"): the same slanted bezel and glass at 144 x
+    # 48, nine-sliced in x only, its slanted ends wholly inside the 20 px margins, so a cell of any width keeps its ends.
+    wplate = soft(Polygon([(8, 1.5), (142.5, 1.5), (136, 46.5), (1.5, 46.5)]), 2.5)
+    wwell = soft(Polygon([(12.4, 5.6), (138.2, 5.6), (131.6, 42.4), (6.6, 42.4)]), 2.0)
+    for state, film in (("idle", "ember"), ("hover", "red"), ("on", "forge"), ("ok", "forge"), ("warn", "lamp_yellow"), ("alert", "lamp_red"), ("off", "slot")):
+        add(f"keyw.{state}", "nine", (144, 48), wplate, [(film, wwell)], margins=(0, 20, 0, 20), stretch="x", roll=1.2, land=1.0, dz=-4.0, pad=1.0)
     # The strips as the battle console joins them to the column: 80 px tall, so a bar's label, its bar and the alert lamps
     # sit inside the open channel (owner, 2026-11-03: "Some of the elements on the bottom bar like red alerts energy,
     # battery, warp button don't fit in the container. Shrink.the elements or grow container height"); the plate runs on

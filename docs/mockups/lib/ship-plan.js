@@ -70,11 +70,25 @@ function sideAt(h, y) {
   if (y < bot + ch) return { x: hb - ((bot + ch) - y), tilt: -Math.PI / 4 };
   return { x: hb, tilt: 0 };
 }
+// A pane (1.2 m long, 0.75 m tall with its rim) lies flat on one face of the section (owner, 2026-11-04: "window geometry
+// extending a bit over the hull slope, need to adjust slope start height"): the face at its middle must also be the face at
+// its top and bottom edges and at both ends. Where it would cross a bend there is no window. The face must also stay one plane along the pane, so a pane where the hull
+// tapers along its length is not set into the taper.
+const PANE = { hu: 0.66, hv: 0.5 };
+function paneY(stations, z, y0) {
+  const fits = (y) => { const s = sideAt(CL.hullAt(stations, z), y); if (!s) return false;
+    const vy = PANE.hv * Math.cos(s.tilt);
+    for (const dz of [-PANE.hu, 0, PANE.hu]) for (const dy of [-vy, 0, vy]) { const t = sideAt(CL.hullAt(stations, z + dz), y + dy);
+      if (!t || t.tilt !== s.tilt || Math.abs(t.x - (s.x - dy * Math.tan(s.tilt))) > 0.05) return false; } // one flat face: same slope, same plane
+    return true; };
+  return fits(y0) ? y0 : null; // a row stays level: a pane that does not fit at its row's height is left out, never moved
+  // (owner, 2026-11-04: "remove these windows if they cannot be placed in an aligned fasion")
+}
 function windows(plan, R, stations, lit) {
   const C = clear(plan), F = plan.deck_floor_m, out = [];
   for (const r of R) { if (!lit[r.kind]) continue;
-    for (const d of r.decks) { const y = F[d] + 1.5;
-      for (let z = r.b.z0 + 1.2; z <= r.b.z1 - 1.2; z += 2.4) { const s = sideAt(CL.hullAt(stations, z), y); if (!s) continue;
+    for (const d of r.decks) { const y0 = F[d] + 1.5;
+      for (let z = r.b.z0 + 1.2; z <= r.b.z1 - 1.2; z += 2.4) { const y = paneY(stations, z, y0); if (y === null) continue; const s = sideAt(CL.hullAt(stations, z), y);
         for (const side of [1, -1]) { const reach = side > 0 ? r.b.x1 : -r.b.x0;
           if (reach < s.x - C * 2 - 1.2) continue; // the room does not meet this side (allowing for a sloped side's offset)
           out.push({ x: side * (s.x + 0.03), y, z, side, tilt: s.tilt }); } } } }

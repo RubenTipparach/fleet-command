@@ -10,10 +10,14 @@
 
 - [x] 1.6 v4 on the Ship Design Bible: the frigate's rooms as data (`data/ships/krai/frigate_plan.json`), the hull fitted round them by `lib/ship-plan.js`, the Krai's own parts and exterior, Build it up and the deck plans; survey A15-A17 withdrawn
 - [x] 1.7 The frigate to the Concord line's standard on the shared `lib/ship-skin.js`: detail and normal maps, the chevron seams as grooves, interior-mapped windows with Krai rooms, six-sided thrusters, warm orange floodlights with shadows, strobes and beacons
+- [x] 1.8 The classes: corvette, cruiser and dreadnought plans from `tools/mockups/krai_plans.py`, one builder for all four, a line-up
+- [x] 1.9 Damage on the shared `lib/ship-fx.js` (lifted from mockup 6, which now uses it): systems, scorch marks, holes onto the plan's rooms, failures, parts breaking away, a core breach, the Damage tab
+- [x] 1.10 The hull breaks apart as the Concord line's (the shared `lib/ship-break.js`, lifted from mockup 6, which uses it and renders as before); a bayonet shape per class
+- [x] 1.11 Owner's notes of 2026-11-04: the whole hull no longer stays under its broken pieces; a wide crescent on the cruiser and the dreadnought; a painted livery; nacelle detail; windows flat on one face with level rooms; the thruster throat clear of the stern face
 
 ## 2. After the frigate is approved
 
-- [ ] 2.1 The corvette, cruiser and dreadnought planned and fitted the same way; the frigate finished: detail texture, hull lamps, damage (mockup 6's systems)
+- [ ] 2.1 The classes finished to the frigate's detail: detail texture, hull lamps, damage (mockup 6's systems)
 - [ ] 2.2 The Krai ship display as a wireframe schematic of the chosen hull (console skins)
 - [ ] 2.3 The Krai builder moved into `docs/mockups/lib/` beside the Concord line, so the console can fly Krai ships
 

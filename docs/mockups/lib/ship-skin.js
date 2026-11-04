@@ -216,7 +216,10 @@ function thruster(at, r, o) {
   const yE = L * 0.62, mount = [[neck(L) * 0.9, L], [r * 0.98, L], [r * 0.98, L * 0.93], [neck(yE) + r * 0.1, yE + L * 0.04], [neck(yE) - 0.02, yE]].map(([x, y]) => new THREE.Vector2(x, y));
   const mg = new THREE.LatheGeometry(mount, N === 28 ? 32 : N); mg.rotateX(PI / 2); mg.translate(at.x, at.y, lip); add(mg, new THREE.MeshStandardMaterial({ color: o.mount ?? 0x3a4049, roughness: 0.55, metalness: 0.6, side: THREE.DoubleSide, envMapIntensity: o.env }), 'mount');
   for (let k = 0; k < 10; k++) { const a = k / 10 * 2 * PI, bo = new THREE.BoxGeometry(r * 0.09, r * 0.09, r * 0.12); bo.translate(at.x + Math.cos(a) * r * 0.99, at.y + Math.sin(a) * r * 0.99, lip + L - r * 0.06); add(bo, o.dark, 'bolt'); }
-  const tm = o.glow(o.throat ?? 0xffc27a, 0x3a1a08); const throat = new THREE.CircleGeometry(r * 0.56, 20); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - 0.05); add(throat, tm, 'throat');
+  // The throat: a disc of the bell's own sides, set inside its walls and well inside the bell's mouth on the hull side, so it
+  // meets no other surface (owner, 2026-11-04, "look at all that zfighting": 5 cm in, it lay exactly on a Krai stern face).
+  const tm = o.glow(o.throat ?? 0xffc27a, 0x3a1a08), dT = L * 0.06, rT = neck(L - dT) * 0.99; // its corners on the bell's own, so it fills the bell and stays inside it
+  const throat = new THREE.CircleGeometry(rT, N, PI / 2); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - dT); add(throat, tm, 'throat');
   const pl = new THREE.ConeGeometry(r * 0.85, r * 3.2, 20, 1, true); pl.rotateX(PI / 2); pl.translate(at.x, at.y, lip - r * 1.6); add(pl, plumeMat(heat, o), 'plume');
   tm.userData.heat = heat;
   return { parts, heat, throat: tm };

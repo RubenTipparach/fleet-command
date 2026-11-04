@@ -63,3 +63,17 @@
 - 2026-11-04, cloud session: M11 at v3 and the guide at v18; version 72, id `1793779859-89fd`.
 - 2026-11-04, cloud session: the guide at v19, built on the live v73 (another session's M2 v74 and M8 v13 kept); version 74, id `1793781484-b484`.
 - 2026-11-04, cloud session: the guide at v20, built on the live v81 (other sessions' entries kept); version 82, id `1793786546-ad10`.
+- 2026-11-03, cloud session (Concord ships thread): version 57, version id `1793748454-d560`: M7 v11 (the Krai line and damage), M6 v15 (shared damage module).
+- 2026-11-04, cloud session (Concord ships thread): version 58, version id `1793755601-4b1e`: M7 v12 (the Krai hull breaking apart, a bayonet per class), M6 v16 (shared breakup module).
+- 2026-11-04, cloud session (Concord ships thread): version 60, version id `1793761970-4cbf`, built on the live version 59 (another session's M8 v9 and Analog Panel Bible v4 kept): M7 v13, M6 v17.
+- 2026-11-04, cloud session (Concord ships thread): version 75, version id `1793781932-3252`, built on the live version 74 (other sessions' entries kept): M7 v16.
+- 2026-11-04, cloud session (Krai battle console thread): M8 at version 9 and the Analog Panel Bible at version 4 (rule T), on the live version `1793755601-4b1e` (from `claude/trusting-faraday-js5whp`: M6 v16, M7 v12, M9, the Emblem Design Guide); version 59, version id `1793761464-be25`.
+- 2026-11-04, cloud session (Krai battle console thread): M2 at version 71 and M8 at version 10 (weapon targeting), on the live version `1793761970-4cbf` (M6 v17, M7 v13 from another session); version 61, version id `1793763310-9c68`.
+- 2026-11-04, cloud session (Krai battle console thread): M2 at version 72 and M8 at version 11, on the live version `1793777299-64c0` (M10 at v4 and the Emblem Design Guide at v16 from another session); version 67, version id `1793777634-c8fa`.
+- 2026-11-04, cloud session (Krai battle console thread): M2 at version 73 and M8 at version 12 (drag-and-drop repairs); version 68, version id `1793778541-bd46`.
+- 2026-11-04, cloud session (Krai battle console thread): M2 at version 74 and M8 at version 13, on the live version `1793779859-89fd` (M11 and the Emblem Design Guide at v18 from another session); version 73, version id `1793780757-f106`.
+- 2026-11-04, cloud session (Concord ships thread): version 76, version id `1793782323-fbf2`: M7 v17.
+- 2026-11-04, cloud session (Concord ships thread): version 78, version id `1793783169-9f75`, built on the live version 77 (other sessions' M2 v75 and M8 v14 kept): M7 v18.
+- 2026-11-04, cloud session (Concord ships thread): version 79, version id `1793783791-8c90`: M7 v19.
+- 2026-11-04, cloud session (Concord ships thread): version 80, version id `1793785489-a233`: M7 v20.
+- 2026-11-04, cloud session (Concord ships thread): version 81, version id `1793785555-ea71`: M6 v18.

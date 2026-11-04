@@ -140,6 +140,7 @@ shape, and exits with an error on any failure:
 | L | every metal tip is rounder than the roll: the metal opened by ROLL changes by 0.6 mm or less | 0.6 mm |
 | P | printing on a display (a gauge, a scale, a hologram) stays PAD inside its window | PAD 3.0 mm |
 | B | every layer behind a plate (film, well, sub-display, glow plane, backing) stays inside the plate's footprint, rounded corners included (owner, 2026-10-31: "Some times the UI layer/plane can stick outside its bounds. It must measured properly to fit inside the parent panel"): clamped when built (`behind_layer()`, `Panel.film(inside=...)` or `shape=`), and on the render no lit pixel outside the plates | INSET 4 mm |
+| T | text never reaches a piece's ends (owner, 2026-11-04: "these text popups need to be a bit wider so they dont get thier letters cut off"): a live label's room is the piece's open field, its width less both end caps at the drawn height (the 9-slice margins as drawn), 4 px clear each side; a key or popup sized to its text is the text plus both caps plus the gaps, the text centred in the open field (a slanted back and a point differ in width). The battle console does it with `keyCaps()` | GAP 4 px |
 
 **Measure, never eyeball.** Every rule is measured on the geometry (shapely), not judged from a render: the study's
 time display sat 5 px from its plate's bottom edge (two 3.8 mm rolls need 7.6 before any flat), most of its windows had
@@ -289,6 +290,7 @@ The study's sampled palette: film `#eacf9f` (ours `#e9ce9f`), plate `#bdb8ae` me
   into the 3D view because its frame and key caps needed more.
 - Every formed shape and every kit piece passes the fit check (K, R, L, P, B) before it is rendered; look at its check
   map. After rendering, no lit pixel outside the plates (rule B).
+- Every label drawn on a piece sits in its open field (rule T): hover the longest names and look.
 - Render the top band at 24 samples while tuning (render border), the whole panel at 64 to finish.
 - Look at a crop at 2x of every changed area; check text under every lamp.
 - Keep each earlier version of a study beside it while iterating, so "change it back" is one copy.
