@@ -174,7 +174,13 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
-  { tag: 'D', name: 'Missiles for every faction (mockup 12)',
+  { tag: 'H', name: 'Ssarith Hunt: their culture first',
+    lead: 'Mockup 12 version 1 is withdrawn: it read the species\' body into the ships. The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
+    qs: [
+      { id: 'H1', q: 'How should the Ssarith Hunt\'s culture be set before their ships are redrawn?',
+        options: ['You write it (history, beliefs, how they live and work, their yards and makers); we design from that', 'We draft several traditions inside the Hunt (yards, eras, schools that disagree), none from their bodies, for you to pick and change', 'Pause the Hunt\'s ships for now'], rec: 1,
+        why: 'Options to react to are quicker for you than a blank page, and you keep every cultural decision (U7).' },
+  { tag: 'D', name: 'Missiles for every faction (mockup 16)',
     lead: 'You asked for missiles on every faction ("in starfleet command they are refered to as drones"). The weapons range fires salvos both ways with point defence; the rules are written up in openspec/changes/missiles after the reference manual (SFC2, printed pages 24 and 190-192). Every number is a placeholder.',
     qs: [
       { id: 'D1', q: 'Your four grades, red to green: red 240 m/s and 8 damage, orange (today\'s missile) 320 m/s and 11, blue 400 m/s and 14, green 480 m/s and 18, so a ship at full speed outruns red and orange but not blue or green; blue and green take two point defence hits to stop. Right spread?',
@@ -196,8 +202,8 @@ const SECTIONS = [
         options: ['Yes: firing main weapons voids it, point defence does not', 'No: the decoy works whatever you do', 'Firing any weapon voids it'], rec: 0,
         why: 'The decoy then costs you your guns for a while, which makes it a real choice; point defence is defence, so it should not cost the decoy.' },
     ] },
-  { tag: 'X', name: 'Special weapons (mockup 12)',
-    lead: 'Mockup 12 (Special Weapons Range, docs/mockups/special-weapons.html; its link is on the tracker) fires the Concord\'s Chorus lance and Quell torpedo and the Krai\'s Forge driver and Blood charge on the approved ships. Designs: openspec/changes/special-weapons and weapon-fx. Every number is a placeholder.',
+  { tag: 'X', name: 'Special weapons (mockup 16)',
+    lead: 'Mockup 16 (Special Weapons Range, docs/mockups/special-weapons.html; its link is on the tracker) fires the Concord\'s Chorus lance and Quell torpedo and the Krai\'s Forge driver and Blood charge on the approved ships. Designs: openspec/changes/special-weapons and weapon-fx. Every number is a placeholder.',
     qs: [
       { id: 'X1', q: 'Two special weapons a faction: a signature weapon (the Chorus lance, the Forge driver) and a tactical one (the Quell torpedo, the Blood charge). Right number?',
         options: ['Two each', 'One each', 'Three each (say what the third should do in the notes)'], rec: 0,

@@ -311,7 +311,8 @@ public sealed partial class Main : Node
     };
 
     /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked
-    /// (--station, --page, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor), saves a PNG and quits. The window size is
+    /// (--station, --page, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
+    /// to the target), saves a PNG and quits. The window size is
     /// Godot's own --resolution flag.</summary>
     private async System.Threading.Tasks.Task Still(string path)
     {
@@ -331,7 +332,10 @@ public sealed partial class Main : Node
         if (_args.ContainsKey("paused")) _x.State.Paused = true;
         if (_args.ContainsKey("scene-list")) _x.State.SceneOpen = true;
         if (_args.TryGetValue("zoom", out string? zm)) _view.Zoom(float.Parse(zm, System.Globalization.CultureInfo.InvariantCulture));
-        for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        bool tview = _args.ContainsKey("target-view");
+        if (tview) _view.ToggleTargetView();
+        // a glide takes BattleView.GlideS of real time: wait it out (and a little more) before the shot
+        for (int i = 0; i < (tview ? 120 : 4); i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         Relayout();
         for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);

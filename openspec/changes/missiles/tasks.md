@@ -3,7 +3,7 @@
 ## 1. The write-up and the mockup
 
 - [x] 1.1 Proposal, design and spec delta, citing SFC2 printed pages 24 and 190-192 and SFC3 28-29
-- [x] 1.2 The weapons range (mockup 12): salvos of four both ways, the drive flame and trail in the firing faction's
+- [x] 1.2 The weapons range (mockup 16): salvos of four both ways, the drive flame and trail in the firing faction's
       colour, point defence firing on them by `pd_intercept_chance`
 - [x] 1.3 The battle console mockup draws missiles with the new look (v77)
 - [x] 1.6 Countermeasures on the range: flares, a decoy shuttle, point defence cannon tracers, fooled by grade

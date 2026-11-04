@@ -9,7 +9,7 @@ Open questions for the owner live in one survey page (CLAUDE.md section 8):
 - Answers: the artifact's `answers` collection, read with `ArtifactData`.
 
 Question id prefixes: `G` game and feel, `U` the console and screens, `T` tech and platforms, `A` art,
-`S` sound and music, `P` playtesting, `F` the game flow (mockup 1), `B` the battle console (mockup 2), `R` the reactor (mockup 2), `E` faction emblems (mockup 9), `X` special weapons (mockup 12), `D` missiles (mockup 12). Ids are
+`S` sound and music, `P` playtesting, `F` the game flow (mockup 1), `B` the battle console (mockup 2), `R` the reactor (mockup 2), `E` faction emblems (mockup 9), `X` special weapons (mockup 16), `D` missiles (mockup 16). Ids are
 never reused.
 
 ## Mockups

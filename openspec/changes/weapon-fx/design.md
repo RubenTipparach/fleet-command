@@ -72,7 +72,7 @@ it leaves behind a particle trail".
 
 ## Where the effects are used
 
-- **The weapons range** (mockup 12): every standard and special weapon, the full pipeline. One fixed view, side on,
+- **The weapons range** (mockup 16): every standard and special weapon, the full pipeline. One fixed view, side on,
   that never turns or follows (owner, 2026-11-04: "no rotation on on camera please. I just want to see the fx fired
   between two ships"); the ships hold station face to face and drift a few metres so the beams can be seen riding them;
   the view's distance fits the ships and their shields into the part of the screen the panels leave free, and the

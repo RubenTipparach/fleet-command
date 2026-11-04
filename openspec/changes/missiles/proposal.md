@@ -2,7 +2,7 @@
 
 ## Why
 
-The owner, 2026-11-04, on the weapons range (mockup 12): "all factions can have missiles too, so develop missiels (in
+The owner, 2026-11-04, on the weapons range (mockup 16): "all factions can have missiles too, so develop missiels (in
 starfleet command they are refered to as drones)".
 
 Today a missile is one weapon on one class (the Vos corsair) and the barrage scene: it flies at 1,100 m/s, homes, does
@@ -29,7 +29,7 @@ fire one or fire all.
 
 ## Impact
 
-- Now: the weapons range (mockup 12) fires missile salvos both ways with point defence; the battle console mockup draws
+- Now: the weapons range (mockup 16) fires missile salvos both ways with point defence; the battle console mockup draws
   missiles with the new look. Survey section D.
 - Later (after approval for implementation): `data/battle/weapons.json` (rounds, reload, fuel, the heavy warhead) and
   `classes.json` (racks for every faction), `src/Core` (`DataLoader`, `Rules`, the battle), the weapons panel.

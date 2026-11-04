@@ -13,3 +13,7 @@
   concord ships ...", then "Add to the guide: ship exterior material should compliment the UI, not share materials or
   colors directly ..."): version 1, version id `1793722593-ea42`.
 - 2026-11-03, cloud session (Concord ships thread): version 2, version id `1793739161-a2e8`. Chapter 5 takes the A18 answer (a bridge block only on super capital ships); X1 is a guide, not a hard rule, and X2 (no shared colours) is withdrawn (owner: "I said compliment, so not a hard rule"); plans from the shared `lib/ship-plan.js`.
+- 2026-11-04, cloud session (owner: "the look of an alien species is not their UI, not their spaceship", "make sure these
+  notes are added to the cultural guides of designing spaceships"): chapter 13, Culture, not anatomy (rules C1-C5), added
+  in `docs/design/ship-bible.html`, with a checklist line and a row in Other factions (now chapter 14). **To republish from
+  the desktop session**: the cloud session's account cannot open this artifact.

@@ -15,9 +15,10 @@ source "$REPO_ROOT/build.config"
 FULL_VERSION="$GODOT_VERSION-$GODOT_RELEASE-$GODOT_FLAVOR"
 DEST="$REPO_ROOT/$TOOLS_DIR/godot"
 STAMP="$DEST/.installed-version"
-# Linux (cloud sessions, CI) or Windows under Git Bash (the owner's playtest PC).
+# Linux (cloud sessions, CI), macOS (the owner's Mac) or Windows under Git Bash (the owner's playtest PC).
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) HOST=windows ;;
+  Darwin) HOST=macos ;;
   *) HOST=linux ;;
 esac
 # The .NET (mono) build ships as a folder (the editor beside its GodotSharp assemblies) and has its own templates.
@@ -30,6 +31,11 @@ if [[ "$HOST" == "windows" ]]; then
   EDITOR_SLUG="${MONO_TAG}win64.zip"; EDITOR_PLATFORM="windows.64"
   GODOT_BIN="$DEST/Godot_v$GODOT_VERSION-${GODOT_RELEASE}_${MONO_TAG}win64_console.exe"
   TEMPLATE_DIR="$APPDATA/Godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE$TEMPLATE_SUFFIX"
+elif [[ "$HOST" == "macos" ]]; then
+  # The macOS zip is one universal app bundle (Godot_mono.app for the .NET build); the binary inside prints to the shell.
+  EDITOR_SLUG="${MONO_TAG}macos.universal.zip"; EDITOR_PLATFORM="macos.universal"
+  GODOT_BIN="$DEST/Godot$([[ -n "$MONO_TAG" ]] && echo _mono).app/Contents/MacOS/Godot"
+  TEMPLATE_DIR="$HOME/Library/Application Support/Godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE$TEMPLATE_SUFFIX"
 else
   EDITOR_SLUG="${MONO_TAG}linux$([[ -n "$MONO_TAG" ]] && echo _ || echo .)x86_64.zip"; EDITOR_PLATFORM="linux.64"
   GODOT_BIN="$DEST/godot"

@@ -171,4 +171,28 @@ public class BattleTests
         Assert.Equal(h, b.Player.HOrder);
         Assert.Equal(v, b.Player.VOrder);
     }
+
+    [Fact]
+    public void Every_hit_that_lands_is_recorded_for_the_view_with_what_the_shields_took_and_what_reached_the_hull()
+    {
+        Battle b = TestData.NewBattle();
+        b.Lock("vorrak");
+        long last = 0;
+        for (int i = 0; i < 3600; i++)
+        {
+            if (i % 30 == 0) b.Fire();
+            b.Step();
+            foreach (HitEvent e in b.Hits)
+            {
+                if (e.Seq <= last) continue;
+                Assert.Equal(last + 1, e.Seq);   // none missed, none twice
+                last = e.Seq;
+                Assert.True(e.Absorbed >= 0 && e.HullDamage >= 0 && e.Absorbed + e.HullDamage > 0);
+                Assert.Contains(b.Ships, s => s.Id == e.ShipId);
+                if (e.Destroyed) Assert.False(b.Ships.First(s => s.Id == e.ShipId).Alive);
+            }
+            Assert.True(b.Hits.Count <= Battle.HitMemory);
+        }
+        Assert.True(last > 0, "no hit landed in two minutes");
+    }
 }

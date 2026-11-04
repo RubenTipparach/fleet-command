@@ -39,35 +39,6 @@ KEY = os.environ.get("EMBLEM_KEY", "b-e27")
 PARTS = os.path.join(R.ROOT, "assets", "emblems", "concord", f"{KEY}.parts.json")
 
 
-def xy(p):
-    """A grid point (y down, 0 to 100) to badge millimetres (y up, centred)."""
-    return ((p[0] - 50.0) * MM, (50.0 - p[1]) * MM)
-
-
-def poly_slab(name, rings, z0, z1, bevel, material):
-    """A flat part between z0 and z1 mm whose outline is the given polygons (nested ones are holes: the curve's 2D fill
-    is even-odd), its edges rounded by `bevel` mm."""
-    cu = bpy.data.curves.new(name, "CURVE")
-    cu.dimensions = "2D"
-    cu.fill_mode = "BOTH"
-    for ring in rings:
-        sp = cu.splines.new("POLY")
-        sp.points.add(len(ring) - 1)
-        for pt, p in zip(sp.points, ring):
-            x, y = xy(p)
-            pt.co = (x, y, 0, 1)
-        sp.use_cyclic_u = True
-    h = (z1 - z0) / 2
-    cu.extrude = max(0.0, h - bevel) * MM
-    cu.bevel_depth = bevel * MM
-    cu.bevel_resolution = 4
-    ob = bpy.data.objects.new(name, cu)
-    ob.location.z = (z0 + h) * MM
-    bpy.context.scene.collection.objects.link(ob)
-    ob.data.materials.append(material)
-    return ob
-
-
 def holo_field():
     """The bell's field: a night sky in deep blue with drifting nebula (violet, teal, lilac) and fine stars, under a
     clear coat with a thin film, so its sheen shifts colour as the badge turns (the holographic look). All procedural:
@@ -203,39 +174,27 @@ def build(parts):
     field = holo_field()
     light = R.principled("concord.bow_light", "#2fbf5a", rough=0.05, coat=1.0, emission="#2fbf5a", strength=4.0)
 
-    poly_slab("frame", parts["frame"], 0.0, 3.6, 0.8, plat)
-    poly_slab("field", parts["field"], 0.3, 1.0, 0.15, field)
+    R.poly_slab("frame", parts["frame"], 0.0, 3.6, 0.8, plat)
+    R.poly_slab("field", parts["field"], 0.3, 1.0, 0.15, field)
     for i, (leg, segs) in enumerate(zip(parts["legs"], parts["legSegments"])):
-        poly_slab(f"leg.{i}", [leg], 0.5, 1.9, 0.35, pearl)
+        R.poly_slab(f"leg.{i}", [leg], 0.5, 1.9, 0.35, pearl)
         for j, seg in enumerate(segs):
-            poly_slab(f"leg.{i}.seg.{j}", [seg], 0.5, 2.4, 0.35, pearl)
-    poly_slab("tail", [parts["tail"]], 0.5, 2.4, 0.4, pearl)
+            R.poly_slab(f"leg.{i}.seg.{j}", [seg], 0.5, 2.4, 0.35, pearl)
+    R.poly_slab("tail", [parts["tail"]], 0.5, 2.4, 0.4, pearl)
     # The saucer in two tiers (the double bevel), the star cut through both, and the star's floor set in the hole.
-    poly_slab("lens", [parts["lens"], parts["star"]], 0.6, 2.3, 0.45, pearl)
-    poly_slab("lens.top", [parts["lensTop"], parts["star"]], 1.9, 2.9, 0.3, pearl)
+    R.poly_slab("lens", [parts["lens"], parts["star"]], 0.6, 2.3, 0.45, pearl)
+    R.poly_slab("lens.top", [parts["lensTop"], parts["star"]], 1.9, 2.9, 0.3, pearl)
     # The star is cyan satin (owner, 2026-11-04: "a cyan colored star in the middle"): the near-white pearl enamel's maps
     # tinted cyan (Signal blue cannot be tinted up to cyan), with a pale cyan sheen.
-    poly_slab("star.floor", [parts["star"]], 0.5, 1.9, 0.2, satin(R.mm_material("emblem_enamel_pearl", tint="#2fd0f0"), sheen="#b8f4ff"))
+    R.poly_slab("star.floor", [parts["star"]], 0.5, 1.9, 0.2, satin(R.mm_material("emblem_enamel_pearl", tint="#2fd0f0"), sheen="#b8f4ff"))
     lt = parts["light"]
-    x, y = xy((lt["cx"], lt["cy"]))
+    x, y = R.xy((lt["cx"], lt["cy"]))
     bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=24, radius=lt["r"] * MM, location=(x, y, 2.4 * MM))
     ob = bpy.context.active_object
     ob.name = "bow.light"
     ob.scale.z = 0.4
     bpy.ops.object.shade_smooth()
     ob.data.materials.append(light)
-
-
-def angle_camera():
-    """A three-quarter perspective view from the lower right, looking up at the badge's face, so its depth shows."""
-    cd = bpy.data.cameras.new("emblem.angle")
-    cd.lens = 70
-    ob = bpy.data.objects.new("emblem.angle", cd)
-    ob.location = Vector((0.085, -0.15, 0.2))
-    bpy.context.scene.collection.objects.link(ob)
-    ob.rotation_mode = "QUATERNION"
-    ob.rotation_quaternion = (Vector((0, -0.004, 0.0015)) - ob.location).to_track_quat("-Z", "Y")
-    return ob
 
 
 def main():
@@ -250,7 +209,7 @@ def main():
         R.render(os.path.join(out, f"{KEY}-clay.png"))
         restore()
     R.render(os.path.join(out, f"{KEY}-face.png"))
-    bpy.context.scene.camera = angle_camera()
+    bpy.context.scene.camera = R.angle_camera()
     R.render(os.path.join(out, f"{KEY}-angle.png"))
 
 

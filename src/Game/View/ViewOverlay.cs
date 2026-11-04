@@ -263,6 +263,11 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), xi, 2.6f, true);
             DrawLine(xr.Position + new Vector2(17, 7), xr.Position + new Vector2(7, 17), xi, 2.6f, true);
             SystemsDisplay.Draw(this, _ui, _x, t, new Rect2(bx + 14, by + 44, w - 28, h - 58), false, "tgt");
+            // the camera's two keys under the box (battle-console design 4n): Target view, and Camera lock back on your ship
+            float kw = (w - 6) / 2, ky = by + h + 6;
+            Key("v.tview", new Rect2(bx, ky, kw, 30), "Target view", _view.ToggleTargetView, _view.TargetView, "The camera glides to the target and orbits it");
+            Key("v.camlock", new Rect2(bx + kw + 6, ky, kw, 30), "Camera lock", _view.LockCamera, _view.CamLock && !_view.TargetView,
+                "Keep the target ahead of your ship (a drag frees it)");
         }
     }
 

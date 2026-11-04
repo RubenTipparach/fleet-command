@@ -45,7 +45,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 <div class="panel title">
   <h1>Concord emblem on the hull</h1>
   <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side, upright on the forward livery band in the stripe's own blue with no outline, the band broken round it by bare hull in an arc over the head and a flat edge under the foot, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
+  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side, upright on the forward livery band in the stripe's own blue with a border in the band's seam colour, the band broken round it by bare hull, its cut edges bordered in the same seam, an arc over the head and a flat edge under the foot, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
   <p>Ship: the Concord line's shared builder, plain pearl (mockup 6 has the windows and lamps). Change <code>faction-emblems</code>.</p>
 </div>
 <div class="panel bar" id="bar"></div>
@@ -114,6 +114,10 @@ const BASES = {
     nacelles: [{ x: 25, y: 0.6, z: -24, len: 64, hw: 2.8, hh: 2.7 }],
     radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 27, 'cmd'], [11.5, -6, 'top'], [-11.5, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
     core: { pos: [0, -20.9, -30], size: [2.2, 0.5, 30] }, torpedo: [0, -1.8, 50.05], deflector: [0, 1.0, 50.05, 2.6],
+    // The primary hull's own stern (owner, 2026-11-04, of the Albatross: "the back part looks kinda bad, more thrusters?
+    // more detail on the back of main hull?"): an aft bulkhead block on its last station (z), its impulse bells [x, y, r]
+    // (mirrored), and manoeuvring thruster quads [x, y] (mirrored) at the stern's corners.
+    stern: { z: -34, block: { w: 16, h: 7.2, d: 2.4, y: 0.7 }, bells: [[4.4, 0.7, 1.9]], rcs: [[9.4, 5.4], [9.4, -3.6]] },
   },
   // The battleship (owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", "please make these
   // somewhat different than the standard ship shape ... battleship needs an array of cannons", "large cannons"): a long armoured
@@ -307,6 +311,9 @@ function plainModel(id, o = {}) {
     for (const s2 of [1, -1]) mesh(boxGeo(0.14, n.hh * 0.32, n.len * 0.72, x + s2 * (n.hw + 0.02), n.y, n.z), glow(0x2fb8ff), 'nacelle');
     const cap = new THREE.CircleGeometry(n.hh * 0.38, 16); cap.translate(x, n.y, n.z + n.len / 2 + 0.03); mesh(cap, glow(0xff6a1f), 'nacelle'); }
   { const b = C.bells; for (const sx of b.x ? [1, -1] : [1]) { const d = new THREE.CircleGeometry(b.r, 20); d.rotateY(Math.PI); d.translate(sx * b.x, b.y, b.z - 0.05); mesh(d, glow(0xffb070), 'drive'); } }
+  if (C.stern) { const T = C.stern, K = T.block, zf = T.z - K.d;   // the primary hull's stern block and its bells
+    mesh(boxGeo(K.w, K.h, K.d + 0.3, 0, K.y, T.z - K.d / 2 + 0.15), pearl, 'drive');
+    for (const [x, y, r] of T.bells) for (const sx of [1, -1]) { const d = new THREE.CircleGeometry(r, 20); d.rotateY(Math.PI); d.translate(sx * x, y, zf - 0.05); mesh(d, glow(0xffb070), 'drive'); } }
   { const [x, y, z, r] = C.deflector; mesh(boxGeo(r * 2, r * 1.1, 0.25, x, y, z), glow(0x6fc6ff), 'deflector'); }
   g.userData.length_m = C.length; g.userData.cls = C.cls;
   return g;
@@ -314,6 +321,126 @@ function plainModel(id, o = {}) {
 
 return { COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELLE_PROFILE, GAP_UP, SIDE_NAMES,
   chOf, hullAt, loftDist, hullsOf, alongNacelle, arrange, sideName, pushTri, geoFrom, octRing, loft, hullGeo, nacelleGeo, pylonGeo, boxGeo, plainModel };
+};
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/concord-emblem.js -->
+<script data-src="docs/mockups/lib/concord-emblem.js">
+// Fleet Command mockups: the Concord's emblem painted on a Concord hull, one implementation (CLAUDE.md section 6.1) of where
+// it goes, how the livery band breaks round it and how it is painted, shared by every page that shows it on a ship: the
+// Concord line (docs/mockups/concord-hull-concepts.html, mockup 6, the real model) and the hull study
+// (docs/mockups/concord-emblem-hull.html, mockup 11, retired but kept as a record). Edit it here, then re-run tools/mockups/inline_data.py on each page.
+//
+// The design (openspec/changes/faction-emblems/design.md; owner, 2026-11-04): B-E27, the smooth keyhole, once per ship,
+// upright ("don't rotate our logo") on the port side ("1/2 size on the left side", "only one logo"), 3 % of the ship's
+// length tall, on the forward livery band ("place emblem on liver stripe"), its field the band's own stripe colour with no
+// outline ("No outline", later "lets add that border back in": a border in the band's seam colour), a pearl ship and a cyan star ("a cyan colored star in the middle"). The band is broken round it
+// by bare hull ("The hull should break the stripe livery at that spot"), its cut edges bordered in the seam colour, 0.35 m
+// clear of the emblem's border where the band crosses it: an arc over the head and a flat edge under the foot ("bottom line can be flat to conform to the key hole/beacon
+// shape more"). No livery is added; the band is the ship's own.
+//
+// FCConcordEmblem(THREE, parts) takes the guide's exported shapes (assets/emblems/concord/b-e27.parts.json) and returns:
+//   texture  the emblem as a mask: red the field, green the ship, blue the star (linear data, so a shader picks the colours)
+//   mark(C, hullAt, chOf)  where it goes on class C: { c, n, u, v (ship space, metres), uniforms } or null for a reference
+//            ship (C.ref, not ours)
+//   GLSL     uniforms and functions for a hull shader: embBreak(p, n) is the band's break, embEdge(p, n) the seam border on
+//            its cut edge, embCover(p, n) the area kept clear of windows, embPaint(p, n, c, field, seam) the paint over
+//            colour c, its field in `field` and its border in `seam`
+window.FCConcordEmblem = function FCConcordEmblem(THREE, parts) {
+'use strict';
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const LENGTH_SHARE = 0.03;      // the emblem's height, a share of the ship's length (half of E7's 6 %; owner: "1/2 size")
+const BAND_HALF = 1.1;          // half the livery band's width along the hull, m (the Concord line's stripe rule, d < 1.1)
+const GAP = 0.35;               // bare hull between the emblem's border and the broken band's border, m (owner, 2026-11-04:
+                                // "add some space between strip and emblem")
+const EDGE = 0.22;              // the border on the band's cut edge, m: the band's own seam width (the Concord line's
+                                // stripe rule, 1.1 m to 1.32 m from its centre)
+const ABOVE_SERVICE = 0.3;      // the emblem's foot stands this far above the waterline service band, m
+const INK = [0.80, 0.81, 0.82]; // the ship: the hull's own armour pearl (linear), so it reads as plating left bare
+// The emblem's border is the frame, in the band's seam colour (owner, 2026-11-04: "lets add that border back in here. so it
+// appears more consistent ... border on both edge of lines and emblem"): the band's sides, its cut edges and the emblem all
+// carry the same dark seam.
+const STAR = '#2fd0f0';         // the star, cyan
+
+// The frame's height on the 100 unit grid: the emblem's size is set by it.
+const ys = parts.frame.flat().map((p) => p[1]), GRID_H = Math.max(...ys) - Math.min(...ys);
+
+// The mask: field red, ship green, star blue, the frame black (opaque with no colour), drawn from the guide's own shapes.
+function maskCanvas() {
+  const N = 1024, k = N / 100, cv = document.createElement('canvas'); cv.width = cv.height = N;
+  const g = cv.getContext('2d');
+  const fill = (rings, col) => { g.beginPath(); for (const r of rings) { r.forEach(([x, y], i) => (i ? g.lineTo(x * k, y * k) : g.moveTo(x * k, y * k))); g.closePath(); } g.fillStyle = col; g.fill(); };
+  g.beginPath(); for (const r of parts.frame) { r.forEach(([x, y], i) => (i ? g.lineTo(x * k, y * k) : g.moveTo(x * k, y * k))); g.closePath(); } g.fillStyle = '#000000'; g.fill('evenodd');
+  fill(parts.field, '#ff0000');
+  for (const leg of parts.legs) fill([leg], '#00ff00');
+  fill([parts.tail], '#00ff00');
+  fill([parts.lens], '#00ff00');
+  fill([parts.star], '#0000ff');
+  const L = parts.light; g.beginPath(); g.arc(L.cx * k, L.cy * k, L.r * k, 0, Math.PI * 2); g.fillStyle = '#00ff00'; g.fill();
+  return cv;
+}
+const texture = new THREE.CanvasTexture(maskCanvas());
+texture.anisotropy = 8;
+
+// Where it goes on class C, and its uniforms.
+function mark(C, hullAt, chOf) {
+  if (C.ref || !C.stripes || !C.stripes.length) return null;
+  const H = C.length * LENGTH_SHARE, mPerUnit = H / GRID_H;
+  const z = Math.max(...C.stripes), h = hullAt(C.stations, z), ch = chOf(h[1], h[2], h[3], h[4]);
+  const sideTop = h[2] - ch, sideBot = h[3] + ch, footAbove = (C.band ? C.band[1] : sideBot) + ABOVE_SERVICE;
+  const y = Math.min(Math.max((sideTop + sideBot) / 2, footAbove + H / 2), sideTop - H / 2);
+  const dhb = (hullAt(C.stations, z + 1)[1] - hullAt(C.stations, z - 1)[1]) / 2;
+  const n = V3(1, 0, -dhb).normalize(), v = V3(0, 1, 0), u = V3().crossVectors(v, n), c = V3(h[1], y, z);
+  // The break: an arc over the head, clear of the emblem's border by GAP plus the cut edge's own border where the band
+  // crosses it, and a flat edge as far under the foot.
+  const frameM = parts.frame.flat().map(([x, yy]) => [(x - 50) * mPerUnit, (50 - yy) * mPerUnit]);
+  const clear = GAP + EDGE;
+  const breakR = Math.max(...frameM.filter(([x, vv]) => vv >= 0 && Math.abs(x) <= BAND_HALF + EDGE + clear).map(([x, vv]) => Math.hypot(x, vv))) + clear;
+  const breakFlat = Math.min(...frameM.map(([, vv]) => vv)) - clear;
+  const uniforms = {
+    uEmbTex: { value: texture }, uEmbC: { value: c }, uEmbN: { value: n }, uEmbU: { value: u }, uEmbV: { value: v },
+    uEmbP: { value: new THREE.Vector4(100 * mPerUnit, breakR, breakFlat, 1) },
+    uEmbInk: { value: new THREE.Color(...INK) }, uEmbStar: { value: new THREE.Color(STAR).convertSRGBToLinear() }, uEmbEdge: { value: EDGE },
+  };
+  return { c, n, u, v, height_m: H, uniforms };
+}
+// Uniforms for a material with no emblem (a reference ship): everything off.
+const off = () => ({ uEmbTex: { value: texture }, uEmbC: { value: V3() }, uEmbN: { value: V3(1, 0, 0) }, uEmbU: { value: V3(0, 0, -1) }, uEmbV: { value: V3(0, 1, 0) },
+  uEmbP: { value: new THREE.Vector4(1, 0, 0, 0) }, uEmbInk: { value: new THREE.Color() }, uEmbStar: { value: new THREE.Color() }, uEmbEdge: { value: 0 } });
+
+const GLSL = `
+uniform sampler2D uEmbTex; uniform vec3 uEmbC, uEmbN, uEmbU, uEmbV; uniform vec4 uEmbP; uniform vec3 uEmbInk, uEmbStar; uniform float uEmbEdge;
+// uEmbP: x the texture's size (m), y the break's arc radius, z its flat edge (below the centre), w on.
+bool embNear(vec3 p, vec3 n) { return uEmbP.w > 0.5 && abs(dot(p - uEmbC, uEmbN)) < 1.5 && dot(n, uEmbN) > -0.5; }
+vec2 embQ(vec3 p) { vec3 d = p - uEmbC; return vec2(dot(d, uEmbU), dot(d, uEmbV)); }
+// How far outside the break a point is (m; negative inside), 1e3 when not near the emblem.
+float embBreakDist(vec3 p, vec3 n) {
+  if (!embNear(p, n)) return 1e3;
+  vec2 q = embQ(p);
+  float below = uEmbP.z - q.y;                       // under the flat edge
+  // Outside the arc over the head, and, below the centre, outside the arc's own width. Without that bound the flat part
+  // ran the whole length of the flank and cut every band crossing that height (owner, 2026-11-04: "why is the middle one
+  // cut short?", "it needs to be a full stripe").
+  float arc = q.y >= 0.0 ? length(q) - uEmbP.y : abs(q.x) - uEmbP.y;
+  return max(below, arc);
+}
+bool embBreak(vec3 p, vec3 n) { return embBreakDist(p, n) < 0.0; }
+// The band's cut edge: the seam border just outside the break.
+bool embEdge(vec3 p, vec3 n) { float d = embBreakDist(p, n); return d >= 0.0 && d < uEmbEdge; }
+bool embCover(vec3 p, vec3 n) { if (!embNear(p, n)) return false; vec2 q = embQ(p); return embBreakDist(p, n) < uEmbEdge || (abs(q.x) < uEmbP.x * 0.46 && abs(q.y) < uEmbP.x * 0.46); }
+// The emblem over colour c: field in \`field\`, the border (frame) in \`seam\`, the ship pearl, the star cyan.
+vec3 embPaint(vec3 p, vec3 n, vec3 c, vec3 field, vec3 seam) {
+  if (!embNear(p, n)) return c;
+  vec2 uv = embQ(p) / uEmbP.x + 0.5;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return c;
+  vec4 t = texture2D(uEmbTex, uv);
+  if (t.a < 0.004) return c;
+  float s = t.r + t.g + t.b;
+  vec3 e = field * t.r + uEmbInk * t.g + uEmbStar * t.b + seam * max(1.0 - s, 0.0);
+  return mix(c, e, t.a);
+}`;
+
+return { texture, mark, off, GLSL, LENGTH_SHARE };
 };
 </script>
 <!-- /INLINE -->
@@ -325,33 +452,12 @@ const PARTS = data('assets/emblems/concord/b-e27.parts.json');
 const CL = window.FCConcordLine(THREE);
 const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
-// The emblem's colours (owner, 2026-11-04): the field in the livery's stripe colour ("use the same color scheme as the
-// liveries"), read from the Concord line's own table (CL.LIVERIES); a pearl ship; a cyan star ("a cyan colored star in the
-// middle"); and no outline ("No outline"), so the keyhole is the stripe-blue field alone.
-const LIVERY = CL.LIVERIES.concord, srgb = (rgb) => '#' + new THREE.Color(...rgb).convertLinearToSRGB().getHexString();
-const PAINT = { ink: '#eef3ff', field: srgb(LIVERY.stripe), frame: null, floor: '#2fd0f0', lit: '#8fb0f6' };
+const LIVERY = CL.LIVERIES.concord;
 const CLASS_ID = 'petrel_level';
 const C = CL.CLASSES[CLASS_ID];
-const MARK_H = C.length * 0.03;               // half of E7's 6 % (owner: "1/2 size"): 3 % of the ship's length, 2.6 m on the Petrel
-const GRID_H = (() => { const ys = PARTS.frame.flat().map((p) => p[1]); return Math.max(...ys) - Math.min(...ys); })(); // the frame's height on the guide's 100 unit grid
-const M_PER_UNIT = MARK_H / GRID_H;           // metres per grid unit
-const TEX_SIZE_M = 100 * M_PER_UNIT;          // the texture spans the whole 100 unit grid
-
-// The emblem drawn flat from the guide's shapes, into a square canvas the size of the grid.
-function emblemCanvas(v) {
-  const N = 1024, k = N / 100, cv = document.createElement('canvas'); cv.width = cv.height = N;
-  const g = cv.getContext('2d');
-  const path = (rings) => { g.beginPath(); for (const r of rings) { r.forEach(([x, y], i) => (i ? g.lineTo(x * k, y * k) : g.moveTo(x * k, y * k))); g.closePath(); } };
-  const fill = (rings, col, rule = 'nonzero') => { path(rings); g.fillStyle = col; g.fill(rule); };
-  if (v.frame) fill(PARTS.frame, v.frame, 'evenodd');
-  fill(PARTS.field, v.field);
-  for (const leg of PARTS.legs) fill([leg], v.ink);
-  fill([PARTS.tail], v.ink);
-  fill([PARTS.lens], v.ink);
-  fill([PARTS.star], v.floor);
-  const L = PARTS.light; g.beginPath(); g.arc(L.cx * k, L.cy * k, L.r * k, 0, Math.PI * 2); g.fillStyle = v.lit; g.fill();
-  return cv;
-}
+// The emblem, its place, the band's break round it and its paint: the shared rule (docs/mockups/lib/concord-emblem.js), the
+// same one the Concord line's real model uses (mockup 6).
+const EMB = FCConcordEmblem(THREE, PARTS);
 
 // Renderer, scene, camera.
 const stage = document.getElementById('stage');
@@ -377,78 +483,31 @@ controls.enableDamping = true; controls.minDistance = 8; controls.maxDistance = 
 const ship = CL.plainModel(CLASS_ID);
 scene.add(ship);
 
-// Where each mark goes, from the ship's own stations (metres, ship space: +X port, +Y dorsal, +Z bow).
-// c the centre on the plating, n the plating's outward normal, u the emblem's right and v its up, as a viewer outside sees it.
-const S = C.stations, top = (z) => CL.hullAt(S, z)[2];
-const MARKS = [];
-{ // One emblem, half size, on the left (port) side (owner, 2026-11-04: "too many logos on the hull there", "1/2 size on the
-  // left side", "only one logo"), upright ("don't rotate our logo"), centred on the forward livery band on the hull's flat
-  // side ("place emblem on livery stripe"). The side narrows toward the bow, so its normal leans forward.
-  const z = Math.max(...C.stripes), h = CL.hullAt(S, z), ch = CL.chOf(h[1], h[2], h[3], h[4]);
-  const y = ((h[2] - ch) + (h[3] + ch)) / 2, dhb = (CL.hullAt(S, z + 1)[1] - CL.hullAt(S, z - 1)[1]) / 2;
-  const n = V3(1, 0, -dhb).normalize(), v = V3(0, 1, 0);
-  MARKS.push({ key: 'port', c: V3(h[1], y, z), n, v, u: V3().crossVectors(v, n) });
-}
-// The hull breaks the band round the emblem (owner, 2026-11-04: "The stripe having a circle around it where the logo
-// crosses", "The hull should break the stripe livery at that spot"): inside a circle round the emblem the band is cut away, so bare pearl plating rings the emblem. No livery is added ("do not add livery in this
-// change"): the band is the Concord line's own.
-// Tightened (owner, 2026-11-04: "tighten the livery line a bit so they arent so distant from the meblem", then "bottom
-// line can be flat to conform to the key hole/beacon shape more"): above, an arc 0.15 m clear of the emblem's head where the
-// band runs across it (its half width, 1.2 m, plus the margin); below, a flat edge 0.15 m under the keyhole's flat foot.
-// Metres in the mark's plane, v up from the emblem's centre.
-const BAND_HALF = 1.2, BREAK_GAP = 0.15;
-const FIELD_M = PARTS.field.flat().map(([x, y]) => [(x - 50) * M_PER_UNIT, (50 - y) * M_PER_UNIT]);
-const BREAK_R = Math.max(...FIELD_M.filter(([x, v]) => v >= 0 && Math.abs(x) <= BAND_HALF + BREAK_GAP).map(([x, v]) => Math.hypot(x, v))) + BREAK_GAP;
-const BREAK_FLAT = Math.min(...FIELD_M.map(([, v]) => v)) - BREAK_GAP;
+// Where the emblem goes, from the ship's own stations (metres, ship space: +X port, +Y dorsal, +Z bow).
+const EM = EMB.mark(C, CL.hullAt, CL.chOf), MARKS = [EM], MARK_H = EM.height_m;
 
-// The paint: the hull's pearl material with the emblem mixed into its colour where each mark's square covers the plating
-// that faces the mark's way. Planar projection in ship space, so the paint follows the hull's own faces.
-const decalTex = new THREE.CanvasTexture(emblemCanvas(PAINT));
-decalTex.encoding = THREE.sRGBEncoding; decalTex.anisotropy = 8; decalTex.generateMipmaps = true;
-const uDecal = { value: decalTex };
-const uMarks = MARKS.map((m) => ({ c: m.c, n: m.n, u: m.u, v: m.v }));
+// The paint: the hull's pearl takes the emblem over its colour; the livery band over it is cut away round the emblem.
+const stripeLin = new THREE.Color(...LIVERY.stripe);
+const seamLin = new THREE.Color(...LIVERY.seam);
 function paintHull(mat, cut = false) {
   const m = mat.clone();
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uDecal = uDecal;
-    MARKS.forEach((mk, i) => { for (const k of ['c', 'n', 'u', 'v']) sh.uniforms[`uM${i}${k}`] = { value: mk[k] }; });
-    sh.uniforms.uSize = { value: TEX_SIZE_M };
-    sh.uniforms.uBreak = { value: new THREE.Vector2(BREAK_R, BREAK_FLAT) };
+    Object.assign(sh.uniforms, EM.uniforms, { uField: { value: stripeLin }, uSeamC: { value: seamLin } });
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vShipPos;\nvarying vec3 vShipN;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvShipPos = position;\nvShipN = normal;');
-    const decl = MARKS.map((_, i) => `uniform vec3 uM${i}c, uM${i}n, uM${i}u, uM${i}v;`).join('\n');
-    const apply = MARKS.map((_, i) => `paint(uM${i}c, uM${i}n, uM${i}u, uM${i}v, diffuseColor.rgb);`).join('\n');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
 varying vec3 vShipPos;
 varying vec3 vShipN;
-uniform sampler2D uDecal;
-uniform float uSize;
-uniform vec2 uBreak;
-${decl}
-// The band is cut away inside the circle round the first mark, so the plating under it shows.
-void breakBand() {
-  vec3 d = vShipPos - uM0c;
-  if (abs(dot(d, uM0n)) > 1.5) return;
-  vec2 p = vec2(dot(d, uM0u), dot(d, uM0v));
-  // An arc over the head, a flat edge under the foot.
-  if (p.y > uBreak.y && (p.y < 0.0 || length(p) < uBreak.x)) discard;
-}
-void paint(vec3 c, vec3 n, vec3 u, vec3 v, inout vec3 col) {
-  vec3 d = vShipPos - c;
-  // Plating near the mark that does not face away from it: its face and the stripe's thin edges, so the paint runs
-  // unbroken across the stripe it sits on.
-  if (dot(normalize(vShipN), n) < -0.5 || abs(dot(d, n)) > 1.5) return;
-  vec2 uv = vec2(dot(d, u), dot(d, v)) / uSize + 0.5;
-  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return;
-  vec4 t = texture2D(uDecal, uv);
-  col = mix(col, t.rgb, t.a);
-}`).replace('#include <map_fragment>', `#include <map_fragment>\n${cut ? 'breakBand();' : apply}`);
+uniform vec3 uField;
+uniform vec3 uSeamC;
+${EMB.GLSL}`).replace('#include <map_fragment>', `#include <map_fragment>
+${cut ? 'if (embBreak(vShipPos, normalize(vShipN))) discard; if (embEdge(vShipPos, normalize(vShipN))) diffuseColor.rgb = uSeamC;' : 'diffuseColor.rgb = embPaint(vShipPos, normalize(vShipN), diffuseColor.rgb, uField, uSeamC);'}`);
   };
   m.customProgramCacheKey = () => (cut ? 'emblem-cut' : 'emblem-paint');
   return m;
 }
 // Painted on the primary hull's pearl; the livery bands over it are cut away round the emblem.
-const stripeHex = new THREE.Color(...LIVERY.stripe).getHex();
+const stripeHex = stripeLin.getHex();
 ship.traverse((o) => { if (!o.isMesh || o.userData.part !== 'primary' || !o.material.color) return;
   const hex = o.material.color.getHex();
   if (hex === 0xe4e2dc) o.material = paintHull(o.material); else if (hex === stripeHex) o.material = paintHull(o.material, true); });
