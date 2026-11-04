@@ -993,7 +993,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // container height"; the top 60, "top bar is way thicker than it needs to be"). Each strip's content, drawn for 56 px,
 // is moved down by its dy to sit in the skin's channel.
 const STT = CON.stripTop || { h: 56, dy: 0 }, STB = CON.stripBottom || { h: 56, dy: 0 };
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v75', krai: 'Mockup 8 · Battle console · Krai Warhost · v14' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v76', krai: 'Mockup 8 · Battle console · Krai Warhost · v15' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -2158,8 +2158,9 @@ function fireMount(s, m, t, aim = s.aim) {
   if (!ready(m) || !inArc(s, m, t) || !inRange(s, m, t) || s.cloak.k > 0 || !canLock(s, t)) return false;
   const w = spec(m), hit = W.rand.hit() < hitChance(s, m, t, aim), [x, z] = mountWorld(s, m);
   m.charge = 0;
-  if (w.kind === 'beam') { W.shots.push({ kind: 'beam', x, z, tx: t.x, tz: t.z, life: 0.25, color: w.color, miss: !hit, to: t.id }); if (hit) damage(t, s, w.dmg, aim, WEAPONS[m.w].aim, w.reach_deg); }
-  else W.shots.push({ kind: w.kind, x, z, to: t.id, from: s.id, hit, dmg: w.dmg, speed: w.speed_m_s / M_PER_U, color: w.color, life: 12, aim, mode: WEAPONS[m.w].aim, reach: w.reach_deg });
+  const mi = s.mounts.indexOf(m);
+  if (w.kind === 'beam') { W.shots.push({ kind: 'beam', x, z, sx: x, sz: z, tx: t.x, tz: t.z, life: 0.25, color: w.color, miss: !hit, to: t.id, from: s.id, mi }); if (hit) damage(t, s, w.dmg, aim, WEAPONS[m.w].aim, w.reach_deg); }
+  else W.shots.push({ kind: w.kind, x, z, sx: x, sz: z, tx: t.x, tz: t.z, to: t.id, from: s.id, mi, trav: 0, hit, dmg: w.dmg, speed: w.speed_m_s / M_PER_U, color: w.color, life: 12, aim, mode: WEAPONS[m.w].aim, reach: w.reach_deg });
   return true;
 }
 function damage(t, src, dmg, aim, mode = 'arc', reach = STRIKE.reach_deg) {
@@ -2189,10 +2190,40 @@ function damage(t, src, dmg, aim, mode = 'arc', reach = STRIKE.reach_deg) {
   if (t.side === 0 || src.side === 0) if (t === W.player || src === W.player) say(t === W.player ? 'Engineering' : 'Tactical', t === W.player ? `Hull hit through the ${FACINGS[f]} shield.` : `Hit on ${t.name}, ${FACINGS[f]} facing.`);
   if (t.hull <= 0) { t.hull = 0; t.alive = false; t.v = 0; boom(t); say('Tactical', `${t.name} destroyed.`); for (const o of W.ships) if (o.target === t.id) o.target = null; }
 }
+// A beam's or a bolt's two ends as the ships now stand (owner, 2026-11-04: "source and destination of phaser and
+// disruptors must maintain in sync ... as they fire, the source and destination of these beams must follow the ship source
+// and ship destination ... a missile fired can break this rule as it leaves behind a particle trail"): its mount on the
+// firing ship, and its target ship (a miss lands beside it, riding with it), or for a point defence beam the shot it fires
+// on. An end whose ship or shot is gone stays where it was last. One rule for the bolt's flight and for the view that draws
+// beams (CLAUDE.md 6.1); the game's is Battle.Ends (src/Core/Sim/Battle.cs). Torpedoes and missiles are seekers: they fly
+// free and leave their trail.
+function shotEnds(sh) {
+  const s = sh.from ? ship(sh.from) : null, m = s && s.alive && sh.mi >= 0 ? s.mounts[sh.mi] : null;
+  if (m) [sh.sx, sh.sz] = mountWorld(s, m);
+  const t = sh.to ? ship(sh.to) : null;
+  if (t && t.alive) { sh.tx = t.x + (sh.miss ? 1.5 : 0); sh.tz = t.z + (sh.miss ? 1.2 : 0); }
+  else if (sh.at) { sh.tx = sh.at.x; sh.tz = sh.at.z; }
+  if (sh.kind === 'beam') { sh.x = sh.sx; sh.z = sh.sz; }
+  return [sh.sx, sh.sz, sh.tx, sh.tz];
+}
+// A direct-fire bolt (the disruptor) runs along that live line, so it stays between its mount and its target as they move,
+// and lands when it has run the line's length.
+function boltStep(sh) {
+  const t = ship(sh.to);
+  if (!t || !t.alive) { sh.life = Math.min(sh.life, 0.4); return; }
+  const [x0, z0, x1, z1] = shotEnds(sh), L = Math.hypot(x1 - x0, z1 - z0);
+  sh.trav += sh.speed * DT;
+  if (sh.trav >= L - 0.4) {
+    if (sh.hit && !sh.spent) damage(t, ship(sh.from) || { x: x0, z: z0, side: 1 }, sh.dmg, sh.aim, sh.mode, sh.reach);
+    sh.spent = true; sh.life = 0; sh.x = x1; sh.z = z1; return;
+  }
+  const k = L > 0 ? sh.trav / L : 1; sh.x = x0 + (x1 - x0) * k; sh.z = z0 + (z1 - z0) * k;
+}
 function shotsStep() {
   for (const sh of W.shots) {
     sh.life -= DT;
-    if (sh.kind === 'beam') continue;
+    if (sh.kind === 'beam') { shotEnds(sh); continue; }
+    if (sh.kind === 'bolt') { boltStep(sh); continue; }
     const t = ship(sh.to);
     if (!t || !t.alive) { sh.life = Math.min(sh.life, 0.4); continue; }
     const d = Math.hypot(t.x - sh.x, t.z - sh.z), stepU = sh.speed * DT;
@@ -2213,7 +2244,8 @@ function pdStep() {
         && Math.hypot(sh.x - s.x, sh.z - s.z) * M_PER_U / 1000 <= WEAPONS.pd.range_km);
       if (!threat) continue;
       m.charge = 0;
-      W.shots.push({ kind: 'beam', x: s.x, z: s.z, tx: threat.x, tz: threat.z, life: 0.15, color: 0xffffff, to: null });
+      const [px, pz] = mountWorld(s, m);
+      W.shots.push({ kind: 'beam', x: px, z: pz, sx: px, sz: pz, tx: threat.x, tz: threat.z, life: 0.15, color: 0xffffff, to: null, from: s.id, mi: s.mounts.indexOf(m), at: threat });
       if (W.rand.hit() < 0.45 + officerSkill(s, 'pd') * OFFICER.pd) { threat.spent = true; threat.life = 0; s.intercepts++; }
     }
   }
@@ -4801,8 +4833,9 @@ function syncScene(dt) {
     used[kind]++; o.obj.visible = true; return o.obj; };
   for (const sh of W.shots) {
     if (sh.kind === 'beam') {
-      const t = sh.to ? ship(sh.to) : null, tx = t && !sh.miss ? t.x : sh.tx + (sh.miss ? 1.5 : 0), tz = t && !sh.miss ? t.z : sh.tz + (sh.miss ? 1.2 : 0);
-      const b = take('beam'), len = Math.hypot(tx - sh.x, tz - sh.z); b.position.set(sh.x, 0.05, sh.z); b.lookAt(tx, 0.05, tz); b.scale.set(1, 1, len); b.material.color.setHex(sh.color); b.material.opacity = Math.min(1, sh.life * 6);
+      // both ends as the ships stand this frame (shotEnds, the rule the bolts fly by)
+      const [sx, sz, tx, tz] = shotEnds(sh);
+      const b = take('beam'), len = Math.hypot(tx - sx, tz - sz); b.position.set(sx, 0.05, sz); b.lookAt(tx, 0.05, tz); b.scale.set(1, 1, len); b.material.color.setHex(sh.color); b.material.opacity = Math.min(1, sh.life * 6);
     } else { const sp = take('glow'); sp.position.set(sh.x, 0.05, sh.z); sp.scale.setScalar(sh.kind === 'torpedo' ? 1.2 : 0.7); sp.material.color.setHex(sh.color); }
   }
   // Tractor beams: a pale line from holder to held, brighter as the grip tightens.

@@ -15,6 +15,12 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | 7 | Krai Warhost ships | v19 | the intact ships as exported by `tools/mockups/export_ships.mjs` | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 
+Beams and bolts (2026-11-04, owner: "source and destination of phaser and disruptors must maintain in sync"): in step in
+both. Mockup 2 v76 (and mockup 8 v15, written from it) resolve a beam's ends each step from the firing mount and the
+target as they now stand (`shotEnds`) and fly disruptor bolts on that live line (`boltStep`); the game does the same in
+`Battle.Ends` and `BoltStep` (`src/Core/Sim/Battle.cs`), drawn by `ViewOverlay`. Torpedoes and missiles fly free in both.
+Change `weapon-fx`, tasks 2.1-2.3.
+
 ## Open differences
 
 ### Mockup 2 and 8 (one console, two skins)

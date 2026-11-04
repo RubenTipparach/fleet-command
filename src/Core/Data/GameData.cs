@@ -13,6 +13,9 @@ public sealed record WeaponDef(string Id, string Name, string Kind, WeaponMode N
 {
     /// <summary>True for weapons whose shot flies (torpedo, bolt, missile) rather than landing at once.</summary>
     public bool Flies => Kind is "torpedo" or "bolt" or "missile";
+    /// <summary>True for a direct-fire bolt (the disruptor): it flies, but along the live line from its mount to its target,
+    /// both ends riding their ships (owner, 2026-11-04), where a seeker (torpedo, missile) flies free.</summary>
+    public bool RidesLine => Kind == "bolt";
     public bool IsPointDefence => Kind == "pd";
 }
 
