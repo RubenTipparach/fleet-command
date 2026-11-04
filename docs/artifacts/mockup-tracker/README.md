@@ -53,3 +53,4 @@
 - 2026-11-03, cloud session (faction emblems thread): the Emblem Design Guide added under Guides and M9 (Faction
   emblems, listed) under Game mockups, on top of the live version; version 55, version id `1793743908-edc6`.
 - 2026-11-04, cloud session (Krai battle console thread): M8 at version 9 and the Analog Panel Bible at version 4 (rule T), on the live version `1793755601-4b1e` (from `claude/trusting-faraday-js5whp`: M6 v16, M7 v12, M9, the Emblem Design Guide); version 59, version id `1793761464-be25`.
+- 2026-11-04, cloud session (Krai battle console thread): M2 at version 71 and M8 at version 10 (weapon targeting), on the live version `1793761970-4cbf` (M6 v17, M7 v13 from another session); version 61, version id `1793763310-9c68`.

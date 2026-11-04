@@ -30,3 +30,4 @@
 - Version 7 (the top strip re-rendered at 60 px): published 2026-11-03, version id `1793738755-e645`.
 - Version 8 (a bloom experiment on the column's channel of red light, with a Bloom key to compare): published 2026-11-03, version id `1793739594-563e`.
 - Version 9 (hover popups and pointed keys' labels sized by the key's own end caps; rule T): published 2026-11-04, version id `1793761414-3503`.
+- Version 10 (the shared weapon targeting of change `weapon-targeting`; parity 2,378 presses of 313 controls): published 2026-11-04, version id `1793763262-429a`.
