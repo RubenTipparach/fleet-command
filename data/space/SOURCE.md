@@ -39,7 +39,10 @@ one being used all the time". The painter is now here, `tools/space/nebula_skies
 | `deep_indigo` | Indigo clouds lit blue from within, crossing black lanes |
 | `coral_drift` | Coral and turquoise side by side, a warm core |
 
-`docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. Each game scenario names its
+`docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
+bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the
+hulls reflect the nebula and take half their ambient light from it (owner, 2026-11-04: "reflection probes ... but dont
+crank it up super high": a 128 radiance map, made once per scenario). Each game scenario names its
 own (`data/battle/scenarios.json` "sky"; a test checks the file exists and no two scenarios share one).
 
 **Not byte-reproducible across machines.** On the owner's Mac (NumPy 2.0.2 with Apple's Accelerate) the painter does not
