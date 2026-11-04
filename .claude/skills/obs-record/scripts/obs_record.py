@@ -59,6 +59,9 @@ def ws_config_path() -> Path:
     return obs_dir() / "plugin_config/obs-websocket/config.json"
 
 
+MAC_OBS = "OBS.app/Contents/MacOS/OBS"
+
+
 def obs_running() -> bool:
     if sys.platform == "win32":
         # An OBS that has exited can linger in the process list with status
@@ -67,6 +70,8 @@ def obs_running() -> bool:
                               "/FI", "STATUS ne UNKNOWN"],
                              capture_output=True, text=True).stdout
         return "obs64.exe" in out
+    if sys.platform == "darwin":   # the macOS process is "OBS" inside the app bundle; pgrep -x obs never sees it
+        return subprocess.run(["pgrep", "-f", MAC_OBS], capture_output=True).returncode == 0
     return subprocess.run(["pgrep", "-x", "obs"], capture_output=True).returncode == 0
 
 
@@ -87,9 +92,12 @@ def clear_stale_crash_markers():
 def close_obs():
     """Close OBS the way a user would, so it writes its config and exits
     cleanly; force it only as a last resort, then clear what that leaves."""
-    polite, force = ((["taskkill", "/IM", "obs64.exe"], ["taskkill", "/F", "/IM", "obs64.exe"])
-                     if sys.platform == "win32" else
-                     (["pkill", "-x", "obs"], ["pkill", "-9", "-x", "obs"]))
+    if sys.platform == "win32":
+        polite, force = ["taskkill", "/IM", "obs64.exe"], ["taskkill", "/F", "/IM", "obs64.exe"]
+    elif sys.platform == "darwin":   # quit as the menu does, so OBS saves and exits cleanly
+        polite, force = ["osascript", "-e", 'quit app "OBS"'], ["pkill", "-9", "-f", MAC_OBS]
+    else:
+        polite, force = ["pkill", "-x", "obs"], ["pkill", "-9", "-x", "obs"]
     subprocess.run(polite, capture_output=True)
     for _ in range(40):
         if not obs_running():
@@ -227,10 +235,9 @@ class ObsSession:
             clear_stale_crash_markers()
             # A normal window, not --minimize-to-tray: a tray-only OBS cannot be
             # closed cleanly, and an unclean exit brings the Safe Mode prompt.
-            # --multi: an OBS that exited uncleanly can linger in the process
-            # list holding its single-instance lock, and a new one then stops at
-            # "OBS is already running". No running OBS was found above.
-            subprocess.Popen([str(exe), "--disable-shutdown-check", "--multi"], cwd=str(exe.parent))
+            # Never --multi: only one OBS may ever run on a machine (the owner's global rule,
+            # 2026-10-28, after 22 were found left running). No running OBS was found above.
+            subprocess.Popen([str(exe), "--disable-shutdown-check"], cwd=str(exe.parent))
             self.started_obs = True
         for _ in range(180):
             try:

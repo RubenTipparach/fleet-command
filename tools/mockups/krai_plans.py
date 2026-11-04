@@ -10,6 +10,7 @@ dreadnought the same way so a change to a class is a change to its list, never t
 A deck: its floor height, the corridor's half width, and from the bow aft:
   bow     a room across the centreline at the deck's front (the corridor ends at its aft face)
   port, starboard   rooms laid aft along each side of the corridor, from the corridor out to the deck's half width
+                    (or to the room's own, when its tuple has a fourth number)
   keel    a weapon band down the centreline (the spinal guns); the deck then has a corridor either side of it
   stern   a room across the centreline at the deck's back (the corridor ends at its front face)
 Every room touches its corridor and none overlaps another, so each plan passes the guide's check P1 (the page's
@@ -70,8 +71,9 @@ def lay(spec):
         sides = {}
         for side, sx in (("port", 1), ("starboard", -1)):
             zz = z
-            for name, kind, ln in deck.get(side, []):
-                x0, x1 = (inner, half) if sx > 0 else (-half, -inner)
+            for name, kind, ln, *own in deck.get(side, []):
+                out = own[0] if own else half  # a room may name its own outer half width (a hull that tapers)
+                x0, x1 = (inner, out) if sx > 0 else (-out, -inner)
                 add(name, kind, d, x0, x1, zz - ln, zz)
                 zz -= ln
             sides[side] = zz
@@ -177,10 +179,14 @@ CLASSES = {
 }
 
 
-def write(check_only=False):
+def write(check_only=False, classes=None, out=None):
+    """Write each class's plan to out/<class>_plan.json (the Krai's by default; the Ssarith Hunt's plans use the same
+    layer from tools/mockups/ssarith_plans.py), or with check_only count the plans that differ from their lists."""
+    classes, out = classes or CLASSES, out or OUT
+    out.mkdir(parents=True, exist_ok=True)
     bad = 0
-    for name, spec in CLASSES.items():
-        path = OUT / f"{name}_plan.json"
+    for name, spec in classes.items():
+        path = out / f"{name}_plan.json"
         plan = lay(spec)
         head = {k: v for k, v in plan.items() if k != "rooms"}
         text = json.dumps(head, indent=2)[:-2] + ',\n  "rooms": [\n' + ",\n".join("    " + json.dumps(r) for r in plan["rooms"]) + "\n  ]\n}\n"

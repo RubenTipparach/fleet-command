@@ -224,7 +224,7 @@ ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", 
          "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate", "helm.pad", "ssd.bezel", "dial",
          "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest", "bar.cell.off", "bar.cell.on", "bar.cell.warn",
          # the battle console's own (openspec/changes/krai-battle-console)
-         "plate.label", "plate.title", "console.column", "strip.top.join", "strip.bottom.join",
+         "plate.label", "plate.title", "console.column", "console.backing", "strip.top.join", "strip.bottom.join",
          "key.idle", "key.hover", "key.on", "key.ok", "key.warn", "key.alert", "key.off",
          "keyw.idle", "keyw.hover", "keyw.on", "keyw.ok", "keyw.warn", "keyw.alert", "keyw.off",
          "cell.idle", "cell.lit", "cell.warn", "cell.accord", "cell.locked", "bar.fill.accord"]

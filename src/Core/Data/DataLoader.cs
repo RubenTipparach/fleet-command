@@ -158,7 +158,11 @@ public static class DataLoader
         }
         if (ships.Count == 0 || ships[0].Side != 0) throw new DataError($"{root.Where}.ships: the first ship is the player's and must be on side 0");
         if (ships[0].Faction != side) throw new DataError($"{root.Where}.ships[0].faction: the player's ship must be of the side '{side}', not '{ships[0].Faction}'");
-        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships);
+        // the nebula sky it is fought under: a file data/space/skies/<sky>.json (its existence is checked by a test,
+        // since the loader reads only data/battle/)
+        string sky = root.Str("sky");
+        if (!System.Text.RegularExpressions.Regex.IsMatch(sky, "^[a-z][a-z0-9_]*$")) throw new DataError($"{root.Where}.sky: a sky id (lower case and underscores), not '{sky}'");
+        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky);
         root.Done();
         return scenario;
     }

@@ -1,0 +1,13 @@
+{
+ "_doc": "The scripted captain's Wrecks scene (owner, 2026-11-04: \"re-record a couple battle videos to show me you fixed each ship type\"): every class of the other side, crippled, shields down and holding fire, so each takes hits, loses parts and comes apart in turn. Lock the nearest, watch it in Target view (which stays on each wreck), wheeled in 7 notches, intercept, fire, stay on each wreck 6 s before locking the next, and hold 8 s on the last. Played from both sides (suite.json).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "click", "arg": "v.tview" },
+  { "do": "wheel", "arg": "in", "s": 7 },
+  { "do": "helm", "arg": "int" },
+  { "do": "fight", "s": 600, "linger_s": 6 },
+  { "do": "hold", "s": 8 }
+ ]
+}
