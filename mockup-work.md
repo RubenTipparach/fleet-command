@@ -30,6 +30,7 @@ account and every link here is updated.
 | 7 | Krai Warhost ships | Drafted (2026-11-03, v10: the frigate rooms first on the Ship Design Bible, brought to the Concord standard: square-cut plates, windows with Krai rooms, thrusters, warm floods) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
 | 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v8) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
+| 10 | Concord badge in 3D: the picked emblem shape (B-E23) as a badge | Drafted (2026-11-04) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -479,3 +480,20 @@ So each faction's emblem is now designed on the **Emblem Design Guide** (https:/
 on hold until then. The flat drafts on this mockup are placeholders.
 
 Design: `openspec/changes/faction-emblems/`. Shapes: `docs/mockups/lib/emblems.js`.
+
+## 10. Concord badge in 3D
+
+Owner, 2026-11-04, on the Emblem Design Guide's B-E23 (the rounded peak, drawn from the owner's own sketch): "ok I'm
+kinda liking it, lets see how it looks in 3d, render something in blender, make a 3d version in thre js, add in
+materials, normals, specular map, AO, and if you can make the background of the emblem, the bell shape some kind of
+holographic stars and nebula shader", then "Central shape should be like irridescent".
+
+- **One source of shapes**: the guide exports B-E23's parts (`tools/emblems/export_parts.mjs` writes
+  `assets/emblems/concord/b-e23.parts.json`), and both the Blender render and the three.js badge build from them.
+- **Blender**: `tools/blender/emblem_concord.py` on the shared harness `tools/blender/emblem_render.py`; renders face on,
+  at an angle and as clay into `assets/emblems/concord/`.
+- **three.js**: `docs/mockups/concord-emblem-3d.html`, orbitable, 100 mm across, with the Blender renders beside it.
+- **Materials**: Material Maker graphs (`emblem_platinum` for the frame, `emblem_enamel_pearl` for the ship) with
+  albedo, normal, ORM (AO, roughness, metal) and a specular map derived from each graph's own roughness and AO.
+- **The field**: a holographic night of nebula and stars on three depths that shift with the viewing angle, under a
+  colour-shifting sheen. **The ship**: iridescent pearl.

@@ -26,7 +26,7 @@ LIST = os.path.join(ROOT, "data", "materials", "materials.json")
 OUT = os.path.join(ROOT, "assets", "textures", "materials")
 SHEET = os.path.join(ROOT, "docs", "screenshots", "materials", "contact-sheet.png")
 REQUIRED = {"name", "size_px", "maps", "tile_m", "status", "use"}
-MAPS = {"albedo", "normal", "orm", "emission", "heightmap"}
+MAPS = {"albedo", "normal", "orm", "emission", "heightmap", "specular"}
 
 
 def materials():
@@ -108,6 +108,16 @@ def cells(dst, cell):
     return [albedo, Image.fromarray(swatch), Image.fromarray(sphere)]
 
 
+def specular_from_orm(orm):
+    """A specular-intensity map (for renderers that take one, such as three.js's physical material) derived from the
+    graph's own ORM, so it can never disagree with the roughness and occlusion: bright where the surface is smooth and
+    open, dark in crevices and rough patches. specular = occlusion x (1 - roughness), lifted to 0.2-1.0."""
+    import numpy as np
+    a = np.asarray(orm, dtype=np.float32) / 255.0
+    spec = 0.2 + 0.8 * np.clip(a[..., 0] * (1.0 - a[..., 1]), 0.0, 1.0)
+    return Image.fromarray((spec * 255 + 0.5).astype("uint8"), "L").convert("RGB")
+
+
 def main():
     raw = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "tools", "materials", "raw")
     rev = os.environ.get("MM_REV", "174f15e")
@@ -117,7 +127,10 @@ def main():
         dst = os.path.join(OUT, m["name"])
         os.makedirs(dst, exist_ok=True)
         for kind in m["maps"]:
-            img = Image.open(os.path.join(raw, f"{m['name']}_{kind}.png")).convert("RGB")
+            if kind == "specular":
+                img = specular_from_orm(Image.open(os.path.join(raw, f"{m['name']}_orm.png")).convert("RGB"))
+            else:
+                img = Image.open(os.path.join(raw, f"{m['name']}_{kind}.png")).convert("RGB")
             img = img.resize((m["size_px"],) * 2, Image.LANCZOS)
             path = os.path.join(dst, f"{kind}.png")
             img.save(path, optimize=True)

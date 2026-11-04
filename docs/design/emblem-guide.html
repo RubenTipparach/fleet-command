@@ -334,17 +334,22 @@ function outlineColour(d, bg) { return d.own ? VERSIONS[bg].frame : RECOLOUR[bg]
 const KREC = VERSIONS.dk;
 function lum(hex) { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
 function contrast(a, b) { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); }
+// The saucer's parts as path data on the 100 grid: one source for the flat sketch here and for the 3D badge
+// (tools/emblems/export_parts.mjs writes them out for Blender and the three.js page).
+function saucerParts() {
+  const legs = [1, -1].map((sx) => { const X = (x) => 50 + sx * x; return ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7); });
+  return { legs, tail: ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4),
+    lens: 'M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z', star: glint(50, 32, 9.5, 7.5, 1.7), light: { cx: 50, cy: 20.5, r: 1.8 } };
+}
 function saucer(ink, k = KREC) {
-  let s = '';
-  for (const sx of [1, -1]) { const X = (x) => 50 + sx * x; s += path(ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7), k.ink); }
-  s += path(ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4), k.ink);
-  s += path('M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z', k.ink);
+  const sp = saucerParts();
+  let s = sp.legs.map((d) => path(d, k.ink)).join('') + path(sp.tail, k.ink) + path(sp.lens, k.ink);
   if (ink) return s;
   // Pressed in, lit from the upper left: the upper-left wall in shadow, the lower-right wall catching the light.
-  const st = glint(50, 32, 9.5, 7.5, 1.7);
+  const st = sp.star;
   s += `<path d="${st}" fill="${k.shadow}" transform="translate(-0.7 -0.7)"/><path d="${st}" fill="${k.lit}" transform="translate(0.8 0.8)"/>`;
   s += path(st, k.floor);
-  s += `<circle cx="50" cy="20.5" r="1.8" fill="${C.accord}"/>`;
+  s += `<circle cx="${sp.light.cx}" cy="${sp.light.cy}" r="${sp.light.r}" fill="${C.accord}"/>`;
   return s;
 }
 // Each patch: its frame (even-odd), the field inside it, and the scale the saucer takes inside it (about 50, 52).
@@ -651,6 +656,28 @@ async function measureJoins(d) {
   }
   return { pieces, expected: d.pieces, nearest, ok: pieces === d.pieces && !(nearest < MIN_GAP) };
 }
+// The picked patch's parts for the 3D badge: every outline sampled as polygons in grid units (y down), the saucer's
+// already moved into its place in the frame. Read by tools/emblems/export_parts.mjs.
+window.EMBLEM_PARTS = (key) => {
+  const e = key ? ENCLOSURES.find((x) => x.key === key) : ENCLOSURES[REC];
+  const sp = saucerParts();
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const host = document.createElementNS(svgNS, 'svg'); document.body.append(host);
+  // Each subpath (every one here starts with an absolute M) sampled every 0.25 units along its length.
+  const polys = (d, k = 1, cy = 52, oy = 52) => d.split(/(?=M)/).filter((x) => x.trim()).map((sub) => {
+    const el = document.createElementNS(svgNS, 'path'); el.setAttribute('d', sub); host.append(el);
+    const L = el.getTotalLength(), n = Math.max(24, Math.ceil(L / 0.25)), out = [];
+    for (let i = 0; i < n; i++) { const p = el.getPointAtLength(L * i / n); out.push([+(50 + (p.x - 50) * k).toFixed(3), +(cy + (p.y - oy) * k).toFixed(3)]); }
+    el.remove(); return out;
+  });
+  const S = (d) => polys(d, e.scale, e.cy);
+  const out = { key: e.key, name: e.name, grid: 100, frame: polys(e.frame), field: polys(e.field), legs: sp.legs.map((d) => S(d)[0]),
+    tail: S(sp.tail)[0], lens: S(sp.lens)[0], star: S(sp.star)[0],
+    light: { cx: 50 + (sp.light.cx - 50) * e.scale, cy: e.cy + (sp.light.cy - 52) * e.scale, r: sp.light.r * e.scale },
+    colours: { pearl: VERSIONS.dk.ink, night: VERSIONS.dk.field, accord: C.accord } };
+  host.remove();
+  return out;
+};
 // The outline, measured (rule 19): the whole patch as printed (field, frame and ship together) must be one piece, and
 // the background must be one region (the outside), so nothing floats outside the edge and nothing is cut through it.
 async function measureOutline(svgInner) {

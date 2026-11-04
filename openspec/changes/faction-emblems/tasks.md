@@ -20,7 +20,12 @@
       with its choices labelled, at 96, 40 and 20 px
 - [x] 1b.3 Emblem materials as Material Maker graphs (`emblem_platinum`, `emblem_enamel_signal`, `emblem_enamel_night`)
       and the shared Blender harness `tools/blender/emblem_render.py`
-- [ ] 1b.4 The owner picks a Concord sketch; then it is sculpted in 3D from that sketch and checked small
+- [x] 1b.4a The owner liked B-E23 (the rounded peak, from their own sketch) enough to see it in 3D (2026-11-04); not yet
+      picked
+- [x] 1b.4b B-E23 in 3D: parts exported from the guide (`tools/emblems/export_parts.mjs`); Blender render
+      (`tools/blender/emblem_concord.py`, face, angle, clay); three.js badge (`docs/mockups/concord-emblem-3d.html`) with
+      Material Maker maps (albedo, normal, ORM, specular), a holographic field shader and an iridescent pearl ship
+- [ ] 1b.4 The owner picks the Concord's emblem; it is then checked small (96, 40 and 20 px) from the render
 - [ ] 1b.5 The other nine factions, the same way
 
 ## 2. After approval for build

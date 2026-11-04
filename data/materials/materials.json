@@ -12,7 +12,7 @@
     {
       "name": "emblem_platinum",
       "size_px": 1024,
-      "maps": ["albedo", "normal", "orm"],
+      "maps": ["albedo", "normal", "orm", "specular"],
       "tile_m": 0.05,
       "status": "starter",
       "use": "faction emblems: the Concord badge's polished platinum (frame, hub, bezels)"
@@ -28,10 +28,18 @@
     {
       "name": "emblem_enamel_night",
       "size_px": 1024,
-      "maps": ["albedo", "normal", "orm", "emission"],
+      "maps": ["albedo", "normal", "orm", "emission", "specular"],
       "tile_m": 0.05,
       "status": "starter",
       "use": "faction emblems: the Concord badge's night-sky field, with lit star flecks"
+    },
+    {
+      "name": "emblem_enamel_pearl",
+      "size_px": 1024,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Concord badge's pearl enamel ship (the saucer, nacelles and tail)"
     }
   ]
 }

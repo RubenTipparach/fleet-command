@@ -29,6 +29,17 @@ and only then sculpted in 3D. That method, sixteen rules compiled from the owner
 STARFLEET Visual Standards Manual 2026, and the Concord's four sketches live on the Emblem Design Guide
 (`docs/design/emblem-guide.html`). The ten flat emblems below are placeholders until each faction's sketch is picked.
 
+## The Concord's badge in 3D (2026-11-04)
+
+B-E23, the rounded peak, built as a badge 100 mm across from the guide's own shapes. Heights (mm), so no two faces
+share a plane: field 0.3 to 1.0, star floor 0.5 to 1.9 (a pocket 0.9 mm deep in a hole through the saucer), nacelles
+and tail 0.5 to 2.4, saucer 0.6 to 2.8, frame 0 to 3.6. Frame polished platinum; ship iridescent pearl enamel (a thin
+film and an angle-dependent pastel shift); field a holographic night (nebula and stars at three depths that move with
+the viewing angle, under a colour-shifting sheen). Materials are Material Maker graphs with albedo, normal, ORM and a
+specular map derived from the graph's own roughness and occlusion. The emblem light rig was scaled for a badge this
+size: at 3 W the key lamp clipped white enamel to flat white (measured, 255 everywhere); at 0.55 W the pearl reads
+about 239 of 255 and every bevel shows.
+
 ## The rules for an emblem
 
 | Rule | Says | Why |
