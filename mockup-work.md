@@ -32,6 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
+| 12 | Ssarith Hunt ships: the Hunt's culture turned into ships, one frigate's rooms and three directions of claws | Drafted (2026-11-04, v1, page written in a cloud session; published from the desktop session if the cloud publish is refused) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -590,3 +591,17 @@ Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hu
 - **Tightened** (owner, 2026-11-04: "tighten the livery line a bit so they arent so distant from the meblem", "bottom line
   can be flat to conform to the key hole/beacon shape more"): the cut is 0.15 m clear of the emblem where the band crosses
   it: an arc over the head and a flat edge under the foot.
+
+## 12. Ssarith Hunt ships
+
+Owner, 2026-11-04: "using current bibles and mockups on ship design, lets consider the Ssarith Hunt culture and how their
+ships will look."
+
+- Starts from the Hunt's culture as written in the console-skins design and approved as written (survey U7), the owner's
+  "gorn emphasizes claw like features, since they enjoy hunting" (mockup 5's notes) and survey A8 (claws).
+- On the Ship Design Bible, as the Krai line (mockup 7) was redone: one frigate's rooms first
+  (`data/ships/ssarith/frigate_plan.json`, from `tools/mockups/ssarith_plans.py` on the Krai plan layer), the hull fitted
+  round them, then three directions of claws on that one hull: A Grasp (recommended), B Jaw, C Crouch; Stalk and Strike.
+- Every cultural reading is provisional until survey section H (H1-H8) is answered.
+
+Design: `openspec/changes/ssarith-ship-concepts/`.
