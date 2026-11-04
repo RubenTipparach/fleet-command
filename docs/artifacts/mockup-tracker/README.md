@@ -93,3 +93,4 @@
 - 2026-11-04, cloud session: the guide at v22 (the Krai started); version 95, id `1793795718-1dea`.
 - 2026-11-04, cloud session: the guide at v23 (one faction at a time); version 96, id `1793799595-1731`.
 - 2026-11-04, cloud session: the guide at v24 (the Krai's fang torc picked); version 97, id `1793800301-06d6`.
+- 2026-11-04, version 100 (`1793803252-b63c`): built on the live v99 (which added M12, the Ssarith console, from another session); adds M14, the Krai badge in 3D; M10 at v7.
