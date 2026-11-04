@@ -31,7 +31,7 @@ account and every link here is updated.
 | 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v13) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
-| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v8) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
+| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -566,3 +566,6 @@ Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hu
 - **Now** (owner, 2026-11-04: "No outline, place emblem on liver stripe dp not add livery in this change"): the pinstripes
   are gone (no livery is added by this change); the emblem sits upright on the forward livery band, in the stripe's own
   blue with no outline, a pearl ship and the cyan star, and the band is cut away round it in a circle of bare hull.
+- **Tightened** (owner, 2026-11-04: "tighten the livery line a bit so they arent so distant from the meblem", "bottom line
+  can be flat to conform to the key hole/beacon shape more"): the cut is 0.15 m clear of the emblem where the band crosses
+  it: an arc over the head and a flat edge under the foot.

@@ -45,7 +45,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 <div class="panel title">
   <h1>Concord emblem on the hull</h1>
   <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side, upright on the forward livery band in the stripe's own blue with no outline, the band broken round it by a circle of bare hull, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
+  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side, upright on the forward livery band in the stripe's own blue with no outline, the band broken round it by bare hull in an arc over the head and a flat edge under the foot, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
   <p>Ship: the Concord line's shared builder, plain pearl (mockup 6 has the windows and lamps). Change <code>faction-emblems</code>.</p>
 </div>
 <div class="panel bar" id="bar"></div>
@@ -390,10 +390,16 @@ const MARKS = [];
   MARKS.push({ key: 'port', c: V3(h[1], y, z), n, v, u: V3().crossVectors(v, n) });
 }
 // The hull breaks the band round the emblem (owner, 2026-11-04: "The stripe having a circle around it where the logo
-// crosses", "The hull should break the stripe livery at that spot"): inside a circle 0.35 m clear of the emblem's farthest
-// corner the band is cut away, so bare pearl plating rings the emblem. No livery is added ("do not add livery in this
+// crosses", "The hull should break the stripe livery at that spot"): inside a circle round the emblem the band is cut away, so bare pearl plating rings the emblem. No livery is added ("do not add livery in this
 // change"): the band is the Concord line's own.
-const BREAK_R = Math.max(...PARTS.frame.flat().map(([x, y]) => Math.hypot(x - 50, y - 50))) * M_PER_UNIT + 0.35;
+// Tightened (owner, 2026-11-04: "tighten the livery line a bit so they arent so distant from the meblem", then "bottom
+// line can be flat to conform to the key hole/beacon shape more"): above, an arc 0.15 m clear of the emblem's head where the
+// band runs across it (its half width, 1.2 m, plus the margin); below, a flat edge 0.15 m under the keyhole's flat foot.
+// Metres in the mark's plane, v up from the emblem's centre.
+const BAND_HALF = 1.2, BREAK_GAP = 0.15;
+const FIELD_M = PARTS.field.flat().map(([x, y]) => [(x - 50) * M_PER_UNIT, (50 - y) * M_PER_UNIT]);
+const BREAK_R = Math.max(...FIELD_M.filter(([x, v]) => v >= 0 && Math.abs(x) <= BAND_HALF + BREAK_GAP).map(([x, v]) => Math.hypot(x, v))) + BREAK_GAP;
+const BREAK_FLAT = Math.min(...FIELD_M.map(([, v]) => v)) - BREAK_GAP;
 
 // The paint: the hull's pearl material with the emblem mixed into its colour where each mark's square covers the plating
 // that faces the mark's way. Planar projection in ship space, so the paint follows the hull's own faces.
@@ -407,7 +413,7 @@ function paintHull(mat, cut = false) {
     sh.uniforms.uDecal = uDecal;
     MARKS.forEach((mk, i) => { for (const k of ['c', 'n', 'u', 'v']) sh.uniforms[`uM${i}${k}`] = { value: mk[k] }; });
     sh.uniforms.uSize = { value: TEX_SIZE_M };
-    sh.uniforms.uBreak = { value: BREAK_R };
+    sh.uniforms.uBreak = { value: new THREE.Vector2(BREAK_R, BREAK_FLAT) };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vShipPos;\nvarying vec3 vShipN;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvShipPos = position;\nvShipN = normal;');
     const decl = MARKS.map((_, i) => `uniform vec3 uM${i}c, uM${i}n, uM${i}u, uM${i}v;`).join('\n');
@@ -417,12 +423,15 @@ varying vec3 vShipPos;
 varying vec3 vShipN;
 uniform sampler2D uDecal;
 uniform float uSize;
-uniform float uBreak;
+uniform vec2 uBreak;
 ${decl}
 // The band is cut away inside the circle round the first mark, so the plating under it shows.
 void breakBand() {
   vec3 d = vShipPos - uM0c;
-  if (abs(dot(d, uM0n)) < 1.5 && length(vec2(dot(d, uM0u), dot(d, uM0v))) < uBreak) discard;
+  if (abs(dot(d, uM0n)) > 1.5) return;
+  vec2 p = vec2(dot(d, uM0u), dot(d, uM0v));
+  // An arc over the head, a flat edge under the foot.
+  if (p.y > uBreak.y && (p.y < 0.0 || length(p) < uBreak.x)) discard;
 }
 void paint(vec3 c, vec3 n, vec3 u, vec3 v, inout vec3 col) {
   vec3 d = vShipPos - c;

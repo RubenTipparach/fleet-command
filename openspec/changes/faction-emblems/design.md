@@ -67,8 +67,9 @@ its star satin cyan: the near-white pearl enamel's maps tinted `#2fd0f0`, since 
 into one of the stripes", "don't rotate our logo", "The hull should break the stripe livery at that spot", then "No
 outline, place emblem on liver stripe dp not add livery in this change"): the emblem stands upright on the forward livery
 band on the port side, its field the band's own stripe colour (read from the Concord line's livery table) with no outline,
-a pearl ship and the cyan star. The band is cut away round it in a circle of bare plating 0.35 m clear of its farthest
-corner. This change adds no livery; the band is the Concord line's own. (A pinstripe layout, after a reference picture of
+a pearl ship and the cyan star. The band is cut away round it in bare plating, 0.15 m clear of the emblem where the band
+crosses it: an arc over the head and a flat edge under the flat foot (owner: "tighten the livery line a bit", "bottom
+line can be flat to conform to the key hole/beacon shape more"). This change adds no livery; the band is the Concord line's own. (A pinstripe layout, after a reference picture of
 an emblem heading two pinstripes, was tried and dropped.)
 
 ## The rules for an emblem
