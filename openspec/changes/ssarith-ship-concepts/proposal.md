@@ -28,7 +28,7 @@ we defined culture and story"): the culture first, then the Ship Design Bible's 
     talons at their tips.
   - **C Crouch**: a hump of armour scutes over a low dipped prow, the nacelles folded under the belly like forelegs, a
     sickle claw at each.
-- **Mockup 12**, `docs/mockups/ssarith-ship-concepts.html` version 1: the three at true scale beside the Concord Petrel
+- **Mockup 12**, `docs/mockups/ssarith-ship-concepts.html` version 1 (https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris): the three at true scale beside the Concord Petrel
   (the yardstick, from `docs/mockups/lib/concord-line.js`), Stalk and Strike, the deck plans, the 40 px silhouettes, the
   bible's checks measured on the page, the console palette beside the hull's (X4).
 - **Survey section H** (H1-H8): the direction, and every culture and story call this design needs from the owner (U7).

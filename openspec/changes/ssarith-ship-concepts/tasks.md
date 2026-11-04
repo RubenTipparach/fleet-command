@@ -7,7 +7,8 @@
 - [x] 1.3 `docs/mockups/ssarith-ship-concepts.html` v1: the fitted hull and its shovel prow, directions A Grasp, B Jaw and C Crouch, Stalk and Strike, deck plans, 40 px silhouettes, the Petrel yardstick, the page's checks
 - [x] 1.4 Named shots looked at; `dom_fit.mjs` passes
 - [x] 1.5 `mockup-work.md` (mockup 12), `docs/artifacts/ssarith-ship-concepts/`, survey section H
-- [ ] 1.6 Published, and on the tracker (from the desktop session if the cloud publish is refused)
+- [x] 1.6 Published: https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris
+- [ ] 1.7 On the tracker, and the survey republished with section H (from the desktop session: the cloud session's account cannot open either)
 
 ## 2. After a direction is chosen (H1)
 

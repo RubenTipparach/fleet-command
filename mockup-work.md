@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships: the Hunt's culture turned into ships, one frigate's rooms and three directions of claws | Drafted (2026-11-04, v1, page written in a cloud session; published from the desktop session if the cloud publish is refused) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | |
+| 12 | Ssarith Hunt ships: the Hunt's culture turned into ships, one frigate's rooms and three directions of claws | Drafted (2026-11-04, v1; the tracker and the survey's section H still to publish from the desktop session) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
