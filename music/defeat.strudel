@@ -1,0 +1,71 @@
+// @title Fleet Command: Ship Lost
+// @cycles 5
+// @reverb 0.55
+// @space gm_french_horn 0.35
+// @space gm_pad_poly 0.5
+// @mix gm_french_horn vol=100
+//
+// The stinger for a ship or a battle lost: the Lost (the Concord's idea in E flat minor) on
+// one horn over low strings and a dark bed, then the last chord held. 66 BPM, 5 bars (18 s).
+// Motifs: docs/design/music.md.
+
+setcps(66/60/4)
+
+// ── MOTIF LIBRARY ──────────────────────────────────────────────
+// THE CONCORD: the player's fleet. An 8-bar sentence in E flat major (docs/design/music.md,
+// "Writing a melody"): a 2-bar idea (a dotted leap of a sixth, the gap filled by step, then a
+// fall through the chord), the idea again a fourth up on A flat, the lift to F MAJOR (its A
+// natural, the raised fourth of E flat, is the Concord's sense of wonder), two bars that
+// shorten the idea and climb, the one high point (B flat 5, bar 7) and a cadence home.
+// In eighths: @2 a quarter, @3 a dotted quarter, @4 a half.
+const CONCORD = note(`<
+  [eb4@3 c5 c5@2 bb4 c5]   [eb5@4 c5@2 g4@2]
+  [ab4@3 f5 f5@2 eb5 f5]   [g5@4 f5@2 a4@2]
+  [bb4@2 d5@2 bb4 d5 g5@2] [c5@2 eb5@2 c5 eb5 ab5@2]
+  [bb5@6 ab5@2]            [g5@3 f5 eb5@4]
+>`)
+const CONCORD_CHORDS = note(`<
+  [eb3,g3,bb3] [c3,eb3,g3] [ab2,c3,eb3] [f3,a3,c4]
+  [g3,bb3,d4] [ab3,c4,eb4] [[bb2,eb3,f3] [bb2,d3,f3,ab3]] [eb3,g3,bb3]
+>`)
+const CONCORD_ROOTS = note("<eb2 c2 ab1 f2 g1 ab1 bb1 eb2>")
+// THE WONDER CHORD: E flat with the raised fourth (E flat, B flat, D, G, A): the Concord at rest.
+const WONDER = note("[eb2,bb2,g3,d4,a4]")
+// THE THREAT: whoever the fleet is fighting (no faction's own theme: survey S2 asks for those).
+// A low ostinato in C minor, 16ths grouped 3+3+3+3+4, grinding C against D flat, the fourth
+// bar on G with the flat nine...
+const THREAT = note(`<
+  [c2 c3 c2 c2 c3 c2 c2 c3 c2 db2 db3 db2 c2 g1 ab1 g1]
+  [c2 c3 c2 c2 c3 c2 eb2 eb3 eb2 db2 db3 db2 c2 bb1 ab1 g1]
+  [c2 c3 c2 c2 c3 c2 c2 c3 c2 db2 db3 db2 c2 g1 ab1 g1]
+  [g1 g2 g1 g1 g2 g1 ab1 ab2 ab1 g1 g2 g1 b1 c2 d2 eb2]
+>`)
+const THREAT_ACCENT = "1 .5 .5 1 .5 .5 1 .5 .5 1 .5 .5 1 .65 .65 .65"
+const THREAT_HITS = "x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ ~"
+const THREAT_CHORDS = note("<[c3,eb3,g3] [c3,db3,f3,ab3] [ab2,c3,eb3] [g2,b2,d3,ab3]>")
+// ... and its call on the horns: up a semitone, down a tritone; then the answer that sinks back.
+const THREAT_CALL = note("<[c4@2 db4@2 g3@4] [c4@2 eb4 db4 c4@4]>")
+// THE LOST: a ship or a battle lost. The Concord's idea in E flat MINOR, slow, on one horn.
+const LOST = note(`<
+  [eb4@3 cb5 cb5@2 bb4 cb5] [db5@4 bb4@2 gb4@2]
+  [f4@4 gb4@2 f4@2]         [eb4@8]
+>`)
+const LOST_CHORDS = note("<[eb3,gb3,bb3] [cb3,eb3,gb3] [bb2,db3,f3] [eb3,gb3,bb3]>")
+// ── END MOTIF LIBRARY ──────────────────────────────────────────
+
+const lament = stack(
+  LOST.s("gm_french_horn").gain(0.95),
+  LOST_CHORDS.s("gm_string_ensemble_2").gain(0.45),
+  LOST_CHORDS.sub(note(12)).s("gm_cello").gain(0.4),
+  note("<eb2 cb2 bb1 eb2>").s("gm_contrabass").gain(0.55),
+  LOST_CHORDS.s("gm_pad_poly").gain(0.3),
+  note("<eb2 ~ bb1 ~>").s("gm_timpani").gain(0.45)
+)
+const end = stack(
+  note("[eb3,gb3,bb3]").s("gm_string_ensemble_2").gain(0.4),
+  note("[eb2,bb2]").s("gm_cello").gain(0.4),
+  note("[eb3,gb3,bb3]").s("gm_pad_poly").gain(0.35),
+  note("eb1").s("gm_contrabass").gain(0.5)
+)
+
+arrange([4, lament], [1, end])
