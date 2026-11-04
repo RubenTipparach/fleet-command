@@ -174,6 +174,25 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'D', name: 'Missiles for every faction (mockup 12)',
+    lead: 'You asked for missiles on every faction ("in starfleet command they are refered to as drones"). The weapons range fires salvos both ways with point defence; the rules are written up in openspec/changes/missiles after the reference manual (SFC2, printed pages 24 and 190-192). Every number is a placeholder.',
+    qs: [
+      { id: 'D1', q: 'Your four grades, red to green: red 900 m/s and 8 damage, orange (today\'s missile) 1,100 m/s and 11, blue 1,300 m/s and 14, green 1,500 m/s and 18; blue and green take two point defence hits to stop. Right spread?',
+        options: ['As written', 'Closer together', 'Wider apart (say how in the notes)'], rec: 0,
+        why: 'Each grade is a clear step up, and the two top grades are worth spending two point defence shots on.' },
+      { id: 'D2', q: 'Missiles cost rounds from a rack (6 light or 3 heavy, reloading one every 10 or 20 s), not reactor energy?',
+        options: ['Rounds; restocked at a supply dock in the campaign, the higher grades dearer', 'Rounds that never run out', 'Reactor energy, as today'], rec: 0,
+        why: 'Ammunition makes a salvo a decision and gives the supply dock and the shop something to sell.' },
+      { id: 'D3', q: 'A ship guides six missiles at once; a seventh launch drops the oldest. A launcher whose sensors are out loses its missiles\' lock.',
+        options: ['Yes', 'No limit', 'The limit is the ship\'s sensor rating, by class'], rec: 0,
+        why: 'It stops a carrier swamping point defence and ties missiles to sensors, as in the reference game.' },
+      { id: 'D4', q: 'On the console: Missile or Drone?',
+        options: ['Missile', 'Drone'], rec: 0,
+        why: 'The console and the icon already say missile, and it says what it is to a new player.' },
+      { id: 'D5', q: 'A missile flies 20 s (22 km for a light one), then drifts dead?',
+        options: ['20 s', 'Longer: 30 s', 'Until it hits or is shot down'], rec: 0,
+        why: 'Fuel lets a captain outrun a salvo and keeps stray missiles from crossing the whole map.' },
+    ] },
   { tag: 'X', name: 'Special weapons (mockup 12)',
     lead: 'Mockup 12 (Special Weapons Range, docs/mockups/special-weapons.html; its link is on the tracker) fires the Concord\'s Chorus lance and Quell torpedo and the Krai\'s Forge driver and Blood charge on the approved ships. Designs: openspec/changes/special-weapons and weapon-fx. Every number is a placeholder.',
     qs: [

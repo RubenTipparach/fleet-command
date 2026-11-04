@@ -1,7 +1,7 @@
 # Special Weapons Range (mockup 12)
 
 - Link: https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT
-- Shows: the Concord's Chorus lance and Quell torpedo and the Krai Warhost's Forge driver and Blood charge, fired on the
+- Shows: the standard weapons (lance, disruptor, pulse torpedo) and the Concord's Chorus lance and Quell torpedo and the Krai Warhost's Forge driver and Blood charge, fired on the
   approved ships at true size with their effects and shaders, each run with moving ships, the weapon's numbers and the
   target's shields and hull computed from the data; views of the shooter, the target and the whole range; slow motion,
   shields up or down, High or Phone quality.

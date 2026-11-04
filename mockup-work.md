@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots; v76 committed, to publish: beams and disruptor bolts keep their ends on their ships) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots; v77 committed, to publish: beams and disruptor bolts keep their ends on their ships (v76); lances, bolts and torpedoes drawn by the weapons range's effects (v77)) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders | Drafted (2026-11-04, v1; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
+| 12 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | Drafted (2026-11-04, v2; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -613,3 +613,35 @@ and `docs/design/mockup-sync.md`. Mockup 2 v76 and mockup 8 v15 are to republish
 Design: `openspec/changes/special-weapons/`, `openspec/changes/weapon-fx/`. References: SFC2 manual printed pages 22-25
 (heavy weapons: direct fire and seeking, each race its own; weapon status, stunned); SFC3 manual printed pages 12-13
 (primary and heavy weapons by empire and loadout) and 28-29 (refit by hardpoint).
+
+Owner, on version 1 (2026-11-04): "Yea add standard weapons too. Kinda hard to see the ships on the phone. Make sure zoom
+is appropriate. Those look awesome. I would make the shield bubble 50% larger", then "Also no rotation on on camera
+please. I just want to see the fx fired between two ships".
+
+Version 2 (2026-11-04): the standard weapons on the range too (the lance, the disruptor and the pulse torpedo, numbers
+from `data/battle/weapons.json`, the lance's life from `data/battle/tuning.json`); one fixed view, side on, that never
+turns or follows, with the ships holding station face to face 420 m apart and drifting a few metres so the beams can be
+seen riding them; the view's distance fitted to the ships and their shields in the part of the screen the panels leave
+free (on a phone the card starts folded and the controls are one row); every shield bubble 50 % larger. The same lance,
+bolt and warhead looks now draw the battle console's shots (mockup 2 v77, mockup 8 v16).
+
+Then, while version 2 was built: "pulse torpedo needs that iconic 6 armed flare" (with a picture of a star's six
+diffraction spikes); "all factions can have missiles too, so develop missiels (in starfleet command they are refered to
+as drones)"; "here is what missiles look like, they got that 3d missile model at the front end, a big ball plume, and a
+tail" (with a screenshot of the reference game's missiles); "torpedo should have like discrete trail instead of a long
+streak"; "shield bubble invisible unless hit". In version 2: the pulse torpedo flies under a six-armed star and drops a
+trail of separate beads; missiles are a weapon for every faction (change `missiles`, survey D), each a plain dart with a
+big ball of its faction's drive light behind it and a long tail, fired in salvos both ways with point defence shooting
+them down; the shield bubbles show nothing until something hits them. The battle console mockup (v77) draws torpedoes and
+missiles the same way.
+
+Then: "torpedos should be purple, and close the gap on those trails, they are too far appart, large spheres to small
+spehres"; "is the flare animated? the flare arms should be moving around"; "please avoid the color white for weapons";
+"missiles depending on grade will have: red, orange, blue, green", "red being lowest grade, green being highest"; "stronger
+purple please for torepodes"; "half the length of tail, I also want it to go from larger (2x) spheeres to smaller
+spheres"; "and torpedo tail should fade out". Done: torpedoes a strong purple (`#8f2bff` in `data/battle/weapons.json`, so
+the game's torpedoes too), a tail half as long of beads packed close, twice the size at the warhead shrinking and fading
+to nothing; the six arms turn and flicker; no weapon core is white (each is its own colour at full strength; point defence
+gold `#ffc23d`); missiles in four grades (`data/battle/missiles.json`), red, orange, blue, green, each salvo on the range one
+of each.
+

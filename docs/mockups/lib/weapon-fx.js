@@ -10,14 +10,14 @@
 //   GLSL                         noise (wn, wfbm), voronoi (wvor), blackbody(t), the shield lattices (hexEdge, triEdge)
 //   pipeline(opts)               HDR render, bloom, heat haze, ACES and sRGB in one final pass: .setSize(w, h, pr), .render()
 //   ribbon(o)                    a beam: a camera-facing strip between two points with a core, a glow, flowing noise and
-//                                helical strands (o.look 'chorus' | 'join' | 'barrel'); .set(a, b), .u (uniforms)
+//                                helical strands (o.look 'chorus' | 'join' | 'lance' | 'bolt' | 'barrel'); .set(a, b), .u (uniforms)
 //   flare(o)                     a muzzle or impact flare (o.look 'lens' | 'tri' | 'soft'), camera-facing
 //   shield(ship, o)              the ship's shield bubble in six facings (o.pattern 'hex' | 'tri'); .hit(dirLocal, t),
 //                                .facing[k] (0..1 held), .breakAt[k], .raycast(worldFrom, worldDir)
 //   scars(ship)                  patches the ship's materials: molten craters, beam burns, gouges and the quell lattice,
 //                                in ship space; .add(kind, pLocal, r, dirLocal, dur), .lattice(pLocal, t, stunS)
-//   orb(o), spike(o)             the quell torpedo and the forge slug
-//   trail(o)                     a fading ribbon behind a moving point
+//   orb(o), spike(o), dart(o)    the quell torpedo, the forge slug and a missile
+//   trail(o)                     a fading ribbon behind a moving point; beads(o) a discrete trail of glowing beads
 //   plume(r, len, o)             an exhaust with shock diamonds; bowShock(r, len, o) the shell before a charging bow
 //   ring(o)                      an impact shockwave ring, any orientation; haze(o) a heat haze sprite
 //   motes(o)                     light gathering toward a point (the chorus charge)
@@ -52,6 +52,8 @@ float hexEdge(vec2 p){ const vec2 s = vec2(1.0, 1.7320508);
   vec4 h = vec4(p - hc.xy*s, p - (hc.zw + 0.5)*s);
   vec2 q = dot(h.xy, h.xy) < dot(h.zw, h.zw) ? h.xy : h.zw; q = abs(q);
   return 0.5 - max(dot(q, s*0.5), q.x); }
+// A weapon's hot core: its own colour at full strength, never white (owner, 2026-11-04: "please avoid the color white for weapons").
+vec3 hotOf(vec3 c){ return c/max(max(c.r, c.g), max(c.b, 1e-3)); }
 float triEdge(vec2 p){ vec2 q = vec2(p.x - p.y*0.5773503, p.y*1.1547005);
   float a = abs(fract(q.x) - 0.5), b = abs(fract(q.y) - 0.5), c = abs(fract(q.x + q.y) - 0.5);
   return 0.5 - max(max(a, b), c); }
@@ -72,6 +74,8 @@ function pipeline(opt = {}) {
   bloom.highPassUniforms.smoothWidth.value = 0.6;
   // bloom's own targets in half floats too: in bytes its wide blur steps into visible rings round a bright flash
   for (const rt of [bloom.renderTargetBright, ...bloom.renderTargetsHorizontal, ...bloom.renderTargetsVertical]) rt.texture.type = THREE.HalfFloatType;
+  // and what goes into it clamped: a flare far brighter than 1 overran the blur's kernel and drew a square round itself
+  const hp = bloom.materialHighPassFilter; hp.fragmentShader = hp.fragmentShader.replace('gl_FragColor = mix( outputColor, texel, alpha );', 'gl_FragColor = mix( outputColor, vec4( min( texel.rgb, vec3( 2.5 ) ), texel.a ), alpha );'); hp.needsUpdate = true;
   const fin = new THREE.ShaderMaterial({ depthTest: false, depthWrite: false,
     uniforms: { tScene: { value: null }, tHaze: { value: null }, uHaze: { value: 1 }, uExposure: { value: opt.exposure ?? 1.0 }, uTime: T, uAb: { value: 1 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
@@ -121,12 +125,15 @@ function pipeline(opt = {}) {
 //   chorus  a white core in Sky glow, flowing light, Lilac strands winding round it (two, plus one for every ship that
 //           joins), a bright node where the joining beams meet it; a front that races out at uReach
 //   join    a thinner beam, one strand, that ends in the chorus's node
+//   lance   the standard lance (every faction's beam): a white core in the weapon's colour, flowing light, pulses racing
+//           to the target
+//   bolt    a disruptor bolt: a short strip from its tail to its head, narrow and dim behind, a hot core at the head
 //   barrel  the forge driver's spine heating: blackbody along its length, brightest at the muzzle
 const RIBBON_FS = {
   chorus: `
     float core = exp(-x*x*90.0), glow = exp(-abs(x)*4.2)*0.55 + exp(-abs(x)*1.4)*0.12;
     float flow = wfbm(vec3(s*0.035 - uTime*9.0, x*3.0, uTime*0.7));
-    vec3 c = uColor*(glow*(1.3 + 1.4*flow)) + mix(uColor, vec3(1.0), 0.35)*core*(1.5 + 1.0*flow);
+    vec3 c = uColor*(glow*(1.3 + 1.4*flow)) + hotOf(uColor)*core*(1.5 + 1.0*flow);
     float strands = 0.0;
     for (int i = 0; i < 5; i++) { if (float(i) >= uStrands) break;
       float ph = float(i)*6.2831853/uStrands; float w = s*0.055 - uTime*11.0 + ph;
@@ -134,14 +141,25 @@ const RIBBON_FS = {
       strands += exp(-pow((x - xs)/0.07, 2.0))*front; }
     c += uColor2*strands*2.4*(0.7 + 0.6*flow);
     float node = exp(-pow((s - uFocus)/(uWidth*0.9), 2.0))*step(0.5, uStrands - 2.0);
-    c += (uColor2*0.6 + vec3(0.9))*node*(1.2 + 0.8*sin(uTime*40.0))*exp(-abs(x)*2.0);
+    c += (uColor2*0.6 + hotOf(uColor)*0.9)*node*(1.2 + 0.8*sin(uTime*40.0))*exp(-abs(x)*2.0);
     float rings = pow(0.5 + 0.5*sin(s*0.22 - uTime*60.0), 24.0)*exp(-abs(x)*3.0)*0.35;
     c += uColor*rings;`,
   join: `
     float core = exp(-x*x*70.0), glow = exp(-abs(x)*3.5)*0.6;
     float flow = wfbm(vec3(s*0.05 - uTime*10.0, x*3.0, 3.1));
-    vec3 c = uColor*glow*(0.6 + 0.7*flow) + vec3(1.0)*core*2.6;
+    vec3 c = uColor*glow*(0.6 + 0.7*flow) + hotOf(uColor)*core*2.0;
     float w = s*0.07 - uTime*12.0; c += uColor2*exp(-pow((x - 0.45*sin(w))/0.09, 2.0))*(0.6 + 0.4*cos(w))*1.2;`,
+  lance: `
+    float core = exp(-x*x*80.0), glow = exp(-abs(x)*4.0)*0.6 + exp(-abs(x)*1.6)*0.12;
+    float flow = wfbm(vec3(s*0.06 - uTime*14.0, x*3.0, 1.7));
+    float pulse = pow(0.5 + 0.5*sin(s*0.12 - uTime*70.0), 6.0);
+    vec3 c = uColor*glow*(1.1 + 1.3*flow + 0.8*pulse) + hotOf(uColor)*core*(1.6 + 0.8*flow);`,
+  bolt: `
+    float k = clamp(s/max(uLen, 1.0), 0.0, 1.0); // 0 at the tail, 1 at the head
+    float w = mix(0.15, 1.0, k*k); float xx = x/max(w, 0.05);
+    float core = exp(-xx*xx*18.0)*pow(k, 3.0), glow = exp(-abs(xx)*3.0)*k*k;
+    float flick = 0.8 + 0.4*wn(vec3(s*0.3 - uTime*40.0, x*2.0, 4.0));
+    vec3 c = uColor*glow*1.6*flick + hotOf(uColor)*core*2.6;`,
   barrel: `
     float k = s/max(uLen, 1.0); float heat = uIntensity*(0.35 + 0.65*k)*(0.75 + 0.5*wfbm(vec3(s*0.4, x*2.0, uTime*3.0)));
     vec3 c = blackbody(heat*1.1)*(exp(-x*x*6.0)*0.8 + exp(-abs(x)*2.0)*0.25);`,
@@ -174,21 +192,40 @@ function ribbon(opt = {}) {
 // -----------------------------------------------------------------------------------------------------------------
 // A flare: a camera-facing quad at a point. lens: a round core, a long thin horizontal streak and a faint halo ring
 // (the Concord's clean light); tri: a three-pointed star of blades, turned to uRot (the Krai's triangle, never a
-// round lens); soft: a plain glow.
+// round lens); soft: a plain glow; six: the pulse torpedo's six-armed star, after a telescope's diffraction spikes (owner,
+// 2026-11-04: "pulse torpedo needs that iconic 6 armed flare"): three thin beaded spikes crossing at 60 degrees, a warm and
+// a cyan fringe beside each, a faint strut pair across, and fine radial streaks in a hot core; the arms turn slowly and
+// each flickers in length (owner: "the flare arms should be moving around");
+// ball: a missile's plume, a big boiling ball of its drive colour round a white heart.
 function flare(opt = {}) {
   const look = opt.look || 'soft';
   const u = { uColor: { value: new THREE.Color(opt.color ?? 0xffffff) }, uI: { value: 0 }, uSize: { value: opt.size ?? 20 }, uRot: { value: opt.rot ?? 0 }, uTime: T };
   const body = {
     lens: `float core = exp(-r*r*40.0)*3.0 + exp(-r*6.0)*0.6; float streak = exp(-abs(p.y)*90.0)*exp(-abs(p.x)*2.6)*1.4;
-           float halo = exp(-pow((r - 0.62)/0.03, 2.0))*0.12; vec3 c = uColor*(core*0.6 + streak + halo) + vec3(1.0)*exp(-r*r*120.0)*4.0;`,
+           float halo = exp(-pow((r - 0.62)/0.03, 2.0))*0.12; vec3 c = uColor*(core*0.6 + streak + halo) + hotOf(uColor)*exp(-r*r*120.0)*2.5;`,
     tri: `float a = atan(p.y, p.x) + uRot; float blade = pow(max(0.0, cos(a*3.0)), 40.0);
           float rays = blade*exp(-r*3.2)*2.2 + pow(max(0.0, cos(a*3.0 + 3.1415927)), 60.0)*exp(-r*7.0)*0.6;
-          float core = exp(-r*r*50.0)*3.0; vec3 c = uColor*(rays + exp(-r*5.0)*0.5) + vec3(1.0, 0.9, 0.7)*core;`,
+          float core = exp(-r*r*50.0)*3.0; vec3 c = uColor*(rays + exp(-r*5.0)*0.5) + hotOf(uColor)*core;`,
     soft: `vec3 c = uColor*(exp(-r*r*12.0)*1.5 + exp(-r*4.0)*0.4);`,
+    ball: `float body = exp(-r*r*7.0); float heart = exp(-r*r*55.0); float rim = exp(-pow((r - 0.42)/0.12, 2.0))*0.25;
+           float boil = 0.85 + 0.3*wn(vec3(p*5.0, uTime*9.0));
+           vec3 c = uColor*(body*1.6*boil + rim + exp(-r*3.0)*0.35) + hotOf(uColor)*heart*2.0;`,
+    six: `float core = exp(-r*r*70.0)*3.2 + exp(-r*10.0)*0.9; float spikes = 0.0; vec3 fringe = vec3(0.0);
+          float spin = uRot + uTime*0.9 + 0.15*sin(uTime*2.3);
+          for (int i = 0; i < 3; i++) { float a = 1.5707963 + float(i)*1.0471976 + spin; vec2 d = vec2(cos(a), sin(a));
+            float along = abs(dot(p, d)), perp = abs(p.x*d.y - p.y*d.x);
+            float beads = 0.7 + 0.3*cos(along*110.0 - uTime*9.0);
+            float reach = 2.0/(0.75 + 0.35*sin(uTime*7.0 + float(i)*2.1) + 0.15*sin(uTime*17.0 + float(i)));
+            spikes += exp(-perp*perp*12000.0 - perp*70.0)*exp(-along*reach)*beads;
+            fringe += vec3(1.0, 0.62, 0.32)*exp(-perp*30.0)*exp(-along*3.4)*0.22 + vec3(0.3, 0.85, 0.8)*exp(-pow((perp - 0.012)*260.0, 2.0))*exp(-along*2.6)*0.25; }
+          vec2 ps = vec2(cos(spin)*p.x + sin(spin)*p.y, -sin(spin)*p.x + cos(spin)*p.y); float strut = exp(-abs(ps.y)*420.0)*exp(-abs(ps.x)*5.0)*0.45;
+          float fine = pow(wn(vec3(atan(p.y, p.x)*36.0, 1.0, uTime*1.5)), 5.0)*exp(-r*6.5)*2.2;
+          vec3 c = uColor*(spikes*2.4 + strut + exp(-r*4.0)*0.6) + fringe*0.6 + hotOf(uColor)*(core + fine);`,
   }[look];
   const m = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, depthTest: opt.depthTest ?? true, blending: THREE.AdditiveBlending,
     vertexShader: 'uniform float uSize; varying vec2 vP; void main(){ vP = position.xy; vec4 mv = modelViewMatrix*vec4(0.0, 0.0, 0.0, 1.0); mv.xy += position.xy*uSize; gl_Position = projectionMatrix*mv; }',
     fragmentShader: `uniform vec3 uColor; uniform float uI; uniform float uRot; uniform float uTime; varying vec2 vP;
+      ${GLSL}
       void main(){ vec2 p = vP; float r = length(p); ${body} gl_FragColor = vec4(c*uI*(1.0 - smoothstep(0.8, 1.0, r)), 1.0); }` }));
   m.frustumCulled = false; m.renderOrder = 6; scene.add(m);
   return { mesh: m, u, remove() { scene.remove(m); } };
@@ -198,16 +235,17 @@ function flare(opt = {}) {
 // A ship's shield bubble: an ellipsoid round the hull in six facings of 60 degrees each, facing 0 at the bow and counted
 // to starboard, as the battle rules count them (the battle console mockup's facingFrom). The Concord's is a hex lattice
 // in Sky, the Krai's a triangle lattice in forge orange (each skin's own geometry: the Krai's triangles, the Concord's
-// calm cells). At rest it is all but invisible: a faint rim. A hit lights a hot spot, a ring that runs out over the
+// calm cells). At rest it cannot be seen at all. A hit lights a hot spot, a ring that runs out over the
 // surface, and the lattice round it; a facing that holds less glows dimmer, and one that fails flashes, its cells
 // breaking up by noise, then it is gone until it is raised again. Up to eight hits at once.
 function shield(ship, opt = {}) {
   const box = new THREE.Box3().setFromObject(ship.model), size = box.getSize(V3()), centre = box.getCenter(V3());
   ship.root.worldToLocal(centre);
-  const rad = V3(size.x * 0.5 + opt.pad, size.y * 0.5 + opt.pad * 1.2, size.z * 0.5 + opt.pad);
+  // the bubble half again as large as the hull's box with its pad (owner, 2026-11-04: "I would make the shield bubble 50% larger")
+  const rad = V3(size.x * 0.5 + opt.pad, size.y * 0.5 + opt.pad * 1.2, size.z * 0.5 + opt.pad).multiplyScalar(opt.scale ?? 1.5);
   const u = { uImp: { value: Array.from({ length: 8 }, () => new THREE.Vector4(0, 0, 1, -99)) }, uFace: { value: [1, 1, 1, 1, 1, 1] },
     uBreak: { value: [-99, -99, -99, -99, -99, -99] }, uColor: { value: new THREE.Color(opt.color ?? 0x3fa9f0) }, uTri: { value: opt.pattern === 'tri' ? 1 : 0 },
-    uTime: T, uRest: { value: opt.rest ?? 0.05 } };
+    uTime: T, uRest: { value: opt.rest ?? 0 } };
   const mat = new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: 'varying vec3 vN; varying vec3 vW; varying vec3 vWN; void main(){ vN = normalize(position); vec4 w = modelMatrix*vec4(position, 1.0); vW = w.xyz; vWN = normalize(mat3(modelMatrix)*normal); gl_Position = projectionMatrix*viewMatrix*w; }',
     fragmentShader: `uniform vec4 uImp[8]; uniform float uFace[6]; uniform float uBreak[6]; uniform vec3 uColor; uniform float uTri; uniform float uTime; uniform float uRest;
@@ -233,8 +271,9 @@ function shield(ship, opt = {}) {
         float bAge = uTime - brk, dissolve = 1.0;
         if (bAge >= 0.0 && bAge < 1.2) { float nz = wn(vec3(g*1.7, 3.0)); dissolve = step(bAge*0.9, nz); on = 1.0; lit += (1.0 - bAge)*2.0*line; }
         else if (bAge >= 1.2 && face < 0.01) { on = 0.0; }
-        float a = (uRest*fres*(0.4 + face) + line*(lit*0.9 + 0.04*face*fres) + ring*(0.6 + line) + hot)*on*dissolve;
-        vec3 c = uColor*a + vec3(1.0)*hot*0.5;
+        // nothing at rest (owner, 2026-11-04: "shield bubble invisible unless hit"): only a hit lights it
+        float a = (line*lit*0.9*(0.5 + 0.5*face) + ring*(0.6 + line) + hot)*on*dissolve + uRest*fres*face*on;
+        vec3 c = uColor*a + hotOf(uColor)*hot*0.5;
         gl_FragColor = vec4(c, 1.0); }` });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 72, 36), mat);
   mesh.scale.copy(rad); mesh.position.copy(centre); mesh.rotation.y = PI; // the bubble's +z to the ship's bow (-z)
@@ -350,11 +389,26 @@ function orb(opt = {}) {
   const g = new THREE.Group(), r = opt.r ?? 3;
   const shell = (rad, col, op) => new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(rad, 1)), new THREE.LineBasicMaterial({ color: new THREE.Color(col).multiplyScalar(op), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
   const a = shell(r, 0xb7a6f2, 2.0), b = shell(r * 0.62, 0x3fa9f0, 2.4); g.add(a, b);
-  const core = flare({ look: 'soft', color: 0xd8e8ff, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = 1.2;
+  const core = flare({ look: 'soft', color: 0xb7a6f2, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = 1.2;
   const lens = flare({ look: 'lens', color: 0xb7a6f2, size: r * 7 }); scene.remove(lens.mesh); g.add(lens.mesh); lens.u.uI.value = 0.5;
   scene.add(g);
   const O = { group: g, step(dt) { a.rotation.x += dt * 2.1; a.rotation.y += dt * 1.3; b.rotation.y -= dt * 2.8; b.rotation.z += dt * 1.7; }, remove() { scene.remove(g); unlive(O); } };
   live.push(O); return O;
+}
+// A missile: a slim four-finned dart in gunmetal, its nose to -z, and its drive flame behind it in its grade's colour
+// (owner, 2026-11-04: "missiles depending on grade will have: red, orange, blue, green", red the lowest); the page gives it a
+// trail. Every faction fits missiles ("all factions can have missiles too"), so the body is plain.
+function dart(opt = {}) {
+  const g = new THREE.Group(), len = opt.len ?? 6, r = len * 0.06, mat = new THREE.MeshStandardMaterial({ color: 0x5a5f66, metalness: 0.7, roughness: 0.4 });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len * 0.8, 8), mat); body.rotation.x = PI / 2; g.add(body);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(r, len * 0.2, 8), mat); nose.rotation.x = -PI / 2; nose.position.z = -len * 0.5; g.add(nose);
+  for (let i = 0; i < 4; i++) { const f = new THREE.Mesh(new THREE.BoxGeometry(r * 0.25, r * 3.2, len * 0.18), mat); f.position.z = len * 0.33; f.rotation.z = i * PI / 2; f.translateY(r * 1.4); g.add(f); }
+  // the plume: a big round ball of drive light just behind the body, several times its width, with a hot white heart
+  // (owner, 2026-11-04, with a picture of the reference game's missiles: "they got that 3d missile model at the front end, a
+  // big ball plume, and a tail"); the page draws the tail
+  const ball = flare({ look: 'ball', color: opt.color ?? 0xffd27a, size: len * 1.6 }); scene.remove(ball.mesh); ball.mesh.position.z = len * 0.75; g.add(ball.mesh);
+  scene.add(g);
+  return { group: g, flame: ball, remove() { scene.remove(g); } };
 }
 // The forge slug: a three-sided spike (the Krai's triangle) of white-hot metal, its surface flowing like a pour, the
 // colour by blackbody from white at the point to orange at its tail.
@@ -367,7 +421,7 @@ function spike(opt = {}) {
       void main(){ float k = clamp(0.5 - vP.z/uLen, 0.0, 1.0); // 1 at the point
         float flow = wfbm(vec3(vP.xy*1.3, vP.z*0.4 + uTime*40.0));
         float fres = pow(1.0 - abs(dot(normalize(vN), normalize(-vW))), 2.0);
-        float t = 0.55 + 0.55*k + 0.35*flow - 0.2*fres;
+        float t = min(0.92, 0.5 + 0.4*k + 0.3*flow - 0.2*fres); // yellow at the hottest, never white
         gl_FragColor = vec4(blackbody(t), 1.0); }` }));
   m.renderOrder = 3; scene.add(m);
   return { mesh: m, remove() { scene.remove(m); } };
@@ -391,7 +445,7 @@ function trail(opt = {}) {
     vertexShader: 'attribute float aAge; attribute float aSide; varying float vAge; varying float vSide; void main(){ vAge = aAge; vSide = aSide; gl_Position = projectionMatrix*modelViewMatrix*vec4(position, 1.0); }',
     fragmentShader: `uniform vec3 uColor; uniform vec3 uColor2; uniform float uTime; varying float vAge; varying float vSide; ${GLSL}
       void main(){ float a = clamp(1.0 - vAge, 0.0, 1.0); float x = vSide; float body = exp(-x*x*3.0);
-        vec3 c = ${heat ? 'blackbody(a*a*1.1)*(0.6 + 0.6*wn(vec3(vAge*30.0 - uTime*20.0, x*2.0, 1.0)))' : 'mix(uColor2, uColor, a)*(0.4 + 1.2*a*a) + vec3(1.0)*exp(-x*x*20.0)*a*a*a*1.5'};
+        vec3 c = ${heat ? 'blackbody(a*a*1.1)*(0.6 + 0.6*wn(vec3(vAge*30.0 - uTime*20.0, x*2.0, 1.0)))' : 'mix(uColor2, uColor, a)*(0.4 + 1.2*a*a) + hotOf(uColor)*exp(-x*x*20.0)*a*a*a*1.5'};
         gl_FragColor = vec4(c*body*a, 1.0); }` }));
   m.frustumCulled = false; m.renderOrder = 4; scene.add(m);
   const tmp = V3(), dirv = V3(), toCam = V3(), sv = V3();
@@ -416,6 +470,33 @@ function trail(opt = {}) {
 }
 
 // -----------------------------------------------------------------------------------------------------------------
+// Beads: a discrete trail (owner, 2026-11-04: "torpedo should have like discrete trail instead of a long streak", then "close
+// the gap on those trails, they are too far appart, large spheres to small spehres"): a glowing bead dropped every every_s
+// seconds where the shot is, packed close, each staying where it was dropped and shrinking from large at the head to small
+// at the tail as it fades out over its life ("torpedo tail should fade out"), with a little twinkle; one draw call. Sizes are in world units, drawn at their true size at any zoom.
+function beads(opt = {}) {
+  const N = opt.n ?? 64, pos = new Float32Array(N * 3), born = new Float32Array(N).fill(-99);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('aBorn', new THREE.BufferAttribute(born, 1).setUsage(THREE.DynamicDrawUsage));
+  const u = { uTime: T, uLife: { value: opt.life ?? 0.9 }, uSize: { value: opt.size ?? 3 }, uScale: { value: 500 }, uColor: { value: new THREE.Color(opt.color ?? 0x9fd0ff) } };
+  const m = new THREE.Points(g, new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: 'attribute float aBorn; uniform float uTime; uniform float uLife; uniform float uSize; uniform float uScale; varying float vK; varying float vSeed; void main(){ float k = clamp((uTime - aBorn)/uLife, 0.0, 1.0); vK = k; vSeed = aBorn*37.0; vec4 mv = modelViewMatrix*vec4(position, 1.0); gl_PointSize = k >= 1.0 ? 0.0 : clamp(uSize*(1.0 - 0.88*k)*uScale/max(-mv.z, 0.01), 0.0, 64.0); gl_Position = projectionMatrix*mv; }',
+    fragmentShader: GLSL + 'uniform vec3 uColor; uniform float uTime; varying float vK; varying float vSeed; void main(){ vec2 q = gl_PointCoord - 0.5; float r = length(q); float dot_ = exp(-r*r*40.0); float heart = exp(-r*r*260.0); float cross_ = (exp(-abs(q.x)*60.0) + exp(-abs(q.y)*60.0))*exp(-r*9.0)*0.5; float tw = 0.8 + 0.2*sin(uTime*30.0 + vSeed); float a = pow(1.0 - vK, 3.0)*tw; gl_FragColor = vec4((uColor*(dot_*2.2 + cross_*1.4) + hotOf(uColor)*heart*2.2)*a, 1.0); }' }));
+  m.frustumCulled = false; m.renderOrder = 4; scene.add(m);
+  let next = 0, last = -99; const size = new THREE.Vector2(), lastP = new THREE.Vector3(), q = new THREE.Vector3();
+  // beads between two pushes are filled in along the line between them, so the spacing is every_s of flight however far
+  // the shot moved in one step
+  const R = { mesh: m, u, every_s: opt.every_s ?? 0.03,
+    push(p, now) {
+      if (last < -50) { last = now; lastP.copy(p); return; }
+      const n = Math.min(N, Math.floor((now - last) / R.every_s)); if (n < 1) return;
+      for (let i = 1; i <= n; i++) { const k = i * R.every_s / (now - last); q.copy(lastP).lerp(p, k); pos.set([q.x, q.y, q.z], next * 3); born[next] = last + i * R.every_s; next = (next + 1) % N; }
+      last += n * R.every_s; lastP.copy(q); g.attributes.position.needsUpdate = true; g.attributes.aBorn.needsUpdate = true; },
+    step() { o.renderer.getDrawingBufferSize(size); u.uScale.value = size.y / (2 * Math.tan(o.camera.fov * PI / 360)); },
+    remove() { scene.remove(m); unlive(R); } };
+  live.push(R); return R;
+}
+
+// -----------------------------------------------------------------------------------------------------------------
 // An exhaust plume from a drive bell: an open cone, brightest at its throat, with standing shock diamonds (the bright
 // knots a hard-pushed exhaust shows) that tighten as uPush rises, faked volumetric by its facing to the camera. The
 // Krai's is forge orange to white; it lengthens with uPush (0 cruising, 1 a full blood charge).
@@ -429,7 +510,7 @@ function plume(r, len, opt = {}) {
         float nodes = 3.0 + 4.0*uPush; float dia = pow(0.5 + 0.5*cos(vK*nodes*6.2831853), 10.0)*(1.0 - vK)*uPush;
         float flick = 0.8 + 0.4*wn(vec3(vK*12.0 - uTime*30.0, uTime*5.0, 0.0));
         float body = (1.0 - vK)*(1.0 - vK)*face;
-        vec3 c = uColor*body*(0.8 + 2.4*uPush)*flick + vec3(1.0, 0.85, 0.6)*dia*face*3.0 + vec3(1.0)*pow(1.0 - vK, 12.0)*face*2.0*(0.4 + uPush);
+        vec3 c = uColor*body*(0.8 + 2.4*uPush)*flick + vec3(1.0, 0.85, 0.6)*dia*face*3.0 + hotOf(uColor)*pow(1.0 - vK, 12.0)*face*2.0*(0.4 + uPush);
         gl_FragColor = vec4(c*(0.25 + 0.75*min(1.0, uPush + 0.3)), 1.0); }` }));
   m.renderOrder = 3; m.frustumCulled = false;
   return { mesh: m, u };
@@ -447,7 +528,7 @@ function bowShock(r, len, opt = {}) {
         float rim = pow(1.0 - abs(dot(vN, vV)), 2.5);
         float stream = wfbm(vec3(atan(vP.x, vP.y)*3.0, vP.z*0.12 + uTime*14.0, uTime*2.0));
         float a = uI*(rim*(0.5 + 1.2*stream) + pow(nose, 6.0)*1.8)*(0.3 + 0.7*nose);
-        vec3 c = mix(vec3(0.82, 0.10, 0.06), vec3(1.0, 0.55, 0.16), nose)*a*2.2 + vec3(1.0, 0.9, 0.75)*pow(nose, 14.0)*uI*3.0;
+        vec3 c = mix(vec3(0.82, 0.10, 0.06), vec3(1.0, 0.55, 0.16), nose)*a*2.2 + vec3(1.0, 0.55, 0.16)*pow(nose, 14.0)*uI*3.0;
         gl_FragColor = vec4(c, 1.0); }` }));
   m.renderOrder = 4; m.frustumCulled = false;
   return { mesh: m, u };
@@ -510,5 +591,5 @@ function motes(opt) {
 function step(dt) { T.value += dt; for (const e of live.slice()) e.step(dt); }
 function clear() { for (const e of live.slice()) { if (e.remove) e.remove(); else { if (e.mesh) scene.remove(e.mesh); unlive(e); } } }
 
-return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, spike, trail, plume, bowShock, ring, haze, motes, step, clear, live };
+return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, spike, dart, trail, beads, plume, bowShock, ring, haze, motes, step, clear, live };
 };
