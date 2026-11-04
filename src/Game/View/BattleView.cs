@@ -259,12 +259,45 @@ public sealed partial class BattleView : Node3D
     /// <summary>The point on the battle plane under a screen position, metres; null when the ray misses the plane.</summary>
     public (double X, double Z)? PlaneAt(Vector2 screen)
     {
-        Vector3 o = _cam.ProjectRayOrigin(screen), d = _cam.ProjectRayNormal(screen);
+        // the ray through the camera's own projection, offset frustum and all: Godot's ProjectRayNormal assumes a centred
+        // frustum, so with the ship held low in the view it cast every click somewhere else (owner, 2026-11-04: "mouse to
+        // screen ray cast is wrong, its not working like the JS version", "cant properly turn my ship in the desired
+        // direction"). Unprojecting two depths of the same pixel gives a ray that ScreenOf's UnprojectPosition inverts exactly.
+        var (o, d) = Ray(screen);
         if (Mathf.Abs(d.Y) < 1e-5f) return null;
         float t = -o.Y / d.Y;
         if (t < 0) return null;
         Vector3 q = o + d * t;
         return (q.X * MPerU, q.Z * MPerU);
+    }
+
+    // The ray (origin, unit direction) through a screen point, in the screen space UnprojectPosition gives (the viewport's
+    // visible rectangle), by the inverse of the camera's projection.
+    private (Vector3 O, Vector3 D) Ray(Vector2 screen)
+    {
+        Vector2 vs = GetViewport().GetVisibleRect().Size;
+        float nx = screen.X / vs.X * 2 - 1, ny = 1 - screen.Y / vs.Y * 2;
+        Projection inv = _cam.GetCameraProjection().Inverse();
+        Vector3 At(float z) { Vector4 v = inv * new Vector4(nx, ny, z, 1); return new Vector3(v.X, v.Y, v.Z) / v.W; }
+        Transform3D xf = _cam.GlobalTransform;
+        Vector3 a = xf * At(0.0f), b = xf * At(0.5f);
+        return (a, (b - a).Normalized());
+    }
+
+    /// <summary>The worst miss, metres, of a click cast back through PlaneAt from where ScreenOf drew points of the
+    /// battle plane round your ship (the layout test's check that a click lands where the player pointed).</summary>
+    public double RayMissM()
+    {
+        Ship p = _x.Battle.Player;
+        double worst = 0;
+        for (int i = 0; i < 16; i++)
+        {
+            double a = i * Math.PI / 8, r = 400 + 600 * (i % 4);
+            double x = p.X + Math.Sin(a) * r, z = p.Z - Math.Cos(a) * r;
+            if (ScreenOf(x, z) is not { } sp || PlaneAt(sp) is not { } q) continue;
+            worst = Math.Max(worst, Math.Sqrt((q.X - x) * (q.X - x) + (q.Z - z) * (q.Z - z)));
+        }
+        return worst;
     }
 
     /// <summary>The player's drag: turns and tilts the camera, and frees the camera lock (zoom does not).</summary>

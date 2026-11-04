@@ -50,7 +50,10 @@ public sealed class ShipDamage
     private int _groups;
     /// <summary>How many cells a chunk of the breaking hull holds, and how often (owner, 2026-11-04: "dont break up all
     /// pieces, some can stay in tact as 2-3 piece clusters"): one, two or three neighbouring cells.</summary>
-    public static readonly (int Cells, float Weight)[] ChunkSizes = { (1, 0.25f), (2, 0.4f), (3, 0.35f) };
+    public static readonly (int Cells, float Weight)[] ChunkSizes = { (1, 0.2f), (2, 0.25f), (3, 0.25f), (5, 0.3f) };
+    /// <summary>The share of a hull's cells that stay together as one big hulk (owner, 2026-11-04: "the ship parts look too
+    /// even"): the first chunk grows this large, so a broken ship leaves a hulk, some chunks and some small pieces.</summary>
+    public const float HulkShare = 0.4f;
     private readonly Vector4[] _scorch = new Vector4[MaxScars];
     private readonly float[] _heat = new float[MaxScars];
     private readonly Vector4[] _holes = new Vector4[MaxScars];
@@ -401,6 +404,7 @@ public sealed class ShipDamage
             if (taken.Contains(start)) continue;
             float roll = (float)_rng.NextDouble(), acc = 0; int want = 1;
             foreach (var (n, w) in ChunkSizes) { acc += w; if (roll <= acc) { want = n; break; } }
+            if (_clusters.Count == 0 && b == _bodies[0]) want = Math.Max(3, (int)Math.Round(left.Count * HulkShare));   // the hulk
             var group = new List<int> { start }; taken.Add(start);
             while (group.Count < want)
             {
@@ -433,8 +437,8 @@ public sealed class ShipDamage
             if (p.Off) continue;
             Vector3 out3 = p.Centre - _core; out3.Y *= 1.6f; float d = Math.Max(1f, out3.Length()); out3 = out3.Normalized();
             // half the mockup's pace times 2.5 (owner, 2026-11-04: "the whole explosion 2x slower")
-            float sp = (6 + 10 * (float)_rng.NextDouble()) * s * (1 + 40 / (d + 30)) * 1.25f;
-            Detach(p, Turn(out3) * sp + new Vector3(R(-1, 1), R(-1, 1), R(-1, 1)) * s, new Vector3(R(-0.18f, 0.18f), R(-0.18f, 0.18f), R(-0.18f, 0.18f)));
+            float sp = (6 + 10 * (float)_rng.NextDouble()) * s * (1 + 40 / (d + 30)) * 1.25f / MathF.Sqrt(Math.Max(1, p.Members.Count));   // big pieces drift, small ones fly
+            Detach(p, Turn(out3) * sp + new Vector3(R(-1, 1), R(-1, 1), R(-1, 1)) * s, new Vector3(R(-0.18f, 0.18f), R(-0.18f, 0.18f), R(-0.18f, 0.18f)) / MathF.Sqrt(Math.Max(1, p.Members.Count)));
             Burn(p);
         }
         Vector3 w = World(_core);

@@ -134,7 +134,7 @@ void fragment() {
 		}
 	}
 	col = mix(col, paint_c * (0.55 + 0.45 * a) * mix(1.0, 0.85, seam), paint);
-	col = mix(col, vec3(0.03, 0.026, 0.024) * (0.6 + 0.8 * nz2), smoothstep(0.0, 0.7, d_char));
+	col = mix(col, vec3(0.035, 0.03, 0.027) * (0.8 + 0.4 * nz2), smoothstep(0.0, 0.7, d_char));   // soot, smooth rather than speckled
 	if (!FRONT_FACING) col = back_color;
 
 	ALBEDO = col;

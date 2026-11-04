@@ -99,7 +99,7 @@ bool dmg_break(vec3 p, float nz, inout float d_char, inout float d_ember) {
 			if (dk < di) return true;
 			if (max(open_cells[cell], open_cells[k]) > 0.5 && abs(cell_group[cell] - cell_group[k]) > 0.5) edge = min(edge, (dot(p - sk, p - sk) - dot(p - si, p - si)) / (2.0 * length(sk - si)));
 		}
-		d_char = max(d_char, 1.0 - smoothstep(0.0, 11.0, edge + nz * 4.0));
+		d_char = max(d_char, 1.0 - smoothstep(0.0, 5.0, edge + nz * 2.5));   // charred only near the break, so a piece keeps its plating
 		d_ember = max(d_ember, (1.0 - smoothstep(0.0, 1.6, edge + nz * 1.6)) * (0.45 + 0.55 * cut_heat) * 1.6);
 	}
 	return false;
