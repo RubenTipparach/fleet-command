@@ -19,5 +19,5 @@
 - Version 2 published 2026-11-04 from the cloud session, version id `1793830836-df78`: the standard weapons (lance,
   disruptor, pulse torpedo with its six-armed star and bead trail, missiles in four grades with point defence), one fixed
   side-on view fitted to the free screen, shields half again as large and invisible until hit, no white on any weapon.
-- Version 3 published 2026-11-04 from the cloud session: torpedoes fired straight; missiles at near ship speeds by grade
+- Version 3 published 2026-11-04 from the cloud session, version id `1793834055-ace0`: torpedoes fired straight; missiles at near ship speeds by grade
   (240 to 480 m/s, 8 to 18 damage); countermeasures: flares, a decoy shuttle, point defence cannon tracers.
