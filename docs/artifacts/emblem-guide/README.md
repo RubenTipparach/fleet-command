@@ -64,3 +64,4 @@
 - 2026-11-04, version 16 (`1793776690-c54f`): the owner's note on the corners; `inset` clips exactly, `polys` samples segment by segment so each path corner is a vertex.
 - 2026-11-04, version 17 (`1793779365-6ec3`): the owner's notes on the hull marking (one emblem, half size, port side).
 - 2026-11-04, version 18 (`1793779848-702d`): B-E26, the beacon, from the owner's sketch ("can we try a shape like this?"), measured: one closed outline, parts 5.0 units apart.
+- 2026-11-04, version 19 (`1793781463-2f51`): B-E26 tightened (about 6 units of field above and below the ship, was 17 to 20); B-E15 marked as one of the owner's candidates.

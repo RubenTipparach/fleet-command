@@ -61,3 +61,4 @@
 - 2026-11-04, cloud session: M11 at v2; version 70, id `1793779351-25c3`.
 - 2026-11-04, cloud session: the Emblem Design Guide at v17; version 71, id `1793779369-6541`.
 - 2026-11-04, cloud session: M11 at v3 and the guide at v18; version 72, id `1793779859-89fd`.
+- 2026-11-04, cloud session: the guide at v19, built on the live v73 (another session's M2 v74 and M8 v13 kept); version 74, id `1793781484-b484`.
