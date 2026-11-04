@@ -62,3 +62,4 @@
 - 2026-11-04, cloud session (Krai battle console thread): M2 at version 73 and M8 at version 12 (drag-and-drop repairs); version 68, version id `1793778541-bd46`.
 - 2026-11-04, cloud session (Krai battle console thread): M2 at version 74 and M8 at version 13, on the live version `1793779859-89fd` (M11 and the Emblem Design Guide at v18 from another session); version 73, version id `1793780757-f106`.
 - 2026-11-04, cloud session (Concord ships thread): version 76, version id `1793782323-fbf2`: M7 v17.
+- 2026-11-04, cloud session (Concord ships thread): version 78, version id `1793783169-9f75`, built on the live version 77 (other sessions' M2 v75 and M8 v14 kept): M7 v18.
