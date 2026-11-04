@@ -50,10 +50,12 @@ PAL = dict(drab="#585e3e", drab_hi="#636a44", drab_lo="#4c5236", gun="#2b3130", 
 MAIN = (0.8, 60.0)    # the soft main light on the tubes: strength, angular size (deg)
 DIMPLE = 2.2          # a lamp's pressed dimple, mm deep
 # Display materials: every film and everything printed on one (the first is the film the print sits on).
-DISPLAY = ("tube", "lit", "flare", "slotfilm", "cellglass", "scan", "grid", "phos", "clawoff", "kill")
+DISPLAY = ("tube", "lit", "flare", "slotfilm", "cellglass", "amberfilm", "redfilm", "bonefilm", "scan", "grid", "phos", "clawoff", "kill")
 # A tube's light by its kind and the piece's state: (film material, emission strength).
 PRESS_MM = 3.0   # how far a pressed key's tube travels, down and in (3 px at the kit's 1x)
-LIGHT = dict(tube=("tube", 0.32), lit=("lit", 0.6), flare=("flare", 0.9), slot=("slotfilm", 0.22), cell=("cellglass", 0.22))
+LIGHT = dict(tube=("tube", 0.32), lit=("lit", 0.6), flare=("flare", 0.9), slot=("slotfilm", 0.22), cell=("cellglass", 0.22),
+             # the battle console's status lights (openspec/changes/ssarith-battle-console): damaged amber, down kill red, bone
+             amber=("amberfilm", 0.9), red=("redfilm", 0.9), bone=("bonefilm", 0.7))
 
 
 def drab(name, scales):
@@ -103,7 +105,8 @@ def mats(K, s):
                clawoff=K.mat("clawoff", lambda: film_ink("clawoff", PAL["clawoff"], es=0.35)),
                kill=K.mat("kill", lambda: film_ink("kill", PAL["kill"], es=2.4)))
     for key, (mname, es) in LIGHT.items():
-        col = {"tube": PAL["tube"], "lit": PAL["lit"], "flare": PAL["flare"], "slot": PAL["slot"], "cell": "#030a05"}[key]
+        col = {"tube": PAL["tube"], "lit": PAL["lit"], "flare": PAL["flare"], "slot": PAL["slot"], "cell": "#030a05",
+               "amber": "#b36f12", "red": "#a82c1c", "bone": "#8e8670"}[key]
         K.m[mname] = K.mat(mname, lambda mname=mname, col=col, es=es: film_mat(mname, col=col, shadow=PAL["tube_lo"], es=es, glow=1.0,
                                                                                 rim=key not in ("cell",), ao_mm=ao))
 

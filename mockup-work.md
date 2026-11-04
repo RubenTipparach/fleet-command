@@ -22,16 +22,17 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v76: every skin in one console, following the ship you command) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | **Approved for implementation** (2026-11-04, owner in conversation: "I've approved ships to be built", "we need to integrate proper ships in the game"; change `ship-models-engine`). Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | **Approved for implementation** (2026-11-04, owner in conversation, as mockup 6; change `ship-models-engine`). Drafted (2026-11-04, v21: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
-| 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v14) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, live v15; owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v14) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
+| 12 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v1) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | to publish |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -224,6 +225,15 @@ capturing, but are easy to get shot and die if there are less than 5 marines. pi
 required to activate and fly the ship, if no pilot show a "pilot needed" after capturing the ship". Version 75 (both
 skins; change `boarding-party`): the default load of marines, marine health and medics, hackers' speed and exposure,
 Pilot needed, and the expanded Capture page's party panel and boarding log.
+
+Owner, 2026-11-04: "lets next work on: Ssarith Hunt UI, this time combine uis together, so we can hop between different
+ships", "use simple geometric ships for the Ssarith", "we'll be developing their ships in another thread", and of the
+Hunt's rail tabs, "These buttons here don't quite fit". Version 76 (all skins; changes `ssarith-battle-console`,
+`fleet-skins`): every skin in one page; the console wears the skin of the ship you command; the Allied fleet scene with a
+Concord, a Krai and a Ssarith ship to hop between, and the quiet Three races scene to try them at leisure (keys 1, 2, 3
+take each ship); every ship you can command has its own officers; the Ssarith Hunt's
+battle console (mockup 12) with tube keys, wide keys and cells rendered in Blender, its 24 icons, and a Hunt stalker in
+simple geometry; the Hunt's icon rails on square tube keys.
 
 ## 3. Look dev
 

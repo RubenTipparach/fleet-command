@@ -238,6 +238,25 @@ def pieces():
         lines = [[(round(24 + (x - 24) * s, 2), round(24 + (y - 24) * s, 2)) for x, y in l] for l in g]
         add(f"icon.{n}", "hero", (48, 48), soft_cut(0.5, 0.5, 47.5, 47.5, 9), [("tube", soft_cut(8, 8, 40, 40, 6))],
             prints=[("glyph", lines, 1.5, "phos")], roll=1.8, dz=-4.0, pad=2.5)
+    # The battle console's own pieces (openspec/changes/ssarith-battle-console): the square tube key every icon key and
+    # status box is drawn on, the wide one for keys much wider than tall, and the allocation cells. One shape for every
+    # light; the light is the state: a control dark at rest, lit on hover, flaring when engaged; a status in phosphor
+    # (whole), amber (damaged) or kill red (down); off an unlit slot.
+    KEY_LIGHTS = (("idle", "tube"), ("hover", "tube"), ("on", "flare"), ("ok", "flare"), ("warn", "amber"), ("alert", "red"), ("off", "slot"))
+    w = soft_cut(8, 8, 40, 40, 5)
+    for state, light in KEY_LIGHTS:
+        add(f"key.{state}", "hero", (48, 48), soft_cut(0.5, 0.5, 47.5, 47.5, 9), [(light, w)],
+            prints=[("scan", scan(w, 2.6, 2.6), 0.5, "scan")], roll=1.6, land=1.4, dz=-4.0, pad=2.0)
+    w = soft_cut(11, 10, 133, 38, 5)
+    for state, light in KEY_LIGHTS:
+        add(f"keyw.{state}", "nine", (144, 48), soft_cut(0.5, 1.5, 143.5, 46.5, 9), [(light, w)],
+            prints=[("scan", scan(w, 2.6), 0.5, "scan")], margins=(0, 22, 0, 22), stretch="x", roll=1.6, land=2.0, dz=-4.0, pad=2.5)
+    # Allocation cells: one energy box a cell, a small tube in a cut bezel; lit in phosphor, the warning in kill red, the
+    # whole-and-ready in bone, locked an empty slot.
+    w = soft_cut(6, 6, 26, 22, 3)
+    for state, light in (("idle", "tube"), ("lit", "flare"), ("warn", "red"), ("accord", "bone"), ("locked", "slot")):
+        add(f"cell.{state}", "nine", (32, 28), soft_cut(0.5, 0.5, 31.5, 27.5, 6), [(light, w)],
+            margins=(10, 10, 10, 10), stretch="xy", roll=1.2, land=1.0, dz=-3.0, pad=1.0)
     # The symbol bar's three cells: one tiny tube, the same claw marks in each; only the light differs.
     for state in ("off", "on", "warn"):
         add(f"bar.cell.{state}", "cell", (10, 14), rbox(0.3, 0.3, 9.7, 13.7, 1.6), [("cell", rbox(0.3, 0.3, 9.7, 13.7, 1.6))],

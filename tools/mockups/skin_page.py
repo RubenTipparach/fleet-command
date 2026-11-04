@@ -2,8 +2,9 @@
 """Write a faction's battle console page from the one source page, so every faction's console runs the same code
 (CLAUDE.md section 6.1; openspec/changes/krai-battle-console). The source is docs/mockups/battle-console.html (the
 Concord skin); a faction's page differs only in what it names here: its skin id (the page's <meta name="fc-skin">,
-read by the page to pick window.FCSkins[id]), its title, the Google Fonts it loads, and the skin's library and kit
-inlined after the Concord's. Everything else, every rule, panel and control, is copied as it is.
+the skin its player side wears) and its title. Every skin's library, kit and type are in the source page already (the
+console follows the ship you command; openspec/changes/fleet-skins). Everything else, every rule, panel and control, is
+copied as it is.
 
     python3 tools/mockups/skin_page.py krai            # writes docs/mockups/battle-console-krai.html
     python3 tools/mockups/skin_page.py krai --check    # exit 1 if that page is not what this would write
@@ -23,10 +24,15 @@ SKINS = {
     "krai": {
         "title": "Krai Battle Console",
         "what": "Mockup 8: the battle console in the Krai Warhost skin (OpenSpec change krai-battle-console)",
-        "fonts": "family=Antonio:wght@400;600;700&family=Teko:wght@400;500;600;700&family=Russo+One",
-        "inline": ["assets/ui/krai/manifest.json", "docs/mockups/lib/krai.js"],
+    },
+    "ssarith": {
+        "title": "Ssarith Battle Console",
+        "what": "Mockup 12: the battle console in the Ssarith Hunt skin (OpenSpec change ssarith-battle-console)",
     },
 }
+# Every skin's library, kit and type are inlined in the source page itself (openspec/changes/fleet-skins: the console
+# follows the ship you command, so one page carries every skin); a faction's page differs only in its meta, title and
+# header.
 
 
 def swap(text, old, new):
@@ -44,10 +50,6 @@ def build(skin_id):
              "  page or the skin's library and run the script again. The source's own notes follow.\n\n")
     t = swap(t, '<meta name="viewport"', f'<meta name="fc-skin" content="{skin_id}">\n<meta name="viewport"')
     t = swap(t, "<title>Battle Console</title>", f"<title>{s['title']}</title>")
-    t = swap(t, "family=Antonio:wght@400;600;700&display=swap", s["fonts"] + "&display=swap")
-    anchor = "<!-- INLINE docs/mockups/lib/space.js -->"
-    blocks = "".join(f"<!-- INLINE {src} -->\n<!-- /INLINE -->\n" for src in s["inline"])
-    t = swap(t, anchor, blocks + anchor)
     return inline_data.fill(t)
 
 
