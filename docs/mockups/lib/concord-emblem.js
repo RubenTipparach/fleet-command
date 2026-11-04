@@ -90,7 +90,10 @@ float embBreakDist(vec3 p, vec3 n) {
   if (!embNear(p, n)) return 1e3;
   vec2 q = embQ(p);
   float below = uEmbP.z - q.y;                       // under the flat edge
-  float arc = q.y >= 0.0 ? length(q) - uEmbP.y : -1e3; // outside the arc over the head
+  // Outside the arc over the head, and, below the centre, outside the arc's own width. Without that bound the flat part
+  // ran the whole length of the flank and cut every band crossing that height (owner, 2026-11-04: "why is the middle one
+  // cut short?", "it needs to be a full stripe").
+  float arc = q.y >= 0.0 ? length(q) - uEmbP.y : abs(q.x) - uEmbP.y;
   return max(below, arc);
 }
 bool embBreak(vec3 p, vec3 n) { return embBreakDist(p, n) < 0.0; }
