@@ -57,3 +57,4 @@
 - 2026-11-04, cloud session (Krai battle console thread): M2 at version 72 and M8 at version 11, on the live version `1793777299-64c0` (M10 at v4 and the Emblem Design Guide at v16 from another session); version 67, version id `1793777634-c8fa`.
 - 2026-11-04, cloud session (Krai battle console thread): M2 at version 73 and M8 at version 12 (drag-and-drop repairs); version 68, version id `1793778541-bd46`.
 - 2026-11-04, cloud session (Krai battle console thread): M2 at version 74 and M8 at version 13, on the live version `1793779859-89fd` (M11 and the Emblem Design Guide at v18 from another session); version 73, version id `1793780757-f106`.
+- 2026-11-04, cloud session (Krai battle console thread): M2 at version 75 and M8 at version 14, on the live version `1793782323-fbf2` (M7 at v17 and the Emblem Design Guide at v19 from other sessions); version 77, version id `1793782763-4fe6`.

@@ -22,13 +22,13 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v74: weapon aims and wide keys after drag-and-drop repairs) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | Drafted (2026-11-03, v10: the frigate rooms first on the Ship Design Bible, brought to the Concord standard: square-cut plates, windows with Krai rooms, thrusters, warm floods) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
-| 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v13) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v14) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
@@ -215,6 +215,13 @@ system dont affect PDCs or missiles actually so disabling that wouldnt disable i
 (both skins; changes `weapon-targeting`, `krai-battle-console`): wide keys rendered in Blender and nine-sliced; the
 target's weapons as aim keys on the expanded Tactical page and on the Target box; point defence and missiles independently
 powered.
+
+Owner, 2026-11-04, of the Transport queues: "by default marines get transported, so show darkend marines in the queue if
+nothing is queued" (Capture and Hit & run), and "capture - medics heal marines ... hackers speed up the process of
+capturing, but are easy to get shot and die if there are less than 5 marines. pilots arent needed right away, but are
+required to activate and fly the ship, if no pilot show a "pilot needed" after capturing the ship". Version 75 (both
+skins; change `boarding-party`): the default load of marines, marine health and medics, hackers' speed and exposure,
+Pilot needed, and the expanded Capture page's party panel and boarding log.
 
 ## 3. Look dev
 
