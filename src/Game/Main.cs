@@ -34,6 +34,9 @@ public sealed partial class Main : Node
     public override void _Ready()
     {
         ParseArgs();
+        // the player's window mode (borderless fullscreen unless they chose a window); a scripted run keeps the window it
+        // was started in
+        if (!_args.ContainsKey("playtest") && !_args.ContainsKey("still") && !_args.ContainsKey("layout-test")) DisplaySettings.ApplySaved();
         GameData data;
         try { data = DataLoader.Load(ReadData); }
         catch (DataError e) { GD.PushError($"DATA_ERROR {e.Message}"); GetTree().Quit(1); return; }
@@ -300,6 +303,10 @@ public sealed partial class Main : Node
         if (w > 220.5f) fails.Add($"a trimmed line is {w} px wide in a 220 px room");
         _x.State.Expanded = null;
         Relayout();
+        // a click lands where the player pointed: points of the battle plane drawn by ScreenOf come back through PlaneAt
+        _view.Sync();
+        double miss = _view.RayMissM();
+        if (!(miss < 1.0)) fails.Add($"a click cast back onto the battle plane misses by {miss:0.0} m");
         foreach (string s in fails) GD.PrintErr("LAYOUT_FAIL " + s);
         GD.Print(fails.Count == 0 ? "LAYOUT_TEST PASS" : $"LAYOUT_TEST FAIL ({fails.Count})");
         GetTree().Quit(fails.Count == 0 ? 0 : 1);

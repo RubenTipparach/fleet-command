@@ -5819,7 +5819,7 @@ function syncScene(dt) {
     const o = modelFor(s); o.g.visible = s.alive && detected(W.player, s); if (!o.g.visible) continue;
     cloakLook(o, s);
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
-    const show = s === W.player ? showShields : false;
+    const show = showShields; // every ship shows its shields (owner, 2026-11-04: "add shield display to all ships as well")
     o.sh.children.forEach((face, i) => { const nl = shieldLayers(s, i), col = shieldCol(s, i); face.children.forEach((m, l) => { m.material.opacity = Math.min(1, (show && l < nl ? 0.8 : 0) + (l === 0 ? s.flash[i] * 0.9 : 0)); m.material.color.set(col); }); });
   }
   // Shots: beams as glowing cylinders, projectiles as glow sprites, each kind from its own pool, so an object is never

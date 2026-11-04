@@ -220,7 +220,7 @@ public sealed partial class BottomStrip : ConsolePanel
 }
 
 /// <summary>The in-battle menu: a sheet over everything that dims the console and takes all input while it is up
-/// (the mockup's uiSheet): resume, restart the battle, quit.</summary>
+/// (the mockup's uiSheet): resume, restart the battle, fullscreen or window, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
     /// <summary>The sheet is over everything, never a panel in the column.</summary>
@@ -230,7 +230,7 @@ public sealed partial class MenuCard : ConsolePanel
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("sheet.block", new Rect2(Vector2.Zero, Size));
-        float w = 600, h = 300;
+        float w = 600, h = 356;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         // a solid background inside the frame (owner, 2026-11-03: "Pause menu should have a background"), so the dimmed
         // console does not show through the keys; it stops short of the frame's end caps (near black with the skin's dark
@@ -240,6 +240,8 @@ public sealed partial class MenuCard : ConsolePanel
         float y = b.Position.Y + 8, bw = b.Size.X;
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
         Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false); y += 56;
+        Button("m.display", new Rect2(b.Position.X, y, bw, 44), DisplaySettings.Fullscreen ? "Display: fullscreen" : "Display: window", X.Act.Fullscreen,
+            center: false, tip: new Tip("Fullscreen or window (F11)")); y += 56;
         Button("m.quit", new Rect2(b.Position.X, y, bw, 44), "Quit", X.Act.Quit, center: false);
     }
 }
