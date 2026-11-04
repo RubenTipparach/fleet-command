@@ -100,7 +100,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Krai <span>Warhost</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 7, v16. <code>krai-ship-concepts</code>. The Krai line on the Ship Design Bible, corvette to dreadnought: rooms first, the hull fitted round them, the Krai's own parts and exterior, and battle damage. Drag to orbit, pinch or scroll to zoom.</p>
+    <p class="sub">Mockup 7, v17. <code>krai-ship-concepts</code>. The Krai line on the Ship Design Bible, corvette to dreadnought: rooms first, the hull fitted round them, the Krai's own parts and exterior, and battle damage. Drag to orbit, pinch or scroll to zoom.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -147,10 +147,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       </ul>
       <h3>The classes</h3>
       <ul>
-        <li>Four classes, each fitted round its own rooms by the same builder: corvette (47 m, three decks, twin bow guns, crew 14), frigate (87 m, four decks, a spinal cannon, crew 36), cruiser (126 m, five decks, two spinal cannons, two nacelle pairs, crew 120) and dreadnought (211 m, seven decks, three spinal cannons, broadside batteries, crew 420).</li>
-        <li>The bayonet is a different shape on each class, more decoration than use: a barbed knife on the corvette, a thin needle on the frigate, a wide crescent standing across the nose on the cruiser and the dreadnought, its horns raked back above and below the hull, with spurs and two openings (owner: "I want a wide blade instead of long blade").</li>
+        <li>Four classes, each fitted round its own rooms by the same builder: corvette (47 m, three decks, twin bow guns, crew 14), frigate (87 m, four decks, a spinal cannon, crew 36), cruiser (126 m, five decks, two spinal cannons, one nacelle pair, crew 120) and dreadnought (211 m, seven decks, three spinal cannons, broadside batteries, crew 420).</li>
+        <li>The bayonet is a different shape on each class, more decoration than use: a barbed knife on the corvette, a thin needle on the frigate, a wide crescent standing across the nose on the dreadnought (smaller and more pointed on the cruiser), its horns raked back above and below the hull, a clean edge with two openings (owner: "I want a wide blade instead of long blade").</li>
         <li>Livery, painted into the hull (owner: "ships dont have much liveries on main hull"): a crimson war stripe low on each flank that widens forward and sweeps up toward the bow, bronze pin lines either side, battle tallies in fives aft above it (3 on the corvette, 7 on the frigate, 12 on the cruiser, 19 on the dreadnought); nothing on the bow's top (owner: "I'd remove the triangle on top if the noses").</li>
-        <li>Nacelles: a row of six framed plasma vents down the outboard face, three bronze collars, a raked fin above and a smaller one below, two clamped conduits inboard, and a glowing collector at the bow (owner: "nacelles still kinda overly simplistic").</li>
+        <li>Nacelles: continuous light strips on the outboard face in a bracket (along the top and bottom, joined at the aft end; owner: "make nacelles lit more like this. instead of squares"), bronze collars at the ends, a raked fin above and a smaller one below, two clamped conduits inboard, and a glowing collector at the bow (owner: "nacelles still kinda overly simplistic").</li>
         <li>Windows lie flat on one face of the section, never across a bend or a taper, and the room behind a window on a sloped face stays level (owner: "window geometry extending a bit over the hull slope", "window paralax on slope has the wrong room angle").</li>
         <li>Only the dreadnought raises a command block above its spine (survey A18: a bridge block on super capital ships only); the others keep the bridge inside.</li>
         <li>The frigate's plan was laid by hand; the others come from <code>tools/mockups/krai_plans.py</code>, a list of rooms per deck for each class, so a change to a class is a change to its list.</li>
@@ -1713,7 +1713,7 @@ const planOf = (id) => JSON.parse(document.querySelector(`script[data-src="data/
 const CLASSES = {
   corvette: { tally: 3, label: 'Corvette', plan: planOf('corvette'), blade: 'knife', nac: [-0.3], lamps: [0.8, 0.22], role: 'the smallest: three decks, twin bow guns, one nacelle pair' },
   frigate: { tally: 7, label: 'Frigate', plan: PLAN, blade: 'needle', nac: [-0.35], lamps: [0.816, 0.471, 0.264, 0.057], role: 'four decks, a spinal cannon along the keel' },
-  cruiser: { tally: 12, label: 'Cruiser', plan: planOf('cruiser'), blade: 'crescent', nac: [-0.38, 0.3], lamps: [0.87, 0.66, 0.44, 0.24, 0.06], role: 'five decks, two spinal cannons, two nacelle pairs' },
+  cruiser: { tally: 12, label: 'Cruiser', plan: planOf('cruiser'), blade: 'crescentSmall', nac: [-0.36], lamps: [0.87, 0.66, 0.44, 0.24, 0.06], role: 'five decks, two spinal cannons, one nacelle pair' },
   dreadnought: { tally: 19, label: 'Dreadnought', plan: planOf('dreadnought'), blade: 'crescent', nac: [-0.36, 0.22], lamps: [0.9, 0.75, 0.6, 0.45, 0.3, 0.16, 0.04], role: 'seven decks, three spinal cannons, broadside batteries, a raised command block (B1)' },
 };
 const CLASS_IDS = Object.keys(CLASSES);
@@ -1754,6 +1754,14 @@ function plateau(fit, key, sign) {
 // dreadnaught would probably ave a wider shape like a saw rather than a pointy knife. The frigate could have a thin needle.
 // They are more decorative than practical"). Outlines in the frigate's metres, x forward from the socket, y down from the
 // barrel's axis; ky stretches the height, fy and fl place the lit fuller (its height, and its start and length along x).
+function crescentBlade(kx, ky, tip) {
+  return { ky: 1.0, holes: [], ovals: [[8.6 * kx, 5.0 * ky, 1.25 * kx, 2.6 * ky], [8.6 * kx, -5.0 * ky, 1.25 * kx, 2.6 * ky]], pts: () => {
+    const H = 12, ox = (y) => 7 + 5.5 * (1 - (y / H) ** 2), ix = (y) => 3.6 + 2.6 * (1 - (y / H) ** 2), p = [[2.5 - tip, H + 3.5 + 1.6 * tip]];
+    for (let y = H; y >= -H; y -= 1) p.push([ox(y), y]);
+    p.push([2.5 - tip, -H - 3.5 - 1.6 * tip], [ix(-H + 1), -H + 1]);
+    for (let y = -H + 2; y <= H - 1; y += 1) { if (y === -2) p.push([ix(y), y], [-4, -1.6], [-4, 1.6]); else if (y > -2 && y < 2) continue; p.push([ix(y), y]); }
+    return p.map(([x, y]) => [x * kx, y * ky]); } };
+}
 const BLADES = {
   // the corvette's: the alien knife (owner: "an alien bayonette, not a human one"): barbs raked back on the spine, a belly of
   // teeth raking back, a talon point hooked down
@@ -1764,16 +1772,14 @@ const BLADES = {
   needle: { ky: 1.7, fy: -2.3, fl: [14, 18], pts: () => [[-2.5, -1.5], [2, -1.6], [2.6, -1.1], [4.2, -1.1], [4.8, -1.75], [27, -2.15], [32, -2.3], [27, -2.45], [4.8, -2.85], [4.2, -3.5], [2.6, -3.5], [2, -3.0], [-2.5, -3.1]] },
   // the cruiser's and the dreadnought's (owner, 2026-11-04: "I want a wide blade instead of long blade", with pictures of
   // crescent war blades): a crescent standing across the nose, far taller than the hull's nose, its back bowed forward,
-  // its two horns raked back above and below the hull, a spur forward of each horn and one at the middle, two long
-  // openings in the band either side of the tang that seats it in the nose. Our own outline, from the shape only.
-  crescent: { ky: 1.0, holes: [], ovals: [[8.6 * 0.75, 5.0 * 0.7, 1.25 * 0.75, 2.6 * 0.7], [8.6 * 0.75, -5.0 * 0.7, 1.25 * 0.75, 2.6 * 0.7]], pts: () => {
-    const H = 12, ox = (y) => 7 + 5.5 * (1 - (y / H) ** 2), ix = (y) => 3.6 + 2.6 * (1 - (y / H) ** 2), p = [[2.5, H + 3.5]];
-    for (let y = H; y >= -H; y -= 1) { p.push([ox(y), y]);
-      if (Math.abs(Math.abs(y) - 7) < 0.5) { const sg = Math.sign(y); p.push([ox(y) + 4.2, y + sg * 2.4], [ox(y) + 0.6, y - sg * 1.2]); }
-      if (y === 0) p.push([ox(0) + 5.5, 0.6], [ox(0) + 5.5, -0.6], [ox(0), -0.9]); }
-    p.push([2.5, -H - 3.5], [ix(-H + 1), -H + 1]);
-    for (let y = -H + 2; y <= H - 1; y += 1) { if (y === -2) p.push([ix(y), y], [-4, -1.6], [-4, 1.6]); else if (y > -2 && y < 2) continue; p.push([ix(y), y]); }
-    return p.map(([x, y]) => [x * 0.75, y * 0.7]); } }, // drawn at a 12 m half span, set at 0.7 of it to stand a little proud of the nose
+  // its two horns raked back above and below the hull, two long
+  // openings in the band either side of the tang that seats it in the nose; a clean edge, no spurs (owner: "this blade here doesnt need any
+  // poky bits, a clian scresnt plande is good"). Our own outline, from the shape only.
+  // One crescent, sized per class: kx and ky scale it from its drawing (a 12 m half span), tip lengthens and sharpens the
+  // horns. The dreadnought's is the full crescent; the cruiser's smaller and more pointed (owner, 2026-11-04: "have the
+  // cruiser haave the blade be more pointy, smaller").
+  crescent: crescentBlade(0.75, 0.7, 0),
+  crescentSmall: crescentBlade(0.6, 0.5, 3),
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1853,17 +1859,19 @@ function buildKrai(id) {
       const g = CL.loft(rings.reverse(), (m) => V3(sx * N.x, N.y, m.z), 4); const col = new Float32Array(g.attributes.position.count * 3); for (let i = 0; i < col.length; i += 3) col.set([PLATE.r, PLATE.g, PLATE.b], i); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
       add(P.inner, g, nm, 'nac' + side);
       // Detail on the blade (owner, 2026-11-04: "nacelles still kinda overly simplistic"), all on its faces, nothing buried:
-      // a row of plasma vents down the outboard flat, each framed in bronze bars round a recessed glowing slot; bronze
-      // collars round the body; a raked fin on its top edge and a smaller one under it, in the crest's blade language; two
+      // light strips on the outboard flat (below); bronze collars
+      // round its ends; a raked fin on its top edge and a smaller one under it, in the crest's blade language; two
       // conduits along the inboard flat held by clamps; and a collector at the bow, a glowing slot in a bronze housing.
       const gm = glow(0xff9a4a, 1.0), brz = new THREE.MeshStandardMaterial({ color: BRONZE, metalness: 0.85, roughness: 0.3, envMapIntensity: LIGHTS[lightKey].env }); mats.push(brz);
       const box = (w, h, d, x, y, z, m) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return add(P.inner, g, m, 'nac' + side); };
       const xo = sx * (N.x + N.hw), xi = sx * (N.x - N.hw), vh = 0.55 * s, vl = 0.045 * N.len, fb = 0.12 * s;
-      for (const t of [-0.21, -0.15, -0.09, 0.03, 0.09, 0.15]) { const z = N.z + t * N.len; // two groups of three, between the collars
-        box(0.06, vh, vl, xo + sx * 0.03, N.y, z, gm);
-        for (const dy of [-1, 1]) box(0.14, fb, vl + 2 * fb, xo + sx * 0.05, N.y + dy * (vh + fb) / 2, z, brz);
-        for (const dz of [-1, 1]) box(0.14, vh, fb, xo + sx * 0.05, N.y, z + dz * (vl + fb) / 2, brz); }
-      for (const t of [-0.27, -0.03, 0.21]) { const band = [t - 0.008, t + 0.008].map((tt) => CL.octRing(N.z + tt * N.len, N.hw * 1.08, N.hh * 1.03, -N.hh * 1.03, 99).map((q) => q.add(V3(sx * N.x, N.y, 0))));
+      // Light strips, not vents (owner, 2026-11-04: "make nacelles lit more like this. instead of squares", with a picture
+      // of nacelles lit by continuous bars): a long strip along the top and the bottom of the outboard face, joined by an
+      // upright strip at the aft end, and short returns at the front, so the face reads as one lit bracket.
+      { const ys = 0.55 * N.hh, tA = -0.26, tF = 0.2, sw = 0.22 * s, x = xo + sx * 0.03, len = (tF - tA) * N.len, zm = N.z + (tA + tF) / 2 * N.len;
+        for (const dy of [-1, 1]) { box(0.06, sw, len, x, N.y + dy * ys, zm, gm); box(0.06, 0.32 * ys, sw, x, N.y + dy * ys * 0.84, N.z + tF * N.len - sw / 2, gm); }
+        box(0.06, 2 * ys + sw, sw, x, N.y, N.z + tA * N.len + sw / 2, gm); }
+      for (const t of [-0.3, 0.24]) { const band = [t - 0.008, t + 0.008].map((tt) => CL.octRing(N.z + tt * N.len, N.hw * 1.08, N.hh * 1.03, -N.hh * 1.03, 99).map((q) => q.add(V3(sx * N.x, N.y, 0))));
         add(P.inner, CL.loft(band.reverse(), (m) => V3(sx * N.x, N.y, m.z), 4), brz, 'nac' + side); }
       add(P.inner, blade(V3(sx * N.x, N.y + N.hh - 0.2, N.z), V3(0, 1, 0), V3(0, 0, 1), [[0, 0.3 * N.len], [1.8 * s, 0.14 * N.len], [2.2 * s, -0.12 * N.len], [0, -0.3 * N.len]], 0.3 * s), nm, 'nac' + side);
       add(P.inner, blade(V3(sx * N.x, N.y - N.hh + 0.2, N.z), V3(0, -1, 0), V3(0, 0, 1), [[0, 0.16 * N.len], [1.1 * s, 0.05 * N.len], [1.3 * s, -0.12 * N.len], [0, -0.2 * N.len]], 0.25 * s), nm, 'nac' + side);

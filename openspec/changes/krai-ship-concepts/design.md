@@ -174,16 +174,22 @@ from the plan, scaled by the class's length against the frigate's 87 m.
   decorative than practical"): the corvette keeps the barbed knife, the frigate a thin needle with a collar at its root,
   the cruiser and the dreadnought first had a broad saw, replaced the same day (owner: "cruiser/dreadnaught nose has the
   wrong shape of blade. I want a wide blade instead of long blade", with photographs of crescent war blades) by a wide
-  crescent standing across the nose: its back bowed forward, its horns raked back above and below the hull, a spur
-  forward of each horn and one at its middle, two openings in the band, seated in the nose by a tang. Our own outline;
-  only the shape (a crescent across the bow) is taken.
+  crescent standing across the nose: its back bowed forward, its horns raked back above and below the hull, two
+  openings in the band, seated in the nose by a tang; a clean edge (its spurs taken off: owner, "this blade here doesnt
+  need any poky bits, a clian scresnt plande is good"). Our own outline;
+  only the shape (a crescent across the bow) is taken. The cruiser's crescent is smaller with longer, sharper horns (owner: "have the cruiser haave the blade be more
+  pointy, smaller"). The cruiser carries one nacelle pair, not two (owner, 2026-11-04:
+  "cruser I think only needs two nacelles").
 - **Livery** (owner, 2026-11-04: "ships dont have much liveries on main hull, please add them"), painted in the hull shader
   so nothing lies on the plating to fight it: a crimson war stripe low on each flank, widening forward and sweeping up
   into a point toward the bow; bronze pin lines either side; battle tallies in fives aft above it, more on the bigger
   classes (3, 7, 12, 19). The hull only, not the nacelles. A crimson talon on the bow's top and bottom faces was
   taken off the same day (owner: "great liveries, but I'd remove the triangle on top if the noses").
-- **Nacelles** (owner, 2026-11-04: "nacelles still kinda overly simplistic"): six framed plasma vents down the outboard
-  face (the old lit strip was inside the blade, so never seen), three bronze collars, a raked fin above and a smaller one
+- **Nacelles** (owner, 2026-11-04: "nacelles still kinda overly simplistic"): light strips on the outboard face (the
+  old lit strip was inside the blade, so never seen; framed square vents were tried first and replaced the same day, owner:
+  "make nacelles lit more like this. instead of squares", with a picture of nacelles lit by continuous bars): a long strip
+  along the top and the bottom, joined by an upright strip at the aft end, with short returns at the front; bronze
+  collars at the ends, a raked fin above and a smaller one
   below, two conduits along the inboard face in clamps, and a collector at the bow.
 - **Windows** (owner, 2026-11-04: "window geometry extending a bit over the hull slope", "the last window ... geometry is
   clipped", "window paralax on slope has the wrong room angle"): a pane lies on one flat face of the section, checked at
