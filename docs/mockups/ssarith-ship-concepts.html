@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 6 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
+/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 7 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
    from the Hunt's culture as written (console-skins design, approved as written in survey U7) and on the Ship Design
    Bible (docs/design/ship-bible.html): one frigate's rooms as blocks (data/ships/ssarith/frigate_plan.json), the hull
    fitted round them by the shared fitter (docs/mockups/lib/ship-plan.js), and (version 3) three traditions inside the Hunt on that one
@@ -96,7 +96,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v6. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
+    <p class="sub">Mockup 12, v7. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -128,7 +128,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     </section>
     <section class="tab notes" id="pane-notes" hidden>
       <h3>Three traditions, drafted for you</h3>
-      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2, H3). Version 4: C is a field hull in place of nacelles; version 5: the hulls are faired, smooth from above and flat along the sides; version 6: the plating lies true on the angled faces; version 3's C Course is withdrawn (owner: "No go for C").</p>
+      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2, H3). Version 4: C is a field hull in place of nacelles; version 5: the hulls are faired, smooth from above and flat along the sides; version 6: the plating lies true on the angled faces; version 7: working detail (guns, bells, bay doors, thrusters and each tradition's own parts); version 3's C Course is withdrawn (owner: "No go for C").</p>
       <ul>
         <li><b>A Old Lodge</b>: ships handed down and refitted for generations. Plates of every age, riveted, bronze repairs, worn field camouflage; the top deck under a pitched roof; one original nacelle and one later refit; grapple emitters in the prow to hold the quarry close. From "worn gunmetal, camouflage", "the kill earned", "broad prows"; the lodge, the roof and the refits are ours.</li>
         <li><b>B Trackers</b>: the hunt won by waiting and watching. Tracking tubes along the spine; radiators folded down the flanks while it holds its heat in, swung out only when it hunts; drive vented sideways; dark mottled louvres. From "the stalk patient", "tracking tubes", "built to wait unseen", "dark and mottled".</li>
@@ -415,6 +415,240 @@ function plainModel(id, o = {}) {
 
 return { COL, DECKS, BASES, VARIANTS, MODE_NAMES, CLASSES, LIVERIES, TERN_NACELLE_PROFILE, GAP_UP, SIDE_NAMES,
   chOf, hullAt, loftDist, hullsOf, alongNacelle, arrange, sideName, pushTri, geoFrom, octRing, loft, hullGeo, nacelleGeo, pylonGeo, boxGeo, plainModel };
+};
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/ship-skin.js -->
+<script data-src="docs/mockups/lib/ship-skin.js">
+// Fleet Command mockups: a ship's skin, shared by every faction's ship page (CLAUDE.md 6.1: one implementation). Lifted from
+// the Concord line (docs/mockups/concord-hull-concepts.html, mockup 6, where each piece was asked for by the owner) so the
+// Krai frigate (docs/mockups/krai-ship-concepts.html) is built to the same standard with the same code. Edit it here, then
+// re-run tools/mockups/inline_data.py on each page that inlines it.
+//
+// FCShipSkin(THREE) returns:
+//   detail(o)            a detail tile drawn once from a seeded generator: a height field turned into a normal map, and a
+//                        grime and wear map. o.style 'strake' (the Concord's: plate seams in a grid, inset and raised
+//                        sub-panels, rivet rows, hatches, vents) or 'kit' (hard-surface plates:
+//                        rectangles split and split again, 45 degree chamfered corners, recessed conduit channels with a
+//                        pipe, vent slot banks, round hatches, bolt-hole rows, with the seams and wear); o.along, o.round: the tile in
+//                        metres; o.seed. Returns { albedo, normal, canvases }.
+//   GLSL.hash            ph1(vec2): a hash in [0, 1).
+//   GLSL.detail(u, v)    detW, detailA, detailN: the tile projected from three sides in ship space (tri-planar), no UVs;
+//                        needs uniforms uDetA and uDetN.
+//   GLSL.box             bHit: a ray against an axis-aligned box, for rooms drawn by interior mapping behind a pane.
+//   thruster(at, r, o)   a flared bell lathed from a profile, ribbed and ringed outside, lit inside by its own heat, a lip
+//                        ring, a closed mounting fairing with bolts, a glowing throat and a faint plume. Lip at the stern
+//                        (at.z), throat forward of it. o: { env, grey, dark, glow(hex, base), sides (round 28, or 6 for a
+//                        faceted bell), hot: [throat rgb, lip rgb], plume: rgb }. Returns { parts: [[geometry, material,
+//                        role]], heat (a uniform: 0 off, 1 full), throat (its material) }.
+window.FCShipSkin = function FCShipSkin(THREE) {
+'use strict';
+const TAU = Math.PI * 2, PI = Math.PI;
+function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function cv(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+
+function detail(opts = {}) {
+  const o = { style: 'strake', along: 8, round: 7.8, seed: 4242, ...opts };
+  if (o.style === 'kit') return kitDetail(o);
+  const W = 1024, H = 1024, ppmU = W / o.along, ppmV = H / o.round, rng = mulberry(o.seed);
+  const hc = cv(W, H), hx = hc.getContext('2d'), ac = cv(W, H), ax = ac.getContext('2d');
+  hx.fillStyle = 'rgb(128,128,128)'; hx.fillRect(0, 0, W, H); ax.fillStyle = 'rgb(236,236,236)'; ax.fillRect(0, 0, W, H);
+  const g = (v) => `rgb(${v},${v},${v})`;
+  // Plates: two along (4 m), three round (2.6 m), each its own shade and its own inset detail.
+  for (let pu = 0; pu < 2; pu++) for (let pv = 0; pv < 3; pv++) {
+    const x0 = pu * W / 2, y0 = pv * H / 3, w = W / 2, h = H / 3;
+    ax.fillStyle = g(Math.round(222 + rng() * 26)); ax.fillRect(x0, y0, w, h);
+    const k = Math.floor(rng() * 4);
+    for (let i = 0; i < 2 + k; i++) {
+      const pw = (0.6 + rng() * 1.6) * ppmU, ph = (0.4 + rng() * 1.0) * ppmV, px = x0 + 12 + rng() * (w - pw - 24), py = y0 + 12 + rng() * (h - ph - 24);
+      const raised = rng() < 0.5, v = raised ? 150 : 108;
+      hx.fillStyle = g(v); hx.fillRect(px, py, pw, ph);
+      hx.strokeStyle = g(raised ? 96 : 150); hx.lineWidth = 2; hx.strokeRect(px, py, pw, ph);
+      if (rng() < 0.3) { // a vent grille
+        hx.fillStyle = g(70); for (let s = 4; s < ph - 4; s += 7) hx.fillRect(px + 4, py + s, pw - 8, 3);
+        ax.fillStyle = 'rgba(40,40,44,0.35)'; ax.fillRect(px, py, pw, ph);
+      }
+      if (rng() < 0.25) { hx.strokeStyle = g(60); hx.lineWidth = 3; hx.strokeRect(px + 3, py + 3, pw - 6, ph - 6); } // hatch groove
+    }
+    // streaks of grime running back from the plate's leading seam
+    for (let i = 0; i < 6; i++) { const sx = x0 + rng() * w, sy = y0 + rng() * h, len = (0.5 + rng() * 2.5) * ppmU, gr = ax.createLinearGradient(sx, sy, sx - len, sy);
+      gr.addColorStop(0, 'rgba(60,54,48,0.22)'); gr.addColorStop(1, 'rgba(60,54,48,0)'); ax.fillStyle = gr; ax.fillRect(sx - len, sy, len, 2 + rng() * 6); }
+  }
+  // Seams: grooves with a bevel, in the paint's grid.
+  const seam = (x, y, w, h) => { hx.fillStyle = g(30); hx.fillRect(x, y, w, h); };
+  for (const u of [0, W / 2]) { seam(u - 3, 0, 6, H); seam(u + W - 3, 0, 6, H); }
+  for (const v of [0, H / 3, 2 * H / 3]) { seam(0, v - 3, W, 6); seam(0, v + H - 3, W, 6); }
+  // Rivet rows either side of every seam, every 0.25 m.
+  hx.fillStyle = g(205);
+  for (const u of [0, W / 2]) for (let y = 6; y < H; y += 0.25 * ppmV) for (const o of [-9, 9]) { hx.beginPath(); hx.arc((u + o + W) % W, y, 2.4, 0, TAU); hx.fill(); }
+  for (const v of [0, H / 3, 2 * H / 3]) for (let x = 6; x < W; x += 0.25 * ppmU) for (const o of [-9, 9]) { hx.beginPath(); hx.arc(x, (v + o + H) % H, 2.4, 0, TAU); hx.fill(); }
+  // Wear: speckle and scratches.
+  for (let i = 0; i < 2600; i++) { ax.fillStyle = `rgba(${rng() < 0.5 ? '40,38,36' : '255,255,255'},${0.05 + rng() * 0.1})`; ax.fillRect(rng() * W, rng() * H, 1 + rng() * 3, 1 + rng() * 3); }
+  ax.strokeStyle = 'rgba(255,255,255,0.18)'; ax.lineWidth = 1;
+  for (let i = 0; i < 60; i++) { const x = rng() * W, y = rng() * H; ax.beginPath(); ax.moveTo(x, y); ax.lineTo(x + (rng() - 0.5) * 80, y + (rng() - 0.5) * 20); ax.stroke(); }
+  // Height to normals (Sobel), wrapping at the tile edges.
+  const hd = hx.getImageData(0, 0, W, H).data, nc = cv(W, H), nx = nc.getContext('2d'), nd = nx.createImageData(W, H), S = 2.2;
+  const at = (x, y) => hd[(((y + H) % H) * W + ((x + W) % W)) * 4] / 255;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const dx = (at(x + 1, y - 1) + 2 * at(x + 1, y) + at(x + 1, y + 1)) - (at(x - 1, y - 1) + 2 * at(x - 1, y) + at(x - 1, y + 1));
+    const dy = (at(x - 1, y + 1) + 2 * at(x, y + 1) + at(x + 1, y + 1)) - (at(x - 1, y - 1) + 2 * at(x, y - 1) + at(x + 1, y - 1));
+    let a = -dx * S, b = dy * S, c = 1; const l = Math.hypot(a, b, c); a /= l; b /= l; c /= l;
+    const i = (y * W + x) * 4; nd.data[i] = (a * 0.5 + 0.5) * 255; nd.data[i + 1] = (b * 0.5 + 0.5) * 255; nd.data[i + 2] = (c * 0.5 + 0.5) * 255; nd.data[i + 3] = 255;
+  }
+  nx.putImageData(nd, 0, 0);
+  const tex = (c, srgb) => { const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (srgb) t.encoding = THREE.sRGBEncoding; return t; };
+  return { albedo: tex(ac, false), normal: tex(nc, false), canvases: { height: hc, albedo: ac, normal: nc } };
+}
+
+// The 'kit' tile: armour laid as hard-surface plates, every line square to the hull (no diagonals but the 45 degree corner
+// chamfers). The tile is split into plates and the plates split again (a seeded binary split), each plate drawn with a
+// seam groove round it and one or two corners cut at 45 degrees, raised or set in; then each plate gets at most one
+// feature: a bank of vent slots, a round hatch with its ring, a row of bolt holes, a smaller inset panel with cut corners,
+// or a recessed conduit channel with a pipe lying in it. Seams wrap at the tile's edges so the tile repeats with no line.
+function kitDetail(o) {
+  const W = 1024, H = 1024, ppmU = W / o.along, ppmV = H / o.round, rng = mulberry(o.seed);
+  const hc = cv(W, H), hx = hc.getContext('2d'), ac = cv(W, H), ax = ac.getContext('2d');
+  hx.fillStyle = 'rgb(128,128,128)'; hx.fillRect(0, 0, W, H); ax.fillStyle = 'rgb(226,226,226)'; ax.fillRect(0, 0, W, H);
+  const g = (v) => `rgb(${v},${v},${v})`;
+  // A rectangle with chosen corners cut at 45 degrees (cut: [top-left, top-right, bottom-right, bottom-left] in pixels).
+  const chamfer = (ctx, x, y, w, h, cut) => { const [a, b, c, d] = cut; ctx.beginPath();
+    ctx.moveTo(x + a, y); ctx.lineTo(x + w - b, y); ctx.lineTo(x + w, y + b); ctx.lineTo(x + w, y + h - c); ctx.lineTo(x + w - c, y + h);
+    ctx.lineTo(x + d, y + h); ctx.lineTo(x, y + h - d); ctx.lineTo(x, y + a); ctx.closePath(); };
+  // Split the tile into plates: cut the longer side at a third to two thirds, until plates are 0.8 to 2.6 m.
+  const plates = [], split = (x, y, w, h, depth) => {
+    const wm = w / ppmU, hm = h / ppmV, small = wm < 1.6 && hm < 1.6;
+    if (depth > 5 || small || (wm < 2.6 && hm < 2.6 && rng() < 0.35)) { plates.push([x, y, w, h]); return; }
+    const t = 0.33 + rng() * 0.34;
+    if (wm > hm) { const a = Math.round(w * t / 8) * 8; split(x, y, a, h, depth + 1); split(x + a, y, w - a, h, depth + 1); }
+    else { const a = Math.round(h * t / 8) * 8; split(x, y, w, a, depth + 1); split(x, y + a, w, h - a, depth + 1); } };
+  split(0, 0, W, H, 0);
+  const S = 5; // half a seam, in pixels (about 4 cm)
+  for (const [x0, y0, w0, h0] of plates) {
+    const x = x0 + S, y = y0 + S, w = w0 - 2 * S, h = h0 - 2 * S, ch = Math.min(w, h) * (0.12 + rng() * 0.12);
+    const cut = [0, 0, 0, 0]; cut[Math.floor(rng() * 4)] = ch; if (rng() < 0.4) cut[Math.floor(rng() * 4)] = ch * 0.6;
+    const raised = rng() < 0.5, v = raised ? 150 : 112;
+    hx.fillStyle = g(v); chamfer(hx, x, y, w, h, cut); hx.fill();
+    hx.strokeStyle = g(raised ? 176 : 92); hx.lineWidth = 3; chamfer(hx, x + 2, y + 2, w - 4, h - 4, cut.map((c) => c * 0.9)); hx.stroke(); // a lit bevel
+    ax.fillStyle = g(Math.round(208 + rng() * 40)); chamfer(ax, x, y, w, h, cut); ax.fill();
+    for (const [bx, by] of [[x + 10, y + 10], [x + w - 10, y + 10], [x + w - 10, y + h - 10], [x + 10, y + h - 10]]) { hx.fillStyle = g(60); hx.beginPath(); hx.arc(bx, by, 3, 0, TAU); hx.fill(); }
+    const f = rng(), cx = x + w / 2, cy = y + h / 2;
+    if (f < 0.2 && w > 60 && h > 60) {            // a bank of vent slots, upright
+      const n = 3 + Math.floor(rng() * 4), sw = 7, sh = Math.min(h * 0.5, 0.9 * ppmV), sx0 = x + w * (0.15 + rng() * 0.4);
+      hx.fillStyle = g(44); for (let i = 0; i < n; i++) { hx.beginPath(); hx.roundRect ? hx.roundRect(sx0 + i * 16, cy - sh / 2, sw, sh, 3) : hx.rect(sx0 + i * 16, cy - sh / 2, sw, sh); hx.fill(); }
+      ax.fillStyle = 'rgba(30,28,26,0.35)'; ax.fillRect(sx0 - 4, cy - sh / 2 - 4, n * 16 + 2, sh + 8);
+    } else if (f < 0.35 && w > 90 && h > 90) {     // a round hatch: a ring groove, a raised lid, a centre boss
+      const r = Math.min(w, h) * 0.28; hx.fillStyle = g(70); hx.beginPath(); hx.arc(cx, cy, r, 0, TAU); hx.fill();
+      hx.fillStyle = g(raised ? 160 : 132); hx.beginPath(); hx.arc(cx, cy, r - 6, 0, TAU); hx.fill();
+      hx.fillStyle = g(90); hx.beginPath(); hx.arc(cx, cy, r * 0.25, 0, TAU); hx.fill();
+    } else if (f < 0.5) {                         // a row of bolt holes along one edge
+      hx.fillStyle = g(48); const along = w > h; for (let t = 18; t < (along ? w : h) - 18; t += 14) { hx.beginPath(); hx.arc(along ? x + t : x + 16, along ? y + 16 : y + t, 3.5, 0, TAU); hx.fill(); }
+    } else if (f < 0.68 && w > 70 && h > 50) {     // a smaller inset panel with a cut corner
+      const iw = w * (0.35 + rng() * 0.3), ih = h * (0.3 + rng() * 0.3), ix = x + 14 + rng() * (w - iw - 28), iy = y + 14 + rng() * (h - ih - 28);
+      const ic = [0, 0, 0, 0]; ic[Math.floor(rng() * 4)] = Math.min(iw, ih) * 0.3;
+      hx.fillStyle = g(raised ? 136 : 96); chamfer(hx, ix, iy, iw, ih, ic); hx.fill(); hx.strokeStyle = g(66); hx.lineWidth = 2; chamfer(hx, ix, iy, iw, ih, ic); hx.stroke();
+    } else if (f < 0.82 && (w > 120 || h > 120)) { // a recessed conduit channel with a pipe lying in it
+      const along = w > h, cw = 22, len = (along ? w : h) - 30, px = along ? x + 15 : cx - cw / 2, py = along ? cy - cw / 2 : y + 15;
+      hx.fillStyle = g(52); hx.fillRect(px, py, along ? len : cw, along ? cw : len);
+      const gr = along ? hx.createLinearGradient(0, py + 3, 0, py + cw - 3) : hx.createLinearGradient(px + 3, 0, px + cw - 3, 0);
+      gr.addColorStop(0, g(80)); gr.addColorStop(0.5, g(196)); gr.addColorStop(1, g(80)); hx.fillStyle = gr;
+      hx.fillRect(along ? px + 4 : px + 4, along ? py + 4 : py + 4, along ? len - 8 : cw - 8, along ? cw - 8 : len - 8);
+      for (let t = 30; t < len - 20; t += 70) { hx.fillStyle = g(150); hx.fillRect(along ? px + t : px - 2, along ? py - 2 : py + t, along ? 6 : cw + 4, along ? cw + 4 : 6); } // clamps
+      ax.fillStyle = 'rgba(40,36,32,0.3)'; ax.fillRect(px, py, along ? len : cw, along ? cw : len);
+    }
+  }
+  // Seams: the grooves between plates (the gaps the plates were inset from), already left at the base height; deepen them.
+  { const d = hx.getImageData(0, 0, W, H), a = d.data; for (let i = 0; i < a.length; i += 4) if (a[i] === 128) { a[i] = a[i + 1] = a[i + 2] = 40; }
+    hx.putImageData(d, 0, 0); }
+  { const d = ax.getImageData(0, 0, W, H), a = d.data, hd = hx.getImageData(0, 0, W, H).data; for (let i = 0; i < a.length; i += 4) if (hd[i] === 40) { a[i] = a[i + 1] = a[i + 2] = 120; } ax.putImageData(d, 0, 0); }
+  // Wear: speckle, scratches and grime trailing aft (toward -u).
+  for (let i = 0; i < 2400; i++) { ax.fillStyle = `rgba(${rng() < 0.5 ? '40,36,34' : '255,250,240'},${0.05 + rng() * 0.09})`; ax.fillRect(rng() * W, rng() * H, 1 + rng() * 3, 1 + rng() * 3); }
+  ax.strokeStyle = 'rgba(255,255,255,0.14)'; ax.lineWidth = 1;
+  for (let i = 0; i < 60; i++) { const x = rng() * W, y = rng() * H; ax.beginPath(); ax.moveTo(x, y); ax.lineTo(x + (rng() - 0.5) * 90, y + (rng() - 0.5) * 6); ax.stroke(); }
+  return toMaps(hc, ac, W, H);
+}
+// Height to normals (Sobel), wrapping at the tile edges; both maps as repeating textures.
+function toMaps(hc, ac, W, H) {
+  const hx = hc.getContext('2d'), hd = hx.getImageData(0, 0, W, H).data, nc = cv(W, H), nx = nc.getContext('2d'), nd = nx.createImageData(W, H), S = 2.2;
+  const at = (x, y) => hd[(((y + H) % H) * W + ((x + W) % W)) * 4] / 255;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const dx = (at(x + 1, y - 1) + 2 * at(x + 1, y) + at(x + 1, y + 1)) - (at(x - 1, y - 1) + 2 * at(x - 1, y) + at(x - 1, y + 1));
+    const dy = (at(x - 1, y + 1) + 2 * at(x, y + 1) + at(x + 1, y + 1)) - (at(x - 1, y - 1) + 2 * at(x, y - 1) + at(x + 1, y - 1));
+    let a = -dx * S, b = dy * S, c = 1; const l = Math.hypot(a, b, c); a /= l; b /= l; c /= l;
+    const i = (y * W + x) * 4; nd.data[i] = (a * 0.5 + 0.5) * 255; nd.data[i + 1] = (b * 0.5 + 0.5) * 255; nd.data[i + 2] = (c * 0.5 + 0.5) * 255; nd.data[i + 3] = 255;
+  }
+  nx.putImageData(nd, 0, 0);
+  const tex = (c) => { const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t; };
+  return { albedo: tex(ac), normal: tex(nc), canvases: { height: hc, albedo: ac, normal: nc } };
+}
+
+const f1 = (v) => (Number.isInteger(v) ? v.toFixed(1) : String(v));
+const GLSL = {
+  hash: 'float ph1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453); }\n',
+  detail: (TU, TV) => { TU = f1(TU); TV = f1(TV); return 'vec3 detW(vec3 n){ vec3 w = pow(abs(n), vec3(6.0)); return w/(w.x + w.y + w.z); }' + '\n' +
+    'float detailA(vec3 p, vec3 n){ vec3 w = detW(n);' + '\n' +
+    '  return texture2D(uDetA, vec2(p.z/' + TU + ', p.y/' + TV + ')).r*w.x + texture2D(uDetA, vec2(p.z/' + TU + ', p.x/' + TV + ')).r*w.y + texture2D(uDetA, vec2(p.x/' + TU + ', p.y/' + TV + ')).r*w.z; }' + '\n' +
+    '// Tri-planar normal map, whiteout blend in ship space.' + '\n' +
+    'vec3 detailN(vec3 p, vec3 n, float k){ vec3 w = detW(n);' + '\n' +
+    '  vec2 tx = (texture2D(uDetN, vec2(p.z/' + TU + ', p.y/' + TV + ')).xy*2.0 - 1.0)*k, ty = (texture2D(uDetN, vec2(p.z/' + TU + ', p.x/' + TV + ')).xy*2.0 - 1.0)*k, tz = (texture2D(uDetN, vec2(p.x/' + TU + ', p.y/' + TV + ')).xy*2.0 - 1.0)*k;' + '\n' +
+    '  vec3 nx = vec3(n.x, n.y + tx.y, n.z + tx.x*sign(n.x)), ny = vec3(n.x + ty.y*sign(n.y), n.y, n.z + ty.x), nz = vec3(n.x + tz.x*sign(n.z), n.y + tz.y, n.z);' + '\n' +
+    '  return normalize(nx*w.x + ny*w.y + nz*w.z); }' + '\n'; },
+  box: `// Ray against an axis-aligned box: distance to the near face (1e9 if missed), and that face's normal.
+float bHit(vec3 ro, vec3 rd, vec3 b0, vec3 b1, inout vec3 nOut, float tBest){
+  vec3 t0 = (b0 - ro)/rd, t1 = (b1 - ro)/rd, tn3 = min(t0, t1), tf3 = max(t0, t1);
+  float tn = max(max(tn3.x, tn3.y), tn3.z), tf = min(min(tf3.x, tf3.y), tf3.z);
+  if (tn > tf || tn < 0.0 || tn >= tBest) return tBest;
+  nOut = tn == tn3.x ? vec3(-sign(rd.x), 0.0, 0.0) : tn == tn3.y ? vec3(0.0, -sign(rd.y), 0.0) : vec3(0.0, 0.0, -sign(rd.z));
+  return tn; }\n`,
+};
+
+// A thruster (owner, 2026-11-03, on the Concord line: "fix thrusters, make them more detailed, properly texture them";
+// "the thruster mounting ring needs to be fixed"): see the header. The materials are made here; the page adds the parts
+// to its own pieces.
+function thrusterMat(heat, o) {
+  const m = new THREE.MeshStandardMaterial({ color: o.shell ?? 0x4a4e57, metalness: 0.8, roughness: 0.34, side: THREE.DoubleSide, envMapIntensity: o.env });
+  const [a, b] = o.hot || [[0.85, 0.12, 0.03], [1.0, 0.78, 0.45]], v3 = (c) => `vec3(${c.map(f1).join(', ')})`;
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uHeat = heat;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vTU;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvTU = uv;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vTU; uniform float uHeat;')
+      .replace('#include <map_fragment>', `#include <map_fragment>
+        float rib = step(0.9, fract(vTU.x*${f1(o.ribs ?? 32)})), ring = step(0.86, fract(vTU.y*7.0)), groove = max(rib, ring);
+        diffuseColor.rgb *= gl_FrontFacing ? 1.0 - 0.5*groove : 0.25;`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        if (!gl_FrontFacing) { float d = vTU.y; vec3 hot = mix(${v3(a)}, ${v3(b)}, smoothstep(0.25, 1.0, d));
+          totalEmissiveRadiance = hot*(0.15 + 1.9*d*d)*uHeat*(1.0 - 0.55*groove); }`);
+  };
+  m.customProgramCacheKey = () => 'fleet-thruster-' + (o.key || 'concord');
+  return m;
+}
+function plumeMat(heat, o) {
+  const c = (o.plume || [1.0, 0.55, 0.22]).map(f1).join(', ');
+  return new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uHeat: heat },
+    vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+    fragmentShader: `uniform float uHeat; varying vec2 vU; void main(){ float a = vU.y*vU.y*0.35*uHeat; gl_FragColor = vec4(vec3(${c})*a, a); }` });
+}
+function thruster(at, r, o) {
+  const N = o.sides ?? 28, L = r * 1.5, heat = { value: 1 }, parts = [], prof = [[r, 0], [r * 0.97, L * 0.12], [r * 0.86, L * 0.38], [r * 0.7, L * 0.68], [r * 0.58, L * 0.9], [r * 0.55, L]].map(([x, y]) => new THREE.Vector2(x, y));
+  const lip = at.z - 0.15 - L, add = (g, m, role) => parts.push([g, m, role]);
+  const bell = new THREE.LatheGeometry(prof, N); bell.rotateX(PI / 2); bell.translate(at.x, at.y, lip); add(bell, thrusterMat(heat, o), 'bell');
+  // The lip ring is turned so its corners sit on the bell's (owner, 2026-11-04: "two different hex orientations on these thrusters").
+  const lipRing = new THREE.TorusGeometry(r * 1.0, r * 0.07, 6, N); lipRing.rotateZ(PI / 2); lipRing.translate(at.x, at.y, lip); add(lipRing, o.grey, 'lip');
+  // The mounting ring: a closed, round fairing that seats on the hull and narrows onto the bell's neck, so the bell grows
+  // out of it; a bolt flange where it meets the plating.
+  const neck = (y) => { for (let k = 1; k < prof.length; k++) if (prof[k].y >= y) { const a = prof[k - 1], b = prof[k], t = (y - a.y) / (b.y - a.y); return a.x + (b.x - a.x) * t; } return prof[prof.length - 1].x; };
+  const yE = L * 0.62, mount = [[neck(L) * 0.9, L], [r * 0.98, L], [r * 0.98, L * 0.93], [neck(yE) + r * 0.1, yE + L * 0.04], [neck(yE) - 0.02, yE]].map(([x, y]) => new THREE.Vector2(x, y));
+  const mg = new THREE.LatheGeometry(mount, N === 28 ? 32 : N); mg.rotateX(PI / 2); mg.translate(at.x, at.y, lip); add(mg, new THREE.MeshStandardMaterial({ color: o.mount ?? 0x3a4049, roughness: 0.55, metalness: 0.6, side: THREE.DoubleSide, envMapIntensity: o.env }), 'mount');
+  for (let k = 0; k < 10; k++) { const a = k / 10 * 2 * PI, bo = new THREE.BoxGeometry(r * 0.09, r * 0.09, r * 0.12); bo.translate(at.x + Math.cos(a) * r * 0.99, at.y + Math.sin(a) * r * 0.99, lip + L - r * 0.06); add(bo, o.dark, 'bolt'); }
+  // The throat: a disc of the bell's own sides, set inside its walls and well inside the bell's mouth on the hull side, so it
+  // meets no other surface (owner, 2026-11-04, "look at all that zfighting": 5 cm in, it lay exactly on a Krai stern face).
+  const tm = o.glow(o.throat ?? 0xffc27a, 0x3a1a08), dT = L * 0.06, rT = neck(L - dT) * 0.99; // its corners on the bell's own, so it fills the bell and stays inside it
+  const throat = new THREE.CircleGeometry(rT, N, PI / 2); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - dT); add(throat, tm, 'throat');
+  const pl = new THREE.ConeGeometry(r * 0.85, r * 3.2, 20, 1, true); pl.rotateX(PI / 2); pl.translate(at.x, at.y, lip - r * 1.6); add(pl, plumeMat(heat, o), 'plume');
+  tm.userData.heat = heat;
+  return { parts, heat, throat: tm };
+}
+
+return { detail, GLSL, thruster, mulberry };
 };
 </script>
 <!-- /INLINE -->
@@ -761,6 +995,52 @@ function pivot(g, at, pieces, poses, pos, part) {
 }
 const topOver = (z0, z1) => { let y = Infinity; for (let z = z1; z <= z0; z += 1) y = Math.min(y, H(z)[2]); return y; };
 
+// ---------------------------------------------------------------------------------------------------------------
+// Working detail (owner, 2026-11-04, on version 6: "ships arent very complex"). A ship reads as built of real parts when
+// its jobs show on its skin: the plan's rooms and the bible's part list say where each goes (guns over the forward battery,
+// bay doors where the bays meet the hull, bells on the stern, attitude thrusters at the corners, an emitter at the bow),
+// and each tradition adds its own. The thruster is the shared one (docs/mockups/lib/ship-skin.js, the Concord's and the
+// Krai's), eight-sided, its heat the Hunt's phosphor green-white.
+const SK = window.FCShipSkin(THREE), HEATS = [];
+const GUNMETAL = new THREE.MeshStandardMaterial({ color: 0x2c302b, metalness: 0.75, roughness: 0.4, flatShading: true }); mats.push(GUNMETAL);
+const DARK = new THREE.MeshStandardMaterial({ color: 0x101210, metalness: 0.4, roughness: 0.7, flatShading: true }); mats.push(DARK);
+const BRASS = new THREE.MeshStandardMaterial({ color: 0x6e5a38, metalness: 0.8, roughness: 0.38, flatShading: true }); mats.push(BRASS);
+const THR = (key) => ({ env: LIGHTS[lightKey].env, sides: 8, ribs: 16, key: 'hunt-' + key, shell: 0x3a3f3a, mount: 0x2a2e2a,
+  hot: [[0.35, 0.8, 0.5], [0.88, 1.0, 0.9]], plume: [0.5, 1.0, 0.68], throat: 0xd9ffe2, grey: GUNMETAL, dark: DARK, glow: (hex) => glowMat(hex, 1.2) });
+function bell(g, at, r, key) { const T = SK.thruster(at, r, THR(key));
+  for (const [geo, m, role] of T.parts) { const k = add(g, geo, m, 'drive'); if (role === 'plume') { k.renderOrder = 4; k.castShadow = false; } } HEATS.push(T.heat); }
+// A piece laid on the hull's skin: `build(group)` makes it in a local frame whose +x is the face's outward normal at (z, y)
+// on side sx, +z along the ship.
+function onFlank(g, sx, z, y, build, lift = 0.03) { const sd = SP.sideAt(H(z), y); if (!sd) return null;
+  const n = V3(sx * Math.cos(sd.tilt), Math.sin(sd.tilt), 0), zA = V3(0, 0, 1), yA = V3().crossVectors(zA, n), gr = new THREE.Group();
+  gr.matrixAutoUpdate = false; gr.matrix.makeBasis(n, yA, zA).setPosition(sx * sd.x + n.x * lift, y + n.y * lift, z); build(gr); g.add(gr); return gr; }
+// A gun house on a ring with two barrels forward; up -1 hangs it under the hull.
+function turret(g, M, x, y, z, up, o = {}) { const r = o.r ?? 1.5, bl = o.barrel ?? 4.2, gr = new THREE.Group(); gr.position.set(x, y, z); if (up < 0) gr.rotation.z = PI;
+  add(gr, new THREE.CylinderGeometry(r, r * 1.12, 0.5, 12).translate(0, 0.2, 0), M, 'gun');
+  add(gr, CL.loft([CL.octRing(1.6, r * 0.55, 1.45, 0.45, 0.25), CL.octRing(0.7, r * 0.85, 1.7, 0.45, 0.35), CL.octRing(-1.8, r * 0.85, 1.55, 0.45, 0.35), CL.octRing(-2.3, r * 0.6, 1.25, 0.45, 0.25)], (m) => V3(0, 1.0, m.z), 2), M, 'gun');
+  for (const sx of [1, -1]) { add(gr, along(new THREE.CylinderGeometry(0.17, 0.22, bl, 8)).translate(sx * 0.45, 1.05, 1.5 + bl / 2), GUNMETAL, 'gun');
+    add(gr, along(new THREE.CylinderGeometry(0.26, 0.26, 0.5, 8)).translate(sx * 0.45, 1.05, 1.5 + bl - 0.2), GUNMETAL, 'gun'); }
+  g.add(gr); return gr; }
+// Bay doors where a bay on the keel deck meets the hull: a dark recess in a frame, split down the middle.
+function bayDoors(g, M) { for (const r of ROOMS) { if (r.kind !== 'bay' || !r.decks.includes(2) || Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1)) < 4) continue;
+  const sx = r.b.x1 > 0 ? 1 : -1, z = (r.b.z0 + r.b.z1) / 2, len = Math.min(r.b.z1 - r.b.z0 - 1.5, 11), h = 2.0;
+  onFlank(g, sx, z, r.b.y0 + 0.9, (gr) => { add(gr, CL.boxGeo(0.08, h, len, 0.02, 0, 0), DARK, 'bay');
+    for (const yy of [-1, 1]) add(gr, CL.boxGeo(0.22, 0.28, len + 0.56, 0.1, yy * (h / 2 + 0.14), 0), M, 'bay');
+    for (const zz of [-1, 1]) add(gr, CL.boxGeo(0.22, h, 0.28, 0.1, 0, zz * (len / 2 + 0.14)), M, 'bay');
+    add(gr, CL.boxGeo(0.12, h, 0.08, 0.06, 0, 0), M, 'bay'); }); } }
+// Attitude thruster blocks on the upper edges, bow and stern, each with a nozzle pointing out and one up.
+function rcs(g, M) { for (const z of [zBow - 9, zStern + 5]) for (const sx of [1, -1]) { const h = H(z), ch = CL.chOf(h[1], h[2], h[3], h[4]);
+  const x = sx * (h[1] - ch * 0.5), y = h[2] - ch * 0.5;
+  const gr = new THREE.Group(); gr.position.set(x, y, z); gr.rotation.z = -sx * PI / 4; add(gr, CL.boxGeo(1.6, 0.7, 1.6, 0, 0.3, 0), M, 'rcs');
+  for (const d of [-0.45, 0.45]) add(gr, new THREE.CylinderGeometry(0.16, 0.24, 0.4, 8).translate(d, 0.85, 0), DARK, 'rcs');
+  g.add(gr); } }
+// A strake laid along the flank at height y, a segment per station so it follows the hull's taper.
+function strake(g, mat, y, w, t, z0, z1) { for (let z = z0; z < z1; z += 2) { const a = SP.sideAt(H(z), y), b = SP.sideAt(H(Math.min(z + 2, z1)), y); if (!a || !b) continue;
+  for (const sx of [1, -1]) { const p = V3(sx * a.x, y, z), q = V3(sx * b.x, y, Math.min(z + 2, z1)), m = p.clone().add(q).multiplyScalar(0.5), L = p.distanceTo(q);
+    const k = add(g, CL.boxGeo(t, w, L + 0.02, 0, 0, 0), mat, 'strake'); k.position.copy(m).add(V3(sx * t / 2, 0, 0)); k.rotation.y = Math.atan2(q.x - p.x, q.z - p.z); } } } // turned to run along the taper
+// The forward emitter at the bow's centre (the bible's deflector).
+function emitter(g, M, r, y) { add(g, along(new THREE.CylinderGeometry(r * 1.25, r * 1.4, 0.8, 12)).translate(0, y, zBow + 0.2), M, 'deflector');
+  add(g, new THREE.CircleGeometry(r, 12).translate(0, y, zBow + 0.62), GRILLE, 'deflector'); }
 // The parts every Hunt frigate shares: the fitted hull and its broad prow ("broad prows", as written), the windows, the
 // position lights; the drive is the tradition's.
 function common(g, M, drive) {
@@ -797,8 +1077,26 @@ const DIRS = {
   A: { label: 'A Old Lodge', tell: 'A broad armoured ship whose top deck sits under a pitched roof, its plates patched over generations, two engines that do not match, and two grapple emitters in its blunt prow.',
     note: 'The oldest tradition (ours, provisional): a ship is handed down and refitted for generations, so its plates are every age, riveted, some repaired in bronze, under worn field camouflage ("worn gunmetal, camouflage"). The top deck sits under a pitched roof, as the lodges roof their halls. Its two nacelles do not match: one is the original, one a later refit. Two grapple emitters in the prow hold the quarry close ("the kill earned").',
     build(g) {
-      const M = MAT.A; common(g, M, 'slot');
-      add(g, gableGeo(20, -20, 4.4, topOver(20, -20) - 0.5, 1.3, 2.3), M, 'hall');
+      const M = MAT.A; common(g, M, 'none');
+      const yb = topOver(20, -20) - 0.5; add(g, gableGeo(20, -20, 4.4, yb, 1.3, 2.3), M, 'hall');
+      // the hall's rafters over the roof, a pair every 4 m, and posts down its walls (ours: the lodge's own way of roofing)
+      for (let z = 18; z >= -18; z -= 4) for (const sx of [1, -1]) { const L = Math.hypot(4.4, 2.3), sl = Math.atan2(2.3, 4.4), k = add(g, CL.boxGeo(L, 0.3, 0.35, 0, 0, 0), BRASS, 'hall');
+        k.position.set(sx * 2.2 + sx * Math.sin(sl) * 0.16, yb + 1.3 + 1.15 + Math.cos(sl) * 0.16, z); k.rotation.z = -sx * sl; // lying on the roof slope, eave to ridge
+        add(g, CL.boxGeo(0.3, 1.3, 0.35, sx * 4.5, yb + 0.65, z), BRASS, 'hall'); }
+      // a riveted belt strake down each flank at the middle deck's floor, and plates of newer steel patched over old ones
+      strake(g, BRASS, 0.1, 0.55, 0.16, zStern + 2, 28);
+      { const rng = mulberry(77); for (let i = 0; i < 22; i++) { const sx = rng() < 0.5 ? 1 : -1, z = lerp(zStern + 4, 26, rng()), y = rng() < 0.5 ? -0.75 : 2.9, w = 1.6 + rng() * 2.4, hh = 0.7 + rng() * 0.5;
+        onFlank(g, sx, z, y, (gr) => { add(gr, CL.boxGeo(0.1, hh, w, 0.05, 0, 0), MAT.A2, 'patch'); for (const d of [-1, 1]) add(gr, CL.boxGeo(0.14, 0.08, w, 0.06, d * hh / 2, 0), BRASS, 'patch'); }); } }
+      // the lodge mast on the ridge, a red beacon at its head (the bible's beacon, top)
+      { const yr = yb + 3.6; add(g, new THREE.CylinderGeometry(0.14, 0.22, 6.5, 8).translate(0, yr + 3.25, 16), GUNMETAL, 'mast');
+        for (const [h, w] of [[3.4, 3.2], [5.2, 2.0]]) add(g, CL.boxGeo(w, 0.12, 0.12, 0, yr + h, 16), GUNMETAL, 'mast');
+        const b = new THREE.Mesh(new THREE.SphereGeometry(0.26, 8, 6), POSMATS.red); b.position.set(0, yr + 6.6, 16); g.add(b); }
+      // guns over the forward battery, one under the keel; bells astern, the refit's newer and smaller; corners; doors
+      for (const sx of [1, -1]) turret(g, M, sx * 4.4, H(26)[2], 26, 1);
+      turret(g, M, 0, H(8)[3], 8, -1);
+      const st = H(zStern + 0.01), sm = (st[2] + st[3]) / 2;
+      bell(g, V3(3.3, sm - 0.5, zStern + 0.2), 1.7, 'A'); bell(g, V3(-3.3, sm - 0.2, zStern + 0.2), 1.35, 'A2');
+      bayDoors(g, M); rcs(g, M); emitter(g, M, 0.8, (BOW[2] + BOW[3]) / 2 + 1.7);
       const r = Math.min(1.1, (BOW[2] - BOW[3]) * 0.28), y = (BOW[2] + BOW[3]) / 2 - 0.2;
       for (const sx of [1, -1]) { add(g, along(new THREE.CylinderGeometry(r, r * 1.2, 1.8, 10)).translate(sx * BOW[1] * 0.45, y, zBow + 0.5), M, 'grapple');
         add(g, new THREE.CircleGeometry(r * 0.72, 10).translate(sx * BOW[1] * 0.45, y, zBow + 1.42), killMat(), 'grapple'); }
@@ -814,9 +1112,21 @@ const DIRS = {
       const M = MAT.B; common(g, M, 'vents');
       const yt = topOver(18, -22);
       add(g, CL.boxGeo(3.6, 0.8, 42, 0, yt + 0.1, -2), M, 'cradle');
-      for (let i = 0; i < 6; i++) add(g, along(new THREE.CylinderGeometry(0.85, 0.85, 5.4, 12)).translate(0, yt + 1.3, 15.5 - i * 6.6), TUBE, 'tubes');
+      for (let i = 0; i < 6; i++) { const z = 15.5 - i * 6.6; add(g, along(new THREE.CylinderGeometry(0.85, 0.85, 5.4, 12)).translate(0, yt + 1.3, z), TUBE, 'tubes');
+        for (const d of [-2.3, 2.3]) { add(g, new THREE.TorusGeometry(0.95, 0.13, 6, 12).translate(0, yt + 1.3, z + d), GUNMETAL, 'tubes'); add(g, CL.boxGeo(2.4, 0.7, 0.5, 0, yt + 0.75, z + d), GUNMETAL, 'tubes'); } }
+      // the sensor head at the cradle's bow end: three lenses
+      add(g, along(new THREE.CylinderGeometry(1.15, 1.3, 1.6, 10)).translate(0, yt + 1.3, 20), GUNMETAL, 'sensor');
+      for (const [x, y] of [[-0.5, 0.3], [0.5, 0.3], [0, -0.4]]) add(g, new THREE.CircleGeometry(0.32, 10).translate(x, yt + 1.3 + y, 20.82), TUBE, 'sensor');
+      // hoods over the side vents, louvred, so the drive's heat goes out sideways and down
+      for (const sx of [1, -1]) { const hz = H(zStern + 4); onFlank(g, sx, zStern + 4, (hz[2] + hz[3]) / 2 - 0.6, (gr) => {
+        add(gr, CL.boxGeo(0.9, 0.16, 6.0, 0.45, 0.85, 0), GUNMETAL, 'vent'); for (const zz of [-3, 3]) add(gr, CL.boxGeo(0.9, 1.7, 0.16, 0.45, 0, zz), GUNMETAL, 'vent');
+        for (let k = 0; k < 4; k++) { const sl = add(gr, CL.boxGeo(0.6, 0.06, 5.8, 0.35, 0.5 - k * 0.35, 0), GUNMETAL, 'vent'); sl.rotation.z = -0.5; } }); }
+      for (const sx of [1, -1]) turret(g, M, sx * 3.4, H(-27)[2], -27, 1, { r: 1.2, barrel: 3.6 });
+      turret(g, M, 0, H(12)[3], 12, -1, { r: 1.2, barrel: 3.6 });
+      bayDoors(g, M); rcs(g, M); emitter(g, M, 0.7, (BOW[2] + BOW[3]) / 2);
       for (const sx of [1, -1]) for (const z of [9, -11]) { const s = SP.sideAt(H(z), -1.6) || { x: H(z)[1] };
-        pivot(g, V3(sx * (s.x + 0.2), -1.6, z), [[CL.boxGeo(4.6, 0.18, 12, sx * 2.3, 0, 0), M], [CL.boxGeo(4.2, 0.03, 11, sx * 2.3, -0.12, 0), HEAT]],
+        pivot(g, V3(sx * (s.x + 0.2), -1.6, z), [[CL.boxGeo(4.6, 0.18, 12, sx * 2.3, 0, 0), M], [CL.boxGeo(4.2, 0.03, 11, sx * 2.3, -0.12, 0), HEAT],
+          ...[-5, -3, -1, 1, 3, 5].map((dz) => [CL.boxGeo(4.4, 0.45, 0.1, sx * 2.3, 0.3, dz), GUNMETAL]), [CL.boxGeo(0.3, 0.5, 12, sx * 4.5, 0.15, 0), GUNMETAL]],
           { stalk: new THREE.Euler(0, 0, -sx * PI / 2), strike: new THREE.Euler(0, 0, 0) }, null, 'radiator'); }
       const ny = minBot - 3.2 - 1.0;
       for (const sx of [1, -1]) { nacelle(g, sx * 6.6, ny, 'nacelle', { mat: M, hw: 2.9, hh: 1.0, profile: [[-0.5, 0.6], [-0.4, 0.95], [0.35, 1.0], [0.5, 0.7]] });
@@ -825,7 +1135,14 @@ const DIRS = {
   C: { label: 'C Field Hull', tell: 'A broad armoured ship with no engine pods: a second, smaller hull carries its field drive, joined to it by a short neck, slung below it and to one side (or below it, or above it); smooth cast plating, dark above and pale below.',
     note: 'Your direction (2026-11-04: "replaces nacelles with a secondary hull instead, adding some assuymetry or lower or upper secondary hull"): no nacelles; the field generators they carry sit in a secondary hull with rooms of its own, joined by a neck, below and to one side, below, or above (Layout). The tradition is ours, provisional: yards that build the field drive as a hull apart, where it can be shielded, changed or cut loose after a long hunt. Smooth cast sections, dark above and pale below, the way field kit is painted ("camouflage").',
     build(g) {
-      const M = MAT.C; common(g, M, 'slot');
+      const M = MAT.C; common(g, M, 'none');
+      { const st = H(zStern + 0.01), sm = (st[2] + st[3]) / 2; bell(g, V3(0, sm - 0.3, zStern + 0.2), 2.0, 'C'); for (const sx of [1, -1]) bell(g, V3(sx * 4.6, sm - 0.8, zStern + 0.2), 1.1, 'C'); }
+      for (const sx of [1, -1]) turret(g, M, sx * 4.6, H(26)[2], 26, 1, { r: 1.4 });
+      turret(g, M, 0, H(26)[3], 26, -1, { r: 1.4 });
+      // a dish over the bridge on a short mount
+      { const y = H(16)[2]; add(g, new THREE.CylinderGeometry(0.35, 0.5, 1.4, 8).translate(0, y + 0.7, 16), GUNMETAL, 'dish');
+        const d = add(g, new THREE.SphereGeometry(1.8, 12, 5, 0, PI * 2, 0, 0.85), GUNMETAL, 'dish'); d.material = GUNMETAL; d.position.set(0, y + 1.9, 16.4); d.rotation.x = PI / 2 + 0.5; }
+      bayDoors(g, M); rcs(g, M); emitter(g, M, 0.8, (BOW[2] + BOW[3]) / 2);
       const L = LAYOUTS[layoutKey], top2 = Math.max(...S2.map((q) => q[2])), bot2 = Math.min(...S2.map((q) => q[3])), hb2 = Math.max(...S2.map((q) => q[1]));
       const zs2 = S2.map((q) => q[0]), z2a = Math.min(...zs2), z2b = Math.max(...zs2), mid2 = (top2 + bot2) / 2;
       const xo = L.x, zo = L.z, yo = L.above ? maxTop + L.gap - bot2 : minBot - L.gap - top2;
@@ -836,6 +1153,13 @@ const DIRS = {
       // the neck: a corridor's width and its clearance (the bible: at least 2.4 m plus clearance), set back from both bows
       const zn = zo + (z2a + z2b) / 2 + 2, a = L.above ? V3(0, H(zn)[2] - 0.8, zn) : V3(xo * 0.35, H(zn)[3] + 0.8, zn), b = V3(xo, yo + (L.above ? bot2 + 0.8 : top2 - 0.8), zn);
       add(g, neckGeo(a, b, 2.2, 6.5), M, 'neck');
+      // field hoops round the field hull, each with a glowing seam; conduits down the neck; its own bell astern
+      for (let k = 0; k < 5; k++) { const z = lerp(z2a + 4, z2b - 3, k / 4), h = CL.hullAt(S2, z);
+        add(g, loftAt([ring(z + zo + 0.4, h[1] + 0.22, h[2] + 0.22, h[3] - 0.22, h[4], xo, yo), ring(z + zo - 0.4, h[1] + 0.22, h[2] + 0.22, h[3] - 0.22, h[4], xo, yo)], xo, yo + (h[2] + h[3]) / 2), GUNMETAL, 'hoop');
+        add(g, loftAt([ring(z + zo + 0.08, h[1] + 0.27, h[2] + 0.27, h[3] - 0.27, h[4], xo, yo), ring(z + zo - 0.08, h[1] + 0.27, h[2] + 0.27, h[3] - 0.27, h[4], xo, yo)], xo, yo + (h[2] + h[3]) / 2), GRILLE, 'hoop'); }
+      for (const dx of [-1.6, 1.6]) { const pa = a.clone().add(V3(dx, 0, -2.5)), pb = b.clone().add(V3(dx, 0, -2.5)), L = pa.distanceTo(pb), c = new THREE.CylinderGeometry(0.28, 0.28, L, 8);
+        const k = add(g, c, GUNMETAL, 'neck'); k.position.copy(pa).add(pb).multiplyScalar(0.5); k.quaternion.setFromUnitVectors(V3(0, 1, 0), pb.clone().sub(pa).normalize()); }
+      { const h = CL.hullAt(S2, z2a + 0.01); bell(g, V3(xo, yo + (h[2] + h[3]) / 2, zo + z2a + 0.2), Math.min(1.3, (h[2] - h[3]) * 0.3), 'C'); }
       g.userData.secondary = { S2, xo, yo, zo };
     } },
 };
@@ -870,7 +1194,7 @@ function applyPose(t) { // t: 0 stalk to 1 strike
     if (R) pv.quaternion.copy(new THREE.Quaternion().setFromEuler(R.stalk)).slerp(new THREE.Quaternion().setFromEuler(R.strike), t);
     if (P) pv.position.lerpVectors(P.stalk, P.strike, t); }
   const A = POSES.stalk, B = POSES.strike, m = (k) => lerp(A[k], B[k], t);
-  WINMAT.emissiveIntensity = m('win'); TUBE.emissiveIntensity = m('tube'); HEAT.emissiveIntensity = m('heat'); GRILLE.emissiveIntensity = m('grille'); DRIVE.emissiveIntensity = m('drive');
+  WINMAT.emissiveIntensity = m('win'); for (const h of HEATS) h.value = lerp(0.15, 1.0, t); TUBE.emissiveIntensity = m('tube'); HEAT.emissiveIntensity = m('heat'); GRILLE.emissiveIntensity = m('grille'); DRIVE.emissiveIntensity = m('drive');
   for (const L of FLOODS) L.intensity = m('flood') * (lightKey === 'nosun' ? 1.6 : 1);
   for (const p of Object.values(POSMATS)) p.emissiveIntensity = m('pos');
   for (const k of KILL) k.emissiveIntensity = t > 0.999 ? B.kill : t * t * B.kill;

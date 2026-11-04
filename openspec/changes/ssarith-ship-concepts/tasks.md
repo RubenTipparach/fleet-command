@@ -17,7 +17,8 @@
 - [x] 1b.3 Version 4: smooth chamfers on every direction; C Course withdrawn; C Field Hull (a secondary hull in place of nacelles, rooms first, three layouts)
 - [x] 1b.4 Version 5: a fair hull (smooth outlines from above and in profile, one chamfer, no polygons added)
 - [x] 1b.5 Version 6: the plating laid on each face, true size on the chamfers
-- [ ] 1b.6 The owner picks, renames or replaces the directions (survey H2) and C's layout (H3)
+- [x] 1b.6 Version 7: working detail (guns, bay doors, attitude thrusters, the shared thruster bells, an emitter, and each tradition's own parts)
+- [ ] 1b.7 The owner picks, renames or replaces the directions (survey H2) and C's layout (H3)
 
 ## 2. After a tradition is chosen (H2)
 

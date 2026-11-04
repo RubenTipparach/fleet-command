@@ -39,3 +39,8 @@
 - 2026-11-04, cloud session (owner: "oof now theres uv issues"): version 6, version id `1793805620-1059`. The plating is
   laid on each face itself (along the ship, and across the face in metres on its own surface), so plates keep their size
   on the 45 degree chamfers and line up along the length; no geometry changed.
+- 2026-11-04, cloud session (owner: "ships arent very complex"): version 7, version id `1793829581-24aa`. Working detail on
+  every direction from the plan and the bible (gun houses over the forward battery and under the keel, bay doors where
+  the bays meet the hull, attitude thruster blocks, the shared thruster bells, a forward emitter) and each tradition's own
+  (A: rafters, a belt strake, patch plates, a mast; B: tube clamps, a sensor head, radiator fins, vent hoods; C: field
+  hoops, neck conduits, a dish). `docs/mockups/lib/ship-skin.js` is now inlined for the bells. 5,100-6,200 triangles a frigate.

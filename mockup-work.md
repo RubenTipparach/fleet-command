@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-04, v6: plating true on the angled faces; v5: faired hulls, smooth from above and flat along the sides; v4: A Old Lodge and B Trackers with smooth hull edges, C Field Hull with a secondary hull in place of nacelles, three layouts; survey H2, H3). **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-04, v7: working detail on every direction; v6: plating true on the angled faces; v5: faired hulls, smooth from above and flat along the sides; v4: A Old Lodge and B Trackers with smooth hull edges, C Field Hull with a secondary hull in place of nacelles, three layouts; survey H2, H3). **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -624,3 +624,5 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
   direction and on the field hull, one chamfer along the body, smooth outlines, no polygons added.
 - Version 6 (owner, 2026-11-04: "oof now theres uv issues"): the plating laid on each face itself, true size on the 45
   degree chamfers, rows lined up along the length; no geometry changed.
+- Version 7 (owner, 2026-11-04: "ships arent very complex"): working detail from the plan and the bible (gun houses, bay
+  doors, attitude thrusters, the shared thruster bells, a forward emitter) and each tradition's own parts.

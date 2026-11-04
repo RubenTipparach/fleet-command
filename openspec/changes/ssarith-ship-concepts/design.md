@@ -1,5 +1,19 @@
 # Design: ssarith-ship-concepts
 
+## Version 7: working detail (owner, 2026-11-04: "ships arent very complex")
+
+A ship reads as built of real parts when its jobs show on its skin, so the detail is the parts the plan and the bible
+already call for, placed from the data, plus each tradition's own:
+
+| | Every direction | A Old Lodge | B Trackers | C Field Hull |
+|---|---|---|---|---|
+| Parts | Two gun houses over the forward battery and one under the keel (the plan's forward battery and armoury); bay doors where the keel deck's boarding and hunting craft bays meet the hull, each a dark recess in a frame, split down the middle; attitude thruster blocks on the upper edges fore and aft; a forward emitter at the bow (the bible's deflector) | Rafters over the hall's roof every 4 m and posts down its walls; a riveted belt strake down each flank at the middle deck's floor; 22 plates of newer steel patched over old ones (the refits); a lodge mast with a red beacon at its head; two bells astern, the refit's newer and smaller | Clamps and saddles on every tracking tube, a three-lens sensor head at the cradle's bow; cooling fins on the radiators; louvred hoods over the side vents; lower gun houses aft | Field hoops round the field hull, each with a glowing seam; conduits down the neck; a dish over the bridge; three bells on the frigate and one on the field hull |
+
+The bells are the shared thruster (`docs/mockups/lib/ship-skin.js`, inlined), eight-sided to match the Hunt's section, their
+heat phosphor green-white, banked while waiting and full while hunting. Triangles per frigate: A 6,228, B 5,934, C 5,114
+(from 1,550 to 2,070), still a phone's budget for a mid-detail ship (survey A1, T3); the triangle budgets per class are set
+by mockup 3 (look dev). Every check still passes.
+
 ## Version 6: plating laid on each face (owner, 2026-11-04: "oof now theres uv issues")
 
 Version 5's one deep chamfer (3.29 m, at exactly 45 degrees) showed a fault in how the plating was laid: it was
@@ -226,7 +240,7 @@ the Petrel's 88 m.
 
 ## Cost
 
-About 3,000 to 4,000 triangles a frigate before detail (measured on the page), inside a phone budget (survey A1, T3). The claws are the most
+About 5,100 to 6,200 triangles a frigate with version 7's detail (measured on the page), inside a phone budget (survey A1, T3). The claws are the most
 expensive part (about 300 triangles each).
 
 ## Not done yet
