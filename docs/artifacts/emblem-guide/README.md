@@ -56,3 +56,4 @@
   chevron, another alternate shape maybe a more curved top trapezoid?"), both one closed outline, joins measured.
 - Version 12 published 2026-11-04: B-E23 the rounded peak, drawn from the owner's red line over B-E22 ("something more
   like this?"): the trapezoid's sides rise from their shoulders in one curve to a rounded peak; now B's main sketch.
+- Version 13 published 2026-11-04: B-E23 links to its 3D badge (mockup 10); the owner's notes on 3D and iridescence.

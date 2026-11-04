@@ -52,3 +52,5 @@
 - 2026-11-03, cloud session (Krai battle console thread): M8 at version 6 (tracker version 47, `1793737629-9deb`), then 7 (version 48, `1793738755-9fdf`), then 8, merged onto the live version `1793739217-06ad` (M7 at v4, the Ship Design Bible at v2, survey v33); version 50, version id `1793739612-c98f`.
 - 2026-11-03, cloud session (faction emblems thread): the Emblem Design Guide added under Guides and M9 (Faction
   emblems, listed) under Game mockups, on top of the live version; version 55, version id `1793743908-edc6`.
+- 2026-11-04, cloud session (faction emblems thread): M10 (Concord badge in 3D) added, the Emblem Design Guide entry brought to
+  v12, on top of the live version; versions 62 (`1793765061-5f07`) and 63 (`1793765076-00b0`).

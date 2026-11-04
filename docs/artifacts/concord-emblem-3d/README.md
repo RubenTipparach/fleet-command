@@ -1,6 +1,6 @@
 # Concord Badge 3D (mockup 10)
 
-- Link: to be recorded on first publish.
+- Link: https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN
 - Shows: the Concord's emblem B-E23 (the rounded peak) as a badge 100 mm across, orbitable: a polished platinum frame,
   an iridescent pearl ship with the star pressed into its saucer, and a holographic night field (nebula and stars at
   three depths that shift with the view); the Blender renders beside it.
@@ -11,4 +11,4 @@
 
 ## Publishes
 
-- None yet.
+- Version 1 published 2026-11-04 (cloud session, faction emblems thread), version id `1793765019-c6ec`.

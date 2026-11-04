@@ -207,6 +207,8 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'Central shape should be like irridescent', means: 'The ship is iridescent pearl in both the Blender render and the 3D page: a thin film and a pastel shift with the viewing angle.' },
+  { when: '2026-11-04', q: 'ok I\'m kinda liking it, lets see how it looks in 3d, render something in blender, make a 3d version in thre js, add in materials, normals, specular map, AO, and if you can make the background of the emblem, the bell shape some kind of holographic stars and nebula shader', means: 'B-E23 as a badge: rendered in Blender and built in three.js (mockup 10) from the guide\'s own shapes, with Material Maker maps and a holographic nebula field.' },
   { when: '2026-11-04', q: 'something more like this? (a red line over B-E22: the sides rising from their shoulders in one curve to a rounded peak)', means: 'B-E23 the rounded peak, drawn from your line, now in B\'s main sketch with its labels.' },
   { when: '2026-11-04', q: 'upside down chevron, another alternate shape maybe a more curved top trapezoid?', means: 'B-E21 the upside-down chevron (peaked top, notch at the foot) and B-E22 the curved-top trapezoid, both one closed outline.' },
   { when: '2026-11-04', q: 'What about a more trapazpidal shape and another one more Chevron', means: 'B-E19 the trapezoid (narrow top, wide foot) and B-E20 the chevron (a V-dipped top, a pointed foot), both one closed outline.' },
@@ -428,7 +430,7 @@ const ENCLOSURES = [
   { key: 'B-E23', name: 'The rounded peak', rec: true, scale: 0.7, cy: 50, pieces: 2,
     frame: 'M4.4 87.4L14.3 38C18.3 18.4 34 4 50 4C66 4 81.7 18.4 85.7 38L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
     field: 'M11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
-    why: 'Your sketch: the wide-footed trapezoid whose sides rise from their shoulders in one curve to a rounded peak, narrower than the trapezoid\'s top. The saucer sits under the peak like a ship under its nose cone, climbing.' },
+    why: 'Your sketch: the wide-footed trapezoid whose sides rise from their shoulders in one curve to a rounded peak, narrower than the trapezoid\'s top. The saucer sits under the peak like a ship under its nose cone, climbing. <a href="https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN" target="_blank" rel="noopener">See it as a 3D badge</a>.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {
