@@ -172,7 +172,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             var col = new Color(sh.Color);
             if (sh.Kind == "beam")
             {
-                if (Local(sh.X, sh.Z) is { } a && Local(sh.TX, sh.TZ) is { } bb)
+                // both ends as the ships stand this frame (Battle.Ends, the rule the bolts fly by)
+                var (sx, sz, tx, tz) = b.Ends(sh);
+                if (Local(sx, sz) is { } a && Local(tx, tz) is { } bb)
                     DrawLine(a, sh.Hit || sh.Intercept ? bb : bb + (bb - a).Normalized().Orthogonal() * 18, new Color(col, (float)Math.Clamp(sh.Life / b.Tuning.BeamLifeS, 0.2, 1)), 2.5f, true);
             }
             else if (Local(sh.X, sh.Z) is { } p) { DrawCircle(p, 4, col, true, -1, true); DrawCircle(p, 8, new Color(col, 0.25f), true, -1, true); }

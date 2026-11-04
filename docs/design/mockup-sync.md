@@ -15,6 +15,16 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 
+Beams and bolts (2026-11-04, owner: "source and destination of phaser and disruptors must maintain in sync"): in step in
+both. Mockup 2 v76 (and mockup 8 v15, written from it) resolve a beam's ends each step from the firing mount and the
+target as they now stand (`shotEnds`) and fly disruptor bolts on that live line (`boltStep`); the game does the same in
+`Battle.Ends` and `BoltStep` (`src/Core/Sim/Battle.cs`), drawn by `ViewOverlay`. Torpedoes and missiles fly free in both.
+Change `weapon-fx`, tasks 2.1-2.3.
+
+Shot looks (mockup 2 v77): open. The mockup draws lances as lit strips, disruptor bolts as hot streaks and torpedoes
+and missiles as glowing warheads with trails (`docs/mockups/lib/weapon-fx.js`); the game's overlay still draws lines and
+dots. Task: `weapon-fx` 3.4.
+
 ## Open differences
 
 ### Mockup 2 and 8 (one console, two skins)

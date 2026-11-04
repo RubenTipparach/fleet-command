@@ -1,4 +1,4 @@
-# Fleet Command Sounds (mockup 16)
+# Fleet Command Sounds (mockup 17; drafted as 16, renumbered on merging main, where 16 is the special weapons range)
 
 - Link: not published yet (a cloud session wrote it; the desktop session publishes, CLAUDE.md section 8).
 - Shows: the first 30 sound effects with play buttons and waveform strips, grouped as the game uses them.

@@ -1,4 +1,4 @@
-# Fleet Command Music (mockup 17)
+# Fleet Command Music (mockup 18; drafted as 17, renumbered on merging main)
 
 - Link: not published yet (a cloud session wrote it; the desktop session publishes, CLAUDE.md section 8).
 - Shows: the first score (the Main Title, Battle Stations, Victory, Ship Lost, the motif sheet) with play buttons, each
