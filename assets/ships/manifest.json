@@ -1,0 +1,4859 @@
+{
+ "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v20, sha256 ba104b49fd04; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 780ac7b20bfe): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
+ "conventions": {
+  "units": "metres",
+  "up": "+Y",
+  "bow": "-Z",
+  "port": "-X",
+  "origin": "the centre of the ship's bounding box (all three axes)",
+  "mockup_space": "the pages build in +X port, +Y up, +Z bow; p_mockup = (-(x + o.x), y + o.y, -(z + o.z)) for a glb point (x, y, z), o = the ship's origin_offset_m; the hull shaders' tri-planar detail and livery are in mockup space",
+  "nodes": "root: the ship id; under it one node per piece of the mockup at the piece's pivot (hull, secondary, neck, command, wing, pod_<side>, pylon_<side>, nacelle_<side>, blade, crest); under each piece its meshes, merged by zone and material, named <piece>[_<zone>]_<material>, and its empties",
+  "empties": "mount_turret_<i>, mount_torpedo_<i>, mount_gun_<i>, engine_<i>, deflector, reactor, bridge, bay_<i>, light_nav_port / starboard / aft, light_strobe_<side>, light_beacon_dorsal / ventral, light_flood_<i>; facts in glTF extras (colour linear RGB with its hex, kind, radius_m, range_m, direction in the glb frame). A mount's +Y is the way it faces out of the hull; a flood's -Z is the way it shines (as a Godot SpotLight3D).",
+  "not_exported": "live lights, additive glows (thruster plumes, the Krai nacelle panels' halos), particles, wires, damage, shields and broken pieces; the windows of the Concord line (drawn by the hull shader, see hull_shader)"
+ },
+ "factions": {
+  "concord": {
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   },
+   "detail": {
+    "albedo": "concord/detail_albedo.png",
+    "normal": "concord/detail_normal.png",
+    "size_px": [
+     1024,
+     1024
+    ],
+    "tile_m": [
+     8,
+     7.8
+    ],
+    "channels": "albedo: grime and wear in red (green and blue match); normal: tangent-space xy in red and green, 0.5 flat"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/concord-hull-concepts.html: hullMat(), PAINT_GLSL paint(), winAt(), winRoom(), pools(); docs/mockups/lib/ship-skin.js GLSL.detail()",
+    "did": [
+     "paint(p, n) by uMode: 0 hull, 1 plain armour, 2 nacelle shell, 3 copper rims, 4 livery accent (uStripe), 5 hazard trim, 6 near black.",
+     "Hull and plain armour: armour white on top and sides, subhull grey underneath (n.y < -0.72), each 4 m by 2.6 m plate shaded +-3.5%.",
+     "Hull (mode 0) also: a subhull grey service band on the sides between y = uBand.x and uBand.y with a dark line at 48% and dark seams every 8 m; grey dorsal seams 0.2 m either side of |x| = uChan; a livery stripe 2.2 m wide at each z in uStripes (uStripeN of them) in uStripe, with a 0.22 m uSeam edge each side, off the service band.",
+     "Nacelle shell (mode 2): armour with a subhull grey band 0.7 m wide every 8 m along z.",
+     "Detail: the paint times mix(1, grime, 0.9), grime = detail_albedo.png red channel; the normal bent by detail_normal.png xy (whiteout blend), both projected tri-planar in mockup ship space (weights |n|^6), tile_m along z and x by round y and x.",
+     "Roughness 0.48 + 0.3 (1 - grime); metalness the material's.",
+     "Windows (uWinOn, hull only): 2.2 m cells along z from uWinZ.x to uWinZ.y, one at each deck floor in uDecks (uDeckN of them) + 1.5 m, skipping each fifth cell and the livery stripes, inside the chamfers; a copper rim, black glass (roughness 0.06), and a room behind it drawn by interior mapping, lit with its life-support section.",
+     "Floodlight pools (baked hull lights): emissive = paint * pools(p, n), from the light_flood_* empties (position, direction, range, strength); in the page a ship in view swaps its pools for real spot lights (lamp_make)."
+    ],
+    "constants": {
+     "armour": [
+      0.8,
+      0.81,
+      0.82
+     ],
+     "sub": [
+      0.36,
+      0.39,
+      0.43
+     ],
+     "dark": [
+      0.12,
+      0.14,
+      0.17
+     ],
+     "copper": [
+      0.55,
+      0.27,
+      0.12
+     ],
+     "hazard": [
+      0.18,
+      0.2,
+      0.23
+     ],
+     "black": [
+      0.02,
+      0.025,
+      0.035
+     ]
+    }
+   },
+   "lamp_make": {
+    "colour": [
+     1,
+     0.941176,
+     0.862745
+    ],
+    "hex": "fff0dc",
+    "cone_half_angle_deg": 45,
+    "penumbra": 0.35,
+    "decay": 1.4,
+    "distance_per_range": 1.25,
+    "intensity_per_strength": 2.6,
+    "shadow_casters": 8,
+    "note": "how the page turns each flood pool into a SpotLight for the ship in view: distance = range * distance_per_range, intensity = strength * intensity_per_strength; the first shadow_casters cast shadows"
+   }
+  },
+  "krai": {
+   "source": {
+    "page": "docs/mockups/krai-ship-concepts.html",
+    "version": 21,
+    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+   },
+   "detail": {
+    "albedo": "krai/detail_albedo.png",
+    "normal": "krai/detail_normal.png",
+    "size_px": [
+     1024,
+     1024
+    ],
+    "tile_m": [
+     8,
+     8
+    ],
+    "channels": "albedo: grime and wear in red (green and blue match); normal: tangent-space xy in red and green, 0.5 flat"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/krai-ship-concepts.html: hullMat() (KRAI_HULL_GLSL); docs/mockups/lib/ship-skin.js GLSL.detail()",
+    "did": [
+     "Base colour: the vertex colours (field steel on the hull, plate on nacelles and blades, bronze bevels) times mix(1, grime, 0.8), grime = detail_albedo.png red channel.",
+     "Seams (the darkest grime, seam = 1 - smoothstep(0.45, 0.6, grime)) tinted toward bronze * 0.45 by seam * 0.5.",
+     "The normal bent by detail_normal.png xy (whiteout blend), both projected tri-planar in mockup ship space (weights |n|^6), tile_m; the fine detail fades out below about 3 px a seam (metres per pixel 0.012 to 0.05).",
+     "Roughness 0.3 + 0.3 (1 - grime) + 0.15 seam, 0.55 under paint; metalness the material's, times (1 - 0.6 paint).",
+     "Livery, painted on the side faces (|n.x| > 0.3) where |x| < uLiv2.x + 0.3 m (the hull, not the nacelles): with t = (z - uLiv.x) / (uLiv.y - uLiv.x) and hgt = uLiv.w - uLiv.z, a crimson war stripe centred at y = uLiv.z + hgt (0.28 + 0.3 sw^2), sw = smoothstep(0.62, 0.93, t), half width hgt (0.03 + 0.07 smoothstep(0.1, 0.6, t)) (1 - smoothstep(0.8, 0.94, t)), for t in 0.12 to 0.94; bronze pin lines 0.32 uLiv2.z beyond each edge of it, t in 0.14 to 0.86, 0.05 to 0.1 uLiv2.z wide; bronze battle tallies above it from t = 0.14, pitch 0.75 uLiv2.z, in fives with a gap (uLiv2.y of them), each 0.42 of the pitch wide and 1.5 uLiv2.z tall, 0.9 uLiv2.z above the stripe. Paint = colour * (0.55 + 0.45 grime) * mix(1, 0.85, seam)."
+    ],
+    "constants": {
+     "crimson": [
+      0.195,
+      0.013,
+      0.025
+     ],
+     "bronze": [
+      0.485,
+      0.254,
+      0.076
+     ]
+    },
+    "livery_uniforms": {
+     "uLiv": "vec4(zMin, zMax, botMin, topMax): the fitted hull's stern and bow z, and its lowest and highest y (mockup ship space, metres)",
+     "uLiv2": "vec4(hbMax, tally, max(1, 0.8 s), 0): the hull's widest half beam (m), the class's battle tallies (CLASSES[id].tally), and the paint scale, s = hull length / 87 m (the frigate's)"
+    }
+   }
+  }
+ },
+ "materials": {
+  "concord/paint_hull": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 0,
+    "uBand": [
+     -0.9,
+     0
+    ],
+    "uChan": [
+     2.6,
+     -1
+    ],
+    "uStripes": [
+     8.5,
+     -12,
+     0,
+     0
+    ],
+    "uStripeN": 2,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     -2,
+     20
+    ],
+    "uDecks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uDeckN": 1,
+    "uWinOn": 1,
+    "uPane": 0
+   },
+   "name": "paint_hull",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_core": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_core",
+   "base_colour": [
+    0.062745,
+    0.082353,
+    0.109804
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    0.282353,
+    0.878431,
+    1
+   ],
+   "emissive_strength": 1.6,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_dish": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_dish",
+   "base_colour": [
+    0.101961,
+    0.133333,
+    0.188235
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    0.435294,
+    0.776471,
+    1
+   ],
+   "emissive_strength": 1.3,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_torpedo": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_torpedo",
+   "base_colour": [
+    0.133333,
+    0.145098,
+    0.172549
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    1,
+    0.352941,
+    0.164706
+   ],
+   "emissive_strength": 1.2,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/metal_8a9098": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "metal_8a9098",
+   "base_colour": [
+    0.541176,
+    0.564706,
+    0.596078
+   ],
+   "metalness": 0.45,
+   "roughness": 0.5,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/metal_2a2f36": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "metal_2a2f36",
+   "base_colour": [
+    0.164706,
+    0.184314,
+    0.211765
+   ],
+   "metalness": 0.5,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_phaser": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_phaser",
+   "base_colour": [
+    0.164706,
+    0.176471,
+    0.211765
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    1,
+    0.635294,
+    0.227451
+   ],
+   "emissive_strength": 0.25,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/radiator": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "radiator",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.4,
+   "roughness": 0.7,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/bell": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": "the bell's outer shell; in the page the inside of the bell (its back faces) glows with heat, [0.85,0.12,0.03] at the throat to [1,0.78,0.45] at the lip, times (0.15 + 1.9 d^2) by depth d, with ribs and rings cut in the shell (lib/ship-skin.js thrusterMat)",
+   "heat_rgb": {
+    "throat": [
+     0.85,
+     0.12,
+     0.03
+    ],
+    "lip": [
+     1,
+     0.78,
+     0.45
+    ]
+   },
+   "name": "bell",
+   "base_colour": [
+    0.290196,
+    0.305882,
+    0.341176
+   ],
+   "metalness": 0.8,
+   "roughness": 0.34,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/metal_3a4049": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "metal_3a4049",
+   "base_colour": [
+    0.227451,
+    0.25098,
+    0.286275
+   ],
+   "metalness": 0.6,
+   "roughness": 0.55,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_impulse": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_impulse",
+   "base_colour": [
+    0.227451,
+    0.101961,
+    0.031373
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    1,
+    0.760784,
+    0.478431
+   ],
+   "emissive_strength": 1.4,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/registry": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/paint_plain": {
+   "hull_shader": true,
+   "livery": false,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 1,
+    "uBand": [
+     99,
+     99
+    ],
+    "uChan": [
+     -1,
+     -1
+    ],
+    "uStripes": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uStripeN": 0,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     0,
+     0
+    ],
+    "uDecks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uDeckN": 0,
+    "uWinOn": 0,
+    "uPane": 0
+   },
+   "name": "paint_plain",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_bridge": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_bridge",
+   "base_colour": [
+    0.047059,
+    0.078431,
+    0.14902
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    0.847059,
+    0.92549,
+    1
+   ],
+   "emissive_strength": 0.9,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/paint_nacelle": {
+   "hull_shader": true,
+   "livery": false,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 2,
+    "uBand": [
+     99,
+     99
+    ],
+    "uChan": [
+     -1,
+     -1
+    ],
+    "uStripes": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uStripeN": 0,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     0,
+     0
+    ],
+    "uDecks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uDeckN": 0,
+    "uWinOn": 0,
+    "uPane": 0
+   },
+   "name": "paint_nacelle",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_grille": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_grille",
+   "base_colour": [
+    0.05098,
+    0.094118,
+    0.188235
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    0.184314,
+    0.721569,
+    1
+   ],
+   "emissive_strength": 1.5,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_grille_2": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_grille_2",
+   "base_colour": [
+    0.227451,
+    0.101961,
+    0.031373
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    1,
+    0.415686,
+    0.121569
+   ],
+   "emissive_strength": 1.5,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/registry_2": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry_2",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/registry_3": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry_3",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/paint_hull_2": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 0,
+    "uBand": [
+     -0.65,
+     0.35
+    ],
+    "uChan": [
+     5,
+     -1
+    ],
+    "uStripes": [
+     21,
+     -2,
+     -28,
+     0
+    ],
+    "uStripeN": 3,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     -8,
+     30
+    ],
+    "uDecks": [
+     3.5,
+     0,
+     -3.5,
+     0
+    ],
+    "uDeckN": 3,
+    "uWinOn": 1,
+    "uPane": 0
+   },
+   "name": "paint_hull_2",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/registry_4": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry_4",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/registry_5": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry_5",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/paint_hull_3": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 0,
+    "uBand": [
+     -0.65,
+     0.35
+    ],
+    "uChan": [
+     4,
+     9
+    ],
+    "uStripes": [
+     28,
+     4,
+     -18,
+     0
+    ],
+    "uStripeN": 3,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     -20,
+     38
+    ],
+    "uDecks": [
+     7,
+     3.5,
+     0,
+     -3.5
+    ],
+    "uDeckN": 4,
+    "uWinOn": 1,
+    "uPane": 0
+   },
+   "name": "paint_hull_3",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/registry_6": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry_6",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/paint_hull_4": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 0,
+    "uBand": [
+     -16.3,
+     -15.3
+    ],
+    "uChan": [
+     2.6,
+     -1
+    ],
+    "uStripes": [
+     -40,
+     0,
+     0,
+     0
+    ],
+    "uStripeN": 1,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     0,
+     0
+    ],
+    "uDecks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uDeckN": 0,
+    "uWinOn": 0,
+    "uPane": 0
+   },
+   "name": "paint_hull_4",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/paint_hull_5": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 0,
+    "uBand": [
+     -0.65,
+     0.35
+    ],
+    "uChan": [
+     5,
+     12
+    ],
+    "uStripes": [
+     60,
+     -32,
+     -66,
+     0
+    ],
+    "uStripeN": 3,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     -40,
+     50
+    ],
+    "uDecks": [
+     7,
+     3.5,
+     0,
+     -3.5
+    ],
+    "uDeckN": 5,
+    "uWinOn": 1,
+    "uPane": 0
+   },
+   "name": "paint_hull_5",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/paint_accent": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's livery stripe colour; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 4,
+    "uBand": [
+     99,
+     99
+    ],
+    "uChan": [
+     -1,
+     -1
+    ],
+    "uStripes": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uStripeN": 0,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     0,
+     0
+    ],
+    "uDecks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uDeckN": 0,
+    "uWinOn": 0,
+    "uPane": 0
+   },
+   "name": "paint_accent",
+   "base_colour": [
+    0.1,
+    0.4,
+    0.86
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_phaser_2": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_phaser_2",
+   "base_colour": [
+    0.164706,
+    0.176471,
+    0.211765
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    1,
+    0.690196,
+    0.290196
+   ],
+   "emissive_strength": 0.25,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/registry_7": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry_7",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/paint_hull_6": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 0,
+    "uBand": [
+     -0.65,
+     0.35
+    ],
+    "uChan": [
+     4.5,
+     -1
+    ],
+    "uStripes": [
+     48,
+     0,
+     0,
+     0
+    ],
+    "uStripeN": 1,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     24,
+     56
+    ],
+    "uDecks": [
+     3.5,
+     0,
+     -3.5,
+     0
+    ],
+    "uDeckN": 3,
+    "uWinOn": 1,
+    "uPane": 0
+   },
+   "name": "paint_hull_6",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/registry_8": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "registry_8",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/paint_hull_7": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "base colour is the paint rule's armour white; the paint, detail, windows and pools are the hull shader's (hull_shader)",
+   "tile_m": [
+    8,
+    7.8
+   ],
+   "uniforms": {
+    "uMode": 0,
+    "uBand": [
+     -0.65,
+     0.35
+    ],
+    "uChan": [
+     -1,
+     -1
+    ],
+    "uStripes": [
+     -50,
+     0,
+     0,
+     0
+    ],
+    "uStripeN": 1,
+    "uStripe": [
+     0.1,
+     0.4,
+     0.86
+    ],
+    "uSeam": [
+     0.04,
+     0.08,
+     0.22
+    ],
+    "uWinZ": [
+     0,
+     0
+    ],
+    "uDecks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "uDeckN": 0,
+    "uWinOn": 0,
+    "uPane": 0
+   },
+   "name": "paint_hull_7",
+   "base_colour": [
+    0.8,
+    0.81,
+    0.82
+   ],
+   "metalness": 0.42,
+   "roughness": 0.62,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/glow_hangar": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_hangar",
+   "base_colour": [
+    0,
+    0,
+    0
+   ],
+   "metalness": 0,
+   "roughness": 0.9,
+   "emissive": [
+    1,
+    1,
+    1
+   ],
+   "emissive_strength": 1,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": [
+    "emissive"
+   ]
+  },
+  "concord/glow_hangar_2": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_hangar_2",
+   "base_colour": [
+    0.164706,
+    0.101961,
+    0.031373
+   ],
+   "metalness": 0.3,
+   "roughness": 0.4,
+   "emissive": [
+    1,
+    0.673554,
+    0.239669
+   ],
+   "emissive_strength": 0.94902,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "concord/bay_number": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "bay_number",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/bay_number_2": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "bay_number_2",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/bay_number_3": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "bay_number_3",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/bay_number_4": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "bay_number_4",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/bay_number_5": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "bay_number_5",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "concord/bay_number_6": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "note": "a transparent decal plane a few centimetres off the plating (the page also used polygonOffset)",
+   "name": "bay_number_6",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": true,
+   "textures": [
+    "baseColor"
+   ]
+  },
+  "krai/hull": {
+   "hull_shader": true,
+   "livery": true,
+   "stand_in": "the vertex colours are the plating; the detail, seams and livery are the hull shader's (hull_shader); the livery paints only where |x| < uLiv2.x + 0.3 m",
+   "tile_m": [
+    8,
+    8
+   ],
+   "name": "hull",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.72,
+   "roughness": 0.4,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": true,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/blade_steel": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "blade_steel",
+   "base_colour": [
+    0.775822,
+    0.814847,
+    0.871367
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": [
+    "metallicRoughness (roughness from the page's map)"
+   ],
+   "clearcoat": [
+    1,
+    0.04
+   ]
+  },
+  "krai/glow_ffd88a": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_ffd88a",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    1,
+    0.847059,
+    0.541176
+   ],
+   "emissive_strength": 0.8,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/metal_14171d": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "metal_14171d",
+   "base_colour": [
+    0.078431,
+    0.090196,
+    0.113725
+   ],
+   "metalness": 0.7,
+   "roughness": 0.45,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_eef8ff": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_eef8ff",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0.933333,
+    0.972549,
+    1
+   ],
+   "emissive_strength": 2.4,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/bell": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": "the bell's outer shell; in the page the inside of the bell (its back faces) glows with heat, [0.95,0.3,0.05] at the throat to [1,0.88,0.62] at the lip, times (0.15 + 1.9 d^2) by depth d, with ribs and rings cut in the shell (lib/ship-skin.js thrusterMat)",
+   "heat_rgb": {
+    "throat": [
+     0.95,
+     0.3,
+     0.05
+    ],
+    "lip": [
+     1,
+     0.88,
+     0.62
+    ]
+   },
+   "name": "bell",
+   "base_colour": [
+    0.235294,
+    0.27451,
+    0.345098
+   ],
+   "metalness": 0.8,
+   "roughness": 0.34,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/metal_7b4013": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "metal_7b4013",
+   "base_colour": [
+    0.48515,
+    0.254152,
+    0.076185
+   ],
+   "metalness": 0.85,
+   "roughness": 0.3,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/metal_2c3442": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "metal_2c3442",
+   "base_colour": [
+    0.172549,
+    0.203922,
+    0.258824
+   ],
+   "metalness": 0.6,
+   "roughness": 0.55,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": true,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_throat": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_throat",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    1,
+    0.839216,
+    0.627451
+   ],
+   "emissive_strength": 1,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/window": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": "a warm lit pane (this exporter's choice); in the page each pane is black glass with a Krai room behind it drawn by interior mapping (kraiRoom), forge-orange lamps or dark red, its light following its life-support section",
+   "name": "window",
+   "base_colour": [
+    0.02,
+    0.02,
+    0.022
+   ],
+   "metalness": 0,
+   "roughness": 0.06,
+   "emissive": [
+    1,
+    0.55,
+    0.22
+   ],
+   "emissive_strength": 1.2,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/marking": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "marking",
+   "base_colour": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 0.2,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": true,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_ff3b2a": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_ff3b2a",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    1,
+    0.231373,
+    0.164706
+   ],
+   "emissive_strength": 1.1,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_1fd65a": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_1fd65a",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    0.14486,
+    1,
+    0.420561
+   ],
+   "emissive_strength": 0.923137,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_ffffff": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_ffffff",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    1,
+    1,
+    1
+   ],
+   "emissive_strength": 1.1,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_ff2a1a": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_ff2a1a",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    1,
+    0.164706,
+    0.101961
+   ],
+   "emissive_strength": 1.1,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_grille": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_grille",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    1,
+    0.070588,
+    0.023529
+   ],
+   "emissive_strength": 1.4,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  },
+  "krai/glow_ffc070": {
+   "hull_shader": false,
+   "livery": false,
+   "stand_in": null,
+   "name": "glow_ffc070",
+   "base_colour": [
+    0.039216,
+    0.039216,
+    0.047059
+   ],
+   "metalness": 0,
+   "roughness": 0.6,
+   "emissive": [
+    1,
+    0.752941,
+    0.439216
+   ],
+   "emissive_strength": 1.1,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": []
+  }
+ },
+ "ships": [
+  {
+   "faction": "concord",
+   "id": "swift_below",
+   "label": "Swift, one below",
+   "cls": "Swift-class corvette",
+   "name": "CNS SWIFT",
+   "registry": "CC-031",
+   "livery": "concord",
+   "file": "concord/swift_below.glb",
+   "length_m": 51.80456,
+   "beam_m": 16,
+   "height_m": 18.78,
+   "triangles": 2806,
+   "draw_calls": 21,
+   "origin_offset_m": [
+    0,
+    -2.11,
+    0.65228
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "command",
+     "pylon_ventral",
+     "nacelle_ventral"
+    ],
+    "meshes": [
+     "hull_paint_hull",
+     "hull_reactor_glow_core",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_glow_phaser",
+     "hull_radiator",
+     "hull_drive_bell",
+     "hull_drive_metal_8a9098",
+     "hull_drive_metal_3a4049",
+     "hull_drive_metal_2a2f36",
+     "hull_drive_glow_impulse",
+     "hull_registry",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_ventral_paint_plain",
+     "nacelle_ventral_paint_plain",
+     "nacelle_ventral_paint_nacelle",
+     "nacelle_ventral_glow_grille",
+     "nacelle_ventral_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_ventral",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull",
+    "concord/glow_core",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_8a9098",
+    "concord/metal_2a2f36",
+    "concord/glow_phaser",
+    "concord/radiator",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/registry",
+    "concord/paint_plain",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       5.9375,
+       -8.466
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 12.992,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       7.9,
+       18
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       0,
+       -13.1,
+       -21.6
+      ],
+      "d": [
+       0,
+       0.242536,
+       0.970143
+      ],
+      "range_m": 24,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       9.24,
+       3.66,
+       9
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 12.096,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -9.24,
+       3.66,
+       9
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 12.096,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       2.416,
+       4.92,
+       -19
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 17.85,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -2.416,
+       4.92,
+       -19
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 17.85,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -4.65,
+       0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 22.95,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -4.65,
+       -0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 22.95,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "swift_updown",
+   "label": "Swift, above and below",
+   "cls": "Swift-class corvette",
+   "name": "CNS SWIFT",
+   "registry": "CC-031",
+   "livery": "concord",
+   "file": "concord/swift_updown.glb",
+   "length_m": 51.80456,
+   "beam_m": 16,
+   "height_m": 24.53,
+   "triangles": 3014,
+   "draw_calls": 26,
+   "origin_offset_m": [
+    0,
+    0.765,
+    0.65228
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "command",
+     "pylon_dorsal",
+     "nacelle_dorsal",
+     "pylon_ventral",
+     "nacelle_ventral"
+    ],
+    "meshes": [
+     "hull_paint_hull",
+     "hull_reactor_glow_core",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_glow_phaser",
+     "hull_radiator",
+     "hull_drive_bell",
+     "hull_drive_metal_8a9098",
+     "hull_drive_metal_3a4049",
+     "hull_drive_metal_2a2f36",
+     "hull_drive_glow_impulse",
+     "hull_registry_2",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_dorsal_paint_plain",
+     "nacelle_dorsal_paint_plain",
+     "nacelle_dorsal_paint_nacelle",
+     "nacelle_dorsal_glow_grille",
+     "nacelle_dorsal_glow_grille_2",
+     "pylon_ventral_paint_plain",
+     "nacelle_ventral_paint_plain",
+     "nacelle_ventral_paint_nacelle",
+     "nacelle_ventral_glow_grille",
+     "nacelle_ventral_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_dorsal",
+     "light_strobe_ventral",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull",
+    "concord/glow_core",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_8a9098",
+    "concord/metal_2a2f36",
+    "concord/glow_phaser",
+    "concord/radiator",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/registry_2",
+    "concord/paint_plain",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       5.9375,
+       -8.466
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 12.992,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       7.9,
+       18
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       0,
+       14.63,
+       -21.6
+      ],
+      "d": [
+       0,
+       -0.242536,
+       0.970143
+      ],
+      "range_m": 24,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       0,
+       -13.1,
+       -21.6
+      ],
+      "d": [
+       0,
+       0.242536,
+       0.970143
+      ],
+      "range_m": 24,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       9.24,
+       3.66,
+       9
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 12.096,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -9.24,
+       3.66,
+       9
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 12.096,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       2.416,
+       4.92,
+       -19
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 17.85,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -2.416,
+       4.92,
+       -19
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 17.85,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -4.65,
+       0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 22.95,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -4.65,
+       -0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 22.95,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "swift_level",
+   "label": "Swift, level",
+   "cls": "Swift-class corvette",
+   "name": "CNS SWIFT",
+   "registry": "CC-031",
+   "livery": "concord",
+   "file": "concord/swift_level.glb",
+   "length_m": 51.80456,
+   "beam_m": 28.379999,
+   "height_m": 11.78,
+   "triangles": 3014,
+   "draw_calls": 26,
+   "origin_offset_m": [
+    0,
+    1.39,
+    0.65228
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "command",
+     "pylon_port",
+     "nacelle_port",
+     "pylon_starboard",
+     "nacelle_starboard"
+    ],
+    "meshes": [
+     "hull_paint_hull",
+     "hull_reactor_glow_core",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_glow_phaser",
+     "hull_radiator",
+     "hull_drive_bell",
+     "hull_drive_metal_8a9098",
+     "hull_drive_metal_3a4049",
+     "hull_drive_metal_2a2f36",
+     "hull_drive_glow_impulse",
+     "hull_registry_3",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_port_paint_plain",
+     "nacelle_port_paint_plain",
+     "nacelle_port_paint_nacelle",
+     "nacelle_port_glow_grille",
+     "nacelle_port_glow_grille_2",
+     "pylon_starboard_paint_plain",
+     "nacelle_starboard_paint_plain",
+     "nacelle_starboard_paint_nacelle",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull",
+    "concord/glow_core",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_8a9098",
+    "concord/metal_2a2f36",
+    "concord/glow_phaser",
+    "concord/radiator",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/registry_3",
+    "concord/paint_plain",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       5.9375,
+       -8.466
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 12.992,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       7.9,
+       18
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       14.5,
+       -1.1,
+       -9
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 6.75,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -14.5,
+       -1.1,
+       -9
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 6.75,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       9.24,
+       3.66,
+       9
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 12.096,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -9.24,
+       3.66,
+       9
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 12.096,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       2.416,
+       4.92,
+       -19
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 17.85,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -2.416,
+       4.92,
+       -19
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 17.85,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -4.65,
+       0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 22.95,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -4.65,
+       -0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 22.95,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "petrel_updown",
+   "label": "Petrel, above and below",
+   "cls": "Petrel-class frigate",
+   "name": "CNS PETREL",
+   "registry": "CC-117",
+   "livery": "concord",
+   "file": "concord/petrel_updown.glb",
+   "length_m": 88.846996,
+   "beam_m": 24,
+   "height_m": 33.200001,
+   "triangles": 3466,
+   "draw_calls": 26,
+   "origin_offset_m": [
+    0,
+    1.1,
+    1.223497
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "command",
+     "pylon_dorsal",
+     "nacelle_dorsal",
+     "pylon_ventral",
+     "nacelle_ventral"
+    ],
+    "meshes": [
+     "hull_paint_hull_2",
+     "hull_reactor_glow_core",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_glow_phaser",
+     "hull_radiator",
+     "hull_drive_bell",
+     "hull_drive_metal_8a9098",
+     "hull_drive_metal_3a4049",
+     "hull_drive_metal_2a2f36",
+     "hull_drive_glow_impulse",
+     "hull_registry_4",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_dorsal_paint_plain",
+     "nacelle_dorsal_paint_plain",
+     "nacelle_dorsal_paint_nacelle",
+     "nacelle_dorsal_glow_grille",
+     "nacelle_dorsal_glow_grille_2",
+     "pylon_ventral_paint_plain",
+     "nacelle_ventral_paint_plain",
+     "nacelle_ventral_paint_nacelle",
+     "nacelle_ventral_glow_grille",
+     "nacelle_ventral_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_dorsal",
+     "light_strobe_ventral",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_turret_2",
+     "mount_turret_3",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull_2",
+    "concord/glow_core",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_8a9098",
+    "concord/metal_2a2f36",
+    "concord/glow_phaser",
+    "concord/radiator",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/registry_4",
+    "concord/paint_plain",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       9.68,
+       -5.3786
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 27.2832,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       11.7,
+       32
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       0,
+       19.3,
+       -36.68
+      ],
+      "d": [
+       0,
+       -0.242536,
+       0.970143
+      ],
+      "range_m": 43.2,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       0,
+       -17.1,
+       -36.68
+      ],
+      "d": [
+       0,
+       0.242536,
+       0.970143
+      ],
+      "range_m": 43.2,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       13.06,
+       6.17,
+       11
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 20.896,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -13.06,
+       6.17,
+       11
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 20.896,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       5.588571,
+       8.371429,
+       -37
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 30.8,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -5.588571,
+       8.371429,
+       -37
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 30.8,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -7.34,
+       0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 39.6,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -7.34,
+       -0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 39.6,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "petrel_level",
+   "label": "Petrel, level",
+   "cls": "Petrel-class frigate",
+   "name": "CNS PETREL",
+   "registry": "CC-117",
+   "livery": "concord",
+   "file": "concord/petrel_level.glb",
+   "length_m": 88.846996,
+   "beam_m": 46.779999,
+   "height_m": 17.4,
+   "triangles": 3466,
+   "draw_calls": 26,
+   "origin_offset_m": [
+    0,
+    2.38,
+    1.223497
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "command",
+     "pylon_port",
+     "nacelle_port",
+     "pylon_starboard",
+     "nacelle_starboard"
+    ],
+    "meshes": [
+     "hull_paint_hull_2",
+     "hull_reactor_glow_core",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_glow_phaser",
+     "hull_radiator",
+     "hull_drive_bell",
+     "hull_drive_metal_8a9098",
+     "hull_drive_metal_3a4049",
+     "hull_drive_metal_2a2f36",
+     "hull_drive_glow_impulse",
+     "hull_registry_5",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_port_paint_plain",
+     "nacelle_port_paint_plain",
+     "nacelle_port_paint_nacelle",
+     "nacelle_port_glow_grille",
+     "nacelle_port_glow_grille_2",
+     "pylon_starboard_paint_plain",
+     "nacelle_starboard_paint_plain",
+     "nacelle_starboard_paint_nacelle",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_turret_2",
+     "mount_turret_3",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull_2",
+    "concord/glow_core",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_8a9098",
+    "concord/metal_2a2f36",
+    "concord/glow_phaser",
+    "concord/radiator",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/registry_5",
+    "concord/paint_plain",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       9.68,
+       -5.3786
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 27.2832,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       11.7,
+       32
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       23.7,
+       3.8,
+       -14
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 9.9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -23.7,
+       3.8,
+       -14
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 9.9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       13.06,
+       6.17,
+       11
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 20.896,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -13.06,
+       6.17,
+       11
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 20.896,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       5.588571,
+       8.371429,
+       -37
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 30.8,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -5.588571,
+       8.371429,
+       -37
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 30.8,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -7.34,
+       0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 39.6,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -7.34,
+       -0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 39.6,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "albatross",
+   "label": "Albatross",
+   "cls": "Albatross-class cruiser",
+   "name": "CNS ALBATROSS",
+   "registry": "CC-002",
+   "livery": "concord",
+   "file": "concord/albatross.glb",
+   "length_m": 111.003059,
+   "beam_m": 55.779999,
+   "height_m": 35.23,
+   "triangles": 3982,
+   "draw_calls": 28,
+   "origin_offset_m": [
+    0,
+    -3.535,
+    5.301529
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "secondary",
+     "neck",
+     "command",
+     "pylon_port",
+     "nacelle_port",
+     "pylon_starboard",
+     "nacelle_starboard"
+    ],
+    "meshes": [
+     "hull_paint_hull_3",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_glow_phaser",
+     "hull_radiator",
+     "hull_registry_6",
+     "secondary_paint_hull_4",
+     "secondary_glow_core",
+     "secondary_drive_bell",
+     "secondary_drive_metal_8a9098",
+     "secondary_drive_metal_3a4049",
+     "secondary_drive_metal_2a2f36",
+     "secondary_drive_glow_impulse",
+     "neck_paint_plain",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_port_paint_plain",
+     "nacelle_port_paint_plain",
+     "nacelle_port_paint_nacelle",
+     "nacelle_port_glow_grille",
+     "nacelle_port_glow_grille_2",
+     "pylon_starboard_paint_plain",
+     "nacelle_starboard_paint_plain",
+     "nacelle_starboard_paint_nacelle",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_turret_2",
+     "mount_turret_3",
+     "mount_turret_4",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9",
+     "light_flood_10",
+     "light_flood_11"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull_3",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_8a9098",
+    "concord/metal_2a2f36",
+    "concord/glow_phaser",
+    "concord/radiator",
+    "concord/registry_6",
+    "concord/paint_hull_4",
+    "concord/glow_core",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/paint_plain",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       12.063636,
+       -7.1
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 35.2,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       14.7,
+       35
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       28.2,
+       3.7,
+       -24
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 12.15,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -28.2,
+       3.7,
+       -24
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 12.15,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       17.354545,
+       7.8,
+       -5.5
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 28.407273,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -17.354545,
+       7.8,
+       -5.5
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 28.407273,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       16.05,
+       7.61,
+       23.5
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 26.776,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -16.05,
+       7.61,
+       23.5
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 26.776,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       7.824,
+       10.48,
+       -28
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 39.2,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -7.824,
+       10.48,
+       -28
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 39.2,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -9.254545,
+       8.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 50.4,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -9.254545,
+       7.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 50.4,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "condor",
+   "label": "Condor battleship",
+   "cls": "Condor-class battleship",
+   "name": "CNS CONDOR",
+   "registry": "CC-001",
+   "livery": "concord",
+   "file": "concord/condor.glb",
+   "length_m": 188.407616,
+   "beam_m": 66.580002,
+   "height_m": 37.6,
+   "triangles": 7962,
+   "draw_calls": 39,
+   "origin_offset_m": [
+    0,
+    -0.8,
+    2.003811
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "command",
+     "pylon_port",
+     "nacelle_port",
+     "pylon_starboard",
+     "nacelle_starboard",
+     "pylon_port_2",
+     "nacelle_port_2",
+     "pylon_starboard_2",
+     "nacelle_starboard_2"
+    ],
+    "meshes": [
+     "hull_paint_hull_5",
+     "hull_reactor_glow_core",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_glow_phaser",
+     "hull_weapons_paint_plain",
+     "hull_weapons_paint_accent",
+     "hull_weapons_glow_phaser_2",
+     "hull_radiator",
+     "hull_drive_bell",
+     "hull_drive_metal_8a9098",
+     "hull_drive_metal_3a4049",
+     "hull_drive_metal_2a2f36",
+     "hull_drive_glow_impulse",
+     "hull_registry_7",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_port_paint_plain",
+     "nacelle_port_paint_plain",
+     "nacelle_port_paint_nacelle",
+     "nacelle_port_glow_grille",
+     "nacelle_port_glow_grille_2",
+     "pylon_starboard_paint_plain",
+     "nacelle_starboard_paint_plain",
+     "nacelle_starboard_paint_nacelle",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_glow_grille_2",
+     "pylon_port_2_paint_plain",
+     "nacelle_port_2_paint_plain",
+     "nacelle_port_2_paint_nacelle",
+     "nacelle_port_2_glow_grille",
+     "nacelle_port_2_glow_grille_2",
+     "pylon_starboard_2_paint_plain",
+     "nacelle_starboard_2_paint_plain",
+     "nacelle_starboard_2_paint_nacelle",
+     "nacelle_starboard_2_glow_grille",
+     "nacelle_starboard_2_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_strobe_port_2",
+     "light_strobe_starboard_2",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_turret_2",
+     "mount_turret_3",
+     "mount_turret_4",
+     "mount_turret_5",
+     "mount_turret_6",
+     "mount_turret_7",
+     "mount_turret_8",
+     "mount_turret_9",
+     "mount_turret_10",
+     "mount_turret_11",
+     "mount_turret_12",
+     "mount_turret_13",
+     "mount_turret_14",
+     "mount_turret_15",
+     "mount_turret_16",
+     "mount_turret_17",
+     "mount_turret_18",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9",
+     "light_flood_10",
+     "light_flood_11",
+     "light_flood_12",
+     "light_flood_13"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull_5",
+    "concord/glow_core",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_2a2f36",
+    "concord/metal_8a9098",
+    "concord/glow_phaser",
+    "concord/paint_plain",
+    "concord/paint_accent",
+    "concord/glow_phaser_2",
+    "concord/radiator",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/registry_7",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       12.5,
+       -29.1
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 35.2,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       19.5,
+       23
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       33.6,
+       5.5,
+       -54
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 13.95,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -33.6,
+       5.5,
+       -54
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 13.95,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       27,
+       -14,
+       -48
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 11.7,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -27,
+       -14,
+       -48
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 11.7,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       18.4,
+       8.1,
+       -25
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 31.2,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -18.4,
+       8.1,
+       -25
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 31.2,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       18.4,
+       8.1,
+       5
+      ],
+      "d": [
+       -0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 31.2,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       -18.4,
+       8.1,
+       5
+      ],
+      "d": [
+       0.287348,
+       -0.957826,
+       0
+      ],
+      "range_m": 31.2,
+      "strength": 0.85
+     },
+     {
+      "p": [
+       7.028571,
+       9.457143,
+       -86
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 64.4,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -7.028571,
+       9.457143,
+       -86
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 64.4,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -10.8,
+       0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 82.8,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -10.8,
+       -0.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 82.8,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "pelican",
+   "label": "Pelican carrier",
+   "cls": "Pelican-class carrier",
+   "name": "CNS PELICAN",
+   "registry": "CC-040",
+   "livery": "concord",
+   "file": "concord/pelican.glb",
+   "length_m": 137.199997,
+   "beam_m": 59.380001,
+   "height_m": 19.88,
+   "triangles": 4390,
+   "draw_calls": 36,
+   "origin_offset_m": [
+    0,
+    0.06,
+    2.400002
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "secondary",
+     "command",
+     "pylon_port",
+     "nacelle_port",
+     "pylon_starboard",
+     "nacelle_starboard"
+    ],
+    "meshes": [
+     "hull_paint_hull_6",
+     "hull_deflector_glow_dish",
+     "hull_weapons_glow_torpedo",
+     "hull_weapons_metal_8a9098",
+     "hull_weapons_metal_2a2f36",
+     "hull_weapons_glow_phaser",
+     "hull_radiator",
+     "hull_registry_8",
+     "secondary_paint_hull_7",
+     "secondary_hull_glow_hangar",
+     "secondary_hull_metal_2a2f36",
+     "secondary_hull_glow_hangar_2",
+     "secondary_hull_bay_number",
+     "secondary_hull_bay_number_2",
+     "secondary_hull_bay_number_3",
+     "secondary_hull_bay_number_4",
+     "secondary_hull_bay_number_5",
+     "secondary_hull_bay_number_6",
+     "secondary_glow_core",
+     "secondary_drive_bell",
+     "secondary_drive_metal_8a9098",
+     "secondary_drive_metal_3a4049",
+     "secondary_drive_metal_2a2f36",
+     "secondary_drive_glow_impulse",
+     "command_paint_plain",
+     "command_glow_bridge",
+     "pylon_port_paint_plain",
+     "nacelle_port_paint_plain",
+     "nacelle_port_paint_nacelle",
+     "nacelle_port_glow_grille",
+     "nacelle_port_glow_grille_2",
+     "pylon_starboard_paint_plain",
+     "nacelle_starboard_paint_plain",
+     "nacelle_starboard_paint_nacelle",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_glow_grille_2"
+    ],
+    "empties": [
+     "light_beacon_dorsal",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_beacon_ventral",
+     "light_nav_aft",
+     "mount_turret_0",
+     "mount_turret_1",
+     "mount_turret_2",
+     "mount_turret_3",
+     "mount_turret_4",
+     "mount_torpedo_0",
+     "engine_0",
+     "engine_1",
+     "deflector",
+     "reactor",
+     "bridge",
+     "bay_0",
+     "bay_1",
+     "bay_2",
+     "bay_3",
+     "bay_4",
+     "bay_5",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9",
+     "light_flood_10",
+     "light_flood_11",
+     "light_flood_12",
+     "light_flood_13"
+    ]
+   },
+   "materials": [
+    "concord/paint_hull_6",
+    "concord/glow_dish",
+    "concord/glow_torpedo",
+    "concord/metal_8a9098",
+    "concord/metal_2a2f36",
+    "concord/glow_phaser",
+    "concord/radiator",
+    "concord/registry_8",
+    "concord/paint_hull_7",
+    "concord/glow_hangar",
+    "concord/glow_hangar_2",
+    "concord/bay_number",
+    "concord/bay_number_2",
+    "concord/bay_number_3",
+    "concord/bay_number_4",
+    "concord/bay_number_5",
+    "concord/bay_number_6",
+    "concord/glow_core",
+    "concord/bell",
+    "concord/metal_3a4049",
+    "concord/glow_impulse",
+    "concord/paint_plain",
+    "concord/glow_bridge",
+    "concord/paint_nacelle",
+    "concord/glow_grille",
+    "concord/glow_grille_2"
+   ],
+   "shader_params": {
+    "pools": [
+     {
+      "p": [
+       0,
+       8.82,
+       18.991375
+      ],
+      "d": [
+       0,
+       -0.304776,
+       0.952424
+      ],
+      "range_m": 29.116,
+      "strength": 1.1
+     },
+     {
+      "p": [
+       0,
+       11.5,
+       55
+      ],
+      "d": [
+       0,
+       -0.371391,
+       0.928477
+      ],
+      "range_m": 18,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       30,
+       3.9,
+       -38
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 11.25,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -30,
+       3.9,
+       -38
+      ],
+      "d": [
+       0,
+       -1,
+       0
+      ],
+      "range_m": 11.25,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       6.366548,
+       7.599138,
+       6
+      ],
+      "d": [
+       0.707107,
+       -0.707107,
+       0
+      ],
+      "range_m": 9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -6.366548,
+       7.599138,
+       6
+      ],
+      "d": [
+       -0.707107,
+       -0.707107,
+       0
+      ],
+      "range_m": 9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       6.366548,
+       7.599138,
+       -10
+      ],
+      "d": [
+       0.707107,
+       -0.707107,
+       0
+      ],
+      "range_m": 9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -6.366548,
+       7.599138,
+       -10
+      ],
+      "d": [
+       -0.707107,
+       -0.707107,
+       0
+      ],
+      "range_m": 9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       6.366548,
+       7.599138,
+       -26
+      ],
+      "d": [
+       0.707107,
+       -0.707107,
+       0
+      ],
+      "range_m": 9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       -6.366548,
+       7.599138,
+       -26
+      ],
+      "d": [
+       -0.707107,
+       -0.707107,
+       0
+      ],
+      "range_m": 9,
+      "strength": 0.9
+     },
+     {
+      "p": [
+       7.38,
+       8.32,
+       26
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 44.8,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       -7.38,
+       8.32,
+       26
+      ],
+      "d": [
+       0,
+       -0.26963,
+       0.962964
+      ],
+      "range_m": 44.8,
+      "strength": 0.7
+     },
+     {
+      "p": [
+       0,
+       -7.3,
+       43.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       0.957826
+      ],
+      "range_m": 57.6,
+      "strength": 0.8
+     },
+     {
+      "p": [
+       0,
+       -7.3,
+       42.5
+      ],
+      "d": [
+       0,
+       0.287348,
+       -0.957826
+      ],
+      "range_m": 57.6,
+      "strength": 0.8
+     }
+    ],
+    "note": "pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)"
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 2
+    }
+   },
+   "source": {
+    "page": "docs/mockups/concord-hull-concepts.html",
+    "version": 20,
+    "sha256": "ba104b49fd044adeca1414574a17bef0a02f98ca8d50c607497b9f5b4a0557b6"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "corvette",
+   "label": "Krai corvette",
+   "role": "the smallest: three decks, twin bow guns, one nacelle pair",
+   "plan": "data/ships/krai/corvette_plan.json",
+   "file": "krai/corvette.glb",
+   "length_m": 57.648941,
+   "beam_m": 23.259769,
+   "height_m": 15.329885,
+   "triangles": 5694,
+   "draw_calls": 33,
+   "origin_offset_m": [
+    0,
+    1.129885,
+    -3.739182
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "nacelle_port",
+     "nacelle_starboard"
+    ],
+    "meshes": [
+     "hull_hull",
+     "hull_weapons_blade_steel",
+     "hull_weapons_glow_ffd88a",
+     "hull_weapons_metal_14171d",
+     "hull_weapons_glow_eef8ff",
+     "hull_drive_bell",
+     "hull_drive_metal_7b4013",
+     "hull_drive_metal_2c3442",
+     "hull_drive_metal_14171d",
+     "hull_drive_glow_throat",
+     "hull_window",
+     "hull_metal_7b4013",
+     "hull_marking",
+     "hull_glow_ff3b2a",
+     "hull_glow_1fd65a",
+     "hull_glow_ffffff",
+     "hull_glow_ff2a1a",
+     "nacelle_port_hull",
+     "nacelle_port_glow_grille",
+     "nacelle_port_metal_14171d",
+     "nacelle_port_metal_7b4013",
+     "nacelle_port_bell",
+     "nacelle_port_metal_2c3442",
+     "nacelle_port_glow_throat",
+     "nacelle_port_glow_ffc070",
+     "nacelle_starboard_hull",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_metal_14171d",
+     "nacelle_starboard_metal_7b4013",
+     "nacelle_starboard_bell",
+     "nacelle_starboard_metal_2c3442",
+     "nacelle_starboard_glow_throat",
+     "nacelle_starboard_glow_ffc070"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_beacon_dorsal",
+     "light_beacon_ventral",
+     "mount_gun_0",
+     "mount_gun_1",
+     "engine_0",
+     "engine_1",
+     "engine_2",
+     "engine_3",
+     "engine_4",
+     "engine_5",
+     "engine_6",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9"
+    ]
+   },
+   "materials": [
+    "krai/hull",
+    "krai/blade_steel",
+    "krai/glow_ffd88a",
+    "krai/metal_14171d",
+    "krai/glow_eef8ff",
+    "krai/bell",
+    "krai/metal_7b4013",
+    "krai/metal_2c3442",
+    "krai/glow_throat",
+    "krai/window",
+    "krai/marking",
+    "krai/glow_ff3b2a",
+    "krai/glow_1fd65a",
+    "krai/glow_ffffff",
+    "krai/glow_ff2a1a",
+    "krai/glow_grille",
+    "krai/glow_ffc070"
+   ],
+   "shader_params": {
+    "uLiv": [
+     -22,
+     25,
+     -4.55,
+     7.35
+    ],
+    "uLiv2": [
+     7.05,
+     3,
+     1,
+     0
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 11
+    }
+   },
+   "source": {
+    "page": "docs/mockups/krai-ship-concepts.html",
+    "version": 21,
+    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "frigate",
+   "label": "Krai frigate",
+   "role": "four decks, a spinal cannon along the keel",
+   "plan": "data/ships/krai/frigate_plan.json",
+   "file": "krai/frigate.glb",
+   "length_m": 110.368492,
+   "beam_m": 31.799999,
+   "height_m": 22.599999,
+   "triangles": 6996,
+   "draw_calls": 33,
+   "origin_offset_m": [
+    0,
+    0.9,
+    -12.964245
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "nacelle_port",
+     "nacelle_starboard"
+    ],
+    "meshes": [
+     "hull_hull",
+     "hull_weapons_blade_steel",
+     "hull_weapons_glow_ffd88a",
+     "hull_weapons_metal_14171d",
+     "hull_weapons_glow_eef8ff",
+     "hull_drive_bell",
+     "hull_drive_metal_7b4013",
+     "hull_drive_metal_2c3442",
+     "hull_drive_metal_14171d",
+     "hull_drive_glow_throat",
+     "hull_window",
+     "hull_metal_7b4013",
+     "hull_marking",
+     "hull_glow_ff3b2a",
+     "hull_glow_1fd65a",
+     "hull_glow_ffffff",
+     "hull_glow_ff2a1a",
+     "nacelle_port_hull",
+     "nacelle_port_glow_grille",
+     "nacelle_port_metal_14171d",
+     "nacelle_port_metal_7b4013",
+     "nacelle_port_bell",
+     "nacelle_port_metal_2c3442",
+     "nacelle_port_glow_throat",
+     "nacelle_port_glow_ffc070",
+     "nacelle_starboard_hull",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_metal_14171d",
+     "nacelle_starboard_metal_7b4013",
+     "nacelle_starboard_bell",
+     "nacelle_starboard_metal_2c3442",
+     "nacelle_starboard_glow_throat",
+     "nacelle_starboard_glow_ffc070"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_beacon_dorsal",
+     "light_beacon_ventral",
+     "mount_gun_0",
+     "engine_0",
+     "engine_1",
+     "engine_2",
+     "engine_3",
+     "engine_4",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9",
+     "light_flood_10",
+     "light_flood_11",
+     "light_flood_12",
+     "light_flood_13",
+     "light_flood_14",
+     "light_flood_15"
+    ]
+   },
+   "materials": [
+    "krai/hull",
+    "krai/blade_steel",
+    "krai/glow_ffd88a",
+    "krai/metal_14171d",
+    "krai/glow_eef8ff",
+    "krai/bell",
+    "krai/metal_7b4013",
+    "krai/metal_2c3442",
+    "krai/glow_throat",
+    "krai/window",
+    "krai/marking",
+    "krai/glow_ff3b2a",
+    "krai/glow_1fd65a",
+    "krai/glow_ffffff",
+    "krai/glow_ff2a1a",
+    "krai/glow_grille",
+    "krai/glow_ffc070"
+   ],
+   "shader_params": {
+    "uLiv": [
+     -37,
+     50,
+     -6.3,
+     9.1
+    ],
+    "uLiv2": [
+     7.55,
+     7,
+     1,
+     0
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 9
+    }
+   },
+   "source": {
+    "page": "docs/mockups/krai-ship-concepts.html",
+    "version": 21,
+    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "cruiser",
+   "label": "Krai cruiser",
+   "role": "five decks, two spinal cannons, one nacelle pair",
+   "plan": "data/ships/krai/cruiser_plan.json",
+   "file": "krai/cruiser.glb",
+   "length_m": 133.559998,
+   "beam_m": 43.151726,
+   "height_m": 29.775862,
+   "triangles": 11474,
+   "draw_calls": 32,
+   "origin_offset_m": [
+    0,
+    0.675862,
+    4.779999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "nacelle_port",
+     "nacelle_starboard"
+    ],
+    "meshes": [
+     "hull_hull",
+     "hull_weapons_blade_steel",
+     "hull_weapons_metal_14171d",
+     "hull_weapons_glow_eef8ff",
+     "hull_drive_bell",
+     "hull_drive_metal_7b4013",
+     "hull_drive_metal_2c3442",
+     "hull_drive_metal_14171d",
+     "hull_drive_glow_throat",
+     "hull_window",
+     "hull_metal_7b4013",
+     "hull_marking",
+     "hull_glow_ff3b2a",
+     "hull_glow_1fd65a",
+     "hull_glow_ffffff",
+     "hull_glow_ff2a1a",
+     "nacelle_port_hull",
+     "nacelle_port_glow_grille",
+     "nacelle_port_metal_14171d",
+     "nacelle_port_metal_7b4013",
+     "nacelle_port_bell",
+     "nacelle_port_metal_2c3442",
+     "nacelle_port_glow_throat",
+     "nacelle_port_glow_ffc070",
+     "nacelle_starboard_hull",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_metal_14171d",
+     "nacelle_starboard_metal_7b4013",
+     "nacelle_starboard_bell",
+     "nacelle_starboard_metal_2c3442",
+     "nacelle_starboard_glow_throat",
+     "nacelle_starboard_glow_ffc070"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_beacon_dorsal",
+     "light_beacon_ventral",
+     "mount_gun_0",
+     "mount_gun_1",
+     "engine_0",
+     "engine_1",
+     "engine_2",
+     "engine_3",
+     "engine_4",
+     "engine_5",
+     "engine_6",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9",
+     "light_flood_10",
+     "light_flood_11",
+     "light_flood_12",
+     "light_flood_13",
+     "light_flood_14",
+     "light_flood_15"
+    ]
+   },
+   "materials": [
+    "krai/hull",
+    "krai/blade_steel",
+    "krai/metal_14171d",
+    "krai/glow_eef8ff",
+    "krai/bell",
+    "krai/metal_7b4013",
+    "krai/metal_2c3442",
+    "krai/glow_throat",
+    "krai/window",
+    "krai/marking",
+    "krai/glow_ff3b2a",
+    "krai/glow_1fd65a",
+    "krai/glow_ffffff",
+    "krai/glow_ff2a1a",
+    "krai/glow_grille",
+    "krai/glow_ffc070"
+   ],
+   "shader_params": {
+    "uLiv": [
+     -64,
+     62,
+     -8.05,
+     10.85
+    ],
+    "uLiv2": [
+     9.55,
+     12,
+     1.158621,
+     0
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 11
+    }
+   },
+   "source": {
+    "page": "docs/mockups/krai-ship-concepts.html",
+    "version": 21,
+    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "dreadnought",
+   "label": "Krai dreadnought",
+   "role": "seven decks, three spinal cannons, broadside batteries, a raised command block (B1)",
+   "plan": "data/ships/krai/dreadnought_plan.json",
+   "file": "krai/dreadnought.glb",
+   "length_m": 226.415947,
+   "beam_m": 66.18515,
+   "height_m": 53.396416,
+   "triangles": 16738,
+   "draw_calls": 48,
+   "origin_offset_m": [
+    0,
+    1.4,
+    6.45203
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "nacelle_port",
+     "nacelle_starboard",
+     "nacelle_port_2",
+     "nacelle_starboard_2"
+    ],
+    "meshes": [
+     "hull_hull",
+     "hull_weapons_blade_steel",
+     "hull_weapons_metal_14171d",
+     "hull_weapons_glow_eef8ff",
+     "hull_drive_bell",
+     "hull_drive_metal_7b4013",
+     "hull_drive_metal_2c3442",
+     "hull_drive_metal_14171d",
+     "hull_drive_glow_throat",
+     "hull_window",
+     "hull_metal_7b4013",
+     "hull_marking",
+     "hull_glow_ff3b2a",
+     "hull_glow_1fd65a",
+     "hull_glow_ffffff",
+     "hull_glow_ff2a1a",
+     "nacelle_port_hull",
+     "nacelle_port_glow_grille",
+     "nacelle_port_metal_14171d",
+     "nacelle_port_metal_7b4013",
+     "nacelle_port_bell",
+     "nacelle_port_metal_2c3442",
+     "nacelle_port_glow_throat",
+     "nacelle_port_glow_ffc070",
+     "nacelle_starboard_hull",
+     "nacelle_starboard_glow_grille",
+     "nacelle_starboard_metal_14171d",
+     "nacelle_starboard_metal_7b4013",
+     "nacelle_starboard_bell",
+     "nacelle_starboard_metal_2c3442",
+     "nacelle_starboard_glow_throat",
+     "nacelle_starboard_glow_ffc070",
+     "nacelle_port_2_hull",
+     "nacelle_port_2_glow_grille",
+     "nacelle_port_2_metal_14171d",
+     "nacelle_port_2_metal_7b4013",
+     "nacelle_port_2_bell",
+     "nacelle_port_2_metal_2c3442",
+     "nacelle_port_2_glow_throat",
+     "nacelle_port_2_glow_ffc070",
+     "nacelle_starboard_2_hull",
+     "nacelle_starboard_2_glow_grille",
+     "nacelle_starboard_2_metal_14171d",
+     "nacelle_starboard_2_metal_7b4013",
+     "nacelle_starboard_2_bell",
+     "nacelle_starboard_2_metal_2c3442",
+     "nacelle_starboard_2_glow_throat",
+     "nacelle_starboard_2_glow_ffc070"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_strobe_port",
+     "light_strobe_starboard",
+     "light_strobe_port_2",
+     "light_strobe_starboard_2",
+     "light_beacon_dorsal",
+     "light_beacon_ventral",
+     "mount_gun_0",
+     "mount_gun_1",
+     "mount_gun_2",
+     "engine_0",
+     "engine_1",
+     "engine_2",
+     "engine_3",
+     "engine_4",
+     "engine_5",
+     "engine_6",
+     "engine_7",
+     "engine_8",
+     "reactor",
+     "bridge",
+     "light_flood_0",
+     "light_flood_1",
+     "light_flood_2",
+     "light_flood_3",
+     "light_flood_4",
+     "light_flood_5",
+     "light_flood_6",
+     "light_flood_7",
+     "light_flood_8",
+     "light_flood_9",
+     "light_flood_10",
+     "light_flood_11",
+     "light_flood_12",
+     "light_flood_13",
+     "light_flood_14",
+     "light_flood_15",
+     "light_flood_16",
+     "light_flood_17",
+     "light_flood_18",
+     "light_flood_19"
+    ]
+   },
+   "materials": [
+    "krai/hull",
+    "krai/blade_steel",
+    "krai/metal_14171d",
+    "krai/glow_eef8ff",
+    "krai/bell",
+    "krai/metal_7b4013",
+    "krai/metal_2c3442",
+    "krai/glow_throat",
+    "krai/window",
+    "krai/marking",
+    "krai/glow_ff3b2a",
+    "krai/glow_1fd65a",
+    "krai/glow_ffffff",
+    "krai/glow_ff2a1a",
+    "krai/glow_grille",
+    "krai/glow_ffc070"
+   ],
+   "shader_params": {
+    "uLiv": [
+     -107,
+     104,
+     -11.55,
+     14.35
+    ],
+    "uLiv2": [
+     13.05,
+     19,
+     1.94023,
+     0
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "additive_glow": 17
+    }
+   },
+   "source": {
+    "page": "docs/mockups/krai-ship-concepts.html",
+    "version": 21,
+    "sha256": "780ac7b20bfe229239596a6a84f398e2bddd68db14d5c46174397b4043ea0d23"
+   }
+  }
+ ]
+}
