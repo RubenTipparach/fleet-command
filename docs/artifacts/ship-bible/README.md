@@ -1,6 +1,7 @@
 # Ship Design Bible (guide)
 
-- Link: https://claude.ai/artifact/QxFV2qGabbN2chE3zd8km7
+- Link (the cloud session's account, published 2026-11-04 with the Culture, not anatomy rules): https://claude.ai/artifact/4nhxxoGusHfkXX63Xt25bm
+- Link (the main account, not reachable from cloud sessions): https://claude.ai/artifact/QxFV2qGabbN2chE3zd8km7
 - Source: `docs/design/ship-bible.html` (one copy, not duplicated here), its captures `docs/design/ship-bible/*.jpg`
   (published as supporting files; rendered from mockup 6's named shots, cropped to the 3D view and saved at 960 px),
   the Petrel plan `data/ships/concord/petrel_plan.json` and the Concord line `docs/mockups/lib/concord-line.js`, both
@@ -17,3 +18,4 @@
   notes are added to the cultural guides of designing spaceships"): chapter 13, Culture, not anatomy (rules C1-C5), added
   in `docs/design/ship-bible.html`, with a checklist line and a row in Other factions (now chapter 14). **To republish from
   the desktop session**: the cloud session's account cannot open this artifact.
+- 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/4nhxxoGusHfkXX63Xt25bm, version id `1793801590-d689`. Not on the tracker (the tracker stays on the main account).

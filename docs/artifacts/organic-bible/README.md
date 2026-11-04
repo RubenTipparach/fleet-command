@@ -1,6 +1,7 @@
 # Organic Panel Bible
 
-- Link: https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD (slug `c56cabee-e37f-4451-a6dd-bf03afee1b3e`).
+- Link (the cloud session's account, published 2026-11-04 with the Culture, not anatomy rules): https://claude.ai/artifact/2PceqpsqnjZeLorkvxYGdU
+- Link (the main account, not reachable from cloud sessions): https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD
 - Shows: the design system for grown, organic console panels (owner, 2026-10-31, of the Vhorr Brood's version 23: "Nah
   that's bad lol. Let's make a new design system for organic", and "The brood is overly simple. It's just metal with
   ameobas on top. Completely missing the zerg aesthetic"). One organism holding crisp instruments; five materials
@@ -29,3 +30,4 @@ Edit `docs/design/organic-bible.html`, recompile, then republish `index.html` to
 - Version 3, 2026-10-31, published from the desktop session (cloud session request, commit d3c949c): rule 4 is no nine-slice and no fixed sizes (parametric sculptors), the any-size sheet, the Brood's build; version id `1793486570-f931`.
 - 2026-10-31, published from the desktop session (cloud session request, commit 855f45f): Rule 0 (owner: "before updating anything I want screenshots on this chat until I approve of the design"): screenshots first, approval before any update; version id `1793488749-729f`.
 - 2026-11-01, desktop session for the cloud session (commit c43b05a): version 4, the survey W verdict accepted, rule 5 takes in the backing, the rule 4 sheet shows the approved styles; version id `1793519060-697c`.
+- 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/2PceqpsqnjZeLorkvxYGdU, version id `1793801609-3075`. Not on the tracker (the tracker stays on the main account).

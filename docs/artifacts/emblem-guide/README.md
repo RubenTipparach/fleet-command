@@ -1,6 +1,7 @@
 # Emblem Design Guide (guide)
 
-- Link: https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V
+- Link (the cloud session's account, published 2026-11-04 with the Culture, not anatomy rules): https://claude.ai/artifact/AewTrvPYf4gyF1kP1gxkDk
+- Link (the main account, not reachable from cloud sessions): https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V
 - Shows: how faction emblems are designed and the owner's notes on them (newest first, in their words); the method
   (ideology, then a flat SVG sketch with every choice labelled, then the owner's pick, then 3D); what the reference
   badges teach; what the STARFLEET Visual Standards Manual 2026 teaches (cited by printed page); sixteen rules compiled
@@ -67,3 +68,4 @@
 - 2026-11-04, version 19 (`1793781463-2f51`): B-E26 tightened (about 6 units of field above and below the ship, was 17 to 20); B-E15 marked as one of the owner's candidates.
 - 2026-11-04, version 20 (`1793786521-e569`): B-E26 rejected (owner: "Beacon sucks"); B-E27, the smooth keyhole ("Keyhole but smoother"), measured: one closed outline, parts 5.3 units apart.
 - 2026-11-04, version 21 (`1793787092-93c4`): B-E27 accepted and made B's main sketch ("Yea ok. I'll accept that"); its parts exported to `assets/emblems/concord/b-e27.parts.json`.
+- 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/AewTrvPYf4gyF1kP1gxkDk, version id `1793801612-4a21`. Not on the tracker (the tracker stays on the main account).
