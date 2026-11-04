@@ -1,0 +1,9 @@
+{
+ "_doc": "Missile grades (openspec/changes/missiles/design.md; owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\"). Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Read by the weapons range mockup (docs/mockups/special-weapons.html); the game does not read it yet. Every number is a placeholder until the combat change. pd_hits: point defence hits it takes to stop one.",
+ "grades": [
+  { "id": "red", "name": "Grade I", "color": "#ff3b30", "speed_m_s": 900, "damage": 8, "pd_hits": 1, "fuel_s": 20 },
+  { "id": "orange", "name": "Grade II", "color": "#ff8c1a", "speed_m_s": 1100, "damage": 11, "pd_hits": 1, "fuel_s": 20 },
+  { "id": "blue", "name": "Grade III", "color": "#2f7bff", "speed_m_s": 1300, "damage": 14, "pd_hits": 2, "fuel_s": 20 },
+  { "id": "green", "name": "Grade IV", "color": "#2fdc5a", "speed_m_s": 1500, "damage": 18, "pd_hits": 2, "fuel_s": 20 }
+ ]
+}

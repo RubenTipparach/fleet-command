@@ -51,7 +51,7 @@
   .info summary::-webkit-details-marker { display: none; }
   .info h2 { margin: 0; font-size: 22px; letter-spacing: .05em; text-transform: uppercase; }
   .chip { display: inline-block; font: 12px/1 var(--mono); padding: 4px 6px; border-radius: 2px; border: 1px solid currentColor; letter-spacing: .04em; white-space: nowrap; }
-  .chip.concord { color: var(--concord); } .chip.krai { color: var(--krai); } .chip.warn { color: var(--forge); } .chip.stun { color: var(--lilac); }
+  .chip.std { color: var(--ink); } .chip.concord { color: var(--concord); } .chip.krai { color: var(--krai); } .chip.warn { color: var(--forge); } .chip.stun { color: var(--lilac); }
   .what { margin: 8px 0 10px; font-size: 15px; }
   table { width: 100%; border-collapse: collapse; font: 13px/1.3 var(--mono); }
   td { padding: 3px 0; vertical-align: top; } td:first-child { color: var(--dim); width: 38%; padding-right: 8px; }
@@ -88,7 +88,9 @@
     #ui { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; }
     .title { grid-column: 1; grid-row: 1; } .info { grid-column: 1; grid-row: 3; max-height: 34vh; } .controls { grid-column: 1; grid-row: 4; }
   }
-  @media (max-height: 460px) { .meter { display: none; } .title p { font-size: 12px; } }
+  @media (max-height: 460px) { .meter { display: none; } .title p { font-size: 12px; } .title p.long { display: none; } }
+  /* on a phone the controls are one row that scrolls sideways, so the ships keep the screen */
+  @media (max-height: 460px), (max-width: 520px) { .controls { flex-wrap: nowrap; overflow-x: auto; } .group { flex: none; flex-wrap: nowrap; } }
   @media (prefers-reduced-motion: reduce) { button { transition: none; } }
 </style>
 </head>
@@ -96,9 +98,9 @@
 <div class="stage" id="stage"></div>
 <div id="ui">
   <div class="card title">
-    <h1>Special weapons range</h1>
+    <h1>Weapons range</h1>
     <p><a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a></p>
-    <p class="long">Mockup 16, OpenSpec changes <code>special-weapons</code> and <code>weapon-fx</code>. The approved ships at true size; the range between them is shortened to under a kilometre so both fit. Drag to orbit, scroll or pinch to zoom.</p>
+    <p class="long">Mockup 16, OpenSpec changes <code>special-weapons</code> and <code>weapon-fx</code>. The approved ships at true size, side on; the range between them is shortened to 420 m so both fit. Drag to orbit, scroll or pinch to zoom; the next run puts the view back.</p>
   </div>
   <details class="card info" id="info" open>
     <summary><h2 id="w-name">Chorus lance</h2><span class="chip concord" id="w-fac">Concord</span></summary>
@@ -119,10 +121,10 @@
     </div>
   </details>
   <div class="controls">
+    <div class="group" role="group" aria-label="Standard weapons"><span>Standard</span><button id="b-lance">Lance</button><button id="b-disruptor" class="krai">Disruptor</button><button id="b-torpedo">Pulse torpedo</button><button id="b-missile">Missile</button></div>
     <div class="group" role="group" aria-label="Concord weapons"><span>Concord</span><button id="b-chorus">Chorus lance</button><button id="b-quell">Quell torpedo</button></div>
     <div class="group" role="group" aria-label="Krai weapons"><span>Krai</span><button id="b-forge" class="krai">Forge driver</button><button id="b-charge" class="krai">Blood charge</button></div>
     <div class="group" role="group" aria-label="Range"><button id="b-again">Fire again</button><button id="b-pause">Pause</button><button id="b-slow">Slow</button><button id="b-shields">Shields up</button></div>
-    <div class="group" role="group" aria-label="Views"><button id="v-wide">Wide</button><button id="v-muzzle">Shooter</button><button id="v-impact">Target</button></div>
     <div class="group" role="group" aria-label="Quality"><button id="q-high">High</button><button id="q-phone">Phone</button><span class="meter" id="meter"></span></div>
   </div>
 </div>
@@ -135,6 +137,15 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <!-- INLINE data/battle/special_weapons.json -->
 <script type="application/json" data-src="data/battle/special_weapons.json">{"_doc":"Each faction's special weapons (openspec/changes/special-weapons/design.md). Every number is a placeholder until the combat change, written so a captain can feel the weapon's idea. The weapons range mockup (docs/mockups/special-weapons.html) inlines this file and computes every readout from it; the game does not read it yet (the change's tasks). Units in every key: km, s, E (energy points), m/s, x (a multiplier), deg. faction: who fields it. fits: where it goes on a ship: a class id list for a fixed mount, 'torpedo' for a load any torpedo tube can take (SFC3 printed pages 28-29: loadout by hardpoint), 'spinal' for the Krai spinal cannon mount, 'helm' for a manoeuvre ordered from the helm. aim: as weapons.json (precise or arc).","chorus":{"name":"Chorus lance","faction":"concord","kind":"beam","aim":"precise","fits":["ca"],"fires_from":"deflector","range_km":14,"charge_s":14,"cost_e":8,"burn_s":2.5,"dmg_per_s":7,"join":{"range_km":8,"per_joiner_x":0.35,"max_joiners":3,"spends":"lance"},"color":"#3fa9f0","strand_color":"#b7a6f2"},"quell":{"name":"Quell torpedo","faction":"concord","kind":"torpedo","aim":"arc","fits":"torpedo","range_km":12,"charge_s":16,"cost_e":6,"speed_m_s":900,"dmg":0,"shield_left_x":0,"stun_s":8,"reach_deg":90,"point_defence_hits":true,"color":"#b7a6f2"},"forge":{"name":"Forge driver","faction":"krai","kind":"slug","aim":"precise","fits":"spinal","range_km":10,"charge_s":10,"cost_e":7,"speed_m_s":4500,"dmg":18,"pierce_x":0.4,"burn":{"dmg_per_s":1,"s":6},"overload":{"range_km":5,"charge_s":14,"cost_e":11,"dmg":30,"pierce_x":0.6},"color":"#ff8a2a"},"charge":{"name":"Blood charge","faction":"krai","kind":"ram","aim":"arc","fits":"helm","surge_s":5,"speed_x":2.2,"accel_x":3,"turn_x":0.5,"bow_shield_x":1.5,"cost_e":8,"cooldown_s":30,"dmg_per_100_m_s":5,"mass_ref_m":230,"pierce_x":1,"recoil_x":0.3,"color":"#d02a20"}}</script>
+<!-- /INLINE -->
+<!-- INLINE data/battle/weapons.json -->
+<script type="application/json" data-src="data/battle/weapons.json">{"_doc":"Weapon types (openspec/changes/battle-console-engine/design.md section 3). Ported from the battle console mockup's WEAPONS table (docs/mockups/battle-console.html, v65); every number a placeholder until the combat change. kind: beam hits at once; torpedo, bolt and missile fly at speed_m_s; pd shoots down shots in flight.","lance":{"name":"Lance","kind":"beam","range_km":12,"charge_s":3.5,"cost_e":2,"damage":7,"color":"#6fc4ff"},"torpedo":{"name":"Pulse torpedo","kind":"torpedo","range_km":18,"charge_s":8,"cost_e":5,"damage":14,"speed_m_s":2600,"color":"#8f2bff","overload":{"range_km":7,"charge_s":12,"cost_e":9,"damage":26}},"disruptor":{"name":"Disruptor","kind":"bolt","range_km":14,"charge_s":4.5,"cost_e":3,"damage":8,"speed_m_s":3200,"color":"#ff6a4a","overload":{"range_km":6,"charge_s":6.5,"cost_e":5,"damage":14}},"missile":{"name":"Missile","kind":"missile","range_km":22,"charge_s":10,"cost_e":2,"damage":11,"speed_m_s":1100,"color":"#ff8c1a"},"pd":{"name":"Point defence","kind":"pd","range_km":2,"charge_s":1.5,"cost_e":0.5,"damage":0,"color":"#ffc23d"}}</script>
+<!-- /INLINE -->
+<!-- INLINE data/battle/missiles.json -->
+<script type="application/json" data-src="data/battle/missiles.json">{"_doc":"Missile grades (openspec/changes/missiles/design.md; owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\"). Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Read by the weapons range mockup (docs/mockups/special-weapons.html); the game does not read it yet. Every number is a placeholder until the combat change. pd_hits: point defence hits it takes to stop one.","grades":[{"id":"red","name":"Grade I","color":"#ff3b30","speed_m_s":900,"damage":8,"pd_hits":1,"fuel_s":20},{"id":"orange","name":"Grade II","color":"#ff8c1a","speed_m_s":1100,"damage":11,"pd_hits":1,"fuel_s":20},{"id":"blue","name":"Grade III","color":"#2f7bff","speed_m_s":1300,"damage":14,"pd_hits":2,"fuel_s":20},{"id":"green","name":"Grade IV","color":"#2fdc5a","speed_m_s":1500,"damage":18,"pd_hits":2,"fuel_s":20}]}</script>
+<!-- /INLINE -->
+<!-- INLINE data/battle/tuning.json -->
+<script type="application/json" data-src="data/battle/tuning.json">{"_doc":"Battle tuning (openspec/changes/battle-console-engine/design.md section 3), from the battle console mockup (v65). Every number is a placeholder until the combat change.","step_s":0.0333333333333,"speed_per_box_m_s":30,"reverse_max_m_s":60,"demo_tough_x":4,"hit_chance_near":0.92,"hit_chance_falloff":0.5,"hit_chance_min":0.05,"hit_chance_max":0.95,"hit_speed_penalty_per_300_m_s":0.12,"ecm_step":0.03,"shield_regen_per_e_s":0.6,"battery_charge_per_spare_e_s":0.5,"start_capacitor_frac":0.6,"start_battery_frac":0.5,"repair_per_e_s":0.004,"mount_repair_per_e_s":0.003,"ai_think_s":0.5,"ai_fire_min_chance":0.35,"ai_range_close_km":4,"ai_range_mid_km":8,"ai_range_long_km":13,"shot_hit_radius_m":40,"beam_life_s":0.25,"pd_intercept_chance":0.45,"status_disabled_below":0.35,"subsystem_hit_chance":0.35,"subsystem_damage_per_hp":0.02,"mount_hit_chance":0.15,"mount_damage":0.6,"het_rate_deg_s":240,"het_cost_e":3,"het_chance_drop":0.2,"het_recover_per_s":0.01,"het_erratic_penalty":0.17,"het_breakdown_s":15,"het_breakdown_engines":0.3,"estop_decel_x":5,"estop_hold_s":4,"erratic_hit":0.75,"erratic_turn":0.8,"orbit_km":4,"hold_min_km":1,"hold_max_km":12}</script>
 <!-- /INLINE -->
 <!-- INLINE data/battle/classes.json -->
 <script type="application/json" data-src="data/battle/classes.json">{"_doc":"Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors.","ca":{"name":"Heavy cruiser","code":"CA","shape":"saucer","model":"assets/ships/concord/albatross.glb","length_m":320,"speed_max_m_s":300,"accel_m_s2":45,"turn_deg_s":26,"reactor_e":22,"capacitor_e":14,"battery_e":10,"mounts":[{"weapon":"lance","x":-0.42,"y":0.62,"arc_centre_deg":-50,"arc_width_deg":200},{"weapon":"lance","x":0.42,"y":0.62,"arc_centre_deg":50,"arc_width_deg":200},{"weapon":"lance","x":-0.62,"y":0.05,"arc_centre_deg":-90,"arc_width_deg":180},{"weapon":"lance","x":0.62,"y":0.05,"arc_centre_deg":90,"arc_width_deg":180},{"weapon":"torpedo","x":-0.14,"y":0.86,"arc_centre_deg":0,"arc_width_deg":90},{"weapon":"torpedo","x":0.14,"y":0.86,"arc_centre_deg":0,"arc_width_deg":90},{"weapon":"lance","x":0,"y":-0.72,"arc_centre_deg":180,"arc_width_deg":160},{"weapon":"pd","x":-0.32,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360},{"weapon":"pd","x":0.32,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[42,32,28,26,28,32],"power_e":{"weapons":6,"shields":5,"engines":6,"sensors":1,"tractor":0,"transport":0,"repair":1},"hull_hp":140},"dd":{"name":"Destroyer","code":"DD","shape":"saucer","model":"assets/ships/concord/petrel_level.glb","length_m":230,"speed_max_m_s":330,"accel_m_s2":55,"turn_deg_s":34,"reactor_e":16,"capacitor_e":10,"battery_e":6,"mounts":[{"weapon":"lance","x":-0.4,"y":0.6,"arc_centre_deg":-40,"arc_width_deg":180},{"weapon":"lance","x":0.4,"y":0.6,"arc_centre_deg":40,"arc_width_deg":180},{"weapon":"torpedo","x":0,"y":0.85,"arc_centre_deg":0,"arc_width_deg":90},{"weapon":"lance","x":0,"y":-0.7,"arc_centre_deg":180,"arc_width_deg":160},{"weapon":"pd","x":0,"y":-0.2,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[32,24,22,20,22,24],"power_e":{"weapons":5,"shields":3,"engines":5,"sensors":1,"tractor":0,"transport":0,"repair":0},"hull_hp":95},"ff":{"name":"Frigate","code":"FF","shape":"saucer","model":"assets/ships/concord/swift_level.glb","length_m":160,"speed_max_m_s":360,"accel_m_s2":70,"turn_deg_s":44,"reactor_e":12,"capacitor_e":8,"battery_e":4,"mounts":[{"weapon":"lance","x":-0.35,"y":0.6,"arc_centre_deg":-30,"arc_width_deg":160},{"weapon":"lance","x":0.35,"y":0.6,"arc_centre_deg":30,"arc_width_deg":160},{"weapon":"pd","x":0,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[24,18,16,14,16,18],"power_e":{"weapons":4,"shields":3,"engines":3,"sensors":0,"tractor":0,"transport":0,"repair":0},"hull_hp":60},"kdd":{"name":"Kethran destroyer","code":"KDD","shape":"wedge","length_m":250,"speed_max_m_s":300,"accel_m_s2":50,"turn_deg_s":30,"reactor_e":18,"capacitor_e":12,"battery_e":6,"mounts":[{"weapon":"disruptor","x":-0.3,"y":0.7,"arc_centre_deg":0,"arc_width_deg":120},{"weapon":"disruptor","x":0.3,"y":0.7,"arc_centre_deg":0,"arc_width_deg":120},{"weapon":"disruptor","x":0,"y":0.9,"arc_centre_deg":0,"arc_width_deg":60},{"weapon":"lance","x":0,"y":-0.6,"arc_centre_deg":180,"arc_width_deg":180}],"shields_hp":[36,26,22,18,22,26],"power_e":{"weapons":7,"shields":3,"engines":5,"sensors":1,"tractor":0,"transport":0,"repair":0},"hull_hp":105},"kff":{"name":"Kethran frigate","code":"KFF","shape":"wedge","length_m":170,"speed_max_m_s":350,"accel_m_s2":65,"turn_deg_s":40,"reactor_e":12,"capacitor_e":8,"battery_e":4,"mounts":[{"weapon":"disruptor","x":-0.25,"y":0.7,"arc_centre_deg":0,"arc_width_deg":120},{"weapon":"disruptor","x":0.25,"y":0.7,"arc_centre_deg":0,"arc_width_deg":120},{"weapon":"pd","x":0,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[26,18,16,12,16,18],"power_e":{"weapons":4,"shields":3,"engines":3,"sensors":0,"tractor":0,"transport":0,"repair":0},"hull_hp":65},"vcr":{"name":"Vos corsair","code":"VCR","shape":"claw","length_m":200,"speed_max_m_s":340,"accel_m_s2":60,"turn_deg_s":38,"reactor_e":14,"capacitor_e":10,"battery_e":6,"mounts":[{"weapon":"missile","x":-0.3,"y":0.5,"arc_centre_deg":0,"arc_width_deg":180},{"weapon":"missile","x":0.3,"y":0.5,"arc_centre_deg":0,"arc_width_deg":180},{"weapon":"lance","x":0,"y":0.8,"arc_centre_deg":0,"arc_width_deg":120}],"shields_hp":[28,22,18,16,18,22],"power_e":{"weapons":5,"shields":2,"engines":5,"sensors":0,"tractor":0,"transport":0,"repair":0},"hull_hp":80},"krai_cv":{"name":"Krai corvette","code":"CV","shape":"wedge","model":"assets/ships/krai/corvette.glb","length_m":140,"speed_max_m_s":380,"accel_m_s2":75,"turn_deg_s":46,"reactor_e":11,"capacitor_e":8,"battery_e":4,"mounts":[{"weapon":"disruptor","x":-0.12,"y":0.85,"arc_centre_deg":0,"arc_width_deg":70},{"weapon":"disruptor","x":0.12,"y":0.85,"arc_centre_deg":0,"arc_width_deg":70},{"weapon":"pd","x":0,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[26,18,15,12,15,18],"power_e":{"weapons":4,"shields":2,"engines":4,"sensors":0,"tractor":0,"transport":0,"repair":0},"hull_hp":55},"krai_ff":{"name":"Krai frigate","code":"FF","shape":"wedge","model":"assets/ships/krai/frigate.glb","length_m":230,"speed_max_m_s":340,"accel_m_s2":60,"turn_deg_s":36,"reactor_e":15,"capacitor_e":10,"battery_e":6,"mounts":[{"weapon":"disruptor","x":0,"y":0.9,"arc_centre_deg":0,"arc_width_deg":40},{"weapon":"disruptor","x":-0.3,"y":0.4,"arc_centre_deg":-60,"arc_width_deg":120},{"weapon":"disruptor","x":0.3,"y":0.4,"arc_centre_deg":60,"arc_width_deg":120},{"weapon":"pd","x":0,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[34,24,20,16,20,24],"power_e":{"weapons":6,"shields":3,"engines":5,"sensors":1,"tractor":0,"transport":0,"repair":0},"hull_hp":85},"krai_ca":{"name":"Krai cruiser","code":"CA","shape":"wedge","model":"assets/ships/krai/cruiser.glb","length_m":340,"speed_max_m_s":300,"accel_m_s2":45,"turn_deg_s":26,"reactor_e":21,"capacitor_e":14,"battery_e":9,"mounts":[{"weapon":"disruptor","x":-0.08,"y":0.9,"arc_centre_deg":0,"arc_width_deg":40},{"weapon":"disruptor","x":0.08,"y":0.9,"arc_centre_deg":0,"arc_width_deg":40},{"weapon":"torpedo","x":0,"y":0.8,"arc_centre_deg":0,"arc_width_deg":90},{"weapon":"disruptor","x":-0.35,"y":0.3,"arc_centre_deg":-70,"arc_width_deg":140},{"weapon":"disruptor","x":0.35,"y":0.3,"arc_centre_deg":70,"arc_width_deg":140},{"weapon":"lance","x":0,"y":-0.7,"arc_centre_deg":180,"arc_width_deg":140},{"weapon":"pd","x":-0.3,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360},{"weapon":"pd","x":0.3,"y":-0.3,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[44,32,26,22,26,32],"power_e":{"weapons":8,"shields":5,"engines":6,"sensors":1,"tractor":0,"transport":0,"repair":1},"hull_hp":135},"krai_dn":{"name":"Krai dreadnought","code":"DN","shape":"wedge","model":"assets/ships/krai/dreadnought.glb","length_m":570,"speed_max_m_s":250,"accel_m_s2":32,"turn_deg_s":18,"reactor_e":26,"capacitor_e":18,"battery_e":12,"mounts":[{"weapon":"disruptor","x":-0.1,"y":0.9,"arc_centre_deg":0,"arc_width_deg":40},{"weapon":"disruptor","x":0,"y":0.92,"arc_centre_deg":0,"arc_width_deg":40},{"weapon":"disruptor","x":0.1,"y":0.9,"arc_centre_deg":0,"arc_width_deg":40},{"weapon":"torpedo","x":0,"y":0.8,"arc_centre_deg":0,"arc_width_deg":90},{"weapon":"lance","x":-0.4,"y":0.35,"arc_centre_deg":-90,"arc_width_deg":150},{"weapon":"lance","x":-0.4,"y":0.0,"arc_centre_deg":-90,"arc_width_deg":150},{"weapon":"lance","x":0.4,"y":0.35,"arc_centre_deg":90,"arc_width_deg":150},{"weapon":"lance","x":0.4,"y":0.0,"arc_centre_deg":90,"arc_width_deg":150},{"weapon":"pd","x":-0.3,"y":-0.35,"arc_centre_deg":0,"arc_width_deg":360},{"weapon":"pd","x":0.3,"y":-0.35,"arc_centre_deg":0,"arc_width_deg":360},{"weapon":"pd","x":0,"y":-0.6,"arc_centre_deg":0,"arc_width_deg":360}],"shields_hp":[56,42,34,28,34,42],"power_e":{"weapons":10,"shields":6,"engines":7,"sensors":1,"tractor":0,"transport":0,"repair":2},"hull_hp":220}}</script>
@@ -699,14 +710,14 @@ return { clearFX, stepFX, emitterStep, CELL_GLSL, DAMAGE_GLSL, Pool, glowPool, s
 //   GLSL                         noise (wn, wfbm), voronoi (wvor), blackbody(t), the shield lattices (hexEdge, triEdge)
 //   pipeline(opts)               HDR render, bloom, heat haze, ACES and sRGB in one final pass: .setSize(w, h, pr), .render()
 //   ribbon(o)                    a beam: a camera-facing strip between two points with a core, a glow, flowing noise and
-//                                helical strands (o.look 'chorus' | 'join' | 'barrel'); .set(a, b), .u (uniforms)
+//                                helical strands (o.look 'chorus' | 'join' | 'lance' | 'bolt' | 'barrel'); .set(a, b), .u (uniforms)
 //   flare(o)                     a muzzle or impact flare (o.look 'lens' | 'tri' | 'soft'), camera-facing
 //   shield(ship, o)              the ship's shield bubble in six facings (o.pattern 'hex' | 'tri'); .hit(dirLocal, t),
 //                                .facing[k] (0..1 held), .breakAt[k], .raycast(worldFrom, worldDir)
 //   scars(ship)                  patches the ship's materials: molten craters, beam burns, gouges and the quell lattice,
 //                                in ship space; .add(kind, pLocal, r, dirLocal, dur), .lattice(pLocal, t, stunS)
-//   orb(o), spike(o)             the quell torpedo and the forge slug
-//   trail(o)                     a fading ribbon behind a moving point
+//   orb(o), spike(o), dart(o)    the quell torpedo, the forge slug and a missile
+//   trail(o)                     a fading ribbon behind a moving point; beads(o) a discrete trail of glowing beads
 //   plume(r, len, o)             an exhaust with shock diamonds; bowShock(r, len, o) the shell before a charging bow
 //   ring(o)                      an impact shockwave ring, any orientation; haze(o) a heat haze sprite
 //   motes(o)                     light gathering toward a point (the chorus charge)
@@ -741,6 +752,8 @@ float hexEdge(vec2 p){ const vec2 s = vec2(1.0, 1.7320508);
   vec4 h = vec4(p - hc.xy*s, p - (hc.zw + 0.5)*s);
   vec2 q = dot(h.xy, h.xy) < dot(h.zw, h.zw) ? h.xy : h.zw; q = abs(q);
   return 0.5 - max(dot(q, s*0.5), q.x); }
+// A weapon's hot core: its own colour at full strength, never white (owner, 2026-11-04: "please avoid the color white for weapons").
+vec3 hotOf(vec3 c){ return c/max(max(c.r, c.g), max(c.b, 1e-3)); }
 float triEdge(vec2 p){ vec2 q = vec2(p.x - p.y*0.5773503, p.y*1.1547005);
   float a = abs(fract(q.x) - 0.5), b = abs(fract(q.y) - 0.5), c = abs(fract(q.x + q.y) - 0.5);
   return 0.5 - max(max(a, b), c); }
@@ -761,6 +774,8 @@ function pipeline(opt = {}) {
   bloom.highPassUniforms.smoothWidth.value = 0.6;
   // bloom's own targets in half floats too: in bytes its wide blur steps into visible rings round a bright flash
   for (const rt of [bloom.renderTargetBright, ...bloom.renderTargetsHorizontal, ...bloom.renderTargetsVertical]) rt.texture.type = THREE.HalfFloatType;
+  // and what goes into it clamped: a flare far brighter than 1 overran the blur's kernel and drew a square round itself
+  const hp = bloom.materialHighPassFilter; hp.fragmentShader = hp.fragmentShader.replace('gl_FragColor = mix( outputColor, texel, alpha );', 'gl_FragColor = mix( outputColor, vec4( min( texel.rgb, vec3( 2.5 ) ), texel.a ), alpha );'); hp.needsUpdate = true;
   const fin = new THREE.ShaderMaterial({ depthTest: false, depthWrite: false,
     uniforms: { tScene: { value: null }, tHaze: { value: null }, uHaze: { value: 1 }, uExposure: { value: opt.exposure ?? 1.0 }, uTime: T, uAb: { value: 1 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
@@ -810,12 +825,15 @@ function pipeline(opt = {}) {
 //   chorus  a white core in Sky glow, flowing light, Lilac strands winding round it (two, plus one for every ship that
 //           joins), a bright node where the joining beams meet it; a front that races out at uReach
 //   join    a thinner beam, one strand, that ends in the chorus's node
+//   lance   the standard lance (every faction's beam): a white core in the weapon's colour, flowing light, pulses racing
+//           to the target
+//   bolt    a disruptor bolt: a short strip from its tail to its head, narrow and dim behind, a hot core at the head
 //   barrel  the forge driver's spine heating: blackbody along its length, brightest at the muzzle
 const RIBBON_FS = {
   chorus: `
     float core = exp(-x*x*90.0), glow = exp(-abs(x)*4.2)*0.55 + exp(-abs(x)*1.4)*0.12;
     float flow = wfbm(vec3(s*0.035 - uTime*9.0, x*3.0, uTime*0.7));
-    vec3 c = uColor*(glow*(1.3 + 1.4*flow)) + mix(uColor, vec3(1.0), 0.35)*core*(1.5 + 1.0*flow);
+    vec3 c = uColor*(glow*(1.3 + 1.4*flow)) + hotOf(uColor)*core*(1.5 + 1.0*flow);
     float strands = 0.0;
     for (int i = 0; i < 5; i++) { if (float(i) >= uStrands) break;
       float ph = float(i)*6.2831853/uStrands; float w = s*0.055 - uTime*11.0 + ph;
@@ -823,14 +841,25 @@ const RIBBON_FS = {
       strands += exp(-pow((x - xs)/0.07, 2.0))*front; }
     c += uColor2*strands*2.4*(0.7 + 0.6*flow);
     float node = exp(-pow((s - uFocus)/(uWidth*0.9), 2.0))*step(0.5, uStrands - 2.0);
-    c += (uColor2*0.6 + vec3(0.9))*node*(1.2 + 0.8*sin(uTime*40.0))*exp(-abs(x)*2.0);
+    c += (uColor2*0.6 + hotOf(uColor)*0.9)*node*(1.2 + 0.8*sin(uTime*40.0))*exp(-abs(x)*2.0);
     float rings = pow(0.5 + 0.5*sin(s*0.22 - uTime*60.0), 24.0)*exp(-abs(x)*3.0)*0.35;
     c += uColor*rings;`,
   join: `
     float core = exp(-x*x*70.0), glow = exp(-abs(x)*3.5)*0.6;
     float flow = wfbm(vec3(s*0.05 - uTime*10.0, x*3.0, 3.1));
-    vec3 c = uColor*glow*(0.6 + 0.7*flow) + vec3(1.0)*core*2.6;
+    vec3 c = uColor*glow*(0.6 + 0.7*flow) + hotOf(uColor)*core*2.0;
     float w = s*0.07 - uTime*12.0; c += uColor2*exp(-pow((x - 0.45*sin(w))/0.09, 2.0))*(0.6 + 0.4*cos(w))*1.2;`,
+  lance: `
+    float core = exp(-x*x*80.0), glow = exp(-abs(x)*4.0)*0.6 + exp(-abs(x)*1.6)*0.12;
+    float flow = wfbm(vec3(s*0.06 - uTime*14.0, x*3.0, 1.7));
+    float pulse = pow(0.5 + 0.5*sin(s*0.12 - uTime*70.0), 6.0);
+    vec3 c = uColor*glow*(1.1 + 1.3*flow + 0.8*pulse) + hotOf(uColor)*core*(1.6 + 0.8*flow);`,
+  bolt: `
+    float k = clamp(s/max(uLen, 1.0), 0.0, 1.0); // 0 at the tail, 1 at the head
+    float w = mix(0.15, 1.0, k*k); float xx = x/max(w, 0.05);
+    float core = exp(-xx*xx*18.0)*pow(k, 3.0), glow = exp(-abs(xx)*3.0)*k*k;
+    float flick = 0.8 + 0.4*wn(vec3(s*0.3 - uTime*40.0, x*2.0, 4.0));
+    vec3 c = uColor*glow*1.6*flick + hotOf(uColor)*core*2.6;`,
   barrel: `
     float k = s/max(uLen, 1.0); float heat = uIntensity*(0.35 + 0.65*k)*(0.75 + 0.5*wfbm(vec3(s*0.4, x*2.0, uTime*3.0)));
     vec3 c = blackbody(heat*1.1)*(exp(-x*x*6.0)*0.8 + exp(-abs(x)*2.0)*0.25);`,
@@ -863,21 +892,40 @@ function ribbon(opt = {}) {
 // -----------------------------------------------------------------------------------------------------------------
 // A flare: a camera-facing quad at a point. lens: a round core, a long thin horizontal streak and a faint halo ring
 // (the Concord's clean light); tri: a three-pointed star of blades, turned to uRot (the Krai's triangle, never a
-// round lens); soft: a plain glow.
+// round lens); soft: a plain glow; six: the pulse torpedo's six-armed star, after a telescope's diffraction spikes (owner,
+// 2026-11-04: "pulse torpedo needs that iconic 6 armed flare"): three thin beaded spikes crossing at 60 degrees, a warm and
+// a cyan fringe beside each, a faint strut pair across, and fine radial streaks in a hot core; the arms turn slowly and
+// each flickers in length (owner: "the flare arms should be moving around");
+// ball: a missile's plume, a big boiling ball of its drive colour round a white heart.
 function flare(opt = {}) {
   const look = opt.look || 'soft';
   const u = { uColor: { value: new THREE.Color(opt.color ?? 0xffffff) }, uI: { value: 0 }, uSize: { value: opt.size ?? 20 }, uRot: { value: opt.rot ?? 0 }, uTime: T };
   const body = {
     lens: `float core = exp(-r*r*40.0)*3.0 + exp(-r*6.0)*0.6; float streak = exp(-abs(p.y)*90.0)*exp(-abs(p.x)*2.6)*1.4;
-           float halo = exp(-pow((r - 0.62)/0.03, 2.0))*0.12; vec3 c = uColor*(core*0.6 + streak + halo) + vec3(1.0)*exp(-r*r*120.0)*4.0;`,
+           float halo = exp(-pow((r - 0.62)/0.03, 2.0))*0.12; vec3 c = uColor*(core*0.6 + streak + halo) + hotOf(uColor)*exp(-r*r*120.0)*2.5;`,
     tri: `float a = atan(p.y, p.x) + uRot; float blade = pow(max(0.0, cos(a*3.0)), 40.0);
           float rays = blade*exp(-r*3.2)*2.2 + pow(max(0.0, cos(a*3.0 + 3.1415927)), 60.0)*exp(-r*7.0)*0.6;
-          float core = exp(-r*r*50.0)*3.0; vec3 c = uColor*(rays + exp(-r*5.0)*0.5) + vec3(1.0, 0.9, 0.7)*core;`,
+          float core = exp(-r*r*50.0)*3.0; vec3 c = uColor*(rays + exp(-r*5.0)*0.5) + hotOf(uColor)*core;`,
     soft: `vec3 c = uColor*(exp(-r*r*12.0)*1.5 + exp(-r*4.0)*0.4);`,
+    ball: `float body = exp(-r*r*7.0); float heart = exp(-r*r*55.0); float rim = exp(-pow((r - 0.42)/0.12, 2.0))*0.25;
+           float boil = 0.85 + 0.3*wn(vec3(p*5.0, uTime*9.0));
+           vec3 c = uColor*(body*1.6*boil + rim + exp(-r*3.0)*0.35) + hotOf(uColor)*heart*2.0;`,
+    six: `float core = exp(-r*r*70.0)*3.2 + exp(-r*10.0)*0.9; float spikes = 0.0; vec3 fringe = vec3(0.0);
+          float spin = uRot + uTime*0.9 + 0.15*sin(uTime*2.3);
+          for (int i = 0; i < 3; i++) { float a = 1.5707963 + float(i)*1.0471976 + spin; vec2 d = vec2(cos(a), sin(a));
+            float along = abs(dot(p, d)), perp = abs(p.x*d.y - p.y*d.x);
+            float beads = 0.7 + 0.3*cos(along*110.0 - uTime*9.0);
+            float reach = 2.0/(0.75 + 0.35*sin(uTime*7.0 + float(i)*2.1) + 0.15*sin(uTime*17.0 + float(i)));
+            spikes += exp(-perp*perp*12000.0 - perp*70.0)*exp(-along*reach)*beads;
+            fringe += vec3(1.0, 0.62, 0.32)*exp(-perp*30.0)*exp(-along*3.4)*0.22 + vec3(0.3, 0.85, 0.8)*exp(-pow((perp - 0.012)*260.0, 2.0))*exp(-along*2.6)*0.25; }
+          vec2 ps = vec2(cos(spin)*p.x + sin(spin)*p.y, -sin(spin)*p.x + cos(spin)*p.y); float strut = exp(-abs(ps.y)*420.0)*exp(-abs(ps.x)*5.0)*0.45;
+          float fine = pow(wn(vec3(atan(p.y, p.x)*36.0, 1.0, uTime*1.5)), 5.0)*exp(-r*6.5)*2.2;
+          vec3 c = uColor*(spikes*2.4 + strut + exp(-r*4.0)*0.6) + fringe*0.6 + hotOf(uColor)*(core + fine);`,
   }[look];
   const m = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, depthTest: opt.depthTest ?? true, blending: THREE.AdditiveBlending,
     vertexShader: 'uniform float uSize; varying vec2 vP; void main(){ vP = position.xy; vec4 mv = modelViewMatrix*vec4(0.0, 0.0, 0.0, 1.0); mv.xy += position.xy*uSize; gl_Position = projectionMatrix*mv; }',
     fragmentShader: `uniform vec3 uColor; uniform float uI; uniform float uRot; uniform float uTime; varying vec2 vP;
+      ${GLSL}
       void main(){ vec2 p = vP; float r = length(p); ${body} gl_FragColor = vec4(c*uI*(1.0 - smoothstep(0.8, 1.0, r)), 1.0); }` }));
   m.frustumCulled = false; m.renderOrder = 6; scene.add(m);
   return { mesh: m, u, remove() { scene.remove(m); } };
@@ -887,16 +935,17 @@ function flare(opt = {}) {
 // A ship's shield bubble: an ellipsoid round the hull in six facings of 60 degrees each, facing 0 at the bow and counted
 // to starboard, as the battle rules count them (the battle console mockup's facingFrom). The Concord's is a hex lattice
 // in Sky, the Krai's a triangle lattice in forge orange (each skin's own geometry: the Krai's triangles, the Concord's
-// calm cells). At rest it is all but invisible: a faint rim. A hit lights a hot spot, a ring that runs out over the
+// calm cells). At rest it cannot be seen at all. A hit lights a hot spot, a ring that runs out over the
 // surface, and the lattice round it; a facing that holds less glows dimmer, and one that fails flashes, its cells
 // breaking up by noise, then it is gone until it is raised again. Up to eight hits at once.
 function shield(ship, opt = {}) {
   const box = new THREE.Box3().setFromObject(ship.model), size = box.getSize(V3()), centre = box.getCenter(V3());
   ship.root.worldToLocal(centre);
-  const rad = V3(size.x * 0.5 + opt.pad, size.y * 0.5 + opt.pad * 1.2, size.z * 0.5 + opt.pad);
+  // the bubble half again as large as the hull's box with its pad (owner, 2026-11-04: "I would make the shield bubble 50% larger")
+  const rad = V3(size.x * 0.5 + opt.pad, size.y * 0.5 + opt.pad * 1.2, size.z * 0.5 + opt.pad).multiplyScalar(opt.scale ?? 1.5);
   const u = { uImp: { value: Array.from({ length: 8 }, () => new THREE.Vector4(0, 0, 1, -99)) }, uFace: { value: [1, 1, 1, 1, 1, 1] },
     uBreak: { value: [-99, -99, -99, -99, -99, -99] }, uColor: { value: new THREE.Color(opt.color ?? 0x3fa9f0) }, uTri: { value: opt.pattern === 'tri' ? 1 : 0 },
-    uTime: T, uRest: { value: opt.rest ?? 0.05 } };
+    uTime: T, uRest: { value: opt.rest ?? 0 } };
   const mat = new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: 'varying vec3 vN; varying vec3 vW; varying vec3 vWN; void main(){ vN = normalize(position); vec4 w = modelMatrix*vec4(position, 1.0); vW = w.xyz; vWN = normalize(mat3(modelMatrix)*normal); gl_Position = projectionMatrix*viewMatrix*w; }',
     fragmentShader: `uniform vec4 uImp[8]; uniform float uFace[6]; uniform float uBreak[6]; uniform vec3 uColor; uniform float uTri; uniform float uTime; uniform float uRest;
@@ -922,8 +971,9 @@ function shield(ship, opt = {}) {
         float bAge = uTime - brk, dissolve = 1.0;
         if (bAge >= 0.0 && bAge < 1.2) { float nz = wn(vec3(g*1.7, 3.0)); dissolve = step(bAge*0.9, nz); on = 1.0; lit += (1.0 - bAge)*2.0*line; }
         else if (bAge >= 1.2 && face < 0.01) { on = 0.0; }
-        float a = (uRest*fres*(0.4 + face) + line*(lit*0.9 + 0.04*face*fres) + ring*(0.6 + line) + hot)*on*dissolve;
-        vec3 c = uColor*a + vec3(1.0)*hot*0.5;
+        // nothing at rest (owner, 2026-11-04: "shield bubble invisible unless hit"): only a hit lights it
+        float a = (line*lit*0.9*(0.5 + 0.5*face) + ring*(0.6 + line) + hot)*on*dissolve + uRest*fres*face*on;
+        vec3 c = uColor*a + hotOf(uColor)*hot*0.5;
         gl_FragColor = vec4(c, 1.0); }` });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 72, 36), mat);
   mesh.scale.copy(rad); mesh.position.copy(centre); mesh.rotation.y = PI; // the bubble's +z to the ship's bow (-z)
@@ -1039,11 +1089,26 @@ function orb(opt = {}) {
   const g = new THREE.Group(), r = opt.r ?? 3;
   const shell = (rad, col, op) => new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(rad, 1)), new THREE.LineBasicMaterial({ color: new THREE.Color(col).multiplyScalar(op), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
   const a = shell(r, 0xb7a6f2, 2.0), b = shell(r * 0.62, 0x3fa9f0, 2.4); g.add(a, b);
-  const core = flare({ look: 'soft', color: 0xd8e8ff, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = 1.2;
+  const core = flare({ look: 'soft', color: 0xb7a6f2, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = 1.2;
   const lens = flare({ look: 'lens', color: 0xb7a6f2, size: r * 7 }); scene.remove(lens.mesh); g.add(lens.mesh); lens.u.uI.value = 0.5;
   scene.add(g);
   const O = { group: g, step(dt) { a.rotation.x += dt * 2.1; a.rotation.y += dt * 1.3; b.rotation.y -= dt * 2.8; b.rotation.z += dt * 1.7; }, remove() { scene.remove(g); unlive(O); } };
   live.push(O); return O;
+}
+// A missile: a slim four-finned dart in gunmetal, its nose to -z, and its drive flame behind it in its grade's colour
+// (owner, 2026-11-04: "missiles depending on grade will have: red, orange, blue, green", red the lowest); the page gives it a
+// trail. Every faction fits missiles ("all factions can have missiles too"), so the body is plain.
+function dart(opt = {}) {
+  const g = new THREE.Group(), len = opt.len ?? 6, r = len * 0.06, mat = new THREE.MeshStandardMaterial({ color: 0x5a5f66, metalness: 0.7, roughness: 0.4 });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len * 0.8, 8), mat); body.rotation.x = PI / 2; g.add(body);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(r, len * 0.2, 8), mat); nose.rotation.x = -PI / 2; nose.position.z = -len * 0.5; g.add(nose);
+  for (let i = 0; i < 4; i++) { const f = new THREE.Mesh(new THREE.BoxGeometry(r * 0.25, r * 3.2, len * 0.18), mat); f.position.z = len * 0.33; f.rotation.z = i * PI / 2; f.translateY(r * 1.4); g.add(f); }
+  // the plume: a big round ball of drive light just behind the body, several times its width, with a hot white heart
+  // (owner, 2026-11-04, with a picture of the reference game's missiles: "they got that 3d missile model at the front end, a
+  // big ball plume, and a tail"); the page draws the tail
+  const ball = flare({ look: 'ball', color: opt.color ?? 0xffd27a, size: len * 1.6 }); scene.remove(ball.mesh); ball.mesh.position.z = len * 0.75; g.add(ball.mesh);
+  scene.add(g);
+  return { group: g, flame: ball, remove() { scene.remove(g); } };
 }
 // The forge slug: a three-sided spike (the Krai's triangle) of white-hot metal, its surface flowing like a pour, the
 // colour by blackbody from white at the point to orange at its tail.
@@ -1056,7 +1121,7 @@ function spike(opt = {}) {
       void main(){ float k = clamp(0.5 - vP.z/uLen, 0.0, 1.0); // 1 at the point
         float flow = wfbm(vec3(vP.xy*1.3, vP.z*0.4 + uTime*40.0));
         float fres = pow(1.0 - abs(dot(normalize(vN), normalize(-vW))), 2.0);
-        float t = 0.55 + 0.55*k + 0.35*flow - 0.2*fres;
+        float t = min(0.92, 0.5 + 0.4*k + 0.3*flow - 0.2*fres); // yellow at the hottest, never white
         gl_FragColor = vec4(blackbody(t), 1.0); }` }));
   m.renderOrder = 3; scene.add(m);
   return { mesh: m, remove() { scene.remove(m); } };
@@ -1080,7 +1145,7 @@ function trail(opt = {}) {
     vertexShader: 'attribute float aAge; attribute float aSide; varying float vAge; varying float vSide; void main(){ vAge = aAge; vSide = aSide; gl_Position = projectionMatrix*modelViewMatrix*vec4(position, 1.0); }',
     fragmentShader: `uniform vec3 uColor; uniform vec3 uColor2; uniform float uTime; varying float vAge; varying float vSide; ${GLSL}
       void main(){ float a = clamp(1.0 - vAge, 0.0, 1.0); float x = vSide; float body = exp(-x*x*3.0);
-        vec3 c = ${heat ? 'blackbody(a*a*1.1)*(0.6 + 0.6*wn(vec3(vAge*30.0 - uTime*20.0, x*2.0, 1.0)))' : 'mix(uColor2, uColor, a)*(0.4 + 1.2*a*a) + vec3(1.0)*exp(-x*x*20.0)*a*a*a*1.5'};
+        vec3 c = ${heat ? 'blackbody(a*a*1.1)*(0.6 + 0.6*wn(vec3(vAge*30.0 - uTime*20.0, x*2.0, 1.0)))' : 'mix(uColor2, uColor, a)*(0.4 + 1.2*a*a) + hotOf(uColor)*exp(-x*x*20.0)*a*a*a*1.5'};
         gl_FragColor = vec4(c*body*a, 1.0); }` }));
   m.frustumCulled = false; m.renderOrder = 4; scene.add(m);
   const tmp = V3(), dirv = V3(), toCam = V3(), sv = V3();
@@ -1105,6 +1170,33 @@ function trail(opt = {}) {
 }
 
 // -----------------------------------------------------------------------------------------------------------------
+// Beads: a discrete trail (owner, 2026-11-04: "torpedo should have like discrete trail instead of a long streak", then "close
+// the gap on those trails, they are too far appart, large spheres to small spehres"): a glowing bead dropped every every_s
+// seconds where the shot is, packed close, each staying where it was dropped and shrinking from large at the head to small
+// at the tail as it fades out over its life ("torpedo tail should fade out"), with a little twinkle; one draw call. Sizes are in world units, drawn at their true size at any zoom.
+function beads(opt = {}) {
+  const N = opt.n ?? 64, pos = new Float32Array(N * 3), born = new Float32Array(N).fill(-99);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('aBorn', new THREE.BufferAttribute(born, 1).setUsage(THREE.DynamicDrawUsage));
+  const u = { uTime: T, uLife: { value: opt.life ?? 0.9 }, uSize: { value: opt.size ?? 3 }, uScale: { value: 500 }, uColor: { value: new THREE.Color(opt.color ?? 0x9fd0ff) } };
+  const m = new THREE.Points(g, new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: 'attribute float aBorn; uniform float uTime; uniform float uLife; uniform float uSize; uniform float uScale; varying float vK; varying float vSeed; void main(){ float k = clamp((uTime - aBorn)/uLife, 0.0, 1.0); vK = k; vSeed = aBorn*37.0; vec4 mv = modelViewMatrix*vec4(position, 1.0); gl_PointSize = k >= 1.0 ? 0.0 : clamp(uSize*(1.0 - 0.88*k)*uScale/max(-mv.z, 0.01), 0.0, 64.0); gl_Position = projectionMatrix*mv; }',
+    fragmentShader: GLSL + 'uniform vec3 uColor; uniform float uTime; varying float vK; varying float vSeed; void main(){ vec2 q = gl_PointCoord - 0.5; float r = length(q); float dot_ = exp(-r*r*40.0); float heart = exp(-r*r*260.0); float cross_ = (exp(-abs(q.x)*60.0) + exp(-abs(q.y)*60.0))*exp(-r*9.0)*0.5; float tw = 0.8 + 0.2*sin(uTime*30.0 + vSeed); float a = pow(1.0 - vK, 3.0)*tw; gl_FragColor = vec4((uColor*(dot_*2.2 + cross_*1.4) + hotOf(uColor)*heart*2.2)*a, 1.0); }' }));
+  m.frustumCulled = false; m.renderOrder = 4; scene.add(m);
+  let next = 0, last = -99; const size = new THREE.Vector2(), lastP = new THREE.Vector3(), q = new THREE.Vector3();
+  // beads between two pushes are filled in along the line between them, so the spacing is every_s of flight however far
+  // the shot moved in one step
+  const R = { mesh: m, u, every_s: opt.every_s ?? 0.03,
+    push(p, now) {
+      if (last < -50) { last = now; lastP.copy(p); return; }
+      const n = Math.min(N, Math.floor((now - last) / R.every_s)); if (n < 1) return;
+      for (let i = 1; i <= n; i++) { const k = i * R.every_s / (now - last); q.copy(lastP).lerp(p, k); pos.set([q.x, q.y, q.z], next * 3); born[next] = last + i * R.every_s; next = (next + 1) % N; }
+      last += n * R.every_s; lastP.copy(q); g.attributes.position.needsUpdate = true; g.attributes.aBorn.needsUpdate = true; },
+    step() { o.renderer.getDrawingBufferSize(size); u.uScale.value = size.y / (2 * Math.tan(o.camera.fov * PI / 360)); },
+    remove() { scene.remove(m); unlive(R); } };
+  live.push(R); return R;
+}
+
+// -----------------------------------------------------------------------------------------------------------------
 // An exhaust plume from a drive bell: an open cone, brightest at its throat, with standing shock diamonds (the bright
 // knots a hard-pushed exhaust shows) that tighten as uPush rises, faked volumetric by its facing to the camera. The
 // Krai's is forge orange to white; it lengthens with uPush (0 cruising, 1 a full blood charge).
@@ -1118,7 +1210,7 @@ function plume(r, len, opt = {}) {
         float nodes = 3.0 + 4.0*uPush; float dia = pow(0.5 + 0.5*cos(vK*nodes*6.2831853), 10.0)*(1.0 - vK)*uPush;
         float flick = 0.8 + 0.4*wn(vec3(vK*12.0 - uTime*30.0, uTime*5.0, 0.0));
         float body = (1.0 - vK)*(1.0 - vK)*face;
-        vec3 c = uColor*body*(0.8 + 2.4*uPush)*flick + vec3(1.0, 0.85, 0.6)*dia*face*3.0 + vec3(1.0)*pow(1.0 - vK, 12.0)*face*2.0*(0.4 + uPush);
+        vec3 c = uColor*body*(0.8 + 2.4*uPush)*flick + vec3(1.0, 0.85, 0.6)*dia*face*3.0 + hotOf(uColor)*pow(1.0 - vK, 12.0)*face*2.0*(0.4 + uPush);
         gl_FragColor = vec4(c*(0.25 + 0.75*min(1.0, uPush + 0.3)), 1.0); }` }));
   m.renderOrder = 3; m.frustumCulled = false;
   return { mesh: m, u };
@@ -1136,7 +1228,7 @@ function bowShock(r, len, opt = {}) {
         float rim = pow(1.0 - abs(dot(vN, vV)), 2.5);
         float stream = wfbm(vec3(atan(vP.x, vP.y)*3.0, vP.z*0.12 + uTime*14.0, uTime*2.0));
         float a = uI*(rim*(0.5 + 1.2*stream) + pow(nose, 6.0)*1.8)*(0.3 + 0.7*nose);
-        vec3 c = mix(vec3(0.82, 0.10, 0.06), vec3(1.0, 0.55, 0.16), nose)*a*2.2 + vec3(1.0, 0.9, 0.75)*pow(nose, 14.0)*uI*3.0;
+        vec3 c = mix(vec3(0.82, 0.10, 0.06), vec3(1.0, 0.55, 0.16), nose)*a*2.2 + vec3(1.0, 0.55, 0.16)*pow(nose, 14.0)*uI*3.0;
         gl_FragColor = vec4(c, 1.0); }` }));
   m.renderOrder = 4; m.frustumCulled = false;
   return { mesh: m, u };
@@ -1199,7 +1291,7 @@ function motes(opt) {
 function step(dt) { T.value += dt; for (const e of live.slice()) e.step(dt); }
 function clear() { for (const e of live.slice()) { if (e.remove) e.remove(); else { if (e.mesh) scene.remove(e.mesh); unlive(e); } } }
 
-return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, spike, trail, plume, bowShock, ring, haze, motes, step, clear, live };
+return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, spike, dart, trail, beads, plume, bowShock, ring, haze, motes, step, clear, live };
 };
 </script>
 <!-- /INLINE -->
@@ -1275,7 +1367,7 @@ async function makeShip(id, src, cls, faction) {
   const S = { id, cls, C: CL[cls], faction, root, model, box, size, len: size.z, local, extras: (name) => (model.getObjectByName(name) || {}).userData || {},
     st: { p: V3(), yaw: 0, v: 0, drift: V3(), spin: 0, recoil: 0, aim: null, turn: CL[cls].turn_deg_s }, meshes: [] };
   model.traverse((m) => { if (m.isMesh) S.meshes.push(m); });
-  S.shield = WFX.shield(S, { pad: Math.max(8, size.x * 0.12), color: FACTION[faction].shield, pattern: FACTION[faction].pattern, rest: 0.025 });
+  S.shield = WFX.shield(S, { pad: Math.max(8, size.x * 0.12), color: FACTION[faction].shield, pattern: FACTION[faction].pattern });
   S.scars = WFX.scars(S);
   // sample points on the hull (for the quell's crawling arcs), in ship space
   S.samples = []; const R = mulberry(id.length * 31);
@@ -1301,6 +1393,7 @@ const SHIPS = {
 // The rules the readouts use, from the data (CLAUDE.md 6.1: what a panel shows is computed by the code that resolves
 // the shot). A hit through a facing: the share pierce_x goes straight to the hull; the shield takes the rest until it
 // runs out, and what it cannot take goes to the hull too.
+const WEAPONS = DATA['data/battle/weapons.json'], TUNING = DATA['data/battle/tuning.json'], GRADES = DATA['data/battle/missiles.json'].grades;
 const RULE = {
   chorusDps: (joined) => SW.chorus.dmg_per_s * (1 + SW.chorus.join.per_joiner_x * Math.min(joined, SW.chorus.join.max_joiners)),
   hit(t, k, dmg, pierce = 0) {
@@ -1313,19 +1406,24 @@ const RULE = {
 let shieldsUp = true;
 
 // ---------------------------------------------------------------------------------------------------------------
-// Moving ships: each has a heading, a speed and a turn rate (its class's, in degrees a second); with an aim it turns
-// toward it (a ship, led by its velocity, or a point). Bow is -z in ship space (the glb convention).
+// Ships hold station facing each other (owner, 2026-11-04: "no rotation on camera please. I just want to see the fx fired
+// between two ships"), drifting a few metres on slow swells so it shows that every beam's ends ride their ships. Only the
+// blood charge's frigate flies: it has a speed and turns toward its target. Bow is -z in ship space (the glb convention).
 const fwd = (yaw) => V3(-Math.sin(yaw), 0, -Math.cos(yaw));
 const yawTo = (from, to) => Math.atan2(-(to.x - from.x), -(to.z - from.z));
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-function place(S, p, yaw, v) { S.root.visible = true; Object.assign(S.st, { p: p.clone(), yaw, v, drift: V3(), spin: 0, recoil: 0, aim: null, turn: S.C.turn_deg_s });
+const DRIFT = { x_m: 14, y_m: 7, z_m: 10, period_s: 7.5 };
+let simT = 0;
+function place(S, p, yaw, v = 0) { S.root.visible = true; Object.assign(S.st, { p: p.clone(), home: v ? null : p.clone(), off: V3(), seed: S.id.length * 1.7, yaw, v, drift: V3(), spin: 0, recoil: 0, aim: null, turn: S.C.turn_deg_s });
   S.hull = S.C.hull_hp; S.sh = S.C.shields_hp.slice(); S.burn = 0; S.stun = 0; S.shield.reset(); S.scars.clear(); S.root.position.copy(p); S.root.rotation.set(0, yaw, 0); S.root.updateMatrixWorld(true); }
 function moveShip(S, dt) {
   const st = S.st;
-  if (st.aim) { const at = st.aim.st ? st.aim.st.p.clone().addScaledVector(fwd(st.aim.st.yaw), st.aim.st.v * Math.min(3, st.p.distanceTo(st.aim.st.p) / Math.max(200, st.v))) : st.aim;
-    const d = wrap(yawTo(st.p, at) - st.yaw), mx = st.turn * DEG * dt; st.yaw += Math.max(-mx, Math.min(mx, d)); }
+  if (st.aim) { const at = st.aim.st.p.clone(); const d = wrap(yawTo(st.p, at) - st.yaw), mx = st.turn * DEG * dt; st.yaw += Math.max(-mx, Math.min(mx, d)); }
   st.yaw += st.spin * dt; st.spin *= Math.exp(-0.6 * dt);
-  st.p.addScaledVector(fwd(st.yaw), st.v * dt).addScaledVector(st.drift, dt); st.drift.multiplyScalar(Math.exp(-0.5 * dt));
+  st.off.addScaledVector(st.drift, dt); st.drift.multiplyScalar(Math.exp(-0.5 * dt));
+  if (st.home) { const w = 2 * PI / DRIFT.period_s, k = st.seed;
+    st.p.copy(st.home).add(st.off).add(V3(Math.sin(simT * w + k) * DRIFT.x_m, Math.sin(simT * w * 0.73 + k * 2) * DRIFT.y_m, Math.sin(simT * w * 0.61 + k * 3) * DRIFT.z_m)); }
+  else st.p.addScaledVector(fwd(st.yaw), st.v * dt).addScaledVector(st.drift, dt);
   st.recoil *= Math.exp(-3 * dt);
   S.root.position.copy(st.p).addScaledVector(fwd(st.yaw), -st.recoil); S.root.rotation.set(0, st.yaw, 0); S.root.updateMatrixWorld(true);
 }
@@ -1339,6 +1437,8 @@ function hullHit(S, from, to) {
   return { local: S.root.worldToLocal(p.clone()), nLocal: n.transformDirection(S.root.matrixWorld.clone().invert()) };
 }
 const faceOf = (T, srcWorld) => T.shield.facingOf(T.root.worldToLocal(srcWorld.clone()).sub(T.shield.centre).normalize());
+// Where a shot from `src` toward a hull point stops: the shield, while the facing it strikes holds, or the hull.
+function endOf(T, src, hit) { const f = faceOf(T, src), up = shieldsUp && T.sh[f] > 0; const sp = up ? T.shield.raycast(src, hit.clone().sub(src).normalize()) : null; return { f, up: up && !!sp, end: sp || hit }; }
 
 // ---------------------------------------------------------------------------------------------------------------
 // One effect list per run, cleared when the run starts over.
@@ -1346,18 +1446,158 @@ let FXL = [];
 const keep = (fx) => { FXL.push(fx); return fx; };
 function every(state, key, period, t) { const n = Math.floor(t / period); if (state[key] === n) return false; state[key] = n; return true; }
 const env = (t, a, b, up, down) => Math.max(0, Math.min(1, (t - a) / up, (b - t) / down));
+const hexOf = (c) => parseInt(String(c).replace('#', ''), 16);
 
-// The four runs. Each places its ships, then plays one shot on the fixed step; t is seconds since the run began.
+
+// The range: the shooter on the left, its target SEP_M to its right, both broadside to the camera, bows toward each other.
+const SEP_M = 420, FACE_R = -PI / 2, FACE_L = PI / 2; // yaw for a bow toward +x (right), toward -x (left)
+
+// A hit's look where it lands, one table for every weapon: on a shield a ripple (and for a heavy hit a flash), on the hull a
+// scar of its kind, sparks and light. Colours: the weapon's own.
+function landFx(T, end, up, n, look) {
+  if (up) { T.shield.hit(T.root.worldToLocal(end.clone())); if (look.flash) SFX.flash(end, look.flash, 0.3); }
+  else { T.scars.add(look.scar, T.root.worldToLocal(end.clone()), look.r, V3(0, 0, 1), look.dur); SFX.emit('sparks', end, n, look.sparks, 1.4); if (look.fire) SFX.emit('fire', end, n, look.fire, 1.1); }
+  if (look.ring) keep(WFX.ring({ at: end, normal: n, size: look.ring, color: look.color, dur: 0.6 }));
+  SFX.fxLight(end, look.color, look.light, 0.35, 140);
+}
+
 const RUNS = {
+  // -------------------------------------------------------------------------------------------------- standard weapons
+  lance: {
+    weapon: 'lance', std: true, shooter: 'albatross', target: 'cruiser', frame: ['albatross', 'cruiser'], end_s: 8,
+    say: 'The Albatross fires its five lances in pairs at the Krai cruiser, then again once they recharge. Each beam lasts as long as the battle draws it, and both its ends stay on their ships as the two drift.',
+    setup(R) {
+      const A = SHIPS.albatross, T = SHIPS.cruiser; place(A, V3(0, 0, 0), FACE_R); place(T, V3(SEP_M, 0, 0), FACE_L);
+      const w = WEAPONS.lance; R.mounts = [0, 1, 2, 3, 4].map((i) => 'mount_turret_' + i).filter((n) => A.local(n));
+      R.shots = []; const recharge = w.charge_s;
+      for (const v of [1.0, 1.0 + recharge]) R.mounts.forEach((m, i) => R.shots.push({ t: v + Math.floor(i / 2) * 0.35 + (i % 2) * 0.08, m, aim: hullHit(T, A.at(m), T.st.p.clone().add(V3(0, (i % 3 - 1) * 4, (i % 2 ? 1 : -1) * 12))).local }));
+      R.beams = R.shots.map(() => keep(WFX.ribbon({ look: 'lance', width: 3.2, color: hexOf(w.color) })));
+      R.flares = R.shots.map(() => keep(WFX.flare({ look: 'lens', color: hexOf(w.color), size: 16 })));
+    },
+    step(R, t) {
+      const A = SHIPS.albatross, T = SHIPS.cruiser, w = WEAPONS.lance, life = TUNING.beam_life_s;
+      R.shots.forEach((s, i) => {
+        // re-aimed every step from the turret as the Albatross now stands to the hit point held in the cruiser's frame
+        const on = t >= s.t && t < s.t + life + 0.2, src = A.at(s.m), hit = T.toWorld(s.aim), e = endOf(T, src, hit);
+        R.beams[i].set(src, e.end); R.beams[i].u.uIntensity.value = on ? env(t, s.t, s.t + life, 0.03, 0.12) : 0; R.beams[i].u.uReach.value = (t - s.t) * 9000;
+        R.flares[i].mesh.position.copy(src); R.flares[i].u.uI.value = on ? 1.6 * env(t, s.t, s.t + life, 0.02, 0.15) : 0;
+        if (on && !s.done) { s.done = true; const r = RULE.hit(T, e.f, w.damage); if (r.failed) T.shield.fail(e.f); landFx(T, e.end, e.up, src.clone().sub(e.end).normalize(), { scar: 1, r: 3.5, dur: 2, sparks: 30, ring: e.up ? 0 : 18, color: hexOf(w.color), light: 2, flash: 0 }); R.result = `${r.held.toFixed(1)} held, ${r.toHull.toFixed(1)} to the hull`; }
+        if (on && e.up && every(s, 'rip', 0.06, t)) T.shield.hit(T.root.worldToLocal(e.end.clone()));
+      });
+      const next = R.shots.find((s) => s.t > t); R.state = next ? `Next lance in ${(next.t - t).toFixed(1)} s` : 'Recharging'; R.charge = next ? 1 - Math.min(1, (next.t - t) / w.charge_s) : 0;
+    },
+  },
+  disruptor: {
+    weapon: 'disruptor', std: true, shooter: 'cruiser', target: 'albatross', frame: ['cruiser', 'albatross'], end_s: 9,
+    say: 'The Krai cruiser fires its two spinal disruptors at the Albatross, then again once they recharge. A bolt flies the live line from its muzzle to its target, so both ends stay on the ships while it flies.',
+    setup(R) {
+      const K = SHIPS.cruiser, T = SHIPS.albatross; place(K, V3(0, 0, 0), FACE_R); place(T, V3(SEP_M, 0, 0), FACE_L);
+      const w = WEAPONS.disruptor; R.shots = [];
+      for (const v of [1.0, 1.0 + w.charge_s]) ['mount_gun_0', 'mount_gun_1'].filter((n) => K.local(n)).forEach((m, i) => R.shots.push({ t: v + i * 0.3, m, trav: 0, aim: hullHit(T, K.at(m), T.st.p.clone().add(V3(0, i ? -5 : 5, i ? 10 : -10))).local }));
+      R.bolts = R.shots.map(() => keep(WFX.ribbon({ look: 'bolt', width: 7, color: hexOf(w.color) })));
+      R.flares = R.shots.map(() => keep(WFX.flare({ look: 'tri', color: hexOf(w.color), size: 22 })));
+    },
+    step(R, t, dt) {
+      const K = SHIPS.cruiser, T = SHIPS.albatross, w = WEAPONS.disruptor;
+      R.shots.forEach((s, i) => {
+        const src = K.at(s.m), fl = R.flares[i]; fl.mesh.position.copy(src); fl.u.uRot.value = -K.st.yaw;
+        fl.u.uI.value = t >= s.t ? 3 * Math.exp(-(t - s.t) * 9) : Math.max(0, 1 - (s.t - t) / 0.6) * 0.4;
+        if (t < s.t || s.done) { R.bolts[i].u.uIntensity.value = 0; return; }
+        // a direct-fire bolt: along the live line from the muzzle to the hit point held in the Albatross's frame
+        const hit = T.toWorld(s.aim), e = endOf(T, src, hit), len = src.distanceTo(e.end);
+        s.trav += w.speed_m_s * dt; const k = Math.min(1, s.trav / len), head = src.clone().lerp(e.end, k), tail = src.clone().lerp(e.end, Math.max(0, k - 70 / len));
+        R.bolts[i].set(tail, head); R.bolts[i].u.uIntensity.value = 1.6;
+        if (k >= 1) { s.done = true; R.bolts[i].u.uIntensity.value = 0; const r = RULE.hit(T, e.f, w.damage); if (r.failed) T.shield.fail(e.f);
+          landFx(T, e.end, e.up, src.clone().sub(e.end).normalize(), { scar: 0, r: 3.5, dur: 2.5, sparks: 50, ring: 26, color: hexOf(w.color), light: 2.5, flash: 14 }); R.result = `${r.held.toFixed(1)} held, ${r.toHull.toFixed(1)} to the hull`; }
+      });
+      const next = R.shots.find((s) => s.t > t); R.state = next ? `Next bolt in ${(next.t - t).toFixed(1)} s` : 'Recharging'; R.charge = next ? 1 - Math.min(1, (next.t - t) / w.charge_s) : 0;
+    },
+  },
+  torpedo: {
+    weapon: 'torpedo', std: true, shooter: 'albatross', target: 'cruiser', frame: ['albatross', 'cruiser'], end_s: 6,
+    say: 'The Albatross fires two pulse torpedoes from its tube. A torpedo is a seeker: it leaves the tube climbing, turns and homes on the cruiser, dropping a trail of beads where it flew.',
+    setup(R) {
+      const A = SHIPS.albatross, T = SHIPS.cruiser; place(A, V3(0, 0, 0), FACE_R); place(T, V3(SEP_M, 0, 0), FACE_L);
+      R.shots = [{ t: 1.0, up: 0.5, side: 0.25 }, { t: 1.45, up: -0.4, side: -0.3 }]; R.glow = keep(WFX.flare({ look: 'soft', color: hexOf(WEAPONS.torpedo.color), size: 9 })); R.lens = keep(WFX.flare({ look: 'lens', color: hexOf(WEAPONS.torpedo.color), size: 34 }));
+    },
+    step(R, t, dt) {
+      const A = SHIPS.albatross, T = SHIPS.cruiser, w = WEAPONS.torpedo, tube = A.at('mount_torpedo_0');
+      R.glow.mesh.position.copy(tube); R.glow.u.uI.value = t < 1.0 ? 1.5 * t : 0.3; R.lens.mesh.position.copy(tube);
+      R.lens.u.uI.value = R.shots.reduce((a, s) => a + (t >= s.t ? 4 * Math.exp(-(t - s.t) * 9) : 0), 0);
+      for (const s of R.shots) {
+        if (t >= s.t && !s.head && !s.done) {
+          s.head = keep(WFX.flare({ look: 'six', color: hexOf(w.color), size: 64 })); s.core = keep(WFX.flare({ look: 'soft', color: 0xe8f4ff, size: 5 }));
+          s.trail = keep(WFX.beads({ n: 160, size: 30, life: 0.6, every_s: 0.004, color: hexOf(w.color) })); s.p = tube.clone();
+          s.v = fwd(A.st.yaw).add(V3(0, s.up, s.side)).normalize().multiplyScalar(w.speed_m_s); SFX.fxLight(tube, hexOf(w.color), 2.5, 0.4, 120);
+        }
+        if (!s.head) continue;
+        // a seeker: it turns toward the cruiser as it now is and flies free; the trail stays in space where it flew
+        const want = T.st.p.clone().sub(s.p).normalize().multiplyScalar(w.speed_m_s); s.v.lerp(want, Math.min(1, dt * 9)).setLength(w.speed_m_s);
+        const dir = s.v.clone().normalize(), stepLen = w.speed_m_s * dt, e = endOf(T, s.p, T.st.p);
+        const meet = e.up ? e.end : T.toWorld(hullHit(T, s.p, T.st.p).local);
+        if (meet.distanceTo(s.p) <= stepLen * 1.2) {
+          const r = RULE.hit(T, e.f, w.damage); if (r.failed) T.shield.fail(e.f); s.done = true;
+          landFx(T, meet, e.up, dir.clone().negate(), { scar: 0, r: 5, dur: 3, sparks: 70, fire: 12, ring: 55, color: hexOf(w.color), light: 3, flash: 24 }); SFX.flash(meet, 20, 0.3);
+          s.head.remove(); s.core.remove(); s.head = null; R.result = `${r.held.toFixed(1)} held, ${r.toHull.toFixed(1)} to the hull`;
+        } else { s.p.addScaledVector(s.v, dt); s.head.mesh.position.copy(s.p); s.core.mesh.position.copy(s.p); s.head.u.uI.value = 1.1 + 0.25 * Math.sin(t * 40); s.core.u.uI.value = 1.5; s.trail.push(s.p, WFX.time()); }
+      }
+      const fly = R.shots.find((s) => s.head); R.state = t < 1 ? 'Loading' : fly ? 'In flight' : 'Recharging'; R.charge = t < 1 ? t : 0;
+    },
+  },
+  missile: {
+    weapon: 'missile', std: true, shooter: 'albatross', target: 'cruiser', frame: ['albatross', 'cruiser'], end_s: 8,
+    say: 'Missiles are for every faction. The Albatross fires one of each grade from its racks (red, orange, blue, green, lowest to highest), then the Krai cruiser answers with the same. Each flies free and weaves as it homes; each ship\'s point defence fires on the ones closing on it, and a blue or green one takes two hits to stop.',
+    setup(R) {
+      const A = SHIPS.albatross, K = SHIPS.cruiser; place(A, V3(0, 0, 0), FACE_R); place(K, V3(SEP_M, 0, 0), FACE_L);
+      R.ms = []; const salvo = (S, T, t0) => { for (let i = 0; i < 4; i++) R.ms.push({ S, T, t: t0 + i * 0.18, i, g: GRADES[i], hits: 0, rack: V3((i % 2 ? 1 : -1) * S.size.x * 0.3, S.size.y * 0.3, (i < 2 ? -0.1 : 0.15) * S.len) }); };
+      salvo(A, K, 1.0); salvo(K, A, 4.0);
+      R.pd = new Map([[A, [0, 0.7]], [K, [0, 0.7]]]); R.pdShots = [];
+    },
+    step(R, t, dt) {
+      const w = WEAPONS.missile, pd = WEAPONS.pd;
+      for (const m of R.ms) {
+        if (t < m.t || m.done) continue;
+        if (!m.dart) { // ejected from its rack, the drive lights a quarter second later
+          m.p = m.S.toWorld(m.rack); m.v = m.p.clone().sub(m.S.st.p).setY(m.rack.y > 0 ? 40 : 0).normalize().multiplyScalar(160); m.age = 0;
+          m.dart = keep(WFX.dart({ len: 7, color: hexOf(m.g.color) })); m.trail = keep(WFX.trail({ n: 90, width: 4.2, life: 1.8, color: hexOf(m.g.color), color2: 0x30343c })); }
+        m.age += dt; const T = m.T;
+        if (m.age > 0.25) { // a seeker: it homes on the target as it now is, weaving, and flies free
+          const sp = Math.min(m.g.speed_m_s, m.v.length() + 3000 * dt), to = T.st.p.clone().sub(m.p).normalize();
+          const side = V3(-to.z, 0, to.x).multiplyScalar(Math.sin(m.age * 13 + m.i * 1.7) * 0.35).add(V3(0, Math.cos(m.age * 11 + m.i) * 0.25, 0));
+          m.v.lerp(to.add(side).normalize().multiplyScalar(sp), Math.min(1, dt * 5)).setLength(sp); }
+        m.dart.flame.u.uI.value = m.age > 0.25 ? Math.min(1, (m.age - 0.25) * 5) * (1.5 + 0.25 * Math.sin(t * 50 + m.i)) : 0; m.dart.flame.u.uSize.value = 7 * 2.6;
+        const stepLen = m.v.length() * dt, e = endOf(T, m.p, T.st.p), meet = e.up ? e.end : T.toWorld(hullHit(T, m.p, T.st.p).local);
+        if (m.age > 0.25 && meet.distanceTo(m.p) <= stepLen * 1.3) {
+          const r = RULE.hit(T, e.f, m.g.damage); if (r.failed) T.shield.fail(e.f); m.done = true; m.dart.remove();
+          landFx(T, meet, e.up, m.v.clone().normalize().negate(), { scar: 0, r: 4, dur: 2.5, sparks: 60, fire: 10, ring: 40, color: hexOf(m.g.color), light: 2.5, flash: 18 });
+          if (T === SHIPS.cruiser) R.result = `${r.held.toFixed(1)} held, ${r.toHull.toFixed(1)} to the hull`;
+          continue; }
+        m.p.addScaledVector(m.v, dt); m.dart.group.position.copy(m.p); m.dart.group.lookAt(m.p.clone().sub(m.v)); m.trail.push(m.p, WFX.time());
+      }
+      // point defence: each ship's two mounts fire on the nearest missile closing on it, every pd.charge_s, and stop it
+      // pd_intercept_chance of the time; the beam runs from the hull to the missile as both now stand
+      for (const [S, ready] of R.pd) for (let k = 0; k < ready.length; k++) {
+        if (t < ready[k]) continue;
+        const near = R.ms.filter((m) => m.T === S && m.dart && !m.done && m.age > 0.25 && m.p.distanceTo(S.st.p) < 330).sort((a, b) => a.p.distanceTo(S.st.p) - b.p.distanceTo(S.st.p))[k % 2];
+        if (!near) continue;
+        ready[k] = t + pd.charge_s; let best = S.samples[0], bd = 1e9; for (const s of S.samples) { const d = S.toWorld(s).distanceTo(near.p); if (d < bd) { bd = d; best = s; } }
+        const kill = rand() < TUNING.pd_intercept_chance, beam = keep(WFX.ribbon({ look: 'lance', width: 1.4, color: hexOf(pd.color) }));
+        R.pdShots.push({ beam, S, from: best, m: near, t0: t, end: null });
+        if (kill && ++near.hits >= near.g.pd_hits) { near.done = true; near.dart.remove(); near.killed = true; SFX.flash(near.p, 10, 0.25); SFX.emit('sparks', near.p, V3(0, 1, 0), 30, 0.8); keep(WFX.ring({ at: near.p, normal: V3(0, 0, 1), size: 14, color: 0xffffff, dur: 0.4 })); }
+      }
+      for (const s of R.pdShots) { const a = s.S.toWorld(s.from), b = s.m.killed || s.m.done ? (s.end || (s.end = s.m.p.clone())) : s.m.p; s.beam.set(a, b); s.beam.u.uIntensity.value = env(t, s.t0, s.t0 + 0.15, 0.02, 0.08); }
+      const flying = R.ms.filter((m) => m.dart && !m.done).length, killed = R.ms.filter((m) => m.killed).length;
+      R.state = `${flying} in flight, ${killed} shot down`; R.charge = 0;
+    },
+  },
+  // ---------------------------------------------------------------------------------------------------- special weapons
   chorus: {
-    weapon: 'chorus', shooter: 'albatross', target: 'cruiser', end_s: 8.5, fire_s: 2.4,
-    say: 'The Albatross charges its deflector while two Petrels hold their lances for it; the Krai cruiser crosses ahead. Its two port facings start worn to 12, so the beam breaks one and burns the hull.',
+    weapon: 'chorus', shooter: 'albatross', target: 'cruiser', frame: ['albatross', 'petrel', 'petrel2', 'cruiser'], end_s: 8.5, fire_s: 2.4,
+    say: 'The Albatross charges its deflector while two Petrels, above and below it, hold their lances for it; the Krai cruiser\'s bow facing starts worn to 12, so the beam breaks it and burns the hull.',
     setup(R) {
       const A = SHIPS.albatross, P1 = SHIPS.petrel, P2 = SHIPS.petrel2, T = SHIPS.cruiser;
-      place(T, V3(720, 0, 260), 0, 90);
-      place(A, V3(0, 0, 0), yawTo(V3(), V3(720, 0, 40)), 60); A.st.aim = T;
-      place(P1, V3(-70, 0, 170), A.st.yaw, 60); P1.st.aim = T; place(P2, V3(-70, 0, -170), A.st.yaw, 60); P2.st.aim = T;
-      for (const d of [V3(-0.87, 0, -0.5), V3(-0.87, 0, 0.5)]) T.sh[T.shield.facingOf(d)] = 12;
+      place(A, V3(0, 0, 0), FACE_R); place(P1, V3(-60, 105, 20), FACE_R); place(P2, V3(-60, -105, -20), FACE_R); place(T, V3(SEP_M + 40, 0, 0), FACE_L);
+      T.sh[T.shield.facingOf(V3(0, 0, -1))] = 12;
       R.local = hullHit(T, A.at('deflector'), T.st.p).local;
       R.motes = keep(WFX.motes({ n: 700, r: A.size.x * 0.48 }));
       R.lens = keep(WFX.flare({ look: 'lens', color: 0x3fa9f0, size: 60 }));
@@ -1378,9 +1618,7 @@ const RUNS = {
       if (t < F && every(R, 'lc', 0.2, t)) SFX.fxLight(src, 0x3fa9f0, 1.5 * k, 0.4, 120);
       // The beam: re-aimed every step from the deflector as the Albatross stands now to the hit point, held in the
       // cruiser's frame, so both ends ride their ships (the owner's rule). It stops at the shield while that facing holds.
-      const hit = T.toWorld(R.local.clone().add(V3(0, 0, Math.sin(t * 2.2) * 5))), f = faceOf(T, src);
-      const up = shieldsUp && T.sh[f] > 0;
-      const end = up ? (T.shield.raycast(src, hit.clone().sub(src).normalize()) || hit) : hit;
+      const hit = T.toWorld(R.local.clone().add(V3(Math.sin(t * 2.2) * 5, 0, 0))), e = endOf(T, src, hit), f = e.f, up = e.up, end = e.end;
       const I = env(t, F, B, 0.06, 0.35);
       R.main.set(src, end); R.main.u.uIntensity.value = I; R.main.u.uReach.value = (t - F) * 7000;
       R.joined = R.joiners.filter((P, i) => t >= F + 0.15 * (i + 1) && P.st.p.distanceTo(A.st.p) / 1000 <= C.join.range_km).length;
@@ -1404,11 +1642,10 @@ const RUNS = {
     },
   },
   quell: {
-    weapon: 'quell', shooter: 'petrel', target: 'cruiser', end_s: 13, fire_s: 1.0,
-    say: 'A Petrel loads a quell into its torpedo tube and fires on a Krai cruiser. The torpedo flies free (a seeker) and leaves its trail; where it strikes, the shield facing fails and that half of the ship goes dark.',
+    weapon: 'quell', shooter: 'petrel', target: 'cruiser', frame: ['petrel', 'cruiser'], end_s: 12, fire_s: 1.0,
+    say: 'A Petrel loads a quell into its torpedo tube and fires on a Krai cruiser. The torpedo is a seeker: it flies free and leaves its trail; where it strikes, the shield facing fails and that half of the ship goes dark.',
     setup(R) {
-      const P = SHIPS.petrel, T = SHIPS.cruiser;
-      place(T, V3(640, 0, 220), -0.25, 80); place(P, V3(0, 0, 0), yawTo(V3(), V3(640, 0, 120)), 70); P.st.aim = T;
+      const P = SHIPS.petrel, T = SHIPS.cruiser; place(P, V3(0, 0, 0), FACE_R); place(T, V3(SEP_M, 0, 0), FACE_L);
       R.glow = keep(WFX.flare({ look: 'soft', color: 0xb7a6f2, size: 10 })); R.lens = keep(WFX.flare({ look: 'lens', color: 0xb7a6f2, size: 40 }));
       R.orb = null; R.done = false;
     },
@@ -1417,9 +1654,8 @@ const RUNS = {
       R.glow.mesh.position.copy(tube); R.glow.u.uI.value = t < F ? 2 * t / F : 0.2;
       R.lens.mesh.position.copy(tube); R.lens.u.uI.value = t < F ? 0 : 6 * Math.exp(-(t - F) * 8);
       if (t >= F && !R.orb && !R.done) { R.orb = keep(WFX.orb({ r: 3 })); R.orb.group.position.copy(tube); R.trail = keep(WFX.trail({ n: 60, width: 5, life: 1.4, color: 0xb7a6f2, color2: 0x3fa9f0 }));
-        R.vel = fwd(P.st.yaw).multiplyScalar(Q.speed_m_s); SFX.fxLight(tube, 0xb7a6f2, 4, 0.5, 150); }
+        R.vel = fwd(P.st.yaw).add(V3(0, 0.45, 0.3)).normalize().multiplyScalar(Q.speed_m_s); SFX.fxLight(tube, 0xb7a6f2, 2.5, 0.5, 150); }
       if (R.orb) {
-        // a seeker: it turns toward the target as it now is and flies free; its trail stays where it flew
         const pos = R.orb.group.position, want = T.st.p.clone().sub(pos).normalize().multiplyScalar(Q.speed_m_s);
         R.vel.lerp(want, Math.min(1, dt * 4)).setLength(Q.speed_m_s);
         const stepLen = Q.speed_m_s * dt, dir = R.vel.clone().normalize();
@@ -1443,11 +1679,10 @@ const RUNS = {
     },
   },
   forge: {
-    weapon: 'forge', shooter: 'cruiser', target: 'albatross', end_s: 11, fire_s: 2.0,
+    weapon: 'forge', shooter: 'cruiser', target: 'albatross', frame: ['cruiser', 'albatross'], end_s: 10, fire_s: 2.0,
     say: 'A Krai cruiser heats its spinal cannon and fires on the Albatross with its shields up. The spike runs the live line from the muzzle to the hull, 40 % of it straight through the shield, and the hull burns for 6 s.',
     setup(R) {
-      const K = SHIPS.cruiser, T = SHIPS.albatross;
-      place(T, V3(620, 0, 200), 0.15, 100); place(K, V3(0, 0, 0), yawTo(V3(), V3(620, 0, 100)), 70); K.st.aim = T; K.st.turn = 14;
+      const K = SHIPS.cruiser, T = SHIPS.albatross; place(K, V3(0, 0, 0), FACE_R); place(T, V3(SEP_M, 0, 0), FACE_L);
       R.local = hullHit(T, K.at('mount_gun_0'), T.st.p).local;
       R.barrel = keep(WFX.ribbon({ look: 'barrel', width: 4 })); R.haze = keep(WFX.haze({ size: 18 })); R.flare = keep(WFX.flare({ look: 'tri', color: 0xff7a24, size: 70 }));
       R.slug = null; R.spent = false;
@@ -1491,11 +1726,11 @@ const RUNS = {
     },
   },
   charge: {
-    weapon: 'charge', shooter: 'frigate', target: 'albatross', end_s: 10, fire_s: 0.8,
-    say: 'A Krai frigate orders a blood charge on the Albatross: its drive surges to 2.2 times top speed, the bow shock builds, and the bayonet goes through the shield into the hull. The faster the charge, the harder it hits; the frigate takes 30 % back on its bow.',
+    weapon: 'charge', shooter: 'frigate', target: 'albatross', frame: ['albatross'], frameFrom: V3(-80, 0, 0), end_s: 9, fire_s: 0.8,
+    say: 'A Krai frigate orders a blood charge on the Albatross from beyond the left of the view: its drive surges to 2.2 times top speed, the bow shock builds, and the bayonet goes through the shield into the hull. The faster the charge, the harder it hits; the frigate takes 30 % back on its bow.',
     setup(R) {
       const Fr = SHIPS.frigate, T = SHIPS.albatross;
-      place(T, V3(0, 0, 0), 0, 90); place(Fr, V3(-1250, 0, 260), 0, Fr.C.speed_max_m_s); Fr.st.yaw = yawTo(Fr.st.p, V3(0, 0, -150)); Fr.st.aim = T;
+      place(T, V3(SEP_M, 0, 0), FACE_L); place(Fr, V3(SEP_M - 1300, 0, 0), FACE_R, Fr.C.speed_max_m_s); Fr.st.aim = T;
       R.bay = keep(WFX.flare({ look: 'tri', color: 0xd02a20, size: 34 })); R.haze = keep(WFX.haze({ size: 50, scroll: 3 }));
       R.hit = false; R.crossed = false;
     },
@@ -1516,14 +1751,14 @@ const RUNS = {
         if (sp && !R.crossed && sp.distanceTo(bow) <= reach && shieldsUp && T.sh[f] > 0) { R.crossed = true; T.shield.hit(T.root.worldToLocal(sp.clone())); SFX.flash(sp, 30, 0.3); }
         ray.set(bow, dir); ray.far = reach; let h = ray.intersectObjects(T.meshes, false)[0];
         // a bow already inside the hull's bounds (between nacelles, or a glancing pass) strikes the nearest plating
-        if (!h && T.root.worldToLocal(bow.clone()).sub(T.shield.centre).divide(T.shield.rad).length() < 0.8) { const q = hullHit(T, bow.clone().addScaledVector(dir, -40), T.st.p); h = { point: T.toWorld(q.local), face: null }; }
+        if (!h && T.root.worldToLocal(bow.clone()).sub(T.shield.centre).divide(T.shield.rad).length() < 0.55) { const q = hullHit(T, bow.clone().addScaledVector(dir, -40), T.st.p); h = { point: T.toWorld(q.local), face: null }; }
         if (h) {
           // the bayonet: pierce_x of it ignores the shield; the rammer takes recoil_x back on its bow
-          const closing = Math.max(0, st.v - fwd(T.st.yaw).multiplyScalar(T.st.v).dot(dir)), dmg = RULE.ramDmg(closing, Fr);
+          const closing = Math.max(0, st.v), dmg = RULE.ramDmg(closing, Fr);
           const r = RULE.hit(T, f, dmg, C.pierce_x); const back = dmg * C.recoil_x; Fr.sh[0] = Math.max(0, Fr.sh[0] * C.bow_shield_x - back) / C.bow_shield_x;
           const n = h.face ? h.face.normal.clone().transformDirection(h.object.matrixWorld) : dir.clone().negate();
           T.scars.add(0, T.root.worldToLocal(h.point.clone()), 9, dir.clone().transformDirection(T.root.matrixWorld.clone().invert()), 8, 2.6);
-          SFX.flash(h.point, 50, 0.55); keep(WFX.ring({ at: h.point, normal: n, size: 150, color: 0xffb070, dur: 1.0 })); keep(WFX.ring({ at: h.point, normal: n, size: 260, color: 0xd02a20, dur: 1.8 }));
+          SFX.flash(h.point, 50, 0.55); keep(WFX.ring({ at: h.point, normal: n, size: 150, color: 0xffb070, dur: 1.0 })); keep(WFX.ring({ at: h.point, normal: n, size: 120, color: 0xd02a20, dur: 1.5 }));
           SFX.emit('sparks', h.point, n, 260, 2.2); SFX.emit('fireball', h.point, n, 14, 1.2); SFX.emit('fire', h.point, n, 50, 1.4); SFX.debrisAdd(h.point, 60, T.len * 1.4);
           SFX.fxLight(h.point, 0xffa060, 3.5, 1.2, 320);
           T.st.drift.addScaledVector(dir, closing * 0.04); T.st.spin += 0.05 * Math.sign(dir.x || 1); st.v = -0.12 * st.v; st.aim = null;
@@ -1538,55 +1773,76 @@ const RUNS = {
 };
 
 // ---------------------------------------------------------------------------------------------------------------
-// The run in play, the fixed step, the follow camera.
+// The run in play and the fixed step.
 const DT = 1 / 60;
-let runName = 'chorus', R = {}, t = 0;
+let runName = 'lance', R = {}, t = 0;
 function start(name) {
   runName = name; rand = mulberry(name.length * 977 + 5);
   for (const fx of FXL) fx.remove && fx.remove(); FXL = []; SFX.clearFX(); WFX.clear();
   for (const S of Object.values(SHIPS)) S.root.visible = false;
   for (const S of Object.values(SHIPS)) for (const pl of S.plumes || []) pl.u.uPush.value = 0;
   if (SHIPS.frigate.shock) SHIPS.frigate.shock.u.uI.value = 0;
-  R = {}; t = 0; RUNS[name].setup(R);
-  if (!shieldsUp) for (const S of Object.values(SHIPS)) { if (!S.root.visible) continue; S.sh.fill(0); for (let k = 0; k < 6; k++) S.shield.set(k, 0); }
-  for (const S of Object.values(SHIPS)) S.shield.mesh.visible = shieldsUp;
-  showWeapon(); setView(viewName);
+  R = {}; t = 0; simT = 0; RUNS[name].setup(R);
+  for (const S of Object.values(SHIPS)) { if (!S.root.visible) continue; if (!shieldsUp) { S.sh.fill(0); for (let k = 0; k < 6; k++) S.shield.set(k, 0); } S.shield.mesh.visible = shieldsUp; }
+  showWeapon(); frameView();
 }
 function stepSim(dt) {
   const run = RUNS[runName];
   for (const S of Object.values(SHIPS)) if (S.root.visible) { moveShip(S, dt); S.scars.step(); }
   run.step(R, t, dt);
   for (const S of Object.values(SHIPS)) if (S.root.visible) for (let k = 0; k < 6; k++) if (S.sh[k] > 0 && shieldsUp) S.shield.set(k, Math.max(0.2, S.sh[k] / S.C.shields_hp[k]));
-  SFX.stepFX(dt); WFX.step(dt); t += dt;
+  SFX.stepFX(dt); WFX.step(dt); t += dt; simT += dt;
 }
 function runTo(time) { while (t < time - 1e-9) stepSim(DT); }
 
-let viewName = 'wide';
-const follow = { get: null, last: V3() };
-const VIEWS = {
-  wide: () => { const run = RUNS[runName], a = SHIPS[run.shooter].st.p, b = SHIPS[run.target].st.p, mid = () => SHIPS[run.shooter].st.p.clone().lerp(SHIPS[run.target].st.p, 0.5);
-    const d = a.distanceTo(b); return { at: mid(), cam: mid().add(V3(-d * 0.1, d * 0.42, d * 1.08)), follow: mid }; },
-  muzzle: () => { const run = RUNS[runName], S = SHIPS[run.shooter], T = SHIPS[run.target], p = () => S.st.p.clone();
-    const side = V3(-Math.cos(S.st.yaw), 0, Math.sin(S.st.yaw)), to = T.st.p.clone().sub(S.st.p).normalize();
-    return { at: p().addScaledVector(to, S.len * 0.8), cam: p().addScaledVector(side, S.len * 1.6).addScaledVector(to, -S.len * 0.9).add(V3(0, S.len * 0.55, 0)), follow: p }; },
-  impact: () => { const run = RUNS[runName], S = SHIPS[run.shooter], T = SHIPS[run.target], p = () => T.st.p.clone();
-    const from = S.st.p.clone().sub(T.st.p).normalize(), side = V3(-from.z, 0, from.x);
-    return { at: p(), cam: p().addScaledVector(from, T.len * 1.5).addScaledVector(side, T.len * 1.1).add(V3(0, T.len * 0.6, 0)), follow: p }; },
-};
-function setView(name) { viewName = name; const v = VIEWS[name](); camera.position.copy(v.cam); controls.target.copy(v.at); follow.get = v.follow; follow.last.copy(v.follow()); controls.update(); refresh(); }
-function followStep() { if (!follow.get) return; const f = follow.get(), d = f.clone().sub(follow.last); camera.position.add(d); controls.target.add(d); follow.last.copy(f); }
+// ---------------------------------------------------------------------------------------------------------------
+// The one view: side-on, a little above, looking straight across at both ships; it never turns or follows (the owner:
+// "no rotation on camera please"). Its distance fits the run's ships, shields included, into the part of the screen the
+// panels leave free, and the projection is shifted so they sit in the middle of it. A drag still orbits, until the next
+// run, which puts the camera back.
+const VIEW_DIR = V3(0, 0.2, 1).normalize(), FIT_MARGIN = 1.1;
+function freeRect() {
+  const W = innerWidth, H = innerHeight; let l = 0, tp = 0, r = W, b = H;
+  for (const el of [document.querySelector('.title'), $('info'), document.querySelector('.controls')]) {
+    const q = el.getBoundingClientRect(); if (!q.width || !q.height) continue;
+    if (q.width > W * 0.5 && q.bottom < H * 0.45) tp = Math.max(tp, q.bottom);
+    else if (q.width > W * 0.5 && q.top > H * 0.4) b = Math.min(b, q.top);
+    else if (q.left > W * 0.45 && q.height > H * 0.3) r = Math.min(r, q.left);
+  }
+  return { x: l, y: tp, w: Math.max(80, r - l), h: Math.max(80, b - tp), W, H };
+}
+function frameView() {
+  const run = RUNS[runName], box = new THREE.Box3();
+  for (const id of run.frame) { const S = SHIPS[id]; S.shield.mesh.updateMatrixWorld(true); box.union(new THREE.Box3().setFromObject(S.shield.mesh)); }
+  if (run.frameFrom) box.expandByPoint(run.frameFrom);
+  const c = box.getCenter(V3()), sz = box.getSize(V3()), fr = freeRect();
+  const tv = Math.tan(camera.fov * DEG / 2), th = tv * (fr.W / fr.H);
+  const hw = sz.x / 2, hh = (sz.y / 2) * VIEW_DIR.z + (sz.z / 2) * VIEW_DIR.y;
+  const d = FIT_MARGIN * Math.max(hw / (th * fr.w / fr.W), hh / (tv * fr.h / fr.H)) + sz.z / 2;
+  camera.position.copy(c).addScaledVector(VIEW_DIR, d); controls.target.copy(c); camera.lookAt(c);
+  camera.setViewOffset(fr.W, fr.H, -((fr.x + fr.w / 2) - fr.W / 2), -((fr.y + fr.h / 2) - fr.H / 2), fr.W, fr.H);
+  camera.updateProjectionMatrix(); controls.update();
+}
 
 // ---------------------------------------------------------------------------------------------------------------
 // The weapon card: its numbers from the data, a sentence on what it does, and the target's readout, computed from the
 // same state the run uses.
 const $ = (id) => document.getElementById(id);
 const WHAT = {
+  lance: 'Every faction\'s beam. It lands the moment it fires and recharges fastest of any weapon; it can be overloaded for more damage up close.',
+  disruptor: 'A fast bolt from a spinal cannon. It flies the live line from its mount to its target, so both ends stay on the ships while it flies.',
+  missile: 'Every faction can fit missiles, in four grades: red, orange, blue and green, lowest to highest. A missile flies free and homes on its target, weaving as it closes; its warhead does the same damage at any range, and point defence can shoot it down.',
+  torpedo: 'A heavy warhead that flies free and homes on its target, leaving a trail. Point defence can shoot it down; overloaded it hits far harder up close.',
   chorus: 'The cruiser\'s deflector throws one long beam. Every Concord ship near it with a lance ready joins in, and each one that joins makes the beam stronger.',
   quell: 'A slow torpedo that does no damage. It knocks out the shield facing it hits and every weapon on that side of the target: the moment to board, or to bring every gun to bear.',
   forge: 'The spinal cannon throws a white-hot spike. Part of it goes straight through the shield, and the hull where it lands burns.',
   charge: 'An order from the helm: the drive surges past top speed and the ship rams with its bayonet. The bayonet ignores shields; the faster the charge, the harder it hits, and the rammer takes a share of it back.',
 };
 function rows(key) {
+  if (key === 'missile') return GRADES.map((g) => [g.name, `${g.id}: ${g.speed_m_s} m/s, ${g.damage} damage, ${g.pd_hits} point defence hit${g.pd_hits > 1 ? 's' : ''} to stop, ${g.fuel_s} s of fuel`]).concat([['Rack', `${WEAPONS.missile.charge_s} s to reload, own power`]]);
+  if (RUNS[key].std) { const w = WEAPONS[key], o = w.overload;
+    return [['Range', `${w.range_km} km${w.speed_m_s ? ` at ${w.speed_m_s} m/s` : ', at once'}`], ['Charge', `${w.charge_s} s, ${w.cost_e} E`], ['Damage', String(w.damage)], ['Kind', { beam: 'Beam: both ends on their ships', bolt: 'Direct-fire bolt on the live line', torpedo: 'Seeker: flies free, leaves a trail', missile: 'Seeker: flies free and weaves; point defence can stop it' }[w.kind]]]
+      .concat(o ? [['Overload', `${o.range_km} km, ${o.charge_s} s, ${o.cost_e} E, ${o.damage}`]] : []); }
   const w = SW[key];
   if (key === 'chorus') return [['Range', `${w.range_km} km`], ['Charge', `${w.charge_s} s, ${w.cost_e} E`], ['Burn', `${w.burn_s} s at ${w.dmg_per_s} a second`], ['Joining', `+${Math.round(w.join.per_joiner_x * 100)} % a ship, up to ${w.join.max_joiners}, within ${w.join.range_km} km; each spends its lance`], ['Fits', 'Albatross-class cruiser, on its deflector']];
   if (key === 'quell') return [['Range', `${w.range_km} km at ${w.speed_m_s} m/s`], ['Charge', `${w.charge_s} s, ${w.cost_e} E`], ['Damage', 'None'], ['On a hit', `the facing's shield to ${Math.round(w.shield_left_x * 100)} %; every mount within ${w.reach_deg} degrees stunned ${w.stun_s} s`], ['Fits', 'Any torpedo tube, as a load'], ['Point defence', w.point_defence_hits ? 'Can shoot it down' : 'Cannot']];
@@ -1594,11 +1850,11 @@ function rows(key) {
   return [['Surge', `${w.surge_s} s at ${w.speed_x} x top speed, ${w.accel_x} x thrust, ${w.turn_x} x turn`], ['Cost', `${w.cost_e} E from the battery, then ${w.cooldown_s} s to ready`], ['Damage', `${w.dmg_per_100_m_s} for every 100 m/s closing, by the rammer's size`], ['Shield', `the bayonet ignores it; own bow shield x ${w.bow_shield_x} while surging`], ['Recoil', `${Math.round(w.recoil_x * 100)} % back on the rammer's bow`], ['Fits', 'Every Krai ship, from the helm']];
 }
 function showWeapon() {
-  const run = RUNS[runName], w = SW[run.weapon];
-  $('w-name').textContent = w.name; $('w-fac').textContent = w.faction === 'krai' ? 'Krai Warhost' : 'Concord'; $('w-fac').className = 'chip ' + w.faction;
+  const run = RUNS[runName], std = !!run.std, w = std ? WEAPONS[run.weapon] : SW[run.weapon], fac = std ? SHIPS[run.shooter].faction : w.faction;
+  $('w-name').textContent = w.name; $('w-fac').textContent = std ? 'Every faction' : fac === 'krai' ? 'Krai Warhost' : 'Concord'; $('w-fac').className = 'chip ' + (std ? 'std' : fac);
   $('w-what').textContent = WHAT[run.weapon]; $('w-run').textContent = run.say;
   $('w-table').innerHTML = rows(run.weapon).map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('');
-  $('s-charge').style.background = w.faction === 'krai' ? 'var(--forge)' : 'var(--concord)';
+  $('s-charge').style.background = fac === 'krai' ? 'var(--forge)' : 'var(--concord)';
   refresh();
 }
 const shCv = $('t-shields'), shG = shCv.getContext('2d');
@@ -1613,13 +1869,13 @@ function drawShields(T) {
   }
   shG.fillStyle = '#8197b1'; shG.beginPath(); shG.moveTo(c, c - r0 * 0.7); shG.lineTo(c + r0 * 0.35, c + r0 * 0.55); shG.lineTo(c - r0 * 0.35, c + r0 * 0.55); shG.closePath(); shG.fill();
 }
-let readoutAt = -1;
 function readout() {
   const run = RUNS[runName], T = SHIPS[run.target];
   $('t-name').textContent = `Target: ${T.C.name}`;
   $('t-hull').style.width = `${(T.hull / T.C.hull_hp) * 100}%`; $('t-hull-l').textContent = `Hull ${T.hull.toFixed(1)} of ${T.C.hull_hp}`;
   $('s-charge').style.width = `${Math.max(0, Math.min(1, R.charge || 0)) * 100}%`; $('s-charge-l').textContent = R.state || '';
-  const chips = []; if (T.stun > 0) chips.push(['stun', `Stunned ${T.stun.toFixed(1)} s`]); if (T.burn > 0 && runName === 'forge') chips.push(['warn', `Burning ${T.burn.toFixed(1)} s`]); $('w-result').textContent = R.result ? 'Last hit: ' + R.result : '';
+  const chips = []; if (T.stun > 0) chips.push(['stun', `Stunned ${T.stun.toFixed(1)} s`]); if (T.burn > 0 && runName === 'forge') chips.push(['warn', `Burning ${T.burn.toFixed(1)} s`]);
+  $('w-result').textContent = R.result ? 'Last hit: ' + R.result : '';
   if (runName === 'quell' && T.stun > 0) { const half = T.C.mounts.filter((m) => Math.abs(wrap(Math.atan2(-m.x, m.y) - (R.face || 0) * PI / 3)) <= SW.quell.reach_deg * DEG).length; chips.push(['stun', `${half} of ${T.C.mounts.length} mounts out`]); }
   $('t-chips').innerHTML = chips.map(([c, s]) => `<span class="chip ${c}">${s}</span>`).join('');
   drawShields(T);
@@ -1634,42 +1890,43 @@ btn('b-again', () => start(runName));
 btn('b-pause', () => { paused = !paused; refresh(); });
 btn('b-slow', () => { slow = !slow; refresh(); });
 btn('b-shields', () => { shieldsUp = !shieldsUp; start(runName); });
-for (const v of Object.keys(VIEWS)) btn('v-' + v, () => setView(v));
 btn('q-high', () => setQuality('high')); btn('q-phone', () => setQuality('phone'));
+$('info').addEventListener('toggle', () => frameView());
 function setQuality(q) { quality = q; pipe.setQuality(q); renderer.setPixelRatio(q === 'phone' ? 1 : Math.min(devicePixelRatio, 2)); resize(); refresh(); }
 function refresh() {
   for (const k of Object.keys(RUNS)) $('b-' + k).setAttribute('aria-pressed', String(k === runName));
-  for (const v of Object.keys(VIEWS)) $('v-' + v).setAttribute('aria-pressed', String(v === viewName));
   $('b-pause').textContent = paused ? 'Play' : 'Pause'; $('b-slow').setAttribute('aria-pressed', String(slow)); $('b-shields').textContent = shieldsUp ? 'Shields up' : 'Shields down';
   $('q-high').setAttribute('aria-pressed', String(quality === 'high')); $('q-phone').setAttribute('aria-pressed', String(quality === 'phone'));
 }
-if (innerWidth <= 520) $('info').open = false;
+// On a phone the card starts folded, so the ships get the screen; tap its title to open it.
+if (innerWidth <= 520 || innerHeight <= 460) $('info').open = false;
 
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight, pr = renderer.getPixelRatio();
   renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); pipe.setSize(w, h, pr);
+  if (RUNS[runName] && R.charge !== undefined) frameView();
 }
 addEventListener('resize', resize); resize();
 
 // ---------------------------------------------------------------------------------------------------------------
 // The loop: real time (or a quarter of it) in fixed steps; the run starts over at its end.
 let last = performance.now(), acc = 0, ms = 16, frames = 0;
-start('chorus');
+start('lance');
 renderer.setAnimationLoop(() => {
   const now = performance.now(), real = Math.min(0.1, (now - last) / 1000); last = now; ms = ms * 0.9 + real * 1000 * 0.1;
   if (!paused) { acc += real * (slow ? 0.25 : 1); while (acc >= DT) { stepSim(DT); acc -= DT; } if (loop && t > RUNS[runName].end_s) start(runName); }
-  followStep(); controls.update();
-  renderer.info.reset(); sky.userData.update(camera, 0); pipe.render(skyScene, camera, real); // the sky gets no time step, so no streaks: the range's camera rides with the ships
+  controls.update();
+  renderer.info.reset(); sky.userData.update(camera, 0); pipe.render(skyScene, camera, real); // the sky gets no time step: no streaks
   if (++frames % 6 === 0) { readout(); $('meter').textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws, ${ms.toFixed(1)} ms`; }
 });
 
 // Named shots, for tools/mockups/shoot.mjs: each starts its run over, plays it on the fixed step to a moment, and holds.
-const shot = (run, time, view, q = 'high') => () => { paused = true; setQuality(q); viewName = view; start(run); runTo(time); setView(view); readout(); };
+const shot = (run, time, q = 'high') => () => { paused = true; setQuality(q); start(run); runTo(time); frameView(); readout(); };
 window.MOCKUP_SHOTS = {
-  chorus_charge: shot('chorus', 1.9, 'muzzle'), chorus_burn: shot('chorus', 3.3, 'wide'), chorus_impact: shot('chorus', 4.4, 'impact'),
-  quell_flight: shot('quell', 1.45, 'wide'), quell_lattice: shot('quell', 2.3, 'impact'), quell_dark: shot('quell', 6.5, 'impact'),
-  forge_charge: shot('forge', 1.8, 'muzzle'), forge_impact: shot('forge', 2.32, 'impact'), forge_cooling: shot('forge', 6.5, 'impact'),
-  charge_surge: shot('charge', 2.4, 'muzzle'), charge_impact: shot('charge', 3.6, 'impact'), forge_impact_phone: shot('forge', 2.32, 'impact', 'phone'),
+  lance_volley: shot('lance', 1.45), disruptor_bolts: shot('disruptor', 1.36), torpedo_flight: shot('torpedo', 1.55),
+  chorus_charge: shot('chorus', 1.9), chorus_burn: shot('chorus', 3.6), quell_flight: shot('quell', 1.3), quell_dark: shot('quell', 4),
+  forge_charge: shot('forge', 1.8), forge_impact: shot('forge', 2.12), forge_cooling: shot('forge', 6),
+  charge_surge: shot('charge', 2.0), charge_impact: shot('charge', 3.4), lance_volley_phone: shot('lance', 1.45, 'phone'), missile_salvo: shot('missile', 1.75), missile_reply: shot('missile', 4.7),
 };
 window.MOCKUP_SCENE = scene;
 window.MOCKUP_READY = true;

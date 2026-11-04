@@ -21,6 +21,10 @@ target as they now stand (`shotEnds`) and fly disruptor bolts on that live line 
 `Battle.Ends` and `BoltStep` (`src/Core/Sim/Battle.cs`), drawn by `ViewOverlay`. Torpedoes and missiles fly free in both.
 Change `weapon-fx`, tasks 2.1-2.3.
 
+Shot looks (mockup 2 v77): open. The mockup draws lances as lit strips, disruptor bolts as hot streaks and torpedoes
+and missiles as glowing warheads with trails (`docs/mockups/lib/weapon-fx.js`); the game's overlay still draws lines and
+dots. Task: `weapon-fx` 3.4.
+
 ## Open differences
 
 ### Mockup 2 and 8 (one console, two skins)
