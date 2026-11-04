@@ -76,7 +76,8 @@ an emblem heading two pinstripes, was tried and dropped.)
 (mockup 6) carries it, on its forward livery band, port side, 3 % of its length tall, its foot 0.3 m above the waterline
 service band, and the hull shader keeps windows out from under it. One implementation, `docs/mockups/lib/concord-emblem.js`
 (placement, the band's break, the paint as a field/ship/star mask so the field follows the chosen livery), used by mockup
-6's hull shader and mockup 11. The Tern (a reference ship, not ours) carries none. Borders (owner, 2026-11-04: "lets add that border back in here ... border on both
+6's hull shader and mockup 11. The Tern (a reference ship, not ours) carries none. Mockup 11, the hull study on a plain Petrel, is retired now that the real model carries
+the emblem (owner, 2026-11-04: "Concord emblem on the hull - get rid of this"). Borders (owner, 2026-11-04: "lets add that border back in here ... border on both
 edge of lines and emblem"): the emblem's frame is drawn in the band's seam colour, the band's cut edges carry a seam as wide
 as its side seams (0.22 m), and 0.35 m of bare hull stands between the two.
 

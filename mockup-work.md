@@ -31,7 +31,7 @@ account and every link here is updated.
 | 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v14) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
-| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v11) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
+| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | **Retired** (2026-11-04: the emblem lives on the real model, mockup 6; owner: "Concord emblem on the hull - get rid of this"; off the tracker's mockup list, kept under Misc) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 

@@ -1,7 +1,7 @@
 // Fleet Command mockups: the Concord's emblem painted on a Concord hull, one implementation (CLAUDE.md section 6.1) of where
 // it goes, how the livery band breaks round it and how it is painted, shared by every page that shows it on a ship: the
 // Concord line (docs/mockups/concord-hull-concepts.html, mockup 6, the real model) and the hull study
-// (docs/mockups/concord-emblem-hull.html, mockup 11). Edit it here, then re-run tools/mockups/inline_data.py on each page.
+// (docs/mockups/concord-emblem-hull.html, mockup 11, retired but kept as a record). Edit it here, then re-run tools/mockups/inline_data.py on each page.
 //
 // The design (openspec/changes/faction-emblems/design.md; owner, 2026-11-04): B-E27, the smooth keyhole, once per ship,
 // upright ("don't rotate our logo") on the port side ("1/2 size on the left side", "only one logo"), 3 % of the ship's
