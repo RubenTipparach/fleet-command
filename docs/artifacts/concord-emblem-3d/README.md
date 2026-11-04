@@ -13,3 +13,4 @@
 
 - Version 1 published 2026-11-04 (cloud session, faction emblems thread), version id `1793765019-c6ec`.
 - 2026-11-04, version 2 (`1793776101-60fc`): B-E25 (the pointed peak), the satin blue star, and the owner's small layer of detail: a two-tier saucer (upper tier inset 1.6 mm) and four segments on each leg (grooves 0.5 mm deep).
+- 2026-11-04, version 3 (`1793776690-edf5`): corners fixed (owner: "fix the corners here"): the saucer's upper tier is an exact inset with one clean point at each tip, and the frame's inner peak no longer spikes, because every shape is now sampled with each corner as a vertex.

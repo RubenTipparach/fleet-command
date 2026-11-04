@@ -61,3 +61,4 @@
   B-E24 the arrow-foot peak ("what if it was a slightly arrow shaped at the bottom") and B-E25 the pointed peak ("Can we
   make the to point too?"), B-E25 now B's main sketch.
 - 2026-11-04, version 15 (`1793776102-a400`): the owner's note on the saucer's double bevel and the leg segment marks; `lensTop` and `legSegments` added to `window.EMBLEM_PARTS`.
+- 2026-11-04, version 16 (`1793776690-c54f`): the owner's note on the corners; `inset` clips exactly, `polys` samples segment by segment so each path corner is a vertex.

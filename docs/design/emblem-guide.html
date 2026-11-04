@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'fix the corners here (the saucer\'s tip, in 3D)', means: 'The upper tier folded over itself at the saucer\'s points, and sampling missed the frame\'s inner peak, so the bevel spiked there. The tier is now an exact inset (no folds), and every shape is sampled so each corner is a vertex.' },
   { when: '2026-11-04', q: 'That look good i like that. We need some small subtle details to.the 3d model.loke a double bevel on the saucer. A small layer of detail. Maybe some segment marks on the legs', means: 'B-E25 kept. The saucer gets an upper tier inset 1.6 mm, so its rim steps twice; each leg is cut into four segments by grooves 0.5 mm deep. Both come from the guide\'s shapes, in the Blender render and the 3D badge.' },
   { when: '2026-11-04', q: 'Can we make the to point too?', means: 'B-E25: the top drawn to a point as well, over the arrow foot; now B\'s main sketch and the 3D badge.' },
   { when: '2026-11-04', q: 'Can you make the start like a satin in blue? I\'m not sure I like the bell shape a whole lot what if it was a slightly arrow shaped at the bottom', means: 'The pressed star is satin Signal blue (flat, Blender and 3D). B-E24: the rounded peak with a shallow arrow-point foot, now B\'s main sketch and the 3D badge.' },
@@ -683,18 +684,50 @@ window.EMBLEM_PARTS = (key) => {
   const host = document.createElementNS(svgNS, 'svg'); document.body.append(host);
   // Each subpath (every one here starts with an absolute M) sampled every 0.25 units along its length.
   const polys = (d, k = 1, cy = 52, oy = 52) => d.split(/(?=M)/).filter((x) => x.trim()).map((sub) => {
+    // Sampled segment by segment, every segment from its own start point, so each corner of the path is a vertex: a
+    // corner missed by even sampling becomes a short flat edge, and a bevel spikes out of it.
     const el = document.createElementNS(svgNS, 'path'); el.setAttribute('d', sub); host.append(el);
-    const L = el.getTotalLength(), n = Math.max(24, Math.ceil(L / 0.25)), out = [];
-    for (let i = 0; i < n; i++) { const p = el.getPointAtLength(L * i / n); out.push([+(50 + (p.x - 50) * k).toFixed(3), +(cy + (p.y - oy) * k).toFixed(3)]); }
-    el.remove(); return out;
+    const cmds = sub.match(/[A-Za-z][^A-Za-z]*/g), ends = [];
+    for (let c = 1; c <= cmds.length; c++) { el.setAttribute('d', cmds.slice(0, c).join('')); ends.push(el.getTotalLength()); }
+    el.setAttribute('d', sub);
+    const L = el.getTotalLength(), out = [];
+    const total = Math.max(24, Math.ceil(L / 0.25));
+    for (let c = 0; c < ends.length; c++) {
+      const a = c ? ends[c - 1] : 0, b = ends[c];
+      if (b - a < 1e-6) continue;
+      const m = Math.max(1, Math.round(total * (b - a) / L));
+      for (let i = 0; i < m; i++) { const p = el.getPointAtLength(a + (b - a) * i / m); out.push([+(50 + (p.x - 50) * k).toFixed(3), +(cy + (p.y - oy) * k).toFixed(3)]); }
+    }
+    el.remove();
+    // A closing point equal to the first is dropped (the ring closes itself).
+    while (out.length > 1 && Math.hypot(out[0][0] - out[out.length - 1][0], out[0][1] - out[out.length - 1][1]) < 1e-3) out.pop();
+    return out;
   });
   const S = (d) => polys(d, e.scale, e.cy);
-  // A closed ring moved inward by d units everywhere (each point along its inward normal): the saucer's upper tier.
+  // A convex ring moved inward by d units, exactly: the ring clipped by every one of its edges moved inward by d (the
+  // saucer's upper tier). Moving each point along its own normal instead folds the ring over itself at a pointed tip.
   const inset = (ring, d) => {
     let a = 0; ring.forEach((p, i) => { const q = ring[(i + 1) % ring.length]; a += p[0] * q[1] - q[0] * p[1]; });
-    const sgn = a > 0 ? 1 : -1, n = ring.length;
-    return ring.map((p, i) => { const a1 = ring[(i + n - 1) % n], b1 = ring[(i + 1) % n]; let tx = b1[0] - a1[0], ty = b1[1] - a1[1]; const l = Math.hypot(tx, ty) || 1; tx /= l; ty /= l;
-      return [+(p[0] - sgn * ty * d).toFixed(3), +(p[1] + sgn * tx * d).toFixed(3)]; });
+    const sgn = a > 0 ? 1 : -1;
+    let poly = ring.slice();
+    ring.forEach((p, i) => {
+      const q = ring[(i + 1) % ring.length], l = Math.hypot(q[0] - p[0], q[1] - p[1]);
+      if (l < 1e-9 || poly.length < 3) return;
+      const nx = -sgn * (q[1] - p[1]) / l, ny = sgn * (q[0] - p[0]) / l; // inward normal
+      const side = (v) => (v[0] - p[0]) * nx + (v[1] - p[1]) * ny - d;  // >= 0 keeps
+      const next = [];
+      poly.forEach((u, k) => {
+        const v = poly[(k + 1) % poly.length], su = side(u), sv = side(v);
+        if (su >= 0) next.push(u);
+        if ((su >= 0) !== (sv >= 0)) { const t = su / (su - sv); next.push([u[0] + (v[0] - u[0]) * t, u[1] + (v[1] - u[1]) * t]); }
+      });
+      poly = next;
+    });
+    // Drop points closer than 0.05 units to the last kept one, so no edge is a sliver.
+    const out = [];
+    poly.forEach((v) => { const w = out[out.length - 1]; if (!w || Math.hypot(v[0] - w[0], v[1] - w[1]) > 0.05) out.push(v); });
+    if (out.length > 1 && Math.hypot(out[0][0] - out[out.length - 1][0], out[0][1] - out[out.length - 1][1]) <= 0.05) out.pop();
+    return out.map((v) => [+v[0].toFixed(3), +v[1].toFixed(3)]);
   };
   const lens = S(sp.lens)[0];
   const out = { key: e.key, name: e.name, grid: 100, frame: polys(e.frame), field: polys(e.field), legs: sp.legs.map((d) => S(d)[0]),
