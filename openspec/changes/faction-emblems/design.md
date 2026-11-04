@@ -72,6 +72,12 @@ crosses it: an arc over the head and a flat edge under the flat foot (owner: "ti
 line can be flat to conform to the key hole/beacon shape more"). This change adds no livery; the band is the Concord line's own. (A pinstripe layout, after a reference picture of
 an emblem heading two pinstripes, was tried and dropped.)
 
+**On the real model** (owner, 2026-11-04: "can you put that on the actual model?"): every Concord ship in the Concord line
+(mockup 6) carries it, on its forward livery band, port side, 3 % of its length tall, its foot 0.3 m above the waterline
+service band, and the hull shader keeps windows out from under it. One implementation, `docs/mockups/lib/concord-emblem.js`
+(placement, the band's break, the paint as a field/ship/star mask so the field follows the chosen livery), used by mockup
+6's hull shader and mockup 11. The Tern (a reference ship, not ours) carries none.
+
 ## The rules for an emblem
 
 | Rule | Says | Why |

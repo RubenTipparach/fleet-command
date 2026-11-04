@@ -84,3 +84,4 @@
 - 2026-11-04, cloud session: M11 at v7; version 87, id `1793788581-0fb3`.
 - 2026-11-04, cloud session: M11 at v8; version 88, id `1793788922-ee81`.
 - 2026-11-04, cloud session: M11 at v9; version 89, id `1793789702-2c07`.
+- 2026-11-04, cloud session: M11 at v10 and M6 at v19 (the emblem on the real model); version 90, id `1793791939-c927`.
