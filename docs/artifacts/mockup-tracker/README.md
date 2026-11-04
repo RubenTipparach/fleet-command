@@ -52,6 +52,10 @@
 - 2026-11-03, cloud session (Krai battle console thread): M8 at version 6 (tracker version 47, `1793737629-9deb`), then 7 (version 48, `1793738755-9fdf`), then 8, merged onto the live version `1793739217-06ad` (M7 at v4, the Ship Design Bible at v2, survey v33); version 50, version id `1793739612-c98f`.
 - 2026-11-03, cloud session (faction emblems thread): the Emblem Design Guide added under Guides and M9 (Faction
   emblems, listed) under Game mockups, on top of the live version; version 55, version id `1793743908-edc6`.
+- 2026-11-03, cloud session (Concord ships thread): version 57, version id `1793748454-d560`: M7 v11 (the Krai line and damage), M6 v15 (shared damage module).
+- 2026-11-04, cloud session (Concord ships thread): version 58, version id `1793755601-4b1e`: M7 v12 (the Krai hull breaking apart, a bayonet per class), M6 v16 (shared breakup module).
+- 2026-11-04, cloud session (Concord ships thread): version 60, version id `1793761970-4cbf`, built on the live version 59 (another session's M8 v9 and Analog Panel Bible v4 kept): M7 v13, M6 v17.
+- 2026-11-04, cloud session (Concord ships thread): version 75, version id `1793781932-3252`, built on the live version 74 (other sessions' entries kept): M7 v16.
 - 2026-11-04, cloud session (Krai battle console thread): M8 at version 9 and the Analog Panel Bible at version 4 (rule T), on the live version `1793755601-4b1e` (from `claude/trusting-faraday-js5whp`: M6 v16, M7 v12, M9, the Emblem Design Guide); version 59, version id `1793761464-be25`.
 - 2026-11-04, cloud session (Krai battle console thread): M2 at version 71 and M8 at version 10 (weapon targeting), on the live version `1793761970-4cbf` (M6 v17, M7 v13 from another session); version 61, version id `1793763310-9c68`.
 - 2026-11-04, cloud session (Krai battle console thread): M2 at version 72 and M8 at version 11, on the live version `1793777299-64c0` (M10 at v4 and the Emblem Design Guide at v16 from another session); version 67, version id `1793777634-c8fa`.
