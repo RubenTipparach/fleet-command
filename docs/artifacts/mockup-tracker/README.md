@@ -90,3 +90,4 @@
 - 2026-11-04, cloud session (battle console thread): version 101, version id `1793804672-309b`, built on the live version (M6 v23, M10 v7, M14 added by other sessions): M2 v77, M8 v16, M12 v2.
 - 2026-11-04, cloud session (battle console thread): version 102, version id `1793806625-1c9b`: the Ssarith ships added as M12 (version 1 withdrawn), the Ssarith battle console renumbered M15.
 - 2026-11-04, cloud session (battle console thread): version 103, version id `1793806654-7ca6`: M15 at v3.
+- 2026-11-04, cloud session (battle console thread): version 105, version id `1793819008-c663`, built on the live version (M6 v24 from another session): M2 v78, M8 v17, M15 v4.
