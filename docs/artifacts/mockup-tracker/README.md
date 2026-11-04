@@ -91,3 +91,4 @@
 - 2026-11-04, cloud session: M11 retired, moved to Misc; version 93, id `1793794304-ede5`.
 - 2026-11-04, cloud session: M6 at v22 (full stripes); version 94, id `1793794813-2a28`.
 - 2026-11-04, cloud session: the guide at v22 (the Krai started); version 95, id `1793795718-1dea`.
+- 2026-11-04, cloud session: the guide at v23 (one faction at a time); version 96, id `1793799595-1731`.
