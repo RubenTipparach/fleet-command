@@ -10,6 +10,7 @@ using System.Linq;
 using FleetCommand.ConsoleModel;
 using FleetCommand.Data;
 using FleetCommand.Game.Ui;
+using FleetCommand.Game.Playtest;
 using FleetCommand.Game.Ui.Kit;
 using FleetCommand.Game.View;
 using FleetCommand.Sim;
@@ -23,7 +24,7 @@ public sealed partial class Main : Node
     private BattleView _view = null!;
     private ViewOverlay _overlay = null!;
     private Control _root = null!;
-    private ColorRect _column = null!;
+    private ColumnBacking _column = null!;
     private MenuCard _menu = null!;
     private readonly Dictionary<Region, ConsolePanel> _panels = new();
     private double _acc;
@@ -36,14 +37,14 @@ public sealed partial class Main : Node
         GameData data;
         try { data = DataLoader.Load(ReadData); }
         catch (DataError e) { GD.PushError($"DATA_ERROR {e.Message}"); GetTree().Quit(1); return; }
-        IKit kit = new ConcordKit();
-        KitPieces.Verify(kit);
+        Scenario start = StartScenario(data);
+        IKit kit = KitFor(data, start);
         GameActions act = null!;
         act = new GameActions(() => _x);
         _x = new ConsoleContext
         {
             Data = data, Kit = kit, Fonts = new Fonts("res://assets/fonts/Antonio-VariableFont_wght.ttf"), Tips = new TipBoard(),
-            State = new ConsoleState(), Act = act, Battle = new Battle(data, StartScenario(data)),
+            State = new ConsoleState(), Act = act, Battle = new Battle(data, start),
         };
         act.OnLayout = Relayout;
         act.OnRestart = Restart;
@@ -59,7 +60,7 @@ public sealed partial class Main : Node
         AddChild(layer);
         _root = new Control { Name = "Root", MouseFilter = Control.MouseFilterEnum.Ignore };
         layer.AddChild(_root);
-        _column = new ColorRect { Name = "Column", Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Stop };
+        _column = new ColumnBacking { Kit = kit };
         _root.AddChild(_column);
         _overlay = new ViewOverlay();
         _overlay.Init(_x, _view);
@@ -83,7 +84,9 @@ public sealed partial class Main : Node
         Relayout();
         GD.Print("GAME_READY");
         if (_args.ContainsKey("layout-test")) CallDeferred(nameof(RunLayoutTest));
+        else if (_args.ContainsKey("parity-test")) _ = RunParityTest();
         else if (_args.TryGetValue("still", out string? still)) _ = Still(still);
+        else if (_args.TryGetValue("playtest", out string? script)) StartPlaytest(script);
     }
 
     /// <summary>The scenario the game opens in: --scenario=id, or the first in data/battle/scenarios.json.</summary>
@@ -112,18 +115,24 @@ public sealed partial class Main : Node
     {
         _x.Battle = new Battle(_x.Data, sc);
         _x.Kit = KitFor(_x.Data, sc);
+        _column.Kit = _x.Kit;
         _x.State.Expanded = null;
         _view.Rebuild();
         _acc = 0;
         Relayout();
     }
 
-    /// <summary>The console skin of the side a scenario is played from (its faction's skin).</summary>
-    private static IKit KitFor(GameData data, Scenario sc)
+    private readonly Dictionary<string, IKit> _kits = new();
+
+    /// <summary>The console skin of the side a scenario is played from (its faction's skin; --skin=id overrides it, for
+    /// the layout test), made and verified once per skin.</summary>
+    private IKit KitFor(GameData data, Scenario sc)
     {
-        IKit kit = new ConcordKit();
+        string id = _args.GetValueOrDefault("skin") ?? data.Factions[sc.Side].Skin!;
+        if (_kits.TryGetValue(id, out IKit? kit)) return kit;
+        kit = Kits.For(id);
         KitPieces.Verify(kit);
-        return kit;
+        return _kits[id] = kit;
     }
 
     public override void _Process(double delta)
@@ -154,7 +163,7 @@ public sealed partial class Main : Node
     private void Relayout(Vector2 size)
     {
         if (_x == null) return;
-        ConsoleFrame f = ConsoleLayout.Compute(_x.Data.Layout, size.X, size.Y, _x.State.Expanded);
+        ConsoleFrame f = ConsoleLayout.Compute(_x.Data.Layout, size.X, size.Y, _x.State.Expanded, 1, _x.Kit.Style.StripTopH, _x.Kit.Style.StripBottomH);
         _x.State.Expanded = f.Expanded;
         _root.Position = Vector2.Zero;
         _root.Size = size;
@@ -189,6 +198,80 @@ public sealed partial class Main : Node
 
     // ---- Headless checks ------------------------------------------------------------------------------------------
 
+    /// <summary>Everything on the console that registers controls: the panels, the strips, the view and the menu.</summary>
+    private IEnumerable<IControlSource> Sources() => _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu);
+
+    /// <summary>Starts the scripted captain on data/playtests/&lt;name&gt;.json; --play=&lt;scenario id&gt; is the scenario it picks
+    /// from the scene selector (the playtest skill).</summary>
+    private void StartPlaytest(string name)
+    {
+        var captain = new ScriptedCaptain();
+        captain.Init(_x, Sources, name, ReadData($"playtests/{name}.json"), _args.GetValueOrDefault("play", _x.Battle.Scenario.Id));
+        AddChild(captain);
+    }
+
+    /// <summary>The skin parity check (owner, 2026-11-04: "we need to make sure all UI elements are at parrity"; after
+    /// tools/mockups/skin_parity.mjs for the mockups): one battle, played the same in every skin, through the same
+    /// console states (every station, every ship page, each panel expanded, the menu, the scene list). In each state
+    /// every skin must register the same controls, and every control must lie inside what draws it and inside the
+    /// window. Prints PARITY_FAIL lines and PARITY_TEST PASS or FAIL.</summary>
+    private async System.Threading.Tasks.Task RunParityTest()
+    {
+        var states = new List<(string Name, Action Set)> { ("battle", () => { }) };
+        foreach (var st in StationPanel.Stations) { string id = st.Id; states.Add(("station." + id, () => _x.State.Station = id)); }
+        foreach (var pg in ShipPanel.Pages) { string id = pg.Id; states.Add(("page." + id, () => _x.State.ShipPage = id)); }
+        foreach (Region r in ConsoleLayout.Expandable) { Region e = r; states.Add(("expand." + e, () => _x.State.Expanded = e)); }
+        states.Add(("menu", () => _x.State.MenuOpen = true));
+        states.Add(("scene-list", () => _x.State.SceneOpen = true));
+        string[] skins = { "concord", "krai" };
+        var seen = new Dictionary<string, Dictionary<string, HashSet<string>>>();
+        var fails = new List<string>();
+        Scenario sc = _x.Battle.Scenario;
+        foreach (string skin in skins)
+        {
+            _x.Kit = Kits.For(skin);
+            KitPieces.Verify(_x.Kit);
+            _column.Kit = _x.Kit;
+            _x.Battle = new Battle(_x.Data, sc);
+            _view.Rebuild();
+            Battle b = _x.Battle;
+            b.Lock(b.EnemiesOf(b.Player).First().Id);
+            for (int i = 0; i < 600; i++) { b.Step(); if (i == 594) b.Fire(); }
+            seen[skin] = new Dictionary<string, HashSet<string>>();
+            foreach (var (name, set) in states)
+            {
+                _x.State.Station = "helm"; _x.State.ShipPage = "systems"; _x.State.Expanded = null; _x.State.MenuOpen = false; _x.State.SceneOpen = false;
+                set();
+                Relayout();
+                _menu.Visible = _x.State.MenuOpen;
+                for (int i = 0; i < 3; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                var ids = new HashSet<string>();
+                Rect2 window = GetViewport().GetVisibleRect().Grow(1);
+                foreach (IControlSource src in Sources())
+                {
+                    Rect2 home = src.Screen.Grow(1);
+                    foreach (var (id, r, _) in src.Controls())
+                    {
+                        ids.Add(id);
+                        if (!home.Encloses(r)) fails.Add($"{skin} {name}: {id} at {r} spills out of its panel {src.Screen}");
+                        else if (!window.Encloses(r)) fails.Add($"{skin} {name}: {id} at {r} is off the window");
+                    }
+                }
+                seen[skin][name] = ids;
+            }
+        }
+        foreach (var (name, _) in states)
+        {
+            HashSet<string> a = seen[skins[0]][name], k = seen[skins[1]][name];
+            foreach (string id in a.Except(k).OrderBy(x => x)) fails.Add($"{name}: '{id}' in {skins[0]} but not in {skins[1]}");
+            foreach (string id in k.Except(a).OrderBy(x => x)) fails.Add($"{name}: '{id}' in {skins[1]} but not in {skins[0]}");
+        }
+        int controls = seen.Values.Sum(d => d.Values.Sum(h => h.Count));
+        foreach (string f in fails.Distinct()) GD.PrintErr("PARITY_FAIL " + f);
+        GD.Print(fails.Count == 0 ? $"PARITY_TEST PASS ({states.Count} states, {controls} controls, {string.Join(" and ", skins)})" : $"PARITY_TEST FAIL ({fails.Distinct().Count()})");
+        GetTree().Quit(fails.Count == 0 ? 0 : 1);
+    }
+
     /// <summary>Every panel at its designed rectangle and clipped, at the reference, wider and narrower windows and expanded.</summary>
     private void RunLayoutTest()
     {
@@ -199,7 +282,7 @@ public sealed partial class Main : Node
             {
                 _x.State.Expanded = ex;
                 Relayout(size);
-                ConsoleFrame want = ConsoleLayout.Compute(l, size.X, size.Y, ex);
+                ConsoleFrame want = ConsoleLayout.Compute(l, size.X, size.Y, ex, 1, _x.Kit.Style.StripTopH, _x.Kit.Style.StripBottomH);
                 foreach (var (r, p) in _panels)
                 {
                     bool shown = want.Regions.TryGetValue(r, out Rect wr);

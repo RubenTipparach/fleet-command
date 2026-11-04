@@ -23,9 +23,11 @@ public static class ConsoleLayout
     /// <summary>The scale from reference pixels to window pixels.</summary>
     public static double Scale(LayoutDef l, double windowW, double windowH) => Math.Min(windowH / l.ReferenceH, windowW / l.MinW);
 
-    /// <summary>The console for a window of the given size in reference pixels (window size over Scale).</summary>
-    public static ConsoleFrame Compute(LayoutDef l, double w, double h, Region? expanded, double scale = 1)
+    /// <summary>The console for a window of the given size in reference pixels (window size over Scale). A skin whose
+    /// strip art is taller than the layout's strip_h_px gives its own strip heights (the Krai's 60 and 80 px, mockup 8).</summary>
+    public static ConsoleFrame Compute(LayoutDef l, double w, double h, Region? expanded, double scale = 1, double? topH = null, double? bottomH = null)
     {
+        double th = topH ?? l.StripH, bh = bottomH ?? l.StripH;
         var r = new Dictionary<Region, Rect>();
         double cw = l.ColumnW;
         Rect view;
@@ -43,9 +45,9 @@ public static class ConsoleLayout
             r[Region.Ship] = l.Ship;
             r[Region.Weapons] = l.Weapons;
             r[Region.Radar] = l.Radar;
-            r[Region.Top] = new Rect(cw, 0, w - cw, l.StripH);
-            r[Region.Bottom] = new Rect(cw, h - l.StripH, w - cw, l.StripH);
-            view = new Rect(cw, l.StripH, w - cw, h - 2 * l.StripH);
+            r[Region.Top] = new Rect(cw, 0, w - cw, th);
+            r[Region.Bottom] = new Rect(cw, h - bh, w - cw, bh);
+            view = new Rect(cw, th, w - cw, h - th - bh);
         }
         return new ConsoleFrame(scale, w, h, r, view, expanded);
     }

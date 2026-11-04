@@ -58,6 +58,17 @@ scenarios grouped by side under the faction's name, one 32 px key each, the one 
 Picking one rebuilds the battle and the 3D view, and sets the console's kit to the side's skin (`Kits.For`, one `IKit`
 per skin). It is one more control in the view's immediate-mode input, like the Target key.
 
+## 5. The scripted captain
+
+The playtest skill's bot, built here because the owner asked for it with these scenarios (2026-11-04: "develop a bot to
+play through these test scenarios for each faction"). It plays fair: InputMap actions (`next_target`, `fire`, `back`)
+and pointer clicks pushed into the viewport at a control's centre, the control found by id where it was last drawn
+(`IControlSource`, which every panel and the view implement). Its `fight` beat is what a captain at the console does:
+lock with Tab, order Intercept on the helm, fire when the weapons panel would fire. `data/playtests/suite.json` lists
+every run, each scenario from both sides; `scripts/playtest.sh` plays them headless at a fixed 30 frames a second, so a
+four-minute battle takes seconds and gives the same verdict. Its first run found a real bug: every hover card threw,
+because the card layer has no size and its clamp's bounds crossed.
+
 ## Open questions
 
 | # | Question | Provisional answer |

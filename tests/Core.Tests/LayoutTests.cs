@@ -51,4 +51,14 @@ public class LayoutTests
         Assert.Null(f.Expanded);
         Assert.Equal(7, f.Regions.Count);
     }
+
+    [Fact]
+    public void A_skin_with_taller_strip_art_gets_taller_strips_and_the_view_gives_way()
+    {
+        ConsoleFrame f = ConsoleLayout.Compute(L, 1920, 1080, null, 1, 60, 80);
+        Assert.Equal(new Rect(480, 0, 1440, 60), f.Regions[Region.Top]);
+        Assert.Equal(new Rect(480, 1000, 1440, 80), f.Regions[Region.Bottom]);
+        Assert.Equal(new Rect(480, 60, 1440, 940), f.View);
+        Assert.Equal(L.Station, f.Regions[Region.Station]);
+    }
 }

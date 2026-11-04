@@ -9,9 +9,14 @@ metadata:
 # Playtests
 
 A feature is not done until a playtest shows it in the running game (CLAUDE.md section 9). This is
-how to run one. The scripted captain, the `--playtest` flag and the beats do not exist yet: they are
-the first `playtest-pipeline` change once the game project exists. Until then a playtest is the owner
-playing and recording with `obs-record` by hand, and a mockup is reviewed with `threejs-mockups`.
+how to run one. The scripted captain exists (2026-11-04, change `battle-scenarios`):
+`src/Game/Playtest/ScriptedCaptain.cs`, started by `-- --playtest=<script> --play=<scenario id>`, its scripts in
+`data/playtests/` and the suite of runs, every scenario from both sides, in `data/playtests/suite.json`. Its beats
+today: `wait_ready`, `pick_scene` (through the view's scene selector), `click <control id>`, `press <input action>`,
+`station <id>`, `expand <Station|Ship|Weapons>`, `collapse`, `arm <offline|normal|overload>`, `helm <key>`,
+`fight` (lock with Tab, order Intercept, fire when a charged weapon is in arc, until won or lost) and `hold <s>`. A
+beat with no progress is `stuck`. `scripts/playtest.sh` plays the suite headless at a fixed 30 frames a second (a
+verdict, not a look); `scripts/playtest.sh --watch` plays it in a window in real time, for recording.
 
 ## What a playtest is
 
@@ -57,8 +62,10 @@ A beat with no progress for 10 s of game time is `stuck`, and the line names the
 ## Run and record
 
 ```bash
-# Play a script and get a verdict (no recording), once the flag exists:
-.tools/godot/godot --path . -- --playtest first-battle --size desktop
+# Play the suite and get a verdict for each run (no recording):
+scripts/playtest.sh
+# One run, headless:
+.tools/godot/godot --headless --fixed-fps 30 --path . -- --playtest=battle --play=krai_battle
 
 # Record it on the owner's Windows machine, then upload the share copy:
 python .claude/skills/obs-record/scripts/obs_record.py \

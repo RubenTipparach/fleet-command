@@ -5,6 +5,7 @@
 // Sensors, tractor and craft are on the rail and are not built yet.
 using System;
 using System.Collections.Generic;
+using FleetCommand.Game.Ui.Kit;
 using FleetCommand.Sim;
 using Godot;
 
@@ -60,7 +61,7 @@ public sealed partial class ShipPanel : ConsolePanel
             if (s.Reinforce == i) DrawPolyline(new[] { key[0], key[1], key[2], key[3], key[0] }, C.Lilac, 3, true);
             if (i == toward) DrawLine(Pt(a - h, ro + 4), Pt(a + h, ro + 4), Colors.White, 3, true);
             Vector2 lp = Pt(a, (ri + ro) / 2);
-            Text(Rules.Facings[i], lp.X, lp.Y + 6, Big ? 22 : 15, frac > 0.4 ? Colors.Black : C.Text, HorizontalAlignment.Center, 0, 700);
+            Text(Rules.Facings[i], lp.X, lp.Y + 6, Big ? 22 : 15, frac > 0.4 ? Sk.InkOn(ShieldColor(frac)) : C.Text, HorizontalAlignment.Center, 0, 700);
         }
         Kit.Icon(this, "ship", new Rect2(c - new Vector2(ri * 0.6f, ri * 0.6f), new Vector2(ri * 1.2f, ri * 1.2f)), C.Sky);
         float rx = c.X + ro + 18, rw = b.End.X - rx;
@@ -98,6 +99,9 @@ public static class SystemsDisplay
     public static List<(Mount M, Rect2 R)> Draw(CanvasItem ci, Imm ui, ConsoleContext x, Ship s, Rect2 b, bool own, string idp, bool big = false, Action<Mount>? pick = null)
     {
         var c = x.Kit.C;
+        // a skin with rendered keys shows a status as the light in a key's glass; the white marks take its colours
+        bool glass = x.Kit.Style.RenderedKeys;
+        var mark = x.Kit.Style.Mark;
         Battle bt = x.Battle;
         var boxes = new List<(Mount, Rect2)>();
         float box = big ? 36 : Math.Min(30, (b.Size.Y - 8 - 3 * 6) / 4f), col = box + 6;
@@ -147,10 +151,12 @@ public static class SystemsDisplay
                 float top = big ? centre.Y - (list.Length * (box + 10)) / 2 : b.Position.Y + 4;
                 var r = new Rect2(sx, top + i * (box + (big ? 10 : 6)), box, box);
                 SystemStatus st = bt.Rules.Status(s, k);
-                HitState hs = ui.Reg($"{idp}.sys.{k}", r, null, null, new Tip(Title(k), new (string, string, Color?)[] { ("Health", $"{Math.Round(s.Sys[k] * 100)} %", null), ("Status", st.ToString(), StatusColorOf(c, st)) }));
-                Shapes.RoundRect(ci, r, StatusColorOf(c, st), 6);
-                x.Kit.Icon(ci, SysIcon[k], r.Grow(-4), st == SystemStatus.Destroyed ? c.Alert : Colors.Black);
-                if (hs.Hot) Shapes.RoundRectLine(ci, r.Grow(2), Colors.White, 8, 2);
+                Color fill = StatusColorOf(c, st);
+                HitState hs = ui.Reg($"{idp}.sys.{k}", r, null, null, new Tip(Title(k), new (string, string, Color?)[] { ("Health", $"{Math.Round(s.Sys[k] * 100)} %", null), ("Status", st.ToString(), fill) }));
+                StatusKey(x.Kit, ci, r, 6, fill, st);
+                Color ink = st == SystemStatus.Destroyed && !glass ? c.Alert : KeyFace.Ink(x.Kit, fill, true);
+                x.Kit.Icon(ci, SysIcon[k], glass ? r.Grow(-box * 0.21f) : r.Grow(-4), ink);
+                if (hs.Hot) x.Kit.Shape(ci, r.Grow(2), 8, mark.Hover, 2);
             }
         }
 
@@ -175,23 +181,36 @@ public static class SystemsDisplay
             HitState hs = ui.Reg($"{idp}.m{m.Index}", r.Grow(2), click, null, new Tip($"{m.Label} {m.Weapon.Name}", rows));
             boxes.Add((m, r));
             if (big) x.Fonts.Draw(ci, m.Label, r.End.X + 5, r.Position.Y + 9, 12, c.Lilac, HorizontalAlignment.Left, 0, 600);
-            if (hs.Hot) Shapes.RoundRectLine(ci, r.Grow(5), Colors.White, 7, 2);
-            if (m.Selected && own) Shapes.RoundRect(ci, r.Grow(3), c.Sky, 6);
+            if (hs.Hot) x.Kit.Shape(ci, r.Grow(5), 7, mark.Hover, 2);
+            if (m.Selected && own) x.Kit.Shape(ci, r.Grow(3), 6, c.Sky);
             if (cd != null && st != SystemStatus.Destroyed)
             {
-                Shapes.RoundRect(ci, r, sc.Darkened(0.66f), 4);
+                // cooling: a darker shade (on glass, the unlit key) lit from the bottom up as it charges
                 float f = (float)Math.Clamp(m.Charge, 0, 1);
-                if (f > 0.02f) Shapes.RoundRect(ci, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), sc, 4);
-                x.Fonts.DrawOutlined(ci, Rules.FormatCooldown(cd.Value), r.GetCenter().X, r.GetCenter().Y + (big ? 6 : 5), big ? 16 : 13, Colors.White, new Color(0, 0, 0, 0.85f), 3);
+                if (glass && st != SystemStatus.Off)
+                {
+                    x.Kit.Hero(ci, "key.off", r);
+                    x.Kit.HeroBottom(ci, "key." + KeyFace.StateOf(c, sc, true), r, f);
+                }
+                else
+                {
+                    StatusKey(x.Kit, ci, r, 4, glass ? sc : sc.Darkened(0.66f), st);
+                    if (f > 0.02f && !glass) Shapes.RoundRect(ci, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), sc, 4);
+                }
+                x.Fonts.DrawOutlined(ci, Rules.FormatCooldown(cd.Value), r.GetCenter().X, r.GetCenter().Y + (big ? 6 : 5), big ? 16 : 13, mark.Count, new Color(0, 0, 0, 0.85f), 3);
             }
             else
             {
-                Shapes.RoundRect(ci, r, st == SystemStatus.Destroyed ? c.Alert.Darkened(0.6f) : sc, 4);
-                Glyph(ci, m.Weapon.Kind, r.GetCenter(), mb / 2 - 3, st == SystemStatus.Destroyed ? c.Alert : Colors.Black);
+                StatusKey(x.Kit, ci, r, 4, sc, st);
+                Glyph(ci, m.Weapon.Kind, r.GetCenter(), mb / 2 - 3, st == SystemStatus.Destroyed ? c.Alert : KeyFace.Ink(x.Kit, sc, true));
             }
         }
         return boxes;
     }
+
+    /// <summary>A status box: the key face lit in its status colour; on rendered glass an Off box is dimmed.</summary>
+    private static void StatusKey(IKit kit, CanvasItem ci, Rect2 r, float radius, Color fill, SystemStatus st) =>
+        KeyFace.Draw(kit, ci, r, radius, fill, true, kit.Style.RenderedKeys && st == SystemStatus.Off ? 0.7f : 1);
 
     private static (int, int) NearestFree((int, int) cell, HashSet<(int, int)> taken, int side)
     {

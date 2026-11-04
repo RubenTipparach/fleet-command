@@ -9,6 +9,9 @@
 - [x] 1.5 The scene selector in the view; `--scenario=<id>`
 - [x] 1.6 Tests: both sides present, every scenario runs a minute, refusals, standing orders, hold fire
 - [ ] 1.7 Stills of both sides beside mockups 2 and 8, looked at (CLAUDE.md section 12)
+- [x] 1.8 The scripted captain (owner, 2026-11-04: "develop a bot to play through these test scenarios for each faction"): `ScriptedCaptain`, `data/playtests/` (battle, arming, the suite of six runs), `scripts/playtest.sh`
+- [ ] 1.9 The whole suite run headless on both sides and reported in `docs/playtests/` (Concord Raiders ran: won at 173 s, hull 100 %)
+- [ ] 1.10 A recorded take of one battle per side (`playtest.sh --watch` under OBS), on Drive
 
 ## 2. The mockup's other scenes (each when its system is in the game)
 

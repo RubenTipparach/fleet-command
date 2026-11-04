@@ -36,6 +36,13 @@ public sealed class Imm
     public Vector2 Mouse { get; private set; } = new(-1e5f, -1e5f);
 
     public void Begin() => _cur = new List<Hit>();
+
+    /// <summary>The controls of the last frame drawn, in registration order (bottom first): id, rectangle and whether a
+    /// click or drag does anything. The skin parity check and the scripted captain read them.</summary>
+    public IEnumerable<(string Id, Rect2 R, bool Live)> Controls()
+    {
+        foreach (Hit h in _last) yield return (h.Id, h.R, h.Click != null || h.Drag != null);
+    }
     public void End() { _last = _cur; if (Hot != null && _last.Find(h => h.Id == Hot) == null) Hot = null; }
 
     /// <summary>Registers a control. A click fires on release over the same control; a drag gets every move while held.</summary>

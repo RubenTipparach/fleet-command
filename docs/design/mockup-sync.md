@@ -12,8 +12,8 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 |---|---|---|---|---|
 | 2 | In-game UI (the battle console, Concord) | v74 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
 | 6 | Concord line (the ships) | v17 | the intact ships as exported by `tools/mockups/export_ships.mjs` | `ship-models-engine` |
-| 7 | Krai Warhost ships | v16 | the intact ships as exported by `tools/mockups/export_ships.mjs` | `ship-models-engine` |
-| 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has) | `krai-console-engine` |
+| 7 | Krai Warhost ships | v19 | the intact ships as exported by `tools/mockups/export_ships.mjs` | `ship-models-engine` |
+| 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 
 ## Open differences
 
@@ -37,6 +37,21 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Test scenes | Seventeen scenes | Battle, Raiders and Arming, from both sides | `battle-scenarios` 2.1-2.5 |
 | Target box | Holder's emblem, boarding tug of war, Target view and Camera lock | The target's systems display and the release X | `battle-console-engine` 2.2 |
 | Backdrop | Nebula sky with streaking dust | A simpler haze and stars | `battle-console-engine` |
+
+### Mockup 8 only (the Krai skin)
+
+Parity between the two skins is checked by the engine (`-- --parity-test`, in `scripts/run-tests.sh`): the same controls
+in both, every control inside its panel, in 20 console states. What the Krai skin still draws differently from mockup 8:
+
+| Where | Mockup | Game | Task |
+|---|---|---|---|
+| Panel titles | The ship and weapons titles on the divider above the panel | On the panel's own top edge (panels are clipped to their rectangles) | `krai-console-engine` 2.1 |
+| Column light | The red channel blooms (v8) | No bloom | `krai-console-engine` 2.2 |
+| Hover cards | The Krai's card shape | The game's card shape in Krai colours | `krai-console-engine` 2.3 |
+| Icons | A glow, mitred corners | No glow, round corners | `krai-console-engine` 2.4 |
+| Names | Kharz, Vekk, Ruhn and the Krai officers' names and ranks; the wireframe ship display | The scenario's names (the same three ships); no officers yet; the plan view | `krai-console-engine` 2.5 |
+
+Not yet seen in a still: the Krai console has only been drawn headless. Stills on the owner's PC are task 1.7.
 
 ### Mockups 6 and 7 (the ships)
 

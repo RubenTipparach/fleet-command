@@ -20,3 +20,7 @@ echo "== layout test (Godot, headless)"
 out="$(timeout 300 "$GODOT" --headless --path . -- --layout-test 2>&1)" || { echo "$out"; exit 1; }
 echo "$out" | grep -E "LAYOUT_(TEST|FAIL)"
 echo "$out" | grep -q "LAYOUT_TEST PASS"
+
+echo "== skin parity (Godot, headless): every control in both skins, inside its panel"
+out="$(timeout 300 "$GODOT" --headless --path . --resolution 1920x1080 -- --parity-test --scenario=concord_raiders 2>&1)" || { echo "$out" | grep -E "PARITY|ERROR"; exit 1; }
+echo "$out" | grep -E "PARITY_TEST"

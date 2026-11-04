@@ -434,6 +434,11 @@ The `playtest` and `obs-record` skills are the method (Crab Breeze 9, Mining Mik
   the owner the link.
 - **One game per device**, and **a desktop run is checked every five minutes** while it plays
   (Mining Mike).
+- **Share the machine with the other sessions** (owner, 2026-11-04: "theres two claude sessions running on this machine,
+  so you may want to coordinate with the other one on when who gets run time"). Before a heavy job on the owner's machine
+  (a Godot run, a headless browser, Blender, a build longer than a minute), check `ListAgents` for another session on the
+  same machine and message it; while it records or plays a take, hold heavy jobs until it says it is done, and tell it
+  when yours start and end.
 - **Report each playtest** in `docs/playtests/<date>-<name>.md` with the commit, the machine, each
   beat's outcome, the Drive link and the contact sheet.
 - **Cloud sessions cannot record.** They render headless stills under Xvfb (Mesa's software
@@ -499,7 +504,8 @@ Before claiming anything is done, run what applies:
 |---|---|
 | Specs | `openspec validate --all` |
 | Dash check | section 5 |
-| Tests | `scripts/run-tests.sh` (headless C# tests of `src/Core`, a warnings-as-errors build, then the layout test in the engine) |
+| Tests | `scripts/run-tests.sh` (headless C# tests of `src/Core`, a warnings-as-errors build, the layout test in the engine, then the skin parity check: every control in every skin, in every console state, inside its panel) |
+| Bot | `scripts/playtest.sh` (the scripted captain plays every scenario in `data/playtests/suite.json` from both sides, headless, and must end ok) |
 | Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
@@ -546,6 +552,10 @@ Nothing is an exception until it is listed here with its reason.
 - **Organic skins are not nine-sliced** (section 7; owner, 2026-10-31). Their frames are one sculpted body that cannot
   stretch or tile, so every piece is sculpted at its exact slot size by parametric sculptors, so any size is a re-run,
   blocked out with placeholders first. The kit's piece names and the rule that a missing piece is a build error still hold.
+- **The approved ships are exported from their mockups, not built in Blender** (2026-11-04, change `ship-models-engine`).
+  The Concord and Krai lines' geometry is defined by the mockup pages' builders; a Blender port would be a second copy
+  of every hull rule (section 6.1). `tools/mockups/export_ships.mjs` exports them to glb from the pages themselves,
+  deterministically, with named nodes and a manifest, so section 10's other rules still hold.
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from
