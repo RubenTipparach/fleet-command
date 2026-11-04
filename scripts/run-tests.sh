@@ -16,7 +16,11 @@ echo "== Godot project build (warnings are errors)"
 "$DOTNET" build FleetCommand.csproj -v q --nologo
 
 echo "== layout test (Godot, headless)"
-[[ -d .godot ]] || timeout 600 "$GODOT" --headless --path . --import >/dev/null 2>&1 || true
+[[ -d .godot/imported ]] || timeout 900 "$GODOT" --headless --path . --import >/dev/null 2>&1 || true  # .godot/mono alone is the C# build, not an import
 out="$(timeout 300 "$GODOT" --headless --path . -- --layout-test 2>&1)" || { echo "$out"; exit 1; }
 echo "$out" | grep -E "LAYOUT_(TEST|FAIL)"
 echo "$out" | grep -q "LAYOUT_TEST PASS"
+
+echo "== skin parity (Godot, headless): every control in both skins, inside its panel"
+out="$(timeout 300 "$GODOT" --headless --path . --resolution 1920x1080 -- --parity-test --scenario=concord_battle 2>&1)" || { echo "$out" | grep -E "PARITY|ERROR"; exit 1; }
+echo "$out" | grep -E "PARITY_TEST"

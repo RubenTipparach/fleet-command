@@ -3,7 +3,9 @@
 // its projection is shifted so that ship sits at a fixed height in the view rectangle at every zoom (battle-console
 // design: 74 % down the view), without moving the camera. The 3D renders full screen behind the console, and the
 // projection centres it on the view rectangle, so an expanded panel moves the battle to the right third and it keeps
-// playing. Ships are stand-ins until mockups 3 and 5 are built (scenes/standins).
+// playing. A class with a model is drawn as its approved ship (assets/ships/, exported from the ship mockups: the Concord
+// line, mockup 6, and the Krai line, mockup 7), scaled to the class's battle length; the factions whose ships are not
+// designed yet keep their stand-ins (scenes/standins).
 using System;
 using System.Collections.Generic;
 using FleetCommand.Data;
@@ -54,13 +56,48 @@ public sealed partial class BattleView : Node3D
         _models.Clear();
         foreach (Ship s in _x.Battle.Ships)
         {
-            var model = GD.Load<PackedScene>($"res://scenes/standins/{s.Class.Shape}.tscn").Instantiate<Node3D>();
+            Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.LengthM) : StandIn(s);
             model.Name = s.Id;
-            model.Scale = Vector3.One * (float)(s.Class.LengthM / MPerU);
-            Paint(model, new Color(s.Faction.Hull), new Color(s.Faction.Trim));
             AddChild(model);
             _models[s.Id] = model;
         }
+    }
+
+    /// <summary>An approved ship from its glb (metres, bow toward -Z), scaled so its length is the class's battle length.</summary>
+    private static Node3D ShipModel(string path, double lengthM)
+    {
+        var scene = GD.Load<PackedScene>("res://" + path) ?? throw new InvalidOperationException($"ship model not found: res://{path}");
+        Node3D ship = scene.Instantiate<Node3D>();
+        float len = Bounds(ship, Transform3D.Identity).Size.Z;
+        if (!(len > 0)) throw new InvalidOperationException($"ship model has no length: res://{path}");
+        var holder = new Node3D();
+        holder.AddChild(ship);
+        ship.Scale = Vector3.One * (float)(lengthM / MPerU) / len;
+        return holder;
+    }
+
+    /// <summary>The box round every mesh under a node, in the frame <paramref name="xf"/> maps the node into.</summary>
+    private static Aabb Bounds(Node n, Transform3D xf)
+    {
+        Aabb? box = null;
+        foreach (Node c in n.GetChildren())
+        {
+            if (c is not Node3D c3) continue;
+            Transform3D cx = xf * c3.Transform;
+            if (c is MeshInstance3D mi && mi.Mesh != null) { Aabb b = cx * mi.Mesh.GetAabb(); box = box is { } a ? a.Merge(b) : b; }
+            Aabb sub = Bounds(c, cx);
+            if (sub.Size != Vector3.Zero) box = box is { } a2 ? a2.Merge(sub) : sub;
+        }
+        return box ?? new Aabb();
+    }
+
+    /// <summary>The stand-in for a class's shape, in its faction's stand-in colours.</summary>
+    private static Node3D StandIn(Ship s)
+    {
+        var model = GD.Load<PackedScene>($"res://scenes/standins/{s.Class.Shape}.tscn").Instantiate<Node3D>();
+        model.Scale = Vector3.One * (float)(s.Class.LengthM / MPerU);
+        Paint(model, new Color(s.Faction.Hull), new Color(s.Faction.Trim));
+        return model;
     }
 
     private static void Paint(Node n, Color hull, Color trim)

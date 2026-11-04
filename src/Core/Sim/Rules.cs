@@ -122,5 +122,6 @@ public sealed class Rules
     public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0));
 
     /// <summary>Range in km an AI captain closes to for its range setting.</summary>
-    public double AiRangeKm() => _t.AiRangeMidKm;
+    /// <summary>The range an AI captain fights at, km (the player's manoeuvres use the middle one).</summary>
+    public double AiRangeKm(Data.AiRange r = Data.AiRange.Mid) => r switch { Data.AiRange.Close => _t.AiRangeCloseKm, Data.AiRange.Long => _t.AiRangeLongKm, _ => _t.AiRangeMidKm };
 }

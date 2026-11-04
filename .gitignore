@@ -16,3 +16,4 @@ tools/materials/raw/
 bin/
 obj/
 *.user
+.claude/worktrees/

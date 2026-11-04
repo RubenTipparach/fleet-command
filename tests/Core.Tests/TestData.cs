@@ -25,6 +25,13 @@ public static class TestData
     private static GameData? _data;
     public static GameData Data => _data ??= DataLoader.Load(Read);
 
-    /// <summary>A fresh skirmish from the real data.</summary>
-    public static Battle NewBattle() => new(Data, Data.Skirmish);
+    /// <summary>The golden seed's battle (Fixtures/golden_raiders.json): the battle console mockup's skirmish, kept for the
+    /// pinned hulls; not a game scenario, since the game plays the Krai against the Concord with approved ships only.</summary>
+    public static Scenario Raiders => _raiders ??= DataLoader.LoadScenario(
+        StrictJson.Parse(File.ReadAllText(Path.Combine(Path.GetDirectoryName(DataDir)!, "tests", "Core.Tests", "Fixtures", "golden_raiders.json")), "tests/Core.Tests/Fixtures/golden_raiders.json"),
+        Data.Classes, Data.Factions);
+    private static Scenario? _raiders;
+
+    /// <summary>A fresh golden-seed battle on the real data.</summary>
+    public static Battle NewBattle() => new(Data, Raiders);
 }

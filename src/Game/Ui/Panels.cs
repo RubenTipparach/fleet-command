@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using FleetCommand.ConsoleModel;
 using FleetCommand.Data;
+using FleetCommand.Game.Ui.Kit;
 using FleetCommand.Sim;
 using Godot;
 
@@ -16,7 +17,9 @@ public sealed partial class PlatePanel : ConsolePanel
     protected override void DrawPanel()
     {
         Kit.Hero(this, "nameplate", new Rect2(0, 0, Size.X, 56));
-        Text($"{Me.Name} · {Me.Captain}".ToUpperInvariant(), 108, 36, 28, C.Text, HorizontalAlignment.Left, 250, 700);
+        // the plate's live field, in the skin's own face, clear of its mark (the Krai's war-shield triangle)
+        PlateText pt = Sk.Plate;
+        X.Fonts.Draw(this, $"{Me.Name} · {Me.Captain}".ToUpperInvariant(), pt.X, pt.Y, pt.Face, pt.Col, HorizontalAlignment.Left, pt.Max);
         Ship[] fleet = B.Fleet();
         int i = Array.IndexOf(fleet, Me);
         Button("fleet", new Rect2(Size.X - 90, 6, 86, 30), $"Fleet {i + 1}/{fleet.Length}", () => B.TakeCommand(fleet[(i + 1) % fleet.Length].Id),
@@ -132,14 +135,15 @@ public sealed partial class RadarPanel : ConsolePanel
     }
 }
 
-/// <summary>The top strip: own hull, the weapon capacitor in cells, the target's hull, the clock, Pause and Menu.</summary>
+/// <summary>The top strip: own hull, the weapon capacitor in cells, the target's hull, the clock, Pause and Menu. A skin
+/// whose strips join its column draws the joined strip, its content moved into the strip's channel.</summary>
 public sealed partial class TopStrip : ConsolePanel
 {
     protected override void DrawPanel()
     {
-        Kit.Piece(this, "strip.top", new Rect2(Vector2.Zero, Size));
+        Kit.Piece(this, Sk.JoinedStrips ? "strip.top.join" : "strip.top", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
-        float cx = 96, cw = Size.X - 192, cy = (44 - 35) / 2f, fix = 70 + 100 + 80, gap = 22, u = (cw - fix - gap * 5) / 3.2f, xx = cx;
+        float cx = 96, cw = Size.X - 192, cy = (44 - 35) / 2f + Sk.StripTopDy, fix = 70 + 100 + 80, gap = 22, u = (cw - fix - gap * 5) / 3.2f, xx = cx;
         double hull = s.Hull / s.Class.HullHp;
         Bar(xx, cy, u, "Hull integrity", hull, hull < 0.35); xx += u + gap;
         Lbl("Weapon capacitor", xx, cy + 13, u * 1.2f);
@@ -158,9 +162,9 @@ public sealed partial class BottomStrip : ConsolePanel
 {
     protected override void DrawPanel()
     {
-        Kit.Piece(this, "strip.bottom", new Rect2(Vector2.Zero, Size));
+        Kit.Piece(this, Sk.JoinedStrips ? "strip.bottom.join" : "strip.bottom", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
-        float cx = 96, cw = Size.X - 192, cy = 12, ch = 44, gap = 22, fix = 120 + 138, u = (cw - fix - gap * 4) / 3.45f, xx = cx;
+        float cx = 96, cw = Size.X - 192, cy = 12 + Sk.StripBottomDy, ch = 44, gap = 22, fix = 120 + 138, u = (cw - fix - gap * 4) / 3.45f, xx = cx;
         Lbl("Speed", xx, cy + 28);
         Num(Math.Round(s.V).ToString(), xx + 58, cy + 31, 46);
         const float wk = 96;
@@ -194,10 +198,10 @@ public sealed partial class BottomStrip : ConsolePanel
     private void WarpKey(Rect2 r)
     {
         HitState st = Ui.Reg("warp.key", r, null, null, new Tip("Warp: not yet in the game"));
-        Shapes.RoundRect(this, r, C.Deep, r.Size.Y / 2);
-        Shapes.RoundRect(this, r.Grow(-1), new Color("#0d1430"), r.Size.Y / 2);
-        if (st.Hot) Shapes.RoundRectLine(this, r.Grow(1), C.Sky, r.Size.Y / 2 + 1, 2);
-        Text("WARP", r.GetCenter().X, r.Position.Y + r.Size.Y * 0.68f, 17, new Color("#3a4a80"), HorizontalAlignment.Center, r.Size.X - 10, 700, 1);
+        Kit.Shape(this, r, r.Size.Y / 2, C.Deep);
+        Kit.Shape(this, r.Grow(-1), r.Size.Y / 2, Sk.R.Night);
+        if (st.Hot) Kit.Shape(this, r.Grow(1), r.Size.Y / 2 + 1, C.Sky, 2);
+        Text("WARP", r.GetCenter().X, r.Position.Y + r.Size.Y * 0.68f, 17, Sk.R.Ghost, HorizontalAlignment.Center, r.Size.X - 10, 700, 1);
     }
 
     // Speed: the ten engine boxes are the track, a handle on them is dragged (owner: "speed needs a slider handle").
@@ -217,8 +221,8 @@ public sealed partial class BottomStrip : ConsolePanel
 /// (the mockup's uiSheet): resume, restart the battle, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
-    /// <summary>The sheet's background: near black with the Concord deep blue in it, so it reads as a panel over the dim.</summary>
-    private static readonly Color MenuBackground = new("#070b1c");
+    /// <summary>The sheet is over everything, never a panel in the column.</summary>
+    protected override bool InColumn => false;
 
     protected override void DrawPanel()
     {
@@ -227,8 +231,9 @@ public sealed partial class MenuCard : ConsolePanel
         float w = 600, h = 300;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         // a solid background inside the frame (owner, 2026-11-03: "Pause menu should have a background"), so the dimmed
-        // console does not show through the keys; it stops short of the frame's end caps
-        Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, h)), MenuBackground, 24, 0, 0, 24);
+        // console does not show through the keys; it stops short of the frame's end caps (near black with the skin's dark
+        // in it, so it reads as a panel over the dim)
+        Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, h)), Sk.R.Sheet, 24, 0, 0, 24);
         Rect2 b = Frame(at, "Menu", false);
         float y = b.Position.Y + 8, bw = b.Size.X;
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
@@ -254,11 +259,15 @@ public sealed partial class TooltipLayer : Control
         foreach (var row in tip.Rows) w = Math.Max(w, f.Width(row.Label.ToUpperInvariant(), 14, 600, 1) + f.Width(row.Value, 17) + 46);
         float h = 30 + tip.Rows.Count * 22 + (tip.Rows.Count > 0 ? 6 : 0);
         Rect2 a = _x.Tips.Anchor;
-        float x = Math.Clamp(a.GetCenter().X - w / 2, 4, Size.X - w - 4), y = a.Position.Y - h - 6;
+        // kept on the screen (the layer itself has no size: it draws over everything), and never a clamp whose bounds cross
+        // when the card is wider than the screen (found by the scripted captain, 2026-11-04: every hover card threw)
+        float sw = GetViewportRect().Size.X;
+        float x = Math.Clamp(a.GetCenter().X - w / 2, 4, Math.Max(4, sw - w - 4)), y = a.Position.Y - h - 6;
         if (y < 4) y = a.End.Y + 6;
-        Shapes.RoundRect(this, new Rect2(x, y, w, h), Colors.Black, 10);
+        SkinStyle sk = _x.Kit.Style;
+        Shapes.RoundRect(this, new Rect2(x, y, w, h), sk.R.Plate, 10);
         Shapes.RoundRect(this, new Rect2(x, y, w, 26), c.Sky, 10, 10, 2, 2);
-        f.Draw(this, tip.Title.ToUpperInvariant(), x + 12, y + 19, 17, Colors.Black, HorizontalAlignment.Left, w - 20, 600, 1);
+        f.Draw(this, tip.Title.ToUpperInvariant(), x + 12, y + 19, 17, sk.InkOn(c.Sky), HorizontalAlignment.Left, w - 20, 600, 1);
         float yy = y + 48;
         foreach (var (l, v, col) in tip.Rows)
         {

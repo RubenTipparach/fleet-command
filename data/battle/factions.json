@@ -1,6 +1,25 @@
 {
-  "_doc": "Factions in the stand-in battle: name and the stand-in hull and trim colours (mockup 3 sets the real look).",
-  "concord": { "name": "Concord", "hull": "#b9c6d6", "trim": "#4f8fe8" },
-  "kethran": { "name": "Kethran Hegemony", "hull": "#8c6a64", "trim": "#d9483b" },
-  "vos": { "name": "Vos Syndicate", "hull": "#b39a6e", "trim": "#e3a33a" }
+ "_doc": "Factions: name, hull and trim colours (stand-in colours for factions whose ships are not designed), and skin: the console skin the player commands that faction in (a UI kit id, src/Game/Ui/Kit/Kits.cs). A faction without a skin cannot be a scenario's side yet.",
+ "concord": {
+  "name": "Concord",
+  "hull": "#b9c6d6",
+  "trim": "#4f8fe8",
+  "skin": "concord"
+ },
+ "kethran": {
+  "name": "Kethran Hegemony",
+  "hull": "#8c6a64",
+  "trim": "#d9483b"
+ },
+ "vos": {
+  "name": "Vos Syndicate",
+  "hull": "#b39a6e",
+  "trim": "#e3a33a"
+ },
+ "krai": {
+  "name": "Krai Warhost",
+  "hull": "#6a6062",
+  "trim": "#d02a20",
+  "skin": "krai"
+ }
 }

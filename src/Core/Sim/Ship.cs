@@ -76,6 +76,10 @@ public sealed class Ship
     /// <summary>Hit and run: "in" closing to RunMinKm, "out" opening to RunMaxKm.</summary>
     public string RunPhase = "in";
     public bool Erratic;
+    /// <summary>An AI captain told to hold its fire (a scenario's standing order): it manoeuvres but never shoots.</summary>
+    public bool HoldFire;
+    /// <summary>The range an AI captain fights at.</summary>
+    public Data.AiRange Range = Data.AiRange.Mid;
     /// <summary>Emergency deceleration under way; then the engines hold for EstopT seconds.</summary>
     public bool Estop;
     public double EstopT;

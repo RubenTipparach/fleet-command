@@ -1,0 +1,11 @@
+{
+ "_doc": "The scripted captain's Arming scene (the battle console mockup's, openspec/changes/battle-scenarios): pick the scenario, arm every selected mount for overload on the weapons panel, then fight the two fast frigates out. Played from both sides (suite.json).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "arm", "arg": "overload" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "helm", "arg": "int" },
+  { "do": "fight", "s": 600 }
+ ]
+}

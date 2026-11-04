@@ -14,7 +14,7 @@ public static class DataLoader
     /// <summary>The files GameData is built from, relative to data/.</summary>
     public static readonly string[] Files =
     {
-        "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/skirmish.json", "battle/tuning.json", "console/layout.json",
+        "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -25,9 +25,9 @@ public static class DataLoader
         var weapons = LoadWeapons(J("battle/weapons.json"));
         var classes = LoadClasses(J("battle/classes.json"), weapons, tuning);
         var factions = LoadFactions(J("battle/factions.json"));
-        Scenario skirmish = LoadScenario(J("battle/skirmish.json"), classes, factions);
+        var scenarios = LoadScenarios(J("battle/scenarios.json"), classes, factions);
         LayoutDef layout = LoadLayout(J("console/layout.json"));
-        return new GameData(weapons, classes, factions, skirmish, tuning, layout);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout);
     }
 
     private static WeaponMode Mode(StrictJson o) => new(Positive(o, "range_km"), Positive(o, "charge_s"), NonNeg(o, "cost_e"), NonNeg(o, "damage"));
@@ -79,7 +79,11 @@ public static class DataLoader
             }
             int reactor = o.Int("reactor_e");
             if (reactor <= 0) throw new DataError($"{o.Where}.reactor_e: must be above 0");
-            d[id] = new ShipClass(id, o.Str("name"), o.Str("code"), shape, Positive(o, "length_m"), Positive(o, "hull_hp") * tuning.DemoToughX,
+            string modelPath = o.Str("model", "");
+            string? model = modelPath == "" ? null : modelPath;
+            if (model != null && !(model.StartsWith("assets/ships/") && model.EndsWith(".glb")))
+                throw new DataError($"{o.Where}.model: expected a glb under assets/ships/, got '{model}'");
+            d[id] = new ShipClass(id, o.Str("name"), o.Str("code"), shape, model, Positive(o, "length_m"), Positive(o, "hull_hp") * tuning.DemoToughX,
                 NonNeg(o, "speed_max_m_s"), NonNeg(o, "accel_m_s2"), NonNeg(o, "turn_deg_s"), reactor, NonNeg(o, "capacitor_e"), NonNeg(o, "battery_e"),
                 shields, power, mounts);
             o.Done();
@@ -94,18 +98,44 @@ public static class DataLoader
         foreach (string id in root.Keys())
         {
             StrictJson o = root.Child(id);
-            d[id] = new Faction(id, o.Str("name"), o.Str("hull"), o.Str("trim"));
+            string skin = o.Str("skin", "");
+            d[id] = new Faction(id, o.Str("name"), o.Str("hull"), o.Str("trim"), skin == "" ? null : skin);
             o.Done();
         }
         root.Done();
         return d;
     }
 
+    private static readonly Dictionary<string, Stance> Stances = new() { ["attack"] = Stance.Attack, ["escort"] = Stance.Escort, ["hold"] = Stance.Hold };
+    private static readonly Dictionary<string, AiRange> Ranges = new() { ["close"] = AiRange.Close, ["mid"] = AiRange.Mid, ["long"] = AiRange.Long };
+
+    /// <summary>The scenarios (data/battle/scenarios.json), in menu order. Ids are unique, every scenario's player side is a
+    /// faction with a console skin, and its first ship is the player's: on side 0 and of that faction.</summary>
+    public static List<Scenario> LoadScenarios(StrictJson root, IReadOnlyDictionary<string, ShipClass> classes, IReadOnlyDictionary<string, Faction> factions)
+    {
+        var list = new List<Scenario>();
+        var ids = new HashSet<string>();
+        foreach (StrictJson o in root.ObjList("scenarios"))
+        {
+            Scenario sc = LoadScenario(o, classes, factions);
+            if (!ids.Add(sc.Id)) throw new DataError($"{o.Where}.id: '{sc.Id}' used twice");
+            list.Add(sc);
+        }
+        if (list.Count == 0) throw new DataError($"{root.Where}.scenarios: needs at least one scenario");
+        root.Done();
+        return list;
+    }
+
     public static Scenario LoadScenario(StrictJson root, IReadOnlyDictionary<string, ShipClass> classes, IReadOnlyDictionary<string, Faction> factions)
     {
+        string scId = root.Str("id"), side = root.Str("side");
+        if (!factions.TryGetValue(side, out Faction? sideFaction)) throw new DataError($"{root.Where}.side: no faction '{side}'");
+        if (sideFaction.Skin == null) throw new DataError($"{root.Where}.side: '{side}' has no console skin, so the player cannot command it");
         double seed = root.Num("seed");
         if (seed < 0 || seed != Math.Floor(seed)) throw new DataError($"{root.Where}.seed: expected a whole number at or above 0");
         string objective = root.Str("objective");
+        string[] say = root.StrList("say");
+        if (say.Length != 2) throw new DataError($"{root.Where}.say: expected [who, text]");
         var ships = new List<ShipStart>();
         var ids = new HashSet<string>();
         foreach (StrictJson s in root.ObjList("ships"))
@@ -114,14 +144,23 @@ public static class DataLoader
             if (!ids.Add(id)) throw new DataError($"{s.Where}.id: '{id}' used twice");
             if (!classes.ContainsKey(cls)) throw new DataError($"{s.Where}.class: no class '{cls}'");
             if (!factions.ContainsKey(fac)) throw new DataError($"{s.Where}.faction: no faction '{fac}'");
-            int side = s.Int("side");
-            if (side is not (0 or 1)) throw new DataError($"{s.Where}.side: 0 (the player's) or 1");
-            ships.Add(new ShipStart(id, s.Str("name"), s.Str("captain"), cls, fac, side, s.Num("x_m"), s.Num("z_m"), s.Num("heading_deg"), s.Num("speed_m_s")));
+            int sideNo = s.Int("side");
+            if (sideNo is not (0 or 1)) throw new DataError($"{s.Where}.side: 0 (the player's) or 1");
+            string stance = s.Str("stance", "attack"), range = s.Str("range", "mid");
+            if (!Stances.TryGetValue(stance, out Stance st)) throw new DataError($"{s.Where}.stance: attack, escort or hold, not '{stance}'");
+            if (!Ranges.TryGetValue(range, out AiRange rg)) throw new DataError($"{s.Where}.range: close, mid or long, not '{range}'");
+            double hullFrac = s.Num("hull_frac", 1), shieldsFrac = s.Num("shields_frac", 1);
+            if (hullFrac is <= 0 or > 1) throw new DataError($"{s.Where}.hull_frac: above 0 and at most 1");
+            if (shieldsFrac is < 0 or > 1) throw new DataError($"{s.Where}.shields_frac: between 0 and 1");
+            ships.Add(new ShipStart(id, s.Str("name"), s.Str("captain"), cls, fac, sideNo, s.Num("x_m"), s.Num("z_m"), s.Num("heading_deg"), s.Num("speed_m_s"),
+                st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac));
             s.Done();
         }
         if (ships.Count == 0 || ships[0].Side != 0) throw new DataError($"{root.Where}.ships: the first ship is the player's and must be on side 0");
+        if (ships[0].Faction != side) throw new DataError($"{root.Where}.ships[0].faction: the player's ship must be of the side '{side}', not '{ships[0].Faction}'");
+        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships);
         root.Done();
-        return new Scenario((ulong)seed, objective, ships);
+        return scenario;
     }
 
     public static Tuning LoadTuning(StrictJson o)

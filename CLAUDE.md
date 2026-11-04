@@ -185,6 +185,20 @@ build, and then need to be approved for actual game implementation after"):
 - **A measurement instrument may come first**: code whose only job is to produce a number the
   write-up needs, said so in the write-up and kept to that job.
 
+**The game stays in step with its mockups** (owner, 2026-11-04: "keep the UI updated with the mockups", "add to claude
+md to keep stuff updated and synced with mockups"). Once a mockup is approved for implementation, the mockup and the game
+are one design in two places, and neither is allowed to drift:
+- **A change to an implemented mockup goes into the game in the same branch**, or, where the game lacks the system it
+  needs, onto the change's `tasks.md` as a named sync task. A game change that alters what the player sees goes back
+  into the mockup the same way. Never leave one ahead of the other without a written task.
+- **Shared things have one copy** (section 6.1). Data both use (classes, weapons, scenarios, the UI kit's manifests) lives
+  in `data/` and `assets/` and is inlined into the pages by `tools/mockups/inline_data.py`. The ships are exported from
+  the mockups' own builders by `tools/mockups/export_ships.mjs`: re-export when a builder changes, never hand-edit a glb.
+- **`docs/design/mockup-sync.md` is the sync record**: each implemented mockup, the version the game matches, and every
+  difference still open, each with its task. Update it with every change to either side.
+- **Check it by looking**: stills of the game beside the mockup's shots (`tools/compare/side_by_side.py`, section 12)
+  after every sync, and the differences found go into the sync record.
+
 ## 5. Writing style
 
 **Never use em dashes (U+2014) or en dashes (U+2013), anywhere.** That covers docs, comments,
@@ -414,12 +428,17 @@ The `playtest` and `obs-record` skills are the method (Crab Breeze 9, Mining Mik
   screen with the view at the side.
 - **Record with OBS** between `PLAYTEST_START` and `PLAYTEST_END`, in real time, and **look at
   the contact sheet** before calling a take done.
-- **Upload every take to Google Drive.** Make a small H.264 share copy (`-crf 26 -preset slow`)
-  into `G:/My Drive/dungeon-crawler-2026/` (the folder the owner's other games use), named
-  `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give
-  the owner the link.
+- **Upload every take to Google Drive at full resolution** (owner, 2026-11-04: "upload google drive at full
+  resolution, mp4 encoded"): an H.264 MP4 at the take's own resolution, never scaled down, into
+  `G:/My Drive/dungeon-crawler-2026/` (the folder the owner's other games use), named
+  `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give the owner the link.
 - **One game per device**, and **a desktop run is checked every five minutes** while it plays
   (Mining Mike).
+- **Share the machine with the other sessions** (owner, 2026-11-04: "theres two claude sessions running on this machine,
+  so you may want to coordinate with the other one on when who gets run time"). Before a heavy job on the owner's machine
+  (a Godot run, a headless browser, Blender, a build longer than a minute), check `ListAgents` for another session on the
+  same machine and message it; while it records or plays a take, hold heavy jobs until it says it is done, and tell it
+  when yours start and end.
 - **Report each playtest** in `docs/playtests/<date>-<name>.md` with the commit, the machine, each
   beat's outcome, the Drive link and the contact sheet.
 - **Cloud sessions cannot record.** They render headless stills under Xvfb (Mesa's software
@@ -485,10 +504,12 @@ Before claiming anything is done, run what applies:
 |---|---|
 | Specs | `openspec validate --all` |
 | Dash check | section 5 |
-| Tests | `scripts/run-tests.sh` (headless C# tests of `src/Core`, a warnings-as-errors build, then the layout test in the engine) |
+| Tests | `scripts/run-tests.sh` (headless C# tests of `src/Core`, a warnings-as-errors build, the layout test in the engine, then the skin parity check: every control in every skin, in every console state, inside its panel) |
+| Bot | `scripts/playtest.sh` (the scripted captain plays every scenario in `data/playtests/suite.json` from both sides, headless, and must end ok) |
 | Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Mockup sync | game stills beside the mockup's shots (`tools/compare/side_by_side.py`), looked at, and `docs/design/mockup-sync.md` updated (section 4) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 
 - **Know what is proven.** Keep implemented, validated and proposed work distinct in docs, PRs and
@@ -531,6 +552,10 @@ Nothing is an exception until it is listed here with its reason.
 - **Organic skins are not nine-sliced** (section 7; owner, 2026-10-31). Their frames are one sculpted body that cannot
   stretch or tile, so every piece is sculpted at its exact slot size by parametric sculptors, so any size is a re-run,
   blocked out with placeholders first. The kit's piece names and the rule that a missing piece is a build error still hold.
+- **The approved ships are exported from their mockups, not built in Blender** (2026-11-04, change `ship-models-engine`).
+  The Concord and Krai lines' geometry is defined by the mockup pages' builders; a Blender port would be a second copy
+  of every hull rule (section 6.1). `tools/mockups/export_ships.mjs` exports them to glb from the pages themselves,
+  deterministically, with named nodes and a manifest, so section 10's other rules still hold.
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from

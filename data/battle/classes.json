@@ -1,9 +1,10 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x).",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors.",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
   "shape": "saucer",
+  "model": "assets/ships/concord/albatross.glb",
   "length_m": 320,
   "speed_max_m_s": 300,
   "accel_m_s2": 45,
@@ -99,6 +100,7 @@
   "name": "Destroyer",
   "code": "DD",
   "shape": "saucer",
+  "model": "assets/ships/concord/petrel_level.glb",
   "length_m": 230,
   "speed_max_m_s": 330,
   "accel_m_s2": 55,
@@ -166,6 +168,7 @@
   "name": "Frigate",
   "code": "FF",
   "shape": "saucer",
+  "model": "assets/ships/concord/swift_level.glb",
   "length_m": 160,
   "speed_max_m_s": 360,
   "accel_m_s2": 70,
@@ -380,5 +383,319 @@
    "repair": 0
   },
   "hull_hp": 80
+ },
+ "krai_cv": {
+  "name": "Krai corvette",
+  "code": "CV",
+  "shape": "wedge",
+  "model": "assets/ships/krai/corvette.glb",
+  "length_m": 140,
+  "speed_max_m_s": 380,
+  "accel_m_s2": 75,
+  "turn_deg_s": 46,
+  "reactor_e": 11,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": -0.12,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 70
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.12,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 70
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   26,
+   18,
+   15,
+   12,
+   15,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 2,
+   "engines": 4,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 55
+ },
+ "krai_ff": {
+  "name": "Krai frigate",
+  "code": "FF",
+  "shape": "wedge",
+  "model": "assets/ships/krai/frigate.glb",
+  "length_m": 230,
+  "speed_max_m_s": 340,
+  "accel_m_s2": 60,
+  "turn_deg_s": 36,
+  "reactor_e": 15,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": 0,
+    "y": 0.9,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 40
+   },
+   {
+    "weapon": "disruptor",
+    "x": -0.3,
+    "y": 0.4,
+    "arc_centre_deg": -60,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.3,
+    "y": 0.4,
+    "arc_centre_deg": 60,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   34,
+   24,
+   20,
+   16,
+   20,
+   24
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 85
+ },
+ "krai_ca": {
+  "name": "Krai cruiser",
+  "code": "CA",
+  "shape": "wedge",
+  "model": "assets/ships/krai/cruiser.glb",
+  "length_m": 340,
+  "speed_max_m_s": 300,
+  "accel_m_s2": 45,
+  "turn_deg_s": 26,
+  "reactor_e": 21,
+  "capacitor_e": 14,
+  "battery_e": 9,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": -0.08,
+    "y": 0.9,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 40
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.08,
+    "y": 0.9,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 40
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "disruptor",
+    "x": -0.35,
+    "y": 0.3,
+    "arc_centre_deg": -70,
+    "arc_width_deg": 140
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.35,
+    "y": 0.3,
+    "arc_centre_deg": 70,
+    "arc_width_deg": 140
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 140
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   44,
+   32,
+   26,
+   22,
+   26,
+   32
+  ],
+  "power_e": {
+   "weapons": 8,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 135
+ },
+ "krai_dn": {
+  "name": "Krai dreadnought",
+  "code": "DN",
+  "shape": "wedge",
+  "model": "assets/ships/krai/dreadnought.glb",
+  "length_m": 570,
+  "speed_max_m_s": 250,
+  "accel_m_s2": 32,
+  "turn_deg_s": 18,
+  "reactor_e": 26,
+  "capacitor_e": 18,
+  "battery_e": 12,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": -0.1,
+    "y": 0.9,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 40
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0,
+    "y": 0.92,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 40
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.1,
+    "y": 0.9,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 40
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.35,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.0,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.35,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.0,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   56,
+   42,
+   34,
+   28,
+   34,
+   42
+  ],
+  "power_e": {
+   "weapons": 10,
+   "shields": 6,
+   "engines": 7,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 220
  }
 }

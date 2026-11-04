@@ -87,6 +87,34 @@ public sealed class StrictJson
         return v.GetString() ?? "";
     }
 
+    /// <summary>An optional string, <paramref name="fallback"/> when absent.</summary>
+    public string Str(string key, string fallback) { if (Has(key)) return Str(key); _read.Add(key); return fallback; }
+
+    /// <summary>An optional true or false, <paramref name="fallback"/> when absent.</summary>
+    public bool Bool(string key, bool fallback)
+    {
+        if (!Has(key)) { _read.Add(key); return fallback; }
+        JsonElement v = Get(key);
+        if (v.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) throw new DataError($"{Where}.{key}: expected true or false");
+        return v.GetBoolean();
+    }
+
+    /// <summary>A required array of strings.</summary>
+    public string[] StrList(string key)
+    {
+        JsonElement v = Get(key);
+        if (v.ValueKind != JsonValueKind.Array) throw new DataError($"{Where}.{key}: expected an array");
+        var list = new List<string>();
+        int i = 0;
+        foreach (JsonElement e in v.EnumerateArray())
+        {
+            if (e.ValueKind != JsonValueKind.String) throw new DataError($"{Where}.{key}[{i}]: expected a string");
+            list.Add(e.GetString() ?? "");
+            i++;
+        }
+        return list.ToArray();
+    }
+
     /// <summary>A nested object, itself strict.</summary>
     public StrictJson Obj(string key) => new(Get(key), $"{Where}.{key}");
 
