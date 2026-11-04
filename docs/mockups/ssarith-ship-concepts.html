@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 4 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
+/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 5 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
    from the Hunt's culture as written (console-skins design, approved as written in survey U7) and on the Ship Design
    Bible (docs/design/ship-bible.html): one frigate's rooms as blocks (data/ships/ssarith/frigate_plan.json), the hull
    fitted round them by the shared fitter (docs/mockups/lib/ship-plan.js), and (version 3) three traditions inside the Hunt on that one
@@ -96,7 +96,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v4. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
+    <p class="sub">Mockup 12, v5. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -128,7 +128,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     </section>
     <section class="tab notes" id="pane-notes" hidden>
       <h3>Three traditions, drafted for you</h3>
-      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2, H3). Version 4: the hull's edges run smooth, and C is a field hull in place of nacelles; version 3's C Course is withdrawn (owner: "No go for C").</p>
+      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2, H3). Version 4: C is a field hull in place of nacelles; version 5: the hulls are faired, smooth from above and flat along the sides; version 3's C Course is withdrawn (owner: "No go for C").</p>
       <ul>
         <li><b>A Old Lodge</b>: ships handed down and refitted for generations. Plates of every age, riveted, bronze repairs, worn field camouflage; the top deck under a pitched roof; one original nacelle and one later refit; grapple emitters in the prow to hold the quarry close. From "worn gunmetal, camouflage", "the kill earned", "broad prows"; the lodge, the roof and the refits are ours.</li>
         <li><b>B Trackers</b>: the hunt won by waiting and watching. Tracking tubes along the spine; radiators folded down the flanks while it holds its heat in, swung out only when it hunts; drive vented sideways; dark mottled louvres. From "the stalk patient", "tracking tubes", "built to wait unseen", "dark and mottled".</li>
@@ -578,23 +578,33 @@ const FIT = SP.fit(PLAN, ROOMS, { section: 'blade' }).slice(0, -2);
 function easeSteps(st, kB, kV) { return st.map((a) => { const o = a.slice();
   for (const b of st) { const d = Math.abs(a[0] - b[0]); o[1] = Math.max(o[1], b[1] - kB * d); o[2] = Math.max(o[2], b[2] - kV * d); o[3] = Math.min(o[3], b[3] + kV * d); }
   return o; }); }
-// Fair chamfers (owner, 2026-11-04, on version 3: "sillhoutte seems a bit rough along the spine. I would prefer something
-// smooth"): the 45 degree faces had jumped between 0.6 and 3.6 m from one station to the next, notching every edge. Each
-// station's chamfer is now worked out from the rooms against the eased hull (as deep as the rooms allow, the fitter's own
-// rule), then the deepest chamfer that changes by at most 0.25 m per metre along the ship is taken (a lower envelope), so
-// the edges run smooth and no chamfer ever comes closer to a room than its own station allows.
-function fairChamfers(st, R, plan) { const C = SP.clear(plan);
-  const allow = st.map(([z, hb, top, bot]) => { let ch = Math.min(hb, (top - bot) / 2);
-    for (const r of R) { if (!(r.b.z0 <= z + 1 && r.b.z1 >= z - 1)) continue; const a = Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1));
-      ch = Math.min(ch, hb + top - (a + r.b.y1) - C * Math.SQRT2, hb - bot - (a - r.b.y0) - C * Math.SQRT2); }
-    return Math.max(0.3, ch); });
-  return st.map((q) => { let c = Infinity; st.forEach((w, j) => { c = Math.min(c, allow[j] + 0.25 * Math.abs(w[0] - q[0])); }); return [q[0], q[1], q[2], q[3], c]; });
+// A fair hull (owner, 2026-11-04, on version 3: "sillhoutte seems a bit rough along the spine. I would prefer something
+// smooth"; on version 4, with the side view marked: "I'd like to see these contours smoothed out top down and sides stay
+// flat"). Two steps, both only ever adding material, so every room stays at least as far inside as the fit put it:
+// 1. Smooth outlines: the beam, top and bottom are each raised (lowered for the bottom) to a smooth curve over the eased
+//    stations, the smallest curve above them that a five-station running mean leaves unchanged, so the plan and the
+//    profile curve instead of breaking at corners.
+// 2. One chamfer: every station takes the same chamfer, the deepest its rooms allow at the tightest station (stations
+//    clear of rooms only by their own size), so the flat side band runs straight from bow to stern: its lower edge level,
+//    its upper edge following the deck line only where the top steps down.
+function fairHull(st, R, plan) { const C = SP.clear(plan), n = st.length, o = st.map((q) => q.slice());
+  for (const [k, sgn] of [[1, 1], [2, 1], [3, -1]]) for (let it = 0; it < 60; it++) { const v = o.map((q) => q[k]);
+    for (let i = 0; i < n; i++) { let a = 0, c = 0; for (let d = -2; d <= 2; d++) { const j = Math.min(n - 1, Math.max(0, i + d)); a += v[j]; c++; }
+      o[i][k] = sgn > 0 ? Math.max(st[i][k], a / c) : Math.min(st[i][k], a / c); } }
+  const own = o.map(([, hb, top, bot]) => Math.min(hb, (top - bot) / 2) - 0.3);
+  let ch = Infinity;
+  o.forEach(([z, hb, top, bot]) => { for (const r of R) { if (!(r.b.z0 <= z + 1 && r.b.z1 >= z - 1)) continue; const a = Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1));
+    ch = Math.min(ch, hb + top - (a + r.b.y1) - C * Math.SQRT2, hb - bot - (a - r.b.y0) - C * Math.SQRT2); } });
+  return o.map((q, i) => [q[0], q[1], q[2], q[3], Math.max(0.3, Math.min(ch, own[i]))]);
 }
-const S = fairChamfers(easeSteps(FIT, 0.16, 0.32), ROOMS, PLAN), front = S[S.length - 1], fh = front[2] - front[3];
+const S = fairHull(easeSteps(FIT, 0.16, 0.32), ROOMS, PLAN), front = S[S.length - 1], fh = front[2] - front[3];
 S.push([front[0] + PLAN.nose_m * 0.55, front[1] * 0.9, front[2] - fh * 0.12, front[3] + fh * 0.06, front[4] * 0.8]);
 S.push([front[0] + PLAN.nose_m, front[1] * 0.7, front[2] - fh * 0.34, front[3] + fh * 0.16, front[4] * 0.6]);
 // Direction C's field hull, rooms first too: fitted round its own rooms the same way, at its own origin.
-const S2 = fairChamfers(easeSteps(SP.fit(PLAN2, ROOMS2, { section: 'blade' }), 0.16, 0.32), ROOMS2, PLAN2);
+const S2 = (() => { const st = fairHull(easeSteps(SP.fit(PLAN2, ROOMS2, { section: 'blade' }).slice(0, -2), 0.16, 0.32), ROOMS2, PLAN2), f = st[st.length - 1], h = f[2] - f[3];
+  // its bow tapers after the fairing (the fairing would square it off): two stations past the front room, as the fitter's
+  st.push([f[0] + PLAN2.nose_m * 0.6, f[1] * 0.78, f[2] - h * 0.12, f[3] + h * 0.12, f[4] * 0.78], [f[0] + PLAN2.nose_m, f[1] * 0.45, f[2] - h * 0.3, f[3] + h * 0.3, f[4] * 0.45]);
+  return st; })();
 const H = (z) => CL.hullAt(S, z), BOW = S[S.length - 1], STERN = S[0];
 const zBow = BOW[0], zStern = STERN[0], maxHB = Math.max(...S.map((s) => s[1])), maxTop = Math.max(...S.map((s) => s[2])), minBot = Math.min(...S.map((s) => s[3]));
 const LEN = zBow - zStern;

@@ -15,7 +15,8 @@
 - [x] 1b.1 Version 1 withdrawn in the design, the page, `mockup-work.md` and the survey; the bible's chapter 13 (C1-C5) and CLAUDE.md section 1 hold the rule
 - [x] 1b.2 Version 3: three traditions drafted inside the Hunt (H1 as recommended), each choice naming its source (C3), the stereotype test on the page (C5)
 - [x] 1b.3 Version 4: smooth chamfers on every direction; C Course withdrawn; C Field Hull (a secondary hull in place of nacelles, rooms first, three layouts)
-- [ ] 1b.4 The owner picks, renames or replaces the directions (survey H2) and C's layout (H3)
+- [x] 1b.4 Version 5: a fair hull (smooth outlines from above and in profile, one chamfer, no polygons added)
+- [ ] 1b.5 The owner picks, renames or replaces the directions (survey H2) and C's layout (H3)
 
 ## 2. After a tradition is chosen (H2)
 

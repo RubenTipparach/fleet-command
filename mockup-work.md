@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-04, v4: A Old Lodge and B Trackers with smooth hull edges, C Field Hull with a secondary hull in place of nacelles, three layouts; survey H2, H3). **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-04, v5: faired hulls, smooth from above and flat along the sides; v4: A Old Lodge and B Trackers with smooth hull edges, C Field Hull with a secondary hull in place of nacelles, three layouts; survey H2, H3). **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -619,3 +619,6 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
   C, A and B are good options I will think about that more. Add new C that replaces nacelles with a secondary hull instead,
   adding some assuymetry or lower or upper secondary hull"): smooth chamfers on every direction; C Course withdrawn; C Field
   Hull with its own rooms (`data/ships/ssarith/frigate_field_hull_plan.json`), below and to port, below, or above.
+- Version 5 (owner, 2026-11-04: "I'd like to see these contours smoothed out top down and sides stay flat", "but without
+  adding more polygons", "remove the wobble", "yea if this could be smoothed thatd be nice"): a fair hull on every
+  direction and on the field hull, one chamfer along the body, smooth outlines, no polygons added.

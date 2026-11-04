@@ -1,5 +1,27 @@
 # Design: ssarith-ship-concepts
 
+## Version 5: a fair hull (owner, 2026-11-04)
+
+On version 4's side view, marked: "I'd like to see these contours smoothed out top down and sides stay flat", "oh I guess
+the sdies would be smoothed too", "but without adding more polygons", "remove the wobble"; and on its top view, marked:
+"yea if this could be smoothed thatd be nice".
+
+Version 4's chamfers still changed along the ship (a lower envelope of each station's allowance), so the edge between the
+flat side and the 45 degree faces wobbled in profile, and the plan's outline broke at corners. `fairHull` replaces it,
+on the frigate and the field hull alike, and only ever adds material, so every room stays at least 1.05 m inside:
+
+1. **Smooth outlines.** The beam, top and bottom are each raised (lowered, for the bottom) to the smallest curve above the
+   eased stations that a five-station running mean leaves unchanged, so the plan and the profile curve instead of
+   breaking at corners.
+2. **One chamfer.** Every station takes the same chamfer (3.29 m on the frigate), the deepest its rooms allow at the
+   tightest station, so the flat side band runs straight from bow to stern.
+3. The bow stations (the frigate's broad prow, the field hull's taper) are added after the fairing, so it cannot square
+   them off.
+
+No polygons are added: the same stations and the same eight-sided section, only the corners move. Triangles per ship
+change by 6 (A 1,828, B 2,068, C 1,550), three more person-sized windows now that the flat faces are longer (14 instead of
+11).
+
 ## Version 4 (owner, 2026-11-04, on version 3)
 
 "sillhoutte seems a bit rough along the spine. I would prefer something smooth. No go for C, A and B are good options I

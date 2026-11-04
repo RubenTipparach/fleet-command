@@ -32,3 +32,7 @@
   (`fairChamfers`); C Course withdrawn; C Field Hull, a secondary hull with its own rooms in place of nacelles, in three
   layouts (below and to port, below, above). The field hull's plan is inlined from
   `data/ships/ssarith/frigate_field_hull_plan.json`. Published, version id `1793803895-9a25`; survey version 3 (H2, H3), version id `1793803896-cbea`.
+- 2026-11-04, cloud session (owner: "I'd like to see these contours smoothed out top down and sides stay flat", "but
+  without adding more polygons", "remove the wobble", "yea if this could be smoothed thatd be nice"): version 5, a fair
+  hull (`fairHull`): smooth outlines from above and in profile, one chamfer along the body, the bows added after the
+  fairing; no polygons added.

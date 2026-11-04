@@ -39,12 +39,12 @@ its length, beam and height measured from the built geometry, and each direction
 
 ### Requirement: A Hunt hull's edges run smooth
 
-A Hunt hull's chamfers SHALL change by at most 0.25 m per metre along the ship, and none SHALL be deeper than its station's
-rooms allow.
+A Hunt hull SHALL carry one chamfer along its body, no deeper than its tightest station's rooms allow, and its beam, top
+and bottom SHALL follow smooth curves that only add material to the fitted hull, with no polygons added.
 
 #### Scenario: No notched edges
 - **WHEN** a Hunt hull is fitted round its rooms
-- **THEN** no two neighbouring stations' chamfers differ by more than 0.25 m per metre between them, and every room is still at least 1.05 m inside
+- **THEN** every body station has the same chamfer, the triangle count is the fitted hull's, and every room is still at least 1.05 m inside
 
 ### Requirement: A secondary hull is designed from its own rooms
 
