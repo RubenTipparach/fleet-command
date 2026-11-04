@@ -122,6 +122,11 @@ This answers open question K1 the other way.
   least 140 and three times its green and blue, so only the channel's light), blurs them twice (16 and 5.6 device px)
   and adds them back over the console, spilling past the column's edge onto the battle. A Bloom key in the view turns
   it on and off to compare; it is on by default. A Krai-only control: the parity check presses the Concord's controls.
+- Popups fit their text (owner, 2026-11-04: "these text popups need to be a bit wider so they dont get thier letters cut
+  off, add to guide", version 9): a hover popup was its text plus 28 px, but the Krai key's caps at 30 px tall are 16 px
+  (slanted back) and 23 px (point). `keyCaps()` reads a key's 9-slice margins at its drawn height; a popup is the text
+  plus both caps plus 8 px, the text centred in the open field, and a pointed key's label is centred and trimmed there
+  too. The rule is the Analog Panel Bible's rule T. The Concord's popups grow by 10 px under it.
 
 ### 8. Every Krai piece is rendered in Blender
 

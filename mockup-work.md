@@ -22,13 +22,13 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v67, v69 in the repo) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v74: weapon aims and wide keys after drag-and-drop repairs) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | Drafted (2026-11-04, v16: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
-| 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v8) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v13) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
@@ -182,6 +182,39 @@ weapons outlined, ships four times tougher.
 **Queued from the survey (2026-11-01), not built yet:** power ticks per ship scaled to
 fit (B7); enemies starting tractor holds (B11); meltdown from a material temperature limit, a scram, coils aligned by
 dragging (R1, R2, R4). The kit's cells and icons wait for the Concord master UI (B6).
+
+Owner, 2026-11-04 ("[General for all UI]"): "this aim at should be icon based - not all weapons can precisely aim, so
+recommend shift + click to see weapon hit stats in details"; torpedoes hit "based on arc receiving the hit ... a small
+bracket would show above those subsystems to show they were on the chopping block", phasers and disruptors "had a better
+chance of delivering the direct hit on stuff, but would damage other systems on rthe current arc as well (like a 50/50
+spred)"; "an expand button to view viable targets to shoow with various weapons"; scenes to disable subsystems, to target
+several ships at once with "Pin weapon fire", and a nebula for ECM and ECCM. Version 71 (both skins; change
+`weapon-targeting`): the chopping block, precise and by-arc weapons, Aim at as icons, shift+click hit details, brackets on
+the target's display, pinned fire, the expanded Tactical grid, nebulae, and scenes Disable, Pinned fire and Nebula.
+
+Owner, 2026-11-04, on the recommendations: "Do 1, you narrowly escape a battle but damaged the reactor core and warp drive
+among other things prioritize repairs and quickly jump out", "2 cool", "3. Yes, we need both sides to cloak. And scan with
+eccm", "4. We need officer slots for stations. Then when you hover over officer. Slots it shows their rank and abilities",
+"10.. boarding def sounds cool. Put a high security officer, transport units around the ship to setup ambushes. We need
+to mock up units moving about the ship.in 3d space"; and "aim at should show status of subsystems", "I should be able to
+click to aim at specific systems here too", "get rid of bloom button, it works great no need for toggle", "this test scene
+menu is useless, I have them the drop down". Version 72 (both skins; changes `damage-control`, `weapon-arming`,
+`cloaking`, `officers`, `boarding-defence`, `weapon-targeting`): the repair queue with crews at work and the Escape scene;
+Proximity torpedoes and overloaded lances and the Arming scene; cloaks on both sides, the ECCM sweep and the Cloak scene;
+an officer slot on every station with its hover card; the Security page with the deck plan in 3D, teams walking or beamed
+to set ambushes, boarders, and the Repel boarders scene; Aim at keys lit in the target's subsystem status; target
+subsystems that aim on a click; the Bloom key and the menu's scene tabs removed.
+
+Owner, 2026-11-04: "6 and 5 are good ideas too though low.priority" (shuttle and fighter recall with scatter-packs, and
+electronic warfare drones: accepted, not started), and "Drag and drop interface for repairs". Version 73 (both skins;
+change `damage-control`): the repair queue reordered by dragging its rows, in place of the Up and Top keys.
+
+Owner, 2026-11-04, of the Krai's Tactical grid: "this looks rough, can you better render a version of these butons? or
+slice them better"; and "in this expanded view, I expect to be able to target individual weapons as well, weapons control
+system dont affect PDCs or missiles actually so disabling that wouldnt disable independently powered weapons". Version 74
+(both skins; changes `weapon-targeting`, `krai-battle-console`): wide keys rendered in Blender and nine-sliced; the
+target's weapons as aim keys on the expanded Tactical page and on the Target box; point defence and missiles independently
+powered.
 
 ## 3. Look dev
 
@@ -444,7 +477,9 @@ mocking up gameplay with this UI now", and "verify all functionality from concor
   "White icons on buttons look bad I.mean": version 6, every label and glyph on a dark key forge orange, never white.
   Then "top bar is way thicker than it needs to be": version 7, the top strip re-rendered at 60 px. Then "lets do an
   experiment and try bloom on this led strip?": version 8, bloom on the column's channel of red light, with a Bloom key in
-  the view to compare.
+  the view to compare. Then, 2026-11-04, of the hover popups: "these text popups need to be a bit wider so they dont get
+  thier letters cut off, add to guide": version 9, every popup sized by its key's own end caps, and rule T in the Analog
+  Panel Bible.
 
 Design: `openspec/changes/krai-battle-console/`.
 
