@@ -6,6 +6,13 @@
 // playing. A class with a model is drawn as its approved ship (assets/ships/, exported from the ship mockups: the Concord
 // line, mockup 6, and the Krai line, mockup 7), scaled to the class's battle length; the factions whose ships are not
 // designed yet keep their stand-ins (scenes/standins).
+// The camera lock and Target view (battle-console design 4e and 4n; owner, 2026-11-02: "camera needs to yaw to face the
+// enemy target", "we'll want to smooth that rotation", "break camera lock into two buttons, target view ... camera
+// lock, focuses camera on the player from target view"; 2026-11-04: "camera lock is mandatory"): locking a target locks
+// the camera, which then turns round your ship toward the target on a critically damped spring (it eases in and out
+// and never overshoots), keeping the player's pitch and zoom; a drag frees it, and the Camera lock key sets it again.
+// Target view glides the orbit's centre to the target (and on to the next one locked) and back when switched off. Both
+// are the player's to set; the camera is never turned against their will (CLAUDE.md 8).
 using System;
 using System.Collections.Generic;
 using FleetCommand.Data;
@@ -29,6 +36,21 @@ public sealed partial class BattleView : Node3D
 
     /// <summary>Camera orbit: yaw round the ship (radians, 0 looking north from the south), pitch above the plane, distance in units.</summary>
     public float Yaw, Pitch = 0.367f, Dist = 13.9f;
+
+    /// <summary>The camera lock's spring: natural rate (per second) and fastest turn (degrees a second), the mockup's CAM_LOCK.</summary>
+    public const float LockOmegaS = 2.5f, LockMaxDegS = 90f;
+    /// <summary>How long Target view's glide to a ship (or back) takes, seconds.</summary>
+    public const float GlideS = 1.1f;
+
+    /// <summary>The camera turns to keep the target ahead of your ship.</summary>
+    public bool CamLock { get; private set; }
+    /// <summary>The camera orbits the target instead of your ship.</summary>
+    public bool TargetView { get; private set; }
+    private float _yawVel;
+    private string? _lastTarget;
+    private Vector3 _focus, _glideFrom;
+    private float _glideT = GlideS;
+    private bool _focusSet;
 
     public void Init(ConsoleContext ctx)
     {
@@ -117,10 +139,11 @@ public sealed partial class BattleView : Node3D
     /// <summary>The view rectangle and the whole screen, in console units.</summary>
     public void SetViewRect(Rect2 view, Vector2 screen) { _view = view; _screen = screen; }
 
-    public override void _Process(double delta) => Sync();
+    public override void _Process(double delta) => Sync(delta);
 
-    /// <summary>Moves every model to its ship and the camera to the ship you command.</summary>
-    public void Sync()
+    /// <summary>Moves every model to its ship and the camera to the ship you command (or, in Target view, its target);
+    /// dt (seconds of real time) turns a locked camera and moves a glide on.</summary>
+    public void Sync(double dt = 0)
     {
         Battle b = _x.Battle;
         ShipSkin.Flash(_strobes, Time.GetTicksMsec() / 1000.0);
@@ -132,7 +155,16 @@ public sealed partial class BattleView : Node3D
             m.Rotation = new Vector3(0, -(float)s.H, 0);
         }
         Ship p = b.Player;
-        var focus = new Vector3((float)(p.X / MPerU), 0, (float)(p.Z / MPerU));
+        FollowTarget(p);
+        LockStep(p, dt);
+        Ship? tv = TargetView ? b.TargetOf(p) : null;
+        Ship f = tv ?? p;
+        var want = new Vector3((float)(f.X / MPerU), 0, (float)(f.Z / MPerU));
+        if (!_focusSet) { _focus = want; _focusSet = true; }
+        _glideT = Math.Min(GlideS, _glideT + (float)dt);
+        float k = _glideT / GlideS, e = k * k * (3 - 2 * k);   // eased in and out
+        _focus = _glideT < GlideS ? _glideFrom.Lerp(want, e) : want;
+        Vector3 focus = _focus;
         var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Dist;
         _cam.Position = focus + off;
         _cam.LookAt(focus, Vector3.Up);
@@ -169,11 +201,55 @@ public sealed partial class BattleView : Node3D
         return (q.X * MPerU, q.Z * MPerU);
     }
 
+    /// <summary>The player's drag: turns and tilts the camera, and frees the camera lock (zoom does not).</summary>
     public void Orbit(Vector2 drag)
     {
+        CamLock = false;
         Yaw -= drag.X * 0.006f;
         Pitch = Mathf.Clamp(Pitch + drag.Y * 0.004f, 0.08f, 1.45f);
     }
 
     public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, 5, 220);
+
+    /// <summary>The Camera lock key: back to your own ship (out of Target view) with the camera locked on the target.</summary>
+    public void LockCamera()
+    {
+        if (_x.Battle.TargetOf(_x.Battle.Player) == null) return;
+        if (TargetView) { TargetView = false; StartGlide(); }
+        CamLock = true;
+    }
+
+    /// <summary>The Target view key: the camera glides to the target and orbits it; again, it glides back to your ship.</summary>
+    public void ToggleTargetView()
+    {
+        TargetView = !TargetView && _x.Battle.TargetOf(_x.Battle.Player) != null;
+        if (TargetView) CamLock = false;
+        StartGlide();
+    }
+
+    private void StartGlide() { _glideFrom = _focus; _glideT = 0; }
+
+    // Follows the player's target: camera lock is the default when targeting a ship (owner, 2026-11-04: "camera lock is
+    // the default when targeting other ships"), so a new lock locks the camera (in Target view it glides there instead);
+    // no target, no lock.
+    private void FollowTarget(Ship p)
+    {
+        string? id = _x.Battle.TargetOf(p)?.Id;   // a target destroyed counts as none
+        if (id == _lastTarget) return;
+        _lastTarget = id;
+        if (id == null) { if (TargetView) StartGlide(); CamLock = false; TargetView = false; return; }
+        if (TargetView) StartGlide();
+        else CamLock = true;
+    }
+
+    // The locked camera's turn: the yaw a critically damped spring toward the bearing that puts the target ahead.
+    private void LockStep(Ship p, double dt)
+    {
+        Ship? t = _x.Battle.TargetOf(p);
+        if (!CamLock || TargetView || t == null || dt <= 0) { _yawVel = 0; return; }
+        float want = Mathf.Atan2(-(float)(t.X - p.X), -(float)(t.Z - p.Z));
+        float d = Mathf.Wrap(want - Yaw, -Mathf.Pi, Mathf.Pi), w = LockOmegaS, vmax = Mathf.DegToRad(LockMaxDegS);
+        _yawVel = Mathf.Clamp(_yawVel + (w * w * d - 2 * w * _yawVel) * (float)dt, -vmax, vmax);
+        Yaw += _yawVel * (float)dt;
+    }
 }

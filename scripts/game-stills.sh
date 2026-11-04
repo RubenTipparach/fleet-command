@@ -47,3 +47,6 @@ shot krai-menu 1920x1080 --steps=300 --scenario=krai_battle --menu
 shot krai-duel 1920x1080 --steps=900 --scenario=krai_duel --zoom=0.6
 shot scene-list 1920x1080 --steps=300 --scene-list
 shot ships-close 1920x1080 --steps=900 --zoom=0.45
+# the camera (battle-console design 4e, 4n): locked on the target by default; Target view orbits the target
+shot target-view 1920x1080 --steps=600 --target-view
+shot krai-target-view 1920x1080 --steps=600 --scenario=krai_battle --target-view

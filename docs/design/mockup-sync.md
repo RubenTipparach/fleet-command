@@ -35,7 +35,7 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Boarding defence (v72) | The Security page, the deck plan in 3D, teams and boarders | Not built | `boarding-defence` |
 | Wide keys, target weapons (v74) | Wide keys; the target's weapons as aim keys; point defence and missiles independently powered | Not built | `weapon-targeting` |
 | Test scenes | Seventeen scenes | Battle, Duel and Arming, from both sides, the Krai against the Concord in the approved ships only | `battle-scenarios` 2.1-2.5 |
-| Target box | Holder's emblem, boarding tug of war, Target view and Camera lock | The target's systems display and the release X | `battle-console-engine` 2.2 |
+| Target box | Holder's emblem, boarding tug of war | The target's systems display, the release X, and (2026-11-04) Target view and Camera lock: camera lock is the default on every target lock, a drag frees it (`docs/screenshots/game/target-view.png`) | `battle-console-engine` 2.2 |
 | Backdrop | Nebula sky with streaking dust | A simpler haze and stars | `battle-console-engine` |
 | The ships in the view | A stand-in Concord block against Kethran and Vos ships (v74, mockup 8 v14) | The approved ships, the Krai against the Concord only (owner: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"); here the mockups are behind the game (sheets 2026-11-04: `docs/screenshots/compare/`) | the mockups' next version |
 

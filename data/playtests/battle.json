@@ -1,15 +1,19 @@
 {
- "_doc": "The scripted captain's fleet battle (the playtest skill; openspec/changes/battle-scenarios): pick the scenario from the view's scene selector, look over the console (the helm, the weapons panel expanded and back), lock the nearest enemy, order Intercept and fire whenever a charged weapon is in arc, until the battle is won or lost. Played for Battle and Duel from both sides (suite.json).",
+ "_doc": "The scripted captain's fleet battle (the playtest skill; openspec/changes/battle-scenarios): pick the scenario from the view's scene selector, look over the console (the helm, the weapons panel expanded and back), lock the nearest enemy (which locks the camera), glide to it in Target view and back with Camera lock, order Intercept and fire whenever a charged weapon is in arc, until the battle is won or lost. Played for Battle and Duel from both sides (suite.json).",
  "beats": [
-  { "do": "wait_ready" },
-  { "do": "pick_scene" },
-  { "do": "station", "arg": "power" },
-  { "do": "station", "arg": "helm" },
-  { "do": "expand", "arg": "Weapons" },
-  { "do": "hold", "s": 2 },
-  { "do": "collapse" },
-  { "do": "press", "arg": "next_target" },
-  { "do": "helm", "arg": "int" },
-  { "do": "fight", "s": 600 }
+  {"do": "wait_ready"},
+  {"do": "pick_scene"},
+  {"do": "station", "arg": "power"},
+  {"do": "station", "arg": "helm"},
+  {"do": "expand", "arg": "Weapons"},
+  {"do": "hold", "s": 2},
+  {"do": "collapse"},
+  {"do": "press", "arg": "next_target"},
+  {"do": "click", "arg": "v.tview"},
+  {"do": "hold", "s": 3},
+  {"do": "click", "arg": "v.camlock"},
+  {"do": "hold", "s": 3},
+  {"do": "helm", "arg": "int"},
+  {"do": "fight", "s": 600}
  ]
 }
