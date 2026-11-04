@@ -1,7 +1,7 @@
 # Proposal: ssarith-ship-concepts
 
-> **Version 3** (2026-11-04): three traditions inside the Hunt, A Old Lodge, B Trackers and C Course, drafted for the owner
-> (design, "Version 3"). **Version 1 withdrawn** (owner, 2026-11-04: "you are over stereotyping an alien species which is extremely insensitive"). It read the species' body into the ships. See the design's
+> **Version 4** (2026-11-04): A Old Lodge and B Trackers with smooth hull edges, and C Field Hull, a secondary hull in place of
+> nacelles in three layouts (design, "Version 4"); version 3's C Course withdrawn. **Version 1 withdrawn** (owner, 2026-11-04: "you are over stereotyping an alien species which is extremely insensitive"). It read the species' body into the ships. See the design's
 > first section; the method carries over, the readings and directions do not.
 
 ## Why

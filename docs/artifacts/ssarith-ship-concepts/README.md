@@ -26,3 +26,9 @@
   rooms, A Old Lodge, B Trackers and C Course, each with its own plating, colours and moving parts, every choice naming its
   line in the culture or marked ours, and the stereotype test (C5) shown on the Notes tab. Waiting and Hunting replace
   Stalk and Strike. Shots in `docs/screenshots/mockups/ssarith-ship-concepts/`. Published, version id `1793802161-a15d`; survey version 2 (H2 added), version id `1793802162-bb01`.
+- 2026-11-04, cloud session (owner: "sillhoutte seems a bit rough along the spine. I would prefer something smooth. No go
+  for C, A and B are good options I will think about that more. Add new C that replaces nacelles with a secondary hull
+  instead, adding some assuymetry or lower or upper secondary hull"): version 4. Smooth chamfers on every direction
+  (`fairChamfers`); C Course withdrawn; C Field Hull, a secondary hull with its own rooms in place of nacelles, in three
+  layouts (below and to port, below, above). The field hull's plan is inlined from
+  `data/ships/ssarith/frigate_field_hull_plan.json`.

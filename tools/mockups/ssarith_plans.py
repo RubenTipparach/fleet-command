@@ -41,6 +41,22 @@ CLASSES = {
              "stern": ("Reactor", "engineering", 12), "stern_half": 4.4},
         ],
     },
+    # Direction C (version 4; owner, 2026-11-04: "Add new C that replaces nacelles with a secondary hull instead, adding some
+    # assuymetry or lower or upper secondary hull"): the field generators the nacelles carried, in a hull of their own,
+    # laid at its own origin; the page places it below, below and to one side, or above the frigate, and joins it by a neck.
+    "frigate_field_hull": {
+        "ship": "ssarith_frigate_field_hull", "crew": 8, "nose_m": 5, "tail_m": 3,
+        "doc": "The field hull of the Ssarith Hunt frigate's direction C: the warp field generators the nacelles carry on directions A and B, with their coolant and control, in a secondary hull of their own, laid by tools/mockups/ssarith_plans.py at its own origin (the page places it). Functional rooms only (U7).",
+        "decks": [
+            {"floor": 1.75, "half": 4.0, "front": 20, "bow": ("Field control", "systems", 6),
+             "port": [("Field generator", "engineering", 14), ("Coolant plant", "systems", 10), ("Stores", "bay", 8, 3.4)],
+             "starboard": [("Field generator", "engineering", 14), ("Coolant plant", "systems", 10), ("Damage control", "systems", 8, 3.4)]},
+            {"floor": -1.75, "half": 4.5, "front": 18, "bow": ("Field emitter", "engineering", 5),
+             "port": [("Field generator", "engineering", 14), ("Coolant pumps", "systems", 10), ("Stores", "bay", 10, 3.8)],
+             "starboard": [("Field generator", "engineering", 14), ("Coolant pumps", "systems", 10), ("Stores", "bay", 10, 3.8)],
+             "stern": ("Field capacitors", "engineering", 6), "stern_half": 3.4},
+        ],
+    },
 }
 
 if __name__ == "__main__":

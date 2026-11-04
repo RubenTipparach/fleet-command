@@ -36,3 +36,22 @@ its length, beam and height measured from the built geometry, and each direction
 #### Scenario: The yardstick
 - **WHEN** the line-up is shown
 - **THEN** each Hunt direction stands beside the Petrel at the same scale, each with its measured size
+
+### Requirement: A Hunt hull's edges run smooth
+
+A Hunt hull's chamfers SHALL change by at most 0.25 m per metre along the ship, and none SHALL be deeper than its station's
+rooms allow.
+
+#### Scenario: No notched edges
+- **WHEN** a Hunt hull is fitted round its rooms
+- **THEN** no two neighbouring stations' chamfers differ by more than 0.25 m per metre between them, and every room is still at least 1.05 m inside
+
+### Requirement: A secondary hull is designed from its own rooms
+
+A Hunt direction that carries a secondary hull SHALL fit it round its own plan in `data/ships/ssarith/`, join it to the
+frigate by a neck at least a corridor's width plus clearance, and keep at least 3 m of daylight between the two hulls,
+measured on the page.
+
+#### Scenario: The field hull
+- **WHEN** direction C is built in any layout
+- **THEN** every field hull room is at least 1.05 m inside its hull and the page shows the daylight between the hulls at 3 m or more

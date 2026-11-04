@@ -180,9 +180,12 @@ const SECTIONS = [
       { id: 'H1', q: 'How should the Ssarith Hunt\'s culture be set before their ships are redrawn?',
         options: ['You write it (history, beliefs, how they live and work, their yards and makers); we design from that', 'We draft several traditions inside the Hunt (yards, eras, schools that disagree), none from their bodies, for you to pick and change', 'Pause the Hunt\'s ships for now'], rec: 1,
         why: 'Options to react to are quicker for you than a blank page, and you keep every cultural decision (U7).' },
-      { id: 'H2', q: 'Mockup 12 version 3 drafts three traditions inside the Hunt on one frigate: A Old Lodge (ships handed down and refitted for generations, patched plating, a pitched roof, mismatched engines, grapple emitters), B Trackers (patience: tracking tubes, radiators that swing out only when hunting, dark louvres), C Course (a younger school of the open chase: a rack of hunting craft, a long drive, pale panels with an amber band). Which stand?',
-        options: ['All three, as one people who disagree (name or change them in the notes)', 'Only some (say which in the notes)', 'None: different traditions (describe them in the notes)'], rec: 0,
-        why: 'Every choice on the page names its line in the culture or says it is ours; none comes from their bodies. A people with several traditions reads as a culture, not a single trait.' },
+      { id: 'H2', q: 'Mockup 12 version 4: A Old Lodge (handed down and refitted: patched plating, a pitched roof, mismatched engines, grapple emitters) and B Trackers (patience: tracking tubes, radiators that swing out only when hunting, dark louvres), which you are weighing, and the new C Field Hull (no nacelles: a secondary hull carries the field drive). Which stands?',
+        options: ['A Old Lodge', 'B Trackers', 'C Field Hull', 'A mix (say which parts in the notes)'], rec: -1,
+        why: 'This is your call. Every choice on the page names its line in the culture or says it is ours; none comes from their bodies.' },
+      { id: 'H3', q: 'C Field Hull: where does the field hull ride?',
+        options: ['Below and to port (asymmetric)', 'Below, centred', 'Above'], rec: 0,
+        why: 'The asymmetry you asked for first; it also leaves the line under the prow clear.' },
     ] },
   { tag: 'E', name: 'Faction emblems (mockup 9)',
     lead: 'Mockup 9 (Faction Emblems, docs/mockups/faction-emblems.html; its link is on the tracker once published) draws one emblem for each of the ten factions and shows it as the console crest, at 40 px and 20 px beside the icons, as hull paint, and on a ship\'s flank. Each keeps the idea its console crest already had. What a people puts on its flag is yours to decide: each faction\'s meaning below is what is drawn, and a blank answer keeps it.',
@@ -416,7 +419,7 @@ function questionCard(q) {
   const root = el('article', { class: 'q', id: 'q-' + q.id },
     el('div', { class: 'q-head' }, el('span', { class: 'qid', text: q.id }), el('p', { class: 'q-text', text: q.q })),
     optsEl,
-    el('p', { class: 'why' }, el('b', { text: 'Why I recommend it: ' }), q.why),
+    el('p', { class: 'why' }, el('b', { text: q.rec >= 0 ? 'Why I recommend it: ' : 'No recommendation: ' }), q.why),
     el('label', { class: 'note', for: 'note-' + q.id }, 'Your answer or note', textarea),
     status);
   cards[q.id] = { root, opts, textarea, status };
@@ -528,10 +531,10 @@ function snapshotHtml() {
     const note = (a?.text ?? '').trim();
     const answer = pick || note
       ? `${pick ? `<b>${esc(pick)}</b>` : ''}${pick && note ? '. ' : ''}${note ? esc(note) : ''}`
-      : `<i>Blank: recommendation accepted (${esc(q.options[q.rec])})</i>`;
+      : (q.rec >= 0 ? `<i>Blank: recommendation accepted (${esc(q.options[q.rec])})</i>` : '<i>Blank: no recommendation, still open</i>');
     return `<div class="q"><p class="h"><span class="id">${esc(q.id)}</span> ${esc(q.q)}</p>`
       + `<p class="o">Options: ${q.options.map(esc).join(' / ')}</p>`
-      + `<p class="r">Recommended: ${esc(q.options[q.rec])}. ${esc(q.why)}</p>`
+      + `<p class="r">${q.rec >= 0 ? `Recommended: ${esc(q.options[q.rec])}. ` : 'No recommendation. '}${esc(q.why)}</p>`
       + `<p class="a">Answer: ${answer}</p></div>`;
   }).join('')).join('');
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">`

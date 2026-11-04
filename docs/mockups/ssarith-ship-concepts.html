@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 3 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
+/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 4 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
    from the Hunt's culture as written (console-skins design, approved as written in survey U7) and on the Ship Design
    Bible (docs/design/ship-bible.html): one frigate's rooms as blocks (data/ships/ssarith/frigate_plan.json), the hull
    fitted round them by the shared fitter (docs/mockups/lib/ship-plan.js), and (version 3) three traditions inside the Hunt on that one
@@ -96,7 +96,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v3. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
+    <p class="sub">Mockup 12, v4. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -107,6 +107,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     <section class="tab" id="pane-ship">
       <div class="grp"><h2>Direction</h2><div class="row" id="dirRow"></div></div>
       <p class="hint" id="dirNote"></p>
+      <div class="grp" id="layoutGrp"><h2>C layout</h2><div class="row" id="layoutRow"></div></div>
       <div class="grp"><h2>Mode</h2><div class="row" id="poseRow"></div></div>
       <div class="grp"><h2>Light</h2><div class="row" id="lightRow"></div></div>
       <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
@@ -127,11 +128,11 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     </section>
     <section class="tab notes" id="pane-notes" hidden>
       <h3>Three traditions, drafted for you</h3>
-      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are three traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2).</p>
+      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2, H3). Version 4: the hull's edges run smooth, and C is a field hull in place of nacelles; version 3's C Course is withdrawn (owner: "No go for C").</p>
       <ul>
         <li><b>A Old Lodge</b>: ships handed down and refitted for generations. Plates of every age, riveted, bronze repairs, worn field camouflage; the top deck under a pitched roof; one original nacelle and one later refit; grapple emitters in the prow to hold the quarry close. From "worn gunmetal, camouflage", "the kill earned", "broad prows"; the lodge, the roof and the refits are ours.</li>
         <li><b>B Trackers</b>: the hunt won by waiting and watching. Tracking tubes along the spine; radiators folded down the flanks while it holds its heat in, swung out only when it hunts; drive vented sideways; dark mottled louvres. From "the stalk patient", "tracking tubes", "built to wait unseen", "dark and mottled".</li>
-        <li><b>C Course</b>: a younger school that thinks the worthy hunt is the open chase. A rack of small hunting craft launched when it hunts; a long drive for the pursuit; pale clean panels and the hunt party's amber band, because it does not hide. From "the quarry must be worthy" and the plan's hunting craft bay; the school and its disagreement are ours.</li>
+        <li><b>C Field Hull</b> (your direction): no nacelles. The field generators they carry sit in a secondary hull with rooms of its own (17 rooms on two decks, fitted the same way), joined by a neck, below and to one side, below, or above (Layout). The tradition is ours: yards that build the field drive as a hull apart, to shield it, change it or cut it loose after a long hunt. Smooth cast sections, dark above and pale below ("camouflage").</li>
       </ul>
       <h3>The stereotype test (Ship Design Bible C5)</h3>
       <p>Each described without naming the species:</p>
@@ -147,7 +148,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <h3>Not done yet</h3>
       <p>Interior-mapped windows, the shared detail tile, flood shadows, damage and breakup, the other classes and the hull marking, on the code the Concord and Krai lines share, once you choose.</p>
       <h3>Your calls</h3>
-      <p>Survey section H: H2, which of these traditions stand and what to change. <a href="https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt" target="_blank" rel="noopener">Open the survey</a>.</p>
+      <p>Survey section H: H2, which traditions stand; H3, C's layout. <a href="https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt" target="_blank" rel="noopener">Open the survey</a>.</p>
     </section>
   </div>
 </aside>
@@ -537,6 +538,9 @@ return { rooms, check, fit, margins, windows, sideAt, clear, planSVGs };
 };
 </script>
 <!-- /INLINE -->
+<!-- INLINE data/ships/ssarith/frigate_field_hull_plan.json -->
+<script type="application/json" data-src="data/ships/ssarith/frigate_field_hull_plan.json">{"schema":"fleetcommand.ship-plan/1","_doc":"The field hull of the Ssarith Hunt frigate's direction C: the warp field generators the nacelles carry on directions A and B, with their coolant and control, in a secondary hull of their own, laid by tools/mockups/ssarith_plans.py at its own origin (the page places it). Functional rooms only (U7).","ship":"ssarith_frigate_field_hull","crew":8,"deck_floor_m":[1.75,-1.75],"headroom_m":2.8,"clearance_m":0.45,"structure_m":0.6,"nose_m":5,"tail_m":3,"rooms":[{"id":"field_control","name":"Field control","kind":"systems","decks":[0],"x_m":[-4.0,4.0],"z_m":[14,20]},{"id":"field_generator","name":"Field generator","kind":"engineering","decks":[0],"x_m":[1.2,4.0],"z_m":[0,14]},{"id":"coolant_plant","name":"Coolant plant","kind":"systems","decks":[0],"x_m":[1.2,4.0],"z_m":[-10,0]},{"id":"stores","name":"Stores","kind":"bay","decks":[0],"x_m":[1.2,3.4],"z_m":[-18,-10]},{"id":"field_generator_2","name":"Field generator","kind":"engineering","decks":[0],"x_m":[-4.0,-1.2],"z_m":[0,14]},{"id":"coolant_plant_2","name":"Coolant plant","kind":"systems","decks":[0],"x_m":[-4.0,-1.2],"z_m":[-10,0]},{"id":"damage_control","name":"Damage control","kind":"systems","decks":[0],"x_m":[-3.4,-1.2],"z_m":[-18,-10]},{"id":"deck_a_corridor","name":"Deck A corridor","kind":"corridor","decks":[0],"x_m":[-1.2,1.2],"z_m":[-18,14]},{"id":"field_emitter","name":"Field emitter","kind":"engineering","decks":[1],"x_m":[-4.5,4.5],"z_m":[13,18]},{"id":"field_generator_3","name":"Field generator","kind":"engineering","decks":[1],"x_m":[1.2,4.5],"z_m":[-1,13]},{"id":"coolant_pumps","name":"Coolant pumps","kind":"systems","decks":[1],"x_m":[1.2,4.5],"z_m":[-11,-1]},{"id":"stores_2","name":"Stores","kind":"bay","decks":[1],"x_m":[1.2,3.8],"z_m":[-21,-11]},{"id":"field_generator_4","name":"Field generator","kind":"engineering","decks":[1],"x_m":[-4.5,-1.2],"z_m":[-1,13]},{"id":"coolant_pumps_2","name":"Coolant pumps","kind":"systems","decks":[1],"x_m":[-4.5,-1.2],"z_m":[-11,-1]},{"id":"stores_3","name":"Stores","kind":"bay","decks":[1],"x_m":[-3.8,-1.2],"z_m":[-21,-11]},{"id":"deck_b_corridor","name":"Deck B corridor","kind":"corridor","decks":[1],"x_m":[-1.2,1.2],"z_m":[-21,13]},{"id":"field_capacitors","name":"Field capacitors","kind":"engineering","decks":[1],"x_m":[-3.4,3.4],"z_m":[-27,-21]}]}</script>
+<!-- /INLINE -->
 <!-- INLINE data/ships/ssarith/frigate_plan.json -->
 <script type="application/json" data-src="data/ships/ssarith/frigate_plan.json">{"schema":"fleetcommand.ship-plan/1","_doc":"The Ssarith Hunt frigate's rooms as blocks, laid by tools/mockups/ssarith_plans.py on the Krai plan layer: three decks, squat and broad, a room across the whole prow on the two lower decks so the bow stays wide. Functional rooms; the trophy hall and the hunters' ready room are provisional, their names the owner's (U7).","ship":"ssarith_frigate","crew":40,"deck_floor_m":[3.5,0.0,-3.5],"headroom_m":2.8,"clearance_m":0.45,"structure_m":0.6,"nose_m":7,"tail_m":3,"rooms":[{"id":"bridge","name":"Bridge","kind":"command","decks":[0],"x_m":[-5.0,5.0],"z_m":[14,22]},{"id":"hunt_master","name":"Hunt master","kind":"command","decks":[0],"x_m":[1.2,5.0],"z_m":[7,14]},{"id":"tracking_room","name":"Tracking room","kind":"systems","decks":[0],"x_m":[1.2,5.0],"z_m":[-2,7]},{"id":"officers","name":"Officers","kind":"crew","decks":[0],"x_m":[1.2,4.4],"z_m":[-12,-2]},{"id":"trophy_hall","name":"Trophy hall","kind":"crew","decks":[0],"x_m":[1.2,3.8],"z_m":[-22,-12]},{"id":"tactical","name":"Tactical","kind":"command","decks":[0],"x_m":[-5.0,-1.2],"z_m":[7,14]},{"id":"sensors","name":"Sensors","kind":"systems","decks":[0],"x_m":[-5.0,-1.2],"z_m":[-2,7]},{"id":"officers_2","name":"Officers","kind":"crew","decks":[0],"x_m":[-4.4,-1.2],"z_m":[-12,-2]},{"id":"comms","name":"Comms","kind":"systems","decks":[0],"x_m":[-3.8,-1.2],"z_m":[-22,-12]},{"id":"deck_a_corridor","name":"Deck A corridor","kind":"corridor","decks":[0],"x_m":[-1.2,1.2],"z_m":[-22,14]},{"id":"forward_battery","name":"Forward battery","kind":"weapons","decks":[1],"x_m":[-9.5,9.5],"z_m":[23,30]},{"id":"quarters","name":"Quarters","kind":"crew","decks":[1],"x_m":[1.2,9.5],"z_m":[13,23]},{"id":"mess","name":"Mess","kind":"crew","decks":[1],"x_m":[1.2,9.2],"z_m":[4,13]},{"id":"medbay","name":"Medbay","kind":"crew","decks":[1],"x_m":[1.2,8.4],"z_m":[-4,4]},{"id":"hunters__ready_room","name":"Hunters' ready room","kind":"crew","decks":[1],"x_m":[1.2,7.6],"z_m":[-13,-4]},{"id":"life_support","name":"Life support","kind":"systems","decks":[1],"x_m":[1.2,6.8],"z_m":[-23,-13]},{"id":"quarters_2","name":"Quarters","kind":"crew","decks":[1],"x_m":[-9.5,-1.2],"z_m":[13,23]},{"id":"armoury","name":"Armoury","kind":"weapons","decks":[1],"x_m":[-9.2,-1.2],"z_m":[4,13]},{"id":"shield_room","name":"Shield room","kind":"systems","decks":[1],"x_m":[-8.4,-1.2],"z_m":[-4,4]},{"id":"damage_control","name":"Damage control","kind":"systems","decks":[1],"x_m":[-7.6,-1.2],"z_m":[-13,-4]},{"id":"stores","name":"Stores","kind":"bay","decks":[1],"x_m":[-6.8,-1.2],"z_m":[-23,-13]},{"id":"deck_b_corridor","name":"Deck B corridor","kind":"corridor","decks":[1],"x_m":[-1.2,1.2],"z_m":[-23,23]},{"id":"engineering","name":"Engineering","kind":"engineering","decks":[1],"x_m":[-5.8,5.8],"z_m":[-33,-23]},{"id":"grapple_projectors","name":"Grapple projectors","kind":"weapons","decks":[2],"x_m":[-6.5,6.5],"z_m":[22,28]},{"id":"magazine","name":"Magazine","kind":"weapons","decks":[2],"x_m":[1.2,6.5],"z_m":[13,22]},{"id":"boarding_bay","name":"Boarding bay","kind":"bay","decks":[2],"x_m":[1.2,6.2],"z_m":[-1,13]},{"id":"fabricators","name":"Fabricators","kind":"engineering","decks":[2],"x_m":[1.2,5.4],"z_m":[-11,-1]},{"id":"stores_2","name":"Stores","kind":"bay","decks":[2],"x_m":[1.2,4.8],"z_m":[-22,-11]},{"id":"magazine_2","name":"Magazine","kind":"weapons","decks":[2],"x_m":[-6.5,-1.2],"z_m":[13,22]},{"id":"hunting_craft_bay","name":"Hunting craft bay","kind":"bay","decks":[2],"x_m":[-6.2,-1.2],"z_m":[-1,13]},{"id":"life_support_2","name":"Life support","kind":"systems","decks":[2],"x_m":[-5.4,-1.2],"z_m":[-11,-1]},{"id":"stores_3","name":"Stores","kind":"bay","decks":[2],"x_m":[-4.8,-1.2],"z_m":[-22,-11]},{"id":"deck_c_corridor","name":"Deck C corridor","kind":"corridor","decks":[2],"x_m":[-1.2,1.2],"z_m":[-22,22]},{"id":"reactor","name":"Reactor","kind":"engineering","decks":[2],"x_m":[-4.4,4.4],"z_m":[-34,-22]}]}</script>
 <!-- /INLINE -->
@@ -547,6 +551,7 @@ const PI = Math.PI, V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z), le
 const CL = window.FCConcordLine(THREE), SP = window.FCShipPlan(THREE, CL);
 const PLAN = JSON.parse(document.querySelector('script[data-src="data/ships/ssarith/frigate_plan.json"]').textContent);
 const ROOMS = SP.rooms(PLAN);
+const PLAN2 = JSON.parse(document.querySelector('script[data-src="data/ships/ssarith/frigate_field_hull_plan.json"]').textContent), ROOMS2 = SP.rooms(PLAN2);
 function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -572,11 +577,24 @@ const glsl3 = (hex) => lin(hex).toArray().map((v) => v.toFixed(3)).join(',');
 const FIT = SP.fit(PLAN, ROOMS, { section: 'blade' }).slice(0, -2);
 function easeSteps(st, kB, kV) { return st.map((a) => { const o = a.slice();
   for (const b of st) { const d = Math.abs(a[0] - b[0]); o[1] = Math.max(o[1], b[1] - kB * d); o[2] = Math.max(o[2], b[2] - kV * d); o[3] = Math.min(o[3], b[3] + kV * d); }
-  // the chamfer grows only as far as the faces it joins moved out, so its diagonal never comes closer to a room
-  o[4] = a[4] + Math.min((o[1] - a[1]) + (o[2] - a[2]), (o[1] - a[1]) + (a[3] - o[3])); return o; }); }
-const S = easeSteps(FIT, 0.16, 0.32), front = S[S.length - 1], fh = front[2] - front[3];
+  return o; }); }
+// Fair chamfers (owner, 2026-11-04, on version 3: "sillhoutte seems a bit rough along the spine. I would prefer something
+// smooth"): the 45 degree faces had jumped between 0.6 and 3.6 m from one station to the next, notching every edge. Each
+// station's chamfer is now worked out from the rooms against the eased hull (as deep as the rooms allow, the fitter's own
+// rule), then the deepest chamfer that changes by at most 0.25 m per metre along the ship is taken (a lower envelope), so
+// the edges run smooth and no chamfer ever comes closer to a room than its own station allows.
+function fairChamfers(st, R, plan) { const C = SP.clear(plan);
+  const allow = st.map(([z, hb, top, bot]) => { let ch = Math.min(hb, (top - bot) / 2);
+    for (const r of R) { if (!(r.b.z0 <= z + 1 && r.b.z1 >= z - 1)) continue; const a = Math.max(Math.abs(r.b.x0), Math.abs(r.b.x1));
+      ch = Math.min(ch, hb + top - (a + r.b.y1) - C * Math.SQRT2, hb - bot - (a - r.b.y0) - C * Math.SQRT2); }
+    return Math.max(0.3, ch); });
+  return st.map((q) => { let c = Infinity; st.forEach((w, j) => { c = Math.min(c, allow[j] + 0.25 * Math.abs(w[0] - q[0])); }); return [q[0], q[1], q[2], q[3], c]; });
+}
+const S = fairChamfers(easeSteps(FIT, 0.16, 0.32), ROOMS, PLAN), front = S[S.length - 1], fh = front[2] - front[3];
 S.push([front[0] + PLAN.nose_m * 0.55, front[1] * 0.9, front[2] - fh * 0.12, front[3] + fh * 0.06, front[4] * 0.8]);
 S.push([front[0] + PLAN.nose_m, front[1] * 0.7, front[2] - fh * 0.34, front[3] + fh * 0.16, front[4] * 0.6]);
+// Direction C's field hull, rooms first too: fitted round its own rooms the same way, at its own origin.
+const S2 = fairChamfers(easeSteps(SP.fit(PLAN2, ROOMS2, { section: 'blade' }), 0.16, 0.32), ROOMS2, PLAN2);
 const H = (z) => CL.hullAt(S, z), BOW = S[S.length - 1], STERN = S[0];
 const zBow = BOW[0], zStern = STERN[0], maxHB = Math.max(...S.map((s) => s[1])), maxTop = Math.max(...S.map((s) => s[2])), minBot = Math.min(...S.map((s) => s[3]));
 const LEN = zBow - zStern;
@@ -617,14 +635,14 @@ const TRAD = {
   A: { field: '#3d4238', old: '#33372f', fresh: '#4b514b', repair: '#5c4d34', camo: '#2f4a2a' },
   A2: { field: '#5d645e', old: '#535953', fresh: '#6a716b', repair: '#5d645e', camo: '#4f5a48' }, // the newer refit: mostly new steel
   B: { field: '#23271f', mottle: '#2e3528', mottle2: '#181b15' },
-  C: { field: '#cbc4ac', band: '#b8792a', band2: '#3a4044' },
+  C: { above: '#262b27', below: '#6d7064', weld: '#1b1e1b' },
 };
 const STYLE = { A: 0, A2: 0, B: 1, C: 2 };
 const g3 = (hex) => `vec3(${glsl3(hex)})`;
 // The plating, one shader with three ways of cutting and laying plate (X3's unique paneling), each a tradition's:
 // 0 Old Lodge: plates of every age side by side, riveted, a few bronze repairs, worn field camouflage over them;
-// 1 Trackers: horizontal louvres in 6 m bays, dark and mottled; 2 Course: clean 4 m by 2.5 m panels in pale paint, the
-// hunt party's band along each flank. Projected from the face's main axis in ship space; fine detail fades out below a
+// 1 Trackers: horizontal louvres in 6 m bays, dark and mottled; 2 Field hull: large smooth cast sections, dark above and
+// pale below. Projected from the face's main axis in ship space; fine detail fades out below a
 // few pixels.
 function hullGLSL(style, P) {
   const def = Object.entries(P).map(([k, v]) => `#define C_${k.toUpperCase()} ${g3(v)}`).join('\n');
@@ -657,13 +675,10 @@ void plating(float u, float v, vec3 nA) {
   c = mix(c, C_MOTTLE, smoothstep(0.58, 0.62, fbm(vObj * 0.16 + 3.0)));
   gCol = c * (0.88 + 0.24 * fv);
 #else
-  float fu = fract(u / 4.0), fv = fract(v / 2.5), r = h3(vec3(floor(u / 4.0), floor(v / 2.5), 3.0));
-  gSeam = 1.0 - smoothstep(0.02, 0.05, min(min(fu, 1.0 - fu) * 4.0, min(fv, 1.0 - fv) * 2.5));
-  if (r > 0.82) gSeam = max(gSeam, 1.0 - smoothstep(0.02, 0.05, abs(max(abs(fu - 0.5) * 4.0, abs(fv - 0.5) * 2.5) - 0.7))); // a hatch
-  vec3 c = C_FIELD * (0.95 + 0.08 * r);
-  if (nA.x > 0.5 && vObj.y > -0.7 && vObj.y < 0.55) c = C_BAND;          // the hunt party's band
-  if (nA.x > 0.5 && abs(vObj.y - 0.72) < 0.12) c = C_BAND2;
-  gCol = c;
+  // large smooth cast sections: a deep seam every 8 m along, a fine weld every 2.2 m across; dark above, pale below
+  float fu = fract(u / 8.0), fv = fract(v / 2.2);
+  gSeam = max(1.0 - smoothstep(0.0, 0.06, min(fu, 1.0 - fu) * 8.0), 0.3 * (1.0 - smoothstep(0.0, 0.025, min(fv, 1.0 - fv) * 2.2)));
+  gCol = mix(C_BELOW, C_ABOVE, smoothstep(-4.0, 3.0, vObj.y)) * (0.95 + 0.1 * n3(vObj * 0.25));
 #endif
 }`;
 }
@@ -749,6 +764,19 @@ function common(g, M, drive) {
   dot(POSMATS.red, widest[1] + 0.15, wy, wz); dot(POSMATS.green, -widest[1] - 0.15, wy, wz); dot(POSMATS.white, 0, st[2] - 0.6, zStern - 0.2);
 }
 
+// A neck between two hulls: an octagonal prism from point a to point b, hx across and hz along the ship.
+function neckGeo(a, b, hx, hz) {
+  const c = Math.min(hx, hz) * 0.4, sec = [[hx - c, hz], [hx, hz - c], [hx, -hz + c], [hx - c, -hz], [-hx + c, -hz], [-hx, -hz + c], [-hx, hz - c], [-hx + c, hz]];
+  const A = sec.map(([x, z]) => V3(a.x + x, a.y, a.z + z)), B = sec.map(([x, z]) => V3(b.x + x, b.y, b.z + z)), t = [];
+  const axis = (m) => { const k = (m.y - a.y) / (b.y - a.y); return a.clone().lerp(b, Math.min(1, Math.max(0, k))); };
+  for (let i = 0; i < 8; i++) { const j = (i + 1) % 8; CL.pushTri(t, A[i], A[j], B[j], axis); CL.pushTri(t, A[i], B[j], B[i], axis); }
+  return CL.geoFrom(t);
+}
+// Direction C's layouts (owner: "adding some assuymetry or lower or upper secondary hull"): x and z of the field hull's origin,
+// its daylight to the frigate, and whether it rides above.
+const LAYOUTS = { port: { label: 'Below, to port', x: 6.0, z: -6, gap: 3.2 }, below: { label: 'Below', x: 0, z: -6, gap: 3.2 }, above: { label: 'Above', x: 0, z: -8, gap: 3.2, above: true } };
+let layoutKey = 'port';
+
 // ---------------------------------------------------------------------------------------------------------------
 // The three traditions on the one hull (design, "Version 3").
 const DIRS = {
@@ -780,25 +808,27 @@ const DIRS = {
       for (const sx of [1, -1]) { nacelle(g, sx * 6.6, ny, 'nacelle', { mat: M, hw: 2.9, hh: 1.0, profile: [[-0.5, 0.6], [-0.4, 0.95], [0.35, 1.0], [0.5, 0.7]] });
         strut(g, [sx * 5.6, H(-3)[3] + 0.4, -3], [sx * 6.6, ny, -9], 14, 10, 1.0, true, M); }
     } },
-  C: { label: 'C Course', tell: 'A pale ship banded in amber with four small craft racked along its back, a long drive section with three bells, and long engines held level on swept struts.',
-    note: 'A younger tradition that disagrees with the other two (ours, provisional): the worthy hunt is the open chase, not the ambush ("the quarry must be worthy"). It carries a party of small hunting craft on a rack along its back (the plan\'s hunting craft bay) and launches them when it hunts, and runs a long drive for the pursuit. It does not hide: pale clean panels and the hunt party\'s band in amber.',
+  C: { label: 'C Field Hull', tell: 'A broad armoured ship with no engine pods: a second, smaller hull carries its field drive, joined to it by a short neck, slung below it and to one side (or below it, or above it); smooth cast plating, dark above and pale below.',
+    note: 'Your direction (2026-11-04: "replaces nacelles with a secondary hull instead, adding some assuymetry or lower or upper secondary hull"): no nacelles; the field generators they carry sit in a secondary hull with rooms of its own, joined by a neck, below and to one side, below, or above (Layout). The tradition is ours, provisional: yards that build the field drive as a hull apart, where it can be shielded, changed or cut loose after a long hunt. Smooth cast sections, dark above and pale below, the way field kit is painted ("camouflage").',
     build(g) {
-      const M = MAT.C; common(g, M, 'none');
-      const st = H(zStern + 0.01), bl = 12;
-      add(g, loftAt([ring(zStern + 0.5, st[1] * 0.55, st[2] - 1.2, st[3] + 0.8, 1.0), ring(zStern - bl, st[1] * 0.45, st[2] - 1.7, st[3] + 1.3, 0.9)]), M, 'drive');
-      for (const [x, y] of [[-1.9, 0], [1.9, 0], [0, 1.7]]) add(g, new THREE.CircleGeometry(1.05, 12).rotateY(PI).translate(x, (st[2] + st[3]) / 2 + y - 0.6, zStern - bl - 0.05), DRIVE, 'drive');
-      const yt = topOver(18, -24);
-      for (const sx of [1, -1]) add(g, CL.boxGeo(0.4, 0.5, 44, sx * 1.7, yt + 0.2, -3), M, 'rack');
-      const craft = () => CL.loft([CL.octRing(4.2, 0.5, 0.3, -0.2, 0.2), CL.octRing(2.2, 1.9, 0.75, -0.55, 0.5), CL.octRing(-2.8, 2.0, 0.8, -0.6, 0.5), CL.octRing(-4.0, 1.5, 0.6, -0.45, 0.4)], (m) => V3(0, 0.1, m.z), 2);
-      [14, 3, -8, -19].forEach((z, i) => { const y = yt + 1.2, home = V3(0, y, z);
-        pivot(g, home, [[craft(), M]], null, { stalk: home, strike: V3((i % 2 ? 1 : -1) * 6.5, y + 3.5, z + 5) }, 'craft'); });
-      const nx = maxHB + 4.8, ny = 0.4;
-      for (const sx of [1, -1]) { nacelle(g, sx * nx, ny, 'nacelle', { mat: M, len: Math.round(LEN * 0.72), hw: 1.9, hh: 1.7, z: -9 });
-        strut(g, [sx * (maxHB - 1.0), 0.4, -2], [sx * nx, ny, -12], 15, 9, 1.0, false, M); }
+      const M = MAT.C; common(g, M, 'slot');
+      const L = LAYOUTS[layoutKey], top2 = Math.max(...S2.map((q) => q[2])), bot2 = Math.min(...S2.map((q) => q[3])), hb2 = Math.max(...S2.map((q) => q[1]));
+      const zs2 = S2.map((q) => q[0]), z2a = Math.min(...zs2), z2b = Math.max(...zs2), mid2 = (top2 + bot2) / 2;
+      const xo = L.x, zo = L.z, yo = L.above ? maxTop + L.gap - bot2 : minBot - L.gap - top2;
+      add(g, CL.hullGeo(S2).translate(xo, yo, zo), M, 'secondary');
+      // the field grille down each flank and the emitter at its bow: the nacelles' jobs, done by this hull
+      for (const sx of [1, -1]) add(g, CL.boxGeo(0.1, 0.55, (z2b - z2a) * 0.62, xo + sx * (hb2 + 0.04), yo + mid2, zo + (z2a + z2b) / 2 - 2), GRILLE, 'secondary');
+      add(g, new THREE.CircleGeometry(1.1, 10).translate(xo, yo + mid2, zo + z2b + 0.04), GRILLE, 'secondary');
+      // the neck: a corridor's width and its clearance (the bible: at least 2.4 m plus clearance), set back from both bows
+      const zn = zo + (z2a + z2b) / 2 + 2, a = L.above ? V3(0, H(zn)[2] - 0.8, zn) : V3(xo * 0.35, H(zn)[3] + 0.8, zn), b = V3(xo, yo + (L.above ? bot2 + 0.8 : top2 - 0.8), zn);
+      add(g, neckGeo(a, b, 2.2, 6.5), M, 'neck');
+      g.userData.secondary = { S2, xo, yo, zo };
     } },
 };
 const SHIPS = {};
-for (const [k, d] of Object.entries(DIRS)) { building = k; const g = new THREE.Group(); g.userData = { pivots: [], nacelles: [], key: k }; d.build(g); g.updateMatrixWorld(true); SHIPS[k] = g; scene.add(g); }
+function buildShip(k) { if (SHIPS[k]) { scene.remove(SHIPS[k]); for (let i = KILL.length - 1; i >= 0; i--) if (KILL[i].userData.ship === k) KILL.splice(i, 1); }
+  building = k; const g = new THREE.Group(); g.userData = { pivots: [], nacelles: [], key: k }; DIRS[k].build(g); g.updateMatrixWorld(true); SHIPS[k] = g; scene.add(g); }
+for (const k of Object.keys(DIRS)) buildShip(k);
 const PETREL = CL.plainModel('petrel_level'); scene.add(PETREL); PETREL.visible = false;
 
 // The rooms as blocks with the hull as a wire shell (the bible's chapter 3 view).
@@ -866,7 +896,7 @@ rim.position.set(80, -20, -90);
 
 // ---------------------------------------------------------------------------------------------------------------
 // Checks and measurements, from the built geometry and the plan.
-const bad = SP.check(ROOMS), marg = SP.margins(ROOMS, S), least = Math.min(...marg.map((q) => q.m));
+const bad = SP.check(ROOMS).concat(SP.check(ROOMS2)), least = Math.min(...SP.margins(ROOMS, S).map((q) => q.m)), least2 = Math.min(...SP.margins(ROOMS2, S2).map((q) => q.m));
 function outside(st, p) { // distance outside the hull's octagon at p.z (the max of the face distances), or null off its length
   const zs = st.map((q) => q[0]); if (p.z > Math.max(...zs) || p.z < Math.min(...zs)) return null;
   const [, hb, top, bot, c] = CL.hullAt(st, p.z), ch = CL.chOf(hb, top, bot, c), ax = Math.abs(p.x);
@@ -879,19 +909,25 @@ function tris(g) { let n = 0; g.traverse((o) => { if (o.isMesh && o.geometry) { 
 function size(g) { const was = g.position.clone(); g.position.set(0, 0, 0); g.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(g); g.position.copy(was); g.updateMatrixWorld(true); return b.getSize(V3()); }
 const MEAS = {};
 function measure() { applyPose(0); for (const [k, g] of Object.entries(SHIPS)) { const s0 = size(g); applyPose(1); const s1 = size(g); applyPose(0);
-  MEAS[k] = { stalk: s0, strike: s1, tris: tris(g), day: Math.min(...g.userData.nacelles.map(daylight)), win: g.userData.windows }; } applyPose(poseT); }
+  MEAS[k] = { stalk: s0, strike: s1, tris: tris(g), day: g.userData.secondary ? hullDaylight(g.userData.secondary) : Math.min(...g.userData.nacelles.map(daylight)), win: g.userData.windows }; } applyPose(poseT); }
+// The field hull's daylight to the frigate: its surface sampled every metre, measured outside the frigate's hull.
+function hullDaylight({ S2, xo, yo, zo }) { let m = Infinity; const zs = S2.map((q) => q[0]);
+  for (let z = Math.min(...zs); z <= Math.max(...zs); z += 1) { const h = CL.hullAt(S2, z);
+    for (const p of ring(z + zo, h[1], h[2], h[3], h[4], xo, yo)) { const d = outside(S, p); if (d !== null) m = Math.min(m, d); } }
+  return m; }
 measure();
 const prow = BOW[1] / maxHB, petrelL = size(PETREL).z;
 function checks() {
   const ok = (b, s) => `<span class="${b ? 'ok' : 'bad'}">${b ? 'PASS' : 'FAIL'}</span> ${s}`, d = MEAS[dirKey];
   const killOn = KILL.filter((m) => m.userData.ship === dirKey && m.emissiveIntensity > 0).length;
   document.getElementById('checks').innerHTML = [
-    ok(!bad.length, `P1: ${ROOMS.length} rooms, ${bad.length} overlapping or off a corridor`),
+    ok(!bad.length, `P1: ${ROOMS.length} rooms (and ${ROOMS2.length} in C's field hull), ${bad.length} overlapping or off a corridor`),
     ok(least >= 1.05 - 1e-6, `H1: every room at least ${least.toFixed(2)} m inside (1.05 m)`),
+    ...(dirKey === 'C' ? [ok(least2 >= 1.05 - 1e-6, `H1, field hull: ${ROOMS2.length} rooms, every one at least ${least2.toFixed(2)} m inside`)] : []),
     ok(prow >= 0.6, `Broad prow: the bow face keeps ${(prow * 100).toFixed(0)}% of the beam (60%)`),
     ok(maxHB * 2 / (maxTop - minBot) >= 1.6, `Squat: beam ${(maxHB * 2 / (maxTop - minBot)).toFixed(2)} times the height (about 2)`),
     ok(LEN / (maxHB * 2) < 4, `Short: length ${(LEN / (maxHB * 2)).toFixed(2)} beams (under 4)`),
-    ok(d.day >= 3, `Nacelle daylight, ${DIRS[dirKey].label}: ${d.day.toFixed(2)} m (3 m)`),
+    ok(d.day >= 3, `${dirKey === 'C' ? 'Field hull' : 'Nacelle'} daylight, ${DIRS[dirKey].label}: ${d.day.toFixed(2)} m (3 m)`),
     ok(poseKey === 'strike' || killOn === 0, `Kill red ${POSES[poseKey].label.toLowerCase()}: ${killOn} lit (none while waiting)`),
   ].join('<br>');
   const f = (v) => v.toFixed(1) + ' m', rows = [
@@ -930,6 +966,8 @@ function buttons(id, items, cur, on) { $(id).innerHTML = items.map(([k, l]) => `
   $(id).onclick = (e) => { const b = e.target.closest('button'); if (b) on(b.dataset.k); }; }
 function syncRows() {
   buttons('dirRow', Object.entries(DIRS).map(([k, d]) => [k, d.label]), viewKey === 'lineup' ? '' : dirKey, (k) => { dirKey = k; if (viewKey === 'lineup') setView('three'); place(); syncRows(); status(); });
+  buttons('layoutRow', Object.entries(LAYOUTS).map(([k, l]) => [k, l.label]), layoutKey, (k) => { layoutKey = k; buildShip('C'); applyPose(poseT); measure(); place(); silhouettes(); syncRows(); status(); });
+  $('layoutGrp').hidden = dirKey !== 'C' && viewKey !== 'lineup';
   buttons('poseRow', Object.entries(POSES).map(([k, p]) => [k, p.label]), poseKey, (k) => setPose(k));
   buttons('lightRow', Object.entries(LIGHTS).map(([k, l]) => [k, l.label]), lightKey, setLight);
   buttons('viewRow', Object.entries(VIEWS).map(([k, v]) => [k, v.label]), viewKey, setView);
@@ -940,7 +978,7 @@ function syncRows() {
 }
 function status() {
   $('status').textContent = viewKey === 'lineup' ? 'Line-up: A, B, C, Petrel' : `${DIRS[dirKey].label}, ${POSES[poseKey].label}${showRooms ? ', rooms' : ''}`;
-  $('tip').textContent = viewKey === 'lineup' ? 'Left to right: A Old Lodge, B Trackers, C Course, the Concord Petrel (88 m), at true scale.' : 'Drag to orbit, scroll or pinch to zoom. Waiting and Hunting change the moving parts and lights.';
+  $('tip').textContent = viewKey === 'lineup' ? 'Left to right: A Old Lodge, B Trackers, C Field Hull, the Concord Petrel (88 m), at true scale.' : 'Drag to orbit, scroll or pinch to zoom. Waiting and Hunting change the moving parts and lights.';
 }
 document.querySelector('.tabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return;
   for (const t of document.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', t === b);
@@ -967,18 +1005,19 @@ function loop(now) {
 resize(); setLight('sunlit'); setPose('stalk', true); setView('three'); silhouettes(); requestAnimationFrame(loop);
 
 // Named shots for tools/mockups/shoot.mjs.
-const shot = (dir, pose, view, o = {}) => () => { dirKey = dir; showRooms = !!o.rooms; showPetrel = !!o.petrel; setLight(o.light || 'sunlit'); setPose(pose, true); setView(view);
+const shot = (dir, pose, view, o = {}) => () => { if (o.layout && o.layout !== layoutKey) { layoutKey = o.layout; buildShip('C'); measure(); } dirKey = dir; showRooms = !!o.rooms; showPetrel = !!o.petrel; setLight(o.light || 'sunlit'); setPose(pose, true); setView(view);
   for (const t of document.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', t.dataset.tab === (o.tab || 'ship'));
   for (const p of document.querySelectorAll('.tab')) p.hidden = p.id !== 'pane-' + (o.tab || 'ship'); renderer.render(scene, camera); };
 window.MOCKUP_SHOTS = {
   a_stalk: shot('A', 'stalk', 'three'), a_strike: shot('A', 'strike', 'three'), a_front: shot('A', 'strike', 'front'),
   b_stalk: shot('B', 'stalk', 'three'), b_strike: shot('B', 'strike', 'three'),
-  c_stalk: shot('C', 'stalk', 'three'), c_strike: shot('C', 'strike', 'three'), c_below: shot('C', 'strike', 'below'),
+  c_stalk: shot('C', 'stalk', 'three', { layout: 'port' }), c_strike: shot('C', 'strike', 'three', { layout: 'port' }), c_below: shot('C', 'strike', 'below', { layout: 'port' }),
+  c_side: shot('C', 'stalk', 'side', { layout: 'port' }), c_front: shot('C', 'stalk', 'front', { layout: 'port' }), c_lower: shot('C', 'stalk', 'three', { layout: 'below' }), c_upper: shot('C', 'stalk', 'three', { layout: 'above' }), b_top: shot('B', 'stalk', 'top', { layout: 'port' }),
   side_a: shot('A', 'stalk', 'side', { petrel: true }), top_a: shot('A', 'strike', 'top'),
   nosun_a: shot('A', 'stalk', 'three', { light: 'nosun' }), nosun_strike: shot('A', 'strike', 'three', { light: 'nosun' }),
-  lineup: shot('A', 'stalk', 'lineup'), rooms: shot('A', 'stalk', 'three', { rooms: true, tab: 'plan' }), notes: shot('A', 'stalk', 'three', { tab: 'notes' }),
+  lineup: shot('A', 'stalk', 'lineup', { layout: 'port' }), rooms: shot('A', 'stalk', 'three', { rooms: true, tab: 'plan' }), notes: shot('A', 'stalk', 'three', { tab: 'notes' }),
 };
-window.MOCKUP_SCENE = scene;
+window.MOCKUP_SCENE = scene; window.MOCKUP_STATIONS = S; // the fitted hull, for checks
 window.MOCKUP_READY = true;
 })();
 </script>

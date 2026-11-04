@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-04, v3: three traditions inside the Hunt, A Old Lodge, B Trackers, C Course, for the owner to pick, survey H2). **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-04, v4: A Old Lodge and B Trackers with smooth hull edges, C Field Hull with a secondary hull in place of nacelles, three layouts; survey H2, H3). **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -615,3 +615,7 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
 - Version 3 (owner, 2026-11-04: "now update the damn ships!", "Ssarith ships", "not anyother ships thoo lol, SSarith needs
   work"): three traditions drafted inside the Hunt on the same rooms, each choice naming its line in the culture or
   marked ours, none from the species' body: A Old Lodge, B Trackers, C Course. Survey H2 asks which stand.
+- Version 4 (owner, 2026-11-04: "sillhoutte seems a bit rough along the spine. I would prefer something smooth. No go for
+  C, A and B are good options I will think about that more. Add new C that replaces nacelles with a secondary hull instead,
+  adding some assuymetry or lower or upper secondary hull"): smooth chamfers on every direction; C Course withdrawn; C Field
+  Hull with its own rooms (`data/ships/ssarith/frigate_field_hull_plan.json`), below and to port, below, or above.

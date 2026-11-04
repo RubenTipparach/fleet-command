@@ -1,5 +1,29 @@
 # Design: ssarith-ship-concepts
 
+## Version 4 (owner, 2026-11-04, on version 3)
+
+"sillhoutte seems a bit rough along the spine. I would prefer something smooth. No go for C, A and B are good options I
+will think about that more. Add new C that replaces nacelles with a secondary hull instead, adding some assuymetry or
+lower or upper secondary hull".
+
+- **Smooth edges, every direction.** The 45 degree faces had jumped between 0.6 m and 3.6 m from one station to the next,
+  so every edge of the hull was notched. Each station's chamfer is now worked out from the rooms against the eased hull
+  (as deep as the rooms allow, the fitter's own rule), then the deepest chamfer that changes by at most 0.25 m per metre
+  along the ship is taken (`fairChamfers`), so the edges run smooth and no chamfer comes closer to a room than its own
+  station allows; H1 still passes (every room at least 1.05 m inside).
+- **A Old Lodge and B Trackers stay** as they are, for the owner to weigh.
+- **C Course is withdrawn** ("No go for C").
+- **C Field Hull, new.** No nacelles: the field generators they carry sit in a secondary hull of their own, rooms first
+  (`data/ships/ssarith/frigate_field_hull_plan.json`, 17 rooms on two decks, crew 8, from `tools/mockups/ssarith_plans.py`),
+  fitted the same way and joined to the frigate by a neck a corridor's width plus clearance (the bible's chapter 4). Its
+  field grille runs down each flank and its emitter is at its bow, the nacelles' jobs. Three layouts, as the owner listed
+  them: **below and to port** (asymmetric, offset 6 m), **below** and **above**, each with 3.2 m of daylight to the
+  frigate, measured. Plating: large smooth cast sections with a deep seam every 8 m, dark above and pale below, the way
+  field kit is painted ("camouflage"). The tradition is ours, provisional: yards that build the field drive as a hull
+  apart, to shield it, change it or cut it loose after a long hunt.
+- Stereotype test (C5) for C: "A broad armoured ship with no engine pods: a second, smaller hull carries its field drive,
+  joined to it by a short neck, slung below it and to one side; smooth cast plating, dark above and pale below."
+
 ## Version 3: three traditions inside the Hunt (owner, 2026-11-04: "now update the damn ships!", "Ssarith ships", "not anyother ships thoo lol, SSarith needs work")
 
 Built on survey H1's recommendation (a blank answer accepts it, and the owner asked for the ships): several traditions
@@ -187,4 +211,5 @@ Version 1's H1-H8 are withdrawn with it.
 | # | Question | Recommendation (provisional) |
 |---|---|---|
 | H1 | How is the Hunt's culture to be set before its ships are redrawn? | Accepted as recommended (owner, 2026-11-04: "now update the damn ships!"): we draft several traditions for the owner to pick and change |
-| H2 | Which of the three traditions (A Old Lodge, B Trackers, C Course) stand, and what are they called? | None recommended: the owner's to choose, rename or replace |
+| H2 | A Old Lodge or B Trackers (the owner: "A and B are good options I will think about that more"), or C Field Hull? | None recommended: the owner's to choose, rename or replace |
+| H3 | Where does C's field hull ride: below and to port, below, or above? | Below and to port: the asymmetry the owner asked for first, and it leaves the keel's grapple line clear |
