@@ -17,13 +17,14 @@ using Godot;
 namespace FleetCommand.Game.Playtest;
 
 /// <summary>One step of a playtest script.</summary>
-public sealed record Beat(string Do, string Arg, double Seconds);
+/// <summary>One step of a playtest script. LingerS (fight only): seconds to stay on a kill before locking the next target.</summary>
+public sealed record Beat(string Do, string Arg, double Seconds, double LingerS = 0);
 
 public sealed partial class ScriptedCaptain : Node
 {
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
-        { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold" };
+        { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -42,7 +43,7 @@ public sealed partial class ScriptedCaptain : Node
         {
             string kind = b.Str("do");
             if (!Kinds.Contains(kind)) throw new DataError($"{b.Where}.do: unknown beat '{kind}' (there are: {string.Join(", ", Kinds)})");
-            _beats.Add(new Beat(kind, b.Str("arg", ""), b.Num("s", 0)));
+            _beats.Add(new Beat(kind, b.Str("arg", ""), b.Num("s", 0), b.Num("linger_s", 0)));
             b.Done();
         }
         root.Done();
@@ -101,27 +102,38 @@ public sealed partial class ScriptedCaptain : Node
                 if (B.Scenario.Id == id) return null;
                 return await Click("v.scene") ?? await Click("v.scene." + id) ?? (B.Scenario.Id == id ? null : $"scenario is {B.Scenario.Id}");
             }
-            case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600);
+            case "wheel": return await Wheel(b.Arg == "in", (int)Math.Max(1, b.Seconds));
+            case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS);
             default: return $"no beat '{b.Do}'";
         }
     }
 
     // Fights the scenario out as a captain at the console would: lock the nearest enemy (Tab), order Intercept on the helm,
     // and fire (F) whenever the weapons panel shows a charged weapon in arc. Stuck when nobody's hull has changed for 60 s
-    // of battle time.
-    private async Task<string?> Fight(double maxS)
+    // of battle time. With lingerS, a captain watching a kill: it stays on the wreck that long before locking the next.
+    private async Task<string?> Fight(double maxS, double lingerS = 0)
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
-        bool ordered = false;
+        bool ordered = false, hadTarget = false;
         while (B.Over == null && B.T - t0 < maxS)
         {
             Ship me = B.Player;
             if (!me.Alive) break;
-            if (B.TargetOf(me) == null) { Press("next_target"); ordered = false; }
+            if (B.TargetOf(me) == null)
+            {
+                if (hadTarget && lingerS > 0) { await Seconds(lingerS); lastChange = B.T; if (B.Over != null) break; }
+                Press("next_target"); ordered = false;
+            }
+            hadTarget = B.TargetOf(me) != null;
+            // the Intercept key lit is Intercept on: pressing it again would turn it off (free heading), so only press it unlit
             if (!ordered && B.TargetOf(me) != null)
             {
-                if (_x.State.Station != "helm") await Click("st.helm");
-                ordered = await Click("helm.int") == null;
+                if (me.Engaged && me.Manoeuvre == "intercept") ordered = true;
+                else
+                {
+                    if (_x.State.Station != "helm") await Click("st.helm");
+                    ordered = await Click("helm.int") == null;
+                }
             }
             if (B.WouldFire().Length > 0) Press("fire");
             await Frames(3);
@@ -161,6 +173,22 @@ public sealed partial class ScriptedCaptain : Node
         return null;
     }
 
+    /// <summary>Turns the mouse wheel over the 3D view (to the right of the console's column), n notches in or out.</summary>
+    private async Task<string?> Wheel(bool zoomIn, int n)
+    {
+        Viewport vp = GetViewport();
+        Vector2 sz = vp.GetVisibleRect().Size, p = new(sz.X * 0.62f, sz.Y * 0.45f);
+        vp.PushInput(new InputEventMouseMotion { Position = p, GlobalPosition = p }, true);
+        for (int i = 0; i < n; i++)
+        {
+            var b = zoomIn ? MouseButton.WheelUp : MouseButton.WheelDown;
+            vp.PushInput(new InputEventMouseButton { ButtonIndex = b, Pressed = true, Position = p, GlobalPosition = p }, true);
+            vp.PushInput(new InputEventMouseButton { ButtonIndex = b, Pressed = false, Position = p, GlobalPosition = p }, true);
+            await Frames(2);
+        }
+        return null;
+    }
+
     private async Task Frames(int n)
     {
         for (int i = 0; i < n; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
@@ -168,6 +196,8 @@ public sealed partial class ScriptedCaptain : Node
 
     private async Task Seconds(double s)
     {
+        // once the battle is over its clock stops: wait real time (the view still plays, a wreck still comes apart)
+        if (B.Over != null) { await ToSignal(GetTree().CreateTimer(s), SceneTreeTimer.SignalName.Timeout); return; }
         double end = B.T + s;
         int guard = 0;
         while (B.T < end && B.Over == null && guard++ < 100000) await Frames(1);

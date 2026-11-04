@@ -5,6 +5,8 @@
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
+# macOS has no timeout(1): Homebrew coreutils' gtimeout is the same tool (brew install coreutils).
+command -v timeout >/dev/null || timeout() { gtimeout "$@"; }
 DOTNET="$(scripts/install-dotnet.sh 2>/dev/null)"
 GODOT="$(scripts/install-godot.sh 2>/dev/null)"
 export DOTNET_ROOT="$(dirname "$DOTNET")" PATH="$(dirname "$DOTNET"):$PATH" DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
