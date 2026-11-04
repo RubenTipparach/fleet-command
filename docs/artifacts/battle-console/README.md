@@ -101,3 +101,4 @@
 - Version 77 (2026-11-04, the battle console thread; change `ssarith-battle-console`): a metal skin's ground behind the column and expanded panels (`console.backing`), placards for the Hunt's titles and officer slots, the Hunt's tabs without the tally. Version id `1793804658-7322`.
 - Version 77 rebuilt after merging main (2026-11-04): the Ssarith backing plain gunmetal, the Ssarith page renumbered mockup 15. Version id `1793805939-090f`.
 - Version 78 (2026-11-04): the Ssarith's hover names in phosphor on its dark tube (a skin's `tip`), its title placards without the underline. Version id `1793818996-9918`.
+- Version 79 (2026-11-04): the backing behind an expanded panel clipped to the panel's side of the screen and clear of the plate's tally (owner: "background should wrap panel properly", "when expanded"); merged onto another session's live version `1793822393-bdb4` (black under the top and bottom strips, carried into the source). Version id `1793823166-a692`.

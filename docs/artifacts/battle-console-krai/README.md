@@ -39,3 +39,4 @@
 - Version 16 (expanded panels on a rendered backing of blackened steel, never black; version 77 of the source page; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793804657-82d3`.
 - Version 16 rebuilt after merging main (2026-11-04; parity 3,917 presses of 396 controls): version id `1793806624-cff7`.
 - Version 17 (version 78 of the source page, no visible Krai change; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793818997-51ff`.
+- Version 18 (version 79 of the source page; merged onto another session's live `1793822395-b7e4`, whose black under the strips is carried; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793823168-2879`.
