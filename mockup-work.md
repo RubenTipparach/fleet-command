@@ -22,7 +22,7 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots; v76 committed, to publish: beams and disruptor bolts keep their ends on their ships) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
@@ -32,6 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
+| 12 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders | Drafted (2026-11-04, v1; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -590,3 +591,25 @@ Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hu
 - **Tightened** (owner, 2026-11-04: "tighten the livery line a bit so they arent so distant from the meblem", "bottom line
   can be flat to conform to the key hole/beacon shape more"): the cut is 0.15 m clear of the emblem where the band crosses
   it: an arc over the head and a flat edge under the foot.
+
+## 12. Special weapons
+
+Owner, 2026-11-04: "we need to develop special weapons for each faction, currently only concord and krai are fully done,
+so start with those two, we also ened high end fx + shaders for both of those things too". Then, while it was built:
+"source and destination of phaser and disruptors must maintain in sync", "this means as they fire, the source and
+destination of these beams must follow the ship source and ship destination", "a missile fired can break this rule as it
+leaves behind a particle trail".
+
+Version 1 (2026-11-04): the special weapons range. The Concord's Chorus lance (the Albatross's deflector beam, joined by
+two Petrels' lances) and Quell torpedo (a Petrel's tube load: the struck shield fails, half the Krai cruiser goes dark for
+8 s), the Krai's Forge driver (the cruiser's spinal cannon, 40 % through the Albatross's shield, the hull burning 6 s) and
+Blood charge (a frigate's surge and bayonet ram). The approved ships as exported glb files, moving during every run so the
+beams can be seen riding their ships; the card's numbers and the target's readout from `data/battle/special_weapons.json`;
+High and Phone quality; twelve named shots. Effects: `docs/mockups/lib/weapon-fx.js`. Survey section X.
+
+The owner's beam rule is in the game and in mockup 2 already (v76, the Krai page v15): change `weapon-fx`, tasks 2.1-2.3,
+and `docs/design/mockup-sync.md`. Mockup 2 v76 and mockup 8 v15 are to republish from the desktop session.
+
+Design: `openspec/changes/special-weapons/`, `openspec/changes/weapon-fx/`. References: SFC2 manual printed pages 22-25
+(heavy weapons: direct fire and seeking, each race its own; weapon status, stunned); SFC3 manual printed pages 12-13
+(primary and heavy weapons by empire and loadout) and 28-29 (refit by hardpoint).
