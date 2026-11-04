@@ -11,7 +11,10 @@ interesting". Then:
 1. **No skin uses the same button shape.**
 2. **Every skin has a palette inspired by its faction's ideology.**
 3. **Elements and icons are inspired by how the faction thinks**: each skin uses different shapes, lighting and
-   shading, and icon shapes shaped by the faction's world view, body shape, technology and ships.
+   shading, and icon shapes shaped by the faction's ideas, history, traditions and technology. Never by its body
+   (owner, 2026-11-04, superseding "their body shapes" of 2026-10-30: "the look of an alien species is not their UI,
+   not their spaceship"; CLAUDE.md section 1). The skins below that took anything from a species' body (the "Bodies"
+   rows, the Hunt's hide scales, the Brood's flesh) are to be reviewed against this with the owner.
 
 And three methods, one per skin: Concord from research on LCARS with a palette sampled from Starfleet Command and
 Starfleet Academy; Kethran modelled in Blender "like starcraft"; Vos "a hand drawn aesthetic of the mirak ui".

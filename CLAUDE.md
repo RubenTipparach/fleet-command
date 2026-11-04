@@ -74,6 +74,16 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   between them, "with ai wingmen, and behaviors configuratble for AI" (G3). Mid-detail ships: clear
   silhouettes, panel-line textures, baked hull lights, sized for phones (A1). Orchestral space opera
   with a synth bed (S1). Playtests on the Windows PC with the RTX 3070 and the owner's phone (P1).
+- **A species' looks are not its design** (owner, 2026-11-04, on the first Ssarith Hunt ships: "you are over stereotyping
+  an alien species which is extremely insensitive", "the look of an alien species is not their UI, not their spaceship.
+  Cultural ideologies are far more deep and complex than what someone's skin or features are", "no culture in the world
+  follows a single line of thinking when it comes to desigining UI, space ships, logos, dressing etc, and none of those
+  reflect the way they look"). Binding on every faction's console, ships, emblems, clothing and rooms:
+  - Never derive a design from a species' body: no claws because they have claws, no scales because they have scales,
+    no hide textures because they have hide. What a people looks like is not what it makes.
+  - A culture holds several traditions at once (schools, eras, regions, classes, makers that disagree), so one trait
+    never becomes a whole design language. A design names which tradition it comes from, and why.
+  - Culture is the owner's to set (survey U7). Where a faction's culture is thin, ask before designing from it.
 - **Mockups first, in three stages** (owner, 2026-10-30: "we'll begin with a rolling list of
   mockups needed", "all these mockups need to be approved for build, and then need to be approved
   for actual game implementation after", "All mockups are to be checked into repo especially when
@@ -174,6 +184,13 @@ build, and then need to be approved for actual game implementation after"):
   into repo especially when they are html claude artifacts"): the page in `docs/mockups/`, its shots in
   `docs/screenshots/mockups/`, and a record in `docs/artifacts/<name>/` with its link, committed in the
   same step as every publish.
+- **Every artifact is tracked as HTML in the repository** (owner, 2026-11-04: "add to claude md that all artifactrs must
+  be tracked as html in the repo"). Every published artifact, a mockup, a guide, the survey or the tracker, has its page
+  as an `.html` file committed in the repository (`docs/mockups/`, `docs/design/`), the very file that was published,
+  and its link recorded in `docs/artifacts/<name>/README.md`, in the same commit as the publish. Nothing is published from
+  a scratch file or from memory, and a page another session published is pulled into the repository as HTML, not left
+  only on claude.ai. `tools/mockups/artifact_check.py` reads the tracker and fails on any entry whose page is not
+  committed HTML or whose link is in no record; run it before every push that publishes.
 - **If the owner changes accounts, republish every mockup, the tracker and the survey from the new
   account** (owner, 2026-10-30), then update every link: the tracker's list, `mockup-work.md`,
   `docs/design/README.md` and each `docs/artifacts/<name>/README.md`. An artifact made from another
@@ -326,7 +343,9 @@ else's artwork):
   1. **No skin uses the same button shape** as another.
   2. **Every skin's palette comes from its faction's ideology.**
   3. **Elements and icons come from how the faction thinks**: each skin has its own shapes, lighting,
-     shading and icon shapes, drawn from the faction's world view, body shape, technology and ships.
+     shading and icon shapes, drawn from the faction's ideas, history, traditions and technology. Never from its
+     body (owner, 2026-11-04, superseding "their body shapes" of 2026-10-30; section 1, "A species' looks are not
+     its design").
 
   The three, in our own designs (section 1: take the shape, not the art). `openspec/changes/console-skins/design.md`
   holds each one in full:
@@ -356,6 +375,12 @@ else's artwork):
   keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
   carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
   dashboards, dials, switches".
+- **No black behind a metallic skin's panels** (owner, 2026-11-04: "We need a background for the lleft panel area. Black
+  background is forbidden for metallic panel based factions"). Every skin whose panels are modelled metal (the Kethran,
+  Krai, Ssarith, Ombrai, Kelvane, and the Aelith's shells) has a rendered ground behind its column, and behind an expanded
+  panel: a cast column with the panels formed into it (the Krai's `console.column`) or a backing plate the panels sit on
+  (`console.backing`: the Ssarith's column, and every metal skin's expanded panels, the Krai's included). Black stays only
+  for the flat Concord, whose back-lit vector is drawn on black.
 - **Icons follow one standard in every skin** (owner, 2026-11-03: "these icons need a similar standard", "theyre generic
   enough to be used on any other ui system"): a picture of the job, one subject one icon everywhere, readable at 20 px,
   solid for the thing and lines for what it gives off, colour for state only, and every skin drawing the same subject
@@ -480,6 +505,8 @@ saying what changes here. Where a note and the copied text below it disagree, th
   mid-range 2022 phone holds 60 fps at the phone layout.
 - **Original designs.** Ships, factions, insignia and markings are our own. Nothing is traced,
   sampled or modelled from another game's assets.
+- **A hull is not a body.** A ship's shape, paneling and markings come from its makers' ideas and traditions,
+  never from what the species looks like (section 1).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).
@@ -509,6 +536,7 @@ Before claiming anything is done, run what applies:
 | Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Artifacts | `python3 tools/mockups/artifact_check.py` (every tracker entry's page is committed HTML and its link is recorded, section 4) |
 | Mockup sync | game stills beside the mockup's shots (`tools/compare/side_by_side.py`), looked at, and `docs/design/mockup-sync.md` updated (section 4) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 

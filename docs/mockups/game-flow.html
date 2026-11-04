@@ -256,6 +256,10 @@ const BASES = {
     nacelles: [{ x: 25, y: 0.6, z: -24, len: 64, hw: 2.8, hh: 2.7 }],
     radiators: [[-22, 6.5, 10], [-22, -6.5, 10]], turrets: [[0, 27, 'cmd'], [11.5, -6, 'top'], [-11.5, -6, 'top'], [9, 22, 'bottom'], [-9, 22, 'bottom']], bells: { z: -58, y: -15.6, x: 2.4, r: 1.7 },
     core: { pos: [0, -20.9, -30], size: [2.2, 0.5, 30] }, torpedo: [0, -1.8, 50.05], deflector: [0, 1.0, 50.05, 2.6],
+    // The primary hull's own stern (owner, 2026-11-04, of the Albatross: "the back part looks kinda bad, more thrusters?
+    // more detail on the back of main hull?"): an aft bulkhead block on its last station (z), its impulse bells [x, y, r]
+    // (mirrored), and manoeuvring thruster quads [x, y] (mirrored) at the stern's corners.
+    stern: { z: -34, block: { w: 16, h: 7.2, d: 2.4, y: 0.7 }, bells: [[4.4, 0.7, 1.9]], rcs: [[9.4, 5.4], [9.4, -3.6]] },
   },
   // The battleship (owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", "please make these
   // somewhat different than the standard ship shape ... battleship needs an array of cannons", "large cannons"): a long armoured
@@ -449,6 +453,9 @@ function plainModel(id, o = {}) {
     for (const s2 of [1, -1]) mesh(boxGeo(0.14, n.hh * 0.32, n.len * 0.72, x + s2 * (n.hw + 0.02), n.y, n.z), glow(0x2fb8ff), 'nacelle');
     const cap = new THREE.CircleGeometry(n.hh * 0.38, 16); cap.translate(x, n.y, n.z + n.len / 2 + 0.03); mesh(cap, glow(0xff6a1f), 'nacelle'); }
   { const b = C.bells; for (const sx of b.x ? [1, -1] : [1]) { const d = new THREE.CircleGeometry(b.r, 20); d.rotateY(Math.PI); d.translate(sx * b.x, b.y, b.z - 0.05); mesh(d, glow(0xffb070), 'drive'); } }
+  if (C.stern) { const T = C.stern, K = T.block, zf = T.z - K.d;   // the primary hull's stern block and its bells
+    mesh(boxGeo(K.w, K.h, K.d + 0.3, 0, K.y, T.z - K.d / 2 + 0.15), pearl, 'drive');
+    for (const [x, y, r] of T.bells) for (const sx of [1, -1]) { const d = new THREE.CircleGeometry(r, 20); d.rotateY(Math.PI); d.translate(sx * x, y, zf - 0.05); mesh(d, glow(0xffb070), 'drive'); } }
   { const [x, y, z, r] = C.deflector; mesh(boxGeo(r * 2, r * 1.1, 0.25, x, y, z), glow(0x6fc6ff), 'deflector'); }
   g.userData.length_m = C.length; g.userData.cls = C.cls;
   return g;

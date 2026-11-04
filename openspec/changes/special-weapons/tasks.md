@@ -4,9 +4,9 @@
 
 - [x] 1.1 Proposal, design and spec delta, citing the reference manuals' printed pages
 - [x] 1.2 The four weapons' numbers in `data/battle/special_weapons.json`, units in every key
-- [x] 1.3 Mockup 12, the special weapons range (`docs/mockups/special-weapons.html`): the approved ships, every weapon's
+- [x] 1.3 Mockup 16, the special weapons range (`docs/mockups/special-weapons.html`): the approved ships, every weapon's
       run, the card's readouts from `RULE` and the data; on mockup-work.md and the tracker
-- [ ] 1.4 The owner's review of mockup 12 (approved for build), and survey X1-X5, X8
+- [ ] 1.4 The owner's review of mockup 16 (approved for build), and survey X1-X5, X8
 - [ ] 1.5 The specials in the battle console mockup (both skins): the mount rows, the Krai Charge key, the four icons on
       the icon guide, the wingman behaviour, a scene for each
 

@@ -10,9 +10,9 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 
 | # | Mockup | Live version | Game matches | Change |
 |---|---|---|---|---|
-| 2 | In-game UI (the battle console, Concord) | v74 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
-| 6 | Concord line (the ships) | v17 | the intact ships as exported by `tools/mockups/export_ships.mjs` | `ship-models-engine` |
-| 7 | Krai Warhost ships | v19 | the intact ships as exported by `tools/mockups/export_ships.mjs` | `ship-models-engine` |
+| 2 | In-game UI (the battle console, Concord) | v79 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
+| 6 | Concord line (the ships) | v24 | v24: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the lamps, the hot bells and the Albatross main hull's two-bell stern; its damage (hits, scorch marks, torpedo holes, parts blown off, the core breach and break-up into burning cells with cut faces) but not the subsystem signatures (`ship-damage-visuals` 3.2b); not its paint rules (below) | `ship-models-engine` |
+| 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 
 Beams and bolts (2026-11-04, owner: "source and destination of phaser and disruptors must maintain in sync"): in step in
@@ -41,8 +41,12 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Boarding defence (v72) | The Security page, the deck plan in 3D, teams and boarders | Not built | `boarding-defence` |
 | Wide keys, target weapons (v74) | Wide keys; the target's weapons as aim keys; point defence and missiles independently powered | Not built | `weapon-targeting` |
 | Test scenes | Seventeen scenes | Battle, Duel and Arming, from both sides, the Krai against the Concord in the approved ships only | `battle-scenarios` 2.1-2.5 |
-| Target box | Holder's emblem, boarding tug of war, Target view and Camera lock | The target's systems display and the release X | `battle-console-engine` 2.2 |
+| Target box | Holder's emblem, boarding tug of war | The target's systems display, the release X, and (2026-11-04) Target view and Camera lock: camera lock is the default on every target lock, a drag frees it (`docs/screenshots/game/target-view.png`) | `battle-console-engine` 2.2 |
 | Backdrop | Nebula sky with streaking dust | A simpler haze and stars | `battle-console-engine` |
+| Strips (v79, mockup 8 v18) | The top and bottom strips on black (owner, 2026-11-04: "this top part needs a blcak background, same with bottom stuff too") | The same | none: in step |
+| Core breach (game ahead, mockups 6 and 7) | The main blast: an orange fireball, flash and shockwave | A white star with pink edges, a flat blue disc racing out through the battle plane, debris trailing flame (owner, 2026-11-04: "center is white with pink edges, and a blue ring glowing outward", "I really want it to have this exact look and colors, and the debris should have trails of flame"); `Fx.Nova`, `novastar.gdshader`, `novadisc.gdshader` | `ship-damage-visuals`: port the breach to `lib/ship-break.js` mainBlast() |
+| Wrecks scene (game ahead) | Not on the scene list | Wrecks, from both sides: every class of the other side, crippled, to watch each come apart (owner, 2026-11-04: "show me you fixed each ship type") | `battle-scenarios`: add Wrecks to the mockup's scene list |
+| The ships in the view | A stand-in Concord block against Kethran and Vos ships (v74, mockup 8 v14) | The approved ships, the Krai against the Concord only (owner: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"); here the mockups are behind the game (sheets 2026-11-04: `docs/screenshots/compare/`) | the mockups' next version |
 
 ### Mockup 8 only (the Krai skin)
 
@@ -57,12 +61,15 @@ in both, every control inside its panel, in 20 console states. What the Krai ski
 | Icons | A glow, mitred corners | No glow, round corners | `krai-console-engine` 2.4 |
 | Names | Kharz, Vekk, Ruhn and the Krai officers' names and ranks; the wireframe ship display | The scenario's names (the same three ships); no officers yet; the plan view | `krai-console-engine` 2.5 |
 
-Not yet seen in a still: the Krai console has only been drawn headless. Stills on the owner's PC are task 1.7.
+Seen in a real window on the Mac (2026-11-04): `docs/screenshots/game/krai-battle.png`, `krai-duel.png`, and the six
+recorded bot runs (`docs/playtests/2026-11-04-scenario-bot-runs.md`).
 
 ### Mockups 6 and 7 (the ships)
 
 | Where | Mockup | Game | Task |
 |---|---|---|---|
 | Damage | Holes into the rooms, scorch marks, venting, nacelles shot off, the hull breaking apart | Ships vanish when destroyed | `ship-models-engine` |
-| Lighting | Floodlights, navigation lights, strobes and beacons in three presets | Not lit yet | `ship-models-engine` |
+| Lighting | Floodlights, navigation lights, strobes and beacons in three presets | Every lamp from the export's light empties (`src/Game/View/ShipSkin.cs`): floods as spot lights, running lights and beacons, strobes double flashing; one preset (healthy), no presets switch | `ship-models-engine` |
+| Concord paint | The hull shader's paint rules (`hullMat`: the subhull service band, livery stripes, dorsal seams, window rows, light pools) | The armour white and the detail tile only (`hull.gdshader` ports the shared detail and the Krai livery) | `ship-models-engine` |
+| Phone lights | One renderer for all | About 120 lamps in a six-ship battle: fine in Forward+; the Compatibility renderer (phones) caps lights per mesh, so phones need a cut set | `ship-models-engine` |
 | Windows | Openings with a room behind (interior mapping) | A warm emissive pane | `ship-models-engine` |

@@ -22,7 +22,7 @@ shaders) is its sister change, `weapon-fx`.
 - **Krai: Blood charge.** An order from the helm on every Krai ship: a 5 s drive surge to 2.2 times top speed, then a ram
   with the bayonet, which ignores the struck facing's shield. Damage grows with closing speed; the rammer takes 30 % back.
 - Their numbers in one data file, `data/battle/special_weapons.json`, read by the mockup now and by the game later.
-- **Mockup 12, the special weapons range** (`docs/mockups/special-weapons.html`): the four weapons fired on the approved
+- **Mockup 16, the special weapons range** (`docs/mockups/special-weapons.html`): the four weapons fired on the approved
   ships, with every readout computed from the data.
 
 ## Impact

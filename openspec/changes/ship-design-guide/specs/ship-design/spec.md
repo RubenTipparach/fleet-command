@@ -26,3 +26,13 @@ its console skin; sharing a colour or material with the console is allowed (comp
 #### Scenario: A new faction's hull
 - **WHEN** a faction's ship exterior is designed
 - **THEN** its page shows its palette beside its console skin's, and no colour-distance check is applied
+
+### Requirement: A ship's design comes from its makers' culture, never from their bodies
+
+A faction's ship SHALL take no shape, paneling, texture or marking from what its species looks like, SHALL name for
+every design choice the part of the faction's culture it comes from, and its line SHALL show more than one of that
+culture's design traditions, as the owner sets them (Ship Design Bible chapter 13, rules C1 to C5).
+
+#### Scenario: The stereotype test
+- **WHEN** a faction's ship design is described without naming the species
+- **THEN** the description is not a picture of the species' body, and every choice in it names its source in the culture

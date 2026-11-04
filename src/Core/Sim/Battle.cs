@@ -27,6 +27,10 @@ public sealed class Shot
 
 public sealed record LogLine(double T, string Who, string Text);
 
+/// <summary>A hit as it landed, for the view's explosions and scars (it changes nothing): the ship struck, where the shot
+/// came from (metres), the weapon's kind, what the shields took and what reached the hull, and whether it destroyed the ship.</summary>
+public sealed record HitEvent(long Seq, double T, string ShipId, double FromX, double FromZ, string Kind, double Absorbed, double HullDamage, bool Destroyed);
+
 public sealed partial class Battle
 {
     public GameData Data { get; }
@@ -36,6 +40,10 @@ public sealed partial class Battle
     public IReadOnlyList<Ship> Ships => _ships;
     public IReadOnlyList<Shot> Shots => _shots;
     public IReadOnlyList<LogLine> Log => _log;
+    /// <summary>The last hits that landed, oldest first, at most <see cref="HitMemory"/>; a reader keeps the last Seq it saw.</summary>
+    public IReadOnlyList<HitEvent> Hits => _hits;
+    /// <summary>How many hits are kept for the view.</summary>
+    public const int HitMemory = 64;
     /// <summary>The ship the player commands.</summary>
     public Ship Player { get; private set; }
     /// <summary>Battle time, s.</summary>
@@ -50,6 +58,8 @@ public sealed partial class Battle
     private readonly List<Ship> _ships = new();
     private readonly List<Shot> _shots = new();
     private readonly List<LogLine> _log = new();
+    private readonly List<HitEvent> _hits = new();
+    private long _hitSeq;
     private readonly Rng _hit, _dmg, _ai, _helm;
 
     public Battle(GameData data, Scenario scenario)
@@ -283,7 +293,7 @@ public sealed partial class Battle
         if (!m.Weapon.Flies)
         {
             _shots.Add(new Shot { Kind = "beam", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, Life = Tuning.BeamLifeS, Color = m.Weapon.Color, To = t.Id, From = s.Id, Mount = mi, Hit = hit });
-            if (hit) Damage(t, s.X, s.Z, s, w.Damage);
+            if (hit) Damage(t, s.X, s.Z, s, w.Damage, m.Weapon.Kind);
         }
         else
             _shots.Add(new Shot { Kind = m.Weapon.Kind, X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Mount = mi, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = m.Weapon.Color });
@@ -291,7 +301,7 @@ public sealed partial class Battle
     }
 
     /// <summary>Damage from a source at (sx, sz): the facing it strikes absorbs what it can, the rest hits the hull and may hurt a subsystem or a mount.</summary>
-    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg)
+    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind)
     {
         if (!t.Alive) return;
         int f = Rules.FacingFrom(t, sx, sz);
@@ -299,7 +309,7 @@ public sealed partial class Battle
         t.Shields[f] -= absorb;
         t.Flash[f] = 1;
         double rest = dmg - absorb;
-        if (rest <= 0) return;
+        if (rest <= 0) { Record(t, sx, sz, kind, absorb, 0); return; }
         t.Hull -= rest;
         if (_dmg.Next() < Tuning.SubsystemHitChance)
         {
@@ -314,13 +324,21 @@ public sealed partial class Battle
         }
         if (t == Player) Say("Engineering", $"Hull hit through the {Rules.Facings[f]} shield.");
         else if (src == Player) Say("Tactical", $"Hit on {t.Name}, {Rules.Facings[f]} facing.");
+        Record(t, sx, sz, kind, absorb, rest);
         if (t.Hull <= 0)
         {
             t.Hull = 0; t.Alive = false; t.V = 0;
+            _hits[^1] = _hits[^1] with { Destroyed = true };
             Say("Tactical", $"{t.Name} destroyed.");
             foreach (Ship o in _ships) if (o.Target == t.Id) o.Target = null;
             if (t == Player) PromoteNextCommand();
         }
+    }
+
+    private void Record(Ship t, double sx, double sz, string kind, double absorbed, double hull)
+    {
+        _hits.Add(new HitEvent(++_hitSeq, T, t.Id, sx, sz, kind, absorbed, hull, false));
+        if (_hits.Count > HitMemory) _hits.RemoveAt(0);
     }
 
     /// <summary>When the commanded ship is lost, command passes to the next living ship of the fleet.</summary>
@@ -358,7 +376,7 @@ public sealed partial class Battle
             if (d <= stepM + Tuning.ShotHitRadiusM)
             {
                 Ship? from = ShipById(sh.From);
-                if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage);
+                if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind);
                 sh.Spent = true; sh.Life = 0;
             }
             else { sh.X += (t.X - sh.X) / d * stepM; sh.Z += (t.Z - sh.Z) / d * stepM; }
@@ -378,7 +396,7 @@ public sealed partial class Battle
         if (sh.TravelledM >= len - Tuning.ShotHitRadiusM)
         {
             Ship? from = ShipById(sh.From);
-            if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sx, from?.Z ?? sz, from, sh.Damage);
+            if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sx, from?.Z ?? sz, from, sh.Damage, sh.Kind);
             sh.Spent = true; sh.Life = 0; sh.X = tx; sh.Z = tz;
             return;
         }

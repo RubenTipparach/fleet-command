@@ -4,8 +4,8 @@
 
 - [x] 1.1 Proposal, design and spec delta
 - [x] 1.2 `docs/mockups/lib/weapon-fx.js`: the pipeline, the phone quality and every effect in the design's table
-- [x] 1.3 The weapons range (mockup 12) uses it; named shots at the three sizes, looked at
-- [ ] 1.4 The owner's review of mockup 12, and survey X6, X7
+- [x] 1.3 The weapons range (mockup 16) uses it; named shots at the three sizes, looked at
+- [ ] 1.4 The owner's review of mockup 16, and survey X6, X7
 - [ ] 1.5 The battle console mockup's lances, disruptors and torpedoes drawn with `ribbon`, `flare` and `trail` (both
       skins), once the look is approved
 

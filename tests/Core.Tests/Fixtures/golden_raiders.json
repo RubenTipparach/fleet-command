@@ -3,7 +3,7 @@
  "id": "golden_raiders",
  "name": "Raiders",
  "side": "concord",
- "seed": 20261101,
+ "sky": "quiet", "seed": 20261101,
  "objective": "Destroy the Kethran and Vos ships",
  "say": [
   "Comms",

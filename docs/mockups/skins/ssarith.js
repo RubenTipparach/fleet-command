@@ -12,13 +12,10 @@
 // film's names, shapes, glyphs or art.
 (function () {
 'use strict';
-const F = window.FCK, P = F.P;
-const SS = { phos: '#6dff8a', phosLo: '#2f9a4f', bone: '#d8cfb4', kill: '#e0533c', amber: '#ffb340', ink: '#d8cfb4', dim: '#7f8f6e', glow: 'rgba(109,255,138,0.55)' };
-
-// A phosphor stroke: the trace drawn twice, a soft glow under a sharp line.
-function glowStroke(x, w, col) {
-  x.save(); x.shadowColor = SS.glow; x.shadowBlur = 8; x.strokeStyle = col || SS.phos; x.lineWidth = w; x.stroke(); x.restore();
-}
+// The Hunt's look has one implementation, docs/mockups/lib/ssarith.js (window.FCSsarith, inlined before this module): its
+// palette, its icons and its live readouts, shared with the battle console. This module registers it with this page's
+// skin registry.
+const F = window.FCK, H = window.FCSsarith, SS = H.SS;
 
 // ---- the skin --------------------------------------------------------------------------------------------------
 F.register('ssarith', {
@@ -35,41 +32,7 @@ F.register('ssarith', {
   helmKeys: 'ring', helmR: 94, shield: [SS.phos, SS.amber, SS.kill],
   fonts: ['400 20px "VT323"', '400 16px "Black Ops One"'], view: { title: '400 30px "VT323"', body: '400 26px "VT323"', upper: true, ink: SS.phos, dim: SS.bone },
   build: () => { const d = F.kitData('assets/ui/ssarith/manifest.json'); return d ? F.fromManifest(d, () => F.paint(48, 48, () => {})) : null; },
-  live: {
-    arrow: (x) => { x.save(); x.shadowColor = SS.glow; x.shadowBlur = 6; x.fillStyle = SS.phos; x.beginPath(); x.moveTo(10, 0); x.lineTo(-6, -8); x.lineTo(-2, 0); x.lineTo(-6, 8); x.closePath(); x.fill(); x.restore(); },
-    helmCentre: () => {},
-    // The ship as a tracker sees it: a squat armoured hull with a broad prow, drawn as phosphor; shields as dashed arcs.
-    ssd: (x, cx, cy, sh, col) => {
-      x.save();
-      for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.setLineDash([6, 4]); x.beginPath(); x.arc(cx, cy, 98, a - P / 6 + 0.1, a + P / 6 - 0.1); x.shadowColor = col(sh[i]); x.shadowBlur = 8; x.strokeStyle = col(sh[i]); x.lineWidth = 3; x.stroke(); }
-      x.setLineDash([]);
-      x.beginPath(); x.moveTo(cx, cy - 66); x.lineTo(cx + 26, cy - 40); x.lineTo(cx + 36, cy + 10); x.lineTo(cx + 22, cy + 56); x.lineTo(cx - 22, cy + 56); x.lineTo(cx - 36, cy + 10); x.lineTo(cx - 26, cy - 40); x.closePath();
-      glowStroke(x, 2);
-      x.beginPath(); x.moveTo(cx - 18, cy - 20); x.lineTo(cx + 18, cy - 20); x.moveTo(cx - 24, cy + 20); x.lineTo(cx + 24, cy + 20); glowStroke(x, 1.4, SS.phosLo);
-      x.fillStyle = SS.phos; for (const [mx, my] of [[cx, cy - 54], [cx - 28, cy + 2], [cx + 28, cy + 2]]) { x.beginPath(); x.rect(mx - 3, my - 3, 6, 6); x.fill(); }
-      x.restore();
-    },
-    // A tracking sweep on the radar's tube (radius 46): a fading wedge, the quarry as bone-white marks.
-    dial: (x, c, cts) => {
-      x.save();
-      const g = x.createRadialGradient(c, c, 0, c, c, 46); g.addColorStop(0, 'rgba(109,255,138,0.0)'); g.addColorStop(1, 'rgba(109,255,138,0.28)');
-      x.fillStyle = g; x.beginPath(); x.moveTo(c, c); x.arc(c, c, 40, -1.2, -0.55); x.closePath(); x.fill();
-      x.beginPath(); x.moveTo(c, c); x.lineTo(c + Math.cos(-0.55) * 40, c + Math.sin(-0.55) * 40); glowStroke(x, 1.6);
-      x.beginPath(); x.arc(c, c, 22, 0, 2 * P); x.setLineDash([2, 4]); glowStroke(x, 1, SS.phosLo); x.setLineDash([]);
-      x.strokeStyle = SS.bone; x.lineWidth = 2;
-      for (const [dx, dy] of cts) { const px = c + dx * 36, py = c + dy * 36; x.beginPath(); x.moveTo(px - 4, py - 4); x.lineTo(px + 4, py + 4); x.moveTo(px + 4, py - 4); x.lineTo(px - 4, py + 4); x.stroke(); }
-      x.restore();
-    },
-    // Tracking chevrons closing on the quarry from the four corners.
-    bracket: (x, bx, by, bw, bh) => {
-      x.save();
-      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
-        x.beginPath(); x.moveTo(px + sx * 34, py); x.lineTo(px, py); x.lineTo(px, py + sy * 34); glowStroke(x, 2.4);
-        x.beginPath(); x.moveTo(px + sx * 10, py + sy * 18); x.lineTo(px + sx * 18, py + sy * 18); x.lineTo(px + sx * 18, py + sy * 10); glowStroke(x, 1.4, SS.phosLo);
-      }
-      x.restore();
-    },
-  },
+  live: H.live,
   world: ['The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted.', 'Big-boned reptiles with heavy clawed hands, slow and silent until they strike.', 'A hunter\'s kit: worn gunmetal, field camouflage, tracking tubes, grown over by the jungle it hides in.', 'Squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen.'],
   shapes: 'Pillowed cut-cornered gunmetal pressed with hide scales, CRT tube keys, fronds on the flat, tally marks, claw-mark bars.', light: 'Backlight only: the tubes light themselves under a dim canopy light; nothing glows that the quarry could see.',
   motion: 'A key\'s tube flares and settles; a tracker sweeps; nothing moves until it strikes.', type: '"Black Ops One" stencilled titles over "VT323" phosphor readouts.',

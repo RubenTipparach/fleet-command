@@ -2,7 +2,7 @@
  "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet.",
  "scenarios": [
   {
-   "id": "concord_battle",
+   "id": "concord_battle", "sky": "deep_indigo",
    "name": "Battle",
    "side": "concord",
    "seed": 20261104,
@@ -87,7 +87,7 @@
    ]
   },
   {
-   "id": "concord_duel",
+   "id": "concord_duel", "sky": "ice_halo",
    "name": "Duel",
    "side": "concord",
    "seed": 20261109,
@@ -124,7 +124,7 @@
    ]
   },
   {
-   "id": "concord_arming",
+   "id": "concord_arming", "sky": "twin_lights",
    "name": "Arming",
    "side": "concord",
    "seed": 20261105,
@@ -177,7 +177,7 @@
    ]
   },
   {
-   "id": "krai_battle",
+   "id": "krai_battle", "sky": "crimson_reach",
    "name": "Battle",
    "side": "krai",
    "seed": 20261106,
@@ -262,7 +262,7 @@
    ]
   },
   {
-   "id": "krai_duel",
+   "id": "krai_duel", "sky": "violet_storm",
    "name": "Duel",
    "side": "krai",
    "seed": 20261110,
@@ -299,7 +299,7 @@
    ]
   },
   {
-   "id": "krai_arming",
+   "id": "krai_arming", "sky": "solar_furnace",
    "name": "Arming",
    "side": "krai",
    "seed": 20261108,
@@ -348,6 +348,168 @@
      "speed_m_s": 300,
      "erratic": true,
      "range": "close"
+    }
+   ]
+  },
+  {
+   "id": "concord_wrecks", "sky": "emerald_rift",
+   "name": "Wrecks",
+   "side": "concord",
+   "seed": 20261105,
+   "objective": "Break up each Krai class, corvette to dreadnought",
+   "say": [
+    "Tactical",
+    "Four Krai hulks, crippled and adrift, shields down. Weapons free."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Sub-warlord Pekh",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -1500,
+     "z_m": -5200,
+     "heading_deg": 170,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "hull_frac": 0.3,
+     "shields_frac": 0
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Raidmaster Ossk",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 1800,
+     "z_m": -6500,
+     "heading_deg": 190,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "hull_frac": 0.3,
+     "shields_frac": 0
+    },
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -2200,
+     "z_m": -8200,
+     "heading_deg": 160,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "hull_frac": 0.3,
+     "shields_frac": 0
+    },
+    {
+     "id": "draxx",
+     "name": "Draxx",
+     "captain": "High Warlord Zhen",
+     "class": "krai_dn",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 1500,
+     "z_m": -10500,
+     "heading_deg": 180,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "hull_frac": 0.3,
+     "shields_frac": 0
+    }
+   ]
+  },
+  {
+   "id": "krai_wrecks", "sky": "ember",
+   "name": "Wrecks",
+   "side": "krai",
+   "seed": 20261106,
+   "objective": "Break up each Concord class, frigate to cruiser",
+   "say": [
+    "Tactical",
+    "Three Concord hulks, crippled and adrift. Their shields are down."
+   ],
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "tallis",
+     "name": "Tallis",
+     "captain": "Cdr. Imre",
+     "class": "ff",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -1500,
+     "z_m": -5200,
+     "heading_deg": 170,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "hull_frac": 0.3,
+     "shields_frac": 0
+    },
+    {
+     "id": "meridian",
+     "name": "Meridian",
+     "captain": "Capt. Osei",
+     "class": "dd",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 1800,
+     "z_m": -6800,
+     "heading_deg": 190,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "hull_frac": 0.3,
+     "shields_frac": 0
+    },
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -1600,
+     "z_m": -8800,
+     "heading_deg": 175,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "hull_frac": 0.3,
+     "shields_frac": 0
     }
    ]
   }

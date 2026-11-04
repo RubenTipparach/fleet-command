@@ -25,7 +25,7 @@ when it fired while the ship flew on (the game froze both ends).
 
 ## Impact
 
-- New: `docs/mockups/lib/weapon-fx.js`; used by `docs/mockups/special-weapons.html` (mockup 12).
+- New: `docs/mockups/lib/weapon-fx.js`; used by `docs/mockups/special-weapons.html` (mockup 16).
 - Changed now (the owner's rule): `docs/mockups/battle-console.html` and the Krai page written from it,
   `src/Core/Sim/Battle.cs`, `src/Core/Data/GameData.cs`, `src/Game/View/ViewOverlay.cs`, `tests/Core.Tests` (two tests,
   the golden seed re-pinned because disruptor bolts now land at other moments).

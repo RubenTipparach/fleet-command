@@ -174,8 +174,14 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
-  { tag: 'X', name: 'Special weapons (mockup 12)',
-    lead: 'Mockup 12 (Special Weapons Range, docs/mockups/special-weapons.html; its link is on the tracker) fires the Concord\'s Chorus lance and Quell torpedo and the Krai\'s Forge driver and Blood charge on the approved ships. Designs: openspec/changes/special-weapons and weapon-fx. Every number is a placeholder.',
+  { tag: 'H', name: 'Ssarith Hunt: their culture first',
+    lead: 'Mockup 12 version 1 is withdrawn: it read the species\' body into the ships. The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
+    qs: [
+      { id: 'H1', q: 'How should the Ssarith Hunt\'s culture be set before their ships are redrawn?',
+        options: ['You write it (history, beliefs, how they live and work, their yards and makers); we design from that', 'We draft several traditions inside the Hunt (yards, eras, schools that disagree), none from their bodies, for you to pick and change', 'Pause the Hunt\'s ships for now'], rec: 1,
+        why: 'Options to react to are quicker for you than a blank page, and you keep every cultural decision (U7).' },
+  { tag: 'X', name: 'Special weapons (mockup 16)',
+    lead: 'Mockup 16 (Special Weapons Range, docs/mockups/special-weapons.html; its link is on the tracker) fires the Concord\'s Chorus lance and Quell torpedo and the Krai\'s Forge driver and Blood charge on the approved ships. Designs: openspec/changes/special-weapons and weapon-fx. Every number is a placeholder.',
     qs: [
       { id: 'X1', q: 'Two special weapons a faction: a signature weapon (the Chorus lance, the Forge driver) and a tactical one (the Quell torpedo, the Blood charge). Right number?',
         options: ['Two each', 'One each', 'Three each (say what the third should do in the notes)'], rec: 0,
