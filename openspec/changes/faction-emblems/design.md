@@ -57,6 +57,12 @@ swept pylon hides the side from view, so the emblem sits on the bow's flat side 
 The paint is the solid version (pearl on a night field; owner: "on the ship hull I like the solid shape more"). At battle distance on desktop it measures about 19 px tall (phones set aside for now, owner: "dont care about phone right
 now").
 
+**The Concord's emblem is B-E27, the smooth keyhole** (owner, 2026-11-04: "Keyhole but smoother", then "Yea ok. I'll
+accept that"): B-E15's keyhole drawn as one smooth curve, its head a flattened oval over the saucer, measured as one
+closed outline with the ship 5.3 units clear. On the hull it is the solid version with a cyan star (`#2fd0f0`; owner:
+"Solid color variant with a cyan colored star in the middle"). The 3D badge (mockup 10) still shows B-E25 until it is
+rebuilt on B-E27.
+
 ## The rules for an emblem
 
 | Rule | Says | Why |

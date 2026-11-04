@@ -77,3 +77,4 @@
 - 2026-11-04, cloud session (Concord ships thread): version 79, version id `1793783791-8c90`: M7 v19.
 - 2026-11-04, cloud session (Concord ships thread): version 80, version id `1793785489-a233`: M7 v20.
 - 2026-11-04, cloud session (Concord ships thread): version 81, version id `1793785555-ea71`: M6 v18.
+- 2026-11-04, cloud session: M11 at v4 and the guide at v21; version 83, id `1793787105-37dd`.

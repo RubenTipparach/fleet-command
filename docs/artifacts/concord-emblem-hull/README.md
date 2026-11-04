@@ -10,3 +10,4 @@
 - 2026-11-04, version 1 (`1793779081-52b3`): first publish (owner: "can you show what this emblem looks on concord ship hull?").
 - 2026-11-04, version 2 (`1793779344-a68d`): one emblem only, half size (2.6 m, 3 % of 88 m) on the port side of the bow (owner: "too many logos on the hull there", "1/2 size on the left side", "only one logo").
 - 2026-11-04, version 3 (`1793779847-6900`): the solid version (pearl on a night field) is the default (owner: "on the ship hull I like the solid shape more"); the outline is the other choice.
+- 2026-11-04, version 4 (`1793787091-0028`): B-E27, the smooth keyhole (accepted), in the solid version with a cyan star (owner: "Solid color variant with a cyan colored star in the middle"); built from `assets/emblems/concord/b-e27.parts.json`.

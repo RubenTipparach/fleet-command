@@ -31,7 +31,7 @@ account and every link here is updated.
 | 8 | Battle console: Krai Warhost | Drafted (2026-11-04, v13) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E25 as a badge | Drafted (2026-11-04, v4) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
-| 11 | Concord emblem on the hull: B-E25 painted on the Petrel frigate | Drafted (2026-11-04, v3) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
+| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v4) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -552,3 +552,6 @@ Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hu
   the swept pylons, under its own logo floodlight. v1 had a dorsal crest and one on each flank at 5.3 m.
 - **Paint** (owner, 2026-11-04: "on the ship hull I like the solid shape more"): the solid version, pearl on a night field,
   is the default; the navy outline is the other choice.
+- **The emblem** (owner, 2026-11-04: "Beacon sucks. Keyhole but smoother", then "Yea ok. I'll accept that. Let's see it ont be
+  ship hull. Solid color variant with a cyan colored star in the middle"): B-E27, the smooth keyhole, accepted as B's
+  sketch and painted here in the solid version with a cyan star (`#2fd0f0`).

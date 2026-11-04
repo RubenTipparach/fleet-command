@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'Yea ok. I\'ll accept that. Let\'s see it ont be ship hull. Solid color variant with a cyan colored star in the middle.', means: 'B-E27, the smooth keyhole, accepted: now B\'s main sketch. Painted on the Petrel\'s hull (M11) in the solid version with a cyan star.' },
   { when: '2026-11-04', q: 'Beacon sucks. Keyhole but smoother', means: 'B-E26 rejected. B-E27: B-E15\'s keyhole drawn as one smooth curve, the head easing into the neck and the neck into the base, the foot\'s corners rounded.' },
   { when: '2026-11-04', q: 'tighten the shape a bit, too much rom on top and bottom / B-E15 The keyhole is a good candidate / B-E26 The beacon is interesting too, but yea too much dead space', means: 'B-E26 tightened: a lower, flatter dome and a shorter skirt, so about 6 units of field stand above and below the ship (it was 17 to 20). B-E15, the keyhole, marked as one of your candidates.' },
   { when: '2026-11-04', q: 'can we try a shape like this? (a sketch: a rounded dome on a pinched neck, flaring to a wide flat foot)', means: 'B-E26, the beacon: your sketch drawn as one closed outline, the saucer in the dome and the nacelles spreading over the skirt. Shown beside B-E25; B-E25 stays the 3D badge until you pick.' },
@@ -448,7 +449,7 @@ const ENCLOSURES = [
     frame: 'M5.31 82.6L14.3 38C18.3 18.4 34 4 50 4C66 4 81.7 18.4 85.7 38L94.69 82.6Q95.48 86.5 91.58 87.4L53.9 96.1Q50 97 46.1 96.1L8.42 87.4Q4.52 86.5 5.31 82.6ZM11.95 80L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
     field: 'M11.95 80L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
     why: 'B-E23 with its foot drawn to a shallow arrow point instead of a flat base: the peak above and the point below give the badge a direction, a ship heading out, while the rounded top keeps it gentle.' },
-  { key: 'B-E25', name: 'The pointed peak', rec: true, scale: 0.7, cy: 50, pieces: 2,
+  { key: 'B-E25', name: 'The pointed peak', scale: 0.7, cy: 50, pieces: 2,
     frame: 'M5.31 82.6L14.3 38C18.3 18.4 41 8 50 3C59 8 81.7 18.4 85.7 38L94.69 82.6Q95.48 86.5 91.58 87.4L53.9 96.1Q50 97 46.1 96.1L8.42 87.4Q4.52 86.5 5.31 82.6ZM11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
     field: 'M11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
     why: 'B-E24 with the top drawn to a point as well: the sides rise in curves that meet at a peak, over the arrow foot. Pointed both ways, it reads as a ship\'s bow and stern, heading out. Watch: a pointed arch can recall a church window; the wide shoulders and the arrow foot keep it a badge.' },
@@ -456,7 +457,7 @@ const ENCLOSURES = [
     frame: 'M9 86H91Q96 86 95 81.1C90 66 73 64 73 50C73 45 82 42 82 38C82 25.2 68 18 50 18C32 18 18 25.2 18 38C18 42 27 45 27 50C27 64 10 66 5 81.1Q4 86 9 86ZM15.5 80H84.5Q88.3 80 87.6 76.5C83.5 64 67 62 67 50C67 42 76 40 76 38C76 29.04 64.5 24 50 24C35.5 24 24 29.04 24 38C24 40 33 42 33 50C33 62 16.5 64 12.4 76.5Q11.7 80 15.5 80Z',
     field: 'M15.5 80H84.5Q88.3 80 87.6 76.5C83.5 64 67 62 67 50C67 42 76 40 76 38C76 29.04 64.5 24 50 24C35.5 24 24 29.04 24 38C24 40 33 42 33 50C33 62 16.5 64 12.4 76.5Q11.7 80 15.5 80Z',
     why: 'Rejected (owner, 2026-11-04: "Beacon sucks"). Your sketch, tightened: a low rounded dome on a pinched neck over a skirt that flares to a wide, flat foot, the frame closed in to about 6 units above and below the ship so no field is wasted. A lighthouse, or a beacon on its tower: the Concord as the light that shows travellers the way in. The saucer rides in the dome like the lamp, and the nacelles reach down through the neck and spread over the skirt. Watch: a dome on a neck can read as a keyhole (B-E15) or a bottle; the dome is wider and flatter than a keyhole\'s round head, and the foot is flat.' },
-  { key: 'B-E27', name: 'The smooth keyhole', scale: 0.72, cy: 51, pieces: 2,
+  { key: 'B-E27', name: 'The smooth keyhole', rec: true, scale: 0.72, cy: 51, pieces: 2,
     frame: 'M50 13C68.78 13 84 24.19 84 38C84 47 79 51 79 58C79 67 87 75 91 83Q94 91 86 91H14Q6 91 9 83C13 75 21 67 21 58C21 51 16 47 16 38C16 24.19 31.22 13 50 13ZM50 19C65.46 19 78 27.51 78 38C78 46 73 50 73 58C73 67.5 80 74.5 84 81.5Q86.3 85 81.5 85H18.5Q13.7 85 16 81.5C20 74.5 27 67.5 27 58C27 50 22 46 22 38C22 27.51 34.54 19 50 19Z',
     field: 'M50 19C65.46 19 78 27.51 78 38C78 46 73 50 73 58C73 67.5 80 74.5 84 81.5Q86.3 85 81.5 85H18.5Q13.7 85 16 81.5C20 74.5 27 67.5 27 58C27 50 22 46 22 38C22 27.51 34.54 19 50 19Z',
     why: 'B-E15, your candidate, smoothed (owner, 2026-11-04: "Keyhole but smoother"): the head, flattened a little to an oval so it closes down over the saucer (a round head left about 20 units of empty field above it), runs into a gentle neck with no corner where B-E15\'s circle met its straight sides, the neck eases out into the flared base, and the foot\'s corners are rounded. One unbroken curve all the way round. The Concord holds the key and opens the door to any people who ask; the saucer sits in the head, the nacelles spread in the base.' },
@@ -517,7 +518,7 @@ const DESIGNS = [
     ],
   },
   {
-    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a pointed peak', pieces: 2,
+    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a smooth keyhole', pieces: 2,
     risk: 'A pictured starship: the manual allows one only when abstracted into a mark (p. 14), and a saucer with nacelles is the shape most likely to be read as borrowed from a famous ship. The weakest of the four on rule 15.',
     own: true,
     draw(bg = 'dk') { return enclosed(ENCLOSURES[REC], false, VERSIONS[bg]); },
@@ -530,7 +531,7 @@ const DESIGNS = [
       [...encT(-1, 50, 20.5), 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
       [...encT(-1, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. Its floor is satin Signal blue, the flag\'s colour, a soft sheen against the pearl.'],
       [74, 60, 'R', 'The night behind', 'Deep night blue, the sky every homeworld shares. Pearl on it measures 11.9:1, so the patch reads from far away.'],
-      [90, 62, 'R', 'The pointed peak (B-E25)', 'Pointed at both ends: curved sides rising to a point above, the foot drawn to a shallow arrow point below. One closed line, for a patch or a pin.'],
+      [91, 66, 'R', 'The smooth keyhole (B-E27)', 'Your pick: a keyhole in one smooth curve, an oval head easing into a gentle neck and out to a wide foot with rounded corners. The Concord holds the key and opens the door to any people who ask. One closed line, for a patch or a pin.'],
     ],
   },
   {
