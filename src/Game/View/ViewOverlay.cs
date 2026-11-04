@@ -150,8 +150,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Ship? t = b.TargetOf(me);
         var view = new Rect2(Vector2.Zero, Size);
 
-        // the 3D shield display is always shown (owner, 2026-11-03: "Re move shield view toggle")
-        ShieldHex(me);
+        // the 3D shield display is always shown (owner, 2026-11-03: "Re move shield view toggle"): every ship's, drawn in the
+        // scene by BattleView (ShieldShell)
 
         // the helm ring and the turn still to make
         bool ringHot = _steering || (!_leftDown && !_rightDown && ShipAt(_mouse) == null && NearRing(_mouse));
@@ -331,32 +331,6 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         DrawRect(new Rect2(px - w / 2, py, w, h), C.Deep);
         DrawRect(new Rect2(px - w / 2, py, w * fr, h), col);
         _x.Fonts.Draw(this, $"{Math.Round(fr * 100)}%", px + w / 2 + 6, py + h, 14, col, HorizontalAlignment.Left, 0, 700);
-    }
-
-    // The 3D shield display (battle-console design): a flat hexagon in the ship's plane, an edge toward the bow, each
-    // facing a stack of one to three glowing bands (strong three green, middling two amber, weak one red); a hit
-    // flashes the inner band; an empty or lowered facing is one dark line.
-    private void ShieldHex(Ship s)
-    {
-        double R = s.Class.LengthM * 0.62, step = s.Class.LengthM * 0.05;
-        for (int i = 0; i < 6; i++)
-        {
-            double frac = s.ShieldsUp ? s.Shields[i] / s.Class.ShieldsHp[i] : 0;
-            int bands = frac > 0.66 ? 3 : frac > 0.33 ? 2 : 1;
-            Color col = frac > 0.01 ? SystemsDisplay.ShieldColorOf(C, frac) : C.Deep;
-            for (int k = 0; k < bands; k++)
-            {
-                double r = R + k * step;
-                double a0 = s.H + (i - 0.5) * Math.PI / 3, a1 = s.H + (i + 0.5) * Math.PI / 3;
-                var p0 = Geometry.Forward(a0); var p1 = Geometry.Forward(a1);
-                // the corners of a hexagon of circumradius r / cos(30) put the edge's middle at r
-                double cr = r / Math.Cos(Math.PI / 6);
-                if (Local(s.X + p0.X * cr, s.Z + p0.Z * cr) is not { } q0 || Local(s.X + p1.X * cr, s.Z + p1.Z * cr) is not { } q1) continue;
-                Vector2 inset = (q1 - q0) * 0.06f;
-                Color bc = k == 0 && s.Flash[i] > 0 ? col.Lerp(Colors.White, (float)s.Flash[i]) : col;
-                DrawLine(q0 + inset, q1 - inset, new Color(bc, frac > 0.01 ? 0.85f : 0.6f), frac > 0.01 ? 3 : 2, true);
-            }
-        }
     }
 
     private void Banner(string text, Color col)

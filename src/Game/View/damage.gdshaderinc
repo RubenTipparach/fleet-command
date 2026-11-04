@@ -24,6 +24,8 @@ uniform vec3 seeds[16];
 uniform int seed_n = 0;
 // 1 where a cell has gone, so its neighbours' edges toward it char and glow
 uniform float open_cells[16];
+// which chunk each cell left the ship in (0 still on it): cells that went together stay whole between them
+uniform float cell_group[16];
 
 float dh3(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float dn3(vec3 x) {
@@ -95,7 +97,7 @@ bool dmg_break(vec3 p, float nz, inout float d_char, inout float d_ember) {
 			vec3 sk = seeds[k];
 			float dk = cell_dist(p, sk, k);
 			if (dk < di) return true;
-			if (max(open_cells[cell], open_cells[k]) > 0.5) edge = min(edge, (dot(p - sk, p - sk) - dot(p - si, p - si)) / (2.0 * length(sk - si)));
+			if (max(open_cells[cell], open_cells[k]) > 0.5 && abs(cell_group[cell] - cell_group[k]) > 0.5) edge = min(edge, (dot(p - sk, p - sk) - dot(p - si, p - si)) / (2.0 * length(sk - si)));
 		}
 		d_char = max(d_char, 1.0 - smoothstep(0.0, 11.0, edge + nz * 4.0));
 		d_ember = max(d_ember, (1.0 - smoothstep(0.0, 1.6, edge + nz * 1.6)) * (0.45 + 0.55 * cut_heat) * 1.6);
