@@ -52,3 +52,5 @@
   B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.
 - Version 10 published 2026-11-04: the trapezoid (B-E19) and the chevron (B-E20) for B (owner: "What about a more
   trapazpidal shape and another one more Chevron"), both one closed outline, joins measured.
+- Version 11 published 2026-11-04: B-E21 the upside-down chevron and B-E22 the curved-top trapezoid (owner: "upside down
+  chevron, another alternate shape maybe a more curved top trapezoid?"), both one closed outline, joins measured.

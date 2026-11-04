@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'upside down chevron, another alternate shape maybe a more curved top trapezoid?', means: 'B-E21 the upside-down chevron (peaked top, notch at the foot) and B-E22 the curved-top trapezoid, both one closed outline.' },
   { when: '2026-11-04', q: 'What about a more trapazpidal shape and another one more Chevron', means: 'B-E19 the trapezoid (narrow top, wide foot) and B-E20 the chevron (a V-dipped top, a pointed foot), both one closed outline.' },
   { when: '2026-11-03', q: 'can we try a triangle shape with cruved ends?', means: 'Two rounded triangles for B: B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.' },
   { when: '2026-11-03', q: 'the shape on e-9 is still the exact same, you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a uniform', means: 'B-E8 to B-E13 retired (restyles, and three broke the outline). Rule 19: one closed outline, measured. Three different outlines: B-E14 capsule, B-E15 keyhole, B-E16 five-sided house.' },
@@ -412,6 +413,12 @@ const ENCLOSURES = [
     why: 'Narrow at the top, wide at the foot: a launch gantry, or a ship seen climbing away. The wide foot gives the nacelles room to spread, and the ship flies free inside, as in B-E2.' },
   { key: 'B-E20', name: 'The chevron', scale: 0.48, cy: 49, pieces: 2, ...polyFrame([[4, 8], [50, 20], [96, 8], [96, 62], [50, 96], [4, 62]], 6, 6),
     why: 'A badge whose top dips in a shallow V and whose foot comes to a point: the chevron of rank and service worn on a sleeve. The Concord\'s officers serve; they do not rule. Pointing down, it is no arrowhead.' },
+  { key: 'B-E21', name: 'The upside-down chevron', scale: 0.6, cy: 50, pieces: 2, ...polyFrame([[50, 4], [96, 38], [96, 92], [50, 80], [4, 92], [4, 38]], 6, 6),
+    why: 'B-E20 turned over: a peaked roof above, the notch at the foot, so the ship lifts off out of the notch and climbs under the roof. Watch: pointing up it must not read as an arrowhead; its square shoulders and the notch keep it a badge.' },
+  { key: 'B-E22', name: 'The curved-top trapezoid', scale: 0.66, cy: 52, pieces: 2,
+    frame: 'M20 10A60.25 60.25 0 0 1 80 10L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    field: 'M25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    why: 'B-E19\'s trapezoid with its top bowed into an arc: the round top you liked in B-E2 over the climbing, wide-footed trapezoid. The ship flies free inside.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {
