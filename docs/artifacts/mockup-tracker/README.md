@@ -85,3 +85,4 @@
 - 2026-11-04, cloud session: M11 at v7; version 87, id `1793788581-0fb3`.
 - 2026-11-04, cloud session: M11 at v8; version 88, id `1793788922-ee81`.
 - 2026-11-04, cloud session: M11 at v9; version 89, id `1793789702-2c07`.
+- 2026-11-04, cloud session (Concord ships thread): version 91, version id `1793793088-d02f`, built on the live version 90: M7 v21, M6 v20.

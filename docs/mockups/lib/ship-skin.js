@@ -209,7 +209,8 @@ function thruster(at, r, o) {
   const N = o.sides ?? 28, L = r * 1.5, heat = { value: 1 }, parts = [], prof = [[r, 0], [r * 0.97, L * 0.12], [r * 0.86, L * 0.38], [r * 0.7, L * 0.68], [r * 0.58, L * 0.9], [r * 0.55, L]].map(([x, y]) => new THREE.Vector2(x, y));
   const lip = at.z - 0.15 - L, add = (g, m, role) => parts.push([g, m, role]);
   const bell = new THREE.LatheGeometry(prof, N); bell.rotateX(PI / 2); bell.translate(at.x, at.y, lip); add(bell, thrusterMat(heat, o), 'bell');
-  const lipRing = new THREE.TorusGeometry(r * 1.0, r * 0.07, 6, N); lipRing.translate(at.x, at.y, lip); add(lipRing, o.grey, 'lip');
+  // The lip ring is turned so its corners sit on the bell's (owner, 2026-11-04: "two different hex orientations on these thrusters").
+  const lipRing = new THREE.TorusGeometry(r * 1.0, r * 0.07, 6, N); lipRing.rotateZ(PI / 2); lipRing.translate(at.x, at.y, lip); add(lipRing, o.grey, 'lip');
   // The mounting ring: a closed, round fairing that seats on the hull and narrows onto the bell's neck, so the bell grows
   // out of it; a bolt flange where it meets the plating.
   const neck = (y) => { for (let k = 1; k < prof.length; k++) if (prof[k].y >= y) { const a = prof[k - 1], b = prof[k], t = (y - a.y) / (b.y - a.y); return a.x + (b.x - a.x) * t; } return prof[prof.length - 1].x; };
