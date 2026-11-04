@@ -45,7 +45,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 <div class="panel title">
   <h1>Concord emblem on the hull</h1>
   <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side of the bow in the livery's colours, heading a pair of pinstripes that run aft into the forward livery band, the hull breaking the stripes in a circle round it, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
+  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side, upright on the forward livery band in the stripe's own blue with no outline, the band broken round it by a circle of bare hull, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
   <p>Ship: the Concord line's shared builder, plain pearl (mockup 6 has the windows and lamps). Change <code>faction-emblems</code>.</p>
 </div>
 <div class="panel bar" id="bar"></div>
@@ -325,20 +325,11 @@ const PARTS = data('assets/emblems/concord/b-e27.parts.json');
 const CL = window.FCConcordLine(THREE);
 const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
-// The guide's two versions (docs/design/emblem-guide.html, VERSIONS): night-blue on a pearl field for a light ground (the
-// pearl hull), and pearl on a night field for a dark one.
-// The solid one is the default (owner, 2026-11-04: "on the ship hull I like the solid shape more").
-// The livery version is the default (owner, 2026-11-04: "Have it use the same color scheme as the liveries and integrate
-// it into one of the stripes"): its field is the livery's stripe colour, so the keyhole reads as the stripe swelling into a
-// badge; its frame the livery's seam colour; the ship pearl and the star cyan (owner: "a cyan colored star in the
-// middle"). The livery's colours are read from the Concord line's own table (CL.LIVERIES), the stripes' one source.
+// The emblem's colours (owner, 2026-11-04): the field in the livery's stripe colour ("use the same color scheme as the
+// liveries"), read from the Concord line's own table (CL.LIVERIES); a pearl ship; a cyan star ("a cyan colored star in the
+// middle"); and no outline ("No outline"), so the keyhole is the stripe-blue field alone.
 const LIVERY = CL.LIVERIES.concord, srgb = (rgb) => '#' + new THREE.Color(...rgb).convertLinearToSRGB().getHexString();
-const VERSIONS = {
-  livery: { label: 'Livery', ink: '#eef3ff', field: srgb(LIVERY.stripe), frame: srgb(LIVERY.seam), floor: '#2fd0f0', lit: '#8fb0f6' },
-  // The star cyan on the solid version (owner, 2026-11-04: "Solid color variant with a cyan colored star in the middle").
-  dk: { label: 'Solid', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#2fd0f0', lit: '#8fb0f6' },
-  lt: { label: 'Outline', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#2f62e0', lit: '#7fa2f2' },
-};
+const PAINT = { ink: '#eef3ff', field: srgb(LIVERY.stripe), frame: null, floor: '#2fd0f0', lit: '#8fb0f6' };
 const CLASS_ID = 'petrel_level';
 const C = CL.CLASSES[CLASS_ID];
 const MARK_H = C.length * 0.03;               // half of E7's 6 % (owner: "1/2 size"): 3 % of the ship's length, 2.6 m on the Petrel
@@ -352,7 +343,7 @@ function emblemCanvas(v) {
   const g = cv.getContext('2d');
   const path = (rings) => { g.beginPath(); for (const r of rings) { r.forEach(([x, y], i) => (i ? g.lineTo(x * k, y * k) : g.moveTo(x * k, y * k))); g.closePath(); } };
   const fill = (rings, col, rule = 'nonzero') => { path(rings); g.fillStyle = col; g.fill(rule); };
-  fill(PARTS.frame, v.frame, 'evenodd');
+  if (v.frame) fill(PARTS.frame, v.frame, 'evenodd');
   fill(PARTS.field, v.field);
   for (const leg of PARTS.legs) fill([leg], v.ink);
   fill([PARTS.tail], v.ink);
@@ -391,43 +382,32 @@ scene.add(ship);
 const S = C.stations, top = (z) => CL.hullAt(S, z)[2];
 const MARKS = [];
 { // One emblem, half size, on the left (port) side (owner, 2026-11-04: "too many logos on the hull there", "1/2 size on the
-  // left side", "only one logo"), forward on the bow's flat side ahead of the last windows (C.live[1]), upright (owner:
-  // "don't rotate our logo"). The side narrows toward the bow, so its normal leans forward.
-  const half = MARK_H * 0.9 / 2 + 0.6, z = C.live[1] + half, h = CL.hullAt(S, z), ch = CL.chOf(h[1], h[2], h[3], h[4]);
+  // left side", "only one logo"), upright ("don't rotate our logo"), centred on the forward livery band on the hull's flat
+  // side ("place emblem on livery stripe"). The side narrows toward the bow, so its normal leans forward.
+  const z = Math.max(...C.stripes), h = CL.hullAt(S, z), ch = CL.chOf(h[1], h[2], h[3], h[4]);
   const y = ((h[2] - ch) + (h[3] + ch)) / 2, dhb = (CL.hullAt(S, z + 1)[1] - CL.hullAt(S, z - 1)[1]) / 2;
   const n = V3(1, 0, -dhb).normalize(), v = V3(0, 1, 0);
   MARKS.push({ key: 'port', c: V3(h[1], y, z), n, v, u: V3().crossVectors(v, n) });
 }
-// The pinstripes (owner, 2026-11-04: "integrate it into one of the stripes", then a reference of a hull whose emblem heads
-// a pair of pinstripes, "See how this works?"): two lines in the livery's colours run aft from the emblem's side along the
-// flank, a broad one in the stripe colour over a thin one in the seam colour, and end in the forward livery band, so the
-// emblem is tied into the ship's own stripes. Metres, ship space; painted on the port flank only.
-const PIN = (() => { const m = MARKS[0], band = Math.max(...C.stripes.filter((z) => z < m.c.z));
-  // The hull breaks the stripe round the emblem (owner, 2026-11-04: "The stripe having a circle around it where the logo
-  // crosses", "The hull should break the stripe livery at that spot"): a circle of bare plating, clear of the emblem's
-  // farthest corner by 0.35 m, inside which no stripe is painted.
-  const corner = Math.max(...PARTS.frame.flat().map(([x, y]) => Math.hypot(x - 50, y - 50))) * M_PER_UNIT;
-  const clear = corner + 0.35; // the stripes carry on forward past the emblem too, so the emblem crosses them
-  return { z0: band + 1.2, z1: m.c.z + clear + 2.5, y0: m.c.y, broad: [0.05, 0.33], thin: [-0.17, -0.05], clear }; })();
+// The hull breaks the band round the emblem (owner, 2026-11-04: "The stripe having a circle around it where the logo
+// crosses", "The hull should break the stripe livery at that spot"): inside a circle 0.35 m clear of the emblem's farthest
+// corner the band is cut away, so bare pearl plating rings the emblem. No livery is added ("do not add livery in this
+// change"): the band is the Concord line's own.
+const BREAK_R = Math.max(...PARTS.frame.flat().map(([x, y]) => Math.hypot(x - 50, y - 50))) * M_PER_UNIT + 0.35;
 
 // The paint: the hull's pearl material with the emblem mixed into its colour where each mark's square covers the plating
 // that faces the mark's way. Planar projection in ship space, so the paint follows the hull's own faces.
-const decalTex = new THREE.CanvasTexture(emblemCanvas(VERSIONS.livery));
+const decalTex = new THREE.CanvasTexture(emblemCanvas(PAINT));
 decalTex.encoding = THREE.sRGBEncoding; decalTex.anisotropy = 8; decalTex.generateMipmaps = true;
 const uDecal = { value: decalTex };
 const uMarks = MARKS.map((m) => ({ c: m.c, n: m.n, u: m.u, v: m.v }));
-function paintHull(mat) {
+function paintHull(mat, cut = false) {
   const m = mat.clone();
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uDecal = uDecal;
     MARKS.forEach((mk, i) => { for (const k of ['c', 'n', 'u', 'v']) sh.uniforms[`uM${i}${k}`] = { value: mk[k] }; });
     sh.uniforms.uSize = { value: TEX_SIZE_M };
-    sh.uniforms.uPin = { value: new THREE.Vector4(PIN.z0, PIN.z1, PIN.y0, PIN.clear) };
-    sh.uniforms.uPinC = { value: MARKS[0].c };
-    sh.uniforms.uPinBroad = { value: new THREE.Vector2(...PIN.broad) };
-    sh.uniforms.uPinThin = { value: new THREE.Vector2(...PIN.thin) };
-    sh.uniforms.uPinA = { value: new THREE.Color(...LIVERY.stripe) };
-    sh.uniforms.uPinB = { value: new THREE.Color(...LIVERY.seam) };
+    sh.uniforms.uBreak = { value: BREAK_R };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vShipPos;\nvarying vec3 vShipN;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvShipPos = position;\nvShipN = normal;');
     const decl = MARKS.map((_, i) => `uniform vec3 uM${i}c, uM${i}n, uM${i}u, uM${i}v;`).join('\n');
@@ -437,16 +417,12 @@ varying vec3 vShipPos;
 varying vec3 vShipN;
 uniform sampler2D uDecal;
 uniform float uSize;
-uniform vec4 uPin;
-uniform vec2 uPinBroad, uPinThin;
-uniform vec3 uPinA, uPinB, uPinC;
+uniform float uBreak;
 ${decl}
-void pinstripes(inout vec3 col) {
-  if (vShipPos.x <= 0.0 || normalize(vShipN).x < 0.7 || vShipPos.z < uPin.x || vShipPos.z > uPin.y) return;
-  if (length((vShipPos - uPinC).yz) < uPin.w) return; // the hull's circle round the emblem
-  float dy = vShipPos.y - uPin.z;
-  if (dy > uPinBroad.x && dy < uPinBroad.y) col = uPinA;
-  else if (dy > uPinThin.x && dy < uPinThin.y) col = uPinB;
+// The band is cut away inside the circle round the first mark, so the plating under it shows.
+void breakBand() {
+  vec3 d = vShipPos - uM0c;
+  if (abs(dot(d, uM0n)) < 1.5 && length(vec2(dot(d, uM0u), dot(d, uM0v))) < uBreak) discard;
 }
 void paint(vec3 c, vec3 n, vec3 u, vec3 v, inout vec3 col) {
   vec3 d = vShipPos - c;
@@ -457,14 +433,16 @@ void paint(vec3 c, vec3 n, vec3 u, vec3 v, inout vec3 col) {
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return;
   vec4 t = texture2D(uDecal, uv);
   col = mix(col, t.rgb, t.a);
-}`).replace('#include <map_fragment>', `#include <map_fragment>\npinstripes(diffuseColor.rgb);\n${apply}`);
+}`).replace('#include <map_fragment>', `#include <map_fragment>\n${cut ? 'breakBand();' : apply}`);
   };
-  m.customProgramCacheKey = () => 'emblem-paint';
+  m.customProgramCacheKey = () => (cut ? 'emblem-cut' : 'emblem-paint');
   return m;
 }
-// Painted on the primary hull's pearl and on its livery stripes, so the emblem runs across the stripe it sits on.
+// Painted on the primary hull's pearl; the livery bands over it are cut away round the emblem.
 const stripeHex = new THREE.Color(...LIVERY.stripe).getHex();
-ship.traverse((o) => { if (o.isMesh && o.userData.part === 'primary' && o.material.color && [0xe4e2dc, stripeHex].includes(o.material.color.getHex())) o.material = paintHull(o.material); });
+ship.traverse((o) => { if (!o.isMesh || o.userData.part !== 'primary' || !o.material.color) return;
+  const hex = o.material.color.getHex();
+  if (hex === 0xe4e2dc) o.material = paintHull(o.material); else if (hex === stripeHex) o.material = paintHull(o.material, true); });
 
 // Light: a low sun and the logo floodlights (CLAUDE.md section 10: logo lights on insignia and registry), each lamp standing
 // off the plating ahead of or below its mark and throwing its fan across it.
@@ -482,7 +460,7 @@ for (const mk of MARKS) {
 // Views. Each is a camera offset from a target, in ship space.
 const VIEWS = {
   three_quarter: { label: 'Three quarter', at: V3(0, 2, 4), from: V3(95, 45, 105), fov: 40 },
-  flank: { label: 'Close', at: MARKS[0].c.clone().add(V3(0, 0, -4)), from: MARKS[0].c.clone().add(MARKS[0].n.clone().multiplyScalar(16)).add(V3(0, 2, -1)), fov: 40 },
+  flank: { label: 'Close', at: MARKS[0].c.clone(), from: MARKS[0].c.clone().add(MARKS[0].n.clone().multiplyScalar(13)).add(V3(0, 2, 2)), fov: 40 },
   chase: { label: 'Battle distance', at: V3(0, 0, 0), from: null, fov: 40 }, // set so the ship fills 40 % of the width
 };
 function setView(key) {
@@ -498,16 +476,11 @@ function setView(key) {
 }
 let current = 'three_quarter';
 
-// The bar: views, the paint version, floodlights and the sun.
+// The bar: views, floodlights and the sun.
 const bar = document.getElementById('bar');
 const btn = (label, on) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.addEventListener('click', on); bar.append(b); return b; };
 const viewBtns = Object.entries(VIEWS).map(([k, V]) => { const b = btn(V.label, () => setView(k)); b.dataset.view = k; return b; });
 bar.append(Object.assign(document.createElement('span'), { className: 'sep' }));
-const verBtns = Object.entries(VERSIONS).map(([k, v]) => { const b = btn(v.label, () => setVersion(k)); b.dataset.ver = k; return b; });
-function setVersion(k) {
-  decalTex.image = emblemCanvas(VERSIONS[k]); decalTex.needsUpdate = true;
-  for (const b of verBtns) b.setAttribute('aria-pressed', String(b.dataset.ver === k));
-}
 const floodBtn = btn('Floodlights', () => { const on = floodBtn.getAttribute('aria-pressed') !== 'true'; floodBtn.setAttribute('aria-pressed', String(on)); floods.forEach((f) => (f.visible = on)); });
 floodBtn.setAttribute('aria-pressed', 'true');
 const sunBtn = btn('Sun', () => { const on = sunBtn.getAttribute('aria-pressed') !== 'true'; sunBtn.setAttribute('aria-pressed', String(on)); sun.visible = on; });
@@ -533,12 +506,11 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 resize();
-setVersion('livery');
 setView('three_quarter');
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 
-const shot = (k, ver = 'livery') => () => { setVersion(ver); setView(k); controls.update(); renderer.render(scene, camera); };
-window.MOCKUP_SHOTS = { three_quarter: shot('three_quarter'), flank: shot('flank'), chase: shot('chase'), flank_solid: shot('flank', 'dk') };
+const shot = (k) => () => { setView(k); controls.update(); renderer.render(scene, camera); };
+window.MOCKUP_SHOTS = { three_quarter: shot('three_quarter'), flank: shot('flank'), chase: shot('chase') };
 window.MOCKUP_SCENE = scene;
 requestAnimationFrame(() => requestAnimationFrame(() => { window.MOCKUP_READY = true; }));
 })();
