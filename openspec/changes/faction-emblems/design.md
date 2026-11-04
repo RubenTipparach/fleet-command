@@ -72,6 +72,43 @@ crosses it: an arc over the head and a flat edge under the flat foot (owner: "ti
 line can be flat to conform to the key hole/beacon shape more"). This change adds no livery; the band is the Concord line's own. (A pinstripe layout, after a reference picture of
 an emblem heading two pinstripes, was tried and dropped.)
 
+**On the real model** (owner, 2026-11-04: "can you put that on the actual model?"): every Concord ship in the Concord line
+(mockup 6) carries it, on its forward livery band, port side, 3 % of its length tall, its foot 0.3 m above the waterline
+service band, and the hull shader keeps windows out from under it. One implementation, `docs/mockups/lib/concord-emblem.js`
+(placement, the band's break, the paint as a field/ship/star mask so the field follows the chosen livery), used by mockup
+6's hull shader and mockup 11. The Tern (a reference ship, not ours) carries none. Mockup 11, the hull study on a plain Petrel, is retired now that the real model carries
+the emblem (owner, 2026-11-04: "Concord emblem on the hull - get rid of this"). Borders (owner, 2026-11-04: "lets add that border back in here ... border on both
+edge of lines and emblem"): the emblem's frame is drawn in the band's seam colour, the band's cut edges carry a seam as wide
+as its side seams (0.22 m), and 0.35 m of bare hull stands between the two.
+
+## The Krai Warhost (2026-11-04)
+
+Owner, 2026-11-04: "begin krai emblem design, this faction believes strongly in tradition. give them some sort of
+asymmetric logo". Added to the Krai's world view (war is the only honest test; rank is won in blood): tradition is kept,
+carried and added to, never replaced. Three asymmetric sketches on the Emblem Design Guide, each a record that only
+grows one way: KA, the heirloom blade (the hooked, barbed Krai bayonet with a blood groove, one quillon and a cut-stone
+pommel) rising across a lopsided shield whose edge carries a tally notch per generation (recommended); KB, the lineage
+standard (a blade finial, a swallow-tailed banner flying forward, a chevron per elder, the founder's red); KC, the fang
+torc (a faceted crescent, a trophy fang per chief from the founder's red one, the rest of its edge left bare). Palette:
+blade steel `#c9d0d8` and blood red `#d0202a` on a blackened field on black; near-black `#1c1416` and `#b3121b` on a bone
+field on white. Each sketch is measured for joins and its outline against both grounds (12.7:1 and 18.1:1 for KA).
+
+**Picked: the Fang Torc, in two tiers** (owner, 2026-11-04: "fang toc, add a star in the middle, circle around it for 3d
+emblem version, a thin crescent border to the outer part of the screscent", then "I want a more complex version of this
+for emblem, but use thesimple logo for the ship livery", and of the ring version "bro this version slaps", "Thats it",
+"the forge star you had was even better", "keep that"). **KC+, the emblem**: the faceted torc with the founder's red fang
+and three smaller fangs, an eight-point forge star in its opening, a thin crescent 4 units outside its outer edge, and a
+ring (radii 45 to 49) round all of it, for the 3D badge. **KC, the livery mark**: the same torc, fangs and star with no
+ring and no thin crescent, for the Krai hulls. A three-point emperor's star over three great houses (owner: "they have an
+emperor cheif ... a star ruling over the 3 great houses") was drawn and then set aside for the forge star; the emperor
+and the three great houses stand as Krai culture. Flagged to the owner: a star beside a crescent is close to the star and
+crescent, a real nation's and faith's symbol (rule E8); the eight points, the facets, the fangs and the ring keep it apart.
+**The 3D badge** (owner, 2026-11-04: "make the 3d version of the fang torc"): mockup 14, `docs/mockups/krai-emblem-3d.html`,
+built from the guide's own parts (`assets/emblems/krai/kc.parts.json`) in Blender (`tools/blender/emblem_krai.py`) and
+three.js on the shared badge library (`docs/mockups/lib/emblem-badge.js`). Blade steel ring, torc, thin crescent, forge
+star and fangs, a blackened steel field, the founder's fang in blood enamel; heights in mockup-work.md section 14.
+Next: KC on the Krai ships' livery (the Krai ship page belongs to the Concord ships thread).
+
 ## The rules for an emblem
 
 | Rule | Says | Why |
@@ -144,7 +181,7 @@ The ship bible changes only if the owner accepts it.
 | E5 | Vhorr Brood | The egg in its ribs |
 | E6 | Aelith Conclave | A triangle of light in a drop of gold |
 | E7 | Tarsine Remnant | The stepped throne under the first star |
-| E8 | Krai Warhost | The bayonet in the triangle, between two fangs |
+| E8 | Krai Warhost | Superseded (owner, 2026-11-04: tradition, asymmetric): KA, the heirloom blade, recommended; KB and KC on the guide |
 | E9 | Ombrai | An eye in a crescent, painted on their hulls |
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |

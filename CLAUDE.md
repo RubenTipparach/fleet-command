@@ -184,6 +184,13 @@ build, and then need to be approved for actual game implementation after"):
   into repo especially when they are html claude artifacts"): the page in `docs/mockups/`, its shots in
   `docs/screenshots/mockups/`, and a record in `docs/artifacts/<name>/` with its link, committed in the
   same step as every publish.
+- **Every artifact is tracked as HTML in the repository** (owner, 2026-11-04: "add to claude md that all artifactrs must
+  be tracked as html in the repo"). Every published artifact, a mockup, a guide, the survey or the tracker, has its page
+  as an `.html` file committed in the repository (`docs/mockups/`, `docs/design/`), the very file that was published,
+  and its link recorded in `docs/artifacts/<name>/README.md`, in the same commit as the publish. Nothing is published from
+  a scratch file or from memory, and a page another session published is pulled into the repository as HTML, not left
+  only on claude.ai. `tools/mockups/artifact_check.py` reads the tracker and fails on any entry whose page is not
+  committed HTML or whose link is in no record; run it before every push that publishes.
 - **If the owner changes accounts, republish every mockup, the tracker and the survey from the new
   account** (owner, 2026-10-30), then update every link: the tracker's list, `mockup-work.md`,
   `docs/design/README.md` and each `docs/artifacts/<name>/README.md`. An artifact made from another
@@ -529,6 +536,7 @@ Before claiming anything is done, run what applies:
 | Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Artifacts | `python3 tools/mockups/artifact_check.py` (every tracker entry's page is committed HTML and its link is recorded, section 4) |
 | Mockup sync | game stills beside the mockup's shots (`tools/compare/side_by_side.py`), looked at, and `docs/design/mockup-sync.md` updated (section 4) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 

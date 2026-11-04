@@ -86,6 +86,14 @@
 - 2026-11-04, cloud session: M11 at v8; version 88, id `1793788922-ee81`.
 - 2026-11-04, cloud session: M11 at v9; version 89, id `1793789702-2c07`.
 - 2026-11-04, cloud session (Concord ships thread): version 91, version id `1793793088-d02f`, built on the live version 90: M7 v21, M6 v20.
+- 2026-11-04, cloud session: M11 at v10 and M6 at v19 (the emblem on the real model); version 90, id `1793791939-c927`.
+- 2026-11-04, cloud session: M6 at v21 and M11 at v11, built on the live v91; version 92, id `1793793688-ca98`.
+- 2026-11-04, cloud session: M11 retired, moved to Misc; version 93, id `1793794304-ede5`.
+- 2026-11-04, cloud session: M6 at v22 (full stripes); version 94, id `1793794813-2a28`.
+- 2026-11-04, cloud session: the guide at v22 (the Krai started); version 95, id `1793795718-1dea`.
+- 2026-11-04, cloud session: the guide at v23 (one faction at a time); version 96, id `1793799595-1731`.
+- 2026-11-04, cloud session: the guide at v24 (the Krai's fang torc picked); version 97, id `1793800301-06d6`.
+- 2026-11-04, version 100 (`1793803252-b63c`): built on the live v99 (which added M12, the Ssarith console, from another session); adds M14, the Krai badge in 3D; M10 at v7.
 - 2026-11-04, desktop session (Mac): Concord line at version 23 (the Albatross stern), a text edit on the live version; version id `1793803170-967a`.
 - 2026-11-04, cloud session (battle console thread): version 98, version id `1793801254-4d1d`, built on the live version (Emblem Design Guide v24): M12 added (Ssarith Hunt battle console), M2 v76, M8 v15.
 - 2026-11-04, cloud session (battle console thread): version 101, version id `1793804672-309b`, built on the live version (M6 v23, M10 v7, M14 added by other sessions): M2 v77, M8 v16, M12 v2.

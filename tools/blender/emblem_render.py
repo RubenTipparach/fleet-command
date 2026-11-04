@@ -540,3 +540,44 @@ def cut_gem(name, cx, cy, r_mm, sides, material, z=0.0, table=0.55, crown=0.35, 
 def polar(r, deg):
     """A point r mm from the centre at deg degrees (0 right, 90 up)."""
     return (r * math.cos(math.radians(deg)), r * math.sin(math.radians(deg)))
+
+# ---- polygon parts and the angled view, shared by every emblem badge (emblem_concord.py, emblem_krai.py) ----------
+def xy(p):
+    """A grid point (y down, 0 to 100) to badge millimetres (y up, centred)."""
+    return ((p[0] - 50.0) * MM, (50.0 - p[1]) * MM)
+
+
+def poly_slab(name, rings, z0, z1, bevel, material):
+    """A flat part between z0 and z1 mm whose outline is the given polygons (nested ones are holes: the curve's 2D fill
+    is even-odd), its edges rounded by `bevel` mm."""
+    cu = bpy.data.curves.new(name, "CURVE")
+    cu.dimensions = "2D"
+    cu.fill_mode = "BOTH"
+    for ring in rings:
+        sp = cu.splines.new("POLY")
+        sp.points.add(len(ring) - 1)
+        for pt, p in zip(sp.points, ring):
+            x, y = xy(p)
+            pt.co = (x, y, 0, 1)
+        sp.use_cyclic_u = True
+    h = (z1 - z0) / 2
+    cu.extrude = max(0.0, h - bevel) * MM
+    cu.bevel_depth = bevel * MM
+    cu.bevel_resolution = 4
+    ob = bpy.data.objects.new(name, cu)
+    ob.location.z = (z0 + h) * MM
+    bpy.context.scene.collection.objects.link(ob)
+    ob.data.materials.append(material)
+    return ob
+
+
+def angle_camera():
+    """A three-quarter perspective view from the lower right, looking up at the badge's face, so its depth shows."""
+    cd = bpy.data.cameras.new("emblem.angle")
+    cd.lens = 70
+    ob = bpy.data.objects.new("emblem.angle", cd)
+    ob.location = Vector((0.085, -0.15, 0.2))
+    bpy.context.scene.collection.objects.link(ob)
+    ob.rotation_mode = "QUATERNION"
+    ob.rotation_quaternion = (Vector((0, -0.004, 0.0015)) - ob.location).to_track_quat("-Z", "Y")
+    return ob
