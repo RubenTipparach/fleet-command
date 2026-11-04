@@ -1,5 +1,5 @@
 {
- "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v20, sha256 18ad8d00452b; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 6d55fd597cab): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
+ "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 48ebc93ad627; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 d30a2b7bce4e): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
  "conventions": {
   "units": "metres",
   "up": "+Y",
@@ -15,8 +15,8 @@
   "concord": {
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    },
    "detail": {
     "albedo": "concord/detail_albedo.png",
@@ -96,7 +96,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
+    "sha256": "d30a2b7bce4e45bad834c36d3ebe63d72a6e0310fe6b6b8d9be52df63c6cee1e"
    },
    "detail": {
     "albedo": "krai/detail_albedo.png",
@@ -2219,8 +2219,8 @@
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -2480,8 +2480,8 @@
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -2741,8 +2741,8 @@
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -3004,8 +3004,8 @@
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -3267,8 +3267,8 @@
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -3283,7 +3283,7 @@
    "length_m": 111.003059,
    "beam_m": 55.779999,
    "height_m": 35.23,
-   "triangles": 8506,
+   "triangles": 6466,
    "draw_calls": 34,
    "origin_offset_m": [
     0,
@@ -3355,8 +3355,6 @@
      "engine_1",
      "engine_2",
      "engine_3",
-     "engine_4",
-     "engine_5",
      "deflector",
      "reactor",
      "bridge",
@@ -3571,13 +3569,13 @@
     "flipped_triangles": 0,
     "flipped_on_single_sided": 0,
     "skipped_meshes": {
-     "additive_glow": 6
+     "additive_glow": 4
     }
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -3935,8 +3933,8 @@
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -4285,8 +4283,8 @@
    },
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
-    "version": 20,
-    "sha256": "18ad8d00452b9eb3489b2572a83f141cc516037e4573cdd7b3242e36739de270"
+    "version": 24,
+    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
    }
   },
   {
@@ -4421,7 +4419,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
+    "sha256": "d30a2b7bce4e45bad834c36d3ebe63d72a6e0310fe6b6b8d9be52df63c6cee1e"
    }
   },
   {
@@ -4559,7 +4557,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
+    "sha256": "d30a2b7bce4e45bad834c36d3ebe63d72a6e0310fe6b6b8d9be52df63c6cee1e"
    }
   },
   {
@@ -4698,7 +4696,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
+    "sha256": "d30a2b7bce4e45bad834c36d3ebe63d72a6e0310fe6b6b8d9be52df63c6cee1e"
    }
   },
   {
@@ -4864,7 +4862,7 @@
    "source": {
     "page": "docs/mockups/krai-ship-concepts.html",
     "version": 21,
-    "sha256": "6d55fd597cab04cc6572fba9618ab3caa11469a3cf2dc2e47d36a0ea990c45dc"
+    "sha256": "d30a2b7bce4e45bad834c36d3ebe63d72a6e0310fe6b6b8d9be52df63c6cee1e"
    }
   }
  ]

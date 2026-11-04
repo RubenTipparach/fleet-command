@@ -11,7 +11,7 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | # | Mockup | Live version | Game matches | Change |
 |---|---|---|---|---|
 | 2 | In-game UI (the battle console, Concord) | v74 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
-| 6 | Concord line (the ships) | v20 | v20: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile and the lamps; not its paint rules (below) | `ship-models-engine` |
+| 6 | Concord line (the ships) | v24 | v24: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the lamps, the hot bells and the Albatross main hull's two-bell stern; not its paint rules (below) | `ship-models-engine` |
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 
