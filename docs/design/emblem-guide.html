@@ -207,6 +207,20 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'Yea ok. I\'ll accept that. Let\'s see it ont be ship hull. Solid color variant with a cyan colored star in the middle.', means: 'B-E27, the smooth keyhole, accepted: now B\'s main sketch. Painted on the Petrel\'s hull (M11) in the solid version with a cyan star.' },
+  { when: '2026-11-04', q: 'Beacon sucks. Keyhole but smoother', means: 'B-E26 rejected. B-E27: B-E15\'s keyhole drawn as one smooth curve, the head easing into the neck and the neck into the base, the foot\'s corners rounded.' },
+  { when: '2026-11-04', q: 'tighten the shape a bit, too much rom on top and bottom / B-E15 The keyhole is a good candidate / B-E26 The beacon is interesting too, but yea too much dead space', means: 'B-E26 tightened: a lower, flatter dome and a shorter skirt, so about 6 units of field stand above and below the ship (it was 17 to 20). B-E15, the keyhole, marked as one of your candidates.' },
+  { when: '2026-11-04', q: 'can we try a shape like this? (a sketch: a rounded dome on a pinched neck, flaring to a wide flat foot)', means: 'B-E26, the beacon: your sketch drawn as one closed outline, the saucer in the dome and the nacelles spreading over the skirt. Shown beside B-E25; B-E25 stays the 3D badge until you pick.' },
+  { when: '2026-11-04', q: 'too many logos on the hull there / 1/2 size on the left side / only one logo', means: 'On a Concord hull (M11): one emblem only, on the port side of the bow, at half the earlier size: 3 % of the ship\'s length, 2.6 m on the Petrel.' },
+  { when: '2026-11-04', q: 'fix the corners here (the saucer\'s tip, in 3D)', means: 'The upper tier folded over itself at the saucer\'s points, and sampling missed the frame\'s inner peak, so the bevel spiked there. The tier is now an exact inset (no folds), and every shape is sampled so each corner is a vertex.' },
+  { when: '2026-11-04', q: 'That look good i like that. We need some small subtle details to.the 3d model.loke a double bevel on the saucer. A small layer of detail. Maybe some segment marks on the legs', means: 'B-E25 kept. The saucer gets an upper tier inset 1.6 mm, so its rim steps twice; each leg is cut into four segments by grooves 0.5 mm deep. Both come from the guide\'s shapes, in the Blender render and the 3D badge.' },
+  { when: '2026-11-04', q: 'Can we make the to point too?', means: 'B-E25: the top drawn to a point as well, over the arrow foot; now B\'s main sketch and the 3D badge.' },
+  { when: '2026-11-04', q: 'Can you make the start like a satin in blue? I\'m not sure I like the bell shape a whole lot what if it was a slightly arrow shaped at the bottom', means: 'The pressed star is satin Signal blue (flat, Blender and 3D). B-E24: the rounded peak with a shallow arrow-point foot, now B\'s main sketch and the 3D badge.' },
+  { when: '2026-11-04', q: 'Central shape should be like irridescent', means: 'The ship is iridescent pearl in both the Blender render and the 3D page: a thin film and a pastel shift with the viewing angle.' },
+  { when: '2026-11-04', q: 'ok I\'m kinda liking it, lets see how it looks in 3d, render something in blender, make a 3d version in thre js, add in materials, normals, specular map, AO, and if you can make the background of the emblem, the bell shape some kind of holographic stars and nebula shader', means: 'B-E23 as a badge: rendered in Blender and built in three.js (mockup 10) from the guide\'s own shapes, with Material Maker maps and a holographic nebula field.' },
+  { when: '2026-11-04', q: 'something more like this? (a red line over B-E22: the sides rising from their shoulders in one curve to a rounded peak)', means: 'B-E23 the rounded peak, drawn from your line, now in B\'s main sketch with its labels.' },
+  { when: '2026-11-04', q: 'upside down chevron, another alternate shape maybe a more curved top trapezoid?', means: 'B-E21 the upside-down chevron (peaked top, notch at the foot) and B-E22 the curved-top trapezoid, both one closed outline.' },
+  { when: '2026-11-04', q: 'What about a more trapazpidal shape and another one more Chevron', means: 'B-E19 the trapezoid (narrow top, wide foot) and B-E20 the chevron (a V-dipped top, a pointed foot), both one closed outline.' },
   { when: '2026-11-03', q: 'can we try a triangle shape with cruved ends?', means: 'Two rounded triangles for B: B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.' },
   { when: '2026-11-03', q: 'the shape on e-9 is still the exact same, you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a uniform', means: 'B-E8 to B-E13 retired (restyles, and three broke the outline). Rule 19: one closed outline, measured. Three different outlines: B-E14 capsule, B-E15 keyhole, B-E16 five-sided house.' },
   { when: '2026-11-03', q: 'the colors are bad, they dont read on the white background; need different versions for white and black background', means: 'Every emblem now has a version for black and one for white, each measured (rule 18): B pearl on night for black, night on pearl for white; A, C and D pearl on black and night blue on white.' },
@@ -280,9 +294,9 @@ const f = (n) => +n.toFixed(2);
 function bez(p, t) { const u = 1 - t; return [0, 1].map((k) => u * u * u * p[0][k] + 3 * u * u * t * p[1][k] + 3 * u * t * t * p[2][k] + t * t * t * p[3][k]); }
 function tangent(p, t) { const u = 1 - t; const d = [0, 1].map((k) => 3 * u * u * (p[1][k] - p[0][k]) + 6 * u * t * (p[2][k] - p[1][k]) + 3 * t * t * (p[3][k] - p[2][k])); const l = Math.hypot(d[0], d[1]) || 1; return [d[0] / l, d[1] / l]; }
 // A filled ribbon along cubic p (four points), half-width w(t).
-function ribbon(p, w, n = 48) {
+function ribbon(p, w, n = 48, t0 = 0, t1 = 1) {
   const L = [], Rr = [];
-  for (let i = 0; i <= n; i++) { const t = i / n, c = bez(p, t), d = tangent(p, t), h = w(t); L.push([c[0] - d[1] * h, c[1] + d[0] * h]); Rr.push([c[0] + d[1] * h, c[1] - d[0] * h]); }
+  for (let i = 0; i <= n; i++) { const t = t0 + (t1 - t0) * i / n, c = bez(p, t), d = tangent(p, t), h = w(t); L.push([c[0] - d[1] * h, c[1] + d[0] * h]); Rr.push([c[0] + d[1] * h, c[1] - d[0] * h]); }
   return 'M' + L.concat(Rr.reverse()).map(([x, y]) => `${f(x)} ${f(y)}`).join('L') + 'Z';
 }
 // A ribbon along a polyline of points (for curls).
@@ -312,9 +326,9 @@ const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}" ${extra}/>`
 const MIN_CONTRAST = 7;
 const BG = { dk: '#070a12', lt: '#ffffff' };
 const VERSIONS = {
-  dk: { key: 'On black', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#b8c4e2', shadow: '#7a8ab4', lit: '#ffffff',
+  dk: { key: 'On black', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#2f62e0', shadow: '#1a3c96', lit: '#8fb0f6',
     why: 'Pearl white, the colour of every Concord hull, for the ship and its frame, on the night sky every homeworld shares. Bright against black.' },
-  lt: { key: 'On white', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#34479a', shadow: '#0e1840', lit: '#6077c6',
+  lt: { key: 'On white', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#2f62e0', shadow: '#152f78', lit: '#7fa2f2',
     why: 'The same patch reversed: a night-blue ship and frame on a pearl field, so the outline holds against white paper or a light screen.' },
 };
 // The sketches A, C and D are recoloured for each background the same way: their blue strokes become pearl on black
@@ -331,17 +345,27 @@ function outlineColour(d, bg) { return d.own ? VERSIONS[bg].frame : RECOLOUR[bg]
 const KREC = VERSIONS.dk;
 function lum(hex) { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
 function contrast(a, b) { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); }
+// The saucer's parts as path data on the 100 grid: one source for the flat sketch here and for the 3D badge
+// (tools/emblems/export_parts.mjs writes them out for Blender and the three.js page).
+// The nacelles' curves and widths (one definition: the flat legs and the 3D badge's segments both come from it).
+const LEGS = [1, -1].map((sx) => { const X = (x) => 50 + sx * x; return { p: [[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], w: (t) => 5.2 * (1 - t) + 0.7 }; });
+// Where the 3D badge's legs are marked into segments (owner, 2026-11-04: "Maybe some segment marks on the legs"): the
+// stretches of each curve, in its own parameter, between the marks. The first stretch starts under the saucer.
+const LEG_SEGMENTS = [[0, 0.395], [0.415, 0.59], [0.61, 0.765], [0.785, 1]];
+function saucerParts() {
+  const legs = LEGS.map((l) => ribbon(l.p, l.w));
+  return { legs, tail: ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4),
+    lens: 'M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z', star: glint(50, 32, 9.5, 7.5, 1.7), light: { cx: 50, cy: 20.5, r: 1.8 } };
+}
 function saucer(ink, k = KREC) {
-  let s = '';
-  for (const sx of [1, -1]) { const X = (x) => 50 + sx * x; s += path(ribbon([[X(9), 38], [X(14), 58], [X(24), 76], [X(38), 92]], (t) => 5.2 * (1 - t) + 0.7), k.ink); }
-  s += path(ribbon([[50, 40], [50, 52], [50, 61], [50, 70]], (t) => 3 * (1 - t) + 0.4), k.ink);
-  s += path('M18 34C26 16 74 16 82 34C74 48 26 48 18 34Z', k.ink);
+  const sp = saucerParts();
+  let s = sp.legs.map((d) => path(d, k.ink)).join('') + path(sp.tail, k.ink) + path(sp.lens, k.ink);
   if (ink) return s;
   // Pressed in, lit from the upper left: the upper-left wall in shadow, the lower-right wall catching the light.
-  const st = glint(50, 32, 9.5, 7.5, 1.7);
+  const st = sp.star;
   s += `<path d="${st}" fill="${k.shadow}" transform="translate(-0.7 -0.7)"/><path d="${st}" fill="${k.lit}" transform="translate(0.8 0.8)"/>`;
   s += path(st, k.floor);
-  s += `<circle cx="50" cy="20.5" r="1.8" fill="${C.accord}"/>`;
+  s += `<circle cx="${sp.light.cx}" cy="${sp.light.cy}" r="${sp.light.r}" fill="${C.accord}"/>`;
   return s;
 }
 // Each patch: its frame (even-odd), the field inside it, and the scale the saucer takes inside it (about 50, 52).
@@ -354,7 +378,8 @@ function roundPoly(pts, r) {
     const u1 = unit(v, pts[(i + n - 1) % n]), u2 = unit(v, pts[(i + 1) % n]);
     const th = Math.acos(u1[0] * u2[0] + u1[1] * u2[1]), k = r / Math.tan(th / 2);
     const A = [v[0] + u1[0] * k, v[1] + u1[1] * k], B = [v[0] + u2[0] * k, v[1] + u2[1] * k];
-    d += `${i ? 'L' : 'M'}${f(A[0])} ${f(A[1])}A${r} ${r} 0 0 1 ${f(B[0])} ${f(B[1])}`;
+    const convex = (-u1[0]) * u2[1] - (-u1[1]) * u2[0] > 0; // the path turns right (clockwise) here
+    d += `${i ? 'L' : 'M'}${f(A[0])} ${f(A[1])}A${r} ${r} 0 0 ${convex ? 1 : 0} ${f(B[0])} ${f(B[1])}`;
   });
   return d + 'Z';
 }
@@ -368,13 +393,25 @@ function triFrame(pts, r, b) {
   return { frame: roundPoly(pts, r) + fieldD, field: fieldD };
 }
 const TRI = [[50, 4], [99, 95], [1, 95]];
+// Any polygon (clockwise, convex or with shallow notches) as a frame: each edge moved in by the band b, the new corners
+// where the moved edges meet, the outer corners rounded r and the inner ones r - b (concave ones r + b, so the band
+// stays even round a notch).
+function polyFrame(pts, r, b) {
+  const n = pts.length;
+  const lines = pts.map((p, i) => { const q = pts[(i + 1) % n], l = Math.hypot(q[0] - p[0], q[1] - p[1]), d = [(q[0] - p[0]) / l, (q[1] - p[1]) / l], nn = [-d[1], d[0]]; return { p: [p[0] + nn[0] * b, p[1] + nn[1] * b], d }; });
+  const meet = (L1, L2) => { const den = L1.d[0] * L2.d[1] - L1.d[1] * L2.d[0], t = ((L2.p[0] - L1.p[0]) * L2.d[1] - (L2.p[1] - L1.p[1]) * L2.d[0]) / den; return [L1.p[0] + L1.d[0] * t, L1.p[1] + L1.d[1] * t]; };
+  const inner = pts.map((_, i) => meet(lines[(i + n - 1) % n], lines[i]));
+  const fieldD = roundPoly(inner, Math.max(2, r - b));
+  return { frame: roundPoly(pts, r) + fieldD, field: fieldD };
+}
+
 // B's frames. Retired, with the owner's words: B-E1 and B-E3 ("dont like any of those shapes, though b-e2 is a good
 // direction"), B-E4 to B-E7 ("(but I still DONT LIKE IT)"), B-E8 to B-E13 ("the shape on e-9 is still the exact same,
 // you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a
 // patch on a uniform"). Every frame below is a different outline, and each is one closed line (rule 19, measured).
 // cy: the height the ship is centred on; scale: its size.
 const ENCLOSURES = [
-  { key: 'B-E2', name: 'The mission arch', rec: true, scale: 0.78, cy: 52, pieces: 2,
+  { key: 'B-E2', name: 'The mission arch', scale: 0.78, cy: 52, pieces: 2,
     frame: 'M6 96V46A44 44 0 0 1 94 46V96ZM14 88V46A36 36 0 0 1 86 46V88Z',
     field: 'M14 88V46A36 36 0 0 1 86 46V88Z',
     why: 'A flat foot and a round top, the shape of an explorer\'s mission patch. Your direction, not yet right. The three below are different outlines, not restyles of it.' },
@@ -385,7 +422,7 @@ const ENCLOSURES = [
   { key: 'B-E15', name: 'The keyhole', scale: 0.7, cy: 52, pieces: 2,
     frame: 'M18.2 52A34 34 0 1 1 81.8 52L92 96H8ZM24.7 52A28 28 0 1 1 75.3 52L84 90H16Z',
     field: 'M24.7 52A28 28 0 1 1 75.3 52L84 90H16Z',
-    why: 'A round head over a base that widens to the foot: a keyhole. The Concord holds the key and opens the door to any people who ask. The saucer sits in the head, the nacelles spread in the base.' },
+    why: 'One of your candidates (2026-11-04). A round head over a base that widens to the foot: a keyhole. The Concord holds the key and opens the door to any people who ask. The saucer sits in the head, the nacelles spread in the base.' },
   { key: 'B-E16', name: 'The five-sided house', scale: 0.72, cy: 56, pieces: 2,
     frame: 'M8 96V40L50 4L92 40V96ZM14 90V42.5L50 11.6L86 42.5V90Z',
     field: 'M14 90V42.5L50 11.6L86 42.5V90Z',
@@ -394,6 +431,36 @@ const ENCLOSURES = [
     why: 'Your triangle, its corners rounded: broad and flat-footed, the ship low in it with its nacelles standing on the base. Three corners, three things the Concord does: explore, mediate, defend. Watch: a triangle pointing up must never read as an arrowhead; the broad base and round corners keep it apart.' },
   { key: 'B-E18', name: 'The soft triangle', scale: 0.5, cy: 70, pieces: 1, ...triFrame(TRI, 20, 6),
     why: 'The same triangle with its corners rounded much further, so it reads softer and further still from an arrowhead, nearer a guitar pick. Watch: rounded much more, it starts to read as a circle.' },
+  { key: 'B-E19', name: 'The trapezoid', scale: 0.66, cy: 52, pieces: 2, ...polyFrame([[20, 6], [80, 6], [97, 94], [3, 94]], 6, 6),
+    why: 'Narrow at the top, wide at the foot: a launch gantry, or a ship seen climbing away. The wide foot gives the nacelles room to spread, and the ship flies free inside, as in B-E2.' },
+  { key: 'B-E20', name: 'The chevron', scale: 0.48, cy: 49, pieces: 2, ...polyFrame([[4, 8], [50, 20], [96, 8], [96, 62], [50, 96], [4, 62]], 6, 6),
+    why: 'A badge whose top dips in a shallow V and whose foot comes to a point: the chevron of rank and service worn on a sleeve. The Concord\'s officers serve; they do not rule. Pointing down, it is no arrowhead.' },
+  { key: 'B-E21', name: 'The upside-down chevron', scale: 0.6, cy: 50, pieces: 2, ...polyFrame([[50, 4], [96, 38], [96, 92], [50, 80], [4, 92], [4, 38]], 6, 6),
+    why: 'B-E20 turned over: a peaked roof above, the notch at the foot, so the ship lifts off out of the notch and climbs under the roof. Watch: pointing up it must not read as an arrowhead; its square shoulders and the notch keep it a badge.' },
+  { key: 'B-E22', name: 'The curved-top trapezoid', scale: 0.66, cy: 52, pieces: 2,
+    frame: 'M20 10A60.25 60.25 0 0 1 80 10L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    field: 'M25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    why: 'B-E19\'s trapezoid with its top bowed into an arc: the round top you liked in B-E2 over the climbing, wide-footed trapezoid. The ship flies free inside.' },
+  { key: 'B-E23', name: 'The rounded peak', scale: 0.7, cy: 50, pieces: 2,
+    frame: 'M4.4 87.4L14.3 38C18.3 18.4 34 4 50 4C66 4 81.7 18.4 85.7 38L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    field: 'M11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    why: 'Your sketch: the wide-footed trapezoid whose sides rise from their shoulders in one curve to a rounded peak, narrower than the trapezoid\'s top. The saucer sits under the peak like a ship under its nose cone, climbing. <a href="https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN" target="_blank" rel="noopener">See it as a 3D badge</a>.' },
+  { key: 'B-E24', name: 'The arrow-foot peak', scale: 0.7, cy: 50, pieces: 2,
+    frame: 'M5.31 82.6L14.3 38C18.3 18.4 34 4 50 4C66 4 81.7 18.4 85.7 38L94.69 82.6Q95.48 86.5 91.58 87.4L53.9 96.1Q50 97 46.1 96.1L8.42 87.4Q4.52 86.5 5.31 82.6ZM11.95 80L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    field: 'M11.95 80L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    why: 'B-E23 with its foot drawn to a shallow arrow point instead of a flat base: the peak above and the point below give the badge a direction, a ship heading out, while the rounded top keeps it gentle.' },
+  { key: 'B-E25', name: 'The pointed peak', scale: 0.7, cy: 50, pieces: 2,
+    frame: 'M5.31 82.6L14.3 38C18.3 18.4 41 8 50 3C59 8 81.7 18.4 85.7 38L94.69 82.6Q95.48 86.5 91.58 87.4L53.9 96.1Q50 97 46.1 96.1L8.42 87.4Q4.52 86.5 5.31 82.6ZM11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    field: 'M11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    why: 'B-E24 with the top drawn to a point as well: the sides rise in curves that meet at a peak, over the arrow foot. Pointed both ways, it reads as a ship\'s bow and stern, heading out. Watch: a pointed arch can recall a church window; the wide shoulders and the arrow foot keep it a badge.' },
+  { key: 'B-E26', name: 'The beacon', scale: 0.6, cy: 50, pieces: 2,
+    frame: 'M9 86H91Q96 86 95 81.1C90 66 73 64 73 50C73 45 82 42 82 38C82 25.2 68 18 50 18C32 18 18 25.2 18 38C18 42 27 45 27 50C27 64 10 66 5 81.1Q4 86 9 86ZM15.5 80H84.5Q88.3 80 87.6 76.5C83.5 64 67 62 67 50C67 42 76 40 76 38C76 29.04 64.5 24 50 24C35.5 24 24 29.04 24 38C24 40 33 42 33 50C33 62 16.5 64 12.4 76.5Q11.7 80 15.5 80Z',
+    field: 'M15.5 80H84.5Q88.3 80 87.6 76.5C83.5 64 67 62 67 50C67 42 76 40 76 38C76 29.04 64.5 24 50 24C35.5 24 24 29.04 24 38C24 40 33 42 33 50C33 62 16.5 64 12.4 76.5Q11.7 80 15.5 80Z',
+    why: 'Rejected (owner, 2026-11-04: "Beacon sucks"). Your sketch, tightened: a low rounded dome on a pinched neck over a skirt that flares to a wide, flat foot, the frame closed in to about 6 units above and below the ship so no field is wasted. A lighthouse, or a beacon on its tower: the Concord as the light that shows travellers the way in. The saucer rides in the dome like the lamp, and the nacelles reach down through the neck and spread over the skirt. Watch: a dome on a neck can read as a keyhole (B-E15) or a bottle; the dome is wider and flatter than a keyhole\'s round head, and the foot is flat.' },
+  { key: 'B-E27', name: 'The smooth keyhole', rec: true, scale: 0.72, cy: 51, pieces: 2,
+    frame: 'M50 13C68.78 13 84 24.19 84 38C84 47 79 51 79 58C79 67 87 75 91 83Q94 91 86 91H14Q6 91 9 83C13 75 21 67 21 58C21 51 16 47 16 38C16 24.19 31.22 13 50 13ZM50 19C65.46 19 78 27.51 78 38C78 46 73 50 73 58C73 67.5 80 74.5 84 81.5Q86.3 85 81.5 85H18.5Q13.7 85 16 81.5C20 74.5 27 67.5 27 58C27 50 22 46 22 38C22 27.51 34.54 19 50 19Z',
+    field: 'M50 19C65.46 19 78 27.51 78 38C78 46 73 50 73 58C73 67.5 80 74.5 84 81.5Q86.3 85 81.5 85H18.5Q13.7 85 16 81.5C20 74.5 27 67.5 27 58C27 50 22 46 22 38C22 27.51 34.54 19 50 19Z',
+    why: 'B-E15, your candidate, smoothed (owner, 2026-11-04: "Keyhole but smoother"): the head, flattened a little to an oval so it closes down over the saucer (a round head left about 20 units of empty field above it), runs into a gentle neck with no corner where B-E15\'s circle met its straight sides, the neck eases out into the flared base, and the foot\'s corners are rounded. One unbroken curve all the way round. The Concord holds the key and opens the door to any people who ask; the saucer sits in the head, the nacelles spread in the base.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {
@@ -451,7 +518,7 @@ const DESIGNS = [
     ],
   },
   {
-    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in an arch', pieces: 2,
+    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a smooth keyhole', pieces: 2,
     risk: 'A pictured starship: the manual allows one only when abstracted into a mark (p. 14), and a saucer with nacelles is the shape most likely to be read as borrowed from a famous ship. The weakest of the four on rule 15.',
     own: true,
     draw(bg = 'dk') { return enclosed(ENCLOSURES[REC], false, VERSIONS[bg]); },
@@ -462,9 +529,9 @@ const DESIGNS = [
       [...encT(-1, 13, 91), 'L', 'Flying free', 'The ship floats inside the arch, clear of it all round: a ship in flight, framed by the door it came through.'],
       [...encT(-1, 50, 62), 'L', 'The tiny tail', 'A small keel growing out of the saucer between the nacelles, kept small so the saucer leads.'],
       [...encT(-1, 50, 20.5), 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
-      [...encT(-1, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. It reads by its shadow and its lit edge, in the saucer\'s own pearl.'],
-      [84, 44, 'R', 'The night behind', 'Deep night blue, the sky every homeworld shares. Pearl on it measures 11.9:1, so the patch reads from far away.'],
-      [90, 62, 'R', 'The mission arch (B-E2)', 'A flat foot and a round top, one even band: your direction, not yet right. The variations below each change one thing about it.'],
+      [...encT(-1, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. Its floor is satin Signal blue, the flag\'s colour, a soft sheen against the pearl.'],
+      [74, 60, 'R', 'The night behind', 'Deep night blue, the sky every homeworld shares. Pearl on it measures 11.9:1, so the patch reads from far away.'],
+      [91, 66, 'R', 'The smooth keyhole (B-E27)', 'Your pick: a keyhole in one smooth curve, an oval head easing into a gentle neck and out to a wide foot with rounded corners. The Concord holds the key and opens the door to any people who ask. One closed line, for a patch or a pin.'],
     ],
   },
   {
@@ -621,6 +688,72 @@ async function measureJoins(d) {
   }
   return { pieces, expected: d.pieces, nearest, ok: pieces === d.pieces && !(nearest < MIN_GAP) };
 }
+// The picked patch's parts for the 3D badge: every outline sampled as polygons in grid units (y down), the saucer's
+// already moved into its place in the frame. Read by tools/emblems/export_parts.mjs.
+window.EMBLEM_PARTS = (key) => {
+  const e = key ? ENCLOSURES.find((x) => x.key === key) : ENCLOSURES[REC];
+  const sp = saucerParts();
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const host = document.createElementNS(svgNS, 'svg'); document.body.append(host);
+  // Each subpath (every one here starts with an absolute M) sampled every 0.25 units along its length.
+  const polys = (d, k = 1, cy = 52, oy = 52) => d.split(/(?=M)/).filter((x) => x.trim()).map((sub) => {
+    // Sampled segment by segment, every segment from its own start point, so each corner of the path is a vertex: a
+    // corner missed by even sampling becomes a short flat edge, and a bevel spikes out of it.
+    const el = document.createElementNS(svgNS, 'path'); el.setAttribute('d', sub); host.append(el);
+    const cmds = sub.match(/[A-Za-z][^A-Za-z]*/g), ends = [];
+    for (let c = 1; c <= cmds.length; c++) { el.setAttribute('d', cmds.slice(0, c).join('')); ends.push(el.getTotalLength()); }
+    el.setAttribute('d', sub);
+    const L = el.getTotalLength(), out = [];
+    const total = Math.max(24, Math.ceil(L / 0.25));
+    for (let c = 0; c < ends.length; c++) {
+      const a = c ? ends[c - 1] : 0, b = ends[c];
+      if (b - a < 1e-6) continue;
+      const m = Math.max(1, Math.round(total * (b - a) / L));
+      for (let i = 0; i < m; i++) { const p = el.getPointAtLength(a + (b - a) * i / m); out.push([+(50 + (p.x - 50) * k).toFixed(3), +(cy + (p.y - oy) * k).toFixed(3)]); }
+    }
+    el.remove();
+    // A closing point equal to the first is dropped (the ring closes itself).
+    while (out.length > 1 && Math.hypot(out[0][0] - out[out.length - 1][0], out[0][1] - out[out.length - 1][1]) < 1e-3) out.pop();
+    return out;
+  });
+  const S = (d) => polys(d, e.scale, e.cy);
+  // A convex ring moved inward by d units, exactly: the ring clipped by every one of its edges moved inward by d (the
+  // saucer's upper tier). Moving each point along its own normal instead folds the ring over itself at a pointed tip.
+  const inset = (ring, d) => {
+    let a = 0; ring.forEach((p, i) => { const q = ring[(i + 1) % ring.length]; a += p[0] * q[1] - q[0] * p[1]; });
+    const sgn = a > 0 ? 1 : -1;
+    let poly = ring.slice();
+    ring.forEach((p, i) => {
+      const q = ring[(i + 1) % ring.length], l = Math.hypot(q[0] - p[0], q[1] - p[1]);
+      if (l < 1e-9 || poly.length < 3) return;
+      const nx = -sgn * (q[1] - p[1]) / l, ny = sgn * (q[0] - p[0]) / l; // inward normal
+      const side = (v) => (v[0] - p[0]) * nx + (v[1] - p[1]) * ny - d;  // >= 0 keeps
+      const next = [];
+      poly.forEach((u, k) => {
+        const v = poly[(k + 1) % poly.length], su = side(u), sv = side(v);
+        if (su >= 0) next.push(u);
+        if ((su >= 0) !== (sv >= 0)) { const t = su / (su - sv); next.push([u[0] + (v[0] - u[0]) * t, u[1] + (v[1] - u[1]) * t]); }
+      });
+      poly = next;
+    });
+    // Drop points closer than 0.05 units to the last kept one, so no edge is a sliver.
+    const out = [];
+    poly.forEach((v) => { const w = out[out.length - 1]; if (!w || Math.hypot(v[0] - w[0], v[1] - w[1]) > 0.05) out.push(v); });
+    if (out.length > 1 && Math.hypot(out[0][0] - out[out.length - 1][0], out[0][1] - out[out.length - 1][1]) <= 0.05) out.pop();
+    return out.map((v) => [+v[0].toFixed(3), +v[1].toFixed(3)]);
+  };
+  const lens = S(sp.lens)[0];
+  const out = { key: e.key, name: e.name, grid: 100, frame: polys(e.frame), field: polys(e.field), legs: sp.legs.map((d) => S(d)[0]),
+    // 3D detail (owner, 2026-11-04: "a double bevel on the saucer ... some segment marks on the legs"): the saucer's upper
+    // tier, 1.6 units inside its edge, and each leg's segments between the marks.
+    lensTop: inset(lens, 1.6),
+    legSegments: LEGS.map((l) => LEG_SEGMENTS.map(([t0, t1]) => S(ribbon(l.p, l.w, 32, t0, t1))[0])),
+    tail: S(sp.tail)[0], lens, star: S(sp.star)[0],
+    light: { cx: 50 + (sp.light.cx - 50) * e.scale, cy: e.cy + (sp.light.cy - 52) * e.scale, r: sp.light.r * e.scale },
+    colours: { pearl: VERSIONS.dk.ink, night: VERSIONS.dk.field, accord: C.accord } };
+  host.remove();
+  return out;
+};
 // The outline, measured (rule 19): the whole patch as printed (field, frame and ship together) must be one piece, and
 // the background must be one region (the outside), so nothing floats outside the edge and nothing is cut through it.
 async function measureOutline(svgInner) {

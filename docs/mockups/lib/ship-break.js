@@ -75,7 +75,7 @@ function fracture(ship, b, rng) {
 // embers toward the broken edges, flame licking up the walls near the break.
 const CUTFACE_GLSL = `
 uniform vec3 uSeeds[16]; uniform int uSeedN; uniform int uA; uniform int uB;
-uniform vec4 uSt[12]; uniform float uCh[12]; uniform int uStN; uniform float uOx;
+uniform vec4 uSt[48]; uniform float uCh[48]; uniform int uStN; uniform float uOx;
 uniform float uHeat; uniform float uTime; uniform vec3 uAcross; uniform vec3 uDepth; uniform vec3 uMid;
 varying vec3 vObj; varying vec3 vCamObj;
 float fh(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
@@ -87,7 +87,7 @@ float loftD(vec3 p){
   p.x -= uOx;
   if (p.z > uSt[0].x || p.z < uSt[uStN - 1].x) return -1.0;
   vec4 s = uSt[0]; float ch = uCh[0];
-  for (int i = 0; i < 11; i++) { if (i >= uStN - 1) break; vec4 a = uSt[i], b = uSt[i + 1];
+  for (int i = 0; i < 47; i++) { if (i >= uStN - 1) break; vec4 a = uSt[i], b = uSt[i + 1];
     if (p.z <= a.x && p.z >= b.x) { float t = (a.x - p.z)/max(a.x - b.x, 1e-4); s = mix(a, b, t); ch = mix(uCh[i], uCh[i + 1], t); break; } }
   float ax = abs(p.x);
   float d = min(min(s.y - ax, s.z - p.y), p.y - s.w);
@@ -127,6 +127,21 @@ vec3 interiorCut(vec3 f, vec3 V, out float solid){
   vec3 flame = vec3(1.0, 0.3, 0.07)*lick*(1.0 - step(t3.y, t)*step(V.y, 0.0)*0.5);
   return base*L*2.0*lamp*exp(-t*0.13) + flame*(0.35 + 0.35*uHeat)*(0.85 + 0.15*sin(uTime*14.0 + hit.y*3.0));
 }`;
+// The stations the cut-face shader clips to: the body's own, bow first, with any station that lies on the straight line
+// between its neighbours dropped, so a hull fitted every 2 m (a Krai hull) fits the shader's 48. It held 12, which every
+// Concord hull fits, so on a Krai hull every cut face past the bow was thrown away and a break left a hole (owner,
+// 2026-11-04: "hole in the hull", "missing geometry, fix urgently").
+function cutStations(b) {
+  if (b.cutSt) return b.cutSt;
+  const S = [...b.stations].sort((p, q) => q[0] - p[0]);
+  for (let tol = 0.01; ; tol *= 2) {
+    const keep = [S[0]];
+    for (let i = 1; i < S.length - 1; i++) { const a = keep[keep.length - 1], c = S[i + 1], t = (a[0] - S[i][0]) / (a[0] - c[0] || 1);
+      if ([1, 2, 3, 4].some((j) => Math.abs(S[i][j] - (a[j] + (c[j] - a[j]) * t)) > tol)) keep.push(S[i]); }
+    keep.push(S[S.length - 1]);
+    if (keep.length <= 48) return (b.cutSt = keep);
+  }
+}
 function cutFace(ship, b, a, c, pts) {
   const sa = b.seeds[a], sb = b.seeds[c], n = sb.clone().sub(sa).normalize(), mid = sa.clone().add(sb).multiplyScalar(0.5);
   const u = Math.abs(n.y) < 0.9 ? V3(0, 1, 0).cross(n).normalize() : V3(1, 0, 0).cross(n).normalize(), v = n.clone().cross(u);
@@ -135,11 +150,11 @@ function cutFace(ship, b, a, c, pts) {
   u0 -= 7; u1 += 7; v0 -= 7; v1 += 7;
   const g = new THREE.PlaneGeometry(u1 - u0, v1 - v0); g.translate((u0 + u1) / 2, (v0 + v1) / 2, 0); g.applyMatrix4(new THREE.Matrix4().makeBasis(u, v, n).setPosition(mid));
   const nh = V3(n.x, 0, n.z); const depth = nh.length() > 0.3 ? nh.normalize().negate() : V3(1, 0, 0), across = V3(0, 1, 0).cross(depth).normalize();
-  const P = b.frags[a], S = [...b.stations].sort((p, q) => q[0] - p[0]);
-  const st = Array.from({ length: 12 }, (_, i) => new THREE.Vector4(...(S[i] ? [S[i][0], S[i][1], S[i][2], S[i][3]] : [0, 0, 0, 0])));
-  const ch = Array.from({ length: 12 }, (_, i) => (S[i] ? chOf(S[i][1], S[i][2], S[i][3], S[i][4]) : 0));
+  const P = b.frags[a], S = cutStations(b);
+  const st = Array.from({ length: 48 }, (_, i) => new THREE.Vector4(...(S[i] ? [S[i][0], S[i][1], S[i][2], S[i][3]] : [0, 0, 0, 0])));
+  const ch = Array.from({ length: 48 }, (_, i) => (S[i] ? chOf(S[i][1], S[i][2], S[i][3], S[i][4]) : 0));
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.3, roughness: 0.85, emissive: 0xffffff, envMapIntensity: o.env() });
-  const U = { uSeeds: b.u.uSeeds, uSeedN: b.u.uSeedN, uA: { value: a }, uB: { value: c }, uSt: { value: st }, uCh: { value: ch }, uStN: { value: Math.min(12, S.length) }, uOx: { value: b.ox || 0 },
+  const U = { uSeeds: b.u.uSeeds, uSeedN: b.u.uSeedN, uA: { value: a }, uB: { value: c }, uSt: { value: st }, uCh: { value: ch }, uStN: { value: S.length }, uOx: { value: b.ox || 0 },
     uHeat: P.mats[0] ? P.mats[0].userData.u.uCutHeat : { value: 0 }, uTime: sharedTime, uAcross: { value: across }, uDepth: { value: depth }, uMid: { value: mid.clone() } };
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);

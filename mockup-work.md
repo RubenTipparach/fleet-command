@@ -22,14 +22,16 @@ account and every link here is updated.
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
 | 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v74: weapon aims and wide keys after drag-and-drop repairs) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | **Approved for implementation** (2026-11-04, owner in conversation: "I've approved ships to be built", "we need to integrate proper ships in the game"; change `ship-models-engine`). Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
-| 7 | Krai Warhost ships | **Approved for implementation** (2026-11-04, owner in conversation, as mockup 6; change `ship-models-engine`). Drafted (2026-11-04, v20: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
-| 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v13) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 7 | Krai Warhost ships | **Approved for implementation** (2026-11-04, owner in conversation, as mockup 6; change `ship-models-engine`). Drafted (2026-11-04, v21: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
+| 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v14) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
+| 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
+| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -215,6 +217,13 @@ system dont affect PDCs or missiles actually so disabling that wouldnt disable i
 (both skins; changes `weapon-targeting`, `krai-battle-console`): wide keys rendered in Blender and nine-sliced; the
 target's weapons as aim keys on the expanded Tactical page and on the Target box; point defence and missiles independently
 powered.
+
+Owner, 2026-11-04, of the Transport queues: "by default marines get transported, so show darkend marines in the queue if
+nothing is queued" (Capture and Hit & run), and "capture - medics heal marines ... hackers speed up the process of
+capturing, but are easy to get shot and die if there are less than 5 marines. pilots arent needed right away, but are
+required to activate and fly the ship, if no pilot show a "pilot needed" after capturing the ship". Version 75 (both
+skins; change `boarding-party`): the default load of marines, marine health and medics, hackers' speed and exposure,
+Pilot needed, and the expanded Capture page's party panel and boarding log.
 
 ## 3. Look dev
 
@@ -528,3 +537,56 @@ So each faction's emblem is now designed on the **Emblem Design Guide** (https:/
 on hold until then. The flat drafts on this mockup are placeholders.
 
 Design: `openspec/changes/faction-emblems/`. Shapes: `docs/mockups/lib/emblems.js`.
+
+## 10. Concord badge in 3D
+
+Owner, 2026-11-04, on the Emblem Design Guide's B-E23 (the rounded peak, drawn from the owner's own sketch): "ok I'm
+kinda liking it, lets see how it looks in 3d, render something in blender, make a 3d version in thre js, add in
+materials, normals, specular map, AO, and if you can make the background of the emblem, the bell shape some kind of
+holographic stars and nebula shader", then "Central shape should be like irridescent".
+
+- **One source of shapes**: the guide exports B-E23's parts (`tools/emblems/export_parts.mjs` writes
+  `assets/emblems/concord/b-e23.parts.json`), and both the Blender render and the three.js badge build from them.
+- **Blender**: `tools/blender/emblem_concord.py` on the shared harness `tools/blender/emblem_render.py`; renders face on,
+  at an angle and as clay into `assets/emblems/concord/`.
+- **three.js**: `docs/mockups/concord-emblem-3d.html`, orbitable, 100 mm across, with the Blender renders beside it.
+- **Materials**: Material Maker graphs (`emblem_platinum` for the frame, `emblem_enamel_pearl` for the ship) with
+  albedo, normal, ORM (AO, roughness, metal) and a specular map derived from each graph's own roughness and AO.
+- **The field**: a holographic night of nebula and stars on three depths that shift with the viewing angle, under a
+  colour-shifting sheen. **The ship**: iridescent pearl.
+- **Since then** (owner, 2026-11-04): "Can you make the start like a satin in blue?", the arrow foot ("slightly arrow
+  shaped at the bottom"), "Can we make the to point too?" (B-E25, now the badge), then "That look good i like that. We
+  need some small subtle details to.the 3d model.loke a double bevel on the saucer. A small layer of detail. Maybe some
+  segment marks on the legs": the saucer has an upper tier inset 1.6 mm, each leg four segments with grooves 0.5 mm
+  deep, both from the guide's shapes (v2).
+
+## 11. Concord emblem on the hull
+
+Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hull?", then "dont care about phone right now".
+
+- **The ship**: the Concord line's Petrel frigate (88 m, level nacelles) from the shared builder
+  `docs/mockups/lib/concord-line.js` (`plainModel`, plain pearl; mockup 6 keeps the windows, lamps and damage).
+- **The paint**: B-E25 from the guide's parts, flat in the guide's two versions (navy on a pearl field; pearl on a night
+  field), mixed into the hull's colour in its shader by a planar projection: no decal plane, no z-fighting.
+- **Where** (owner, 2026-11-04: "too many logos on the hull there", "1/2 size on the left side", "only one logo"): one
+  emblem, 2.6 m tall (3 % of 88 m, half of E7's 6 %), on the port side of the bow just ahead of the last windows, clear of
+  the swept pylons, under its own logo floodlight. v1 had a dorsal crest and one on each flank at 5.3 m.
+- **Paint** (owner, 2026-11-04: "on the ship hull I like the solid shape more"): the solid version, pearl on a night field,
+  is the default; the navy outline is the other choice.
+- **The emblem** (owner, 2026-11-04: "Beacon sucks. Keyhole but smoother", then "Yea ok. I'll accept that. Let's see it ont be
+  ship hull. Solid color variant with a cyan colored star in the middle"): B-E27, the smooth keyhole, accepted as B's
+  sketch and painted here in the solid version with a cyan star (`#2fd0f0`).
+- **Livery and pinstripes** (owner, 2026-11-04: "Have it use the same color scheme as the liveries and integrate it into
+  one of the stripes", then, with a reference picture of a hull whose emblem heads a pair of pinstripes, "See how this
+  works? Although don't rotate our logo"): the emblem is in the livery's colours (field the stripe blue, frame the seam
+  navy, read from `CL.LIVERIES`), upright on the port bow, and heads two pinstripes (broad stripe blue over thin seam navy)
+  that run aft along the flank into the forward livery band. The reference picture is not committed; only the idea is taken.
+- **The hull breaks the stripe** (owner, 2026-11-04: "The stripe having a circle around it where the logo crosses", "The
+  hull should break the stripe livery at that spot"): the pinstripes carry on forward past the emblem, so it crosses them,
+  and stop at a circle of bare plating round it, clear of its farthest corner by 0.35 m.
+- **Now** (owner, 2026-11-04: "No outline, place emblem on liver stripe dp not add livery in this change"): the pinstripes
+  are gone (no livery is added by this change); the emblem sits upright on the forward livery band, in the stripe's own
+  blue with no outline, a pearl ship and the cyan star, and the band is cut away round it in a circle of bare hull.
+- **Tightened** (owner, 2026-11-04: "tighten the livery line a bit so they arent so distant from the meblem", "bottom line
+  can be flat to conform to the key hole/beacon shape more"): the cut is 0.15 m clear of the emblem where the band crosses
+  it: an arc over the head and a flat edge under the foot.
