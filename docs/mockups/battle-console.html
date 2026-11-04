@@ -732,7 +732,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // container height"; the top 60, "top bar is way thicker than it needs to be"). Each strip's content, drawn for 56 px,
 // is moved down by its dy to sit in the skin's channel.
 const STT = CON.stripTop || { h: 56, dy: 0 }, STB = CON.stripBottom || { h: 56, dy: 0 };
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v73', krai: 'Mockup 8 · Battle console · Krai Warhost · v12' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v74', krai: 'Mockup 8 · Battle console · Krai Warhost · v13' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -761,6 +761,11 @@ const TRACTOR = { reach_km: 3, powerup_s: 10, grip_start: 0.5, round_s: 10, step
 // (more damage, a longer charge, at short range only) and `proximity` (a torpedo fused to burst beside the target:
 // hit_bonus added to the chance to hit, the target's speed ignored, less damage, and a chopping block reach_deg either
 // side of the facing struck instead of STRIKE.reach_deg, so it reaches more of the ship).
+// Independently powered weapons (owner, 2026-11-04: "weapons control system dont affect PDCs or missiles actually so
+// disabling that wouldnt disable independently powered weapons"): a weapon with own_power charges from its own
+// generator, never from the capacitor or the battery, and fires whatever weapons control's state; every other mount
+// charges from the capacitor (then the battery) and stops charging once weapons control is Disabled (WEAPONS_CONTROL).
+const WEAPONS_CONTROL = { disabled_below: 0.35 };
 const ARM_MODES = [['offline', 'Offline'], ['normal', 'Normal'], ['overload', 'Overload'], ['proximity', 'Proximity']];
 const WEAPONS = {
   lance: { name: 'Lance', kind: 'beam', aim: 'precise', range_km: 12, charge_s: 3.5, cost_e: 2, dmg: 7, color: 0x6fc4ff,
@@ -769,8 +774,8 @@ const WEAPONS = {
     overload: { range_km: 7, charge_s: 12, cost_e: 9, dmg: 26 }, proximity: { dmg: 8, hit_bonus: 0.2, ignore_speed: true, reach_deg: 120, color: 0xc8b0ff } },
   disruptor: { name: 'Disruptor', kind: 'bolt', aim: 'precise', range_km: 14, charge_s: 4.5, cost_e: 3, dmg: 8, speed_m_s: 3200, color: 0xff6a4a,
     overload: { range_km: 6, charge_s: 6.5, cost_e: 5, dmg: 14 } },
-  missile: { name: 'Missile', kind: 'missile', aim: 'arc', range_km: 22, charge_s: 10, cost_e: 2, dmg: 11, speed_m_s: 1100, color: 0xffd27a },
-  pd: { name: 'Point defence', kind: 'pd', aim: 'arc', range_km: 2, charge_s: 1.5, cost_e: 0.5, dmg: 0, color: 0xffffff },
+  missile: { name: 'Missile', kind: 'missile', aim: 'arc', own_power: true, range_km: 22, charge_s: 10, cost_e: 2, dmg: 11, speed_m_s: 1100, color: 0xffd27a },
+  pd: { name: 'Point defence', kind: 'pd', aim: 'arc', own_power: true, range_km: 2, charge_s: 1.5, cost_e: 0.5, dmg: 0, color: 0xffffff },
 };
 // Where a hit lands (owner, 2026-11-04, after the reference game: "most weapons like torpedos hit based on arc receiving
 // the hit. So based on where wapons are placed on the ship, thats the current set of items getting hit on that arc. a
@@ -784,7 +789,7 @@ const WEAPONS = {
 // the chance a hit that is not direct damages a subsystem at all; mount_p: the chance it damages an exposed mount
 // (plus mount_aim_p for a direct hit aimed at weapons). Damage to a subsystem: sys_per_dmg of its health per point that
 // gets through the shields (reactor_per_dmg of the reactor's confinement).
-const STRIKE = { direct_p: 0.5, spread_p: 0.6, reach_deg: 60, internal_r: 0.3, mount_p: 0.25, mount_aim_p: 0.25, sys_per_dmg: 0.02, reactor_per_dmg: 0.012 };
+const STRIKE = { mount_hit: 0.6, direct_p: 0.5, spread_p: 0.6, reach_deg: 60, internal_r: 0.3, mount_p: 0.25, mount_aim_p: 0.25, sys_per_dmg: 0.02, reactor_per_dmg: 0.012 };
 // Each subsystem's place in the hull, in half-lengths (x to starboard, y forward), as the mounts' are.
 const SYS_POS = { weapons: [0, 0.35], shields: [0, 0], sensors: [0, 0.85], reactor: [0, -0.15], engines: [0, -0.9], tractor: [0, -0.6], transport: [0.2, 0.1] };
 // A nebula (owner, 2026-11-04: "We also need a nebula scenario to test out the ECM/ECCM systems"): inside one, at its
@@ -1395,6 +1400,8 @@ function systemsStep(s) {
   for (const m of s.mounts) {
     if (m.state === 'offline' || m.charge >= 1 || m.hp <= 0) continue;
     const w = spec(m), need = w.cost_e * DT / w.charge_s;
+    if (w.own_power) { m.charge = Math.min(1, m.charge + DT / w.charge_s); continue; }
+    if (s.sys.weapons < WEAPONS_CONTROL.disabled_below) continue;
     if (s.cap >= need) s.cap -= need; else if (s.battery >= need) s.battery -= need; else continue;
     m.charge = Math.min(1, m.charge + DT / w.charge_s);
   }
@@ -1858,11 +1865,17 @@ function pinsStep() {
   const s = W.player;
   for (const m of s.mounts) {
     if (!m.pin) continue;
-    const t = ship(m.pin.to), why = !t || !t.alive ? `${t ? t.name : 'its target'} destroyed` : m.pin.aim !== 'hull' && healthOf(t, m.pin.aim) <= 0 ? `${t.name}'s ${aimName(m.pin.aim).toLowerCase()} destroyed` : null;
+    const t = ship(m.pin.to), why = !t || !t.alive ? `${t ? t.name : 'its target'} destroyed` : m.pin.aim !== 'hull' && aimHealth(t, m.pin.aim) <= 0 ? `${t.name}'s ${aimName(m.pin.aim, t).toLowerCase()} destroyed` : null;
     if (why) { say('Tactical', `${mountId(m)} unpinned: ${why}.`); m.pin = null; }
   }
 }
-const aimName = (a) => (AIMS.find((q) => q[0] === a) || [a, a])[1];
+// An aim at one of the target's weapons (owner, 2026-11-04: "in this expanded view, I expect to be able to target individual
+// weapons as well"): 'w:<mount index>'. A precise hit aimed there lands on that mount when it is on the block.
+const aimMount = (a) => (/^w:\d+$/.test(a || '') ? Number(a.slice(2)) : -1);
+const aimName = (a, t = tgt(W.player)) => { const i = aimMount(a); if (i >= 0) { const m = t && t.mounts[i]; return m ? `${mountId(m)} ${WEAPONS[m.w].name}` : `Weapon W${i + 1}`; } return (AIMS.find((q) => q[0] === a) || [a, a])[1]; };
+// What an aim has left (0 to 1), and whether a facing's block holds it: the hull always, a subsystem or a mount if exposed.
+function aimHealth(t, a) { const i = aimMount(a); return i >= 0 ? (t.mounts[i] ? t.mounts[i].hp : 0) : a === 'hull' ? t.hull / CLASSES[t.cls].hull : healthOf(t, a); }
+const aimExposed = (ex, a) => a === 'hull' || (aimMount(a) >= 0 ? ex.mounts.includes(aimMount(a)) : ex.sys.includes(a));
 function mountWorld(s, m) {
   const L = CLASSES[s.cls].len_m / M_PER_U / 2, f = fwd(s.h), r = rightOf(s.h);
   return [s.x + f[0] * m.y * L + r[0] * m.x * L * 0.6, s.z + f[1] * m.y * L + r[1] * m.x * L * 0.6];
@@ -1885,8 +1898,10 @@ function damage(t, src, dmg, aim, mode = 'arc', reach = STRIKE.reach_deg) {
   t.hull -= rest;
   // the chopping block: a precise weapon lands on the aimed subsystem direct_p of the time when it is exposed, every
   // other hit spreads over the subsystems and mounts on the facing that took it (STRIKE)
-  const R = W.rand.dmg, exp = exposure(t, f, reach), direct = mode === 'precise' && !!aim && aim !== 'hull' && exp.sys.includes(aim) && R() < STRIKE.direct_p;
-  const k = direct ? aim : exp.sys.length && R() < STRIKE.spread_p ? exp.sys[Math.floor(R() * exp.sys.length)] : null;
+  const R = W.rand.dmg, exp = exposure(t, f, reach), mi = aimMount(aim), direct = mode === 'precise' && !!aim && aim !== 'hull' && aimExposed(exp, aim) && R() < STRIKE.direct_p;
+  const k = direct ? (mi >= 0 ? null : aim) : exp.sys.length && R() < STRIKE.spread_p ? exp.sys[Math.floor(R() * exp.sys.length)] : null;
+  // a direct hit aimed at a weapon lands on that mount
+  if (direct && mi >= 0 && t.mounts[mi]) { const m = t.mounts[mi]; m.hp = Math.max(0, m.hp - STRIKE.mount_hit); if (m.hp <= 0) m.charge = 0; }
   if (k === 'reactor') t.reactor.conf = Math.max(0, t.reactor.conf - rest * STRIKE.reactor_per_dmg);
   else if (k) t.sys[k] = Math.max(0, t.sys[k] - rest * STRIKE.sys_per_dmg);
   // The reactor: a hit may knock a confinement coil out of alignment or damage a coolant loop.
@@ -1897,7 +1912,7 @@ function damage(t, src, dmg, aim, mode = 'arc', reach = STRIKE.reach_deg) {
   // a hit may damage a warp nacelle
   if (R() < 0.15) { const n = t.warp.nacelles[Math.floor(R() * t.warp.nacelles.length)]; n.hp = Math.max(0, n.hp - 0.25); if (t === W.player) say('Engineering', n.hp <= 0 ? 'A warp nacelle is out.' : 'Warp nacelle damaged.'); }
   const em = exp.mounts.map((i) => t.mounts[i]).filter(Boolean);
-  if (em.length && R() < STRIKE.mount_p + (direct && aim === 'weapons' ? STRIKE.mount_aim_p : 0)) { const m = em[Math.floor(R() * em.length)]; m.hp = Math.max(0, m.hp - 0.6); if (m.hp <= 0) m.charge = 0; }
+  if (em.length && R() < STRIKE.mount_p + (direct && aim === 'weapons' ? STRIKE.mount_aim_p : 0)) { const m = em[Math.floor(R() * em.length)]; m.hp = Math.max(0, m.hp - STRIKE.mount_hit); if (m.hp <= 0) m.charge = 0; }
   if (t.side === 0 || src.side === 0) if (t === W.player || src === W.player) say(t === W.player ? 'Engineering' : 'Tactical', t === W.player ? `Hull hit through the ${FACINGS[f]} shield.` : `Hit on ${t.name}, ${FACINGS[f]} facing.`);
   if (t.hull <= 0) { t.hull = 0; t.alive = false; t.v = 0; boom(t); say('Tactical', `${t.name} destroyed.`); for (const o of W.ships) if (o.target === t.id) o.target = null; }
 }
@@ -1999,9 +2014,9 @@ const A = {
   // mount pinned to a ship fires at it with the aim it was pinned with, whatever the locked target is.
   pin: (i, id) => { const s = W.player, m = s.mounts[i], t = ship(id); if (!m || m.w === 'pd' || !t || !t.alive) return;
     if (m.pin && m.pin.to === id) { m.pin = null; say('Tactical', `${mountId(m)} unpinned.`); return; }
-    m.pin = { to: id, aim: s.aim }; say('Tactical', `${mountId(m)} pinned to ${t.name}${s.aim === 'hull' ? '' : `, aimed at ${aimName(s.aim)}`}.`); },
+    m.pin = { to: id, aim: s.aim }; say('Tactical', `${mountId(m)} pinned to ${t.name}${s.aim === 'hull' ? '' : `, aimed at ${aimName(s.aim, t)}`}.`); },
   pinSelected: () => { const s = W.player, t = tgt(s); if (!t) return; const sel = s.mounts.filter((m) => m.sel && m.w !== 'pd');
-    for (const m of sel) m.pin = { to: t.id, aim: s.aim }; say('Tactical', `${sel.map(mountId).join(', ')} pinned to ${t.name}${s.aim === 'hull' ? '' : `, aimed at ${aimName(s.aim)}`}.`); },
+    for (const m of sel) m.pin = { to: t.id, aim: s.aim }; say('Tactical', `${sel.map(mountId).join(', ')} pinned to ${t.name}${s.aim === 'hull' ? '' : `, aimed at ${aimName(s.aim, t)}`}.`); },
   unpinAll: () => { for (const m of W.player.mounts) m.pin = null; say('Tactical', 'All weapons unpinned.'); },
   // Hit details (owner: "recommend shift + click to see weapon hit stats in details"): for an aim, or one mount.
   hitInfo: (o) => { hitInfo = o; logOpen = false; sceneOpen = false; },
@@ -2016,7 +2031,7 @@ const A = {
   // right click. Clicking and dragging camera around frees up the lock").
   lock: (id) => { const s = W.player, t = ship(id); if (!t || !t.alive || t.side === s.side) return;
     if (!detected(s, t)) { say('Science', 'No lock: it is cloaked. Sweep to find it.'); return; }
-    if (!canLock(s, t)) { say('Science', `No lock: the nebula hides it. Raise ECCM above its ECM, or close to ${NEBULA.lock_km} km.`, true); return; } s.target = id; focus = id; camLock = true; say('Tactical', `Target locked: ${t.name}.`); },
+    if (!canLock(s, t)) { say('Science', `No lock: the nebula hides it. Raise ECCM above its ECM, or close to ${NEBULA.lock_km} km.`, true); return; } if (s.target !== id && aimMount(s.aim) >= 0) s.aim = 'weapons'; s.target = id; focus = id; camLock = true; say('Tactical', `Target locked: ${t.name}.`); },
   // The camera lock on its own, from the Target box ("you can lock again under the enemy ship systems view box").
   // release the target (the X on the Target box): no target, the camera back on your ship
   unlock: () => { const s = W.player, t = tgt(s); if (!t) return; s.target = null; camLock = false; camTargetView = false; s.engaged = false; say('Tactical', `Target released: ${t.name}.`); },
@@ -2580,6 +2595,10 @@ function facePiece(fill, status) {
 }
 function face(G, x, y, w, h, r, fill, status) {
   if (!KIT.hero['key.idle']) { G.fillStyle = fill; RR(G, x, y, w, h, r); G.fill(); return; }
+  // a key much wider than tall: the kit's wide key, nine-sliced so its slanted ends keep their shape (owner, 2026-11-04,
+  // of the square key stretched: "this looks rough, can you better render a version of these butons? or slice them better")
+  const wide = 'keyw.' + facePiece(fill, status).slice(4);
+  if (w > h * 1.4 && KIT.nine[wide] && G === g) { nine(wide, x, y, w, h); return; }
   G.drawImage(KIT.hero[facePiece(fill, status)], x, y, w, h);
 }
 // The ink that reads on a key's face: on rendered glass, dark on lit glass and bone on dark glass.
@@ -3103,6 +3122,8 @@ function stTactical(b, big) {
   const lw = big ? Math.round(b.w * 0.4) : b.w;
   LBL('Aim at', b.x, y + 13); LBL('Shift+click: hit details', b.x + lw, y + 13, 0, CC.lilac, 'right', 12); y += 20;
   aimKeys(b.x, y, lw, 40); y += 46;
+  // expanded, the target's own weapons as aims beside its subsystems
+  if (big) { LBL('Aim at a weapon', b.x, y + 13); y += 20; y += mountKeys(b.x, y, lw, 40) + 8; }
   LBL('Contacts', b.x, y + 13); y += 20;
   const foes = seenFoes(s).sort((a, c) => distU(s, a) - distU(s, c)).slice(0, big ? 12 : 5);
   for (const f of foes) {
@@ -3137,6 +3158,24 @@ function aimKeys(x, y, w, h) {
     g.drawImage((KIT.hero['key.idle'] && st === 'Off' ? KIT.icon : KIT.iconOn)[ic], bx + bs * ik, y + bs * ik, bs * (1 - 2 * ik), bs * (1 - 2 * ik));
     if (onBlock && k !== 'hull') { const yy = y - 5; g.strokeStyle = CC.alert; g.lineWidth = 1.6; g.beginPath(); g.moveTo(bx + 2, yy + 4); g.lineTo(bx + 2, yy); g.lineTo(bx + bs - 2, yy); g.lineTo(bx + bs - 2, yy + 4); g.stroke(); }
   });
+}
+// The target's weapons as aim keys (the expanded Tactical page): one a mount, lit in its status, its weapon's glyph and id
+// on it, the aimed one ringed, a bracket over each on the chopping block; a click aims, shift+click opens the hit details.
+function mountKeys(x, y, w, h) {
+  const s = W.player, t = tgt(s); if (!t) { LBL('Lock a target to aim at its weapons', x, y + 22, w, CC.ghost, 'left', 15); return 30; }
+  const n = t.mounts.length, gap = 4, bs = Math.min(h, (w - gap * (n - 1)) / Math.max(1, n)), ex = exposure(t, facingFrom(t, s.x, s.z));
+  t.mounts.forEach((m, i) => {
+    const bx = x + i * (bs + gap), a = `w:${m.i}`, st = mountStatus(t, m), on = ex.mounts.includes(m.i), w2 = WEAPONS[m.w];
+    const h2 = hit(`aim.${a}`, bx, y, bs, bs, { click: () => (SHIFT ? A.hitInfo({ aim: a }) : A.aim(a)), tip: { title: `${mountId(m)} · ${w2.name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]],
+      ['Power', w2.own_power ? 'Its own' : 'Weapons control'], ['On the block', on ? 'Yes' : 'Not from here', on ? CC.accord : CC.caution], ['Click', 'Aim · shift: details']] } });
+    if (s.aim === a) { g.fillStyle = CC.sky; RR(g, bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
+    statusBox(g, bx, y, bs, st, bs * 0.28);
+    if (h2.hot) { g.fillStyle = al('#ffffff', 0.12); RR(g, bx, y, bs, bs, bs * 0.28); g.fill(); }
+    weaponGlyph(g, m, bx + bs / 2, y + bs * 0.42, bs * 0.24, faceInk(STATUS_COL[st], true));
+    text(mountId(m), bx + bs / 2, y + bs - 4, '600 11px Antonio', faceInk(STATUS_COL[st], true), 'center', bs - 4);
+    if (on) { const yy = y - 5; g.strokeStyle = CC.alert; g.lineWidth = 1.6; g.beginPath(); g.moveTo(bx + 2, yy + 4); g.lineTo(bx + 2, yy); g.lineTo(bx + bs - 2, yy); g.lineTo(bx + bs - 2, yy + 4); g.stroke(); }
+  });
+  return bs;
 }
 function tacMatrix(x, y, w, h, foes) {
   const s = W.player, ms = s.mounts.filter((m) => m.w !== 'pd'), cols = foes.slice(0, 6), rh = Math.min(48, (h - 70) / Math.max(1, ms.length)), cw0 = 170, cw = (w - cw0) / Math.max(1, cols.length);
@@ -3606,7 +3645,9 @@ function isOff(s, key) {
 }
 function statusOf(hp, off) { return hp <= 0 ? 'Destroyed' : hp < 0.35 ? 'Disabled' : off ? 'Off' : hp < 1 ? 'Damaged' : 'Active'; }
 const subsysStatus = (s, key) => statusOf(healthOf(s, key), isOff(s, key));
-const mountStatus = (s, m) => statusOf(m.hp, m.state === 'offline' || (m.w !== 'pd' && s.power.weapons <= 0));
+// a mount fed by the capacitor is Off with no weapons energy or with weapons control disabled; an independently powered
+// one only when switched off
+const mountStatus = (s, m) => statusOf(m.hp, m.state === 'offline' || (!WEAPONS[m.w].own_power && (s.power.weapons <= 0 || s.sys.weapons < WEAPONS_CONTROL.disabled_below)));
 // A status box: filled solid with the status colour (Active green, Damaged amber, Disabled red, Off dimmed Lilac,
 // Destroyed dark red with a red edge), so a hit shows at a glance.
 // A colour mixed toward black (f < 1) or toward white (f > 1, by f - 1), for the cooling shade and its figures.
@@ -3656,10 +3697,14 @@ function ssdHits(idp, ox, oy, geo, s, own) {
     if (aims && W.player.aim === key) { g.strokeStyle = CC.sky; g.lineWidth = 2.5; RR(g, ox + bx - 3, oy + by - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.stroke(); }
     hit(`${idp}.sys.${key}`, ox + bx, oy + by, bs, bs, { click: aims ? () => (SHIFT ? A.hitInfo({ aim: key }) : A.aim(key)) : null, cursor: aims ? 'pointer' : undefined,
       tip: { title: SUBSYS.find((q) => q[0] === key)[1], rows: [['Health', pct(clamp(healthOf(s, key), 0, 1))], ['Status', st, STATUS_COL[st]], ...(aims ? [['Click', W.player.aim === key ? 'Aimed here' : 'Aim here · shift: details']] : [])] } }); }
-  for (const [mx, my, rr, m] of geo.mounts) { const st = mountStatus(s, m); hit(`${idp}.m.${m.i}`, ox + mx - rr, oy + my - rr, rr * 2, rr * 2, { click: own ? (m.w !== 'pd' ? () => (SHIFT ? A.hitInfo({ mount: m.i }) : A.selectMount(m.i)) : null) : () => A.raidMount(m.i), cursor: 'pointer',
+  // on the locked target's display a weapon is an aim too, and the raid's pick (owner, 2026-11-04: "target individual weapons")
+  const tgtAims = !own && s.side !== W.player.side && tgt(W.player) === s;
+  for (const [mx, my, rr, m] of geo.mounts) { const st = mountStatus(s, m), a = `w:${m.i}`;
+    if (tgtAims && W.player.aim === a) { g.strokeStyle = CC.sky; g.lineWidth = 2.5; g.beginPath(); g.arc(ox + mx, oy + my, rr + 3, 0, 2 * P); g.stroke(); }
+    hit(`${idp}.m.${m.i}`, ox + mx - rr, oy + my - rr, rr * 2, rr * 2, { click: own ? (m.w !== 'pd' ? () => (SHIFT ? A.hitInfo({ mount: m.i }) : A.selectMount(m.i)) : null) : () => { A.raidMount(m.i); if (tgtAims) (SHIFT ? A.hitInfo({ aim: a }) : A.aim(a)); }, cursor: 'pointer',
     tip: { title: `${mountId(m)} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ['Charge', m.state === 'offline' || m.hp <= 0 ? '--' : pct(m.charge)],
       ...(own && m.w !== 'pd' ? [['To hit', tgt(s) && inArc(s, m, tgt(s)) && inRange(s, m, tgt(s)) ? pct(hitChance(s, m, tgt(s))) : '--'], ['Aims', WEAPONS[m.w].aim === 'precise' ? 'Precise' : 'By arc']] : []),
-      ...(own && m.pin && pinTarget(m) ? [['Pinned', `${pinTarget(m).name}${m.pin.aim === 'hull' ? '' : ` · ${aimName(m.pin.aim)}`}`]] : []), ['Ready in', cooldownS(m) === null ? (ready(m) ? 'Ready' : '--') : fmtCool(cooldownS(m)) + ' s']] } }); }
+      ...(own && m.pin && pinTarget(m) ? [['Pinned', `${pinTarget(m).name}${m.pin.aim === 'hull' ? '' : ` · ${aimName(m.pin.aim, pinTarget(m))}`}`]] : []), ['Ready in', cooldownS(m) === null ? (ready(m) ? 'Ready' : '--') : fmtCool(cooldownS(m)) + ' s']] } }); }
 }
 // The ship systems display: one drawing for own ship and target, used docked, expanded and in the Target box (6.1).
 function drawSSD(x, w, h, s, big, own, idp) {
@@ -4679,7 +4724,7 @@ function hitSheet(vx, vy, vw, vh) {
     const xf = st.hot ? CC.alert : CC.signal; g.fillStyle = xf; KNOB(g, xs + 13, ys + 13, 13); g.fill();
     g.strokeStyle = INK(xf); g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 8, ys + 8); g.lineTo(xs + 18, ys + 18); g.moveTo(xs + 18, ys + 8); g.lineTo(xs + 8, ys + 18); g.stroke(); }
   let y = ly + 54;
-  const ex = t ? exposure(t, facingFrom(t, s.x, s.z)) : null, onBlock = ex && aim !== 'hull' && ex.sys.includes(aim);
+  const ex = t ? exposure(t, facingFrom(t, s.x, s.z)) : null, onBlock = ex && aim !== 'hull' && aimExposed(ex, aim);
   if (t) rich(lx + 16, y, [[`${t.name}'s ${FACINGS[facingFrom(t, s.x, s.z)]} facing is toward you. On the chopping block: `, CC.lilac], [`${ex.sys.map((k) => aimName(k)).join(', ')}; ${ex.mounts.length} weapon mount${ex.mounts.length === 1 ? '' : 's'}`, CC.text]], '600 17px Antonio', lw - 32);
   else LBL('Lock a target to see where your hits can land', lx + 16, y, lw - 32);
   y += 26;
@@ -4690,7 +4735,7 @@ function hitSheet(vx, vy, vw, vh) {
   y += 26;
   for (const m of list) {
     const tt = pinTarget(m) || t, a2 = pinTarget(m) ? m.pin.aim : aim, ok = tt && inArc(s, m, tt) && inRange(s, m, tt), hc = ok ? hitChance(s, m, tt, a2) : 0, precise = WEAPONS[m.w].aim === 'precise';
-    const on = !tt || !ok || a2 === 'hull' ? '--' : !precise ? 'By arc' : !exposure(tt, facingFrom(tt, s.x, s.z)).sys.includes(a2) ? 'Not exposed' : pct(hc * STRIKE.direct_p);
+    const on = !tt || !ok || a2 === 'hull' ? '--' : !precise ? 'By arc' : !aimExposed(exposure(tt, facingFrom(tt, s.x, s.z)), a2) ? 'Not exposed' : pct(hc * STRIKE.direct_p);
     // the weapon's arming mode beside its name when it is not Normal (openspec/changes/weapon-arming)
     const cells = [`${mountId(m)} ${WEAPONS[m.w].name}${m.state !== 'normal' ? ` · ${ARM_MODES.find((q) => q[0] === m.state)[1]}` : ''}`, precise ? 'Precise' : m.state === 'proximity' ? 'Wide arc' : 'By arc', tt && inArc(s, m, tt) ? 'Yes' : 'No', tt ? `${distKm(s, tt).toFixed(1)}/${spec(m).range_km} km` : '--', ok ? pct(hc) : '--', on, pinTarget(m) ? pinTarget(m).name : '--'];
     cells.forEach((c, i) => TXT(c, lx + 16 + (lw - 32) * cols[i][1], y, (lw - 32) * 0.12 + (i === 0 ? 120 : 0), i === 5 && on !== '--' && on !== 'By arc' && on !== 'Not exposed' ? CC.sky : CC.text, 'left', 17));
@@ -4955,6 +5000,8 @@ window.MOCKUP_SHOTS = {
     for (let i = 0; i < Math.round(12 / DT); i++) step(); }, 'repel'),
   // the targeting rules (openspec/changes/weapon-targeting)
   scene_disable: () => scripted(240, () => { station = 'tactical'; W.player.aim = 'engines'; for (let i = 0; i < Math.round(20 / DT); i++) { step(); if (i % 30 === 0) A.fire(); } }, 'disable'),
+  // the target's weapons as aims (expanded Tactical), W3 aimed, and the wide keys of the weapons-against-contacts grid
+  aim_weapons: () => scripted(240, () => { station = 'tactical'; expanded = 'station'; A.aim('w:2'); }, 'disable'),
   hit_details: () => scripted(240, () => { station = 'tactical'; W.player.aim = 'engines'; hitInfo = { aim: 'engines' }; }, 'disable'),
   scene_pinned: () => scripted(90, () => { station = 'tactical'; expanded = 'station'; const s = W.player; A.lock('ashkar'); A.pin(0, 'ashkar'); A.pin(1, 'skarn'); A.pin(4, 'rattlejaw'); A.lock('rattlejaw'); }, 'pinned'),
   scene_nebula: () => scripted(90, () => { station = 'tactical'; }, 'nebula'),

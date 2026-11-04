@@ -226,6 +226,7 @@ ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", 
          # the battle console's own (openspec/changes/krai-battle-console)
          "plate.label", "plate.title", "console.column", "strip.top.join", "strip.bottom.join",
          "key.idle", "key.hover", "key.on", "key.ok", "key.warn", "key.alert", "key.off",
+         "keyw.idle", "keyw.hover", "keyw.on", "keyw.ok", "keyw.warn", "keyw.alert", "keyw.off",
          "cell.idle", "cell.lit", "cell.warn", "cell.accord", "cell.locked", "bar.fill.accord"]
 PIECES = {k: PIECES[k] for k in ORDER}
 

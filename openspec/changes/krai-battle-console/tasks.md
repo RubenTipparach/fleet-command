@@ -13,6 +13,9 @@
 - [x] 1.6 Concord fixes: the Fleet key with no ship left; clean named shots
 - [x] 1.7 Shots of all 40 named views looked at; listed in `mockup-work.md` and `docs/artifacts/battle-console-krai/`
 - [ ] 1.8 Published by the desktop session and added to the mockup tracker
+- [x] 1.8a Wide keys (`keyw.*`, 144 x 48, nine-sliced in x with the slanted ends inside 20 px margins), rendered in Blender in the
+  seven lights, for every key much wider than tall (the Tactical grid's cells first; owner, 2026-11-04: "this looks rough,
+  can you better render a version of these butons? or slice them better")
 - [ ] 1.9 The owner's review (approved for build)
 
 ## 2. Game (after approval for implementation, a separate request)

@@ -12,4 +12,6 @@
 - [x] 1.8 Scenes Disable, Pinned fire, Nebula, with named shots; a scene may fail
 - [x] 1.9 Both skins (the Krai page written again); every control still matches the Concord press for press
 - [x] 1.10 Aim keys lit in the target's subsystem status, with brackets; target display subsystems aim on click
-- [ ] 1.11 The owner's review; W1-W6
+- [x] 1.11 Aims at the target's weapons (`w:<mount>`, `aimMount`, `aimHealth`, `aimExposed`), the expanded Tactical's weapon
+  keys, the Target box's mounts; independently powered point defence and missiles (`own_power`, `WEAPONS_CONTROL`)
+- [ ] 1.12 The owner's review; W1-W6

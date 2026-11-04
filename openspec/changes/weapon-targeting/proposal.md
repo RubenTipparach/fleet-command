@@ -24,6 +24,8 @@ Then, 2026-11-04, with crops of the Krai's Tactical station and Target box:
 
 - "aim at should show status of subsystems"
 - "I should be able to click to aim at specific systems here too" (the Target box's systems display)
+- "in this expanded view, I expect to be able to target individual weapons as well, weapons control system dont affect
+  PDCs or missiles actually so disabling that wouldnt disable independently powered weapons" (the expanded Tactical page)
 
 ## What Changes
 
@@ -34,6 +36,10 @@ Then, 2026-11-04, with crops of the Krai's Tactical station and Target box:
 - **Aim at as icons**: the hull and the seven subsystems, named on hover, in every skin's icon set, each key lit in the
   locked target's status for that subsystem (the target display's status boxes), the aim ringed and a bracket over each
   one on the chopping block. On the Target box, clicking a subsystem aims at it.
+- **Aim at a weapon**: the expanded Tactical page lists the target's weapons as aim keys (and its mounts on the Target box
+  aim on a click); a precise hit aimed at a mount lands on that mount when it is on the block.
+- **Independently powered weapons**: point defence and missiles charge from their own generators, so weapons control
+  (damaged, disabled or destroyed) never stops them; every other mount stops charging once weapons control is disabled.
 - **Hit details**: shift+click an aim or a weapon for a sheet of the target's exposed facing, what is on the block, and
   each weapon's way of aiming, arc, range, chance to hit and chance to put the hit on the aimed subsystem.
 - **The chopping block shown**: on the target's systems display, a small red bracket over every subsystem and mount the

@@ -32,3 +32,17 @@ SHALL not be locked from beyond 6 km unless the locker's ECCM exceeds its ECM.
 #### Scenario: A jamming raider in the nebula
 - **WHEN** the captain tries to lock a raider with ECM 3 inside the nebula at 9 km with ECCM 2
 - **THEN** the lock is refused with the reason, and the contact reads Unknown until ECCM is 4 or the range is 6 km
+
+### Requirement: A weapon can be aimed at, and weapons control feeds only the mounts it powers
+
+The captain SHALL be able to aim at one of the target's weapon mounts, and a precise hit so aimed SHALL land on that
+mount half of the time when it is on the block. Mounts fed by the capacitor SHALL stop charging once weapons control is
+disabled; independently powered weapons (point defence, missiles) SHALL charge and fire whatever weapons control's state.
+
+#### Scenario: Knocking out one gun
+- **WHEN** the captain aims at the Vorrak's W3 and fires lances through the facing that exposes it
+- **THEN** about half the hits land on W3, and the aim key and the Target box show W3's status falling
+
+#### Scenario: Point defence outlives weapons control
+- **WHEN** a ship's weapons control is disabled
+- **THEN** its lances and torpedoes stop charging, and its point defence still charges and intercepts
