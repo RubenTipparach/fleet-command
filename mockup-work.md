@@ -622,24 +622,6 @@ Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hu
   back in the band's seam colour, the band's cut edges carry the same seam (0.22 m, the band's own seam width), and 0.35 m
   of bare hull stands between them.
 
-## 14. Krai badge in 3D
-
-Owner, 2026-11-04, of the Fang Torc sketch KC+ on the Emblem Design Guide: "bro this version slaps", "Thats it", "keep
-that", then "make the 3d version of the fang torc". Numbered 14 because two other branches each hold a page numbered 12
-(the Ssarith console and the Ssarith ships) and 13 is left for them to settle.
-
-- **One source of shapes**: the guide exports KC+'s parts (`tools/emblems/export_parts.mjs krai` writes
-  `assets/emblems/krai/kc.parts.json`); the Blender render and the three.js badge both build from them.
-- **Blender**: `tools/blender/emblem_krai.py` on the shared harness `tools/blender/emblem_render.py`; renders face on, at
-  an angle and as clay into `assets/emblems/krai/`.
-- **three.js**: `docs/mockups/krai-emblem-3d.html`, orbitable, 100 mm across, with the Blender renders beside it, on the
-  shared badge library `docs/mockups/lib/emblem-badge.js` (the Concord badge, mockup 10, now uses it too).
-- **Metals**, Material Maker graphs tinted: blade steel (`emblem_platinum`, `#b9c2cc`) for the ring, torc, thin crescent,
-  forge star and three fangs; blackened steel (the same graph, `#2b2426`) for the field; blood enamel
-  (`emblem_enamel_pearl` under a clear coat, `#c4161f`) for the founder's fang.
-- **Heights** (mm): field 0.3-1.0, thin crescent 0.6-2.2, fangs 0.6-2.6, torc 0.6-3.0, forge star 0.6-3.3, ring 0-3.6.
-  No two faces share a plane.
-
 ## 12. Ssarith Hunt ships
 
 Owner, 2026-11-04: "using current bibles and mockups on ship design, lets consider the Ssarith Hunt culture and how their
@@ -660,3 +642,21 @@ ships will look."
   and CLAUDE.md section 1. Next: the Hunt's culture, set by the owner (survey H1), before any ship is redrawn.
 
 Design: `openspec/changes/ssarith-ship-concepts/`.
+
+## 14. Krai badge in 3D
+
+Owner, 2026-11-04, of the Fang Torc sketch KC+ on the Emblem Design Guide: "bro this version slaps", "Thats it", "keep
+that", then "make the 3d version of the fang torc". Numbered 14 because two other branches each hold a page numbered 12
+(the Ssarith console and the Ssarith ships) and 13 is left for them to settle.
+
+- **One source of shapes**: the guide exports KC+'s parts (`tools/emblems/export_parts.mjs krai` writes
+  `assets/emblems/krai/kc.parts.json`); the Blender render and the three.js badge both build from them.
+- **Blender**: `tools/blender/emblem_krai.py` on the shared harness `tools/blender/emblem_render.py`; renders face on, at
+  an angle and as clay into `assets/emblems/krai/`.
+- **three.js**: `docs/mockups/krai-emblem-3d.html`, orbitable, 100 mm across, with the Blender renders beside it, on the
+  shared badge library `docs/mockups/lib/emblem-badge.js` (the Concord badge, mockup 10, now uses it too).
+- **Metals**, Material Maker graphs tinted: blade steel (`emblem_platinum`, `#b9c2cc`) for the ring, torc, thin crescent,
+  forge star and three fangs; blackened steel (the same graph, `#2b2426`) for the field; blood enamel
+  (`emblem_enamel_pearl` under a clear coat, `#c4161f`) for the founder's fang.
+- **Heights** (mm): field 0.3-1.0, thin crescent 0.6-2.2, fangs 0.6-2.6, torc 0.6-3.0, forge star 0.6-3.3, ring 0-3.6.
+  No two faces share a plane.
