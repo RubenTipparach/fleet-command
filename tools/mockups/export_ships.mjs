@@ -164,6 +164,7 @@ async function exportInPage(cfg) {
       name = 'bell';
       rec.stand_in = 'the bell\'s outer shell; in the page the inside of the bell (its back faces) glows with heat, ' + JSON.stringify(hotA) + ' at the throat to ' + JSON.stringify(hotB) + ' at the lip, times (0.15 + 1.9 d^2) by depth d, with ribs and rings cut in the shell (lib/ship-skin.js thrusterMat)';
       rec.heat_rgb = { throat: hotA, lip: hotB };
+      rec.uv = 'the lathe\'s own: u round the bell, v along it from the lip (0) to the throat (1); src/Game/View/bell.gdshader reads them';
     } else if (pk.startsWith('krai-window')) {
       name = 'window';
       o.color.setRGB(0.02, 0.02, 0.022); o.emissive.setRGB(1.0, 0.55, 0.22); o.emissiveIntensity = 1.2; o.roughness = 0.06; o.metalness = 0;
@@ -235,7 +236,8 @@ async function exportInPage(cfg) {
       for (const k of ['position', 'normal', 'color', 'uv']) if (src.attributes[k]) g.setAttribute(k, src.attributes[k].clone());
       if (src.index) g.setIndex(src.index.clone());
       if (!mi.mat.vertexColors) g.deleteAttribute('color');
-      if (!MAPS.some((k) => mi.mat[k])) g.deleteAttribute('uv');
+      if (mi.rec.heat_rgb) { if (!g.attributes.uv) fail('a bell with no uvs'); } // a bell keeps its lathe's uvs: the game's bell shader cuts its ribs and depth from them
+      else if (!MAPS.some((k) => mi.mat[k])) g.deleteAttribute('uv');
       else { const t = uvMapOf(m), a = g.attributes.uv, q = new THREE.Vector2(); if (!a) fail('a textured mesh with no uvs'); // this mesh's own map transform
         t.updateMatrix(); for (let i = 0; i < a.count; i++) { q.set(a.getX(i), a.getY(i)).applyMatrix3(t.matrix); a.setXY(i, q.x, q.y); } }
       g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(R, toShip(o)));
@@ -258,7 +260,7 @@ async function exportInPage(cfg) {
     let tris = 0, flipped = 0, flippedSingle = 0; const meshNames = [], drawn = [];
     for (const G of groups.values()) {
       const { n, P } = nodeFor(G.P), piv = pivotOf(P);
-      const g = merge(G.geos, G.mi.mat.vertexColors, MAPS.some((k) => G.mi.mat[k]));
+      const g = merge(G.geos, G.mi.mat.vertexColors, MAPS.some((k) => G.mi.mat[k]) || !!G.mi.rec.heat_rgb);
       g.translate(-piv.x, -piv.y, -piv.z);
       const f = flippedTris(g); flipped += f; if (G.mi.mat.side !== THREE.DoubleSide) flippedSingle += f;
       const mesh = new THREE.Mesh(g, G.mi.mat); mesh.name = G.part + (G.zone !== G.zone0 ? '_' + G.zone : '') + '_' + G.mi.mat.name;
@@ -295,7 +297,7 @@ async function exportInPage(cfg) {
         k.facing === 'ventral' ? qZ(PI) : k.facing === 'port' ? qZ(PI / 2) : k.facing === 'starboard' ? qZ(-PI / 2) : null); });
       empty('mount_torpedo_0', V3(...C.torpedo), pieceOfMat(ship.glows.torpedo[0]), { kind: 'torpedo', arc: 'fore' });
       const impulse = ship.glows.impulse || [];
-      ship.bellPos.forEach((p, i) => empty('engine_' + i, p, pieceOfMat(impulse[i]), { kind: 'impulse', radius_m: C.bells.r }));
+      ship.bellPos.forEach((p, i) => empty('engine_' + i, p, pieceOfMat(impulse[i]), { kind: 'impulse', radius_m: (ship.bellR || [])[i] ?? C.bells.r }));
       empty('deflector', ship.deflector, pieceOfMat(ship.glows.dish[0]), { radius_m: C.deflector[3] });
       empty('reactor', ship.corePos, pieceOfMat(ship.glows.core[0]), {});
       empty('bridge', ship.bridgeTop, ship.pieces.crown || hullP, { at: 'the top of the command block' });
