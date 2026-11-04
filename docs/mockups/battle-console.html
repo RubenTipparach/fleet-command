@@ -5749,7 +5749,7 @@ function beamsStep(dt) {
 }
 function boomAt(x, z, size) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb070, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); sp.position.set(x, 0, z); scene.add(sp); booms.push({ sp, t: 0, size }); }
 const SHOT_POOL = {};
-// The shots' looks (owner, 2026-11-04, on the weapons range, mockup 12: "Yea add standard weapons too"), from the one effects
+// The shots' looks (owner, 2026-11-04, on the weapons range, mockup 16: "Yea add standard weapons too"), from the one effects
 // library, docs/mockups/lib/weapon-fx.js: a lance or point defence beam is a lit strip from its mount to its target, both
 // ends as the ships stand this frame; a disruptor bolt is a hot streak running the live line; a torpedo or missile is a
 // glowing warhead that flies free and leaves its trail in space (a seeker): a torpedo under its six-armed star (owner,
