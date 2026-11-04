@@ -729,7 +729,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // container height"; the top 60, "top bar is way thicker than it needs to be"). Each strip's content, drawn for 56 px,
 // is moved down by its dy to sit in the skin's channel.
 const STT = CON.stripTop || { h: 56, dy: 0 }, STB = CON.stripBottom || { h: 56, dy: 0 };
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v70', krai: 'Mockup 8 · Battle console · Krai Warhost · v9' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v71', krai: 'Mockup 8 · Battle console · Krai Warhost · v10' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -753,14 +753,33 @@ const MINE = { cooldown_s: 3, arm_s: 3, trigger_u: 12, dmg: 30 };
 // reel_u_s at full grip, times the holder's hull over the held ship's, at most 1.
 const TRACTOR = { reach_km: 3, powerup_s: 10, grip_start: 0.5, round_s: 10, step_per_e: 0.1, reverse_ratio: 0.5, hold_damp: 0.8, relock_s: 10, reel_u_s: 1.5, reel_step_u: 2, min_u: 3 };
 const WEAPONS = {
-  lance: { name: 'Lance', kind: 'beam', range_km: 12, charge_s: 3.5, cost_e: 2, dmg: 7, color: 0x6fc4ff },
-  torpedo: { name: 'Pulse torpedo', kind: 'torpedo', range_km: 18, charge_s: 8, cost_e: 5, dmg: 14, speed_m_s: 2600, color: 0x9fd0ff,
+  lance: { name: 'Lance', kind: 'beam', aim: 'precise', range_km: 12, charge_s: 3.5, cost_e: 2, dmg: 7, color: 0x6fc4ff },
+  torpedo: { name: 'Pulse torpedo', kind: 'torpedo', aim: 'arc', range_km: 18, charge_s: 8, cost_e: 5, dmg: 14, speed_m_s: 2600, color: 0x9fd0ff,
     overload: { range_km: 7, charge_s: 12, cost_e: 9, dmg: 26 } },
-  disruptor: { name: 'Disruptor', kind: 'bolt', range_km: 14, charge_s: 4.5, cost_e: 3, dmg: 8, speed_m_s: 3200, color: 0xff6a4a,
+  disruptor: { name: 'Disruptor', kind: 'bolt', aim: 'precise', range_km: 14, charge_s: 4.5, cost_e: 3, dmg: 8, speed_m_s: 3200, color: 0xff6a4a,
     overload: { range_km: 6, charge_s: 6.5, cost_e: 5, dmg: 14 } },
-  missile: { name: 'Missile', kind: 'missile', range_km: 22, charge_s: 10, cost_e: 2, dmg: 11, speed_m_s: 1100, color: 0xffd27a },
-  pd: { name: 'Point defence', kind: 'pd', range_km: 2, charge_s: 1.5, cost_e: 0.5, dmg: 0, color: 0xffffff },
+  missile: { name: 'Missile', kind: 'missile', aim: 'arc', range_km: 22, charge_s: 10, cost_e: 2, dmg: 11, speed_m_s: 1100, color: 0xffd27a },
+  pd: { name: 'Point defence', kind: 'pd', aim: 'arc', range_km: 2, charge_s: 1.5, cost_e: 0.5, dmg: 0, color: 0xffffff },
 };
+// Where a hit lands (owner, 2026-11-04, after the reference game: "most weapons like torpedos hit based on arc receiving
+// the hit. So based on where wapons are placed on the ship, thats the current set of items getting hit on that arc. a
+// small bracket would show above those subsystems to show they were on the chopping block. where as EMPs and phasers and
+// disruptors had a better chance of delivering the direct hit on stuff, but would damage other systems on rthe current
+// arc as well (like a 50/50 spred)"; openspec/changes/weapon-targeting). A hit through a facing reaches the subsystems
+// and mounts on that side of the hull (the chopping block): those within reach_deg of the facing's centre, and anything
+// within internal_r of the middle. A weapon's `aim` says how it chooses among them: 'precise' (lances, disruptors) puts
+// the damage on the aimed subsystem direct_p of the time when that subsystem is on the block, and spreads the rest over
+// the block; 'arc' (torpedoes, missiles, mines, collisions) ignores the aim and lands anywhere on the block. spread_p:
+// the chance a hit that is not direct damages a subsystem at all; mount_p: the chance it damages an exposed mount
+// (plus mount_aim_p for a direct hit aimed at weapons). Damage to a subsystem: sys_per_dmg of its health per point that
+// gets through the shields (reactor_per_dmg of the reactor's confinement).
+const STRIKE = { direct_p: 0.5, spread_p: 0.6, reach_deg: 60, internal_r: 0.3, mount_p: 0.25, mount_aim_p: 0.25, sys_per_dmg: 0.02, reactor_per_dmg: 0.012 };
+// Each subsystem's place in the hull, in half-lengths (x to starboard, y forward), as the mounts' are.
+const SYS_POS = { weapons: [0, 0.35], shields: [0, 0], sensors: [0, 0.85], reactor: [0, -0.15], engines: [0, -0.9], tractor: [0, -0.6], transport: [0.2, 0.1] };
+// A nebula (owner, 2026-11-04: "We also need a nebula scenario to test out the ECM/ECCM systems"): inside one, at its
+// density (0 to 1, thinning to 70 % at its edge), every shot loses hit_penalty x density, ECM and ECCM count ew_gain x
+// density more, and a ship in it cannot be locked from beyond lock_km unless the locker's ECCM beats its ECM.
+const NEBULA = { hit_penalty: 0.3, ew_gain: 2, lock_km: 6 };
 const SYSTEMS = ['weapons', 'shields', 'engines', 'sensors', 'tractor', 'transport', 'repair'];
 // The reactor (owner, 2026-11-01: a new system of our own, not in the reference game): magnetic confinement coils that
 // lose alignment as the reactor takes damage, and coolant loops whose pumps draw energy. Misalignment cuts the output
@@ -1026,6 +1045,37 @@ const SCENES = {
       for (const [x, y] of [[-0.3, 0.1], [0.3, 0.1], [0, -0.4]]) t.mounts.push({ i: t.mounts.length, w: 'pd', x, y, arc: [0, 360], state: 'normal', charge: 1, sel: false, hp: 1 }); },
     say: ['Flight deck', 'Ironhold has three point-defence mounts. Launch fighters on Defences, then fire a missile barrage.'] },
 };
+// Three scenes for the targeting rules (owner, 2026-11-04): disable a ship's subsystems without destroying it; pin
+// weapons to several ships at once; and a nebula to test ECM and ECCM.
+Object.assign(SCENES, {
+  disable: { name: 'Disable', objective: 'Disable the Vorrak\'s engines and weapons without destroying it', target: 'vorrak', endless: true,
+    done: (W) => { const t = ship('vorrak'); return !!t && t.alive && healthOf(t, 'engines') < 0.35 && healthOf(t, 'weapons') < 0.35; },
+    failed: (W) => (ship('vorrak') && !ship('vorrak').alive ? 'the Vorrak was destroyed' : ''),
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 60 },
+      { id: 'vorrak', name: 'Vorrak', captain: 'Warlord Tesk', cls: 'kdd', faction: 'kethran', side: 1, x: 0, z: -70, h: 180, v: 90 },
+    ],
+    setup: (W) => { const t = ship('vorrak'); t.ai.stance = 'attack'; },
+    say: ['Tactical', 'Take the Vorrak intact: aim at its engines, then its weapons. Lances and disruptors aim; torpedoes hit whatever its facing exposes.'] },
+  pinned: { name: 'Pinned fire', objective: 'Pin a weapon to each raider and destroy all three', target: 'ashkar',
+    done: (W) => !W.ships.some((o) => o.alive && o.side === 1),
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 0, h: 0, v: 60 },
+      { id: 'ashkar', name: 'Ashkar', captain: 'Blade Oru', cls: 'kff', faction: 'kethran', side: 1, x: -50, z: -45, h: 130, v: 140 },
+      { id: 'skarn', name: 'Skarn', captain: 'Blade Vey', cls: 'kff', faction: 'kethran', side: 1, x: 55, z: -40, h: 235, v: 140 },
+      { id: 'rattlejaw', name: 'Rattlejaw', captain: 'Mother Skeel', cls: 'vcr', faction: 'vos', side: 1, x: 5, z: -85, h: 180, v: 120 },
+    ],
+    say: ['Tactical', 'Three raiders from three sides. Expand Tactical and pin a weapon to each, then fire.'] },
+  nebula: { name: 'Nebula', objective: 'Find and destroy the raider hiding in the nebula', target: null,
+    done: (W) => !ship('rattlejaw').alive,
+    nebula: { x: 0, z: -70, r: 48, density: 0.85 },
+    ships: [
+      { id: 'resolute', name: 'Resolute', captain: 'Capt. Ardent', cls: 'ca', faction: 'concord', side: 0, x: 0, z: 10, h: 0, v: 60 },
+      { id: 'rattlejaw', name: 'Rattlejaw', captain: 'Mother Skeel', cls: 'vcr', faction: 'vos', side: 1, x: 12, z: -78, h: 90, v: 50 },
+    ],
+    setup: (W) => { const t = ship('rattlejaw'), s = W.player; t.power.sensors = 4; t.ecm = 3; t.ai.stance = 'hold'; s.power.sensors = Math.max(s.power.sensors, 4); },
+    say: ['Science', 'A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 6 km.'] },
+});
 const AI_CHOICES = {
   stance: [['attack', 'Attack'], ['escort', 'Escort'], ['hold', 'Hold'], ['hunt', 'Hunt']],
   rule: [['mine', 'My target'], ['nearest', 'Nearest'], ['weakest', 'Weakest']],
@@ -1036,7 +1086,10 @@ const AI_CHOICES = {
 const AI_RANGE_KM = { close: 4, mid: 8, long: 13 };
 const AI_RETREAT = { never: 0, half: 0.5, quarter: 0.25 };
 const ORDERS = [['approach', 'Approach'], ['keep', 'Keep range'], ['circle', 'Circle'], ['evade', 'Evade']];
-const AIMS = [['hull', 'Hull'], ['weapons', 'Weapons'], ['engines', 'Engines'], ['sensors', 'Sensors']];
+// What to aim at, as icons (owner, 2026-11-04: "this aim at should be icon based"): the hull, or one subsystem; its name
+// shows on hover. Only precise weapons can put a hit on the aimed subsystem (STRIKE).
+const AIMS = [['hull', 'Hull', 'ship'], ['weapons', 'Weapons control', 'weapons'], ['engines', 'Engines', 'engines'], ['sensors', 'Sensors', 'sensors'],
+  ['shields', 'Shield generators', 'shields'], ['reactor', 'Reactor', 'reactor'], ['tractor', 'Tractor beam', 'tractor'], ['transport', 'Transporters', 'transport']];
 
 // =================================================================================================================
 // Simulation: plain data and functions, fixed steps, seeded randomness forked per subsystem, ships in a stable order.
@@ -1066,18 +1119,27 @@ function cooldownS(m) { return m.state === 'offline' || m.hp <= 0 || m.charge >=
 // x.x"): under 10 s one decimal, rounded up so it never reads 0.0 while cooling; 10 s and over whole seconds.
 function fmtCool(sec) { const t = Math.ceil(sec * 10) / 10; return t < 10 ? t.toFixed(1) : String(Math.ceil(sec)); }
 // The chance a shot from mount m of s hits t. The helm's readout, the weapons panel and the shot itself all call this.
-function hitChance(s, m, t) {
+function hitChance(s, m, t, aim = s.aim) {
   if (!t || !t.alive || !inRange(s, m, t)) return 0;
-  const w = spec(m), d = distKm(s, t);
+  const w = spec(m), d = distKm(s, t), nb = Math.max(nebulaAt(s.x, s.z), nebulaAt(t.x, t.z));
   let p = 0.92 - 0.5 * d / w.range_km;
-  p += 0.03 * s.eccm - 0.03 * t.ecm;
+  p += (0.03 * s.eccm - 0.03 * t.ecm) * (1 + NEBULA.ew_gain * nb) - NEBULA.hit_penalty * nb;
   p -= 0.12 * Math.abs(t.v) / 300;
-  if (s.aim !== 'hull' && s.side === 0) p -= 0.1;
+  if (aim !== 'hull' && s.side === 0) p -= 0.1;
   if (t.sensorMode === 'passive') p -= 0.05;
   p *= 0.5 + 0.5 * s.sys.sensors;
   // erratic manoeuvres: harder to hit, and harder to hit with
   if (t.erratic) p *= HELM.erratic_hit; if (s.erratic) p *= HELM.erratic_hit;
   return clamp(p, 0.05, 0.95);
+}
+// A nebula's density at a point, 0 outside it (NEBULA).
+function nebulaAt(x, z) { const n = W.nebula; if (!n) return 0; const d = Math.hypot(x - n.x, z - n.z); return d < n.r ? n.density * (1 - 0.3 * d / n.r) : 0; }
+// Whether s can lock t: in a nebula a ship is hidden beyond NEBULA.lock_km unless s's ECCM beats its ECM.
+const canLock = (s, t) => !(nebulaAt(t.x, t.z) > 0 && distKm(s, t) > NEBULA.lock_km && s.eccm <= t.ecm);
+// The subsystems and mounts a hit through facing f of t can reach: the chopping block (STRIKE).
+function exposure(t, f) {
+  const fa = f * 60, near = (x, y) => Math.hypot(x, y) < STRIKE.internal_r || Math.abs(((((Math.atan2(x, y) / DEG - fa) % 360) + 540) % 360) - 180) <= STRIKE.reach_deg;
+  return { sys: SUBSYS.map(([k]) => k).filter((k) => near(...SYS_POS[k])), mounts: t.mounts.filter((m) => near(m.x, m.y)).map((m) => m.i) };
 }
 function maxSpeed(s) { const c = CLASSES[s.cls]; return Math.min(c.speed_max_m_s, s.power.engines * SPEED_PER_BOX_M_S) * (0.4 + 0.6 * s.sys.engines) * s.brown; }
 // The reactor's output this moment: its rating, less what misaligned coils lose.
@@ -1109,7 +1171,7 @@ let sceneId = (() => { try { const v = localStorage.getItem('fc.battle.scene'); 
 function newWorld(id = sceneId) {
   const sc = SCENES[id]; sceneId = id;
   const planets = (sc.planets || []).map((pl) => ({ hold: emptyHold(), holdCap: 0, needs: null, ...pl, got: {} }));
-  W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', planets, wells: (sc.wells || []).map((w) => ({ ...w })),
+  W = { t: 0, ships: (sc.ships || SCENARIO.ships).map(makeShip), shots: [], mines: [], craft: [], log: [], over: null, overWhy: '', planets, wells: (sc.wells || []).map((w) => ({ ...w })), nebula: sc.nebula ? { ...sc.nebula } : null,
     // a planet is solid too: it joins the rocks for collisions
     rocks: (sc.rocks || []).map((r) => ({ ...r })).concat(planets.map((pl) => ({ x: pl.x, z: pl.z, r: pl.r, name: pl.name, planet: true }))),
     rand: { hit: rng(SCENARIO.seed + 1), dmg: rng(SCENARIO.seed + 2), ai: rng(SCENARIO.seed + 3), reactor: rng(SCENARIO.seed + 4), warp: rng(Math.imul(SCENARIO.seed + 5, 0x9e3779b1) >>> 0), helm: rng(Math.imul(SCENARIO.seed + 6, 0x9e3779b1) >>> 0) } }; // the warp stream's seed is mixed: a plain seed + 5 starts on 0.014, failing nearly any first jump
@@ -1138,7 +1200,7 @@ function navTarget(s) {
 const enemiesOf = (s) => W.ships.filter((o) => o.alive && o.side !== s.side);
 // The battle log. A refusal (an order that cannot be carried out) is a warning: shown in Caution, held longer in the
 // view, and marked in the log (owner, 2026-11-02: "is there game log of some kind? I CLICKED JUMP AND NOTHING HAPPENED").
-const WARN_RE = /^(Cannot|Warp field collapsed|Warp core breach|Out of|No target|Not during|The queue is empty|Pads charging|Their shield|That ship is ours|A raid is out|A boarding party is out)/;
+const WARN_RE = /^(Cannot|No lock|Objective failed|Warp field collapsed|Warp core breach|Out of|No target|Not during|The queue is empty|Pads charging|Their shield|That ship is ours|A raid is out|A boarding party is out)/;
 function say(who, text) { W.log.push({ t: W.t, who, text, warn: WARN_RE.test(text) }); if (W.log.length > 80) W.log.shift(); }
 
 // Crossing the transporter's range to the selected destination (owner, 2026-11-03: "when crossing this range transporters
@@ -1162,6 +1224,9 @@ function step() {
   rocksStep();
   pdStep(); shotsStep(); minesStep(); craftStep();
   if (!W.objDone && SCENES[sceneId].done && SCENES[sceneId].done(W)) { W.objDone = true; say('Comms', `Objective complete: ${SCENES[sceneId].objective}.`); }
+  // a scene that can be lost before its objective (the Disable scene: the ship destroyed instead of disabled)
+  if (!W.objDone && !W.failSaid && SCENES[sceneId].failed && SCENES[sceneId].failed(W)) { W.failSaid = true; say('Comms', `Objective failed: ${SCENES[sceneId].failed(W)}. Restart the scene from the menu.`, true); }
+  pinsStep();
   const foes = W.ships.filter((s) => s.side === 1 && s.alive).length;
   // test scenes run on after the last enemy is gone (a capture should be seen joining the fleet); restart from the menu
   if (!foes && SCENES[sceneId].endless) { if (!W.endSaid && W.hadFoes) { W.endSaid = true; say('Tactical', W.overWhy || 'No hostile ships left. Restart the scene from the menu.'); } }
@@ -1478,29 +1543,50 @@ function think(s) {
     s.power.weapons -= take; s.power.tractor = spare + take;
   } else if (!contest && s.pickRound) { s.pickRound = 0; s.power.weapons += s.power.tractor; s.power.tractor = 0; }
 }
+// A pinned mount's target while it lives, else null.
+function pinTarget(m) { const t = m.pin && ship(m.pin.to); return t && t.alive ? t : null; }
+// The player's selected weapons that can fire now, each with its target (pinned, else the locked one) and its aim.
+function fireable(s) {
+  const t = tgt(s);
+  return s.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m)).map((m) => { const pt = pinTarget(m); return [m, pt || t, pt ? m.pin.aim : s.aim]; })
+    .filter(([m, tt]) => tt && inArc(s, m, tt) && inRange(s, m, tt));
+}
+// A pin stops when its ship, or the subsystem it was aimed at, is destroyed.
+function pinsStep() {
+  const s = W.player;
+  for (const m of s.mounts) {
+    if (!m.pin) continue;
+    const t = ship(m.pin.to), why = !t || !t.alive ? `${t ? t.name : 'its target'} destroyed` : m.pin.aim !== 'hull' && healthOf(t, m.pin.aim) <= 0 ? `${t.name}'s ${aimName(m.pin.aim).toLowerCase()} destroyed` : null;
+    if (why) { say('Tactical', `${mountId(m)} unpinned: ${why}.`); m.pin = null; }
+  }
+}
+const aimName = (a) => (AIMS.find((q) => q[0] === a) || [a, a])[1];
 function mountWorld(s, m) {
   const L = CLASSES[s.cls].len_m / M_PER_U / 2, f = fwd(s.h), r = rightOf(s.h);
   return [s.x + f[0] * m.y * L + r[0] * m.x * L * 0.6, s.z + f[1] * m.y * L + r[1] * m.x * L * 0.6];
 }
 // A shot: the hit is rolled when it is fired, with the chance every readout shows; a projectile lands when it arrives.
-function fireMount(s, m, t) {
+function fireMount(s, m, t, aim = s.aim) {
   if (!ready(m) || !inArc(s, m, t) || !inRange(s, m, t)) return false;
-  const w = spec(m), hit = W.rand.hit() < hitChance(s, m, t), [x, z] = mountWorld(s, m);
+  const w = spec(m), hit = W.rand.hit() < hitChance(s, m, t, aim), [x, z] = mountWorld(s, m);
   m.charge = 0;
-  if (w.kind === 'beam') { W.shots.push({ kind: 'beam', x, z, tx: t.x, tz: t.z, life: 0.25, color: w.color, miss: !hit, to: t.id }); if (hit) damage(t, s, w.dmg, s.aim); }
-  else W.shots.push({ kind: w.kind, x, z, to: t.id, from: s.id, hit, dmg: w.dmg, speed: w.speed_m_s / M_PER_U, color: w.color, life: 12, aim: s.aim });
+  if (w.kind === 'beam') { W.shots.push({ kind: 'beam', x, z, tx: t.x, tz: t.z, life: 0.25, color: w.color, miss: !hit, to: t.id }); if (hit) damage(t, s, w.dmg, aim, WEAPONS[m.w].aim); }
+  else W.shots.push({ kind: w.kind, x, z, to: t.id, from: s.id, hit, dmg: w.dmg, speed: w.speed_m_s / M_PER_U, color: w.color, life: 12, aim, mode: WEAPONS[m.w].aim });
   return true;
 }
-function damage(t, src, dmg, aim) {
+function damage(t, src, dmg, aim, mode = 'arc') {
   if (!t.alive) return;
   const f = facingFrom(t, src.x, src.z), absorb = t.shUp ? Math.min(t.shields[f], dmg) : 0;
   t.shields[f] -= absorb; t.flash[f] = 1;
   const rest = dmg - absorb;
   if (rest <= 0) return;
   t.hull -= rest;
-  const R = W.rand.dmg, keys = Object.keys(t.sys);
-  const k = aim && aim !== 'hull' ? aim : R() < 0.35 ? keys[Math.floor(R() * keys.length)] : null;
-  if (k) t.sys[k] = Math.max(0, t.sys[k] - rest * 0.02);
+  // the chopping block: a precise weapon lands on the aimed subsystem direct_p of the time when it is exposed, every
+  // other hit spreads over the subsystems and mounts on the facing that took it (STRIKE)
+  const R = W.rand.dmg, exp = exposure(t, f), direct = mode === 'precise' && !!aim && aim !== 'hull' && exp.sys.includes(aim) && R() < STRIKE.direct_p;
+  const k = direct ? aim : exp.sys.length && R() < STRIKE.spread_p ? exp.sys[Math.floor(R() * exp.sys.length)] : null;
+  if (k === 'reactor') t.reactor.conf = Math.max(0, t.reactor.conf - rest * STRIKE.reactor_per_dmg);
+  else if (k) t.sys[k] = Math.max(0, t.sys[k] - rest * STRIKE.sys_per_dmg);
   // The reactor: a hit may knock a confinement coil out of alignment or damage a coolant loop.
   if (R() < 0.3) { const i = Math.floor(R() * REACTOR.coils); t.reactor.coils[i] = clamp(t.reactor.coils[i] + (R() - 0.5) * 0.8, -1, 1); t.reactor.conf = Math.max(0, t.reactor.conf - rest * 0.012);
     if (t === W.player) say('Engineering', `Confinement coil ${i + 1} out of alignment.`); }
@@ -1508,7 +1594,8 @@ function damage(t, src, dmg, aim) {
     if (t === W.player) say('Engineering', l.hp <= 0 ? `Coolant loop ${'AB'[j]} offline.` : `Coolant loop ${'AB'[j]} damaged.`); }
   // a hit may damage a warp nacelle
   if (R() < 0.15) { const n = t.warp.nacelles[Math.floor(R() * t.warp.nacelles.length)]; n.hp = Math.max(0, n.hp - 0.25); if (t === W.player) say('Engineering', n.hp <= 0 ? 'A warp nacelle is out.' : 'Warp nacelle damaged.'); }
-  if (t.mounts.length && R() < 0.15 + (aim === 'weapons' ? 0.25 : 0)) { const m = t.mounts[Math.floor(R() * t.mounts.length)]; m.hp = Math.max(0, m.hp - 0.6); if (m.hp <= 0) m.charge = 0; }
+  const em = exp.mounts.map((i) => t.mounts[i]).filter(Boolean);
+  if (em.length && R() < STRIKE.mount_p + (direct && aim === 'weapons' ? STRIKE.mount_aim_p : 0)) { const m = em[Math.floor(R() * em.length)]; m.hp = Math.max(0, m.hp - 0.6); if (m.hp <= 0) m.charge = 0; }
   if (t.side === 0 || src.side === 0) if (t === W.player || src === W.player) say(t === W.player ? 'Engineering' : 'Tactical', t === W.player ? `Hull hit through the ${FACINGS[f]} shield.` : `Hit on ${t.name}, ${FACINGS[f]} facing.`);
   if (t.hull <= 0) { t.hull = 0; t.alive = false; t.v = 0; boom(t); say('Tactical', `${t.name} destroyed.`); for (const o of W.ships) if (o.target === t.id) o.target = null; }
 }
@@ -1520,7 +1607,7 @@ function shotsStep() {
     if (!t || !t.alive) { sh.life = Math.min(sh.life, 0.4); continue; }
     const d = Math.hypot(t.x - sh.x, t.z - sh.z), stepU = sh.speed * DT;
     if (d <= stepU + 0.4) {
-      if (sh.hit && !sh.spent) damage(t, ship(sh.from) || { x: sh.x, z: sh.z, side: 1 }, sh.dmg, sh.aim);
+      if (sh.hit && !sh.spent) damage(t, ship(sh.from) || { x: sh.x, z: sh.z, side: 1 }, sh.dmg, sh.aim, sh.mode);
       sh.spent = true; sh.life = 0;
     } else { sh.x += (t.x - sh.x) / d * stepU; sh.z += (t.z - sh.z) / d * stepU; }
   }
@@ -1600,11 +1687,22 @@ const A = {
   order: (o) => { W.player.order = o; },
   engage: () => { const s = W.player; s.engaged = !s.engaged && !!navTarget(s); if (s.engaged) say('Helm', `${ORDERS.find((o) => o[0] === s.order)[1]}: ${navTarget(s).name}.`); },
   fire: () => {
-    const s = W.player, t = tgt(s); if (!t) { say('Tactical', 'No target locked.'); return; }
-    const able = s.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(s, m, t) && inRange(s, m, t));
+    const s = W.player; if (!tgt(s) && !s.mounts.some((m) => m.sel && pinTarget(m))) { say('Tactical', 'No target locked.'); return; }
+    const able = fireable(s);
     if (!able.length) { say('Tactical', 'No selected weapon bears on the target.'); return; }
-    for (const m of s.volley ? able : able.slice(0, 1)) fireMount(s, m, t);
+    for (const [m, tt, aim] of s.volley ? able : able.slice(0, 1)) fireMount(s, m, tt, aim);
   },
+  // Pinning (owner, 2026-11-04: "the: Pin weapon fire system, should allow you to lock a weapon on a specific target even
+  // if your main sensors changed targets. if that target is destroyed (ship or susbsystem) then the pinning stops"): a
+  // mount pinned to a ship fires at it with the aim it was pinned with, whatever the locked target is.
+  pin: (i, id) => { const s = W.player, m = s.mounts[i], t = ship(id); if (!m || m.w === 'pd' || !t || !t.alive) return;
+    if (m.pin && m.pin.to === id) { m.pin = null; say('Tactical', `${mountId(m)} unpinned.`); return; }
+    m.pin = { to: id, aim: s.aim }; say('Tactical', `${mountId(m)} pinned to ${t.name}${s.aim === 'hull' ? '' : `, aimed at ${aimName(s.aim)}`}.`); },
+  pinSelected: () => { const s = W.player, t = tgt(s); if (!t) return; const sel = s.mounts.filter((m) => m.sel && m.w !== 'pd');
+    for (const m of sel) m.pin = { to: t.id, aim: s.aim }; say('Tactical', `${sel.map(mountId).join(', ')} pinned to ${t.name}${s.aim === 'hull' ? '' : `, aimed at ${aimName(s.aim)}`}.`); },
+  unpinAll: () => { for (const m of W.player.mounts) m.pin = null; say('Tactical', 'All weapons unpinned.'); },
+  // Hit details (owner: "recommend shift + click to see weapon hit stats in details"): for an aim, or one mount.
+  hitInfo: (o) => { hitInfo = o; logOpen = false; sceneOpen = false; },
   volley: () => { W.player.volley = !W.player.volley; },
   arm: (state) => { for (const m of W.player.mounts) if (m.sel && m.w !== 'pd' && (state !== 'overload' || WEAPONS[m.w].overload)) { if (m.state !== state) m.charge = state === 'offline' ? 0 : Math.min(m.charge, 0.5); m.state = state; } },
   selectMount: (i) => { const m = W.player.mounts[i]; if (m && m.w !== 'pd') m.sel = !m.sel; },
@@ -1614,7 +1712,8 @@ const A = {
   group: (g) => { for (const m of W.player.mounts) if (m.w !== 'pd') m.sel = g === 'all' || m.w === g; },
   // Locking a target also locks the camera on it (owner, survey B2: "Lock camera on target is automatic when you first
   // right click. Clicking and dragging camera around frees up the lock").
-  lock: (id) => { const s = W.player, t = ship(id); if (!t || !t.alive || t.side === s.side) return; s.target = id; focus = id; camLock = true; say('Tactical', `Target locked: ${t.name}.`); },
+  lock: (id) => { const s = W.player, t = ship(id); if (!t || !t.alive || t.side === s.side) return;
+    if (!canLock(s, t)) { say('Science', `No lock: the nebula hides it. Raise ECCM above its ECM, or close to ${NEBULA.lock_km} km.`, true); return; } s.target = id; focus = id; camLock = true; say('Tactical', `Target locked: ${t.name}.`); },
   // The camera lock on its own, from the Target box ("you can lock again under the enemy ship systems view box").
   // release the target (the X on the Target box): no target, the camera back on your ship
   unlock: () => { const s = W.player, t = tgt(s); if (!t) return; s.target = null; camLock = false; camTargetView = false; s.engaged = false; say('Tactical', `Target released: ${t.name}.`); },
@@ -2038,6 +2137,7 @@ function rich(x, y, segs, font, max = 0) {
 }
 
 // ---- Input, immediate mode ----------------------------------------------------------------------------------------
+let SHIFT = false, hitInfo = null;
 let HITS = [], PREV = [], HOT = null, ACTIVE = null, DRAG = null, PX = -1, PY = -1;
 function hit(id, x, y, w, h, o = {}) { HITS.push({ id, x, y, w, h, ...o }); return { hot: HOT === id, down: ACTIVE === id && HOT === id }; }
 // A control may give its exact outline (poly, a list of points) when its rectangle would overlap its neighbours'.
@@ -2047,6 +2147,7 @@ const refXY = (e) => [e.clientX / S, e.clientY / S];
 const inView = (px, py) => px >= VIEW[0] && px < VIEW[0] + VIEW[2] && py >= VIEW[1] && py < VIEW[1] + VIEW[3];
 function wireInput() {
   addEventListener('pointerdown', (e) => {
+    SHIFT = e.shiftKey;
     const [px, py] = refXY(e); PX = px; PY = py; const h = topAt(px, py);
     if (h) { e.stopPropagation(); e.preventDefault(); ACTIVE = h.id; HOT = h.id; if (h.drag) { DRAG = h; h.drag(px, py, true); } return; }
     if (!inView(px, py)) e.stopPropagation();
@@ -2065,6 +2166,7 @@ function wireInput() {
     root.style.cursor = h ? (h.cursor || (h.click || h.drag ? 'pointer' : 'default')) : ringHot ? 'grab' : '';
   }, true);
   addEventListener('pointerup', (e) => {
+    SHIFT = e.shiftKey;
     if (STEER) { STEER = false; e.stopPropagation(); const s = W.player; say('Helm', `Come to ${String(Math.round(((s.hOrder / DEG) + 360) % 360)).padStart(3, '0')}.`); return; }
     const [px, py] = refXY(e), h = topAt(px, py), was = ACTIVE; ACTIVE = null;
     if (DRAG) { DRAG = null; e.stopPropagation(); return; }
@@ -2091,8 +2193,16 @@ function button(id, x, y, w, h, label, click, o = {}) {
   const size = h >= 44 ? 22 : h >= 30 ? 17 : 15, pad = h >= 44 ? 24 : 12, ctr = o.center || !!CON.keyCenter;
   g.save(); if (dis) g.globalAlpha = 0.35;
   // a pointed key (keyCenter) centres its label in the open field between its caps, never over them (rule T)
-  const [cl, cr] = CON.keyCenter ? keyCaps('button.' + kst, h) : [0, 0];
-  text(String(label).toUpperCase(), ctr ? x + (CON.keyCenter ? cl + (w - cl - cr) / 2 : w / 2) : x + w - pad, y + h / 2 + size * 0.36, `600 ${size}px Antonio`, KINK[kst], ctr ? 'center' : 'right', ctr ? (CON.keyCenter ? w - cl - cr - 8 : w - 8) : w - pad - 12, '0.8px');
+  // (rule T: the label shrinks to fit the open field, down to 12 px, before it is trimmed)
+  const [cl, cr] = CON.keyCenter ? keyCaps('button.' + kst, h) : [0, 0], room = w - cl - cr - 8;
+  // (a key may give a short form of its label, o.short, used when the full one cannot fit even at 11 px)
+  let fs = size, lab = String(label).toUpperCase(), sp = '0.8px';
+  if (CON.keyCenter) {
+    const wid = (s2, f2, l2) => { g.font = FNT(`600 ${f2}px Antonio`); g.letterSpacing = l2; const v = g.measureText(s2).width; g.letterSpacing = '0px'; return v; };
+    let tw = wid(lab, size, sp);
+    if (tw > room) { sp = '0.4px'; tw = wid(lab, size, sp); fs = Math.max(11, Math.floor(size * room / tw)); if (o.short && wid(lab, fs, sp) > room) { lab = String(o.short).toUpperCase(); fs = Math.max(11, Math.min(size, Math.floor(size * room / wid(lab, size, sp)))); } }
+  }
+  text(lab, ctr ? x + (CON.keyCenter ? cl + (w - cl - cr) / 2 : w / 2) : x + w - pad, y + h / 2 + fs * 0.36, `600 ${fs}px Antonio`, KINK[kst], ctr ? 'center' : 'right', ctr ? (CON.keyCenter ? room : w - 8) : w - pad - 12, sp);
   g.restore();
 }
 // A tab: one cap, a flat end; lit (Accord) when chosen. With an icon it shows the icon and names itself on hover.
@@ -2297,7 +2407,7 @@ function uiPlate(r) {
   const [x, y] = r, s = W.player, own = W.ships.filter((o) => o.side === 0 && o.alive);
   heroImg('nameplate', x, y, 460, 56);
   text(`${s.name} · ${s.captain}`.toUpperCase(), x + CON.plate.x, y + CON.plate.y, CON.plate.font, CON.plate.col, 'left', CON.plate.max);
-  button('fleet', x + 460 - 90, y + 6, 86, 30, `Fleet ${own.indexOf(s) + 1}/${own.length}`, () => { if (own.length) A.command(own[(own.indexOf(s) + 1) % own.length].id); }, { center: true, dis: () => !own.length });
+  button('fleet', x + 460 - 90, y + 6, 86, 30, `Fleet ${own.indexOf(s) + 1}/${own.length}`, () => { if (own.length) A.command(own[(own.indexOf(s) + 1) % own.length].id); }, { center: true, dis: () => !own.length, short: `${own.indexOf(s) + 1}/${own.length}` });
 }
 
 // ---- Stations ------------------------------------------------------------------------------------------------------
@@ -2642,18 +2752,46 @@ function stReactor(c, big) {
 }
 function stTactical(b, big) {
   const s = W.player; let y = b.y;
-  LBL('Aim at', b.x, y + 13); y += 20; tabs('aim', b.x, y, b.w, 40, AIMS, s.aim, A.aim); y += 46;
+  // expanded, the contacts take the left part and the weapons against contacts the right (owner, 2026-11-04: "this aim
+  // at window needs more details, there should be an expand button to view viable targets to shoow with various weapons")
+  const lw = big ? Math.round(b.w * 0.4) : b.w;
+  LBL('Aim at', b.x, y + 13); LBL('Shift+click: hit details', b.x + lw, y + 13, 0, CC.lilac, 'right', 12); y += 20;
+  tabs('aim', b.x, y, lw, 40, AIMS, s.aim, (id) => (SHIFT ? A.hitInfo({ aim: id }) : A.aim(id))); y += 46;
   LBL('Contacts', b.x, y + 13); y += 20;
   const foes = enemiesOf(s).sort((a, c) => distU(s, a) - distU(s, c)).slice(0, big ? 12 : 5);
   for (const f of foes) {
-    const on = s.target === f.id, st = hit(`ct.${f.id}`, b.x, y, b.w, 40, { click: () => A.lock(f.id) });
-    if (on || st.hot) { g.fillStyle = on ? CC.deep : al(CC.deep, 0.5); RR(g, b.x, y, b.w, 40, [20, 4, 4, 20]); g.fill(); }
-    g.fillStyle = FACTION[f.faction].dot; g.beginPath(); g.arc(b.x + 18, y + 20, 7, 0, 2 * P); g.fill();
-    TXT(big ? `${f.name} · ${CLASSES[f.cls].name}` : f.name, b.x + 34, y + 27, b.w - 34 - 150);
-    LBL(String(Math.round((bearing(s, f.x, f.z) / DEG + 360) % 360)).padStart(3, '0'), b.x + b.w - 96, y + 26, 0, CC.lilac, 'right');
-    NUM(km(distKm(s, f)), b.x + b.w - 8, y + 28, 0, CC.sky, 'right', 20); y += 44;
+    const on = s.target === f.id, seen = canLock(s, f), st = hit(`ct.${f.id}`, b.x, y, lw, 40, { click: () => A.lock(f.id) });
+    if (on || st.hot) { g.fillStyle = on ? CC.deep : al(CC.deep, 0.5); RR(g, b.x, y, lw, 40, [20, 4, 4, 20]); g.fill(); }
+    g.fillStyle = seen ? FACTION[f.faction].dot : CC.ghost; g.beginPath(); g.arc(b.x + 18, y + 20, 7, 0, 2 * P); g.fill();
+    TXT(!seen ? 'Unknown contact' : big ? `${f.name} · ${CLASSES[f.cls].name}` : f.name, b.x + 34, y + 27, lw - 34 - 150, seen ? CC.text : CC.ghost);
+    LBL(String(Math.round((bearing(s, f.x, f.z) / DEG + 360) % 360)).padStart(3, '0'), b.x + lw - 96, y + 26, 0, CC.lilac, 'right');
+    NUM(km(distKm(s, f)), b.x + lw - 8, y + 28, 0, CC.sky, 'right', 20); y += 44;
   }
-  button('tac.next', b.x, b.y + b.h - 48, b.w, 48, 'Next target', A.nextTarget);
+  if (big) tacMatrix(b.x + lw + 24, b.y, b.w - lw - 24, b.h - 60, foes);
+  // pin the selected weapons to the locked target, beside Next target
+  const hw = (lw - 6) / 2;
+  button('tac.pin', b.x, b.y + b.h - 48, hw, 48, 'Pin weapons', A.pinSelected, { dis: () => !tgt(s) || !s.mounts.some((m) => m.sel && m.w !== 'pd'), tip: 'Pin the selected weapons to the locked target' });
+  button('tac.next', b.x + hw + 6, b.y + b.h - 48, hw, 48, 'Next target', A.nextTarget);
+}
+// The expanded Tactical page's grid: a row per weapon, a column per contact; each cell the chance to hit now (a dot when
+// out of arc or range); click a cell to pin that weapon to that contact, again to unpin. Viable cells are lit keys.
+function tacMatrix(x, y, w, h, foes) {
+  const s = W.player, ms = s.mounts.filter((m) => m.w !== 'pd'), cols = foes.slice(0, 6), rh = Math.min(48, (h - 70) / Math.max(1, ms.length)), cw0 = 170, cw = (w - cw0) / Math.max(1, cols.length);
+  LBL('Weapons against contacts · click to pin', x, y + 13); y += 22;
+  cols.forEach((f, j) => TXT(canLock(s, f) ? f.name : 'Unknown', x + cw0 + j * cw + cw / 2, y + 18, cw - 8, s.target === f.id ? CC.sky : CC.text, 'center', 16)); y += 28;
+  for (const m of ms) {
+    TXT(`${mountId(m)} ${WEAPONS[m.w].name}`, x, y + rh * 0.62, cw0 - 34, CC.text, 'left', 16);
+    LBL(WEAPONS[m.w].aim === 'precise' ? 'Prec' : 'Arc', x + cw0 - 8, y + rh * 0.62, 0, CC.lilac, 'right', 11);
+    cols.forEach((f, j) => {
+      const cx = x + cw0 + j * cw + 3, ok = canLock(s, f) && inArc(s, m, f) && inRange(s, m, f), pinned = m.pin && m.pin.to === f.id;
+      const st = hit(`tm.${m.i}.${f.id}`, cx, y + 2, cw - 6, rh - 4, { click: () => A.pin(m.i, f.id), tip: `${mountId(m)} on ${f.name}: ${ok ? `to hit ${pct(hitChance(s, m, f, pinned ? m.pin.aim : s.aim))}` : 'out of arc or range'}${pinned ? ' · pinned' : ' · click to pin'}` });
+      const fill = pinned ? CC.lilac : st.hot ? CC.sky : ok ? CC.signal : CC.deep;
+      face(g, cx, y + 2, cw - 6, rh - 4, (rh - 4) * 0.22, fill);
+      NUM(ok ? pct(hitChance(s, m, f, pinned ? m.pin.aim : s.aim)) : '·', cx + (cw - 6) / 2, y + rh * 0.66, 0, faceInk(fill), 'center', 17);
+    });
+    y += rh;
+  }
+  button('tm.unpin', x, y + 10, 180, 36, 'Unpin all', A.unpinAll, { dis: () => !s.mounts.some((m) => m.pin), center: true });
 }
 function stPD(b) {
   const s = W.player; let y = b.y;
@@ -3085,9 +3223,10 @@ function weaponGlyph(x, m, mx, my, r, col) {
 // weapon box: show what subsystem name is, health, status"). Own mounts also select on a click.
 function ssdHits(idp, ox, oy, geo, s, own) {
   for (const [bx, by, bs, key] of geo.boxes) { const st = subsysStatus(s, key); hit(`${idp}.sys.${key}`, ox + bx, oy + by, bs, bs, { tip: { title: SUBSYS.find((q) => q[0] === key)[1], rows: [['Health', pct(clamp(healthOf(s, key), 0, 1))], ['Status', st, STATUS_COL[st]]] } }); }
-  for (const [mx, my, rr, m] of geo.mounts) { const st = mountStatus(s, m); hit(`${idp}.m.${m.i}`, ox + mx - rr, oy + my - rr, rr * 2, rr * 2, { click: own ? (m.w !== 'pd' ? () => A.selectMount(m.i) : null) : () => A.raidMount(m.i), cursor: 'pointer',
+  for (const [mx, my, rr, m] of geo.mounts) { const st = mountStatus(s, m); hit(`${idp}.m.${m.i}`, ox + mx - rr, oy + my - rr, rr * 2, rr * 2, { click: own ? (m.w !== 'pd' ? () => (SHIFT ? A.hitInfo({ mount: m.i }) : A.selectMount(m.i)) : null) : () => A.raidMount(m.i), cursor: 'pointer',
     tip: { title: `${mountId(m)} · ${WEAPONS[m.w].name}`, rows: [['Health', pct(clamp(m.hp, 0, 1))], ['Status', st, STATUS_COL[st]], ['Charge', m.state === 'offline' || m.hp <= 0 ? '--' : pct(m.charge)],
-      ...(own && m.w !== 'pd' ? [['To hit', tgt(s) && inArc(s, m, tgt(s)) && inRange(s, m, tgt(s)) ? pct(hitChance(s, m, tgt(s))) : '--']] : []), ['Ready in', cooldownS(m) === null ? (ready(m) ? 'Ready' : '--') : fmtCool(cooldownS(m)) + ' s']] } }); }
+      ...(own && m.w !== 'pd' ? [['To hit', tgt(s) && inArc(s, m, tgt(s)) && inRange(s, m, tgt(s)) ? pct(hitChance(s, m, tgt(s))) : '--'], ['Aims', WEAPONS[m.w].aim === 'precise' ? 'Precise' : 'By arc']] : []),
+      ...(own && m.pin && pinTarget(m) ? [['Pinned', `${pinTarget(m).name}${m.pin.aim === 'hull' ? '' : ` · ${aimName(m.pin.aim)}`}`]] : []), ['Ready in', cooldownS(m) === null ? (ready(m) ? 'Ready' : '--') : fmtCool(cooldownS(m)) + ' s']] } }); }
 }
 // The ship systems display: one drawing for own ship and target, used docked, expanded and in the Target box (6.1).
 function drawSSD(x, w, h, s, big, own, idp) {
@@ -3200,6 +3339,16 @@ function drawSSD(x, w, h, s, big, own, idp) {
     } else weaponGlyph(x, m, mx, my, mb * 0.3, st === 'Destroyed' ? CC.alert : KIT.hero['key.idle'] ? faceInk(STATUS_COL[st], true) : INK(STATUS_COL[st]));
     if (big) { x.fillStyle = CC.lilac; x.font = FNT('600 15px Antonio'); x.textAlign = 'center'; x.fillText(mountId(m), bx + mb + 14, by + 4); }
     mounts.push([mx, my, mb / 2 + 5, m]);
+    // a pinned mount: a small flag on its box's corner
+    if (own && m.pin && pinTarget(m)) { const fs = big ? 12 : 8; x.fillStyle = CC.alert; x.beginPath(); x.moveTo(bx + mb - fs, by - 2); x.lineTo(bx + mb + 3, by - 2); x.lineTo(bx + mb + 3, by + fs); x.closePath(); x.fill(); }
+  }
+  // the chopping block (STRIKE): on a target's display, a small bracket over every subsystem and mount the facing turned
+  // toward you exposes, which is where your next hit can land
+  if (!own && toward >= 0) {
+    const ex = exposure(s, toward), tk = big ? 7 : 5, br = (bx, by, bw) => { const yy = by - (big ? 6 : 4); x.beginPath(); x.moveTo(bx, yy + tk); x.lineTo(bx, yy); x.lineTo(bx + bw, yy); x.lineTo(bx + bw, yy + tk); x.stroke(); };
+    x.strokeStyle = CC.alert; x.lineWidth = big ? 2.5 : 1.6;
+    for (const [bx, by, bs2, key] of boxes) if (ex.sys.includes(key)) br(bx, by, bs2);
+    for (const [mx, my, rr, m] of mounts) if (ex.mounts.includes(m.i)) br(mx - rr + 3, my - rr + 3, 2 * rr - 6);
   }
   return { cx, cy, Rr, L, mounts, boxes };
 }
@@ -3320,7 +3469,7 @@ function shCraft(b) {
 function uiWeapons(r, big) {
   const P0 = panel('weapons', r, 'Weapons', big), s = W.player, t = tgt(s), b = P0;
   const sel = s.mounts.filter((m) => m.sel && m.w !== 'pd'), states = [...new Set(sel.map((m) => m.state))];
-  const n = t ? s.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m) && inArc(s, m, t) && inRange(s, m, t)).length : 0;
+  const n = fireable(s).length;
   const w1 = (b.w - 6) * 0.62;
   button('w.fire', b.x, b.y, w1, 48, `Fire · ${n}`, A.fire); button('w.multi', b.x + w1 + 6, b.y, b.w - w1 - 6, 48, s.volley ? 'Multiple' : 'Single', A.volley, { sel: () => s.volley });
   tabs('w.arm', b.x, b.y + 54, b.w, 40, [['offline', 'Offline'], ['normal', 'Normal'], ['overload', 'Overload']], states.length === 1 ? states[0] : null, A.arm, (id) => id === 'overload' && !sel.some((m) => WEAPONS[m.w].overload));
@@ -3402,6 +3551,7 @@ function drawMap(x, w, h) {
     x.fillStyle = al(CC.sky, 0.05); x.beginPath(); x.moveTo(c[0], c[1]); x.arc(c[0], c[1], rr, a0, a1); x.closePath(); x.fill();
   }
   for (const sh of W.shots) if (sh.kind !== 'beam') { const [px, py] = view(sh.x, sh.z); x.fillStyle = '#' + sh.color.toString(16).padStart(6, '0'); x.fillRect(px - 2, py - 2, 4, 4); }
+  if (W.nebula) { const [px, py] = view(W.nebula.x, W.nebula.z); x.fillStyle = 'rgba(150,90,200,0.18)'; x.beginPath(); x.arc(px, py, W.nebula.r * k, 0, 2 * P); x.fill(); }
   for (const r of W.rocks) { const [px, py] = view(r.x, r.z); x.fillStyle = '#6d6a66'; x.beginPath(); x.arc(px, py, Math.max(2, r.r * k), 0, 2 * P); x.fill(); }
   for (const mn of W.mines) { const [px, py] = view(mn.x, mn.z); x.strokeStyle = CC.caution; x.beginPath(); x.arc(px, py, 4, 0, 2 * P); x.stroke(); }
   for (const o of W.ships) {
@@ -3518,6 +3668,18 @@ function stationModel(s, F) {
 }
 // Gravity wells: a small, white-hot star with a glow (neutron star); its name and the field strength at your ship over it.
 let WELLS3D = null, wellsFor = null;
+// A nebula: soft violet puffs of glow, seeded, filling its circle on the battle plane.
+let NEB3D = null, nebFor = null;
+function syncNebula() {
+  if (nebFor === W) return; nebFor = W;
+  if (NEB3D) scene.remove(NEB3D); NEB3D = null; const n = W.nebula; if (!n) return;
+  NEB3D = new THREE.Group(); scene.add(NEB3D); const R = rng(SCENARIO.seed + 21);
+  for (let i = 0; i < 70; i++) {
+    const a = R() * 2 * P, d = Math.sqrt(R()) * n.r, sz = n.r * (0.25 + R() * 0.35), col = new THREE.Color().setHSL(0.76 + R() * 0.08, 0.6, 0.45 + R() * 0.15);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.16 * n.density, depthWrite: false, blending: THREE.AdditiveBlending }));
+    sp.position.set(n.x + Math.cos(a) * d, (R() - 0.5) * n.r * 0.25, n.z + Math.sin(a) * d); sp.scale.set(sz, sz, 1); NEB3D.add(sp);
+  }
+}
 function syncWells() {
   if (wellsFor === W) return; wellsFor = W;
   if (WELLS3D) scene.remove(WELLS3D); WELLS3D = new THREE.Group(); scene.add(WELLS3D);
@@ -3702,7 +3864,7 @@ function syncRocks() {
 // The grit drifts slowly round its rock.
 function gritStep(dt) { for (const c of GRIT) { for (let i = 0; i < c.base.length; i++) { const b = c.base[i]; b[0] += b[3] * dt / Math.max(1, b[1] * 0.3); c.gp[i * 3] = c.r.x + Math.cos(b[0]) * b[1]; c.gp[i * 3 + 2] = c.r.z + Math.sin(b[0]) * b[1]; } c.gg.attributes.position.needsUpdate = true; } }
 function syncScene(dt) {
-  syncRocks(); gritStep(dt); syncPlanets(); syncWells();
+  syncRocks(); gritStep(dt); syncPlanets(); syncWells(); syncNebula();
   for (const s of W.ships) {
     const o = modelFor(s); o.g.visible = s.alive; if (!s.alive) continue;
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
@@ -3959,6 +4121,37 @@ function hullBar(px, py, o) {
 }
 function insetRect() { const w = Math.min(320, VIEW[2] * 0.3), h = w * 0.86; return [VIEW[2] - w - 16, 14, w, h]; }
 // Over the 3D view: brackets and names, the readout, the last message, the Target box, the lock key, the mockup badge.
+// Hit details (shift+click an aim or a weapon): the target's facing toward you and what it exposes, then each weapon's
+// way of aiming, arc, range, chance to hit and chance to put the hit on the aimed subsystem.
+function hitSheet(vx, vy, vw, vh) {
+  const s = W.player, t = tgt(s), aim = hitInfo.aim || s.aim, list = hitInfo.mount != null ? [s.mounts[hitInfo.mount]].filter(Boolean) : s.mounts.filter((m) => m.w !== 'pd');
+  hit('v.hi.off', vx, vy, vw, vh, { click: () => { hitInfo = null; } });
+  const lx = vx + 14, ly = vy + 50, lw = Math.min(1040, vw - 28), lh = 150 + list.length * 30;
+  hit('v.hi.box', lx, ly, lw, lh, {});
+  g.fillStyle = 'rgba(0,0,0,0.9)'; RR(g, lx, ly, lw, lh, 10); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke();
+  LBL(`Hit details · aimed at ${aimName(aim)} · ${t ? t.name : 'no target'}`, lx + 16, ly + 26, lw - 60, CC.sky, 'left', 16);
+  { const xs = lx + lw - 34, ys = ly + 8, st = hit('v.hi.x', xs, ys, 26, 26, { click: () => { hitInfo = null; }, tip: 'Close' });
+    const xf = st.hot ? CC.alert : CC.signal; g.fillStyle = xf; KNOB(g, xs + 13, ys + 13, 13); g.fill();
+    g.strokeStyle = INK(xf); g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(xs + 8, ys + 8); g.lineTo(xs + 18, ys + 18); g.moveTo(xs + 18, ys + 8); g.lineTo(xs + 8, ys + 18); g.stroke(); }
+  let y = ly + 54;
+  const ex = t ? exposure(t, facingFrom(t, s.x, s.z)) : null, onBlock = ex && aim !== 'hull' && ex.sys.includes(aim);
+  if (t) rich(lx + 16, y, [[`${t.name}'s ${FACINGS[facingFrom(t, s.x, s.z)]} facing is toward you. On the chopping block: `, CC.lilac], [`${ex.sys.map((k) => aimName(k)).join(', ')}; ${ex.mounts.length} weapon mount${ex.mounts.length === 1 ? '' : 's'}`, CC.text]], '600 17px Antonio', lw - 32);
+  else LBL('Lock a target to see where your hits can land', lx + 16, y, lw - 32);
+  y += 26;
+  rich(lx + 16, y, [[`Precise weapons put a hit on the aimed system ${pct(STRIKE.direct_p)} of the time when it is on the block; the rest, and every by-arc weapon, lands anywhere on it.`, CC.lilac]], '600 15px Antonio', lw - 32);
+  y += 34;
+  const cols = [['Weapon', 0], ['Aims', 0.26], ['In arc', 0.38], ['Range', 0.48], ['To hit', 0.6], [`On ${aimName(aim)}`, 0.72], ['Pinned', 0.86]];
+  for (const [h2, f] of cols) LBL(h2, lx + 16 + (lw - 32) * f, y, 0, CC.lilac, 'left', 13);
+  y += 26;
+  for (const m of list) {
+    const tt = pinTarget(m) || t, a2 = pinTarget(m) ? m.pin.aim : aim, ok = tt && inArc(s, m, tt) && inRange(s, m, tt), hc = ok ? hitChance(s, m, tt, a2) : 0, precise = WEAPONS[m.w].aim === 'precise';
+    const on = !tt || !ok || a2 === 'hull' ? '--' : !precise ? 'By arc' : !exposure(tt, facingFrom(tt, s.x, s.z)).sys.includes(a2) ? 'Not exposed' : pct(hc * STRIKE.direct_p);
+    const cells = [`${mountId(m)} ${WEAPONS[m.w].name}`, precise ? 'Precise' : 'By arc', tt && inArc(s, m, tt) ? 'Yes' : 'No', tt ? `${distKm(s, tt).toFixed(1)}/${spec(m).range_km} km` : '--', ok ? pct(hc) : '--', on, pinTarget(m) ? pinTarget(m).name : '--'];
+    cells.forEach((c, i) => TXT(c, lx + 16 + (lw - 32) * cols[i][1], y, (lw - 32) * 0.12 + (i === 0 ? 120 : 0), i === 5 && on !== '--' && on !== 'By arc' && on !== 'Not exposed' ? CC.sky : CC.text, 'left', 17));
+    y += 30;
+  }
+  if (onBlock === false && t && aim !== 'hull') LBL(`${aimName(aim)} is not on the block from here: manoeuvre to another facing`, lx + 16, ly + lh - 14, lw - 32, CC.caution, 'left', 13);
+}
 function uiView() {
   const [vx, vy, vw, vh] = VIEW, s = W.player, t = tgt(s);
   // a marker under the pointer reacts (owner, 2026-11-03: "make target boxes react to my mouse hovering over them, slight
@@ -4053,6 +4246,7 @@ function uiView() {
   }
   LBL(LABEL, vx + vw - 104, vy + vh - 20, 0, CC.ver, 'right', 13);
   button('v.reset', vx + vw - 92, vy + vh - 42, 78, 30, 'Reset', A.reset, { center: true });
+  if (hitInfo) hitSheet(vx, vy, vw, vh);
   if (logOpen) {
     // the battle log, newest first, refusals in Caution; a click anywhere else closes it
     hit('v.log.off', vx, vy, vw, vh, { click: () => { logOpen = false; } });
@@ -4172,7 +4366,7 @@ function frame(now) {
 const queueParty = () => { for (const r of ['marines', 'marines', 'marines', 'medics', 'marines', 'marines', 'marines', 'marines', 'marines', 'hackers', 'engineers', 'pilots', 'engineers', 'pilots']) A.queueRole('capture', r); };
 function scripted(steps, then, sc = 'battle') {
   // each shot from a clean console: no explosion, scene list, log or hover left over from the shot before
-  explosionsStep(60); sceneOpen = false; logOpen = false; HOT = null;
+  explosionsStep(60); sceneOpen = false; logOpen = false; HOT = null; hitInfo = null;
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(qPage, { capture: 0, hit: 0 });
   newWorld(sc); W.player.target = SCENES[sc].target; camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
@@ -4197,6 +4391,11 @@ function tractorScene() {
 }
 function damagedSystems() { const s = W.player; s.mounts[1].hp = 0.6; s.mounts[2].hp = 0.2; s.mounts[5].hp = 0; s.mounts[6].state = 'offline'; s.sys.sensors = 0.6; s.sys.engines = 0.25; }
 window.MOCKUP_SHOTS = {
+  // the targeting rules (openspec/changes/weapon-targeting)
+  scene_disable: () => scripted(240, () => { station = 'tactical'; W.player.aim = 'engines'; for (let i = 0; i < Math.round(20 / DT); i++) { step(); if (i % 30 === 0) A.fire(); } }, 'disable'),
+  hit_details: () => scripted(240, () => { station = 'tactical'; W.player.aim = 'engines'; hitInfo = { aim: 'engines' }; }, 'disable'),
+  scene_pinned: () => scripted(90, () => { station = 'tactical'; expanded = 'station'; const s = W.player; A.lock('ashkar'); A.pin(0, 'ashkar'); A.pin(1, 'skarn'); A.pin(4, 'rattlejaw'); A.lock('rattlejaw'); }, 'pinned'),
+  scene_nebula: () => scripted(90, () => { station = 'tactical'; }, 'nebula'),
   ssd_status: () => { scripted(600, () => { damagedSystems(); expanded = 'ship'; }); HOT = 'ssd.m.2'; },
   shields: () => scripted(600, () => { shipTab = 'shields'; W.player.reinforce = 0; }),
   tractor: () => scripted(600, () => { shipTab = 'tractor'; tractorScene(); }),
