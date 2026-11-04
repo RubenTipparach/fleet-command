@@ -645,3 +645,14 @@ to nothing; the six arms turn and flicker; no weapon core is white (each is its 
 gold `#ffc23d`); missiles in four grades (`data/battle/missiles.json`), red, orange, blue, green, each salvo on the range one
 of each.
 
+Then: "Try to fire the torpedos straight. And the missiles should move slower. Different grades have different speeds and
+damage values." Done: torpedoes leave the tube straight at the target and hold their line; missiles fly near a ship's
+own speed, by grade 240, 320, 400 and 480 m/s with 8, 11, 14 and 18 damage and 30 s of fuel (`data/battle/missiles.json`);
+today's missile in `data/battle/weapons.json` and the battle console's table is the orange grade (320 m/s, 9.6 km).
+
+Then: "Missiles follow ships around. Can be countered with counter measures like flares, decoy shuttles, or pdc." Done:
+the missile run now has the cruiser throw flares and the Albatross launch a decoy shuttle, each missile fooled by its
+grade's chance (`data/battle/missiles.json`), the decoy destroyed by the first missile to reach it and the rest coming back
+for the ship (after SFC2, printed pages 136-137); point defence is drawn as point defence cannon tracers, here and in the
+battle console. Survey D6.
+

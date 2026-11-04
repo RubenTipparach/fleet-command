@@ -1,9 +1,64 @@
 {
- "_doc": "Missile grades (openspec/changes/missiles/design.md; owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\"). Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Read by the weapons range mockup (docs/mockups/special-weapons.html); the game does not read it yet. Every number is a placeholder until the combat change. pd_hits: point defence hits it takes to stop one.",
+ "_doc": "Missile grades and the countermeasures against them (openspec/changes/missiles/design.md). Owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\", \"the missiles should move slower. Different grades have different speeds and damage values\", \"Missiles follow ships around. Can be countered with counter measures like flares, decoy shuttles, or pdc\". Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Speeds near a ship's own, so a captain can outrun the lower grades. pd_hits: point defence hits it takes to stop one. When a ship throws flares or launches a decoy, each missile closing on it is fooled with its grade's fooled_by_flare_x or fooled_by_decoy_x chance (rolled once) and goes for the lure instead; the higher grades are harder to fool. Point defence cannon is weapons.json's pd, stopping a missile pd_intercept_chance of a burst (tuning.json). Read by the weapons range mockup (docs/mockups/special-weapons.html); the game does not read it yet. Every number is a placeholder until the combat change.",
+ "countermeasures": {
+  "flare": {
+   "count": 4,
+   "burn_s": 4,
+   "eject_m_s": 70,
+   "cooldown_s": 20,
+   "color": "#ffb347"
+  },
+  "decoy": {
+   "speed_m_s": 60,
+   "life_s": 30,
+   "voided_by_firing": true,
+   "color": "#ffb030"
+  }
+ },
  "grades": [
-  { "id": "red", "name": "Grade I", "color": "#ff3b30", "speed_m_s": 900, "damage": 8, "pd_hits": 1, "fuel_s": 20 },
-  { "id": "orange", "name": "Grade II", "color": "#ff8c1a", "speed_m_s": 1100, "damage": 11, "pd_hits": 1, "fuel_s": 20 },
-  { "id": "blue", "name": "Grade III", "color": "#2f7bff", "speed_m_s": 1300, "damage": 14, "pd_hits": 2, "fuel_s": 20 },
-  { "id": "green", "name": "Grade IV", "color": "#2fdc5a", "speed_m_s": 1500, "damage": 18, "pd_hits": 2, "fuel_s": 20 }
+  {
+   "id": "red",
+   "name": "Grade I",
+   "color": "#ff3b30",
+   "speed_m_s": 240,
+   "damage": 8,
+   "pd_hits": 1,
+   "fuel_s": 30,
+   "fooled_by_flare_x": 0.6,
+   "fooled_by_decoy_x": 0.85
+  },
+  {
+   "id": "orange",
+   "name": "Grade II",
+   "color": "#ff8c1a",
+   "speed_m_s": 320,
+   "damage": 11,
+   "pd_hits": 1,
+   "fuel_s": 30,
+   "fooled_by_flare_x": 0.45,
+   "fooled_by_decoy_x": 0.7
+  },
+  {
+   "id": "blue",
+   "name": "Grade III",
+   "color": "#2f7bff",
+   "speed_m_s": 400,
+   "damage": 14,
+   "pd_hits": 2,
+   "fuel_s": 30,
+   "fooled_by_flare_x": 0.3,
+   "fooled_by_decoy_x": 0.55
+  },
+  {
+   "id": "green",
+   "name": "Grade IV",
+   "color": "#2fdc5a",
+   "speed_m_s": 480,
+   "damage": 18,
+   "pd_hits": 2,
+   "fuel_s": 30,
+   "fooled_by_flare_x": 0.15,
+   "fooled_by_decoy_x": 0.4
+  }
  ]
 }
