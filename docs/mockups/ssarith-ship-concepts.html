@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 5 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
+/* Mockup 12 (OpenSpec change ssarith-ship-concepts, mockup-work.md), version 6 (version 1 withdrawn): the Ssarith Hunt's first ship concepts,
    from the Hunt's culture as written (console-skins design, approved as written in survey U7) and on the Ship Design
    Bible (docs/design/ship-bible.html): one frigate's rooms as blocks (data/ships/ssarith/frigate_plan.json), the hull
    fitted round them by the shared fitter (docs/mockups/lib/ship-plan.js), and (version 3) three traditions inside the Hunt on that one
@@ -96,7 +96,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v5. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
+    <p class="sub">Mockup 12, v6. <code>ssarith-ship-concepts</code>. Three traditions inside the Hunt on one frigate's rooms, drafted for you to change: nothing taken from the species' body.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -128,7 +128,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     </section>
     <section class="tab notes" id="pane-notes" hidden>
       <h3>Three traditions, drafted for you</h3>
-      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2, H3). Version 4: C is a field hull in place of nacelles; version 5: the hulls are faired, smooth from above and flat along the sides; version 3's C Course is withdrawn (owner: "No go for C").</p>
+      <p>The Hunt's culture as written is one line ("The hunt is the only honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"), plus its field kit and "squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen". A people builds in more than one way, so these are traditions inside the Hunt that disagree with each other. They are ours and provisional: name them, change them or replace them (survey H2, H3). Version 4: C is a field hull in place of nacelles; version 5: the hulls are faired, smooth from above and flat along the sides; version 6: the plating lies true on the angled faces; version 3's C Course is withdrawn (owner: "No go for C").</p>
       <ul>
         <li><b>A Old Lodge</b>: ships handed down and refitted for generations. Plates of every age, riveted, bronze repairs, worn field camouflage; the top deck under a pitched roof; one original nacelle and one later refit; grapple emitters in the prow to hold the quarry close. From "worn gunmetal, camouflage", "the kill earned", "broad prows"; the lodge, the roof and the refits are ours.</li>
         <li><b>B Trackers</b>: the hunt won by waiting and watching. Tracking tubes along the spine; radiators folded down the flanks while it holds its heat in, swung out only when it hunts; drive vented sideways; dark mottled louvres. From "the stalk patient", "tracking tubes", "built to wait unseen", "dark and mottled".</li>
@@ -701,9 +701,13 @@ function hullMat(key) {
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + hullGLSL(st, TRAD[key]) + '\nvec3 gU; vec3 gV; float gFine;')
       .replace('#include <color_fragment>', `#include <color_fragment>
         vec3 nO = normalize(vNObj), nA = abs(nO); float u, v;
+        // Plating laid on each face itself (owner, 2026-11-04, on version 5: "oof now theres uv issues"): along the ship, and
+        // across the face in metres measured on its own surface, so a plate keeps its size on the 45 degree chamfers as on
+        // the flat sides (picking a main axis had stretched it 1.4 times there, and flipped between neighbouring faces).
+        // Only the bow and stern faces are projected face-on.
         if (nA.z > 0.8) { u = vObj.y; v = vObj.x; gU = vec3(0,1,0); gV = vec3(1,0,0); }
-        else if (nA.y > nA.x) { u = vObj.z; v = vObj.x; gU = vec3(0,0,1); gV = vec3(1,0,0); }
-        else { u = vObj.z; v = vObj.y; gU = vec3(0,0,1); gV = vec3(0,1,0); }
+        else { vec2 nxy = normalize(nO.xy); vec2 across = vec2(-nxy.y, nxy.x);
+          u = vObj.z; v = dot(vObj.xy, across); gU = vec3(0,0,1); gV = vec3(across, 0.0); }
         gFine = 1.0 - smoothstep(0.04, 0.22, length(fwidth(vObj)));
         plating(u, v, nA);
         diffuseColor.rgb *= gCol * mix(1.0, 0.45, gSeam * gFine);`)
@@ -712,7 +716,7 @@ function hullMat(key) {
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = ${st === 1 ? '0.88' : st === 2 ? '0.5' : '0.62'} + 0.15 * gSeam;`);
   };
-  m.customProgramCacheKey = () => 'hunt-hull-3-' + key; mats.push(m); return m;
+  m.customProgramCacheKey = () => 'hunt-hull-4-' + key; mats.push(m); return m;
 }
 for (const k of Object.keys(TRAD)) MAT[k] = hullMat(k);
 const glowMat = (hex, k) => new THREE.MeshStandardMaterial({ color: 0x050605, emissive: hex, emissiveIntensity: k, roughness: 0.6 });

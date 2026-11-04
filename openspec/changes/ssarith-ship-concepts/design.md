@@ -1,5 +1,14 @@
 # Design: ssarith-ship-concepts
 
+## Version 6: plating laid on each face (owner, 2026-11-04: "oof now theres uv issues")
+
+Version 5's one deep chamfer (3.29 m, at exactly 45 degrees) showed a fault in how the plating was laid: it was
+projected along each face's main axis, and on a 45 degree face neither axis leads, so the plates there were stretched
+about 1.4 times and flipped between neighbouring faces. The plating is now laid on each face itself, along the ship and
+across the face in metres measured on its own surface, so a plate keeps its size on the chamfers, the roof and the flat
+sides, and the rows line up along the length; only the bow and stern faces are projected face-on. One shader, so the
+fix covers A's plates, B's louvres and C's cast sections alike. No geometry changed.
+
 ## Version 5: a fair hull (owner, 2026-11-04)
 
 On version 4's side view, marked: "I'd like to see these contours smoothed out top down and sides stay flat", "oh I guess

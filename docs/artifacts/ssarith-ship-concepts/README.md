@@ -36,3 +36,6 @@
   without adding more polygons", "remove the wobble", "yea if this could be smoothed thatd be nice"): version 5, a fair
   hull (`fairHull`): smooth outlines from above and in profile, one chamfer along the body, the bows added after the
   fairing; no polygons added. Published, version id `1793804179-2dae`.
+- 2026-11-04, cloud session (owner: "oof now theres uv issues"): version 6, version id `1793805620-1059`. The plating is
+  laid on each face itself (along the ship, and across the face in metres on its own surface), so plates keep their size
+  on the 45 degree chamfers and line up along the length; no geometry changed.
