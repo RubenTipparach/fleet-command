@@ -21,3 +21,7 @@
   well and the notch, the light chapter and settings table brought up to the final study, and step 19.
 - Account move: Republished 2026-10-31 on the owner's current account (the earlier links were made from another account and cannot be read from here); every link updated.
 - 2026-10-31, republished from the desktop session (owner: "Make sure all published pages link back to the master", commit 7200539): the page links back to the mockup tracker; version id `1793462717-c534`.
+- Version 4, 2026-11-04 (owner, of the Krai battle console's hover popups: "these text popups need to be a bit wider so
+  they dont get thier letters cut off, add to guide"): rule T in chapter 9, text never reaches a piece's ends, with the
+  popups as its worked fault; the same rule in the `blender-ui-panels` skill. Published from the cloud session, version id
+  `1793761414-8788`.

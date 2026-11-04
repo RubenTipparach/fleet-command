@@ -729,7 +729,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // container height"; the top 60, "top bar is way thicker than it needs to be"). Each strip's content, drawn for 56 px,
 // is moved down by its dy to sit in the skin's channel.
 const STT = CON.stripTop || { h: 56, dy: 0 }, STB = CON.stripBottom || { h: 56, dy: 0 };
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v70', krai: 'Mockup 8 · Battle console · Krai Warhost · v8' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v70', krai: 'Mockup 8 · Battle console · Krai Warhost · v9' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -2078,6 +2078,10 @@ const tickUI = () => {}, buildPanel = () => {}, rebuild = () => {}, renderSheet 
 
 // ---- Controls -----------------------------------------------------------------------------------------------------
 // A key: the kit's pill, idle, hover or pressed (pressed also when it is on); its label black, right-aligned.
+// A key's end caps at a drawn height: its 9-slice margins, scaled as nine() scales them. Text sized to a key lives in
+// the open field between them, 4 px clear each side (the Analog Panel Bible's rule T; owner, 2026-11-04, of the Krai's
+// hover popups: "these text popups need to be a bit wider so they dont get thier letters cut off").
+function keyCaps(piece, h) { const p = KIT.nine[piece], k = Math.min(1, h / p.size[1]); return [p.m[3] * k, p.m[1] * k]; }
 function button(id, x, y, w, h, label, click, o = {}) {
   const dis = !!(o.dis && o.dis()), st = dis ? { hot: false, down: false } : hit(id, x, y, w, h, { click, tip: o.tip });
   const on = o.sel && o.sel();
@@ -2086,7 +2090,9 @@ function button(id, x, y, w, h, label, click, o = {}) {
   // a skin whose keys end in a point (the Krai blade) centres every label, clear of the point (keyCenter)
   const size = h >= 44 ? 22 : h >= 30 ? 17 : 15, pad = h >= 44 ? 24 : 12, ctr = o.center || !!CON.keyCenter;
   g.save(); if (dis) g.globalAlpha = 0.35;
-  text(String(label).toUpperCase(), ctr ? x + w / 2 : x + w - pad, y + h / 2 + size * 0.36, `600 ${size}px Antonio`, KINK[kst], ctr ? 'center' : 'right', ctr ? w - (CON.keyCenter ? pad : 8) : w - pad - 12, '0.8px');
+  // a pointed key (keyCenter) centres its label in the open field between its caps, never over them (rule T)
+  const [cl, cr] = CON.keyCenter ? keyCaps('button.' + kst, h) : [0, 0];
+  text(String(label).toUpperCase(), ctr ? x + (CON.keyCenter ? cl + (w - cl - cr) / 2 : w / 2) : x + w - pad, y + h / 2 + size * 0.36, `600 ${size}px Antonio`, KINK[kst], ctr ? 'center' : 'right', ctr ? (CON.keyCenter ? w - cl - cr - 8 : w - 8) : w - pad - 12, '0.8px');
   g.restore();
 }
 // A tab: one cap, a flat end; lit (Accord) when chosen. With an icon it shows the icon and names itself on hover.
@@ -4116,9 +4122,11 @@ function uiTip() {
     rows.forEach(([l, v, col], i) => { LBL(l, x + 14, y + 52 + i * 24); NUM(v, x + w - 14, y + 53 + i * 24, 0, col || CC.text, 'right', 18); });
     return;
   }
-  g.font = FNT('600 17px Antonio'); g.letterSpacing = '0.8px'; const tw = g.measureText(h.tip.toUpperCase()).width + 28; g.letterSpacing = '0px';
+  // the popup is its text plus both of the key's caps plus 8 px, the text centred in the open field (rule T)
+  g.font = FNT('600 17px Antonio'); g.letterSpacing = '0.8px'; const txw = g.measureText(h.tip.toUpperCase()).width; g.letterSpacing = '0px';
+  const [cl, cr] = keyCaps('button.pressed', 30), tw = Math.max(txw + cl + cr + 8, txw + 28);
   const x = clamp(h.x + h.w / 2 - tw / 2, 4, RW - tw - 4), y = Math.max(4, h.y - 36);
-  nine('button.pressed', x, y, tw, 30); text(h.tip.toUpperCase(), x + tw / 2, y + 21, '600 17px Antonio', KINK.pressed, 'center', 0, '0.8px');
+  nine('button.pressed', x, y, tw, 30); text(h.tip.toUpperCase(), x + cl + (tw - cl - cr) / 2, y + 21, '600 17px Antonio', KINK.pressed, 'center', 0, '0.8px');
 }
 function drawUI() {
   g.setTransform(DPR * S, 0, 0, DPR * S, 0, 0); g.clearRect(0, 0, RW, RH); g.lineCap = 'round'; g.lineJoin = 'round';

@@ -352,7 +352,7 @@ svg .fillbad { fill: var(--red); }
 
   <section class="ch" id="rules">
     <div class="chhead"><div class="kicker">Chapter 9</div><h2>Fit rules: checked, not eyeballed</h2></div>
-    <p>Chapter 7's principle, children inside their parents, has a precise form for formed metal. A rolled edge (P2) takes ROLL from every edge it lines, so only the metal between the rolls is flat, and only flat metal can carry a control. Five rules say what fits, and <code>tools/mockups/formed_metal.py</code> measures every layout against them on its geometry (shapely) before anything is rendered. Measure, never eyeball: a layout that looks right can be 3 mm wrong.</p>
+    <p>Chapter 7's principle, children inside their parents, has a precise form for formed metal. A rolled edge (P2) takes ROLL from every edge it lines, so only the metal between the rolls is flat, and only flat metal can carry a control. Six rules say what fits, and <code>tools/mockups/formed_metal.py</code> measures every layout against them on its geometry (shapely) before anything is rendered. Measure, never eyeball: a layout that looks right can be 3 mm wrong.</p>
     <div class="scroll"><table>
       <thead><tr><th>Rule</th><th>What must hold</th><th>Numbers</th></tr></thead>
       <tbody>
@@ -361,6 +361,7 @@ svg .fillbad { fill: var(--red); }
         <tr><td class="n">L</td><td>Every metal tip is rounder than the roll. Test: open the metal by the roll (shrink, then grow back); it may change by 0.6 mm at most, or the roll would pinch or eat it.</td><td class="n">0.6 mm</td></tr>
         <tr><td class="n">P</td><td>Anything printed on a display, a gauge or a scale, stays inside its window with a pad.</td><td class="n">PAD 3.0 mm</td></tr>
         <tr><td class="n">B</td><td>Every layer behind a plate (film, well, sub-display, glow plane, backing) stays inside the plate's footprint, rounded corners included; clamped when built, and on the finished render no lit pixel falls outside the plates.</td><td class="n">INSET 4 mm</td></tr>
+        <tr><td class="n">T</td><td><b>Text never reaches a piece's ends.</b> A live label's room is the piece's open field: its width less both end caps at the height it is drawn (the 9-slice margins, scaled as drawn), with a clear gap each side. A key or popup sized to its text is the text plus both caps plus the gaps, and the text is centred in the open field, not in the whole piece, because a slanted back and a point are not the same width.</td><td class="n">GAP 4 px each side · Krai key at 30 px: caps 16 and 23 px</td></tr>
       </tbody></table></div>
     <p>The checker was proven on the mistakes the first drawings made. Each fault was given to it on purpose, and it caught every one:</p>
     <div class="scroll"><table>
@@ -374,6 +375,7 @@ svg .fillbad { fill: var(--red); }
         <tr><td>A dimple 8 mm from a window</td><td class="n">R</td><td>8.0 mm to the nearest edge (roll, rim and land need 8.2)</td></tr>
         <tr><td>A raised plate 2 mm from its parent's edge</td><td class="n">R</td><td>must stay 6.8 mm inside its parent and clear of its openings</td></tr>
         <tr><td>The study's time display film, grown 8 mm and not clamped</td><td class="n">B</td><td>must stay 4 mm inside the plate, corners included</td></tr>
+        <tr><td>The Krai battle console's hover popups, sized to their text plus 28 px (owner, 2026-11-04: "these text popups need to be a bit wider so they dont get thier letters cut off")</td><td class="n">T</td><td>INTERCEPT ran onto the blade's point and slanted back: 39 px of caps at 30 px tall against 28 px of room; the console now sizes every popup and every pointed key's label by the key's own caps</td></tr>
       </tbody></table></div>
     <p class="note">Run <code>python3 tools/mockups/formed_metal.py --out &lt;folder&gt;</code> to write the outlines (with each film already clamped) and the check maps; it exits with an error if any rule fails. <code>--selftest</code> runs the eight faults above and fails if one slips through. The same <code>fit()</code> checks a whole skin's kit: the Aelith Conclave's 20 shell pieces all pass K, L, R, P and B before Blender sees them (<code>tools/mockups/aelith_shapes.py</code>).</p>
   </section>

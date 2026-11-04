@@ -52,3 +52,4 @@
 - 2026-11-03, cloud session (Krai battle console thread): M8 at version 6 (tracker version 47, `1793737629-9deb`), then 7 (version 48, `1793738755-9fdf`), then 8, merged onto the live version `1793739217-06ad` (M7 at v4, the Ship Design Bible at v2, survey v33); version 50, version id `1793739612-c98f`.
 - 2026-11-03, cloud session (faction emblems thread): the Emblem Design Guide added under Guides and M9 (Faction
   emblems, listed) under Game mockups, on top of the live version; version 55, version id `1793743908-edc6`.
+- 2026-11-04, cloud session (Krai battle console thread): M8 at version 9 and the Analog Panel Bible at version 4 (rule T), on the live version `1793755601-4b1e` (from `claude/trusting-faraday-js5whp`: M6 v16, M7 v12, M9, the Emblem Design Guide); version 59, version id `1793761464-be25`.
