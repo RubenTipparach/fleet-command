@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'What about a more trapazpidal shape and another one more Chevron', means: 'B-E19 the trapezoid (narrow top, wide foot) and B-E20 the chevron (a V-dipped top, a pointed foot), both one closed outline.' },
   { when: '2026-11-03', q: 'can we try a triangle shape with cruved ends?', means: 'Two rounded triangles for B: B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.' },
   { when: '2026-11-03', q: 'the shape on e-9 is still the exact same, you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a patch on a uniform', means: 'B-E8 to B-E13 retired (restyles, and three broke the outline). Rule 19: one closed outline, measured. Three different outlines: B-E14 capsule, B-E15 keyhole, B-E16 five-sided house.' },
   { when: '2026-11-03', q: 'the colors are bad, they dont read on the white background; need different versions for white and black background', means: 'Every emblem now has a version for black and one for white, each measured (rule 18): B pearl on night for black, night on pearl for white; A, C and D pearl on black and night blue on white.' },
@@ -354,7 +355,8 @@ function roundPoly(pts, r) {
     const u1 = unit(v, pts[(i + n - 1) % n]), u2 = unit(v, pts[(i + 1) % n]);
     const th = Math.acos(u1[0] * u2[0] + u1[1] * u2[1]), k = r / Math.tan(th / 2);
     const A = [v[0] + u1[0] * k, v[1] + u1[1] * k], B = [v[0] + u2[0] * k, v[1] + u2[1] * k];
-    d += `${i ? 'L' : 'M'}${f(A[0])} ${f(A[1])}A${r} ${r} 0 0 1 ${f(B[0])} ${f(B[1])}`;
+    const convex = (-u1[0]) * u2[1] - (-u1[1]) * u2[0] > 0; // the path turns right (clockwise) here
+    d += `${i ? 'L' : 'M'}${f(A[0])} ${f(A[1])}A${r} ${r} 0 0 ${convex ? 1 : 0} ${f(B[0])} ${f(B[1])}`;
   });
   return d + 'Z';
 }
@@ -368,6 +370,18 @@ function triFrame(pts, r, b) {
   return { frame: roundPoly(pts, r) + fieldD, field: fieldD };
 }
 const TRI = [[50, 4], [99, 95], [1, 95]];
+// Any polygon (clockwise, convex or with shallow notches) as a frame: each edge moved in by the band b, the new corners
+// where the moved edges meet, the outer corners rounded r and the inner ones r - b (concave ones r + b, so the band
+// stays even round a notch).
+function polyFrame(pts, r, b) {
+  const n = pts.length;
+  const lines = pts.map((p, i) => { const q = pts[(i + 1) % n], l = Math.hypot(q[0] - p[0], q[1] - p[1]), d = [(q[0] - p[0]) / l, (q[1] - p[1]) / l], nn = [-d[1], d[0]]; return { p: [p[0] + nn[0] * b, p[1] + nn[1] * b], d }; });
+  const meet = (L1, L2) => { const den = L1.d[0] * L2.d[1] - L1.d[1] * L2.d[0], t = ((L2.p[0] - L1.p[0]) * L2.d[1] - (L2.p[1] - L1.p[1]) * L2.d[0]) / den; return [L1.p[0] + L1.d[0] * t, L1.p[1] + L1.d[1] * t]; };
+  const inner = pts.map((_, i) => meet(lines[(i + n - 1) % n], lines[i]));
+  const fieldD = roundPoly(inner, Math.max(2, r - b));
+  return { frame: roundPoly(pts, r) + fieldD, field: fieldD };
+}
+
 // B's frames. Retired, with the owner's words: B-E1 and B-E3 ("dont like any of those shapes, though b-e2 is a good
 // direction"), B-E4 to B-E7 ("(but I still DONT LIKE IT)"), B-E8 to B-E13 ("the shape on e-9 is still the exact same,
 // you just changed teh style. Keep in mind the shape must be closed line beacuse it needs to be printed as a pin or a
@@ -394,6 +408,10 @@ const ENCLOSURES = [
     why: 'Your triangle, its corners rounded: broad and flat-footed, the ship low in it with its nacelles standing on the base. Three corners, three things the Concord does: explore, mediate, defend. Watch: a triangle pointing up must never read as an arrowhead; the broad base and round corners keep it apart.' },
   { key: 'B-E18', name: 'The soft triangle', scale: 0.5, cy: 70, pieces: 1, ...triFrame(TRI, 20, 6),
     why: 'The same triangle with its corners rounded much further, so it reads softer and further still from an arrowhead, nearer a guitar pick. Watch: rounded much more, it starts to read as a circle.' },
+  { key: 'B-E19', name: 'The trapezoid', scale: 0.66, cy: 52, pieces: 2, ...polyFrame([[20, 6], [80, 6], [97, 94], [3, 94]], 6, 6),
+    why: 'Narrow at the top, wide at the foot: a launch gantry, or a ship seen climbing away. The wide foot gives the nacelles room to spread, and the ship flies free inside, as in B-E2.' },
+  { key: 'B-E20', name: 'The chevron', scale: 0.48, cy: 49, pieces: 2, ...polyFrame([[4, 8], [50, 20], [96, 8], [96, 62], [50, 96], [4, 62]], 6, 6),
+    why: 'A badge whose top dips in a shallow V and whose foot comes to a point: the chevron of rank and service worn on a sleeve. The Concord\'s officers serve; they do not rule. Pointing down, it is no arrowhead.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {

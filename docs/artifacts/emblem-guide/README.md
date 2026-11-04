@@ -50,3 +50,5 @@
   region). Three different outlines beside B-E2: B-E14 the capsule, B-E15 the keyhole, B-E16 the five-sided house.
 - Version 9 published 2026-11-03: two rounded triangles for B (owner: "can we try a triangle shape with cruved ends?"):
   B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.
+- Version 10 published 2026-11-04: the trapezoid (B-E19) and the chevron (B-E20) for B (owner: "What about a more
+  trapazpidal shape and another one more Chevron"), both one closed outline, joins measured.
