@@ -35,4 +35,4 @@
 - 2026-11-04, cloud session (owner: "I'd like to see these contours smoothed out top down and sides stay flat", "but
   without adding more polygons", "remove the wobble", "yea if this could be smoothed thatd be nice"): version 5, a fair
   hull (`fairHull`): smooth outlines from above and in profile, one chamfer along the body, the bows added after the
-  fairing; no polygons added.
+  fairing; no polygons added. Published, version id `1793804179-2dae`.
