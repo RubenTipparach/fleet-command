@@ -169,6 +169,13 @@ from the plan, scaled by the class's length against the frigate's 87 m.
   The whole hull mesh stays with the whole hull and is hidden when the cells replace it, and each cell carries the windows
   nearest its seed (owner, 2026-11-04: "a piece broke off but the original stayed": the whole hull had been handed to one
   cell and stayed drawn under the pieces).
+  A part that crosses a cell line (the keel blade, the guns, the bronze edges, the bayonet and the dorsal crest, which now
+  sit on the hull's piece instead of breaking off on their own) is cut along the same lines: one copy per cell it reaches,
+  each drawing only its own cell by the hull's own rule (`CELL_GLSL` in `lib/ship-fx.js`, which `dmgBreak` uses too)
+  (owner: "failing to break cleanly please fix", "blade and fin did NOT break cleanylu"). Each floodlight belongs to the
+  cell it lights and goes out only when that cell breaks away (owner: "exterior hull lights also dissaperaed after ship
+  took damage"). The room blocks show only in the Rooms to Parts steps, also on a ship rebuilt after damage (owner: "hide
+  ship plan by default").
 - **The bayonets** (owner, 2026-11-04: "The blade should be a different shape on each ship. Cruiser and dreadnaught would
   probably ave a wider shape like a saw rather than a pointy knife. The frigate could have a thin needle. They are more
   decorative than practical"): the corvette keeps the barbed knife, the frigate a thin needle with a collar at its root,
@@ -194,7 +201,8 @@ from the plan, scaled by the class's length against the frigate's 87 m.
   below, two conduits along the inboard face in clamps, and a collector at the bow.
 - **Windows** (owner, 2026-11-04: "window geometry extending a bit over the hull slope", "the last window ... geometry is
   clipped", "window paralax on slope has the wrong room angle"): a pane lies on one flat face of the section, checked at
-  its top and bottom edges and both ends (same slope, same plane), moving up to 0.9 m off a bend, or there is no window;
+  its top and bottom edges and both ends (same slope, same plane), or there is no window: a pane is never moved off its row's height, so every row stays level (owner: "remove these
+  windows if they cannot be placed in an aligned fasion");
   the room behind a pane on a sloped face is level.
 - **Thrusters** (owner, 2026-11-04: "look at all that zfighting"): the throat disc of the shared thruster has the bell's
   own number of sides and sits 6% of the bell's length inside it; 5 cm in, it lay exactly on the Krai stern face.
