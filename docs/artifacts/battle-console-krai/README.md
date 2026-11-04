@@ -35,3 +35,4 @@
 - Version 12 (drag-and-drop repairs, version 73 of the source page; parity 3,225 presses of 380 controls): published 2026-11-04, version id `1793778538-858d`.
 - Version 13 (wide keys `keyw.*` rendered in Blender and nine-sliced for the Tactical grid; weapon aims and independently powered weapons from version 74 of the source page; parity 3,261 presses of 391 controls): published 2026-11-04, version id `1793780737-78bf`.
 - Version 14 (the boarding party of version 75 of the source page; parity 3,432 presses of 394 controls): published 2026-11-04, version id `1793782743-4feb`.
+- 2026-11-04, desktop session (Mac), owner: "this top part needs a blcak background, same with bottom stuff too": version 18, version id `1793822395-b7e4`, a text edit on the live version: the strips drawn on black (no change where the Krai metal covers them).

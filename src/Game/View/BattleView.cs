@@ -15,6 +15,7 @@
 // are the player's to set; the camera is never turned against their will (CLAUDE.md 8).
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FleetCommand.Data;
 using FleetCommand.Game.Ui;
 using FleetCommand.Sim;
@@ -31,6 +32,8 @@ public sealed partial class BattleView : Node3D
     private Camera3D _cam = null!;
     private readonly Dictionary<string, Node3D> _models = new();
     private readonly List<OmniLight3D> _strobes = new();
+    private readonly Dictionary<string, ShipDamage> _damage = new();
+    private long _hitSeq;
     private NebulaSky? _sky;
     private ShaderMaterial _skyMat = null!;
 
@@ -53,6 +56,7 @@ public sealed partial class BattleView : Node3D
     public bool TargetView { get; private set; }
     private float _yawVel;
     private string? _lastTarget;
+    private string? _watched;   // the ship Target view last orbited: it stays on its wreck until the next lock
     private Vector3 _focus, _glideFrom;
     private float _glideT = GlideS;
     private bool _focusSet;
@@ -88,6 +92,8 @@ public sealed partial class BattleView : Node3D
         foreach (Node3D n in _models.Values) n.QueueFree();
         _models.Clear();
         _strobes.Clear();
+        _damage.Clear();
+        _hitSeq = _x.Battle.Hits.Count > 0 ? _x.Battle.Hits[^1].Seq : 0;
         // the scenario's own nebula sky (each scene its own: data/battle/scenarios.json "sky")
         if (_sky == null || _sky.Name != "Sky_" + _x.Battle.Scenario.Sky)
         {
@@ -102,6 +108,8 @@ public sealed partial class BattleView : Node3D
             model.Name = s.Id;
             AddChild(model);
             _models[s.Id] = model;
+            if (s.Class.Model is { } file && model.GetChild(0) is Node3D glb)
+                _damage[s.Id] = new ShipDamage(glb, this, s, file["assets/ships/".Length..], glb.Scale.X, ShipSkin.HullShader);
         }
     }
 
@@ -165,17 +173,18 @@ public sealed partial class BattleView : Node3D
     {
         Battle b = _x.Battle;
         ShipSkin.Flash(_strobes, Time.GetTicksMsec() / 1000.0);
+        Damage(b, _x.State.Paused || _x.State.MenuOpen ? 0 : dt);
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
-            m.Visible = s.Alive;
+            m.Visible = s.Alive || _damage.ContainsKey(s.Id);   // an approved ship stays to come apart; a stand-in just goes
             m.Position = new Vector3((float)(s.X / MPerU), 0, (float)(s.Z / MPerU));
             m.Rotation = new Vector3(0, -(float)s.H, 0);
         }
         Ship p = b.Player;
         FollowTarget(p);
         LockStep(p, dt);
-        Ship? tv = TargetView ? b.TargetOf(p) : null;
+        Ship? tv = TargetView ? b.TargetOf(p) ?? Wreck(b) : null;
         Ship f = tv ?? p;
         var want = new Vector3((float)(f.X / MPerU), 0, (float)(f.Z / MPerU));
         if (!_focusSet) { _focus = want; _focusSet = true; }
@@ -188,6 +197,21 @@ public sealed partial class BattleView : Node3D
         _cam.LookAt(focus, Vector3.Up);
         _sky?.Follow(_cam.GlobalPosition);
         Project();
+    }
+
+    // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every
+    // ship's damage steps on by dt, real seconds (0 while paused), so a wreck still comes apart once the battle is over.
+    private void Damage(Battle b, double dt)
+    {
+        foreach (HitEvent e in b.Hits)
+        {
+            if (e.Seq <= _hitSeq) continue;
+            _hitSeq = e.Seq;
+            if (_damage.TryGetValue(e.ShipId, out ShipDamage? d)) d.OnHit(e);
+            else if (_models.TryGetValue(e.ShipId, out Node3D? m))
+                Fx.Fireball(this, m.GlobalPosition, e.HullDamage > 0 ? 0.12f : 0.06f, Vector3.Up);
+        }
+        foreach (ShipDamage d in _damage.Values) d.Step((float)dt);
     }
 
     // A perspective frustum whose centre lands on the ship's point in the view rectangle (ship_screen_y down the view).
@@ -242,6 +266,7 @@ public sealed partial class BattleView : Node3D
     public void ToggleTargetView()
     {
         TargetView = !TargetView && _x.Battle.TargetOf(_x.Battle.Player) != null;
+        if (TargetView) _watched = _x.Battle.TargetOf(_x.Battle.Player)!.Id;
         if (TargetView) CamLock = false;
         StartGlide();
     }
@@ -256,10 +281,22 @@ public sealed partial class BattleView : Node3D
         string? id = _x.Battle.TargetOf(p)?.Id;   // a target destroyed counts as none
         if (id == _lastTarget) return;
         _lastTarget = id;
-        if (id == null) { if (TargetView) StartGlide(); CamLock = false; TargetView = false; return; }
+        if (id == null)
+        {
+            CamLock = false;
+            // a target destroyed: Target view stays on its wreck, to watch it come apart, until the next lock
+            if (TargetView && Wreck(_x.Battle) != null) return;
+            if (TargetView) StartGlide();
+            TargetView = false;
+            return;
+        }
+        _watched = id;
         if (TargetView) StartGlide();
         else CamLock = true;
     }
+
+    // The ship Target view was watching when it was destroyed, while its wreck is still drawn.
+    private Ship? Wreck(Battle b) => _watched != null && _damage.ContainsKey(_watched) ? b.Ships.FirstOrDefault(s => s.Id == _watched && !s.Alive) : null;
 
     // The locked camera's turn: the yaw a critically damped spring toward the bearing that puts the target ahead.
     private void LockStep(Ship p, double dt)

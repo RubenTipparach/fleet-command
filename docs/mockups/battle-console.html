@@ -292,7 +292,7 @@ const BASES = {
     // The primary hull's own stern (owner, 2026-11-04, of the Albatross: "the back part looks kinda bad, more thrusters?
     // more detail on the back of main hull?"): an aft bulkhead block on its last station (z), its impulse bells [x, y, r]
     // (mirrored), and manoeuvring thruster quads [x, y] (mirrored) at the stern's corners.
-    stern: { z: -34, block: { w: 16, h: 7.2, d: 2.4, y: 0.7 }, bells: [[4.4, 1.5, 1.9], [1.8, -1.7, 1.0]], rcs: [[9.4, 5.4], [9.4, -3.6]] },
+    stern: { z: -34, block: { w: 16, h: 7.2, d: 2.4, y: 0.7 }, bells: [[4.4, 0.7, 1.9]], rcs: [[9.4, 5.4], [9.4, -3.6]] },
   },
   // The battleship (owner, 2026-11-03: "we need 2 additional ship classes: a battle ship and a carrier", "please make these
   // somewhat different than the standard ship shape ... battleship needs an array of cannons", "large cannons"): a long armoured
@@ -2719,7 +2719,7 @@ function clipped(b, fn) { g.save(); g.beginPath(); g.rect(b.x - 2, b.y - 2, b.w 
 // ---- Strips and plate ---------------------------------------------------------------------------------------------
 function uiTop(r) {
   // a kit with strips that join the column (the Krai's) uses them: the metal runs on into the column with no edge between
-  const [x, y, w, h] = r, s = W.player; nine(KIT.nine['strip.top.join'] ? 'strip.top.join' : 'strip.top', x, y, w, h);
+  const [x, y, w, h] = r, s = W.player; g.fillStyle = '#000'; g.fillRect(x, y, w, h); nine(KIT.nine['strip.top.join'] ? 'strip.top.join' : 'strip.top', x, y, w, h);
   const cx = x + 96, cw = w - 192, cy = y + STT.dy + (44 - 35) / 2, fixed = 70 + 100 + 80, gap = 22, rest = cw - fixed - gap * 5, u = rest / 3.2;
   let xx = cx;
   bar(xx, cy, u, 'Hull integrity', s.hull / CLASSES[s.cls].hull, s.hull / CLASSES[s.cls].hull < 0.35); xx += u + gap;
@@ -2768,7 +2768,7 @@ function warpKey(x, y, w, h) {
   text(lab, x + w / 2, y + h * 0.68, `700 ${starved || blocked ? 14 : 17}px Antonio`, col, 'center', w - 10, '1px');
 }
 function uiBottom(r) {
-  const [x, y, w, h] = r, s = W.player; nine(KIT.nine['strip.bottom.join'] ? 'strip.bottom.join' : 'strip.bottom', x, y, w, h);
+  const [x, y, w, h] = r, s = W.player; g.fillStyle = '#000'; g.fillRect(x, y, w, h); nine(KIT.nine['strip.bottom.join'] ? 'strip.bottom.join' : 'strip.bottom', x, y, w, h);
   const cx = x + 96, cw = w - 192, cy = y + STB.dy + 12, ch = 44, gap = 22, fixed = 120 + 138, rest = cw - fixed - gap * 4, u = rest / 3.45;
   let xx = cx;
   const wk = 96; LBL('Speed', xx, cy + 28); NUM(String(Math.round(s.v)), xx + 58, cy + 31, 46, CC.sky, 'left'); speedSlider(xx + 112, cy, u * 1.5 - 112 - wk - 10, ch);
