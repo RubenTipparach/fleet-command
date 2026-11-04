@@ -33,7 +33,7 @@ account and every link here is updated.
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
-| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v3) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v3](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
+| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v4) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v4](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -242,7 +242,9 @@ up and fit the incons in the button diaplay", "the labels here need work, they a
 words", "see how we resolved this with the Krai labels". Version 77 (Krai v16, Ssarith v2): the Hunt's tabs without the
 tally, every label and icon inside the tube; its titles and officer slots on rendered gunmetal placards with a phosphor
 pip; its column on a rendered plain gunmetal backing plate, and every metal skin's expanded panels on their own backing
-(the Krai's blackened steel); the rule in CLAUDE.md section 7.
+(the Krai's blackened steel); the rule in CLAUDE.md section 7. Then "this text is hard to read" (a key's name on hover,
+dark letters on the lit tube) and "remove underline" (the title placard's bone groove): version 78 (Krai v17, Ssarith
+v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove.
 
 ## 3. Look dev
 

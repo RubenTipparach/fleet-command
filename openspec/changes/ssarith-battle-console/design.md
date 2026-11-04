@@ -27,9 +27,13 @@ is the Hunt's own squat hull with a broad prow.
 **Placards** (owner, 2026-11-04: "the labels here need work, they are just dark background rectangles with words", "see
 how we resolved this with the Krai labels"): each panel title and officer slot on a frame's rail is set on `plate.title`,
 140 x 24 and nine-sliced in x. It is a cut-cornered plate of the key bezels' dark gunmetal, with a phosphor diamond lit at
-its head and a bone groove along its foot. The Krai's labels also sit on placards (`plate.label`), but the Hunt has none:
+its head. (A bone groove along its foot came off the same day; owner: "remove underline".) The Krai's labels also sit on placards (`plate.label`), but the Hunt has none:
 its labels inside a panel are on the tracker's screen, where text is lit on the glass itself. A placard there would sink
 into the glass and leave only its pip, a stray dot.
+
+**Hover names** (owner, 2026-11-04, of dark letters on the lit tube: "this text is hard to read"): a key's name on hover
+sits on the dark tube (`button.idle`) in phosphor, as the Hunt's readouts do (`tip` in `lib/ssarith.js`), never dark
+letters on the flaring tube through its scan lines. Other skins keep the pressed key.
 
 **The column's ground** (owner, 2026-11-04: "Black background is forbidden for metallic panel based factions"):
 `console.backing`, 480 x 1080, one plate of the frames' plain olive gunmetal behind the column (no hide texture: CLAUDE.md

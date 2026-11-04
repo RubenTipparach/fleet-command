@@ -204,11 +204,11 @@ def pieces():
     # are just dark background rectangles with words", "see how we resolved this with the Krai labels"): as the Krai's,
     # each panel title and officer slot on the frame's rail is struck on a small rendered plate, the text drawn live on the
     # metal. The Hunt's own: a cut-cornered plate of the dark gunmetal its key bezels are made of (metal="gun"), a
-    # phosphor diamond glowing at its head like a tracker's contact, and a bone groove along its foot, the tally's ink.
+    # phosphor diamond glowing at its head like a tracker's contact. (A bone groove along its foot came off the same day;
+    # owner: "remove underline".)
     # No label placard: the labels inside a panel are on the tracker's screen, where text is lit on the glass itself.
     add("plate.title", "nine", (140, 24), soft_cut(0.5, 0.5, 139.5, 23.5, 6), [("flare", Polygon([(12, 7.5), (16.5, 12), (12, 16.5), (7.5, 12)]))],
-        engrave=[[(26, 20.0), (118, 20.0)]], margins=(0, 24, 0, 24), stretch="x", roll=1.2, land=1.0, dz=-2.0, pad=0.5,
-        metal="gun")
+        margins=(0, 24, 0, 24), stretch="x", roll=1.2, land=1.0, dz=-2.0, pad=0.5, metal="gun")
     add("divider", "nine", (128, 10), soft_cut(0.5, 1.5, 127.5, 8.5, 3), [], margins=(0, 12, 0, 12), stretch="x", roll=1.2)
     # Heroes carry the hide-scale texture. The name plate: a tube for the live name; a reticle engraved at its left, the
     # tally of kills at its right, a sunk bolt, and a frond lying on the flat.

@@ -212,6 +212,9 @@ const api = {
   // labels centred on the tube keys (the skin's --btn-justify: center); on a tab, in its tube (x 9-111 of 120, centred
   // since 2026-11-04, when the tally at its left came off), with 6 px of glass round the label
   keyCenter: true, tabField: [15, 15],
+  // a hover name on the dark tube in phosphor, as the Hunt's readouts, never dark letters on the lit tube through its
+  // scan lines (owner, 2026-11-04: "this text is hard to read")
+  tip: ['button.idle', 'idle'],
   // icon tabs (the station and ship rails) on the square tube key, not the long tab tube, so the icon sits in the glass
   iconKeys: true,
   // panel tab icons at rest in bone, apart from the functional icons' phosphor; glyphs on a dark tube in phosphor
