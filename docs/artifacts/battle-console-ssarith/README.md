@@ -12,3 +12,4 @@
 - Link: https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM
 - Version 1 (the Ssarith Hunt skin of version 76 of the source page; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793800555-994e`.
 - Version 2 (tabs without the ||| tally, every label and icon inside the tube; titles and officer slots on rendered gunmetal placards; the column and expanded panels on a rendered hide-pressed backing; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793804656-6a74`.
+- Version 3, now mockup 15 (main gave 12 to the Ssarith ships): the column's backing plain olive gunmetal, no hide texture (CLAUDE.md section 1, "A species' looks are not its design"); parity 3,917 presses of 396 controls. Published 2026-11-04, version id `1793805937-8ac2`.

@@ -21,3 +21,4 @@
   version 2, version id `1793800832-dbd2`. Version 1 marked withdrawn on the page (subtitle and Notes); its readings kept
   as the record only. The survey's section H is now one question, H1 (how the Hunt's culture is set), still to publish
   from the desktop session.
+- 2026-11-04, cloud session (battle console thread): added to the mockup tracker as M12 (version 1 withdrawn), tracker version id `1793806625-1c9b`.
