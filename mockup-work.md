@@ -30,7 +30,7 @@ account and every link here is updated.
 | 7 | Krai Warhost ships | Drafted (2026-11-03, v10: the frigate rooms first on the Ship Design Bible, brought to the Concord standard: square-cut plates, windows with Krai rooms, thrusters, warm floods) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
 | 8 | Battle console: Krai Warhost | Drafted (2026-11-03, v8) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
-| 10 | Concord badge in 3D: the emblem shape B-E23 as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
+| 10 | Concord badge in 3D: the emblem shape B-E25 as a badge | Drafted (2026-11-04, v2) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -497,3 +497,8 @@ holographic stars and nebula shader", then "Central shape should be like irrides
   albedo, normal, ORM (AO, roughness, metal) and a specular map derived from each graph's own roughness and AO.
 - **The field**: a holographic night of nebula and stars on three depths that shift with the viewing angle, under a
   colour-shifting sheen. **The ship**: iridescent pearl.
+- **Since then** (owner, 2026-11-04): "Can you make the start like a satin in blue?", the arrow foot ("slightly arrow
+  shaped at the bottom"), "Can we make the to point too?" (B-E25, now the badge), then "That look good i like that. We
+  need some small subtle details to.the 3d model.loke a double bevel on the saucer. A small layer of detail. Maybe some
+  segment marks on the legs": the saucer has an upper tier inset 1.6 mm, each leg four segments with grooves 0.5 mm
+  deep, both from the guide's shapes (v2).

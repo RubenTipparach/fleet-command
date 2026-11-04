@@ -9,9 +9,11 @@ tools/blender/emblem_render.py; this file owns the parts, their heights and the 
 
 Heights (mm), lowest to highest, so no two faces ever share a plane (no z-fighting):
     field  0.3 to 1.0   the holographic night inside the bell
-    star   0.5 to 1.9   the pressed star's floor, inside a hole cut through the saucer (a real pocket, 0.9 mm deep)
-    legs   0.5 to 2.4   the nacelles and the tail
-    lens   0.6 to 2.8   the saucer, the star cut through it
+    star   0.5 to 1.9   the pressed star's floor, inside a hole cut through the saucer (a pocket 1.0 mm deep)
+    legs   0.5 to 1.9   each nacelle's body, and over it its segments 0.5 to 2.4, so the marks between them are
+                        grooves 0.5 mm deep (owner, 2026-11-04: "some segment marks on the legs"); the tail 0.5 to 2.4
+    lens   0.6 to 2.3   the saucer's lower tier, and its upper tier 1.9 to 2.9, 1.6 mm inside the edge: the double
+                        bevel (owner: "a double bevel on the saucer"); the star cut through both
     frame  0.0 to 3.6   the platinum rim, highest, catching the key light
     light  dome to 3.1  the green running light at the bow
 
@@ -203,13 +205,14 @@ def build(parts):
 
     poly_slab("frame", parts["frame"], 0.0, 3.6, 0.8, plat)
     poly_slab("field", parts["field"], 0.3, 1.0, 0.15, field)
-    for i, leg in enumerate(parts["legs"]):
-        poly_slab(f"leg.{i}", [leg], 0.5, 2.4, 0.5, pearl)
+    for i, (leg, segs) in enumerate(zip(parts["legs"], parts["legSegments"])):
+        poly_slab(f"leg.{i}", [leg], 0.5, 1.9, 0.35, pearl)
+        for j, seg in enumerate(segs):
+            poly_slab(f"leg.{i}.seg.{j}", [seg], 0.5, 2.4, 0.35, pearl)
     poly_slab("tail", [parts["tail"]], 0.5, 2.4, 0.4, pearl)
-    # The saucer with the star cut through it, and the star's floor set inside the hole: a pocket 0.9 mm deep.
-    poly_slab("lens", [parts["lens"], parts["star"]], 0.6, 2.8, 0.55, pearl)
-    # The star's floor is satin Signal blue (owner, 2026-11-04: "make the start like a satin in blue"): the Signal enamel
-    # graph, its roughness raised to a satin and a soft blue sheen, no clear coat.
+    # The saucer in two tiers (the double bevel), the star cut through both, and the star's floor set in the hole.
+    poly_slab("lens", [parts["lens"], parts["star"]], 0.6, 2.3, 0.45, pearl)
+    poly_slab("lens.top", [parts["lensTop"], parts["star"]], 1.9, 2.9, 0.3, pearl)
     poly_slab("star.floor", [parts["star"]], 0.5, 1.9, 0.2, satin(R.mm_material("emblem_enamel_signal")))
     lt = parts["light"]
     x, y = xy((lt["cx"], lt["cy"]))

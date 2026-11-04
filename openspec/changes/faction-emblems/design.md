@@ -40,6 +40,13 @@ specular map derived from the graph's own roughness and occlusion. The emblem li
 size: at 3 W the key lamp clipped white enamel to flat white (measured, 255 everywhere); at 0.55 W the pearl reads
 about 239 of 255 and every bevel shows.
 
+Since then (owner, 2026-11-04): the outline is B-E25, the pointed peak (B-E23's sketch with an arrow foot and a pointed
+top), the star is satin blue, and the ship carries a small layer of detail ("a double bevel on the saucer", "segment
+marks on the legs"). Heights now (mm): saucer 0.6 to 2.3 with an upper tier inset 1.6 mm rising 1.9 to 2.9, so its
+rim steps twice; each leg body 0.5 to 1.9 under four segments 0.5 to 2.4, so the joins read as grooves 0.5 mm deep;
+tail 0.5 to 2.4. The upper tier and the segments come from the guide's own shapes (`lensTop`, `legSegments` in
+`window.EMBLEM_PARTS`), so the sketch, the render and the three.js badge stay one source.
+
 ## The rules for an emblem
 
 | Rule | Says | Why |

@@ -60,3 +60,4 @@
 - Version 14 published 2026-11-04: the pressed star is satin Signal blue (owner: "make the start like a satin in blue");
   B-E24 the arrow-foot peak ("what if it was a slightly arrow shaped at the bottom") and B-E25 the pointed peak ("Can we
   make the to point too?"), B-E25 now B's main sketch.
+- 2026-11-04, version 15 (`1793776102-a400`): the owner's note on the saucer's double bevel and the leg segment marks; `lensTop` and `legSegments` added to `window.EMBLEM_PARTS`.

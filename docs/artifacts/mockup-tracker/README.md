@@ -54,3 +54,4 @@
   emblems, listed) under Game mockups, on top of the live version; version 55, version id `1793743908-edc6`.
 - 2026-11-04, cloud session (faction emblems thread): M10 (Concord badge in 3D) added, the Emblem Design Guide entry brought to
   v12, on top of the live version; versions 62 (`1793765061-5f07`) and 63 (`1793765076-00b0`).
+- 2026-11-04, cloud session: M10 at v2 (B-E25 with its detail layer) and the Emblem Design Guide at v15; version 64, id `1793776128-1787`.

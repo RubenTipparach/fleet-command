@@ -12,3 +12,4 @@
 ## Publishes
 
 - Version 1 published 2026-11-04 (cloud session, faction emblems thread), version id `1793765019-c6ec`.
+- 2026-11-04, version 2 (`1793776101-60fc`): B-E25 (the pointed peak), the satin blue star, and the owner's small layer of detail: a two-tier saucer (upper tier inset 1.6 mm) and four segments on each leg (grooves 0.5 mm deep).
