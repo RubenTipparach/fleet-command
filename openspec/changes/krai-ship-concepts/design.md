@@ -159,9 +159,17 @@ from the plan, scaled by the class's length against the frigate's 87 m.
   elsewhere (D2). Nacelles vent, spark, then break away and drift burning; the reactor leaks coolant from the belly under
   its room, jets it, the lamps stutter, then breaches; the bridge smokes, burns, then blows out; the guns spark, then burn
   at their muzzles; the bells cool and stutter; life support darkens the windows a section at a time.
-- **A core breach** is three seconds of secondary blasts while the nacelles, the crest and the bayonet come away, then the
-  main blast. The Concord line also breaks its hull into fracture cells; a Krai hull blows apart whole for now (a later
-  step, if the owner wants it).
+- **Breaking apart** (owner, 2026-11-04: "Ship isn't breaking apart like concord. Please fix"). The Concord line's breakup
+  moves into `docs/mockups/lib/ship-break.js`: fracture into seeded cells, cut faces showing the decks and frames a break
+  goes through, caps, pieces breaking away and burning, the breach sequence (the outer cells first, then the outer parts,
+  then the main blast), and cables that stretch and snap; the hull shader's half (a piece keeps only its cell, its broken
+  edges charred) is `dmgBreak` in `lib/ship-fx.js`. Mockup 6 uses both and renders as before (five breakup scenarios
+  compared: four pixel-identical, one with 357 pixels of fireball flicker). A Krai hull is one body cut into 7 cells on the
+  corvette, 9 on the frigate, 11 on the cruiser and 14 on the dreadnought; its fixed parts go with the cell they sit in.
+- **The bayonets** (owner, 2026-11-04: "The blade should be a different shape on each ship. Cruiser and dreadnaught would
+  probably ave a wider shape like a saw rather than a pointy knife. The frigate could have a thin needle. They are more
+  decorative than practical"): the corvette keeps the barbed knife, the frigate a thin needle with a collar at its root,
+  the cruiser and the dreadnought a broad saw with a raked front, a belly of teeth raking back and a row of round holes.
 - The Damage tab: fire a phaser or a torpedo by clicking the ship (or Fire at it), hurt or destroy one system, repair (a
   new ship), and each system's health. Scenario shots replay from a seed.
 

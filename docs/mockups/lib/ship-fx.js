@@ -7,7 +7,8 @@
 // FCShipFX(THREE, o): o.scene (the scene the effects live in), o.rand (the page's seeded generator, called for every
 // random draw, so a scenario replays exactly), o.spriteTex (a soft round sprite for flashes and torpedoes). Returns:
 //   DAMAGE_GLSL            hull shader uniforms and helpers: holes and scorch marks (uHoles, uScorch ...), noise (dfbm),
-//                          interiorRoom (the decks seen through a hole), dmgHoles and dmgScorch (the char and ember rules)
+//                          interiorRoom (the decks seen through a hole), dmgHoles and dmgScorch (the char and ember rules),
+//                          dmgBreak (a broken piece's cut planes and fracture cell)
 //   Pool, glowPool, smokePool, FX, emit(type, pos, dir, count, scale, inherit)
 //                          particles: two pools, one table of looks, one emitter
 //   holeInterior(c, n, r, type), sharedTime   a modelled hole's inside
@@ -71,7 +72,23 @@ void dmgHoles(vec3 p, float nz, inout float dChar, inout float dEmber, inout int
 void dmgScorch(vec3 p, float nz2, inout float dChar, inout float dEmber){
   for (int i = 0; i < 24; i++) { if (i >= uScorchCount) break; vec4 s = uScorch[i]; float d = length(p - s.xyz); float r = s.w*(0.55+0.9*nz2);
     dChar = max(dChar, 0.92*(1.0 - smoothstep(r*0.25, r, d)));
-    dEmber = max(dEmber, uScorchHeat[i]*smoothstep(r*0.45, r*0.75, d)*(1.0 - smoothstep(r*0.75, r, d))); } }`;
+    dEmber = max(dEmber, uScorchHeat[i]*smoothstep(r*0.45, r*0.75, d)*(1.0 - smoothstep(r*0.75, r, d))); } }
+// How a piece of a broken hull is cut (lifted from mockup 6's hull material): cut planes char the plating toward the break
+// with an ember line; a fracture cell keeps only the skin nearest its own seed (the border torn a little by noise) and chars
+// and embers its edges where a neighbour has gone. Returns true where the fragment is not this cell's: discard it.
+bool dmgBreak(vec3 p, float nz, inout float dChar, inout float dEmber){
+  for (int i = 0; i < 4; i++) { if (i >= uCutCount) break; float d = abs(dot(p, uCuts[i].xyz) - uCuts[i].w) + nz*2.5 - 0.8;
+    float near = 1.0 - smoothstep(uCutC[i].w*0.85, uCutC[i].w, length(p - uCutC[i].xyz));
+    dChar = max(dChar, near*(1.0 - smoothstep(0.0, 7.0, d)));
+    dEmber = max(dEmber, near*uCutHeat*(1.0 - smoothstep(0.0, 1.6, d))); }
+  if (uCell >= 0) {
+    vec3 si = uSeeds[uCell]; float di = length(p - si) + 1.1*(dn3(p*0.32 + float(uCell)*7.13) - 0.5); float edge = 1e9;
+    for (int k = 0; k < 16; k++) { if (k >= uSeedN) break; if (k == uCell) continue; vec3 sk = uSeeds[k];
+      float dk = length(p - sk) + 1.1*(dn3(p*0.32 + float(k)*7.13) - 0.5); if (dk < di) return true;
+      if (max(uOpen[uCell], uOpen[k]) > 0.5) edge = min(edge, (dot(p - sk, p - sk) - dot(p - si, p - si))/(2.0*length(sk - si))); }
+    dChar = max(dChar, 1.0 - smoothstep(0.0, 11.0, edge + nz*4.0));
+    dEmber = max(dEmber, (1.0 - smoothstep(0.0, 1.6, edge + nz*1.6))*(0.45 + 0.55*uCutHeat)*1.6); }
+  return false; }`;
 
 // Particles: two pools (glowing and smoky), one draw call each, stepped on the fixed step.
 const partTex = (() => { const c = cv(64, 64), g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
