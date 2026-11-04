@@ -1,6 +1,7 @@
 // Scenarios (data/battle/scenarios.json): both sides playable, each validated on load, and an AI captain's standing orders
 // from its scenario (stance, range, erratic, hold fire, the hull and shields it starts with) applied in the battle. Ship
-// models: every class's glb exists and is the approved ship the export manifest lists (assets/ships/manifest.json).
+// models: every class's glb exists and is the approved ship the export manifest lists (assets/ships/manifest.json), and
+// the export is not stale: each ship page still has the sha256 the manifest recorded when the ships were exported.
 using System;
 using System.IO;
 using System.Linq;
@@ -119,6 +120,21 @@ public class ScenarioTests
         {
             Assert.True(File.Exists(Path.Combine(root, c.Model!)), $"{c.Id}: {c.Model} is missing");
             Assert.Contains(c.Model, listed);
+        }
+    }
+
+    [Fact]
+    public void The_ship_export_is_not_stale_every_page_it_came_from_is_unchanged()
+    {
+        string root = Path.GetDirectoryName(TestData.DataDir)!;
+        using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "assets", "ships", "manifest.json")));
+        foreach (JsonProperty f in manifest.RootElement.GetProperty("factions").EnumerateObject())
+        {
+            JsonElement src = f.Value.GetProperty("source");
+            string page = src.GetProperty("page").GetString()!;
+            string now = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(Path.Combine(root, page)))).ToLowerInvariant();
+            Assert.True(now == src.GetProperty("sha256").GetString(),
+                $"{f.Name}: {page} changed since the ships were exported; re-run tools/mockups/export_ships.mjs");
         }
     }
 }

@@ -21,14 +21,25 @@ its own ships, intact. It copies their meshes out as they stand and exports them
 NODE_PATH=$(npm root -g) node tools/mockups/export_ships.mjs
 ```
 
-Re-running is the only step needed when a mockup changes. The current files were exported from the Krai page v19
-and the Concord page as recorded in the manifest. Each ship's `source` there names the page, its published version
+Re-running is the only step needed when a mockup changes. The current files were exported on 2026-11-04 on the Mac
+from the Krai page v21 and the Concord page v20 (two runs, byte-identical). The `<ship>_<n>.png` files beside a glb are
+Godot's import of the textures embedded in it (the registry decals), committed with their `.import` files. Each ship's `source` there names the page, its published version
 (the newest in `docs/artifacts/<page>/README.md`) and the sha256 of the page file it came from, so a check can tell a
 stale export: the page's sha256 differs. The exporter stops if a page changes while it runs.
 
 The run is deterministic: a second run gives byte-identical glb, PNG and manifest files, and it prints each file's
 sha256. It also renders every glb, loaded back with GLTFLoader, onto `docs/screenshots/ships/export-contact.png`.
-Look at that sheet before you commit a change.
+Look at that sheet before you commit a change. A test (`tests/Core.Tests/ScenarioTests.cs`) fails when a page's sha256
+no longer matches the manifest: the export is stale, re-run it.
+
+## In the game
+
+`src/Game/View/ShipSkin.cs` dresses each ship from the manifest: `src/Game/View/hull.gdshader` on every material marked
+`hull_shader` (its base colour, vertex colours, metalness, the faction's detail tile, the ship's `origin_offset_m` as
+`mockup_offset = (-o.x, o.y, -o.z)`, and the Krai livery's `uLiv` and `uLiv2`), and a lamp on every `light_*` empty from
+its extras (a flood is a `SpotLight3D`, the rest small `OmniLight3D`s; strobes double flash). Not yet ported: the
+Concord's own paint rules (the service band, livery stripes, windows and light pools of its `hullMat`), so a Concord
+hull shows the armour white with the detail tile only.
 
 ## Axes and units
 

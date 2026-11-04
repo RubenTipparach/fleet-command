@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Stills of the running game (CLAUDE.md section 9). On Linux (cloud sessions) headless under Xvfb with Mesa's software
 # renderer, said so; on Windows (the owner's PC) in a real window that opens for a few seconds a shot, so run it there
-# only when the owner has said Claude may use the screen. Each shot plays a scenario from its seed for a number of steps,
+# only when the owner has said Claude may use the screen. On macOS (the owner's Mac) the same, in a real window. Each shot plays a scenario from its seed for a number of steps,
 # sets the console as named, and saves a PNG into docs/screenshots/game/ (or the folder given).
 # Usage: scripts/game-stills.sh [out_dir] [only,these,names]
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
+# macOS has no timeout(1): Homebrew coreutils' gtimeout is the same tool (brew install coreutils).
+command -v timeout >/dev/null || timeout() { gtimeout "$@"; }
 OUT="${1:-docs/screenshots/game}"
 ONLY="${2:-}"
 mkdir -p "$OUT"
@@ -14,12 +16,12 @@ DOTNET="$(scripts/install-dotnet.sh 2>/dev/null)"
 GODOT="$(scripts/install-godot.sh 2>/dev/null)"
 export DOTNET_ROOT="$(dirname "$DOTNET")" PATH="$(dirname "$DOTNET"):$PATH"
 "$DOTNET" build FleetCommand.csproj -v q --nologo >/dev/null
-case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) HOST=windows ;; *) HOST=linux ;; esac
+case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) HOST=windows ;; Darwin) HOST=macos ;; *) HOST=linux ;; esac
 
 shot() { # name size args...
   local name="$1" size="$2"; shift 2
   [[ -z "$ONLY" || ",$ONLY," == *",$name,"* ]] || return 0
-  if [[ "$HOST" == windows ]]; then
+  if [[ "$HOST" == windows || "$HOST" == macos ]]; then   # a real window (the Mac and the PC have screens)
     timeout 240 "$GODOT" --path . --resolution "$size" --position 0,0 -- --still="$OUT/$name.png" "$@" 2>&1 \
       | grep -E "^STILL" || { echo "FAILED $name"; return 1; }
   else

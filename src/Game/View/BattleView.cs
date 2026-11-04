@@ -23,6 +23,7 @@ public sealed partial class BattleView : Node3D
     private ConsoleContext _x = null!;
     private Camera3D _cam = null!;
     private readonly Dictionary<string, Node3D> _models = new();
+    private readonly List<OmniLight3D> _strobes = new();
     private Rect2 _view;
     private Vector2 _screen;
 
@@ -54,17 +55,19 @@ public sealed partial class BattleView : Node3D
     {
         foreach (Node3D n in _models.Values) n.QueueFree();
         _models.Clear();
+        _strobes.Clear();
         foreach (Ship s in _x.Battle.Ships)
         {
-            Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.LengthM) : StandIn(s);
+            Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.LengthM, _strobes) : StandIn(s);
             model.Name = s.Id;
             AddChild(model);
             _models[s.Id] = model;
         }
     }
 
-    /// <summary>An approved ship from its glb (metres, bow toward -Z), scaled so its length is the class's battle length.</summary>
-    private static Node3D ShipModel(string path, double lengthM)
+    /// <summary>An approved ship from its glb (metres, bow toward -Z), scaled so its length is the class's battle length,
+    /// dressed from the export manifest (its hull shader and lamps: <see cref="ShipSkin"/>); its strobes join strobes.</summary>
+    private static Node3D ShipModel(string path, double lengthM, List<OmniLight3D> strobes)
     {
         var scene = GD.Load<PackedScene>("res://" + path) ?? throw new InvalidOperationException($"ship model not found: res://{path}");
         Node3D ship = scene.Instantiate<Node3D>();
@@ -73,6 +76,7 @@ public sealed partial class BattleView : Node3D
         var holder = new Node3D();
         holder.AddChild(ship);
         ship.Scale = Vector3.One * (float)(lengthM / MPerU) / len;
+        strobes.AddRange(ShipSkin.Apply(ship, path["assets/ships/".Length..], ship.Scale.X));
         return holder;
     }
 
@@ -119,6 +123,7 @@ public sealed partial class BattleView : Node3D
     public void Sync()
     {
         Battle b = _x.Battle;
+        ShipSkin.Flash(_strobes, Time.GetTicksMsec() / 1000.0);
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
