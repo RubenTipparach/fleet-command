@@ -169,25 +169,40 @@ from the plan, scaled by the class's length against the frigate's 87 m.
   The whole hull mesh stays with the whole hull and is hidden when the cells replace it, and each cell carries the windows
   nearest its seed (owner, 2026-11-04: "a piece broke off but the original stayed": the whole hull had been handed to one
   cell and stayed drawn under the pieces).
+  A part that crosses a cell line (the keel blade, the guns, the bronze edges, the bayonet and the dorsal crest, which now
+  sit on the hull's piece instead of breaking off on their own) is cut along the same lines: one copy per cell it reaches,
+  each drawing only its own cell by the hull's own rule (`CELL_GLSL` in `lib/ship-fx.js`, which `dmgBreak` uses too)
+  (owner: "failing to break cleanly please fix", "blade and fin did NOT break cleanylu"). Each floodlight belongs to the
+  cell it lights and goes out only when that cell breaks away (owner: "exterior hull lights also dissaperaed after ship
+  took damage"). The room blocks show only in the Rooms to Parts steps, also on a ship rebuilt after damage (owner: "hide
+  ship plan by default").
 - **The bayonets** (owner, 2026-11-04: "The blade should be a different shape on each ship. Cruiser and dreadnaught would
   probably ave a wider shape like a saw rather than a pointy knife. The frigate could have a thin needle. They are more
   decorative than practical"): the corvette keeps the barbed knife, the frigate a thin needle with a collar at its root,
   the cruiser and the dreadnought first had a broad saw, replaced the same day (owner: "cruiser/dreadnaught nose has the
   wrong shape of blade. I want a wide blade instead of long blade", with photographs of crescent war blades) by a wide
-  crescent standing across the nose: its back bowed forward, its horns raked back above and below the hull, a spur
-  forward of each horn and one at its middle, two openings in the band, seated in the nose by a tang. Our own outline;
-  only the shape (a crescent across the bow) is taken.
+  crescent standing across the nose: its back bowed forward, its horns raked back above and below the hull, two
+  openings in the band, seated in the nose by a tang; a clean edge (its spurs taken off: owner, "this blade here doesnt
+  need any poky bits, a clian scresnt plande is good"). Our own outline;
+  only the shape (a crescent across the bow) is taken. The cruiser's crescent is smaller with longer, sharper horns (owner: "have the cruiser haave the blade be more
+  pointy, smaller"). The cruiser carries one nacelle pair, not two (owner, 2026-11-04:
+  "cruser I think only needs two nacelles").
 - **Livery** (owner, 2026-11-04: "ships dont have much liveries on main hull, please add them"), painted in the hull shader
   so nothing lies on the plating to fight it: a crimson war stripe low on each flank, widening forward and sweeping up
   into a point toward the bow; bronze pin lines either side; battle tallies in fives aft above it, more on the bigger
   classes (3, 7, 12, 19). The hull only, not the nacelles. A crimson talon on the bow's top and bottom faces was
   taken off the same day (owner: "great liveries, but I'd remove the triangle on top if the noses").
-- **Nacelles** (owner, 2026-11-04: "nacelles still kinda overly simplistic"): six framed plasma vents down the outboard
-  face (the old lit strip was inside the blade, so never seen), three bronze collars, a raked fin above and a smaller one
+- **Nacelles** (owner, 2026-11-04: "nacelles still kinda overly simplistic"): light strips on the outboard face (the
+  old lit strip was inside the blade, so never seen; framed square vents were tried first and replaced the same day, owner:
+  "make nacelles lit more like this. instead of squares", with a picture of nacelles lit by continuous bars): a long strip
+  along the top and the bottom, joined at the aft end; then (owner: "nacelles have wrong designs here. they should look
+  like glowing panels", "dont use the big bulge") two thick glowing panels stacked on the outboard face, each in a dark
+  frame proud of the plating with a soft additive glow, red as the Krai console's backlight; bronze collars at the ends, a raked fin above and a smaller one
   below, two conduits along the inboard face in clamps, and a collector at the bow.
 - **Windows** (owner, 2026-11-04: "window geometry extending a bit over the hull slope", "the last window ... geometry is
   clipped", "window paralax on slope has the wrong room angle"): a pane lies on one flat face of the section, checked at
-  its top and bottom edges and both ends (same slope, same plane), moving up to 0.9 m off a bend, or there is no window;
+  its top and bottom edges and both ends (same slope, same plane), or there is no window: a pane is never moved off its row's height, so every row stays level (owner: "remove these
+  windows if they cannot be placed in an aligned fasion");
   the room behind a pane on a sloped face is level.
 - **Thrusters** (owner, 2026-11-04: "look at all that zfighting"): the throat disc of the shared thruster has the bell's
   own number of sides and sits 6% of the bell's length inside it; 5 cm in, it lay exactly on the Krai stern face.
