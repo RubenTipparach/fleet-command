@@ -78,10 +78,11 @@ public sealed partial class StationPanel : ConsolePanel
             float sx = x0 + ts + tg + 4, sw = half - ts - tg - 4, sh = ts - 8, sy = y + 4, hh = sw / 2;
             bool cw = s.OrbitDir > 0;
             Ui.Reg("helm.odir", new Rect2(sx, sy, sw, sh), _ => B.ToggleOrbitDir(), null, new Tip("Orbit direction"));
-            Shapes.RoundRect(this, new Rect2(sx, sy, sw, sh), C.Deep, sh / 2);
-            Shapes.RoundRect(this, new Rect2(sx + (cw ? 0 : hh), sy, hh, sh), C.Lilac, sh / 2);
-            Text("CW", sx + hh / 2, sy + sh / 2 + 5 * k, lbl, cw ? Colors.Black : C.Sky, HorizontalAlignment.Center, 0, 700);
-            Text("CCW", sx + hh * 1.5f, sy + sh / 2 + 5 * k, lbl, cw ? C.Sky : Colors.Black, HorizontalAlignment.Center, 0, 700);
+            Kit.Shape(this, new Rect2(sx, sy, sw, sh), sh / 2, C.Deep);
+            KeyFace.Draw(Kit, this, new Rect2(sx + (cw ? 0 : hh), sy, hh, sh), sh / 2, C.Lilac);
+            Color lit = KeyFace.Ink(Kit, C.Lilac);
+            Text("CW", sx + hh / 2, sy + sh / 2 + 5 * k, lbl, cw ? lit : C.Sky, HorizontalAlignment.Center, 0, 700);
+            Text("CCW", sx + hh * 1.5f, sy + sh / 2 + 5 * k, lbl, cw ? C.Sky : lit, HorizontalAlignment.Center, 0, 700);
         }
         float yr = y0;
         HelmKey("helm.run", xr, yr, ts, "hit_run", $"Hit and run ({(s.RunPhase == "in" ? "running in" : "pulling away")})", () => B.HelmOrder("hit_run"), ordOn("hit_run")(), B.TargetOf(s) == null);
@@ -118,7 +119,7 @@ public sealed partial class StationPanel : ConsolePanel
                 switch (kind)
                 {
                     // a blank grey key fills the corner, so the pad reads as a full 3 x 3; it does nothing
-                    case "none": Shapes.RoundRect(this, new Rect2(x, yy, ks, ks), new Color("#3a4152"), ks * 0.22f); break;
+                    case "none": KeyFace.Draw(Kit, this, new Rect2(x, yy, ks, ks), ks * 0.22f, Sk.R.Mute); break;
                     case "free": HelmKey("helm.free", x, yy, ks, "free", name, () => B.HelmOrder("free"), !s.Engaged, false, C.Sky); break;
                     case "estop": HelmKey("helm.stop", x, yy, ks, "estop", s.EstopT > 0 ? $"Engines holding {Rules.FormatCooldown(s.EstopT)} s" : name, () => B.EmergencyStop(), s.Estop || s.EstopT > 0, false, C.Caution); break;
                     case "het.free": HelmKey("helm.hetf", x, yy, ks, "het.free", name, () => X.State.PlacingHet = !X.State.PlacingHet, X.State.PlacingHet, busy, C.Lilac); break;
@@ -146,14 +147,15 @@ public sealed partial class StationPanel : ConsolePanel
         Pairs("helm.m", x0, y + 34, new (string, string, Color?)[] { ("Max speed", $"{Math.Round(B.Rules.MaxSpeed(s))} M/S", null), ("Engine boxes", s.Power["engines"].ToString(), null) });
     }
 
-    /// <summary>One helm key: a rounded square in the Concord blue (lit when its order or toggle is on), its glyph black, its name on hover.</summary>
+    /// <summary>One helm key: the skin's key face (lit when its order or toggle is on), its glyph in the ink that reads on
+    /// it, its name on hover.</summary>
     private void HelmKey(string id, float x, float y, float sz, string kind, string name, Action click, bool on, bool dis, Color? onCol = null)
     {
         var r = new Rect2(x, y, sz, sz);
         HitState st = dis ? default : Ui.Reg(id, r, _ => click(), null, new Tip(name));
-        Color fill = dis ? new Color(C.Deep, 0.5f) : st.Down ? C.Lilac : on ? onCol ?? C.Accord : st.Hot ? C.Sky : C.Signal;
-        Shapes.RoundRect(this, r, fill, sz * 0.22f);
-        Color ink = dis ? new Color("#2a3a7a") : Colors.Black;
+        Color fill = dis ? C.Deep : st.Down ? C.Lilac : on ? onCol ?? C.Accord : st.Hot ? C.Sky : C.Signal;
+        KeyFace.Draw(Kit, this, r, sz * 0.22f, fill, false, dis ? 0.5f : 1);
+        Color ink = dis ? Sk.R.InkDis : KeyFace.Ink(Kit, fill);
         HelmGlyphs.Draw(this, X.Fonts, kind, x + sz / 2, y + sz / 2, sz * 0.42f, ink, Me.OrbitDir, C.Signal);
         // the turn's angle, small in the corner, so 90 and 135 never read alike
         string? ang = kind switch { "het.l90" or "het.r90" => "90", "het.l135" or "het.r135" => "135", "het.180" => "180", _ => null };
@@ -169,11 +171,11 @@ public sealed partial class StationPanel : ConsolePanel
     {
         float sy = y + h / 2;
         Ui.Reg(id, new Rect2(x - 8, y, w + 16, h), p => set(Math.Clamp((p.X - x) / w, 0, 1)), (p, _) => set(Math.Clamp((p.X - x) / w, 0, 1)), new Tip(label));
-        Shapes.RoundRect(this, new Rect2(x, sy - 3, w, 6), C.Deep, 3);
+        Kit.Shape(this, new Rect2(x, sy - 3, w, 6), 3, C.Deep);
         float a = f1 != null ? f0 : 0, bb = f1 ?? f0;
-        Shapes.RoundRect(this, new Rect2(x + w * a, sy - 3, w * (bb - a), 6), C.Sky, 3);
+        Kit.Shape(this, new Rect2(x + w * a, sy - 3, w * (bb - a), 6), 3, C.Sky);
         foreach (float f in f1 != null ? new[] { f0, f1.Value } : new[] { f0 })
-            Shapes.RoundRect(this, new Rect2(x + w * f - 7, sy - 11, 14, 22), C.Lilac, 6);
+            KeyFace.Draw(Kit, this, new Rect2(x + w * f - 7, sy - 11, 14, 22), 6, C.Lilac);
     }
 
     private void Power(Rect2 b)

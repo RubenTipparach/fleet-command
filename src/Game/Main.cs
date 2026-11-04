@@ -35,7 +35,7 @@ public sealed partial class Main : Node
         GameData data;
         try { data = DataLoader.Load(ReadData); }
         catch (DataError e) { GD.PushError($"DATA_ERROR {e.Message}"); GetTree().Quit(1); return; }
-        IKit kit = new ConcordKit();
+        IKit kit = Kits.For(_args.GetValueOrDefault("skin", "concord"));
         KitPieces.Verify(kit);
         GameActions act = null!;
         act = new GameActions(() => _x);

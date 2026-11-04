@@ -242,24 +242,26 @@ public sealed partial class ViewOverlay : Control
         if (_x.State.ShowTarget && t != null)
         {
             float w = Math.Min(320, Size.X * 0.3f), h = w * 0.86f, bx = Size.X - w - 16, by = 14;
-            DrawRect(new Rect2(bx + 2, by + 2, w - 4, h - 4), Colors.Black);
+            DrawRect(new Rect2(bx + 2, by + 2, w - 4, h - 4), _x.Kit.Style.R.Plate);
             _x.Kit.Piece(this, "frame.inset", new Rect2(bx, by, w, h));
             f.Draw(this, $"TARGET · {t.Name.ToUpperInvariant()}", bx + 18, by + 34, 18, C.Sky, HorizontalAlignment.Left, w - 90, 600, 1);
             var xr = new Rect2(bx + w - 34, by + 14, 24, 24);
             HitState xs = _ui.Reg("v.untarget", xr, _ => B.Unlock(), null, new Tip("Release target"));
-            DrawCircle(xr.GetCenter(), 12, xs.Hot ? C.Alert : C.Signal, true, -1, true);
-            DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), Colors.Black, 2.6f, true);
-            DrawLine(xr.Position + new Vector2(17, 7), xr.Position + new Vector2(7, 17), Colors.Black, 2.6f, true);
+            Color xf = xs.Hot ? C.Alert : C.Signal, xi = _x.Kit.Style.InkOn(xf);
+            _x.Kit.Knob(this, xr.GetCenter(), 12, xf);
+            DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), xi, 2.6f, true);
+            DrawLine(xr.Position + new Vector2(17, 7), xr.Position + new Vector2(7, 17), xi, 2.6f, true);
             SystemsDisplay.Draw(this, _ui, _x, t, new Rect2(bx + 14, by + 44, w - 28, h - 58), false, "tgt");
         }
     }
 
-    /// <summary>A pill key over the view, lit when on.</summary>
+    /// <summary>A key over the view, lit when on, its label in the skin's key ink.</summary>
     private void Key(string id, Rect2 r, string label, Action click, bool on, string? tip = null)
     {
         HitState st = _ui.Reg(id, r, _ => click(), null, tip != null ? new Tip(tip) : null);
-        _x.Kit.Piece(this, st.Down || on ? "button.pressed" : st.Hot ? "button.hover" : "button.idle", r);
-        _x.Fonts.Draw(this, label.ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + 6, 17, Colors.Black, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
+        string kst = st.Down || on ? "pressed" : st.Hot ? "hover" : "idle";
+        _x.Kit.Piece(this, "button." + kst, r);
+        _x.Fonts.Draw(this, label.ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + 6, 17, _x.Kit.Style.KeyInk.For(kst), HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
     }
 
     /// <summary>A ship's hull: a short bar and its percentage, green above 60 %, amber above 30 %, red below (the same
@@ -304,8 +306,8 @@ public sealed partial class ViewOverlay : Control
     {
         float w = Math.Min(Size.X - 40, 360);
         var r = new Rect2(Size.X / 2 - w / 2, 100, w, 44);
-        Shapes.RoundRect(this, r, col, 22);
-        _x.Fonts.Draw(this, text.ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + 9, 24, Colors.Black, HorizontalAlignment.Center, w - 20, 700, 2);
+        _x.Kit.Shape(this, r, 22, col);
+        _x.Fonts.Draw(this, text.ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + 9, 24, _x.Kit.Style.InkOn(col), HorizontalAlignment.Center, w - 20, 700, 2);
     }
 
     private void RingArc(Ship s, float a0, float a1, Color col, float width)

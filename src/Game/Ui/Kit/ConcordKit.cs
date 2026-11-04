@@ -2,7 +2,8 @@
 // that change thickness at every turn, round-capped pill buttons, at most five colours each with one meaning. A port of
 // docs/mockups/lib/concord.js (battle console v65), shape for shape, so the game draws what the owner reviewed. Every
 // piece is drawn whole at its rectangle in vector, which is the 9-slice contract (fixed corners, stretched edges and
-// centre) with no seam between slices.
+// centre) with no seam between slices. Its style holds the values the console drew before skins had styles, so the
+// Concord looks as it did.
 using System;
 using System.Collections.Generic;
 using Godot;
@@ -16,8 +17,38 @@ public sealed class ConcordKit : IKit
         Deep: new Color("#1b2a6b"), Signal: new Color("#2f62e0"), Sky: new Color("#3fa9f0"), Accord: new Color("#2fbf5a"),
         Lilac: new Color("#b7a6f2"), Caution: new Color("#f0b43c"), Alert: new Color("#e8352b"), Text: new Color("#eef3ff"));
 
+    private const string Antonio = "res://assets/fonts/Antonio-VariableFont_wght.ttf";
+
+    /// <summary>The Concord's style: black ink on its lit keys, Antonio as written, its frame's own margins.</summary>
+    public SkinStyle Style { get; }
+
     private readonly HashSet<string> _supplies = new();
     public IReadOnlyCollection<string> Supplies => _supplies;
+
+    // The pieces' designs (docs/mockups/lib/concord.js concordKit and ccCells): size, margins (top, right, bottom,
+    // left), inset and gap.
+    private static readonly Dictionary<string, PieceSpec> Specs = new()
+    {
+        ["frame.panel"] = new(new Vector2(160, 120), new Pad(22, 28, 22, 44), Vector2.Zero, 0),
+        ["frame.inset"] = new(new Vector2(64, 48), new Pad(14, 14, 14, 14), Vector2.Zero, 0),
+        ["bar.track"] = new(new Vector2(96, 16), new Pad(0, 10, 0, 10), new Vector2(3, 3), 0),
+        ["bar.fill"] = new(new Vector2(64, 10), new Pad(0, 6, 0, 6), Vector2.Zero, 0),
+        ["bar.fill.red"] = new(new Vector2(64, 10), new Pad(0, 6, 0, 6), Vector2.Zero, 0),
+        ["bar.fill.accord"] = new(new Vector2(64, 10), new Pad(0, 6, 0, 6), Vector2.Zero, 0),
+        ["button.idle"] = new(new Vector2(120, 48), new Pad(22, 24, 22, 24), Vector2.Zero, 0),
+        ["button.hover"] = new(new Vector2(120, 48), new Pad(22, 24, 22, 24), Vector2.Zero, 0),
+        ["button.pressed"] = new(new Vector2(120, 48), new Pad(22, 24, 22, 24), Vector2.Zero, 0),
+        ["tab.idle"] = new(new Vector2(120, 40), new Pad(18, 6, 18, 20), Vector2.Zero, 0),
+        ["tab.active"] = new(new Vector2(120, 40), new Pad(18, 6, 18, 20), Vector2.Zero, 0),
+        ["strip.top"] = new(new Vector2(512, 72), new Pad(10, 96, 16, 96), Vector2.Zero, 0),
+        ["strip.bottom"] = new(new Vector2(512, 72), new Pad(16, 96, 10, 96), Vector2.Zero, 0),
+        ["divider"] = new(new Vector2(128, 10), new Pad(0, 18, 0, 18), Vector2.Zero, 0),
+        ["cell.idle"] = new(new Vector2(32, 28), new Pad(10, 10, 10, 10), Vector2.Zero, 0),
+        ["cell.lit"] = new(new Vector2(32, 28), new Pad(10, 10, 10, 10), Vector2.Zero, 0),
+        ["cell.warn"] = new(new Vector2(32, 28), new Pad(10, 10, 10, 10), Vector2.Zero, 0),
+        ["cell.accord"] = new(new Vector2(32, 28), new Pad(10, 10, 10, 10), Vector2.Zero, 0),
+        ["cell.locked"] = new(new Vector2(32, 28), new Pad(10, 10, 10, 10), Vector2.Zero, 0),
+    };
 
     private readonly Dictionary<string, Action<CanvasItem, Rect2, float>> _pieces = new();
     private readonly Dictionary<string, Action<CanvasItem, Rect2, float>> _heroes = new();
@@ -26,6 +57,19 @@ public sealed class ConcordKit : IKit
     public ConcordKit()
     {
         Palette c = C;
+        Color black = Colors.Black;
+        Style = new SkinStyle
+        {
+            R = new Roles(Ink: black, InkDis: new Color("#2a3a7a"), Night: new Color("#0d1430"), Ghost: new Color("#3a4a80"),
+                Mute: new Color("#3a4152"), Plate: black, Title: c.Sky, Sheet: new Color("#070b1c")),
+            Type = new TypeSet(Antonio, Antonio, (size, weight) => new Face(false, size, weight)),
+            InkOn = _ => black,
+            KeyInk = new KeyInk(black, black, black, black, c.Text),
+            TabIcon = c.Sky, GlyphOnDark = c.Text,
+            Mark = new Marks(Colors.White, Colors.White, Colors.White),
+            Pad = Specs["frame.panel"].M,
+            Plate = new PlateText(108, 36, 250, new Face(false, 28, 700), c.Text),
+        };
         // The sweep: a thick bar on the left joined by outer-rounded elbows to thin arms along the top and bottom,
         // which end in a small rounded cap of another colour. Thick to thin at every turn (the LCARS rule).
         _pieces["frame.panel"] = (ci, r, a) => Sweep(ci, r, 28, 10, 24, 10, 16, A(c.Signal, a), A(c.Sky, a));
@@ -130,18 +174,28 @@ public sealed class ConcordKit : IKit
         d(c, r, alpha);
     }
 
+    /// <summary>The Concord has no rendered keys (its style says so), so nothing asks it for part of one.</summary>
+    public void HeroBottom(CanvasItem c, string hero, Rect2 r, float frac) =>
+        throw new System.NotSupportedException($"the Concord kit has no rendered keys ('{hero}')");
+
     public void Icon(CanvasItem c, string icon, Rect2 r, Color ink)
     {
         if (!_icons.TryGetValue(icon, out var d)) throw new KeyNotFoundException($"Concord kit has no icon '{icon}'");
         d(new Pen(c, r.Position, r.Size.X / 48f, ink));
     }
 
-    public (float T, float R, float B, float L) Margins(string piece) => piece switch
+    public PieceSpec Spec(string piece) =>
+        Specs.TryGetValue(piece, out PieceSpec s) ? s : throw new KeyNotFoundException($"Concord kit has no piece '{piece}'");
+
+    /// <summary>The Concord's keys are rounded rectangles.</summary>
+    public void Shape(CanvasItem c, Rect2 r, float radius, Color col, float line = 0)
     {
-        "frame.panel" => (22, 28, 22, 44),
-        "frame.inset" => (14, 14, 14, 14),
-        _ => (0, 0, 0, 0),
-    };
+        if (line > 0) Shapes.RoundRectLine(c, r, col, radius, line);
+        else Shapes.RoundRect(c, r, col, radius);
+    }
+
+    /// <summary>The Concord's knobs are circles.</summary>
+    public void Knob(CanvasItem c, Vector2 centre, float r, Color col) => c.DrawCircle(centre, r, col, true, -1, true);
 
     private static Color A(Color c, float a) => new(c.R, c.G, c.B, c.A * a);
 
