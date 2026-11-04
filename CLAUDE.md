@@ -74,6 +74,16 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   between them, "with ai wingmen, and behaviors configuratble for AI" (G3). Mid-detail ships: clear
   silhouettes, panel-line textures, baked hull lights, sized for phones (A1). Orchestral space opera
   with a synth bed (S1). Playtests on the Windows PC with the RTX 3070 and the owner's phone (P1).
+- **A species' looks are not its design** (owner, 2026-11-04, on the first Ssarith Hunt ships: "you are over stereotyping
+  an alien species which is extremely insensitive", "the look of an alien species is not their UI, not their spaceship.
+  Cultural ideologies are far more deep and complex than what someone's skin or features are", "no culture in the world
+  follows a single line of thinking when it comes to desigining UI, space ships, logos, dressing etc, and none of those
+  reflect the way they look"). Binding on every faction's console, ships, emblems, clothing and rooms:
+  - Never derive a design from a species' body: no claws because they have claws, no scales because they have scales,
+    no hide textures because they have hide. What a people looks like is not what it makes.
+  - A culture holds several traditions at once (schools, eras, regions, classes, makers that disagree), so one trait
+    never becomes a whole design language. A design names which tradition it comes from, and why.
+  - Culture is the owner's to set (survey U7). Where a faction's culture is thin, ask before designing from it.
 - **Mockups first, in three stages** (owner, 2026-10-30: "we'll begin with a rolling list of
   mockups needed", "all these mockups need to be approved for build, and then need to be approved
   for actual game implementation after", "All mockups are to be checked into repo especially when
@@ -326,7 +336,9 @@ else's artwork):
   1. **No skin uses the same button shape** as another.
   2. **Every skin's palette comes from its faction's ideology.**
   3. **Elements and icons come from how the faction thinks**: each skin has its own shapes, lighting,
-     shading and icon shapes, drawn from the faction's world view, body shape, technology and ships.
+     shading and icon shapes, drawn from the faction's ideas, history, traditions and technology. Never from its
+     body (owner, 2026-11-04, superseding "their body shapes" of 2026-10-30; section 1, "A species' looks are not
+     its design").
 
   The three, in our own designs (section 1: take the shape, not the art). `openspec/changes/console-skins/design.md`
   holds each one in full:
@@ -486,6 +498,8 @@ saying what changes here. Where a note and the copied text below it disagree, th
   mid-range 2022 phone holds 60 fps at the phone layout.
 - **Original designs.** Ships, factions, insignia and markings are our own. Nothing is traced,
   sampled or modelled from another game's assets.
+- **A hull is not a body.** A ship's shape, paneling and markings come from its makers' ideas and traditions,
+  never from what the species looks like (section 1).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).

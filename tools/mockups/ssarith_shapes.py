@@ -190,15 +190,16 @@ def pieces():
             prints=[("grid", grid(w, 7.0, 2.8), 0.5, "grid"), ("sweep", [[(45, 36), (64, 27)]], 1.2, "phos")],
             engrave=tally(440, 36, 2, 12.0), margins=(10, 92, 10, 88), stretch="x", roll=2.6, dz=-6.0, pad=2.0)
     # The column's backing (owner, 2026-11-04: "We need a background for the lleft panel area. Black background is
-    # forbidden for metallic panel based factions"): one hide-textured gunmetal plate the height of the screen behind the
-    # left column's panels, which sit on it in their own frames. Bolts down both edges, a groove engraved along each
+    # forbidden for metallic panel based factions"): one plain olive gunmetal plate the height of the screen behind the
+    # left column's panels, which sit on it in their own frames. No hide texture (CLAUDE.md section 1, "A species' looks
+    # are not its design": "no hide textures because they have hide"); the same paint as the frames. Bolts down both edges, a groove engraved along each
     # edge with the hunt's tallies under it, and fronds over the corners. Where the panels leave it bare (the gaps between
     # them, the radar row's corners) it reads as the hull of the console, never as black.
     edge = [[(10, 70), (10, 1010)], [(470, 70), (470, 1010)]]
     add("console.backing", "hero", (480, 1080), soft_cut(0.5, 0.5, 479.5, 1079.5, 18), [],
         studs=[(x, y, 3.0, "bolt") for x in (22, 458) for y in (30, 490, 772, 1050)],
         engrave=edge + tally(196, 1062, 4, 9.0),
-        leaves=[(60, 12, 32, 6.0, 0.2), (420, 1068, 30, 5.8, -2.9)], roll=3.0, dz=-6.0, scales=True)
+        leaves=[(60, 12, 32, 6.0, 0.2), (420, 1068, 30, 5.8, -2.9)], roll=3.0, dz=-6.0, scales=False)
     # The title placard (owner, 2026-11-04, of the Hunt's panel titles and officer slots: "the labels here need work, they
     # are just dark background rectangles with words", "see how we resolved this with the Krai labels"): as the Krai's,
     # each panel title and officer slot on the frame's rail is struck on a small rendered plate, the text drawn live on the

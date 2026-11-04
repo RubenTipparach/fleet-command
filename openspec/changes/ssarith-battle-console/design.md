@@ -32,7 +32,8 @@ its labels inside a panel are on the tracker's screen, where text is lit on the 
 into the glass and leave only its pip, a stray dot.
 
 **The column's ground** (owner, 2026-11-04: "Black background is forbidden for metallic panel based factions"):
-`console.backing`, 480 x 1080, one plate of the hide-pressed olive gunmetal behind the column, with bolts down both edges,
+`console.backing`, 480 x 1080, one plate of the frames' plain olive gunmetal behind the column (no hide texture: CLAUDE.md
+section 1, "A species' looks are not its design"), with bolts down both edges,
 a groove along each edge, the tally at its foot and fronds over two corners. Behind an expanded panel the page lays a
 plain band of it (x 100-390) side by side, every other copy mirrored. The Krai's expanded panels get their own
 `console.backing` in blackened blade steel.
@@ -60,3 +61,4 @@ outline.
 | H1 | Should the Hunt's column be one joined plate, as the Krai's is? | No: separate cut-cornered frames, as on the skins page |
 | H2 | Ship, officer and rank names | Ours, placeholders until the Hunt's thread names them |
 | H3 | Should the Hunt stalker's numbers come from its ships thread? | Yes, when it has them |
+| H4 | The Hunt skin predates the rule "A species' looks are not its design" (owner, 2026-11-04). Its hero pieces carry a hide-scale texture, its bar cells claw marks and its crest a fang: readings of the body, which the rule forbids. Redraw them from the Hunt's culture? | Yes, once the owner sets that culture (survey H1); until then they stay as drafted, and nothing new is drawn from the body (the column's backing is plain gunmetal) |

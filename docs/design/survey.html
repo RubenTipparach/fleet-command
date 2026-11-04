@@ -174,6 +174,13 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'H', name: 'Ssarith Hunt: their culture first',
+    lead: 'Mockup 12 version 1 is withdrawn: it read the species\' body into the ships. The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
+    qs: [
+      { id: 'H1', q: 'How should the Ssarith Hunt\'s culture be set before their ships are redrawn?',
+        options: ['You write it (history, beliefs, how they live and work, their yards and makers); we design from that', 'We draft several traditions inside the Hunt (yards, eras, schools that disagree), none from their bodies, for you to pick and change', 'Pause the Hunt\'s ships for now'], rec: 1,
+        why: 'Options to react to are quicker for you than a blank page, and you keep every cultural decision (U7).' },
+    ] },
   { tag: 'E', name: 'Faction emblems (mockup 9)',
     lead: 'Mockup 9 (Faction Emblems, docs/mockups/faction-emblems.html; its link is on the tracker once published) draws one emblem for each of the ten factions and shows it as the console crest, at 40 px and 20 px beside the icons, as hull paint, and on a ship\'s flank. Each keeps the idea its console crest already had. What a people puts on its flag is yours to decide: each faction\'s meaning below is what is drawn, and a blank answer keeps it.',
     qs: [

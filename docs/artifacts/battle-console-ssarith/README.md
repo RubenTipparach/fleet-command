@@ -1,4 +1,4 @@
-# Battle console: Ssarith Hunt (mockup 12)
+# Battle console: Ssarith Hunt (mockup 15; first published as mockup 12, renumbered 2026-11-04 when main gave 12 to the Ssarith ships)
 
 - Page: `docs/mockups/battle-console-ssarith.html`, written by `tools/mockups/skin_page.py ssarith` from
   `docs/mockups/battle-console.html` (never edit it by hand).

@@ -27,7 +27,7 @@ SKINS = {
     },
     "ssarith": {
         "title": "Ssarith Battle Console",
-        "what": "Mockup 12: the battle console in the Ssarith Hunt skin (OpenSpec change ssarith-battle-console)",
+        "what": "Mockup 15: the battle console in the Ssarith Hunt skin (OpenSpec change ssarith-battle-console)",
     },
 }
 # Every skin's library, kit and type are inlined in the source page itself (openspec/changes/fleet-skins: the console
