@@ -89,3 +89,4 @@
 - 2026-11-04, cloud session: M11 at v10 and M6 at v19 (the emblem on the real model); version 90, id `1793791939-c927`.
 - 2026-11-04, cloud session: M6 at v21 and M11 at v11, built on the live v91; version 92, id `1793793688-ca98`.
 - 2026-11-04, cloud session: M11 retired, moved to Misc; version 93, id `1793794304-ede5`.
+- 2026-11-04, cloud session: M6 at v22 (full stripes); version 94, id `1793794813-2a28`.
