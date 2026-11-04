@@ -1,0 +1,19 @@
+{
+ "note": "Blender renders of the Concord badge B-E25 (tools/blender/emblem_concord.py), shown on the 3D page beside the live badge.",
+ "pieces": {
+  "face": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "b-e25-face.png"
+  },
+  "angle": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "b-e25-angle.png"
+  }
+ }
+}

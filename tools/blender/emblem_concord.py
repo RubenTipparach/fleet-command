@@ -1,9 +1,9 @@
-"""Fleet Command: the Concord's emblem B-E23 (the rounded peak) rendered as a 3D badge (openspec/changes/faction-emblems;
+"""Fleet Command: the Concord's emblem (B-E25, the pointed peak, by default; B-E23 and B-E24 before it) rendered as a 3D badge (openspec/changes/faction-emblems;
 the Emblem Design Guide, docs/design/emblem-guide.html). The owner, 2026-11-04: "ok I'm kinda liking it, lets see how it
 looks in 3d, render something in blender ... add in materials, normals, specular map, AO, and if you can make the
 background of the emblem, the bell shape some kind of holographic stars and nebula shader".
 
-The shapes are the guide's own: tools/emblems/export_parts.mjs writes assets/emblems/concord/b-e23.parts.json (every
+The shapes are the guide's own: tools/emblems/export_parts.mjs writes assets/emblems/concord/<key>.parts.json (every
 outline as polygons, 1 grid unit = 1 mm). The shared rig (lights, studio, shadow catcher, Material Maker map loader) is
 tools/blender/emblem_render.py; this file owns the parts, their heights and the field's shader.
 
@@ -17,8 +17,8 @@ Heights (mm), lowest to highest, so no two faces ever share a plane (no z-fighti
 
     /opt/blender/blender -b -P tools/blender/emblem_concord.py -- [--out DIR] [--samples N] [--px N] [--steps]
 
-Writes <out>/concord/b-e23-face.png (face on, orthographic) and b-e23-angle.png (three-quarter, perspective); with
---steps, the clay blockout b-e23-clay.png too.
+Writes <out>/concord/<key>-face.png (face on, orthographic) and <key>-angle.png (three-quarter, perspective); with
+--steps, the clay blockout <key>-clay.png too. The key is EMBLEM_KEY, b-e25 by default.
 """
 import json
 import math
@@ -32,7 +32,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import emblem_render as R  # noqa: E402
 
 MM = R.MM
-PARTS = os.path.join(R.ROOT, "assets", "emblems", "concord", "b-e23.parts.json")
+# The outline to build: the guide's picked patch, exported by tools/emblems/export_parts.mjs (EMBLEM_KEY to override).
+KEY = os.environ.get("EMBLEM_KEY", "b-e25")
+PARTS = os.path.join(R.ROOT, "assets", "emblems", "concord", f"{KEY}.parts.json")
 
 
 def xy(p):
@@ -172,6 +174,24 @@ def pearl_film(m):
     nt.links.new(mul.outputs["Result"], p.inputs["Base Color"])
 
 
+def satin(m):
+    """A satin finish on a Material Maker enamel: its roughness raised by 0.25 (soft, wide highlights rather than a
+    gloss) and a pale blue sheen at grazing angles, the soft glow of satin cloth or satin-finished enamel."""
+    nt = m.node_tree
+    p = nt.nodes["Principled BSDF"]
+    src = p.inputs["Roughness"].links[0].from_socket
+    add = nt.nodes.new("ShaderNodeMath")
+    add.operation = "ADD"
+    add.use_clamp = True
+    add.inputs[1].default_value = 0.25
+    nt.links.new(src, add.inputs[0])
+    nt.links.new(add.outputs[0], p.inputs["Roughness"])
+    p.inputs["Sheen Weight"].default_value = 1.0
+    p.inputs["Sheen Roughness"].default_value = 0.45
+    p.inputs["Sheen Tint"].default_value = R.hex_rgb("#a9c4ff")
+    return m
+
+
 def build(parts):
     plat = R.mm_material("emblem_platinum")
     # The ship is iridescent pearl (owner, 2026-11-04: "Central shape should be like irridescent"): the pearl enamel with a
@@ -188,8 +208,9 @@ def build(parts):
     poly_slab("tail", [parts["tail"]], 0.5, 2.4, 0.4, pearl)
     # The saucer with the star cut through it, and the star's floor set inside the hole: a pocket 0.9 mm deep.
     poly_slab("lens", [parts["lens"], parts["star"]], 0.6, 2.8, 0.55, pearl)
-    # The floor takes the sketch's shaded pearl (VERSIONS.dk.floor, #b8c4e2), so the pocket reads face on as it does flat.
-    poly_slab("star.floor", [parts["star"]], 0.5, 1.9, 0.2, R.mm_material("emblem_enamel_pearl", coat=0.25, tint="#b8c4e2"))
+    # The star's floor is satin Signal blue (owner, 2026-11-04: "make the start like a satin in blue"): the Signal enamel
+    # graph, its roughness raised to a satin and a soft blue sheen, no clear coat.
+    poly_slab("star.floor", [parts["star"]], 0.5, 1.9, 0.2, satin(R.mm_material("emblem_enamel_signal")))
     lt = parts["light"]
     x, y = xy((lt["cx"], lt["cy"]))
     bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=24, radius=lt["r"] * MM, location=(x, y, 2.4 * MM))
@@ -221,11 +242,11 @@ def main():
     build(parts)
     if a["steps"]:
         restore = R.with_material(R.clay())
-        R.render(os.path.join(out, "b-e23-clay.png"))
+        R.render(os.path.join(out, f"{KEY}-clay.png"))
         restore()
-    R.render(os.path.join(out, "b-e23-face.png"))
+    R.render(os.path.join(out, f"{KEY}-face.png"))
     bpy.context.scene.camera = angle_camera()
-    R.render(os.path.join(out, "b-e23-angle.png"))
+    R.render(os.path.join(out, f"{KEY}-angle.png"))
 
 
 main()

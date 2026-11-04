@@ -57,3 +57,6 @@
 - Version 12 published 2026-11-04: B-E23 the rounded peak, drawn from the owner's red line over B-E22 ("something more
   like this?"): the trapezoid's sides rise from their shoulders in one curve to a rounded peak; now B's main sketch.
 - Version 13 published 2026-11-04: B-E23 links to its 3D badge (mockup 10); the owner's notes on 3D and iridescence.
+- Version 14 published 2026-11-04: the pressed star is satin Signal blue (owner: "make the start like a satin in blue");
+  B-E24 the arrow-foot peak ("what if it was a slightly arrow shaped at the bottom") and B-E25 the pointed peak ("Can we
+  make the to point too?"), B-E25 now B's main sketch.

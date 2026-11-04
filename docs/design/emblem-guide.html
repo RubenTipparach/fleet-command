@@ -207,6 +207,8 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'Can we make the to point too?', means: 'B-E25: the top drawn to a point as well, over the arrow foot; now B\'s main sketch and the 3D badge.' },
+  { when: '2026-11-04', q: 'Can you make the start like a satin in blue? I\'m not sure I like the bell shape a whole lot what if it was a slightly arrow shaped at the bottom', means: 'The pressed star is satin Signal blue (flat, Blender and 3D). B-E24: the rounded peak with a shallow arrow-point foot, now B\'s main sketch and the 3D badge.' },
   { when: '2026-11-04', q: 'Central shape should be like irridescent', means: 'The ship is iridescent pearl in both the Blender render and the 3D page: a thin film and a pastel shift with the viewing angle.' },
   { when: '2026-11-04', q: 'ok I\'m kinda liking it, lets see how it looks in 3d, render something in blender, make a 3d version in thre js, add in materials, normals, specular map, AO, and if you can make the background of the emblem, the bell shape some kind of holographic stars and nebula shader', means: 'B-E23 as a badge: rendered in Blender and built in three.js (mockup 10) from the guide\'s own shapes, with Material Maker maps and a holographic nebula field.' },
   { when: '2026-11-04', q: 'something more like this? (a red line over B-E22: the sides rising from their shoulders in one curve to a rounded peak)', means: 'B-E23 the rounded peak, drawn from your line, now in B\'s main sketch with its labels.' },
@@ -317,9 +319,9 @@ const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}" ${extra}/>`
 const MIN_CONTRAST = 7;
 const BG = { dk: '#070a12', lt: '#ffffff' };
 const VERSIONS = {
-  dk: { key: 'On black', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#b8c4e2', shadow: '#7a8ab4', lit: '#ffffff',
+  dk: { key: 'On black', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#2f62e0', shadow: '#1a3c96', lit: '#8fb0f6',
     why: 'Pearl white, the colour of every Concord hull, for the ship and its frame, on the night sky every homeworld shares. Bright against black.' },
-  lt: { key: 'On white', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#34479a', shadow: '#0e1840', lit: '#6077c6',
+  lt: { key: 'On white', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#2f62e0', shadow: '#152f78', lit: '#7fa2f2',
     why: 'The same patch reversed: a night-blue ship and frame on a pearl field, so the outline holds against white paper or a light screen.' },
 };
 // The sketches A, C and D are recoloured for each background the same way: their blue strokes become pearl on black
@@ -427,10 +429,18 @@ const ENCLOSURES = [
     frame: 'M20 10A60.25 60.25 0 0 1 80 10L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
     field: 'M25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
     why: 'B-E19\'s trapezoid with its top bowed into an arc: the round top you liked in B-E2 over the climbing, wide-footed trapezoid. The ship flies free inside.' },
-  { key: 'B-E23', name: 'The rounded peak', rec: true, scale: 0.7, cy: 50, pieces: 2,
+  { key: 'B-E23', name: 'The rounded peak', scale: 0.7, cy: 50, pieces: 2,
     frame: 'M4.4 87.4L14.3 38C18.3 18.4 34 4 50 4C66 4 81.7 18.4 85.7 38L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
     field: 'M11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
     why: 'Your sketch: the wide-footed trapezoid whose sides rise from their shoulders in one curve to a rounded peak, narrower than the trapezoid\'s top. The saucer sits under the peak like a ship under its nose cone, climbing. <a href="https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN" target="_blank" rel="noopener">See it as a 3D badge</a>.' },
+  { key: 'B-E24', name: 'The arrow-foot peak', scale: 0.7, cy: 50, pieces: 2,
+    frame: 'M5.31 82.6L14.3 38C18.3 18.4 34 4 50 4C66 4 81.7 18.4 85.7 38L94.69 82.6Q95.48 86.5 91.58 87.4L53.9 96.1Q50 97 46.1 96.1L8.42 87.4Q4.52 86.5 5.31 82.6ZM11.95 80L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    field: 'M11.95 80L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    why: 'B-E23 with its foot drawn to a shallow arrow point instead of a flat base: the peak above and the point below give the badge a direction, a ship heading out, while the rounded top keeps it gentle.' },
+  { key: 'B-E25', name: 'The pointed peak', rec: true, scale: 0.7, cy: 50, pieces: 2,
+    frame: 'M5.31 82.6L14.3 38C18.3 18.4 41 8 50 3C59 8 81.7 18.4 85.7 38L94.69 82.6Q95.48 86.5 91.58 87.4L53.9 96.1Q50 97 46.1 96.1L8.42 87.4Q4.52 86.5 5.31 82.6ZM11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    field: 'M11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
+    why: 'B-E24 with the top drawn to a point as well: the sides rise in curves that meet at a peak, over the arrow foot. Pointed both ways, it reads as a ship\'s bow and stern, heading out. Watch: a pointed arch can recall a church window; the wide shoulders and the arrow foot keep it a badge.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {
@@ -488,7 +498,7 @@ const DESIGNS = [
     ],
   },
   {
-    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a rounded peak', pieces: 2,
+    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a pointed peak', pieces: 2,
     risk: 'A pictured starship: the manual allows one only when abstracted into a mark (p. 14), and a saucer with nacelles is the shape most likely to be read as borrowed from a famous ship. The weakest of the four on rule 15.',
     own: true,
     draw(bg = 'dk') { return enclosed(ENCLOSURES[REC], false, VERSIONS[bg]); },
@@ -499,9 +509,9 @@ const DESIGNS = [
       [...encT(-1, 13, 91), 'L', 'Flying free', 'The ship floats inside the arch, clear of it all round: a ship in flight, framed by the door it came through.'],
       [...encT(-1, 50, 62), 'L', 'The tiny tail', 'A small keel growing out of the saucer between the nacelles, kept small so the saucer leads.'],
       [...encT(-1, 50, 20.5), 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
-      [...encT(-1, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. It reads by its shadow and its lit edge, in the saucer\'s own pearl.'],
+      [...encT(-1, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. Its floor is satin Signal blue, the flag\'s colour, a soft sheen against the pearl.'],
       [74, 60, 'R', 'The night behind', 'Deep night blue, the sky every homeworld shares. Pearl on it measures 11.9:1, so the patch reads from far away.'],
-      [90, 62, 'R', 'The rounded peak (B-E23)', 'From your sketch: a wide flat foot, sides that lean in, then rise in one curve to a rounded peak. One closed line, for a patch or a pin.'],
+      [90, 62, 'R', 'The pointed peak (B-E25)', 'Pointed at both ends: curved sides rising to a point above, the foot drawn to a shallow arrow point below. One closed line, for a patch or a pin.'],
     ],
   },
   {

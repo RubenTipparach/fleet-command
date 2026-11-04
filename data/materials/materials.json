@@ -20,7 +20,7 @@
     {
       "name": "emblem_enamel_signal",
       "size_px": 1024,
-      "maps": ["albedo", "normal", "orm"],
+      "maps": ["albedo", "normal", "orm", "specular"],
       "tile_m": 0.05,
       "status": "starter",
       "use": "faction emblems: the Concord badge's Signal blue enamel band"

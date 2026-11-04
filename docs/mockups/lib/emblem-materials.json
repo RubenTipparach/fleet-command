@@ -56,6 +56,34 @@
     1024
    ],
    "file": "../../../assets/textures/materials/emblem_enamel_pearl/specular.png"
+  },
+  "emblem_enamel_signal/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/albedo.png"
+  },
+  "emblem_enamel_signal/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/normal.png"
+  },
+  "emblem_enamel_signal/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/orm.png"
+  },
+  "emblem_enamel_signal/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/specular.png"
   }
  }
 }
