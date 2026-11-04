@@ -54,3 +54,5 @@
   trapazpidal shape and another one more Chevron"), both one closed outline, joins measured.
 - Version 11 published 2026-11-04: B-E21 the upside-down chevron and B-E22 the curved-top trapezoid (owner: "upside down
   chevron, another alternate shape maybe a more curved top trapezoid?"), both one closed outline, joins measured.
+- Version 12 published 2026-11-04: B-E23 the rounded peak, drawn from the owner's red line over B-E22 ("something more
+  like this?"): the trapezoid's sides rise from their shoulders in one curve to a rounded peak; now B's main sketch.

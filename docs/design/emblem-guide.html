@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'something more like this? (a red line over B-E22: the sides rising from their shoulders in one curve to a rounded peak)', means: 'B-E23 the rounded peak, drawn from your line, now in B\'s main sketch with its labels.' },
   { when: '2026-11-04', q: 'upside down chevron, another alternate shape maybe a more curved top trapezoid?', means: 'B-E21 the upside-down chevron (peaked top, notch at the foot) and B-E22 the curved-top trapezoid, both one closed outline.' },
   { when: '2026-11-04', q: 'What about a more trapazpidal shape and another one more Chevron', means: 'B-E19 the trapezoid (narrow top, wide foot) and B-E20 the chevron (a V-dipped top, a pointed foot), both one closed outline.' },
   { when: '2026-11-03', q: 'can we try a triangle shape with cruved ends?', means: 'Two rounded triangles for B: B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.' },
@@ -389,7 +390,7 @@ function polyFrame(pts, r, b) {
 // patch on a uniform"). Every frame below is a different outline, and each is one closed line (rule 19, measured).
 // cy: the height the ship is centred on; scale: its size.
 const ENCLOSURES = [
-  { key: 'B-E2', name: 'The mission arch', rec: true, scale: 0.78, cy: 52, pieces: 2,
+  { key: 'B-E2', name: 'The mission arch', scale: 0.78, cy: 52, pieces: 2,
     frame: 'M6 96V46A44 44 0 0 1 94 46V96ZM14 88V46A36 36 0 0 1 86 46V88Z',
     field: 'M14 88V46A36 36 0 0 1 86 46V88Z',
     why: 'A flat foot and a round top, the shape of an explorer\'s mission patch. Your direction, not yet right. The three below are different outlines, not restyles of it.' },
@@ -419,6 +420,10 @@ const ENCLOSURES = [
     frame: 'M20 10A60.25 60.25 0 0 1 80 10L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
     field: 'M25.29 13.99A54.25 54.25 0 0 1 74.71 13.99L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
     why: 'B-E19\'s trapezoid with its top bowed into an arc: the round top you liked in B-E2 over the climbing, wide-footed trapezoid. The ship flies free inside.' },
+  { key: 'B-E23', name: 'The rounded peak', rec: true, scale: 0.7, cy: 50, pieces: 2,
+    frame: 'M4.4 87.4L14.3 38C18.3 18.4 34 4 50 4C66 4 81.7 18.4 85.7 38L95.6 87.4Q97 94 90.5 94H9.5Q3 94 4.4 87.4ZM11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    field: 'M11.5 82.2L20 40C23.6 22 36.5 10.5 50 10.5C63.5 10.5 76.4 22 80 40L88.5 82.2Q89.67 88 84 88H16Q10.33 88 11.5 82.2Z',
+    why: 'Your sketch: the wide-footed trapezoid whose sides rise from their shoulders in one curve to a rounded peak, narrower than the trapezoid\'s top. The saucer sits under the peak like a ship under its nose cone, climbing.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {
@@ -476,7 +481,7 @@ const DESIGNS = [
     ],
   },
   {
-    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in an arch', pieces: 2,
+    id: 'concord-b', name: 'B · The Saucer', outline: 'A ship from above, in a rounded peak', pieces: 2,
     risk: 'A pictured starship: the manual allows one only when abstracted into a mark (p. 14), and a saucer with nacelles is the shape most likely to be read as borrowed from a famous ship. The weakest of the four on rule 15.',
     own: true,
     draw(bg = 'dk') { return enclosed(ENCLOSURES[REC], false, VERSIONS[bg]); },
@@ -488,8 +493,8 @@ const DESIGNS = [
       [...encT(-1, 50, 62), 'L', 'The tiny tail', 'A small keel growing out of the saucer between the nacelles, kept small so the saucer leads.'],
       [...encT(-1, 50, 20.5), 'R', 'A green running light at the bow', 'Accord green, consent given: the Concord announces itself before it arrives.'],
       [...encT(-1, 50, 32), 'R', 'The Accord, pressed in', 'The star is pressed into the saucer, not set on top: the agreement is part of the hull, not an ornament on it. It reads by its shadow and its lit edge, in the saucer\'s own pearl.'],
-      [84, 44, 'R', 'The night behind', 'Deep night blue, the sky every homeworld shares. Pearl on it measures 11.9:1, so the patch reads from far away.'],
-      [90, 62, 'R', 'The mission arch (B-E2)', 'A flat foot and a round top, one even band: your direction, not yet right. The variations below each change one thing about it.'],
+      [74, 60, 'R', 'The night behind', 'Deep night blue, the sky every homeworld shares. Pearl on it measures 11.9:1, so the patch reads from far away.'],
+      [90, 62, 'R', 'The rounded peak (B-E23)', 'From your sketch: a wide flat foot, sides that lean in, then rise in one curve to a rounded peak. One closed line, for a patch or a pin.'],
     ],
   },
   {
