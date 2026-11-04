@@ -835,6 +835,7 @@ return { NO_SEEDS, fracture, cutFace, addCap, dedupe, ellipse, addEmitter, wreck
 //   DAMAGE_GLSL            hull shader uniforms and helpers: holes and scorch marks (uHoles, uScorch ...), noise (dfbm),
 //                          interiorRoom (the decks seen through a hole), dmgHoles and dmgScorch (the char and ember rules),
 //                          dmgBreak (a broken piece's cut planes and fracture cell)
+//   CELL_GLSL              the fracture cell rule alone (cellDist, cellOf), for a part cut along the hull's cells
 //   Pool, glowPool, smokePool, FX, emit(type, pos, dir, count, scale, inherit)
 //                          particles: two pools, one table of looks, one emitter
 //   holeInterior(c, n, r, type), sharedTime   a modelled hole's inside
@@ -852,6 +853,21 @@ const PI = Math.PI, TAU = PI * 2, V3 = (x = 0, y = 0, z = 0) => new THREE.Vector
 const rr = (rng, a, b) => a + (b - a) * rng(), lerp = (a, b, t) => a + (b - a) * t;
 function cv(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 
+// The fracture cell rule: which cell a point is in, by distance to the cells' seeds with a little noise so a break is torn,
+// not ruled. One copy, used by the hull (dmgBreak below) and by any part cut along the same lines (cellOf); guarded so a
+// shader that already has it can include it again.
+const CELL_GLSL = `
+#ifndef FC_CELL_GLSL
+#define FC_CELL_GLSL
+float dh3(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float dn3(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(mix(dh3(i),dh3(i+vec3(1,0,0)),f.x),mix(dh3(i+vec3(0,1,0)),dh3(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(dh3(i+vec3(0,0,1)),dh3(i+vec3(1,0,1)),f.x),mix(dh3(i+vec3(0,1,1)),dh3(i+vec3(1,1,1)),f.x),f.y),f.z); }
+float cellDist(vec3 p, vec3 s, int k){ return length(p - s) + 1.1*(dn3(p*0.32 + float(k)*7.13) - 0.5); }
+int cellOf(vec3 p, vec3 seeds[16], int n){ int best = 0; float bd = 1e9;
+  for (int k = 0; k < 16; k++) { if (k >= n) break; float d = cellDist(p, seeds[k], k); if (d < bd) { bd = d; best = k; } } return best; }
+#endif
+`;
 const DAMAGE_GLSL = `
 uniform vec4 uHoles[24]; uniform vec4 uHoleN[24]; uniform int uHoleCount;
 uniform vec4 uScorch[24]; uniform float uScorchHeat[24]; uniform int uScorchCount;
@@ -859,10 +875,7 @@ uniform vec4 uCuts[4]; uniform vec4 uCutC[4]; uniform int uCutCount; uniform flo
 uniform float uLight; uniform float uTime; uniform float uParallax;
 uniform int uCell; uniform vec3 uSeeds[16]; uniform int uSeedN; uniform float uOpen[16]; uniform float uSec[8]; uniform vec3 uSecC; uniform float uSecOn;
 varying vec3 vObj; varying vec3 vCamObj;
-float dh3(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
-float dn3(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
-  return mix(mix(mix(dh3(i),dh3(i+vec3(1,0,0)),f.x),mix(dh3(i+vec3(0,1,0)),dh3(i+vec3(1,1,0)),f.x),f.y),
-             mix(mix(dh3(i+vec3(0,0,1)),dh3(i+vec3(1,0,1)),f.x),mix(dh3(i+vec3(0,1,1)),dh3(i+vec3(1,1,1)),f.x),f.y),f.z); }
+` + CELL_GLSL + `
 float dfbm(vec3 p){ return 0.5*dn3(p)+0.3*dn3(p*2.03)+0.2*dn3(p*4.1); }
 vec3 holeLight(float type){ return type < 0.5 ? vec3(1.0,0.16,0.06) : (type < 1.5 ? vec3(0.55,0.32,1.0) : (type < 2.5 ? vec3(0.35,0.85,1.0) : vec3(0.85,0.72,0.55))); }
 // Interior mapping: a room grid (decks every 3.4 m, walls every 6 m) and a back wall, seen through the skin.
@@ -908,9 +921,9 @@ bool dmgBreak(vec3 p, float nz, inout float dChar, inout float dEmber){
     dChar = max(dChar, near*(1.0 - smoothstep(0.0, 7.0, d)));
     dEmber = max(dEmber, near*uCutHeat*(1.0 - smoothstep(0.0, 1.6, d))); }
   if (uCell >= 0) {
-    vec3 si = uSeeds[uCell]; float di = length(p - si) + 1.1*(dn3(p*0.32 + float(uCell)*7.13) - 0.5); float edge = 1e9;
+    vec3 si = uSeeds[uCell]; float di = cellDist(p, si, uCell); float edge = 1e9;
     for (int k = 0; k < 16; k++) { if (k >= uSeedN) break; if (k == uCell) continue; vec3 sk = uSeeds[k];
-      float dk = length(p - sk) + 1.1*(dn3(p*0.32 + float(k)*7.13) - 0.5); if (dk < di) return true;
+      float dk = cellDist(p, sk, k); if (dk < di) return true;
       if (max(uOpen[uCell], uOpen[k]) > 0.5) edge = min(edge, (dot(p - sk, p - sk) - dot(p - si, p - si))/(2.0*length(sk - si))); }
     dChar = max(dChar, 1.0 - smoothstep(0.0, 11.0, edge + nz*4.0));
     dEmber = max(dEmber, (1.0 - smoothstep(0.0, 1.6, edge + nz*1.6))*(0.45 + 0.55*uCutHeat)*1.6); }
@@ -1127,7 +1140,7 @@ function clearFX() {
   for (const o of oneshots) scene.remove(o.obj); oneshots.length = 0; for (const b of beams) scene.remove(b.m); beams.length = 0;
 }
 
-return { clearFX, stepFX, emitterStep, DAMAGE_GLSL, Pool, glowPool, smokePool, FX, emit, holeInterior, sharedTime, oneshots, FXL, fxLight, stepFxLights, flash, shockwave,
+return { clearFX, stepFX, emitterStep, CELL_GLSL, DAMAGE_GLSL, Pool, glowPool, smokePool, FX, emit, holeInterior, sharedTime, oneshots, FXL, fxLight, stepFxLights, flash, shockwave,
   shards, shardData, debrisAdd, debrisBurst, FLICK, inFlick, settle, burst, flick, beams, beamMat, shoot, stepBeams };
 };
 </script>

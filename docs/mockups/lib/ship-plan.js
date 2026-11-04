@@ -72,8 +72,7 @@ function sideAt(h, y) {
 }
 // A pane (1.2 m long, 0.75 m tall with its rim) lies flat on one face of the section (owner, 2026-11-04: "window geometry
 // extending a bit over the hull slope, need to adjust slope start height"): the face at its middle must also be the face at
-// its top and bottom edges and at both ends. Where it would cross a bend, it moves off the bend toward its own face's middle
-// by up to 0.9 m; where no height fits, there is no window. The face must also stay one plane along the pane, so a pane where the hull
+// its top and bottom edges and at both ends. Where it would cross a bend there is no window. The face must also stay one plane along the pane, so a pane where the hull
 // tapers along its length is not set into the taper.
 const PANE = { hu: 0.66, hv: 0.5 };
 function paneY(stations, z, y0) {
@@ -82,8 +81,8 @@ function paneY(stations, z, y0) {
     for (const dz of [-PANE.hu, 0, PANE.hu]) for (const dy of [-vy, 0, vy]) { const t = sideAt(CL.hullAt(stations, z + dz), y + dy);
       if (!t || t.tilt !== s.tilt || Math.abs(t.x - (s.x - dy * Math.tan(s.tilt))) > 0.05) return false; } // one flat face: same slope, same plane
     return true; };
-  for (let k = 0; k <= 9; k++) for (const sg of k ? [-1, 1] : [1]) { const y = y0 + sg * k * 0.1; if (fits(y)) return y; }
-  return null;
+  return fits(y0) ? y0 : null; // a row stays level: a pane that does not fit at its row's height is left out, never moved
+  // (owner, 2026-11-04: "remove these windows if they cannot be placed in an aligned fasion")
 }
 function windows(plan, R, stations, lit) {
   const C = clear(plan), F = plan.deck_floor_m, out = [];
