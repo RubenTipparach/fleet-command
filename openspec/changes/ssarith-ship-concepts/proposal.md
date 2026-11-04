@@ -1,5 +1,8 @@
 # Proposal: ssarith-ship-concepts
 
+> **Version 1 withdrawn** (owner, 2026-11-04: "you are over stereotyping an alien species which is extremely insensitive"). It read the species' body into the ships. See the design's
+> first section; the method carries over, the readings and directions do not.
+
 ## Why
 
 The owner, 2026-11-04: "using current bibles and mockups on ship design, lets consider the Ssarith Hunt culture and how
@@ -31,7 +34,7 @@ we defined culture and story"): the culture first, then the Ship Design Bible's 
 - **Mockup 12**, `docs/mockups/ssarith-ship-concepts.html` version 1 (https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris): the three at true scale beside the Concord Petrel
   (the yardstick, from `docs/mockups/lib/concord-line.js`), Stalk and Strike, the deck plans, the 40 px silhouettes, the
   bible's checks measured on the page, the console palette beside the hull's (X4).
-- **Survey section H** (H1-H8): the direction, and every culture and story call this design needs from the owner (U7).
+- **Survey section H**: version 1's H1-H8 withdrawn; one question in their place, how the Hunt's culture is set (C4).
 - Not in this change: the other classes, the Concord-standard skin (detail maps, interior-mapped windows, hull floods
   with shadows), damage and breakup. Those follow once a direction is chosen, on the shared modules the Krai already use.
 

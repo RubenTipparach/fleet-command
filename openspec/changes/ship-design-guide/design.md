@@ -51,6 +51,16 @@ deck proud. Each faction shapes that block its own way.
 - **X4.** The console and the ship are tested side by side.
 - Mockup 6's band blue stays as it is.
 
+## Culture, not anatomy (owner, 2026-11-04)
+
+On the first Ssarith Hunt ships: "you are over stereotyping an alien species which is extremely insensitive. We've stated
+multiple times before, the look of an alien species is not their UI, not their spaceship. Cultural ideologies are far
+more deep and complex than what someone's skin or features are. And that no culture in the world follows a single line
+of thinking when it comes to desigining UI, space ships, logos, dressing etc, and none of those reflect the way they
+look". Then: "make sure these notes are added to the cultural guides of designing spaceships". The bible's chapter 13
+holds them as rules C1 to C5: never from the body; many traditions, never one line; name the source; the culture is the
+owner's; the stereotype test.
+
 ## Open questions
 
 | # | Question | Recommendation (provisional until answered) |

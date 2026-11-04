@@ -1,5 +1,23 @@
 # Design: ssarith-ship-concepts
 
+## Version 1 is withdrawn (owner, 2026-11-04)
+
+"part of me loves that these are space aligators, but at last, you are over stereotyping an alien species which is
+extremely insensitive. We've stated multiple times before, the look of an alien species is not their UI, not their
+spaceship. Cultural ideologies are far more deep and complex than what someone's skin or features are. And that no
+culture in the world follows a single line of thinking when it comes to desigining UI, space ships, logos, dressing etc,
+and none of those reflect the way they look."
+
+What went wrong: version 1 read the species' body straight into the ship (claws because they have clawed hands, scutes
+because they have scales, a sprawl and a crouch because they are reptiles) and let one line of the culture (the hunt)
+shape the whole line. Both now break the Ship Design Bible's chapter 13 (rules C1 to C5) and CLAUDE.md section 1. The
+sections below are kept as the record of version 1 only; none of their readings, rules or directions stand.
+
+What carries over: the method (rooms first, the shared fitter, the plan layer's tapering rooms, the page's checks), which
+is species-neutral. What comes next waits for the owner: the Hunt's culture is too thin to design from (C4), so the
+survey asks how it is to be set before any ship is redrawn (H1).
+
+
 ## Sources
 
 | Source | What it gives the ships |
@@ -144,15 +162,8 @@ marking (waits on E11 and E12).
 
 ## Open questions
 
-Survey section H. A blank answer accepts the recommendation; until then each is provisional here.
+Version 1's H1-H8 are withdrawn with it.
 
 | # | Question | Recommendation (provisional) |
 |---|---|---|
-| H1 | Which direction: A Grasp, B Jaw or C Crouch? | A Grasp |
-| H2 | Stalk and Strike: do the claws (or jaw) move between the two? | Yes: they move only when the ship strikes, and fold back when it breaks off |
-| H3 | Lights: how dark does a stalking Hunt ship run? | Dim but readable: every bible light kept, hooded floods at a third, no strobes; full only in Strike |
-| H4 | Kill notches: are kills counted on the ship? | A bone notch cut into a claw for each worthy kill, the emblem's notches said on the hull |
-| H5 | How many classes, and how does a class grow? | Three: a stalker (frigate), a hunter (cruiser) and a great hunter (super capital); a class grows by a pair of claws and a deck, never by a swarm of small ships |
-| H6 | The rooms the culture adds: a trophy hall, a hunters' ready room, dens for quarters, plants in the warm rooms? | Yes to all four, as placeholders, the names yours |
-| H7 | Do Hunt ships cloak? The culture says "built to wait unseen"; the cloaking change gives cloaks to the Concord and the Kethran only | No cloak: they run dark instead (Stalk), seen but hard to lock at range. A gameplay rule, so it would be its own change |
-| H8 | The scute paneling and the camouflage: the right paneling and colour for the Hunt? | Yes, as built |
+| H1 | How is the Hunt's culture to be set before its ships are redrawn? | You set it; we offer several traditions inside the Hunt to choose from, none drawn from the species' body |

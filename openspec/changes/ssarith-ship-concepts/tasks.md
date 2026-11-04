@@ -10,7 +10,12 @@
 - [x] 1.6 Published: https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris
 - [ ] 1.7 On the tracker, and the survey republished with section H (from the desktop session: the cloud session's account cannot open either)
 
-## 2. After a direction is chosen (H1)
+## 1b. Withdrawn (owner, 2026-11-04)
+
+- [x] 1b.1 Version 1 withdrawn in the design, the page, `mockup-work.md` and the survey; the bible's chapter 13 (C1-C5) and CLAUDE.md section 1 hold the rule
+- [ ] 1b.2 The Hunt's culture set by the owner (survey H1), then new directions drawn from it, each choice naming its source (C3)
+
+## 2. After a direction is chosen
 
 - [ ] 2.1 The chosen direction to the Concord line's standard on the shared `lib/ship-skin.js`: a scute detail tile, interior-mapped windows with Hunt rooms, hooded floods as spotlights with shadows, the drive
 - [ ] 2.2 The classes (H5), their plans from `tools/mockups/ssarith_plans.py`, a line-up

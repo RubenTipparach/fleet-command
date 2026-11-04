@@ -13,3 +13,5 @@
 - [ ] 2.1 Refit mockup 6's hulls from plans (a plan per class)
 - [ ] 2.2 Redesign the Krai ships on the method: rooms first, their own exterior (X1-X3)
 - [ ] 2.3 Interior mapping sized per room from the plan (W4, chapter 8)
+- [x] 2.4 Chapter 13, Culture, not anatomy (C1-C5; owner, 2026-11-04: "the look of an alien species is not their UI, not their spaceship"), in the bible, its checklist and this spec
+- [ ] 2.5 Review the existing lines and skins against C1-C5 with the owner (the Krai's "lean predators" reading; the Hunt and Brood skins)

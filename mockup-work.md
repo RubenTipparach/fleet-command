@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships: the Hunt's culture turned into ships, one frigate's rooms and three directions of claws | Drafted (2026-11-04, v1; the tracker and the survey's section H still to publish from the desktop session) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -603,5 +603,12 @@ ships will look."
   (`data/ships/ssarith/frigate_plan.json`, from `tools/mockups/ssarith_plans.py` on the Krai plan layer), the hull fitted
   round them, then three directions of claws on that one hull: A Grasp (recommended), B Jaw, C Crouch; Stalk and Strike.
 - Every cultural reading is provisional until survey section H (H1-H8) is answered.
+- **Withdrawn** (owner, 2026-11-04): "part of me loves that these are space aligators, but at last, you are over
+  stereotyping an alien species which is extremely insensitive. We've stated multiple times before, the look of an alien
+  species is not their UI, not their spaceship. Cultural ideologies are far more deep and complex than what someone's
+  skin or features are. And that no culture in the world follows a single line of thinking when it comes to desigining
+  UI, space ships, logos, dressing etc, and none of those reflect the way they look". Then: "make sure these notes are
+  added to the cultural guides of designing spaceships": the Ship Design Bible's chapter 13, Culture, not anatomy (C1-C5),
+  and CLAUDE.md section 1. Next: the Hunt's culture, set by the owner (survey H1), before any ship is redrawn.
 
 Design: `openspec/changes/ssarith-ship-concepts/`.
