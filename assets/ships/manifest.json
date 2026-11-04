@@ -1,5 +1,5 @@
 {
- "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 48ebc93ad627; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 d30a2b7bce4e): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
+ "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 64220327a5cb; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 d30a2b7bce4e): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
  "conventions": {
   "units": "metres",
   "up": "+Y",
@@ -16,7 +16,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    },
    "detail": {
     "albedo": "concord/detail_albedo.png",
@@ -3020,7 +3020,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {
@@ -4227,7 +4227,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {
@@ -5434,7 +5434,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {
@@ -6998,7 +6998,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {
@@ -8562,7 +8562,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {
@@ -11543,7 +11543,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {
@@ -13665,7 +13665,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {
@@ -16704,7 +16704,7 @@
    "source": {
     "page": "docs/mockups/concord-hull-concepts.html",
     "version": 24,
-    "sha256": "48ebc93ad627352e298eba379a0901f387e0efda7d0693a67268ed7bfd63a404"
+    "sha256": "64220327a5cb4d818b37fca0cf08b9ad48a01cdde958e1f7233112c0ac752246"
    }
   },
   {

@@ -15,6 +15,10 @@ piece's image as a "data" URI (high-quality WebP when smaller than the PNG; any 
 
 A JavaScript file (a mockup module, such as a faction skin in docs/mockups/skins/) is inlined as a script element.
 
+A glTF binary (an approved ship from assets/ships/, exported by tools/mockups/export_ships.mjs) is inlined as base64 in
+a script element of type application/octet-stream, which the page decodes and hands to three.js's GLTFLoader.parse(), so
+nothing is fetched (the artifact host serves no .glb).
+
     python3 tools/mockups/inline_data.py docs/mockups/game-flow.html [--check]
 
 --check fails (exit 1) when a page's inlined data differs from the file, writing nothing.
@@ -58,6 +62,9 @@ def load(src):
 def fill(text):
     def one(m):
         src = m.group(2)
+        if src.endswith(".glb"):
+            b64 = base64.b64encode((ROOT / src).read_bytes()).decode("ascii")
+            return f'{m.group(1)}<script type="application/octet-stream" data-src="{src}">{b64}</script>\n{m.group(4)}'
         if src.endswith(".js"):
             code = (ROOT / src).read_text()
             if "</script" in code:
