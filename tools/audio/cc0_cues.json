@@ -1,0 +1,387 @@
+{
+  "_about": "Recorded cues for tools/audio/cut_cc0.py (format from Crab Breeze, unchanged). A layer is {src: 'pack:file'} or {synth: '<gen_sfx layer or cue>'}, with optional shot (n-th shot of a multi-shot take), start, dur (s), pitch (tape-speed ratio), gain (dB after the layer is peak-normalised), lp, hp (Hz, steep), fadein, fadeout, delay (s), repeat. A cue may set len, drive (tanh), hp, lp (gentle, 12 dB/octave), distance (compressor, lowpass and reverb that push a bed into the background), loop, stereo, group, peak_db, what and edits. A cue whose what ends in (loops) loops in the game.",
+  "lance_fire": {
+    "group": "Weapons",
+    "what": "The Lance firing: a beam that snaps on, holds a detuned buzz and falls away.",
+    "layers": [
+      {
+        "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:laser4.mp3",
+        "pitch": 0.8,
+        "lp": 6000
+      },
+      {
+        "synth": "beam_body",
+        "gain": -4
+      },
+      {
+        "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:zap2.mp3",
+        "pitch": 0.7,
+        "gain": -9,
+        "lp": 3000
+      }
+    ],
+    "len": 1.7,
+    "edits": "slowed to 0.7-0.8 speed, layered over our beam synthesis, lowpassed"
+  },
+  "disruptor_fire": {
+    "group": "Weapons",
+    "what": "A Disruptor bolt leaving its mount: a hard electric crack with a short tail.",
+    "layers": [
+      {
+        "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:zap1.mp3",
+        "pitch": 0.85
+      },
+      {
+        "src": "oga/electricity-game-sound-pack:groundhit.wav",
+        "gain": -3
+      },
+      {
+        "synth": "sub_thump",
+        "gain": -8
+      }
+    ],
+    "len": 1.2,
+    "drive": 1.3,
+    "edits": "slowed to 0.85 speed, layered with a crack and our sub thump, saturated"
+  },
+  "torpedo_launch": {
+    "group": "Weapons",
+    "what": "A Pulse torpedo leaving its tube: a deep launch thump and a rising energy whine.",
+    "layers": [
+      {
+        "src": "oga/battle-at-sea:cannon_fire_1.ogg",
+        "pitch": 0.75,
+        "lp": 1500,
+        "dur": 1.6,
+        "fadeout": 0.5
+      },
+      {
+        "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:phaserUp3.mp3",
+        "pitch": 0.6,
+        "delay": 0.05,
+        "gain": -4
+      },
+      {
+        "src": "oga/50-cc0-sci-fi-sfx:teleport_02.ogg",
+        "start": 0.4,
+        "dur": 1.0,
+        "pitch": 0.8,
+        "gain": -7
+      },
+      {
+        "synth": "sub_thump",
+        "gain": -3
+      }
+    ],
+    "len": 1.9,
+    "edits": "a ship's cannon slowed and lowpassed to a thump, a phaser rise slowed to 0.6, our sub thump"
+  },
+  "overload_charge": {
+    "group": "Weapons",
+    "what": "A mount charging in overload (loops): an electric charge building and crackling.",
+    "layers": [
+      {
+        "src": "oga/electricity-game-sound-pack:charge.wav",
+        "dur": 4.0,
+        "lp": 7000
+      }
+    ],
+    "len": 4.0,
+    "loop": true,
+    "loop_fade": 0.4,
+    "edits": "trimmed, lowpassed, crossfaded into a loop"
+  },
+  "missile_launch": {
+    "group": "Weapons",
+    "what": "A missile away: an ignition hiss and the motor roaring off.",
+    "layers": [
+      {
+        "src": "oga/missile-sound:missile launch.ogg",
+        "pitch": 0.9
+      },
+      {
+        "src": "oga/rocket-launch:launch.wav",
+        "start": 2.0,
+        "dur": 2.0,
+        "gain": -6,
+        "lp": 3000,
+        "fadeout": 0.8
+      }
+    ],
+    "len": 2.8,
+    "edits": "slowed to 0.9, layered with a rocket's roar, lowpassed"
+  },
+  "pd_burst": {
+    "group": "Weapons",
+    "what": "Point defence firing: a fast rattling burst.",
+    "layers": [
+      {
+        "src": "oga/laser-weapon-burst-fire:burst fire.mp3",
+        "pitch": 1.1,
+        "hp": 300
+      }
+    ],
+    "len": 0.75,
+    "edits": "sped to 1.1, highpassed"
+  },
+  "shield_hit": {
+    "group": "Impacts",
+    "what": "A shot striking a shield facing: an energy thud with a glassy shimmer and a spark.",
+    "layers": [
+      {
+        "src": "oga/electricity-game-sound-pack:shieldhit.wav"
+      },
+      {
+        "src": "oga/space-ship-shield-sounds:space shield sounds - 4.wav",
+        "gain": -3
+      },
+      {
+        "synth": "shield_shimmer",
+        "gain": -7
+      },
+      {
+        "src": "oga/electricity-game-sound-pack:groundhit.wav",
+        "gain": -11
+      }
+    ],
+    "len": 1.7,
+    "edits": "two shield takes layered with our shimmer synthesis and a spark"
+  },
+  "hull_hit": {
+    "group": "Impacts",
+    "what": "A shot through to the hull: a heavy metal crunch and a short blast.",
+    "layers": [
+      {
+        "src": "oga/battle-at-sea:cannon_hit_ship_short.ogg",
+        "dur": 1.4,
+        "pitch": 0.8,
+        "lp": 4000,
+        "fadeout": 0.5
+      },
+      {
+        "src": "oga/100-cc0-metal-and-wood-sfx:metal_slam_01.ogg",
+        "pitch": 0.6,
+        "gain": -4
+      },
+      {
+        "src": "oga/explosions-4:explosion2.ogg",
+        "gain": -6
+      }
+    ],
+    "len": 1.7,
+    "drive": 1.3,
+    "edits": "a cannonball hitting a ship slowed to 0.8 and lowpassed, a metal slam at 0.6, saturated"
+  },
+  "torpedo_detonate": {
+    "group": "Impacts",
+    "what": "A torpedo detonating: a blast and the energy flaring out of it.",
+    "layers": [
+      {
+        "src": "oga/explosions-4:explosion1_0.ogg",
+        "pitch": 0.8
+      },
+      {
+        "synth": "energy_bloom",
+        "gain": -3
+      },
+      {
+        "src": "oga/50-cc0-sci-fi-sfx:explosion_01.ogg",
+        "pitch": 0.7,
+        "gain": -5
+      }
+    ],
+    "len": 3.2,
+    "edits": "two blasts slowed to 0.7-0.8, layered with our energy bloom"
+  },
+  "explosion_small": {
+    "group": "Impacts",
+    "what": "A small blast: a missile shot down, a system blown out.",
+    "layers": [
+      {
+        "src": "oga/explosions-4:explosion3.ogg"
+      },
+      {
+        "src": "oga/explosions-4:explosion2.ogg",
+        "pitch": 0.8,
+        "gain": -6
+      }
+    ],
+    "len": 1.7,
+    "edits": "layered, the second slowed to 0.8"
+  },
+  "ship_destroyed": {
+    "group": "Impacts",
+    "what": "A ship destroyed: the blast, its core going up, the hull groaning apart and a long rumble.",
+    "layers": [
+      {
+        "src": "oga/chunky-explosion:Chunky Explosion.mp3",
+        "pitch": 0.8
+      },
+      {
+        "src": "oga/electricity-game-sound-pack:deathboom.wav",
+        "delay": 0.1,
+        "gain": -2
+      },
+      {
+        "src": "oga/explosions-4:explosion1_0.ogg",
+        "pitch": 0.6,
+        "delay": 0.6,
+        "gain": -6
+      },
+      {
+        "src": "oga/100-cc0-metal-and-wood-sfx:metal_falling_01.ogg",
+        "pitch": 0.5,
+        "delay": 1.0,
+        "gain": -12,
+        "lp": 2500
+      },
+      {
+        "src": "oga/low-rumbling:low-rumbling-176033.mp3",
+        "dur": 6.0,
+        "gain": -6,
+        "fadein": 0.3,
+        "fadeout": 3.0
+      }
+    ],
+    "len": 7.0,
+    "edits": "four takes slowed to 0.5-0.8 and layered over a low rumble, the metal lowpassed"
+  },
+  "engine_hum": {
+    "group": "Ship",
+    "what": "A ship's engines under way (loops): a low, steady roar.",
+    "layers": [
+      {
+        "src": "oga/rocket-engine:rocket_engine.001.wav",
+        "pitch": 0.7,
+        "lp": 900,
+        "dur": 6.0
+      },
+      {
+        "src": "oga/generator-loop:loop_generator_1.mp3",
+        "gain": -9,
+        "repeat": 2,
+        "dur": 6.0
+      }
+    ],
+    "len": 6.0,
+    "loop": true,
+    "loop_fade": 0.5,
+    "edits": "a rocket motor slowed to 0.7 and lowpassed, a generator under it, crossfaded into a loop"
+  },
+  "thruster_burst": {
+    "group": "Ship",
+    "what": "Manoeuvring thrusters: a short hiss of a turn or a stop.",
+    "layers": [
+      {
+        "src": "oga/boost-or-launch-or-thruster-sound-effect:boost.mp3",
+        "pitch": 0.6
+      },
+      {
+        "src": "oga/rocket-launch:launch.wav",
+        "start": 3.0,
+        "dur": 0.6,
+        "gain": -8,
+        "fadeout": 0.3
+      }
+    ],
+    "len": 0.8,
+    "edits": "a boost slowed to 0.6, a slice of rocket roar"
+  },
+  "reactor_hum": {
+    "group": "Ship",
+    "what": "The reactor running (loops): a deep machine hum.",
+    "layers": [
+      {
+        "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Hum.mp3",
+        "dur": 8.0
+      }
+    ],
+    "len": 8.0,
+    "loop": true,
+    "loop_fade": 0.6,
+    "edits": "trimmed, crossfaded into a loop"
+  },
+  "shields_raise": {
+    "group": "Ship",
+    "what": "Shields coming up: a rising energy swell.",
+    "layers": [
+      {
+        "src": "oga/electricity-game-sound-pack:powerup.wav"
+      },
+      {
+        "src": "oga/seamless-energy-emission-loop:movingshield_sound.ogg",
+        "dur": 1.6,
+        "gain": -8,
+        "fadein": 0.4,
+        "fadeout": 0.6
+      }
+    ],
+    "len": 2.1,
+    "edits": "layered with a shield hum"
+  },
+  "shields_collapse": {
+    "group": "Ship",
+    "what": "A shield facing failing: the energy draining away with a last shield thud.",
+    "layers": [
+      {
+        "src": "oga/electricity-game-sound-pack:powerdown.wav"
+      },
+      {
+        "src": "oga/space-ship-shield-sounds:space shield sounds - 1.wav",
+        "gain": -4
+      }
+    ],
+    "len": 2.0,
+    "edits": "layered"
+  },
+  "ui_clunk": {
+    "group": "Console",
+    "what": "A metal console key (the modelled skins): a switch with a heavy clunk under it.",
+    "layers": [
+      {
+        "src": "oga/51-ui-sound-effects-buttons-switches-and-clicks:switch7.wav",
+        "pitch": 0.75
+      },
+      {
+        "src": "oga/100-cc0-metal-and-wood-sfx:metal_hit_03.ogg",
+        "pitch": 0.7,
+        "gain": -6,
+        "lp": 3000
+      }
+    ],
+    "len": 0.4,
+    "peak_db": -9.0,
+    "edits": "slowed to 0.7-0.75, layered, lowpassed"
+  },
+  "amb_bridge": {
+    "group": "Ambience",
+    "what": "The bridge (loops): computers working, the air handling, the ship's hum, under everything.",
+    "layers": [
+      {
+        "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Computer room ambience.mp3",
+        "pan": -0.3
+      },
+      {
+        "src": "oga/airvent-loop:airvent-large-loop.wav",
+        "repeat": 2,
+        "gain": -6,
+        "pan": 0.4
+      },
+      {
+        "src": "oga/generator-loop:loop_generator_1.mp3",
+        "repeat": 3,
+        "gain": -12
+      }
+    ],
+    "len": 15.0,
+    "stereo": true,
+    "loop": true,
+    "loop_fade": 1.0,
+    "distance": {
+      "lp": 4000,
+      "wet": 0.25
+    },
+    "peak_db": -6.0,
+    "edits": "three beds layered and panned, compressed, lowpassed and given a room, crossfaded into a loop"
+  }
+}

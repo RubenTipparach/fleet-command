@@ -39,6 +39,12 @@ else
 fi
 [ -s "$TMP/raw.wav" ] || { echo "render produced no audio" >&2; exit 1; }
 
+# a looping cue (// @loop) is cut at its scored length with the tail folded onto its start
+if grep -q '^// *@loop' "$SCORE"; then
+  ffmpeg -hide_banner -loglevel error -y -i "$TMP/raw.wav" -c:a pcm_s16le "$TMP/raw16.wav"
+  python3 "$HERE/fold_loop.py" "$SCORE" "$TMP/raw16.wav" "$TMP/raw.wav"
+fi
+
 # clipping in the raw mix means the comp is too hot: lower vol in the score's @mix lines
 python3 "$HERE/check_mix.py" "$TMP/raw.wav"
 

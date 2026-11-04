@@ -35,5 +35,10 @@
 - Version 12 (drag-and-drop repairs, version 73 of the source page; parity 3,225 presses of 380 controls): published 2026-11-04, version id `1793778538-858d`.
 - Version 13 (wide keys `keyw.*` rendered in Blender and nine-sliced for the Tactical grid; weapon aims and independently powered weapons from version 74 of the source page; parity 3,261 presses of 391 controls): published 2026-11-04, version id `1793780737-78bf`.
 - Version 14 (the boarding party of version 75 of the source page; parity 3,432 presses of 394 controls): published 2026-11-04, version id `1793782743-4feb`.
+- Version 15 (one console for every skin, version 76 of the source page; the Allied fleet and Three races scenes; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793801244-fa5c`.
+- Version 16 (expanded panels on a rendered backing of blackened steel, never black; version 77 of the source page; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793804657-82d3`.
+- Version 16 rebuilt after merging main (2026-11-04; parity 3,917 presses of 396 controls): version id `1793806624-cff7`.
+- Version 17 (version 78 of the source page, no visible Krai change; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793818997-51ff`.
+- Version 18 (version 79 of the source page; merged onto another session's live `1793822395-b7e4`, whose black under the strips is carried; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793823168-2879`.
 - 2026-11-04, desktop session (Mac), owner: "this top part needs a blcak background, same with bottom stuff too": version 18, version id `1793822395-b7e4`, a text edit on the live version: the strips drawn on black (no change where the Krai metal covers them).
 - 2026-11-04, desktop session (Mac), owner: "add shield display to all ships as well": version 20, version id `1793828141-484d`, a text edit on the live version: every ship shows its 3D shield display.

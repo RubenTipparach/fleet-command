@@ -15,8 +15,16 @@ text below is Crab Breeze's: its paths match this repository, its musical direct
 
 - **Direction** (survey `S1`, owner 2026-10-30): orchestral space opera, brass, strings and timpani,
   over a synth bed. Crab Breeze's moody cyberpunk and 90s drums are that game's, not this one's.
-- **Not here yet**: `docs/design/music.md`, `music/motifs.strudel` and the music page. The first
-  music change writes them.
+- **Here now** (2026-11-04): `docs/design/music.md` (the motifs: the Concord, the wonder chord, the
+  Threat, the Lost), `music/motifs.strudel`, the cues `main_theme`, `battle`, `victory` and `defeat`,
+  and the Fleet Command Music page (`docs/mockups/music.html`, written by `tools/music/music_page.py`
+  on the page code shared with the Sounds page, `tools/audio/audio_page.py`). Read "the Crab Breeze
+  Music page" below as that page, and `openspec/changes/music` as this repository's change.
+- **Added here**: `// @loop` in a score's header makes `render.sh` cut the render at its scored
+  length and fold the tail onto the start (`tools/music/fold_loop.py`), for cues the game loops.
+- **No faction themes** until the owner sets that faction's culture (CLAUDE.md section 1, survey S2).
+  The Threat stands for any enemy.
+- Sound effects are the `sound-effects` skill.
 - **Proven here on 2026-10-30**: a two-bar test score went through `tools/music/render.sh` (Strudel
   to MIDI and an LMMS project, LMMS 1.2 headless with GeneralUser GS, loudness-normalised OGG and MP3).
 - **Setup in a fresh cloud session** (about two minutes):
