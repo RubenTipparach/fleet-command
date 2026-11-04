@@ -681,7 +681,11 @@ const KC = (() => {
   for (let i = 0; i < 16; i++) star.push(pol(i % 2 ? 2.9 : (i % 4 === 0 ? 8.5 : 5.2), -45 + i * 22.5, ...S));
   const ring = `M${O[0] + RING[0]} ${O[1]}A${RING[0]} ${RING[0]} 0 1 0 ${O[0] - RING[0]} ${O[1]}A${RING[0]} ${RING[0]} 0 1 0 ${O[0] + RING[0]} ${O[1]}Z`;
   const ringIn = `M${O[0] + RING[1]} ${O[1]}A${RING[1]} ${RING[1]} 0 1 0 ${O[0] - RING[1]} ${O[1]}A${RING[1]} ${RING[1]} 0 1 0 ${O[0] + RING[1]} ${O[1]}Z`;
-  return { body: polyD(out.concat(inn)), fangs, thin: polyD(thinOut.concat(thinIn.reverse())), star: polyD(star), S, ring, ringIn,
+  const bodyPts = out.concat(inn), thinPts = thinOut.concat(thinIn.slice().reverse());
+  const circle = (r) => Array.from({ length: 180 }, (_, i) => pol(r, i * 2, ...O));
+  // The same shapes as polygons (grid units, y down), for the 3D badge (tools/emblems/export_parts.mjs krai).
+  const parts = { ring: [circle(RING[0]), circle(RING[1])], field: [circle(RING[1])], thin: thinPts, body: bodyPts, fangs, founder: 0, star, S };
+  return { body: polyD(bodyPts), fangs, thin: polyD(thinPts), star: polyD(star), S, ring, ringIn, parts,
     C1, C2, r1, r2, k, a0, span, RING, O, at: (r, a, c) => pol(r, a, ...c) };
 })();
 // The torc in two tiers (owner, 2026-11-04: "I like the overall shape of fang torc, I want a more complex version of this
@@ -946,6 +950,8 @@ async function measureOutline(svgInner) {
   const parts = count(true), regions = count(false);
   return { parts, holes: regions - 1, ok: parts === 1 && regions === 1 };
 }
+// The Krai's picked emblem (KC+, the fang torc) as polygons for its 3D badge (tools/emblems/export_parts.mjs krai).
+window.EMBLEM_PARTS_KRAI = () => ({ key: 'KC+', name: 'The Fang Torc', grid: 100, ...KC.parts });
 // A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
 window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
 window.EMBLEM_CHECK = async () => {

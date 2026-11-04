@@ -8,6 +8,7 @@
   The shapes come from the guide itself (tools/emblems/export_parts.mjs -> assets/emblems/concord/b-e27.parts.json), the
   surfaces from Material Maker graphs (albedo, normal, ORM for AO, roughness and metal, and a specular map), the bell's
   field from a holographic shader below. Same parts and heights as the Blender render (tools/blender/emblem_concord.py).
+  The studio, materials, part builder, views and shots are the shared badge, docs/mockups/lib/emblem-badge.js.
   Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, window.MOCKUP_READY, window.MOCKUP_SCENE.
 -->
 <style>
@@ -55,18 +56,23 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 <!-- /INLINE -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script>
-(function () {
+<!-- INLINE docs/mockups/lib/emblem-badge.js -->
+<script data-src="docs/mockups/lib/emblem-badge.js">
+// Fleet Command mockups: an emblem as an orbitable 3D badge, one implementation (CLAUDE.md section 6.1) of the studio, the
+// Material Maker materials, the part builder, the views, the bar and the named shots, shared by every badge page: the
+// Concord's (docs/mockups/concord-emblem-3d.html) and the Krai's (docs/mockups/krai-emblem-3d.html). Each page keeps only
+// its own parts, heights and special materials. Edit it here, then re-run tools/mockups/inline_data.py on each page.
+//
+// FCEmblemBadge(THREE, { stage, bar, maps, views, onFrame }) returns { scene, badge, mmMaterial, slab, start }.
+//   maps     the Material Maker maps by name (docs/mockups/lib/emblem-materials.json's pieces)
+//   views    { name: [x, y, z, tx, ty] } camera positions (mm) for a wide screen; on a narrow one they move back
+//   onFrame  (dt, frozen) called every frame (a page's animated material)
+//   start(shots, first)  starts the loop with the bar's view buttons and sets window.MOCKUP_SHOTS from
+//            { shotName: [viewName, setup] } (setup runs before the shot, after the scene is frozen)
+// 1 three.js unit = 1 mm; the badge is 100 mm across, its parts given as polygons on the guide's 100 unit grid (y down).
+window.FCEmblemBadge = function FCEmblemBadge(THREE, opts) {
 'use strict';
-const data = (src) => JSON.parse(document.querySelector(`script[data-src="${src}"]`).textContent);
-const PARTS = data('assets/emblems/concord/b-e27.parts.json');
-const MAPS = data('docs/mockups/lib/emblem-materials.json').pieces;
-const RENDERS = data('assets/emblems/concord/b-e27.renders.json').pieces;
-document.getElementById('r-face').src = RENDERS.face.data;
-document.getElementById('r-angle').src = RENDERS.angle.data;
-
-// ---- the scene: 1 three.js unit = 1 mm --------------------------------------------------------------------------
-const stage = document.getElementById('stage');
+const { stage, bar, maps, views } = opts;
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputEncoding = THREE.sRGBEncoding;
@@ -74,7 +80,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 stage.append(renderer.domElement);
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x05070d);
+const BLACK = 0x05070d;
+scene.background = new THREE.Color(BLACK);
 const pmrem = new THREE.PMREMGenerator(renderer);
 // What the polished faces reflect: the same studio as the Blender render (tools/blender/emblem_render.py environment()):
 // near black toward the viewer, a bright sky above with a warm band at the horizon, a dark floor, plus a cool and a warm
@@ -107,13 +114,14 @@ scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x080a12, 0.08));
 const loader = new THREE.TextureLoader();
 const TILE_MM = 50; // every emblem graph tiles every 0.05 m
 function tex(name, colour) {
-  const t = loader.load(MAPS[name].data);
+  const t = loader.load(maps[name].data);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1 / TILE_MM, 1 / TILE_MM); t.anisotropy = 8;
   if (colour) t.encoding = THREE.sRGBEncoding;
   return t;
 }
 // A physical material from one graph: colour, normal, AO (ORM red), roughness (ORM green), metal (ORM blue) and the
-// specular map (three.js reads a specular colour map's RGB; ours is grey, so it scales the specular strength).
+// specular map (three.js reads a specular colour map's RGB; ours is grey, so it scales the specular strength). A `color`
+// in extra tints the graph's colour, as the Blender render's tint does.
 function mmMaterial(name, extra = {}) {
   const orm = tex(`${name}/orm`, false);
   return new THREE.MeshPhysicalMaterial(Object.assign({
@@ -122,6 +130,79 @@ function mmMaterial(name, extra = {}) {
     specularColorMap: tex(`${name}/specular`, true), specularIntensity: 1,
   }, extra));
 }
+
+// ---- the parts, built from the guide's polygons ------------------------------------------------------------------
+const badge = new THREE.Group();
+scene.add(badge);
+const toV2 = (p) => new THREE.Vector2(p[0] - 50, 50 - p[1]); // grid (y down) to mm, centred, y up
+const area = (ring) => { let a = 0; for (let i = 0; i < ring.length; i++) { const [x1, y1] = ring[i], [x2, y2] = ring[(i + 1) % ring.length]; a += x1 * y2 - x2 * y1; } return Math.abs(a / 2); };
+// A part between z0 and z1 mm whose outline is the given rings (the largest is the outline, the rest its holes), its
+// edges rounded by `bevel` mm, kept to the drawn size (the bevel is taken from inside the outline).
+function slab(rings, z0, z1, bevel, material) {
+  const sorted = rings.slice().sort((a, b) => area(b) - area(a));
+  const shape = new THREE.Shape(sorted[0].map(toV2));
+  for (const h of sorted.slice(1)) shape.holes.push(new THREE.Path(h.map(toV2)));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: Math.max(0.01, z1 - z0 - 2 * bevel), bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelOffset: -bevel, bevelSegments: 4, curveSegments: 1 });
+  geo.translate(0, 0, z0 + bevel);
+  geo.setAttribute('uv2', geo.attributes.uv); // the AO map reads the second UV set
+  const mesh = new THREE.Mesh(geo, material);
+  badge.add(mesh);
+  return mesh;
+}
+
+// ---- views, background, motion, shots -----------------------------------------------------------------------------
+const fit = () => Math.max(1, 1.15 / camera.aspect);
+const VIEWS = {};
+for (const [n, [x, y, z, tx, ty]] of Object.entries(views)) VIEWS[n] = () => { const k = fit(); camera.position.set(tx + (x - tx) * k, ty + (y - ty) * k, 1 + (z - 1) * k); controls.target.set(tx, ty, 1); };
+let spin = false, frozen = false;
+const btn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.onclick = fn; bar.append(b); return b; };
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+function start(shots, first) {
+  for (const [n, f] of Object.entries(VIEWS)) btn(n, f);
+  const spinB = btn('Turn', () => { spin = !spin; spinB.setAttribute('aria-pressed', String(spin)); });
+  const bgB = btn('White background', () => { const w = scene.background.getHex() === BLACK; scene.background.set(w ? 0xffffff : BLACK); bgB.textContent = w ? 'Black background' : 'White background'; });
+  addEventListener('resize', resize); resize();
+  VIEWS[first]();
+  const meter = document.createElement('span'); meter.className = 'meter'; bar.append(meter);
+  const clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const dt = clock.getDelta();
+    if (opts.onFrame) opts.onFrame(dt, frozen);
+    if (spin) badge.rotation.y += dt * 0.5;
+    controls.update();
+    renderer.render(scene, camera);
+    meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws`;
+  });
+  // Shots: frozen, so every shot is the same each run.
+  window.MOCKUP_SHOTS = {};
+  for (const [name, [v, setup]] of Object.entries(shots)) window.MOCKUP_SHOTS[name] = () => { frozen = true; badge.rotation.y = 0; spin = false; if (setup) setup(); VIEWS[v](); };
+  window.MOCKUP_SCENE = scene;
+  requestAnimationFrame(() => requestAnimationFrame(() => { window.MOCKUP_READY = true; }));
+}
+
+return { scene, badge, mmMaterial, slab, start };
+};
+</script>
+<!-- /INLINE -->
+<script>
+(function () {
+'use strict';
+const data = (src) => JSON.parse(document.querySelector(`script[data-src="${src}"]`).textContent);
+const PARTS = data('assets/emblems/concord/b-e27.parts.json');
+const MAPS = data('docs/mockups/lib/emblem-materials.json').pieces;
+const RENDERS = data('assets/emblems/concord/b-e27.renders.json').pieces;
+document.getElementById('r-face').src = RENDERS.face.data;
+document.getElementById('r-angle').src = RENDERS.angle.data;
+
+// ---- the studio, materials, part builder, views and shots: the shared badge (docs/mockups/lib/emblem-badge.js) -----
+let holoTime = 0;
+const B = window.FCEmblemBadge(THREE, {
+  stage: document.getElementById('stage'), bar: document.getElementById('bar'), maps: MAPS,
+  views: { face: [0, 0, 250, 0, 0], 'three quarter': [110, -150, 170, 0, -2], edge: [-210, 60, 70, 0, 0], close: [28, -20, 95, 0, 12] },
+  onFrame: (dt, frozen) => { if (!frozen) holoTime += dt; holo.uniforms.time.value = holoTime; },
+});
+const { mmMaterial, slab } = B;
+
 const platinum = mmMaterial('emblem_platinum', { envMapIntensity: 1.0 });
 // The ship is iridescent pearl (owner, 2026-11-04: "Central shape should be like irridescent"): a thin film over the
 // pearl enamel whose colour runs through blue, violet and green with the viewing angle.
@@ -200,24 +281,7 @@ const holo = new THREE.ShaderMaterial({
 });
 const fieldSide = new THREE.MeshStandardMaterial({ color: '#0a1030', roughness: 0.5 });
 
-// ---- the parts, built from the guide's polygons ------------------------------------------------------------------
-const toV2 = (p) => new THREE.Vector2(p[0] - 50, 50 - p[1]); // grid (y down) to mm, centred, y up
-const area = (ring) => { let a = 0; for (let i = 0; i < ring.length; i++) { const [x1, y1] = ring[i], [x2, y2] = ring[(i + 1) % ring.length]; a += x1 * y2 - x2 * y1; } return Math.abs(a / 2); };
-// A part between z0 and z1 mm whose outline is the given rings (the largest is the outline, the rest its holes), its
-// edges rounded by `bevel` mm, kept to the drawn size (the bevel is taken from inside the outline).
-function slab(rings, z0, z1, bevel, material) {
-  const sorted = rings.slice().sort((a, b) => area(b) - area(a));
-  const shape = new THREE.Shape(sorted[0].map(toV2));
-  for (const h of sorted.slice(1)) shape.holes.push(new THREE.Path(h.map(toV2)));
-  const geo = new THREE.ExtrudeGeometry(shape, { depth: Math.max(0.01, z1 - z0 - 2 * bevel), bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelOffset: -bevel, bevelSegments: 4, curveSegments: 1 });
-  geo.translate(0, 0, z0 + bevel);
-  geo.setAttribute('uv2', geo.attributes.uv); // the AO map reads the second UV set
-  const mesh = new THREE.Mesh(geo, material);
-  badge.add(mesh);
-  return mesh;
-}
-const badge = new THREE.Group();
-scene.add(badge);
+// ---- the parts, built from the guide's polygons (the shared slab builder) ----------------------------------------
 // Heights (mm) as in the Blender render: no two faces share a plane.
 slab(PARTS.frame, 0.0, 3.6, 0.8, platinum);
 slab(PARTS.field, 0.3, 1.0, 0.15, [holo, fieldSide]);
@@ -229,42 +293,10 @@ slab([PARTS.lensTop, PARTS.star], 1.9, 2.9, 0.3, pearl);  // and its upper tier 
 slab([PARTS.star], 0.5, 1.9, 0.2, starFloor);            // the star's floor set in the hole: a pocket 1.0 mm deep
 const lt = PARTS.light;
 const dome = new THREE.Mesh(new THREE.SphereGeometry(lt.r, 32, 16), bowLight);
-dome.scale.z = 0.4; dome.position.set(lt.cx - 50, 50 - lt.cy, 2.4); badge.add(dome);
+dome.scale.z = 0.4; dome.position.set(lt.cx - 50, 50 - lt.cy, 2.4); B.badge.add(dome);
 
-// ---- views, background, motion ----------------------------------------------------------------------------------
-// Each view's camera offset is for a wide screen; on a narrow one it moves back so the whole badge still fits.
-const fit = () => Math.max(1, 1.15 / camera.aspect);
-const view = (x, y, z, tx, ty) => () => { const k = fit(); camera.position.set(tx + (x - tx) * k, ty + (y - ty) * k, 1 + (z - 1) * k); controls.target.set(tx, ty, 1); };
-const VIEWS = {
-  face: view(0, 0, 250, 0, 0),
-  'three quarter': view(110, -150, 170, 0, -2),
-  edge: view(-210, 60, 70, 0, 0),
-  close: view(28, -20, 95, 0, 12),
-};
-let spin = false, frozen = false;
-const bar = document.getElementById('bar');
-const btn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.onclick = fn; bar.append(b); return b; };
-for (const [n, f] of Object.entries(VIEWS)) btn(n, f);
-const spinB = btn('Turn', () => { spin = !spin; spinB.setAttribute('aria-pressed', String(spin)); });
-const bgB = btn('White background', () => { const w = scene.background.getHex() === 0x05070d; scene.background.set(w ? 0xffffff : 0x05070d); bgB.textContent = w ? 'Black background' : 'White background'; });
-function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
-addEventListener('resize', resize); resize();
-VIEWS['three quarter']();
-const meter = document.createElement('span'); meter.className = 'meter'; bar.append(meter);
-const clock = new THREE.Clock();
-renderer.setAnimationLoop(() => {
-  const dt = clock.getDelta();
-  if (!frozen) holo.uniforms.time.value += dt;
-  if (spin) badge.rotation.y += dt * 0.5;
-  controls.update();
-  renderer.render(scene, camera);
-  meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws`;
-});
-
-// Shots: a fixed time so every shot is the same each run.
-const shot = (view, spinY = 0) => () => { frozen = true; holo.uniforms.time.value = 4.0; badge.rotation.y = spinY; spin = false; VIEWS[view](); };
-window.MOCKUP_SHOTS = { three_quarter: shot('three quarter'), face: shot('face'), edge: shot('edge'), close: shot('close') };
-window.MOCKUP_SCENE = scene;
-requestAnimationFrame(() => requestAnimationFrame(() => { window.MOCKUP_READY = true; }));
+// ---- shots: a fixed time so every shot is the same each run ------------------------------------------------------
+const still = () => { holoTime = 4.0; };
+B.start({ three_quarter: ['three quarter', still], face: ['face', still], edge: ['edge', still], close: ['close', still] }, 'three quarter');
 })();
 </script>

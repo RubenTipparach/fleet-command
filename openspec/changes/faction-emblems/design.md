@@ -103,7 +103,11 @@ ring and no thin crescent, for the Krai hulls. A three-point emperor's star over
 emperor cheif ... a star ruling over the 3 great houses") was drawn and then set aside for the forge star; the emperor
 and the three great houses stand as Krai culture. Flagged to the owner: a star beside a crescent is close to the star and
 crescent, a real nation's and faith's symbol (rule E8); the eight points, the facets, the fangs and the ring keep it apart.
-Next: the 3D badge of KC+, and KC on the Krai ships' livery (the Krai ship page belongs to the Concord ships thread).
+**The 3D badge** (owner, 2026-11-04: "make the 3d version of the fang torc"): mockup 14, `docs/mockups/krai-emblem-3d.html`,
+built from the guide's own parts (`assets/emblems/krai/kc.parts.json`) in Blender (`tools/blender/emblem_krai.py`) and
+three.js on the shared badge library (`docs/mockups/lib/emblem-badge.js`). Blade steel ring, torc, thin crescent, forge
+star and fangs, a blackened steel field, the founder's fang in blood enamel; heights in mockup-work.md section 14.
+Next: KC on the Krai ships' livery (the Krai ship page belongs to the Concord ships thread).
 
 ## The rules for an emblem
 
