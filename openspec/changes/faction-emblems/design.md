@@ -29,6 +29,49 @@ and only then sculpted in 3D. That method, sixteen rules compiled from the owner
 STARFLEET Visual Standards Manual 2026, and the Concord's four sketches live on the Emblem Design Guide
 (`docs/design/emblem-guide.html`). The ten flat emblems below are placeholders until each faction's sketch is picked.
 
+## The Concord's badge in 3D (2026-11-04)
+
+B-E23, the rounded peak, built as a badge 100 mm across from the guide's own shapes. Heights (mm), so no two faces
+share a plane: field 0.3 to 1.0, star floor 0.5 to 1.9 (a pocket 0.9 mm deep in a hole through the saucer), nacelles
+and tail 0.5 to 2.4, saucer 0.6 to 2.8, frame 0 to 3.6. Frame polished platinum; ship iridescent pearl enamel (a thin
+film and an angle-dependent pastel shift); field a holographic night (nebula and stars at three depths that move with
+the viewing angle, under a colour-shifting sheen). Materials are Material Maker graphs with albedo, normal, ORM and a
+specular map derived from the graph's own roughness and occlusion. The emblem light rig was scaled for a badge this
+size: at 3 W the key lamp clipped white enamel to flat white (measured, 255 everywhere); at 0.55 W the pearl reads
+about 239 of 255 and every bevel shows.
+
+Since then (owner, 2026-11-04): the outline is B-E25, the pointed peak (B-E23's sketch with an arrow foot and a pointed
+top), the star is satin blue, and the ship carries a small layer of detail ("a double bevel on the saucer", "segment
+marks on the legs"). Heights now (mm): saucer 0.6 to 2.3 with an upper tier inset 1.6 mm rising 1.9 to 2.9, so its
+rim steps twice; each leg body 0.5 to 1.9 under four segments 0.5 to 2.4, so the joins read as grooves 0.5 mm deep;
+tail 0.5 to 2.4. The upper tier and the segments come from the guide's own shapes (`lensTop`, `legSegments` in
+`window.EMBLEM_PARTS`), so the sketch, the render and the three.js badge stay one source.
+
+## On a Concord hull (2026-11-04)
+
+Mockup 11 paints B-E25 on the Concord line's Petrel frigate (88 m) in the hull's colour by a planar projection in its
+shader (no decal plane). The owner set the marking (2026-11-04: "too many logos on the hull there", "1/2 size on the left
+side", "only one logo"): **one emblem, on the port side, at half of E7's size**: 3 % of the ship's length (2.6 m on the
+Petrel). This replaces E7's 6 % and E12's three marks for Concord hulls. Measured placement: aft of the pylon root the
+swept pylon hides the side from view, so the emblem sits on the bow's flat side just ahead of the last windows (z 33 m).
+The paint is the solid version (pearl on a night field; owner: "on the ship hull I like the solid shape more"). At battle distance on desktop it measures about 19 px tall (phones set aside for now, owner: "dont care about phone right
+now").
+
+**The Concord's emblem is B-E27, the smooth keyhole** (owner, 2026-11-04: "Keyhole but smoother", then "Yea ok. I'll
+accept that"): B-E15's keyhole drawn as one smooth curve, its head a flattened oval over the saucer, measured as one
+closed outline with the ship 5.3 units clear. On the hull it is the solid version with a cyan star (`#2fd0f0`; owner:
+"Solid color variant with a cyan colored star in the middle"). The 3D badge (mockup 10) is rebuilt on B-E27 (owner: "Also render the 3d version too"),
+its star satin cyan: the near-white pearl enamel's maps tinted `#2fd0f0`, since Signal blue cannot be tinted up to cyan.
+
+**On the hull, on the livery band** (owner, 2026-11-04: "Have it use the same color scheme as the liveries and integrate it
+into one of the stripes", "don't rotate our logo", "The hull should break the stripe livery at that spot", then "No
+outline, place emblem on liver stripe dp not add livery in this change"): the emblem stands upright on the forward livery
+band on the port side, its field the band's own stripe colour (read from the Concord line's livery table) with no outline,
+a pearl ship and the cyan star. The band is cut away round it in bare plating, 0.15 m clear of the emblem where the band
+crosses it: an arc over the head and a flat edge under the flat foot (owner: "tighten the livery line a bit", "bottom
+line can be flat to conform to the key hole/beacon shape more"). This change adds no livery; the band is the Concord line's own. (A pinstripe layout, after a reference picture of
+an emblem heading two pinstripes, was tried and dropped.)
+
 ## The rules for an emblem
 
 | Rule | Says | Why |
@@ -105,4 +148,4 @@ The ship bible changes only if the owner accepts it.
 | E9 | Ombrai | An eye in a crescent, painted on their hulls |
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |
-| E12 | Where on a hull? | Dorsal forward of the bridge and on each flank, at least 6 % of ship length |
+| E12 | Where on a hull? | Decided for the Concord (owner, 2026-11-04): one emblem on the port side, 3 % of ship length |

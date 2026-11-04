@@ -50,3 +50,20 @@
   region). Three different outlines beside B-E2: B-E14 the capsule, B-E15 the keyhole, B-E16 the five-sided house.
 - Version 9 published 2026-11-03: two rounded triangles for B (owner: "can we try a triangle shape with cruved ends?"):
   B-E17 (corners rounded 10) and B-E18 (rounded 20), each one closed outline, the nacelles standing on the base.
+- Version 10 published 2026-11-04: the trapezoid (B-E19) and the chevron (B-E20) for B (owner: "What about a more
+  trapazpidal shape and another one more Chevron"), both one closed outline, joins measured.
+- Version 11 published 2026-11-04: B-E21 the upside-down chevron and B-E22 the curved-top trapezoid (owner: "upside down
+  chevron, another alternate shape maybe a more curved top trapezoid?"), both one closed outline, joins measured.
+- Version 12 published 2026-11-04: B-E23 the rounded peak, drawn from the owner's red line over B-E22 ("something more
+  like this?"): the trapezoid's sides rise from their shoulders in one curve to a rounded peak; now B's main sketch.
+- Version 13 published 2026-11-04: B-E23 links to its 3D badge (mockup 10); the owner's notes on 3D and iridescence.
+- Version 14 published 2026-11-04: the pressed star is satin Signal blue (owner: "make the start like a satin in blue");
+  B-E24 the arrow-foot peak ("what if it was a slightly arrow shaped at the bottom") and B-E25 the pointed peak ("Can we
+  make the to point too?"), B-E25 now B's main sketch.
+- 2026-11-04, version 15 (`1793776102-a400`): the owner's note on the saucer's double bevel and the leg segment marks; `lensTop` and `legSegments` added to `window.EMBLEM_PARTS`.
+- 2026-11-04, version 16 (`1793776690-c54f`): the owner's note on the corners; `inset` clips exactly, `polys` samples segment by segment so each path corner is a vertex.
+- 2026-11-04, version 17 (`1793779365-6ec3`): the owner's notes on the hull marking (one emblem, half size, port side).
+- 2026-11-04, version 18 (`1793779848-702d`): B-E26, the beacon, from the owner's sketch ("can we try a shape like this?"), measured: one closed outline, parts 5.0 units apart.
+- 2026-11-04, version 19 (`1793781463-2f51`): B-E26 tightened (about 6 units of field above and below the ship, was 17 to 20); B-E15 marked as one of the owner's candidates.
+- 2026-11-04, version 20 (`1793786521-e569`): B-E26 rejected (owner: "Beacon sucks"); B-E27, the smooth keyhole ("Keyhole but smoother"), measured: one closed outline, parts 5.3 units apart.
+- 2026-11-04, version 21 (`1793787092-93c4`): B-E27 accepted and made B's main sketch ("Yea ok. I'll accept that"); its parts exported to `assets/emblems/concord/b-e27.parts.json`.
