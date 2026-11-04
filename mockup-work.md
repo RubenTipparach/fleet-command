@@ -244,7 +244,9 @@ tally, every label and icon inside the tube; its titles and officer slots on ren
 pip; its column on a rendered plain gunmetal backing plate, and every metal skin's expanded panels on their own backing
 (the Krai's blackened steel); the rule in CLAUDE.md section 7. Then "this text is hard to read" (a key's name on hover,
 dark letters on the lit tube) and "remove underline" (the title placard's bone groove): version 78 (Krai v17, Ssarith
-v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove.
+v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove. Then, of an
+expanded panel: "background should wrap panel properly", "when expanded": version 79 (Krai v18, Ssarith v5), the backing
+clipped to the panel's side of the screen (a mirrored copy had run into the live view) and its band clear of the tally.
 
 ## 3. Look dev
 

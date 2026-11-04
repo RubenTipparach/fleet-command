@@ -39,7 +39,9 @@ letters on the flaring tube through its scan lines. Other skins keep the pressed
 `console.backing`, 480 x 1080, one plate of the frames' plain olive gunmetal behind the column (no hide texture: CLAUDE.md
 section 1, "A species' looks are not its design"), with bolts down both edges,
 a groove along each edge, the tally at its foot and fronds over two corners. Behind an expanded panel the page lays a
-plain band of it (x 100-390) side by side, every other copy mirrored. The Krai's expanded panels get their own
+plain band of it (x 100-390, y 40-1040, clear of the tally and fronds) side by side, every other copy mirrored, clipped to
+the panel's side of the screen so it wraps the panel and stops where the live view starts (owner, 2026-11-04: "background
+should wrap panel properly", "when expanded"). The Krai's expanded panels get their own
 `console.backing` in blackened blade steel.
 
 **Names**: ships Sskarr, Hissath and Thrael; ranks Unblooded, Tracker, Stalker and Huntmaster; thirteen officers.
