@@ -55,3 +55,4 @@
 - 2026-11-03, cloud session (Concord ships thread): version 57, version id `1793748454-d560`: M7 v11 (the Krai line and damage), M6 v15 (shared damage module).
 - 2026-11-04, cloud session (Concord ships thread): version 58, version id `1793755601-4b1e`: M7 v12 (the Krai hull breaking apart, a bayonet per class), M6 v16 (shared breakup module).
 - 2026-11-04, cloud session (Concord ships thread): version 60, version id `1793761970-4cbf`, built on the live version 59 (another session's M8 v9 and Analog Panel Bible v4 kept): M7 v13, M6 v17.
+- 2026-11-04, cloud session (Concord ships thread): version 75, version id `1793781932-3252`, built on the live version 74 (other sessions' entries kept): M7 v16.

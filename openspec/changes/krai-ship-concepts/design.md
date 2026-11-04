@@ -180,7 +180,8 @@ from the plan, scaled by the class's length against the frigate's 87 m.
 - **Livery** (owner, 2026-11-04: "ships dont have much liveries on main hull, please add them"), painted in the hull shader
   so nothing lies on the plating to fight it: a crimson war stripe low on each flank, widening forward and sweeping up
   into a point toward the bow; bronze pin lines either side; battle tallies in fives aft above it, more on the bigger
-  classes (3, 7, 12, 19); a crimson talon on the bow's top and bottom faces. The hull only, not the nacelles.
+  classes (3, 7, 12, 19). The hull only, not the nacelles. A crimson talon on the bow's top and bottom faces was
+  taken off the same day (owner: "great liveries, but I'd remove the triangle on top if the noses").
 - **Nacelles** (owner, 2026-11-04: "nacelles still kinda overly simplistic"): six framed plasma vents down the outboard
   face (the old lit strip was inside the blade, so never seen), three bronze collars, a raked fin above and a smaller one
   below, two conduits along the inboard face in clamps, and a collector at the bow.

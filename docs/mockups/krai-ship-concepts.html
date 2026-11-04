@@ -100,7 +100,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Krai <span>Warhost</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 7, v13. <code>krai-ship-concepts</code>. The Krai line on the Ship Design Bible, corvette to dreadnought: rooms first, the hull fitted round them, the Krai's own parts and exterior, and battle damage. Drag to orbit, pinch or scroll to zoom.</p>
+    <p class="sub">Mockup 7, v16. <code>krai-ship-concepts</code>. The Krai line on the Ship Design Bible, corvette to dreadnought: rooms first, the hull fitted round them, the Krai's own parts and exterior, and battle damage. Drag to orbit, pinch or scroll to zoom.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -149,7 +149,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <ul>
         <li>Four classes, each fitted round its own rooms by the same builder: corvette (47 m, three decks, twin bow guns, crew 14), frigate (87 m, four decks, a spinal cannon, crew 36), cruiser (126 m, five decks, two spinal cannons, two nacelle pairs, crew 120) and dreadnought (211 m, seven decks, three spinal cannons, broadside batteries, crew 420).</li>
         <li>The bayonet is a different shape on each class, more decoration than use: a barbed knife on the corvette, a thin needle on the frigate, a wide crescent standing across the nose on the cruiser and the dreadnought, its horns raked back above and below the hull, with spurs and two openings (owner: "I want a wide blade instead of long blade").</li>
-        <li>Livery, painted into the hull (owner: "ships dont have much liveries on main hull"): a crimson war stripe low on each flank that widens forward and sweeps up toward the bow, bronze pin lines either side, battle tallies in fives aft above it (3 on the corvette, 7 on the frigate, 12 on the cruiser, 19 on the dreadnought), and a crimson talon on the bow's top and bottom faces.</li>
+        <li>Livery, painted into the hull (owner: "ships dont have much liveries on main hull"): a crimson war stripe low on each flank that widens forward and sweeps up toward the bow, bronze pin lines either side, battle tallies in fives aft above it (3 on the corvette, 7 on the frigate, 12 on the cruiser, 19 on the dreadnought); nothing on the bow's top (owner: "I'd remove the triangle on top if the noses").</li>
         <li>Nacelles: a row of six framed plasma vents down the outboard face, three bronze collars, a raked fin above and a smaller one below, two clamped conduits inboard, and a glowing collector at the bow (owner: "nacelles still kinda overly simplistic").</li>
         <li>Windows lie flat on one face of the section, never across a bend or a taper, and the room behind a window on a sloped face stays level (owner: "window geometry extending a bit over the hull slope", "window paralax on slope has the wrong room angle").</li>
         <li>Only the dreadnought raises a command block above its spine (survey A18: a bridge block on super capital ships only); the others keep the bridge inside.</li>
@@ -1596,8 +1596,8 @@ function hullMat(ship) {
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${lin(HULL.bronze).toArray().map((v) => v.toFixed(3)).join(',')}) * 0.45, seam * 0.5);
         // The livery (owner, 2026-11-04: "ships dont have much liveries on main hull, please add them"), painted, so nothing
         // sits on the plating to fight it: a crimson war stripe low on each flank that widens forward and sweeps up into a
-        // talon toward the bow, bronze pin lines either side, battle tallies in fives aft above it, a crimson talon on the bow's
-        // top and bottom faces. The hull only (not the nacelles, outboard of uLiv2.x).
+        // talon toward the bow, bronze pin lines either side, battle tallies in fives aft above it. No mark on the bow's top and
+        // bottom faces (owner, 2026-11-04: "I'd remove the triangle on top if the noses"). The hull only (not the nacelles).
         float paint = 0.0; vec3 paintC = vec3(0.0);
         { vec3 nA = abs(nK); float t = (vObj.z - uLiv.x)/(uLiv.y - uLiv.x), hgt = uLiv.w - uLiv.z, sc = uLiv2.z;
           if (abs(vObj.x) < uLiv2.x + 0.3) {
@@ -1611,8 +1611,7 @@ function hullMat(ship) {
               float slots = uLiv2.y + floor((uLiv2.y - 1.0)/5.0), ty = vObj.y - (yc + w + 0.9*sc);
               float tally = step(0.0, tz)*step(k, slots - 1.0)*step(inG, 4.5)*step(fract(tz/pitch), 0.42)*step(0.0, ty)*step(ty, 1.5*sc);
               paint = max(band, max(pin, tally)); paintC = band > 0.5 ? crim : brz; }
-            if (nA.y > 0.25 && nA.x < 0.95) { float tal = step(abs(vObj.x), (t - 0.8)/0.17*uLiv2.x*0.7)*step(t, 0.97);
-              if (tal > paint) { paint = tal; paintC = crim; } } } }
+          } }
         diffuseColor.rgb = mix(diffuseColor.rgb, paintC*(0.55 + 0.45*detA)*mix(1.0, 0.85, seam), paint*(1.0 - smoothstep(0.0, 0.5, dChar)));
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03, 0.026, 0.024)*(0.6 + 0.8*nz2), smoothstep(0.0, 0.7, dChar));
         if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.05, 0.045, 0.042);`)
