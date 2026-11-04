@@ -36,3 +36,4 @@
 - Version 13 (wide keys `keyw.*` rendered in Blender and nine-sliced for the Tactical grid; weapon aims and independently powered weapons from version 74 of the source page; parity 3,261 presses of 391 controls): published 2026-11-04, version id `1793780737-78bf`.
 - Version 14 (the boarding party of version 75 of the source page; parity 3,432 presses of 394 controls): published 2026-11-04, version id `1793782743-4feb`.
 - Version 15 (one console for every skin, version 76 of the source page; the Allied fleet and Three races scenes; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793801244-fa5c`.
+- Version 16 (expanded panels on a rendered backing of blackened steel, never black; version 77 of the source page; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793804657-82d3`.
