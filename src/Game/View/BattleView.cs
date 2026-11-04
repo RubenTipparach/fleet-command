@@ -5,7 +5,7 @@
 // projection centres it on the view rectangle, so an expanded panel moves the battle to the right third and it keeps
 // playing. A class with a model is drawn as its approved ship (assets/ships/, exported from the ship mockups: the Concord
 // line, mockup 6, and the Krai line, mockup 7), scaled to the class's battle length; the factions whose ships are not
-// designed yet keep their stand-ins (scenes/standins).
+// designed yet keep their stand-ins (scenes/standins). The sky is the scenario's own nebula (NebulaSky).
 // The camera lock and Target view (battle-console design 4e and 4n; owner, 2026-11-02: "camera needs to yaw to face the
 // enemy target", "we'll want to smooth that rotation", "break camera lock into two buttons, target view ... camera
 // lock, focuses camera on the player from target view"; 2026-11-04: "camera lock is mandatory"): locking a target locks
@@ -31,6 +31,7 @@ public sealed partial class BattleView : Node3D
     private Camera3D _cam = null!;
     private readonly Dictionary<string, Node3D> _models = new();
     private readonly List<OmniLight3D> _strobes = new();
+    private NebulaSky? _sky;
     private Rect2 _view;
     private Vector2 _screen;
 
@@ -78,6 +79,13 @@ public sealed partial class BattleView : Node3D
         foreach (Node3D n in _models.Values) n.QueueFree();
         _models.Clear();
         _strobes.Clear();
+        // the scenario's own nebula sky (each scene its own: data/battle/scenarios.json "sky")
+        if (_sky == null || _sky.Name != "Sky_" + _x.Battle.Scenario.Sky)
+        {
+            _sky?.QueueFree();
+            _sky = NebulaSky.Load(_x.Battle.Scenario.Sky);
+            AddChild(_sky);
+        }
         foreach (Ship s in _x.Battle.Ships)
         {
             Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.LengthM, _strobes) : StandIn(s);
@@ -168,6 +176,7 @@ public sealed partial class BattleView : Node3D
         var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Dist;
         _cam.Position = focus + off;
         _cam.LookAt(focus, Vector3.Up);
+        _sky?.Follow(_cam.GlobalPosition);
         Project();
     }
 

@@ -44,7 +44,7 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
 /// objective, and the first officer's message. The first ship is the one the player commands.</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
-    IReadOnlyList<ShipStart> Ships);
+    IReadOnlyList<ShipStart> Ships, string Sky);
 
 /// <summary>Every tuning number of the stand-in battle (data/battle/tuning.json), units in the names.</summary>
 public sealed record Tuning(
