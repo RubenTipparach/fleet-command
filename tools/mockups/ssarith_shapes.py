@@ -145,10 +145,10 @@ def pieces():
     P = {}
 
     def add(name, kind, size, plate, wells, studs=(), prints=(), live=(), engrave=(), leaves=(), margins=None, stretch=None,
-            roll=3.0, land=3.0, inset=None, dz=-8.0, pad=3.0, scales=False, gap=None):
+            roll=3.0, land=3.0, inset=None, dz=-8.0, pad=3.0, scales=False, gap=None, metal=None):
         P[name] = dict(kind=kind, size=size, margins=margins, stretch=stretch, roll=roll, land=land, inset=inset, plate=plate,
                        wells=list(wells), studs=list(studs), prints=list(prints), live=list(live), engrave=list(engrave),
-                       leaves=list(leaves), dz=dz, pad=pad, scales=scales, gap=gap)
+                       leaves=list(leaves), dz=dz, pad=pad, scales=scales, gap=gap, metal=metal)
 
     # Frames. The panel is a thick cut-cornered gunmetal bezel round one dark tube (the panel's content sits on the
     # glass), a hex bolt sunk in each corner of the bezel. The inset is a smaller tube in a thinner bezel.
@@ -171,13 +171,14 @@ def pieces():
         add(f"button.{state}", "nine", (150, 48), soft_cut(0.5, 1.5, 149.5, 46.5, 9), [("tube", w)],
             prints=[("scan", scan(w, 2.6), 0.6, "scan")], live=[("label", box(20, 14, 130, 34))],
             margins=(0, 22, 0, 22), stretch="x", roll=1.6, land=2.0, dz=-4.0, pad=2.5)
-    # Tabs: a plate with a long tube for the arming state, three bone tally strokes engraved at its left.
-    w = soft_cut(22, 9, 111, 31, 4)
+    # Tabs: a plate with a long tube for the arming state, centred, the same metal at each end. (It carried three tally
+    # strokes at its left until 2026-11-04; owner: "The panel icons have ||| on them but the icons don't fit because of
+    # that extra symbol. I want those cleaned up and fit the incons in the button diaplay".)
+    w = soft_cut(9, 9, 111, 31, 4)
     for state in ("idle", "active"):
         add(f"tab.{state}", "nine", (120, 40), soft_cut(0.5, 2.5, 119.5, 37.5, 7), [("tube", w)],
-            prints=[("scan", scan(w, 2.6), 0.5, "scan")], live=[("label", box(28, 13, 105, 27))],
-            engrave=[[(8 + i * 3.4, 14), (8.6 + i * 3.4, 26)] for i in range(3)], margins=(0, 16, 0, 28), stretch="x",
-            roll=1.6, land=2.0, dz=-4.0, pad=2.5)
+            prints=[("scan", scan(w, 2.6), 0.5, "scan")], live=[("label", box(15, 13, 105, 27))],
+            margins=(0, 16, 0, 16), stretch="x", roll=1.6, land=2.0, dz=-4.0, pad=2.5)
     # Strips: a long gunmetal rail. At its left end a bay holds a small tracker tube (a sweep and its grid); at its right
     # end the hunt's tally is engraved beside a sunk bolt. The middle is plain flat metal, where the readouts sit.
     # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the tracker tube, bolts and tally keep their
@@ -188,6 +189,25 @@ def pieces():
             studs=[(492, 23, 2.4, "bolt"), (492, 49, 2.4, "bolt")],
             prints=[("grid", grid(w, 7.0, 2.8), 0.5, "grid"), ("sweep", [[(45, 36), (64, 27)]], 1.2, "phos")],
             engrave=tally(440, 36, 2, 12.0), margins=(10, 92, 10, 88), stretch="x", roll=2.6, dz=-6.0, pad=2.0)
+    # The column's backing (owner, 2026-11-04: "We need a background for the lleft panel area. Black background is
+    # forbidden for metallic panel based factions"): one hide-textured gunmetal plate the height of the screen behind the
+    # left column's panels, which sit on it in their own frames. Bolts down both edges, a groove engraved along each
+    # edge with the hunt's tallies under it, and fronds over the corners. Where the panels leave it bare (the gaps between
+    # them, the radar row's corners) it reads as the hull of the console, never as black.
+    edge = [[(10, 70), (10, 1010)], [(470, 70), (470, 1010)]]
+    add("console.backing", "hero", (480, 1080), soft_cut(0.5, 0.5, 479.5, 1079.5, 18), [],
+        studs=[(x, y, 3.0, "bolt") for x in (22, 458) for y in (30, 490, 772, 1050)],
+        engrave=edge + tally(196, 1062, 4, 9.0),
+        leaves=[(60, 12, 32, 6.0, 0.2), (420, 1068, 30, 5.8, -2.9)], roll=3.0, dz=-6.0, scales=True)
+    # The title placard (owner, 2026-11-04, of the Hunt's panel titles and officer slots: "the labels here need work, they
+    # are just dark background rectangles with words", "see how we resolved this with the Krai labels"): as the Krai's,
+    # each panel title and officer slot on the frame's rail is struck on a small rendered plate, the text drawn live on the
+    # metal. The Hunt's own: a cut-cornered plate of the dark gunmetal its key bezels are made of (metal="gun"), a
+    # phosphor diamond glowing at its head like a tracker's contact, and a bone groove along its foot, the tally's ink.
+    # No label placard: the labels inside a panel are on the tracker's screen, where text is lit on the glass itself.
+    add("plate.title", "nine", (140, 24), soft_cut(0.5, 0.5, 139.5, 23.5, 6), [("flare", Polygon([(12, 7.5), (16.5, 12), (12, 16.5), (7.5, 12)]))],
+        engrave=[[(26, 20.0), (118, 20.0)]], margins=(0, 24, 0, 24), stretch="x", roll=1.2, land=1.0, dz=-2.0, pad=0.5,
+        metal="gun")
     add("divider", "nine", (128, 10), soft_cut(0.5, 1.5, 127.5, 8.5, 3), [], margins=(0, 12, 0, 12), stretch="x", roll=1.2)
     # Heroes carry the hide-scale texture. The name plate: a tube for the live name; a reticle engraved at its left, the
     # tally of kills at its right, a sunk bolt, and a frond lying on the flat.
@@ -313,7 +333,7 @@ def write(P, films):
                                    plate=pts(p["plate"]), wells=[[kind, pts(g)] for kind, g in p["wells"]],
                                    films=[pts(f) for f in films[name]], studs=[list(s) for s in p["studs"]],
                                    prints=[[role, poly_lines(ls), w, ink] for role, ls, w, ink in p["prints"]],
-                                   engrave=poly_lines(p["engrave"]), leaves=[[list(l), pts(leaf(*l))] for l in p["leaves"]], scales=p["scales"],
+                                   engrave=poly_lines(p["engrave"]), leaves=[[list(l), pts(leaf(*l))] for l in p["leaves"]], scales=p["scales"], metal=p["metal"],
                                    live={role: [round(v, 2) for v in g.bounds] for role, g in p["live"]}, gap=p["gap"])
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:

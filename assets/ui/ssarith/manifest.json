@@ -164,7 +164,7 @@
         0,
         16,
         0,
-        28
+        16
       ],
       "stretch": "x"
     },
@@ -179,7 +179,7 @@
         0,
         16,
         0,
-        28
+        16
       ],
       "stretch": "x"
     },
@@ -291,6 +291,29 @@
         96
       ],
       "file": "crest.png"
+    },
+    "console.backing": {
+      "kind": "hero",
+      "size": [
+        480,
+        1080
+      ],
+      "file": "console.backing.png"
+    },
+    "plate.title": {
+      "kind": "nine",
+      "size": [
+        140,
+        24
+      ],
+      "file": "plate.title.png",
+      "margins": [
+        0,
+        24,
+        0,
+        24
+      ],
+      "stretch": "x"
     },
     "icon.helm": {
       "kind": "hero",

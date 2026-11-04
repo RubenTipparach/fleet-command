@@ -356,6 +356,12 @@ else's artwork):
   keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
   carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
   dashboards, dials, switches".
+- **No black behind a metallic skin's panels** (owner, 2026-11-04: "We need a background for the lleft panel area. Black
+  background is forbidden for metallic panel based factions"). Every skin whose panels are modelled metal (the Kethran,
+  Krai, Ssarith, Ombrai, Kelvane, and the Aelith's shells) has a rendered ground behind its column, and behind an expanded
+  panel: a cast column with the panels formed into it (the Krai's `console.column`) or a backing plate the panels sit on
+  (`console.backing`: the Ssarith's column, and every metal skin's expanded panels, the Krai's included). Black stays only
+  for the flat Concord, whose back-lit vector is drawn on black.
 - **Icons follow one standard in every skin** (owner, 2026-11-03: "these icons need a similar standard", "theyre generic
   enough to be used on any other ui system"): a picture of the job, one subject one icon everywhere, readable at 20 px,
   solid for the thing and lines for what it gives off, colour for state only, and every skin drawing the same subject

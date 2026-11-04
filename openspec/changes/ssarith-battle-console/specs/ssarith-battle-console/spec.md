@@ -9,3 +9,12 @@ state exactly as the same press does in the Concord skin.
 #### Scenario: Parity
 - **WHEN** the parity check presses every control of every named shot in the Ssarith page and in the Concord page
 - **THEN** every press leaves the same state in both
+
+### Requirement: A metallic skin never shows black behind its panels
+
+In the battle console, a skin whose panels are modelled metal SHALL draw a rendered ground behind its left column and
+behind an expanded panel, and SHALL NOT leave the page's black showing there.
+
+#### Scenario: The Ssarith column and an expanded panel
+- **WHEN** the console wears the Ssarith skin, at rest and with the Power panel expanded
+- **THEN** the gaps between the column's panels and the border round the expanded panel show the Hunt's backing plate

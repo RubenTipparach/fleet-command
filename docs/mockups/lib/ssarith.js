@@ -209,9 +209,9 @@ const api = {
     ranks: ['Unblooded', 'Tracker', 'Stalker', 'Huntmaster'],
     officers: { o1: 'Ssev', o2: 'Varrak', o3: 'Thessil', o4: 'Kesh', o5: 'Orrath', o6: 'Sisk', o7: 'Grathul', o8: 'Vesh-Kar', o9: 'Ssorna', o10: 'Tikk', o11: 'Harsk', o12: 'Ossiv', o13: 'Rekh' } },
   link: SS.phos,
-  // labels centred on the tube keys (the skin's --btn-justify: center); on a tab, in its tube (x 22-111 of 120: the
-  // tally engraved at its left is not label room)
-  keyCenter: true, tabField: [22, 9],
+  // labels centred on the tube keys (the skin's --btn-justify: center); on a tab, in its tube (x 9-111 of 120, centred
+  // since 2026-11-04, when the tally at its left came off), with 6 px of glass round the label
+  keyCenter: true, tabField: [15, 15],
   // icon tabs (the station and ship rails) on the square tube key, not the long tab tube, so the icon sits in the glass
   iconKeys: true,
   // panel tab icons at rest in bone, apart from the functional icons' phosphor; glyphs on a dark tube in phosphor

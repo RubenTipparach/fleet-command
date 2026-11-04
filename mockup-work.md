@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v1) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M12 v1](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
+| 12 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v2) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M12 v1](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -234,6 +234,14 @@ Concord, a Krai and a Ssarith ship to hop between, and the quiet Three races sce
 take each ship); every ship you can command has its own officers; the Ssarith Hunt's
 battle console (mockup 12) with tube keys, wide keys and cells rendered in Blender, its 24 icons, and a Hunt stalker in
 simple geometry; the Hunt's icon rails on square tube keys.
+
+Owner, 2026-11-04: "We need a background for the lleft panel area. Black background is forbidden for metallic panel based
+factions", "The panel icons have ||| on them but the icons don't fit because of that extra symbol. I want those cleaned
+up and fit the incons in the button diaplay", "the labels here need work, they are just dark background rectangles with
+words", "see how we resolved this with the Krai labels". Version 77 (Krai v16, Ssarith v2): the Hunt's tabs without the
+tally, every label and icon inside the tube; its titles and officer slots on rendered gunmetal placards with a phosphor
+pip; its column on a rendered hide-pressed backing plate, and every metal skin's expanded panels on their own backing
+(the Krai's blackened steel); the rule in CLAUDE.md section 7.
 
 ## 3. Look dev
 

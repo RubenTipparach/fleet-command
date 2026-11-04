@@ -94,7 +94,10 @@ def leafmat(name):
 
 def mats(K, s):
     ao = min(6.0, -s["dz"] * 0.6)
-    K.m.update(plate=K.mat("hide" if s["scales"] else "drab", lambda: drab("hide" if s["scales"] else "drab", s["scales"])),
+    # a placard's plate is the dark gunmetal of the key bezels (metal "gun"); every other plate the olive drab or the hide
+    plate = (K.mat("gunplate", lambda: metal("gunplate", PAL["gun"], 0.34)) if s.get("metal") == "gun"
+             else K.mat("hide" if s["scales"] else "drab", lambda: drab("hide" if s["scales"] else "drab", s["scales"])))
+    K.m.update(plate=plate,
                bezel=K.mat("gun", lambda: metal("gun", PAL["gun"], 0.34)), groove=K.mat("wall", lambda: printed("wall", PAL["wall"])),
                knob=K.mat("bolt", lambda: metal("bolt", PAL["bolt"], 0.3)), pointer=K.mat("wall", lambda: printed("wall", PAL["wall"])),
                bone=K.mat("bone", lambda: printed("bone", PAL["bone"], 0.5)), leaf=K.mat("leaf", lambda: leafmat("leaf")),
