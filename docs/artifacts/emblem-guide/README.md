@@ -67,3 +67,4 @@
 - 2026-11-04, version 19 (`1793781463-2f51`): B-E26 tightened (about 6 units of field above and below the ship, was 17 to 20); B-E15 marked as one of the owner's candidates.
 - 2026-11-04, version 20 (`1793786521-e569`): B-E26 rejected (owner: "Beacon sucks"); B-E27, the smooth keyhole ("Keyhole but smoother"), measured: one closed outline, parts 5.3 units apart.
 - 2026-11-04, version 21 (`1793787092-93c4`): B-E27 accepted and made B's main sketch ("Yea ok. I'll accept that"); its parts exported to `assets/emblems/concord/b-e27.parts.json`.
+- 2026-11-04, version 22 (`1793795704-e08e`): the Krai Warhost section (owner: "begin krai emblem design, this faction believes strongly in tradition. give them some sort of asymmetric logo"): KA the heirloom blade (recommended), KB the lineage standard, KC the fang torc; feature ids KA1, KB1 and so on; measured joins and outline contrast.

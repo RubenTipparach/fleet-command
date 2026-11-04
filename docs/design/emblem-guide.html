@@ -170,6 +170,12 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
     </div>
   </section>
 
+  <section aria-labelledby="h-krai">
+    <h2 id="h-krai">Krai Warhost</h2>
+    <p class="muted">What the Krai believe (console skins design, and your note of 2026-11-04): war is the only honest test, and rank is won in blood; and they hold hard to tradition: what the ancestors forged, carried and won is kept, carried and added to, never replaced. Lean predators who forge steel and edge everything; knife-blade hulls, a crimson livery with battle tallies. You asked for an asymmetric mark: each direction below is lopsided on purpose, because each records a history that only grows one way. Colours: blade steel and blood red, with a blackened field on black and a bone field on white.</p>
+    <div id="krai-designs" style="display:grid;gap:20px"></div>
+  </section>
+
   <section aria-labelledby="h-next">
     <h2 id="h-next">The other nine, after the Concord</h2>
     <p class="muted">Each gets the same treatment once the Concord's direction is set: sketches with reasons, your pick, then 3D. The flat drafts on mockup 9 are placeholders until then.</p>
@@ -207,6 +213,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'good, begin krai emblem design, this faction believes strongly in tradition. give them some sort of asymmetric logo', means: 'The Krai Warhost\'s section: three asymmetric directions, each a record that only grows one way: KA, the heirloom blade on a tally-notched shield (recommended); KB, the lineage standard with a chevron per elder; KC, the fang torc with a trophy per chief. Blade steel and blood red, measured like the Concord\'s.' },
   { when: '2026-11-04', q: 'Yea ok. I\'ll accept that. Let\'s see it ont be ship hull. Solid color variant with a cyan colored star in the middle.', means: 'B-E27, the smooth keyhole, accepted: now B\'s main sketch. Painted on the Petrel\'s hull (M11) in the solid version with a cyan star.' },
   { when: '2026-11-04', q: 'Beacon sucks. Keyhole but smoother', means: 'B-E26 rejected. B-E27: B-E15\'s keyhole drawn as one smooth curve, the head easing into the neck and the neck into the base, the foot\'s corners rounded.' },
   { when: '2026-11-04', q: 'tighten the shape a bit, too much rom on top and bottom / B-E15 The keyhole is a good candidate / B-E26 The beacon is interesting too, but yea too much dead space', means: 'B-E26 tightened: a lower, flatter dome and a shorter skirt, so about 6 units of field stand above and below the ship (it was 17 to 20). B-E15, the keyhole, marked as one of your candidates.' },
@@ -341,7 +348,7 @@ function recolour(svg, bg) { let out = svg; for (const [a, b] of Object.entries(
 // A design's art for a background: B draws its own versions, the others are recoloured.
 function art(d, bg) { return d.own ? d.draw(bg) : recolour(d.draw(), bg); }
 // The colour that carries a design's outline on a background, for the contrast check.
-function outlineColour(d, bg) { return d.own ? VERSIONS[bg].frame : RECOLOUR[bg][C.signal]; }
+function outlineColour(d, bg) { return d.pal ? d.pal[bg].frame : d.own ? VERSIONS[bg].frame : RECOLOUR[bg][C.signal]; }
 const KREC = VERSIONS.dk;
 function lum(hex) { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
 function contrast(a, b) { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); }
@@ -583,6 +590,110 @@ const DESIGNS = [
   },
 ];
 
+// ---- the Krai Warhost's three directions (owner, 2026-11-04: "begin krai emblem design, this faction believes strongly in
+// tradition. give them some sort of asymmetric logo") ------------------------------------------------------------------
+// Blade steel and blood red (the Krai console's palette, no green, no white). On black: steel edge and device on a
+// blackened field; on white: a near-black edge and device on a bone field. The outline is measured against each ground.
+const KRAI = {
+  dk: { frame: '#c9d0d8', field: '#1a1214', device: '#c9d0d8', accent: '#d0202a' },
+  lt: { frame: '#1c1416', field: '#efe2d3', device: '#1c1416', accent: '#b3121b' },
+};
+const polyD = (pts) => 'M' + pts.map(([x, y]) => `${f(x)} ${f(y)}`).join('L') + 'Z';
+// Local blade coordinates (u along the blade from its guard, v across it, + toward the edge) into the grid.
+const along = (o, deg) => { const c = Math.cos(deg * R), sn = Math.sin(deg * R); return (u, v) => [o[0] + u * c - v * sn, o[1] + u * sn + v * c]; };
+// KA's shield: lopsided (a high square shoulder on the left, a chamfered right, the point off to the right of centre),
+// its left edge cut by one tally notch for each generation that has carried the blade.
+const KA_SHIELD = (() => {
+  const pts = [[14, 8], [74, 5], [92, 22], [86, 60], [56, 96], [12, 80]];
+  // The field is the plain shield moved in 7 units; the notches cut only the outer edge, so the field stays clean.
+  const field = polyFrame(pts, 2.5, 7).field, x = (y) => 12 + (80 - y) / 72 * 2, out = pts.slice(0, 6);
+  for (const y0 of [66, 50, 34]) out.push([x(y0 + 4), y0 + 4], [x(y0) + 3.6, y0], [x(y0 - 4), y0 - 4]);
+  return { frame: roundPoly(out, 1.2) + field, field };
+})();
+function kaBlade(k) {
+  // The blade from its pommel at (30, 72) up to its point at (72, 22): u along it from the guard, v across it.
+  const P = along([40.3, 59.7], -50), D = (pts) => polyD(pts.map(([u, v]) => P(u, v)));
+  let s = '';
+  // A straight spine with a barb thrown back near the point, a hooked point, and a serrated edge.
+  s += path(D([[0, -5.5], [33, -5], [37, -11.5], [41, -5.4], [49, -1], [37, 6], [32, 6.6], [29, 4], [25, 7], [22, 4.4], [17, 7.6], [0, 5.5]]), k.device);
+  s += path(D([[-12, -2.8], [0.5, -2.8], [0.5, 2.8], [-12, 2.8]]), k.device);                 // the grip
+  s += path(D([[-1.5, -2.6], [-4, -12], [1.5, -12], [2.5, -2.6]]), k.device);                 // one quillon, on the spine side only
+  s += path(D([[-19, 0], [-15, -4.2], [-11, 0], [-15, 4.2]]), k.device);                      // the pommel, a cut stone
+  if (k.accent) s += path(D([[4, -1.3], [30, -1.1], [30, 1.1], [4, 1.3]]), k.accent);          // the blood groove
+  return s;
+}
+// KB's standard: the pole with a blade for a finial, and the banner flying off it to one side, swallow-tailed.
+const KB_SIL = [[17.5, 2], [21.5, 14], [90, 20], [75, 40], [90, 60], [21.5, 66], [21.5, 90], [17.5, 98], [13.5, 90], [13.5, 14]];
+const KB_FLAG = [[28, 21.5], [80.5, 26.2], [68, 40], [80.5, 53.8], [28, 58.5]];
+function kbChevrons(k) {
+  // One chevron for each elder of the host, pointing out along the banner, the eldest (nearest the pole) largest.
+  let s = '';
+  [[36, 11, 6, k.accent || k.device], [47.5, 8.5, 5, k.device], [58, 6.5, 4, k.device]].forEach(([x, h, w, col]) => {
+    s += path(polyD([[x, 40 - h], [x + w, 40], [x, 40 + h], [x - 4, 40 + h], [x + w - 4, 40], [x - 4, 40 - h]]), col);
+  });
+  return s;
+}
+// KC's torc: a heavy faceted crescent, open to the upper right, its two arcs meeting in sharp horns, with trophy fangs along its
+// inside edge from the founder's (largest, at the heavy end) toward the lower horn, the rest left open for the next.
+const KC = (() => {
+  const C1 = [50, 52], r1 = 45, C2 = [62, 42], r2 = 32, d = Math.hypot(C2[0] - C1[0], C2[1] - C1[1]);
+  const toC2 = Math.atan2(C2[1] - C1[1], C2[0] - C1[0]) / R, toC1 = toC2 + 180;
+  const th = Math.acos((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d)) / R, ph = Math.acos((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d)) / R;
+  const out = [], inn = [];
+  // Faceted, not round: hammered flat faces, so it reads as forged steel and never as a moon.
+  for (let i = 0; i <= 10; i++) out.push(pol(r1, toC2 + th + (360 - 2 * th) * i / 10, ...C1));
+  for (let i = 0; i <= 8; i++) inn.push(pol(r2, toC1 + ph - 2 * ph * i / 8, ...C2));
+  const fangs = [[150, 14, 4.4], [115, 11, 3.8], [80, 8.5, 3.2], [45, 6.5, 2.7]].map(([a, len, hw]) => {
+    const t = [-Math.sin(a * R), Math.cos(a * R)], base = pol(r2 + 2, a, ...C2), tip = pol(r2 - len, a, ...C2), edge = pol(r2 - 0.5, a, ...C2);
+    return [[edge[0] + t[0] * hw, edge[1] + t[1] * hw], tip, [edge[0] - t[0] * hw, edge[1] - t[1] * hw], base];
+  });
+  return { body: polyD(out.concat(inn)), fangs };
+})();
+const KRAI_DESIGNS = [
+  {
+    id: 'krai-a', tag: 'KA', faction: 'krai', name: 'KA · The Heirloom Blade', outline: 'A lopsided shield', rec: true, own: true, pal: KRAI, pieces: 2,
+    risk: 'A blade across a shield is a common military badge; the hooked, barbed Krai bayonet, the single quillon and the tally-cut edge keep it the Krai\'s own.',
+    draw(bg = 'dk') { const k = KRAI[bg]; return `<path d="${KA_SHIELD.frame}" fill="${k.frame}" fill-rule="evenodd"/>` + path(KA_SHIELD.field, k.field) + kaBlade(k); },
+    ink() { return `<path d="${KA_SHIELD.frame}" fill="#000" fill-rule="evenodd"/>` + kaBlade({ device: '#000' }); },
+    callouts: [
+      [14.5, 50, 'L', 'Tally notches in the edge', 'One cut for each generation that has carried the blade. Cut, never filled: the count only grows, so the shield is lopsided and gets more so.'],
+      [33, 52, 'L', 'One quillon, on the spine side', 'The guard is only where the hand needs it. Nothing on a Krai blade is for show.'],
+      [30.5, 71.5, 'L', 'The pommel: a cut stone', 'The house stone, the oldest part. The blade has been reforged; the stone never.'],
+      [58, 44, 'R', 'The heirloom blade, rising', 'The Krai bayonet (the hooked, barbed prow of their ships), passed down and carried upward across the shield: tradition carried into war.'],
+      [61, 22, 'R', 'A barb thrown back', 'It catches on the way out. The Krai finish what they start.'],
+      [51, 47, 'R', 'The blood groove', 'Red down the blade\'s middle: rank won in blood, kept in the steel.'],
+      [91, 40, 'R', 'Lopsided on purpose', 'A high square shoulder against a chamfered one, the point off centre: a history that only grows one way, as you asked.'],
+    ],
+  },
+  {
+    id: 'krai-b', tag: 'KB', faction: 'krai', name: 'KB · The Lineage Standard', outline: 'A war standard', own: true, pal: KRAI, pieces: 4,
+    risk: 'A flag reads as a country\'s at a glance; the blade finial, the swallowtail and the chevrons keep it a war host\'s standard, never a nation\'s flag.',
+    draw(bg = 'dk') { const k = KRAI[bg]; return `<path d="${polyD(KB_SIL)}${polyD(KB_FLAG)}" fill="${k.frame}" fill-rule="evenodd"/>` + path(polyD(KB_FLAG), k.field) + kbChevrons(k); },
+    ink() { return `<path d="${polyD(KB_SIL)}${polyD(KB_FLAG)}" fill="#000" fill-rule="evenodd"/>` + kbChevrons({ device: '#000' }); },
+    callouts: [
+      [17.5, 6, 'L', 'A blade for a finial', 'The standard is a weapon first. It has been carried into every battle the host has fought.'],
+      [17.5, 82, 'L', 'The pole, planted', 'Where the standard is planted the host holds. It is never lowered and never laid down.'],
+      [37, 40, 'L', 'The eldest\'s chevron, red', 'One chevron for each elder of the host, the founder\'s nearest the pole, largest, in blood red.'],
+      [62, 40, 'R', 'Each younger chevron smaller', 'The line carries on out along the banner; there is always room for the next.'],
+      [86, 40, 'R', 'The swallowtail', 'A torn fly: the banner has been through fire. It is mended, never replaced.'],
+      [55, 22, 'R', 'Flying one way', 'A standard only flies forward. The whole mark leans the way the host advances.'],
+    ],
+  },
+  {
+    id: 'krai-c', tag: 'KC', faction: 'krai', name: 'KC · The Fang Torc', outline: 'A crescent torc', own: true, pal: KRAI, pieces: 1,
+    risk: 'A crescent is a sacred symbol to many on Earth; the hammered flat facets, the fangs and the heavy one-sided weight keep it a forged trophy torc, never a moon.',
+    draw(bg = 'dk') { const k = KRAI[bg]; let s = path(KC.body, k.frame); KC.fangs.forEach((g, i) => { s += path(polyD(g), i === 0 ? k.accent : k.frame); }); return s; },
+    ink() { let s = path(KC.body, '#000'); KC.fangs.forEach((g) => { s += path(polyD(g), '#000'); }); return s; },
+    callouts: [
+      [16, 75, 'L', 'A torc, worn heavy on one side', 'The war host\'s neck ring, worn by its chief and passed to the next. Hammered in flat facets, thickest where the oldest trophies hang.'],
+      [40, 55, 'L', 'The founder\'s fang, red', 'The first trophy, taken by the host\'s founder: the largest, and the only one in blood red.'],
+      [64, 66, 'R', 'Each fang smaller than the last', 'One fang added for each chief, each a little smaller: no one may outshine the founder.'],
+      [72, 25, 'R', 'Open to the next', 'Half the inside edge is bare, up to the upper horn: the fangs of chiefs not yet born go there.'],
+      [50, 95, 'R', 'One piece of forged steel', 'Fangs and ring are one body: the trophies are part of the host, not hung on it.'],
+    ],
+  },
+];
+
 // The three patch shapes for B, side by side, each with its reason.
 function enclosureRow() {
   return `<div class="encl"><h4>Outlines for B</h4><p class="muted" style="font-size:14px">B-E8 to B-E13 only restyled B-E2, and three of them broke the outline (a tab outside it, an open canopy, gaps through it). They are retired. Below, B-E2 and three different outlines, each one closed line that can be cut as a patch or struck as a pin (rule 19, measured).</p><div class="encl-row">${ENCLOSURES.map((e) => `<figure>
@@ -596,7 +707,7 @@ function figure(d) {
   const W = 1000, H = 520, S = 4.4, ox = (W - 100 * S) / 2, oy = (H - 100 * S) / 2;
   const colW = 255, lx = 16, rx = W - colW - 16;
   // Each feature gets an id (A1, A2, ...): the left column top to bottom, then the right, so the ids read in order.
-  const letter = d.name[0];
+  const letter = d.tag || d.name[0];
   const left = d.callouts.filter((c) => c[2] === 'L').sort((a, b) => a[1] - b[1]);
   const right = d.callouts.filter((c) => c[2] === 'R').sort((a, b) => a[1] - b[1]);
   [...left, ...right].forEach((c, i) => { c.fid = letter + (i + 1); });
@@ -636,7 +747,8 @@ function mark(d, px, bg) {
 
 const host = document.getElementById('concord-designs');
 const boxes = {};
-for (const d of DESIGNS) {
+for (const d of [...DESIGNS, ...KRAI_DESIGNS]) {
+  const host = document.getElementById(d.faction === 'krai' ? 'krai-designs' : 'concord-designs');
   const el = document.createElement('article'); el.className = 'design'; el.id = d.id; el.dataset.id = d.id;
   el.innerHTML = `<header><h3>${d.name}</h3><span class="chip">${d.outline}</span>${d.rec ? '<span class="chip rec">Recommended</span>' : ''}<span class="chip picked" data-picked hidden>Your pick</span></header>
     <div class="figure">${figure(d)}</div>
@@ -646,7 +758,7 @@ for (const d of DESIGNS) {
     ${d.id === 'concord-b' ? colourRow() + enclosureRow() : ''}
     ${d.risk ? `<p class="risk">Watch: ${d.risk}</p>` : ''}
     <div class="notebox"><label for="note-${d.id}">Your note on ${d.name.split(' · ')[1]}</label>
-      <textarea id="note-${d.id}" placeholder="What to keep, what to change. Refer to a feature by its id, such as ${d.name[0]}2."></textarea>
+      <textarea id="note-${d.id}" placeholder="What to keep, what to change. Refer to a feature by its id, such as ${d.tag || d.name[0]}2."></textarea>
       <div class="row"><button class="btn primary" type="button" data-save>Save note</button><button class="btn" type="button" data-pick>Pick this one</button><span class="status" data-status></span></div></div>`;
   host.append(el);
 }
@@ -779,7 +891,7 @@ window.EMBLEM_CHECK = async () => {
     const el = document.querySelector(`[data-joins-enc="${e.key}"]`);
     if (el) { el.classList.toggle('bad', !(r.ok && o.ok)); el.textContent = (o.ok ? 'One closed outline' : `Outline FAIL: ${o.parts} parts, ${o.holes} holes`) + '. ' + (r.ok ? 'Joins: ' : 'Joins FAIL: ') + `${r.pieces} piece${r.pieces === 1 ? '' : 's'} (designed ${r.expected})` + (Number.isFinite(r.nearest) ? `, parts ${r.nearest.toFixed(1)} apart` : ''); }
   }
-  for (const d of DESIGNS) {
+  for (const d of [...DESIGNS, ...KRAI_DESIGNS]) {
     const r = await measureJoins(d); out.push({ id: d.id, ...r });
     const el = document.querySelector(`#${d.id} [data-joins]`);
     if (el) {

@@ -81,6 +81,18 @@ the emblem (owner, 2026-11-04: "Concord emblem on the hull - get rid of this"). 
 edge of lines and emblem"): the emblem's frame is drawn in the band's seam colour, the band's cut edges carry a seam as wide
 as its side seams (0.22 m), and 0.35 m of bare hull stands between the two.
 
+## The Krai Warhost (2026-11-04)
+
+Owner, 2026-11-04: "begin krai emblem design, this faction believes strongly in tradition. give them some sort of
+asymmetric logo". Added to the Krai's world view (war is the only honest test; rank is won in blood): tradition is kept,
+carried and added to, never replaced. Three asymmetric sketches on the Emblem Design Guide, each a record that only
+grows one way: KA, the heirloom blade (the hooked, barbed Krai bayonet with a blood groove, one quillon and a cut-stone
+pommel) rising across a lopsided shield whose edge carries a tally notch per generation (recommended); KB, the lineage
+standard (a blade finial, a swallow-tailed banner flying forward, a chevron per elder, the founder's red); KC, the fang
+torc (a faceted crescent, a trophy fang per chief from the founder's red one, the rest of its edge left bare). Palette:
+blade steel `#c9d0d8` and blood red `#d0202a` on a blackened field on black; near-black `#1c1416` and `#b3121b` on a bone
+field on white. Each sketch is measured for joins and its outline against both grounds (12.7:1 and 18.1:1 for KA).
+
 ## The rules for an emblem
 
 | Rule | Says | Why |
@@ -153,7 +165,7 @@ The ship bible changes only if the owner accepts it.
 | E5 | Vhorr Brood | The egg in its ribs |
 | E6 | Aelith Conclave | A triangle of light in a drop of gold |
 | E7 | Tarsine Remnant | The stepped throne under the first star |
-| E8 | Krai Warhost | The bayonet in the triangle, between two fangs |
+| E8 | Krai Warhost | Superseded (owner, 2026-11-04: tradition, asymmetric): KA, the heirloom blade, recommended; KB and KC on the guide |
 | E9 | Ombrai | An eye in a crescent, painted on their hulls |
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |
