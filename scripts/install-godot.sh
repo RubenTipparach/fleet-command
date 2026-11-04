@@ -14,15 +14,26 @@ source "$REPO_ROOT/build.config"
 
 FULL_VERSION="$GODOT_VERSION-$GODOT_RELEASE-$GODOT_FLAVOR"
 DEST="$REPO_ROOT/$TOOLS_DIR/godot"
-GODOT_BIN="$DEST/godot"
 STAMP="$DEST/.installed-version"
+# Linux (cloud sessions, CI) or Windows under Git Bash (the owner's playtest PC).
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) HOST=windows ;;
+  *) HOST=linux ;;
+esac
 # The .NET (mono) build ships as a folder (the editor beside its GodotSharp assemblies) and has its own templates.
-if [[ "$GODOT_FLAVOR" == "mono" ]]; then
-  EDITOR_SLUG="mono_linux_x86_64.zip"; TEMPLATES_SLUG="mono_export_templates.tpz"
-  TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE.mono"
+MONO_TAG=""; [[ "$GODOT_FLAVOR" == "mono" ]] && MONO_TAG="mono_"
+TEMPLATE_SUFFIX=""; [[ "$GODOT_FLAVOR" == "mono" ]] && TEMPLATE_SUFFIX=".mono"
+TEMPLATES_SLUG="${MONO_TAG}export_templates.tpz"
+if [[ "$HOST" == "windows" ]]; then
+  # Windows keeps the zip's own file names: the _console.exe wrapper launches the editor beside it by name, and it is
+  # the one that prints to the shell, so it is the binary this script hands back.
+  EDITOR_SLUG="${MONO_TAG}win64.zip"; EDITOR_PLATFORM="windows.64"
+  GODOT_BIN="$DEST/Godot_v$GODOT_VERSION-${GODOT_RELEASE}_${MONO_TAG}win64_console.exe"
+  TEMPLATE_DIR="$APPDATA/Godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE$TEMPLATE_SUFFIX"
 else
-  EDITOR_SLUG="linux.x86_64.zip"; TEMPLATES_SLUG="export_templates.tpz"
-  TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE"
+  EDITOR_SLUG="${MONO_TAG}linux$([[ -n "$MONO_TAG" ]] && echo _ || echo .)x86_64.zip"; EDITOR_PLATFORM="linux.64"
+  GODOT_BIN="$DEST/godot"
+  TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE$TEMPLATE_SUFFIX"
 fi
 
 # Godot's own download endpoint: the canonical entry point, reachable where github.com is not.
@@ -42,13 +53,15 @@ fetch() {
 if [[ ! -x "$GODOT_BIN" || "$(cat "$STAMP" 2>/dev/null)" != "$FULL_VERSION" ]]; then
   rm -rf "$DEST"
   mkdir -p "$DEST"
-  fetch "$(asset_url "$EDITOR_SLUG" linux.64)" "$DEST/godot.zip"
+  fetch "$(asset_url "$EDITOR_SLUG" "$EDITOR_PLATFORM")" "$DEST/godot.zip"
   unzip -q -o "$DEST/godot.zip" -d "$DEST"
   rm -f "$DEST/godot.zip"
   # The mono zip holds one folder; lift its contents (the editor and GodotSharp/) up beside the stamp.
   sub="$(find "$DEST" -mindepth 1 -maxdepth 1 -type d -name 'Godot_v*' -print -quit)"
   if [[ -n "$sub" ]]; then mv "$sub"/* "$DEST"/; rmdir "$sub"; fi
-  mv "$(find "$DEST" -maxdepth 1 -type f -name 'Godot_v*' -print -quit)" "$GODOT_BIN"
+  if [[ "$HOST" == "linux" ]]; then
+    mv "$(find "$DEST" -maxdepth 1 -type f -name 'Godot_v*' -print -quit)" "$GODOT_BIN"
+  fi
   chmod +x "$GODOT_BIN"
   printf '%s' "$FULL_VERSION" > "$STAMP"
 fi
