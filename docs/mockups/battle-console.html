@@ -732,7 +732,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // container height"; the top 60, "top bar is way thicker than it needs to be"). Each strip's content, drawn for 56 px,
 // is moved down by its dy to sit in the skin's channel.
 const STT = CON.stripTop || { h: 56, dy: 0 }, STB = CON.stripBottom || { h: 56, dy: 0 };
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v72', krai: 'Mockup 8 · Battle console · Krai Warhost · v11' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v73', krai: 'Mockup 8 · Battle console · Krai Warhost · v12' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -807,7 +807,7 @@ const SYSTEMS = ['weapons', 'shields', 'engines', 'sensors', 'tractor', 'transpo
 // weapon mounts mount_per_crew_s. The reactor job mends its worst coolant loop, then its confinement; the warp job its
 // worst nacelle; the mounts job its worst mount. The chief engineer (officers) adds to every crew's rate.
 const REPAIR = { per_crew_s: 0.004, max_crews: 3, mount_per_crew_s: 0.003 };
-const REPAIR_JOBS = [['reactor', 'Reactor core', 'reactor'], ['warp', 'Warp nacelles', 'warp'], ['engines', 'Engines', 'engines'], ['sensors', 'Sensors', 'sensors'],
+const REPAIR_JOBS = [['reactor', 'Reactor core', 'reactor'], ['warp', 'Warp nacelles', 'warp', 'Nacelles'], ['engines', 'Engines', 'engines'], ['sensors', 'Sensors', 'sensors'],
   ['shields', 'Shield generators', 'shields', 'Shields'], ['weapons', 'Weapons control', 'weapons', 'Fire control'], ['mounts', 'Weapon mounts', 'weapons', 'Mounts'], ['tractor', 'Tractor beam', 'tractor'], ['transport', 'Transporters', 'transport']];
 // Officers (owner, 2026-11-04: "We need officer slots for stations. Then when you hover over officer. Slots it shows their
 // rank and abilities"; openspec/changes/officers; after the Starfleet Command 3 manual's officers, printed pages 28-29, in
@@ -2065,7 +2065,9 @@ const A = {
     const free = W.crew.filter((o) => !taken.has(o.id)); if (!free.length) return; const i = free.findIndex((o) => o.id === s.officers[st]), o = free[(i + 1) % free.length];
     s.officers[st] = o.id; say('Comms', `${RANKS[o.rank]} ${o.name} to ${STATIONS.find((q) => q[0] === st)[1]}.`); },
   priority: (k) => { const q = W.player.repairQ; const i = q.indexOf(k); if (i > 0) { q.splice(i, 1); q.unshift(k); say('Engineering', `${REPAIR_JOBS.find((j) => j[0] === k)[1]} first.`); } },
-  repairUp: (k) => { const q = W.player.repairQ, i = q.indexOf(k); if (i > 0) { q[i] = q[i - 1]; q[i - 1] = k; } },
+  // a job moved to place i of the queue (the drag); quiet while dragging, the drop says where it landed
+  repairMove: (k, i, quiet) => { const q = W.player.repairQ, j = q.indexOf(k); if (j < 0 || i === j || i < 0 || i >= q.length) return; q.splice(j, 1); q.splice(i, 0, k);
+    if (!quiet) say('Engineering', `${REPAIR_JOBS.find((x) => x[0] === k)[1]} moved to place ${i + 1}.`); },
   // The boarding queue (owner, 2026-11-02: "transport will follow a queue pattern, so you'll want to set up a queue
   // before you send off boarding parties"): a role key moves one of that role off the roster into the mode's queue; a
   // queued box clicked puts them back. Capture queues any role but demolition; Hit and run queues marines and demolition.
@@ -2490,7 +2492,7 @@ function wireInput() {
     SHIFT = e.shiftKey;
     if (STEER) { STEER = false; e.stopPropagation(); const s = W.player; say('Helm', `Come to ${String(Math.round(((s.hOrder / DEG) + 360) % 360)).padStart(3, '0')}.`); return; }
     const [px, py] = refXY(e), h = topAt(px, py), was = ACTIVE; ACTIVE = null;
-    if (DRAG) { DRAG = null; e.stopPropagation(); return; }
+    if (DRAG) { if (DRAG.drop) DRAG.drop(px, py); DRAG = null; e.stopPropagation(); return; }
     if (was) { e.stopPropagation(); if (h && h.id === was && h.click) h.click(px, py, e.button); }
   }, true);
   addEventListener('contextmenu', (e) => { const [px, py] = refXY(e); if (topAt(px, py) || !inView(px, py)) e.preventDefault(); }, true);
@@ -3191,31 +3193,40 @@ function stComms(b, big) {
   const n = big ? 22 : 4;
   for (const m of W.log.slice(-n).reverse()) { rich(b.x, y + 16, [[`${mmss(m.t)} ${m.who}: `, m.warn ? CC.caution : CC.lilac], [m.text, m.warn ? CC.caution : CC.text]], '600 17px Antonio', b.w); y += 24; }
 }
-// The repair queue (REPAIR): each job in the order the crews take it, its health, the crews on it now (wrenches that
-// work), how long until it is whole, and keys to move it up or to the top; the crews (repair energy) at the foot.
+// The repair queue (REPAIR), ordered by drag and drop (owner, 2026-11-04: "Drag and drop interface for repairs"): each
+// job a row in the order the crews take it, with a grip; drag a row up or down and the queue reorders as it passes the
+// others, the row riding under the pointer. Each row shows its health, the crews on it now (wrenches that work), and how
+// long until it is whole; the crews (repair energy) at the foot.
+let repDrag = null; // { k, dy }: the row being dragged and where it was gripped
 function stRepair(b, big) {
-  const s = W.player, plan = repairPlan(s), q = s.repairQ, rh = big ? 52 : 34, kh = big ? 40 : 28, now = performance.now() / 1000; let y = b.y;
-  LBL('Repair queue · crews work from the top', b.x, y + 13, b.w); y += 22;
-  q.forEach((k, i) => {
+  const s = W.player, plan = repairPlan(s), q = s.repairQ, rh = big ? 52 : 34, now = performance.now() / 1000, top = b.y + 22, rw = b.w;
+  LBL('Repair queue · drag to reorder', b.x, b.y + 13, b.w);
+  const dragging = repDrag && DRAG && DRAG.id === `rep.row.${repDrag.k}` ? repDrag : null;
+  const row = (k, i, y, lifted) => {
     const [, name, ic, short] = REPAIR_JOBS.find((j) => j[0] === k), h = clamp(jobHealth(s, k), 0, 1), n = (plan.find((p2) => p2[0] === k) || [k, 0])[1], st = statusOf(h, false), eta = jobEta(s, k);
-    const row = hit(`rep.row.${k}`, b.x, y, b.w - (big ? 150 : 96), rh - 4, { tip: { title: name, rows: [['Health', pct(h)], ['Status', st, STATUS_COL[st]], ['Crews', String(n)], ['Whole in', eta === 0 ? 'Whole' : eta === Infinity ? 'No crews' : `${Math.ceil(eta)} s`]] } });
-    if (n > 0 || row.hot) { g.fillStyle = al(CC.deep, n > 0 ? 0.7 : 0.4); RR(g, b.x, y, b.w - (big ? 150 : 96), rh - 4, [rh / 2, 4, 4, rh / 2]); g.fill(); }
-    NUM(String(i + 1), b.x + 14, y + rh * 0.62, 0, CC.lilac, 'center', big ? 20 : 16);
-    const is = big ? 30 : 22; g.drawImage(KIT.icon[ic], b.x + 30, y + (rh - 4 - is) / 2, is, is);
-    const nx = b.x + 34 + is, nw = big ? 230 : 112, ws = big ? is * 0.8 : 13;
+    if (!lifted) hit(`rep.row.${k}`, b.x, y, rw, rh - 4, { cursor: 'grab', tip: { title: name, rows: [['Health', pct(h)], ['Status', st, STATUS_COL[st]], ['Crews', String(n)], ['Whole in', eta === 0 ? 'Whole' : eta === Infinity ? 'No crews' : `${Math.ceil(eta)} s`], ['Drag', 'Reorder the queue']] },
+      drag: (px, py, start) => { if (start) { repDrag = { k, dy: py - y, from: i }; return; } A.repairMove(k, clamp(Math.floor((py - repDrag.dy + rh / 2 - top) / rh), 0, q.length - 1), true); },
+      drop: () => { const i2 = q.indexOf(k); if (repDrag && repDrag.from !== i2) say('Engineering', `${name}: ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][i2]} in the repair queue.`); repDrag = null; } });
+    const hot = HOT === `rep.row.${k}`;
+    if (lifted) { g.fillStyle = al(CC.sky, 0.25); RR(g, b.x, y, rw, rh - 4, [rh / 2, 4, 4, rh / 2]); g.fill(); g.strokeStyle = CC.sky; g.lineWidth = 2; g.stroke(); }
+    else if (n > 0 || hot) { g.fillStyle = al(CC.deep, n > 0 ? 0.7 : 0.4); RR(g, b.x, y, rw, rh - 4, [rh / 2, 4, 4, rh / 2]); g.fill(); }
+    // the grip: three short rules
+    g.strokeStyle = lifted || hot ? CC.sky : CC.lilac; g.lineWidth = 2; for (let r2 = -1; r2 <= 1; r2++) { const gy = y + (rh - 4) / 2 + r2 * 5; g.beginPath(); g.moveTo(b.x + 8, gy); g.lineTo(b.x + 18, gy); g.stroke(); }
+    NUM(String(i + 1), b.x + 32, y + rh * 0.62, 0, CC.lilac, 'center', big ? 20 : 16);
+    const is = big ? 30 : 22; g.drawImage(KIT.icon[ic], b.x + 44, y + (rh - 4 - is) / 2, is, is);
+    const nx = b.x + 48 + is, nw = big ? 230 : 104, ws = big ? is * 0.8 : 13;
     TXT(big || !short ? name : short, nx, y + rh * 0.62, nw - 8, h >= 1 ? CC.ghost : CC.text, 'left', big ? 19 : 16);
     // the crews at work: a wrench each, rocking while it works
     for (let c = 0; c < n; c++) { const wx = nx + nw + c * ws, a = Math.sin(now * 6 + c * 1.7) * 0.35; g.save(); g.translate(wx + ws / 2, y + (rh - 4) / 2); g.rotate(a); g.drawImage(KIT.icon.repair, -ws * 0.6, -ws * 0.6, ws * 1.2, ws * 1.2); g.restore(); }
-    const hx = nx + nw + REPAIR.max_crews * ws + 4;
-    if (big) { const bw = b.w - 150 - (hx - b.x) - 110; nine('bar.track', hx, y + (rh - 4) / 2 - 8, bw, 16); if (h > 0.005) nine(h < 0.35 ? 'bar.fill.red' : 'bar.fill', hx + 3, y + (rh - 4) / 2 - 5, Math.max(10, (bw - 6) * h), 10);
-      NUM(eta === 0 ? '--' : eta === Infinity ? 'Idle' : `${Math.ceil(eta)} S`, b.x + b.w - 160, y + rh * 0.62, 0, n ? CC.sky : CC.lilac, 'right', 18); }
-    NUM(pct(h), big ? hx + (b.w - 150 - (hx - b.x) - 110) + 70 : b.x + b.w - 96, y + rh * 0.62, 0, STATUS_COL[st] === CC.lilac ? CC.text : h >= 1 ? CC.accord : STATUS_COL[st], 'right', big ? 20 : 17);
-    const kw = big ? 66 : 44;
-    button(`rep.up.${k}`, b.x + b.w - 2 * kw - 6, y, kw, kh, 'Up', () => A.repairUp(k), { center: true, dis: () => i === 0 });
-    button(`rep.top.${k}`, b.x + b.w - kw, y, kw, kh, 'Top', () => A.priority(k), { center: true, dis: () => i === 0 });
-    y += rh;
-  });
-  powerRow('rep.pw', b.x, Math.min(b.y + b.h - 28, y + 6), b.w, 26, 'repair', big ? 120 : 82);
+    const hx = nx + nw + REPAIR.max_crews * ws + 6, tail = big ? 170 : 52, bw = b.x + rw - tail - hx - 8;
+    if (bw > 30) { nine('bar.track', hx, y + (rh - 4) / 2 - 8, bw, 16); if (h > 0.005) nine(h < 0.35 ? 'bar.fill.red' : 'bar.fill', hx + 3, y + (rh - 4) / 2 - 5, Math.max(10, (bw - 6) * h), 10); }
+    NUM(pct(h), big ? b.x + rw - 100 : b.x + rw - 6, y + rh * 0.62, 0, STATUS_COL[st] === CC.lilac ? CC.text : h >= 1 ? CC.accord : STATUS_COL[st], 'right', big ? 20 : 16);
+    if (big) NUM(eta === 0 ? '--' : eta === Infinity ? 'Idle' : `${Math.ceil(eta)} S`, b.x + rw - 8, y + rh * 0.62, 0, n ? CC.sky : CC.lilac, 'right', 18);
+  };
+  q.forEach((k, i) => { const y = top + i * rh; if (dragging && dragging.k === k) { g.strokeStyle = al(CC.sky, 0.6); g.lineWidth = 1.5; g.setLineDash([6, 4]); RR(g, b.x, y, rw, rh - 4, [rh / 2, 4, 4, rh / 2]); g.stroke(); g.setLineDash([]); } else row(k, i, y, false); });
+  // the dragged row last, riding under the pointer inside the queue
+  if (dragging) row(dragging.k, q.indexOf(dragging.k), clamp(PY - dragging.dy, top - 4, top + (q.length - 1) * rh + 4), true);
+  powerRow('rep.pw', b.x, Math.min(b.y + b.h - 28, top + q.length * rh + 6), b.w, 26, 'repair', big ? 120 : 82);
 }
 let trTab = 'hit', wpickAt = null, cargoView = 'sup', secSel = 'T1', secMode = 'walk', secYaw = 1.15, secRect = null, secHot = null;
 // The Security page: the teams as keys (pick one, then click a room to send it there), Walk or Beam, the deck plan in 3D
@@ -4900,7 +4911,7 @@ function frame(now) {
 const queueParty = () => { for (const r of ['marines', 'marines', 'marines', 'medics', 'marines', 'marines', 'marines', 'marines', 'marines', 'hackers', 'engineers', 'pilots', 'engineers', 'pilots']) A.queueRole('capture', r); };
 function scripted(steps, then, sc = 'battle') {
   // each shot from a clean console: no explosion, scene list, log or hover left over from the shot before
-  explosionsStep(60); sceneOpen = false; logOpen = false; HOT = null; hitInfo = null;
+  explosionsStep(60); sceneOpen = false; logOpen = false; HOT = null; hitInfo = null; DRAG = null; repDrag = null;
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(qPage, { capture: 0, hit: 0 }); secSel = 'T1'; secMode = 'walk'; secYaw = 1.15;
   newWorld(sc); W.player.target = SCENES[sc].target; camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
@@ -4927,6 +4938,10 @@ function damagedSystems() { const s = W.player; s.mounts[1].hp = 0.6; s.mounts[2
 window.MOCKUP_SHOTS = {
   // damage control, arming, cloaking, officers and boarding defence (openspec/changes/damage-control, weapon-arming,
   // cloaking, officers, boarding-defence)
+  // a drag in the queue, held: Sensors lifted from fourth to second, the pointer still down
+  repair_drag: () => { scripted(30, () => { station = 'repair'; A.priority('warp'); A.priority('reactor'); for (let i = 0; i < Math.round(6 / DT); i++) step(); }, 'escape');
+    drawUI(); const h = PREV.find((q) => q.id === 'rep.row.warp'); repDrag = { k: 'sensors', dy: 14, from: 3 }; A.repairMove('sensors', 1, true);
+    DRAG = { id: 'rep.row.sensors', drag: () => {}, drop: () => { repDrag = null; } }; PY = h.y + 22; PX = h.x + 120; },
   scene_escape: () => scripted(30, () => { station = 'repair'; A.priority('sensors'); A.priority('warp'); A.priority('reactor'); for (let i = 0; i < Math.round(20 / DT); i++) step(); }, 'escape'),
   repair_expanded: () => scripted(30, () => { station = 'repair'; expanded = 'station'; A.priority('warp'); A.priority('reactor'); for (let i = 0; i < Math.round(12 / DT); i++) step(); }, 'escape'),
   arming: () => scripted(60, () => { expanded = 'weapons'; A.armOne(4, 'proximity'); A.armOne(5, 'proximity'); A.armOne(0, 'overload'); A.armOne(1, 'overload'); wDetail = 4; }, 'arming'),

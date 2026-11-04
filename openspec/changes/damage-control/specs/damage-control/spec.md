@@ -12,3 +12,12 @@ one job and the rest on the next job that needs them, and a job SHALL be mended 
 #### Scenario: Escape
 - **WHEN** the captain plays the Escape scene and orders the reactor and the nacelles first
 - **THEN** the reactor holds and the ship can jump before the pursuers are in range
+
+### Requirement: The captain orders the queue by drag and drop
+
+The captain SHALL reorder the repair queue by dragging a job's row up or down; the queue SHALL make room live as the row
+passes the others, and the crews SHALL follow the new order at once.
+
+#### Scenario: Sensors second
+- **WHEN** the captain drags Sensors from fourth to between the reactor core and the warp nacelles and lets go
+- **THEN** Sensors is second, the log says so, and the crews left after the reactor go to the sensors

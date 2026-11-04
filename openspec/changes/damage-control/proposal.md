@@ -8,6 +8,8 @@ the captain orders (which subsystem first), with crew shown working":
 - "Do 1, you narrowly escape a battle but damaged the reactor core and warp drive among other things prioritize repairs
   and quickly jump out"
 
+Then, 2026-11-04: "Drag and drop interface for repairs".
+
 The console had one Priority key per system and repairs that always split the same way. A captain who has just broken
 away needs to say what gets mended first, see who is working on it and how long it will take.
 
@@ -15,7 +17,8 @@ away needs to say what gets mended first, see who is working on it and how long 
 
 - **A repair queue** on the Repair station: nine jobs (reactor core, warp nacelles, engines, sensors, shields, fire
   control, weapon mounts, tractor, transporters) in the order the crews take them, each with its health, the crews on it
-  (wrenches that work), the time until it is whole, and Up and Top keys.
+  (wrenches that work), its health bar and the time until it is whole. **Drag and drop** reorders it: grip a row, drag
+  it up or down, and the queue makes room as it passes; the row rides under the pointer.
 - **Crews**: one for each point of repair energy (the energy row at the foot of the queue), at most three on a job, the
   rest on the next job that needs them.
 - **Jobs that were not repaired before**: the warp nacelles and the reactor's coolant loops and confinement.

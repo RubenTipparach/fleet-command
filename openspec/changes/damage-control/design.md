@@ -17,8 +17,15 @@ A job's health is its worst part: the reactor is the lower of its confinement an
 mended first, then the confinement); the warp job is its worst nacelle; the mounts job its worst mount. The time to
 whole (`jobEta`) sums what every part still needs at today's crews, so the readout and the rule are one calculation.
 
-The old rule mended the priority system and every mount at once; the queue replaces it. `A.priority(k)` (Top) and
-`A.repairUp(k)` (Up) are the only ways to change the order.
+The old rule mended the priority system and every mount at once; the queue replaces it. `A.priority(k)` (to the top, used by the scenes and shots) and
+`A.repairMove(k, i)` (the drag) are the only ways to change the order.
+
+## Drag and drop
+
+Each row is a drag handle (a grip of three rules at its left). While a row is dragged it rides under the pointer, its
+slot drawn as a dashed outline, and the queue reorders live as the row's middle crosses another's (`repairMove`, quiet);
+on the drop the log says where it landed. The console's pointer layer gained a `drop` callback for this; a press without
+a move changes nothing.
 
 ## The Escape scene
 

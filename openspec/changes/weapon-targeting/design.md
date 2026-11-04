@@ -73,7 +73,9 @@ the Tactical list, and a lock attempt says why. It is drawn as violet glow in th
 ## Recommendations (the owner: "if you think of anything recommend some stuff")
 
 Mechanics from the reference games' family the mockup does not have yet, each a candidate for its own change, in rough
-order of how much they add to a captain's choices:
+order of how much they add to a captain's choices. The owner's answers, 2026-11-04: 1, 2, 3, 4 and 10 built (changes
+`damage-control`, `weapon-arming`, `cloaking`, `officers`, `boarding-defence`); "6 and 5 are good ideas too though
+low.priority" (accepted, not started); 7, 8 and 9 not answered.
 
 1. **Damage control priorities**: a repair queue the captain orders (which subsystem first), with crew shown working.
 2. **Weapon arming choices per type**: proximity torpedoes (a wider block, lower damage), overloaded lances at short range only.
