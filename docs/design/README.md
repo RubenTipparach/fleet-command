@@ -37,6 +37,15 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
   `docs/artifacts/ship-bible/`). How every ship is designed, worked on the Concord line: rooms first as block floor
   plans (`data/ships/`), the hull fitted round them, then parts, windows, lights, markings, material and damage.
 
+## Sound and music
+
+- Fleet Command Sounds (mockup 17): `docs/mockups/sounds.html`, record in `docs/artifacts/sounds/`. Every sound effect
+  with a play button; the method is the `sound-effects` skill, every original is in `AUDIO_SOURCES.md`.
+- Fleet Command Music (mockup 18): `docs/mockups/music.html`, record in `docs/artifacts/music/`. The score; its motifs
+  are [`music.md`](music.md), the method the `music-authoring` skill.
+
+Both are published from the desktop session; their links go here and on the tracker.
+
 ## The screen
 
 The console layout the game keeps from the owner's reference is described in CLAUDE.md section 7.

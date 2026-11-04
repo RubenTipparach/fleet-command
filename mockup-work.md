@@ -36,6 +36,8 @@ account and every link here is updated.
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | Drafted (2026-11-04, v2; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
+| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -716,3 +718,25 @@ to nothing; the six arms turn and flicker; no weapon core is white (each is its 
 gold `#ffc23d`); missiles in four grades (`data/battle/missiles.json`), red, orange, blue, green, each salvo on the range one
 of each.
 
+## 17. Battle sounds
+
+The owner, 2026-11-04: "pull in audio and music skills from crab breeze, lets get some audio for this game!" A sound is
+heard, not seen, so its mockup is a page to listen on: every cue with a play button, grouped as the game uses them
+(placed at a mount, where a hit lands, at the ship; the console, the alerts and the bridge bed unplaced). Made by the
+`sound-effects` skill: 18 cues cut from CC0 recordings on OpenGameArt, 12 synthesised; every original named in
+`assets/audio/sfx/SOURCES.md` and `AUDIO_SOURCES.md`. Chosen and checked by measurement and a spectrogram sheet
+(`docs/screenshots/audio/sfx-sheet.jpg`), because a cloud session cannot listen: the owner's ears approve it.
+
+- Change: `openspec/changes/sound-effects`. Shots: `docs/screenshots/mockups/sounds-*.png`.
+- Stage: Drafted (2026-11-04). Questions: survey S4 (how a battle sounds in silent space).
+
+## 18. Music
+
+The same request. The first score, orchestral space opera over a synth bed (survey S1), built from four motifs written
+down first in `docs/design/music.md`: the Concord (the player's fleet, an 8-bar theme in E flat major), the wonder
+chord, the Threat (a C minor ostinato and horn call for any enemy) and the Lost. Cues: the Main Title, Battle Stations
+(a seamless 43.64 s loop), Victory, Ship Lost and the motif sheet, rendered headless in LMMS with the GeneralUser GS
+orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/music-spectrograms.jpg`), not heard.
+
+- Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
+- Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).
