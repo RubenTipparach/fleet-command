@@ -135,11 +135,32 @@ float metal_$name(vec2 uv) { return 0.0; }
                   emission=True)
 
 
+def emblem_enamel_pearl():
+    """Pearl enamel, the Concord's hull colour (#eef3ff) as the ship on its emblem: a white glaze with the faint orange
+    peel of firing, a slow pearly drift between a cool and a warm white, and fine bright grains in the glass. One tile is
+    0.05 m."""
+    g = Graph("Emblem Enamel Pearl")
+    ins = [("peel", "f", fbm(g, 40, iterations=3, persistence=0.5)), ("cloud", "f", fbm(g, 3, iterations=4)),
+           ("grain", "f", fbm(g, 160, iterations=2, persistence=0.5))]
+    body = """
+float height_$name(vec2 uv) { return 0.5 + 0.12 * ($peel(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 cool = vec3(0.92, 0.95, 1.0), warm = vec3(0.97, 0.95, 0.92);
+	vec3 c = mix(cool, warm, smoothstep(0.35, 0.75, $cloud(uv))) * (0.97 + 0.03 * $peel(uv));
+	return mix(c, vec3(1.0), 0.6 * smoothstep(0.74, 0.82, $grain(uv)));
+}
+float rough_$name(vec2 uv) { return 0.2 + 0.08 * $peel(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem enamel pearl", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.2)
+
+
 GRAPHS = {
     "hull_plate": hull_plate,
     "emblem_platinum": emblem_platinum,
     "emblem_enamel_signal": emblem_enamel_signal,
     "emblem_enamel_night": emblem_enamel_night,
+    "emblem_enamel_pearl": emblem_enamel_pearl,
 }
 
 

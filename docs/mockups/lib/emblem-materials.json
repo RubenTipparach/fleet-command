@@ -1,0 +1,89 @@
+{
+ "note": "The Material Maker maps the 3D Concord badge (docs/mockups/concord-emblem-3d.html) uses, inlined by tools/mockups/inline_data.py. Rendered from tools/materials/ptex/<material>.ptex; the specular map is derived from each graph's own roughness and occlusion (tools/materials/postprocess.py).",
+ "pieces": {
+  "emblem_platinum/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/albedo.png"
+  },
+  "emblem_platinum/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/normal.png"
+  },
+  "emblem_platinum/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/orm.png"
+  },
+  "emblem_platinum/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/specular.png"
+  },
+  "emblem_enamel_pearl/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/albedo.png"
+  },
+  "emblem_enamel_pearl/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/normal.png"
+  },
+  "emblem_enamel_pearl/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/orm.png"
+  },
+  "emblem_enamel_pearl/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/specular.png"
+  },
+  "emblem_enamel_signal/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/albedo.png"
+  },
+  "emblem_enamel_signal/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/normal.png"
+  },
+  "emblem_enamel_signal/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/orm.png"
+  },
+  "emblem_enamel_signal/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_signal/specular.png"
+  }
+ }
+}

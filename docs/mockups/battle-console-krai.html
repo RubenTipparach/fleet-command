@@ -993,7 +993,7 @@ const al = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n 
 // container height"; the top 60, "top bar is way thicker than it needs to be"). Each strip's content, drawn for 56 px,
 // is moved down by its dy to sit in the skin's channel.
 const STT = CON.stripTop || { h: 56, dy: 0 }, STB = CON.stripBottom || { h: 56, dy: 0 };
-const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v74', krai: 'Mockup 8 · Battle console · Krai Warhost · v13' }[SKIN_ID] || `Battle console · ${CON.name}`;
+const LABEL = { concord: 'Mockup 2 · Battle console · Concord · v75', krai: 'Mockup 8 · Battle console · Krai Warhost · v14' }[SKIN_ID] || `Battle console · ${CON.name}`;
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
 
@@ -1233,13 +1233,22 @@ const ROCK = { dmg: 14, speed_ref_m_s: 150, speed_floor: 0.35, speed_frac: 0.3, 
 // marine still standing; bombing it takes bomb_dmg if a demolition marine lives to set the charge. Demolition marines
 // cannot defend themselves: each is lost with demo_loss divided by (1 + the combat marines escorting); a combat marine
 // is lost with marine_loss. Capture: the party trades a volley with the defenders (marines and guard_crew armed crew)
-// every volley_s, each combat marine one shot at hit_chance, both sides at once; a medic saves a casualty at medic_save,
+// every volley_s, each combat marine one shot at hit_chance, both sides at once; medics treat the wounded (below),
 // a hacker locks out one of the guard at hacker_lock, a VIP talks one defender into giving up at vip_persuade. With
 // the defenders down the ship is taken only if an engineer, a pilot and a hacker (or the VIP) are aboard.
 // volley_s: a round of the fight aboard, like the tractor contest's rounds (owner, 2026-11-02: "similar to tug of war
 // tractor beam, I think this battle simulation for boarding parties should update every 10 seconds").
 const BOARD = { raid_s: 6, shoot_per_marine: 0.2, bomb_dmg: 0.8, demo_loss: 0.6, marine_loss: 0.2, volley_s: 10, hit_chance: 0.5, guard_crew: 2,
-  medic_save: 0.5, hacker_lock: 0.5, vip_persuade: 0.5 };
+  hacker_lock: 0.5, vip_persuade: 0.5,
+  // (owner, 2026-11-04: "capture - medics heal marines -- int he expanded view show marine health and battle log for when
+  // medics heal, hackers speed up the process of capturing, but are easy to get shot and die if there are less than 5
+  // marines. pilots arent needed right away, but are required to activate and fly the ship, if no pilot show a "pilot
+  // needed" after capturing the ship"): a boarding marine has health; a hit on a marine takes `wound` of it and kills it
+  // at none. Each volley every medic heals the most wounded marine by `heal` (medics no longer save a casualty outright).
+  // Each hacker shortens the volley by hacker_speed (to half at most); with fewer than hacker_cover marines, a hit the
+  // defenders land finds a hacker at hacker_exposed_p. Taking a ship needs an engineer and a hacker (or the envoy); the
+  // pilot is needed only to get it under way.
+  wound: 0.5, heal: 0.35, hacker_speed: 0.15, hacker_cover: 5, hacker_exposed_p: 0.5 };
 // The inventory transporter: goods, a VIP or a mine, to or from a friendly ship, a station or a planet in reach; one
 // beam moves per_beam crates and spends the transporter's charge.
 const INV = { per_beam: 5 };
@@ -2073,6 +2082,9 @@ function aiCapture(s) {
   return true;
 }
 function think(s) {
+  // a prize with no pilot holds still and does not fight; a pilot beamed aboard gets it under way
+  if (s.awaitPilot && !pilotNeeded(s)) { s.awaitPilot = false; say('Transport', `Pilot aboard the ${s.name}: under way.`); }
+  if (pilotNeeded(s)) { s.vOrder = 0; s.hOrder = s.h; return; }
   if (s.ai.capture && aiCapture(s)) return;
   const foes = seenFoes(s);
   // none in sight: sweep for a cloaked enemy, else head for where one was last seen
@@ -2421,7 +2433,7 @@ const A = {
   recall: () => { for (const c of W.craft) if (c.home === W.player.id) c.recall = true; },
   mission: (m) => { W.player.mission = m; for (const c of W.craft) if (c.home === W.player.id) c.mission = m; },
   ai: (id, key, val) => { const s = ship(id); if (s) s.ai[key] = val; },
-  command: (id) => { const s = ship(id); if (!s || !s.alive || s.side !== 0 || s === W.player) return; W.player.engaged = false; W.player.ai.rule = 'mine'; W.player = s; s.engaged = false; if (!tgt(s)) A.nextTarget(); fleetPick = s.id; say('Helm', `Command transferred to ${s.name}.`); rebuild(); },
+  command: (id) => { const s = ship(id); if (!s || !s.alive || s.side !== 0 || s === W.player) return; if (pilotNeeded(s)) { say('Helm', `Cannot take command of the ${s.name}: pilot needed.`); return; } W.player.engaged = false; W.player.ai.rule = 'mine'; W.player = s; s.engaged = false; if (!tgt(s)) A.nextTarget(); fleetPick = s.id; say('Helm', `Command transferred to ${s.name}.`); rebuild(); },
   pause: () => { paused = !paused; },
   expand: (id) => { expanded = expanded === id ? null : id; layout(); },
   station: (id) => { station = id; if (expanded && expanded !== 'station') expanded = 'station'; buildPanel('station'); },
@@ -2455,13 +2467,19 @@ const canRaid = (s, t) => beamReach(s, t) && t.side !== s.side && !s.party && (!
 // an assault: owner, 2026-11-03, "supply troops for an assault (combat transport tab)").
 function captureDest(s) { const t = tgt(s); if (t) return t; const d = s === W.player ? invPick(s) : null; return d && d.ship ? d.ship : null; }
 const canReinforce = (s, o) => !!o && o.alive && o.side === s.side && padReady(s) && distKm(s, o) <= TRANSPORT.range_km;
+// With nothing queued the pads beam marines (owner, 2026-11-04: "by default marines get transported, so show darkend
+// marines in the queue if nothing is queued", "thiss is both truye for capture and hit and run"): one a pad, from the
+// marines aboard. The queue grid shows them as that default load.
+const defaultLoad = (s) => Array(Math.min(s.marines, s.pads.length)).fill('marines');
 function beamQueued(s, mode, pads) {
-  const t = mode === 'capture' ? captureDest(s) : tgt(s), q = s.bq[mode], sent = {}; let n = 0, friend = false;
+  const t = mode === 'capture' ? captureDest(s) : tgt(s), byDefault = !s.bq[mode].length, q = byDefault ? defaultLoad(s) : s.bq[mode], sent = {}; let n = 0, friend = false;
+  // a default marine leaves the ship's marines as it beams; a queued one left them when it was queued
+  const take = () => { const role = q.shift(); if (byDefault) addRole(s, role, -1); return role; };
   for (const i of pads) {
     if (!q.length) break; if (!(s.pads[i] >= 1)) continue;
-    if (mode === 'capture' && t && t.side === s.side) { if (!canReinforce(s, t)) break; const role = q.shift(); s.pads[i] = 0; sent[role] = (sent[role] || 0) + 1; n++; friend = true; addRole(t, role, 1); continue; }
+    if (mode === 'capture' && t && t.side === s.side) { if (!canReinforce(s, t)) break; const role = take(); s.pads[i] = 0; sent[role] = (sent[role] || 0) + 1; n++; friend = true; addRole(t, role, 1); continue; }
     if (!(mode === 'capture' ? canBoard(s, t) : canRaid(s, t))) break;
-    const role = q.shift(); s.pads[i] = 0; sent[role] = (sent[role] || 0) + 1; n++;
+    const role = take(); s.pads[i] = 0; sent[role] = (sent[role] || 0) + 1; n++;
     if (mode === 'capture') {
       if (s.party) { s.party.team[role]++; s.party.held = false; }
       else s.party = { on: t.id, team: { marines: 0, demo: 0, medics: 0, engineers: 0, hackers: 0, pilots: 0, vip: 0, [role]: 1 }, volleyT: BOARD.volley_s, last: null };
@@ -2473,7 +2491,7 @@ function beamQueued(s, mode, pads) {
   if (n) beamPair(s, t);
   if (s !== W.player) return n;
   if (n) say('Transport', `Energizing: ${Object.entries(sent).map(([r, k]) => `${k} ${ROLE_ONE[r].toLowerCase()}${k > 1 && r !== 'demo' ? 's' : ''}`).join(', ')} to ${t.name}${mode === 'hit' ? `'s ${raidName(s.raid, t)}` : ''}${friend ? ` (${t.marines} marines aboard)` : ''}.`);
-  else say('Transport', !q.length ? 'The queue is empty.' : !t ? 'No target.' : !pads.some((i) => s.pads[i] >= 1) ? 'Pads charging.' : distKm(s, t) > TRANSPORT.range_km ? `Out of reach (${km(TRANSPORT.range_km)}).`
+  else say('Transport', !q.length ? (byDefault ? 'No marines aboard to beam.' : 'The queue is empty.') : !t ? 'No target.' : !pads.some((i) => s.pads[i] >= 1) ? 'Pads charging.' : distKm(s, t) > TRANSPORT.range_km ? `Out of reach (${km(TRANSPORT.range_km)}).`
     : t.side === s.side ? `Out of reach (${km(TRANSPORT.range_km)}).` : mode === 'hit' && s.party ? 'A boarding party is out.' : mode === 'capture' && s.raid ? 'A raid is out.' : 'Their shield facing is up.');
   return n;
 }
@@ -2486,21 +2504,32 @@ const teamSize = (team) => Object.entries(team).reduce((a, [k, v]) => a + (k ===
 function beamReach(s, t) { return !!t && t.alive && padReady(s) && distKm(s, t) <= TRANSPORT.range_km && (t.side === s.side || t.shields[facingFrom(t, s.x, s.z)] <= 0.5); }
 function canBoard(s, t) { return beamReach(s, t) && t.side !== s.side && !s.raid && (!s.party || s.party.on === t.id); }
 const defenders = (t) => t.marines + t.guard;
-const canTake = (team) => team.engineers > 0 && team.pilots > 0 && (team.hackers > 0 || team.vip > 0);
+const canTake = (team) => team.engineers > 0 && (team.hackers > 0 || team.vip > 0);
 // The roles a party still lacks to take a ship (the same rule as canTake, 6.1).
-const missingRoles = (team) => ['engineers', 'pilots'].filter((k) => !(team[k] > 0)).concat(team.hackers > 0 || team.vip > 0 ? [] : ['hackers']);
-// One hit on a boarding party: a medic may save it; otherwise a random member falls, the VIP only when no one else is left.
-function partyHit(team, R) {
-  const n = teamSize(team);
-  if (team.medics > 0 && R() < BOARD.medic_save) return;
-  if (n <= 0) { team.vip = 0; return; }
-  let k = R() * n; for (const [role] of ROLES) { if (k < team[role]) { team[role]--; return; } k -= team[role]; }
+const missingRoles = (team) => ['engineers'].filter((k) => !(team[k] > 0)).concat(team.hackers > 0 || team.vip > 0 ? [] : ['hackers']);
+// A captured ship with no pilot aboard cannot get under way: it holds where it is and does not fight until one beams over.
+const pilotNeeded = (s) => !!s.captured && !(s.team.pilots > 0);
+// The boarding party's marines' health, one entry a marine, kept in step with its count (new marines arrive whole).
+function partyHp(pt) { pt.hp = pt.hp || []; while (pt.hp.length < pt.team.marines) pt.hp.push(1); while (pt.hp.length > pt.team.marines) pt.hp.pop(); return pt.hp; }
+// One hit the defenders land on the party: a hacker if they are exposed, else someone at random; a marine is wounded
+// (killed at no health). Returns what happened, for the log.
+function woundParty(pt, R) {
+  const tm = pt.team, hp = partyHp(pt);
+  if (tm.hackers > 0 && tm.marines < BOARD.hacker_cover && R() < BOARD.hacker_exposed_p) { tm.hackers--; return 'hacker'; }
+  const n = teamSize(tm); if (n <= 0) { tm.vip = 0; return null; }
+  let k = R() * n;
+  for (const [role] of ROLES) { if (k < tm[role]) {
+    if (role !== 'marines') { tm[role]--; return role; }
+    const i = Math.floor(R() * hp.length); hp[i] -= BOARD.wound; if (hp[i] > 0) return 'wounded'; hp.splice(i, 1); tm.marines--; return 'marines'; }
+    k -= tm[role]; }
+  return null;
 }
 function capture(s, t, team) {
   t.side = s.side; t.captured = true; t.target = null; t.ai.stance = 'escort'; t.ai.fire = 'free';
   t.marines = team.marines; for (const [r] of ROLES.slice(1)) t.team[r] = team[r]; t.vip = team.vip ? (s.vipName || 'Envoy Saros') : null; s.party = null;
   for (const o of W.ships) if (o.target === t.id) o.target = null;
   say('Transport', `${t.name} strikes its colours. ${team.marines} marines hold it${team.vip ? ', the envoy aboard' : ''}.`);
+  if (pilotNeeded(t)) { t.awaitPilot = true; say('Transport', `${t.name} is ours but dead in space: pilot needed. Beam a pilot over (Capture, ${t.name} selected).`); if (s === W.player) notice('Pilot needed', `${t.name} cannot get under way until a pilot is aboard`, CC.caution); }
 }
 // Raids and boarding parties, every step, for the ship that sent them.
 function boardingStep(s) {
@@ -2529,17 +2558,24 @@ function boardingStep(s) {
     if (!t || !t.alive) { s.party = null; return; }
     if (defenders(t) <= 0) { if (canTake(tm)) capture(s, t, tm); else if (!pt.held) { pt.held = true; say('Transport', `${t.name}'s deck is ours, but to take it we need ${missingRoles(tm).map((r) => ({ engineers: 'an engineer', pilots: 'a pilot', hackers: 'a hacker' })[r]).join(', ')}.`); } return; }
     if ((pt.volleyT -= DT) > 0) return;
-    pt.volleyT += BOARD.volley_s;
+    // hackers speed the fight up (BOARD.hacker_speed); the medics treat the wounded before the volley
+    pt.volleyT += BOARD.volley_s * Math.max(0.5, 1 - BOARD.hacker_speed * tm.hackers);
+    const hp = partyHp(pt), loud = s === W.player || pt.loud; let healed = 0;
+    for (let i = 0; i < tm.medics; i++) { let j = -1; hp.forEach((v, k2) => { if (v < 1 && (j < 0 || v < hp[j])) j = k2; }); if (j < 0) break; hp[j] = Math.min(1, hp[j] + BOARD.heal); healed++; }
+    if (healed && loud) say('Boarding', `Medic${tm.medics > 1 ? 's' : ''} aboard ${t.name} treat${tm.medics > 1 ? '' : 's'} ${healed} wounded marine${healed > 1 ? 's' : ''}.`);
     // Simultaneous: both sides' shots counted before any hit lands.
     const att = volley(tm.marines, BOARD.hit_chance, R), def = volley(defenders(t), BOARD.hit_chance, R);
     let locked = 0, talked = 0; for (let i = 0; i < tm.hackers; i++) if (R() < BOARD.hacker_lock) locked++; if (tm.vip && R() < BOARD.vip_persuade) talked = 1;
     t.guard = Math.max(0, t.guard - locked);
     const down = att + talked, fromMarines = Math.min(down, t.marines); t.marines -= fromMarines; t.guard = Math.max(0, t.guard - (down - fromMarines));
-    for (let i = 0; i < def; i++) partyHit(tm, R);
-    pt.last = { att, def, locked, talked };
+    const hurt = {}; for (let i = 0; i < def; i++) { const w = woundParty(pt, R); if (w) hurt[w] = (hurt[w] || 0) + 1; }
+    if (hurt.hacker && loud) say('Boarding', `${hurt.hacker} hacker${hurt.hacker > 1 ? 's' : ''} shot aboard ${t.name}: too few marines (${tm.marines}) to cover them.`);
+    pt.last = { att, def, locked, talked, hurt };
     if (defenders(t) <= 0 && canTake(tm)) capture(s, t, tm);
     else if (teamSize(tm) <= 0) { s.party = null; say('Transport', `Boarding party on ${t.name} lost.`); }
-    else if (s === W.player || pt.loud) say('Transport', `Volley aboard ${t.name}: ${att} hits${locked ? `, ${locked} locked out` : ''}${talked ? ', 1 talked down' : ''}, ${def} taken. ${tm.marines} marines against ${defenders(t)}.`);
+    else if (loud) { // every casualty named: the wounded, then each role lost (a hacker shot for want of cover said above)
+      const lost = Object.entries(hurt).filter(([k]) => k !== 'wounded' && k !== 'hacker').map(([k, n2]) => `${n2} ${ROLE_ONE[k].toLowerCase()}${n2 > 1 && k !== 'demo' ? 's' : ''}`);
+      say('Boarding', `Volley aboard ${t.name}: ${att} hit${att === 1 ? '' : 's'}${locked ? `, ${locked} locked out` : ''}${talked ? ', 1 talked down' : ''}; ${[hurt.wounded ? `${hurt.wounded} wounded` : '', lost.length ? `lost ${lost.join(', ')}` : ''].filter(Boolean).join(', ') || 'no one hurt'}. ${tm.marines} marines against ${defenders(t)}.`); }
   }
 }
 // The hold as one bar split three ways: supplies (Sky), misc cargo (Lilac) and the free space left (dark), with the counts.
@@ -3528,6 +3564,33 @@ function stRepair(b, big) {
   if (dragging) row(dragging.k, q.indexOf(dragging.k), clamp(PY - dragging.dy, top - 4, top + (q.length - 1) * rh + 4), true);
   powerRow('rep.pw', b.x, Math.min(b.y + b.h - 28, top + q.length * rh + 6), b.w, 26, 'repair', big ? 120 : 82);
 }
+// The boarding party aboard (expanded Capture; owner, 2026-11-04: "int he expanded view show marine health and battle log
+// for when medics heal"): each marine's health as a bar, the specialists with what they do now (hackers exposed under
+// BOARD.hacker_cover marines, the pilot needed only to fly the prize), and the boarding log beside them.
+function partyPanel(x, y, w, h, s) {
+  if (h < 80) return 0;
+  const pt = s.party, t = pt && ship(pt.on), lw = w * 0.5; let yy = y;
+  LBL(pt && t ? `Boarding party · aboard ${t.name}` : 'Boarding party · none aboard', x, yy + 14, lw - 10); yy += 24;
+  if (pt && t) {
+    const hp = partyHp(pt), bw = 16, bh = 40;
+    hp.forEach((v, i) => { const bx = x + i * (bw + 6), col = v > 0.66 ? CC.accord : v > 0.33 ? CC.caution : CC.alert;
+      hit(`tr.hp.${i}`, bx, yy, bw, bh, { tip: `Marine ${i + 1} · health ${pct(v)}` });
+      g.fillStyle = CC.deep; RR(g, bx, yy, bw, bh, 4); g.fill(); g.fillStyle = col; RR(g, bx, yy + bh * (1 - v), bw, bh * v, 4); g.fill(); });
+    if (!hp.length) LBL('No marines left', x, yy + 24, lw, CC.alert, 'left', 15);
+    yy += bh + 10;
+    const tm = pt.team, exposed = tm.hackers > 0 && tm.marines < BOARD.hacker_cover;
+    const rows = [['Marines', `${tm.marines} · ${hp.filter((v) => v < 1).length} wounded`, CC.text], ['Medics', tm.medics ? `${tm.medics} · heal ${pct(BOARD.heal)} a volley each` : 'None', tm.medics ? CC.accord : CC.lilac],
+      ['Hackers', tm.hackers ? `${tm.hackers} · volleys ${pct(Math.min(0.5, BOARD.hacker_speed * tm.hackers))} faster${exposed ? ' · exposed' : ''}` : 'None', exposed ? CC.alert : tm.hackers ? CC.accord : CC.lilac],
+      ['Engineers', tm.engineers ? String(tm.engineers) : 'None: needed to take it', tm.engineers ? CC.text : CC.caution], ['Pilots', tm.pilots ? String(tm.pilots) : 'None: needed to fly it after', tm.pilots ? CC.text : CC.caution],
+      ['Defenders', String(defenders(t)), CC.alert], ['Next volley', `${Math.max(0, pt.volleyT).toFixed(1)} s`, CC.sky]];
+    for (const [l, v, c] of rows) { if (yy + 22 > y + h) break; LBL(l, x, yy + 15, 110); TXT(v, x + 116, yy + 16, lw - 126, c, 'left', 17); yy += 24; }
+  } else LBL('Queue marines and specialists, then energize', x, yy + 14, lw - 10, CC.ghost, 'left', 15);
+  // the boarding log: the latest lines about parties, medics and hackers
+  const lx = x + lw + 10, lines = W.log.filter((m) => m.who === 'Boarding' || m.who === 'Transport').slice(-Math.max(1, Math.floor((h - 24) / 22))).reverse();
+  LBL('Boarding log', lx, y + 14, w - lw - 10);
+  lines.forEach((m, i) => rich(lx, y + 40 + i * 22, [[`${mmss(m.t)} `, CC.lilac], [m.text, m.warn ? CC.caution : /Medic/.test(m.text) ? CC.accord : /shot aboard|lost/.test(m.text) ? CC.alert : CC.text]], '600 15px Antonio', w - lw - 10));
+  return h;
+}
 let trTab = 'hit', wpickAt = null, cargoView = 'sup', secSel = 'T1', secMode = 'walk', secYaw = 1.15, secRect = null, secHot = null;
 // The Security page: the teams as keys (pick one, then click a room to send it there), Walk or Beam, the deck plan in 3D
 // with the teams and boarders moving through it, and their states (expanded, beside the view).
@@ -3654,12 +3717,16 @@ function itemGlyph(item, cx, cy, r, col) {
 // list", "10 boxes for you to queue"): two rows of five, the head in green, a box clicked takes its member off the
 // queue; the arrows page by ten and light only when there is a page that way. Returns the height used.
 function queueGrid(id, x, y, w, s, mode, big) {
-  const q = s.bq[mode], per = 10, cols = 5, gap = big ? 10 : 5, aw = big ? 60 : 30, pages = Math.max(1, Math.ceil(q.length / per));
+  const q = s.bq[mode], dflt = defaultLoad(s), per = 10, cols = 5, gap = big ? 10 : 5, aw = big ? 60 : 30, pages = Math.max(1, Math.ceil(q.length / per));
   qPage[mode] = clamp(qPage[mode], 0, pages - 1); const pg = qPage[mode];
   const qs = Math.min(big ? 96 : 38, (w - aw - gap - (cols - 1) * gap) / cols);
   for (let k = 0; k < per; k++) {
     const i = pg * per + k, bx = x + (k % cols) * (qs + gap), by = y + Math.floor(k / cols) * (qs + gap), role = q[i];
     if (!role) { if (KIT.hero['key.idle']) face(g, bx, by, qs, qs, qs * 0.22, CC.void); else { g.fillStyle = CC.void; RR(g, bx, by, qs, qs, qs * 0.22); g.fill(); g.strokeStyle = CC.deep; g.lineWidth = 2; g.stroke(); }
+      // nothing queued: the default load, marines one a pad, darkened, with its number; otherwise the slot's number
+      if (!q.length && i < dflt.length) { hit(`${id}.${k}`, bx, by, qs, qs, { tip: `${i + 1}. Marine · by default · queue to change` });
+        g.save(); g.globalAlpha = 0.45; roleGlyph('marines', bx + qs / 2, by + qs * 0.54, qs * 0.3, CON.glyphOnDark || CC.text); g.restore();
+        g.fillStyle = CC.slate; g.font = FNT(`700 ${Math.round(qs * 0.26)}px Antonio`); g.textAlign = 'left'; g.fillText(String(i + 1), bx + qs * 0.09, by + qs * 0.3); continue; }
       NUM(String(i + 1), bx + qs / 2, by + qs * 0.62, 0, CC.slate, 'center', Math.round(qs * 0.36)); continue; }
     const st = hit(`${id}.${k}`, bx, by, qs, qs, { click: () => A.unqueue(mode, i), tip: `${i + 1}. ${ROLE_ONE[role]}${i === 0 ? ' · next' : ''} · remove` });
     const qf = st.hot ? CC.lilac : i === 0 ? CC.accord : CC.signal; face(g, bx, by, qs, qs, qs * 0.22, qf);
@@ -3682,7 +3749,7 @@ function padRow(id, x, y, w, s, mode, big) {
   const q = s.bq[mode], n = s.pads.length, gap = big ? 8 : 6, ps = Math.min(big ? 110 : 40, (w - (q ? (big ? 240 : 120) + gap : 0) - (n - 1) * gap) / n), bw = q ? Math.min(big ? 300 : w, w - n * (ps + gap)) : 0;
   for (let i = 0; i < n; i++) {
     const px = x + i * (ps + gap), c = s.pads[i], ready = c >= 1, eta = padEta(s, i);
-    const st = hit(`${id}.${i}`, px, y, ps, ps, { click: q ? () => A.energize(i, mode) : undefined, tip: ready ? `Pad ${i + 1} · ${q ? `energize${q.length ? ` · ${ROLE_ONE[q[0]]}` : ''}` : 'charged'}` : `Pad ${i + 1} · charging${isFinite(eta) ? ` · ${fmtCool(eta)} s` : ' · no power'}` });
+    const st = hit(`${id}.${i}`, px, y, ps, ps, { click: q ? () => A.energize(i, mode) : undefined, tip: ready ? `Pad ${i + 1} · ${q ? `energize · ${q.length ? ROLE_ONE[q[0]] : 'Marine (default)'}` : 'charged'}` : `Pad ${i + 1} · charging${isFinite(eta) ? ` · ${fmtCool(eta)} s` : ' · no power'}` });
     // recharging fills in the same blue as a charged pad (owner, 2026-11-02: "I prefer recharge to be same color as the
     // standard value, it is hard to see otherwise"); the pictogram is black over the fill and Sky over the empty part
     const fillY = ready ? y : y + ps * (1 - c), cx = px + ps / 2, cy = y + ps / 2;
@@ -3701,7 +3768,7 @@ function padRow(id, x, y, w, s, mode, big) {
     else if (big && q) { const k = s.pads.slice(0, i).filter((c2) => c2 >= 1).length, r = q[k];
       if (r) { const cs = ps * 0.34; g.fillStyle = k === 0 ? CC.accord : '#000'; RR(g, px + ps - cs - 4, y + 4, cs, cs, cs * 0.25); g.fill(); roleGlyph(r, px + ps - cs / 2 - 4, y + 4 + cs / 2, cs * 0.34, k === 0 ? INK(CC.accord) : CC.sky); } }
   }
-  if (q) button(`${id}.all`, x + n * (ps + gap) + (big ? 12 : 0), y + (big ? ps * 0.2 : 0), bw - (big ? 12 : 0), big ? ps * 0.6 : ps, 'Energize all', () => A.energizeAll(mode), { center: true, dis: () => !q.length || !padReady(s) });
+  if (q) button(`${id}.all`, x + n * (ps + gap) + (big ? 12 : 0), y + (big ? ps * 0.2 : 0), bw - (big ? 12 : 0), big ? ps * 0.6 : ps, 'Energize all', () => A.energizeAll(mode), { center: true, dis: () => (!q.length && !defaultLoad(s).length) || !padReady(s) });
   else LBL('Pads', x + n * (ps + gap) + 4, y + ps / 2 + 6, w - n * (ps + gap) - 4, CC.lilac);
   return ps;
 }
@@ -3808,6 +3875,8 @@ function stTransport(b, big) {
     g.fillStyle = CC.deep; g.fillRect(b.x, y - gap / 2 - (big ? 5 : 2), b.w, 2);
     y += padRow(`tr.pad.${mode}`, b.x, y, b.w, s, mode, big) + gap;
     y += controlRow(`tr.ctl.${mode}`, b.x, y, b.w, s, mode === 'capture' ? captureDest(s) : t, mode, big) + gap;
+    // expanded Capture: the party's marines' health and the boarding log
+    if (big && mode === 'capture') y += partyPanel(b.x, y, b.w, b.y + b.h - y - 34, s) + gap;
   } else if (trTab === 'mines') {
     // mines: beamed out to a point clicked inside the transporter's range, or dropped astern; the count and cooldown
     const hw = (b.w - 6) / 2;
@@ -3866,6 +3935,7 @@ function stFleet(b, big) {
   tabs('fl', b.x, y, b.w, 40, own.map((x) => [x.id, x.name]), fleetPick, (id) => { fleetPick = id; }, (id) => !ship(id).alive); y += 46;
   const f = ship(fleetPick) || W.player;
   y += bar(b.x, y, b.w, `${f.name} · ${CLASSES[f.cls].name} · hull`, f.hull / CLASSES[f.cls].hull, f.hull / CLASSES[f.cls].hull < 0.35) + 12;
+  if (pilotNeeded(f)) { TXT('Pilot needed', b.x, y + 18, b.w, CC.caution); LBL('Beam a pilot over to get it under way', b.x, y + 42, b.w); return; }
   if (f === W.player) { TXT('Under your command', b.x, y + 18, b.w); LBL('Choose a wingman above to set its orders', b.x, y + 42, b.w); return; }
   if (!big) {
     LBL('Stance', b.x, y + 13); y += 20; tabs('fl.st', b.x, y, b.w, 40, AI_CHOICES.stance, f.ai.stance, (v) => A.ai(f.id, 'stance', v)); y += 64;
@@ -4941,6 +5011,7 @@ function friendMark(id, name, px, py, dk, o, f, hov) {
   g.fillText((sel ? `${name} · ${dk.toFixed(1)} km${dk <= TRANSPORT.range_km ? ' · in reach' : ''}` : name).toUpperCase(), px, py + ny);
   const want = ITEMS.filter(([k]) => stillNeeds(o, k) > 0).map(([k, l]) => `${stillNeeds(o, k)} ${l.toLowerCase()}`);
   if (o.ai && o.ai.needMarines && o.marines < o.ai.needMarines) want.push(`${o.ai.needMarines - o.marines} marines`);
+  if (pilotNeeded(o)) { g.fillStyle = CC.caution; g.font = FNT('700 16px Antonio'); g.fillText('PILOT NEEDED', px, py + ny + (want.length ? 38 : 20)); }
   if (want.length) { g.fillStyle = CC.caution; g.font = FNT('600 15px Antonio'); g.fillText(`Needs ${want.join(', ')}`.toUpperCase(), px, py + ny + (sel ? 20 : 18)); }
 }
 // The ring round a ship or planet in the view: wider when focused; under the pointer a little larger, thicker and
@@ -5262,6 +5333,17 @@ window.MOCKUP_SHOTS = {
   // the targeting rules (openspec/changes/weapon-targeting)
   scene_disable: () => scripted(240, () => { station = 'tactical'; W.player.aim = 'engines'; for (let i = 0; i < Math.round(20 / DT); i++) { step(); if (i % 30 === 0) A.fire(); } }, 'disable'),
   // the target's weapons as aims (expanded Tactical), W3 aimed, and the wide keys of the weapons-against-contacts grid
+  // nothing queued: the default load of marines shown darkened, on Hit & run and on Capture
+  queue_default: () => scripted(30, () => { station = 'transport'; trTab = 'hit'; }, 'boarding'),
+  queue_default_capture: () => scripted(30, () => { station = 'transport'; trTab = 'capture'; expanded = 'station'; }, 'boarding'),
+  // a party of marines, two medics and a hacker but no pilot: the wounded treated, then the prize dead in space
+  capture_party: () => scripted(30, () => { station = 'transport'; trTab = 'capture'; expanded = 'station'; const r = ship('rattlejaw'); r.marines = 5;
+    for (const k of ['marines', 'medics', 'marines', 'marines', 'marines', 'medics', 'marines', 'marines', 'hackers', 'engineers']) A.queueRole('capture', k);
+    for (let i = 0; i < Math.round(26 / DT); i++) { if (padReady(W.player) && W.player.bq.capture.length) A.energizeAll('capture'); step(); } }, 'boarding'),
+  pilot_needed: () => scripted(30, () => { const r = ship('rattlejaw'); r.marines = 1;
+    for (const k of ['marines', 'marines', 'marines', 'marines', 'marines', 'marines', 'hackers', 'hackers', 'engineers']) A.queueRole('capture', k);
+    for (let i = 0; i < Math.round(60 / DT) && ship('rattlejaw').side !== 0; i++) { if (padReady(W.player) && W.player.bq.capture.length) A.energizeAll('capture'); step(); }
+    for (let i = 0; i < Math.round(2 / DT); i++) step(); focus = 'rattlejaw'; invDest = 'rattlejaw'; }, 'boarding'),
   aim_weapons: () => scripted(240, () => { station = 'tactical'; expanded = 'station'; A.aim('w:2'); }, 'disable'),
   hit_details: () => scripted(240, () => { station = 'tactical'; W.player.aim = 'engines'; hitInfo = { aim: 'engines' }; }, 'disable'),
   scene_pinned: () => scripted(90, () => { station = 'tactical'; expanded = 'station'; const s = W.player; A.lock('ashkar'); A.pin(0, 'ashkar'); A.pin(1, 'skarn'); A.pin(4, 'rattlejaw'); A.lock('rattlejaw'); }, 'pinned'),

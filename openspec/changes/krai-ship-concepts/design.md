@@ -176,6 +176,9 @@ from the plan, scaled by the class's length against the frigate's 87 m.
   cell it lights and goes out only when that cell breaks away (owner: "exterior hull lights also dissaperaed after ship
   took damage"). The room blocks show only in the Rooms to Parts steps, also on a ship rebuilt after damage (owner: "hide
   ship plan by default").
+  The cut-face shader held 12 hull stations, enough for every Concord hull; a Krai hull is fitted every 2 m, so every cut
+  face past the bow was thrown away and a break left a hole (owner: "hole in the hull", "missing geometry, fix urgently").
+  It takes 48 now, and the stations it is given drop any that lie on a straight line between their neighbours.
 - **The bayonets** (owner, 2026-11-04: "The blade should be a different shape on each ship. Cruiser and dreadnaught would
   probably ave a wider shape like a saw rather than a pointy knife. The frigate could have a thin needle. They are more
   decorative than practical"): the corvette keeps the barbed knife, the frigate a thin needle with a collar at its root,

@@ -161,10 +161,13 @@ def area(name, direction, dist_mm, size_mm, energy_w, colour):
 
 def lights():
     """The rig every emblem shares (guide, "Light"): a large warm key high at the upper left, which also throws the
-    drop shadow to the lower right; a narrow cool rim from the right that outlines the far bevels; a soft top fill."""
-    area("key", (-0.75, 0.85, 2.2), 260, 60, 3.0, (1.0, 0.95, 0.88))
-    area("rim", (1.2, -0.25, 0.45), 220, 30, 1.5, (0.75, 0.85, 1.0))
-    area("fill", (0.2, 0.4, 1.0), 300, 220, 0.6, (0.9, 0.93, 1.0))
+    drop shadow to the lower right; a narrow cool rim from the right that outlines the far bevels; a soft top fill.
+    Energies are for a badge about 0.1 m across: the key gives a white enamel about 0.85 of full white (measured on the
+    Concord badge, 2026-11-04; at 3 W it clipped to flat white and hid every bevel)."""
+    area("key", (-0.75, 0.85, 2.2), 260, 60, 0.55, (1.0, 0.95, 0.88))
+    area("rim", (1.2, -0.25, 0.45), 220, 30, 0.35, (0.75, 0.85, 1.0))
+    fill = area("fill", (0.2, 0.4, 1.0), 300, 220, 0.12, (0.9, 0.93, 1.0))
+    fill.visible_glossy = False  # a soft fill lights; it must not show as a big disc mirrored in a glossy face
 
 
 def ground():
@@ -231,7 +234,7 @@ def star_field_enamel(name, base, fleck="#cfe3ff", density=900.0, size=0.035):
     return m
 
 
-def mm_material(name, coat=0.0, emission_strength=0.0, tile_mm=50.0):
+def mm_material(name, coat=0.0, emission_strength=0.0, tile_mm=50.0, tint=None, thin_film=None):
     """A material from a Material Maker graph's maps (assets/textures/materials/<name>/, rendered from
     tools/materials/ptex/<name>.ptex by tools/materials/export_materials.sh): albedo (sRGB), normal (OpenGL, as Blender
     reads it), ORM (R occlusion, G roughness, B metal) and an emission map when the graph has one. Projected flat onto the
@@ -267,7 +270,16 @@ def mm_material(name, coat=0.0, emission_strength=0.0, tile_mm=50.0):
     ao.inputs["Factor"].default_value = 1.0
     nt.links.new(alb.outputs["Color"], ao.inputs["A"])
     nt.links.new(sep.outputs["Red"], ao.inputs["B"])
-    nt.links.new(ao.outputs["Result"], p.inputs["Base Color"])
+    base = ao.outputs["Result"]
+    if tint:  # a second tone of the same material (a shaded floor): the maps unchanged, the colour multiplied
+        tm = nt.nodes.new("ShaderNodeMix")
+        tm.data_type = "RGBA"
+        tm.blend_type = "MULTIPLY"
+        tm.inputs["Factor"].default_value = 1.0
+        nt.links.new(base, tm.inputs["A"])
+        tm.inputs["B"].default_value = hex_rgb(tint)
+        base = tm.outputs["Result"]
+    nt.links.new(base, p.inputs["Base Color"])
     nt.links.new(sep.outputs["Green"], p.inputs["Roughness"])
     nt.links.new(sep.outputs["Blue"], p.inputs["Metallic"])
     nm = nt.nodes.new("ShaderNodeNormalMap")
@@ -275,6 +287,9 @@ def mm_material(name, coat=0.0, emission_strength=0.0, tile_mm=50.0):
     nt.links.new(nm.outputs["Normal"], p.inputs["Normal"])
     p.inputs["Coat Weight"].default_value = coat
     p.inputs["Coat Roughness"].default_value = 0.03
+    if thin_film:  # (thickness nm, IOR): an iridescent film whose colour shifts with the viewing angle
+        p.inputs["Thin Film Thickness"].default_value = thin_film[0]
+        p.inputs["Thin Film IOR"].default_value = thin_film[1]
     if emi and emission_strength:
         nt.links.new(emi.outputs["Color"], p.inputs["Emission Color"])
         p.inputs["Emission Strength"].default_value = emission_strength
