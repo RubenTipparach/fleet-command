@@ -207,6 +207,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { when: '2026-11-04', q: 'can we try a shape like this? (a sketch: a rounded dome on a pinched neck, flaring to a wide flat foot)', means: 'B-E26, the beacon: your sketch drawn as one closed outline, the saucer in the dome and the nacelles spreading over the skirt. Shown beside B-E25; B-E25 stays the 3D badge until you pick.' },
   { when: '2026-11-04', q: 'too many logos on the hull there / 1/2 size on the left side / only one logo', means: 'On a Concord hull (M11): one emblem only, on the port side of the bow, at half the earlier size: 3 % of the ship\'s length, 2.6 m on the Petrel.' },
   { when: '2026-11-04', q: 'fix the corners here (the saucer\'s tip, in 3D)', means: 'The upper tier folded over itself at the saucer\'s points, and sampling missed the frame\'s inner peak, so the bevel spiked there. The tier is now an exact inset (no folds), and every shape is sampled so each corner is a vertex.' },
   { when: '2026-11-04', q: 'That look good i like that. We need some small subtle details to.the 3d model.loke a double bevel on the saucer. A small layer of detail. Maybe some segment marks on the legs', means: 'B-E25 kept. The saucer gets an upper tier inset 1.6 mm, so its rim steps twice; each leg is cut into four segments by grooves 0.5 mm deep. Both come from the guide\'s shapes, in the Blender render and the 3D badge.' },
@@ -449,6 +450,10 @@ const ENCLOSURES = [
     frame: 'M5.31 82.6L14.3 38C18.3 18.4 41 8 50 3C59 8 81.7 18.4 85.7 38L94.69 82.6Q95.48 86.5 91.58 87.4L53.9 96.1Q50 97 46.1 96.1L8.42 87.4Q4.52 86.5 5.31 82.6ZM11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
     field: 'M11.95 80L20 40C23.6 22.5 42.5 14 50 9.86C57.5 14 76.4 22.5 80 40L88.05 80Q88.45 81.97 86.5 82.42L52 90.39Q50 90.85 48 90.39L13.5 82.42Q11.55 81.97 11.95 80Z',
     why: 'B-E24 with the top drawn to a point as well: the sides rise in curves that meet at a peak, over the arrow foot. Pointed both ways, it reads as a ship\'s bow and stern, heading out. Watch: a pointed arch can recall a church window; the wide shoulders and the arrow foot keep it a badge.' },
+  { key: 'B-E26', name: 'The beacon', scale: 0.58, cy: 48, pieces: 2,
+    frame: 'M9 94H91Q96 94 95 89.1C90 74 73 64 73 50C73 45 82 42 82 32C82 13 68 3 50 3C32 3 18 13 18 32C18 42 27 45 27 50C27 64 10 74 5 89.1Q4 94 9 94ZM15.5 88H84.5Q88.3 88 87.6 84.5C83.5 72 67 62 67 50C67 42 76 40 76 32C76 17 64.5 9 50 9C35.5 9 24 17 24 32C24 40 33 42 33 50C33 62 16.5 72 12.4 84.5Q11.7 88 15.5 88Z',
+    field: 'M15.5 88H84.5Q88.3 88 87.6 84.5C83.5 72 67 62 67 50C67 42 76 40 76 32C76 17 64.5 9 50 9C35.5 9 24 17 24 32C24 40 33 42 33 50C33 62 16.5 72 12.4 84.5Q11.7 88 15.5 88Z',
+    why: 'Your sketch: a rounded dome on a pinched neck over a skirt that flares to a wide, flat foot. A lighthouse, or a beacon on its tower: the Concord as the light that shows travellers the way in. The saucer rides in the dome like the lamp, and the nacelles reach down through the neck and spread over the skirt. Watch: a dome on a neck can read as a keyhole (B-E15) or a bottle; the dome is wider and flatter than a keyhole\'s round head, and the foot is flat.' },
 ];
 const REC = ENCLOSURES.findIndex((e) => e.rec);
 function enclosed(e, ink, k = KREC) {

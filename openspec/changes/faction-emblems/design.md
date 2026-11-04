@@ -54,7 +54,7 @@ shader (no decal plane). The owner set the marking (2026-11-04: "too many logos 
 side", "only one logo"): **one emblem, on the port side, at half of E7's size**: 3 % of the ship's length (2.6 m on the
 Petrel). This replaces E7's 6 % and E12's three marks for Concord hulls. Measured placement: aft of the pylon root the
 swept pylon hides the side from view, so the emblem sits on the bow's flat side just ahead of the last windows (z 33 m).
-At battle distance on desktop it measures about 19 px tall (phones set aside for now, owner: "dont care about phone right
+The paint is the solid version (pearl on a night field; owner: "on the ship hull I like the solid shape more"). At battle distance on desktop it measures about 19 px tall (phones set aside for now, owner: "dont care about phone right
 now").
 
 ## The rules for an emblem

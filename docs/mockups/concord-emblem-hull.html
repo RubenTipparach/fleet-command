@@ -327,9 +327,10 @@ const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
 // The guide's two versions (docs/design/emblem-guide.html, VERSIONS): night-blue on a pearl field for a light ground (the
 // pearl hull), and pearl on a night field for a dark one.
+// The solid one is the default (owner, 2026-11-04: "on the ship hull I like the solid shape more").
 const VERSIONS = {
-  lt: { label: 'On a light hull', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#2f62e0', lit: '#7fa2f2' },
-  dk: { label: 'Night field', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#2f62e0', lit: '#8fb0f6' },
+  dk: { label: 'Solid', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#2f62e0', lit: '#8fb0f6' },
+  lt: { label: 'Outline', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#2f62e0', lit: '#7fa2f2' },
 };
 const CLASS_ID = 'petrel_level';
 const C = CL.CLASSES[CLASS_ID];
@@ -393,7 +394,7 @@ const MARKS = [];
 
 // The paint: the hull's pearl material with the emblem mixed into its colour where each mark's square covers the plating
 // that faces the mark's way. Planar projection in ship space, so the paint follows the hull's own faces.
-const decalTex = new THREE.CanvasTexture(emblemCanvas(VERSIONS.lt));
+const decalTex = new THREE.CanvasTexture(emblemCanvas(VERSIONS.dk));
 decalTex.encoding = THREE.sRGBEncoding; decalTex.anisotropy = 8; decalTex.generateMipmaps = true;
 const uDecal = { value: decalTex };
 const uMarks = MARKS.map((m) => ({ c: m.c, n: m.n, u: m.u, v: m.v }));
@@ -494,12 +495,12 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 resize();
-setVersion('lt');
+setVersion('dk');
 setView('three_quarter');
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 
-const shot = (k, ver = 'lt') => () => { setVersion(ver); setView(k); controls.update(); renderer.render(scene, camera); };
-window.MOCKUP_SHOTS = { three_quarter: shot('three_quarter'), flank: shot('flank'), chase: shot('chase'), flank_night: shot('flank', 'dk') };
+const shot = (k, ver = 'dk') => () => { setVersion(ver); setView(k); controls.update(); renderer.render(scene, camera); };
+window.MOCKUP_SHOTS = { three_quarter: shot('three_quarter'), flank: shot('flank'), chase: shot('chase'), flank_outline: shot('flank', 'lt') };
 window.MOCKUP_SCENE = scene;
 requestAnimationFrame(() => requestAnimationFrame(() => { window.MOCKUP_READY = true; }));
 })();
