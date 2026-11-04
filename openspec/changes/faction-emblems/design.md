@@ -63,6 +63,13 @@ closed outline with the ship 5.3 units clear. On the hull it is the solid versio
 "Solid color variant with a cyan colored star in the middle"). The 3D badge (mockup 10) is rebuilt on B-E27 (owner: "Also render the 3d version too"),
 its star satin cyan: the near-white pearl enamel's maps tinted `#2fd0f0`, since Signal blue cannot be tinted up to cyan.
 
+**On the hull, in the livery** (owner, 2026-11-04: "Have it use the same color scheme as the liveries and integrate it into
+one of the stripes", then "See how this works? Although don't rotate our logo", with a reference of an emblem heading a
+pair of pinstripes): the emblem's field is the livery's stripe colour and its frame the seam colour, both read from the
+Concord line's livery table, with a pearl ship and the cyan star. It stands upright on the port bow and heads two
+pinstripes (broad stripe blue, 0.28 m, over thin seam navy, 0.12 m) that run aft along the flank and end in the forward
+livery band. Taken from the reference: only the idea of an emblem heading pinstripes; no shape or art.
+
 ## The rules for an emblem
 
 | Rule | Says | Why |

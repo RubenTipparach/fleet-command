@@ -45,7 +45,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 <div class="panel title">
   <h1>Concord emblem on the hull</h1>
   <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side of the bow, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
+  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side of the bow in the livery's colours, heading a pair of pinstripes that run aft into the forward livery band, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
   <p>Ship: the Concord line's shared builder, plain pearl (mockup 6 has the windows and lamps). Change <code>faction-emblems</code>.</p>
 </div>
 <div class="panel bar" id="bar"></div>
@@ -328,7 +328,13 @@ const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 // The guide's two versions (docs/design/emblem-guide.html, VERSIONS): night-blue on a pearl field for a light ground (the
 // pearl hull), and pearl on a night field for a dark one.
 // The solid one is the default (owner, 2026-11-04: "on the ship hull I like the solid shape more").
+// The livery version is the default (owner, 2026-11-04: "Have it use the same color scheme as the liveries and integrate
+// it into one of the stripes"): its field is the livery's stripe colour, so the keyhole reads as the stripe swelling into a
+// badge; its frame the livery's seam colour; the ship pearl and the star cyan (owner: "a cyan colored star in the
+// middle"). The livery's colours are read from the Concord line's own table (CL.LIVERIES), the stripes' one source.
+const LIVERY = CL.LIVERIES.concord, srgb = (rgb) => '#' + new THREE.Color(...rgb).convertLinearToSRGB().getHexString();
 const VERSIONS = {
+  livery: { label: 'Livery', ink: '#eef3ff', field: srgb(LIVERY.stripe), frame: srgb(LIVERY.seam), floor: '#2fd0f0', lit: '#8fb0f6' },
   // The star cyan on the solid version (owner, 2026-11-04: "Solid color variant with a cyan colored star in the middle").
   dk: { label: 'Solid', ink: '#eef3ff', field: '#1b2a6b', frame: '#eef3ff', floor: '#2fd0f0', lit: '#8fb0f6' },
   lt: { label: 'Outline', ink: '#1b2a6b', field: '#eef3ff', frame: '#1b2a6b', floor: '#2f62e0', lit: '#7fa2f2' },
@@ -385,17 +391,23 @@ scene.add(ship);
 const S = C.stations, top = (z) => CL.hullAt(S, z)[2];
 const MARKS = [];
 { // One emblem, half size, on the left (port) side (owner, 2026-11-04: "too many logos on the hull there", "1/2 size on the
-  // left side", "only one logo"): forward on the bow's flat side, just ahead of the last windows (C.live[1]) and clear of
-  // the swept pylons. The side narrows toward the bow, so its normal leans forward.
+  // left side", "only one logo"), forward on the bow's flat side ahead of the last windows (C.live[1]), upright (owner:
+  // "don't rotate our logo"). The side narrows toward the bow, so its normal leans forward.
   const half = MARK_H * 0.9 / 2 + 0.6, z = C.live[1] + half, h = CL.hullAt(S, z), ch = CL.chOf(h[1], h[2], h[3], h[4]);
   const y = ((h[2] - ch) + (h[3] + ch)) / 2, dhb = (CL.hullAt(S, z + 1)[1] - CL.hullAt(S, z - 1)[1]) / 2;
   const n = V3(1, 0, -dhb).normalize(), v = V3(0, 1, 0);
   MARKS.push({ key: 'port', c: V3(h[1], y, z), n, v, u: V3().crossVectors(v, n) });
 }
+// The pinstripes (owner, 2026-11-04: "integrate it into one of the stripes", then a reference of a hull whose emblem heads
+// a pair of pinstripes, "See how this works?"): two lines in the livery's colours run aft from the emblem's side along the
+// flank, a broad one in the stripe colour over a thin one in the seam colour, and end in the forward livery band, so the
+// emblem is tied into the ship's own stripes. Metres, ship space; painted on the port flank only.
+const PIN = (() => { const m = MARKS[0], band = Math.max(...C.stripes.filter((z) => z < m.c.z));
+  return { z0: band + 1.2, z1: m.c.z - 0.8, y0: m.c.y, broad: [0.05, 0.33], thin: [-0.17, -0.05] }; })();
 
 // The paint: the hull's pearl material with the emblem mixed into its colour where each mark's square covers the plating
 // that faces the mark's way. Planar projection in ship space, so the paint follows the hull's own faces.
-const decalTex = new THREE.CanvasTexture(emblemCanvas(VERSIONS.dk));
+const decalTex = new THREE.CanvasTexture(emblemCanvas(VERSIONS.livery));
 decalTex.encoding = THREE.sRGBEncoding; decalTex.anisotropy = 8; decalTex.generateMipmaps = true;
 const uDecal = { value: decalTex };
 const uMarks = MARKS.map((m) => ({ c: m.c, n: m.n, u: m.u, v: m.v }));
@@ -405,6 +417,11 @@ function paintHull(mat) {
     sh.uniforms.uDecal = uDecal;
     MARKS.forEach((mk, i) => { for (const k of ['c', 'n', 'u', 'v']) sh.uniforms[`uM${i}${k}`] = { value: mk[k] }; });
     sh.uniforms.uSize = { value: TEX_SIZE_M };
+    sh.uniforms.uPin = { value: new THREE.Vector4(PIN.z0, PIN.z1, PIN.y0, 0) };
+    sh.uniforms.uPinBroad = { value: new THREE.Vector2(...PIN.broad) };
+    sh.uniforms.uPinThin = { value: new THREE.Vector2(...PIN.thin) };
+    sh.uniforms.uPinA = { value: new THREE.Color(...LIVERY.stripe) };
+    sh.uniforms.uPinB = { value: new THREE.Color(...LIVERY.seam) };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vShipPos;\nvarying vec3 vShipN;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvShipPos = position;\nvShipN = normal;');
     const decl = MARKS.map((_, i) => `uniform vec3 uM${i}c, uM${i}n, uM${i}u, uM${i}v;`).join('\n');
@@ -414,20 +431,33 @@ varying vec3 vShipPos;
 varying vec3 vShipN;
 uniform sampler2D uDecal;
 uniform float uSize;
+uniform vec4 uPin;
+uniform vec2 uPinBroad, uPinThin;
+uniform vec3 uPinA, uPinB;
 ${decl}
+void pinstripes(inout vec3 col) {
+  if (vShipPos.x <= 0.0 || normalize(vShipN).x < 0.7 || vShipPos.z < uPin.x || vShipPos.z > uPin.y) return;
+  float dy = vShipPos.y - uPin.z;
+  if (dy > uPinBroad.x && dy < uPinBroad.y) col = uPinA;
+  else if (dy > uPinThin.x && dy < uPinThin.y) col = uPinB;
+}
 void paint(vec3 c, vec3 n, vec3 u, vec3 v, inout vec3 col) {
   vec3 d = vShipPos - c;
-  if (dot(normalize(vShipN), n) < 0.85 || abs(dot(d, n)) > 1.5) return; // only plating that faces the mark, near it
+  // Plating near the mark that does not face away from it: its face and the stripe's thin edges, so the paint runs
+  // unbroken across the stripe it sits on.
+  if (dot(normalize(vShipN), n) < -0.5 || abs(dot(d, n)) > 1.5) return;
   vec2 uv = vec2(dot(d, u), dot(d, v)) / uSize + 0.5;
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return;
   vec4 t = texture2D(uDecal, uv);
   col = mix(col, t.rgb, t.a);
-}`).replace('#include <map_fragment>', `#include <map_fragment>\n${apply}`);
+}`).replace('#include <map_fragment>', `#include <map_fragment>\npinstripes(diffuseColor.rgb);\n${apply}`);
   };
   m.customProgramCacheKey = () => 'emblem-paint';
   return m;
 }
-ship.traverse((o) => { if (o.isMesh && o.userData.part === 'primary' && o.material.color && o.material.color.getHex() === 0xe4e2dc) o.material = paintHull(o.material); });
+// Painted on the primary hull's pearl and on its livery stripes, so the emblem runs across the stripe it sits on.
+const stripeHex = new THREE.Color(...LIVERY.stripe).getHex();
+ship.traverse((o) => { if (o.isMesh && o.userData.part === 'primary' && o.material.color && [0xe4e2dc, stripeHex].includes(o.material.color.getHex())) o.material = paintHull(o.material); });
 
 // Light: a low sun and the logo floodlights (CLAUDE.md section 10: logo lights on insignia and registry), each lamp standing
 // off the plating ahead of or below its mark and throwing its fan across it.
@@ -436,8 +466,8 @@ const sun = new THREE.DirectionalLight(0xfff1dc, 1.4); sun.position.set(60, 80, 
 const rim = new THREE.DirectionalLight(0x9ab8ff, 0.6); rim.position.set(-80, 30, -90); scene.add(rim);
 const floods = [];
 for (const mk of MARKS) {
-  const lamp = new THREE.SpotLight(0xfff4e0, 3.5, MARK_H * 5, 0.62, 0.7, 2);
-  const along = mk.v.clone().multiplyScalar(-MARK_H * 0.9);
+  const lamp = new THREE.SpotLight(0xfff4e0, 1.0, MARK_H * 6, 0.7, 0.8, 2);
+  const along = mk.v.clone().multiplyScalar(-MARK_H * 1.2);
   lamp.position.copy(mk.c).add(mk.n.clone().multiplyScalar(2.2)).add(along);
   lamp.target.position.copy(mk.c); scene.add(lamp, lamp.target); floods.push(lamp);
 }
@@ -445,7 +475,7 @@ for (const mk of MARKS) {
 // Views. Each is a camera offset from a target, in ship space.
 const VIEWS = {
   three_quarter: { label: 'Three quarter', at: V3(0, 2, 4), from: V3(95, 45, 105), fov: 40 },
-  flank: { label: 'Close', at: MARKS[0].c.clone(), from: MARKS[0].c.clone().add(MARKS[0].n.clone().multiplyScalar(9)).add(V3(0, 2, 3)), fov: 40 },
+  flank: { label: 'Close', at: MARKS[0].c.clone().add(V3(0, 0, -4)), from: MARKS[0].c.clone().add(MARKS[0].n.clone().multiplyScalar(16)).add(V3(0, 2, -1)), fov: 40 },
   chase: { label: 'Battle distance', at: V3(0, 0, 0), from: null, fov: 40 }, // set so the ship fills 40 % of the width
 };
 function setView(key) {
@@ -496,12 +526,12 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 resize();
-setVersion('dk');
+setVersion('livery');
 setView('three_quarter');
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 
-const shot = (k, ver = 'dk') => () => { setVersion(ver); setView(k); controls.update(); renderer.render(scene, camera); };
-window.MOCKUP_SHOTS = { three_quarter: shot('three_quarter'), flank: shot('flank'), chase: shot('chase'), flank_outline: shot('flank', 'lt') };
+const shot = (k, ver = 'livery') => () => { setVersion(ver); setView(k); controls.update(); renderer.render(scene, camera); };
+window.MOCKUP_SHOTS = { three_quarter: shot('three_quarter'), flank: shot('flank'), chase: shot('chase'), flank_solid: shot('flank', 'dk') };
 window.MOCKUP_SCENE = scene;
 requestAnimationFrame(() => requestAnimationFrame(() => { window.MOCKUP_READY = true; }));
 })();
