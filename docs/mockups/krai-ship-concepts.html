@@ -100,7 +100,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Krai <span>Warhost</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 7, v18. <code>krai-ship-concepts</code>. The Krai line on the Ship Design Bible, corvette to dreadnought: rooms first, the hull fitted round them, the Krai's own parts and exterior, and battle damage. Drag to orbit, pinch or scroll to zoom.</p>
+    <p class="sub">Mockup 7, v19. <code>krai-ship-concepts</code>. The Krai line on the Ship Design Bible, corvette to dreadnought: rooms first, the hull fitted round them, the Krai's own parts and exterior, and battle damage. Drag to orbit, pinch or scroll to zoom.</p>
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="ship">Ship</button>
@@ -150,7 +150,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
         <li>Four classes, each fitted round its own rooms by the same builder: corvette (47 m, three decks, twin bow guns, crew 14), frigate (87 m, four decks, a spinal cannon, crew 36), cruiser (126 m, five decks, two spinal cannons, one nacelle pair, crew 120) and dreadnought (211 m, seven decks, three spinal cannons, broadside batteries, crew 420).</li>
         <li>The bayonet is a different shape on each class, more decoration than use: a barbed knife on the corvette, a thin needle on the frigate, a wide crescent standing across the nose on the dreadnought (smaller and more pointed on the cruiser), its horns raked back above and below the hull, a clean edge with two openings (owner: "I want a wide blade instead of long blade").</li>
         <li>Livery, painted into the hull (owner: "ships dont have much liveries on main hull"): a crimson war stripe low on each flank that widens forward and sweeps up toward the bow, bronze pin lines either side, battle tallies in fives aft above it (3 on the corvette, 7 on the frigate, 12 on the cruiser, 19 on the dreadnought); nothing on the bow's top (owner: "I'd remove the triangle on top if the noses").</li>
-        <li>Nacelles: continuous light strips on the outboard face in a bracket (along the top and bottom, joined at the aft end; owner: "make nacelles lit more like this. instead of squares"), bronze collars at the ends, a raked fin above and a smaller one below, two clamped conduits inboard, and a glowing collector at the bow (owner: "nacelles still kinda overly simplistic").</li>
+        <li>Nacelles: two glowing red panels stacked on the outboard face, each in a dark frame with a soft glow (owner: "they should look like glowing panels"), bronze collars at the ends, a raked fin above and a smaller one below, two clamped conduits inboard, and a glowing collector at the bow (owner: "nacelles still kinda overly simplistic").</li>
         <li>Windows lie flat on one face of the section, never across a bend or a taper, and the room behind a window on a sloped face stays level (owner: "window geometry extending a bit over the hull slope", "window paralax on slope has the wrong room angle").</li>
         <li>Only the dreadnought raises a command block above its spine (survey A18: a bridge block on super capital ships only); the others keep the bridge inside.</li>
         <li>The frigate's plan was laid by hand; the others come from <code>tools/mockups/krai_plans.py</code>, a list of rooms per deck for each class, so a change to a class is a change to its list.</li>
@@ -1634,6 +1634,10 @@ function hullMat(ship) {
   m.customProgramCacheKey = () => 'krai-hull-6'; mats.push(m); return m;
 }
 const glow = (hex, k = 1.6) => new THREE.MeshStandardMaterial({ color: 0x0a0a0c, emissive: hex, emissiveIntensity: k, roughness: 0.6 });
+// A soft glow round a lit panel: a rectangle that fades from its edge out, added to what is behind it.
+const haloMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+  fragmentShader: 'varying vec2 vU; void main(){ vec2 d = abs(vU - 0.5)*2.0; float e = max(d.x, d.y); float a = (1.0 - smoothstep(0.45, 1.0, e))*0.6; gl_FragColor = vec4(vec3(1.0, 0.08, 0.03)*a, a); }' });
 const dark = new THREE.MeshStandardMaterial({ color: 0x14171d, metalness: 0.7, roughness: 0.45 });
 
 // Faceted geometry: each triangle with its own vertices and colour, facing away from its part's centre.
@@ -1862,15 +1866,18 @@ function buildKrai(id) {
       // light strips on the outboard flat (below); bronze collars
       // round its ends; a raked fin on its top edge and a smaller one under it, in the crest's blade language; two
       // conduits along the inboard flat held by clamps; and a collector at the bow, a glowing slot in a bronze housing.
-      const gm = glow(0xff9a4a, 1.0), brz = new THREE.MeshStandardMaterial({ color: BRONZE, metalness: 0.85, roughness: 0.3, envMapIntensity: LIGHTS[lightKey].env }); mats.push(brz);
+      const gm = glow(0xff1206, 0.75), brz = new THREE.MeshStandardMaterial({ color: BRONZE, metalness: 0.85, roughness: 0.3, envMapIntensity: LIGHTS[lightKey].env }); mats.push(brz);
       const box = (w, h, d, x, y, z, m) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return add(P.inner, g, m, 'nac' + side); };
       const xo = sx * (N.x + N.hw), xi = sx * (N.x - N.hw), vh = 0.55 * s, vl = 0.045 * N.len, fb = 0.12 * s;
-      // Light strips, not vents (owner, 2026-11-04: "make nacelles lit more like this. instead of squares", with a picture
-      // of nacelles lit by continuous bars): a long strip along the top and the bottom of the outboard face, joined by an
-      // upright strip at the aft end, and short returns at the front, so the face reads as one lit bracket.
-      { const ys = 0.55 * N.hh, tA = -0.26, tF = 0.2, sw = 0.22 * s, x = xo + sx * 0.03, len = (tF - tA) * N.len, zm = N.z + (tA + tF) / 2 * N.len;
-        for (const dy of [-1, 1]) { box(0.06, sw, len, x, N.y + dy * ys, zm, gm); box(0.06, 0.32 * ys, sw, x, N.y + dy * ys * 0.84, N.z + tF * N.len - sw / 2, gm); }
-        box(0.06, 2 * ys + sw, sw, x, N.y, N.z + tA * N.len + sw / 2, gm); }
+      // Glowing panels (owner, 2026-11-04: "nacelles have wrong designs here. they should look like glowing panels", with a
+      // picture of a nacelle side lit by two thick bars, stacked; "dont use the big bulge"): two long lit panels one above
+      // the other on the outboard face, each set in a dark frame that stands proud of the plating, with a soft glow round
+      // it (additive, so it never fights the plating). Red, the Krai console's backlight.
+      { const ph = 0.26 * N.hh, pl = 0.3 * N.len, zc = N.z - 0.04 * N.len, x = xo + sx * 0.04, fw = 0.16 * s;
+        for (const dy of [-1, 1]) { const yc = N.y + dy * 0.21 * N.hh;
+          box(0.06, ph, pl, x, yc, zc, gm);
+          for (const e of [-1, 1]) { box(0.16, fw, pl + 2 * fw, xo + sx * 0.07, yc + e * (ph + fw) / 2, zc, dark); box(0.16, ph, fw, xo + sx * 0.07, yc, zc + e * (pl + fw) / 2, dark); }
+          const halo = new THREE.Mesh(new THREE.PlaneGeometry(pl + 6 * fw, ph + 6 * fw), haloMat); halo.rotation.y = sx * PI / 2; halo.position.set(xo + sx * 0.2, yc, zc); halo.renderOrder = 3; P.inner.add(halo); } }
       for (const t of [-0.3, 0.24]) { const band = [t - 0.008, t + 0.008].map((tt) => CL.octRing(N.z + tt * N.len, N.hw * 1.08, N.hh * 1.03, -N.hh * 1.03, 99).map((q) => q.add(V3(sx * N.x, N.y, 0))));
         add(P.inner, CL.loft(band.reverse(), (m) => V3(sx * N.x, N.y, m.z), 4), brz, 'nac' + side); }
       add(P.inner, blade(V3(sx * N.x, N.y + N.hh - 0.2, N.z), V3(0, 1, 0), V3(0, 0, 1), [[0, 0.3 * N.len], [1.8 * s, 0.14 * N.len], [2.2 * s, -0.12 * N.len], [0, -0.3 * N.len]], 0.3 * s), nm, 'nac' + side);

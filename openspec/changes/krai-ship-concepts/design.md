@@ -188,8 +188,9 @@ from the plan, scaled by the class's length against the frigate's 87 m.
 - **Nacelles** (owner, 2026-11-04: "nacelles still kinda overly simplistic"): light strips on the outboard face (the
   old lit strip was inside the blade, so never seen; framed square vents were tried first and replaced the same day, owner:
   "make nacelles lit more like this. instead of squares", with a picture of nacelles lit by continuous bars): a long strip
-  along the top and the bottom, joined by an upright strip at the aft end, with short returns at the front; bronze
-  collars at the ends, a raked fin above and a smaller one
+  along the top and the bottom, joined at the aft end; then (owner: "nacelles have wrong designs here. they should look
+  like glowing panels", "dont use the big bulge") two thick glowing panels stacked on the outboard face, each in a dark
+  frame proud of the plating with a soft additive glow, red as the Krai console's backlight; bronze collars at the ends, a raked fin above and a smaller one
   below, two conduits along the inboard face in clamps, and a collector at the bow.
 - **Windows** (owner, 2026-11-04: "window geometry extending a bit over the hull slope", "the last window ... geometry is
   clipped", "window paralax on slope has the wrong room angle"): a pane lies on one flat face of the section, checked at
