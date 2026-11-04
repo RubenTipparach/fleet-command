@@ -26,5 +26,11 @@
     breach and main blast. The cells are the mockup's own fracture, exported by `tools/mockups/export_ships.mjs` (manifest
     `break`), each drawn as a copy of its body trimmed by the hull shader, closed by cut faces (`cutface.gdshader`). The
     Wrecks scene from both sides (every class of the other side, crippled) and its playtest show every ship type coming apart.
+  - [x] 3.2d (2026-11-04, owner: "aww theres no big super nova", "center is white with pink edges, and a blue ring glowing
+    outward", "the debris should have trails of flame") The core breach's main blast: a white star with pink edges
+    (`novastar.gdshader`), a flat blue disc racing out through the battle plane (`novadisc.gdshader`), debris trailing flame,
+    white sparks, a blue-white flash; part blasts and hits a rolling ball of fire (`fireball.gdshader`) and a shock ring
+    (`shockring.gdshader`)
+  - [ ] 3.2e The mockups' mainBlast() to match (lib/ship-break.js and mockup 6's own copy)
   - [ ] 3.2b Subsystem signatures (coolant, plasma, venting fire per system), wires, modelled holes: they wait for 3.1
   - [ ] 3.2c A part blown off changes nothing in the simulation yet (a lost nacelle does not slow the ship): 3.1

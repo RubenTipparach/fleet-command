@@ -347,7 +347,7 @@ public sealed class ShipDamage
     {
         float s = Math.Max(0.6f, _lenM / 150f);
         Vector3 local = Game(p.Centre) - PlaceInShip(p.Node);
-        Fx.Flame(p.Node, local, 0.06f * _lenU, 18f);
+        Fx.Flame(p.Node, local, 0.07f * _lenU, 24f);
     }
 
     private void StartBreach()
@@ -380,8 +380,7 @@ public sealed class ShipDamage
             Burn(p);
         }
         Vector3 w = World(_core);
-        Fx.Blast(_fx, w, 0.28f * _lenU, 4f * _lenU, 1.6f);
-        Fx.Shockwave(_fx, w, 1.4f * _lenU, 1.8f);
+        Fx.Nova(_fx, w, 0.9f * _lenU);
     }
 
     /// <summary>Steps the damage on by dt seconds of battle time: embers cool, the breach runs, broken pieces drift and tumble.</summary>

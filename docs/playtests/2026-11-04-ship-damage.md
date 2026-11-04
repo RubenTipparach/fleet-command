@@ -63,3 +63,26 @@ Looked at (`docs/playtests/2026-11-04-ship-damage/`):
   OBS throughout, closed after every take.
 - Not built yet: subsystem signatures (coolant, plasma, venting fire per system), wires, modelled holes, and a part blown
   off changing the simulation (a lost nacelle does not slow the ship): `ship-damage-visuals` 3.1, 3.2b, 3.2c.
+
+## The core breach (later the same day)
+
+The owner, on these takes: "aww theres no big super nova", "we had a big explosion ewarlier, but it needs better shaders
+and aprticles", then, with a picture of the 1999 game's warp core breach: "center is white with pink edges, and a blue
+ring glowing outward. this explosion was so iconic to me as a child", "I really wahnt it to have this exact look and
+colors, and the debris should have trails of flame". (The "big explosion earlier" was a bug: a burning piece's flame drawn
+a hundred times its size.)
+
+- A ship's end is now a star of white light with pink-violet edges and soft spikes (`novastar.gdshader`), a flat disc of
+  blue light racing out through the battle plane, brightest at its rim and streaked from the centre
+  (`novadisc.gdshader`), eighteen chunks of debris flung out each trailing flame, white sparks, and a blue-white flash over
+  the ships round it (`Fx.Nova`). Our own shaders and code; only the look is the reference's.
+- A part blown off and every hit get a ball of fire that billows, rolls and cools from white through orange to red as its
+  edge burns away (`fireball.gdshader`), and a ragged shock ring (`shockring.gdshader`).
+- Bloom was tried and taken out: the white Concord hulls under their floods bloomed into blobs.
+- First look: `docs/playtests/2026-11-04-ship-damage/core-breach-first-look.jpg` (the Krai Wrecks scene, the Swift and the
+  Petrel going up).
+- Recorded with the breach, the same way as above, both confirmed on Drive at the local byte size:
+  [concord-wrecks-nova](https://drive.google.com/file/d/1bJYt7CS2ZLLCEwP-84nDynU2bLZFwdVb/view?usp=drivesdk) (131 MB,
+  won, the Krai corvette, frigate, cruiser and dreadnought each going up) and
+  [krai-wrecks-nova](https://drive.google.com/file/d/1D8ktHh1qR_tRCOqL8hNAAjoLgfk6Nv_H/view?usp=drivesdk) (101 MB, won,
+  the Concord Swift, Petrel and Albatross). Looked at: `core-breach-each-krai-class.jpg`, three moments of each breach.
