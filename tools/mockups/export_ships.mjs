@@ -19,7 +19,8 @@
 // per piece of the mockup (hull, secondary, neck, command, pylon_<side>, nacelle_<side>, blade, crest, ...), placed at the
 // piece's own pivot, holding its meshes merged by (zone, material) and named <piece>[_<zone>]_<material>, and the named
 // empties the game drives (mount_*, engine_*, deflector, bridge, reactor, bay_*, light_*), each with its facts in extras.
-// No live lights, particles, plumes, wires, damage or broken pieces.
+// No live lights, particles, plumes, wires, damage or broken pieces in the glb: how a ship comes apart (each body's fracture
+// cells, its cut faces and the parts that blow off) is written to the manifest's "break", for the game's ShipDamage.
 //
 //   NODE_PATH=$(npm root -g) node tools/mockups/export_ships.mjs [--no-contact]
 //
@@ -314,13 +315,34 @@ async function exportInPage(cfg) {
         empty('light_flood_' + i, p, hullP, { kind: 'flood', colour: rgb(l.color), hex: l.color.getHexString(), direction: v3(turn(d)), aim_point: v3(turn(l.userData.aim).sub(c)), range_m: r6(l.distance),
           cone_half_angle_deg: r6(l.angle * 180 / PI), penumbra: l.penumbra, decay: l.decay, strength: r6(l.userData.k), casts_shadow: l.castShadow }, aim(d)); });
     }
+    // How the ship comes apart (owner, 2026-11-04: "if a part gets hit enough break it appart like in the damage demo"): the
+    // page's own fracture, read off the pieces it built and hid (lib/ship-break.js fracture(), cutFace()). Each body's cells
+    // are its seeds; the game draws one copy of the body per cell and the hull shader keeps only that cell's skin (dmgBreak),
+    // and each cut face closes a cell toward a neighbour (the cut-face shader). All in mockup ship space, as the shaders are.
+    const breakup = { space: 'mockup ship space (+X port, +Y up, +Z bow, metres): the hull shader\'s v_obj', core: v3(ship.corePos), bodies: [], pieces: [] };
+    for (const b of ship.bodies) {
+      if (!b.seeds || !b.frags) fail(ship.id + ': body ' + b.name + ' was never fractured');
+      const faces = []; let st = null;
+      for (const f of b.frags) for (const cap of f.caps) {
+        if (cap.userData.other === undefined) continue; // a cut face, closing cell f.cell toward cell other
+        const U = compiled(cap.material).uniforms, pos = cap.geometry.attributes.position, corners = [];
+        for (let i = 0; i < pos.count; i++) corners.push(v3(V3().fromBufferAttribute(pos, i)));
+        if (!st) st = { stations: U.uSt.value.slice(0, U.uStN.value).map((q) => [r6(q.x), r6(q.y), r6(q.z), r6(q.w)]), ch: U.uCh.value.slice(0, U.uStN.value).map(r6), ox: r6(U.uOx.value) };
+        faces.push({ cell: U.uA.value, other: U.uB.value, corners, mid: v3(U.uMid.value), across: v3(U.uAcross.value), depth: v3(U.uDepth.value) });
+      }
+      if (!st) fail(ship.id + ': body ' + b.name + ' has no cut faces');
+      breakup.bodies.push({ node: partName(b.intact), name: b.name, system: b.sys, seeds: b.seeds.map(v3), centers: b.frags.map((f) => v3(f.center)), ...st, faces });
+    }
+    const bodyPieces = new Set(ship.bodies.map((b) => b.intact));
+    for (const P of pieces) if (!bodyPieces.has(P) && partNodes.has(partName(P)))
+      breakup.pieces.push({ node: partName(P), system: P.sys, center: v3(P.center || shipPos(P.pivot)), cuts: (P.cuts || []).map((k) => ({ n: v3(k.n), d: r6(k.d), c: v3(k.c), r: r6(k.r) })) });
     out.updateMatrixWorld(true);
-    const shaderParams = cfg.faction === 'krai' ? { uLiv: ship.dmgU.uLiv.value.toArray().map(r6), uLiv2: ship.dmgU.uLiv2.value.toArray().map(r6) }
+    const shaderParams =cfg.faction === 'krai' ? { uLiv: ship.dmgU.uLiv.value.toArray().map(r6), uLiv2: ship.dmgU.uLiv2.value.toArray().map(r6) }
       : { pools: (ship.spots || []).map((s) => ({ p: v3(s.p), d: v3(s.d), range_m: r6(s.range), strength: r6(s.a) })), note: 'pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)' };
     const info = cfg.faction === 'concord' ? { label: ship.C.label, cls: ship.C.cls, name: ship.C.name, registry: ship.C.reg, livery: ship.liv }
       : { label: 'Krai ' + ship.D.label.toLowerCase(), role: ship.D.role, plan: 'data/ships/krai/' + ship.id + '_plan.json' };
     return { out, man: { faction: cfg.faction, id: ship.id, ...info, file: cfg.faction + '/' + ship.id + '.glb', length_m: r6(size.z), beam_m: r6(size.x), height_m: r6(size.y), triangles: tris, draw_calls: meshNames.length,
-      origin_offset_m: v3(c), nodes: { pieces: [...partNodes.keys()], meshes: meshNames, empties }, materials: [...new Set(drawn)], shader_params: shaderParams,
+      origin_offset_m: v3(c), nodes: { pieces: [...partNodes.keys()], meshes: meshNames, empties }, materials: [...new Set(drawn)], shader_params: shaderParams, break: breakup,
       checks: { flipped_triangles: flipped, flipped_on_single_sided: flippedSingle, skipped_meshes: skipped } } };
   }
   function merge(list, colour, uvs) {

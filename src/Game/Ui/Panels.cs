@@ -141,6 +141,7 @@ public sealed partial class TopStrip : ConsolePanel
 {
     protected override void DrawPanel()
     {
+        DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.top.join" : "strip.top", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
         float cx = 96, cw = Size.X - 192, cy = (44 - 35) / 2f + Sk.StripTopDy, fix = 70 + 100 + 80, gap = 22, u = (cw - fix - gap * 5) / 3.2f, xx = cx;
@@ -162,6 +163,7 @@ public sealed partial class BottomStrip : ConsolePanel
 {
     protected override void DrawPanel()
     {
+        DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.bottom.join" : "strip.bottom", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
         float cx = 96, cw = Size.X - 192, cy = 12 + Sk.StripBottomDy, ch = 44, gap = 22, fix = 120 + 138, u = (cw - fix - gap * 4) / 3.45f, xx = cx;
