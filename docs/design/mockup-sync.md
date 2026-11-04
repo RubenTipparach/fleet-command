@@ -34,7 +34,7 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Officers (v72) | An officer slot on every station with its hover card | Not built | `officers` |
 | Boarding defence (v72) | The Security page, the deck plan in 3D, teams and boarders | Not built | `boarding-defence` |
 | Wide keys, target weapons (v74) | Wide keys; the target's weapons as aim keys; point defence and missiles independently powered | Not built | `weapon-targeting` |
-| Test scenes | Seventeen scenes | Battle, Raiders and Arming, from both sides | `battle-scenarios` 2.1-2.5 |
+| Test scenes | Seventeen scenes | Battle, Duel and Arming, from both sides, the Krai against the Concord in the approved ships only | `battle-scenarios` 2.1-2.5 |
 | Target box | Holder's emblem, boarding tug of war, Target view and Camera lock | The target's systems display and the release X | `battle-console-engine` 2.2 |
 | Backdrop | Nebula sky with streaking dust | A simpler haze and stars | `battle-console-engine` |
 

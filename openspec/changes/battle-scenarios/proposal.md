@@ -11,9 +11,10 @@ a Kethran pair and a Vos raider.
 
 - **`data/battle/scenarios.json`** replaces `data/battle/skirmish.json`: a list of scenarios in menu order, each naming
   the side the player commands (a faction with a console skin), its seed, objective, first officer's message and ships.
-- **Six scenarios, three for each side**: Battle (the Concord line against the Krai line, and the reverse), Raiders (the
-  mockup's skirmish against the Kethran and the Vos, from either side) and Arming (two fast frigates jinking in close,
-  the mockup's Arming scene without proximity torpedoes).
+- **Six scenarios, three for each side, all the Krai against the Concord in the approved ships** (owner, 2026-11-04: "NO
+  PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"): Battle (the Concord line against the Krai line, and the reverse),
+  Duel (one cruiser against one) and Arming (two fast frigates jinking in close, the mockup's Arming scene without
+  proximity torpedoes). The old skirmish against Kethran and Vos stand-ins is kept only as the golden seed's test fixture.
 - **The Krai Warhost becomes a faction** with its console skin (`krai`), and the Krai line's four classes (corvette,
   frigate, cruiser, dreadnought) get battle figures.
 - **Standing orders per ship** in a scenario: stance, fighting range, erratic, hold fire, the hull and shields it starts

@@ -21,15 +21,17 @@ A ship may carry its captain's standing orders, each optional with the default i
 escort or hold), `range` (mid; close, mid or long, the tuning's `ai_range_*_km`), `erratic` (false), `hold_fire` (false),
 `hull_frac` (1) and `shields_frac` (1). An unknown value is a data error naming the field (CLAUDE.md section 6.4).
 
-The first scenario is the one the game opens in. The golden seed's battle is `concord_raiders`, the old skirmish
-unchanged (seed 20261101, the same six ships), so the pinned hulls hold.
+The first scenario is the one the game opens in. No scenario uses a stand-in ship: every ship is the Concord's or the
+Krai's, in a class with an approved model (owner, 2026-11-04: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"; a
+test enforces it). The golden seed's battle, the old skirmish against Kethran and Vos stand-ins (seed 20261101, the same
+six ships), lives on only as a test fixture (`tests/Core.Tests/Fixtures/golden_raiders.json`), so the pinned hulls hold.
 
 ## 2. The scenarios
 
 | Scene | Concord side | Krai side | From the mockup |
 |---|---|---|---|
 | Battle | Resolute (Albatross), Tallis (Swift), Meridian (Petrel) against Kharz (cruiser), Vekk (frigate), Ruhn (corvette) | the same fleets, sides swapped | the Battle scene, with the Krai as the foe |
-| Raiders | the Concord three against Vorrak, Ashkar (Kethran) and Rattlejaw (Vos) | the Krai three against the same | the Battle scene as it is; the Krai names are mockup 8's (`docs/mockups/lib/krai.js`, `player.ships`) |
+| Duel | Resolute (Albatross) against Kharz (Krai cruiser), 9 km apart, closing | Kharz against Resolute | one ship against one, for the console and the ships up close; the Krai names are mockup 8's (`docs/mockups/lib/krai.js`, `player.ships`) |
 | Arming | Resolute against two Krai frigates at 300 m/s, erratic, fighting close | Kharz against two Swifts the same way | the Arming scene; the game has no proximity torpedoes yet, so the objective asks for overloads |
 
 Positions follow the mockup's skirmish: the player's three at the origin heading north, the foe's three 6 to 11 km

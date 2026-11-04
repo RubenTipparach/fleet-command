@@ -42,6 +42,6 @@ shot krai-power 1920x1080 --steps=600 --scenario=krai_battle --station=power
 shot krai-ship-expanded 1920x1080 --steps=600 --scenario=krai_battle --expand=ship
 shot krai-weapons-expanded 1920x1080 --steps=600 --scenario=krai_battle --expand=weapons
 shot krai-menu 1920x1080 --steps=300 --scenario=krai_battle --menu
-shot concord-raiders 1920x1080 --steps=600 --scenario=concord_raiders
+shot krai-duel 1920x1080 --steps=900 --scenario=krai_duel --zoom=0.6
 shot scene-list 1920x1080 --steps=300 --scene-list
 shot ships-close 1920x1080 --steps=900 --zoom=0.45

@@ -2,10 +2,10 @@
  "_doc": "Every playtest the scripted captain runs (scripts/playtest.sh): each script against each scenario it plays, from both sides (owner, 2026-11-04: \"develop a bot to play through these test scenarios for each faction\"). A new scenario is added here with the script that plays it.",
  "runs": [
   { "script": "battle", "play": "concord_battle" },
-  { "script": "battle", "play": "concord_raiders" },
+  { "script": "battle", "play": "concord_duel" },
   { "script": "arming", "play": "concord_arming" },
   { "script": "battle", "play": "krai_battle" },
-  { "script": "battle", "play": "krai_raiders" },
+  { "script": "battle", "play": "krai_duel" },
   { "script": "arming", "play": "krai_arming" }
  ]
 }

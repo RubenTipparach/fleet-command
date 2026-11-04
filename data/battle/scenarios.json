@@ -1,5 +1,5 @@
 {
- "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Raiders is the mockup's skirmish (Concord against a Kethran pair and a Vos raider, whose ships are stand-ins until designed); concord_raiders is the golden seed's battle. Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet.",
+ "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet.",
  "scenarios": [
   {
    "id": "concord_battle",
@@ -87,14 +87,14 @@
    ]
   },
   {
-   "id": "concord_raiders",
-   "name": "Raiders",
+   "id": "concord_duel",
+   "name": "Duel",
    "side": "concord",
-   "seed": 20261101,
-   "objective": "Destroy the Kethran and Vos ships",
+   "seed": 20261109,
+   "objective": "Destroy the Kharz",
    "say": [
-    "Comms",
-    "Kethran and Vos contacts ahead. Weapons free."
+    "Tactical",
+    "A Krai cruiser, alone and closing. Ship to ship."
    ],
    "ships": [
     {
@@ -110,64 +110,16 @@
      "speed_m_s": 120
     },
     {
-     "id": "tallis",
-     "name": "Tallis",
-     "captain": "Cdr. Imre",
-     "class": "ff",
-     "faction": "concord",
-     "side": 0,
-     "x_m": -900,
-     "z_m": 600,
-     "heading_deg": 0,
-     "speed_m_s": 120
-    },
-    {
-     "id": "meridian",
-     "name": "Meridian",
-     "captain": "Capt. Osei",
-     "class": "dd",
-     "faction": "concord",
-     "side": 0,
-     "x_m": 900,
-     "z_m": 700,
-     "heading_deg": 0,
-     "speed_m_s": 120
-    },
-    {
-     "id": "vorrak",
-     "name": "Vorrak",
-     "captain": "Warlord Tesk",
-     "class": "kdd",
-     "faction": "kethran",
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
-     "heading_deg": 175,
+     "x_m": 0,
+     "z_m": -9000,
+     "heading_deg": 180,
      "speed_m_s": 150
-    },
-    {
-     "id": "ashkar",
-     "name": "Ashkar",
-     "captain": "Blade Oru",
-     "class": "kff",
-     "faction": "kethran",
-     "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
-     "heading_deg": 190,
-     "speed_m_s": 160
-    },
-    {
-     "id": "rattlejaw",
-     "name": "Rattlejaw",
-     "captain": "Mother Skeel",
-     "class": "vcr",
-     "faction": "vos",
-     "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
-     "heading_deg": 240,
-     "speed_m_s": 140
     }
    ]
   },
@@ -310,14 +262,14 @@
    ]
   },
   {
-   "id": "krai_raiders",
-   "name": "Raiders",
+   "id": "krai_duel",
+   "name": "Duel",
    "side": "krai",
-   "seed": 20261107,
-   "objective": "Destroy the Kethran and Vos ships",
+   "seed": 20261110,
+   "objective": "Destroy the Resolute",
    "say": [
-    "Comms",
-    "Kethran and Vos contacts ahead. Weapons free."
+    "Tactical",
+    "A Concord cruiser, alone and closing. Ship to ship."
    ],
    "ships": [
     {
@@ -333,64 +285,16 @@
      "speed_m_s": 120
     },
     {
-     "id": "vekk",
-     "name": "Vekk",
-     "captain": "Blade Sora",
-     "class": "krai_ff",
-     "faction": "krai",
-     "side": 0,
-     "x_m": -900,
-     "z_m": 600,
-     "heading_deg": 0,
-     "speed_m_s": 120
-    },
-    {
-     "id": "ruhn",
-     "name": "Ruhn",
-     "captain": "Fang Idra",
-     "class": "krai_cv",
-     "faction": "krai",
-     "side": 0,
-     "x_m": 900,
-     "z_m": 700,
-     "heading_deg": 0,
-     "speed_m_s": 120
-    },
-    {
-     "id": "vorrak",
-     "name": "Vorrak",
-     "captain": "Warlord Tesk",
-     "class": "kdd",
-     "faction": "kethran",
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
-     "heading_deg": 175,
+     "x_m": 0,
+     "z_m": -9000,
+     "heading_deg": 180,
      "speed_m_s": 150
-    },
-    {
-     "id": "ashkar",
-     "name": "Ashkar",
-     "captain": "Blade Oru",
-     "class": "kff",
-     "faction": "kethran",
-     "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
-     "heading_deg": 190,
-     "speed_m_s": 160
-    },
-    {
-     "id": "rattlejaw",
-     "name": "Rattlejaw",
-     "captain": "Mother Skeel",
-     "class": "vcr",
-     "faction": "vos",
-     "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
-     "heading_deg": 240,
-     "speed_m_s": 140
     }
    ]
   },

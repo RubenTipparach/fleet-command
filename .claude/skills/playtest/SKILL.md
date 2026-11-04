@@ -72,18 +72,19 @@ python .claude/skills/obs-record/scripts/obs_record.py \
   --launch "builds/windows/fleet-command.exe -- --playtest first-battle" --window-exe fleet-command.exe \
   --capture game --start-on "^PLAYTEST_START" --stop-on "^PLAYTEST_END" \
   --fps 60 --out output/playtests/<date>-first-battle.mp4 --contact-sheet
-ffmpeg -i output/playtests/<date>-first-battle.mp4 -c:v libx264 -crf 26 -preset slow -an \
+ffmpeg -i output/playtests/<date>-first-battle.mp4 -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -an \
   "G:/My Drive/dungeon-crawler-2026/fleet-command-<date>-first-battle.mp4"
 ```
 
 - Record in **real time**: a take shows how the game feels.
 - **Look at the contact sheet before calling it done**: a dialog over the game, a black capture,
   the wrong window, a panel that overflowed or a view that stopped rendering are easy to miss.
-- `output/` is git-ignored. The full take stays local; only the share copy goes to Drive.
+- `output/` is git-ignored. Drive gets an H.264 MP4 at the take's full resolution (owner, 2026-11-04: "upload google
+  drive at full resolution, mp4 encoded"), never a scaled-down copy.
 
 ## Upload to Google Drive
 
-Every recorded take is uploaded, to `G:/My Drive/dungeon-crawler-2026/` (Drive for Desktop),
+Every recorded take is uploaded at full resolution as an H.264 MP4, to `G:/My Drive/dungeon-crawler-2026/` (Drive for Desktop),
 named `fleet-command-<YYYY-MM-DD>-<what>.mp4`. Confirm it with the Google Drive connector
 (`search_files` for the title); the connector cannot upload video itself. Put the link in the report
 and the reply. If the folder is missing, say so and give the owner the copy command.
@@ -104,6 +105,6 @@ one line each, and anything to fix as a task in its OpenSpec change.
 
 ## Do not
 
-- Cut between views, fast-forward a take, or upload the full OBS file.
+- Cut between views, fast-forward a take, or upload a scaled-down copy.
 - Call a feature done from a unit test, a mockup or a still when it can be played.
 - Run two games on one machine, or a build beside a recorded take.

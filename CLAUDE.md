@@ -428,10 +428,10 @@ The `playtest` and `obs-record` skills are the method (Crab Breeze 9, Mining Mik
   screen with the view at the side.
 - **Record with OBS** between `PLAYTEST_START` and `PLAYTEST_END`, in real time, and **look at
   the contact sheet** before calling a take done.
-- **Upload every take to Google Drive.** Make a small H.264 share copy (`-crf 26 -preset slow`)
-  into `G:/My Drive/dungeon-crawler-2026/` (the folder the owner's other games use), named
-  `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give
-  the owner the link.
+- **Upload every take to Google Drive at full resolution** (owner, 2026-11-04: "upload google drive at full
+  resolution, mp4 encoded"): an H.264 MP4 at the take's own resolution, never scaled down, into
+  `G:/My Drive/dungeon-crawler-2026/` (the folder the owner's other games use), named
+  `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give the owner the link.
 - **One game per device**, and **a desktop run is checked every five minutes** while it plays
   (Mining Mike).
 - **Share the machine with the other sessions** (owner, 2026-11-04: "theres two claude sessions running on this machine,
