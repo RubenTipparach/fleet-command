@@ -221,6 +221,10 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'krai', when: '2026-11-04', q: 'bro this version slaps / Thats it / the forge star you had was even better / keep that', means: 'The ring version is the Krai\'s emblem (KC+): the forge star (eight points), the founder\'s red fang and four fangs, the thin outer crescent and the ring, as first drawn, the torc a little smaller so the thin crescent clears the ring. The three-point emperor\'s star and the engraving are dropped.' },
+  { f: 'krai', when: '2026-11-04', q: 'I like the overall shape of fang torc, I want a more complex version of this for emblem, but use thesimple logo for the ship livery', means: 'KC in two tiers: KC, the livery mark (the torc, the three houses\' fangs and the emperor\'s star, nothing round it), for the hulls; KC+, the emblem (the ring, the thin outer crescent, a tally per emperor on the ring, a groove along the facets, each fang bound, the throne in the star), for the 3D badge.' },
+  { f: 'krai', when: '2026-11-04', q: 'KC3 they have an emperor cheif, the 3 sided star should represent that / a star ruling over the 3 great houses', means: 'KC: the star is the emperor-chief, three-pointed and the only red, set above three fangs, one for each great house in order of precedence (the red founder\'s fang and the fourth fang go).' },
+  { f: 'krai', when: '2026-11-04', q: 'fang toc, add a star in the middle, circle around it for 3d emblem version, a thin crescent border to the outer part of the screscent', means: 'KC, the fang torc, taken forward: an eight-point forge star in its opening, a thin crescent along its outer edge, and a ring round all of it for the 3D badge; the torc made smaller to keep every part 4 units clear. Flagged: a star with a crescent is close to the star and crescent, a real symbol.' },
   { f: 'all', when: '2026-11-04', q: 'dont show everything on one page, we\'re on krai now, I dont need to see both krai and concord in one page', means: 'A faction switch at the top: one faction\'s sketches and notes at a time, opening on the Krai. Notes that apply to every faction always show.' },
   { f: 'krai', when: '2026-11-04', q: 'good, begin krai emblem design, this faction believes strongly in tradition. give them some sort of asymmetric logo', means: 'The Krai Warhost\'s section: three asymmetric directions, each a record that only grows one way: KA, the heirloom blade on a tally-notched shield (recommended); KB, the lineage standard with a chevron per elder; KC, the fang torc with a trophy per chief. Blade steel and blood red, measured like the Concord\'s.' },
   { f: 'concord', when: '2026-11-04', q: 'Yea ok. I\'ll accept that. Let\'s see it ont be ship hull. Solid color variant with a cyan colored star in the middle.', means: 'B-E27, the smooth keyhole, accepted: now B\'s main sketch. Painted on the Petrel\'s hull (M11) in the solid version with a cyan star.' },
@@ -642,25 +646,59 @@ function kbChevrons(k) {
   });
   return s;
 }
-// KC's torc: a heavy faceted crescent, open to the upper right, its two arcs meeting in sharp horns, with trophy fangs along its
-// inside edge from the founder's (largest, at the heavy end) toward the lower horn, the rest left open for the next.
+// KC's torc (owner, 2026-11-04, picking it: "fang toc, add a star in the middle, circle around it for 3d emblem version, a
+// thin crescent border to the outer part of the screscent"). A heavy faceted crescent, open to the upper right, its two
+// arcs meeting in sharp horns, with trophy fangs along its inside edge from the founder's (largest, at the heavy end)
+// toward the lower horn; a thin crescent following its outer edge; an eight-point forge star in its opening; and a ring
+// round all of it, the badge's rim. Everything is sized so each part stands at least 4 units clear of the next.
 const KC = (() => {
-  const C1 = [50, 52], r1 = 45, C2 = [62, 42], r2 = 32, d = Math.hypot(C2[0] - C1[0], C2[1] - C1[1]);
+  const O = [50, 50], RING = [49, 45];                 // the ring: outer and inner radius
+  const r1 = 33.2, k = r1 / 45, C1 = O, C2 = [O[0] + 12 * k, O[1] - 10 * k], r2 = 32 * k;
+  const d = Math.hypot(C2[0] - C1[0], C2[1] - C1[1]);
   const toC2 = Math.atan2(C2[1] - C1[1], C2[0] - C1[0]) / R, toC1 = toC2 + 180;
   const th = Math.acos((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d)) / R, ph = Math.acos((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d)) / R;
-  const out = [], inn = [];
+  const a0 = toC2 + th, span = 360 - 2 * th, out = [], inn = [];
   // Faceted, not round: hammered flat faces, so it reads as forged steel and never as a moon.
-  for (let i = 0; i <= 10; i++) out.push(pol(r1, toC2 + th + (360 - 2 * th) * i / 10, ...C1));
+  for (let i = 0; i <= 10; i++) out.push(pol(r1, a0 + span * i / 10, ...C1));
   for (let i = 0; i <= 8; i++) inn.push(pol(r2, toC1 + ph - 2 * ph * i / 8, ...C2));
-  const fangs = [[150, 14, 4.4], [115, 11, 3.8], [80, 8.5, 3.2], [45, 6.5, 2.7]].map(([a, len, hw]) => {
+  const fangs = [[150, 14, 4.4], [118, 11, 3.8], [88, 8.5, 3.2], [60, 6.5, 2.7]].map(([a, len, hw]) => {
+    len *= k; hw *= k;
     const t = [-Math.sin(a * R), Math.cos(a * R)], base = pol(r2 + 2, a, ...C2), tip = pol(r2 - len, a, ...C2), edge = pol(r2 - 0.5, a, ...C2);
     return [[edge[0] + t[0] * hw, edge[1] + t[1] * hw], tip, [edge[0] - t[0] * hw, edge[1] - t[1] * hw], base];
   });
-  return { body: polyD(out.concat(inn)), fangs };
+  // The thin crescent: 4 units outside the torc, along the same facets and the same span, tapering to points at both ends.
+  const gap = 4, wMax = 2.4, thinOut = [], thinIn = [];
+  for (let i = 0; i <= 40; i++) {
+    const t = i / 40, a = a0 + span * t, w = i === 0 || i === 40 ? 0 : Math.max(1.2, wMax * Math.pow(Math.sin(Math.PI * t), 0.6)); // never thinner than a print line before its point
+    // Follow the faceted edge: the radius of the facet under this angle, so the thin line stays parallel to it.
+    const f0 = Math.min(9, Math.floor(t * 10)), fa = a0 + span * f0 / 10, fb = a0 + span * (f0 + 1) / 10, mid = (fa + fb) / 2;
+    const rr = r1 * Math.cos((span / 20) * R) / Math.cos((a - mid) * R);
+    thinIn.push(pol(rr + gap, a, ...C1)); thinOut.push(pol(rr + gap + w, a, ...C1));
+  }
+  // The forge star (owner, 2026-11-04, of the emperor's three-point star that briefly replaced it: "the forge star you had
+  // was even better", "keep that"): eight points, the four long ones on the diagonals, in the torc's opening.
+  const S = [C2[0] + 3.5, C2[1] - 2.5], star = [];
+  for (let i = 0; i < 16; i++) star.push(pol(i % 2 ? 2.9 : (i % 4 === 0 ? 8.5 : 5.2), -45 + i * 22.5, ...S));
+  const ring = `M${O[0] + RING[0]} ${O[1]}A${RING[0]} ${RING[0]} 0 1 0 ${O[0] - RING[0]} ${O[1]}A${RING[0]} ${RING[0]} 0 1 0 ${O[0] + RING[0]} ${O[1]}Z`;
+  const ringIn = `M${O[0] + RING[1]} ${O[1]}A${RING[1]} ${RING[1]} 0 1 0 ${O[0] - RING[1]} ${O[1]}A${RING[1]} ${RING[1]} 0 1 0 ${O[0] + RING[1]} ${O[1]}Z`;
+  return { body: polyD(out.concat(inn)), fangs, thin: polyD(thinOut.concat(thinIn.reverse())), star: polyD(star), S, ring, ringIn,
+    C1, C2, r1, r2, k, a0, span, RING, O, at: (r, a, c) => pol(r, a, ...c) };
 })();
+// The torc in two tiers (owner, 2026-11-04: "I like the overall shape of fang torc, I want a more complex version of this
+// for emblem, but use thesimple logo for the ship livery", then of the ring version: "bro this version slaps", "Thats it").
+// simple: the torc, its fangs and the forge star, nothing round it, for the hull. full: the emblem, with the ring and the
+// thin outer crescent.
+function kcArt(k, ink = false, full = true) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = '';
+  if (full) { s += `<path d="${KC.ring}${KC.ringIn}" fill="${c(k.frame)}" fill-rule="evenodd"/>`; if (!ink) s += path(KC.ringIn, k.field); s += path(KC.thin, c(k.frame)); }
+  s += path(KC.body, c(k.frame));
+  KC.fangs.forEach((g, i) => { s += path(polyD(g), c(i === 0 ? k.accent : k.frame)); });
+  return s + path(KC.star, c(k.frame));
+}
 const KRAI_DESIGNS = [
   {
-    id: 'krai-a', tag: 'KA', faction: 'krai', name: 'KA · The Heirloom Blade', outline: 'A lopsided shield', rec: true, own: true, pal: KRAI, pieces: 2,
+    id: 'krai-a', tag: 'KA', faction: 'krai', name: 'KA · The Heirloom Blade', outline: 'A lopsided shield', own: true, pal: KRAI, pieces: 2,
     risk: 'A blade across a shield is a common military badge; the hooked, barbed Krai bayonet, the single quillon and the tally-cut edge keep it the Krai\'s own.',
     draw(bg = 'dk') { const k = KRAI[bg]; return `<path d="${KA_SHIELD.frame}" fill="${k.frame}" fill-rule="evenodd"/>` + path(KA_SHIELD.field, k.field) + kaBlade(k); },
     ink() { return `<path d="${KA_SHIELD.frame}" fill="#000" fill-rule="evenodd"/>` + kaBlade({ device: '#000' }); },
@@ -689,16 +727,33 @@ const KRAI_DESIGNS = [
     ],
   },
   {
-    id: 'krai-c', tag: 'KC', faction: 'krai', name: 'KC · The Fang Torc', outline: 'A crescent torc', own: true, pal: KRAI, pieces: 1,
-    risk: 'A crescent is a sacred symbol to many on Earth; the hammered flat facets, the fangs and the heavy one-sided weight keep it a forged trophy torc, never a moon.',
-    draw(bg = 'dk') { const k = KRAI[bg]; let s = path(KC.body, k.frame); KC.fangs.forEach((g, i) => { s += path(polyD(g), i === 0 ? k.accent : k.frame); }); return s; },
-    ink() { let s = path(KC.body, '#000'); KC.fangs.forEach((g) => { s += path(polyD(g), '#000'); }); return s; },
+    id: 'krai-c', tag: 'KC', faction: 'krai', name: 'KC · The Fang Torc, livery mark', outline: 'A crescent torc', own: true, pal: KRAI, pieces: 2,
+    risk: 'A star beside a crescent is the star and crescent, a real nation\'s and faith\'s symbol (rule E8 keeps those out). Kept apart by the eight-point forge star (never five points), the faceted, fanged torc, but it is still the closest of any sketch to a real symbol: your call.',
+    draw(bg = 'dk') { return kcArt(KRAI[bg], false, false); },
+    ink() { return kcArt(KRAI.dk, true, false); },
     callouts: [
-      [16, 75, 'L', 'A torc, worn heavy on one side', 'The war host\'s neck ring, worn by its chief and passed to the next. Hammered in flat facets, thickest where the oldest trophies hang.'],
-      [40, 55, 'L', 'The founder\'s fang, red', 'The first trophy, taken by the host\'s founder: the largest, and the only one in blood red.'],
-      [64, 66, 'R', 'Each fang smaller than the last', 'One fang added for each chief, each a little smaller: no one may outshine the founder.'],
-      [72, 25, 'R', 'Open to the next', 'Half the inside edge is bare, up to the upper horn: the fangs of chiefs not yet born go there.'],
-      [50, 95, 'R', 'One piece of forged steel', 'Fangs and ring are one body: the trophies are part of the host, not hung on it.'],
+      [...KC.at(KC.r1 - 6, 145, KC.C1), 'L', 'A torc, worn heavy on one side', 'The war host\'s neck ring, worn by its chief and passed to the next. Hammered in flat facets, thickest where the oldest trophies hang.'],
+      [...KC.at(KC.r2 - 5, 150, KC.C2), 'L', 'The founder\'s fang, red', 'The first trophy, taken by the host\'s founder: the largest, and the only one in blood red.'],
+      [...KC.S, 'R', 'The forge star', 'Eight points, the long four on the diagonals: the star the first host was sworn under, struck in the forge\'s shape. Never five points.'],
+      [...KC.at(KC.r2 - 3, 230, KC.C2), 'R', 'Open to the next', 'The upper half of the inside edge is bare: the fangs of chiefs not yet born go there.'],
+      [...KC.at(KC.r2 - 4, 80, KC.C2), 'R', 'Each fang smaller than the last', 'One fang added for each chief, each a little smaller: no one may outshine the founder.'],
+      [...KC.at(KC.r1 - 3, 95, KC.C1), 'R', 'One piece of forged steel', 'Fangs and torc are one body: the trophies are part of the host, not hung on it.'],
+    ],
+  },
+  {
+    id: 'krai-c2', tag: 'KC+', faction: 'krai', name: 'KC+ · The Fang Torc, emblem', outline: 'A ring round a crescent torc', rec: true, own: true, pal: KRAI, pieces: 4,
+    risk: 'A star beside a crescent is the star and crescent, a real nation\'s and faith\'s symbol (rule E8 keeps those out). Kept apart by the eight-point forge star (never five points), the faceted, fanged torc, the thin outer crescent and the ring, but it is still the closest of any sketch to a real symbol: your call. The ring also goes against "never a circle holding things", at your request, for the 3D badge.',
+    draw(bg = 'dk') { return kcArt(KRAI[bg]); },
+    ink() { return kcArt(KRAI.dk, true); },
+    callouts: [
+      [...KC.at(KC.r1 - 6, 145, KC.C1), 'L', 'A torc, worn heavy on one side', 'The war host\'s neck ring, worn by its chief and passed to the next. Hammered in flat facets, thickest where the oldest trophies hang.'],
+      [...KC.at(KC.r2 - 5, 150, KC.C2), 'L', 'The founder\'s fang, red', 'The first trophy, taken by the host\'s founder: the largest, and the only one in blood red.'],
+      [...KC.at(KC.r1 + 5.2, 200, KC.C1), 'L', 'A thin crescent outside', 'A second, fine crescent along the torc\'s outer edge: the line of every chief who wore it before, always just behind the one who wears it now.'],
+      [...KC.at(47, 225, [50, 50]), 'L', 'The ring, the badge\'s rim', 'For the 3D emblem: the host\'s oath ring, closed round the torc. Everything inside stands 4 units clear of it.'],
+      [...KC.S, 'R', 'The forge star', 'Eight points, the long four on the diagonals: the star the first host was sworn under, struck in the forge\'s shape. Never five points.'],
+      [...KC.at(KC.r2 - 3, 230, KC.C2), 'R', 'Open to the next', 'The upper half of the inside edge is bare: the fangs of chiefs not yet born go there.'],
+      [...KC.at(KC.r2 - 4, 80, KC.C2), 'R', 'Each fang smaller than the last', 'One fang added for each chief, each a little smaller: no one may outshine the founder.'],
+      [...KC.at(KC.r1 - 3, 95, KC.C1), 'R', 'One piece of forged steel', 'Fangs and torc are one body: the trophies are part of the host, not hung on it.'],
     ],
   },
 ];
@@ -891,6 +946,8 @@ async function measureOutline(svgInner) {
   const parts = count(true), regions = count(false);
   return { parts, holes: regions - 1, ok: parts === 1 && regions === 1 };
 }
+// A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
+window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
 window.EMBLEM_CHECK = async () => {
   const out = [];
   for (const e of ENCLOSURES) {

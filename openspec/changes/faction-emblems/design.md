@@ -93,6 +93,18 @@ torc (a faceted crescent, a trophy fang per chief from the founder's red one, th
 blade steel `#c9d0d8` and blood red `#d0202a` on a blackened field on black; near-black `#1c1416` and `#b3121b` on a bone
 field on white. Each sketch is measured for joins and its outline against both grounds (12.7:1 and 18.1:1 for KA).
 
+**Picked: the Fang Torc, in two tiers** (owner, 2026-11-04: "fang toc, add a star in the middle, circle around it for 3d
+emblem version, a thin crescent border to the outer part of the screscent", then "I want a more complex version of this
+for emblem, but use thesimple logo for the ship livery", and of the ring version "bro this version slaps", "Thats it",
+"the forge star you had was even better", "keep that"). **KC+, the emblem**: the faceted torc with the founder's red fang
+and three smaller fangs, an eight-point forge star in its opening, a thin crescent 4 units outside its outer edge, and a
+ring (radii 45 to 49) round all of it, for the 3D badge. **KC, the livery mark**: the same torc, fangs and star with no
+ring and no thin crescent, for the Krai hulls. A three-point emperor's star over three great houses (owner: "they have an
+emperor cheif ... a star ruling over the 3 great houses") was drawn and then set aside for the forge star; the emperor
+and the three great houses stand as Krai culture. Flagged to the owner: a star beside a crescent is close to the star and
+crescent, a real nation's and faith's symbol (rule E8); the eight points, the facets, the fangs and the ring keep it apart.
+Next: the 3D badge of KC+, and KC on the Krai ships' livery (the Krai ship page belongs to the Concord ships thread).
+
 ## The rules for an emblem
 
 | Rule | Says | Why |
