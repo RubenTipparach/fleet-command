@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v1) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | to publish |
+| 12 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v1) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M12 v1](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 

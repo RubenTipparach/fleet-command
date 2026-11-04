@@ -9,3 +9,5 @@
   `docs/screenshots/mockups/battle-console-allied*.png`.
 
 ## Publishes
+- Link: https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM
+- Version 1 (the Ssarith Hunt skin of version 76 of the source page; parity 3,917 presses of 396 controls): published 2026-11-04, version id `1793800555-994e`.
