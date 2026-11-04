@@ -31,4 +31,4 @@
   instead, adding some assuymetry or lower or upper secondary hull"): version 4. Smooth chamfers on every direction
   (`fairChamfers`); C Course withdrawn; C Field Hull, a secondary hull with its own rooms in place of nacelles, in three
   layouts (below and to port, below, above). The field hull's plan is inlined from
-  `data/ships/ssarith/frigate_field_hull_plan.json`.
+  `data/ships/ssarith/frigate_field_hull_plan.json`. Published, version id `1793803895-9a25`; survey version 3 (H2, H3), version id `1793803896-cbea`.

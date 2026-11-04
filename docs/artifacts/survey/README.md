@@ -43,3 +43,4 @@
 - 2026-11-03, cloud session (Concord ships thread; owner: "nuke the krai survey since we're redoing them"): A15-A17 removed, A18 moved to decided with the owner's answer; version 33, version id `1793738368-a1c4`.
 - 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt, version id `1793801625-ca51` with capabilities db, user and downloads; its answers database starts empty (the main account's answers stay there). Not on the tracker (the tracker stays on the main account).
 - 2026-11-04, cloud session: version 2 on the cloud session's account (H2, Ssarith traditions), version id `1793802162-bb01`.
+- 2026-11-04, cloud session: version 3 (H2 rewritten for A, B or the new C, no recommendation; H3 C's layout; a question may have no recommendation), version id `1793803896-cbea`.
