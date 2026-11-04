@@ -68,7 +68,9 @@ one of the stripes", then "See how this works? Although don't rotate our logo", 
 pair of pinstripes): the emblem's field is the livery's stripe colour and its frame the seam colour, both read from the
 Concord line's livery table, with a pearl ship and the cyan star. It stands upright on the port bow and heads two
 pinstripes (broad stripe blue, 0.28 m, over thin seam navy, 0.12 m) that run aft along the flank and end in the forward
-livery band. Taken from the reference: only the idea of an emblem heading pinstripes; no shape or art.
+livery band. Taken from the reference: only the idea of an emblem heading pinstripes; no shape or art. The emblem
+crosses the stripes, which run on forward past it, and the hull breaks them in a circle of bare plating round it, 0.35 m
+clear of its farthest corner (owner: "The hull should break the stripe livery at that spot").
 
 ## The rules for an emblem
 

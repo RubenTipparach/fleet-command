@@ -45,7 +45,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 <div class="panel title">
   <h1>Concord emblem on the hull</h1>
   <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side of the bow in the livery's colours, heading a pair of pinstripes that run aft into the forward livery band, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
+  <p class="long">B-E27, the smooth keyhole, from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> painted on the Concord line's Petrel frigate (88 m): one emblem on the left (port) side of the bow in the livery's colours, heading a pair of pinstripes that run aft into the forward livery band, the hull breaking the stripes in a circle round it, 2.6 m tall (3 % of the ship's length), lit by its own logo floodlight. The paint is in the hull's colour, not a sticker. Drag to orbit, scroll or pinch to zoom.</p>
   <p>Ship: the Concord line's shared builder, plain pearl (mockup 6 has the windows and lamps). Change <code>faction-emblems</code>.</p>
 </div>
 <div class="panel bar" id="bar"></div>
@@ -403,7 +403,12 @@ const MARKS = [];
 // flank, a broad one in the stripe colour over a thin one in the seam colour, and end in the forward livery band, so the
 // emblem is tied into the ship's own stripes. Metres, ship space; painted on the port flank only.
 const PIN = (() => { const m = MARKS[0], band = Math.max(...C.stripes.filter((z) => z < m.c.z));
-  return { z0: band + 1.2, z1: m.c.z - 0.8, y0: m.c.y, broad: [0.05, 0.33], thin: [-0.17, -0.05] }; })();
+  // The hull breaks the stripe round the emblem (owner, 2026-11-04: "The stripe having a circle around it where the logo
+  // crosses", "The hull should break the stripe livery at that spot"): a circle of bare plating, clear of the emblem's
+  // farthest corner by 0.35 m, inside which no stripe is painted.
+  const corner = Math.max(...PARTS.frame.flat().map(([x, y]) => Math.hypot(x - 50, y - 50))) * M_PER_UNIT;
+  const clear = corner + 0.35; // the stripes carry on forward past the emblem too, so the emblem crosses them
+  return { z0: band + 1.2, z1: m.c.z + clear + 2.5, y0: m.c.y, broad: [0.05, 0.33], thin: [-0.17, -0.05], clear }; })();
 
 // The paint: the hull's pearl material with the emblem mixed into its colour where each mark's square covers the plating
 // that faces the mark's way. Planar projection in ship space, so the paint follows the hull's own faces.
@@ -417,7 +422,8 @@ function paintHull(mat) {
     sh.uniforms.uDecal = uDecal;
     MARKS.forEach((mk, i) => { for (const k of ['c', 'n', 'u', 'v']) sh.uniforms[`uM${i}${k}`] = { value: mk[k] }; });
     sh.uniforms.uSize = { value: TEX_SIZE_M };
-    sh.uniforms.uPin = { value: new THREE.Vector4(PIN.z0, PIN.z1, PIN.y0, 0) };
+    sh.uniforms.uPin = { value: new THREE.Vector4(PIN.z0, PIN.z1, PIN.y0, PIN.clear) };
+    sh.uniforms.uPinC = { value: MARKS[0].c };
     sh.uniforms.uPinBroad = { value: new THREE.Vector2(...PIN.broad) };
     sh.uniforms.uPinThin = { value: new THREE.Vector2(...PIN.thin) };
     sh.uniforms.uPinA = { value: new THREE.Color(...LIVERY.stripe) };
@@ -433,10 +439,11 @@ uniform sampler2D uDecal;
 uniform float uSize;
 uniform vec4 uPin;
 uniform vec2 uPinBroad, uPinThin;
-uniform vec3 uPinA, uPinB;
+uniform vec3 uPinA, uPinB, uPinC;
 ${decl}
 void pinstripes(inout vec3 col) {
   if (vShipPos.x <= 0.0 || normalize(vShipN).x < 0.7 || vShipPos.z < uPin.x || vShipPos.z > uPin.y) return;
+  if (length((vShipPos - uPinC).yz) < uPin.w) return; // the hull's circle round the emblem
   float dy = vShipPos.y - uPin.z;
   if (dy > uPinBroad.x && dy < uPinBroad.y) col = uPinA;
   else if (dy > uPinThin.x && dy < uPinThin.y) col = uPinB;
