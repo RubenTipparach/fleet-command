@@ -15,3 +15,4 @@
 - 2026-11-04, version 2 (`1793776101-60fc`): B-E25 (the pointed peak), the satin blue star, and the owner's small layer of detail: a two-tier saucer (upper tier inset 1.6 mm) and four segments on each leg (grooves 0.5 mm deep).
 - 2026-11-04, version 3 (`1793776690-edf5`): corners fixed (owner: "fix the corners here"): the saucer's upper tier is an exact inset with one clean point at each tip, and the frame's inner peak no longer spikes, because every shape is now sampled with each corner as a vertex.
 - 2026-11-04, version 4 (`1793777293-400e`): the full-quality Blender render (96 samples, 1200 px) of the corrected shapes beside the badge.
+- 2026-11-04, version 5 (`1793787574-bb93`): rebuilt on B-E27, the smooth keyhole (accepted), with a satin cyan star (owner: "Also render the 3d version too"); Blender test render beside it, full render to follow.

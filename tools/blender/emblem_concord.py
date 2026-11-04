@@ -20,7 +20,7 @@ Heights (mm), lowest to highest, so no two faces ever share a plane (no z-fighti
     /opt/blender/blender -b -P tools/blender/emblem_concord.py -- [--out DIR] [--samples N] [--px N] [--steps]
 
 Writes <out>/concord/<key>-face.png (face on, orthographic) and <key>-angle.png (three-quarter, perspective); with
---steps, the clay blockout <key>-clay.png too. The key is EMBLEM_KEY, b-e25 by default.
+--steps, the clay blockout <key>-clay.png too. The key is EMBLEM_KEY, b-e27 (the smooth keyhole) by default.
 """
 import json
 import math
@@ -35,7 +35,7 @@ import emblem_render as R  # noqa: E402
 
 MM = R.MM
 # The outline to build: the guide's picked patch, exported by tools/emblems/export_parts.mjs (EMBLEM_KEY to override).
-KEY = os.environ.get("EMBLEM_KEY", "b-e25")
+KEY = os.environ.get("EMBLEM_KEY", "b-e27")
 PARTS = os.path.join(R.ROOT, "assets", "emblems", "concord", f"{KEY}.parts.json")
 
 
@@ -176,7 +176,7 @@ def pearl_film(m):
     nt.links.new(mul.outputs["Result"], p.inputs["Base Color"])
 
 
-def satin(m):
+def satin(m, sheen="#a9c4ff"):
     """A satin finish on a Material Maker enamel: its roughness raised by 0.25 (soft, wide highlights rather than a
     gloss) and a pale blue sheen at grazing angles, the soft glow of satin cloth or satin-finished enamel."""
     nt = m.node_tree
@@ -190,7 +190,7 @@ def satin(m):
     nt.links.new(add.outputs[0], p.inputs["Roughness"])
     p.inputs["Sheen Weight"].default_value = 1.0
     p.inputs["Sheen Roughness"].default_value = 0.45
-    p.inputs["Sheen Tint"].default_value = R.hex_rgb("#a9c4ff")
+    p.inputs["Sheen Tint"].default_value = R.hex_rgb(sheen)
     return m
 
 
@@ -213,7 +213,9 @@ def build(parts):
     # The saucer in two tiers (the double bevel), the star cut through both, and the star's floor set in the hole.
     poly_slab("lens", [parts["lens"], parts["star"]], 0.6, 2.3, 0.45, pearl)
     poly_slab("lens.top", [parts["lensTop"], parts["star"]], 1.9, 2.9, 0.3, pearl)
-    poly_slab("star.floor", [parts["star"]], 0.5, 1.9, 0.2, satin(R.mm_material("emblem_enamel_signal")))
+    # The star is cyan satin (owner, 2026-11-04: "a cyan colored star in the middle"): the near-white pearl enamel's maps
+    # tinted cyan (Signal blue cannot be tinted up to cyan), with a pale cyan sheen.
+    poly_slab("star.floor", [parts["star"]], 0.5, 1.9, 0.2, satin(R.mm_material("emblem_enamel_pearl", tint="#2fd0f0"), sheen="#b8f4ff"))
     lt = parts["light"]
     x, y = xy((lt["cx"], lt["cy"]))
     bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=24, radius=lt["r"] * MM, location=(x, y, 2.4 * MM))
