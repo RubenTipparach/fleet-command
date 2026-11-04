@@ -13,6 +13,7 @@
 - [x] 1.8 The classes: corvette, cruiser and dreadnought plans from `tools/mockups/krai_plans.py`, one builder for all four, a line-up
 - [x] 1.9 Damage on the shared `lib/ship-fx.js` (lifted from mockup 6, which now uses it): systems, scorch marks, holes onto the plan's rooms, failures, parts breaking away, a core breach, the Damage tab
 - [x] 1.10 The hull breaks apart as the Concord line's (the shared `lib/ship-break.js`, lifted from mockup 6, which uses it and renders as before); a bayonet shape per class
+- [x] 1.11 Owner's notes of 2026-11-04: the whole hull no longer stays under its broken pieces; a wide crescent on the cruiser and the dreadnought; a painted livery; nacelle detail; windows flat on one face with level rooms; the thruster throat clear of the stern face
 
 ## 2. After the frigate is approved
 

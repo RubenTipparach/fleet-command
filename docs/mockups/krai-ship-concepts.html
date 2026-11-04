@@ -148,7 +148,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <h3>The classes</h3>
       <ul>
         <li>Four classes, each fitted round its own rooms by the same builder: corvette (47 m, three decks, twin bow guns, crew 14), frigate (87 m, four decks, a spinal cannon, crew 36), cruiser (126 m, five decks, two spinal cannons, two nacelle pairs, crew 120) and dreadnought (211 m, seven decks, three spinal cannons, broadside batteries, crew 420).</li>
-        <li>The bayonet is a different shape on each class, more decoration than use: a barbed knife on the corvette, a thin needle on the frigate, a broad saw with a row of holes on the cruiser and the dreadnought.</li>
+        <li>The bayonet is a different shape on each class, more decoration than use: a barbed knife on the corvette, a thin needle on the frigate, a wide crescent standing across the nose on the cruiser and the dreadnought, its horns raked back above and below the hull, with spurs and two openings (owner: "I want a wide blade instead of long blade").</li>
+        <li>Livery, painted into the hull (owner: "ships dont have much liveries on main hull"): a crimson war stripe low on each flank that widens forward and sweeps up toward the bow, bronze pin lines either side, battle tallies in fives aft above it (3 on the corvette, 7 on the frigate, 12 on the cruiser, 19 on the dreadnought), and a crimson talon on the bow's top and bottom faces.</li>
+        <li>Nacelles: a row of six framed plasma vents down the outboard face, three bronze collars, a raked fin above and a smaller one below, two clamped conduits inboard, and a glowing collector at the bow (owner: "nacelles still kinda overly simplistic").</li>
+        <li>Windows lie flat on one face of the section, never across a bend or a taper, and the room behind a window on a sloped face stays level (owner: "window geometry extending a bit over the hull slope", "window paralax on slope has the wrong room angle").</li>
         <li>Only the dreadnought raises a command block above its spine (survey A18: a bridge block on super capital ships only); the others keep the bridge inside.</li>
         <li>The frigate's plan was laid by hand; the others come from <code>tools/mockups/krai_plans.py</code>, a list of rooms per deck for each class, so a change to a class is a change to its list.</li>
       </ul>
@@ -504,11 +507,26 @@ function sideAt(h, y) {
   if (y < bot + ch) return { x: hb - ((bot + ch) - y), tilt: -Math.PI / 4 };
   return { x: hb, tilt: 0 };
 }
+// A pane (1.2 m long, 0.75 m tall with its rim) lies flat on one face of the section (owner, 2026-11-04: "window geometry
+// extending a bit over the hull slope, need to adjust slope start height"): the face at its middle must also be the face at
+// its top and bottom edges and at both ends. Where it would cross a bend, it moves off the bend toward its own face's middle
+// by up to 0.9 m; where no height fits, there is no window. The face must also stay one plane along the pane, so a pane where the hull
+// tapers along its length is not set into the taper.
+const PANE = { hu: 0.66, hv: 0.5 };
+function paneY(stations, z, y0) {
+  const fits = (y) => { const s = sideAt(CL.hullAt(stations, z), y); if (!s) return false;
+    const vy = PANE.hv * Math.cos(s.tilt);
+    for (const dz of [-PANE.hu, 0, PANE.hu]) for (const dy of [-vy, 0, vy]) { const t = sideAt(CL.hullAt(stations, z + dz), y + dy);
+      if (!t || t.tilt !== s.tilt || Math.abs(t.x - (s.x - dy * Math.tan(s.tilt))) > 0.05) return false; } // one flat face: same slope, same plane
+    return true; };
+  for (let k = 0; k <= 9; k++) for (const sg of k ? [-1, 1] : [1]) { const y = y0 + sg * k * 0.1; if (fits(y)) return y; }
+  return null;
+}
 function windows(plan, R, stations, lit) {
   const C = clear(plan), F = plan.deck_floor_m, out = [];
   for (const r of R) { if (!lit[r.kind]) continue;
-    for (const d of r.decks) { const y = F[d] + 1.5;
-      for (let z = r.b.z0 + 1.2; z <= r.b.z1 - 1.2; z += 2.4) { const s = sideAt(CL.hullAt(stations, z), y); if (!s) continue;
+    for (const d of r.decks) { const y0 = F[d] + 1.5;
+      for (let z = r.b.z0 + 1.2; z <= r.b.z1 - 1.2; z += 2.4) { const y = paneY(stations, z, y0); if (y === null) continue; const s = sideAt(CL.hullAt(stations, z), y);
         for (const side of [1, -1]) { const reach = side > 0 ? r.b.x1 : -r.b.x0;
           if (reach < s.x - C * 2 - 1.2) continue; // the room does not meet this side (allowing for a sloped side's offset)
           out.push({ x: side * (s.x + 0.03), y, z, side, tilt: s.tilt }); } } } }
@@ -756,7 +774,10 @@ function thruster(at, r, o) {
   const yE = L * 0.62, mount = [[neck(L) * 0.9, L], [r * 0.98, L], [r * 0.98, L * 0.93], [neck(yE) + r * 0.1, yE + L * 0.04], [neck(yE) - 0.02, yE]].map(([x, y]) => new THREE.Vector2(x, y));
   const mg = new THREE.LatheGeometry(mount, N === 28 ? 32 : N); mg.rotateX(PI / 2); mg.translate(at.x, at.y, lip); add(mg, new THREE.MeshStandardMaterial({ color: o.mount ?? 0x3a4049, roughness: 0.55, metalness: 0.6, side: THREE.DoubleSide, envMapIntensity: o.env }), 'mount');
   for (let k = 0; k < 10; k++) { const a = k / 10 * 2 * PI, bo = new THREE.BoxGeometry(r * 0.09, r * 0.09, r * 0.12); bo.translate(at.x + Math.cos(a) * r * 0.99, at.y + Math.sin(a) * r * 0.99, lip + L - r * 0.06); add(bo, o.dark, 'bolt'); }
-  const tm = o.glow(o.throat ?? 0xffc27a, 0x3a1a08); const throat = new THREE.CircleGeometry(r * 0.56, 20); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - 0.05); add(throat, tm, 'throat');
+  // The throat: a disc of the bell's own sides, set inside its walls and well inside the bell's mouth on the hull side, so it
+  // meets no other surface (owner, 2026-11-04, "look at all that zfighting": 5 cm in, it lay exactly on a Krai stern face).
+  const tm = o.glow(o.throat ?? 0xffc27a, 0x3a1a08), dT = L * 0.06, rT = neck(L - dT) * 0.99; // its corners on the bell's own, so it fills the bell and stays inside it
+  const throat = new THREE.CircleGeometry(rT, N, PI / 2); throat.rotateY(PI); throat.translate(at.x, at.y, lip + L - dT); add(throat, tm, 'throat');
   const pl = new THREE.ConeGeometry(r * 0.85, r * 3.2, 20, 1, true); pl.rotateX(PI / 2); pl.translate(at.x, at.y, lip - r * 1.6); add(pl, plumeMat(heat, o), 'plume');
   tm.userData.heat = heat;
   return { parts, heat, throat: tm };
@@ -1563,7 +1584,7 @@ function hullMat(ship) {
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvK = position; vNK = normal; vObj = position; vCamObj = (inverse(modelMatrix) * vec4(cameraPosition, 1.0)).xyz;');
     // Battle damage on the shared rules (lib/ship-fx.js DAMAGE_GLSL): holes show the decks behind by interior mapping, lit
     // by what the plan puts there; scorch marks char the plating with a cooling ember line.
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vK; varying vec3 vNK;\n' + SFX.DAMAGE_GLSL + KRAI_HULL_GLSL)
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vK; varying vec3 vNK; uniform vec4 uLiv; uniform vec4 uLiv2;\n' + SFX.DAMAGE_GLSL + KRAI_HULL_GLSL)
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
         float dChar = 0.0, dEmber = 0.0; int holeIdx = -1; float nz = dfbm(vObj*0.45), nz2 = dfbm(vObj*0.9+7.0);
         dmgHoles(vObj, nz, dChar, dEmber, holeIdx); dmgScorch(vObj, nz2, dChar, dEmber);
@@ -1573,6 +1594,26 @@ function hullMat(ship) {
         vec3 nK = normalize(vNK); float detA = detailA(vK, nK), seam = 1.0 - smoothstep(0.45, 0.6, detA); // the seams are the darkest of the grime map
         diffuseColor.rgb *= mix(1.0, detA, 0.8);
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${lin(HULL.bronze).toArray().map((v) => v.toFixed(3)).join(',')}) * 0.45, seam * 0.5);
+        // The livery (owner, 2026-11-04: "ships dont have much liveries on main hull, please add them"), painted, so nothing
+        // sits on the plating to fight it: a crimson war stripe low on each flank that widens forward and sweeps up into a
+        // talon toward the bow, bronze pin lines either side, battle tallies in fives aft above it, a crimson talon on the bow's
+        // top and bottom faces. The hull only (not the nacelles, outboard of uLiv2.x).
+        float paint = 0.0; vec3 paintC = vec3(0.0);
+        { vec3 nA = abs(nK); float t = (vObj.z - uLiv.x)/(uLiv.y - uLiv.x), hgt = uLiv.w - uLiv.z, sc = uLiv2.z;
+          if (abs(vObj.x) < uLiv2.x + 0.3) {
+            vec3 crim = vec3(${lin(HULL.mark).toArray().map((v) => v.toFixed(3)).join(',')}), brz = vec3(${lin(HULL.bronze).toArray().map((v) => v.toFixed(3)).join(',')});
+            if (nA.x > 0.3) {
+              float sw = smoothstep(0.62, 0.93, t), yc = uLiv.z + hgt*(0.28 + 0.3*sw*sw);
+              float w = hgt*(0.03 + 0.07*smoothstep(0.1, 0.6, t))*(1.0 - smoothstep(0.8, 0.94, t)), dy = abs(vObj.y - yc), inT = step(0.12, t)*step(t, 0.94);
+              float band = (1.0 - smoothstep(w - 0.04, w + 0.04, dy))*inT;
+              float pin = (1.0 - smoothstep(0.05*sc, 0.1*sc, abs(dy - w - 0.32*sc)))*inT*step(t, 0.86)*step(0.14, t);
+              float tz = vObj.z - (uLiv.x + 0.14*(uLiv.y - uLiv.x)), pitch = 0.75*sc, k = floor(tz/pitch), inG = mod(k, 6.0);
+              float slots = uLiv2.y + floor((uLiv2.y - 1.0)/5.0), ty = vObj.y - (yc + w + 0.9*sc);
+              float tally = step(0.0, tz)*step(k, slots - 1.0)*step(inG, 4.5)*step(fract(tz/pitch), 0.42)*step(0.0, ty)*step(ty, 1.5*sc);
+              paint = max(band, max(pin, tally)); paintC = band > 0.5 ? crim : brz; }
+            if (nA.y > 0.25 && nA.x < 0.95) { float tal = step(abs(vObj.x), (t - 0.8)/0.17*uLiv2.x*0.7)*step(t, 0.97);
+              if (tal > paint) { paint = tal; paintC = crim; } } } }
+        diffuseColor.rgb = mix(diffuseColor.rgb, paintC*(0.55 + 0.45*detA)*mix(1.0, 0.85, seam), paint*(1.0 - smoothstep(0.0, 0.5, dChar)));
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03, 0.026, 0.024)*(0.6 + 0.8*nz2), smoothstep(0.0, 0.7, dChar));
         if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.05, 0.045, 0.042);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
@@ -1582,16 +1623,16 @@ function hullMat(ship) {
           vec3 nD = detailN(vK, nK, fine); if (!gl_FrontFacing) nD = -nD;
           normal = normalize(normalMatrix*nD); }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = mix(0.3 + 0.3*(1.0 - detA) + 0.15*seam, 1.0, smoothstep(0.0, 0.7, dChar));`)
+        roughnessFactor = mix(mix(0.3 + 0.3*(1.0 - detA) + 0.15*seam, 0.55, paint), 1.0, smoothstep(0.0, 0.7, dChar));`)
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
-        metalnessFactor *= 1.0 - 0.85*dChar*dChar;`)
+        metalnessFactor *= (1.0 - 0.85*dChar*dChar)*(1.0 - 0.6*paint);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         if (!gl_FrontFacing) totalEmissiveRadiance = vec3(0.08, 0.008, 0.0);
         totalEmissiveRadiance += vec3(1.0, 0.36, 0.07)*dEmber*1.8*(0.75 + 0.25*sin(uTime*21.0 + nz*30.0));
         if (holeIdx >= 0) { totalEmissiveRadiance = interiorRoom(vObj, normalize(vObj - vCamObj), uHoles[holeIdx], uHoleN[holeIdx]);
           diffuseColor.rgb = vec3(0.0); roughnessFactor = 1.0; metalnessFactor = 0.0; }`);
   };
-  m.customProgramCacheKey = () => 'krai-hull-5'; mats.push(m); return m;
+  m.customProgramCacheKey = () => 'krai-hull-6'; mats.push(m); return m;
 }
 const glow = (hex, k = 1.6) => new THREE.MeshStandardMaterial({ color: 0x0a0a0c, emissive: hex, emissiveIntensity: k, roughness: 0.6 });
 const dark = new THREE.MeshStandardMaterial({ color: 0x14171d, metalness: 0.7, roughness: 0.45 });
@@ -1671,10 +1712,10 @@ vec3 kraiRoom(vec3 q, vec3 D, vec2 id){
 // struts, six-sided bells, windows, warm floods) are the whole line's. Sizes come from the rooms, not from a picture.
 const planOf = (id) => JSON.parse(document.querySelector(`script[data-src="data/ships/krai/${id}_plan.json"]`).textContent);
 const CLASSES = {
-  corvette: { label: 'Corvette', plan: planOf('corvette'), blade: 'knife', nac: [-0.3], lamps: [0.8, 0.22], role: 'the smallest: three decks, twin bow guns, one nacelle pair' },
-  frigate: { label: 'Frigate', plan: PLAN, blade: 'needle', nac: [-0.35], lamps: [0.816, 0.471, 0.264, 0.057], role: 'four decks, a spinal cannon along the keel' },
-  cruiser: { label: 'Cruiser', plan: planOf('cruiser'), blade: 'saw', nac: [-0.38, 0.3], lamps: [0.87, 0.66, 0.44, 0.24, 0.06], role: 'five decks, two spinal cannons, two nacelle pairs' },
-  dreadnought: { label: 'Dreadnought', plan: planOf('dreadnought'), blade: 'saw', nac: [-0.36, 0.22], lamps: [0.9, 0.75, 0.6, 0.45, 0.3, 0.16, 0.04], role: 'seven decks, three spinal cannons, broadside batteries, a raised command block (B1)' },
+  corvette: { tally: 3, label: 'Corvette', plan: planOf('corvette'), blade: 'knife', nac: [-0.3], lamps: [0.8, 0.22], role: 'the smallest: three decks, twin bow guns, one nacelle pair' },
+  frigate: { tally: 7, label: 'Frigate', plan: PLAN, blade: 'needle', nac: [-0.35], lamps: [0.816, 0.471, 0.264, 0.057], role: 'four decks, a spinal cannon along the keel' },
+  cruiser: { tally: 12, label: 'Cruiser', plan: planOf('cruiser'), blade: 'crescent', nac: [-0.38, 0.3], lamps: [0.87, 0.66, 0.44, 0.24, 0.06], role: 'five decks, two spinal cannons, two nacelle pairs' },
+  dreadnought: { tally: 19, label: 'Dreadnought', plan: planOf('dreadnought'), blade: 'crescent', nac: [-0.36, 0.22], lamps: [0.9, 0.75, 0.6, 0.45, 0.3, 0.16, 0.04], role: 'seven decks, three spinal cannons, broadside batteries, a raised command block (B1)' },
 };
 const CLASS_IDS = Object.keys(CLASSES);
 const steelTex = (() => { const c = document.createElement('canvas'); c.width = 512; c.height = 64; const x = c.getContext('2d'), r = mulberry(7);
@@ -1722,10 +1763,18 @@ const BLADES = {
     p.push([1.5, -4.2], [-2.5, -3.0]); return p; } },
   // the frigate's: a thin needle, longer than the knife, a collar near its root, tapering to a point on the barrel's line
   needle: { ky: 1.7, fy: -2.3, fl: [14, 18], pts: () => [[-2.5, -1.5], [2, -1.6], [2.6, -1.1], [4.2, -1.1], [4.8, -1.75], [27, -2.15], [32, -2.3], [27, -2.45], [4.8, -2.85], [4.2, -3.5], [2.6, -3.5], [2, -3.0], [-2.5, -3.1]] },
-  // the cruiser's and the dreadnought's: a broad saw, its front raked, its belly a row of big teeth raking back, a row of
-  // round holes down its middle (decoration, as the owner says, more than use)
-  saw: { ky: 1.0, fy: -1.3, fl: [12, 18], holes: [[5, -3.6, 1.0], [10, -3.6, 1.0], [15, -3.6, 1.0], [20, -3.6, 1.0]], pts: () => { const p = [[-2.5, -0.3], [21, -0.3], [25, -1.6], [26.5, -5.6], [25.2, -7.2]];
-    for (let x = 23.5; x > 1; x -= 2.2) p.push([x, -6.3], [x - 1.5, -7.6]); p.push([0, -6.4], [-2.5, -6.2]); return p; } },
+  // the cruiser's and the dreadnought's (owner, 2026-11-04: "I want a wide blade instead of long blade", with pictures of
+  // crescent war blades): a crescent standing across the nose, far taller than the hull's nose, its back bowed forward,
+  // its two horns raked back above and below the hull, a spur forward of each horn and one at the middle, two long
+  // openings in the band either side of the tang that seats it in the nose. Our own outline, from the shape only.
+  crescent: { ky: 1.0, holes: [], ovals: [[8.6 * 0.75, 5.0 * 0.7, 1.25 * 0.75, 2.6 * 0.7], [8.6 * 0.75, -5.0 * 0.7, 1.25 * 0.75, 2.6 * 0.7]], pts: () => {
+    const H = 12, ox = (y) => 7 + 5.5 * (1 - (y / H) ** 2), ix = (y) => 3.6 + 2.6 * (1 - (y / H) ** 2), p = [[2.5, H + 3.5]];
+    for (let y = H; y >= -H; y -= 1) { p.push([ox(y), y]);
+      if (Math.abs(Math.abs(y) - 7) < 0.5) { const sg = Math.sign(y); p.push([ox(y) + 4.2, y + sg * 2.4], [ox(y) + 0.6, y - sg * 1.2]); }
+      if (y === 0) p.push([ox(0) + 5.5, 0.6], [ox(0) + 5.5, -0.6], [ox(0), -0.9]); }
+    p.push([2.5, -H - 3.5], [ix(-H + 1), -H + 1]);
+    for (let y = -H + 2; y <= H - 1; y += 1) { if (y === -2) p.push([ix(y), y], [-4, -1.6], [-4, 1.6]); else if (y > -2 && y < 2) continue; p.push([ix(y), y]); }
+    return p.map(([x, y]) => [x * 0.75, y * 0.7]); } }, // drawn at a 12 m half span, set at 0.7 of it to stand a little proud of the nose
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1744,6 +1793,7 @@ function buildKrai(id) {
   // Damage uniforms, one set per ship, shared by its hull materials (the shader's half is DAMAGE_GLSL in lib/ship-fx.js).
   ship.dmgU = { uHoles: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uHoleN: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uHoleCount: { value: 0 },
     uScorch: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uScorchHeat: { value: new Array(24).fill(0) }, uScorchCount: { value: 0 }, uTime: { value: 0 }, uParallax: { value: 1 } };
+  ship.dmgU.uLiv = { value: new THREE.Vector4(zMin, zMax, botMin, topMax) }; ship.dmgU.uLiv2 = { value: new THREE.Vector4(hbMax, D.tally, Math.max(1, s * 0.8), 0) }; // the livery's frame
   ship.secLight = { value: new Array(8).fill(1) };
   const add = (grp, geo, m, sys = 'hull') => { const o = new THREE.Mesh(geo, m); o.castShadow = o.receiveShadow = true; o.userData = { ship, sys, piece: ship.pieceOf.get(grp) || ship.hullP }; grp.add(o); if (grp !== G.rooms && grp !== G.lights) ship.meshes.push(o); return o; };
   // A piece that can break away (the shared piece of lib/ship-break.js): a pivot at its middle, so it tumbles about itself,
@@ -1770,11 +1820,12 @@ function buildKrai(id) {
   { const B = BLADES[D.blade], pts = B.pts();
     const sh = new THREE.Shape(); pts.forEach(([x, y], i) => (i ? sh.lineTo(x, y) : sh.moveTo(x, y)));
     for (const [hx, hy, hr] of B.holes || []) { const h = new THREE.Path(); h.absarc(hx, hy, hr, 0, PI * 2, true); sh.holes.push(h); }
+    for (const [hx, hy, rx, ry] of B.ovals || []) { const h = new THREE.Path(); h.absellipse(hx, hy, rx, ry, 0, PI * 2, true); sh.holes.push(h); }
     const g = new THREE.ExtrudeGeometry(sh, { depth: 0.4, bevelEnabled: true, bevelThickness: 0.18, bevelSize: 0.14, bevelSegments: 1, curveSegments: 10 });
     const K = 0.75 * s, KY = B.ky * s, at = zMax - 6 * s; g.translate(0, 0, -0.2); g.scale(K, KY, Math.max(1, s)); g.rotateY(-PI / 2); g.computeBoundingBox();
     const nose = fit[fit.length - 1], dy = (nose[2] + nose[3]) / 2 - (g.boundingBox.min.y + g.boundingBox.max.y) / 2; g.translate(0, dy, at);
     const P = piece('blade', V3(0, dy, at + 13 * K)); add(P.inner, g, steelMat(), 'weapons');
-    const fuller = new THREE.BoxGeometry(0.8 * Math.max(1, s), 0.22 * s, B.fl[1] * K); fuller.translate(0, dy + B.fy * KY, at + B.fl[0] * K); add(P.inner, fuller, glow(HULL.light, 0.8), 'weapons'); }
+    if (B.fl) { const fuller = new THREE.BoxGeometry(0.8 * Math.max(1, s), 0.22 * s, B.fl[1] * K); fuller.translate(0, dy + B.fy * KY, at + B.fl[0] * K); add(P.inner, fuller, glow(HULL.light, 0.8), 'weapons'); } }
   // The crest: a long low blade along the dorsal line, its bevel bronze, kept wholly on the plateau the top holds longest so
   // it never overhangs a step (owner: "nudge it forward so it doesnt extend beyond the hull").
   const top = plateau(fit, 2, 1), bot = plateau(fit, 3, -1);
@@ -1802,7 +1853,25 @@ function buildKrai(id) {
       const rings = [[-0.5, 0.3], [-0.42, 0.75], [-0.2, 1], [0.25, 1], [0.45, 0.6], [0.5, 0.15]].map(([t, q]) => CL.octRing(N.z + t * N.len, N.hw * Math.max(q, 0.35), N.hh * q, -N.hh * q, 99).map((p) => p.add(V3(sx * N.x, N.y, 0))));
       const g = CL.loft(rings.reverse(), (m) => V3(sx * N.x, N.y, m.z), 4); const col = new Float32Array(g.attributes.position.count * 3); for (let i = 0; i < col.length; i += 3) col.set([PLATE.r, PLATE.g, PLATE.b], i); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
       add(P.inner, g, nm, 'nac' + side);
-      const grille = new THREE.BoxGeometry(0.12 * Math.max(1, s), 0.35 * s, N.len * 0.7); grille.translate(sx * (N.x + N.hw * 0.4 + 0.06), N.y, N.z); const gm = glow(HULL.light, 1.4); add(P.inner, grille, gm, 'nac' + side);
+      // Detail on the blade (owner, 2026-11-04: "nacelles still kinda overly simplistic"), all on its faces, nothing buried:
+      // a row of plasma vents down the outboard flat, each framed in bronze bars round a recessed glowing slot; bronze
+      // collars round the body; a raked fin on its top edge and a smaller one under it, in the crest's blade language; two
+      // conduits along the inboard flat held by clamps; and a collector at the bow, a glowing slot in a bronze housing.
+      const gm = glow(0xff9a4a, 1.0), brz = new THREE.MeshStandardMaterial({ color: BRONZE, metalness: 0.85, roughness: 0.3, envMapIntensity: LIGHTS[lightKey].env }); mats.push(brz);
+      const box = (w, h, d, x, y, z, m) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return add(P.inner, g, m, 'nac' + side); };
+      const xo = sx * (N.x + N.hw), xi = sx * (N.x - N.hw), vh = 0.55 * s, vl = 0.045 * N.len, fb = 0.12 * s;
+      for (const t of [-0.21, -0.15, -0.09, 0.03, 0.09, 0.15]) { const z = N.z + t * N.len; // two groups of three, between the collars
+        box(0.06, vh, vl, xo + sx * 0.03, N.y, z, gm);
+        for (const dy of [-1, 1]) box(0.14, fb, vl + 2 * fb, xo + sx * 0.05, N.y + dy * (vh + fb) / 2, z, brz);
+        for (const dz of [-1, 1]) box(0.14, vh, fb, xo + sx * 0.05, N.y, z + dz * (vl + fb) / 2, brz); }
+      for (const t of [-0.27, -0.03, 0.21]) { const band = [t - 0.008, t + 0.008].map((tt) => CL.octRing(N.z + tt * N.len, N.hw * 1.08, N.hh * 1.03, -N.hh * 1.03, 99).map((q) => q.add(V3(sx * N.x, N.y, 0))));
+        add(P.inner, CL.loft(band.reverse(), (m) => V3(sx * N.x, N.y, m.z), 4), brz, 'nac' + side); }
+      add(P.inner, blade(V3(sx * N.x, N.y + N.hh - 0.2, N.z), V3(0, 1, 0), V3(0, 0, 1), [[0, 0.3 * N.len], [1.8 * s, 0.14 * N.len], [2.2 * s, -0.12 * N.len], [0, -0.3 * N.len]], 0.3 * s), nm, 'nac' + side);
+      add(P.inner, blade(V3(sx * N.x, N.y - N.hh + 0.2, N.z), V3(0, -1, 0), V3(0, 0, 1), [[0, 0.16 * N.len], [1.1 * s, 0.05 * N.len], [1.3 * s, -0.12 * N.len], [0, -0.2 * N.len]], 0.25 * s), nm, 'nac' + side);
+      for (const dy of [-0.4, 0.4]) { const c = new THREE.CylinderGeometry(0.13 * s, 0.13 * s, 0.62 * N.len, 6); c.rotateX(PI / 2); c.translate(xi - sx * 0.13 * s, N.y + dy * N.hh, N.z); add(P.inner, c, brz, 'nac' + side);
+        for (let k = -3; k <= 3; k++) box(0.34 * s, 0.4 * s, 0.25 * s, xi - sx * 0.1 * s, N.y + dy * N.hh, N.z + k * 0.09 * N.len, dark); }
+      { const z = N.z + 0.36 * N.len, hh = N.hh * 0.62; box(0.1, hh * 1.2, 0.5 * s, xo - sx * 0.05, N.y, z, gm); box(0.1, hh * 1.2, 0.5 * s, xi + sx * 0.05, N.y, z, gm);
+        for (const xx of [xo + sx * 0.02, xi - sx * 0.02]) for (const dz of [-1, 1]) box(0.16, hh * 1.3, fb, xx, N.y, z + dz * (0.25 * s + fb / 2), brz); }
       // the strut: from the hull's side at the deck floor nearest the nacelle's height, swept aft (rooted in structure: a deck line)
       const rz = N.z + 10 * s, rootY = plan.deck_floor_m.reduce((a, b) => (Math.abs(b - N.y) < Math.abs(a - N.y) ? b : a)), sd = SP.sideAt(H(rz), rootY), rootX = (sd ? sd.x : H(rz)[1]) - 0.4;
       add(P.inner, blade(V3(sx * rootX, rootY, rz), V3(sx, (N.y - rootY) / (N.x - rootX), 0).normalize(), V3(0, 0, 1), [[0, 6 * s], [N.x - rootX, -2 * s], [N.x - rootX, -14 * s], [0, -10 * s]], 1.2 * s), nm, 'nac' + side);
@@ -1859,11 +1928,16 @@ function buildKrai(id) {
   // (the shared swapBody), and the skin (windows, marking, position lights) goes dark with the whole hull.
   ship.layer = { parts: [], skin: [] };
   for (const o of G.parts.children.slice()) { if (Object.values(ship.pieces).some((P) => P.pivot === o)) continue; ship.hullP.inner.add(o); ship.layer.parts.push(o); }
-  for (const o of G.skin.children.slice()) { ship.hullP.inner.add(o); o.userData.skin = true; ship.layer.skin.push(o); }
+  for (const o of G.skin.children.slice()) { ship.hullP.inner.add(o); if (o.userData.win) o.userData.skin = true; ship.layer.skin.push(o); }
+  ship.hullMesh.userData.skin = true; // the whole hull stays with the whole piece (lib/ship-break.js); its cells replace it
   // The body that breaks: the fitted hull, cut into seeded cells (more for a bigger ship, 16 at most), its centre of blast the reactor.
   const rb = ship.reactorRoom && ship.reactorRoom.b; ship.corePos = rb ? V3((rb.x0 + rb.x1) / 2, (rb.y0 + rb.y1) / 2, (rb.z0 + rb.z1) / 2) : V3(0, mid, zMin + 0.4 * L);
   ship.bodies.push({ name: 'kh', sys: 'life', intact: ship.hullP, stations: fit, geos: [[hullGeo, 0]], n: L > 150 ? 14 : L > 100 ? 11 : L > 70 ? 9 : 7 });
   BRK.fracture(ship, ship.bodies[0], mulberry(91 + CLASS_IDS.indexOf(id)));
+  // The windows go with the cells: each cell carries the windows nearest its seed, so a piece that breaks away takes its
+  // windows and the hull left behind keeps its own (the whole hull's set stays hidden with the whole hull).
+  { const b = ship.bodies[0], near = (w) => { let k = 0, d = 1e9; b.seeds.forEach((q, i) => { const e = q.distanceTo(V3(w.x, w.y, w.z)); if (e < d) { d = e; k = i; } }); return k; };
+    for (const f of b.frags) ship.layer.skin.push(...addWindows(ship, ship.wins.filter((w) => near(w) === f.cell), f.inner)); }
   return ship;
 }
 const ACTIVE_DEFAULT = 'frigate';
@@ -1877,8 +1951,8 @@ const ACTIVE_DEFAULT = 'frigate';
 // watch sleeps. Three crew layouts (a barracks of racked bunks, an armoury wall of blades, a mess round a brazier) and a
 // command room (a war table lit from inside, consoles). Each pane carries its room's frame, and its life-support section,
 // whose power its light follows.
-function addWindows(ship) {
-  const list = ship.wins, P = [], Q = [], NN = [], UP = [], ID = [], SEC = [], R = [];
+function addWindows(ship, list = ship.wins, parent = ship.G.skin) {
+  const P = [], Q = [], NN = [], UP = [], ID = [], SEC = [], R = [];
   const cmd = (w) => ship.rooms.some((r) => r.kind === 'command' && w.z >= r.b.z0 && w.z <= r.b.z1 && w.y >= r.b.y0 && w.y <= r.b.y1);
   list.forEach((w, i) => {
     const nOut = V3(w.side, 0, 0).applyAxisAngle(V3(0, 0, 1), w.side * w.tilt).normalize(), up = V3(0, 1, 0).applyAxisAngle(V3(0, 0, 1), w.side * w.tilt).normalize();
@@ -1891,7 +1965,7 @@ function addWindows(ship) {
       const g = new THREE.BoxGeometry(0.06, (b1 - b0) * hv, (a1 - a0) * hu); g.rotateZ(w.side * w.tilt);
       const m = corner((a0 + a1) / 2, (b0 + b1) / 2).addScaledVector(nOut, 0.03); g.translate(m.x, m.y, m.z); R.push(g); }
   });
-  if (!list.length) return;
+  if (!list.length) return [];
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('aQ', new THREE.Float32BufferAttribute(Q, 2));
   g.setAttribute('aN', new THREE.Float32BufferAttribute(NN, 3)); g.setAttribute('aUp', new THREE.Float32BufferAttribute(UP, 3)); g.setAttribute('aId', new THREE.Float32BufferAttribute(ID, 2)); g.setAttribute('aSec', new THREE.Float32BufferAttribute(SEC, 1)); g.computeVertexNormals();
   const m = new THREE.MeshStandardMaterial({ color: 0x050608, metalness: 0.0, roughness: 0.06, envMapIntensity: LIGHTS[lightKey].env });
@@ -1902,13 +1976,16 @@ function addWindows(ship) {
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uSecL[8]; varying vec2 vQ; varying vec3 vWN; varying vec3 vWU; varying vec2 vId; varying float vSec; varying vec3 vP; varying vec3 vCam;\n' + KRAI_ROOM_GLSL)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         { vec3 V = normalize(vP - vCam), up = normalize(vWU), into = -normalize(vWN); // the room's frame: along the ship, up the pane, into the hull
-          vec3 D = vec3(V.z, dot(V, up), dot(V, into)); vec3 q = vec3(vQ.x, vQ.y, 0.0);
+          vec3 inH = normalize(vec3(into.x, 0.0, 0.0)); // a room is level whatever the face's slope (owner, 2026-11-04: "window paralax on slope has the wrong room angle")
+          vec3 D = vec3(V.z, V.y, dot(V, inH)); float dIn = vQ.y*dot(up, inH); vec3 q = vec3(vQ.x, vQ.y*up.y, dIn + 0.3*sqrt(max(0.0, 1.0 - up.y*up.y)));
           int sc = int(floor(vSec + 0.5)); float pw = 0.0; for (int i = 0; i < 8; i++) if (i == sc) pw = uSecL[i]; // its section's power
           totalEmissiveRadiance = kraiRoom(q, D, floor(vId + 0.5))*pw; } // the id rounded: an interpolated varying is not exactly constant, and the hash would turn the difference into noise`);
   };
   m.customProgramCacheKey = () => 'krai-window-2'; mats.push(m);
-  { const o = new THREE.Mesh(g, m); o.castShadow = o.receiveShadow = false; ship.G.skin.add(o); } // glass takes no shadow map: 7 cm off the plating it would only show acne
-  const rims = new THREE.Mesh(mergeGeos(R), new THREE.MeshStandardMaterial({ color: BRONZE, metalness: 0.85, roughness: 0.3, envMapIntensity: LIGHTS[lightKey].env })); rims.castShadow = rims.receiveShadow = true; ship.G.skin.add(rims);
+  const glass = new THREE.Mesh(g, m); glass.castShadow = glass.receiveShadow = false; parent.add(glass); // glass takes no shadow map: 7 cm off the plating it would only show acne
+  const rims = new THREE.Mesh(mergeGeos(R), new THREE.MeshStandardMaterial({ color: BRONZE, metalness: 0.85, roughness: 0.3, envMapIntensity: LIGHTS[lightKey].env })); rims.castShadow = rims.receiveShadow = true; parent.add(rims);
+  for (const o of [glass, rims]) o.userData.win = true;
+  return [glass, rims];
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1922,7 +1999,8 @@ function addWindows(ship) {
 //   the bridge smokes, then burns, then blows out; the guns spark, then their muzzles are holed;
 //   the drive's bells cool and stutter, then burn; life support goes dark a section at a time, windows and all.
 // A core breach is a sequence: secondary blasts for three seconds while the nacelles, the crest and the bayonet come away,
-// then the main blast. (The Concord line also breaks its hull into fracture cells; a Krai hull blows apart whole for now.)
+// then the main blast. The hull itself breaks into fracture cells on the shared lib/ship-break.js, as the Concord line's does;
+// each cell carries its own windows.
 const stateOf = (h) => h <= 0 ? 'destroyed' : h < 33 ? 'critical' : h < 66 ? 'damaged' : 'healthy';
 const SYS_NAMES = { reactor: 'Reactor', bridge: 'Bridge', weapons: 'Guns', drive: 'Drive', nacP: 'Nacelles, port', nacS: 'Nacelles, starboard', life: 'Life support' };
 const ray = new THREE.Raycaster();
@@ -2164,6 +2242,8 @@ window.MOCKUP_SHOTS = {
   dreadnought_side: pick('all', 'sunlit', 'side', false, 'dreadnought'), cruiser_rooms: pick('rooms', 'sunlit', 'three_quarter', false, 'cruiser'),
   lineup: () => { pick('all', 'sunlit', 'side')(); pickClass('lineup'); applyView('side'); }, lineup_quarter: () => { pick('all', 'sunlit', 'three_quarter')(); pickClass('lineup'); applyView('three_quarter'); },
   bayonet: () => { pick('all', 'sunlit', 'three_quarter')(); near([0, -6, 54], [-30, 0, 74])(); },
+  nacelle_close: () => { pick('all', 'sunlit', 'three_quarter')(); const n = ships.frigate.nacs[1]; near([n.sx * n.x, n.y, n.z], [n.sx * n.x - 26, n.y + 9, n.z + 22])(); },
+  livery_side: pick('all', 'sunlit', 'side'),
   thrusters_close: () => { pick('all', 'sunlit', 'stern')(); near([0, -4, -36], [-16, 2, -62])(); },
   window_macro: () => { pick('all', 'nosun', 'three_quarter')(); near([-7.6, 3.25, 6], [-10.5, 3.6, 8.2])(); },
   fin_lights: () => { pick('all', 'nosun', 'three_quarter')(); near([0, 9, -6], [-16, 18, -34])(); },
@@ -2180,6 +2260,7 @@ window.MOCKUP_SHOTS = {
   damage_breach: scenario('frigate', 18, (sh) => { damage(sh, 'reactor', 400); }, 2.2),
   damage_breakup: scenario('frigate', 19, (sh) => { damage(sh, 'reactor', 400); }, 4.6),
   damage_chunk: scenario('frigate', 21, (sh) => { sh.hull = 55; volley(sh, 4, 'torpedo'); }, 2.0),
+  damage_chunk_drift: scenario('frigate', 21, (sh) => { sh.hull = 55; volley(sh, 4, 'torpedo'); }, 9.0, 'side'),
   damage_breach_mid: scenario('frigate', 18, (sh) => { damage(sh, 'reactor', 400); }, 1.8),
   damage_break_after: scenario('frigate', 19, (sh) => { damage(sh, 'reactor', 400); }, 6.0),
   damage_break_close: () => { scenario('frigate', 19, (sh) => { damage(sh, 'reactor', 400); }, 5.0)(); near([0, 0, 6], [-60, 30, 70])(); },
