@@ -35,7 +35,7 @@ account and every link here is updated.
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
-| 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
+| 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -734,4 +734,9 @@ debris glows hot. The quell now flies as a missile's body and ball plume with th
 lattice head and a bead trail, launched straight, then homing and weaving. Then: "also that pulse torpedo is kinda white, needs to be deep blue" (read as the quell, which was the white one; the
 standard pulse torpedo stays the purple asked for on 2026-11-04): the quell is deep blue, `#2a4cff` in
 `data/battle/special_weapons.json`, in its star, lattice head, plume, beads, launch flash and ring.
+
+**Approved for implementation** (owner, 2026-11-05, in conversation: "Implement weapons in game"). The game build follows
+the changes' tasks: first the standard weapons' looks in the 3D view (`src/Game/View/ShotView.cs` with `beam.gdshader`,
+`flare.gdshader` and `beads.gdshader`, ported from `docs/mockups/lib/weapon-fx.js`), then missile grades and
+countermeasures, then the special weapons.
 
