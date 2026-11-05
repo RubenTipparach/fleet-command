@@ -235,6 +235,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'ssarith', when: '2026-11-05', q: 'ooh the thorny bows are great / omit some thornes a the bottom half where the shooter might put their grip hand', means: 'The thorn nearest the grip on each lower limb is gone, so the hand that closes just under the arrow finds smooth wood; the outer one stays.' },
   { f: 'ssarith', when: '2026-11-05', q: 'this is what it really looks like, but I need you to add some character to it, make it more alien', means: 'SD\'s bows redrawn on a real recurve (after your picture): one smooth curve, thickest at the grip, the tips flipping forward past where the string meets them; then the Hunt\'s own character: two tally spurs on the back of each limb and a forked hook at each tip that the string seats in.' },
   { f: 'ssarith', when: '2026-11-05', q: 'the bow is all wobly, it sucks', means: 'The smoothing drew a curve through the old facets and it rippled; the limb is now one analytic curve, no points to wobble between.' },
   { f: 'ssarith', when: '2026-11-05', q: 'make each arrowhead unique', means: 'Each stage has its own head: the learner\'s leaf (no barb), the hunter\'s barb (one barb), the elder\'s tally (long, a notch for each hunt). The 3D badge takes them too.' },
@@ -932,7 +933,10 @@ const SD = (() => {
     };
     P.trim = [];
     for (const sgn of [-1, 1]) {
-      for (const a of [0.42, 0.58]) {                                    // two tally spurs, swept back toward the tip
+      // two tally spurs on the upper limb; on the lower limb only the outer one, so the grip hand, which closes just under
+      // the arrow, finds smooth wood (owner, 2026-11-05: "omit some thornes a the bottom half where the shooter might put
+      // their grip hand")
+      for (const a of sgn > 0 ? [0.58] : [0.42, 0.58]) {                 // swept back toward the tip
         const b = back(a, sgn), L = 0.08 * h * (a < 0.5 ? 1 : 0.8) + b.w * 0.7, W = 0.03 * h + 0.3;
         P.trim.push([[b.x - b.tx * W, b.y - b.ty * W], [b.x + b.nx * L + b.tx * L * 0.7, b.y + b.ny * L + b.ty * L * 0.7], [b.x + b.tx * W, b.y + b.ty * W]]);
       }
@@ -977,7 +981,7 @@ const SSARITH_DESIGNS = [
       [SD.bows[0].tip - 3, SD.bows[0].y - 1.5, 'R', 'The learner\'s leaf', 'The youngest\'s head: a plain leaf with no barb, for practice. Nothing is meant to stay in it yet.'],
       [SD.bows[1].tip - 7.5, SD.bows[1].y - 2.5, 'R', 'The hunter\'s barb', 'The middle stage\'s head: one barb, on one side only, so a fair hunter can draw it out.'],
       [SD.bows[2].tip - 6, SD.bows[2].y - 2, 'R', 'The elder\'s tally', 'The eldest\'s head: long, a notch cut in its back edge for each hunt it has made (the Tally Keepers\' count, on the arrow itself).'],
-      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'A recurve, with tally spurs', 'One smooth curve from the grip, its tips flipping forward past the string. Two spurs on the back of each limb (the Tally Keepers\' count) and a forked hook at each tip: the Hunt\'s bow, not anyone\'s body.'],
+      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'A recurve, with tally spurs', 'One smooth curve from the grip, its tips flipping forward past the string. Spurs on the back of each limb (the Tally Keepers\' count), none where the grip hand closes below the arrow, and a forked hook at each tip: the Hunt\'s bow, not anyone\'s body.'],
       [SD.bows[1].sx + SD.bows[1].d, SD.bows[1].y, 'R', 'Each stage a size larger, overlapping', 'A new bow at each stage of life, the old ones kept and laid over one another: three stages, all aimed the same way.'],
     ],
   },
