@@ -88,3 +88,8 @@
   and green lamps greener, rooms behind every window and hangars behind the bays (`docs/mockups/lib/ship-rooms.js`,
   shared with the Concord page), battle damage on the shared `docs/mockups/lib/ship-fx.js` (Fire: Phaser, Torpedo,
   Repair), the carrier on the board beside the picks. Greebles are kept out of every opening. Page 13.1 MB.
+- 2026-11-05, cloud session (owner: "windows and hangar bay are kinda messed up, mmake them clean, make the border
+  clean"): version 16, version id `1793908285-29c4`. Every window and bay is its own quad on the page, placed from the
+  panes `tools/blender/hull_detail.py` writes into the manifest (`painted_bake.py --ship ... --panes-only` writes them
+  without a bake), with a bevelled dark-metal frame and a fine lit line round the glass, the room or hangar behind drawn
+  from exact coordinates. The baked pane maps are gone. Page 13.1 MB.

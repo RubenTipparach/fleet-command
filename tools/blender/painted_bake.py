@@ -297,7 +297,8 @@ def img_array(img):
     return a.reshape(h, w, 4)
 
 
-def bake_ship(slug, px, samples):
+def bake_ship(slug, px, samples, panes_only=False):
+    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written)."""
     import bmesh
     import hull_detail as HD
     K.reset_scene(); HD.MATS.clear()
@@ -329,6 +330,9 @@ def bake_ship(slug, px, samples):
     high = HD.build(ship, S, D["defaults"], S["seed"])
     print(f"  built the detail in {time.time() - t0:.0f} s", flush=True)
     print(f"  {slug}: {len(high)} high-poly pieces, {sum(len(o.data.polygons) for o in high)} faces", flush=True)
+    panes = [dict(P) for P in HD.PANES]   # the page draws each pane as its own quad (hull_detail.pane_box)
+    if panes_only:
+        return {"panes": panes}
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
     sun.data.energy = 1.0; sun.data.angle = math.radians(3)
     sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
@@ -367,7 +371,6 @@ def bake_ship(slug, px, samples):
     cover = data[:, :, 3] > 0.5
     glowp = bake("EMIT", "glow")[:, :, :3]
     P = bake("EMIT", "position")[:, :, :3]
-    pane = bake("EMIT", "pane")[:, :, :3]          # each window's and bay's own (u, v, room), for the page's rooms
     nor = bake("NORMAL", "shade", normal_space="OBJECT")[:, :, :3] * 2.0 - 1.0     # for the paint's own use
     nts = bake("NORMAL", "shade", normal_space="TANGENT")[:, :, :3]                # the normal map, for the game and page
     ao = bake("AO", "shade")[:, :, 0]
@@ -393,7 +396,6 @@ def bake_ship(slug, px, samples):
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_base.png"), pbr)
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_orm.png"), orm)
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_light.png"), lmap)
-    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_pane.png"), np.clip(pane, 0, 1))
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
     # the UV mesh, in ship space, as flat triangle lists
     bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
@@ -405,7 +407,7 @@ def bake_ship(slug, px, samples):
     bm.free()
     return {"tris": len(pos) // 9, "tex_px": px, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
             "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "mesh": {"pos": pos, "uv": uv}}
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv}}
 
 
 EMBLEMS = os.path.join(ROOT, "assets", "emblems")
@@ -573,7 +575,7 @@ def half(a):
     return (a[0::2, 0::2] + a[1::2, 0::2] + a[0::2, 1::2] + a[1::2, 1::2]) / 4
 
 
-def ship_main(slugs, px, samples):
+def ship_main(slugs, px, samples, panes_only=False):
     mpath = os.path.join(SHIPS_OUT, "manifest.json")
     man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
     man.setdefault("kept", {})
@@ -582,16 +584,20 @@ def ship_main(slugs, px, samples):
     man["_doc"] = ("The Ssarith Hunt's picked blockouts, each unwrapped and baked onto its own UVs by tools/blender/painted_bake.py "
                    "--ship (never edited by hand): the UV mesh in ship space (+x port, +y up, +z bow, metres) and its painted colour, "
                    "AO and glow maps. uv_m is metres of hull per UV unit.")
+    for k in [k for k in man["pieces"] if k.endswith("_pane")]:   # panes are drawn from their data now, not a map
+        del man["pieces"][k]
     for slug in slugs:
+        if panes_only:
+            man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
+            print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
+            continue
         info = bake_ship(slug, px, samples)
         n = int(open(os.path.join(SHIPS_RAW, slug + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
-        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light", "pane"):   # the AO is kept beside, not inlined (it is in the ORM)
+        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(SHIPS_OUT, f), "rb").read()).hexdigest()}
-            if m == "pane":
-                man["pieces"][f"{slug}_{m}"]["lossless"] = True   # data, not colour: kept exact on the page
         print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)
     man["blender"] = bpy.app.version_string
     with open(mpath, "w") as fh:
@@ -602,8 +608,8 @@ def ship_main(slugs, px, samples):
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     arg = lambda k, d: argv[argv.index(k) + 1] if k in argv else d
-    if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64]
-        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")))
+    if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only]
+        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv)
     names = arg("--tile", ",".join(TILES)).split(",")
     samples, ppm = int(arg("--samples", "32")), float(arg("--ppm", "128"))
     os.makedirs(OUT, exist_ok=True); os.makedirs(RAW, exist_ok=True)
