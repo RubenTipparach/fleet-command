@@ -214,6 +214,7 @@ const { mmMaterial, slab } = B;
 
 // ---- the materials: Material Maker graphs, as the Blender render uses them (tools/blender/emblem_ssarith.py) -----------
 const rim = mmMaterial('emblem_platinum', { color: new THREE.Color('#d8cfb4'), envMapIntensity: 1.0 });            // bone-pale metal
+const wall = mmMaterial('emblem_wood_laminate', { color: new THREE.Color('#5a3e28'), envMapIntensity: 0.3 });           // the inner walls, a shadow box
 const floor = mmMaterial('emblem_enamel_forest', { color: new THREE.Color('#141812'), envMapIntensity: 0.2 });     // the recess's floor, in shadow
 const wood = mmMaterial('emblem_wood_laminate', { clearcoat: 0.15, clearcoatRoughness: 0.2, envMapIntensity: 0.5 });   // the bows
 const cord = mmMaterial('emblem_wood_laminate', { color: new THREE.Color('#5a4a38'), envMapIntensity: 0.3 });          // the strings
@@ -234,6 +235,7 @@ const LEVEL = 0.9;
 const HEIGHTS = { string: [6.9, 0.73, 0.15], vanes: [7.1, 0.47, 0.15], vaneTips: [7.1, 0.47, 0.15], shaft: [7.3, 1.03, 0.3], head: [7.5, 0.91, 0.3], limb: [7.9, 1.79, 0.5] };
 slab(PARTS.frame, 0.0, 10.4, 0.8, rim);
 slab(PARTS.field, 0.3, 0.6, 0.1, floor);
+slab(PARTS.wall, 0.6, 9.8, 0.3, wall);   // the recess's inner walls, a band 2 mm wide inside the rim (owner: "need walls inner, on emblem")
 PARTS.bows.forEach((bow, i) => {
   const level = PARTS.bows.length - 1 - i;   // bows[0], the smallest, is in front
   for (const [part, [top, thick, bevel]] of Object.entries(HEIGHTS)) {

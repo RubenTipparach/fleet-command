@@ -10,7 +10,7 @@ Each frond is bipinnate, as the photograph's: a stem (rachis) with leaflets (pin
 the way up and shrinking to the tip, and each leaflet itself a midrib with small lobed leaflets (pinnules) along both its
 sides. The frond arches up from its root and droops toward its tip; leaflets droop a little and angle forward.
 
-Seeded, inside the field (assets/emblems/ssarith/sd.parts.json). Grid units are mm, y down. Writes
+Seeded, inside the recess's inner walls (the floor of assets/emblems/ssarith/sd.parts.json). Grid units are mm, y down. Writes
 assets/emblems/ssarith/sd.ferns.json:
     ferns   {v: [x, y, z, ...] in hundredths of a mm, f: [a, b, c, ...] triangles, s: [light 0-100 per vertex]}
 
@@ -116,7 +116,7 @@ def frond(rng, root, ang, length, z0, verts, faces, light):
 
 
 def main():
-    field = json.load(open(PARTS))["field"][0]
+    field = json.load(open(PARTS))["floor"][0]   # inside the recess's inner walls
     rng = random.Random(SEED)
     xs, ys = [p[0] for p in field], [p[1] for p in field]
     verts, faces, light = [], [], []

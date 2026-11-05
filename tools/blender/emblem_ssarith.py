@@ -17,12 +17,14 @@ Materials, each a Material Maker graph (tools/materials/build_ptex.py):
     feathers        red, their tips orange: the pearl enamel graph tinted, matte
     fern            the fern bed (emblem_fern), each vertex's light from the generator multiplying it
     the floor       the recess's floor: the forest enamel graph, near black (the shadow under the ferns)
+    inner walls     the laminated wood, darkened: the recess lined like a shadow box
     pale metal      the pennon's rim: the platinum graph tinted bone
 
 Heights (mm). The badge is a deep frame: the rim stands 10.4 mm, the field sinks to a floor at 0.6 mm, and the fern bed
 fills the recess up to 6.4 mm. The bows float over the ferns as thin parts, each bow 0.9 mm prouder than the one behind it
 (the largest at the back, level 0). Each part's (bottom, top) at level 0, no two faces sharing a plane:
     floor      0.3 to 0.6
+    walls      0.6 to 9.8   a band 2 mm wide inside the rim (owner: "need walls inner, on emblem")
     ferns      0.7 to 6.4
     string     6.17 to 6.9
     feathers   6.63 to 7.1   body and tip meet edge to edge, never overlapping
@@ -56,6 +58,8 @@ FLOOR = "#141812"   # the recess's floor, in the ferns' shadow
 FERN_TINT = "#7dff5c"   # the graph's green pushed toward the photograph's: red and blue pulled down
 LEVEL_MM = 0.9
 RIM_MM = 10.4
+WALL_MM = 9.8          # the inner walls stop just under the rim's top
+WALL = "#5a3e28"       # the inner walls: the laminate, darkened, a shadow box
 # (top mm at level 0, thickness mm, bevel mm) of each part of a bow; the thicknesses differ so no two bottoms share a plane.
 HEIGHTS = {"string": (6.9, 0.73, 0.15), "vanes": (7.1, 0.47, 0.15), "vaneTips": (7.1, 0.47, 0.15), "shaft": (7.3, 1.03, 0.3),
            "head": (7.5, 0.91, 0.3), "limb": (7.9, 1.79, 0.5)}
@@ -64,6 +68,7 @@ HEIGHTS = {"string": (6.9, 0.73, 0.15), "vanes": (7.1, 0.47, 0.15), "vaneTips": 
 def build(parts):
     rim = R.mm_material("emblem_platinum", tint=BONE)
     floor = R.mm_material("emblem_enamel_forest", tint=FLOOR)
+    wall = R.mm_material("emblem_wood_laminate", tint=WALL)
     wood = R.mm_material("emblem_wood_laminate", coat=0.15)
     cord = R.mm_material("emblem_wood_laminate", tint=CORD)
     steel = R.mm_material("emblem_platinum", tint=STEEL)
@@ -73,6 +78,7 @@ def build(parts):
     mats = {"string": cord, "vanes": feather, "vaneTips": feather_tip, "shaft": steel, "head": green, "limb": wood}
     R.poly_slab("frame", parts["frame"], 0.0, RIM_MM, 0.8, rim)
     R.poly_slab("floor", parts["field"], 0.3, 0.6, 0.1, floor)
+    R.poly_slab("wall", parts["wall"], 0.6, WALL_MM, 0.3, wall)
     n = len(parts["bows"])
     for i, bow in enumerate(parts["bows"]):
         level = n - 1 - i  # bows[0] is the smallest, in front

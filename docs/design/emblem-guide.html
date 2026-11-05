@@ -903,7 +903,19 @@ const SD = (() => {
     const half = [[-0.18, -0.5], [0, -0.44], [0.55, -0.3], [0.9, -0.12], [1, 0]];
     const line = half.map(([u, v]) => [sx + u * d, y + v * h]).concat(half.slice(0, -1).reverse().map(([u, v]) => [sx + u * d, y - v * h]));
     const P = {};
-    P.limb = thick(line, [1.8, 2.1, 2.6, 3.2, 4, 3.2, 2.6, 2.1, 1.8]);
+    // Smoothed (owner, 2026-11-05: "can you smooth out the bows?"): one continuous curve through the limb's points
+    // (Catmull-Rom, 8 samples a span), its width eased between the same values, so the limb has no facets.
+    const W = [1.8, 2.1, 2.6, 3.2, 4, 3.2, 2.6, 2.1, 1.8], smooth = [], sw = [];
+    for (let k = 0; k < line.length - 1; k++) {
+      const p0 = line[Math.max(0, k - 1)], p1 = line[k], p2 = line[k + 1], p3 = line[Math.min(line.length - 1, k + 2)];
+      for (let j = 0; j < 8; j++) {
+        const t = j / 8, t2 = t * t, t3 = t2 * t;
+        smooth.push([0, 1].map((c) => 0.5 * (2 * p1[c] + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t2 + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t3)));
+        sw.push(W[k] + (W[k + 1] - W[k]) * (3 * t2 - 2 * t3));
+      }
+    }
+    smooth.push(line[line.length - 1]); sw.push(W[W.length - 1]);
+    P.limb = thick(smooth, sw);
     P.string = [[sx - 0.6, y - 0.44 * h], [sx + 0.6, y - 0.44 * h], [sx + 0.6, y + 0.44 * h], [sx - 0.6, y + 0.44 * h]];
     // The arrow: a shaft from its nock just behind the string, a narrow leaf head with one barb (below: it holds on one
     // side only), and two square-cut vanes just ahead of the string.
@@ -940,7 +952,7 @@ const SSARITH_DESIGNS = [
       [SD.bows[0].tip - 3, SD.bows[0].y - 1.5, 'R', 'The learner\'s leaf', 'The youngest\'s head: a plain leaf with no barb, for practice. Nothing is meant to stay in it yet.'],
       [SD.bows[1].tip - 7.5, SD.bows[1].y - 2.5, 'R', 'The hunter\'s barb', 'The middle stage\'s head: one barb, on one side only, so a fair hunter can draw it out.'],
       [SD.bows[2].tip - 6, SD.bows[2].y - 2, 'R', 'The elder\'s tally', 'The eldest\'s head: long, a notch cut in its back edge for each hunt it has made (the Tally Keepers\' count, on the arrow itself).'],
-      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'Cut from flat plate', 'Straight facets and a square-cut recurve at each tip: the Hunt\'s makers laminate their bows from cut plate, as they build their gear.'],
+      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'Laminated, then bent smooth', 'Thin plies of wood glued up and bent on a form into one smooth curve, with a recurve at each tip: the Hunt\'s makers build a bow the way they build their gear, in layers.'],
       [SD.bows[1].sx + SD.bows[1].d, SD.bows[1].y, 'R', 'Each stage a size larger, overlapping', 'A new bow at each stage of life, the old ones kept and laid over one another: three stages, all aimed the same way.'],
     ],
   },
@@ -1180,7 +1192,10 @@ window.EMBLEM_PARTS_KRAI = () => ({ key: 'KC+', name: 'The Fang Torc', grid: 100
 // The Ssarith's Bow Rites (SD) as polygons for its 3D badge (tools/emblems/export_parts.mjs ssarith): the pennon's outer
 // and inner edges (the badge rounds them with its bevels), and for each bow, smallest first, its limb, string, shaft, the
 // two vanes and the head. The youngest's is bows[0].
+// The 3D badge's recess has inner walls (owner, 2026-11-05: "need walls inner, on emblem"): a band 2 units wide inside the
+// rim's inner edge (`wall`, outer and inner rings), and the floor (`floor`) inside that, where the ferns grow.
 window.EMBLEM_PARTS_SSARITH = () => ({ key: 'SD', name: 'The Bow Rites', grid: 100, frame: [SD.PEN, SD.fr.inner], field: [SD.fr.inner],
+  wall: [SD.fr.inner, polyFrame(SD.PEN, 2.5, 7).inner], floor: [polyFrame(SD.PEN, 2.5, 7).inner],
   bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, vaneTips: q.P.vaneTips, head: q.P.head })) });
 // A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
 window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
