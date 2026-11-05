@@ -38,3 +38,4 @@
   put their grip hand": each bow is one smooth recurve curve (tips flipping forward past the string), with tally spurs on
   the back of each limb (none where the grip hand closes below the arrow) and a forked hook at each tip; the recess is lined
   with wooden inner walls 2 mm thick.
+- 2026-11-05, version 5 (`1793863648-1e93`), desktop session: the badge's parts and materials now come from the shared builder `docs/mockups/lib/emblem-builds.js` (shared with the game flow's faction screen, change `faction-select`); no visible change.

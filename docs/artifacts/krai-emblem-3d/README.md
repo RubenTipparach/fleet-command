@@ -13,3 +13,4 @@
 
 - 2026-11-04, version 1 (`1793803223-e96d`): first publish, with the full-quality Blender render (owner: "make the 3d
   version of the fang torc").
+- 2026-11-05, version 2 (`1793863643-5461`), desktop session: the badge's parts and materials now come from the shared builder `docs/mockups/lib/emblem-builds.js` (shared with the game flow's faction screen, change `faction-select`); no visible change.

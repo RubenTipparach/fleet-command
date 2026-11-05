@@ -10,18 +10,9 @@
 //   start(shots, first)  starts the loop with the bar's view buttons and sets window.MOCKUP_SHOTS from
 //            { shotName: [viewName, setup] } (setup runs before the shot, after the scene is frozen)
 // 1 three.js unit = 1 mm; the badge is 100 mm across, its parts given as polygons on the guide's 100 unit grid (y down).
-window.FCEmblemBadge = function FCEmblemBadge(THREE, opts) {
-'use strict';
-const { stage, bar, maps, views } = opts;
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-stage.append(renderer.domElement);
-const scene = new THREE.Scene();
-const BLACK = 0x05070d;
-scene.background = new THREE.Color(BLACK);
+// FCEmblemStudio(THREE, renderer) returns the studio's environment map, for any page that lights a badge (the game flow's
+// faction screen lights its badges with it, under its own lights).
+window.FCEmblemStudio = function FCEmblemStudio(THREE, renderer) {
 const pmrem = new THREE.PMREMGenerator(renderer);
 // What the polished faces reflect: the same studio as the Blender render (tools/blender/emblem_render.py environment()):
 // near black toward the viewer, a bright sky above with a warm band at the horizon, a dark floor, plus a cool and a warm
@@ -40,16 +31,16 @@ envScene.add(new THREE.Mesh(new THREE.SphereGeometry(100, 64, 32), new THREE.Sha
     float front = smoothstep(0.55, 0.95, d.z);
     gl_FragColor = vec4(sky * (1.0 - 0.9 * front), 1.0);
   }` })));
-scene.environment = pmrem.fromScene(envScene, 0.02).texture;
-const camera = new THREE.PerspectiveCamera(32, 1, 1, 5000);
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.minDistance = 80; controls.maxDistance = 600;
-// three.js 0.147 uses the legacy light units: about pi times brighter than r155 and later for the same number.
-const key = new THREE.DirectionalLight(0xfff2e0, 0.55); key.position.set(-120, 140, 260); scene.add(key);
-const rim = new THREE.DirectionalLight(0xbcd6ff, 0.45); rim.position.set(220, -60, 90); scene.add(rim);
-scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x080a12, 0.08));
+const env = pmrem.fromScene(envScene, 0.02).texture;
+pmrem.dispose();
+return env;
+};
 
+// FCEmblemParts(THREE, maps, group) returns { mmMaterial, slab, badge }: the Material Maker materials and the part builder
+// alone, building into `group`, for a page that sets its own studio (the game flow's faction screen, docs/mockups/game-flow.html).
+// The badges' own parts are docs/mockups/lib/emblem-builds.js.
+window.FCEmblemParts = function FCEmblemParts(THREE, maps, badge) {
+'use strict';
 // ---- Material Maker maps ----------------------------------------------------------------------------------------
 const loader = new THREE.TextureLoader();
 const TILE_MM = 50; // every emblem graph tiles every 0.05 m
@@ -72,8 +63,6 @@ function mmMaterial(name, extra = {}) {
 }
 
 // ---- the parts, built from the guide's polygons ------------------------------------------------------------------
-const badge = new THREE.Group();
-scene.add(badge);
 const toV2 = (p) => new THREE.Vector2(p[0] - 50, 50 - p[1]); // grid (y down) to mm, centred, y up
 const area = (ring) => { let a = 0; for (let i = 0; i < ring.length; i++) { const [x1, y1] = ring[i], [x2, y2] = ring[(i + 1) % ring.length]; a += x1 * y2 - x2 * y1; } return Math.abs(a / 2); };
 // A part between z0 and z1 mm whose outline is the given rings (the largest is the outline, the rest its holes), its
@@ -89,6 +78,36 @@ function slab(rings, z0, z1, bevel, material) {
   badge.add(mesh);
   return mesh;
 }
+
+return { mmMaterial, slab, badge };
+};
+
+window.FCEmblemBadge = function FCEmblemBadge(THREE, opts) {
+'use strict';
+const { stage, bar, maps, views } = opts;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+stage.append(renderer.domElement);
+const scene = new THREE.Scene();
+const BLACK = 0x05070d;
+scene.background = new THREE.Color(BLACK);
+scene.environment = window.FCEmblemStudio(THREE, renderer);
+const camera = new THREE.PerspectiveCamera(32, 1, 1, 5000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.minDistance = 80; controls.maxDistance = 600;
+// three.js 0.147 uses the legacy light units: about pi times brighter than r155 and later for the same number.
+const key = new THREE.DirectionalLight(0xfff2e0, 0.55); key.position.set(-120, 140, 260); scene.add(key);
+const rim = new THREE.DirectionalLight(0xbcd6ff, 0.45); rim.position.set(220, -60, 90); scene.add(rim);
+scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x080a12, 0.08));
+
+// ---- Material Maker materials and the part builder (FCEmblemParts, above) ---------------------------------------
+const badge = new THREE.Group();
+scene.add(badge);
+const { mmMaterial, slab } = window.FCEmblemParts(THREE, maps, badge);
 
 // ---- views, background, motion, shots -----------------------------------------------------------------------------
 const fit = () => Math.max(1, 1.15 / camera.aspect);
