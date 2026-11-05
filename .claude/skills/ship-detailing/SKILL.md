@@ -114,6 +114,13 @@ Built over the low-poly hull, in ship space, never exported: it exists only to b
   aft; position lights at the widest frame (port red, starboard green) and white aft; red beacons top and bottom
   mid-ship; white strobes at the bow's tips. Each gets a small lit lamp on the hull and a light for the bake, named
   `LIGHT_<kind>_<n>` (the light-baking skill), and is written to the manifest so the page can blink it.
+- **Forward floods** (owner: "we need some more lights pointed forward to paint more of the hull"): `auto_floods` adds rows
+  of floods aimed forward along the port flank (mirrored), the top and the belly, every 22 m from the stern to the bow's
+  split (`to_z_m`), 1.8 kW in 80 degree cones, 0.9 m off the plating and tilted 12 degrees into it.
+- **Panes** (owner: "we need to show interior of ships with windows"): every window and launch bay is a pane whose vertices
+  carry a `pane` attribute: its own u and v (0 to 1 across it) and, in blue, the room behind it ((kind + 0.5) / 8 for
+  quarters, mess, workshop, hold or bay, plus a half when lit). A window group shares one room kind. Bays (`bays` in the
+  data: `w_m` by `h_m`) are cut through the armour like windows, with amber lamps along the lintel.
 - **One axis of symmetry, nothing repeated**: everything off the centreline is built on the port side and mirrored with a
   reflected frame (`frame_at(p, n, mirror=True)`, faces reversed by `place`); every piece's `rid` is a hash of its
   mirrored position (`rid_of`), so a plate and its mirror take the same paint and no two others do.
@@ -135,6 +142,7 @@ node graph switched per pass (`kind_material`, `show`).
 | AO | AO, 2.2 m | occlusion, deep in the trenches | 12 / 90 |
 | sun | DIFFUSE direct | a low painter's sun (ship space 0.6, 0.55, 0.58) with its cast shadows | 8 / 60 |
 | hull lights | DIFFUSE direct, sun off, fixtures on | the floods', lamps' and windows' light falling on white plating | 15 / 120 |
+| pane | EMIT | each window's and bay's own u, v and room code, for the page's rooms | 1 / 4 |
 
 ## 6. The maps
 
@@ -155,6 +163,7 @@ near black, greebles, the dome's green, slats, vents), the liveries, and the emb
 | `normal` | the tangent bake | the detail's relief, OpenGL convention |
 | `emit` | `strips_and_glow` | lamps, windows, the strips' lit line (0.7 m) in its dark channel, the domes' faint inner light, a soft halo |
 | `light` | the hull lights bake | the light falling on the hull, over `light_ref`, stored with a 1/1.6 curve at half size |
+| `pane` | the pane bake | u, v and the room code of every window and bay (black elsewhere); stored lossless on the page (`"lossless": true` in the manifest), because lossy WebP's colour subsampling mixes its channels |
 | `ao` | the AO bake | kept beside, not inlined (it is in the ORM and the paint) |
 
 The Hooded lance's hood in every map (from the top: the emblem on its plate, the dome, the fan at the stern deck; the
@@ -178,6 +187,23 @@ beacons pulse, position lights and floods burn steady, as additive sprites at th
 The board at night, each ship lit by its own floods, lamps, windows, strobes and beacons:
 
 ![the four picks at night](images/09-board-night.jpg)
+
+### Rooms, hangars and damage on the page
+
+**Rooms behind the panes.** The hull shader reads the pane map; where it finds a pane it builds the pane's frame from how
+its u and v change across the screen (`dFdx`, `dFdy` of the ship-space position and of u, v: no tangents needed), turns
+the view ray into that frame and draws the room behind with `roomBehind(q, D, room, kind, light)` from
+`docs/mockups/lib/ship-rooms.js`, the same rooms as the Concord line's (lifted from its page, its shots unchanged to the
+pixel), or a hangar with `hangarBehind(q, D, room, mouth, light)` behind a bay. The pane map is never mipmapped.
+
+**Damage**, on the shared `docs/mockups/lib/ship-fx.js` (as the Concord and Krai pages): the hull shader runs
+`dmgHoles`, `dmgScorch` and `interiorRoom` (holes show the decks behind), per-ship damage uniforms; a phaser scorches, a
+torpedo blows a hole and leaves an emitter (fire, smoke, embers) stepped by `emitterStep`. The shared GLSL declares
+`uLight`, so a ship's own light map is `uHullLight`.
+
+| The carrier's bays | Night with the rooms lit | A torpedo's work |
+|---|---|---|
+| ![bays](images/10-bays.jpg) | ![rooms](images/11-rooms.jpg) | ![damage](images/12-damage.jpg) |
 
 ## Judge it
 
@@ -205,6 +231,9 @@ Look at the maps and at the ship close up and from the board, in every look and 
 | A light strip glows metres wide | The keel's whole flat bottom is the strip face | A dark channel with a lit line down its middle |
 | The logo cannot be seen | Its field colour matches the khaki plates | Paint the emblem's own plate colour as a patch under it |
 | The light map is speckled | The lamps' and windows' faces sampled as lights | More samples (32), a one-pixel blur |
+| The pane map is white almost everywhere | Joined meshes fill a missing colour attribute with white; an Exact boolean's new vertices take the cutter's attribute, and a merged cutter's slabs default to white | Zero `pane` on every piece (`no_pane`), forced again after each boolean |
+| Rooms flicker or show the wrong kind at a distance | The pane map mipmapped or stored lossy | No mipmaps, linear filtering, lossless WebP |
+| The hull shader will not compile on a damage page | Your uniform has a name the shared GLSL already declares (`uLight`) | Name yours apart (`uHullLight`) |
 | The page never becomes ready | A ship in the manifest lacks a map the page asks for | Bake every ship before inlining, or keep the old manifest |
 | A flat olive hull | Only the per-part paint, nothing modelled | The detail layer of step 4 |
 

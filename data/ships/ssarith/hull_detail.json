@@ -1,6 +1,6 @@
 {
   "_doc": "The Ssarith Hunt picks' hull detail: what tools/blender/hull_detail.py builds over each low-poly hull before painted_bake.py --ship bakes it onto the ship's own UVs (Ship Design Bible chapters 14 and 15). Ship space: +x port, +y up, +z bow, metres. A feature off the centreline is mirrored to starboard (one axis of symmetry); nothing repeats. face: where it sits, found by a ray (top: from above at [x, z]; bottom: from below at [x, z]; port: from the port side at [z, y]; bow: from ahead at [x, y]). Owner, 2026-11-05: \"the gorn ships have things like vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the same\", \"notice stuff like liveries, smooth sphereical portions of armor, and specifically shaped vents\", \"no repeating elemnts, single axis symmetry, and lots of shading to give the armor depth\".",
-  "_doc_lighting": "logo: the faction emblem (assets/emblems/<faction>/hull_mask.png) painted on the top armour, centred at [x, z], size_m across, lit by its own flood. lighting.floods: spotlights standing 0.9 m off the hull that graze the plating toward aim (aft, fwd, out, in, up, down), 90 degree cones (Ship Design Bible chapter 9). windows: person-sized window rows on the port flank (mirrored) between z_m, one row per rows_y_m, provisional until the ship's room plan places them (W1). Position lights, beacons, strobes and the belly pair are placed from the hull's own shape.",
+  "_doc_lighting": "logo: the faction emblem (assets/emblems/<faction>/hull_mask.png) painted on the top armour, centred at [x, z], size_m across, lit by its own flood. lighting.floods: spotlights standing 0.9 m off the hull that graze the plating toward aim (aft, fwd, out, in, up, down), 90 degree cones (Ship Design Bible chapter 9). windows: person-sized window rows on the port flank (mirrored) between z_m, one row per rows_y_m, provisional until the ship's room plan places them (W1). Position lights, beacons, strobes and the belly pair are placed from the hull's own shape. auto_floods (defaults, a ship's own keys over them): rows of floods aimed forward along the port flank (mirrored), the top and the belly, every step_m from the stern, up to to_z_m. bays: launch bays, w_m by h_m openings cut through the armour, the hangar behind drawn by the page.",
   "faction": "ssarith",
   "defaults": {
     "armour_t_m": 0.5,
@@ -39,7 +39,15 @@
     "overlay_min_m2": 22.0,
     "overlay_inset": 0.86,
     "overlay_lift_m": 0.3,
-    "light_ref": 0.9
+    "light_ref": 0.9,
+    "auto_floods": {
+      "step_m": 22,
+      "from_stern_m": 6,
+      "top_x_frac": 0.4,
+      "tilt_deg": 12,
+      "power_w": 1800,
+      "cone_deg": 80
+    }
   },
   "ships": {
     "hooded_lance": {
@@ -299,7 +307,10 @@
             "aim": "fwd",
             "tilt_deg": 10
           }
-        ]
+        ],
+        "auto_floods": {
+          "to_z_m": 8
+        }
       },
       "windows": [
         {
@@ -553,7 +564,10 @@
             "aim": "fwd",
             "tilt_deg": 10
           }
-        ]
+        ],
+        "auto_floods": {
+          "to_z_m": 12
+        }
       },
       "windows": [
         {
@@ -807,7 +821,10 @@
             "aim": "fwd",
             "tilt_deg": 8
           }
-        ]
+        ],
+        "auto_floods": {
+          "to_z_m": 16
+        }
       },
       "windows": [
         {
@@ -1052,7 +1069,10 @@
             "aim": "fwd",
             "tilt_deg": 10
           }
-        ]
+        ],
+        "auto_floods": {
+          "to_z_m": 14
+        }
       },
       "windows": [
         {
@@ -1067,6 +1087,266 @@
           ]
         }
       ]
+    },
+    "carrier": {
+      "seed": 53,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            22,
+            -50
+          ],
+          "r_m": 4.6,
+          "h_m": 1.0,
+          "straps": [
+            [
+              0,
+              0.7
+            ],
+            [
+              60,
+              0.4
+            ]
+          ]
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -76
+          ],
+          "r_m": 5.0,
+          "fins": 23,
+          "lamps": 15,
+          "tilt_deg": 24,
+          "lamp": "amber"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "top",
+          "at": [
+            14,
+            -64
+          ],
+          "shape": "chevron",
+          "len_m": 4.4,
+          "span_m": 5.6,
+          "w_m": 1.3,
+          "pitch_m": 0.42,
+          "slant_deg": 34
+        },
+        {
+          "face": "top",
+          "at": [
+            26,
+            -24
+          ],
+          "shape": "slot",
+          "len_m": 7.0,
+          "span_m": 1.6,
+          "rake_m": 2.4,
+          "pitch_m": 0.45,
+          "slant_deg": 30
+        },
+        {
+          "face": "bottom",
+          "at": [
+            7,
+            -40
+          ],
+          "shape": "chevron",
+          "len_m": 5.0,
+          "span_m": 5.0,
+          "w_m": 1.4,
+          "pitch_m": 0.44,
+          "slant_deg": 40
+        },
+        {
+          "face": "port",
+          "at": [
+            -62,
+            1
+          ],
+          "shape": "slot",
+          "len_m": 5.0,
+          "span_m": 2.4,
+          "rake_m": -1.2,
+          "pitch_m": 0.5,
+          "slant_deg": 44
+        }
+      ],
+      "lamps": [
+        {
+          "face": "bow",
+          "at": [
+            0,
+            3.2
+          ],
+          "size_m": 0.7,
+          "colour": "red",
+          "housing": true
+        },
+        {
+          "face": "top",
+          "at": [
+            30,
+            -30
+          ],
+          "size_m": 0.45,
+          "colour": "green"
+        },
+        {
+          "face": "top",
+          "at": [
+            8,
+            70
+          ],
+          "size_m": 0.4,
+          "colour": "amber"
+        }
+      ],
+      "bays": [
+        {
+          "face": "bow",
+          "at": [
+            5.6,
+            -2.2
+          ],
+          "w_m": 8.0,
+          "h_m": 6.0
+        },
+        {
+          "face": "port",
+          "at": [
+            -4,
+            -3.0
+          ],
+          "w_m": 12.0,
+          "h_m": 5.0
+        },
+        {
+          "face": "port",
+          "at": [
+            -30,
+            -3.0
+          ],
+          "w_m": 10.0,
+          "h_m": 5.0
+        }
+      ],
+      "windows": [
+        {
+          "z_m": [
+            -72,
+            -42
+          ],
+          "rows_y_m": [
+            -5.2,
+            -1.7,
+            1.8
+          ]
+        },
+        {
+          "z_m": [
+            6,
+            36
+          ],
+          "rows_y_m": [
+            1.8
+          ]
+        }
+      ],
+      "exposed": [
+        {
+          "plan": [
+            [
+              -7,
+              -82.5
+            ],
+            [
+              7,
+              -82.5
+            ],
+            [
+              6,
+              -70
+            ],
+            [
+              -6,
+              -70
+            ]
+          ],
+          "y_m": [
+            -50,
+            50
+          ]
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            52,
+            53.6
+          ]
+        },
+        {
+          "band_z_m": [
+            55,
+            55.7
+          ]
+        },
+        {
+          "chevron": {
+            "z_m": 76,
+            "sweep": 0.3,
+            "w_m": 1.6
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          30
+        ],
+        "size_m": 10.0,
+        "flood_w": 4200
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              16,
+              -68
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -70,
+              1
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              10,
+              48
+            ],
+            "aim": "fwd",
+            "tilt_deg": 8
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 40
+        }
+      }
     }
   }
 }

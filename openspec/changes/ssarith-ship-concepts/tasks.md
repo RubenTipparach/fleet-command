@@ -14,7 +14,9 @@
 - [x] 2.6 Version 12: each pick rebuilt as one grown structure (Ship Design Bible chapter 14), re-exported and re-baked
 - [x] 2.8 Version 13: the unpicked blockouts discarded; each pick's hull detail modelled (`tools/blender/hull_detail.py`, `data/ships/ssarith/hull_detail.json`: layered armour, sub-armour, machinery, domes, fans, louvres, lamps, liveries), mirrored, nothing repeated, baked with a low sun and deep AO
 - [x] 2.9 Version 14: the PBR set (base colour, ORM, tangent normals, emission), the hull lights baked into a light map, fixtures (floods, position lights, beacons, strobes), provisional windows, the Hunt emblem; Look and Light on the page; the `ship-detailing` skill with image samples
+- [x] 2.11 Version 15: forward floods every 22 m, a greener emission, rooms behind every window (lib/ship-rooms.js, shared with the Concord line), the carrier with its launch bays and hangars, battle damage on the shared lib/ship-fx.js
 - [ ] 2.10 The window and flood colours (survey H5)
+- [ ] 2.12 The Hunt hulls breaking apart (an inside test for the grown skin, then lib/ship-break.js), systems and their states, damaged lights flickering (Ship Design Bible L3)
 - [ ] 2.7 A detail mask for the tile (owner: "we'll probably need a detail mask in the future")
 
 ## 3. After blockouts are picked

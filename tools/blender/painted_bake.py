@@ -367,6 +367,7 @@ def bake_ship(slug, px, samples):
     cover = data[:, :, 3] > 0.5
     glowp = bake("EMIT", "glow")[:, :, :3]
     P = bake("EMIT", "position")[:, :, :3]
+    pane = bake("EMIT", "pane")[:, :, :3]          # each window's and bay's own (u, v, room), for the page's rooms
     nor = bake("NORMAL", "shade", normal_space="OBJECT")[:, :, :3] * 2.0 - 1.0     # for the paint's own use
     nts = bake("NORMAL", "shade", normal_space="TANGENT")[:, :, :3]                # the normal map, for the game and page
     ao = bake("AO", "shade")[:, :, 0]
@@ -392,6 +393,7 @@ def bake_ship(slug, px, samples):
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_base.png"), pbr)
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_orm.png"), orm)
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_light.png"), lmap)
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_pane.png"), np.clip(pane, 0, 1))
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
     # the UV mesh, in ship space, as flat triangle lists
     bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
@@ -585,9 +587,11 @@ def ship_main(slugs, px, samples):
         n = int(open(os.path.join(SHIPS_RAW, slug + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
-        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)
+        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light", "pane"):   # the AO is kept beside, not inlined (it is in the ORM)
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(SHIPS_OUT, f), "rb").read()).hexdigest()}
+            if m == "pane":
+                man["pieces"][f"{slug}_{m}"]["lossless"] = True   # data, not colour: kept exact on the page
         print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)
     man["blender"] = bpy.app.version_string
     with open(mpath, "w") as fh:

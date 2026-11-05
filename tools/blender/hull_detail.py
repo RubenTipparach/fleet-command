@@ -35,7 +35,8 @@ from mathutils.bvhtree import BVHTree
 
 KIND = {"under": 0.12, "greeble": 0.28, "sub": 0.39, "armour": 0.5, "dome": 0.64, "slat": 0.74, "vent": 0.82, "strip": 0.89,
         "lamp": 0.95}
-LAMP_RGB = {"red": (1.0, 0.12, 0.06), "amber": (1.0, 0.78, 0.3), "green": (0.27, 1.0, 0.54), "strip": (0.27, 1.0, 0.54),
+# the strips and green lamps a true green (owner, 2026-11-05, of the hull emission: "I wish it were more green")
+LAMP_RGB = {"bay": (0.75, 0.8, 0.7), "red": (1.0, 0.12, 0.06), "amber": (1.0, 0.78, 0.3), "green": (0.1, 1.0, 0.24), "strip": (0.1, 1.0, 0.24),
             "white": (1.0, 1.0, 1.0), "flood": (1.0, 0.92, 0.78), "window": (0.86, 1.0, 0.84)}
 FIXTURES = []  # the lights the bake lights the hull with, filled by build(): dicts of kind, pos, dir, rgb, power_w, cone_deg
 MATS = []  # (material, switch) for every material made here: switch(what) relinks its output for the next bake
@@ -70,7 +71,8 @@ def kind_material(kind, glow=None):
     em = N.new("ShaderNodeEmission")
     lit = N.new("ShaderNodeEmission"); L.new(rgb.outputs[0], lit.inputs[0]); lit.inputs[1].default_value = GLOW_W_M2
     bs = N.new("ShaderNodeBsdfDiffuse"); bs.inputs["Color"].default_value = (1, 1, 1, 1); L.new(bev.outputs[0], bs.inputs["Normal"])
-    src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"]}
+    pane = N.new("ShaderNodeAttribute"); pane.attribute_name = "pane"   # a window's or bay's own (u, v, room kind)
+    src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"], "pane": pane.outputs["Color"]}
 
     def switch(what):
         if what == "light" and glow:      # the light pass: lamps and windows shine on the hull around them
@@ -95,7 +97,21 @@ def obj_from(bm, name, mat, rid=0.0):
     o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
     me.materials.append(mat)
     set_rid(o, rid)
+    no_pane(o)
     return o
+
+
+def no_pane(o, force=False):
+    """A zero `pane` on a piece that is not a window or bay: joined meshes fill a missing colour attribute with white,
+    which would read as a pane everywhere. force: zero it even if present (a boolean's new vertices take the cutter's
+    attribute, and a merged cutter's slabs default to white)."""
+    at = o.data.color_attributes.get("pane")
+    if at is None:
+        at = o.data.color_attributes.new("pane", "FLOAT_COLOR", "POINT")
+    elif not force:
+        return
+    for d in at.data:
+        d.color = (0.0, 0.0, 0.0, 1.0)
 
 
 def set_rid(o, rid):
@@ -297,7 +313,7 @@ def lamp(F, M):
 
 def window_rows(F, surf):
     """Person-sized windows (Ship Design Bible W1-W3: 1.1 m by 0.6 m, one row a deck, 3.5 m apart, in groups of 4 to 12
-    with gaps, about one in five dark) along a stretch of the port flank: [(loc, normal, lit)]. Placed from data until
+    with gaps, about one in five dark) along a stretch of the port flank: [(loc, normal, lit, room kind)]. Placed from data until
     the ship's room plan places them (provisional: W1 wants a room with people behind every one)."""
     out = []
     z0, z1 = F["z_m"]
@@ -306,20 +322,47 @@ def window_rows(F, surf):
         z = z1
         while z > z0:
             n = r.randint(4, 12)
+            kind = r.choice(ROOMS[:4])                   # one room kind a group (provisional until the plan says)
             for k in range(n):
                 zk = z - k * 1.6
                 if zk < z0:
                     break
                 h = surf.hit("port", [zk, y])
                 if h and abs(h[1].x) > 0.6:     # only on faces that look out to the side
-                    out.append((h[0], h[1], r.random() > 0.2))
+                    out.append((h[0], h[1], r.random() > 0.2, kind))
             z -= n * 1.6 + r.uniform(2.0, 4.5)
     return out
 
 
-def window(lit, M, cutters):
+ROOMS = ("quarters", "mess", "workshop", "hold", "bay")   # the room kinds a pane can show (the page's interior mapping)
+
+
+def pane_box(w, h, kind, lit):
+    """A pane w by h in local coordinates, each vertex carrying `pane`: its place across the pane (u, v, 0 to 1) and,
+    in blue, the room behind it ((kind + 0.5) / 8, plus a half when the room is lit). The page draws the room from it."""
+    bm = bm_box(w, h, 0.06, at=(0, 0, 0.02))
+    lay = bm.verts.layers.float_color.new("pane")
+    k = (ROOMS.index(kind) + 0.5) / 8 + (0.5 if lit else 0.0)
+    for v in bm.verts:
+        v[lay] = (v.co.x / w + 0.5, v.co.y / h + 0.5, k, 1.0)
+    return bm
+
+
+def window(lit, M, cutters, kind="quarters"):
     cutters.append(place(bm_box(1.1, 0.6, 3.0, at=(0, 0, -1.0)), M))
-    return [(place(bm_box(1.1, 0.6, 0.06, at=(0, 0, 0.02)), M), "lamp:window" if lit else "vent")]
+    return [(place(pane_box(1.1, 0.6, kind, lit), M), "lamp:window" if lit else "vent")]
+
+
+def bay(F, M, cutters):
+    """A launch bay: an opening cut through the armour, its mouth a pane onto the hangar behind (drawn by the page), a
+    row of amber lamps along its lintel."""
+    w, h = F["w_m"], F["h_m"]
+    cutters.append(place(bm_box(w, h, 3.0, at=(0, 0, -1.0)), M))
+    parts = [(place(pane_box(w, h, "bay", F.get("lit", True)), M), "lamp:bay")]
+    n = max(3, int(w / 2.2))
+    for i in range(n):
+        parts.append((place(bm_box(0.3, 0.3, 0.3, at=(-w / 2 + (i + 0.5) * w / n, h / 2 + 0.45, 0)), M), "lamp:amber"))
+    return parts
 
 
 def fixture(kind, pos, d, rgb, power, cone=None, size=0.0):
@@ -335,7 +378,7 @@ def tangent_aim(n, toward, tilt_deg):
     return (t * math.cos(a) - n * math.sin(a)).normalized()
 
 
-def lights(lo, S, surf, mats, lamps, feats):
+def lights(lo, S, surf, mats, lamps, feats, defaults=None):
     """The hull's light fixtures (Ship Design Bible chapter 9, aircraft at night): the data's floods and logo flood,
     a belly pair, position lights (port red, starboard green, white aft), red beacons top and bottom, white strobes at
     the bow's tips. Each gets a small lit lamp on the hull (so it shows in the emission) and a light for the bake."""
@@ -362,6 +405,26 @@ def lights(lo, S, surf, mats, lamps, feats):
             R = Matrix.Diagonal((-1, 1, 1)) if m else Matrix.Identity(3)
             ll, nn, tw = R @ loc, R @ n, R @ toward
             spot(ll, nn, tangent_aim(nn, tw, F.get("tilt_deg", 14)), LAMP_RGB["flood"], F.get("power_w", 2600), F.get("cone_deg", 90), 0.9, "hull_flood")
+    # rows of floods aimed forward along the flanks, the top and the belly, every step_m (owner, 2026-11-05: "we need some
+    # more lights pointed forward to paint more of the hull"); the defaults' rows, the ship's own keys over them
+    A = {**(defaults or {}).get("auto_floods", {}), **D.get("auto_floods", {})}
+    if A.get("step_m"):
+        body = [v for v in vs if v.z < A.get("to_z_m", zmax)]
+        z = zmin + A.get("from_stern_m", 6)
+        while z < A.get("to_z_m", zmax) - 4:
+            near = [v for v in body if abs(v.z - z) < 3] or body
+            ym = (min(v.y for v in near) + max(v.y for v in near)) / 2
+            xw = max(v.x for v in near)
+            for face, at in (("port", [z, ym]), ("top", [xw * A.get("top_x_frac", 0.4), z]), ("bottom", [xw * A.get("top_x_frac", 0.4), z])):
+                h = surf.hit(face, at)
+                if not h:
+                    continue
+                loc, n = h
+                for m in (False, True):
+                    R_ = Matrix.Diagonal((-1, 1, 1)) if m else Matrix.Identity(3)
+                    spot(R_ @ loc, R_ @ n, tangent_aim(R_ @ n, Vector((0, 0, 1)), A.get("tilt_deg", 12)), LAMP_RGB["flood"],
+                         A.get("power_w", 1800), A.get("cone_deg", 80), 0.9, "hull_flood")
+            z += A["step_m"]
     lg = S.get("logo")
     if lg:
         h = surf.hit("top", lg["at"])
@@ -532,7 +595,7 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     for o in plates:
         c = sum((v.co for v in o.data.vertices), Vector()) / max(len(o.data.vertices), 1)
         r = rid_of(c, 0.0 if primary else 5.0)
-        set_rid(o, r)
+        set_rid(o, r); no_pane(o, force=True)
         if primary:   # raised by its own amount along its facing: plates stand proud of one another
             nrm = sum((p.normal * p.area for p in o.data.polygons), Vector())
             if nrm.length > 0:
@@ -578,6 +641,7 @@ def overlay(o, D, mats):
         dv_t = dv - nrm * dv.dot(nrm)
         v.co = cc + nrm * dv.dot(nrm) + dv_t * k + nrm * D["overlay_lift_m"]
     ov = obj_from(bm, "overlay", mats["armour"], (r * 1.618 + 0.31) % 1.0)
+    no_pane(ov, force=True)
     return ov
 
 
@@ -652,7 +716,7 @@ def build(lo, S, D, seed):
     under.data.materials.append(mats["under"]); under.data.materials.append(kind_material("strip", "strip"))
     for p, st in zip(under.data.polygons, strip):
         p.material_index = 1 if st else 0
-    set_rid(under, 0.0)
+    set_rid(under, 0.0); no_pane(under)
     high = [under]
     feats, holes = [], []
 
@@ -675,13 +739,15 @@ def build(lo, S, D, seed):
         at_both(F, louvre)
     for F in S.get("lamps", []):
         at_both(F, lambda F, M, cut: lamp(F, M))
+    for F in S.get("bays", []):
+        at_both(F, bay)
     for F in S.get("windows", []):
-        for loc, nor, lit_ in window_rows(F, surf):
+        for loc, nor, lit_, kind in window_rows(F, surf):
             for m in (False, True):
                 cut = []
-                feats.append((window(lit_, frame_at(loc, nor, m), cut), loc))
+                feats.append((window(lit_, frame_at(loc, nor, m), cut, kind), loc))
                 holes.extend(obj_from(c, "hole", mats["armour"]) for c in cut)
-    lights(lo, S, surf, mats, lamps, feats)
+    lights(lo, S, surf, mats, lamps, feats, D)
     armour = build_armour(lo, D, S, rng, holes, mats, "primary")
     sub = build_armour(lo, D, S, random.Random(seed * 31 + 7), holes, mats, "sub")
     for h in holes:
@@ -696,6 +762,7 @@ def build(lo, S, D, seed):
                     inner = obj_from(part[3], "collar_in", mats["armour"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
                 elif kind == "armour_strap":
                     slab = obj_from(part[3], "strap_slab", mats["armour"]); boolean(o, slab, "INTERSECT"); bpy.data.objects.remove(slab)
+                no_pane(o, force=True)
                 high.append(o)
             elif kind.startswith("lamp:"):
                 high.append(obj_from(bm, "lamp", lamps[kind[5:]], 0.5))

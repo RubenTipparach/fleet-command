@@ -11,12 +11,13 @@ choices SHALL name its source in the Hunt's culture as the owner sets it (Ship D
 
 ### Requirement: The Hunt page shows the owner's picks
 
-The Hunt page SHALL show only the blockouts the owner picked (1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident), at
+The Hunt page SHALL show the blockouts the owner picked (1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident) and the
+Hunt carrier (13), at
 true scale with the Concord Petrel to hand, each with its length, beam and height measured from its built geometry.
 
 #### Scenario: The board
 - **WHEN** the board is shown
-- **THEN** the four picks stand on it, every one with its measured size, and each can be viewed on its own
+- **THEN** the four picks and the carrier stand on it, every one with its measured size, and each can be viewed on its own
 
 ### Requirement: A picked blockout is designed rooms first
 
@@ -80,3 +81,22 @@ show it in that PBR set under the live light and at night by its own lamps, its 
 #### Scenario: Night
 - **WHEN** Night is chosen on the Hunt page
 - **THEN** each ship shows the floods' pools on its plating, its emblem lit, its window rows, steady position lights, and strobes and beacons that blink
+
+### Requirement: Hunt windows and bays show the rooms behind them
+
+Every window and launch bay on a Hunt ship SHALL show a room with depth behind it, drawn by the shared room code
+(`docs/mockups/lib/ship-rooms.js`), its kind and light from the ship's bake, a dark window showing a dark room.
+
+#### Scenario: Looking in
+- **WHEN** the camera looks at a lit window from an angle
+- **THEN** the room's floor, walls, ceiling lights and furniture shift with the view as a real room would
+
+### Requirement: Hunt ships take battle damage on the shared rules
+
+The Hunt page SHALL let the viewer fire a phaser or a torpedo at a ship, and the hit SHALL scorch the armour (phaser) or
+blow a hole into the decks behind with fire, smoke and embers (torpedo), on the shared damage code
+(`docs/mockups/lib/ship-fx.js`), until Repair clears it.
+
+#### Scenario: A torpedo hit
+- **WHEN** a torpedo is fired at a ship and strikes it
+- **THEN** the plating there is charred with an ember rim, a hole shows the decks inside, and fire and smoke vent from it

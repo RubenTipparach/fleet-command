@@ -1,5 +1,23 @@
 # Design: ssarith-ship-concepts
 
+## Version 15: the carrier, rooms behind the windows, forward floods, battle damage (owner, 2026-11-05)
+
+With two night shots: "we need some more lights pointed forward to paint more of the hull", "we need a carrier", "we need
+to show interior of ships with windows", "we need damage systems", and, of the hull emission, "also this light, I wish it
+were more green".
+
+| Ask | How | Numbers |
+|---|---|---|
+| Forward floods | `auto_floods` (defaults, a ship's own keys over them): rows of floods aimed forward along the port flank (mirrored), the top and the belly, from the stern to the bow's split | every 22 m, 1.8 kW, 80 degree cones, tilted 12 degrees into the plating |
+| Greener emission | The strips' and green lamps' light | (0.1, 1.0, 0.24), was (0.27, 1.0, 0.54) |
+| Rooms behind windows | Every window and bay pane carries `pane` (its own u, v and room code) into a baked pane map (stored lossless on the page); the page finds each pane's frame from how its u, v change across the screen and draws the room behind it with `roomBehind`, lifted from the Concord page into `docs/mockups/lib/ship-rooms.js` (the Concord page now calls the same code, its shots unchanged to the pixel) | quarters, mess, workshop (green-lit), hold; one window in five dark |
+| The carrier | Blockout 13, grown like the picks: a flight deck (the hood) over a hangar block whose forward face holds two launch bays, two more on each flank, a keel blade below; hangars drawn behind the bays by `hangarBehind` (a deck, its stripe, three parked craft, ceiling light rows) | 168 m by 68 m by 24 m, 326 triangles; bays 8-12 m by 5-6 m |
+| Damage | `docs/mockups/lib/ship-fx.js` inlined: the hull shader runs its `dmgHoles`, `dmgScorch` and `interiorRoom`; Fire (Phaser, Torpedo, Repair) and a click on a ship | phaser: a 2.2 m scorch; torpedo: a 6 m scorch and a 2.4-4.0 m hole with fire, smoke and embers |
+
+- Not yet: the Hunt hulls breaking apart (`lib/ship-break.js` reads a Concord-style loft; the Hunt's grown skin needs its
+  own inside test), systems and their states, damaged lights flickering (L3). Each is a task.
+- Provisional: the carrier's rooms and bays (until it is planned rooms first), the window and room light colours (H5).
+
 ## Version 14: the lighting pass, windows, PBR, normal maps, the emblem, emission (owner, 2026-11-05)
 
 "Now those my friend are gorgeous looking star ships. Next up, lighting pass, windows, pbr, normal maps, logo, emissive
