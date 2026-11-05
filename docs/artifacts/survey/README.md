@@ -47,3 +47,4 @@
 - 2026-11-05, cloud session: version 4 (H2 and H3 replaced by H4, which Ssarith blockouts go on), version id `1793837618-10b4`.
 - 2026-11-05, cloud session: version 5 (H4 lists the version 10 blockouts), version id `1793842421-9921`.
 - 2026-11-05, cloud session: version 6, version id `1793849483-356d` (H4 decided by the owner's picks: 1, 3, 7, 9; Spearhead withdrawn).
+- 2026-11-05, cloud session: version 7, version id `1793882428-1f8c` (H5: the Hunt's window and flood colours, for mockup 12 version 14).

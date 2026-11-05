@@ -171,7 +171,13 @@ over one geometry: **Painted** (the painted map, its own light kept as a third o
 and the environment; at night the ship is lit by its own floods, lamps and windows. Strobes flash twice every 1.5 s,
 beacons pulse, position lights and floods burn steady, as additive sprites at the fixtures; a shot fixes the clock.
 
-<!-- PAGE SHOTS -->
+| PBR, Studio | Night |
+|---|---|
+| ![the Harpoon in its PBR set](images/07-pbr-studio.jpg) | ![the Trident at night](images/08-night.jpg) |
+
+The board at night, each ship lit by its own floods, lamps, windows, strobes and beacons:
+
+![the four picks at night](images/09-board-night.jpg)
 
 ## Judge it
 

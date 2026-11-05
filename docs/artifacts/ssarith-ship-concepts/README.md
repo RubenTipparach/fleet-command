@@ -76,3 +76,8 @@
   outline and height with overlays, sub-armour, machinery, domes, fans, louvres, lamps, liveries; mirrored) and baked
   onto its own UVs at 2048 px with a low sun's shadows and AO (`tools/blender/painted_bake.py --ship`), shown with its
   object-space normal map; the tile is gone. Page 4.6 MB.
+- 2026-11-05, cloud session (owner: "lighting pass, windows, pbr, normal maps, logo, emissive texture"): version 14,
+  version id `1793882426-b4b5`. Each pick's PBR set (base colour, ORM, tangent normals, emission) and a light map of its
+  hull lights (floods, belly pair, position lights, beacons, strobes, windows), the Hunt emblem from
+  `docs/mockups/lib/emblems.js` on the top armour (`tools/mockups/emblem_masks.mjs`), Look (Painted, PBR, Clay) and Light
+  (Studio, Night) switches, strobes and beacons blinking. Page 9.8 MB. The method is the `ship-detailing` skill.
