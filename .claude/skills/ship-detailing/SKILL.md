@@ -220,6 +220,15 @@ hole or a burn takes the pane, and the hole's own decks show through it.
 torpedo blows a hole and leaves an emitter (fire, smoke, embers) stepped by `emitterStep`. The shared GLSL declares
 `uLight`, so a ship's own light map is `uHullLight`.
 
+**Breaking apart**, on the shared `docs/mockups/lib/ship-break.js` (as the Concord and Krai ships): the hull is one piece
+while whole, cut into seeded cells when it breaks, every break closed by a cut face. A grown hull has no loft, so its inside
+is its **signed distance field**, baked with the ship (`tools/blender/hull_sdf.py`, into the manifest's `sdf`: a
+generalised winding number for inside, so overlapping closed branches count as one solid, and the exact distance to the
+nearest triangle, one byte a 1 m cell). The same field answers the script's inside test (`sdfAt`) and, as a 3D texture,
+the cut faces' shader (`bodyD`), so the cut and the face that closes it agree. Each cell carries the windows and lamps
+nearest its seed, and they stutter out when it breaks away. Look at a slice of the field before trusting it: the inside
+must be solid and match the silhouette from above and the side.
+
 | The carrier's bays | Night with the rooms lit | A torpedo's work |
 |---|---|---|
 | ![bays](images/10-bays.jpg) | ![rooms](images/11-rooms.jpg) | ![damage](images/12-damage.jpg) |

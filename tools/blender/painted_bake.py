@@ -301,6 +301,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written)."""
     import bmesh
     import hull_detail as HD
+    import hull_sdf
     K.reset_scene(); HD.MATS.clear()
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = samples; sc.cycles.use_denoising = False; sc.cycles.seed = 0
@@ -407,7 +408,8 @@ def bake_ship(slug, px, samples, panes_only=False):
     bm.free()
     return {"tris": len(pos) // 9, "tex_px": px, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
             "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv}}
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
+            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
 
 
 EMBLEMS = os.path.join(ROOT, "assets", "emblems")

@@ -16,8 +16,9 @@ were more green".
 | Panes fit their faces (owner: "hanger window taller than side of the ship") | Every pane, frame and all, lies within 0.12 m of its face's plane at each corner and edge middle (`hull_detail.fits`); a window that would cross a bend is left out, a bay that does not fit stops the build. Frame widths are data (`pane_frame_m`) | frames 0.1 m (windows), 0.35 m (bays); the flank bays moved 1 m down onto the middle of their face |
 | Damage | `docs/mockups/lib/ship-fx.js` inlined: the hull shader runs its `dmgHoles`, `dmgScorch` and `interiorRoom`; Fire (Phaser, Torpedo, Repair) and a click on a ship | phaser: a 2.2 m scorch; torpedo: a 6 m scorch and a 2.4-4.0 m hole with fire, smoke and embers |
 
-- Not yet: the Hunt hulls breaking apart (`lib/ship-break.js` reads a Concord-style loft; the Hunt's grown skin needs its
-  own inside test), systems and their states, damaged lights flickering (L3). Each is a task.
+| Breaking apart (owner: "what about breaking peices apart and stuff?", "ship piece breaking should be built next") | The shared `lib/ship-break.js`, as the Concord and Krai ships break: the hull cut into seeded cells, each break closed by a cut face (decks, bulkheads, rooms), wires, fire on the broken edges. A grown hull has no loft stations, so its inside is a signed distance field (`tools/blender/hull_sdf.py`: a winding-number inside test and the distance to the nearest triangle, one byte a 1 m cell), read by the script's inside test and, as a 3D texture, by the cut faces' shader. The Concord and Krai pages are unchanged (the Krai breakup checked to the pixel) | 9 cells (under 120 m), 11, 13 (over 150 m); a torpedo costs 18 % of the hull, a phaser 5 %; at 60 % a torpedo knocks off the piece it lands on, at 0 % the core breaches (3.6 s) |
+
+- Not yet: systems and their states, damaged lights flickering (L3). Each is a task.
 - Provisional: the carrier's rooms and bays (until it is planned rooms first), the window and room light colours (H5).
 
 ## Version 14: the lighting pass, windows, PBR, normal maps, the emblem, emission (owner, 2026-11-05)

@@ -16,7 +16,8 @@
 - [x] 2.9 Version 14: the PBR set (base colour, ORM, tangent normals, emission), the hull lights baked into a light map, fixtures (floods, position lights, beacons, strobes), provisional windows, the Hunt emblem; Look and Light on the page; the `ship-detailing` skill with image samples
 - [x] 2.11 Version 15: forward floods every 22 m, a greener emission, rooms behind every window (lib/ship-rooms.js, shared with the Concord line), the carrier with its launch bays and hangars, battle damage on the shared lib/ship-fx.js
 - [ ] 2.10 The window and flood colours (survey H5)
-- [ ] 2.12 The Hunt hulls breaking apart (an inside test for the grown skin, then lib/ship-break.js), systems and their states, damaged lights flickering (Ship Design Bible L3)
+- [x] 2.12 The Hunt hulls breaking apart: each ship's signed distance field (`tools/blender/hull_sdf.py`, baked with the ship) as the inside test of the shared `lib/ship-break.js`; chunks off a hull at 60 % or less, a core breach at 0 %, windows and lamps going with their pieces and dying (owner: "ship piece breaking should be built next")
+- [ ] 2.13 Systems and their states on the Hunt ships, damaged lights flickering (Ship Design Bible L3)
 - [ ] 2.7 A detail mask for the tile (owner: "we'll probably need a detail mask in the future")
 
 ## 3. After blockouts are picked
