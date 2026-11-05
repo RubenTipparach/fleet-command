@@ -369,8 +369,9 @@ def bay(F, M, cutters, surf, frame):
     cutters.append(place(bm_box(w, h, 3.0, at=(0, 0, -1.0)), M))
     parts = [(pane_box(w, h, "bay", F.get("lit", True), M, frame), "lamp:bay")]
     n = max(3, int(w / 2.2))
+    up = 1.0 if M.col[1].y >= 0 else -1.0   # the lintel is the edge toward the ship's up, whichever way the frame runs
     for i in range(n):
-        parts.append((place(bm_box(0.3, 0.3, 0.3, at=(-w / 2 + (i + 0.5) * w / n, h / 2 + 0.45, 0)), M), "lamp:amber"))
+        parts.append((place(bm_box(0.3, 0.3, 0.3, at=(-w / 2 + (i + 0.5) * w / n, up * (h / 2 + 0.45), 0)), M), "lamp:amber"))
     return parts
 
 
