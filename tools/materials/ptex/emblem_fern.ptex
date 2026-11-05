@@ -67,7 +67,7 @@
    "to_port": 6
   }
  ],
- "label": "Emblem Lacquer Watch",
+ "label": "Emblem Fern",
  "name": "Material",
  "node_position": {
   "x": 0,
@@ -82,12 +82,12 @@
    },
    "parameters": {
     "folds": 0,
-    "iterations": 4,
+    "iterations": 3,
     "noise": 2,
     "offset": 0.0,
-    "persistence": 0.55,
-    "scale_x": 64,
-    "scale_y": 2
+    "persistence": 0.5,
+    "scale_x": 4,
+    "scale_y": 160
    },
    "type": "fbm2"
   },
@@ -99,12 +99,12 @@
    },
    "parameters": {
     "folds": 0,
-    "iterations": 3,
+    "iterations": 4,
     "noise": 2,
     "offset": 0.0,
-    "persistence": 0.5,
-    "scale_x": 128,
-    "scale_y": 4
+    "persistence": 0.55,
+    "scale_x": 6,
+    "scale_y": 6
    },
    "type": "fbm2"
   },
@@ -116,12 +116,12 @@
    },
    "parameters": {
     "folds": 0,
-    "iterations": 4,
+    "iterations": 2,
     "noise": 2,
     "offset": 0.0,
-    "persistence": 0.55,
-    "scale_x": 3,
-    "scale_y": 3
+    "persistence": 0.5,
+    "scale_x": 96,
+    "scale_y": 96
    },
    "type": "fbm2"
   },
@@ -140,19 +140,10 @@
      {
       "default": "0.0",
       "function": true,
-      "label": "grain",
-      "longdesc": "grain",
-      "name": "grain",
-      "shortdesc": "grain",
-      "type": "f"
-     },
-     {
-      "default": "0.0",
-      "function": true,
-      "label": "brush",
-      "longdesc": "brush",
-      "name": "brush",
-      "shortdesc": "brush",
+      "label": "vein",
+      "longdesc": "vein",
+      "name": "vein",
+      "shortdesc": "vein",
       "type": "f"
      },
      {
@@ -163,11 +154,20 @@
       "name": "cloud",
       "shortdesc": "cloud",
       "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "speck",
+      "longdesc": "speck",
+      "name": "speck",
+      "shortdesc": "speck",
+      "type": "f"
      }
     ],
-    "instance": "\nfloat hs_$name(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\nfloat sat_$name(float x) { return clamp(x, 0.0, 1.0); }\n\nfloat height_$name(vec2 uv) { return 0.5 + 0.22 * ($brush(uv) - 0.5) + 0.1 * ($grain(uv) - 0.5); }\nvec3 albedo_$name(vec2 uv) {\n\tvec3 deep = vec3(0.04, 0.33, 0.15), bright = vec3(0.17, 0.62, 0.32);\n\tvec3 c = mix(deep, bright, 0.35 + 0.4 * $cloud(uv));\n\treturn c * (0.9 + 0.12 * $grain(uv));\n}\nfloat rough_$name(vec2 uv) { return 0.16 + 0.08 * $brush(uv); }\nfloat metal_$name(vec2 uv) { return 0.0; }\n",
-    "longdesc": "emblem lacquer watch",
-    "name": "emblem lacquer watch",
+    "instance": "\nfloat hs_$name(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\nfloat sat_$name(float x) { return clamp(x, 0.0, 1.0); }\n\nfloat height_$name(vec2 uv) { return 0.5 + 0.18 * smoothstep(0.6, 0.85, $vein(uv)) + 0.05 * ($cloud(uv) - 0.5); }\nvec3 albedo_$name(vec2 uv) {\n\tvec3 deep = vec3(0.03, 0.2, 0.04), bright = vec3(0.16, 0.5, 0.09), yellow = vec3(0.36, 0.6, 0.12);\n\tvec3 c = mix(deep, bright, 0.3 + 0.6 * $cloud(uv));\n\tc = mix(c, yellow, 0.35 * smoothstep(0.6, 0.85, $vein(uv)));\n\treturn c * (0.92 + 0.12 * $speck(uv));\n}\nfloat rough_$name(vec2 uv) { return 0.42 + 0.12 * $cloud(uv); }\nfloat metal_$name(vec2 uv) { return 0.0; }\n",
+    "longdesc": "emblem fern",
+    "name": "emblem fern",
     "outputs": [
      {
       "f": "sat_$name(height_$name($uv))",
@@ -195,7 +195,7 @@
      }
     ],
     "parameters": [],
-    "shortdesc": "emblem lacquer watch"
+    "shortdesc": "emblem fern"
    },
    "type": "shader"
   },
@@ -207,7 +207,7 @@
    },
    "parameters": {
     "param0": 11,
-    "param1": 0.0288,
+    "param1": 0.024,
     "param2": 0,
     "param4": 1
    },
@@ -222,7 +222,7 @@
    "parameters": {
     "param0": 11,
     "param1": 4,
-    "param2": 0.44,
+    "param2": 0.66,
     "param3": 1
    },
    "type": "occlusion2"

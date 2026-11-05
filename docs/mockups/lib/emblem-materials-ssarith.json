@@ -29,6 +29,34 @@
    ],
    "file": "../../../assets/textures/materials/emblem_platinum/specular.png"
   },
+  "emblem_enamel_pearl/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/albedo.png"
+  },
+  "emblem_enamel_pearl/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/normal.png"
+  },
+  "emblem_enamel_pearl/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/orm.png"
+  },
+  "emblem_enamel_pearl/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_pearl/specular.png"
+  },
   "emblem_wood_laminate/albedo": {
    "size": [
     512,
@@ -57,61 +85,33 @@
    ],
    "file": "../../../assets/textures/materials/emblem_wood_laminate/specular.png"
   },
-  "emblem_lacquer_watch/albedo": {
+  "emblem_fern/albedo": {
    "size": [
     512,
     512
    ],
-   "file": "../../../assets/textures/materials/emblem_lacquer_watch/albedo.png"
+   "file": "../../../assets/textures/materials/emblem_fern/albedo.png"
   },
-  "emblem_lacquer_watch/normal": {
+  "emblem_fern/normal": {
    "size": [
     512,
     512
    ],
-   "file": "../../../assets/textures/materials/emblem_lacquer_watch/normal.png"
+   "file": "../../../assets/textures/materials/emblem_fern/normal.png"
   },
-  "emblem_lacquer_watch/orm": {
+  "emblem_fern/orm": {
    "size": [
     512,
     512
    ],
-   "file": "../../../assets/textures/materials/emblem_lacquer_watch/orm.png"
+   "file": "../../../assets/textures/materials/emblem_fern/orm.png"
   },
-  "emblem_lacquer_watch/specular": {
+  "emblem_fern/specular": {
    "size": [
     512,
     512
    ],
-   "file": "../../../assets/textures/materials/emblem_lacquer_watch/specular.png"
-  },
-  "emblem_blood_watch/albedo": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_blood_watch/albedo.png"
-  },
-  "emblem_blood_watch/normal": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_blood_watch/normal.png"
-  },
-  "emblem_blood_watch/orm": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_blood_watch/orm.png"
-  },
-  "emblem_blood_watch/specular": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_blood_watch/specular.png"
+   "file": "../../../assets/textures/materials/emblem_fern/specular.png"
   },
   "emblem_enamel_forest/albedo": {
    "size": [

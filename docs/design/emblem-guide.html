@@ -909,7 +909,11 @@ const SD = (() => {
     // side only), and two square-cut vanes just ahead of the string.
     P.shaft = [[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]];
     P.head = HEADS[idx](tip, y);
-    P.vanes = [[[sx + 2.5, y - 0.8], [sx + 3.5, y - 2.4], [sx + 7, y - 2.4], [sx + 6, y - 0.8]], [[sx + 2.5, y + 0.8], [sx + 3.5, y + 2.4], [sx + 7, y + 2.4], [sx + 6, y + 0.8]]];
+    // The fletching (owner, 2026-11-05: "Feathers red with orange tip"): two feathers swept back from the nock, and the
+    // outer strip of each (its tip, orange on the 3D badge) as its own polygon over it.
+    const vane = (s) => [[sx + 2.2, y + s * 0.8], [sx + 3, y + s * 3], [sx + 6.5, y + s * 3], [sx + 8.5, y + s * 0.8]];
+    const vaneTip = (s) => [[sx + 2.67, y + s * 2.1], [sx + 3, y + s * 3], [sx + 6.5, y + s * 3], [sx + 7.32, y + s * 2.1]];
+    P.vanes = [vane(-1), vane(1)]; P.vaneTips = [vaneTip(-1), vaneTip(1)];
     return { y, h, sx, tip, d, P, limb: polyD(P.limb), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.map(polyD).join('') };
   });
   return { bows, PEN, fr: polyFrame(PEN, 2.5, 5) };
@@ -1176,7 +1180,7 @@ window.EMBLEM_PARTS_KRAI = () => ({ key: 'KC+', name: 'The Fang Torc', grid: 100
 // and inner edges (the badge rounds them with its bevels), and for each bow, smallest first, its limb, string, shaft, the
 // two vanes and the head. The youngest's is bows[0].
 window.EMBLEM_PARTS_SSARITH = () => ({ key: 'SD', name: 'The Bow Rites', grid: 100, frame: [SD.PEN, SD.fr.inner], field: [SD.fr.inner],
-  bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, head: q.P.head })) });
+  bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, vaneTips: q.P.vaneTips, head: q.P.head })) });
 // A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
 window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
 window.EMBLEM_CHECK = async () => {

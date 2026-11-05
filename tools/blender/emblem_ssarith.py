@@ -1,29 +1,35 @@
 """Fleet Command: the Ssarith Hunt's emblem SD, the Bow Rites, rendered as a 3D badge (openspec/changes/faction-emblems;
 the Emblem Design Guide, docs/design/emblem-guide.html). The owner, 2026-11-04 and 05: "3 bow and arrows overlapping
-pointed to the right", "more colors and shading on the bow and green arrows on the 3d rendering", "shade the bow parts
-with like wood and the arrows green with blood", "Background should be like a beige, dull brown and dry green forest".
+pointed to the right", "shade the bow parts with like wood", "Background should be like a beige, dull brown and dry green
+forest", "make each arrowhead unique", then, with a photograph of ferns in deep shadow: "3d model Fern leaves. Arrow made
+of wood. Arrow head made of steal. Feathera red with orange tip. Arrows dripping with bright glowing green blood".
 
 The shapes are the guide's own: tools/emblems/export_parts.mjs ssarith writes assets/emblems/ssarith/sd.parts.json (every
-outline as polygons, 1 grid unit = 1 mm). The shared rig (lights, studio, shadow catcher, Material Maker map loader and
-the polygon slab) is tools/blender/emblem_render.py; this file owns the parts, their heights and their materials.
+outline as polygons, 1 grid unit = 1 mm). The ferns and the blood are tools/emblems/ssarith_ferns.py's
+(assets/emblems/ssarith/sd.ferns.json: the fronds as finished triangles, the blood as polygons). The shared rig (lights,
+studio, shadow catcher, Material Maker map loader and the polygon slab) is tools/blender/emblem_render.py; this file owns
+the parts, their heights and their materials.
 
-Materials, each a Material Maker graph (tools/materials/build_ptex.py):
-    laminated wood  the bows' limbs (emblem_wood_laminate), and darkened, their strings
-    Watch green     the arrows' shafts and vanes (emblem_lacquer_watch)
-    blood           the arrowheads: the green lacquer under dried blood (emblem_blood_watch)
-    dry forest      the field, the hunting ground (emblem_enamel_forest), under a light clear coat
+Materials, each a Material Maker graph (tools/materials/build_ptex.py) but the blood:
+    laminated wood  the bows' limbs and the arrows' shafts (emblem_wood_laminate), and darkened, the strings
+    steel           the arrowheads: the platinum graph, cooled
+    feathers        red with an orange tip: the pearl enamel graph tinted, matte
+    fern            the fronds (emblem_fern), each leaflet shaded by its light from the generator
+    dry forest      the field (emblem_enamel_forest), under a light clear coat
     pale metal      the pennon's rim: the platinum graph tinted bone
+    blood           bright glowing green: an emission under a wet clear coat (light, so no graph)
 
-Heights (mm). The bows overlap like a hand of cards, so each stands higher than the one behind it: the largest (back)
-at level 0, the middle at 1, the smallest (front) at 2, every top raised 0.9 mm a level. No two faces share a plane:
-    field   0.3 to 1.0
-    string  0.6 to 1.3   + 0.9 a level
-    vanes   0.6 to 1.5   + 0.9 a level
-    shaft   0.6 to 1.7   + 0.9 a level
-    head    0.6 to 1.9   + 0.9 a level
-    limb    0.6 to 2.3   + 0.9 a level (the front bow's limb tops out at 4.1)
-    frame   0.0 to 4.4   the pennon's rim, highest
-    leaves  1.4, 2.1 and 2.8, holographic: light, not solid (tools/emblems/ssarith_leaves.py lays them out)
+Heights (mm). The ferns arch off the field up to 2.7 mm; every part of a bow stands above them, and each bow higher than
+the one behind it: the largest (back) at level 0, the middle at 1, the smallest (front) at 2, every top raised 0.9 mm a
+level. No two faces share a plane:
+    field      0.3 to 1.0
+    ferns      1.08 to 2.7
+    string     0.6 to 2.9   + 0.9 a level
+    feathers   0.6 to 3.1   + 0.9 a level (their orange tips to 3.18)
+    shaft      0.6 to 3.3   + 0.9 a level
+    head       0.6 to 3.5   + 0.9 a level, its blood pooled 0.15 over it and dripping 0.2 over it
+    limb       0.6 to 3.9   + 0.9 a level (the front bow's limb tops out at 5.7)
+    frame      0.0 to 6.2   the pennon's rim, highest
 
     /opt/blender/blender -b -P tools/blender/emblem_ssarith.py -- [--out DIR] [--samples N] [--px N] [--steps]
 
@@ -31,7 +37,6 @@ Writes <out>/ssarith/sd-face.png (face on, orthographic) and sd-angle.png (three
 clay blockout sd-clay.png too.
 """
 import json
-import math
 import os
 import sys
 
@@ -41,97 +46,77 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import emblem_render as R  # noqa: E402
 
 PARTS = os.path.join(R.ROOT, "assets", "emblems", "ssarith", "sd.parts.json")
-LEAVES = os.path.join(R.ROOT, "assets", "emblems", "ssarith", "sd.leaves.json")
-LEAF_TINTS = ("#8ca847", "#668f38", "#d9c766")   # dry green, olive, straw: the holographic canopy's light
+FERNS = os.path.join(R.ROOT, "assets", "emblems", "ssarith", "sd.ferns.json")
 BONE = "#d8cfb4"    # the pennon's rim: the Tally Keepers' bone, in metal
 CORD = "#5a4a38"    # the strings: the laminate darkened, a waxed cord
+STEEL = "#b9c2cc"   # the arrowheads
+FEATHER, FEATHER_TIP = "#c4161f", "#f07a1a"
+BLOOD = "#5dff3a"   # bright glowing green
 LEVEL_MM = 0.9
 # (top mm at level 0, bevel mm) of each part of a bow.
-HEIGHTS = {"string": (1.3, 0.15), "vanes": (1.5, 0.2), "shaft": (1.7, 0.3), "head": (1.9, 0.35), "limb": (2.3, 0.5)}
+HEIGHTS = {"string": (2.9, 0.15), "vanes": (3.1, 0.2), "vaneTips": (3.18, 0.15), "shaft": (3.3, 0.3), "head": (3.5, 0.35),
+           "limb": (3.9, 0.5)}
 
 
-def build(parts):
+def blood_material():
+    """Bright glowing green blood: a wet, glossy body that gives off its own light."""
+    m = R.principled("blood", BLOOD, rough=0.15, coat=1.0, emission=BLOOD, strength=4.0)
+    return m
+
+
+def build(parts, spill):
     rim = R.mm_material("emblem_platinum", tint=BONE)
     forest = R.mm_material("emblem_enamel_forest", coat=0.4)
     wood = R.mm_material("emblem_wood_laminate", coat=0.15)
     cord = R.mm_material("emblem_wood_laminate", tint=CORD)
-    green = R.mm_material("emblem_lacquer_watch", coat=0.5)
-    blood = R.mm_material("emblem_blood_watch", coat=0.3)
-    mats = {"string": cord, "vanes": green, "shaft": green, "head": blood, "limb": wood}
-    R.poly_slab("frame", parts["frame"], 0.0, 4.4, 0.8, rim)
+    steel = R.mm_material("emblem_platinum", tint=STEEL)
+    feather = R.mm_material("emblem_enamel_pearl", tint=FEATHER)
+    feather_tip = R.mm_material("emblem_enamel_pearl", tint=FEATHER_TIP)
+    blood = blood_material()
+    mats = {"string": cord, "vanes": feather, "vaneTips": feather_tip, "shaft": wood, "head": steel, "limb": wood}
+    R.poly_slab("frame", parts["frame"], 0.0, 6.2, 0.8, rim)
     R.poly_slab("field", parts["field"], 0.3, 1.0, 0.15, forest)
     n = len(parts["bows"])
     for i, bow in enumerate(parts["bows"]):
         level = n - 1 - i  # bows[0] is the smallest, in front
         for part, (top, bevel) in HEIGHTS.items():
-            rings = bow[part] if part == "vanes" else [bow[part]]
+            rings = bow[part] if part in ("vanes", "vaneTips") else [bow[part]]
             for k, ring in enumerate(rings):
                 R.poly_slab(f"bow{i}.{part}.{k}", [ring], 0.6, top + LEVEL_MM * level, bevel, mats[part])
+        head_top = HEIGHTS["head"][0] + LEVEL_MM * level
+        for k, ring in enumerate(spill[i]["rings"]):
+            pool = k < 3  # the first three are the pools on the steel; the rest drip down the face
+            R.poly_slab(f"bow{i}.blood.{k}", [ring], 0.6, head_top + (0.15 if pool else 0.2), 0.2 if pool else 0.15, blood)
 
 
-def hologram(name, colour):
-    """Light, not a solid: an emission in the leaf's colour, brighter toward its edges (the `edge` attribute, 0 on the
-    midrib and 1 at the rim), seen through where it is faint, so the forest shows behind it."""
-    m = bpy.data.materials.new(name)
-    m.use_nodes = True
-    m.blend_method = "BLEND" if hasattr(m, "blend_method") else None
+def ferns(data):
+    """The fronds, as the generator built them: one mesh of fern material, each vertex's light (`shade`) multiplying the
+    leaf's colour so whole fronds sit in shadow and leaflets brighten toward their tips, as in the owner's photograph."""
+    v, f, sh = data["v"], data["f"], data["s"]
+    verts = [R.xy((v[i] / 100, v[i + 1] / 100)) + (v[i + 2] / 100 * R.MM,) for i in range(0, len(v), 3)]
+    faces = [tuple(f[i:i + 3]) for i in range(0, len(f), 3)]
+    me = bpy.data.meshes.new("ferns")
+    me.from_pydata(verts, [], faces)
+    at = me.attributes.new("shade", "FLOAT", "POINT")
+    at.data.foreach_set("value", [x / 100 for x in sh])
+    for poly in me.polygons:
+        poly.use_smooth = True
+    m = R.mm_material("emblem_fern")
     nt = m.node_tree
-    for n in list(nt.nodes):
-        nt.nodes.remove(n)
-    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    p = nt.nodes["Principled BSDF"]
+    link = p.inputs["Base Color"].links[0]
     attr = nt.nodes.new("ShaderNodeAttribute")
-    attr.attribute_name = "edge"
-    ramp = nt.nodes.new("ShaderNodeMapRange")
-    ramp.inputs["To Min"].default_value = 1.2
-    ramp.inputs["To Max"].default_value = 4.0
-    nt.links.new(attr.outputs["Fac"], ramp.inputs["Value"])
-    emi = nt.nodes.new("ShaderNodeEmission")
-    emi.inputs["Color"].default_value = R.hex_rgb(colour)
-    nt.links.new(ramp.outputs["Result"], emi.inputs["Strength"])
-    clear = nt.nodes.new("ShaderNodeBsdfTransparent")
-    add = nt.nodes.new("ShaderNodeAddShader")
-    nt.links.new(clear.outputs[0], add.inputs[0])
-    nt.links.new(emi.outputs[0], add.inputs[1])
-    mix = nt.nodes.new("ShaderNodeMixShader")
-    mix.inputs["Fac"].default_value = 0.45
-    nt.links.new(clear.outputs[0], mix.inputs[1])
-    nt.links.new(add.outputs[0], mix.inputs[2])
-    nt.links.new(mix.outputs[0], out.inputs["Surface"])
-    return m
-
-
-def leaves(layout):
-    """The holographic canopy: each leaf a strip from stalk to tip (midrib and both edges), curled by its bend and cupped
-    across, as the three.js badge builds it. One mesh per tint."""
-    half = layout["outline"][:13]
-    mats = [hologram(f"leaf.{i}", c) for i, c in enumerate(LEAF_TINTS)]
-    for tint in range(len(LEAF_TINTS)):
-        verts, faces, edge = [], [], []
-        for x, y, z, length, ang, bend, t in layout["leaves"]:
-            if t != tint:
-                continue
-            a = math.radians(ang)
-            ca, sa, base = math.cos(a), math.sin(a), len(verts)
-            for u, w in half:
-                lift = bend * length * u * u
-                for side in (-1, 0, 1):
-                    lx, ly = u * length, side * w * length
-                    cup = 0.15 * length * w * w * (1 if side else 0)
-                    gx, gy = x + lx * ca - ly * sa, y - (lx * sa + ly * ca)   # the page's rotation, in mm (y up), back to the grid (y down)
-                    px, py = R.xy((gx, gy))
-                    verts.append((px, py, (z + lift + cup) * R.MM))
-                    edge.append(abs(side))
-            for i in range(len(half) - 1):
-                for j in range(2):
-                    p0 = base + i * 3 + j
-                    faces.append((p0, p0 + 3, p0 + 4, p0 + 1))
-        me = bpy.data.meshes.new(f"leaves.{tint}")
-        me.from_pydata(verts, [], faces)
-        at = me.attributes.new("edge", "FLOAT", "POINT")
-        at.data.foreach_set("value", edge)
-        ob = bpy.data.objects.new(f"leaves.{tint}", me)
-        ob.data.materials.append(mats[tint])
-        bpy.context.scene.collection.objects.link(ob)
+    attr.attribute_name = "shade"
+    mul = nt.nodes.new("ShaderNodeMix")
+    mul.data_type = "RGBA"
+    mul.blend_type = "MULTIPLY"
+    mul.inputs["Factor"].default_value = 1.0
+    nt.links.new(link.from_socket, mul.inputs["A"])
+    nt.links.new(attr.outputs["Fac"], mul.inputs["B"])
+    nt.links.new(mul.outputs["Result"], p.inputs["Base Color"])
+    ob = bpy.data.objects.new("ferns", me)
+    ob.data.materials.append(m)
+    bpy.context.scene.collection.objects.link(ob)
 
 
 def main():
@@ -140,8 +125,9 @@ def main():
     out = os.path.join(a["out"], "ssarith")
     R.reset()
     R.setup(px=a["px"], samples=a["samples"])
-    build(parts)
-    leaves(json.load(open(LEAVES)))
+    grown = json.load(open(FERNS))
+    build(parts, grown["blood"])
+    ferns(grown["ferns"])
     if a["steps"]:
         restore = R.with_material(R.clay())
         R.render(os.path.join(out, "sd-clay.png"))

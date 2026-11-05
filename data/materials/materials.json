@@ -50,20 +50,12 @@
       "use": "faction emblems: the Ssarith Hunt badge's bows (the Bow Rites), laminated wood"
     },
     {
-      "name": "emblem_lacquer_watch",
+      "name": "emblem_fern",
       "size_px": 512,
       "maps": ["albedo", "normal", "orm", "specular"],
       "tile_m": 0.05,
       "status": "starter",
-      "use": "faction emblems: the Ssarith Hunt badge's arrows, Watch green lacquer"
-    },
-    {
-      "name": "emblem_blood_watch",
-      "size_px": 512,
-      "maps": ["albedo", "normal", "orm", "specular"],
-      "tile_m": 0.05,
-      "status": "starter",
-      "use": "faction emblems: the Ssarith Hunt badge's arrowheads, green lacquer under dried blood"
+      "use": "faction emblems: the Ssarith Hunt badge's fern fronds over its field"
     },
     {
       "name": "emblem_enamel_forest",
