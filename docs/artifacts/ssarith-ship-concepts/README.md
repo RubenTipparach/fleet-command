@@ -102,3 +102,5 @@
   carry their v16 maps, so a faint glow of the old bay openings shows round the carrier's bays until the rebake lands.
 - 2026-11-05, cloud session: version 18, version id `1793916208-29de`. Version 17 with all five ships rebaked (the old
   bay openings' glow gone). The page's subtitle still read v17 in this publish.
+- 2026-11-05, cloud session: version 19, version id `1793917715-2742`. The carrier rebaked with its bays' amber lamps
+  along the lintel (the edge toward the ship's up), not the sill. The page's subtitle read v18 in this publish.
