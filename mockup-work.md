@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-04, v8: plating modelled in Blender and rendered into textures, fine metal over it; v7: working detail on every direction; v6: plating true on the angled faces; v5: faired hulls, smooth from above and flat along the sides; v4: A Old Lodge and B Trackers with smooth hull edges, C Field Hull with a secondary hull in place of nacelles, three layouts; survey H2, H3). **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v9: a blockout board of twelve massings; versions 1 to 8 deleted, owner: "Not just 3 lame ones that look like coffins") | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -629,3 +629,8 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
 - Version 8 (owner, 2026-11-04: "pack in those details by rendering a high poly model into textures", "Then applying metal
   detail texture on top"): three plating tiles and a fine metal tile modelled and rendered in Blender
   (`tools/blender/build_hull_tiles_ssarith.py`, `assets/textures/ssarith/`) and laid on the hulls.
+- Version 9 (owner, 2026-11-05: "Bro why are you stuck on this. Delete this design. It sucks, look at the inspiration.
+  Block out more stuff. We need a variety of designs. Not just 3 lame ones that look like coffins. Look at my examples -
+  gorn from Starfleet command"): versions 1 to 8 deleted (the plans, the baked tiles and their generator, the old shots;
+  git keeps them). A blockout board of twelve frigate-sized massings in grey clay; survey H4 asks which go on. The
+  owner's examples did not reach the session and are asked for again.

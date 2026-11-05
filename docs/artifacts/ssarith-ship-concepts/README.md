@@ -1,9 +1,8 @@
 # Ssarith Hunt Ships (mockup 12)
 
 - Link: https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris
-- Source: `docs/mockups/ssarith-ship-concepts.html` (one copy, not duplicated here); the Concord line yardstick, the loft
-  geometry, the shared hull fitter and the frigate's plan are inlined from `docs/mockups/lib/concord-line.js`,
-  `docs/mockups/lib/ship-plan.js` and `data/ships/ssarith/frigate_plan.json` by `tools/mockups/inline_data.py`.
+- Source: `docs/mockups/ssarith-ship-concepts.html` (one copy, not duplicated here); the Concord line yardstick and the loft
+  geometry are inlined from `docs/mockups/lib/concord-line.js` by `tools/mockups/inline_data.py`.
 - OpenSpec change: `openspec/changes/ssarith-ship-concepts/`.
 - Shots: `docs/screenshots/mockups/ssarith-ship-concepts/` (`tools/mockups/shoot.mjs`), at desktop, phone landscape and
   portrait.
@@ -50,3 +49,7 @@
   modelled in Blender and rendered face-on into albedo, normal and ORM maps (`tools/blender/build_hull_tiles_ssarith.py`,
   `assets/textures/ssarith/`, inlined from its manifest as WebP, 646 KB), with a 2 m fine metal tile over every face; a
   Close view. Contact sheet `docs/screenshots/mockups/ssarith-ship-concepts/hull-tiles-contact-sheet.png`.
+- 2026-11-05, cloud session (owner: "Delete this design. It sucks, look at the inspiration. Block out more stuff. We need a
+  variety of designs. Not just 3 lame ones that look like coffins"): version 9, the page replaced by a blockout board of
+  twelve frigate-sized massings in grey clay. Versions 1 to 8 deleted with their plans, tiles, generator and shots (git
+  keeps them).
