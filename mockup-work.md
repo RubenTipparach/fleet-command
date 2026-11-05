@@ -35,7 +35,7 @@ account and every link here is updated.
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
-| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v1) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
+| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -687,4 +687,12 @@ main holds 16 to 18.
   hanging at 1.4, 2.1 and 2.8 mm over the enamel forest, each a curled, cupped leaf mesh drawn as light: glowing at its
   edges and midrib, its colour shifting with the viewing angle, with faint scanlines (three.js), and an edge-weighted
   emission seen through (Blender).
+- **v2, ferns, steel and glowing blood** (owner, 2026-11-05, with a photograph of ferns in deep shadow: "3d model Fern
+  leaves. Arrow made of wood. Arrow head made of steal. Feathera red with orange tip. Arrows dripping with bright glowing
+  green blood", then "Fern leaves are the holographic background jungle"): `tools/emblems/ssarith_ferns.py` grows 60 fern
+  fronds (a stem with lobed leaflets, arched and curling) and spills the blood (pools on each head, drips down the face) into
+  `assets/emblems/ssarith/sd.ferns.json`, one layout for both renders. The ferns are a hologram (light added over the field,
+  glowing along every edge) over the forest enamel darkened; the shafts are the laminated wood, the heads steel, the feathers
+  red with orange tips (their own polygons in the guide), the blood an emission. Every part of a bow now stands over the
+  ferns (tops raised 1.6 mm; the rim to 6.2 mm). The holographic leaves and the green lacquer, blood and fern graphs are gone.
 

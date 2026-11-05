@@ -6,7 +6,7 @@
   shape (the learner's leaf, the hunter's barb, the elder's tally) under dried blood; a dry forest of beige, dull brown and
   dry green in the field with its canopy hanging over it as holographic leaves at three depths; a bone-pale metal rim; the
   Blender renders beside it.
-- Made by: `docs/mockups/ssarith-emblem-3d.html` on the shared badge library `docs/mockups/lib/emblem-badge.js`, with the
+- Made by (since v2: ferns and blood from `tools/emblems/ssarith_ferns.py`, see Publishes): `docs/mockups/ssarith-emblem-3d.html` on the shared badge library `docs/mockups/lib/emblem-badge.js`, with the
   parts from `assets/emblems/ssarith/sd.parts.json` (`tools/emblems/export_parts.mjs ssarith`), the leaves from
   `assets/emblems/ssarith/sd.leaves.json` (`tools/emblems/ssarith_leaves.py`), the Material Maker maps listed in
   `docs/mockups/lib/emblem-materials-ssarith.json` (new graphs `emblem_wood_laminate`, `emblem_lacquer_watch`,
@@ -19,3 +19,9 @@
 - 2026-11-05, version 1 (`1793839261-17d1`): first publish (owner: "shade the bow parts with like wood and the arrows green
   with blood", "Background should be like a beige, dull brown and dry green forest", "make each arrowhead unique", "with
   like holographic leaves", "Should be 3d leaves shapes").
+- 2026-11-05, version 2 (`1793841959-133b`): to the owner's photograph of ferns ("3d model Fern leaves. Arrow made of wood.
+  Arrow head made of steal. Feathera red with orange tip. Arrows dripping with bright glowing green blood", "Fern leaves are
+  the holographic background jungle"): 60 modelled fern fronds drawn as a hologram over the darkened forest
+  (`tools/emblems/ssarith_ferns.py`, `assets/emblems/ssarith/sd.ferns.json`, replacing the leaves), wooden shafts, steel
+  heads, red feathers with orange tips, and glowing green blood pooled on each head and dripping down the face. The green
+  lacquer, blood and fern graphs are gone; the full Blender render beside it.
