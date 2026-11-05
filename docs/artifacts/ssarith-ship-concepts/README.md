@@ -52,4 +52,4 @@
 - 2026-11-05, cloud session (owner: "Delete this design. It sucks, look at the inspiration. Block out more stuff. We need a
   variety of designs. Not just 3 lame ones that look like coffins"): version 9, the page replaced by a blockout board of
   twelve frigate-sized massings in grey clay. Versions 1 to 8 deleted with their plans, tiles, generator and shots (git
-  keeps them).
+  keeps them). Published, version id `1793837617-6c69`; survey version 4 (H4), version id `1793837618-10b4`.
