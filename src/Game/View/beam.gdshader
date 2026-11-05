@@ -5,7 +5,8 @@
 // simulation's Battle.Ends, so a beam's ends stay on their ships (owner, 2026-11-04). No weapon is drawn white (owner:
 // "please avoid the color white for weapons"): a hot core is the weapon's own colour at full strength (hot_of).
 // Modes: 0 lance (a core in the weapon's colour, flowing light, pulses racing to the target), 1 bolt (a disruptor bolt:
-// narrow and dim behind, a hot head), 2 tracer (point defence cannon rounds racing from the mount).
+// narrow and dim behind, a hot head), 2 tracer (point defence cannon rounds racing from the mount), 3 chorus (the chorus
+// lance: a core in Sky with flowing light and Lilac strands winding round it, two plus one for each ship that joined).
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 
@@ -16,6 +17,8 @@ uniform float intensity = 0.0;
 uniform vec4 color : source_color = vec4(0.44, 0.77, 1.0, 1.0);
 uniform int mode = 0;
 uniform float time_s = 0.0;
+uniform vec4 color2 : source_color = vec4(0.72, 0.65, 0.95, 1.0);
+uniform float strands = 2.0;
 
 varying float v_x;
 varying float v_s;
@@ -59,6 +62,17 @@ void fragment() {
 		float core = exp(-xx * xx * 18.0) * k * k * k, glow = exp(-abs(xx) * 3.0) * k * k;
 		float flick = 0.8 + 0.4 * n3(vec3(s * 12.0 - time_s * 40.0, x * 2.0, 4.0));
 		c = color.rgb * glow * 1.6 * flick + hot_of(color.rgb) * core * 2.6;
+	} else if (mode == 3) {
+		float core = exp(-x * x * 90.0), glow = exp(-abs(x) * 4.2) * 0.55 + exp(-abs(x) * 1.4) * 0.12;
+		float flow = fbm(vec3(s * 1.8 - time_s * 9.0, x * 3.0, time_s * 0.7));
+		c = color.rgb * glow * (1.3 + 1.4 * flow) + hot_of(color.rgb) * core * (1.5 + flow);
+		float st = 0.0;
+		for (int i = 0; i < 5; i++) {
+			if (float(i) >= strands) break;
+			float ph = float(i) * 6.2831853 / strands, w = s * 3.0 - time_s * 11.0 + ph;
+			st += exp(-pow((x - 0.42 * sin(w)) / 0.07, 2.0)) * (0.55 + 0.45 * cos(w));
+		}
+		c += color2.rgb * st * 2.4 * (0.7 + 0.6 * flow);
 	} else {
 		float per = width * 9.0, u = fract(s / per - time_s * 6.0);
 		float dash = smoothstep(0.0, 0.06, u) * (1.0 - smoothstep(0.22, 0.32, u));

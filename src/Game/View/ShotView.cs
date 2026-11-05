@@ -5,7 +5,9 @@
 // source and destination of these beams must follow the ship source and ship destination"); a disruptor bolt is a hot
 // streak on that live line; a pulse torpedo flies under its six-armed star and drops a trail of beads; a missile is a
 // small body with a ball of drive light behind it and a long tail in its grade's colour (a seeker flies free and leaves its
-// trail in space); flares burn where they were thrown and a decoy shuttle flies off under its pulsing beacon.
+// trail in space); flares burn where they were thrown and a decoy shuttle flies off under its pulsing beacon. The special
+// weapons: the chorus lance with its strands and the lances that join it, the quell (a star, a ball and beads in deep
+// blue), the forge slug (a hot streak on the live line) and a blood charge's bow and drive.
 // Colours are each weapon's own (data/battle/weapons.json), never white. View only: the simulation never reads it.
 // Sizes are scene units (BattleView.MPerU: 1 u is 100 m), the mockup's SHOT_FX.
 using System;
@@ -19,7 +21,8 @@ public sealed partial class ShotView : Node3D
 {
     /// <summary>The looks' sizes, scene units and seconds (the battle console mockup's SHOT_FX, v77).</summary>
     public const float BeamWU = 0.34f, PdWU = 0.2f, BoltWU = 0.45f, BoltLenU = 1.0f, TorpedoU = 2.2f, MissileU = 0.7f, MissileLenU = 0.22f,
-        TrailWU = 0.3f, TrailS = 0.8f, BeadU = 1.4f, BeadEveryS = 0.012f, BeadLifeS = 0.4f, MissOffsetU = 0.6f, FlareU = 0.6f, DecoyU = 0.5f, DecoyLenU = 0.14f;
+        TrailWU = 0.3f, TrailS = 0.8f, BeadU = 1.4f, BeadEveryS = 0.012f, BeadLifeS = 0.4f, MissOffsetU = 0.6f, FlareU = 0.6f, DecoyU = 0.5f, DecoyLenU = 0.14f,
+        ChorusWU = 0.55f, JoinWU = 0.2f, SlugWU = 0.6f, SlugLenU = 1.3f, QuellU = 1.8f, ChargeBowU = 1.3f, ChargeDriveU = 1.6f;
     private const float Y = 0.05f;
     private const int BeadN = 48, TrailN = 40;
 
@@ -122,22 +125,46 @@ public sealed partial class ShotView : Node3D
                 if (!sh.Hit && !sh.Intercept && sh.To != null) { Vector3 d = (e - a).Normalized(); e += new Vector3(-d.Z, 0, d.X) * MissOffsetU; }
                 Beam(a, e, sh.Intercept ? PdWU : BeamWU, sh.Intercept ? 2 : 0, col, Math.Clamp((float)sh.Life * 6, 0, 1), now);
             }
-            else if (sh.Kind == "bolt")
+            else if (sh.Kind == "chorus")
+            {
+                // the chorus lance: its beam from the deflector to the target, and each joining lance into it, a third of the way
+                var (sx, sz, tx, tz) = b.Ends(sh);
+                Vector3 a = At(sx, sz), e = At(tx, tz), focus = a.Lerp(e, 0.35f);
+                int n = sh.Joined?.Count ?? 0;
+                float k = Math.Clamp((float)sh.Life / 0.35f, 0, 1);
+                Beam(a, e, ChorusWU * (1 + 0.22f * n), 3, col, k, now, new Color(b.Data.Specials.Chorus.StrandColor), 2 + n);
+                foreach (var (id, mi) in sh.Joined ?? new())
+                    if (b.ShipById(id) is { Alive: true } o && mi < o.Mounts.Count) { var (jx, jz) = Battle.MountWorld(o, o.Mounts[mi]); Beam(At(jx, jz), focus, JoinWU, 0, new Color(o.Mounts[mi].Weapon.Color), k, now); }
+            }
+            else if (sh.Kind is "bolt" or "slug")
             {
                 var (sx, sz, tx, tz) = b.Ends(sh);
                 Vector3 s0 = At(sx, sz), t0 = At(tx, tz), head = At(sh.X, sh.Z);
-                float len = Math.Max(1e-4f, s0.DistanceTo(t0)), k = Math.Min(1, BoltLenU / len);
-                Beam(head - (t0 - s0) * k, head, BoltWU, 1, col, 1.4f, now);
+                bool slug = sh.Kind == "slug";
+                float len = Math.Max(1e-4f, s0.DistanceTo(t0)), k = Math.Min(1, (slug ? SlugLenU : BoltLenU) / len);
+                Beam(head - (t0 - s0) * k, head, slug ? SlugWU : BoltWU, 1, col, slug ? 1.8f : 1.4f, now);
             }
             else
             {
-                bool torpedo = sh.Kind == "torpedo";
+                // torpedoes and the quell (half torpedo, half missile) fly under the six-armed star and drop beads
+                bool torpedo = sh.Kind is "torpedo" or "quell";
                 Vector3 p = At(sh.X, sh.Z);
-                Flare(p, torpedo ? TorpedoU : MissileU, torpedo ? 1 : 2, col, torpedo ? 1.1f : 1.5f, now);
+                Flare(p, sh.Kind == "quell" ? QuellU : torpedo ? TorpedoU : MissileU, torpedo ? 1 : 2, col, torpedo ? 1.1f : 1.5f, now);
+                if (sh.Kind == "quell") Flare(p, QuellU * 0.45f, 2, col, 0.9f, now);   // and the missile's ball of drive light
                 if (!_trails.TryGetValue(sh, out Trail? tr)) _trails[sh] = tr = NewTrail(!torpedo, col);
                 Push(tr, p, now);
                 live.Add(sh);
             }
+        }
+        // a blood charge: the bayonet glows blood red at the bow and the drive burns forge orange astern
+        foreach (Ship s in b.Ships)
+        {
+            if (!s.Alive || s.SurgeS <= 0) continue;
+            var f = Geometry.Forward(s.H);
+            double half = s.Class.LengthM / 2;
+            float k = (float)Math.Clamp(s.SurgeS / b.Data.Specials.Charge.SurgeS, 0, 1);
+            Flare(At(s.X + f.X * half, s.Z + f.Z * half), ChargeBowU, 0, new Color(b.Data.Specials.Charge.Color), 1.4f + 0.6f * k, now);
+            Flare(At(s.X - f.X * half, s.Z - f.Z * half), ChargeDriveU, 2, new Color("#ff8a2a"), 1.2f + 0.8f * k, now);
         }
         // countermeasures: burning flares, and a decoy shuttle under its pulsing beacon (Battle.Lures)
         foreach (Lure l in b.Lures)
@@ -170,9 +197,11 @@ public sealed partial class ShotView : Node3D
         foreach (Shot sh in gone) _trails.Remove(sh);
     }
 
-    private void Beam(Vector3 a, Vector3 b, float width, int mode, Color col, float intensity, float now)
+    private void Beam(Vector3 a, Vector3 b, float width, int mode, Color col, float intensity, float now, Color? col2 = null, int strands = 2)
     {
         var m = (ShaderMaterial)Take("beam").MaterialOverride;
+        if (col2 is { } c2) m.SetShaderParameter("color2", c2);
+        m.SetShaderParameter("strands", (float)strands);
         m.SetShaderParameter("point_a", a); m.SetShaderParameter("point_b", b); m.SetShaderParameter("width", width);
         m.SetShaderParameter("mode", mode); m.SetShaderParameter("color", col); m.SetShaderParameter("intensity", intensity);
         m.SetShaderParameter("time_s", now);

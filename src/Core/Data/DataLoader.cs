@@ -15,7 +15,7 @@ public static class DataLoader
     public static readonly string[] Files =
     {
         "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json",
-        "battle/missiles.json",
+        "battle/missiles.json", "battle/special_weapons.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -25,11 +25,15 @@ public static class DataLoader
         Tuning tuning = LoadTuning(J("battle/tuning.json"));
         var weapons = LoadWeapons(J("battle/weapons.json"));
         MissileData missiles = LoadMissiles(J("battle/missiles.json"));
+        SpecialWeapons specials = LoadSpecials(J("battle/special_weapons.json"), weapons);
         var classes = LoadClasses(J("battle/classes.json"), weapons, tuning, missiles);
+        foreach (ShipClass c in classes.Values)
+            if (c.Mounts.Any(m => m.Weapon == "chorus") && !specials.Chorus.Fits.Contains(c.Id))
+                throw new DataError($"data/battle/classes.json.{c.Id}: the chorus lance fits only {string.Join(", ", specials.Chorus.Fits)}");
         var factions = LoadFactions(J("battle/factions.json"));
         var scenarios = LoadScenarios(J("battle/scenarios.json"), classes, factions);
         LayoutDef layout = LoadLayout(J("console/layout.json"));
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials);
     }
 
     private static WeaponMode Mode(StrictJson o) => new(Positive(o, "range_km"), Positive(o, "charge_s"), NonNeg(o, "cost_e"), NonNeg(o, "damage"));
@@ -56,6 +60,43 @@ public static class DataLoader
     }
 
     private static readonly string[] Shapes = { "saucer", "wedge", "claw", "station" };
+
+    /// <summary>The special weapons (data/battle/special_weapons.json). The chorus, the quell and the forge are added to
+    /// weapons as mounts (kinds chorus, quell, slug), so classes can carry them; every number is validated.</summary>
+    public static SpecialWeapons LoadSpecials(StrictJson root, Dictionary<string, WeaponDef> weapons)
+    {
+        void Fac(StrictJson o, string want) { if (o.Str("faction") != want) throw new DataError($"{o.Where}.faction: expected {want}"); o.Str("kind"); o.Str("aim"); }
+        StrictJson c = root.Obj("chorus"), q = root.Obj("quell"), f = root.Obj("forge"), h = root.Obj("charge");
+        Fac(c, "concord"); Fac(q, "concord"); Fac(f, "krai"); Fac(h, "krai");
+        // the chorus: a beam whose damage is its burn; its WeaponMode's damage is what one alone does over the burn
+        StrictJson j = c.Obj("join");
+        var chorus = new ChorusDef(Positive(c, "burn_s"), Positive(c, "dmg_per_s"), Positive(j, "range_km"), NonNeg(j, "per_joiner_x"), j.Int("max_joiners"), j.Str("spends"), c.Str("strand_color"), c.StrList("fits"));
+        j.Done();
+        c.Str("fires_from");
+        weapons["chorus"] = new WeaponDef("chorus", c.Str("name"), "chorus", new WeaponMode(Positive(c, "range_km"), Positive(c, "charge_s"), NonNeg(c, "cost_e"), chorus.DmgPerS * chorus.BurnS), null, 0, c.Str("color"));
+        c.Done();
+        q.Str("fits");
+        double shieldLeft = NonNeg(q, "shield_left_x");
+        if (shieldLeft > 1) throw new DataError($"{q.Where}.shield_left_x: at most 1");
+        var quell = new QuellDef(shieldLeft, Positive(q, "stun_s"), Positive(q, "reach_deg"));
+        q.Bool("point_defence_hits", true);
+        weapons["quell"] = new WeaponDef("quell", q.Str("name"), "quell", new WeaponMode(Positive(q, "range_km"), Positive(q, "charge_s"), NonNeg(q, "cost_e"), NonNeg(q, "dmg")), null, Positive(q, "speed_m_s"), q.Str("color"));
+        q.Done();
+        f.Str("fits");
+        StrictJson fb = f.Obj("burn"), fo = f.Obj("overload");
+        var forge = new ForgeDef(NonNeg(f, "pierce_x"), NonNeg(fo, "pierce_x"), NonNeg(fb, "dmg_per_s"), Positive(fb, "s"));
+        fb.Done();
+        WeaponMode over = new(Positive(fo, "range_km"), Positive(fo, "charge_s"), NonNeg(fo, "cost_e"), NonNeg(fo, "dmg"));
+        fo.Done();
+        weapons["forge"] = new WeaponDef("forge", f.Str("name"), "slug", new WeaponMode(Positive(f, "range_km"), Positive(f, "charge_s"), NonNeg(f, "cost_e"), NonNeg(f, "dmg")), over, Positive(f, "speed_m_s"), f.Str("color"));
+        f.Done();
+        h.Str("fits");
+        var charge = new ChargeDef(h.Str("name"), "krai", Positive(h, "surge_s"), Positive(h, "speed_x"), Positive(h, "accel_x"), Positive(h, "turn_x"), Positive(h, "bow_shield_x"),
+            NonNeg(h, "cost_e"), Positive(h, "cooldown_s"), NonNeg(h, "dmg_per_100_m_s"), Positive(h, "mass_ref_m"), NonNeg(h, "pierce_x"), NonNeg(h, "recoil_x"), h.Str("color"));
+        h.Done();
+        root.Done();
+        return new SpecialWeapons(chorus, quell, forge, charge);
+    }
 
     /// <summary>The missile grades and countermeasures (data/battle/missiles.json): grades unique, each fooled-by chance a
     /// fraction, speeds and fuel above 0.</summary>

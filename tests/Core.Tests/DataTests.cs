@@ -11,8 +11,9 @@ public class DataTests
         GameData d = TestData.Data;
         Assert.Equal(6, TestData.Raiders.Ships.Count);
         Assert.Equal("resolute", TestData.Raiders.Ships[0].Id);
-        Assert.Equal(10, d.Classes["ca"].Mounts.Count);   // nine guns and a missile rack (blue grade)
-        Assert.Equal("blue", d.Classes["ca"].Mounts[9].Grade);
+        Assert.Equal(11, d.Classes["ca"].Mounts.Count);   // nine guns, the chorus lance and a missile rack (blue grade)
+        Assert.Equal("chorus", d.Classes["ca"].Mounts[6].Weapon);
+        Assert.Equal("blue", d.Classes["ca"].Mounts[10].Grade);
         Assert.Equal(140 * d.Tuning.DemoToughX, d.Classes["ca"].HullHp);
     }
 

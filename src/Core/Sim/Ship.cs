@@ -26,6 +26,8 @@ public sealed class Mount
     public bool Selected { get; set; }
     /// <summary>Health, 0 (destroyed) to 1.</summary>
     public double Hp { get; set; } = 1;
+    /// <summary>Seconds it stays stunned by a quell torpedo: it neither charges nor fires.</summary>
+    public double StunS { get; set; }
     /// <summary>The mount's id as the console shows it: W and its place in the ship's list.</summary>
     public string Label => $"W{Index + 1}";
 }
@@ -66,6 +68,11 @@ public sealed class Ship
     public double ThinkT;
     /// <summary>Countermeasures: battle time its flares can be thrown again (s), decoy shuttles left, and the decoy it has out.</summary>
     public double FlareReadyT;
+    /// <summary>A forge burn: seconds left, damage a second and where it struck from (m).</summary>
+    public double BurnS, BurnDps, BurnFromX, BurnFromZ, BurnTick;
+    /// <summary>A blood charge: seconds of surge left, its speed, thrust and turn factors (1 when not surging), and the
+    /// battle time it can be ordered again (s).</summary>
+    public double SurgeS, SurgeSpeedX = 1, SurgeAccelX = 1, SurgeTurnX = 1, ChargeReadyT;
     public int DecoysLeft;
     public Lure? Decoy;
 

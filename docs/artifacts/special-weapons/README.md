@@ -23,3 +23,5 @@
   (240 to 480 m/s, 8 to 18 damage); countermeasures: flares, a decoy shuttle, point defence cannon tracers.
 - Version 4 published 2026-11-05 from the cloud session, version id `1793848734-9e85`: the quell as a cross between a
   pulse torpedo and a missile, in deep blue; no dark smoke or dark shards on the range (the black specks after a ram).
+- Version 5 published 2026-11-05 from the cloud session, version id `1793912527-5da1`: the blood charge's card reads its
+  cost from the capacitor and battery together, as the game now spends it.

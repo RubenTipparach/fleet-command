@@ -33,6 +33,10 @@ public sealed class Shot
     public bool Lost;
     /// <summary>The direction it last flew (a unit vector), for a lost missile.</summary>
     public double DX, DZ;
+    /// <summary>Its share that goes straight through a shield (the forge slug's pierce_x).</summary>
+    public double Pierce;
+    /// <summary>The ships and lance mounts that joined a chorus lance.</summary>
+    public List<(string Ship, int Mount)>? Joined;
 }
 
 public sealed record LogLine(double T, string Who, string Text);
@@ -143,6 +147,7 @@ public sealed partial class Battle
         Ship p = Player;
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
         foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
+        ChargeStep(dt);
         PointDefenceStep();
         CountermeasuresStep(dt);
         ShotsStep(dt);
@@ -157,9 +162,10 @@ public sealed partial class Battle
         if (spare >= 0) { s.Battery = Math.Min(c.BatteryE, s.Battery + spare * dt * Tuning.BatteryChargePerSpareES); s.Brown = 1; }
         else { s.Battery = Math.Max(0, s.Battery + spare * dt); s.Brown = s.Battery > 0 ? 1 : Rules.Output(s) / Rules.Used(s); }
         s.Capacitor = Math.Min(c.CapacitorE, s.Capacitor + s.Power["weapons"] * s.Brown * dt * s.Sys["weapons"]);
+        SpecialsStep(s, dt);
         foreach (Mount m in s.Mounts)
         {
-            if (m.State == Arming.Offline || m.Charge >= 1 || m.Hp <= 0) continue;
+            if (m.State == Arming.Offline || m.Charge >= 1 || m.Hp <= 0 || m.StunS > 0) continue;
             WeaponMode w = Rules.Mode(m);
             double need = w.CostE * dt / w.ChargeS;
             if (s.Capacitor >= need) s.Capacitor -= need;
@@ -201,13 +207,13 @@ public sealed partial class Battle
         else if (s.Broke > 0) s.HOrder = s.H;
         else
         {
-            double turn = c.TurnDegS * Geometry.Deg * dt * (0.5 + 0.5 * s.Sys["engines"]) * (s.Erratic ? Tuning.ErraticTurn : 1);
+            double turn = c.TurnDegS * Geometry.Deg * dt * (0.5 + 0.5 * s.Sys["engines"]) * (s.Erratic ? Tuning.ErraticTurn : 1) * s.SurgeTurnX;
             double dh = Geometry.Wrap(s.HOrder - s.H);
             s.H = Geometry.Wrap(s.H + Math.Clamp(dh, -turn, turn));
         }
         if (s.Broke > 0) { s.V = 0; s.VOrder = 0; }
         if (s.Estop || s.EstopT > 0) s.VOrder = 0;
-        double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1);
+        double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1) * s.SurgeAccelX;
         s.V += Math.Clamp(goal - s.V, -a, a);
         if (s.Estop && Math.Abs(s.V) < 1) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
         var f = Geometry.Forward(s.H);
@@ -280,6 +286,7 @@ public sealed partial class Battle
         if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
         else if (s.Stance == Stance.Escort && s.Side == 0 && Player.Alive && s != Player) Steer(s, Rules.DistKm(s, t) < range ? "circle" : "follow", Rules.DistKm(s, t) < range ? t : Player, range);
         else Steer(s, Rules.DistKm(s, t) > range * 1.3 ? "approach" : "circle", t, range);
+        ThinkCharge(s, t);
         if (s.HoldFire) return;
         foreach (Mount m in s.Mounts)
             if (!m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(s, m, t) && Rules.HitChance(s, m, t) >= Tuning.AiFireMinChance) FireMount(s, m, t);
@@ -304,7 +311,8 @@ public sealed partial class Battle
         m.Charge = 0;
         int mi = s.Mounts.IndexOf(m);
         if (!m.Weapon.IsPointDefence) VoidDecoy(s);   // firing main weapons voids its decoy (SFC2, printed page 136)
-        if (!m.Weapon.Flies)
+        if (m.Weapon.Kind == "chorus") _shots.Add(FireChorus(s, m, t, x, z, mi, hit));
+        else if (!m.Weapon.Flies)
         {
             _shots.Add(new Shot { Kind = "beam", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, Life = Tuning.BeamLifeS, Color = m.Weapon.Color, To = t.Id, From = s.Id, Mount = mi, Hit = hit });
             if (hit) Damage(t, s.X, s.Z, s, w.Damage, m.Weapon.Kind);
@@ -312,17 +320,20 @@ public sealed partial class Battle
         else if (m.Weapon.Kind == "missile")
             _shots.Add(LaunchMissile(s, m, t, x, z, mi, hit));
         else
-            _shots.Add(new Shot { Kind = m.Weapon.Kind, X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Mount = mi, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = m.Weapon.Color });
+            _shots.Add(new Shot { Kind = m.Weapon.Kind, X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Mount = mi, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = m.Weapon.Color,
+                Pierce = m.Weapon.Kind == "slug" ? (m.State == Arming.Overload ? Data.Specials.Forge.OverloadPierceX : Data.Specials.Forge.PierceX) : 0 });
         return true;
     }
 
     /// <summary>Damage from a source at (sx, sz): the facing it strikes absorbs what it can, the rest hits the hull and may hurt a subsystem or a mount.</summary>
-    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind)
+    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind, double pierce = 0)
     {
         if (!t.Alive) return;
         int f = Rules.FacingFrom(t, sx, sz);
-        double absorb = t.ShieldsUp ? Math.Min(t.Shields[f], dmg) : 0;
-        t.Shields[f] -= absorb;
+        // a surging Krai bow holds bow_shield_x as much; pierce of the hit goes straight through (Rules.Pierced)
+        double bowX = f == 0 && t.SurgeS > 0 ? Data.Specials.Charge.BowShieldX : 1;
+        double absorb = t.ShieldsUp ? Rules.Pierced(dmg, pierce, t.Shields[f] * bowX).Held : 0;
+        t.Shields[f] -= absorb / bowX;
         t.Flash[f] = 1;
         double rest = dmg - absorb;
         if (rest <= 0) { Record(t, sx, sz, kind, absorb, 0); return; }
@@ -338,7 +349,8 @@ public sealed partial class Battle
             m.Hp = Math.Max(0, m.Hp - Tuning.MountDamage);
             if (m.Hp <= 0) m.Charge = 0;
         }
-        if (t == Player) Say("Engineering", $"Hull hit through the {Rules.Facings[f]} shield.");
+        if (kind is "burn" or "chorus") { }   // a burn and a chorus land in ticks: their own lines say so
+        else if (t == Player) Say("Engineering", $"Hull hit through the {Rules.Facings[f]} shield.");
         else if (src == Player) Say("Tactical", $"Hit on {t.Name}, {Rules.Facings[f]} facing.");
         Record(t, sx, sz, kind, absorb, rest);
         if (t.Hull <= 0)
@@ -385,7 +397,8 @@ public sealed partial class Battle
         {
             sh.Life -= dt;
             if (sh.Kind == "beam") { Ends(sh); continue; }
-            if (sh.Kind == "bolt") { BoltStep(sh, dt); continue; }
+            if (sh.Kind == "chorus") { ChorusStep(sh, dt); continue; }
+            if (sh.Kind is "bolt" or "slug") { BoltStep(sh, dt); continue; }
             if (sh.Kind == "missile") { MissileStep(sh, dt); continue; }
             Ship? t = ShipById(sh.To);
             if (t is not { Alive: true }) { sh.Life = Math.Min(sh.Life, 0.4); continue; }
@@ -393,7 +406,7 @@ public sealed partial class Battle
             if (d <= stepM + Tuning.ShotHitRadiusM)
             {
                 Ship? from = ShipById(sh.From);
-                if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind);
+                if (sh.Hit && !sh.Spent) { if (sh.Kind == "quell") Quelled(t, from?.X ?? sh.X, from?.Z ?? sh.Z); else Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind); }
                 sh.Spent = true; sh.Life = 0;
             }
             else { sh.X += (t.X - sh.X) / d * stepM; sh.Z += (t.Z - sh.Z) / d * stepM; }
@@ -413,7 +426,11 @@ public sealed partial class Battle
         if (sh.TravelledM >= len - Tuning.ShotHitRadiusM)
         {
             Ship? from = ShipById(sh.From);
-            if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sx, from?.Z ?? sz, from, sh.Damage, sh.Kind);
+            if (sh.Hit && !sh.Spent)
+            {
+                Damage(t, from?.X ?? sx, from?.Z ?? sz, from, sh.Damage, sh.Kind, sh.Pierce);
+                if (sh.Kind == "slug") Burn(t, from?.X ?? sx, from?.Z ?? sz);
+            }
             sh.Spent = true; sh.Life = 0; sh.X = tx; sh.Z = tz;
             return;
         }
