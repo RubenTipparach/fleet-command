@@ -47,7 +47,7 @@ tools/audio/cc0_cues.json   --cut_cc0.py---> output/sfx/<cue>.wav               
                                              assets/audio/sfx/SOURCES.md, assets/audio/ambience/SOURCES.md
 render_sfx.sh: ffmpeg -----> assets/audio/sfx/<cue>.ogg (Vorbis q5, mono), assets/audio/ambience/amb_*.ogg (stereo, q4)
                              output/sfx/<cue>.mp3 (share copies), AUDIO_SOURCES.md (list_sources.py)
-gen_sfx_page.py -----------> docs/mockups/sounds.html (every cue with a play button, MP3s inlined)
+gen_sfx_page.py -----------> docs/mockups/sounds.html (every cue with a play button) + sounds.files.json
 inspect_sfx.py check ------> clipping, loop seams, output/sfx/sheet.png (look at it)
 ```
 
@@ -85,7 +85,9 @@ One command rebuilds everything: `tools/audio/render_sfx.sh` (or `tools/audio/re
    Copy the sheet to `docs/screenshots/audio/sfx-sheet.jpg` at half size.
 7. **Audition and record**: the page is rewritten by the build; it is an artifact like a mockup
    (CLAUDE.md section 4): commit it with its shots, its record in `docs/artifacts/sounds/` and its row
-   in `mockup-work.md` and the tracker, and publish it (from the desktop session).
+   in `mockup-work.md` and the tracker, and publish it with the audio beside it: pass
+   `docs/mockups/sounds.files.json` as the publish's `files` map (each MP3 at the same path the page names). Never
+   inline audio in the page: version 1 did (1.9 MB of data URIs) and never loaded in the viewer (2026-11-05).
 
 ## Levels
 

@@ -43,7 +43,9 @@ BODY = """<div class="wrap">
 def main() -> None:
     data = json.load(open(os.path.join(REPO, "output", "sfx", "sfx.json")))
     for s in data:
-        s["src"] = audio_page.embed(os.path.join(REPO, "output", "sfx", s["name"] + ".mp3"))
+        s["src"] = f"output/sfx/{s['name']}.mp3"
+        if not os.path.exists(os.path.join(REPO, s["src"])):
+            raise SystemExit(f"{s['src']} is missing: run tools/audio/render_sfx.sh")
     rec = sum(1 for s in data if s.get("recorded"))
     body = BODY.replace("__COUNT__", str(len(data))).replace("__REC__", str(rec)).replace("__SYN__", str(len(data) - rec))
     out = os.path.join(REPO, "docs", "mockups", "sounds.html")

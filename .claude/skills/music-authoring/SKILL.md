@@ -24,6 +24,9 @@ text below is Crab Breeze's: its paths match this repository, its musical direct
   length and fold the tail onto the start (`tools/music/fold_loop.py`), for cues the game loops.
 - **No faction themes** until the owner sets that faction's culture (CLAUDE.md section 1, survey S2).
   The Threat stands for any enemy.
+- **Publish the Music page with its tracks beside it**: `docs/mockups/music.files.json` (written with the page) is
+  the publish's `files` map, each `output/music/<cue>.mp3` at the path the page names, as Crab Breeze's Music page
+  does. Never inline the audio: a page carrying megabytes of data URIs never loaded in the viewer (2026-11-05).
 - Sound effects are the `sound-effects` skill.
 - **Proven here on 2026-10-30**: a two-bar test score went through `tools/music/render.sh` (Strudel
   to MIDI and an LMMS project, LMMS 1.2 headless with GeneralUser GS, loudness-normalised OGG and MP3).

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Writes the Fleet Command Music page (docs/mockups/music.html) from the scores and their renders.
 
-One row per score in music/ that tools/music/render.sh has rendered (output/music/<cue>.mp3): its
+One row per score in music/ that tools/music/render.sh has rendered (output/music/<cue>.mp3, its share copy): its
 title and its description, both read from the score's own header comment (so the page cannot drift
 from the score), its length, a waveform strip and a play button. The page's look and player are
 tools/audio/audio_page.py, shared with the Sounds page. Which cues loop is CUES below.
@@ -59,14 +59,14 @@ def header(path: str) -> tuple:
 def main() -> int:
     items = []
     for name, group, loop in CUES:
-        mp3 = os.path.join(REPO, "output", "music", name + ".mp3")
-        if not os.path.exists(mp3):
+        src = f"output/music/{name}.mp3"
+        if not os.path.exists(os.path.join(REPO, src)):
             print(f"{name}: not rendered (tools/music/render.sh music/{name}.strudel)", file=sys.stderr)
             return 1
         title, seconds, what = header(os.path.join(REPO, "music", name + ".strudel"))
         items.append({"name": title.replace("Fleet Command: ", ""), "group": group, "what": what,
-                      "seconds": round(seconds, 1), "loop": loop, "peaks": audio_page.peaks(mp3),
-                      "src": audio_page.embed(mp3)})
+                      "seconds": round(seconds, 1), "loop": loop, "peaks": audio_page.peaks(os.path.join(REPO, src)),
+                      "src": src})
     minutes = sum(i["seconds"] for i in items) / 60
     body = BODY.replace("__COUNT__", str(len(items))).replace("__MIN__", f"{minutes:.1f}")
     out = os.path.join(REPO, "docs", "mockups", "music.html")

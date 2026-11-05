@@ -1,0 +1,7 @@
+{
+ "output/music/main_theme.mp3": "output/music/main_theme.mp3",
+ "output/music/battle.mp3": "output/music/battle.mp3",
+ "output/music/victory.mp3": "output/music/victory.mp3",
+ "output/music/defeat.mp3": "output/music/defeat.mp3",
+ "output/music/motifs.mp3": "output/music/motifs.mp3"
+}
