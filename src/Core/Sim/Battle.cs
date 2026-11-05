@@ -9,18 +9,27 @@ using FleetCommand.Data;
 
 namespace FleetCommand.Sim;
 
-/// <summary>A shot: a beam (drawn for its life, its damage already dealt) or a projectile flying at its target.</summary>
+/// <summary>A shot: a beam (drawn for its life, its damage already dealt) or a projectile flying at its target.
+/// X, Z is where the shot is (a beam's is its start); SX, SZ and TX, TZ are its two ends as last resolved by
+/// Battle.Ends: the mount it left (Mount, on the ship From) and its target (the ship To, or the shot At for a point
+/// defence beam), so a beam or a bolt keeps both ends on their ships as they move (owner, 2026-11-04).</summary>
 public sealed class Shot
 {
     public required string Kind { get; init; }
-    public double X, Z, TX, TZ;
+    public double X, Z, SX, SZ, TX, TZ;
     public string? To, From;
+    public int Mount = -1;
+    public Shot? At;
     public bool Hit, Spent, Intercept;
-    public double Damage, SpeedMS, Life;
+    public double Damage, SpeedMS, Life, TravelledM;
     public required string Color { get; init; }
 }
 
 public sealed record LogLine(double T, string Who, string Text);
+
+/// <summary>A hit as it landed, for the view's explosions and scars (it changes nothing): the ship struck, where the shot
+/// came from (metres), the weapon's kind, what the shields took and what reached the hull, and whether it destroyed the ship.</summary>
+public sealed record HitEvent(long Seq, double T, string ShipId, double FromX, double FromZ, string Kind, double Absorbed, double HullDamage, bool Destroyed);
 
 public sealed partial class Battle
 {
@@ -31,6 +40,10 @@ public sealed partial class Battle
     public IReadOnlyList<Ship> Ships => _ships;
     public IReadOnlyList<Shot> Shots => _shots;
     public IReadOnlyList<LogLine> Log => _log;
+    /// <summary>The last hits that landed, oldest first, at most <see cref="HitMemory"/>; a reader keeps the last Seq it saw.</summary>
+    public IReadOnlyList<HitEvent> Hits => _hits;
+    /// <summary>How many hits are kept for the view.</summary>
+    public const int HitMemory = 64;
     /// <summary>The ship the player commands.</summary>
     public Ship Player { get; private set; }
     /// <summary>Battle time, s.</summary>
@@ -45,6 +58,8 @@ public sealed partial class Battle
     private readonly List<Ship> _ships = new();
     private readonly List<Shot> _shots = new();
     private readonly List<LogLine> _log = new();
+    private readonly List<HitEvent> _hits = new();
+    private long _hitSeq;
     private readonly Rng _hit, _dmg, _ai, _helm;
 
     public Battle(GameData data, Scenario scenario)
@@ -274,18 +289,19 @@ public sealed partial class Battle
         bool hit = _hit.Next() < Rules.HitChance(s, m, t);
         var (x, z) = MountWorld(s, m);
         m.Charge = 0;
+        int mi = s.Mounts.IndexOf(m);
         if (!m.Weapon.Flies)
         {
-            _shots.Add(new Shot { Kind = "beam", X = x, Z = z, TX = t.X, TZ = t.Z, Life = Tuning.BeamLifeS, Color = m.Weapon.Color, To = t.Id, From = s.Id, Hit = hit });
-            if (hit) Damage(t, s.X, s.Z, s, w.Damage);
+            _shots.Add(new Shot { Kind = "beam", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, Life = Tuning.BeamLifeS, Color = m.Weapon.Color, To = t.Id, From = s.Id, Mount = mi, Hit = hit });
+            if (hit) Damage(t, s.X, s.Z, s, w.Damage, m.Weapon.Kind);
         }
         else
-            _shots.Add(new Shot { Kind = m.Weapon.Kind, X = x, Z = z, To = t.Id, From = s.Id, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = m.Weapon.Color });
+            _shots.Add(new Shot { Kind = m.Weapon.Kind, X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Mount = mi, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = m.Weapon.Color });
         return true;
     }
 
     /// <summary>Damage from a source at (sx, sz): the facing it strikes absorbs what it can, the rest hits the hull and may hurt a subsystem or a mount.</summary>
-    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg)
+    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind)
     {
         if (!t.Alive) return;
         int f = Rules.FacingFrom(t, sx, sz);
@@ -293,7 +309,7 @@ public sealed partial class Battle
         t.Shields[f] -= absorb;
         t.Flash[f] = 1;
         double rest = dmg - absorb;
-        if (rest <= 0) return;
+        if (rest <= 0) { Record(t, sx, sz, kind, absorb, 0); return; }
         t.Hull -= rest;
         if (_dmg.Next() < Tuning.SubsystemHitChance)
         {
@@ -308,13 +324,21 @@ public sealed partial class Battle
         }
         if (t == Player) Say("Engineering", $"Hull hit through the {Rules.Facings[f]} shield.");
         else if (src == Player) Say("Tactical", $"Hit on {t.Name}, {Rules.Facings[f]} facing.");
+        Record(t, sx, sz, kind, absorb, rest);
         if (t.Hull <= 0)
         {
             t.Hull = 0; t.Alive = false; t.V = 0;
+            _hits[^1] = _hits[^1] with { Destroyed = true };
             Say("Tactical", $"{t.Name} destroyed.");
             foreach (Ship o in _ships) if (o.Target == t.Id) o.Target = null;
             if (t == Player) PromoteNextCommand();
         }
+    }
+
+    private void Record(Ship t, double sx, double sz, string kind, double absorbed, double hull)
+    {
+        _hits.Add(new HitEvent(++_hitSeq, T, t.Id, sx, sz, kind, absorbed, hull, false));
+        if (_hits.Count > HitMemory) _hits.RemoveAt(0);
     }
 
     /// <summary>When the commanded ship is lost, command passes to the next living ship of the fleet.</summary>
@@ -324,24 +348,60 @@ public sealed partial class Battle
         if (next != null) { Player = next; Say("Comms", $"Command passes to {next.Name}."); }
     }
 
+    /// <summary>A beam's or a bolt's two ends as the ships now stand (owner, 2026-11-04: "as they fire, the source and
+    /// destination of these beams must follow the ship source and ship destination"): its mount on the firing ship, and its
+    /// target ship (or, for a point defence beam, the shot it fires on). An end whose ship or shot is gone stays where it was
+    /// last. One rule for the bolt's flight and for every view that draws a beam (CLAUDE.md 6.1).</summary>
+    public (double SX, double SZ, double TX, double TZ) Ends(Shot sh)
+    {
+        Ship? s = ShipById(sh.From);
+        if (s is { Alive: true } && sh.Mount >= 0 && sh.Mount < s.Mounts.Count) (sh.SX, sh.SZ) = MountWorld(s, s.Mounts[sh.Mount]);
+        Ship? t = ShipById(sh.To);
+        if (t is { Alive: true }) { sh.TX = t.X; sh.TZ = t.Z; }
+        else if (sh.At is { } a) { sh.TX = a.X; sh.TZ = a.Z; }
+        if (sh.Kind == "beam") { sh.X = sh.SX; sh.Z = sh.SZ; }
+        return (sh.SX, sh.SZ, sh.TX, sh.TZ);
+    }
+
     private void ShotsStep(double dt)
     {
         foreach (Shot sh in _shots)
         {
             sh.Life -= dt;
-            if (sh.Kind == "beam") continue;
+            if (sh.Kind == "beam") { Ends(sh); continue; }
+            if (sh.Kind == "bolt") { BoltStep(sh, dt); continue; }
             Ship? t = ShipById(sh.To);
             if (t is not { Alive: true }) { sh.Life = Math.Min(sh.Life, 0.4); continue; }
             double d = Geometry.Dist(sh.X, sh.Z, t.X, t.Z), stepM = sh.SpeedMS * dt;
             if (d <= stepM + Tuning.ShotHitRadiusM)
             {
                 Ship? from = ShipById(sh.From);
-                if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage);
+                if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind);
                 sh.Spent = true; sh.Life = 0;
             }
             else { sh.X += (t.X - sh.X) / d * stepM; sh.Z += (t.Z - sh.Z) / d * stepM; }
         }
         _shots.RemoveAll(sh => sh.Life <= 0);
+    }
+
+    /// <summary>A direct-fire bolt: it runs along the live line between its two ends (Ends), so it stays between the
+    /// firing mount and its target while they move, and lands when it has run the line's length.</summary>
+    private void BoltStep(Shot sh, double dt)
+    {
+        Ship? t = ShipById(sh.To);
+        if (t is not { Alive: true }) { sh.Life = Math.Min(sh.Life, 0.4); return; }
+        var (sx, sz, tx, tz) = Ends(sh);
+        double len = Geometry.Dist(sx, sz, tx, tz);
+        sh.TravelledM += sh.SpeedMS * dt;
+        if (sh.TravelledM >= len - Tuning.ShotHitRadiusM)
+        {
+            Ship? from = ShipById(sh.From);
+            if (sh.Hit && !sh.Spent) Damage(t, from?.X ?? sx, from?.Z ?? sz, from, sh.Damage, sh.Kind);
+            sh.Spent = true; sh.Life = 0; sh.X = tx; sh.Z = tz;
+            return;
+        }
+        double k = len > 0 ? sh.TravelledM / len : 1;
+        sh.X = sx + (tx - sx) * k; sh.Z = sz + (tz - sz) * k;
     }
 
     private void PointDefenceStep()
@@ -357,7 +417,8 @@ public sealed partial class Battle
                     && Geometry.Dist(sh.X, sh.Z, s.X, s.Z) / 1000 <= m.Weapon.Normal.RangeKm);
                 if (threat == null) continue;
                 m.Charge = 0;
-                added.Add(new Shot { Kind = "beam", X = s.X, Z = s.Z, TX = threat.X, TZ = threat.Z, Life = 0.15, Color = m.Weapon.Color, Intercept = true });
+                var (px, pz) = MountWorld(s, m);
+                added.Add(new Shot { Kind = "beam", X = px, Z = pz, SX = px, SZ = pz, TX = threat.X, TZ = threat.Z, Life = 0.15, Color = m.Weapon.Color, Intercept = true, From = s.Id, Mount = s.Mounts.IndexOf(m), At = threat });
                 if (_hit.Next() < Tuning.PdInterceptChance) { threat.Spent = true; threat.Life = 0; }
             }
         }

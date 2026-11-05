@@ -194,6 +194,11 @@ def pieces():
     add("console.column", "hero", (480, 1080), soft(col_plate, 3.0), [("ember", soft(w, 3.6)) for w in wells] + [("red", spine)],
         studs=[(9.5, y, 2.4) for y in (40, 939, 1040)] + [(467.5, y, 2.4) for y in (40, 1040)],
         inlays=[Polygon([(30, d - 2), (196, d - 2), (204, d), (196, d + 2), (30, d + 2), (24, d)]) for d in dividers], dz=-8.0)
+    # The ground behind an expanded panel (owner, 2026-11-04: "Black background is forbidden for metallic panel based
+    # factions"): the column's blackened blade steel as one plain plate, bolted at its corners, with no wells; the page
+    # lays a plain band of it side by side behind the panel, where the column itself (its wells lit) cannot go.
+    add("console.backing", "hero", (480, 1080), soft(box(0.5, 0.5, 479.5, 1079.5), 3.0), [],
+        studs=[(x, y, 2.4) for x in (12, 468) for y in (12, 1068)], dz=-8.0)
     # Icon keys (owner, 2026-11-03: "the buttons with icons need work ... make custom design for this skin. Just changing
     # the color to red or leaving it green doesnt work. I love the buttons you did for chaning the panels. repeating that
     # design style is prefered"): the rail tab's slanted steel bezel made square round a well of glass, one render per
@@ -239,7 +244,7 @@ def check_all(P):
     bad, lines, films = 0, [], {}
     for name, p in P.items():
         wells = [w for _k, w in p["wells"]]
-        gap = min(w.exterior.distance(p["plate"].exterior) for w in wells)
+        gap = min([w.exterior.distance(p["plate"].exterior) for w in wells] or [8.0])  # a plain plate has no wells
         inset = min(INSET, gap / 2)
         f = [behind_layer(w, p["plate"], grow=min(6.0, gap), inset=inset) for w in wells]
         films[name] = f

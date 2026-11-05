@@ -4,7 +4,8 @@
 // detail tile and its size) and the ship's own (its re-centring offset, the Krai livery's uLiv and uLiv2); every other
 // material keeps the stand-in the exporter wrote (glows, metals, windows), but the impulse bells, which take
 // src/Game/View/bell.gdshader from their heat_rgb (hot inside, ribbed outside, as the mockups draw them). Its lamps come from the named light
-// empties' glTF extras: a flood is a SpotLight3D down its -Z, a running light, strobe or beacon a small OmniLight3D;
+// empties' glTF extras: a flood is baked into the hull as a light pool with its own glint (hull.gdshader, the mockups'
+// pools(); owner, 2026-11-04: "emissive baked lights + shader based multi specular"), a running light, strobe or beacon a small OmniLight3D;
 // strobes flash as their extras say ("double flash every 1.4 s"). It lives in the view because it only changes how a
 // ship looks: the simulation never reads it. One implementation for every ship of both factions.
 using System;
@@ -19,6 +20,8 @@ public static class ShipSkin
     private const string ManifestPath = "res://assets/ships/manifest.json";
     private static JsonDocument? _manifest;
     private static Shader? _hull;
+    /// <summary>The hull shader every hull surface is dressed with (ShipDamage finds the hull surfaces by it).</summary>
+    public static Shader HullShader => _hull ??= GD.Load<Shader>("res://src/Game/View/hull.gdshader");
 
     /// <summary>Range of a running light, strobe or beacon, metres: enough to tint the plating round it, no more.</summary>
     public const float RunningLightRangeM = 6f;
@@ -64,8 +67,10 @@ public static class ShipSkin
                     if (m == null || !materials.TryGetProperty(faction + "/" + m.ResourceName, out JsonElement me)) continue;
                     bool bell = me.TryGetProperty("heat_rgb", out _);
                     if (!bell && !me.GetProperty("hull_shader").GetBoolean()) continue;
-                    string key = m.ResourceName;
-                    if (!cache.TryGetValue(key, out Material? hm)) cache[key] = hm = bell ? BellMaterial(me) : HullMaterial(me, tex, offset, sp);
+                    // the shader works in mockup ship space, so each piece's material carries its own pivot (the node's place in the ship)
+                    Vector3 piv = PlaceInShip(mi, ship), at = offset + new Vector3(-piv.X, piv.Y, -piv.Z);
+                    string key = m.ResourceName + "@" + piv.ToString("F4");
+                    if (!cache.TryGetValue(key, out Material? hm)) cache[key] = hm = bell ? BellMaterial(me) : HullMaterial(me, tex, at, sp);
                     mi.SetSurfaceOverrideMaterial(i, hm);
                     hullSurfaces++;
                 }
@@ -80,8 +85,48 @@ public static class ShipSkin
                 if (strobe && l is OmniLight3D om) strobes.Add(om);
             }
         });
-        GD.Print($"SHIP_SKIN {file}: hull shader on {hullSurfaces} surfaces, {lamps} lamps ({strobes.Count} strobes)");
+        int pools = Pools(ship, offset, cache.Values);
+        GD.Print($"SHIP_SKIN {file}: hull shader on {hullSurfaces} surfaces, {pools} floodlight pools, {lamps} lamps ({strobes.Count} strobes)");
         return strobes;
+    }
+
+    /// <summary>The ship's floodlights as baked light pools on its hull (hull.gdshader pool_light, the mockups' pools()):
+    /// each light_flood_* empty's place and aim taken back into mockup ship space, with its range, strength and colour.
+    /// Returns how many (at most 16, as the mockups).</summary>
+    private static int Pools(Node3D ship, Vector3 offset, IEnumerable<Material> mats)
+    {
+        var pos = new Vector4[16]; var dir = new Vector4[16]; var str = new float[16]; var col = new Vector4[16];
+        int n = 0;
+        Walk(ship, node =>
+        {
+            if (n >= 16 || node is not Node3D e || !e.Name.ToString().StartsWith("light_flood") || !e.HasMeta("extras")) return;
+            var x = e.GetMeta("extras").AsGodotDictionary();
+            Vector3 g = PlaceInShip(e, ship), p = offset + new Vector3(-g.X, g.Y, -g.Z);
+            float[] d = x["direction"].AsFloat32Array(), c = x["colour"].AsFloat32Array();
+            pos[n] = new Vector4(p.X, p.Y, p.Z, (float)x["range_m"].AsDouble());
+            dir[n] = new Vector4(-d[0], d[1], -d[2], 0);
+            str[n] = (float)x["strength"].AsDouble();
+            col[n] = new Vector4(c[0], c[1], c[2], 1);
+            n++;
+        });
+        foreach (Material m in mats)
+        {
+            if (m is not ShaderMaterial sm || sm.Shader != HullShader) continue;
+            sm.SetShaderParameter("pools", pos);
+            sm.SetShaderParameter("pool_d", dir);
+            sm.SetShaderParameter("pool_a", str);
+            sm.SetShaderParameter("pool_c", col);
+            sm.SetShaderParameter("pool_n", n);
+        }
+        return n;
+    }
+
+    /// <summary>Where a mesh's own origin sits in its ship's glb frame (metres): its parents' offsets, up to the ship node.</summary>
+    private static Vector3 PlaceInShip(Node3D n, Node3D ship)
+    {
+        Transform3D xf = Transform3D.Identity;
+        for (Node? p = n; p != null && p != ship; p = p.GetParent()) if (p is Node3D p3) xf = p3.Transform * xf;
+        return xf.Origin;
     }
 
     /// <summary>Turns each strobe on during its double flash at time t (seconds).</summary>
@@ -108,8 +153,7 @@ public static class ShipSkin
 
     private static ShaderMaterial HullMaterial(JsonElement me, (Texture2D A, Texture2D N) tex, Vector3 offset, JsonElement? sp)
     {
-        _hull ??= GD.Load<Shader>("res://src/Game/View/hull.gdshader");
-        var m = new ShaderMaterial { Shader = _hull };
+        var m = new ShaderMaterial { Shader = HullShader };
         JsonElement bc = me.GetProperty("base_colour"), tile = me.GetProperty("tile_m");
         m.SetShaderParameter("detail_albedo", tex.A);
         m.SetShaderParameter("detail_normal", tex.N);
@@ -138,16 +182,7 @@ public static class ShipSkin
         float[] c = cv.AsFloat32Array();
         if (c.Length < 3) return null;
         var col = new Color(c[0], c[1], c[2]);   // the hex values over 255, as the mockup gave its lamps
-        if (kind == "flood")
-        {
-            float range = (x.TryGetValue("range_m", out Variant r) ? (float)r.AsDouble() : 12f) * unitsPerMetre;
-            return new SpotLight3D
-            {
-                LightColor = col, SpotRange = range, LightEnergy = x.TryGetValue("strength", out Variant s) ? (float)s.AsDouble() : 1f,
-                SpotAngle = x.TryGetValue("cone_half_angle_deg", out Variant a) ? (float)a.AsDouble() : 30f,
-                SpotAttenuation = x.TryGetValue("decay", out Variant d) ? (float)d.AsDouble() : 1f, ShadowEnabled = false,
-            };
-        }
+        if (kind == "flood") return null;   // floods are baked into the hull as light pools (Pools), not lights
         strobe = kind.Contains("strobe");
         return new OmniLight3D { LightColor = col, OmniRange = RunningLightRangeM * unitsPerMetre, LightEnergy = 1.2f, ShadowEnabled = false };
     }

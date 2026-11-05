@@ -50,3 +50,50 @@ Looked at, one per take (`docs/playtests/2026-11-04-scenario-bot-runs/<side>-<sc
 - The recorder could not see OBS on macOS (it looked for a process named `obs`; the Mac's is `OBS`), so it would never
   have closed OBS and could have started a second one, and it launched OBS with `--multi`. Fixed before the takes: one
   OBS for the whole run, closed after each take, checked.
+
+## Take 2 (afternoon, re-recorded)
+
+The owner asked: "go back to re-recording the gameplay tests". The same six runs, recorded the same way, on the work
+since the morning: every scenario under its own nebula sky with the sky's reflections, the camera lock and Target view
+(the bot now clicks Target view, holds 3 s, clicks Camera lock, holds 3 s, before Intercept), the Albatross's main hull
+stern (two bells, mockup 6 v24) and the hot bells on every ship.
+
+| | |
+|---|---|
+| Commit | `9cb7beb` on `claude/ships-export-mac` (PR #27), with the two-bell Albatross stern re-exported and not yet committed |
+| Takes | H.264 MP4, 1920 x 1136, 60 fps, at the take's own size, named `fleet-command-2026-11-04-<side>-<scenario>-take2.mp4` so the morning's files stay as they were |
+
+| Run | Scenario | Result | Game time | Take | Drive |
+|---|---|---|---|---|---|
+| `battle` | Concord, Battle | ok: won, 0 foes left, hull 100 % | 222 s | 3 min 41 s, 170 MB | [concord-battle-take2](https://drive.google.com/file/d/1SZ2C5EgPmPGf1qTBZGjz-_1UXoQAhPhf/view?usp=drivesdk) |
+| `battle` | Concord, Duel | **stuck**: no hull changed for 60 s | 193 s | 3 min 15 s, 150 MB | [concord-duel-take2](https://drive.google.com/file/d/1RFxU8H9czA6YXdV6YkeoIRd8pXVakQHJ/view?usp=drivesdk) |
+| `arming` | Concord, Arming | ok: won, 0 foes left, hull 88 % | 252 s | 4 min 12 s, 194 MB | [concord-arming-take2](https://drive.google.com/file/d/1VME8IMByxpn6VFV7TEA_wZ1k4qoDqcFe/view?usp=drivesdk) |
+| `battle` | Krai, Battle | **stuck**: no hull changed for 60 s | 553 s | 9 min 15 s, 428 MB | [krai-battle-take2](https://drive.google.com/file/d/1anPqvQv05Slih8Vcx4B1LeU5sgis1jP1/view?usp=drivesdk) |
+| `battle` | Krai, Duel | ok: lost, 1 foe left, hull 0 % | 311 s | 5 min 11 s, 240 MB | [krai-duel-take2](https://drive.google.com/file/d/1lG2h2Yc_H2K5Zehp7cRnj3ArAEKfg8mz/view?usp=drivesdk) |
+| `arming` | Krai, Arming | ok: lost, 2 foes left, hull 0 % | 209 s | 3 min 28 s, 161 MB | [krai-arming-take2](https://drive.google.com/file/d/19NhqiD7aR4Zz4kZkK_L6GDNp54d6CM8b/view?usp=drivesdk) |
+
+Every file was confirmed with the Google Drive connector at the same byte size as the local take. One OBS ran for the
+whole set and was closed after each take, checked.
+
+### What the contact sheets show
+
+Looked at, one per take (`docs/playtests/2026-11-04-scenario-bot-runs/<side>-<scenario>-take2.jpg`):
+
+- Each scenario under its own sky: deep indigo (Concord Battle), ice halo (Concord Duel), twin lights (Concord Arming),
+  crimson reach (Krai Battle), violet storm (Krai Duel), solar furnace (Krai Arming).
+- The Target view and Camera lock keys under the Target box on both skins, the camera locked on the target.
+- No menu, dialog or blank frame over a take.
+
+### Findings
+
+- **Two battle runs stalled** where the morning's same runs finished. A recorded run steps in real time, so its fight
+  differs from the headless one and from the morning's, and the two new beats shift its timing again.
+  - Krai Battle: the sheet shows the Kharz on Intercept after the Resolute at 19.5 km, both at 144 m/s, neither closing
+    nor firing. The Resolute steers for its own nearest foe (the Vekk, the Kharz's escort, which follows the Kharz), so
+    the three ships can chase round each other at one speed with nobody in range. Pursuit at equal top speed never
+    closes, and nothing in the AI breaks it off.
+  - Concord Duel: the Kharz, its hull low, and the Resolute circling with nothing landing on a hull for 60 s; the sheet
+    shows the Resolute's weapons in arc with none charged.
+  Both are the game's tactics, not the recorder; the stall check did its job. They need a look (the AI's pursuit, and
+  why the duel stops charging) before these runs are called reliable.
+- The Krai still lose every run that finishes, as in the morning.

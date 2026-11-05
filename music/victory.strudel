@@ -1,0 +1,83 @@
+// @title Fleet Command: Victory
+// @cycles 5
+// @reverb 0.5
+// @space gm_trumpet 0.3
+// @space gm_pad_poly 0.45
+// @mix gm_trumpet vol=165
+// @mix gm_tuba vol=70
+// @mix gm_contrabass vol=105
+// @mix gm_brass_section vol=80
+//
+// The stinger after a won battle: the Concord's last four bars, its climb, its high point
+// and its cadence, in full on trumpets and strings, then the wonder chord held. 96 BPM,
+// 5 bars (12.5 s). Motifs: docs/design/music.md.
+
+setcps(96/60/4)
+
+// ── MOTIF LIBRARY ──────────────────────────────────────────────
+// THE CONCORD: the player's fleet. An 8-bar sentence in E flat major (docs/design/music.md,
+// "Writing a melody"): a 2-bar idea (a dotted leap of a sixth, the gap filled by step, then a
+// fall through the chord), the idea again a fourth up on A flat, the lift to F MAJOR (its A
+// natural, the raised fourth of E flat, is the Concord's sense of wonder), two bars that
+// shorten the idea and climb, the one high point (B flat 5, bar 7) and a cadence home.
+// In eighths: @2 a quarter, @3 a dotted quarter, @4 a half.
+const CONCORD = note(`<
+  [eb4@3 c5 c5@2 bb4 c5]   [eb5@4 c5@2 g4@2]
+  [ab4@3 f5 f5@2 eb5 f5]   [g5@4 f5@2 a4@2]
+  [bb4@2 d5@2 bb4 d5 g5@2] [c5@2 eb5@2 c5 eb5 ab5@2]
+  [bb5@6 ab5@2]            [g5@3 f5 eb5@4]
+>`)
+const CONCORD_CHORDS = note(`<
+  [eb3,g3,bb3] [c3,eb3,g3] [ab2,c3,eb3] [f3,a3,c4]
+  [g3,bb3,d4] [ab3,c4,eb4] [[bb2,eb3,f3] [bb2,d3,f3,ab3]] [eb3,g3,bb3]
+>`)
+const CONCORD_ROOTS = note("<eb2 c2 ab1 f2 g1 ab1 bb1 eb2>")
+// THE WONDER CHORD: E flat with the raised fourth (E flat, B flat, D, G, A): the Concord at rest.
+const WONDER = note("[eb2,bb2,g3,d4,a4]")
+// THE THREAT: whoever the fleet is fighting (no faction's own theme: survey S2 asks for those).
+// A low ostinato in C minor, 16ths grouped 3+3+3+3+4, grinding C against D flat, the fourth
+// bar on G with the flat nine...
+const THREAT = note(`<
+  [c2 c3 c2 c2 c3 c2 c2 c3 c2 db2 db3 db2 c2 g1 ab1 g1]
+  [c2 c3 c2 c2 c3 c2 eb2 eb3 eb2 db2 db3 db2 c2 bb1 ab1 g1]
+  [c2 c3 c2 c2 c3 c2 c2 c3 c2 db2 db3 db2 c2 g1 ab1 g1]
+  [g1 g2 g1 g1 g2 g1 ab1 ab2 ab1 g1 g2 g1 b1 c2 d2 eb2]
+>`)
+const THREAT_ACCENT = "1 .5 .5 1 .5 .5 1 .5 .5 1 .5 .5 1 .65 .65 .65"
+const THREAT_HITS = "x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ ~"
+const THREAT_CHORDS = note("<[c3,eb3,g3] [c3,db3,f3,ab3] [ab2,c3,eb3] [g2,b2,d3,ab3]>")
+// ... and its call on the horns: up a semitone, down a tritone; then the answer that sinks back.
+const THREAT_CALL = note("<[c4@2 db4@2 g3@4] [c4@2 eb4 db4 c4@4]>")
+// THE LOST: a ship or a battle lost. The Concord's idea in E flat MINOR, slow, on one horn.
+const LOST = note(`<
+  [eb4@3 cb5 cb5@2 bb4 cb5] [db5@4 bb4@2 gb4@2]
+  [f4@4 gb4@2 f4@2]         [eb4@8]
+>`)
+const LOST_CHORDS = note("<[eb3,gb3,bb3] [cb3,eb3,gb3] [bb2,db3,f3] [eb3,gb3,bb3]>")
+// ── END MOTIF LIBRARY ──────────────────────────────────────────
+
+// the theme's bars 5-8 (the arrangement starts each section at the theme's bar 1)
+const tail = (p) => p.early(4)
+const climb = stack(
+  tail(CONCORD).s("gm_trumpet").gain(1.1),
+  tail(CONCORD).s("gm_string_ensemble_1").gain(0.6),
+  tail(CONCORD).add(note(12)).s("gm_string_ensemble_2").gain(0.4),
+  tail(CONCORD_CHORDS).s("gm_brass_section").gain(0.5),
+  tail(CONCORD_CHORDS).s("gm_french_horn").gain(0.4),
+  tail(CONCORD_ROOTS).s("gm_tuba").gain(0.5),
+  tail(CONCORD_ROOTS).s("gm_contrabass").gain(0.6),
+  tail(CONCORD_CHORDS).s("gm_pad_poly").gain(0.3),
+  tail(CONCORD_ROOTS).add(note(12)).struct("x ~ ~ x ~ ~ x x").s("gm_timpani").gain(0.6),
+  s("<cr ~ cr ~>").gain(0.7)
+)
+const ring = stack(
+  WONDER.s("gm_brass_section").gain(0.55),
+  WONDER.s("gm_string_ensemble_1").gain(0.55),
+  WONDER.add(note(12)).s("gm_choir_aahs").gain(0.4),
+  WONDER.s("gm_pad_poly").gain(0.4),
+  note("[eb3 bb3 d4 g4 a4 d5 g5 a5]").s("gm_orchestral_harp").gain(0.4),
+  note("eb2").s("gm_timpani").gain(0.8),
+  s("cr").gain(0.8)
+)
+
+arrange([4, climb], [1, ring])

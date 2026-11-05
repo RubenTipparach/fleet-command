@@ -40,6 +40,59 @@ public class BattleTests
         Assert.Equal(GoldenSeed.Hulls, string.Join(",", b.Ships.Select(s => s.Hull.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))));
     }
 
+    // The owner, 2026-11-04: "as they fire, the source and destination of these beams must follow the ship source and
+    // ship destination ... a missile fired can break this rule as it leaves behind a particle trail".
+    private static Shot FirstShot(Battle b, Func<Shot, bool> pick)
+    {
+        for (int i = 0; i < 3600; i++)
+        {
+            if (i % 30 == 0) b.Fire();
+            b.Step();
+            Shot? sh = b.Shots.FirstOrDefault(pick);
+            if (sh != null) return sh;
+        }
+        throw new InvalidOperationException("no such shot in a minute of battle");
+    }
+
+    [Fact]
+    public void A_beam_keeps_its_ends_on_the_firing_mount_and_the_target_as_both_ships_move()
+    {
+        Battle b = TestData.NewBattle();
+        b.Lock("vorrak");
+        Shot beam = FirstShot(b, s => s.Kind == "beam" && s.To != null && s.Mount >= 0);
+        Ship from = b.ShipById(beam.From)!, to = b.ShipById(beam.To)!;
+        double fx = from.X, tx0 = to.X;
+        b.Step();
+        Assert.Contains(beam, b.Shots);
+        Assert.NotEqual(fx, from.X);
+        Assert.NotEqual(tx0, to.X);
+        var (sx, sz, tx, tz) = b.Ends(beam);
+        var (mx, mz) = Battle.MountWorld(from, from.Mounts[beam.Mount]);
+        Assert.Equal(mx, sx, 9);
+        Assert.Equal(mz, sz, 9);
+        Assert.Equal(to.X, tx, 9);
+        Assert.Equal(to.Z, tz, 9);
+    }
+
+    [Fact]
+    public void A_disruptor_bolt_flies_along_the_live_line_between_its_mount_and_its_target()
+    {
+        Battle b = TestData.NewBattle();
+        b.Lock("vorrak");
+        Shot bolt = FirstShot(b, s => s.Kind == "bolt" && !s.Spent);
+        for (int i = 0; i < 3 && b.Shots.Contains(bolt); i++)
+        {
+            b.Step();
+            if (!b.Shots.Contains(bolt)) break;
+            Ship from = b.ShipById(bolt.From)!, to = b.ShipById(bolt.To)!;
+            var (mx, mz) = Battle.MountWorld(from, from.Mounts[bolt.Mount]);
+            double ax = to.X - mx, az = to.Z - mz, px = bolt.X - mx, pz = bolt.Z - mz, len = Math.Sqrt(ax * ax + az * az);
+            Assert.True(Math.Abs(ax * pz - az * px) / len < 1e-6, "the bolt is off the line from its mount to its target");
+            double along = (ax * px + az * pz) / len;
+            Assert.InRange(along, 0, len);
+        }
+    }
+
     [Fact]
     public void Orders_given_while_paused_change_the_orders_but_not_the_ship()
     {
@@ -117,5 +170,29 @@ public class BattleTests
         b.Turn(double.NaN); b.SetSpeed(double.PositiveInfinity); b.HelmTo(double.NaN, 0);
         Assert.Equal(h, b.Player.HOrder);
         Assert.Equal(v, b.Player.VOrder);
+    }
+
+    [Fact]
+    public void Every_hit_that_lands_is_recorded_for_the_view_with_what_the_shields_took_and_what_reached_the_hull()
+    {
+        Battle b = TestData.NewBattle();
+        b.Lock("vorrak");
+        long last = 0;
+        for (int i = 0; i < 3600; i++)
+        {
+            if (i % 30 == 0) b.Fire();
+            b.Step();
+            foreach (HitEvent e in b.Hits)
+            {
+                if (e.Seq <= last) continue;
+                Assert.Equal(last + 1, e.Seq);   // none missed, none twice
+                last = e.Seq;
+                Assert.True(e.Absorbed >= 0 && e.HullDamage >= 0 && e.Absorbed + e.HullDamage > 0);
+                Assert.Contains(b.Ships, s => s.Id == e.ShipId);
+                if (e.Destroyed) Assert.False(b.Ships.First(s => s.Id == e.ShipId).Alive);
+            }
+            Assert.True(b.Hits.Count <= Battle.HitMemory);
+        }
+        Assert.True(last > 0, "no hit landed in two minutes");
     }
 }

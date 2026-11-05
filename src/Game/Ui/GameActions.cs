@@ -32,7 +32,7 @@ public sealed class GameActions
         ["helm_port_45"] = () => B.Turn(-45), ["helm_starboard_45"] = () => B.Turn(45),
         ["speed_up"] = () => B.SpeedStep(1), ["speed_down"] = () => B.SpeedStep(-1), ["all_stop"] = () => B.AllStop(),
         ["fire"] = () => B.Fire(), ["next_target"] = () => B.NextTarget(), ["toggle_volley"] = () => B.ToggleVolley(),
-        ["pause"] = Pause, ["back"] = Back,
+        ["pause"] = Pause, ["back"] = Back, ["toggle_fullscreen"] = Fullscreen,
     };
 
     public void Station(string id) => S.Station = id;
@@ -61,4 +61,6 @@ public sealed class GameActions
     /// <summary>Plays the scenario with this id, from its start.</summary>
     public void Scene(string id) { S.SceneOpen = false; S.MenuOpen = false; OnScene?.Invoke(id); }
     public void Quit() => OnQuit?.Invoke();
+    /// <summary>Borderless fullscreen or a window (DisplaySettings), remembered.</summary>
+    public void Fullscreen() { DisplaySettings.Toggle(); OnLayout?.Invoke(); }
 }

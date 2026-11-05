@@ -330,6 +330,14 @@
       ],
       "file": "console.column.png"
     },
+    "console.backing": {
+      "kind": "hero",
+      "size": [
+        480,
+        1080
+      ],
+      "file": "console.backing.png"
+    },
     "strip.top.join": {
       "kind": "nine",
       "size": [
