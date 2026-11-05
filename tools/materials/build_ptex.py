@@ -155,8 +155,8 @@ float metal_$name(vec2 uv) { return 0.0; }
     return finish(g, "emblem enamel pearl", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.2)
 
 
-# ---- the Ssarith Hunt's badge, the Bow Rites (owner, 2026-11-05: "shade the bow parts with like wood", "3d model Fern
-# leaves", "Arrow made of wood"). The bow is the Hunt's own,
+# ---- the Ssarith Hunt's badge, the Bow Rites (owner, 2026-11-05: "shade the bow parts with like wood", "Arrow made of
+# wood"). The bow is the Hunt's own,
 # laminated from cut plate (the guide's SD), so the wood shows its laminations as well as its grain.
 
 def emblem_wood_laminate():
@@ -188,26 +188,6 @@ float metal_$name(vec2 uv) { return 0.0; }
 """
     return finish(g, "emblem wood laminate", ins, body, tile_m=0.05, depth_m=0.00008, ao_radius=4, ao_strength=0.4)
 
-
-def emblem_fern():
-    """A fern's leaf, for the fronds over the Ssarith badge's field (owner, 2026-11-05: "3d model Fern leaves", with a
-    photograph of ferns in deep shadow): a deep, saturated green with fine parallel veins, lighter and yellower where the
-    leaf is thin, a waxy satin sheen. The veins run along u, the shader's own shading does the rest. One tile is 0.05 m."""
-    g = Graph("Emblem Fern")
-    ins = [("vein", "f", g.node("fbm2", noise=2, scale_x=4, scale_y=160, folds=0, iterations=3, persistence=0.5, offset=0.0)),
-           ("cloud", "f", fbm(g, 6, iterations=4)), ("speck", "f", fbm(g, 96, iterations=2, persistence=0.5))]
-    body = """
-float height_$name(vec2 uv) { return 0.5 + 0.18 * smoothstep(0.6, 0.85, $vein(uv)) + 0.05 * ($cloud(uv) - 0.5); }
-vec3 albedo_$name(vec2 uv) {
-	vec3 deep = vec3(0.03, 0.2, 0.04), bright = vec3(0.16, 0.5, 0.09), yellow = vec3(0.36, 0.6, 0.12);
-	vec3 c = mix(deep, bright, 0.3 + 0.6 * $cloud(uv));
-	c = mix(c, yellow, 0.35 * smoothstep(0.6, 0.85, $vein(uv)));
-	return c * (0.92 + 0.12 * $speck(uv));
-}
-float rough_$name(vec2 uv) { return 0.42 + 0.12 * $cloud(uv); }
-float metal_$name(vec2 uv) { return 0.0; }
-"""
-    return finish(g, "emblem fern", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.3)
 
 def emblem_enamel_forest():
     """The badge's field, the Hunt's hunting ground (owner, 2026-11-05: "Background should be like a beige, dull brown and
@@ -265,7 +245,6 @@ GRAPHS = {
     "emblem_enamel_night": emblem_enamel_night,
     "emblem_enamel_pearl": emblem_enamel_pearl,
     "emblem_wood_laminate": emblem_wood_laminate,
-    "emblem_fern": emblem_fern,
     "emblem_enamel_forest": emblem_enamel_forest,
 }
 

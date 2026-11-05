@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Grow the ferns and spill the blood on the Ssarith badge (owner, 2026-11-05, with a photograph of dense ferns in shadow:
-"3d model Fern leaves", "Arrows dripping with bright glowing green blood"). One layout, read by both the Blender render
+"3d model Fern leaves", "Arrows dripping with bright glowing green blood", then "Fern leaves are the holographic background
+jungle": the fronds are drawn as light, a hologram of the jungle behind the bows). One layout, read by both the Blender render
 (tools/blender/emblem_ssarith.py) and the three.js badge (docs/mockups/ssarith-emblem-3d.html), so they match.
 
 Ferns: fronds rooted around the field, each a stem (rachis) arching up off the enamel and curving to one side, with
@@ -11,7 +12,8 @@ a stream ending in a drop.
 
 Seeded, inside the field (assets/emblems/ssarith/sd.parts.json). Grid units are mm, y down. Writes
 assets/emblems/ssarith/sd.ferns.json:
-    ferns   {v: [x, y, z, ...] in hundredths of a mm, f: [a, b, c, ...] triangles, s: [shade 0-100 per vertex]}
+    ferns   {v: [x, y, z, ...] in hundredths of a mm, f: [a, b, c, ...] triangles, s: [shade 0-100 per vertex],
+             e: [1 on a leaflet's or stem's edge, 0 down its middle, per vertex]}
     blood   [{head: i, rings: [[[x, y], ...], ...]}] per arrowhead: the pools and drips as polygons
 
     python3 tools/emblems/ssarith_ferns.py
@@ -47,8 +49,8 @@ def edge_dist(pt, poly):
 
 
 def frond(rng, root, ang, length, z0):
-    """One frond's triangles: (verts [(x, y, z)], faces [(a, b, c)], shades [0-1])."""
-    verts, faces, shade = [], [], []
+    """One frond's triangles: (verts [(x, y, z)], faces [(a, b, c)], shades [0-1], edges [0 or 1])."""
+    verts, faces, shade, edge = [], [], [], []
     curl = rng.uniform(-0.6, 0.6)            # radians the stem turns over its length
     arch = rng.uniform(0.35, 0.7)            # mm it rises at its middle
     tone = rng.uniform(0.75, 1.0)            # this frond's light: some sit in shadow
@@ -73,6 +75,7 @@ def frond(rng, root, ang, length, z0):
             for side in (-1, 0, 1):
                 verts.append((x + nx * w * side, y + ny * w * side, z_of(i, side)))
                 shade.append(light(i, side))
+                edge.append(abs(side))
         for i in range(n - 1):
             for j in range(2):
                 p0 = base + i * 3 + j
@@ -106,14 +109,14 @@ def frond(rng, root, ang, length, z0):
             droop = 0.12 * plen
             strip(ppts, widths, lambda i, s, z=z: max(1.08, z - droop * (i / S) ** 2 + 0.03 * abs(s)),
                   lambda i, s: tone * (0.6 + 0.4 * i / S) * (0.85 + 0.15 * abs(s)))
-    return verts, faces, shade
+    return verts, faces, shade, edge
 
 
 def main():
     parts = json.load(open(PARTS))
     field = parts["field"][0]
     rng = random.Random(SEED)
-    V, F, Sh = [], [], []
+    V, F, Sh, E = [], [], [], []
     made, tries = 0, 0
     xs = [p[0] for p in field]
     ys = [p[1] for p in field]
@@ -125,13 +128,14 @@ def main():
         length = rng.uniform(14, 28)
         ang = rng.uniform(0, 2 * math.pi)
         z0 = rng.uniform(*Z_BASE_MM)
-        v, f, s = frond(rng, root, ang, length, z0)
+        v, f, s, e = frond(rng, root, ang, length, z0)
         if any(not inside((p[0], p[1]), field) or edge_dist((p[0], p[1]), field) < MARGIN_MM for p in v):
             continue
         base = len(V)
         V += v
         F += [(a + base, b + base, c + base) for a, b, c in f]
         Sh += s
+        E += e
         made += 1
     blood = []
     for i, bow in enumerate(parts["bows"]):
@@ -164,7 +168,7 @@ def main():
         blood.append({"head": i, "rings": rings})
     out = {"note": __doc__.split("\n\n")[0], "seed": SEED,
            "ferns": {"v": [round(c * 100) for p in V for c in p], "f": [i for t in F for i in t],
-                     "s": [round(x * 100) for x in Sh]},
+                     "s": [round(x * 100) for x in Sh], "e": E},
            "blood": blood}
     with open(OUT, "w") as fh:
         json.dump(out, fh, separators=(",", ":"))

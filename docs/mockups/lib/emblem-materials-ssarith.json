@@ -85,34 +85,6 @@
    ],
    "file": "../../../assets/textures/materials/emblem_wood_laminate/specular.png"
   },
-  "emblem_fern/albedo": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_fern/albedo.png"
-  },
-  "emblem_fern/normal": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_fern/normal.png"
-  },
-  "emblem_fern/orm": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_fern/orm.png"
-  },
-  "emblem_fern/specular": {
-   "size": [
-    512,
-    512
-   ],
-   "file": "../../../assets/textures/materials/emblem_fern/specular.png"
-  },
   "emblem_enamel_forest/albedo": {
    "size": [
     512,
