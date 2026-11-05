@@ -3042,7 +3042,6 @@ const SCREENS = {
     if (S.closed) return h('div', { class: 'center' }, h('div', { class: 'panel sheet' }, h('h2', { text: 'Game closed' }), h('p', { class: 'muted', text: 'Quit closes the game. The mockup stays open.' }), key_('Start again', () => go('menu', { closed: false }), 'go')));
     const menu = h('div', { class: 'menu' },
       h('div', { class: 'title' }, 'Fleet Command', h('small', { text: 'Mockup 1 · Game flow' })),
-      h('a', { class: 'master', href: 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu', target: '_blank', rel: 'noopener', text: 'All Fleet Command mockups (the tracker)' }),
       h('div', { class: 'panel col' },
         key_(h('span', {}, h('span', { class: 'lamp' }), 'Campaign'), () => go('faction', { pick: null })),
         key_(h('span', {}, h('span', { class: 'lamp' }), 'Skirmish'), () => go('skirmish')),
@@ -3130,7 +3129,6 @@ const SCREENS = {
   faction() {
     useScene('faction');
     const out = [h('div', { class: 'fachead' }, h('div', {}, h('div', { class: 'plate', text: 'Campaign' }), h('h2', { text: 'Choose your faction' })),
-        h('a', { class: 'master', href: 'https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu', target: '_blank', rel: 'noopener', text: 'All Fleet Command mockups (the tracker)' }),
         key_('Back', () => go('menu', { pick: null }), 'small')),
       PLAYABLE.map((f) => h('div', { class: 'flabel', id: `flabel-${f}` }, h('b', { text: FACTIONS[f].name }), h('span', { text: FACTIONS[f].badge })))];
     if (S.pick) {

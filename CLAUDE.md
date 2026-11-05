@@ -596,6 +596,9 @@ Nothing is an exception until it is listed here with its reason.
   The Concord and Krai lines' geometry is defined by the mockup pages' builders; a Blender port would be a second copy
   of every hull rule (section 6.1). `tools/mockups/export_ships.mjs` exports them to glb from the pages themselves,
   deterministically, with named nodes and a manifest, so section 10's other rules still hold.
+- **The campaign mockup has no tracker link** (owner, 2026-11-05, of its "All Fleet Command mockups (the tracker)" link: "remove
+  this from the campaign mockup"). `docs/mockups/game-flow.html` (mockup 1) is drawn as the game's own screens, so it carries no
+  link back to the tracker; every other published page still does (section 4).
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from
