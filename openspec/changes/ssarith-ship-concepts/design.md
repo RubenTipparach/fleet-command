@@ -1,5 +1,30 @@
 # Design: ssarith-ship-concepts
 
+## Version 14: the lighting pass, windows, PBR, normal maps, the emblem, emission (owner, 2026-11-05)
+
+"Now those my friend are gorgeous looking star ships. Next up, lighting pass, windows, pbr, normal maps, logo, emissive
+texture (you have some features that look like glowy bits)". The method is written up as the `ship-detailing` skill (owner:
+"write up a skill for detailing space ships with custom texturing", "Include image samples in your documentation").
+
+| Map or light | How | Numbers |
+|---|---|---|
+| PBR base colour | The same flat paint as the painted map (one function, `flat_paint`), with no light in it: cavities dark from the AO, plates darker toward their gaps, worn edges lighter, grain | 2048 px |
+| ORM | AO; roughness and metalness by kind (painted armour 0.58 / 0.45, sub-armour 0.62 / 0.55, under layer 0.8 / 0.6, greebles 0.55 / 0.7, domes 0.12 / 0, slats 0.6 / 0.7, vents 0.9 / 0.3); paint 0.5 / 0.1; worn edges 0.22 smoother, 0.35 barer | 2048 px |
+| Normal map | Baked in tangent space (OpenGL), the one map for the page and the game | 2048 px |
+| Emission | Lamps, windows, the strips' lit line, the domes' faint inner light (0.35 of their green), a soft halo | 2048 px |
+| Hull lights | The fixtures alone (sun off) and the lamps' and windows' own faces, baked as direct light on white plating, over `light_ref` 0.9, stored with a 1/1.6 curve | 1024 px |
+| Fixtures | Three hull floods a ship from data (mirrored: five), a logo flood, a belly pair, position lights (port red, starboard green at the widest frame, white aft), red beacons top and bottom mid-ship, white strobes at the bow's tips (one to three, mirrored) | floods 2.2-3.2 kW, 60-90 degree cones, 0.9 m off the hull |
+| Windows | 1.1 by 0.6 m, groups of 4-12 at 1.6 m pitch, rows 3.5 m apart on the port flank (mirrored), one in five dark, pale green-white (survey H5) | provisional until the rooms (W1) |
+| Emblem | `assets/emblems/ssarith/hull_mask.png`, rendered from `docs/mockups/lib/emblems.js` by `tools/mockups/emblem_masks.mjs`, painted from above on the top armour over a patch of its plate colour, in its own hull colours | 5-7 m across |
+
+- **The page**: Look (Painted, PBR, Clay) and Light (Studio, Night). PBR uses the base colour, ORM, tangent normals and a
+  soft room environment; both looks add the light map and the emission. At night the live lights drop to almost nothing
+  and the ships are lit by their own floods, lamps and windows; strobes flash, beacons pulse, position lights burn steady
+  (sprites at the fixtures, written to the manifest).
+- **Cost**: two more bakes a ship (tangent normals, hull lights), about 12 minutes a ship at 2048 px and 32 samples; the
+  page carries six maps a ship.
+- Provisional: the window and flood colours (H5), the windows' places (until the rooms are planned).
+
 ## Version 13: the picks only, their hull detail modelled and baked (owner, 2026-11-05)
 
 With the reference game's orthographic sheet of a ship (not committed): "discard ships that I didnt want, only keep the
@@ -164,4 +189,5 @@ artifact record and git.
 | # | Question | Recommendation (provisional) |
 |---|---|---|
 | H1 | How is the Hunt's culture to be set? | We draft several traditions inside the Hunt for the owner to pick and change (accepted as recommended, 2026-11-04) |
+| H5 | What colour are the Hunt's windows and floodlights? | Pale green-white windows, warm white floods (provisional, as drawn) |
 | H4 | Which blockouts go on to be designed? | Answered by the owner, 2026-11-05: 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident; Spearhead withdrawn |

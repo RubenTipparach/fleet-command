@@ -1,5 +1,7 @@
 {
   "_doc": "The Ssarith Hunt picks' hull detail: what tools/blender/hull_detail.py builds over each low-poly hull before painted_bake.py --ship bakes it onto the ship's own UVs (Ship Design Bible chapters 14 and 15). Ship space: +x port, +y up, +z bow, metres. A feature off the centreline is mirrored to starboard (one axis of symmetry); nothing repeats. face: where it sits, found by a ray (top: from above at [x, z]; bottom: from below at [x, z]; port: from the port side at [z, y]; bow: from ahead at [x, y]). Owner, 2026-11-05: \"the gorn ships have things like vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the same\", \"notice stuff like liveries, smooth sphereical portions of armor, and specifically shaped vents\", \"no repeating elemnts, single axis symmetry, and lots of shading to give the armor depth\".",
+  "_doc_lighting": "logo: the faction emblem (assets/emblems/<faction>/hull_mask.png) painted on the top armour, centred at [x, z], size_m across, lit by its own flood. lighting.floods: spotlights standing 0.9 m off the hull that graze the plating toward aim (aft, fwd, out, in, up, down), 90 degree cones (Ship Design Bible chapter 9). windows: person-sized window rows on the port flank (mirrored) between z_m, one row per rows_y_m, provisional until the ship's room plan places them (W1). Position lights, beacons, strobes and the belly pair are placed from the hull's own shape.",
+  "faction": "ssarith",
   "defaults": {
     "armour_t_m": 0.5,
     "sub_t_m": 0.22,
@@ -36,7 +38,8 @@
     "greebles_per_m2": 1.6,
     "overlay_min_m2": 22.0,
     "overlay_inset": 0.86,
-    "overlay_lift_m": 0.3
+    "overlay_lift_m": 0.3,
+    "light_ref": 0.9
   },
   "ships": {
     "hooded_lance": {
@@ -261,6 +264,54 @@
             "w_m": 1.3
           }
         }
+      ],
+      "logo": {
+        "at": [
+          0,
+          4
+        ],
+        "size_m": 6.5
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              10,
+              -34
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -30,
+              1.5
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "bottom",
+            "at": [
+              0,
+              12
+            ],
+            "aim": "fwd",
+            "tilt_deg": 10
+          }
+        ]
+      },
+      "windows": [
+        {
+          "z_m": [
+            -40,
+            2
+          ],
+          "rows_y_m": [
+            -2.6,
+            0.9
+          ]
+        }
       ]
     },
     "forked_prow": {
@@ -466,6 +517,54 @@
             "sweep": 0.5,
             "w_m": 1.1
           }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -12
+        ],
+        "size_m": 5.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              4,
+              -40
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -40,
+              1
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              0,
+              16
+            ],
+            "aim": "fwd",
+            "tilt_deg": 10
+          }
+        ]
+      },
+      "windows": [
+        {
+          "z_m": [
+            -40,
+            4
+          ],
+          "rows_y_m": [
+            -3.0,
+            0.5
+          ]
         }
       ]
     },
@@ -673,6 +772,54 @@
             "w_m": 1.4
           }
         }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -6
+        ],
+        "size_m": 7.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              8,
+              -40
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -38,
+              2
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              0,
+              22
+            ],
+            "aim": "fwd",
+            "tilt_deg": 8
+          }
+        ]
+      },
+      "windows": [
+        {
+          "z_m": [
+            -42,
+            6
+          ],
+          "rows_y_m": [
+            0.0,
+            3.5
+          ]
+        }
       ]
     },
     "trident": {
@@ -869,6 +1016,55 @@
             "sweep": 0.4,
             "w_m": 1.2
           }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -27
+        ],
+        "size_m": 6.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              6,
+              -42
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -36,
+              1
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              13,
+              22
+            ],
+            "aim": "fwd",
+            "tilt_deg": 10
+          }
+        ]
+      },
+      "windows": [
+        {
+          "z_m": [
+            -40,
+            8
+          ],
+          "rows_y_m": [
+            -3.5,
+            0.0,
+            3.5
+          ]
         }
       ]
     }

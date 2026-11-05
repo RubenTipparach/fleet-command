@@ -76,56 +76,8 @@ Look at the tile (albedo beside its normal map, and tiled 2 x 2) and at the ship
 ## Ship mode: every ship its own unwrap, colour and AO
 
 The owner, 2026-11-05: "every ship needs custom uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR
-MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need a detail mask in the future", "Also dont forget to
-bake AO as well". The rule is in CLAUDE.md section 10 and the Ship Design Bible, chapter 15 (T1-T4). This is the binding way
-to texture a ship; the tile steps above are for detail.
-
-1. **Export the ship from its page** as OBJ in ship space (+x port, +y up, +z bow, metres), one object per named part,
-   light strips as `glow_*` objects: `NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs` (the page's
-   `MOCKUP_EXPORT_OBJ`), into `tools/materials/raw/painted/ships/` (gitignored).
-2. **Unwrap** in Blender: import as it is (forward Y, up Z, so nothing is converted), the light strips' faces given
-   their own material, join, Smart UV Project (60 degrees), then pack the islands again by shape with rotation
-   (`pack_islands`, CONCAVE) so the texels go on the hull.
-3. **Build the detail over it** (`tools/blender/hull_detail.py`, laid out in `data/ships/<faction>/hull_detail.json`;
-   owner, 2026-11-05: "vents, lights, and sub armor pieces, and primary armor peices", "liveries, smooth sphereical
-   portions of armor, and specifically shaped vents", "no repeating elemnts, single axis symmetry, and lots of shading"):
-   - the under layer: a copy of the hull, dark, its strips kept;
-   - primary armour: the hull's faces grouped by facing, thickened 0.5 m outward (Solidify) and cut apart by one Exact
-     boolean against gap slabs (top and bottom: a kinked spine and swept chevrons, every station its own spacing and
-     sweep; flanks: raked cuts), the data's exposed areas and every feature's hole; split into plates, each raised by its
-     own amount, the big ones with a smaller plate laid over part of them (cut by a raked line, drawn in, lifted);
-   - sub-armour: a thinner shell (0.22 m) with its own cuts and wide gaps;
-   - greebles only where both armour layers leave the hull bare (a ray up from the hull finds no armour);
-   - domes (a sunk sphere in a collar ring, straps that hug it), fans (recess, hub, tilted fins, lamp ring), louvres
-     (chevron or raked slot outlines cut through, slanted slats clipped to the outline), lamps;
-   - everything off the centreline built on the port side and mirrored with a reflected frame, and every piece's `rid`
-     a hash of its mirrored position, so the ship has one axis of symmetry and nothing repeats.
-   Join the detail into one object before baking: the bake's setup is per object, and 600 pieces cost minutes a pass.
-   Bake it onto the hull's UVs, selected to active (cage 1.3 m, ray 2.8 m), the hull itself hidden from rays: a data pass
-   (kind, rid, Bevel-node edges), glow, position, object-space normals, AO (2.2 m) and a low sun's direct light with its
-   cast shadows (DIFFUSE, direct only).
-4. **Paint** (`paint_ship`): each texel by its kind (armour from the palette by rid, sub-armour greyer, the under layer
-   near black, greebles, the dome's green, slats, vents), liveries from the position, then the sun's light in soft steps
-   over a low ambient from the AO, the AO curved and inked, each plate pillowed darker toward its gaps, lit and shaded
-   edges, the dome's highlight, grain, and the lamps' glow; the light strips a dark channel with a lit line.
-5. **Write** `assets/ships/<faction>/<ship>_{albedo,ao,emit,normal}.png` and the manifest (the UV mesh, `uv_m` metres of
-   hull per UV unit, sha256 of each map; the AO is kept beside, not inlined, as it is already in the albedo). Inline it
-   into the page, which shows the UV mesh with its own map, its glow and its object-space normal map, and no tile.
-
-```sh
-NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs
-/opt/blender/blender -b --python tools/blender/painted_bake.py -- --ship hooded_lance,forked_prow,harpoon,trident --px 2048 --samples 64
-python3 tools/mockups/inline_data.py docs/mockups/ssarith-ship-concepts.html
-```
-
-Judge it on the page, close up and at board distance: plates read as plating that follows the form, not bricks; markings
-read; no seam shows as a hard colour jump; the AO darkens the joints and the crevices between branches.
-
-| You see | Cause | Fix |
-|---|---|---|
-| Hundreds of tiny islands and mostly empty texture | A hull of stuck-on primitives, every face at an angle to its neighbour | Grow the hull as one structure (Ship Design Bible chapter 14); pack the islands again by shape |
-| The hull reads as brickwork | Plates all one length, joints staggered by half | A plate length and an offset per course, from a hash |
-| A flat olive hull | Only the per-part paint, nothing laid over it | The modelled detail of step 3 |
-| Every gap between plates glows | A mesh copy's materials cleared: Blender zeroes every face's material index | Read which faces are strips before clearing |
-| Each bake pass takes minutes | Hundreds of separate objects selected to active | Join the detail into one object first |
-| The detail is too fine to read at ship scale | Hairline gaps, small features | Trenches of 2.6-4.6 m in about 40 % of the cuts, domes and fans of 4-6 m, a second plate over the big ones |
+MAIN COLOR MAP", "tile textures are for DETAIL only", "Also dont forget to bake AO as well". A ship's own texture is now its
+own skill, **`ship-detailing`** (`.claude/skills/ship-detailing/SKILL.md`): growing the hull, its unwrap, the modelled
+detail layer (`tools/blender/hull_detail.py`), the bake and the paint (`tools/blender/painted_bake.py --ship`, which uses
+this skill's paint-over for its painted map), the PBR set and the hull lights. This skill keeps the tile method, for
+detail.

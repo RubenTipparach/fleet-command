@@ -503,16 +503,17 @@ saying what changes here. Where a note and the copied text below it disagree, th
   NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need
   a detail mask in the future", "dont forget to bake AO as well"). Every ship is unwrapped on its own; its main colour map
   is painted onto its own UVs, never a repeating tile; tiles add fine detail only (a detail mask to come); its AO is baked
-  onto its own UVs. The Concord and Krai lines are to be moved onto this (`painted-bake`, ship mode; Ship Design Bible
-  chapter 15, T1-T4).
+  onto its own UVs. The Concord and Krai lines are to be moved onto this (`ship-detailing`; Ship Design Bible chapter 15,
+  T1-T4).
 - **A hull's detail is modelled and baked: layered armour, distinct features, nothing repeated** (owner, 2026-11-05:
   "vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the
   same", "liveries, smooth sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis
   symmetry, and lots of shading to give the armor depth"). A high-poly layer over the hull (`tools/blender/hull_detail.py`,
   laid out in `data/ships/<faction>/hull_detail.json`): primary plates each cut to its own outline and standing proud by
   its own amount, sub-armour beneath, machinery in the gaps and trenches, domes, shaped vents, lamps and liveries, mirrored
-  about the centreline, baked with a low sun's cast shadows and deep AO onto the ship's own UVs (Ship Design Bible
-  chapter 15, T5-T8).
+  about the centreline, baked with a low sun's cast shadows and deep AO onto the ship's own UVs, painted into a painted
+  map and a PBR set (base colour, ORM, tangent normals, emission) with the hull lights baked into a light map
+  (`ship-detailing`; Ship Design Bible chapter 15, T5-T8).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).
@@ -575,6 +576,7 @@ Before claiming anything is done, run what applies:
 | `blender-organic-panels` | Organic, grown panels in Blender (the Vhorr Brood first): one body of flesh, chitin and bone round crisp instruments, black smoked screens, rim-lit keys, panels floating over the game with no backdrop, growth measured clear of readouts (sections 7, 10). Its companion guide is the Organic Panel Bible, `docs/design/organic-bible.html`. |
 | `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
 | `painted-bake` | Hull textures that read drawn on: a high-poly tile's occlusion, normals, edges and plate ids rendered in Blender and painted over (flat plates, painted light, inked crevices, lit edges, glow), after the reference games' look, never their art (section 10). |
+| `ship-detailing` | Detailing a ship from blockout to game-ready textures: the hull grown as one structure, its own unwrap, a modelled detail layer (layered armour, machinery, domes, vents, lamps, windows, emblem, liveries, light fixtures), mirrored and never repeated, baked onto its UVs and painted into a painted map and a PBR set with emission and a hull-light map, with image samples (section 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

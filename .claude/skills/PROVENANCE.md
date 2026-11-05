@@ -28,6 +28,7 @@ note, and the note wins where they differ.
 | `blender-organic-panels` | New, from this session's organic panel study (`tools/blender/organic_study.py`, our own shapes; the reference screenshots are not committed) | | 2026-10-31 | Its companion guide: `docs/design/organic-bible.html` (the Organic Panel Bible), with the study's step renders in `docs/design/organic-bible/`. |
 | `krita-brushwork` | New, from this session: Krita 5.3.4.1 run headless under Xvfb with a script-runner plugin | | 2026-10-31 | `scripts/install-krita.sh`, `tools/krita/`. |
 | `painted-bake` | New, from this session (owner, 2026-11-05: "might need a new skill to make high -poly AO baked texture that looks drawn on"): a paint-over of Cycles passes, on the panel kit | | 2026-11-05 | `tools/blender/painted_bake.py`, `assets/textures/painted/`. |
+| `ship-detailing` | New, from this session (owner, 2026-11-05: "if like you to write up a skill for detailing space ships with custom texturing", "Include image samples in your documentation"): the Ssarith Hunt ships' method, written up with its samples | | 2026-11-05 | `tools/blender/hull_detail.py`, `tools/blender/painted_bake.py --ship`, `tools/mockups/export_blockouts.mjs`, `tools/mockups/emblem_masks.mjs`, `data/ships/ssarith/hull_detail.json`. |
 
 Data and code borrowed for the mockups (not skills, recorded here so they are found):
 - The puff nebulae in `docs/mockups/game-flow.html` (camera-facing billboards, noise-eroded edges, lit as spheres,

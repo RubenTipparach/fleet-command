@@ -1,0 +1,10 @@
+{
+  "_doc": "Ssarith Hunt's emblem as a mask for hull painting: red the field, green the device, transparent the ground. Written by tools/mockups/emblem_masks.mjs from docs/mockups/lib/emblems.js; never edited by hand.",
+  "size_px": 512,
+  "hull": {
+    "plate": "#3a4a32",
+    "field": "#c9c0a2",
+    "device": "#e8e0c8",
+    "lit": false
+  }
+}

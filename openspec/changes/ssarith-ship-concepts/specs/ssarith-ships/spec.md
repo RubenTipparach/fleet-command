@@ -70,3 +70,13 @@ element repeated; lit by a baked low sun with its cast shadows and AO (Ship Desi
 #### Scenario: One axis of symmetry
 - **WHEN** the ship is seen from above
 - **THEN** its port and starboard detail mirror each other, plate for plate and colour for colour
+
+### Requirement: A picked Hunt ship has game-ready maps and is lit by its own lamps
+
+A picked Hunt ship SHALL have, on its own UVs, a PBR set (base colour without light, ORM, tangent-space normal map,
+emission) and a light map of its hull lights (floods, position lights, beacons, strobes, windows), and the Hunt page SHALL
+show it in that PBR set under the live light and at night by its own lamps, its strobes and beacons blinking.
+
+#### Scenario: Night
+- **WHEN** Night is chosen on the Hunt page
+- **THEN** each ship shows the floods' pools on its plating, its emblem lit, its window rows, steady position lights, and strobes and beacons that blink

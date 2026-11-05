@@ -33,12 +33,16 @@ import bpy
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
-KIND = {"under": 0.12, "greeble": 0.28, "sub": 0.39, "armour": 0.5, "dome": 0.64, "slat": 0.74, "vent": 0.82, "strip": 0.89, "lamp": 0.95}
-LAMP_RGB = {"red": (1.0, 0.12, 0.06), "amber": (1.0, 0.78, 0.3), "green": (0.27, 1.0, 0.54), "strip": (0.27, 1.0, 0.54)}
+KIND = {"under": 0.12, "greeble": 0.28, "sub": 0.39, "armour": 0.5, "dome": 0.64, "slat": 0.74, "vent": 0.82, "strip": 0.89,
+        "lamp": 0.95}
+LAMP_RGB = {"red": (1.0, 0.12, 0.06), "amber": (1.0, 0.78, 0.3), "green": (0.27, 1.0, 0.54), "strip": (0.27, 1.0, 0.54),
+            "white": (1.0, 1.0, 1.0), "flood": (1.0, 0.92, 0.78), "window": (0.86, 1.0, 0.84)}
+FIXTURES = []  # the lights the bake lights the hull with, filled by build(): dicts of kind, pos, dir, rgb, power_w, cone_deg
 MATS = []  # (material, switch) for every material made here: switch(what) relinks its output for the next bake
 
 
 # ----------------------------------------------------------------------------- materials
+GLOW_W_M2 = 6.0   # how brightly a lamp's or window's own face lights the hull next to it, in the light pass
 BEVEL_M = {"armour": 0.3, "sub": 0.14, "dome": 0.05}   # the armour's edges rolled wide, so each plate reads pillowed in the light
 
 
@@ -64,11 +68,14 @@ def kind_material(kind, glow=None):
     L.new(sep.outputs[0], comb.inputs[1]); L.new(inv.outputs[0], comb.inputs[2])
     rgb = N.new("ShaderNodeRGB"); rgb.outputs[0].default_value = (*(LAMP_RGB[glow] if glow else (0, 0, 0)), 1.0)
     em = N.new("ShaderNodeEmission")
+    lit = N.new("ShaderNodeEmission"); L.new(rgb.outputs[0], lit.inputs[0]); lit.inputs[1].default_value = GLOW_W_M2
     bs = N.new("ShaderNodeBsdfDiffuse"); bs.inputs["Color"].default_value = (1, 1, 1, 1); L.new(bev.outputs[0], bs.inputs["Normal"])
     src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"]}
 
     def switch(what):
-        if what == "shade":
+        if what == "light" and glow:      # the light pass: lamps and windows shine on the hull around them
+            L.new(lit.outputs[0], out.inputs[0])
+        elif what in ("shade", "light"):
             L.new(bs.outputs[0], out.inputs[0])
         else:
             L.new(src[what], em.inputs[0]); L.new(em.outputs[0], out.inputs[0])
@@ -286,6 +293,113 @@ def lamp(F, M):
         parts.append((place(bm_box(s * 2.6, s * 1.8, s * 0.3, at=(-s * 0.2, 0, 0)), M), "armour_housing", 0.41))
         parts.append((place(bm_box(s * 1.2, s * 2.4, s * 0.42, at=(-s * 1.5, 0, 0)), M), "armour_housing", 0.53))
     return parts
+
+
+def window_rows(F, surf):
+    """Person-sized windows (Ship Design Bible W1-W3: 1.1 m by 0.6 m, one row a deck, 3.5 m apart, in groups of 4 to 12
+    with gaps, about one in five dark) along a stretch of the port flank: [(loc, normal, lit)]. Placed from data until
+    the ship's room plan places them (provisional: W1 wants a room with people behind every one)."""
+    out = []
+    z0, z1 = F["z_m"]
+    for y in F["rows_y_m"]:
+        r = random.Random(int(y * 100) * 31 + int(z0 * 10))
+        z = z1
+        while z > z0:
+            n = r.randint(4, 12)
+            for k in range(n):
+                zk = z - k * 1.6
+                if zk < z0:
+                    break
+                h = surf.hit("port", [zk, y])
+                if h and abs(h[1].x) > 0.6:     # only on faces that look out to the side
+                    out.append((h[0], h[1], r.random() > 0.2))
+            z -= n * 1.6 + r.uniform(2.0, 4.5)
+    return out
+
+
+def window(lit, M, cutters):
+    cutters.append(place(bm_box(1.1, 0.6, 3.0, at=(0, 0, -1.0)), M))
+    return [(place(bm_box(1.1, 0.6, 0.06, at=(0, 0, 0.02)), M), "lamp:window" if lit else "vent")]
+
+
+def fixture(kind, pos, d, rgb, power, cone=None, size=0.0):
+    FIXTURES.append({"kind": kind, "pos": [round(c, 3) for c in pos], "dir": [round(c, 4) for c in d.normalized()],
+                     "rgb": list(rgb), "power_w": power, "cone_deg": cone, "size_m": size})
+
+
+def tangent_aim(n, toward, tilt_deg):
+    """A direction along the surface toward `toward`, tilted tilt_deg into it, for a lamp that grazes the plating."""
+    t = toward - n * n.dot(toward)
+    t = t.normalized() if t.length > 1e-3 else n.orthogonal().normalized()
+    a = math.radians(tilt_deg)
+    return (t * math.cos(a) - n * math.sin(a)).normalized()
+
+
+def lights(lo, S, surf, mats, lamps, feats):
+    """The hull's light fixtures (Ship Design Bible chapter 9, aircraft at night): the data's floods and logo flood,
+    a belly pair, position lights (port red, starboard green, white aft), red beacons top and bottom, white strobes at
+    the bow's tips. Each gets a small lit lamp on the hull (so it shows in the emission) and a light for the bake."""
+    FIXTURES.clear()
+    vs = [v.co for v in lo.data.vertices]
+    zmin, zmax = min(v.z for v in vs), max(v.z for v in vs)
+    zmid = (zmin + zmax) / 2
+
+    def lamp_at(loc, n, colour, s, mirror=False):
+        feats.append(([(place(bm_box(s, s, s * 0.6), frame_at(loc, n, mirror)), "lamp:" + colour)], loc))
+
+    def spot(loc, n, aim, rgb, power, cone, standoff, name):
+        p = loc + n * standoff
+        fixture(name, p, aim, rgb, power, cone)
+        lamp_at(loc, n, "flood", 0.45)
+    D = S.get("lighting", {})
+    for F in D.get("floods", []):
+        h = surf.hit(F["face"], F["at"])
+        if not h:
+            continue
+        loc, n = h
+        toward = Vector({"aft": (0, 0, -1), "fwd": (0, 0, 1), "out": (1, 0, 0), "in": (-1, 0, 0), "up": (0, 1, 0), "down": (0, -1, 0)}[F["aim"]])
+        for m in ((False, True) if (F["face"] == "port" or abs(loc.x) > 0.3) else (False,)):
+            R = Matrix.Diagonal((-1, 1, 1)) if m else Matrix.Identity(3)
+            ll, nn, tw = R @ loc, R @ n, R @ toward
+            spot(ll, nn, tangent_aim(nn, tw, F.get("tilt_deg", 14)), LAMP_RGB["flood"], F.get("power_w", 2600), F.get("cone_deg", 90), 0.9, "hull_flood")
+    lg = S.get("logo")
+    if lg:
+        h = surf.hit("top", lg["at"])
+        if h:
+            c, n = h
+            hh = surf.hit("top", [lg["at"][0], lg["at"][1] + lg["size_m"] * 0.85])
+            if hh:
+                p = hh[0] + hh[1] * 2.2
+                fixture("logo_flood", p, c - p, LAMP_RGB["flood"], lg.get("flood_w", 3200), 60)
+                lamp_at(hh[0], hh[1], "flood", 0.5)
+    for zz, aim in ((zmid + 6, (0, 0, -1)), (zmid - 6, (0, 0, 1))):   # the belly pair, one forward, one aft, pools apart
+        h = surf.hit("bottom", [0, zz])
+        if h:
+            spot(h[0], h[1], tangent_aim(h[1], Vector(aim), 12), LAMP_RGB["flood"], 2200, 90, 0.9, "belly_flood")
+    xmax = max(vs, key=lambda v: v.x)                                  # the widest frame: position lights
+    for sign, colour in ((1, "red"), (-1, "green")):
+        p = Vector((sign * xmax.x, xmax.y, xmax.z)); n = Vector((sign, 0, 0))
+        fixture("position", p + n * 0.6, n, LAMP_RGB[colour], 60, None, 0.4); lamp_at(p, n, colour, 0.5)
+    aft = min(vs, key=lambda v: v.z + abs(v.x) * 0.5)
+    fixture("position", aft + Vector((0, 0, -0.6)), Vector((0, 0, -1)), LAMP_RGB["white"], 60, None, 0.4)
+    lamp_at(aft, Vector((0, 0, -1)), "white", 0.5)
+    for face in ("top", "bottom"):                                    # red beacons, mid-ship on the centreline
+        h = surf.hit(face, [0, zmid])
+        if h:
+            fixture("beacon", h[0] + h[1] * 0.6, h[1], LAMP_RGB["red"], 80, None, 0.5); lamp_at(h[0], h[1], "red", 0.6)
+    tips = []                                                          # white strobes at the bow's tips
+    for v in sorted(vs, key=lambda v: -v.z):
+        if v.z < zmax - 18 or v.x < -0.01:
+            continue
+        if all((v - t).length > 8 for t in tips):
+            tips.append(v.copy())
+        if len(tips) >= 3:
+            break
+    for t in tips:
+        for sx in ((1, -1) if t.x > 0.3 else (1,)):
+            p = Vector((t.x * sx, t.y, t.z))
+            fixture("strobe", p + Vector((0, 0, 0.5)), Vector((0, 0, 1)), LAMP_RGB["white"], 40, None, 0.35)
+            lamp_at(p, Vector((0, 0, 1)), "white", 0.4)
 
 
 # ----------------------------------------------------------------------------- the armour
@@ -561,6 +675,13 @@ def build(lo, S, D, seed):
         at_both(F, louvre)
     for F in S.get("lamps", []):
         at_both(F, lambda F, M, cut: lamp(F, M))
+    for F in S.get("windows", []):
+        for loc, nor, lit_ in window_rows(F, surf):
+            for m in (False, True):
+                cut = []
+                feats.append((window(lit_, frame_at(loc, nor, m), cut), loc))
+                holes.extend(obj_from(c, "hole", mats["armour"]) for c in cut)
+    lights(lo, S, surf, mats, lamps, feats)
     armour = build_armour(lo, D, S, rng, holes, mats, "primary")
     sub = build_armour(lo, D, S, random.Random(seed * 31 + 7), holes, mats, "sub")
     for h in holes:
