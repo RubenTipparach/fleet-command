@@ -22,6 +22,8 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
 
 ## Guides
 
+- Fleet Command Missions: https://claude.ai/artifact/LRgd2iRm8gdTZ84i7htXhH (source `docs/design/mission-guide.html`, record in
+  `docs/artifacts/mission-guide/`): mission types, outcome grades, scenarios and story chains.
 - Emblem Design Guide: https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V (source `docs/design/emblem-guide.html`, record in
   `docs/artifacts/emblem-guide/`). How faction emblems are designed: sketch first with every choice explained, the
   owner picks, then 3D; the rules; the owner's notes, kept on the page.

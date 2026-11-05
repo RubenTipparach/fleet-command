@@ -116,3 +116,4 @@
 - 2026-11-05, desktop session: version 119, version id `1793863693-e0b0`, edited on the live version 118: M1 v8 (the faction screen, skins on the campaign, missions as scripts, test maps), M10 v8, M14 v2, M19 v5 (the shared emblem builder).
 - 2026-11-05, desktop session: version 120, version id `1793865072-cc30`: M1 v9.
 - 2026-11-05, desktop session: version 121, version id `1793865429-5b9d`: M1 v10.
+- 2026-11-05, desktop session: version 122, version id `1793866185-85f0`: the Fleet Command Missions guide added under Guides.

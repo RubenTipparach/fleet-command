@@ -51,6 +51,13 @@ The owner, 2026-11-05: "Add test maps to scenarios". The skirmish lists the game
 inlined: Battle, Duel, Arming and Wrecks for each side) under **Test maps**, after the presets. A test map shows its ships at
 their starts on a 2 km grid and its roster, and launches straight into battle with its fixed fleets on its own side.
 
+## Mission types and scenarios
+
+The catalogue of mission types, the outcome grades, the first scenarios and story chains, and what the script shape needs
+next (grades, objectives, teams, lines per side, hails, gates, branches) are in the Fleet Command Missions guide,
+`docs/design/mission-guide.html` (https://claude.ai/artifact/LRgd2iRm8gdTZ84i7htXhH), written from the reference game's
+mission files (structure only, our own words).
+
 ## Open questions
 
 | # | Question | Provisional |
