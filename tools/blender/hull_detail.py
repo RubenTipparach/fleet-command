@@ -659,7 +659,28 @@ def split_plates(o):
 
 
 # ----------------------------------------------------------------------------- greebles on the bare under layer
-def greebles(lo, armour, D, rng, mats):
+def bvh_of(objs):
+    """One BVH over the objects' meshes, in world space."""
+    bm = bmesh.new()
+    for o in objs:
+        m = o.data.copy(); m.transform(o.matrix_world); bm.from_mesh(m); bpy.data.meshes.remove(m)
+    return BVHTree.FromBMesh(bm) if bm.faces else None
+
+
+def inside(bvh, p):
+    """Whether p is inside the closed meshes of bvh: the first face a ray meets faces away from where it started."""
+    if bvh is None:
+        return False
+    for d in (Vector((0.0, 0.0, 1.0)), Vector((0.31, 0.93, 0.19)).normalized()):
+        h = bvh.ray_cast(p, d, 20.0)
+        if h[0] is None or h[1].dot(d) <= 0:
+            return False
+    return True
+
+
+def greebles(lo, armour, D, rng, mats, holes=None):
+    """Machinery in the gaps and trenches the armour leaves. Never inside an opening (a window, a bay, a fan's or a
+    dome's well): a greeble there would stand in front of the pane and hide the room behind it."""
     bm = bmesh.new()
     for o in armour:
         bm.from_mesh(o.data)
@@ -681,8 +702,12 @@ def greebles(lo, armour, D, rng, mats):
             n = p.normal
             if abvh.ray_cast(q + n * 0.02, n, 0.9)[0] is not None:   # under armour: nobody sees it
                 continue
-            for mirror in (False, True):   # the port greeble and its mirror, one shape from one seed
-                parts.append(greeble(frame_at(q, n, mirror), q))
+            g = greeble(frame_at(q, n, False), q)
+            if holes is not None and any(inside(holes, v.co) for v in g.verts):
+                g.free()
+                continue
+            parts.append(g)   # the port greeble and its mirror, one shape from one seed (the openings are mirrored too)
+            parts.append(greeble(frame_at(q, n, True), q))
     return parts
 
 
@@ -750,6 +775,7 @@ def build(lo, S, D, seed):
     lights(lo, S, surf, mats, lamps, feats, D)
     armour = build_armour(lo, D, S, rng, holes, mats, "primary")
     sub = build_armour(lo, D, S, random.Random(seed * 31 + 7), holes, mats, "sub")
+    hole_bvh = bvh_of(holes)
     for h in holes:
         bpy.data.objects.remove(h)
     high += armour + sub
@@ -768,7 +794,7 @@ def build(lo, S, D, seed):
                 high.append(obj_from(bm, "lamp", lamps[kind[5:]], 0.5))
             else:
                 high.append(obj_from(bm, kind, mats[kind], rid_of(loc, salt=i * 0.37)))
-    gb = greebles(lo, armour + sub, D, rng, mats)
+    gb = greebles(lo, armour + sub, D, rng, mats, hole_bvh)
     if gb:
         high.append(obj_from(merge(gb), "greebles", mats["greeble"], 0.0))
         set_greeble_rids(high[-1])

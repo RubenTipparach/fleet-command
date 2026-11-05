@@ -106,6 +106,8 @@ Built over the low-poly hull, in ship space, never exported: it exists only to b
 - **Sub-armour**: the same with a thinner shell, its own cuts and wider gaps, so trenches show a second layer.
 - **Greebles** only where both armour layers leave the hull bare: points sampled over the hull, kept if a ray up from
   them finds no armour within 0.9 m; blocks, sub-armour slabs, pipe runs and rib sets, each seeded by where it is.
+  **Never inside an opening**: a greeble with any vertex inside a hole cutter (a window, a bay, a fan's or dome's well)
+  is dropped, or it stands in front of the pane and the bake hides the room behind it (v15's first bake: ragged bays).
 - **Features**, each sitting in a hole cut for it: domes (a sphere sunk to stand h proud, a collar ring, straps that hug
   it: a slightly larger sphere intersected with a slab), fans (recess, hub, tilted fins, a lamp ring), louvres (a convex
   outline or two cut through, slats tilted and clipped to the outline with `bisect_plane`), lamps (the eye lamp in a
