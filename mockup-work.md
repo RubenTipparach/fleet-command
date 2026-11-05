@@ -35,7 +35,7 @@ account and every link here is updated.
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
-| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v3) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
+| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v4) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -702,4 +702,11 @@ main holds 16 to 18.
   falling off with depth; our own scene after the owner's photograph, which is not committed), the bows floating over them
   as thin parts. Steel shafts, hard green heads, no blood. The z-fighting was a feather's orange tip laid over its red body
   at 0.08 mm: they now meet edge to edge. The fern-leaf graph is back; the hologram and the blood are gone.
+- **v4, thorny recurves and inner walls** (owner, 2026-11-05: "can you smooth out the bows?", "need walls inner, on emblem",
+  "the bow is all wobly", "this is what it really looks like, but I need you to add some character to it, make it more
+  alien", "ooh the thorny bows are great", "omit some thornes a the bottom half where the shooter might put their grip
+  hand"): each bow one smooth recurve (an analytic curve, the tips flipping forward past the string), tally spurs on the
+  back of each limb except where the grip hand closes, a forked hook at each tip; wooden inner walls lining the recess.
+- **The Emblem Gallery** (owner, 2026-11-05: "create an emblem gallery artifact"): `docs/mockups/emblem-gallery.html`,
+  https://claude.ai/artifact/VdjoRwjMKG3Er8rC2H2epS, every finished badge with its renders; on the tracker under Misc.
 

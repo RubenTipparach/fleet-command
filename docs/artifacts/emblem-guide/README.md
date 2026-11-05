@@ -76,3 +76,4 @@
 - 2026-11-05, version 28 (`1793838728-f910`): each arrowhead of SD unique (owner: "make each arrowhead unique"): the learner's leaf (no barb), the hunter's barb, the elder's tally (a notch for each hunt).
 - 2026-11-05, version 29 (`1793840985-686c`): SD's feathers larger, their tips their own shapes (owner: "Feathera red with orange tip").
 - 2026-11-05, version 30 (`1793846055-70a5`): SD's feather body and tip edge to edge (owner: "z fighting").
+- 2026-11-05, version 31 (`1793847828-247e`): SD's bows a real recurve with tally spurs and forked tips (owner: "make it more alien", "ooh the thorny bows are great"), no spur where the grip hand closes; the recess's inner walls in the parts.

@@ -32,3 +32,9 @@
   ones in shadow (`tools/emblems/ssarith_ferns.py`, our own scene after the owner's photograph, which is not committed); the
   bows float over them as thin parts; steel shafts, hard green heads, no blood; the feathers' body and tip meet edge to edge
   (the z-fighting was the tip laid over the body). The fern-leaf graph is back; the holographic jungle is gone.
+- 2026-11-05, version 4 (`1793847827-7952`): owner: "can you smooth out the bows?", "need walls inner, on emblem", "the bow is
+  all wobly", then with a picture of a recurve bow "this is what it really looks like, but I need you to add some character
+  to it, make it more alien", "ooh the thorny bows are great", "omit some thornes a the bottom half where the shooter might
+  put their grip hand": each bow is one smooth recurve curve (tips flipping forward past the string), with tally spurs on
+  the back of each limb (none where the grip hand closes below the arrow) and a forked hook at each tip; the recess is lined
+  with wooden inner walls 2 mm thick.
