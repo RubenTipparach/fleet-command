@@ -35,6 +35,7 @@ account and every link here is updated.
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
+| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v1) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -660,3 +661,23 @@ that", then "make the 3d version of the fang torc". Numbered 14 because two othe
   (`emblem_enamel_pearl` under a clear coat, `#c4161f`) for the founder's fang.
 - **Heights** (mm): field 0.3-1.0, thin crescent 0.6-2.2, fangs 0.6-2.6, torc 0.6-3.0, forge star 0.6-3.3, ring 0-3.6.
   No two faces share a plane.
+
+## 19. Ssarith badge in 3D
+
+Owner, 2026-11-05, of the Bow Rites sketch SD on the Emblem Design Guide: "Definitely would like to see more colors and
+shading on the bow and green arrows on the 3d rendering. I quite like that..shade the bow parts with like wood and the
+arrows green with blood", then "Background should be like a beige, dull brown and dry green forest". Numbered 19 because
+main holds 16 to 18.
+
+- **One source of shapes**: the guide exports SD's parts (`tools/emblems/export_parts.mjs ssarith` writes
+  `assets/emblems/ssarith/sd.parts.json`); the Blender render and the three.js badge both build from them.
+- **Blender**: `tools/blender/emblem_ssarith.py` on the shared harness `tools/blender/emblem_render.py`.
+- **three.js**: `docs/mockups/ssarith-emblem-3d.html` on the shared badge library `docs/mockups/lib/emblem-badge.js`, its
+  maps listed in `docs/mockups/lib/emblem-materials-ssarith.json` (apart from the shared list, so the other badges stay small).
+- **New Material Maker graphs** (`tools/materials/build_ptex.py`, 512 px, 0.05 m a tile): `emblem_wood_laminate` (the bows:
+  plies of a warm and a darker wood, grain along them), `emblem_lacquer_watch` (the arrows, Watch green), `emblem_blood_watch`
+  (the heads: the lacquer under dried blood), `emblem_enamel_forest` (the field: a dry forest of beige haze, dull brown
+  trunks and dry green canopy, the hunting ground). The rim is the platinum graph tinted bone.
+- **Heights** (mm): field 0.3-1.0; each bow's string, vanes, shaft, head and limb rise to 1.3, 1.5, 1.7, 1.9 and 2.3 mm,
+  each bow 0.9 mm prouder than the one behind it (the smallest in front); the rim 0-4.4. No two faces share a plane.
+

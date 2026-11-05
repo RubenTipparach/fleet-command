@@ -1,0 +1,145 @@
+{
+ "note": "The Material Maker maps the 3D Ssarith badge (docs/mockups/ssarith-emblem-3d.html) uses, inlined by tools/mockups/inline_data.py. Rendered from tools/materials/ptex/<material>.ptex (tools/materials/export_materials.sh); listed apart from emblem-materials.json so the other badge pages do not carry them.",
+ "pieces": {
+  "emblem_platinum/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/albedo.png"
+  },
+  "emblem_platinum/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/normal.png"
+  },
+  "emblem_platinum/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/orm.png"
+  },
+  "emblem_platinum/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/emblem_platinum/specular.png"
+  },
+  "emblem_wood_laminate/albedo": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_wood_laminate/albedo.png"
+  },
+  "emblem_wood_laminate/normal": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_wood_laminate/normal.png"
+  },
+  "emblem_wood_laminate/orm": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_wood_laminate/orm.png"
+  },
+  "emblem_wood_laminate/specular": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_wood_laminate/specular.png"
+  },
+  "emblem_lacquer_watch/albedo": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_lacquer_watch/albedo.png"
+  },
+  "emblem_lacquer_watch/normal": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_lacquer_watch/normal.png"
+  },
+  "emblem_lacquer_watch/orm": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_lacquer_watch/orm.png"
+  },
+  "emblem_lacquer_watch/specular": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_lacquer_watch/specular.png"
+  },
+  "emblem_blood_watch/albedo": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_blood_watch/albedo.png"
+  },
+  "emblem_blood_watch/normal": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_blood_watch/normal.png"
+  },
+  "emblem_blood_watch/orm": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_blood_watch/orm.png"
+  },
+  "emblem_blood_watch/specular": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_blood_watch/specular.png"
+  },
+  "emblem_enamel_forest/albedo": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_forest/albedo.png"
+  },
+  "emblem_enamel_forest/normal": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_forest/normal.png"
+  },
+  "emblem_enamel_forest/orm": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_forest/orm.png"
+  },
+  "emblem_enamel_forest/specular": {
+   "size": [
+    512,
+    512
+   ],
+   "file": "../../../assets/textures/materials/emblem_enamel_forest/specular.png"
+  }
+ }
+}

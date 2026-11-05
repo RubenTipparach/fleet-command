@@ -441,7 +441,7 @@ function polyFrame(pts, r, b) {
   const meet = (L1, L2) => { const den = L1.d[0] * L2.d[1] - L1.d[1] * L2.d[0], t = ((L2.p[0] - L1.p[0]) * L2.d[1] - (L2.p[1] - L1.p[1]) * L2.d[0]) / den; return [L1.p[0] + L1.d[0] * t, L1.p[1] + L1.d[1] * t]; };
   const inner = pts.map((_, i) => meet(lines[(i + n - 1) % n], lines[i]));
   const fieldD = roundPoly(inner, Math.max(2, r - b));
-  return { frame: roundPoly(pts, r) + fieldD, field: fieldD };
+  return { frame: roundPoly(pts, r) + fieldD, field: fieldD, inner };
 }
 
 // B's frames. Retired, with the owner's words: B-E1 and B-E3 ("dont like any of those shapes, though b-e2 is a good
@@ -892,16 +892,17 @@ const SD = (() => {
     // to the riser at the front.
     const half = [[-0.18, -0.5], [0, -0.44], [0.55, -0.3], [0.9, -0.12], [1, 0]];
     const line = half.map(([u, v]) => [sx + u * d, y + v * h]).concat(half.slice(0, -1).reverse().map(([u, v]) => [sx + u * d, y - v * h]));
-    const limb = polyD(thick(line, [1.8, 2.1, 2.6, 3.2, 4, 3.2, 2.6, 2.1, 1.8]));
-    const string = polyD([[sx - 0.6, y - 0.44 * h], [sx + 0.6, y - 0.44 * h], [sx + 0.6, y + 0.44 * h], [sx - 0.6, y + 0.44 * h]]);
+    const P = {};
+    P.limb = thick(line, [1.8, 2.1, 2.6, 3.2, 4, 3.2, 2.6, 2.1, 1.8]);
+    P.string = [[sx - 0.6, y - 0.44 * h], [sx + 0.6, y - 0.44 * h], [sx + 0.6, y + 0.44 * h], [sx - 0.6, y + 0.44 * h]];
     // The arrow: a shaft from its nock just behind the string, a narrow leaf head with one barb (below: it holds on one
     // side only), and two square-cut vanes just ahead of the string.
-    const shaft = polyD([[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]]);
-    const head = polyD([[tip, y], [tip - 4.2, y + 2.2], [tip - 7, y + 0.8], [tip - 7, y - 0.8], [tip - 8.4, y - 2.8], [tip - 4.2, y - 2.2]]);
-    const vanes = polyD([[sx + 2.5, y - 0.8], [sx + 3.5, y - 2.4], [sx + 7, y - 2.4], [sx + 6, y - 0.8]]) + polyD([[sx + 2.5, y + 0.8], [sx + 3.5, y + 2.4], [sx + 7, y + 2.4], [sx + 6, y + 0.8]]);
-    return { y, h, sx, tip, d, limb, string, shaft, head, vanes };
+    P.shaft = [[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]];
+    P.head = [[tip, y], [tip - 4.2, y + 2.2], [tip - 7, y + 0.8], [tip - 7, y - 0.8], [tip - 8.4, y - 2.8], [tip - 4.2, y - 2.2]];
+    P.vanes = [[[sx + 2.5, y - 0.8], [sx + 3.5, y - 2.4], [sx + 7, y - 2.4], [sx + 6, y - 0.8]], [[sx + 2.5, y + 0.8], [sx + 3.5, y + 2.4], [sx + 7, y + 2.4], [sx + 6, y + 0.8]]];
+    return { y, h, sx, tip, d, P, limb: polyD(P.limb), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.map(polyD).join('') };
   });
-  return { bows, fr: polyFrame(PEN, 2.5, 5) };
+  return { bows, PEN, fr: polyFrame(PEN, 2.5, 5) };
 })();
 function sdArt(k, ink = false) {
   const c = (x) => (ink ? '#000' : x);
@@ -1159,6 +1160,11 @@ async function measureOutline(svgInner) {
 }
 // The Krai's picked emblem (KC+, the fang torc) as polygons for its 3D badge (tools/emblems/export_parts.mjs krai).
 window.EMBLEM_PARTS_KRAI = () => ({ key: 'KC+', name: 'The Fang Torc', grid: 100, ...KC.parts });
+// The Ssarith's Bow Rites (SD) as polygons for its 3D badge (tools/emblems/export_parts.mjs ssarith): the pennon's outer
+// and inner edges (the badge rounds them with its bevels), and for each bow, smallest first, its limb, string, shaft, the
+// two vanes and the head. The youngest's is bows[0].
+window.EMBLEM_PARTS_SSARITH = () => ({ key: 'SD', name: 'The Bow Rites', grid: 100, frame: [SD.PEN, SD.fr.inner], field: [SD.fr.inner],
+  bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, head: q.P.head })) });
 // A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
 window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
 window.EMBLEM_CHECK = async () => {

@@ -155,12 +155,148 @@ float metal_$name(vec2 uv) { return 0.0; }
     return finish(g, "emblem enamel pearl", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.2)
 
 
+# ---- the Ssarith Hunt's badge, the Bow Rites (owner, 2026-11-05: "more colors and shading on the bow and green arrows on
+# the 3d rendering", "shade the bow parts with like wood and the arrows green with blood"). The bow is the Hunt's own,
+# laminated from cut plate (the guide's SD), so the wood shows its laminations as well as its grain.
+
+def emblem_wood_laminate():
+    """A bow's laminated wood: thin plies of a warm and a darker wood glued edge to edge (the Hunt's makers build their
+    bows from cut plate), long grain running along the plies with fine pores, a slow drift of tone between boards, and an
+    oiled, satin finish. The plies and grain run along the tile's v (the bows' length). One tile is 0.05 m."""
+    g = Graph("Emblem Wood Laminate")
+    ins = [("grain", "f", g.node("fbm2", noise=2, scale_x=64, scale_y=2, folds=0, iterations=5, persistence=0.55, offset=0.0)),
+           ("pore", "f", g.node("fbm2", noise=2, scale_x=256, scale_y=16, folds=0, iterations=2, persistence=0.5, offset=0.0)),
+           ("board", "f", fbm(g, 3, iterations=4))]
+    body = """
+// The plies: 40 per tile across u (1.25 mm each, so a 3 mm limb shows two or three), alternating a warm and a dark
+// wood, a hairline of glue between them.
+vec2 ply_$name(vec2 uv) { float x = uv.x * 40.0; return vec2(mod(floor(x), 2.0), min(fract(x), 1.0 - fract(x))); }
+float height_$name(vec2 uv) {
+	vec2 p = ply_$name(uv);
+	return 0.5 + 0.1 * ($grain(uv) - 0.5) - 0.12 * smoothstep(0.75, 0.9, $pore(uv)) - 0.15 * (1.0 - smoothstep(0.0, 0.06, p.y));
+}
+vec3 albedo_$name(vec2 uv) {
+	vec2 p = ply_$name(uv);
+	vec3 warm = vec3(0.56, 0.35, 0.17), dark = vec3(0.47, 0.28, 0.13);
+	vec3 c = mix(warm, dark, p.x) * (0.85 + 0.3 * $board(uv));
+	c *= 0.78 + 0.34 * smoothstep(0.25, 0.75, $grain(uv));
+	c *= 1.0 - 0.35 * smoothstep(0.75, 0.9, $pore(uv));
+	return mix(vec3(0.12, 0.07, 0.03), c, smoothstep(0.0, 0.06, p.y));
+}
+float rough_$name(vec2 uv) { return 0.42 + 0.12 * $grain(uv) + 0.2 * smoothstep(0.75, 0.9, $pore(uv)); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem wood laminate", ins, body, tile_m=0.05, depth_m=0.00008, ao_radius=4, ao_strength=0.4)
+
+
+def emblem_lacquer_watch():
+    """The arrows' green lacquer, the Hunt's Watch green (the phosphor of its tracking tubes): a deep green laid in thin
+    coats over the wood, with the grain faintly showing through, brush marks along the shaft, and a hard gloss. One tile
+    is 0.05 m."""
+    g = Graph("Emblem Lacquer Watch")
+    ins = [("grain", "f", g.node("fbm2", noise=2, scale_x=64, scale_y=2, folds=0, iterations=4, persistence=0.55, offset=0.0)),
+           ("brush", "f", g.node("fbm2", noise=2, scale_x=128, scale_y=4, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("cloud", "f", fbm(g, 3, iterations=4))]
+    body = """
+float height_$name(vec2 uv) { return 0.5 + 0.22 * ($brush(uv) - 0.5) + 0.1 * ($grain(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 deep = vec3(0.04, 0.33, 0.15), bright = vec3(0.17, 0.62, 0.32);
+	vec3 c = mix(deep, bright, 0.35 + 0.4 * $cloud(uv));
+	return c * (0.9 + 0.12 * $grain(uv));
+}
+float rough_$name(vec2 uv) { return 0.16 + 0.08 * $brush(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem lacquer watch", ins, body, tile_m=0.05, depth_m=0.00006, ao_radius=4, ao_strength=0.2)
+
+
+def emblem_blood_watch():
+    """The same green lacquer after the hunt: blood dried over it in blots and runs, near black where it pooled thick and
+    dark red where it thinned, glossier than the lacquer where it is fresh. Laid over the arrowheads. One tile is 0.05 m."""
+    g = Graph("Emblem Blood Watch")
+    ins = [("blot", "f", fbm(g, 5, iterations=5, persistence=0.6)),
+           ("run", "f", g.node("fbm2", noise=2, scale_x=24, scale_y=3, folds=0, iterations=4, persistence=0.5, offset=0.0)),
+           ("cloud", "f", fbm(g, 3, iterations=4)), ("speck", "f", fbm(g, 96, iterations=2, persistence=0.5))]
+    body = """
+// Where the blood is: blots, runs along the shaft's length, and fine spatter; 0 none, 1 thick.
+float blood_$name(vec2 uv) {
+	float b = smoothstep(0.48, 0.62, $blot(uv));
+	b = max(b, 0.8 * smoothstep(0.6, 0.72, $run(uv)));
+	return max(b, 0.7 * smoothstep(0.8, 0.86, $speck(uv)));
+}
+float height_$name(vec2 uv) { return 0.5 + 0.1 * blood_$name(uv) + 0.04 * ($blot(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 green = mix(vec3(0.04, 0.33, 0.15), vec3(0.17, 0.62, 0.32), 0.35 + 0.4 * $cloud(uv));
+	float b = blood_$name(uv);
+	vec3 thin = vec3(0.45, 0.03, 0.03), thick = vec3(0.16, 0.01, 0.015);
+	vec3 blood = mix(thin, thick, smoothstep(0.55, 0.85, $blot(uv)));
+	return mix(green, blood, b);
+}
+float rough_$name(vec2 uv) { return mix(0.18, 0.1, blood_$name(uv) * smoothstep(0.6, 0.8, $blot(uv))) + 0.15 * blood_$name(uv) * (1.0 - smoothstep(0.6, 0.8, $blot(uv))); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem blood watch", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.2)
+
+
+def emblem_enamel_forest():
+    """The badge's field, the Hunt's hunting ground (owner, 2026-11-05: "Background should be like a beige, dull brown and
+    dry green forest"): a dry forest painted in enamel. A beige haze, dull brown trunks standing in it at uneven spacing and
+    widths, nearer trunks darker, and dappled dry-green and olive canopy over them, with light falling through. Every
+    trunk and blot repeats whole across the tile, so the field tiles. One tile is 0.05 m."""
+    g = Graph("Emblem Enamel Forest")
+    ins = [("leaf", "f", fbm(g, 4, iterations=5, persistence=0.55)), ("leaf2", "f", fbm(g, 12, iterations=4, persistence=0.5)),
+           ("bark", "f", g.node("fbm2", noise=2, scale_x=96, scale_y=4, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("haze", "f", fbm(g, 3, iterations=4)), ("peel", "f", fbm(g, 40, iterations=3, persistence=0.5))]
+    body = """
+// Trunks: 5 columns across the tile, each with a trunk at a hashed offset and width, near (dark, wide) or far (pale, thin).
+// Returns x the trunk's cover (0-1), y its depth (0 far, 1 near).
+vec2 trunk_$name(vec2 uv) {
+	float cols = 5.0; float c = floor(uv.x * cols); float f = fract(uv.x * cols);
+	float near = step(0.55, hs_$name(vec2(c, 5.0)));
+	float w = mix(0.1, 0.18, hs_$name(vec2(c, 9.0))) * mix(0.8, 1.8, near);
+	float x0 = mix(0.2, 0.8, hs_$name(vec2(c, 13.0)));
+	float lean = 0.03 * (hs_$name(vec2(c, 21.0)) - 0.5) * sin(6.2831853 * uv.y);
+	float t = 1.0 - smoothstep(w * 0.4, w * 0.5, abs(f - x0 - lean));
+	return vec2(t * step(0.15, hs_$name(vec2(c, 31.0))), near);
+}
+// The canopy: dry leaves where the leaf noise is high, thicker toward the top of the tile's repeat, broken by light.
+float canopy_$name(vec2 uv) {
+	float l = 0.65 * $leaf(uv) + 0.35 * $leaf2(uv);
+	return smoothstep(0.47, 0.57, l);
+}
+float height_$name(vec2 uv) {
+	vec2 t = trunk_$name(uv);
+	return 0.5 + 0.12 * ($peel(uv) - 0.5) + 0.12 * t.x * (0.5 + t.y) + 0.08 * canopy_$name(uv);
+}
+vec3 albedo_$name(vec2 uv) {
+	vec3 beige = vec3(0.64, 0.57, 0.43), haze = vec3(0.55, 0.5, 0.38);
+	vec3 c = mix(beige, haze, $haze(uv));
+	vec2 t = trunk_$name(uv);
+	vec3 farT = vec3(0.44, 0.35, 0.24), nearT = vec3(0.26, 0.18, 0.11);
+	vec3 trunkC = mix(farT, nearT, t.y) * (0.85 + 0.3 * $bark(uv));
+	c = mix(c, trunkC, t.x);
+	float can = canopy_$name(uv);
+	vec3 dry = vec3(0.42, 0.44, 0.25), olive = vec3(0.3, 0.33, 0.18), straw = vec3(0.56, 0.53, 0.33);
+	vec3 leafC = mix(olive, dry, smoothstep(0.3, 0.7, $leaf2(uv)));
+	leafC = mix(leafC, straw, 0.5 * smoothstep(0.72, 0.85, $leaf2(uv)));
+	return mix(c, leafC, can * 0.92);
+}
+float rough_$name(vec2 uv) { return 0.3 + 0.1 * $peel(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem enamel forest", ins, body, tile_m=0.05, depth_m=0.00006, ao_radius=4, ao_strength=0.3)
+
+
 GRAPHS = {
     "hull_plate": hull_plate,
     "emblem_platinum": emblem_platinum,
     "emblem_enamel_signal": emblem_enamel_signal,
     "emblem_enamel_night": emblem_enamel_night,
     "emblem_enamel_pearl": emblem_enamel_pearl,
+    "emblem_wood_laminate": emblem_wood_laminate,
+    "emblem_lacquer_watch": emblem_lacquer_watch,
+    "emblem_blood_watch": emblem_blood_watch,
+    "emblem_enamel_forest": emblem_enamel_forest,
 }
 
 

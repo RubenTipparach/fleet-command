@@ -1,0 +1,99 @@
+<title>Ssarith Badge 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--
+  Fleet Command: the Ssarith Hunt's emblem SD, the Bow Rites, as a 3D badge (openspec/changes/faction-emblems; the Emblem
+  Design Guide). Owner, 2026-11-04 and 05: "3 bow and arrows overlapping pointed to the right", "Definitely would like to see
+  more colors and shading on the bow and green arrows on the 3d rendering", "shade the bow parts with like wood and the arrows
+  green with blood", "Background should be like a beige, dull brown and dry green forest".
+  The shapes come from the guide itself (tools/emblems/export_parts.mjs ssarith -> assets/emblems/ssarith/sd.parts.json), the
+  surfaces from Material Maker graphs (albedo, normal, ORM for AO, roughness and metal, and a specular map): laminated wood,
+  Watch green lacquer, the lacquer under dried blood, a dry forest in enamel and bone-tinted metal. Same parts and heights as
+  the Blender render (tools/blender/emblem_ssarith.py). The studio, materials, part builder, views and shots are the shared
+  badge, docs/mockups/lib/emblem-badge.js.
+  Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, window.MOCKUP_READY, window.MOCKUP_SCENE.
+-->
+<style>
+:root { --bg: #05070d; --panel: rgba(20, 24, 16, 0.9); --edge: #3d4a36; --ink: #eef3ff; --dim: #9aa6c4; --accent: #5bdc8c;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace; color-scheme: dark; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--body); overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; }
+.panel { position: fixed; background: var(--panel); border: 1px solid var(--edge); border-radius: 10px; padding: 10px 12px; }
+.title { left: max(12px, env(safe-area-inset-left, 0px)); top: calc(12px + env(safe-area-inset-top, 0px)); max-width: min(440px, calc(100% - 24px)); display: grid; gap: 6px; }
+.title h1 { margin: 0; font: 700 17px/1.2 var(--body); letter-spacing: 0.04em; text-transform: uppercase; }
+.title p { margin: 0; color: var(--dim); font-size: 13px; }
+.title a { color: var(--accent); }
+.title code { font: 500 11px var(--mono); color: var(--accent); }
+.bar { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100% - 24px); }
+.bar button { min-width: 44px; min-height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--edge); background: #161a12; color: var(--ink); font: 600 13px var(--body); cursor: pointer; }
+.bar button[aria-pressed="true"] { border-color: var(--accent); background: #24402a; }
+.bar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.renders { right: max(12px, env(safe-area-inset-right, 0px)); top: calc(12px + env(safe-area-inset-top, 0px)); display: grid; gap: 6px; justify-items: center; }
+.renders h2 { margin: 0; font: 600 12px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+.renders .imgs { display: flex; gap: 6px; }
+.renders img { width: 130px; height: 130px; border-radius: 6px; background: #0b0e16; }
+.meter { align-self: center; padding: 0 6px; font: 500 12px var(--mono); color: var(--dim); font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .renders { display: none; } .title p.long { display: none; } }
+</style>
+
+<div id="stage"></div>
+<div class="panel title" data-closable>
+  <h1>Ssarith badge, the Bow Rites</h1>
+  <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+  <p class="long">SD from the <a href="https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V" target="_blank" rel="noopener">Emblem Design Guide</a> as a badge 100 mm across: three of the Hunt's bows in laminated wood, one for each stage of life, overlapping and aimed right, each a step prouder than the one behind it; arrows in Watch green lacquer, their heads under dried blood; a dry forest in the field, the hunting ground; a rim of bone-pale metal. Drag to turn it, scroll or pinch to zoom.</p>
+  <p>Surfaces: Material Maker maps (colour, normal, AO, roughness and metal, specular). Change <code>faction-emblems</code>.</p>
+</div>
+<div class="panel renders" data-closable><h2>Blender render</h2><div class="imgs"><img id="r-face" alt="Blender render of the badge, face on"><img id="r-angle" alt="Blender render of the badge at an angle"></div></div>
+<div class="panel bar" id="bar"></div>
+
+<!-- INLINE assets/emblems/ssarith/sd.parts.json -->
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/emblem-materials-ssarith.json -->
+<!-- /INLINE -->
+<!-- INLINE assets/emblems/ssarith/sd.renders.json -->
+<!-- /INLINE -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<!-- INLINE docs/mockups/lib/emblem-badge.js -->
+<!-- /INLINE -->
+<script>
+(function () {
+'use strict';
+const data = (src) => JSON.parse(document.querySelector(`script[data-src="${src}"]`).textContent);
+const PARTS = data('assets/emblems/ssarith/sd.parts.json');
+const MAPS = data('docs/mockups/lib/emblem-materials-ssarith.json').pieces;
+const RENDERS = data('assets/emblems/ssarith/sd.renders.json').pieces;
+document.getElementById('r-face').src = RENDERS.face.data;
+document.getElementById('r-angle').src = RENDERS.angle.data;
+
+// ---- the studio, materials, part builder, views and shots: the shared badge (docs/mockups/lib/emblem-badge.js) -----
+const B = window.FCEmblemBadge(THREE, {
+  stage: document.getElementById('stage'), bar: document.getElementById('bar'), maps: MAPS,
+  views: { face: [0, 0, 250, 0, 0], 'three quarter': [110, -150, 170, 0, -2], edge: [-210, 60, 70, 0, 0], close: [30, -14, 95, 10, 4] },
+});
+const { mmMaterial, slab } = B;
+
+// ---- the materials: Material Maker graphs, as the Blender render uses them (tools/blender/emblem_ssarith.py) -----------
+const rim = mmMaterial('emblem_platinum', { color: new THREE.Color('#d8cfb4'), envMapIntensity: 1.0 });            // bone-pale metal
+const forest = mmMaterial('emblem_enamel_forest', { clearcoat: 0.4, clearcoatRoughness: 0.1, envMapIntensity: 0.5 });  // the hunting ground
+const wood = mmMaterial('emblem_wood_laminate', { clearcoat: 0.15, clearcoatRoughness: 0.2, envMapIntensity: 0.5 });   // the bows
+const cord = mmMaterial('emblem_wood_laminate', { color: new THREE.Color('#5a4a38'), envMapIntensity: 0.3 });          // the strings
+const green = mmMaterial('emblem_lacquer_watch', { clearcoat: 0.5, clearcoatRoughness: 0.06, envMapIntensity: 0.7 });  // the arrows
+const blood = mmMaterial('emblem_blood_watch', { clearcoat: 0.3, clearcoatRoughness: 0.08, envMapIntensity: 0.7 });    // the heads
+const MATS = { string: cord, vanes: green, shaft: green, head: blood, limb: wood };
+
+// ---- the parts, from the guide's polygons. Heights (mm) as in the Blender render: each bow a level (0.9 mm) prouder
+// than the one behind it, the largest at the back; no two faces share a plane ------------------------------------------
+const LEVEL = 0.9, HEIGHTS = { string: [1.3, 0.15], vanes: [1.5, 0.2], shaft: [1.7, 0.3], head: [1.9, 0.35], limb: [2.3, 0.5] };
+slab(PARTS.frame, 0.0, 4.4, 0.8, rim);
+slab(PARTS.field, 0.3, 1.0, 0.15, forest);
+PARTS.bows.forEach((bow, i) => {
+  const level = PARTS.bows.length - 1 - i;   // bows[0], the smallest, is in front
+  for (const [part, [top, bevel]] of Object.entries(HEIGHTS)) {
+    for (const ring of part === 'vanes' ? bow.vanes : [bow[part]]) slab([ring], 0.6, top + LEVEL * level, bevel, MATS[part]);
+  }
+});
+
+B.start({ three_quarter: ['three quarter'], face: ['face'], edge: ['edge'], close: ['close'] }, 'three quarter');
+})();
+</script>

@@ -40,6 +40,38 @@
       "tile_m": 0.05,
       "status": "starter",
       "use": "faction emblems: the Concord badge's pearl enamel ship (the saucer, nacelles and tail)"
+    },
+    {
+      "name": "emblem_wood_laminate",
+      "size_px": 512,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Ssarith Hunt badge's bows (the Bow Rites), laminated wood"
+    },
+    {
+      "name": "emblem_lacquer_watch",
+      "size_px": 512,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Ssarith Hunt badge's arrows, Watch green lacquer"
+    },
+    {
+      "name": "emblem_blood_watch",
+      "size_px": 512,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Ssarith Hunt badge's arrowheads, green lacquer under dried blood"
+    },
+    {
+      "name": "emblem_enamel_forest",
+      "size_px": 512,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Ssarith Hunt badge's field, a dry forest (the hunting ground) in enamel"
     }
   ]
 }
