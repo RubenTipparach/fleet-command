@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v13: only the owner's four picks, 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident, each one grown structure with its hull detail modelled and baked onto its own UVs: layered armour over machinery, domes, vents, lamps, liveries) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v14: the owner's four picks with their modelled hull detail, now with a PBR set (base colour, ORM, tangent normals, emission), the hull lights baked into a light map, windows (provisional), the Hunt emblem; Look (Painted, PBR, Clay) and Light (Studio, Night) on the page) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -654,3 +654,9 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
   symmetry, and lots of shading to give the armor depth". Only the picks stay. Each one's detail is modelled over its hull
   (`tools/blender/hull_detail.py`, `data/ships/ssarith/hull_detail.json`) and baked onto its own UVs; the rules are Ship
   Design Bible T5-T8 and CLAUDE.md section 10.
+- Version 14 (owner, 2026-11-05: "Now those my friend are gorgeous looking star ships. Next up, lighting pass, windows,
+  pbr, normal maps, logo, emissive texture (you have some features that look like glowy bits)"): the PBR set and the
+  hull lights (floods, position lights, beacons, strobes, windows) baked onto each ship's UVs, the emblem from the
+  emblems page painted on the top armour, the page's Look and Light switches. The method is the new `ship-detailing`
+  skill, with image samples (owner: "write up a skill for detailing space ships with custom texturing", "Include image
+  samples in your documentation"). Survey H5: the window and flood colours.
