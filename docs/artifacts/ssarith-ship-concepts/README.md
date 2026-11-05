@@ -93,3 +93,10 @@
   panes `tools/blender/hull_detail.py` writes into the manifest (`painted_bake.py --ship ... --panes-only` writes them
   without a bake), with a bevelled dark-metal frame and a fine lit line round the glass, the room or hangar behind drawn
   from exact coordinates. The baked pane maps are gone. Page 13.1 MB.
+- 2026-11-05, cloud session (owner: "Need to account for normal angles on windows, and the hangar bay too", "I actually
+  like the paralax so I'd keep it", "the windows and hangar on the side on sloped angles need work though", "hanger window
+  taller than side of the ship"): version 17, version id `1793915201-ef18`, an interim publish while the five ships
+  rebake. Rooms and parallax hangars drawn level with the decks whatever the face's angle; bow bays turned so their width
+  runs level; every window and bay checked to lie flat on its face, frame and all (a window over a bend is left out, the
+  flank bays moved onto the middle of their face at 4 m tall). The Hooded lance's maps are rebaked; the other four still
+  carry their v16 maps, so a faint glow of the old bay openings shows round the carrier's bays until the rebake lands.
