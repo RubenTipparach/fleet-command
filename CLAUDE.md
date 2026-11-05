@@ -555,6 +555,7 @@ Before claiming anything is done, run what applies:
 | `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
 | `blender-organic-panels` | Organic, grown panels in Blender (the Vhorr Brood first): one body of flesh, chitin and bone round crisp instruments, black smoked screens, rim-lit keys, panels floating over the game with no backdrop, growth measured clear of readouts (sections 7, 10). Its companion guide is the Organic Panel Bible, `docs/design/organic-bible.html`. |
 | `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
+| `painted-bake` | Hull textures that read drawn on: a high-poly tile's occlusion, normals, edges and plate ids rendered in Blender and painted over (flat plates, painted light, inked crevices, lit edges, glow), after the reference games' look, never their art (section 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

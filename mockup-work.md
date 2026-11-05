@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v9: a blockout board of twelve massings; versions 1 to 8 deleted, owner: "Not just 3 lame ones that look like coffins") | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v10: twelve blockouts in the owner's examples' shape language, painted by the new `painted-bake` skill; versions 1 to 8 deleted) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -634,3 +634,8 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
   gorn from Starfleet command"): versions 1 to 8 deleted (the plans, the baked tiles and their generator, the old shots;
   git keeps them). A blockout board of twelve frigate-sized massings in grey clay; survey H4 asks which go on. The
   owner's examples did not reach the session and are asked for again.
+- Version 10 (owner, 2026-11-05, with three images of the reference game's and a fan's Gorn ships, not committed:
+  "gorn from star trek", "they looked menacing!", "make ships like this, with this kind of texture", "might need a new
+  skill to make high -poly AO baked texture that looks drawn on"): twelve new blockouts in the examples' shape language
+  (reach forward, a hood over a narrow neck, low raked blades, chevrons, light in strips), never their designs; a new skill,
+  `painted-bake` (`tools/blender/painted_bake.py`), paints over a high-poly tile's Cycles passes so it reads drawn on.

@@ -27,3 +27,12 @@ hull fitted round them, then its parts and skin.
 #### Scenario: From massing to ship
 - **WHEN** a blockout is picked
 - **THEN** its plan is written before its hull is drawn in detail
+
+### Requirement: Hunt hulls can be shown painted
+
+The Hunt page SHALL show its blockouts with a painted bake from `tools/blender/painted_bake.py` (`assets/textures/painted/`,
+inlined from its manifest), and SHALL let the viewer switch back to plain clay.
+
+#### Scenario: Clay underneath
+- **WHEN** the Painted switch is turned off
+- **THEN** every blockout shows in plain clay, and turning it on paints them again

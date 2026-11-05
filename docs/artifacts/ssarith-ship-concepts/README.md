@@ -2,7 +2,8 @@
 
 - Link: https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris
 - Source: `docs/mockups/ssarith-ship-concepts.html` (one copy, not duplicated here); the Concord line yardstick and the loft
-  geometry are inlined from `docs/mockups/lib/concord-line.js` by `tools/mockups/inline_data.py`.
+  geometry are inlined from `docs/mockups/lib/concord-line.js`, and the painted tile from
+  `assets/textures/painted/manifest.json`, by `tools/mockups/inline_data.py`.
 - OpenSpec change: `openspec/changes/ssarith-ship-concepts/`.
 - Shots: `docs/screenshots/mockups/ssarith-ship-concepts/` (`tools/mockups/shoot.mjs`), at desktop, phone landscape and
   portrait.

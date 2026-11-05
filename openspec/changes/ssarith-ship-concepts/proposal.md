@@ -11,6 +11,9 @@ Versions 1 to 8 are deleted: version 1 read the species' body into the ships (wi
 stereotyping an alien species"), and versions 3 to 8 refined one long fitted hull into three ships that read as coffins.
 What the owner asks for now is breadth before depth: many massings to choose from, then detail on the chosen ones.
 
+> **Version 10** (2026-11-05, with the owner's examples: "they looked menacing!", "make ships like this, with this kind of
+> texture"): twelve blockouts in the examples' shape language, painted by a new skill, `painted-bake` (design, "Version 10").
+
 ## What Changes
 
 - **Mockup 12 version 9**, `docs/mockups/ssarith-ship-concepts.html`: a blockout board of twelve frigate-sized massings in
