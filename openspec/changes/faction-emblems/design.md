@@ -206,3 +206,13 @@ Palette (provisional, from the Hunt console): Bone (the Tally Keepers' tablets),
 tubes), Canopy (the hunting ground at night). Each sketch passes the stereotype test (C5) and the measured checks (joins,
 contrast on black and on white). The guide gains a rule for every emblem: Culture, not anatomy. The traditions are the
 owner's to set (C4); all three are provisional until H1 is answered or a sketch is picked.
+
+**The 3D badge** (owner, 2026-11-05: "more colors and shading on the bow and green arrows on the 3d rendering", "shade the
+bow parts with like wood and the arrows green with blood", "Background should be like a beige, dull brown and dry green
+forest", "make each arrowhead unique", "holographic leaves", "Should be 3d leaves shapes"): mockup 19,
+`docs/mockups/ssarith-emblem-3d.html`, from the guide's own parts (`assets/emblems/ssarith/sd.parts.json`) in Blender
+(`tools/blender/emblem_ssarith.py`) and three.js (the shared badge library). Four new Material Maker graphs: laminated wood,
+Watch green lacquer, the lacquer under dried blood, and a dry forest in enamel; holographic leaves at three depths laid out
+by `tools/emblems/ssarith_leaves.py`. SD's three arrowheads are now each their own shape, one per stage. Heights and
+materials in mockup-work.md section 19.
+

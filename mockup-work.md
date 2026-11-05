@@ -35,7 +35,7 @@ account and every link here is updated.
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
-| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v1) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | |
+| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v1) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -680,4 +680,11 @@ main holds 16 to 18.
   trunks and dry green canopy, the hunting ground). The rim is the platinum graph tinted bone.
 - **Heights** (mm): field 0.3-1.0; each bow's string, vanes, shaft, head and limb rise to 1.3, 1.5, 1.7, 1.9 and 2.3 mm,
   each bow 0.9 mm prouder than the one behind it (the smallest in front); the rim 0-4.4. No two faces share a plane.
+- **Unique arrowheads** (owner, 2026-11-05: "make each arrowhead unique"), in the guide's SD too: the learner's leaf (no
+  barb), the hunter's barb (one), the elder's tally (long, a notch for each hunt).
+- **Holographic leaves** (owner, 2026-11-05: "In the 3d version I mean with like holographic leaves", "Should be 3d leaves
+  shapes"): 70 leaves laid out once by `tools/emblems/ssarith_leaves.py` (`assets/emblems/ssarith/sd.leaves.json`, seeded),
+  hanging at 1.4, 2.1 and 2.8 mm over the enamel forest, each a curled, cupped leaf mesh drawn as light: glowing at its
+  edges and midrib, its colour shifting with the viewing angle, with faint scanlines (three.js), and an edge-weighted
+  emission seen through (Blender).
 

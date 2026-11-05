@@ -106,3 +106,4 @@
 - 2026-11-04, cloud session (faction emblems): version 109, version id `1793829600-eb98`, built on the live version (M2 v81, M8 v20): the guide at v25 (the Ssarith Hunt started).
 - 2026-11-04, cloud session (faction emblems): version 110, version id `1793830372-8f69`: the guide at v26 (the Bow Rites).
 - 2026-11-04, cloud session (faction emblems): version 111, version id `1793833883-7dce`: the guide at v27 (the Bow Rites redrawn).
+- 2026-11-05, cloud session (faction emblems): version 112, version id `1793839271-20ad`: M19 added (the Ssarith badge in 3D), the guide at v28.
