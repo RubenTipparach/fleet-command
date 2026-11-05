@@ -173,7 +173,7 @@ def emblem_wood_laminate():
 vec2 ply_$name(vec2 uv) { float x = uv.x * 40.0; return vec2(mod(floor(x), 2.0), min(fract(x), 1.0 - fract(x))); }
 float height_$name(vec2 uv) {
 	vec2 p = ply_$name(uv);
-	return 0.5 + 0.1 * ($grain(uv) - 0.5) - 0.12 * smoothstep(0.75, 0.9, $pore(uv)) - 0.15 * (1.0 - smoothstep(0.0, 0.06, p.y));
+	return 0.5 + 0.1 * ($grain(uv) - 0.5) - 0.12 * smoothstep(0.75, 0.9, $pore(uv)) - 0.08 * (1.0 - smoothstep(0.0, 0.025, p.y));
 }
 vec3 albedo_$name(vec2 uv) {
 	vec2 p = ply_$name(uv);
@@ -181,7 +181,7 @@ vec3 albedo_$name(vec2 uv) {
 	vec3 c = mix(warm, dark, p.x) * (0.85 + 0.3 * $board(uv));
 	c *= 0.78 + 0.34 * smoothstep(0.25, 0.75, $grain(uv));
 	c *= 1.0 - 0.35 * smoothstep(0.75, 0.9, $pore(uv));
-	return mix(vec3(0.12, 0.07, 0.03), c, smoothstep(0.0, 0.06, p.y));
+	return mix(c * 0.7, c, smoothstep(0.0, 0.025, p.y));
 }
 float rough_$name(vec2 uv) { return 0.42 + 0.12 * $grain(uv) + 0.2 * smoothstep(0.75, 0.9, $pore(uv)); }
 float metal_$name(vec2 uv) { return 0.0; }

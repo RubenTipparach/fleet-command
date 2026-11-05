@@ -23,6 +23,7 @@ at level 0, the middle at 1, the smallest (front) at 2, every top raised 0.9 mm 
     head    0.6 to 1.9   + 0.9 a level
     limb    0.6 to 2.3   + 0.9 a level (the front bow's limb tops out at 4.1)
     frame   0.0 to 4.4   the pennon's rim, highest
+    leaves  1.4, 2.1 and 2.8, holographic: light, not solid (tools/emblems/ssarith_leaves.py lays them out)
 
     /opt/blender/blender -b -P tools/blender/emblem_ssarith.py -- [--out DIR] [--samples N] [--px N] [--steps]
 
@@ -30,6 +31,7 @@ Writes <out>/ssarith/sd-face.png (face on, orthographic) and sd-angle.png (three
 clay blockout sd-clay.png too.
 """
 import json
+import math
 import os
 import sys
 
@@ -39,6 +41,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import emblem_render as R  # noqa: E402
 
 PARTS = os.path.join(R.ROOT, "assets", "emblems", "ssarith", "sd.parts.json")
+LEAVES = os.path.join(R.ROOT, "assets", "emblems", "ssarith", "sd.leaves.json")
+LEAF_TINTS = ("#8ca847", "#668f38", "#d9c766")   # dry green, olive, straw: the holographic canopy's light
 BONE = "#d8cfb4"    # the pennon's rim: the Tally Keepers' bone, in metal
 CORD = "#5a4a38"    # the strings: the laminate darkened, a waxed cord
 LEVEL_MM = 0.9
@@ -65,6 +69,71 @@ def build(parts):
                 R.poly_slab(f"bow{i}.{part}.{k}", [ring], 0.6, top + LEVEL_MM * level, bevel, mats[part])
 
 
+def hologram(name, colour):
+    """Light, not a solid: an emission in the leaf's colour, brighter toward its edges (the `edge` attribute, 0 on the
+    midrib and 1 at the rim), seen through where it is faint, so the forest shows behind it."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    m.blend_method = "BLEND" if hasattr(m, "blend_method") else None
+    nt = m.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    attr = nt.nodes.new("ShaderNodeAttribute")
+    attr.attribute_name = "edge"
+    ramp = nt.nodes.new("ShaderNodeMapRange")
+    ramp.inputs["To Min"].default_value = 1.2
+    ramp.inputs["To Max"].default_value = 4.0
+    nt.links.new(attr.outputs["Fac"], ramp.inputs["Value"])
+    emi = nt.nodes.new("ShaderNodeEmission")
+    emi.inputs["Color"].default_value = R.hex_rgb(colour)
+    nt.links.new(ramp.outputs["Result"], emi.inputs["Strength"])
+    clear = nt.nodes.new("ShaderNodeBsdfTransparent")
+    add = nt.nodes.new("ShaderNodeAddShader")
+    nt.links.new(clear.outputs[0], add.inputs[0])
+    nt.links.new(emi.outputs[0], add.inputs[1])
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mix.inputs["Fac"].default_value = 0.45
+    nt.links.new(clear.outputs[0], mix.inputs[1])
+    nt.links.new(add.outputs[0], mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def leaves(layout):
+    """The holographic canopy: each leaf a strip from stalk to tip (midrib and both edges), curled by its bend and cupped
+    across, as the three.js badge builds it. One mesh per tint."""
+    half = layout["outline"][:13]
+    mats = [hologram(f"leaf.{i}", c) for i, c in enumerate(LEAF_TINTS)]
+    for tint in range(len(LEAF_TINTS)):
+        verts, faces, edge = [], [], []
+        for x, y, z, length, ang, bend, t in layout["leaves"]:
+            if t != tint:
+                continue
+            a = math.radians(ang)
+            ca, sa, base = math.cos(a), math.sin(a), len(verts)
+            for u, w in half:
+                lift = bend * length * u * u
+                for side in (-1, 0, 1):
+                    lx, ly = u * length, side * w * length
+                    cup = 0.15 * length * w * w * (1 if side else 0)
+                    gx, gy = x + lx * ca - ly * sa, y - (lx * sa + ly * ca)   # the page's rotation, in mm (y up), back to the grid (y down)
+                    px, py = R.xy((gx, gy))
+                    verts.append((px, py, (z + lift + cup) * R.MM))
+                    edge.append(abs(side))
+            for i in range(len(half) - 1):
+                for j in range(2):
+                    p0 = base + i * 3 + j
+                    faces.append((p0, p0 + 3, p0 + 4, p0 + 1))
+        me = bpy.data.meshes.new(f"leaves.{tint}")
+        me.from_pydata(verts, [], faces)
+        at = me.attributes.new("edge", "FLOAT", "POINT")
+        at.data.foreach_set("value", edge)
+        ob = bpy.data.objects.new(f"leaves.{tint}", me)
+        ob.data.materials.append(mats[tint])
+        bpy.context.scene.collection.objects.link(ob)
+
+
 def main():
     a = R.args()
     parts = json.load(open(PARTS))
@@ -72,6 +141,7 @@ def main():
     R.reset()
     R.setup(px=a["px"], samples=a["samples"])
     build(parts)
+    leaves(json.load(open(LEAVES)))
     if a["steps"]:
         restore = R.with_material(R.clay())
         R.render(os.path.join(out, "sd-clay.png"))

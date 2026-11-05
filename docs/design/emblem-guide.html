@@ -235,6 +235,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'ssarith', when: '2026-11-05', q: 'make each arrowhead unique', means: 'Each stage has its own head: the learner\'s leaf (no barb), the hunter\'s barb (one barb), the elder\'s tally (long, a notch for each hunt). The 3D badge takes them too.' },
   { f: 'ssarith', when: '2026-11-04', q: 'No the way I imagined was 3 bow and arrows overlapping pointed to the right', means: 'SD redrawn: the three bows overlap like a hand of cards, the largest behind on the left, the smallest in front on the right, every arrow aimed right and flying through the smaller bows ahead of it, in a pennon pointing the same way. The stepped rack is gone.' },
   { f: 'ssarith', when: '2026-11-04', q: 'bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and arrow / maybe different sizes to represent their different stages of manhood', means: 'SD, the Bow Rites, now recommended: three of the Hunt\'s own bows (cut from flat plate, a square-cut recurve, a one-barbed head), each braced with its arrow nocked, smallest to largest in a rack whose top steps up with them. A fourth tradition, yours: a new bow made at each stage of life, and the old ones kept.' },
   { f: 'ssarith', when: '2026-11-04', q: 'lets design an emblem for the SSarith', means: 'The Ssarith Hunt\'s section. Under your rule that a species\' looks are not its design, nothing is taken from their bodies: three traditions inside the Hunt are drafted (survey H1\'s recommendation), and each sketch names the one it comes from.' },
@@ -886,7 +887,16 @@ const SD = (() => {
   // largest behind on the left, the smallest in front on the right, their arrows close and parallel, so each arrow flies
   // through the smaller bows ahead of it. Every tip stands clear of the pennon's slanted end.
   const SPEC = [[43, 26, 47, 74], [50, 36, 33, 85], [57, 46, 19, 80]];
-  const bows = SPEC.map(([y, h, sx, tip]) => {
+  // Each stage's own arrowhead (owner, 2026-11-05: "make each arrowhead unique"), pointing right from its tip:
+  //   the learner's leaf  the youngest's: a plain leaf, no barb, for practice; nothing is meant to stay in it
+  //   the hunter's barb   the middle stage's: a narrow leaf with one barb, so a fair hunter can draw it out
+  //   the elder's tally   the eldest's: long, a notch cut in its back edge for each hunt it has made, and one barb
+  const HEADS = [
+    (tip, y) => [[tip, y], [tip - 3.2, y + 1.9], [tip - 6.5, y + 0.8], [tip - 6.5, y - 0.8], [tip - 3.2, y - 1.9]],
+    (tip, y) => [[tip, y], [tip - 4.2, y + 2.2], [tip - 7, y + 0.8], [tip - 7, y - 0.8], [tip - 8.4, y - 2.8], [tip - 4.2, y - 2.2]],
+    (tip, y) => [[tip, y], [tip - 4, y - 2.4], [tip - 5, y - 1.5], [tip - 6, y - 2.4], [tip - 7, y - 1.5], [tip - 8, y - 2.4], [tip - 10, y - 0.8], [tip - 10, y + 0.8], [tip - 7.6, y + 3.2], [tip - 4.6, y + 2.4]],
+  ];
+  const bows = SPEC.map(([y, h, sx, tip], idx) => {
     const d = 0.3 * h;                                      // the bow's depth from string to riser
     // The limb's centre line, top tip to bottom tip: a square-cut recurve kicking back at each end, straight facets out
     // to the riser at the front.
@@ -898,7 +908,7 @@ const SD = (() => {
     // The arrow: a shaft from its nock just behind the string, a narrow leaf head with one barb (below: it holds on one
     // side only), and two square-cut vanes just ahead of the string.
     P.shaft = [[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]];
-    P.head = [[tip, y], [tip - 4.2, y + 2.2], [tip - 7, y + 0.8], [tip - 7, y - 0.8], [tip - 8.4, y - 2.8], [tip - 4.2, y - 2.2]];
+    P.head = HEADS[idx](tip, y);
     P.vanes = [[[sx + 2.5, y - 0.8], [sx + 3.5, y - 2.4], [sx + 7, y - 2.4], [sx + 6, y - 0.8]], [[sx + 2.5, y + 0.8], [sx + 3.5, y + 2.4], [sx + 7, y + 2.4], [sx + 6, y + 0.8]]];
     return { y, h, sx, tip, d, P, limb: polyD(P.limb), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.map(polyD).join('') };
   });
@@ -919,10 +929,12 @@ const SSARITH_DESIGNS = [
     draw(bg = 'dk') { return sdArt(SSARITH[bg]); },
     ink() { return sdArt(SSARITH.dk, true); },
     callouts: [
-      [SD.bows[0].sx + SD.bows[0].d * 0.55, SD.bows[0].y - SD.bows[0].h * 0.3, 'L', 'The first bow, smallest, in front', 'The youngest stage: the bow made first. Its head in Watch green: its first hunt is still ahead of it.'],
+      [SD.bows[0].sx + SD.bows[0].d * 0.55, SD.bows[0].y - SD.bows[0].h * 0.3, 'L', 'The first bow, smallest, in front', 'The youngest stage: the bow made first, its head the learner\'s leaf: its first hunt is still ahead of it.'],
       [SD.bows[2].sx, SD.bows[2].y + SD.bows[2].h * 0.3, 'L', 'Braced, arrow nocked', 'Every bow is kept strung and ready, never retired: each stage stays part of the hunter.'],
       [9, 30, 'L', 'A pennon, square at the back', 'Tradition: the Bow Rites (yours). The hunter\'s pennon flies the way the bows aim.'],
-      [SD.bows[1].tip - 7.5, SD.bows[1].y - 2.5, 'R', 'A barb on one side', 'The Hunt\'s own head: a narrow leaf that holds on one side only, so a fair hunter can draw it out.'],
+      [SD.bows[0].tip - 3, SD.bows[0].y - 1.5, 'R', 'The learner\'s leaf', 'The youngest\'s head: a plain leaf with no barb, for practice. Nothing is meant to stay in it yet.'],
+      [SD.bows[1].tip - 7.5, SD.bows[1].y - 2.5, 'R', 'The hunter\'s barb', 'The middle stage\'s head: one barb, on one side only, so a fair hunter can draw it out.'],
+      [SD.bows[2].tip - 6, SD.bows[2].y - 2, 'R', 'The elder\'s tally', 'The eldest\'s head: long, a notch cut in its back edge for each hunt it has made (the Tally Keepers\' count, on the arrow itself).'],
       [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'Cut from flat plate', 'Straight facets and a square-cut recurve at each tip: the Hunt\'s makers laminate their bows from cut plate, as they build their gear.'],
       [SD.bows[1].sx + SD.bows[1].d, SD.bows[1].y, 'R', 'Each stage a size larger, overlapping', 'A new bow at each stage of life, the old ones kept and laid over one another: three stages, all aimed the same way.'],
     ],
