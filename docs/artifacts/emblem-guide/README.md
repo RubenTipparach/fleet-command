@@ -75,3 +75,4 @@
 - 2026-11-04, version 27 (`1793833883-e92c`): SD redrawn (owner: "No the way I imagined was 3 bow and arrows overlapping pointed to the right"): the three bows overlap like a hand of cards, largest behind on the left, smallest in front on the right, every arrow aimed right, in a pennon; the stepped rack is gone.
 - 2026-11-05, version 28 (`1793838728-f910`): each arrowhead of SD unique (owner: "make each arrowhead unique"): the learner's leaf (no barb), the hunter's barb, the elder's tally (a notch for each hunt).
 - 2026-11-05, version 29 (`1793840985-686c`): SD's feathers larger, their tips their own shapes (owner: "Feathera red with orange tip").
+- 2026-11-05, version 30 (`1793846055-70a5`): SD's feather body and tip edge to edge (owner: "z fighting").

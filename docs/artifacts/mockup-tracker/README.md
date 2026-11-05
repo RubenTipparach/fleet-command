@@ -108,3 +108,4 @@
 - 2026-11-04, cloud session (faction emblems): version 111, version id `1793833883-7dce`: the guide at v27 (the Bow Rites redrawn).
 - 2026-11-05, cloud session (faction emblems): version 112, version id `1793839271-20ad`: M19 added (the Ssarith badge in 3D), the guide at v28.
 - 2026-11-05, cloud session (faction emblems): version 113, version id `1793841962-5e56`: M19 at v2 (ferns, steel, feathers, glowing blood), the guide at v29.
+- 2026-11-05, cloud session (faction emblems): version 114, version id `1793846057-df61`: M19 at v3 (the fern recess, steel and hard green arrows), the guide at v30.

@@ -35,7 +35,7 @@ account and every link here is updated.
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
-| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
+| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v3) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -695,4 +695,11 @@ main holds 16 to 18.
   glowing along every edge) over the forest enamel darkened; the shafts are the laminated wood, the heads steel, the feathers
   red with orange tips (their own polygons in the guide), the blood an emission. Every part of a bow now stands over the
   ferns (tops raised 1.6 mm; the rim to 6.2 mm). The holographic leaves and the green lacquer, blood and fern graphs are gone.
+- **v3, a 3D fern bed** (owner, 2026-11-05: "z fighting, the blood doesnt look right, remove blood, and just make arrow hard
+  green and arrow body metal", "redo the fern, render a fern forrest sccene. Make THAT exact scene!", "no hologram, just make
+  a scene that looks like that as background for the emblem, and it should be 3d"): the badge is a deep frame (rim 10.4 mm,
+  floor 0.6 mm), the recess filled with 40 bipinnate ferns in layers up to 6.4 mm (`tools/emblems/ssarith_ferns.py`, light
+  falling off with depth; our own scene after the owner's photograph, which is not committed), the bows floating over them
+  as thin parts. Steel shafts, hard green heads, no blood. The z-fighting was a feather's orange tip laid over its red body
+  at 0.08 mm: they now meet edge to edge. The fern-leaf graph is back; the hologram and the blood are gone.
 

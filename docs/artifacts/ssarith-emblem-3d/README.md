@@ -25,3 +25,10 @@
   (`tools/emblems/ssarith_ferns.py`, `assets/emblems/ssarith/sd.ferns.json`, replacing the leaves), wooden shafts, steel
   heads, red feathers with orange tips, and glowing green blood pooled on each head and dripping down the face. The green
   lacquer, blood and fern graphs are gone; the full Blender render beside it.
+- 2026-11-05, version 3 (`1793846054-a212`): owner: "z fighting, the blood doesnt look right, remove blood, and just make
+  arrow hard green and arrow body metal", "redo the fern, render a fern forrest sccene. Make THAT exact scene!", "no
+  hologram, just make a scene that looks like that as background for the emblem, and it should be 3d". The badge is a deep
+  frame: the rim to 10.4 mm, the field a dark floor 9 mm below it, filled with 40 modelled bipinnate ferns in layers, the deep
+  ones in shadow (`tools/emblems/ssarith_ferns.py`, our own scene after the owner's photograph, which is not committed); the
+  bows float over them as thin parts; steel shafts, hard green heads, no blood; the feathers' body and tip meet edge to edge
+  (the z-fighting was the tip laid over the body). The fern-leaf graph is back; the holographic jungle is gone.
