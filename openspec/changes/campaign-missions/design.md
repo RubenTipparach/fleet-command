@@ -84,6 +84,17 @@ The stand-in battle has no rules to decide an objective, so the tester ticks eac
 gives. Asteroid sectors put rocks in the stand-in (the battle console's rocks are the real ones, mockup 2; owner, 2026-11-05:
 "we do have asteroids").
 
+## The debrief, prestige and reputation
+
+The owner, 2026-11-05: "need a win or loose screen, and how many prestige + reputation I got". The report after a mission
+opens with the verdict, large, in the grade's colour (Mission accomplished, Withdrawn or Mission failed, over the grade),
+then three tiles: **credits** earned, **prestige** gained or lost with the new total, and **reputation**: each faction's
+standing as it changed, with its new value. Then the objectives, met or missed, and each ship's hull.
+
+**Prestige** is the captain's record, kept apart from credits (the Missions guide's question 1, provisional): crushing
+defeat -5, defeat 0, draw 2, victory 5, outstanding 10, doubled for a story mission; a script's result may set its own. It
+shows in the top bar. Nothing is gated on it yet (story gates by prestige are the guide's "Gates and eras").
+
 ## Open questions
 
 | # | Question | Provisional |
@@ -94,3 +105,4 @@ gives. Asteroid sectors put rocks in the stand-in (the battle console's rocks ar
 | 4 | Does a failed story mission come back? | First blood offers itself again; each script decides |
 | 5 | What does research give for a delivered prize? | A bounty and standing; an unlock later |
 | 6 | Five grades or three? (guide question 2) | Five |
+| 7 | Prestige per grade, and what it opens | -5, 0, 2, 5, 10, doubled for story; no gates yet |

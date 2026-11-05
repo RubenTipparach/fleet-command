@@ -99,6 +99,25 @@ button { font: inherit; color: inherit; }
 .objs { width: min(360px, 46vw); max-height: 100%; overflow: auto; display: grid; gap: 8px; }
 @media (orientation: portrait) and (max-width: 920px) { .objs { width: min(360px, 70vw); } }
 .objs .item .t { font-size: 14px; text-transform: none; letter-spacing: 0; }
+/* The sector panel's missions: a letter, the mission, and a key to its briefing. */
+.missionrow { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.08); }
+.missionrow .mglyph { width: 28px; height: 34px; display: grid; place-items: center; font: 800 18px/1 var(--display); color: #1a1006;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%); }
+.missionrow .mtext { display: grid; gap: 2px; min-width: 0; }
+.missionrow .t { font: 700 15px/1.1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.missionrow .s { color: var(--dim); font-size: 12px; }
+/* The debrief: the verdict large, then what was earned. */
+.outcome { display: grid; gap: 2px; padding: 10px 12px; border-left: 6px solid var(--g); background: color-mix(in srgb, var(--g) 12%, transparent); }
+.outcome .verdict { font: 600 13px/1 var(--display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--g); }
+.outcome .gradebig { font: 800 44px/1 var(--display); text-transform: uppercase; letter-spacing: 0.03em; color: var(--g); }
+.tiles { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 8px; }
+.tile { display: grid; gap: 4px; align-content: start; padding: 8px 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+.tile b { font: 600 11px/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+.tile .num { font-size: 22px; } .tile small { color: var(--dim); }
+.tile.rep .repline { display: flex; align-items: center; gap: 4px; } .tile.rep .num { font-size: 16px; }
+.num.ok { color: var(--ok); } .num.err { color: var(--warn); }
+@media (max-width: 920px), (max-height: 520px) { .outcome .gradebig { font-size: 30px; } .tile .num { font-size: 17px; } }
+@media (max-width: 560px) { .tiles { grid-template-columns: 1fr 1fr; } .tile.rep { grid-column: 1 / -1; } }
 .gradeword { font: 700 18px/1 var(--display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
 .bar { height: 8px; border-radius: 4px; background: #0a0f15; box-shadow: inset 0 1px 2px #000; overflow: hidden; min-width: 60px; }
 .bar i { display: block; height: 100%; background: var(--ok); }
@@ -1900,7 +1919,7 @@ return { concord, krai, ssarith };
 //                     The older short form { enemy, count, name? } is one enemy group with the script's objective.
 //   grade(ctx, m, met, how)  optional: the outcome grade, when the default rule below does not fit the type
 //   result(ctx, m, o) what happens after, o = { grade, win, met, how, pay } (pay: the grade's share of the reward):
-//                     { credits, standing: { faction: change }, prize: faction, next: [script id, or { id, c, r, data }],
+//                     { credits, prestige, standing: { faction: change }, prize: faction, next: [script id, or { id, c, r, data }],
 //                     log: 'text' }; any field may be left out
 // m is the offered mission: { id, script, c, r, turns, strength, reward, data }.
 //
@@ -1924,6 +1943,11 @@ const GRADES = ['crushing', 'defeat', 'draw', 'victory', 'outstanding'];
 const GRADE_NAME = { crushing: 'Crushing defeat', defeat: 'Defeat', draw: 'Draw', victory: 'Victory', outstanding: 'Outstanding' };
 // The share of a mission's reward each grade pays.
 const PAY = { crushing: 0, defeat: 0, draw: 0.25, victory: 1, outstanding: 1.5 };
+// Prestige each grade earns, a captain's record kept apart from credits (the guide's question 1; owner, 2026-11-05: "need a
+// win or loose screen, and how many prestige + reputation I got"); a story mission's counts double. A script's result may
+// give its own `prestige`.
+const PRESTIGE = { crushing: -5, defeat: 0, draw: 2, victory: 5, outstanding: 10 };
+const prestigeOf = (m, o) => PRESTIGE[o.grade] * (ALL[m.script].kind === 'story' ? 2 : 1);
 // How a battle ended: 'end' (fought to its end), 'withdraw' (the fleet disengaged), 'lost' (the fleet was destroyed or
 // struck). Every primary objective met is a victory, and every bonus too is outstanding; a withdrawal short of the primary
 // is a draw, staying and failing it a defeat, and losing the fleet a crushing defeat.
@@ -2133,7 +2157,7 @@ define({ id: 'first_blood', name: 'First blood', glyph: '2', kind: 'story', type
     : { next: ['first_blood'], log: 'The raider got away. It will be back.' }) });
 
 return { define, get: (id) => ALL[id], ids: () => Object.keys(ALL), contracts: () => Object.values(ALL).filter((s) => s.kind === 'contract').map((s) => s.id),
-  battleOf, score, GRADES, GRADE_NAME, PAY };
+  battleOf, score, prestigeOf, GRADES, GRADE_NAME, PAY, PRESTIGE };
 })();
 </script>
 <!-- /INLINE -->
@@ -2360,7 +2384,7 @@ function buildCampaign(side = 'concord', seed = 7) {
   const fleet = [newShip(smallestHull(side), FACTIONS[side].prefix + SHIP_NAMES[side][0])];
   fleet[0].supplies.marines = Math.min(2, SUPPLIES[0].max(fleet[0]));
   CAMP = { side, seed, R, hexes, groups, fleet, at: { ...HOME[side] }, home: { ...HOME[side] }, credits: 4000, turn: 1, mp: MOVE_POINTS, missions: [], active: [], log: [], crew: [], officerPool: [], mid: 0,
-    captain: 'Captain Ardent', battles: 0, standing: startStanding(side), dir: Math.PI / 2 };
+    captain: 'Captain Ardent', battles: 0, standing: startStanding(side), dir: Math.PI / 2, prestige: 0, order: null };
   CAMP.freighters = makeFreighters();
   rollOfficers();
   offerMission('shakedown');
@@ -2458,7 +2482,21 @@ function rollOfficers() {
     return { name, station: STATIONS[Math.floor(R() * STATIONS.length)], skill: SKILLS[sk][0], cost: SKILLS[sk][1] };
   });
 }
-function pathTo(target) { return cheapestPath(CAMP.at, target, CAMP.mp); }
+// The fleet's route to a sector, however far (owner, 2026-11-05: "need to show multi turn moves please"): the cheapest path,
+// split into legs by turn: the first leg is what the moves left this turn reach, each later leg a full turn's move points.
+// { path, cost, legs: [{ path, cost }], turns }; null if no path (a star, or the fleet's own sector).
+function pathTo(target) {
+  const full = cheapestPath(CAMP.at, target);
+  if (!full) return null;
+  const legs = [{ path: [], cost: 0 }];
+  let left = CAMP.mp;
+  for (const k of full.path) {
+    const cost = TERRAIN[CAMP.hexes[k].terrain].cost;
+    if (cost > left) { legs.push({ path: [], cost: 0 }); left = MOVE_POINTS; }
+    const leg = legs[legs.length - 1]; leg.path.push(k); leg.cost += cost; left -= cost;
+  }
+  return { ...full, legs, turns: legs.length };
+}
 // Cheapest path by move cost from one sector to another within a budget of move points (design: Moving): the player's
 // moves, the factions' fleets and the freighters' routes all use it.
 function cheapestPath(from, target, budget = Infinity) {
@@ -2491,6 +2529,12 @@ function endTurn() {
   for (let i = 0; i < n && CAMP.missions.length < 12; i++) offerMission();
   rollOfficers();
   return moves;
+}
+// End turn from the map: the factions move, then a fleet with an order flies its next leg.
+function endTurnNow() {
+  glideFleets(endTurn()); rebuildMarkers();
+  if (CAMP.order) { const res = pathTo(CAMP.order); if (res) { S.sel = { ...CAMP.order }; moveFleet(res); return; } CAMP.order = null; }
+  S.path = S.sel ? pathTo(S.sel) : null; showPath(S.path); render();
 }
 function fleetPoints(fleet) { return fleet.reduce((n, s) => n + shipPoints(s), 0); }
 
@@ -2593,6 +2637,38 @@ function labelSprite(text, color) {
   s.scale.set(0.16, 0.03, 1); s.renderOrder = 4;
   return s;
 }
+// A banner as cloth in the scene (owner, 2026-11-05, of the first mission flags, camera-facing sprites: "its angled weird
+// lol, Ithink mission flags sould just be 3d"): a plane cut by its texture's alpha, facing the map's default view (+Z),
+// its back a second face so the letter reads the right way round from behind, rippling in the wave below. `edge` is
+// where it hangs from: 'top' (a gonfalon under a crossbar) or 'left' (a flag along its pole).
+const banners = [];
+function bannerMesh(tex, w, h, edge) {
+  const geo = new THREE.PlaneGeometry(w, h, 10, 6);
+  geo.translate(edge === 'left' ? w / 2 : 0, -h / 2, 0);
+  const mat = (flip) => {
+    const t = flip ? tex.clone() : tex; if (flip) { t.wrapS = THREE.RepeatWrapping; t.repeat.x = -1; t.needsUpdate = true; }
+    return new THREE.MeshStandardMaterial({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0.35, roughness: 0.85, alphaTest: 0.5, side: flip ? THREE.BackSide : THREE.FrontSide });
+  };
+  const g = new THREE.Group(); g.add(new THREE.Mesh(geo, mat(false)), new THREE.Mesh(geo, mat(true)));
+  Object.assign(g.userData, { geo, rest: Float32Array.from(geo.attributes.position.array), w, h, edge, seed: banners.length * 1.7 });
+  banners.push(g);
+  return g;
+}
+// The ripple: free edges move most, the hung edge not at all.
+function waveBanners(t) {
+  for (let i = banners.length - 1; i >= 0; i--) {
+    const b = banners[i], u = b.userData;
+    let root = b; while (root.parent) root = root.parent;
+    if (root !== mapScene) { banners.splice(i, 1); continue; }   // its piece has left the board
+    const pos = u.geo.attributes.position, a = pos.array, rest = u.rest;
+    for (let k = 0; k < pos.count; k++) {
+      const x = rest[k * 3], y = rest[k * 3 + 1];
+      const free = u.edge === 'left' ? x / u.w : -y / u.h;
+      a[k * 3 + 2] = Math.sin(t * 2.2 + u.seed + (u.edge === 'left' ? x / u.w : -y / u.h) * 4.5) * 0.018 * free;
+    }
+    pos.needsUpdate = true;
+  }
+}
 // A strength flag on its own pole beside a fleet (owner, 2026-11-05: "ship standees should have a flag next to them
 // representing ship strength", with a screenshot of banners beside a strategy game's pieces): a banner in the faction's
 // colour, one pip per step of strength (1 to 5), longer the stronger the fleet.
@@ -2608,8 +2684,7 @@ function strengthFlag(fac, n, size) {
     x.fillStyle = 'rgba(0,0,0,0.28)'; x.fillRect(2, 2, w - 4, 12);
     x.fillStyle = '#f4f1e8'; for (let i = 0; i < n; i++) { x.beginPath(); x.arc(w / 2, 34 + i * 34, 10, 0, Math.PI * 2); x.fill(); }
   });
-  const flag = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.5 }));
-  flag.center.set(0, 1); flag.scale.set(0.16 * size, 0.64 * size, 1); flag.position.set(0.008, h - 0.02, 0); g.add(flag);
+  const flag = bannerMesh(tex, 0.16 * size, 0.64 * size, 'left'); flag.position.set(0.008, h - 0.02, 0); g.add(flag);
   g.userData.flag = flag;
   return g;
 }
@@ -2678,8 +2753,7 @@ function missionStandee(m) {
     x.fillStyle = ink; x.fill(); x.lineWidth = 6; x.strokeStyle = '#1a1006'; x.stroke();
     x.fillStyle = '#1a1006'; x.font = '800 78px "Saira Condensed", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(MS(m).glyph, w / 2, 70);
   });
-  const flag = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.5 }));
-  flag.center.set(0.5, 1); flag.scale.set(0.28, 0.385, 1); flag.position.y = h + 0.02; g.add(flag);
+  const flag = bannerMesh(tex, 0.28, 0.385, 'top'); flag.position.set(0, h + 0.012, 0.012); g.add(flag);
   Object.assign(g.userData, { mission: m, flag });
   return g;
 }
@@ -2741,19 +2815,19 @@ function buildMap() {
         a.rotation.set(R() * 3, R() * 3, R() * 3); mapRoot.add(a); decals.push(a);
       }
     }
-    if (h.planet) addStandee(makeStandee('planet', h.owner === 'neutral' ? 'neutral' : h.owner, h.planet, 1.15), p.clone().add(PLACE_OFFSET), 'place');
-    if (h.station) addStandee(makeStandee('station', h.owner, h.station, 1.05), p.clone().add(PLACE_OFFSET), 'place');
+    if (h.planet) { const s = makeStandee('planet', h.owner === 'neutral' ? 'neutral' : h.owner, h.planet, 1.15); s.userData.hex = { c: h.c, r: h.r }; addStandee(s, slotAt('place', h.c, h.r), 'place'); }
+    if (h.station) { const s = makeStandee('station', h.owner, h.station, 1.05); s.userData.hex = { c: h.c, r: h.r }; addStandee(s, slotAt('place', h.c, h.r), 'place'); }
   }
   hexMesh.instanceColor.needsUpdate = true;
   mapRoot.add(hexMesh);
   mapRoot.add(hexBorders());
   puffSetMap = puffSet(puffs); mapRoot.add(puffSetMap.mesh);
-  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1, shipRef(g.fac, g.size), { dir: g.dir, strength: groupStrength(g) }); s.userData.hex = g; addStandee(s, hexPos(g.c, g.r).add(GROUP_OFFSET), 'ship'); }
+  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1, shipRef(g.fac, g.size), { dir: g.dir, strength: groupStrength(g) }); s.userData.hex = g; addStandee(s, slotAt('ship', g.c, g.r), 'ship'); }
   buildFreight();
   fleetStandee = makeStandee('ship', CAMP.side, CAMP.fleet[0].name, 1.15, HULLS[CAMP.fleet[0].hull].ref, { gold: true, dir: CAMP.dir, strength: fleetStrength(CAMP.fleet) });
   const lampRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), new THREE.MeshBasicMaterial({ color: 0xffc94a, side: THREE.DoubleSide }));
   lampRing.rotation.x = -Math.PI / 2; lampRing.position.y = 0.07; fleetStandee.add(lampRing);
-  addStandee(fleetStandee, hexPos(CAMP.at.c, CAMP.at.r).add(FLEET_OFFSET), 'fleet');
+  addStandee(fleetStandee, slotAt('fleet', CAMP.at.c, CAMP.at.r), 'fleet');
   selRing = new THREE.Mesh(new THREE.RingGeometry(0.82, 0.95, 6, 1, 0), new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide }));
   selRing.rotation.x = -Math.PI / 2; selRing.position.y = 0.02; selRing.visible = false; mapRoot.add(selRing);
   rebuildMarkers();
@@ -2912,7 +2986,29 @@ function hexBorders() {
 }
 const glowTex = canvasTex(128, 128, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.4, 'rgba(255,255,255,0.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); });
 // Within a hex: a planet or station stands at the back, the player's fleet front left, other ships front right.
-const FLEET_OFFSET = new THREE.Vector3(-0.45, 0, 0.45), PLACE_OFFSET = new THREE.Vector3(0.1, 0, -0.35), GROUP_OFFSET = new THREE.Vector3(0.45, 0, 0.4);
+// Where a piece stands in its hex (owner, 2026-11-05: "how come my ship isnt centered?", "if theres more ships or objects on
+// it, then offset, otherwise I think ships should be centered"): alone, in the middle; sharing, in its own slot so no two
+// stand on one another: the port up right, the player's fleet down left, a faction fleet down right, a freighter right, a
+// mission up left.
+const FLEET_OFFSET = new THREE.Vector3(-0.45, 0, 0.45), PLACE_OFFSET = new THREE.Vector3(0.1, 0, -0.35), GROUP_OFFSET = new THREE.Vector3(0.45, 0, 0.42);
+const CENTRE = new THREE.Vector3(0, 0, 0);
+function piecesIn(c, r) {
+  const h = CAMP.hexes[key(c, r)];
+  return ((h.planet || h.station) ? 1 : 0) + (CAMP.at.c === c && CAMP.at.r === r ? 1 : 0) + CAMP.groups.filter((g) => g.c === c && g.r === r).length
+    + CAMP.missions.filter((m) => m.c === c && m.r === r).length
+    + CAMP.freighters.filter((f) => sideOf(f.fac) === 'own' && f.route[f.i] === key(c, r)).length;
+}
+const SLOT = { fleet: () => FLEET_OFFSET, place: () => PLACE_OFFSET, ship: () => GROUP_OFFSET, freighter: () => FREIGHT_OFFSET, mission: () => MISSION_OFFSET };
+function slotAt(role, c, r) { return hexPos(c, r).add(piecesIn(c, r) > 1 ? SLOT[role]() : CENTRE); }
+// Every piece to its place for who shares its hex now (after a move, an offer, a mission done).
+function settlePieces() {
+  for (const s of standees) {
+    if (s.userData.glide || (s === fleetStandee && flight)) continue;
+    const at = s.userData.role === 'fleet' ? CAMP.at : s.userData.hex;
+    if (at) s.position.copy(slotAt(s.userData.role, at.c, at.r));
+  }
+  for (const m of markers) m.position.copy(slotAt('mission', m.userData.mission.c, m.userData.mission.r));
+}
 const FREIGHT_OFFSET = new THREE.Vector3(0.66, 0, -0.12);
 // The freighters and routes you can see: your own freighters on their routes, and your allies' routes (dimmer), each a
 // dashed line through the sectors' centres in the faction's colour.
@@ -2930,18 +3026,18 @@ function buildFreight() {
     if (seen !== 'own') return;
     const [c, r] = f.route[f.i].split(',').map(Number);
     const s = makeStandee('freighter', f.fac, `Freighter ${f.name}`, 1, null, { dir: f.dir }); s.userData.hex = { c, r }; s.userData.freighter = f;
-    addStandee(s, hexPos(c, r).add(FREIGHT_OFFSET), 'freighter');
+    addStandee(s, slotAt('freighter', c, r), 'freighter');
   });
 }
 // The factions' moves after End turn, flown sector by sector like the player's (the camera stays where it is).
 function glideFleets(moves) {
   for (const [g, path] of moves) {
     const s = standees.find((x) => x.userData.hex === g); if (!s) continue;
-    s.userData.glide = { pts: path.map((h) => hexPos(h.c, h.r).add(GROUP_OFFSET)), t: 0, dir: g.dir };
+    s.userData.glide = { pts: path.map((h, i) => (i === path.length - 1 ? slotAt('ship', h.c, h.r) : i === 0 ? s.position.clone() : hexPos(h.c, h.r))), t: 0, dir: g.dir };
   }
   for (const s of standees.filter((x) => x.userData.freighter)) {
     const f = s.userData.freighter, [c, r] = f.route[f.i].split(',').map(Number);
-    s.userData.hex = { c, r }; s.userData.glide = { pts: [s.position.clone(), hexPos(c, r).add(FREIGHT_OFFSET)], t: 0, dir: f.dir };
+    s.userData.hex = { c, r }; s.userData.glide = { pts: [s.position.clone(), slotAt('freighter', c, r)], t: 0, dir: f.dir };
   }
 }
 function stepFleetGlides(dt) {
@@ -2951,24 +3047,39 @@ function stepFleetGlides(dt) {
     const i = Math.min(gl.pts.length - 2, Math.floor(gl.t)), a = gl.pts[i], b = gl.pts[i + 1], k = gl.t - i;
     s.position.lerpVectors(a, b, k);
     if (s.userData.model && a.distanceToSquared(b) > 1e-6) s.userData.model.rotation.y = Math.atan2(b.x - a.x, b.z - a.z);
-    if (gl.t >= gl.pts.length - 1) { s.position.copy(gl.pts[gl.pts.length - 1]); if (s.userData.model) s.userData.model.rotation.y = gl.dir; s.userData.glide = null; }
+    if (gl.t >= gl.pts.length - 1) { s.position.copy(gl.pts[gl.pts.length - 1]); if (s.userData.model) s.userData.model.rotation.y = gl.dir; s.userData.glide = null; settlePieces(); }
   }
 }
 function addStandee(s, p, role) { s.position.copy(p); s.userData.role = role; mapRoot.add(s); standees.push(s); }
 function rebuildMarkers() {
   for (const k of markers) mapRoot.remove(k);
-  markers = CAMP.missions.map((m) => { const s = missionStandee(m); s.position.copy(hexPos(m.c, m.r).add(MISSION_OFFSET)); mapRoot.add(s); return s; });
+  markers = CAMP.missions.map((m) => { const s = missionStandee(m); mapRoot.add(s); return s; });
+  settlePieces();
 }
 // The planned route, traced as a line (owner, 2026-10-30: "I prefer routs be traced like a line"): a ribbon from
 // the fleet's hex through each sector's centre, round joints, and an arrowhead in the last hex.
+// A route longer than this turn is drawn leg by leg: this turn's bright, each later turn's fainter, and a numbered badge
+// where each turn ends (owner, 2026-11-05: "need to show multi turn moves please").
+function turnBadge(n, now) {
+  const tex = canvasTex(96, 96, (x, w, h) => {
+    x.beginPath(); x.arc(w / 2, h / 2, 40, 0, Math.PI * 2); x.fillStyle = now ? '#ffb547' : '#1a1206'; x.fill();
+    x.lineWidth = 7; x.strokeStyle = '#ffb547'; x.stroke();
+    x.fillStyle = now ? '#1a1006' : '#ffd08a'; x.font = '800 52px "Saira Condensed", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(String(n), w / 2, h / 2 + 3);
+  });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, sizeAttenuation: false })); s.scale.setScalar(0.034); s.renderOrder = 6;
+  return s;
+}
 function showPath(res) {
   if (pathDots) { mapRoot.remove(pathDots); pathDots = null; }
   if (!res) return;
   pathDots = new THREE.Group();
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide, transparent: true, opacity: 0.95, depthWrite: false });
+  const mats = [0.95, 0.55, 0.35].map((o) => new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide, transparent: true, opacity: o, depthWrite: false }));
+  const legOf = [], ends = [];
+  res.legs.forEach((l, i) => { for (const k of l.path) legOf.push(i); if (l.path.length) ends.push([l.path[l.path.length - 1], i]); });
   const pts = [hexPos(CAMP.at.c, CAMP.at.r), ...res.path.map((k) => { const [c, r] = k.split(',').map(Number); return hexPos(c, r); })];
   const Y = 0.05, W = 0.07;
   for (let i = 0; i < pts.length - 1; i++) {
+    const mat = mats[Math.min(2, legOf[i])];
     const a = pts[i], b = pts[i + 1].clone();
     if (i === pts.length - 2) b.lerp(a, 0.32 / a.distanceTo(b)); // stop short of the arrowhead
     const len = a.distanceTo(b), seg = new THREE.Mesh(new THREE.PlaneGeometry(len, W * 2), mat);
@@ -2976,8 +3087,11 @@ function showPath(res) {
     pathDots.add(seg);
     if (i > 0) { const j = new THREE.Mesh(new THREE.CircleGeometry(W, 16), mat); j.rotation.x = -Math.PI / 2; j.position.set(a.x, Y, a.z); pathDots.add(j); }
   }
+  if (res.legs.length > 1) for (const [k, i] of ends) {
+    const [c, r] = k.split(',').map(Number), b = turnBadge(i + 1, i === 0); b.position.copy(hexPos(c, r)).setY(0.32); pathDots.add(b);
+  }
   const end = pts[pts.length - 1], prev = pts[pts.length - 2];
-  const head = new THREE.Mesh(new THREE.CircleGeometry(0.32, 3), mat);
+  const head = new THREE.Mesh(new THREE.CircleGeometry(0.32, 3), mats[Math.min(2, legOf[legOf.length - 1])]);
   head.rotation.x = -Math.PI / 2; head.rotation.z = -Math.atan2(end.z - prev.z, end.x - prev.x);
   head.position.set(end.x - Math.cos(Math.atan2(end.z - prev.z, end.x - prev.x)) * 0.12, Y, end.z - Math.sin(Math.atan2(end.z - prev.z, end.x - prev.x)) * 0.12);
   pathDots.add(head);
@@ -3256,7 +3370,7 @@ renderer.setAnimationLoop(() => {
       if (s.userData.spin) s.userData.spin.rotation.y += dt * 0.15;
     }
     sortPuffs(puffSetMap, mapCam.position);
-    for (const m of markers) m.userData.flag.material.rotation = Math.sin(t * 1.6 + m.userData.mission.id) * 0.035;
+    waveBanners(t);
     stepFleetGlides(dt);
     if (selRing?.visible) selRing.material.opacity = 1;
   }
@@ -3348,11 +3462,17 @@ function selectHex(c, r) {
 // section 8: never take the camera from the player). On arrival, an accepted mission in that sector opens its briefing.
 let flight = null;
 const FLIGHT_SECTORS_S = 2.6;
+// Move along a route: this turn's leg now; a longer route becomes the fleet's order, flown on after each End turn until it
+// arrives or the player sends it elsewhere.
 function moveFleet(res) {
   if (flight) return;
-  const last = res.path[res.path.length - 1].split(',').map(Number);
-  const pts = [hexPos(CAMP.at.c, CAMP.at.r), ...res.path.map((k) => { const [c, r] = k.split(',').map(Number); return hexPos(c, r); })].map((v) => v.add(FLEET_OFFSET));
-  CAMP.mp -= res.cost; CAMP.at = { c: last[0], r: last[1] };
+  const goal = res.path[res.path.length - 1].split(',').map(Number), leg = res.legs[0];
+  CAMP.order = res.legs.length > 1 ? { c: goal[0], r: goal[1] } : null;
+  if (!leg.path.length) { S.path = pathTo(CAMP.order); showPath(S.path); render(); return; }
+  const last = leg.path[leg.path.length - 1].split(',').map(Number);
+  const pts = [fleetStandee.position.clone(), ...leg.path.map((k) => { const [c, r] = k.split(',').map(Number); return hexPos(c, r); })];
+  CAMP.mp -= leg.cost; CAMP.at = { c: last[0], r: last[1] };
+  pts[pts.length - 1] = slotAt('fleet', last[0], last[1]);
   CAMP.dir = Math.atan2(pts[pts.length - 1].x - pts[pts.length - 2].x, pts[pts.length - 1].z - pts[pts.length - 2].z);
   flight = { pts, i: 0, t: 0 };
   S.path = null; showPath(null);
@@ -3370,7 +3490,9 @@ function stepFlight(dt) {
   const legs = pts.length - 1, along = (flight.i + k) / legs;
   model.position.y = 0.06 + 0.46 * 1.15 + Math.sin(Math.PI * Math.min(1, along)) * 0.35;
   if (done) {
-    flight = null; model.rotation.y = CAMP.dir;
+    flight = null; model.rotation.y = CAMP.dir; settlePieces();
+    if (CAMP.order && CAMP.order.c === CAMP.at.c && CAMP.order.r === CAMP.at.r) CAMP.order = null;
+    if (CAMP.order) { S.sel = { ...CAMP.order }; S.path = pathTo(CAMP.order); showPath(S.path); }
     const m = CAMP.missions.find((x) => x.c === CAMP.at.c && x.r === CAMP.at.r && CAMP.active.includes(x.id));
     if (m) S.mission = m;
     saveCampaign(); render();
@@ -3394,7 +3516,7 @@ function continueCampaign(side) {
   const d = savedCampaign(side); if (!d) return;
   const { rs, serial, ...rest } = d; CAMP = { ...rest, R: rng(rs) }; shipSerial = Math.max(shipSerial, serial || 0);
   // Saves from before the factions moved their fleets and ran freighters.
-  CAMP.dir ??= Math.PI / 2; CAMP.freighters ||= makeFreighters();
+  CAMP.dir ??= Math.PI / 2; CAMP.freighters ||= makeFreighters(); CAMP.prestige ??= 0; CAMP.order ??= null;
   CAMP.groups.forEach((g, i) => { g.home ||= { c: g.c, r: g.r }; g.every ||= 1 + (i % 3); g.dir ??= -Math.PI / 2; });
   buildMap(); centreOn(CAMP.at.c, CAMP.at.r, 18); go('map', { sel: null, path: null, port: null, mission: null, pick: null });
 }
@@ -3581,6 +3703,7 @@ const SCREENS = {
       key_('Menu', () => go('menu'), 'small'),
       h('div', { class: 'stat cap' }, h('b', { text: 'Captain' }), h('span', { text: CAMP.captain })),
       h('div', { class: 'stat' }, h('b', { text: 'Credits' }), h('span', { class: 'num', text: CAMP.credits.toLocaleString('en-US') })),
+      h('div', { class: 'stat' }, h('b', { text: 'Prestige' }), h('span', { class: 'num', text: CAMP.prestige })),
       h('div', { class: 'stat' }, h('b', { text: 'Turn' }), h('span', { class: 'num', text: CAMP.turn })),
       h('div', { class: 'stat' }, h('b', { text: 'Moves' }), h('span', { class: 'num', text: `${CAMP.mp} / ${MOVE_POINTS}` })),
       key_(`Missions ${CAMP.active.length}`, () => { S.missionsOpen = !S.missionsOpen; render(); }, `small ${S.missionsOpen ? 'on' : ''}`),
@@ -3596,9 +3719,12 @@ const SCREENS = {
       h('h3', { text: sel.planet || sel.station || TERRAIN[sel.terrain].name }),
       h('p', { class: 'muted' }, h('span', { class: 'fac', style: `background:${FACTIONS[sel.owner].color}` }), FACTIONS[sel.owner].name, ` · ${TERRAIN[sel.terrain].name}`, sel.terrain !== 'star' ? ` · move cost ${TERRAIN[sel.terrain].cost}` : ''),
       groupsHere.length ? h('p', { text: groupsHere.map((g) => `${g.name} (${g.size} ${g.size > 1 ? 'ships' : 'ship'})`).join(', ') }) : null,
-      !here_ && sel.terrain !== 'star' ? (S.path ? h('div', { class: 'row' }, h('span', { class: 'muted', text: `Path cost ${S.path.cost}` }), h('span', { class: 'spacer' }), key_('Move here', () => moveFleet(S.path), 'go small'))
-        : h('p', { class: 'err', text: `Out of reach this turn (${CAMP.mp} moves left).` })) : null,
-      missionsHere.map((m) => h('button', { class: 'item', type: 'button', onclick: () => briefing(m) }, h('span', { class: 't', text: MS(m).name }), h('span', { class: 'num', text: `${m.reward} cr` }), h('span', { class: 's', text: `${m.turns} ${m.turns > 1 ? 'turns' : 'turn'} left · ${m.strength} opposition` }))),
+      !here_ && sel.terrain !== 'star' ? (S.path ? h('div', { class: 'row' }, h('span', { class: 'muted', text: S.path.turns > 1 ? `${S.path.cost} moves · ${S.path.turns} turns` : `Path cost ${S.path.cost}` }), h('span', { class: 'spacer' }), key_('Move here', () => moveFleet(S.path), 'go small'))
+        : h('p', { class: 'err', text: 'No route there.' })) : null,
+      // A mission here is a key that opens its briefing (owner, 2026-11-05: "make this more obvious its a button").
+      missionsHere.map((m) => h('div', { class: 'missionrow' }, h('span', { class: 'mglyph', style: `background:${missionInk(m)}`, text: MS(m).glyph }),
+        h('span', { class: 'mtext' }, h('span', { class: 't', text: MS(m).name }), h('span', { class: 's', text: `${m.reward} cr · ${m.turns == null ? 'story' : `${m.turns} ${m.turns > 1 ? 'turns' : 'turn'} left`}${MS(m).battle(missionCtx(), m) ? ` · ${m.strength} opposition` : ''}` })),
+        key_('Briefing', () => briefing(m), 'small go'))),
       h('div', { class: 'plate', text: atPort ? `Port: ${here.planet || here.station}` : isMarket(here) ? `${FACTIONS[here.owner].name} port: ${here.planet || here.station}`
         : (here.planet || here.station) ? `Closed to you: standing ${CAMP.standing[here.owner]}` : 'No friendly port here' }),
       h('div', { class: 'row' }, portKey('shipyard', 'Shipyard'), portKey('outfitter', 'Outfitter'), portKey('recruit', 'Recruiting'),
@@ -3607,7 +3733,7 @@ const SCREENS = {
       key_('+', () => setZoom(Math.max(8, mapCam.position.distanceTo(controls.target) * 0.7)), 'small', { 'aria-label': 'Zoom in' }),
       key_('−', () => setZoom(Math.min(68, mapCam.position.distanceTo(controls.target) * 1.4)), 'small', { 'aria-label': 'Zoom out' }),
       key_('Fleet', () => centreOn(CAMP.at.c, CAMP.at.r, mapCam.position.distanceTo(controls.target)), 'small'));
-    const out = [top, keys, h('div', { class: 'endturn' }, key_('End turn', () => { glideFleets(endTurn()); rebuildMarkers(); S.path = S.sel ? pathTo(S.sel) : null; showPath(S.path); render(); }, 'go'))];
+    const out = [top, keys, h('div', { class: 'endturn' }, key_('End turn', endTurnNow, 'go'))];
     if (S.port) out.push(portPanel());
     else if (!S.mission) out.splice(1, 0, panel);   // a briefing takes the sector panel's place
     if (S.missionsOpen && !S.port) out.push(missionLog());
@@ -3632,14 +3758,25 @@ const SCREENS = {
   results() {
     useScene(S.result.noBattle ? 'map' : 'battle');
     const r = S.result;
-    return h('div', { class: 'center' }, h('div', { class: 'panel sheet' },
+    // The debrief (owner, 2026-11-05: "need a win or loose screen, and how many prestige + reputation I got"): won or lost
+    // first, large, in the grade's colour; then what it earned: credits, prestige and each faction's reputation.
+    const won = r.noBattle || r.win, verdict = r.noBattle ? 'Mission complete' : r.win ? (r.kind === 'campaign' ? 'Mission accomplished' : 'Battle won')
+      : r.grade === 'draw' ? 'Withdrawn' : r.kind === 'campaign' ? 'Mission failed' : 'Battle lost';
+    const signed = (n) => `${n > 0 ? '+' : n < 0 ? '−' : '±'}${Math.abs(n)}`;
+    return h('div', { class: 'center' }, h('div', { class: 'panel sheet debrief' },
       h('div', { class: 'plate', text: r.kind === 'campaign' ? 'Mission report' : 'Skirmish report' }),
-      h('h2', { text: r.noBattle ? 'Done' : FCMissions.GRADE_NAME[r.grade], style: `color:${GRADE_INK[r.grade]}` }), h('p', { class: 'muted', text: r.name }),
+      h('div', { class: `outcome ${won ? 'won' : r.grade === 'draw' ? 'drawn' : 'lost'}`, style: `--g:${GRADE_INK[r.noBattle ? 'victory' : r.grade]}` },
+        h('span', { class: 'verdict', text: verdict }), h('span', { class: 'gradebig', text: r.noBattle ? 'Done' : FCMissions.GRADE_NAME[r.grade] }), h('span', { class: 'muted', text: r.name })),
+      r.kind === 'campaign' ? h('div', { class: 'tiles' },
+        h('div', { class: 'tile' }, h('b', { text: 'Credits' }), h('span', { class: `num ${r.reward > 0 ? 'ok' : ''}`, text: signed(r.reward) })),
+        h('div', { class: 'tile' }, h('b', { text: 'Prestige' }), h('span', { class: `num ${r.prestige > 0 ? 'ok' : r.prestige < 0 ? 'err' : ''}`, text: signed(r.prestige) }), h('small', { text: `now ${r.prestigeNow}` })),
+        h('div', { class: 'tile rep' }, h('b', { text: 'Reputation' }), r.standing.length ? r.standing.map(([f, d, now]) => h('span', { class: 'repline' },
+          h('span', { class: 'fac', style: `background:${FACTIONS[f].color}` }), `${FACTIONS[f].short} `, h('span', { class: `num ${d > 0 ? 'ok' : 'err'}`, text: signed(d) }), h('small', { text: ` (${now})` })))
+          : h('span', { class: 'muted', text: 'No change' }))) : null,
       r.objectives ? h('table', { class: 'grid' }, h('tbody', {}, r.objectives.map((o) => h('tr', {}, h('td', { class: 'muted', text: o.primary ? 'Primary' : 'Bonus' }),
         h('td', { text: o.text }), h('td', { class: r.met[o.id] ? 'ok' : 'muted', text: r.met[o.id] ? 'Met' : 'Missed' }))))) : null,
       r.noBattle ? null : h('table', { class: 'grid' }, h('thead', {}, h('tr', {}, h('th', { text: 'Ship' }), h('th', { text: 'Hull' }))), h('tbody', {}, r.ships.map((s) =>
         h('tr', {}, h('td', { text: s.name }), h('td', {}, s.lost ? h('span', { class: 'err', text: 'Destroyed' }) : h('span', { class: 'row' }, h('span', { class: 'bar', style: 'width:90px' }, h('i', { style: `width:${s.hullPct}%` })), h('span', { class: 'num', text: `${s.hullPct}%` }))))))),
-      r.kind === 'campaign' ? h('p', {}, 'Credits earned: ', h('span', { class: 'num', text: r.reward })) : null,
       r.log ? h('p', { text: r.log }) : null,
       r.prize ? h('p', { text: `Captured: ${r.prize} joins the fleet damaged. Repair it at a shipyard to fly it, or sell it; a rival's yard pays more for your enemy's hull.` }) : null,
       (r.next || []).length ? h('p', { class: 'muted', text: `New on the map: ${r.next.join(', ')}.` }) : null,
@@ -3893,9 +4030,11 @@ function runMission(m) {
 // A mission's result, from its script and its outcome o (FCMissions.score): credits, standing, a prize, the missions it
 // offers next, a line for the log.
 function applyResult(m, o) {
-  const def = MS(m), out = def.result(missionCtx(), m, o) || {}, r = { reward: out.credits || 0, prize: null, next: [], log: out.log || null };
+  const def = MS(m), out = def.result(missionCtx(), m, o) || {}, r = { reward: out.credits || 0, prize: null, next: [], log: out.log || null, standing: [] };
   CAMP.credits += r.reward;
-  for (const [f, d] of Object.entries(out.standing || {})) if (CAMP.standing[f] != null) changeStanding(f, d);
+  r.prestige = out.prestige ?? FCMissions.prestigeOf(m, o); CAMP.prestige += r.prestige; r.prestigeNow = CAMP.prestige;
+  // Reputation: each faction's standing as it changed (after the -100 to 100 limits), for the report.
+  for (const [f, d] of Object.entries(out.standing || {})) if (CAMP.standing[f] != null) { const was = CAMP.standing[f]; changeStanding(f, d); if (CAMP.standing[f] !== was) r.standing.push([f, CAMP.standing[f] - was, CAMP.standing[f]]); }
   if (out.prize && CAMP.fleet.length < FLEET_MAX) {
     const fac = out.prize, hull = HULLS[smallestHull(fac)] ? smallestHull(fac) : smallestHull(CAMP.side);
     const pr = newShip(hull, `Prize Ship ${(SHIP_NAMES[fac] || SHIP_NAMES.vos)[1]}`); pr.maker = fac; pr.hullPct = 40; CAMP.fleet.push(pr); r.prize = pr.name;
@@ -3988,6 +4127,12 @@ window.MOCKUP_SHOTS = {
   // Mid-move after End turn: the factions' fleets flying their legs.
   map_turns_moving: () => { freshCampaign(); centreOn(16, 10, 20); glideFleets(endTurn()); rebuildMarkers(); render(); stepFleetGlides(0.5 / FLIGHT_SECTORS_S); },
   // An ally's routes: the Ssarith at standing 30 show their freight route (dimmer, no freighters); a rival's never show.
+  // A route three turns long: this turn's leg bright, later legs fainter, each turn's end numbered.
+  map_route_multi: () => { freshCampaign(); centreOn(CAMP.at.c + 4, CAMP.at.r, 16); selectHex(CAMP.at.c + 7, CAMP.at.r + 1); },
+  // The same route ordered: the first leg flown, the rest drawn on as the fleet's order.
+  map_order: () => { freshCampaign(); centreOn(CAMP.at.c + 4, CAMP.at.r, 16); selectHex(CAMP.at.c + 7, CAMP.at.r + 1); moveFleet(S.path); stepFlight(60); },
+  // The fleet in a mission's sector: the sector panel lists it with a Briefing key.
+  map_mission_here: () => { missionAt('distress'); S.mission = null; render(); },
   map_allies: () => { freshCampaign(); CAMP.standing.ssarith = 30; buildMap(); centreOn(15, 5, 16); },
   map_path: () => { freshCampaign(); selectHex(CAMP.at.c + 2, CAMP.at.r - 1); },
   // Mid flight: the corvette lifted off its stand halfway along a three-sector route.
@@ -4018,6 +4163,7 @@ window.MOCKUP_SHOTS = {
   battle_distress: () => { missionAt('distress', (m) => { m.data.trap = false; }); runMission(S.mission); S.battle.met = { save: true }; render(); },
   results_distress_trap: () => { missionAt('distress', (m) => { m.data.trap = true; }); runMission(S.mission); S.battle.met = { trap: true, intact: true }; finishBattle(false, 'end'); },
   battle_asteroids: () => { missionAt('patrol', (m) => { missionCtx().hex(m.c, m.r).terrain = 'asteroids'; }); runMission(S.mission); render(); },
+  results_defeat: () => { MOCKUP_SHOTS.battle_asteroids(); finishBattle(false, 'lost'); },
   results_draw: () => { MOCKUP_SHOTS.battle_asteroids(); finishBattle(false, 'withdraw'); },
 };
 // A shot's mission: offered fresh in a new Concord campaign, the fleet in its sector, accepted, its briefing open.

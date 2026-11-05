@@ -21,7 +21,7 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | Drafted (2026-11-05, v13) | `game-flow`, `faction-select`, `campaign-missions` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
+| 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | Drafted (2026-11-05, v14) | `game-flow`, `faction-select`, `campaign-missions` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
 | 2 | In-game UI | Approved for implementation (2026-11-03; live v79: every skin in one console, following the ship you command; v80 committed, to publish: beams and disruptor bolts keep their ends on their ships, and lances, bolts and torpedoes drawn by the weapons range's effects) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
@@ -93,6 +93,11 @@ move delta)"; "ship standees should have a flag next to them representing ship s
 routes for your empire, and show freighter routes for allies. develop and use placeholders for freighters"; the nebula
 palette ("here's a better pallete for nebulas, the colros are kinda random right now") and "maybe nebula should have a
 couple different colors, like a main color and an accent color".
+
+Then, 2026-11-05 (v14): "its angled weird lol, Ithink mission flags sould just be 3d"; "how come my ship isnt centered?",
+"if theres more ships or objects on it, then offset, otherwise I think ships should be centered"; "make this more obvious
+its a button" (a mission in the sector panel); "need a win or loose screen, and how many prestige + reputation I got";
+"need to show multi turn moves please".
 
 Design: `openspec/changes/game-flow/`. References: SFC2 manual printed pages 74-89 (menus, skirmish,
 campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish points, refit by

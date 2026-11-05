@@ -120,3 +120,4 @@
 - 2026-11-05, desktop session: version 123, version id `1793871461-ad95`: M1 v11, the Missions guide v2.
 - 2026-11-05, desktop session: version 124, version id `1793872899-a201`: M1 v12.
 - 2026-11-05, desktop session: version 125, version id `1793874926-c06c`: M1 v13.
+- 2026-11-05, desktop session: version 126, version id `1793877957-f8cb`: M1 v14, the Missions guide v3.

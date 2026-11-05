@@ -10,6 +10,7 @@
 - [x] 1.6 Shots at desktop and phone sizes, looked at; `dom_fit.mjs` passes; published
 - [x] 1.7 The guide's ready mission types as scripts (patrol, fleet action, ambushed, overwhelming fleet, capture, distress
   call) and Capture the prize with its delivery (owner, 2026-11-05); five outcome grades, objectives, battles by group
+- [x] 1.9 The debrief: verdict, credits, prestige and reputation; prestige in the top bar
 - [x] 1.8 The stand-in battle flies each group with its label, rocks in an asteroid sector, objectives ticked by hand, and
   ends by End battle, Withdraw or Fleet lost; the report shows the grade and each objective
 

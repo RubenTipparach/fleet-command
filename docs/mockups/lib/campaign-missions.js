@@ -26,7 +26,7 @@
 //                     The older short form { enemy, count, name? } is one enemy group with the script's objective.
 //   grade(ctx, m, met, how)  optional: the outcome grade, when the default rule below does not fit the type
 //   result(ctx, m, o) what happens after, o = { grade, win, met, how, pay } (pay: the grade's share of the reward):
-//                     { credits, standing: { faction: change }, prize: faction, next: [script id, or { id, c, r, data }],
+//                     { credits, prestige, standing: { faction: change }, prize: faction, next: [script id, or { id, c, r, data }],
 //                     log: 'text' }; any field may be left out
 // m is the offered mission: { id, script, c, r, turns, strength, reward, data }.
 //
@@ -50,6 +50,11 @@ const GRADES = ['crushing', 'defeat', 'draw', 'victory', 'outstanding'];
 const GRADE_NAME = { crushing: 'Crushing defeat', defeat: 'Defeat', draw: 'Draw', victory: 'Victory', outstanding: 'Outstanding' };
 // The share of a mission's reward each grade pays.
 const PAY = { crushing: 0, defeat: 0, draw: 0.25, victory: 1, outstanding: 1.5 };
+// Prestige each grade earns, a captain's record kept apart from credits (the guide's question 1; owner, 2026-11-05: "need a
+// win or loose screen, and how many prestige + reputation I got"); a story mission's counts double. A script's result may
+// give its own `prestige`.
+const PRESTIGE = { crushing: -5, defeat: 0, draw: 2, victory: 5, outstanding: 10 };
+const prestigeOf = (m, o) => PRESTIGE[o.grade] * (ALL[m.script].kind === 'story' ? 2 : 1);
 // How a battle ended: 'end' (fought to its end), 'withdraw' (the fleet disengaged), 'lost' (the fleet was destroyed or
 // struck). Every primary objective met is a victory, and every bonus too is outstanding; a withdrawal short of the primary
 // is a draw, staying and failing it a defeat, and losing the fleet a crushing defeat.
@@ -259,5 +264,5 @@ define({ id: 'first_blood', name: 'First blood', glyph: '2', kind: 'story', type
     : { next: ['first_blood'], log: 'The raider got away. It will be back.' }) });
 
 return { define, get: (id) => ALL[id], ids: () => Object.keys(ALL), contracts: () => Object.values(ALL).filter((s) => s.kind === 'contract').map((s) => s.id),
-  battleOf, score, GRADES, GRADE_NAME, PAY };
+  battleOf, score, prestigeOf, GRADES, GRADE_NAME, PAY, PRESTIGE };
 })();

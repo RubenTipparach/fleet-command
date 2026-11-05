@@ -196,8 +196,22 @@ cheapest path (the one path rule the player's moves use). The freighter is a pla
 bridge aft and a drive, in the faction's hull tint with a band of its colour, on a small stand. Convoy defense is now
 offered on one of your own routes, and Convoy ambush on a hostile faction's.
 
-Slots in a hex, so pieces never stand on one another: the port up and right of centre, the player's fleet down left, a
-faction fleet down right, a freighter right, a mission up left.
+**Where pieces stand** (owner, 2026-11-05: "how come my ship isnt centered?", "if theres more ships or objects on it, then
+offset, otherwise I think ships should be centered"): a piece alone in its hex stands in the middle; where a hex holds more
+than one (a port, the player's fleet, faction fleets, your freighters, missions), each takes its slot so none stands on
+another: the port up right, the player's fleet down left, a faction fleet down right, a freighter right, a mission up
+left. Pieces settle again after every move, offer and End turn.
+
+**Routes over several turns** (owner: "need to show multi turn moves please"): a route is drawn all the way to the picked
+sector, split into legs by turn (the first leg what the moves left this turn reach, each later leg a full 3 move
+points), this turn's leg bright and later legs fainter, with a numbered badge where each turn ends. The sector panel says
+"7 moves · 3 turns". Moving flies this turn's leg; the rest becomes the fleet's order, flown on after each End turn (once
+the factions have moved) until it arrives or the player sends the fleet elsewhere.
+
+**A mission in the sector panel** is a row with its letter, its name, reward, time left and opposition, and a Briefing key
+(owner: "make this more obvious its a button").
+Banners (mission standees and strength flags) are cloth in the scene, rippling, not camera-facing cards (owner: "its angled
+weird lol, Ithink mission flags sould just be 3d").
 
 ## Campaign ports
 
