@@ -103,5 +103,13 @@
 - 2026-11-04, cloud session (battle console thread): version 107, version id `1793823194-7b46`, built on the live version (another session's M2 v79, M8 v18 and M6 stern text): M15 v5.
 - 2026-11-04, desktop session (Mac): Concord line at version 24 (the Albatross stern down to two bells), a text edit on the live version; version id `1793817050-4098`.
 - 2026-11-04, desktop session (Mac): M2 at v79 and M8 at v18 (strips on black), M6 summary to two bells; version id `1793822422-f548`.
+- 2026-11-04, cloud session (faction emblems): version 109, version id `1793829600-eb98`, built on the live version (M2 v81, M8 v20): the guide at v25 (the Ssarith Hunt started).
+- 2026-11-04, cloud session (faction emblems): version 110, version id `1793830372-8f69`: the guide at v26 (the Bow Rites).
+- 2026-11-04, cloud session (faction emblems): version 111, version id `1793833883-7dce`: the guide at v27 (the Bow Rites redrawn).
+- 2026-11-05, cloud session (faction emblems): version 112, version id `1793839271-20ad`: M19 added (the Ssarith badge in 3D), the guide at v28.
+- 2026-11-05, cloud session (faction emblems): version 113, version id `1793841962-5e56`: M19 at v2 (ferns, steel, feathers, glowing blood), the guide at v29.
+- 2026-11-05, cloud session (faction emblems): version 114, version id `1793846057-df61`: M19 at v3 (the fern recess, steel and hard green arrows), the guide at v30.
+- 2026-11-05, cloud session (faction emblems): version 115, then 116: M19 at v4, the guide at v31, the Emblem Gallery added under Misc.
 - 2026-11-04, desktop session (Mac): M2 at v81 and M8 at v20 (the shield display on every ship); version id `1793828157-0f07`.
+- 2026-11-05, cloud session (faction emblems): version 117, version id `1793848268-4e78`, merging main: M16 (special weapons), M17 (sounds) and M18 (music), committed on main by another session, back beside M19 and the gallery.
 - 2026-11-05, cloud session (battle console thread): version 118, version id `1793850979-43ca`, built on the live version (M19, the Emblem Gallery and the guide at v31 from the emblem session, carried): M2 v82, M8 v21, M15 v6.

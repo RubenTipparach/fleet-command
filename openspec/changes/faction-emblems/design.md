@@ -186,3 +186,33 @@ The ship bible changes only if the owner accepts it.
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |
 | E12 | Where on a hull? | Decided for the Concord (owner, 2026-11-04): one emblem on the port side, 3 % of ship length |
+
+## The Ssarith Hunt (2026-11-04)
+
+Owner, 2026-11-04: "lets design an emblem for the SSarith". Under the owner's rule that a species' looks are not its
+design (CLAUDE.md section 1; the Ship Design Bible chapter 13, C1-C5), nothing is taken from the Ssarith's bodies. The
+Hunt's culture is one line in the console skins design ("the hunt is the only honest sport: the quarry must be worthy, the
+stalk patient, the kill earned and counted"), too thin to design from, so, as survey H1 recommends (blank, so accepted),
+three traditions inside the Hunt are drafted for the owner to pick, change or reject, each with a sketch that names it:
+
+| Sketch | Tradition | Outline | What it shows |
+|---|---|---|---|
+| SA, the Open Gate | The Fair Chase, a school of law: a hunt that leaves the quarry no way out is slaughter | A marker stone (a hunting ground's boundary stone) | Three closing brackets, the fourth left out, and three Watch green chevrons running out through the gap |
+| SB, the Witness Tally | The Tally Keepers, a guild of witnesses: nothing counts unless witnessed and recorded | A hanging tablet | A cord tied at the notch with the count across it (long marks the witness's, short the hunter's), three to a season, the newest in Watch green, the witness's seal below |
+| SC, the Long Watch | The Watchers, stargazers turned navigators: patience first | A low blind | The horizon joined to the blind, the four-point watch star over it, its path across the sky half travelled |
+| SD, the Bow Rites (recommended; the owner's idea) | The Bow Rites (owner, 2026-11-04: "bows and arrows lined up ... it has to be ssarith bow and arrow", "different sizes to represent their different stages of manhood", then "3 bow and arrows overlapping pointed to the right"): a new bow made at each stage of life, the old ones kept | A pennon, square at the back, pointing right | Three of the Hunt's own bows (cut from flat plate: straight facets, a square-cut recurve, a heavy riser), each braced with its arrow nocked and aimed right, overlapping like a hand of cards, largest behind on the left, smallest in front on the right; a one-barbed leaf head; the youngest's head in Watch green |
+
+Palette (provisional, from the Hunt console): Bone (the Tally Keepers' tablets), Watch green (the phosphor of the tracking
+tubes), Canopy (the hunting ground at night). Each sketch passes the stereotype test (C5) and the measured checks (joins,
+contrast on black and on white). The guide gains a rule for every emblem: Culture, not anatomy. The traditions are the
+owner's to set (C4); all three are provisional until H1 is answered or a sketch is picked.
+
+**The 3D badge** (owner, 2026-11-05: "more colors and shading on the bow and green arrows on the 3d rendering", "shade the
+bow parts with like wood and the arrows green with blood", "Background should be like a beige, dull brown and dry green
+forest", "make each arrowhead unique", "holographic leaves", "Should be 3d leaves shapes"): mockup 19,
+`docs/mockups/ssarith-emblem-3d.html`, from the guide's own parts (`assets/emblems/ssarith/sd.parts.json`) in Blender
+(`tools/blender/emblem_ssarith.py`) and three.js (the shared badge library). Four new Material Maker graphs: laminated wood,
+Watch green lacquer, the lacquer under dried blood, and a dry forest in enamel; holographic leaves at three depths laid out
+by `tools/emblems/ssarith_leaves.py`. SD's three arrowheads are now each their own shape, one per stage. Heights and
+materials in mockup-work.md section 19.
+
