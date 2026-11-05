@@ -1906,7 +1906,9 @@ return { concord, krai, ssarith };
 //
 // ctx, given by the page: side, rival (faction ids), name(faction), hexes(), hex(c, r), at (the fleet's sector),
 // home (the side's home port), own(h), hostile(h), plain(h), port(h), groupAt(h), fleet, marines(), rng(), near(h, n)
-// (sectors within n of h), dist(a, b), hull(faction, tier) ({ id, cls }), names(faction) (its ship names).
+// (sectors within n of h), dist(a, b), hull(faction, tier) ({ id, cls }), names(faction) (its ship names), routes(faction)
+// (the sectors its freighters run through). The factions' fleets move; a script that stores m.data.group (a fleet's name)
+// has its mission move with that fleet.
 window.FCMissions = (function () {
 'use strict';
 const ALL = {};
@@ -2021,6 +2023,7 @@ define({ id: 'overwhelming', name: 'Stem the tide', glyph: 'O', type: 'Overwhelm
 // Capture (ready): a lone ship on the map, boarded and taken.
 define({ id: 'capture', name: 'Capture a ship', glyph: 'K', type: 'Capture', reward: 800,
   where: (ctx) => ctx.hexes().filter((h) => ctx.groupAt(h)?.size === 1 && ctx.groupAt(h).fac !== ctx.side),
+  setup: (ctx, m) => { m.data.group = ctx.groupAt(ctx.hex(m.c, m.r)).name; },   // the mission goes where the ship goes
   objective: () => 'Board and take the ship. Needs marines.',
   brief: (ctx, m) => `${ctx.groupAt(ctx.hex(m.c, m.r))?.name || 'A lone ship'} is alone here. Drop its shields and board it.`,
   needs: (ctx) => (ctx.marines() > 0 ? null : 'Boarding needs marines aboard.'),
@@ -2090,19 +2093,20 @@ define({ id: 'planet', name: 'Planetary assault', glyph: 'A', type: 'Planetary a
   battle: (ctx, m) => ({ enemy: ctx.hex(m.c, m.r).owner, count: strengthCount(m) }),
   result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.hex(m.c, m.r).owner]: -8, [ctx.side]: 4 } } : {}) });
 define({ id: 'ambush', name: 'Convoy ambush', glyph: 'C', type: 'Convoy raid', reward: 700,
-  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.hostile(h)),
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.hostile(h) && ctx.routes(h.owner).includes(h)),
   objective: () => 'Destroy two of the three freighters.',
   brief: (ctx, m) => `A ${ctx.name(foeOf(ctx, ctx.hex(m.c, m.r)))} supply convoy passes through here. Destroy two of its three freighters before they jump.`,
   battle: (ctx, m) => ({ enemy: foeOf(ctx, ctx.hex(m.c, m.r)), count: strengthCount(m) + 1 }),
   result: (ctx, m, o) => (o.win ? { credits: paid(m, o) } : {}) });
 define({ id: 'defend', name: 'Convoy defense', glyph: 'D', type: 'Convoy escort', reward: 600,
-  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.own(h)),
+  where: (ctx) => ctx.routes(ctx.side).filter((h) => ctx.plain(h)),   // on one of your own freight routes
   objective: () => 'Keep two of the three freighters alive.',
   brief: () => 'Our freighters are expected through this sector and raiders are waiting for them. Keep two of the three alive.',
   battle: (ctx, m) => ({ enemy: ctx.rival || 'vos', count: strengthCount(m) }),
   result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.side]: 3 } } : { standing: { [ctx.side]: -2 } }) });
 define({ id: 'assassinate', name: 'Assassination', glyph: 'X', type: 'Fleet action', reward: 900,
   where: (ctx) => ctx.hexes().filter((h) => ctx.groupAt(h)?.commander),
+  setup: (ctx, m) => { m.data.group = ctx.groupAt(ctx.hex(m.c, m.r)).name; },
   objective: () => 'Destroy the commander\'s ship.',
   brief: (ctx, m) => `${ctx.groupAt(ctx.hex(m.c, m.r))?.name || 'An enemy commander'} is in this sector. Destroy the flagship; the escorts do not matter.`,
   battle: (ctx, m) => {
@@ -2349,16 +2353,70 @@ function buildCampaign(side = 'concord', seed = 7) {
     { name: 'Vos Corsair', fac: 'vos', c: 11, r: 20, size: 1 }, { name: 'Concord Survey Ship', fac: 'concord', c: 9, r: 13, size: 1 },
     { name: 'Hunt Patrol', fac: 'ssarith', c: 15, r: 4, size: 2 }, { name: 'Hunt Courier', fac: 'ssarith', c: 20, r: 2, size: 1 },
   ];
+  // Every other fleet is the factions' own (owner, 2026-11-05: "player ever controls one fleet at a time, the rest of the
+  // fleets are controlled by the factions"): each moves on its faction's orders every few turns.
+  for (const [i, g] of groups.entries()) Object.assign(g, { home: { c: g.c, r: g.r }, every: 1 + (i % 3), dir: g.fac === side ? Math.PI / 2 : -Math.PI / 2 });
   // One ship of the side's smallest tier, as the owner asked; a squad of marines aboard.
   const fleet = [newShip(smallestHull(side), FACTIONS[side].prefix + SHIP_NAMES[side][0])];
   fleet[0].supplies.marines = Math.min(2, SUPPLIES[0].max(fleet[0]));
   CAMP = { side, seed, R, hexes, groups, fleet, at: { ...HOME[side] }, home: { ...HOME[side] }, credits: 4000, turn: 1, mp: MOVE_POINTS, missions: [], active: [], log: [], crew: [], officerPool: [], mid: 0,
-    captain: 'Captain Ardent', battles: 0, standing: startStanding(side) };
+    captain: 'Captain Ardent', battles: 0, standing: startStanding(side), dir: Math.PI / 2 };
+  CAMP.freighters = makeFreighters();
   rollOfficers();
   offerMission('shakedown');
   for (let i = 0; i < 8; i++) offerMission();
   return CAMP;
 }
+// Freighters (owner, 2026-11-05: "show freigthers and their routes for your empire, and show freighter routes for allies.
+// develop and use placeholders for freighters"): each faction's trade runs between its own ports, one freighter to a
+// route, moving a sector a turn and turning back at each end. Every faction has them; the map shows your own freighters
+// and routes, and the routes of your allies (standing ALLY_STANDING or more), never a rival's.
+const ALLY_STANDING = 25;
+const FREIGHT_ROUTES = [['concord', 'Halcyon', 'Keel Station'], ['concord', 'Halcyon', 'Meridian'], ['concord', 'Aster', 'Keel Station'], ['concord', 'Meridian', 'Brightwater'],
+  ['krai', 'Vahr', 'Ironmouth'], ['krai', 'Vahr', 'Gatehold'], ['krai', 'Kesh Prime', 'Ironmouth'], ['krai', 'Gatehold', 'Redoubt'],
+  ['ssarith', 'Calder', 'Pell Reach'], ['vos', 'Cinder Den', "Rook's Nest"]];
+const FREIGHTER_NAMES = ['Larkspur', 'Patience', 'Ninefold', 'Hollow Bell', 'Ember Reach', 'Saltmarsh', 'Tidewell', 'Copperline', 'Wayfarer', 'Long Acre'];
+function portHex(name) { return Object.values(CAMP.hexes).find((h) => h.planet === name || h.station === name); }
+function makeFreighters() {
+  return FREIGHT_ROUTES.map(([fac, a, b], i) => {
+    const A = portHex(a), B = portHex(b), res = cheapestPath(A, B);
+    const route = [key(A.c, A.r), ...res.path];
+    return { fac, name: FREIGHTER_NAMES[i % FREIGHTER_NAMES.length], from: a, to: b, route, i: i % route.length, step: 1, dir: 0 };
+  });
+}
+const sideOf = (f) => (f === CAMP.side ? 'own' : (CAMP.standing[f] ?? 0) >= ALLY_STANDING ? 'ally' : null);
+// The factions' turn: each fleet moves on its own cadence toward a sector its faction sends it to (raiders roam, the rest
+// keep near home), one or two sectors at a time; each freighter steps along its route. A mission on a fleet goes with it.
+function factionsMove() {
+  const R = CAMP.R, all = Object.values(CAMP.hexes).filter((h) => h.terrain !== 'star');
+  const moves = [];
+  for (const g of CAMP.groups) {
+    if ((CAMP.turn + g.every) % g.every || (g.goal && g.c === g.goal.c && g.r === g.goal.r && R() < 0.5)) continue;
+    if (!g.goal || (g.c === g.goal.c && g.r === g.goal.r)) {
+      const range = g.fac === 'vos' ? 6 : g.size === 1 ? 5 : 3;
+      const pool = all.filter((h) => hexDist(h, g.home) <= range && (g.fac === 'vos' || h.owner === g.fac || h.owner === 'neutral'));
+      g.goal = pool.length ? (({ c, r }) => ({ c, r }))(pool[Math.floor(R() * pool.length)]) : { ...g.home };
+    }
+    const res = cheapestPath(g, g.goal);
+    if (!res) { g.goal = null; continue; }
+    const steps = res.path.slice(0, g.size === 1 ? 2 : 1), from = { c: g.c, r: g.r };
+    const [c, r] = steps[steps.length - 1].split(',').map(Number);
+    const before = steps.length > 1 ? steps[steps.length - 2].split(',').map(Number) : [from.c, from.r];
+    g.dir = headingOf({ c: before[0], r: before[1] }, { c, r });
+    Object.assign(g, { c, r });
+    for (const m of CAMP.missions) if (m.data.group === g.name) Object.assign(m, { c, r });
+    moves.push([g, [from, ...steps.map((k) => (([kc, kr]) => ({ c: kc, r: kr }))(k.split(',').map(Number)))]]);
+  }
+  for (const f of CAMP.freighters) {
+    if (f.i + f.step < 0 || f.i + f.step >= f.route.length) f.step = -f.step;
+    const [ac, ar] = f.route[f.i].split(',').map(Number); f.i += f.step; const [bc, br] = f.route[f.i].split(',').map(Number);
+    f.dir = headingOf({ c: ac, r: ar }, { c: bc, r: br });
+  }
+  return moves;
+}
+// The heading of the last leg of a move (owner, 2026-11-05: "ship fleets should point in the direction they are facing (last
+// move delta)"), as a standee's turn about the vertical (the ship model's bow is +Z).
+function headingOf(a, b) { const pa = hexPos(a.c, a.r), pb = hexPos(b.c, b.r); return Math.atan2(pb.x - pa.x, pb.z - pa.z); }
 function isPort(h) { return (h.planet || h.station) && h.owner === CAMP.side; }
 // Another faction's port deals with you (a market, selling only) while your standing with it is 0 or above.
 function isMarket(h) { return (h.planet || h.station) && h.owner !== CAMP.side && h.owner !== 'neutral' && (CAMP.standing[h.owner] ?? 0) >= 0; }
@@ -2374,6 +2432,7 @@ function missionCtx() {
     dist: hexDist, near: (h, n) => all.filter((x) => hexDist(x, h) <= n),
     hull: (f, t) => { const id = hullsOf(f).length ? hullOfTier(f, t) : null; return { id, cls: id ? HULLS[id].cls.replace(' (stand-in)', '').toLowerCase() : 'raider' }; },
     names: (f) => SHIP_NAMES[f] || SHIP_NAMES.vos,
+    routes: (f) => [...new Set((C.freighters || []).filter((x) => x.fac === f).flatMap((x) => x.route))].map((k) => C.hexes[k]),
   };
 }
 // Offer a mission: the script's own choice of sector, never one that already has a mission. `at` pins the sector.
@@ -2399,9 +2458,11 @@ function rollOfficers() {
     return { name, station: STATIONS[Math.floor(R() * STATIONS.length)], skill: SKILLS[sk][0], cost: SKILLS[sk][1] };
   });
 }
-function pathTo(target) {
-  // Cheapest path by move cost, within the move points left (design: Moving).
-  const start = key(CAMP.at.c, CAMP.at.r), goal = key(target.c, target.r);
+function pathTo(target) { return cheapestPath(CAMP.at, target, CAMP.mp); }
+// Cheapest path by move cost from one sector to another within a budget of move points (design: Moving): the player's
+// moves, the factions' fleets and the freighters' routes all use it.
+function cheapestPath(from, target, budget = Infinity) {
+  const start = key(from.c, from.r), goal = key(target.c, target.r);
   const dist = { [start]: 0 }, prev = {}, open = [start];
   while (open.length) {
     open.sort((a, b) => dist[a] - dist[b]);
@@ -2410,8 +2471,9 @@ function pathTo(target) {
     const [c, r] = k.split(',').map(Number);
     for (const [nc, nr] of neighbours(c, r)) {
       const nk = key(nc, nr), cost = TERRAIN[CAMP.hexes[nk].terrain].cost;
+      if (cost === Infinity) continue;   // a star is never entered
       const nd = dist[k] + cost;
-      if (nd <= CAMP.mp && nd < (dist[nk] ?? Infinity)) { dist[nk] = nd; prev[nk] = k; open.push(nk); }
+      if (nd <= budget && nd < (dist[nk] ?? Infinity)) { dist[nk] = nd; prev[nk] = k; open.push(nk); }
     }
   }
   if (dist[goal] == null || goal === start) return null;
@@ -2421,12 +2483,14 @@ function pathTo(target) {
 }
 function endTurn() {
   CAMP.turn++;
+  const moves = factionsMove();
   CAMP.mp = MOVE_POINTS;
   // Contracts expire unless taken; story missions and accepted ones wait.
   CAMP.missions = CAMP.missions.filter((m) => m.turns == null || CAMP.active.includes(m.id) || --m.turns > 0);
   const n = 1 + Math.floor(CAMP.R() * 2);
   for (let i = 0; i < n && CAMP.missions.length < 12; i++) offerMission();
   rollOfficers();
+  return moves;
 }
 function fleetPoints(fleet) { return fleet.reduce((n, s) => n + shipPoints(s), 0); }
 
@@ -2497,10 +2561,13 @@ const HULL_TINT = { concord: 0xb9c6d6, krai: 0x6a6062, ssarith: 0x8a9478, vos: 0
 function shipRef(fac, size) { return fac === 'concord' ? (size > 1.1 ? 'albatross' : 'petrel_level') : fac === 'krai' ? HULLS[hullOfTier('krai', Math.min(3, Math.max(1, Math.round(size))))].ref : null; }
 const postMat = new THREE.MeshStandardMaterial({ color: 0xcfe6ff, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0 });
 const baseMat = new THREE.MeshStandardMaterial({ color: 0x15181d, roughness: 0.55, metalness: 0.2 });
-function flightStand(fac, height, size) {
+// The player's own fleet stands on gold (owner, 2026-11-05: "player fleet should have a gold standee"); every other piece on
+// dark plastic with its faction's rim.
+const goldMat = new THREE.MeshStandardMaterial({ color: 0xd9a93e, metalness: 0.95, roughness: 0.28, emissive: 0x3a2604, emissiveIntensity: 0.6 });
+function flightStand(fac, height, size, gold = false) {
   const g = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * size, 0.26 * size, 0.06, 6, 1, false, Math.PI / 6), baseMat); base.position.y = 0.03; g.add(base);
-  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.24 * size, 0.018, 6, 6), new THREE.MeshBasicMaterial({ color: FACTIONS[fac].color }));
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * size, 0.26 * size, 0.06, 6, 1, false, Math.PI / 6), gold ? goldMat : baseMat); base.position.y = 0.03; g.add(base);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.24 * size, 0.018, 6, 6), gold ? goldMat : new THREE.MeshBasicMaterial({ color: FACTIONS[fac].color }));
   rim.rotation.x = Math.PI / 2; rim.position.y = 0.062; g.add(rim);
   const post = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, height, 8), postMat); post.position.y = height / 2 + 0.06; g.add(post);
   return g;
@@ -2526,15 +2593,43 @@ function labelSprite(text, color) {
   s.scale.set(0.16, 0.03, 1); s.renderOrder = 4;
   return s;
 }
-function makeStandee(kind, fac, label, size = 1, ref) {
+// A strength flag on its own pole beside a fleet (owner, 2026-11-05: "ship standees should have a flag next to them
+// representing ship strength", with a screenshot of banners beside a strategy game's pieces): a banner in the faction's
+// colour, one pip per step of strength (1 to 5), longer the stronger the fleet.
+function strengthFlag(fac, n, size) {
+  const g = new THREE.Group(), h = 0.95 * size;
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, h, 6), new THREE.MeshStandardMaterial({ color: 0xc9cdd2, metalness: 0.8, roughness: 0.35 }));
+  pole.position.y = h / 2; g.add(pole);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.018, 10, 8), goldMat); knob.position.y = h + 0.01; g.add(knob);
+  const tall = 72 + n * 34, tex = canvasTex(64, 256, (x, w) => {
+    x.clearRect(0, 0, w, 256);
+    x.beginPath(); x.moveTo(2, 2); x.lineTo(w - 2, 2); x.lineTo(w - 2, tall); x.lineTo(w / 2, tall - 16); x.lineTo(2, tall); x.closePath();
+    x.fillStyle = FACTIONS[fac].color; x.fill(); x.lineWidth = 4; x.strokeStyle = '#0b0d10'; x.stroke();
+    x.fillStyle = 'rgba(0,0,0,0.28)'; x.fillRect(2, 2, w - 4, 12);
+    x.fillStyle = '#f4f1e8'; for (let i = 0; i < n; i++) { x.beginPath(); x.arc(w / 2, 34 + i * 34, 10, 0, Math.PI * 2); x.fill(); }
+  });
+  const flag = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.5 }));
+  flag.center.set(0, 1); flag.scale.set(0.16 * size, 0.64 * size, 1); flag.position.set(0.008, h - 0.02, 0); g.add(flag);
+  g.userData.flag = flag;
+  return g;
+}
+// A fleet's strength, 1 to 5: the player's by the tiers of its hulls, a faction fleet's by its ships (a commander's counts more).
+const fleetStrength = (fleet) => Math.max(1, Math.min(5, Math.round(fleet.reduce((n, s) => n + HULLS[s.hull].tier, 0) / 1.5)));
+const groupStrength = (g) => Math.max(1, Math.min(5, g.size + (g.commander ? 2 : 0)));
+function makeStandee(kind, fac, label, size = 1, ref, opts = {}) {
   const g = new THREE.Group();
   let labelY = 0.2;
   if (kind === 'ship') {
-    g.add(flightStand(fac, 0.42 * size, size));
+    g.add(flightStand(fac, 0.42 * size, size, !!opts.gold));
     const ship = shipModel(new THREE.Color(FACTIONS[fac].color).getHex(), 0.16 * size, HULL_TINT[fac], ref !== undefined ? ref : shipRef(fac, size));
-    ship.position.y = 0.06 + 0.46 * size; ship.rotation.y = fac === CAMP?.side ? Math.PI / 2 : -Math.PI / 2;
+    ship.position.y = 0.06 + 0.46 * size; ship.rotation.y = opts.dir ?? (fac === CAMP?.side ? Math.PI / 2 : -Math.PI / 2);
     g.userData.model = ship;
     g.add(ship);
+    if (opts.strength) { const f = strengthFlag(fac, opts.strength, size); f.position.set(-0.3 * size, 0, 0.08 * size); g.add(f); g.userData.flag = f; }
+  } else if (kind === 'freighter') {
+    g.add(flightStand(fac, 0.2 * size, size * 0.75));
+    const ship = freighterModel(fac); ship.scale.setScalar(1.5 * size); ship.position.y = 0.06 + 0.26 * size; ship.rotation.y = opts.dir ?? 0;
+    g.userData.model = ship; g.add(ship);
   } else if (kind === 'station') {
     g.add(flightStand(fac, 0.5 * size, size));
     const st = stationModel(fac); st.scale.setScalar(size); st.position.y = 0.06 + 0.58 * size; g.add(st);
@@ -2551,6 +2646,41 @@ function makeStandee(kind, fac, label, size = 1, ref) {
   }
   const tag = labelSprite(label, FACTIONS[fac].color); tag.position.y = -0.05; g.add(tag);
   Object.assign(g.userData, { kind, label, fac, tag });
+  return g;
+}
+// A freighter, a placeholder until the factions' freighters are designed: a long spine with three cargo pods, a bridge
+// block aft and a drive, in the faction's hull tint with a band of its colour. Bow is +Z.
+function freighterModel(fac) {
+  const g = new THREE.Group();
+  const hull = new THREE.MeshStandardMaterial({ color: HULL_TINT[fac], metalness: 0.4, roughness: 0.55 });
+  const band = new THREE.MeshStandardMaterial({ color: FACTIONS[fac].color, emissive: FACTIONS[fac].color, emissiveIntensity: 0.2, roughness: 0.6 });
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.4), hull); g.add(spine);
+  for (let k = 0; k < 3; k++) { const pod = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.07, 0.085), k === 1 ? band : hull); pod.position.z = 0.1 - k * 0.1; g.add(pod); }
+  const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.06), hull); bridge.position.set(0, 0.02, -0.17); g.add(bridge);
+  const drive = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.03, 0.04, 10), new THREE.MeshBasicMaterial({ color: 0x9fd2ff })); drive.rotation.x = Math.PI / 2; drive.position.z = -0.215; g.add(drive);
+  return g;
+}
+// A mission's standee (owner, 2026-11-05: "misions should have standees so I know what tile they are on"): a pole on a
+// small base in the mission's sector, its banner showing the mission's letter, amber when offered, green once accepted,
+// blue for a story mission.
+const MISSION_OFFSET = new THREE.Vector3(-0.5, 0, -0.28);
+function missionInk(m) { return MS(m).kind === 'story' ? '#8fd0ff' : CAMP.active.includes(m.id) ? '#7dffa0' : '#ffb547'; }
+function missionStandee(m) {
+  const g = new THREE.Group(), ink = missionInk(m), h = 1.05;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.05, 6, 1, false, Math.PI / 6), baseMat); base.position.y = 0.025; g.add(base);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.014, 6, 6), new THREE.MeshBasicMaterial({ color: ink })); rim.rotation.x = Math.PI / 2; rim.position.y = 0.052; g.add(rim);
+  const metal = new THREE.MeshStandardMaterial({ color: 0xc9cdd2, metalness: 0.8, roughness: 0.35 });
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, h, 6), metal); pole.position.y = h / 2 + 0.05; g.add(pole);
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 6), metal); bar.rotation.z = Math.PI / 2; bar.position.y = h + 0.02; g.add(bar);
+  const tex = canvasTex(128, 176, (x, w, hh) => {
+    x.clearRect(0, 0, w, hh);
+    x.beginPath(); x.moveTo(4, 4); x.lineTo(w - 4, 4); x.lineTo(w - 4, hh - 4); x.lineTo(w / 2, hh - 36); x.lineTo(4, hh - 4); x.closePath();
+    x.fillStyle = ink; x.fill(); x.lineWidth = 6; x.strokeStyle = '#1a1006'; x.stroke();
+    x.fillStyle = '#1a1006'; x.font = '800 78px "Saira Condensed", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(MS(m).glyph, w / 2, 70);
+  });
+  const flag = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.5 }));
+  flag.center.set(0.5, 1); flag.scale.set(0.28, 0.385, 1); flag.position.y = h + 0.02; g.add(flag);
+  Object.assign(g.userData, { mission: m, flag });
   return g;
 }
 const PLANET_HUE = { Halcyon: 205, Meridian: 160, Vahr: 12, Ouro: 40, Tessaly: 280 };
@@ -2591,9 +2721,11 @@ function buildMap() {
     }
     if (h.terrain === 'nebula') {
       // A cloud in depth: puffs at several heights, big and dim low, smaller and brighter on top.
-      const R = rng(h.c * 17 + h.r * 5), tint = regions[key(h.c, h.r)].tint;
+      const R = rng(h.c * 17 + h.r * 5), { tint: main, accent } = regions[key(h.c, h.r)];
       for (let k = 0; k < 14; k++) {
         const y = 0.12 + R() * 0.85, r = 0.32 + R() * 0.32 - y * 0.12, v = 0.75 + R() * 0.4;
+        // The accent rises through the cloud: none low down, more toward the top, some puffs wholly accent.
+        const w = Math.min(1, Math.max(0, (y - 0.3) / 0.6) * (0.35 + 0.9 * R())), tint = main.map((m, i) => m + (accent[i] - m) * w);
         puffs.push({ x: p.x + (R() - 0.5) * 1.3, y, z: p.z + (R() - 0.5) * 1.3, rx: r, ry: r * 0.8, seed: R() * 100, tint: [tint[0] * v, tint[1] * v, tint[2] * v, 0.5 + R() * 0.3] });
       }
     }
@@ -2616,9 +2748,10 @@ function buildMap() {
   mapRoot.add(hexMesh);
   mapRoot.add(hexBorders());
   puffSetMap = puffSet(puffs); mapRoot.add(puffSetMap.mesh);
-  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1, shipRef(g.fac, g.size)); s.userData.hex = g; addStandee(s, hexPos(g.c, g.r).add(new THREE.Vector3(0.45, 0, 0.4)), 'ship'); }
-  fleetStandee = makeStandee('ship', CAMP.side, CAMP.fleet[0].name, 1.15, HULLS[CAMP.fleet[0].hull].ref);
-  const lampRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide }));
+  for (const g of CAMP.groups) { const s = makeStandee('ship', g.fac, g.name, 1, shipRef(g.fac, g.size), { dir: g.dir, strength: groupStrength(g) }); s.userData.hex = g; addStandee(s, hexPos(g.c, g.r).add(GROUP_OFFSET), 'ship'); }
+  buildFreight();
+  fleetStandee = makeStandee('ship', CAMP.side, CAMP.fleet[0].name, 1.15, HULLS[CAMP.fleet[0].hull].ref, { gold: true, dir: CAMP.dir, strength: fleetStrength(CAMP.fleet) });
+  const lampRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), new THREE.MeshBasicMaterial({ color: 0xffc94a, side: THREE.DoubleSide }));
   lampRing.rotation.x = -Math.PI / 2; lampRing.position.y = 0.07; fleetStandee.add(lampRing);
   addStandee(fleetStandee, hexPos(CAMP.at.c, CAMP.at.r).add(FLEET_OFFSET), 'fleet');
   selRing = new THREE.Mesh(new THREE.RingGeometry(0.82, 0.95, 6, 1, 0), new THREE.MeshBasicMaterial({ color: 0xffb547, side: THREE.DoubleSide }));
@@ -2630,7 +2763,17 @@ function buildMap() {
 // back to front in one draw. Here the gas glows from within as well as catching the light, and each connected nebula
 // takes its own colour (owner, 2026-10-30: "nebulas can be of different color, make the clouds more pronounced and 3d
 // looking, use the puffs method from crab-breeeze").
-const NEBULA_TINTS = [[0.62, 0.36, 0.95], [0.25, 0.78, 0.86], [0.95, 0.4, 0.62], [0.98, 0.62, 0.3], [0.45, 0.9, 0.55], [0.4, 0.5, 1.0]];
+// The nebulae's palette, the owner's (2026-11-05: "here's a better pallete for nebulas, the colros are kinda random right
+// now"), and each cloud takes two of it (owner: "maybe nebula should have a couple different colors, like a main color and
+// an accent color"): its main colour through the body, its accent rising through the upper puffs.
+const NEBULA_PALETTE = ['#6f6776', '#9a9a97', '#c5ccb8', '#8b5580', '#c38890', '#a593a5', '#666092', '#9a4f50', '#c28d75', '#7ca1c0', '#416aa3',
+  '#8d6268', '#be955c', '#68aca9', '#387080', '#6e6962', '#93a167', '#6eaa78', '#557064', '#9d9f7f', '#7e9e99', '#5d6872', '#433455'];
+const NEBULA_TINTS = NEBULA_PALETTE.map((hx) => { const c = new THREE.Color(hx); return [c.r, c.g, c.b]; });  // sRGB 0-1, as the puff shader reads them
+// A cloud's accent: another palette colour far enough from its main to read as a second colour, picked by the cloud's seed.
+function nebulaAccent(main, R) {
+  const far = NEBULA_TINTS.filter((t) => Math.hypot(t[0] - main[0], t[1] - main[1], t[2] - main[2]) > 0.28);
+  return far[Math.floor(R() * far.length)];
+}
 const puffMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false,
   uniforms: { uLight: { value: new THREE.Vector3(-0.4, 0.8, 0.45).normalize() } },
@@ -2686,17 +2829,17 @@ function sortPuffs(set, eye) {
   set.order.forEach((i, o) => { const q = L[i]; set.centre.array.set([q.x, q.y, q.z], o * 3); set.size.array.set([q.rx, q.ry], o * 2); set.tint.array.set(q.tint, o * 4); set.seed.array[o] = q.seed; });
   [set.centre, set.size, set.tint, set.seed].forEach((a) => { a.needsUpdate = true; });
 }
-// Each connected run of nebula sectors is one cloud with one colour.
+// Each connected run of nebula sectors is one cloud with one main colour and one accent.
 function nebulaRegions() {
   const region = {}, R = rng(97);
   let id = 0;
   for (const h of Object.values(CAMP.hexes)) {
     if (h.terrain !== 'nebula' || region[key(h.c, h.r)] != null) continue;
-    const tint = NEBULA_TINTS[Math.floor(R() * NEBULA_TINTS.length)], stack = [h];
-    region[key(h.c, h.r)] = { id, tint };
+    const tint = NEBULA_TINTS[Math.floor(R() * NEBULA_TINTS.length)], accent = nebulaAccent(tint, R), stack = [h];
+    region[key(h.c, h.r)] = { id, tint, accent };
     while (stack.length) {
       const q = stack.pop();
-      for (const [c, r] of neighbours(q.c, q.r)) { const k = key(c, r); if (CAMP.hexes[k].terrain === 'nebula' && region[k] == null) { region[k] = { id, tint }; stack.push(CAMP.hexes[k]); } }
+      for (const [c, r] of neighbours(q.c, q.r)) { const k = key(c, r); if (CAMP.hexes[k].terrain === 'nebula' && region[k] == null) { region[k] = { id, tint, accent }; stack.push(CAMP.hexes[k]); } }
     }
     id++;
   }
@@ -2769,22 +2912,52 @@ function hexBorders() {
 }
 const glowTex = canvasTex(128, 128, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.4, 'rgba(255,255,255,0.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); });
 // Within a hex: a planet or station stands at the back, the player's fleet front left, other ships front right.
-const FLEET_OFFSET = new THREE.Vector3(-0.45, 0, 0.45), PLACE_OFFSET = new THREE.Vector3(0.1, 0, -0.35);
-function addStandee(s, p, role) { s.position.copy(p); s.userData.role = role; mapRoot.add(s); standees.push(s); }
-function markerTex(m) {
-  return canvasTex(128, 128, (x, w, h) => {
-    x.translate(w / 2, h / 2); x.rotate(Math.PI / 4); x.fillStyle = MS(m).kind === 'story' ? '#8fd0ff' : CAMP.active.includes(m.id) ? '#7dffa0' : '#ffb547'; x.fillRect(-36, -36, 72, 72);
-    x.strokeStyle = '#1a1006'; x.lineWidth = 5; x.strokeRect(-30, -30, 60, 60); x.rotate(-Math.PI / 4);
-    x.fillStyle = '#1a1006'; x.font = '800 46px "Saira Condensed", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(MS(m).glyph, 0, 3);
+const FLEET_OFFSET = new THREE.Vector3(-0.45, 0, 0.45), PLACE_OFFSET = new THREE.Vector3(0.1, 0, -0.35), GROUP_OFFSET = new THREE.Vector3(0.45, 0, 0.4);
+const FREIGHT_OFFSET = new THREE.Vector3(0.66, 0, -0.12);
+// The freighters and routes you can see: your own freighters on their routes, and your allies' routes (dimmer), each a
+// dashed line through the sectors' centres in the faction's colour.
+let freightRoot = null;
+function buildFreight() {
+  if (freightRoot) mapRoot.remove(freightRoot);
+  freightRoot = new THREE.Group(); mapRoot.add(freightRoot);
+  CAMP.freighters.forEach((f, n) => {
+    const seen = sideOf(f.fac);
+    if (!seen) return;
+    const lift = new THREE.Vector3(((n % 3) - 1) * 0.05, 0.035, ((n % 3) - 1) * 0.05);
+    const pts = f.route.map((k) => { const [c, r] = k.split(',').map(Number); return hexPos(c, r).add(lift); });
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: FACTIONS[f.fac].color, dashSize: 0.22, gapSize: 0.14, transparent: true, opacity: seen === 'own' ? 0.95 : 0.5 }));
+    line.computeLineDistances(); freightRoot.add(line);
+    if (seen !== 'own') return;
+    const [c, r] = f.route[f.i].split(',').map(Number);
+    const s = makeStandee('freighter', f.fac, `Freighter ${f.name}`, 1, null, { dir: f.dir }); s.userData.hex = { c, r }; s.userData.freighter = f;
+    addStandee(s, hexPos(c, r).add(FREIGHT_OFFSET), 'freighter');
   });
 }
+// The factions' moves after End turn, flown sector by sector like the player's (the camera stays where it is).
+function glideFleets(moves) {
+  for (const [g, path] of moves) {
+    const s = standees.find((x) => x.userData.hex === g); if (!s) continue;
+    s.userData.glide = { pts: path.map((h) => hexPos(h.c, h.r).add(GROUP_OFFSET)), t: 0, dir: g.dir };
+  }
+  for (const s of standees.filter((x) => x.userData.freighter)) {
+    const f = s.userData.freighter, [c, r] = f.route[f.i].split(',').map(Number);
+    s.userData.hex = { c, r }; s.userData.glide = { pts: [s.position.clone(), hexPos(c, r).add(FREIGHT_OFFSET)], t: 0, dir: f.dir };
+  }
+}
+function stepFleetGlides(dt) {
+  for (const s of standees) {
+    const gl = s.userData.glide; if (!gl) continue;
+    gl.t = Math.min(gl.pts.length - 1, gl.t + dt * FLIGHT_SECTORS_S);
+    const i = Math.min(gl.pts.length - 2, Math.floor(gl.t)), a = gl.pts[i], b = gl.pts[i + 1], k = gl.t - i;
+    s.position.lerpVectors(a, b, k);
+    if (s.userData.model && a.distanceToSquared(b) > 1e-6) s.userData.model.rotation.y = Math.atan2(b.x - a.x, b.z - a.z);
+    if (gl.t >= gl.pts.length - 1) { s.position.copy(gl.pts[gl.pts.length - 1]); if (s.userData.model) s.userData.model.rotation.y = gl.dir; s.userData.glide = null; }
+  }
+}
+function addStandee(s, p, role) { s.position.copy(p); s.userData.role = role; mapRoot.add(s); standees.push(s); }
 function rebuildMarkers() {
   for (const k of markers) mapRoot.remove(k);
-  markers = CAMP.missions.map((m) => {
-    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: markerTex(m), depthTest: false, sizeAttenuation: false }));
-    const p = hexPos(m.c, m.r); s.position.set(p.x + 0.38, 1.25, p.z - 0.35); s.scale.setScalar(0.07); s.userData.mission = m; s.renderOrder = 5;
-    mapRoot.add(s); return s;
-  });
+  markers = CAMP.missions.map((m) => { const s = missionStandee(m); s.position.copy(hexPos(m.c, m.r).add(MISSION_OFFSET)); mapRoot.add(s); return s; });
 }
 // The planned route, traced as a line (owner, 2026-10-30: "I prefer routs be traced like a line"): a ribbon from
 // the fleet's hex through each sector's centre, round joints, and an arrowhead in the last hex.
@@ -3083,7 +3256,8 @@ renderer.setAnimationLoop(() => {
       if (s.userData.spin) s.userData.spin.rotation.y += dt * 0.15;
     }
     sortPuffs(puffSetMap, mapCam.position);
-    for (const m of markers) m.position.y = 1.25 + Math.sin(t * 2 + m.userData.mission.id) * 0.08;
+    for (const m of markers) m.userData.flag.material.rotation = Math.sin(t * 1.6 + m.userData.mission.id) * 0.035;
+    stepFleetGlides(dt);
     if (selRing?.visible) selRing.material.opacity = 1;
   }
   activeScene.userData.sky?.userData.update(activeCam, dt);
@@ -3154,8 +3328,8 @@ function pick(x, y) {
       selectHex(c, r); glideTo(c, r); return;
     }
   }
-  const mk = rayAt(x, y, markers);
-  if (mk) { const m = mk.object.userData.mission; selectHex(m.c, m.r); briefing(m); return; }
+  const mk = rayAt(x, y, markers, true);
+  if (mk) { let o = mk.object; while (!o.userData.mission) o = o.parent; const m = o.userData.mission; selectHex(m.c, m.r); briefing(m); return; }
   const hit = rayAt(x, y, [hexMesh]);
   if (!hit) return;
   const [c, r] = hexKeys[hit.instanceId].split(',').map(Number);
@@ -3179,6 +3353,7 @@ function moveFleet(res) {
   const last = res.path[res.path.length - 1].split(',').map(Number);
   const pts = [hexPos(CAMP.at.c, CAMP.at.r), ...res.path.map((k) => { const [c, r] = k.split(',').map(Number); return hexPos(c, r); })].map((v) => v.add(FLEET_OFFSET));
   CAMP.mp -= res.cost; CAMP.at = { c: last[0], r: last[1] };
+  CAMP.dir = Math.atan2(pts[pts.length - 1].x - pts[pts.length - 2].x, pts[pts.length - 1].z - pts[pts.length - 2].z);
   flight = { pts, i: 0, t: 0 };
   S.path = null; showPath(null);
   render();
@@ -3195,7 +3370,7 @@ function stepFlight(dt) {
   const legs = pts.length - 1, along = (flight.i + k) / legs;
   model.position.y = 0.06 + 0.46 * 1.15 + Math.sin(Math.PI * Math.min(1, along)) * 0.35;
   if (done) {
-    flight = null; model.rotation.y = Math.PI / 2;
+    flight = null; model.rotation.y = CAMP.dir;
     const m = CAMP.missions.find((x) => x.c === CAMP.at.c && x.r === CAMP.at.r && CAMP.active.includes(x.id));
     if (m) S.mission = m;
     saveCampaign(); render();
@@ -3218,6 +3393,9 @@ function savedCampaign(side) { try { return JSON.parse(STORE.getItem(SAVE_KEY(si
 function continueCampaign(side) {
   const d = savedCampaign(side); if (!d) return;
   const { rs, serial, ...rest } = d; CAMP = { ...rest, R: rng(rs) }; shipSerial = Math.max(shipSerial, serial || 0);
+  // Saves from before the factions moved their fleets and ran freighters.
+  CAMP.dir ??= Math.PI / 2; CAMP.freighters ||= makeFreighters();
+  CAMP.groups.forEach((g, i) => { g.home ||= { c: g.c, r: g.r }; g.every ||= 1 + (i % 3); g.dir ??= -Math.PI / 2; });
   buildMap(); centreOn(CAMP.at.c, CAMP.at.r, 18); go('map', { sel: null, path: null, port: null, mission: null, pick: null });
 }
 // The console skin each screen is drawn in (owner, 2026-11-05: "update campaign UI with new skins"): the campaign in its
@@ -3429,7 +3607,7 @@ const SCREENS = {
       key_('+', () => setZoom(Math.max(8, mapCam.position.distanceTo(controls.target) * 0.7)), 'small', { 'aria-label': 'Zoom in' }),
       key_('−', () => setZoom(Math.min(68, mapCam.position.distanceTo(controls.target) * 1.4)), 'small', { 'aria-label': 'Zoom out' }),
       key_('Fleet', () => centreOn(CAMP.at.c, CAMP.at.r, mapCam.position.distanceTo(controls.target)), 'small'));
-    const out = [top, keys, h('div', { class: 'endturn' }, key_('End turn', () => { endTurn(); rebuildMarkers(); S.path = S.sel ? pathTo(S.sel) : null; showPath(S.path); render(); }, 'go'))];
+    const out = [top, keys, h('div', { class: 'endturn' }, key_('End turn', () => { glideFleets(endTurn()); rebuildMarkers(); S.path = S.sel ? pathTo(S.sel) : null; showPath(S.path); render(); }, 'go'))];
     if (S.port) out.push(portPanel());
     else if (!S.mission) out.splice(1, 0, panel);   // a briefing takes the sector panel's place
     if (S.missionsOpen && !S.port) out.push(missionLog());
@@ -3803,6 +3981,14 @@ window.MOCKUP_SHOTS = {
   },
   map_hover: () => { freshCampaign(); centreOn(8, 10, 16); renderer.render(mapScene, mapCam); renderer.domElement.dispatchEvent(new PointerEvent('pointermove', { clientX: innerWidth * 0.62, clientY: innerHeight * 0.45, bubbles: true })); },
   map_near: () => { freshCampaign(); centreOn(6, 8, 9); },
+  // Close on home: the gold fleet with its strength flag, a freighter on its dashed route, a mission's standee.
+  map_close: () => { freshCampaign(); centreOn(CAMP.at.c + 1, CAMP.at.r - 1, 6.5); },
+  // Three turns on: the factions' fleets have moved and face their last move; the freighters have run on.
+  map_turns: () => { freshCampaign(); for (let k = 0; k < 3; k++) endTurn(); buildMap(); centreOn(16, 10, 20); },
+  // Mid-move after End turn: the factions' fleets flying their legs.
+  map_turns_moving: () => { freshCampaign(); centreOn(16, 10, 20); glideFleets(endTurn()); rebuildMarkers(); render(); stepFleetGlides(0.5 / FLIGHT_SECTORS_S); },
+  // An ally's routes: the Ssarith at standing 30 show their freight route (dimmer, no freighters); a rival's never show.
+  map_allies: () => { freshCampaign(); CAMP.standing.ssarith = 30; buildMap(); centreOn(15, 5, 16); },
   map_path: () => { freshCampaign(); selectHex(CAMP.at.c + 2, CAMP.at.r - 1); },
   // Mid flight: the corvette lifted off its stand halfway along a three-sector route.
   map_flight: () => { freshCampaign('krai'); centreOn(CAMP.at.c - 1, CAMP.at.r, 11); const res = pathTo({ c: CAMP.at.c - 2, r: CAMP.at.r }); moveFleet(res); stepFlight(0.5 / FLIGHT_SECTORS_S * 2.0); },

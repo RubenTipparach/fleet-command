@@ -32,7 +32,9 @@
 //
 // ctx, given by the page: side, rival (faction ids), name(faction), hexes(), hex(c, r), at (the fleet's sector),
 // home (the side's home port), own(h), hostile(h), plain(h), port(h), groupAt(h), fleet, marines(), rng(), near(h, n)
-// (sectors within n of h), dist(a, b), hull(faction, tier) ({ id, cls }), names(faction) (its ship names).
+// (sectors within n of h), dist(a, b), hull(faction, tier) ({ id, cls }), names(faction) (its ship names), routes(faction)
+// (the sectors its freighters run through). The factions' fleets move; a script that stores m.data.group (a fleet's name)
+// has its mission move with that fleet.
 window.FCMissions = (function () {
 'use strict';
 const ALL = {};
@@ -147,6 +149,7 @@ define({ id: 'overwhelming', name: 'Stem the tide', glyph: 'O', type: 'Overwhelm
 // Capture (ready): a lone ship on the map, boarded and taken.
 define({ id: 'capture', name: 'Capture a ship', glyph: 'K', type: 'Capture', reward: 800,
   where: (ctx) => ctx.hexes().filter((h) => ctx.groupAt(h)?.size === 1 && ctx.groupAt(h).fac !== ctx.side),
+  setup: (ctx, m) => { m.data.group = ctx.groupAt(ctx.hex(m.c, m.r)).name; },   // the mission goes where the ship goes
   objective: () => 'Board and take the ship. Needs marines.',
   brief: (ctx, m) => `${ctx.groupAt(ctx.hex(m.c, m.r))?.name || 'A lone ship'} is alone here. Drop its shields and board it.`,
   needs: (ctx) => (ctx.marines() > 0 ? null : 'Boarding needs marines aboard.'),
@@ -216,19 +219,20 @@ define({ id: 'planet', name: 'Planetary assault', glyph: 'A', type: 'Planetary a
   battle: (ctx, m) => ({ enemy: ctx.hex(m.c, m.r).owner, count: strengthCount(m) }),
   result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.hex(m.c, m.r).owner]: -8, [ctx.side]: 4 } } : {}) });
 define({ id: 'ambush', name: 'Convoy ambush', glyph: 'C', type: 'Convoy raid', reward: 700,
-  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.hostile(h)),
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.hostile(h) && ctx.routes(h.owner).includes(h)),
   objective: () => 'Destroy two of the three freighters.',
   brief: (ctx, m) => `A ${ctx.name(foeOf(ctx, ctx.hex(m.c, m.r)))} supply convoy passes through here. Destroy two of its three freighters before they jump.`,
   battle: (ctx, m) => ({ enemy: foeOf(ctx, ctx.hex(m.c, m.r)), count: strengthCount(m) + 1 }),
   result: (ctx, m, o) => (o.win ? { credits: paid(m, o) } : {}) });
 define({ id: 'defend', name: 'Convoy defense', glyph: 'D', type: 'Convoy escort', reward: 600,
-  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.own(h)),
+  where: (ctx) => ctx.routes(ctx.side).filter((h) => ctx.plain(h)),   // on one of your own freight routes
   objective: () => 'Keep two of the three freighters alive.',
   brief: () => 'Our freighters are expected through this sector and raiders are waiting for them. Keep two of the three alive.',
   battle: (ctx, m) => ({ enemy: ctx.rival || 'vos', count: strengthCount(m) }),
   result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.side]: 3 } } : { standing: { [ctx.side]: -2 } }) });
 define({ id: 'assassinate', name: 'Assassination', glyph: 'X', type: 'Fleet action', reward: 900,
   where: (ctx) => ctx.hexes().filter((h) => ctx.groupAt(h)?.commander),
+  setup: (ctx, m) => { m.data.group = ctx.groupAt(ctx.hex(m.c, m.r)).name; },
   objective: () => 'Destroy the commander\'s ship.',
   brief: (ctx, m) => `${ctx.groupAt(ctx.hex(m.c, m.r))?.name || 'An enemy commander'} is in this sector. Destroy the flagship; the escorts do not matter.`,
   battle: (ctx, m) => {
