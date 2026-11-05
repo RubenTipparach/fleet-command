@@ -1408,8 +1408,10 @@ return { detail, GLSL, thruster, mulberry };
 // q: the point on the pane in metres (x along the pane, y up, 0 at its centre, the floor 1.5 m below), D: the view ray in the
 // pane's frame (z into the room, normalised), room: any vec3 naming the room (hashed for its layout, carpet and light),
 // kindIn: 0 quarters, 1 mess, 2 office, or -1 to pick from the hash, LIn: the room's light colour, or x < 0 to pick from the
-// hash (warm, cold or dark). Returns the light leaving the pane. It needs ph1 (FCShipSkin GLSL.hash) and bHit (GLSL.box)
-// defined before it.
+// hash (warm, cold or dark). Returns the light leaving the pane.
+// A launch bay's hangar is not drawn here: it is big enough to be geometry (owner, 2026-11-05: "Hangar bay is large enough
+// for me to just recommend using geometry"; hangarMesh in docs/mockups/ssarith-ship-concepts.html).
+// It needs ph1 (FCShipSkin GLSL.hash) and bHit (GLSL.box) defined before it.
 window.FCShipRooms = (function () {
 'use strict';
 const GLSL = `
@@ -1488,7 +1490,8 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
   if (obj == 5 || (obj == 0 && emit > 0.9 && emit < 1.5)) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : accent)*0.7;  // screens
   else if (emit > 0.0) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : (emit > 2.0 ? accent : L))*emit*0.55;
   return lit*exp(-t*0.05);
-}`;
+}
+`;
 return { GLSL };
 })();
 </script>
