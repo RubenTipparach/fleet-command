@@ -37,8 +37,13 @@ frame.panel and frame.inset (panels), button.idle, hover and pressed (keys), tab
 same kit the battle console draws, so nothing is drawn twice. Large rendered frames are scaled so no margin passes 26 px;
 keys and tabs are drawn at their element's height. Each skin's colour roles and type come with it.
 
-Which skin a screen wears: the faction screen the faction picked (Concord before a pick), the campaign its side's, a
-skirmish its scenario's side's, the menus the Concord's.
+Which skin a screen wears: the faction screen the faction picked (Concord before a pick), the campaign its side's, the
+menus and every skirmish the Concord's (owner, 2026-11-05: "stick to Concord skin for skirmish, its kind of awkward with
+skins changing when I select different skirmish maps").
+
+The Concord's panels sit on one black box, borders and all, its corners following the sweep's outer curve with a 6 px band of
+black round the outside (owner, 2026-11-05: "can we get a whole box around this? include the border too, the black background
+shoule wrap and curve aorund the outer border"). The metal skins keep their frames as their own ground (CLAUDE.md section 7).
 
 ## Saves
 

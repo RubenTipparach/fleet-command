@@ -26,6 +26,12 @@ function nine(piece, k) {
 const fit = (piece, max) => Math.min(1, max / Math.max(1, ...piece.m));
 // The scale for a key or tab: the piece drawn at the element's height.
 const tall = (piece, h) => h / piece.size[1];
+// A flat skin's panel sits on one box of its ground, borders and all, its corners rounded to the frame's outer curve and a
+// band of the ground wrapping round the outside (owner, 2026-11-05, of the Concord menu: "can we get a whole box around this?
+// include the border too, the black background shoule wrap and curve aorund the outer border"). Only the flat Concord: a
+// metal skin's frame is its own ground, and black behind it is forbidden (CLAUDE.md section 7). The value is the frame's
+// outer corner radius at the reference size (lib/concord.js, the sweep's R).
+const WRAP = { concord: { radius: 24, band: 6 } };
 
 function css(skin, scope) {
   return Promise.resolve(skin.load()).then(() => {
@@ -33,11 +39,12 @@ function css(skin, scope) {
     for (const id of ['frame.panel', 'frame.inset', 'button.idle', 'button.hover', 'button.pressed', 'tab.idle', 'tab.active', 'bar.track', 'bar.fill', 'bar.fill.red'])
       if (!K[id]) throw new Error(`skin ${skin.id} has no kit piece ${id}`); // a piece a skin lacks is a build error, not a fallback
     const S = scope, panelK = fit(K['frame.panel'], 26), insetK = fit(K['frame.inset'], 12);
-    const key = (id, h) => nine(K[id], tall(K[id], h));
+    const key = (id, h) => nine(K[id], tall(K[id], h)), wrap = WRAP[skin.id];
     return `
 ${S} { --ink: ${C.text}; --dim: ${C.lilac}; --faint: ${C.ver || C.lilac}; --lamp: ${C.sky}; --lamp-soft: ${C.sky}2e; --ok: ${C.accord};
   --warn: ${C.alert}; --display: ${fam}; --body: ${fam}; }
-${S} .panel { ${nine(K['frame.panel'], panelK)} background: ${C.bg} padding-box; box-shadow: none; border-radius: 0; padding: 4px 6px; }
+${S} .panel { ${nine(K['frame.panel'], panelK)} background: ${C.bg} ${wrap ? 'border-box' : 'padding-box'}; padding: 4px 6px;
+  ${wrap ? `border-radius: ${Math.round(wrap.radius * panelK)}px; box-shadow: 0 0 0 ${wrap.band}px ${C.bg};` : 'border-radius: 0; box-shadow: none;'} }
 ${S} .panel.inset { ${nine(K['frame.inset'], insetK)} background: none; box-shadow: none; padding: 4px; }
 ${S} .topbar.panel { padding: 0 6px; }
 ${S} .key { ${key('button.idle', 44)} background: none; box-shadow: none; border-radius: 0; color: ${ink.idle || C.text}; padding: 0 4px; }

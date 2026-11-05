@@ -115,3 +115,4 @@
 - 2026-11-05, cloud session (battle console thread): version 118, version id `1793850979-43ca`, built on the live version (M19, the Emblem Gallery and the guide at v31 from the emblem session, carried): M2 v82, M8 v21, M15 v6.
 - 2026-11-05, desktop session: version 119, version id `1793863693-e0b0`, edited on the live version 118: M1 v8 (the faction screen, skins on the campaign, missions as scripts, test maps), M10 v8, M14 v2, M19 v5 (the shared emblem builder).
 - 2026-11-05, desktop session: version 120, version id `1793865072-cc30`: M1 v9.
+- 2026-11-05, desktop session: version 121, version id `1793865429-5b9d`: M1 v10.
