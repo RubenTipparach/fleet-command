@@ -122,6 +122,11 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   Xvfb and `build.config`. Fleet Command follows the same split (section 6).
 - **Assets are glTF (`.glb`)** built by committed Blender generators (section 10). They are
   imported by Godot, and the import is a build product.
+- **Every asset's `.import` file is committed, and Godot's headless import writes it** (owner, 2026-11-04: "commit
+  those and make sure they get generated in the future so it doesnt pile up as garbage on my pc"). Run
+  `--headless --path . --import` after adding or changing an asset (`play.bat` does it on every launch) and commit the
+  `.import` files it writes in the same commit as the asset; the cache in `.godot/` stays ignored. `.gitattributes`
+  keeps them LF, so a Windows checkout does not show every one as changed.
 - **Platforms**: Windows desktop is the owner's playtest machine, Linux runs the headless tests,
   and phones are a target from the first screen. The builds are Windows desktop and native Android
   (survey T1). The renderer is Forward+ on desktop and Compatibility on Android, set per platform

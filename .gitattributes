@@ -1,0 +1,7 @@
+# Godot writes its import and project files with LF on every platform: keep them LF in the checkout too, so a
+# Windows checkout does not show every .import file as changed.
+*.import text eol=lf
+*.uid text eol=lf
+*.godot text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
