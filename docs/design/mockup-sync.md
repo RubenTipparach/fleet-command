@@ -10,11 +10,17 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 
 | # | Mockup | Live version | Game matches | Change |
 |---|---|---|---|---|
-| 2 | In-game UI (the battle console, Concord) | v79 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
+| 2 | In-game UI (the battle console, Concord) | v81 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
 | 6 | Concord line (the ships) | v24 | v24: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the lamps, the hot bells and the Albatross main hull's two-bell stern; its damage (hits, scorch marks, torpedo holes, parts blown off, the core breach and break-up into burning cells with cut faces) but not the subsystem signatures (`ship-damage-visuals` 3.2b); not its paint rules (below) | `ship-models-engine` |
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 | 16 | Special weapons range | v5 | v5's simulation and looks: the four missile grades with flares, decoy shuttle and point defence; the chorus lance, quell torpedo, forge driver and blood charge with their rules and effects. Not its shield bubble ripple, haze or motes (below) | `weapon-fx`, `missiles`, `special-weapons` |
+
+Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
+battle console mockup (mockup 2 v82, mockup 8 v21, mockup 15 v6) flies the same exported glbs the game flies, each class's
+`model` from `data/battle/classes.json`, with the Krai's ships as the Krai line. Still open on the mockup side: the hull
+paint (livery bands, windows, detail, light pools) is the game's `hull.gdshader` but has no shared three.js copy yet, so
+the console shows the glbs' stand-in paint. Task: `ship-models-engine` 2.5.
 
 Beams and bolts (2026-11-04, owner: "source and destination of phaser and disruptors must maintain in sync"): in step in
 both. Mockup 2 v76 (and mockup 8 v15, written from it) resolve a beam's ends each step from the firing mount and the
@@ -49,6 +55,9 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Test scenes | Seventeen scenes | Battle, Duel and Arming, from both sides, the Krai against the Concord in the approved ships only | `battle-scenarios` 2.1-2.5 |
 | Target box | Holder's emblem, boarding tug of war | The target's systems display, the release X, and (2026-11-04) Target view and Camera lock: camera lock is the default on every target lock, a drag frees it (`docs/screenshots/game/target-view.png`) | `battle-console-engine` 2.2 |
 | Backdrop | Nebula sky with streaking dust | A simpler haze and stars | `battle-console-engine` |
+| Pointing in the view | three.js's raycaster from the pointer, through the camera | The same ray, by the inverse of the camera's own projection (2026-11-04: Godot's ProjectRayNormal ignored the view's offset frustum and missed by up to 2.16 km; owner: "mouse to screen ray cast is wrong, its not working like the JS version", "cant properly turn my ship in the desired direction"); the layout test checks a click lands within 1 m | none: in step |
+| Menu: Display (game ahead) | Resume, mockup settings, restart, quit | A Display key: borderless fullscreen (the default) or a window, also F11 and Alt+Enter, remembered (owner: "need a fullscreen /window option") | `battle-console`: the page's own fullscreen key (requestFullscreen) |
+| 3D shield display (v81, mockup 8 v20) | Soft glowing bands in the ship's plane, one to three per facing by strength, the inner one flashing when hit, on every ship (owner, 2026-11-04: "shield display not matching mockup, also one change needed is to add shield display to all ships as well") | The same: `ShieldShell`, a port of the mockup's shieldShell(), in place of the thin lines the overlay drew round your ship only | none: in step |
 | Strips (v79, mockup 8 v18) | The top and bottom strips on black (owner, 2026-11-04: "this top part needs a blcak background, same with bottom stuff too") | The same | none: in step |
 | Core breach (game ahead, mockups 6 and 7) | The main blast: an orange fireball, flash and shockwave | A white star with pink edges, a flat blue disc racing out through the battle plane, debris trailing flame (owner, 2026-11-04: "center is white with pink edges, and a blue ring glowing outward", "I really want it to have this exact look and colors, and the debris should have trails of flame"); `Fx.Nova`, `novastar.gdshader`, `novadisc.gdshader` | `ship-damage-visuals`: port the breach to `lib/ship-break.js` mainBlast() |
 | Wrecks scene (game ahead) | Not on the scene list | Wrecks, from both sides: every class of the other side, crippled, to watch each come apart (owner, 2026-11-04: "show me you fixed each ship type") | `battle-scenarios`: add Wrecks to the mockup's scene list |
@@ -88,7 +97,7 @@ the range shows that the game lacks, and what the game now has that the battle c
 | Where | Mockup | Game | Task |
 |---|---|---|---|
 | Damage | Holes into the rooms, scorch marks, venting, nacelles shot off, the hull breaking apart | Ships vanish when destroyed | `ship-models-engine` |
-| Lighting | Floodlights, navigation lights, strobes and beacons in three presets | Every lamp from the export's light empties (`src/Game/View/ShipSkin.cs`): floods as spot lights, running lights and beacons, strobes double flashing; one preset (healthy), no presets switch | `ship-models-engine` |
-| Concord paint | The hull shader's paint rules (`hullMat`: the subhull service band, livery stripes, dorsal seams, window rows, light pools) | The armour white and the detail tile only (`hull.gdshader` ports the shared detail and the Krai livery) | `ship-models-engine` |
-| Phone lights | One renderer for all | About 120 lamps in a six-ship battle: fine in Forward+; the Compatibility renderer (phones) caps lights per mesh, so phones need a cut set | `ship-models-engine` |
+| Lighting | Floodlights, navigation lights, strobes and beacons in three presets | Every lamp from the export's light empties (`src/Game/View/ShipSkin.cs`): floods baked into the hull as the mockups' light pools (2026-11-04, owner: "I thought we were using emissive baked lights + shader based multi specular? for ship hull detail lighting"), each with its own specular glint, which the mockups' pools() lack (game ahead: `ship-models-engine`, add the glint to pools()); running lights and beacons, strobes double flashing; one preset (healthy), no presets switch | `ship-models-engine` |
+| Concord paint | The hull shader's paint rules (`hullMat`: the subhull service band, livery stripes, dorsal seams, window rows) | The armour white and the detail tile, the light pools (`hull.gdshader` ports the shared detail, the Krai livery and pools()) | `ship-models-engine` |
+| Phone lights | One renderer for all | The floods are baked pools now, so a six-ship battle carries only the small running lights, strobes and beacons (about 80 omni lights); the Compatibility renderer still caps lights per mesh, so phones need a cut set of those | `ship-models-engine` |
 | Windows | Openings with a room behind (interior mapping) | A warm emissive pane | `ship-models-engine` |

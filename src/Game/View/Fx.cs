@@ -57,8 +57,9 @@ public static class Fx
     {
         var p = new CpuParticles3D
         {
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             Amount = Math.Max(1, count), Lifetime = lifeS, OneShot = burnS <= 0, Explosiveness = burnS <= 0 ? 1f : 0f, Randomness = 0.5f,
-            Mesh = new QuadMesh { Size = Vector2.One * sizeU, Material = Mat(additive) }, LocalCoords = false,
+            Mesh = new QuadMesh { Size = Vector2.One * sizeU, Material = ramp == FireRamp || ramp == FlameRamp ? FlameMat : Mat(additive) }, LocalCoords = false,
             Direction = dir ?? Vector3.Up, Spread = spread, Gravity = Vector3.Zero,
             InitialVelocityMin = speedU * 0.3f, InitialVelocityMax = speedU, DampingMin = damping, DampingMax = damping,
             ScaleAmountMin = 0.6f, ScaleAmountMax = 1.4f, ScaleAmountCurve = Grow(growFrom, growTo), ColorRamp = ramp,
@@ -72,6 +73,37 @@ public static class Fx
         else FreeAfter(p, burnS + lifeS * 1.6f + 0.2f, () => p.Emitting = false, burnS);
         return p;
     }
+
+    private static ShaderMaterial? _flameMat;
+    // Fire's particles are drawn as torn, flickering tongues of flame (flame.gdshader), not soft dots.
+    private static ShaderMaterial FlameMat => _flameMat ??= new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/View/flame.gdshader") };
+
+    /// <summary>Small debris (owner, 2026-11-04: "add in some smaller debris like sparks"): n white-hot fragments drawn as
+    /// streaks along their flight, lenU long, flying out at up to speedU (scene units a second) and cooling to red over
+    /// lifeS, and half as many embers that drift and flicker out.</summary>
+    public static void Streaks(Node parent, Vector3 at, int n, float lenU, float speedU, float lifeS, Vector3? dir = null, float spread = 180f)
+    {
+        // each spark laid along its own flight (streak.gdshader), so they radiate from the blast
+        var mat = _streakMat ??= new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/View/streak.gdshader") };
+        var p = new CpuParticles3D
+        {
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            Amount = n, Lifetime = lifeS, OneShot = true, Explosiveness = 0.92f, Randomness = 0.6f, LocalCoords = false,
+            Mesh = new QuadMesh { Size = new Vector2(lenU * 0.12f, lenU), Material = mat }, ParticleFlagAlignY = true,
+            Direction = dir ?? Vector3.Up, Spread = spread, Gravity = Vector3.Zero, InitialVelocityMin = speedU * 0.25f, InitialVelocityMax = speedU,
+            DampingMin = speedU * 0.08f, DampingMax = speedU * 0.2f, ScaleAmountMin = 0.4f, ScaleAmountMax = 1.2f, ScaleAmountCurve = Grow(1f, 0.15f),
+            ColorRamp = SparkRamp,
+        };
+        parent.AddChild(p);
+        p.GlobalPosition = at;
+        p.Emitting = true;
+        FreeAfter(p, lifeS * 1.6f + 0.2f);
+        Burst(parent, at, Math.Max(4, n / 2), lifeS * 2.2f, lenU * 0.18f, speedU * 0.3f, EmberRamp, true, 1f, 0.4f, 0.3f, dir, spread);
+    }
+
+    private static ShaderMaterial? _streakMat;
+    private static readonly Gradient EmberRamp = Ramp((0f, new Color(1f, 0.85f, 0.5f, 1f)), (0.3f, new Color(1f, 0.45f, 0.1f, 0.9f)),
+        (0.7f, new Color(0.7f, 0.15f, 0.03f, 0.6f)), (1f, new Color(0.3f, 0.05f, 0.0f, 0f)));
 
     private static void FreeAfter(Node n, float s, Action? first = null, float firstAt = 0)
     {
@@ -109,6 +141,7 @@ public static class Fx
         Shell(parent, at, r * 1.6f, 1.6f, 1.2f, 0.35f);
         Burst(parent, at, 14, 1.6f, r, r * 0.5f, FireRamp, true, 0.3f, 1.4f, 1.5f);
         Burst(parent, at, 90, 1.8f, r * 0.07f, r * 8f, SparkRamp, true, 1f, 0.3f, 0.5f);
+        Streaks(parent, at, 60, r * 0.5f, r * 6f, 1.6f);
         Burst(parent, at, 14, 5f, r * 1.2f, r * 0.8f, SmokeRamp, false, 0.5f, 2f, 0.4f);
         Shockwave(parent, at, r * 4f, 1.2f);
         Flash(parent, at, lightRangeU, 5f, lightS);
@@ -121,15 +154,18 @@ public static class Fx
     /// flame, white sparks, and a blue-white flash over the ships round it. r is the star's size, scene units.</summary>
     public static void Nova(Node parent, Vector3 at, float r)
     {
-        Star(parent, at, r * 1.5f, 2.4f);
-        Disc(parent, at, r * 3.8f, 2.8f);
-        Debris(parent, at, 18, r * 0.08f, r * 3.2f, 3.2f);
-        Burst(parent, at, 200, 1.6f, r * 0.05f, r * 6f, StarSparkRamp, true, 1f, 0.3f, 0.4f);
-        var l = new OmniLight3D { OmniRange = r * 14f, LightEnergy = 16f, LightColor = new Color(0.75f, 0.8f, 1f), ShadowEnabled = false, OmniAttenuation = 1.2f };
+        // the owner's timing (2026-11-04: "nova should linger 2x as long, the whole explosion 2x slower"): every part runs
+        // over twice its first length, the star's glow holding on longest
+        Star(parent, at, r * 1.5f, 4.8f);
+        Disc(parent, at, r * 3.8f, 5.6f);
+        Debris(parent, at, 18, r * 0.04f, r * 2.2f, 6.4f);
+        Burst(parent, at, 200, 3.2f, r * 0.03f, r * 2.5f, StarSparkRamp, true, 1f, 0.3f, 0.2f);
+        Streaks(parent, at, 160, r * 0.14f, r * 1.3f, 3.4f);
+        var l = new OmniLight3D { OmniRange = r * 8f, LightEnergy = 16f, LightColor = new Color(0.75f, 0.8f, 1f), ShadowEnabled = false, OmniAttenuation = 1.2f };
         parent.AddChild(l);
         l.GlobalPosition = at;
         Tween tw = l.CreateTween();
-        tw.TweenProperty(l, "light_energy", 0f, 2.6f).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Expo);
+        tw.TweenProperty(l, "light_energy", 0f, 5.2f).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Expo);
         tw.TweenCallback(Callable.From(l.QueueFree));
     }
 
@@ -168,23 +204,24 @@ public static class Fx
         tw.TweenCallback(Callable.From(plane.QueueFree));
     }
 
-    /// <summary>Debris flung out of a blast: n small burning chunks of size sizeU flying out to about reachU (scene
-    /// units, mostly along the battle plane) over s seconds, each trailing flame behind it.</summary>
+    /// <summary>Burning debris flung out of a blast: n streaks of flame (no solid chunk: owner, 2026-11-04, "remove blocky
+    /// debris"), each puff sizeU across, flying out to about reachU (scene units, mostly along the battle plane) over s
+    /// seconds.</summary>
     public static void Debris(Node parent, Vector3 at, int n, float sizeU, float reachU, float s)
     {
-        var chunkMat = new StandardMaterial3D { AlbedoColor = new Color(0.12f, 0.1f, 0.09f), Roughness = 0.9f, EmissionEnabled = true, Emission = new Color(1f, 0.35f, 0.08f), EmissionEnergyMultiplier = 0.3f };
         for (int i = 0; i < n; i++)
         {
             float ang = (float)GD.RandRange(0, Math.Tau), up = (float)GD.RandRange(-0.35, 0.35);
             Vector3 dir = new Vector3(Mathf.Cos(ang), up, Mathf.Sin(ang)).Normalized();
             float reach = reachU * (float)GD.RandRange(0.45, 1.0), sz = sizeU * (float)GD.RandRange(0.5, 1.3);
-            var chunk = new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(sz, sz * 0.5f, sz * 0.8f) }, MaterialOverride = chunkMat };
+            var chunk = new Node3D();
             parent.AddChild(chunk);
             chunk.GlobalPosition = at;
             chunk.RotationDegrees = new Vector3((float)GD.RandRange(0, 360), (float)GD.RandRange(0, 360), 0);
             var trail = new CpuParticles3D
             {
-                Amount = 70, Lifetime = 1.1f, LocalCoords = false, Mesh = new QuadMesh { Size = Vector2.One * sz * 1.3f, Material = Mat(true) },
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+                Amount = 90, Lifetime = 1.6f, LocalCoords = false, Mesh = new QuadMesh { Size = Vector2.One * sz * 1.3f, Material = Mat(true) },
                 Gravity = Vector3.Zero, Spread = 180, InitialVelocityMin = 0, InitialVelocityMax = sz * 0.6f, ScaleAmountCurve = Grow(1f, 0.2f),
                 ColorRamp = FlameRamp, AngleMin = 0, AngleMax = 360,
             };
@@ -194,7 +231,7 @@ public static class Fx
             tw.TweenProperty(chunk, "global_position", at + dir * reach, s).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quad);
             tw.TweenProperty(chunk, "rotation_degrees", chunk.RotationDegrees + new Vector3(360, 200, 90) * (float)GD.RandRange(0.5, 1.5), s);
             tw.Chain().TweenCallback(Callable.From(() => trail.Emitting = false));
-            tw.Chain().TweenInterval(1.0f);
+            tw.Chain().TweenInterval(1.8f);
             tw.Chain().TweenCallback(Callable.From(chunk.QueueFree));
         }
     }
@@ -263,7 +300,8 @@ public static class Fx
     /// <summary>A flame streaming off a broken piece for burnS seconds (it follows the piece: parent it to the piece).</summary>
     public static CpuParticles3D Flame(Node3D piece, Vector3 localAt, float r, float burnS)
     {
-        var p = Burst(piece, piece.ToGlobal(localAt), 70, 2.2f, r, r * 0.25f, FlameRamp, true, 0.9f, 0.25f, 0.8f, null, 180f, burnS);
+        // a wake: puffs left behind in space as the piece drifts on, swelling as they cool
+        var p = Burst(piece, piece.ToGlobal(localAt), 140, 2.8f, r, r * 0.12f, FlameRamp, true, 0.7f, 1.6f, 0.6f, null, 180f, burnS);
         p.Position = localAt;
         return p;
     }

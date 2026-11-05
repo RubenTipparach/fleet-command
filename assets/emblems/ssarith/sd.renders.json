@@ -1,0 +1,19 @@
+{
+ "note": "Blender renders of the Ssarith badge SD, the Bow Rites (tools/blender/emblem_ssarith.py), shown on the 3D page beside the live badge.",
+ "pieces": {
+  "face": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "sd-face.png"
+  },
+  "angle": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "sd-angle.png"
+  }
+ }
+}

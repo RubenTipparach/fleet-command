@@ -174,6 +174,19 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'S', name: 'Sound and music: the first set',
+    lead: 'The first sound effects (30 cues: every weapon, shield and hull hits, explosions, the engines, the console keys, the alerts and a bridge bed) and the first score (the main title, the battle loop, a victory and a ship-lost stinger, and the motif sheet) are on the Fleet Command Sounds and Music pages, linked from the tracker. Approve or note each there. These questions are what the score and the mix are built on next.',
+    qs: [
+      { id: 'S2', q: 'Do the rival empires get musical themes of their own?',
+        options: ['One Threat theme for every enemy now; a faction gets its own theme once you have set its culture', 'Yes, a theme for every faction now, drafted from what each faction already has written', 'No faction themes: the Threat stays the only enemy music'], rec: 0,
+        why: 'A theme is part of a culture, which is yours to set (survey U7, and the rule after the Ssarith ships); the Threat says "enemy" without speaking for any people.' },
+      { id: 'S3', q: 'How should the battle music follow the fight?',
+        options: ['One battle loop for now; layers that rise with the fight (contact, engaged, a ship lost) come next', 'Layers from the start: the game crossfades calm, contact and engaged versions of the loop', 'Music only once weapons fire; the bridge bed alone before that'], rec: 0,
+        why: 'One loop proves the score and the mix in the game; the layers are the same motifs arranged three ways, so nothing is wasted.' },
+      { id: 'S4', q: 'Space is silent. How does the battle sound?',
+        options: ['Like classic space opera: every shot and blast heard from where it is in 3D, quieter and duller with distance', 'Only through your own ship: your weapons and the hits on you, other ships heard faintly as if through the hull', 'Opera close up, silent far away: sounds fade out completely beyond a few kilometres'], rec: 0,
+        why: 'Survey G1 chose classic space opera, where the battle is heard; Godot\'s 3D players dull a far sound by distance on their own.' },
+    ] },
   { tag: 'H', name: 'Ssarith Hunt: their culture first',
     lead: 'Mockup 12 version 1 is withdrawn: it read the species\' body into the ships. The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
     qs: [

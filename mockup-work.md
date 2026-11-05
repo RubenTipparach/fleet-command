@@ -34,8 +34,11 @@ account and every link here is updated.
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | **Retired** (2026-11-04: the emblem lives on the real model, mockup 6; owner: "Concord emblem on the hull - get rid of this"; off the tracker's mockup list, kept under Misc) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
-| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
+| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-05, v6) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
+| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
+| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v4) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -246,7 +249,10 @@ tally, every label and icon inside the tube; its titles and officer slots on ren
 pip; its column on a rendered plain gunmetal backing plate, and every metal skin's expanded panels on their own backing
 (the Krai's blackened steel); the rule in CLAUDE.md section 7. Then "this text is hard to read" (a key's name on hover,
 dark letters on the lit tube) and "remove underline" (the title placard's bone groove): version 78 (Krai v17, Ssarith
-v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove. Then, of an
+v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove. Then, of the console's
+Albatross: "looks like the albatros is behind a version, please update ships to latest": version 82 (Krai v21, Ssarith
+v6), the ships are the exported glbs the game flies, the Krai's as the Krai line (their hull paint still the stand-in:
+`ship-models-engine` 2.5). Then, of an
 expanded panel: "background should wrap panel properly", "when expanded": version 79 (Krai v18, Ssarith v5), the backing
 clipped to the panel's side of the screen (a mirrored copy had run into the live view) and its band clear of the tally.
 
@@ -662,6 +668,54 @@ that", then "make the 3d version of the fang torc". Numbered 14 because two othe
 - **Heights** (mm): field 0.3-1.0, thin crescent 0.6-2.2, fangs 0.6-2.6, torc 0.6-3.0, forge star 0.6-3.3, ring 0-3.6.
   No two faces share a plane.
 
+## 19. Ssarith badge in 3D
+
+Owner, 2026-11-05, of the Bow Rites sketch SD on the Emblem Design Guide: "Definitely would like to see more colors and
+shading on the bow and green arrows on the 3d rendering. I quite like that..shade the bow parts with like wood and the
+arrows green with blood", then "Background should be like a beige, dull brown and dry green forest". Numbered 19 because
+main holds 16 to 18.
+
+- **One source of shapes**: the guide exports SD's parts (`tools/emblems/export_parts.mjs ssarith` writes
+  `assets/emblems/ssarith/sd.parts.json`); the Blender render and the three.js badge both build from them.
+- **Blender**: `tools/blender/emblem_ssarith.py` on the shared harness `tools/blender/emblem_render.py`.
+- **three.js**: `docs/mockups/ssarith-emblem-3d.html` on the shared badge library `docs/mockups/lib/emblem-badge.js`, its
+  maps listed in `docs/mockups/lib/emblem-materials-ssarith.json` (apart from the shared list, so the other badges stay small).
+- **New Material Maker graphs** (`tools/materials/build_ptex.py`, 512 px, 0.05 m a tile): `emblem_wood_laminate` (the bows:
+  plies of a warm and a darker wood, grain along them), `emblem_lacquer_watch` (the arrows, Watch green), `emblem_blood_watch`
+  (the heads: the lacquer under dried blood), `emblem_enamel_forest` (the field: a dry forest of beige haze, dull brown
+  trunks and dry green canopy, the hunting ground). The rim is the platinum graph tinted bone.
+- **Heights** (mm): field 0.3-1.0; each bow's string, vanes, shaft, head and limb rise to 1.3, 1.5, 1.7, 1.9 and 2.3 mm,
+  each bow 0.9 mm prouder than the one behind it (the smallest in front); the rim 0-4.4. No two faces share a plane.
+- **Unique arrowheads** (owner, 2026-11-05: "make each arrowhead unique"), in the guide's SD too: the learner's leaf (no
+  barb), the hunter's barb (one), the elder's tally (long, a notch for each hunt).
+- **Holographic leaves** (owner, 2026-11-05: "In the 3d version I mean with like holographic leaves", "Should be 3d leaves
+  shapes"): 70 leaves laid out once by `tools/emblems/ssarith_leaves.py` (`assets/emblems/ssarith/sd.leaves.json`, seeded),
+  hanging at 1.4, 2.1 and 2.8 mm over the enamel forest, each a curled, cupped leaf mesh drawn as light: glowing at its
+  edges and midrib, its colour shifting with the viewing angle, with faint scanlines (three.js), and an edge-weighted
+  emission seen through (Blender).
+- **v2, ferns, steel and glowing blood** (owner, 2026-11-05, with a photograph of ferns in deep shadow: "3d model Fern
+  leaves. Arrow made of wood. Arrow head made of steal. Feathera red with orange tip. Arrows dripping with bright glowing
+  green blood", then "Fern leaves are the holographic background jungle"): `tools/emblems/ssarith_ferns.py` grows 60 fern
+  fronds (a stem with lobed leaflets, arched and curling) and spills the blood (pools on each head, drips down the face) into
+  `assets/emblems/ssarith/sd.ferns.json`, one layout for both renders. The ferns are a hologram (light added over the field,
+  glowing along every edge) over the forest enamel darkened; the shafts are the laminated wood, the heads steel, the feathers
+  red with orange tips (their own polygons in the guide), the blood an emission. Every part of a bow now stands over the
+  ferns (tops raised 1.6 mm; the rim to 6.2 mm). The holographic leaves and the green lacquer, blood and fern graphs are gone.
+- **v3, a 3D fern bed** (owner, 2026-11-05: "z fighting, the blood doesnt look right, remove blood, and just make arrow hard
+  green and arrow body metal", "redo the fern, render a fern forrest sccene. Make THAT exact scene!", "no hologram, just make
+  a scene that looks like that as background for the emblem, and it should be 3d"): the badge is a deep frame (rim 10.4 mm,
+  floor 0.6 mm), the recess filled with 40 bipinnate ferns in layers up to 6.4 mm (`tools/emblems/ssarith_ferns.py`, light
+  falling off with depth; our own scene after the owner's photograph, which is not committed), the bows floating over them
+  as thin parts. Steel shafts, hard green heads, no blood. The z-fighting was a feather's orange tip laid over its red body
+  at 0.08 mm: they now meet edge to edge. The fern-leaf graph is back; the hologram and the blood are gone.
+- **v4, thorny recurves and inner walls** (owner, 2026-11-05: "can you smooth out the bows?", "need walls inner, on emblem",
+  "the bow is all wobly", "this is what it really looks like, but I need you to add some character to it, make it more
+  alien", "ooh the thorny bows are great", "omit some thornes a the bottom half where the shooter might put their grip
+  hand"): each bow one smooth recurve (an analytic curve, the tips flipping forward past the string), tally spurs on the
+  back of each limb except where the grip hand closes, a forked hook at each tip; wooden inner walls lining the recess.
+- **The Emblem Gallery** (owner, 2026-11-05: "create an emblem gallery artifact"): `docs/mockups/emblem-gallery.html`,
+  https://claude.ai/artifact/VdjoRwjMKG3Er8rC2H2epS, every finished badge with its renders; on the tracker under Misc.
+
 ## 16. Special weapons
 
 Owner, 2026-11-04: "we need to develop special weapons for each faction, currently only concord and krai are fully done,
@@ -740,3 +794,25 @@ the changes' tasks: first the standard weapons' looks in the 3D view (`src/Game/
 `flare.gdshader` and `beads.gdshader`, ported from `docs/mockups/lib/weapon-fx.js`), then missile grades and
 countermeasures, then the special weapons.
 
+## 17. Battle sounds
+
+The owner, 2026-11-04: "pull in audio and music skills from crab breeze, lets get some audio for this game!" A sound is
+heard, not seen, so its mockup is a page to listen on: every cue with a play button, grouped as the game uses them
+(placed at a mount, where a hit lands, at the ship; the console, the alerts and the bridge bed unplaced). Made by the
+`sound-effects` skill: 18 cues cut from CC0 recordings on OpenGameArt, 12 synthesised; every original named in
+`assets/audio/sfx/SOURCES.md` and `AUDIO_SOURCES.md`. Chosen and checked by measurement and a spectrogram sheet
+(`docs/screenshots/audio/sfx-sheet.jpg`), because a cloud session cannot listen: the owner's ears approve it.
+
+- Change: `openspec/changes/sound-effects`. Shots: `docs/screenshots/mockups/sounds-*.png`.
+- Stage: Drafted (2026-11-04). Questions: survey S4 (how a battle sounds in silent space).
+
+## 18. Music
+
+The same request. The first score, orchestral space opera over a synth bed (survey S1), built from four motifs written
+down first in `docs/design/music.md`: the Concord (the player's fleet, an 8-bar theme in E flat major), the wonder
+chord, the Threat (a C minor ostinato and horn call for any enemy) and the Lost. Cues: the Main Title, Battle Stations
+(a seamless 43.64 s loop), Victory, Ship Lost and the motif sheet, rendered headless in LMMS with the GeneralUser GS
+orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/music-spectrograms.jpg`), not heard.
+
+- Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
+- Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).

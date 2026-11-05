@@ -97,11 +97,12 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
     <div class="eyebrow">Guide · one faction at a time · started 2026-11-03</div>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <h1>Emblem Design Guide</h1>
-    <p class="muted">How Fleet Command's faction emblems are designed, the rules they follow, and the record of your notes on them. An emblem says what a people believes, so every shape in it is chosen for a reason, and the reason is written beside it. Choose a faction below to see its sketches and the notes on it; the Krai Warhost is in work.</p>
+    <p class="muted">How Fleet Command's faction emblems are designed, the rules they follow, and the record of your notes on them. An emblem says what a people believes, so every shape in it is chosen for a reason, and the reason is written beside it. Choose a faction below to see its sketches and the notes on it; the Ssarith Hunt is in work.</p>
     <div class="factions" role="group" aria-label="Faction">
       <span class="muted">Faction:</span>
       <button class="btn" type="button" data-show="concord">Concord</button>
       <button class="btn" type="button" data-show="krai">Krai Warhost</button>
+      <button class="btn" type="button" data-show="ssarith">Ssarith Hunt</button>
     </div>
   </header>
 
@@ -109,6 +110,19 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
     <h2 id="h-notes">Your notes</h2>
     <p class="muted">In your words, newest first, with what each one changes. They are the rules for every emblem from here on.</p>
     <ul class="notes" id="owner-notes"></ul>
+  </section>
+
+  <section aria-labelledby="h-ssarith" data-faction="ssarith">
+    <h2 id="h-ssarith">Ssarith Hunt</h2>
+    <p class="muted">What the Hunt believes (console skins design): the hunt is the only honest sport; the quarry must be worthy, the stalk patient, the kill earned and counted. That is one line, too thin to design from (CLAUDE.md section 1; the Ship Design Bible, chapter 13), so, as survey H1 recommends, below are three traditions drafted inside the Hunt for you to pick, change or throw out. They disagree with each other, as a real culture's schools do. <b>Nothing here comes from what the Ssarith look like</b>: no claws, scales, hide, teeth or eyes, and each sketch passes the stereotype test (describe it without naming the species: it is never a picture of a body).</p>
+    <ul class="muted">
+      <li><b>The Fair Chase</b> (a school of law): a hunt that leaves the quarry no way out is slaughter, and shameful. Every Hunt court still asks one question first: was the gate left open?</li>
+      <li><b>The Tally Keepers</b> (a guild of witnesses): nothing counts unless it is witnessed and recorded. They keep the Hunt's history as knotted cords and notched tablets, and a false count is the worst crime the Hunt knows.</li>
+      <li><b>The Long Watch</b> (stargazers and navigators): the old seasons of the hunt were set by watching the sky, and patience is the first skill a hunter learns. The Watchers became the Hunt's first navigators, and its ships still wait rather than chase.</li>
+      <li><b>The Bow Rites</b> (yours, 2026-11-04: "bows and arrows lined up ... different sizes to represent their different stages of manhood"): at each stage of life a Ssarith makes a new bow of their own, a size larger, and keeps the old ones. A hunter's bows hang in a row, smallest first: a life you can read from left to right.</li>
+    </ul>
+    <p class="muted">Colours, each from a tradition: Bone, the Tally Keepers' tablets; Watch green, the phosphor of the tracking tubes lit through a long wait; Canopy, the dark of the hunting ground at night. All provisional until you set the Hunt's culture.</p>
+    <div id="ssarith-designs" style="display:grid;gap:20px"></div>
   </section>
 
   <section aria-labelledby="h-krai" data-faction="krai">
@@ -221,6 +235,14 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'ssarith', when: '2026-11-05', q: 'ooh the thorny bows are great / omit some thornes a the bottom half where the shooter might put their grip hand', means: 'The thorn nearest the grip on each lower limb is gone, so the hand that closes just under the arrow finds smooth wood; the outer one stays.' },
+  { f: 'ssarith', when: '2026-11-05', q: 'this is what it really looks like, but I need you to add some character to it, make it more alien', means: 'SD\'s bows redrawn on a real recurve (after your picture): one smooth curve, thickest at the grip, the tips flipping forward past where the string meets them; then the Hunt\'s own character: two tally spurs on the back of each limb and a forked hook at each tip that the string seats in.' },
+  { f: 'ssarith', when: '2026-11-05', q: 'the bow is all wobly, it sucks', means: 'The smoothing drew a curve through the old facets and it rippled; the limb is now one analytic curve, no points to wobble between.' },
+  { f: 'ssarith', when: '2026-11-05', q: 'make each arrowhead unique', means: 'Each stage has its own head: the learner\'s leaf (no barb), the hunter\'s barb (one barb), the elder\'s tally (long, a notch for each hunt). The 3D badge takes them too.' },
+  { f: 'ssarith', when: '2026-11-04', q: 'No the way I imagined was 3 bow and arrows overlapping pointed to the right', means: 'SD redrawn: the three bows overlap like a hand of cards, the largest behind on the left, the smallest in front on the right, every arrow aimed right and flying through the smaller bows ahead of it, in a pennon pointing the same way. The stepped rack is gone.' },
+  { f: 'ssarith', when: '2026-11-04', q: 'bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and arrow / maybe different sizes to represent their different stages of manhood', means: 'SD, the Bow Rites, now recommended: three of the Hunt\'s own bows (cut from flat plate, a square-cut recurve, a one-barbed head), each braced with its arrow nocked, smallest to largest in a rack whose top steps up with them. A fourth tradition, yours: a new bow made at each stage of life, and the old ones kept.' },
+  { f: 'ssarith', when: '2026-11-04', q: 'lets design an emblem for the SSarith', means: 'The Ssarith Hunt\'s section. Under your rule that a species\' looks are not its design, nothing is taken from their bodies: three traditions inside the Hunt are drafted (survey H1\'s recommendation), and each sketch names the one it comes from.' },
+  { f: 'all', when: '2026-11-04', q: 'the look of an alien species is not their UI, not their spaceship ... none of those reflect the way they look', means: 'A rule for every emblem: culture, not anatomy. No shape from a species\' body; each sketch names the tradition it comes from.' },
   { f: 'krai', when: '2026-11-04', q: 'bro this version slaps / Thats it / the forge star you had was even better / keep that', means: 'The ring version is the Krai\'s emblem (KC+): the forge star (eight points), the founder\'s red fang and four fangs, the thin outer crescent and the ring, as first drawn, the torc a little smaller so the thin crescent clears the ring. The three-point emperor\'s star and the engraving are dropped.' },
   { f: 'krai', when: '2026-11-04', q: 'I like the overall shape of fang torc, I want a more complex version of this for emblem, but use thesimple logo for the ship livery', means: 'KC in two tiers: KC, the livery mark (the torc, the three houses\' fangs and the emperor\'s star, nothing round it), for the hulls; KC+, the emblem (the ring, the thin outer crescent, a tally per emperor on the ring, a groove along the facets, each fang bound, the throne in the star), for the 3D badge.' },
   { f: 'krai', when: '2026-11-04', q: 'KC3 they have an emperor cheif, the 3 sided star should represent that / a star ruling over the 3 great houses', means: 'KC: the star is the emperor-chief, three-pointed and the only red, set above three fangs, one for each great house in order of precedence (the red founder\'s fang and the fourth fang go).' },
@@ -292,6 +314,7 @@ const RULES = [
   ['One body, no slivers', 'Every part grows out of the part it joins; parts meant to stand apart stand at least 4 grid units clear. Measured on every sketch.', 'your notes'],
   ['Readable from far away, on black and on white', 'Every emblem has a version for black backgrounds and one for white. In each, the emblem and its field contrast at least 7:1, and the outline and the background at least 7:1, measured; checked at 12 px.', 'your notes'],
   ['One closed outline', 'The patch\'s edge is one closed line: nothing outside it, nothing cut through it, so it can be cut as a patch or struck as a pin. Measured: the printed patch is one piece and the background one region.', 'your notes'],
+  ['Culture, not anatomy', 'Never a shape from the species\' body (no claws, scales, teeth, eyes, wings or limbs because they have them). A culture holds several traditions; each sketch names the one it comes from, and passes the stereotype test: described without the species\' name, it is never a picture of a body.', 'your notes; CLAUDE.md section 1; ship bible ch. 13'],
   ['No lettering inside', 'The faction\'s name is set beside the emblem in its skin\'s display face, never inside it.', 'manual p. 4; the icon standard'],
 ];
 const rulesEl = document.getElementById('rules');
@@ -422,7 +445,7 @@ function polyFrame(pts, r, b) {
   const meet = (L1, L2) => { const den = L1.d[0] * L2.d[1] - L1.d[1] * L2.d[0], t = ((L2.p[0] - L1.p[0]) * L2.d[1] - (L2.p[1] - L1.p[1]) * L2.d[0]) / den; return [L1.p[0] + L1.d[0] * t, L1.p[1] + L1.d[1] * t]; };
   const inner = pts.map((_, i) => meet(lines[(i + n - 1) % n], lines[i]));
   const fieldD = roundPoly(inner, Math.max(2, r - b));
-  return { frame: roundPoly(pts, r) + fieldD, field: fieldD };
+  return { frame: roundPoly(pts, r) + fieldD, field: fieldD, inner };
 }
 
 // B's frames. Retired, with the owner's words: B-E1 and B-E3 ("dont like any of those shapes, though b-e2 is a good
@@ -762,6 +785,249 @@ const KRAI_DESIGNS = [
   },
 ];
 
+// ---- the Ssarith Hunt (owner, 2026-11-04: "lets design an emblem for the SSarith"). Under the owner's rule that a
+// species' looks are not its design (CLAUDE.md section 1), nothing comes from the Ssarith's bodies: each direction comes
+// from one tradition inside the Hunt, drafted for the owner to pick (survey H1's recommendation). Bone, Watch green and
+// Canopy (the Hunt console's own palette, each colour named from a tradition).
+const SSARITH = {
+  dk: { frame: '#d3ccb0', field: '#141c17', device: '#d3ccb0', accent: '#5bdc8c' },
+  lt: { frame: '#18201b', field: '#e9e4d1', device: '#18201b', accent: '#13703d' },
+};
+// SA, the open gate (the Fair Chase): a marker stone, four closing brackets with one left out, and the quarry's way out.
+const SA_STONE = [[50, 3], [85, 15], [95, 55], [74, 96], [26, 96], [5, 55], [15, 15]];
+const SA = (() => {
+  const fr = polyFrame(SA_STONE, 3, 6), c = [50, 56], h = 20, arm = 11, t = 4;
+  // A bracket at corner (sx, sy): two arms of length `arm`, `t` thick, pointing back toward the centre.
+  const bracket = (sx, sy) => { const x = c[0] + sx * h, y = c[1] + sy * h, ix = -sx, iy = -sy;
+    return polyD([[x, y], [x + ix * arm, y], [x + ix * arm, y + iy * t], [x + ix * t, y + iy * t], [x + ix * t, y + iy * arm], [x, y + iy * arm]]); };
+  const brackets = [[-1, -1], [-1, 1], [1, 1]].map(([a, b]) => bracket(a, b)); // the upper right left out: the gate
+  // The quarry's way out: three chevrons from the centre out through the open corner, each larger than the last.
+  const u = [Math.SQRT1_2, -Math.SQRT1_2], n = [Math.SQRT1_2, Math.SQRT1_2];
+  const chev = (d, w, th) => { const P = (a, b) => [c[0] + u[0] * a + n[0] * b, c[1] + u[1] * a + n[1] * b];
+    return polyD([P(d, 0), P(d - w, w), P(d - w - th, w), P(d - th, 0), P(d - w - th, -w), P(d - w, -w)]); };
+  const chevrons = [[2, 4, 2.6], [12, 5, 3], [23, 6, 3.4]].map(([d, w, th]) => chev(d, w, th));
+  return { fr, brackets, chevrons };
+})();
+function saArt(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${SA.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(SA.fr.field, k.field);
+  SA.brackets.forEach((b) => { s += path(b, c(k.device)); });
+  SA.chevrons.forEach((b) => { s += path(b, c(k.accent)); });
+  return s;
+}
+// SB, the witness tally (the Tally Keepers): a hanging tablet, the cord it hangs by, and the count notched across it.
+const SB_TABLET = [[20, 5], [42, 5], [50, 13], [58, 5], [80, 5], [80, 76], [50, 97], [20, 76]];
+const SB = (() => {
+  const fr = polyFrame(SB_TABLET, 3, 6);
+  // The cord: from the notch at the top (where it is tied to the tablet) down to a cut end.
+  const cord = polyD([[48.4, 15], [51.6, 15], [51.6, 69.5], [50, 72], [48.4, 69.5]]);
+  // The count: groups of marks across the cord, long to the left, short to the right (the witness's side and the
+  // hunter's), three to a group. The last mark, the newest, in Watch green.
+  const marks = []; let y = 20;
+  for (let g = 0; g < 3; g++) { for (let m = 0; m < 3; m++) { marks.push([y, g === 2 && m === 2]); y += 5; } y += 3.5; }
+  const bars = marks.map(([yy, last]) => [polyD([[36, yy], [58, yy], [58, yy + 2.6], [36, yy + 2.6]]), last]);
+  // The witness's seal in the tablet's point: a cut diamond, set apart from the count.
+  const seal = polyD([[50, 76.5], [54.5, 80.5], [50, 84.5], [45.5, 80.5]]);
+  return { fr, cord, bars, seal };
+})();
+function sbArt(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${SB.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(SB.fr.field, k.field);
+  s += path(SB.cord, c(k.device));
+  SB.bars.forEach(([b, last]) => { s += path(b, c(last ? k.accent : k.device)); });
+  return s + path(SB.seal, c(k.device));
+}
+// SC, the long watch (the Watchers): a low blind's outline, the horizon across it, the watch star rising and its path.
+const SC_BLIND = [[4, 84], [12, 48], [32, 22], [68, 22], [88, 48], [96, 84]];
+const SC = (() => {
+  const fr = polyFrame(SC_BLIND, 3, 6);
+  // The horizon, from side to side of the field and joined to the frame: the ground the hunter waits on.
+  const horizon = polyD([[8, 64], [92, 64], [92, 68], [8, 68]]);
+  // The watch star: four long points, standing over the horizon.
+  const S = [50, 51], star = [];
+  for (let i = 0; i < 8; i++) star.push(pol(i % 2 ? 2.2 : 8.5, -90 + i * 45, ...S));
+  // Its path across the sky: an arc from the left horizon over the star, broken off where it is not yet travelled.
+  const arc = [], R1 = 30, R2 = 27, C0 = [50, 64];
+  for (let a = 200; a <= 300; a += 5) arc.push(pol(R1, a, ...C0));
+  for (let a = 300; a >= 200; a -= 5) arc.push(pol(R2, a, ...C0));
+  return { fr, horizon, star: polyD(star), arc: polyD(arc), S };
+})();
+function scArt(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${SC.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(SC.fr.field, k.field);
+  return s + path(SC.horizon, c(k.device)) + path(SC.arc, c(k.device)) + path(SC.star, c(k.accent));
+}
+
+// SD, the bow rites (owner, 2026-11-04: "bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and
+// arrow", "maybe different sizes to represent their different stages of manhood", then "the way I imagined was 3 bow and
+// arrows overlapping pointed to the right"). Three Ssarith bows, smallest to largest, each braced with its arrow nocked and
+// aimed right, laid over one another, in a pennon that points the way they aim. The bow is the Hunt's own (cut from flat
+// laminated plate, so its limbs are straight facets with a square-cut recurve at each tip, and a heavy riser), never a
+// picture of a body.
+const SD = (() => {
+  // A thick polyline as a polygon: each vertex moved along its mitred normal by +-w/2 (w may vary per vertex).
+  const thick = (pts, wv) => {
+    const n = pts.length, L = [], Rr = [];
+    pts.forEach((p, i) => {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)], d = [b[0] - a[0], b[1] - a[1]], l = Math.hypot(...d);
+      let nx = -d[1] / l, ny = d[0] / l;
+      if (i > 0 && i < n - 1) {
+        const d1 = [p[0] - a[0], p[1] - a[1]], d2 = [b[0] - p[0], b[1] - p[1]], l1 = Math.hypot(...d1), l2 = Math.hypot(...d2);
+        const n1 = [-d1[1] / l1, d1[0] / l1], n2 = [-d2[1] / l2, d2[0] / l2], m = [n1[0] + n2[0], n1[1] + n2[1]], ml = Math.hypot(...m);
+        const k = 1 / Math.max(0.5, (m[0] * n1[0] + m[1] * n1[1]) / ml); nx = m[0] / ml * k; ny = m[1] / ml * k;
+      }
+      const w = (Array.isArray(wv) ? wv[i] : wv) / 2;
+      L.push([p[0] + nx * w, p[1] + ny * w]); Rr.push([p[0] - nx * w, p[1] - ny * w]);
+    });
+    return L.concat(Rr.reverse());
+  };
+  // The pennon: a long plaque whose right end comes to a point, the way the arrows fly.
+  const PEN = [[5, 10], [72, 10], [96, 50], [72, 90], [5, 90]];
+  // Each bow: [y of its arrow, height, x of its string, x of its arrow's tip]. Overlapping like a hand of cards: the
+  // largest behind on the left, the smallest in front on the right, their arrows close and parallel, so each arrow flies
+  // through the smaller bows ahead of it. Every tip stands clear of the pennon's slanted end.
+  const SPEC = [[43, 26, 47, 74], [50, 36, 33, 85], [56, 44, 19, 80]];
+  // Each stage's own arrowhead (owner, 2026-11-05: "make each arrowhead unique"), pointing right from its tip:
+  //   the learner's leaf  the youngest's: a plain leaf, no barb, for practice; nothing is meant to stay in it
+  //   the hunter's barb   the middle stage's: a narrow leaf with one barb, so a fair hunter can draw it out
+  //   the elder's tally   the eldest's: long, a notch cut in its back edge for each hunt it has made, and one barb
+  const HEADS = [
+    (tip, y) => [[tip, y], [tip - 3.2, y + 1.9], [tip - 6.5, y + 0.8], [tip - 6.5, y - 0.8], [tip - 3.2, y - 1.9]],
+    (tip, y) => [[tip, y], [tip - 4.2, y + 2.2], [tip - 7, y + 0.8], [tip - 7, y - 0.8], [tip - 8.4, y - 2.8], [tip - 4.2, y - 2.2]],
+    (tip, y) => [[tip, y], [tip - 4, y - 2.4], [tip - 5, y - 1.5], [tip - 6, y - 2.4], [tip - 7, y - 1.5], [tip - 8, y - 2.4], [tip - 10, y - 0.8], [tip - 10, y + 0.8], [tip - 7.6, y + 3.2], [tip - 4.6, y + 2.4]],
+  ];
+  const bows = SPEC.map(([y, h, sx, tip], idx) => {
+    const d = 0.3 * h;                                      // the bow's depth from string to riser
+    // The Hunt's bow (owner, 2026-11-05: "can you smooth out the bows?", "the bow is all wobly", then, with a picture of a
+    // recurve bow: "this is what it really looks like, but I need you to add some character to it, make it more alien").
+    // The limb follows one even curve from the grip (a = 0) to each tip (a = 1): the string meets it at a = 0.9, and past
+    // that the tip flips forward, away from the string, as a recurve's does. It is thickest at the grip and tapers to the
+    // tips. The character, each from a tradition of the Hunt rather than anyone's body: two tally spurs on the back of each limb (the Tally Keepers' count), and
+    // a forked hook at each tip that the string seats in.
+    const P = {};
+    // The curve, in units of the bow's depth: an even fall from the grip, and a recurve that lifts the last part of each
+    // limb forward. The string meets the limb where the curve comes nearest it (STR), as a recurve's string lies along the
+    // belly there; the tip curls forward past that.
+    const depth = (a) => Math.cos(Math.PI / 2 * a / 0.9) + 0.5 * Math.max(0, a - 0.7) ** 2 / 0.3 ** 2;
+    let STR = 0.7;
+    for (let a = 0.7; a <= 1; a += 0.002) if (depth(a) < depth(STR)) STR = a;
+    const at = (a, sgn) => [sx + d * (depth(a) - depth(STR)) / (depth(0) - depth(STR)), y + sgn * a * h / 2];
+    const arc = [], aw = [];
+    for (let k = 0; k <= 64; k++) {
+      const v = -1 + 2 * k / 64, a = Math.abs(v);
+      arc.push(at(a, Math.sign(v) || 1));
+      aw.push(1.1 + 2.9 * (1 - a) ** 1.4);
+    }
+    P.limb = thick(arc, aw);
+    const NOCK = STR;
+    // The trim, laid over the limb: a point on the limb's back (toward the target) and its outward normal.
+    const back = (a, sgn) => {
+      const p0 = at(Math.max(0, a - 0.01), sgn), p1 = at(Math.min(1, a + 0.01), sgn);
+      let tx = p1[0] - p0[0], ty = p1[1] - p0[1]; const l = Math.hypot(tx, ty); tx /= l; ty /= l;
+      let nx = ty, ny = -tx; if (nx < 0) { nx = -nx; ny = -ny; }       // the normal pointing forward, away from the string
+      const w = (1.1 + 2.9 * (1 - a) ** 1.4) / 2, c = at(a, sgn);
+      return { x: c[0] + nx * w * 0.3, y: c[1] + ny * w * 0.3, tx: tx * sgn, ty: ty * sgn, nx, ny, w };   // rooted well inside the limb
+    };
+    P.trim = [];
+    for (const sgn of [-1, 1]) {
+      // two tally spurs on the upper limb; on the lower limb only the outer one, so the grip hand, which closes just under
+      // the arrow, finds smooth wood (owner, 2026-11-05: "omit some thornes a the bottom half where the shooter might put
+      // their grip hand")
+      for (const a of sgn > 0 ? [0.58] : [0.42, 0.58]) {                 // swept back toward the tip
+        const b = back(a, sgn), L = 0.08 * h * (a < 0.5 ? 1 : 0.8) + b.w * 0.7, W = 0.03 * h + 0.3;
+        P.trim.push([[b.x - b.tx * W, b.y - b.ty * W], [b.x + b.nx * L + b.tx * L * 0.7, b.y + b.ny * L + b.ty * L * 0.7], [b.x + b.tx * W, b.y + b.ty * W]]);
+      }
+      const t = at(1, sgn), u = at(0.97, sgn), tx = t[0] - u[0], ty = t[1] - u[1], l = Math.hypot(tx, ty), ux = tx / l, uy = ty / l;
+      const f = 0.05 * h;                                              // the forked hook: two prongs past the tip
+      P.trim.push([[t[0] - uy * 0.7 - ux * 0.6, t[1] + ux * 0.7 - uy * 0.6], [t[0] + ux * f - uy * f * 0.55, t[1] + uy * f + ux * f * 0.55],
+        [t[0] + ux * f * 0.45, t[1] + uy * f * 0.45], [t[0] + ux * f + uy * f * 0.55, t[1] + uy * f - ux * f * 0.55], [t[0] + uy * 0.7 - ux * 0.6, t[1] - ux * 0.7 - uy * 0.6]]);
+    }
+    P.string = [[sx - 0.6, y - NOCK * h / 2], [sx + 0.6, y - NOCK * h / 2], [sx + 0.6, y + NOCK * h / 2], [sx - 0.6, y + NOCK * h / 2]];
+    // The arrow: a shaft from its nock just behind the string, a narrow leaf head with one barb (below: it holds on one
+    // side only), and two square-cut vanes just ahead of the string.
+    P.shaft = [[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]];
+    P.head = HEADS[idx](tip, y);
+    // The fletching (owner, 2026-11-05: "Feathers red with orange tip"): two feathers swept back from the nock, each in
+    // two pieces that meet edge to edge and never overlap (an overlap at nearly one height z-fights on the 3D badge, owner:
+    // "z fighting"): the feather's body nearest the shaft, and its outer strip, the tip, orange on the badge.
+    const vane = (s) => [[sx + 2.2, y + s * 0.8], [sx + 2.67, y + s * 2.1], [sx + 7.32, y + s * 2.1], [sx + 8.5, y + s * 0.8]];
+    const vaneTip = (s) => [[sx + 2.67, y + s * 2.1], [sx + 3, y + s * 3], [sx + 6.5, y + s * 3], [sx + 7.32, y + s * 2.1]];
+    P.vanes = [vane(-1), vane(1)]; P.vaneTips = [vaneTip(-1), vaneTip(1)];
+    return { y, h, sx, tip, d, P, limb: polyD(P.limb), trim: P.trim.map(polyD), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.concat(P.vaneTips).map(polyD).join('') };
+  });
+  return { bows, PEN, fr: polyFrame(PEN, 2.5, 5) };
+})();
+function sdArt(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${SD.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(SD.fr.field, k.field);
+  // Each part its own path: overlapping parts in one path would cancel into holes where their windings differ.
+  SD.bows.forEach((q, i) => { for (const part of [q.limb, ...q.trim, q.string, q.shaft, q.vanes]) s += path(part, c(k.device)); s += path(q.head, c(i === 0 ? k.accent : k.device)); });
+  return s;
+}
+const SSARITH_DESIGNS = [
+  {
+    id: 'ssarith-d', tag: 'SD', faction: 'ssarith', name: 'SD · The Bow Rites', outline: 'A pennon', rec: true, own: true, pal: SSARITH, pieces: 2,
+    risk: 'A bow and arrow is a common archery mark; three overlapping, growing, in the Hunt\'s own cut-plate bow with its one-barbed head, keep it the Ssarith\'s. Fine parts (strings, vanes) fill in below 40 px: the flat livery version may drop the strings. A right-pointing outline is kept a pennon, square at the back, so it never reads as an arrowhead badge.',
+    draw(bg = 'dk') { return sdArt(SSARITH[bg]); },
+    ink() { return sdArt(SSARITH.dk, true); },
+    callouts: [
+      [SD.bows[0].sx + SD.bows[0].d * 0.55, SD.bows[0].y - SD.bows[0].h * 0.3, 'L', 'The first bow, smallest, in front', 'The youngest stage: the bow made first, its head the learner\'s leaf: its first hunt is still ahead of it.'],
+      [SD.bows[2].sx, SD.bows[2].y + SD.bows[2].h * 0.3, 'L', 'Braced, arrow nocked', 'Every bow is kept strung and ready, never retired: each stage stays part of the hunter.'],
+      [9, 30, 'L', 'A pennon, square at the back', 'Tradition: the Bow Rites (yours). The hunter\'s pennon flies the way the bows aim.'],
+      [SD.bows[0].tip - 3, SD.bows[0].y - 1.5, 'R', 'The learner\'s leaf', 'The youngest\'s head: a plain leaf with no barb, for practice. Nothing is meant to stay in it yet.'],
+      [SD.bows[1].tip - 7.5, SD.bows[1].y - 2.5, 'R', 'The hunter\'s barb', 'The middle stage\'s head: one barb, on one side only, so a fair hunter can draw it out.'],
+      [SD.bows[2].tip - 6, SD.bows[2].y - 2, 'R', 'The elder\'s tally', 'The eldest\'s head: long, a notch cut in its back edge for each hunt it has made (the Tally Keepers\' count, on the arrow itself).'],
+      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'A recurve, with tally spurs', 'One smooth curve from the grip, its tips flipping forward past the string. Spurs on the back of each limb (the Tally Keepers\' count), none where the grip hand closes below the arrow, and a forked hook at each tip: the Hunt\'s bow, not anyone\'s body.'],
+      [SD.bows[1].sx + SD.bows[1].d, SD.bows[1].y, 'R', 'Each stage a size larger, overlapping', 'A new bow at each stage of life, the old ones kept and laid over one another: three stages, all aimed the same way.'],
+    ],
+  },
+  {
+    id: 'ssarith-a', tag: 'SA', faction: 'ssarith', name: 'SA · The Open Gate', outline: 'A marker stone', own: true, pal: SSARITH, pieces: 7,
+    risk: 'Corner brackets are a common targeting reticle; here one is always missing, which is the whole point, and the stone outline keeps it off a gun sight.',
+    draw(bg = 'dk') { return saArt(SSARITH[bg]); },
+    ink() { return saArt(SSARITH.dk, true); },
+    callouts: [
+      [12, 40, 'L', 'A marker stone', 'Tradition: the Fair Chase. The stones that once marked a hunting ground\'s bounds, where the law of the chase began.'],
+      [30, 76, 'L', 'Three brackets closing', 'The hunt closes in from every side but one. Bone, the plain colour of the count.'],
+      [50, 56, 'L', 'Nothing in the middle', 'No quarry is drawn: the emblem is about the rule, not the prize.'],
+      [70, 36, 'R', 'The fourth bracket left out', 'The gate. A hunt that leaves the quarry no way out is slaughter, and shameful. Every Hunt court still asks: was the gate left open?'],
+      [62, 44, 'R', 'The way out, in Watch green', 'Three chevrons, each larger, running out through the gate: the quarry always has its chance.'],
+      [92, 56, 'R', 'Lopsided on purpose', 'Symmetry would close the gate. The open corner makes the mark read at once, even at 20 px.'],
+    ],
+  },
+  {
+    id: 'ssarith-b', tag: 'SB', faction: 'ssarith', name: 'SB · The Witness Tally', outline: 'A hanging tablet', own: true, pal: SSARITH, pieces: 2,
+    risk: 'Tally marks are universal; the cord through the middle, the long-short marks and the tablet keep it the Tally Keepers\' own. Close to a barcode at 20 px: watch the marks\' spacing.',
+    draw(bg = 'dk') { return sbArt(SSARITH[bg]); },
+    ink() { return sbArt(SSARITH.dk, true); },
+    callouts: [
+      [22, 40, 'L', 'A hanging tablet', 'Tradition: the Tally Keepers. A record hung where everyone can read it, never kept in a drawer.'],
+      [37, 31, 'L', 'Long on the witness\'s side', 'Every mark is two marks: the long half the witness\'s, the short half the hunter\'s. A kill nobody witnessed is not a kill.'],
+      [37, 68, 'L', 'Groups of three', 'Three hunts to a season; a gap between seasons. The tablet only ever grows downward.'],
+      [50, 10, 'R', 'Tied at the notch', 'The cord is tied to the tablet: the record and the one who keeps it are one.'],
+      [58, 68, 'R', 'The newest mark, in Watch green', 'The last hunt recorded, still lit. When the next is cut, it turns to bone like the rest.'],
+      [54, 80.5, 'R', 'The witness\'s seal', 'Set apart from the count: the Keepers\' guarantee that the count is true. A false count is the worst crime the Hunt knows.'],
+    ],
+  },
+  {
+    id: 'ssarith-c', tag: 'SC', faction: 'ssarith', name: 'SC · The Long Watch', outline: 'A low blind', own: true, pal: SSARITH, pieces: 3,
+    risk: 'A star rising over a horizon is a common sunrise; the four-point watch star, the half-travelled path and the blind\'s outline keep it the Watchers\' own.',
+    draw(bg = 'dk') { return scArt(SSARITH[bg]); },
+    ink() { return scArt(SSARITH.dk, true); },
+    callouts: [
+      [10, 70, 'L', 'A low blind', 'Tradition: the Long Watch. The shelter a hunter waits in, low and wide, built to be still in.'],
+      [26, 44, 'L', 'The star\'s path, half travelled', 'The Watchers measured patience in the sky\'s turning. The arc stops where the night is not over yet.'],
+      [50, 66, 'L', 'The horizon', 'The ground the hunter waits on, joined to the blind from side to side.'],
+      [58.5, 51, 'R', 'The watch star, in Watch green', 'The star the old seasons were set by, and the first star the Hunt\'s navigators steered by. Four points, the four seasons of the hunt.'],
+      [80, 30, 'R', 'Nothing chasing', 'No arrow, no blade, no motion: the Watchers taught that the hunter who waits wins. The Hunt\'s ships still wait rather than chase.'],
+    ],
+  },
+];
+
 // The three patch shapes for B, side by side, each with its reason.
 function enclosureRow() {
   return `<div class="encl"><h4>Outlines for B</h4><p class="muted" style="font-size:14px">B-E8 to B-E13 only restyled B-E2, and three of them broke the outline (a tab outside it, an open canopy, gaps through it). They are retired. Below, B-E2 and three different outlines, each one closed line that can be cut as a patch or struck as a pin (rule 19, measured).</p><div class="encl-row">${ENCLOSURES.map((e) => `<figure>
@@ -815,8 +1081,8 @@ function mark(d, px, bg) {
 
 const host = document.getElementById('concord-designs');
 const boxes = {};
-for (const d of [...DESIGNS, ...KRAI_DESIGNS]) {
-  const host = document.getElementById(d.faction === 'krai' ? 'krai-designs' : 'concord-designs');
+for (const d of [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS]) {
+  const host = document.getElementById(d.faction === 'concord' || !d.faction ? 'concord-designs' : `${d.faction}-designs`);
   const el = document.createElement('article'); el.className = 'design'; el.id = d.id; el.dataset.id = d.id;
   el.innerHTML = `<header><h3>${d.name}</h3><span class="chip">${d.outline}</span>${d.rec ? '<span class="chip rec">Recommended</span>' : ''}<span class="chip picked" data-picked hidden>Your pick</span></header>
     <div class="figure">${figure(d)}</div>
@@ -952,8 +1218,16 @@ async function measureOutline(svgInner) {
 }
 // The Krai's picked emblem (KC+, the fang torc) as polygons for its 3D badge (tools/emblems/export_parts.mjs krai).
 window.EMBLEM_PARTS_KRAI = () => ({ key: 'KC+', name: 'The Fang Torc', grid: 100, ...KC.parts });
+// The Ssarith's Bow Rites (SD) as polygons for its 3D badge (tools/emblems/export_parts.mjs ssarith): the pennon's outer
+// and inner edges (the badge rounds them with its bevels), and for each bow, smallest first, its limb, string, shaft, the
+// two vanes and the head. The youngest's is bows[0].
+// The 3D badge's recess has inner walls (owner, 2026-11-05: "need walls inner, on emblem"): a band 2 units wide inside the
+// rim's inner edge (`wall`, outer and inner rings), and the floor (`floor`) inside that, where the ferns grow.
+window.EMBLEM_PARTS_SSARITH = () => ({ key: 'SD', name: 'The Bow Rites', grid: 100, frame: [SD.PEN, SD.fr.inner], field: [SD.fr.inner],
+  wall: [SD.fr.inner, polyFrame(SD.PEN, 2.5, 7).inner], floor: [polyFrame(SD.PEN, 2.5, 7).inner],
+  bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, vaneTips: q.P.vaneTips, head: q.P.head, trim: q.P.trim })) });
 // A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
-window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
+window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
 window.EMBLEM_CHECK = async () => {
   const out = [];
   for (const e of ENCLOSURES) {
@@ -963,7 +1237,7 @@ window.EMBLEM_CHECK = async () => {
     const el = document.querySelector(`[data-joins-enc="${e.key}"]`);
     if (el) { el.classList.toggle('bad', !(r.ok && o.ok)); el.textContent = (o.ok ? 'One closed outline' : `Outline FAIL: ${o.parts} parts, ${o.holes} holes`) + '. ' + (r.ok ? 'Joins: ' : 'Joins FAIL: ') + `${r.pieces} piece${r.pieces === 1 ? '' : 's'} (designed ${r.expected})` + (Number.isFinite(r.nearest) ? `, parts ${r.nearest.toFixed(1)} apart` : ''); }
   }
-  for (const d of [...DESIGNS, ...KRAI_DESIGNS]) {
+  for (const d of [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS]) {
     const r = await measureJoins(d); out.push({ id: d.id, ...r });
     const el = document.querySelector(`#${d.id} [data-joins]`);
     if (el) {
@@ -982,7 +1256,8 @@ try {
 
 // ---- one faction at a time (owner, 2026-11-04: "dont show everything on one page, we're on krai now, I dont need to see
 // both krai and concord in one page"): the switch shows one faction's sketches and its notes; the method, the rules and the
-// notes for every faction stay. Opens on the faction in work (the Krai), or the one in the address (#concord, #krai).
+// notes for every faction stay. Opens on the faction in work (the Ssarith Hunt), or the one in the address (#concord,
+// #krai, #ssarith).
 function showFaction(fac) {
   document.querySelectorAll('[data-faction]').forEach((el) => { el.hidden = el.dataset.faction !== fac; });
   document.querySelectorAll('#owner-notes li').forEach((li) => { li.hidden = li.dataset.f !== 'all' && li.dataset.f !== fac; });
@@ -990,7 +1265,7 @@ function showFaction(fac) {
   try { history.replaceState(null, '', '#' + fac); } catch (e) { /* a sandboxed frame may refuse; the switch still works */ }
 }
 document.querySelectorAll('[data-show]').forEach((b) => b.addEventListener('click', () => showFaction(b.dataset.show)));
-showFaction(location.hash === '#concord' ? 'concord' : 'krai');
+showFaction(['#concord', '#krai'].includes(location.hash) ? location.hash.slice(1) : 'ssarith');
 
 // ---- notes and picks, saved in the page's database (collection `notes`, one document per design) -------------------
 const boxesAll = document.querySelectorAll('[data-id]');

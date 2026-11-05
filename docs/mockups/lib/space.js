@@ -2,7 +2,7 @@
 // (docs/mockups/game-flow.html, docs/mockups/battle-console.html). One implementation (CLAUDE.md section 6.1): edit it
 // here, then re-run tools/mockups/inline_data.py on each page that inlines it.
 //
-// FCSpace(THREE, renderer, DATA, rng) returns { makeSpace, parallaxStars, shipModel, nebulaMesh }. DATA maps a data file's path to
+// FCSpace(THREE, renderer, DATA, rng) returns { makeSpace, parallaxStars, shipModel, loadShips, nebulaMesh }. DATA maps a data file's path to
 // its parsed JSON (the page's inlined data/space/ files); rng(seed) is the page's seeded generator.
 //
 
@@ -176,18 +176,41 @@ function makeSpace(skyId, finiteStars) {
   };
   return g;
 }
-// A ship. With `line` (a class id of the Concord line, docs/mockups/lib/concord-line.js, which the page inlines), the Concord
-// line's own model (owner, 2026-11-03: "start applying these spaceships into the ui mockup stuff"), sized to the stand-in's
-// length at this scale so every page keeps its framing. Without it, the stand-in: our own shape (a spine, a wedge bow, two
-// drive pods) for the factions whose ships are not designed yet.
+// A ship. With `ref`, an approved ship: an exported glb's path (assets/ships/, the very file the game flies, exported from
+// the Concord and Krai lines' own pages by tools/mockups/export_ships.mjs with their skins, liveries and emblems; owner,
+// 2026-11-05: "looks like the albatros is behind a version, please update ships to latest"), which the page inlines and
+// decodes once with loadShips() before it builds a ship; or, on a page that inlines no glb, a class id of the Concord line
+// (docs/mockups/lib/concord-line.js), its bare hull (owner, 2026-11-03: "start applying these spaceships into the ui
+// mockup stuff"). Either is sized to the stand-in's length at this scale so every page keeps its framing; a glb is turned
+// a half turn about Y (its bow is -Z, a mockup's +Z). Without `ref`, the stand-in: our own shape (a spine, a wedge bow,
+// two drive pods) for the factions whose ships are not designed yet.
+const GLB = {};   // an inlined glb's path -> its decoded scene, cloned for each ship
+function loadShips() {
+  const els = [...document.querySelectorAll('script[type="application/octet-stream"][data-src$=".glb"]')];
+  if (!els.length || !THREE.GLTFLoader) return Promise.resolve();
+  try { self.createImageBitmap = undefined; } catch (e) { /* textures decode through <img> instead */ }
+  const loader = new THREE.GLTFLoader();
+  return Promise.all(els.map((el) => {
+    const bin = atob(el.textContent.trim()), b = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+    return new Promise((ok, no) => loader.parse(b.buffer, '', (gl) => {
+      GLB[el.dataset.src] = { scene: gl.scene, len: new THREE.Box3().setFromObject(gl.scene).getSize(new THREE.Vector3()).z }; ok();
+    }, no));
+  }));
+}
 let standInLen = 0, concordLine = null;
-function shipModel(color, scale = 1, hullColor = 0xb9c2cc, line = null) {
-  if (line && window.FCConcordLine) {
+function shipModel(color, scale = 1, hullColor = 0xb9c2cc, ref = null) {
+  if (!ref) return standIn(color, scale, hullColor);
+  if (!standInLen) standInLen = new THREE.Box3().setFromObject(standIn(color, 1, hullColor)).getSize(new THREE.Vector3()).z;
+  const outer = new THREE.Group();
+  if (GLB[ref]) {
+    const m = GLB[ref].scene.clone(true); m.rotation.y = Math.PI; m.scale.setScalar(standInLen * scale / GLB[ref].len);
+    outer.add(m); outer.userData.file = ref; return outer;
+  }
+  if (window.FCConcordLine && !/\.glb$/.test(ref)) {
     concordLine ||= window.FCConcordLine(THREE);
-    if (!standInLen) standInLen = new THREE.Box3().setFromObject(standIn(color, 1, hullColor)).getSize(new THREE.Vector3()).z;
-    const outer = new THREE.Group(), m = concordLine.plainModel(line);
-    m.scale.setScalar(standInLen * scale / m.userData.length_m); outer.add(m); outer.userData.line = line;
-    return outer;
+    const m = concordLine.plainModel(ref); m.scale.setScalar(standInLen * scale / m.userData.length_m);
+    outer.add(m); outer.userData.line = ref; return outer;
   }
   return standIn(color, scale, hullColor);
 }
@@ -209,5 +232,5 @@ function standIn(color, scale, hullColor) {
   g.scale.setScalar(scale);
   return g;
 }
-return { makeSpace, parallaxStars, shipModel, nebulaMesh };
+return { makeSpace, parallaxStars, shipModel, loadShips, nebulaMesh };
 };

@@ -239,7 +239,10 @@ public static class DataLoader
         // since the loader reads only data/battle/)
         string sky = root.Str("sky");
         if (!System.Text.RegularExpressions.Regex.IsMatch(sky, "^[a-z][a-z0-9_]*$")) throw new DataError($"{root.Where}.sky: a sky id (lower case and underscores), not '{sky}'");
-        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky);
+        // the sun's strength there: deep space by default, more by a warm star
+        double sun = root.Num("sun_energy", Scenario.DeepSpaceSun);
+        if (!(sun > 0 && sun <= 4)) throw new DataError($"{root.Where}.sun_energy: above 0 and at most 4, not {sun}");
+        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun);
         root.Done();
         return scenario;
     }

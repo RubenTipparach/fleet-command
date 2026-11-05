@@ -40,6 +40,30 @@
       "tile_m": 0.05,
       "status": "starter",
       "use": "faction emblems: the Concord badge's pearl enamel ship (the saucer, nacelles and tail)"
+    },
+    {
+      "name": "emblem_wood_laminate",
+      "size_px": 512,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Ssarith Hunt badge's bows (the Bow Rites), laminated wood"
+    },
+    {
+      "name": "emblem_enamel_forest",
+      "size_px": 512,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Ssarith Hunt badge's field, a dry forest (the hunting ground) in enamel"
+    },
+    {
+      "name": "emblem_fern",
+      "size_px": 512,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.05,
+      "status": "starter",
+      "use": "faction emblems: the Ssarith Hunt badge's fern bed, modelled in its recess"
     }
   ]
 }
