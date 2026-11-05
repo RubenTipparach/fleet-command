@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FleetCommand.Campaign;
 using FleetCommand.Data;
 using FleetCommand.Game.Ui;
@@ -49,6 +50,15 @@ public sealed partial class GameFlow : Node
     private MapScreen _map = null!;
     private readonly Dictionary<FlowScreen, Control> _screens = new();
     private MissionStrip _strip = null!;
+    private LoadingScreen _loading = null!;
+    private ColorRect _fade = null!;
+    private bool _busy;
+    /// <summary>Done once the boot's loading (ships, pictures, shaders) has finished and the menu is up.</summary>
+    public Task Booted { get; private set; } = Task.CompletedTask;
+    /// <summary>True while a screen change or a loading screen is under way.</summary>
+    public bool Busy => _busy;
+    /// <summary>A screen change: the screen fades to black, changes, and fades back.</summary>
+    public const float FadeOutS = 0.18f, FadeInS = 0.28f;
 
     public void Init(ConsoleContext x, CampaignData data, Action<Scenario> startBattle, Action<bool> showBattle, Action<string> useSkin)
     {
@@ -70,7 +80,83 @@ public sealed partial class GameFlow : Node
         _strip = Panel(new MissionStrip());
         _strip.MouseFilter = Control.MouseFilterEnum.Stop;
         _layer.AddChild(_strip);
+        // over everything: the loading screen, and the black the screens fade through
+        var top = new CanvasLayer { Name = "Fade", Layer = 20 };
+        AddChild(top);
+        _loading = Panel(new LoadingScreen());
+        _loading.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        _loading.Visible = false;
+        top.AddChild(_loading);
+        _fade = new ColorRect { Color = new Color(0, 0, 0, 1), MouseFilter = Control.MouseFilterEnum.Stop, Name = "Black" };
+        _fade.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        top.AddChild(_fade);
         Go(FlowScreen.Menu);
+        Booted = Boot();
+    }
+
+    // the boot: the loading screen while the ships load and the shaders compile, then the menu fades in
+    private async Task Boot()
+    {
+        ulong t0 = Time.GetTicksMsec();
+        await Loading("Fleet Command", async report => await Prewarm.Run(this, X.Data, report), fadeOut: false);
+        GD.Print($"FLOW_BOOT {Time.GetTicksMsec() - t0} ms (ships, pictures and shaders)");
+        await FadeIn();
+    }
+
+    private async Task Tween(float to, float s)
+    {
+        Tween t = CreateTween();
+        t.TweenProperty(_fade, "color:a", to, s).SetTrans(Godot.Tween.TransitionType.Sine).SetEase(Godot.Tween.EaseType.InOut);
+        await ToSignal(t, Godot.Tween.SignalName.Finished);
+    }
+
+    private async Task FadeOut() { _fade.MouseFilter = Control.MouseFilterEnum.Stop; await Tween(1, FadeOutS); }
+
+    private async Task FadeIn()
+    {
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await Tween(0, FadeInS);
+        _fade.MouseFilter = Control.MouseFilterEnum.Ignore;
+    }
+
+    /// <summary>Fades to another screen (owner, 2026-11-05: "make transitions between menus smoother"); a change already
+    /// under way is not interrupted.</summary>
+    public async Task Show(FlowScreen s, Action? change = null)
+    {
+        if (_busy) return;
+        _busy = true;
+        try
+        {
+            await FadeOut();
+            change?.Invoke();
+            Go(s);
+            await FadeIn();
+        }
+        finally { _busy = false; }
+    }
+
+    /// <summary>The loading screen over a slow change: it fades in, the work reports its progress (0 to 1) and step as it
+    /// goes, and the screen stays black when it is done, for the caller to fade the next screen in.</summary>
+    private async Task Loading(string title, Func<Action<float, string>, Task> work, bool fadeOut = true)
+    {
+        if (fadeOut) await FadeOut();
+        _loading.Reset(title);
+        _loading.Visible = true;
+        await Tween(0, 0.15f);
+        await work((p, step) => { _loading.Target = p; _loading.Step = step; });
+        _loading.Target = 1;
+        while (_loading.Shown < 1) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await Tween(1, FadeOutS);
+        _loading.Visible = false;
+    }
+
+    // one step of a loading screen: report it, let the bar draw, then do it
+    private async Task Step(Action<float, string> report, float p, string step, Action work)
+    {
+        report(p, step);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        work();
     }
 
     private T Panel<T>(T p) where T : FlowPanel { p.Bind(this); return p; }
@@ -85,10 +171,13 @@ public sealed partial class GameFlow : Node
     /// <summary>Shows a screen; the battle console shows only for Battle.</summary>
     public void Go(FlowScreen s)
     {
+        // the debrief stands over what it follows (owner, 2026-11-05: "background shouldnt disappear on mission win screen"):
+        // the battle as it ended, frozen, or the map for a mission done on arrival
+        FlowScreen behind = s == FlowScreen.Debrief ? (Screen == FlowScreen.Battle ? FlowScreen.Battle : FlowScreen.Map) : s;
         Screen = s;
-        foreach (var (k, c) in _screens) c.Visible = k == s;
+        foreach (var (k, c) in _screens) c.Visible = k == s || (k == behind && k != FlowScreen.Battle);
         _strip.Visible = s == FlowScreen.Battle && Running != null;
-        _showBattle(s == FlowScreen.Battle);
+        _showBattle(behind == FlowScreen.Battle);
         if (s == FlowScreen.Map) _map.Refresh();
     }
 
@@ -105,32 +194,56 @@ public sealed partial class GameFlow : Node
     public static string SavePath(string side) => $"user://campaign-{side}.json";
     public bool HasSave(string side) => FileAccess.FileExists(SavePath(side));
 
-    public void NewCampaign(string side)
+    public async Task NewCampaign(string side)
     {
-        Camp = Campaign.Campaign.New(Data, side);
-        Camp.S.Log.Add($"Turn 1: {Camp.S.Fleet[0].Name} takes her first command at {Camp.Home.PortName}.");
-        Begin();
-    }
-
-    public void ContinueCampaign(string side)
-    {
-        using var f = FileAccess.Open(SavePath(side), FileAccess.ModeFlags.Read);
-        try { Camp = Campaign.Campaign.Load(Data, f.GetAsText()); }
-        catch (Exception e) when (e is FormatException or System.Text.Json.JsonException)
+        if (_busy) return;
+        _busy = true;
+        try
         {
-            Msg = $"The saved campaign could not be read ({e.Message}). Start a new one.";
-            return;
+            await Loading("New campaign", async report =>
+            {
+                await Step(report, 0.1f, "Charting the sectors", () =>
+                {
+                    Camp = Campaign.Campaign.New(Data, side);
+                    Camp.S.Log.Add($"Turn 1: {Camp.S.Fleet[0].Name} takes her first command at {Camp.Home.PortName}.");
+                });
+                await Begin(report);
+            });
+            await FadeIn();
         }
-        Begin();
+        finally { _busy = false; }
     }
 
-    private void Begin()
+    public async Task ContinueCampaign(string side)
     {
-        _useSkin(Data.Factions[Camp!.S.Side].Id);
-        Sel = (Camp.S.AtC, Camp.S.AtR);
-        Path = null; Brief = null; Port = null; Msg = "";
-        _map.NewMap(Camp);
-        Save();
+        if (_busy) return;
+        Campaign.Campaign loaded;
+        using (var f = FileAccess.Open(SavePath(side), FileAccess.ModeFlags.Read))
+            try { loaded = Campaign.Campaign.Load(Data, f.GetAsText()); }
+            catch (Exception e) when (e is FormatException or System.Text.Json.JsonException)
+            {
+                Msg = $"The saved campaign could not be read ({e.Message}). Start a new one.";
+                return;
+            }
+        _busy = true;
+        try
+        {
+            await Loading("Continue campaign", async report => { Camp = loaded; await Begin(report); });
+            await FadeIn();
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task Begin(Action<float, string> report)
+    {
+        await Step(report, 0.35f, "Setting the console", () =>
+        {
+            _useSkin(Data.Factions[Camp!.S.Side].Id);
+            Sel = (Camp.S.AtC, Camp.S.AtR);
+            Path = null; Brief = null; Port = null; Msg = "";
+        });
+        await Step(report, 0.55f, "Placing ports, fleets and freighters", () => _map.NewMap(Camp!));
+        await Step(report, 0.9f, "Saving", Save);
         Go(FlowScreen.Map);
     }
 
@@ -159,6 +272,7 @@ public sealed partial class GameFlow : Node
         Msg = Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
         _map.Map?.Rebuild(null, steps);
         SelectHex(Sel);
+        Arrived();
         Save();
     }
 
@@ -171,10 +285,34 @@ public sealed partial class GameFlow : Node
         _map.Map?.Rebuild(moves, own);
         Msg = $"Turn {Camp.S.Turn}.";
         SelectHex(Sel);
+        if (own != null) Arrived();
         Save();
     }
 
     public void OpenBrief(Offer m) { Brief = m; Port = null; }
+
+    /// <summary>Centres the map's camera on a sector (the stills; the player's own Fleet key does the same for the fleet).</summary>
+    public void MapCentre(int c, int r) => _map.Map?.CentreOn(c, r);
+
+    /// <summary>Accepts a mission and sets course for its sector (owner, 2026-11-05: "if you accept a mission your ship auto
+    /// navigates there"): the fleet flies this turn's leg, and the rest is its order, flown on after each End turn. The
+    /// briefing opens again when the fleet arrives (Arrived).</summary>
+    public void Accept(Offer m)
+    {
+        if (Camp == null) return;
+        Camp.Accept(m);
+        bool here = Camp.S.AtC == m.C && Camp.S.AtR == m.R;
+        if (here) return;
+        Brief = null;
+        SelectHex((m.C, m.R));
+        if (Path != null) MoveHere();
+    }
+
+    // an accepted mission in the sector the fleet has reached opens its briefing (as the mockup does on arrival)
+    private void Arrived()
+    {
+        if (Camp?.MissionAt(Camp.S.AtC, Camp.S.AtR) is { } m && Camp.S.Active.Contains(m.Id)) OpenBrief(m);
+    }
 
     /// <summary>Starts the briefed mission here: its battle on the console, or done on arrival.</summary>
     public void Launch(Offer m)
@@ -185,10 +323,8 @@ public sealed partial class GameFlow : Node
         MissionPlan? plan = MissionRun.Plan(Camp, m, X.Data);
         if (plan == null)
         {
-            Last = MissionRun.Finish(Camp, m, null, null);
             Brief = null;
-            Save();
-            Go(FlowScreen.Debrief);
+            _ = Show(FlowScreen.Debrief, () => { Last = MissionRun.Finish(Camp, m, null, null); Save(); });
             return;
         }
         Running = m;
@@ -198,8 +334,7 @@ public sealed partial class GameFlow : Node
         Brief = null;
         X.State.InMission = true;
         X.State.SceneOpen = false;
-        _startBattle(plan.Scenario);
-        Go(FlowScreen.Battle);
+        _ = Battle(plan.Scenario);
     }
 
     public void StartSkirmish(Scenario sc)
@@ -209,8 +344,25 @@ public sealed partial class GameFlow : Node
         Skirmish = true;
         X.State.InMission = false;
         _overT = 0;
-        _startBattle(sc);
-        Go(FlowScreen.Battle);
+        _ = Battle(sc);
+    }
+
+    // the battle behind the loading screen: the scenario built, its ships placed and dressed, then the console fades in
+    private async Task Battle(Scenario sc)
+    {
+        if (_busy) return;
+        _busy = true;
+        try
+        {
+            await Loading(sc.Name, async report =>
+            {
+                await Step(report, 0.2f, "Plotting the engagement", () => { });
+                await Step(report, 0.6f, "Bringing the ships in", () => _startBattle(sc));
+                await Step(report, 0.9f, "Manning the console", () => Go(FlowScreen.Battle));
+            });
+            await FadeIn();
+        }
+        finally { _busy = false; }
     }
 
     public void Withdraw() => X.Battle.Withdraw();
@@ -225,6 +377,7 @@ public sealed partial class GameFlow : Node
         if (b.Over == null) return;
         _overT += delta;
         if (_overT < 2.5) return;
+        if (_busy) return;
         if (Running != null && Plan != null && Camp != null)
         {
             Last = MissionRun.Finish(Camp, Running, Plan, b);
@@ -234,22 +387,20 @@ public sealed partial class GameFlow : Node
         }
         else Last = new Debrief { Mission = b.Scenario.Name, Grade = b.Over == "won" ? "victory" : b.Over == "withdrawn" ? "draw" : "defeat",
             Win = b.Over == "won", How = MissionRun.HowOf(b) };
-        Go(FlowScreen.Debrief);
+        _ = Show(FlowScreen.Debrief);
     }
 
     /// <summary>From the debrief: back to the map (a campaign) or the skirmish list.</summary>
     public void AfterDebrief()
     {
-        if (Skirmish || Camp == null) { Skirmish = false; Go(FlowScreen.Skirmish); return; }
-        _map.Map?.Rebuild();
-        SelectHex((Camp.S.AtC, Camp.S.AtR));
-        Go(FlowScreen.Map);
+        if (Skirmish || Camp == null) { _ = Show(FlowScreen.Skirmish, () => Skirmish = false); return; }
+        _ = Show(FlowScreen.Map, () =>
+        {
+            _map.Map?.Rebuild();
+            SelectHex((Camp.S.AtC, Camp.S.AtR));
+            Arrived();
+        });
     }
 
-    public void ToMenu()
-    {
-        Save();
-        _useSkin("concord");
-        Go(FlowScreen.Menu);
-    }
+    public void ToMenu() => _ = Show(FlowScreen.Menu, () => { Save(); _useSkin("concord"); });
 }

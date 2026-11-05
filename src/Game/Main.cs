@@ -399,40 +399,52 @@ public sealed partial class Main : Node
         GetTree().Quit(err == Error.Ok ? 0 : 1);
     }
 
-    /// <summary>A still of a game flow screen (--flow=menu, factions, skirmish, map, route, brief, port, outfit, battle, debrief
-    /// or debrief-battle; --side=concord or krai; --out=path.png), for the mockup comparison (CLAUDE.md section 12). It sets the
+    /// <summary>A still of a game flow screen (--flow=loading, menu, factions, skirmish, map, route, brief, accept, port, outfit, battle,
+    /// debrief or debrief-battle; --side=concord or krai; --out=path.png), for the mockup comparison (CLAUDE.md section 12). It sets the
     /// screen up as a player would reach it, through the flow's own actions, waits for it to draw, saves and quits.</summary>
     private async System.Threading.Tasks.Task FlowStill(string what)
     {
         GameFlow f = _flow!;
         string side = _args.GetValueOrDefault("side", "concord"), path = _args.GetValueOrDefault("out", $"user://flow-{what}.png");
         async System.Threading.Tasks.Task Frames(int n) { for (int i = 0; i < n; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); }
+        async System.Threading.Tasks.Task Settle() { do await Frames(5); while (f.Busy); }
+        // the loading screen is shot part way through the boot; everything else once the menu is up
+        if (what == "loading") await Frames(12); else await f.Booted;
         Offer? Find(string script) => f.Camp!.S.Missions.FirstOrDefault(m => m.Script == script) ?? f.Camp.OfferMission(script);
         void FlyTo(Offer m) { f.Camp!.S.AtC = m.C; f.Camp.S.AtR = m.R; f.SelectHex((m.C, m.R)); }
         switch (what)
         {
             case "menu": break;
-            case "factions": f.Go(FlowScreen.Factions); f.Picked = side; break;
-            case "skirmish": f.Go(FlowScreen.Skirmish); break;
+            case "factions": await f.Show(FlowScreen.Factions); f.Picked = side; break;
+            case "skirmish": await f.Show(FlowScreen.Skirmish); break;
+            case "loading": break;
             default:
-                f.NewCampaign(side);
+                await f.NewCampaign(side);
                 Campaign.Campaign c = f.Camp!;
                 if (what == "route") f.SelectHex((c.S.AtC + 7, c.S.AtR + 1));
+                if (what == "accept")
+                {
+                    Offer m = c.S.Missions.Where(x => !c.ScriptOf(x).Story && c.PathTo(x.C, x.R) is { Turns: > 1 }).OrderBy(x => x.Id).FirstOrDefault() ?? Find("prize")!;
+                    f.SelectHex((m.C, m.R));
+                    f.OpenBrief(m);
+                    f.Accept(m);
+                    _flow!.MapCentre(m.C, m.R);
+                }
                 if (what == "brief") { Offer m = Find("prize")!; f.SelectHex((m.C, m.R)); f.OpenBrief(m); }
                 if (what is "port" or "outfit") { c.Buy(c.Data.HullsOf(side).Skip(1).First().Id); f.Port = what == "port" ? "yard" : "outfit"; }
-                if (what == "debrief") { Offer m = Find("shakedown")!; FlyTo(m); f.Launch(m); }
+                if (what == "debrief") { Offer m = Find("shakedown")!; FlyTo(m); f.Launch(m); await Settle(); }
                 if (what is "battle" or "debrief-battle")
                 {
                     Offer m = Find("patrol")!;
                     FlyTo(m);
                     f.Launch(m);
-                    await Frames(10);
+                    await Settle();
                     Battle b = _x.Battle;
                     b.Lock(b.EnemiesOf(b.Player).First().Id);
                     b.HelmOrder("intercept");
                     b.SetSpeed(b.Rules.MaxSpeed(b.Player));
                     for (int i = 0; i < 600; i++) b.Step();
-                    if (what == "debrief-battle") { b.Withdraw(); while (f.Screen == FlowScreen.Battle) await Frames(10); }
+                    if (what == "debrief-battle") { b.Withdraw(); while (f.Screen == FlowScreen.Battle) await Frames(10); await Settle(); }
                 }
                 break;
         }

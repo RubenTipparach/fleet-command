@@ -4007,10 +4007,12 @@ function briefPanel() {
       hx.terrain !== 'open' ? row('Terrain', TERRAIN[hx.terrain].name) : null,
       h('tr', {}, h('td', { class: 'muted', text: 'Reward' }), h('td', { class: 'num', text: `${m.reward} cr` })),
       m.turns != null ? h('tr', {}, h('td', { class: 'muted', text: taken ? 'Accepted' : 'Expires in' }), h('td', { text: taken ? 'it waits for you' : `${m.turns} ${m.turns > 1 ? 'turns' : 'turn'}` })) : null)),
-    !here ? h('p', { class: 'muted', text: taken ? 'Fly to its sector to begin.' : 'Accept it, then fly to its sector.' }) : null,
+    !here ? h('p', { class: 'muted', text: taken ? 'The fleet is on its way; the briefing opens when it arrives.' : 'Accept it and the fleet sets course for its sector.' }) : null,
     need ? h('p', { class: 'err', text: need }) : null,
     h('div', { class: 'row' }, key_('Close', () => { S.mission = null; render(); }), h('span', { class: 'spacer' }),
-      !taken ? key_('Accept', () => { CAMP.active.push(m.id); rebuildMarkers(); if (!here) { selectHex(m.c, m.r); } S.mission = here ? m : null; render(); }, here ? '' : 'go') : null,
+      // accepting sets course for the mission's sector (owner, 2026-11-05: "if you accept a mission your ship auto navigates
+      // there"): the fleet flies this turn's leg, and the rest is its order, flown on after each End turn
+      !taken ? key_('Accept', () => { CAMP.active.push(m.id); rebuildMarkers(); S.mission = here ? m : null; if (!here) { selectHex(m.c, m.r); const res = pathTo({ c: m.c, r: m.r }); if (res) moveFleet(res); } render(); }, here ? '' : 'go') : null,
       key_(fight ? 'Deploy' : 'Complete', () => runMission(m), 'go', { disabled: !here || !!need }))));
 }
 // The mission log: what you have taken on, and what has happened.
@@ -4150,6 +4152,15 @@ window.MOCKUP_SHOTS = {
   campaign_results: () => { MOCKUP_SHOTS.briefing(); runMission(S.mission); S.battle.met = { clear: true }; finishBattle(false, 'end'); },
   // The ready mission types (the Missions guide): each briefing, its battle with objectives ticked, and the reports.
   brief_prize: () => { missionAt('prize'); },
+  // Accept on a far contract: the fleet sets course and flies this turn's leg (owner, 2026-11-05: "if you accept a mission your
+  // ship auto navigates there"); the briefing reopens on arrival
+  map_accept: () => {
+    freshCampaign();
+    const m = CAMP.missions.find((x) => MS(x).kind !== 'story' && (pathTo({ c: x.c, r: x.r })?.turns || 0) > 1);
+    centreOn(m.c, m.r, 18); briefing(m);
+    [...document.querySelectorAll('button')].find((b) => b.textContent.trim().toLowerCase() === 'accept').click();
+    stepFlight(60);
+  },
   battle_prize: () => { missionAt('prize'); runMission(S.mission); S.battle.met = { take: true, whole: true }; render(); },
   results_prize: () => { MOCKUP_SHOTS.battle_prize(); S.battle.met.escort = true; finishBattle(false, 'end'); },
   prize_home: () => { MOCKUP_SHOTS.results_prize(); const m = CAMP.missions.find((x) => x.script === 'prize_home'); CAMP.at = { ...CAMP.home }; buildMap(); go('map', { result: null, mission: null, sel: null, path: null }); centreOn(m.c, m.r, 14); selectHex(m.c, m.r); briefing(m); },

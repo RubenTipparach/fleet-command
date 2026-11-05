@@ -155,15 +155,18 @@ public sealed partial class MapHud : FlowPanel
         else { Row("Battle", "none expected", x, y, cw); y += 26; }
         Row("Sector", $"{c.Hex(m.C, m.R).PortName ?? $"{m.C}.{m.R}"} · {c.TerrainOf(c.Hex(m.C, m.R)).Name}", x, y, cw); y += 26;
         string? need = c.Needs(m);
-        if (need != null) Text(need, x, y + 6, 18, C.Caution, HorizontalAlignment.Left, cw, 600);
         bool here = c.S.AtC == m.C && c.S.AtR == m.R;
+        if (need != null) { Text(need, x, y + 6, 18, C.Caution, HorizontalAlignment.Left, cw, 600); y += 30; }
+        if (!here) Text(c.S.Active.Contains(m.Id) ? "Accepted: the fleet is on its way, and the briefing opens when it arrives." : "Accept it and the fleet sets course for its sector.",
+            x, y + 6, 17, C.Lilac, HorizontalAlignment.Left, cw, 600);
         float by = b.End.Y - 52;
         Button("br.close", new Rect2(x, by, 150, 48), "Close", () => F.Brief = null);
         if (here) Button("br.launch", new Rect2(b.End.X - 230, by, 230, 48), bt != null ? "Launch" : "Complete", () => F.Launch(m), dis: need != null);
         else
         {
             Button("br.go", new Rect2(b.End.X - 230, by, 230, 48), "Set course", () => { F.SelectHex((m.C, m.R)); F.MoveHere(); }, dis: F.Path == null && !(F.Sel == (m.C, m.R)));
-            if (!c.S.Active.Contains(m.Id) && !def.Story) Button("br.accept", new Rect2(b.End.X - 420, by, 180, 48), "Accept", () => c.Accept(m));
+            if (!c.S.Active.Contains(m.Id) && !def.Story) Button("br.accept", new Rect2(b.End.X - 420, by, 180, 48), "Accept", () => F.Accept(m),
+                tip: new Tip("Accept", new (string, string, Color?)[] { ("Then", "the fleet sets course for its sector", null) }));
         }
     }
 

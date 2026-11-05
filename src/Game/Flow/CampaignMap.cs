@@ -275,6 +275,22 @@ public sealed partial class CampaignMap : Node3D
         }
     }
 
+    /// <summary>One material of every kind the map draws (tiles, lines, puffs and stars, rocks, metal, gold, flags), for the
+    /// loading screen to compile before the map first shows (Prewarm).</summary>
+    public static IEnumerable<Material> MaterialKinds()
+    {
+        yield return new StandardMaterial3D { VertexColorUseAsAlbedo = true, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, CullMode = BaseMaterial3D.CullModeEnum.Disabled, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+        yield return new StandardMaterial3D { AlbedoTexture = Puff, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+            BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled, BlendMode = BaseMaterial3D.BlendModeEnum.Add, DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled };
+        yield return new StandardMaterial3D { VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+            AlbedoTexture = Puff, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, BlendMode = BaseMaterial3D.BlendModeEnum.Add };
+        yield return new StandardMaterial3D { AlbedoColor = Colors.White, CullMode = BaseMaterial3D.CullModeEnum.Disabled, Roughness = 0.8f, EmissionEnabled = true, Emission = Colors.Gray };
+        yield return new StandardMaterial3D { AlbedoColor = Colors.White, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha };
+        yield return Rock;
+        yield return Metal;
+        yield return Gold;
+    }
+
     private static readonly StandardMaterial3D Rock = new() { AlbedoColor = new Color(0.42f, 0.38f, 0.34f), Roughness = 0.95f };
     private static readonly StandardMaterial3D Metal = new() { AlbedoColor = new Color(0.62f, 0.66f, 0.72f), Metallic = 0.8f, Roughness = 0.3f };
     private static readonly StandardMaterial3D Gold = new() { AlbedoColor = new Color(0.95f, 0.72f, 0.25f), Metallic = 0.9f, Roughness = 0.25f, EmissionEnabled = true, Emission = new Color(0.35f, 0.22f, 0.02f) };

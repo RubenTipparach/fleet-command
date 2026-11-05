@@ -99,8 +99,8 @@ public sealed partial class MenuScreen : FlowPanel
         Lbl("A captain's war among the stars", cx, Size.Y * 0.28f + 40, 0, null, HorizontalAlignment.Center, 17);
         float w = Math.Min(420, Size.X - 40), y = Size.Y * 0.42f;
         var r = new Rect2(cx - w / 2, y, w, 52);
-        Button("menu.campaign", r, "Campaign", () => F.Go(FlowScreen.Factions)); r.Position += new Vector2(0, 66);
-        Button("menu.skirmish", r, "Skirmish", () => F.Go(FlowScreen.Skirmish)); r.Position += new Vector2(0, 66);
+        Button("menu.campaign", r, "Campaign", () => _ = F.Show(FlowScreen.Factions)); r.Position += new Vector2(0, 66);
+        Button("menu.skirmish", r, "Skirmish", () => _ = F.Show(FlowScreen.Skirmish)); r.Position += new Vector2(0, 66);
         Button("menu.options", r, DisplaySettings.Fullscreen ? "Display: fullscreen" : "Display: window", X.Act.Fullscreen); r.Position += new Vector2(0, 66);
         Button("menu.quit", r, "Quit", () => GetTree().Quit());
     }
@@ -140,10 +140,10 @@ public sealed partial class FactionScreen : FlowPanel
             float by = r.End.Y - 128;
             // inside the frame's own padding (a Concord sweep's arm is wide)
             float bx = r.Position.X + Sk.Pad.L + 8, bw = cw - Sk.Pad.L - Sk.Pad.R - 16;
-            Button($"fac.{fac.Id}.new", new Rect2(bx, by, bw, 48), "New campaign", () => F.NewCampaign(fac.Id));
-            Button($"fac.{fac.Id}.cont", new Rect2(bx, by + 60, bw, 48), "Continue", () => F.ContinueCampaign(fac.Id), dis: !F.HasSave(fac.Id));
+            Button($"fac.{fac.Id}.new", new Rect2(bx, by, bw, 48), "New campaign", () => _ = F.NewCampaign(fac.Id));
+            Button($"fac.{fac.Id}.cont", new Rect2(bx, by + 60, bw, 48), "Continue", () => _ = F.ContinueCampaign(fac.Id), dis: !F.HasSave(fac.Id));
         }
-        Button("fac.back", new Rect2(30, Size.Y - 76, 200, 48), "Back", () => F.Go(FlowScreen.Menu));
+        Button("fac.back", new Rect2(30, Size.Y - 76, 200, 48), "Back", () => _ = F.Show(FlowScreen.Menu));
         if (F.Msg.Length > 0) Text(F.Msg, Size.X / 2, Size.Y - 44, 19, C.Caution, HorizontalAlignment.Center, Size.X - 500);
     }
 }
@@ -164,7 +164,7 @@ public sealed partial class SkirmishScreen : FlowPanel
                 tip: new Tip(sc.Name, new (string, string, Color?)[] { ("Objective", sc.Objective, null), ("Ships", sc.Ships.Count.ToString(), null) }));
             y += 66;
         }
-        Button("sk.back", new Rect2(b.Position.X, b.End.Y - 50, 200, 48), "Back", () => F.Go(FlowScreen.Menu));
+        Button("sk.back", new Rect2(b.Position.X, b.End.Y - 50, 200, 48), "Back", () => _ = F.Show(FlowScreen.Menu));
     }
 }
 
@@ -194,10 +194,15 @@ public sealed partial class DebriefScreen : FlowPanel
 {
     protected override void DrawPanel()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0.012f, 0.016f, 0.03f, 0.97f));
+        // dimmed, not hidden: the battle (or the map) stays behind the debrief
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.5f));
+        Ui.Reg("db.block", new Rect2(Vector2.Zero, Size));
         Debrief? d = F.Last;
         if (d == null) return;
         float w = Math.Min(860, Size.X - 30), h = Math.Min(Size.Y - 40, 760);
+        float need = 300 + (F.Skirmish || F.Camp == null ? 0 : 120) + (d.Objectives.Count > 0 ? 38 + 28 * d.Objectives.Count : 0)
+            + (d.Ships.Count > 0 ? 38 + 26 * d.Ships.Count : 0) + (d.Log != null ? 60 : 0);
+        h = Math.Min(h, need);
         Rect2 b = Sheet(new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h), d.Mission);
         float x = b.Position.X, y = b.Position.Y + 60, cw = b.Size.X;
         string verdict = d.Win ? "MISSION ACCOMPLISHED" : d.How == "withdraw" ? "WITHDRAWN" : "MISSION FAILED";
@@ -242,4 +247,30 @@ public sealed partial class DebriefScreen : FlowPanel
         Text(value, r.Position.X + 14, r.Position.Y + 58, 24, C.Sky, HorizontalAlignment.Left, r.Size.X - 24, 700);
         Text(sub, r.Position.X + 14, r.Position.Y + 84, 15, C.Lilac, HorizontalAlignment.Left, r.Size.X - 24, 500);
     }
+}
+
+/// <summary>The loading screen: what is being done and a bar of how far along (the boot's shader prewarm, building the
+/// campaign map, preparing a battle). The bar eases toward the progress it is given, so it never jumps.</summary>
+public sealed partial class LoadingScreen : FlowPanel
+{
+    public string Title = "Fleet Command";
+    public string Step = "";
+    public float Target;
+    private float _shown;
+
+    public void Reset(string title) { Title = title; Step = ""; Target = 0; _shown = 0; }
+
+    protected override void DrawPanel()
+    {
+        _shown += (Target - _shown) * Math.Min(1, (float)GetProcessDeltaTime() * 10);
+        if (Target >= 1 && _shown > 0.995f) _shown = 1;
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0.01f, 0.014f, 0.03f));
+        Ui.Reg("load.block", new Rect2(Vector2.Zero, Size));
+        float w = Math.Min(720, Size.X - 60), x = (Size.X - w) / 2, y = Size.Y * 0.5f;
+        Text(Title.ToUpperInvariant(), Size.X / 2, y - 60, 40, C.Sky, HorizontalAlignment.Center, Size.X - 40, 700, 4);
+        Bar(x, y, w, Step, _shown, false);
+        Text($"{Math.Round(_shown * 100)} %", x + w, y + 60, 18, C.Lilac, HorizontalAlignment.Right, 100, 600);
+    }
+
+    public float Shown => _shown;
 }

@@ -121,3 +121,4 @@
 - 2026-11-05, desktop session: version 124, version id `1793872899-a201`: M1 v12.
 - 2026-11-05, desktop session: version 125, version id `1793874926-c06c`: M1 v13.
 - 2026-11-05, desktop session: version 126, version id `1793877957-f8cb`: M1 v14, the Missions guide v3.
+- 2026-11-05, desktop session: version 127, version id `1793911435-01fe`: M1 v15 (Accept sets course), and the flow running in the game.
