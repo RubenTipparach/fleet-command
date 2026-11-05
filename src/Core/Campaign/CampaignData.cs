@@ -26,7 +26,7 @@ public sealed record Hull(string Id, string Side, int Tier, string Name, string 
 public sealed record ShipSystem(string Id, string Group, string Name, int Cost, string Desc);
 
 /// <summary>A supply a ship carries: at most one per HpPer hull points, PerFit per fitted system Fit, or Fixed.</summary>
-public sealed record Supply(string Id, string Name, int Cost, int HpPer, int PerFit, string Fit, int Fixed);
+public sealed record Supply(string Id, string Name, int Cost, int HpPer, int PerFit, string Fit, int Fixed, string Desc);
 
 public sealed record Place(string Kind, int C, int R, string Name, string Owner);
 
@@ -35,18 +35,21 @@ public sealed record FleetDef(string Name, string Fac, int C, int R, int Size, b
 public sealed record CampRules(int Cols, int Rows, ulong Seed, int StartCredits, int StartMarines, int MovePoints, int FleetMax, int CreditRate,
     double SaleShare, double RivalPays, double PiratesPay, int SaleStanding, int PirateSaleStanding, int AllyStanding, int StandingOwn,
     int StandingRival, int MissionsMax, int MissionsStart, IReadOnlyDictionary<string, double> Pay, IReadOnlyDictionary<string, double> Prestige,
-    double StoryPrestigeX, IReadOnlyList<string> Strengths, int RewardSteps, int RewardStep);
+    double StoryPrestigeX, IReadOnlyList<string> Strengths, int RewardSteps, int RewardStep, double RepairShare);
 
 public sealed record MapDef(IReadOnlyList<(string Fac, int C, int R)> Seeds, double SeedJitter, double NebulaBelow, double AsteroidsBelow,
     IReadOnlyList<(int C, int R)> Stars, IReadOnlyList<Place> Places, IReadOnlyList<FleetDef> Fleets, int RangePirate, int RangeLone, int RangeGroup,
     IReadOnlyList<(string Fac, string A, string B)> FreightRoutes, IReadOnlyList<string> FreighterNames);
 
-public sealed record OfficerDef(IReadOnlyList<string> Stations, IReadOnlyList<(string Skill, int Cost)> Skills, IReadOnlyList<string> Names, int Pool);
+/// <summary>The officers: the stations they serve (with what each does), the skill levels and their pay, the names, and how
+/// many are on offer at a time.</summary>
+public sealed record OfficerDef(IReadOnlyList<string> Stations, IReadOnlyList<(string Skill, int Cost)> Skills, IReadOnlyList<string> Names, int Pool,
+    IReadOnlyDictionary<string, string> Does);
 
 public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, CampFaction> Factions, IReadOnlyDictionary<string, Terrain> Terrain,
     IReadOnlyList<(string Id, string Name)> Groups, IReadOnlyList<Tier> Tiers, IReadOnlyDictionary<string, Hull> Hulls,
     IReadOnlyDictionary<string, ShipSystem> Systems, IReadOnlyDictionary<string, string> Stock, IReadOnlyList<Supply> Supplies, MapDef Map,
-    OfficerDef Officers, IReadOnlyDictionary<string, MissionScript> Missions)
+    OfficerDef Officers, IReadOnlyList<string> Behaviours, IReadOnlyDictionary<string, MissionScript> Missions)
 {
     public IEnumerable<Hull> HullsOf(string side) => Hulls.Values.Where(h => h.Side == side).OrderBy(h => h.Tier);
     /// <summary>The side's hull of a tier, or its smallest when it has none of that tier.</summary>
@@ -73,7 +76,7 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
             ru.Int("move_points"), ru.Int("fleet_max"), ru.Int("credit_rate_cr"), ru.Num("sale_share"), ru.Num("rival_pays"), ru.Num("pirates_pay"),
             ru.Int("sale_standing"), ru.Int("pirate_sale_standing"), ru.Int("ally_standing"), ru.Int("standing_own"), ru.Int("standing_rival"),
             ru.Int("missions_max"), ru.Int("missions_start"), Table(ru, "pay"), Table(ru, "prestige"), ru.Num("story_prestige_x"),
-            ru.StrList("strengths"), ru.Int("reward_steps"), ru.Int("reward_step_cr"));
+            ru.StrList("strengths"), ru.Int("reward_steps"), ru.Int("reward_step_cr"), ru.Num("repair_share"));
         ru.Done();
         if (rules.Cols < 2 || rules.Rows < 2) throw new DataError("data/campaign/campaign.json.rules: the map needs at least 2 x 2 sectors");
 
@@ -154,7 +157,7 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
         var supplies = new List<Supply>();
         foreach (StrictJson u in root.ObjList("supplies"))
         {
-            supplies.Add(new Supply(u.Str("id"), u.Str("name"), u.Int("cost"), (int)u.Num("hp_per", 0), (int)u.Num("per_fit", 0), u.Str("fit", ""), (int)u.Num("fixed", 0)));
+            supplies.Add(new Supply(u.Str("id"), u.Str("name"), u.Int("cost"), (int)u.Num("hp_per", 0), (int)u.Num("per_fit", 0), u.Str("fit", ""), (int)u.Num("fixed", 0), u.Str("d")));
             u.Done();
         }
         if (supplies.All(s => s.Id != "marines")) throw new DataError("data/campaign/campaign.json.supplies: needs 'marines'");
@@ -185,12 +188,17 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
 
         StrictJson oo = root.Obj("officers");
         var skills = Rows(oo, "skills", 2).Select(a => (a[0].ToString()!, Convert.ToInt32(a[1]))).ToList();
-        var officers = new OfficerDef(oo.StrList("stations"), skills, oo.StrList("names"), oo.Int("pool"));
+        StrictJson does = oo.Obj("does");
+        string[] stations = oo.StrList("stations");
+        var doesMap = stations.ToDictionary(st => st, st => does.Str(st));
+        does.Done();
+        var officers = new OfficerDef(stations, skills, oo.StrList("names"), oo.Int("pool"), doesMap);
         oo.Done();
+        string[] behaviours = root.StrList("behaviours");
         root.Done();
 
         var missions = MissionLoader.LoadAll(missionFiles, read);
-        return new CampaignData(rules, factions, terrain, groups, tiers, hulls, systems, stock, supplies, map, officers, missions);
+        return new CampaignData(rules, factions, terrain, groups, tiers, hulls, systems, stock, supplies, map, officers, behaviours, missions);
     }
 
     // An array of arrays of strings and whole numbers, as the map's compact rows are written.

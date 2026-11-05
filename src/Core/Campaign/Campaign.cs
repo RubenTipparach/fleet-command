@@ -437,6 +437,9 @@ public sealed class Campaign
         return null;
     }
 
+    /// <summary>What a buyer pays for one of your ships: its worth, by its hull left, at the buyer's rate.</summary>
+    public int SaleQuote(CampShip s, string buyer) => SalePrice((int)(Points(s) * Ru.CreditRate * s.HullPct / 100), s.Maker, buyer);
+
     /// <summary>Sells a ship at a port that deals with you (never the last ship). Returns why not, or null.</summary>
     public string? Sell(CampShip s)
     {
@@ -444,24 +447,58 @@ public sealed class Campaign
         string buyer = IsPort(at) ? S.Side : IsMarket(at) ? at.Owner : "";
         if (buyer == "") return "Ships are sold at a port that deals with you.";
         if (S.Fleet.Count <= 1) return "You cannot sell your last ship.";
-        S.Credits += SalePrice((int)(Points(s) * Ru.CreditRate * s.HullPct / 100), s.Maker, buyer);
+        S.Credits += SaleQuote(s, buyer);
         S.Fleet.Remove(s);
         ChangeStanding(buyer, buyer == "vos" ? Ru.PirateSaleStanding : Ru.SaleStanding);
         return null;
     }
 
-    /// <summary>Fits a system to a hardpoint (or empties it with null), paying the price less what the old one fetches.</summary>
+    /// <summary>What fitting a system to a hardpoint (or emptying it with null) costs in credits: the new system's price
+    /// less what the old one fetches; below 0 is a refund. The shop shows this before the player decides; Refit pays it.</summary>
+    public int RefitQuote(CampShip s, string group, int i, string? sysId)
+    {
+        string? old = s.Fit[group][i];
+        if (old == sysId) return 0;
+        return (sysId != null ? Data.Systems[sysId].Cost * Ru.CreditRate : 0) - (old != null ? SalePrice(Data.Systems[old].Cost * Ru.CreditRate, S.Side, S.Side) : 0);
+    }
+
+    /// <summary>Fits a system to a hardpoint (or empties it with null), paying its quote.</summary>
     public string? Refit(CampShip s, string group, int i, string? sysId)
     {
         if (sysId != null && Data.Systems[sysId].Group != group) return $"{Data.Systems[sysId].Name} does not fit a {group} hardpoint.";
-        string? old = s.Fit[group][i];
-        if (old == sysId) return null;
-        int net = (sysId != null ? Data.Systems[sysId].Cost * Ru.CreditRate : 0) - (old != null ? SalePrice(Data.Systems[old].Cost * Ru.CreditRate, S.Side, S.Side) : 0);
-        string? err = Pay(net);
+        if (s.Fit[group][i] == sysId) return null;
+        string? err = Pay(RefitQuote(s, group, i, sysId));
         if (err != null) return err;
         s.Fit[group][i] = sysId;
         ClampSupplies(s);
         return null;
+    }
+
+    /// <summary>The hardpoints of a ship that are empty, as (group, index).</summary>
+    public List<(string Group, int I)> EmptyHardpoints(CampShip s) =>
+        s.Fit.SelectMany(kv => kv.Value.Select((x, i) => (kv.Key, i, x))).Where(t => t.x == null).Select(t => (t.Key, t.i)).ToList();
+
+    /// <summary>What filling every empty hardpoint with the stock system costs.</summary>
+    public int StockQuote(CampShip s) => EmptyHardpoints(s).Sum(h => RefitQuote(s, h.Group, h.I, Data.Stock[h.Group]));
+
+    /// <summary>Fills every empty hardpoint with the stock system, paying for all at once.</summary>
+    public string? FitStock(CampShip s)
+    {
+        var empty = EmptyHardpoints(s);
+        if (empty.Count == 0) return null;
+        string? err = Pay(StockQuote(s));
+        if (err != null) return err;
+        foreach (var (g, i) in empty) s.Fit[g][i] = Data.Stock[g];
+        ClampSupplies(s);
+        return null;
+    }
+
+    /// <summary>What changing a ship's supply by delta (clamped to what it carries) costs; below 0 is a refund.</summary>
+    public int SupplyQuote(CampShip s, string id, int delta)
+    {
+        Supply u = Data.Supplies.First(x => x.Id == id);
+        int now = s.Supplies[id], n = Math.Clamp(now + delta, 0, SupplyMax(s, id)) - now;
+        return n > 0 ? u.Cost * Ru.CreditRate * n : -SalePrice(u.Cost * Ru.CreditRate, S.Side, S.Side) * -n;
     }
 
     /// <summary>Buys (delta above 0) or sells back supplies, within what the ship carries.</summary>
@@ -471,31 +508,65 @@ public sealed class Campaign
         int max = SupplyMax(s, id), now = s.Supplies[id];
         int next = Math.Clamp(now + delta, 0, max);
         if (next == now) return delta > 0 ? $"{u.Name}: this ship carries at most {max}." : null;
-        int n = next - now;
-        string? err = Pay(n > 0 ? u.Cost * Ru.CreditRate * n : -SalePrice(u.Cost * Ru.CreditRate, S.Side, S.Side) * -n);
+        string? err = Pay(SupplyQuote(s, id, delta));
         if (err != null) return err;
         s.Supplies[id] = next;
         return null;
     }
 
-    /// <summary>Repairs every ship's hull to full at your own port, at the hull's share of its points.</summary>
-    public int RepairCost() => S.Fleet.Sum(s => (int)Math.Ceiling(Data.TierOf(Data.Hulls[s.Hull]).Cost * Ru.CreditRate * (100 - s.HullPct) / 100 * 0.5));
-    public string? Repair()
+    /// <summary>What filling every supply of every ship in the fleet to what it carries costs.</summary>
+    public int RestockQuote() => S.Fleet.Sum(s => Data.Supplies.Sum(u => SupplyQuote(s, u.Id, SupplyMax(s, u.Id))));
+
+    /// <summary>Fills every supply of every ship to what it carries, paying for all at once.</summary>
+    public string? Restock()
     {
-        if (!IsPort(At)) return "Repairs are made at your own ports.";
-        string? err = Pay(RepairCost());
+        string? err = Pay(RestockQuote());
         if (err != null) return err;
-        foreach (CampShip s in S.Fleet) s.HullPct = 100;
+        foreach (CampShip s in S.Fleet) foreach (Supply u in Data.Supplies) s.Supplies[u.Id] = SupplyMax(s, u.Id);
         return null;
     }
 
+    /// <summary>What repairing one ship's hull to full costs: the hull's share (rules.repair_share) of its price for what is missing.</summary>
+    public int RepairCost(CampShip s) => (int)Math.Ceiling(Data.TierOf(Data.Hulls[s.Hull]).Cost * Ru.CreditRate * (100 - s.HullPct) / 100 * Ru.RepairShare);
+    /// <summary>What repairing the whole fleet costs.</summary>
+    public int RepairCost() => S.Fleet.Sum(RepairCost);
+
+    /// <summary>Repairs one ship (or, with null, the whole fleet) at your own port.</summary>
+    public string? Repair(CampShip? one = null)
+    {
+        if (!IsPort(At)) return "Repairs are made at your own ports.";
+        string? err = Pay(one != null ? RepairCost(one) : RepairCost());
+        if (err != null) return err;
+        foreach (CampShip s in one != null ? new[] { one } : S.Fleet.ToArray()) s.HullPct = 100;
+        return null;
+    }
+
+    /// <summary>The officer serving at a station, or null.</summary>
+    public Officer? AtStation(string station) => S.Crew.FirstOrDefault(o => o.Station == station);
+
+    /// <summary>Hires an officer for their station. One officer serves each station: whoever served there before leaves the
+    /// crew and goes back on offer.</summary>
     public string? Hire(Officer o)
     {
         if (!IsPort(At)) return "Officers are recruited at your own ports.";
         string? err = Pay(o.Cost);
         if (err != null) return err;
         S.OfficerPool.Remove(o);
+        if (AtStation(o.Station) is { } was) { S.Crew.Remove(was); S.OfficerPool.Add(was); }
         S.Crew.Add(o);
         return null;
+    }
+
+    /// <summary>Lets an officer go (no refund); they go back on offer.</summary>
+    public void Dismiss(Officer o)
+    {
+        if (!S.Crew.Remove(o)) return;
+        S.OfficerPool.Add(o);
+    }
+
+    /// <summary>A wingman's standing orders (data behaviours); the flagship has none.</summary>
+    public void SetBehaviour(CampShip s, string behaviour)
+    {
+        if (Data.Behaviours.Contains(behaviour) && S.Fleet.IndexOf(s) > 0) s.Behaviour = behaviour;
     }
 }

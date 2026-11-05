@@ -33,8 +33,12 @@ public sealed partial class GameFlow : Node
     public string Msg = "";
     /// <summary>The faction picked on the faction screen, waiting for New or Continue.</summary>
     public string? Picked;
-    /// <summary>The ship chosen in the port's outfitter and supplies.</summary>
+    /// <summary>The ship chosen in the port (its loadout, supplies), the hull looked at in the shipyard, and the hardpoint
+    /// picked in the loadout (group and index).</summary>
     public int PortShip;
+    public string? YardHull;
+    public string LoGroup = "primary";
+    public int LoSlot;
 
     // the battle under way: the mission and its plan, or a skirmish
     public Offer? Running { get; private set; }
@@ -293,6 +297,13 @@ public sealed partial class GameFlow : Node
 
     /// <summary>Centres the map's camera on a sector (the stills; the player's own Fleet key does the same for the fleet).</summary>
     public void MapCentre(int c, int r) => _map.Map?.CentreOn(c, r);
+
+    /// <summary>Sets the map camera's distance and opens or closes the mission log (the stills).</summary>
+    public void MapView(float? dist, bool? log)
+    {
+        if (dist is { } d && _map.Map != null) _map.Map.Dist = d;
+        if (log is { } l) _map.Hud.LogOpen = l;
+    }
 
     /// <summary>Accepts a mission and sets course for its sector (owner, 2026-11-05: "if you accept a mission your ship auto
     /// navigates there"): the fleet flies this turn's leg, and the rest is its order, flown on after each End turn. The

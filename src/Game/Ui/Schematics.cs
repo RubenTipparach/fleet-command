@@ -63,12 +63,27 @@ public static class Schematics
         return true;
     }
 
+    /// <summary>The rectangle the hull itself covers when drawn by Draw at this centre and half-length (its beam across, its
+    /// length down), or null without a schematic; the shop places hardpoints in it.</summary>
+    public static Rect2? HullRect(string? key, Vector2 centre, float halfLength)
+    {
+        if (key == null || !All.TryGetValue(key, out Entry? e)) return null;
+        float beam = 2 * halfLength * e.BeamPx / e.LengthPx;
+        return new Rect2(centre.X - beam / 2, centre.Y - halfLength, beam, 2 * halfLength);
+    }
+
+    /// <summary>The half-length that fits a schematic inside a box (DrawFit's).</summary>
+    public static float FitHalf(string? key, Rect2 box)
+    {
+        if (key == null || !All.TryGetValue(key, out Entry? e)) return box.Size.Y * 0.46f;
+        return Math.Min(box.Size.Y * 0.46f, box.Size.X * 0.46f * e.LengthPx / Math.Max(1, e.BeamPx));
+    }
+
     /// <summary>Draws the schematic fitted inside a box (the shipyard's preview), nose up.</summary>
     public static bool DrawFit(CanvasItem ci, string? key, Rect2 box, Color hull, Color wire)
     {
         if (key == null || !All.TryGetValue(key, out Entry? e)) return false;
         // the ship fills the box's height, or its width when the hull is the wider for the box
-        float half = Math.Min(box.Size.Y * 0.46f, box.Size.X * 0.46f * e.LengthPx / Math.Max(1, e.BeamPx));
-        return Draw(ci, key, box.GetCenter(), half, hull, wire);
+        return Draw(ci, key, box.GetCenter(), FitHalf(key, box), hull, wire);
     }
 }

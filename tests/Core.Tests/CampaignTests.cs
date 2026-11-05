@@ -310,3 +310,73 @@ public sealed class MissionPreviewTests
         Assert.Contains("data/missions/patrol.json", r.Error);
     }
 }
+
+public sealed class ShopTests
+{
+    private static Campaign.Campaign New() => Campaign.Campaign.New(CampaignTests.Camp, "concord");
+
+    [Fact]
+    public void A_refit_costs_exactly_its_quote()
+    {
+        Campaign.Campaign c = New();
+        CampShip s = c.S.Fleet[0];
+        int quote = c.RefitQuote(s, "primary", 0, "lance"), before = c.S.Credits;
+        Assert.Null(c.Refit(s, "primary", 0, "lance"));
+        Assert.Equal(before - quote, c.S.Credits);
+        Assert.True(c.RefitQuote(s, "primary", 0, null) < 0);
+    }
+
+    [Fact]
+    public void Empty_hardpoints_are_filled_with_stock_for_their_quote()
+    {
+        Campaign.Campaign c = New();
+        CampShip s = c.S.Fleet[0];
+        c.Refit(s, "primary", 0, null);
+        c.Refit(s, "shields", 0, null);
+        Assert.Equal(2, c.EmptyHardpoints(s).Count);
+        int quote = c.StockQuote(s), before = c.S.Credits;
+        Assert.Null(c.FitStock(s));
+        Assert.Empty(c.EmptyHardpoints(s));
+        Assert.Equal(before - quote, c.S.Credits);
+    }
+
+    [Fact]
+    public void Restocking_fills_every_ship_for_its_quote()
+    {
+        Campaign.Campaign c = New();
+        int quote = c.RestockQuote(), before = c.S.Credits;
+        Assert.True(quote > 0);
+        Assert.Null(c.Restock());
+        Assert.Equal(before - quote, c.S.Credits);
+        foreach (Supply u in CampaignTests.Camp.Supplies) Assert.Equal(c.SupplyMax(c.S.Fleet[0], u.Id), c.S.Fleet[0].Supplies[u.Id]);
+        Assert.Equal(0, c.RestockQuote());
+    }
+
+    [Fact]
+    public void One_officer_serves_each_station()
+    {
+        Campaign.Campaign c = New();
+        c.S.Credits = 100000;
+        Officer a = c.S.OfficerPool[0];
+        Assert.Null(c.Hire(a));
+        var b = new Officer { Name = "Test Officer", Station = a.Station, Skill = "Green", Cost = 150 };
+        c.S.OfficerPool.Add(b);
+        Assert.Null(c.Hire(b));
+        Assert.Same(b, c.AtStation(a.Station));
+        Assert.Contains(a, c.S.OfficerPool);
+        c.Dismiss(b);
+        Assert.Null(c.AtStation(a.Station));
+    }
+
+    [Fact]
+    public void Repairs_are_priced_per_ship()
+    {
+        Campaign.Campaign c = New();
+        c.S.Fleet[0].HullPct = 50;
+        int one = c.RepairCost(c.S.Fleet[0]);
+        Assert.True(one > 0);
+        Assert.Equal(one, c.RepairCost());
+        Assert.Null(c.Repair(c.S.Fleet[0]));
+        Assert.Equal(100, c.S.Fleet[0].HullPct);
+    }
+}

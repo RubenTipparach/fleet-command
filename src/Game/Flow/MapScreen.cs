@@ -1,6 +1,6 @@
 // MapScreen: the campaign map screen. The 3D map (CampaignMap) renders in its own world inside a SubViewport filling the
 // screen, and the map's HUD (MapHud: the top bar, the sector panel, the briefing and the port) is drawn over it. A press the
-// HUD does not take falls through to here: a click picks a sector, a left drag pans, a right drag turns, the wheel zooms.
+// HUD does not take falls through to here: a click picks a sector, a drag pans, the wheel zooms; the view never turns.
 // The camera is the player's alone (CLAUDE.md section 8).
 using FleetCommand.Campaign;
 using Godot;
@@ -13,10 +13,11 @@ public sealed partial class MapScreen : Control
     private SubViewportContainer _box = null!;
     private SubViewport _vp = null!;
     private MapHud _hud = null!;
+    public MapHud Hud => _hud;
     private PortPanel _port = null!;
     public CampaignMap? Map { get; private set; }
     private Vector2 _press;
-    private bool _dragging, _left, _right;
+    private bool _dragging, _left;
     public (int C, int R)? HoverHex { get; private set; }
     public Vector2 Mouse { get; private set; }
 
@@ -58,7 +59,7 @@ public sealed partial class MapScreen : Control
         switch (e)
         {
             case InputEventMouseButton b when b.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown && b.Pressed:
-                Map.Dist *= b.ButtonIndex == MouseButton.WheelUp ? 0.9f : 1.11f;
+                Map.Zoom(b.ButtonIndex == MouseButton.WheelUp ? 0.9f : 1.11f);
                 AcceptEvent();
                 break;
             case InputEventMouseButton b when b.ButtonIndex == MouseButton.Left:
@@ -70,15 +71,10 @@ public sealed partial class MapScreen : Control
                 }
                 AcceptEvent();
                 break;
-            case InputEventMouseButton b when b.ButtonIndex == MouseButton.Right:
-                _right = b.Pressed;
-                AcceptEvent();
-                break;
             case InputEventMouseMotion m:
                 Mouse = m.Position;
                 if (_left && (m.Position - _press).Length() > 6) _dragging = true;
                 if (_left && _dragging) Map.Pan(m.Relative);
-                else if (_right) { Map.Yaw -= m.Relative.X * 0.006f; Map.Pitch += m.Relative.Y * 0.004f; }
                 HoverHex = Map.Pick(m.Position);
                 Map.Hover(HoverHex);
                 break;
@@ -98,10 +94,10 @@ public sealed partial class MapScreen : Control
         _f.SelectHex(hex);
     }
 
-    /// <summary>The player asked to see their fleet: the camera's centre moves to it (their order, not the map's).</summary>
+    /// <summary>The player asked to see their fleet: the view glides to it (their order, not the map's).</summary>
     public void CentreOnFleet()
     {
         if (_f.Camp == null || Map == null) return;
-        Map.CentreOn(_f.Camp.S.AtC, _f.Camp.S.AtR);
+        Map.GlideTo(_f.Camp.S.AtC, _f.Camp.S.AtR);
     }
 }

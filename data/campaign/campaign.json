@@ -40,7 +40,8 @@
    "Heavy"
   ],
   "reward_steps": 5,
-  "reward_step_cr": 50
+  "reward_step_cr": 50,
+  "repair_share": 0.5
  },
  "factions": {
   "concord": {
@@ -469,33 +470,38 @@
    "id": "marines",
    "name": "Marines",
    "cost": 5,
-   "hp_per": 15
+   "hp_per": 15,
+   "d": "Board and take ships that strike. Capture missions need them."
   },
   {
    "id": "shuttles",
    "name": "Shuttles",
    "cost": 15,
    "per_fit": 2,
-   "fit": "bay"
+   "fit": "bay",
+   "d": "Carry boarding parties and survey teams; launched from shuttle bays."
   },
   {
    "id": "mines",
    "name": "Mines",
    "cost": 8,
-   "fixed": 4
+   "fixed": 4,
+   "d": "Laid behind the ship to cover a retreat."
   },
   {
    "id": "reloads",
    "name": "Missile reloads",
    "cost": 6,
    "per_fit": 4,
-   "fit": "missile"
+   "fit": "missile",
+   "d": "Refill the missile racks between volleys."
   },
   {
    "id": "parts",
    "name": "Spare parts",
    "cost": 4,
-   "hp_per": 20
+   "hp_per": 20,
+   "d": "Repair systems in the field after a battle."
   }
  ],
  "map": {
@@ -930,6 +936,20 @@
    "Arlo Kade",
    "Nim Sato"
   ],
-  "pool": 6
- }
+  "pool": 6,
+  "does": {
+   "Helm": "Faster turns, steadier high energy turns.",
+   "Tactical": "A better chance to hit.",
+   "Engineering": "Faster repairs, more from the reactor.",
+   "Science": "Sees further; reads the enemy's systems.",
+   "Comms": "Better standing from every mission.",
+   "Security": "Marines fight better when boarding."
+  }
+ },
+ "behaviours": [
+  "Escort",
+  "Attack my target",
+  "Hold at range",
+  "Defensive"
+ ]
 }

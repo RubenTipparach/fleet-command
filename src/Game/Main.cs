@@ -430,8 +430,28 @@ public sealed partial class Main : Node
                     f.Accept(m);
                     _flow!.MapCentre(m.C, m.R);
                 }
+                if (what == "map-far") { f.MapCentre(15, 11); f.MapView(64, null); }
+                if (what == "map-close") { f.MapCentre(c.S.AtC + 1, c.S.AtR - 1); f.MapView(6.5f, null); }
+                if (what == "log") { Offer m = Find("shakedown")!; c.Accept(m); f.MapView(null, true); }
+                if (what == "turns") { for (int k = 0; k < 3; k++) f.EndTurn(); f.MapCentre(16, 10); f.MapView(20, null); }
                 if (what == "brief") { Offer m = Find("prize")!; f.SelectHex((m.C, m.R)); f.OpenBrief(m); }
-                if (what is "port" or "outfit") { c.Buy(c.Data.HullsOf(side).Skip(1).First().Id); f.Port = what == "port" ? "yard" : "outfit"; }
+                if (what is "port" or "outfit" or "supply" or "crew")
+                {
+                    c.S.Credits += 6000;
+                    c.Buy(c.Data.HullsOf(side).Skip(1).First().Id);
+                    c.Refit(c.S.Fleet[0], "primary", 0, null);
+                    c.S.Fleet[0].HullPct = 72;
+                    if (what == "crew") c.Hire(c.S.OfficerPool[0]);
+                    f.Port = what switch { "port" => "yard", "outfit" => "outfit", "supply" => "supply", _ => "crew" };
+                }
+                if (what == "market")
+                {
+                    Sector cal = c.PortNamed("Calder")!;
+                    c.S.AtC = cal.C; c.S.AtR = cal.R;
+                    c.S.Credits += 6000;
+                    f.SelectHex((cal.C, cal.R));
+                    f.Port = "market";
+                }
                 if (what == "debrief") { Offer m = Find("shakedown")!; FlyTo(m); f.Launch(m); await Settle(); }
                 if (what is "battle" or "debrief-battle")
                 {

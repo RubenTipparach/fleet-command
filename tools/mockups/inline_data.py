@@ -15,6 +15,9 @@ piece's image as a "data" URI (high-quality WebP when smaller than the PNG; any 
 
 A JavaScript file (a mockup module, such as a faction skin in docs/mockups/skins/) is inlined as a script element.
 
+The ship schematics' manifest (assets/ships/schematics/manifest.json) is inlined with each ship's hull and wire layers as
+data URIs (hull_data, wire_data), so the shop draws the same pictures as the game.
+
 A glTF binary (an approved ship from assets/ships/, exported by tools/mockups/export_ships.mjs) is inlined as base64 in
 a script element of type application/octet-stream, which the page decodes and hands to three.js's GLTFLoader.parse(), so
 nothing is fetched (the artifact host serves no .glb).
@@ -56,6 +59,11 @@ def load(src):
     if isinstance(obj, dict) and isinstance(obj.get("pieces"), dict) and all("file" in p for p in obj["pieces"].values()):
         for piece in obj["pieces"].values():
             piece["data"] = image_uri(path.parent / piece["file"])
+    # the ship schematics' manifest (assets/ships/schematics/): each ship's two white layers carried as data URIs
+    if isinstance(obj, dict) and isinstance(obj.get("ships"), list) and all("hull" in s and "wire" in s for s in obj["ships"]):
+        for ship in obj["ships"]:
+            ship["hull_data"] = image_uri(path.parent / ship["hull"])
+            ship["wire_data"] = image_uri(path.parent / ship["wire"])
     return obj
 
 

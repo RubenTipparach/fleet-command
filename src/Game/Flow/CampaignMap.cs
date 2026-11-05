@@ -1,15 +1,21 @@
-// CampaignMap: the campaign's hex map in 3D (game-flow design, "Campaign map"; the campaign mockup v14,
-// docs/mockups/game-flow.html): the sectors as hex tiles coloured by who holds them (ports lighter), territory borders,
-// stars, planets and stations, asteroid fields and nebula puffs, and the pieces on their flight stands: your fleet on a
-// gold stand, the factions' fleets each with a strength flag and turned the way they last moved, freighters on your and
-// your allies' routes, and every mission's banner. A route preview shows each turn's leg, later legs fainter, with a
-// numbered badge where each turn ends. The camera is the player's (CLAUDE.md section 8): drag pans, the wheel zooms, a
-// right drag turns; nothing moves it on its own except a click on your fleet, which the player asked for.
+// CampaignMap: the campaign's hex map in 3D, built as the campaign mockup builds it (docs/mockups/game-flow.html v15:
+// buildMap, makeSpace, nebulaRegions, puffSet, hexBorders, makeStandee, buildFreight, showPath). The owner's reference is
+// a box-back star map: dark glass hexes over the galaxy, each sector's contents inside its hex, territory told by bright
+// ribbons along the borders where the holder changes. Behind it the "quiet" nebula sky with its stars, and three layers of
+// stars under the board that slide with parallax as the view pans. Nebulae are billboard puffs (puff.gdshader), one main
+// colour per connected cloud from the owner's palette with an accent rising through its upper puffs; asteroid sectors hold
+// a curved belt of rocks; stars burn in theirs. The pieces stand on flight posts: planets and stations, the factions'
+// fleets facing their last move with a strength flag, the player's fleet on gold, your freighters on their dashed routes
+// (and your allies' routes), and every mission's cloth banner. A route shows each turn's leg, later ones fainter, a
+// numbered badge where each turn ends. Fleets fly their moves sector by sector, lifting off their stands.
+// The camera is the player's (CLAUDE.md section 8): drag pans, the wheel and the +/- keys zoom, its angle is fixed (owner,
+// 2026-10-30: the map must not turn); it moves on its own only when the player asks (the Fleet key, a mission in the log).
 // It draws campaign state and holds no rules: everything it shows is read from Campaign (src/Core/Campaign).
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using FleetCommand.Campaign;
+using FleetCommand.Game.View;
 using Godot;
 
 namespace FleetCommand.Game.Flow;
@@ -18,55 +24,92 @@ public sealed partial class CampaignMap : Node3D
 {
     private Campaign.Campaign _c = null!;
     private Camera3D _cam = null!;
-    private Node3D _pieces = null!, _routes = null!, _path = null!;
+    private Node3D _board = null!, _pieces = null!, _routes = null!, _path = null!;
     private MeshInstance3D _ring = null!, _hover = null!;
-    private readonly Dictionary<string, Node3D> _fleetNodes = new();
-    private readonly Dictionary<string, (Vector3 From, Vector3 To, float T)> _glides = new();
-    private Node3D? _own;
-    private readonly List<(MeshInstance3D Mesh, float Phase)> _banners = new();
+    private NebulaSky? _sky;
+    private MultiMeshInstance3D _puffs = null!;
+    private readonly List<(Vector3 Pos, Vector2 Size, float Seed, Color Tint)> _puffList = new();
+    private Vector3 _puffEye = new(1e9f, 0, 0);
+    private readonly List<Label3D> _labels = new();
+    private readonly List<Node3D> _spin = new();
+    private readonly Dictionary<string, Piece> _fleets = new();
     private float _time;
+    private (Vector3 From, Vector3 To, float T)? _camGlide;
 
-    /// <summary>Camera: the point it looks at on the map plane, its distance, pitch and yaw.</summary>
-    public Vector3 Target;
-    public float Dist = 16, Pitch = 0.95f, Yaw;
-    public const float MinDist = 5, MaxDist = 42;
-
-    private static readonly Dictionary<string, Color> PlanetHue = new()
+    /// <summary>A piece that flies: its node, its model (turned as it flies), the points it flies through, its heading at the end.</summary>
+    private sealed class Piece
     {
-        ["Halcyon"] = Color.FromHsv(205 / 360f, 0.45f, 0.8f), ["Meridian"] = Color.FromHsv(160 / 360f, 0.45f, 0.75f), ["Vahr"] = Color.FromHsv(12 / 360f, 0.5f, 0.75f),
-        ["Ouro"] = Color.FromHsv(40 / 360f, 0.5f, 0.8f), ["Tessaly"] = Color.FromHsv(280 / 360f, 0.35f, 0.75f),
+        public required Node3D Node;
+        public Node3D? Model;
+        public List<Vector3>? Pts;
+        public float T;
+        public float EndDir;
+        public float Lift;
+    }
+
+    /// <summary>The camera: the point it looks at on the map plane and its distance. Its angle is fixed (the mockup's polar
+    /// 0.88 rad), and it never turns.</summary>
+    public Vector3 Target;
+    public float Dist = 18;
+    public const float Polar = 0.88f, MinDist = 7, MaxDist = 70;
+    /// <summary>Sectors a second a fleet flies (the mockup's FLIGHT_SECTORS_S).</summary>
+    public const float FlightSectorsS = 2.6f;
+    /// <summary>Beyond this distance the name labels leave (they would pile on one another); the pieces never do.</summary>
+    public const float FarDist = 34;
+
+    private static readonly Dictionary<string, int> PlanetHue = new() { ["Halcyon"] = 205, ["Meridian"] = 160, ["Vahr"] = 12, ["Ouro"] = 40, ["Tessaly"] = 280 };
+    /// <summary>The owner's nebula palette (2026-11-05), each cloud a main colour and an accent from it.</summary>
+    private static readonly string[] Palette =
+    {
+        "#6f6776", "#9a9a97", "#c5ccb8", "#8b5580", "#c38890", "#a593a5", "#666092", "#9a4f50", "#c28d75", "#7ca1c0", "#416aa3",
+        "#8d6268", "#be955c", "#68aca9", "#387080", "#6e6962", "#93a167", "#6eaa78", "#557064", "#9d9f7f", "#7e9e99", "#5d6872", "#433455",
     };
-    /// <summary>The owner's nebula palette (2026-11-05), main colours the puffs are tinted from.</summary>
-    private static readonly string[] Nebula = { "#8b5580", "#c38890", "#666092", "#9a4f50", "#7ca1c0", "#416aa3", "#68aca9", "#387080", "#6eaa78", "#557064" };
 
     public static Vector3 HexPos(int c, int r) { var (x, z) = HexGrid.Pos(c, r); return new Vector3((float)x, 0, (float)z); }
 
     public Color FacColor(string fac) => _c.Data.Factions.TryGetValue(fac, out CampFaction? f) ? new Color(f.Color) : new Color("#7c8794");
 
+    private float MapW => 1.5f * (_c.S.Cols - 1);
+    private float MapH => Mathf.Sqrt(3) * (_c.S.Rows - 0.5f);
+
+    public Camera3D Camera => _cam;
+
     public void Init(Campaign.Campaign c)
     {
         _c = c;
         Name = "CampaignMap";
-        _cam = new Camera3D { Fov = 42, Near = 0.1f, Far = 400, Current = true };
+        _cam = new Camera3D { Fov = 42, Near = 0.1f, Far = 4000, Current = true };
         AddChild(_cam);
+        // the quiet nebula's panorama lights the board and the pieces and is what the glass reflects (the mockup's sky probe)
+        var skyMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/View/nebula_sky.gdshader") };
+        skyMat.SetShaderParameter("panorama", GD.Load<Texture2D>("res://assets/skies/quiet.jpg"));
         var env = new Godot.Environment
         {
-            BackgroundMode = Godot.Environment.BGMode.Color, BackgroundColor = new Color(0.012f, 0.016f, 0.035f),
-            AmbientLightSource = Godot.Environment.AmbientSource.Color, AmbientLightColor = new Color(0.55f, 0.6f, 0.75f), AmbientLightEnergy = 0.55f,
-            GlowEnabled = true, GlowIntensity = 0.6f, GlowBloom = 0.05f,
+            BackgroundMode = Godot.Environment.BGMode.Color, BackgroundColor = new Color("#03060a"),
+            Sky = new Sky { SkyMaterial = skyMat, RadianceSize = Sky.RadianceSizeEnum.Size128 },
+            AmbientLightSource = Godot.Environment.AmbientSource.Sky, AmbientLightEnergy = 0.9f,
+            ReflectedLightSource = Godot.Environment.ReflectionSource.Sky,
+            GlowEnabled = true, GlowIntensity = 0.5f, GlowBloom = 0.04f, TonemapMode = Godot.Environment.ToneMapper.Filmic,
         };
         AddChild(new WorldEnvironment { Environment = env });
-        AddChild(new DirectionalLight3D { RotationDegrees = new Vector3(-58, -30, 0), LightEnergy = 1.1f });
-        BuildStars();
-        BuildBoard();
+        var sun = new DirectionalLight3D { LightEnergy = 0.6f, Name = "Sun" };
+        AddChild(sun);
+        sun.LookAtFromPosition(new Vector3(10, 20, 6), Vector3.Zero, Vector3.Up);
+        _sky = NebulaSky.Load("quiet");
+        AddChild(_sky);
+        _board = new Node3D { Name = "Board" };
         _routes = new Node3D { Name = "Routes" };
         _pieces = new Node3D { Name = "Pieces" };
         _path = new Node3D { Name = "Path" };
+        AddChild(_board);
         AddChild(_routes);
         AddChild(_pieces);
         AddChild(_path);
-        _ring = Ring(0.92f, 0.06f, new Color(1, 0.85f, 0.35f));
-        _hover = Ring(0.95f, 0.035f, new Color(1, 1, 1, 0.55f));
+        BuildStars();
+        BuildBoard();
+        _ring = MapPieces.HexRing(0.82f, 0.95f, new Color("#ffb547"));
+        _hover = MapPieces.HexRing(0.9f, 0.95f, new Color(1, 1, 1, 0.45f));
+        ((StandardMaterial3D)_hover.MaterialOverride).Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
         AddChild(_ring);
         AddChild(_hover);
         _ring.Visible = _hover.Visible = false;
@@ -74,32 +117,33 @@ public sealed partial class CampaignMap : Node3D
         CentreOn(c.S.AtC, c.S.AtR);
     }
 
-    public Camera3D Camera => _cam;
+    public void CentreOn(int c, int r) { _camGlide = null; Target = HexPos(c, r); }
 
-    public void CentreOn(int c, int r) => Target = HexPos(c, r);
+    /// <summary>Glides the view's centre to a sector over a third of a second (the player's Fleet key, a mission in the log).</summary>
+    public void GlideTo(int c, int r) => _camGlide = (Target, HexPos(c, r), 0);
+
+    public void Zoom(float k) => Dist = Math.Clamp(Dist * k, MinDist, MaxDist);
 
     public override void _Process(double delta)
     {
         float dt = (float)delta;
         _time += dt;
-        // the camera: orbiting its target, kept over the map
-        var (mx, mz) = HexGrid.Pos(_c.S.Cols - 1, _c.S.Rows - 1);
-        Target = new Vector3(Math.Clamp(Target.X, -2, (float)mx + 2), 0, Math.Clamp(Target.Z, -2, (float)mz + 2));
-        Dist = Math.Clamp(Dist, MinDist, MaxDist);
-        Pitch = Math.Clamp(Pitch, 0.45f, 1.35f);
-        var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Dist;
-        _cam.Position = Target + off;
-        _cam.LookAt(Target, Vector3.Up);
-        foreach (var (mesh, ph) in _banners)
-            if (IsInstanceValid(mesh)) mesh.Rotation = new Vector3(0, Mathf.Sin(_time * 2.2f + ph) * 0.18f, 0);
-        foreach (string k in _glides.Keys.ToList())
+        if (_camGlide is { } g)
         {
-            var (a, b, t) = _glides[k];
-            t = Math.Min(1, t + dt / 0.9f);
-            _glides[k] = (a, b, t);
-            if (_fleetNodes.TryGetValue(k, out Node3D? n) && IsInstanceValid(n)) n.Position = a.Lerp(b, Mathf.SmoothStep(0, 1, t));
-            if (t >= 1) _glides.Remove(k);
+            float t = Math.Min(1, g.T + dt / 0.35f), k = 1 - MathF.Pow(1 - t, 3);
+            Target = g.From.Lerp(g.To, k);
+            _camGlide = t >= 1 ? null : (g.From, g.To, t);
         }
+        Target = new Vector3(Math.Clamp(Target.X, -1, MapW + 1), 0, Math.Clamp(Target.Z, 0, MapH + 1));
+        Dist = Math.Clamp(Dist, MinDist, MaxDist);
+        _cam.Position = Target + new Vector3(0, Mathf.Cos(Polar), Mathf.Sin(Polar)) * Dist;
+        _cam.LookAt(Target, Vector3.Up);
+        _sky?.Follow(_cam.GlobalPosition);
+        bool far = Dist > FarDist;
+        foreach (Label3D l in _labels) if (IsInstanceValid(l)) l.Visible = !far;
+        foreach (Node3D s in _spin) if (IsInstanceValid(s)) s.RotateY(dt * 0.15f);
+        SortPuffs();
+        StepFlights(dt);
     }
 
     /// <summary>The sector under a screen point, or null off the map.</summary>
@@ -114,251 +158,328 @@ public sealed partial class CampaignMap : Node3D
         return _c.OnMap(c, r) ? (c, r) : null;
     }
 
+    /// <summary>Pans by a screen drag: the map follows the pointer.</summary>
     public void Pan(Vector2 screenDelta)
     {
-        float k = Dist * 0.0022f;
-        var right = new Vector3(Mathf.Cos(Yaw), 0, -Mathf.Sin(Yaw));
-        var fwd = new Vector3(-Mathf.Sin(Yaw), 0, -Mathf.Cos(Yaw));
-        Target += (-right * screenDelta.X + fwd * screenDelta.Y) * k;
+        _camGlide = null;
+        float k = Dist * 0.0016f;
+        Target += new Vector3(-screenDelta.X, 0, -screenDelta.Y / Mathf.Cos(Polar) * 0.75f) * k;
     }
 
     public void Select((int C, int R)? at)
     {
         _ring.Visible = at != null;
-        if (at is { } a) _ring.Position = HexPos(a.C, a.R) + new Vector3(0, 0.03f, 0);
+        if (at is { } a) _ring.Position = HexPos(a.C, a.R) + new Vector3(0, 0.02f, 0);
     }
 
     public void Hover((int C, int R)? at)
     {
         _hover.Visible = at != null;
-        if (at is { } a) _hover.Position = HexPos(a.C, a.R) + new Vector3(0, 0.025f, 0);
+        if (at is { } a) _hover.Position = HexPos(a.C, a.R) + new Vector3(0, 0.018f, 0);
     }
 
-    // ---- The board (built once) ---------------------------------------------------------------------------------------
+    // ---- The backdrop -----------------------------------------------------------------------------------------------
 
-    private void BuildBoard()
-    {
-        var st = new SurfaceTool();
-        st.Begin(Mesh.PrimitiveType.Triangles);
-        var lines = new SurfaceTool();
-        lines.Begin(Mesh.PrimitiveType.Lines);
-        foreach (Sector h in _c.S.Sectors)
-        {
-            Vector3 p = HexPos(h.C, h.R);
-            Color col = FacColor(h.Owner).Darkened(h.IsPort ? 0.3f : 0.6f);
-            if (h.Owner == "neutral") col = new Color(0.16f, 0.18f, 0.22f);
-            if (h.Terrain == "nebula") col = col.Lerp(new Color(0.42f, 0.28f, 0.45f), 0.3f);
-            if (h.Terrain == "asteroids") col = col.Lerp(new Color(0.3f, 0.27f, 0.24f), 0.3f);
-            if (h.Terrain == "star") col = new Color(0.32f, 0.22f, 0.08f);
-            col.A = 0.4f;
-            for (int i = 0; i < 6; i++)
-            {
-                Vector3 a = p + Corner(i, 0.97f), b = p + Corner(i + 1, 0.97f);
-                st.SetColor(col); st.AddVertex(p);
-                st.SetColor(col); st.AddVertex(b);
-                st.SetColor(col); st.AddVertex(a);
-                // a border where the next sector is held by someone else, in the holder's colour
-                (int, int) n = NeighbourAcross(h.C, h.R, i);
-                bool edge = !_c.OnMap(n.Item1, n.Item2) || _c.Hex(n.Item1, n.Item2).Owner != h.Owner;
-                Color lc = edge && h.Owner != "neutral" ? FacColor(h.Owner) : new Color(0.5f, 0.6f, 0.75f, 0.18f);
-                lines.SetColor(lc); lines.AddVertex(p + Corner(i, edge ? 0.93f : 1f) + Vector3.Up * 0.012f);
-                lines.SetColor(lc); lines.AddVertex(p + Corner(i + 1, edge ? 0.93f : 1f) + Vector3.Up * 0.012f);
-            }
-        }
-        var mat = new StandardMaterial3D { VertexColorUseAsAlbedo = true, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, Roughness = 0.7f,
-            CullMode = BaseMaterial3D.CullModeEnum.Disabled, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
-        AddChild(new MeshInstance3D { Mesh = st.Commit(), MaterialOverride = mat, Name = "Tiles" });
-        var lmat = new StandardMaterial3D { VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha };
-        AddChild(new MeshInstance3D { Mesh = lines.Commit(), MaterialOverride = lmat, Name = "Borders" });
-
-        var rng = new Random(17); // the rocks and puffs: the same every time the map is drawn
-        foreach (Sector h in _c.S.Sectors)
-        {
-            Vector3 p = HexPos(h.C, h.R);
-            if (h.Terrain == "star")
-            {
-                var sun = new MeshInstance3D { Mesh = new SphereMesh { Radius = 0.42f, Height = 0.84f }, Position = p + Vector3.Up * 0.5f,
-                    MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(1, 0.8f, 0.45f), EmissionEnabled = true, Emission = new Color(1, 0.7f, 0.3f), EmissionEnergyMultiplier = 3 } };
-                AddChild(sun);
-                AddChild(new OmniLight3D { Position = p + Vector3.Up * 0.8f, LightColor = new Color(1, 0.75f, 0.45f), OmniRange = 3, LightEnergy = 1.2f });
-            }
-            if (h.Terrain == "asteroids")
-                for (int i = 0; i < 7; i++)
-                {
-                    float a = (float)(rng.NextDouble() * Math.Tau), d = 0.2f + (float)rng.NextDouble() * 0.55f, s = 0.05f + (float)rng.NextDouble() * 0.07f;
-                    AddChild(new MeshInstance3D { Mesh = new SphereMesh { Radius = s, Height = s * 1.6f, RadialSegments = 6, Rings = 3 },
-                        Position = p + new Vector3(Mathf.Cos(a) * d, 0.12f + (float)rng.NextDouble() * 0.12f, Mathf.Sin(a) * d),
-                        RotationDegrees = new Vector3(rng.Next(90), rng.Next(360), 0), MaterialOverride = Rock });
-                }
-            if (h.Terrain == "nebula")
-            {
-                Color nc = new(Nebula[(h.C * 7 + h.R * 3) % Nebula.Length]);
-                for (int i = 0; i < 3; i++)
-                {
-                    float s = 1.1f + (float)rng.NextDouble() * 0.6f;
-                    var puff = new MeshInstance3D
-                    {
-                        Mesh = new QuadMesh { Size = new Vector2(s, s) }, Position = p + new Vector3((float)rng.NextDouble() * 0.6f - 0.3f, 0.25f + i * 0.18f, (float)rng.NextDouble() * 0.6f - 0.3f),
-                        MaterialOverride = new StandardMaterial3D
-                        {
-                            AlbedoTexture = Puff, AlbedoColor = new Color(nc, 0.32f), Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-                            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
-                            BlendMode = BaseMaterial3D.BlendModeEnum.Add, NoDepthTest = false, DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled,
-                        },
-                    };
-                    AddChild(puff);
-                }
-            }
-            if (h.Planet != null)
-            {
-                Color pc = PlanetHue.TryGetValue(h.Planet, out Color hc) ? hc : Color.FromHsv(h.Planet.Aggregate(0, (n, ch) => (n * 31 + ch) & 255) / 255f, 0.4f, 0.75f);
-                Node3D ps = Stand(0.35f, false);
-                ps.Position = p + new Vector3(0.1f, 0, -0.35f);
-                AddChild(ps);
-                var ball = new MeshInstance3D { Mesh = new SphereMesh { Radius = 0.3f, Height = 0.6f }, Position = p + new Vector3(0.1f, 0.62f, -0.35f),
-                    MaterialOverride = new StandardMaterial3D { AlbedoColor = pc, Roughness = 0.8f } };
-                AddChild(ball);
-                AddLabel(h.Planet, p + new Vector3(0.1f, 1.08f, -0.35f), FacColor(h.Owner).Lightened(0.4f));
-            }
-            if (h.Station != null)
-            {
-                Node3D ss = Stand(0.3f, false);
-                ss.Position = p + new Vector3(0.1f, 0, -0.35f);
-                AddChild(ss);
-                var ring = new MeshInstance3D { Mesh = new TorusMesh { InnerRadius = 0.16f, OuterRadius = 0.26f }, Position = p + new Vector3(0.1f, 0.5f, -0.35f),
-                    MaterialOverride = new StandardMaterial3D { AlbedoColor = FacColor(h.Owner).Lightened(0.3f), Metallic = 0.7f, Roughness = 0.35f } };
-                var hub = new MeshInstance3D { Mesh = new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.06f, Height = 0.3f }, Position = ring.Position,
-                    MaterialOverride = Metal };
-                AddChild(ring);
-                AddChild(hub);
-                AddLabel(h.Station, p + new Vector3(0.1f, 0.92f, -0.35f), FacColor(h.Owner).Lightened(0.4f));
-            }
-        }
-    }
-
+    // three layers of stars under the board (the mockup's parallaxStars: [-3, -10, 600], [-12, -32, 1400], [-40, -90, 2600]),
+    // in the starfield's classes and colours (data/space/starfield.json)
     private void BuildStars()
     {
-        var mm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, Mesh = new QuadMesh { Size = new Vector2(0.18f, 0.18f) } };
-        var rng = new Random(7);
-        mm.InstanceCount = 1600;
-        var (mx, mz) = HexGrid.Pos(_c.S.Cols, _c.S.Rows);
-        for (int i = 0; i < mm.InstanceCount; i++)
-        {
-            var pos = new Vector3((float)(rng.NextDouble() * (mx + 80) - 40), -6 - (float)rng.NextDouble() * 40, (float)(rng.NextDouble() * (mz + 80) - 40));
-            mm.SetInstanceTransform(i, new Transform3D(Basis.Identity.Scaled(Vector3.One * (0.5f + (float)rng.NextDouble() * 1.5f)), pos));
-            float b = 0.4f + (float)rng.NextDouble() * 0.6f;
-            mm.SetInstanceColor(i, new Color(b * 0.85f, b * 0.9f, b));
-        }
+        using var doc = System.Text.Json.JsonDocument.Parse(FileAccess.GetFileAsString("res://data/space/starfield.json"));
+        var classes = doc.RootElement.GetProperty("classes").EnumerateArray().Select(e => (Share: e.GetProperty("share").GetSingle(),
+            B0: e.GetProperty("brightness")[0].GetSingle(), B1: e.GetProperty("brightness")[1].GetSingle(), Px: e.GetProperty("size_px").GetSingle())).ToList();
+        var colours = doc.RootElement.GetProperty("colours").EnumerateArray().Select(e => (Share: e.GetProperty("share").GetSingle(),
+            Rgb: new Color(e.GetProperty("srgb")[0].GetSingle(), e.GetProperty("srgb")[1].GetSingle(), e.GetProperty("srgb")[2].GetSingle()))).ToList();
+        var classShares = classes.Select(x => x.Share).ToList();
+        var colourShares = colours.Select(x => x.Share).ToList();
+        var R = new Mulberry32(41);
+        int Pick(List<float> shares) { double x = R.Next(); for (int i = 0; i < shares.Count; i++) { x -= shares[i]; if (x <= 0) return i; } return shares.Count - 1; }
+        Vector3 centre = new(MapW / 2, 0, MapH / 2);
+        const float spread = 220;
+        var layers = new (float Y0, float Y1, int N)[] { (-3, -10, 600), (-12, -32, 1400), (-40, -90, 2600) };
+        var mm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, Mesh = new QuadMesh { Size = new Vector2(1, 1) } };
+        mm.InstanceCount = layers.Sum(l => l.N);
+        int k = 0;
+        foreach (var (y0, y1, n) in layers)
+            for (int i = 0; i < n; i++)
+            {
+                var p = new Vector3(centre.X + (float)(R.Next() - 0.5) * spread, y0 + (y1 - y0) * (float)R.Next(), centre.Z + (float)(R.Next() - 0.5) * spread);
+                var cl = classes[Pick(classShares)];
+                float b = cl.B0 + (cl.B1 - cl.B0) * (float)R.Next();
+                Color col = colours[Pick(colourShares)].Rgb;
+                // a star's size grows with its depth so each reads at about its class's pixels on screen
+                float size = 0.05f * cl.Px * (1 + -p.Y / 30f);
+                mm.SetInstanceTransform(k, new Transform3D(Basis.Identity.Scaled(Vector3.One * size), p));
+                mm.SetInstanceColor(k, new Color(col.R * b, col.G * b, col.B * b));
+                k++;
+            }
         AddChild(new MultiMeshInstance3D
         {
-            Multimesh = mm, Name = "Stars",
+            Multimesh = mm, Name = "ParallaxStars",
             MaterialOverride = new StandardMaterial3D
             {
                 VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
-                AlbedoTexture = Puff, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, BlendMode = BaseMaterial3D.BlendModeEnum.Add,
+                AlbedoTexture = MapPieces.Glow, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, BlendMode = BaseMaterial3D.BlendModeEnum.Add, BillboardKeepScale = true,
             },
         });
     }
 
-    private static Texture2D? _puff;
-    /// <summary>A soft round spot, for nebula puffs and stars.</summary>
-    private static Texture2D Puff
+    // ---- The board (built once per campaign) --------------------------------------------------------------------------
+
+    /// <summary>Each connected run of nebula sectors is one cloud: a main colour and an accent far enough from it (the
+    /// mockup's nebulaRegions and nebulaAccent, with its random numbers).</summary>
+    private Dictionary<(int, int), (Color Main, Color Accent)> NebulaRegions()
     {
-        get
+        var tints = Palette.Select(h => new Color(h)).ToList();
+        var region = new Dictionary<(int, int), (Color, Color)>();
+        var R = new Mulberry32(97);
+        foreach (Sector h in _c.S.Sectors)
         {
-            if (_puff != null) return _puff;
-            var g = new Gradient();
-            g.SetColor(0, new Color(1, 1, 1, 1));
-            g.SetColor(1, new Color(1, 1, 1, 0));
-            _puff = new GradientTexture2D { Gradient = g, Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1, 0.5f), Width = 64, Height = 64 };
-            return _puff;
+            if (h.Terrain != "nebula" || region.ContainsKey((h.C, h.R))) continue;
+            Color main = tints[(int)Math.Floor(R.Next() * tints.Count)];
+            var far = tints.Where(t => Mathf.Sqrt((t.R - main.R) * (t.R - main.R) + (t.G - main.G) * (t.G - main.G) + (t.B - main.B) * (t.B - main.B)) > 0.28f).ToList();
+            Color accent = far[(int)Math.Floor(R.Next() * far.Count)];
+            var stack = new Stack<Sector>();
+            stack.Push(h);
+            region[(h.C, h.R)] = (main, accent);
+            while (stack.Count > 0)
+            {
+                Sector q = stack.Pop();
+                foreach (var (nc, nr) in HexGrid.Neighbours(q.C, q.R, _c.S.Cols, _c.S.Rows))
+                {
+                    Sector n = _c.Hex(nc, nr);
+                    if (n.Terrain == "nebula" && !region.ContainsKey((nc, nr))) { region[(nc, nr)] = (main, accent); stack.Push(n); }
+                }
+            }
+        }
+        return region;
+    }
+
+    private void BuildBoard()
+    {
+        var regions = NebulaRegions();
+        // dark glass hexes, each a faint wash of its holder's colour; ports brighter and warmer (owner, 2026-10-30: "tiles with
+        // planets or stations should be a different color")
+        var hex = new CylinderMesh { TopRadius = 0.95f, BottomRadius = 0.95f, Height = 0.12f, RadialSegments = 6, Rings = 1 };
+        var mm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, Mesh = hex, InstanceCount = _c.S.Sectors.Count };
+        var turn = new Basis(Vector3.Up, Mathf.Pi / 6);
+        var rocks = new List<Transform3D>();
+        for (int i = 0; i < _c.S.Sectors.Count; i++)
+        {
+            Sector h = _c.S.Sectors[i];
+            Vector3 p = HexPos(h.C, h.R);
+            mm.SetInstanceTransform(i, new Transform3D(turn, p + new Vector3(0, -0.06f, 0)));
+            Color col = new Color("#080c12").Lerp(FacColor(h.Owner), h.Owner == "neutral" ? 0.02f : 0.06f);
+            if (h.Terrain == "nebula") col = col.Lerp(regions[(h.C, h.R)].Main, 0.18f);
+            if (h.Terrain == "asteroids") col = col.Lerp(new Color("#2a241e"), 0.4f);
+            if (h.Terrain == "star") col = new Color("#2a1d0c");
+            if (h.IsPort) col = new Color("#1c2430").Lerp(FacColor(h.Owner), h.Owner == "neutral" ? 0.25f : 0.42f).Lerp(new Color("#ffd9a0"), 0.12f);
+            mm.SetInstanceColor(i, new Color(col, 0.5f));
+
+            if (h.Terrain == "star")
+            {
+                var sun = new MeshInstance3D { Mesh = new SphereMesh { Radius = 0.42f, Height = 0.84f, RadialSegments = 24, Rings = 12 }, Position = p + new Vector3(0, 0.5f, 0),
+                    MaterialOverride = MapPieces.Unlit(new Color("#ffd27a")) };
+                _board.AddChild(sun);
+                var halo = MapPieces.Halo(new Color("#ffb547"), 1.6f);
+                halo.Position = sun.Position;
+                _board.AddChild(halo);
+                _board.AddChild(new OmniLight3D { Position = sun.Position, LightColor = new Color("#ffc26a"), OmniRange = 3.5f, LightEnergy = 1.2f });
+            }
+            if (h.Terrain == "nebula")
+            {
+                // a cloud in depth: puffs at several heights, big and dim low, smaller and brighter on top, the accent rising
+                var R = new Mulberry32((uint)(h.C * 17 + h.R * 5));
+                var (main, accent) = regions[(h.C, h.R)];
+                for (int k = 0; k < 14; k++)
+                {
+                    double y = 0.12 + R.Next() * 0.85, r = 0.32 + R.Next() * 0.32 - y * 0.12, v = 0.75 + R.Next() * 0.4;
+                    double w = Math.Min(1, Math.Max(0, (y - 0.3) / 0.6) * (0.35 + 0.9 * R.Next()));
+                    Color tint = main.Lerp(accent, (float)w);
+                    double px = p.X + (R.Next() - 0.5) * 1.3, pz = p.Z + (R.Next() - 0.5) * 1.3, seed = R.Next() * 100, a = 0.5 + R.Next() * 0.3;
+                    // the palette is sRGB, as the mockup's shader reads it; the puff shader writes linear light
+                    Color lin = new Color(tint.R * (float)v, tint.G * (float)v, tint.B * (float)v).SrgbToLinear();
+                    _puffList.Add((new Vector3((float)px, (float)y, (float)pz), new Vector2((float)r, (float)r * 0.8f), (float)seed, new Color(lin, (float)a)));
+                }
+            }
+            if (h.Terrain == "asteroids")
+            {
+                // a belt: rocks along a curved band across the hex, the big ones in the middle of the band
+                var R = new Mulberry32((uint)(h.C * 31 + h.R));
+                double a0 = R.Next() * Math.PI, rad = 0.9 + R.Next() * 0.5;
+                double cx = p.X - Math.Cos(a0) * rad, cz = p.Z - Math.Sin(a0) * rad;
+                for (int k = 0; k < 34; k++)
+                {
+                    double u = (R.Next() - 0.5) * 1.1, off = (R.Next() - 0.5) * 0.28, rr = rad + off;
+                    double size = 0.025 + R.Next() * (0.07 - Math.Abs(off) * 0.15);
+                    var at = new Vector3((float)(cx + Math.Cos(a0 + u) * rr), (float)(0.1 + R.Next() * 0.18), (float)(cz + Math.Sin(a0 + u) * rr));
+                    var rot = new Basis(new Vector3((float)R.Next() + 0.01f, (float)R.Next(), (float)R.Next()).Normalized(), (float)R.Next() * 3);
+                    if (new Vector2(at.X - p.X, at.Z - p.Z).Length() > 0.85f) continue;
+                    rocks.Add(new Transform3D(rot.Scaled(Vector3.One * (float)size), at));
+                }
+            }
+        }
+        _board.AddChild(new MultiMeshInstance3D
+        {
+            Multimesh = mm, Name = "Glass",
+            MaterialOverride = new StandardMaterial3D
+            {
+                VertexColorUseAsAlbedo = true, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, Roughness = 0.22f, Metallic = 0.35f,
+                DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled,
+            },
+        });
+        var rm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = new SphereMesh { Radius = 1, Height = 1.6f, RadialSegments = 6, Rings = 3 }, InstanceCount = rocks.Count };
+        for (int i = 0; i < rocks.Count; i++) rm.SetInstanceTransform(i, rocks[i]);
+        _board.AddChild(new MultiMeshInstance3D { Multimesh = rm, MaterialOverride = MapPieces.Rock, Name = "Rocks" });
+        BuildBorders();
+        BuildPuffs();
+        BuildPorts();
+    }
+
+    // hex borders: a faint line on every edge in its holder's colour, and a bright ribbon inside each hex along every edge
+    // where territory changes, so a border shows both holders' colours (the mockup's hexBorders)
+    private void BuildBorders()
+    {
+        var grid = new SurfaceTool();
+        grid.Begin(Mesh.PrimitiveType.Lines);
+        var rib = new SurfaceTool();
+        rib.Begin(Mesh.PrimitiveType.Triangles);
+        bool any = false;
+        foreach (Sector h in _c.S.Sectors)
+        {
+            Vector3 p = HexPos(h.C, h.R);
+            Color col = FacColor(h.Owner);
+            Vector3 C(int i, float r, float y) { float a = Mathf.Pi / 3 * i; return new Vector3(p.X + r * Mathf.Cos(a), y, p.Z + r * Mathf.Sin(a)); }
+            for (int k = 0; k < 6; k++)
+            {
+                Color gc = col * (h.Owner == "neutral" ? 0.35f : 0.5f);
+                gc.A = 0.8f;
+                grid.SetColor(gc); grid.AddVertex(C(k, 0.98f, 0.01f));
+                grid.SetColor(gc); grid.AddVertex(C(k + 1, 0.98f, 0.01f));
+                float dir = Mathf.Pi / 3 * k + Mathf.Pi / 6;
+                var (nc, nr) = HexGrid.At(p.X + Mathf.Sqrt(3) * Mathf.Cos(dir), p.Z + Mathf.Sqrt(3) * Mathf.Sin(dir));
+                bool same = _c.OnMap(nc, nr) && _c.Hex(nc, nr).Owner == h.Owner;
+                if (h.Owner == "neutral" || same) continue;
+                Color rc = new(col, 0.9f);
+                Vector3 a = C(k, 0.98f, 0.02f), b = C(k + 1, 0.98f, 0.02f), ai = C(k, 0.86f, 0.02f), bi = C(k + 1, 0.86f, 0.02f);
+                foreach (Vector3 v in new[] { a, b, bi, a, bi, ai }) { rib.SetColor(rc); rib.AddVertex(v); }
+                any = true;
+            }
+        }
+        var lm = new StandardMaterial3D { VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha };
+        _board.AddChild(new MeshInstance3D { Mesh = grid.Commit(), MaterialOverride = lm, Name = "Grid" });
+        if (!any) return;
+        var rmat = new StandardMaterial3D
+        {
+            VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            CullMode = BaseMaterial3D.CullModeEnum.Disabled,
+        };
+        _board.AddChild(new MeshInstance3D { Mesh = rib.Commit(), MaterialOverride = rmat, Name = "Borders" });
+    }
+
+    private void BuildPuffs()
+    {
+        var mm = new MultiMesh
+        {
+            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, UseCustomData = true,
+            Mesh = new QuadMesh { Size = new Vector2(2, 2) }, InstanceCount = _puffList.Count,
+        };
+        _puffs = new MultiMeshInstance3D
+        {
+            Multimesh = mm, Name = "Nebulae", MaterialOverride = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/puff.gdshader") },
+            // the billboards are moved in the shader: keep the whole board's box so a cloud is never culled
+            CustomAabb = new Aabb(new Vector3(-2, -1, -2), new Vector3(MapW + 4, 3, MapH + 4)),
+        };
+        _board.AddChild(_puffs);
+        _puffEye = new Vector3(1e9f, 0, 0);
+    }
+
+    // the puffs drawn back to front from wherever the camera is (the mockup's sortPuffs)
+    private void SortPuffs()
+    {
+        if (_puffList.Count == 0) return;
+        Vector3 eye = _cam.GlobalPosition;
+        if (eye.DistanceSquaredTo(_puffEye) < 0.01f) return;
+        _puffEye = eye;
+        var order = Enumerable.Range(0, _puffList.Count).OrderByDescending(i => _puffList[i].Pos.DistanceSquaredTo(eye)).ToList();
+        MultiMesh mm = _puffs.Multimesh;
+        for (int o = 0; o < order.Count; o++)
+        {
+            var q = _puffList[order[o]];
+            mm.SetInstanceTransform(o, new Transform3D(Basis.Identity, q.Pos));
+            mm.SetInstanceColor(o, q.Tint);
+            mm.SetInstanceCustomData(o, new Color(q.Size.X, q.Size.Y, q.Seed, 0));
         }
     }
 
-    /// <summary>One material of every kind the map draws (tiles, lines, puffs and stars, rocks, metal, gold, flags), for the
-    /// loading screen to compile before the map first shows (Prewarm).</summary>
-    public static IEnumerable<Material> MaterialKinds()
+    // planets and stations, built once: they never move (they turn slowly)
+    private void BuildPorts()
     {
-        yield return new StandardMaterial3D { VertexColorUseAsAlbedo = true, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, CullMode = BaseMaterial3D.CullModeEnum.Disabled, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
-        yield return new StandardMaterial3D { AlbedoTexture = Puff, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-            BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled, BlendMode = BaseMaterial3D.BlendModeEnum.Add, DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled };
-        yield return new StandardMaterial3D { VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
-            AlbedoTexture = Puff, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, BlendMode = BaseMaterial3D.BlendModeEnum.Add };
-        yield return new StandardMaterial3D { AlbedoColor = Colors.White, CullMode = BaseMaterial3D.CullModeEnum.Disabled, Roughness = 0.8f, EmissionEnabled = true, Emission = Colors.Gray };
-        yield return new StandardMaterial3D { AlbedoColor = Colors.White, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha };
-        yield return Rock;
-        yield return Metal;
-        yield return Gold;
+        foreach (Sector h in _c.S.Sectors.Where(s => s.IsPort))
+        {
+            string fac = h.Owner;
+            Color col = FacColor(fac);
+            var g = new Node3D { Name = h.PortName ?? "Port" };
+            if (h.Planet != null)
+            {
+                int hue = PlanetHue.TryGetValue(h.Planet, out int hh) ? hh : 200;
+                Node3D pl = MapPieces.PlanetPiece(hue, col, 1.15f);
+                g.AddChild(pl);
+                _spin.Add(pl.GetNode<Node3D>("Ball"));
+            }
+            else
+            {
+                g.AddChild(MapPieces.FlightStand(col, 0.5f * 1.05f, 1.05f, false));
+                Node3D st = MapPieces.Station(fac, col);
+                st.Scale = Vector3.One * 1.05f;
+                st.Position = new Vector3(0, 0.06f + 0.58f * 1.05f, 0);
+                g.AddChild(st);
+                _spin.Add(st);
+            }
+            Label3D tag = MapPieces.Label(h.PortName!, col.Lightened(0.15f));
+            tag.Position = new Vector3(0, -0.05f, 0.1f);
+            g.AddChild(tag);
+            _labels.Add(tag);
+            g.SetMeta("hex", new Vector2I(h.C, h.R));
+            g.Position = HexPos(h.C, h.R);
+            _board.AddChild(g);
+        }
     }
 
-    private static readonly StandardMaterial3D Rock = new() { AlbedoColor = new Color(0.42f, 0.38f, 0.34f), Roughness = 0.95f };
-    private static readonly StandardMaterial3D Metal = new() { AlbedoColor = new Color(0.62f, 0.66f, 0.72f), Metallic = 0.8f, Roughness = 0.3f };
-    private static readonly StandardMaterial3D Gold = new() { AlbedoColor = new Color(0.95f, 0.72f, 0.25f), Metallic = 0.9f, Roughness = 0.25f, EmissionEnabled = true, Emission = new Color(0.35f, 0.22f, 0.02f) };
-
-    private static Vector3 Corner(int i, float k) { float a = Mathf.Pi / 3 * i; return new Vector3(Mathf.Cos(a) * k, 0, Mathf.Sin(a) * k); }
-
-    // the sector across corner i's edge (between corners i and i + 1) of a flat-topped hex
-    private static (int, int) NeighbourAcross(int c, int r, int i)
-    {
-        Vector3 mid = HexPos(c, r) + (Corner(i, 1) + Corner(i + 1, 1)) * 0.5f * 2;
-        return HexGrid.At(mid.X, mid.Z);
-    }
-
-    private MeshInstance3D Ring(float r, float w, Color col)
-    {
-        var t = new TorusMesh { InnerRadius = r - w, OuterRadius = r, Rings = 6, RingSegments = 6 };
-        return new MeshInstance3D { Mesh = t, Scale = new Vector3(1, 0.05f, 1),
-            MaterialOverride = new StandardMaterial3D { AlbedoColor = col, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha } };
-    }
-
-    /// <summary>A flight stand: a base disc and a pole (gold for your fleet).</summary>
-    private static Node3D Stand(float height, bool gold)
-    {
-        var n = new Node3D();
-        Material m = gold ? Gold : Metal;
-        n.AddChild(new MeshInstance3D { Mesh = new CylinderMesh { TopRadius = 0.16f, BottomRadius = 0.19f, Height = 0.04f }, Position = new Vector3(0, 0.02f, 0), MaterialOverride = m });
-        n.AddChild(new MeshInstance3D { Mesh = new CylinderMesh { TopRadius = 0.012f, BottomRadius = 0.012f, Height = height }, Position = new Vector3(0, height / 2, 0), MaterialOverride = m });
-        return n;
-    }
-
-    private Label3D AddLabel(string text, Vector3 at, Color col, Node3D? parent = null, int size = 40)
-    {
-        var l = new Label3D { Text = text, Position = at, Modulate = col, FontSize = size, PixelSize = 0.004f, Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-            OutlineSize = 10, OutlineModulate = new Color(0, 0, 0, 0.85f), NoDepthTest = false };
-        (parent ?? this).AddChild(l);
-        return l;
-    }
-
-    // ---- The pieces (rebuilt after every move) --------------------------------------------------------------------------
+    // ---- The pieces (rebuilt after every move) ------------------------------------------------------------------------
 
     private static readonly Dictionary<string, PackedScene?> Models = new();
 
-    /// <summary>The model a faction's fleet stands as: its approved ship, or a stand-in wedge.</summary>
-    private Node3D ShipPiece(string fac, int tier, float size)
+    /// <summary>A ship's model on the map: the hull's own approved glb (its schematic names it), or the faction's by tier
+    /// for the Concord and the Krai, a stand-in wedge for the rest. Bow toward +z, <paramref name="length"/> units long.</summary>
+    private Node3D ShipModel(string fac, string? hullId, int tier, float length)
     {
-        string? path = fac switch
+        string? path = null;
+        if (hullId != null && _c.Data.Hulls.TryGetValue(hullId, out Hull? hull) && hull.Schematic != "") path = $"res://assets/ships/{hull.Schematic}.glb";
+        path ??= fac switch
         {
             "concord" => tier >= 3 ? "res://assets/ships/concord/albatross.glb" : "res://assets/ships/concord/petrel_level.glb",
-            "krai" => tier >= 3 ? "res://assets/ships/krai/cruiser.glb" : "res://assets/ships/krai/frigate.glb",
+            "krai" => $"res://assets/ships/krai/{(tier <= 1 ? "corvette" : tier == 2 ? "frigate" : "cruiser")}.glb",
             _ => null,
         };
-        Node3D model;
+        var holder = new Node3D { Name = "Model" };
         if (path != null)
         {
             if (!Models.TryGetValue(path, out PackedScene? ps)) Models[path] = ps = ResourceLoader.Exists(path) ? GD.Load<PackedScene>(path) : null;
-            model = ps?.Instantiate<Node3D>() ?? Wedge(fac);
             if (ps != null)
             {
+                Node3D model = ps.Instantiate<Node3D>();
                 Aabb box = Bounds(model);
-                float len = Math.Max(box.Size.Z, Math.Max(box.Size.X, 0.01f));
-                model.Scale = Vector3.One * (0.62f * size / len);
+                float len = Math.Max(box.Size.Z, 0.01f);
+                model.Scale = Vector3.One * (length / len);
                 // the glb's bow is -z; a standee's bow is +z (the map's headings)
                 model.RotationDegrees = new Vector3(0, 180, 0);
+                try { ShipSkin.Apply(model, path["res://assets/ships/".Length..], model.Scale.X); }
+                catch (InvalidOperationException) { /* a ship the export manifest does not dress keeps its own materials */ }
+                holder.AddChild(model);
+                return holder;
             }
         }
-        else model = Wedge(fac);
-        var holder = new Node3D();
-        holder.AddChild(model);
+        holder.AddChild(Wedge(fac, length));
         return holder;
     }
 
@@ -376,14 +497,15 @@ public sealed partial class CampaignMap : Node3D
         return box;
     }
 
-    private Node3D Wedge(string fac)
+    private static MeshInstance3D Wedge(string fac, float length)
     {
         var st = new SurfaceTool();
         st.Begin(Mesh.PrimitiveType.Triangles);
-        Vector3 n = new(0, 0, 0.3f), l = new(-0.16f, 0, -0.22f), r = new(0.16f, 0, -0.22f), t = new(0, 0.07f, -0.1f);
+        float k = length / 0.52f;
+        Vector3 n = new(0, 0, 0.3f * k), l = new(-0.16f * k, 0, -0.22f * k), r = new(0.16f * k, 0, -0.22f * k), t = new(0, 0.07f * k, -0.1f * k);
         foreach (var tri in new[] { (n, l, t), (n, t, r), (l, r, t), (n, r, l) }) { st.AddVertex(tri.Item1); st.AddVertex(tri.Item2); st.AddVertex(tri.Item3); }
         st.GenerateNormals();
-        return new MeshInstance3D { Mesh = st.Commit(), MaterialOverride = new StandardMaterial3D { AlbedoColor = FacColor(fac).Lightened(0.15f), Metallic = 0.5f, Roughness = 0.4f } };
+        return new MeshInstance3D { Mesh = st.Commit(), MaterialOverride = new StandardMaterial3D { AlbedoColor = MapPieces.HullTint(fac), Metallic = 0.5f, Roughness = 0.4f } };
     }
 
     private int PiecesIn(int c, int r) =>
@@ -397,141 +519,238 @@ public sealed partial class CampaignMap : Node3D
         if (PiecesIn(c, r) <= 1) return p;
         return p + role switch
         {
-            "fleet" => new Vector3(-0.45f, 0, 0.45f), "ship" => new Vector3(0.45f, 0, 0.42f), "freighter" => new Vector3(0.66f, 0, -0.12f),
-            "mission" => new Vector3(-0.5f, 0, -0.28f), _ => Vector3.Zero,
+            "fleet" => new Vector3(-0.45f, 0, 0.45f), "place" => new Vector3(0.1f, 0, -0.35f), "ship" => new Vector3(0.45f, 0, 0.42f),
+            "freighter" => new Vector3(0.66f, 0, -0.12f), "mission" => new Vector3(-0.5f, 0, -0.28f), _ => Vector3.Zero,
         };
     }
 
-    /// <summary>Redraws every piece from the campaign; moves glide the fleets that moved from where they were.</summary>
+    /// <summary>A fleet's strength, 1 to 5 (the mockup's fleetStrength and groupStrength).</summary>
+    private int FleetStrength() => Math.Clamp((int)Math.Round(_c.S.Fleet.Sum(s => _c.Data.Hulls[s.Hull].Tier) / 1.5, MidpointRounding.AwayFromZero), 1, 5);
+    private static int GroupStrength(FactionFleet g) => Math.Clamp(g.Size + (g.Commander ? 2 : 0), 1, 5);
+
+    private Piece ShipStandee(string fac, string label, float size, string? hullId, int tier, float dir, int strength, bool gold)
+    {
+        var g = new Node3D { Name = label };
+        Color col = FacColor(fac);
+        g.AddChild(MapPieces.FlightStand(col, 0.42f * size, size, gold));
+        Node3D model = ShipModel(fac, hullId, tier, 0.9f * size);
+        model.Position = new Vector3(0, 0.06f + 0.46f * size, 0);
+        model.Rotation = new Vector3(0, dir, 0);
+        g.AddChild(model);
+        Node3D flag = MapPieces.StrengthFlag(col, strength, size, label.Length * 1.7f);
+        flag.Position = new Vector3(-0.3f * size, 0, 0.08f * size);
+        g.AddChild(flag);
+        if (gold)
+        {
+            // a lamp ring round the player's own stand
+            g.AddChild(new MeshInstance3D { Mesh = new TorusMesh { InnerRadius = 0.5f, OuterRadius = 0.6f, Rings = 32, RingSegments = 4 }, Position = new Vector3(0, 0.07f, 0),
+                Scale = new Vector3(1, 0.04f, 1), MaterialOverride = MapPieces.Unlit(new Color("#ffc94a")) });
+        }
+        Label3D tag = MapPieces.Label(label, col.Lightened(0.15f));
+        tag.Position = new Vector3(0, -0.05f, 0.1f);
+        g.AddChild(tag);
+        _labels.Add(tag);
+        return new Piece { Node = g, Model = model, EndDir = dir, Lift = 0.06f + 0.46f * size };
+    }
+
+    /// <summary>Redraws every piece from the campaign. The fleets that moved (and the player's, with ownSteps) fly their
+    /// moves sector by sector from where they stood.</summary>
     public void Rebuild(IEnumerable<FleetMove>? moves = null, List<(int C, int R)>? ownSteps = null)
     {
-        var was = _fleetNodes.ToDictionary(kv => kv.Key, kv => kv.Value.Position);
-        foreach (Node n in _pieces.GetChildren()) n.QueueFree();
-        foreach (Node n in _routes.GetChildren()) n.QueueFree();
-        _fleetNodes.Clear();
-        _banners.Clear();
+        var was = _fleets.ToDictionary(kv => kv.Key, kv => kv.Value.Node.Position);
+        foreach (Node n in _pieces.GetChildren()) { _pieces.RemoveChild(n); n.QueueFree(); }
+        foreach (Node n in _routes.GetChildren()) { _routes.RemoveChild(n); n.QueueFree(); }
+        _fleets.Clear();
+        _labels.RemoveAll(l => !IsInstanceValid(l) || !l.IsInsideTree());
 
-        // your fleet: the flagship's model on a gold stand
-        var own = new Node3D { Name = "OwnFleet" };
-        own.AddChild(Stand(0.42f, true));
-        Hull flag = _c.Data.Hulls[_c.S.Fleet[0].Hull];
-        Node3D ship = ShipPiece(_c.S.Side, flag.Tier, 1.1f);
-        ship.Position = new Vector3(0, 0.46f, 0);
-        ship.Rotation = new Vector3(0, (float)_c.S.Dir, 0);
-        own.AddChild(ship);
-        own.AddChild(Flag(_c.S.Side, _c.S.Fleet.Count, new Color(1, 0.85f, 0.35f)));
-        own.Position = Slot("fleet", _c.S.AtC, _c.S.AtR);
-        _pieces.AddChild(own);
-        _own = own;
-        _fleetNodes["__own"] = own;
+        // the player's fleet: the flagship's own hull on a gold stand, with the fleet's strength
+        CampShip flagship = _c.S.Fleet[0];
+        Piece own = ShipStandee(_c.S.Side, flagship.Name, 1.15f, flagship.Hull, _c.Data.Hulls[flagship.Hull].Tier, (float)_c.S.Dir, FleetStrength(), true);
+        own.Node.Position = Slot("fleet", _c.S.AtC, _c.S.AtR);
+        _pieces.AddChild(own.Node);
+        _fleets["__own"] = own;
 
         foreach (FactionFleet g in _c.S.Groups)
         {
-            var n = new Node3D { Name = g.Name };
-            n.AddChild(Stand(0.36f, false));
-            Node3D m = ShipPiece(g.Fac, g.Commander ? 3 : g.Size >= 3 ? 3 : 2, 0.85f);
-            m.Position = new Vector3(0, 0.4f, 0);
-            m.Rotation = new Vector3(0, (float)g.Dir, 0);
-            n.AddChild(m);
-            n.AddChild(Flag(g.Fac, g.Size, FacColor(g.Fac)));
-            n.Position = Slot("ship", g.C, g.R);
-            _pieces.AddChild(n);
-            _fleetNodes[g.Name] = n;
+            Piece p = ShipStandee(g.Fac, g.Name, 1, null, Math.Clamp(g.Size, 1, 3), (float)g.Dir, GroupStrength(g), false);
+            p.Node.Position = Slot("ship", g.C, g.R);
+            _pieces.AddChild(p.Node);
+            _fleets[g.Name] = p;
         }
 
-        // freighters and their routes: your own, and your allies' routes (never a rival's)
+        // the ports move to their slot when a sector fills, and back to the centre when it empties
+        foreach (Node n in _board.GetChildren())
+            if (n is Node3D port && port.HasMeta("hex"))
+            {
+                Vector2I hx = port.GetMeta("hex").AsVector2I();
+                port.Position = Slot("place", hx.X, hx.Y);
+            }
+
+        // freighters and their routes: your own freighters on their routes, and your allies' routes (dimmer), never a rival's
+        int fi = 0;
         foreach (Freighter f in _c.S.Freighters)
         {
-            string? side = _c.SideOf(f.Fac);
-            if (side == null) continue;
-            var pts = f.Route.Select(k => HexPos(k[0], k[1]) + Vector3.Up * 0.05f).ToList();
-            _routes.AddChild(Dashed(pts, new Color(FacColor(f.Fac).Lightened(0.3f), side == "own" ? 0.85f : 0.45f)));
-            if (side != "own") continue;
-            var fr = new Node3D { Name = "Freighter " + f.Name };
-            fr.AddChild(Stand(0.22f, false));
-            var hull = new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(0.1f, 0.08f, 0.3f) }, Position = new Vector3(0, 0.27f, 0),
-                Rotation = new Vector3(0, (float)f.Dir, 0), MaterialOverride = new StandardMaterial3D { AlbedoColor = FacColor(f.Fac).Lightened(0.45f), Roughness = 0.5f } };
-            fr.AddChild(hull);
-            fr.Position = Slot("freighter", f.Route[f.I][0], f.Route[f.I][1]);
-            _pieces.AddChild(fr);
+            int n = fi++;
+            string? seen = _c.SideOf(f.Fac);
+            if (seen == null) continue;
+            var lift = new Vector3(((n % 3) - 1) * 0.05f, 0.035f, ((n % 3) - 1) * 0.05f);
+            var pts = f.Route.Select(k => HexPos(k[0], k[1]) + lift).ToList();
+            _routes.AddChild(Dashed(pts, FacColor(f.Fac), seen == "own" ? 0.95f : 0.5f, 0.22f, 0.14f));
+            if (seen != "own") continue;
+            var g = new Node3D { Name = "Freighter " + f.Name };
+            g.AddChild(MapPieces.FlightStand(FacColor(f.Fac), 0.2f, 0.75f, false));
+            Node3D model = MapPieces.Freighter(f.Fac, FacColor(f.Fac));
+            model.Scale = Vector3.One * 1.5f;
+            var mh = new Node3D { Position = new Vector3(0, 0.06f + 0.26f, 0), Rotation = new Vector3(0, (float)f.Dir, 0) };
+            mh.AddChild(model);
+            g.AddChild(mh);
+            Label3D tag = MapPieces.Label("Freighter " + f.Name, FacColor(f.Fac).Lightened(0.15f));
+            tag.Position = new Vector3(0, -0.05f, 0.1f);
+            g.AddChild(tag);
+            _labels.Add(tag);
+            g.Position = Slot("freighter", f.Route[f.I][0], f.Route[f.I][1]);
+            _pieces.AddChild(g);
+            _fleets["freighter:" + f.Name] = new Piece { Node = g, Model = mh, EndDir = (float)f.Dir, Lift = 0.32f };
         }
 
-        // missions: a banner on a pole in its sector, story blue, accepted green, on offer amber
+        // missions: a standee in its sector, its banner amber on offer, green once accepted, blue for a story mission
         foreach (Offer m in _c.S.Missions)
         {
             MissionScript def = _c.ScriptOf(m);
             Color ink = def.Story ? new Color("#8fd0ff") : _c.S.Active.Contains(m.Id) ? new Color("#7dffa0") : new Color("#ffb547");
-            var b = new Node3D { Name = "Mission " + m.Id };
-            b.AddChild(new MeshInstance3D { Mesh = new CylinderMesh { TopRadius = 0.012f, BottomRadius = 0.012f, Height = 0.75f }, Position = new Vector3(0, 0.375f, 0), MaterialOverride = Metal });
-            var cloth = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(0.3f, 0.22f), CenterOffset = new Vector3(0.15f, 0, 0) }, Position = new Vector3(0.012f, 0.62f, 0),
-                MaterialOverride = new StandardMaterial3D { AlbedoColor = ink, CullMode = BaseMaterial3D.CullModeEnum.Disabled, Roughness = 0.8f, EmissionEnabled = true, Emission = ink * 0.25f } };
-            b.AddChild(cloth);
-            _banners.Add((cloth, m.Id * 1.3f));
-            AddLabel(def.Glyph, new Vector3(0.15f, 0.62f, 0.01f), new Color(0.05f, 0.05f, 0.08f), cloth, 64).Billboard = BaseMaterial3D.BillboardModeEnum.Disabled;
-            b.Position = Slot("mission", m.C, m.R);
-            _pieces.AddChild(b);
+            Node3D s = MapPieces.MissionStandee(def.Glyph, ink, m.Id * 1.7f);
+            s.Position = Slot("mission", m.C, m.R);
+            _pieces.AddChild(s);
         }
 
-        // glide what moved from where it stood
+        // fly what moved from where it stood, sector by sector
         if (moves != null)
             foreach (FleetMove mv in moves)
-                if (_fleetNodes.TryGetValue(mv.Name, out Node3D? n) && was.TryGetValue(mv.Name, out Vector3 from)) { _glides[mv.Name] = (from, n.Position, 0); n.Position = from; }
-        if (ownSteps is { Count: > 1 } && was.TryGetValue("__own", out Vector3 of)) { _glides["__own"] = (of, own.Position, 0); own.Position = of; }
+                if (_fleets.TryGetValue(mv.Name, out Piece? p) && was.TryGetValue(mv.Name, out Vector3 from))
+                    Fly(p, mv.Steps, from, Slot("ship", mv.Steps[^1].C, mv.Steps[^1].R));
+        foreach (var (k, p) in _fleets.Where(kv => kv.Key.StartsWith("freighter:")))
+            if (was.TryGetValue(k, out Vector3 from) && from.DistanceSquaredTo(p.Node.Position) > 1e-4f) { p.Pts = new() { from, p.Node.Position }; p.T = 0; p.Node.Position = from; }
+        if (ownSteps is { Count: > 1 } && was.TryGetValue("__own", out Vector3 of))
+            Fly(own, ownSteps, of, Slot("fleet", ownSteps[^1].C, ownSteps[^1].R));
     }
 
-    /// <summary>A strength flag beside a stand: the number of ships on a small banner in the faction's colour.</summary>
-    private Node3D Flag(string fac, int n, Color col)
+    private static void Fly(Piece p, List<(int C, int R)> steps, Vector3 from, Vector3 to)
     {
-        var f = new Node3D { Position = new Vector3(0.22f, 0, 0.05f) };
-        f.AddChild(new MeshInstance3D { Mesh = new CylinderMesh { TopRadius = 0.008f, BottomRadius = 0.008f, Height = 0.5f }, Position = new Vector3(0, 0.25f, 0), MaterialOverride = Metal });
-        var cloth = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(0.2f, 0.14f), CenterOffset = new Vector3(0.1f, 0, 0) }, Position = new Vector3(0.008f, 0.42f, 0),
-            MaterialOverride = new StandardMaterial3D { AlbedoColor = col, CullMode = BaseMaterial3D.CullModeEnum.Disabled, Roughness = 0.8f } };
-        f.AddChild(cloth);
-        _banners.Add((cloth, n * 0.7f + fac.Length));
-        var l = AddLabel(n.ToString(), new Vector3(0.1f, 0, 0.012f), Colors.White, cloth, 48);
-        l.Billboard = BaseMaterial3D.BillboardModeEnum.Disabled;
-        return f;
+        var pts = new List<Vector3> { from };
+        for (int i = 1; i < steps.Count - 1; i++) pts.Add(HexPos(steps[i].C, steps[i].R));
+        pts.Add(to);
+        p.Pts = pts;
+        p.T = 0;
+        p.Node.Position = from;
     }
 
-    /// <summary>A dashed line through points on the map.</summary>
-    private static MeshInstance3D Dashed(List<Vector3> pts, Color col, float dash = 0.16f, float gap = 0.12f)
+    // the flights: each piece along its points, turning to face each leg, lifted off its stand while it flies (the
+    // mockup's stepFlight and stepFleetGlides)
+    private void StepFlights(float dt)
+    {
+        foreach (Piece p in _fleets.Values)
+        {
+            if (p.Pts is not { } pts || !IsInstanceValid(p.Node)) continue;
+            int legs = pts.Count - 1;
+            p.T = Math.Min(legs, p.T + dt * FlightSectorsS);
+            int i = Math.Min(legs - 1, (int)p.T);
+            float k = p.T - i;
+            Vector3 a = pts[i], b = pts[i + 1];
+            float e = legs == 1 ? k * k * (3 - 2 * k) : k;
+            p.Node.Position = a.Lerp(b, e);
+            if (p.Model != null)
+            {
+                if (a.DistanceSquaredTo(b) > 1e-6f) p.Model.Rotation = new Vector3(0, Mathf.Atan2(b.X - a.X, b.Z - a.Z), 0);
+                p.Model.Position = new Vector3(0, p.Lift + Mathf.Sin(Mathf.Pi * Math.Min(1, p.T / legs)) * 0.35f, 0);
+            }
+            if (p.T >= legs)
+            {
+                p.Node.Position = pts[^1];
+                if (p.Model != null) { p.Model.Rotation = new Vector3(0, p.EndDir, 0); p.Model.Position = new Vector3(0, p.Lift, 0); }
+                p.Pts = null;
+            }
+        }
+    }
+
+    /// <summary>A dashed line through points on the map, its dashes running on across the corners.</summary>
+    private static MeshInstance3D Dashed(List<Vector3> pts, Color col, float alpha, float dash, float gap)
     {
         var st = new SurfaceTool();
         st.Begin(Mesh.PrimitiveType.Lines);
+        float run = 0, period = dash + gap;
         for (int i = 0; i + 1 < pts.Count; i++)
         {
             Vector3 a = pts[i], b = pts[i + 1];
             float len = a.DistanceTo(b);
-            for (float t = 0; t < len; t += dash + gap)
+            if (len < 1e-5f) continue;
+            for (float t = 0; t < len;)
             {
-                st.AddVertex(a.Lerp(b, t / len));
-                st.AddVertex(a.Lerp(b, Math.Min(len, t + dash) / len));
+                float phase = (run + t) % period, step;
+                if (phase < dash)
+                {
+                    step = Math.Min(dash - phase, len - t);
+                    st.AddVertex(a.Lerp(b, t / len));
+                    st.AddVertex(a.Lerp(b, (t + step) / len));
+                }
+                else step = Math.Min(period - phase, len - t);
+                t += Math.Max(step, 1e-4f);
             }
+            run += len;
         }
         if (pts.Count < 2) { st.AddVertex(Vector3.Zero); st.AddVertex(Vector3.Zero); }
-        return new MeshInstance3D { Mesh = st.Commit(), MaterialOverride = new StandardMaterial3D { AlbedoColor = col, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha } };
+        return new MeshInstance3D { Mesh = st.Commit(), MaterialOverride = MapPieces.Unlit(col, alpha) };
     }
 
-    /// <summary>Shows a route by turn: this turn's leg bright, later legs fainter, a numbered badge where each turn ends.</summary>
+    /// <summary>Shows a route by turn as a ribbon through the sectors' centres with round joints and an arrowhead: this
+    /// turn's leg bright, later legs fainter, a numbered badge where each turn ends (the mockup's showPath).</summary>
     public void ShowRoute(Route? route)
     {
-        foreach (Node n in _path.GetChildren()) n.QueueFree();
-        if (route == null) return;
-        Vector3 start = HexPos(_c.S.AtC, _c.S.AtR) + Vector3.Up * 0.08f;
+        foreach (Node n in _path.GetChildren()) { _path.RemoveChild(n); n.QueueFree(); }
+        if (route == null || route.Path.Count == 0) return;
+        var mats = new[] { 0.95f, 0.55f, 0.35f }.Select(o => { StandardMaterial3D m = MapPieces.Unlit(new Color("#ffb547"), o); m.DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled; return m; }).ToArray();
+        var legOf = new List<int>();
+        var ends = new List<((int C, int R) At, int Leg)>();
         for (int i = 0; i < route.Legs.Count; i++)
         {
-            var leg = route.Legs[i];
-            if (leg.Count == 0) continue;
-            var pts = new List<Vector3> { start };
-            pts.AddRange(leg.Select(k => HexPos(k.C, k.R) + Vector3.Up * 0.08f));
-            float a = i == 0 ? 1f : Math.Max(0.3f, 0.7f - 0.15f * i);
-            _path.AddChild(Dashed(pts, new Color(1, 0.86f, 0.4f, a), 0.22f, 0.06f));
-            var badge = new Label3D { Text = (i + 1).ToString(), Position = pts[^1] + Vector3.Up * 0.35f, FontSize = 56, PixelSize = 0.004f,
-                Modulate = i == 0 ? new Color(1, 0.86f, 0.4f) : new Color(0.85f, 0.85f, 0.9f, a), OutlineSize = 12, OutlineModulate = new Color(0, 0, 0, 0.9f),
-                Billboard = BaseMaterial3D.BillboardModeEnum.Enabled };
-            _path.AddChild(badge);
-            start = pts[^1];
+            legOf.AddRange(Enumerable.Repeat(i, route.Legs[i].Count));
+            if (route.Legs[i].Count > 0) ends.Add((route.Legs[i][^1], i));
         }
+        var pts = new List<Vector3> { HexPos(_c.S.AtC, _c.S.AtR) };
+        pts.AddRange(route.Path.Select(k => HexPos(k.C, k.R)));
+        const float Y = 0.05f, W = 0.07f;
+        for (int i = 0; i < pts.Count - 1; i++)
+        {
+            Material mat = mats[Math.Min(2, legOf[i])];
+            Vector3 a = pts[i], b = pts[i + 1];
+            if (i == pts.Count - 2) b = b.Lerp(a, 0.32f / a.DistanceTo(b));
+            float len = a.DistanceTo(b);
+            var seg = new MeshInstance3D { Mesh = new PlaneMesh { Size = new Vector2(len, W * 2) }, MaterialOverride = mat, Position = new Vector3((a.X + b.X) / 2, Y, (a.Z + b.Z) / 2) };
+            seg.Rotation = new Vector3(0, -Mathf.Atan2(b.Z - a.Z, b.X - a.X), 0);
+            _path.AddChild(seg);
+            if (i > 0) _path.AddChild(new MeshInstance3D { Mesh = new CylinderMesh { TopRadius = W, BottomRadius = W, Height = 0.001f, RadialSegments = 16 }, MaterialOverride = mat, Position = new Vector3(a.X, Y, a.Z) });
+        }
+        if (route.Legs.Count > 1)
+            foreach (var (at, leg) in ends)
+            {
+                Node3D badge = MapPieces.TurnBadge(leg + 1, leg == 0);
+                badge.Position = HexPos(at.C, at.R) + new Vector3(0, 0.32f, 0);
+                _path.AddChild(badge);
+            }
+        Vector3 end = pts[^1], prev = pts[^2];
+        float ang = Mathf.Atan2(end.Z - prev.Z, end.X - prev.X);
+        var head = new SurfaceTool();
+        head.Begin(Mesh.PrimitiveType.Triangles);
+        for (int k = 0; k < 3; k++)
+        {
+            float a0 = Mathf.Tau / 3 * k;
+            head.AddVertex(Vector3.Zero);
+            head.AddVertex(new Vector3(Mathf.Cos(a0 + Mathf.Tau / 3), 0, Mathf.Sin(a0 + Mathf.Tau / 3)) * 0.32f);
+            head.AddVertex(new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)) * 0.32f);
+        }
+        var hm = new MeshInstance3D { Mesh = head.Commit(), MaterialOverride = mats[Math.Min(2, legOf[^1])],
+            Position = new Vector3(end.X - Mathf.Cos(ang) * 0.12f, Y, end.Z - Mathf.Sin(ang) * 0.12f) };
+        hm.Rotation = new Vector3(0, -ang, 0);
+        _path.AddChild(hm);
     }
 
     /// <summary>The screen point of a sector's centre (for the HUD to anchor to), or null behind the camera.</summary>
@@ -539,5 +758,26 @@ public sealed partial class CampaignMap : Node3D
     {
         Vector3 p = HexPos(c, r);
         return _cam.IsPositionBehind(p) ? null : _cam.UnprojectPosition(p);
+    }
+
+    /// <summary>One material of every kind the map draws, for the loading screen to compile before the map first shows (Prewarm).</summary>
+    public static IEnumerable<Material> MaterialKinds()
+    {
+        yield return new StandardMaterial3D { VertexColorUseAsAlbedo = true, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, Roughness = 0.22f, Metallic = 0.35f, DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled };
+        yield return new StandardMaterial3D { VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, CullMode = BaseMaterial3D.CullModeEnum.Disabled };
+        yield return new StandardMaterial3D
+        {
+            VertexColorUseAsAlbedo = true, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+            AlbedoTexture = MapPieces.Glow, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, BlendMode = BaseMaterial3D.BlendModeEnum.Add, BillboardKeepScale = true,
+        };
+        yield return new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/puff.gdshader") };
+        yield return new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/banner.gdshader") };
+        yield return MapPieces.Unlit(Colors.White, 0.5f);
+        yield return MapPieces.Post;
+        yield return MapPieces.Base;
+        yield return MapPieces.Gold;
+        yield return MapPieces.PoleMetal;
+        yield return MapPieces.Rock;
+        yield return new StandardMaterial3D { AlbedoTexture = MapPieces.Planet(200), Roughness = 0.9f };
     }
 }
