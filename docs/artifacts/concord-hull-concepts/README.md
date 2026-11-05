@@ -30,3 +30,6 @@
 - 2026-11-04, cloud session (Concord ships thread): version 17, version id `1793761943-c490`. The shared thruster's throat disc (`lib/ship-skin.js`) takes the bell's own sides and sits 6% of the bell's length inside it, so it never lies on another surface (owner, on the Krai bells: "look at all that zfighting").
 - 2026-11-04, cloud session (Concord ships thread): version 18, version id `1793785541-bfba`. The fracture cell rule moved into `CELL_GLSL` in `lib/ship-fx.js` (same math, used by the Krai page's parts too); the breakup checked in a render.
 - 2026-11-04, cloud session (Concord ships thread): version 20, version id `1793793068-4af4`, built on the live version 19 (the emblem session's B-E27 work, not yet in main, kept): the shared cut-face stations and the lip ring turned to the bell's corners. The repository's copy carries only this session's part until the emblem branch merges.
+- 2026-11-05, cloud session (Ssarith Hunt thread): no republish. The page's room code moved into
+  `docs/mockups/lib/ship-rooms.js` (inlined, `winRoom` now calls `roomBehind`) so the Hunt ships draw the same rooms;
+  its shots are unchanged to the pixel, so the published version still matches what the page shows.

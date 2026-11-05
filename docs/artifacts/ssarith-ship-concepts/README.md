@@ -81,3 +81,10 @@
   hull lights (floods, belly pair, position lights, beacons, strobes, windows), the Hunt emblem from
   `docs/mockups/lib/emblems.js` on the top armour (`tools/mockups/emblem_masks.mjs`), Look (Painted, PBR, Clay) and Light
   (Studio, Night) switches, strobes and beacons blinking. Page 9.8 MB. The method is the `ship-detailing` skill.
+- 2026-11-05, cloud session (owner: "we need some more lights pointed forward to paint more of the hull", "we need a
+  carrier", "we need to show interior of ships with windows", "we need damage systems", "I wish it were more green", "the
+  hull emission"): version 15, version id `1793901988-73f2`. The four picks and a new carrier (blockout 13: a flight
+  deck over a hangar block, launch bays forward and on the flanks, a keel blade), rows of floods aimed forward, the strips
+  and green lamps greener, rooms behind every window and hangars behind the bays (`docs/mockups/lib/ship-rooms.js`,
+  shared with the Concord page), battle damage on the shared `docs/mockups/lib/ship-fx.js` (Fire: Phaser, Torpedo,
+  Repair), the carrier on the board beside the picks. Greebles are kept out of every opening. Page 13.1 MB.
