@@ -34,7 +34,7 @@ account and every link here is updated.
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | **Retired** (2026-11-04: the emblem lives on the real model, mockup 6; owner: "Concord emblem on the hull - get rid of this"; off the tracker's mockup list, kept under Misc) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
-| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
+| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-05, v6) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | Drafted (2026-11-04, v2; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
 | 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
@@ -248,7 +248,10 @@ tally, every label and icon inside the tube; its titles and officer slots on ren
 pip; its column on a rendered plain gunmetal backing plate, and every metal skin's expanded panels on their own backing
 (the Krai's blackened steel); the rule in CLAUDE.md section 7. Then "this text is hard to read" (a key's name on hover,
 dark letters on the lit tube) and "remove underline" (the title placard's bone groove): version 78 (Krai v17, Ssarith
-v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove. Then, of an
+v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove. Then, of the console's
+Albatross: "looks like the albatros is behind a version, please update ships to latest": version 82 (Krai v21, Ssarith
+v6), the ships are the exported glbs the game flies, the Krai's as the Krai line (their hull paint still the stand-in:
+`ship-models-engine` 2.5). Then, of an
 expanded panel: "background should wrap panel properly", "when expanded": version 79 (Krai v18, Ssarith v5), the backing
 clipped to the panel's side of the screen (a mirrored copy had run into the live view) and its band clear of the tally.
 

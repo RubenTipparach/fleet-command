@@ -104,3 +104,4 @@
 - 2026-11-04, desktop session (Mac): Concord line at version 24 (the Albatross stern down to two bells), a text edit on the live version; version id `1793817050-4098`.
 - 2026-11-04, desktop session (Mac): M2 at v79 and M8 at v18 (strips on black), M6 summary to two bells; version id `1793822422-f548`.
 - 2026-11-04, desktop session (Mac): M2 at v81 and M8 at v20 (the shield display on every ship); version id `1793828157-0f07`.
+- 2026-11-05, cloud session (battle console thread): version 118, version id `1793850979-43ca`, built on the live version (M19, the Emblem Gallery and the guide at v31 from the emblem session, carried): M2 v82, M8 v21, M15 v6.
