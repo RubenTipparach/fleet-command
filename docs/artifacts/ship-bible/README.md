@@ -23,3 +23,7 @@
   flow into the grater structures"): version 2 on the cloud account, version id `1793849492-26ef`. Chapter 14, One
   structure, grown (F1-F5), and chapter 15, Every ship its own texture (T1-T4); Other factions is now chapter 16, the
   checklist chapter 17.
+- 2026-11-05, cloud session (owner: "vents, lights, and sub armor pieces, and primary armor peices", "liveries, smooth
+  sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis symmetry, and lots of
+  shading"): version 3, version id `1793873085-5bf7`. Chapter 15 gains T5-T8 (armour in layers, distinct features,
+  nothing repeats with one axis of symmetry, shading for depth) and a checklist line.

@@ -68,3 +68,11 @@
   (`tools/mockups/export_blockouts.mjs`) and baked onto their own UVs with AO, plating, chevrons and lit ports
   (`tools/blender/painted_bake.py --ship`, `assets/ships/ssarith/`, inlined as WebP; page 3.7 MB). Survey version 6 (H4
   decided), version id `1793849483-356d`.
+- 2026-11-05, cloud session (owner: "discard ships that I didnt want, only keep the ramining ones. I'd like more features
+  onthe hulls ... vents, lights, and sub armor pieces, and primary armor peices", "notice stuff like liveries, smooth
+  sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis symmetry, and lots of
+  shading to give the armor depth"): version 13, version id `1793873084-ad12`. Only the four picks. Each one's hull detail
+  is modelled over it (`tools/blender/hull_detail.py`, `data/ships/ssarith/hull_detail.json`: primary plates each its own
+  outline and height with overlays, sub-armour, machinery, domes, fans, louvres, lamps, liveries; mirrored) and baked
+  onto its own UVs at 2048 px with a low sun's shadows and AO (`tools/blender/painted_bake.py --ship`), shown with its
+  object-space normal map; the tile is gone. Page 4.6 MB.
