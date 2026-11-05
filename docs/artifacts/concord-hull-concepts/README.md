@@ -33,3 +33,5 @@
 - 2026-11-05, cloud session (Ssarith Hunt thread): no republish. The page's room code moved into
   `docs/mockups/lib/ship-rooms.js` (inlined, `winRoom` now calls `roomBehind`) so the Hunt ships draw the same rooms;
   its shots are unchanged to the pixel, so the published version still matches what the page shows.
+- 2026-11-05, cloud session (Ssarith Hunt thread): no republish. `lib/ship-break.js` takes a signed distance field in place of
+  loft stations for hulls that are not lofts; this page still takes the loft path, re-inlined.

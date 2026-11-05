@@ -104,3 +104,9 @@
   bay openings' glow gone). The page's subtitle still read v17 in this publish.
 - 2026-11-05, cloud session: version 19, version id `1793917715-2742`. The carrier rebaked with its bays' amber lamps
   along the lintel (the edge toward the ship's up), not the sill. The page's subtitle read v18 in this publish.
+- 2026-11-05, cloud session (owner: "what about breaking peices apart and stuff?", "ship piece breaking should be built
+  next"): version 20, version id `1793919879-aaf0`. The Hunt hulls break apart on the shared `docs/mockups/lib/ship-break.js`:
+  each ship's signed distance field (`tools/blender/hull_sdf.py`) is the inside test the cells and cut faces use; a torpedo
+  costs 18 % of the hull and knocks off the piece it lands on once the hull is at 60 % or less; at 0 % the core breaches.
+  Fire: Break up breaches the ship in view (or every ship on the board). Windows and lamps go with their pieces. New shots:
+  break_early, break_late, break_night, break_carrier, chunk. Page 14.2 MB.
