@@ -727,3 +727,11 @@ grade's chance (`data/battle/missiles.json`), the decoy destroyed by the first m
 for the ship (after SFC2, printed pages 136-137); point defence is drawn as point defence cannon tracers, here and in the
 battle console. Survey D6.
 
+Then (2026-11-05): "theres some artifact when the ship doe a charge attack", "after the krai ship finishes chargin theres
+like the black discharge at the bow"; "quell torpedo should be like a cross between a pulse torpedo and a missle". Done:
+the black specks were the shared damage effects' dark smoke and dark shards; on the range the smoke is not drawn and the
+debris glows hot. The quell now flies as a missile's body and ball plume with the pulse torpedo's six-armed star round its
+lattice head and a bead trail, launched straight, then homing and weaving. Then: "also that pulse torpedo is kinda white, needs to be deep blue" (read as the quell, which was the white one; the
+standard pulse torpedo stays the purple asked for on 2026-11-04): the quell is deep blue, `#2a4cff` in
+`data/battle/special_weapons.json`, in its star, lattice head, plume, beads, launch flash and ring.
+

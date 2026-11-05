@@ -37,7 +37,8 @@ map. Quality **Phone**: bloom at half resolution, no haze pass, no aberration, n
 | `flare` | Camera-facing. Lens: core, long horizontal streak, faint halo ring. Tri: three blades turned with the ship. Six: the pulse torpedo's star, three thin beaded diffraction spikes at 60 degrees with warm and cyan fringes, a faint horizontal strut and a streaked hot core (owner: "pulse torpedo needs that iconic 6 armed flare"). Ball: a missile's plume | Every muzzle and impact |
 | `shield` | An ellipsoid half again as large as the hull's box with its pad (owner: "I would make the shield bubble 50% larger"), in six 60 degree facings counted as the battle counts them. Invisible at rest (owner: "shield bubble invisible unless hit"); a hit lights a hot spot, a ring that runs out over the surface and the lattice round it, dimmer on a weaker facing; a failing facing flashes and its cells dissolve by noise | Every ship |
 | `scars` | Not a decal: the hull's own materials are patched (`onBeforeCompile`), in ship space, so a scar rides the ship and nothing z-fights (CLAUDE.md 10). Molten crater: a white-hot pool cooling by blackbody to crust, voronoi fissures glowing forge orange to twice its radius and fading last (the Krai's own fissured metal); stretched along its direction for a ram's gouge. Beam burn: a white spot in a ring of char. Quell lattice: Lilac and Sky cells growing over the whole hull at 60 m/s, light pulsing along them, every glow under them dimmed until the stun ends, then flickering back | Forge, ram, chorus, quell |
-| `orb` | Two counter-turning icosahedral shells (Lilac, Sky) round a soft core | Quell |
+| `orb` | Two counter-turning icosahedral shells (Lilac, Sky) round a soft core | The quell's head |
+| `quell` | A cross between a pulse torpedo and a missile (owner, 2026-11-05: "quell torpedo should be like a cross between a pulse torpedo and a missle"): a missile's body and ball plume , the torpedo's six-armed star at the nose round the turning lattice head, and the torpedo's bead trail, all in deep blue `#2a4cff` (owner: "needs to be deep blue"); it leaves the tube straight like a torpedo, then homes and weaves like a missile | Quell torpedo |
 | `spike` | A three-sided cone of flowing blackbody metal, white at the point | Forge |
 | `ribbon` tracer | Point defence cannon fire: a stream of short gold rounds racing from the hull to the missile, both ends where they now stand | Point defence, every faction |
 | `decoy` | A small blunt craft with a pulsing amber beacon and a small drive | The decoy shuttle |
@@ -50,6 +51,8 @@ map. Quality **Phone**: bloom at half resolution, no haze pass, no aberration, n
 | `haze` | Screen offsets in the haze pass | Muzzles, the spike, the beam's end, the charging bow |
 | `motes` | Points spiralling in from a ring and brightening | The chorus's charge round the saucer |
 
+On the range the shared damage smoke is not drawn and debris glows hot (owner, 2026-11-05: "after the krai ship finishes
+chargin theres like the black discharge at the bow": dark smoke and dark shards read as black specks in space).
 Fire, sparks, embers, arcs, shards and weapon light are the shared `lib/ship-fx.js`'s (`emit`, `flash`, `debrisAdd`,
 `fxLight`), never copied (CLAUDE.md 6.1).
 
