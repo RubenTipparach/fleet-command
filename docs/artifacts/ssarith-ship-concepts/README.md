@@ -60,3 +60,11 @@
   `painted-bake` skill (`tools/blender/painted_bake.py`, `assets/textures/painted/`), a Painted switch over the clay. Survey
   version 5 (H4 for the new twelve), version id `1793842421-9921`.
 - 2026-11-05, cloud session: version 11, version id `1793842658-f5f8` (shots of the board from above and ahead painted; subtitle says painted).
+- 2026-11-05, cloud session (owner: the picks "headedf lance: great! / forked prow, great! ... / trident: awesome! / harpoon
+  yes!", Spearhead withdrawn; "every ship needs custom uv Unwraped textures ... tile textures are for DETAIL only ... dont
+  forget to bake AO as well"; "these shapes need work, they arent connect together well, and violate our "no deformed
+  primitive rules", shapes must be made with purpose and flow into the grater structures"): version 12, version id
+  `1793849478-14e9`. The four picks rebuilt as one grown skin each (`Skin`, `hsec` in the page), exported as OBJ
+  (`tools/mockups/export_blockouts.mjs`) and baked onto their own UVs with AO, plating, chevrons and lit ports
+  (`tools/blender/painted_bake.py --ship`, `assets/ships/ssarith/`, inlined as WebP; page 3.7 MB). Survey version 6 (H4
+  decided), version id `1793849483-356d`.

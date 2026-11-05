@@ -36,3 +36,23 @@ inlined from its manifest), and SHALL let the viewer switch back to plain clay.
 #### Scenario: Clay underneath
 - **WHEN** the Painted switch is turned off
 - **THEN** every blockout shows in plain clay, and turning it on paints them again
+
+### Requirement: A picked Hunt ship is one grown structure
+
+A picked Hunt ship SHALL be one closed skin: a body lofted through cross-sections of one layout, with every branch (prong,
+lance, hood, blade, rail) lofted on from a region of the body's own section, and no placed box, cylinder, cone or plate
+visible (Ship Design Bible rules F1 to F5).
+
+#### Scenario: Nothing stuck on
+- **WHEN** a picked ship is built on the Hunt page
+- **THEN** each of its parts is a named branch of its body, and the meshes it is made of are only its skin, its light strips and its drive recess
+
+### Requirement: A picked Hunt ship has its own unwrapped texture and baked AO
+
+A picked Hunt ship SHALL be shown with its own UV mesh and its own painted colour, AO and glow maps from
+`tools/blender/painted_bake.py --ship` (`assets/ships/ssarith/`, inlined from its manifest), and any tile on it SHALL only
+add detail over that map (Ship Design Bible rules T1 to T4).
+
+#### Scenario: No repeating main colour
+- **WHEN** a picked ship is shown painted
+- **THEN** its colour comes from its own map on its own UVs, and its AO map is in its manifest

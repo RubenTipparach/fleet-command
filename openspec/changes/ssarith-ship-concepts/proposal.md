@@ -14,6 +14,13 @@ What the owner asks for now is breadth before depth: many massings to choose fro
 > **Version 10** (2026-11-05, with the owner's examples: "they looked menacing!", "make ships like this, with this kind of
 > texture"): twelve blockouts in the examples' shape language, painted by a new skill, `painted-bake` (design, "Version 10").
 
+> **Version 12** (2026-11-05): the owner picked 1 Hooded lance, 3 Forked prow, 7 Harpoon and 9 Trident and withdrew the
+> Spearhead; asked that "every ship needs custom uv Unwraped textures ... tile textures are for DETAIL only ... dont forget
+> to bake AO as well"; and, on the picks, "these shapes need work, they arent connect together well, and violate our "no
+> deformed primitive rules", shapes must be made with purpose and flow into the grater structures". Each pick is rebuilt
+> as one grown structure and baked onto its own UVs (design, "Version 12"); both are now rules for every ship (CLAUDE.md
+> section 10, Ship Design Bible chapters 14 and 15).
+
 ## What Changes
 
 - **Mockup 12 version 9**, `docs/mockups/ssarith-ship-concepts.html`: a blockout board of twelve frigate-sized massings in
@@ -31,4 +38,8 @@ What the owner asks for now is breadth before depth: many massings to choose fro
 
 - Changed: `docs/mockups/ssarith-ship-concepts.html` (replaced), `docs/design/survey.html` (section H), `mockup-work.md`,
   `docs/artifacts/ssarith-ship-concepts/`, this change.
+- Version 12 also changes: `CLAUDE.md` (section 10), `docs/design/ship-bible.html` (chapters 14 and 15),
+  `.claude/skills/painted-bake/SKILL.md` (ship mode), `tools/blender/painted_bake.py`, `tools/mockups/export_blockouts.mjs`,
+  `assets/ships/ssarith/`, and a task in `ship-models-engine`, `concord-hull-concepts` and `krai-ship-concepts` to move
+  those lines onto their own unwrap.
 - No game code.

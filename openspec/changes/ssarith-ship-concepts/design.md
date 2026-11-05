@@ -1,5 +1,47 @@
 # Design: ssarith-ship-concepts
 
+## Version 12: the picks, grown as one structure, each with its own texture (owner, 2026-11-05)
+
+**The picks** (survey H4, answered in the conversation): "spearhead: there we go again with the ltiterals lol / headedf
+lance: great! / forked prow, great! bit of a mess of geometry / trident: awesome! / harpoon yes!". Picked: 1 Hooded lance,
+3 Forked prow, 7 Harpoon, 9 Trident. Spearhead (5) is withdrawn from the board. The other seven stay on the board, unpicked,
+as the record of what was offered.
+
+**Its own texture** (version 11): "every ship needs custom uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID
+REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need a detail mask in the future,
+same goes for Concord and Krai ships", "Also dont forget to bake AO as well". Now a rule for every ship (CLAUDE.md section
+10; Ship Design Bible chapter 15, T1 to T4). Each picked ship leaves the page as OBJ (`tools/mockups/export_blockouts.mjs`)
+and `tools/blender/painted_bake.py --ship` unwraps it (Smart UV Project at 60 degrees, islands packed again by shape),
+bakes AO (1.5 m), normals, a part id, edges, glow and the surface position onto its own UVs at 2048 px, and paints its
+colour map: the painted-bake paint-over, plus plating laid in ship space (courses of 4.5 m, plates about 11 m with a
+length and offset per course), ochre chevrons in two bands on the dorsal faces, grooves with lit and shaded lips, lit ports
+on the flanks and ink on the seams. The page shows that UV mesh with its own map and glow; the chevron tile is multiplied in
+faintly, every 4 m, as detail only. The other blockouts keep the tile (they have no unwrap) until picked. A detail mask is
+not designed yet.
+
+**One structure, grown**: "these shapes need work, they arent connect together well, and violate our "no deformed
+primitive rules", shapes must be made with purpose and flow into the grater structures". The version 10 picks were boxes,
+tapered booms and flat plates placed against each other. Each picked ship is now one closed skin (Ship Design Bible chapter
+14, F1 to F5):
+
+- The body is lofted through cross-sections of one fixed 18-point layout (`hsec`): keel bottom, keel root, bottom chine,
+  lower side, a side chine that can swell out, the hood's root, edge and top, and the crown. A feature a station lacks
+  lies flat in its neighbours' line, so every station lofts to every other point to point.
+- At the bow the body's last section is split along cut lines into regions; each region lofts on forward as a named
+  branch, scaled and moved station by station, and ends in a cap. Two branches that split from one section share their cut
+  line, so the skin never opens or overlaps.
+- Light strips are faces of the skin (the keel's flat bottom, a lance's underside); the drive is a recess cut 1.6 m into
+  the stern, its mouth lit.
+
+| Ship | Body | Splits into | Triangles |
+|---|---|---|---|
+| 1 Hooded lance | 98 m to the bow split at +6 m; hood swept to 52 m across aft | hood (narrows to its point), lance (the body's middle, drawn out 56 m), keel blade (deepens and sweeps down) | 394 |
+| 3 Forked prow | split at +10 m along the side chines | high prong (the upper half, rising 5.5 m), low prong (the lower half and keel, dropping 8.6 m) | 374 |
+| 7 Harpoon | the hull closes onto its keel at +16 m | bow (capped), rail (the keel run on 50 m, flaring into a barbed head) | 294 |
+| 9 Trident | split at +12 m from one point low in its middle | brow (lifts over the prongs), port and starboard prongs (the flanks, reaching out 8.8 m), keel prong | 454 |
+
+The rooms-first design of each pick (task 3.1) still comes before any of this is final.
+
 ## Version 10: the inspiration's shape language, painted (owner, 2026-11-05)
 
 With three images of the reference game's and a fan's Gorn ships: "gorn from star trek", "they looked menacing!", then
@@ -88,4 +130,4 @@ artifact record and git.
 | # | Question | Recommendation (provisional) |
 |---|---|---|
 | H1 | How is the Hunt's culture to be set? | We draft several traditions inside the Hunt for the owner to pick and change (accepted as recommended, 2026-11-04) |
-| H4 | Which blockouts go on to be designed? | None recommended: the owner picks |
+| H4 | Which blockouts go on to be designed? | Answered by the owner, 2026-11-05: 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident; Spearhead withdrawn |

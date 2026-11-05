@@ -175,14 +175,11 @@ function styleQ(id, comp, q, rec, why, skip = []) {
 }
 const SECTIONS = [
   { tag: 'H', name: 'Ssarith Hunt: their culture first',
-    lead: 'Mockup 12 versions 1 to 8 are deleted (version 1 read the species\' body into the ships; the rest were three coffins). Version 9 is a blockout board (H4). The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
+    lead: 'Mockup 12 versions 1 to 8 are deleted (version 1 read the species\' body into the ships; the rest were three coffins). Version 9 is a blockout board; your picks from it are decided (below). The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
     qs: [
       { id: 'H1', q: 'How should the Ssarith Hunt\'s culture be set before their ships are redrawn?',
         options: ['You write it (history, beliefs, how they live and work, their yards and makers); we design from that', 'We draft several traditions inside the Hunt (yards, eras, schools that disagree), none from their bodies, for you to pick and change', 'Pause the Hunt\'s ships for now'], rec: 1,
         why: 'Options to react to are quicker for you than a blank page, and you keep every cultural decision (U7).' },
-      { id: 'H4', q: 'Mockup 12 version 10 is a blockout board in your examples\' shape language, painted: 1 Hooded lance, 2 Twin lances, 3 Forked prow, 4 Anchor, 5 Spearhead, 6 Mantle, 7 Harpoon, 8 Raked blade, 9 Trident, 10 Wedge, 11 Arc, 12 Crown. Which go on to be designed?',
-        options: ['These (name the numbers in the notes)', 'None yet: block out more (say what in the notes)'], rec: -1,
-        why: 'Your pick. A picked massing then gets its rooms, its tradition and its detail.' },
     ] },
   { tag: 'E', name: 'Faction emblems (mockup 9)',
     lead: 'Mockup 9 (Faction Emblems, docs/mockups/faction-emblems.html; its link is on the tracker once published) draws one emblem for each of the ten factions and shows it as the console crest, at 40 px and 20 px beside the icons, as hull paint, and on a ship\'s flank. Each keeps the idea its console crest already had. What a people puts on its flag is yours to decide: each faction\'s meaning below is what is drawn, and a blank answer keeps it.',
@@ -313,6 +310,7 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'H4: the blockouts that go on are 1 Hooded lance, 3 Forked prow, 7 Harpoon and 9 Trident; the Spearhead is withdrawn (owner, 2026-11-05: "spearhead: there we go again with the ltiterals lol / headedf lance: great! / forked prow, great! ... / trident: awesome! / harpoon yes!")', where: 'openspec/changes/ssarith-ship-concepts' },
   { text: 'A18: a bridge block of its own on larger super-capital ships; on other classes it depends on players\' feedback (owner, 2026-11-03: "larger super captial ships, otherwise it depends based on human feedback")', where: 'docs/design/ship-bible.html chapter 5' },
   { text: 'A15-A17 (Krai ship direction, sizes, names): withdrawn, the Krai ships are being redone on the Ship Design Bible (owner, 2026-11-03: "nuke the krai survey since we\'re redoing them")', where: 'openspec/changes/krai-ship-concepts' },
   { text: 'A13: the Albatross hangs its nacelle pylons from its main hull, the secondary hull clear beneath (owner, 2026-11-03: "I asked for the albatross pylons to be connected to the main hull instead")', where: 'openspec/changes/concord-hull-concepts' },

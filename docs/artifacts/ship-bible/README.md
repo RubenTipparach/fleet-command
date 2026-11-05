@@ -19,3 +19,7 @@
   in `docs/design/ship-bible.html`, with a checklist line and a row in Other factions (now chapter 14). **To republish from
   the desktop session**: the cloud session's account cannot open this artifact.
 - 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/4nhxxoGusHfkXX63Xt25bm, version id `1793801590-d689`. Not on the tracker (the tracker stays on the main account).
+- 2026-11-05, cloud session (owner: "every ship needs custom uv Unwraped textures ...", "shapes must be made with purpose and
+  flow into the grater structures"): version 2 on the cloud account, version id `1793849492-26ef`. Chapter 14, One
+  structure, grown (F1-F5), and chapter 15, Every ship its own texture (T1-T4); Other factions is now chapter 16, the
+  checklist chapter 17.

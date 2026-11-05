@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v10: twelve blockouts in the owner's examples' shape language, painted by the new `painted-bake` skill; versions 1 to 8 deleted) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v12: the owner's four picks, 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident, each rebuilt as one grown structure with its own unwrapped, painted texture and baked AO; Spearhead withdrawn) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -639,3 +639,11 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
   skill to make high -poly AO baked texture that looks drawn on"): twelve new blockouts in the examples' shape language
   (reach forward, a hood over a narrow neck, low raked blades, chevrons, light in strips), never their designs; a new skill,
   `painted-bake` (`tools/blender/painted_bake.py`), paints over a high-poly tile's Cycles passes so it reads drawn on.
+- Version 12 (owner, 2026-11-05): the picks, "spearhead: there we go again with the ltiterals lol / headedf lance: great! /
+  forked prow, great! bit of a mess of geometry / trident: awesome! / harpoon yes!"; the new rule, "every ship needs custom
+  uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL
+  only", "dont forget to bake AO as well"; and on the picks, "these shapes need work, they arent connect together well, and
+  violate our "no deformed primitive rules", shapes must be made with purpose and flow into the grater structures". Each
+  pick is one grown skin (its branches split from the body's own section) and is baked onto its own UVs with AO, plating,
+  chevrons and lit ports (`painted_bake.py --ship`, `assets/ships/ssarith/`). Both rules are in CLAUDE.md section 10 and
+  the Ship Design Bible (chapters 14 and 15); the Concord and Krai lines have a task to follow.

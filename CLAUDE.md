@@ -494,6 +494,17 @@ saying what changes here. Where a note and the copied text below it disagree, th
   sampled or modelled from another game's assets.
 - **A hull is not a body.** A ship's shape, paneling and markings come from its makers' ideas and traditions,
   never from what the species looks like (section 1).
+- **A hull is one grown structure** (owner, 2026-11-05: "these shapes need work, they arent connect together well, and
+  violate our "no deformed primitive rules", shapes must be made with purpose and flow into the grater structures"). No
+  box, cylinder, cone or plate, stretched or tapered, is a visible part of a hull. A prong, lance, hood or rail grows out
+  of the body: its section is a region of the body's own, split along a cut line, its chines carried through, the skin
+  closed. Light strips are faces of the skin, drives are recesses. Ship Design Bible chapter 14 (F1-F5).
+- **Every ship has its own UV-unwrapped textures** (owner, 2026-11-05: "every ship needs custom uv Unwraped textures. From
+  NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need
+  a detail mask in the future", "dont forget to bake AO as well"). Every ship is unwrapped on its own; its main colour map
+  is painted onto its own UVs, never a repeating tile; tiles add fine detail only (a detail mask to come); its AO is baked
+  onto its own UVs. The Concord and Krai lines are to be moved onto this (`painted-bake`, ship mode; Ship Design Bible
+  chapter 15, T1-T4).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).

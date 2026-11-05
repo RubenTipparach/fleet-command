@@ -1,6 +1,6 @@
 ---
 name: painted-bake
-description: Make Fleet Command hull textures that read drawn on, the way late-1990s ship textures were painted over their renders - model a high-poly armour tile (or a ship's own panels) in Blender, render its occlusion, normals, edges and per-plate ids face-on in Cycles, then paint over those passes in numpy (flat colour per plate from a palette, a painter's light in soft steps from the upper left, lit and shaded bevels, inked crevices, brush grain, glowing strips) into albedo, normal and glow maps, and lay them on a ship. Use whenever a ship should look painted, hand-drawn or "like the old games", when a texture "looks too clean", "looks like a render", "needs to look drawn on", or when baking high-poly AO detail into a hull texture ("painted texture", "drawn on", "baked AO", "hand painted hull", "like starfleet command").
+description: Make Fleet Command hull textures that read drawn on, the way late-1990s ship textures were painted over their renders - model a high-poly armour tile (or a ship's own panels) in Blender, render its occlusion, normals, edges and per-plate ids face-on in Cycles, then paint over those passes in numpy (flat colour per plate from a palette, a painter's light in soft steps from the upper left, lit and shaded bevels, inked crevices, brush grain, glowing strips) into albedo, normal and glow maps; and in ship mode, the binding way to texture a ship, unwrap each ship on its own and bake its AO, plating, markings and lit ports onto its own UVs as its main colour map, with any tile laid over it as detail only. Use whenever a ship should look painted, hand-drawn or "like the old games", when a texture "looks too clean", "looks like a render", "needs to look drawn on", or when baking high-poly AO detail into a hull texture, or when a ship needs its own UV-unwrapped texture or AO bake ("unwrap the ship", "custom UVs", "bake AO", "painted texture", "drawn on", "baked AO", "hand painted hull", "like starfleet command").
 ---
 
 # Painted bake
@@ -40,7 +40,10 @@ A painted texture carries its own light, so it reads at a distance and in any li
    strips take its emissive version.
 4. **Paint** (`paint`): the rules in the table above, in that order: base, light, crevices, ink, edges, grain, glow.
 5. **Write** `assets/textures/painted/<tile>_{albedo,normal,emit}.png` and the manifest (size in metres, sha256 of each).
-6. **Lay it on the ship**: inline the manifest (`tools/mockups/inline_data.py` carries each map as WebP); in the page the
+6. **A tile is detail only** (owner, 2026-11-05: "ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures
+   are for DETAIL only"). A ship's main colour is its own painted map (ship mode, below); a tile only adds fine detail
+   over it. The steps below are how a tile is laid as that detail, or on a blockout that has no unwrap yet.
+7. **Lay it on the ship**: inline the manifest (`tools/mockups/inline_data.py` carries each map as WebP); in the page the
    albedo multiplies the base colour, about a third of it shows as emission (the paint's own light reads in shadow), the
    normal map takes the live light, the glow map adds to emission. On a ship built of primitives with no UVs, project from
    three sides in world space; on a ship with its own parts, lay the sheet on each part.
@@ -69,3 +72,41 @@ Look at the tile (albedo beside its normal map, and tiled 2 x 2) and at the ship
 | Chevrons flat in the normal map | One concave outline: the bevel modifier skips its edges | Build each chevron as two convex arms |
 | The hull reads as busy camouflage | The tile laid at its bake size, repeating 12 times down the hull | Lay it larger; next, a painted sheet per ship that follows its parts |
 | Angled faces mottled | Three-side projection blending on 45 degree faces | Lay the sheet on each part along its own surface (the Hunt page's version 6 did this for lofted hulls) |
+
+## Ship mode: every ship its own unwrap, colour and AO
+
+The owner, 2026-11-05: "every ship needs custom uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR
+MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need a detail mask in the future", "Also dont forget to
+bake AO as well". The rule is in CLAUDE.md section 10 and the Ship Design Bible, chapter 15 (T1-T4). This is the binding way
+to texture a ship; the tile steps above are for detail.
+
+1. **Export the ship from its page** as OBJ in ship space (+x port, +y up, +z bow, metres), one object per named part,
+   light strips as `glow_*` objects: `NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs` (the page's
+   `MOCKUP_EXPORT_OBJ`), into `tools/materials/raw/painted/ships/` (gitignored).
+2. **Bake** in Blender: import as it is (forward Y, up Z, so nothing is converted), give each part a random id and a glow
+   flag in a colour attribute, join, Smart UV Project (60 degrees), then pack the islands again by shape with rotation
+   (`pack_islands`, CONCAVE) so the texels go on the hull. Bake onto the ship's own UVs: coverage, a data pass (part id,
+   Bevel-node edges, glow), the surface position, AO reaching 1.5 m and object-space normals.
+3. **Paint**: plating laid in ship space over the unwrap (courses along the ship, each course its own plate length and
+   offset so joints never line up into brickwork, each plate a little lighter or darker), markings where the faction's
+   design puts them (the Hunt: ochre chevrons on the dorsal faces in two bands), then the paint-over of the table above,
+   then each plate's groove with a lit or shaded lip by which way its edge faces the light, lit ports on the flanks, and
+   ink along the UV seams.
+4. **Write** `assets/ships/<faction>/<ship>_{albedo,ao,emit}.png` and the manifest (the UV mesh, `uv_m` metres of hull per
+   UV unit, sha256 of each map). Inline it into the page, which shows the UV mesh with its own map, its glow, and the tile
+   multiplied in faintly every 4 m as detail.
+
+```sh
+NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs
+/opt/blender/blender -b --python tools/blender/painted_bake.py -- --ship hooded_lance,forked_prow,harpoon,trident --px 2048 --samples 64
+python3 tools/mockups/inline_data.py docs/mockups/ssarith-ship-concepts.html
+```
+
+Judge it on the page, close up and at board distance: plates read as plating that follows the form, not bricks; markings
+read; no seam shows as a hard colour jump; the AO darkens the joints and the crevices between branches.
+
+| You see | Cause | Fix |
+|---|---|---|
+| Hundreds of tiny islands and mostly empty texture | A hull of stuck-on primitives, every face at an angle to its neighbour | Grow the hull as one structure (Ship Design Bible chapter 14); pack the islands again by shape |
+| The hull reads as brickwork | Plates all one length, joints staggered by half | A plate length and an offset per course, from a hash |
+| A flat olive hull | Only the per-part paint, nothing laid over it | The plating, markings and ports of step 3 |
