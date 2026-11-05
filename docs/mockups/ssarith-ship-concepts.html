@@ -617,9 +617,12 @@ return { detail, GLSL, thruster, mulberry };
 // pane's frame (z into the room, normalised), room: any vec3 naming the room (hashed for its layout, carpet and light),
 // kindIn: 0 quarters, 1 mess, 2 office, or -1 to pick from the hash, LIn: the room's light colour, or x < 0 to pick from the
 // hash (warm, cold or dark). Returns the light leaving the pane.
-// A launch bay's hangar is not drawn here: it is big enough to be geometry (owner, 2026-11-05: "Hangar bay is large enough
-// for me to just recommend using geometry"; hangarMesh in docs/mockups/ssarith-ship-concepts.html).
-// It needs ph1 (FCShipSkin GLSL.hash) and bHit (GLSL.box) defined before it.
+//   vec3 hangarBehind(vec3 q, vec3 D, vec3 room, vec2 mouth, vec3 L)
+// the hangar behind a launch bay's mouth (mouth: its width and height in metres, q at its centre): a deck 28 m deep with a
+// centre stripe, three small craft parked in a row, rows of lights in the ceiling, ribbed walls, a lit back wall, in the
+// bay's light L (owner, 2026-11-05: "we need a carrier"; kept painted
+// over geometry for its parallax: "I actually like the paralax so I'd keep it").
+// Both need ph1 (FCShipSkin GLSL.hash) and bHit (GLSL.box) defined before them.
 window.FCShipRooms = (function () {
 'use strict';
 const GLSL = `
@@ -698,6 +701,24 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
   if (obj == 5 || (obj == 0 && emit > 0.9 && emit < 1.5)) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : accent)*0.7;  // screens
   else if (emit > 0.0) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : (emit > 2.0 ? accent : L))*emit*0.55;
   return lit*exp(-t*0.05);
+}
+vec3 hangarBehind(vec3 q, vec3 D, vec3 room, vec2 mouth, vec3 L){
+  float hw = mouth.x*0.5 + 2.0, fl = -mouth.y*0.5, ce = mouth.y*0.5 + 1.5, DZ = 28.0;
+  vec3 lo = vec3(-hw, fl, 0.0), hi = vec3(hw, ce, DZ), nb;
+  vec3 tA = (mix(lo, hi, step(0.0, D)) - q)/D; float t = min(tA.x, min(tA.y, tA.z));
+  vec3 n = t == tA.x ? vec3(-sign(D.x), 0.0, 0.0) : t == tA.y ? vec3(0.0, -sign(D.y), 0.0) : vec3(0.0, 0.0, -1.0);
+  int obj = 0;
+  for (int i = 0; i < 3; i++) { float zc = 6.0 + float(i)*7.5, xc = (ph1(room.xy + float(i)) - 0.5)*max(hw - 3.5, 0.0), tb;
+    tb = bHit(q, D, vec3(xc - 1.4, fl, zc - 2.4), vec3(xc + 1.4, fl + 1.2, zc + 2.4), nb, t); if (tb < t) { t = tb; n = nb; obj = 1; }   // a small craft's body
+    tb = bHit(q, D, vec3(xc - 3.0, fl + 0.5, zc - 0.2), vec3(xc + 3.0, fl + 0.7, zc + 1.0), nb, t); if (tb < t) { t = tb; n = nb; obj = 1; } } // its wings
+  vec3 h = q + D*t, col = vec3(0.16, 0.17, 0.15); float emit = 0.0;
+  if (obj == 1) col = vec3(0.32, 0.33, 0.27);
+  else if (n.y > 0.5) col = vec3(0.11, 0.12, 0.10) + vec3(0.6, 0.5, 0.15)*step(abs(h.x), 0.35)*step(0.5, fract(h.z/4.0));   // the deck and its stripe
+  else if (n.y < -0.5) emit = step(0.72, fract(h.z/4.0))*step(abs(fract(h.x/3.0) - 0.5), 0.22)*2.2;                         // ceiling light rows
+  else if (n.z < -0.5) { col = vec3(0.22, 0.23, 0.2); emit = 0.3; }                                                          // the back wall
+  else col *= 0.75 + 0.25*step(0.5, fract(h.z/3.0));                                                                         // ribbed walls
+  float shade = 0.4 + 0.6*max(n.y, 0.0) + 0.25*max(-n.z, 0.0);
+  return (col*L*shade*1.8 + L*emit*0.6)*exp(-t*0.03);
 }
 `;
 return { GLSL };
@@ -1236,19 +1257,12 @@ let fxSeed = 977; const fxRng = () => { fxSeed = (fxSeed * 16807) % 2147483647; 
 // The hull shader for both looks: the baked hull lights (diffuse x light^gamma x k) and the paint's own light, and the
 // shared damage rules. The windows and bays are not in it: each is its own quad (paneMesh, below).
 const HULL_GLSL = `
-uniform sampler2D uHullLight; uniform float uLightK; uniform float uSelf;
-uniform int uBayCount; uniform vec4 uBayC[8]; uniform vec4 uBayU[8]; uniform vec4 uBayV[8];
-// the hull is open over each bay's mouth (c, and its u, v axes with the half sizes in w), within a metre of the face
-bool inBay(vec3 p){ for (int i = 0; i < 8; i++) { if (i >= uBayCount) break; vec3 d = p - uBayC[i].xyz;
-  vec3 n = normalize(cross(uBayU[i].xyz, uBayV[i].xyz));
-  if (abs(dot(d, uBayU[i].xyz)) < uBayU[i].w && abs(dot(d, uBayV[i].xyz)) < uBayV[i].w && abs(dot(d, n)) < 1.0) return true; }
-  return false; }`;
+uniform sampler2D uHullLight; uniform float uLightK; uniform float uSelf;`;
 // The panes: every window and bay is a quad of its own, laid on the hull at the place the bake cut for it
 // (tools/blender/hull_detail.py pane_box writes each one's centre, axes and size), so its frame is exact at any distance
 // (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the border clean"). The quad
 // is the pane plus its frame: a bevelled rim of the hull's dark metal, lit from above, with a fine lit line round the
-// glass; behind a window's glass, the room (roomBehind) from docs/mockups/lib/ship-rooms.js.
-const PANE_FRAME_M = { window: 0.1, bay: 0.35 };
+// glass; behind the glass, the room (roomBehind) or the hangar (hangarBehind) from docs/mockups/lib/ship-rooms.js.
 const PANE_KIND = { quarters: 0, mess: 1, workshop: 2, hold: 3, bay: 4 };
 const PANE_GLSL = `
 uniform float uRoomK; uniform float uFrameK;
@@ -1268,75 +1282,25 @@ vec3 paneColour(){
     float lip = 1.0 - smoothstep(0.0, 0.035, out_);                       // the fine lit line round the glass
     return col*uFrameK + L*lip*(lit ? 0.9 : 0.15);
   }
-  if (k == 4) discard;   // a bay's mouth is open: its hangar is geometry (hangarMesh)
-  // The room stands level with the decks whatever the face's angle (owner, 2026-11-05: "Need to account for normal angles
-  // on windows"): up is the ship's up, in is the face's normal turned level, and the pane cuts the room's front at a slant,
-  // its nearest corner on the room's front wall.
+  // The room or hangar stands level with the decks whatever the face's angle (owner, 2026-11-05: "Need to account for
+  // normal angles on windows, and the hangar bay too"): up is the ship's up, in is the face's normal turned level, and the
+  // pane cuts the room's front at a slant, its nearest corner on the room's front wall. The hangar stays painted, not
+  // geometry, for its parallax (owner: "I actually like the paralax so I'd keep it").
   vec3 rv = vec3(0.0, 1.0, 0.0), ri = vec3(-en.x, 0.0, -en.z), ru, rn; float hl = length(ri);
   if (hl < 0.3) { ru = eu; rv = ev; rn = -en; } else { rn = ri/hl; ru = normalize(cross(rv, rn)); }
   vec3 Pp = eu*vQ.x + ev*vQ.y; float zext = abs(dot(eu, rn))*hs.x + abs(dot(ev, rn))*hs.y;
   vec3 D = normalize(vec3(dot(V, ru), dot(V, rv), dot(V, rn)) + vec3(1e-4)); if (D.z <= 0.0) D.z = 1e-3;
   vec3 q = vec3(dot(Pp, ru), dot(Pp, rv), dot(Pp, rn) + zext);
-  vec3 room = roomBehind(q, D, floor(vC*0.6), k == 1 ? 1 : k == 2 ? 2 : k == 3 ? 1 : 0, L);
+  vec2 mouth = 2.0*vec2(abs(dot(eu, ru))*hs.x + abs(dot(ev, ru))*hs.y, abs(dot(eu, rv))*hs.x + abs(dot(ev, rv))*hs.y);  // the mouth, level
+  vec3 room = k == 4 ? hangarBehind(q, D, floor(vC*0.3), mouth, lit ? vec3(0.75, 0.8, 0.7) : L)
+                     : roomBehind(q, D, floor(vC*0.6), k == 1 ? 1 : k == 2 ? 2 : k == 3 ? 1 : 0, L);
   float fres = pow(1.0 - clamp(-dot(V, en), 0.0, 1.0), 4.0);             // the glass: a faint sky in it at a glancing look
   return room*uRoomK*(1.0 - 0.5*fres) + vec3(0.05, 0.07, 0.06)*fres*uFrameK;
 }`;
-// The hangars behind the bays, as geometry (owner, 2026-11-05: "Hangar bay is large enough for me to just recommend using
-// geometry. Not sure if this illusion holds up well with battlescars"): a level deck running depth_m into the hull, ribbed
-// walls, rows of ceiling lights, a lit back wall, a yellow centre stripe, small craft parked nose to the mouth. Self-lit
-// (the hangar's own lights, not the sun), fading with depth, cut at the face so nothing stands outside the hull, and it
-// takes the ship's scorch. The hull opens over the mouth (inBay in HULL_GLSL).
-function bayUniforms(panes) { const bays = (panes || []).filter((P) => P.kind === 'bay').slice(0, 8), v4 = () => Array.from({ length: 8 }, () => new THREE.Vector4());
-  const U_ = { uBayCount: { value: bays.length }, uBayC: { value: v4() }, uBayU: { value: v4() }, uBayV: { value: v4() } };
-  bays.forEach((P, j) => { U_.uBayC.value[j].set(...P.c, 0); U_.uBayU.value[j].set(...P.u, P.w_m / 2); U_.uBayV.value[j].set(...P.v, P.h_m / 2); }); return U_; }
-function hangarMesh(P, dmgU) {
-  const C = V3(...P.c), N = V3(...P.n), Y = V3(0, 1, 0), I = V3(-N.x, 0, -N.z).normalize(), A = V3().crossVectors(Y, I).normalize();
-  const hw = P.w_m / 2, hh = P.h_m / 2, loc = (p) => { const d = p.clone().sub(C); return [d.dot(A), d.dot(Y), d.dot(I)]; };
-  const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => loc(C.clone().addScaledVector(V3(...P.u), a * hw).addScaledVector(V3(...P.v), b * hh)));
-  const a0 = Math.min(...corners.map((c) => c[0])) - 1.5, a1 = Math.max(...corners.map((c) => c[0])) + 1.5, y0 = Math.min(...corners.map((c) => c[1])),
-    y1 = Math.max(...corners.map((c) => c[1])) + 1.5, d0 = Math.min(...corners.map((c) => c[2])) - 0.5, d1 = d0 + 0.5 + (P.depth_m || 20);
-  const pos = [], nor = [], col = [], emi = [], put = (p, n, c, e) => { const w = C.clone().addScaledVector(A, p[0]).addScaledVector(Y, p[1]).addScaledVector(I, p[2]);
-    const wn = V3().addScaledVector(A, n[0]).addScaledVector(Y, n[1]).addScaledVector(I, n[2]); pos.push(w.x, w.y, w.z); nor.push(wn.x, wn.y, wn.z); col.push(...c); emi.push(e); };
-  // a box from (x0, y0, z0) to (x1, y1, z1) in the hangar's frame (a across, y up, d in), its faces out, or in for the room
-  const box = (lo, hi, c, e = 0, inward = false, skip = -1) => { for (let ax = 0; ax < 3; ax++) for (const sgn of [-1, 1]) { const f = ax * 2 + (sgn > 0 ? 1 : 0); if (f === skip) continue;
-    const u = (ax + 1) % 3, v = (ax + 2) % 3, at = sgn > 0 ? hi[ax] : lo[ax], n = [0, 0, 0]; n[ax] = inward ? -sgn : sgn;
-    const q = [[lo[u], lo[v]], [hi[u], lo[v]], [hi[u], hi[v]], [lo[u], hi[v]]].map(([pu, pv]) => { const p = [0, 0, 0]; p[ax] = at; p[u] = pu; p[v] = pv; return p; });
-    const order = (sgn > 0) !== inward ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2]; for (const k of order) put(q[k], n, c, e); } };
-  box([a0, y0, d0], [a1, y1, d1], [0.2, 0.21, 0.19], 0, true, 4);                                         // the room, open at its mouth
-  const span = a1 - a0, depth = d1 - d0;
-  for (let z = d0 + 2; z < d1 - 1; z += 4) box([-0.3, y0, z], [0.3, y0 + 0.02, z + 2], [0.62, 0.52, 0.16]);                  // the deck stripe
-  for (let z = d0 + 1.5; z < d1 - 0.5; z += 3) for (const sa of [-1, 1]) { const x = sa < 0 ? a0 : a1;                         // ribs down each wall
-    box([Math.min(x, x - sa * 0.35), y0, z], [Math.max(x, x - sa * 0.35), y1, z + 0.3], [0.15, 0.16, 0.14]); }
-  for (let z = d0 + 2.5; z < d1 - 1; z += 4) for (let x = a0 + 1.5; x < a1 - 1; x += 3) box([x, y1 - 0.08, z], [x + 1.2, y1, z + 0.6], [1, 1, 0.92], 1);   // ceiling lights
-  box([a0 + 0.5, y0 + 0.6, d1 - 0.1], [a1 - 0.5, y1 - 0.6, d1], [0.24, 0.26, 0.22], 0.35);                    // the lit back wall
-  const nx = Math.max(1, Math.floor((span - 2) / 7.5)), nd = Math.max(1, Math.floor((depth - 4) / 7.5));
-  let k = 0; for (let ix = 0; ix < nx; ix++) for (let id = 0; id < nd && k < 4; id++, k++) {   // small craft, noses to the mouth
-    const x = a0 + (ix + 0.5) * span / nx, z = d0 + 4 + id * 7.5, hull = [0.34, 0.35, 0.29];
-    box([x - 1.1, y0 + 0.3, z], [x + 1.1, y0 + 1.4, z + 4.6], hull); box([x - 3, y0 + 0.75, z + 2.2], [x + 3, y0 + 0.95, z + 3.6], [0.28, 0.29, 0.24]);
-    box([x - 0.5, y0 + 1.4, z + 0.6], [x + 0.5, y0 + 1.85, z + 1.8], [0.1, 0.32, 0.18], 0.5); box([x - 0.9, y0, z + 1], [x - 0.7, y0 + 0.3, z + 1.2], [0.1, 0.1, 0.1]);
-    box([x + 0.7, y0, z + 1], [x + 0.9, y0 + 0.3, z + 1.2], [0.1, 0.1, 0.1]); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-  g.setAttribute('aCol', new THREE.Float32BufferAttribute(col, 3)); g.setAttribute('aEmit', new THREE.Float32BufferAttribute(emi, 1));
-  const mat = new THREE.ShaderMaterial({ uniforms: { ...dmgU, uMouthC: { value: C }, uMouthN: { value: N }, uIn: { value: I }, uD0: { value: d0 } }, side: THREE.DoubleSide,
-    vertexShader: `attribute vec3 aCol; attribute float aEmit; varying vec3 vObj; varying vec3 vCamObj; varying vec3 vNrm; varying vec3 vCol; varying float vEmit;
-      void main(){ vObj = position; vCamObj = (inverse(modelMatrix)*vec4(cameraPosition, 1.0)).xyz; vNrm = normal; vCol = aCol; vEmit = aEmit; gl_Position = projectionMatrix*modelViewMatrix*vec4(position, 1.0); }`,
-    fragmentShader: SFX.DAMAGE_GLSL + `
-      uniform vec3 uMouthC; uniform vec3 uMouthN; uniform vec3 uIn; uniform float uD0; varying vec3 vNrm; varying vec3 vCol; varying float vEmit;
-      void main(){ if (dot(vObj - uMouthC, uMouthN) > 0.0) discard;   // nothing stands outside the face
-        float dChar = 0.0, dEmber = 0.0; int holeIdx = -1; float nz2 = dfbm(vObj*0.9 + 7.0); dmgScorch(vObj, nz2, dChar, dEmber); dChar = clamp(dChar, 0.0, 1.0);
-        vec3 n = normalize(vNrm), L = vec3(0.95, 1.0, 0.88); float depth = max(dot(vObj - uMouthC, uIn) - uD0, 0.0);
-        // pools of light on the deck under each ceiling light (lights every 3 m across, 4 m in)
-        vec3 h = vObj - uMouthC; float acr = dot(h, normalize(cross(vec3(0.0, 1.0, 0.0), uIn))), din = dot(h, uIn);
-        float pool = max(n.y, 0.0)*(0.5 + 0.5*cos(6.2832*(acr/3.0)))*(0.5 + 0.5*cos(6.2832*((din - uD0 - 2.8)/4.0)));
-        float shade = 0.55 + 0.75*max(n.y, 0.0) + 0.3*abs(dot(n, uIn)) + 0.6*pool;
-        vec3 c = vCol*L*shade*exp(-depth*0.022) + vCol*vEmit*1.6;
-        c = mix(c, vec3(0.02), smoothstep(0.0, 0.7, dChar)) + vec3(1.0, 0.36, 0.07)*dEmber*1.5;
-        gl_FragColor = vec4(c, 1.0); }` });
-  const m = new THREE.Mesh(g, mat); m.userData.baked = true; return m; }
 // One mesh of quads for a ship's panes; dmgU: the ship's damage uniforms, so a hole or a burn takes its panes with it.
 function paneMesh(panes, dmgU) {
   const pos = [], q = [], half = [], au = [], av = [], an = [], ac = [], kind = [], idx = [];
-  panes.forEach((P, j) => { const f = P.kind === 'bay' ? PANE_FRAME_M.bay : PANE_FRAME_M.window, hw = P.w_m / 2, hh = P.h_m / 2;
+  panes.forEach((P, j) => { const f = P.frame_m, hw = P.w_m / 2, hh = P.h_m / 2;
     const C = V3(...P.c).addScaledVector(V3(...P.n), 0.05), U_ = V3(...P.u), V_ = V3(...P.v);
     for (const [x, y] of [[-hw - f, -hh - f], [hw + f, -hh - f], [hw + f, hh + f], [-hw - f, hh + f]]) {
       const p = C.clone().addScaledVector(U_, x).addScaledVector(V_, y); pos.push(p.x, p.y, p.z); q.push(x, y); half.push(hw, hh);
@@ -1362,7 +1326,6 @@ function hullShader(mat, lightTex, gamma, self, key, dmgU) {
     s2.fragmentShader = s2.fragmentShader.replace('#include <common>', '#include <common>\n' + SFX.DAMAGE_GLSL + HULL_GLSL)
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
         float dChar = 0.0, dEmber = 0.0; int holeIdx = -1; float nz = dfbm(vObj*0.45), nz2 = dfbm(vObj*0.9 + 7.0);
-        if (inBay(vObj)) discard;
         dmgHoles(vObj, nz, dChar, dEmber, holeIdx); dmgScorch(vObj, nz2, dChar, dEmber); dChar = clamp(dChar, 0.0, 1.0);`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03, 0.026, 0.024)*(0.6 + 0.8*nz2), smoothstep(0.0, 0.7, dChar));`)
@@ -1387,14 +1350,13 @@ if (BK) for (const [slug, sh] of Object.entries(BK.ships)) { const i = BLOCKS.fi
   geo.setAttribute('uv2', new THREE.Float32BufferAttribute(sh.mesh.uv, 2)); geo.setIndex(Array.from({ length: n }, (_, k) => k));
   geo.computeVertexNormals(); geo.computeTangents();
   const em = tex('emit', true), nm = tex('normal'), lt = tex('light'), orm = tex('orm'), g = sh.light_gamma || 1.6;
-  const dU = Object.assign(dmgUniforms(), bayUniforms(sh.panes)); DMG[i] = { U: dU, holes: 0, scorch: 0, emitters: [] };
+  const dU = dmgUniforms(); DMG[i] = { U: dU, holes: 0, scorch: 0, emitters: [] };
   const painted = hullShader(new THREE.MeshStandardMaterial({ map: tex('albedo', true), emissiveMap: em, emissive: 0xffffff, normalMap: nm, roughness: 0.72, metalness: 0.15, envMapIntensity: 0 }), lt, g, U.selfP, 'painted-' + slug, dU);
   const pbr = hullShader(new THREE.MeshStandardMaterial({ map: tex('base', true), normalMap: nm, roughnessMap: orm, metalnessMap: orm, aoMap: orm, roughness: 1, metalness: 1,
     emissiveMap: em, emissive: 0xffffff, envMapIntensity: 0.5 }), lt, g, U.none, 'pbr-' + slug, dU);
   LOOK[i] = { painted, pbr };
   const mesh = new THREE.Mesh(geo, painted); mesh.userData.baked = true; mesh.visible = false; SHIPS[i].add(mesh); BAKED[i] = mesh;
-  if (sh.panes && sh.panes.length) { const pm = paneMesh(sh.panes, dU); pm.visible = false; SHIPS[i].add(pm);
-    for (const P of sh.panes.filter((P) => P.kind === 'bay')) { const hm = hangarMesh(P, dU); hm.visible = false; SHIPS[i].add(hm); } }
+  if (sh.panes && sh.panes.length) { const pm = paneMesh(sh.panes, dU); pm.visible = false; SHIPS[i].add(pm); }
   // the fixtures that show themselves: strobes flash, beacons pulse, position lights and floods burn steady
   for (const F of sh.fixtures || []) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowSprite, color: new THREE.Color(...F.rgb), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
     sp.position.set(...F.pos); const big = { strobe: 3.2, beacon: 3.0, position: 2.6 }[F.kind] || 1.6; sp.scale.setScalar(big); sp.userData = { kind: F.kind, big }; SHIPS[i].add(sp); FIX.push(sp); } }

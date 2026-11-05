@@ -40,6 +40,10 @@
     "overlay_inset": 0.86,
     "overlay_lift_m": 0.3,
     "light_ref": 0.9,
+    "pane_frame_m": {
+      "window": 0.1,
+      "bay": 0.35
+    },
     "auto_floods": {
       "step_m": 22,
       "from_stern_m": 6,
@@ -1217,28 +1221,25 @@
             -2.2
           ],
           "w_m": 8.0,
-          "h_m": 6.0,
-          "depth_m": 26.0
+          "h_m": 6.0
         },
         {
           "face": "port",
           "at": [
             -4,
-            -3.0
+            -4.0
           ],
           "w_m": 12.0,
-          "h_m": 5.0,
-          "depth_m": 11.0
+          "h_m": 4.0
         },
         {
           "face": "port",
           "at": [
             -30,
-            -3.0
+            -4.0
           ],
           "w_m": 10.0,
-          "h_m": 5.0,
-          "depth_m": 11.0
+          "h_m": 4.0
         }
       ],
       "windows": [

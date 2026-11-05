@@ -125,9 +125,14 @@ Built over the low-poly hull, in ship space, never exported: it exists only to b
   into the manifest (`panes`), and the page draws each pane as its own quad from them (below). A window group shares one
   room kind. Never bake the panes into a map: a 1.1 m window is about 17 texels at 2048 px, so its edge comes out ragged
   (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the border clean"). Bays (`bays` in the
-  data: `w_m` wide by `h_m` tall, and `depth_m`, how far its hangar runs in) are cut through the armour like windows, with
+  data: `w_m` wide by `h_m` tall) are cut through the armour like windows, with
   amber lamps along the lintel. A bay's width always runs level: on a face whose frame runs up the ship (a bow face) its
   frame turns a quarter about the normal, or the mouth comes out on its side.
+- **Every pane lies flat on its face, frame and all** (`fits`: each corner and edge middle of the framed rectangle within
+  0.12 m of the face's plane). A window that would cross a bend is left out (Ship Design Bible W2); a bay that does not fit
+  stops the build, naming it, so the data moves it (owner, 2026-11-05: "hanger window taller than side of the ship": the
+  flank bays were 5 m on a face 5.3 m tall, off centre). The frame widths are data (`pane_frame_m`), written into each
+  pane, so the check and the page use one number.
 - **One axis of symmetry, nothing repeated**: everything off the centreline is built on the port side and mirrored with a
   reflected frame (`frame_at(p, n, mirror=True)`, faces reversed by `place`); every piece's `rid` is a hash of its
   mirrored position (`rid_of`), so a plate and its mirror take the same paint and no two others do.
@@ -201,15 +206,14 @@ carries the pane's place in metres, its half size, its axes and its kind, so the
 bevelled rim of the hull's dark metal lit from above, a fine lit line round the glass. Behind a window's glass the view
 ray draws the room with `roomBehind(q, D, room, kind, light)` from `docs/mockups/lib/ship-rooms.js` (the same rooms as the
 Concord line's), in a frame **level with the decks**, not the face's: up is the ship's up, in is the face's normal turned
-level, and the pane cuts the room's front at a slant (owner, 2026-11-05: "Need to account for normal angles on windows").
+level, and the pane cuts the room's front at a slant (owner, 2026-11-05: "Need to account for normal angles on windows, and the hangar bay too").
 The quads share the ship's damage uniforms, so a hole or a burn takes its panes with it.
 
-**Hangars are geometry** (owner: "Hangar bay is large enough for me to just recommend using geometry. Not sure if this
-illusion holds up well with battlescars"). Interior mapping is for openings a few metres across; a bay is big enough that
-the eye looks for depth, parallax and damage that a painted room cannot give. `hangarMesh` builds each bay's hangar from
-its pane: a level deck `depth_m` deep, ribbed walls, ceiling lights with pools on the deck, a lit back wall, a centre
-stripe, small craft parked nose to the mouth, all self-lit and fading with depth, cut at the face's plane so nothing stands
-outside the hull, and taking the ship's scorch. The hull shader discards itself over each mouth (`inBay`).
+**Hangars are painted too, by parallax** (owner, 2026-11-05: "I actually like the paralax so I'd keep it", after
+weighing geometry: "Hangar bay is large enough for me to just recommend using geometry"). `hangarBehind(q, D, room, mouth,
+light)` draws the deck, stripe, parked craft, ceiling lights, ribbed walls and back wall behind a bay's open mouth, in the
+same level frame as the rooms, its mouth measured level (on a sloped flank the mouth is shorter than the bay is tall). A
+hole or a burn takes the pane, and the hole's own decks show through it.
 
 **Damage**, on the shared `docs/mockups/lib/ship-fx.js` (as the Concord and Krai pages): the hull shader runs
 `dmgHoles`, `dmgScorch` and `interiorRoom` (holes show the decks behind), per-ship damage uniforms; a phaser scorches, a

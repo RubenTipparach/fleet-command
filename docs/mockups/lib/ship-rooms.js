@@ -11,9 +11,12 @@
 // pane's frame (z into the room, normalised), room: any vec3 naming the room (hashed for its layout, carpet and light),
 // kindIn: 0 quarters, 1 mess, 2 office, or -1 to pick from the hash, LIn: the room's light colour, or x < 0 to pick from the
 // hash (warm, cold or dark). Returns the light leaving the pane.
-// A launch bay's hangar is not drawn here: it is big enough to be geometry (owner, 2026-11-05: "Hangar bay is large enough
-// for me to just recommend using geometry"; hangarMesh in docs/mockups/ssarith-ship-concepts.html).
-// It needs ph1 (FCShipSkin GLSL.hash) and bHit (GLSL.box) defined before it.
+//   vec3 hangarBehind(vec3 q, vec3 D, vec3 room, vec2 mouth, vec3 L)
+// the hangar behind a launch bay's mouth (mouth: its width and height in metres, q at its centre): a deck 28 m deep with a
+// centre stripe, three small craft parked in a row, rows of lights in the ceiling, ribbed walls, a lit back wall, in the
+// bay's light L (owner, 2026-11-05: "we need a carrier"; kept painted
+// over geometry for its parallax: "I actually like the paralax so I'd keep it").
+// Both need ph1 (FCShipSkin GLSL.hash) and bHit (GLSL.box) defined before them.
 window.FCShipRooms = (function () {
 'use strict';
 const GLSL = `
@@ -92,6 +95,24 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
   if (obj == 5 || (obj == 0 && emit > 0.9 && emit < 1.5)) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : accent)*0.7;  // screens
   else if (emit > 0.0) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : (emit > 2.0 ? accent : L))*emit*0.55;
   return lit*exp(-t*0.05);
+}
+vec3 hangarBehind(vec3 q, vec3 D, vec3 room, vec2 mouth, vec3 L){
+  float hw = mouth.x*0.5 + 2.0, fl = -mouth.y*0.5, ce = mouth.y*0.5 + 1.5, DZ = 28.0;
+  vec3 lo = vec3(-hw, fl, 0.0), hi = vec3(hw, ce, DZ), nb;
+  vec3 tA = (mix(lo, hi, step(0.0, D)) - q)/D; float t = min(tA.x, min(tA.y, tA.z));
+  vec3 n = t == tA.x ? vec3(-sign(D.x), 0.0, 0.0) : t == tA.y ? vec3(0.0, -sign(D.y), 0.0) : vec3(0.0, 0.0, -1.0);
+  int obj = 0;
+  for (int i = 0; i < 3; i++) { float zc = 6.0 + float(i)*7.5, xc = (ph1(room.xy + float(i)) - 0.5)*max(hw - 3.5, 0.0), tb;
+    tb = bHit(q, D, vec3(xc - 1.4, fl, zc - 2.4), vec3(xc + 1.4, fl + 1.2, zc + 2.4), nb, t); if (tb < t) { t = tb; n = nb; obj = 1; }   // a small craft's body
+    tb = bHit(q, D, vec3(xc - 3.0, fl + 0.5, zc - 0.2), vec3(xc + 3.0, fl + 0.7, zc + 1.0), nb, t); if (tb < t) { t = tb; n = nb; obj = 1; } } // its wings
+  vec3 h = q + D*t, col = vec3(0.16, 0.17, 0.15); float emit = 0.0;
+  if (obj == 1) col = vec3(0.32, 0.33, 0.27);
+  else if (n.y > 0.5) col = vec3(0.11, 0.12, 0.10) + vec3(0.6, 0.5, 0.15)*step(abs(h.x), 0.35)*step(0.5, fract(h.z/4.0));   // the deck and its stripe
+  else if (n.y < -0.5) emit = step(0.72, fract(h.z/4.0))*step(abs(fract(h.x/3.0) - 0.5), 0.22)*2.2;                         // ceiling light rows
+  else if (n.z < -0.5) { col = vec3(0.22, 0.23, 0.2); emit = 0.3; }                                                          // the back wall
+  else col *= 0.75 + 0.25*step(0.5, fract(h.z/3.0));                                                                         // ribbed walls
+  float shade = 0.4 + 0.6*max(n.y, 0.0) + 0.25*max(-n.z, 0.0);
+  return (col*L*shade*1.8 + L*emit*0.6)*exp(-t*0.03);
 }
 `;
 return { GLSL };

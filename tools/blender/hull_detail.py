@@ -323,36 +323,51 @@ def window_rows(F, surf):
 ROOMS = ("quarters", "mess", "workshop", "hold", "bay")   # the room kinds a pane can show (the page's interior mapping)
 
 
-def pane_box(w, h, kind, lit, M, depth=None):
+def fits(surf, M, w, h, frame):
+    """Whether a pane w by h with its frame lies flat on the hull at frame M: every corner and edge middle of the framed
+    rectangle within 0.12 m of the face's plane. A pane that would cross a bend is left out (Ship Design Bible W2), or,
+    for a bay, the build stops (the data must move it)."""
+    R3, o = M.to_3x3(), M.to_translation()
+    u, v, n = R3 @ Vector((1, 0, 0)), R3 @ Vector((0, 1, 0)), (R3 @ Vector((0, 0, 1))).normalized()
+    for a in (-1, 0, 1):
+        for b in (-1, 0, 1):
+            p = o + u * (a * (w / 2 + frame)) + v * (b * (h / 2 + frame))
+            hit = surf.bvh.ray_cast(p + n * 2.0, -n, 4.0)
+            if hit[0] is None or abs((hit[0] - p).dot(n)) > 0.12:
+                return False
+    return True
+
+
+def pane_box(w, h, kind, lit, M, frame):
     """A pane w by h at frame M: its glass for the bake (a thin box that glows when lit, so it lights the hull round it),
     and its entry in PANES, from which the page draws the pane itself as its own quad, with a clean frame and the room
     or hangar behind it (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the
     border clean"). A baked map of the panes was too coarse for that: a window is a few texels across."""
     R3 = M.to_3x3()
-    PANES.append({"kind": kind, "lit": bool(lit), "w_m": w, "h_m": h,
+    PANES.append({"kind": kind, "lit": bool(lit), "w_m": w, "h_m": h, "frame_m": frame,
                   "c": [round(c, 4) for c in M.to_translation()],
                   "u": [round(c, 5) for c in (R3 @ Vector((1, 0, 0))).normalized()],
                   "v": [round(c, 5) for c in (R3 @ Vector((0, 1, 0))).normalized()],
                   "n": [round(c, 5) for c in (R3 @ Vector((0, 0, 1))).normalized()]})
-    if depth:
-        PANES[-1]["depth_m"] = depth   # a bay's hangar: how far it runs into the hull
     return place(bm_box(w, h, 0.06, at=(0, 0, 0.02)), M)
 
 
-def window(lit, M, cutters, kind="quarters"):
+def window(lit, M, cutters, frame, kind="quarters"):
     cutters.append(place(bm_box(1.1, 0.6, 3.0, at=(0, 0, -1.0)), M))
-    return [(pane_box(1.1, 0.6, kind, lit, M), "lamp:window" if lit else "vent")]
+    return [(pane_box(1.1, 0.6, kind, lit, M, frame), "lamp:window" if lit else "vent")]
 
 
-def bay(F, M, cutters):
+def bay(F, M, cutters, surf, frame):
     """A launch bay: an opening cut through the armour, its mouth a pane onto the hangar behind (drawn by the page), a
     row of amber lamps along its lintel. Its width runs level with the decks: on a face whose frame runs up the ship (a bow
     face), the frame turns a quarter about the normal, so the mouth is w wide and h tall there too."""
     w, h = F["w_m"], F["h_m"]
     if abs(M.col[0].y) > 0.7:
         M = M @ Matrix.Rotation(math.pi / 2, 4, "Z")
+    if not fits(surf, M, w, h, frame):
+        raise ValueError(f"hull_detail: the bay at {F['face']} {F['at']} ({w} by {h} m) does not lie flat on its face; move it or make it smaller")
     cutters.append(place(bm_box(w, h, 3.0, at=(0, 0, -1.0)), M))
-    parts = [(pane_box(w, h, "bay", F.get("lit", True), M, F.get("depth_m", 20.0)), "lamp:bay")]
+    parts = [(pane_box(w, h, "bay", F.get("lit", True), M, frame), "lamp:bay")]
     n = max(3, int(w / 2.2))
     for i in range(n):
         parts.append((place(bm_box(0.3, 0.3, 0.3, at=(-w / 2 + (i + 0.5) * w / n, h / 2 + 0.45, 0)), M), "lamp:amber"))
@@ -758,13 +773,16 @@ def build(lo, S, D, seed):
         at_both(F, louvre)
     for F in S.get("lamps", []):
         at_both(F, lambda F, M, cut: lamp(F, M))
+    PF = D["pane_frame_m"]
     for F in S.get("bays", []):
-        at_both(F, bay)
+        at_both(F, lambda F, M, cut: bay(F, M, cut, surf, PF["bay"]))
     for F in S.get("windows", []):
         for loc, nor, lit_, kind in window_rows(F, surf):
+            if not fits(surf, frame_at(loc, nor), 1.1, 0.6, PF["window"]):
+                continue   # it would cross a bend
             for m in (False, True):
                 cut = []
-                feats.append((window(lit_, frame_at(loc, nor, m), cut, kind), loc))
+                feats.append((window(lit_, frame_at(loc, nor, m), cut, PF["window"], kind), loc))
                 holes.extend(obj_from(c, "hole", mats["armour"]) for c in cut)
     lights(lo, S, surf, mats, lamps, feats, D)
     armour = build_armour(lo, D, S, rng, holes, mats, "primary")
