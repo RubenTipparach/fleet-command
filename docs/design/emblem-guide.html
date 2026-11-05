@@ -909,12 +909,13 @@ const SD = (() => {
     // side only), and two square-cut vanes just ahead of the string.
     P.shaft = [[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]];
     P.head = HEADS[idx](tip, y);
-    // The fletching (owner, 2026-11-05: "Feathers red with orange tip"): two feathers swept back from the nock, and the
-    // outer strip of each (its tip, orange on the 3D badge) as its own polygon over it.
-    const vane = (s) => [[sx + 2.2, y + s * 0.8], [sx + 3, y + s * 3], [sx + 6.5, y + s * 3], [sx + 8.5, y + s * 0.8]];
+    // The fletching (owner, 2026-11-05: "Feathers red with orange tip"): two feathers swept back from the nock, each in
+    // two pieces that meet edge to edge and never overlap (an overlap at nearly one height z-fights on the 3D badge, owner:
+    // "z fighting"): the feather's body nearest the shaft, and its outer strip, the tip, orange on the badge.
+    const vane = (s) => [[sx + 2.2, y + s * 0.8], [sx + 2.67, y + s * 2.1], [sx + 7.32, y + s * 2.1], [sx + 8.5, y + s * 0.8]];
     const vaneTip = (s) => [[sx + 2.67, y + s * 2.1], [sx + 3, y + s * 3], [sx + 6.5, y + s * 3], [sx + 7.32, y + s * 2.1]];
     P.vanes = [vane(-1), vane(1)]; P.vaneTips = [vaneTip(-1), vaneTip(1)];
-    return { y, h, sx, tip, d, P, limb: polyD(P.limb), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.map(polyD).join('') };
+    return { y, h, sx, tip, d, P, limb: polyD(P.limb), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.concat(P.vaneTips).map(polyD).join('') };
   });
   return { bows, PEN, fr: polyFrame(PEN, 2.5, 5) };
 })();
