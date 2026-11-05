@@ -8,8 +8,11 @@
 - [x] 1.4 The campaign in the faction's skin (`docs/mockups/lib/kitcss.js`), Concord, Krai and Ssarith
 - [x] 1.5 Shots at desktop and phone sizes, looked at; `dom_fit.mjs` passes
 - [x] 1.6 Published; tracker and `mockup-work.md` updated
+- [x] 1.7 Disabled keys dark in every skin: the idle key darkened and solid (owner, 2026-11-05: "disabled butons should be like dark")
 
 ## 2. After approval for build
+
+- [ ] 2.0 A `button.disabled` piece in each skin's kit, drawn by its own generator, in place of the darkened idle key
 
 - [ ] 2.1 Fold in the owner's notes
 - [ ] 2.2 Sound cues for the lamp and the pick

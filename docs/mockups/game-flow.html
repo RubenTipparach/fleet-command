@@ -1467,6 +1467,10 @@ const tall = (piece, h) => h / piece.size[1];
 // metal skin's frame is its own ground, and black behind it is forbidden (CLAUDE.md section 7). The value is the frame's
 // outer corner radius at the reference size (lib/concord.js, the sweep's R).
 const WRAP = { concord: { radius: 24, band: 6 } };
+// A key that cannot be pressed is the skin's idle key, unlit: darkened and dulled, solid so the ground behind does not show
+// through (owner, 2026-11-05: "disabled butons should be like dark"). The same treatment in every skin, until a skin has a
+// button.disabled piece of its own.
+const DARK = 'filter: brightness(0.42) saturate(0.45); opacity: 1; cursor: not-allowed; box-shadow: none; transform: none;';
 
 function css(skin, scope) {
   return Promise.resolve(skin.load()).then(() => {
@@ -1490,6 +1494,8 @@ ${S} .key.danger { filter: hue-rotate(${skin.id === 'concord' ? 140 : 0}deg) sat
 ${S} .key.small { ${key('button.idle', 36)} padding: 0 2px; }
 ${S} .key.small:hover:not(:disabled) { ${key('button.hover', 36)} }
 ${S} .key.small.go, ${S} .key.small:active:not(:disabled) { ${key('button.pressed', 36)} }
+${S} .key:disabled, ${S} .key.go:disabled, ${S} .key.on:disabled { ${key('button.idle', 44)} ${DARK} color: ${C.lilac}; }
+${S} .key.small:disabled, ${S} .key.small.go:disabled { ${key('button.idle', 36)} }
 ${S} .tab { ${key('tab.idle', 40)} background: none; border-radius: 0; color: ${ink.tabOff || C.text}; padding: 0 2px; box-shadow: none; }
 ${S} .tab[aria-selected="true"] { ${key('tab.active', 40)} background: none; color: ${ink.tabOn || C.text}; box-shadow: none; }
 ${S} .bar { ${nine(K['bar.track'], 1)} border-top-width: 0; border-bottom-width: 0; height: ${K['bar.track'].size[1]}px; background: none; box-shadow: none;
@@ -3768,6 +3774,8 @@ window.MOCKUP_SHOTS = {
   faction_hover: () => factionShot(1, null, 0.12, 0.2),
   faction_pick: () => { STORE.removeItem(SAVE_KEY('krai')); freshCampaign('krai'); CAMP.turn = 4; CAMP.credits = 5150; saveCampaign(); factionShot(1, 'krai', 0.12, 0.2); },
   faction_pick_ssarith: () => { STORE.removeItem(SAVE_KEY('ssarith')); factionShot(2, 'ssarith', 0.62, 0.15); },
+  // No Krai campaign saved: Continue is a disabled key, dark.
+  faction_pick_krai_new: () => { STORE.removeItem(SAVE_KEY('krai')); factionShot(1, 'krai', 0.12, 0.2); },
   new_campaign: () => { go('newcamp', { newSide: 'concord' }); FAC.frozen = true; FAC.hover = -1; stepFaction(0); },
   skirmish: () => { S.sk = { scen: 1, scale: 1, fleet: [], sel: 0 }; go('skirmish'); },
   skirmish_test: () => { S.sk = { scen: testIndex('concord_wrecks'), scale: 1, fleet: [], sel: 0 }; go('skirmish'); },

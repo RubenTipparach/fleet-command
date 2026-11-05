@@ -32,6 +32,10 @@ const tall = (piece, h) => h / piece.size[1];
 // metal skin's frame is its own ground, and black behind it is forbidden (CLAUDE.md section 7). The value is the frame's
 // outer corner radius at the reference size (lib/concord.js, the sweep's R).
 const WRAP = { concord: { radius: 24, band: 6 } };
+// A key that cannot be pressed is the skin's idle key, unlit: darkened and dulled, solid so the ground behind does not show
+// through (owner, 2026-11-05: "disabled butons should be like dark"). The same treatment in every skin, until a skin has a
+// button.disabled piece of its own.
+const DARK = 'filter: brightness(0.42) saturate(0.45); opacity: 1; cursor: not-allowed; box-shadow: none; transform: none;';
 
 function css(skin, scope) {
   return Promise.resolve(skin.load()).then(() => {
@@ -55,6 +59,8 @@ ${S} .key.danger { filter: hue-rotate(${skin.id === 'concord' ? 140 : 0}deg) sat
 ${S} .key.small { ${key('button.idle', 36)} padding: 0 2px; }
 ${S} .key.small:hover:not(:disabled) { ${key('button.hover', 36)} }
 ${S} .key.small.go, ${S} .key.small:active:not(:disabled) { ${key('button.pressed', 36)} }
+${S} .key:disabled, ${S} .key.go:disabled, ${S} .key.on:disabled { ${key('button.idle', 44)} ${DARK} color: ${C.lilac}; }
+${S} .key.small:disabled, ${S} .key.small.go:disabled { ${key('button.idle', 36)} }
 ${S} .tab { ${key('tab.idle', 40)} background: none; border-radius: 0; color: ${ink.tabOff || C.text}; padding: 0 2px; box-shadow: none; }
 ${S} .tab[aria-selected="true"] { ${key('tab.active', 40)} background: none; color: ${ink.tabOn || C.text}; box-shadow: none; }
 ${S} .bar { ${nine(K['bar.track'], 1)} border-top-width: 0; border-bottom-width: 0; height: ${K['bar.track'].size[1]}px; background: none; box-shadow: none;
