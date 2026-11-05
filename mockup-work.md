@@ -36,8 +36,8 @@ account and every link here is updated.
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | Drafted (2026-11-04, v2; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
-| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
-| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-05, v1; published from the cloud session's account) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
+| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-05, v1; published from the cloud session's account) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
