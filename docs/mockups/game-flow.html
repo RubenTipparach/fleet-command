@@ -92,6 +92,14 @@ button { font: inherit; color: inherit; }
 .item .t { font: 700 17px/1.1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; }
 .item .s { grid-column: 1 / -1; color: var(--dim); font-size: 13px; }
 .item.off { opacity: 0.5; }
+.item.met { border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+.item.met .num, td.ok { color: var(--ok); }
+/* The stand-in battle's objectives, ticked by hand (campaign-missions), on the right of the view. */
+.battlemid { display: flex; justify-content: flex-end; align-items: flex-start; min-height: 0; overflow: hidden; }
+.objs { width: min(360px, 46vw); max-height: 100%; overflow: auto; display: grid; gap: 8px; }
+@media (orientation: portrait) and (max-width: 920px) { .objs { width: min(360px, 70vw); } }
+.objs .item .t { font-size: 14px; text-transform: none; letter-spacing: 0; }
+.gradeword { font: 700 18px/1 var(--display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); }
 .bar { height: 8px; border-radius: 4px; background: #0a0f15; box-shadow: inset 0 1px 2px #000; overflow: hidden; min-width: 60px; }
 .bar i { display: block; height: 100%; background: var(--ok); }
 .bar.over i { background: var(--warn); }
@@ -114,6 +122,8 @@ table.grid td { padding: 6px 8px; border-top: 1px solid rgba(255,255,255,0.06); 
 .center { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; pointer-events: none; }
 .center > * { pointer-events: auto; }
 .sheet { width: min(560px, 100%); max-height: calc(100% - 24px); display: grid; gap: 14px; overflow: auto; }
+/* A long briefing or report scrolls under its keys, which stay in reach (a phone's short landscape screen). */
+.sheet > .row:last-child { position: sticky; bottom: 0; background: var(--ground, #05080b); padding: 6px 0 2px; }
 .screen { position: absolute; inset: max(12px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   display: grid; gap: 12px; grid-template-rows: auto 1fr auto; min-height: 0; }
 .head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end; justify-content: space-between; }
@@ -1433,7 +1443,7 @@ return api;
 // 'body[data-skin="krai"]'). The page adds it to a <style> once per skin. Elements it styles, by class:
 //   .panel (frame.panel), .panel.inset (frame.inset), .key (button.idle, .hover, .pressed), .tab (tab.idle, tab.active),
 //   .bar (bar.track) and its <i> fill (bar.fill, bar.fill.red when .over); plus the colour and type tokens the page's
-//   own CSS reads (--ink, --dim, --lamp, --ok, --warn, --display, --body). Inside its frame a panel is the skin's own ground
+//   own CSS reads (--ink, --dim, --lamp, --ok, --warn, --display, --body, --ground: the panel's own ground). Inside its frame a panel is the skin's own ground
 //   (CC.bg: the Concord's black, behind its flat back-lit vector, as on the battle console).
 // Needs docs/mockups/lib/kitdraw.js and the skin's module inlined first.
 window.FCKitCss = (function () {
@@ -1467,7 +1477,7 @@ function css(skin, scope) {
     const key = (id, h) => nine(K[id], tall(K[id], h)), wrap = WRAP[skin.id];
     return `
 ${S} { --ink: ${C.text}; --dim: ${C.lilac}; --faint: ${C.ver || C.lilac}; --lamp: ${C.sky}; --lamp-soft: ${C.sky}2e; --ok: ${C.accord};
-  --warn: ${C.alert}; --display: ${fam}; --body: ${fam}; }
+  --warn: ${C.alert}; --display: ${fam}; --body: ${fam}; --ground: ${C.bg}; }
 ${S} .panel { ${nine(K['frame.panel'], panelK)} background: ${C.bg} ${wrap ? 'border-box' : 'padding-box'}; padding: 4px 6px;
   ${wrap ? `border-radius: ${Math.round(wrap.radius * panelK)}px; box-shadow: 0 0 0 ${wrap.band}px ${C.bg};` : 'border-radius: 0; box-shadow: none;'} }
 ${S} .panel.inset { ${nine(K['frame.inset'], insetK)} background: none; box-shadow: none; padding: 4px; }
@@ -1861,97 +1871,259 @@ return { concord, krai, ssarith };
 // to implement in our three js mockup env"). One registry, one shape for every mission: the contracts offered on the map
 // and the story missions alike are scripts of the shape below, so a new mission is one define() call and no change to the
 // page. The page (docs/mockups/game-flow.html) owns the campaign; a script only reads it through `ctx` and answers.
+// The mission types and grades are the Fleet Command Missions guide's (docs/design/mission-guide.html); every type it
+// marks ready is a script here (owner, 2026-11-05: "let's implement all \"ready\" mission types"), with Capture the prize
+// added ("add \"capture the prize\" mission to capture a designated target ship for research").
 //
 // FCMissions.define(script) adds a script. A script is:
-//   id, name, glyph (one letter on the map marker), kind ('contract' expires after `turns`; 'story' never expires)
+//   id, name, glyph (one letter on the map marker), kind ('contract' expires after `turns`; 'story' never expires),
+//   type (the guide's mission type it plays)
 //   reward            base credits
 //   turns             turns a contract stays on offer (default 3)
 //   where(ctx)        the sectors it may be offered in: a list of hexes from ctx.hexes()
+//   setup(ctx, m)     optional: fills m.data when the mission is offered (a target's name, whether a call is a trap)
 //   brief(ctx, m)     the briefing text; objective(ctx, m) the one-line goal
 //   needs(ctx, m)     null, or why the fleet cannot take it yet ("Boarding needs marines aboard.")
-//   battle(ctx, m)    null for a mission done on arrival (a survey, a delivery), or
-//                     { enemy: faction id, count: ships, name? } for the battle it starts
-//   result(ctx, m, win)  what happens after: { credits, standing: { faction: change }, prize: hull id, next: [script id,
-//                     or { id, c, r }], log: 'text' }; any field may be left out
-// m is the offered mission: { id, script, c, r, turns, strength, reward, data } (data: whatever where/brief stored).
+//   battle(ctx, m)    null for a mission done on arrival (a survey, a delivery), or the battle it starts:
+//                     { name?, groups: [group], objectives: [objective], intel? }
+//                       group: { fac, count, role: 'enemy' | 'ally' | 'neutral', label?, tag?: 'flagship' | 'prize' |
+//                              'rescue' | 'decoy' }; allies are wingmen beside the fleet, neutrals are ships to protect
+//                       objective: { id, text, primary?, byWithdraw? } (primary ones decide win or lose; the rest lift
+//                              the grade; byWithdraw: withdrawing meets it, as breaking out of an ambush does)
+//                       intel: what the briefing says of the opposition, when it is not the truth (an ambush, a trap)
+//                     The older short form { enemy, count, name? } is one enemy group with the script's objective.
+//   grade(ctx, m, met, how)  optional: the outcome grade, when the default rule below does not fit the type
+//   result(ctx, m, o) what happens after, o = { grade, win, met, how, pay } (pay: the grade's share of the reward):
+//                     { credits, standing: { faction: change }, prize: faction, next: [script id, or { id, c, r, data }],
+//                     log: 'text' }; any field may be left out
+// m is the offered mission: { id, script, c, r, turns, strength, reward, data }.
 //
 // ctx, given by the page: side, rival (faction ids), name(faction), hexes(), hex(c, r), at (the fleet's sector),
 // home (the side's home port), own(h), hostile(h), plain(h), port(h), groupAt(h), fleet, marines(), rng(), near(h, n)
-// (sectors within n of h), dist(a, b).
+// (sectors within n of h), dist(a, b), hull(faction, tier) ({ id, cls }), names(faction) (its ship names).
 window.FCMissions = (function () {
 'use strict';
 const ALL = {};
 function define(s) {
   for (const k of ['id', 'name', 'glyph', 'where', 'brief', 'objective'])
     if (s[k] == null) throw new Error(`mission script ${s.id || '?'} has no ${k}`);
-  ALL[s.id] = Object.assign({ kind: 'contract', reward: 0, turns: 3, needs: () => null, battle: () => null, result: () => ({}) }, s);
+  ALL[s.id] = Object.assign({ kind: 'contract', type: null, reward: 0, turns: 3, setup: () => {}, needs: () => null, battle: () => null, result: () => ({}) }, s);
   return ALL[s.id];
 }
+
+// ---- Outcome grades (the guide's five, from worst to best; the draw is our own addition) -------------------------------
+const GRADES = ['crushing', 'defeat', 'draw', 'victory', 'outstanding'];
+const GRADE_NAME = { crushing: 'Crushing defeat', defeat: 'Defeat', draw: 'Draw', victory: 'Victory', outstanding: 'Outstanding' };
+// The share of a mission's reward each grade pays.
+const PAY = { crushing: 0, defeat: 0, draw: 0.25, victory: 1, outstanding: 1.5 };
+// How a battle ended: 'end' (fought to its end), 'withdraw' (the fleet disengaged), 'lost' (the fleet was destroyed or
+// struck). Every primary objective met is a victory, and every bonus too is outstanding; a withdrawal short of the primary
+// is a draw, staying and failing it a defeat, and losing the fleet a crushing defeat.
+function defaultGrade(objs, met, how) {
+  if (how === 'lost') return 'crushing';
+  const ok = (o) => !!met[o.id] || (how === 'withdraw' && !!o.byWithdraw);
+  const prim = objs.filter((o) => o.primary), bonus = objs.filter((o) => !o.primary);
+  if (prim.every(ok)) return bonus.length && bonus.every(ok) ? 'outstanding' : 'victory';
+  return how === 'withdraw' ? 'draw' : 'defeat';
+}
+// A script's battle in its full form (or null), the short form expanded.
+function battleOf(ctx, m) {
+  const def = ALL[m.script], b = def.battle(ctx, m);
+  if (!b) return null;
+  if (b.groups) return { name: b.name || def.name, intel: b.intel || null, groups: b.groups, objectives: b.objectives || [{ id: 'win', text: def.objective(ctx, m), primary: true }] };
+  return { name: b.name || def.name, intel: null, groups: [{ fac: b.enemy, count: b.count, role: 'enemy' }],
+    objectives: [{ id: 'win', text: def.objective(ctx, m), primary: true }, { id: 'intact', text: 'Lose no ships' }] };
+}
+// The outcome of a mission: its grade by the script's rule or the default, what that grade pays, whether it is a win.
+function score(ctx, m, battle, met, how) {
+  const def = ALL[m.script];
+  const g = !battle ? 'victory' : def.grade ? def.grade(ctx, m, met, how) : defaultGrade(battle.objectives, met, how);
+  const done = { ...met };
+  if (battle && how === 'withdraw') for (const o of battle.objectives) if (o.byWithdraw) done[o.id] = true;
+  return { grade: g, win: GRADES.indexOf(g) >= GRADES.indexOf('victory'), met: done, how: battle ? how : 'done', pay: PAY[g] };
+}
+const paid = (m, o) => Math.round(m.reward * o.pay / 10) * 10;  // to the nearest 10 cr
+
 const strengthCount = (m) => ({ Light: 1, Moderate: 2, Heavy: 3 })[m.strength] || 1;
 const foeOf = (ctx, h) => (ctx.hostile(h) ? h.owner : ctx.rival || 'vos');
+const enemyOf = (ctx) => ctx.rival || 'vos';
+const intact = { id: 'intact', text: 'Lose no ships' };
 
-// ---- Contracts: the seven kinds of the game flow's first draft (mockup-work.md, mockup 1), now as scripts ---------------
-define({ id: 'patrol', name: 'Patrol', glyph: 'P', reward: 300,
+// ---- Fight -------------------------------------------------------------------------------------------------------------
+// Patrol (ready): sweep a sector and meet what is there. Disengaging is a draw.
+define({ id: 'patrol', name: 'Patrol', glyph: 'P', type: 'Patrol', reward: 300,
   where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && (ctx.own(h) || h.owner === 'neutral')),
   objective: () => 'Sweep the sector and engage what you find.',
-  brief: (ctx) => `Raiders have been seen on the trade lanes. Take a turn through the sector and see them off. Your ${ctx.name(ctx.side)} patrol pay is the reward.`,
-  battle: (ctx, m) => ({ enemy: 'vos', count: strengthCount(m) }),
-  result: (ctx, m, win) => (win ? { credits: m.reward, standing: { [ctx.side]: 2 } } : {}) });
-define({ id: 'station', name: 'Enemy station assault', glyph: 'S', reward: 1200,
-  where: (ctx) => ctx.hexes().filter((h) => h.station && ctx.hostile(h)),
-  objective: () => 'Destroy the station.',
-  brief: (ctx, m) => `${ctx.hex(m.c, m.r).station} anchors the ${ctx.name(ctx.hex(m.c, m.r).owner)} line here. Break its shields and destroy it.`,
-  battle: (ctx, m) => ({ enemy: ctx.hex(m.c, m.r).owner, count: strengthCount(m) + 1 }),
-  result: (ctx, m, win) => (win ? { credits: m.reward, standing: { [ctx.hex(m.c, m.r).owner]: -10, [ctx.side]: 5 } } : {}) });
-define({ id: 'planet', name: 'Planetary assault', glyph: 'A', reward: 1000,
-  where: (ctx) => ctx.hexes().filter((h) => h.planet && ctx.hostile(h)),
-  objective: () => 'Destroy the orbital defences.',
-  brief: (ctx, m) => `The orbital guns over ${ctx.hex(m.c, m.r).planet} cover the approach. Silence them.`,
-  battle: (ctx, m) => ({ enemy: ctx.hex(m.c, m.r).owner, count: strengthCount(m) }),
-  result: (ctx, m, win) => (win ? { credits: m.reward, standing: { [ctx.hex(m.c, m.r).owner]: -8, [ctx.side]: 4 } } : {}) });
-define({ id: 'ambush', name: 'Convoy ambush', glyph: 'C', reward: 700,
-  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.hostile(h)),
-  objective: () => 'Destroy two of the three freighters.',
-  brief: (ctx, m) => `A ${ctx.name(foeOf(ctx, ctx.hex(m.c, m.r)))} supply convoy passes through here. Destroy two of its three freighters before they jump.`,
-  battle: (ctx, m) => ({ enemy: foeOf(ctx, ctx.hex(m.c, m.r)), count: strengthCount(m) + 1 }),
-  result: (ctx, m, win) => (win ? { credits: m.reward } : {}) });
-define({ id: 'defend', name: 'Convoy defense', glyph: 'D', reward: 600,
-  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.own(h)),
-  objective: () => 'Keep two of the three freighters alive.',
-  brief: (ctx) => `Our freighters are expected through this sector and raiders are waiting for them. Keep two of the three alive.`,
-  battle: (ctx, m) => ({ enemy: ctx.rival || 'vos', count: strengthCount(m) }),
-  result: (ctx, m, win) => (win ? { credits: m.reward, standing: { [ctx.side]: 3 } } : { standing: { [ctx.side]: -2 } }) });
-define({ id: 'assassinate', name: 'Assassination', glyph: 'X', reward: 900,
-  where: (ctx) => ctx.hexes().filter((h) => ctx.groupAt(h)?.commander),
-  objective: () => 'Destroy the commander\'s ship.',
-  brief: (ctx, m) => `${ctx.groupAt(ctx.hex(m.c, m.r))?.name || 'An enemy commander'} is in this sector. Destroy the flagship; the escorts do not matter.`,
-  battle: (ctx, m) => ({ enemy: ctx.groupAt(ctx.hex(m.c, m.r))?.fac || ctx.rival || 'vos', count: 3 }),
-  result: (ctx, m, win) => (win ? { credits: m.reward } : {}) });
-define({ id: 'capture', name: 'Capture a ship', glyph: 'K', reward: 800,
+  brief: (ctx, m) => `Raiders have been seen on the trade lanes. Take a turn through the sector and see them off.${ctx.hex(m.c, m.r).terrain === 'asteroids' ? ' They hide among the rocks here: mind the fields.' : ''} Your ${ctx.name(ctx.side)} patrol pay is the reward.`,
+  battle: (ctx, m) => ({ groups: [{ fac: 'vos', count: strengthCount(m), role: 'enemy', label: 'Raiders' }],
+    objectives: [{ id: 'clear', text: 'Destroy or drive off the raiders', primary: true }, intact] }),
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.side]: o.grade === 'outstanding' ? 3 : 2 } }
+    : o.grade === 'draw' ? { credits: paid(m, o), log: 'Patrol: outnumbered, the fleet drew off.' } : {}) });
+
+// Fleet action (ready): an equal battle group, fought with wingmen.
+define({ id: 'fleet_action', name: 'Fleet action', glyph: 'F', type: 'Fleet action', reward: 900,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && h.owner === enemyOf(ctx) && ctx.dist(h, ctx.home) >= 5),
+  setup: (ctx, m) => { m.data.flag = ctx.names(enemyOf(ctx))[2]; },
+  objective: (ctx, m) => `Destroy the ${m.data.flag} or most of her group.`,
+  brief: (ctx, m) => `A ${ctx.name(enemyOf(ctx))} battle group under the ${m.data.flag} holds this sector. Two wingmen of the line join you for the action: meet the group as equals and break it.`,
+  battle: (ctx, m) => {
+    const n = ctx.fleet.length + 2, foe = enemyOf(ctx);
+    return { groups: [{ fac: ctx.side, count: 2, role: 'ally', label: 'Wingmen' }, { fac: foe, count: 1, role: 'enemy', tag: 'flagship', label: m.data.flag },
+      { fac: foe, count: n - 1, role: 'enemy' }],
+      objectives: [{ id: 'flag', text: `Destroy the ${m.data.flag} or most of her group`, primary: true }, intact, { id: 'wing', text: 'Bring both wingmen home' }] };
+  },
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.side]: 5, [enemyOf(ctx)]: -5 } }
+    : o.grade === 'draw' ? { credits: paid(m, o) } : { standing: { [ctx.side]: -2 } }) });
+
+// Ambushed (ready): a quiet run that is not quiet. The briefing does not know; two groups are waiting, ahead and behind.
+// Breaking out is the win.
+define({ id: 'ambushed', name: 'Dispatch run', glyph: 'R', type: 'Ambushed', reward: 450,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && !ctx.own(h) && ctx.dist(h, ctx.home) >= 4),
+  objective: () => 'Carry the dispatches through the sector.',
+  brief: () => 'Sealed dispatches for the picket beyond this sector. A routine run: through and out the far side.',
+  battle: (ctx, m) => {
+    const foe = foeOf(ctx, ctx.hex(m.c, m.r));
+    return { intel: 'None expected', groups: [{ fac: foe, count: 2, role: 'enemy', label: 'Ahead' }, { fac: foe, count: strengthCount(m), role: 'enemy', label: 'Behind' }],
+      objectives: [{ id: 'out', text: 'Break out, or beat both groups', primary: true, byWithdraw: true }, { id: 'home', text: 'Bring every ship home' },
+        { id: 'both', text: 'Destroy both groups' }] };
+  },
+  result: (ctx, m, o) => ({ credits: paid(m, o), standing: o.win ? { [ctx.side]: 2 } : {},
+    log: o.win ? 'Dispatch run: it was an ambush, and the fleet broke out.' : 'Dispatch run: ambushed, and the dispatches were lost.' }) });
+
+// Overwhelming fleet (ready): far more than one captain can beat. Each group neutralised counts; four is outstanding.
+const WAVE = ['first', 'second', 'third', 'fourth'];
+define({ id: 'overwhelming', name: 'Stem the tide', glyph: 'O', type: 'Overwhelming fleet', reward: 1600,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.own(h) && ctx.dist(h, ctx.home) >= 3),
+  objective: () => 'Neutralise as many of its four groups as you can.',
+  brief: (ctx) => `A ${ctx.name(enemyOf(ctx))} fleet in four groups is pushing into our space, far more than one captain can beat. Two wingmen are with you. Destroy, capture or drive off each group you can: every group stopped here is one that does not reach the yards.`,
+  battle: (ctx) => ({ groups: [{ fac: ctx.side, count: 2, role: 'ally', label: 'Wingmen' },
+    ...WAVE.map((w, i) => ({ fac: enemyOf(ctx), count: 2, role: 'enemy', label: `Group ${i + 1}` }))],
+  objectives: WAVE.map((w, i) => ({ id: `g${i + 1}`, text: `Neutralise the ${w} group` })) }),
+  // Groups neutralised: all four outstanding, two or three a victory, one a draw, none a defeat.
+  grade: (ctx, m, met, how) => {
+    if (how === 'lost') return 'crushing';
+    const n = WAVE.filter((w, i) => met[`g${i + 1}`]).length;
+    return n === 4 ? 'outstanding' : n >= 2 ? 'victory' : n === 1 || how === 'withdraw' ? 'draw' : 'defeat';
+  },
+  result: (ctx, m, o) => {
+    const n = WAVE.filter((w, i) => o.met[`g${i + 1}`]).length;
+    return { credits: Math.round(m.reward * n / 4 * (n === 4 ? 1.5 : 1)), standing: { [ctx.side]: 2 * n },
+      log: `Stem the tide: ${n} of 4 groups stopped.` };
+  } });
+
+// ---- Raid --------------------------------------------------------------------------------------------------------------
+// Capture (ready): a lone ship on the map, boarded and taken.
+define({ id: 'capture', name: 'Capture a ship', glyph: 'K', type: 'Capture', reward: 800,
   where: (ctx) => ctx.hexes().filter((h) => ctx.groupAt(h)?.size === 1 && ctx.groupAt(h).fac !== ctx.side),
   objective: () => 'Board and take the ship. Needs marines.',
   brief: (ctx, m) => `${ctx.groupAt(ctx.hex(m.c, m.r))?.name || 'A lone ship'} is alone here. Drop its shields and board it.`,
   needs: (ctx) => (ctx.marines() > 0 ? null : 'Boarding needs marines aboard.'),
-  battle: (ctx, m) => ({ enemy: ctx.groupAt(ctx.hex(m.c, m.r))?.fac || 'vos', count: 1 }),
-  result: (ctx, m, win) => (win ? { credits: m.reward, prize: ctx.groupAt(ctx.hex(m.c, m.r))?.fac || 'vos' } : {}) });
+  battle: (ctx, m) => {
+    const g = ctx.groupAt(ctx.hex(m.c, m.r));
+    return { groups: [{ fac: g?.fac || 'vos', count: 1, role: 'enemy', tag: 'prize', label: g?.name || 'Lone ship' }],
+      objectives: [{ id: 'take', text: 'Board and take the ship', primary: true }, { id: 'whole', text: 'Take it with its hull above half' }, { id: 'marines', text: 'Lose no marines' }] };
+  },
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), prize: ctx.groupAt(ctx.hex(m.c, m.r))?.fac || 'vos' } : {}) });
+
+// Capture the prize (owner, 2026-11-05): research wants one named ship of the rival's, taken whole. It runs escorted;
+// destroying it voids the contract. Taken, it is towed home to the research yard, which pays the bounty.
+define({ id: 'prize', name: 'Capture the prize', glyph: 'Z', type: 'Capture the prize', reward: 400,
+  turns: 4,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.hostile(h) && ctx.dist(h, ctx.home) >= 4),
+  setup: (ctx, m) => {
+    const fac = enemyOf(ctx), hull = ctx.hull(fac, 2 + Math.floor(ctx.rng() * 2)), names = ctx.names(fac);
+    m.data = { fac, hull: hull.id, cls: hull.cls, name: names[(2 + Math.floor(ctx.rng() * names.length)) % names.length] };
+  },
+  objective: (ctx, m) => `Board and take the ${m.data.name}, whole. Needs marines.`,
+  brief: (ctx, m) => `Research wants a ${ctx.name(m.data.fac)} ${m.data.cls} to take apart, and the ${m.data.name} is passing through this sector under escort. Strip her shields, board her and tow her home to ${ctx.home.planet || ctx.home.station}. She is worth nothing to us destroyed: sink her and the contract is void.`,
+  needs: (ctx) => (ctx.marines() > 0 ? null : 'Boarding needs marines aboard.'),
+  battle: (ctx, m) => ({ groups: [{ fac: m.data.fac, count: 1, role: 'enemy', tag: 'prize', label: `Prize: ${m.data.name}` }, { fac: m.data.fac, count: strengthCount(m), role: 'enemy', label: 'Escorts' }],
+    objectives: [{ id: 'take', text: `Board and take the ${m.data.name} (not destroy her)`, primary: true }, { id: 'whole', text: 'Take her with her hull above half' },
+      { id: 'escort', text: 'Destroy or drive off the escorts' }] }),
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), next: [{ id: 'prize_home', c: ctx.home.c, r: ctx.home.r, data: { ...m.data, grade: o.grade } }],
+    log: `The ${m.data.name} is under tow. Bring her home to the research yard.` }
+    : { log: `The ${m.data.name} got away${o.grade === 'crushing' ? ', and the fleet with it barely did' : ''}.` }) });
+// Its second half: towing the prize home. Done on arrival; the bounty is larger for a prize taken whole.
+define({ id: 'prize_home', name: 'Deliver the prize', glyph: 'Y', kind: 'story', type: 'Capture the prize', reward: 1500,
+  where: (ctx) => [ctx.home],
+  objective: (ctx, m) => `Tow the ${m.data.name} to the research yard at ${ctx.home.planet || ctx.home.station}.`,
+  brief: (ctx, m) => `The ${m.data.name} is under tow. The research yard at ${ctx.home.planet || ctx.home.station} is waiting for her; the bounty is paid on delivery.`,
+  result: (ctx, m) => {
+    const whole = m.data.grade === 'outstanding';
+    return { credits: Math.round(m.reward * (whole ? 1.5 : 1)), standing: { [ctx.side]: whole ? 8 : 5 },
+      log: `Research has the ${m.data.name}: the ${ctx.name(m.data.fac)} ${m.data.cls}'s drive and shields are being taken apart.` };
+  } });
+
+// ---- Serve -------------------------------------------------------------------------------------------------------------
+// Distress call (ready): a freighter calls for help. Sometimes the call is a trap: the briefing cannot tell which.
+define({ id: 'distress', name: 'Distress call', glyph: 'H', type: 'Distress call', reward: 500,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && (ctx.own(h) || h.owner === 'neutral') && ctx.dist(h, ctx.home) >= 2),
+  setup: (ctx, m) => { m.data = { trap: ctx.rng() < 0.4, ship: ['Larkspur', 'Patience', 'Hollow Bell', 'Ninefold', 'Ember Reach'][Math.floor(ctx.rng() * 5)] }; },
+  objective: (ctx, m) => `Answer the call and save the freighter ${m.data.ship}.`,
+  brief: (ctx, m) => `The freighter ${m.data.ship} is calling for help: raiders on her, her shields failing. You are the nearest ship.`,
+  battle: (ctx, m) => (m.data.trap
+    ? { intel: 'Raiders, a few', groups: [{ fac: 'vos', count: 1, role: 'enemy', tag: 'decoy', label: `Decoy: ${m.data.ship}` }, { fac: 'vos', count: strengthCount(m) + 1, role: 'enemy', label: 'Waiting in ambush' }],
+      objectives: [{ id: 'trap', text: 'Beat the trap', primary: true }, intact, { id: 'decoy', text: 'Take the decoy ship' }] }
+    : { intel: 'Raiders, a few', groups: [{ fac: 'neutral', count: 1, role: 'neutral', tag: 'rescue', label: m.data.ship }, { fac: 'vos', count: strengthCount(m), role: 'enemy', label: 'Raiders' }],
+      objectives: [{ id: 'save', text: `Keep the ${m.data.ship} alive`, primary: true }, { id: 'drive', text: 'Drive off the raiders' }, { id: 'cargo', text: "Take the raiders' shipment" }] }),
+  result: (ctx, m, o) => (m.data.trap
+    ? { credits: paid(m, o), standing: o.win ? { vos: -3 } : {}, log: o.win ? `The ${m.data.ship} was a Vos decoy, and the trap was beaten.` : `The ${m.data.ship} was a Vos decoy.` }
+    : { credits: paid(m, o), standing: o.win ? { [ctx.side]: 3 } : {}, log: o.win ? `The ${m.data.ship} is safe and on her way.` : `The ${m.data.ship} was lost.` }) });
+
+// ---- The first draft's other contracts (their battles wait on stations, planets and freighters: guide, "needs") -------
+define({ id: 'station', name: 'Enemy station assault', glyph: 'S', type: 'Base assault', reward: 1200,
+  where: (ctx) => ctx.hexes().filter((h) => h.station && ctx.hostile(h)),
+  objective: () => 'Destroy the station.',
+  brief: (ctx, m) => `${ctx.hex(m.c, m.r).station} anchors the ${ctx.name(ctx.hex(m.c, m.r).owner)} line here. Break its shields and destroy it.`,
+  battle: (ctx, m) => ({ enemy: ctx.hex(m.c, m.r).owner, count: strengthCount(m) + 1 }),
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.hex(m.c, m.r).owner]: -10, [ctx.side]: 5 } } : {}) });
+define({ id: 'planet', name: 'Planetary assault', glyph: 'A', type: 'Planetary assault', reward: 1000,
+  where: (ctx) => ctx.hexes().filter((h) => h.planet && ctx.hostile(h)),
+  objective: () => 'Destroy the orbital defences.',
+  brief: (ctx, m) => `The orbital guns over ${ctx.hex(m.c, m.r).planet} cover the approach. Silence them.`,
+  battle: (ctx, m) => ({ enemy: ctx.hex(m.c, m.r).owner, count: strengthCount(m) }),
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.hex(m.c, m.r).owner]: -8, [ctx.side]: 4 } } : {}) });
+define({ id: 'ambush', name: 'Convoy ambush', glyph: 'C', type: 'Convoy raid', reward: 700,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.hostile(h)),
+  objective: () => 'Destroy two of the three freighters.',
+  brief: (ctx, m) => `A ${ctx.name(foeOf(ctx, ctx.hex(m.c, m.r)))} supply convoy passes through here. Destroy two of its three freighters before they jump.`,
+  battle: (ctx, m) => ({ enemy: foeOf(ctx, ctx.hex(m.c, m.r)), count: strengthCount(m) + 1 }),
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o) } : {}) });
+define({ id: 'defend', name: 'Convoy defense', glyph: 'D', type: 'Convoy escort', reward: 600,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.plain(h) && ctx.own(h)),
+  objective: () => 'Keep two of the three freighters alive.',
+  brief: () => 'Our freighters are expected through this sector and raiders are waiting for them. Keep two of the three alive.',
+  battle: (ctx, m) => ({ enemy: ctx.rival || 'vos', count: strengthCount(m) }),
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.side]: 3 } } : { standing: { [ctx.side]: -2 } }) });
+define({ id: 'assassinate', name: 'Assassination', glyph: 'X', type: 'Fleet action', reward: 900,
+  where: (ctx) => ctx.hexes().filter((h) => ctx.groupAt(h)?.commander),
+  objective: () => 'Destroy the commander\'s ship.',
+  brief: (ctx, m) => `${ctx.groupAt(ctx.hex(m.c, m.r))?.name || 'An enemy commander'} is in this sector. Destroy the flagship; the escorts do not matter.`,
+  battle: (ctx, m) => {
+    const g = ctx.groupAt(ctx.hex(m.c, m.r)), fac = g?.fac || ctx.rival || 'vos';
+    return { groups: [{ fac, count: 1, role: 'enemy', tag: 'flagship', label: g?.name || 'Flagship' }, { fac, count: 2, role: 'enemy', label: 'Escorts' }],
+      objectives: [{ id: 'flag', text: 'Destroy the flagship', primary: true }, intact] };
+  },
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o) } : {}) });
 
 // ---- Story: a new captain's first command, an example of a chain (a mission that offers the next when it is done) -------
-// The owner's own mission scripts replace this when they arrive.
 define({ id: 'shakedown', name: 'Shakedown cruise', glyph: '1', kind: 'story', reward: 250,
   where: (ctx) => ctx.near(ctx.home, 3).filter((h) => ctx.plain(h) && ctx.dist(h, ctx.home) >= 2 && h.terrain === 'open'),
   objective: () => 'Fly to the marker beacon and back on your own engines.',
-  brief: (ctx) => `Your first command is fresh from the yard. Take her out to the marker beacon and let the crew find her faults before anyone else does. No battle expected.`,
+  brief: () => 'Your first command is fresh from the yard. Take her out to the marker beacon and let the crew find her faults before anyone else does. No battle expected.',
   battle: () => null,
-  result: (ctx) => ({ credits: 250, next: ['first_blood'], log: 'Shakedown done: the yard fixed what the crew found.' }) });
-define({ id: 'first_blood', name: 'First blood', glyph: '2', kind: 'story', reward: 500,
+  result: () => ({ credits: 250, next: ['first_blood'], log: 'Shakedown done: the yard fixed what the crew found.' }) });
+define({ id: 'first_blood', name: 'First blood', glyph: '2', kind: 'story', type: 'Patrol', reward: 500,
   where: (ctx) => ctx.near(ctx.home, 5).filter((h) => ctx.plain(h) && ctx.dist(h, ctx.home) >= 3),
   objective: () => 'Drive off the raider watching your home port.',
   brief: (ctx) => `A single raider has been shadowing traffic out of ${ctx.home.planet || ctx.home.station}. You are the nearest ship. Drive it off.`,
-  battle: () => ({ enemy: 'vos', count: 1, name: 'First blood' }),
-  result: (ctx, m, win) => (win ? { credits: 500, standing: { [ctx.side]: 5, vos: -5 }, log: 'The raider is gone; the port has noticed you.' }
+  battle: () => ({ name: 'First blood', groups: [{ fac: 'vos', count: 1, role: 'enemy', label: 'Raider' }],
+    objectives: [{ id: 'off', text: 'Drive off or destroy the raider', primary: true }, { id: 'kill', text: 'Destroy it before it runs' }] }),
+  result: (ctx, m, o) => (o.win ? { credits: paid(m, o), standing: { [ctx.side]: 5, vos: -5 }, log: 'The raider is gone; the port has noticed you.' }
     : { next: ['first_blood'], log: 'The raider got away. It will be back.' }) });
 
-return { define, get: (id) => ALL[id], ids: () => Object.keys(ALL), contracts: () => Object.values(ALL).filter((s) => s.kind === 'contract').map((s) => s.id) };
+return { define, get: (id) => ALL[id], ids: () => Object.keys(ALL), contracts: () => Object.values(ALL).filter((s) => s.kind === 'contract').map((s) => s.id),
+  battleOf, score, GRADES, GRADE_NAME, PAY };
 })();
 </script>
 <!-- /INLINE -->
@@ -2194,6 +2366,8 @@ function missionCtx() {
     own: (h) => h.owner === C.side, hostile, plain: (h) => !h.planet && !h.station, port: (h) => !!(h.planet || h.station),
     groupAt: (h) => C.groups.find((g) => g.c === h.c && g.r === h.r), marines: () => C.fleet.reduce((n, s) => n + s.supplies.marines, 0),
     dist: hexDist, near: (h, n) => all.filter((x) => hexDist(x, h) <= n),
+    hull: (f, t) => { const id = hullsOf(f).length ? hullOfTier(f, t) : null; return { id, cls: id ? HULLS[id].cls.replace(' (stand-in)', '').toLowerCase() : 'raider' }; },
+    names: (f) => SHIP_NAMES[f] || SHIP_NAMES.vos,
   };
 }
 // Offer a mission: the script's own choice of sector, never one that already has a mission. `at` pins the sector.
@@ -2204,7 +2378,8 @@ function offerMission(id, at) {
     const pool = (at ? [ctx.hex(at.c, at.r)] : def.where(ctx)).filter((h) => !CAMP.missions.some((m) => m.c === h.c && m.r === h.r));
     if (!pool.length) { if (id) return null; continue; }
     const h = pool[Math.floor(R() * pool.length)];
-    const m = { id: ++CAMP.mid, script: sid, c: h.c, r: h.r, turns: def.kind === 'story' ? null : def.turns, strength: ['Light', 'Moderate', 'Heavy'][Math.floor(R() * 3)], reward: def.reward + (def.kind === 'story' ? 0 : Math.floor(R() * 5) * 50), data: {} };
+    const m = { id: ++CAMP.mid, script: sid, c: h.c, r: h.r, turns: def.kind === 'story' ? null : def.turns, strength: ['Light', 'Moderate', 'Heavy'][Math.floor(R() * 3)], reward: def.reward + (def.kind === 'story' ? 0 : Math.floor(R() * 5) * 50), data: { ...(at?.data || {}) } };
+    def.setup(ctx, m);
     CAMP.missions.push(m);
     return m;
   }
@@ -2659,29 +2834,69 @@ const bsun = new THREE.DirectionalLight(0xfff1dd, 0.9); bsun.position.set(-10, 1
 const bplanet = new THREE.Mesh(new THREE.SphereGeometry(40, 64, 48), new THREE.MeshStandardMaterial({ map: planetTex(28), roughness: 0.95 })); bplanet.position.set(-30, -48, -60); battleScene.add(bplanet);
 const battleShips = [];
 const beams = new THREE.Group(); battleScene.add(beams);
+// The stand-in battle, by group (a mission's battle, docs/mockups/lib/campaign-missions.js): the fleet and its wingmen on one
+// side, the enemy's groups round the far side of the ring (an ambush's two groups from two bearings, a fleet's four spread
+// wide), ships to protect between, a named ship (a flagship, the prize, a decoy) just inside its group with its label above.
+// An asteroid sector puts rocks in the fight (the battle console's rocks are the real ones, mockup 2).
+const ROLE_SIDE = { own: 0, ally: 0, enemy: 1, neutral: 2 };
+const LABEL_INK = { ally: '#8fd0ff', neutral: '#d6dde6', enemy: '#ff8f74', prize: '#ffd166' };
+const battleRocks = new THREE.Group(); battleScene.add(battleRocks);
 function setupBattle(ownCount, enemyCount, enemyFac, ownFac = 'concord', ownRefs = []) {
+  setupGroups(ownFac, Array.from({ length: ownCount }, (_, i) => ownRefs[i]), [{ fac: enemyFac, count: enemyCount, role: 'enemy' }], false);
+}
+function setupGroups(ownFac, ownRefs, groups, rocks) {
   for (const s of battleShips) battleScene.remove(s.obj);
-  battleShips.length = 0;
-  const add = (side, n, color) => { for (let i = 0; i < n; i++) { const fac = side === 0 ? ownFac : enemyFac, o = shipModel(color, 0.8, HULL_TINT[fac], side === 0 && ownRefs[i] !== undefined ? ownRefs[i] : shipRef(fac, side === 0 && i === 0 ? 2 : 1)); battleScene.add(o); battleShips.push({ obj: o, side, i, n }); } };
-  add(0, ownCount, new THREE.Color(FACTIONS[ownFac].color).getHex()); add(1, enemyCount, new THREE.Color(FACTIONS[enemyFac].color).getHex());
+  battleShips.length = 0; battleRocks.clear();
+  const list = [{ fac: ownFac, count: ownRefs.length, role: 'own' }, ...groups];
+  const wings = list.filter((g) => g.role === 'enemy' && !g.tag), lead = wings[0];
+  const spread = wings.length > 2 ? 0.85 : 1.9;
+  const bearing = (g) => {
+    if (g.role === 'own') return 0;
+    if (g.role === 'ally') return -0.55;
+    if (g.role === 'neutral') return 0.75;
+    const k = wings.indexOf(g.tag ? lead || g : g);
+    return Math.PI + (wings.length > 1 ? (k - (wings.length - 1) / 2) * spread : 0) + (g.tag ? 0.2 : 0);
+  };
+  for (const g of list) {
+    const side = ROLE_SIDE[g.role], col = new THREE.Color(FACTIONS[g.fac].color).getHex(), bear = bearing(g);
+    for (let i = 0; i < g.count; i++) {
+      const ref = g.role === 'own' && ownRefs[i] !== undefined ? ownRefs[i] : shipRef(g.fac, g.tag || (g.role === 'own' && i === 0) ? 2 : 1);
+      const o = shipModel(col, 0.8, HULL_TINT[g.fac], ref); battleScene.add(o);
+      if (i === 0 && g.label) { const l = labelSprite(g.label, LABEL_INK[g.tag === 'prize' ? 'prize' : g.role] || '#ffffff'); l.position.y = g.tag ? -1.1 : 1.3; o.add(l); }  // a named ship's label below it, its group's above
+      battleShips.push({ obj: o, side, i, n: g.count, bear, rad: g.tag ? 5.8 : g.role === 'neutral' ? 4.6 : 7 });
+    }
+  }
+  if (rocks) {
+    const R = rng(91), geo = new THREE.IcosahedronGeometry(1, 1), pos = geo.attributes.position;
+    for (let k = 0; k < pos.count; k++) pos.setXYZ(k, pos.getX(k) * (0.8 + R() * 0.4), pos.getY(k) * (0.7 + R() * 0.4), pos.getZ(k) * (0.8 + R() * 0.4));
+    geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({ color: 0x6d655b, roughness: 1, flatShading: true });
+    for (let k = 0; k < 42; k++) {
+      const a = R() * Math.PI * 2, d = 3 + R() * 10, rk = new THREE.Mesh(geo, mat);
+      rk.position.set(Math.cos(a) * d, (R() - 0.5) * 3, Math.sin(a) * d * 0.6); rk.scale.setScalar(0.15 + R() ** 2 * 0.9);
+      rk.rotation.set(R() * 6, R() * 6, R() * 6); battleRocks.add(rk);
+    }
+  }
 }
 let beamTimer = 0;
 function animateBattle(t, dt) {
   for (const s of battleShips) {
-    const a = t * 0.18 + s.side * Math.PI + (s.i - (s.n - 1) / 2) * 0.32;
-    const r = 7 + s.i * 0.8;
+    const a = t * 0.18 + s.bear + (s.i - (s.n - 1) / 2) * 0.32;
+    const r = s.rad + s.i * 0.8;
     s.obj.position.set(Math.cos(a) * r, Math.sin(t * 0.6 + s.i) * 0.5, Math.sin(a) * r * 0.6);
-    s.obj.rotation.y = -a + (s.side ? 0 : Math.PI) + Math.PI / 2;
+    s.obj.rotation.y = -a + Math.PI / 2 + (s.side === 1 ? 0 : Math.PI);
   }
+  battleRocks.rotation.y = t * 0.01;
   beamTimer -= dt;
   if (beamTimer <= 0 && battleShips.length) {
     beamTimer = 0.35;
     beams.clear();
-    const own = battleShips.filter((s) => s.side === 0), foe = battleShips.filter((s) => s.side === 1);
-    const a = own[Math.floor(Math.random() * own.length)], b = foe[Math.floor(Math.random() * foe.length)];
+    const ours = battleShips.filter((s) => s.side !== 1), foe = battleShips.filter((s) => s.side === 1);
+    const a = ours.filter((s) => s.side === 0)[Math.floor(Math.random() * ours.filter((s) => s.side === 0).length)], b = foe[Math.floor(Math.random() * foe.length)];
+    const hit = ours[Math.floor(Math.random() * ours.length)];
     if (a && b) {
-      const pts = Math.random() < 0.5 ? [a.obj.position, b.obj.position] : [b.obj.position, a.obj.position];
-      beams.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone())), new THREE.LineBasicMaterial({ color: pts[0] === a.obj.position ? 0x8fd0ff : 0xff7a5c })));
+      const pts = Math.random() < 0.5 ? [a.obj.position, b.obj.position] : [b.obj.position, hit.obj.position];
+      beams.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map((q) => q.clone())), new THREE.LineBasicMaterial({ color: pts[0] === a.obj.position ? 0x8fd0ff : 0xff7a5c })));
     }
   }
 }
@@ -3043,6 +3258,16 @@ function render() {
   bs.setProperty('--bot-h', `${Math.ceil(Math.max(hgt('.mapkeys'), hgt('.endturn'))) + 20}px`);
 }
 
+// The stand-in battle's objectives: the mockup has no battle to decide them, so each is ticked by hand, and the bar below
+// shows the grade the mission's script gives for what is ticked.
+const GRADE_INK = { outstanding: 'var(--ok)', victory: 'var(--ok)', draw: 'var(--lamp)', defeat: 'var(--warn)', crushing: 'var(--warn)' };
+function battleObjectives(b) {
+  return h('div', { class: 'battlemid' }, h('div', { class: 'panel objs' }, h('div', { class: 'plate', text: 'Objectives · tick what happened' }),
+    h('div', { class: 'list' }, b.spec.objectives.map((o) => h('button', { class: `item${b.met[o.id] ? ' met' : ''}`, type: 'button', 'aria-pressed': String(!!b.met[o.id]),
+      onclick: () => { b.met[o.id] = !b.met[o.id]; render(); } },
+      h('span', { class: 't', text: o.text }), h('span', { class: 'num', text: b.met[o.id] ? 'Met' : 'Open' }),
+      h('span', { class: 's', text: `${o.primary ? 'Primary' : 'Bonus'}${o.byWithdraw ? ' · withdrawing meets it' : ''}` }))))));
+}
 const SCREENS = {
   menu() {
     useScene('menu');
@@ -3212,9 +3437,12 @@ const SCREENS = {
     const b = S.battle;
     return h('div', { class: 'screen' },
       h('div', { class: 'head' }, h('div', {}, h('div', { class: 'plate', text: 'Battle stand-in · the battle console is mockup 2' }), h('h2', { text: b.name }))),
-      h('div', {}),
-      h('div', { class: 'panel row' }, h('span', { class: 'muted', text: 'End the battle as' }), h('span', { class: 'spacer' }),
-        key_('Victory', () => finishBattle(true), 'go'), key_('Defeat', () => finishBattle(false), 'danger')));
+      b.spec ? battleObjectives(b) : h('div', {}),
+      b.spec ? h('div', { class: 'panel row' }, h('span', { class: 'muted', text: 'Ends as' }),
+        h('b', { class: 'gradeword', text: FCMissions.GRADE_NAME[FCMissions.score(missionCtx(), b.mission, b.spec, b.met, 'end').grade] }), h('span', { class: 'spacer' }),
+        key_('Fleet lost', () => finishBattle(false, 'lost'), 'danger'), key_('Withdraw', () => finishBattle(false, 'withdraw')), key_('End battle', () => finishBattle(false, 'end'), 'go'))
+        : h('div', { class: 'panel row' }, h('span', { class: 'muted', text: 'End the battle as' }), h('span', { class: 'spacer' }),
+          key_('Victory', () => finishBattle(true), 'go'), key_('Defeat', () => finishBattle(false), 'danger')));
   },
 
   results() {
@@ -3222,7 +3450,9 @@ const SCREENS = {
     const r = S.result;
     return h('div', { class: 'center' }, h('div', { class: 'panel sheet' },
       h('div', { class: 'plate', text: r.kind === 'campaign' ? 'Mission report' : 'Skirmish report' }),
-      h('h2', { text: r.win ? 'Victory' : 'Defeat', style: `color:${r.win ? 'var(--ok)' : 'var(--warn)'}` }), h('p', { class: 'muted', text: r.name }),
+      h('h2', { text: r.noBattle ? 'Done' : FCMissions.GRADE_NAME[r.grade], style: `color:${GRADE_INK[r.grade]}` }), h('p', { class: 'muted', text: r.name }),
+      r.objectives ? h('table', { class: 'grid' }, h('tbody', {}, r.objectives.map((o) => h('tr', {}, h('td', { class: 'muted', text: o.primary ? 'Primary' : 'Bonus' }),
+        h('td', { text: o.text }), h('td', { class: r.met[o.id] ? 'ok' : 'muted', text: r.met[o.id] ? 'Met' : 'Missed' }))))) : null,
       r.noBattle ? null : h('table', { class: 'grid' }, h('thead', {}, h('tr', {}, h('th', { text: 'Ship' }), h('th', { text: 'Hull' }))), h('tbody', {}, r.ships.map((s) =>
         h('tr', {}, h('td', { text: s.name }), h('td', {}, s.lost ? h('span', { class: 'err', text: 'Destroyed' }) : h('span', { class: 'row' }, h('span', { class: 'bar', style: 'width:90px' }, h('i', { style: `width:${s.hullPct}%` })), h('span', { class: 'num', text: `${s.hullPct}%` }))))))),
       r.kind === 'campaign' ? h('p', {}, 'Credits earned: ', h('span', { class: 'num', text: r.reward })) : null,
@@ -3440,13 +3670,20 @@ function briefing(m) { S.mission = m; render(); }
 // is in its sector, Deploy starts its battle (or Complete, for a mission done on arrival).
 function briefPanel() {
   const m = S.mission, def = MS(m), ctx = missionCtx();
-  const here = CAMP.at.c === m.c && CAMP.at.r === m.r, taken = CAMP.active.includes(m.id), need = def.needs(ctx, m), fight = def.battle(ctx, m);
+  const here = CAMP.at.c === m.c && CAMP.at.r === m.r, taken = CAMP.active.includes(m.id), need = def.needs(ctx, m), fight = FCMissions.battleOf(ctx, m);
+  const hx = ctx.hex(m.c, m.r), allies = fight ? fight.groups.filter((g) => g.role === 'ally') : [];
+  const foes = fight ? fight.groups.filter((g) => g.role === 'enemy') : [], foeN = foes.reduce((n, g) => n + g.count, 0);
+  const opp = !fight ? 'None expected' : fight.intel || `${FACTIONS[foes[0].fac].name}, ${foeN} ${foeN > 1 ? 'ships' : 'ship'}${foes.length > 1 ? ` in ${foes.length} groups` : ''}`;
+  const row = (k, v, cls) => h('tr', {}, h('td', { class: 'muted', text: k }), h('td', { class: cls || '', text: v }));
   return h('div', { class: 'center' }, h('div', { class: 'panel sheet' },
     h('div', { class: 'plate', text: `${def.kind === 'story' ? 'Story mission' : 'Contract'} · sector ${m.c + 1}-${m.r + 1}` }), h('h2', { text: def.name }),
     h('p', { text: def.brief(ctx, m) }),
     h('table', { class: 'grid' }, h('tbody', {},
-      h('tr', {}, h('td', { class: 'muted', text: 'Objective' }), h('td', { text: def.objective(ctx, m) })),
-      h('tr', {}, h('td', { class: 'muted', text: 'Opposition' }), h('td', { text: fight ? `${FACTIONS[fight.enemy].name}, ${fight.count} ${fight.count > 1 ? 'ships' : 'ship'}` : 'None expected' })),
+      row('Objective', def.objective(ctx, m)),
+      fight ? fight.objectives.filter((o) => !o.primary).map((o, i) => row(i ? '' : 'Bonus', o.text)) : null,
+      row('Opposition', opp),
+      allies.length ? row('Wingmen', allies.map((g) => `${g.count} ${FACTIONS[g.fac].short}`).join(', ')) : null,
+      hx.terrain !== 'open' ? row('Terrain', TERRAIN[hx.terrain].name) : null,
       h('tr', {}, h('td', { class: 'muted', text: 'Reward' }), h('td', { class: 'num', text: `${m.reward} cr` })),
       m.turns != null ? h('tr', {}, h('td', { class: 'muted', text: taken ? 'Accepted' : 'Expires in' }), h('td', { text: taken ? 'it waits for you' : `${m.turns} ${m.turns > 1 ? 'turns' : 'turn'}` })) : null)),
     !here ? h('p', { class: 'muted', text: taken ? 'Fly to its sector to begin.' : 'Accept it, then fly to its sector.' }) : null,
@@ -3465,13 +3702,14 @@ function missionLog() {
     CAMP.log.length ? h('div', { class: 'col' }, h('div', { class: 'plate', text: 'Recent' }), CAMP.log.slice(-4).reverse().map((t) => h('p', { class: 'muted', text: t }))) : null);
 }
 function runMission(m) {
-  const def = MS(m), fight = def.battle(missionCtx(), m);
-  if (!fight) { go('results', { result: { kind: 'campaign', name: def.name, win: true, ships: [], noBattle: true, ...applyResult(m, true) }, mission: null }); return; }
-  startBattle({ kind: 'campaign', name: fight.name || def.name, fleet: CAMP.fleet, enemy: fight.enemy, enemyCount: fight.count, mission: m, side: CAMP.side });
+  const def = MS(m), ctx = missionCtx(), spec = FCMissions.battleOf(ctx, m);
+  if (!spec) { const o = FCMissions.score(ctx, m, null, {}, 'done'); go('results', { result: { kind: 'campaign', name: def.name, win: true, grade: o.grade, ships: [], noBattle: true, ...applyResult(m, o) }, mission: null }); return; }
+  startBattle({ kind: 'campaign', name: spec.name, fleet: CAMP.fleet, spec, met: {}, mission: m, side: CAMP.side, rocks: ctx.hex(m.c, m.r).terrain === 'asteroids' });
 }
-// A mission's result, from its script: credits, standing, a prize, the missions it offers next, a line for the log.
-function applyResult(m, win) {
-  const def = MS(m), out = def.result(missionCtx(), m, win) || {}, r = { reward: out.credits || 0, prize: null, next: [], log: out.log || null };
+// A mission's result, from its script and its outcome o (FCMissions.score): credits, standing, a prize, the missions it
+// offers next, a line for the log.
+function applyResult(m, o) {
+  const def = MS(m), out = def.result(missionCtx(), m, o) || {}, r = { reward: out.credits || 0, prize: null, next: [], log: out.log || null };
   CAMP.credits += r.reward;
   for (const [f, d] of Object.entries(out.standing || {})) if (CAMP.standing[f] != null) changeStanding(f, d);
   if (out.prize && CAMP.fleet.length < FLEET_MAX) {
@@ -3480,23 +3718,33 @@ function applyResult(m, win) {
   }
   CAMP.missions = CAMP.missions.filter((x) => x !== m); CAMP.active = CAMP.active.filter((id) => id !== m.id);
   for (const n of out.next || []) { const nm = typeof n === 'string' ? offerMission(n) : offerMission(n.id, n); if (nm) { r.next.push(MS(nm).name); if (MS(nm).kind === 'story') CAMP.active.push(nm.id); } }
-  CAMP.log.push(r.log || `${def.name}: ${win ? 'done' : 'failed'}.`);
+  CAMP.log.push(r.log || `${def.name}: ${FCMissions.GRADE_NAME[o.grade].toLowerCase()}.`);
   return r;
 }
-function startBattle(b) { S.battle = b; setupBattle(b.fleet.length, b.enemyCount, b.enemy, b.side || 'concord', b.fleet.map((s) => HULLS[s.hull].ref)); S.mission = null; S.port = null; go('battle'); }
-function finishBattle(win) {
-  const b = S.battle, R = rng(1000 + (CAMP?.battles ?? 0) * 17 + (win ? 1 : 0));
+function startBattle(b) {
+  S.battle = b; const refs = b.fleet.map((s) => HULLS[s.hull].ref);
+  if (b.spec) setupGroups(b.side, refs, b.spec.groups, b.rocks); else setupBattle(b.fleet.length, b.enemyCount, b.enemy, b.side || 'concord', refs);
+  S.mission = null; S.port = null; go('battle');
+}
+// Hull lost by each ship, by grade: a base and a random spread, in percent.
+const GRADE_HURT = { outstanding: [5, 15], victory: [10, 35], draw: [20, 30], defeat: [35, 50], crushing: [60, 30] };
+// The battle's end. A skirmish ends won or lost; a mission ends by `how` ('end', 'withdraw' or 'lost') with the objectives
+// ticked on the battle screen, and its script grades it.
+function finishBattle(win, how = 'end') {
+  const b = S.battle;
+  const o = b.spec ? FCMissions.score(missionCtx(), b.mission, b.spec, b.met, how) : { grade: win ? 'victory' : 'defeat', win, met: {} };
+  const R = rng(1000 + (CAMP?.battles ?? 0) * 17 + FCMissions.GRADES.indexOf(o.grade));
   if (CAMP) CAMP.battles++;
+  const [base, spread] = GRADE_HURT[o.grade];
   const ships = b.fleet.map((s, i) => {
-    const dmg = Math.floor((win ? 10 + R() * 35 : 35 + R() * 50));
-    const hullPct = Math.max(0, s.hullPct - dmg);
-    return { s, name: s.name, hullPct, lost: !win && i > 0 && hullPct < 20 };
+    const hullPct = Math.max(o.grade === 'crushing' && i === 0 ? 5 : 0, s.hullPct - Math.floor(base + R() * spread));
+    return { s, name: s.name, hullPct, lost: i > 0 && (o.grade === 'crushing' || (!o.win && hullPct < 20)) };
   });
-  const r = { kind: b.kind, name: b.name, win, ships, reward: 0, prize: null };
+  const r = { kind: b.kind, name: b.name, win: o.win, grade: o.grade, ships, reward: 0, prize: null, objectives: b.spec?.objectives || null, met: o.met };
   if (b.kind === 'campaign') {
     for (const x of ships) x.s.hullPct = x.hullPct;
     CAMP.fleet = CAMP.fleet.filter((s) => !ships.find((x) => x.s === s && x.lost));
-    Object.assign(r, applyResult(b.mission, win));
+    Object.assign(r, applyResult(b.mission, o));
     rebuildMarkers();
   }
   go('results', { result: r });
@@ -3560,8 +3808,31 @@ window.MOCKUP_SHOTS = {
   recruiting: () => { freshCampaign('ssarith'); openPort('recruit'); },
   market: () => { freshCampaign(); const pr = newShip('krai_cv', 'Prize Ship Vekk'); pr.maker = 'krai'; pr.hullPct = 40; CAMP.fleet.push(pr); CAMP.at = { c: 14, r: 18 }; buildMap(); centreOn(14, 18, 14); render(); openPort('market'); },
   briefing: () => { freshCampaign(); const m = CAMP.missions.find((x) => x.script === 'patrol') || offerMission('patrol'); rebuildMarkers(); CAMP.at = { c: m.c, r: m.r }; CAMP.active.push(m.id); buildMap(); centreOn(m.c, m.r, 14); selectHex(m.c, m.r); briefing(m); },
-  campaign_results: () => { MOCKUP_SHOTS.briefing(); runMission(S.mission); finishBattle(true); },
+  campaign_results: () => { MOCKUP_SHOTS.briefing(); runMission(S.mission); S.battle.met = { clear: true }; finishBattle(false, 'end'); },
+  // The ready mission types (the Missions guide): each briefing, its battle with objectives ticked, and the reports.
+  brief_prize: () => { missionAt('prize'); },
+  battle_prize: () => { missionAt('prize'); runMission(S.mission); S.battle.met = { take: true, whole: true }; render(); },
+  results_prize: () => { MOCKUP_SHOTS.battle_prize(); S.battle.met.escort = true; finishBattle(false, 'end'); },
+  prize_home: () => { MOCKUP_SHOTS.results_prize(); const m = CAMP.missions.find((x) => x.script === 'prize_home'); CAMP.at = { ...CAMP.home }; buildMap(); go('map', { result: null, mission: null, sel: null, path: null }); centreOn(m.c, m.r, 14); selectHex(m.c, m.r); briefing(m); },
+  prize_delivered: () => { MOCKUP_SHOTS.prize_home(); runMission(S.mission); },
+  brief_ambushed: () => { missionAt('ambushed'); },
+  battle_ambushed: () => { missionAt('ambushed'); runMission(S.mission); render(); },
+  results_ambushed: () => { MOCKUP_SHOTS.battle_ambushed(); finishBattle(false, 'withdraw'); },
+  battle_fleet_action: () => { missionAt('fleet_action'); runMission(S.mission); S.battle.met = { flag: true }; render(); },
+  battle_overwhelming: () => { missionAt('overwhelming'); runMission(S.mission); S.battle.met = { g1: true, g3: true }; render(); },
+  brief_distress: () => { missionAt('distress', (m) => { m.data.trap = false; }); },
+  battle_distress: () => { missionAt('distress', (m) => { m.data.trap = false; }); runMission(S.mission); S.battle.met = { save: true }; render(); },
+  results_distress_trap: () => { missionAt('distress', (m) => { m.data.trap = true; }); runMission(S.mission); S.battle.met = { trap: true, intact: true }; finishBattle(false, 'end'); },
+  battle_asteroids: () => { missionAt('patrol', (m) => { missionCtx().hex(m.c, m.r).terrain = 'asteroids'; }); runMission(S.mission); render(); },
+  results_draw: () => { MOCKUP_SHOTS.battle_asteroids(); finishBattle(false, 'withdraw'); },
 };
+// A shot's mission: offered fresh in a new Concord campaign, the fleet in its sector, accepted, its briefing open.
+function missionAt(id, prep) {
+  freshCampaign(); const m = CAMP.missions.find((x) => x.script === id) || offerMission(id);
+  if (!m) throw new Error(`no sector offers ${id}`);
+  prep?.(m); rebuildMarkers(); CAMP.at = { c: m.c, r: m.r }; CAMP.active.push(m.id); buildMap(); centreOn(m.c, m.r, 14); selectHex(m.c, m.r); briefing(m);
+  return m;
+}
 window.MOCKUP_SCENE = mapScene;
 
 render();

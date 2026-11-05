@@ -12,3 +12,4 @@
 ## Publishes
 
 - 2026-11-05, version 1 (`1793866177-04c7`), desktop session: first publish.
+- 2026-11-05, version 2 (`1793870930-bfbe`), desktop session: the ready types marked in the mockup, with a new section "In the mockup now" (each type's map name, battle, objectives and grading, Capture the prize, grades and pay); Capture the prize added to the catalogue; asteroid base assault now waits on stations only (owner: "we do have asteroids"); open question 7, what research gives.

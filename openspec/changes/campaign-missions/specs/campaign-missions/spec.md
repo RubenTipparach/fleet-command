@@ -10,6 +10,28 @@ changing the campaign itself.
 - **WHEN** the fleet reaches an accepted Shakedown cruise and the player chooses Complete
 - **THEN** no battle starts, 250 credits are added and First blood is offered
 
+### Requirement: A mission ends in one of five grades
+
+A mission's battle SHALL end in one of five grades (crushing defeat, defeat, draw, victory, outstanding), decided from its
+objectives and how the battle ended, and its result SHALL pay the grade's share of the reward.
+
+#### Scenario: Withdrawing from a patrol
+- **WHEN** the fleet withdraws from a patrol before driving off the raiders
+- **THEN** the mission ends as a draw and pays a quarter of its reward
+
+#### Scenario: Breaking out of an ambush
+- **WHEN** the fleet withdraws from a Dispatch run's ambush
+- **THEN** the primary objective is met and the mission ends as a victory
+
+### Requirement: A prize is captured, then delivered
+
+Capture the prize SHALL name one rival ship to be boarded and taken, SHALL fail if the ship is not taken, and once taken
+SHALL offer Deliver the prize at the home port, which pays the research bounty.
+
+#### Scenario: The prize taken whole
+- **WHEN** the fleet takes the prize with her hull above half and the escorts driven off, then flies her home
+- **THEN** the capture ends outstanding, Deliver the prize is offered at the home port, and completing it pays 2,250 credits
+
 ### Requirement: A mission is accepted, flown to and then deployed
 
 A mission SHALL be accepted from its briefing into the mission log, and Deploy or Complete SHALL be available only while the

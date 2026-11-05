@@ -8,7 +8,7 @@
 // 'body[data-skin="krai"]'). The page adds it to a <style> once per skin. Elements it styles, by class:
 //   .panel (frame.panel), .panel.inset (frame.inset), .key (button.idle, .hover, .pressed), .tab (tab.idle, tab.active),
 //   .bar (bar.track) and its <i> fill (bar.fill, bar.fill.red when .over); plus the colour and type tokens the page's
-//   own CSS reads (--ink, --dim, --lamp, --ok, --warn, --display, --body). Inside its frame a panel is the skin's own ground
+//   own CSS reads (--ink, --dim, --lamp, --ok, --warn, --display, --body, --ground: the panel's own ground). Inside its frame a panel is the skin's own ground
 //   (CC.bg: the Concord's black, behind its flat back-lit vector, as on the battle console).
 // Needs docs/mockups/lib/kitdraw.js and the skin's module inlined first.
 window.FCKitCss = (function () {
@@ -42,7 +42,7 @@ function css(skin, scope) {
     const key = (id, h) => nine(K[id], tall(K[id], h)), wrap = WRAP[skin.id];
     return `
 ${S} { --ink: ${C.text}; --dim: ${C.lilac}; --faint: ${C.ver || C.lilac}; --lamp: ${C.sky}; --lamp-soft: ${C.sky}2e; --ok: ${C.accord};
-  --warn: ${C.alert}; --display: ${fam}; --body: ${fam}; }
+  --warn: ${C.alert}; --display: ${fam}; --body: ${fam}; --ground: ${C.bg}; }
 ${S} .panel { ${nine(K['frame.panel'], panelK)} background: ${C.bg} ${wrap ? 'border-box' : 'padding-box'}; padding: 4px 6px;
   ${wrap ? `border-radius: ${Math.round(wrap.radius * panelK)}px; box-shadow: 0 0 0 ${wrap.band}px ${C.bg};` : 'border-radius: 0; box-shadow: none;'} }
 ${S} .panel.inset { ${nine(K['frame.inset'], insetK)} background: none; box-shadow: none; padding: 4px; }

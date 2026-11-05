@@ -62,6 +62,7 @@ td b { font-weight: 600; }
 .tag.ready { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
 .tag.needs { background: color-mix(in srgb, var(--amber) 18%, transparent); color: var(--amber); }
 .tag.later { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--muted); }
+.tag.built { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 14px; }
 .scen h3 { color: var(--accent); }
 .scen dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 14px; }
@@ -82,6 +83,7 @@ td b { font-weight: 600; }
       Command's own catalogue of mission types, how each is won and graded, what each needs from the game, and a first set
       of scenarios written for our factions.</p>
     <blockquote><span class="who">Owner, 2026-11-05</span>"see if you can read these mission scripts?", then "write up missions types and scenarios from your analysis please."</blockquote>
+    <blockquote><span class="who">Owner, 2026-11-05</span>"let's implement all "ready" mission types, amke sure to keep this artifact updated. I'd also like to add "capture the prize" mission to capture a designated target ship for research", and "asteroid base assayult: we do have asteroids".</blockquote>
   </header>
 
   <nav class="toc" aria-label="Contents"><ol>
@@ -90,6 +92,7 @@ td b { font-weight: 600; }
     <li><a href="#mission">How a mission is built</a></li>
     <li><a href="#grades">Outcome grades</a></li>
     <li><a href="#types">Mission types</a></li>
+    <li><a href="#built">In the mockup now</a></li>
     <li><a href="#modes">Battles outside the campaign</a></li>
     <li><a href="#scenarios">Scenarios</a></li>
     <li><a href="#shape">What our scripts need</a></li>
@@ -182,26 +185,27 @@ td b { font-weight: 600; }
       <thead><tr><th>Type</th><th>The captain</th><th>Won by</th><th>Grades on</th><th>Status</th></tr></thead>
       <tbody>
         <tr><th colspan="5">Fight</th></tr>
-        <tr><td><b>Patrol</b></td><td>Sweeps a sector and meets what is there</td><td>Destroying or driving off the contacts</td><td>Enemy losses against own; disengaging when outnumbered is a draw</td><td><span class="tag ready">ready</span></td></tr>
-        <tr><td><b>Fleet action</b></td><td>Fights an equal battle group with wingmen</td><td>Destroying the enemy flagship or most of its group</td><td>Ships lost on each side</td><td><span class="tag ready">ready</span></td></tr>
-        <tr><td><b>Ambushed</b></td><td>Is caught between two groups</td><td>Surviving and breaking out, or winning</td><td>Ships brought home</td><td><span class="tag ready">ready</span></td></tr>
+        <tr><td><b>Patrol</b></td><td>Sweeps a sector and meets what is there</td><td>Destroying or driving off the contacts</td><td>Enemy losses against own; disengaging when outnumbered is a draw</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Fleet action</b></td><td>Fights an equal battle group with wingmen</td><td>Destroying the enemy flagship or most of its group</td><td>Ships lost on each side</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Ambushed</b></td><td>Is caught between two groups</td><td>Surviving and breaking out, or winning</td><td>Ships brought home</td><td><span class="tag built">in the mockup</span></td></tr>
         <tr><td><b>Ambush</b></td><td>Lies in wait with allies and springs it</td><td>Destroying the group before it escapes</td><td>Ships escaped</td><td><span class="tag needs">needs sensor range</span></td></tr>
         <tr><td><b>Holding action</b></td><td>Holds a listening post or position until relieved</td><td>Still holding when the timer runs out</td><td>The post intact; what its data turns out to be (a random bonus)</td><td><span class="tag needs">needs a mission timer</span></td></tr>
         <tr><td><b>Sleeping giants</b></td><td>Faces escorts while dormant capital ships wake one by one</td><td>Winning before all are awake, or withdrawing</td><td>Capital ships destroyed before waking</td><td><span class="tag needs">needs timed arrivals</span></td></tr>
         <tr><td><b>Monster</b></td><td>Hunts a creature loose in the sector</td><td>Killing or driving it off</td><td>Damage taken</td><td><span class="tag later">later: no creatures designed</span></td></tr>
-        <tr><td><b>Overwhelming fleet</b></td><td>Faces a fleet far stronger than any one captain</td><td>Neutralising each of its groups (destroy, capture or drive off)</td><td>Groups neutralised</td><td><span class="tag ready">ready</span></td></tr>
+        <tr><td><b>Overwhelming fleet</b></td><td>Faces a fleet far stronger than any one captain</td><td>Neutralising each of its groups (destroy, capture or drive off)</td><td>Groups neutralised</td><td><span class="tag built">in the mockup</span></td></tr>
         <tr><th colspan="5">Attack</th></tr>
         <tr><td><b>Base assault</b></td><td>Breaks a station's shields and destroys it</td><td>The station destroyed</td><td>Own losses; defence platforms destroyed first</td><td><span class="tag needs">needs stations in battle</span></td></tr>
         <tr><td><b>Shipyard strike</b></td><td>Destroys ships in a yard and the yard</td><td>The yard destroyed</td><td>Ships caught in dock</td><td><span class="tag needs">needs stations</span></td></tr>
         <tr><td><b>Planetary assault</b></td><td>Silences a planet's orbital guns</td><td>Every battery neutralised</td><td>Own losses</td><td><span class="tag needs">needs planetary defences</span></td></tr>
-        <tr><td><b>Asteroid base assault</b></td><td>Digs a base out of a rock field</td><td>The base destroyed</td><td>Losses to rocks and guns</td><td><span class="tag needs">needs asteroid fields</span></td></tr>
+        <tr><td><b>Asteroid base assault</b></td><td>Digs a base out of a rock field</td><td>The base destroyed</td><td>Losses to rocks and guns</td><td><span class="tag needs">needs stations (the asteroids are in)</span></td></tr>
         <tr><td><b>Homeworld assault</b></td><td>Late war: strikes the enemy's home system</td><td>Defences and fleet broken</td><td>Everything</td><td><span class="tag later">later</span></td></tr>
         <tr><th colspan="5">Defend</th></tr>
         <tr><td><b>Defence: base, shipyard, asteroid base, homeworld</b></td><td>The same battles from the other side</td><td>The asset still standing</td><td>How much of it is left</td><td><span class="tag needs">needs stations</span></td></tr>
         <tr><td><b>Convoy escort</b></td><td>Brings freighters through</td><td>Most freighters arriving</td><td>All through, most, some, few, none</td><td><span class="tag needs">needs freighters that travel</span></td></tr>
         <tr><th colspan="5">Raid</th></tr>
         <tr><td><b>Convoy raid</b></td><td>Stops an enemy supply run</td><td>Most freighters destroyed or taken</td><td>The same ladder, reversed</td><td><span class="tag needs">needs freighters</span></td></tr>
-        <tr><td><b>Capture</b></td><td>Boards and takes a ship</td><td>The ship taken</td><td>Its condition; marines lost</td><td><span class="tag ready">ready (boarding designed)</span></td></tr>
+        <tr><td><b>Capture</b></td><td>Boards and takes a ship</td><td>The ship taken</td><td>Its condition; marines lost</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Capture the prize</b></td><td>Takes one named ship, picked by research, out of its escort and tows it home</td><td>The prize boarded and taken, not destroyed; then delivered home</td><td>Its condition; the escorts driven off</td><td><span class="tag built">in the mockup</span></td></tr>
         <tr><td><b>Salvage</b></td><td>Picks over a wreck field for parts</td><td>Containers recovered</td><td>Spare parts found (each pod holds none to three)</td><td><span class="tag needs">needs tractor or transporter on props</span></td></tr>
         <tr><th colspan="5">Learn and deny</th></tr>
         <tr><td><b>Scout</b></td><td>Scans an enemy fleet and gets home, or stops an enemy scout getting home</td><td>Ships scanned, or the scout stopped</td><td>Scanned share; capturing the scout is outstanding</td><td><span class="tag needs">needs scanning</span></td></tr>
@@ -211,13 +215,51 @@ td b { font-weight: 600; }
         <tr><td><b>Dead engines</b></td><td>Fights where an anomaly cuts every ship's engines at times</td><td>Winning the drift battle</td><td>Losses</td><td><span class="tag needs">needs a world condition</span></td></tr>
         <tr><th colspan="5">Serve</th></tr>
         <tr><td><b>Diplomat run</b></td><td>Carries an envoy to a world under truce, without firing first</td><td>The envoy landed</td><td>Whether the truce held; who fired first</td><td><span class="tag needs">needs a truce rule and transport</span></td></tr>
-        <tr><td><b>Distress call</b></td><td>Answers a call that may be a trap</td><td>The ship saved, or the trap beaten</td><td>Primary and secondary (a shipment taken)</td><td><span class="tag ready">ready</span></td></tr>
+        <tr><td><b>Distress call</b></td><td>Answers a call that may be a trap</td><td>The ship saved, or the trap beaten</td><td>Primary and secondary (a shipment taken)</td><td><span class="tag built">in the mockup</span></td></tr>
         <tr><td><b>Drain the yard</b></td><td>Draws energy from a captured yard before it is retaken</td><td>Energy taken</td><td>Yards drained</td><td><span class="tag later">later</span></td></tr>
         <tr><td><b>Starbase construction</b></td><td>Guards builders while a station goes up</td><td>The station finished</td><td>How far it got</td><td><span class="tag later">later</span></td></tr>
         <tr><td><b>Crossroads</b></td><td>Holds a junction where neutral traffic keeps passing</td><td>Enemies stopped without harming the passers</td><td>Neutrals harmed</td><td><span class="tag needs">needs neutral traffic</span></td></tr>
       </tbody>
     </table></div>
-    <p class="cap">Ready: playable with the battle as designed today. Needs: one named system first. Later: waits on art or a system not yet designed.</p>
+    <p class="cap">In the mockup: a script in the game flow mockup's campaign, offered on the map and played through its
+      stand-in battle (below). Needs: one named system first. Later: waits on art or a system not yet designed. Every type
+      once marked ready is now in the mockup; Capture the prize is new, at the owner's request.</p>
+  </section>
+
+  <section class="ch" id="built">
+    <h2>In the mockup now</h2>
+    <p>The seven types are mission scripts in <code>docs/mockups/lib/campaign-missions.js</code>, offered as contracts on the
+      game flow mockup's campaign map (mockup 1). Each briefing lists the objective, the bonus objectives, the opposition,
+      any wingmen and the sector's terrain. The battle is still a stand-in until the battle console (mockup 2) is joined to
+      the campaign: its groups fly in the view with their names over them, the objectives are ticked by hand, and the bar
+      below shows the grade the script gives for what is ticked. The battle ends one of three ways: <b>End battle</b>,
+      <b>Withdraw</b> or <b>Fleet lost</b>. The report shows the grade, each objective met or missed, the hull each ship
+      lost, and the pay.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Type</th><th>On the map</th><th>The battle</th><th>Primary</th><th>Bonus</th><th>Graded</th></tr></thead>
+      <tbody>
+        <tr><td><b>Patrol</b></td><td>Patrol (P), own or unclaimed space</td><td>One to three Vos raiders; rocks in an asteroid sector</td><td>Destroy or drive off the raiders</td><td>Lose no ships</td><td>The ladder below; withdrawing is a draw</td></tr>
+        <tr><td><b>Fleet action</b></td><td>Fleet action (F), deep in the rival's space</td><td>The fleet and two wingmen against a named flagship and a group as large as yours</td><td>Destroy the flagship or most of her group</td><td>Lose no ships; bring both wingmen home</td><td>The ladder</td></tr>
+        <tr><td><b>Ambushed</b></td><td>Dispatch run (R): the briefing expects no one</td><td>Two groups, ahead and behind</td><td>Break out, or beat both groups (withdrawing meets it)</td><td>Bring every ship home; destroy both groups</td><td>The ladder: breaking out is a victory</td></tr>
+        <tr><td><b>Overwhelming fleet</b></td><td>Stem the tide (O), own space</td><td>Four rival groups of two; two wingmen</td><td colspan="2">Neutralise each group (destroy, capture or drive off)</td><td>Four outstanding, two or three victory, one a draw, none a defeat</td></tr>
+        <tr><td><b>Capture</b></td><td>Capture a ship (K), on a lone ship on the map; needs marines</td><td>The lone ship</td><td>Board and take it</td><td>Its hull above half; no marines lost</td><td>The ladder; the ship joins the fleet damaged</td></tr>
+        <tr><td><b>Capture the prize</b></td><td>Capture the prize (Z), hostile space; needs marines</td><td>A named rival ship (a frigate or cruiser) and its escorts</td><td>Board and take her, not destroy her</td><td>Her hull above half; escorts driven off</td><td>The ladder; taken, she is towed home</td></tr>
+        <tr><td><b>Distress call</b></td><td>Distress call (H), own or unclaimed space</td><td>A freighter and raiders; or, four times in ten, a Vos decoy and its ambush</td><td>Save the freighter, or beat the trap</td><td>Drive off the raiders and take their shipment; or lose no ships and take the decoy</td><td>The ladder</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Capture the prize</h3>
+    <p>A contract from your side's research: one named ship of the rival's (for the Ssarith, of the Vos), a frigate or a
+      cruiser, is passing through a hostile sector under escort. Strip her shields, board her and take her: sinking her voids
+      the contract. Taken, she is towed, and a story mission, <b>Deliver the prize</b> (Y), appears at your home port. Flying
+      her home pays the research bounty: 1,500 cr and standing, half again if she was taken outstanding (her hull above
+      half and the escorts driven off). She goes to research, not into your fleet.</p>
+    <h3>Grades and pay</h3>
+    <p>One rule grades every type unless its script says otherwise: every primary met is a victory, every bonus too is
+      outstanding; withdrawing short of the primary is a draw, staying and failing it a defeat, and losing the fleet a
+      crushing defeat. A victory pays the reward, outstanding half again, a draw a quarter, a defeat nothing. The grade also
+      sets how much hull each ship loses, and a crushing defeat loses every ship but the flagship.</p>
+    <p>The older contracts on the map (station and planetary assault, convoy raid and escort, assassination) use the same
+      grades with a single primary and "lose no ships" as their bonus, until their battles exist.</p>
   </section>
 
   <section class="ch" id="modes">
@@ -299,9 +341,9 @@ td b { font-weight: 600; }
     <div class="tablewrap"><table>
       <thead><tr><th>Addition</th><th>What it is</th><th>Used by</th></tr></thead>
       <tbody>
-        <tr><td><b>Grades</b></td><td><code>result</code> receives one of five grades instead of win or lose, and the battle reports the numbers it is graded on</td><td>Every type</td></tr>
-        <tr><td><b>Objectives</b></td><td>A primary and optional secondaries, each a condition (destroy, defend, scan, capture, keep alive, hold until)</td><td>Every type</td></tr>
-        <tr><td><b>Teams</b></td><td><code>battle</code> returns teams (player, wingmen, allies, enemy, neutral, assets to defend or destroy, props) with where they start and when they arrive</td><td>Ambushes, sleeping giants, convoys, crossroads</td></tr>
+        <tr><td><b>Grades</b> <span class="tag built">in</span></td><td><code>result</code> receives one of five grades instead of win or lose, and the battle reports the numbers it is graded on</td><td>Every type</td></tr>
+        <tr><td><b>Objectives</b> <span class="tag built">in</span></td><td>A primary and optional secondaries, each a condition (destroy, defend, scan, capture, keep alive, hold until); ticked by hand until the battle reports them</td><td>Every type</td></tr>
+        <tr><td><b>Teams</b> <span class="tag built">in, part</span></td><td><code>battle</code> returns teams (player, wingmen, allies, enemy, neutral, assets to defend or destroy, props); where they start and when they arrive is still to come</td><td>Ambushes, sleeping giants, convoys, crossroads</td></tr>
         <tr><td><b>Lines per side</b></td><td>Briefing, opening log and debriefing keyed by the player's faction, with tokens for name, rank, ship and sector</td><td>Story chains</td></tr>
         <tr><td><b>Crew and ally lines</b></td><td>A remark per station and per allied captain, and an officer's line for each event</td><td>Story chains</td></tr>
         <tr><td><b>Hails</b></td><td>An event in battle offering the player a short list of answers that change what follows</td><td>Flag of truce, Find the ship</td></tr>
@@ -311,7 +353,9 @@ td b { font-weight: 600; }
     </table></div>
     <p>Battle-side systems the catalogue asks for, in order of how many types they unlock: stations in battle (7 types),
       freighters that travel (3), scanning (4), a mission timer and timed arrivals (3), props for tractor or transporter
-      (2), neutral traffic (2), hails (2). Each is its own OpenSpec change before it is built.</p>
+      (2), neutral traffic (2), hails (2). Asteroid fields already exist in battle (the battle console's solid rocks and their
+      micrometeor clouds, mockup 2), and the campaign map has asteroid sectors; a mission in one fights among rocks.
+      Each is its own OpenSpec change before it is built.</p>
   </section>
 
   <section class="ch" id="open">
@@ -325,6 +369,7 @@ td b { font-weight: 600; }
         <tr><td>4</td><td>Which battle system first: stations, freighters or scanning?</td><td>Stations</td></tr>
         <tr><td>5</td><td>The Ssarith Hunt's missions</td><td>Wait on its culture (survey H1)</td></tr>
         <tr><td>6</td><td>Are the scenario names and premises above the direction you want?</td><td>Drafts, yours to change</td></tr>
+        <tr><td>7</td><td>What does research give for a delivered prize?</td><td>A bounty and standing for now; later perhaps an unlock (a system, or the rival's hull in your yard)</td></tr>
       </tbody>
     </table></div>
   </section>

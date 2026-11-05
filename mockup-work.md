@@ -21,7 +21,7 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | Drafted (2026-11-05, v10) | `game-flow`, `faction-select`, `campaign-missions` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
+| 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | Drafted (2026-11-05, v11) | `game-flow`, `faction-select`, `campaign-missions` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
 | 2 | In-game UI | Approved for implementation (2026-11-03; live v79: every skin in one console, following the ship you command; v80 committed, to publish: beams and disruptor bolts keep their ends on their ships, and lances, bolts and torpedoes drawn by the weapons range's effects) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
@@ -80,6 +80,11 @@ hover your mouse over it. Clicking on it gives you an option to continue campaig
 starts a new campaign with the smallest tier ship and you can fly around the galaxy map performing missions. Mockup campaign
 systems first. Then I'll get you some mission scripts to implement in our three js mockup env". Changes `faction-select` and
 `campaign-missions`; mission scripts go in `docs/mockups/lib/campaign-missions.js`, one `FCMissions.define` call each.
+
+Then, 2026-11-05 (v11): "let's implement all \"ready\" mission types, amke sure to keep this artifact updated. I'd also
+like to add \"capture the prize\" mission to capture a designated target ship for research"; "asteroid base assayult: we do
+have asteroids". The six ready types and Capture the prize are scripts with five grades; the Missions guide (v2) records
+which types are in.
 
 Design: `openspec/changes/game-flow/`. References: SFC2 manual printed pages 74-89 (menus, skirmish,
 campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish points, refit by

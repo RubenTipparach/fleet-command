@@ -58,6 +58,32 @@ next (grades, objectives, teams, lines per side, hails, gates, branches) are in 
 `docs/design/mission-guide.html` (https://claude.ai/artifact/LRgd2iRm8gdTZ84i7htXhH), written from the reference game's
 mission files (structure only, our own words).
 
+## Mission types in the mockup
+
+The owner, 2026-11-05: "let's implement all \"ready\" mission types, amke sure to keep this artifact updated. I'd also like
+to add \"capture the prize\" mission to capture a designated target ship for research". Every type the Missions guide
+marked ready is a script: Patrol, Fleet action, Ambushed (offered as a Dispatch run whose briefing expects no one),
+Overwhelming fleet (Stem the tide), Capture, Distress call (a trap four times in ten). Capture the prize is new: a named
+rival frigate or cruiser under escort, taken and not destroyed, then towed home by a story mission (Deliver the prize) that
+pays the research bounty. The guide's "In the mockup now" section has each one's battle, objectives and grading.
+
+The script shape gains:
+- `battle` returns groups (`fac`, `count`, `role`: enemy, ally or neutral, an optional `label` and `tag`) and objectives
+  (`id`, `text`, `primary`, `byWithdraw`), and may give `intel` (what the briefing believes). The older `{ enemy, count }`
+  is one enemy group with the script's objective as primary and "lose no ships" as bonus.
+- `setup(ctx, m)` fills `m.data` when offered (a target's name, whether a call is a trap); a chain's `next` may carry data.
+- `result(ctx, m, o)` receives the outcome `{ grade, win, met, how, pay }`; `grade(ctx, m, met, how)` may replace the
+  default rule.
+
+**Grades** (the guide's five): every primary met is a victory, every bonus too outstanding, withdrawing short of the primary
+a draw, failing it a defeat, losing the fleet a crushing defeat. Pay: victory 1, outstanding 1.5, draw 0.25, defeat and
+crushing 0, of the reward, to the nearest 10 cr. Hull lost per ship, by grade (base plus a random spread, percent):
+outstanding 5 + 15, victory 10 + 35, draw 20 + 30, defeat 35 + 50, crushing 60 + 30 with every ship but the flagship lost.
+
+The stand-in battle has no rules to decide an objective, so the tester ticks each one; the bar shows the grade the script
+gives. Asteroid sectors put rocks in the stand-in (the battle console's rocks are the real ones, mockup 2; owner, 2026-11-05:
+"we do have asteroids").
+
 ## Open questions
 
 | # | Question | Provisional |
@@ -66,3 +92,5 @@ mission files (structure only, our own words).
 | 2 | Free flight in real time, or move points and turns as now? | Move points and turns, the miniature animating the route |
 | 3 | The Ssarith Hunt's rivals and home | None, Calder in the north, until its culture is set |
 | 4 | Does a failed story mission come back? | First blood offers itself again; each script decides |
+| 5 | What does research give for a delivered prize? | A bounty and standing; an unlock later |
+| 6 | Five grades or three? (guide question 2) | Five |
