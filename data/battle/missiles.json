@@ -1,18 +1,21 @@
 {
- "_doc": "Missile grades and the countermeasures against them (openspec/changes/missiles/design.md). Owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\", \"the missiles should move slower. Different grades have different speeds and damage values\", \"Missiles follow ships around. Can be countered with counter measures like flares, decoy shuttles, or pdc\". Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Speeds near a ship's own, so a captain can outrun the lower grades. pd_hits: point defence hits it takes to stop one. When a ship throws flares or launches a decoy, each missile closing on it is fooled with its grade's fooled_by_flare_x or fooled_by_decoy_x chance (rolled once) and goes for the lure instead; the higher grades are harder to fool. Point defence cannon is weapons.json's pd, stopping a missile pd_intercept_chance of a burst (tuning.json). Read by the weapons range mockup (docs/mockups/special-weapons.html); the game does not read it yet. Every number is a placeholder until the combat change.",
+ "_doc": "Missile grades and the countermeasures against them (openspec/changes/missiles/design.md). Owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\", \"the missiles should move slower. Different grades have different speeds and damage values\", \"Missiles follow ships around. Can be countered with counter measures like flares, decoy shuttles, or pdc\". Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Speeds near a ship's own, so a captain can outrun the lower grades. pd_hits: point defence hits it takes to stop one. When a ship throws flares or launches a decoy, each missile closing on it is fooled with its grade's fooled_by_flare_x or fooled_by_decoy_x chance (rolled once) and goes for the lure instead; the higher grades are harder to fool. Point defence cannon is weapons.json's pd, stopping a missile pd_intercept_chance of a burst (tuning.json). Read by the weapons range mockup (docs/mockups/special-weapons.html) and the game (DataLoader.LoadMissiles; a mount's grade is classes.json's \"grade\", orange when left out). A ship throws its flares when a missile closes inside flare.trigger_m, every flare.cooldown_s; it launches a decoy (decoy.per_ship a battle) when one closes inside decoy.trigger_km. Every number is a placeholder until the combat change.",
  "countermeasures": {
   "flare": {
    "count": 4,
    "burn_s": 4,
    "eject_m_s": 70,
    "cooldown_s": 20,
-   "color": "#ffb347"
+   "color": "#ffb347",
+   "trigger_m": 260
   },
   "decoy": {
    "speed_m_s": 60,
    "life_s": 30,
    "voided_by_firing": true,
-   "color": "#ffb030"
+   "color": "#ffb030",
+   "trigger_km": 2,
+   "per_ship": 1
   }
  },
  "grades": [

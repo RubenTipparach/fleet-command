@@ -15,6 +15,7 @@ public static class DataLoader
     public static readonly string[] Files =
     {
         "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json",
+        "battle/missiles.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -23,11 +24,12 @@ public static class DataLoader
         StrictJson J(string f) => StrictJson.Parse(read(f), "data/" + f);
         Tuning tuning = LoadTuning(J("battle/tuning.json"));
         var weapons = LoadWeapons(J("battle/weapons.json"));
-        var classes = LoadClasses(J("battle/classes.json"), weapons, tuning);
+        MissileData missiles = LoadMissiles(J("battle/missiles.json"));
+        var classes = LoadClasses(J("battle/classes.json"), weapons, tuning, missiles);
         var factions = LoadFactions(J("battle/factions.json"));
         var scenarios = LoadScenarios(J("battle/scenarios.json"), classes, factions);
         LayoutDef layout = LoadLayout(J("console/layout.json"));
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles);
     }
 
     private static WeaponMode Mode(StrictJson o) => new(Positive(o, "range_km"), Positive(o, "charge_s"), NonNeg(o, "cost_e"), NonNeg(o, "damage"));
@@ -55,7 +57,34 @@ public static class DataLoader
 
     private static readonly string[] Shapes = { "saucer", "wedge", "claw", "station" };
 
-    public static Dictionary<string, ShipClass> LoadClasses(StrictJson root, IReadOnlyDictionary<string, WeaponDef> weapons, Tuning tuning)
+    /// <summary>The missile grades and countermeasures (data/battle/missiles.json): grades unique, each fooled-by chance a
+    /// fraction, speeds and fuel above 0.</summary>
+    public static MissileData LoadMissiles(StrictJson root)
+    {
+        StrictJson cm = root.Obj("countermeasures"), f = cm.Obj("flare"), d = cm.Obj("decoy");
+        var flare = new FlareDef(f.Int("count"), Positive(f, "burn_s"), Positive(f, "eject_m_s"), Positive(f, "cooldown_s"), Positive(f, "trigger_m"), f.Str("color"));
+        if (flare.Count < 1) throw new DataError($"{f.Where}.count: at least one flare a throw");
+        f.Done();
+        var decoy = new DecoyDef(Positive(d, "speed_m_s"), Positive(d, "life_s"), d.Bool("voided_by_firing", true), Positive(d, "trigger_km"), d.Int("per_ship"), d.Str("color"));
+        d.Done();
+        cm.Done();
+        var grades = new List<MissileGrade>();
+        foreach (StrictJson g in root.ObjList("grades"))
+        {
+            double Frac(string k) { double v = g.Num(k); if (v < 0 || v > 1) throw new DataError($"{g.Where}.{k}: a chance between 0 and 1, got {v}"); return v; }
+            var grade = new MissileGrade(g.Str("id"), g.Str("name"), g.Str("color"), Positive(g, "speed_m_s"), NonNeg(g, "damage"), g.Int("pd_hits"),
+                Positive(g, "fuel_s"), Frac("fooled_by_flare_x"), Frac("fooled_by_decoy_x"));
+            if (grade.PdHits < 1) throw new DataError($"{g.Where}.pd_hits: at least one");
+            if (grades.Any(o => o.Id == grade.Id)) throw new DataError($"{g.Where}.id: '{grade.Id}' is listed twice");
+            grades.Add(grade);
+            g.Done();
+        }
+        if (grades.Count == 0) throw new DataError($"{root.Where}.grades: no grades");
+        root.Done();
+        return new MissileData(grades, flare, decoy);
+    }
+
+    public static Dictionary<string, ShipClass> LoadClasses(StrictJson root, IReadOnlyDictionary<string, WeaponDef> weapons, Tuning tuning, MissileData missiles)
     {
         var d = new Dictionary<string, ShipClass>();
         foreach (string id in root.Keys())
@@ -74,7 +103,14 @@ public static class DataLoader
             {
                 string w = m.Str("weapon");
                 if (!weapons.ContainsKey(w)) throw new DataError($"{m.Where}.weapon: no weapon '{w}' in data/battle/weapons.json");
-                mounts.Add(new MountDef(w, m.Num("x"), m.Num("y"), m.Num("arc_centre_deg"), m.Num("arc_width_deg")));
+                string? grade = null;
+                if (weapons[w].Kind == "missile")
+                {
+                    grade = m.Str("grade", "orange");
+                    if (!missiles.Grades.Any(g => g.Id == grade)) throw new DataError($"{m.Where}.grade: no missile grade '{grade}' in data/battle/missiles.json");
+                }
+                else if (m.Has("grade")) throw new DataError($"{m.Where}.grade: only a missile rack has a grade");
+                mounts.Add(new MountDef(w, m.Num("x"), m.Num("y"), m.Num("arc_centre_deg"), m.Num("arc_width_deg"), grade));
                 m.Done();
             }
             int reactor = o.Int("reactor_e");

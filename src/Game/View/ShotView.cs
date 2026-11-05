@@ -4,7 +4,8 @@
 // their target as they stand this frame (Battle.Ends, the rule the simulation flies bolts by; owner, 2026-11-04: "the
 // source and destination of these beams must follow the ship source and ship destination"); a disruptor bolt is a hot
 // streak on that live line; a pulse torpedo flies under its six-armed star and drops a trail of beads; a missile is a
-// small body with a ball of drive light behind it and a long tail (a seeker flies free and leaves its trail in space).
+// small body with a ball of drive light behind it and a long tail in its grade's colour (a seeker flies free and leaves its
+// trail in space); flares burn where they were thrown and a decoy shuttle flies off under its pulsing beacon.
 // Colours are each weapon's own (data/battle/weapons.json), never white. View only: the simulation never reads it.
 // Sizes are scene units (BattleView.MPerU: 1 u is 100 m), the mockup's SHOT_FX.
 using System;
@@ -18,7 +19,7 @@ public sealed partial class ShotView : Node3D
 {
     /// <summary>The looks' sizes, scene units and seconds (the battle console mockup's SHOT_FX, v77).</summary>
     public const float BeamWU = 0.34f, PdWU = 0.2f, BoltWU = 0.45f, BoltLenU = 1.0f, TorpedoU = 2.2f, MissileU = 0.7f, MissileLenU = 0.22f,
-        TrailWU = 0.3f, TrailS = 0.8f, BeadU = 1.4f, BeadEveryS = 0.012f, BeadLifeS = 0.4f, MissOffsetU = 0.6f;
+        TrailWU = 0.3f, TrailS = 0.8f, BeadU = 1.4f, BeadEveryS = 0.012f, BeadLifeS = 0.4f, MissOffsetU = 0.6f, FlareU = 0.6f, DecoyU = 0.5f, DecoyLenU = 0.14f;
     private const float Y = 0.05f;
     private const int BeadN = 48, TrailN = 40;
 
@@ -86,6 +87,23 @@ public sealed partial class ShotView : Node3D
         return m;
     }
 
+    // a decoy shuttle's body: a small blunt box in gunmetal, pooled like the rest
+    private MeshInstance3D TakeBody()
+    {
+        if (!_pool.TryGetValue("decoy", out List<MeshInstance3D>? list)) _pool["decoy"] = list = new List<MeshInstance3D>();
+        int i = _used.GetValueOrDefault("decoy");
+        _used["decoy"] = i + 1;
+        if (i < list.Count) { list[i].Visible = true; return list[i]; }
+        var m = new MeshInstance3D
+        {
+            Mesh = new BoxMesh { Size = new Vector3(DecoyLenU * 0.45f, DecoyLenU * 0.3f, DecoyLenU) },
+            MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color("#6a6f78"), Metallic = 0.6f, Roughness = 0.45f },
+        };
+        AddChild(m);
+        list.Add(m);
+        return m;
+    }
+
     private static Vector3 At(double xM, double zM) => new((float)(xM / BattleView.MPerU), Y, (float)(zM / BattleView.MPerU));
 
     /// <summary>Draws every shot as it stands this frame.</summary>
@@ -119,6 +137,23 @@ public sealed partial class ShotView : Node3D
                 if (!_trails.TryGetValue(sh, out Trail? tr)) _trails[sh] = tr = NewTrail(!torpedo, col);
                 Push(tr, p, now);
                 live.Add(sh);
+            }
+        }
+        // countermeasures: burning flares, and a decoy shuttle under its pulsing beacon (Battle.Lures)
+        foreach (Lure l in b.Lures)
+        {
+            Vector3 p = At(l.X, l.Z);
+            if (l.Kind == "flare")
+            {
+                float k = (float)Math.Clamp(l.LifeS / b.Data.Missiles.Flare.BurnS, 0, 1);
+                Flare(p, FlareU, 0, new Color(b.Data.Missiles.Flare.Color), 1.6f * k * (0.8f + 0.4f * Mathf.Sin(now * 40 + l.X.GetHashCode() % 7)), now);
+            }
+            else
+            {
+                Flare(p, DecoyU, 0, new Color(b.Data.Missiles.Decoy.Color), 0.6f + 1.4f * Math.Max(0, Mathf.Sin(now * 9)), now);
+                MeshInstance3D body = TakeBody();
+                body.Position = p;
+                body.Rotation = new Vector3(0, -Mathf.Atan2((float)l.VX, (float)-l.VZ), 0);
             }
         }
         // what a slot did not draw this frame is hidden

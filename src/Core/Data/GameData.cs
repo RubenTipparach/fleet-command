@@ -19,8 +19,29 @@ public sealed record WeaponDef(string Id, string Name, string Kind, WeaponMode N
     public bool IsPointDefence => Kind == "pd";
 }
 
-/// <summary>A weapon mount: x to starboard and y forward in half-lengths of the hull; its arc in degrees.</summary>
-public sealed record MountDef(string Weapon, double X, double Y, double ArcCentreDeg, double ArcWidthDeg);
+/// <summary>A weapon mount: x to starboard and y forward in half-lengths of the hull; its arc in degrees; for a missile
+/// rack, the grade of missile it is loaded with (data/battle/missiles.json), else null.</summary>
+public sealed record MountDef(string Weapon, double X, double Y, double ArcCentreDeg, double ArcWidthDeg, string? Grade = null);
+
+/// <summary>A missile grade (data/battle/missiles.json; owner, 2026-11-04: "red, orange, blue, green", red the lowest): its
+/// colour, speed, damage, the point defence hits it takes to stop, its fuel, and the chance a flare or a decoy fools it.</summary>
+public sealed record MissileGrade(string Id, string Name, string Color, double SpeedMS, double Damage, int PdHits, double FuelS,
+    double FooledByFlareX, double FooledByDecoyX);
+
+/// <summary>Flares: how many a throw, how long they burn, how fast they leave the hull, the wait before the next throw, and
+/// how close a missile comes before they are thrown.</summary>
+public sealed record FlareDef(int Count, double BurnS, double EjectMS, double CooldownS, double TriggerM, string Color);
+
+/// <summary>A decoy shuttle: its speed and life, whether firing main weapons voids it, how close a missile comes before it
+/// is launched, and how many a ship carries.</summary>
+public sealed record DecoyDef(double SpeedMS, double LifeS, bool VoidedByFiring, double TriggerKm, int PerShip, string Color);
+
+/// <summary>The missile grades and the countermeasures against them.</summary>
+public sealed record MissileData(IReadOnlyList<MissileGrade> Grades, FlareDef Flare, DecoyDef Decoy)
+{
+    /// <summary>A grade by id; throws naming it when there is none.</summary>
+    public MissileGrade Grade(string id) => Grades.FirstOrDefault(g => g.Id == id) ?? throw new KeyNotFoundException($"no missile grade '{id}' in data/battle/missiles.json");
+}
 
 /// <summary>A ship class. Shape is the systems display's top-down silhouette; Model, when set, is the approved ship's glb
 /// (res:// path under assets/ships/), drawn in the battle at LengthM (the battle's framing, as the battle console mockup
@@ -72,7 +93,7 @@ public sealed record LayoutDef(
 /// game starts in.</summary>
 public sealed record GameData(
     IReadOnlyDictionary<string, WeaponDef> Weapons, IReadOnlyDictionary<string, ShipClass> Classes,
-    IReadOnlyDictionary<string, Faction> Factions, IReadOnlyList<Scenario> Scenarios, Tuning Tuning, LayoutDef Layout)
+    IReadOnlyDictionary<string, Faction> Factions, IReadOnlyList<Scenario> Scenarios, Tuning Tuning, LayoutDef Layout, MissileData Missiles)
 {
     /// <summary>The scenario the game starts in (the first).</summary>
     public Scenario StartScenario => Scenarios[0];

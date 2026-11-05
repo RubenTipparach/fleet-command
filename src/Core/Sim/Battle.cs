@@ -23,6 +23,16 @@ public sealed class Shot
     public bool Hit, Spent, Intercept;
     public double Damage, SpeedMS, Life, TravelledM;
     public required string Color { get; init; }
+    /// <summary>A missile's grade (data/battle/missiles.json); null for every other shot.</summary>
+    public MissileGrade? Grade;
+    /// <summary>Point defence hits still needed to stop it.</summary>
+    public int PdHitsLeft = 1;
+    /// <summary>The flare or decoy a missile has been fooled into chasing, or null.</summary>
+    public Lure? Lure;
+    /// <summary>A missile whose flare burnt out: it flies on, straight, and hits nothing.</summary>
+    public bool Lost;
+    /// <summary>The direction it last flew (a unit vector), for a lost missile.</summary>
+    public double DX, DZ;
 }
 
 public sealed record LogLine(double T, string Who, string Text);
@@ -60,7 +70,7 @@ public sealed partial class Battle
     private readonly List<LogLine> _log = new();
     private readonly List<HitEvent> _hits = new();
     private long _hitSeq;
-    private readonly Rng _hit, _dmg, _ai, _helm;
+    private readonly Rng _hit, _dmg, _ai, _helm, _cm;
 
     public Battle(GameData data, Scenario scenario)
     {
@@ -70,7 +80,9 @@ public sealed partial class Battle
         _dmg = Rng.Fork(scenario.Seed, "damage");
         _ai = Rng.Fork(scenario.Seed, "ai");
         _helm = Rng.Fork(scenario.Seed, "helm");
+        _cm = Rng.Fork(scenario.Seed, "countermeasures");
         for (int i = 0; i < scenario.Ships.Count; i++) _ships.Add(MakeShip(scenario.Ships[i], i));
+        foreach (Ship s in _ships) s.DecoysLeft = data.Missiles.Decoy.PerShip;
         Player = _ships[0];
         Scenario = scenario;
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
@@ -132,6 +144,7 @@ public sealed partial class Battle
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
         foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
         PointDefenceStep();
+        CountermeasuresStep(dt);
         ShotsStep(dt);
         if (!_ships.Any(s => s.Side == 1 && s.Alive)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
@@ -290,11 +303,14 @@ public sealed partial class Battle
         var (x, z) = MountWorld(s, m);
         m.Charge = 0;
         int mi = s.Mounts.IndexOf(m);
+        if (!m.Weapon.IsPointDefence) VoidDecoy(s);   // firing main weapons voids its decoy (SFC2, printed page 136)
         if (!m.Weapon.Flies)
         {
             _shots.Add(new Shot { Kind = "beam", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, Life = Tuning.BeamLifeS, Color = m.Weapon.Color, To = t.Id, From = s.Id, Mount = mi, Hit = hit });
             if (hit) Damage(t, s.X, s.Z, s, w.Damage, m.Weapon.Kind);
         }
+        else if (m.Weapon.Kind == "missile")
+            _shots.Add(LaunchMissile(s, m, t, x, z, mi, hit));
         else
             _shots.Add(new Shot { Kind = m.Weapon.Kind, X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Mount = mi, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = m.Weapon.Color });
         return true;
@@ -370,6 +386,7 @@ public sealed partial class Battle
             sh.Life -= dt;
             if (sh.Kind == "beam") { Ends(sh); continue; }
             if (sh.Kind == "bolt") { BoltStep(sh, dt); continue; }
+            if (sh.Kind == "missile") { MissileStep(sh, dt); continue; }
             Ship? t = ShipById(sh.To);
             if (t is not { Alive: true }) { sh.Life = Math.Min(sh.Life, 0.4); continue; }
             double d = Geometry.Dist(sh.X, sh.Z, t.X, t.Z), stepM = sh.SpeedMS * dt;
@@ -413,13 +430,15 @@ public sealed partial class Battle
             foreach (Mount m in s.Mounts)
             {
                 if (!m.Weapon.IsPointDefence || !Rules.Ready(m)) continue;
-                Shot? threat = _shots.FirstOrDefault(sh => sh.Kind != "beam" && sh.To == s.Id && !sh.Spent
+                // a missile chasing a lure or lost is no threat; the rest are, nearest first in the stable shot order
+                Shot? threat = _shots.FirstOrDefault(sh => sh.Kind != "beam" && sh.To == s.Id && !sh.Spent && sh.Lure == null && !sh.Lost
                     && Geometry.Dist(sh.X, sh.Z, s.X, s.Z) / 1000 <= m.Weapon.Normal.RangeKm);
                 if (threat == null) continue;
                 m.Charge = 0;
                 var (px, pz) = MountWorld(s, m);
                 added.Add(new Shot { Kind = "beam", X = px, Z = pz, SX = px, SZ = pz, TX = threat.X, TZ = threat.Z, Life = 0.15, Color = m.Weapon.Color, Intercept = true, From = s.Id, Mount = s.Mounts.IndexOf(m), At = threat });
-                if (_hit.Next() < Tuning.PdInterceptChance) { threat.Spent = true; threat.Life = 0; }
+                // a burst stops it pd_intercept_chance of the time; a blue or green missile needs two (its grade's pd_hits)
+                if (_hit.Next() < Tuning.PdInterceptChance && --threat.PdHitsLeft <= 0) { threat.Spent = true; threat.Life = 0; }
             }
         }
         _shots.AddRange(added);

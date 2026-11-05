@@ -64,6 +64,10 @@ public sealed class Ship
     public int Ecm;
     public Stance Stance = Stance.Attack;
     public double ThinkT;
+    /// <summary>Countermeasures: battle time its flares can be thrown again (s), decoy shuttles left, and the decoy it has out.</summary>
+    public double FlareReadyT;
+    public int DecoysLeft;
+    public Lure? Decoy;
 
     // The helm officer (battle-console design: helm orders, high energy turns, evasive, emergency stop).
     /// <summary>True while an order toward the target steers the ship (the autopilot); false is free heading.</summary>

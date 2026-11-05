@@ -1,5 +1,5 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors.",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange.",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
@@ -73,6 +73,14 @@
     "weapon": "pd",
     "x": 0.32,
     "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    }
@@ -348,14 +356,16 @@
     "x": -0.3,
     "y": 0.5,
     "arc_centre_deg": 0,
-    "arc_width_deg": 180
+    "arc_width_deg": 180,
+    "grade": "red"
    },
    {
     "weapon": "missile",
     "x": 0.3,
     "y": 0.5,
     "arc_centre_deg": 0,
-    "arc_width_deg": 180
+    "arc_width_deg": 180,
+    "grade": "orange"
    },
    {
     "weapon": "lance",
@@ -567,6 +577,14 @@
     "y": -0.3,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "orange",
+    "x": 0,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
    }
   ],
   "shields_hp": [
@@ -675,6 +693,14 @@
     "weapon": "pd",
     "x": 0,
     "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "green",
+    "x": 0,
+    "y": -0.4,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    }
