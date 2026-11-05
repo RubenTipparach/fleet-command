@@ -235,6 +235,8 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'ssarith', when: '2026-11-05', q: 'this is what it really looks like, but I need you to add some character to it, make it more alien', means: 'SD\'s bows redrawn on a real recurve (after your picture): one smooth curve, thickest at the grip, the tips flipping forward past where the string meets them; then the Hunt\'s own character: two tally spurs on the back of each limb and a forked hook at each tip that the string seats in.' },
+  { f: 'ssarith', when: '2026-11-05', q: 'the bow is all wobly, it sucks', means: 'The smoothing drew a curve through the old facets and it rippled; the limb is now one analytic curve, no points to wobble between.' },
   { f: 'ssarith', when: '2026-11-05', q: 'make each arrowhead unique', means: 'Each stage has its own head: the learner\'s leaf (no barb), the hunter\'s barb (one barb), the elder\'s tally (long, a notch for each hunt). The 3D badge takes them too.' },
   { f: 'ssarith', when: '2026-11-04', q: 'No the way I imagined was 3 bow and arrows overlapping pointed to the right', means: 'SD redrawn: the three bows overlap like a hand of cards, the largest behind on the left, the smallest in front on the right, every arrow aimed right and flying through the smaller bows ahead of it, in a pennon pointing the same way. The stepped rack is gone.' },
   { f: 'ssarith', when: '2026-11-04', q: 'bows and arrows lined up might be a cool emblem, but it has to be ssarith bow and arrow / maybe different sizes to represent their different stages of manhood', means: 'SD, the Bow Rites, now recommended: three of the Hunt\'s own bows (cut from flat plate, a square-cut recurve, a one-barbed head), each braced with its arrow nocked, smallest to largest in a rack whose top steps up with them. A fourth tradition, yours: a new bow made at each stage of life, and the old ones kept.' },
@@ -886,7 +888,7 @@ const SD = (() => {
   // Each bow: [y of its arrow, height, x of its string, x of its arrow's tip]. Overlapping like a hand of cards: the
   // largest behind on the left, the smallest in front on the right, their arrows close and parallel, so each arrow flies
   // through the smaller bows ahead of it. Every tip stands clear of the pennon's slanted end.
-  const SPEC = [[43, 26, 47, 74], [50, 36, 33, 85], [57, 46, 19, 80]];
+  const SPEC = [[43, 26, 47, 74], [50, 36, 33, 85], [56, 44, 19, 80]];
   // Each stage's own arrowhead (owner, 2026-11-05: "make each arrowhead unique"), pointing right from its tip:
   //   the learner's leaf  the youngest's: a plain leaf, no barb, for practice; nothing is meant to stay in it
   //   the hunter's barb   the middle stage's: a narrow leaf with one barb, so a fair hunter can draw it out
@@ -898,25 +900,48 @@ const SD = (() => {
   ];
   const bows = SPEC.map(([y, h, sx, tip], idx) => {
     const d = 0.3 * h;                                      // the bow's depth from string to riser
-    // The limb's centre line, top tip to bottom tip: a square-cut recurve kicking back at each end, straight facets out
-    // to the riser at the front.
-    const half = [[-0.18, -0.5], [0, -0.44], [0.55, -0.3], [0.9, -0.12], [1, 0]];
-    const line = half.map(([u, v]) => [sx + u * d, y + v * h]).concat(half.slice(0, -1).reverse().map(([u, v]) => [sx + u * d, y - v * h]));
+    // The Hunt's bow (owner, 2026-11-05: "can you smooth out the bows?", "the bow is all wobly", then, with a picture of a
+    // recurve bow: "this is what it really looks like, but I need you to add some character to it, make it more alien").
+    // The limb follows one even curve from the grip (a = 0) to each tip (a = 1): the string meets it at a = 0.9, and past
+    // that the tip flips forward, away from the string, as a recurve's does. It is thickest at the grip and tapers to the
+    // tips. The character, each from a tradition of the Hunt rather than anyone's body: two tally spurs on the back of each limb (the Tally Keepers' count), and
+    // a forked hook at each tip that the string seats in.
     const P = {};
-    // Smoothed (owner, 2026-11-05: "can you smooth out the bows?"): one continuous curve through the limb's points
-    // (Catmull-Rom, 8 samples a span), its width eased between the same values, so the limb has no facets.
-    const W = [1.8, 2.1, 2.6, 3.2, 4, 3.2, 2.6, 2.1, 1.8], smooth = [], sw = [];
-    for (let k = 0; k < line.length - 1; k++) {
-      const p0 = line[Math.max(0, k - 1)], p1 = line[k], p2 = line[k + 1], p3 = line[Math.min(line.length - 1, k + 2)];
-      for (let j = 0; j < 8; j++) {
-        const t = j / 8, t2 = t * t, t3 = t2 * t;
-        smooth.push([0, 1].map((c) => 0.5 * (2 * p1[c] + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t2 + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t3)));
-        sw.push(W[k] + (W[k + 1] - W[k]) * (3 * t2 - 2 * t3));
-      }
+    // The curve, in units of the bow's depth: an even fall from the grip, and a recurve that lifts the last part of each
+    // limb forward. The string meets the limb where the curve comes nearest it (STR), as a recurve's string lies along the
+    // belly there; the tip curls forward past that.
+    const depth = (a) => Math.cos(Math.PI / 2 * a / 0.9) + 0.5 * Math.max(0, a - 0.7) ** 2 / 0.3 ** 2;
+    let STR = 0.7;
+    for (let a = 0.7; a <= 1; a += 0.002) if (depth(a) < depth(STR)) STR = a;
+    const at = (a, sgn) => [sx + d * (depth(a) - depth(STR)) / (depth(0) - depth(STR)), y + sgn * a * h / 2];
+    const arc = [], aw = [];
+    for (let k = 0; k <= 64; k++) {
+      const v = -1 + 2 * k / 64, a = Math.abs(v);
+      arc.push(at(a, Math.sign(v) || 1));
+      aw.push(1.1 + 2.9 * (1 - a) ** 1.4);
     }
-    smooth.push(line[line.length - 1]); sw.push(W[W.length - 1]);
-    P.limb = thick(smooth, sw);
-    P.string = [[sx - 0.6, y - 0.44 * h], [sx + 0.6, y - 0.44 * h], [sx + 0.6, y + 0.44 * h], [sx - 0.6, y + 0.44 * h]];
+    P.limb = thick(arc, aw);
+    const NOCK = STR;
+    // The trim, laid over the limb: a point on the limb's back (toward the target) and its outward normal.
+    const back = (a, sgn) => {
+      const p0 = at(Math.max(0, a - 0.01), sgn), p1 = at(Math.min(1, a + 0.01), sgn);
+      let tx = p1[0] - p0[0], ty = p1[1] - p0[1]; const l = Math.hypot(tx, ty); tx /= l; ty /= l;
+      let nx = ty, ny = -tx; if (nx < 0) { nx = -nx; ny = -ny; }       // the normal pointing forward, away from the string
+      const w = (1.1 + 2.9 * (1 - a) ** 1.4) / 2, c = at(a, sgn);
+      return { x: c[0] + nx * w * 0.3, y: c[1] + ny * w * 0.3, tx: tx * sgn, ty: ty * sgn, nx, ny, w };   // rooted well inside the limb
+    };
+    P.trim = [];
+    for (const sgn of [-1, 1]) {
+      for (const a of [0.42, 0.58]) {                                    // two tally spurs, swept back toward the tip
+        const b = back(a, sgn), L = 0.08 * h * (a < 0.5 ? 1 : 0.8) + b.w * 0.7, W = 0.03 * h + 0.3;
+        P.trim.push([[b.x - b.tx * W, b.y - b.ty * W], [b.x + b.nx * L + b.tx * L * 0.7, b.y + b.ny * L + b.ty * L * 0.7], [b.x + b.tx * W, b.y + b.ty * W]]);
+      }
+      const t = at(1, sgn), u = at(0.97, sgn), tx = t[0] - u[0], ty = t[1] - u[1], l = Math.hypot(tx, ty), ux = tx / l, uy = ty / l;
+      const f = 0.05 * h;                                              // the forked hook: two prongs past the tip
+      P.trim.push([[t[0] - uy * 0.7 - ux * 0.6, t[1] + ux * 0.7 - uy * 0.6], [t[0] + ux * f - uy * f * 0.55, t[1] + uy * f + ux * f * 0.55],
+        [t[0] + ux * f * 0.45, t[1] + uy * f * 0.45], [t[0] + ux * f + uy * f * 0.55, t[1] + uy * f - ux * f * 0.55], [t[0] + uy * 0.7 - ux * 0.6, t[1] - ux * 0.7 - uy * 0.6]]);
+    }
+    P.string = [[sx - 0.6, y - NOCK * h / 2], [sx + 0.6, y - NOCK * h / 2], [sx + 0.6, y + NOCK * h / 2], [sx - 0.6, y + NOCK * h / 2]];
     // The arrow: a shaft from its nock just behind the string, a narrow leaf head with one barb (below: it holds on one
     // side only), and two square-cut vanes just ahead of the string.
     P.shaft = [[sx - 2.2, y - 0.8], [tip - 6, y - 0.8], [tip - 6, y + 0.8], [sx - 2.2, y + 0.8]];
@@ -927,7 +952,7 @@ const SD = (() => {
     const vane = (s) => [[sx + 2.2, y + s * 0.8], [sx + 2.67, y + s * 2.1], [sx + 7.32, y + s * 2.1], [sx + 8.5, y + s * 0.8]];
     const vaneTip = (s) => [[sx + 2.67, y + s * 2.1], [sx + 3, y + s * 3], [sx + 6.5, y + s * 3], [sx + 7.32, y + s * 2.1]];
     P.vanes = [vane(-1), vane(1)]; P.vaneTips = [vaneTip(-1), vaneTip(1)];
-    return { y, h, sx, tip, d, P, limb: polyD(P.limb), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.concat(P.vaneTips).map(polyD).join('') };
+    return { y, h, sx, tip, d, P, limb: polyD(P.limb), trim: P.trim.map(polyD), string: polyD(P.string), shaft: polyD(P.shaft), head: polyD(P.head), vanes: P.vanes.concat(P.vaneTips).map(polyD).join('') };
   });
   return { bows, PEN, fr: polyFrame(PEN, 2.5, 5) };
 })();
@@ -936,7 +961,7 @@ function sdArt(k, ink = false) {
   let s = `<path d="${SD.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
   if (!ink) s += path(SD.fr.field, k.field);
   // Each part its own path: overlapping parts in one path would cancel into holes where their windings differ.
-  SD.bows.forEach((q, i) => { for (const part of [q.limb, q.string, q.shaft, q.vanes]) s += path(part, c(k.device)); s += path(q.head, c(i === 0 ? k.accent : k.device)); });
+  SD.bows.forEach((q, i) => { for (const part of [q.limb, ...q.trim, q.string, q.shaft, q.vanes]) s += path(part, c(k.device)); s += path(q.head, c(i === 0 ? k.accent : k.device)); });
   return s;
 }
 const SSARITH_DESIGNS = [
@@ -952,7 +977,7 @@ const SSARITH_DESIGNS = [
       [SD.bows[0].tip - 3, SD.bows[0].y - 1.5, 'R', 'The learner\'s leaf', 'The youngest\'s head: a plain leaf with no barb, for practice. Nothing is meant to stay in it yet.'],
       [SD.bows[1].tip - 7.5, SD.bows[1].y - 2.5, 'R', 'The hunter\'s barb', 'The middle stage\'s head: one barb, on one side only, so a fair hunter can draw it out.'],
       [SD.bows[2].tip - 6, SD.bows[2].y - 2, 'R', 'The elder\'s tally', 'The eldest\'s head: long, a notch cut in its back edge for each hunt it has made (the Tally Keepers\' count, on the arrow itself).'],
-      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'Laminated, then bent smooth', 'Thin plies of wood glued up and bent on a form into one smooth curve, with a recurve at each tip: the Hunt\'s makers build a bow the way they build their gear, in layers.'],
+      [SD.bows[2].sx + SD.bows[2].d * 0.9, SD.bows[2].y + SD.bows[2].h * 0.12, 'R', 'A recurve, with tally spurs', 'One smooth curve from the grip, its tips flipping forward past the string. Two spurs on the back of each limb (the Tally Keepers\' count) and a forked hook at each tip: the Hunt\'s bow, not anyone\'s body.'],
       [SD.bows[1].sx + SD.bows[1].d, SD.bows[1].y, 'R', 'Each stage a size larger, overlapping', 'A new bow at each stage of life, the old ones kept and laid over one another: three stages, all aimed the same way.'],
     ],
   },
@@ -1196,7 +1221,7 @@ window.EMBLEM_PARTS_KRAI = () => ({ key: 'KC+', name: 'The Fang Torc', grid: 100
 // rim's inner edge (`wall`, outer and inner rings), and the floor (`floor`) inside that, where the ferns grow.
 window.EMBLEM_PARTS_SSARITH = () => ({ key: 'SD', name: 'The Bow Rites', grid: 100, frame: [SD.PEN, SD.fr.inner], field: [SD.fr.inner],
   wall: [SD.fr.inner, polyFrame(SD.PEN, 2.5, 7).inner], floor: [polyFrame(SD.PEN, 2.5, 7).inner],
-  bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, vaneTips: q.P.vaneTips, head: q.P.head })) });
+  bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, vaneTips: q.P.vaneTips, head: q.P.head, trim: q.P.trim })) });
 // A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
 window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
 window.EMBLEM_CHECK = async () => {

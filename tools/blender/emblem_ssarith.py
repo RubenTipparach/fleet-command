@@ -30,7 +30,7 @@ fills the recess up to 6.4 mm. The bows float over the ferns as thin parts, each
     feathers   6.63 to 7.1   body and tip meet edge to edge, never overlapping
     shaft      6.27 to 7.3
     head       6.59 to 7.5
-    limb       6.11 to 7.9   (the front bow's limb tops out at 9.7)
+    limb       6.11 to 7.9   (the front bow's limb tops out at 9.7); its trim (fin, spurs, hooks) 6.19 to 7.78
     frame      0.0 to 10.4
 
     /opt/blender/blender -b -P tools/blender/emblem_ssarith.py -- [--out DIR] [--samples N] [--px N] [--steps]
@@ -87,6 +87,12 @@ def build(parts):
             for k, ring in enumerate(rings):
                 z1 = top + LEVEL_MM * level
                 R.poly_slab(f"bow{i}.{part}.{k}", [ring], z1 - thick, z1, bevel, mats[part])
+        # the limb's trim (the sight fin, the tally spurs, the forked hooks), a hair under the limb's top and over its
+        # bottom so no face meets the limb's in a plane
+        top, thick, _ = HEIGHTS["limb"]
+        for k, ring in enumerate(bow["trim"]):
+            z1 = top + LEVEL_MM * level - 0.12
+            R.poly_slab(f"bow{i}.trim.{k}", [ring], z1 - thick + 0.2, z1, 0.25, wood)
 
 
 def ferns(data):

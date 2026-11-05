@@ -242,6 +242,9 @@ PARTS.bows.forEach((bow, i) => {
     const z1 = top + LEVEL * level;
     for (const ring of part === 'vanes' || part === 'vaneTips' ? bow[part] : [bow[part]]) slab([ring], z1 - thick, z1, bevel, MATS[part]);
   }
+  // the limb's trim (the sight fin, the tally spurs, the forked hooks), a hair under the limb's top and over its bottom
+  const [lt, lth] = HEIGHTS.limb, tz = lt + LEVEL * level - 0.12;
+  for (const ring of bow.trim) slab([ring], tz - lth + 0.2, tz, 0.25, wood);
 });
 
 // ---- the fern bed (owner, 2026-11-05: "render a fern forrest sccene", "it should be 3d"), as tools/emblems/ssarith_ferns.py
