@@ -117,3 +117,4 @@
 - 2026-11-05, desktop session: version 120, version id `1793865072-cc30`: M1 v9.
 - 2026-11-05, desktop session: version 121, version id `1793865429-5b9d`: M1 v10.
 - 2026-11-05, desktop session: version 122, version id `1793866185-85f0`: the Fleet Command Missions guide added under Guides.
+- 2026-11-05, desktop session: version 123, version id `1793871461-ad95`: M1 v11, the Missions guide v2.
