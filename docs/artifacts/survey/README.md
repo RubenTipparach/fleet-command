@@ -45,3 +45,4 @@
 - 2026-11-04, cloud session: version 2 on the cloud session's account (H2, Ssarith traditions), version id `1793802162-bb01`.
 - 2026-11-04, cloud session: version 3 (H2 rewritten for A, B or the new C, no recommendation; H3 C's layout; a question may have no recommendation), version id `1793803896-cbea`.
 - 2026-11-05, cloud session: version 4 (H2 and H3 replaced by H4, which Ssarith blockouts go on), version id `1793837618-10b4`.
+- 2026-11-05, cloud session: version 5 (H4 lists the version 10 blockouts), version id `1793842421-9921`.

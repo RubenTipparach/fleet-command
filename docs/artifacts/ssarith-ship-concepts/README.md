@@ -54,3 +54,9 @@
   variety of designs. Not just 3 lame ones that look like coffins"): version 9, the page replaced by a blockout board of
   twelve frigate-sized massings in grey clay. Versions 1 to 8 deleted with their plans, tiles, generator and shots (git
   keeps them). Published, version id `1793837617-6c69`; survey version 4 (H4), version id `1793837618-10b4`.
+- 2026-11-05, cloud session (owner, with three images of Gorn ships, not committed: "they looked menacing!", "make ships
+  like this, with this kind of texture", "might need a new skill to make high -poly AO baked texture that looks drawn on"):
+  version 10, version id `1793842420-9cbe`. Twelve blockouts in the examples' shape language, painted by the new
+  `painted-bake` skill (`tools/blender/painted_bake.py`, `assets/textures/painted/`), a Painted switch over the clay. Survey
+  version 5 (H4 for the new twelve), version id `1793842421-9921`.
+- 2026-11-05, cloud session: version 11, version id `1793842658-f5f8` (shots of the board from above and ahead painted; subtitle says painted).

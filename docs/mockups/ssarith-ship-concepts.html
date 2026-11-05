@@ -73,7 +73,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v10. <code>ssarith-ship-concepts</code>. A blockout board: twelve massings in your inspiration's shape language, clay, to pick from.</p>
+    <p class="sub">Mockup 12, v10. <code>ssarith-ship-concepts</code>. A blockout board: twelve massings in your inspiration's shape language, painted (the clay is a switch away), to pick from.</p>
   </header>
   <div class="scroll">
     <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
@@ -576,7 +576,7 @@ resize(); setView('board'); requestAnimationFrame(loop);
 
 // Named shots for tools/mockups/shoot.mjs.
 const shot = (fn) => () => { fn(); renderer.render(scene, camera); labels(); };
-window.MOCKUP_SHOTS = { board: shot(() => { setPaint(true); setView('board'); }), board_clay: shot(() => { setPaint(false); setView('board'); }), board_top: shot(() => setView('top')), board_ahead: shot(() => setView('side')) };
+window.MOCKUP_SHOTS = { board: shot(() => { setPaint(true); setView('board'); }), board_clay: shot(() => { setPaint(false); setView('board'); }), board_top: shot(() => { setPaint(true); setView('top'); }), board_ahead: shot(() => { setPaint(true); setView('side'); }) };
 BLOCKS.forEach((b, i) => { window.MOCKUP_SHOTS['b' + String(b.n).padStart(2, '0')] = shot(() => { setPaint(true); focusOn(i); }); });
 window.MOCKUP_SCENE = scene;
 Promise.all(TEXLOAD).then(() => { renderer.render(scene, camera); window.MOCKUP_READY = true; }); // ready once the painted tile is in
