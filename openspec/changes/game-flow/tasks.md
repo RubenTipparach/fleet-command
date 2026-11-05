@@ -18,6 +18,9 @@
 
 ## 3. After approval for implementation (a separate request)
 
-- [ ] 3.1 Data: `data/` files for scenarios, hulls, systems, supplies, missions, factions and terrain, validated on load
-- [ ] 3.2 Simulation: loadout rules, budgets, campaign state, movement, mission offers, results, with tests for every scenario
-- [ ] 3.3 Screens in the engine chosen by survey T4, then a playtest at desktop and phone size
+Approved for implementation by the owner, 2026-11-05: "implement game flow into the game, but I want you to implmenent
+missions as well". The work is change `game-flow-engine` (and `mission-scripting`, `ship-schematics`).
+
+- [x] 3.1 Data: `data/campaign/campaign.json` (factions, terrain, tiers, hulls, systems, supplies, the map) and `data/missions/`, validated on load
+- [x] 3.2 Simulation: campaign state, movement and routes by turn, the factions' turn, mission offers, battles and results, the shop, saves, with tests (`tests/Core.Tests/CampaignTests.cs`); loadout budgets for skirmish still to do (`game-flow-engine` 2.3)
+- [ ] 3.3 Screens in Godot (done: `src/Game/Flow/`), then a playtest at desktop and phone size (`game-flow-engine` 1.6)

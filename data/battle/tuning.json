@@ -42,5 +42,6 @@
   "erratic_turn": 0.8,
   "orbit_km": 4,
   "hold_min_km": 1,
-  "hold_max_km": 12
+  "hold_max_km": 12,
+  "capture_hull_frac": 0.25
 }

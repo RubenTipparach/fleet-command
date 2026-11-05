@@ -59,6 +59,11 @@ public sealed class Ship
     public string? Target;
     public AlertLevel Alert = AlertLevel.Yellow;
     public bool Alive = true;
+    /// <summary>A prize: a ship a mission wants taken, not destroyed (ShipStart.Prize).</summary>
+    public bool Prize;
+    /// <summary>A prize beaten down to the capture line has struck: boarded and taken, it no longer fights or moves, and the
+    /// battle no longer counts it as an enemy. It can still be destroyed by a careless shot.</summary>
+    public bool Struck;
     /// <summary>Multiple fire: Fire looses every selected ready mount; off, one at a time.</summary>
     public bool Volley = true;
     public int Ecm;

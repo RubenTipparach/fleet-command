@@ -7,8 +7,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FleetCommand.Campaign;
 using FleetCommand.ConsoleModel;
 using FleetCommand.Data;
+using FleetCommand.Game.Flow;
 using FleetCommand.Game.Ui;
 using FleetCommand.Game.Playtest;
 using FleetCommand.Game.Ui.Kit;
@@ -30,6 +32,8 @@ public sealed partial class Main : Node
     private double _acc;
     private Dictionary<string, Action> _bindings = new();
     private readonly Dictionary<string, string> _args = new();
+    private GameFlow? _flow;
+    private CanvasLayer _console = null!;
 
     public override void _Ready()
     {
@@ -38,7 +42,12 @@ public sealed partial class Main : Node
         // was started in
         if (!_args.ContainsKey("playtest") && !_args.ContainsKey("still") && !_args.ContainsKey("layout-test")) DisplaySettings.ApplySaved();
         GameData data;
-        try { data = DataLoader.Load(ReadData); }
+        CampaignData camp;
+        try
+        {
+            data = DataLoader.Load(ReadData);
+            camp = CampaignData.Load(ReadData, MissionFiles(), data);
+        }
         catch (DataError e) { GD.PushError($"DATA_ERROR {e.Message}"); GetTree().Quit(1); return; }
         Scenario start = StartScenario(data);
         IKit kit = KitFor(data, start);
@@ -59,7 +68,7 @@ public sealed partial class Main : Node
         AddChild(_view);
         _view.Init(_x);
 
-        var layer = new CanvasLayer { Name = "Console" };
+        var layer = _console = new CanvasLayer { Name = "Console" };
         AddChild(layer);
         _root = new Control { Name = "Root", MouseFilter = Control.MouseFilterEnum.Ignore };
         layer.AddChild(_root);
@@ -83,9 +92,20 @@ public sealed partial class Main : Node
         tips.Init(_x);
         _root.AddChild(tips);
 
+        // the game flow (menus, campaign, missions) unless the run is one of the battle's own checks or a scenario asked for
+        bool battleOnly = new[] { "scenario", "playtest", "still", "layout-test", "parity-test" }.Any(_args.ContainsKey) && !_args.ContainsKey("flow");
+        if (!battleOnly)
+        {
+            _flow = new GameFlow();
+            AddChild(_flow);
+            _flow.Init(_x, camp, Start, ShowBattle, UseSkin);
+            act.OnQuit = () => { if (_flow.Screen == FlowScreen.Battle) { _x.State.MenuOpen = false; _flow.ToMenu(); } else GetTree().Quit(); };
+        }
+
         GetViewport().SizeChanged += Relayout;
         Relayout();
         GD.Print("GAME_READY");
+        if (_flow != null && _args.TryGetValue("flow", out string? fs)) { _ = FlowStill(fs); return; }
         if (_args.ContainsKey("layout-test")) CallDeferred(nameof(RunLayoutTest));
         else if (_args.ContainsKey("parity-test")) _ = RunParityTest();
         else if (_args.TryGetValue("still", out string? still)) _ = Still(still);
@@ -112,6 +132,32 @@ public sealed partial class Main : Node
     }
 
     private void Restart() => Start(_x.Battle.Scenario);
+
+    /// <summary>The mission files: every .json under data/missions/, as paths relative to data/.</summary>
+    private static IEnumerable<string> MissionFiles()
+    {
+        var list = new List<string>();
+        foreach (string f in DirAccess.GetFilesAt("res://data/missions"))
+            if (f.EndsWith(".json")) list.Add("missions/" + f);
+        return list;
+    }
+
+    /// <summary>Shows the battle (its 3D view and console) or hides it under the game flow's screens; hidden, it does not step.</summary>
+    private void ShowBattle(bool on)
+    {
+        _view.Visible = on;
+        _console.Visible = on;
+        if (on) { _x.State.MenuOpen = false; _x.State.Paused = false; Relayout(); }
+    }
+
+    /// <summary>The console skin of a faction (the side a campaign is played from).</summary>
+    private void UseSkin(string faction)
+    {
+        string id = _x.Data.Factions[faction].Skin ?? "concord";
+        if (!_kits.TryGetValue(id, out IKit? kit)) { kit = Kits.For(id); KitPieces.Verify(kit); _kits[id] = kit; }
+        _x.Kit = kit;
+        _column.Kit = kit;
+    }
 
     /// <summary>Starts a scenario from its beginning, in the skin of the side it is played from.</summary>
     private void Start(Scenario sc)
@@ -142,7 +188,7 @@ public sealed partial class Main : Node
     {
         if (_x == null) return;
         _menu.Visible = _x.State.MenuOpen;
-        if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still")) return;
+        if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still") || (_flow != null && _flow.Screen != FlowScreen.Battle)) return;
         double step = _x.Data.Tuning.StepS;
         _acc = Math.Min(_acc + delta, step * 6);
         while (_acc >= step) { _x.Battle.Step(); _acc -= step; }
@@ -150,7 +196,7 @@ public sealed partial class Main : Node
 
     public override void _UnhandledInput(InputEvent e)
     {
-        if (_x == null || e.IsEcho()) return;
+        if (_x == null || e.IsEcho() || (_flow != null && _flow.Screen != FlowScreen.Battle)) return;
         foreach (var (name, run) in _bindings)
         {
             if (!e.IsActionPressed(name)) continue;
@@ -183,6 +229,7 @@ public sealed partial class Main : Node
         _menu.Position = Vector2.Zero;
         _menu.Size = size;
         _view.SetViewRect(new Rect2(V(v.X, v.Y), V(v.W, v.H)), size);
+        _flow?.PlaceStrip(new Rect2(V(v.X, v.Y + 64), V(v.W, v.H)));
         _view.Sync();
     }
 
@@ -345,6 +392,51 @@ public sealed partial class Main : Node
         for (int i = 0; i < (tview ? 120 : 4); i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         Relayout();
         for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        Image img = GetViewport().GetTexture().GetImage();
+        Error err = img.SavePng(path);
+        GD.Print(err == Error.Ok ? $"STILL {path} {img.GetWidth()}x{img.GetHeight()}" : $"STILL_FAIL {err}");
+        GetTree().Quit(err == Error.Ok ? 0 : 1);
+    }
+
+    /// <summary>A still of a game flow screen (--flow=menu, factions, skirmish, map, route, brief, port, outfit, battle, debrief
+    /// or debrief-battle; --side=concord or krai; --out=path.png), for the mockup comparison (CLAUDE.md section 12). It sets the
+    /// screen up as a player would reach it, through the flow's own actions, waits for it to draw, saves and quits.</summary>
+    private async System.Threading.Tasks.Task FlowStill(string what)
+    {
+        GameFlow f = _flow!;
+        string side = _args.GetValueOrDefault("side", "concord"), path = _args.GetValueOrDefault("out", $"user://flow-{what}.png");
+        async System.Threading.Tasks.Task Frames(int n) { for (int i = 0; i < n; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); }
+        Offer? Find(string script) => f.Camp!.S.Missions.FirstOrDefault(m => m.Script == script) ?? f.Camp.OfferMission(script);
+        void FlyTo(Offer m) { f.Camp!.S.AtC = m.C; f.Camp.S.AtR = m.R; f.SelectHex((m.C, m.R)); }
+        switch (what)
+        {
+            case "menu": break;
+            case "factions": f.Go(FlowScreen.Factions); f.Picked = side; break;
+            case "skirmish": f.Go(FlowScreen.Skirmish); break;
+            default:
+                f.NewCampaign(side);
+                Campaign.Campaign c = f.Camp!;
+                if (what == "route") f.SelectHex((c.S.AtC + 7, c.S.AtR + 1));
+                if (what == "brief") { Offer m = Find("prize")!; f.SelectHex((m.C, m.R)); f.OpenBrief(m); }
+                if (what is "port" or "outfit") { c.Buy(c.Data.HullsOf(side).Skip(1).First().Id); f.Port = what == "port" ? "yard" : "outfit"; }
+                if (what == "debrief") { Offer m = Find("shakedown")!; FlyTo(m); f.Launch(m); }
+                if (what is "battle" or "debrief-battle")
+                {
+                    Offer m = Find("patrol")!;
+                    FlyTo(m);
+                    f.Launch(m);
+                    await Frames(10);
+                    Battle b = _x.Battle;
+                    b.Lock(b.EnemiesOf(b.Player).First().Id);
+                    b.HelmOrder("intercept");
+                    b.SetSpeed(b.Rules.MaxSpeed(b.Player));
+                    for (int i = 0; i < 600; i++) b.Step();
+                    if (what == "debrief-battle") { b.Withdraw(); while (f.Screen == FlowScreen.Battle) await Frames(10); }
+                }
+                break;
+        }
+        await Frames(30);
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         Image img = GetViewport().GetTexture().GetImage();
         Error err = img.SavePng(path);

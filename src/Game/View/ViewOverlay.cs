@@ -228,8 +228,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
         Key("v.target", new Rect2(14, 12, 90, 30), "Target", () => _x.State.ShowTarget = !_x.State.ShowTarget, _x.State.ShowTarget, "Show or hide the Target box");
-        ScenePicker();
-        if (!_x.State.SceneOpen) f.DrawRich(this, new[] { ("OBJECTIVE · ", C.Lilac), (b.Scenario.Objective.ToUpperInvariant(), C.Text) }, 14, 64, 16, Size.X * 0.62f);
+        // a campaign mission's battle has its own objectives (the mission strip) and no scene selector
+        if (!_x.State.InMission) ScenePicker();
+        if (!_x.State.SceneOpen && !_x.State.InMission) f.DrawRich(this, new[] { ("OBJECTIVE · ", C.Lilac), (b.Scenario.Objective.ToUpperInvariant(), C.Text) }, 14, 64, 16, Size.X * 0.62f);
         if (_x.State.Paused) f.Draw(this, "PAUSED · ORDERS STILL TAKEN", Size.X / 2, 40, 28, C.Caution, HorizontalAlignment.Center, 0, 600, 1);
         if (_x.State.PlacingHet) f.Draw(this, "CLICK WHERE TO TURN", Size.X / 2, 74, 20, C.Lilac, HorizontalAlignment.Center, 0, 600, 1);
 
@@ -247,7 +248,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             LogLine l = b.Log[^1];
             f.DrawRich(this, new[] { ($"{l.Who}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
         }
-        if (b.Over is { } over) Banner(over == "won" ? "Victory" : "Fleet lost", over == "won" ? C.Accord : C.Alert);
+        if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : "Fleet lost", over == "won" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
 
         // the Target box: the locked target's systems display, the same drawing as the ship panel (one component)
         if (_x.State.ShowTarget && t != null)

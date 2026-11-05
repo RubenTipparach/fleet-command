@@ -1,0 +1,100 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "prize",
+ "name": "Capture the prize",
+ "glyph": "Z",
+ "type": "Capture the prize",
+ "reward_cr": 400,
+ "turns": 4,
+ "where": "plain && hostile && dist_home >= 4",
+ "setup": [
+  {
+   "set": "fac",
+   "expr": "enemy"
+  },
+  {
+   "set": "tier",
+   "expr": "2 + floor(rand() * 2)"
+  },
+  {
+   "set": "hull",
+   "expr": "hull_of(fac, tier)"
+  },
+  {
+   "set": "cls",
+   "expr": "class_of(hull)"
+  },
+  {
+   "set": "prize_name",
+   "expr": "name_of(fac, 2 + floor(rand() * 6))"
+  }
+ ],
+ "objective": "Board and take the {prize_name}, whole. Needs marines.",
+ "brief": "Research wants a {name(fac)} {cls} to take apart, and the {prize_name} is passing through this sector under escort. Strip her shields, beat her down until she strikes, board her and tow her home to {home}. She is worth nothing to us destroyed: sink her and the contract is void.",
+ "needs": [
+  {
+   "if": "marines == 0",
+   "say": "Boarding needs marines aboard."
+  }
+ ],
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "prize",
+     "faction": "{fac}",
+     "count": 1,
+     "role": "enemy",
+     "tag": "prize",
+     "label": "Prize: {prize_name}",
+     "ship_name": "{prize_name}",
+     "tier": "tier"
+    },
+    {
+     "id": "escorts",
+     "faction": "{fac}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Escorts"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "take",
+     "text": "Board and take the {prize_name} (not destroy her)",
+     "primary": true,
+     "done": "taken(prize) == 1"
+    },
+    {
+     "id": "whole",
+     "text": "Take her with more than a sixth of her hull",
+     "done": "taken(prize) == 1 && hull_min(prize) > 0.16"
+    },
+    {
+     "id": "escort",
+     "text": "Destroy the escorts",
+     "done": "alive(escorts) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "next": [
+    {
+     "mission": "prize_home",
+     "at": "home",
+     "data": {
+      "taken_grade": "{grade}"
+     }
+    }
+   ],
+   "log": "The {prize_name} is under tow. Bring her home to the research yard."
+  },
+  {
+   "log": "The {prize_name} got away{crushing ? ', and the fleet with it barely did' : ''}."
+  }
+ ]
+}

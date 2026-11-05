@@ -14,6 +14,7 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | 6 | Concord line (the ships) | v24 | v24: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the lamps, the hot bells and the Albatross main hull's two-bell stern; its damage (hits, scorch marks, torpedo holes, parts blown off, the core breach and break-up into burning cells with cut faces) but not the subsystem signatures (`ship-damage-visuals` 3.2b); not its paint rules (below) | `ship-models-engine` |
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
+| 1 | Primary game flow (menus, faction screen, campaign, missions) | v14 | v14's flow and rules (2026-11-05): the menu, the faction screen, skirmish, the campaign map with the same territory, moves, routes by turn, factions' fleets, freighters, mission banners, briefing, port, debrief with prestige and reputation; missions from `data/missions/`; the differences below | `game-flow-engine`, `mission-scripting` |
 
 Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
 battle console mockup (mockup 2 v82, mockup 8 v21, mockup 15 v6) flies the same exported glbs the game flies, each class's
@@ -31,7 +32,29 @@ Shot looks (mockup 2 v77): open. The mockup draws lances as lit strips, disrupto
 and missiles as glowing warheads with trails (`docs/mockups/lib/weapon-fx.js`); the game's overlay still draws lines and
 dots. Task: `weapon-fx` 3.4.
 
+Schematics (2026-11-05, owner: "generate schematics for each ship ... I want these to be used in game, and in store"): the
+game is ahead of the mockups. The battle's systems display and the campaign's shipyard, fleet and outfitter draw each ship's
+two-layer schematic (`assets/ships/schematics/`, `src/Game/Ui/Schematics.cs`); the battle console mockup (mockups 2, 8, 15)
+still draws its outline, and the campaign mockup's shipyard its own. Task: `ship-schematics` 2.1.
+
+Missions (2026-11-05): the game reads `data/missions/`; the campaign mockup still runs `docs/mockups/lib/campaign-missions.js`,
+kept the same by hand (the files were written from it, 2026-11-05). Task: `mission-scripting` 2.1.
+
 ## Open differences
+
+### Mockup 1 (the game flow)
+
+| Where | Mockup | Game | Task |
+|---|---|---|---|
+| Faction screen | 3D emblems on wooden pedestals on concrete, a light and dust on hover, the emblem turning | the rendered emblems flat on kit frames; the Ssarith card disabled (no console skin in the game) | `game-flow-engine` 2.1 |
+| Map look | parallax star shader, the board reflecting the sky, nebula puffs with an accent colour, cloth banners | flat stars, unlit hex tiles, puffs in one colour, flat flags that sway | `game-flow-engine` 2.2 |
+| Skirmish | fleet building and loadouts on a points budget | the game's scenarios, played as written | `game-flow-engine` 2.3 |
+| Refits | fittings priced and shown | priced and saved, but a hull fights as its battle class | `game-flow-engine` 2.3 |
+| Officers | hired | hired, no effect in battle | `game-flow-engine` 2.4 |
+| Phones | every screen at phone sizes | not yet checked at phone sizes | `game-flow-engine` 2.5 |
+| Options | sound levels, quality, UI scale | display mode only | `game-flow-engine` 2.6 |
+| Battles | the stand-in battle with an End battle key | the real battle console, the mission's groups placed by bearing; Withdraw; the battle ends when one side is gone | none: the game is the target |
+| Station and planet assaults | fight the base | fight its guard squadron (no stations or planets in the battle yet) | `mission-scripting` 2.3 |
 
 ### Mockup 2 and 8 (one console, two skins)
 

@@ -1,0 +1,54 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "assassinate",
+ "name": "Assassination",
+ "glyph": "X",
+ "type": "Fleet action",
+ "reward_cr": 900,
+ "follow_group": true,
+ "where": "commander_here",
+ "objective": "Destroy the commander's ship.",
+ "brief": "{group} is in this sector. Destroy the flagship; the escorts do not matter.",
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "flagship",
+     "faction": "{group_fac}",
+     "count": 1,
+     "role": "enemy",
+     "tag": "flagship",
+     "label": "{group}",
+     "ship_name": "{group}",
+     "tier": 3
+    },
+    {
+     "id": "escorts",
+     "faction": "{group_fac}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Escorts"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "flag",
+     "text": "Destroy the flagship",
+     "primary": true,
+     "done": "destroyed(flagship) == 1"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay"
+  }
+ ]
+}

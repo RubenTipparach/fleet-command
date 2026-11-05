@@ -182,7 +182,7 @@ public static class DataLoader
             Frac(o, "mount_hit_chance"), Frac(o, "mount_damage"),
             Positive(o, "het_rate_deg_s"), NonNeg(o, "het_cost_e"), Frac(o, "het_chance_drop"), NonNeg(o, "het_recover_per_s"), Frac(o, "het_erratic_penalty"),
             NonNeg(o, "het_breakdown_s"), Frac(o, "het_breakdown_engines"), Positive(o, "estop_decel_x"), NonNeg(o, "estop_hold_s"), Frac(o, "erratic_hit"), Frac(o, "erratic_turn"),
-            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"));
+            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac"));
         o.Done();
         return t;
     }

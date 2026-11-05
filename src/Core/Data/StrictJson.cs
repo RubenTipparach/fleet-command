@@ -53,6 +53,9 @@ public sealed class StrictJson
 
     public bool Has(string key) => _el.TryGetProperty(key, out _);
 
+    /// <summary>True when the key is present and holds a string (for fields that take a number or an expression).</summary>
+    public bool IsString(string key) => _el.TryGetProperty(key, out JsonElement v) && v.ValueKind == JsonValueKind.String;
+
     private JsonElement Get(string key)
     {
         _read.Add(key);
@@ -146,6 +149,32 @@ public sealed class StrictJson
             i++;
         }
         return list.ToArray();
+    }
+
+    /// <summary>A required array of rows, each an array of strings and whole numbers (compact tables such as the campaign
+    /// map's ports); a string is returned as string, a whole number as int, anything else is an error.</summary>
+    public List<object[]> RawArray(string key)
+    {
+        JsonElement v = Get(key);
+        if (v.ValueKind != JsonValueKind.Array) throw new DataError($"{Where}.{key}: expected an array");
+        var rows = new List<object[]>();
+        int i = 0;
+        foreach (JsonElement row in v.EnumerateArray())
+        {
+            if (row.ValueKind != JsonValueKind.Array) throw new DataError($"{Where}.{key}[{i}]: expected an array");
+            var cells = new List<object>();
+            int j = 0;
+            foreach (JsonElement e in row.EnumerateArray())
+            {
+                if (e.ValueKind == JsonValueKind.String) cells.Add(e.GetString() ?? "");
+                else if (e.ValueKind == JsonValueKind.Number && e.TryGetInt32(out int n)) cells.Add(n);
+                else throw new DataError($"{Where}.{key}[{i}][{j}]: expected a string or a whole number");
+                j++;
+            }
+            rows.Add(cells.ToArray());
+            i++;
+        }
+        return rows;
     }
 
     /// <summary>A child object by key, for maps whose keys are ids (classes, weapons).</summary>

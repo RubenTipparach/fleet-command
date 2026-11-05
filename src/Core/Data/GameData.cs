@@ -42,7 +42,7 @@ public enum AiRange { Close, Mid, Long }
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1);
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false);
 
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
 /// objective, and the first officer's message. The first ship is the one the player commands. Sky is the nebula it is fought
@@ -67,7 +67,7 @@ public sealed record Tuning(
     double MountHitChance, double MountDamage,
     double HetRateDegS, double HetCostE, double HetChanceDrop, double HetRecoverPerS, double HetErraticPenalty,
     double HetBreakdownS, double HetBreakdownEngines, double EstopDecelX, double EstopHoldS, double ErraticHit, double ErraticTurn,
-    double OrbitKm, double HoldMinKm, double HoldMaxKm);
+    double OrbitKm, double HoldMinKm, double HoldMaxKm, double CaptureHullFrac);
 
 /// <summary>The console's layout in reference pixels (data/console/layout.json).</summary>
 public sealed record LayoutDef(

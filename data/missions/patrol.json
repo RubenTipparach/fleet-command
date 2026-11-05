@@ -1,0 +1,62 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "patrol",
+ "name": "Patrol",
+ "glyph": "P",
+ "type": "Patrol",
+ "reward_cr": 300,
+ "where": "plain && (own || neutral)",
+ "objective": "Sweep the sector and engage what you find.",
+ "brief": [
+  {
+   "text": "Raiders have been seen on the trade lanes. Take a turn through the sector and see them off."
+  },
+  {
+   "when": "asteroids",
+   "text": " They hide among the rocks here: mind the fields."
+  },
+  {
+   "text": " Your {side_name} patrol pay is the reward."
+  }
+ ],
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "raiders",
+     "faction": "vos",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "clear",
+     "text": "Destroy the raiders",
+     "primary": true,
+     "done": "alive(raiders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": "outstanding ? 3 : 2"
+   }
+  },
+  {
+   "when": "draw",
+   "credits": "pay",
+   "log": "Patrol: outnumbered, the fleet drew off."
+  }
+ ]
+}
