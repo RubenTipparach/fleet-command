@@ -13,6 +13,7 @@ public sealed partial class MapScreen : Control
     private SubViewportContainer _box = null!;
     private SubViewport _vp = null!;
     private MapHud _hud = null!;
+    private PortPanel _port = null!;
     public CampaignMap? Map { get; private set; }
     private Vector2 _press;
     private bool _dragging, _left, _right;
@@ -33,6 +34,10 @@ public sealed partial class MapScreen : Control
         _hud.Bind(f);
         _hud.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(_hud);
+        _port = new PortPanel();
+        _port.Bind(f);
+        _port.SetAnchorsPreset(LayoutPreset.FullRect);
+        AddChild(_port);
     }
 
     /// <summary>Builds the 3D map for a campaign (a new one, or one loaded).</summary>
