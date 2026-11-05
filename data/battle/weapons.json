@@ -1,10 +1,10 @@
 {
   "_doc": "Weapon types (openspec/changes/battle-console-engine/design.md section 3). Ported from the battle console mockup's WEAPONS table (docs/mockups/battle-console.html, v65); every number a placeholder until the combat change. kind: beam hits at once; torpedo, bolt and missile fly at speed_m_s; pd shoots down shots in flight.",
   "lance": { "name": "Lance", "kind": "beam", "range_km": 12, "charge_s": 3.5, "cost_e": 2, "damage": 7, "color": "#6fc4ff" },
-  "torpedo": { "name": "Pulse torpedo", "kind": "torpedo", "range_km": 18, "charge_s": 8, "cost_e": 5, "damage": 14, "speed_m_s": 2600, "color": "#9fd0ff",
+  "torpedo": { "name": "Pulse torpedo", "kind": "torpedo", "range_km": 18, "charge_s": 8, "cost_e": 5, "damage": 14, "speed_m_s": 2600, "color": "#8f2bff",
     "overload": { "range_km": 7, "charge_s": 12, "cost_e": 9, "damage": 26 } },
   "disruptor": { "name": "Disruptor", "kind": "bolt", "range_km": 14, "charge_s": 4.5, "cost_e": 3, "damage": 8, "speed_m_s": 3200, "color": "#ff6a4a",
     "overload": { "range_km": 6, "charge_s": 6.5, "cost_e": 5, "damage": 14 } },
-  "missile": { "name": "Missile", "kind": "missile", "range_km": 22, "charge_s": 10, "cost_e": 2, "damage": 11, "speed_m_s": 1100, "color": "#ffd27a" },
-  "pd": { "name": "Point defence", "kind": "pd", "range_km": 2, "charge_s": 1.5, "cost_e": 0.5, "damage": 0, "color": "#ffffff" }
+  "missile": { "name": "Missile", "kind": "missile", "range_km": 22, "charge_s": 10, "cost_e": 2, "damage": 11, "speed_m_s": 1100, "color": "#ff8c1a" },
+  "pd": { "name": "Point defence", "kind": "pd", "range_km": 2, "charge_s": 1.5, "cost_e": 0.5, "damage": 0, "color": "#ffc23d" }
 }

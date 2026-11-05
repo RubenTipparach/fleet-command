@@ -13,6 +13,9 @@ public sealed record WeaponDef(string Id, string Name, string Kind, WeaponMode N
 {
     /// <summary>True for weapons whose shot flies (torpedo, bolt, missile) rather than landing at once.</summary>
     public bool Flies => Kind is "torpedo" or "bolt" or "missile";
+    /// <summary>True for a direct-fire bolt (the disruptor): it flies, but along the live line from its mount to its target,
+    /// both ends riding their ships (owner, 2026-11-04), where a seeker (torpedo, missile) flies free.</summary>
+    public bool RidesLine => Kind == "bolt";
     public bool IsPointDefence => Kind == "pd";
 }
 
@@ -42,9 +45,16 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     double HullFrac = 1, double ShieldsFrac = 1);
 
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
-/// objective, and the first officer's message. The first ship is the one the player commands.</summary>
+/// objective, and the first officer's message. The first ship is the one the player commands. Sky is the nebula it is fought
+/// under; SunEnergy the sun's strength there (deep space is dim and moody; a scene by a warm star turns it up).</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
-    IReadOnlyList<ShipStart> Ships, string Sky);
+    IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun)
+{
+    /// <summary>The sun's strength in deep space, where most battles are (owner, 2026-11-04: "tune down sun brightness by 50%
+    /// most of the game is set in deep space where lighting is more moody, if there is a warmer planet, then we can crank up
+    /// solar strength"): half the 1.3 the view first used.</summary>
+    public const double DeepSpaceSun = 0.65;
+}
 
 /// <summary>Every tuning number of the stand-in battle (data/battle/tuning.json), units in the names.</summary>
 public sealed record Tuning(

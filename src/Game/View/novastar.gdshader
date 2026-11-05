@@ -22,7 +22,7 @@ void fragment() {
 	float t = progress;
 	float flare = smoothstep(0.0, 0.06, t) * (1.0 - smoothstep(0.06, 1.0, t));
 	float white = exp(-r * r * mix(30.0, 140.0, t)) * (1.0 - smoothstep(0.1, 0.6, t)) * 3.0;
-	float halo = exp(-r * mix(3.2, 5.0, t)) * (1.0 - smoothstep(0.2, 1.0, t));
+	float halo = exp(-r * mix(3.2, 4.4, t)) * (1.0 - smoothstep(0.55, 1.0, t));   // the pink holds, then goes
 	float spikes = (pow(abs(cos(a * 2.0)), 80.0) + 0.6 * pow(abs(cos(a * 2.0 + 0.785)), 120.0)) * exp(-r * 4.0) * flare * 1.6;
 	vec3 col = edge_col * halo * 1.6 + core_col * (white + spikes);
 	ALBEDO = col;

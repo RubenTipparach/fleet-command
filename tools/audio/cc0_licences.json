@@ -1,0 +1,365 @@
+{
+ "oga/63-digital-sound-effects-lasers-phasers-space-etc": {
+  "pack": "63-digital-sound-effects-lasers-phasers-space-etc",
+  "url": "https://opengameart.org/content/63-digital-sound-effects-lasers-phasers-space-etc",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Kenney",
+  "files": [
+   "Digital_SFX_Set.zip",
+   "previewDigitaEffects.mp3"
+  ]
+ },
+ "oga/50-cc0-sci-fi-sfx": {
+  "pack": "50-cc0-sci-fi-sfx",
+  "url": "https://opengameart.org/content/50-cc0-sci-fi-sfx",
+  "licences": [
+   "CC0"
+  ],
+  "author": "rubberduck",
+  "files": [
+   "sci-fi-prev.ogg",
+   "sci-fi-sfx.zip"
+  ]
+ },
+ "oga/60-cc0-sci-fi-sfx": {
+  "pack": "60-cc0-sci-fi-sfx",
+  "url": "https://opengameart.org/content/60-cc0-sci-fi-sfx",
+  "licences": [
+   "CC0"
+  ],
+  "author": "rubberduck",
+  "files": [
+   "60-sci-fi-sfx_0.zip",
+   "sci-fi-sfx-prev_v2_1.ogg"
+  ]
+ },
+ "oga/space-ship-shield-sounds": {
+  "pack": "space-ship-shield-sounds",
+  "url": "https://opengameart.org/content/space-ship-shield-sounds",
+  "licences": [
+   "CC0"
+  ],
+  "author": "bart",
+  "files": [
+   "space%20shield%20sounds.zip",
+   "sss.mp3"
+  ]
+ },
+ "oga/10-impactshield-blocks": {
+  "pack": "10-impactshield-blocks",
+  "url": "https://opengameart.org/content/10-impactshield-blocks",
+  "licences": [
+   "CC0"
+  ],
+  "author": "StarNinjas",
+  "files": [
+   "impact_-_starninjas.zip",
+   "impact_preview.ogg"
+  ]
+ },
+ "oga/seamless-energy-emission-loop": {
+  "pack": "seamless-energy-emission-loop",
+  "url": "https://opengameart.org/content/seamless-energy-emission-loop",
+  "licences": [
+   "CC0"
+  ],
+  "author": "zeroisnotnull",
+  "files": [
+   "movingshield_sound.ogg",
+   "movingshield_sound_0.ogg"
+  ]
+ },
+ "oga/doomsday-laser-cannon-sound-effect": {
+  "pack": "doomsday-laser-cannon-sound-effect",
+  "url": "https://opengameart.org/content/doomsday-laser-cannon-sound-effect",
+  "licences": [
+   "CC0"
+  ],
+  "author": "TAD",
+  "files": [
+   "doomsday_laser_cannon_example.mp3",
+   "doomsday_laser_cannon_long.mp3",
+   "doomsday_laser_cannon_long.wav",
+   "doomsday_laser_cannon_midium_.wav",
+   "doomsday_laser_cannon_short.wav"
+  ]
+ },
+ "oga/electricity-game-sound-pack": {
+  "pack": "electricity-game-sound-pack",
+  "url": "https://opengameart.org/content/electricity-game-sound-pack",
+  "licences": [
+   "CC0"
+  ],
+  "author": "faxcorp",
+  "files": [
+   "charge.wav",
+   "chargestart.wav",
+   "crackleelectricityloop.wav",
+   "death_1.wav",
+   "deathboom.wav",
+   "electricitysoundspreview.mp3",
+   "groundhit.wav",
+   "hit.wav",
+   "killconfirmed.wav",
+   "powerdown.wav",
+   "powerup.wav",
+   "recharge.wav",
+   "shieldhit.wav",
+   "shieldloop.wav",
+   "snaploop.wav",
+   "teleport_1.wav",
+   "turbo.wav"
+  ]
+ },
+ "oga/laser-weapon-burst-fire": {
+  "pack": "laser-weapon-burst-fire",
+  "url": "https://opengameart.org/content/laser-weapon-burst-fire",
+  "licences": [
+   "CC0"
+  ],
+  "author": "celestialghost8",
+  "files": [
+   "burst%20fire.mp3",
+   "burst%20fire_1.mp3"
+  ]
+ },
+ "oga/explosions-4": {
+  "pack": "explosions-4",
+  "url": "https://opengameart.org/content/explosions-4",
+  "licences": [
+   "CC0"
+  ],
+  "author": "EZduzziteh",
+  "files": [
+   "explosion1_0.ogg",
+   "explosion2.ogg",
+   "explosion3.ogg",
+   "explosions.ogg",
+   "explosions4.ogg"
+  ]
+ },
+ "oga/chunky-explosion": {
+  "pack": "chunky-explosion",
+  "url": "https://opengameart.org/content/chunky-explosion",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Joth",
+  "files": [
+   "Chunky%20Explosion.mp3"
+  ]
+ },
+ "oga/battle-at-sea": {
+  "pack": "battle-at-sea",
+  "url": "https://opengameart.org/content/battle-at-sea",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Thimras",
+  "files": [
+   "cannon_fire_1.ogg",
+   "cannon_hit_1.ogg",
+   "cannon_hit_cannon_1.ogg",
+   "cannon_hit_ship_short.ogg",
+   "cannon_hit_wall_1.ogg",
+   "cannon_hit_wall_no_splash.ogg",
+   "cannon_miss_1.ogg",
+   "ship_destroyed_1.ogg",
+   "ship_destroyed_short.ogg",
+   "ship_fx_preview.ogg",
+   "ship_ram_ship_1.ogg",
+   "ship_ram_ship_shortened.ogg"
+  ]
+ },
+ "oga/explosion-somewhere-far": {
+  "pack": "explosion-somewhere-far",
+  "url": "https://opengameart.org/content/explosion-somewhere-far",
+  "licences": [
+   "CC0"
+  ],
+  "author": "pauliuw",
+  "files": [
+   "explosion_somewhere_far.mp3"
+  ]
+ },
+ "oga/low-rumbling": {
+  "pack": "low-rumbling",
+  "url": "https://opengameart.org/content/low-rumbling",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Musheran",
+  "files": [
+   "low-rumbling-176033.mp3",
+   "low-rumbling-176033_0.mp3"
+  ]
+ },
+ "oga/rocket-engine": {
+  "pack": "rocket-engine",
+  "url": "https://opengameart.org/content/rocket-engine",
+  "licences": [
+   "CC0"
+  ],
+  "author": "theMinesAreShakin",
+  "files": [
+   "rocket_engine.001.wav"
+  ]
+ },
+ "oga/rocket-launch": {
+  "pack": "rocket-launch",
+  "url": "https://opengameart.org/content/rocket-launch",
+  "licences": [
+   "CC0"
+  ],
+  "author": "qubodup",
+  "files": [
+   "l.mp3",
+   "launch.7z"
+  ]
+ },
+ "oga/missile-sound": {
+  "pack": "missile-sound",
+  "url": "https://opengameart.org/content/missile-sound",
+  "licences": [
+   "CC0"
+  ],
+  "author": "mikeask",
+  "files": [
+   "missile%20launch.ogg",
+   "missile.wav"
+  ]
+ },
+ "oga/boost-or-launch-or-thruster-sound-effect": {
+  "pack": "boost-or-launch-or-thruster-sound-effect",
+  "url": "https://opengameart.org/content/boost-or-launch-or-thruster-sound-effect",
+  "licences": [
+   "CC0"
+  ],
+  "author": "EZduzziteh",
+  "files": [
+   "boost.mp3",
+   "boost_0.mp3"
+  ]
+ },
+ "oga/7-space-sounds": {
+  "pack": "7-space-sounds",
+  "url": "https://opengameart.org/content/7-space-sounds",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Joth",
+  "files": [
+   "7%20Space%20Sounds_1.mp3"
+  ]
+ },
+ "oga/sci-fi-ambience-sfx": {
+  "pack": "sci-fi-ambience-sfx",
+  "url": "https://opengameart.org/content/sci-fi-ambience-sfx",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Fun Gi Development",
+  "files": [
+   "SFX%20SCI%20FI%20Computer%20room%20ambience.mp3",
+   "SFX%20SCI%20FI%20Computer%20room%20ambience_0.mp3",
+   "SFX%20SCI%20FI%20Hum.mp3",
+   "SFX%20SCI%20FI%20Hum_0.mp3"
+  ]
+ },
+ "oga/generator-loop": {
+  "pack": "generator-loop",
+  "url": "https://opengameart.org/content/generator-loop",
+  "licences": [
+   "CC0"
+  ],
+  "author": "YCbCr",
+  "files": [
+   "loop_generator_1.mp3"
+  ]
+ },
+ "oga/airvent-loop": {
+  "pack": "airvent-loop",
+  "url": "https://opengameart.org/content/airvent-loop",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Longor",
+  "files": [
+   "airvent-large-loop.wav"
+  ]
+ },
+ "oga/electronic-device-loop": {
+  "pack": "electronic-device-loop",
+  "url": "https://opengameart.org/content/electronic-device-loop",
+  "licences": [
+   "CC0"
+  ],
+  "author": "qubodup",
+  "files": [
+   "montageAudio-20120408%40142651.mp3",
+   "qubodup-edev.flac"
+  ]
+ },
+ "oga/100-cc0-metal-and-wood-sfx": {
+  "pack": "100-cc0-metal-and-wood-sfx",
+  "url": "https://opengameart.org/content/100-cc0-metal-and-wood-sfx",
+  "licences": [
+   "CC0"
+  ],
+  "author": "rubberduck",
+  "files": [
+   "100-CC0-wood-metal-SFX.zip",
+   "metal_wood_prev.ogg"
+  ]
+ },
+ "oga/75-cc0-breaking-falling-hit-sfx": {
+  "pack": "75-cc0-breaking-falling-hit-sfx",
+  "url": "https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx",
+  "licences": [
+   "CC0"
+  ],
+  "author": "rubberduck",
+  "files": [
+   "bfh1_prev.ogg",
+   "sfx_breaking_and_falling.zip"
+  ]
+ },
+ "oga/51-ui-sound-effects-buttons-switches-and-clicks": {
+  "pack": "51-ui-sound-effects-buttons-switches-and-clicks",
+  "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Kenney",
+  "files": [
+   "UI_SFX_Set.zip",
+   "sfxguipreview.mp3"
+  ]
+ },
+ "oga/interface-beeps": {
+  "pack": "interface-beeps",
+  "url": "https://opengameart.org/content/interface-beeps",
+  "licences": [
+   "CC0"
+  ],
+  "author": "bart",
+  "files": [
+   "beeps.zip",
+   "bep.mp3"
+  ]
+ },
+ "oga/atmospheric-interaction-sound-pack": {
+  "pack": "atmospheric-interaction-sound-pack",
+  "url": "https://opengameart.org/content/atmospheric-interaction-sound-pack",
+  "licences": [
+   "CC0"
+  ],
+  "author": "qubodup",
+  "files": [
+   "krank_sounds.7z",
+   "montageAudio-20120619%40031244.ogg"
+  ]
+ }
+}

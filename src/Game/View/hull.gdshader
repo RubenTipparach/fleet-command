@@ -32,6 +32,38 @@ uniform vec3 liv_bronze : source_color = vec3(0.725, 0.541, 0.306);
 
 #include "res://src/Game/View/damage.gdshaderinc"
 
+// The floodlights, baked into the hull as light pools (the mockups' pools(), mockup 6's "baked hull lights"; owner,
+// 2026-11-04: "I thought we were using emissive baked lights + shader based multi specular? for ship hull detail
+// lighting"): each lamp a position and range (pools), an aim (pool_d), a strength (pool_a) and a colour (pool_c), in
+// mockup ship space, up to 16. Its light is taken against the detail normal, so it grazes the plating and every seam
+// catches it; on top, each lamp puts its own specular glint on the plating, moving with the view.
+uniform vec4 pools[16];
+uniform vec4 pool_d[16];
+uniform float pool_a[16];
+uniform vec4 pool_c[16];
+uniform int pool_n = 0;
+// how strong the lamps' glints are, and how tight
+uniform float pool_spec = 0.55;
+uniform float pool_shine = 40.0;
+
+// The mockups' pools(): a cone with a soft edge, falling off with distance, only on faces turned toward the lamp. Returns
+// the light (diffuse, in the lamps' colours) and adds each lamp's glint to spec.
+vec3 pool_light(vec3 p, vec3 n, vec3 v, float gloss, inout vec3 spec) {
+	vec3 sum = vec3(0.0);
+	for (int i = 0; i < 16; i++) {
+		if (i >= pool_n) break;
+		vec4 P = pools[i]; vec3 d = p - P.xyz; float dist = length(d); vec3 dl = d / max(dist, 1e-3);
+		float cone = smoothstep(0.64, 0.76, dot(dl, pool_d[i].xyz));
+		float fall = (1.0 - smoothstep(P.w * 0.55, P.w, dist)) / (1.0 + pow(dist / P.w * 2.4, 2.0));
+		float ndl = dot(n, -dl), face = smoothstep(-0.02, 0.12, ndl) * (0.45 + 1.6 * max(ndl, 0.0));
+		float k = pool_a[i] * cone * fall;
+		sum += pool_c[i].rgb * k * face;
+		vec3 h = normalize(-dl + v);
+		spec += pool_c[i].rgb * k * step(0.0, ndl) * pow(max(dot(n, h), 0.0), pool_shine) * gloss;
+	}
+	return sum;
+}
+
 varying vec3 v_obj;
 varying vec3 v_nobj;
 varying vec3 v_cam;
@@ -102,7 +134,7 @@ void fragment() {
 		}
 	}
 	col = mix(col, paint_c * (0.55 + 0.45 * a) * mix(1.0, 0.85, seam), paint);
-	col = mix(col, vec3(0.03, 0.026, 0.024) * (0.6 + 0.8 * nz2), smoothstep(0.0, 0.7, d_char));
+	col = mix(col, vec3(0.035, 0.03, 0.027) * (0.8 + 0.4 * nz2), smoothstep(0.0, 0.7, d_char));   // soot, smooth rather than speckled
 	if (!FRONT_FACING) col = back_color;
 
 	ALBEDO = col;
@@ -119,6 +151,12 @@ void fragment() {
 	float px = max(length(dFdx(v_obj)), length(dFdy(v_obj)));
 	float fine = 1.0 - smoothstep(0.012, 0.05, px);
 	vec3 nd = detail_n(v_obj, n, fine);
+	// the baked floodlight pools, with their glints, dimmed where the plating is charred
+	if (FRONT_FACING && hole_idx < 0 && pool_n > 0) {
+		vec3 spec = vec3(0.0);
+		vec3 lit = pool_light(v_obj, nd, normalize(v_cam - v_obj), pool_spec * (1.0 - ROUGHNESS * 0.7), spec);
+		EMISSION += (col * lit + spec) * (1.0 - clamp(d_char * 1.4, 0.0, 1.0));
+	}
 	if (!FRONT_FACING) nd = -nd;
 	vec3 n_model = vec3(-nd.x, nd.y, -nd.z);
 	NORMAL = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(n_model, 0.0)).xyz);

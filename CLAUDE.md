@@ -122,6 +122,11 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   Xvfb and `build.config`. Fleet Command follows the same split (section 6).
 - **Assets are glTF (`.glb`)** built by committed Blender generators (section 10). They are
   imported by Godot, and the import is a build product.
+- **Every asset's `.import` file is committed, and Godot's headless import writes it** (owner, 2026-11-04: "commit
+  those and make sure they get generated in the future so it doesnt pile up as garbage on my pc"). Run
+  `--headless --path . --import` after adding or changing an asset (`play.bat` does it on every launch) and commit the
+  `.import` files it writes in the same commit as the asset; the cache in `.godot/` stays ignored. `.gitattributes`
+  keeps them LF, so a Windows checkout does not show every one as changed.
 - **Platforms**: Windows desktop is the owner's playtest machine, Linux runs the headless tests,
   and phones are a target from the first screen. The builds are Windows desktop and native Android
   (survey T1). The renderer is Forward+ on desktop and Compatibility on Android, set per platform
@@ -519,7 +524,13 @@ saying what changes here. Where a note and the copied text below it disagree, th
   comp. The direction is orchestral space opera, brass, strings and timpani, over a synth bed
   (survey S1).
 - **Sound effects are recorded CC0 sounds where possible** (Crab Breeze), every original named
-  in `SOURCES.md`. They are synthesised only where nothing recorded is better.
+  in `SOURCES.md`. They are synthesised only where nothing recorded is better. The method is the
+  `sound-effects` skill (owner, 2026-11-04: "pull in audio and music skills from crab breeze, lets get some audio for
+  this game!"): packs fetched and licence-checked by `tools/audio/fetch_cc0.py`, cut to the spec in
+  `tools/audio/cc0_cues.json`, built by `tools/audio/render_sfx.sh`, judged by measurement and a spectrogram sheet
+  (a cloud session cannot listen), and heard by the owner on the Fleet Command Sounds page.
+- **The motifs are `docs/design/music.md`**: the Concord, the wonder chord, the Threat and the Lost. No faction gets a
+  theme of its own until the owner sets its culture (section 1; survey S2).
 - **Sounds from the battle are placed in 3D** at their ship or mount. Interface clicks, music and
   ambience are not.
 
@@ -564,6 +575,7 @@ Before claiming anything is done, run what applies:
 | `panel-textures` | Hull plating and console panels modelled in Blender and rendered to PBR maps (section 10). |
 | `light-baking` | Baking hull lights and occlusion into the ships' maps (section 10). |
 | `music-authoring` | Motifs in notes, Strudel scores, multitrack MIDI, LMMS headless (section 11). |
+| `sound-effects` | CC0 recordings fetched, licence-checked, cut and layered to a spec; synthesis where nothing recorded is better; measured, sheeted and auditioned (section 11). |
 | `playtest` | Running, watching, recording, uploading and reporting a playtest (section 9). |
 | `obs-record` | Recording a window with OBS and copying it to Google Drive (section 9). |
 | `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
