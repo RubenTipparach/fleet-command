@@ -157,7 +157,10 @@ near black, greebles, the dome's green, slats, vents), the liveries, and the emb
 | `light` | the hull lights bake | the light falling on the hull, over `light_ref`, stored with a 1/1.6 curve at half size |
 | `ao` | the AO bake | kept beside, not inlined (it is in the ORM and the paint) |
 
-<!-- PBR SET -->
+The Hooded lance's hood in every map (from the top: the emblem on its plate, the dome, the fan at the stern deck; the
+light map here brightened 1.6 times to read):
+
+![the six maps of one ship](images/06-pbr-set.jpg)
 
 ## 7. On the page
 
