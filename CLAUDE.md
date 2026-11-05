@@ -505,6 +505,14 @@ saying what changes here. Where a note and the copied text below it disagree, th
   is painted onto its own UVs, never a repeating tile; tiles add fine detail only (a detail mask to come); its AO is baked
   onto its own UVs. The Concord and Krai lines are to be moved onto this (`painted-bake`, ship mode; Ship Design Bible
   chapter 15, T1-T4).
+- **A hull's detail is modelled and baked: layered armour, distinct features, nothing repeated** (owner, 2026-11-05:
+  "vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the
+  same", "liveries, smooth sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis
+  symmetry, and lots of shading to give the armor depth"). A high-poly layer over the hull (`tools/blender/hull_detail.py`,
+  laid out in `data/ships/<faction>/hull_detail.json`): primary plates each cut to its own outline and standing proud by
+  its own amount, sub-armour beneath, machinery in the gaps and trenches, domes, shaped vents, lamps and liveries, mirrored
+  about the centreline, baked with a low sun's cast shadows and deep AO onto the ship's own UVs (Ship Design Bible
+  chapter 15, T5-T8).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).

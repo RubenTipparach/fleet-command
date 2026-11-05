@@ -1,5 +1,39 @@
 # Design: ssarith-ship-concepts
 
+## Version 13: the picks only, their hull detail modelled and baked (owner, 2026-11-05)
+
+With the reference game's orthographic sheet of a ship (not committed): "discard ships that I didnt want, only keep the
+ramining ones. I'd like more features onthe hulls, the gorn ships have things like vents, lights, and sub armor pieces,
+and primary armor peices. Armor pieces are carefully craftyer to not look the same, in your mockup armor pieces are
+square, and there are no distinct features. like under armor area with greebles"; then, with three crops of it, "notice
+stuff like liveries, smooth sphereical portions of armor, and specifically shaped vents"; and "no repeating elemnts,
+single axis symmetry, and lots of shading to give the armor depth". What is taken is how such a hull is layered and
+shaded, never its art.
+
+- **The board** keeps only the four picks, two by two. The other blockouts, their builders and shots are deleted (git
+  keeps them), and the triplanar tile with them: nothing on the picks repeats.
+- **The detail is modelled** (`tools/blender/hull_detail.py`, laid out in `data/ships/ssarith/hull_detail.json`) over
+  each low-poly hull and baked onto its own UVs, selected to active (Ship Design Bible T5-T8):
+
+| Layer or feature | How it is built | Numbers |
+|---|---|---|
+| Primary armour | The hull's faces by facing, thickened outward, cut apart by gap slabs: a kinked spine and swept chevrons on top and bottom (every station's spacing, sweep and spine width drawn from the ship's seed), raked cuts on the flanks; each plate raised by its own amount; plates over 22 m2 get a second plate over part of them | 0.5 m thick; stations 6-13 m (top), 7-14 m (flanks); sweep 0.35-1.1; gaps 0.5-1.0 m, 40 % of cuts trenches of 2.6-4.6 m; lift up to 0.35 m; overlays drawn in to 0.86 and lifted 0.3 m |
+| Sub-armour | A thinner shell with its own cuts, 35 % of them wide | 0.22 m |
+| Under layer | The hull itself, near black, with machinery only where both armour layers leave it bare: blocks, sub-armour slabs, pipe runs, ribs | 1.6 per m2 sampled |
+| Domes | A sphere sunk to stand h proud, in a collar ring, held by straps that hug it | r 2.6-6.4 m, h 0.8-1.05 m |
+| Fans | A recess, a hub, fins tilted like a turbine's, a ring of lamps | r 3.8-4.6 m, 17-21 fins |
+| Louvres | Chevron and raked-slot outlines cut through the armour, slanted slats clipped to them; four per ship, each its own shape and size | slats 0.34-0.5 m apart, 28-46 degrees |
+| Lamps | Lit blocks; the red eye in a two-step housing; amber pairs; green markers | 0.32-0.6 m |
+| Liveries | Green bands and a chevron stripe across the armour, painted from the baked position | 0.6-1.4 m wide |
+| Light strips | The strip faces become a dark channel with a lit line down the middle | 0.7 m line |
+
+- **Symmetry**: everything off the centreline is built on the port side and mirrored through a reflected frame; every
+  piece's id is a hash of its mirrored position, so a plate and its mirror take the same paint.
+- **Shading**: a low sun from port and ahead (ship space 0.6, 0.55, 0.58) baked with its cast shadows, AO reaching
+  2.2 m, armour edges rolled 0.3 m by the Bevel node in the normals and the light, each plate pillowed darker toward its
+  gaps, then the painted-bake paint-over. The page lays the object-space normal map under the live light.
+- **Cost**: about 31-38 thousand high-poly faces a ship, baked at 2048 px; the high-poly never leaves Blender. The low-poly hulls are unchanged (294-454 triangles).
+
 ## Version 12: the picks, grown as one structure, each with its own texture (owner, 2026-11-05)
 
 **The picks** (survey H4, answered in the conversation): "spearhead: there we go again with the ltiterals lol / headedf

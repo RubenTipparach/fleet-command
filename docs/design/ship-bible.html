@@ -334,7 +334,13 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
     <div class="rule"><b class="code">T2</b><span><b>Tiles are detail only.</b> A tiling texture may only add fine detail over the ship's own map, at a few metres a repeat. A detail mask, to say where it shows, is to come.</span></div>
     <div class="rule"><b class="code">T3</b><span><b>AO is baked.</b> Every ship's occlusion is baked onto its own UVs and painted into its colour map, and kept as its own map.</span></div>
     <div class="rule"><b class="code">T4</b><span><b>The detail follows the form.</b> Plating, markings and lit ports are laid in ship space over the unwrap, so plate joints run along the ship and never line up into brickwork.</span></div>
-    <p>The method is the painted-bake skill's ship mode (<code>tools/blender/painted_bake.py --ship</code>). The Concord and Krai lines are to be moved onto it (their changes' tasks).</p>
+    <blockquote><span class="who">Owner, 2026-11-05, with the reference game's sheet of a ship</span>"the gorn ships have things like vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the same, in your mockup armor pieces are square, and there are no distinct features. like under armor area with greebles", "notice stuff like liveries, smooth sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis symmetry, and lots of shading to give the armor depth"</blockquote>
+    <p>The detail is modelled, not drawn: a high-poly layer is built over the ship's hull and baked onto its UVs.</p>
+    <div class="rule"><b class="code">T5</b><span><b>Armour in layers.</b> Primary plates cut apart along gap lines that differ at every station (swept chevrons on the top and bottom, raked cuts on the flanks), each plate standing proud by its own amount, the large ones with a second plate laid over part of them; a thinner sub-armour beneath; and, where both leave it bare, the under layer and its machinery (blocks, slabs, pipe runs, ribs). Some gaps are trenches wide enough to show it.</span></div>
+    <div class="rule"><b class="code">T6</b><span><b>Distinct features.</b> Each ship carries features of its own: smooth spherical armour in a collar, held by straps; round fan vents with a ring of lamps; shaped vents (a chevron, a raked slot) cut through the armour with slanted slats; lamps, the eye lamp in a housing; liveries painted across the plates. Every feature sits in a hole cut for it, never on top.</span></div>
+    <div class="rule"><b class="code">T7</b><span><b>Nothing repeats; one axis of symmetry.</b> No plate, vent or feature is a copy of another, and no tile is visible. The ship is mirrored about its centreline, so a plate and its mirror match in shape and paint.</span></div>
+    <div class="rule"><b class="code">T8</b><span><b>Shading gives the armour depth.</b> A low painter's sun is baked with its cast shadows, the occlusion is deep in the trenches, plate edges are rolled so they catch the light, and each plate is darker toward its gaps.</span></div>
+    <p>The method is the painted-bake skill's ship mode (<code>tools/blender/painted_bake.py --ship</code>, the detail by <code>tools/blender/hull_detail.py</code> from <code>data/ships/&lt;faction&gt;/hull_detail.json</code>). The Concord and Krai lines are to be moved onto it (their changes' tasks).</p>
   </section>
 
   <section class="ch" id="factions">
@@ -350,7 +356,7 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
         <tr><td>Lights with one job each, no overlapping pools</td><td>Light colours from the faction's palette</td></tr>
         <tr><td>An exterior that complements its console (X1)</td><td>Distinct features, colour scheme and unique paneling (X3)</td></tr>
         <tr><td>Culture, not anatomy (C1-C5): never from the body, many traditions, every choice sourced</td><td>Which traditions, as the owner sets them</td></tr>
-        <tr><td>One grown structure (F1-F5) and its own unwrapped, painted texture with baked AO (T1-T4)</td><td>The section's layout and where it splits; the palette, plating and markings painted on</td></tr>
+        <tr><td>One grown structure (F1-F5) and its own unwrapped, painted texture with baked AO (T1-T8)</td><td>The section's layout and where it splits; the palette, plating and markings painted on</td></tr>
         <tr><td>Damage that shows the rooms behind it</td><td>Its material's char and fire colour</td></tr>
       </tbody></table></div>
     <p>The Krai ships (mockup 7) were drawn hull first and painted in their console's own metal and colours, which is why they did not read: they are to be redesigned on this method, rooms first, with their culture setting the shapes and an exterior of their own (chapter 11).</p>
@@ -370,6 +376,7 @@ figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
       <li>Every design choice names its source in the culture (C3), the line shows more than one tradition (C2), and the design passes the stereotype test (C5): nothing is taken from the species' body (C1).</li>
       <li>The hull is one grown structure: no placed primitive, every branch split from the body's own section, its lines carried through (F1-F5).</li>
       <li>The ship has its own unwrap, its own painted colour map and its own baked AO; any tile is detail only (T1-T4).</li>
+      <li>Its detail is layered armour over machinery, with features of its own, nothing repeated, mirrored about the centreline, and shaded deep (T5-T8).</li>
       <li>A torpedo through each room kind shows that room (D1).</li>
       <li>At 40 px, top and side, the class reads.</li>
       <li>Triangles inside the class's budget (survey A1, T3).</li>

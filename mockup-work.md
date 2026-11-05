@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v12: the owner's four picks, 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident, each rebuilt as one grown structure with its own unwrapped, painted texture and baked AO; Spearhead withdrawn) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | Drafted (2026-11-05, v13: only the owner's four picks, 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident, each one grown structure with its hull detail modelled and baked onto its own UVs: layered armour over machinery, domes, vents, lamps, liveries) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -647,3 +647,10 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
   pick is one grown skin (its branches split from the body's own section) and is baked onto its own UVs with AO, plating,
   chevrons and lit ports (`painted_bake.py --ship`, `assets/ships/ssarith/`). Both rules are in CLAUDE.md section 10 and
   the Ship Design Bible (chapters 14 and 15); the Concord and Krai lines have a task to follow.
+- Version 13 (owner, 2026-11-05, with the reference game's sheet of a ship, not committed): "discard ships that I didnt
+  want, only keep the ramining ones. I'd like more features onthe hulls, the gorn ships have things like vents, lights, and
+  sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the same", "notice stuff like
+  liveries, smooth sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis
+  symmetry, and lots of shading to give the armor depth". Only the picks stay. Each one's detail is modelled over its hull
+  (`tools/blender/hull_detail.py`, `data/ships/ssarith/hull_detail.json`) and baked onto its own UVs; the rules are Ship
+  Design Bible T5-T8 and CLAUDE.md section 10.

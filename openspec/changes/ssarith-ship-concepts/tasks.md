@@ -12,6 +12,7 @@
 - [x] 2.4 The owner picks blockouts (H4): 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident; Spearhead withdrawn
 - [x] 2.5 Version 11: each pick unwrapped on its own, AO baked, its own painted colour map (`painted_bake.py --ship`), the tile as detail only
 - [x] 2.6 Version 12: each pick rebuilt as one grown structure (Ship Design Bible chapter 14), re-exported and re-baked
+- [x] 2.8 Version 13: the unpicked blockouts discarded; each pick's hull detail modelled (`tools/blender/hull_detail.py`, `data/ships/ssarith/hull_detail.json`: layered armour, sub-armour, machinery, domes, fans, louvres, lamps, liveries), mirrored, nothing repeated, baked with a low sun and deep AO
 - [ ] 2.7 A detail mask for the tile (owner: "we'll probably need a detail mask in the future")
 
 ## 3. After blockouts are picked

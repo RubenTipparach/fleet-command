@@ -9,15 +9,14 @@ choices SHALL name its source in the Hunt's culture as the owner sets it (Ship D
 - **WHEN** a Hunt design is described without naming the species
 - **THEN** the description is not a picture of a reptile's body
 
-### Requirement: Hunt ship designs start from a board of varied blockouts
+### Requirement: The Hunt page shows the owner's picks
 
-Before any Hunt ship is designed in detail, the Hunt page SHALL show at least twelve frigate-sized massings, each a
-different silhouette, in plain clay at true scale with the Concord Petrel to hand, with each massing's length, beam and
-height measured from its built geometry.
+The Hunt page SHALL show only the blockouts the owner picked (1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident), at
+true scale with the Concord Petrel to hand, each with its length, beam and height measured from its built geometry.
 
 #### Scenario: The board
 - **WHEN** the board is shown
-- **THEN** twelve massings stand on it, every one with its measured size, and each can be viewed on its own
+- **THEN** the four picks stand on it, every one with its measured size, and each can be viewed on its own
 
 ### Requirement: A picked blockout is designed rooms first
 
@@ -30,8 +29,8 @@ hull fitted round them, then its parts and skin.
 
 ### Requirement: Hunt hulls can be shown painted
 
-The Hunt page SHALL show its blockouts with a painted bake from `tools/blender/painted_bake.py` (`assets/textures/painted/`,
-inlined from its manifest), and SHALL let the viewer switch back to plain clay.
+The Hunt page SHALL show its ships with their own painted bakes from `tools/blender/painted_bake.py --ship`
+(`assets/ships/ssarith/`, inlined from its manifest), and SHALL let the viewer switch back to plain clay.
 
 #### Scenario: Clay underneath
 - **WHEN** the Painted switch is turned off
@@ -56,3 +55,18 @@ add detail over that map (Ship Design Bible rules T1 to T4).
 #### Scenario: No repeating main colour
 - **WHEN** a picked ship is shown painted
 - **THEN** its colour comes from its own map on its own UVs, and its AO map is in its manifest
+
+### Requirement: A picked Hunt ship's hull detail is layered, its own, mirrored and shaded deep
+
+A picked Hunt ship's texture SHALL be baked from a modelled detail layer (`tools/blender/hull_detail.py`, laid out in
+`data/ships/ssarith/hull_detail.json`): primary armour plates each cut to its own outline over a sub-armour layer and the
+machinery of the under layer, with domes, fans, shaped vents, lamps and liveries; mirrored about the centreline; no
+element repeated; lit by a baked low sun with its cast shadows and AO (Ship Design Bible rules T5 to T8).
+
+#### Scenario: Layers and features
+- **WHEN** a picked ship is shown painted, close up
+- **THEN** its armour plates differ in outline and stand at different heights, trenches between them show machinery, and its dome, fan vent, shaped vents and lamps can be found
+
+#### Scenario: One axis of symmetry
+- **WHEN** the ship is seen from above
+- **THEN** its port and starboard detail mirror each other, plate for plate and colour for colour

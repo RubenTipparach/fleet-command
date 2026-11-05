@@ -21,6 +21,11 @@ What the owner asks for now is breadth before depth: many massings to choose fro
 > as one grown structure and baked onto its own UVs (design, "Version 12"); both are now rules for every ship (CLAUDE.md
 > section 10, Ship Design Bible chapters 14 and 15).
 
+> **Version 13** (2026-11-05): "discard ships that I didnt want", and more on the hulls: "vents, lights, and sub armor
+> pieces, and primary armor peices", "liveries, smooth sphereical portions of armor, and specifically shaped vents", "no
+> repeating elemnts, single axis symmetry, and lots of shading to give the armor depth". Only the picks are kept; each
+> one's hull detail is modelled and baked onto its own UVs (design, "Version 13").
+
 ## What Changes
 
 - **Mockup 12 version 9**, `docs/mockups/ssarith-ship-concepts.html`: a blockout board of twelve frigate-sized massings in
@@ -42,4 +47,6 @@ What the owner asks for now is breadth before depth: many massings to choose fro
   `.claude/skills/painted-bake/SKILL.md` (ship mode), `tools/blender/painted_bake.py`, `tools/mockups/export_blockouts.mjs`,
   `assets/ships/ssarith/`, and a task in `ship-models-engine`, `concord-hull-concepts` and `krai-ship-concepts` to move
   those lines onto their own unwrap.
+- Version 13 also adds `tools/blender/hull_detail.py` and `data/ships/ssarith/hull_detail.json`, and removes the unpicked
+  blockouts' shots.
 - No game code.
