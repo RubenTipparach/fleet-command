@@ -15,6 +15,12 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 
+Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
+battle console mockup (mockup 2 v82, mockup 8 v21, mockup 15 v6) flies the same exported glbs the game flies, each class's
+`model` from `data/battle/classes.json`, with the Krai's ships as the Krai line. Still open on the mockup side: the hull
+paint (livery bands, windows, detail, light pools) is the game's `hull.gdshader` but has no shared three.js copy yet, so
+the console shows the glbs' stand-in paint. Task: `ship-models-engine` 2.5.
+
 Beams and bolts (2026-11-04, owner: "source and destination of phaser and disruptors must maintain in sync"): in step in
 both. Mockup 2 v76 (and mockup 8 v15, written from it) resolve a beam's ends each step from the firing mount and the
 target as they now stand (`shotEnds`) and fly disruptor bolts on that live line (`boltStep`); the game does the same in
