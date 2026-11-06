@@ -44,6 +44,9 @@ public interface IKit
     /// skin whose style declares a rendered backing is asked; any other refuses it.</summary>
     void HeroPart(CanvasItem c, string hero, Rect2 dest, Rect2 src, bool mirror = false) =>
         throw new System.NotSupportedException($"UI kit '{Name}' draws no part of a hero piece ('{hero}')");
+    /// <summary>The glass of the square key as fractions of the key (X, Y, W, H): the part the skin lights, where a key's
+    /// glyph and label go. All of a drawn key; the window inside a rendered key's frame (RenderedPieces.Glass).</summary>
+    FleetCommand.Data.Rect KeyGlass { get; }
 }
 
 public static class KitPieces

@@ -144,3 +144,12 @@ the range shows that the game lacks, and what the game now has that the battle c
 | Skirmish (game ahead) | One key per scenario and side | The scenario types once each, scrolled (wheel or bar), the type picked on the right with its objective and a Play as key for each faction (owner, 2026-11-06: "I only need the scenario type, then when I select a scenario, I need to see what faction I can play that scenario AS", "Also need a scroll bar") | `game-flow-engine` 2.9 |
 | Friendly targets (game ahead) | Mockup 2 selects friendly ships for transport | The game now locks friendly ships too (green bracket), its weapons holding on them (owner, 2026-11-06: "I also cant target friendly units", "firting between friendly units is not possible", "mainly for transporiting goods") | `battle-console-engine` (transport) |
 | Faction consoles (game ahead of nothing) | Mockups 2, 8, 15, 20: the Concord, Krai, Ssarith and Kelvane consoles | All four kits in the game, the console following the ship you command (Allied fleet, Four races), layout and parity tests across all four | the skins' own live drawings (systems outline, radar sweep, brackets), their own ship and officer names, the Kelvane emblem (`fleet-skins`) |
+
+Helm keys and mines (2026-11-06; owner: "the numbers arent in the buttons for turn angle, also these icons need a little
+more space on these buttons", "Institute 90degree to the right is busted. Stop isnt centered. The ssarith tol has same
+issue", "Uncaught ReferenceError: Rm is not defined ... mines just failed on the institution mockup screen"). In step on
+both sides: battle console v86, Krai v25, Ssarith v10 and Kelvane v4 (committed, to publish) and the game's four skins
+measure each key's glass from its own renders, walked out from the key's centre (the page's keyGlass, the game's
+RenderedPieces.Glass), and lay the glyph and the turn's angle inside it by the same numbers (the page's helmKeyLayout, the
+game's HelmKeyLayout, tested). The mine preview's crash was the mockup's alone (the game's mines are drawn elsewhere).
+

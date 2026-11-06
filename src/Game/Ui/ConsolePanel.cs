@@ -129,21 +129,33 @@ public abstract partial class ConsolePanel : Control, IControlSource
         HitState st = dis ? default : Ui.Reg(id, r, click == null ? null : _ => click(), null, tip);
         string kst = dis ? "idle" : st.Down || on ? "pressed" : st.Hot ? "hover" : "idle";
         Kit.Piece(this, "button." + kst, r, dis ? 0.35f : 1);
+        KeyLabel(this, Kit, X.Fonts, r, kst, label, dis, center);
+        return st;
+    }
+
+    /// <summary>A key's label in the skin's key ink: one implementation for every key the console draws, the panels' and
+    /// the view's (owner, 2026-11-06: the view's Target key read "ARGET" in the Kelvane skin, its label under the knob).
+    /// A skin whose keys end in a point (KeyCenter) centres the label in the open field between the key's caps or its
+    /// measured KeyField, shrinking it to fit (down to 11 px) before it is trimmed (the Analog Panel Bible's rule T).</summary>
+    public static void KeyLabel(CanvasItem ci, IKit kit, Fonts fonts, Rect2 r, string kst, string label, bool dis = false, bool center = true)
+    {
+        SkinStyle sk = kit.Style;
         float h = r.Size.Y;
         int size = h >= 44 ? 22 : h >= 30 ? 17 : 15;
         float pad = h >= 44 ? 24 : 12;
-        Color k = Sk.KeyInk.For(kst), ink = dis ? new Color(k, k.A * 0.5f) : k;
+        Color k = sk.KeyInk.For(kst), ink = dis ? new Color(k, k.A * 0.5f) : k;
         string lab = label.ToUpperInvariant();
-        if (Sk.KeyCenter)
+        if (sk.KeyCenter)
         {
-            var (cl, cr) = Field(Sk.KeyField, "button." + kst, h);
-            float room = r.Size.X - cl - cr - 8, tw = X.Fonts.Width(lab, size, 600, 1);
+            PieceSpec p = kit.Spec("button." + kst);
+            float sc = Math.Min(1, h / p.Size.Y);
+            var (cl, cr) = sk.KeyField is { } f ? (f.L * sc, f.R * sc) : (p.M.L * sc, p.M.R * sc);
+            float room = r.Size.X - cl - cr - 8, tw = fonts.Width(lab, size, 600, 1);
             int fs = tw > room ? Math.Max(11, (int)MathF.Floor(size * room / tw)) : size;
-            Text(lab, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
+            fonts.Draw(ci, lab, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
         }
-        else if (center) Text(lab, r.Position.X + r.Size.X / 2, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
-        else Text(lab, r.End.X - pad, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Right, r.Size.X - pad - 12, 600, 1);
-        return st;
+        else if (center) fonts.Draw(ci, lab, r.Position.X + r.Size.X / 2, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
+        else fonts.Draw(ci, lab, r.End.X - pad, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Right, r.Size.X - pad - 12, 600, 1);
     }
 
     /// <summary>A key's end caps at a drawn height: its nine-slice margins, shrunk with its height as the kit draws them.</summary>

@@ -33,6 +33,9 @@ public sealed class SsarithKit : IKit
     public SkinStyle Style { get; }
 
     private readonly RenderedPieces _r = new("ssarith");
+    /// <summary>Measured from the kit's own key renders (RenderedPieces.Glass).</summary>
+    public FleetCommand.Data.Rect KeyGlass => _glass ??= _r.Glass("key.idle", "key.on");
+    private FleetCommand.Data.Rect? _glass;
     private readonly HashSet<string> _supplies = new();
     public IReadOnlyCollection<string> Supplies => _supplies;
     private readonly Dictionary<string, Action<Pen>> _icons = new();

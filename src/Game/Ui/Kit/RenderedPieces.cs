@@ -156,4 +156,35 @@ public sealed class RenderedPieces
             }
         _pieces[id] = e with { Tex = ImageTexture.CreateFromImage(img) };
     }
+
+    /// <summary>The glass of a rendered key as fractions of the key (X, Y, W, H): where the lit render
+    /// <paramref name="lit"/> differs from the one at rest <paramref name="rest"/>, walked out from the key's centre along
+    /// its middle row and column, so a key's glyph and label are placed inside the window and never on its frame, and a
+    /// stray pixel on the frame never widens it (owner, 2026-11-06: "Stop isnt centered"). The whole key when the centre
+    /// does not differ.</summary>
+    public FleetCommand.Data.Rect Glass(string rest, string lit)
+    {
+        Image a = Get(rest).Tex.GetImage() ?? throw new InvalidOperationException($"the {_skin} kit's '{rest}' has no image");
+        Image b = Get(lit).Tex.GetImage() ?? throw new InvalidOperationException($"the {_skin} kit's '{lit}' has no image");
+        if (a.IsCompressed()) a.Decompress();
+        if (b.IsCompressed()) b.Decompress();
+        int w = Math.Min(a.GetWidth(), b.GetWidth()), h = Math.Min(a.GetHeight(), b.GetHeight()), cx = w / 2, cy = h / 2;
+        bool Lit(int i, int j)
+        {
+            Color ca = a.GetPixel(i, j), cb = b.GetPixel(i, j);
+            return (Math.Abs(ca.R - cb.R) + Math.Abs(ca.G - cb.G) + Math.Abs(ca.B - cb.B)) * 255 > 90;
+        }
+        if (!Lit(cx, cy)) return new FleetCommand.Data.Rect(0, 0, 1, 1);
+        // a gap of up to 4 px is stepped over: the Hunt's glass has dark scan lines
+        static int Walk(Func<int, bool> at, int from, int step, int end)
+        {
+            int last = from;
+            for (int v = from + step, gap = 0; v != end + step && gap <= 4; v += step)
+                if (at(v)) { last = v; gap = 0; } else gap++;
+            return last;
+        }
+        int x0 = Walk(i => Lit(i, cy), cx, -1, 0), x1 = Walk(i => Lit(i, cy), cx, 1, w - 1);
+        int y0 = Walk(j => Lit(cx, j), cy, -1, 0), y1 = Walk(j => Lit(cx, j), cy, 1, h - 1);
+        return new FleetCommand.Data.Rect((double)x0 / w, (double)y0 / h, (double)(x1 + 1 - x0) / w, (double)(y1 + 1 - y0) / h);
+    }
 }

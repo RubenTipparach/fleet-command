@@ -3,6 +3,7 @@
 // energy turns) and Power (energy in boxes; its Reactor and Warp modes in StationPanel.Reactor.cs). The other stations
 // each live in their own file (StationPanel.<Station>.cs); one not built yet says so.
 using System;
+using FleetCommand.ConsoleModel;
 using FleetCommand.Sim;
 using Godot;
 
@@ -175,14 +176,12 @@ public sealed partial class StationPanel : ConsolePanel
         Color fill = dis ? C.Deep : st.Down ? C.Lilac : on ? onCol ?? C.Accord : st.Hot ? C.Sky : C.Signal;
         KeyFace.Draw(Kit, this, r, sz * 0.22f, fill, false, dis ? 0.5f : 1);
         Color ink = dis ? Sk.R.InkDis : KeyFace.Ink(Kit, fill);
-        HelmGlyphs.Draw(this, X.Fonts, kind, x + sz / 2, y + sz / 2, sz * 0.42f, ink, Me.OrbitDir, C.Signal);
-        // the turn's angle, small in the corner, so 90 and 135 never read alike
+        // the glyph and a turn's angle inside the key's glass (HelmKeyLayout, shared with the mockup's helmKeyLayout)
         string? ang = kind switch { "het.l90" or "het.r90" => "90", "het.l135" or "het.r135" => "135", "het.180" => "180", _ => null };
+        HelmKeyContent L = HelmKeyLayout.For(new FleetCommand.Data.Rect(x, y, sz, sz), Kit.KeyGlass, ang != null, kind.Contains(".l"));
+        HelmGlyphs.Draw(this, X.Fonts, kind, (float)L.Cx, (float)L.Cy, (float)L.R, ink, Me.OrbitDir, C.Signal);
         if (ang != null)
-        {
-            bool left = kind.Contains(".l");
-            Text(ang, left ? x + sz - sz * 0.1f : x + sz * 0.1f, y + sz - sz * 0.1f, Math.Max(8, (int)Math.Round(sz * 0.2f)), ink, left ? HorizontalAlignment.Right : HorizontalAlignment.Left, 0, 700);
-        }
+            Text(ang, (float)L.Tx, (float)L.Ty, L.Size, ink, L.AlignRight ? HorizontalAlignment.Right : HorizontalAlignment.Left, 0, 700);
     }
 
     /// <summary>A slider: one handle, or two (min and max) when f1 is given.</summary>
