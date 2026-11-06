@@ -180,8 +180,8 @@ CLASSES = {
 
 
 def write(check_only=False, classes=None, out=None):
-    """Write each class's plan to out/<class>_plan.json (the Krai's by default; the Ssarith Hunt's plans use the same
-    layer from tools/mockups/ssarith_plans.py), or with check_only count the plans that differ from their lists."""
+    """Write each class's plan to out/<class>_plan.json (the Krai's by default; another faction passes its own classes and
+    folder), or with check_only count the plans that differ from their lists."""
     classes, out = classes or CLASSES, out or OUT
     out.mkdir(parents=True, exist_ok=True)
     bad = 0

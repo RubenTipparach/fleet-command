@@ -1,169 +1,240 @@
 # Design: ssarith-ship-concepts
 
-## Version 1 is withdrawn (owner, 2026-11-04)
+## Version 23: the shell below and in the middle, no glowing windows (owner, 2026-11-06)
 
-"part of me loves that these are space aligators, but at last, you are over stereotyping an alien species which is
-extremely insensitive. We've stated multiple times before, the look of an alien species is not their UI, not their
-spaceship. Cultural ideologies are far more deep and complex than what someone's skin or features are. And that no
-culture in the world follows a single line of thinking when it comes to desigining UI, space ships, logos, dressing etc,
-and none of those reflect the way they look."
+"I dont really like the big shell being on top, can the cruiser and carrier have the shell be on the bottom? maybe the
+carrier can have the shell be in the middle, and launchers above and below"; "window borders should also not glow"; "I
+would remove window dots from the ships texture since it overlaps with our window cutouts".
 
-What went wrong: version 1 read the species' body straight into the ship (claws because they have clawed hands, scutes
-because they have scales, a sprawl and a crouch because they are reptiles) and let one line of the culture (the hunt)
-shape the whole line. Both now break the Ship Design Bible's chapter 13 (rules C1 to C5) and CLAUDE.md section 1. The
-sections below are kept as the record of version 1 only; none of their readings, rules or directions stand.
-
-What carries over: the method (rooms first, the shared fitter, the plan layer's tapering rooms, the page's checks), which
-is species-neutral. What comes next waits for the owner: the Hunt's culture is too thin to design from (C4), so the
-survey asks how it is to be set before any ship is redrawn (H1).
-
-
-## Sources
-
-| Source | What it gives the ships |
-|---|---|
-| The Hunt's culture, `openspec/changes/console-skins/design.md` (the Ssarith Hunt table), approved as written (survey U7, 2026-11-01) | World view, bodies, technology, "Squat armoured hunting ships with broad prows, dark and mottled, built to wait unseen" |
-| Owner, 2026-11-02 (ships thread, recorded in `mockup-work.md`, mockup 5): "gorn emphasizes claw like features, since they enjoy hunting" | Claws are the Hunt's distinct feature |
-| Survey A8, left blank, so its recommendation stands | "Ssarith Hunt: claws" |
-| The Ship Design Bible, `docs/design/ship-bible.html` | The method (rooms, hull, parts, skin, damage) and its universal rules (M1, P1, H1-H3, B1-B4, W1-W5, L1-L4, X1-X4) |
-| The Krai line, mockup 7 (`krai-ship-concepts`) | How a faction is drawn from its culture; the plan layer (`tools/mockups/krai_plans.py`); the shared fitter (`docs/mockups/lib/ship-plan.js`) |
-| The Hunt console (mockup 4) and its emblem draft (E11) | Palette, the scute texture on its hero pieces, backlight only, the fang and its kill notches |
-
-The reference games are not used here: no page of either manual describes a race's ship designs, and section 1 of
-CLAUDE.md applies (the shape of an idea, never another game's ships, names or art).
-
-## From the culture
-
-Each line as written, and what it becomes in a ship. The world view is the owner's (U7); every reading below it is ours
-and provisional until survey section H is answered.
-
-| As written | In the ship |
-|---|---|
-| "The quarry must be worthy" | A hunter goes out alone or in a pair, never a swarm: a few heavy, well-armoured ships rather than many light ones (H5) |
-| "The stalk patient" | A ship built to wait: a hull that holds still, dark and mottled, with its lights shuttered (Stalk) |
-| "The kill earned and counted" | Kills are counted on the ship: a notch cut in bone white into a claw for each worthy kill, the emblem's notches said on the hull (H4) |
-| "Big-boned reptiles with heavy clawed hands" | Heavy bones: a squat, broad hull, thick armour, short and strong parts; the claws are the ship's distinct feature (A8) |
-| "Slow and silent until they strike" | Two states: Stalk (claws folded, lights shuttered, the drive banked) and Strike (claws open, kill red at the claws and guns, the drive lit) |
-| "A hunter's field kit: worn gunmetal, camouflage, tracking tubes" | Dark worn gunmetal under a disruptive camouflage of canopy and moss; green phosphor behind the windows, the tracking tubes said a second way |
-| "Grown over by the jungle it hides in" | Inside only: the rooms are warm and green-lit, and a few hold plants (H6). Nothing grows on a hull in space |
-| "Squat armoured hunting ships with broad prows" | A broad flat prow that stays wide to its face, never a point; the opposite of the Krai's edge-first blade |
-| "Built to wait unseen" | A matte, low-albedo hull; floods that are hooded and graze the plating rather than throw light into space (H3) |
-
-## The rules, provisional
-
-1. **Claws are the feature.** Every Hunt ship carries hooked claws: at the prow (A), at the feet of its nacelles (B) or
-   under the belly (C). Claws are faceted horns that taper to a hooked point, laterally flattened and keeled like a
-   reptile's claw, never a straight spike (the Krai's) or a blade (the Krai's bayonet).
-2. **Squat and broad.** Beam about twice the height, length under four beams. A Hunt frigate is shorter and wider than
-   the Concord's or the Krai's of its rank.
-3. **A broad prow.** The bow keeps at least 0.6 of the hull's beam to its face; it is a shovel or a jaw, never a point.
-4. **Scute paneling** (X3's unique paneling): the hull plating is laid as rows of keeled oval scutes, like a crocodile's
-   back, overlapping aft so they shed like scales; a ridge of large osteoderm plates runs down the spine.
-5. **Camouflage is the field colour.** Dark gunmetal under large disruptive blotches of canopy green and moss, with a
-   dark umber; bone only for kill notches and the emblem; kill red only as light, and only in Strike.
-6. **Stalk and Strike.** A Hunt ship has two looks. Stalk: claws folded, windows dim green, floods hooded and low, no
-   strobes. Strike: claws open, kill red at the claw roots and the guns, the drive lit. The bible's lights stay (each
-   with its job), dimmer in Stalk, so a player can still read the ship (H3).
-
-## The frigate's rooms
-
-`data/ships/ssarith/frigate_plan.json`, written by `tools/mockups/ssarith_plans.py` on the Krai plan layer (its `lay`,
-`cycle` and writer, now taking the classes and folder as arguments: one implementation of the room layout; a room may
-now name its own outer half width, so a deck can taper). Three decks 3.5 m apart (floors 3.5, 0 and -3.5 m), so the hull
-is low; the middle deck is widest and the top and keel decks narrower, so the section is a wide low lozenge; and each
-room aft is a little narrower than the one ahead of it, so the hull is broadest at its shoulders and tapers aft like an
-animal toward its tail:
-
-| Deck | Half width | Rooms, bow to stern |
+| What | How | Numbers |
 |---|---|---|
-| A (top, narrow) | 5.0 m, to 3.8 m aft | Bridge; hunt master and tactical; tracking room and sensors; officers; a trophy hall (H6) and comms |
-| B (widest) | 9.5 m, to 6.8 m aft and 5.8 m at engineering | The forward battery across the whole prow (this makes it broad); dens, mess, medbay, a hunters' ready room, life support; armoury, shields, damage control, stores; engineering |
-| C (keel) | 6.5 m, to 4.8 m aft and 4.4 m at the reactor | Grapple projectors across the prow (the claws' machinery); magazines; the boarding bay and the hunting craft bay; fabricators; the reactor |
+| The cruiser's shell below | Its section turned over (`underHood`: every height mirrored, the order reversed): the broad shell is the underside, drawn to a point under the bow; the spine runs on above the side prongs as the dorsal lance with its light strip | 150 m by 60 m by 19 m, 456 triangles |
+| The carrier's shell in the middle | Its own section (`msec`, 22 points): a hangar block above and one below, the shell a deck reaching out of each side at mid-height with a light strip along its blunt edge, running on past the hangars; launch bays forward and on each flank, above and below the shell | shell 15-21 m out of each side, 2.2-2.4 m thick; forward bays 6 m by 4.4 m, flank bays 10 m by 3.2 m, two of each above and below; 168 m by 67 m by 23 m, 380 triangles |
+| Bigger flood pools (owner: "lights are kinda small here, can we get bigger cones that illuminate more of the ship?") | Every flood (placed, the rows, the belly pair) takes one data setting, `defaults.flood`: stood off the plating, tilted into it, a wide cone, so each pool covers a broad stretch of hull | 2.4 m off the plating (was 0.9), 22 degrees in (was 12-14), 120 degree cones (was 80-90), 1.6 kW |
+| Sharper big ships (owner: "the texture on carrier is pretty blury") | The cruiser and carrier bake at 3072 px, the frigates at 2048, so the texel is near a frigate's | 6.4 cm a pixel on the cruiser and carrier (9.5 at 2048), 5.4-8.0 on the frigates |
+| No glowing windows | The window frames are dark metal lit by the scene, no line of light round the glass. The bake keeps each window's and bay's recess but no glass, so no glowing dot in the maps sits under the page's pane | |
 
-Crew 40. Rooms are functional; the three whose names come from the culture (trophy hall, hunters' ready room, dens) are
-provisional, and what the Hunt calls any room is the owner's (H6, U7).
+## Version 22: the classes, one ship at a time (owner, 2026-11-06)
 
-The hull is fitted round them by the shared fitter (`FCShipPlan.fit`, section `blade`: chamfers as deep as the rooms
-allow), then the Hunt's character is added on top of the fit (H2), never cut into it:
+"update mockup to be one ship at a time, we need a cruiser class, all the smaller ships are frigates".
 
-- **No steps.** The beam may change by at most 0.16 m per metre along the ship and the top and bottom by 0.32, so where a
-  deck ends the hull slopes over it like a heavy animal's back (a dilation: stations only grow, and a chamfer grows only
-  as far as the faces it joins moved out).
-- **A shovel prow.** The two nose stations keep 0.9 and 0.7 of the front station's beam and drop their top.
+| What | How | Numbers |
+|---|---|---|
+| The classes | The four picks are the frigates; a new cruiser; the carrier. The list groups them by class | frigates 110-116 m, cruiser 150 m, carrier 168 m |
+| The cruiser | Blockout 14, grown like the others: a long heavy body under a broad hood swept wide aft and drawn to a point over the bow; the flanks reach forward low as two side prongs, the keel runs on longest as a lance with a light strip. Its detail, maps, panes and field baked as the others | 150 m by 60 m by 20 m, 452 triangles |
+| One ship at a time | Every ship at the origin, only the picked one shown; views of it (three quarter, side, top, ahead) from its own size; the Concord Petrel beside it for scale; the board and its labels gone | |
 
-Every room is measured 1.05 m inside (H1) on the page. The fitted hull is 74 m long, 21.1 m in the beam and 11.9 m tall.
+- Provisional: the cruiser's form and features (drafted, not yet reviewed by the owner); its rooms come with task 3.1.
 
-## The three directions (frigate)
+## Version 15: the carrier, rooms behind the windows, forward floods, battle damage (owner, 2026-11-05)
 
-All three are built on the one fitted hull; only their parts differ, so the page compares features, not plans.
+With two night shots: "we need some more lights pointed forward to paint more of the hull", "we need a carrier", "we need
+to show interior of ships with windows", "we need damage systems", and, of the hull emission, "also this light, I wish it
+were more green".
 
-| | A Grasp | B Jaw | C Crouch |
+| Ask | How | Numbers |
+|---|---|---|
+| Forward floods | `auto_floods` (defaults, a ship's own keys over them): rows of floods aimed forward along the port flank (mirrored), the top and the belly, from the stern to the bow's split | every 22 m, 1.8 kW, 80 degree cones, tilted 12 degrees into the plating |
+| Greener emission | The strips' and green lamps' light | (0.1, 1.0, 0.24), was (0.27, 1.0, 0.54) |
+| Rooms behind windows | Every window and bay is a quad of its own on the page, laid on the hull where the bake cut for it (`hull_detail.pane_box` writes each pane's centre, axes, size and room into the manifest), so its frame stays exact at any distance (owner: "windows and hangar bay are kinda messed up, mmake them clean, make the border clean"; a baked pane map was a few texels a window). A bevelled dark-metal rim with a fine lit line round the glass; behind it the room from `roomBehind`, lifted from the Concord page into `docs/mockups/lib/ship-rooms.js` (the Concord page now calls the same code, its shots unchanged to the pixel) | quarters, mess, workshop (green-lit), hold; one window in five dark; frames 0.1 m (windows), 0.35 m (bays) |
+| The carrier | Blockout 13, grown like the picks: a flight deck (the hood) over a hangar block whose forward face holds two launch bays, two more on each flank, a keel blade below; hangars drawn behind the bays by `hangarBehind` (a deck, its stripe, three parked craft, ceiling light rows); on the board it lies beside the picks, to starboard. No greeble is kept with a vertex inside an opening's cutter, so nothing stands in front of a pane | 168 m by 68 m by 24 m, 326 triangles; bays 8-12 m by 5-6 m |
+| Level rooms and hangars (owner: "Need to account for normal angles on windows, and the hangar bay too", "the windows and hangar on the side on sloped angles need work though") | A window's room and a bay's hangar are drawn in a frame level with the decks (the face's normal turned level), the pane cutting the front at a slant, the hangar's mouth measured level. A bay's width runs level (bow bays turn a quarter). The hangars stay painted by parallax, not geometry (owner: "I actually like the paralax so I'd keep it") | bow bays 8 m by 6 m; flank bays 12 and 10 m by 4 m on faces 21 degrees off vertical and 5.3 m tall |
+| Panes fit their faces (owner: "hanger window taller than side of the ship") | Every pane, frame and all, lies within 0.12 m of its face's plane at each corner and edge middle (`hull_detail.fits`); a window that would cross a bend is left out, a bay that does not fit stops the build. Frame widths are data (`pane_frame_m`) | frames 0.1 m (windows), 0.35 m (bays); the flank bays moved 1 m down onto the middle of their face |
+| Damage | `docs/mockups/lib/ship-fx.js` inlined: the hull shader runs its `dmgHoles`, `dmgScorch` and `interiorRoom`; Fire (Phaser, Torpedo, Repair) and a click on a ship | phaser: a 2.2 m scorch; torpedo: a 6 m scorch and a 2.4-4.0 m hole with fire, smoke and embers |
+
+| Breaking apart (owner: "what about breaking peices apart and stuff?", "ship piece breaking should be built next") | The shared `lib/ship-break.js`, as the Concord and Krai ships break: the hull cut into seeded cells, each break closed by a cut face (decks, bulkheads, rooms), wires, fire on the broken edges. A grown hull has no loft stations, so its inside is a signed distance field (`tools/blender/hull_sdf.py`: a winding-number inside test and the distance to the nearest triangle, one byte a 1 m cell), read by the script's inside test and, as a 3D texture, by the cut faces' shader. The breakable hull is tessellated to 2.5 m edges first, as a loft already is: the fracture gives each cell the triangles with a corner near it, so a grown hull of big triangles left holes (owner: "it created a big empty hole, no chunks, no fill"). The Concord and Krai pages are unchanged (the Krai breakup checked to the pixel) | 9 cells (under 120 m), 11, 13 (over 150 m); a torpedo costs 18 % of the hull, a phaser 5 %; at 60 % a torpedo knocks off the piece it lands on, at 0 % the core breaches (3.6 s) |
+
+- Not yet: systems and their states, damaged lights flickering (L3). Each is a task.
+- Provisional: the carrier's rooms and bays (until it is planned rooms first), the window and room light colours (H5).
+
+## Version 14: the lighting pass, windows, PBR, normal maps, the emblem, emission (owner, 2026-11-05)
+
+"Now those my friend are gorgeous looking star ships. Next up, lighting pass, windows, pbr, normal maps, logo, emissive
+texture (you have some features that look like glowy bits)". The method is written up as the `ship-detailing` skill (owner:
+"write up a skill for detailing space ships with custom texturing", "Include image samples in your documentation").
+
+| Map or light | How | Numbers |
+|---|---|---|
+| PBR base colour | The same flat paint as the painted map (one function, `flat_paint`), with no light in it: cavities dark from the AO, plates darker toward their gaps, worn edges lighter, grain | 2048 px |
+| ORM | AO; roughness and metalness by kind (painted armour 0.58 / 0.45, sub-armour 0.62 / 0.55, under layer 0.8 / 0.6, greebles 0.55 / 0.7, domes 0.12 / 0, slats 0.6 / 0.7, vents 0.9 / 0.3); paint 0.5 / 0.1; worn edges 0.22 smoother, 0.35 barer | 2048 px |
+| Normal map | Baked in tangent space (OpenGL), the one map for the page and the game | 2048 px |
+| Emission | Lamps, windows, the strips' lit line, the domes' faint inner light (0.35 of their green), a soft halo | 2048 px |
+| Hull lights | The fixtures alone (sun off) and the lamps' and windows' own faces, baked as direct light on white plating, over `light_ref` 0.9, stored with a 1/1.6 curve | 1024 px |
+| Fixtures | Three hull floods a ship from data (mirrored: five), a logo flood, a belly pair, position lights (port red, starboard green at the widest frame, white aft), red beacons top and bottom mid-ship, white strobes at the bow's tips (one to three, mirrored) | floods 2.2-3.2 kW, 60-90 degree cones, 0.9 m off the hull |
+| Windows | 1.1 by 0.6 m, groups of 4-12 at 1.6 m pitch, rows 3.5 m apart on the port flank (mirrored), one in five dark, pale green-white (survey H5) | provisional until the rooms (W1) |
+| Emblem | `assets/emblems/ssarith/hull_mask.png`, rendered from `docs/mockups/lib/emblems.js` by `tools/mockups/emblem_masks.mjs`, painted from above on the top armour over a patch of its plate colour, in its own hull colours | 5-7 m across |
+
+- **The page**: Look (Painted, PBR, Clay) and Light (Studio, Night). PBR uses the base colour, ORM, tangent normals and a
+  soft room environment; both looks add the light map and the emission. At night the live lights drop to almost nothing
+  and the ships are lit by their own floods, lamps and windows; strobes flash, beacons pulse, position lights burn steady
+  (sprites at the fixtures, written to the manifest).
+- **Cost**: two more bakes a ship (tangent normals, hull lights), about 12 minutes a ship at 2048 px and 32 samples; the
+  page carries six maps a ship.
+- Provisional: the window and flood colours (H5), the windows' places (until the rooms are planned).
+
+## Version 13: the picks only, their hull detail modelled and baked (owner, 2026-11-05)
+
+With the reference game's orthographic sheet of a ship (not committed): "discard ships that I didnt want, only keep the
+ramining ones. I'd like more features onthe hulls, the gorn ships have things like vents, lights, and sub armor pieces,
+and primary armor peices. Armor pieces are carefully craftyer to not look the same, in your mockup armor pieces are
+square, and there are no distinct features. like under armor area with greebles"; then, with three crops of it, "notice
+stuff like liveries, smooth sphereical portions of armor, and specifically shaped vents"; and "no repeating elemnts,
+single axis symmetry, and lots of shading to give the armor depth". What is taken is how such a hull is layered and
+shaded, never its art.
+
+- **The board** keeps only the four picks, two by two. The other blockouts, their builders and shots are deleted (git
+  keeps them), and the triplanar tile with them: nothing on the picks repeats.
+- **The detail is modelled** (`tools/blender/hull_detail.py`, laid out in `data/ships/ssarith/hull_detail.json`) over
+  each low-poly hull and baked onto its own UVs, selected to active (Ship Design Bible T5-T8):
+
+| Layer or feature | How it is built | Numbers |
+|---|---|---|
+| Primary armour | The hull's faces by facing, thickened outward, cut apart by gap slabs: a kinked spine and swept chevrons on top and bottom (every station's spacing, sweep and spine width drawn from the ship's seed), raked cuts on the flanks; each plate raised by its own amount; plates over 22 m2 get a second plate over part of them | 0.5 m thick; stations 6-13 m (top), 7-14 m (flanks); sweep 0.35-1.1; gaps 0.5-1.0 m, 40 % of cuts trenches of 2.6-4.6 m; lift up to 0.35 m; overlays drawn in to 0.86 and lifted 0.3 m |
+| Sub-armour | A thinner shell with its own cuts, 35 % of them wide | 0.22 m |
+| Under layer | The hull itself, near black, with machinery only where both armour layers leave it bare: blocks, sub-armour slabs, pipe runs, ribs | 1.6 per m2 sampled |
+| Domes | A sphere sunk to stand h proud, in a collar ring, held by straps that hug it | r 2.6-6.4 m, h 0.8-1.05 m |
+| Fans | A recess, a hub, fins tilted like a turbine's, a ring of lamps | r 3.8-4.6 m, 17-21 fins |
+| Louvres | Chevron and raked-slot outlines cut through the armour, slanted slats clipped to them; four per ship, each its own shape and size | slats 0.34-0.5 m apart, 28-46 degrees |
+| Lamps | Lit blocks; the red eye in a two-step housing; amber pairs; green markers | 0.32-0.6 m |
+| Liveries | Green bands and a chevron stripe across the armour, painted from the baked position | 0.6-1.4 m wide |
+| Light strips | The strip faces become a dark channel with a lit line down the middle | 0.7 m line |
+
+- **Symmetry**: everything off the centreline is built on the port side and mirrored through a reflected frame; every
+  piece's id is a hash of its mirrored position, so a plate and its mirror take the same paint.
+- **Shading**: a low sun from port and ahead (ship space 0.6, 0.55, 0.58) baked with its cast shadows, AO reaching
+  2.2 m, armour edges rolled 0.3 m by the Bevel node in the normals and the light, each plate pillowed darker toward its
+  gaps, then the painted-bake paint-over. The page lays the object-space normal map under the live light.
+- **Cost**: about 31-38 thousand high-poly faces a ship, baked at 2048 px; the high-poly never leaves Blender. The low-poly hulls are unchanged (294-454 triangles).
+
+## Version 12: the picks, grown as one structure, each with its own texture (owner, 2026-11-05)
+
+**The picks** (survey H4, answered in the conversation): "spearhead: there we go again with the ltiterals lol / headedf
+lance: great! / forked prow, great! bit of a mess of geometry / trident: awesome! / harpoon yes!". Picked: 1 Hooded lance,
+3 Forked prow, 7 Harpoon, 9 Trident. Spearhead (5) is withdrawn from the board. The other seven stay on the board, unpicked,
+as the record of what was offered.
+
+**Its own texture** (version 11): "every ship needs custom uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID
+REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need a detail mask in the future,
+same goes for Concord and Krai ships", "Also dont forget to bake AO as well". Now a rule for every ship (CLAUDE.md section
+10; Ship Design Bible chapter 15, T1 to T4). Each picked ship leaves the page as OBJ (`tools/mockups/export_blockouts.mjs`)
+and `tools/blender/painted_bake.py --ship` unwraps it (Smart UV Project at 60 degrees, islands packed again by shape),
+bakes AO (1.5 m), normals, a part id, edges, glow and the surface position onto its own UVs at 2048 px, and paints its
+colour map: the painted-bake paint-over, plus plating laid in ship space (courses of 4.5 m, plates about 11 m with a
+length and offset per course), ochre chevrons in two bands on the dorsal faces, grooves with lit and shaded lips, lit ports
+on the flanks and ink on the seams. The page shows that UV mesh with its own map and glow; the chevron tile is multiplied in
+faintly, every 4 m, as detail only. The other blockouts keep the tile (they have no unwrap) until picked. A detail mask is
+not designed yet.
+
+**One structure, grown**: "these shapes need work, they arent connect together well, and violate our "no deformed
+primitive rules", shapes must be made with purpose and flow into the grater structures". The version 10 picks were boxes,
+tapered booms and flat plates placed against each other. Each picked ship is now one closed skin (Ship Design Bible chapter
+14, F1 to F5):
+
+- The body is lofted through cross-sections of one fixed 18-point layout (`hsec`): keel bottom, keel root, bottom chine,
+  lower side, a side chine that can swell out, the hood's root, edge and top, and the crown. A feature a station lacks
+  lies flat in its neighbours' line, so every station lofts to every other point to point.
+- At the bow the body's last section is split along cut lines into regions; each region lofts on forward as a named
+  branch, scaled and moved station by station, and ends in a cap. Two branches that split from one section share their cut
+  line, so the skin never opens or overlaps.
+- Light strips are faces of the skin (the keel's flat bottom, a lance's underside); the drive is a recess cut 1.6 m into
+  the stern, its mouth lit.
+
+| Ship | Body | Splits into | Triangles |
 |---|---|---|---|
-| The idea | A clawed hand reaching for the quarry | A crocodile's ambush at the water's edge | A big cat or a raptor crouched to spring |
-| Claws | Four hooked claws at the prow's corners, 17 m and 21 m, curving forward and in | Three 5.5 m talons at the bow of each nacelle | One 12 m sickle claw under each foreleg nacelle |
-| Prow | The shovel prow, the claws' roots at its corners | Split into an upper and a lower jaw, fangs along both, a gun in the throat | Dipped low, under the hump |
-| Nacelles | One pair, flat and low under the flanks on short struts | One pair, splayed wide and low on angled struts, like legs | One pair, folded under the belly on struts angled down and forward |
-| Spine | A low ridge of osteoderm plates | A double row of scutes, like a crocodile's back | A raised hump of large scutes |
-| Stalk to Strike | The claws, closed in front of the bow, spread open | The lower jaw drops open; the talons straighten | The sickle claws, tucked down, raise forward |
+| 1 Hooded lance | 98 m to the bow split at +6 m; hood swept to 52 m across aft | hood (narrows to its point), lance (the body's middle, drawn out 56 m), keel blade (deepens and sweeps down) | 394 |
+| 3 Forked prow | split at +10 m along the side chines | high prong (the upper half, rising 5.5 m), low prong (the lower half and keel, dropping 8.6 m) | 374 |
+| 7 Harpoon | the hull closes onto its keel at +16 m | bow (capped), rail (the keel run on 50 m, flaring into a barbed head) | 294 |
+| 9 Trident | split at +12 m from one point low in its middle | brow (lifts over the prongs), port and starboard prongs (the flanks, reaching out 8.8 m), keel prong | 454 |
 
-**A is recommended.** It says "claws" from every side and at 40 px, the claws are the ship's own weapon (the grapple
-projectors are under them), and it grows by claws without changing shape (a larger class adds a pair; H5). B reads as a
-jaw first and a claw second; C's claws are under the hull, where the chase view rarely sees them.
+The rooms-first design of each pick (task 3.1) still comes before any of this is final.
 
-## Lights and windows
+## Version 10: the inspiration's shape language, painted (owner, 2026-11-05)
 
-- **Windows**: the bible's person-sized pane (1.1 m by 0.6 m), one row a deck, only on lived-in rooms (W1, W2), lit a
-  dim phosphor green from the rooms. Interior mapping comes with the Concord-standard skin, after a direction is chosen.
-- **Floods**: the bible's grazing hull floods, but hooded: each lamp sits under a lip of armour and throws its pool
-  along the plating, so the hull reads in shadow while the lamp itself is hidden from ahead. In Stalk they burn at a
-  third. Their light is a pale green-white, so the camouflage reads as green and brown, not grey.
-- **Position lights** port red, starboard green, white aft (the bible), small and dim; no white strobes in Stalk (H3).
-- **Kill red** only as light and only in Strike: a lamp at each claw's root, the gun throat on B.
-- **Drive**: a wide flat slot across the stern, banked dark in Stalk, pale phosphor-white in Strike.
+With three images of the reference game's and a fan's Gorn ships: "gorn from star trek", "they looked menacing!", then
+"make ships like this, with this kind of texture", "might need a new skill to make high -poly AO baked texture that looks
+drawn on". The images are not committed (someone else's art). What is taken is their shape language and the way their
+texture reads, in our own words and our own forms, never their designs (CLAUDE.md sections 1 and 10):
 
-## Exterior against the console (X1, X3, X4)
+- **Reach forward**: lances, prongs and rails running well past the bow, often from low down.
+- **A hood over a narrow neck**: a wide flat cowl swept back at its tips, so head-on a ship reads as a T or an anchor.
+- **Low raked blades**: deep keel blades sweeping forward and down under the bow; fins raked aft.
+- **Layered and chevroned**: overlapping plates, chevrons pointing forward, the mass heavy aft.
+- **Light in strips** along the booms and blades.
 
-| | Console (mockup 4) | Hull |
+None of these comes from the species' body (C1): they are weapon and hull forms. The twelve version 9 massings, made
+before the examples arrived, are replaced by twelve in this language:
+
+| # | Name | The arrangement |
 |---|---|---|
-| Material | Pillowed olive gunmetal, every edge rolled; hero pieces pressed with hide scales | Matte dark gunmetal laid in keeled scutes, worn lighter on the keels |
-| Colour | Gunmetal `#3a4044`, canopy `#2f4a2a`, moss `#5b6340`, phosphor `#6dff8a`, bone `#d8cfb4`, kill red `#c2412b` | Field `#33382f`, canopy blotch `#2d4228`, moss blotch `#4f5638`, umber `#3a3026`, bone notches `#d8cfb4`, green-white light `#c8ffd6`, kill red light `#ff4a2e` |
-| Light | Backlight only | Hooded floods, phosphor windows, red only in Strike |
+| 1 | Hooded lance | An arrowhead hood over a short heavy body, a long lance below the bow, a keel blade sweeping forward and down |
+| 2 | Twin lances | A flat wedge body, two lances far past the bow from its lower flanks, one tall fin raked aft |
+| 3 | Forked prow | The bow splits into a high prong rising forward and a long low prong dropping forward |
+| 4 | Anchor | Head-on an anchor: a wide swept hood, a narrow neck, a curved blade below |
+| 5 | Spearhead | A slim body carrying a great broad blade-head, three raked fins round its stern |
+| 6 | Mantle | A compact hull under a huge flat mantle swept back to two points, two short spurs beneath |
+| 7 | Harpoon | A long rail running the whole ship and far past the bow to a barbed head, the hull riding aft on it |
+| 8 | Raked blade | A deep blade of a hull raked forward to a keel point, a tall fin raked aft |
+| 9 | Trident | Three prongs forward from a heavy core: port, starboard and keel |
+| 10 | Wedge | A thick armoured wedge, two spurs at its bow corners, a raised spine |
+| 11 | Arc | From the side an open arc: a raised upper hull and a long low boom joined only at the stern |
+| 12 | Crown | A core hull, a short lance forward, six blades swept back round its stern |
 
-The console and the hull share gunmetal, canopy, moss and bone (allowed: X1 is a guide). What sets the hull apart is
-its features (the claws), its paneling (the scutes) and its camouflage, which the console only hints at.
+**The texture: a new skill, `painted-bake`.** `tools/blender/painted_bake.py` models a high-poly armour tile (8 m by 6 m:
+two rows of chevron plates pointing forward over seamed under-plates, a spine with a light strip in its groove, conduits
+in clamps, vent wells), renders its normals, occlusion (to 0.45 m), edges and per-plate ids in Cycles, then paints over
+them: flat olive, khaki and sand plates with a rare bronze one, a painter's light from the upper left in soft steps, lit
+and shaded bevels, inked crevices, brush grain, green glow. On the board it is projected from three sides (the blockouts
+have no UVs) at 2.5 times its bake, so a chevron is about 5 m across; about a third of the paint shows as emission so its
+own light reads in shadow, and the live light plays over its normal map. A Painted switch shows the clay underneath.
 
-## Measured on the page
+Known: projecting from three sides mottles the angled faces; the next step for a picked blockout is a painted sheet laid
+on its own parts, following their form (the skill's last row).
 
-P1 and H1 on the plan; the prow's width as a fraction of the beam (rule 3); the beam to height and length to beam
-(rule 2); nacelle daylight (3 m at least, the bible); triangles; the length, beam and height of each direction against
-the Petrel's 88 m.
+## Version 9: a blockout board (owner, 2026-11-05)
 
-### Found on version 1
+"Delete this design. It sucks, look at the inspiration. Block out more stuff. We need a variety of designs. Not just 3
+lame ones that look like coffins. Look at my examples - gorn from Starfleet command".
 
-- **At 40 px the claws nearly vanish.** In the silhouettes (`docs/screenshots/mockups/ssarith-ship-concepts/ssarith-ship-concepts-silhouettes.png`)
-  A's claws show only as a thin outline at the bow, B's jaw is lost in the hull and C's top view is a plain lozenge; what
-  reads at that size is the hull and the nacelles. So whichever direction is chosen, its claws need more mass at the
-  root (about twice the 1.35 m radius) before rule 1 is met at contact size.
-- **With no sun the hooded floods light only pools on the flanks**; the bow and claws stay dark. That suits Stalk; Strike
-  needs a lamp on the claws themselves, which comes with the flood spotlights and shadows of task 2.1.
-- The fitted minimum was a long box at first (version 1's own first renders): the plan's decks shared one width each, so
-  the plan layer now lets a room name its own outer width, and the hull eases its steps.
+The examples had not reached the session then; they came with version 10.
 
-## Cost
+**Breadth first.** Twelve massings, each a different answer to what a frigate's body is, built from a few primitives
+(ellipsoids, capsules, cylinders, lathed profiles, chamfered lofts, an extruded delta, tori), grey clay so only the form is
+judged, each about 70-85 m long against the Concord Petrel's 88 m. None is drawn from the species' body (C1).
 
-About 3,000 to 4,000 triangles a frigate before detail (measured on the page), inside a phone budget (survey A1, T3). The claws are the most
-expensive part (about 300 triangles each).
+| # | Name | The massing |
+|---|---|---|
+| 1 | Bulwark | A broad flattened ovoid, a low dome forward, two round engine pods riding high astern |
+| 2 | Lantern | A big forward sphere on a long neck, an aft block wrapped in three radiator rings |
+| 3 | Catamaran | Two long hulls side by side, a deck spanning them midships, the command pod on the deck |
+| 4 | Ring | A spindle hull run through a great ring on four spokes |
+| 5 | Terrace | Three decks stepped back: a wide base, a narrower middle, a small top set forward |
+| 6 | T-bar | A narrow hull with a wide bar across its bow ending in two pods; engines splayed astern |
+| 7 | Crescent | A flattened crescent open astern, a core hull riding in its hollow on two bridges |
+| 8 | Bundle | Six long pods bundled round a spine under a round cap |
+| 9 | Teardrop | A smooth teardrop, broad and round forward, a second hull slung under it on a neck |
+| 10 | Delta | A flat delta wedge with a raised keel ridge and three engines in its trailing edge |
+| 11 | Offset | Asymmetric: the main hull to one side, a big pod on a stub wing to the other, a tall mast |
+| 12 | Disc and drum | A flat disc forward over a drum-shaped engine hull aft and below, on a raked neck |
 
-## Not done yet
+**Then depth, on the chosen ones only**: each picked blockout gets its rooms (the bible's chapter 2, rule M1: these
+massings are studies, and nothing is called a ship until its rooms are fitted), its tradition from the Hunt's culture as
+the owner sets it (C2-C4), its parts, and its plating rendered from a modelled tile (the panel-textures method of version
+8, kept in git at 6f7a22c).
 
-The other classes, the Concord-standard skin (detail and normal tiles in the shared `lib/ship-skin.js`, interior-mapped
-windows, flood spotlights with shadows), damage and breakup on `lib/ship-fx.js` and `lib/ship-break.js`, and the hull
-marking (waits on E11 and E12).
+The page measures each massing's length, beam, height and triangles from the built geometry, and shows the board from
+the front, from above and from the side.
+
+## Versions 1 to 8 (deleted)
+
+Version 1 took claws, scales and a reptile's sprawl from the species' body (withdrawn, 2026-11-04). Versions 3 to 8 drew
+three traditions (Old Lodge, Trackers, Field Hull, after Course) on one long fitted hull, then smoothed, detailed and
+textured it; the owner: "Not just 3 lame ones that look like coffins". Their records stay in `mockup-work.md`, the
+artifact record and git.
 
 ## Open questions
 
-Version 1's H1-H8 are withdrawn with it.
-
 | # | Question | Recommendation (provisional) |
 |---|---|---|
-| H1 | How is the Hunt's culture to be set before its ships are redrawn? | You set it; we offer several traditions inside the Hunt to choose from, none drawn from the species' body |
+| H1 | How is the Hunt's culture to be set? | We draft several traditions inside the Hunt for the owner to pick and change (accepted as recommended, 2026-11-04) |
+| H5 | What colour are the Hunt's windows and floodlights? | Pale green-white windows, warm white floods (provisional, as drawn) |
+| H4 | Which blockouts go on to be designed? | Answered by the owner, 2026-11-05: 1 Hooded lance, 3 Forked prow, 7 Harpoon, 9 Trident; Spearhead withdrawn |

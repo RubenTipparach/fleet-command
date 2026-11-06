@@ -23,3 +23,15 @@
 - [ ] 2.5 The hull paint as a shared three.js library (the Concord line page's `hullMat` and paint shader, the Krai page's
   `hullMat`), dressing an exported glb from the manifest as `ShipSkin` does in the game, so the battle console and the
   weapons range show the livery, windows, detail and light pools; today they show the glbs' stand-in paint
+
+## 4. Own unwrap and baked AO (owner, 2026-11-05)
+
+The owner: "every ship needs custom uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR
+MAP", "tile textures are for DETAIL only, we'll probably need a detail mask in the future, same goes for Concord and Krai
+ships which will need more work done as well", "dont forget to bake AO as well" (CLAUDE.md section 10; Ship Design Bible
+chapter 15). Not started: the Ssarith Hunt goes first.
+
+- [ ] 4.1 Each class unwrapped on its own and its main colour map painted onto its own UVs (`painted-bake`, ship mode), replacing the repeating plating tile as the main colour
+- [ ] 4.2 AO baked onto each class's own UVs and kept as its own map
+- [ ] 4.3 The plating tile kept as detail only, under a detail mask (to be designed)
+- [ ] 4.4 Every hull checked against Ship Design Bible chapter 14 (one grown structure, no placed primitive)

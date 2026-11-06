@@ -123,3 +123,4 @@
 - 2026-11-05, desktop session: version 126, version id `1793877957-f8cb`: M1 v14, the Missions guide v3.
 - 2026-11-05, desktop session: version 127, version id `1793911435-01fe`: M1 v15 (Accept sets course), and the flow running in the game.
 - 2026-11-05, desktop session: version 128, version id `1793915465-6c92`: M1 v16 (the port redesigned).
+- 2026-11-06, from the Kelvane console session (owner: "make sure all active branches get this artifact tracker change"): this branch's tracker on the new page (one-line summaries, each faction's mockups in a modal, the escaped apostrophes) with this branch's own entries kept; live tracker version 132 (`1793930222-562a`) is the Kelvane session's.
