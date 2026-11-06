@@ -864,6 +864,8 @@ standard for UI design".
 
   Every piece is rendered in Blender from fit-checked shapes, and every colour role is measured against the glass
   (design.md D2).
+- **Live meters.** The owner, 2026-11-06: "that looks really good! can we have these meters be tied to the speed and hull
+  integrity?" The strips' needle meters are now live: hull integrity on the top strip, speed on the bottom.
 - **Type and icons.** Share Tech Mono sets every readout. All 24 icons of the icon guide are drawn in the Institute's
   schematic hand.
 - **Names.** The ships, officers and ranks carry placeholder names until the owner sets the Institute's culture (K1).

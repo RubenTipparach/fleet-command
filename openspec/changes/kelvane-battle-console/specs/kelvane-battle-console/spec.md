@@ -30,3 +30,14 @@ taking command of another faction's ship SHALL dress it in that faction's skin.
 #### Scenario: Hopping in the swap scene
 - **WHEN** the captain presses key 4 in the "Four races" scene
 - **THEN** the Patience is commanded and the console wears the Kelvane skin
+
+### Requirement: The Kelvane strips' meters read the ship
+
+In the Kelvane skin, the needle meter on the top strip SHALL read the commanded ship's hull integrity, and the one on the
+bottom strip its speed out of the speed slider's full scale. Each SHALL be computed from the same values the strip's bar
+and number show.
+
+#### Scenario: Speed on the meter
+- **WHEN** the ship makes 60 m/s against a full scale of 300 m/s
+- **THEN** the bottom meter's needle stands a fifth of the way along its sweep
+

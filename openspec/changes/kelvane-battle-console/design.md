@@ -140,11 +140,28 @@ Task 1.8 re-renders them from these subjects.
 - The research cruiser Patience (Dr. Orrel, class `ca`) joins the allied fleet and the swap scene ("Four races", key 4).
 - The Institute has no line of ships yet, so it flies the stand-in hull in amber trim and champagne hull.
 
+### D8. Live meters in the strips
+
+**The ask.** The owner, 2026-11-06, of the strips' needle meters: "that looks really good! can we have these meters be
+tied to the speed and hull integrity?"
+
+**The decision.** The console's strip renders keep the printed scale (205-335 degrees about (46, 50), ticks at radius
+18-22) but not the printed needle. The console draws the needle live:
+- **The readings.** The top strip reads hull integrity. The bottom strip reads speed, out of the speed slider's full
+  scale of 300 m/s. They are the same values the strip's bar and number show (CLAUDE.md section 6.1).
+- **The needle.** Needle red with a brass hub, swinging toward its reading and settling at 4 per second.
+- **Snapping.** After a pause, a scene change or a ship hop, the needle is set straight to its reading.
+- **Hover.** Pointing at a meter names its reading.
+
+**How a skin opts in.** A skin gives the meter's geometry (`CON.meter`) and its needle (`CON.live.needle`). The other
+skins give neither, so their strips are unchanged. Mockup 4's strips keep their printed needle.
+
 ## Measurements
 
 | Check | Result |
 |---|---|
 | Fit rules K, L, R, P and B on every piece's shapes | 0 failures |
+| Parity, Kelvane page against the Concord's | 70 shots, 4,087 presses of 396 controls, every press matched |
 | Rule B on the renders | every piece, 0 lit pixels outside its plate |
 | Pieces mockup 4 uses | byte-identical manifest entries |
 | Render time | about 4 minutes at 48 samples on 4 cores, the backing taking most of it |

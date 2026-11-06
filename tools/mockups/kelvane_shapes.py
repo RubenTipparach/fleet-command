@@ -218,10 +218,13 @@ def console_pieces(add):
     bay = soft(unary_union([rbox(14, 32, 78, 54, 5), disc(46, 42, 24)]).intersection(box(0, 0, 512, 54)), 4)
     meter = [arc_pts(46, 50, 22, math.radians(205), math.radians(335), 20)] + \
         [[(46 + math.cos(a) * 18, 50 + math.sin(a) * 18), (46 + math.cos(a) * 22, 50 + math.sin(a) * 22)] for a in [math.radians(205 + 13 * i) for i in range(11)]]
+    # The meter's needle is not printed here: the console draws it live (owner, 2026-11-06: "can we have these meters be
+    # tied to the speed and hull integrity?"), hull integrity on the top strip and speed on the bottom, swinging over this
+    # printed scale (205-335 degrees about (46, 50), radius 18-22; docs/mockups/lib/kelvane.js's meter).
     for name in ("strip.top.screen", "strip.bottom.screen"):
         add(name, "nine", (512, 72), rbox(0.5, 0.5, 511.5, 71.5, 12), [("amber", bay), ("screen", rbox(87, 9, 442, 63, 6))],
             studs=[(468, 36, 12.0, "knurl"), (497, 15, 2.5, "screw"), (497, 57, 2.5, "screw")], dimples=[(468, 36, 15.0)],
-            prints=[("scale", meter, 1.0, "ink"), ("needle", [[(46, 50), (46 + math.cos(math.radians(250)) * 20, 50 + math.sin(math.radians(250)) * 20)]], 1.2, "red")],
+            prints=[("scale", meter, 1.0, "ink")],
             margins=(12, 88, 12, 90), stretch="x", roll=2.5, dz=-6.0, lamps=[(46, 18, 0.06)], pad=2.0)
     # The name plate: the skins page's, its right end plain flat metal for the console's Fleet key (370-456 x 6-36),
     # two screws below the key.

@@ -154,6 +154,15 @@ const live = {
     x.fillStyle = '#ff6a50'; x.shadowColor = '#ff6a50'; for (const [dx, dy] of cts) { x.beginPath(); x.arc(c + dx * 34, c + dy * 34, 3, 0, 2 * P); x.fill(); }
     x.restore();
   },
+  // A strip meter's needle (the battle console's stripMeter): a needle-red pointer from the pivot over the printed scale,
+  // angle a in radians, length r, with a dark brass hub on the pivot and a faint shadow on the film below it.
+  needle: (x, cx, cy, r, a) => {
+    x.save(); x.lineCap = 'round';
+    x.strokeStyle = 'rgba(60, 36, 10, 0.35)'; x.lineWidth = 1.6; x.beginPath(); x.moveTo(cx + 0.8, cy + 1.2); x.lineTo(cx + 0.8 + Math.cos(a) * r, cy + 1.2 + Math.sin(a) * r); x.stroke();
+    x.strokeStyle = '#c8302a'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(cx - Math.cos(a) * 3, cy - Math.sin(a) * 3); x.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); x.stroke();
+    x.fillStyle = '#5a4520'; x.beginPath(); x.arc(cx, cy, 2.6, 0, 2 * P); x.fill(); x.fillStyle = '#b0915a'; x.beginPath(); x.arc(cx - 0.5, cy - 0.5, 1.2, 0, 2 * P); x.fill();
+    x.restore();
+  },
   // Scope cursors: thin phosphor corners with graduation ticks, as an oscilloscope's measuring cursors.
   bracket: (x, bx, by, bw, bh) => {
     x.save(); x.shadowColor = KV.phos; x.shadowBlur = 8; x.strokeStyle = KV.phos; x.lineWidth = 2;
@@ -245,6 +254,9 @@ const api = {
   // The strips (strip.top.screen and strip.bottom.screen, 72 px, as the skins page's: owner, 2026-10-31, "we need to make
   // parent taller") at their full height; the content, laid out for 56 px, moved down to centre in the screen (9-63).
   stripTop: { h: 72, dy: 14 }, stripBottom: { h: 72, dy: 4 },
+  // The strips' needle meter (strip.*.screen's bay): its pivot (46, 50) and needle length 20 px in the 72 px strip, swept
+  // 205 to 335 degrees over the printed scale; it settles at 4 per second toward the reading.
+  meter: { cx: 46, cy: 50, h: 72, r: 20, a0: 205 * P / 180, a1: 335 * P / 180, settle: 4 },
   // A panel title's baseline 2 px higher than the console's, centred in the title placard's window (y 3-21 of 24).
   titleDy: 2,
 };
