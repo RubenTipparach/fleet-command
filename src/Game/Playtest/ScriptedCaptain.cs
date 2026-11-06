@@ -9,7 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FleetCommand.Campaign;
 using FleetCommand.Data;
+using FleetCommand.Game.Flow;
 using FleetCommand.Game.Ui;
 using FleetCommand.Sim;
 using Godot;
@@ -24,7 +26,8 @@ public sealed partial class ScriptedCaptain : Node
 {
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
-        { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap" };
+        { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
+          "wait_screen", "end_turn", "move", "contract" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -32,11 +35,14 @@ public sealed partial class ScriptedCaptain : Node
     private string _scene = "";
     private List<Beat> _beats = new();
     private bool _done;
+    private GameFlow? _flow;
+    private int _snapN;
+    private readonly List<string> _missions = new();
 
     /// <summary>Loads a script (validated, CLAUDE.md section 6.4) and the scenario it is to play.</summary>
-    public void Init(ConsoleContext ctx, Func<IEnumerable<IControlSource>> sources, string name, string json, string scene)
+    public void Init(ConsoleContext ctx, Func<IEnumerable<IControlSource>> sources, string name, string json, string scene, GameFlow? flow = null)
     {
-        _x = ctx; _sources = sources; _name = name; _scene = scene;
+        _x = ctx; _sources = sources; _name = name; _scene = scene; _flow = flow;
         Name = "ScriptedCaptain";
         StrictJson root = StrictJson.Parse(json, $"data/playtests/{name}.json");
         foreach (StrictJson b in root.ObjList("beats"))
@@ -46,6 +52,7 @@ public sealed partial class ScriptedCaptain : Node
             _beats.Add(new Beat(kind, b.Str("arg", ""), b.Num("s", 0), b.Num("linger_s", 0)));
             b.Done();
         }
+        root.Bool("flow", false);
         root.Done();
     }
 
@@ -66,7 +73,9 @@ public sealed partial class ScriptedCaptain : Node
                 string? stuck = await Play(b);
                 if (stuck != null) { result = "stuck"; detail = $"beat {i} {b.Do}: {stuck}"; break; }
             }
-            if (result == "ok")
+            if (result == "ok" && _flow?.Camp is { } camp)
+                detail = $"campaign side={camp.S.Side} turn={camp.S.Turn} credits={camp.S.Credits:0} prestige={camp.S.Prestige:0} ships={camp.S.Fleet.Count} missions=[{string.Join("; ", _missions)}]";
+            else if (result == "ok")
             {
                 Battle bt = B;
                 int foes = bt.Ships.Count(s => s.Side != bt.Player.Side && s.Alive);
@@ -105,6 +114,10 @@ public sealed partial class ScriptedCaptain : Node
             case "wheel": return await Wheel(b.Arg == "in", (int)Math.Max(1, b.Seconds));
             case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS);
             case "snap": return await Snap(b.Arg);
+            case "wait_screen": return await WaitScreen(b.Arg, b.Seconds > 0 ? b.Seconds : 60);
+            case "end_turn": return await EndTurn();
+            case "move": return await Move((int)Math.Max(1, b.Seconds));
+            case "contract": return await Contract(b.Seconds > 0 ? b.Seconds : 600);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -145,6 +158,154 @@ public sealed partial class ScriptedCaptain : Node
         return null;
     }
 
+    // ---- The campaign (a script with "flow": true) -----------------------------------------------------------------
+
+    private Campaign.Campaign Camp => _flow?.Camp ?? throw new InvalidOperationException("no campaign is open");
+
+    // Waits for the flow to show a screen and settle (the boot, a fade or a loading screen finished); real seconds.
+    private async Task<string?> WaitScreen(string name, double maxS)
+    {
+        if (_flow == null) return "not a campaign script (\"flow\": true)";
+        if (!Enum.TryParse(name, true, out FlowScreen want)) return $"no screen '{name}'";
+        ulong end = Time.GetTicksMsec() + (ulong)(maxS * 1000);
+        while (Time.GetTicksMsec() < end)
+        {
+            if (_flow.Booted.IsCompleted && !_flow.Busy && _flow.Screen == want) { await Frames(20); return null; }
+            await Frames(2);
+        }
+        return $"the screen is {_flow.Screen}, not {want}";
+    }
+
+    // The End turn key; null once the turn has moved on.
+    private async Task<string?> EndTurn()
+    {
+        int t = Camp.S.Turn;
+        string? stuck = await Click("top.end");
+        await Frames(10);
+        return stuck ?? (Camp.S.Turn > t ? null : "the turn did not end");
+    }
+
+    // A click on a sector of the map where the player sees it; a sector off screen is dragged into view first, a drag of
+    // the map at a time (left button held, as a player pans), toward the middle of the view.
+    private async Task<string?> ClickHex(int c, int r)
+    {
+        Vector2 sz = GetViewport().GetVisibleRect().Size;
+        var safe = new Rect2(sz.X * 0.08f, sz.Y * 0.16f, sz.X * 0.6f, sz.Y * 0.7f);   // clear of the top bar and the sector panel
+        Viewport vp = GetViewport();
+        for (int tries = 0; tries < 12; tries++)
+        {
+            if (_flow!.MapView3D?.ScreenOf(c, r) is not { } p) { await Click("keys.fleet"); await Frames(40); continue; }
+            if (safe.HasPoint(p))
+            {
+                vp.PushInput(new InputEventMouseMotion { Position = p, GlobalPosition = p }, true);
+                await Frames(1);
+                vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = p, GlobalPosition = p }, true);
+                vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = p, GlobalPosition = p }, true);
+                await Frames(4);
+                return _flow.Sel == (c, r) ? null : $"the click at sector {c},{r} selected {_flow.Sel}";
+            }
+            // drag from a quiet spot of the map toward the sector's way, so the sector comes toward the middle
+            Vector2 mid = safe.GetCenter(), move = (mid - p).LimitLength(Math.Min(sz.X, sz.Y) * 0.35f), from = mid - move / 2, to = mid + move / 2;
+            vp.PushInput(new InputEventMouseMotion { Position = from, GlobalPosition = from }, true);
+            await Frames(1);
+            vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = from, GlobalPosition = from, ButtonMask = MouseButtonMask.Left }, true);
+            for (int k = 1; k <= 12; k++)
+            {
+                Vector2 q = from + move * k / 12f;
+                vp.PushInput(new InputEventMouseMotion { Position = q, GlobalPosition = q, Relative = move / 12f, ButtonMask = MouseButtonMask.Left }, true);
+                await Frames(1);
+            }
+            vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = to, GlobalPosition = to }, true);
+            await Frames(20);
+        }
+        return $"sector {c},{r} never came on screen";
+    }
+
+    // Moves the fleet: picks the sector `steps` away that it can reach this turn (the first in a turn of the compass), clicks
+    // it on the map and presses Move here.
+    private async Task<string?> Move(int steps)
+    {
+        var c = Camp;
+        var at = (c.S.AtC, c.S.AtR);
+        var ring = new List<(int C, int R)>();
+        for (int cc = 0; cc < c.S.Cols; cc++)
+            for (int rr = 0; rr < c.S.Rows; rr++)
+                if (HexGrid.Dist(at.AtC, at.AtR, cc, rr) == steps && c.PathTo(cc, rr) is { } p && p.Turns == 1 && p.Legs[0].Count > 0) ring.Add((cc, rr));
+        if (ring.Count == 0) return $"no sector {steps} away to move to this turn";
+        var to = ring[(c.S.Turn * 3 + steps) % ring.Count];
+        string? stuck = await ClickHex(to.C, to.R);
+        stuck ??= await Click("sec.move");
+        await Seconds(1.5);
+        return stuck ?? ((c.S.AtC, c.S.AtR) == to ? null : $"the fleet is at {c.S.AtC},{c.S.AtR}, not {to.C},{to.R}");
+    }
+
+    // One contract, start to end, as a player plays it: the nearest contract the fleet can take (End turn until one is
+    // offered), its sector clicked on the map and its Briefing opened, Accept (the fleet sets course), End turn until it
+    // arrives and the briefing opens again, Launch, the battle fought out (Fight; a battle that stalls is withdrawn from
+    // with the mission strip's Withdraw), the debrief read and Continue back to the map.
+    private async Task<string?> Contract(double maxBattleS)
+    {
+        var c = Camp;
+        Campaign.Offer? m = null;
+        for (int t = 0; t < 4 && m == null; t++)
+        {
+            m = c.S.Missions.Where(o => !c.Data.Missions[o.Script].Story && c.Needs(o) == null)
+                .OrderBy(o => HexGrid.Dist(c.S.AtC, c.S.AtR, o.C, o.R)).ThenBy(o => o.Id).FirstOrDefault();
+            if (m == null && await EndTurn() is { } st) return st;
+        }
+        if (m == null) return "no contract offered in four turns";
+        string name = c.Data.Missions[m.Script].Name;
+        GD.Print($"PLAYTEST_MISSION take {name} #{m.Id} at {m.C},{m.R} from {c.S.AtC},{c.S.AtR}, reward {m.Reward:0} cr");
+        if (await ClickHex(m.C, m.R) is { } s1) return s1;
+        if (await Click($"sec.brief.{m.Id}") is { } s2) return s2;
+        await Snap($"brief-{m.Script}");
+        bool here = (c.S.AtC, c.S.AtR) == (m.C, m.R);
+        if (!here && await Click("br.accept") is { } s3) return s3;
+        for (int t = 0; t < 16 && (c.S.AtC, c.S.AtR) != (m.C, m.R); t++)
+        {
+            await Seconds(1.2);
+            if ((c.S.AtC, c.S.AtR) == (m.C, m.R)) break;
+            if (!c.S.Missions.Contains(m)) return $"{name} expired before the fleet arrived";
+            // a mission that goes with a moving fleet has moved on from where the course was set: set course again from
+            // its briefing, opened from the mission log
+            if (c.S.OrderC == null || (c.S.OrderC, c.S.OrderR) != (m.C, m.R))
+            {
+                GD.Print($"PLAYTEST_MISSION course again for {name}, now at {m.C},{m.R}");
+                string? sc = await Click("top.missions") ?? await Click($"log.{m.Id}") ?? await Click("br.go");
+                if (sc != null) return sc;
+                await Click("top.missions");
+                await Seconds(1.2);
+                if ((c.S.AtC, c.S.AtR) == (m.C, m.R)) break;
+            }
+            if (await EndTurn() is { } st) return st;
+        }
+        if ((c.S.AtC, c.S.AtR) != (m.C, m.R)) return $"the fleet never reached {m.C},{m.R}";
+        if (!c.S.Missions.Contains(m)) return $"{name} was gone when the fleet arrived";
+        await Seconds(1.5);
+        if (_flow!.Brief?.Id != m.Id && await Click($"sec.brief.{m.Id}") is { } s4) return s4;
+        if (await Click("br.launch") is { } s5) return s5;
+        await Frames(10);
+        ulong end = Time.GetTicksMsec() + 30000;
+        while (Time.GetTicksMsec() < end && (_flow.Busy || _flow.Screen == FlowScreen.Map)) await Frames(2);
+        string how = "done on arrival";
+        if (_flow.Screen == FlowScreen.Battle)
+        {
+            await Frames(30);
+            await Snap($"battle-{m.Script}");
+            string? stalled = await Fight(maxBattleS);
+            if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("ms.withdraw"); }
+            else how = B.Over;
+            await Snap($"end-{m.Script}");
+        }
+        if (await WaitScreen("Debrief", 30) is { } s6) return s6;
+        await Snap($"debrief-{m.Script}");
+        var d = _flow.Last;
+        string line = $"{name}: {how}, {d?.Grade ?? "?"}";
+        _missions.Add(line);
+        GD.Print($"PLAYTEST_MISSION done {line}, credits {c.S.Credits:0}, prestige {c.S.Prestige:0}");
+        return await Click("db.continue") ?? await WaitScreen("Map", 30);
+    }
+
     // A still of the screen as the player sees it, into docs/screenshots/game/<script>/<scenario>-<name>.png (a windowed
     // run only: headless renders nothing, so there it does nothing).
     private async Task<string?> Snap(string name)
@@ -157,7 +318,8 @@ public sealed partial class ScriptedCaptain : Node
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         string dir = ProjectSettings.GlobalizePath($"res://docs/screenshots/game/{_name}");
         DirAccess.MakeDirRecursiveAbsolute(dir);
-        Error e = GetViewport().GetTexture().GetImage().SavePng($"{dir}/{_scene}-{name}.png");
+        string file = _flow != null ? $"{dir}/{++_snapN:00}-{name}.png" : $"{dir}/{_scene}-{name}.png";
+        Error e = GetViewport().GetTexture().GetImage().SavePng(file);
         return e == Error.Ok ? null : $"could not save the still ({e})";
     }
 
@@ -213,8 +375,9 @@ public sealed partial class ScriptedCaptain : Node
 
     private async Task Seconds(double s)
     {
-        // once the battle is over its clock stops: wait real time (the view still plays, a wreck still comes apart)
-        if (B.Over != null) { await ToSignal(GetTree().CreateTimer(s), SceneTreeTimer.SignalName.Timeout); return; }
+        // once the battle is over its clock stops, and off the battle screen (the campaign's menus and map) it never runs:
+        // wait real time there (the view still plays, a wreck still comes apart)
+        if (B.Over != null || (_flow != null && _flow.Screen != FlowScreen.Battle)) { await ToSignal(GetTree().CreateTimer(s), SceneTreeTimer.SignalName.Timeout); return; }
         double end = B.T + s;
         int guard = 0;
         while (B.T < end && B.Over == null && guard++ < 100000) await Frames(1);

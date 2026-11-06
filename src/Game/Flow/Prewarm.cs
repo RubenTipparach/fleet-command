@@ -68,7 +68,9 @@ public static class Prewarm
         report(0.7f, "Preparing shaders");
         await Frame();
 
-        // 3. the shaders: everything drawn once, off screen (0.7 to 1)
+        // 3. the shaders: everything drawn once, off screen (0.7 to 1); a headless run draws nothing, so there is nothing to
+        // compile and no frame would ever be drawn to wait for
+        if (DisplayServer.GetName() == "headless") { report(1, "Ready"); return; }
         var vp = new SubViewport { Size = new Vector2I(256, 256), OwnWorld3D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always, Name = "Prewarm" };
         host.AddChild(vp);
         var sky = new Sky { SkyMaterial = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/View/nebula_sky.gdshader") }, RadianceSize = Sky.RadianceSizeEnum.Size128 };

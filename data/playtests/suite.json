@@ -10,6 +10,7 @@
   { "script": "wrecks", "play": "concord_wrecks" },
   { "script": "wrecks", "play": "krai_wrecks" },
   { "script": "range", "play": "concord_range" },
-  { "script": "range", "play": "krai_range" }
+  { "script": "range", "play": "krai_range" },
+  { "script": "campaign", "play": "campaign" }
  ]
 }
