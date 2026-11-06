@@ -130,4 +130,6 @@
 - 2026-11-06, the Kelvane console session: version 132, version id `1793930222-562a`: M20, the Kelvane Institute battle console, in its faction's card.
 - 2026-11-06, the Kelvane console session: version 133, version id `1793930964-2992`: M2 v83, M4 v27, M8 v22, M15 v7.
 - 2026-11-06, the Kelvane console session: version 136, version id `1793934770-b61e`: M21, the Kelvane badge in 3D (KID on an oval coin), in the Kelvane card; M2 v84, M4 v28, M8 v23, M15 v8, M20 v2. Merged onto the live version `1793932305-689a`, keeping its Emblem Design Guide v34.
+- 2026-11-06, desktop session: version 137, version id `1793935850-c265`: M22, the space fly-through (an edit over the other session's v136, which this commit's `tracker.html` carries).
+- 2026-11-06, desktop session: version 138, version id `1793938020-eca6`: M22 at v2.
 - 2026-11-06, the Kelvane console session: version 139, version id `1793938207-f4a1`: M21 v2 (embossed, velvet), M2 v85, M8 v24, M15 v9, M20 v3. Merged onto the live version `1793938020-eca6`, keeping another session's M22 (Space fly-through; its page and record brought from `claude/campaign-mockups` so the check passes here).

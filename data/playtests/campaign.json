@@ -1,0 +1,27 @@
+{
+ "_doc": "The scripted captain plays the campaign (owner, 2026-11-05: \"launch game, and play through the menus and move ship around and play through general missions in the campaign\", \"no story yet, we're just looking to see how the game works with these missions\"): the menu, the Concord, a new campaign, the fleet moved round the map over a few turns, then three contracts start to end (brief, Accept, sail, Launch, fight, debrief). Contracts only, never a story mission. It saves to user://campaign-playtest-concord.json, never over the player's campaign. In a window, snap saves stills into docs/screenshots/game/campaign/.",
+ "flow": true,
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_screen", "arg": "menu", "s": 120},
+  {"do": "snap", "arg": "menu"},
+  {"do": "click", "arg": "menu.campaign"},
+  {"do": "wait_screen", "arg": "factions"},
+  {"do": "click", "arg": "fac.concord"},
+  {"do": "snap", "arg": "factions"},
+  {"do": "click", "arg": "fac.concord.new"},
+  {"do": "wait_screen", "arg": "map", "s": 120},
+  {"do": "snap", "arg": "map"},
+  {"do": "move", "s": 1},
+  {"do": "snap", "arg": "moved"},
+  {"do": "move", "s": 2},
+  {"do": "end_turn"},
+  {"do": "move", "s": 2},
+  {"do": "end_turn"},
+  {"do": "snap", "arg": "turn"},
+  {"do": "contract", "s": 300},
+  {"do": "contract", "s": 300},
+  {"do": "contract", "s": 300},
+  {"do": "snap", "arg": "after"}
+ ]
+}

@@ -117,11 +117,14 @@ starScene.add(new THREE.Points(starGeo, starMat));
 const starRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
 
 // ---- The clouds: ray-marched in a full-screen pass, the stars composited behind them ------------------------------------
-// The noise is baked once, at load, into a tileable 3D texture on the GPU (VOL cells a side, half floats): r the cloud's
-// 5-octave gradient noise, g the dust's 3 octaves, b and a two 2-octave fields for the warp and the gas's tint. The march
-// then reads it five times a step with the hardware's filtering, where computing the noise in place cost about 130 hashes
-// a step (owner, 2026-11-06: "the performance is terrible!": 16 fps at High on an M4 Max).
-const VOL = 128;
+// The noise is baked once, at load, into a tileable volume on the GPU (VOL cells a side): r the cloud's 5-octave gradient
+// noise, g the dust's 3 octaves, b and a two 2-octave fields for the warp and the gas's tint. The march then reads it five
+// times a step with the hardware's filtering, where computing the noise in place cost about 130 hashes a step (owner,
+// 2026-11-06: "the performance is terrible!": 16 fps at High on an M4 Max). The volume is stored as a plain 8-bit 2D atlas,
+// its slices side by side, each with a one-cell border copied from the opposite edge so the filtering wraps: every WebGL2
+// browser can render to and filter that, where a half-float 3D target is not (owner, after version 2: "well now theres no
+// nebula lol"). The bake is read back and checked; if it ever fails, the march computes the noise in place instead.
+const VOL = 128, TILE = VOL + 2, ACX = 16, ACY = VOL / ACX;
 const HASH = `
 uvec3 pcg3d(uvec3 v) {
   v = v * 1664525u + 1013904223u;
@@ -130,12 +133,9 @@ uvec3 pcg3d(uvec3 v) {
   v.x += v.y * v.z; v.y += v.z * v.x; v.z += v.x * v.y;
   return v;
 }`;
-const BAKE_FRAG = `
-precision highp float; precision highp int;
-uniform float uZ; in vec2 vUv; out vec4 outColor;
-${HASH}
 // PCG3D (Jarzynski and Olano, "Hash Functions for GPU Rendering", 2020) on the lattice point wrapped to the period, so the
-// volume tiles; seed keeps the fields apart
+// volume tiles; seed keeps the fields apart. Octaves at exact doublings of an 8-cell period, so every octave tiles.
+const NOISE = `
 vec3 grad(ivec3 c, int period, uint seed) {
   uvec3 w = uvec3((c % period + period) % period) + uvec3(seed, seed * 7u, seed * 13u);
   vec3 h = vec3(pcg3d(w)) * (1.0 / 4294967295.0); return normalize(h * 2.0 - 1.0 + 1e-4);
@@ -148,36 +148,64 @@ float gnoise(vec3 p, int period, uint seed) {
   float n011 = dot(grad(i + ivec3(0,1,1), period, seed), f - vec3(0,1,1)), n111 = dot(grad(i + ivec3(1,1,1), period, seed), f - vec3(1,1,1));
   return mix(mix(mix(n000, n100, u.x), mix(n010, n110, u.x), u.y), mix(mix(n001, n101, u.x), mix(n011, n111, u.x), u.y), u.z) * 1.6;
 }
-// octaves at exact doublings of an 8-cell period, so every octave tiles with the volume
 float fbm(vec3 x, int oct, uint seed) {
   float s = 0.0, a = 0.5; int period = 8; vec3 p = x * 8.0;
   for (int k = 0; k < 6; k++) { if (k >= oct) break; s += a * gnoise(p, period, seed + uint(k) * 101u); p *= 2.0; period *= 2; a *= 0.5; }
   return s;
 }
+vec4 fields(vec3 x) { return vec4(fbm(x, 5, 1u), fbm(x, 3, 977u), fbm(x, 2, 3301u), fbm(x, 2, 7919u)); }`;
+const BAKE_FRAG = `
+precision highp float; precision highp int;
+out vec4 outColor;
+${HASH}
+${NOISE}
 void main() {
-  vec3 x = vec3(vUv, uZ);
-  outColor = vec4(fbm(x, 5, 1u), fbm(x, 3, 977u), fbm(x, 2, 3301u), fbm(x, 2, 7919u));
+  ivec2 px = ivec2(gl_FragCoord.xy);
+  ivec2 tile = px / ${TILE}, loc = px - tile * ${TILE};
+  int z = tile.y * ${ACX} + tile.x;
+  // the border cells hold the opposite edge, so the filtering wraps
+  ivec2 cell = ((loc - 1) % ${VOL} + ${VOL}) % ${VOL};
+  vec3 x = (vec3(vec2(cell), float(z)) + 0.5) / ${VOL}.0;
+  outColor = clamp(fields(x) * 0.5 + 0.5, 0.0, 1.0);
 }`;
-const volRT = new THREE.WebGL3DRenderTarget(VOL, VOL, VOL);
-Object.assign(volRT.texture, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
-  wrapS: THREE.RepeatWrapping, wrapT: THREE.RepeatWrapping, wrapR: THREE.RepeatWrapping, generateMipmaps: false });
-const bakeMat = new THREE.ShaderMaterial({ glslVersion: THREE.GLSL3, uniforms: { uZ: { value: 0 } }, depthTest: false, depthWrite: false,
-  vertexShader: `out vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`, fragmentShader: BAKE_FRAG });
+const volRT = new THREE.WebGLRenderTarget(TILE * ACX, TILE * ACY, { type: THREE.UnsignedByteType, format: THREE.RGBAFormat,
+  minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, generateMipmaps: false, depthBuffer: false });
+const bakeMat = new THREE.ShaderMaterial({ glslVersion: THREE.GLSL3, depthTest: false, depthWrite: false,
+  vertexShader: `void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }`, fragmentShader: BAKE_FRAG });
 const bakeScene = new THREE.Scene(); bakeScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bakeMat));
 const bakeCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+let baked = false;
 function bakeVolume() {
-  for (let z = 0; z < VOL; z++) { bakeMat.uniforms.uZ.value = (z + 0.5) / VOL; renderer.setRenderTarget(volRT, z); renderer.render(bakeScene, bakeCam); }
+  renderer.setRenderTarget(volRT); renderer.render(bakeScene, bakeCam);
+  // read a few cells back: a bake that failed leaves them empty, and the march then computes the noise in place
+  const px = new Uint8Array(4 * 64);
+  renderer.readRenderTargetPixels(volRT, TILE * 3 + 5, TILE * 2 + 7, 8, 8, px);
+  let lit = 0, spread = 0; for (let i = 0; i < 64; i++) { if (px[i * 4 + 3] > 0) lit++; spread = Math.max(spread, Math.abs(px[i * 4] - px[0])); }
+  baked = lit === 64 && spread > 0;
   renderer.setRenderTarget(null);
 }
 
 const NEB_FRAG = `
-precision highp float; precision highp int; precision highp sampler3D;
-uniform sampler3D uVol; uniform int uFrame; uniform int uSteps;
+precision highp float; precision highp int;
+uniform sampler2D uVol; uniform int uFrame; uniform int uSteps; uniform int uBaked;
 uniform mat4 uInvProj; uniform mat4 uCamWorld; uniform vec3 uCamPos;
 uniform vec3 uGasA, uGasB, uHot, uDust;
 uniform vec3 uLamp[4]; uniform float uLampR[4];
 in vec2 vUv; out vec4 outColor;
 ${HASH}
+${NOISE}
+// the volume at a point (tiling): the two slices round it from the atlas, each filtered, blended by depth; or, if the bake
+// failed, the noise computed in place
+vec4 slice(vec2 xy, float z) {
+  float s = mod(z, ${VOL}.0); vec2 tile = vec2(mod(s, ${ACX}.0), floor(s / ${ACX}.0));
+  return texture(uVol, (tile * ${TILE}.0 + 1.0 + xy * ${VOL}.0) / vec2(${TILE * ACX}.0, ${TILE * ACY}.0));
+}
+vec4 vol(vec3 q) {
+  if (uBaked == 0) return fields(fract(q)) * 0.5 + 0.5;
+  q = fract(q);
+  float z = q.z * ${VOL}.0 - 0.5, z0 = floor(z);
+  return mix(slice(q.xy, z0), slice(q.xy, z0 + 1.0), z - z0);
+}
 // the clouds keep to a thick, wandering sheet, so there is open space to fly through and walls to fly past
 float sheetAt(vec3 p) { return exp(-pow((p.y + 18.0 * sin(p.x * 0.006) + 14.0 * cos(p.z * 0.005)) / 70.0, 2.0)); }
 
@@ -195,10 +223,10 @@ void main() {
     // outside the sheet there is nothing to read: stride on
     if (sheet < 0.03) { t += dt * 3.0; continue; }
     vec3 q = p * 0.0023;
-    vec4 w = texture(uVol, q * 0.43 + 0.17);
+    vec4 w = vol(q * 0.43 + 0.17) * 2.0 - 1.0;
     q += vec3(w.b, w.a, w.r) * 0.21;
-    vec4 c = texture(uVol, q);
-    float n = c.r + 0.2 * texture(uVol, q * 2.7 + 0.31).r + 0.08 * texture(uVol, q * 7.3 + 0.53).r;
+    vec4 c = vol(q) * 2.0 - 1.0;
+    float n = c.r + 0.2 * (vol(q * 2.7 + 0.31).r * 2.0 - 1.0) + (uBaked == 1 ? 0.08 * (vol(q * 7.3 + 0.53).r * 2.0 - 1.0) : 0.0);
     float gas = smoothstep(0.07, 0.6, n) * sheet;
     float dust = smoothstep(0.10, 0.42, c.g * 1.25) * smoothstep(-0.05, 0.3, n) * sheet;
     if (gas + dust < 0.004) { t += dt * 1.8; continue; }
@@ -222,7 +250,7 @@ const LAMPS = [new THREE.Vector3(120, 4, -60), new THREE.Vector3(-150, -10, 140)
 const nebMat = new THREE.ShaderMaterial({
   glslVersion: THREE.GLSL3,
   uniforms: {
-    uVol: { value: volRT.texture }, uFrame: { value: 0 }, uSteps: { value: 64 },
+    uVol: { value: volRT.texture }, uFrame: { value: 0 }, uSteps: { value: 64 }, uBaked: { value: 1 },
     uInvProj: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() }, uCamPos: { value: new THREE.Vector3() },
     uGasA: { value: new THREE.Vector3() }, uGasB: { value: new THREE.Vector3() }, uHot: { value: new THREE.Vector3() }, uDust: { value: new THREE.Vector3() },
     uLamp: { value: LAMPS }, uLampR: { value: [26, 34, 22, 30] },
@@ -305,7 +333,8 @@ function keys() {
 keys();
 
 function resize() {
-  const w = innerWidth, h = innerHeight, q = QUALITY[S.quality];
+  // never zero: a page opened in a panel that has no size yet would make empty targets ("Attachment has zero size")
+  const w = Math.max(1, innerWidth), h = Math.max(1, innerHeight), q = QUALITY[S.quality];
   renderer.setSize(w, h, false);
   camera.aspect = w / h; camera.updateProjectionMatrix();
   starRT.setSize(w, h);
@@ -318,13 +347,17 @@ resize();
 
 // ---- One frame ---------------------------------------------------------------------------------------------------------
 let frame = 0, last = performance.now(), fps = 0;
+// the GPU's name, on the meter, so a page that draws wrong on some machine can be told apart
+const GPU = (() => { const gl = renderer.getContext(), e = gl.getExtension('WEBGL_debug_renderer_info'); const n = e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+  return String(n).replace(/^ANGLE \((.*)\)$/, '$1').replace(/, Unspecified Version|ANGLE Metal Renderer: /g, '').slice(0, 48); })();
 function render() {
   place(S.t / LOOP_S);
   const pal = PALETTES[S.palette], U = nebMat.uniforms, B = blitMat.uniforms;
   U.uGasA.value.set(...pal.gasA); U.uGasB.value.set(...pal.gasB); U.uHot.value.set(...pal.hot); U.uDust.value.set(...pal.dust); B.uBg.value.set(...pal.bg);
   B.uShowNeb.value = S.neb ? 1 : 0; B.uShowStars.value = S.stars ? 1 : 0; U.uSteps.value = QUALITY[S.quality].steps;
   U.uInvProj.value.copy(camera.projectionMatrixInverse); U.uCamWorld.value.copy(camera.matrixWorld); U.uCamPos.value.copy(camera.position);
-  U.uFrame.value = frame++;
+  U.uFrame.value = frame++; U.uBaked.value = baked ? 1 : 0;
+  if (!baked) U.uSteps.value = Math.min(U.uSteps.value, 40);
   renderer.setRenderTarget(starRT); renderer.setClearColor(0x000000, 1); renderer.clear(); renderer.render(starScene, camera);
   if (S.neb) { renderer.setRenderTarget(nebRT); renderer.render(nebScene, ortho); }
   // blend into the history: more of the last frame while the view is still, less while it turns or flies fast
@@ -336,12 +369,13 @@ function render() {
 }
 let keep = 0;
 function loop(now) {
+  if (Math.max(1, innerWidth) !== renderer.domElement.width || Math.max(1, innerHeight) !== renderer.domElement.height) resize();
   const dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
   if (S.play) S.t = (S.t + dt * S.speed) % LOOP_S;
   keep = 0.55 / Math.max(1, S.play ? S.speed : 0.5);
   render();
   fps = fps * 0.95 + (1 / Math.max(dt, 1e-3)) * 0.05;
-  document.getElementById('meter').textContent = `${fps.toFixed(0)} fps · ${QUALITY[S.quality].steps} steps at ${Math.round(QUALITY[S.quality].scale * 100)} % · ${(FAR + NEAR).toLocaleString()} stars`;
+  document.getElementById('meter').textContent = `${fps.toFixed(0)} fps · ${QUALITY[S.quality].steps} steps at ${Math.round(QUALITY[S.quality].scale * 100)} % · ${(FAR + NEAR).toLocaleString()} stars · clouds ${baked ? 'baked' : 'computed in place'} · ${GPU}`;
   requestAnimationFrame(loop);
 }
 
@@ -360,7 +394,8 @@ window.MOCKUP_SCENE = starScene;
 // a timing of n frames uncapped (the GPU finished after each), in milliseconds a frame, for the performance check
 window.MOCKUP_BENCH = (n = 60) => { const gl = renderer.getContext(), px = new Uint8Array(4); render(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
   const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t = (S.t + 0.05) % LOOP_S; render(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); } return (performance.now() - t0) / n; };
-window.MOCKUP_BAKE_MS = (() => { const t0 = performance.now(); bakeVolume(); const gl = renderer.getContext(); gl.finish(); return performance.now() - t0; })();
+window.MOCKUP_BAKE_MS = (() => { const t0 = performance.now(); bakeVolume(); return performance.now() - t0; })();
+window.MOCKUP_BAKED = baked;
 render();
 window.MOCKUP_READY = true;
 requestAnimationFrame(loop);

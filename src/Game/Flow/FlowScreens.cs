@@ -83,16 +83,45 @@ public abstract partial class FlowPanel : ConsolePanel
 }
 
 /// <summary>The main menu: Campaign, Skirmish, Options, Quit.</summary>
+// Its backdrop is Starfield2D's stars (src/Core/Space), made once for the window's size: faint stars as fine points, bright
+// ones with a soft halo, the few brilliant ones with faint spikes, and only those twinkle, slowly.
 public sealed partial class MenuScreen : FlowPanel
 {
+    private static System.Collections.Generic.List<FleetCommand.Space.Star> _stars = new();
+    private static Vector2 _starsFor;
+    private static (System.Collections.Generic.List<FleetCommand.Space.StarClass> Classes, System.Collections.Generic.List<FleetCommand.Space.StarColour> Colours)? _spec;
+
+    /// <summary>Draws the backdrop's stars over a control of this size (remade when the size changes).</summary>
+    public static void DrawStars(CanvasItem c, Vector2 size)
+    {
+        _spec ??= FleetCommand.Space.Starfield2D.LoadSpec(FileAccess.GetFileAsString("res://data/space/starfield.json"));
+        if (_starsFor != size) { _stars = FleetCommand.Space.Starfield2D.Make((int)size.X, (int)size.Y, 20261105, _spec.Value.Classes, _spec.Value.Colours); _starsFor = size; }
+        float t = (float)(Time.GetTicksMsec() / 1000.0);
+        foreach (var st in _stars)
+        {
+            var k = _spec.Value.Classes[st.Class];
+            var co = _spec.Value.Colours[st.Colour];
+            float b = st.Brightness;
+            if (st.Class >= 2) b *= 0.88f + 0.12f * Mathf.Sin(t * 0.9f + st.Phase);
+            // a colour mixed 40 % to white, as the battle's stars are
+            var col = new Color(Mathf.Lerp((float)co.R, 1, 0.4f), Mathf.Lerp((float)co.G, 1, 0.4f), Mathf.Lerp((float)co.B, 1, 0.4f));
+            var p = new Vector2(st.X, st.Y);
+            float r = (float)k.SizePx * 0.5f + 0.25f;
+            if (st.Class >= 2) c.DrawCircle(p, r * 4.5f, new Color(col, 0.08f * b), true, -1, true);
+            c.DrawCircle(p, r, new Color(col, 0.25f + 0.75f * b), true, -1, true);
+            if (st.Class == 3)
+            {
+                float len = 9 * b;
+                c.DrawLine(p - new Vector2(len, 0), p + new Vector2(len, 0), new Color(col, 0.22f * b), 1, true);
+                c.DrawLine(p - new Vector2(0, len), p + new Vector2(0, len), new Color(col, 0.22f * b), 1, true);
+            }
+        }
+    }
+
     protected override void DrawPanel()
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0.01f, 0.014f, 0.03f));
-        for (int i = 0; i < 160; i++)
-        {
-            float sx = (i * 7919 % 1000) / 1000f * Size.X, sy = (i * 104729 % 1000) / 1000f * Size.Y, br = 0.25f + (i % 7) / 10f;
-            DrawCircle(new Vector2(sx, sy), 1 + i % 2, new Color(br, br, br + 0.1f));
-        }
+        DrawStars(this, Size);
         Ui.Reg("menu.block", new Rect2(Vector2.Zero, Size));
         float cx = Size.X / 2;
         Text("FLEET COMMAND", cx, Size.Y * 0.28f, 72, C.Sky, HorizontalAlignment.Center, Size.X - 40, 700, 6);

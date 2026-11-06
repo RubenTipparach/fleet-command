@@ -93,7 +93,10 @@ public sealed partial class Main : Node
         _root.AddChild(tips);
 
         // the game flow (menus, campaign, missions) unless the run is one of the battle's own checks or a scenario asked for
-        bool battleOnly = new[] { "scenario", "playtest", "still", "layout-test", "parity-test" }.Any(_args.ContainsKey) && !_args.ContainsKey("flow");
+        // a playtest whose script plays the campaign ("flow": true) runs the flow too, saving apart from the player's campaign
+        bool flowTest = _args.TryGetValue("playtest", out string? pt) && StrictJson.Parse(ReadData($"playtests/{pt}.json"), pt).Bool("flow", false);
+        if (flowTest) GameFlow.SaveTag = "playtest-";
+        bool battleOnly = new[] { "scenario", "playtest", "still", "layout-test", "parity-test" }.Any(_args.ContainsKey) && !_args.ContainsKey("flow") && !flowTest;
         if (!battleOnly)
         {
             _flow = new GameFlow();
@@ -250,14 +253,15 @@ public sealed partial class Main : Node
     // ---- Headless checks ------------------------------------------------------------------------------------------
 
     /// <summary>Everything on the console that registers controls: the panels, the strips, the view and the menu.</summary>
-    private IEnumerable<IControlSource> Sources() => _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu);
+    private IEnumerable<IControlSource> Sources() =>
+        _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu).Concat(_flow?.Sources() ?? Enumerable.Empty<IControlSource>());
 
     /// <summary>Starts the scripted captain on data/playtests/&lt;name&gt;.json; --play=&lt;scenario id&gt; is the scenario it picks
     /// from the scene selector (the playtest skill).</summary>
     private void StartPlaytest(string name)
     {
         var captain = new ScriptedCaptain();
-        captain.Init(_x, Sources, name, ReadData($"playtests/{name}.json"), _args.GetValueOrDefault("play", _x.Battle.Scenario.Id));
+        captain.Init(_x, Sources, name, ReadData($"playtests/{name}.json"), _args.GetValueOrDefault("play", _x.Battle.Scenario.Id), _flow);
         AddChild(captain);
     }
 
