@@ -60,7 +60,7 @@ TITLE="$(sed -n 's#^// *@title *##p' "$SCORE" | head -1)"
 ffmpeg -hide_banner -loglevel error -y -i "$TMP/norm.wav" -c:a libmp3lame -b:a 192k \
   -metadata title="$TITLE" -metadata artist="Fleet Command OST" "$OUT_MP3"
 if [ "$MODE" != "--preview" ]; then
-  ffmpeg -hide_banner -loglevel error -y -i "$TMP/norm.wav" -c:a libvorbis -q:a 6 \
+  ffmpeg -hide_banner -loglevel error -y -i "$TMP/norm.wav" -c:a libvorbis -q:a 6 -fflags +bitexact -flags:a +bitexact -serial_offset 0 \
     -metadata title="$TITLE" -metadata artist="Fleet Command OST" "$OGG_DIR/$NAME.ogg"
   echo "wrote $OGG_DIR/$NAME.ogg"
 fi

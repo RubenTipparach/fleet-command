@@ -7,7 +7,6 @@
  "output/sfx/hail.mp3": "output/sfx/hail.mp3",
  "output/sfx/pause_on.mp3": "output/sfx/pause_on.mp3",
  "output/sfx/pause_off.mp3": "output/sfx/pause_off.mp3",
- "output/sfx/red_alert.mp3": "output/sfx/red_alert.mp3",
  "output/sfx/shields_failing.mp3": "output/sfx/shields_failing.mp3",
  "output/sfx/hull_critical.mp3": "output/sfx/hull_critical.mp3",
  "output/sfx/core_breach.mp3": "output/sfx/core_breach.mp3",
@@ -28,5 +27,12 @@
  "output/sfx/shields_raise.mp3": "output/sfx/shields_raise.mp3",
  "output/sfx/shields_collapse.mp3": "output/sfx/shields_collapse.mp3",
  "output/sfx/ui_clunk.mp3": "output/sfx/ui_clunk.mp3",
- "output/sfx/amb_bridge.mp3": "output/sfx/amb_bridge.mp3"
+ "output/sfx/amb_bridge.mp3": "output/sfx/amb_bridge.mp3",
+ "output/sfx/shield_hit_short.mp3": "output/sfx/shield_hit_short.mp3",
+ "output/sfx/hull_hit_short.mp3": "output/sfx/hull_hit_short.mp3",
+ "output/sfx/torpedo_detonate_short.mp3": "output/sfx/torpedo_detonate_short.mp3",
+ "output/sfx/explosion_small_short.mp3": "output/sfx/explosion_small_short.mp3",
+ "output/sfx/red_alert.mp3": "output/sfx/red_alert.mp3",
+ "output/sfx/red_alert_twotone.mp3": "output/sfx/red_alert_twotone.mp3",
+ "output/sfx/red_alert_wail.mp3": "output/sfx/red_alert_wail.mp3"
 }

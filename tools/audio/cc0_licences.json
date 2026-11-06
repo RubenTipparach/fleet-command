@@ -361,5 +361,63 @@
    "krank_sounds.7z",
    "montageAudio-20120619%40031244.ogg"
   ]
+ },
+ "oga/alarm-1": {
+  "pack": "alarm-1",
+  "url": "https://opengameart.org/content/alarm-1",
+  "licences": [
+   "CC0"
+  ],
+  "author": "EZduzziteh",
+  "files": [
+   "alarm_2.ogg",
+   "alarm_3.ogg"
+  ]
+ },
+ "oga/alarm-2": {
+  "pack": "alarm-2",
+  "url": "https://opengameart.org/content/alarm-2",
+  "licences": [
+   "CC0"
+  ],
+  "author": "Frenchyboy",
+  "files": [
+   "alarm_0.wav"
+  ]
+ },
+ "oga/alarm-sound-effect": {
+  "pack": "alarm-sound-effect",
+  "url": "https://opengameart.org/content/alarm-sound-effect",
+  "licences": [
+   "CC0"
+  ],
+  "author": "bonzille",
+  "files": [
+   "alarm_2.wav"
+  ]
+ },
+ "oga/short-alarm": {
+  "pack": "short-alarm",
+  "url": "https://opengameart.org/content/short-alarm",
+  "licences": [
+   "CC0"
+  ],
+  "author": "yd",
+  "files": [
+   "alarm.ogg",
+   "alarm_0.ogg"
+  ]
+ },
+ "oga/sirens-and-alarm-noise": {
+  "pack": "sirens-and-alarm-noise",
+  "url": "https://opengameart.org/content/sirens-and-alarm-noise",
+  "licences": [
+   "CC0"
+  ],
+  "author": "aquinn",
+  "files": [
+   "siren.mp3",
+   "siren_0.mp3"
+  ]
  }
 }

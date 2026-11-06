@@ -21,6 +21,7 @@ import json
 import os
 import subprocess
 import sys
+import zlib
 
 import numpy as np
 
@@ -151,8 +152,42 @@ def distance(x: np.ndarray, spec: dict) -> np.ndarray:
     return np.stack([wrapped_reverb(c, spec.get("wet", 0.35), rooms[i % 2]) for i, c in enumerate(x)])
 
 
-def cut(cue: dict, src_root: str) -> np.ndarray:
-    """The cue as (channels, n): stereo for an ambience bed (cue "stereo": true), mono otherwise."""
+def scattered(cue: dict, name: str) -> list:
+    """A cue's "scatter" groups expanded into layers: each group places `count` short sounds, picked from
+    `pick` (each a layer spec, recorded or synthesised), at seeded times inside `within` seconds and no
+    closer than `min_gap`, with a gain in dB, a pan and a pitch drawn from the group's ranges. Seeded from
+    the cue's name and the group's place, so a rebuild places every sound where it was. Written in this
+    repository (2026-11-06) for the bridge bed's bleeps and scans; Crab Breeze's cutter has no scatter."""
+    out = []
+    for k, grp in enumerate(cue.get("scatter", [])):
+        rng = np.random.default_rng(zlib.crc32(f"{name}/{k}".encode()))
+        times, tries = [], 0
+        while len(times) < grp["count"] and tries < 10000:
+            t = float(rng.uniform(grp.get("from", 0.0), grp["within"]))
+            if all(abs(t - u) >= grp.get("min_gap", 0.5) for u in times):
+                times.append(t)
+            tries += 1
+        for t in sorted(times):
+            spec = dict(grp["pick"][int(rng.integers(len(grp["pick"])))])
+            lo, hi = grp.get("gain", [-18.0, -12.0])
+            spec["gain"] = spec.get("gain", 0.0) + float(rng.uniform(lo, hi))
+            spec["pan"] = float(rng.uniform(-1, 1)) * grp.get("pan", 0.8)
+            plo, phi = grp.get("pitch", [1.0, 1.0])
+            if "src" in spec:
+                spec["pitch"] = spec.get("pitch", 1.0) * float(rng.uniform(plo, phi))
+            spec["delay"] = t
+            out.append(spec)
+    return out
+
+
+def all_layers(cue: dict) -> list:
+    """Every layer spec a cue can draw on (its layers and every scatter pick), for the sources lists."""
+    return list(cue["layers"]) + [p for grp in cue.get("scatter", []) for p in grp["pick"]]
+
+
+def cut(cue: dict, src_root: str, name: str = "") -> np.ndarray:
+    """The cue as (channels, n): stereo for an ambience bed (cue "stereo": true), mono otherwise.
+    Scattered sounds are mixed after the distance treatment, so they stay close and crisp over the bed."""
     ch = 2 if cue.get("stereo") else 1
     parts = [layer(s, src_root, ch) for s in cue["layers"]]
     n = cue.get("len") and int(cue["len"] * SR) or max(p.shape[-1] for p in parts)
@@ -161,6 +196,10 @@ def cut(cue: dict, src_root: str) -> np.ndarray:
         x = g.shape(x / (np.max(np.abs(x)) or 1.0), cue["drive"])
     if "distance" in cue:
         x = distance(x, cue["distance"])
+    extra = [layer(s, src_root, ch) for s in scattered(cue, name)]
+    if extra:
+        x = x / (np.max(np.abs(x)) or 1.0)
+        x = x + sum(fit(p, n) for p in extra)
     x = per_channel(g.hp, x, cue.get("hp", 20))
     if "lp" in cue:
         x = per_channel(g.lp, x, cue["lp"], order=2)
@@ -185,7 +224,7 @@ def rows_for(names, cues: dict, licences: dict) -> list:
     for name in names:
         if name in cues and cues[name].get("_cut"):
             srcs = []
-            for s in cues[name]["layers"]:
+            for s in all_layers(cues[name]):
                 srcs.append(f"our `{s['synth']}` synthesis" if "synth" in s else credit(s["src"], licences))
             edits = cues[name].get("edits", "trimmed, layered, filtered, levelled")
             rows.append(f"| {name} | {'; '.join(dict.fromkeys(srcs))} | {edits} |")
@@ -237,7 +276,7 @@ def main() -> int:
             status = 1
             continue
         try:
-            x = cut(cue, args.src)
+            x = cut(cue, args.src, name)
         except (FileNotFoundError, ValueError, subprocess.CalledProcessError) as e:
             print(f"{name:18} left synthesised: {e}")
             continue

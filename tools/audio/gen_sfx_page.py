@@ -25,9 +25,9 @@ BODY = """<div class="wrap">
   <header class="mast">
     <div class="stripe" aria-hidden="true"></div>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <span class="eyebrow">Fleet Command sound effects · works sheet 1 · 2026-11-04</span>
+    <span class="eyebrow">Fleet Command sound effects · works sheet 2 · 2026-11-06</span>
     <h1>Fleet Command Sounds</h1>
-    <p>__COUNT__ sounds for the battle: every weapon mount firing, what the shots hit, the ship itself, the console keys and the alerts, and the bridge under it all. __REC__ are cut from real recordings (CC0 packs from OpenGameArt: digital lasers and phasers, electric charges and shield hits, real explosions, rocket motors, a ship's cannon, a computer room), slowed and layered to starship size; the console tones and alerts are synthesised. Battle sounds are mono and placed in 3D at their ship or mount; the console, the alerts and the bridge bed are not. Cues marked <em class="rec">rec</em> are recorded.</p>
+    <p>__COUNT__ sounds for the battle: every weapon mount firing, what the shots hit, the ship itself, the console keys and the alerts, and the bridge under it all. __REC__ are cut from real recordings (CC0 packs from OpenGameArt: digital lasers and phasers, electric charges and shield hits, real explosions, rocket motors, a ship's cannon, a computer room), slowed and layered to starship size; the console tones and three of the alerts are synthesised. The hits have short alternatives for when they come fast, and the battle stations alarm has two alternatives to choose from. Battle sounds are mono and placed in 3D at their ship or mount; the console, the alerts and the bridge bed are not. Cues marked <em class="rec">rec</em> are recorded.</p>
     <div class="facts"><span>Cues <b>__COUNT__</b></span><span>Recorded <b>__REC__</b></span><span>Synthesised <b>__SYN__</b></span><span>Format <b>mono 44.1 kHz OGG</b></span><span>Licence <b>CC0 and ours</b></span></div>
     <p class="status">Each recorded cue names its originals in assets/audio/sfx/SOURCES.md. Not in the game yet: playing them is the sound plan (openspec/changes/sound-effects), after the owner's approval.</p>
   </header>

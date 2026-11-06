@@ -31,7 +31,7 @@ def main() -> int:
     for name, cue in cues.items():
         if name.startswith("_"):
             continue
-        for layer in cue["layers"]:
+        for layer in list(cue["layers"]) + [p for grp in cue.get("scatter", []) for p in grp["pick"]]:
             if "synth" in layer:
                 synth.add(name)
             else:

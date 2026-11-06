@@ -15,3 +15,6 @@
 - Version 1 published 2026-11-05 from the cloud session at the owner's request ("need to pubhlish music artifacts and sound"), version id `1793914825-6d3a`.
 - Version 2 published 2026-11-05, version id `1793916586-7ffb`: version 1 inlined every sound in the page and never loaded in
   the viewer (owner: "artifact not loading"); the audio is now served beside the page.
+- Version 3 published 2026-11-06, version id `1793924827-1a74`: the owner's notes (shorter, punchier weapons; short
+  alternatives of the hits; a recorded battle stations klaxon and two alternatives; a minute-long bridge bed with
+  bleeps, boops and scans). 36 cues.

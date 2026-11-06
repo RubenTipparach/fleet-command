@@ -36,7 +36,7 @@ account and every link here is updated.
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-04, v5) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v5](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | Drafted (2026-11-04, v2; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
-| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-05, v2; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-06, v3 after the owner's notes; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-05, v2; published from the cloud session's account, audio served beside the page) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
@@ -729,6 +729,12 @@ heard, not seen, so its mockup is a page to listen on: every cue with a play but
 
 - Change: `openspec/changes/sound-effects`. Shots: `docs/screenshots/mockups/sounds-*.png`.
 - Stage: Drafted (2026-11-04). Questions: survey S4 (how a battle sounds in silent space).
+- The owner's notes, 2026-11-06, all done in v3: "weapons all are too long, lance fire should sound more punchy" (every
+  weapon cut to 0.5-1.2 s from its peak, with a kick; the Lance a crack, a snap and a kick in 0.55 s); "hull hits are
+  all great btw, I would make some shorter sfx as alternatives" (the hits kept, each with a `_short` alternative);
+  "red_alert sucks" (a recorded whoop klaxon, with a two-tone and a wail as alternatives); "amb_bridge - should be like
+  aminute with bleeps and boops on theb ridge and scanning sounds" (a minute-long bed with about 48 bleeps, six sensor
+  sweeps and four scan pings scattered over it).
 
 ## 18. Music
 

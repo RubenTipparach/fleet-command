@@ -13,6 +13,8 @@ OUT="$REPO/output/sfx"
 OGG="$REPO/assets/audio/sfx"
 AMB="$REPO/assets/audio/ambience"
 mkdir -p "$OUT" "$OGG" "$AMB"
+# a fixed Ogg stream serial and no encoder stamp, so an unchanged cue encodes to the same bytes (2026-11-06)
+BITEXACT="-fflags +bitexact -flags:a +bitexact -serial_offset 0"
 if [ "$#" -gt 0 ]; then
   python3 "$REPO/tools/audio/gen_sfx.py" --out "$OUT" --only "$@"
 else
@@ -26,10 +28,10 @@ for wav in "$OUT"/*.wav; do
   if [ "$#" -gt 0 ] && [[ ! " $* " == *" $name "* ]]; then continue; fi
   if [[ "$name" == amb_* ]]; then
     # ambience beds: stereo, non-spatial, in their own folder; a lighter share copy for the page
-    ffmpeg -hide_banner -loglevel error -y -i "$wav" -c:a libvorbis -q:a 4 "$AMB/$name.ogg"
+    ffmpeg -hide_banner -loglevel error -y -i "$wav" -c:a libvorbis -q:a 4 $BITEXACT "$AMB/$name.ogg"
     ffmpeg -hide_banner -loglevel error -y -i "$wav" -c:a libmp3lame -b:a 96k "$OUT/$name.mp3"
   else
-    ffmpeg -hide_banner -loglevel error -y -i "$wav" -c:a libvorbis -q:a 5 "$OGG/$name.ogg"
+    ffmpeg -hide_banner -loglevel error -y -i "$wav" -c:a libvorbis -q:a 5 $BITEXACT "$OGG/$name.ogg"
     ffmpeg -hide_banner -loglevel error -y -i "$wav" -c:a libmp3lame -b:a 160k "$OUT/$name.mp3"
   fi
 done

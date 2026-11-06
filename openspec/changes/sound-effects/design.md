@@ -24,12 +24,22 @@ loudness strip (`inspect_sfx.py inventory`, `envelope`), and the built set judge
 
 | Group | Cues | Placed |
 | --- | --- | --- |
-| Weapons | `lance_fire`, `disruptor_fire`, `torpedo_launch`, `overload_charge` (loops), `missile_launch`, `pd_burst` | at the mount node |
-| Impacts | `shield_hit`, `hull_hit`, `torpedo_detonate`, `explosion_small`, `ship_destroyed` | where the hit lands |
+| Weapons | `lance_fire` (0.55 s), `disruptor_fire` (0.55 s), `torpedo_launch` (0.9 s), `overload_charge` (loops), `missile_launch` (1.2 s), `pd_burst` (0.5 s) | at the mount node |
+| Impacts | `shield_hit`, `hull_hit`, `torpedo_detonate`, `explosion_small`, each with a short alternative (`*_short`, 0.6-1.1 s), and `ship_destroyed` | where the hit lands |
 | Ship | `engine_hum` (loops), `reactor_hum` (loops), `thruster_burst`, `shields_raise`, `shields_collapse` | at the ship |
 | Console | `ui_chirp` (Concord), `ui_clunk` (the metal skins), `ui_confirm`, `ui_deny`, `weapon_charged`, `target_lock`, `hail`, `pause_on`, `pause_off` | no |
-| Alerts | `red_alert` (loops), `shields_failing`, `hull_critical`, `core_breach` | no |
-| Ambience | `amb_bridge` (stereo, loops) | no |
+| Alerts | `red_alert` (loops; alternatives `red_alert_twotone`, `red_alert_wail`), `shields_failing`, `hull_critical`, `core_breach` | no |
+| Ambience | `amb_bridge` (stereo, a minute, loops: the bed with bleeps, boops, sensor sweeps and scan pings scattered over it) | no |
+
+**The owner's first notes** (2026-11-06): "weapons all are too long, lance fire should sound more punchy": every weapon
+cut to 0.5-1.2 s, starting at its peak, with a kick under it (`punch_thump`) and, for the Lance, a crack and a snap
+(`beam_snap`); "hull hits are all great btw, I would make some shorter sfx as alternatives": the hits kept, a short
+alternative of each added; "red_alert sucks": the synthesised whoop replaced by a recorded klaxon, with two recorded
+alternatives; "amb_bridge - should be like aminute with bleeps and boops on theb ridge and scanning sounds": the bed
+made a minute long with sounds scattered over it (`scatter` in `cc0_cues.json`).
+
+**Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
+so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.
 
 Levels as written: weapons and blasts peak at -1 dBFS, alerts -4 to -6, console keys -8 to -9, the bridge bed -6. The
 mix between cues is the cue table's `volume_db` in the game (section 3), not a re-cut.

@@ -72,7 +72,11 @@ One command rebuilds everything: `tools/audio/render_sfx.sh` (or `tools/audio/re
 4. **Write the spec** in `tools/audio/cc0_cues.json` (its `_about` lists every field): layers of
    `{"src": "pack:file"}` or `{"synth": "<layer>"}` with `start`, `dur`, `pitch` (tape speed: below
    1 is bigger and slower), `gain`, `lp`, `hp`, fades and `delay`; the cue's `len`, `drive`, `loop`,
-   `stereo`, `distance` and `peak_db`. Say the edits in `edits`.
+   `stereo`, `distance` and `peak_db`. Say the edits in `edits`. A bed that should be busy (the bridge's bleeps and
+   scans) uses `scatter`: groups of short sounds placed at seeded times, gains and pans over the bed.
+   **Keep weapons short and front-loaded** (owner, 2026-11-06: "weapons all are too long, lance fire should sound
+   more punchy"): start each take at its peak, put a kick under it (`punch_thump`), and cut to about half a second
+   (1.2 s at most for a missile's roar). A hit gets a short alternative (`<cue>_short`) for rapid fire.
 5. **Synthesise only what is missing.** A synthesised cue or layer is a function in
    `tools/audio/gen_sfx.py` registered with `@sound(name, group, what, peak_db)`; a layer's group is
    `_layer`, so it is mixed into recorded cues and never written alone. Use the building blocks

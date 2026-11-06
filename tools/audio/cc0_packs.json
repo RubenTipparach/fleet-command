@@ -26,5 +26,10 @@
   "oga/75-cc0-breaking-falling-hit-sfx",
   "oga/51-ui-sound-effects-buttons-switches-and-clicks",
   "oga/interface-beeps",
-  "oga/atmospheric-interaction-sound-pack"
+  "oga/atmospheric-interaction-sound-pack",
+  "oga/alarm-1",
+  "oga/alarm-2",
+  "oga/alarm-sound-effect",
+  "oga/short-alarm",
+  "oga/sirens-and-alarm-noise"
 ]

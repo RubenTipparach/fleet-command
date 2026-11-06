@@ -1,80 +1,87 @@
 {
-  "_about": "Recorded cues for tools/audio/cut_cc0.py (format from Crab Breeze, unchanged). A layer is {src: 'pack:file'} or {synth: '<gen_sfx layer or cue>'}, with optional shot (n-th shot of a multi-shot take), start, dur (s), pitch (tape-speed ratio), gain (dB after the layer is peak-normalised), lp, hp (Hz, steep), fadein, fadeout, delay (s), repeat. A cue may set len, drive (tanh), hp, lp (gentle, 12 dB/octave), distance (compressor, lowpass and reverb that push a bed into the background), loop, stereo, group, peak_db, what and edits. A cue whose what ends in (loops) loops in the game.",
+  "_about": "Recorded cues for tools/audio/cut_cc0.py (format from Crab Breeze, unchanged). A layer is {src: 'pack:file'} or {synth: '<gen_sfx layer or cue>'}, with optional shot (n-th shot of a multi-shot take), start, dur (s), pitch (tape-speed ratio), gain (dB after the layer is peak-normalised), lp, hp (Hz, steep), fadein, fadeout, delay (s), repeat. A cue may set len, drive (tanh), hp, lp (gentle, 12 dB/octave), distance (compressor, lowpass and reverb that push a bed into the background), loop, stereo, group, peak_db, what and edits. A cue whose what ends in (loops) loops in the game. A cue may also set scatter: a list of groups, each placing count short sounds picked from pick (layer specs) at seeded times inside within seconds (from 0, no closer than min_gap), with gain, pitch ranges and a pan width; scattered sounds are mixed after the distance treatment (this repository, 2026-11-06).",
   "lance_fire": {
     "group": "Weapons",
-    "what": "The Lance firing: a beam that snaps on, holds a detuned buzz and falls away.",
+    "what": "The Lance firing: a hard electric crack and a kick, a beam that snaps out and is gone in half a second.",
     "layers": [
       {
-        "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:laser4.mp3",
-        "pitch": 0.8,
-        "lp": 6000
+        "src": "oga/electricity-game-sound-pack:groundhit.wav",
+        "hp": 800,
+        "dur": 0.12,
+        "fadeout": 0.08,
+        "gain": -3
       },
       {
-        "synth": "beam_body",
-        "gain": -4
+        "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:laser7.mp3",
+        "start": 0.04,
+        "pitch": 0.85,
+        "dur": 0.45,
+        "fadeout": 0.3
       },
       {
-        "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:zap2.mp3",
-        "pitch": 0.7,
-        "gain": -9,
-        "lp": 3000
+        "synth": "beam_snap",
+        "gain": -3
+      },
+      {
+        "synth": "punch_thump",
+        "gain": -2
       }
     ],
-    "len": 1.7,
-    "edits": "slowed to 0.7-0.8 speed, layered over our beam synthesis, lowpassed"
+    "len": 0.55,
+    "drive": 1.6,
+    "tail_fade": 0.1,
+    "edits": "a crack, a laser take started at its peak and slowed to 0.85, our snap and kick, saturated, cut to 0.55 s"
   },
   "disruptor_fire": {
     "group": "Weapons",
-    "what": "A Disruptor bolt leaving its mount: a hard electric crack with a short tail.",
+    "what": "A Disruptor bolt leaving its mount: a hard electric crack and a kick.",
     "layers": [
       {
         "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:zap1.mp3",
-        "pitch": 0.85
+        "pitch": 0.85,
+        "dur": 0.5,
+        "fadeout": 0.3
       },
       {
         "src": "oga/electricity-game-sound-pack:groundhit.wav",
         "gain": -3
       },
       {
-        "synth": "sub_thump",
-        "gain": -8
+        "synth": "punch_thump",
+        "gain": -4
       }
     ],
-    "len": 1.2,
-    "drive": 1.3,
-    "edits": "slowed to 0.85 speed, layered with a crack and our sub thump, saturated"
+    "len": 0.55,
+    "drive": 1.4,
+    "tail_fade": 0.1,
+    "edits": "slowed to 0.85 speed, cut to 0.5 s, a crack and our kick, saturated"
   },
   "torpedo_launch": {
     "group": "Weapons",
-    "what": "A Pulse torpedo leaving its tube: a deep launch thump and a rising energy whine.",
+    "what": "A Pulse torpedo leaving its tube: a deep launch thump and a short rising whine.",
     "layers": [
       {
         "src": "oga/battle-at-sea:cannon_fire_1.ogg",
         "pitch": 0.75,
         "lp": 1500,
-        "dur": 1.6,
-        "fadeout": 0.5
+        "dur": 0.7,
+        "fadeout": 0.4
       },
       {
         "src": "oga/63-digital-sound-effects-lasers-phasers-space-etc:phaserUp3.mp3",
         "pitch": 0.6,
-        "delay": 0.05,
+        "dur": 0.6,
+        "fadeout": 0.3,
         "gain": -4
       },
       {
-        "src": "oga/50-cc0-sci-fi-sfx:teleport_02.ogg",
-        "start": 0.4,
-        "dur": 1.0,
-        "pitch": 0.8,
-        "gain": -7
-      },
-      {
-        "synth": "sub_thump",
-        "gain": -3
+        "synth": "punch_thump",
+        "gain": -2
       }
     ],
-    "len": 1.9,
-    "edits": "a ship's cannon slowed and lowpassed to a thump, a phaser rise slowed to 0.6, our sub thump"
+    "len": 0.9,
+    "tail_fade": 0.15,
+    "edits": "a ship's cannon slowed and lowpassed, a phaser rise slowed to 0.6, our kick, cut to 0.9 s"
   },
   "overload_charge": {
     "group": "Weapons",
@@ -82,47 +89,49 @@
     "layers": [
       {
         "src": "oga/electricity-game-sound-pack:charge.wav",
-        "dur": 4.0,
+        "dur": 2.0,
         "lp": 7000
       }
     ],
-    "len": 4.0,
+    "len": 2.0,
     "loop": true,
     "loop_fade": 0.4,
-    "edits": "trimmed, lowpassed, crossfaded into a loop"
+    "edits": "trimmed to 2 s, lowpassed, crossfaded into a loop"
   },
   "missile_launch": {
     "group": "Weapons",
-    "what": "A missile away: an ignition hiss and the motor roaring off.",
+    "what": "A missile away: an ignition crack and the motor roaring off.",
     "layers": [
       {
         "src": "oga/missile-sound:missile launch.ogg",
-        "pitch": 0.9
+        "start": 0.3,
+        "pitch": 0.9,
+        "dur": 1.0,
+        "fadeout": 0.5
       },
       {
-        "src": "oga/rocket-launch:launch.wav",
-        "start": 2.0,
-        "dur": 2.0,
-        "gain": -6,
-        "lp": 3000,
-        "fadeout": 0.8
+        "synth": "punch_thump",
+        "gain": -6
       }
     ],
-    "len": 2.8,
-    "edits": "slowed to 0.9, layered with a rocket's roar, lowpassed"
+    "len": 1.2,
+    "tail_fade": 0.2,
+    "edits": "started at its ignition, slowed to 0.9, our kick, cut to 1.2 s"
   },
   "pd_burst": {
     "group": "Weapons",
-    "what": "Point defence firing: a fast rattling burst.",
+    "what": "Point defence firing: a short rattling burst.",
     "layers": [
       {
         "src": "oga/laser-weapon-burst-fire:burst fire.mp3",
-        "pitch": 1.1,
-        "hp": 300
+        "pitch": 1.15,
+        "hp": 300,
+        "dur": 0.45,
+        "fadeout": 0.15
       }
     ],
-    "len": 0.75,
-    "edits": "sped to 1.1, highpassed"
+    "len": 0.5,
+    "edits": "sped to 1.15, highpassed, cut to 0.5 s"
   },
   "shield_hit": {
     "group": "Impacts",
@@ -355,33 +364,360 @@
   },
   "amb_bridge": {
     "group": "Ambience",
-    "what": "The bridge (loops): computers working, the air handling, the ship's hum, under everything.",
+    "what": "The bridge (loops, a minute): computers working, the air handling and the ship's hum, with consoles bleeping and booping and the sensors sweeping.",
     "layers": [
       {
         "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Computer room ambience.mp3",
+        "repeat": 4,
         "pan": -0.3
       },
       {
         "src": "oga/airvent-loop:airvent-large-loop.wav",
-        "repeat": 2,
+        "repeat": 8,
         "gain": -6,
         "pan": 0.4
       },
       {
         "src": "oga/generator-loop:loop_generator_1.mp3",
-        "repeat": 3,
+        "repeat": 12,
         "gain": -12
       }
     ],
-    "len": 15.0,
+    "scatter": [
+      {
+        "count": 34,
+        "within": 57.0,
+        "min_gap": 0.9,
+        "gain": [
+          -15,
+          -7
+        ],
+        "pan": 0.85,
+        "pitch": [
+          0.9,
+          1.1
+        ],
+        "pick": [
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_01.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_02.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_03.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_04.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_05.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_06.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_07.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_08.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_09.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:beep_01.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:beep_02.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:beep_03.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_01.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_02.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_05.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_06.ogg"
+          },
+          {
+            "synth": "console_bleep"
+          },
+          {
+            "synth": "console_bleep"
+          },
+          {
+            "synth": "console_bleep"
+          },
+          {
+            "synth": "console_bleep"
+          }
+        ]
+      },
+      {
+        "count": 14,
+        "within": 56.0,
+        "min_gap": 2.0,
+        "gain": [
+          -15,
+          -9
+        ],
+        "pan": 0.7,
+        "pitch": [
+          0.95,
+          1.05
+        ],
+        "pick": [
+          {
+            "src": "oga/interface-beeps:beep-00.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-01.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-03.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-05.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-06.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-09.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-13.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/60-cc0-sci-fi-sfx:sfx_02a.ogg"
+          },
+          {
+            "src": "oga/60-cc0-sci-fi-sfx:sfx_07a.ogg"
+          },
+          {
+            "src": "oga/60-cc0-sci-fi-sfx:sfx_09a.ogg"
+          }
+        ]
+      },
+      {
+        "count": 6,
+        "within": 54.0,
+        "min_gap": 7.0,
+        "gain": [
+          -11,
+          -7
+        ],
+        "pan": 0.6,
+        "pick": [
+          {
+            "synth": "scan_sweep"
+          }
+        ]
+      },
+      {
+        "count": 4,
+        "within": 55.0,
+        "min_gap": 11.0,
+        "gain": [
+          -13,
+          -9
+        ],
+        "pan": 0.9,
+        "pick": [
+          {
+            "synth": "scan_ping"
+          }
+        ]
+      }
+    ],
+    "len": 60.0,
     "stereo": true,
     "loop": true,
-    "loop_fade": 1.0,
+    "loop_fade": 1.5,
     "distance": {
       "lp": 4000,
       "wet": 0.25
     },
     "peak_db": -6.0,
-    "edits": "three beds layered and panned, compressed, lowpassed and given a room, crossfaded into a loop"
+    "edits": "three beds layered and panned, compressed, lowpassed and given a room; recorded terminal and interface bleeps and our bleeps, sensor sweeps and scan pings scattered over a minute at seeded times and pans; crossfaded into a loop"
+  },
+  "shield_hit_short": {
+    "group": "Impacts",
+    "what": "The short shield hit, for hits that come fast: the thud and the shimmer, cut short.",
+    "layers": [
+      {
+        "src": "oga/electricity-game-sound-pack:shieldhit.wav",
+        "dur": 0.5,
+        "fadeout": 0.3
+      },
+      {
+        "src": "oga/space-ship-shield-sounds:space shield sounds - 4.wav",
+        "dur": 0.5,
+        "fadeout": 0.3,
+        "gain": -3
+      },
+      {
+        "synth": "shield_shimmer",
+        "dur": 0.5,
+        "fadeout": 0.3,
+        "gain": -7
+      },
+      {
+        "src": "oga/electricity-game-sound-pack:groundhit.wav",
+        "gain": -11
+      }
+    ],
+    "len": 0.6,
+    "tail_fade": 0.15,
+    "edits": "the layers of shield_hit, each cut short and faded, to 0.6 s"
+  },
+  "hull_hit_short": {
+    "group": "Impacts",
+    "what": "The short hull hit, for hits that come fast: the metal crunch without the blast's tail.",
+    "layers": [
+      {
+        "src": "oga/battle-at-sea:cannon_hit_ship_short.ogg",
+        "dur": 0.5,
+        "pitch": 0.8,
+        "lp": 4000,
+        "fadeout": 0.3
+      },
+      {
+        "src": "oga/100-cc0-metal-and-wood-sfx:metal_slam_01.ogg",
+        "pitch": 0.6,
+        "gain": -4
+      },
+      {
+        "src": "oga/explosions-4:explosion2.ogg",
+        "dur": 0.4,
+        "fadeout": 0.25,
+        "gain": -6
+      }
+    ],
+    "len": 0.6,
+    "tail_fade": 0.15,
+    "edits": "the layers of hull_hit, each cut short and faded, to 0.6 s",
+    "drive": 1.3
+  },
+  "torpedo_detonate_short": {
+    "group": "Impacts",
+    "what": "The short torpedo detonation: the blast and its flare, without the long fall.",
+    "layers": [
+      {
+        "src": "oga/explosions-4:explosion1_0.ogg",
+        "pitch": 0.8,
+        "dur": 1.0,
+        "fadeout": 0.6
+      },
+      {
+        "synth": "energy_bloom",
+        "dur": 1.0,
+        "fadeout": 0.5,
+        "gain": -3
+      },
+      {
+        "src": "oga/50-cc0-sci-fi-sfx:explosion_01.ogg",
+        "pitch": 0.7,
+        "dur": 0.9,
+        "fadeout": 0.5,
+        "gain": -5
+      }
+    ],
+    "len": 1.1,
+    "tail_fade": 0.15,
+    "edits": "the layers of torpedo_detonate, each cut short and faded, to 1.1 s"
+  },
+  "explosion_small_short": {
+    "group": "Impacts",
+    "what": "The short small blast: a missile shot down, a system blown out, quickly.",
+    "layers": [
+      {
+        "src": "oga/explosions-4:explosion3.ogg",
+        "dur": 0.6,
+        "fadeout": 0.35
+      },
+      {
+        "src": "oga/explosions-4:explosion2.ogg",
+        "pitch": 0.8,
+        "gain": -6
+      }
+    ],
+    "len": 0.7,
+    "tail_fade": 0.15,
+    "edits": "the layers of explosion_small, each cut short and faded, to 0.7 s"
+  },
+  "red_alert": {
+    "group": "Alerts",
+    "what": "Battle stations (loops): a ship's whooping klaxon rising through the corridors, every 2.6 s.",
+    "layers": [
+      {
+        "src": "oga/alarm-2:alarm_0.wav",
+        "pitch": 0.9,
+        "hp": 120
+      }
+    ],
+    "len": 2.6,
+    "loop": true,
+    "loop_fade": 0.25,
+    "distance": {
+      "lp": 7000,
+      "wet": 0.22,
+      "threshold_db": -12
+    },
+    "peak_db": -4.0,
+    "edits": "a recorded whoop klaxon slowed to 0.9, given a room, crossfaded into a loop"
+  },
+  "red_alert_twotone": {
+    "group": "Alerts",
+    "what": "Battle stations, alternative (loops): a two-tone alarm, high and low.",
+    "layers": [
+      {
+        "src": "oga/alarm-1:alarm_2.ogg",
+        "dur": 1.75
+      }
+    ],
+    "len": 1.75,
+    "loop": true,
+    "loop_fade": 0.1,
+    "peak_db": -5.0,
+    "edits": "trimmed, crossfaded into a loop"
+  },
+  "red_alert_wail": {
+    "group": "Alerts",
+    "what": "Battle stations, alternative (loops): a rising siren wail, three times every 2.1 s.",
+    "layers": [
+      {
+        "src": "oga/sirens-and-alarm-noise:siren.mp3",
+        "start": 0.1,
+        "dur": 2.2,
+        "hp": 200
+      }
+    ],
+    "len": 2.1,
+    "loop": true,
+    "loop_fade": 0.1,
+    "peak_db": -5.0,
+    "edits": "three wails cut from a siren, crossfaded into a loop"
   }
 }
