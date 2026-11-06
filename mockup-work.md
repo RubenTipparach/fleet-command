@@ -42,6 +42,7 @@ account and every link here is updated.
 | 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v3) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
+| 23 | Kelvane Institute ships: a blockout board from five drafted traditions | Drafted (2026-11-06, v1, committed; to publish from the desktop session) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -968,3 +969,24 @@ that stays where it is left. A candidate backdrop for the main menu.
 
 - Change: `openspec/changes/space-flythrough`. Shots: `docs/screenshots/mockups/space-flythrough/`.
 - Stage: Drafted (2026-11-05, v1).
+
+## 23. Kelvane Institute ships
+
+Owner, 2026-11-06: "begin designs on the institute ships".
+
+- **Breadth first.** As the Ssarith Hunt's ships went well once they went broad (mockup 12, version 9), the Institute
+  starts with a board to pick from: twelve frigate-sized blockouts, 104-122 m, beside the Concord Petrel's 88 m.
+- **Traditions, drafted.** The Institute's culture is one line ("truth is measured, never assumed"), so five traditions
+  inside it are drafted for the owner to pick, change or reject (Ship Design Bible C4), none from the Kelvane's bodies:
+  - the Calibrators, the Open Notebook and the Long Baseline (the three drafted for the emblem);
+  - the Field Stations and the Collider Halls (new: long voyages and a weapon).
+- **The blockouts.** Case, Stepped deck, Runners; Twin hulls, Slotted; Waisted baseline, Spread arms, Long spar; Gallery
+  bow, Terraces; Loop, Through-beam.
+- **How they are grown.** Each is one closed grown structure (chapter 14) on the shared `docs/mockups/lib/hull-grow.js`,
+  lifted from the Hunt page, whose ships are unchanged. The Institute has its own section layout: a rounded case after the
+  console's rolled plates.
+- **The look.** Champagne, dark glass and amber from the console, or plain clay.
+- **Change:** `openspec/changes/kelvane-ship-concepts`.
+- **Shots:** `docs/screenshots/mockups/kelvane-ship-concepts/`.
+- **Stage:** Drafted (2026-11-06, v1).
+- **Questions:** survey I1-I4 (traditions, picks, palette, the first class).
