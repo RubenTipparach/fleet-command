@@ -11,4 +11,6 @@
 
 ## 2. Game (after approval for implementation)
 
-- [ ] 2.1 The queue in `src/Core/Sim`, with tests that read as sentences
+- [x] 2.1 The queue in `src/Core/Sim` (`Battle.Repair.cs`; the crews replace repair energy mending the worst system), numbers in `data/battle/systems/reactor.json`, with tests that read as sentences (`RepairTests`)
+- [x] 2.2 The Repair station in the game (`StationPanel.Repair.cs`): the queue by drag and drop, crews at work, time to whole, the energy row; docked and expanded, both skins (skin parity)
+- [x] 2.3 The Escape scene from both sides (`data/battle/scenes/reactor.json`, `concord_escape`, `krai_escape`) and its scripted captain (`data/playtests/escape.json`)

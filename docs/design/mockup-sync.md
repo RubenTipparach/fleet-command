@@ -75,18 +75,18 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 
 | Where | Mockup | Game | Task |
 |---|---|---|---|
-| Stations | Tactical, point defence, science, comms, repair, transport, fleet | "Not yet in the game" | `battle-console-engine` 2.1 |
-| Ship pages | Sensors, tractor (the contest), craft | "Not yet in the game" | `battle-console-engine` 2.2 |
-| Power | Reactor and Warp modes, the warp key on the speed slider | Reactor and Warp tabs disabled | `battle-console-engine` 2.3 |
-| Radar row | Map opens the tactical map; the event log | Map disabled; no log page | `battle-console-engine` 2.5 |
-| Weapon targeting (v71) | Aim-at icons, by-arc and precise weapons, the chopping block, shift-click hit details, pinned fire, the expanded Tactical grid | Not built | `weapon-targeting` |
-| Damage control (v72, v73) | The repair queue with crews, ordered by drag and drop | Repair power mends the worst system | `damage-control` |
-| Arming (v72) | Proximity torpedoes, overloaded lances | Overload for torpedoes and disruptors only | `weapon-arming` |
-| Cloaking (v72) | Cloaks on both sides, the ECCM sweep | Not built | `cloaking` |
-| Officers (v72) | An officer slot on every station with its hover card | Not built | `officers` |
-| Boarding defence (v72) | The Security page, the deck plan in 3D, teams and boarders | Not built | `boarding-defence` |
-| Wide keys, target weapons (v74) | Wide keys; the target's weapons as aim keys; point defence and missiles independently powered | Not built | `weapon-targeting` |
-| Test scenes | Seventeen scenes | Battle, Duel and Arming, from both sides, the Krai against the Concord in the approved ships only | `battle-scenarios` 2.1-2.5 |
+| Stations | Tactical, point defence, science, comms, repair, transport, fleet | All built (2026-11-06): Tactical (aim keys, contacts, pins, the expanded grid), Point defence (modes, own power), Science (scan, ECM, ECCM, cloak, sweep), Comms (hail, fleet orders, the event log), Repair (the crews' queue by drag and drop), Transport (capture, hit and run, cargo, mines, security), Fleet (stances, rules, retreat, take command) | none: in step; smaller gaps below |
+| Ship pages | Sensors, tractor (the contest), craft | All built: Sensors, Tractor (Hold and Break, grip, rounds, tether), Craft (fighters, barrage, shuttle) | none: in step |
+| Power | Reactor and Warp modes, the warp key on the speed slider | Built: the Reactor mode (coils, loops, heat), the Warp mode (banks, plot, risk), the warp key arming, plotting and jumping | none: in step |
+| Radar row | Map opens the tactical map; the event log | Built: the Map key and dial open the tactical map (10, 20, 40 km); the event log from Comms | none: in step |
+| Weapon targeting (v71) | Aim-at icons, by-arc and precise weapons, the chopping block, shift-click hit details, pinned fire, the expanded Tactical grid | Built (the chopping block is every hit's rule) | none: in step |
+| Damage control (v72, v73) | The repair queue with crews, ordered by drag and drop | Built | none: in step |
+| Arming (v72) | Proximity torpedoes, overloaded lances | Built | none: in step |
+| Cloaking (v72) | Cloaks on both sides, the ECCM sweep | Built, with nebulae, ECM and ECCM | the tactical map's nebula disc; the Target box's detail waiting on a scan |
+| Officers (v72) | An officer slot on every station with its hover card | Built: slots, hover cards, the helm, power, repair and science officers' abilities | the tactical, fleet, comms, point defence and security officers' abilities (`officers` 2.3); campaign officers in the battle's slots (2.5) |
+| Boarding defence (v72) | The Security page, the deck plan in 3D, teams and boarders | Built on the Transport station's Security tab; the deck plan drawn by projection, not a second renderer | each class's own deck plan (Petrel's and the Krai frigate's stand in) |
+| Wide keys, target weapons (v74) | Wide keys; the target's weapons as aim keys; point defence and missiles independently powered | Built | none: in step |
+| Test scenes | Twenty scenes | All twenty in the game from both sides (and the Ssarith's own), picked by type then faction | mines and rocks on the radar minimap; point defence against fighters; planets as solid rocks |
 | Target box | Holder's emblem, boarding tug of war | The target's systems display, the release X, and (2026-11-04) Target view and Camera lock: camera lock is the default on every target lock, a drag frees it (`docs/screenshots/game/target-view.png`) | `battle-console-engine` 2.2 |
 | Backdrop | Nebula sky with streaking dust | A simpler haze and stars | `battle-console-engine` |
 | Pointing in the view | three.js's raycaster from the pointer, through the camera | The same ray, by the inverse of the camera's own projection (2026-11-04: Godot's ProjectRayNormal ignored the view's offset frustum and missed by up to 2.16 km; owner: "mouse to screen ray cast is wrong, its not working like the JS version", "cant properly turn my ship in the desired direction"); the layout test checks a click lands within 1 m | none: in step |
@@ -140,3 +140,4 @@ the range shows that the game lacks, and what the game now has that the battle c
 | Mission strip and Withdraw (game ahead) | The strip over the battle with its objectives and a Withdraw key | The strip's frame with nothing behind the objectives, each ticked when met; Withdraw in the battle's menu in a mission (owner, 2026-11-06: "withdraw button should be in main meny, not here. make background transparent on goal") | `game-flow-engine` 2.8 |
 | Skirmish (game ahead) | One key per scenario and side | The scenario types once each, scrolled (wheel or bar), the type picked on the right with its objective and a Play as key for each faction (owner, 2026-11-06: "I only need the scenario type, then when I select a scenario, I need to see what faction I can play that scenario AS", "Also need a scroll bar") | `game-flow-engine` 2.9 |
 | Friendly targets (game ahead) | Mockup 2 selects friendly ships for transport | The game now locks friendly ships too (green bracket), its weapons holding on them (owner, 2026-11-06: "I also cant target friendly units", "firting between friendly units is not possible", "mainly for transporiting goods") | `battle-console-engine` (transport) |
+| Faction consoles (game ahead of nothing) | Mockups 2, 8, 15, 20: the Concord, Krai, Ssarith and Kelvane consoles | All four kits in the game, the console following the ship you command (Allied fleet, Four races), layout and parity tests across all four | the skins' own live drawings (systems outline, radar sweep, brackets), their own ship and officer names, the Kelvane emblem (`fleet-skins`) |

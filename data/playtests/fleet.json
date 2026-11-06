@@ -1,0 +1,16 @@
+{
+ "_doc": "The scripted captain with the fleet and point defence (the battle console mockup's Fleet and Point defence stations): pick the scenario, open the first wingman on the Fleet station, expand it and set it to hunt the weakest enemy and retreat below half its hull, return, set point defence to missiles only and back to auto, then fight it out. Played on the battles with wingmen, from both sides (concord_battle, krai_battle).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "fleet_wingman" },
+  { "do": "expand", "arg": "Station" },
+  { "do": "click", "arg": "fl.stance.hunt" },
+  { "do": "click", "arg": "fl.retreat.half" },
+  { "do": "collapse" },
+  { "do": "station", "arg": "pd" },
+  { "do": "click", "arg": "pd.missiles" },
+  { "do": "click", "arg": "pd.auto" },
+  { "do": "fight", "s": 600 }
+ ]
+}

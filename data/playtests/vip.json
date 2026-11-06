@@ -1,0 +1,36 @@
+{
+ "_doc": "The scripted captain's VIP scene: zoom out to see the troop ship astern, select it, beam the envoy over from Cargo, and watch it take the outpost with its marines. Played from both sides.",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "wheel",
+   "arg": "out",
+   "s": 8
+  },
+  {
+   "do": "select",
+   "arg": "corrin|ruhn"
+  },
+  {
+   "do": "station",
+   "arg": "transport"
+  },
+  {
+   "do": "click",
+   "arg": "tr.tab.cargo"
+  },
+  {
+   "do": "click",
+   "arg": "tr.inv.us.vip"
+  },
+  {
+   "do": "until_over",
+   "s": 400
+  }
+ ]
+}
