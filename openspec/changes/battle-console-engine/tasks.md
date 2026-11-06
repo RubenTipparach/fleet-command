@@ -42,4 +42,6 @@
 - [ ] 2.8 Sync task "distances x10 in the mockups" (owner, 2026-11-06: "1km -> 10km"): the game's battle distances are ten
   times the mockups' and its ships are framed at `tuning.json` `ship_frame_x` times their length (`docs/design/mockup-sync.md`);
   give mockups 2, 8, 15 and 16 a 1 km scene unit and draw their ships at the framed length, so the inlined data reads the same
+- [ ] 2.9 Sync task "missile tails" (owner, 2026-11-06: "your missiles don't have much of a tail"): give the special weapons
+  range (mockup 16) the game's and mockup 2's missile tail, 2.4 s long and 0.45 units wide, a point every 1/30 s of battle time
 - [ ] 2.7 Phone layouts, once the mockup has them

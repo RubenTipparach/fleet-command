@@ -181,7 +181,7 @@ public sealed partial class Main : Node
     private void Start(Scenario sc)
     {
         _x.Battle = new Battle(_x.Data, sc);
-        Engine.TimeScale = 1;   // the damage range's slow motion ends with its scene
+        Engine.TimeScale = sc.TimeScale;   // a weapons test scene's quarter speed; the damage range's slow motion ends with its scene
         UseKit(SkinOf(_x.Battle.Player));
         _x.State.Expanded = null;
         _x.State.Station = "comms";

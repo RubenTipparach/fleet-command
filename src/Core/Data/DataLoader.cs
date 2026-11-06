@@ -312,7 +312,7 @@ public static partial class DataLoader
                 st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac,
                 Start: s.ObjOrNull("start") is { } so ? ShipStartState.Read(so, classes[cls]) : null, Cloak: CloakShipStart(s),
                 Setup: CommsScenes.LoadSetup(s.ObjOrNull("setup"))));
-            ships[^1] = ScenarioExtras.Ship(s, ships[^1]);
+            ships[^1] = ScenarioExtras.Ship(s, ships[^1], classes[cls]);
             s.Done();
         }
         if (ships.Count == 0 || ships[0].Side != 0) throw new DataError($"{root.Where}.ships: the first ship is the player's and must be on side 0");

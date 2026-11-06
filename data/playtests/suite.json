@@ -58,6 +58,14 @@
   { "script": "distress", "play": "krai_distress" },
   { "script": "assault", "play": "concord_assault" },
   { "script": "assault", "play": "krai_assault" },
-  { "script": "campaign", "play": "campaign" }
+  { "script": "campaign", "play": "campaign" },
+  { "script": "weapons", "play": "weapon_lance" },
+  { "script": "weapons", "play": "weapon_disruptor" },
+  { "script": "weapons", "play": "weapon_torpedo" },
+  { "script": "weapons", "play": "weapon_missile" },
+  { "script": "weapons", "play": "weapon_pd" },
+  { "script": "weapons", "play": "weapon_chorus" },
+  { "script": "weapons", "play": "weapon_quell" },
+  { "script": "weapons", "play": "weapon_forge" }
  ]
 }

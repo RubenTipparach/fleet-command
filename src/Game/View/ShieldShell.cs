@@ -1,8 +1,8 @@
 // ShieldShell: a ship's 3D shield display (battle-console design; owner, 2026-11-01: "shield facing should be hexagons
 // here"; 2026-11-04: "shield display not matching mockup, also one change needed is to add shield display to all ships as
-// well"). A port of the battle console mockup's shieldShell(): a flat hexagon in the ship's plane, an edge toward the bow,
-// each of the six facings up to three glowing bands outward, a small gap between facings, each band a soft line of light
-// (bright along its middle, fading to either side), added to the scene. A facing shows as many bands as its strength
+// well"). A port of the battle console mockup's shieldShell(): a hexagon in the ship's plane, an edge toward the bow,
+// each of the six facings up to three glowing bands outward, a small gap between facings, each band a slab of soft light as tall as
+// it is wide (bright along its middle, fading to either side), added to the scene. A facing shows as many bands as its strength
 // earns out of its class's shield_layers (a frigate one, larger ships more; for three: above two thirds three, above a third two, else one; none when the shields are down or the facing
 // is empty), in its strength's colour (the systems display's rule, ShipPanel.ShieldColorOf); a hit brightens its inner
 // band. Every ship carries one. View only: it reads the simulation, never writes it.
@@ -44,12 +44,28 @@ public sealed partial class ShieldShell : Node3D
             for (int l = 0; l < 3; l++)
             {
                 float r0 = rc + l * step, b0 = i * Mathf.Pi / 3 - half + g, b1 = i * Mathf.Pi / 3 + half - g;
-                var v = new[] { At(b0, r0 * k0), At(b1, r0 * k0), At(b1, (r0 + w) * k0), At(b0, (r0 + w) * k0) };
+                Vector3 a = At(b0, r0 * k0), b = At(b1, r0 * k0), c = At(b1, (r0 + w) * k0), d = At(b0, (r0 + w) * k0), up = new(0, w / 2, 0);
+                // a slab, not a flat strip (owner, 2026-11-06: "Shield faces I think should have zdepth"): as tall as it is wide,
+                // its top and bottom faces glowing across the band's width, its inner and outer walls across its height
+                Vector3[][] quads =
+                {
+                    new[] { a + up, b + up, c + up, d + up }, new[] { a - up, b - up, c - up, d - up },
+                    new[] { a - up, b - up, b + up, a + up }, new[] { d - up, c - up, c + up, d + up },
+                };
+                var v = new Vector3[16];
+                var uv = new Vector2[16];
+                var idx = new int[24];
+                for (int q = 0; q < 4; q++)
+                {
+                    for (int k = 0; k < 4; k++) { v[q * 4 + k] = quads[q][k]; uv[q * 4 + k] = new Vector2(k is 1 or 2 ? 1 : 0, k >= 2 ? 1 : 0); }
+                    int n = q * 4;
+                    new[] { n, n + 1, n + 2, n, n + 2, n + 3 }.CopyTo(idx, q * 6);
+                }
                 var arrays = new Godot.Collections.Array();
                 arrays.Resize((int)Mesh.ArrayType.Max);
                 arrays[(int)Mesh.ArrayType.Vertex] = v;
-                arrays[(int)Mesh.ArrayType.TexUV] = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
-                arrays[(int)Mesh.ArrayType.Index] = new[] { 0, 1, 2, 0, 2, 3 };
+                arrays[(int)Mesh.ArrayType.TexUV] = uv;
+                arrays[(int)Mesh.ArrayType.Index] = idx;
                 var mesh = new ArrayMesh();
                 mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
                 var m = new StandardMaterial3D

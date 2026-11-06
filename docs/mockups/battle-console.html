@@ -5584,8 +5584,8 @@ controls.mouseButtons = { LEFT: -1, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUS
 const MODELS = new Map();
 const glowTex = (() => { const c = paint(32, 32, (x) => { const g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(255,255,255,0.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); }); const t = new THREE.CanvasTexture(c); return t; })();
 // The 3D shield display (owner, 2026-11-01: "shield facing should be hexagons here", with the reference game's flat
-// glowing facets round the ship): a flat hexagon in the ship's plane, one glowing band per facing, an edge toward the
-// bow. A band's colour is its facing's strength (as on the systems display); it brightens when hit.
+// glowing facets round the ship): a hexagon in the ship's plane, one glowing band per facing, an edge toward the
+// bow, each band a slab as tall as it is wide. A band's colour is its facing's strength (as on the systems display); it brightens when hit.
 const bandTex = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 64; const x = c.getContext('2d'), gr = x.createLinearGradient(0, 0, 0, 64);
   gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.35)'); gr.addColorStop(0.62, 'rgba(255,255,255,1)'); gr.addColorStop(0.75, 'rgba(255,255,255,0.3)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
   x.fillStyle = gr; x.fillRect(0, 0, 4, 64); return new THREE.CanvasTexture(c); })();
@@ -5598,9 +5598,16 @@ function shieldShell(s) {
     for (let l = 0; l < 3; l++) {
       const r0 = Rc + l * step, b0 = (i * 60 - 30 + 60 * gap / 2) * DEG, b1 = (i * 60 + 30 - 60 * gap / 2) * DEG, k0 = Math.cos(30 * DEG) / Math.cos(30 * DEG - 60 * gap / 2 * DEG);
       const [ax, az] = at(b0, r0 * k0), [bx, bz] = at(b1, r0 * k0), [cx2, cz] = at(b1, (r0 + w) * k0), [dx, dz] = at(b0, (r0 + w) * k0);
+      // a slab, not a flat strip (owner, 2026-11-06: "Shield faces I think should have zdepth"): as tall as it is wide, its top
+      // and bottom faces glowing across the band's width, its inner and outer walls across its height
+      const y = w / 2, q = (p) => p.flat(), pos = [], uv = [], idx = [];
+      const quad = (a, b, c, d) => { const n = pos.length / 3; pos.push(...q([a, b, c, d])); uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(n, n + 1, n + 2, n, n + 2, n + 3); };
+      for (const h of [y, -y]) quad([ax, h, az], [bx, h, bz], [cx2, h, cz], [dx, h, dz]);
+      quad([ax, -y, az], [bx, -y, bz], [bx, y, bz], [ax, y, az]);
+      quad([dx, -y, dz], [cx2, -y, cz], [cx2, y, cz], [dx, y, dz]);
       const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute([ax, 0, az, bx, 0, bz, cx2, 0, cz, dx, 0, dz], 3));
-      geo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2)); geo.setIndex([0, 1, 2, 0, 2, 3]);
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
       face.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: bandTex, color: 0x3fa9f0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })));
     }
     g2.add(face);
@@ -5928,7 +5935,7 @@ const SHOT_POOL = {};
 // as the page's other looks are, until the game's version moves them to data). This page has no bloom pass: the range
 // shows the full look.
 const WFX = window.FCWeaponFX(THREE, { scene, hazeScene: new THREE.Scene(), camera, renderer, SFX: null, rand: rng(4242) });
-const SHOT_FX = { beam_w_u: 0.34, pd_w_u: 0.2, bolt_w_u: 0.45, bolt_len_u: 1.0, torpedo_u: 2.2, missile_u: 0.7, missile_len_u: 0.22, trail_w_u: 0.2, missile_trail_w_u: 0.3, trail_s: 0.8, bead_u: 1.4, bead_s: 0.012, bead_life_s: 0.4 };
+const SHOT_FX = { beam_w_u: 0.34, pd_w_u: 0.2, bolt_w_u: 0.45, bolt_len_u: 1.0, torpedo_u: 2.2, missile_u: 0.7, missile_len_u: 0.22, trail_w_u: 0.2, missile_trail_w_u: 0.45, missile_trail_s: 2.4, missile_trail_n: 80, missile_trail_every_s: 1 / 30, trail_s: 0.8, bead_u: 1.4, bead_s: 0.012, bead_life_s: 0.4 };
 const FX_POOL = { lance: [], tracer: [], bolt: [], six: [], ball: [], dart: [] }, TRAILS = new Map(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 function takeFx(kind, used) {
   const pool = FX_POOL[kind]; let o = pool[used[kind]];
@@ -5956,8 +5963,8 @@ function shotFx(dt) {
         if (L > 1e-4) { sh.px = sh.x; sh.pz = sh.z; } }
       // a missile's tail is one ribbon; a torpedo's is a trail of separate beads (owner: "torpedo should have like discrete
       // trail instead of a long streak")
-      let tr = TRAILS.get(sh); if (!tr) { tr = sh.kind === 'torpedo' ? WFX.beads({ n: 40, size: SHOT_FX.bead_u, life: SHOT_FX.bead_life_s, every_s: SHOT_FX.bead_s, color: sh.color }) : WFX.trail({ n: 40, width: SHOT_FX.missile_trail_w_u, life: SHOT_FX.trail_s, color: sh.color, color2: 0x2a3f80 }); TRAILS.set(sh, tr); }
-      tr.push(_a.set(sh.x, 0.05, sh.z), now); tr.last = now; live.add(sh);
+      let tr = TRAILS.get(sh); if (!tr) { tr = sh.kind === 'torpedo' ? WFX.beads({ n: 40, size: SHOT_FX.bead_u, life: SHOT_FX.bead_life_s, every_s: SHOT_FX.bead_s, color: sh.color }) : WFX.trail({ n: SHOT_FX.missile_trail_n, width: SHOT_FX.missile_trail_w_u, life: SHOT_FX.missile_trail_s, color: sh.color, color2: 0x2a3f80 }); TRAILS.set(sh, tr); }
+      if (sh.kind === 'torpedo' || !(now - (tr.pushed ?? -1e9) < SHOT_FX.missile_trail_every_s)) { tr.push(_a.set(sh.x, 0.05, sh.z), now); tr.pushed = now; } tr.last = now; live.add(sh);
     }
   }
   for (const r of FX_POOL.lance.slice(used.lance)) r.u.uIntensity.value = 0;
@@ -5966,7 +5973,7 @@ function shotFx(dt) {
   for (const k of ['six', 'ball']) for (const f of FX_POOL[k].slice(used[k])) f.u.uI.value = 0;
   for (const d of FX_POOL.dart.slice(used.dart)) d.group.visible = false;
   // a trail outlives its shot until it has faded where it flew
-  for (const [sh, tr] of TRAILS) if (!live.has(sh) && now - tr.last > SHOT_FX.trail_s) { tr.remove(); TRAILS.delete(sh); }
+  for (const [sh, tr] of TRAILS) if (!live.has(sh) && now - tr.last > (sh.kind === 'torpedo' ? SHOT_FX.trail_s : SHOT_FX.missile_trail_s)) { tr.remove(); TRAILS.delete(sh); }
   WFX.step(dt);
 }
 // The rocks (owner, 2026-11-02: "asteroid meshes need work!"): each rock's surface is pushed in and out by one smooth

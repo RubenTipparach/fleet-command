@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "fire" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -138,6 +138,8 @@ public sealed partial class ScriptedCaptain : Node
             case "select": return await Select(b.Arg);
             case "repeat": return await Repeat(b.Arg.Split(','), b.Seconds > 0 ? b.Seconds : 60);
             case "until_over": return await UntilOver(b.Seconds > 0 ? b.Seconds : 300);
+            // a weapons test scene: fire on the locked target for s seconds, from where the ship stands (no helm order)
+            case "fire": return await Fight(b.Seconds > 0 ? b.Seconds : 30, steer: false);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -147,8 +149,8 @@ public sealed partial class ScriptedCaptain : Node
     // of battle time. With lingerS, a captain watching a kill: it stays on the wreck that long before locking the next. With
     // aims (a comma list, the Disable scene's "engines,weapons"), a captain disabling a ship: it aims, on the Tactical
     // station's Aim at keys, at the first of them whose key is not yet lit Disabled or Destroyed on the locked target. With
-    // sweep, against cloaked ships: with none in sight, the Science station's Sweep.
-    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false)
+    // sweep, against cloaked ships: with none in sight, the Science station's Sweep. Without steer, it gives no helm order.
+    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool steer = true)
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
@@ -191,7 +193,7 @@ public sealed partial class ScriptedCaptain : Node
             }
             hadTarget = B.TargetOf(me) != null;
             // the Intercept key lit is Intercept on: pressing it again would turn it off (free heading), so only press it unlit
-            if (!ordered && B.TargetOf(me) != null)
+            if (steer && !ordered && B.TargetOf(me) != null)
             {
                 if (me.Engaged && me.Manoeuvre == "intercept") ordered = true;
                 else
