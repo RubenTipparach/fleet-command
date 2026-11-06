@@ -45,15 +45,15 @@
       "bay": 0.35
     },
     "auto_floods": {
-      "step_m": 22,
+      "step_m": 44,
       "from_stern_m": 6,
-      "top_x_frac": 0.4
+      "top_x_frac": 0
     },
     "flood": {
-      "standoff_m": 2.4,
+      "standoff_m": 4.8,
       "cone_deg": 120,
       "tilt_deg": 22,
-      "power_w": 1600
+      "power_w": 6400
     }
   },
   "ships": {
@@ -290,29 +290,12 @@
       "lighting": {
         "floods": [
           {
-            "face": "top",
-            "at": [
-              10,
-              -34
-            ],
-            "aim": "fwd"
-          },
-          {
             "face": "port",
             "at": [
               -30,
               1.5
             ],
             "aim": "fwd"
-          },
-          {
-            "face": "bottom",
-            "at": [
-              0,
-              12
-            ],
-            "aim": "fwd",
-            "tilt_deg": 10
           }
         ],
         "auto_floods": {
@@ -547,29 +530,12 @@
       "lighting": {
         "floods": [
           {
-            "face": "top",
-            "at": [
-              4,
-              -40
-            ],
-            "aim": "fwd"
-          },
-          {
             "face": "port",
             "at": [
               -40,
               1
             ],
             "aim": "fwd"
-          },
-          {
-            "face": "top",
-            "at": [
-              0,
-              16
-            ],
-            "aim": "fwd",
-            "tilt_deg": 10
           }
         ],
         "auto_floods": {
@@ -804,29 +770,12 @@
       "lighting": {
         "floods": [
           {
-            "face": "top",
-            "at": [
-              8,
-              -40
-            ],
-            "aim": "fwd"
-          },
-          {
             "face": "port",
             "at": [
               -38,
               2
             ],
             "aim": "fwd"
-          },
-          {
-            "face": "top",
-            "at": [
-              0,
-              22
-            ],
-            "aim": "fwd",
-            "tilt_deg": 8
           }
         ],
         "auto_floods": {
@@ -1052,29 +1001,12 @@
       "lighting": {
         "floods": [
           {
-            "face": "top",
-            "at": [
-              6,
-              -42
-            ],
-            "aim": "fwd"
-          },
-          {
             "face": "port",
             "at": [
               -36,
               1
             ],
             "aim": "fwd"
-          },
-          {
-            "face": "top",
-            "at": [
-              13,
-              22
-            ],
-            "aim": "fwd",
-            "tilt_deg": 10
           }
         ],
         "auto_floods": {
@@ -1367,29 +1299,12 @@
       "lighting": {
         "floods": [
           {
-            "face": "top",
-            "at": [
-              16,
-              -68
-            ],
-            "aim": "fwd"
-          },
-          {
             "face": "port",
             "at": [
               -70,
               4.2
             ],
             "aim": "fwd"
-          },
-          {
-            "face": "top",
-            "at": [
-              10,
-              48
-            ],
-            "aim": "fwd",
-            "tilt_deg": 8
           }
         ],
         "auto_floods": {
@@ -1630,29 +1545,12 @@
       "lighting": {
         "floods": [
           {
-            "face": "top",
-            "at": [
-              8,
-              -60
-            ],
-            "aim": "fwd"
-          },
-          {
             "face": "port",
             "at": [
               -50,
               1
             ],
             "aim": "fwd"
-          },
-          {
-            "face": "top",
-            "at": [
-              6,
-              22
-            ],
-            "aim": "fwd",
-            "tilt_deg": 10
           },
           {
             "face": "port",
