@@ -9,7 +9,7 @@ Open questions for the owner live in one survey page (CLAUDE.md section 8):
 - Answers: the artifact's `answers` collection, read with `ArtifactData`.
 
 Question id prefixes: `G` game and feel, `U` the console and screens, `T` tech and platforms, `A` art,
-`S` sound and music, `P` playtesting, `F` the game flow (mockup 1), `B` the battle console (mockup 2), `R` the reactor (mockup 2), `E` faction emblems (mockup 9). Ids are
+`S` sound and music, `P` playtesting, `F` the game flow (mockup 1), `B` the battle console (mockup 2), `R` the reactor (mockup 2), `E` faction emblems (mockup 9), `X` special weapons (mockup 16), `D` missiles (mockup 16). Ids are
 never reused.
 
 ## Mockups
@@ -22,6 +22,8 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
 
 ## Guides
 
+- Fleet Command Missions: https://claude.ai/artifact/LRgd2iRm8gdTZ84i7htXhH (source `docs/design/mission-guide.html`, record in
+  `docs/artifacts/mission-guide/`): mission types, outcome grades, scenarios and story chains.
 - Emblem Design Guide: https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V (cloud session account copy: https://claude.ai/artifact/AewTrvPYf4gyF1kP1gxkDk) (source `docs/design/emblem-guide.html`, record in
   `docs/artifacts/emblem-guide/`). How faction emblems are designed: sketch first with every choice explained, the
   owner picks, then 3D; the rules; the owner's notes, kept on the page.
@@ -36,6 +38,15 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
 - Ship Design Bible: https://claude.ai/artifact/QxFV2qGabbN2chE3zd8km7 (cloud session account copy: https://claude.ai/artifact/4nhxxoGusHfkXX63Xt25bm) (source `docs/design/ship-bible.html`, record in
   `docs/artifacts/ship-bible/`). How every ship is designed, worked on the Concord line: rooms first as block floor
   plans (`data/ships/`), the hull fitted round them, then parts, windows, lights, markings, material and damage.
+
+## Sound and music
+
+- Fleet Command Sounds (mockup 17): `docs/mockups/sounds.html`, record in `docs/artifacts/sounds/`. Every sound effect
+  with a play button; the method is the `sound-effects` skill, every original is in `AUDIO_SOURCES.md`.
+- Fleet Command Music (mockup 18): `docs/mockups/music.html`, record in `docs/artifacts/music/`. The score; its motifs
+  are [`music.md`](music.md), the method the `music-authoring` skill.
+
+Both are published from the desktop session; their links go here and on the tracker.
 
 ## The screen
 

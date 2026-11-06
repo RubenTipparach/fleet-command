@@ -72,6 +72,43 @@ crosses it: an arc over the head and a flat edge under the flat foot (owner: "ti
 line can be flat to conform to the key hole/beacon shape more"). This change adds no livery; the band is the Concord line's own. (A pinstripe layout, after a reference picture of
 an emblem heading two pinstripes, was tried and dropped.)
 
+**On the real model** (owner, 2026-11-04: "can you put that on the actual model?"): every Concord ship in the Concord line
+(mockup 6) carries it, on its forward livery band, port side, 3 % of its length tall, its foot 0.3 m above the waterline
+service band, and the hull shader keeps windows out from under it. One implementation, `docs/mockups/lib/concord-emblem.js`
+(placement, the band's break, the paint as a field/ship/star mask so the field follows the chosen livery), used by mockup
+6's hull shader and mockup 11. The Tern (a reference ship, not ours) carries none. Mockup 11, the hull study on a plain Petrel, is retired now that the real model carries
+the emblem (owner, 2026-11-04: "Concord emblem on the hull - get rid of this"). Borders (owner, 2026-11-04: "lets add that border back in here ... border on both
+edge of lines and emblem"): the emblem's frame is drawn in the band's seam colour, the band's cut edges carry a seam as wide
+as its side seams (0.22 m), and 0.35 m of bare hull stands between the two.
+
+## The Krai Warhost (2026-11-04)
+
+Owner, 2026-11-04: "begin krai emblem design, this faction believes strongly in tradition. give them some sort of
+asymmetric logo". Added to the Krai's world view (war is the only honest test; rank is won in blood): tradition is kept,
+carried and added to, never replaced. Three asymmetric sketches on the Emblem Design Guide, each a record that only
+grows one way: KA, the heirloom blade (the hooked, barbed Krai bayonet with a blood groove, one quillon and a cut-stone
+pommel) rising across a lopsided shield whose edge carries a tally notch per generation (recommended); KB, the lineage
+standard (a blade finial, a swallow-tailed banner flying forward, a chevron per elder, the founder's red); KC, the fang
+torc (a faceted crescent, a trophy fang per chief from the founder's red one, the rest of its edge left bare). Palette:
+blade steel `#c9d0d8` and blood red `#d0202a` on a blackened field on black; near-black `#1c1416` and `#b3121b` on a bone
+field on white. Each sketch is measured for joins and its outline against both grounds (12.7:1 and 18.1:1 for KA).
+
+**Picked: the Fang Torc, in two tiers** (owner, 2026-11-04: "fang toc, add a star in the middle, circle around it for 3d
+emblem version, a thin crescent border to the outer part of the screscent", then "I want a more complex version of this
+for emblem, but use thesimple logo for the ship livery", and of the ring version "bro this version slaps", "Thats it",
+"the forge star you had was even better", "keep that"). **KC+, the emblem**: the faceted torc with the founder's red fang
+and three smaller fangs, an eight-point forge star in its opening, a thin crescent 4 units outside its outer edge, and a
+ring (radii 45 to 49) round all of it, for the 3D badge. **KC, the livery mark**: the same torc, fangs and star with no
+ring and no thin crescent, for the Krai hulls. A three-point emperor's star over three great houses (owner: "they have an
+emperor cheif ... a star ruling over the 3 great houses") was drawn and then set aside for the forge star; the emperor
+and the three great houses stand as Krai culture. Flagged to the owner: a star beside a crescent is close to the star and
+crescent, a real nation's and faith's symbol (rule E8); the eight points, the facets, the fangs and the ring keep it apart.
+**The 3D badge** (owner, 2026-11-04: "make the 3d version of the fang torc"): mockup 14, `docs/mockups/krai-emblem-3d.html`,
+built from the guide's own parts (`assets/emblems/krai/kc.parts.json`) in Blender (`tools/blender/emblem_krai.py`) and
+three.js on the shared badge library (`docs/mockups/lib/emblem-badge.js`). Blade steel ring, torc, thin crescent, forge
+star and fangs, a blackened steel field, the founder's fang in blood enamel; heights in mockup-work.md section 14.
+Next: KC on the Krai ships' livery (the Krai ship page belongs to the Concord ships thread).
+
 ## The rules for an emblem
 
 | Rule | Says | Why |
@@ -144,8 +181,38 @@ The ship bible changes only if the owner accepts it.
 | E5 | Vhorr Brood | The egg in its ribs |
 | E6 | Aelith Conclave | A triangle of light in a drop of gold |
 | E7 | Tarsine Remnant | The stepped throne under the first star |
-| E8 | Krai Warhost | The bayonet in the triangle, between two fangs |
+| E8 | Krai Warhost | Superseded (owner, 2026-11-04: tradition, asymmetric): KA, the heirloom blade, recommended; KB and KC on the guide |
 | E9 | Ombrai | An eye in a crescent, painted on their hulls |
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |
 | E12 | Where on a hull? | Decided for the Concord (owner, 2026-11-04): one emblem on the port side, 3 % of ship length |
+
+## The Ssarith Hunt (2026-11-04)
+
+Owner, 2026-11-04: "lets design an emblem for the SSarith". Under the owner's rule that a species' looks are not its
+design (CLAUDE.md section 1; the Ship Design Bible chapter 13, C1-C5), nothing is taken from the Ssarith's bodies. The
+Hunt's culture is one line in the console skins design ("the hunt is the only honest sport: the quarry must be worthy, the
+stalk patient, the kill earned and counted"), too thin to design from, so, as survey H1 recommends (blank, so accepted),
+three traditions inside the Hunt are drafted for the owner to pick, change or reject, each with a sketch that names it:
+
+| Sketch | Tradition | Outline | What it shows |
+|---|---|---|---|
+| SA, the Open Gate | The Fair Chase, a school of law: a hunt that leaves the quarry no way out is slaughter | A marker stone (a hunting ground's boundary stone) | Three closing brackets, the fourth left out, and three Watch green chevrons running out through the gap |
+| SB, the Witness Tally | The Tally Keepers, a guild of witnesses: nothing counts unless witnessed and recorded | A hanging tablet | A cord tied at the notch with the count across it (long marks the witness's, short the hunter's), three to a season, the newest in Watch green, the witness's seal below |
+| SC, the Long Watch | The Watchers, stargazers turned navigators: patience first | A low blind | The horizon joined to the blind, the four-point watch star over it, its path across the sky half travelled |
+| SD, the Bow Rites (recommended; the owner's idea) | The Bow Rites (owner, 2026-11-04: "bows and arrows lined up ... it has to be ssarith bow and arrow", "different sizes to represent their different stages of manhood", then "3 bow and arrows overlapping pointed to the right"): a new bow made at each stage of life, the old ones kept | A pennon, square at the back, pointing right | Three of the Hunt's own bows (cut from flat plate: straight facets, a square-cut recurve, a heavy riser), each braced with its arrow nocked and aimed right, overlapping like a hand of cards, largest behind on the left, smallest in front on the right; a one-barbed leaf head; the youngest's head in Watch green |
+
+Palette (provisional, from the Hunt console): Bone (the Tally Keepers' tablets), Watch green (the phosphor of the tracking
+tubes), Canopy (the hunting ground at night). Each sketch passes the stereotype test (C5) and the measured checks (joins,
+contrast on black and on white). The guide gains a rule for every emblem: Culture, not anatomy. The traditions are the
+owner's to set (C4); all three are provisional until H1 is answered or a sketch is picked.
+
+**The 3D badge** (owner, 2026-11-05: "more colors and shading on the bow and green arrows on the 3d rendering", "shade the
+bow parts with like wood and the arrows green with blood", "Background should be like a beige, dull brown and dry green
+forest", "make each arrowhead unique", "holographic leaves", "Should be 3d leaves shapes"): mockup 19,
+`docs/mockups/ssarith-emblem-3d.html`, from the guide's own parts (`assets/emblems/ssarith/sd.parts.json`) in Blender
+(`tools/blender/emblem_ssarith.py`) and three.js (the shared badge library). Four new Material Maker graphs: laminated wood,
+Watch green lacquer, the lacquer under dried blood, and a dry forest in enamel; holographic leaves at three depths laid out
+by `tools/emblems/ssarith_leaves.py`. SD's three arrowheads are now each their own shape, one per stage. Heights and
+materials in mockup-work.md section 19.
+

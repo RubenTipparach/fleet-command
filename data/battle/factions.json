@@ -21,5 +21,15 @@
   "hull": "#6a6062",
   "trim": "#d02a20",
   "skin": "krai"
+ },
+ "ssarith": {
+  "name": "Ssarith Hunt",
+  "hull": "#8a9478",
+  "trim": "#5fd07a"
+ },
+ "neutral": {
+  "name": "Unclaimed",
+  "hull": "#a0a6ae",
+  "trim": "#7c8794"
  }
 }

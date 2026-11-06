@@ -1,0 +1,58 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "first_blood",
+ "name": "First blood",
+ "glyph": "2",
+ "kind": "story",
+ "type": "Patrol",
+ "reward_cr": 500,
+ "where": "plain && dist_home >= 3 && dist_home <= 5",
+ "objective": "Drive off the raider watching your home port.",
+ "brief": "A single raider has been shadowing traffic out of {home}. You are the nearest ship. Drive it off.",
+ "battle": [
+  {
+   "name": "First blood",
+   "groups": [
+    {
+     "id": "raider",
+     "faction": "vos",
+     "count": 1,
+     "role": "enemy",
+     "label": "Raider"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "off",
+     "text": "Destroy the raider",
+     "primary": true,
+     "done": "alive(raider) == 0"
+    },
+    {
+     "id": "kill",
+     "text": "Keep your hull above half",
+     "done": "hull_min(fleet) > 0.5"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 5,
+    "vos": -5
+   },
+   "log": "The raider is gone; the port has noticed you."
+  },
+  {
+   "next": [
+    {
+     "mission": "first_blood"
+    }
+   ],
+   "log": "The raider got away. It will be back."
+  }
+ ]
+}

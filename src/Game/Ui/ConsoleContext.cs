@@ -21,6 +21,8 @@ public sealed class ConsoleState
     public bool ShowTarget = true;
     /// <summary>The view's scene selector is open.</summary>
     public bool SceneOpen;
+    /// <summary>The battle is a campaign mission's: the mission strip shows its objectives, and there is no scene selector.</summary>
+    public bool InMission;
 }
 
 public sealed class ConsoleContext

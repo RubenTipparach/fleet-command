@@ -136,9 +136,10 @@ public static class SystemsDisplay
             x.Fonts.Draw(ci, Math.Round(s.ShieldsUp ? s.Shields[i] : 0).ToString(), np.X, np.Y + (big ? 7 : 5), big ? 20 : 13, c.Text, HorizontalAlignment.Center, 0, 600);
         }
 
-        // the ship from above, a stand-in schematic by hull shape
+        // the ship from above: its schematic (two white layers, tinted here in the skin's colours: the hull dark, the wire
+        // bright), or a stand-in by hull shape for a class whose ship is not designed yet
         float L = R * 0.72f;
-        Schematic(ci, s.Class.Shape, centre, L, c.Sky);
+        if (!Schematics.Draw(ci, Schematics.KeyOfModel(s.Class.Model), centre, L, c.Signal, c.Sky)) Schematic(ci, s.Class.Shape, centre, L, c.Sky);
 
         // subsystems in two columns
         for (int side = 0; side < 2; side++)
@@ -229,6 +230,25 @@ public static class SystemsDisplay
             case "torpedo": ci.DrawCircle(c, r * 0.3f, ink, true, -1, true); ci.DrawArc(c, r * 0.8f, 0, Mathf.Tau, 20, ink, 2, true); break;
             case "bolt": ci.DrawCircle(c - new Vector2(r * 0.42f, 0), r * 0.3f, ink, true, -1, true); ci.DrawCircle(c + new Vector2(r * 0.42f, 0), r * 0.3f, ink, true, -1, true); break;
             case "missile": Shapes.RoundRect(ci, new Rect2(c - new Vector2(r * 0.3f, r * 0.85f), new Vector2(r * 0.6f, r * 1.7f)), ink, r * 0.3f); break;
+            // the special weapons (special-weapons design: a beam with strands, a lattice ball, a spike)
+            case "chorus":
+                ci.DrawLine(c - new Vector2(r, 0), c + new Vector2(r, 0), ink, 2, true);
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    var pts = new Vector2[9];
+                    for (int i = 0; i < 9; i++) { float u = i / 8f; pts[i] = c + new Vector2(-r + 2 * r * u, s * r * 0.45f * Mathf.Sin(u * Mathf.Tau)); }
+                    ci.DrawPolyline(pts, ink, 1.5f, true);
+                }
+                break;
+            case "quell":
+            {
+                var hex = new Vector2[7];
+                for (int i = 0; i < 7; i++) { float a = i * Mathf.Tau / 6; hex[i] = c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r * 0.8f; }
+                ci.DrawPolyline(hex, ink, 2, true);
+                ci.DrawCircle(c, r * 0.25f, ink, true, -1, true);
+                break;
+            }
+            case "slug": ci.DrawColoredPolygon(new[] { c + new Vector2(r, 0), c + new Vector2(-r * 0.7f, -r * 0.45f), c + new Vector2(-r * 0.7f, r * 0.45f) }, ink); break;
             default:
                 ci.DrawCircle(c, r * 0.25f, ink, true, -1, true);
                 for (int i = 0; i < 3; i++) { float a = -Mathf.Pi / 2 + i * Mathf.Tau / 3; ci.DrawArc(c, r * 0.75f, a - 0.6f, a + 0.6f, 8, ink, 2, true); }

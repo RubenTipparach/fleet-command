@@ -1,0 +1,19 @@
+{
+ "note": "Blender renders of the Krai badge KC+, the fang torc (tools/blender/emblem_krai.py), shown on the 3D page beside the live badge.",
+ "pieces": {
+  "face": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "kc-face.png"
+  },
+  "angle": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "kc-angle.png"
+  }
+ }
+}

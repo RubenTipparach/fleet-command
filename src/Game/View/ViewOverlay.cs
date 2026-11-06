@@ -3,7 +3,9 @@
 // and speed), draws the helm ring with the turn still to make, the shots, the readout of range and weapons in arc and
 // charged, the last officer's message, and the pause and end banners. Input: a left click on empty space is the helm
 // (come to that bearing), a click on an enemy locks it, a drag on or near the helm ring steers, a right drag turns the
-// camera, the wheel zooms. Expanded, a click on the battle brings the console back.
+// camera, the wheel zooms. Expanded, a click on the battle brings the console back. In a damage range (Battle.Range) it
+// also draws the range's keys, the ship mockups' Damage tab (weapon, fire, shields, the programs, repair, slow motion),
+// and a left click on a ship's plating fires the chosen weapon at the point clicked.
 using System;
 using System.Linq;
 using FleetCommand.Game.Ui;
@@ -121,6 +123,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             if (_view.PlaneAt(local + Position) is { } h) B.HetTo(h.X, h.Z);
             return;
         }
+        if (B.Scenario.DamageRange && _x.State.Expanded == null && RangeClick(local)) return;
         if (ShipAt(local) is { } s) { if (s.Side != B.Player.Side) B.Lock(s.Id); return; }
         if (_x.State.Expanded != null) { _x.Act.Return(); return; }
         if (_view.PlaneAt(local + Position) is { } q)
@@ -150,8 +153,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Ship? t = b.TargetOf(me);
         var view = new Rect2(Vector2.Zero, Size);
 
-        // the 3D shield display is always shown (owner, 2026-11-03: "Re move shield view toggle")
-        ShieldHex(me);
+        // the 3D shield display is always shown (owner, 2026-11-03: "Re move shield view toggle"): every ship's, drawn in the
+        // scene by BattleView (ShieldShell)
 
         // the helm ring and the turn still to make
         bool ringHot = _steering || (!_leftDown && !_rightDown && ShipAt(_mouse) == null && NearRing(_mouse));
@@ -166,17 +169,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (Local(me.X + fo.X * (RingM - 60), me.Z + fo.Z * (RingM - 60)) is { } t0 && Local(me.X + fo.X * (RingM + 60), me.Z + fo.Z * (RingM + 60)) is { } t1)
             DrawLine(t0, t1, C.Lilac, 3, true);
 
-        // shots
-        foreach (Shot sh in b.Shots)
-        {
-            var col = new Color(sh.Color);
-            if (sh.Kind == "beam")
-            {
-                if (Local(sh.X, sh.Z) is { } a && Local(sh.TX, sh.TZ) is { } bb)
-                    DrawLine(a, sh.Hit || sh.Intercept ? bb : bb + (bb - a).Normalized().Orthogonal() * 18, new Color(col, (float)Math.Clamp(sh.Life / b.Tuning.BeamLifeS, 0.2, 1)), 2.5f, true);
-            }
-            else if (Local(sh.X, sh.Z) is { } p) { DrawCircle(p, 4, col, true, -1, true); DrawCircle(p, 8, new Color(col, 0.25f), true, -1, true); }
-        }
+        // shots are drawn in the 3D view (ShotView), not over it
 
         // contacts: a ring each in its faction's colour (friendlies green), names under them; the locked target
         // bracketed with its name, class, range and speed, and its hull under that
@@ -226,8 +219,10 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
         Key("v.target", new Rect2(14, 12, 90, 30), "Target", () => _x.State.ShowTarget = !_x.State.ShowTarget, _x.State.ShowTarget, "Show or hide the Target box");
-        ScenePicker();
-        if (!_x.State.SceneOpen) f.DrawRich(this, new[] { ("OBJECTIVE · ", C.Lilac), (b.Scenario.Objective.ToUpperInvariant(), C.Text) }, 14, 64, 16, Size.X * 0.62f);
+        // a campaign mission's battle has its own objectives (the mission strip) and no scene selector
+        if (!_x.State.InMission) ScenePicker();
+        if (b.Scenario.DamageRange && !_x.State.SceneOpen) RangePanel();
+        if (!_x.State.SceneOpen && !_x.State.InMission) f.DrawRich(this, new[] { ("OBJECTIVE · ", C.Lilac), (b.Scenario.Objective.ToUpperInvariant(), C.Text) }, 14, 64, 16, Size.X * 0.62f);
         if (_x.State.Paused) f.Draw(this, "PAUSED · ORDERS STILL TAKEN", Size.X / 2, 40, 28, C.Caution, HorizontalAlignment.Center, 0, 600, 1);
         if (_x.State.PlacingHet) f.Draw(this, "CLICK WHERE TO TURN", Size.X / 2, 74, 20, C.Lilac, HorizontalAlignment.Center, 0, 600, 1);
 
@@ -245,7 +240,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             LogLine l = b.Log[^1];
             f.DrawRich(this, new[] { ($"{l.Who}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
         }
-        if (b.Over is { } over) Banner(over == "won" ? "Victory" : "Fleet lost", over == "won" ? C.Accord : C.Alert);
+        if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : "Fleet lost", over == "won" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
 
         // the Target box: the locked target's systems display, the same drawing as the ship panel (one component)
         if (_x.State.ShowTarget && t != null)
@@ -261,7 +256,91 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), xi, 2.6f, true);
             DrawLine(xr.Position + new Vector2(17, 7), xr.Position + new Vector2(7, 17), xi, 2.6f, true);
             SystemsDisplay.Draw(this, _ui, _x, t, new Rect2(bx + 14, by + 44, w - 28, h - 58), false, "tgt");
+            // the camera's two keys under the box (battle-console design 4n): Target view, and Camera lock back on your ship
+            float kw = (w - 6) / 2, ky = by + h + 6;
+            Key("v.tview", new Rect2(bx, ky, kw, 30), "Target view", _view.ToggleTargetView, _view.TargetView, "The camera glides to the target and orbits it");
+            Key("v.camlock", new Rect2(bx + kw + 6, ky, kw, 30), "Camera lock", _view.LockCamera, _view.CamLock && !_view.TargetView,
+                "Keep the target ahead of your ship (a drag frees it)");
         }
+    }
+
+    // ---- The damage range ------------------------------------------------------------------------------------------
+
+    private string _rangeWeapon = "lance";
+    private bool _rangeOver;
+    private const float RangeW = 236, RangeKeyH = 30, RangeRowH = 36, RangeHeadH = 22;
+
+    // The locked ship, or the next one locked for the range's keys.
+    private Ship? RangeTarget()
+    {
+        if (B.TargetOf(B.Player) == null) B.NextTarget();
+        return B.TargetOf(B.Player);
+    }
+
+    // A shot of the chosen weapon at a ship from a bearing on the plane (radians, clockwise from north).
+    private void RangeShot(Ship s, double worldBearing) =>
+        B.RangeFire(s.Id, Geometry.Wrap(worldBearing - s.H) / Geometry.Deg, _rangeWeapon, _rangeOver);
+
+    // A click on the plating of a ship on the range (the locked one first): it is locked, and the shot lands where clicked,
+    // fired from that side.
+    private bool RangeClick(Vector2 local)
+    {
+        Vector2 sp = local + Position;
+        Ship? t = B.TargetOf(B.Player);
+        foreach (Ship s in B.Ships.Where(s => s.Alive && s.Side != B.Player.Side).OrderBy(s => s == t ? 0 : 1))
+        {
+            if (_view.PlatingAt(s.Id, sp) is not { } p) continue;
+            if (s != t) B.Lock(s.Id);
+            _view.AimAt(s.Id, p);
+            RangeShot(s, Math.Atan2(p.X * BattleView.MPerU - s.X, -(p.Z * BattleView.MPerU - s.Z)));
+            return true;
+        }
+        return false;
+    }
+
+    // The range's keys, down the left of the view under the objective: the weapon, overload and Fire at it (from the
+    // camera's side), shields and slow motion, the programs (data/battle/range.json), and Repair all and Next ship.
+    private void RangePanel()
+    {
+        var weapons = B.Data.Weapons.Values.Where(w => !w.IsPointDefence).ToArray();
+        var progs = B.Data.Range.Programs;
+        int rows = (weapons.Length + 1) / 2 + 2 + (progs.Count + 1) / 2 + 1;
+        float x = 14, y = 92, kw = (RangeW - 6) / 2;
+        Shapes.RoundRect(this, new Rect2(x - 6, y - 6, RangeW + 12, 2 * RangeHeadH + rows * RangeRowH + 8), new Color(0, 0, 0, 0.6f), 10);
+        Ship? t = B.TargetOf(B.Player);
+        // the locked ship's bracket is a control too: a click in it fires at the plating there (a click anywhere on a ship's
+        // plating does, through LeftClick; this makes the locked one a control the scripted captain can find and click)
+        if (t != null && Local(t.X, t.Z) is { } tp)
+            _ui.Reg("v.range.hull", new Rect2(tp - new Vector2(46, 36), new Vector2(92, 72)), at => RangeClick(at), null, new Tip("Click the plating to fire"));
+        void Head(string text) { _x.Fonts.Draw(this, text, x + 4, y + 16, 14, C.Lilac, HorizontalAlignment.Left, RangeW - 8, 600, 1); y += RangeHeadH; }
+        void Grid(int i, string id, string label, Action click, bool on, string tip)
+        {
+            Key(id, new Rect2(x + (i % 2) * (kw + 6), y, kw, RangeKeyH), label, click, on, tip);
+            if (i % 2 == 1) y += RangeRowH;
+        }
+        Head("RANGE · " + (t?.Name.ToUpperInvariant() ?? "CLICK A SHIP"));
+        for (int i = 0; i < weapons.Length; i++)
+        {
+            string id = weapons[i].Id;
+            Grid(i, "v.range.w." + id, weapons[i].Name, () => { _rangeWeapon = id; if (B.Data.Weapons[id].Overload == null) _rangeOver = false; }, _rangeWeapon == id, "Fire this weapon with a click on the hull");
+        }
+        if (weapons.Length % 2 == 1) y += RangeRowH;
+        bool canOver = B.Data.Weapons[_rangeWeapon].Overload != null;
+        Grid(0, "v.range.over", canOver ? "Overload" : "No overload", () => _rangeOver = canOver && !_rangeOver, _rangeOver, "Fire the overloaded shot");
+        Grid(1, "v.range.fire", "Fire at it", () => { if (RangeTarget() is { } s) { var (cx, cz) = _view.CameraM; RangeShot(s, Math.Atan2(cx - s.X, -(cz - s.Z))); } }, false,
+            "One shot from the camera's side");
+        Grid(0, "v.range.shields", "Shields", () => { if (RangeTarget() is { } s) B.RangeShields(s.Id, !s.ShieldsUp); }, t?.ShieldsUp == true, "Raise the ship's shields at full strength, or drop them");
+        Grid(1, "v.range.slow", "Slow motion", () => Engine.TimeScale = Engine.TimeScale < 1 ? 1 : 0.25, Engine.TimeScale < 1, "A quarter speed");
+        Head("PROGRAMS");
+        for (int i = 0; i < progs.Count; i++)
+        {
+            Data.RangeProgram pr = progs[i];
+            Grid(i, "v.range.p." + pr.Id, pr.Name, () => { if (B.RangeRunning?.Id == pr.Id) B.RangeStop(); else if (RangeTarget() is { } s) B.RangeRun(s.Id, pr.Id); },
+                B.RangeRunning?.Id == pr.Id, $"{string.Join(", ", pr.Weapons.Distinct().Select(w => B.Data.Weapons[w].Name))}, at most {pr.Count} shots");
+        }
+        if (progs.Count % 2 == 1) y += RangeRowH;
+        Grid(0, "v.range.repair", "Repair all", _x.Act.Restart, false, "Every ship back as new");
+        Grid(1, "v.range.next", "Next ship", B.NextTarget, false, "Lock the next ship on the range");
     }
 
     private const float SceneX = 110, SceneW = 230, SceneRowH = 38, SceneHeadH = 26;
@@ -326,32 +405,6 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         DrawRect(new Rect2(px - w / 2, py, w, h), C.Deep);
         DrawRect(new Rect2(px - w / 2, py, w * fr, h), col);
         _x.Fonts.Draw(this, $"{Math.Round(fr * 100)}%", px + w / 2 + 6, py + h, 14, col, HorizontalAlignment.Left, 0, 700);
-    }
-
-    // The 3D shield display (battle-console design): a flat hexagon in the ship's plane, an edge toward the bow, each
-    // facing a stack of one to three glowing bands (strong three green, middling two amber, weak one red); a hit
-    // flashes the inner band; an empty or lowered facing is one dark line.
-    private void ShieldHex(Ship s)
-    {
-        double R = s.Class.LengthM * 0.62, step = s.Class.LengthM * 0.05;
-        for (int i = 0; i < 6; i++)
-        {
-            double frac = s.ShieldsUp ? s.Shields[i] / s.Class.ShieldsHp[i] : 0;
-            int bands = frac > 0.66 ? 3 : frac > 0.33 ? 2 : 1;
-            Color col = frac > 0.01 ? SystemsDisplay.ShieldColorOf(C, frac) : C.Deep;
-            for (int k = 0; k < bands; k++)
-            {
-                double r = R + k * step;
-                double a0 = s.H + (i - 0.5) * Math.PI / 3, a1 = s.H + (i + 0.5) * Math.PI / 3;
-                var p0 = Geometry.Forward(a0); var p1 = Geometry.Forward(a1);
-                // the corners of a hexagon of circumradius r / cos(30) put the edge's middle at r
-                double cr = r / Math.Cos(Math.PI / 6);
-                if (Local(s.X + p0.X * cr, s.Z + p0.Z * cr) is not { } q0 || Local(s.X + p1.X * cr, s.Z + p1.Z * cr) is not { } q1) continue;
-                Vector2 inset = (q1 - q0) * 0.06f;
-                Color bc = k == 0 && s.Flash[i] > 0 ? col.Lerp(Colors.White, (float)s.Flash[i]) : col;
-                DrawLine(q0 + inset, q1 - inset, new Color(bc, frac > 0.01 ? 0.85f : 0.6f), frac > 0.01 ? 3 : 2, true);
-            }
-        }
     }
 
     private void Banner(string text, Color col)

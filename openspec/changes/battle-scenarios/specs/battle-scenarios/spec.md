@@ -32,3 +32,20 @@ and SHALL draw the console in the skin of the side it is played from.
 #### Scenario: Picking a Krai scenario
 - **WHEN** the player opens the selector and picks the Krai's Battle
 - **THEN** the battle restarts with the player in the Kharz and the console in the Krai Warhost skin
+
+### Requirement: A damage range on each side
+
+Each side SHALL have a damage range scene: every class with an approved ship stands still with its shields down and its point defence off, and the player fires at it. A range shot SHALL be fired by no ship from a bearing off the target's bow and land through the battle's one damage rule, so its scars and breaks are a battle's. The range's programs (data/battle/range.json) SHALL run on the battle's step and replay exactly from the seed, and a range SHALL never end.
+
+#### Scenario: A range shot is a battle's hit
+- **WHEN** a lance is fired on the range at a ship from 90 degrees to starboard
+- **THEN** the hull loses the lance's damage at once and the hit is recorded from that side, 3 km out
+
+#### Scenario: Battle scars leave a whole ship
+- **WHEN** the Battle scars program runs on a ship
+- **THEN** it stops with the ship alive and its hull above the share at which parts come off
+
+#### Scenario: Only a range takes range orders
+- **WHEN** a range shot or program is ordered in a battle that is not a range
+- **THEN** nothing changes
+

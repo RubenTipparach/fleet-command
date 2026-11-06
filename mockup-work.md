@@ -21,18 +21,24 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow | Drafted (2026-11-03, v7) | `game-flow` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v75: the boarding party's medics, hackers and pilots) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | **Approved for implementation** (2026-11-05, owner in conversation: "implement game flow into the game, but I want you to implmenent missions as well"; changes `game-flow-engine`, `mission-scripting`, `ship-schematics`). Drafted (2026-11-05, v16: the port redesigned; v15: Accept sets course) | `game-flow`, `faction-select`, `campaign-missions` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
+| 2 | In-game UI | Approved for implementation (2026-11-03; live v79: every skin in one console, following the ship you command; v80 committed, to publish: beams and disruptor bolts keep their ends on their ships, and lances, bolts and torpedoes drawn by the weapons range's effects) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
 | 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | **Approved for implementation** (2026-11-04, owner in conversation: "I've approved ships to be built", "we need to integrate proper ships in the game"; change `ship-models-engine`). Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | **Approved for implementation** (2026-11-04, owner in conversation, as mockup 6; change `ship-models-engine`). Drafted (2026-11-04, v21: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
-| 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v14) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
+| 8 | Battle console: Krai Warhost | **Approved for implementation** (2026-11-04, live v15; owner in conversation: "make scenarios for both sides (concord and Krai), and keep the UI updated witht he mockups"; change `krai-console-engine`). Drafted (2026-11-04, v14) | `krai-battle-console` | `docs/mockups/battle-console-krai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv |
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
-| 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-04, v6) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
-| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | Drafted (2026-11-04, v9) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | Drafted (2026-11-06, v23: the cruiser's shell below, the carrier's in the middle with bays above and below, windows without glow; v22: one ship at a time, frigates, a new cruiser and the carrier; v21: breakup fixed, every cell has its skin; v20: hulls break apart; v19: bay lamps on the lintels; v18: all five rebaked with every pane fitted; v17: rooms and hangars level, every pane fitted to its face; v16: clean-framed windows and bays, each its own quad; v15: the four picks and a new carrier, each with modelled hull detail, a PBR set and baked hull lights; rooms behind the windows and hangars behind the bays, forward floods, a greener emission, battle damage on the shared ship-fx.js) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-05, v8) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
+| 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | **Retired** (2026-11-04: the emblem lives on the real model, mockup 6; owner: "Concord emblem on the hull - get rid of this"; off the tracker's mockup list, kept under Misc) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
+| 12 | Ssarith Hunt ships | **Approved for implementation** (2026-11-06, owner in conversation: "looks good, implement in game"; approved for build by the same words). Drafted (2026-11-06, v23: the cruiser's shell below, the carrier's in the middle with bays above and below, windows without glow; v22: one ship at a time, frigates, a new cruiser and the carrier; v21: breakup fixed, every cell has its skin; v20: hulls break apart; v19: bay lamps on the lintels; v18: all five rebaked with every pane fitted; v17: rooms and hangars level, every pane fitted to its face; v16: clean-framed windows and bays, each its own quad; v15: the four picks and a new carrier, each with modelled hull detail, a PBR set and baked hull lights; rooms behind the windows and hangars behind the bays, forward floods, a greener emission, battle damage on the shared ship-fx.js) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
+| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-05, v6) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
+| 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
+| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
+| 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -66,6 +72,32 @@ reflection probe of space skybox? to make this look nicer? nebulas can be of dif
 looking, use the puffs method from crab-breeeze"; "tiles with planets or stations should be a different color"; "hex orientation all
 need to be same orientation"; "what is standing in relation to? can we merge this with the top? so tis not floating? looks more like a
 panel hanging from top of the screen"; "I should be able to click on ship to quicky go there".
+
+Then, 2026-11-05 (v8): "Can we update campaign UI with new skins? Add test maps to scenarios. And create a faction selection
+screen using 3d rendered emblems?"; "Emblems are placed on a wooden pedestal each on a concrete platform with a space backdrop.
+Hovering over each causes a light to shine on it with some dust reflecting off the light. The emblem rotates slightly as you
+hover your mouse over it. Clicking on it gives you an option to continue campaign or start a new one."; "Then clicking on it
+starts a new campaign with the smallest tier ship and you can fly around the galaxy map performing missions. Mockup campaign
+systems first. Then I'll get you some mission scripts to implement in our three js mockup env". Changes `faction-select` and
+`campaign-missions`; mission scripts go in `docs/mockups/lib/campaign-missions.js`, one `FCMissions.define` call each.
+
+Then, 2026-11-05 (v11): "let's implement all \"ready\" mission types, amke sure to keep this artifact updated. I'd also
+like to add \"capture the prize\" mission to capture a designated target ship for research"; "asteroid base assayult: we do
+have asteroids". The six ready types and Capture the prize are scripts with five grades; the Missions guide (v2) records
+which types are in.
+
+Then, 2026-11-05 (v13): "player ever controls one fleet at a time, the rest of the fleets are controlled by the factions.
+The map must be dynamic, all ships move move around every few turns."; "misions should have standees so I know what tile
+they are on"; "player fleet should have a gold standee"; "ship fleets should point in the direction they are facing (last
+move delta)"; "ship standees should have a flag next to them representing ship strength"; "show freigthers and their
+routes for your empire, and show freighter routes for allies. develop and use placeholders for freighters"; the nebula
+palette ("here's a better pallete for nebulas, the colros are kinda random right now") and "maybe nebula should have a
+couple different colors, like a main color and an accent color".
+
+Then, 2026-11-05 (v14): "its angled weird lol, Ithink mission flags sould just be 3d"; "how come my ship isnt centered?",
+"if theres more ships or objects on it, then offset, otherwise I think ships should be centered"; "make this more obvious
+its a button" (a mission in the sector panel); "need a win or loose screen, and how many prestige + reputation I got";
+"need to show multi turn moves please".
 
 Design: `openspec/changes/game-flow/`. References: SFC2 manual printed pages 74-89 (menus, skirmish,
 campaign map, supply dock, shipyard); SFC3 manual printed pages 26-37 (skirmish points, refit by
@@ -225,6 +257,30 @@ capturing, but are easy to get shot and die if there are less than 5 marines. pi
 required to activate and fly the ship, if no pilot show a "pilot needed" after capturing the ship". Version 75 (both
 skins; change `boarding-party`): the default load of marines, marine health and medics, hackers' speed and exposure,
 Pilot needed, and the expanded Capture page's party panel and boarding log.
+
+Owner, 2026-11-04: "lets next work on: Ssarith Hunt UI, this time combine uis together, so we can hop between different
+ships", "use simple geometric ships for the Ssarith", "we'll be developing their ships in another thread", and of the
+Hunt's rail tabs, "These buttons here don't quite fit". Version 76 (all skins; changes `ssarith-battle-console`,
+`fleet-skins`): every skin in one page; the console wears the skin of the ship you command; the Allied fleet scene with a
+Concord, a Krai and a Ssarith ship to hop between, and the quiet Three races scene to try them at leisure (keys 1, 2, 3
+take each ship); every ship you can command has its own officers; the Ssarith Hunt's
+battle console (mockup 15; numbered 12 until main took 12 for the Ssarith ships) with tube keys, wide keys and cells rendered in Blender, its 24 icons, and a Hunt stalker in
+simple geometry; the Hunt's icon rails on square tube keys.
+
+Owner, 2026-11-04: "We need a background for the lleft panel area. Black background is forbidden for metallic panel based
+factions", "The panel icons have ||| on them but the icons don't fit because of that extra symbol. I want those cleaned
+up and fit the incons in the button diaplay", "the labels here need work, they are just dark background rectangles with
+words", "see how we resolved this with the Krai labels". Version 77 (Krai v16, Ssarith v2): the Hunt's tabs without the
+tally, every label and icon inside the tube; its titles and officer slots on rendered gunmetal placards with a phosphor
+pip; its column on a rendered plain gunmetal backing plate, and every metal skin's expanded panels on their own backing
+(the Krai's blackened steel); the rule in CLAUDE.md section 7. Then "this text is hard to read" (a key's name on hover,
+dark letters on the lit tube) and "remove underline" (the title placard's bone groove): version 78 (Krai v17, Ssarith
+v4), the Hunt's hover names in phosphor on the dark tube, and its title placards without the groove. Then, of the console's
+Albatross: "looks like the albatros is behind a version, please update ships to latest": version 82 (Krai v21, Ssarith
+v6), the ships are the exported glbs the game flies, the Krai's as the Krai line (their hull paint still the stand-in:
+`ship-models-engine` 2.5). Then, of an
+expanded panel: "background should wrap panel properly", "when expanded": version 79 (Krai v18, Ssarith v5), the backing
+clipped to the panel's side of the screen (a mirrored copy had run into the live view) and its band clear of the tally.
 
 ## 3. Look dev
 
@@ -591,6 +647,13 @@ Owner, 2026-11-04: "nice! can you show what this emblem looks on concord ship hu
 - **Tightened** (owner, 2026-11-04: "tighten the livery line a bit so they arent so distant from the meblem", "bottom line
   can be flat to conform to the key hole/beacon shape more"): the cut is 0.15 m clear of the emblem where the band crosses
   it: an arc over the head and a flat edge under the foot.
+- **On the real model** (owner, 2026-11-04: "can you put that on the actual model?"): the emblem is on every Concord ship of
+  mockup 6 (the Concord line, v19), on each one's forward band, port side, at 3 % of its length, with no windows under it.
+  The placement, the break and the paint are one shared file, `docs/mockups/lib/concord-emblem.js`, used by both pages.
+- **Borders** (owner, 2026-11-04, with a picture of the real model: "lets add that border back in here. so it appears more
+  consistent, add some space between strip and emblem, and border on both edge of lines and emblem"): the emblem's frame is
+  back in the band's seam colour, the band's cut edges carry the same seam (0.22 m, the band's own seam width), and 0.35 m
+  of bare hull stands between them.
 
 ## 12. Ssarith Hunt ships
 
@@ -665,3 +728,170 @@ Design: `openspec/changes/ssarith-ship-concepts/`.
   wish it were more green", "the hull emission"): rows of forward floods, a greener emission, rooms behind every window
   (the Concord line's room code lifted into `docs/mockups/lib/ship-rooms.js`), the carrier (blockout 13) with launch bays
   and hangars, and battle damage on the shared `docs/mockups/lib/ship-fx.js`.
+
+## 14. Krai badge in 3D
+
+Owner, 2026-11-04, of the Fang Torc sketch KC+ on the Emblem Design Guide: "bro this version slaps", "Thats it", "keep
+that", then "make the 3d version of the fang torc". Numbered 14 because two other branches each hold a page numbered 12
+(the Ssarith console and the Ssarith ships) and 13 is left for them to settle.
+
+- **One source of shapes**: the guide exports KC+'s parts (`tools/emblems/export_parts.mjs krai` writes
+  `assets/emblems/krai/kc.parts.json`); the Blender render and the three.js badge both build from them.
+- **Blender**: `tools/blender/emblem_krai.py` on the shared harness `tools/blender/emblem_render.py`; renders face on, at
+  an angle and as clay into `assets/emblems/krai/`.
+- **three.js**: `docs/mockups/krai-emblem-3d.html`, orbitable, 100 mm across, with the Blender renders beside it, on the
+  shared badge library `docs/mockups/lib/emblem-badge.js` (the Concord badge, mockup 10, now uses it too).
+- **Metals**, Material Maker graphs tinted: blade steel (`emblem_platinum`, `#b9c2cc`) for the ring, torc, thin crescent,
+  forge star and three fangs; blackened steel (the same graph, `#2b2426`) for the field; blood enamel
+  (`emblem_enamel_pearl` under a clear coat, `#c4161f`) for the founder's fang.
+- **Heights** (mm): field 0.3-1.0, thin crescent 0.6-2.2, fangs 0.6-2.6, torc 0.6-3.0, forge star 0.6-3.3, ring 0-3.6.
+  No two faces share a plane.
+
+## 19. Ssarith badge in 3D
+
+Owner, 2026-11-05, of the Bow Rites sketch SD on the Emblem Design Guide: "Definitely would like to see more colors and
+shading on the bow and green arrows on the 3d rendering. I quite like that..shade the bow parts with like wood and the
+arrows green with blood", then "Background should be like a beige, dull brown and dry green forest". Numbered 19 because
+main holds 16 to 18.
+
+- **One source of shapes**: the guide exports SD's parts (`tools/emblems/export_parts.mjs ssarith` writes
+  `assets/emblems/ssarith/sd.parts.json`); the Blender render and the three.js badge both build from them.
+- **Blender**: `tools/blender/emblem_ssarith.py` on the shared harness `tools/blender/emblem_render.py`.
+- **three.js**: `docs/mockups/ssarith-emblem-3d.html` on the shared badge library `docs/mockups/lib/emblem-badge.js`, its
+  maps listed in `docs/mockups/lib/emblem-materials-ssarith.json` (apart from the shared list, so the other badges stay small).
+- **New Material Maker graphs** (`tools/materials/build_ptex.py`, 512 px, 0.05 m a tile): `emblem_wood_laminate` (the bows:
+  plies of a warm and a darker wood, grain along them), `emblem_lacquer_watch` (the arrows, Watch green), `emblem_blood_watch`
+  (the heads: the lacquer under dried blood), `emblem_enamel_forest` (the field: a dry forest of beige haze, dull brown
+  trunks and dry green canopy, the hunting ground). The rim is the platinum graph tinted bone.
+- **Heights** (mm): field 0.3-1.0; each bow's string, vanes, shaft, head and limb rise to 1.3, 1.5, 1.7, 1.9 and 2.3 mm,
+  each bow 0.9 mm prouder than the one behind it (the smallest in front); the rim 0-4.4. No two faces share a plane.
+- **Unique arrowheads** (owner, 2026-11-05: "make each arrowhead unique"), in the guide's SD too: the learner's leaf (no
+  barb), the hunter's barb (one), the elder's tally (long, a notch for each hunt).
+- **Holographic leaves** (owner, 2026-11-05: "In the 3d version I mean with like holographic leaves", "Should be 3d leaves
+  shapes"): 70 leaves laid out once by `tools/emblems/ssarith_leaves.py` (`assets/emblems/ssarith/sd.leaves.json`, seeded),
+  hanging at 1.4, 2.1 and 2.8 mm over the enamel forest, each a curled, cupped leaf mesh drawn as light: glowing at its
+  edges and midrib, its colour shifting with the viewing angle, with faint scanlines (three.js), and an edge-weighted
+  emission seen through (Blender).
+- **v2, ferns, steel and glowing blood** (owner, 2026-11-05, with a photograph of ferns in deep shadow: "3d model Fern
+  leaves. Arrow made of wood. Arrow head made of steal. Feathera red with orange tip. Arrows dripping with bright glowing
+  green blood", then "Fern leaves are the holographic background jungle"): `tools/emblems/ssarith_ferns.py` grows 60 fern
+  fronds (a stem with lobed leaflets, arched and curling) and spills the blood (pools on each head, drips down the face) into
+  `assets/emblems/ssarith/sd.ferns.json`, one layout for both renders. The ferns are a hologram (light added over the field,
+  glowing along every edge) over the forest enamel darkened; the shafts are the laminated wood, the heads steel, the feathers
+  red with orange tips (their own polygons in the guide), the blood an emission. Every part of a bow now stands over the
+  ferns (tops raised 1.6 mm; the rim to 6.2 mm). The holographic leaves and the green lacquer, blood and fern graphs are gone.
+- **v3, a 3D fern bed** (owner, 2026-11-05: "z fighting, the blood doesnt look right, remove blood, and just make arrow hard
+  green and arrow body metal", "redo the fern, render a fern forrest sccene. Make THAT exact scene!", "no hologram, just make
+  a scene that looks like that as background for the emblem, and it should be 3d"): the badge is a deep frame (rim 10.4 mm,
+  floor 0.6 mm), the recess filled with 40 bipinnate ferns in layers up to 6.4 mm (`tools/emblems/ssarith_ferns.py`, light
+  falling off with depth; our own scene after the owner's photograph, which is not committed), the bows floating over them
+  as thin parts. Steel shafts, hard green heads, no blood. The z-fighting was a feather's orange tip laid over its red body
+  at 0.08 mm: they now meet edge to edge. The fern-leaf graph is back; the hologram and the blood are gone.
+- **v4, thorny recurves and inner walls** (owner, 2026-11-05: "can you smooth out the bows?", "need walls inner, on emblem",
+  "the bow is all wobly", "this is what it really looks like, but I need you to add some character to it, make it more
+  alien", "ooh the thorny bows are great", "omit some thornes a the bottom half where the shooter might put their grip
+  hand"): each bow one smooth recurve (an analytic curve, the tips flipping forward past the string), tally spurs on the
+  back of each limb except where the grip hand closes, a forked hook at each tip; wooden inner walls lining the recess.
+- **The Emblem Gallery** (owner, 2026-11-05: "create an emblem gallery artifact"): `docs/mockups/emblem-gallery.html`,
+  https://claude.ai/artifact/VdjoRwjMKG3Er8rC2H2epS, every finished badge with its renders; on the tracker under Misc.
+
+## 16. Special weapons
+
+Owner, 2026-11-04: "we need to develop special weapons for each faction, currently only concord and krai are fully done,
+so start with those two, we also ened high end fx + shaders for both of those things too". Then, while it was built:
+"source and destination of phaser and disruptors must maintain in sync", "this means as they fire, the source and
+destination of these beams must follow the ship source and ship destination", "a missile fired can break this rule as it
+leaves behind a particle trail".
+
+Version 1 (2026-11-04): the special weapons range. The Concord's Chorus lance (the Albatross's deflector beam, joined by
+two Petrels' lances) and Quell torpedo (a Petrel's tube load: the struck shield fails, half the Krai cruiser goes dark for
+8 s), the Krai's Forge driver (the cruiser's spinal cannon, 40 % through the Albatross's shield, the hull burning 6 s) and
+Blood charge (a frigate's surge and bayonet ram). The approved ships as exported glb files, moving during every run so the
+beams can be seen riding their ships; the card's numbers and the target's readout from `data/battle/special_weapons.json`;
+High and Phone quality; twelve named shots. Effects: `docs/mockups/lib/weapon-fx.js`. Survey section X.
+
+The owner's beam rule is in the game and in mockup 2 already (v80 after merging main, the Krai page v19, the Ssarith page
+v6): change `weapon-fx`, tasks 2.1-2.3, and `docs/design/mockup-sync.md`. Drafted as mockup 12; renumbered 16 on merging,
+since main had given 12 to the Ssarith ships (and 14 and 15 were taken).
+
+Design: `openspec/changes/special-weapons/`, `openspec/changes/weapon-fx/`. References: SFC2 manual printed pages 22-25
+(heavy weapons: direct fire and seeking, each race its own; weapon status, stunned); SFC3 manual printed pages 12-13
+(primary and heavy weapons by empire and loadout) and 28-29 (refit by hardpoint).
+
+Owner, on version 1 (2026-11-04): "Yea add standard weapons too. Kinda hard to see the ships on the phone. Make sure zoom
+is appropriate. Those look awesome. I would make the shield bubble 50% larger", then "Also no rotation on on camera
+please. I just want to see the fx fired between two ships".
+
+Version 2 (2026-11-04): the standard weapons on the range too (the lance, the disruptor and the pulse torpedo, numbers
+from `data/battle/weapons.json`, the lance's life from `data/battle/tuning.json`); one fixed view, side on, that never
+turns or follows, with the ships holding station face to face 420 m apart and drifting a few metres so the beams can be
+seen riding them; the view's distance fitted to the ships and their shields in the part of the screen the panels leave
+free (on a phone the card starts folded and the controls are one row); every shield bubble 50 % larger. The same lance,
+bolt and warhead looks now draw the battle console's shots (mockup 2 v77, mockup 8 v16).
+
+Then, while version 2 was built: "pulse torpedo needs that iconic 6 armed flare" (with a picture of a star's six
+diffraction spikes); "all factions can have missiles too, so develop missiels (in starfleet command they are refered to
+as drones)"; "here is what missiles look like, they got that 3d missile model at the front end, a big ball plume, and a
+tail" (with a screenshot of the reference game's missiles); "torpedo should have like discrete trail instead of a long
+streak"; "shield bubble invisible unless hit". In version 2: the pulse torpedo flies under a six-armed star and drops a
+trail of separate beads; missiles are a weapon for every faction (change `missiles`, survey D), each a plain dart with a
+big ball of its faction's drive light behind it and a long tail, fired in salvos both ways with point defence shooting
+them down; the shield bubbles show nothing until something hits them. The battle console mockup (v77) draws torpedoes and
+missiles the same way.
+
+Then: "torpedos should be purple, and close the gap on those trails, they are too far appart, large spheres to small
+spehres"; "is the flare animated? the flare arms should be moving around"; "please avoid the color white for weapons";
+"missiles depending on grade will have: red, orange, blue, green", "red being lowest grade, green being highest"; "stronger
+purple please for torepodes"; "half the length of tail, I also want it to go from larger (2x) spheeres to smaller
+spheres"; "and torpedo tail should fade out". Done: torpedoes a strong purple (`#8f2bff` in `data/battle/weapons.json`, so
+the game's torpedoes too), a tail half as long of beads packed close, twice the size at the warhead shrinking and fading
+to nothing; the six arms turn and flicker; no weapon core is white (each is its own colour at full strength; point defence
+gold `#ffc23d`); missiles in four grades (`data/battle/missiles.json`), red, orange, blue, green, each salvo on the range one
+of each.
+
+Then: "Try to fire the torpedos straight. And the missiles should move slower. Different grades have different speeds and
+damage values." Done: torpedoes leave the tube straight at the target and hold their line; missiles fly near a ship's
+own speed, by grade 240, 320, 400 and 480 m/s with 8, 11, 14 and 18 damage and 30 s of fuel (`data/battle/missiles.json`);
+today's missile in `data/battle/weapons.json` and the battle console's table is the orange grade (320 m/s, 9.6 km).
+
+Then: "Missiles follow ships around. Can be countered with counter measures like flares, decoy shuttles, or pdc." Done:
+the missile run now has the cruiser throw flares and the Albatross launch a decoy shuttle, each missile fooled by its
+grade's chance (`data/battle/missiles.json`), the decoy destroyed by the first missile to reach it and the rest coming back
+for the ship (after SFC2, printed pages 136-137); point defence is drawn as point defence cannon tracers, here and in the
+battle console. Survey D6.
+
+Then (2026-11-05): "theres some artifact when the ship doe a charge attack", "after the krai ship finishes chargin theres
+like the black discharge at the bow"; "quell torpedo should be like a cross between a pulse torpedo and a missle". Done:
+the black specks were the shared damage effects' dark smoke and dark shards; on the range the smoke is not drawn and the
+debris glows hot. The quell now flies as a missile's body and ball plume with the pulse torpedo's six-armed star round its
+lattice head and a bead trail, launched straight, then homing and weaving. Then: "also that pulse torpedo is kinda white, needs to be deep blue" (read as the quell, which was the white one; the
+standard pulse torpedo stays the purple asked for on 2026-11-04): the quell is deep blue, `#2a4cff` in
+`data/battle/special_weapons.json`, in its star, lattice head, plume, beads, launch flash and ring.
+
+**Approved for implementation** (owner, 2026-11-05, in conversation: "Implement weapons in game"). The game build follows
+the changes' tasks: first the standard weapons' looks in the 3D view (`src/Game/View/ShotView.cs` with `beam.gdshader`,
+`flare.gdshader` and `beads.gdshader`, ported from `docs/mockups/lib/weapon-fx.js`), then missile grades and
+countermeasures, then the special weapons.
+
+## 17. Battle sounds
+
+The owner, 2026-11-04: "pull in audio and music skills from crab breeze, lets get some audio for this game!" A sound is
+heard, not seen, so its mockup is a page to listen on: every cue with a play button, grouped as the game uses them
+(placed at a mount, where a hit lands, at the ship; the console, the alerts and the bridge bed unplaced). Made by the
+`sound-effects` skill: 18 cues cut from CC0 recordings on OpenGameArt, 12 synthesised; every original named in
+`assets/audio/sfx/SOURCES.md` and `AUDIO_SOURCES.md`. Chosen and checked by measurement and a spectrogram sheet
+(`docs/screenshots/audio/sfx-sheet.jpg`), because a cloud session cannot listen: the owner's ears approve it.
+
+- Change: `openspec/changes/sound-effects`. Shots: `docs/screenshots/mockups/sounds-*.png`.
+- Stage: Drafted (2026-11-04). Questions: survey S4 (how a battle sounds in silent space).
+
+## 18. Music
+
+The same request. The first score, orchestral space opera over a synth bed (survey S1), built from four motifs written
+down first in `docs/design/music.md`: the Concord (the player's fleet, an 8-bar theme in E flat major), the wonder
+chord, the Threat (a C minor ostinato and horn call for any enemy) and the Lost. Cues: the Main Title, Battle Stations
+(a seamless 43.64 s loop), Victory, Ship Lost and the motif sheet, rendered headless in LMMS with the GeneralUser GS
+orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/music-spectrograms.jpg`), not heard.
+
+- Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
+- Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).

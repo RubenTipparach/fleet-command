@@ -122,6 +122,11 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   Xvfb and `build.config`. Fleet Command follows the same split (section 6).
 - **Assets are glTF (`.glb`)** built by committed Blender generators (section 10). They are
   imported by Godot, and the import is a build product.
+- **Every asset's `.import` file is committed, and Godot's headless import writes it** (owner, 2026-11-04: "commit
+  those and make sure they get generated in the future so it doesnt pile up as garbage on my pc"). Run
+  `--headless --path . --import` after adding or changing an asset (`play.bat` does it on every launch) and commit the
+  `.import` files it writes in the same commit as the asset; the cache in `.godot/` stays ignored. `.gitattributes`
+  keeps them LF, so a Windows checkout does not show every one as changed.
 - **Platforms**: Windows desktop is the owner's playtest machine, Linux runs the headless tests,
   and phones are a target from the first screen. The builds are Windows desktop and native Android
   (survey T1). The renderer is Forward+ on desktop and Compatibility on Android, set per platform
@@ -188,6 +193,13 @@ build, and then need to be approved for actual game implementation after"):
   into repo especially when they are html claude artifacts"): the page in `docs/mockups/`, its shots in
   `docs/screenshots/mockups/`, and a record in `docs/artifacts/<name>/` with its link, committed in the
   same step as every publish.
+- **Every artifact is tracked as HTML in the repository** (owner, 2026-11-04: "add to claude md that all artifactrs must
+  be tracked as html in the repo"). Every published artifact, a mockup, a guide, the survey or the tracker, has its page
+  as an `.html` file committed in the repository (`docs/mockups/`, `docs/design/`), the very file that was published,
+  and its link recorded in `docs/artifacts/<name>/README.md`, in the same commit as the publish. Nothing is published from
+  a scratch file or from memory, and a page another session published is pulled into the repository as HTML, not left
+  only on claude.ai. `tools/mockups/artifact_check.py` reads the tracker and fails on any entry whose page is not
+  committed HTML or whose link is in no record; run it before every push that publishes.
 - **If the owner changes accounts, republish every mockup, the tracker and the survey from the new
   account** (owner, 2026-10-30), then update every link: the tracker's list, `mockup-work.md`,
   `docs/design/README.md` and each `docs/artifacts/<name>/README.md`. An artifact made from another
@@ -372,6 +384,12 @@ else's artwork):
   keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
   carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
   dashboards, dials, switches".
+- **No black behind a metallic skin's panels** (owner, 2026-11-04: "We need a background for the lleft panel area. Black
+  background is forbidden for metallic panel based factions"). Every skin whose panels are modelled metal (the Kethran,
+  Krai, Ssarith, Ombrai, Kelvane, and the Aelith's shells) has a rendered ground behind its column, and behind an expanded
+  panel: a cast column with the panels formed into it (the Krai's `console.column`) or a backing plate the panels sit on
+  (`console.backing`: the Ssarith's column, and every metal skin's expanded panels, the Krai's included). Black stays only
+  for the flat Concord, whose back-lit vector is drawn on black.
 - **Icons follow one standard in every skin** (owner, 2026-11-03: "these icons need a similar standard", "theyre generic
   enough to be used on any other ui system"): a picture of the job, one subject one icon everywhere, readable at 20 px,
   solid for the thing and lines for what it gives off, colour for state only, and every skin drawing the same subject
@@ -530,7 +548,13 @@ saying what changes here. Where a note and the copied text below it disagree, th
   comp. The direction is orchestral space opera, brass, strings and timpani, over a synth bed
   (survey S1).
 - **Sound effects are recorded CC0 sounds where possible** (Crab Breeze), every original named
-  in `SOURCES.md`. They are synthesised only where nothing recorded is better.
+  in `SOURCES.md`. They are synthesised only where nothing recorded is better. The method is the
+  `sound-effects` skill (owner, 2026-11-04: "pull in audio and music skills from crab breeze, lets get some audio for
+  this game!"): packs fetched and licence-checked by `tools/audio/fetch_cc0.py`, cut to the spec in
+  `tools/audio/cc0_cues.json`, built by `tools/audio/render_sfx.sh`, judged by measurement and a spectrogram sheet
+  (a cloud session cannot listen), and heard by the owner on the Fleet Command Sounds page.
+- **The motifs are `docs/design/music.md`**: the Concord, the wonder chord, the Threat and the Lost. No faction gets a
+  theme of its own until the owner sets its culture (section 1; survey S2).
 - **Sounds from the battle are placed in 3D** at their ship or mount. Interface clicks, music and
   ambience are not.
 
@@ -547,6 +571,7 @@ Before claiming anything is done, run what applies:
 | Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Artifacts | `python3 tools/mockups/artifact_check.py` (every tracker entry's page is committed HTML and its link is recorded, section 4) |
 | Mockup sync | game stills beside the mockup's shots (`tools/compare/side_by_side.py`), looked at, and `docs/design/mockup-sync.md` updated (section 4) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 
@@ -574,6 +599,7 @@ Before claiming anything is done, run what applies:
 | `panel-textures` | Hull plating and console panels modelled in Blender and rendered to PBR maps (section 10). |
 | `light-baking` | Baking hull lights and occlusion into the ships' maps (section 10). |
 | `music-authoring` | Motifs in notes, Strudel scores, multitrack MIDI, LMMS headless (section 11). |
+| `sound-effects` | CC0 recordings fetched, licence-checked, cut and layered to a spec; synthesis where nothing recorded is better; measured, sheeted and auditioned (section 11). |
 | `playtest` | Running, watching, recording, uploading and reporting a playtest (section 9). |
 | `obs-record` | Recording a window with OBS and copying it to Google Drive (section 9). |
 | `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
@@ -596,6 +622,9 @@ Nothing is an exception until it is listed here with its reason.
   The Concord and Krai lines' geometry is defined by the mockup pages' builders; a Blender port would be a second copy
   of every hull rule (section 6.1). `tools/mockups/export_ships.mjs` exports them to glb from the pages themselves,
   deterministically, with named nodes and a manifest, so section 10's other rules still hold.
+- **The campaign mockup has no tracker link** (owner, 2026-11-05, of its "All Fleet Command mockups (the tracker)" link: "remove
+  this from the campaign mockup"). `docs/mockups/game-flow.html` (mockup 1) is drawn as the game's own screens, so it carries no
+  link back to the tracker; every other published page still does (section 4).
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from

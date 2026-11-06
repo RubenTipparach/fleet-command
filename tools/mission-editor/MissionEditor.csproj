@@ -1,0 +1,28 @@
+<!-- Fleet Command's mission editor (openspec/changes/mission-scripting; owner, 2026-11-05: "start building out mission
+     scripting so we can write up mission files outside of godot, pick a ui package that works good for windows/mac").
+     Avalonia UI: one C# desktop app for Windows and macOS (and Linux) on the same .NET 8 as the game, so it loads, checks
+     and previews mission files with the game's own code (FleetCommand.Core), never a second copy of the rules. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>FleetCommand.MissionEditor</RootNamespace>
+    <AssemblyName>MissionEditor</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Headless" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Skia" Version="11.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Core/FleetCommand.Core.csproj" />
+  </ItemGroup>
+</Project>

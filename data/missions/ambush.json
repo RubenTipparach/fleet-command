@@ -1,0 +1,61 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "ambush",
+ "name": "Convoy ambush",
+ "glyph": "C",
+ "type": "Convoy raid",
+ "reward_cr": 700,
+ "where": "plain && hostile && on_route(owner)",
+ "objective": "Destroy two of the three freighters.",
+ "brief": "A {foe_name} supply convoy passes through here. Destroy two of its three freighters before they jump.",
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "convoy",
+     "faction": "{foe}",
+     "count": 3,
+     "role": "enemy",
+     "label": "Freighters",
+     "tier": 1,
+     "range_km": 8
+    },
+    {
+     "id": "escorts",
+     "faction": "{foe}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Escorts",
+     "range_km": 11
+    }
+   ],
+   "objectives": [
+    {
+     "id": "two",
+     "text": "Destroy two of the three freighters",
+     "primary": true,
+     "done": "destroyed(convoy) >= 2"
+    },
+    {
+     "id": "all",
+     "text": "Destroy all three",
+     "done": "destroyed(convoy) == 3"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{foe}": -3
+   }
+  }
+ ]
+}

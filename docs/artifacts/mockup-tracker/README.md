@@ -86,4 +86,41 @@
 - 2026-11-04, cloud session: M11 at v8; version 88, id `1793788922-ee81`.
 - 2026-11-04, cloud session: M11 at v9; version 89, id `1793789702-2c07`.
 - 2026-11-04, cloud session (Concord ships thread): version 91, version id `1793793088-d02f`, built on the live version 90: M7 v21, M6 v20.
+- 2026-11-04, cloud session: M11 at v10 and M6 at v19 (the emblem on the real model); version 90, id `1793791939-c927`.
+- 2026-11-04, cloud session: M6 at v21 and M11 at v11, built on the live v91; version 92, id `1793793688-ca98`.
+- 2026-11-04, cloud session: M11 retired, moved to Misc; version 93, id `1793794304-ede5`.
+- 2026-11-04, cloud session: M6 at v22 (full stripes); version 94, id `1793794813-2a28`.
+- 2026-11-04, cloud session: the guide at v22 (the Krai started); version 95, id `1793795718-1dea`.
+- 2026-11-04, cloud session: the guide at v23 (one faction at a time); version 96, id `1793799595-1731`.
+- 2026-11-04, cloud session: the guide at v24 (the Krai's fang torc picked); version 97, id `1793800301-06d6`.
+- 2026-11-04, version 100 (`1793803252-b63c`): built on the live v99 (which added M12, the Ssarith console, from another session); adds M14, the Krai badge in 3D; M10 at v7.
+- 2026-11-04, desktop session (Mac): Concord line at version 23 (the Albatross stern), a text edit on the live version; version id `1793803170-967a`.
+- 2026-11-04, cloud session (battle console thread): version 98, version id `1793801254-4d1d`, built on the live version (Emblem Design Guide v24): M12 added (Ssarith Hunt battle console), M2 v76, M8 v15.
+- 2026-11-04, cloud session (battle console thread): version 101, version id `1793804672-309b`, built on the live version (M6 v23, M10 v7, M14 added by other sessions): M2 v77, M8 v16, M12 v2.
+- 2026-11-04, cloud session (battle console thread): version 102, version id `1793806625-1c9b`: the Ssarith ships added as M12 (version 1 withdrawn), the Ssarith battle console renumbered M15.
+- 2026-11-04, cloud session (battle console thread): version 103, version id `1793806654-7ca6`: M15 at v3.
+- 2026-11-04, cloud session (battle console thread): version 105, version id `1793819008-c663`, built on the live version (M6 v24 from another session): M2 v78, M8 v17, M15 v4.
+- 2026-11-04, cloud session (battle console thread): version 107, version id `1793823194-7b46`, built on the live version (another session's M2 v79, M8 v18 and M6 stern text): M15 v5.
+- 2026-11-04, desktop session (Mac): Concord line at version 24 (the Albatross stern down to two bells), a text edit on the live version; version id `1793817050-4098`.
+- 2026-11-04, desktop session (Mac): M2 at v79 and M8 at v18 (strips on black), M6 summary to two bells; version id `1793822422-f548`.
+- 2026-11-04, cloud session (faction emblems): version 109, version id `1793829600-eb98`, built on the live version (M2 v81, M8 v20): the guide at v25 (the Ssarith Hunt started).
+- 2026-11-04, cloud session (faction emblems): version 110, version id `1793830372-8f69`: the guide at v26 (the Bow Rites).
+- 2026-11-04, cloud session (faction emblems): version 111, version id `1793833883-7dce`: the guide at v27 (the Bow Rites redrawn).
+- 2026-11-05, cloud session (faction emblems): version 112, version id `1793839271-20ad`: M19 added (the Ssarith badge in 3D), the guide at v28.
+- 2026-11-05, cloud session (faction emblems): version 113, version id `1793841962-5e56`: M19 at v2 (ferns, steel, feathers, glowing blood), the guide at v29.
+- 2026-11-05, cloud session (faction emblems): version 114, version id `1793846057-df61`: M19 at v3 (the fern recess, steel and hard green arrows), the guide at v30.
+- 2026-11-05, cloud session (faction emblems): version 115, then 116: M19 at v4, the guide at v31, the Emblem Gallery added under Misc.
+- 2026-11-04, desktop session (Mac): M2 at v81 and M8 at v20 (the shield display on every ship); version id `1793828157-0f07`.
+- 2026-11-05, cloud session (faction emblems): version 117, version id `1793848268-4e78`, merging main: M16 (special weapons), M17 (sounds) and M18 (music), committed on main by another session, back beside M19 and the gallery.
+- 2026-11-05, cloud session (battle console thread): version 118, version id `1793850979-43ca`, built on the live version (M19, the Emblem Gallery and the guide at v31 from the emblem session, carried): M2 v82, M8 v21, M15 v6.
+- 2026-11-05, desktop session: version 119, version id `1793863693-e0b0`, edited on the live version 118: M1 v8 (the faction screen, skins on the campaign, missions as scripts, test maps), M10 v8, M14 v2, M19 v5 (the shared emblem builder).
+- 2026-11-05, desktop session: version 120, version id `1793865072-cc30`: M1 v9.
+- 2026-11-05, desktop session: version 121, version id `1793865429-5b9d`: M1 v10.
+- 2026-11-05, desktop session: version 122, version id `1793866185-85f0`: the Fleet Command Missions guide added under Guides.
+- 2026-11-05, desktop session: version 123, version id `1793871461-ad95`: M1 v11, the Missions guide v2.
+- 2026-11-05, desktop session: version 124, version id `1793872899-a201`: M1 v12.
+- 2026-11-05, desktop session: version 125, version id `1793874926-c06c`: M1 v13.
+- 2026-11-05, desktop session: version 126, version id `1793877957-f8cb`: M1 v14, the Missions guide v3.
+- 2026-11-05, desktop session: version 127, version id `1793911435-01fe`: M1 v15 (Accept sets course), and the flow running in the game.
+- 2026-11-05, desktop session: version 128, version id `1793915465-6c92`: M1 v16 (the port redesigned).
 - 2026-11-06, from the Kelvane console session (owner: "make sure all active branches get this artifact tracker change"): this branch's tracker on the new page (one-line summaries, each faction's mockups in a modal, the escaped apostrophes) with this branch's own entries kept; live tracker version 132 (`1793930222-562a`) is the Kelvane session's.
