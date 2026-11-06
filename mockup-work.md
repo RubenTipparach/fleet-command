@@ -35,7 +35,7 @@ account and every link here is updated.
 | 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-04, v1) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-05, v6) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
-| 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | Drafted (2026-11-04, v2; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
+| 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
 | 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v4) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
@@ -769,6 +769,30 @@ the game's torpedoes too), a tail half as long of beads packed close, twice the 
 to nothing; the six arms turn and flicker; no weapon core is white (each is its own colour at full strength; point defence
 gold `#ffc23d`); missiles in four grades (`data/battle/missiles.json`), red, orange, blue, green, each salvo on the range one
 of each.
+
+Then: "Try to fire the torpedos straight. And the missiles should move slower. Different grades have different speeds and
+damage values." Done: torpedoes leave the tube straight at the target and hold their line; missiles fly near a ship's
+own speed, by grade 240, 320, 400 and 480 m/s with 8, 11, 14 and 18 damage and 30 s of fuel (`data/battle/missiles.json`);
+today's missile in `data/battle/weapons.json` and the battle console's table is the orange grade (320 m/s, 9.6 km).
+
+Then: "Missiles follow ships around. Can be countered with counter measures like flares, decoy shuttles, or pdc." Done:
+the missile run now has the cruiser throw flares and the Albatross launch a decoy shuttle, each missile fooled by its
+grade's chance (`data/battle/missiles.json`), the decoy destroyed by the first missile to reach it and the rest coming back
+for the ship (after SFC2, printed pages 136-137); point defence is drawn as point defence cannon tracers, here and in the
+battle console. Survey D6.
+
+Then (2026-11-05): "theres some artifact when the ship doe a charge attack", "after the krai ship finishes chargin theres
+like the black discharge at the bow"; "quell torpedo should be like a cross between a pulse torpedo and a missle". Done:
+the black specks were the shared damage effects' dark smoke and dark shards; on the range the smoke is not drawn and the
+debris glows hot. The quell now flies as a missile's body and ball plume with the pulse torpedo's six-armed star round its
+lattice head and a bead trail, launched straight, then homing and weaving. Then: "also that pulse torpedo is kinda white, needs to be deep blue" (read as the quell, which was the white one; the
+standard pulse torpedo stays the purple asked for on 2026-11-04): the quell is deep blue, `#2a4cff` in
+`data/battle/special_weapons.json`, in its star, lattice head, plume, beads, launch flash and ring.
+
+**Approved for implementation** (owner, 2026-11-05, in conversation: "Implement weapons in game"). The game build follows
+the changes' tasks: first the standard weapons' looks in the 3D view (`src/Game/View/ShotView.cs` with `beam.gdshader`,
+`flare.gdshader` and `beads.gdshader`, ported from `docs/mockups/lib/weapon-fx.js`), then missile grades and
+countermeasures, then the special weapons.
 
 ## 17. Battle sounds
 

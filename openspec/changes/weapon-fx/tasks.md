@@ -21,8 +21,11 @@
 
 ## 3. The game (after approval for implementation, a separate request)
 
-- [ ] 3.1 The effects as Godot shaders and meshes (the design's table), the phone quality on the Compatibility renderer
-- [ ] 3.4 Sync (mockup 2 v77): the game's beams, bolts and torpedoes drawn as the mockup's lit strips, streaks and
+- [ ] 3.1 The effects as Godot shaders and meshes (the design's table), the phone quality on the Compatibility renderer.
+      Done: the ribbon (`beam.gdshader`: lance, bolt, tracer, chorus), the flare (`flare.gdshader`: soft, six, ball),
+      the bead trail (`beads.gdshader`) and the glow, drawn by `ShotView` on both renderers (stills under Xvfb are
+      Compatibility). Not built: the shield bubble's hit ripple, the haze and motes
+- [x] 3.4 Sync (mockup 2 v77): the game's beams, bolts and torpedoes drawn as the mockup's lit strips, streaks and
       trailing warheads, where `ViewOverlay` draws lines and dots today
 - [ ] 3.2 Scars in `hull.gdshader`
 - [ ] 3.3 Frame time measured on the RTX 3070 and the owner's phone (T3: 60 fps at the phone layout)

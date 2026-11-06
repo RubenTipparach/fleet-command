@@ -5,6 +5,6 @@
     "overload": { "range_km": 7, "charge_s": 12, "cost_e": 9, "damage": 26 } },
   "disruptor": { "name": "Disruptor", "kind": "bolt", "range_km": 14, "charge_s": 4.5, "cost_e": 3, "damage": 8, "speed_m_s": 3200, "color": "#ff6a4a",
     "overload": { "range_km": 6, "charge_s": 6.5, "cost_e": 5, "damage": 14 } },
-  "missile": { "name": "Missile", "kind": "missile", "range_km": 22, "charge_s": 10, "cost_e": 2, "damage": 11, "speed_m_s": 1100, "color": "#ff8c1a" },
+  "missile": { "name": "Missile", "kind": "missile", "range_km": 9.6, "charge_s": 10, "cost_e": 2, "damage": 11, "speed_m_s": 320, "color": "#ff8c1a" },
   "pd": { "name": "Point defence", "kind": "pd", "range_km": 2, "charge_s": 1.5, "cost_e": 0.5, "damage": 0, "color": "#ffc23d" }
 }

@@ -31,7 +31,7 @@
   "stun_s": 8,
   "reach_deg": 90,
   "point_defence_hits": true,
-  "color": "#b7a6f2"
+  "color": "#2a4cff"
  },
  "forge": {
   "name": "Forge driver",
