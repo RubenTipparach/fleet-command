@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b6p8an4bm4aci"
-path="res://.godot/imported/copper_tide.jpg-2e33fe63c05d5c148f0dec3cefdd72b3.ctex"
+uid="uid://cmmg4unaj42tx"
+path="res://.godot/imported/skins_amber_lull.jpg-e8c89278b4ee79cc4cc67fc649f21c8f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/skies/copper_tide.jpg"
-dest_files=["res://.godot/imported/copper_tide.jpg-2e33fe63c05d5c148f0dec3cefdd72b3.ctex"]
+source_file="res://assets/skies/skins_amber_lull.jpg"
+dest_files=["res://.godot/imported/skins_amber_lull.jpg-e8c89278b4ee79cc4cc67fc649f21c8f.ctex"]
 
 [params]
 

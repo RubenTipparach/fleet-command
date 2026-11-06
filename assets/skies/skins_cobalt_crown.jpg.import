@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://x5ys3vg8gerv"
-path="res://.godot/imported/moss_haze.jpg-b0e291ec06188019311244cad46719fa.ctex"
+uid="uid://1hbc8jbt03u6"
+path="res://.godot/imported/skins_cobalt_crown.jpg-8669ea6ee57397d8702706b1c1d497a4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/skies/moss_haze.jpg"
-dest_files=["res://.godot/imported/moss_haze.jpg-b0e291ec06188019311244cad46719fa.ctex"]
+source_file="res://assets/skies/skins_cobalt_crown.jpg"
+dest_files=["res://.godot/imported/skins_cobalt_crown.jpg-8669ea6ee57397d8702706b1c1d497a4.ctex"]
 
 [params]
 

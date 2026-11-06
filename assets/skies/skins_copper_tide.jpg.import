@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvirvameotn7x"
-path="res://.godot/imported/jade_lantern.jpg-114b3872f24d6967e1511ca7a2718a57.ctex"
+uid="uid://c4ilmii2q7e1o"
+path="res://.godot/imported/skins_copper_tide.jpg-3d9888a53fd7388a8673fc0f53b60650.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/skies/jade_lantern.jpg"
-dest_files=["res://.godot/imported/jade_lantern.jpg-114b3872f24d6967e1511ca7a2718a57.ctex"]
+source_file="res://assets/skies/skins_copper_tide.jpg"
+dest_files=["res://.godot/imported/skins_copper_tide.jpg-3d9888a53fd7388a8673fc0f53b60650.ctex"]
 
 [params]
 

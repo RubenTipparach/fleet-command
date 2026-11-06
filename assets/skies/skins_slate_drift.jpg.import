@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://casqggj2kbmnh"
-path="res://.godot/imported/pearl_mist.jpg-416583f75b4053f0951ec2fd37f588ce.ctex"
+uid="uid://orlh7mjlsnoy"
+path="res://.godot/imported/skins_slate_drift.jpg-eff1efed50e46b8eb905cf75d5a11330.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/skies/pearl_mist.jpg"
-dest_files=["res://.godot/imported/pearl_mist.jpg-416583f75b4053f0951ec2fd37f588ce.ctex"]
+source_file="res://assets/skies/skins_slate_drift.jpg"
+dest_files=["res://.godot/imported/skins_slate_drift.jpg-eff1efed50e46b8eb905cf75d5a11330.ctex"]
 
 [params]
 

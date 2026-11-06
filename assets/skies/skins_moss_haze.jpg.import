@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://85pitojyy1la"
-path="res://.godot/imported/amber_lull.jpg-981f97f0fd49b02020266c172d5d310c.ctex"
+uid="uid://cxn8xdtukq6v1"
+path="res://.godot/imported/skins_moss_haze.jpg-1a4563750dee3ac66daba6b96be8882b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/skies/amber_lull.jpg"
-dest_files=["res://.godot/imported/amber_lull.jpg-981f97f0fd49b02020266c172d5d310c.ctex"]
+source_file="res://assets/skies/skins_moss_haze.jpg"
+dest_files=["res://.godot/imported/skins_moss_haze.jpg-1a4563750dee3ac66daba6b96be8882b.ctex"]
 
 [params]
 

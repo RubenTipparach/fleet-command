@@ -1,7 +1,7 @@
 {
   "schema": "starcrew.sky/1",
   "_doc": "A nebula sky (openspec/changes/nebula-skies). Written by tools/space/nebula_skies.py from data/space/skies/recipes.json: edit the recipe, then run the tool; never edit this file. Frame: the system's (+y north, the planets in the xz plane). mesh: vertices_b64 is 8 bytes a vertex (its direction as two little-endian 16-bit octahedral coordinates, then red, green and blue as sRGB bytes and the share of the stars behind it the nebula hides, 0-255); triangles_b64 is three little-endian 16-bit indices a triangle, wound counter-clockwise seen from the centre; both base64, cut into rows. stars: [x, y, z, brightness 0-1 already dimmed by the dust in front, class, colour], brightest first. ambient: the linear RGB a white surface takes facing +x, -x, +y, -y, +z, -z, scaled so the brightest face's luminance is the strength, and the nine radiance coefficients it came from, scaled the same way.",
-  "id": "moss_haze",
+  "id": "skins_moss_haze",
   "label": "",
   "name": "Moss Haze",
   "for": "the test scenes and demos (composed)",

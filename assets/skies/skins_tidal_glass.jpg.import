@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://n5o3ydxp7b5t"
-path="res://.godot/imported/cobalt_crown.jpg-0e8ec7023f4de1bdf130afaf4c9e9d19.ctex"
+uid="uid://brlrsbhudm70t"
+path="res://.godot/imported/skins_tidal_glass.jpg-736c31cbbf44dc0675ac6f277f883716.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/skies/cobalt_crown.jpg"
-dest_files=["res://.godot/imported/cobalt_crown.jpg-0e8ec7023f4de1bdf130afaf4c9e9d19.ctex"]
+source_file="res://assets/skies/skins_tidal_glass.jpg"
+dest_files=["res://.godot/imported/skins_tidal_glass.jpg-736c31cbbf44dc0675ac6f277f883716.ctex"]
 
 [params]
 

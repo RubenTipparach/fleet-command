@@ -1387,7 +1387,7 @@
   },
   {
    "id": "ssarith_battle",
-   "sky": "moss_haze",
+   "sky": "skins_moss_haze",
    "name": "Battle",
    "side": "ssarith",
    "seed": 20261107,
@@ -1473,7 +1473,7 @@
   },
   {
    "id": "ssarith_duel",
-   "sky": "verdigris",
+   "sky": "skins_tidal_glass",
    "name": "Duel",
    "side": "ssarith",
    "seed": 20261110,
@@ -1511,7 +1511,7 @@
   },
   {
    "id": "ssarith_arming",
-   "sky": "copper_tide",
+   "sky": "skins_copper_tide",
    "name": "Arming",
    "side": "ssarith",
    "seed": 20261108,
@@ -1565,7 +1565,7 @@
   },
   {
    "id": "concord_allied",
-   "sky": "aurora",
+   "sky": "skins_saffron_ring",
    "name": "Allied fleet",
    "side": "concord",
    "seed": 20261111,
@@ -1651,7 +1651,7 @@
   },
   {
    "id": "krai_allied",
-   "sky": "cobalt_crown",
+   "sky": "skins_cobalt_crown",
    "name": "Allied fleet",
    "side": "krai",
    "seed": 20261112,
@@ -1737,7 +1737,7 @@
   },
   {
    "id": "ssarith_allied",
-   "sky": "jade_lantern",
+   "sky": "skins_jade_lantern",
    "name": "Allied fleet",
    "side": "ssarith",
    "seed": 20261113,
@@ -1823,7 +1823,7 @@
   },
   {
    "id": "concord_four_races",
-   "sky": "quiet",
+   "sky": "skins_slate_drift",
    "name": "Four races",
    "side": "concord",
    "seed": 20261114,
@@ -1899,7 +1899,7 @@
   },
   {
    "id": "krai_four_races",
-   "sky": "amber_lull",
+   "sky": "skins_amber_lull",
    "name": "Four races",
    "side": "krai",
    "seed": 20261115,
@@ -1975,7 +1975,7 @@
   },
   {
    "id": "ssarith_four_races",
-   "sky": "pearl_mist",
+   "sky": "skins_pearl_mist",
    "name": "Four races",
    "side": "ssarith",
    "seed": 20261116,
