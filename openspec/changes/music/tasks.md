@@ -9,6 +9,13 @@
 - [x] 1.5 Write the Fleet Command Music page and screenshot it
 - [ ] 1.6 Publish the Music page from the desktop session; add it to the tracker and record its link
 
+## 1b. Faction music (owner, 2026-11-07)
+
+- [x] 1b.1 The Krai, Ssarith and Kelvane motifs in the MOTIF LIBRARY and `docs/design/music.md`, each with its sources
+- [x] 1b.2 A battle loop and an ambient loop for each, and the Concord's ambient loop; seven new instruments calibrated
+- [x] 1b.3 Rendered, checked (clipping, loops, loudness profiles, spectrograms) and put on the Music page
+- [ ] 1b.4 The owner hears them and answers S5-S7
+
 ## 2. The owner's ears
 
 - [ ] 2.1 The owner approves the score or notes what to change (the tracker)

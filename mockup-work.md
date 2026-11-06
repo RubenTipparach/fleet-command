@@ -36,8 +36,8 @@ account and every link here is updated.
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | **Approved for implementation** (2026-11-06, owner in conversation: "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v9; v10 committed, to publish) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
-| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
-| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-07, v9 after the owner's notes; the console keys **approved for implementation**, owner in conversation: "Console keys - this should be implemented in the game"; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
+| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-07, v3: a battle and an ambient loop for every faction in the game; published from the cloud session's account, audio served beside the page) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
@@ -887,6 +887,43 @@ heard, not seen, so its mockup is a page to listen on: every cue with a play but
 
 - Change: `openspec/changes/sound-effects`. Shots: `docs/screenshots/mockups/sounds-*.png`.
 - Stage: Drafted (2026-11-04). Questions: survey S4 (how a battle sounds in silent space).
+- The owner's notes, 2026-11-06, all done in v3: "weapons all are too long, lance fire should sound more punchy" (every
+  weapon cut to 0.5-1.2 s from its peak, with a kick; the Lance a crack, a snap and a kick in 0.55 s); "hull hits are
+  all great btw, I would make some shorter sfx as alternatives" (the hits kept, each with a `_short` alternative);
+  "red_alert sucks" (a recorded whoop klaxon, with a two-tone and a wail as alternatives); "amb_bridge - should be like
+  aminute with bleeps and boops on theb ridge and scanning sounds" (a minute-long bed with about 48 bleeps, six sensor
+  sweeps and four scan pings scattered over it).
+- The owner, 2026-11-07: "bridge loop is no longer backgrouind noise, it has a really annoying whirling noise. I'm
+  assuming thats the sensor sweep, get rid of the sweep sound, just subtle bleeps and airduct noise". Done in v4: the
+  sweeps and pings gone, the computer-room recording (which swells every 3 s) gone too, the air duct twice over a low
+  hum, the bleeps about 10 dB quieter (at most 11 dB over the bed in their band, in under 2% of the minute).
+- The owner, 2026-11-07: "soften bridge ambient along with a lot of the other weapons, check the procedure in crab breeze
+  how audio was softened with low passes". Done in v5 on Crab Breeze's two rules: the bridge gets its ambience beds'
+  treatment ("ambient sounds needs to be softer and queiter", Crab Breeze `openspec/changes/ambience`: compressed 3:1
+  from -18 dB, low passed at 3.5 kHz, a diffuse reverb, written at -14 dB peak), the bleeps now filtered with it; every
+  weapon gets its outside-sound seal (Crab Breeze `openspec/changes/audio`: low passed at 4 kHz twice over, 6 dB down),
+  heard from the bridge through the hull, with less saturation on the Lance and the Disruptor.
+- The owner, 2026-11-07: "low rumble bridge ambient, it hurts my ears a bit", "make it sound pleaasent like proper
+  ambience". Done in v6: the generator layer (86% of it a 53 Hz hum) removed; a soft room tone (pink air, 200 Hz to
+  6 kHz, two uncorrelated sides) under the air duct, which is cut below 180 Hz; the whole bed cut below 180 Hz at
+  24 dB/octave and above 6.5 kHz, so the 3.5 kHz dark roar of v5 opens to soft air. Measured: 0.03% of the energy under
+  150 Hz, the rest even from 200 Hz to 3.5 kHz, the loudness within 5.3 dB, the bleeps soft over it (at most 11 dB).
+- The owner, 2026-11-07, on v6: "no, it got worse, now sounds like water!", "I want it to sound like a hum". Done in v7:
+  the pink-noise air removed (broadband noise reads as water or rain); the bed is a hum: our warm tone at 152 Hz with soft
+  harmonics to about 1.2 kHz under a recorded hum raised an octave (76 to 152 Hz), the air duct faint beneath, nothing
+  under 110 Hz. Measured: 69% of the energy on the hum's own pitches, none under 100 Hz, 2% over 2 kHz, the loudness
+  within 2.6 dB, the bleeps at most 9 dB over the hum as the ear weights it (A-weighted).
+- The owner, 2026-11-07, on v7: "audio still busted", "now it soiunds like electrical buz", "it sounds like electrical buzz
+  which is wrong!", "why cant you do something like brownian noise", "https://opengameart.org/content/sci-fi-sound-effects-library
+  space ambience right here". Done in v8: the synthesised hums removed (a stack of harmonics is what mains buzz is); the bed
+  is Little Robot Sound Factory's recorded space ambience from the pack the owner sent (a soft drone between 60 and
+  120 Hz), looped to a minute with the sub-bass under 45 Hz trimmed, the bleeps at about 10 dB over it as heard; and a
+  brown-noise alternative (`amb_bridge_brown`, 60-600 Hz). The pack is CC-BY 3.0, used at the owner's request: its credit,
+  "Little Robot Sound Factory, www.littlerobotsoundfactory.com", is on the page, in `AUDIO_SOURCES.md` and the sources
+  tables, and must be in the game's credits (`tools/audio/licence_exceptions.json`). v9: every sound's link carries a
+  fingerprint of its file, so a sound changed at the same path is never played from the viewer's cache.
+- The owner, 2026-11-07: "Console keys - this should be implemented in the game": the console key sounds approved for
+  implementation (`openspec/changes/sound-effects` tasks 3.x).
 
 ## 18. Music
 
@@ -898,6 +935,11 @@ orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/
 
 - Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
 - Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).
+- The owner, 2026-11-07: "we need custom music for each faction (just do the ones in game right now) and add ambient
+  music as well". Done in v3: the Concord's ambient (Concord Watch) beside its title and battle; the Krai Warhost (the
+  Line, the Forge at Rest), the Ssarith Hunt (the Bows, the Long Watch) and the Kelvane Institute (the Measurement, the
+  Long Baseline), each from its written culture with every source named in `docs/design/music.md`. S2 decided by these
+  words; S5-S7 ask whether each reading is right. The Kethran and the Vos, opponents with no skin yet, wait.
 
 ## 20. Battle console: Kelvane Institute
 

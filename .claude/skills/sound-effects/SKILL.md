@@ -25,7 +25,10 @@ approved", "verify all sounds are 3d based (except ambience and music and ui)"):
   edits) and `AUDIO_SOURCES.md` (one row per pack: its page, who recorded it, its licence) are
   written by the tools from the spec. Edit the spec, never the tables.
 - **CC0 or public domain only**, checked on the pack's own page when it is fetched. A pack whose page
-  does not say so is refused, and nothing is copied from another game.
+  does not say so is refused, and nothing is copied from another game. **The one way past it**: the owner asks for a
+  pack by name; it goes into `tools/audio/licence_exceptions.json` with the owner's words, its licence and the credit
+  its page asks for, which the Sounds page, `AUDIO_SOURCES.md` and the game's credits then carry (the first: Little
+  Robot Sound Factory's Sci-Fi Sound Effects Library, CC-BY 3.0, 2026-11-07).
 - **Placed in 3D**: every battle sound (weapons, impacts, the ship) plays from its ship or its named
   mount node (CLAUDE.md section 10, named nodes), mono. Only the console keys, the alerts, the
   ambience beds and the music are unplaced, and only beds may be stereo.
@@ -47,7 +50,7 @@ tools/audio/cc0_cues.json   --cut_cc0.py---> output/sfx/<cue>.wav               
                                              assets/audio/sfx/SOURCES.md, assets/audio/ambience/SOURCES.md
 render_sfx.sh: ffmpeg -----> assets/audio/sfx/<cue>.ogg (Vorbis q5, mono), assets/audio/ambience/amb_*.ogg (stereo, q4)
                              output/sfx/<cue>.mp3 (share copies), AUDIO_SOURCES.md (list_sources.py)
-gen_sfx_page.py -----------> docs/mockups/sounds.html (every cue with a play button, MP3s inlined)
+gen_sfx_page.py -----------> docs/mockups/sounds.html (every cue with a play button) + sounds.files.json
 inspect_sfx.py check ------> clipping, loop seams, output/sfx/sheet.png (look at it)
 ```
 
@@ -72,7 +75,11 @@ One command rebuilds everything: `tools/audio/render_sfx.sh` (or `tools/audio/re
 4. **Write the spec** in `tools/audio/cc0_cues.json` (its `_about` lists every field): layers of
    `{"src": "pack:file"}` or `{"synth": "<layer>"}` with `start`, `dur`, `pitch` (tape speed: below
    1 is bigger and slower), `gain`, `lp`, `hp`, fades and `delay`; the cue's `len`, `drive`, `loop`,
-   `stereo`, `distance` and `peak_db`. Say the edits in `edits`.
+   `stereo`, `distance` and `peak_db`. Say the edits in `edits`. A bed that should be busy (the bridge's bleeps and
+   scans) uses `scatter`: groups of short sounds placed at seeded times, gains and pans over the bed.
+   **Keep weapons short and front-loaded** (owner, 2026-11-06: "weapons all are too long, lance fire should sound
+   more punchy"): start each take at its peak, put a kick under it (`punch_thump`), and cut to about half a second
+   (1.2 s at most for a missile's roar). A hit gets a short alternative (`<cue>_short`) for rapid fire.
 5. **Synthesise only what is missing.** A synthesised cue or layer is a function in
    `tools/audio/gen_sfx.py` registered with `@sound(name, group, what, peak_db)`; a layer's group is
    `_layer`, so it is mixed into recorded cues and never written alone. Use the building blocks
@@ -85,7 +92,28 @@ One command rebuilds everything: `tools/audio/render_sfx.sh` (or `tools/audio/re
    Copy the sheet to `docs/screenshots/audio/sfx-sheet.jpg` at half size.
 7. **Audition and record**: the page is rewritten by the build; it is an artifact like a mockup
    (CLAUDE.md section 4): commit it with its shots, its record in `docs/artifacts/sounds/` and its row
-   in `mockup-work.md` and the tracker, and publish it (from the desktop session).
+   in `mockup-work.md` and the tracker, and publish it with the audio beside it: pass
+   `docs/mockups/sounds.files.json` as the publish's `files` map (each MP3 at the same path the page names). Never
+   inline audio in the page: version 1 did (1.9 MB of data URIs) and never loaded in the viewer (2026-11-05).
+
+## Softening (Crab Breeze's two rules)
+
+When the owner says a sound is too harsh, too bright or too foreground (2026-11-07: "soften bridge ambient along with a
+lot of the other weapons, check the procedure in crab breeze how audio was softened with low passes"):
+- **A bed** gets Crab Breeze's ambience treatment: `"distance": {"lp": 3500, "wet": 0.35, "threshold_db": -18,
+  "ratio": 3}`, a cue `"lp": 3500, "lp_order": 4` so scattered sounds are softened with it, and `"peak_db": -14`.
+- **A sound heard from the bridge through the hull** (the weapons) gets Crab Breeze's sealed-cockpit filter:
+  `"lp": 4000, "lp_order": 4, "peak_db": -7` (4 kHz twice over, 6 dB down), and less `drive`.
+- Measure before and after (energy above 4 kHz, spectral centre, RMS, the first 20 ms of a shot) and say the numbers.
+- **Prefer a recorded bed** the owner points to: the bridge took four synthesised tries (rumble, water, buzz) before
+  the owner sent a recording (2026-11-07). A synthesised stack of harmonics reads as mains buzz.
+- **A bed is a hum, not a noise and not a rumble** (owner, 2026-11-07, over three versions of the bridge: "low rumble
+  bridge ambient, it hurts my ears a bit", then of pink noise "now sounds like water!", then "I want it to sound like a
+  hum"). Make a ship's bed tonal: a warm tone between about 120 and 400 Hz with soft harmonics (`ship_hum`), or a
+  recorded hum moved there by `pitch` (a 76 Hz hum at 2.0 is 152 Hz); cut it below about 110 Hz (`"hp": 110,
+  "hp_order": 4`) and drop any steady tone under 100 Hz (they hurt); no broadband noise wash, filtered or not (it reads
+  as water or rain); nothing that moves in pitch (it reads as whirling). Judge scattered sounds over it A-weighted, as
+  the ear hears them, at most about 10 dB over the bed, and set their gain against the bed's average, not its peak.
 
 ## Levels
 

@@ -3,12 +3,15 @@
 
 A works sheet: a masthead (written by the caller), then one run sheet per group, each row a sound
 with its description, length, a waveform strip from its peaks and a play button (loops play on
-repeat). Each sound's MP3 is embedded as a data: URI, so the page needs no files beside it. Used by
+repeat). Each sound plays from its MP3 share copy (output/sfx, output/music: render_sfx.sh and render.sh write
+them), published beside the page at the same path (files_map below), as Crab Breeze's Music page does: a page with
+megabytes of audio inlined never loaded in the artifact viewer (2026-11-05). MP3, not the game's OGG, because
+every browser plays it. Opened from docs/mockups/ in the repository, a sound that fails at its published path is
+tried again at ../../ (the repository root). Used by
 tools/audio/gen_sfx_page.py (the Fleet Command Sounds page) and tools/music/music_page.py (the
 Fleet Command Music page). The look and the player are Crab Breeze's (tools/audio/gen_sfx_page.py
 at 0e569e3), moved here so both pages share one copy.
 """
-import base64
 import json
 import subprocess
 
@@ -93,6 +96,7 @@ for (const [g, title] of Object.entries(GROUPS)) {
     const audio = new Audio();
     audio.preload = 'auto';
     audio.src = s.src;
+    audio.addEventListener('error', () => { if (!audio.dataset.retried) { audio.dataset.retried = '1'; audio.src = '../../' + s.src.split('?')[0]; } });
     audio.loop = s.loop;
     const btn = row.querySelector('button');
     const me = { audio, btn };
@@ -124,10 +128,22 @@ new MutationObserver(draw).observe(document.documentElement, { attributes: true,
 """
 
 
-def embed(mp3_path: str) -> str:
-    """The MP3 as a data: URI."""
-    with open(mp3_path, "rb") as f:
-        return "data:audio/mpeg;base64," + base64.b64encode(f.read()).decode("ascii")
+def files_map(items: list) -> dict:
+    """The Artifact publish `files` map for a page's sounds: each published path is the repository path
+    the page names (without its fingerprint), so the published page and the repository agree."""
+    return {i["src"].split("?")[0]: i["src"].split("?")[0] for i in items}
+
+
+def fingerprint(items: list, root: str) -> None:
+    """Adds ?v=<first 10 hex of the file's SHA-256> to each item's src, so a sound republished at the same path
+    is fetched afresh rather than played from the viewer's cache (2026-11-07: the bridge bed was changed six times
+    at one path)."""
+    import hashlib
+    import os
+    for i in items:
+        path = i["src"].split("?")[0]
+        with open(os.path.join(root, path), "rb") as f:
+            i["src"] = path + "?v=" + hashlib.sha256(f.read()).hexdigest()[:10]
 
 
 def peaks(path: str, points: int = 120) -> list:
@@ -142,8 +158,14 @@ def peaks(path: str, points: int = 120) -> list:
 def write(out: str, title: str, body: str, groups: dict, items: list) -> None:
     """The page at `out`: `body` is the masthead and footer HTML (with an empty #groups div),
     `groups` maps each item's group to its heading, in order, and each item has name, group, what,
-    seconds, loop, peaks and src (and optionally recorded)."""
+    seconds, loop, peaks and src (a repository path under output/), and optionally recorded.
+    Writes the publish files map beside the page (<page>.files.json)."""
+    import os
+    fingerprint(items, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(out)))))
     page = (HEAD.replace("__TITLE__", title) + body
             + SCRIPT.replace("__GROUPS__", json.dumps(groups)).replace("__DATA__", json.dumps(items)))
     with open(out, "w") as f:
         f.write(page)
+    with open(out[:-5] + ".files.json", "w") as f:
+        json.dump(files_map(items), f, indent=1)
+        f.write("\n")

@@ -11,7 +11,8 @@
 
 ## 2. The owner's ears
 
-- [ ] 2.1 The owner approves the set or notes cues to redo (the tracker)
+- [ ] 2.1 The owner approves the set or notes cues to redo (the tracker). The console keys approved for implementation
+  (owner, 2026-11-07: "Console keys - this should be implemented in the game")
 - [ ] 2.2 Redo the noted cues
 
 ## 3. In the game (after approval for implementation)
@@ -23,3 +24,5 @@
 - [ ] 3.5 Skins' key sounds through the kit manifest
 - [ ] 3.6 The voice cap and pause behaviour
 - [ ] 3.7 `PLAYTEST_BEAT sound` lines and a playtest that checks them
+- [ ] 3.8 The game's credits carry every CC-BY pack's credit (`tools/audio/licence_exceptions.json`): Little Robot Sound
+  Factory, www.littlerobotsoundfactory.com

@@ -46,6 +46,9 @@
     "gm_brass_section": {
       "vol": 107
     },
+    "gm_celesta": {
+      "vol": 69.3
+    },
     "gm_cello": {
       "vol": 90,
       "pan": 20
@@ -88,6 +91,9 @@
       "vol": 127,
       "pan": 20
     },
+    "gm_marimba": {
+      "vol": 83.0
+    },
     "gm_oboe": {
       "vol": 90,
       "pan": 10
@@ -102,8 +108,14 @@
       "vol": 100,
       "pan": -35
     },
+    "gm_pad_bowed": {
+      "vol": 131.8
+    },
     "gm_pad_warm": {
       "vol": 200
+    },
+    "gm_pizzicato_strings": {
+      "vol": 101.4
     },
     "gm_reverse_cymbal": {
       "vol": 200.0
@@ -140,8 +152,14 @@
     "gm_tuba": {
       "vol": 103
     },
+    "gm_tubular_bells": {
+      "vol": 94.2
+    },
     "gm_vibraphone": {
       "vol": 59
+    },
+    "gm_voice_oohs": {
+      "vol": 72.4
     }
   },
   "voices": {
