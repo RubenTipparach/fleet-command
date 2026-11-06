@@ -90,6 +90,7 @@ public sealed partial class Battle
         Player = _ships[0];
         Scenario = scenario;
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
+        RangeSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -101,7 +102,7 @@ public sealed partial class Battle
             Id = d.Id, Order = order, Name = d.Name, Captain = d.Captain, Class = c, Faction = Data.Factions[d.Faction], Side = d.Side,
             X = d.XM, Z = d.ZM, H = Geometry.Wrap(d.HeadingDeg * Geometry.Deg), V = d.SpeedMS, VOrder = d.SpeedMS, Hull = c.HullHp * d.HullFrac,
             Capacitor = c.CapacitorE * Tuning.StartCapacitorFrac, Battery = c.BatteryE * Tuning.StartBatteryFrac,
-            Stance = d.Stance, Range = d.Range, Erratic = d.Erratic, HoldFire = d.HoldFire,
+            Stance = d.Stance, Range = d.Range, Erratic = d.Erratic, HoldFire = d.HoldFire, Prize = d.Prize,
         };
         s.HOrder = s.H;
         s.HetChance = Rules.HetMax(s);
@@ -122,7 +123,18 @@ public sealed partial class Battle
     /// <summary>A ship's locked target, if it is still alive.</summary>
     public Ship? TargetOf(Ship s) { Ship? t = ShipById(s.Target); return t is { Alive: true } ? t : null; }
 
-    public IEnumerable<Ship> EnemiesOf(Ship s) => _ships.Where(o => o.Alive && o.Side != s.Side);
+    public IEnumerable<Ship> EnemiesOf(Ship s) => _ships.Where(o => o.Alive && !o.Struck && o.Side != s.Side);
+
+    /// <summary>The player's fleet disengages (a mission's Withdraw): the battle ends where it stands.</summary>
+    public void Withdraw()
+    {
+        if (Over != null) return;
+        Over = "withdrawn";
+        Say("Helm", "Disengaging. All ships, withdraw.");
+    }
+
+    /// <summary>The battle is lost though ships of side 0 still fly (a mission whose own fleet is gone, its wingmen left).</summary>
+    public void Lose() { if (Over == null) Over = "lost"; }
 
     public void Say(string who, string text)
     {
@@ -140,7 +152,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Alive) SystemsStep(s, dt);
         foreach (Ship s in _ships)
         {
-            if (!s.Alive || s == Player) continue;
+            if (!s.Alive || s.Struck || s == Player) continue;
             s.ThinkT -= dt;
             if (s.ThinkT <= 0) { s.ThinkT = Tuning.AiThinkS; Think(s); }
         }
@@ -148,10 +160,21 @@ public sealed partial class Battle
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
         foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
         ChargeStep(dt);
+        RangeStep(dt);
         PointDefenceStep();
         CountermeasuresStep(dt);
         ShotsStep(dt);
-        if (!_ships.Any(s => s.Side == 1 && s.Alive)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
+        foreach (Ship s in _ships)
+            if (s.Prize && s.Alive && !s.Struck && s.Hull <= s.Class.HullHp * Tuning.CaptureHullFrac)
+            {
+                s.Struck = true;
+                s.VOrder = 0;
+                s.Engaged = false;
+                Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
+            }
+        // a damage range never ends: its last ship can be broken up and the range repaired
+        if (Scenario.DamageRange) return;
+        if (!_ships.Any(s => s.Side == 1 && s.Alive && !s.Struck)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
     }
 

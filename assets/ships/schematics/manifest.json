@@ -1,0 +1,343 @@
+{
+ "_doc": "Written by tools/mockups/ship_schematics.py from the ship glbs; do not edit, re-run it. Each ship has two layers, pure white RGB with the drawing in alpha: hull (filled, top-lit, low alpha) and wire (quad edges seen from above plus the outline, full alpha). Tint the hull with a dark skin colour, the wire with a bright one, and lay the wire over the hull. A glb point (x, y, z) in metres falls at pixel (origin_px[0] + x / m_per_px, origin_px[1] + z / m_per_px); y (height) is not drawn. A schematic is stale when its source glb's sha256 differs.",
+ "conventions": {
+  "view": "orthographic, looking straight down -Y (from above)",
+  "image_x": "+X (starboard to the right)",
+  "image_y": "+Z (the bow, -Z, at the top)",
+  "glb_axes": {
+   "bow": "-Z",
+   "up": "+Y",
+   "port": "-X"
+  },
+  "pixel_origin": "top-left corner of the image; pixel centres at +0.5",
+  "centre": "the centre of the hull's top-down bounding box is the centre of the canvas",
+  "margin": 0.06,
+  "layers": "white RGB, alpha carries the drawing; hull alpha 0.15-0.55, wire alpha up to 1"
+ },
+ "ships": [
+  {
+   "faction": "concord",
+   "id": "swift_below",
+   "hull": "concord/swift_below.hull.png",
+   "wire": "concord/swift_below.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.057489,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 16.0,
+    "length_z": 51.805
+   },
+   "source_triangles": 2804,
+   "quads": 1392,
+   "triangles": 20,
+   "edges_drawn": 958,
+   "source": {
+    "glb": "assets/ships/concord/swift_below.glb",
+    "sha256": "1622de5e21eac1632a13a0f6d563a669c2d777f7297d738a4ab3c8c6eb2040e2"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "swift_updown",
+   "hull": "concord/swift_updown.hull.png",
+   "wire": "concord/swift_updown.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.057489,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 16.0,
+    "length_z": 51.805
+   },
+   "source_triangles": 3012,
+   "quads": 1493,
+   "triangles": 26,
+   "edges_drawn": 1108,
+   "source": {
+    "glb": "assets/ships/concord/swift_updown.glb",
+    "sha256": "907180da1ac5e37df94e5c690093afc9f9baaa5ff1b2278e0f4df831066ef278"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "swift_level",
+   "hull": "concord/swift_level.hull.png",
+   "wire": "concord/swift_level.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.057489,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 28.38,
+    "length_z": 51.805
+   },
+   "source_triangles": 3012,
+   "quads": 1496,
+   "triangles": 20,
+   "edges_drawn": 1092,
+   "source": {
+    "glb": "assets/ships/concord/swift_level.glb",
+    "sha256": "fe8af5fdf4b8347ce97fa360e950027f517c800945616a8e1f0e314376fc4f27"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "petrel_updown",
+   "hull": "concord/petrel_updown.hull.png",
+   "wire": "concord/petrel_updown.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.098596,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 24.0,
+    "length_z": 88.847
+   },
+   "source_triangles": 3464,
+   "quads": 1719,
+   "triangles": 26,
+   "edges_drawn": 1454,
+   "source": {
+    "glb": "assets/ships/concord/petrel_updown.glb",
+    "sha256": "87240b70e958645a53c54a09de896245ee4444e62803699ff0d42071caf5f865"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "petrel_level",
+   "hull": "concord/petrel_level.hull.png",
+   "wire": "concord/petrel_level.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.098596,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 46.78,
+    "length_z": 88.847
+   },
+   "source_triangles": 3464,
+   "quads": 1721,
+   "triangles": 22,
+   "edges_drawn": 1438,
+   "source": {
+    "glb": "assets/ships/concord/petrel_level.glb",
+    "sha256": "3e0f8cc795d5dc79b2962974ed49793e1f5f0682ed7089fb2c8ef96407a716de"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "albatross",
+   "hull": "concord/albatross.hull.png",
+   "wire": "concord/albatross.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.123183,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 55.78,
+    "length_z": 111.003
+   },
+   "source_triangles": 6464,
+   "quads": 3204,
+   "triangles": 56,
+   "edges_drawn": 2022,
+   "source": {
+    "glb": "assets/ships/concord/albatross.glb",
+    "sha256": "9e228cd504f1e56d65ee34beed75ae5ce4446b5aa106dd3ba481eae99bfa8d91"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "condor",
+   "hull": "concord/condor.hull.png",
+   "wire": "concord/condor.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.209082,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 66.58,
+    "length_z": 188.408
+   },
+   "source_triangles": 7960,
+   "quads": 3743,
+   "triangles": 474,
+   "edges_drawn": 3316,
+   "source": {
+    "glb": "assets/ships/concord/condor.glb",
+    "sha256": "73fd9f7f084fa0fc7003825367dc8b8cd2e1aa92c6cd9753b27cff42286067b5"
+   }
+  },
+  {
+   "faction": "concord",
+   "id": "pelican",
+   "hull": "concord/pelican.hull.png",
+   "wire": "concord/pelican.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.152255,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 59.38,
+    "length_z": 137.2
+   },
+   "source_triangles": 4388,
+   "quads": 2182,
+   "triangles": 24,
+   "edges_drawn": 1492,
+   "source": {
+    "glb": "assets/ships/concord/pelican.glb",
+    "sha256": "eaef18ea3f4a66ae01a06bd1a2a59d1d12e2e79f52795cca290f017bc17e8bf1"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "corvette",
+   "hull": "krai/corvette.hull.png",
+   "wire": "krai/corvette.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.063975,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 23.26,
+    "length_z": 57.649
+   },
+   "source_triangles": 5694,
+   "quads": 2678,
+   "triangles": 338,
+   "edges_drawn": 1785,
+   "source": {
+    "glb": "assets/ships/krai/corvette.glb",
+    "sha256": "c857acb0d2b2b8db5d2d14824a4d524f689baea2a2f14a5cf9717bb66794de51"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "frigate",
+   "hull": "krai/frigate.hull.png",
+   "wire": "krai/frigate.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.122479,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 31.8,
+    "length_z": 110.368
+   },
+   "source_triangles": 6996,
+   "quads": 3333,
+   "triangles": 330,
+   "edges_drawn": 2210,
+   "source": {
+    "glb": "assets/ships/krai/frigate.glb",
+    "sha256": "081690667ccb599cd8338e96dfb28b8c975d1630fd4507f40cc3fc1f3223e206"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "cruiser",
+   "hull": "krai/cruiser.hull.png",
+   "wire": "krai/cruiser.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.148216,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 43.152,
+    "length_z": 133.56
+   },
+   "source_triangles": 11474,
+   "quads": 5537,
+   "triangles": 392,
+   "edges_drawn": 3199,
+   "source": {
+    "glb": "assets/ships/krai/cruiser.glb",
+    "sha256": "3fd2232ed4e1a6e77eac50926d29830c25c0ede40d866f985d84ccdebce7c661"
+   }
+  },
+  {
+   "faction": "krai",
+   "id": "dreadnought",
+   "hull": "krai/dreadnought.hull.png",
+   "wire": "krai/dreadnought.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.251261,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 66.185,
+    "length_z": 226.416
+   },
+   "source_triangles": 16738,
+   "quads": 8079,
+   "triangles": 572,
+   "edges_drawn": 5079,
+   "source": {
+    "glb": "assets/ships/krai/dreadnought.glb",
+    "sha256": "7cfccede0f655418b72cd6cc024f2e979bc8b6f9d09afb4c609b27aabcdd2b12"
+   }
+  }
+ ]
+}

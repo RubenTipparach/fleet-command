@@ -1,0 +1,22 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "shakedown",
+ "name": "Shakedown cruise",
+ "glyph": "1",
+ "kind": "story",
+ "reward_cr": 250,
+ "where": "plain && dist_home >= 2 && dist_home <= 3 && terrain == 'open'",
+ "objective": "Fly to the marker beacon and back on your own engines.",
+ "brief": "Your first command is fresh from the yard. Take her out to the marker beacon and let the crew find her faults before anyone else does. No battle expected.",
+ "result": [
+  {
+   "credits": 250,
+   "next": [
+    {
+     "mission": "first_blood"
+    }
+   ],
+   "log": "Shakedown done: the yard fixed what the crew found."
+  }
+ ]
+}

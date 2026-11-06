@@ -1,0 +1,68 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "ambushed",
+ "name": "Dispatch run",
+ "glyph": "R",
+ "type": "Ambushed",
+ "reward_cr": 450,
+ "where": "plain && !own && dist_home >= 4",
+ "objective": "Carry the dispatches through the sector.",
+ "brief": "Sealed dispatches for the picket beyond this sector. A routine run: through and out the far side.",
+ "battle": [
+  {
+   "intel": "None expected",
+   "groups": [
+    {
+     "id": "ahead",
+     "faction": "{foe}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Ahead",
+     "bearing_deg": 0
+    },
+    {
+     "id": "behind",
+     "faction": "{foe}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Behind",
+     "bearing_deg": 180,
+     "range_km": 6
+    }
+   ],
+   "objectives": [
+    {
+     "id": "out",
+     "text": "Break out, or beat both groups",
+     "primary": true,
+     "by_withdraw": true,
+     "done": "alive(enemies) == 0"
+    },
+    {
+     "id": "home",
+     "text": "Bring every ship home",
+     "done": "destroyed(fleet) == 0"
+    },
+    {
+     "id": "both",
+     "text": "Destroy both groups",
+     "done": "alive(enemies) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 2
+   },
+   "log": "Dispatch run: it was an ambush, and the fleet broke out."
+  },
+  {
+   "credits": "pay",
+   "log": "Dispatch run: ambushed, and the dispatches were lost."
+  }
+ ]
+}

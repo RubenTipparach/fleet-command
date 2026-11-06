@@ -113,3 +113,13 @@
 - 2026-11-04, desktop session (Mac): M2 at v81 and M8 at v20 (the shield display on every ship); version id `1793828157-0f07`.
 - 2026-11-05, cloud session (faction emblems): version 117, version id `1793848268-4e78`, merging main: M16 (special weapons), M17 (sounds) and M18 (music), committed on main by another session, back beside M19 and the gallery.
 - 2026-11-05, cloud session (battle console thread): version 118, version id `1793850979-43ca`, built on the live version (M19, the Emblem Gallery and the guide at v31 from the emblem session, carried): M2 v82, M8 v21, M15 v6.
+- 2026-11-05, desktop session: version 119, version id `1793863693-e0b0`, edited on the live version 118: M1 v8 (the faction screen, skins on the campaign, missions as scripts, test maps), M10 v8, M14 v2, M19 v5 (the shared emblem builder).
+- 2026-11-05, desktop session: version 120, version id `1793865072-cc30`: M1 v9.
+- 2026-11-05, desktop session: version 121, version id `1793865429-5b9d`: M1 v10.
+- 2026-11-05, desktop session: version 122, version id `1793866185-85f0`: the Fleet Command Missions guide added under Guides.
+- 2026-11-05, desktop session: version 123, version id `1793871461-ad95`: M1 v11, the Missions guide v2.
+- 2026-11-05, desktop session: version 124, version id `1793872899-a201`: M1 v12.
+- 2026-11-05, desktop session: version 125, version id `1793874926-c06c`: M1 v13.
+- 2026-11-05, desktop session: version 126, version id `1793877957-f8cb`: M1 v14, the Missions guide v3.
+- 2026-11-05, desktop session: version 127, version id `1793911435-01fe`: M1 v15 (Accept sets course), and the flow running in the game.
+- 2026-11-05, desktop session: version 128, version id `1793915465-6c92`: M1 v16 (the port redesigned).

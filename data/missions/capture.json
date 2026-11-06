@@ -1,0 +1,59 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "capture",
+ "name": "Capture a ship",
+ "glyph": "K",
+ "type": "Capture",
+ "reward_cr": 800,
+ "follow_group": true,
+ "where": "has_group && group_size_here == 1 && group_fac_here != side",
+ "objective": "Board and take the ship. Needs marines.",
+ "brief": "The {group} is alone here. Drop its shields, beat it down until it strikes, and board it.",
+ "needs": [
+  {
+   "if": "marines == 0",
+   "say": "Boarding needs marines aboard."
+  }
+ ],
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "prize",
+     "faction": "{group_fac}",
+     "count": 1,
+     "role": "enemy",
+     "tag": "prize",
+     "label": "{group}",
+     "ship_name": "{group}"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "take",
+     "text": "Board and take the ship",
+     "primary": true,
+     "done": "taken(prize) == 1"
+    },
+    {
+     "id": "whole",
+     "text": "Take it with more than a sixth of its hull",
+     "done": "taken(prize) == 1 && hull_min(prize) > 0.16"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "prize": "{group_fac}",
+   "log": "The {group} is ours, and joins the fleet."
+  }
+ ]
+}

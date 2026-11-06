@@ -14,6 +14,7 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | 6 | Concord line (the ships) | v24 | v24: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the lamps, the hot bells and the Albatross main hull's two-bell stern; its damage (hits, scorch marks, torpedo holes, parts blown off, the core breach and break-up into burning cells with cut faces) but not the subsystem signatures (`ship-damage-visuals` 3.2b); not its paint rules (below) | `ship-models-engine` |
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
+| 1 | Primary game flow (menus, faction screen, campaign, missions) | v15 | v15 (Accept sets course; the debrief over the battle); v14's flow and rules (2026-11-05): the menu, the faction screen, skirmish, the campaign map with the same territory, moves, routes by turn, factions' fleets, freighters, mission banners, briefing, port, debrief with prestige and reputation; missions from `data/missions/`; the differences below | `game-flow-engine`, `mission-scripting` |
 | 16 | Special weapons range | v5 | v5's simulation and looks: the four missile grades with flares, decoy shuttle and point defence; the chorus lance, quell torpedo, forge driver and blood charge with their rules and effects. Not its shield bubble ripple, haze or motes (below) | `weapon-fx`, `missiles`, `special-weapons` |
 
 Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
@@ -33,7 +34,31 @@ mockup draw it (`src/Game/View/ShotView.cs` with `beam`, `flare` and `beads` sha
 disruptor bolts as hot streaks, torpedoes as six-armed purple stars with bead trails, missiles as body, ball plume and
 tail in their grade's colour, point defence as gold tracers, flares and the decoy shuttle. Task `weapon-fx` 3.4.
 
+Schematics (2026-11-05, owner: "generate schematics for each ship ... I want these to be used in game, and in store"): the
+game is ahead of the mockups. The battle's systems display and the campaign's shipyard, fleet and outfitter draw each ship's
+two-layer schematic (`assets/ships/schematics/`, `src/Game/Ui/Schematics.cs`); the battle console mockup (mockups 2, 8, 15)
+still draws its outline, and the campaign mockup's shipyard its own. Task: `ship-schematics` 2.1.
+
+Missions (2026-11-05): the game reads `data/missions/`; the campaign mockup still runs `docs/mockups/lib/campaign-missions.js`,
+kept the same by hand (the files were written from it, 2026-11-05). Task: `mission-scripting` 2.1.
+
 ## Open differences
+
+### Mockup 1 (the game flow)
+
+| Where | Mockup | Game | Task |
+|---|---|---|---|
+| Faction screen | 3D emblems on wooden pedestals on concrete, a light and dust on hover, the emblem turning | the rendered emblems flat on kit frames; the Ssarith card disabled (no console skin in the game) | `game-flow-engine` 2.1 |
+| Map look | the board reflecting the sky in a planar mirror (three.js Reflector); stars that streak as the view pans (the FreeSpace-style streak shader) | matched 2026-11-05 (`CampaignMap.cs`, `MapPieces.cs`, `puff.gdshader`, `banner.gdshader`): the quiet nebula sky and its stars behind, three layers of parallax stars under the board, dark glass hexes washed in the holder's colour with ports lighter, holder-coloured border ribbons, nebula puffs with a main and an accent colour from the owner's palette (the mockup's own random numbers), asteroid belts, stars with halos, textured planets with atmospheres and orbit rings, stations, flight stands (gold for the player, with its lamp ring), ships facing their last move and flying their moves sector by sector, strength flags and mission gonfalons as rippling cloth, freighters on dashed routes (allies' routes dimmer), labels that keep their size and leave at far zoom, the route ribbon with turn badges and arrowhead, the fixed camera angle; the HUD's top bar (captain, credits, prestige, turn, moves, the Missions key and mission log, standing chips, fleet chips with hull bars), zoom and Fleet keys, End turn, the sector panel with the port's keys. Still different: the glass reflects the sky panorama (an environment light), not a planar mirror of the pieces; the stars under the board are points, not streaks | `game-flow-engine` 2.2 |
+| Skirmish | fleet building and loadouts on a points budget | the game's scenarios, played as written | `game-flow-engine` 2.3 |
+| Port (v16) | Shipyard, Loadout, Supplies, Crew tabs, the fleet down the left, schematics, quoted prices | the same (`PortPanel.cs`), in sync 2026-11-05; the game's port covers the width with the map dimmed, the mockup's on desktop too, and on a phone it keeps the map strip | none |
+| Refits | fittings priced and shown | priced and saved, but a hull fights as its battle class | `game-flow-engine` 2.3 |
+| Officers | hired | hired, no effect in battle | `game-flow-engine` 2.4 |
+| Phones | every screen at phone sizes | not yet checked at phone sizes | `game-flow-engine` 2.5 |
+| Options | sound levels, quality, UI scale | display mode only | `game-flow-engine` 2.6 |
+| Transitions and loading | screens switch at once | screens fade through black; a loading screen with a progress bar at boot (shader prewarm), before the map and before a battle | `game-flow-engine` 2.7 |
+| Battles | the stand-in battle with an End battle key | the real battle console, the mission's groups placed by bearing; Withdraw; the battle ends when one side is gone | none: the game is the target |
+| Station and planet assaults | fight the base | fight its guard squadron (no stations or planets in the battle yet) | `mission-scripting` 2.3 |
 
 ### Mockup 2 and 8 (one console, two skins)
 
@@ -61,6 +86,7 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Strips (v79, mockup 8 v18) | The top and bottom strips on black (owner, 2026-11-04: "this top part needs a blcak background, same with bottom stuff too") | The same | none: in step |
 | Core breach (game ahead, mockups 6 and 7) | The main blast: an orange fireball, flash and shockwave | A white star with pink edges, a flat blue disc racing out through the battle plane, debris trailing flame (owner, 2026-11-04: "center is white with pink edges, and a blue ring glowing outward", "I really want it to have this exact look and colors, and the debris should have trails of flame"); `Fx.Nova`, `novastar.gdshader`, `novadisc.gdshader` | `ship-damage-visuals`: port the breach to `lib/ship-break.js` mainBlast() |
 | Wrecks scene (game ahead) | Not on the scene list | Wrecks, from both sides: every class of the other side, crippled, to watch each come apart (owner, 2026-11-04: "show me you fixed each ship type") | `battle-scenarios`: add Wrecks to the mockup's scene list |
+| Damage range (game ahead) | The ship mockups' Damage tab (mockups 6 and 7: fire with a click, scenarios, repair); not on the battle console's scene list | Damage range, from both sides: every approved class on the range, weapon keys, click the plating to fire, programs (Battle scars, Lance rake, Bolt burns, Torpedo holes, Missile salvo, Break a part, Core breach), Shields, Slow motion, Repair all (owner, 2026-11-05) | `battle-scenarios` 3.6, 3.7 |
 | The ships in the view | A stand-in Concord block against Kethran and Vos ships (v74, mockup 8 v14) | The approved ships, the Krai against the Concord only (owner: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"); here the mockups are behind the game (sheets 2026-11-04: `docs/screenshots/compare/`) | the mockups' next version |
 
 ### Mockup 8 only (the Krai skin)

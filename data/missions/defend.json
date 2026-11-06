@@ -1,0 +1,64 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "defend",
+ "name": "Convoy defense",
+ "glyph": "D",
+ "type": "Convoy escort",
+ "reward_cr": 600,
+ "where": "plain && on_route(side)",
+ "objective": "Keep two of the three freighters alive.",
+ "brief": "Our freighters are expected through this sector and raiders are waiting for them. Keep two of the three alive.",
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "convoy",
+     "faction": "{side}",
+     "count": 3,
+     "role": "neutral",
+     "label": "Convoy",
+     "tier": 1
+    },
+    {
+     "id": "raiders",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "two",
+     "text": "Keep two of the three freighters alive",
+     "primary": true,
+     "done": "alive(convoy) >= 2 && alive(raiders) == 0"
+    },
+    {
+     "id": "all",
+     "text": "Keep all three alive",
+     "done": "alive(convoy) == 3"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 3
+   }
+  },
+  {
+   "standing": {
+    "{side}": -2
+   }
+  }
+ ]
+}

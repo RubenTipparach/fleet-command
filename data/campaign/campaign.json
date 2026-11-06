@@ -1,0 +1,955 @@
+{
+ "_doc": "The campaign's data (openspec/changes/game-flow-engine): factions, sector terrain, hulls by tier, ship systems and supplies, the rules' numbers, and the map (its territory seeds, stars, ports, fleets and freight routes). The one copy the game and the campaign mockup (docs/mockups/game-flow.html, inlined by tools/mockups/inline_data.py) read. Missions are in data/missions/. Prices are points; the campaign charges points x credit_rate credits. Hulls: each faction's by tier (1 the smallest); battle_class is the ship class it fights as (data/battle/classes.json), schematic its top-down picture (assets/ships/schematics/), empty while the hull is a stand-in. Supplies: at most one per hp_per hull points, per_fit per fitted system fit, or fixed.",
+ "rules": {
+  "cols": 30,
+  "rows": 22,
+  "seed": 7,
+  "start_credits_cr": 4000,
+  "start_marines": 2,
+  "move_points": 3,
+  "fleet_max": 4,
+  "credit_rate_cr": 10,
+  "sale_share": 0.25,
+  "rival_pays": 1.5,
+  "pirates_pay": 0.6,
+  "sale_standing": 1,
+  "pirate_sale_standing": 5,
+  "ally_standing": 25,
+  "standing_own": 40,
+  "standing_rival": -40,
+  "missions_max": 12,
+  "missions_start": 8,
+  "pay": {
+   "crushing": 0,
+   "defeat": 0,
+   "draw": 0.25,
+   "victory": 1,
+   "outstanding": 1.5
+  },
+  "prestige": {
+   "crushing": -5,
+   "defeat": 0,
+   "draw": 2,
+   "victory": 5,
+   "outstanding": 10
+  },
+  "story_prestige_x": 2,
+  "strengths": [
+   "Light",
+   "Moderate",
+   "Heavy"
+  ],
+  "reward_steps": 5,
+  "reward_step_cr": 50,
+  "repair_share": 0.5
+ },
+ "factions": {
+  "concord": {
+   "name": "Concord",
+   "short": "Concord",
+   "color": "#4f8fe8",
+   "rival": "krai",
+   "playable": true,
+   "prefix": "CNS ",
+   "home": "Halcyon",
+   "names": [
+    "Resolute",
+    "Wren",
+    "Tallis",
+    "Meridian",
+    "Osprey",
+    "Vigil"
+   ]
+  },
+  "krai": {
+   "name": "Krai Warhost",
+   "short": "Krai",
+   "color": "#d02a20",
+   "rival": "concord",
+   "playable": true,
+   "prefix": "",
+   "home": "Vahr",
+   "names": [
+    "Kharz",
+    "Vekk",
+    "Ruhn",
+    "Skarr",
+    "Dovak",
+    "Ulgar"
+   ]
+  },
+  "ssarith": {
+   "name": "Ssarith Hunt",
+   "short": "Ssarith",
+   "color": "#5fd07a",
+   "rival": "",
+   "playable": true,
+   "prefix": "",
+   "home": "Calder",
+   "names": [
+    "SH-1",
+    "SH-2",
+    "SH-3",
+    "SH-4",
+    "SH-5",
+    "SH-6"
+   ]
+  },
+  "vos": {
+   "name": "Vos Syndicate",
+   "short": "Vos",
+   "color": "#e3a33a",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Varn",
+    "Grist",
+    "Kettle"
+   ]
+  },
+  "neutral": {
+   "name": "Unclaimed",
+   "short": "Unclaimed",
+   "color": "#7c8794",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Larkspur",
+    "Patience",
+    "Hollow Bell"
+   ]
+  }
+ },
+ "terrain": {
+  "open": {
+   "name": "Open space",
+   "cost": 1
+  },
+  "nebula": {
+   "name": "Nebula",
+   "cost": 2
+  },
+  "asteroids": {
+   "name": "Asteroid field",
+   "cost": 2
+  },
+  "star": {
+   "name": "Star",
+   "cost": 0,
+   "impassable": true
+  }
+ },
+ "groups": [
+  [
+   "shields",
+   "Shields"
+  ],
+  [
+   "primary",
+   "Primary weapons"
+  ],
+  [
+   "heavy",
+   "Heavy weapons"
+  ],
+  [
+   "hull",
+   "Hull systems"
+  ],
+  [
+   "bridge",
+   "Bridge systems"
+  ],
+  [
+   "engines",
+   "Engines"
+  ]
+ ],
+ "tiers": [
+  {
+   "cost": 160,
+   "slots": {
+    "shields": 1,
+    "primary": 2,
+    "heavy": 0,
+    "hull": 1,
+    "bridge": 1,
+    "engines": 1
+   },
+   "hp": 60
+  },
+  {
+   "cost": 230,
+   "slots": {
+    "shields": 1,
+    "primary": 2,
+    "heavy": 1,
+    "hull": 2,
+    "bridge": 1,
+    "engines": 1
+   },
+   "hp": 90
+  },
+  {
+   "cost": 320,
+   "slots": {
+    "shields": 2,
+    "primary": 3,
+    "heavy": 1,
+    "hull": 2,
+    "bridge": 1,
+    "engines": 1
+   },
+   "hp": 130
+  },
+  {
+   "cost": 450,
+   "slots": {
+    "shields": 2,
+    "primary": 4,
+    "heavy": 2,
+    "hull": 3,
+    "bridge": 2,
+    "engines": 1
+   },
+   "hp": 190
+  },
+  {
+   "cost": 620,
+   "slots": {
+    "shields": 3,
+    "primary": 4,
+    "heavy": 3,
+    "hull": 3,
+    "bridge": 2,
+    "engines": 2
+   },
+   "hp": 260
+  }
+ ],
+ "hulls": {
+  "swift": {
+   "side": "concord",
+   "tier": 1,
+   "name": "Swift",
+   "cls": "Frigate",
+   "battle_class": "ff",
+   "schematic": "concord/swift_level"
+  },
+  "petrel": {
+   "side": "concord",
+   "tier": 2,
+   "name": "Petrel",
+   "cls": "Destroyer",
+   "battle_class": "dd",
+   "schematic": "concord/petrel_level"
+  },
+  "albatross": {
+   "side": "concord",
+   "tier": 3,
+   "name": "Albatross",
+   "cls": "Heavy cruiser",
+   "battle_class": "ca",
+   "schematic": "concord/albatross"
+  },
+  "pelican": {
+   "side": "concord",
+   "tier": 4,
+   "name": "Pelican",
+   "cls": "Carrier",
+   "battle_class": "ca",
+   "schematic": "concord/pelican"
+  },
+  "condor": {
+   "side": "concord",
+   "tier": 5,
+   "name": "Condor",
+   "cls": "Battleship",
+   "battle_class": "ca",
+   "schematic": "concord/condor"
+  },
+  "krai_cv": {
+   "side": "krai",
+   "tier": 1,
+   "name": "Krai corvette",
+   "cls": "Corvette",
+   "battle_class": "krai_cv",
+   "schematic": "krai/corvette"
+  },
+  "krai_ff": {
+   "side": "krai",
+   "tier": 2,
+   "name": "Krai frigate",
+   "cls": "Frigate",
+   "battle_class": "krai_ff",
+   "schematic": "krai/frigate"
+  },
+  "krai_ca": {
+   "side": "krai",
+   "tier": 3,
+   "name": "Krai cruiser",
+   "cls": "Cruiser",
+   "battle_class": "krai_ca",
+   "schematic": "krai/cruiser"
+  },
+  "krai_dn": {
+   "side": "krai",
+   "tier": 4,
+   "name": "Krai dreadnought",
+   "cls": "Dreadnought",
+   "battle_class": "krai_dn",
+   "schematic": "krai/dreadnought"
+  },
+  "hunt_1": {
+   "side": "ssarith",
+   "tier": 1,
+   "name": "Hunt corvette",
+   "cls": "Corvette (stand-in)",
+   "battle_class": "kff",
+   "schematic": ""
+  },
+  "hunt_2": {
+   "side": "ssarith",
+   "tier": 2,
+   "name": "Hunt frigate",
+   "cls": "Frigate (stand-in)",
+   "battle_class": "kff",
+   "schematic": ""
+  },
+  "hunt_3": {
+   "side": "ssarith",
+   "tier": 3,
+   "name": "Hunt cruiser",
+   "cls": "Cruiser (stand-in)",
+   "battle_class": "kdd",
+   "schematic": ""
+  },
+  "vos_raider": {
+   "side": "vos",
+   "tier": 1,
+   "name": "Vos corsair",
+   "cls": "Raider",
+   "battle_class": "vcr",
+   "schematic": "",
+   "for_sale": false
+  },
+  "freighter": {
+   "side": "neutral",
+   "tier": 1,
+   "name": "Freighter",
+   "cls": "Freighter",
+   "battle_class": "kff",
+   "schematic": "",
+   "for_sale": false
+  }
+ },
+ "systems": {
+  "defl1": {
+   "g": "shields",
+   "name": "Deflector I",
+   "cost": 20,
+   "d": "Light shield generator for every facing."
+  },
+  "defl2": {
+   "g": "shields",
+   "name": "Deflector II",
+   "cost": 40,
+   "d": "Stronger facings, faster recharge."
+  },
+  "defl3": {
+   "g": "shields",
+   "name": "Deflector III",
+   "cost": 70,
+   "d": "Heavy shield generator; draws more power."
+  },
+  "pulse": {
+   "g": "primary",
+   "name": "Pulse cannon",
+   "cost": 20,
+   "d": "Short bursts; good at close range."
+  },
+  "lance": {
+   "g": "primary",
+   "name": "Beam lance",
+   "cost": 30,
+   "d": "Long-range beam; charges from the capacitor."
+  },
+  "pdt": {
+   "g": "primary",
+   "name": "Point-defense turret",
+   "cost": 15,
+   "d": "Shoots down missiles and fighters."
+  },
+  "missile": {
+   "g": "heavy",
+   "name": "Missile rack",
+   "cost": 30,
+   "d": "Guided missiles; needs reloads."
+  },
+  "torpedo": {
+   "g": "heavy",
+   "name": "Torpedo tube",
+   "cost": 45,
+   "d": "Slow to arm, hits very hard."
+  },
+  "plasma": {
+   "g": "heavy",
+   "name": "Plasma projector",
+   "cost": 60,
+   "d": "Bolt that weakens with range."
+  },
+  "armour": {
+   "g": "hull",
+   "name": "Armour plating",
+   "cost": 20,
+   "d": "Extra hull points."
+  },
+  "tractor": {
+   "g": "hull",
+   "name": "Tractor emitter",
+   "cost": 25,
+   "d": "Holds or tows a ship or object."
+  },
+  "bay": {
+   "g": "hull",
+   "name": "Shuttle bay",
+   "cost": 30,
+   "d": "Carries two shuttles."
+  },
+  "cargo": {
+   "g": "hull",
+   "name": "Cargo pod",
+   "cost": 10,
+   "d": "Room for supplies and prizes."
+  },
+  "sensor": {
+   "g": "bridge",
+   "name": "Sensor suite",
+   "cost": 20,
+   "d": "Longer detection range."
+  },
+  "target": {
+   "g": "bridge",
+   "name": "Targeting computer",
+   "cost": 25,
+   "d": "Raises the chance to hit."
+  },
+  "ecm": {
+   "g": "bridge",
+   "name": "ECM suite",
+   "cost": 25,
+   "d": "Lowers the enemy's chance to hit."
+  },
+  "imp1": {
+   "g": "engines",
+   "name": "Impulse drive I",
+   "cost": 15,
+   "d": "Standard drive."
+  },
+  "imp2": {
+   "g": "engines",
+   "name": "Impulse drive II",
+   "cost": 35,
+   "d": "Faster, turns tighter."
+  }
+ },
+ "stock": {
+  "shields": "defl1",
+  "primary": "pulse",
+  "heavy": "missile",
+  "hull": "armour",
+  "bridge": "sensor",
+  "engines": "imp1"
+ },
+ "supplies": [
+  {
+   "id": "marines",
+   "name": "Marines",
+   "cost": 5,
+   "hp_per": 15,
+   "d": "Board and take ships that strike. Capture missions need them."
+  },
+  {
+   "id": "shuttles",
+   "name": "Shuttles",
+   "cost": 15,
+   "per_fit": 2,
+   "fit": "bay",
+   "d": "Carry boarding parties and survey teams; launched from shuttle bays."
+  },
+  {
+   "id": "mines",
+   "name": "Mines",
+   "cost": 8,
+   "fixed": 4,
+   "d": "Laid behind the ship to cover a retreat."
+  },
+  {
+   "id": "reloads",
+   "name": "Missile reloads",
+   "cost": 6,
+   "per_fit": 4,
+   "fit": "missile",
+   "d": "Refill the missile racks between volleys."
+  },
+  {
+   "id": "parts",
+   "name": "Spare parts",
+   "cost": 4,
+   "hp_per": 20,
+   "d": "Repair systems in the field after a battle."
+  }
+ ],
+ "map": {
+  "seeds": [
+   [
+    "concord",
+    4,
+    10
+   ],
+   [
+    "concord",
+    8,
+    4
+   ],
+   [
+    "concord",
+    6,
+    17
+   ],
+   [
+    "krai",
+    24,
+    10
+   ],
+   [
+    "krai",
+    23,
+    3
+   ],
+   [
+    "krai",
+    26,
+    18
+   ],
+   [
+    "ssarith",
+    16,
+    2
+   ],
+   [
+    "ssarith",
+    19,
+    5
+   ],
+   [
+    "vos",
+    14,
+    18
+   ],
+   [
+    "vos",
+    17,
+    21
+   ],
+   [
+    "neutral",
+    13,
+    8
+   ],
+   [
+    "neutral",
+    11,
+    1
+   ],
+   [
+    "neutral",
+    18,
+    13
+   ],
+   [
+    "neutral",
+    12,
+    13
+   ]
+  ],
+  "seed_jitter": 2.2,
+  "nebula_below": 0.1,
+  "asteroids_below": 0.18,
+  "stars": [
+   [
+    12,
+    12
+   ],
+   [
+    21,
+    7
+   ],
+   [
+    6,
+    18
+   ],
+   [
+    25,
+    15
+   ],
+   [
+    3,
+    3
+   ],
+   [
+    20,
+    20
+   ]
+  ],
+  "places": [
+   [
+    "planet",
+    4,
+    10,
+    "Halcyon",
+    "concord"
+   ],
+   [
+    "station",
+    8,
+    6,
+    "Keel Station",
+    "concord"
+   ],
+   [
+    "planet",
+    10,
+    16,
+    "Meridian",
+    "concord"
+   ],
+   [
+    "planet",
+    7,
+    3,
+    "Aster",
+    "concord"
+   ],
+   [
+    "station",
+    3,
+    15,
+    "Brightwater",
+    "concord"
+   ],
+   [
+    "planet",
+    24,
+    10,
+    "Vahr",
+    "krai"
+   ],
+   [
+    "station",
+    22,
+    4,
+    "Ironmouth",
+    "krai"
+   ],
+   [
+    "station",
+    20,
+    16,
+    "Gatehold",
+    "krai"
+   ],
+   [
+    "planet",
+    27,
+    3,
+    "Kesh Prime",
+    "krai"
+   ],
+   [
+    "station",
+    26,
+    19,
+    "Redoubt",
+    "krai"
+   ],
+   [
+    "planet",
+    17,
+    2,
+    "Calder",
+    "ssarith"
+   ],
+   [
+    "station",
+    19,
+    5,
+    "Pell Reach",
+    "ssarith"
+   ],
+   [
+    "station",
+    14,
+    18,
+    "Cinder Den",
+    "vos"
+   ],
+   [
+    "station",
+    17,
+    21,
+    "Rook's Nest",
+    "vos"
+   ],
+   [
+    "planet",
+    14,
+    8,
+    "Ouro",
+    ""
+   ],
+   [
+    "planet",
+    16,
+    14,
+    "Tessaly",
+    ""
+   ],
+   [
+    "planet",
+    11,
+    1,
+    "Sabine",
+    ""
+   ],
+   [
+    "planet",
+    11,
+    11,
+    "Selene",
+    ""
+   ]
+  ],
+  "fleets": [
+   {
+    "name": "Krai Patrol 3",
+    "fac": "krai",
+    "c": 18,
+    "r": 10,
+    "size": 2
+   },
+   {
+    "name": "Warlord Vesh",
+    "fac": "krai",
+    "c": 22,
+    "r": 8,
+    "size": 3,
+    "commander": true
+   },
+   {
+    "name": "Krai Scout",
+    "fac": "krai",
+    "c": 18,
+    "r": 18,
+    "size": 1
+   },
+   {
+    "name": "Vos Raiders",
+    "fac": "vos",
+    "c": 12,
+    "r": 16,
+    "size": 2
+   },
+   {
+    "name": "Vos Blockade Runner",
+    "fac": "vos",
+    "c": 16,
+    "r": 20,
+    "size": 1
+   },
+   {
+    "name": "Concord Picket",
+    "fac": "concord",
+    "c": 10,
+    "r": 8,
+    "size": 2
+   },
+   {
+    "name": "Krai Raid Group",
+    "fac": "krai",
+    "c": 20,
+    "r": 12,
+    "size": 3
+   },
+   {
+    "name": "Krai Courier",
+    "fac": "krai",
+    "c": 23,
+    "r": 14,
+    "size": 1
+   },
+   {
+    "name": "Vos Corsair",
+    "fac": "vos",
+    "c": 11,
+    "r": 20,
+    "size": 1
+   },
+   {
+    "name": "Concord Survey Ship",
+    "fac": "concord",
+    "c": 9,
+    "r": 13,
+    "size": 1
+   },
+   {
+    "name": "Hunt Patrol",
+    "fac": "ssarith",
+    "c": 15,
+    "r": 4,
+    "size": 2
+   },
+   {
+    "name": "Hunt Courier",
+    "fac": "ssarith",
+    "c": 20,
+    "r": 2,
+    "size": 1
+   }
+  ],
+  "fleet_range": {
+   "pirate": 6,
+   "lone": 5,
+   "group": 3
+  },
+  "freight_routes": [
+   [
+    "concord",
+    "Halcyon",
+    "Keel Station"
+   ],
+   [
+    "concord",
+    "Halcyon",
+    "Meridian"
+   ],
+   [
+    "concord",
+    "Aster",
+    "Keel Station"
+   ],
+   [
+    "concord",
+    "Meridian",
+    "Brightwater"
+   ],
+   [
+    "krai",
+    "Vahr",
+    "Ironmouth"
+   ],
+   [
+    "krai",
+    "Vahr",
+    "Gatehold"
+   ],
+   [
+    "krai",
+    "Kesh Prime",
+    "Ironmouth"
+   ],
+   [
+    "krai",
+    "Gatehold",
+    "Redoubt"
+   ],
+   [
+    "ssarith",
+    "Calder",
+    "Pell Reach"
+   ],
+   [
+    "vos",
+    "Cinder Den",
+    "Rook's Nest"
+   ]
+  ],
+  "freighter_names": [
+   "Larkspur",
+   "Patience",
+   "Ninefold",
+   "Hollow Bell",
+   "Ember Reach",
+   "Saltmarsh",
+   "Tidewell",
+   "Copperline",
+   "Wayfarer",
+   "Long Acre"
+  ]
+ },
+ "officers": {
+  "stations": [
+   "Helm",
+   "Tactical",
+   "Engineering",
+   "Science",
+   "Comms",
+   "Security"
+  ],
+  "skills": [
+   [
+    "Green",
+    150
+   ],
+   [
+    "Skilled",
+    300
+   ],
+   [
+    "Veteran",
+    550
+   ],
+   [
+    "Elite",
+    900
+   ],
+   [
+    "Legendary",
+    1400
+   ]
+  ],
+  "names": [
+   "Ines Marrow",
+   "Tavo Quell",
+   "Dace Orrin",
+   "Mirela Vance",
+   "Sef Anjou",
+   "Kito Brand",
+   "Lysa Fenn",
+   "Oren Hale",
+   "Pell Varro",
+   "Juno Tesh",
+   "Arlo Kade",
+   "Nim Sato"
+  ],
+  "pool": 6,
+  "does": {
+   "Helm": "Faster turns, steadier high energy turns.",
+   "Tactical": "A better chance to hit.",
+   "Engineering": "Faster repairs, more from the reactor.",
+   "Science": "Sees further; reads the enemy's systems.",
+   "Comms": "Better standing from every mission.",
+   "Security": "Marines fight better when boarding."
+  }
+ },
+ "behaviours": [
+  "Escort",
+  "Attack my target",
+  "Hold at range",
+  "Defensive"
+ ]
+}

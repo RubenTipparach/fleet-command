@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Fleet Command Missions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:wght@600;800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<!--
+  Fleet Command: mission types and scenarios (owner, 2026-11-05: "write up missions types and scenarios from your analysis
+  please"), after reading the Starfleet Command II campaign files and mission scripts the owner supplied (a zip, not
+  committed: they are another studio's work). Everything here is our own words: what we learned of how its missions are
+  built, then Fleet Command's own catalogue and scenarios. Nothing of its text, names, races or places is copied (CLAUDE.md
+  section 1, "Take the shape, not the text"). Companion of openspec/changes/campaign-missions and
+  docs/mockups/lib/campaign-missions.js. Styled as the Ship Design Bible, the guides' shared look.
+-->
+<style>
+:root {
+  --paper: #e9ebe6; --sheet: #f5f6f2; --ink: #1d2230; --muted: #5a6273; --rule: #c7ccd4;
+  --accent: #2f62e0; --accent-soft: #dce5fb; --warn: #b23a2a; --ok: #3c7a46; --amber: #a8700c;
+  --display: "Saira Extra Condensed", "Arial Narrow", Impact, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12151c; --sheet: #1a1e27; --ink: #e3e7ef; --muted: #9aa3b4; --rule: #2d3442;
+    --accent: #6f9bff; --accent-soft: #1d2a48; --warn: #e3624e; --ok: #84c48e; --amber: #e8b448; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12151c; --sheet: #1a1e27; --ink: #e3e7ef; --muted: #9aa3b4; --rule: #2d3442;
+  --accent: #6f9bff; --accent-soft: #1d2a48; --warn: #e3624e; --ok: #84c48e; --amber: #e8b448; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-bottom: 64px; }
+.wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 40px; }
+header.top { padding-top: 32px; display: grid; gap: 14px; }
+.kicker { font: 500 12px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 800 clamp(48px, 11vw, 92px)/0.86 var(--display); margin: 0; text-transform: uppercase; text-wrap: balance; }
+h2 { font: 800 clamp(30px, 6vw, 44px)/0.95 var(--display); margin: 0; text-transform: uppercase; text-wrap: balance; }
+h3 { font: 600 22px/1.1 var(--display); margin: 0; text-transform: uppercase; letter-spacing: 0.02em; }
+p { margin: 0; max-width: 70ch; }
+.lede { font-size: 18px; color: var(--muted); }
+.master { display: inline-flex; align-items: center; justify-self: start; min-height: 44px; padding: 0 14px; border: 1px solid currentColor; border-radius: 8px; font: 600 14px/1 var(--body); color: inherit; text-decoration: none; opacity: 0.85; }
+.master:hover, .master:focus-visible { opacity: 1; outline: 2px solid var(--accent); outline-offset: 2px; }
+nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+nav.toc a { color: inherit; }
+section.ch { display: grid; gap: 16px; padding-top: 28px; border-top: 2px solid var(--ink); }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.cap { font-size: 14px; color: var(--muted); }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 70ch; }
+code, .mono { font: 500 0.88em var(--mono); }
+blockquote { margin: 0; padding: 8px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-style: italic; max-width: 70ch; border-radius: 0 4px 4px 0; }
+blockquote span.who { font: 500 11px/1 var(--mono); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 620px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 11px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+td b { font-weight: 600; }
+.tag { display: inline-block; font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 6px; border-radius: 4px; white-space: nowrap; }
+.tag.ready { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.tag.needs { background: color-mix(in srgb, var(--amber) 18%, transparent); color: var(--amber); }
+.tag.later { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--muted); }
+.tag.built { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 14px; }
+.scen h3 { color: var(--accent); }
+.scen dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 14px; }
+.scen dt { font: 500 11px/1.9 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.scen dd { margin: 0; min-width: 0; }
+.ladder { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; font-size: 13px; }
+.ladder div { padding: 8px; border-radius: 4px; background: var(--sheet); border: 1px solid var(--rule); }
+.ladder b { display: block; font: 600 15px/1.1 var(--display); text-transform: uppercase; }
+@media (max-width: 640px) { .ladder { grid-template-columns: 1fr; } nav.toc ol { columns: 1; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">Fleet Command · campaign · missions</div>
+    <h1>Mission types and scenarios</h1>
+    <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+    <p class="lede">What the reference game's mission files show about how its campaign missions are built, and Fleet
+      Command's own catalogue of mission types, how each is won and graded, what each needs from the game, and a first set
+      of scenarios written for our factions.</p>
+    <blockquote><span class="who">Owner, 2026-11-05</span>"see if you can read these mission scripts?", then "write up missions types and scenarios from your analysis please."</blockquote>
+    <blockquote><span class="who">Owner, 2026-11-05</span>"let's implement all "ready" mission types, amke sure to keep this artifact updated. I'd also like to add "capture the prize" mission to capture a designated target ship for research", and "asteroid base assayult: we do have asteroids".</blockquote>
+  </header>
+
+  <nav class="toc" aria-label="Contents"><ol>
+    <li><a href="#read">What was read</a></li>
+    <li><a href="#campaign">How a campaign is built</a></li>
+    <li><a href="#mission">How a mission is built</a></li>
+    <li><a href="#grades">Outcome grades</a></li>
+    <li><a href="#types">Mission types</a></li>
+    <li><a href="#built">In the mockup now</a></li>
+    <li><a href="#modes">Battles outside the campaign</a></li>
+    <li><a href="#scenarios">Scenarios</a></li>
+    <li><a href="#shape">What our scripts need</a></li>
+    <li><a href="#open">Open questions</a></li>
+  </ol></nav>
+
+  <section class="ch" id="read">
+    <h2>What was read</h2>
+    <p>The zip holds the reference game's campaign definitions (28 single-player, 1 multiplayer) and 153 mission scripts.
+      It stays out of the repository: it is another studio's work, and the rule for the reference games is to take how a
+      system works, never its words, names or places (CLAUDE.md section 1).</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Part</th><th>Count</th><th>What could be read</th></tr></thead>
+      <tbody>
+        <tr><td>Campaign definitions</td><td>29</td><td>Plain text: a campaign's name and line, one map per era, difficulty, the mission that opens its story and the prestige it needs, and the pool of missions it draws from.</td></tr>
+        <tr><td>Generic missions</td><td>33</td><td>Compiled Windows libraries. Their logic is machine code; their text is a handful of lines each (debriefings by grade, crew reports, an opening log per empire).</td></tr>
+        <tr><td>Story missions</td><td>about 65, in four chains</td><td>The same, with much more text: a briefing per empire, an opening log, crew lines, allied captains, hails with choices, a debriefing per grade, the next mission.</td></tr>
+        <tr><td>Tutorials, skirmishes, multiplayer</td><td>39</td><td>Names only, plus one setting (a timed battle's limit, 20 minutes).</td></tr>
+        <tr><td>Class names inside the libraries</td><td>all</td><td>The pieces every mission is built from (teams, actor states, victory conditions); see "How a mission is built".</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">The logic itself (when a wave arrives, how a grade is scored) is compiled and was not taken apart. What follows is read from the text, the definitions and the class names.</p>
+  </section>
+
+  <section class="ch" id="campaign">
+    <h2>How a campaign is built</h2>
+    <ul>
+      <li><b>A pool, not a list.</b> A campaign names about 50 missions it may offer. The repeatable ones are drawn again and again as the war goes on; the story ones once each.</li>
+      <li><b>Eras.</b> Three maps, early, middle and late, so the frontier and the ships on offer change as the war does.</li>
+      <li><b>Story behind a gate.</b> The story chain opens only once the captain's prestige passes a threshold (0 in a general campaign, 800 in a story one), so a captain earns the story with ordinary work first.</li>
+      <li><b>Chains.</b> Each story mission names the one that follows, and some branch (a mission with two or three variants of its next step, chosen by the outcome).</li>
+      <li><b>One campaign per side and opponent.</b> The same chain is written once and played from several sides: the briefing, the log and the debriefing come in a version for every side.</li>
+    </ul>
+  </section>
+
+  <section class="ch" id="mission">
+    <h2>How a mission is built</h2>
+    <p>Every mission is assembled from the same few pieces, which is what makes 150 of them possible.</p>
+    <div class="grid2">
+      <div class="sheet"><h3>Teams</h3><p>Ships are grouped into teams by job: the player's team, the player's wingmen, allies, the
+        enemy, neutral third parties, a planet, a base, freighters, transports, a monster, an attacking and a defending team
+        (up to three of each in one mission), and props (cargo pods, buoys). A mission is mostly a choice of teams and where
+        they start.</p></div>
+      <div class="sheet"><h3>Actor states</h3><p>Every team and ship runs a small state machine: an initial state at the
+        start, a base state while the battle runs, and states for winning, losing or "an ally was attacked". Events (a ship
+        destroyed, captured or disengaged; a scan done; a timer) move them on.</p></div>
+      <div class="sheet"><h3>Victory conditions</h3><p>A condition watches the battle and scores it: defend these, destroy
+        those, scout that team, keep this team from scouting you. Conditions combine: a <b>primary</b> objective decides win
+        or lose, a <b>secondary</b> lifts the grade, and "all objectives" is the best result.</p></div>
+      <div class="sheet"><h3>Text with tokens</h3><p>Lines carry blanks the game fills: the captain's name and rank, the
+        player's empire and its plural, each team's empire, the system's name and the date. One line serves every captain.</p></div>
+    </div>
+    <h3>What a story mission carries</h3>
+    <ol>
+      <li>A <b>briefing</b> from the captain's superior, one version per side, ending in a dismissal.</li>
+      <li>An <b>opening log</b> in the captain's own voice, in each side's form (a log, a journal, a war record).</li>
+      <li>A one-line <b>objective</b> shown on the screen.</li>
+      <li><b>Crew lines</b>: a remark from each station (helm, comms, weapons, navigation, security, engineering, science) when the player asks them.</li>
+      <li><b>Events in the battle</b>: ships arriving "by unknown means", an ultimatum, a diplomat landing, a scan finishing, each with a line from the officer who would report it.</li>
+      <li><b>Hails and choices</b>: the player answers a hail from a short list (in the one read: surrender, or no reply), and allies answer the player.</li>
+      <li>A <b>debriefing per grade</b>, and for some grades a different line depending on what was done (a ship captured, an order disobeyed for a good reason).</li>
+      <li>The <b>next mission</b>.</li>
+    </ol>
+  </section>
+
+  <section class="ch" id="grades">
+    <h2>Outcome grades</h2>
+    <p>No mission is just won or lost. The reference game scores four levels, from a crushing defeat to an outstanding
+      victory, plus a forfeit when the captain surrenders; its convoy and scouting debriefings show how the levels map onto a
+      mission's own numbers (freighters through, ships scanned, the scout stopped or captured). Fleet Command's ladder adds a
+      <b>draw</b> in the middle, for a part-done mission or an orderly withdrawal:</p>
+    <div class="ladder" role="list">
+      <div role="listitem"><b>Crushing defeat</b>Nothing achieved; the career is questioned.</div>
+      <div role="listitem"><b>Defeat</b>The primary objective failed.</div>
+      <div role="listitem"><b>Draw</b>Part done, or the captain withdrew in good order.</div>
+      <div role="listitem"><b>Victory</b>The primary objective done.</div>
+      <div role="listitem"><b>Outstanding</b>Primary and secondary done, or a bonus (a capture, no losses).</div>
+    </div>
+    <p>Two lessons for Fleet Command: <b>withdrawing is an outcome</b>, not a failure (every generic mission orders the
+      captain to disengage if outnumbered and grades it); and <b>a grade can depend on judgement</b> (a debriefing that
+      forgives breaking an order when the captain faced an unknown, superior threat).</p>
+  </section>
+
+  <section class="ch" id="types">
+    <h2>Mission types</h2>
+    <p>Fleet Command's catalogue, in our own words, grouped by what the captain does. "Needs" is what the battle must have
+      before the type can be played; the game has (or has designed) ships, shields, weapons and arming, missiles, damage and
+      break-up, boarding, cloaking, officers and warp.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Type</th><th>The captain</th><th>Won by</th><th>Grades on</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><th colspan="5">Fight</th></tr>
+        <tr><td><b>Patrol</b></td><td>Sweeps a sector and meets what is there</td><td>Destroying or driving off the contacts</td><td>Enemy losses against own; disengaging when outnumbered is a draw</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Fleet action</b></td><td>Fights an equal battle group with wingmen</td><td>Destroying the enemy flagship or most of its group</td><td>Ships lost on each side</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Ambushed</b></td><td>Is caught between two groups</td><td>Surviving and breaking out, or winning</td><td>Ships brought home</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Ambush</b></td><td>Lies in wait with allies and springs it</td><td>Destroying the group before it escapes</td><td>Ships escaped</td><td><span class="tag needs">needs sensor range</span></td></tr>
+        <tr><td><b>Holding action</b></td><td>Holds a listening post or position until relieved</td><td>Still holding when the timer runs out</td><td>The post intact; what its data turns out to be (a random bonus)</td><td><span class="tag needs">needs a mission timer</span></td></tr>
+        <tr><td><b>Sleeping giants</b></td><td>Faces escorts while dormant capital ships wake one by one</td><td>Winning before all are awake, or withdrawing</td><td>Capital ships destroyed before waking</td><td><span class="tag needs">needs timed arrivals</span></td></tr>
+        <tr><td><b>Monster</b></td><td>Hunts a creature loose in the sector</td><td>Killing or driving it off</td><td>Damage taken</td><td><span class="tag later">later: no creatures designed</span></td></tr>
+        <tr><td><b>Overwhelming fleet</b></td><td>Faces a fleet far stronger than any one captain</td><td>Neutralising each of its groups (destroy, capture or drive off)</td><td>Groups neutralised</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><th colspan="5">Attack</th></tr>
+        <tr><td><b>Base assault</b></td><td>Breaks a station's shields and destroys it</td><td>The station destroyed</td><td>Own losses; defence platforms destroyed first</td><td><span class="tag needs">needs stations in battle</span></td></tr>
+        <tr><td><b>Shipyard strike</b></td><td>Destroys ships in a yard and the yard</td><td>The yard destroyed</td><td>Ships caught in dock</td><td><span class="tag needs">needs stations</span></td></tr>
+        <tr><td><b>Planetary assault</b></td><td>Silences a planet's orbital guns</td><td>Every battery neutralised</td><td>Own losses</td><td><span class="tag needs">needs planetary defences</span></td></tr>
+        <tr><td><b>Asteroid base assault</b></td><td>Digs a base out of a rock field</td><td>The base destroyed</td><td>Losses to rocks and guns</td><td><span class="tag needs">needs stations (the asteroids are in)</span></td></tr>
+        <tr><td><b>Homeworld assault</b></td><td>Late war: strikes the enemy's home system</td><td>Defences and fleet broken</td><td>Everything</td><td><span class="tag later">later</span></td></tr>
+        <tr><th colspan="5">Defend</th></tr>
+        <tr><td><b>Defence: base, shipyard, asteroid base, homeworld</b></td><td>The same battles from the other side</td><td>The asset still standing</td><td>How much of it is left</td><td><span class="tag needs">needs stations</span></td></tr>
+        <tr><td><b>Convoy escort</b></td><td>Brings freighters through</td><td>Most freighters arriving</td><td>All through, most, some, few, none</td><td><span class="tag needs">needs freighters that travel</span></td></tr>
+        <tr><th colspan="5">Raid</th></tr>
+        <tr><td><b>Convoy raid</b></td><td>Stops an enemy supply run</td><td>Most freighters destroyed or taken</td><td>The same ladder, reversed</td><td><span class="tag needs">needs freighters</span></td></tr>
+        <tr><td><b>Capture</b></td><td>Boards and takes a ship</td><td>The ship taken</td><td>Its condition; marines lost</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Capture the prize</b></td><td>Takes one named ship, picked by research, out of its escort and tows it home</td><td>The prize boarded and taken, not destroyed; then delivered home</td><td>Its condition; the escorts driven off</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Salvage</b></td><td>Picks over a wreck field for parts</td><td>Containers recovered</td><td>Spare parts found (each pod holds none to three)</td><td><span class="tag needs">needs tractor or transporter on props</span></td></tr>
+        <tr><th colspan="5">Learn and deny</th></tr>
+        <tr><td><b>Scout</b></td><td>Scans an enemy fleet and gets home, or stops an enemy scout getting home</td><td>Ships scanned, or the scout stopped</td><td>Scanned share; capturing the scout is outstanding</td><td><span class="tag needs">needs scanning</span></td></tr>
+        <tr><td><b>Survey</b></td><td>Launches a probe at a planet and holds while it reports</td><td>The data received</td><td>Probe time, losses</td><td><span class="tag needs">needs probes</span></td></tr>
+        <tr><td><b>The secret below</b></td><td>Guards a world hiding something, or uncovers one</td><td>The secret kept, or found and brought out</td><td>Who scanned whom first</td><td><span class="tag needs">needs scanning</span></td></tr>
+        <tr><td><b>Find the ship</b></td><td>Searches a crowd of ships for one carrying a cargo, talks or fights</td><td>The right ship found and stopped</td><td>Innocents harmed</td><td><span class="tag needs">needs scanning and hails</span></td></tr>
+        <tr><td><b>Dead engines</b></td><td>Fights where an anomaly cuts every ship's engines at times</td><td>Winning the drift battle</td><td>Losses</td><td><span class="tag needs">needs a world condition</span></td></tr>
+        <tr><th colspan="5">Serve</th></tr>
+        <tr><td><b>Diplomat run</b></td><td>Carries an envoy to a world under truce, without firing first</td><td>The envoy landed</td><td>Whether the truce held; who fired first</td><td><span class="tag needs">needs a truce rule and transport</span></td></tr>
+        <tr><td><b>Distress call</b></td><td>Answers a call that may be a trap</td><td>The ship saved, or the trap beaten</td><td>Primary and secondary (a shipment taken)</td><td><span class="tag built">in the mockup</span></td></tr>
+        <tr><td><b>Drain the yard</b></td><td>Draws energy from a captured yard before it is retaken</td><td>Energy taken</td><td>Yards drained</td><td><span class="tag later">later</span></td></tr>
+        <tr><td><b>Starbase construction</b></td><td>Guards builders while a station goes up</td><td>The station finished</td><td>How far it got</td><td><span class="tag later">later</span></td></tr>
+        <tr><td><b>Crossroads</b></td><td>Holds a junction where neutral traffic keeps passing</td><td>Enemies stopped without harming the passers</td><td>Neutrals harmed</td><td><span class="tag needs">needs neutral traffic</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">In the mockup: a script in the game flow mockup's campaign, offered on the map and played through its
+      stand-in battle (below). Needs: one named system first. Later: waits on art or a system not yet designed. Every type
+      once marked ready is now in the mockup; Capture the prize is new, at the owner's request.</p>
+  </section>
+
+  <section class="ch" id="built">
+    <h2>In the mockup now</h2>
+    <p>The seven types are mission scripts in <code>docs/mockups/lib/campaign-missions.js</code>, offered as contracts on the
+      game flow mockup's campaign map (mockup 1). Each briefing lists the objective, the bonus objectives, the opposition,
+      any wingmen and the sector's terrain. The battle is still a stand-in until the battle console (mockup 2) is joined to
+      the campaign: its groups fly in the view with their names over them, the objectives are ticked by hand, and the bar
+      below shows the grade the script gives for what is ticked. The battle ends one of three ways: <b>End battle</b>,
+      <b>Withdraw</b> or <b>Fleet lost</b>. The report opens with the verdict (accomplished, withdrawn or failed) over
+      the grade, then what it earned: credits, prestige and each faction's reputation as it changed; then each objective met
+      or missed, and the hull each ship lost.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Type</th><th>On the map</th><th>The battle</th><th>Primary</th><th>Bonus</th><th>Graded</th></tr></thead>
+      <tbody>
+        <tr><td><b>Patrol</b></td><td>Patrol (P), own or unclaimed space</td><td>One to three Vos raiders; rocks in an asteroid sector</td><td>Destroy or drive off the raiders</td><td>Lose no ships</td><td>The ladder below; withdrawing is a draw</td></tr>
+        <tr><td><b>Fleet action</b></td><td>Fleet action (F), deep in the rival's space</td><td>The fleet and two wingmen against a named flagship and a group as large as yours</td><td>Destroy the flagship or most of her group</td><td>Lose no ships; bring both wingmen home</td><td>The ladder</td></tr>
+        <tr><td><b>Ambushed</b></td><td>Dispatch run (R): the briefing expects no one</td><td>Two groups, ahead and behind</td><td>Break out, or beat both groups (withdrawing meets it)</td><td>Bring every ship home; destroy both groups</td><td>The ladder: breaking out is a victory</td></tr>
+        <tr><td><b>Overwhelming fleet</b></td><td>Stem the tide (O), own space</td><td>Four rival groups of two; two wingmen</td><td colspan="2">Neutralise each group (destroy, capture or drive off)</td><td>Four outstanding, two or three victory, one a draw, none a defeat</td></tr>
+        <tr><td><b>Capture</b></td><td>Capture a ship (K), on a lone ship on the map; needs marines</td><td>The lone ship</td><td>Board and take it</td><td>Its hull above half; no marines lost</td><td>The ladder; the ship joins the fleet damaged</td></tr>
+        <tr><td><b>Capture the prize</b></td><td>Capture the prize (Z), hostile space; needs marines</td><td>A named rival ship (a frigate or cruiser) and its escorts</td><td>Board and take her, not destroy her</td><td>Her hull above half; escorts driven off</td><td>The ladder; taken, she is towed home</td></tr>
+        <tr><td><b>Distress call</b></td><td>Distress call (H), own or unclaimed space</td><td>A freighter and raiders; or, four times in ten, a Vos decoy and its ambush</td><td>Save the freighter, or beat the trap</td><td>Drive off the raiders and take their shipment; or lose no ships and take the decoy</td><td>The ladder</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Capture the prize</h3>
+    <p>A contract from your side's research: one named ship of the rival's (for the Ssarith, of the Vos), a frigate or a
+      cruiser, is passing through a hostile sector under escort. Strip her shields, board her and take her: sinking her voids
+      the contract. Taken, she is towed, and a story mission, <b>Deliver the prize</b> (Y), appears at your home port. Flying
+      her home pays the research bounty: 1,500 cr and standing, half again if she was taken outstanding (her hull above
+      half and the escorts driven off). She goes to research, not into your fleet.</p>
+    <h3>Grades and pay</h3>
+    <p>One rule grades every type unless its script says otherwise: every primary met is a victory, every bonus too is
+      outstanding; withdrawing short of the primary is a draw, staying and failing it a defeat, and losing the fleet a
+      crushing defeat. A victory pays the reward, outstanding half again, a draw a quarter, a defeat nothing. The grade also
+      sets how much hull each ship loses, and a crushing defeat loses every ship but the flagship.</p>
+    <p><b>Prestige</b>, the captain's record, is kept apart from credits (question 1 below): a crushing defeat costs 5, a
+      defeat nothing, a draw earns 2, a victory 5 and outstanding 10, doubled for a story mission. It shows in the campaign's
+      top bar; nothing is gated on it yet.</p>
+    <p>The older contracts on the map (station and planetary assault, convoy raid and escort, assassination) use the same
+      grades with a single primary and "lose no ships" as their bonus, until their battles exist.</p>
+  </section>
+
+  <section class="ch" id="modes">
+    <h2>Battles outside the campaign</h2>
+    <p>The skirmish and multiplayer scripts show the other ways a battle can be framed, worth keeping for the skirmish screen:</p>
+    <ul>
+      <li><b>Free for all</b> and <b>team battle</b>, with a <b>timed</b> variant (a limit, then scored).</li>
+      <li><b>Tournament</b> rounds and a lighter version of each.</li>
+      <li><b>Random battle</b>: sides and ships drawn for you.</li>
+      <li><b>Station assault</b> as a team game, one side attacking, one defending.</li>
+      <li>A <b>sport</b>: ships push an object into a goal with tractor beams.</li>
+      <li><b>Wrecks</b>: break up every class (our own test map already does this).</li>
+    </ul>
+  </section>
+
+  <section class="ch" id="scenarios">
+    <h2>Scenarios</h2>
+    <p>A first set written for Fleet Command, each one a mission script of the shape under "What our scripts need". The Concord and the
+      Krai only: the Ssarith Hunt's culture is yours to set (survey H1), so its missions wait. Krai lines keep to what the
+      Krai design already says (cast, blunt, a warhost with ranks); the rest is yours to steer.</p>
+
+    <h3>Contracts, the repeatable work</h3>
+    <div class="grid2">
+      <div class="sheet scen"><h3>Lanterns on the Lane</h3><dl>
+        <dt>Type</dt><dd>Patrol (Concord)</dd>
+        <dt>Setup</dt><dd>A trade lane through open space; one to three Vos raiders shadowing a freighter.</dd>
+        <dt>Objective</dt><dd>Drive off the raiders. Disengage if outnumbered.</dd>
+        <dt>Grades</dt><dd>Outstanding: the freighter unharmed. Draw: a clean withdrawal.</dd>
+      </div></div>
+      <div class="sheet scen"><h3>Cold Furnace</h3><dl>
+        <dt>Type</dt><dd>Convoy raid (Krai)</dd>
+        <dt>Setup</dt><dd>Three Concord freighters and two escorts running for a jump point 40 km away.</dd>
+        <dt>Objective</dt><dd>Stop two of the three.</dd>
+        <dt>Grades</dt><dd>By freighters stopped; capturing one is outstanding and yields a prize.</dd>
+      </div></div>
+      <div class="sheet scen"><h3>Picket Duty</h3><dl>
+        <dt>Type</dt><dd>Scout, denial (either side)</dd>
+        <dt>Setup</dt><dd>An enemy scout arrives at the edge of a sector where your fleet is gathering.</dd>
+        <dt>Objective</dt><dd>Keep it from scanning your ships and getting away.</dd>
+        <dt>Grades</dt><dd>By ships it scanned; capturing it is outstanding.</dd>
+      </div></div>
+      <div class="sheet scen"><h3>Ghost Signal</h3><dl>
+        <dt>Type</dt><dd>Distress call (either side)</dd>
+        <dt>Setup</dt><dd>A damaged ship calls from a nebula. Half the time it is real; half the time two raiders wait in the cloud.</dd>
+        <dt>Objective</dt><dd>Reach the ship. Secondary: take the raiders' cargo.</dd>
+        <dt>Grades</dt><dd>Primary and secondary.</dd>
+      </div></div>
+    </div>
+
+    <h3>A story chain: the Concord's first command</h3>
+    <p>Five missions, gated by prestige, picking up after the Shakedown cruise already on the map.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>#</th><th>Mission</th><th>Type</th><th>What happens</th><th>Branches on</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>Shakedown cruise</b></td><td>Survey</td><td>Fly to the marker beacon and back (on the map now).</td><td>Nothing</td></tr>
+        <tr><td>2</td><td><b>First blood</b></td><td>Patrol</td><td>A lone raider shadowing your home port; drive it off (on the map now).</td><td>A failed attempt offers it again</td></tr>
+        <tr><td>3</td><td><b>Flag of truce</b></td><td>Diplomat run</td><td>Carry an envoy to a neutral world under truce; a Krai cruiser arrives and demands you stand down. Answer from a short list.</td><td>Who fired first; whether the envoy landed</td></tr>
+        <tr><td>4a</td><td><b>Hold the Line</b></td><td>Holding action</td><td>If the truce broke: hold the neutral world's orbit until relief arrives.</td><td>Time held</td></tr>
+        <tr><td>4b</td><td><b>Quiet Talks</b></td><td>Find the ship</td><td>If it held: find the ship carrying a saboteur among the delegations' shuttles, without firing on the wrong one.</td><td>Innocents harmed</td></tr>
+        <tr><td>5</td><td><b>The Second Fleet</b></td><td>Sleeping giants</td><td>The Krai battle group that was waiting all along wakes ship by ship. Win before it is whole, or bring your ships home.</td><td>The grade opens the campaign's middle era</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>A story chain: the Krai's</h3>
+    <p>The same events from the other side, so one chain serves both, as the reference game does, with its own lines:</p>
+    <ol>
+      <li><b>Blooding</b>: a new warleader's first raid on an undefended relay (patrol).</li>
+      <li><b>The Long Haul</b>: escort the warhost's ore barges past a Concord picket (convoy escort).</li>
+      <li><b>The Demand</b>: the Krai side of Flag of truce; the player is the one who arrives and makes the demand, and chooses whether to fire.</li>
+      <li><b>Hold the Line</b> or <b>Quiet Talks</b> from the Krai side: break the orbit, or smuggle the saboteur out.</li>
+      <li><b>The Second Fleet</b> from the Krai side: keep the sleeping ships alive until they wake.</li>
+    </ol>
+  </section>
+
+  <section class="ch" id="shape">
+    <h2>What our scripts need</h2>
+    <p>The mission scripts in the game flow mockup (<code>docs/mockups/lib/campaign-missions.js</code>) already have where,
+      brief, objective, needs, battle and result. To carry the types and scenarios above they need:</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Addition</th><th>What it is</th><th>Used by</th></tr></thead>
+      <tbody>
+        <tr><td><b>Grades</b> <span class="tag built">in</span></td><td><code>result</code> receives one of five grades instead of win or lose, and the battle reports the numbers it is graded on</td><td>Every type</td></tr>
+        <tr><td><b>Objectives</b> <span class="tag built">in</span></td><td>A primary and optional secondaries, each a condition (destroy, defend, scan, capture, keep alive, hold until); ticked by hand until the battle reports them</td><td>Every type</td></tr>
+        <tr><td><b>Teams</b> <span class="tag built">in, part</span></td><td><code>battle</code> returns teams (player, wingmen, allies, enemy, neutral, assets to defend or destroy, props); where they start and when they arrive is still to come</td><td>Ambushes, sleeping giants, convoys, crossroads</td></tr>
+        <tr><td><b>Lines per side</b></td><td>Briefing, opening log and debriefing keyed by the player's faction, with tokens for name, rank, ship and sector</td><td>Story chains</td></tr>
+        <tr><td><b>Crew and ally lines</b></td><td>A remark per station and per allied captain, and an officer's line for each event</td><td>Story chains</td></tr>
+        <tr><td><b>Hails</b></td><td>An event in battle offering the player a short list of answers that change what follows</td><td>Flag of truce, Find the ship</td></tr>
+        <tr><td><b>Gates and eras</b></td><td>A story mission offered only above a prestige threshold; a campaign's pool and map per era</td><td>The campaign</td></tr>
+        <tr><td><b>Branches</b></td><td><code>next</code> chosen by grade or by a choice made in battle</td><td>Story chains</td></tr>
+      </tbody>
+    </table></div>
+    <p>Battle-side systems the catalogue asks for, in order of how many types they unlock: stations in battle (7 types),
+      freighters that travel (3), scanning (4), a mission timer and timed arrivals (3), props for tractor or transporter
+      (2), neutral traffic (2), hails (2). Asteroid fields already exist in battle (the battle console's solid rocks and their
+      micrometeor clouds, mockup 2), and the campaign map has asteroid sectors; a mission in one fights among rocks.
+      Each is its own OpenSpec change before it is built.</p>
+  </section>
+
+  <section class="ch" id="open">
+    <h2>Open questions</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>#</th><th>Question</th><th>Provisional</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Is prestige separate from credits (rank and story gates) as in the reference game?</td><td>Yes: prestige from grades, credits from rewards (in the mockup, no gates yet)</td></tr>
+        <tr><td>2</td><td>Five grades, or three (defeat, draw, victory)?</td><td>Five</td></tr>
+        <tr><td>3</td><td>Do both sides share story chains (one set of events, lines per side)?</td><td>Yes</td></tr>
+        <tr><td>4</td><td>Which battle system first: stations, freighters or scanning?</td><td>Stations</td></tr>
+        <tr><td>5</td><td>The Ssarith Hunt's missions</td><td>Wait on its culture (survey H1)</td></tr>
+        <tr><td>6</td><td>Are the scenario names and premises above the direction you want?</td><td>Drafts, yours to change</td></tr>
+        <tr><td>7</td><td>What does research give for a delivered prize?</td><td>A bounty and standing for now; later perhaps an unlock (a system, or the rival's hull in your yard)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>

@@ -136,9 +136,10 @@ public static class SystemsDisplay
             x.Fonts.Draw(ci, Math.Round(s.ShieldsUp ? s.Shields[i] : 0).ToString(), np.X, np.Y + (big ? 7 : 5), big ? 20 : 13, c.Text, HorizontalAlignment.Center, 0, 600);
         }
 
-        // the ship from above, a stand-in schematic by hull shape
+        // the ship from above: its schematic (two white layers, tinted here in the skin's colours: the hull dark, the wire
+        // bright), or a stand-in by hull shape for a class whose ship is not designed yet
         float L = R * 0.72f;
-        Schematic(ci, s.Class.Shape, centre, L, c.Sky);
+        if (!Schematics.Draw(ci, Schematics.KeyOfModel(s.Class.Model), centre, L, c.Signal, c.Sky)) Schematic(ci, s.Class.Shape, centre, L, c.Sky);
 
         // subsystems in two columns
         for (int side = 0; side < 2; side++)

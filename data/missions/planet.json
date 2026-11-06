@@ -1,0 +1,47 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "planet",
+ "name": "Planetary assault",
+ "glyph": "A",
+ "type": "Planetary assault",
+ "reward_cr": 1000,
+ "where": "planet != '' && hostile",
+ "objective": "Destroy the orbital defence squadron.",
+ "brief": "The orbital squadron over {sector_planet} covers the approach. Silence it. (The planet's own guns join the battle once planets are built.)",
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "orbit",
+     "faction": "{sector_owner}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Orbital squadron"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "win",
+     "text": "Destroy the orbital squadron",
+     "primary": true,
+     "done": "alive(enemies) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -8,
+    "{side}": 4
+   }
+  }
+ ]
+}

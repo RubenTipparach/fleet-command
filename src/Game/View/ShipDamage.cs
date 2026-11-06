@@ -153,13 +153,47 @@ public sealed class ShipDamage
         Wear(p, e.HullDamage);
     }
 
-    // Where a shot from dir lands: one of the points of plating that face it most.
+    // Where a shot from dir lands: the point the damage range aimed it at, if one waits for a shot from this side, else
+    // one of the points of plating that face it most.
     private (Vector3 P, Vector3 N) Struck(Vector3 dir)
     {
+        if (_aims.Count > 0) { var a = _aims[0]; _aims.RemoveAt(0); return (a.P, a.N); }
         var scored = _skin.Select(k => (k, Sc: (k.P - _centre).Dot(dir) + 4f * k.N.Dot(dir))).OrderByDescending(x => x.Sc).ToList();
         int top = Math.Max(1, scored.Count / 12);
         var pick = scored[_rng.Next(top)].k;
         return pick;
+    }
+
+    // ---- The damage range's aim --------------------------------------------------------------------------------------
+
+    // the points the range's clicks aimed at, in order, each with the seconds it has waited (a shot that never lands, as
+    // one fired into raised shields, lets its aim go after AimWaitS)
+    private readonly List<(Vector3 P, Vector3 N, float Age)> _aims = new();
+    private const float AimWaitS = 4f;
+
+    /// <summary>The point of plating under a screen position (the damage range's click to fire): the sampled plating point
+    /// nearest it on screen, of those facing the camera, within 40 px; null when the click missed the ship. Global space.</summary>
+    public Vector3? PlatingAt(Camera3D cam, Vector2 screen)
+    {
+        if (Broken) return null;
+        float best = 40;
+        Vector3? hit = null;
+        foreach (var (p, n) in _skin)
+        {
+            Vector3 at = World(p);
+            if (cam.IsPositionBehind(at) || (World(p + n) - at).Dot(cam.GlobalPosition - at) <= 0) continue;
+            float d = cam.UnprojectPosition(at).DistanceTo(screen);
+            if (d < best) { best = d; hit = at; }
+        }
+        return hit;
+    }
+
+    /// <summary>The next shot from that side lands at this point of plating (global space; the nearest sampled point).</summary>
+    public void Aim(Vector3 global)
+    {
+        Vector3 local = Turn(_ship.ToLocal(global) + _c);
+        var pick = _skin.OrderBy(k => k.P.DistanceSquaredTo(local)).FirstOrDefault();
+        if (_skin.Count > 0) _aims.Add((pick.P, pick.N, 0));
     }
 
     private void Scorch(Vector3 p, float r, float heat)
@@ -251,7 +285,7 @@ public sealed class ShipDamage
                             cell.Mats.Add(dup);
                             hull = true;
                         }
-                    if (!hull && NearestSeed(b.Seeds, Mock(mi, mi.Mesh.GetAabb().GetCenter())) != ci) mi.Visible = false;
+                    if (!hull) KeepCell(mi, b.Seeds, ci);
                 }
                 else if (n is Node3D e && e.Name.ToString().StartsWith("light_"))
                 {
@@ -266,6 +300,36 @@ public sealed class ShipDamage
         }
         Upload(b.Cells.SelectMany(k => k.Mats));
         b.Node.Visible = false;
+    }
+
+    // A detail mesh of a breaking body (windows, markings, glows, trim) keeps only its triangles nearest this cell's seed,
+    // as the mockup's subsetGeo (docs/mockups/lib/ship-break.js) cuts every mesh of a body: kept whole, a row of windows
+    // stayed in one cell and hung across the gap where its neighbours had blown away (owner, 2026-11-05: "what are these
+    // dashed lines?"). The hull's own surfaces are clipped by its shader instead. Done once, when the body first breaks.
+    private void KeepCell(MeshInstance3D mi, Vector3[] seeds, int cell)
+    {
+        Mesh src = mi.Mesh;
+        var cut = new ArrayMesh();
+        for (int k = 0; k < src.GetSurfaceCount(); k++)
+        {
+            var arr = src.SurfaceGetArrays(k);
+            Vector3[] vs = arr[(int)Mesh.ArrayType.Vertex].AsVector3Array();
+            int[] idx = arr[(int)Mesh.ArrayType.Index].VariantType == Variant.Type.Nil ? Enumerable.Range(0, vs.Length).ToArray() : arr[(int)Mesh.ArrayType.Index].AsInt32Array();
+            var keep = new List<int>();
+            for (int t = 0; t + 2 < idx.Length; t += 3)
+            {
+                Vector3 c = (vs[idx[t]] + vs[idx[t + 1]] + vs[idx[t + 2]]) / 3;
+                if (NearestSeed(seeds, Mock(mi, c)) == cell) keep.AddRange(new[] { idx[t], idx[t + 1], idx[t + 2] });
+            }
+            if (keep.Count == 0) continue;
+            arr[(int)Mesh.ArrayType.Index] = keep.ToArray();
+            cut.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arr);
+            int s = cut.GetSurfaceCount() - 1;
+            cut.SurfaceSetMaterial(s, mi.GetSurfaceOverrideMaterial(k) ?? src.SurfaceGetMaterial(k));
+        }
+        if (cut.GetSurfaceCount() == 0) { mi.Visible = false; return; }
+        mi.Mesh = cut;
+        for (int s = 0; s < cut.GetSurfaceCount(); s++) mi.SetSurfaceOverrideMaterial(s, null);
     }
 
     // A cut face: the quad the exporter wrote, in the copy's frame, closing cell a toward cell b; shown once either has gone.
@@ -451,6 +515,7 @@ public sealed class ShipDamage
     public void Step(float dt)
     {
         if (dt <= 0) return;
+        for (int i = _aims.Count - 1; i >= 0; i--) { var a = _aims[i]; if ((a.Age += dt) > AimWaitS) _aims.RemoveAt(i); else _aims[i] = a; }
         bool cooled = false;
         for (int i = 0; i < MaxScars; i++) if (_heat[i] > 0) { _heat[i] = Math.Max(0, _heat[i] - dt / ScorchCoolS); cooled = true; }
         if (cooled) foreach (ShaderMaterial m in _mats) m.SetShaderParameter("scorch_heat", _heat);
