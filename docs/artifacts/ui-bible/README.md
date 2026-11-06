@@ -1,6 +1,7 @@
 # Analog Panel Bible
 
-- Link: https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF
+- Link (the cloud session's account, published 2026-11-04 with the Culture, not anatomy rules): https://claude.ai/artifact/Hf4o8xLrZ9WzXaMAwTX4PS
+- Link (the main account, not reachable from cloud sessions): https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF
 - Shows: the guide to building 1990s-style instrument panels in Blender (owner, 2026-10-30: "Start writing up a
   guide/bible. UI design Bible for using blender to render UI stuff the way they did in the 90s"). Named and
   numbered parts, depth, light, readability, analog feel, children inside their parents, formed metal (the notch
@@ -25,3 +26,4 @@
   they dont get thier letters cut off, add to guide"): rule T in chapter 9, text never reaches a piece's ends, with the
   popups as its worked fault; the same rule in the `blender-ui-panels` skill. Published from the cloud session, version id
   `1793761414-8788`.
+- 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/Hf4o8xLrZ9WzXaMAwTX4PS, version id `1793801603-ae01`. Not on the tracker (the tracker stays on the main account).

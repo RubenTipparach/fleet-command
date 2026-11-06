@@ -1,0 +1,29 @@
+{
+  "_doc": "Painted bake tiles, written by tools/blender/painted_bake.py (never edited by hand): a high-poly tile's passes painted over so it reads drawn on. u along the ship (x), v across the face (y), metres.",
+  "blender": "4.4.3",
+  "pieces": {
+    "hunt_chevron_albedo": {
+      "file": "hunt_chevron_albedo.png",
+      "sha256": "45bf41a52001f69344736c2567b5f8d23d18821cc1f0ca039b5f454654c45603"
+    },
+    "hunt_chevron_emit": {
+      "file": "hunt_chevron_emit.png",
+      "sha256": "5985b048c82c6ff70942fd00c43c16079851aa56f5c65d6c50aa2af20d3d33dd"
+    },
+    "hunt_chevron_normal": {
+      "file": "hunt_chevron_normal.png",
+      "sha256": "a3de9cb3b9065b3ccf3b8c276ed67318221068db1a452236aeedaacbb8802222"
+    }
+  },
+  "tiles": {
+    "hunt_chevron": {
+      "px": [
+        1024,
+        768
+      ],
+      "samples": 32,
+      "u_m": 8.0,
+      "v_m": 6.0
+    }
+  }
+}
