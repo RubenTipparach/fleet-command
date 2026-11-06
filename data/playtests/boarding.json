@@ -1,0 +1,96 @@
+{
+ "_doc": "The scripted captain's Boarding scene (data/battle/scenes/comms.json; the mockup's boarding): lock the crippled enemy, raid its engines with a bombing squad first, then open Capture, queue five marines, an engineer, a hacker and a pilot, and energize the pads until the ship is taken, queueing an engineer and a hacker again as they are lost. Played from both sides (suite.json).",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "station",
+   "arg": "transport"
+  },
+  {
+   "do": "press",
+   "arg": "next_target"
+  },
+  {
+   "do": "click",
+   "arg": "tr.tab.hit"
+  },
+  {
+   "do": "click",
+   "arg": "tr.sys.engines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.kind.bomb"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.hit.marines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.hit.marines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.hit.demo"
+  },
+  {
+   "do": "click",
+   "arg": "tr.pad.hit.all"
+  },
+  {
+   "do": "hold",
+   "s": 8
+  },
+  {
+   "do": "click",
+   "arg": "tr.tab.capture"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.marines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.marines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.marines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.marines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.marines"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.engineers"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.hackers"
+  },
+  {
+   "do": "click",
+   "arg": "tr.q.capture.pilots"
+  },
+  {
+   "do": "repeat",
+   "arg": "tr.pad.capture.all,tr.q.capture.engineers,tr.q.capture.hackers,tr.pad.capture.all",
+   "s": 240
+  },
+  {
+   "do": "until_over",
+   "s": 60
+  }
+ ]
+}

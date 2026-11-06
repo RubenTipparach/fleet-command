@@ -23,7 +23,7 @@ public sealed partial class PlatePanel : ConsolePanel
         Ship[] fleet = B.Fleet();
         int i = Array.IndexOf(fleet, Me);
         Button("fleet", new Rect2(Size.X - 90, 6, 86, 30), $"Fleet {i + 1}/{fleet.Length}", () => B.TakeCommand(fleet[(i + 1) % fleet.Length].Id),
-            tip: new Tip("Take command of the next ship"), shortLabel: $"{i + 1}/{fleet.Length}");
+            tip: new Tip("Take command of the next ship"));
     }
 }
 
@@ -34,6 +34,7 @@ public sealed partial class PlatePanel : ConsolePanel
 public sealed partial class WeaponsPanel : ConsolePanel
 {
     private int _detail;
+    private static readonly (string Id, string Label)[] ArmModes = { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload"), ("proximity", "Proximity") };
 
     protected override void DrawPanel()
     {
@@ -47,8 +48,9 @@ public sealed partial class WeaponsPanel : ConsolePanel
             tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {t.Name} (F)"));
         Button("volley", new Rect2(x0 + w1 + 6, y0, b.Size.X - w1 - 6, 48), s.Volley ? "Multiple" : "Single", () => B.ToggleVolley(), s.Volley, center: false,
             tip: new Tip(s.Volley ? "Multiple: every ready weapon fires (M)" : "Single: one weapon per press (M)"));
-        Tabs("arm", new Rect2(x0, y0 + 54, b.Size.X, 40), new[] { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload") }, cur,
-            id => B.SetArming(Enum.Parse<Arming>(id, true)));
+        // every arming mode; one no selected weapon has is dimmed (weapon-arming design)
+        Tabs("arm", new Rect2(x0, y0 + 54, b.Size.X, 40), ArmModes, cur,
+            id => B.SetArming(Enum.Parse<Arming>(id, true)), id => !sel.Any(m => Rules.CanArm(m.Weapon, Enum.Parse<Arming>(id, true))));
         if (!Big) return;
         float y = y0 + 106;
         Lbl("Select", x0, y + 13);
@@ -74,7 +76,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
         if (s.Mounts.Count == 0) { Lbl("No weapons fitted", r.Position.X, r.Position.Y + 26, 0, null, HorizontalAlignment.Left, 18); return; }
         Mount m = s.Mounts[Math.Clamp(_detail, 0, s.Mounts.Count - 1)];
         WeaponMode w = Rules.Mode(m);
-        SystemStatus st = B.Rules.Status(m);
+        SystemStatus st = B.Rules.Status(s, m);
         double? cool = Rules.CooldownS(m);
         float x0 = r.Position.X, y = r.Position.Y, cw = r.Size.X / 2 - 12;
         Text($"{m.Label} · {m.Weapon.Name}".ToUpperInvariant(), x0, y + 26, 26, C.Sky, HorizontalAlignment.Left, cw, 700, 1);
@@ -84,8 +86,8 @@ public sealed partial class WeaponsPanel : ConsolePanel
             ("Ready in", cool is { } c ? $"{Rules.FormatCooldown(c)} s" : Rules.Ready(m) ? "Ready" : "--", null), ("Cost", $"{w.CostE:0.#} E", null) }, 20);
         float rx = x0 + r.Size.X / 2 + 12, rw = r.Size.X / 2 - 12;
         if (!m.Weapon.IsPointDefence)
-            Tabs("wd.arm", new Rect2(rx, y + 6, rw, 36), new[] { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload") }, m.State.ToString().ToLowerInvariant(),
-                id => B.ArmOne(m.Index, Enum.Parse<Arming>(id, true)));
+            Tabs("wd.arm", new Rect2(rx, y + 6, rw, 36), ArmModes, m.State.ToString().ToLowerInvariant(),
+                id => B.ArmOne(m.Index, Enum.Parse<Arming>(id, true)), id => !Rules.CanArm(m.Weapon, Enum.Parse<Arming>(id, true)));
         if (t != null)
         {
             bool arc = Rules.InArc(s, m, t), rng = Rules.InRange(s, m, t);
@@ -102,34 +104,35 @@ public sealed partial class WeaponsPanel : ConsolePanel
     }
 }
 
-/// <summary>The radar row: the dial of contacts round your heading (a click opens the tactical map when it is built),
-/// the hostile count, Map and Next target, and the crest.</summary>
+/// <summary>The radar row: the dial of contacts round your heading (a click opens the tactical map), the hostile count, Map
+/// and Next target, and the crest. Expanded, it is the tactical map (RadarPanel.Map.cs).</summary>
 public sealed partial class RadarPanel : ConsolePanel
 {
     private const double ScaleKm = 15;
 
     protected override void DrawPanel()
     {
+        if (Big) { Map(); return; }
         float x = 0, y = 0;
         var dr = new Rect2(x, y + 6, 120, 120);
         Kit.Hero(this, "dial", dr);
+        Ui.Reg("radar", dr, _ => X.Act.Expand(Region), null, new Tip("Tactical map"));
         Vector2 c = dr.GetCenter();
         float rr = 120 * 0.4f;
         foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
         foreach (Ship o in B.Ships)
         {
-            if (!o.Alive || o == Me) continue;
+            if (!o.Alive || o == Me || !B.Detected(Me, o)) continue;   // a cloaked ship unseen is not on the radar
             double km = Rules.DistKm(Me, o), br = Rules.Bearing(Me, o.X, o.Z), r = Math.Min(1.08, km / ScaleKm) * rr;
             var p = c + new Vector2((float)(Math.Sin(br) * r), (float)(-Math.Cos(br) * r));
-            Color dot = o.Side == Me.Side ? C.Accord : o.Faction.Id == "vos" ? C.Caution : C.Alert;
-            DrawCircle(p, 120 * 0.035f, dot, true, -1, true);
+            DrawCircle(p, 120 * 0.035f, Aiming.ContactColor(C, Me, o), true, -1, true);
             if (o.Id == Me.Target) DrawArc(p, 120 * 0.07f, 0, Mathf.Tau, 20, C.Sky, 2, true);
         }
         DrawCircle(c, 120 * 0.03f, C.Sky, true, -1, true);
         float bx = x + 128, bw = Size.X - 128 - 80;
         Kit.Piece(this, "frame.inset", new Rect2(bx, y + 6, bw, 120));
-        Pairs("rr", bx + 14, y + 52, new (string, string, Color?)[] { ("", B.EnemiesOf(Me).Count().ToString(), null), ($"hostile · {ScaleKm:0} km", "", null) });
-        Button("rr.map", new Rect2(bx + 14, y + 72, 70, 30), "Map", null, dis: true, tip: new Tip("Tactical map: not yet in the game"));
+        Pairs("rr", bx + 14, y + 52, new (string, string, Color?)[] { ("", B.SeenFoes(Me).Count().ToString(), null), ($"hostile · {ScaleKm:0} km", "", null) });
+        Button("rr.map", new Rect2(bx + 14, y + 72, 70, 30), "Map", () => X.Act.Expand(Region), tip: new Tip("Tactical map"));
         Button("rr.next", new Rect2(bx + 92, y + 72, 120, 30), "Next target", () => B.NextTarget(), tip: new Tip("Lock the next enemy (Tab)"));
         Kit.Hero(this, "crest", new Rect2(Size.X - 74, y + 30, 72, 72));
     }
@@ -144,8 +147,8 @@ public sealed partial class TopStrip : ConsolePanel
         DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.top.join" : "strip.top", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
-        double hf = s.Hull / s.Class.HullHp;
-        StripNeedle.Draw(this, Ui, Sk, "top", Me.Id, Size.Y, hf, $"Hull integrity {Pct(Math.Clamp(hf, 0, 1))}");
+        double hullFrac = s.Hull / s.Class.HullHp;
+        StripMeter("top", hullFrac, $"Hull integrity {Pct(Math.Clamp(hullFrac, 0, 1))}");
         float cx = 96, cw = Size.X - 192, cy = (44 - 35) / 2f + Sk.StripTopDy, fix = 70 + 100 + 80, gap = 22, u = (cw - fix - gap * 5) / 3.2f, xx = cx;
         double hull = s.Hull / s.Class.HullHp;
         Bar(xx, cy, u, "Hull integrity", hull, hull < 0.35); xx += u + gap;
@@ -168,7 +171,7 @@ public sealed partial class BottomStrip : ConsolePanel
         DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.bottom.join" : "strip.bottom", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
-        StripNeedle.Draw(this, Ui, Sk, "bottom", Me.Id, Size.Y, s.V / (B.Tuning.SpeedPerBoxMS * 10), $"Speed {Math.Round(s.V)} m/s");
+        StripMeter("bottom", s.V / (B.Tuning.SpeedPerBoxMS * 10), $"Speed {Math.Round(s.V)} m/s");
         float cx = 96, cw = Size.X - 192, cy = 12 + Sk.StripBottomDy, ch = 44, gap = 22, fix = 120 + 138, u = (cw - fix - gap * 4) / 3.45f, xx = cx;
         Lbl("Speed", xx, cy + 28);
         Num(Math.Round(s.V).ToString(), xx + 58, cy + 31, 46);
@@ -198,15 +201,47 @@ public sealed partial class BottomStrip : ConsolePanel
         }
     }
 
-    // The warp key at the end of the speed slider, drawn offline (dark, its name dim) as the mockup's drive starts: the
-    // warp drive is not in the game yet, so the key does nothing.
+    // The warp key at the end of the speed slider (the battle console mockup's warpKey; owner, 2026-11-02: "it should start
+    // out as disabled ... then it begins charging and glows, pulsating when its ready. it wont glow in a gravitational
+    // anomaly however"). Offline: dark, its name dim. Armed with no free energy: "Need power" in Caution. Charging: filling
+    // toward the energy a jump needs, a soft glow. Ready: green and pulsing; inside a Q-G field strong enough to need the
+    // override it neither glows nor pulses. A click is Battle.WarpKey (it arms, reports or jumps; it never cuts power), and
+    // its hover card gives the banks, the coils' draw, the course and the risk from the same Battle.WarpRiskOf.
     private void WarpKey(Rect2 r)
     {
-        HitState st = Ui.Reg("warp.key", r, null, null, new Tip("Warp: not yet in the game"));
-        Kit.Shape(this, r, r.Size.Y / 2, C.Deep);
-        Kit.Shape(this, r.Grow(-1), r.Size.Y / 2, Sk.R.Night);
-        if (st.Hot) Kit.Shape(this, r.Grow(1), r.Size.Y / 2 + 1, C.Sky, 2);
-        Text("WARP", r.GetCenter().X, r.Position.Y + r.Size.Y * 0.68f, 17, Sk.R.Ghost, HorizontalAlignment.Center, r.Size.X - 10, 700, 1);
+        Ship s = Me;
+        WarpState wp = s.Warp;
+        var W = B.Data.Systems.Warp;
+        WarpRisk risk = B.WarpRiskOf(s);
+        float f = (float)Math.Clamp(wp.Banks / W.JumpE, 0, 1), h = r.Size.Y;
+        bool anomaly = risk.Q > W.QgBlock, ready = B.WarpReady(s), starved = wp.Armed && !ready && s.Power["warp"] <= 0 && wp.Banks < W.JumpE;
+        bool plotting = wp.Armed && wp.Plotting && wp.Plot < 1, blocked = wp.Armed && !ready && !plotting && wp.Banks >= W.JumpE && risk.Why != "";
+        string title = !wp.Armed ? "Warp off · click to start charging" : ready ? "Warp ready · click to jump" : starved ? "Warp: no free reactor power · lower another system"
+            : plotting ? "Warp: plotting the course" : blocked ? $"Warp: {risk.Why}" : "Warp charging";
+        var rows = new System.Collections.Generic.List<(string, string, Color?)>
+        {
+            ("Stored for the jump", $"{Math.Floor(wp.Banks)}/{W.JumpE:0} E", null), ("Reactor power in", $"{s.Power["warp"]} of {W.CoilE} E", null), ("Course", Battle.CourseText(s), null),
+            risk.Why != "" ? ("Jump", "blocked", C.Caution) : ("Jump risk", Pct(risk.Total), risk.Total > 0.3 ? C.Alert : risk.Total > 0.1 ? C.Caution : C.Accord),
+        };
+        if (risk.Why != "") rows.Add(("Needs", risk.Why, C.Caution));
+        HitState st = Ui.Reg("warp.key", r, _ => B.WarpKey(), null, new Tip(title, rows));
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.GetTicksMsec() / 1000f * Mathf.Tau * 0.9f);
+        // a glow: steady while charging on a plotted course, a pulse when ready; none while plotting or in a Q-G field
+        if (wp.Armed && !starved && !plotting && !blocked && !anomaly)
+            Kit.Shape(this, r.Grow(ready ? 2 + 4 * pulse : 3), h / 2 + 3, new Color(ready ? C.Accord : C.Sky, ready ? 0.25f + 0.25f * pulse : 0.25f));
+        Kit.Shape(this, r, h / 2, C.Deep);
+        if (!wp.Armed) Kit.Shape(this, r.Grow(-1), h / 2, Sk.R.Night);
+        else
+        {
+            if (f > 0) Kit.Shape(this, new Rect2(r.Position, new Vector2(Math.Max(h, r.Size.X * (ready ? 1 : f)), h)), h / 2, ready ? (st.Down ? C.Lilac : C.Accord) : C.Signal);
+            if (ready && !anomaly) Kit.Shape(this, r, h / 2, new Color(1, 1, 1, 0.28f * pulse));
+        }
+        // the plot's progress, a thin line along the key's foot
+        if (plotting) DrawRect(new Rect2(r.Position.X + h / 2, r.End.Y - 4, (r.Size.X - h) * (float)wp.Plot, 4), C.Lilac);
+        if (st.Hot) Kit.Shape(this, r.Grow(1), h / 2 + 1, C.Sky, 2);
+        string lab = wp.Out > 0 ? "JUMPING" : starved ? "NEED POWER" : blocked ? (anomaly ? "Q-G FIELD" : "BLOCKED") : plotting && f >= 1 ? $"PLOT {Math.Floor(wp.Plot * 100)}%" : "WARP";
+        Color col = !wp.Armed ? Sk.R.Ghost : starved || blocked ? C.Caution : ready || f > 0.55f ? KeyFace.Ink(Kit, ready ? C.Accord : C.Signal) : C.Sky;
+        Text(lab, r.GetCenter().X, r.Position.Y + h * 0.68f, starved || blocked ? 14 : 17, col, HorizontalAlignment.Center, r.Size.X - 10, 700, 1);
     }
 
     // Speed: the ten engine boxes are the track, a handle on them is dragged (owner: "speed needs a slider handle").
@@ -242,7 +277,14 @@ public sealed partial class MenuCard : ConsolePanel
         Rect2 b = Frame(at, "Menu", false);
         float y = b.Position.Y + 8, bw = b.Size.X;
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
-        Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false); y += 56;
+        // in a campaign mission the menu holds Withdraw (owner, 2026-11-06: "withdraw button should be in main meny"), and a
+        // mission's battle is not restarted
+        if (X.State.InMission)
+            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), X.Battle.Over != null ? "Battle over" : "Withdraw",
+                X.Battle.Over != null ? null : () => { X.State.MenuOpen = false; X.Battle.Withdraw(); }, center: false, dis: X.Battle.Over != null,
+                tip: new Tip("Withdraw", new (string, string, Color?)[] { ("Ends", "the battle where it stands", null), ("Grade", "a draw, unless an objective says otherwise", null) }));
+        else Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false);
+        y += 56;
         Button("m.display", new Rect2(b.Position.X, y, bw, 44), DisplaySettings.Fullscreen ? "Display: fullscreen" : "Display: window", X.Act.Fullscreen,
             center: false, tip: new Tip("Fullscreen or window (F11)")); y += 56;
         Button("m.quit", new Rect2(b.Position.X, y, bw, 44), "Quit", X.Act.Quit, center: false);
@@ -282,29 +324,5 @@ public sealed partial class TooltipLayer : Control
             f.Draw(this, v, x + w - 12, yy, 17, col ?? c.Sky, HorizontalAlignment.Right);
             yy += 22;
         }
-    }
-}
-
-/// <summary>A strip's needle meter (the mockup's stripMeter; owner, 2026-11-06, of the Kelvane strips' meter bays: "can we
-/// have these meters be tied to the speed and hull integrity?"): over the printed scale of a skin whose strip carries one
-/// (SkinStyle.Meter), hull integrity on the top strip and speed on the bottom. It swings toward the reading and settles as
-/// a damped needle does, and names its reading on hover. A display only: the value is the one the strip's bar and number
-/// show. A needle not drawn for a quarter of a second, or on another ship, is set straight to its reading.</summary>
-public static class StripNeedle
-{
-    private static readonly System.Collections.Generic.Dictionary<string, (string Ship, ulong T, double V)> State = new();
-
-    public static void Draw(CanvasItem ci, Imm ui, Ui.Kit.SkinStyle sk, string id, string ship, float h, double frac, string tip)
-    {
-        if (sk.Meter is not { } m || sk.Needle == null) return;
-        ulong now = Time.GetTicksMsec();
-        double v = Math.Clamp(double.IsFinite(frac) ? frac : 0, 0, 1);
-        double dt = State.TryGetValue(id, out var n) && n.Ship == ship ? (now - n.T) / 1000.0 : double.PositiveInfinity;
-        double shown = dt > 0.25 ? v : n.V + (v - n.V) * Math.Min(1, dt * m.Settle);
-        State[id] = (ship, now, shown);
-        float ky = h / m.H, r = m.R * Math.Min(1, ky);
-        var pivot = new Vector2(m.Cx, m.Cy * ky);
-        sk.Needle(ci, pivot, r, (float)(m.A0 + (m.A1 - m.A0) * shown));
-        ui.Reg($"meter.{id}", new Rect2(pivot.X - r - 6, pivot.Y - r - 6, 2 * r + 12, r + 10), null, null, new Tip(tip));
     }
 }

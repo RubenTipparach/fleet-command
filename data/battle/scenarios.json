@@ -1,5 +1,5 @@
 {
- "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet. The Hunt (concord_hunt) puts the Ssarith Hunt's approved ships against the Concord (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"); the Hunt has no console skin yet, so the Concord is the side you command. Battle from the Hunt's side (ssarith_battle: its cruiser, lance frigate and carrier under the Hunt's own names, against the Concord) shows the Hunt's console (mockup 15; owner, 2026-11-06: \"Yes, approve both for the game\"). The Kelvane Institute has no approved ships, so it is no scenario's side yet; its console (mockup 20) runs on any battle with --skin=kelvane.",
+ "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet. The Hunt (concord_hunt) puts the Ssarith Hunt's approved ships against the Concord (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"); the Hunt is played as the Concord or the Krai there. Once the Hunt's console was built (mockup 15), the Ssarith are a side of their own (ssarith_battle, ssarith_duel, ssarith_arming: the Hunt's approved ships against the Concord's and the Krai's). The allied scenes (*_allied, *_four_races; the battle console mockup's Allied fleet and Four races, openspec/changes/fleet-skins) put a Concord, a Krai and a Ssarith ship in one fleet to hop between (the Fleet key, keys 1 to 9), the console wearing the skin of the ship you command; in them alone the foes are the mockup's Kethran and Vos stand-ins (no Krai or Concord stand-in anywhere), and Four races adds the Kelvane Institute's research cruiser Patience, a stand-in, the Institute having no designed ships, as the mockup does.",
  "scenarios": [
   {
    "id": "concord_battle",
@@ -231,10 +231,10 @@
    "name": "Arming",
    "side": "concord",
    "seed": 20261105,
-   "objective": "Destroy the two fast frigates: overload the torpedoes up close",
+   "objective": "Destroy the two fast frigates: proximity torpedoes for fast movers, overloaded lances up close",
    "say": [
     "Tactical",
-    "Two fast Krai frigates jinking in close. Overload the torpedoes inside 7 km."
+    "Two fast Krai frigates jinking in close. Arm the torpedoes for proximity and overload the lances inside 4 km."
    ],
    "ships": [
     {
@@ -509,10 +509,10 @@
    "name": "Arming",
    "side": "krai",
    "seed": 20261108,
-   "objective": "Destroy the two fast frigates: overload the disruptors up close",
+   "objective": "Destroy the two fast frigates: proximity torpedoes for fast movers, overloaded disruptors up close",
    "say": [
     "Tactical",
-    "Two fast Concord frigates jinking in close. Overload the disruptors inside 6 km."
+    "Two fast Concord frigates jinking in close. Arm the torpedo for proximity and overload the disruptors inside 6 km."
    ],
    "ships": [
     {
@@ -976,6 +976,20 @@
      "speed_m_s": 0,
      "stance": "hold",
      "hold_fire": true
+    },
+    {
+     "id": "t_tr",
+     "name": "Pelican",
+     "captain": "Lt. Bram",
+     "class": "tr",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -7600,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
     }
    ]
   },
@@ -1382,19 +1396,33 @@
      "speed_m_s": 0,
      "stance": "hold",
      "hold_fire": true
+    },
+    {
+     "id": "t_tr",
+     "name": "Pelican",
+     "captain": "Lt. Bram",
+     "class": "tr",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -7600,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
     }
    ]
   },
   {
    "id": "ssarith_battle",
-   "sky": "verdigris",
+   "sky": "skins_moss_haze",
    "name": "Battle",
    "side": "ssarith",
    "seed": 20261107,
    "objective": "Destroy the Concord squadron",
    "say": [
     "Comms",
-    "Concord contacts ahead. The hunt is on."
+    "Concord contacts ahead. Weapons free."
    ],
    "ships": [
     {
@@ -1413,7 +1441,7 @@
      "id": "hissath",
      "name": "Hissath",
      "captain": "Tracker Ssev",
-     "class": "hunt_ff_lance",
+     "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 0,
      "x_m": -900,
@@ -1425,7 +1453,7 @@
      "id": "thrael",
      "name": "Thrael",
      "captain": "Blooded Karsh",
-     "class": "hunt_cv",
+     "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 0,
      "x_m": 900,
@@ -1468,6 +1496,584 @@
      "z_m": -6000,
      "heading_deg": 240,
      "speed_m_s": 140
+    }
+   ]
+  },
+  {
+   "id": "ssarith_duel",
+   "sky": "skins_tidal_glass",
+   "name": "Duel",
+   "side": "ssarith",
+   "seed": 20261110,
+   "objective": "Destroy the Kharz",
+   "say": [
+    "Tactical",
+    "A Krai cruiser, alone and closing. Ship to ship."
+   ],
+   "ships": [
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -9000,
+     "heading_deg": 180,
+     "speed_m_s": 150
+    }
+   ]
+  },
+  {
+   "id": "ssarith_arming",
+   "sky": "skins_copper_tide",
+   "name": "Arming",
+   "side": "ssarith",
+   "seed": 20261108,
+   "objective": "Destroy the two fast frigates: overload the torpedoes up close",
+   "say": [
+    "Tactical",
+    "Two fast Krai frigates jinking in close. Overload the torpedoes inside 7 km."
+   ],
+   "ships": [
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 60
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -1800,
+     "z_m": -6000,
+     "heading_deg": 160,
+     "speed_m_s": 300,
+     "erratic": true,
+     "range": "close"
+    },
+    {
+     "id": "skarr",
+     "name": "Skarr",
+     "captain": "Blade Tovek",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 2200,
+     "z_m": -6600,
+     "heading_deg": 200,
+     "speed_m_s": 300,
+     "erratic": true,
+     "range": "close"
+    }
+   ]
+  },
+  {
+   "id": "concord_allied",
+   "sky": "skins_saffron_ring",
+   "name": "Allied fleet",
+   "side": "concord",
+   "seed": 20261111,
+   "objective": "Destroy the Kethran and Vos ships, hopping between your Concord, Krai and Ssarith ships",
+   "say": [
+    "Comms",
+    "An allied fleet of three races. The Fleet key on the name plate, or keys 1 to 3, take each ship."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": -1100,
+     "z_m": 700,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 1100,
+     "z_m": 700,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "vorrak",
+     "name": "Vorrak",
+     "captain": "Warlord Tesk",
+     "class": "kdd",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": -1800,
+     "z_m": -9500,
+     "heading_deg": 175,
+     "speed_m_s": 150
+    },
+    {
+     "id": "ashkar",
+     "name": "Ashkar",
+     "captain": "Blade Oru",
+     "class": "kff",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": 2200,
+     "z_m": -11000,
+     "heading_deg": 190,
+     "speed_m_s": 160
+    },
+    {
+     "id": "rattlejaw",
+     "name": "Rattlejaw",
+     "captain": "Mother Skeel",
+     "class": "vcr",
+     "faction": "vos",
+     "side": 1,
+     "x_m": 7000,
+     "z_m": -6000,
+     "heading_deg": 240,
+     "speed_m_s": 140
+    }
+   ]
+  },
+  {
+   "id": "krai_allied",
+   "sky": "skins_cobalt_crown",
+   "name": "Allied fleet",
+   "side": "krai",
+   "seed": 20261112,
+   "objective": "Destroy the Kethran and Vos ships, hopping between your Concord, Krai and Ssarith ships",
+   "say": [
+    "Comms",
+    "An allied fleet of three races. The Fleet key on the name plate, or keys 1 to 3, take each ship."
+   ],
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": -1100,
+     "z_m": 700,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 1100,
+     "z_m": 700,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "vorrak",
+     "name": "Vorrak",
+     "captain": "Warlord Tesk",
+     "class": "kdd",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": -1800,
+     "z_m": -9500,
+     "heading_deg": 175,
+     "speed_m_s": 150
+    },
+    {
+     "id": "ashkar",
+     "name": "Ashkar",
+     "captain": "Blade Oru",
+     "class": "kff",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": 2200,
+     "z_m": -11000,
+     "heading_deg": 190,
+     "speed_m_s": 160
+    },
+    {
+     "id": "rattlejaw",
+     "name": "Rattlejaw",
+     "captain": "Mother Skeel",
+     "class": "vcr",
+     "faction": "vos",
+     "side": 1,
+     "x_m": 7000,
+     "z_m": -6000,
+     "heading_deg": 240,
+     "speed_m_s": 140
+    }
+   ]
+  },
+  {
+   "id": "ssarith_allied",
+   "sky": "skins_jade_lantern",
+   "name": "Allied fleet",
+   "side": "ssarith",
+   "seed": 20261113,
+   "objective": "Destroy the Kethran and Vos ships, hopping between your Concord, Krai and Ssarith ships",
+   "say": [
+    "Comms",
+    "An allied fleet of three races. The Fleet key on the name plate, or keys 1 to 3, take each ship."
+   ],
+   "ships": [
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": -1100,
+     "z_m": 700,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 1100,
+     "z_m": 700,
+     "heading_deg": 0,
+     "speed_m_s": 120
+    },
+    {
+     "id": "vorrak",
+     "name": "Vorrak",
+     "captain": "Warlord Tesk",
+     "class": "kdd",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": -1800,
+     "z_m": -9500,
+     "heading_deg": 175,
+     "speed_m_s": 150
+    },
+    {
+     "id": "ashkar",
+     "name": "Ashkar",
+     "captain": "Blade Oru",
+     "class": "kff",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": 2200,
+     "z_m": -11000,
+     "heading_deg": 190,
+     "speed_m_s": 160
+    },
+    {
+     "id": "rattlejaw",
+     "name": "Rattlejaw",
+     "captain": "Mother Skeel",
+     "class": "vcr",
+     "faction": "vos",
+     "side": 1,
+     "x_m": 7000,
+     "z_m": -6000,
+     "heading_deg": 240,
+     "speed_m_s": 140
+    }
+   ]
+  },
+  {
+   "id": "concord_four_races",
+   "sky": "skins_slate_drift",
+   "name": "Four races",
+   "side": "concord",
+   "seed": 20261114,
+   "objective": "Hop between your four ships (keys 1 to 4): each brings its own race's console",
+   "say": [
+    "Comms",
+    "Four ships of four races under your command. Keys 1 to 4 (or the Fleet key) take each of them."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": -1200,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 1200,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 1400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "varn",
+     "name": "Varn Picket",
+     "captain": "Castellan Dorr",
+     "class": "kdd",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -26000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    }
+   ]
+  },
+  {
+   "id": "krai_four_races",
+   "sky": "skins_amber_lull",
+   "name": "Four races",
+   "side": "krai",
+   "seed": 20261115,
+   "objective": "Hop between your four ships (keys 1 to 4): each brings its own race's console",
+   "say": [
+    "Comms",
+    "Four ships of four races under your command. Keys 1 to 4 (or the Fleet key) take each of them."
+   ],
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": -1200,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 1200,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 1400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "varn",
+     "name": "Varn Picket",
+     "captain": "Castellan Dorr",
+     "class": "kdd",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -26000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    }
+   ]
+  },
+  {
+   "id": "ssarith_four_races",
+   "sky": "skins_pearl_mist",
+   "name": "Four races",
+   "side": "ssarith",
+   "seed": 20261116,
+   "objective": "Hop between your four ships (keys 1 to 4): each brings its own race's console",
+   "say": [
+    "Comms",
+    "Four ships of four races under your command. Keys 1 to 4 (or the Fleet key) take each of them."
+   ],
+   "ships": [
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": -1200,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 1200,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 1400,
+     "heading_deg": 0,
+     "speed_m_s": 0
+    },
+    {
+     "id": "varn",
+     "name": "Varn Picket",
+     "captain": "Castellan Dorr",
+     "class": "kdd",
+     "faction": "kethran",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -26000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
     }
    ]
   }

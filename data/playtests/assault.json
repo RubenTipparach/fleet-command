@@ -1,0 +1,37 @@
+{
+ "_doc": "The scripted captain's Assault scene: zoom out to see the troop ship astern, select it, open Capture and energize marines over (one a pad, by default) until it has the ten it asked for, then watch it take the outpost. Played from both sides.",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "wheel",
+   "arg": "out",
+   "s": 8
+  },
+  {
+   "do": "select",
+   "arg": "corrin|ruhn"
+  },
+  {
+   "do": "station",
+   "arg": "transport"
+  },
+  {
+   "do": "click",
+   "arg": "tr.tab.capture"
+  },
+  {
+   "do": "repeat",
+   "arg": "tr.pad.capture.all",
+   "s": 30
+  },
+  {
+   "do": "until_over",
+   "s": 400
+  }
+ ]
+}

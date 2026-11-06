@@ -28,6 +28,12 @@
   "trim": "#5fd07a",
   "skin": "ssarith"
  },
+ "kelvane": {
+  "name": "Kelvane Institute",
+  "hull": "#c9bfa9",
+  "trim": "#ffc865",
+  "skin": "kelvane"
+ },
  "neutral": {
   "name": "Unclaimed",
   "hull": "#a0a6ae",

@@ -1,6 +1,7 @@
 // Main: the composition root (CLAUDE.md section 6.2). It loads and validates the data, starts the scenario (--scenario=id,
 // or the first) with its side's skin, builds the battle, the 3D view and the console, wires them together and runs the
-// fixed step. Starting another scenario (the view's scene selector) rebuilds the battle and, for the other side, the skin. Nothing else creates these; every other
+// fixed step. Starting another scenario (the view's scene selector) rebuilds the battle and, for the other side, the skin;
+// the console follows the ship you command, wearing its faction's skin (openspec/changes/fleet-skins). Nothing else creates these; every other
 // class gets what it needs passed in. It also runs the headless checks: --layout-test (every panel at its designed
 // rectangle, clipped, at several window sizes) and --still (a picture of the console after a number of steps, under
 // Xvfb in a cloud session).
@@ -50,7 +51,9 @@ public sealed partial class Main : Node
         }
         catch (DataError e) { GD.PushError($"DATA_ERROR {e.Message}"); GetTree().Quit(1); return; }
         Scenario start = StartScenario(data);
-        IKit kit = KitFor(data, start);
+        _forcedSkin = _args.GetValueOrDefault("skin");
+        _skinId = _forcedSkin ?? data.Factions[start.Side].Skin!;
+        IKit kit = KitById(_skinId);
         GameActions act = null!;
         act = new GameActions(() => _x);
         _x = new ConsoleContext
@@ -154,21 +157,14 @@ public sealed partial class Main : Node
     }
 
     /// <summary>The console skin of a faction (the side a campaign is played from).</summary>
-    private void UseSkin(string faction)
-    {
-        string id = _x.Data.Factions[faction].Skin ?? "concord";
-        if (!_kits.TryGetValue(id, out IKit? kit)) { kit = Kits.For(id); KitPieces.Verify(kit); _kits[id] = kit; }
-        _x.Kit = kit;
-        _column.Kit = kit;
-    }
+    private void UseSkin(string faction) => UseKit(_forcedSkin ?? _x.Data.Factions[faction].Skin ?? "concord");
 
-    /// <summary>Starts a scenario from its beginning, in the skin of the side it is played from.</summary>
+    /// <summary>Starts a scenario from its beginning, in the skin of the ship you command (its first, of the side it is played from).</summary>
     private void Start(Scenario sc)
     {
         _x.Battle = new Battle(_x.Data, sc);
         Engine.TimeScale = 1;   // the damage range's slow motion ends with its scene
-        _x.Kit = KitFor(_x.Data, sc);
-        _column.Kit = _x.Kit;
+        UseKit(SkinOf(_x.Battle.Player));
         _x.State.Expanded = null;
         _view.Rebuild();
         _acc = 0;
@@ -177,22 +173,47 @@ public sealed partial class Main : Node
 
     private readonly Dictionary<string, IKit> _kits = new();
 
-    /// <summary>The console skin of the side a scenario is played from (its faction's skin; --skin=id overrides it, for
-    /// the layout test), made and verified once per skin.</summary>
-    private IKit KitFor(GameData data, Scenario sc)
+    /// <summary>The skin the console wears now.</summary>
+    private string _skinId = "";
+    /// <summary>A skin every ship is shown in, whatever its faction: --skin=id (the layout test), or the skin the parity
+    /// check is walking.</summary>
+    private string? _forcedSkin;
+
+    /// <summary>A skin's kit, made and verified once (a piece the skin lacks stops it here, naming the piece).</summary>
+    private IKit KitById(string id)
     {
-        string id = _args.GetValueOrDefault("skin") ?? data.Factions[sc.Side].Skin!;
         if (_kits.TryGetValue(id, out IKit? kit)) return kit;
         kit = Kits.For(id);
         KitPieces.Verify(kit);
         return _kits[id] = kit;
     }
 
+    /// <summary>The skin of the ship you command (the mockup's skinOf): its faction's, or, for a faction with no skin of its
+    /// own, the skin of the side the scenario is played from.</summary>
+    private string SkinOf(Ship s) => _forcedSkin ?? s.Faction.Skin ?? _x.Data.Factions[_x.Battle.Scenario.Side].Skin!;
+
+    /// <summary>Makes the console wear a skin: its kit, the column's ground, and the layout again (a skin's strips have their
+    /// own heights).</summary>
+    private void UseKit(string id)
+    {
+        if (id == _skinId) return;
+        _skinId = id;
+        _x.Kit = KitById(id);
+        _column.Kit = _x.Kit;
+        Relayout();
+    }
+
+    /// <summary>The console follows the ship you command: when command passes to a ship of another faction (the Fleet key,
+    /// keys 1 to 9), the console swaps to that faction's kit (openspec/changes/fleet-skins).</summary>
+    private void FollowCommand() => UseKit(SkinOf(_x.Battle.Player));
+
     public override void _Process(double delta)
     {
         if (_x == null) return;
         _menu.Visible = _x.State.MenuOpen;
-        if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still") || (_flow != null && _flow.Screen != FlowScreen.Battle)) return;
+        if (_flow != null && _flow.Screen != FlowScreen.Battle) return;
+        FollowCommand();
+        if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still")) return;
         double step = _x.Data.Tuning.StepS;
         _acc = Math.Min(_acc + delta, step * 6);
         while (_acc >= step) { _x.Battle.Step(); _acc -= step; }
@@ -230,6 +251,7 @@ public sealed partial class Main : Node
         _overlay.Size = V(v.W, v.H);
         _column.Position = Vector2.Zero;
         _column.Size = V(v.X, size.Y);
+        _column.Expanded = f.Expanded != null;
         _menu.Position = Vector2.Zero;
         _menu.Size = size;
         _view.SetViewRect(new Rect2(V(v.X, v.Y), V(v.W, v.H)), size);
@@ -274,19 +296,44 @@ public sealed partial class Main : Node
     {
         var states = new List<(string Name, Action Set)> { ("battle", () => { }) };
         foreach (var st in StationPanel.Stations) { string id = st.Id; states.Add(("station." + id, () => _x.State.Station = id)); }
+        // the Power station's other modes, docked and expanded, and the Repair station expanded (the reactor package)
+        foreach (string pm in new[] { "reactor", "warp" })
+        {
+            string m = pm;
+            states.Add(("power." + m, () => { _x.State.Station = "power"; _x.State.PowerMode = m; }));
+            states.Add(("power." + m + ".expanded", () => { _x.State.Station = "power"; _x.State.PowerMode = m; _x.State.Expanded = Region.Station; }));
+        }
+        states.Add(("repair.expanded", () => { _x.State.Station = "repair"; _x.State.Expanded = Region.Station; }));
         foreach (var pg in ShipPanel.Pages) { string id = pg.Id; states.Add(("page." + id, () => _x.State.ShipPage = id)); }
         foreach (Region r in ConsoleLayout.Expandable) { Region e = r; states.Add(("expand." + e, () => _x.State.Expanded = e)); }
+        // comms and transport: every transport mode docked and expanded, the weapon pick open, comms expanded, the event log
+        foreach (string tab in new[] { "capture", "hit", "cargo", "mines", "security" })
+        {
+            string tb = tab;
+            states.Add(("transport." + tb, () => { _x.State.Station = "transport"; _x.State.TransportTab = tb; }));
+            states.Add(("expand.transport." + tb, () => { _x.State.Station = "transport"; _x.State.TransportTab = tb; _x.State.Expanded = Region.Station; }));
+        }
+        states.Add(("transport.hit.pick", () => { _x.State.Station = "transport"; _x.State.TransportTab = "hit"; _x.State.RaidMountOpen = true; }));
+        states.Add(("expand.comms", () => { _x.State.Station = "comms"; _x.State.Expanded = Region.Station; }));
+        states.Add(("log", () => _x.State.LogOpen = true));
         states.Add(("menu", () => _x.State.MenuOpen = true));
         states.Add(("scene-list", () => _x.State.SceneOpen = true));
-        string[] skins = { "concord", "krai", "ssarith", "kelvane" };
+        // weapon targeting, the fleet, point defence, the hit details and the event log (openspec/changes/weapon-targeting)
+        string? Wingman() => _x.Battle.FleetAll().FirstOrDefault(s => s != _x.Battle.Player && s.Alive)?.Id;
+        states.Add(("tactical.expanded", () => { _x.State.Station = "tactical"; _x.State.Expanded = Region.Station; }));
+        states.Add(("pd.expanded", () => { _x.State.Station = "pd"; _x.State.Expanded = Region.Station; }));
+        states.Add(("fleet.wingman", () => { _x.State.Station = "fleet"; _x.State.FleetPick = Wingman(); }));
+        states.Add(("fleet.wingman.expanded", () => { _x.State.Station = "fleet"; _x.State.FleetPick = Wingman(); _x.State.Expanded = Region.Station; }));
+        states.Add(("hit-details", () => _x.State.OpenHitInfo(new HitInfo("engines", null))));
+        states.Add(("event-log", () => _x.State.LogOpen = true));
+        IReadOnlyList<string> skins = Kits.Ids;
         var seen = new Dictionary<string, Dictionary<string, HashSet<string>>>();
         var fails = new List<string>();
         Scenario sc = _x.Battle.Scenario;
         foreach (string skin in skins)
         {
-            _x.Kit = Kits.For(skin);
-            KitPieces.Verify(_x.Kit);
-            _column.Kit = _x.Kit;
+            _forcedSkin = skin;
+            UseKit(skin);
             _x.Battle = new Battle(_x.Data, sc);
             _view.Rebuild();
             Battle b = _x.Battle;
@@ -296,6 +343,9 @@ public sealed partial class Main : Node
             foreach (var (name, set) in states)
             {
                 _x.State.Station = "helm"; _x.State.ShipPage = "systems"; _x.State.Expanded = null; _x.State.MenuOpen = false; _x.State.SceneOpen = false;
+                _x.State.HitInfo = null; _x.State.LogOpen = false; _x.State.FleetPick = null;
+                _x.State.PowerMode = "alloc";
+                _x.State.RaidMountOpen = false; _x.State.TransportTab = "hit";
                 set();
                 Relayout();
                 _menu.Visible = _x.State.MenuOpen;
@@ -315,41 +365,84 @@ public sealed partial class Main : Node
                 seen[skin][name] = ids;
             }
         }
-        foreach (var (name, _) in states)
+        // every skin registers the Concord's controls in every state, and no others but the controls a skin's own features
+        // add (the Kelvane's strip meters, "meter.*"), which it must then register in the battle
+        static bool Own(string id) => id.StartsWith("meter.", StringComparison.Ordinal);
+        foreach (string skin in skins.Skip(1))
         {
-            HashSet<string> a = seen[skins[0]][name], k = seen[skins[1]][name];
-            foreach (string id in a.Except(k).OrderBy(x => x)) fails.Add($"{name}: '{id}' in {skins[0]} but not in {skins[1]}");
-            foreach (string id in k.Except(a).OrderBy(x => x)) fails.Add($"{name}: '{id}' in {skins[1]} but not in {skins[0]}");
+            foreach (var (name, _) in states)
+            {
+                HashSet<string> a = seen[skins[0]][name], k = seen[skin][name];
+                foreach (string id in a.Except(k).OrderBy(x => x)) fails.Add($"{name}: '{id}' in {skins[0]} but not in {skin}");
+                foreach (string id in k.Except(a).Where(i => !Own(i)).OrderBy(x => x)) fails.Add($"{name}: '{id}' in {skin} but not in {skins[0]}");
+            }
+            if (_kits[skin].Style.Meter != null)
+                foreach (string id in new[] { "meter.top", "meter.bottom" })
+                    if (!seen[skin]["battle"].Contains(id)) fails.Add($"{skin} battle: its strip meter '{id}' is not drawn");
         }
+        _forcedSkin = _args.GetValueOrDefault("skin");
+        await FollowCheck(fails);
         int controls = seen.Values.Sum(d => d.Values.Sum(h => h.Count));
         foreach (string f in fails.Distinct()) GD.PrintErr("PARITY_FAIL " + f);
-        GD.Print(fails.Count == 0 ? $"PARITY_TEST PASS ({states.Count} states, {controls} controls, {string.Join(" and ", skins)})" : $"PARITY_TEST FAIL ({fails.Distinct().Count()})");
+        GD.Print(fails.Count == 0 ? $"PARITY_TEST PASS ({states.Count} states, {controls} controls, {string.Join(", ", skins)})" : $"PARITY_TEST FAIL ({fails.Distinct().Count()})");
         GetTree().Quit(fails.Count == 0 ? 0 : 1);
     }
 
-    /// <summary>Every panel at its designed rectangle and clipped, at the reference, wider and narrower windows and expanded.</summary>
+    /// <summary>The console follows the ship you command (openspec/changes/fleet-skins): in every scenario whose fleet holds
+    /// ships of more than one faction, command is passed to each ship in turn, as keys 1 to 9 do, and after two frames the
+    /// console and the column must wear that ship's faction's skin. Prints FOLLOW lines.</summary>
+    private async System.Threading.Tasks.Task FollowCheck(List<string> fails)
+    {
+        foreach (Scenario sc in _x.Data.Scenarios.Where(s => s.Ships.Where(o => o.Side == 0).Select(o => o.Faction).Distinct().Count() > 1))
+        {
+            Start(sc);
+            Ship[] fleet = _x.Battle.Fleet();
+            for (int n = 0; n < fleet.Length; n++)
+            {
+                _x.Act.Command(n + 1);
+                for (int i = 0; i < 2; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                IKit want = _kits[SkinOf(fleet[n])];
+                if (_x.Battle.Player != fleet[n]) fails.Add($"follow {sc.Id}: key {n + 1} did not give command of {fleet[n].Name}");
+                else if (_x.Kit != want || _column.Kit != want) fails.Add($"follow {sc.Id}: on {fleet[n].Name} ({fleet[n].Faction.Id}) the console wears {_x.Kit.Name}, not {want.Name}");
+                else GD.Print($"FOLLOW {sc.Id} key {n + 1}: {fleet[n].Name} ({fleet[n].Faction.Id}) in {_x.Kit.Name}");
+            }
+        }
+    }
+
+    /// <summary>Every panel at its designed rectangle and clipped, at the reference, wider and narrower windows and expanded,
+    /// in every skin (a skin's strips have their own heights, so each skin lays the console out for itself).</summary>
     private void RunLayoutTest()
     {
         var fails = new List<string>();
         LayoutDef l = _x.Data.Layout;
-        foreach (Vector2 size in new[] { new Vector2(1920, 1080), new Vector2(2560, 1080), new Vector2(1500, 1080) })
-            foreach (Region? ex in new Region?[] { null, Region.Station, Region.Ship, Region.Weapons })
-            {
-                _x.State.Expanded = ex;
-                Relayout(size);
-                ConsoleFrame want = ConsoleLayout.Compute(l, size.X, size.Y, ex, 1, _x.Kit.Style.StripTopH, _x.Kit.Style.StripBottomH);
-                foreach (var (r, p) in _panels)
+        foreach (string skin in Kits.Ids)
+        {
+            _forcedSkin = skin;
+            UseKit(skin);
+            foreach (Vector2 size in new[] { new Vector2(1920, 1080), new Vector2(2560, 1080), new Vector2(1500, 1080) })
+                foreach (Region? ex in new Region?[] { null, Region.Station, Region.Ship, Region.Weapons })
                 {
-                    bool shown = want.Regions.TryGetValue(r, out Rect wr);
-                    if (p.Visible != shown) fails.Add($"{size} {ex}: {r} visible {p.Visible}, want {shown}");
-                    if (!shown) continue;
-                    if (p.Position != V(wr.X, wr.Y) || p.Size != V(wr.W, wr.H)) fails.Add($"{size} {ex}: {r} at {p.Position} {p.Size}, want {wr}");
-                    if (!p.ClipContents) fails.Add($"{r}: not clipped");
+                    _x.State.Expanded = ex;
+                    Relayout(size);
+                    ConsoleFrame want = ConsoleLayout.Compute(l, size.X, size.Y, ex, 1, _x.Kit.Style.StripTopH, _x.Kit.Style.StripBottomH);
+                    foreach (var (r, p) in _panels)
+                    {
+                        bool shown = want.Regions.TryGetValue(r, out Rect wr);
+                        if (p.Visible != shown) fails.Add($"{skin} {size} {ex}: {r} visible {p.Visible}, want {shown}");
+                        if (!shown) continue;
+                        if (p.Position != V(wr.X, wr.Y) || p.Size != V(wr.W, wr.H)) fails.Add($"{skin} {size} {ex}: {r} at {p.Position} {p.Size}, want {wr}");
+                        if (!p.ClipContents) fails.Add($"{r}: not clipped");
+                    }
+                    // the ground behind the column and an expanded panel spans everything left of the live view
+                    if (_column.Size != V(want.View.X, size.Y) || _column.Expanded != (ex != null))
+                        fails.Add($"{skin} {size} {ex}: the column's ground is {_column.Size}, expanded {_column.Expanded}");
+                    if (ex == null)
+                        foreach (Region r in new[] { Region.Plate, Region.Station, Region.Ship, Region.Weapons, Region.Radar })
+                            if (_panels[r].Size != V(Pick(l, r).W, Pick(l, r).H)) fails.Add($"{skin} {size}: {r} changed size");
                 }
-                if (ex == null)
-                    foreach (Region r in new[] { Region.Plate, Region.Station, Region.Ship, Region.Weapons, Region.Radar })
-                        if (_panels[r].Size != V(Pick(l, r).W, Pick(l, r).H)) fails.Add($"{size}: {r} changed size");
-            }
+        }
+        _forcedSkin = _args.GetValueOrDefault("skin");
+        UseKit(SkinOf(_x.Battle.Player));
         // a long name is trimmed to its room and never widens what holds it
         float w = _x.Fonts.Line("THE EXTREMELY LONG NAME OF A KETHRAN DREADNOUGHT OF THE LINE", 18, 700, 1, 220).GetLineWidth();
         if (w > 220.5f) fails.Add($"a trimmed line is {w} px wide in a 220 px room");
@@ -360,7 +453,7 @@ public sealed partial class Main : Node
         double miss = _view.RayMissM();
         if (!(miss < 1.0)) fails.Add($"a click cast back onto the battle plane misses by {miss:0.0} m");
         foreach (string s in fails) GD.PrintErr("LAYOUT_FAIL " + s);
-        GD.Print(fails.Count == 0 ? "LAYOUT_TEST PASS" : $"LAYOUT_TEST FAIL ({fails.Count})");
+        GD.Print(fails.Count == 0 ? $"LAYOUT_TEST PASS ({string.Join(", ", Kits.Ids)})" : $"LAYOUT_TEST FAIL ({fails.Count})");
         GetTree().Quit(fails.Count == 0 ? 0 : 1);
     }
 

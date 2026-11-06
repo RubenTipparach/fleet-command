@@ -1,0 +1,162 @@
+{
+ "_doc": "The numbers of cloaking, sensors with ECM and ECCM, nebulae and boarding defence (src/Core/Data/SystemsDef.Cloak.cs reads them, strictly), from the battle console mockup's NEBULA, CLOAK, AI_CLOAK, SECURITY, ROOM_SYSTEM and the Science station's scan (docs/mockups/battle-console.html; openspec/changes/cloaking and boarding-defence). Units are in the keys.",
+ "nebula": {
+  "_doc": "Inside a nebula, at its density (0 to 1, thinning by edge_thin_frac at its edge): every shot loses hit_penalty x density, ECM and ECCM count ew_gain_x x density more, and a ship in it cannot be locked from beyond lock_km unless the locker's ECCM beats its ECM.",
+  "hit_penalty": 0.3,
+  "ew_gain_x": 2,
+  "lock_km": 6,
+  "edge_thin_frac": 0.3
+ },
+ "cloak": {
+  "_doc": "A fitted ship fades out over fade_s and back in over fade_s; cloaking or cloaked it draws cost_e, its shields neither hold nor regenerate, and it cannot fire. Fully cloaked it is seen only by its own side, from within detect_km, or once a sweep of the seer's side reveals it. A sweep spends sweep_e of the battery and reveals every cloaked ship of the other side within base_km + per_eccm_km a point of ECCM (and the science officer's officer_sweep_km a level) for reveal_s; again after sweep_cool_s. A revealed cloaked ship is hit at hit_penalty less. fitted: the classes that carry a cloak (the mockup's ca, dd, kdd and kff, the Krai line's cruiser and frigate built on ca and dd, and the Hunt, built to wait unseen). own_alpha: how much of a cloaked ship still shows as a shimmer, to its own side and once revealed; sweep_fx_s: how long a sweep's ring takes to spread.",
+  "cost_e": 5,
+  "fade_s": 3,
+  "detect_km": 1.5,
+  "sweep_e": 2,
+  "base_km": 4,
+  "per_eccm_km": 3,
+  "officer_sweep_km": 1,
+  "reveal_s": 8,
+  "sweep_cool_s": 10,
+  "hit_penalty": 0.25,
+  "own_alpha": 0.22,
+  "sweep_fx_s": 1.6,
+  "fitted": [
+   "ca",
+   "dd",
+   "kdd",
+   "kff",
+   "krai_ca",
+   "krai_ff",
+   "hunt_ff_lance",
+   "hunt_ff_prow",
+   "hunt_ff_harpoon",
+   "hunt_ff_trident",
+   "hunt_ca",
+   "hunt_cv"
+  ]
+ },
+ "ai_cloak": {
+  "_doc": "A cloaking captain stays cloaked closing in, decloaks inside strike_km with charged_frac of its guns charged, fights for fight_s, then cloaks again.",
+  "strike_km": 6,
+  "fight_s": 12,
+  "charged_frac": 0.6
+ },
+ "sensors": {
+  "_doc": "ECM and ECCM are points out of the sensors' energy (at most ew_cells each, together at most the sensors' boxes), each worth ecm_step of tuning.json in the chance to hit. A scan of the target runs at scan_base_per_s + scan_per_e_s for each sensor point not given to ECM or ECCM, times the sensors' health, passive_scan_x as fast on passive sensors, and the science officer's officer_scan a level more. A ship on passive sensors is passive_hit harder to hit.",
+  "ew_cells": 5,
+  "scan_base_per_s": 0.08,
+  "scan_per_e_s": 0.05,
+  "passive_scan_x": 0.5,
+  "passive_hit": 0.05,
+  "officer_scan": 0.25
+ },
+ "security": {
+  "_doc": "Boarding defence. The ship's marines aboard are its teams of up to team, at the plan's posts. A team walks at walk_m_s or is beamed to a room (one pad charge). A team and a squad within engage_m on one deck fight: a volley every volley_s, each marine one shot at hit_chance (the boarding rule's), the security chief's officer_aboard a level added to ours. A team that has held its room ambush_s has an ambush set: its first volley adds ambush_bonus (and the chief's officer_ambush) and the boarders get no shots in it. A boarding enemy beams a squad of up to board_squad aboard every board_every_s while it can board (within board_range_km, the facing toward it at or below shield_down_hp) into a room no team holds; unopposed at its goal the squad damages the room's system (room_system) by sabotage_dmg every sabotage_s; holding the bridge capture_s takes the ship. marines: the marines aboard each class (the mockup's classes, the Krai and Hunt lines after the classes they are built on), until the classes carry their own.",
+  "walk_m_s": 3,
+  "team": 3,
+  "engage_m": 5,
+  "volley_s": 3,
+  "hit_chance": 0.5,
+  "officer_aboard": 0.04,
+  "officer_ambush": 0.1,
+  "ambush_s": 6,
+  "ambush_bonus": 0.25,
+  "board_every_s": 18,
+  "board_squad": 5,
+  "board_range_km": 1.5,
+  "shield_down_hp": 0.5,
+  "sabotage_s": 12,
+  "sabotage_dmg": 0.25,
+  "capture_s": 30,
+  "room_system": {
+   "bridge": "bridge",
+   "reactor": "reactor",
+   "engineering": "engines",
+   "shield_room": "shields",
+   "sensors": "sensors",
+   "computer_core": "sensors",
+   "torpedo_room": "weapons",
+   "magazine": "weapons",
+   "switchboard": "weapons"
+  },
+  "marines": {
+   "ca": 12,
+   "dd": 6,
+   "ff": 4,
+   "kdd": 8,
+   "kff": 4,
+   "vcr": 10,
+   "krai_ca": 12,
+   "krai_ff": 6,
+   "krai_cv": 4,
+   "krai_dn": 16,
+   "hunt_ff_lance": 10,
+   "hunt_ff_prow": 10,
+   "hunt_ff_harpoon": 10,
+   "hunt_ff_trident": 10,
+   "hunt_ca": 10,
+   "hunt_cv": 10
+  }
+ },
+ "deck_plans": {
+  "_doc": "Each class's interior: a deck plan (data/ships/, the Ship Design Bible's rooms) with the posts its teams start at, the rooms boarders go for in turn, and the room marines beamed back form up in. Every Concord and Hunt class uses the Petrel's plan and every Krai class the Krai frigate's until each class has its own (boarding-defence B1); the troop ship, the starbase and the Kelvane's stand-in cruiser use the Petrel's plan too.",
+  "plans": {
+   "petrel": {
+    "file": "ships/concord/petrel_plan.json",
+    "posts": [
+     "bridge",
+     "engineering",
+     "reactor",
+     "b_spine",
+     "medbay"
+    ],
+    "goals": [
+     "bridge",
+     "shield_room",
+     "reactor",
+     "engineering"
+    ],
+    "pad_room": "cargo"
+   },
+   "krai_frigate": {
+    "file": "ships/krai/frigate_plan.json",
+    "posts": [
+     "bridge",
+     "engineering",
+     "reactor",
+     "b_corridor",
+     "medbay"
+    ],
+    "goals": [
+     "bridge",
+     "shield_room",
+     "reactor",
+     "engineering"
+    ],
+    "pad_room": "boarding_bay"
+   }
+  },
+  "classes": {
+   "ca": "petrel",
+   "dd": "petrel",
+   "ff": "petrel",
+   "kdd": "petrel",
+   "kff": "petrel",
+   "vcr": "petrel",
+   "krai_ca": "krai_frigate",
+   "krai_ff": "krai_frigate",
+   "krai_cv": "krai_frigate",
+   "krai_dn": "krai_frigate",
+   "hunt_ff_lance": "petrel",
+   "hunt_ff_prow": "petrel",
+   "hunt_ff_harpoon": "petrel",
+   "hunt_ff_trident": "petrel",
+   "hunt_ca": "petrel",
+   "hunt_cv": "petrel",
+   "tr": "petrel",
+   "sb": "petrel",
+   "kelvane_rv": "petrel"
+  }
+ }
+}

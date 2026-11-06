@@ -34,6 +34,8 @@ public sealed class Imm
     public string? Active { get; private set; }
     /// <summary>The pointer in the panel's coordinates, far away when it is elsewhere.</summary>
     public Vector2 Mouse { get; private set; } = new(-1e5f, -1e5f);
+    /// <summary>True while a click being handled was made with Shift held (shift+click opens the hit details).</summary>
+    public bool Shift { get; private set; }
 
     public void Begin() => _cur = new List<Hit>();
 
@@ -97,7 +99,9 @@ public sealed class Imm
                     Active = null;
                     if (was == null) return false;
                     Hit? h = TopAt(b.Position);
+                    Shift = b.ShiftPressed;
                     if (h != null && h.Id == was) h.Click?.Invoke(b.Position);
+                    Shift = false;
                     return true;
                 }
             default:

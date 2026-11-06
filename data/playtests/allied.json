@@ -1,0 +1,24 @@
+{
+ "_doc": "The scripted captain in an allied fleet (openspec/changes/fleet-skins; the battle console mockup's Allied fleet scene): pick the scenario from the scene selector, hop to the second and third ships with keys 2 and 3 (the console wears each ship's faction's skin), look over a station and an expanded panel in each, step on with the Fleet key on the name plate, take the first ship back with key 1, then lock the nearest enemy, order Intercept and fire until the battle is won or lost. Played for the Allied fleet from each side.",
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "pick_scene"},
+  {"do": "press", "arg": "command_2"},
+  {"do": "station", "arg": "tactical"},
+  {"do": "expand", "arg": "Ship"},
+  {"do": "hold", "s": 1},
+  {"do": "collapse"},
+  {"do": "press", "arg": "command_3"},
+  {"do": "station", "arg": "power"},
+  {"do": "expand", "arg": "Weapons"},
+  {"do": "hold", "s": 1},
+  {"do": "collapse"},
+  {"do": "click", "arg": "fleet"},
+  {"do": "hold", "s": 1},
+  {"do": "press", "arg": "command_1"},
+  {"do": "station", "arg": "helm"},
+  {"do": "press", "arg": "next_target"},
+  {"do": "helm", "arg": "int"},
+  {"do": "fight", "s": 600}
+ ]
+}

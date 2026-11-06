@@ -39,8 +39,13 @@ public interface IKit
     void Shape(CanvasItem c, Rect2 r, float radius, Color col, float line = 0);
     /// <summary>A small round knob in this skin's shape (the mockup's knob), filled.</summary>
     void Knob(CanvasItem c, Vector2 centre, float r, Color col);
+    /// <summary>Part of a rendered hero piece (<paramref name="src"/>, in the piece's reference pixels) drawn into a
+    /// rectangle, mirrored left to right when asked (the backing plate laid in bands behind an expanded panel). Only a
+    /// skin whose style declares a rendered backing is asked; any other refuses it.</summary>
+    void HeroPart(CanvasItem c, string hero, Rect2 dest, Rect2 src, bool mirror = false) =>
+        throw new System.NotSupportedException($"UI kit '{Name}' draws no part of a hero piece ('{hero}')");
     /// <summary>The glass of the square key as fractions of the key (X, Y, W, H): the part the skin lights, where a key's
-    /// glyph and label go. All of a drawn key; the window inside a rendered key's frame.</summary>
+    /// glyph and label go. All of a drawn key; the window inside a rendered key's frame (RenderedPieces.Glass).</summary>
     FleetCommand.Data.Rect KeyGlass { get; }
 }
 
@@ -48,7 +53,7 @@ public static class KitPieces
 {
     public static readonly string[] Pieces =
     {
-        "frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "bar.fill.accord",
+        "frame.panel", "frame.inset", "bar.track",
         "button.idle", "button.hover", "button.pressed", "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider",
         "cell.idle", "cell.lit", "cell.warn", "cell.accord", "cell.locked",
     };
@@ -69,8 +74,11 @@ public static class KitPieces
         if (s.LabelPlacard) yield return "plate.label";
         if (s.TitlePlacard) yield return "plate.title";
         if (s.JoinedStrips) { yield return "strip.top.join"; yield return "strip.bottom.join"; }
+        // a bar is either a row of the skin's symbol or a fill along the track, so a skin needs one set or the other
         if (s.SymbolBars) foreach (string c in new[] { "on", "off", "warn", "ok" }) yield return "bar.cell." + c;
-        if (s.RenderedKeys) foreach (string k in KeyStates) { yield return "key." + k; yield return "keyw." + k; }
+        else foreach (string f in new[] { "bar.fill", "bar.fill.red", "bar.fill.accord" }) yield return f;
+        if (s.RenderedKeys || s.IconKeys) foreach (string k in KeyStates) { yield return "key." + k; yield return "keyw." + k; }
+        if (s.Backing) yield return "console.backing";
     }
 
     public static IEnumerable<string> All => Pieces.Concat(Heroes).Concat(Icons.Select(i => "icon." + i));
@@ -79,6 +87,7 @@ public static class KitPieces
     public static void Verify(IKit kit)
     {
         string[] missing = All.Concat(FeaturePieces(kit.Style)).Where(n => !kit.Supplies.Contains(n)).ToArray();
+        if (kit.Style.Meter != null && kit.Style.Needle == null) missing = missing.Append("its meters' needle").ToArray();
         if (missing.Length > 0) throw new System.InvalidOperationException($"UI kit '{kit.Name}' lacks: {string.Join(", ", missing)}");
     }
 }

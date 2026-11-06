@@ -18,6 +18,8 @@ public sealed record MissionPlan(Offer Mission, MissionBattle Battle, Scenario S
 
 public static class MissionRun
 {
+    /// <summary>A target drone is a light hulk: no shields, this share of its class's hull.</summary>
+    public const double DroneHullFrac = 0.3;
     public const double FleetSpacingM = 700, AllyOffsetM = 1600, GroupSpreadM = 800, EnemyRangeKm = 10, NeutralRangeKm = 5, EnemyArcDeg = 35;
 
     /// <summary>The battle for an offered mission, or null when the mission has none (done on arrival).</summary>
@@ -87,9 +89,11 @@ public static class MissionRun
                     z = -Math.Cos(rad) * rangeM + Math.Sin(rad) * lat;
                     heading = grp.Role == GroupRole.Neutral ? 180 : Geometry.Wrap(Math.Atan2(-x, z)) * 180 / Math.PI;
                 }
-                bool neutral = grp.Role == GroupRole.Neutral;
-                ships.Add(new ShipStart(id, name, label, hull.BattleClass, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading, neutral ? 60 : 140,
-                    grp.Role == GroupRole.Ally ? Stance.Escort : neutral ? Stance.Hold : Stance.Attack, HoldFire: neutral, Prize: grp.Tag == "prize" && i == 0));
+                bool neutral = grp.Role == GroupRole.Neutral, drone = grp.Tag == "drone";
+                // a drone (a shakedown's target) stands where it is put, never fires, and is a light hulk with no shields
+                ships.Add(new ShipStart(id, name, label, hull.BattleClass, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading, drone ? 0 : neutral ? 60 : 140,
+                    grp.Role == GroupRole.Ally ? Stance.Escort : neutral || drone ? Stance.Hold : Stance.Attack, HoldFire: neutral || drone,
+                    HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone ? 0 : 1, Prize: grp.Tag == "prize" && i == 0));
                 list.Add(id);
                 groups[grp.Role == GroupRole.Enemy ? "enemies" : "allies"].Add(id);
                 labels[id] = (label, i == 0 ? grp.Tag : null, grp.Role);
@@ -99,8 +103,14 @@ public static class MissionRun
         string intel = b.Intel?.Eval(sc) ?? "";
         string obj = b.Objectives.First(o => o.Primary).Text.Eval(sc);
         ulong seed = c.S.Seed * 1_000_003UL + (ulong)(c.S.Turn * 97 + m.Id);
+        // the marker beacons, by bearing (clockwise from ahead, which is -z) and range from the fleet's start, or at it
+        var markers = b.Markers.Select(k =>
+        {
+            double rad = k.BearingDeg * Math.PI / 180, r = k.AtStart ? 0 : k.RangeKm * 1000;
+            return new MarkerDef(k.Id, k.Label.Eval(sc), Math.Sin(rad) * r, -Math.Cos(rad) * r, k.RadiusM, k.After);
+        }).ToList();
         var scen = new Scenario($"mission_{def.Id}_{m.Id}", b.Name?.Eval(sc) ?? def.Name, side, seed, obj, "Comms",
-            intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)));
+            intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)), Markers: markers.Count > 0 ? markers : null);
         return new MissionPlan(m, b, scen, groups, fleetIds, labels);
     }
 
@@ -118,8 +128,17 @@ public static class MissionRun
         return how == "withdraw" ? "draw" : "defeat";
     }
 
-    /// <summary>How a battle ended, as the mission files say it: end, withdraw or lost.</summary>
-    public static string HowOf(Battle b) => b.Over switch { "withdrawn" => "withdraw", "lost" => "lost", _ => "end" };
+    /// <summary>How a battle ended, as the mission files say it: end, withdraw or lost (a jump to warp is an escape: a withdrawal).</summary>
+    public static string HowOf(Battle b) => b.Over switch { "withdrawn" or "jumped" => "withdraw", "lost" => "lost", _ => "end" };
+
+    /// <summary>Each objective's state now, as if the battle ended this moment (the mission strip's ticks, and a battle
+    /// that ends on its objectives: GameFlow wins it once every primary is met).</summary>
+    public static Dictionary<string, bool> MetNow(Campaign c, MissionPlan plan, Battle battle)
+    {
+        var ends = plan.Groups.ToDictionary(g => g.Key, g => g.Value.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck, s.Hull / s.Class.HullHp)).ToList());
+        var sc = new EndScope(c, plan.Mission, ends, "end") { Reached = battle.Reached };
+        return plan.Battle.Objectives.ToDictionary(o => o.Id, o => o.Done.Bool(sc));
+    }
 
     /// <summary>Ends a mission: with its battle as it ended (plan and battle), or done on arrival (both null). Applies the
     /// result to the campaign and returns the debrief.</summary>
@@ -132,7 +151,7 @@ public static class MissionRun
         if (plan != null && battle != null)
             foreach (var (gid, ids) in plan.Groups)
                 ends[gid] = ids.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck, s.Hull / s.Class.HullHp)).ToList();
-        var sc = new EndScope(c, m, ends, how) { HadBattle = plan != null };
+        var sc = new EndScope(c, m, ends, how) { HadBattle = plan != null, Reached = battle?.Reached ?? (IReadOnlyCollection<string>)Array.Empty<string>() };
         var objs = plan?.Battle.Objectives ?? (IReadOnlyList<MissionObjective>)Array.Empty<MissionObjective>();
         var met = new Dictionary<string, bool>();
         foreach (MissionObjective o in objs) met[o.Id] = (how == "withdraw" && o.ByWithdraw) || (how != "lost" && o.Done.Bool(sc));

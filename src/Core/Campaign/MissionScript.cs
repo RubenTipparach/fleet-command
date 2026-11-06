@@ -40,7 +40,12 @@ public sealed record MissionGroup(string Id, Template Faction, Expr Count, Group
 public sealed record MissionObjective(string Id, Template Text, bool Primary, bool ByWithdraw, Expr Done);
 
 /// <summary>The battle a mission starts, under its condition (a mission may have several, the first whose When holds).</summary>
-public sealed record MissionBattle(Expr? When, Template? Name, Template? Intel, IReadOnlyList<MissionGroup> Groups, IReadOnlyList<MissionObjective> Objectives);
+public sealed record MissionBattle(Expr? When, Template? Name, Template? Intel, IReadOnlyList<MissionGroup> Groups, IReadOnlyList<MissionObjective> Objectives,
+    IReadOnlyList<MissionMarker> Markers);
+
+/// <summary>A marker beacon to fly to: at a bearing (clockwise from ahead) and range from the fleet's start, or at the start
+/// itself; shown once the marker it follows (After) is reached; reached within RadiusM metres.</summary>
+public sealed record MissionMarker(string Id, Template Label, double BearingDeg, double RangeKm, bool AtStart, string? After, double RadiusM);
 
 /// <summary>A next mission offered when this one ends: the script, where (its own where, home, here, or the fleet's sector), and data it carries.</summary>
 public sealed record NextMission(string Mission, string At, IReadOnlyDictionary<string, Template> Data);
@@ -68,7 +73,7 @@ public static class MissionLoader
     /// <summary>The five grades, worst to best.</summary>
     public static readonly string[] GradeIds = { "crushing", "defeat", "draw", "victory", "outstanding" };
     private static readonly string[] Roles = { "enemy", "ally", "neutral" };
-    private static readonly string[] Tags = { "flagship", "prize", "rescue", "decoy" };
+    private static readonly string[] Tags = { "flagship", "prize", "rescue", "decoy", "drone" };
     private static readonly string[] Places = { "where", "home", "here", "fleet" };
 
     /// <summary>Loads every mission; <paramref name="files"/> are paths relative to data/, <paramref name="read"/> returns text.</summary>
@@ -192,6 +197,26 @@ public static class MissionLoader
             groups.Add(grp);
         }
         if (!groups.Any(g => g.Role == GroupRole.Enemy)) throw new DataError($"{b.Where}.groups: a battle needs at least one enemy group");
+        foreach (MissionGroup g in groups)
+            if (g.Tag == "drone" && g.Role != GroupRole.Enemy) throw new DataError($"{b.Where}.groups: '{g.Id}' is tagged drone, so its role is enemy");
+        var markers = new List<MissionMarker>();
+        if (b.Has("markers"))
+            foreach (StrictJson k in b.ObjList("markers"))
+            {
+                string mid = k.Str("id");
+                if (markers.Any(x => x.Id == mid)) throw new DataError($"{k.Where}.id: '{mid}' twice");
+                string at = k.Str("at", "bearing");
+                if (at is not ("bearing" or "start")) throw new DataError($"{k.Where}.at: bearing or start");
+                string? after = k.Has("after") ? k.Str("after") : null;
+                if (after != null && !markers.Any(x => x.Id == after)) throw new DataError($"{k.Where}.after: no marker '{after}' before it");
+                double bearing = k.Num("bearing_deg", 0), range = k.Num("range_km", at == "start" ? 0 : 8), radius = k.Num("radius_m", 800);
+                if (at == "bearing" && range is <= 0 or > 40) throw new DataError($"{k.Where}.range_km: above 0 and at most 40");
+                if (radius is < 100 or > 5000) throw new DataError($"{k.Where}.radius_m: 100 to 5000");
+                var mk = new MissionMarker(mid, Tpl(k, "label"), bearing, range, at == "start", after, radius);
+                Check(mk.Label.Names, vars, Scopes.OfferCalls, $"{k.Where}.label");
+                k.Done();
+                markers.Add(mk);
+            }
         var groupIds = groups.Select(g => g.Id).Concat(new[] { "fleet", "enemies", "allies" }).ToHashSet();
         var objs = new List<MissionObjective>();
         foreach (StrictJson j in b.ObjList("objectives"))
@@ -205,7 +230,10 @@ public static class MissionLoader
         }
         if (!objs.Any(x => x.Primary)) throw new DataError($"{b.Where}.objectives: at least one primary objective");
         b.Done();
-        return new MissionBattle(when, name, intel, groups, objs);
+        foreach (MissionObjective ob in objs)
+            foreach (string r in ob.Done.Calls("reached"))
+                if (!markers.Any(x => x.Id == r)) throw new DataError($"{b.Where}.objectives: '{ob.Id}' asks reached('{r}'), and there is no such marker");
+        return new MissionBattle(when, name, intel, groups, objs, markers);
     }
 
     private static MissionOutcome Outcome(StrictJson r, IEnumerable<string> vars)
@@ -304,7 +332,7 @@ public static class Scopes
     public static readonly string[] HexCalls = { "on_route" };
     /// <summary>When the battle ends, for an objective's done.</summary>
     public static readonly string[] BattleEnd = { "how" };
-    public static readonly string[] BattleCalls = { "size", "alive", "destroyed", "taken", "hull_min", "name", "rand", "name_of", "hull_of", "class_of" };
+    public static readonly string[] BattleCalls = { "size", "alive", "destroyed", "taken", "hull_min", "reached", "name", "rand", "name_of", "hull_of", "class_of" };
     /// <summary>After the battle, for grade and result rules.</summary>
     public static readonly string[] Grade = { "how", "battle", "all_primary", "all_bonus", "bonus_count" };
     public static readonly string[] GradeCalls = { "met" };

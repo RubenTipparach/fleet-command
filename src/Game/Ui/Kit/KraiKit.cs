@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using static FleetCommand.Game.Ui.Kit.IconGeom;
 
 namespace FleetCommand.Game.Ui.Kit;
 
@@ -53,7 +54,7 @@ public sealed class KraiKit : IKit
                 : weight >= 700 ? new Face(false, (int)MathF.Round(size * 1.05f), 600)
                 : new Face(false, (int)MathF.Round(size * 1.1f), 500)),
             // dark on the lit colours, forge orange on blood and steel (krai.js ink)
-            InkOn = fill => Luminance(fill) > 0.2f ? ink : glyph,
+            InkOn = fill => KitInk.On(fill, ink, glyph),
             KeyInk = new KeyInk(Idle: glyph, Hover: ink, Pressed: ink, TabOn: ink, TabOff: new Color("#ff4a3a")),
             TabIcon = red, GlyphOnDark = glyph,
             Mark = new Marks(Hover: new Color("#ffb070"), Ready: red, Count: new Color("#ffd9b0")),
@@ -65,6 +66,8 @@ public sealed class KraiKit : IKit
             // moves down 6 px in the top strip's channel and up 5 px in the bottom one's
             StripTopDy = 8, StripBottomDy = 12, StripTopH = 60, StripBottomH = 80, // krai.js stripTop, stripBottom
             Column = true, LabelPlacard = true, TitlePlacard = true, JoinedStrips = true, SymbolBars = true, RenderedKeys = true,
+            // its backing plate behind an expanded panel (the mockup's consoleBacking; no black behind metal, CLAUDE.md section 7)
+            Backing = true,
         };
         // the ok symbol: the lit chevron's light turned to the state colour (krai.js load)
         _r.AddHueTurned("bar.cell.ok", "bar.cell.on", c.Accord);
@@ -73,18 +76,13 @@ public sealed class KraiKit : IKit
         foreach (string k in _icons.Keys) _supplies.Add("icon." + k);
     }
 
-    /// <summary>Relative luminance of a colour (WCAG), for picking the ink that reads on a fill.</summary>
-    private static float Luminance(Color col)
-    {
-        static float Lin(float v) => v <= 0.03928f ? v / 12.92f : MathF.Pow((v + 0.055f) / 1.055f, 2.4f);
-        return 0.2126f * Lin(col.R) + 0.7152f * Lin(col.G) + 0.0722f * Lin(col.B);
-    }
-
     public void Piece(CanvasItem c, string piece, Rect2 r, float alpha = 1) => _r.Draw(c, piece, r, alpha);
 
     public void Hero(CanvasItem c, string hero, Rect2 r, float alpha = 1) => _r.Draw(c, hero, r, alpha);
 
     public void HeroBottom(CanvasItem c, string hero, Rect2 r, float frac) => _r.DrawBottom(c, hero, r, frac);
+
+    public void HeroPart(CanvasItem c, string hero, Rect2 dest, Rect2 src, bool mirror = false) => _r.DrawPart(c, hero, dest, src, mirror);
 
     public void Icon(CanvasItem c, string icon, Rect2 r, Color ink)
     {
@@ -116,13 +114,6 @@ public sealed class KraiKit : IKit
 
     // ---- Icons: one subject list for every skin (docs/design/icon-guide.html) ------------------------------------
     // krai.js icon(), on a 48 x 48 grid: solid for the thing, thinner lines for what it gives off, one ink.
-
-    private static Vector2[] Pts(params float[] xy)
-    {
-        var p = new Vector2[xy.Length / 2];
-        for (int i = 0; i < p.Length; i++) p[i] = new Vector2(xy[2 * i], xy[2 * i + 1]);
-        return p;
-    }
 
     private static Vector2[] Ngon(float cx, float cy, float r, int n, float a0 = -P / 2) =>
         Enumerable.Range(0, n).Select(i => new Vector2(cx + Mathf.Cos(a0 + i * 2 * P / n) * r, cy + Mathf.Sin(a0 + i * 2 * P / n) * r)).ToArray();

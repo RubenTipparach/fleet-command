@@ -138,7 +138,8 @@ public sealed partial class MenuScreen : FlowPanel
 /// <summary>The faction screen: each playable faction's emblem; picked, New campaign or Continue.</summary>
 public sealed partial class FactionScreen : FlowPanel
 {
-    private static readonly Dictionary<string, string> Emblem = new()
+    /// <summary>Each playable faction's emblem (also the transport station's portrait of who holds a ship).</summary>
+    internal static readonly Dictionary<string, string> Emblem = new()
     {
         ["concord"] = "res://assets/emblems/concord/b-e27-angle.png", ["krai"] = "res://assets/emblems/krai/kc-angle.png", ["ssarith"] = "res://assets/emblems/ssarith/sd-angle.png",
     };
@@ -177,44 +178,118 @@ public sealed partial class FactionScreen : FlowPanel
     }
 }
 
-/// <summary>The skirmish list: the game's scenarios (data/battle/scenarios.json), each played from the side it was written for.</summary>
+/// <summary>Skirmish (owner, 2026-11-06: "I only need the scenario type, then when I select a scenario, I need to see what
+/// faction I can play that scenario AS", "Also need a scroll bar"): the scenario types down the left, each once, in menu
+/// order, scrolled by the wheel or the bar; the type picked on the right with its objective and a key for each faction it
+/// can be played as, which starts it.</summary>
 public sealed partial class SkirmishScreen : FlowPanel
 {
+    private const float RowH = 52, Gap = 12;
+    private string? _type;
+    private float _scroll;
+    private Rect2 _list;
+
+    // the scenario types in menu order, each with the scenarios that play it (one a side)
+    private List<(string Name, List<Scenario> Sides)> Types() =>
+        X.Data.Scenarios.GroupBy(sc => sc.Name).Select(g => (g.Key, g.ToList())).ToList();
+
+    private float MaxScroll(int n) => Math.Max(0, n * (RowH + Gap) - Gap - _list.Size.Y);
+
+    public override void _GuiInput(InputEvent e)
+    {
+        if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.WheelUp or MouseButton.WheelDown } w && _list.HasPoint(w.Position))
+        {
+            _scroll = Math.Clamp(_scroll + (w.ButtonIndex == MouseButton.WheelDown ? 1 : -1) * (RowH + Gap), 0, MaxScroll(Types().Count));
+            AcceptEvent();
+            return;
+        }
+        base._GuiInput(e);
+    }
+
     protected override void DrawPanel()
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0.012f, 0.016f, 0.03f));
-        float w = Math.Min(760, Size.X - 40), h = Math.Min(Size.Y - 80, 110 + 66 * X.Data.Scenarios.Count);
-        Rect2 b = Sheet(new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h), "Skirmish");
-        float y = b.Position.Y + 10;
-        foreach (Scenario sc in X.Data.Scenarios)
+        var types = Types();
+        _type ??= types.FirstOrDefault().Name;
+        float w = Math.Min(1100, Size.X - 40), h = Size.Y - 80;
+        Rect2 b = Sheet(new Rect2((Size.X - w) / 2, 40, w, h), "Skirmish");
+        float lw = Math.Min(380, b.Size.X * 0.42f);
+        _list = new Rect2(b.Position.X, b.Position.Y + 34, lw - 26, b.Size.Y - 34 - 64);
+        Lbl("SCENARIO", b.Position.X, b.Position.Y + 18);
+        _scroll = Math.Clamp(_scroll, 0, MaxScroll(types.Count));
+        // the rows that fit wholly in the list, the rest reached by scrolling
+        for (int i = 0; i < types.Count; i++)
         {
-            Scenario s = sc;
-            Button($"sk.{sc.Id}", new Rect2(b.Position.X, y, b.Size.X, 52), $"{sc.Name}  ·  {FacName(sc.Side)}", () => F.StartSkirmish(s), center: false,
-                tip: new Tip(sc.Name, new (string, string, Color?)[] { ("Objective", sc.Objective, null), ("Ships", sc.Ships.Count.ToString(), null) }));
-            y += 66;
+            float y = _list.Position.Y + i * (RowH + Gap) - _scroll;
+            if (y < _list.Position.Y - 0.5f || y + RowH > _list.End.Y + 0.5f) continue;
+            string name = types[i].Name;
+            Button($"sk.type.{Slug(name)}", new Rect2(_list.Position.X, y, _list.Size.X, RowH), name, () => _type = name, on: name == _type, center: false);
+        }
+        // the scroll bar: a track beside the list and a thumb the size of what shows, dragged or clicked to a place
+        float max = MaxScroll(types.Count);
+        if (max > 0)
+        {
+            var track = new Rect2(_list.End.X + 10, _list.Position.Y, 12, _list.Size.Y);
+            float th = Math.Max(44, track.Size.Y * _list.Size.Y / (_list.Size.Y + max)), ty = track.Position.Y + (track.Size.Y - th) * _scroll / max;
+            HitState st = Ui.Reg("sk.scroll", new Rect2(track.Position.X - 8, track.Position.Y, track.Size.X + 16, track.Size.Y), at => ScrollTo(at.Y, track, th, max),
+                (at, _) => ScrollTo(at.Y, track, th, max), new Tip("Scroll the scenarios"));
+            Shapes.RoundRect(this, track, new Color(Sk.R.Plate, 0.9f), 6);
+            Shapes.RoundRect(this, new Rect2(track.Position.X, ty, track.Size.X, th), st.Hot || st.Down ? C.Sky : C.Signal, 6);
+        }
+        // the type picked: its objective, and a key for each faction it can be played as
+        var pick = types.FirstOrDefault(t => t.Name == _type);
+        if (pick.Sides != null)
+        {
+            float rx = b.Position.X + lw + 20, rw = b.End.X - rx, y = b.Position.Y + 34;
+            Text(pick.Name.ToUpperInvariant(), rx, y + 26, 34, C.Sky, HorizontalAlignment.Left, rw, 700, 1);
+            y += 52;
+            y += Para(pick.Sides[0].Objective, rx, y + 20, rw, 19, C.Text) + 24;
+            Lbl("PLAY AS", rx, y + 14);
+            y += 28;
+            foreach (Scenario sc in pick.Sides)
+            {
+                Scenario s = sc;
+                var key = new Rect2(rx, y, Math.Min(rw, 420), RowH);
+                Button($"sk.{sc.Id}", key, FacName(sc.Side), () => F.StartSkirmish(s), center: false,
+                    tip: new Tip(sc.Name, new (string, string, Color?)[] { ("As", FacName(sc.Side), FacColor(sc.Side)), ("Ships", sc.Ships.Count.ToString(), null) }));
+                DrawRect(new Rect2(key.End.X + 12, y + 14, 24, 24), FacColor(sc.Side));
+                y += RowH + Gap;
+            }
         }
         Button("sk.back", new Rect2(b.Position.X, b.End.Y - 50, 200, 48), "Back", () => _ = F.Show(FlowScreen.Menu));
     }
+
+    private void ScrollTo(float y, Rect2 track, float thumb, float max) =>
+        _scroll = Math.Clamp((y - track.Position.Y - thumb / 2) / Math.Max(1, track.Size.Y - thumb) * max, 0, max);
+
+    private static string Slug(string s) => new string(s.ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 }
 
-/// <summary>The mission strip over the battle: the mission, its objectives, and the Withdraw key.</summary>
+/// <summary>The mission strip over the battle: the mission's name and its objectives, each ticked once it is met (read live
+/// by MissionRun.MetNow, the same rule the debrief grades by). Its frame stands over the battle with nothing filled behind
+/// the objectives (owner, 2026-11-06: "make background transparent on goal"); Withdraw is in the battle's menu.</summary>
 public sealed partial class MissionStrip : FlowPanel
 {
     protected override void DrawPanel()
     {
         MissionPlan? p = F.Plan;
-        if (p == null) return;
-        Rect2 b = Sheet(new Rect2(Vector2.Zero, Size), p.Scenario.Name);
+        if (p == null || Camp == null) return;
+        Rect2 b = Frame(new Rect2(Vector2.Zero, Size), p.Scenario.Name, false);
+        var met = MissionRun.MetNow(Camp, p, X.Battle);
         float y = b.Position.Y + 20;
         foreach (MissionObjective o in p.Battle.Objectives)
         {
-            DrawCircle(new Vector2(b.Position.X + 6, y - 6), 4, o.Primary ? C.Sky : C.Lilac);
-            Text(o.Text.Eval(new OfferScope(Camp!, p.Mission)) + (o.Primary ? "" : " (bonus)"), b.Position.X + 18, y, 17, o.Primary ? C.Text : C.Lilac, HorizontalAlignment.Left, b.Size.X - 18, 600);
+            bool done = met.GetValueOrDefault(o.Id);
+            Color ink = done ? C.Accord : o.Primary ? C.Text : C.Lilac;
+            var c = new Vector2(b.Position.X + 6, y - 6);
+            if (done) { DrawLine(c + new Vector2(-4, 0), c + new Vector2(-1, 3), C.Accord, 2.5f, true); DrawLine(c + new Vector2(-1, 3), c + new Vector2(5, -4), C.Accord, 2.5f, true); }
+            else DrawCircle(c, 4, o.Primary ? C.Sky : C.Lilac);
+            // a dark edge under the text, so it reads over a bright nebula with nothing behind it
+            string t = o.Text.Eval(new OfferScope(Camp, p.Mission)) + (o.Primary ? "" : " (bonus)");
+            Text(t, b.Position.X + 19, y + 1, 17, new Color(0, 0, 0, 0.8f), HorizontalAlignment.Left, b.Size.X - 18, 600);
+            Text(t, b.Position.X + 18, y, 17, ink, HorizontalAlignment.Left, b.Size.X - 18, 600);
             y += 24;
         }
-        bool over = X.Battle.Over != null;
-        Button("ms.withdraw", new Rect2(b.Position.X, b.End.Y - 38, 170, 36), over ? "Battle over" : "Withdraw", over ? null : F.Withdraw, dis: over,
-            tip: new Tip("Withdraw", new (string, string, Color?)[] { ("Ends", "the battle where it stands", null), ("Grade", "a draw, unless an objective says otherwise", null) }));
     }
 }
 
