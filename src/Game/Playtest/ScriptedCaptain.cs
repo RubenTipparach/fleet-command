@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract" };
+          "wait_screen", "end_turn", "move", "contract", "select", "repeat", "until_over" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -118,6 +118,9 @@ public sealed partial class ScriptedCaptain : Node
             case "end_turn": return await EndTurn();
             case "move": return await Move((int)Math.Max(1, b.Seconds));
             case "contract": return await Contract(b.Seconds > 0 ? b.Seconds : 600, b.Arg);
+            case "select": return await Select(b.Arg);
+            case "repeat": return await Repeat(b.Arg.Split(','), b.Seconds > 0 ? b.Seconds : 60);
+            case "until_over": return await UntilOver(b.Seconds > 0 ? b.Seconds : 300);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -363,6 +366,45 @@ public sealed partial class ScriptedCaptain : Node
         vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = p, GlobalPosition = p }, true);
         await Frames(2);
         return null;
+    }
+
+    /// <summary>Clicks a ship or planet in the view where it is drawn (a friendly ship is selected, a planet chosen for
+    /// transport, an enemy locked), as a captain clicks it; ids split by | are the same part in each side's scene, the
+    /// first in the battle taken.</summary>
+    private async Task<string?> Select(string ids)
+    {
+        await Frames(2);
+        if (_sources().OfType<View.ViewOverlay>().FirstOrDefault() is not { } ov) return "no view";
+        string id = ids.Split('|').FirstOrDefault(k => B.ShipById(k) != null || B.Planets.Any(p => p.Id == k)) ?? ids;
+        if (ov.ScreenPointOf(id) is not { } p) return $"'{id}' is not in the view";
+        Viewport vp = GetViewport();
+        vp.PushInput(new InputEventMouseMotion { Position = p, GlobalPosition = p }, true);
+        await Frames(2);
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = p, GlobalPosition = p }, true);
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = p, GlobalPosition = p }, true);
+        await Frames(3);
+        return null;
+    }
+
+    /// <summary>Clicks each listed control in turn, one a battle second, for up to maxS battle seconds or until the battle
+    /// ends; a control not on screen or doing nothing yet (a key still dark) is passed over, as a captain waits for it.</summary>
+    private async Task<string?> Repeat(string[] ids, double maxS)
+    {
+        double t0 = B.T;
+        for (int i = 0; B.Over == null && B.T - t0 < maxS; i++)
+        {
+            await Click(ids[i % ids.Length]);
+            await Seconds(1);
+        }
+        return null;
+    }
+
+    /// <summary>Waits for the battle to end, won; stuck when it is not over in maxS battle seconds, or lost.</summary>
+    private async Task<string?> UntilOver(double maxS)
+    {
+        double t0 = B.T;
+        while (B.Over == null && B.T - t0 < maxS) await Frames(5);
+        return B.Over == "won" ? null : $"outcome {B.Over ?? "fighting"} after {B.T - t0:0} s";
     }
 
     /// <summary>Turns the mouse wheel over the 3D view (to the right of the console's column), n notches in or out.</summary>

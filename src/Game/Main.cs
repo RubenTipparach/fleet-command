@@ -276,6 +276,16 @@ public sealed partial class Main : Node
         foreach (var st in StationPanel.Stations) { string id = st.Id; states.Add(("station." + id, () => _x.State.Station = id)); }
         foreach (var pg in ShipPanel.Pages) { string id = pg.Id; states.Add(("page." + id, () => _x.State.ShipPage = id)); }
         foreach (Region r in ConsoleLayout.Expandable) { Region e = r; states.Add(("expand." + e, () => _x.State.Expanded = e)); }
+        // comms and transport: every transport mode docked and expanded, the weapon pick open, comms expanded, the event log
+        foreach (string tab in new[] { "capture", "hit", "cargo", "mines", "security" })
+        {
+            string tb = tab;
+            states.Add(("transport." + tb, () => { _x.State.Station = "transport"; _x.State.TransportTab = tb; }));
+            states.Add(("expand.transport." + tb, () => { _x.State.Station = "transport"; _x.State.TransportTab = tb; _x.State.Expanded = Region.Station; }));
+        }
+        states.Add(("transport.hit.pick", () => { _x.State.Station = "transport"; _x.State.TransportTab = "hit"; _x.State.RaidMountOpen = true; }));
+        states.Add(("expand.comms", () => { _x.State.Station = "comms"; _x.State.Expanded = Region.Station; }));
+        states.Add(("log", () => _x.State.LogOpen = true));
         states.Add(("menu", () => _x.State.MenuOpen = true));
         states.Add(("scene-list", () => _x.State.SceneOpen = true));
         string[] skins = { "concord", "krai" };
@@ -296,6 +306,7 @@ public sealed partial class Main : Node
             foreach (var (name, set) in states)
             {
                 _x.State.Station = "helm"; _x.State.ShipPage = "systems"; _x.State.Expanded = null; _x.State.MenuOpen = false; _x.State.SceneOpen = false;
+                _x.State.LogOpen = false; _x.State.RaidMountOpen = false; _x.State.TransportTab = "hit";
                 set();
                 Relayout();
                 _menu.Visible = _x.State.MenuOpen;
