@@ -5589,8 +5589,8 @@ controls.mouseButtons = { LEFT: -1, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUS
 const MODELS = new Map();
 const glowTex = (() => { const c = paint(32, 32, (x) => { const g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(255,255,255,0.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); }); const t = new THREE.CanvasTexture(c); return t; })();
 // The 3D shield display (owner, 2026-11-01: "shield facing should be hexagons here", with the reference game's flat
-// glowing facets round the ship): a hexagon in the ship's plane, one glowing band per facing, an edge toward the
-// bow, each band a slab as tall as it is wide. A band's colour is its facing's strength (as on the systems display); it brightens when hit.
+// glowing facets round the ship): a flat hexagon in the ship's plane, one glowing band per facing, an edge toward the
+// bow. A band's colour is its facing's strength (as on the systems display); it brightens when hit.
 const bandTex = (() => { const c = document.createElement('canvas'); c.width = 4; c.height = 64; const x = c.getContext('2d'), gr = x.createLinearGradient(0, 0, 0, 64);
   gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.35)'); gr.addColorStop(0.62, 'rgba(255,255,255,1)'); gr.addColorStop(0.75, 'rgba(255,255,255,0.3)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
   x.fillStyle = gr; x.fillRect(0, 0, 4, 64); return new THREE.CanvasTexture(c); })();
@@ -5603,16 +5603,9 @@ function shieldShell(s) {
     for (let l = 0; l < 3; l++) {
       const r0 = Rc + l * step, b0 = (i * 60 - 30 + 60 * gap / 2) * DEG, b1 = (i * 60 + 30 - 60 * gap / 2) * DEG, k0 = Math.cos(30 * DEG) / Math.cos(30 * DEG - 60 * gap / 2 * DEG);
       const [ax, az] = at(b0, r0 * k0), [bx, bz] = at(b1, r0 * k0), [cx2, cz] = at(b1, (r0 + w) * k0), [dx, dz] = at(b0, (r0 + w) * k0);
-      // a slab, not a flat strip (owner, 2026-11-06: "Shield faces I think should have zdepth"): as tall as it is wide, its top
-      // and bottom faces glowing across the band's width, its inner and outer walls across its height
-      const y = w / 2, q = (p) => p.flat(), pos = [], uv = [], idx = [];
-      const quad = (a, b, c, d) => { const n = pos.length / 3; pos.push(...q([a, b, c, d])); uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(n, n + 1, n + 2, n, n + 2, n + 3); };
-      for (const h of [y, -y]) quad([ax, h, az], [bx, h, bz], [cx2, h, cz], [dx, h, dz]);
-      quad([ax, -y, az], [bx, -y, bz], [bx, y, bz], [ax, y, az]);
-      quad([dx, -y, dz], [cx2, -y, cz], [cx2, y, cz], [dx, y, dz]);
       const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
+      geo.setAttribute('position', new THREE.Float32BufferAttribute([ax, 0, az, bx, 0, bz, cx2, 0, cz, dx, 0, dz], 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2)); geo.setIndex([0, 1, 2, 0, 2, 3]);
       face.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: bandTex, color: 0x3fa9f0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })));
     }
     g2.add(face);

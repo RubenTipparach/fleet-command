@@ -73,10 +73,6 @@ Shield bands by class (2026-11-06, owner: "frigates have only 1 layer of shields
 up 3) sets how many bands a facing shows at full strength, read by the game's `ShieldShell.Layers` and by the four battle
 console pages' `shieldLayers` from their inlined table.
 
-Shield band depth (2026-11-06, owner: "Shield faces I think should have zdepth ( the 3d graphic for them)"): in step. Each
-band is a slab as tall as it is wide (top and bottom faces glowing across its width, inner and outer walls across its
-height) in the four battle console pages' shieldShell() and the game's `ShieldShell`, so a facing reads from a low camera.
-
 Shots between steps (2026-11-06, owner: "why does weapon appear jittery?"): the game draws a shot in flight between its last
 two fixed steps (`Battle.DrawnAt`), as the mockups already do by stepping every animation frame. Nothing to sync.
 
@@ -133,7 +129,7 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Backdrop | Nebula sky with streaking dust | A simpler haze and stars | `battle-console-engine` |
 | Pointing in the view | three.js's raycaster from the pointer, through the camera | The same ray, by the inverse of the camera's own projection (2026-11-04: Godot's ProjectRayNormal ignored the view's offset frustum and missed by up to 2.16 km; owner: "mouse to screen ray cast is wrong, its not working like the JS version", "cant properly turn my ship in the desired direction"); the layout test checks a click lands within 1 m | none: in step |
 | Menu: Display (game ahead) | Resume, mockup settings, restart, quit | A Display key: borderless fullscreen (the default) or a window, also F11 and Alt+Enter, remembered (owner: "need a fullscreen /window option") | `battle-console`: the page's own fullscreen key (requestFullscreen) |
-| 3D shield display (v81, mockup 8 v20) | Soft glowing bands in the ship's plane, slabs as tall as they are wide (2026-11-06), one to three per facing by strength, the inner one flashing when hit, on every ship (owner, 2026-11-04: "shield display not matching mockup, also one change needed is to add shield display to all ships as well") | The same: `ShieldShell`, a port of the mockup's shieldShell(), in place of the thin lines the overlay drew round your ship only | none: in step |
+| 3D shield display (v81, mockup 8 v20) | Soft glowing bands in the ship's plane, one to three per facing by strength, the inner one flashing when hit, on every ship (owner, 2026-11-04: "shield display not matching mockup, also one change needed is to add shield display to all ships as well") | The same: `ShieldShell`, a port of the mockup's shieldShell(), in place of the thin lines the overlay drew round your ship only | none: in step |
 | Strips (v79, mockup 8 v18) | The top and bottom strips on black (owner, 2026-11-04: "this top part needs a blcak background, same with bottom stuff too") | The same | none: in step |
 | Core breach (game ahead, mockups 6 and 7) | The main blast: an orange fireball, flash and shockwave | A white star with pink edges, a flat blue disc racing out through the battle plane, debris trailing flame (owner, 2026-11-04: "center is white with pink edges, and a blue ring glowing outward", "I really want it to have this exact look and colors, and the debris should have trails of flame"); `Fx.Nova`, `novastar.gdshader`, `novadisc.gdshader` | `ship-damage-visuals`: port the breach to `lib/ship-break.js` mainBlast() |
 | Wrecks scene (game ahead) | Not on the scene list | Wrecks, from both sides: every class of the other side, crippled, to watch each come apart (owner, 2026-11-04: "show me you fixed each ship type") | `battle-scenarios`: add Wrecks to the mockup's scene list |
