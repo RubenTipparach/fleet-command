@@ -22,3 +22,5 @@
   backgrouind noise, it has a really annoying whirling noise ... get rid of the sweep sound, just subtle bleeps and
   airduct noise"): no sensor sweeps or scan pings, no swelling computer-room layer, the air duct twice over a low hum,
   the bleeps about 10 dB quieter.
+- Version 5 published 2026-11-07, version id `1793953907-28eb`: the bridge and the weapons softened on Crab Breeze's
+  low-pass rules (the bed at 3.5 kHz and -14 dB peak, bleeps included; every weapon at 4 kHz, 24 dB/octave, 6 dB down).

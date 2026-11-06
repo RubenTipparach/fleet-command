@@ -1,5 +1,5 @@
 {
-  "_about": "Recorded cues for tools/audio/cut_cc0.py (format from Crab Breeze, unchanged). A layer is {src: 'pack:file'} or {synth: '<gen_sfx layer or cue>'}, with optional shot (n-th shot of a multi-shot take), start, dur (s), pitch (tape-speed ratio), gain (dB after the layer is peak-normalised), lp, hp (Hz, steep), fadein, fadeout, delay (s), repeat. A cue may set len, drive (tanh), hp, lp (gentle, 12 dB/octave), distance (compressor, lowpass and reverb that push a bed into the background), loop, stereo, group, peak_db, what and edits. A cue whose what ends in (loops) loops in the game. A cue may also set scatter: a list of groups, each placing count short sounds picked from pick (layer specs) at seeded times inside within seconds (from 0, no closer than min_gap), with gain, pitch ranges and a pan width; scattered sounds are mixed after the distance treatment (this repository, 2026-11-06).",
+  "_about": "Recorded cues for tools/audio/cut_cc0.py (format from Crab Breeze, unchanged). A layer is {src: 'pack:file'} or {synth: '<gen_sfx layer or cue>'}, with optional shot (n-th shot of a multi-shot take), start, dur (s), pitch (tape-speed ratio), gain (dB after the layer is peak-normalised), lp, hp (Hz, steep), fadein, fadeout, delay (s), repeat. A cue may set len, drive (tanh), hp, lp (gentle, 12 dB/octave), distance (compressor, lowpass and reverb that push a bed into the background), loop, stereo, group, peak_db, what and edits. A cue whose what ends in (loops) loops in the game. A cue may also set scatter: a list of groups, each placing count short sounds picked from pick (layer specs) at seeded times inside within seconds (from 0, no closer than min_gap), with gain, pitch ranges and a pan width; scattered sounds are mixed after the distance treatment (this repository, 2026-11-06). A cue's lp_order (default 2, 12 dB/octave) makes its lp steeper: 4 is Crab Breeze's sealed-cockpit filter (two 2-pole passes at 4 kHz), used here for every weapon heard from the bridge through the hull, written 6 dB down (peak_db -7) (2026-11-07).",
   "lance_fire": {
     "group": "Weapons",
     "what": "The Lance firing: a hard electric crack and a kick, a beam that snaps out and is gone in half a second.",
@@ -28,9 +28,12 @@
       }
     ],
     "len": 0.55,
-    "drive": 1.6,
+    "drive": 1.3,
     "tail_fade": 0.1,
-    "edits": "a crack, a laser take started at its peak and slowed to 0.85, our snap and kick, saturated, cut to 0.55 s"
+    "edits": "a crack, a laser take started at its peak and slowed to 0.85, our snap and kick, saturated, cut to 0.55 s, then heard through the hull as Crab Breeze hears outside sounds through its sealed cockpit: low passed at 4 kHz, 24 dB/octave, 6 dB down",
+    "lp": 4000,
+    "lp_order": 4,
+    "peak_db": -7.0
   },
   "disruptor_fire": {
     "group": "Weapons",
@@ -52,9 +55,12 @@
       }
     ],
     "len": 0.55,
-    "drive": 1.4,
+    "drive": 1.2,
     "tail_fade": 0.1,
-    "edits": "slowed to 0.85 speed, cut to 0.5 s, a crack and our kick, saturated"
+    "edits": "slowed to 0.85 speed, cut to 0.5 s, a crack and our kick, saturated, then heard through the hull as Crab Breeze hears outside sounds through its sealed cockpit: low passed at 4 kHz, 24 dB/octave, 6 dB down",
+    "lp": 4000,
+    "lp_order": 4,
+    "peak_db": -7.0
   },
   "torpedo_launch": {
     "group": "Weapons",
@@ -81,7 +87,10 @@
     ],
     "len": 0.9,
     "tail_fade": 0.15,
-    "edits": "a ship's cannon slowed and lowpassed, a phaser rise slowed to 0.6, our kick, cut to 0.9 s"
+    "edits": "a ship's cannon slowed and lowpassed, a phaser rise slowed to 0.6, our kick, cut to 0.9 s, then heard through the hull as Crab Breeze hears outside sounds through its sealed cockpit: low passed at 4 kHz, 24 dB/octave, 6 dB down",
+    "lp": 4000,
+    "lp_order": 4,
+    "peak_db": -7.0
   },
   "overload_charge": {
     "group": "Weapons",
@@ -96,7 +105,10 @@
     "len": 2.0,
     "loop": true,
     "loop_fade": 0.4,
-    "edits": "trimmed to 2 s, lowpassed, crossfaded into a loop"
+    "edits": "trimmed to 2 s, lowpassed, crossfaded into a loop, then heard through the hull as Crab Breeze hears outside sounds through its sealed cockpit: low passed at 4 kHz, 24 dB/octave, 6 dB down",
+    "lp": 4000,
+    "lp_order": 4,
+    "peak_db": -7.0
   },
   "missile_launch": {
     "group": "Weapons",
@@ -116,7 +128,10 @@
     ],
     "len": 1.2,
     "tail_fade": 0.2,
-    "edits": "started at its ignition, slowed to 0.9, our kick, cut to 1.2 s"
+    "edits": "started at its ignition, slowed to 0.9, our kick, cut to 1.2 s, then heard through the hull as Crab Breeze hears outside sounds through its sealed cockpit: low passed at 4 kHz, 24 dB/octave, 6 dB down",
+    "lp": 4000,
+    "lp_order": 4,
+    "peak_db": -7.0
   },
   "pd_burst": {
     "group": "Weapons",
@@ -131,7 +146,10 @@
       }
     ],
     "len": 0.5,
-    "edits": "sped to 1.15, highpassed, cut to 0.5 s"
+    "edits": "sped to 1.15, highpassed, cut to 0.5 s, then heard through the hull as Crab Breeze hears outside sounds through its sealed cockpit: low passed at 4 kHz, 24 dB/octave, 6 dB down",
+    "lp": 4000,
+    "lp_order": 4,
+    "peak_db": -7.0
   },
   "shield_hit": {
     "group": "Impacts",
@@ -515,11 +533,15 @@
     "loop": true,
     "loop_fade": 1.5,
     "distance": {
-      "lp": 4000,
-      "wet": 0.25
+      "lp": 3500,
+      "wet": 0.35,
+      "threshold_db": -18,
+      "ratio": 3
     },
-    "peak_db": -6.0,
-    "edits": "the air duct recorded twice, offset and panned wide, over a low generator hum, compressed, lowpassed and given a room; recorded terminal and interface bleeps and our bleeps scattered softly over a minute at seeded times and pans; crossfaded into a loop"
+    "peak_db": -14.0,
+    "edits": "the air duct recorded twice, offset and panned wide, over a low generator hum; recorded terminal and interface bleeps and our bleeps scattered softly over a minute at seeded times and pans; then Crab Breeze's background treatment for a bed, the bleeps included: compressed 3:1 from -18 dB, low passed at 3.5 kHz, a diffuse reverb, written at -14 dB peak; crossfaded into a loop",
+    "lp": 3500,
+    "lp_order": 4
   },
   "shield_hit_short": {
     "group": "Impacts",

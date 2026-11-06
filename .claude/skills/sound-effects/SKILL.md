@@ -93,6 +93,16 @@ One command rebuilds everything: `tools/audio/render_sfx.sh` (or `tools/audio/re
    `docs/mockups/sounds.files.json` as the publish's `files` map (each MP3 at the same path the page names). Never
    inline audio in the page: version 1 did (1.9 MB of data URIs) and never loaded in the viewer (2026-11-05).
 
+## Softening (Crab Breeze's two rules)
+
+When the owner says a sound is too harsh, too bright or too foreground (2026-11-07: "soften bridge ambient along with a
+lot of the other weapons, check the procedure in crab breeze how audio was softened with low passes"):
+- **A bed** gets Crab Breeze's ambience treatment: `"distance": {"lp": 3500, "wet": 0.35, "threshold_db": -18,
+  "ratio": 3}`, a cue `"lp": 3500, "lp_order": 4` so scattered sounds are softened with it, and `"peak_db": -14`.
+- **A sound heard from the bridge through the hull** (the weapons) gets Crab Breeze's sealed-cockpit filter:
+  `"lp": 4000, "lp_order": 4, "peak_db": -7` (4 kHz twice over, 6 dB down), and less `drive`.
+- Measure before and after (energy above 4 kHz, spectral centre, RMS, the first 20 ms of a shot) and say the numbers.
+
 ## Levels
 
 Cues are peak-normalised when written: `-1 dBFS` for weapons and blasts, about `-9 dBFS` for

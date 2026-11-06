@@ -41,6 +41,17 @@ annoying whirling noise ... get rid of the sweep sound, just subtle bleeps and a
 the swelling computer-room layer removed, the bleeps about 10 dB quieter. A bed stays background: no tone that moves
 in pitch, no swell, nothing more than about 12 dB over it.
 
+**Softened the Crab Breeze way** (owner, 2026-11-07: "soften bridge ambient along with a lot of the other weapons, check
+the procedure in crab breeze how audio was softened with low passes"). Crab Breeze has two rules, read at `6819b52`:
+its ambience beds (`openspec/changes/ambience/design.md` section 2, after its owner's "ambient sounds needs to be softer
+and queiter") are compressed 3:1 from -18 dB, low passed at 3.5 kHz, given a diffuse reverb and written 11 dB lower;
+every sound from outside its sealed cockpit (`openspec/changes/audio/design.md` section 3) is 6 dB down and low passed
+at 4 kHz, twice over. Here the bridge bed takes the first rule (`distance` 3.5 kHz, 35% wet, -14 dB peak, and a
+24 dB/octave low pass over the whole bed so the bleeps are softened with it), and every weapon the second, heard from
+the bridge through the hull (`lp` 4000, `lp_order` 4, `peak_db` -7). Measured: the Lance's spectral centre fell from
+1196 to 815 Hz and its energy above 4 kHz from 4.8% to 0.2%, 7 dB quieter on average, its first 20 ms still its
+loudest; every weapon is 6-7 dB quieter on average. The hits keep their level (the owner: "hull hits are all great").
+
 **Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
 so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.
 

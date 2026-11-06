@@ -202,7 +202,7 @@ def cut(cue: dict, src_root: str, name: str = "") -> np.ndarray:
         x = x + sum(fit(p, n) for p in extra)
     x = per_channel(g.hp, x, cue.get("hp", 20))
     if "lp" in cue:
-        x = per_channel(g.lp, x, cue["lp"], order=2)
+        x = per_channel(g.lp, x, cue["lp"], order=cue.get("lp_order", 2))
     if cue.get("loop"):
         x = per_channel(g.loopable, x, cue.get("loop_fade", 0.3))
     else:
