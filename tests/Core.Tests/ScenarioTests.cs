@@ -3,6 +3,7 @@
 // models: every class's glb exists and is the approved ship the export manifest lists (assets/ships/manifest.json), and
 // the export is not stale: each ship page still has the sha256 the manifest recorded when the ships were exported.
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -44,12 +45,44 @@ public class ScenarioTests
     {
         // owner, 2026-11-04: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"; the Ssarith Hunt joined them once its ships
         // were approved for the game (owner, 2026-11-06: "looks good, implement in game")
+        // The one exception is the battle console mockup's allied scenes (openspec/changes/fleet-skins), as the mockup has
+        // them: their foes are its Kethran and Vos stand-ins, and Four races adds the Kelvane Institute's Patience, a
+        // stand-in, the Institute having no designed ships. The ships you can command beside it are approved ones.
         foreach (Scenario s in TestData.Data.Scenarios)
             foreach (ShipStart o in s.Ships)
             {
+                bool allied = s.Name is "Allied fleet" or "Four races";
+                if (allied && o.Side == 1 && o.Faction is "kethran" or "vos") continue;
+                if (s.Name == "Four races" && o.Faction == "kelvane" && o.Class == "kelvane_rv") continue;
                 Assert.True(o.Faction is "concord" or "krai" or "ssarith", $"{s.Id}: {o.Id} is of the {o.Faction}");
                 Assert.True(TestData.Data.Classes[o.Class].Model != null, $"{s.Id}: {o.Id} ({o.Class}) would be a stand-in");
             }
+    }
+
+    [Fact]
+    public void The_Ssarith_Hunt_is_played_as_itself_in_its_approved_ships()
+    {
+        Scenario[] hunt = TestData.Data.Scenarios.Where(s => s.Side == "ssarith").ToArray();
+        foreach (string name in new[] { "Battle", "Duel", "Arming", "Allied fleet", "Four races" }) Assert.Contains(hunt, s => s.Name == name);
+        Assert.All(hunt, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith"), o => Assert.NotNull(TestData.Data.Classes[o.Class].Model)));
+        Assert.Equal("ssarith", TestData.Data.Factions["ssarith"].Skin);
+        Assert.Equal("kelvane", TestData.Data.Factions["kelvane"].Skin);
+    }
+
+    [Fact]
+    public void In_the_allied_scenes_the_fleet_holds_a_ship_of_each_race_with_a_console_to_hop_between()
+    {
+        foreach (Scenario s in TestData.Data.Scenarios.Where(s => s.Name is "Allied fleet" or "Four races"))
+        {
+            string[] own = s.Ships.Where(o => o.Side == 0).Select(o => o.Faction).ToArray();
+            Assert.Equal(own.Length, own.Distinct().Count());
+            Assert.Superset(new HashSet<string> { "concord", "krai", "ssarith" }, own.ToHashSet());
+            Assert.All(own, f => Assert.NotNull(TestData.Data.Factions[f].Skin));
+            if (s.Name == "Four races") Assert.Contains("kelvane", own);
+            else Assert.DoesNotContain("kelvane", own);
+            var b = new Battle(TestData.Data, s);
+            foreach (Ship o in b.Fleet()) { b.TakeCommand(o.Id); Assert.Same(o, b.Player); }
+        }
     }
 
     [Fact]

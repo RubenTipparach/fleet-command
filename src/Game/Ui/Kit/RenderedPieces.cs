@@ -100,6 +100,47 @@ public sealed class RenderedPieces
         c.DrawTextureRectRegion(e.Tex, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), new Rect2(0, ts.Y * (1 - f), ts.X, ts.Y * f), new Color(1, 1, 1, alpha));
     }
 
+    /// <summary>Draws part of a whole piece, <paramref name="src"/> in its reference pixels, into a rectangle; mirrored left
+    /// to right when asked (the mockup's consoleBacking bands).</summary>
+    public void DrawPart(CanvasItem c, string id, Rect2 dest, Rect2 src, bool mirror = false)
+    {
+        Entry e = Get(id);
+        if (dest.Size.X <= 0 || dest.Size.Y <= 0) return;
+        float k = e.Tex.GetSize().X / e.Spec.Size.X;
+        var from = new Rect2(src.Position * k, src.Size * k);
+        if (!mirror) { c.DrawTextureRectRegion(e.Tex, dest, from); return; }
+        // mirrored about the band's own middle: drawn under a transform that flips x there
+        c.DrawSetTransform(new Vector2(2 * dest.Position.X + dest.Size.X, 0), 0, new Vector2(-1, 1));
+        c.DrawTextureRectRegion(e.Tex, dest, from);
+        c.DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+    }
+
+    /// <summary>Gives a piece a second name (the Kelvane's screened console pieces standing in under the kit's names, the
+    /// mockup's CONSOLE map); a piece that is not in the manifest stops the skin.</summary>
+    public void Alias(string name, string piece) => _pieces[name] = Get(piece);
+
+    /// <summary>A new whole piece made from an existing one in another colour (the mockup's "color" blend: the colour's
+    /// hue and saturation over the source's luminance, the source's alpha kept).</summary>
+    public void AddColorTurned(string id, string from, Color col)
+    {
+        Entry e = Get(from);
+        Image img = e.Tex.GetImage() ?? throw new InvalidOperationException($"the {_skin} kit's '{from}' has no image to turn");
+        img.Decompress();
+        static float Lum(float r, float g, float b) => 0.3f * r + 0.59f * g + 0.11f * b;
+        for (int y = 0; y < img.GetHeight(); y++)
+            for (int x = 0; x < img.GetWidth(); x++)
+            {
+                Color p = img.GetPixel(x, y);
+                // SetLum(col, Lum(p)) of the W3C compositing spec, clipped back into range
+                float d = Lum(p.R, p.G, p.B) - Lum(col.R, col.G, col.B), r = col.R + d, g = col.G + d, b = col.B + d, l = Lum(r, g, b);
+                float n = Math.Min(r, Math.Min(g, b)), m = Math.Max(r, Math.Max(g, b));
+                if (n < 0) { r = l + (r - l) * l / (l - n); g = l + (g - l) * l / (l - n); b = l + (b - l) * l / (l - n); }
+                if (m > 1) { r = l + (r - l) * (1 - l) / (m - l); g = l + (g - l) * (1 - l) / (m - l); b = l + (b - l) * (1 - l) / (m - l); }
+                img.SetPixel(x, y, new Color(r, g, b, p.A));
+            }
+        _pieces[id] = e with { Tex = ImageTexture.CreateFromImage(img) };
+    }
+
     /// <summary>A new whole piece made from an existing one with its hue turned to <paramref name="hue"/>'s (the mockup's
     /// "hue" blend: the source keeps its saturation and brightness).</summary>
     public void AddHueTurned(string id, string from, Color hue)

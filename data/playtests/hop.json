@@ -1,0 +1,29 @@
+{
+ "_doc": "The scripted captain hopping between the ships of four races (openspec/changes/fleet-skins; the battle console mockup's Four races scene, a quiet sector with nothing underway): pick the scenario from the scene selector, then take each ship in turn with keys 1 to 4 (the console wears each ship's faction's skin) and in each look over two stations and an expanded panel and back; last the Fleet key on the name plate. No battle is fought.",
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "pick_scene"},
+  {"do": "press", "arg": "command_1"},
+  {"do": "station", "arg": "tactical"},
+  {"do": "station", "arg": "helm"},
+  {"do": "expand", "arg": "Ship"},
+  {"do": "collapse"},
+  {"do": "press", "arg": "command_2"},
+  {"do": "station", "arg": "power"},
+  {"do": "station", "arg": "science"},
+  {"do": "expand", "arg": "Weapons"},
+  {"do": "collapse"},
+  {"do": "press", "arg": "command_3"},
+  {"do": "station", "arg": "comms"},
+  {"do": "station", "arg": "repair"},
+  {"do": "expand", "arg": "Ship"},
+  {"do": "collapse"},
+  {"do": "press", "arg": "command_4"},
+  {"do": "station", "arg": "transport"},
+  {"do": "station", "arg": "fleet"},
+  {"do": "expand", "arg": "Station"},
+  {"do": "collapse"},
+  {"do": "click", "arg": "fleet"},
+  {"do": "hold", "s": 2}
+ ]
+}

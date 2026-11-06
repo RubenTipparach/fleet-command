@@ -71,6 +71,25 @@ THEMES = [
     ("coral_drift", "Coral Drift", "Coral and turquoise side by side, like a reef seen from above, a warm core.",
      2114, [0.016, 0.016, 0.026], [0.85, 0.8, 0.8], [((1.0, 0.45, 0.35), (0.38, 0.08, 0.08)), ((0.3, 0.85, 0.8), (0.03, 0.22, 0.24))],
      [0.8, 0.9, 1.1], [((1.0, 0.92, 0.8), (1.0, 0.55, 0.4))], 1.15),
+    # the Ssarith Hunt's scenarios and the allied scenes (2026-11-06), each under a sky of its own
+    ("moss_haze", "Moss Haze", "An olive-green haze with amber knots in it and a dim gold core: a murky, close sky.",
+     2115, [0.012, 0.016, 0.01], [0.75, 0.8, 0.6], [((0.55, 0.7, 0.3), (0.12, 0.18, 0.05)), ((0.9, 0.7, 0.3), (0.26, 0.16, 0.04))],
+     [0.7, 0.95, 1.2], [((1.0, 0.95, 0.7), (0.8, 0.7, 0.3))], 1.1),
+    ("copper_tide", "Copper Tide", "Copper and teal clouds rolling against each other, a hot copper core between them.",
+     2116, [0.014, 0.014, 0.018], [0.8, 0.75, 0.7], [((1.0, 0.5, 0.25), (0.36, 0.1, 0.04)), ((0.25, 0.75, 0.7), (0.03, 0.18, 0.2))],
+     [0.75, 0.95, 1.15], [((1.0, 0.9, 0.75), (1.0, 0.55, 0.3))], 1.15),
+    ("cobalt_crown", "Cobalt Crown", "A ring of cobalt clouds round a bright violet-white core, dark lanes through the ring.",
+     2117, [0.008, 0.01, 0.03], [0.65, 0.7, 1.0], [((0.2, 0.45, 1.0), (0.03, 0.08, 0.34)), ((0.6, 0.45, 1.0), (0.14, 0.06, 0.34))],
+     [0.8, 0.9, 1.05], [((0.95, 0.92, 1.0), (0.6, 0.55, 1.0))], 1.2),
+    ("jade_lantern", "Jade Lantern", "Jade-green veils lit from within by a warm yellow lantern of a core.",
+     2118, [0.008, 0.018, 0.016], [0.6, 0.85, 0.75], [((0.25, 0.9, 0.6), (0.03, 0.24, 0.16)), ((0.5, 1.0, 0.75), (0.06, 0.28, 0.2))],
+     [0.8, 1.0, 1.1], [((1.0, 0.98, 0.75), (0.9, 0.85, 0.4))], 1.15),
+    ("amber_lull", "Amber Lull", "Still amber clouds low on the horizon, soft and wide, a pale honey core: a quiet sky.",
+     2119, [0.018, 0.014, 0.01], [0.9, 0.8, 0.62], [((1.0, 0.68, 0.32), (0.32, 0.16, 0.05))],
+     [0.85, 1.0, 1.1], [((1.0, 0.94, 0.8), (1.0, 0.72, 0.4))], 1.0),
+    ("pearl_mist", "Pearl Mist", "Pale pearl-grey mist with faint rose and blue in it, a soft white core.",
+     2120, [0.016, 0.016, 0.022], [0.85, 0.85, 0.92], [((0.85, 0.8, 0.9), (0.22, 0.2, 0.28)), ((0.7, 0.8, 1.0), (0.14, 0.2, 0.34))],
+     [0.9, 1.0, 1.05], [((1.0, 0.98, 1.0), (0.85, 0.82, 0.95))], 1.0),
 ]
 
 
