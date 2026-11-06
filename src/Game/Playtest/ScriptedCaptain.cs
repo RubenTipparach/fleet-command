@@ -152,11 +152,13 @@ public sealed partial class ScriptedCaptain : Node
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
-        string? steering = null;
+        string? steering = null, commanding = B.Player.Id;
         while (B.Over == null && B.T - t0 < maxS)
         {
             Ship me = B.Player;
             if (!me.Alive) break;
+            // command passed to another ship (the last one was lost): its helm has had no order yet
+            if (me.Id != commanding) { commanding = me.Id; ordered = false; }
             // a battle with marker beacons and no enemy left: steer for the next beacon shown, by clicking it, as a player would
             if (B.Scenario.Markers != null && !B.EnemiesOf(me).Any())
             {
