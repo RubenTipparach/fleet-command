@@ -216,3 +216,20 @@ Watch green lacquer, the lacquer under dried blood, and a dry forest in enamel; 
 by `tools/emblems/ssarith_leaves.py`. SD's three arrowheads are now each their own shape, one per stage. Heights and
 materials in mockup-work.md section 19.
 
+## The Kelvane Institute (2026-11-06)
+
+Owner, 2026-11-06: "lets design an emblem for the institute". The Institute's culture is one line in the console skins
+design ("truth is measured, never assumed; every reading is shown on an instrument a scientist can check by eye"), so, as
+for the Hunt, three traditions inside the Institute are drafted for the owner to pick, change or reject, each with a sketch
+that names it, none from the Kelvane's bodies (the console notes' "many-handed" is left out):
+
+| Sketch | Tradition | Outline | What it shows |
+|---|---|---|---|
+| KIA, the True Mark (recommended) | The Calibrators, the instrument makers: a reading is only as true as the standard it was checked against | A meter's face (a fan) | An engraved scale, the needle at rest exactly on the amber reference mark: the moment of calibration |
+| KIB, the Repeated Trace | The Open Notebook, the reviewers: no result is true until another laboratory repeats it | A scope's screen | Two identical traces, green and amber, and the cursor that compares them |
+| KIC, the Long Baseline | The surveyors and astronomers: the Institute began by measuring the distance to a star | A lens | A measured baseline with a station at each end, their sightlines meeting at one amber star |
+
+Palette (provisional, the Kelvane console's): Champagne (the enamelled plate), Phosphor green (the scope's trace), Amber (the
+backlit readout, the reference mark), Scope glass (the dark behind a trace). The console's crest today, a tuning fork over
+its wave, is a placeholder until a sketch is picked. Every sketch passes the measured checks (joins, outline, contrast).
+

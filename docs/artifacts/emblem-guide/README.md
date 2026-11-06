@@ -77,3 +77,4 @@
 - 2026-11-05, version 29 (`1793840985-686c`): SD's feathers larger, their tips their own shapes (owner: "Feathera red with orange tip").
 - 2026-11-05, version 30 (`1793846055-70a5`): SD's feather body and tip edge to edge (owner: "z fighting").
 - 2026-11-05, version 31 (`1793847828-247e`): SD's bows a real recurve with tally spurs and forked tips (owner: "make it more alien", "ooh the thorny bows are great"), no spur where the grip hand closes; the recess's inner walls in the parts.
+- 2026-11-06, version 32 (`1793927604-66e5`): the Kelvane Institute section (owner: "lets design an emblem for the institute"), opening by default: three traditions drafted inside the Institute (the Calibrators, the Open Notebook, the Long Baseline), each with a sketch: KIA the True Mark (recommended), KIB the Repeated Trace, KIC the Long Baseline; none from the Kelvane's bodies.

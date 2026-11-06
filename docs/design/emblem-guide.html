@@ -97,12 +97,13 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
     <div class="eyebrow">Guide · one faction at a time · started 2026-11-03</div>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <h1>Emblem Design Guide</h1>
-    <p class="muted">How Fleet Command's faction emblems are designed, the rules they follow, and the record of your notes on them. An emblem says what a people believes, so every shape in it is chosen for a reason, and the reason is written beside it. Choose a faction below to see its sketches and the notes on it; the Ssarith Hunt is in work.</p>
+    <p class="muted">How Fleet Command's faction emblems are designed, the rules they follow, and the record of your notes on them. An emblem says what a people believes, so every shape in it is chosen for a reason, and the reason is written beside it. Choose a faction below to see its sketches and the notes on it; the Kelvane Institute is in work.</p>
     <div class="factions" role="group" aria-label="Faction">
       <span class="muted">Faction:</span>
       <button class="btn" type="button" data-show="concord">Concord</button>
       <button class="btn" type="button" data-show="krai">Krai Warhost</button>
       <button class="btn" type="button" data-show="ssarith">Ssarith Hunt</button>
+      <button class="btn" type="button" data-show="kelvane">Kelvane Institute</button>
     </div>
   </header>
 
@@ -110,6 +111,18 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
     <h2 id="h-notes">Your notes</h2>
     <p class="muted">In your words, newest first, with what each one changes. They are the rules for every emblem from here on.</p>
     <ul class="notes" id="owner-notes"></ul>
+  </section>
+
+  <section aria-labelledby="h-kelvane" data-faction="kelvane">
+    <h2 id="h-kelvane">Kelvane Institute</h2>
+    <p class="muted">What the Institute believes (console skins design): truth is measured, never assumed, and every reading is shown on an instrument a scientist can check by eye. Its console is cream-enamelled lab instruments, brass, amber backlit readouts and green phosphor scopes. That is one line of culture, so, as for the Hunt, below are three traditions drafted inside the Institute for you to pick, change or throw out. Nothing comes from what the Kelvane look like. The console's crest today, a tuning fork over its wave, is a placeholder until you pick.</p>
+    <ul class="muted">
+      <li><b>The Calibrators</b> (the instrument makers): a reading is only as true as the standard it was checked against. The Institute keeps the master standards, and its oldest rite is the calibration: the needle brought exactly to the true mark.</li>
+      <li><b>The Open Notebook</b> (the reviewers): no result is true until another laboratory repeats it. Every finding is published with its method, and a finding nobody has repeated is called a rumour.</li>
+      <li><b>The Long Baseline</b> (the surveyors and astronomers): the Institute began by measuring the distance to the stars, two stations far apart sighting one star. Patience over a long baseline, and a number that can be checked.</li>
+    </ul>
+    <p class="muted">Colours, from the console: Champagne, the enamelled plate of every instrument; Phosphor green, the scope's trace; Amber, the backlit readout and the reference mark; Scope glass, the dark behind a trace. All provisional until you set the Institute's culture.</p>
+    <div id="kelvane-designs" style="display:grid;gap:20px"></div>
   </section>
 
   <section aria-labelledby="h-ssarith" data-faction="ssarith">
@@ -235,6 +248,7 @@ ol.steps .st { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transfor
 'use strict';
 // ---- your notes (newest first): kept in the page, added by Claude as you give them -----------------------------------
 const NOTES = [
+  { f: 'kelvane', when: '2026-11-06', q: 'lets design an emblem for the institute', means: 'The Kelvane Institute\'s section. Its culture is one line, so three traditions inside the Institute are drafted (the Calibrators, the Open Notebook, the Long Baseline), each with a sketch, none from the Kelvane\'s bodies.' },
   { f: 'ssarith', when: '2026-11-05', q: 'ooh the thorny bows are great / omit some thornes a the bottom half where the shooter might put their grip hand', means: 'The thorn nearest the grip on each lower limb is gone, so the hand that closes just under the arrow finds smooth wood; the outer one stays.' },
   { f: 'ssarith', when: '2026-11-05', q: 'this is what it really looks like, but I need you to add some character to it, make it more alien', means: 'SD\'s bows redrawn on a real recurve (after your picture): one smooth curve, thickest at the grip, the tips flipping forward past where the string meets them; then the Hunt\'s own character: two tally spurs on the back of each limb and a forked hook at each tip that the string seats in.' },
   { f: 'ssarith', when: '2026-11-05', q: 'the bow is all wobly, it sucks', means: 'The smoothing drew a curve through the old facets and it rippled; the limb is now one analytic curve, no points to wobble between.' },
@@ -968,6 +982,149 @@ function sdArt(k, ink = false) {
   SD.bows.forEach((q, i) => { for (const part of [q.limb, ...q.trim, q.string, q.shaft, q.vanes]) s += path(part, c(k.device)); s += path(q.head, c(i === 0 ? k.accent : k.device)); });
   return s;
 }
+// ---- the Kelvane Institute (owner, 2026-11-06: "lets design an emblem for the institute"). Its culture is one line ("truth
+// is measured, never assumed"), so each direction comes from one tradition drafted inside the Institute, none from the
+// Kelvane's bodies (CLAUDE.md section 1). Champagne (the enamelled plate), Phosphor green (the scope's trace), Amber (the
+// backlit readout, the reference mark), Scope glass (the dark behind a trace): the Kelvane console's own palette.
+const KELVANE = {
+  dk: { frame: '#e6d8b8', field: '#0c1712', device: '#5cff9a', accent: '#ffb347' },
+  lt: { frame: '#2a2418', field: '#efe6cf', device: '#1d5a36', accent: '#a8600a' },
+};
+const seg = (a, b, w) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), nx = -dy / l * w / 2, ny = dx / l * w / 2;
+  return polyD([[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]]); };
+// A convex outline moved in by d, exactly: the outline clipped by each of its edges moved inward (no corner folds over,
+// however many sides or however sharp). And a frame from it: the outline with that inset as its hole, and the inset as field.
+function convexInset(ring, d) {
+  let a = 0; ring.forEach((p, i) => { const q = ring[(i + 1) % ring.length]; a += p[0] * q[1] - q[0] * p[1]; });
+  const sgn = a > 0 ? 1 : -1; let poly = ring.slice();
+  ring.forEach((p, i) => {
+    const q = ring[(i + 1) % ring.length], l = Math.hypot(q[0] - p[0], q[1] - p[1]); if (l < 1e-9) return;
+    const nx = -sgn * (q[1] - p[1]) / l, ny = sgn * (q[0] - p[0]) / l, side = (v) => (v[0] - p[0]) * nx + (v[1] - p[1]) * ny - d, next = [];
+    poly.forEach((u, k) => { const v = poly[(k + 1) % poly.length], su = side(u), sv = side(v);
+      if (su >= 0) next.push(u);
+      if ((su >= 0) !== (sv >= 0)) { const t = su / (su - sv); next.push([u[0] + (v[0] - u[0]) * t, u[1] + (v[1] - u[1]) * t]); } });
+    poly = next;
+  });
+  return poly;
+}
+const insetFrame = (ring, b) => { const inner = convexInset(ring, b); return { frame: polyD(ring) + polyD(inner), field: polyD(inner), inner }; };
+const arcBand = (c, r0, r1, a0, a1, n = 40) => { const o = [], i = [];
+  for (let k = 0; k <= n; k++) { const a = a0 + (a1 - a0) * k / n; o.push(pol(r1, a, ...c)); i.push(pol(r0, a, ...c)); }
+  return polyD(o.concat(i.reverse())); };
+// KA, the true mark (the Calibrators): a meter's face, its scale, and the needle brought exactly to the reference mark.
+const KA = (() => {
+  const C = [50, 94], outline = [[38, 94]];
+  for (let k = 0; k <= 28; k++) outline.push(pol(80, 235 + 70 * k / 28, ...C).map((v) => +v.toFixed(2)));
+  outline.push([62, 94]);
+  // clockwise from the bottom left: the bottom, up the left side, over the arc, down the right side
+  const fr = insetFrame(outline, 6);
+  const scale = [arcBand(C, 52, 55.5, 245, 295)];
+  for (let a = 245; a <= 295; a += 5) {
+    const major = (a - 245) % 10 === 0;
+    scale.push(seg(pol(54, a, ...C), pol(major ? 61 : 59, a, ...C), major ? 1.8 : 1.2));
+  }
+  scale.push(seg(pol(54, 270, ...C), pol(63, 270, ...C), 2.2));
+  const mark = polyD([pol(62.5, 270, ...C), pol(69, 266.4, ...C), pol(69, 273.6, ...C)]);    // the reference mark, amber
+  const hub = [50, 79], needle = polyD([[hub[0] - 1.8, hub[1]], [hub[0] - 0.5, 47], [hub[0] + 0.5, 47], [hub[0] + 1.8, hub[1]]]);
+  const hubD = `M${hub[0] + 4.2} ${hub[1]}A4.2 4.2 0 1 0 ${hub[0] - 4.2} ${hub[1]}A4.2 4.2 0 1 0 ${hub[0] + 4.2} ${hub[1]}Z`;
+  return { fr, scale, mark, needle, hubD };
+})();
+function kaArt(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${KA.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(KA.fr.field, k.field);
+  KA.scale.forEach((d) => { s += path(d, c(k.device)); });
+  return s + path(KA.mark, c(k.accent)) + path(KA.needle, c(k.frame)) + path(KA.hubD, c(k.frame));
+}
+// KB, the repeated trace (the Open Notebook): a scope's screen, two traces of one result, and the cursor that compares them.
+const KB = (() => {
+  const fr = polyFrame([[6, 14], [94, 14], [94, 86], [6, 86]], 10, 6);
+  const wave = (y0) => { const pts = []; for (let k = 0; k <= 60; k++) { const x = 18 + 64 * k / 60; pts.push([x, y0 - 7 * Math.sin(Math.PI * 3 * (x - 18) / 64)]); } return pts; };
+  const trace = (pts) => pts.slice(0, -1).map((p, i) => seg(p, pts[i + 1], 2.2));
+  // the traces' joints: a round cap at each sample, so the stroked line has no notches
+  const caps = (pts) => pts.map(([x, y]) => `M${f(x + 1.1)} ${f(y)}A1.1 1.1 0 1 0 ${f(x - 1.1)} ${f(y)}A1.1 1.1 0 1 0 ${f(x + 1.1)} ${f(y)}Z`);
+  const w1 = wave(38), w2 = wave(62);
+  const cursor = seg([50, 16], [50, 84], 1.6);
+  const ticks = [30, 70].map((x) => seg([x, 18.5], [x, 23], 1.4)).join('') + [30, 70].map((x) => seg([x, 77], [x, 81.5], 1.4)).join('');
+  return { fr, first: trace(w1).concat(caps(w1)), second: trace(w2).concat(caps(w2)), cursor, ticks };
+})();
+function kbArt(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${KB.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(KB.fr.field, k.field);
+  s += path(KB.cursor, c(k.frame));
+  KB.first.forEach((d) => { s += path(d, c(k.device)); });
+  KB.second.forEach((d) => { s += path(d, c(k.accent)); });
+  return s;
+}
+// KC, the long baseline (the surveyors): a lens's outline, a baseline with a station at each end, their two sightlines
+// meeting at one star.
+const KC_LENS = (() => {
+  // two arcs of radius R that meet exactly at the lens's tips (50, 4) and (50, 96); each tip is written once
+  const R = 47.7, cOff = Math.sqrt(R * R - 46 * 46), pts = [];
+  const a = Math.asin(46 / R);   // the half-angle of each arc
+  for (let k = 0; k < 24; k++) { const t = -a + 2 * a * k / 24; pts.push([50 - cOff + R * Math.cos(t), 50 + R * Math.sin(t)]); }
+  for (let k = 0; k < 24; k++) { const t = Math.PI - a + 2 * a * k / 24; pts.push([50 + cOff + R * Math.cos(t), 50 + R * Math.sin(t)]); }
+  return pts.map(([x, y]) => [+x.toFixed(2), +y.toFixed(2)]);
+})();
+const KCB = (() => {
+  const fr = insetFrame(KC_LENS, 5), S = [50, 25], A = [33, 71], Bp = [67, 71];
+  const base = seg([A[0], A[1] + 1.6], [Bp[0], Bp[1] + 1.6], 2.6);
+  const star = []; for (let i = 0; i < 8; i++) star.push(pol(i % 2 ? 1.9 : 6.2, -90 + i * 45, ...S));
+  // each piece its own path: overlapping pieces in one path cancel into holes where their windings differ
+  return { fr, base: [base, ...[A, Bp].map(([x, y]) => polyD([[x, y - 3.4], [x + 2.6, y + 1.6], [x - 2.6, y + 1.6]])), ...[41.5, 50, 58.5].map((x) => seg([x, 74], [x, 77], 1.2))],
+    sights: [seg(A, S, 1.5), seg(Bp, S, 1.5)], star: polyD(star) };
+})();
+function kcArtK(k, ink = false) {
+  const c = (x) => (ink ? '#000' : x);
+  let s = `<path d="${KCB.fr.frame}" fill="${c(k.frame)}" fill-rule="evenodd"/>`;
+  if (!ink) s += path(KCB.fr.field, k.field);
+  KCB.base.forEach((d) => { s += path(d, c(k.frame)); });
+  KCB.sights.forEach((d) => { s += path(d, c(k.device)); });
+  return s + path(KCB.star, c(k.accent));
+}
+const KELVANE_DESIGNS = [
+  {
+    id: 'kelvane-a', tag: 'KIA', faction: 'kelvane', name: 'KIA · The True Mark', outline: 'A meter\'s face', rec: true, own: true, pal: KELVANE, pieces: 3,
+    risk: 'A gauge with a needle is a common "speed" or "power" icon; the reference mark the needle rests on, and the fan of a real meter\'s face, keep it the Calibrators\' own. Ticks fill in below 40 px.',
+    draw(bg = 'dk') { return kaArt(KELVANE[bg]); },
+    ink() { return kaArt(KELVANE.dk, true); },
+    callouts: [
+      [14, 50, 'L', 'A meter\'s face', 'Tradition: the Calibrators. The fan-shaped face of the Institute\'s oldest instrument, the one every apprentice builds first.'],
+      [27, 40, 'L', 'The scale', 'Every division engraved, a long one each ten. Phosphor green: a reading anyone can check by eye.'],
+      [50, 65, 'L', 'The needle, at rest on the mark', 'Champagne, the instrument\'s own metal. Not a reading of anything outside: the moment of calibration, when the instrument agrees with the standard.'],
+      [50, 28, 'R', 'The true mark, amber', 'The reference every reading is checked against. The Institute keeps the master standards; this mark is them.'],
+      [62, 92, 'R', 'Pivoted at the base', 'The needle turns on one jewel bearing, the hub at its foot.'],
+    ],
+  },
+  {
+    id: 'kelvane-b', tag: 'KIB', faction: 'kelvane', name: 'KIB · The Repeated Trace', outline: 'A scope\'s screen', own: true, pal: KELVANE, pieces: 1,
+    risk: 'A sine wave on a screen reads as "signal" or "audio"; the second trace, identical, and the cursor that compares them, make it a claim about truth rather than about sound.',
+    draw(bg = 'dk') { return kbArt(KELVANE[bg]); },
+    ink() { return kbArt(KELVANE.dk, true); },
+    callouts: [
+      [10, 30, 'L', 'A scope\'s screen', 'Tradition: the Open Notebook. Results are shown, never told: on a screen, with the method beside them.'],
+      [20, 38, 'L', 'The first result, green', 'One laboratory\'s trace.'],
+      [20, 62, 'L', 'The same result, repeated, amber', 'Another laboratory, another instrument, the same trace. Only now is it true; a finding nobody has repeated is called a rumour.'],
+      [50, 16, 'R', 'The cursor', 'One line through both traces: the comparison. Every peak meets its twin on the same line.'],
+      [70, 21, 'R', 'Graticule ticks', 'The screen is ruled, so the comparison can be read, not guessed.'],
+    ],
+  },
+  {
+    id: 'kelvane-c', tag: 'KIC', faction: 'kelvane', name: 'KIC · The Long Baseline', outline: 'A lens', own: true, pal: KELVANE, pieces: 2,
+    risk: 'Two lines to a star can read as a compass or a mountain; the measured baseline with its stations and ticks keeps it a survey.',
+    draw(bg = 'dk') { return kcArtK(KELVANE[bg]); },
+    ink() { return kcArtK(KELVANE.dk, true); },
+    callouts: [
+      [8, 50, 'L', 'A lens', 'Tradition: the Long Baseline. The Institute began by looking: its first instrument was a lens.'],
+      [33, 72, 'L', 'Two stations, far apart', 'Observers at each end of a measured line. The longer the baseline, the truer the distance.'],
+      [50, 76, 'L', 'A measured baseline', 'Ruled in equal parts: the one length the whole sum rests on.'],
+      [42, 47, 'R', 'Two sightlines', 'Each station sights the same star. Where the lines meet is the answer: a distance, by geometry, that anyone can check.'],
+      [50, 25, 'R', 'The star, amber', 'The first star the Institute measured. Patience over a long baseline.'],
+    ],
+  },
+];
+
 const SSARITH_DESIGNS = [
   {
     id: 'ssarith-d', tag: 'SD', faction: 'ssarith', name: 'SD · The Bow Rites', outline: 'A pennon', rec: true, own: true, pal: SSARITH, pieces: 2,
@@ -1081,7 +1238,7 @@ function mark(d, px, bg) {
 
 const host = document.getElementById('concord-designs');
 const boxes = {};
-for (const d of [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS]) {
+for (const d of [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS, ...KELVANE_DESIGNS]) {
   const host = document.getElementById(d.faction === 'concord' || !d.faction ? 'concord-designs' : `${d.faction}-designs`);
   const el = document.createElement('article'); el.className = 'design'; el.id = d.id; el.dataset.id = d.id;
   el.innerHTML = `<header><h3>${d.name}</h3><span class="chip">${d.outline}</span>${d.rec ? '<span class="chip rec">Recommended</span>' : ''}<span class="chip picked" data-picked hidden>Your pick</span></header>
@@ -1227,7 +1384,7 @@ window.EMBLEM_PARTS_SSARITH = () => ({ key: 'SD', name: 'The Bow Rites', grid: 1
   wall: [SD.fr.inner, polyFrame(SD.PEN, 2.5, 7).inner], floor: [polyFrame(SD.PEN, 2.5, 7).inner],
   bows: SD.bows.map((q) => ({ limb: q.P.limb, string: q.P.string, shaft: q.P.shaft, vanes: q.P.vanes, vaneTips: q.P.vaneTips, head: q.P.head, trim: q.P.trim })) });
 // A sketch's silhouette as SVG, for the tools that measure it (tools/emblems/).
-window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
+window.EMBLEM_INK = (id) => { const d = [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS, ...KELVANE_DESIGNS].find((x) => x.id === id); return d ? (d.ink || d.draw).call(d) : null; };
 window.EMBLEM_CHECK = async () => {
   const out = [];
   for (const e of ENCLOSURES) {
@@ -1237,7 +1394,7 @@ window.EMBLEM_CHECK = async () => {
     const el = document.querySelector(`[data-joins-enc="${e.key}"]`);
     if (el) { el.classList.toggle('bad', !(r.ok && o.ok)); el.textContent = (o.ok ? 'One closed outline' : `Outline FAIL: ${o.parts} parts, ${o.holes} holes`) + '. ' + (r.ok ? 'Joins: ' : 'Joins FAIL: ') + `${r.pieces} piece${r.pieces === 1 ? '' : 's'} (designed ${r.expected})` + (Number.isFinite(r.nearest) ? `, parts ${r.nearest.toFixed(1)} apart` : ''); }
   }
-  for (const d of [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS]) {
+  for (const d of [...DESIGNS, ...KRAI_DESIGNS, ...SSARITH_DESIGNS, ...KELVANE_DESIGNS]) {
     const r = await measureJoins(d); out.push({ id: d.id, ...r });
     const el = document.querySelector(`#${d.id} [data-joins]`);
     if (el) {
@@ -1256,7 +1413,7 @@ try {
 
 // ---- one faction at a time (owner, 2026-11-04: "dont show everything on one page, we're on krai now, I dont need to see
 // both krai and concord in one page"): the switch shows one faction's sketches and its notes; the method, the rules and the
-// notes for every faction stay. Opens on the faction in work (the Ssarith Hunt), or the one in the address (#concord,
+// notes for every faction stay. Opens on the faction in work (the Kelvane Institute), or the one in the address (#concord,
 // #krai, #ssarith).
 function showFaction(fac) {
   document.querySelectorAll('[data-faction]').forEach((el) => { el.hidden = el.dataset.faction !== fac; });
@@ -1265,7 +1422,7 @@ function showFaction(fac) {
   try { history.replaceState(null, '', '#' + fac); } catch (e) { /* a sandboxed frame may refuse; the switch still works */ }
 }
 document.querySelectorAll('[data-show]').forEach((b) => b.addEventListener('click', () => showFaction(b.dataset.show)));
-showFaction(['#concord', '#krai'].includes(location.hash) ? location.hash.slice(1) : 'ssarith');
+showFaction(['#concord', '#krai', '#ssarith'].includes(location.hash) ? location.hash.slice(1) : 'kelvane');
 
 // ---- notes and picks, saved in the page's database (collection `notes`, one document per design) -------------------
 const boxesAll = document.querySelectorAll('[data-id]');
