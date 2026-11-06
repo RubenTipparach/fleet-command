@@ -231,10 +231,10 @@
    "name": "Arming",
    "side": "concord",
    "seed": 20261105,
-   "objective": "Destroy the two fast frigates: overload the torpedoes up close",
+   "objective": "Destroy the two fast frigates: proximity torpedoes for fast movers, overloaded lances up close",
    "say": [
     "Tactical",
-    "Two fast Krai frigates jinking in close. Overload the torpedoes inside 7 km."
+    "Two fast Krai frigates jinking in close. Arm the torpedoes for proximity and overload the lances inside 4 km."
    ],
    "ships": [
     {
@@ -509,10 +509,10 @@
    "name": "Arming",
    "side": "krai",
    "seed": 20261108,
-   "objective": "Destroy the two fast frigates: overload the disruptors up close",
+   "objective": "Destroy the two fast frigates: proximity torpedoes for fast movers, overloaded disruptors up close",
    "say": [
     "Tactical",
-    "Two fast Concord frigates jinking in close. Overload the disruptors inside 6 km."
+    "Two fast Concord frigates jinking in close. Arm the torpedo for proximity and overload the disruptors inside 6 km."
    ],
    "ships": [
     {

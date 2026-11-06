@@ -97,9 +97,22 @@ public static class DataLoader
             StrictJson? ov = o.ObjOrNull("overload");
             WeaponMode? over = null;
             if (ov != null) { over = Mode(ov); ov.Done(); }
+            // a proximity fuse: the normal range, charge and cost, its own damage, to-hit bonus, speed rule, reach and colour
+            StrictJson? px = o.ObjOrNull("proximity");
+            WeaponMode? prox = null;
+            if (px != null)
+            {
+                double bonus = px.Num("hit_bonus", 0), reach = px.Num("reach_deg", 0);
+                if (bonus is < 0 or > 1) throw new DataError($"{px.Where}.hit_bonus: between 0 and 1");
+                if (reach is < 0 or > 180) throw new DataError($"{px.Where}.reach_deg: between 0 and 180");
+                prox = normal with { Damage = NonNeg(px, "damage"), HitBonus = bonus, IgnoreSpeed = px.Bool("ignore_speed", false), ReachDeg = reach, Color = px.Str("color", "") is { Length: > 0 } pc ? pc : null };
+                px.Done();
+            }
+            string aim = o.Str("aim", "arc");
+            if (aim is not ("precise" or "arc")) throw new DataError($"{o.Where}.aim: precise or arc, not '{aim}'");
             double speed = o.Num("speed_m_s", 0);
             if (kind is "torpedo" or "bolt" or "missile" && speed <= 0) throw new DataError($"{o.Where}.speed_m_s: a {kind} needs a speed above 0");
-            d[id] = new WeaponDef(id, o.Str("name"), kind, normal, over, speed, o.Str("color"));
+            d[id] = new WeaponDef(id, o.Str("name"), kind, normal, over, speed, o.Str("color"), prox, aim, o.Bool("own_power", false));
             o.Done();
         }
         root.Done();
@@ -112,22 +125,31 @@ public static class DataLoader
     /// weapons as mounts (kinds chorus, quell, slug), so classes can carry them; every number is validated.</summary>
     public static SpecialWeapons LoadSpecials(StrictJson root, Dictionary<string, WeaponDef> weapons)
     {
-        void Fac(StrictJson o, string want) { if (o.Str("faction") != want) throw new DataError($"{o.Where}.faction: expected {want}"); o.Str("kind"); o.Str("aim"); }
+        // each one's faction, and how its hits choose where they land (precise or by arc, the weapon-targeting design)
+        string Fac(StrictJson o, string want)
+        {
+            if (o.Str("faction") != want) throw new DataError($"{o.Where}.faction: expected {want}");
+            o.Str("kind");
+            string aim = o.Str("aim");
+            if (aim is not ("precise" or "arc")) throw new DataError($"{o.Where}.aim: precise or arc, not '{aim}'");
+            return aim;
+        }
         StrictJson c = root.Obj("chorus"), q = root.Obj("quell"), f = root.Obj("forge"), h = root.Obj("charge");
-        Fac(c, "concord"); Fac(q, "concord"); Fac(f, "krai"); Fac(h, "krai");
+        string cAim = Fac(c, "concord"), qAim = Fac(q, "concord"), fAim = Fac(f, "krai");
+        Fac(h, "krai");
         // the chorus: a beam whose damage is its burn; its WeaponMode's damage is what one alone does over the burn
         StrictJson j = c.Obj("join");
         var chorus = new ChorusDef(Positive(c, "burn_s"), Positive(c, "dmg_per_s"), Positive(j, "range_km"), NonNeg(j, "per_joiner_x"), j.Int("max_joiners"), j.Str("spends"), c.Str("strand_color"), c.StrList("fits"));
         j.Done();
         c.Str("fires_from");
-        weapons["chorus"] = new WeaponDef("chorus", c.Str("name"), "chorus", new WeaponMode(Positive(c, "range_km"), Positive(c, "charge_s"), NonNeg(c, "cost_e"), chorus.DmgPerS * chorus.BurnS), null, 0, c.Str("color"));
+        weapons["chorus"] = new WeaponDef("chorus", c.Str("name"), "chorus", new WeaponMode(Positive(c, "range_km"), Positive(c, "charge_s"), NonNeg(c, "cost_e"), chorus.DmgPerS * chorus.BurnS), null, 0, c.Str("color"), null, cAim);
         c.Done();
         q.Str("fits");
         double shieldLeft = NonNeg(q, "shield_left_x");
         if (shieldLeft > 1) throw new DataError($"{q.Where}.shield_left_x: at most 1");
         var quell = new QuellDef(shieldLeft, Positive(q, "stun_s"), Positive(q, "reach_deg"));
         q.Bool("point_defence_hits", true);
-        weapons["quell"] = new WeaponDef("quell", q.Str("name"), "quell", new WeaponMode(Positive(q, "range_km"), Positive(q, "charge_s"), NonNeg(q, "cost_e"), NonNeg(q, "dmg")), null, Positive(q, "speed_m_s"), q.Str("color"));
+        weapons["quell"] = new WeaponDef("quell", q.Str("name"), "quell", new WeaponMode(Positive(q, "range_km"), Positive(q, "charge_s"), NonNeg(q, "cost_e"), NonNeg(q, "dmg")), null, Positive(q, "speed_m_s"), q.Str("color"), null, qAim);
         q.Done();
         f.Str("fits");
         StrictJson fb = f.Obj("burn"), fo = f.Obj("overload");
@@ -135,7 +157,7 @@ public static class DataLoader
         fb.Done();
         WeaponMode over = new(Positive(fo, "range_km"), Positive(fo, "charge_s"), NonNeg(fo, "cost_e"), NonNeg(fo, "dmg"));
         fo.Done();
-        weapons["forge"] = new WeaponDef("forge", f.Str("name"), "slug", new WeaponMode(Positive(f, "range_km"), Positive(f, "charge_s"), NonNeg(f, "cost_e"), NonNeg(f, "dmg")), over, Positive(f, "speed_m_s"), f.Str("color"));
+        weapons["forge"] = new WeaponDef("forge", f.Str("name"), "slug", new WeaponMode(Positive(f, "range_km"), Positive(f, "charge_s"), NonNeg(f, "cost_e"), NonNeg(f, "dmg")), over, Positive(f, "speed_m_s"), f.Str("color"), null, fAim);
         f.Done();
         h.Str("fits");
         var charge = new ChargeDef(h.Str("name"), "krai", Positive(h, "surge_s"), Positive(h, "speed_x"), Positive(h, "accel_x"), Positive(h, "turn_x"), Positive(h, "bow_shield_x"),
@@ -230,7 +252,7 @@ public static class DataLoader
         return d;
     }
 
-    private static readonly Dictionary<string, Stance> Stances = new() { ["attack"] = Stance.Attack, ["escort"] = Stance.Escort, ["hold"] = Stance.Hold };
+    private static readonly Dictionary<string, Stance> Stances = new() { ["attack"] = Stance.Attack, ["escort"] = Stance.Escort, ["hold"] = Stance.Hold, ["hunt"] = Stance.Hunt };
     private static readonly Dictionary<string, AiRange> Ranges = new() { ["close"] = AiRange.Close, ["mid"] = AiRange.Mid, ["long"] = AiRange.Long };
 
     /// <summary>The scenarios (data/battle/scenarios.json), in menu order. Ids are unique, every scenario's player side is a
@@ -271,7 +293,7 @@ public static class DataLoader
             int sideNo = s.Int("side");
             if (sideNo is not (0 or 1)) throw new DataError($"{s.Where}.side: 0 (the player's) or 1");
             string stance = s.Str("stance", "attack"), range = s.Str("range", "mid");
-            if (!Stances.TryGetValue(stance, out Stance st)) throw new DataError($"{s.Where}.stance: attack, escort or hold, not '{stance}'");
+            if (!Stances.TryGetValue(stance, out Stance st)) throw new DataError($"{s.Where}.stance: attack, escort, hold or hunt, not '{stance}'");
             if (!Ranges.TryGetValue(range, out AiRange rg)) throw new DataError($"{s.Where}.range: close, mid or long, not '{range}'");
             double hullFrac = s.Num("hull_frac", 1), shieldsFrac = s.Num("shields_frac", 1);
             if (hullFrac is <= 0 or > 1) throw new DataError($"{s.Where}.hull_frac: above 0 and at most 1");

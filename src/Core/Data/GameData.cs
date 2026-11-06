@@ -6,11 +6,17 @@ using System.Linq;
 
 namespace FleetCommand.Data;
 
-/// <summary>The figures a weapon fires with in one arming state (normal, or its overload).</summary>
-public sealed record WeaponMode(double RangeKm, double ChargeS, double CostE, double Damage);
+/// <summary>The figures a weapon fires with in one arming state (normal, its overload or its proximity fuse): HitBonus is
+/// added to the chance to hit, IgnoreSpeed drops the target's speed from it, ReachDeg (above 0) is the chopping block's
+/// reach either side of the facing struck in place of the strike's own, Color (when set) the shot's colour.</summary>
+public sealed record WeaponMode(double RangeKm, double ChargeS, double CostE, double Damage, double HitBonus = 0, bool IgnoreSpeed = false, double ReachDeg = 0, string? Color = null);
 
-public sealed record WeaponDef(string Id, string Name, string Kind, WeaponMode Normal, WeaponMode? Overload, double SpeedMS, string Color)
+/// <summary>A weapon type. Aim is "precise" (a hit can land on the aimed subsystem) or "arc" (anywhere the facing struck
+/// exposes); OwnPower charges it from its own generator, whatever weapons control's state (weapon-targeting design).</summary>
+public sealed record WeaponDef(string Id, string Name, string Kind, WeaponMode Normal, WeaponMode? Overload, double SpeedMS, string Color,
+    WeaponMode? Proximity = null, string Aim = "arc", bool OwnPower = false)
 {
+    public bool Precise => Aim == "precise";
     /// <summary>True for weapons whose shot flies (torpedo, bolt, missile, the quell and the forge slug) rather than landing at once.</summary>
     public bool Flies => Kind is "torpedo" or "bolt" or "missile" or "quell" or "slug";
     /// <summary>True for a direct-fire bolt (the disruptor): it flies, but along the live line from its mount to its target,
