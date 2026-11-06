@@ -44,3 +44,5 @@ Rerun after the v25 floods (half as many, twice the pool) and main merged in (ru
   a gap; the run reached the cruiser before its 25 minute limit
 - A bug found and fixed on the way: hung on its light, a glow lost the ship's scale (a light's global scale is 1) and drew
   tens of metres wide; it now hangs on the lamp's empty
+- On the merged code (main with PRs 42, 43 and 45): `PLAYTEST_SUITE 58/58 ok` headless; `scripts/run-tests.sh` 300 of 300, the
+  layout and skin parity checks passing for the concord, krai, ssarith and kelvane skins
