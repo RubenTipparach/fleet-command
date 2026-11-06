@@ -8,3 +8,5 @@
 - Shots: `docs/screenshots/mockups/battle-console-kelvane-*.png`.
 
 ## Publishes
+- Link: https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty
+- Version 1 (2026-11-06): the Kelvane Institute skin of source v83, with the live strip meters; parity 70 shots, 4,087 presses of 396 controls, every press matched the Concord's. Version id `1793930210-1831`.

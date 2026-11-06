@@ -39,7 +39,7 @@ account and every link here is updated.
 | 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
-| 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v1) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) | |
+| 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v1) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
