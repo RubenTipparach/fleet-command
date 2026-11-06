@@ -857,7 +857,7 @@ def ship_main(slugs, px, samples, panes_only=False):
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(SHIPS_OUT, f), "rb").read()).hexdigest()}
         print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)
     man["blender"] = bpy.app.version_string
-    man["webp_quality"] = 84   # the page's copy of the maps (tools/mockups/inline_data.py); the PNGs here stay exact
+    man["webp_quality"] = json.load(open(DETAIL)).get("webp_quality", 84)   # the page's copy of the maps (inline_data.py); the PNGs stay exact
     with open(mpath, "w") as fh:
         json.dump(man, fh, separators=(",", ":"), sort_keys=True)
         fh.write("\n")

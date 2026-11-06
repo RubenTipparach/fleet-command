@@ -2,6 +2,7 @@
   "_doc": "The Concord's hull texture designs (change hull-texture-designs, mockup 23): the Petrel frigate's detail layer and paint, built by tools/blender/hull_detail.py and baked by tools/blender/painted_bake.py --detail data/ships/concord/hull_detail.json --ship petrel_c1,... onto the Petrel's own UVs. The mesh is the game's model (tools/mockups/glb_hull_obj.py, in its export frame); the room plan (data/ships/concord/petrel_plan.json) sits 0.55 m forward of it (dz_m). The story (where the ship's rooms put its windows, sensors, vents, bay, gun and drives) is shared by every design; a design is its plating (detail), its paint (palette, plates, liveries) and how it wears. Each design names the tradition it comes from (CLAUDE.md section 1).",
   "faction": "concord",
   "out": "assets/ships/concord/baked",
+  "webp_quality": 72,
   "defaults": {
     "cut_style": "strake", "strake_w_m": [1.6, 3.2], "strake_h_m": [1.1, 2.6], "plate_l_m": [5.0, 14.0], "strake_merge": 0.3, "rings_z_m": [],
     "armour_t_m": 0.3, "sub_t_m": 0.12, "lift_m": 0.12, "gap_m": [0.12, 0.2], "trench_m": [0.5, 0.9], "trench_share": 0.06,
