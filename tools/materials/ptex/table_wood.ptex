@@ -1,0 +1,356 @@
+{
+ "connections": [
+  {
+   "from": "fbm2_0",
+   "from_port": 0,
+   "to": "shader_6",
+   "to_port": 0
+  },
+  {
+   "from": "fbm2_1",
+   "from_port": 0,
+   "to": "shader_6",
+   "to_port": 1
+  },
+  {
+   "from": "fbm2_2",
+   "from_port": 0,
+   "to": "shader_6",
+   "to_port": 2
+  },
+  {
+   "from": "fbm2_3",
+   "from_port": 0,
+   "to": "shader_6",
+   "to_port": 3
+  },
+  {
+   "from": "fbm2_4",
+   "from_port": 0,
+   "to": "shader_6",
+   "to_port": 4
+  },
+  {
+   "from": "fbm2_5",
+   "from_port": 0,
+   "to": "shader_6",
+   "to_port": 5
+  },
+  {
+   "from": "shader_6",
+   "from_port": 0,
+   "to": "normal_map_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_6",
+   "from_port": 0,
+   "to": "occlusion2_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_6",
+   "from_port": 1,
+   "to": "Material",
+   "to_port": 0
+  },
+  {
+   "from": "shader_6",
+   "from_port": 3,
+   "to": "Material",
+   "to_port": 1
+  },
+  {
+   "from": "shader_6",
+   "from_port": 2,
+   "to": "Material",
+   "to_port": 2
+  },
+  {
+   "from": "normal_map_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 4
+  },
+  {
+   "from": "occlusion2_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 5
+  },
+  {
+   "from": "shader_6",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 6
+  }
+ ],
+ "label": "Table Wood",
+ "name": "Material",
+ "node_position": {
+  "x": 0,
+  "y": 0
+ },
+ "nodes": [
+  {
+   "name": "fbm2_0",
+   "node_position": {
+    "x": 220,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 2,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 2,
+    "scale_y": 8
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_1",
+   "node_position": {
+    "x": 440,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 5,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.55,
+    "scale_x": 2,
+    "scale_y": 96
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_2",
+   "node_position": {
+    "x": 660,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 2,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 12,
+    "scale_y": 640
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_3",
+   "node_position": {
+    "x": 880,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 2,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 96,
+    "scale_y": 384
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_4",
+   "node_position": {
+    "x": 1100,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 1,
+    "scale_y": 24
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_5",
+   "node_position": {
+    "x": 1320,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 24,
+    "scale_y": 24
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "shader_6",
+   "node_position": {
+    "x": 1540,
+    "y": 0
+   },
+   "parameters": {},
+   "seed_int": 0,
+   "shader_model": {
+    "code": "",
+    "global": "",
+    "inputs": [
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "warp",
+      "longdesc": "warp",
+      "name": "warp",
+      "shortdesc": "warp",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "fine",
+      "longdesc": "fine",
+      "name": "fine",
+      "shortdesc": "fine",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "pore",
+      "longdesc": "pore",
+      "name": "pore",
+      "shortdesc": "pore",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "fleck",
+      "longdesc": "fleck",
+      "name": "fleck",
+      "shortdesc": "fleck",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "mineral",
+      "longdesc": "mineral",
+      "name": "mineral",
+      "shortdesc": "mineral",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "burnish",
+      "longdesc": "burnish",
+      "name": "burnish",
+      "shortdesc": "burnish",
+      "type": "f"
+     }
+    ],
+    "instance": "\nfloat hs_$name(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\nfloat sat_$name(float x) { return clamp(x, 0.0, 1.0); }\n\n// A board: t across it (0-1), du along it from its butt joint (0-1 a tile), its log's hash, and the distance (tile units,\n// metres) to the nearest seam or joint.\nvec4 board_$name(vec2 uv) {\n\tfloat rows = 4.0;\n\tfloat r = floor(uv.y * rows);\n\tfloat t = fract(uv.y * rows);\n\tfloat du = fract(uv.x - hs_$name(vec2(r, 5.0)));\n\tfloat d = min(min(t, 1.0 - t) / rows, min(du, 1.0 - du));\n\treturn vec4(t, du, hs_$name(vec2(r * 7.0 + 1.0, 3.0)), d);\n}\n// The ring field: where the board's face cuts its log's growth rings, in metres. The pith sits beside or under the board\n// (a flat-sawn board is cut from one side of the log), 0.09-0.15 m below its face; the face's depth in the log rises and\n// falls a few centimetres along the board, so the rings sweep up into arches where the pith is under the board and run\n// straight where it is beside it. Rings 4.5-7 mm apart, as a walnut grows. The warp, stretched along the grain, waves\n// the rings without blotting them. Returns the ring's phase, 0-1 within a year.\nfloat ring_$name(vec2 uv, vec4 b) {\n\tfloat pith = mix(-0.4, 1.4, hs_$name(vec2(b.z, 11.0)));\n\tfloat f = 145.0 + 75.0 * hs_$name(vec2(b.z, 13.0));\n\tfloat ph = hs_$name(vec2(b.z, 17.0));\n\tfloat dx = (b.x - pith) * 0.25;\n\tfloat depth = 0.09 + 0.06 * hs_$name(vec2(b.z, 19.0)) + 0.028 * sin(6.2831853 * (b.y + ph)) + 0.012 * sin(6.2831853 * (2.0 * b.y + ph * 3.0))\n\t\t+ 0.008 * ($warp(uv) - 0.5);\n\tfloat r = sqrt(dx * dx + depth * depth);\n\treturn fract(r * f + 0.55 * ($warp(uv) - 0.5) + 0.025 * ($fine(uv) - 0.5));\n}\n// a year's ring: light earlywood darkening slowly into the latewood, then the next year's earlywood starts at once\nfloat late_$name(float g) { return smoothstep(0.12, 0.93, g) * (1.0 - smoothstep(0.965, 1.0, g)); }\nfloat seam_$name(vec4 b) { return smoothstep(0.0004, 0.0013, b.w); }\nfloat pore_$name(vec2 uv) { return smoothstep(0.72, 0.9, $pore(uv)); }\nfloat height_$name(vec2 uv) {\n\tvec4 b = board_$name(uv);\n\tfloat g = ring_$name(uv, b);\n\treturn 0.62 + 0.05 * late_$name(g) - 0.12 * pore_$name(uv) + 0.02 * ($fine(uv) - 0.5) - 0.5 * (1.0 - seam_$name(b));\n}\nvec3 albedo_$name(vec2 uv) {\n\tvec4 b = board_$name(uv);\n\tfloat g = ring_$name(uv, b);\n\tvec3 early = vec3(0.39, 0.24, 0.13), late = vec3(0.21, 0.115, 0.06);\n\t// each board its own log: a little lighter or darker, a little redder or cooler\n\tfloat tone = 0.86 + 0.28 * hs_$name(vec2(b.z, 23.0));\n\tvec3 tint = mix(vec3(1.04, 0.98, 0.92), vec3(0.96, 1.0, 1.04), hs_$name(vec2(b.z, 29.0)));\n\tvec3 c = mix(early, late, pow(late_$name(g), 1.6)) * tone * tint;\n\tc *= 0.9 + 0.2 * $fine(uv);                                                    // the grain's long streaks\n\tc = mix(c, c * 1.4, 0.45 * smoothstep(0.82, 0.96, $fleck(uv)));                 // ray flecks, catching the light\n\tc *= 1.0 - 0.45 * pore_$name(uv);                                               // open pores, darker\n\tc *= 1.0 - 0.3 * smoothstep(0.68, 0.9, $mineral(uv)) * (0.5 + 0.5 * hs_$name(vec2(b.z, 31.0)));   // mineral streaks\n\tc = pow(c, vec3(1.06)) * vec3(1.05, 1.0, 0.92);                                 // the finish deepens and warms it\n\treturn mix(c * 0.35, c, seam_$name(b));\n}\nfloat rough_$name(vec2 uv) {\n\tvec4 b = board_$name(uv);\n\treturn 0.16 + 0.07 * $burnish(uv) + 0.24 * pore_$name(uv) + 0.35 * (1.0 - seam_$name(b));\n}\nfloat metal_$name(vec2 uv) { return 0.0; }\n",
+    "longdesc": "table wood",
+    "name": "table wood",
+    "outputs": [
+     {
+      "f": "sat_$name(height_$name($uv))",
+      "longdesc": "out0",
+      "shortdesc": "out0",
+      "type": "f"
+     },
+     {
+      "longdesc": "out1",
+      "rgba": "vec4(clamp(albedo_$name($uv), vec3(0.0), vec3(1.0)), 1.0)",
+      "shortdesc": "out1",
+      "type": "rgba"
+     },
+     {
+      "f": "sat_$name(rough_$name($uv))",
+      "longdesc": "out2",
+      "shortdesc": "out2",
+      "type": "f"
+     },
+     {
+      "f": "sat_$name(metal_$name($uv))",
+      "longdesc": "out3",
+      "shortdesc": "out3",
+      "type": "f"
+     }
+    ],
+    "parameters": [],
+    "shortdesc": "table wood"
+   },
+   "type": "shader"
+  },
+  {
+   "name": "normal_map_0",
+   "node_position": {
+    "x": 0,
+    "y": 160
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 0.0096,
+    "param2": 0,
+    "param4": 1
+   },
+   "type": "normal_map"
+  },
+  {
+   "name": "occlusion2_0",
+   "node_position": {
+    "x": 220,
+    "y": 160
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 6,
+    "param2": 1.32,
+    "param3": 1
+   },
+   "type": "occlusion2"
+  },
+  {
+   "export_paths": {},
+   "name": "Material",
+   "node_position": {
+    "x": 440,
+    "y": 160
+   },
+   "parameters": {
+    "albedo_color": {
+     "a": 1.0,
+     "b": 1,
+     "g": 1,
+     "r": 1,
+     "type": "Color"
+    },
+    "ao": 1.0,
+    "depth_scale": 0.0,
+    "emission_energy": 1.0,
+    "flags_transparent": false,
+    "metallic": 1.0,
+    "normal": 1.0,
+    "roughness": 1.0,
+    "size": 11,
+    "sss": 0.0
+   },
+   "type": "material"
+  }
+ ],
+ "parameters": {},
+ "type": "graph"
+}

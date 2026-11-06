@@ -358,28 +358,54 @@ public sealed class ShopTests
     private static Campaign.Campaign New() => Campaign.Campaign.New(CampaignTests.Camp, "concord");
 
     [Fact]
-    public void A_refit_costs_exactly_its_quote()
+    public void Fitting_is_free_and_takes_from_the_stores()
     {
         Campaign.Campaign c = New();
         CampShip s = c.S.Fleet[0];
-        int quote = c.RefitQuote(s, "primary", 0, "lance"), before = c.S.Credits;
+        string old = s.Fit["primary"][0]!;
+        Assert.NotNull(c.Refit(s, "primary", 0, "lance"));
+        int before = c.S.Credits;
+        Assert.Null(c.BuySystem("lance"));
+        Assert.Equal(before - c.SystemPrice("lance"), c.S.Credits);
+        before = c.S.Credits;
         Assert.Null(c.Refit(s, "primary", 0, "lance"));
-        Assert.Equal(before - quote, c.S.Credits);
-        Assert.True(c.RefitQuote(s, "primary", 0, null) < 0);
+        Assert.Equal(before, c.S.Credits);
+        Assert.Equal("lance", s.Fit["primary"][0]);
+        Assert.Equal(0, c.InStores("lance"));
+        Assert.Equal(1, c.InStores(old));
     }
 
     [Fact]
-    public void Empty_hardpoints_are_filled_with_stock_for_their_quote()
+    public void Removing_a_system_stows_it_and_selling_it_pays_the_yard_share()
+    {
+        Campaign.Campaign c = New();
+        CampShip s = c.S.Fleet[0];
+        string old = s.Fit["primary"][0]!;
+        int before = c.S.Credits;
+        Assert.Null(c.Refit(s, "primary", 0, null));
+        Assert.Equal(before, c.S.Credits);
+        Assert.Equal(1, c.InStores(old));
+        Assert.Null(c.SellSystem(old));
+        Assert.Equal(before + c.SystemSale(old), c.S.Credits);
+        Assert.Equal(0, c.InStores(old));
+        Assert.NotNull(c.SellSystem(old));
+    }
+
+    [Fact]
+    public void Empty_hardpoints_take_stock_from_the_stores_and_buy_the_rest()
     {
         Campaign.Campaign c = New();
         CampShip s = c.S.Fleet[0];
         c.Refit(s, "primary", 0, null);
         c.Refit(s, "shields", 0, null);
+        c.SellSystem(c.Data.Stock["shields"]);
         Assert.Equal(2, c.EmptyHardpoints(s).Count);
         int quote = c.StockQuote(s), before = c.S.Credits;
+        Assert.Equal(c.SystemPrice(c.Data.Stock["shields"]), quote);
         Assert.Null(c.FitStock(s));
         Assert.Empty(c.EmptyHardpoints(s));
         Assert.Equal(before - quote, c.S.Credits);
+        Assert.Empty(c.S.Stores);
     }
 
     [Fact]
@@ -395,19 +421,43 @@ public sealed class ShopTests
     }
 
     [Fact]
-    public void One_officer_serves_each_station()
+    public void Every_station_offers_three_experienced_officers_at_different_levels_and_five_cadets()
+    {
+        Campaign.Campaign c = New();
+        foreach (string st in c.Data.Officers.Stations)
+        {
+            var offer = c.OnOffer(st);
+            Assert.Equal(5, offer.Count(c.IsCadet));
+            var exp = offer.Where(o => !c.IsCadet(o)).ToList();
+            Assert.Equal(3, exp.Count);
+            Assert.Equal(3, exp.Select(o => o.Skill).Distinct().Count());
+        }
+        var names = c.S.OfficerPool.Select(o => o.Name).ToList();
+        Assert.Equal(names.Count, names.Distinct().Count());
+    }
+
+    [Fact]
+    public void A_station_keeps_its_list_after_a_hire_and_one_officer_serves_it()
     {
         Campaign.Campaign c = New();
         c.S.Credits = 100000;
-        Officer a = c.S.OfficerPool[0];
+        string st = c.Data.Officers.Stations[0];
+        Officer a = c.OnOffer(st).First(o => !c.IsCadet(o));
         Assert.Null(c.Hire(a));
-        var b = new Officer { Name = "Test Officer", Station = a.Station, Skill = "Green", Cost = 150 };
-        c.S.OfficerPool.Add(b);
+        Assert.Same(a, c.AtStation(st));
+        Assert.DoesNotContain(a, c.S.OfficerPool);
+        Assert.Equal(3, c.OnOffer(st).Count(o => !c.IsCadet(o)));
+        Assert.Equal(5, c.OnOffer(st).Count(c.IsCadet));
+        Officer b = c.OnOffer(st).First(c.IsCadet);
         Assert.Null(c.Hire(b));
-        Assert.Same(b, c.AtStation(a.Station));
+        Assert.Same(b, c.AtStation(st));
         Assert.Contains(a, c.S.OfficerPool);
+        Assert.Equal(3, c.OnOffer(st).Count(o => !c.IsCadet(o)));
+        Assert.Equal(5, c.OnOffer(st).Count(c.IsCadet));
         c.Dismiss(b);
-        Assert.Null(c.AtStation(a.Station));
+        Assert.Null(c.AtStation(st));
+        Assert.Contains(b, c.S.OfficerPool);
+        Assert.Equal(8, c.OnOffer(st).Count);
     }
 
     [Fact]
