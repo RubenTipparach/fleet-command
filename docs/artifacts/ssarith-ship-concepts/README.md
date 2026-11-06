@@ -110,3 +110,10 @@
   costs 18 % of the hull and knocks off the piece it lands on once the hull is at 60 % or less; at 0 % the core breaches.
   Fire: Break up breaches the ship in view (or every ship on the board). Windows and lamps go with their pieces. New shots:
   break_early, break_late, break_night, break_carrier, chunk. Page 14.2 MB.
+- 2026-11-05, cloud session (owner: "breaking system did NOT WORK - review existing systems and make sure our artifact uses
+  the same thing as existing artifacts", "it created a big empty hole, no chunks, no fill"): version 21, version id
+  `1793924511-6b9b`. The breakable hull is tessellated to 2.5 m edges before the shared fracture, as the Concord and Krai
+  lofts already are: the fracture gives each cell the triangles with a corner near it, so on the Hunt's few hundred big
+  triangles a cell in the middle of one got nothing and left a hole (and v20's flying pieces were missing their skin). Now
+  every cell holds 1,000 to 6,000 triangles; a new shot, chunk_carrier, is the owner's case. Compared beside the Krai
+  frigate's breakup.

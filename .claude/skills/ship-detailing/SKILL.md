@@ -228,6 +228,11 @@ nearest triangle, one byte a 1 m cell). The same field answers the script's insi
 the cut faces' shader (`bodyD`), so the cut and the face that closes it agree. Each cell carries the windows and lamps
 nearest its seed, and they stutter out when it breaks away. Look at a slice of the field before trusting it: the inside
 must be solid and match the silhouette from above and the side.
+**The breakable hull is tessellated** (`tessellate`, every edge 2.5 m or less, split at edge middles with its UVs, so the maps
+do not move). The shared fracture gives each cell the triangles with a corner near it, which a loft's small triangles
+always satisfy; a grown hull of a few hundred big triangles does not, and a cell in the middle of one is left with nothing,
+a hole the other cells discard around (owner, 2026-11-05: "it created a big empty hole, no chunks, no fill"). Check that
+every cell holds triangles (`window.__huntCells()` on the page) before looking at a break.
 
 | The carrier's bays | Night with the rooms lit | A torpedo's work |
 |---|---|---|
@@ -259,6 +264,7 @@ Look at the maps and at the ship close up and from the board, in every look and 
 | A light strip glows metres wide | The keel's whole flat bottom is the strip face | A dark channel with a lit line down its middle |
 | The logo cannot be seen | Its field colour matches the khaki plates | Paint the emblem's own plate colour as a patch under it |
 | The light map is speckled | The lamps' and windows' faces sampled as lights | More samples (32), a one-pixel blur |
+| A break leaves an empty hole, pieces look like hollow cages | The hull's triangles are too big for the fracture: cells in the middle of one get none of it | Tessellate the breakable hull to 2.5 m edges |
 | Window and bay borders ragged, rooms speckled | The panes read from a baked map a few texels across | Draw each pane as its own quad from its data (`paneMesh`) |
 | Rooms stippled, lit and dark pixels mixed | A per-vertex kind like 8.0 interpolates to 7.9999 and floors to the wrong kind | Round it in the shader (`floor(vKind + 0.5)`) |
 | The hull shader will not compile on a damage page | Your uniform has a name the shared GLSL already declares (`uLight`) | Name yours apart (`uHullLight`) |

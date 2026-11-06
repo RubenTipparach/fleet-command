@@ -79,7 +79,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v20. <code>ssarith-ship-concepts</code>. Your four picks and the carrier: rooms behind clean-framed windows, hangars behind the bays, battle damage, and hulls that break apart. Pick a weapon and click a ship, or Break up the one in view.</p>
+    <p class="sub">Mockup 12, v21. <code>ssarith-ship-concepts</code>. Your four picks and the carrier: rooms behind clean-framed windows, hangars behind the bays, battle damage, and hulls that break apart. Pick a weapon and click a ship, or Break up the one in view.</p>
   </header>
   <div class="scroll">
     <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
@@ -1809,6 +1809,20 @@ function sdfOf(f) { const bytes = Uint8Array.from(atob(f.data), (c) => c.charCod
   tex.format = THREE.RedFormat; tex.type = THREE.UnsignedByteType; tex.minFilter = tex.magFilter = THREE.LinearFilter; tex.unpackAlignment = 1; tex.needsUpdate = true;
   return { lo: f.lo, hi: f.hi, dims: f.dims, scale: f.scale, bytes, tex }; }
 const HB = {}, MAPS = {};
+// The hull as the breakup needs it: every triangle split until no edge is longer than maxM (owner, 2026-11-05: "it created a
+// big empty hole, no chunks, no fill"). The shared fracture (lib/ship-break.js subsetGeo) gives each cell the triangles that
+// have a corner near it, which holds for the Concord and Krai lofts (a triangle every 2 m or so) but not for a grown hull of
+// a few hundred big triangles: a cell in the middle of one got nothing, and the cells round it discard it, so it was a hole.
+// Split at edge middles, position and UV together, so the maps stay where they were.
+function tessellate(pos, uv, maxM) {
+  const P = [], T = [], stack = [];
+  for (let t = 0; t < pos.length / 9; t++) stack.push([0, 1, 2].map((k) => [pos.slice(t * 9 + k * 3, t * 9 + k * 3 + 3), uv.slice(t * 6 + k * 2, t * 6 + k * 2 + 2)]));
+  const d = (a, b) => Math.hypot(a[0][0] - b[0][0], a[0][1] - b[0][1], a[0][2] - b[0][2]);
+  const mid = (a, b) => [a[0].map((v, k) => (v + b[0][k]) / 2), a[1].map((v, k) => (v + b[1][k]) / 2)];
+  while (stack.length) { const [a, b, c] = stack.pop(), e = [d(a, b), d(b, c), d(c, a)], m = Math.max(...e);
+    if (m <= maxM) { for (const v of [a, b, c]) { P.push(...v[0]); T.push(...v[1]); } continue; }
+    if (m === e[0]) { const q = mid(a, b); stack.push([a, q, c], [q, b, c]); } else if (m === e[1]) { const q = mid(b, c); stack.push([a, b, q], [a, q, c]); } else { const q = mid(c, a); stack.push([a, b, q], [q, b, c]); } }
+  return { pos: P, uv: T }; }
 // A piece that can break away (the shared piece of lib/ship-break.js): a pivot at its middle, so it tumbles about itself.
 function hbPiece(ship, key, center, sys) { const pivot = new THREE.Group(), inner = new THREE.Group(); pivot.position.copy(center); inner.position.copy(center).negate(); pivot.add(inner); ship.root.add(pivot);
   const P = { id: key, pivot, inner, center: center.clone(), vel: V3(), spin: V3(), detached: false, lightLeft: 1, mats: [], cuts: [], caps: [], sys }; ship.pieces[key] = P; return P; }
@@ -1839,9 +1853,9 @@ function buildHunt(i) {
 if (BK) for (const [slug, sh] of Object.entries(BK.ships)) { const i = BLOCKS.findIndex((b) => b.n === sh.n); if (i < 0) continue;
   const tex = (k, srgb) => { const pc = BK.pieces[slug + '_' + k]; // a map a ship has not been baked with yet is black
     const t = pc ? ptex2(pc.data) : new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1); if (!pc) t.needsUpdate = true; if (srgb) t.encoding = THREE.sRGBEncoding; return t; };
-  const geo = new THREE.BufferGeometry(), n = sh.mesh.pos.length / 3;
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(sh.mesh.pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(sh.mesh.uv, 2));
-  geo.setAttribute('uv2', new THREE.Float32BufferAttribute(sh.mesh.uv, 2)); geo.setIndex(Array.from({ length: n }, (_, k) => k));
+  const fine = tessellate(sh.mesh.pos, sh.mesh.uv, 2.5), geo = new THREE.BufferGeometry(), n = fine.pos.length / 3;
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(fine.pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(fine.uv, 2));
+  geo.setAttribute('uv2', new THREE.Float32BufferAttribute(fine.uv, 2)); geo.setIndex(Array.from({ length: n }, (_, k) => k));
   geo.computeVertexNormals(); geo.computeTangents();
   MAPS[i] = { sh, slug, geo, albedo: tex('albedo', true), base: tex('base', true), em: tex('emit', true), nm: tex('normal'), lt: tex('light'), orm: tex('orm'), g: sh.light_gamma || 1.6, sdf: sdfOf(sh.sdf) };
   buildHunt(i); }
@@ -1962,6 +1976,10 @@ resize(); setView('board'); requestAnimationFrame(loop);
 
 // Named shots for tools/mockups/shoot.mjs.
 const shot = (lk, nt, fn) => () => { window.MOCKUP_T = 0.03; setLook(lk); setNight(nt); fn(); sync(); blink(0.03); BRK.uploadWires(); renderer.render(scene, camera); labels(); };
+// For a check from outside: how many triangles each cell holds, and how many cut faces it has.
+window.__huntCells = () => Object.values(HB).map((sh) => ({ ship: MAPS[sh.i].slug, tris: MAPS[sh.i].geo.index.count / 3,
+  cells: sh.bodies[0].frags.map((f) => f.inner.children.filter((o) => o.isMesh && o.material.userData && o.material.userData.u).reduce((t, o) => t + o.geometry.index.count / 3, 0)),
+  caps: sh.bodies[0].frags.map((f) => f.caps.length) }));
 window.MOCKUP_SHOTS = { board: shot('painted', false, () => setView('board')), board_pbr: shot('pbr', false, () => setView('board')), board_night: shot('pbr', true, () => setView('board')),
   board_clay: shot('clay', false, () => setView('board')), board_top: shot('pbr', false, () => setView('top')), board_ahead: shot('painted', false, () => setView('side')) };
 BLOCKS.forEach((b, i) => { const k = 'b' + String(b.n).padStart(2, '0');
@@ -1988,6 +2006,7 @@ Object.assign(window.MOCKUP_SHOTS, {
   break_late: shot('pbr', false, () => { repair(); fxSeed = 977; focusOn(IDX(9)); breakFocus(); for (let k = 0; k < 150; k++) stepDamage(1 / 30); }),
   break_night: shot('pbr', true, () => { repair(); fxSeed = 977; focusOn(IDX(9)); breakFocus(); for (let k = 0; k < 90; k++) stepDamage(1 / 30); }),
   break_carrier: shot('pbr', false, () => { repair(); fxSeed = 977; focusOn(IDX(13)); breakFocus(); for (let k = 0; k < 80; k++) stepDamage(1 / 30); }),
+  chunk_carrier: shot('pbr', false, () => { repair(); fxSeed = 977; strike(IDX(13), [[0, -20, true], [-6, 20, true], [8, -50, true], [10, 25, true], [-10, -60, true]]); for (let k = 0; k < 40; k++) stepDamage(1 / 30); closeOn(IDX(13), [-60, 70, 70], [0, 0, -5]); }),
   chunk: shot('pbr', false, () => { repair(); fxSeed = 977; strike(IDX(1), [[0, -10, true], [4, -24, true], [-3, 4, true], [2, -30, true]]); for (let k = 0; k < 45; k++) stepDamage(1 / 30); focusOn(IDX(1)); }),
 });
 window.MOCKUP_SCENE = scene;
