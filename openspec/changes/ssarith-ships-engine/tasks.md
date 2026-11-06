@@ -5,7 +5,7 @@
 - [x] 1.1 The exporter's Hunt branch: glbs, manifest entries naming the baked maps, the fields as `.bin`
 - [x] 1.2 `baked_hull.gdshader`; `ShipSkin` and `ShipDamage` take it; `cutface.gdshader` by a signed distance field
 - [x] 1.3 Six Hunt classes, The Hunt from each side, the Hunt on both damage ranges; the scenario test widened to every faction with approved ships
-- [ ] 1.4 Stills of The Hunt and the damage range in the running game, looked at beside the mockup's shots
+- [x] 1.4 Stills of The Hunt, Hunt wrecks and the breakup in the running game (docs/playtests/2026-11-06-ssarith-hunt.md), and the suite 14 of 14
 
 ## 2. Still different from mockup 12 (docs/design/mockup-sync.md)
 
