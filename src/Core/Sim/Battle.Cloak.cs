@@ -34,7 +34,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships)
         {
             s.CloakCostE = Cs.Cloak.CostE;
-            s.Marines = Cs.Security.Marines.GetValueOrDefault(s.Class.Id);
+            // the marines aboard are the class's crew (Battle.Transport sets them first); a scene may set them here
             if (Scenario.Ships[s.Order].Cloak is not { } c) continue;
             if (c.Cloaked && Fitted(s)) { s.CloakOn = true; s.CloakK = 1; }
             s.AiCloak = c.AiCloak;

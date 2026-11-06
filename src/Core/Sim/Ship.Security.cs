@@ -44,8 +44,6 @@ public sealed class SecurityState
 
 public sealed partial class Ship
 {
-    /// <summary>The marines aboard.</summary>
-    public int Marines;
     /// <summary>The security aboard (teams, boarders, fights); made for the ship you command once it has a deck plan.</summary>
     public SecurityState? Sec;
     /// <summary>A boarding captain: sends squads aboard the ship it fights whenever it can (Battle.Security.cs).</summary>

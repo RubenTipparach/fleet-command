@@ -39,8 +39,9 @@ public sealed partial class Battle
 
     public void AllStop() { if (Player.Alive) { Player.Engaged = false; Player.VOrder = 0; Say("Helm", "All stop."); } }
 
-    /// <summary>What the helm's manoeuvres steer toward: the locked enemy (friendly destinations come with transport).</summary>
-    public Ship? NavTarget(Ship s) => TargetOf(s);
+    /// <summary>What the helm's manoeuvres steer toward (owner, 2026-11-03: "nav buttons not working when targeting
+    /// friendly"): the locked ship, enemy or friendly, or else the planet selected for transport, as a still point.</summary>
+    public Ship? NavTarget(Ship s) => TargetOf(s) ?? (s == Player ? PlanetNav() : null);
 
     /// <summary>An order toward the target: intercept, trail, hold_range, orbit or hit_run. The lit order again, or
     /// "free", returns to free heading.</summary>
@@ -244,6 +245,7 @@ public sealed partial class Battle
     {
         Ship? s = ShipById(id);
         if (s is not { Alive: true } || s.Side != 0 || s == Player) return;
+        if (PilotNeeded(s)) { Say("Helm", $"Cannot take command of the {s.Name}: pilot needed."); return; }
         Player.ThinkT = 0;
         Player.Rule = TargetRule.Mine;   // the ship left behind follows its new captain's target (the mockup's command)
         Player = s;

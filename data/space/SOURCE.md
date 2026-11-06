@@ -66,6 +66,11 @@ Eight more (2026-11-06), one for each of the tractor, mines and craft test scene
 | `cloak_bulkhead` | Copper and teal clouds along a hard dark seam (the Concord's Repel boarders scene) |
 | `cloak_alarm_red` | A low scarlet glow under violet dust (the Krai's Repel boarders scene) |
 
+Ten more for the comms and transport test scenes (`data/battle/scenes/comms.json`), one a scene and side, prefixed `comms_`:
+`comms_harbour_dusk`, `comms_amber_shoals`, `comms_cobalt_drift`, `comms_saffron_lanes`, `comms_jade_mist`,
+`comms_garnet_veil`, `comms_frost_lantern`, `comms_copper_haze`, `comms_orchid_reef` and `comms_storm_slate` (their looks are in
+`tools/space/nebula_recipes.py`).
+
 `docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
 bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the
 hulls reflect the nebula and take half their ambient light from it (owner, 2026-11-04: "reflection probes ... but dont

@@ -98,6 +98,7 @@ public sealed partial class Battle
         ReactorSetup();
         SystemsSetup();
         TractorSetup();
+        CommsSetup();   // the crews first: the marines aboard, which the security teams are formed from
         CloakSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
@@ -195,6 +196,13 @@ public sealed partial class Battle
     /// <summary>The scene ends systems have registered: each is checked after every step, before the default end (the
     /// last enemy gone, or the fleet), and one that returns true has ended the battle (set Over).</summary>
     private readonly List<Func<bool>> _ends = new();
+    /// <summary>Comms and transport's set-up: crews, pads, holds and planets from the scenario (Battle.Transport).</summary>
+    partial void CommsSetup();
+    /// <summary>An AI captain's thinking taken over by a system (a prize waiting for its pilot, a capture order); handled
+    /// skips the rest of Think.</summary>
+    partial void ThinkHook(Ship s, ref bool handled);
+    /// <summary>A test scene's goal (Battle.Transport): ended skips the battle's usual end by its enemies.</summary>
+    partial void ObjectivesStep(ref bool ended);
 
     /// <summary>One fixed step of the whole battle.</summary>
     public void Step()
@@ -232,6 +240,10 @@ public sealed partial class Battle
             }
         // a scene's own end, registered by the system whose objective it is (a ship disabled, not destroyed): checked first
         foreach (Func<bool> end in _ends) if (end()) return;
+        // a test scene with a goal ends on it, whatever enemies are left
+        bool goalEnds = false;
+        ObjectivesStep(ref goalEnds);
+        if (goalEnds) return;
         // a damage range never ends: its last ship can be broken up and the range repaired
         if (Scenario.DamageRange || Over != null) return;
         if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
@@ -359,6 +371,9 @@ public sealed partial class Battle
 
     private void Think(Ship s)
     {
+        bool handled = false;
+        ThinkHook(s, ref handled);
+        if (handled) return;
         // the enemies it can see (Battle.Cloak.cs); seeing none, it sweeps for one and heads where it last saw one
         Ship[] foes = SeenFoes(s).ToArray();
         if (foes.Length == 0) { NoFoeSeen(s); return; }

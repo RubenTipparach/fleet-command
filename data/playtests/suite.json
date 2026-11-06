@@ -48,6 +48,16 @@
   { "script": "nebula", "play": "krai_nebula" },
   { "script": "repel", "play": "concord_repel" },
   { "script": "repel", "play": "krai_repel" },
+  { "script": "boarding", "play": "concord_boarding" },
+  { "script": "boarding", "play": "krai_boarding" },
+  { "script": "relief", "play": "concord_relief" },
+  { "script": "relief", "play": "krai_relief" },
+  { "script": "vip", "play": "concord_vip" },
+  { "script": "vip", "play": "krai_vip" },
+  { "script": "distress", "play": "concord_distress" },
+  { "script": "distress", "play": "krai_distress" },
+  { "script": "assault", "play": "concord_assault" },
+  { "script": "assault", "play": "krai_assault" },
   { "script": "campaign", "play": "campaign" }
  ]
 }

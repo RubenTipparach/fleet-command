@@ -21,6 +21,10 @@ public sealed partial class SystemsDef
         return d;
     }
 
+    // a number with a default that must be above 0, or 0 or more (the packages' readers share these)
+    private static double Pos(StrictJson o, string k, double d) { double v = o.Num(k, d); if (v <= 0) throw new DataError($"{o.Where}.{k}: must be above 0"); return v; }
+    private static double Non(StrictJson o, string k, double d) { double v = o.Num(k, d); if (v < 0) throw new DataError($"{o.Where}.{k}: must be 0 or more"); return v; }
+
     partial void LoadComms(StrictJson o);
     partial void LoadTractor(StrictJson o);
     partial void LoadReactor(StrictJson o);

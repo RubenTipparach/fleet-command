@@ -35,7 +35,8 @@ public class ScenarioTests
         {
             Assert.Equal(s.Side, s.Ships[0].Faction);
             Assert.Equal(0, s.Ships[0].Side);
-            Assert.Contains(s.Ships, o => o.Side == 1);
+            // a test scene with a goal (a delivery, a ship in distress) may have no enemy at all
+            if (s.Goal == null) Assert.Contains(s.Ships, o => o.Side == 1);
         }
         Assert.Equal(sides["concord"].Select(s => s.Name), sides["krai"].Select(s => s.Name));
     }
@@ -55,7 +56,9 @@ public class ScenarioTests
                 if (allied && o.Side == 1 && o.Faction is "kethran" or "vos") continue;
                 if (s.Name == "Four races" && o.Faction == "kelvane" && o.Class == "kelvane_rv") continue;
                 Assert.True(o.Faction is "concord" or "krai" or "ssarith", $"{s.Id}: {o.Id} is of the {o.Faction}");
-                Assert.True(TestData.Data.Classes[o.Class].Model != null, $"{s.Id}: {o.Id} ({o.Class}) would be a stand-in");
+                // a station is drawn as the mockup's station (its stationModel: scenes/standins/station.tscn), not a ship's stand-in
+                ShipClass c = TestData.Data.Classes[o.Class];
+                Assert.True(c.Model != null || c.Shape == "station", $"{s.Id}: {o.Id} ({o.Class}) would be a stand-in");
             }
     }
 

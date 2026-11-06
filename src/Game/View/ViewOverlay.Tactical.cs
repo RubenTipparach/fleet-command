@@ -97,7 +97,8 @@ public sealed partial class ViewOverlay
         {
             LogLine q = list[i];
             int sec = (int)q.T;
-            f.DrawRich(this, new[] { ($"{sec / 60:00}:{sec % 60:00}  {q.Who}: ", C.Lilac), (q.Text, C.Text) }, lx, r.Position.Y + 56 + i * 26, 18, lw);
+            bool warn = Battle.IsWarning(q);   // a refusal or a warning in the caution colour (the mockup's red lines)
+            f.DrawRich(this, new[] { ($"{sec / 60:00}:{sec % 60:00}  {q.Who}: ", warn ? C.Caution : C.Lilac), (q.Text, warn ? C.Caution : C.Text) }, lx, r.Position.Y + 56 + i * 26, 18, lw);
         }
     }
 }

@@ -89,6 +89,8 @@ public class SecurityTests
         Ship v = b.ShipById("vekk")!;
         int f = Rules.FacingFrom(b.Player, v.X, v.Z);
         Assert.True(b.CanBoard(v, b.Player));
+        // the facing toward it raised, with the shields on (lowered shields hold nothing: Battle.Transport's FacingDown)
+        b.Player.ShieldsUp = true;
         b.Player.Shields[f] = 10;
         Assert.False(b.CanBoard(v, b.Player));
     }

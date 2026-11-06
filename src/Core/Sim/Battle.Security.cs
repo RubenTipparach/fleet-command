@@ -5,8 +5,8 @@
 // walks the corridors or is beamed to a room; a team and a squad of boarders close on one deck fight in volleys
 // (Rules.Volley); a team that has held its room long enough springs an ambush; boarders unopposed at their goal sabotage
 // its system, and holding the bridge takes the ship. A boarding captain sends squads whenever it can board.
-// The transporter's pads are the comms package's: until it is in, SecurityUsePad leaves a beam always ready (a pad
-// is always charged), and boarding needs only transporter range and the facing toward the boarder down.
+// A boarding squad beams through one of the transporter's pads, and boards when the transporter can reach (Battle.Transport:
+// UsePad and CanBoard, one rule for every beam and every boarding party).
 using System;
 using System.Linq;
 using FleetCommand.Data;
@@ -16,17 +16,6 @@ namespace FleetCommand.Sim;
 public sealed partial class Battle
 {
     private SecurityRules Sr => Cs.Security;
-
-    /// <summary>Uses one of a ship's transporter pads; <paramref name="used"/> comes back false when none is charged. The
-    /// comms package's pads fill this in; without it every beam finds a pad.</summary>
-    partial void SecurityUsePad(Ship s, ref bool used);
-
-    private bool UsePad(Ship s)
-    {
-        bool ok = true;
-        SecurityUsePad(s, ref ok);
-        return ok;
-    }
 
     /// <summary>Makes a ship's security (its marines in teams at their posts) once its class has a deck plan.</summary>
     public void EnsureSecurity(Ship s)
@@ -151,10 +140,6 @@ public sealed partial class Battle
             if (s == Player) Say("Security", $"Boarders sabotaging {room.Name.ToLowerInvariant()}: {k} damaged.");
         }
     }
-
-    /// <summary>Whether s can send boarders onto t: an enemy within transporter range with its facing toward s down.</summary>
-    public bool CanBoard(Ship s, Ship t) =>
-        t.Alive && s.Alive && t.Side != s.Side && Rules.DistKm(s, t) <= Sr.BoardRangeKm && t.Shields[Rules.FacingFrom(t, s.X, s.Z)] <= Sr.ShieldDownHp;
 
     // A boarding captain sends a squad aboard the ship you command whenever it can.
     private void ThinkBoard(Ship s, Ship t)

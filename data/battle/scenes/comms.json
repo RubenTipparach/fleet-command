@@ -1,4 +1,772 @@
 {
- "_doc": "The battle console mockup's test scenes for comms, transport and boarding, in the format of data/battle/scenarios.json, appended to its list in menu order.",
- "scenarios": []
+ "_doc": "The battle console mockup's test scenes for comms, transport and boarding (its SCENES boarding, delivery as Relief, vip, distress and assault), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides: the Concord against the Krai Warhost and the Krai against the Concord, with the approved ships (the troop ship is the Concord Pelican; a Krai frigate carries the Krai's troops, as the mockup's Krai line maps its troop ship) and the mockup's starbase. Optional keys (src/Core/Data/Scenes.Comms.cs): armed (false: the player's ship carries no weapons, the mockup's armed: false), goal (taken: a ship joined to the player's side; relieved: a ship or planet given all it asked for), planets, and each ship's setup (marines, team, hold, needs, vip, capture, need_marines, distress, shields_down, power_e, sys, mounts_hp). Positions in metres.",
+ "scenarios": [
+  {
+   "id": "concord_boarding",
+   "sky": "comms_storm_slate",
+   "name": "Boarding",
+   "side": "concord",
+   "seed": 20261111,
+   "objective": "Board the Vekk and take it (raid its systems first, if you like)",
+   "say": [
+    "Tactical",
+    "The Vekk is crippled, shields down. Raid its systems, or board and take it."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "vekk"
+   },
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "weapons": 2,
+       "transport": 8
+      }
+     }
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Raidmaster Ossk",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 400,
+     "z_m": -1100,
+     "heading_deg": 200,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hull_frac": 0.1,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 3,
+      "shields_down": true,
+      "sys": {
+       "engines": 0
+      },
+      "mounts_hp": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "krai_boarding",
+   "sky": "comms_copper_haze",
+   "name": "Boarding",
+   "side": "krai",
+   "seed": 20261111,
+   "objective": "Board the Meridian and take it (raid its systems first, if you like)",
+   "say": [
+    "Tactical",
+    "The Meridian is crippled, shields down. Raid its systems, or board and take it."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "meridian"
+   },
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "weapons": 2,
+       "transport": 8
+      }
+     }
+    },
+    {
+     "id": "meridian",
+     "name": "Meridian",
+     "captain": "Capt. Osei",
+     "class": "dd",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 400,
+     "z_m": -1100,
+     "heading_deg": 200,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hull_frac": 0.1,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 3,
+      "shields_down": true,
+      "sys": {
+       "engines": 0
+      },
+      "mounts_hp": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "concord_relief",
+   "sky": "comms_harbour_dusk",
+   "name": "Relief",
+   "side": "concord",
+   "seed": 20261112,
+   "objective": "Take rations and medicine from Harbor Nine and beam them down to Tessaly",
+   "say": [
+    "Comms",
+    "Harbor Nine: Tessaly needs ten rations and five medicine. Select us, beam them aboard, then select Tessaly and take them down."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "relieved",
+    "id": "tessaly"
+   },
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "hold": {
+       "goods": 4
+      }
+     }
+    },
+    {
+     "id": "harbor",
+     "name": "Harbor Nine",
+     "captain": "Stationmaster Pell",
+     "class": "sb",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 600,
+     "z_m": -900,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "hold": {
+       "rations": 20,
+       "medicine": 10,
+       "parts": 10,
+       "goods": 30
+      }
+     }
+    }
+   ],
+   "planets": [
+    {
+     "id": "tessaly",
+     "name": "Tessaly",
+     "x_m": 5000,
+     "z_m": -15000,
+     "radius_m": 1600,
+     "color": "#4f7fa8",
+     "needs": {
+      "rations": 10,
+      "medicine": 5
+     }
+    }
+   ],
+   "sun_energy": 1.0
+  },
+  {
+   "id": "krai_relief",
+   "sky": "comms_amber_shoals",
+   "name": "Relief",
+   "side": "krai",
+   "seed": 20261112,
+   "objective": "Take rations and medicine from Ironmaw Depot and beam them down to Tessaly",
+   "say": [
+    "Comms",
+    "Ironmaw Depot: Tessaly needs ten rations and five medicine. Select us, beam them aboard, then select Tessaly and take them down."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "relieved",
+    "id": "tessaly"
+   },
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "hold": {
+       "goods": 4
+      }
+     }
+    },
+    {
+     "id": "ironmaw",
+     "name": "Ironmaw Depot",
+     "captain": "Depot-master Grell",
+     "class": "sb",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 600,
+     "z_m": -900,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "hold": {
+       "rations": 20,
+       "medicine": 10,
+       "parts": 10,
+       "goods": 30
+      }
+     }
+    }
+   ],
+   "planets": [
+    {
+     "id": "tessaly",
+     "name": "Tessaly",
+     "x_m": 5000,
+     "z_m": -15000,
+     "radius_m": 1600,
+     "color": "#4f7fa8",
+     "needs": {
+      "rations": 10,
+      "medicine": 5
+     }
+    }
+   ],
+   "sun_energy": 1.0
+  },
+  {
+   "id": "concord_vip",
+   "sky": "comms_orchid_reef",
+   "name": "VIP",
+   "side": "concord",
+   "seed": 20261113,
+   "objective": "Beam the envoy to the Corrin and see Varn Outpost taken",
+   "say": [
+    "Comms",
+    "Envoy Saros is aboard. Beam him to the Corrin; it takes him and its marines to Varn Outpost, whose shields have failed."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "varn"
+   },
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "vip": "Envoy Saros"
+     }
+    },
+    {
+     "id": "corrin",
+     "name": "Corrin",
+     "captain": "Major Vale",
+     "class": "tr",
+     "faction": "concord",
+     "side": 0,
+     "x_m": -700,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "capture": "varn"
+     }
+    },
+    {
+     "id": "varn",
+     "name": "Varn Outpost",
+     "captain": "Castellan Dorr",
+     "class": "sb",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 1000,
+     "z_m": -7000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "hold_fire": true,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 8,
+      "shields_down": true,
+      "mounts_hp": [
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "krai_vip",
+   "sky": "comms_garnet_veil",
+   "name": "VIP",
+   "side": "krai",
+   "seed": 20261113,
+   "objective": "Beam the speaker to the Ruhn and see Calder Outpost taken",
+   "say": [
+    "Comms",
+    "Speaker Vouth is aboard. Beam him to the Ruhn; it takes him and its marines to Calder Outpost, whose shields have failed."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "calder"
+   },
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "vip": "Speaker Vouth"
+     }
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Fang Idra",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 0,
+     "x_m": -700,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "marines": 14,
+      "team": {
+       "demo": 2,
+       "medics": 2,
+       "engineers": 2,
+       "hackers": 1,
+       "pilots": 1
+      },
+      "capture": "calder"
+     }
+    },
+    {
+     "id": "calder",
+     "name": "Calder Outpost",
+     "captain": "Commodore Hale",
+     "class": "sb",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 1000,
+     "z_m": -7000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "hold_fire": true,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 8,
+      "shields_down": true,
+      "mounts_hp": [
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "concord_distress",
+   "sky": "comms_frost_lantern",
+   "name": "Distress",
+   "side": "concord",
+   "seed": 20261114,
+   "objective": "Beam 10 spare parts to the Lark, adrift with failed engines",
+   "say": [
+    "Comms",
+    "Lark: engines dead, drifting. We need ten spare parts. Click us to select us, close to transporter range and beam them over."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "relieved",
+    "id": "lark"
+   },
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "hold": {
+       "parts": 15,
+       "rations": 5
+      }
+     }
+    },
+    {
+     "id": "lark",
+     "name": "Lark",
+     "captain": "Master Ines",
+     "class": "tr",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 3000,
+     "z_m": -9000,
+     "heading_deg": 140,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "setup": {
+      "needs": {
+       "parts": 10
+      },
+      "distress": true,
+      "sys": {
+       "engines": 0,
+       "sensors": 0.3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "krai_distress",
+   "sky": "comms_saffron_lanes",
+   "name": "Distress",
+   "side": "krai",
+   "seed": 20261114,
+   "objective": "Beam 10 spare parts to the Skarr, adrift with failed engines",
+   "say": [
+    "Comms",
+    "Skarr: engines dead, drifting. We need ten spare parts. Click us to select us, close to transporter range and beam them over."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "relieved",
+    "id": "skarr"
+   },
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "hold": {
+       "parts": 15,
+       "rations": 5
+      }
+     }
+    },
+    {
+     "id": "skarr",
+     "name": "Skarr",
+     "captain": "Blade Tovek",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 3000,
+     "z_m": -9000,
+     "heading_deg": 140,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "setup": {
+      "needs": {
+       "parts": 10
+      },
+      "distress": true,
+      "sys": {
+       "engines": 0,
+       "sensors": 0.3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "concord_assault",
+   "sky": "comms_cobalt_drift",
+   "name": "Assault",
+   "side": "concord",
+   "seed": 20261116,
+   "objective": "Beam 8 marines to the Corrin and see Varn Outpost taken",
+   "say": [
+    "Comms",
+    "Corrin: we have two marines left and need ten to take Varn Outpost. Select us, open Transport, Capture, queue marines and energize."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "varn"
+   },
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 4
+      }
+     }
+    },
+    {
+     "id": "corrin",
+     "name": "Corrin",
+     "captain": "Major Vale",
+     "class": "tr",
+     "faction": "concord",
+     "side": 0,
+     "x_m": -700,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "capture": "varn",
+      "need_marines": 10,
+      "marines": 2
+     }
+    },
+    {
+     "id": "varn",
+     "name": "Varn Outpost",
+     "captain": "Castellan Dorr",
+     "class": "sb",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 1000,
+     "z_m": -7000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "hold_fire": true,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 6,
+      "shields_down": true,
+      "mounts_hp": [
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "krai_assault",
+   "sky": "comms_jade_mist",
+   "name": "Assault",
+   "side": "krai",
+   "seed": 20261116,
+   "objective": "Beam 8 marines to the Ruhn and see Calder Outpost taken",
+   "say": [
+    "Comms",
+    "Ruhn: we have two marines left and need ten to take Calder Outpost. Select us, open Transport, Capture, queue marines and energize."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "calder"
+   },
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 4
+      }
+     }
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Fang Idra",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 0,
+     "x_m": -700,
+     "z_m": 400,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "marines": 2,
+      "team": {
+       "demo": 2,
+       "medics": 2,
+       "engineers": 2,
+       "hackers": 1,
+       "pilots": 1
+      },
+      "capture": "calder",
+      "need_marines": 10
+     }
+    },
+    {
+     "id": "calder",
+     "name": "Calder Outpost",
+     "captain": "Commodore Hale",
+     "class": "sb",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 1000,
+     "z_m": -7000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "hold_fire": true,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 6,
+      "shields_down": true,
+      "mounts_hp": [
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   ]
+  }
+ ]
 }

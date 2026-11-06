@@ -16347,6 +16347,3342 @@
      "hides_stars": 0.75
     }
    ]
+  },
+  {
+   "id": "comms_harbour_dusk",
+   "label": "",
+   "name": "Harbour Dusk",
+   "for": "the test scenes and demos (composed)",
+   "look": "Warm violet dusk over a calm blue veil, a soft rose core: a quiet anchorage.",
+   "composed": true,
+   "seed": 2301,
+   "space_srgb": [
+    0.016,
+    0.012,
+    0.026
+   ],
+   "exposure": 1.1,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     -106,
+     -7
+    ],
+    "tilt_deg": 29,
+    "width_deg": 7.1,
+    "colour_srgb": [
+     0.8,
+     0.7,
+     0.9
+    ],
+    "intensity": 0.062,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1600,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      -145.5,
+      29.0
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       156.1,
+       27.7
+      ],
+      [
+       -176.3,
+       28
+      ],
+      [
+       -145.5,
+       28
+      ],
+      [
+       -122.3,
+       28
+      ],
+      [
+       -96.9,
+       28
+      ]
+     ],
+     "width_deg": 23.5,
+     "taper": [
+      0.26,
+      0.37
+     ],
+     "colour_srgb": [
+      0.7,
+      0.45,
+      0.9
+     ],
+     "edge_srgb": [
+      0.2,
+      0.08,
+      0.32
+     ],
+     "intensity": 0.65,
+     "warp": 0.13,
+     "warp_scale": 1.9,
+     "grain": 0.5,
+     "grain_scale": 2.2,
+     "hides_stars": 0.36,
+     "filaments": 0.41,
+     "filament_scale": 4.7
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       154.5,
+       33.9
+      ],
+      [
+       -177.9,
+       34.2
+      ],
+      [
+       -147.1,
+       34.2
+      ],
+      [
+       -123.9,
+       34.2
+      ],
+      [
+       -98.5,
+       34.2
+      ]
+     ],
+     "width_deg": 13.6,
+     "taper": [
+      0.31,
+      0.33
+     ],
+     "colour_srgb": [
+      0.45,
+      0.6,
+      1.0
+     ],
+     "edge_srgb": [
+      0.08,
+      0.14,
+      0.36
+     ],
+     "intensity": 0.38,
+     "warp": 0.17,
+     "warp_scale": 1.9,
+     "grain": 0.48,
+     "grain_scale": 2.3,
+     "hides_stars": 0.47,
+     "filaments": 0.47,
+     "filament_scale": 4.8
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -172.3,
+       24.1
+      ],
+      [
+       -141.5,
+       24.1
+      ],
+      [
+       -118.3,
+       24.1
+      ]
+     ],
+     "width_deg": 7.4,
+     "taper": [
+      0.29,
+      0.31
+     ],
+     "colour_srgb": [
+      0.7,
+      0.45,
+      0.9
+     ],
+     "edge_srgb": [
+      0.08,
+      0.14,
+      0.36
+     ],
+     "intensity": 0.55,
+     "warp": 0.15,
+     "warp_scale": 2.0,
+     "grain": 0.41,
+     "grain_scale": 2.9,
+     "hides_stars": 0.45,
+     "filaments": 0.4,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       159.1,
+       31.5
+      ],
+      [
+       -173.3,
+       31.8
+      ],
+      [
+       -142.5,
+       31.8
+      ],
+      [
+       -119.3,
+       31.8
+      ],
+      [
+       -93.9,
+       31.8
+      ]
+     ],
+     "width_deg": 3.5,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 3.2,
+     "redden": [
+      0.8,
+      0.9,
+      1.1
+     ],
+     "warp": 0.1,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -36.0,
+       27.3
+      ],
+      [
+       -23.8,
+       23.9
+      ],
+      [
+       -11.2,
+       19.6
+      ],
+      [
+       6.7,
+       15.6
+      ]
+     ],
+     "width_deg": 12.8,
+     "taper": [
+      0.32,
+      0.32
+     ],
+     "colour_srgb": [
+      0.45,
+      0.6,
+      1.0
+     ],
+     "edge_srgb": [
+      0.08,
+      0.14,
+      0.36
+     ],
+     "intensity": 0.29,
+     "warp": 0.16,
+     "warp_scale": 1.4,
+     "grain": 0.53,
+     "grain_scale": 2.5,
+     "hides_stars": 0.46,
+     "filaments": 0.52,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -22.1,
+       -19.5
+      ],
+      [
+       -0.6,
+       -20
+      ],
+      [
+       15.4,
+       -20
+      ],
+      [
+       38.3,
+       -20
+      ]
+     ],
+     "width_deg": 8.4,
+     "taper": [
+      0.27,
+      0.28
+     ],
+     "colour_srgb": [
+      0.7,
+      0.45,
+      0.9
+     ],
+     "edge_srgb": [
+      0.2,
+      0.08,
+      0.32
+     ],
+     "intensity": 0.37,
+     "warp": 0.19,
+     "warp_scale": 2.0,
+     "grain": 0.53,
+     "grain_scale": 2.3,
+     "hides_stars": 0.46,
+     "filaments": 0.44,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      -145.5,
+      29.0
+     ],
+     "radius_deg": 2.8,
+     "halo": 0.71,
+     "colour_srgb": [
+      1.0,
+      0.85,
+      0.9
+     ],
+     "edge_srgb": [
+      0.9,
+      0.5,
+      0.7
+     ],
+     "intensity": 1.54,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_amber_shoals",
+   "label": "",
+   "name": "Amber Shoals",
+   "for": "the test scenes and demos (composed)",
+   "look": "Low amber shoals of dust with olive edges, a honey-coloured core.",
+   "composed": true,
+   "seed": 2302,
+   "space_srgb": [
+    0.018,
+    0.015,
+    0.01
+   ],
+   "exposure": 1.1,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     -177,
+     5
+    ],
+    "tilt_deg": 15,
+    "width_deg": 9.0,
+    "colour_srgb": [
+     0.9,
+     0.8,
+     0.55
+    ],
+    "intensity": 0.06,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1400,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      -158.6,
+      -15.7
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       126.5,
+       -4.8
+      ],
+      [
+       147.2,
+       -7.3
+      ],
+      [
+       176.4,
+       -14.8
+      ],
+      [
+       -158.6,
+       -18
+      ],
+      [
+       -137.5,
+       -18
+      ],
+      [
+       -113.0,
+       -18
+      ],
+      [
+       -88.1,
+       -18
+      ]
+     ],
+     "width_deg": 21.1,
+     "taper": [
+      0.3,
+      0.29
+     ],
+     "colour_srgb": [
+      0.95,
+      0.7,
+      0.3
+     ],
+     "edge_srgb": [
+      0.3,
+      0.2,
+      0.05
+     ],
+     "intensity": 0.67,
+     "warp": 0.18,
+     "warp_scale": 1.8,
+     "grain": 0.48,
+     "grain_scale": 2.8,
+     "hides_stars": 0.41,
+     "filaments": 0.4,
+     "filament_scale": 4.7
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       116.9,
+       -11.9
+      ],
+      [
+       137.6,
+       -14.4
+      ],
+      [
+       166.8,
+       -21.9
+      ],
+      [
+       -168.2,
+       -25.1
+      ],
+      [
+       -147.1,
+       -25.1
+      ],
+      [
+       -122.6,
+       -25.1
+      ],
+      [
+       -97.7,
+       -25.1
+      ]
+     ],
+     "width_deg": 10.7,
+     "taper": [
+      0.23,
+      0.29
+     ],
+     "colour_srgb": [
+      0.7,
+      0.75,
+      0.35
+     ],
+     "edge_srgb": [
+      0.18,
+      0.2,
+      0.06
+     ],
+     "intensity": 0.49,
+     "warp": 0.14,
+     "warp_scale": 1.7,
+     "grain": 0.53,
+     "grain_scale": 2.5,
+     "hides_stars": 0.43,
+     "filaments": 0.53,
+     "filament_scale": 4.0
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       132.3,
+       -5.9
+      ],
+      [
+       153.0,
+       -8.4
+      ],
+      [
+       -177.8,
+       -15.9
+      ],
+      [
+       -152.8,
+       -19.1
+      ],
+      [
+       -131.7,
+       -19.1
+      ],
+      [
+       -107.2,
+       -19.1
+      ]
+     ],
+     "width_deg": 3.6,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.9,
+     "redden": [
+      0.8,
+      1.0,
+      1.2
+     ],
+     "warp": 0.1,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       149.6,
+       -7.5
+      ],
+      [
+       178.8,
+       -15.0
+      ],
+      [
+       -156.2,
+       -18.2
+      ],
+      [
+       -135.1,
+       -18.2
+      ],
+      [
+       -110.6,
+       -18.2
+      ]
+     ],
+     "width_deg": 3.0,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.3,
+     "redden": [
+      0.8,
+      1.0,
+      1.2
+     ],
+     "warp": 0.11,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -64.2,
+       -5.3
+      ],
+      [
+       -49.5,
+       -5.8
+      ],
+      [
+       -34.4,
+       -4.3
+      ]
+     ],
+     "width_deg": 11.5,
+     "taper": [
+      0.26,
+      0.33
+     ],
+     "colour_srgb": [
+      0.7,
+      0.75,
+      0.35
+     ],
+     "edge_srgb": [
+      0.18,
+      0.2,
+      0.06
+     ],
+     "intensity": 0.35,
+     "warp": 0.17,
+     "warp_scale": 1.7,
+     "grain": 0.42,
+     "grain_scale": 2.9,
+     "hides_stars": 0.44,
+     "filaments": 0.39,
+     "filament_scale": 4.8
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -62.9,
+       -7.7
+      ],
+      [
+       -42.9,
+       -3.7
+      ],
+      [
+       -20.9,
+       -2.7
+      ]
+     ],
+     "width_deg": 11.4,
+     "taper": [
+      0.3,
+      0.35
+     ],
+     "colour_srgb": [
+      0.95,
+      0.7,
+      0.3
+     ],
+     "edge_srgb": [
+      0.3,
+      0.2,
+      0.05
+     ],
+     "intensity": 0.28,
+     "warp": 0.19,
+     "warp_scale": 1.6,
+     "grain": 0.5,
+     "grain_scale": 2.8,
+     "hides_stars": 0.44,
+     "filaments": 0.47,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      -158.6,
+      -15.7
+     ],
+     "radius_deg": 3.6,
+     "halo": 0.61,
+     "colour_srgb": [
+      1.0,
+      0.95,
+      0.75
+     ],
+     "edge_srgb": [
+      0.95,
+      0.7,
+      0.3
+     ],
+     "intensity": 1.42,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_cobalt_drift",
+   "label": "",
+   "name": "Cobalt Drift",
+   "for": "the test scenes and demos (composed)",
+   "look": "Cobalt clouds drifting in long bands, a steel-white core and fine dark lanes.",
+   "composed": true,
+   "seed": 2303,
+   "space_srgb": [
+    0.008,
+    0.01,
+    0.028
+   ],
+   "exposure": 1.1,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     -38,
+     2
+    ],
+    "tilt_deg": 22,
+    "width_deg": 9.6,
+    "colour_srgb": [
+     0.6,
+     0.7,
+     1.0
+    ],
+    "intensity": 0.058,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1900,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      -67.5,
+      -4.6
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -136.2,
+       -3.9
+      ],
+      [
+       -110.3,
+       -6.1
+      ],
+      [
+       -88.6,
+       -6.8
+      ],
+      [
+       -67.5,
+       -6.5
+      ],
+      [
+       -41.2,
+       -3.3
+      ],
+      [
+       -14.0,
+       3.8
+      ]
+     ],
+     "width_deg": 20.8,
+     "taper": [
+      0.31,
+      0.34
+     ],
+     "colour_srgb": [
+      0.25,
+      0.5,
+      1.0
+     ],
+     "edge_srgb": [
+      0.03,
+      0.1,
+      0.34
+     ],
+     "intensity": 0.83,
+     "warp": 0.19,
+     "warp_scale": 1.4,
+     "grain": 0.45,
+     "grain_scale": 2.2,
+     "hides_stars": 0.36,
+     "filaments": 0.55,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -135.5,
+       -6.0
+      ],
+      [
+       -109.6,
+       -8.2
+      ],
+      [
+       -87.9,
+       -8.9
+      ],
+      [
+       -66.8,
+       -8.6
+      ],
+      [
+       -40.5,
+       -5.4
+      ],
+      [
+       -13.3,
+       1.7
+      ]
+     ],
+     "width_deg": 11.2,
+     "taper": [
+      0.3,
+      0.37
+     ],
+     "colour_srgb": [
+      0.4,
+      0.75,
+      1.0
+     ],
+     "edge_srgb": [
+      0.06,
+      0.16,
+      0.36
+     ],
+     "intensity": 0.51,
+     "warp": 0.12,
+     "warp_scale": 1.6,
+     "grain": 0.53,
+     "grain_scale": 2.4,
+     "hides_stars": 0.36,
+     "filaments": 0.41,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -115.7,
+       -8.3
+      ],
+      [
+       -94.0,
+       -9.0
+      ],
+      [
+       -72.9,
+       -8.7
+      ],
+      [
+       -46.6,
+       -5.5
+      ]
+     ],
+     "width_deg": 6.6,
+     "taper": [
+      0.2,
+      0.27
+     ],
+     "colour_srgb": [
+      0.25,
+      0.5,
+      1.0
+     ],
+     "edge_srgb": [
+      0.06,
+      0.16,
+      0.36
+     ],
+     "intensity": 0.55,
+     "warp": 0.18,
+     "warp_scale": 1.7,
+     "grain": 0.46,
+     "grain_scale": 2.1,
+     "hides_stars": 0.37,
+     "filaments": 0.36,
+     "filament_scale": 4.3
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -107.1,
+       -7.8
+      ],
+      [
+       -85.4,
+       -8.5
+      ],
+      [
+       -64.3,
+       -8.2
+      ],
+      [
+       -38.0,
+       -5.0
+      ]
+     ],
+     "width_deg": 3.2,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.3,
+     "redden": [
+      0.8,
+      0.95,
+      1.1
+     ],
+     "warp": 0.12,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -115.7,
+       -1.9
+      ],
+      [
+       -94.0,
+       -2.6
+      ],
+      [
+       -72.9,
+       -2.3
+      ],
+      [
+       -46.6,
+       0.9
+      ]
+     ],
+     "width_deg": 2.8,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.4,
+     "redden": [
+      0.8,
+      0.95,
+      1.1
+     ],
+     "warp": 0.11,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -0.0,
+       27.6
+      ],
+      [
+       17.3,
+       24.4
+      ],
+      [
+       37.4,
+       18.5
+      ]
+     ],
+     "width_deg": 11.1,
+     "taper": [
+      0.26,
+      0.31
+     ],
+     "colour_srgb": [
+      0.4,
+      0.75,
+      1.0
+     ],
+     "edge_srgb": [
+      0.06,
+      0.16,
+      0.36
+     ],
+     "intensity": 0.34,
+     "warp": 0.16,
+     "warp_scale": 1.5,
+     "grain": 0.44,
+     "grain_scale": 2.6,
+     "hides_stars": 0.36,
+     "filaments": 0.54,
+     "filament_scale": 4.7
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       6.1,
+       -11.7
+      ],
+      [
+       20.5,
+       -6.2
+      ],
+      [
+       34.2,
+       -0.5
+      ],
+      [
+       48.5,
+       5.9
+      ]
+     ],
+     "width_deg": 8.5,
+     "taper": [
+      0.24,
+      0.31
+     ],
+     "colour_srgb": [
+      0.25,
+      0.5,
+      1.0
+     ],
+     "edge_srgb": [
+      0.03,
+      0.1,
+      0.34
+     ],
+     "intensity": 0.23,
+     "warp": 0.19,
+     "warp_scale": 1.9,
+     "grain": 0.55,
+     "grain_scale": 2.8,
+     "hides_stars": 0.37,
+     "filaments": 0.41,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      -67.5,
+      -4.6
+     ],
+     "radius_deg": 3.1,
+     "halo": 0.72,
+     "colour_srgb": [
+      0.92,
+      0.96,
+      1.0
+     ],
+     "edge_srgb": [
+      0.5,
+      0.65,
+      1.0
+     ],
+     "intensity": 1.32,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_saffron_lanes",
+   "label": "",
+   "name": "Saffron Lanes",
+   "for": "the test scenes and demos (composed)",
+   "look": "Saffron and orange clouds cut by many black lanes, a pale yellow core.",
+   "composed": true,
+   "seed": 2304,
+   "space_srgb": [
+    0.02,
+    0.013,
+    0.008
+   ],
+   "exposure": 1.15,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     -167,
+     -4
+    ],
+    "tilt_deg": 23,
+    "width_deg": 6.2,
+    "colour_srgb": [
+     0.95,
+     0.75,
+     0.5
+    ],
+    "intensity": 0.068,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1400,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      101.7,
+      5.6
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       19.5,
+       -9.8
+      ],
+      [
+       47.4,
+       -3.3
+      ],
+      [
+       73.2,
+       3.5
+      ],
+      [
+       101.7,
+       8.2
+      ],
+      [
+       130.6,
+       9.0
+      ],
+      [
+       165.0,
+       15.0
+      ]
+     ],
+     "width_deg": 23.0,
+     "taper": [
+      0.29,
+      0.27
+     ],
+     "colour_srgb": [
+      1.0,
+      0.62,
+      0.15
+     ],
+     "edge_srgb": [
+      0.38,
+      0.14,
+      0.02
+     ],
+     "intensity": 0.65,
+     "warp": 0.14,
+     "warp_scale": 1.8,
+     "grain": 0.48,
+     "grain_scale": 2.4,
+     "hides_stars": 0.42,
+     "filaments": 0.54,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       11.0,
+       -16.3
+      ],
+      [
+       38.9,
+       -9.8
+      ],
+      [
+       64.7,
+       -3.0
+      ],
+      [
+       93.2,
+       1.7
+      ],
+      [
+       122.1,
+       2.5
+      ],
+      [
+       156.5,
+       8.5
+      ]
+     ],
+     "width_deg": 13.0,
+     "taper": [
+      0.22,
+      0.32
+     ],
+     "colour_srgb": [
+      1.0,
+      0.8,
+      0.35
+     ],
+     "edge_srgb": [
+      0.4,
+      0.22,
+      0.05
+     ],
+     "intensity": 0.53,
+     "warp": 0.18,
+     "warp_scale": 1.6,
+     "grain": 0.4,
+     "grain_scale": 2.7,
+     "hides_stars": 0.48,
+     "filaments": 0.54,
+     "filament_scale": 4.1
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       19.4,
+       -12.3
+      ],
+      [
+       47.3,
+       -5.8
+      ],
+      [
+       73.1,
+       1.0
+      ],
+      [
+       101.6,
+       5.7
+      ],
+      [
+       130.5,
+       6.5
+      ]
+     ],
+     "width_deg": 2.8,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.8,
+     "redden": [
+      0.6,
+      0.9,
+      1.3
+     ],
+     "warp": 0.1,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       153.9,
+       9.1
+      ],
+      [
+       173.8,
+       11.6
+      ],
+      [
+       -168.3,
+       13.4
+      ],
+      [
+       -153.9,
+       13.8
+      ]
+     ],
+     "width_deg": 12.8,
+     "taper": [
+      0.32,
+      0.32
+     ],
+     "colour_srgb": [
+      1.0,
+      0.8,
+      0.35
+     ],
+     "edge_srgb": [
+      0.4,
+      0.22,
+      0.05
+     ],
+     "intensity": 0.38,
+     "warp": 0.2,
+     "warp_scale": 1.9,
+     "grain": 0.52,
+     "grain_scale": 2.2,
+     "hides_stars": 0.36,
+     "filaments": 0.52,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       150.0,
+       20.3
+      ],
+      [
+       172.1,
+       20.5
+      ],
+      [
+       -165.0,
+       17.7
+      ],
+      [
+       -142.0,
+       13.4
+      ]
+     ],
+     "width_deg": 12.6,
+     "taper": [
+      0.3,
+      0.25
+     ],
+     "colour_srgb": [
+      1.0,
+      0.62,
+      0.15
+     ],
+     "edge_srgb": [
+      0.38,
+      0.14,
+      0.02
+     ],
+     "intensity": 0.33,
+     "warp": 0.2,
+     "warp_scale": 1.6,
+     "grain": 0.51,
+     "grain_scale": 2.6,
+     "hides_stars": 0.38,
+     "filaments": 0.49,
+     "filament_scale": 4.7
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      101.7,
+      5.6
+     ],
+     "radius_deg": 3.0,
+     "halo": 0.63,
+     "colour_srgb": [
+      1.0,
+      0.98,
+      0.8
+     ],
+     "edge_srgb": [
+      1.0,
+      0.8,
+      0.4
+     ],
+     "intensity": 1.38,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_jade_mist",
+   "label": "",
+   "name": "Jade Mist",
+   "for": "the test scenes and demos (composed)",
+   "look": "A jade mist hanging low, sea-glass edges and a pale mint core.",
+   "composed": true,
+   "seed": 2305,
+   "space_srgb": [
+    0.008,
+    0.018,
+    0.016
+   ],
+   "exposure": 1.1,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     -62,
+     -1
+    ],
+    "tilt_deg": 26,
+    "width_deg": 6.7,
+    "colour_srgb": [
+     0.6,
+     0.9,
+     0.8
+    ],
+    "intensity": 0.041,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1600,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      -37.0,
+      -3.1
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -113.9,
+       2.4
+      ],
+      [
+       -91.3,
+       -2.0
+      ],
+      [
+       -63.1,
+       -3.3
+      ],
+      [
+       -37.0,
+       -5.4
+      ],
+      [
+       -5.5,
+       -4.7
+      ],
+      [
+       22.2,
+       0.6
+      ],
+      [
+       49.0,
+       2.2
+      ]
+     ],
+     "width_deg": 22.6,
+     "taper": [
+      0.22,
+      0.33
+     ],
+     "colour_srgb": [
+      0.3,
+      0.9,
+      0.65
+     ],
+     "edge_srgb": [
+      0.03,
+      0.22,
+      0.14
+     ],
+     "intensity": 0.63,
+     "warp": 0.19,
+     "warp_scale": 1.7,
+     "grain": 0.51,
+     "grain_scale": 2.8,
+     "hides_stars": 0.45,
+     "filaments": 0.36,
+     "filament_scale": 4.3
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -110.3,
+       9.4
+      ],
+      [
+       -87.7,
+       5.0
+      ],
+      [
+       -59.5,
+       3.7
+      ],
+      [
+       -33.4,
+       1.6
+      ],
+      [
+       -1.9,
+       2.3
+      ],
+      [
+       25.8,
+       7.6
+      ],
+      [
+       52.6,
+       9.2
+      ]
+     ],
+     "width_deg": 13.7,
+     "taper": [
+      0.29,
+      0.33
+     ],
+     "colour_srgb": [
+      0.55,
+      0.95,
+      0.85
+     ],
+     "edge_srgb": [
+      0.08,
+      0.26,
+      0.24
+     ],
+     "intensity": 0.53,
+     "warp": 0.19,
+     "warp_scale": 1.5,
+     "grain": 0.51,
+     "grain_scale": 2.3,
+     "hides_stars": 0.4,
+     "filaments": 0.37,
+     "filament_scale": 3.8
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -96.9,
+       -4.5
+      ],
+      [
+       -68.7,
+       -5.8
+      ],
+      [
+       -42.6,
+       -7.9
+      ],
+      [
+       -11.1,
+       -7.2
+      ],
+      [
+       16.6,
+       -1.9
+      ]
+     ],
+     "width_deg": 5.8,
+     "taper": [
+      0.29,
+      0.35
+     ],
+     "colour_srgb": [
+      0.3,
+      0.9,
+      0.65
+     ],
+     "edge_srgb": [
+      0.08,
+      0.26,
+      0.24
+     ],
+     "intensity": 0.47,
+     "warp": 0.12,
+     "warp_scale": 1.6,
+     "grain": 0.47,
+     "grain_scale": 2.4,
+     "hides_stars": 0.44,
+     "filaments": 0.41,
+     "filament_scale": 4.3
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -87.9,
+       -0.6
+      ],
+      [
+       -59.7,
+       -1.9
+      ],
+      [
+       -33.6,
+       -4.0
+      ],
+      [
+       -2.1,
+       -3.3
+      ],
+      [
+       25.6,
+       2.0
+      ],
+      [
+       52.4,
+       3.6
+      ]
+     ],
+     "width_deg": 2.9,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.3,
+     "redden": [
+      0.8,
+      0.9,
+      1.1
+     ],
+     "warp": 0.1,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       101.6,
+       5.2
+      ],
+      [
+       123.6,
+       9.4
+      ],
+      [
+       147.7,
+       10.4
+      ],
+      [
+       169.8,
+       11.8
+      ]
+     ],
+     "width_deg": 9.4,
+     "taper": [
+      0.2,
+      0.36
+     ],
+     "colour_srgb": [
+      0.55,
+      0.95,
+      0.85
+     ],
+     "edge_srgb": [
+      0.08,
+      0.26,
+      0.24
+     ],
+     "intensity": 0.35,
+     "warp": 0.14,
+     "warp_scale": 1.5,
+     "grain": 0.45,
+     "grain_scale": 2.3,
+     "hides_stars": 0.47,
+     "filaments": 0.48,
+     "filament_scale": 4.8
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      -37.0,
+      -3.1
+     ],
+     "radius_deg": 3.1,
+     "halo": 0.75,
+     "colour_srgb": [
+      0.9,
+      1.0,
+      0.95
+     ],
+     "edge_srgb": [
+      0.45,
+      0.95,
+      0.75
+     ],
+     "intensity": 1.07,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_garnet_veil",
+   "label": "",
+   "name": "Garnet Veil",
+   "for": "the test scenes and demos (composed)",
+   "look": "A dark garnet veil with plum shadows and a deep red core.",
+   "composed": true,
+   "seed": 2306,
+   "space_srgb": [
+    0.02,
+    0.008,
+    0.016
+   ],
+   "exposure": 1.15,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     -108,
+     7
+    ],
+    "tilt_deg": 16,
+    "width_deg": 6.9,
+    "colour_srgb": [
+     0.85,
+     0.55,
+     0.7
+    ],
+    "intensity": 0.058,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1600,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      34.6,
+      -3.3
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -6.2,
+       -4.7
+      ],
+      [
+       14.2,
+       -5.0
+      ],
+      [
+       34.6,
+       -2.3
+      ],
+      [
+       58.9,
+       0.8
+      ],
+      [
+       81.5,
+       0.1
+      ]
+     ],
+     "width_deg": 19.7,
+     "taper": [
+      0.21,
+      0.32
+     ],
+     "colour_srgb": [
+      0.85,
+      0.15,
+      0.35
+     ],
+     "edge_srgb": [
+      0.26,
+      0.02,
+      0.12
+     ],
+     "intensity": 0.58,
+     "warp": 0.15,
+     "warp_scale": 1.6,
+     "grain": 0.46,
+     "grain_scale": 2.6,
+     "hides_stars": 0.43,
+     "filaments": 0.54,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -0.0,
+       -1.7
+      ],
+      [
+       20.4,
+       -2.0
+      ],
+      [
+       40.8,
+       0.7
+      ],
+      [
+       65.1,
+       3.8
+      ],
+      [
+       87.7,
+       3.1
+      ]
+     ],
+     "width_deg": 10.0,
+     "taper": [
+      0.31,
+      0.35
+     ],
+     "colour_srgb": [
+      0.6,
+      0.2,
+      0.6
+     ],
+     "edge_srgb": [
+      0.18,
+      0.04,
+      0.22
+     ],
+     "intensity": 0.46,
+     "warp": 0.17,
+     "warp_scale": 1.7,
+     "grain": 0.4,
+     "grain_scale": 2.8,
+     "hides_stars": 0.39,
+     "filaments": 0.37,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -7.3,
+       -1.2
+      ],
+      [
+       13.1,
+       -1.5
+      ],
+      [
+       33.5,
+       1.2
+      ],
+      [
+       57.8,
+       4.3
+      ]
+     ],
+     "width_deg": 3.3,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.6,
+     "redden": [
+      0.7,
+      0.9,
+      1.2
+     ],
+     "warp": 0.12,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -166.7,
+       10.2
+      ],
+      [
+       -149.4,
+       9.6
+      ],
+      [
+       -135.8,
+       11.2
+      ]
+     ],
+     "width_deg": 9.3,
+     "taper": [
+      0.31,
+      0.37
+     ],
+     "colour_srgb": [
+      0.6,
+      0.2,
+      0.6
+     ],
+     "edge_srgb": [
+      0.18,
+      0.04,
+      0.22
+     ],
+     "intensity": 0.22,
+     "warp": 0.19,
+     "warp_scale": 1.6,
+     "grain": 0.41,
+     "grain_scale": 2.0,
+     "hides_stars": 0.47,
+     "filaments": 0.48,
+     "filament_scale": 4.5
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      34.6,
+      -3.3
+     ],
+     "radius_deg": 3.3,
+     "halo": 0.67,
+     "colour_srgb": [
+      1.0,
+      0.8,
+      0.85
+     ],
+     "edge_srgb": [
+      0.9,
+      0.3,
+      0.45
+     ],
+     "intensity": 1.25,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_frost_lantern",
+   "label": "",
+   "name": "Frost Lantern",
+   "for": "the test scenes and demos (composed)",
+   "look": "Frost-white wisps round a lantern-blue core, thin and bright.",
+   "composed": true,
+   "seed": 2307,
+   "space_srgb": [
+    0.012,
+    0.014,
+    0.028
+   ],
+   "exposure": 1.0,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     -35,
+     -4
+    ],
+    "tilt_deg": 29,
+    "width_deg": 7.6,
+    "colour_srgb": [
+     0.8,
+     0.88,
+     1.0
+    ],
+    "intensity": 0.067,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1400,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      31.2,
+      22.6
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -75.4,
+       18.3
+      ],
+      [
+       -44.3,
+       19.2
+      ],
+      [
+       -6.5,
+       22.7
+      ],
+      [
+       31.2,
+       23.8
+      ],
+      [
+       71.2,
+       28
+      ],
+      [
+       105.5,
+       28
+      ]
+     ],
+     "width_deg": 21.7,
+     "taper": [
+      0.32,
+      0.32
+     ],
+     "colour_srgb": [
+      0.7,
+      0.85,
+      1.0
+     ],
+     "edge_srgb": [
+      0.14,
+      0.22,
+      0.45
+     ],
+     "intensity": 0.64,
+     "warp": 0.17,
+     "warp_scale": 1.4,
+     "grain": 0.4,
+     "grain_scale": 2.9,
+     "hides_stars": 0.4,
+     "filaments": 0.49,
+     "filament_scale": 4.6
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -83.7,
+       22.2
+      ],
+      [
+       -52.6,
+       23.1
+      ],
+      [
+       -14.8,
+       26.6
+      ],
+      [
+       22.9,
+       27.7
+      ],
+      [
+       62.9,
+       31.9
+      ],
+      [
+       97.2,
+       31.9
+      ]
+     ],
+     "width_deg": 11.2,
+     "taper": [
+      0.23,
+      0.33
+     ],
+     "colour_srgb": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "edge_srgb": [
+      0.3,
+      0.38,
+      0.6
+     ],
+     "intensity": 0.42,
+     "warp": 0.12,
+     "warp_scale": 1.5,
+     "grain": 0.5,
+     "grain_scale": 2.9,
+     "hides_stars": 0.42,
+     "filaments": 0.49,
+     "filament_scale": 4.5
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -41.8,
+       22.8
+      ],
+      [
+       -4.0,
+       26.3
+      ],
+      [
+       33.7,
+       27.4
+      ],
+      [
+       73.7,
+       31.6
+      ]
+     ],
+     "width_deg": 6.2,
+     "taper": [
+      0.27,
+      0.35
+     ],
+     "colour_srgb": [
+      0.7,
+      0.85,
+      1.0
+     ],
+     "edge_srgb": [
+      0.3,
+      0.38,
+      0.6
+     ],
+     "intensity": 0.42,
+     "warp": 0.15,
+     "warp_scale": 1.8,
+     "grain": 0.47,
+     "grain_scale": 2.6,
+     "hides_stars": 0.42,
+     "filaments": 0.41,
+     "filament_scale": 4.3
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -70.0,
+       22.8
+      ],
+      [
+       -38.9,
+       23.7
+      ],
+      [
+       -1.1,
+       27.2
+      ],
+      [
+       36.6,
+       28.3
+      ],
+      [
+       76.6,
+       32.5
+      ]
+     ],
+     "width_deg": 3.8,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.3,
+     "redden": [
+      0.9,
+      1.0,
+      1.0
+     ],
+     "warp": 0.1,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -70.6,
+       15.0
+      ],
+      [
+       -39.5,
+       15.9
+      ],
+      [
+       -1.7,
+       19.4
+      ],
+      [
+       36.0,
+       20.5
+      ],
+      [
+       76.0,
+       24.7
+      ],
+      [
+       110.3,
+       24.7
+      ]
+     ],
+     "width_deg": 3.2,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 3.0,
+     "redden": [
+      0.9,
+      1.0,
+      1.0
+     ],
+     "warp": 0.11,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       102.3,
+       -18.3
+      ],
+      [
+       117.7,
+       -18.9
+      ],
+      [
+       136.6,
+       -17.6
+      ],
+      [
+       152.9,
+       -18.5
+      ]
+     ],
+     "width_deg": 10.7,
+     "taper": [
+      0.24,
+      0.35
+     ],
+     "colour_srgb": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "edge_srgb": [
+      0.3,
+      0.38,
+      0.6
+     ],
+     "intensity": 0.28,
+     "warp": 0.2,
+     "warp_scale": 1.7,
+     "grain": 0.47,
+     "grain_scale": 2.9,
+     "hides_stars": 0.39,
+     "filaments": 0.5,
+     "filament_scale": 4.0
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      31.2,
+      22.6
+     ],
+     "radius_deg": 3.2,
+     "halo": 0.57,
+     "colour_srgb": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "edge_srgb": [
+      0.55,
+      0.75,
+      1.0
+     ],
+     "intensity": 1.06,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_copper_haze",
+   "label": "",
+   "name": "Copper Haze",
+   "for": "the test scenes and demos (composed)",
+   "look": "A copper haze with teal glints at its edge, a burnished core.",
+   "composed": true,
+   "seed": 2308,
+   "space_srgb": [
+    0.016,
+    0.012,
+    0.012
+   ],
+   "exposure": 1.1,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     86,
+     -7
+    ],
+    "tilt_deg": 14,
+    "width_deg": 7.8,
+    "colour_srgb": [
+     0.85,
+     0.7,
+     0.6
+    ],
+    "intensity": 0.043,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1900,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      -142.1,
+      10.1
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       166.9,
+       -4.4
+      ],
+      [
+       -170.9,
+       0.0
+      ],
+      [
+       -142.1,
+       7.8
+      ],
+      [
+       -119.7,
+       17.8
+      ],
+      [
+       -97.9,
+       26.8
+      ]
+     ],
+     "width_deg": 19.7,
+     "taper": [
+      0.2,
+      0.36
+     ],
+     "colour_srgb": [
+      0.85,
+      0.45,
+      0.25
+     ],
+     "edge_srgb": [
+      0.26,
+      0.1,
+      0.05
+     ],
+     "intensity": 0.76,
+     "warp": 0.17,
+     "warp_scale": 2.0,
+     "grain": 0.46,
+     "grain_scale": 2.9,
+     "hides_stars": 0.44,
+     "filaments": 0.48,
+     "filament_scale": 4.6
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       168.7,
+       -6.9
+      ],
+      [
+       -169.1,
+       -2.5
+      ],
+      [
+       -140.3,
+       5.3
+      ],
+      [
+       -117.9,
+       15.3
+      ],
+      [
+       -96.1,
+       24.3
+      ]
+     ],
+     "width_deg": 10.5,
+     "taper": [
+      0.21,
+      0.27
+     ],
+     "colour_srgb": [
+      0.35,
+      0.75,
+      0.7
+     ],
+     "edge_srgb": [
+      0.05,
+      0.2,
+      0.2
+     ],
+     "intensity": 0.57,
+     "warp": 0.19,
+     "warp_scale": 1.7,
+     "grain": 0.49,
+     "grain_scale": 2.9,
+     "hides_stars": 0.46,
+     "filaments": 0.37,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -172.4,
+       1.0
+      ],
+      [
+       -143.6,
+       8.8
+      ],
+      [
+       -121.2,
+       18.8
+      ]
+     ],
+     "width_deg": 6.8,
+     "taper": [
+      0.25,
+      0.37
+     ],
+     "colour_srgb": [
+      0.85,
+      0.45,
+      0.25
+     ],
+     "edge_srgb": [
+      0.05,
+      0.2,
+      0.2
+     ],
+     "intensity": 0.47,
+     "warp": 0.16,
+     "warp_scale": 2.0,
+     "grain": 0.51,
+     "grain_scale": 2.7,
+     "hides_stars": 0.5,
+     "filaments": 0.36,
+     "filament_scale": 4.6
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -168.0,
+       1.2
+      ],
+      [
+       -139.2,
+       9.0
+      ],
+      [
+       -116.8,
+       19.0
+      ]
+     ],
+     "width_deg": 3.7,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.3,
+     "redden": [
+      0.7,
+      0.9,
+      1.2
+     ],
+     "warp": 0.09,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       164.7,
+       -9.3
+      ],
+      [
+       -173.1,
+       -4.9
+      ],
+      [
+       -144.3,
+       2.9
+      ],
+      [
+       -121.9,
+       12.9
+      ],
+      [
+       -100.1,
+       21.9
+      ]
+     ],
+     "width_deg": 3.1,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 3.2,
+     "redden": [
+      0.7,
+      0.9,
+      1.2
+     ],
+     "warp": 0.08,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -43.3,
+       7.9
+      ],
+      [
+       -25.3,
+       8.8
+      ],
+      [
+       -11.5,
+       10.4
+      ]
+     ],
+     "width_deg": 10.3,
+     "taper": [
+      0.31,
+      0.35
+     ],
+     "colour_srgb": [
+      0.35,
+      0.75,
+      0.7
+     ],
+     "edge_srgb": [
+      0.05,
+      0.2,
+      0.2
+     ],
+     "intensity": 0.24,
+     "warp": 0.15,
+     "warp_scale": 1.8,
+     "grain": 0.48,
+     "grain_scale": 2.5,
+     "hides_stars": 0.41,
+     "filaments": 0.5,
+     "filament_scale": 4.3
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      -142.1,
+      10.1
+     ],
+     "radius_deg": 2.4,
+     "halo": 0.6,
+     "colour_srgb": [
+      1.0,
+      0.85,
+      0.7
+     ],
+     "edge_srgb": [
+      0.9,
+      0.5,
+      0.3
+     ],
+     "intensity": 1.38,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_orchid_reef",
+   "label": "",
+   "name": "Orchid Reef",
+   "for": "the test scenes and demos (composed)",
+   "look": "Orchid and lilac reefs of cloud, magenta knots and a white core.",
+   "composed": true,
+   "seed": 2309,
+   "space_srgb": [
+    0.02,
+    0.012,
+    0.03
+   ],
+   "exposure": 1.2,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     54,
+     11
+    ],
+    "tilt_deg": 20,
+    "width_deg": 8.0,
+    "colour_srgb": [
+     0.85,
+     0.7,
+     0.95
+    ],
+    "intensity": 0.061,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1600,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      164.7,
+      1.0
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       67.3,
+       19.6
+      ],
+      [
+       95.4,
+       16.5
+      ],
+      [
+       131.1,
+       9.8
+      ],
+      [
+       164.7,
+       3.8
+      ],
+      [
+       -166.3,
+       3.3
+      ],
+      [
+       -136.4,
+       4.0
+      ]
+     ],
+     "width_deg": 19.5,
+     "taper": [
+      0.3,
+      0.27
+     ],
+     "colour_srgb": [
+      0.95,
+      0.45,
+      0.95
+     ],
+     "edge_srgb": [
+      0.3,
+      0.06,
+      0.32
+     ],
+     "intensity": 0.81,
+     "warp": 0.13,
+     "warp_scale": 1.7,
+     "grain": 0.52,
+     "grain_scale": 2.7,
+     "hides_stars": 0.41,
+     "filaments": 0.49,
+     "filament_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       68.5,
+       20.8
+      ],
+      [
+       96.6,
+       17.7
+      ],
+      [
+       132.3,
+       11.0
+      ],
+      [
+       165.9,
+       5.0
+      ],
+      [
+       -165.1,
+       4.5
+      ],
+      [
+       -135.2,
+       5.2
+      ]
+     ],
+     "width_deg": 9.3,
+     "taper": [
+      0.32,
+      0.29
+     ],
+     "colour_srgb": [
+      0.75,
+      0.6,
+      1.0
+     ],
+     "edge_srgb": [
+      0.2,
+      0.12,
+      0.4
+     ],
+     "intensity": 0.38,
+     "warp": 0.19,
+     "warp_scale": 1.6,
+     "grain": 0.44,
+     "grain_scale": 2.9,
+     "hides_stars": 0.42,
+     "filaments": 0.4,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       87.6,
+       12.4
+      ],
+      [
+       123.3,
+       5.7
+      ],
+      [
+       156.9,
+       -0.3
+      ],
+      [
+       -174.1,
+       -0.8
+      ]
+     ],
+     "width_deg": 6.5,
+     "taper": [
+      0.24,
+      0.34
+     ],
+     "colour_srgb": [
+      0.95,
+      0.45,
+      0.95
+     ],
+     "edge_srgb": [
+      0.2,
+      0.12,
+      0.4
+     ],
+     "intensity": 0.48,
+     "warp": 0.19,
+     "warp_scale": 1.7,
+     "grain": 0.52,
+     "grain_scale": 2.7,
+     "hides_stars": 0.46,
+     "filaments": 0.54,
+     "filament_scale": 4.1
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       94.5,
+       19.6
+      ],
+      [
+       130.2,
+       12.9
+      ],
+      [
+       163.8,
+       6.9
+      ],
+      [
+       -167.2,
+       6.4
+      ],
+      [
+       -137.3,
+       7.1
+      ]
+     ],
+     "width_deg": 3.7,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.6,
+     "redden": [
+      0.8,
+      0.9,
+      1.1
+     ],
+     "warp": 0.08,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -122.4,
+       25.9
+      ],
+      [
+       -99.2,
+       28.3
+      ],
+      [
+       -81.5,
+       30
+      ],
+      [
+       -58.1,
+       30
+      ]
+     ],
+     "width_deg": 9.3,
+     "taper": [
+      0.29,
+      0.35
+     ],
+     "colour_srgb": [
+      0.75,
+      0.6,
+      1.0
+     ],
+     "edge_srgb": [
+      0.2,
+      0.12,
+      0.4
+     ],
+     "intensity": 0.24,
+     "warp": 0.19,
+     "warp_scale": 1.5,
+     "grain": 0.52,
+     "grain_scale": 2.2,
+     "hides_stars": 0.43,
+     "filaments": 0.55,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -115.5,
+       -2.0
+      ],
+      [
+       -100.6,
+       -1.9
+      ],
+      [
+       -81.0,
+       -4.4
+      ]
+     ],
+     "width_deg": 12.4,
+     "taper": [
+      0.28,
+      0.33
+     ],
+     "colour_srgb": [
+      0.95,
+      0.45,
+      0.95
+     ],
+     "edge_srgb": [
+      0.3,
+      0.06,
+      0.32
+     ],
+     "intensity": 0.24,
+     "warp": 0.14,
+     "warp_scale": 1.5,
+     "grain": 0.5,
+     "grain_scale": 2.0,
+     "hides_stars": 0.49,
+     "filaments": 0.47,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      164.7,
+      1.0
+     ],
+     "radius_deg": 2.8,
+     "halo": 0.7,
+     "colour_srgb": [
+      1.0,
+      0.95,
+      1.0
+     ],
+     "edge_srgb": [
+      0.95,
+      0.55,
+      0.95
+     ],
+     "intensity": 1.24,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
+  },
+  {
+   "id": "comms_storm_slate",
+   "label": "",
+   "name": "Storm Slate",
+   "for": "the test scenes and demos (composed)",
+   "look": "Slate-grey storm clouds lit from below in dull orange, a smouldering core.",
+   "composed": true,
+   "seed": 2310,
+   "space_srgb": [
+    0.01,
+    0.01,
+    0.014
+   ],
+   "exposure": 1.0,
+   "vertex_budget": 8000,
+   "band": {
+    "through_deg": [
+     40,
+     -1
+    ],
+    "tilt_deg": 29,
+    "width_deg": 9.5,
+    "colour_srgb": [
+     0.7,
+     0.7,
+     0.75
+    ],
+    "intensity": 0.043,
+    "bulge": 1.4,
+    "bulge_width_deg": 30,
+    "warp": 0.06,
+    "warp_scale": 2.5,
+    "grain": 0.35,
+    "grain_scale": 4.0
+   },
+   "stars": {
+    "count": 1600,
+    "band_bias": 2.0,
+    "cluster": {
+     "at_deg": [
+      16.9,
+      -5.0
+     ],
+     "radius_deg": 2.5,
+     "share": 0.03
+    }
+   },
+   "dust_stars": {
+    "density": 0.06,
+    "brightness": 0.75
+   },
+   "ambient": {
+    "strength": 0.06
+   },
+   "layers": [
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -71.2,
+       9.7
+      ],
+      [
+       -42.5,
+       3.5
+      ],
+      [
+       -11.4,
+       -0.4
+      ],
+      [
+       16.9,
+       -5.1
+      ],
+      [
+       50.9,
+       -12.1
+      ],
+      [
+       80.8,
+       -13.0
+      ],
+      [
+       111.7,
+       -12.4
+      ]
+     ],
+     "width_deg": 23.3,
+     "taper": [
+      0.29,
+      0.34
+     ],
+     "colour_srgb": [
+      0.5,
+      0.55,
+      0.65
+     ],
+     "edge_srgb": [
+      0.1,
+      0.11,
+      0.16
+     ],
+     "intensity": 0.79,
+     "warp": 0.19,
+     "warp_scale": 1.4,
+     "grain": 0.53,
+     "grain_scale": 2.8,
+     "hides_stars": 0.41,
+     "filaments": 0.53,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -74.2,
+       16.1
+      ],
+      [
+       -45.5,
+       9.9
+      ],
+      [
+       -14.4,
+       6.0
+      ],
+      [
+       13.9,
+       1.3
+      ],
+      [
+       47.9,
+       -5.7
+      ],
+      [
+       77.8,
+       -6.6
+      ],
+      [
+       108.7,
+       -6.0
+      ]
+     ],
+     "width_deg": 9.8,
+     "taper": [
+      0.31,
+      0.34
+     ],
+     "colour_srgb": [
+      0.9,
+      0.5,
+      0.25
+     ],
+     "edge_srgb": [
+      0.25,
+      0.08,
+      0.03
+     ],
+     "intensity": 0.58,
+     "warp": 0.13,
+     "warp_scale": 1.9,
+     "grain": 0.49,
+     "grain_scale": 2.7,
+     "hides_stars": 0.38,
+     "filaments": 0.46,
+     "filament_scale": 4.4
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       -45.1,
+       3.6
+      ],
+      [
+       -14.0,
+       -0.3
+      ],
+      [
+       14.3,
+       -5.0
+      ],
+      [
+       48.3,
+       -12.0
+      ],
+      [
+       78.2,
+       -12.9
+      ]
+     ],
+     "width_deg": 6.3,
+     "taper": [
+      0.27,
+      0.36
+     ],
+     "colour_srgb": [
+      0.5,
+      0.55,
+      0.65
+     ],
+     "edge_srgb": [
+      0.25,
+      0.08,
+      0.03
+     ],
+     "intensity": 0.51,
+     "warp": 0.13,
+     "warp_scale": 1.9,
+     "grain": 0.47,
+     "grain_scale": 2.9,
+     "hides_stars": 0.38,
+     "filaments": 0.54,
+     "filament_scale": 4.7
+    },
+    {
+     "kind": "dust",
+     "path_deg": [
+      [
+       -47.3,
+       3.3
+      ],
+      [
+       -16.2,
+       -0.6
+      ],
+      [
+       12.1,
+       -5.3
+      ],
+      [
+       46.1,
+       -12.3
+      ],
+      [
+       76.0,
+       -13.2
+      ]
+     ],
+     "width_deg": 3.2,
+     "taper": [
+      0.2,
+      0.25
+     ],
+     "density": 2.5,
+     "redden": [
+      0.7,
+      0.9,
+      1.2
+     ],
+     "warp": 0.1,
+     "warp_scale": 2.8,
+     "grain": 0.5,
+     "grain_scale": 4.0
+    },
+    {
+     "kind": "glow",
+     "path_deg": [
+      [
+       148.7,
+       1.3
+      ],
+      [
+       165.0,
+       -2.5
+      ],
+      [
+       -178.4,
+       -3.9
+      ],
+      [
+       -163.3,
+       -5.3
+      ]
+     ],
+     "width_deg": 11.3,
+     "taper": [
+      0.28,
+      0.32
+     ],
+     "colour_srgb": [
+      0.9,
+      0.5,
+      0.25
+     ],
+     "edge_srgb": [
+      0.25,
+      0.08,
+      0.03
+     ],
+     "intensity": 0.38,
+     "warp": 0.19,
+     "warp_scale": 1.5,
+     "grain": 0.52,
+     "grain_scale": 2.4,
+     "hides_stars": 0.42,
+     "filaments": 0.37,
+     "filament_scale": 3.9
+    },
+    {
+     "kind": "core",
+     "at_deg": [
+      16.9,
+      -5.0
+     ],
+     "radius_deg": 3.5,
+     "halo": 0.74,
+     "colour_srgb": [
+      1.0,
+      0.8,
+      0.6
+     ],
+     "edge_srgb": [
+      0.85,
+      0.4,
+      0.2
+     ],
+     "intensity": 1.09,
+     "warp": 0.03,
+     "warp_scale": 3.0,
+     "hides_stars": 0.75
+    }
+   ]
   }
  ]
 }

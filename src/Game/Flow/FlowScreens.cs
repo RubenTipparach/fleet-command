@@ -138,7 +138,8 @@ public sealed partial class MenuScreen : FlowPanel
 /// <summary>The faction screen: each playable faction's emblem; picked, New campaign or Continue.</summary>
 public sealed partial class FactionScreen : FlowPanel
 {
-    private static readonly Dictionary<string, string> Emblem = new()
+    /// <summary>Each playable faction's emblem (also the transport station's portrait of who holds a ship).</summary>
+    internal static readonly Dictionary<string, string> Emblem = new()
     {
         ["concord"] = "res://assets/emblems/concord/b-e27-angle.png", ["krai"] = "res://assets/emblems/krai/kc-angle.png", ["ssarith"] = "res://assets/emblems/ssarith/sd-angle.png",
     };

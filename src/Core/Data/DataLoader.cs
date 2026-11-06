@@ -52,7 +52,9 @@ public static partial class DataLoader
         }
         LayoutDef layout = LoadLayout(J("console/layout.json"));
         RangeDef range = LoadRange(J("battle/range.json"), weapons);
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = SystemsDef.Load(J) };
+        SystemsDef systems = SystemsDef.Load(J);
+        systems.CheckComms(classes);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems };
     }
 
     /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>
@@ -300,7 +302,8 @@ public static partial class DataLoader
             if (shieldsFrac is < 0 or > 1) throw new DataError($"{s.Where}.shields_frac: between 0 and 1");
             ships.Add(new ShipStart(id, s.Str("name"), s.Str("captain"), cls, fac, sideNo, s.Num("x_m"), s.Num("z_m"), s.Num("heading_deg"), s.Num("speed_m_s"),
                 st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac,
-                Start: s.ObjOrNull("start") is { } so ? ShipStartState.Read(so, classes[cls]) : null, Cloak: CloakShipStart(s)));
+                Start: s.ObjOrNull("start") is { } so ? ShipStartState.Read(so, classes[cls]) : null, Cloak: CloakShipStart(s),
+                Setup: CommsScenes.LoadSetup(s.ObjOrNull("setup"))));
             ships[^1] = ScenarioExtras.Ship(s, ships[^1]);
             s.Done();
         }
@@ -315,8 +318,12 @@ public static partial class DataLoader
         if (!(sun > 0 && sun <= 4)) throw new DataError($"{root.Where}.sun_energy: above 0 and at most 4, not {sun}");
         // a damage range (data/battle/range.json): its ships stand to be fired at, and it never ends
         bool isRange = root.Bool("damage_range", false);
+        // a test scene's planets and goal (Scenes.Comms); its unarmed own ship is ScenarioExtras' armed
+        IReadOnlyList<PlanetDef>? planets = CommsScenes.LoadPlanets(root);
+        ScenarioGoal? goal = CommsScenes.LoadGoal(root);
+        CommsScenes.Check(root.Where, ships, planets, goal);
         var scenario = ScenarioExtras.Scene(root, new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange, Wells: WellDef.ReadList(root),
-            Nebula: CloakNebula(root), Repel: root.Bool("repel", false)));
+            Nebula: CloakNebula(root), Repel: root.Bool("repel", false))) with { Planets = planets, Goal = goal };
         root.Done();
         return scenario;
     }

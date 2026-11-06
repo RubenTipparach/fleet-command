@@ -186,8 +186,6 @@ public sealed partial class SystemsDef
 
     // ---- readers: each number in its range, the code default when absent ------------------------------------------
 
-    private static double Pos(StrictJson o, string k, double d) { double v = o.Num(k, d); if (v <= 0) throw new DataError($"{o.Where}.{k}: must be above 0"); return v; }
-    private static double Non(StrictJson o, string k, double d) { double v = o.Num(k, d); if (v < 0) throw new DataError($"{o.Where}.{k}: must be 0 or more"); return v; }
     private static double Share(StrictJson o, string k, double d) { double v = o.Num(k, d); if (v is < 0 or > 1) throw new DataError($"{o.Where}.{k}: must be between 0 and 1"); return v; }
     private static int Whole(StrictJson o, string k, int d, int min)
     {

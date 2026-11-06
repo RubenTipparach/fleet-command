@@ -1,42 +1,50 @@
 [gd_scene load_steps=5 format=3]
 
-[sub_resource type="CylinderMesh" id="disc"]
-top_radius = 0.3
-bottom_radius = 0.26
-height = 0.06
-radial_segments = 32
+[sub_resource type="TorusMesh" id="ring"]
+inner_radius = 0.365
+outer_radius = 0.485
+rings = 40
+ring_segments = 10
 
-[sub_resource type="BoxMesh" id="hull"]
-size = Vector3(0.12, 0.1, 0.42)
+[sub_resource type="CylinderMesh" id="hub"]
+top_radius = 0.14
+bottom_radius = 0.17
+height = 0.25
+radial_segments = 16
 
-[sub_resource type="BoxMesh" id="nacelle"]
-size = Vector3(0.07, 0.07, 0.46)
+[sub_resource type="TorusMesh" id="trim"]
+inner_radius = 0.41
+outer_radius = 0.44
+rings = 40
+ring_segments = 6
 
-[sub_resource type="BoxMesh" id="pylon"]
-size = Vector3(0.32, 0.03, 0.08)
+[sub_resource type="BoxMesh" id="spoke"]
+size = Vector3(0.8, 0.03, 0.04)
 
 [node name="Station" type="Node3D"]
 
-[node name="HullDisc" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.22)
-mesh = SubResource("disc")
+[node name="HullRing" type="MeshInstance3D" parent="."]
+mesh = SubResource("ring")
 
-[node name="HullBody" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.12)
-mesh = SubResource("hull")
+[node name="HullHub" type="MeshInstance3D" parent="."]
+mesh = SubResource("hub")
 
-[node name="HullPylonL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.03, 0.18)
-mesh = SubResource("pylon")
+[node name="TrimRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.055, 0)
+mesh = SubResource("trim")
 
-[node name="HullPylonR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 0.03, 0.18)
-mesh = SubResource("pylon")
+[node name="HullSpoke1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("spoke")
 
-[node name="TrimNacelleL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.06, 0.24)
-mesh = SubResource("nacelle")
+[node name="HullSpoke2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 0, 0, 0)
+mesh = SubResource("spoke")
 
-[node name="TrimNacelleR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.06, 0.24)
-mesh = SubResource("nacelle")
+[node name="HullSpoke3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0)
+mesh = SubResource("spoke")
+
+[node name="HullSpoke4" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, -0.707107, 0, 0, 0)
+mesh = SubResource("spoke")

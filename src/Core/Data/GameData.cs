@@ -80,7 +80,7 @@ public enum AiRange { Close, Mid, Long }
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, ShipStartState? Start = null, CloakStart? Cloak = null)
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, ShipStartState? Start = null, CloakStart? Cloak = null, ShipSetup? Setup = null)
 {
     /// <summary>What it carries in place of its class's loadout (mines, fighters, shuttles, barrage missiles), or null.</summary>
     public ShipKit? Kit { get; init; }
@@ -113,6 +113,10 @@ public sealed record Scenario(string Id, string Name, string Side, ulong Seed, s
     public IReadOnlyList<string> Lethal { get; init; } = System.Array.Empty<string>();
     /// <summary>The asteroids of the scene.</summary>
     public IReadOnlyList<RockDef> Rocks { get; init; } = System.Array.Empty<RockDef>();
+    /// <summary>A test scene's planets (data/battle/scenes/comms.json), or null.</summary>
+    public IReadOnlyList<PlanetDef>? Planets { get; init; }
+    /// <summary>A test scene's goal, met to win whatever enemies are left (Scenes.Comms), or null.</summary>
+    public ScenarioGoal? Goal { get; init; }
     /// <summary>A battle with marker beacons ends when its mission's objectives are met (GameFlow checks them), not when
     /// the last enemy goes: a shakedown's target drones can be shot before its beacon is reached.</summary>
     public bool EndsOnObjectives => Markers is { Count: > 0 };
