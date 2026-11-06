@@ -10,7 +10,9 @@ namespace FleetCommand.Game.Ui;
 
 public sealed partial class ConsoleState
 {
-    public string Station = "helm";
+    /// <summary>The open station; a battle starts on Comms, its goals and log (owner, 2026-11-06: "Start game with coms panel
+    /// open by default").</summary>
+    public string Station = "comms";
     public string ShipPage = "systems";
     public Region? Expanded;
     public bool Paused;

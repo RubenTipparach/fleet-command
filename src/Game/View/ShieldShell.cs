@@ -3,7 +3,7 @@
 // well"). A port of the battle console mockup's shieldShell(): a flat hexagon in the ship's plane, an edge toward the bow,
 // each of the six facings up to three glowing bands outward, a small gap between facings, each band a soft line of light
 // (bright along its middle, fading to either side), added to the scene. A facing shows as many bands as its strength
-// earns (shieldLayers: above two thirds three, above a third two, else one; none when the shields are down or the facing
+// earns out of its class's shield_layers (a frigate one, larger ships more; for three: above two thirds three, above a third two, else one; none when the shields are down or the facing
 // is empty), in its strength's colour (the systems display's rule, ShipPanel.ShieldColorOf); a hit brightens its inner
 // band. Every ship carries one. View only: it reads the simulation, never writes it.
 using System;
@@ -63,12 +63,13 @@ public sealed partial class ShieldShell : Node3D
             }
     }
 
-    /// <summary>How many bands a facing shows (the mockup's shieldLayers).</summary>
+    /// <summary>How many bands a facing shows (the mockup's shieldLayers, out of the class's ShieldLayers: a frigate's one band
+    /// at any strength, a cruiser's three above two thirds, two above a third, else one).</summary>
     public static int Layers(Ship s, int i)
     {
         if (!s.ShieldsUp || s.Shields[i] <= 0.5) return 0;
         double f = s.Shields[i] / s.Class.ShieldsHp[i];
-        return f > 0.66 ? 3 : f > 0.33 ? 2 : 1;
+        return Math.Clamp((int)Math.Ceiling(f * s.Class.ShieldLayers - 0.02), 1, s.Class.ShieldLayers);
     }
 
     /// <summary>Lights the bands from the ship's shields, in the console skin's palette.</summary>

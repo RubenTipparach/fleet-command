@@ -4,6 +4,7 @@
 // the key's state as the light in its glass ("key.idle" ember, "key.hover", "key.on", "key.ok", "key.warn", "key.alert",
 // "key.off" unlit), a key much wider than tall in the nine-sliced "keyw." render so its slanted ends keep their shape.
 // Any other skin fills its own key shape (the kit's Shape) with the colour.
+using System;
 using FleetCommand.Game.Ui.Kit;
 using Godot;
 
@@ -36,5 +37,17 @@ public static class KeyFace
         if (!kit.Style.RenderedKeys) return kit.Style.InkOn(fill);
         string st = StateOf(kit.C, fill, status);
         return st is "idle" or "off" ? kit.Style.GlyphOnDark : kit.Style.R.Ink;
+    }
+
+    /// <summary>A sheet's close key: the skin's knob with an X in the ink that reads on it (the event log's, the hit
+    /// details', the mission goals').</summary>
+    public static void Close(IKit kit, CanvasItem ci, Rect2 r, bool hot)
+    {
+        Color fill = hot ? kit.C.Alert : kit.C.Signal, ink = kit.Style.InkOn(fill);
+        Vector2 c = r.GetCenter();
+        float h = Math.Min(r.Size.X, r.Size.Y) * 0.2f;
+        kit.Knob(ci, c, Math.Min(r.Size.X, r.Size.Y) / 2, fill);
+        ci.DrawLine(c - new Vector2(h, h), c + new Vector2(h, h), ink, 2.6f, true);
+        ci.DrawLine(c + new Vector2(h, -h), c - new Vector2(h, -h), ink, 2.6f, true);
     }
 }

@@ -61,11 +61,13 @@ public sealed record MissileData(IReadOnlyList<MissileGrade> Grades, FlareDef Fl
 
 /// <summary>A ship class. Shape is the systems display's top-down silhouette; Model, when set, is the approved ship's glb
 /// (res:// path under assets/ships/), drawn in the battle at LengthM (the battle's framing, as the battle console mockup
-/// draws its ships); without it the battle draws the stand-in for Shape (factions whose ships are not designed yet).</summary>
+/// draws its ships); without it the battle draws the stand-in for Shape (factions whose ships are not designed yet).
+/// ShieldLayers is how many bands its shield display shows at full strength: a frigate one, larger ships more (owner,
+/// 2026-11-06: "frigates have only 1 layer of shields as opposed to larger ships").</summary>
 public sealed record ShipClass(
     string Id, string Name, string Code, string Shape, string? Model, double LengthM, double HullHp, double SpeedMaxMS, double AccelMS2,
     double TurnDegS, int ReactorE, double CapacitorE, double BatteryE, double[] ShieldsHp,
-    IReadOnlyDictionary<string, int> PowerE, IReadOnlyList<MountDef> Mounts);
+    IReadOnlyDictionary<string, int> PowerE, IReadOnlyList<MountDef> Mounts, int ShieldLayers = 3);
 
 /// <summary>A faction. Skin is the console skin its captains play in (a UI kit id); null for a faction the player
 /// cannot command yet.</summary>

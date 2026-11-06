@@ -233,11 +233,19 @@ public static partial class DataLoader
                 throw new DataError($"{o.Where}.model: expected a glb under assets/ships/, got '{model}'");
             d[id] = new ShipClass(id, o.Str("name"), o.Str("code"), shape, model, Positive(o, "length_m"), Positive(o, "hull_hp") * tuning.DemoToughX,
                 NonNeg(o, "speed_max_m_s"), NonNeg(o, "accel_m_s2"), NonNeg(o, "turn_deg_s"), reactor, NonNeg(o, "capacitor_e"), NonNeg(o, "battery_e"),
-                shields, power, mounts);
+                shields, power, mounts, Layers(o));
             o.Done();
         }
         root.Done();
         return d;
+    }
+
+    // a class's shield bands at full strength (shield_layers, 1 to 3; 3 when absent)
+    private static int Layers(StrictJson o)
+    {
+        int n = o.Has("shield_layers") ? o.Int("shield_layers") : 3;
+        if (n is < 1 or > 3) throw new DataError($"{o.Where}.shield_layers: 1 to 3");
+        return n;
     }
 
     public static Dictionary<string, Faction> LoadFactions(StrictJson root)

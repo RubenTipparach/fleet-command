@@ -180,6 +180,8 @@ public sealed partial class Main : Node
         Engine.TimeScale = 1;   // the damage range's slow motion ends with its scene
         UseKit(SkinOf(_x.Battle.Player));
         _x.State.Expanded = null;
+        _x.State.Station = "comms";
+        _x.State.GoalsShown = true;
         _view.Rebuild();
         _acc = 0;
         Relayout();

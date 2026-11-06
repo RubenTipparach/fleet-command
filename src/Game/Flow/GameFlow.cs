@@ -188,7 +188,7 @@ public sealed partial class GameFlow : Node
         FlowScreen behind = s == FlowScreen.Debrief ? (Screen == FlowScreen.Battle ? FlowScreen.Battle : FlowScreen.Map) : s;
         Screen = s;
         foreach (var (k, c) in _screens) c.Visible = k == s || (k == behind && k != FlowScreen.Battle);
-        _strip.Visible = s == FlowScreen.Battle && Running != null;
+        _strip.Visible = s == FlowScreen.Battle && Running != null && X.State.GoalsShown;
         _showBattle(behind == FlowScreen.Battle);
         if (s == FlowScreen.Map) _map.Refresh();
     }
@@ -369,6 +369,7 @@ public sealed partial class GameFlow : Node
         Brief = null;
         X.State.InMission = true;
         X.State.SceneOpen = false;
+        X.State.Goals = Goals;
         _ = Battle(plan.Scenario);
     }
 
@@ -378,6 +379,7 @@ public sealed partial class GameFlow : Node
         Plan = null;
         Skirmish = true;
         X.State.InMission = false;
+        X.State.Goals = null;
         _overT = 0;
         _ = Battle(sc);
     }
@@ -402,10 +404,21 @@ public sealed partial class GameFlow : Node
 
     public void Withdraw() => X.Battle.Withdraw();
 
+    /// <summary>The running mission's goals as they stand (MissionRun.MetNow, the rule the debrief grades by), for the goals
+    /// over the view and the Comms station.</summary>
+    private IReadOnlyList<Ui.GoalLine> Goals()
+    {
+        if (Plan is not { } p || Camp is not { } c) return Array.Empty<Ui.GoalLine>();
+        var met = MissionRun.MetNow(c, p, X.Battle);
+        return p.Battle.Objectives.Select(o => new Ui.GoalLine(o.Text.Eval(new OfferScope(c, p.Mission)), o.Primary, met.GetValueOrDefault(o.Id))).ToList();
+    }
+
     /// <summary>Each frame while a battle plays: a mission whose own fleet is gone is lost; a battle that is over goes to
     /// the debrief a moment later, so the last hit is seen.</summary>
     public override void _Process(double delta)
     {
+        // the goals over the view: a mission's, until their X shuts them (Comms shows them again)
+        _strip.Visible = Screen == FlowScreen.Battle && Running != null && X.State.GoalsShown;
         if (Screen != FlowScreen.Battle) return;
         Sim.Battle b = X.Battle;
         if (Plan != null && b.Over == null && Plan.Groups["fleet"].All(id => b.ShipById(id) is not { Alive: true })) b.Lose();

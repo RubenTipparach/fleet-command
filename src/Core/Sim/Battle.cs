@@ -118,6 +118,9 @@ public sealed partial class Battle
         for (int i = 0; i < 6; i++) s.Shields[i] = c.ShieldsHp[i] * d.ShieldsFrac;
         foreach (string k in Rules.Systems) s.Power[k] = d.PowerE?.GetValueOrDefault(k, c.PowerE.GetValueOrDefault(k)) ?? c.PowerE.GetValueOrDefault(k);
         foreach (string k in Rules.Subsystems) s.Sys[k] = d.SysHp?.GetValueOrDefault(k, 1) ?? 1;
+        // a ship that starts with no shields keeps none: a target drone or a wreck range hulk has them down and unpowered,
+        // so they never build back up (owner, 2026-11-06: "drones have too much shields in shake down cruise")
+        if (d.ShieldsFrac <= 0) { s.ShieldsUp = false; s.Power["shields"] = 0; }
         var mounts = d.ExtraMounts == null ? c.Mounts : c.Mounts.Concat(d.ExtraMounts).ToList();
         for (int i = 0; i < mounts.Count; i++)
         {

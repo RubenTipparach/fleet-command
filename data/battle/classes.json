@@ -1,5 +1,5 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. kelvane_rv is a stand-in (no model, drawn as its shape), the Kelvane Institute having no designed ships: the battle console mockup's research cruiser Patience (mockup 2, the Four races scene), flown in that scene alone, with the heavy cruiser's figures less the Concord's chorus lance. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json).",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. shield_layers is how many bands the shield display shows at full strength, 1 to 3, 3 when absent (owner, 2026-11-06: frigates have one layer, larger ships more). hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. kelvane_rv is a stand-in (no model, drawn as its shape), the Kelvane Institute having no designed ships: the battle console mockup's research cruiser Patience (mockup 2, the Four races scene), flown in that scene alone, with the heavy cruiser's figures less the Concord's chorus lance. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json).",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
@@ -160,6 +160,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    32,
    24,
@@ -214,6 +215,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    24,
    18,
@@ -274,6 +276,7 @@
     "arc_width_deg": 180
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    36,
    26,
@@ -327,6 +330,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    26,
    18,
@@ -382,6 +386,7 @@
     "arc_width_deg": 120
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    28,
    22,
@@ -436,6 +441,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    26,
    18,
@@ -497,6 +503,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -773,6 +780,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -834,6 +842,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -895,6 +904,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -956,6 +966,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -1301,6 +1312,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    22,
    18,
