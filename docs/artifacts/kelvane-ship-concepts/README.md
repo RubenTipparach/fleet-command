@@ -33,3 +33,9 @@
   `assets/ships/kelvane/`; Painted, PBR, Champagne and Clay looks; Studio and Night; the loops' inner walls dark glass lit
   at their rims. Published as artifact version 4, version id `1793969381-6d19`; survey cloud copy version 10, version id
   `1793969382-5dd1`.
+- 2026-11-06, cloud session (owner: "we need greebles on the inside", "missing texture on the nose", "also where are
+  windows to give scale", "do we got normal maps for the insitue too?"): version 6. Machinery on every face that looks
+  across an opening, the outer hull still clean; a lit aperture's open middle and the frigate's glass nose an instrument's
+  array of cells; rows of windows on every flank with rooms behind them, drawn by the pane code now shared with the Hunt
+  (`docs/mockups/lib/baked-ship.js`). All five rebaked. Page 11.3 MB. Published as artifact version 6, version id
+  `1793981351-4965`.

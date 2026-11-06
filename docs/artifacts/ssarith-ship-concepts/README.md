@@ -145,3 +145,6 @@
   enough"): version 26, version id `1793951356-d4bb`. The glowing dots at the floods (hull, belly and logo) are gone; a
   flood shows only by the light it throws on the plating. Strobes, beacons and position lights keep theirs. The game
   already drew no lamp at a flood (ShipSkin), so it needed no change.
+- 2026-11-06, cloud session (Kelvane ships v6): version 26 republished as artifact version 27, version id `1793981354-efcc`,
+  its windows drawn by the shared `docs/mockups/lib/baked-ship.js` (panes) instead of its own copy; its rooms and bays
+  render identical to version 26.
