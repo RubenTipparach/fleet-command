@@ -177,10 +177,9 @@
       2.4
     ],
     "inner_mix": {
-      "pipes": 0.35,
-      "pods": 0.25,
-      "coils": 0.2,
-      "vents": 0.2
+      "pipes": 0.4,
+      "coils": 0.3,
+      "vents": 0.3
     },
     "corner_m": 0.9,
     "cage_m": 2.0

@@ -832,14 +832,13 @@ def greebles(lo, armour, D, rng, mats, holes=None):
     return parts
 
 
-MACHINES = ("pipes", "pods", "coils", "vents")
+MACHINES = ("pipes", "coils", "vents")   # no fuel pods (owner, 2026-11-06: "I hate those pods")
 
 
 def machine(kind, P, Q, r):
     """One cell of the machinery inside an opening, P along the ship by Q across, in local (u along, v across, w out)
     coordinates, sitting on w = 0: {paint kind: [bmesh]}. pipes: two to four runs along the ship with a collar and a
-    bracket at the cell's join, so neighbouring pipe cells read as one long run; pods: a fuel pod (a capsule) on two
-    cradles with its feed line; coils: a core wound with five to seven coils between end flanges, on stands; vents: a
+    bracket at the cell's join, so neighbouring pipe cells read as one long run; coils: a core wound with five to seven coils between end flanges, on stands; vents: a
     large vent, a bank of upright slats in a framed tray."""
     out = {}
     add = lambda k, bm: out.setdefault(k, []).append(bm)
@@ -850,15 +849,6 @@ def machine(kind, P, Q, r):
             add("greeble", bm_cyl(rad, P * 1.02, 16, at=(0, v, rad + 0.1), axis="u"))
             add("machine", bm_cyl(rad * 1.5, 0.24, 16, at=(-P * 0.5 + 0.25, v, rad + 0.1), axis="u"))
         add("greeble", bm_box(0.32, Q * 0.9, 0.14, at=(-P * 0.5 + 0.25, 0, 0)))
-    elif kind == "pods":
-        R = Q * r.uniform(0.24, 0.28); L = P * 0.6; h = R + 0.22   # under the bake's reach (cage_m)
-        add("machine", bm_cyl(R, L, 24, at=(0, 0, h), axis="u"))
-        for sgn in (-1, 1):
-            sp = bmesh.new(); bmesh.ops.create_uvsphere(sp, u_segments=24, v_segments=12, radius=R)
-            bmesh.ops.transform(sp, matrix=Matrix.Translation((sgn * L / 2, 0, h)), verts=sp.verts)
-            add("machine", sp)
-            add("greeble", bm_box(0.36, R * 1.7, h - R * 0.4, at=(sgn * L * 0.28, 0, 0)))
-        add("greeble", bm_cyl(0.09, P * 1.02, 10, at=(0, R * 1.05, 0.14), axis="u"))
     elif kind == "coils":
         rc, rw = Q * 0.12, Q * r.uniform(0.24, 0.28); n = r.choice((5, 6, 7)); h = rw + 0.14; span = P * 0.66
         add("greeble", bm_cyl(rc, P * 0.92, 16, at=(0, 0, h), axis="u"))
@@ -891,7 +881,7 @@ def inner_machinery(lo, armour, D, S, seed, holes=None):
     like large vents, fuel pods, coils and pipes would be cool", "greebles look too random"). Every face that looks across
     an opening at the ship's own hull within inner_reach_m carries an ordered lattice of cells inner_cell_m apart (along
     the ship, across), laid on the ship's own axes so neighbouring faces of a wall share one grid. Each row of cells is one
-    kind of machine (pipes, fuel pods, coils or large vents, by inner_mix), broken into runs of three to six cells with
+    kind of machine (pipes, coils or large vents, by inner_mix; no fuel pods, owner: "I hate those pods"), broken into runs of three to six cells with
     pipes between them, so a wall reads as engineered bays, never scatter; every cell's variant is seeded by its place.
     A carrier's well (S['pads']) gets landing pads on its up-facing floors first, and the machinery stands clear of them
     (PADS records each, for the page to park a craft on). Port side placed, starboard mirrored; never under armour, in a
@@ -899,7 +889,7 @@ def inner_machinery(lo, armour, D, S, seed, holes=None):
     if not D.get("inner_machinery"):
         return {}
     P, Q = D.get("inner_cell_m", [4.0, 2.4])
-    mix = D.get("inner_mix", {"pipes": 0.35, "pods": 0.25, "coils": 0.2, "vents": 0.2})
+    mix = D.get("inner_mix", {"pipes": 0.4, "coils": 0.3, "vents": 0.3})
     me = lo.data
     bm = bmesh.new(); bm.from_mesh(me); lbvh = BVHTree.FromBMesh(bm); bm.free()
     bm = bmesh.new()

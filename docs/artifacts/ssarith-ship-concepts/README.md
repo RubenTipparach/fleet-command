@@ -148,3 +148,7 @@
 - 2026-11-06, cloud session (Kelvane ships v6): version 26 republished as artifact version 27, version id `1793981354-efcc`,
   its windows drawn by the shared `docs/mockups/lib/baked-ship.js` (panes) instead of its own copy; its rooms and bays
   render identical to version 26.
+- 2026-11-06, cloud session (owner: "can we have the rooms in the windows be more yellow/orange tinted like they are well
+  lit for all ships?"): version 26 with the shared warm room palette (`lib/ship-rooms.js`, `lib/baked-ship.js`), published as
+  artifact version 28, version id `1794009085-7277`. The game's `pane.gdshader` and `ship_rooms.gdshaderinc` carry the same
+  palette.
