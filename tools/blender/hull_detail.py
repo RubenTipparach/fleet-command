@@ -726,7 +726,61 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
                     v.co += lift
     if primary:
         plates += [ov for o in list(plates) if (ov := overlay(o, D, mats)) is not None]
+        if D.get("hatch_share"):
+            plates += hatches(plates, D, mats, holes, S.get("logo"))
     return plates
+
+
+def hatches(plates, D, mats, holes=(), logo=None):
+    """Inspection hatches on the larger top and bottom plates (owner, 2026-11-06, "some hull armor examples", "details
+    idea"): on a plate D['hatch_min_m2'] or more, by the plate's own draw (a plate and its mirror alike), a framed hatch
+    with its corners cut on the diagonal, its panel set a little lower than its frame, and an amber lamp at two corners,
+    laid square to the ship on the plate's face. Never on the flanks, where the windows are, and never over a feature's
+    hole (a dome, a pod) or the logo. Returns the new objects."""
+    out = []
+    hb = bvh_of(list(holes)) if holes else None
+    lamp_mat = kind_material("lamp", "amber")
+    for o in list(plates):
+        me = o.data
+        if not me.polygons:
+            continue
+        nrm = sum((p.normal * p.area for p in me.polygons), Vector())
+        area = sum(p.area for p in me.polygons) / 2   # a solidified plate: its two faces
+        if nrm.length == 0 or abs(nrm.normalized().y) < 0.8 or area < D.get("hatch_min_m2", 18.0):
+            continue
+        n = nrm.normalized()
+        c = sum((v.co for v in me.vertices), Vector()) / len(me.vertices)
+        if c.x < -0.3:
+            continue   # the starboard plates take their mirror
+        r = random.Random(int(abs(c.x) * 10) * 7919 + int(c.y * 10) * 104729 + int(c.z * 10) * 31)
+        if r.random() > D["hatch_share"]:
+            continue
+        bm = bmesh.new(); bm.from_mesh(me); bvh = BVHTree.FromBMesh(bm); bm.free()
+        hit = bvh.ray_cast(c + n * 3.0, -n, 6.0)
+        if hit[0] is None:
+            continue
+        M = frame_at(hit[0], n)
+        R3 = M.to_3x3(); u, v = R3 @ Vector((1, 0, 0)), R3 @ Vector((0, 1, 0))
+        us = [(vv.co - hit[0]).dot(u) for vv in me.vertices]; vs = [(vv.co - hit[0]).dot(v) for vv in me.vertices]
+        hw = min(-min(us), max(us)) * 0.55; hh = min(-min(vs), max(vs)) * 0.55
+        if hw < 1.0 or hh < 0.7:
+            continue
+        hw, hh = min(hw, r.uniform(1.6, 2.6)), min(hh, r.uniform(1.0, 1.6))
+        foot = [hit[0] + u * (a_ * hw) + v * (b_ * hh) for a_ in (-1, 0, 1) for b_ in (-1, 0, 1)]
+        if hb is not None and any(inside(hb, f + n * 0.05) or inside(hb, f - n * 0.2) for f in foot):
+            continue
+        if logo and any(abs(abs(f.x) - abs(logo["at"][0])) < logo["size_m"] * 0.6 + 0.5 and abs(f.z - logo["at"][1]) < logo["size_m"] * 0.6 + 0.5 for f in foot):
+            continue
+        cc = min(hw, hh) * 0.3
+        parts = {"sub": [bm_ring(crect(2 * hw, 2 * hh, cc), crect(2 * hw - 0.3, 2 * hh - 0.3, cc * 0.7), 0.0, 0.1)],
+                 "greeble": [bm_prism(crect(2 * hw - 0.34, 2 * hh - 0.34, cc * 0.65), 0.0, 0.04)]}
+        lamps = [bm_box(0.2, 0.2, 0.12, at=(sx * (hw - 0.3), hh - 0.3, 0.06)) for sx in (-1, 1)]
+        for mir in ((False, True) if c.x > 0.3 else (False,)):
+            Mm = frame_at(hit[0], n, mir)
+            for k, bms in parts.items():
+                out.append(obj_from(merge([place(b.copy(), Mm) for b in bms]), "hatch_" + k, mats[k], rid_of(c, 2.0)))
+            out.append(obj_from(merge([place(b.copy(), Mm) for b in lamps]), "hatch_lamps", lamp_mat, 0.5))
+    return out
 
 
 def overlay(o, D, mats):
@@ -832,23 +886,79 @@ def greebles(lo, armour, D, rng, mats, holes=None):
     return parts
 
 
-MACHINES = ("pipes", "coils", "vents")   # no fuel pods (owner, 2026-11-06: "I hate those pods")
+MACHINES = ("bays", "grilles", "channels", "conduits", "plates", "coils", "pipes")   # no fuel pods (owner: "I hate those pods")
+
+
+def crect(w, h, c, du=0.0, dv=0.0):
+    """A w by h rectangle at (du, dv) in local (u, v) with its corners cut c on the diagonal, counter-clockwise."""
+    x0, x1, y0, y1 = du - w / 2, du + w / 2, dv - h / 2, dv + h / 2
+    return [(x0 + c, y0), (x1 - c, y0), (x1, y0 + c), (x1, y1 - c), (x1 - c, y1), (x0 + c, y1), (x0, y1 - c), (x0, y0 + c)]
+
+
+def bm_ring(outer, inner, w0, w1):
+    """A frame between two polygons of the same count (outer round inner), from w0 to w1: a rim with its own corners."""
+    bm = bmesh.new(); n = len(outer)
+    O = [(bm.verts.new((u, v, w0)), bm.verts.new((u, v, w1))) for u, v in outer]
+    I = [(bm.verts.new((u, v, w0)), bm.verts.new((u, v, w1))) for u, v in inner]
+    for i in range(n):
+        j = (i + 1) % n
+        bm.faces.new((O[i][1], O[j][1], I[j][1], I[i][1])); bm.faces.new((O[j][0], O[i][0], I[i][0], I[j][0]))
+        bm.faces.new((O[i][0], O[j][0], O[j][1], O[i][1])); bm.faces.new((I[j][0], I[i][0], I[i][1], I[j][1]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
 
 
 def machine(kind, P, Q, r):
     """One cell of the machinery inside an opening, P along the ship by Q across, in local (u along, v across, w out)
-    coordinates, sitting on w = 0: {paint kind: [bmesh]}. pipes: two to four runs along the ship with a collar and a
-    bracket at the cell's join, so neighbouring pipe cells read as one long run; coils: a core wound with five to seven coils between end flanges, on stands; vents: a
-    large vent, a bank of upright slats in a framed tray."""
+    coordinates, sitting on w = 0: {paint kind: [bmesh]}. Low relief in two or three layers, every corner cut on the
+    diagonal, after how worked hulls are panelled (owner, 2026-11-06: "some examples of greebles for you to study"):
+      bays      a framed tray with a pair of hatch doors and a door's indicator lamps;
+      grilles   a framed tray of upright slats;
+      channels  a lit channel between two rails, running the cell's length so a row reads as one long light;
+      conduits  two or three thin lines on low brackets with a junction box;
+      plates    a plate with a smaller one laid on it and a row of small fittings, the quiet cells;
+      coils     a core wound with coils between end flanges, on stands;
+      pipes     two to four runs with a collar and a bracket at the join, so neighbouring cells read as one run."""
     out = {}
     add = lambda k, bm: out.setdefault(k, []).append(bm)
-    if kind == "pipes":
-        n = r.choice((2, 3, 3, 4)); rad = r.uniform(0.14, 0.22)
+    c = min(P, Q) * 0.12   # the diagonal at a module's corners
+    if kind in ("bays", "grilles"):
+        w, h = P * 0.92, Q * 0.88
+        add("under", bm_prism(crect(w, h, c), 0.0, 0.06))                                       # the tray's back
+        add("machine", bm_ring(crect(w, h, c), crect(w - 0.36, h - 0.36, c * 0.7), 0.0, 0.34))  # its frame
+        if kind == "bays":
+            dw = (w - 0.36 - 0.14) / 2
+            for sgn in (-1, 1):
+                add("sub", bm_prism(crect(dw, h - 0.46, c * 0.6, du=sgn * (dw / 2 + 0.07)), 0.0, 0.2))   # a hatch door
+                add("vent", bm_prism(crect(dw * 0.6, 0.16, 0.04, du=sgn * (dw / 2 + 0.07), dv=(h - 0.46) * 0.28), 0.0, 0.22))
+            col = r.choice(("amber", "amber", "red", "green"))
+            for k in range(2):
+                add("lamp:" + col, bm_box(0.2, 0.2, 0.12, at=(-w / 2 + 0.5 + k * 0.32, h / 2 - 0.09, 0.3)))
+        else:
+            n = r.choice((7, 9, 11)); span = w - 0.6
+            for k in range(n):
+                add("slat", bm_box(span / n * 0.45, h - 0.5, 0.26, at=(-span / 2 + (k + 0.5) * span / n, 0, 0.04)))
+    elif kind == "channels":
+        for sgn in (-1, 1):
+            add("machine", bm_box(P * 1.02, 0.22, 0.3, at=(0, sgn * 0.32, 0)))
+        add("lamp:strip", bm_box(P * 1.02, 0.3, 0.08, at=(0, 0, 0.02)))
+        add("greeble", bm_prism(crect(P * 0.8, Q * 0.3, 0.1, dv=Q * 0.3), 0.0, 0.16))
+        if r.random() < 0.5:
+            add("lamp:" + r.choice(("amber", "red")), bm_box(0.22, 0.22, 0.14, at=(r.uniform(-P, P) * 0.35, -Q * 0.32, 0.0)))
+    elif kind == "conduits":
+        n = r.choice((2, 3)); rad = r.uniform(0.08, 0.12)
         for j in range(n):
-            v = (j - (n - 1) / 2) * Q / n
-            add("greeble", bm_cyl(rad, P * 1.02, 16, at=(0, v, rad + 0.1), axis="u"))
-            add("machine", bm_cyl(rad * 1.5, 0.24, 16, at=(-P * 0.5 + 0.25, v, rad + 0.1), axis="u"))
-        add("greeble", bm_box(0.32, Q * 0.9, 0.14, at=(-P * 0.5 + 0.25, 0, 0)))
+            add("greeble", bm_cyl(rad, P * 1.02, 12, at=(0, (j - (n - 1) / 2) * 0.34, rad + 0.12), axis="u"))
+        add("machine", bm_box(0.26, n * 0.34 + 0.2, 0.12, at=(-P * 0.5 + 0.2, 0, 0)))
+        jb = r.uniform(-0.25, 0.25) * P
+        add("machine", bm_prism(crect(0.9, n * 0.34 + 0.4, 0.14, du=jb), 0.0, 0.42))              # a junction box
+        add("lamp:" + r.choice(("amber", "green")), bm_box(0.16, 0.16, 0.08, at=(jb, n * 0.17 + 0.05, 0.42)))
+    elif kind == "plates":
+        add("machine", bm_prism(crect(P * 0.94, Q * 0.9, c), 0.0, 0.14))
+        sw, sh = P * r.uniform(0.4, 0.6), Q * r.uniform(0.4, 0.6); du = r.uniform(-1, 1) * (P * 0.94 - sw) / 2 * 0.8
+        add("sub", bm_prism(crect(sw, sh, c * 0.6, du=du), 0.0, 0.28))
+        for k in range(r.choice((3, 4, 5))):
+            add("greeble", bm_box(0.3, 0.3, 0.1, at=(-P * 0.3 + k * 0.45, -Q * 0.3, 0.14)))
     elif kind == "coils":
         rc, rw = Q * 0.12, Q * r.uniform(0.24, 0.28); n = r.choice((5, 6, 7)); h = rw + 0.14; span = P * 0.66
         add("greeble", bm_cyl(rc, P * 0.92, 16, at=(0, 0, h), axis="u"))
@@ -856,15 +966,14 @@ def machine(kind, P, Q, r):
             add("machine", bm_cyl(rw, span / n * 0.62, 28, at=(-span / 2 + (k + 0.5) * span / n, 0, h), axis="u"))
         for sgn in (-1, 1):
             add("greeble", bm_cyl(rw * 1.18, 0.14, 28, at=(sgn * P * 0.4, 0, h), axis="u"))
-            add("greeble", bm_box(0.32, rw * 1.5, h, at=(sgn * P * 0.4, 0, 0)))
-    else:
-        add("greeble", bm_box(P * 0.9, Q * 0.86, 0.14))
-        for sgn in (-1, 1):
-            add("greeble", bm_box(P * 0.9, 0.16, 0.46, at=(0, sgn * Q * 0.43, 0)))
-        n = r.choice((7, 9, 11)); span = P * 0.78
-        for k in range(n):
-            add("slat", bm_box(span / n * 0.42, Q * 0.72, 0.36, at=(-span / 2 + (k + 0.5) * span / n, 0, 0.12)))
-        add("vent", bm_box(span, Q * 0.74, 0.02, at=(0, 0, 0.13)))
+            add("greeble", bm_prism(crect(0.36, rw * 1.5, 0.08, du=sgn * P * 0.4), 0.0, h))
+    else:   # pipes
+        n = r.choice((2, 3, 3, 4)); rad = r.uniform(0.14, 0.22)
+        for j in range(n):
+            v = (j - (n - 1) / 2) * Q / n
+            add("greeble", bm_cyl(rad, P * 1.02, 16, at=(0, v, rad + 0.1), axis="u"))
+            add("machine", bm_cyl(rad * 1.5, 0.24, 16, at=(-P * 0.5 + 0.25, v, rad + 0.1), axis="u"))
+        add("greeble", bm_prism(crect(0.34, Q * 0.9, 0.1, du=-P * 0.5 + 0.25), 0.0, 0.14))
     return out
 
 
@@ -881,15 +990,16 @@ def inner_machinery(lo, armour, D, S, seed, holes=None):
     like large vents, fuel pods, coils and pipes would be cool", "greebles look too random"). Every face that looks across
     an opening at the ship's own hull within inner_reach_m carries an ordered lattice of cells inner_cell_m apart (along
     the ship, across), laid on the ship's own axes so neighbouring faces of a wall share one grid. Each row of cells is one
-    kind of machine (pipes, coils or large vents, by inner_mix; no fuel pods, owner: "I hate those pods"), broken into runs of three to six cells with
-    pipes between them, so a wall reads as engineered bays, never scatter; every cell's variant is seeded by its place.
+    kind of machine (machine(): door bays, grilles, lit channels, conduits, plates, coils, pipes; by inner_mix; no fuel
+    pods, owner: "I hate those pods"), broken into runs of three to six cells with conduits between them, so a wall
+    reads as engineered bays, never scatter; every cell's variant is seeded by its place.
     A carrier's well (S['pads']) gets landing pads on its up-facing floors first, and the machinery stands clear of them
     (PADS records each, for the page to park a craft on). Port side placed, starboard mirrored; never under armour, in a
     hole, or past a face's edge. Returns {paint kind: [bmesh]}."""
     if not D.get("inner_machinery"):
         return {}
     P, Q = D.get("inner_cell_m", [4.0, 2.4])
-    mix = D.get("inner_mix", {"pipes": 0.4, "coils": 0.3, "vents": 0.3})
+    mix = D.get("inner_mix", {k: 1.0 for k in MACHINES})
     me = lo.data
     bm = bmesh.new(); bm.from_mesh(me); lbvh = BVHTree.FromBMesh(bm); bm.free()
     bm = bmesh.new()
@@ -981,7 +1091,7 @@ def inner_machinery(lo, armour, D, S, seed, holes=None):
         row_kind = row.choices(kinds, weights)[0]
         run = row.randint(3, 6)
         blk = random.Random(seed * 7777 + ax * 131 + pos * 17 + j * 9973 + (i // run) * 613)
-        kind = row_kind if blk.random() < 0.8 else "pipes"
+        kind = row_kind if blk.random() < 0.8 else "conduits"
         v = random.Random(seed * 131071 + ax * 8191 + pos * 127 + j * 524287 + i * 2147).random()   # its variant, one for both sides
         for mir in (False, True):
             put(machine(kind, P, Q, random.Random(v)), frame_at(q, n, mir))

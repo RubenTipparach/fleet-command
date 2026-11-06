@@ -110,7 +110,22 @@
       "slat",
       "vent"
     ],
-    "machine_light": 0.7
+    "machine_light": 0.7,
+    "plate_marks": {
+      "groove_inset_m": 0.3,
+      "groove_w_m": 0.08,
+      "groove_k": 0.62,
+      "red": "#9a1c1c",
+      "ink": "#3a3022",
+      "dots": [
+        "#9a1c1c",
+        "#8a6a3a",
+        "#3a3022"
+      ],
+      "triangle_share": 0.45,
+      "frame_share": 0.4,
+      "dots_share": 0.3
+    }
   },
   "defaults": {
     "smooth_deg": 40,
@@ -177,12 +192,18 @@
       2.4
     ],
     "inner_mix": {
-      "pipes": 0.4,
-      "coils": 0.3,
-      "vents": 0.3
+      "bays": 0.2,
+      "grilles": 0.15,
+      "channels": 0.15,
+      "conduits": 0.12,
+      "plates": 0.2,
+      "coils": 0.1,
+      "pipes": 0.08
     },
     "corner_m": 0.9,
-    "cage_m": 2.0
+    "cage_m": 2.0,
+    "hatch_share": 0.4,
+    "hatch_min_m2": 18.0
   },
   "ships": {
     "kelvane_frigate": {

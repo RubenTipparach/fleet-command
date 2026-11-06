@@ -530,6 +530,9 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
             tick &= (z > za) & (z < zb) & (np.abs(n[..., 0]) > 0.5) & (kind_is("armour") | kind_is("sub"))
             base = np.where(tick[..., None], hexrgb(PT["ink"]) * 1.4, base)
             liv |= tick
+    if PT.get("plate_marks"):
+        base, marked = plate_marks(base, P, n, rid, kind_is("armour"), PT["plate_marks"])
+        liv |= marked
     patch, field, device, hull = logo_mask(S, faction, P, n, kind_is("armour") | kind_is("sub"))
     if hull:   # the emblem's own hull colours: its plate painted as a patch, the field and device on it
         base = np.where(patch[..., None], hexrgb(hull["plate"]), base)
@@ -577,6 +580,65 @@ def detector_cells(P, n, cell_m=None):
     on = h < PT.get("strip_cell_on", 0.7)
     lvl = 0.45 + 0.55 * cell_hash(iu, iv, ax, 0x1F)
     return np.where(sq & on, lvl, 0.0).astype(np.float32)
+
+
+def plate_marks(base, P, n, rid, plate, M):
+    """Each armour plate as a panel within a panel, with the small marks a worked hull carries (owner, 2026-11-06, "some
+    hull armor examples", "details idea"): a groove inset M['groove_inset_m'] from every plate edge, and, on some plates
+    (by the plate's id, so a plate and its mirror match), a small red triangle near one corner, an outlined stencil box
+    near another, and a short row of small squares. Each mark is placed in the plate's own plane (the axes of its
+    facing, |x| for port and starboard alike) from the plate's extent there. Returns (colour, marked mask)."""
+    h, w = plate.shape
+    d = np.linalg.norm(np.diff(P, axis=1), axis=2)[:, :-1][plate[:, 1:-1]] if plate.any() else np.array([0.1])
+    texel = float(np.median(d[(d > 1e-4) & (d < 1.0)])) if d.size else 0.1   # metres per texel on the plating
+    q = np.round(rid * 4096).astype(np.int64)
+    edge = np.zeros_like(plate)
+    for ax in (0, 1):
+        for sh in (1, -1):
+            edge |= plate & ((np.roll(q, sh, axis=ax) != q) | ~np.roll(plate, sh, axis=ax))
+    r1 = max(1, int(round(M.get("groove_inset_m", 0.3) / texel)))
+    near = lambda r: blur(edge.astype(np.float32), r) > 1e-6
+    groove = plate & near(r1 + max(1, int(round(M.get("groove_w_m", 0.08) / texel)))) & ~near(r1)
+    base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
+    # the plate's own plane: (along, across) by its facing, the same on both sides
+    ax = np.abs(n).argmax(axis=2); x = np.abs(P[..., 0])
+    a = np.where(ax == 0, P[..., 2], x); b = np.where(ax == 1, P[..., 2], P[..., 1])
+    lab = np.where(plate, q, -1); ids, inv = np.unique(lab, return_inverse=True); inv = inv.reshape(lab.shape)
+    big = 1e9
+    amin = np.full(len(ids), big); amax = np.full(len(ids), -big); bmin = np.full(len(ids), big); bmax = np.full(len(ids), -big)
+    np.minimum.at(amin, inv[plate], a[plate]); np.maximum.at(amax, inv[plate], a[plate])
+    np.minimum.at(bmin, inv[plate], b[plate]); np.maximum.at(bmax, inv[plate], b[plate])
+    zero = np.zeros(len(ids), np.int64)
+    hsh = lambda salt: cell_hash(ids, zero, zero, salt)[inv]       # one draw a plate, by its id
+    A0, A1, B0, B1 = amin[inv], amax[inv], bmin[inv], bmax[inv]
+    room = ((A1 - A0) > 3.0) & ((B1 - B0) > 2.0) & plate               # a plate big enough to carry marks
+    ins = r1 * texel + 0.35                                            # inside the groove
+    marked = np.zeros_like(plate)
+    red = hexrgb(M.get("red", "#9a1c1c")); ink = hexrgb(M.get("ink", "#3a3022")); dots = [hexrgb(c) for c in M.get("dots", ["#9a1c1c", "#8a6a3a", "#3a3022"])]
+    # a small red triangle, pointing in, near the plate's top corner
+    tri = room & (hsh(0x11) < M.get("triangle_share", 0.45))
+    da, db = a - (A0 + ins + 0.45), (B1 - ins) - b
+    tri &= (db > 0) & (db < 0.7) & (np.abs(da) < 0.42 * (1 - db / 0.7))
+    base = np.where(tri[..., None], red, base); marked |= tri
+    # an outlined stencil box near the opposite corner
+    fr = room & (hsh(0x23) < M.get("frame_share", 0.4))
+    ua, vb = (A1 - ins) - a, b - (B0 + ins)
+    box = (ua > 0) & (ua < 1.8) & (vb > 0) & (vb < 0.8)
+    lw = max(texel * 1.2, 0.06)
+    inner = (ua > lw) & (ua < 1.8 - lw) & (vb > lw) & (vb < 0.8 - lw)
+    fr &= box & ~inner
+    base = np.where(fr[..., None], ink, base); marked |= fr
+    # a short row of small squares along the bottom edge, middle of the plate
+    sq = room & (hsh(0x37) < M.get("dots_share", 0.3))
+    k = np.floor((a - (A0 + A1) / 2) / 0.55 + 2)
+    fa = (a - (A0 + A1) / 2) / 0.55 + 2 - k
+    sq &= (k >= 0) & (k < 4) & (fa > 0.2) & (fa < 0.8) & ((b - (B0 + ins)) > 1.0) & ((b - (B0 + ins)) < 1.35)
+    pick = (hsh(0x41) * 3).astype(int)
+    for i, c in enumerate(dots):
+        m = sq & (((pick + k.astype(int)) % len(dots)) == i)
+        base = np.where(m[..., None], c, base)
+    marked |= sq
+    return base, marked
 
 
 def strips_and_glow(kind_is, P, glowp, cover, n=None):
