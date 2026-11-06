@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-05, v8) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | **Retired** (2026-11-04: the emblem lives on the real model, mockup 6; owner: "Concord emblem on the hull - get rid of this"; off the tracker's mockup list, kept under Misc) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | **Version 1 withdrawn** (2026-11-04, owner: "you are over stereotyping an alien species which is extremely insensitive"; it read the species' body into the ships). Waits on the owner setting the Hunt's culture (survey H1) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | **Approved for implementation** (2026-11-06, owner in conversation: "looks good, implement in game"; approved for build by the same words). Drafted (2026-11-06, v23: the cruiser's shell below, the carrier's in the middle with bays above and below, windows without glow; v22: one ship at a time, frigates, a new cruiser and the carrier; v21: breakup fixed, every cell has its skin; v20: hulls break apart; v19: bay lamps on the lintels; v18: all five rebaked with every pane fitted; v17: rooms and hangars level, every pane fitted to its face; v16: clean-framed windows and bays, each its own quad; v15: the four picks and a new carrier, each with modelled hull detail, a PBR set and baked hull lights; rooms behind the windows and hangars behind the bays, forward floods, a greener emission, battle damage on the shared ship-fx.js) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-06, v7) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
@@ -676,6 +676,59 @@ ships will look."
   and CLAUDE.md section 1. Next: the Hunt's culture, set by the owner (survey H1), before any ship is redrawn.
 
 Design: `openspec/changes/ssarith-ship-concepts/`.
+- Version 3 (owner, 2026-11-04: "now update the damn ships!", "Ssarith ships", "not anyother ships thoo lol, SSarith needs
+  work"): three traditions drafted inside the Hunt on the same rooms, each choice naming its line in the culture or
+  marked ours, none from the species' body: A Old Lodge, B Trackers, C Course. Survey H2 asks which stand.
+- Version 4 (owner, 2026-11-04: "sillhoutte seems a bit rough along the spine. I would prefer something smooth. No go for
+  C, A and B are good options I will think about that more. Add new C that replaces nacelles with a secondary hull instead,
+  adding some assuymetry or lower or upper secondary hull"): smooth chamfers on every direction; C Course withdrawn; C Field
+  Hull with its own rooms (`data/ships/ssarith/frigate_field_hull_plan.json`), below and to port, below, or above.
+- Version 5 (owner, 2026-11-04: "I'd like to see these contours smoothed out top down and sides stay flat", "but without
+  adding more polygons", "remove the wobble", "yea if this could be smoothed thatd be nice"): a fair hull on every
+  direction and on the field hull, one chamfer along the body, smooth outlines, no polygons added.
+- Version 6 (owner, 2026-11-04: "oof now theres uv issues"): the plating laid on each face itself, true size on the 45
+  degree chamfers, rows lined up along the length; no geometry changed.
+- Version 7 (owner, 2026-11-04: "ships arent very complex"): working detail from the plan and the bible (gun houses, bay
+  doors, attitude thrusters, the shared thruster bells, a forward emitter) and each tradition's own parts.
+- Version 8 (owner, 2026-11-04: "pack in those details by rendering a high poly model into textures", "Then applying metal
+  detail texture on top"): three plating tiles and a fine metal tile modelled and rendered in Blender
+  (`tools/blender/build_hull_tiles_ssarith.py`, `assets/textures/ssarith/`) and laid on the hulls.
+- Version 9 (owner, 2026-11-05: "Bro why are you stuck on this. Delete this design. It sucks, look at the inspiration.
+  Block out more stuff. We need a variety of designs. Not just 3 lame ones that look like coffins. Look at my examples -
+  gorn from Starfleet command"): versions 1 to 8 deleted (the plans, the baked tiles and their generator, the old shots;
+  git keeps them). A blockout board of twelve frigate-sized massings in grey clay; survey H4 asks which go on. The
+  owner's examples did not reach the session and are asked for again.
+- Version 10 (owner, 2026-11-05, with three images of the reference game's and a fan's Gorn ships, not committed:
+  "gorn from star trek", "they looked menacing!", "make ships like this, with this kind of texture", "might need a new
+  skill to make high -poly AO baked texture that looks drawn on"): twelve new blockouts in the examples' shape language
+  (reach forward, a hood over a narrow neck, low raked blades, chevrons, light in strips), never their designs; a new skill,
+  `painted-bake` (`tools/blender/painted_bake.py`), paints over a high-poly tile's Cycles passes so it reads drawn on.
+- Version 12 (owner, 2026-11-05): the picks, "spearhead: there we go again with the ltiterals lol / headedf lance: great! /
+  forked prow, great! bit of a mess of geometry / trident: awesome! / harpoon yes!"; the new rule, "every ship needs custom
+  uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL
+  only", "dont forget to bake AO as well"; and on the picks, "these shapes need work, they arent connect together well, and
+  violate our "no deformed primitive rules", shapes must be made with purpose and flow into the grater structures". Each
+  pick is one grown skin (its branches split from the body's own section) and is baked onto its own UVs with AO, plating,
+  chevrons and lit ports (`painted_bake.py --ship`, `assets/ships/ssarith/`). Both rules are in CLAUDE.md section 10 and
+  the Ship Design Bible (chapters 14 and 15); the Concord and Krai lines have a task to follow.
+- Version 13 (owner, 2026-11-05, with the reference game's sheet of a ship, not committed): "discard ships that I didnt
+  want, only keep the ramining ones. I'd like more features onthe hulls, the gorn ships have things like vents, lights, and
+  sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the same", "notice stuff like
+  liveries, smooth sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis
+  symmetry, and lots of shading to give the armor depth". Only the picks stay. Each one's detail is modelled over its hull
+  (`tools/blender/hull_detail.py`, `data/ships/ssarith/hull_detail.json`) and baked onto its own UVs; the rules are Ship
+  Design Bible T5-T8 and CLAUDE.md section 10.
+- Version 14 (owner, 2026-11-05: "Now those my friend are gorgeous looking star ships. Next up, lighting pass, windows,
+  pbr, normal maps, logo, emissive texture (you have some features that look like glowy bits)"): the PBR set and the
+  hull lights (floods, position lights, beacons, strobes, windows) baked onto each ship's UVs, the emblem from the
+  emblems page painted on the top armour, the page's Look and Light switches. The method is the new `ship-detailing`
+  skill, with image samples (owner: "write up a skill for detailing space ships with custom texturing", "Include image
+  samples in your documentation"). Survey H5: the window and flood colours.
+- Version 15 (owner, 2026-11-05, with two night shots: "we need some more lights pointed forward to paint more of the hull",
+  "we need a carrier", "we need to show interior of ships with windows", "we need damage systems", "also this light, I
+  wish it were more green", "the hull emission"): rows of forward floods, a greener emission, rooms behind every window
+  (the Concord line's room code lifted into `docs/mockups/lib/ship-rooms.js`), the carrier (blockout 13) with launch bays
+  and hangars, and battle damage on the shared `docs/mockups/lib/ship-fx.js`.
 
 ## 14. Krai badge in 3D
 

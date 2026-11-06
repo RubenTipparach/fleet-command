@@ -1,6 +1,7 @@
 # Emblem Design Guide (guide)
 
-- Link: https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V
+- Link (the cloud session's account, published 2026-11-04 with the Culture, not anatomy rules): https://claude.ai/artifact/AewTrvPYf4gyF1kP1gxkDk
+- Link (the main account, not reachable from cloud sessions): https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V
 - Shows: how faction emblems are designed and the owner's notes on them (newest first, in their words); the method
   (ideology, then a flat SVG sketch with every choice labelled, then the owner's pick, then 3D); what the reference
   badges teach; what the STARFLEET Visual Standards Manual 2026 teaches (cited by printed page); sixteen rules compiled
@@ -77,3 +78,5 @@
 - 2026-11-05, version 29 (`1793840985-686c`): SD's feathers larger, their tips their own shapes (owner: "Feathera red with orange tip").
 - 2026-11-05, version 30 (`1793846055-70a5`): SD's feather body and tip edge to edge (owner: "z fighting").
 - 2026-11-05, version 31 (`1793847828-247e`): SD's bows a real recurve with tally spurs and forked tips (owner: "make it more alien", "ooh the thorny bows are great"), no spur where the grip hand closes; the recess's inner walls in the parts.
+- 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/AewTrvPYf4gyF1kP1gxkDk, version id `1793801612-4a21`. Not on the tracker (the tracker stays on the main account).
+- 2026-11-06, version 32 (`1793927604-66e5`): the Kelvane Institute section (owner: "lets design an emblem for the institute"), opening by default: three traditions drafted inside the Institute (the Calibrators, the Open Notebook, the Long Baseline), each with a sketch: KIA the True Mark (recommended), KIB the Repeated Trace, KIC the Long Baseline; none from the Kelvane's bodies.
