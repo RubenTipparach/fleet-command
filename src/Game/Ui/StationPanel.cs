@@ -1,7 +1,7 @@
 // StationPanel: the stations panel (battle-console design section 1): one panel whose page is picked by a narrow column
-// of nine icon tabs. Built in the game so far: Helm (orders toward the target, high energy turns) and Power (energy in
-// boxes). The
-// other seven stations are on the rail and show that they are not built yet; each comes in its own change.
+// of nine icon tabs, each with its officer's slot on the frame's top edge. Built here: Helm (orders toward the target, high
+// energy turns) and Power (energy in boxes; its Reactor and Warp modes in StationPanel.Reactor.cs). The other stations
+// each live in their own file (StationPanel.<Station>.cs); one not built yet says so.
 using System;
 using FleetCommand.Sim;
 using Godot;
@@ -25,6 +25,8 @@ public sealed partial class StationPanel : ConsolePanel
         var st = Array.Find(Stations, s => s.Id == cur);
         Rect2 p = Frame(st.Label);
         Rail("st", p.Position.X, p.Position.Y, Stations, cur, X.Act.Station);
+        // the station's officer slot, on the frame's top edge left of its title (StationPanel.Reactor.cs)
+        OfficerSlot(p.Position.X + 56, 0, Math.Min(Big ? 340 : 230, TitleLeft - 14 - (p.Position.X + 56)), cur);
         var b = new Rect2(p.Position.X + 56, p.Position.Y, p.Size.X - 56, p.Size.Y);
         bool drawn = false;
         switch (cur)
@@ -198,9 +200,11 @@ public sealed partial class StationPanel : ConsolePanel
     private void Power(Rect2 b)
     {
         Ship s = Me;
-        // the power station's modes: Allocation is built; Reactor and Warp are not in the game yet
-        Tabs("pw.mode", new Rect2(b.Position, new Vector2(b.Size.X, 40)), new[] { ("alloc", "Allocation"), ("reactor", "Reactor"), ("warp", "Warp") }, "alloc", _ => { }, id => id != "alloc");
+        // the power station's modes: Allocation (the reference game's energy page), Reactor and Warp (StationPanel.Reactor.cs)
+        Tabs("pw.mode", new Rect2(b.Position, new Vector2(b.Size.X, 40)), new[] { ("alloc", "Allocation"), ("reactor", "Reactor"), ("warp", "Warp") }, X.State.PowerMode, m => X.State.PowerMode = m);
         b = new Rect2(b.Position.X, b.Position.Y + 46, b.Size.X, b.Size.Y - 46);
+        if (X.State.PowerMode == "reactor") { ReactorMode(b); return; }
+        if (X.State.PowerMode == "warp") { WarpMode(b); return; }
         double outE = B.Rules.Output(s);
         int used = B.Rules.Used(s);
         double spare = outE - used;
@@ -213,7 +217,13 @@ public sealed partial class StationPanel : ConsolePanel
             PowerRow("pw", b.Position.X + io, y, b.Size.X - io, rowH, k, lw - io);
             y += rowH + gap;
         }
-        y += 4;
+        // warp set by hand (the mockup's allocation: "warp should be in here to allocate power for"), and the pumps' draw
+        Kit.Icon(this, "warp", new Rect2(b.Position.X, y + (rowH - isz) / 2, isz, isz), C.Sky);
+        PowerRow("pw", b.Position.X + io, y, b.Size.X - io, rowH, "warp", lw - io);
+        y += rowH + gap;
+        Pairs("pw.c", b.Position.X, y + 16, new (string, string, Color?)[] { ("Coolant pumps", $"{B.Rules.CoolantDraw(s)} E", null) }, 18);
+        Lbl("set in Reactor", b.End.X, y + 16, 0, null, HorizontalAlignment.Right, 13);
+        y += 22;
         double bat = s.Battery / s.Class.BatteryE;
         Bar(b.Position.X, y, b.Size.X, $"Battery {s.Battery:0.0} / {s.Class.BatteryE:0} E", bat, bat < 0.25);
         if (Big)

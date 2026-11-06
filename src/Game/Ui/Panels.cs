@@ -195,15 +195,47 @@ public sealed partial class BottomStrip : ConsolePanel
         }
     }
 
-    // The warp key at the end of the speed slider, drawn offline (dark, its name dim) as the mockup's drive starts: the
-    // warp drive is not in the game yet, so the key does nothing.
+    // The warp key at the end of the speed slider (the battle console mockup's warpKey; owner, 2026-11-02: "it should start
+    // out as disabled ... then it begins charging and glows, pulsating when its ready. it wont glow in a gravitational
+    // anomaly however"). Offline: dark, its name dim. Armed with no free energy: "Need power" in Caution. Charging: filling
+    // toward the energy a jump needs, a soft glow. Ready: green and pulsing; inside a Q-G field strong enough to need the
+    // override it neither glows nor pulses. A click is Battle.WarpKey (it arms, reports or jumps; it never cuts power), and
+    // its hover card gives the banks, the coils' draw, the course and the risk from the same Battle.WarpRiskOf.
     private void WarpKey(Rect2 r)
     {
-        HitState st = Ui.Reg("warp.key", r, null, null, new Tip("Warp: not yet in the game"));
-        Kit.Shape(this, r, r.Size.Y / 2, C.Deep);
-        Kit.Shape(this, r.Grow(-1), r.Size.Y / 2, Sk.R.Night);
-        if (st.Hot) Kit.Shape(this, r.Grow(1), r.Size.Y / 2 + 1, C.Sky, 2);
-        Text("WARP", r.GetCenter().X, r.Position.Y + r.Size.Y * 0.68f, 17, Sk.R.Ghost, HorizontalAlignment.Center, r.Size.X - 10, 700, 1);
+        Ship s = Me;
+        WarpState wp = s.Warp;
+        var W = B.Data.Systems.Warp;
+        WarpRisk risk = B.WarpRiskOf(s);
+        float f = (float)Math.Clamp(wp.Banks / W.JumpE, 0, 1), h = r.Size.Y;
+        bool anomaly = risk.Q > W.QgBlock, ready = B.WarpReady(s), starved = wp.Armed && !ready && s.Power["warp"] <= 0 && wp.Banks < W.JumpE;
+        bool plotting = wp.Armed && wp.Plotting && wp.Plot < 1, blocked = wp.Armed && !ready && !plotting && wp.Banks >= W.JumpE && risk.Why != "";
+        string title = !wp.Armed ? "Warp off · click to start charging" : ready ? "Warp ready · click to jump" : starved ? "Warp: no free reactor power · lower another system"
+            : plotting ? "Warp: plotting the course" : blocked ? $"Warp: {risk.Why}" : "Warp charging";
+        var rows = new System.Collections.Generic.List<(string, string, Color?)>
+        {
+            ("Stored for the jump", $"{Math.Floor(wp.Banks)}/{W.JumpE:0} E", null), ("Reactor power in", $"{s.Power["warp"]} of {W.CoilE} E", null), ("Course", Battle.CourseText(s), null),
+            risk.Why != "" ? ("Jump", "blocked", C.Caution) : ("Jump risk", Pct(risk.Total), risk.Total > 0.3 ? C.Alert : risk.Total > 0.1 ? C.Caution : C.Accord),
+        };
+        if (risk.Why != "") rows.Add(("Needs", risk.Why, C.Caution));
+        HitState st = Ui.Reg("warp.key", r, _ => B.WarpKey(), null, new Tip(title, rows));
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.GetTicksMsec() / 1000f * Mathf.Tau * 0.9f);
+        // a glow: steady while charging on a plotted course, a pulse when ready; none while plotting or in a Q-G field
+        if (wp.Armed && !starved && !plotting && !blocked && !anomaly)
+            Kit.Shape(this, r.Grow(ready ? 2 + 4 * pulse : 3), h / 2 + 3, new Color(ready ? C.Accord : C.Sky, ready ? 0.25f + 0.25f * pulse : 0.25f));
+        Kit.Shape(this, r, h / 2, C.Deep);
+        if (!wp.Armed) Kit.Shape(this, r.Grow(-1), h / 2, Sk.R.Night);
+        else
+        {
+            if (f > 0) Kit.Shape(this, new Rect2(r.Position, new Vector2(Math.Max(h, r.Size.X * (ready ? 1 : f)), h)), h / 2, ready ? (st.Down ? C.Lilac : C.Accord) : C.Signal);
+            if (ready && !anomaly) Kit.Shape(this, r, h / 2, new Color(1, 1, 1, 0.28f * pulse));
+        }
+        // the plot's progress, a thin line along the key's foot
+        if (plotting) DrawRect(new Rect2(r.Position.X + h / 2, r.End.Y - 4, (r.Size.X - h) * (float)wp.Plot, 4), C.Lilac);
+        if (st.Hot) Kit.Shape(this, r.Grow(1), h / 2 + 1, C.Sky, 2);
+        string lab = wp.Out > 0 ? "JUMPING" : starved ? "NEED POWER" : blocked ? (anomaly ? "Q-G FIELD" : "BLOCKED") : plotting && f >= 1 ? $"PLOT {Math.Floor(wp.Plot * 100)}%" : "WARP";
+        Color col = !wp.Armed ? Sk.R.Ghost : starved || blocked ? C.Caution : ready || f > 0.55f ? KeyFace.Ink(Kit, ready ? C.Accord : C.Signal) : C.Sky;
+        Text(lab, r.GetCenter().X, r.Position.Y + h * 0.68f, starved || blocked ? 14 : 17, col, HorizontalAlignment.Center, r.Size.X - 10, 700, 1);
     }
 
     // Speed: the ten engine boxes are the track, a handle on them is dragged (owner: "speed needs a slider handle").

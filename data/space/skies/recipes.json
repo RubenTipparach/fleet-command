@@ -5753,7 +5753,7 @@
    ]
   },
   {
-   "id": "neutron_glare",
+   "id": "reactor_neutron_glare",
    "label": "",
    "name": "Neutron Glare",
    "for": "the test scenes and demos (composed)",
@@ -6061,7 +6061,7 @@
    ]
   },
   {
-   "id": "pulsar_wake",
+   "id": "reactor_pulsar_wake",
    "label": "",
    "name": "Pulsar Wake",
    "for": "the test scenes and demos (composed)",
@@ -6477,7 +6477,7 @@
    ]
   },
   {
-   "id": "cinder_drift",
+   "id": "reactor_cinder_drift",
    "label": "",
    "name": "Cinder Drift",
    "for": "the test scenes and demos (composed)",
@@ -6821,7 +6821,7 @@
    ]
   },
   {
-   "id": "smoke_veil",
+   "id": "reactor_smoke_veil",
    "label": "",
    "name": "Smoke Veil",
    "for": "the test scenes and demos (composed)",

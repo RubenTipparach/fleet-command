@@ -3,7 +3,7 @@
  "scenarios": [
   {
    "id": "concord_warp",
-   "sky": "neutron_glare",
+   "sky": "reactor_neutron_glare",
    "name": "Warp",
    "side": "concord",
    "seed": 20261111,
@@ -79,7 +79,7 @@
   },
   {
    "id": "krai_warp",
-   "sky": "pulsar_wake",
+   "sky": "reactor_pulsar_wake",
    "name": "Warp",
    "side": "krai",
    "seed": 20261111,
@@ -155,7 +155,7 @@
   },
   {
    "id": "concord_escape",
-   "sky": "cinder_drift",
+   "sky": "reactor_cinder_drift",
    "name": "Escape",
    "side": "concord",
    "seed": 20261112,
@@ -254,7 +254,7 @@
   },
   {
    "id": "krai_escape",
-   "sky": "smoke_veil",
+   "sky": "reactor_smoke_veil",
    "name": "Escape",
    "side": "krai",
    "seed": 20261112,

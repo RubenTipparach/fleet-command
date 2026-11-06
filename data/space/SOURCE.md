@@ -38,6 +38,10 @@ one being used all the time". The painter is now here, `tools/space/nebula_skies
 | `solar_furnace` | A blazing yellow-white heart in orange fire |
 | `deep_indigo` | Indigo clouds lit blue from within, crossing black lanes |
 | `coral_drift` | Coral and turquoise side by side, a warm core |
+| `reactor_neutron_glare` | A hard white-violet glare off a dead star (the reactor package's Warp scene, Concord side) |
+| `reactor_pulsar_wake` | A cold teal wake trailing a pulsar, pale gold knots (Warp, Krai side) |
+| `reactor_cinder_drift` | Smouldering brown and ember dust, a low red glow (Escape, Concord side) |
+| `reactor_smoke_veil` | Grey-violet smoke drawn thin, a faint rose core (Escape, Krai side) |
 
 `docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
 bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the

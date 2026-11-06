@@ -111,24 +111,16 @@ public sealed partial class Rules
     }
 
     /// <summary>A subsystem's status from its health and its energy.</summary>
-    public SystemStatus Status(Ship s, string subsystem)
-    {
-        double hp = s.Sys[subsystem];
-        if (hp <= 0) return SystemStatus.Destroyed;
-        if (hp < _t.StatusDisabledBelow) return SystemStatus.Disabled;
-        bool off = (Array.IndexOf(Systems, subsystem) >= 0 && s.Power.GetValueOrDefault(subsystem) <= 0) || (subsystem == "shields" && !s.ShieldsUp);
-        if (off) return SystemStatus.Off;
-        return hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
-    }
+    public SystemStatus Status(Ship s, string subsystem) =>
+        StatusOf(s.Sys[subsystem], (Array.IndexOf(Systems, subsystem) >= 0 && s.Power.GetValueOrDefault(subsystem) <= 0) || (subsystem == "shields" && !s.ShieldsUp));
 
     /// <summary>A mount's status from its health and its arming state.</summary>
-    public SystemStatus Status(Mount m)
-    {
-        if (m.Hp <= 0) return SystemStatus.Destroyed;
-        if (m.Hp < _t.StatusDisabledBelow) return SystemStatus.Disabled;
-        if (m.State == Arming.Offline) return SystemStatus.Off;
-        return m.Hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
-    }
+    public SystemStatus Status(Mount m) => StatusOf(m.Hp, m.State == Arming.Offline);
+
+    /// <summary>The status of anything with a health (a subsystem, a mount, a nacelle, a repair job): destroyed at 0,
+    /// disabled below status_disabled_below, then off when it has no energy, damaged below 1, else active.</summary>
+    public SystemStatus StatusOf(double hp, bool off = false) =>
+        hp <= 0 ? SystemStatus.Destroyed : hp < _t.StatusDisabledBelow ? SystemStatus.Disabled : off ? SystemStatus.Off : hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
 
     /// <summary>A class's best high energy turn chance: smaller hulls turn hard more safely.</summary>
     public static double HetMax(Ship s) => Math.Clamp(0.95 - s.Class.LengthM / 2000, 0.6, 0.95);
