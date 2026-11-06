@@ -236,7 +236,7 @@ the values the code had.
 | `facing_min` | 0.55 (chamfers bare) | 0.38 (the rounded hull's rolls plated too) | The rolled case (D2) |
 | Gaps, trenches | 0.5-1.0 m, trenches 2.6-4.6 m in 40 %, overlays on plates over 22 m2, greebles 1.6 a m2 | Seams of 0.2-0.32 m, no trenches, no overlays, no greebles, plates lifted no more than 0.05 m | Clean and sterile (owner: "Mind the clean and sterile and almost scientific aesthetics") |
 | `paint` | Olives and khakis, a bronze accent | Champagne enamel in seven tones, a brass accent, darker champagne sub-armour, a dark bronze under layer, smoked-glass domes and wells, the logo's velvet red for liveries, the console's dark ink | The console (kelvane-battle-console D2) |
-| Strips | `centre`: a lit line down a keel | `whole`: the belt and the beamline walls lit amber | The amber of a reading |
+| Strips | `centre`: a lit line down a keel, full strength | `whole`: the belt and the beamline walls lit amber, at 0.4 (`strip_k`; at full strength the loops' wide walls read as blank white) | The amber of a reading |
 | Glass | (none) | The hull's dark-glass faces (`well_*`) bare of armour, baked as their own kind (`glass`) | The console's wells |
 
 **What each ship carries** (`data/ships/kelvane/hull_detail.json`), smooth and round, never machinery (owner: "They would
@@ -262,6 +262,20 @@ up to date.
 - **The switches.** Look: Painted, PBR, Champagne, Clay. Light: Studio, Night.
 - **Duplication, reported.** The Hunt page still has its own copy of the same rules, woven into its damage, panes and
   breakup. Moving it onto the library is task 3.4.
+
+**The bakes.** Every class is baked at 2048 px and 32 samples, 6-19 minutes a ship on four cloud cores. Each bake keeps its passes (`tools/materials/raw/painted/ships/<faction>_<slug>_passes.npz`, gitignored), so `--repaint` redoes the paint from them in seconds, with no Cycles time.
+
+| Class | Low-poly triangles | High-poly faces | Metres a UV unit | Texel |
+|---|---|---|---|---|
+| Frigate | 656 | 16,122 | 147 | 7.2 cm |
+| Destroyer | 1,516 | 21,890 | 152 | 7.4 cm |
+| Cruiser | 1,884 | 26,025 | 197 | 9.6 cm |
+| Battlecruiser | 2,808 | 29,816 | 206 | 10.1 cm |
+| Carrier | 2,596 | 26,963 | 267 | 13.0 cm |
+
+- **Provisional: the large ships' texel.** The Hunt baked its cruiser and carrier at 3072 px to keep their texel near a
+  frigate's. Here the three larger ships stay at 2048 px for now, for the page's 16 MiB limit and the bake time (about
+  2.25 times as long). Task 3.7.
 
 **Not yet** (as the Hunt's ships took them in versions 14 and 15):
 - windows and the rooms behind them, once each class is planned rooms first;

@@ -385,6 +385,35 @@ def bake_ship(slug, px, samples, panes_only=False):
     sc.cycles.samples = max(32, samples)
     lightp = bake("DIFFUSE", "light", pass_filter={"DIRECT"})[:, :, :3]
     lightp = np.dstack([blur(lightp[..., c], 1) for c in range(3)])   # the emissive faces' sampling speckle out
+    passes = {"data": data, "glowp": glowp, "P": P, "nor": nor, "nts": nts, "ao": ao, "sunp": sunp, "lightp": lightp}
+    np.savez_compressed(passes_path(slug), **passes)   # kept (a build intermediate), so --repaint repaints without a bake
+    paint_and_write(slug, D, S, passes)
+    lref = D["defaults"]["light_ref"]
+    # the UV mesh, in ship space, as flat triangle lists
+    bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    uvl = bm.loops.layers.uv.active
+    pos, uv = [], []
+    for f in bm.faces:
+        for l in f.loops:
+            pos += [round(c, 3) for c in l.vert.co]; uv += [round(l[uvl].uv[0], 5), round(l[uvl].uv[1], 5)]
+    bm.free()
+    return {"tris": len(pos) // 9, "tex_px": px, "smooth_deg": smooth, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
+            "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
+            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
+
+
+def passes_path(slug):
+    """Where a ship's baked passes are kept (tools/materials/raw/painted/ships/, gitignored): the paint can be redone from
+    them in seconds, with no bake (--repaint), so a change to a faction's paint costs no Cycles time."""
+    return os.path.join(SHIPS_RAW, f"{FACTION}_{slug}_passes.npz")
+
+
+def paint_and_write(slug, D, S, ps):
+    """Paint a ship from its passes (ps) and write its maps: painted colour, AO, emission, tangent normals, PBR base
+    colour, ORM and the hull-light map."""
+    data, glowp, P, nor, nts, ao, sunp, lightp = (ps[k] for k in ("data", "glowp", "P", "nor", "nts", "ao", "sunp", "lightp"))
+    cover = data[:, :, 3] > 0.5
     faction = D.get("faction", FACTION)
     col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction)
     pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction)
@@ -399,18 +428,25 @@ def bake_ship(slug, px, samples, panes_only=False):
     K.save_png(os.path.join(ships_out(), f"{slug}_orm.png"), orm)
     K.save_png(os.path.join(ships_out(), f"{slug}_light.png"), lmap)
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
-    # the UV mesh, in ship space, as flat triangle lists
-    bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
-    uvl = bm.loops.layers.uv.active
-    pos, uv = [], []
-    for f in bm.faces:
-        for l in f.loops:
-            pos += [round(c, 3) for c in l.vert.co]; uv += [round(l[uvl].uv[0], 5), round(l[uvl].uv[1], 5)]
-    bm.free()
-    return {"tris": len(pos) // 9, "tex_px": px, "smooth_deg": smooth, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
-            "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
-            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
+
+
+def repaint_main(slugs):
+    """Repaint ships from their kept passes (no bake): the maps and their hashes in the manifest; the mesh, fixtures and
+    field are the bake's and stay."""
+    PT.clear(); PT.update(json.load(open(detail_path()))["paint"])
+    D = json.load(open(detail_path()))
+    mpath = os.path.join(ships_out(), "manifest.json")
+    man = json.load(open(mpath))
+    for slug in slugs:
+        ps = dict(np.load(passes_path(slug)))
+        paint_and_write(slug, D, D["ships"][slug], ps)
+        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):
+            f = f"{slug}_{m}.png"
+            man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}
+        print(f"repainted {slug}", flush=True)
+    with open(mpath, "w") as fh:
+        json.dump(man, fh, separators=(",", ":"), sort_keys=True)
+        fh.write("\n")
 
 
 EMBLEMS = os.path.join(ROOT, "assets", "emblems")
@@ -515,6 +551,7 @@ def strips_and_glow(kind_is, P, glowp, cover):
     line = chan & (np.abs(P[..., 0]) < PT["strip_m"] / 2) if PT["strip"] == "centre" else chan
     side = chan & ~line
     g = np.where(side[..., None], 0.0, np.clip(glowp, 0, 1)) * cover[..., None]
+    g = g * np.where(chan, PT.get("strip_k", 1.0), 1.0)[..., None]   # how bright a strip glows (a wide wall lit whole wants less)
     g = g + kind_is("dome")[..., None] * hexrgb(PT["dome"]) * PT["dome_glow"]   # the domes' faint inner light
     emit = np.clip(g * 1.2 + np.dstack([blur(g[..., c], 2) for c in range(3)]) * 0.8, 0, 1)
     return side, g, emit
@@ -627,9 +664,11 @@ def ship_main(slugs, px, samples, panes_only=False):
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     arg = lambda k, d: argv[argv.index(k) + 1] if k in argv else d
-    if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only] [--faction ssarith]
+    if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only] [--faction ssarith] [--repaint]
         global FACTION
         FACTION = arg("--faction", "ssarith")
+        if "--repaint" in argv:
+            return repaint_main(arg("--ship", "").split(","))
         return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv)
     names = arg("--tile", ",".join(TILES)).split(",")
     samples, ppm = int(arg("--samples", "32")), float(arg("--ppm", "128"))

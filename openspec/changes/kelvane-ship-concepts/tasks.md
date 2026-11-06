@@ -25,6 +25,7 @@
 - [ ] 3.4 The Hunt page onto `docs/mockups/lib/baked-ship.js` (its own copy of the baked-ship look today), checked unchanged to the pixel
 - [ ] 3.5 The shared emblem library's Kelvane entry brought up to KID (faction-emblems), so the masks and crests draw from one copy
 - [ ] 3.6 Weapon mounts placed on each class
+- [ ] 3.7 The cruiser, battlecruiser and carrier baked at 3072 px, as the Hunt's large ships, if the page's size allows
 
 ## 4. After approval for implementation (a separate request)
 

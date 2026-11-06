@@ -79,7 +79,8 @@
     "livery_pbr": [
       0.45,
       0.1
-    ]
+    ],
+    "strip_k": 0.4
   },
   "defaults": {
     "smooth_deg": 40,
