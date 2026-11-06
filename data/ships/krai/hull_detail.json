@@ -4,7 +4,7 @@
   "out": "assets/ships/krai/baked",
   "webp_quality": 72,
   "defaults": {
-    "cut_style": "kit",
+    "cut_style": "plan",
     "kit_min_m": 2.4,
     "kit_depth": 3,
     "kit_stop": 0.22,
@@ -86,7 +86,11 @@
       "EDGE_K": 0.55,
       "PAINT_MODE": "render"
     },
-    "_recipe": "The Krai's recipe (design.md, Recipes from culture): big split panels (KP1), heavy layered relief (KP1), machinery only at the reactor and engines (KP5), the render light (rules 3, 4)"
+    "_recipe": "The Krai's recipe (design.md, Recipes from culture): big split panels (KP1), heavy layered relief (KP1), machinery only at the reactor and engines (KP5), the render light (rules 3, 4)",
+    "plan": "data/ships/krai/frigate_plan.json",
+    "plan_dz_m": 25.93,
+    "plan_merge_m": 3.5,
+    "greebles_exposed_only": true
   },
   "stories": {
     "krai_frigate": {

@@ -718,6 +718,42 @@ def kit_cuts(rng, D, zr, xmax, yr):
     return out
 
 
+def plan_cuts(rng, D, zr, xmax, yr):
+    """Plating laid from the ship's own structure (owner, 2026-11-06, of random plating: "still really messy on both
+    ships"): a seam only where the room plan puts a bulkhead (every room's fore and aft wall, the stations closer than
+    D['plan_merge_m'] taken as one), at every deck (on the flanks) and at the corridors' and outer rooms' walls (on the top
+    and bottom), each running the whole hull, so every line on the skin marks something inside it and the layout is as
+    ordered and as symmetric as the ship. D['plan'], D['plan_dz_m']: the plan and its frame to the hull's. Port side only;
+    mirrored by the caller."""
+    import json as _json
+    import os as _os
+    plan = _json.load(open(_os.path.join(_os.path.dirname(__file__), "..", "..", D["plan"])))
+    dz, merge = D.get("plan_dz_m", 0.0), D.get("plan_merge_m", 2.0)
+    z0, z1 = zr
+
+    def stations(vals, gap):
+        out = []
+        for v in sorted(vals):
+            if not out or v - out[-1] > gap:
+                out.append(v)
+        return out
+    zs = stations([z - dz for r in plan["rooms"] for z in r["z_m"]] + list(D.get("rings_z_m", [])), merge)
+    xs = stations([abs(x) for r in plan["rooms"] for x in r["x_m"] if abs(x) > 0.6], D.get("plan_merge_x_m", 1.5))
+    floors = plan["deck_floor_m"]
+    ys = stations([f - plan.get("structure_m", 0.6) / 2 for f in floors], 1.0)
+    plan_cuts_, side = [], []
+    for z in zs:
+        if z0 < z < z1:
+            plan_cuts_.append(((0.0, z), (xmax + 2, z)))
+            side.append(((z, yr[0] - 2), (z, yr[1] + 2)))
+    for x in xs:
+        plan_cuts_.append(((x, z0 - 2), (x, z1 + 2)))
+    for y in ys:
+        if yr[0] < y < yr[1]:
+            side.append(((z0 - 2, y), (z1 + 2, y)))
+    return {"plan": plan_cuts_, "side": side}
+
+
 def mirror_cuts(cuts):
     return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
 
@@ -729,7 +765,7 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     the trenches show a second layer of plating and, in its gaps, the machinery."""
     groups = shell_groups(lo)
     xs = [v.co.x for v in lo.data.vertices]; ys = [v.co.y for v in lo.data.vertices]; zs = [v.co.z for v in lo.data.vertices]
-    style = {"hunt": armour_cuts, "strake": strake_cuts, "kit": kit_cuts}[D.get("cut_style", "hunt")]
+    style = {"hunt": armour_cuts, "strake": strake_cuts, "kit": kit_cuts, "plan": plan_cuts}[D.get("cut_style", "hunt")]
     cuts = mirror_cuts(style(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
     primary = layer == "primary"
     t = D["armour_t_m"] if primary else D["sub_t_m"]
@@ -839,7 +875,25 @@ def inside(bvh, p):
     return True
 
 
-def greebles(lo, armour, D, rng, mats, holes=None):
+def in_exposed(q, S):
+    """Whether a point lies in one of the data's exposed zones (a plan polygon and a y range: where the armour is opened)."""
+    for e in S.get("exposed", []):
+        y0, y1 = e["y_m"]
+        if not (y0 <= q.y <= y1):
+            continue
+        P, inside_ = e["plan"], False
+        j = len(P) - 1
+        for i in range(len(P)):
+            (xi, zi), (xj, zj) = P[i], P[j]
+            if (zi > q.z) != (zj > q.z) and q.x < (xj - xi) * (q.z - zi) / (zj - zi + 1e-12) + xi:
+                inside_ = not inside_
+            j = i
+        if inside_:
+            return True
+    return False
+
+
+def greebles(lo, armour, D, rng, mats, holes=None, S=None):
     """Machinery in the gaps and trenches the armour leaves. Never inside an opening (a window, a bay, a fan's or a
     dome's well): a greeble there would stand in front of the pane and hide the room behind it."""
     bm = bmesh.new()
@@ -863,6 +917,8 @@ def greebles(lo, armour, D, rng, mats, holes=None):
             n = p.normal
             if abvh.ray_cast(q + n * 0.02, n, 0.9)[0] is not None:   # under armour: nobody sees it
                 continue
+            if D.get("greebles_exposed_only") and not in_exposed(q, S or {}):   # machinery only where the armour is opened,
+                continue                                                         # never poking through a seam
             g = greeble(frame_at(q, n, False), q)
             if holes is not None and any(inside(holes, v.co) for v in g.verts):
                 g.free()
@@ -975,7 +1031,7 @@ def build(lo, S, D, seed):
                 high.append(obj_from(bm, "lamp", lamps[kind[5:]], 0.5))
             else:
                 high.append(obj_from(bm, kind, mats[kind], rid_of(loc, salt=i * 0.37)))
-    gb = greebles(lo, armour + sub, D, rng, mats, hole_bvh)
+    gb = greebles(lo, armour + sub, D, rng, mats, hole_bvh, S)
     if gb:
         high.append(obj_from(merge(gb), "greebles", mats["greeble"], 0.0))
         set_greeble_rids(high[-1])

@@ -4,7 +4,7 @@
   "out": "assets/ships/concord/baked",
   "webp_quality": 72,
   "defaults": {
-    "cut_style": "strake",
+    "cut_style": "plan",
     "strake_w_m": [
       1.8,
       2.8
@@ -85,7 +85,11 @@
       2,
       5
     ],
-    "_recipe": "The Concord's recipe (design.md, Recipes from culture): strakes on frames (CP2), a flush skin (CP1), machinery only in the service band and the keel (CP5), the render light (rules 3, 4)"
+    "_recipe": "The Concord's recipe (design.md, Recipes from culture): strakes on frames (CP2), a flush skin (CP1), machinery only in the service band and the keel (CP5), the render light (rules 3, 4)",
+    "plan": "data/ships/concord/petrel_plan.json",
+    "plan_dz_m": 0.55,
+    "plan_merge_m": 2.5,
+    "greebles_exposed_only": true
   },
   "stories": {
     "petrel": {

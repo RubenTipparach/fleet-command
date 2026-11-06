@@ -17,6 +17,10 @@
 
 ## 3. In the game (approved for implementation)
 
+The owner, 2026-11-06: "Do not put any of these textures in the game until I have enthusiastically approved, they are
+kinda lame right now". Nothing here goes into the game until then; the baked maps carry a `.gdignore`.
+
+
 - [ ] 3.1 The Concord and Krai ships exported with their baked maps (`baked_hull.gdshader`, as the Hunt)
 
 ## 4. One copy of the tooling (CLAUDE.md 6.1)
