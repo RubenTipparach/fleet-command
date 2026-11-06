@@ -80,13 +80,13 @@ public class ReactorTests
     {
         Battle b = TestData.NewBattle();
         Ship s = b.Player, near = b.ShipById("tallis")!;
-        near.X = s.X + 1000; near.Z = s.Z; near.ShieldsUp = false;
+        near.X = s.X + 10000; near.Z = s.Z; near.ShieldsUp = false;
         double hull = near.Hull;
         foreach (CoolantLoop l in s.Reactor.Loops) l.Flow = 0;
         Run(b, b.Data.Systems.Reactor.MeltdownS - 1);
         Assert.True(s.Alive);
         Assert.Contains(b.Log, l => l.Text == "Coolant offline. The core will melt down.");
-        near.X = s.X + 1000; near.Z = s.Z;
+        near.X = s.X + 10000; near.Z = s.Z;
         Run(b, 1.5);
         Assert.False(s.Alive);
         Assert.Contains(b.Log, l => l.Text.EndsWith("reactor meltdown."));

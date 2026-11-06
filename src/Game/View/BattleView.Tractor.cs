@@ -2,7 +2,7 @@
 // mockup draws these): a tractor beam is a pale line from holder to held, brighter as the grip tightens; fighters and
 // disguised shuttles are small lights (a caught shuttle goes up in a puff; a detonation's fireball comes with its hit);
 // a mine is a glow, dim amber while arming and bright once armed; the scene's asteroids are lumpy grey-brown rocks at
-// their radius. View only: the simulation never reads it. Sizes are scene units (MPerU: 1 u is 100 m).
+// their radius. View only: the simulation never reads it. Sizes are scene units (MPerU: 1 u is 1 km).
 using System;
 using System.Collections.Generic;
 using FleetCommand.Data;

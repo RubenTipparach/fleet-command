@@ -79,7 +79,7 @@ public sealed partial class RadarPanel
         float k = (float)(Math.Min(size.X, size.Y) / 2 / (km * 1000));
         Vector2 mid = size / 2;
         // range rings every 5 km, labelled
-        for (int r = 5; r <= km * 1.5; r += 5)
+        for (int r = 50; r <= km * 1.5; r += 50)
         {
             c.DrawArc(mid, r * 1000 * k, 0, Mathf.Tau, 96, C.Deep, 1.5f, true);
             X.Fonts.Draw(c, $"{r} KM", mid.X + r * 1000 * k + 4, mid.Y - 4, 14, C.Lilac, HorizontalAlignment.Left, 0, 600);

@@ -23,7 +23,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "tallis",
@@ -32,10 +32,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 0,
-     "x_m": -900,
-     "z_m": 600,
+     "x_m": -9000,
+     "z_m": 6000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "meridian",
@@ -44,10 +44,10 @@
      "class": "dd",
      "faction": "concord",
      "side": 0,
-     "x_m": 900,
-     "z_m": 700,
+     "x_m": 9000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "kharz",
@@ -56,10 +56,10 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
+     "x_m": -18000,
+     "z_m": -95000,
      "heading_deg": 175,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     },
     {
      "id": "vekk",
@@ -68,10 +68,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
+     "x_m": 22000,
+     "z_m": -110000,
      "heading_deg": 190,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "ruhn",
@@ -80,10 +80,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
+     "x_m": 70000,
+     "z_m": -60000,
      "heading_deg": 240,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     }
    ]
   },
@@ -109,7 +109,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "tallis",
@@ -118,10 +118,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 0,
-     "x_m": -900,
-     "z_m": 600,
+     "x_m": -9000,
+     "z_m": 6000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "meridian",
@@ -130,10 +130,10 @@
      "class": "dd",
      "faction": "concord",
      "side": 0,
-     "x_m": 900,
-     "z_m": 700,
+     "x_m": 9000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "hunt_cruiser",
@@ -142,10 +142,10 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -600,
-     "z_m": -9800,
+     "x_m": -6000,
+     "z_m": -98000,
      "heading_deg": 180,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     },
     {
      "id": "hunt_trident",
@@ -154,10 +154,10 @@
      "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -2600,
-     "z_m": -10800,
+     "x_m": -26000,
+     "z_m": -108000,
      "heading_deg": 172,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "hunt_harpoon",
@@ -166,10 +166,10 @@
      "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 1800,
-     "z_m": -10600,
+     "x_m": 18000,
+     "z_m": -106000,
      "heading_deg": 188,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "hunt_carrier",
@@ -178,10 +178,10 @@
      "class": "hunt_cv",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 200,
-     "z_m": -13500,
+     "x_m": 2000,
+     "z_m": -135000,
      "heading_deg": 180,
-     "speed_m_s": 110,
+     "speed_m_s": 1100,
      "stance": "hold",
      "range": "long"
     }
@@ -209,7 +209,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "kharz",
@@ -219,9 +219,9 @@
      "faction": "krai",
      "side": 1,
      "x_m": 0,
-     "z_m": -9000,
+     "z_m": -90000,
      "heading_deg": 180,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     }
    ]
   },
@@ -234,7 +234,7 @@
    "objective": "Destroy the two fast frigates: proximity torpedoes for fast movers, overloaded lances up close",
    "say": [
     "Tactical",
-    "Two fast Krai frigates jinking in close. Arm the torpedoes for proximity and overload the lances inside 4 km."
+    "Two fast Krai frigates jinking in close. Arm the torpedoes for proximity and overload the lances inside 40 km."
    ],
    "ships": [
     {
@@ -247,7 +247,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 60
+     "speed_m_s": 600
     },
     {
      "id": "vekk",
@@ -256,10 +256,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -6000,
+     "x_m": -18000,
+     "z_m": -60000,
      "heading_deg": 160,
-     "speed_m_s": 300,
+     "speed_m_s": 3000,
      "erratic": true,
      "range": "close"
     },
@@ -270,10 +270,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -6600,
+     "x_m": 22000,
+     "z_m": -66000,
      "heading_deg": 200,
-     "speed_m_s": 300,
+     "speed_m_s": 3000,
      "erratic": true,
      "range": "close"
     }
@@ -301,7 +301,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "vekk",
@@ -310,10 +310,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 0,
-     "x_m": -900,
-     "z_m": 600,
+     "x_m": -9000,
+     "z_m": 6000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "ruhn",
@@ -322,10 +322,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 0,
-     "x_m": 900,
-     "z_m": 700,
+     "x_m": 9000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "resolute",
@@ -334,10 +334,10 @@
      "class": "ca",
      "faction": "concord",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
+     "x_m": -18000,
+     "z_m": -95000,
      "heading_deg": 175,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     },
     {
      "id": "tallis",
@@ -346,10 +346,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
+     "x_m": 22000,
+     "z_m": -110000,
      "heading_deg": 190,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "meridian",
@@ -358,10 +358,10 @@
      "class": "dd",
      "faction": "concord",
      "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
+     "x_m": 70000,
+     "z_m": -60000,
      "heading_deg": 240,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     }
    ]
   },
@@ -387,7 +387,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "vekk",
@@ -396,10 +396,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 0,
-     "x_m": -900,
-     "z_m": 600,
+     "x_m": -9000,
+     "z_m": 6000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "ruhn",
@@ -408,10 +408,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 0,
-     "x_m": 900,
-     "z_m": 700,
+     "x_m": 9000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "hunt_cruiser",
@@ -420,10 +420,10 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -600,
-     "z_m": -9800,
+     "x_m": -6000,
+     "z_m": -98000,
      "heading_deg": 180,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     },
     {
      "id": "hunt_trident",
@@ -432,10 +432,10 @@
      "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -2600,
-     "z_m": -10800,
+     "x_m": -26000,
+     "z_m": -108000,
      "heading_deg": 172,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "hunt_harpoon",
@@ -444,10 +444,10 @@
      "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 1800,
-     "z_m": -10600,
+     "x_m": 18000,
+     "z_m": -106000,
      "heading_deg": 188,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "hunt_carrier",
@@ -456,10 +456,10 @@
      "class": "hunt_cv",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 200,
-     "z_m": -13500,
+     "x_m": 2000,
+     "z_m": -135000,
      "heading_deg": 180,
-     "speed_m_s": 110,
+     "speed_m_s": 1100,
      "stance": "hold",
      "range": "long"
     }
@@ -487,7 +487,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "resolute",
@@ -497,9 +497,9 @@
      "faction": "concord",
      "side": 1,
      "x_m": 0,
-     "z_m": -9000,
+     "z_m": -90000,
      "heading_deg": 180,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     }
    ]
   },
@@ -512,7 +512,7 @@
    "objective": "Destroy the two fast frigates: proximity torpedoes for fast movers, overloaded disruptors up close",
    "say": [
     "Tactical",
-    "Two fast Concord frigates jinking in close. Arm the torpedo for proximity and overload the disruptors inside 6 km."
+    "Two fast Concord frigates jinking in close. Arm the torpedo for proximity and overload the disruptors inside 60 km."
    ],
    "ships": [
     {
@@ -525,7 +525,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 60
+     "speed_m_s": 600
     },
     {
      "id": "tallis",
@@ -534,10 +534,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -6000,
+     "x_m": -18000,
+     "z_m": -60000,
      "heading_deg": 160,
-     "speed_m_s": 300,
+     "speed_m_s": 3000,
      "erratic": true,
      "range": "close"
     },
@@ -548,10 +548,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -6600,
+     "x_m": 22000,
+     "z_m": -66000,
      "heading_deg": 200,
-     "speed_m_s": 300,
+     "speed_m_s": 3000,
      "erratic": true,
      "range": "close"
     }
@@ -579,7 +579,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "ruhn",
@@ -588,8 +588,8 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 1,
-     "x_m": -1500,
-     "z_m": -5200,
+     "x_m": -15000,
+     "z_m": -52000,
      "heading_deg": 170,
      "speed_m_s": 0,
      "stance": "hold",
@@ -604,8 +604,8 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": 1800,
-     "z_m": -6500,
+     "x_m": 18000,
+     "z_m": -65000,
      "heading_deg": 190,
      "speed_m_s": 0,
      "stance": "hold",
@@ -620,8 +620,8 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 1,
-     "x_m": -2200,
-     "z_m": -8200,
+     "x_m": -22000,
+     "z_m": -82000,
      "heading_deg": 160,
      "speed_m_s": 0,
      "stance": "hold",
@@ -636,8 +636,8 @@
      "class": "krai_dn",
      "faction": "krai",
      "side": 1,
-     "x_m": 1500,
-     "z_m": -10500,
+     "x_m": 15000,
+     "z_m": -105000,
      "heading_deg": 180,
      "speed_m_s": 0,
      "stance": "hold",
@@ -669,7 +669,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "hw_lance",
@@ -678,8 +678,8 @@
      "class": "hunt_ff_lance",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -1500,
-     "z_m": -4200,
+     "x_m": -15000,
+     "z_m": -42000,
      "heading_deg": 170,
      "speed_m_s": 0,
      "stance": "hold",
@@ -694,8 +694,8 @@
      "class": "hunt_ff_prow",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 1500,
-     "z_m": -4600,
+     "x_m": 15000,
+     "z_m": -46000,
      "heading_deg": 190,
      "speed_m_s": 0,
      "stance": "hold",
@@ -710,8 +710,8 @@
      "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -2400,
-     "z_m": -6400,
+     "x_m": -24000,
+     "z_m": -64000,
      "heading_deg": 160,
      "speed_m_s": 0,
      "stance": "hold",
@@ -726,8 +726,8 @@
      "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 2400,
-     "z_m": -6800,
+     "x_m": 24000,
+     "z_m": -68000,
      "heading_deg": 200,
      "speed_m_s": 0,
      "stance": "hold",
@@ -742,8 +742,8 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -1600,
-     "z_m": -9000,
+     "x_m": -16000,
+     "z_m": -90000,
      "heading_deg": 170,
      "speed_m_s": 0,
      "stance": "hold",
@@ -758,8 +758,8 @@
      "class": "hunt_cv",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 1800,
-     "z_m": -10500,
+     "x_m": 18000,
+     "z_m": -105000,
      "heading_deg": 185,
      "speed_m_s": 0,
      "stance": "hold",
@@ -790,7 +790,7 @@
      "faction": "concord",
      "side": 0,
      "x_m": 0,
-     "z_m": 3000,
+     "z_m": 30000,
      "heading_deg": 0,
      "speed_m_s": 0,
      "stance": "hold"
@@ -802,8 +802,8 @@
      "class": "ca",
      "faction": "concord",
      "side": 1,
-     "x_m": -4500,
-     "z_m": -2500,
+     "x_m": -45000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -816,8 +816,8 @@
      "class": "dd",
      "faction": "concord",
      "side": 1,
-     "x_m": -3000,
-     "z_m": -2500,
+     "x_m": -30000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -830,8 +830,8 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": -1500,
-     "z_m": -2500,
+     "x_m": -15000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -845,7 +845,7 @@
      "faction": "krai",
      "side": 1,
      "x_m": 0,
-     "z_m": -2500,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -858,8 +858,8 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": 1500,
-     "z_m": -2500,
+     "x_m": 15000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -872,8 +872,8 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 1,
-     "x_m": 3000,
-     "z_m": -2500,
+     "x_m": 30000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -886,8 +886,8 @@
      "class": "krai_dn",
      "faction": "krai",
      "side": 1,
-     "x_m": 4500,
-     "z_m": -2500,
+     "x_m": 45000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -900,8 +900,8 @@
      "class": "hunt_ff_lance",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -3750,
-     "z_m": -5200,
+     "x_m": -37500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -914,8 +914,8 @@
      "class": "hunt_ff_prow",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -2250,
-     "z_m": -5200,
+     "x_m": -22500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -928,8 +928,8 @@
      "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -750,
-     "z_m": -5200,
+     "x_m": -7500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -942,8 +942,8 @@
      "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 750,
-     "z_m": -5200,
+     "x_m": 7500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -956,8 +956,8 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 2250,
-     "z_m": -5200,
+     "x_m": 22500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -970,8 +970,8 @@
      "class": "hunt_cv",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 3750,
-     "z_m": -5200,
+     "x_m": 37500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -985,7 +985,7 @@
      "faction": "concord",
      "side": 1,
      "x_m": 0,
-     "z_m": -7600,
+     "z_m": -76000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1015,7 +1015,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "tallis",
@@ -1024,8 +1024,8 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": -1500,
-     "z_m": -5200,
+     "x_m": -15000,
+     "z_m": -52000,
      "heading_deg": 170,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1040,8 +1040,8 @@
      "class": "dd",
      "faction": "concord",
      "side": 1,
-     "x_m": 1800,
-     "z_m": -6800,
+     "x_m": 18000,
+     "z_m": -68000,
      "heading_deg": 190,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1056,8 +1056,8 @@
      "class": "ca",
      "faction": "concord",
      "side": 1,
-     "x_m": -1600,
-     "z_m": -8800,
+     "x_m": -16000,
+     "z_m": -88000,
      "heading_deg": 175,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1089,7 +1089,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "hw_lance",
@@ -1098,8 +1098,8 @@
      "class": "hunt_ff_lance",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -1500,
-     "z_m": -4200,
+     "x_m": -15000,
+     "z_m": -42000,
      "heading_deg": 170,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1114,8 +1114,8 @@
      "class": "hunt_ff_prow",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 1500,
-     "z_m": -4600,
+     "x_m": 15000,
+     "z_m": -46000,
      "heading_deg": 190,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1130,8 +1130,8 @@
      "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -2400,
-     "z_m": -6400,
+     "x_m": -24000,
+     "z_m": -64000,
      "heading_deg": 160,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1146,8 +1146,8 @@
      "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 2400,
-     "z_m": -6800,
+     "x_m": 24000,
+     "z_m": -68000,
      "heading_deg": 200,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1162,8 +1162,8 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -1600,
-     "z_m": -9000,
+     "x_m": -16000,
+     "z_m": -90000,
      "heading_deg": 170,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1178,8 +1178,8 @@
      "class": "hunt_cv",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 1800,
-     "z_m": -10500,
+     "x_m": 18000,
+     "z_m": -105000,
      "heading_deg": 185,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1210,7 +1210,7 @@
      "faction": "krai",
      "side": 0,
      "x_m": 0,
-     "z_m": 3000,
+     "z_m": 30000,
      "heading_deg": 0,
      "speed_m_s": 0,
      "stance": "hold"
@@ -1222,8 +1222,8 @@
      "class": "ca",
      "faction": "concord",
      "side": 1,
-     "x_m": -4500,
-     "z_m": -2500,
+     "x_m": -45000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1236,8 +1236,8 @@
      "class": "dd",
      "faction": "concord",
      "side": 1,
-     "x_m": -3000,
-     "z_m": -2500,
+     "x_m": -30000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1250,8 +1250,8 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": -1500,
-     "z_m": -2500,
+     "x_m": -15000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1265,7 +1265,7 @@
      "faction": "krai",
      "side": 1,
      "x_m": 0,
-     "z_m": -2500,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1278,8 +1278,8 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": 1500,
-     "z_m": -2500,
+     "x_m": 15000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1292,8 +1292,8 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 1,
-     "x_m": 3000,
-     "z_m": -2500,
+     "x_m": 30000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1306,8 +1306,8 @@
      "class": "krai_dn",
      "faction": "krai",
      "side": 1,
-     "x_m": 4500,
-     "z_m": -2500,
+     "x_m": 45000,
+     "z_m": -25000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1320,8 +1320,8 @@
      "class": "hunt_ff_lance",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -3750,
-     "z_m": -5200,
+     "x_m": -37500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1334,8 +1334,8 @@
      "class": "hunt_ff_prow",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -2250,
-     "z_m": -5200,
+     "x_m": -22500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1348,8 +1348,8 @@
      "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 1,
-     "x_m": -750,
-     "z_m": -5200,
+     "x_m": -7500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1362,8 +1362,8 @@
      "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 750,
-     "z_m": -5200,
+     "x_m": 7500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1376,8 +1376,8 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 2250,
-     "z_m": -5200,
+     "x_m": 22500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1390,8 +1390,8 @@
      "class": "hunt_cv",
      "faction": "ssarith",
      "side": 1,
-     "x_m": 3750,
-     "z_m": -5200,
+     "x_m": 37500,
+     "z_m": -52000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1405,7 +1405,7 @@
      "faction": "concord",
      "side": 1,
      "x_m": 0,
-     "z_m": -7600,
+     "z_m": -76000,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1435,7 +1435,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "hissath",
@@ -1444,10 +1444,10 @@
      "class": "hunt_ff_trident",
      "faction": "ssarith",
      "side": 0,
-     "x_m": -900,
-     "z_m": 600,
+     "x_m": -9000,
+     "z_m": 6000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "thrael",
@@ -1456,10 +1456,10 @@
      "class": "hunt_ff_harpoon",
      "faction": "ssarith",
      "side": 0,
-     "x_m": 900,
-     "z_m": 700,
+     "x_m": 9000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "resolute",
@@ -1468,10 +1468,10 @@
      "class": "ca",
      "faction": "concord",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
+     "x_m": -18000,
+     "z_m": -95000,
      "heading_deg": 175,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     },
     {
      "id": "tallis",
@@ -1480,10 +1480,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
+     "x_m": 22000,
+     "z_m": -110000,
      "heading_deg": 190,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "meridian",
@@ -1492,10 +1492,10 @@
      "class": "dd",
      "faction": "concord",
      "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
+     "x_m": 70000,
+     "z_m": -60000,
      "heading_deg": 240,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     }
    ]
   },
@@ -1521,7 +1521,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "kharz",
@@ -1531,9 +1531,9 @@
      "faction": "krai",
      "side": 1,
      "x_m": 0,
-     "z_m": -9000,
+     "z_m": -90000,
      "heading_deg": 180,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     }
    ]
   },
@@ -1546,7 +1546,7 @@
    "objective": "Destroy the two fast frigates: overload the torpedoes up close",
    "say": [
     "Tactical",
-    "Two fast Krai frigates jinking in close. Overload the torpedoes inside 7 km."
+    "Two fast Krai frigates jinking in close. Overload the torpedoes inside 70 km."
    ],
    "ships": [
     {
@@ -1559,7 +1559,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 60
+     "speed_m_s": 600
     },
     {
      "id": "vekk",
@@ -1568,10 +1568,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -6000,
+     "x_m": -18000,
+     "z_m": -60000,
      "heading_deg": 160,
-     "speed_m_s": 300,
+     "speed_m_s": 3000,
      "erratic": true,
      "range": "close"
     },
@@ -1582,10 +1582,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -6600,
+     "x_m": 22000,
+     "z_m": -66000,
      "heading_deg": 200,
-     "speed_m_s": 300,
+     "speed_m_s": 3000,
      "erratic": true,
      "range": "close"
     }
@@ -1613,7 +1613,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "kharz",
@@ -1622,10 +1622,10 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 0,
-     "x_m": -1100,
-     "z_m": 700,
+     "x_m": -11000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "sskarr",
@@ -1634,10 +1634,10 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 0,
-     "x_m": 1100,
-     "z_m": 700,
+     "x_m": 11000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "vorrak",
@@ -1646,10 +1646,10 @@
      "class": "kdd",
      "faction": "kethran",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
+     "x_m": -18000,
+     "z_m": -95000,
      "heading_deg": 175,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     },
     {
      "id": "ashkar",
@@ -1658,10 +1658,10 @@
      "class": "kff",
      "faction": "kethran",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
+     "x_m": 22000,
+     "z_m": -110000,
      "heading_deg": 190,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "rattlejaw",
@@ -1670,10 +1670,10 @@
      "class": "vcr",
      "faction": "vos",
      "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
+     "x_m": 70000,
+     "z_m": -60000,
      "heading_deg": 240,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     }
    ]
   },
@@ -1699,7 +1699,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "resolute",
@@ -1708,10 +1708,10 @@
      "class": "ca",
      "faction": "concord",
      "side": 0,
-     "x_m": -1100,
-     "z_m": 700,
+     "x_m": -11000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "sskarr",
@@ -1720,10 +1720,10 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 0,
-     "x_m": 1100,
-     "z_m": 700,
+     "x_m": 11000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "vorrak",
@@ -1732,10 +1732,10 @@
      "class": "kdd",
      "faction": "kethran",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
+     "x_m": -18000,
+     "z_m": -95000,
      "heading_deg": 175,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     },
     {
      "id": "ashkar",
@@ -1744,10 +1744,10 @@
      "class": "kff",
      "faction": "kethran",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
+     "x_m": 22000,
+     "z_m": -110000,
      "heading_deg": 190,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "rattlejaw",
@@ -1756,10 +1756,10 @@
      "class": "vcr",
      "faction": "vos",
      "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
+     "x_m": 70000,
+     "z_m": -60000,
      "heading_deg": 240,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     }
    ]
   },
@@ -1785,7 +1785,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "resolute",
@@ -1794,10 +1794,10 @@
      "class": "ca",
      "faction": "concord",
      "side": 0,
-     "x_m": -1100,
-     "z_m": 700,
+     "x_m": -11000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "kharz",
@@ -1806,10 +1806,10 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 0,
-     "x_m": 1100,
-     "z_m": 700,
+     "x_m": 11000,
+     "z_m": 7000,
      "heading_deg": 0,
-     "speed_m_s": 120
+     "speed_m_s": 1200
     },
     {
      "id": "vorrak",
@@ -1818,10 +1818,10 @@
      "class": "kdd",
      "faction": "kethran",
      "side": 1,
-     "x_m": -1800,
-     "z_m": -9500,
+     "x_m": -18000,
+     "z_m": -95000,
      "heading_deg": 175,
-     "speed_m_s": 150
+     "speed_m_s": 1500
     },
     {
      "id": "ashkar",
@@ -1830,10 +1830,10 @@
      "class": "kff",
      "faction": "kethran",
      "side": 1,
-     "x_m": 2200,
-     "z_m": -11000,
+     "x_m": 22000,
+     "z_m": -110000,
      "heading_deg": 190,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "rattlejaw",
@@ -1842,10 +1842,10 @@
      "class": "vcr",
      "faction": "vos",
      "side": 1,
-     "x_m": 7000,
-     "z_m": -6000,
+     "x_m": 70000,
+     "z_m": -60000,
      "heading_deg": 240,
-     "speed_m_s": 140
+     "speed_m_s": 1400
     }
    ]
   },
@@ -1880,8 +1880,8 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 0,
-     "x_m": -1200,
-     "z_m": 400,
+     "x_m": -12000,
+     "z_m": 4000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -1892,8 +1892,8 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 0,
-     "x_m": 1200,
-     "z_m": 400,
+     "x_m": 12000,
+     "z_m": 4000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -1905,7 +1905,7 @@
      "faction": "kelvane",
      "side": 0,
      "x_m": 0,
-     "z_m": 1400,
+     "z_m": 14000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -1917,7 +1917,7 @@
      "faction": "kethran",
      "side": 1,
      "x_m": 0,
-     "z_m": -26000,
+     "z_m": -260000,
      "heading_deg": 0,
      "speed_m_s": 0,
      "stance": "hold",
@@ -1956,8 +1956,8 @@
      "class": "ca",
      "faction": "concord",
      "side": 0,
-     "x_m": -1200,
-     "z_m": 400,
+     "x_m": -12000,
+     "z_m": 4000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -1968,8 +1968,8 @@
      "class": "hunt_ca",
      "faction": "ssarith",
      "side": 0,
-     "x_m": 1200,
-     "z_m": 400,
+     "x_m": 12000,
+     "z_m": 4000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -1981,7 +1981,7 @@
      "faction": "kelvane",
      "side": 0,
      "x_m": 0,
-     "z_m": 1400,
+     "z_m": 14000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -1993,7 +1993,7 @@
      "faction": "kethran",
      "side": 1,
      "x_m": 0,
-     "z_m": -26000,
+     "z_m": -260000,
      "heading_deg": 0,
      "speed_m_s": 0,
      "stance": "hold",
@@ -2032,8 +2032,8 @@
      "class": "ca",
      "faction": "concord",
      "side": 0,
-     "x_m": -1200,
-     "z_m": 400,
+     "x_m": -12000,
+     "z_m": 4000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -2044,8 +2044,8 @@
      "class": "krai_ca",
      "faction": "krai",
      "side": 0,
-     "x_m": 1200,
-     "z_m": 400,
+     "x_m": 12000,
+     "z_m": 4000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -2057,7 +2057,7 @@
      "faction": "kelvane",
      "side": 0,
      "x_m": 0,
-     "z_m": 1400,
+     "z_m": 14000,
      "heading_deg": 0,
      "speed_m_s": 0
     },
@@ -2069,7 +2069,7 @@
      "faction": "kethran",
      "side": 1,
      "x_m": 0,
-     "z_m": -26000,
+     "z_m": -260000,
      "heading_deg": 0,
      "speed_m_s": 0,
      "stance": "hold",

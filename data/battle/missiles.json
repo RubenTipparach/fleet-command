@@ -4,17 +4,17 @@
   "flare": {
    "count": 4,
    "burn_s": 4,
-   "eject_m_s": 70,
+   "eject_m_s": 700,
    "cooldown_s": 20,
    "color": "#ffb347",
-   "trigger_m": 260
+   "trigger_m": 2600
   },
   "decoy": {
-   "speed_m_s": 60,
+   "speed_m_s": 600,
    "life_s": 30,
    "voided_by_firing": true,
    "color": "#ffb030",
-   "trigger_km": 2,
+   "trigger_km": 20,
    "per_ship": 1
   }
  },
@@ -23,7 +23,7 @@
    "id": "red",
    "name": "Grade I",
    "color": "#ff3b30",
-   "speed_m_s": 240,
+   "speed_m_s": 2400,
    "damage": 8,
    "pd_hits": 1,
    "fuel_s": 30,
@@ -34,7 +34,7 @@
    "id": "orange",
    "name": "Grade II",
    "color": "#ff8c1a",
-   "speed_m_s": 320,
+   "speed_m_s": 3200,
    "damage": 11,
    "pd_hits": 1,
    "fuel_s": 30,
@@ -45,7 +45,7 @@
    "id": "blue",
    "name": "Grade III",
    "color": "#2f7bff",
-   "speed_m_s": 400,
+   "speed_m_s": 4000,
    "damage": 14,
    "pd_hits": 2,
    "fuel_s": 30,
@@ -56,7 +56,7 @@
    "id": "green",
    "name": "Grade IV",
    "color": "#2fdc5a",
-   "speed_m_s": 480,
+   "speed_m_s": 4800,
    "damage": 18,
    "pd_hits": 2,
    "fuel_s": 30,

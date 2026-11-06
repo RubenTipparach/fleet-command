@@ -93,7 +93,10 @@ public sealed partial class Main : Node
         _menu = new MenuCard();
         _menu.Init(_x, Region.Station);
         _menu.Name = "Menu";
-        _root.AddChild(_menu);
+        // the menu sheet on its own layer over the game flow (layer 4), so the campaign map's Menu opens it too
+        var menuLayer = new CanvasLayer { Name = "MenuLayer", Layer = 10 };
+        AddChild(menuLayer);
+        menuLayer.AddChild(_menu);
         var tips = new TooltipLayer();
         tips.Init(_x);
         _root.AddChild(tips);
@@ -119,6 +122,7 @@ public sealed partial class Main : Node
             _flow = new GameFlow();
             AddChild(_flow);
             _flow.Init(_x, camp, Start, ShowBattle, UseSkin);
+            act.OnMainMenu = _flow.ToMenu;
             act.OnQuit = () => { if (_flow.Screen == FlowScreen.Battle) { _x.State.MenuOpen = false; _flow.ToMenu(); } else GetTree().Quit(); };
         }
 
@@ -180,6 +184,8 @@ public sealed partial class Main : Node
         Engine.TimeScale = 1;   // the damage range's slow motion ends with its scene
         UseKit(SkinOf(_x.Battle.Player));
         _x.State.Expanded = null;
+        _x.State.Station = "comms";
+        _x.State.GoalsShown = true;
         _view.Rebuild();
         _acc = 0;
         Relayout();
@@ -233,6 +239,7 @@ public sealed partial class Main : Node
         double step = _x.Data.Tuning.StepS;
         _acc = Math.Min(_acc + delta, step * 6);
         while (_acc >= step) { _x.Battle.Step(); _acc -= step; }
+        _x.StepShare = _acc / step;
     }
 
     public override void _UnhandledInput(InputEvent e)
@@ -467,7 +474,7 @@ public sealed partial class Main : Node
         // a click lands where the player pointed: points of the battle plane drawn by ScreenOf come back through PlaneAt
         _view.Sync();
         double miss = _view.RayMissM();
-        if (!(miss < 1.0)) fails.Add($"a click cast back onto the battle plane misses by {miss:0.0} m");
+        if (!(miss < 10.0)) fails.Add($"a click cast back onto the battle plane misses by {miss:0.0} m");
         foreach (string s in fails) GD.PrintErr("LAYOUT_FAIL " + s);
         GD.Print(fails.Count == 0 ? $"LAYOUT_TEST PASS ({string.Join(", ", Kits.Ids)})" : $"LAYOUT_TEST FAIL ({fails.Count})");
         GetTree().Quit(fails.Count == 0 ? 0 : 1);
@@ -547,6 +554,7 @@ public sealed partial class Main : Node
                     f.Accept(m);
                     _flow!.MapCentre(m.C, m.R);
                 }
+                if (what == "map-menu") _x.State.MenuOpen = true;
                 if (what == "map-far") { f.MapCentre(15, 11); f.MapView(64, null); }
                 if (what == "map-close") { f.MapCentre(c.S.AtC + 1, c.S.AtR - 1); f.MapView(6.5f, null); }
                 if (what == "log") { Offer m = Find("shakedown")!; c.Accept(m); f.MapView(null, true); }

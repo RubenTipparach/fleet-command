@@ -33,10 +33,7 @@ public sealed partial class ViewOverlay
         f.Draw(this, title.ToUpperInvariant(), r.Position.X + 16, r.Position.Y + 26, 16, C.Sky, HorizontalAlignment.Left, r.Size.X - 60, 600, 1);
         var xr = new Rect2(r.End.X - 34, r.Position.Y + 8, 26, 26);
         HitState xs = _ui.Reg($"v.{id}.x", xr, _ => close(), null, new Tip("Close"));
-        Color xf = xs.Hot ? C.Alert : C.Signal, xi = _x.Kit.Style.InkOn(xf);
-        _x.Kit.Knob(this, xr.GetCenter(), 13, xf);
-        DrawLine(xr.Position + new Vector2(8, 8), xr.Position + new Vector2(18, 18), xi, 2.6f, true);
-        DrawLine(xr.Position + new Vector2(18, 8), xr.Position + new Vector2(8, 18), xi, 2.6f, true);
+        KeyFace.Close(_x.Kit, this, xr, xs.Hot);
         return r;
     }
 

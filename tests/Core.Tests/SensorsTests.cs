@@ -13,14 +13,14 @@ public class SensorsTests
 {
     private static CloakSystems Cs => TestData.Data.Systems.Cloak;
     private static Tuning Tu => TestData.Data.Tuning;
-    private const string Nebula = "\"nebula\": {\"x_m\": 0, \"z_m\": -7000, \"r_m\": 4800, \"density\": 0.85}, ";
+    private const string Nebula = "\"nebula\": {\"x_m\": 0, \"z_m\": -70000, \"r_m\": 48000, \"density\": 0.85}, ";
 
     private static void Run(Battle b, double s) { for (int i = 0; i < Math.Round(s / b.Tuning.StepS); i++) b.Step(); }
 
     [Fact]
     public void Ecm_and_eccm_share_the_sensors_energy_and_never_pass_it()
     {
-        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -9000, extraA: ", \"power_e\": {\"sensors\": 4}");
+        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -90000, extraA: ", \"power_e\": {\"sensors\": 4}");
         b.SetEw(false, 3);
         Assert.Equal(3, b.Player.Ecm);
         b.SetEw(true, 3);
@@ -35,7 +35,7 @@ public class SensorsTests
     [Fact]
     public void Eccm_adds_and_the_targets_ecm_takes_off_one_step_a_point_in_the_chance_to_hit()
     {
-        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -3000, extraA: ", \"power_e\": {\"sensors\": 4}", extraB: ", \"hold_fire\": true");
+        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -30000, extraA: ", \"power_e\": {\"sensors\": 4}", extraB: ", \"hold_fire\": true");
         Ship t = b.ShipById("b")!;
         Mount m = b.Player.Mounts.First(x => x.Weapon.Id == "lance");
         t.Ecm = 0;
@@ -49,16 +49,16 @@ public class SensorsTests
     [Fact]
     public void A_nebula_is_densest_in_its_middle_thinning_to_its_edge_and_nothing_outside()
     {
-        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -7000, scene: Nebula);
-        Assert.Equal(0.85, b.Rules.NebulaAt(0, -7000), 9);
-        Assert.Equal(0.85 * (1 - Cs.Nebula.EdgeThinFrac * 0.5), b.Rules.NebulaAt(2400, -7000), 9);
+        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -70000, scene: Nebula);
+        Assert.Equal(0.85, b.Rules.NebulaAt(0, -70000), 9);
+        Assert.Equal(0.85 * (1 - Cs.Nebula.EdgeThinFrac * 0.5), b.Rules.NebulaAt(24000, -70000), 9);
         Assert.Equal(0, b.Rules.NebulaAt(0, 0));
     }
 
     [Fact]
     public void Inside_a_nebula_every_shot_loses_its_penalty_and_ecm_counts_its_gain_more()
     {
-        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -7000, scene: Nebula, extraB: ", \"hold_fire\": true");
+        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -70000, scene: Nebula, extraB: ", \"hold_fire\": true");
         Ship t = b.ShipById("b")!;
         t.Ecm = 2;
         double nb = b.Rules.NebulaAt(t.X, t.Z);
@@ -69,7 +69,7 @@ public class SensorsTests
     [Fact]
     public void A_ship_in_a_nebula_cannot_be_locked_from_beyond_its_lock_range_unless_eccm_beats_its_ecm()
     {
-        Battle b = CloakTests.Pair("ca", "concord", "krai_cv", "krai", -7800, scene: Nebula, extraA: ", \"power_e\": {\"sensors\": 4}", extraB: ", \"ecm\": 3, \"power_e\": {\"sensors\": 4}, \"hold_fire\": true");
+        Battle b = CloakTests.Pair("ca", "concord", "krai_cv", "krai", -78000, scene: Nebula, extraA: ", \"power_e\": {\"sensors\": 4}", extraB: ", \"ecm\": 3, \"power_e\": {\"sensors\": 4}, \"hold_fire\": true");
         Ship t = b.ShipById("b")!;
         Assert.False(b.CanLock(b.Player, t));
         b.Lock("b");
@@ -80,14 +80,14 @@ public class SensorsTests
         b.SetEw(true, 4);
         Assert.True(b.CanLock(b.Player, t));
         b.SetEw(true, 0);
-        t.Z = -(Cs.Nebula.LockKm * 1000 - 200);
+        t.Z = -(Cs.Nebula.LockKm * 1000 - 2000);
         Assert.True(b.CanLock(b.Player, t));
     }
 
     [Fact]
     public void A_scan_runs_on_the_sensor_points_left_and_stops_when_the_target_changes()
     {
-        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -5000, extraA: ", \"power_e\": {\"sensors\": 3}", extraB: ", \"hold_fire\": true");
+        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -50000, extraA: ", \"power_e\": {\"sensors\": 3}", extraB: ", \"hold_fire\": true");
         b.Player.Officers.Clear();   // the base rule, without a science officer's speed
         b.Lock("b");
         b.Scan();
@@ -107,7 +107,7 @@ public class SensorsTests
     [Fact]
     public void A_ship_on_passive_sensors_is_harder_to_hit()
     {
-        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -3000, extraB: ", \"hold_fire\": true");
+        Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -30000, extraB: ", \"hold_fire\": true");
         Ship t = b.ShipById("b")!;
         double a = b.Rules.Ew(b.Player, t);
         t.Passive = true;
