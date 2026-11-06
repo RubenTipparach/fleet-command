@@ -5,9 +5,10 @@
   openspec/changes/kelvane-battle-console D9). Owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the
   logo/emblem", then "shade the 3d plot in the 3d render of the emblem, use our emblem designer for this please".
   The orbital is computed, not traced: tools/mockups/kelvane_emblem.py writes hydrogen's 3d z-squared state (the surface at
-  |3 cos^2 theta - 1|) as the badge's relief, with the full orbital's normals so it shades as the 3D orbital does, and its
-  wireframe as a mask over the orbital's UVs (assets/emblems/kelvane/ka.orbital.json, ka.grid.png). The rim, field and
-  graticule are Material Maker graphs, tinted for the Institute: champagne, smoked scope glass, brass. Same parts and
+  |3 cos^2 theta - 1|) as the badge's relief, with the full orbital's normals so it shades as the 3D orbital does, its wireframe
+  as a mask over the orbital's UVs, and the red satin it floats over (assets/emblems/kelvane/ka.orbital.json, ka.grid.png,
+  ka.satin.json, which also carries the emblem's palette). Owner, 2026-11-06: "green hydrogen icon, irrdescent and red
+  satin soft fabric background on an oval emblem coin". Same parts and
   heights as the Blender render (tools/blender/emblem_kelvane.py). The studio, materials, part builder, views and shots are
   the shared badge, docs/mockups/lib/emblem-badge.js; the parts are docs/mockups/lib/emblem-builds.js's kelvane().
   Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, window.MOCKUP_READY, window.MOCKUP_SCENE.
@@ -38,15 +39,17 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 
 <div id="stage"></div>
 <div class="panel title" data-closable>
-  <h1>Kelvane badge, the eigen plot</h1>
+  <h1>Kelvane badge, KID the eigen plot</h1>
   <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-  <p class="long">KA, the Kelvane Institute's emblem: hydrogen's 3d z<sup>2</sup> orbital plotted as its eigen surface, two lobes and a ring, computed and shaded as the 3D orbital, its wireframe inlaid in brass, on a field of smoked scope glass with a brass graticule, in a champagne rim; a badge 100 mm across. Drag to turn it, scroll or pinch to zoom.</p>
-  <p>Surfaces: Material Maker maps (colour, normal, AO, roughness and metal, specular). Changes <code>faction-emblems</code>, <code>kelvane-battle-console</code>.</p>
+  <p class="long">KID, the Kelvane Institute's emblem, on an oval coin: hydrogen's 3d z<sup>2</sup> orbital plotted as its eigen surface, two lobes and a ring, computed and shaded as the 3D orbital, in iridescent green with its wireframe light green, floating over red satin draped in soft folds, in a champagne rim. The 2D logo beside it is the hull logo. Drag to turn it, scroll or pinch to zoom.</p>
+  <p>Surfaces: the rim a Material Maker graph; the satin and the green film physical materials (sheen, clear coat, thin-film iridescence). Changes <code>faction-emblems</code>, <code>kelvane-battle-console</code>.</p>
 </div>
 <div class="panel renders" data-closable><h2>2D logo · Blender render</h2><div class="imgs"><img id="r-logo" alt="The 2D logo: the eigen plot in two tones under its wireframe"><img id="r-face" alt="Blender render of the badge, face on"><img id="r-angle" alt="Blender render of the badge at an angle"></div></div>
 <div class="panel bar" id="bar"></div>
 
 <!-- INLINE assets/emblems/kelvane/ka.orbital.json -->
+<!-- /INLINE -->
+<!-- INLINE assets/emblems/kelvane/ka.satin.json -->
 <!-- /INLINE -->
 <!-- INLINE docs/mockups/lib/emblem-materials.json -->
 <!-- /INLINE -->
@@ -65,6 +68,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 'use strict';
 const data = (src) => JSON.parse(document.querySelector(`script[data-src="${src}"]`).textContent);
 const ORBITAL = data('assets/emblems/kelvane/ka.orbital.json');
+const SATIN = data('assets/emblems/kelvane/ka.satin.json');
 const MAPS = data('docs/mockups/lib/emblem-materials.json').pieces;
 const RENDERS = data('assets/emblems/kelvane/ka.renders.json').pieces;
 document.getElementById('r-logo').src = RENDERS.logo.data;
@@ -79,7 +83,7 @@ const B = window.FCEmblemBadge(THREE, {
 // ---- the badge's parts and materials: docs/mockups/lib/emblem-builds.js; the orbital's grid decoded first -----------
 const grid = new Image();
 grid.onload = () => {
-  window.FCEmblemBuilds.kelvane(THREE, B, ORBITAL, grid);
+  window.FCEmblemBuilds.kelvane(THREE, B, ORBITAL, SATIN, grid);
   B.start({ three_quarter: ['three quarter'], face: ['face'], edge: ['edge'], close: ['close'] }, 'three quarter');
 };
 grid.src = data('assets/emblems/kelvane/ka.maps.json').pieces.grid.data;

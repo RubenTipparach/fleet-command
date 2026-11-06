@@ -184,6 +184,33 @@ against its spectrum ("truth is measured").
 
 - **Users.** The crest, both name plates and `lib/kelvane.js`'s live emblem all read that one file.
 
+### D10. KID's colours, the 2D logo, the hull logo and the oval coin
+
+**KID.** The emblem thread's guide names the Institute's emblem KID, the Eigen Plot, picked. Its colours are the owner's:
+"on the emblem, background red, shape green" and "the red background should be like a satin texture". KID draws the
+same geometry (`assets/ui/kelvane/emblem.json`), so it is one emblem everywhere.
+
+**What the owner asked for** (2026-11-06):
+- "in 2d logo, I also would like a 2 -tone render with wireframe and shape as well";
+- "shade the 3d plot in the 3d render of the emblem, use our emblem designer for this please";
+- "green hydrogen icon, irrdescent and red satin soft fabric background on an oval emblem coin";
+- "the 2d version the green wireframe and oval background can be used for ship hull logo".
+
+**One palette.** `PALETTE` in `tools/mockups/kelvane_emblem.py` is KID's: champagne frame, red satin field with its sheen
+and shade bands, the plot lit and dark green, light green wires, a deeper green outline. It is written into the emblem's
+data, and every form reads it from there.
+
+**The forms.**
+
+| Form | What it is | Where |
+|---|---|---|
+| 2D logo, which is also the hull logo | The oval coin: a champagne rim round a red satin field. On it the plot in two greens, lit and in shadow (each face split along the light's threshold so the edge is smooth), its wireframe light green and its silhouette deeper | `assets/ui/kelvane/emblem.svg` |
+| The console's live emblem | The same logo, the whole coin fitted to the radius it is given | `lib/kelvane.js` |
+| The 3D badge (mockup 21) | Built on the emblem designer. An oval coin in a champagne rim; red satin draped in soft folds (the generator's height field, `ka.satin.json`), anisotropic with a sheen; the orbital floating over it, iridescent green under a hard coat, shaded on the full 3D orbital's normals, its wireframe light green and faintly lit | `tools/blender/emblem_kelvane.py`, `docs/mockups/lib/emblem-builds.js`'s `kelvane()` |
+| The console crest and name plates | Stay brass wire and engraving on champagne: metal pieces of the console kit | the console kit |
+
+The guide's KID card still shows the plot in a ring. The emblem thread moves it to the oval.
+
 ## Measurements
 
 | Check | Result |

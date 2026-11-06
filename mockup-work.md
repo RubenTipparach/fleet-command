@@ -40,7 +40,7 @@ account and every link here is updated.
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 | 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v1) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
-| 21 | Kelvane badge in 3D: the emblem KA (the hydrogen eigen plot) as a badge, with its 2D logo | Drafted (2026-11-06, v1) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | |
+| 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v1) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -934,20 +934,21 @@ standard for UI design".
 ## 21. Kelvane badge in 3D
 
 Owner, 2026-11-06, with a book cover's hydrogen-atom plot: "I would like this hydrogen atom eigen plot used as the
-logo/emblem", "in 2d logo, I also would like a 2 -tone render with wireframe and shape asw ell", then "shade the 3d plot in
-the 3d render of the emblem, use our emblem designer for this please".
+logo/emblem", "in 2d logo, I also would like a 2 -tone render with wireframe and shape asw ell", "shade the 3d plot in
+the 3d render of the emblem, use our emblem designer for this please", "green hydrogen icon, irrdescent and red satin soft
+fabric background on an oval emblem coin", then "the 2d version the green wireframe and oval background can be used for
+ship hull logo".
 
-- **The emblem.** KA is hydrogen's 3d z² orbital, computed (not traced from the cover) by `tools/mockups/kelvane_emblem.py`.
-  That one file writes every form of it:
+- **The emblem.** KID, as the Emblem Design Guide names it, picked: hydrogen's 3d z² orbital, computed (not traced from the
+  cover) by `tools/mockups/kelvane_emblem.py`. That one file writes every form of it, in KID's colours ("on the emblem,
+  background red, shape green"):
   - the console crest's brass wire and the name plates' mark;
-  - the 2D logo (`assets/ui/kelvane/emblem.svg`): the shape in two tones, lit and in shadow, under the wireframe and the
-    outline in ink;
-  - the badge's relief and its grid.
-- **The badge.** Built on the emblem designer (`tools/blender/emblem_render.py`, `docs/mockups/lib/emblem-badge.js`):
-  - a champagne rim;
-  - a field of smoked scope glass with a brass graticule;
-  - the orbital in amber enamel with its wireframe inlaid in brass, shaded on the full 3D orbital's normals.
-
-  It is rendered in Blender (`tools/blender/emblem_kelvane.py`) and built live from the same mesh on the page.
-- **Change:** `faction-emblems` (the emblem branch records the pick) and `kelvane-battle-console` (D9).
+  - the 2D logo and hull logo (`assets/ui/kelvane/emblem.svg`): the oval coin, red satin, the plot in two greens with its
+    wireframe light green and its outline deeper;
+  - the badge's relief, its grid and its satin.
+- **The badge.** Built on the emblem designer (`tools/blender/emblem_render.py`, `docs/mockups/lib/emblem-badge.js`): an
+  oval coin in a champagne rim, red satin draped in soft folds, and the orbital floating over it in iridescent green with
+  its wireframe light green, shaded on the full 3D orbital's normals. It is rendered in Blender
+  (`tools/blender/emblem_kelvane.py`) and built live from the same meshes on the page.
+- **Change:** `faction-emblems` and `kelvane-battle-console` (D9, D10).
 - **Stage:** Drafted (2026-11-06, v1).

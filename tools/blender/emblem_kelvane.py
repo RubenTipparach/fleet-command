@@ -10,20 +10,22 @@ ka.grid.png: the same lines the 2D logo and the console crest draw. The shared r
 Material Maker map loader, rings and slabs) is tools/blender/emblem_render.py; this file owns the parts, their heights and
 materials.
 
-The relief is pressed into the guide's device band, but every vertex keeps the full orbital's normal, so the plot is lit
-and shaded as the 3D orbital is: lobes and ring rounding away from the key light, the ring's shadow side dark.
+The coin (owner, 2026-11-06: "green hydrogen icon, irrdescent and red satin soft fabric background on an oval emblem
+coin"): an upright oval in a champagne rim; inside it red satin draped in soft folds (assets/emblems/kelvane/ka.satin.json,
+the same generator's height field: a few broad folds and smaller ones between, gathered toward the bottom, tucked flat
+under the rim); over the satin the orbital in iridescent green, a thin film whose colour runs with the viewing angle,
+its wireframe in light green lines (KID's colours, the Emblem Design Guide). The relief keeps the full orbital's normals, so it is lit and shaded as the 3D orbital is,
+and it floats above the satin's crests, shadowing the cloth.
 
 Materials:
     champagne     the rim: the platinum graph tinted the Institute's champagne (its instruments' plate)
-    scope glass   the field: the pearl enamel graph tinted the console's smoked glass, under a hard clear coat
-    brass         the graticule on the field and the wireframe on the orbital (the console's bezels and crest wire)
-    amber enamel  the orbital's surface: the reading lit amber, under a soft clear coat, with a faint glow of its own
+    red satin     the field: red, a soft sheen at grazing angles and a highlight drawn out along the weave (anisotropic)
+    green film    the orbital: green under a hard coat with a thin film (iridescent), its wireframe light green, faintly lit
 
-Heights (mm), no two faces sharing a plane:
-    field       0.3 to 1.0
-    graticule   1.0 to 1.15   two rings and a cross, engraved standing proud by a hair
-    orbital     1.05 to 4.0   the relief (the guide's device band); its farthest point clears the field by 0.05
-    rim         0.0 to 5.0    the frame, highest
+Heights (mm), no two faces sharing a plane (the generator's numbers):
+    satin       0.6 to 2.0    its floor where it is tucked under the rim, its highest crest
+    orbital     2.4 to 5.4    the relief, its farthest point 0.4 above the highest crest
+    rim         0.0 to 6.2    the frame, highest
 
     /opt/blender/blender -b -P tools/blender/emblem_kelvane.py -- [--out DIR] [--samples N] [--px N] [--steps]
 
@@ -31,6 +33,7 @@ Writes <out>/kelvane/ka-face.png (face on, orthographic) and ka-angle.png (three
 clay blockout ka-clay.png too.
 """
 import json
+import math
 import os
 import sys
 
@@ -41,55 +44,26 @@ import emblem_render as R  # noqa: E402
 
 HERE = os.path.join(R.ROOT, "assets", "emblems", "kelvane")
 ORBITAL = os.path.join(HERE, "ka.orbital.json")
+SATIN = os.path.join(HERE, "ka.satin.json")
 GRID = os.path.join(HERE, "ka.grid.png")
-CHAMPAGNE = "#d8cbab"   # the instruments' plate, on the platinum graph (white), so a little lighter than #c9bfa9
-GLASS = "#1b150d"       # the console's smoked glass
-BRASS = "#b0915a"
-AMBER = "#f2d08c"       # the 2D logo's lit tone, a step lighter: enamel under a coat reads darker than flat ink
-RIM_IN, RIM_OUT = 44.0, 48.0
+# The colours are the emblem's one palette (tools/mockups/kelvane_emblem.py's PALETTE, KID's on the Emblem Design Guide;
+# owner: "on the emblem, background red, shape green"), carried in the satin's file.
+PAL = json.load(open(SATIN))["palette"]
+CHAMPAGNE = PAL["frame"]
+SATIN_RED = PAL["field"]
+SHEEN = PAL["sheen"]
+GREEN = PAL["lit"]
+LINE = PAL["wire"]      # the wireframe, light green on the green, as KID's wires
 
 
-def orbital_material():
-    """Amber enamel with the wireframe inlaid in brass: one surface, the grid mask choosing between the two."""
-    m = bpy.data.materials.new("ka.orbital")
-    m.use_nodes = True
-    nt = m.node_tree
-    nt.nodes.clear()
-    out = nt.nodes.new("ShaderNodeOutputMaterial")
-    enamel = nt.nodes.new("ShaderNodeBsdfPrincipled")
-    enamel.inputs["Base Color"].default_value = R.hex_rgb(AMBER)
-    enamel.inputs["Roughness"].default_value = 0.34
-    # a faint glow of its own, a reading lit from behind as on the console's windows, so the shadow side reads amber
-    enamel.inputs["Emission Color"].default_value = R.hex_rgb(AMBER)
-    enamel.inputs["Emission Strength"].default_value = 0.12
-    enamel.inputs["Coat Weight"].default_value = 0.35
-    enamel.inputs["Coat Roughness"].default_value = 0.08
-    brass = nt.nodes.new("ShaderNodeBsdfPrincipled")
-    brass.inputs["Base Color"].default_value = R.hex_rgb(BRASS)
-    brass.inputs["Metallic"].default_value = 1.0
-    brass.inputs["Roughness"].default_value = 0.28
-    uv = nt.nodes.new("ShaderNodeUVMap")
-    mask = nt.nodes.new("ShaderNodeTexImage")
-    mask.image = bpy.data.images.load(GRID)
-    mask.image.colorspace_settings.name = "Non-Color"
-    mask.interpolation = "Cubic"
-    mix = nt.nodes.new("ShaderNodeMixShader")
-    nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
-    nt.links.new(mask.outputs["Color"], mix.inputs["Fac"])
-    nt.links.new(enamel.outputs["BSDF"], mix.inputs[1])
-    nt.links.new(brass.outputs["BSDF"], mix.inputs[2])
-    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
-    return m
-
-
-def orbital(material):
-    """The relief from the generator's mesh, smooth shaded on the full orbital's normals (custom normals)."""
-    d = json.load(open(ORBITAL))
+def node_mesh(path, name):
+    """A mesh from one of the generator's files (positions in badge mm, normals, UVs, faces), smooth shaded on the
+    normals the generator computed (custom normals)."""
+    d = json.load(open(path))
     P, N, U, F = d["positions"], d["normals"], d["uvs"], d["faces"]
     verts = [(P[i] * R.MM, P[i + 1] * R.MM, P[i + 2] * R.MM) for i in range(0, len(P), 3)]
-    faces = [tuple(F[i:i + 3]) for i in range(0, len(F), 3)]
-    me = bpy.data.meshes.new("ka.orbital")
-    me.from_pydata(verts, [], faces)
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, [], [tuple(F[i:i + 3]) for i in range(0, len(F), 3)])
     me.validate(clean_customdata=False)
     uvl = me.uv_layers.new(name="UVMap")
     for poly in me.polygons:
@@ -98,25 +72,82 @@ def orbital(material):
             v = me.loops[li].vertex_index
             uvl.data[li].uv = (U[2 * v], 1.0 - U[2 * v + 1])
     me.normals_split_custom_set_from_vertices([(N[i], N[i + 1], N[i + 2]) for i in range(0, len(N), 3)])
-    ob = bpy.data.objects.new("ka.orbital", me)
+    ob = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(ob)
-    me.materials.append(material)
-    return ob
+    return ob, d
+
+
+def satin_material():
+    """Red satin: a soft sheen at grazing angles and a highlight drawn out along the weave (anisotropic, its tangent
+    round the oval, the generator's u)."""
+    m = bpy.data.materials.new("ka.satin")
+    m.use_nodes = True
+    nt = m.node_tree
+    p = nt.nodes["Principled BSDF"]
+    p.inputs["Base Color"].default_value = R.hex_rgb(SATIN_RED)
+    p.inputs["Roughness"].default_value = 0.3
+    p.inputs["Anisotropic"].default_value = 0.85
+    p.inputs["Sheen Weight"].default_value = 0.9
+    p.inputs["Sheen Roughness"].default_value = 0.35
+    p.inputs["Sheen Tint"].default_value = R.hex_rgb(SHEEN)
+    p.inputs["Specular IOR Level"].default_value = 0.6
+    tg = nt.nodes.new("ShaderNodeTangent")
+    tg.direction_type = "UV_MAP"
+    tg.uv_map = "UVMap"
+    nt.links.new(tg.outputs["Tangent"], p.inputs["Tangent"])
+    return m
+
+
+def orbital_material():
+    """Iridescent green under a hard coat, a thin film whose colour runs with the viewing angle, with the wireframe in a
+    dark green-black: one surface, the grid mask choosing between the two."""
+    m = bpy.data.materials.new("ka.orbital")
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    film = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    film.inputs["Base Color"].default_value = R.hex_rgb(GREEN)
+    film.inputs["Metallic"].default_value = 0.25
+    film.inputs["Roughness"].default_value = 0.22
+    film.inputs["Coat Weight"].default_value = 1.0
+    film.inputs["Coat Roughness"].default_value = 0.04
+    film.inputs["Thin Film Thickness"].default_value = 520.0
+    film.inputs["Thin Film IOR"].default_value = 1.7
+    line = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    line.inputs["Base Color"].default_value = R.hex_rgb(LINE)
+    line.inputs["Roughness"].default_value = 0.35
+    line.inputs["Emission Color"].default_value = R.hex_rgb(LINE)   # a little light of its own, a trace on a scope
+    line.inputs["Emission Strength"].default_value = 0.25
+    line.inputs["Coat Weight"].default_value = 1.0
+    line.inputs["Coat Roughness"].default_value = 0.04
+    uv = nt.nodes.new("ShaderNodeUVMap")
+    mask = nt.nodes.new("ShaderNodeTexImage")
+    mask.image = bpy.data.images.load(GRID)
+    mask.image.colorspace_settings.name = "Non-Color"
+    mask.interpolation = "Cubic"
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
+    nt.links.new(mask.outputs["Color"], mix.inputs["Fac"])
+    nt.links.new(film.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(line.outputs["BSDF"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return m
+
+
+def ellipse(a, b, n=180):
+    """An ellipse of semi-axes a, b mm as a polygon on the guide's 100 unit grid (y down)."""
+    return [(50 + a * math.cos(2 * math.pi * k / n), 50 - b * math.sin(2 * math.pi * k / n)) for k in range(n)]
 
 
 def build():
     champagne = R.mm_material("emblem_platinum", tint=CHAMPAGNE)
-    glass = R.mm_material("emblem_enamel_pearl", coat=1.0, tint=GLASS)
-    brass = R.mm_material("emblem_platinum", tint=BRASS)
-    R.ring("rim", 0.0, 0.0, RIM_IN, RIM_OUT, 0.0, 5.0, 0.8, champagne)
-    R.disc("field", 0.0, 0.0, RIM_IN + 0.4, 0.3, 1.0, 0.15, glass)
-    # the graticule: two rings and a cross, a scope's measuring lines, on the glass under the plot
-    for k, r in enumerate((22.0, 36.0)):
-        R.ring(f"graticule.ring.{k}", 0.0, 0.0, r - 0.25, r + 0.25, 1.0, 1.15, 0.05, brass)
-    for k, rect in enumerate((((50 - 41, 49.8), (50 + 41, 49.8), (50 + 41, 50.2), (50 - 41, 50.2)),
-                              ((49.8, 50 - 41), (50.2, 50 - 41), (50.2, 50 + 41), (49.8, 50 + 41)))):
-        R.poly_slab(f"graticule.cross.{k}", [list(rect)], 1.0, 1.15, 0.05, brass)
-    orbital(orbital_material())
+    satin, d = node_mesh(SATIN, "ka.satin")
+    satin.data.materials.append(satin_material())
+    (ao, bo), (ai, bi) = d["oval_out"], d["oval_in"]
+    R.poly_slab("rim", [ellipse(ao, bo), ellipse(ai, bi)], 0.0, d["rim_z"], 0.8, champagne)
+    orbital, _ = node_mesh(ORBITAL, "ka.orbital")
+    orbital.data.materials.append(orbital_material())
 
 
 def main():

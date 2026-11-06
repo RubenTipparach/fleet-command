@@ -174,15 +174,16 @@ const live = {
     x.restore();
   },
 };
-// The Institute's emblem where the console draws one (a portrait, the holder of a ship): the hydrogen 3d z-squared eigen
-// plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem"), as the 2D logo: the
-// two-tone render of its shape, lit and in shadow, with the wireframe and the outline over it in ink (owner, 2026-11-06:
-// "in 2d logo, I also would like a 2 -tone render with wireframe and shape as well"). Drawn from what
-// tools/mockups/kelvane_emblem.py computed (assets/ui/kelvane/emblem.json, inlined), the lines the crest's brass wire is
-// rendered from and the shapes of assets/ui/kelvane/emblem.svg: the fine wireframe when drawn large, the coarse one when
-// small, the outline alone when tiny. r is the radius of the unit circle the plot fits in.
+// The Institute's emblem where the console draws one (a portrait, the holder of a ship): KID, the hydrogen 3d z-squared
+// eigen plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem"), as the 2D logo,
+// the same as assets/ui/kelvane/emblem.svg and the hull logo (owner: "the 2d version the green wireframe and oval background
+// can be used for ship hull logo"): the oval coin's champagne rim round a red satin field, and on it the plot's shape in
+// two greens, lit and in shadow, the wireframe light green and the silhouette deeper (owner: "in 2d logo, I also would
+// like a 2 -tone render with wireframe and shape as well"; "on the emblem, background red, shape green"). Drawn from what
+// tools/mockups/kelvane_emblem.py computed (assets/ui/kelvane/emblem.json, inlined, its palette included): the fine
+// wireframe when drawn large, the coarse one when small, none when tiny. r is the radius the whole coin fits in (its
+// height), as every faction's emblem fits its r.
 const EMBLEM = 'assets/ui/kelvane/emblem.json';
-const LOGO = { lit: '#e9c47a', shade: '#8a6528', ink: '#2a1a06' };
 let emblemLines = null;
 function emblem(G, cx, cy, r) {
   if (!emblemLines) {
@@ -190,18 +191,23 @@ function emblem(G, cx, cy, r) {
     if (!n) throw new Error(`the Kelvane emblem (${EMBLEM}) is not inlined in this page`);
     emblemLines = JSON.parse(n.textContent);
   }
-  const e = emblemLines, X = (x) => cx + x * r, Y = (y) => cy - y * r;
-  const line = (l) => { G.beginPath(); l.forEach(([x, y], k) => (k ? G.lineTo(X(x), Y(y)) : G.moveTo(X(x), Y(y)))); G.stroke(); };
+  r /= emblemLines.oval.out[1];   // the coin, not the plot, fits the radius it is given, as every faction's emblem fits
+  const e = emblemLines, k = e.palette, X = (x) => cx + x * r, Y = (y) => cy - y * r;
+  const line = (l) => { G.beginPath(); l.forEach(([x, y], q) => (q ? G.lineTo(X(x), Y(y)) : G.moveTo(X(x), Y(y)))); G.stroke(); };
   G.save(); G.lineCap = 'round'; G.lineJoin = 'round';
-  // the shape in two tones, far to near, each run one fill (stroked in its own colour so no hairline shows between pieces)
+  // the coin: the champagne rim, the red satin field with its bright and dark bands
+  G.fillStyle = k.frame; G.beginPath(); G.ellipse(cx, cy, e.oval.out[0] * r, e.oval.out[1] * r, 0, 0, 2 * P); G.fill();
+  const ai = e.oval.in[0] * r, bi = e.oval.in[1] * r, gr = G.createLinearGradient(cx - ai * 0.8, cy - bi, cx + ai * 0.8, cy + bi);
+  for (const [o, c] of [[0, k.shade], [0.18, k.field], [0.34, k.sheen], [0.46, k.field], [0.6, k.shade], [0.74, k.field], [0.86, k.sheen], [1, k.field]]) gr.addColorStop(o, c);
+  G.fillStyle = gr; G.beginPath(); G.ellipse(cx, cy, ai, bi, 0, 0, 2 * P); G.fill();
+  // the plot's shape in two greens, far to near, each run one fill (stroked in its own colour so no hairline shows)
   for (const run of e.tones) {
     G.beginPath();
-    for (const p of run.polys) { G.moveTo(X(p[0]), Y(p[1])); for (let k = 2; k < p.length; k += 2) G.lineTo(X(p[k]), Y(p[k + 1])); G.closePath(); }
-    G.fillStyle = G.strokeStyle = run.tone ? LOGO.lit : LOGO.shade; G.lineWidth = Math.max(0.4, r * 0.004); G.fill(); G.stroke();
+    for (const p of run.polys) { G.moveTo(X(p[0]), Y(p[1])); for (let q = 2; q < p.length; q += 2) G.lineTo(X(p[q]), Y(p[q + 1])); G.closePath(); }
+    G.fillStyle = G.strokeStyle = run.tone ? k.lit : k.dark; G.lineWidth = Math.max(0.4, r * 0.004); G.fill(); G.stroke();
   }
-  G.strokeStyle = LOGO.ink;
-  if (r >= 16) { G.lineWidth = Math.max(0.6, r * 0.007); for (const l of r >= 40 ? e.fine : e.coarse) line(l); }
-  G.lineWidth = Math.max(1, r * 0.018); line(e.outline);
+  if (r >= 16) { G.strokeStyle = k.wire; G.lineWidth = Math.max(0.6, r * 0.0065); for (const l of r >= 40 ? e.fine : e.coarse) line(l); }
+  G.strokeStyle = k.outline; G.lineWidth = Math.max(1, r * 0.017); line(e.outline);
   G.restore();
 }
 

@@ -30,8 +30,20 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 OUT = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.json")
 SVG = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.svg")   # the 2D logo: two tones, wireframe, outline
 BADGE = os.path.join(ROOT, "assets", "emblems", "kelvane")             # the 3D badge's orbital and its grid mask
-BADGE_R_MM = 40.0             # the plot's unit circle on the badge, mm (inside the rim's 44 mm opening)
-RELIEF = (1.05, 4.0)          # the relief's lowest and highest points, mm (the guide's device band, under the 5 mm frame)
+BADGE_R_MM = 40.0             # the plot's unit circle on the badge, mm (inside the oval's opening)
+# The coin (owner, 2026-11-06: "green hydrogen icon, irrdescent and red satin soft fabric background on an oval emblem
+# coin"): an upright oval, as tall as the plot, its rim between the outer and inner ellipses (semi-axes x, y in mm); the
+# satin draped inside it from SATIN_Z up through its folds, and the orbital floating above the folds' crests.
+OVAL_OUT = (39.0, 49.0)
+OVAL_IN = (35.0, 45.0)
+SATIN_Z = (0.6, 2.0)          # the satin's floor at the rim and its highest crest, mm
+RELIEF = (2.4, 5.4)           # the orbital's relief, its farthest point clear of the highest crest, under the 6.2 mm rim
+RIM_Z = 6.2
+# The emblem's colours, KID's (the Emblem Design Guide; owner, 2026-11-06: "on the emblem, background red, shape green",
+# "the red background should be like a satin texture", "green hydrogen icon, irrdescent and red satin soft fabric
+# background on an oval emblem coin"): one palette for the 2D logo, the console's live emblem, the hull logo and the badge.
+PALETTE = {"frame": "#e6d8b8", "field": "#8c1a1f", "sheen": "#d4434a", "shade": "#4f0b0f",
+           "lit": "#2fd36a", "dark": "#137a3c", "wire": "#a6ffbe", "outline": "#0c4a24"}
 
 TILT = math.radians(30.0)     # the view looks down on the ring by this much, so the ring reads as a ring
 TURN = math.radians(15.0)     # meridians turned off the view's axis, so no two lie on top of each other
@@ -212,20 +224,33 @@ def split(xy, lv):
     return [(1, lit)] * (len(lit) >= 3) + [(0, shade)] * (len(shade) >= 3)
 
 
-def svg(d, size=512, lit="#e9c47a", shade="#8a6528", ink="#2a1a06"):
-    """The 2D logo as an SVG: the two-tone fill, the fine wireframe over it and the outline, in ink."""
-    c = size / 2.0
-    k = c * 0.98
-    P = lambda x, y: f"{c + x * k:.2f},{c - y * k:.2f}"
-    out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" width="{size}" height="{size}">',
-           '<title>Kelvane Institute: the hydrogen 3d z2 eigen plot</title>']
+def svg(d, px=200.0):
+    """The 2D logo as an SVG (owner, 2026-11-06: "the 2d version the green wireframe and oval background can be used for
+    ship hull logo"): the oval coin, its champagne rim round a red satin field (soft bright and dark bands across it, as
+    satin catches the light), and on it the plot: its shape in two greens, lit and in shadow, the wireframe in light green
+    and the silhouette in a deeper green. px is the size of the plot's unit circle; the oval is the badge's, in its units."""
+    k = PALETTE
+    u = 1.0 / BADGE_R_MM * 0.96 / 0.96          # badge mm to plot units (the plot's unit circle is BADGE_R_MM)
+    ao, bo = OVAL_OUT[0] * u * px, OVAL_OUT[1] * u * px
+    ai, bi = OVAL_IN[0] * u * px, OVAL_IN[1] * u * px
+    w, h = 2 * ao + 8, 2 * bo + 8
+    cx, cy = w / 2, h / 2
+    P = lambda x, y: f"{cx + x * px:.2f},{cy - y * px:.2f}"
+    stops = [(0, k["shade"]), (0.18, k["field"]), (0.34, k["sheen"]), (0.46, k["field"]), (0.6, k["shade"]), (0.74, k["field"]),
+             (0.86, k["sheen"]), (1, k["field"])]
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:.0f} {h:.0f}" width="{w:.0f}" height="{h:.0f}">',
+           '<title>Kelvane Institute: the hydrogen 3d z2 eigen plot</title>',
+           '<defs><linearGradient id="satin" x1="0.1" y1="0" x2="0.9" y2="1">'
+           + "".join(f'<stop offset="{o}" stop-color="{c}"/>' for o, c in stops) + '</linearGradient></defs>',
+           f'<ellipse cx="{cx:.2f}" cy="{cy:.2f}" rx="{ao:.2f}" ry="{bo:.2f}" fill="{k["frame"]}"/>',
+           f'<ellipse cx="{cx:.2f}" cy="{cy:.2f}" rx="{ai:.2f}" ry="{bi:.2f}" fill="url(#satin)"/>']
     for r in d["tones"]:
-        path = "".join("M" + "L".join(P(t[k], t[k + 1]) for k in range(0, len(t), 2)) + "Z" for t in r["polys"])
-        col = lit if r["tone"] else shade
+        path = "".join("M" + "L".join(P(t[q], t[q + 1]) for q in range(0, len(t), 2)) + "Z" for t in r["polys"])
+        col = k["lit"] if r["tone"] else k["dark"]
         out.append(f'<path d="{path}" fill="{col}" stroke="{col}" stroke-width="0.6" stroke-linejoin="round"/>')
     for l in d["fine"]:
-        out.append(f'<polyline points="{" ".join(P(x, y) for x, y in l)}" fill="none" stroke="{ink}" stroke-width="{size / 512 * 1.6:.2f}" stroke-linecap="round" stroke-linejoin="round"/>')
-    out.append(f'<polyline points="{" ".join(P(x, y) for x, y in d["outline"])}" fill="none" stroke="{ink}" stroke-width="{size / 512 * 4.2:.2f}" stroke-linejoin="round"/>')
+        out.append(f'<polyline points="{" ".join(P(x, y) for x, y in l)}" fill="none" stroke="{k["wire"]}" stroke-width="{px / 200 * 1.3:.2f}" stroke-linecap="round" stroke-linejoin="round"/>')
+    out.append(f'<polyline points="{" ".join(P(x, y) for x, y in d["outline"])}" fill="none" stroke="{k["outline"]}" stroke-width="{px / 200 * 3.4:.2f}" stroke-linejoin="round"/>')
     out.append("</svg>")
     return "\n".join(out) + "\n"
 
@@ -289,6 +314,45 @@ def grid_mask(w=2048, h=1024, line_px=5.0, meridian_px=16.0):
     return Image.fromarray((np.broadcast_to(m, (h, w)) * 255).astype(np.uint8), "L")
 
 
+def satin_mesh(n_r=40, n_a=192):
+    """The red satin the orbital floats over: a cloth draped inside the oval in soft rounded folds that run out from the
+    middle, a few broad ones and some smaller between them, gathered a little toward the bottom, lying flat where it is
+    tucked under the rim. A height field over the oval (polar rings, the centre one point), with its normals and UVs (u
+    round the oval, v from the middle out: the direction its folds run, which the satin's sheen follows)."""
+    a, b = OVAL_IN[0] + 0.6, OVAL_IN[1] + 0.6   # tucked a hair under the rim's inner edge
+    def height(r, t):
+        fold = (0.55 * np.sin(7 * t + 0.9 * np.sin(2 * t) + 0.4) + 0.3 * np.sin(13 * t + 1.7 * np.cos(3 * t)) + 0.15 * np.sin(23 * t + 0.5))
+        gather = 1.0 + 0.35 * np.sin(t - math.pi / 2)        # deeper folds toward the bottom, where the cloth gathers
+        rise = np.clip(r / 0.25, 0, 1) ** 0.7 * (1 - np.clip((r - 0.86) / 0.14, 0, 1)) ** 1.5   # flat at the middle and the tuck
+        z = 0.5 + 0.5 * fold * gather * rise
+        return SATIN_Z[0] + (SATIN_Z[1] - SATIN_Z[0]) * np.clip(z * (0.45 + 0.55 * rise), 0, 1)
+    R = np.linspace(0.0, 1.0, n_r + 1)
+    T = np.linspace(0.0, 2 * math.pi, n_a, endpoint=False)
+    rr, tt = np.meshgrid(R, T, indexing="ij")
+    X, Y = a * rr * np.cos(tt), b * rr * np.sin(tt)
+    Z = height(rr, tt)
+    e = 1e-3
+    def hz(x, y):
+        r = np.sqrt((x / a) ** 2 + (y / b) ** 2)
+        return height(np.clip(r, 0, 1), np.arctan2(y / b, x / a))
+    nx = -(hz(X + e, Y) - hz(X - e, Y)) / (2 * e)
+    ny = -(hz(X, Y + e) - hz(X, Y - e)) / (2 * e)
+    N = np.stack([nx, ny, np.ones_like(nx)], axis=-1)
+    N /= np.linalg.norm(N, axis=-1, keepdims=True)
+    V = np.stack([X, Y, Z], axis=-1)
+    U = np.stack([tt / (2 * math.pi), rr], axis=-1)
+    faces = []
+    idx = lambda i, j: i * n_a + (j % n_a)
+    for i in range(n_r):
+        for j in range(n_a):
+            p, q, r_, s_ = idx(i, j), idx(i + 1, j), idx(i + 1, j + 1), idx(i, j + 1)
+            faces += [[p, q, r_], [p, r_, s_]] if i else [[p, q, r_]]   # the centre ring's quads fold to triangles
+    r4 = lambda arr: [round(float(v), 4) for v in arr.reshape(-1)]
+    return {"units": "badge mm: x right, y up, z out of the badge", "oval_out": list(OVAL_OUT), "oval_in": list(OVAL_IN),
+            "rim_z": RIM_Z, "satin_z": list(SATIN_Z), "palette": PALETTE, "positions": r4(V), "normals": r4(N), "uvs": r4(U),
+            "faces": [k for f in faces for k in f]}
+
+
 def build():
     th, ph = np.meshgrid(np.linspace(0, math.pi, 200), np.linspace(0, 2 * math.pi, 400), indexing="ij")
     x, y, _d = point(th, ph)
@@ -303,6 +367,8 @@ def build():
         levels[name] = lines
     levels["outline"] = silhouette(buf)
     levels["tones"] = two_tone(scale)
+    levels["palette"] = PALETTE
+    levels["oval"] = {"out": [v / BADGE_R_MM for v in OVAL_OUT], "in": [v / BADGE_R_MM for v in OVAL_IN], "units": "the plot's unit circle"}
     return {"state": "hydrogen 3d z^2 (n 3, l 2, m 0): surface at |3 cos^2 theta - 1|", "tilt_deg": math.degrees(TILT),
             "turn_deg": math.degrees(TURN), "units": "unit circle about the nucleus, y up", **levels}
 
@@ -318,6 +384,9 @@ def main():
     os.makedirs(BADGE, exist_ok=True)
     with open(os.path.join(BADGE, "ka.orbital.json"), "w") as f:
         json.dump(badge_mesh(), f, separators=(",", ":"))
+        f.write("\n")
+    with open(os.path.join(BADGE, "ka.satin.json"), "w") as f:
+        json.dump(satin_mesh(), f, separators=(",", ":"))
         f.write("\n")
     grid_mask().save(os.path.join(BADGE, "ka.grid.png"), optimize=True)
     print(f"wrote {os.path.relpath(OUT, ROOT)}: fine {len(d['fine'])} lines, coarse {len(d['coarse'])} lines, "
