@@ -40,13 +40,14 @@ public class ScenarioTests
     }
 
     [Fact]
-    public void Every_scenario_is_the_Krai_against_the_Concord_in_approved_ships_with_no_stand_ins()
+    public void Every_scenario_is_fought_by_factions_with_approved_ships_in_those_ships_with_no_stand_ins()
     {
-        // owner, 2026-11-04: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"
+        // owner, 2026-11-04: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"; the Ssarith Hunt joined them once its ships
+        // were approved for the game (owner, 2026-11-06: "looks good, implement in game")
         foreach (Scenario s in TestData.Data.Scenarios)
             foreach (ShipStart o in s.Ships)
             {
-                Assert.True(o.Faction is "concord" or "krai", $"{s.Id}: {o.Id} is of the {o.Faction}");
+                Assert.True(o.Faction is "concord" or "krai" or "ssarith", $"{s.Id}: {o.Id} is of the {o.Faction}");
                 Assert.True(TestData.Data.Classes[o.Class].Model != null, $"{s.Id}: {o.Id} ({o.Class}) would be a stand-in");
             }
     }

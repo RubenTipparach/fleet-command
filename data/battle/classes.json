@@ -1,5 +1,5 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm.",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines.",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
@@ -730,5 +730,444 @@
    "repair": 2
   },
   "hull_hp": 220
+ },
+ "hunt_ff_lance": {
+  "name": "Hunt frigate (Hooded lance)",
+  "code": "FF",
+  "shape": "wedge",
+  "model": "assets/ships/ssarith/hooded_lance.glb",
+  "length_m": 297,
+  "speed_max_m_s": 340,
+  "accel_m_s2": 60,
+  "turn_deg_s": 36,
+  "reactor_e": 15,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   34,
+   24,
+   20,
+   16,
+   20,
+   24
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 85
+ },
+ "hunt_ff_prow": {
+  "name": "Hunt frigate (Forked prow)",
+  "code": "FF",
+  "shape": "wedge",
+  "model": "assets/ships/ssarith/forked_prow.glb",
+  "length_m": 297,
+  "speed_max_m_s": 340,
+  "accel_m_s2": 60,
+  "turn_deg_s": 36,
+  "reactor_e": 15,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   34,
+   24,
+   20,
+   16,
+   20,
+   24
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 85
+ },
+ "hunt_ff_harpoon": {
+  "name": "Hunt frigate (Harpoon)",
+  "code": "FF",
+  "shape": "wedge",
+  "model": "assets/ships/ssarith/harpoon.glb",
+  "length_m": 313,
+  "speed_max_m_s": 340,
+  "accel_m_s2": 60,
+  "turn_deg_s": 36,
+  "reactor_e": 15,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   34,
+   24,
+   20,
+   16,
+   20,
+   24
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 85
+ },
+ "hunt_ff_trident": {
+  "name": "Hunt frigate (Trident)",
+  "code": "FF",
+  "shape": "wedge",
+  "model": "assets/ships/ssarith/trident.glb",
+  "length_m": 302,
+  "speed_max_m_s": 340,
+  "accel_m_s2": 60,
+  "turn_deg_s": 36,
+  "reactor_e": 15,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.15,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shields_hp": [
+   34,
+   24,
+   20,
+   16,
+   20,
+   24
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 85
+ },
+ "hunt_ca": {
+  "name": "Hunt cruiser",
+  "code": "CA",
+  "shape": "wedge",
+  "model": "assets/ships/ssarith/cruiser.glb",
+  "length_m": 405,
+  "speed_max_m_s": 300,
+  "accel_m_s2": 45,
+  "turn_deg_s": 26,
+  "reactor_e": 21,
+  "capacitor_e": 14,
+  "battery_e": 9,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.12,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.12,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.1,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.1,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "pd",
+    "x": -0.25,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.25,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ],
+  "shields_hp": [
+   44,
+   32,
+   26,
+   22,
+   26,
+   32
+  ],
+  "power_e": {
+   "weapons": 8,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 135
+ },
+ "hunt_cv": {
+  "name": "Hunt carrier",
+  "code": "CV",
+  "shape": "wedge",
+  "model": "assets/ships/ssarith/carrier.glb",
+  "length_m": 455,
+  "speed_max_m_s": 260,
+  "accel_m_s2": 35,
+  "turn_deg_s": 20,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.3,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.3,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": -0.2,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": -0.2,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": -0.2,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "orange"
+   },
+   {
+    "weapon": "missile",
+    "x": 0.2,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ],
+  "shields_hp": [
+   48,
+   36,
+   30,
+   26,
+   30,
+   36
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 6,
+   "engines": 5,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 170
  }
 }
