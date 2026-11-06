@@ -41,6 +41,17 @@ A `MOCKUPS` entry:
   summary: 'One sentence: what the owner will see and do on the page.' }
 ```
 
+A summary is one short line, what the page is, at most 200 characters, never a history of versions ("New in v...")
+(owner, 2026-11-06: "why did you add so much detail to the mockup tracker? the mockups themselves already have
+documentation, or you can add documentation to openspec"). What changed in a version goes in the mockup page itself, its
+OpenSpec change and `docs/artifacts/<name>/README.md`. Escape every apostrophe in a summary (`\'`): one bare quote stops
+the page's script and empties every list. `tools/mockups/artifact_check.py` checks both, and the script parsing.
+
+A faction's own mockup (its ships, its battle console, its badge) carries `faction: 'krai'` (an id in the page's
+`FACTIONS`): it is drawn inside that faction's modal, behind one card that lists the faction's mockups with their stages
+(owner, 2026-11-06: "coalesce faction mockups together in modals"). Mockups for every faction (the in-game UI, the
+console skins, the emblem set) have no `faction` and stay in the main list.
+
 Ids are `M` plus the number in `mockup-work.md`, never reused. A mockup listed but not yet built has
 `url: ''` and shows as "Listed".
 

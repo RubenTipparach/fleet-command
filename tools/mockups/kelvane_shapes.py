@@ -35,6 +35,16 @@ from formed_metal import DIMPLE_RIM, INSET, behind_layer, disc, fit, rbox, soft 
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "ui", "kelvane", "shapes.json")
+EMBLEM = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.json")
+
+
+def orbital(level, cx, cy, scale, wire, outline):
+    """The Institute's emblem, the hydrogen 3d z-squared eigen plot (tools/mockups/kelvane_emblem.py writes its lines;
+    owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem"), placed at (cx, cy) with
+    the unit circle at scale px, y down: its wires at one width and its outline heavier, as (width, polyline) pairs."""
+    e = json.load(open(EMBLEM))
+    place = lambda l: [(round(cx + x * scale, 3), round(cy - y * scale, 3)) for x, y in l]
+    return [(wire, place(l)) for l in e[level]] + [(outline, place(e["outline"]))]
 
 # Icon glyphs (48 px icons), drawn for the Institute: instruments and lab glassware, a line each. They are printed in
 # ink on a small amber window, so they are scaled into it about the icon's centre.
@@ -74,6 +84,26 @@ def graticule(cx, cy, r, rings, spokes=4):
     return out
 
 
+def button(add, name, film, lamps):
+    """The Institute's key (button.*): a domed key in a pressed dimple beside a window that holds the key's name, its film
+    the key's state. The key, its dimple and the window's rounded left end (to 52 px with its bezel) stay in the 54 px left
+    cap, the window's right end in the 16 px right cap, so only the window's straight run stretches. (Until 2026-11-06 the
+    left cap was 46 px and ended on the window's left corner, which smeared across a wide key.)"""
+    add(name, "nine", (150, 48), rbox(0.5, 2.5, 149.5, 45.5, 10), [(film, rbox(44, 9, 140, 39, 5))],
+        studs=[(22, 24, 9.0, "key")], dimples=[(22, 24, 13.0)], live=[("label", box(48, 15, 136, 33))],
+        margins=(20, 16, 20, 54), stretch="x", roll=1.6, dz=-5.0, lamps=lamps, pad=2.5)
+
+
+def tab(add, name, film, on):
+    """A tab, the console's toggle (tab.*): a jewel pilot lamp in a dimple at its left, lit when chosen, and one long
+    window, its film the tab's state. The lamp and the window's rounded left end (28-36 px with its bezel) lie in the 36 px
+    left cap, its right end in the 14 px right cap (the left cap was 28 px until 2026-11-06, smearing the window's corner)."""
+    add(name, "nine", (120, 40), rbox(1, 4, 119, 36, 8), [(film, rbox(28, 10, 112, 30, 5))],
+        studs=[(15, 20, 3.6, "jewel_on" if on else "jewel_off")], dimples=[(15, 20, 5.0)],
+        live=[("label", box(32, 13, 106, 27))], margins=(12, 14, 12, 36), stretch="x", roll=1.4, dz=-4.0, pad=2.5,
+        lamps=[(70, 10, 0.05)] if on else [])
+
+
 def pieces():
     """Every piece: kind, size, 9-slice margins (top, right, bottom, left), stretch, the fill inset (bars), roll and land
     for the fit rule, the plate, its wells (each with its light: amber, phos or tray), studs (x, y, r, style), dimples
@@ -106,19 +136,13 @@ def pieces():
     # The window is the key's state (owner, 2026-10-31: "these need to switch back light on off based on hover/click
     # state"): unlit film and no lamp at rest, backlit amber on hover, brighter with a stronger lamp when pressed. The
     # plate, glass and dimple are the same in every state; only the light changes.
-    win = rbox(44, 9, 140, 39, 5)
     for state, film, lamps in (("idle", "dim", []), ("hover", "amber", [(92, 9, 0.05)]), ("pressed", "hot", [(92, 9, 0.08)])):
-        add(f"button.{state}", "nine", (150, 48), rbox(0.5, 2.5, 149.5, 45.5, 10), [(film, win)],
-            studs=[(22, 24, 9.0, "key")], dimples=[(22, 24, 13.0)], live=[("label", box(48, 15, 136, 33))],
-            margins=(20, 16, 20, 46), stretch="x", roll=1.6, dz=-5.0, lamps=lamps, pad=2.5)
+        button(add, f"button.{state}", film, lamps)
     # Tabs are the console's toggles: a plate with a jewel pilot lamp in a dimple at its left (owner, 2026-10-31: "some
     # of the togle buttons for instutues having lights on would be cool") and one long amber window. The selected tab's
     # lamp glows and its window is lit; the others' lamps are dark glass and their windows dim. Same glass in both.
     for state in ("idle", "active"):
-        add(f"tab.{state}", "nine", (120, 40), rbox(1, 4, 119, 36, 8), [("amber" if state == "active" else "dim", rbox(28, 10, 112, 30, 5))],
-            studs=[(15, 20, 3.6, "jewel_on" if state == "active" else "jewel_off")], dimples=[(15, 20, 5.0)],
-            live=[("label", box(32, 13, 106, 27))], margins=(12, 14, 12, 28), stretch="x", roll=1.4, dz=-4.0, pad=2.5,
-            lamps=[(70, 10, 0.05)] if state == "active" else [])
+        tab(add, f"tab.{state}", "amber" if state == "active" else "dim", state == "active")
     # Strips: a long plate; at its left end a bay holds a small needle meter on amber film (an arched window grown up
     # out of a box), at its right end a knurled knob in a dimple and two screws. The middle is plain metal that stretches.
     # 72 px tall since 2026-10-31 (owner: "we need to make parent taller"): the bay, knob and screws keep their size,
@@ -134,8 +158,8 @@ def pieces():
     add("divider", "nine", (128, 10), rbox(0.5, 1.5, 127.5, 8.5, 3.5), [], margins=(0, 12, 0, 12), stretch="x", roll=3.0)
     # Heroes. The name plate: an amber window for the live name, an engraved fork-and-wave mark at its left, a jewel and
     # a domed key in dimples at its right.
-    mark = [[(16, 16), (16, 30)] + [(22 + 6 * math.cos(a), 30 + 6 * math.sin(a)) for a in [math.pi - i * math.pi / 8 for i in range(9)]] + [(28, 16)],
-            [(22, 36), (22, 44)], [(10 + i, 28 + math.sin(i / 24 * 4 * math.pi) * 4) for i in range(25)]]
+    # (the Institute's mark engraved at the left end: the eigen plot, its mark level, 27 px tall)
+    mark = [l for _w, l in orbital("mark", 22, 28, 14.0, 0.8, 0.8)]
     add("nameplate", "hero", (460, 56), rbox(0.5, 0.5, 459.5, 55.5, 12), [("amber", rbox(46, 9, 360, 47, 6))],
         studs=[(386, 28, 5.5, "jewel"), (424, 28, 10.0, "key")], dimples=[(386, 28, 9.0), (424, 28, 15.0)],
         live=[("name", box(54, 12, 344, 44))], engrave=mark, roll=2.5, dz=-8.0, lamps=[(120, 9, 0.1), (280, 9, 0.1)], pad=2.9)
@@ -158,17 +182,99 @@ def pieces():
     for c in ("green", "yellow", "red"):
         add(f"lamp.alert.{c}", "hero", (64, 64), Point(32, 32).buffer(31.5, quad_segs=48), [],
             studs=[(32, 32, 13.0, f"jewel_{c}")], dimples=[(32, 32, 20.0)], roll=2.0, dz=-4.0)
-    # The crest: a round plate with a pressed ring channel and the Institute's mark (a tuning fork over a sine wave)
-    # inlaid in brass on the flat inside it.
-    fork = [[(40, 26), (40, 48)] + [(48 + 8 * math.cos(a), 48 + 8 * math.sin(a)) for a in [math.pi - i * math.pi / 8 for i in range(9)]] + [(56, 26)],
-            [(48, 56), (48, 70)], [(28 + i * 1.6, 60 + math.sin(i / 25 * 4 * math.pi) * 5) for i in range(26)]]
-    add("crest", "hero", (96, 96), Point(48, 48).buffer(47.5, quad_segs=48), [], cradle=(48, 48, 34.0, 4.0, 1.6), emblem=fork, roll=3.0, dz=-4.0)
+    # The crest: a round plate with a pressed ring channel and the Institute's emblem inlaid in brass wire on the flat
+    # inside it: the hydrogen 3d z-squared eigen plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used
+    # as the logo/emblem"; it replaces the tuning fork over a sine wave), its coarse level, the outline heavier.
+    add("crest", "hero", (96, 96), Point(48, 48).buffer(47.5, quad_segs=48), [], cradle=(48, 48, 34.0, 4.0, 1.6),
+        emblem=orbital("coarse", 48, 48, 25.0, 0.9, 1.7), roll=3.0, dz=-4.0)
     for n, g in GLYPHS.items():
         s = 0.62
         lines = [[(24 + (x - 24) * s, 24 + (y - 24) * s) for x, y in l] for l in g]
         add(f"icon.{n}", "hero", (48, 48), rbox(0.5, 0.5, 47.5, 47.5, 9), [("amber", rbox(8, 8, 40, 40, 6))],
             prints=[("glyph", lines, 1.4, "ink")], roll=2.0, dz=-4.0, lamps=[(24, 8, 0.02)], pad=2.5)
+    console_pieces(add)
     return P
+
+
+def ruler(x, y0, y1, side, step=10.0):
+    """An engraved measuring scale down a plate's edge: a tick every step mm, longer every fifth, the long line it hangs
+    on; side +1 has the ticks run right of x, -1 left."""
+    out = [[(x, y0), (x, y1)]]
+    n = int((y1 - y0) // step)
+    for i in range(n + 1):
+        y = y0 + i * step
+        out.append([(x, y), (x + side * (7.0 if i % 5 == 0 else 3.5), y)])
+    return out
+
+
+def console_pieces(add):
+    """The battle console's own pieces (openspec/changes/kelvane-battle-console). The console draws its readouts live, in
+    light, over a panel's middle, its strips and its cards, and the same colours over the 3D view, so the Institute's
+    console panels are instruments with a screen: the champagne plate rolled round one big well of dark smoked glass,
+    where the readouts glow (amber for a reading, phosphor green for whole, needle red for an alarm), as on a laboratory
+    instrument's display window. The skins page (mockup 4) keeps its plain plates; docs/mockups/lib/kelvane.js gives the
+    console these under the kit's names. Every key is the Institute's window key: the light in its window is its state
+    (unlit smoke at rest, amber on hover, hot amber engaged; a status green, amber-orange or red; off, dark)."""
+    # The panel: a plain rolled bezel 12 mm wide round the screen, no screws in the glass's way. The screen's corners
+    # lie inside the 28 px margins, so its straight sides stretch.
+    add("frame.screen", "nine", (180, 140), rbox(0.5, 0.5, 179.5, 139.5, 14), [("screen", rbox(12, 12, 168, 128, 7))],
+        margins=(28, 28, 28, 28), stretch="xy", roll=3.0, dz=-6.0, pad=3.0)
+    # The inset (the contacts box, the hover cards, the portrait, the target box): a thin bezel round the same glass.
+    add("inset.screen", "nine", (72, 56), rbox(0.5, 0.5, 71.5, 55.5, 9), [("screen", rbox(6, 6, 66, 50, 4))],
+        margins=(14, 14, 14, 14), stretch="xy", roll=1.5, land=1.5, dz=-3.0, pad=1.5)
+    # The strips: the bay with its needle meter at the left end and the knurled knob at the right end, as on the skins
+    # page, and between them one long screen that holds the strip's readouts (the console lays them from 96 px in at
+    # each end; the screen runs 87 to 442 of 512, so 9 px of glass clear each side).
+    bay = soft(unary_union([rbox(14, 32, 78, 54, 5), disc(46, 42, 24)]).intersection(box(0, 0, 512, 54)), 4)
+    meter = [arc_pts(46, 50, 22, math.radians(205), math.radians(335), 20)] + \
+        [[(46 + math.cos(a) * 18, 50 + math.sin(a) * 18), (46 + math.cos(a) * 22, 50 + math.sin(a) * 22)] for a in [math.radians(205 + 13 * i) for i in range(11)]]
+    # The meter's needle is not printed here: the console draws it live (owner, 2026-11-06: "can we have these meters be
+    # tied to the speed and hull integrity?"), hull integrity on the top strip and speed on the bottom, swinging over this
+    # printed scale (205-335 degrees about (46, 50), radius 18-22; docs/mockups/lib/kelvane.js's meter).
+    for name in ("strip.top.screen", "strip.bottom.screen"):
+        add(name, "nine", (512, 72), rbox(0.5, 0.5, 511.5, 71.5, 12), [("amber", bay), ("screen", rbox(87, 9, 442, 63, 6))],
+            studs=[(468, 36, 12.0, "knurl"), (497, 15, 2.5, "screw"), (497, 57, 2.5, "screw")], dimples=[(468, 36, 15.0)],
+            prints=[("scale", meter, 1.0, "ink")],
+            margins=(12, 88, 12, 90), stretch="x", roll=2.5, dz=-6.0, lamps=[(46, 18, 0.06)], pad=2.0)
+    # The name plate: the skins page's, its right end plain flat metal for the console's Fleet key (370-456 x 6-36),
+    # two screws below the key.
+    mark = [l for _w, l in orbital("mark", 22, 28, 14.0, 0.8, 0.8)]
+    add("nameplate.console", "hero", (460, 56), rbox(0.5, 0.5, 459.5, 55.5, 12), [("amber", rbox(46, 9, 360, 47, 6))],
+        studs=[(384, 47, 2.2, "screw"), (442, 47, 2.2, "screw")],
+        live=[("name", box(54, 12, 344, 44))], engrave=mark, roll=2.5, dz=-8.0, lamps=[(120, 9, 0.1), (280, 9, 0.1)], pad=2.9)
+    # The title placard (every panel title and officer slot on a frame's top rail): a small champagne plate, a lit jewel
+    # pilot lamp in a dimple at its head (the toggles' lamp: this instrument is on), and a smoke window the title glows in.
+    add("plate.title", "nine", (140, 24), rbox(0.5, 0.5, 139.5, 23.5, 6), [("screen", rbox(20, 3, 134, 21, 3))],
+        studs=[(11, 12, 3.2, "jewel_on")], dimples=[(11, 12, 4.6)],
+        margins=(0, 12, 0, 24), stretch="x", roll=0.8, land=0.8, dz=-2.0, pad=0.5)
+    # The column's backing (CLAUDE.md section 7, "No black behind a metallic skin's panels"): one plain champagne plate the
+    # height of the screen, the panels standing on it in their own bezels. Screws down both edges, and down each edge an
+    # engraved measuring scale, a tick every 10 mm: the Institute marks every surface it works at so a reading can be
+    # checked against it (design.md, "Truth is measured"). The middle stays plain, where the expanded panel's backing tiles.
+    edge = ruler(6.5, 60, 1020, 1) + ruler(473.5, 60, 1020, -1)
+    add("console.backing", "hero", (480, 1080), rbox(0.5, 0.5, 479.5, 1079.5, 18), [],
+        studs=[(x, y, 3.0, "screw") for x in (24, 456) for y in (24, 1056)] + [(x, 540, 3.0, "screw") for x in (24, 456)],
+        engrave=edge, roll=3.0, dz=-6.0)
+    # A key and a tab at rest, unlit: the window dark smoke, the legend lit amber on it (the square keys' idle), so at rest
+    # a window's backlight is off and it comes on with hover and press (owner, 2026-10-31: "these need to switch back light
+    # on off based on hover/click state"). The skins page's dim film with ink measured 3.3 to 1 on the console, too faint
+    # for a key read under fire; lit amber on smoke measures 9.6 to 1.
+    button(add, "button.idle.screen", "smoke", [])
+    tab(add, "tab.idle.screen", "smoke", False)
+    # Keys: the window key in two shapes, square (icon keys and status boxes) and wide (keys much wider than tall), and
+    # the allocation cells. One plate and one glass for every state; only the light in the window changes.
+    LIGHTS = (("idle", "smoke"), ("hover", "amber"), ("on", "hot"), ("ok", "green"), ("warn", "orange"), ("alert", "red"), ("off", "off"))
+    lamp = {"amber": 0.02, "hot": 0.03}
+    for state, light in LIGHTS:
+        add(f"key.{state}", "hero", (48, 48), rbox(0.5, 0.5, 47.5, 47.5, 9), [(light, rbox(8, 8, 40, 40, 5))],
+            roll=1.8, land=1.8, dz=-4.0, pad=2.0, lamps=[(24, 8, lamp[light])] if light in lamp else [])
+    for state, light in LIGHTS:
+        add(f"keyw.{state}", "nine", (144, 48), rbox(0.5, 1.5, 143.5, 46.5, 9), [(light, rbox(10, 9, 134, 39, 5))],
+            margins=(0, 22, 0, 22), stretch="x", roll=1.8, land=2.0, dz=-4.0, pad=2.5,
+            lamps=[(40, 9, lamp[light]), (104, 9, lamp[light])] if light in lamp else [])
+    for state, light in (("idle", "smoke"), ("lit", "hot"), ("warn", "red"), ("accord", "green"), ("locked", "off")):
+        add(f"cell.{state}", "nine", (32, 28), rbox(0.5, 0.5, 31.5, 27.5, 6), [(light, rbox(6, 6, 26, 22, 3))],
+            margins=(10, 10, 10, 10), stretch="xy", roll=1.2, land=1.0, dz=-3.0, pad=1.0)
 
 
 def check_all(P):
@@ -192,7 +298,7 @@ def check_all(P):
             res.append(("R", "the pressed cradle", d >= need, f"{d:.1f} mm to the nearest edge (needs {need:.1f})"))
         if p["emblem"]:  # the inlaid mark sits on the flat inside the cradle
             cx, cy, R, half, _d = p["cradle"]
-            g = lines_geom(p["emblem"], 2.4)
+            g = unary_union([lines_geom([l], w) for w, l in p["emblem"]])
             ok = Point(cx, cy).buffer(R - half - 2.0).contains(g)
             res.append(("K", "the inlaid mark", ok, "stays on the flat inside the channel"))
         fails = [r for r in res if not r[2]]
@@ -215,7 +321,7 @@ def write(P, films):
                                    dimples=[list(d) for d in p["dimples"]], cradle=list(p["cradle"]) if p["cradle"] else None,
                                    prints=[[role, [[[round(x, 3), round(y, 3)] for x, y in l] for l in ls], w, ink] for role, ls, w, ink in p["prints"]],
                                    engrave=[[[round(x, 3), round(y, 3)] for x, y in l] for l in p["engrave"]],
-                                   emblem=[[[round(x, 3), round(y, 3)] for x, y in l] for l in p["emblem"]],
+                                   emblem=[[w, [[round(x, 3), round(y, 3)] for x, y in l]] for w, l in p["emblem"]],
                                    live={role: [round(v, 2) for v in g.bounds] for role, g in p["live"]}, lamps=[list(l) for l in p["lamps"]])
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:

@@ -1,0 +1,1685 @@
+{
+  "_doc": "The Ssarith Hunt picks' hull detail: what tools/blender/hull_detail.py builds over each low-poly hull before painted_bake.py --ship bakes it onto the ship's own UVs (Ship Design Bible chapters 14 and 15). Ship space: +x port, +y up, +z bow, metres. A feature off the centreline is mirrored to starboard (one axis of symmetry); nothing repeats. face: where it sits, found by a ray (top: from above at [x, z]; bottom: from below at [x, z]; port: from the port side at [z, y]; bow: from ahead at [x, y]). Owner, 2026-11-05: \"the gorn ships have things like vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the same\", \"notice stuff like liveries, smooth sphereical portions of armor, and specifically shaped vents\", \"no repeating elemnts, single axis symmetry, and lots of shading to give the armor depth\".",
+  "_doc_lighting": "logo: the faction emblem (assets/emblems/<faction>/hull_mask.png) painted on the top armour, centred at [x, z], size_m across, lit by its own flood. lighting.floods: spotlights standing 0.9 m off the hull that graze the plating toward aim (aft, fwd, out, in, up, down), 90 degree cones (Ship Design Bible chapter 9). windows: person-sized window rows on the port flank (mirrored) between z_m, one row per rows_y_m, provisional until the ship's room plan places them (W1). Position lights, beacons, strobes and the belly pair are placed from the hull's own shape. auto_floods (defaults, a ship's own keys over them): rows of floods aimed forward along the port flank (mirrored), the top and the belly, every step_m from the stern, up to to_z_m. bays: launch bays, w_m by h_m openings cut through the armour, the hangar behind drawn by the page.",
+  "faction": "ssarith",
+  "defaults": {
+    "armour_t_m": 0.5,
+    "sub_t_m": 0.22,
+    "lift_m": 0.35,
+    "gap_m": [
+      0.5,
+      1.0
+    ],
+    "trench_m": [
+      2.6,
+      4.6
+    ],
+    "trench_share": 0.4,
+    "top_station_m": [
+      6.0,
+      13.0
+    ],
+    "top_sweep": [
+      0.35,
+      1.1
+    ],
+    "spine_half_m": [
+      1.1,
+      2.6
+    ],
+    "flank_station_m": [
+      7.0,
+      14.0
+    ],
+    "flank_rake": [
+      -0.6,
+      0.9
+    ],
+    "greebles_per_m2": 1.6,
+    "overlay_min_m2": 22.0,
+    "overlay_inset": 0.86,
+    "overlay_lift_m": 0.3,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+      "window": 0.1,
+      "bay": 0.35
+    },
+    "auto_floods": {
+      "step_m": 22,
+      "from_stern_m": 6,
+      "top_x_frac": 0.4
+    },
+    "flood": {
+      "standoff_m": 2.4,
+      "cone_deg": 120,
+      "tilt_deg": 22,
+      "power_w": 1600
+    }
+  },
+  "ships": {
+    "hooded_lance": {
+      "seed": 11,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -22
+          ],
+          "r_m": 6.0,
+          "h_m": 1.0,
+          "straps": [
+            [
+              0,
+              0.8
+            ],
+            [
+              62,
+              0.45
+            ]
+          ]
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -42
+          ],
+          "r_m": 4.6,
+          "fins": 19,
+          "lamps": 13,
+          "tilt_deg": 25,
+          "lamp": "amber"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "top",
+          "at": [
+            11,
+            -30
+          ],
+          "shape": "chevron",
+          "len_m": 3.4,
+          "span_m": 5.2,
+          "w_m": 1.1,
+          "pitch_m": 0.34,
+          "slant_deg": 35
+        },
+        {
+          "face": "port",
+          "at": [
+            -14,
+            -1.5
+          ],
+          "shape": "slot",
+          "len_m": 6.5,
+          "span_m": 1.2,
+          "rake_m": 1.0,
+          "pitch_m": 0.4,
+          "slant_deg": 40
+        },
+        {
+          "face": "top",
+          "at": [
+            17,
+            -36
+          ],
+          "shape": "slot",
+          "len_m": 5.0,
+          "span_m": 1.6,
+          "rake_m": 2.2,
+          "pitch_m": 0.45,
+          "slant_deg": 30
+        },
+        {
+          "face": "bottom",
+          "at": [
+            6,
+            -20
+          ],
+          "shape": "chevron",
+          "len_m": 4.2,
+          "span_m": 3.8,
+          "w_m": 1.2,
+          "pitch_m": 0.4,
+          "slant_deg": 40
+        },
+        {
+          "face": "port",
+          "at": [
+            -34,
+            0.5
+          ],
+          "shape": "slot",
+          "len_m": 4.0,
+          "span_m": 2.2,
+          "rake_m": -0.8,
+          "pitch_m": 0.5,
+          "slant_deg": 45
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            30
+          ],
+          "size_m": 0.6,
+          "colour": "red",
+          "housing": true
+        },
+        {
+          "face": "top",
+          "at": [
+            5,
+            16
+          ],
+          "size_m": 0.35,
+          "colour": "amber"
+        },
+        {
+          "face": "bow",
+          "at": [
+            0,
+            -3
+          ],
+          "size_m": 0.45,
+          "colour": "green"
+        },
+        {
+          "face": "top",
+          "at": [
+            14,
+            -8
+          ],
+          "size_m": 0.4,
+          "colour": "green"
+        },
+        {
+          "face": "port",
+          "at": [
+            -40,
+            1
+          ],
+          "size_m": 0.5,
+          "colour": "amber"
+        }
+      ],
+      "exposed": [
+        {
+          "plan": [
+            [
+              -4,
+              6
+            ],
+            [
+              4,
+              6
+            ],
+            [
+              3,
+              16
+            ],
+            [
+              -3,
+              16
+            ]
+          ],
+          "y_m": [
+            -12,
+            2
+          ]
+        },
+        {
+          "plan": [
+            [
+              -6,
+              -48.5
+            ],
+            [
+              6,
+              -48.5
+            ],
+            [
+              4.5,
+              -35
+            ],
+            [
+              -4.5,
+              -35
+            ]
+          ],
+          "y_m": [
+            -50,
+            50
+          ]
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            -4.0,
+            -2.6
+          ]
+        },
+        {
+          "band_z_m": [
+            -1.6,
+            -1.0
+          ]
+        },
+        {
+          "chevron": {
+            "z_m": 18,
+            "sweep": 0.6,
+            "w_m": 1.3
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          4
+        ],
+        "size_m": 6.5
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              10,
+              -34
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -30,
+              1.5
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "bottom",
+            "at": [
+              0,
+              12
+            ],
+            "aim": "fwd",
+            "tilt_deg": 10
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 8
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -40,
+            2
+          ],
+          "rows_y_m": [
+            -2.6,
+            0.9
+          ]
+        }
+      ]
+    },
+    "forked_prow": {
+      "seed": 23,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -26
+          ],
+          "r_m": 5.0,
+          "h_m": 1.0,
+          "straps": [
+            [
+              0,
+              0.7
+            ],
+            [
+              -48,
+              0.4
+            ]
+          ]
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -43
+          ],
+          "r_m": 3.8,
+          "fins": 17,
+          "lamps": 11,
+          "tilt_deg": 30,
+          "lamp": "amber"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "top",
+          "at": [
+            4.5,
+            -12
+          ],
+          "shape": "chevron",
+          "len_m": 2.8,
+          "span_m": 3.6,
+          "w_m": 0.9,
+          "pitch_m": 0.3,
+          "slant_deg": 30
+        },
+        {
+          "face": "port",
+          "at": [
+            -30,
+            0.5
+          ],
+          "shape": "slot",
+          "len_m": 7.5,
+          "span_m": 1.0,
+          "rake_m": -1.4,
+          "pitch_m": 0.36,
+          "slant_deg": 38
+        },
+        {
+          "face": "top",
+          "at": [
+            4,
+            -36
+          ],
+          "shape": "slot",
+          "len_m": 5.5,
+          "span_m": 1.4,
+          "rake_m": 1.8,
+          "pitch_m": 0.42,
+          "slant_deg": 32
+        },
+        {
+          "face": "bottom",
+          "at": [
+            3.5,
+            -14
+          ],
+          "shape": "chevron",
+          "len_m": 3.6,
+          "span_m": 3.4,
+          "w_m": 1.0,
+          "pitch_m": 0.36,
+          "slant_deg": 42
+        },
+        {
+          "face": "port",
+          "at": [
+            -8,
+            -2.5
+          ],
+          "shape": "slot",
+          "len_m": 4.5,
+          "span_m": 1.8,
+          "rake_m": 0.9,
+          "pitch_m": 0.46,
+          "slant_deg": 44
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            38
+          ],
+          "size_m": 0.5,
+          "colour": "red",
+          "housing": true
+        },
+        {
+          "face": "top",
+          "at": [
+            3.5,
+            2
+          ],
+          "size_m": 0.32,
+          "colour": "amber"
+        },
+        {
+          "face": "port",
+          "at": [
+            -42,
+            1
+          ],
+          "size_m": 0.45,
+          "colour": "green"
+        }
+      ],
+      "exposed": [
+        {
+          "plan": [
+            [
+              -4,
+              10
+            ],
+            [
+              4,
+              10
+            ],
+            [
+              2.5,
+              26
+            ],
+            [
+              -2.5,
+              26
+            ]
+          ],
+          "y_m": [
+            -30,
+            -0.3
+          ]
+        },
+        {
+          "plan": [
+            [
+              -5,
+              -48.5
+            ],
+            [
+              5,
+              -48.5
+            ],
+            [
+              4,
+              -38
+            ],
+            [
+              -4,
+              -38
+            ]
+          ],
+          "y_m": [
+            -50,
+            50
+          ]
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            -36.0,
+            -34.8
+          ]
+        },
+        {
+          "band_z_m": [
+            -33.8,
+            -33.2
+          ]
+        },
+        {
+          "chevron": {
+            "z_m": 30,
+            "sweep": 0.5,
+            "w_m": 1.1
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -12
+        ],
+        "size_m": 5.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              4,
+              -40
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -40,
+              1
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              0,
+              16
+            ],
+            "aim": "fwd",
+            "tilt_deg": 10
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 12
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -40,
+            4
+          ],
+          "rows_y_m": [
+            -3.0,
+            0.5
+          ]
+        }
+      ]
+    },
+    "harpoon": {
+      "seed": 37,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -24
+          ],
+          "r_m": 6.4,
+          "h_m": 1.05,
+          "straps": [
+            [
+              0,
+              0.85
+            ],
+            [
+              55,
+              0.5
+            ]
+          ]
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -44
+          ],
+          "r_m": 4.4,
+          "fins": 21,
+          "lamps": 15,
+          "tilt_deg": 22,
+          "lamp": "amber"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "top",
+          "at": [
+            7,
+            -8
+          ],
+          "shape": "chevron",
+          "len_m": 3.0,
+          "span_m": 4.4,
+          "w_m": 1.0,
+          "pitch_m": 0.32,
+          "slant_deg": 33
+        },
+        {
+          "face": "port",
+          "at": [
+            -18,
+            3
+          ],
+          "shape": "slot",
+          "len_m": 8.0,
+          "span_m": 1.1,
+          "rake_m": 1.6,
+          "pitch_m": 0.42,
+          "slant_deg": 42
+        },
+        {
+          "face": "top",
+          "at": [
+            11,
+            -38
+          ],
+          "shape": "slot",
+          "len_m": 6.0,
+          "span_m": 1.5,
+          "rake_m": 2.4,
+          "pitch_m": 0.44,
+          "slant_deg": 28
+        },
+        {
+          "face": "bottom",
+          "at": [
+            6,
+            -30
+          ],
+          "shape": "chevron",
+          "len_m": 4.4,
+          "span_m": 4.6,
+          "w_m": 1.3,
+          "pitch_m": 0.42,
+          "slant_deg": 38
+        },
+        {
+          "face": "port",
+          "at": [
+            -36,
+            1
+          ],
+          "shape": "slot",
+          "len_m": 4.2,
+          "span_m": 2.4,
+          "rake_m": -1.0,
+          "pitch_m": 0.5,
+          "slant_deg": 46
+        }
+      ],
+      "lamps": [
+        {
+          "face": "bow",
+          "at": [
+            0,
+            -1
+          ],
+          "size_m": 0.55,
+          "colour": "red",
+          "housing": true
+        },
+        {
+          "face": "top",
+          "at": [
+            3,
+            8
+          ],
+          "size_m": 0.33,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            10,
+            -14
+          ],
+          "size_m": 0.4,
+          "colour": "green"
+        }
+      ],
+      "exposed": [
+        {
+          "plan": [
+            [
+              -3,
+              16
+            ],
+            [
+              3,
+              16
+            ],
+            [
+              2.2,
+              28
+            ],
+            [
+              -2.2,
+              28
+            ]
+          ],
+          "y_m": [
+            -10,
+            0
+          ]
+        },
+        {
+          "plan": [
+            [
+              -6,
+              -50.5
+            ],
+            [
+              6,
+              -50.5
+            ],
+            [
+              5,
+              -39
+            ],
+            [
+              -5,
+              -39
+            ]
+          ],
+          "y_m": [
+            -50,
+            50
+          ]
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            36.0,
+            37.4
+          ]
+        },
+        {
+          "band_z_m": [
+            38.4,
+            39.0
+          ]
+        },
+        {
+          "chevron": {
+            "z_m": -2,
+            "sweep": 0.7,
+            "w_m": 1.4
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -6
+        ],
+        "size_m": 7.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              8,
+              -40
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -38,
+              2
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              0,
+              22
+            ],
+            "aim": "fwd",
+            "tilt_deg": 8
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 16
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -42,
+            6
+          ],
+          "rows_y_m": [
+            0.0,
+            3.5
+          ]
+        }
+      ]
+    },
+    "trident": {
+      "seed": 41,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -14
+          ],
+          "r_m": 5.4,
+          "h_m": 1.0,
+          "straps": [
+            [
+              0,
+              0.75
+            ],
+            [
+              70,
+              0.42
+            ]
+          ]
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            8
+          ],
+          "r_m": 2.6,
+          "h_m": 0.8,
+          "straps": [
+            [
+              90,
+              0.3
+            ]
+          ]
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -40
+          ],
+          "r_m": 4.2,
+          "fins": 18,
+          "lamps": 12,
+          "tilt_deg": 28,
+          "lamp": "amber"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "top",
+          "at": [
+            6,
+            -18
+          ],
+          "shape": "chevron",
+          "len_m": 3.2,
+          "span_m": 4.8,
+          "w_m": 1.0,
+          "pitch_m": 0.33,
+          "slant_deg": 36
+        },
+        {
+          "face": "port",
+          "at": [
+            -26,
+            1
+          ],
+          "shape": "slot",
+          "len_m": 7.0,
+          "span_m": 1.15,
+          "rake_m": -1.0,
+          "pitch_m": 0.38,
+          "slant_deg": 40
+        },
+        {
+          "face": "top",
+          "at": [
+            6,
+            -30
+          ],
+          "shape": "slot",
+          "len_m": 5.0,
+          "span_m": 1.5,
+          "rake_m": -2.0,
+          "pitch_m": 0.42,
+          "slant_deg": 30
+        },
+        {
+          "face": "bottom",
+          "at": [
+            4,
+            -20
+          ],
+          "shape": "chevron",
+          "len_m": 4.0,
+          "span_m": 4.2,
+          "w_m": 1.1,
+          "pitch_m": 0.38,
+          "slant_deg": 40
+        },
+        {
+          "face": "port",
+          "at": [
+            -40,
+            0
+          ],
+          "shape": "slot",
+          "len_m": 4.0,
+          "span_m": 2.0,
+          "rake_m": 1.2,
+          "pitch_m": 0.48,
+          "slant_deg": 44
+        }
+      ],
+      "lamps": [
+        {
+          "face": "bow",
+          "at": [
+            0,
+            6.3
+          ],
+          "size_m": 0.5,
+          "colour": "red",
+          "housing": true
+        },
+        {
+          "face": "top",
+          "at": [
+            5,
+            0
+          ],
+          "size_m": 0.34,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            11,
+            30
+          ],
+          "size_m": 0.4,
+          "colour": "green"
+        }
+      ],
+      "exposed": [
+        {
+          "plan": [
+            [
+              -5,
+              -48.5
+            ],
+            [
+              5,
+              -48.5
+            ],
+            [
+              4,
+              -37
+            ],
+            [
+              -4,
+              -37
+            ]
+          ],
+          "y_m": [
+            -50,
+            50
+          ]
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            -12.0,
+            -10.6
+          ]
+        },
+        {
+          "band_z_m": [
+            -9.6,
+            -9.0
+          ]
+        },
+        {
+          "chevron": {
+            "z_m": 20,
+            "sweep": 0.4,
+            "w_m": 1.2
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -27
+        ],
+        "size_m": 6.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              6,
+              -42
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -36,
+              1
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              13,
+              22
+            ],
+            "aim": "fwd",
+            "tilt_deg": 10
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 14
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -40,
+            8
+          ],
+          "rows_y_m": [
+            -3.5,
+            0.0,
+            3.5
+          ]
+        }
+      ]
+    },
+    "carrier": {
+      "seed": 53,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -50
+          ],
+          "r_m": 4.6,
+          "h_m": 1.0,
+          "straps": [
+            [
+              0,
+              0.7
+            ],
+            [
+              60,
+              0.4
+            ]
+          ]
+        },
+        {
+          "face": "top",
+          "at": [
+            22,
+            -46
+          ],
+          "r_m": 2.6,
+          "h_m": 0.7,
+          "straps": [
+            [
+              90,
+              0.3
+            ]
+          ]
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -76
+          ],
+          "r_m": 5.0,
+          "fins": 23,
+          "lamps": 15,
+          "tilt_deg": 24,
+          "lamp": "amber"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "top",
+          "at": [
+            14,
+            -64
+          ],
+          "shape": "chevron",
+          "len_m": 4.4,
+          "span_m": 5.6,
+          "w_m": 1.3,
+          "pitch_m": 0.42,
+          "slant_deg": 34
+        },
+        {
+          "face": "top",
+          "at": [
+            26,
+            -24
+          ],
+          "shape": "slot",
+          "len_m": 7.0,
+          "span_m": 1.6,
+          "rake_m": 2.4,
+          "pitch_m": 0.45,
+          "slant_deg": 30
+        },
+        {
+          "face": "bottom",
+          "at": [
+            7,
+            -40
+          ],
+          "shape": "chevron",
+          "len_m": 5.0,
+          "span_m": 5.0,
+          "w_m": 1.4,
+          "pitch_m": 0.44,
+          "slant_deg": 40
+        },
+        {
+          "face": "port",
+          "at": [
+            -62,
+            4.2
+          ],
+          "shape": "slot",
+          "len_m": 5.0,
+          "span_m": 2.4,
+          "rake_m": -1.2,
+          "pitch_m": 0.5,
+          "slant_deg": 44
+        }
+      ],
+      "lamps": [
+        {
+          "face": "bow",
+          "at": [
+            0,
+            3.2
+          ],
+          "size_m": 0.7,
+          "colour": "red",
+          "housing": true
+        },
+        {
+          "face": "top",
+          "at": [
+            30,
+            -30
+          ],
+          "size_m": 0.45,
+          "colour": "green"
+        },
+        {
+          "face": "top",
+          "at": [
+            8,
+            70
+          ],
+          "size_m": 0.4,
+          "colour": "amber"
+        }
+      ],
+      "bays": [
+        {
+          "face": "bow",
+          "at": [
+            5.0,
+            5.0
+          ],
+          "w_m": 6.0,
+          "h_m": 4.4
+        },
+        {
+          "face": "bow",
+          "at": [
+            5.0,
+            -5.0
+          ],
+          "w_m": 6.0,
+          "h_m": 4.4
+        },
+        {
+          "face": "port",
+          "at": [
+            -4,
+            4.4
+          ],
+          "w_m": 10.0,
+          "h_m": 3.2
+        },
+        {
+          "face": "port",
+          "at": [
+            -4,
+            -4.4
+          ],
+          "w_m": 10.0,
+          "h_m": 3.2
+        },
+        {
+          "face": "port",
+          "at": [
+            -34,
+            4.4
+          ],
+          "w_m": 10.0,
+          "h_m": 3.2
+        },
+        {
+          "face": "port",
+          "at": [
+            -34,
+            -4.4
+          ],
+          "w_m": 10.0,
+          "h_m": 3.2
+        }
+      ],
+      "windows": [
+        {
+          "z_m": [
+            -72,
+            -44
+          ],
+          "rows_y_m": [
+            -4.2,
+            4.2
+          ]
+        },
+        {
+          "z_m": [
+            8,
+            36
+          ],
+          "rows_y_m": [
+            4.2,
+            -4.2
+          ]
+        }
+      ],
+      "exposed": [
+        {
+          "plan": [
+            [
+              -7,
+              -82.5
+            ],
+            [
+              7,
+              -82.5
+            ],
+            [
+              6,
+              -70
+            ],
+            [
+              -6,
+              -70
+            ]
+          ],
+          "y_m": [
+            -50,
+            50
+          ]
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            52,
+            53.6
+          ]
+        },
+        {
+          "band_z_m": [
+            55,
+            55.7
+          ]
+        },
+        {
+          "chevron": {
+            "z_m": 76,
+            "sweep": 0.3,
+            "w_m": 1.6
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          30
+        ],
+        "size_m": 10.0,
+        "flood_w": 4200
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              16,
+              -68
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -70,
+              4.2
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              10,
+              48
+            ],
+            "aim": "fwd",
+            "tilt_deg": 8
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 40
+        }
+      }
+    },
+    "cruiser": {
+      "seed": 57,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -30
+          ],
+          "r_m": 6.2,
+          "h_m": 1.1,
+          "straps": [
+            [
+              0,
+              0.75
+            ],
+            [
+              60,
+              0.4
+            ]
+          ]
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            0
+          ],
+          "r_m": 3.0,
+          "h_m": 0.9,
+          "straps": [
+            [
+              90,
+              0.3
+            ]
+          ]
+        },
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            -40
+          ],
+          "r_m": 4.0,
+          "h_m": 0.8,
+          "straps": [
+            [
+              0,
+              0.5
+            ]
+          ]
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -62
+          ],
+          "r_m": 4.6,
+          "fins": 18,
+          "lamps": 12,
+          "tilt_deg": 28,
+          "lamp": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            18,
+            -54
+          ],
+          "r_m": 3.2,
+          "fins": 14,
+          "lamps": 8,
+          "tilt_deg": 24,
+          "lamp": "green"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "top",
+          "at": [
+            7,
+            -14
+          ],
+          "shape": "chevron",
+          "len_m": 3.6,
+          "span_m": 5.0,
+          "w_m": 1.1,
+          "pitch_m": 0.34,
+          "slant_deg": 36
+        },
+        {
+          "face": "port",
+          "at": [
+            -36,
+            1
+          ],
+          "shape": "slot",
+          "len_m": 8.0,
+          "span_m": 1.2,
+          "rake_m": -1.2,
+          "pitch_m": 0.4,
+          "slant_deg": 40
+        },
+        {
+          "face": "top",
+          "at": [
+            7,
+            -40
+          ],
+          "shape": "slot",
+          "len_m": 6.0,
+          "span_m": 1.6,
+          "rake_m": -2.0,
+          "pitch_m": 0.42,
+          "slant_deg": 30
+        },
+        {
+          "face": "bottom",
+          "at": [
+            5,
+            -24
+          ],
+          "shape": "chevron",
+          "len_m": 4.4,
+          "span_m": 4.6,
+          "w_m": 1.2,
+          "pitch_m": 0.38,
+          "slant_deg": 40
+        },
+        {
+          "face": "port",
+          "at": [
+            -56,
+            0
+          ],
+          "shape": "slot",
+          "len_m": 5.0,
+          "span_m": 2.2,
+          "rake_m": 1.2,
+          "pitch_m": 0.48,
+          "slant_deg": 44
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            28
+          ],
+          "size_m": 0.55,
+          "colour": "red",
+          "housing": true
+        },
+        {
+          "face": "top",
+          "at": [
+            6,
+            -6
+          ],
+          "size_m": 0.34,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            22,
+            -58
+          ],
+          "size_m": 0.4,
+          "colour": "green"
+        }
+      ],
+      "exposed": [
+        {
+          "plan": [
+            [
+              -6,
+              -68
+            ],
+            [
+              6,
+              -68
+            ],
+            [
+              5,
+              -52
+            ],
+            [
+              -5,
+              -52
+            ]
+          ],
+          "y_m": [
+            -50,
+            50
+          ]
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            -22.0,
+            -20.4
+          ]
+        },
+        {
+          "band_z_m": [
+            -19.4,
+            -18.8
+          ]
+        },
+        {
+          "chevron": {
+            "z_m": 34,
+            "sweep": 0.4,
+            "w_m": 1.4
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -46
+        ],
+        "size_m": 7.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              8,
+              -60
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -50,
+              1
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              6,
+              22
+            ],
+            "aim": "fwd",
+            "tilt_deg": 10
+          },
+          {
+            "face": "port",
+            "at": [
+              -10,
+              1
+            ],
+            "aim": "fwd"
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 12
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -62,
+            8
+          ],
+          "rows_y_m": [
+            -4.0,
+            0.0,
+            4.0
+          ]
+        }
+      ]
+    }
+  }
+}

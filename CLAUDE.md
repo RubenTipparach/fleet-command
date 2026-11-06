@@ -180,8 +180,12 @@ build, and then need to be approved for actual game implementation after"):
   with each mockup's stage, change, page and link. A new mockup goes on the list before work starts.
 - **The mockup tracker** (`mockup-tracker` skill) is the master artifact: it lists every published artifact
   (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"), in three sections: game
-  mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A new
-  artifact goes on it when it is first published. Its link is in `mockup-work.md` and
+  mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A
+  faction's mockups (its ships, its battle console, its badge) sit together behind one card that opens them in a modal
+  (owner, 2026-11-06: "coalesce faction mockups together in modals"). Each entry's summary is one short line saying what
+  the page is (owner, 2026-11-06: "why did you add so much detail to the mockup tracker? the mockups themselves already
+  have documentation, or you can add documentation to openspec"); a version's changes go in the page, its OpenSpec change
+  and its `docs/artifacts/` record. A new artifact goes on it when it is first published. Its link is in `mockup-work.md` and
   `docs/design/README.md`, and **every published page links back to it** (owner, 2026-10-31: "Make sure all
   published pages link back to the master"): an "All Fleet Command mockups (the tracker)" link near the page's top. An approval counts only when it is in the tracker or in the owner's own
   words in the conversation; record it in `mockup-work.md` either way.
@@ -512,6 +516,26 @@ saying what changes here. Where a note and the copied text below it disagree, th
   sampled or modelled from another game's assets.
 - **A hull is not a body.** A ship's shape, paneling and markings come from its makers' ideas and traditions,
   never from what the species looks like (section 1).
+- **A hull is one grown structure** (owner, 2026-11-05: "these shapes need work, they arent connect together well, and
+  violate our "no deformed primitive rules", shapes must be made with purpose and flow into the grater structures"). No
+  box, cylinder, cone or plate, stretched or tapered, is a visible part of a hull. A prong, lance, hood or rail grows out
+  of the body: its section is a region of the body's own, split along a cut line, its chines carried through, the skin
+  closed. Light strips are faces of the skin, drives are recesses. Ship Design Bible chapter 14 (F1-F5).
+- **Every ship has its own UV-unwrapped textures** (owner, 2026-11-05: "every ship needs custom uv Unwraped textures. From
+  NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need
+  a detail mask in the future", "dont forget to bake AO as well"). Every ship is unwrapped on its own; its main colour map
+  is painted onto its own UVs, never a repeating tile; tiles add fine detail only (a detail mask to come); its AO is baked
+  onto its own UVs. The Concord and Krai lines are to be moved onto this (`ship-detailing`; Ship Design Bible chapter 15,
+  T1-T4).
+- **A hull's detail is modelled and baked: layered armour, distinct features, nothing repeated** (owner, 2026-11-05:
+  "vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the
+  same", "liveries, smooth sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis
+  symmetry, and lots of shading to give the armor depth"). A high-poly layer over the hull (`tools/blender/hull_detail.py`,
+  laid out in `data/ships/<faction>/hull_detail.json`): primary plates each cut to its own outline and standing proud by
+  its own amount, sub-armour beneath, machinery in the gaps and trenches, domes, shaped vents, lamps and liveries, mirrored
+  about the centreline, baked with a low sun's cast shadows and deep AO onto the ship's own UVs, painted into a painted
+  map and a PBR set (base colour, ORM, tangent normals, emission) with the hull lights baked into a light map
+  (`ship-detailing`; Ship Design Bible chapter 15, T5-T8).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - **Stars and every scatter come from a real generator, never a cheap hash** (owner, 2026-11-05, of the menu's stars drawn
   with `i * 7919 % 1000`: "never to use poor RNG stuff for stars, this seems like a common low effort mistake", "you can see a
@@ -591,6 +615,8 @@ Before claiming anything is done, run what applies:
 | `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
 | `blender-organic-panels` | Organic, grown panels in Blender (the Vhorr Brood first): one body of flesh, chitin and bone round crisp instruments, black smoked screens, rim-lit keys, panels floating over the game with no backdrop, growth measured clear of readouts (sections 7, 10). Its companion guide is the Organic Panel Bible, `docs/design/organic-bible.html`. |
 | `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
+| `painted-bake` | Hull textures that read drawn on: a high-poly tile's occlusion, normals, edges and plate ids rendered in Blender and painted over (flat plates, painted light, inked crevices, lit edges, glow), after the reference games' look, never their art (section 10). |
+| `ship-detailing` | Detailing a ship from blockout to game-ready textures: the hull grown as one structure, its own unwrap, a modelled detail layer (layered armour, machinery, domes, vents, lamps, windows, emblem, liveries, light fixtures), mirrored and never repeated, baked onto its UVs and painted into a painted map and a PBR set with emission and a hull-light map, with image samples (section 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

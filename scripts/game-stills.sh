@@ -50,3 +50,11 @@ shot ships-close 1920x1080 --steps=900 --zoom=0.45
 # the camera (battle-console design 4e, 4n): locked on the target by default; Target view orbits the target
 shot target-view 1920x1080 --steps=600 --target-view
 shot krai-target-view 1920x1080 --steps=600 --scenario=krai_battle --target-view
+# the Ssarith Hunt (mockup 12, change ssarith-ships-engine): each class close, from the Concord's side, and the battle later on
+shot hunt-cruiser 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_cruiser --target-view --zoom=0.5
+shot hunt-carrier 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_carrier --target-view --zoom=0.5
+shot hunt-trident 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_trident --target-view --zoom=0.5
+shot hunt-range 1920x1080 --steps=300 --scenario=concord_range --target=t_hff2 --target-view --zoom=0.8
+shot hunt-battle-late 1920x1080 --steps=3600 --scenario=concord_hunt --target=hunt_cruiser --target-view --zoom=0.6
+shot krai-hunt 1920x1080 --steps=600 --scenario=krai_hunt --target=hunt_harpoon --target-view --zoom=0.5
+shot hunt-wrecks 1920x1080 --steps=2400 --scenario=concord_hunt_wrecks --target=hw_lance --target-view --zoom=0.7

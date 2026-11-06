@@ -92,7 +92,7 @@ public sealed class ShipDamage
         public required JsonElement Def;
     }
 
-    public ShipDamage(Node3D ship, Node fx, Ship sim, string file, float unitsPerMetre, Shader hull)
+    public ShipDamage(Node3D ship, Node fx, Ship sim, string file, float unitsPerMetre)
     {
         _ship = ship; _fx = fx; _sim = sim; _upm = unitsPerMetre;
         _rng = new Random(sim.Id.Aggregate(17, (h, ch) => h * 31 + ch));
@@ -107,7 +107,7 @@ public sealed class ShipDamage
         {
             if (n is not MeshInstance3D mi || mi.Mesh == null) return;
             for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++)
-                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && sm.Shader == hull)
+                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader))
                 {
                     if (!_mats.Contains(sm)) _mats.Add(sm);
                     Sample(mi, i);
@@ -121,7 +121,7 @@ public sealed class ShipDamage
             if (Find(p.GetProperty("node").GetString()!) is { } node)
             {
                 var piece = new Piece { Node = node, Centre = V(p.GetProperty("center")) };
-                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && sm.Shader == hull && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
+                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader) && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
                 _parts.Add(new Part { P = piece, Def = p });
             }
     }
@@ -351,6 +351,14 @@ public sealed class ShipDamage
         m.SetShaderParameter("seed_n", b.Seeds.Length);
         m.SetShaderParameter("cell_a", f.GetProperty("cell").GetInt32());
         m.SetShaderParameter("cell_b", f.GetProperty("other").GetInt32());
+        if (b.Def.TryGetProperty("sdf", out JsonElement sdf))   // a grown hull: its field is the inside test (cutface.gdshader body_d)
+        {
+            m.SetShaderParameter("use_sdf", true);
+            m.SetShaderParameter("sdf_tex", SdfTexture(sdf));
+            m.SetShaderParameter("sdf_lo", V(sdf.GetProperty("lo")));
+            m.SetShaderParameter("sdf_hi", V(sdf.GetProperty("hi")));
+            m.SetShaderParameter("sdf_scale", F(sdf.GetProperty("scale")));
+        }
         JsonElement st = b.Def.GetProperty("stations"), ch = b.Def.GetProperty("ch");
         var stv = new Vector4[48]; var chv = new float[48];
         int n = Math.Min(48, st.GetArrayLength());
@@ -367,6 +375,23 @@ public sealed class ShipDamage
         mi.SetMeta("other", f.GetProperty("other").GetInt32());
         copy.AddChild(mi);
         return mi;
+    }
+
+    private static readonly Dictionary<string, ImageTexture3D> _sdfs = new();
+    /// <summary>A body's signed distance field as a 3D texture, one R8 image a z slice, from its .bin (the manifest's sdf: file,
+    /// dims; tools/blender/hull_sdf.py), loaded once.</summary>
+    private static ImageTexture3D SdfTexture(JsonElement sdf)
+    {
+        string file = sdf.GetProperty("file").GetString()!;
+        if (_sdfs.TryGetValue(file, out ImageTexture3D? t)) return t;
+        byte[] bytes = FileAccess.GetFileAsBytes("res://assets/ships/" + file);
+        int nx = sdf.GetProperty("dims")[0].GetInt32(), ny = sdf.GetProperty("dims")[1].GetInt32(), nz = sdf.GetProperty("dims")[2].GetInt32();
+        if (bytes.Length != nx * ny * nz) throw new InvalidOperationException($"sdf {file}: {bytes.Length} bytes, the manifest says {nx} x {ny} x {nz}");
+        var slices = new Godot.Collections.Array<Image>();
+        for (int z = 0; z < nz; z++) slices.Add(Image.CreateFromData(nx, ny, false, Image.Format.R8, bytes[(z * nx * ny)..((z + 1) * nx * ny)]));
+        t = new ImageTexture3D();
+        t.Create(Image.Format.R8, nx, ny, nz, false, slices);
+        return _sdfs[file] = t;
     }
 
     private void BlowOff(Piece p, float speed)
@@ -418,8 +443,9 @@ public sealed class ShipDamage
             }
             foreach (ShaderMaterial m in p.Mats) { m.SetShaderParameter("cuts", cv); m.SetShaderParameter("cut_c", cc); m.SetShaderParameter("cut_count", cuts.Length); }
         }
-        // its lamps go out
+        // its lamps go out, and a baked hull's own lights with them (baked_hull.gdshader lit)
         Walk(p.Node, n => { if (n is Light3D l) l.Visible = false; });
+        foreach (ShaderMaterial m in p.Mats) if (m.Shader == ShipSkin.BakedHullShader) m.SetShaderParameter("lit", 0f);
     }
 
     // A broken piece burns: flames from its broken side for about 20 s.

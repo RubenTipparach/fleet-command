@@ -136,7 +136,7 @@ public sealed partial class BattleView : Node3D
             model.AddChild(shell);
             _shields[s.Id] = shell;
             if (s.Class.Model is { } file && model.GetChild(0) is Node3D glb)
-                _damage[s.Id] = new ShipDamage(glb, this, s, file["assets/ships/".Length..], glb.Scale.X, ShipSkin.HullShader);
+                _damage[s.Id] = new ShipDamage(glb, this, s, file["assets/ships/".Length..], glb.Scale.X);
         }
     }
 
