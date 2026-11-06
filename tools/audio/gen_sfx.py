@@ -330,18 +330,19 @@ def beam_snap(r):
     return lp(body, sweep(7000, 1200, n, 0.6), order=2) * adsr(n, 0.002, 0.05, 0.55, 0.22)
 
 
-@sound("ship_hum", "_layer", "The ship's hum on the bridge: a warm steady tone at 152 Hz with soft harmonics to about 1.2 kHz, each partial with a quieter twin a twentieth of a hertz above it, so it breathes gently over twenty seconds, never wobbling or dipping out.")
-def ship_hum(r):
+def slow_drift(r, n: int, depth: float = 0.1, points: int = 7) -> np.ndarray:
+    """A slow random swell, plus or minus `depth`, over the whole sound: a bed that lives without pulsing."""
+    return 1.0 + depth * np.interp(np.arange(n), np.linspace(0, n, points), r.uniform(-1, 1, points))
+
+
+@sound("brown_bed", "_layer", "Soft brown noise for a bed (the owner, 2026-11-07: \"why cant you do something like brownian noise\"): kept between 60 and 600 Hz, swelling a decibel either way over many seconds.")
+def brown_bed(r):
     n = int(60.0 * SR)
-    t = t_axis(60.0)
-    f0 = 152.0
-    partials = [(1, 1.0), (2, 0.55), (3, 0.3), (4, 0.16), (6, 0.07), (8, 0.03)]
-    out = np.zeros(n)
-    for k, a in partials:
-        ph = r.uniform(0, 2 * np.pi, 2)
-        out += a * (0.77 * np.sin(2 * np.pi * f0 * k * t + ph[0]) + 0.23 * np.sin(2 * np.pi * (f0 * k + 0.05) * t + ph[1]))
-    drift = 1.0 + 0.1 * np.interp(np.arange(n), np.linspace(0, n, 7), r.uniform(-1, 1, 7))
-    return lp(out * drift, 1200.0, order=2)
+    body = hp(lp(brown(r, n), 600.0, order=4), 60.0, order=4)
+    return body / (np.max(np.abs(body)) or 1.0) * slow_drift(r, n, 0.08)
+
+
+sound("brown_bed_r", "_layer", "The brown bed again from its own seed, for the other side.")(brown_bed)
 
 
 @sound("console_bleep", "_layer", "A console working: two or three quick bleeps, the pitches seeded.")

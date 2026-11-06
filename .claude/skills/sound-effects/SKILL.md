@@ -25,7 +25,10 @@ approved", "verify all sounds are 3d based (except ambience and music and ui)"):
   edits) and `AUDIO_SOURCES.md` (one row per pack: its page, who recorded it, its licence) are
   written by the tools from the spec. Edit the spec, never the tables.
 - **CC0 or public domain only**, checked on the pack's own page when it is fetched. A pack whose page
-  does not say so is refused, and nothing is copied from another game.
+  does not say so is refused, and nothing is copied from another game. **The one way past it**: the owner asks for a
+  pack by name; it goes into `tools/audio/licence_exceptions.json` with the owner's words, its licence and the credit
+  its page asks for, which the Sounds page, `AUDIO_SOURCES.md` and the game's credits then carry (the first: Little
+  Robot Sound Factory's Sci-Fi Sound Effects Library, CC-BY 3.0, 2026-11-07).
 - **Placed in 3D**: every battle sound (weapons, impacts, the ship) plays from its ship or its named
   mount node (CLAUDE.md section 10, named nodes), mono. Only the console keys, the alerts, the
   ambience beds and the music are unplaced, and only beds may be stereo.
@@ -102,6 +105,8 @@ lot of the other weapons, check the procedure in crab breeze how audio was softe
 - **A sound heard from the bridge through the hull** (the weapons) gets Crab Breeze's sealed-cockpit filter:
   `"lp": 4000, "lp_order": 4, "peak_db": -7` (4 kHz twice over, 6 dB down), and less `drive`.
 - Measure before and after (energy above 4 kHz, spectral centre, RMS, the first 20 ms of a shot) and say the numbers.
+- **Prefer a recorded bed** the owner points to: the bridge took four synthesised tries (rumble, water, buzz) before
+  the owner sent a recording (2026-11-07). A synthesised stack of harmonics reads as mains buzz.
 - **A bed is a hum, not a noise and not a rumble** (owner, 2026-11-07, over three versions of the bridge: "low rumble
   bridge ambient, it hurts my ears a bit", then of pink noise "now sounds like water!", then "I want it to sound like a
   hum"). Make a ship's bed tonal: a warm tone between about 120 and 400 Hz with soft harmonics (`ship_hum`), or a

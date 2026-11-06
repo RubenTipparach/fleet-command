@@ -29,3 +29,8 @@
   air duct, nothing under 180 Hz.
 - Version 7 published 2026-11-07, version id `1793955211-d761`: the bridge bed as a hum (owner: "no, it got worse, now
   sounds like water!", "I want it to sound like a hum"): a warm 152 Hz tone and a recorded hum an octave up, no noise wash.
+- Version 8 published 2026-11-07, version id `1793955877-84e3`: the bridge bed from the owner's pack (Little Robot Sound
+  Factory's space ambience, CC-BY 3.0, credited on the page) and a brown-noise alternative; the synthesised hums removed
+  (owner: "it sounds like electrical buzz which is wrong!").
+- Version 9 published 2026-11-07, version id `1793955908-18e1`: every sound's link fingerprinted (`?v=` the file's
+  hash), so a changed sound is never played from the viewer's cache.

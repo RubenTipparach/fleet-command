@@ -67,6 +67,16 @@ the air duct faint beneath, nothing under 110 Hz. The rules for a bed, final: a 
 nothing under 100 Hz, no broadband noise wash, nothing moving in pitch, its loudness within about 3 dB, scattered sounds
 judged A-weighted (as loud as the ear hears them) at most about 10 dB over it.
 
+**The bridge is the owner's recording** (2026-11-07: "now it soiunds like electrical buz", "it sounds like electrical buzz
+which is wrong!", "why cant you do something like brownian noise", then the link to Little Robot Sound Factory's
+Sci-Fi Sound Effects Library, "space ambience right here"). A synthesised hum with stacked harmonics is mains buzz;
+the bed is now that pack's `Ambience_Space_00` (a soft drone between 60 and 120 Hz) looped to a minute, sub-bass under
+45 Hz trimmed, the bleeps about 10 dB over it A-weighted; `amb_bridge_brown` (brown noise, 60-600 Hz) is the
+alternative. **Licence**: the pack is CC-BY 3.0, the first non-CC0 pack, used because the owner asked for it; it is a
+named exception in `tools/audio/licence_exceptions.json` with the owner's words and its credit ("Little Robot Sound
+Factory, www.littlerobotsoundfactory.com"), printed on the Sounds page, in `AUDIO_SOURCES.md` and the sources tables, and
+owed in the game's credits.
+
 **Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
 so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.
 

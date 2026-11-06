@@ -382,37 +382,19 @@
   },
   "amb_bridge": {
     "group": "Ambience",
-    "what": "The bridge (loops, a minute): the ship's warm, steady hum, the air handling faint beneath it, consoles bleeping softly now and then.",
+    "what": "The bridge (loops, a minute): a recorded space ambience, a soft low drone, with consoles bleeping softly now and then.",
     "layers": [
       {
-        "synth": "ship_hum",
-        "gain": 0
+        "src": "oga/sci-fi-sound-effects-library:Ambience_Space_00.wav",
+        "repeat": 4,
+        "pan": -0.1
       },
       {
-        "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Hum.mp3",
-        "pitch": 2.0,
-        "repeat": 9,
-        "hp": 110,
-        "lp": 1500,
-        "gain": -4,
-        "pan": -0.3
-      },
-      {
-        "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Hum.mp3",
-        "start": 3.1,
-        "pitch": 2.0,
-        "repeat": 9,
-        "hp": 110,
-        "lp": 1500,
-        "gain": -6,
-        "pan": 0.3
-      },
-      {
-        "src": "oga/airvent-loop:airvent-large-loop.wav",
-        "repeat": 8,
-        "pan": 0.4,
-        "hp": 180,
-        "gain": -16
+        "src": "oga/sci-fi-sound-effects-library:Ambience_Space_00.wav",
+        "start": 7.3,
+        "repeat": 5,
+        "pan": 0.1,
+        "gain": -4
       }
     ],
     "scatter": [
@@ -421,8 +403,8 @@
         "within": 57.0,
         "min_gap": 1.4,
         "gain": [
-          -13,
-          -7
+          -27,
+          -21
         ],
         "pan": 0.85,
         "pitch": [
@@ -485,8 +467,8 @@
         "within": 56.0,
         "min_gap": 4.0,
         "gain": [
-          -15,
-          -10
+          -29,
+          -24
         ],
         "pan": 0.7,
         "pitch": [
@@ -545,18 +527,10 @@
     "stereo": true,
     "loop": true,
     "loop_fade": 1.5,
-    "distance": {
-      "lp": 4000,
-      "wet": 0.25,
-      "threshold_db": -18,
-      "ratio": 3
-    },
+    "hp": 45,
+    "hp_order": 4,
     "peak_db": -14.0,
-    "edits": "our warm hum at 152 Hz with soft harmonics, under a recorded hum raised an octave (pitch 2.0, from 76 Hz to 152 Hz) twice, offset and panned, and the air duct faint beneath; nothing under 110 Hz; recorded terminal and interface bleeps and our bleeps scattered softly over a minute; compressed 3:1, a little room, written at -14 dB peak; crossfaded into a loop",
-    "lp": 4000,
-    "lp_order": 2,
-    "hp": 110,
-    "hp_order": 4
+    "edits": "Little Robot Sound Factory's space ambience (CC-BY 3.0, the owner's pick) looped to a minute, twice, offset half a loop and panned a little, the sub-bass under 45 Hz trimmed; recorded terminal and interface bleeps and our bleeps scattered softly; written at -14 dB peak; crossfaded into a loop"
   },
   "shield_hit_short": {
     "group": "Impacts",
@@ -715,5 +689,153 @@
     "loop_fade": 0.1,
     "peak_db": -5.0,
     "edits": "three wails cut from a siren, crossfaded into a loop"
+  },
+  "amb_bridge_brown": {
+    "group": "Ambience",
+    "what": "The bridge, alternative (loops, a minute): soft brown noise, low and even, with the bleeps.",
+    "layers": [
+      {
+        "synth": "brown_bed",
+        "pan": -0.5
+      },
+      {
+        "synth": "brown_bed_r",
+        "pan": 0.5
+      }
+    ],
+    "scatter": [
+      {
+        "count": 26,
+        "within": 57.0,
+        "min_gap": 1.4,
+        "gain": [
+          -19,
+          -13
+        ],
+        "pan": 0.85,
+        "pitch": [
+          0.9,
+          1.1
+        ],
+        "pick": [
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_01.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_02.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_03.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_04.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_05.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_06.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_07.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_08.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:terminal_09.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:beep_01.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:beep_02.ogg"
+          },
+          {
+            "src": "oga/50-cc0-sci-fi-sfx:beep_03.ogg"
+          },
+          {
+            "synth": "console_bleep"
+          },
+          {
+            "synth": "console_bleep"
+          },
+          {
+            "synth": "console_bleep"
+          },
+          {
+            "synth": "console_bleep"
+          }
+        ]
+      },
+      {
+        "count": 8,
+        "within": 56.0,
+        "min_gap": 4.0,
+        "gain": [
+          -21,
+          -16
+        ],
+        "pan": 0.7,
+        "pitch": [
+          0.95,
+          1.05
+        ],
+        "pick": [
+          {
+            "src": "oga/interface-beeps:beep-00.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-01.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-03.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-05.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-06.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-09.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/interface-beeps:beep-13.wav",
+            "dur": 0.6,
+            "fadeout": 0.2
+          },
+          {
+            "src": "oga/60-cc0-sci-fi-sfx:sfx_02a.ogg"
+          },
+          {
+            "src": "oga/60-cc0-sci-fi-sfx:sfx_07a.ogg"
+          },
+          {
+            "src": "oga/60-cc0-sci-fi-sfx:sfx_09a.ogg"
+          }
+        ]
+      }
+    ],
+    "len": 60.0,
+    "stereo": true,
+    "loop": true,
+    "loop_fade": 1.5,
+    "hp": 55,
+    "hp_order": 4,
+    "peak_db": -14.0,
+    "edits": "our brown noise kept between 60 and 600 Hz, two uncorrelated sides; the bleeps scattered softly; written at -14 dB peak; crossfaded into a loop"
   }
 }

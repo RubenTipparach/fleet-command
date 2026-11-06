@@ -2,9 +2,11 @@
 
 Recorded cues are cut from CC0 and public domain originals by `tools/audio/cut_cc0.py` to the spec in
 `tools/audio/cc0_cues.json` (originals fetched by `tools/audio/fetch_cc0.py`, which refuses a pack
-whose page does not say CC0 or public domain); the rest are synthesised by `tools/audio/gen_sfx.py`.
+whose page does not say CC0 or public domain, unless the owner asked for it under another licence:
+`tools/audio/licence_exceptions.json`, with its credit); the rest are synthesised by `tools/audio/gen_sfx.py`.
 Rebuild all of them with `tools/audio/render_sfx.sh`. This file is written by `cut_cc0.py`: edit the
-spec, not this table. CC0 asks for no credit; the people who recorded the originals are named anyway.
+spec, not this table. CC0 asks for no credit; the people who recorded the originals are named anyway. A CC-BY pack's credit is printed
+beside it and must be in the game's credits.
 Candidates and what was looked at: `docs/analysis/audio-sources.md`.
 
 | Cue | Made from | Edits |

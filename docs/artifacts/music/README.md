@@ -19,3 +19,4 @@
   custom music for each faction (just do the ones in game right now) and add ambient music as well"): a battle and an
   ambient loop each for the Concord (its ambient new), the Krai Warhost, the Ssarith Hunt and the Kelvane Institute. 12
   cues.
+- Version 4 published 2026-11-07, version id `1793955908-f2ef`: every track's link fingerprinted, as on the Sounds page.

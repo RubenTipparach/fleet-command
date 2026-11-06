@@ -96,7 +96,7 @@ for (const [g, title] of Object.entries(GROUPS)) {
     const audio = new Audio();
     audio.preload = 'auto';
     audio.src = s.src;
-    audio.addEventListener('error', () => { if (!audio.dataset.retried) { audio.dataset.retried = '1'; audio.src = '../../' + s.src; } });
+    audio.addEventListener('error', () => { if (!audio.dataset.retried) { audio.dataset.retried = '1'; audio.src = '../../' + s.src.split('?')[0]; } });
     audio.loop = s.loop;
     const btn = row.querySelector('button');
     const me = { audio, btn };
@@ -130,8 +130,20 @@ new MutationObserver(draw).observe(document.documentElement, { attributes: true,
 
 def files_map(items: list) -> dict:
     """The Artifact publish `files` map for a page's sounds: each published path is the repository path
-    the page names, so the published page and the repository agree."""
-    return {i["src"]: i["src"] for i in items}
+    the page names (without its fingerprint), so the published page and the repository agree."""
+    return {i["src"].split("?")[0]: i["src"].split("?")[0] for i in items}
+
+
+def fingerprint(items: list, root: str) -> None:
+    """Adds ?v=<first 10 hex of the file's SHA-256> to each item's src, so a sound republished at the same path
+    is fetched afresh rather than played from the viewer's cache (2026-11-07: the bridge bed was changed six times
+    at one path)."""
+    import hashlib
+    import os
+    for i in items:
+        path = i["src"].split("?")[0]
+        with open(os.path.join(root, path), "rb") as f:
+            i["src"] = path + "?v=" + hashlib.sha256(f.read()).hexdigest()[:10]
 
 
 def peaks(path: str, points: int = 120) -> list:
@@ -148,6 +160,8 @@ def write(out: str, title: str, body: str, groups: dict, items: list) -> None:
     `groups` maps each item's group to its heading, in order, and each item has name, group, what,
     seconds, loop, peaks and src (a repository path under output/), and optionally recorded.
     Writes the publish files map beside the page (<page>.files.json)."""
+    import os
+    fingerprint(items, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(out)))))
     page = (HEAD.replace("__TITLE__", title) + body
             + SCRIPT.replace("__GROUPS__", json.dumps(groups)).replace("__DATA__", json.dumps(items)))
     with open(out, "w") as f:

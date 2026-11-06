@@ -419,5 +419,19 @@
    "siren.mp3",
    "siren_0.mp3"
   ]
+ },
+ "oga/sci-fi-sound-effects-library": {
+  "pack": "sci-fi-sound-effects-library",
+  "url": "https://opengameart.org/content/sci-fi-sound-effects-library",
+  "licences": [
+   "CC-BY 3.0"
+  ],
+  "author": "Little Robot Sound Factory",
+  "files": [
+   "Sci-Fi%20Sample.mp3",
+   "Sci-Fi%20Sound%20Library.zip"
+  ],
+  "attribution": "Little Robot Sound Factory, www.littlerobotsoundfactory.com",
+  "owner": "owner, 2026-11-07, sending the link for the bridge ambience: \"https://opengameart.org/content/sci-fi-sound-effects-library space ambience right here\""
  }
 }
