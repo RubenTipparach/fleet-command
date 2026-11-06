@@ -25,3 +25,11 @@
   Tall loop, Keel loop; Crossed loops, Quartered loop), each closed, grown by the page's `loopOf()`; an All ships / Loop
   family switch; every loop ship shot from its quarter, side, above and ahead. Survey I2 lists them. Published, version id
   `1793957210-7877`; survey cloud copy version 9, version id `1793957212-1424`.
+- 2026-11-06, cloud session (owner: "12,11,18.19,17 all really good shapes, start detailing these", "12 is no go use 5",
+  "Mind the clean and sterile and almost scientific aesthetics. They would have decorated their ships with smooth round
+  pieces rather than industrial greebles"): versions 4 and 5 together. The line (frigate from 5, destroyer from 11,
+  cruiser from 17, battlecruiser from 18, carrier from 19), each class unwrapped on its own and baked by
+  `tools/blender/painted_bake.py --faction kelvane` from `data/ships/kelvane/hull_detail.json` into
+  `assets/ships/kelvane/`; Painted, PBR, Champagne and Clay looks; Studio and Night; the loops' inner walls dark glass lit
+  at their rims. Published as artifact version 4, version id `1793969381-6d19`; survey cloud copy version 10, version id
+  `1793969382-5dd1`.

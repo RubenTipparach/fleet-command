@@ -50,3 +50,4 @@
 - 2026-11-05, cloud session: version 7, version id `1793882428-1f8c` (H5: the Hunt's window and flood colours, for mockup 12 version 14).
 - 2026-11-06, cloud session: version 8 of the cloud account copy (https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt), version id `1793953194-4b7f`: the committed survey, which adds section I (the Kelvane Institute's ships, I1-I4, mockup 23) and brings over sections S, D and X. The desktop copy is still to republish.
 - 2026-11-06, cloud session: version 9 of the cloud account copy, version id `1793957212-1424`: I2 lists the loop family (13-19, mockup 23 version 3).
+- 2026-11-06, cloud session: version 10 of the cloud account copy, version id `1793969382-5dd1`: section I now asks I5 (the other schools), I3 (the palette) and I6 (the class names); I2 and I4 decided (the picks 5, 11, 17, 18, 19 and their classes), I1 in part (the science specialisation). The desktop copy is still to republish.

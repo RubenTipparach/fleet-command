@@ -80,7 +80,9 @@
       0.45,
       0.1
     ],
-    "strip_k": 0.4
+    "strip_k": 0.5,
+    "strip_inner": 0.12,
+    "strip_rim_px": 7
   },
   "defaults": {
     "smooth_deg": 40,

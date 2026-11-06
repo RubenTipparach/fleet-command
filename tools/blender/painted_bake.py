@@ -545,13 +545,21 @@ def grain(h, w, seed=17):
 
 def strips_and_glow(kind_is, P, glowp, cover):
     """The light strips: a dark channel with a lit line strip_m wide down the middle (paint "strip": "centre"), or the strip
-    face lit whole ("whole"). Returns (channel mask, the
-    glow pass with the channel's sides put out, the emission map: lamps, windows and lines, each with a soft halo)."""
+    face lit whole ("whole"). Lit whole, a wide face (a loop's inner wall) burns brightest along its rims and dims to
+    strip_inner across its middle, the rim's width set by strip_rim_px, so a wall reads as a lit aperture with form rather
+    than a flat fill; a narrow strip is all rim and burns whole. Returns (channel mask, the glow pass with the channel's sides put out, the emission
+    map: lamps, windows and lines, each with a soft halo)."""
     chan = kind_is("strip")
     line = chan & (np.abs(P[..., 0]) < PT["strip_m"] / 2) if PT["strip"] == "centre" else chan
     side = chan & ~line
     g = np.where(side[..., None], 0.0, np.clip(glowp, 0, 1)) * cover[..., None]
     g = g * np.where(chan, PT.get("strip_k", 1.0), 1.0)[..., None]   # how bright a strip glows (a wide wall lit whole wants less)
+    if PT["strip"] == "whole":
+        r = PT.get("strip_rim_px", 6)
+        m = blur(blur(chan.astype(np.float32), r), r)          # 1 deep inside a wide face, falling toward its edges
+        rim = np.clip((0.95 - m) / 0.3, 0, 1)
+        inner = PT.get("strip_inner", 1.0)
+        g = g * np.where(chan, inner + (1 - inner) * rim, 1.0)[..., None]
     g = g + kind_is("dome")[..., None] * hexrgb(PT["dome"]) * PT["dome_glow"]   # the domes' faint inner light
     emit = np.clip(g * 1.2 + np.dstack([blur(g[..., c], 2) for c in range(3)]) * 0.8, 0, 1)
     return side, g, emit
@@ -588,7 +596,11 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
     col *= grain(h, w)[..., None]
     side, g, emit = strips_and_glow(is_, P, glowp, cover)
     col = np.where(side[..., None], hexrgb(PT["vent"]) * (0.6 + 0.6 * sh)[..., None], col)
-    col = np.where((g.max(axis=2) > 0.05)[..., None], np.maximum(col, g), col)
+    if PT["strip"] == "whole":   # a wall lit whole: its own shaded paint with the glow over it, not the glow's flat colour
+        col = np.where(is_("strip")[..., None], np.clip(col + g * 0.6, 0, 1), col)
+        col = np.where((~is_("strip") & (g.max(axis=2) > 0.05))[..., None], np.maximum(col, g), col)
+    else:
+        col = np.where((g.max(axis=2) > 0.05)[..., None], np.maximum(col, g), col)
     return np.clip(col, 0, 1), emit
 
 
