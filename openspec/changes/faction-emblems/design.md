@@ -233,3 +233,12 @@ Palette (provisional, the Kelvane console's): Champagne (the enamelled plate), P
 backlit readout, the reference mark), Scope glass (the dark behind a trace). The console's crest today, a tuning fork over
 its wave, is a placeholder until a sketch is picked. Every sketch passes the measured checks (joins, outline, contrast).
 
+**Picked (owner, 2026-11-06, in the Kelvane console thread, with a book cover's hydrogen-atom plot): "I would like this
+hydrogen atom eigen plot used as the logo/emblem".** This supersedes the three sketches above. The emblem is hydrogen's 3d z²
+orbital (n 3, l 2, m 0): the surface at |3cos²θ − 1|, two lobes along the axis and a ring round the waist, drawn as a
+wireframe eigen plot. It is computed, not traced from the cover, whose art is its publisher's. Its one geometry is
+`tools/mockups/kelvane_emblem.py`, which writes `assets/ui/kelvane/emblem.json` (fine, coarse and mark levels, and the
+outline). It is already on the Kelvane crest in brass wire, the name plates and the console's live emblem
+(`openspec/changes/kelvane-battle-console`, D9, on `claude/brave-faraday-ilpu2q`). Still to do in this thread: the emblem
+guide's Kelvane section and the gallery's badge, built from the same lines.
+
