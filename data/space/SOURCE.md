@@ -38,6 +38,12 @@ one being used all the time". The painter is now here, `tools/space/nebula_skies
 | `solar_furnace` | A blazing yellow-white heart in orange fire |
 | `deep_indigo` | Indigo clouds lit blue from within, crossing black lanes |
 | `coral_drift` | Coral and turquoise side by side, a warm core |
+| `cloak_still_water` | A calm grey-green pool of light, a pale core (the Concord's Cloak scene) |
+| `cloak_night_shroud` | A dark slate shroud, steel-blue edges, one dim cold core (the Krai's Cloak scene) |
+| `cloak_static_haze` | Pink-violet haze shot with static, a hot magenta core (the Concord's Nebula scene) |
+| `cloak_iris_drift` | Blue-violet petals drifting apart, gold at their hearts (the Krai's Nebula scene) |
+| `cloak_bulkhead` | Copper and teal clouds along a hard dark seam (the Concord's Repel boarders scene) |
+| `cloak_alarm_red` | A low scarlet glow under violet dust (the Krai's Repel boarders scene) |
 
 `docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
 bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the

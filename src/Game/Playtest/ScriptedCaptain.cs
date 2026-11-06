@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract" };
+          "wait_screen", "end_turn", "move", "contract", "hunt" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -113,6 +113,8 @@ public sealed partial class ScriptedCaptain : Node
             }
             case "wheel": return await Wheel(b.Arg == "in", (int)Math.Max(1, b.Seconds));
             case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS);
+            // a fight against cloaked ships: with none in sight, the Science station's Sweep, as a captain would
+            case "hunt": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS, sweep: true);
             case "snap": return await Snap(b.Arg);
             case "wait_screen": return await WaitScreen(b.Arg, b.Seconds > 0 ? b.Seconds : 60);
             case "end_turn": return await EndTurn();
@@ -125,7 +127,7 @@ public sealed partial class ScriptedCaptain : Node
     // Fights the scenario out as a captain at the console would: lock the nearest enemy (Tab), order Intercept on the helm,
     // and fire (F) whenever the weapons panel shows a charged weapon in arc. Stuck when nobody's hull has changed for 60 s
     // of battle time. With lingerS, a captain watching a kill: it stays on the wreck that long before locking the next.
-    private async Task<string?> Fight(double maxS, double lingerS = 0)
+    private async Task<string?> Fight(double maxS, double lingerS = 0, bool sweep = false)
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
@@ -149,6 +151,12 @@ public sealed partial class ScriptedCaptain : Node
             {
                 if (hadTarget && lingerS > 0) { await Seconds(lingerS); lastChange = B.T; if (B.Over != null) break; }
                 Press("next_target"); ordered = false;
+                // hunting: nothing in sight but enemies left, so sweep for them when the Sweep key is lit
+                if (sweep && B.TargetOf(me) == null && B.EnemiesOf(me).Any() && B.CanSweep(me))
+                {
+                    if (_x.State.Station != "science") await Click("st.science");
+                    await Click("sci.sweep");
+                }
             }
             hadTarget = B.TargetOf(me) != null;
             // the Intercept key lit is Intercept on: pressing it again would turn it off (free heading), so only press it unlit

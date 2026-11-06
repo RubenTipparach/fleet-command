@@ -17,7 +17,9 @@
 ## 2. Next slices (each its own request)
 
 - [ ] 2.1 The other stations: tactical, point defence, science, comms, repair, transport, fleet (wingman behaviours)
+  - [x] 2.1a Science (scan, active or passive, ECM and ECCM, cloak and sweep), with cloaking and nebulae in the battle (changes `cloaking`, `weapon-targeting`)
 - [ ] 2.2 Ship pages: sensors, tractor (the contest), craft; the Target box with the target's systems display
+  - [x] 2.2a Sensors (health, mode, ECM and ECCM, contacts, the target's ECM), and Security on its own entry with the deck plan in 3D (change `boarding-defence`)
 - [ ] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [ ] 2.5 The tactical map, the event log, the 3D shield hexagon, the transporter effect
 - [ ] 2.6 The scripted captain and a recorded desktop playtest on the owner's PC (CLAUDE.md section 9)

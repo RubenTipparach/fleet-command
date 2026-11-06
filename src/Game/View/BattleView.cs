@@ -213,10 +213,10 @@ public sealed partial class BattleView : Node3D
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
-            m.Visible = s.Alive || _damage.ContainsKey(s.Id);   // an approved ship stays to come apart; a stand-in just goes
+            m.Visible = (s.Alive || _damage.ContainsKey(s.Id)) && (!s.Alive || b.Detected(b.Player, s));   // an approved ship stays to come apart; a stand-in just goes; a cloaked ship unseen is not drawn
             m.Position = new Vector3((float)(s.X / MPerU), 0, (float)(s.Z / MPerU));
             m.Rotation = new Vector3(0, -(float)s.H, 0);
-            if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive; if (s.Alive) sh.Show(s, _x.Kit.C); }
+            if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive && s.CloakK <= 0; if (sh.Visible) sh.Show(s, _x.Kit.C); }   // a cloak's shields are down
         }
         Ship p = b.Player;
         FollowTarget(p);

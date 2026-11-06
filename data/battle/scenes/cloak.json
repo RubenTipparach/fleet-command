@@ -3,7 +3,7 @@
  "scenarios": [
   {
    "id": "concord_cloak",
-   "sky": "quiet",
+   "sky": "cloak_still_water",
    "name": "Cloak",
    "side": "concord",
    "seed": 20261107,
@@ -18,7 +18,7 @@
   },
   {
    "id": "krai_cloak",
-   "sky": "night_shroud",
+   "sky": "cloak_night_shroud",
    "name": "Cloak",
    "side": "krai",
    "seed": 20261108,
@@ -33,7 +33,7 @@
   },
   {
    "id": "concord_nebula",
-   "sky": "static_haze",
+   "sky": "cloak_static_haze",
    "name": "Nebula",
    "side": "concord",
    "seed": 20261109,
@@ -49,7 +49,7 @@
   },
   {
    "id": "krai_nebula",
-   "sky": "iris_drift",
+   "sky": "cloak_iris_drift",
    "name": "Nebula",
    "side": "krai",
    "seed": 20261110,
@@ -65,7 +65,7 @@
   },
   {
    "id": "concord_repel",
-   "sky": "verdigris",
+   "sky": "cloak_bulkhead",
    "name": "Repel boarders",
    "side": "concord",
    "seed": 20261111,
@@ -81,7 +81,7 @@
   },
   {
    "id": "krai_repel",
-   "sky": "aurora",
+   "sky": "cloak_alarm_red",
    "name": "Repel boarders",
    "side": "krai",
    "seed": 20261112,
