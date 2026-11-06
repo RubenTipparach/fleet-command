@@ -307,25 +307,25 @@
   "hunt_1": {
    "side": "ssarith",
    "tier": 1,
-   "name": "Hunt corvette",
-   "cls": "Corvette (stand-in)",
-   "battle_class": "kff",
+   "name": "Hooded lance",
+   "cls": "Frigate",
+   "battle_class": "hunt_ff_lance",
    "schematic": ""
   },
   "hunt_2": {
    "side": "ssarith",
    "tier": 2,
-   "name": "Hunt frigate",
-   "cls": "Frigate (stand-in)",
-   "battle_class": "kff",
+   "name": "Trident",
+   "cls": "Frigate",
+   "battle_class": "hunt_ff_trident",
    "schematic": ""
   },
   "hunt_3": {
    "side": "ssarith",
    "tier": 3,
    "name": "Hunt cruiser",
-   "cls": "Cruiser (stand-in)",
-   "battle_class": "kdd",
+   "cls": "Cruiser",
+   "battle_class": "hunt_ca",
    "schematic": ""
   },
   "vos_raider": {
