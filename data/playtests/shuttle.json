@@ -1,0 +1,15 @@
+{
+ "_doc": "The scripted captain's Shuttle scene (the battle console mockup's scene_shuttle): lock the target, open the ship panel's Craft page and launch the three disguised shuttles at it, eight seconds apart, then watch them arrive. Played from both sides (concord_shuttle, krai_shuttle).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "click", "arg": "sh.craft" },
+  { "do": "click", "arg": "cr.s" },
+  { "do": "hold", "s": 8 },
+  { "do": "click", "arg": "cr.s" },
+  { "do": "hold", "s": 8 },
+  { "do": "click", "arg": "cr.s" },
+  { "do": "hold", "s": 40 }
+ ]
+}

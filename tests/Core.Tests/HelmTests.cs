@@ -22,11 +22,11 @@ public class HelmTests
     public void Each_high_energy_turn_lowers_the_chance_of_the_next()
     {
         Battle b = TestData.NewBattle();
-        double before = b.Rules.HetChanceNow(b.Player);
+        double before = b.Player.HetChance, officer = Rules.OfficerSkill(b.Player, "helm") * b.Data.Systems.Officers.Ability.Het;
         b.Het(-90);
         Assert.Equal(before - b.Tuning.HetChanceDrop, b.Player.HetChance, 6);
         b.ToggleErratic();
-        Assert.Equal(b.Player.HetChance - b.Tuning.HetErraticPenalty, b.Rules.HetChanceNow(b.Player), 6);
+        Assert.Equal(b.Player.HetChance - b.Tuning.HetErraticPenalty + officer, b.Rules.HetChanceNow(b.Player), 6);
     }
 
     [Fact]

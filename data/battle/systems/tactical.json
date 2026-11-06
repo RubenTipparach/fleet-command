@@ -1,0 +1,30 @@
+{
+ "_doc": "The numbers of weapon targeting, point defence, the fleet and the tactical map (src/Core/Data/SystemsDef.Tactical.cs reads them; openspec/changes/weapon-targeting/design.md), ported from the battle console mockup's STRIKE, SYS_POS, hitChance, AI_RETREAT and the map's scales (docs/mockups/battle-console.html). strike: where a hit lands (owner, 2026-11-04: \"most weapons like torpedos hit based on arc receiving the hit ... where as EMPs and phasers and disruptors had a better chance of delivering the direct hit on stuff, but would damage other systems on rthe current arc as well (like a 50/50 spred)\"). A hit through a facing reaches the subsystems and mounts within reach_deg of the facing's centre, and anything within internal_half_len half-lengths of the middle: the chopping block. A precise weapon's hit lands on the aimed subsystem or mount direct_chance of the time when the block holds it; any other hit damages a random block subsystem spread_chance of the time. Every hit damages a random exposed mount mount_chance of the time (plus mount_aim_chance for a direct hit aimed at weapons control), taking mount_hit_frac of its health. A subsystem loses sys_per_dmg of its health a point through the shields, the reactor reactor_per_dmg. subsystems_half_len: each subsystem's place in the hull, [x to starboard, y forward] in half-lengths, as the mounts' are. aim_hit_penalty: the chance to hit a captain of side 0 gives up aiming at anything but the hull. retreat_below_hull_frac: a wingman told to retreat at 50 % or 25 % breaks off below that share of its hull. map_scales_km: the tactical map's ranges, the middle one first shown. objectives: a test scene that is won by disabling, not destroying (the Disable scene): the scenario, the ship to take intact and the subsystems to bring under the Disabled line (tuning.json status_disabled_below); destroying it fails the scene.",
+ "strike": {
+  "reach_deg": 60,
+  "internal_half_len": 0.3,
+  "direct_chance": 0.5,
+  "spread_chance": 0.6,
+  "mount_chance": 0.25,
+  "mount_aim_chance": 0.25,
+  "mount_hit_frac": 0.6,
+  "sys_per_dmg": 0.02,
+  "reactor_per_dmg": 0.012
+ },
+ "subsystems_half_len": {
+  "weapons": [0, 0.35],
+  "shields": [0, 0],
+  "sensors": [0, 0.85],
+  "reactor": [0, -0.15],
+  "engines": [0, -0.9],
+  "tractor": [0, -0.6],
+  "transport": [0.2, 0.1]
+ },
+ "aim_hit_penalty": 0.1,
+ "retreat_below_hull_frac": { "half": 0.5, "quarter": 0.25 },
+ "map_scales_km": [10, 20, 40],
+ "objectives": [
+  { "scenario": "concord_disable", "ship": "vekk", "disable": ["engines", "weapons"] },
+  { "scenario": "krai_disable", "ship": "meridian", "disable": ["engines", "weapons"] }
+ ]
+}

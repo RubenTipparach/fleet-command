@@ -58,7 +58,7 @@ public sealed partial class MapScreen : Control
     // for the HUD under it (Move here, End turn, Briefing) and passed it on to the map, which picked a sector instead.
     public override void _Process(double delta) => _port.Visible = _f.Port != null && _f.Camp != null;
 
-    public void Refresh() { Map?.Rebuild(); Map?.Select(_f.Sel); Map?.ShowRoute(_f.Path); }
+    public void Refresh() { Map?.Rebuild(); Map?.Select(_f.Sel); Map?.ShowRoute(_f.Path, _f.Course); }
 
     public override void _GuiInput(InputEvent e)
     {

@@ -1,0 +1,635 @@
+{
+ "_doc": "The faction screen, exported from mockup 1 (docs/mockups/game-flow.html, buildFactionScene) by tools/mockups/export_faction.mjs. Metres, +Y up, the camera looking toward -Z. Drawn by src/Game/Flow/FactionStage.cs.",
+ "source": {
+  "page": "docs/mockups/game-flow.html",
+  "sha256": "3903ca70ee3c407610dbb19de488a33a20779e84b1c9d088c10011fc734c1042"
+ },
+ "table": {
+  "top": 0.78,
+  "pitch": 3.3,
+  "float": 1.66,
+  "bob": 0.035,
+  "lift": 0.07,
+  "woodM": 3,
+  "fitW": 4.3
+ },
+ "slots": [
+  {
+   "faction": "concord",
+   "x": -3.3,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     -3.3,
+     6.4,
+     1.7
+    ],
+    "target": [
+     -3.3,
+     1.13,
+     0
+    ]
+   }
+  },
+  {
+   "faction": "krai",
+   "x": 0,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     0,
+     6.4,
+     1.7
+    ],
+    "target": [
+     0,
+     1.13,
+     0
+    ]
+   }
+  },
+  {
+   "faction": "ssarith",
+   "x": 3.3,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     3.3,
+     6.4,
+     1.7
+    ],
+    "target": [
+     3.3,
+     1.13,
+     0
+    ]
+   }
+  }
+ ],
+ "lamp": {
+  "colour": "#ffe2bb",
+  "angle_rad": 0.3,
+  "penumbra": 0.55,
+  "decay": 1.4,
+  "range_m": 12,
+  "intensity": "idle 0.25, plus 6.5 times its level: 1 on the picked faction, 0.55 under the pointer (stepFaction)"
+ },
+ "beam": {
+  "colour": "#ffe5bc",
+  "cone_radius_m": 1.826683,
+  "cone_length_m": 5.905169,
+  "shader": "additive: colour * pow(|N.V|, 1.6) * pow(v, 0.7) * 0.16 * level, v running 0 at the lamp to 1 at the base (beamMat)"
+ },
+ "dust": {
+  "count": 420,
+  "size_px": "(1.6 + 3.2 glint) * 8 / depth",
+  "glint": "pow(0.5 + 0.5 sin(t (1.5 + 3 fract(seed 7.3)) + seed 40), 10)",
+  "lit": "inside the cone only, (0.25 + 1.6 glint) * level",
+  "drift_m": [
+   0.12,
+   0.18,
+   0.12
+  ],
+  "drift_rate": [
+   0.21,
+   0.13,
+   0.17
+  ],
+  "colour": [
+   1,
+   0.86,
+   0.66
+  ]
+ },
+ "turn": {
+  "yaw_per_ndc": 1.6,
+  "pitch_per_ndc": 1,
+  "max_yaw_rad": 0.5,
+  "max_pitch_rad": 0.3,
+  "others": 0.35,
+  "rate_per_s": 6,
+  "bob_rate": 1.1,
+  "bob_phase": 2.1
+ },
+ "camera": {
+  "position": [
+   0,
+   3.5,
+   7.3
+  ],
+  "target": [
+   0,
+   1.22,
+   0.1
+  ],
+  "fov_deg": 36,
+  "fit": "on a screen narrower than 16:9 the camera backs off along its line to the target until table.fitW either side of the middle fits across (fitFacCam)"
+ },
+ "badge_materials": {
+  "concord_0": {
+   "graph": "emblem_platinum",
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.35
+  },
+  "concord_1": {
+   "graph": "emblem_enamel_pearl",
+   "tint": [
+    0.788235,
+    0.819608,
+    0.901961
+   ],
+   "metalness": 0,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0.5,
+   "clearcoat_roughness": 0.06,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 1,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.245
+  },
+  "concord_2": {
+   "graph": "emblem_enamel_pearl",
+   "tint": [
+    0.184314,
+    0.815686,
+    0.941176
+   ],
+   "metalness": 0,
+   "roughness": 2,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 1,
+   "sheen_colour": [
+    0.721569,
+    0.956863,
+    1
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.21
+  },
+  "concord_3": {
+   "graph": null,
+   "tint": [
+    0.184314,
+    0.74902,
+    0.352941
+   ],
+   "metalness": 0,
+   "roughness": 0.1,
+   "emissive": [
+    0.184314,
+    0.74902,
+    0.352941
+   ],
+   "emissive_strength": 2.2,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "concord_4": {
+   "graph": null,
+   "tint": [
+    0.039216,
+    0.062745,
+    0.188235
+   ],
+   "metalness": 0,
+   "roughness": 0.5,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "krai_0": {
+   "graph": "emblem_platinum",
+   "tint": [
+    0.72549,
+    0.760784,
+    0.8
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.35
+  },
+  "krai_1": {
+   "graph": "emblem_platinum",
+   "tint": [
+    0.168627,
+    0.141176,
+    0.14902
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.21
+  },
+  "krai_2": {
+   "graph": "emblem_enamel_pearl",
+   "tint": [
+    0.768627,
+    0.086275,
+    0.121569
+   ],
+   "metalness": 0,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0.6,
+   "clearcoat_roughness": 0.08,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.245
+  },
+  "ssarith_0": {
+   "graph": "emblem_platinum",
+   "tint": [
+    0.847059,
+    0.811765,
+    0.705882
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.35
+  },
+  "ssarith_1": {
+   "graph": "emblem_enamel_forest",
+   "tint": [
+    0.078431,
+    0.094118,
+    0.070588
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.07
+  },
+  "ssarith_2": {
+   "graph": "emblem_wood_laminate",
+   "tint": [
+    0.352941,
+    0.243137,
+    0.156863
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.105
+  },
+  "ssarith_3": {
+   "graph": "emblem_wood_laminate",
+   "tint": [
+    0.352941,
+    0.290196,
+    0.219608
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.105
+  },
+  "ssarith_4": {
+   "graph": "emblem_enamel_pearl",
+   "tint": [
+    0.619608,
+    0.047059,
+    0.070588
+   ],
+   "metalness": 0,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.035
+  },
+  "ssarith_5": {
+   "graph": "emblem_enamel_pearl",
+   "tint": [
+    0.878431,
+    0.376471,
+    0.039216
+   ],
+   "metalness": 0,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.035
+  },
+  "ssarith_6": {
+   "graph": "emblem_platinum",
+   "tint": [
+    0.72549,
+    0.760784,
+    0.8
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.35
+  },
+  "ssarith_7": {
+   "graph": "emblem_enamel_pearl",
+   "tint": [
+    0.121569,
+    0.615686,
+    0.227451
+   ],
+   "metalness": 0,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 1,
+   "clearcoat_roughness": 0.04,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.21
+  },
+  "ssarith_8": {
+   "graph": "emblem_wood_laminate",
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0.15,
+   "clearcoat_roughness": 0.2,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.175
+  },
+  "ssarith_9": {
+   "graph": "emblem_fern",
+   "tint": [
+    0.490196,
+    1,
+    0.360784
+   ],
+   "metalness": 0,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.105
+  }
+ },
+ "materials": {
+  "table_wood": "the table_wood maps (assets/textures/materials/table_wood/), clearcoat 0.35 at roughness 0.28",
+  "table_under": "the same wood times (0.55, 0.5, 0.46)",
+  "holo_field": "the Concord badge's field: src/Game/Flow/holo_field.gdshader, a port of emblem-builds.js concord() holo",
+  "badge": "each other badge material is named in badge_materials: on a graph, its maps (assets/textures/materials/<graph>/: albedo tinted by tint, normal, ORM) at uv_scale per glb uv unit, metalness and roughness 1 times the ORM; otherwise its own colour, metalness and roughness"
+ }
+}

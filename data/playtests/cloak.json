@@ -1,0 +1,15 @@
+{
+ "_doc": "The scripted captain's Cloak scene (the battle console mockup's SCENES.cloak and its shots scene_cloak and cloak_own; openspec/changes/cloaking): pick the scenario, open Science and look over the Sensors page, sweep while the battery is full, cloak and decloak (the cloak overdraws the reactor and drains the battery), then hunt the cloaked enemy: with nothing in sight it sweeps from Science, locks what the sweep reveals or what decloaks to strike, orders Intercept and fires. Played from both sides.",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "station", "arg": "science" },
+  { "do": "click", "arg": "sh.sensors" },
+  { "do": "click", "arg": "sci.sweep" },
+  { "do": "click", "arg": "sci.cloak" },
+  { "do": "hold", "s": 4 },
+  { "do": "click", "arg": "sci.cloak" },
+  { "do": "hold", "s": 4 },
+  { "do": "hunt", "s": 600 }
+ ]
+}

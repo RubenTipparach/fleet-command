@@ -64,6 +64,14 @@
       "tile_m": 0.05,
       "status": "starter",
       "use": "faction emblems: the Ssarith Hunt badge's fern bed, modelled in its recess"
+    },
+    {
+      "name": "table_wood",
+      "size_px": 1024,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 1.0,
+      "status": "starter",
+      "use": "the faction screen's table: polished walnut boards, flat-sawn figure, pores, ray flecks (owner, 2026-11-06: \"generate the best wooden textture you can with material maker\")"
     }
   ]
 }

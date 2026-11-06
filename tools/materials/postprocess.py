@@ -125,6 +125,11 @@ def main():
     sheet_cells = []
     for m in materials():
         dst = os.path.join(OUT, m["name"])
+        if not os.path.exists(os.path.join(raw, f"{m['name']}_albedo.png")):
+            # not rendered this run (export_materials.sh was given other names): its committed maps stay, and still go
+            # on the sheet
+            sheet_cells.append((m, cells(dst, cell)))
+            continue
         os.makedirs(dst, exist_ok=True)
         for kind in m["maps"]:
             if kind == "specular":

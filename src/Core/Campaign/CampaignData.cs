@@ -41,10 +41,11 @@ public sealed record MapDef(IReadOnlyList<(string Fac, int C, int R)> Seeds, dou
     IReadOnlyList<(int C, int R)> Stars, IReadOnlyList<Place> Places, IReadOnlyList<FleetDef> Fleets, int RangePirate, int RangeLone, int RangeGroup,
     IReadOnlyList<(string Fac, string A, string B)> FreightRoutes, IReadOnlyList<string> FreighterNames);
 
-/// <summary>The officers: the stations they serve (with what each does), the skill levels and their pay, the names, and how
-/// many are on offer at a time.</summary>
-public sealed record OfficerDef(IReadOnlyList<string> Stations, IReadOnlyList<(string Skill, int Cost)> Skills, IReadOnlyList<string> Names, int Pool,
-    IReadOnlyDictionary<string, string> Does);
+/// <summary>The officers: the stations they serve (with what each does), the skill levels and their pay (the first is a
+/// cadet), the given and family names officers are named from, and how many experienced officers and cadets each station
+/// has on offer.</summary>
+public sealed record OfficerDef(IReadOnlyList<string> Stations, IReadOnlyList<(string Skill, int Cost)> Skills, IReadOnlyList<string> Given,
+    IReadOnlyList<string> Family, int Experienced, int Cadets, IReadOnlyDictionary<string, string> Does);
 
 public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, CampFaction> Factions, IReadOnlyDictionary<string, Terrain> Terrain,
     IReadOnlyList<(string Id, string Name)> Groups, IReadOnlyList<Tier> Tiers, IReadOnlyDictionary<string, Hull> Hulls,
@@ -192,7 +193,9 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
         string[] stations = oo.StrList("stations");
         var doesMap = stations.ToDictionary(st => st, st => does.Str(st));
         does.Done();
-        var officers = new OfficerDef(stations, skills, oo.StrList("names"), oo.Int("pool"), doesMap);
+        var officers = new OfficerDef(stations, skills, oo.StrList("given"), oo.StrList("family"), oo.Int("experienced"), oo.Int("cadets"), doesMap);
+        if (skills.Count < 2 || officers.Given.Count == 0 || officers.Family.Count == 0 || officers.Experienced < 0 || officers.Cadets < 0)
+            throw new DataError("data/campaign/campaign.json.officers: needs two skill levels or more, given and family names, and counts of 0 or more");
         oo.Done();
         string[] behaviours = root.StrList("behaviours");
         root.Done();

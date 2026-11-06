@@ -59,7 +59,7 @@ public sealed partial class Battle
         if (d <= stepM + Tuning.ShotHitRadiusM)
         {
             if (sh.Lure is { } lure) { if (lure.Kind == "decoy") EndDecoy(lure); }
-            else if (sh.Hit && !sh.Spent) { Ship? from = ShipById(sh.From); Damage(t!, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind); }
+            else if (sh.Hit && !sh.Spent) { Ship? from = ShipById(sh.From); Damage(t!, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind, 0, sh); }
             sh.Spent = true; sh.Life = 0;
             return;
         }

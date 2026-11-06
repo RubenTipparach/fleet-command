@@ -298,32 +298,56 @@ public sealed partial class PortPanel : FlowPanel
             y += 4;
         }
 
-        // what fits the picked hardpoint, each with what the change costs
+        // what fits the picked hardpoint: fitting is free, from the stores (owner, 2026-11-06: "fitting stuff on a ship
+        // should be free, have the store below"); the store below buys systems into the stores and sells them back
         float cx = lx + lw + 18, cw = b.End.X - cx;
         string? fitted = s.Fit[F.LoGroup][F.LoSlot];
         string gn = c.Data.Groups.First(x => x.Id == F.LoGroup).Name;
-        Lbl($"{gn} {F.LoSlot + 1}: choose a system", cx, b.Position.Y + 14, cw);
-        float cy = b.Position.Y + 24;
         var options = c.Data.Systems.Values.Where(x => x.Group == F.LoGroup).OrderBy(x => x.Cost).ToList();
-        float oh = Math.Min(92, (b.Size.Y - 140) / Math.Max(1, options.Count + 1) - 6);
+        float top = b.Position.Y + 24, bottom = b.End.Y - (F.PortShip > 0 ? 120 : 60);
+        float avail = bottom - top - 40 - 30 - (fitted != null ? 44 : 0);
+        float oh = Math.Clamp(avail * 0.6f / Math.Max(1, options.Count) - 6, 44, 84), sh = Math.Clamp(avail * 0.4f / Math.Max(1, options.Count) - 6, 36, 48);
+        Lbl($"{gn} {F.LoSlot + 1}: fit from the stores", cx, b.Position.Y + 14, cw);
+        float cy = top;
         foreach (ShipSystem o in options)
         {
             var r = new Rect2(cx, cy, cw, oh);
             bool isOn = o.Id == fitted;
+            int held = c.InStores(o.Id);
             Card(r, isOn, false);
-            Text(o.Name, r.Position.X + 14, r.Position.Y + 26, 19, isOn ? C.Sky : C.Text, HorizontalAlignment.Left, cw - 190, 700);
-            Para(o.Desc, r.Position.X + 14, r.Position.Y + 50, cw - 200, 15, C.Lilac, 2);
-            int q = c.RefitQuote(s, F.LoGroup, F.LoSlot, o.Id);
+            Text(o.Name, r.Position.X + 14, r.Position.Y + 24, 19, isOn ? C.Sky : C.Text, HorizontalAlignment.Left, cw - 290, 700);
+            if (oh >= 60) Para(o.Desc, r.Position.X + 14, r.Position.Y + 46, cw - 300, 14, C.Lilac, 2);
+            Text(held > 0 ? $"{held} in stores" : "none in stores", r.End.X - 186, r.Position.Y + oh / 2 + 6, 15, held > 0 ? C.Accord : C.Lilac, HorizontalAlignment.Right, 110, 600, 1);
             string sid = o.Id;
-            if (isOn) Text("FITTED", r.End.X - 14, r.Position.Y + 30, 17, C.Accord, HorizontalAlignment.Right, 160, 700, 1);
-            else Button($"lo.fit.{o.Id}", new Rect2(r.End.X - 170, r.Position.Y + (oh - 40) / 2, 160, 40), q >= 0 ? $"Fit {q:N0} cr" : $"Fit +{-q:N0} cr back",
-                () => Say(c.Refit(s, F.LoGroup, F.LoSlot, sid), $"Fitted: {c.Data.Systems[sid].Name}."), dis: q > c.S.Credits);
+            if (isOn) Text("FITTED", r.End.X - 14, r.Position.Y + oh / 2 + 6, 17, C.Accord, HorizontalAlignment.Right, 160, 700, 1);
+            else Button($"lo.fit.{o.Id}", new Rect2(r.End.X - 170, r.Position.Y + (oh - 40) / 2, 160, 40), "Fit",
+                () => Say(c.Refit(s, F.LoGroup, F.LoSlot, sid), $"Fitted: {c.Data.Systems[sid].Name}."), dis: held == 0,
+                tip: held == 0 ? new Tip(o.Name, new (string, string, Color?)[] { ("In stores", "none: buy one below", null) }) : null);
             cy += oh + 6;
         }
         if (fitted != null)
         {
-            int refund = -c.RefitQuote(s, F.LoGroup, F.LoSlot, null);
-            Button("lo.remove", new Rect2(cx, cy, Math.Min(cw, 300), 40), $"Remove: +{refund:N0} cr back", () => Say(c.Refit(s, F.LoGroup, F.LoSlot, null), "Removed."));
+            Button("lo.remove", new Rect2(cx, cy, Math.Min(cw, 300), 38), "Remove to stores", () => Say(c.Refit(s, F.LoGroup, F.LoSlot, null), "Removed to the stores."));
+            cy += 44;
+        }
+
+        // the store: buy into the stores, sell from them
+        Lbl($"Store: {gn.ToLowerInvariant()} systems", cx, cy + 16, cw);
+        cy += 26;
+        bool port = c.IsPort(c.At);
+        foreach (ShipSystem o in options)
+        {
+            var r = new Rect2(cx, cy, cw, sh);
+            int held = c.InStores(o.Id), price = c.SystemPrice(o.Id), sale = c.SystemSale(o.Id);
+            Kit.Piece(this, "frame.inset", r);
+            Text(o.Name, r.Position.X + 14, r.Position.Y + sh / 2 + 6, 17, C.Text, HorizontalAlignment.Left, cw - 400, 600, 1);
+            Text($"{held} held", r.End.X - 340, r.Position.Y + sh / 2 + 6, 15, held > 0 ? C.Accord : C.Lilac, HorizontalAlignment.Right, 80, 600, 1);
+            string sid = o.Id;
+            Button($"lo.buy.{o.Id}", new Rect2(r.End.X - 252, r.Position.Y + (sh - 32) / 2, 130, 32), $"Buy {price:N0} cr",
+                () => Say(c.BuySystem(sid), $"{c.Data.Systems[sid].Name} bought into the stores."), dis: !port || price > c.S.Credits);
+            Button($"lo.sell.{o.Id}", new Rect2(r.End.X - 116, r.Position.Y + (sh - 32) / 2, 110, 32), $"Sell +{sale:N0}",
+                () => Say(c.SellSystem(sid), $"{c.Data.Systems[sid].Name} sold."), dis: !port || held == 0);
+            cy += sh + 4;
         }
 
         // the ship's worth, its empty hardpoints, and a wingman's standing orders
@@ -333,7 +357,7 @@ public sealed partial class PortPanel : FlowPanel
         if (empty > 0)
         {
             int sq = c.StockQuote(s);
-            Button("lo.stock", new Rect2(lx, by, lw, 44), $"Fill {empty} empty: {sq:N0} cr", () => Say(c.FitStock(s), "Empty hardpoints fitted with stock systems."), dis: sq > c.S.Credits);
+            Button("lo.stock", new Rect2(lx, by, lw, 44), sq > 0 ? $"Fill {empty} empty: {sq:N0} cr" : $"Fill {empty} empty from stores", () => Say(c.FitStock(s), "Empty hardpoints fitted with stock systems."), dis: sq > c.S.Credits);
         }
         if (F.PortShip > 0)
         {
@@ -391,10 +415,14 @@ public sealed partial class PortPanel : FlowPanel
 
     // ---- Crew --------------------------------------------------------------------------------------------------------
 
+    // Every station opens its list (owner, 2026-11-06: "for each crew slot, I should be able to click on it and always geta
+    // list, even when I hire someone. Always 3 experienced of various levels and 5 cadets"): the stations across the top,
+    // the picked one's officers on offer below, experienced on the left and cadets on the right.
     private void Crew(Campaign.Campaign c, Rect2 b)
     {
         OfficerDef od = c.Data.Officers;
-        Lbl("Your officers, one at each station", b.Position.X, b.Position.Y + 14, b.Size.X);
+        if (F.CrewStation == null || !od.Stations.Contains(F.CrewStation)) F.CrewStation = od.Stations[0];
+        Lbl("Your officers, one at each station: pick a station to see who is on offer", b.Position.X, b.Position.Y + 14, b.Size.X);
         int n = od.Stations.Count;
         float tw = (b.Size.X - 10 * (n - 1)) / n, th = 150, y = b.Position.Y + 24;
         for (int i = 0; i < n; i++)
@@ -402,9 +430,11 @@ public sealed partial class PortPanel : FlowPanel
             string st = od.Stations[i];
             var r = new Rect2(b.Position.X + i * (tw + 10), y, tw, th);
             Officer? o = c.AtStation(st);
-            Card(r, o != null, false);
+            bool picked = st == F.CrewStation;
+            HitState hs = Ui.Reg($"crew.station.{st}", r, _ => F.CrewStation = st);
+            Card(r, picked, hs.Hot);
             Kit.Icon(this, StationIcon.GetValueOrDefault(st, "fleet"), new Rect2(r.Position.X + 14, r.Position.Y + 14, 30, 30), o != null ? C.Sky : C.Lilac);
-            Text(st.ToUpperInvariant(), r.Position.X + 52, r.Position.Y + 36, 17, C.Lilac, HorizontalAlignment.Left, tw - 60, 600, 1);
+            Text(st.ToUpperInvariant(), r.Position.X + 52, r.Position.Y + 36, 17, picked ? C.Caution : C.Lilac, HorizontalAlignment.Left, tw - 60, 600, 1);
             if (o != null)
             {
                 Text(o.Name, r.Position.X + 14, r.Position.Y + 72, 19, C.Text, HorizontalAlignment.Left, tw - 24, 700);
@@ -419,32 +449,39 @@ public sealed partial class PortPanel : FlowPanel
             }
         }
 
-        Lbl("Officers looking for a berth", b.Position.X, y + th + 30, b.Size.X);
-        float cy = y + th + 40;
-        int cols = b.Size.X > 1100 ? 3 : 2;
-        float cw = (b.Size.X - 12 * (cols - 1)) / cols, chh = Math.Min(150, (b.End.Y - cy - 30) / Math.Max(1, (c.S.OfficerPool.Count + cols - 1) / cols) - 12);
-        int k = 0;
-        foreach (Officer o in c.S.OfficerPool.ToList())
+        string pick = F.CrewStation;
+        Officer? now = c.AtStation(pick);
+        var offer = c.OnOffer(pick);
+        var exp = offer.Where(o => !c.IsCadet(o)).ToList();
+        var cadets = offer.Where(c.IsCadet).ToList();
+        float cy = y + th + 40, gap = 16, colw = (b.Size.X - gap) / 2;
+        int rows = Math.Max(1, Math.Max(exp.Count, cadets.Count));
+        float rh = Math.Min(96, (b.End.Y - cy - 10) / rows - 8);
+        Lbl($"{pick}: experienced officers", b.Position.X, cy - 10, colw);
+        Lbl($"{pick}: cadets", b.Position.X + colw + gap, cy - 10, colw);
+        for (int col = 0; col < 2; col++)
         {
-            var r = new Rect2(b.Position.X + (k % cols) * (cw + 12), cy + (k / cols) * (chh + 12), cw, chh);
-            Kit.Piece(this, "frame.inset", r);
-            // initials in a disc: a portrait waits on the crew's art
-            var disc = r.Position + new Vector2(42, chh / 2);
-            DrawCircle(disc, 28, C.Deep);
-            Kit.Icon(this, StationIcon.GetValueOrDefault(o.Station, "fleet"), new Rect2(disc - new Vector2(16, 16), new Vector2(32, 32)), C.Sky);
-            float tx = r.Position.X + 84, tww = r.End.X - tx - 180;
-            Text(o.Name, tx, r.Position.Y + 30, 20, C.Text, HorizontalAlignment.Left, tww, 700);
-            Text(o.Station, tx, r.Position.Y + 52, 16, C.Sky, HorizontalAlignment.Left, tww, 600);
-            Pips(tx, r.Position.Y + 60, SkillOf(c, o));
-            Para(od.Does.GetValueOrDefault(o.Station, ""), tx, r.Position.Y + 98, tww + 160, 14, C.Lilac, 2);
-            Officer? now = c.AtStation(o.Station);
-            Officer oo = o;
-            Button($"crew.hire.{o.Name}", new Rect2(r.End.X - 170, r.Position.Y + 14, 160, 44), $"Hire {o.Cost:N0} cr", () => Say(c.Hire(oo), $"{oo.Name} takes the {oo.Station} station."), dis: o.Cost > c.S.Credits,
-                tip: now != null ? new Tip($"Replaces {now.Name}", new (string, string, Color?)[] { ("At", o.Station, null), ("Skill now", now.Skill, null) }) : null);
-            if (now != null) Text($"replaces {now.Name}", r.End.X - 90, r.Position.Y + 76, 13, C.Caution, HorizontalAlignment.Center, 170, 600);
-            k++;
+            var list = col == 0 ? exp : cadets;
+            for (int k = 0; k < list.Count; k++)
+                OfficerRow(c, list[k], now, new Rect2(b.Position.X + col * (colw + gap), cy + k * (rh + 8), colw, rh));
         }
-        if (c.S.OfficerPool.Count == 0) Text("No one is looking for a berth here this turn.", b.Position.X, cy + 24, 17, C.Lilac, HorizontalAlignment.Left, b.Size.X, 600);
+    }
+
+    private void OfficerRow(Campaign.Campaign c, Officer o, Officer? now, Rect2 r)
+    {
+        float hgt = r.Size.Y;
+        Kit.Piece(this, "frame.inset", r);
+        // initials in a disc: a portrait waits on the crew's art
+        float rad = Math.Min(26, hgt / 2 - 8);
+        var disc = r.Position + new Vector2(14 + rad, hgt / 2);
+        DrawCircle(disc, rad, C.Deep);
+        Kit.Icon(this, StationIcon.GetValueOrDefault(o.Station, "fleet"), new Rect2(disc - new Vector2(rad * 0.6f, rad * 0.6f), new Vector2(rad * 1.2f, rad * 1.2f)), C.Sky);
+        float tx = r.Position.X + 28 + 2 * rad, tww = r.End.X - tx - 180;
+        Text(o.Name, tx, r.Position.Y + hgt / 2 - 6, 19, C.Text, HorizontalAlignment.Left, tww, 700);
+        Pips(tx, r.Position.Y + hgt / 2 + 2, SkillOf(c, o));
+        Officer oo = o;
+        Button($"crew.hire.{o.Name}", new Rect2(r.End.X - 170, r.Position.Y + (hgt - 40) / 2, 160, 40), $"Hire {o.Cost:N0} cr", () => Say(c.Hire(oo), $"{oo.Name} takes the {oo.Station} station."), dis: o.Cost > c.S.Credits,
+            tip: now != null ? new Tip($"Replaces {now.Name}", new (string, string, Color?)[] { ("At", o.Station, null), ("Skill now", now.Skill, null) }) : null);
     }
 
     private static int SkillOf(Campaign.Campaign c, Officer o) => c.Data.Officers.Skills.ToList().FindIndex(s => s.Skill == o.Skill) + 1;

@@ -22,6 +22,9 @@ public abstract partial class ConsolePanel : Control, IControlSource
     /// <summary>The region this panel fills, which decides whether it can expand.</summary>
     public Region Region { get; private set; }
     private readonly Dictionary<string, float> _slots = new();
+    /// <summary>Where the last frame's title box (or placard) starts, x in the panel: what sits left of the title on the
+    /// frame's top edge (a station's officer slot) stops short of it.</summary>
+    protected float TitleLeft { get; private set; }
 
     protected IKit Kit => X.Kit;
     protected Palette C => X.Kit.C;
@@ -133,7 +136,7 @@ public abstract partial class ConsolePanel : Control, IControlSource
         string lab = label.ToUpperInvariant();
         if (Sk.KeyCenter)
         {
-            var (cl, cr) = Caps("button." + kst, h);
+            var (cl, cr) = Field(Sk.KeyField, "button." + kst, h);
             float room = r.Size.X - cl - cr - 8, tw = X.Fonts.Width(lab, size, 600, 1);
             int fs = tw > room ? Math.Max(11, (int)MathF.Floor(size * room / tw)) : size;
             Text(lab, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
@@ -151,10 +154,30 @@ public abstract partial class ConsolePanel : Control, IControlSource
         return (p.M.L * k, p.M.R * k);
     }
 
+    /// <summary>What a label keeps clear of at each end of a key or tab drawn this high: the skin's measured label field
+    /// when it gives one (shrunk with the height as the piece is), else the piece's caps (the mockup's keyField, tabField
+    /// and keyCaps).</summary>
+    private (float L, float R) Field((float L, float R)? field, string piece, float h)
+    {
+        if (field is not { } f) return Caps(piece, h);
+        float k = Math.Min(1, h / Kit.Spec(piece).Size.Y);
+        return (f.L * k, f.R * k);
+    }
+
     /// <summary>A tab: one cap and a flat end, lit when chosen. With an icon it shows the icon and names itself on hover.</summary>
     protected void Tab(string id, Rect2 r, string label, Action click, bool on, string? icon = null, bool dis = false)
     {
         HitState st = dis ? default : Ui.Reg(id, r, _ => click(), null, icon != null ? new Tip(label) : null);
+        // an icon tab in a skin whose tab piece is a long tube or window (the Ssarith's, the Kelvane's): its square key
+        // instead, the icon inside the glass; dark at rest, lit on hover, engaged when chosen (the mockup's iconKeys)
+        if (icon != null && Sk.IconKeys)
+        {
+            float s2 = Math.Min(r.Size.X, r.Size.Y), ic = s2 * 0.56f;
+            var key = new Rect2(r.Position + (r.Size - new Vector2(s2, s2)) / 2, new Vector2(s2, s2));
+            Kit.Hero(this, on ? "key.on" : st.Hot ? "key.hover" : "key.idle", key, dis ? 0.35f : 1);
+            Kit.Icon(this, icon, new Rect2(key.Position + new Vector2((s2 - ic) / 2, (s2 - ic) / 2), new Vector2(ic, ic)), on ? Sk.R.Ink : Sk.TabIcon);
+            return;
+        }
         Kit.Piece(this, on ? "tab.active" : "tab.idle", r, dis ? 0.35f : 1);
         if (!on && st.Hot) Kit.Piece(this, "tab.active", r, 0.22f);
         if (icon != null)
@@ -167,10 +190,13 @@ public abstract partial class ConsolePanel : Control, IControlSource
         Color ink = on ? Sk.KeyInk.TabOn : Sk.KeyInk.TabOff;
         if (Sk.KeyCenter)
         {
-            // centred, shrinking to fit (down to 14 px) before it is trimmed (rule T)
-            float room = r.Size.X - 28, tw = X.Fonts.Width(lab, 19, 600, 1);
-            int fs = tw > room ? Math.Max(14, (int)MathF.Floor(19 * room / tw)) : 19;
-            Text(lab, r.Position.X + r.Size.X / 2, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
+            // centred in the open field between the tab's end caps (or the skin's measured field), shrinking to fit
+            // (down to 11 px) before it is trimmed (rule T)
+            var (tl, tr) = Field(Sk.TabField, on ? "tab.active" : "tab.idle", r.Size.Y);
+            float room = r.Size.X - Math.Max(28, tl + tr + 4), tw = X.Fonts.Width(lab, 19, 600, 1);
+            int fs = tw > room ? Math.Max(11, (int)MathF.Floor(19 * room / tw)) : 19;
+            float cx = tl + tr > 20 ? r.Position.X + tl + (r.Size.X - tl - tr) / 2 : r.Position.X + r.Size.X / 2;
+            Text(lab, cx, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
         }
         else Text(lab, r.End.X - 8, r.Position.Y + r.Size.Y / 2 + 7, 19, ink, HorizontalAlignment.Right, r.Size.X - 22, 600, 1);
     }
@@ -250,9 +276,10 @@ public abstract partial class ConsolePanel : Control, IControlSource
         // the title box ends inside the frame's corner (owner, 2026-11-06: "trim the box a bit so its corner matches the blue
         // border"): a panel without the expand key keeps it clear of the corner cap as one with the key does
         float bw = expandable ? 21 : -10, x1 = content.End.X - (expandable ? 6 : 20), total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
+        TitleLeft = x0 - (Sk.TitlePlacard ? 18 : 0);
         if (Sk.TitlePlacard) Kit.Piece(this, "plate.title", new Rect2(x0 - 18, y0 - 1, total + 22, 24));
         else DrawRect(new Rect2(x0, y0, total, 22), Sk.R.Plate);
-        Text(up, x0 + 8, y0 + 19, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);
+        Text(up, x0 + 8, y0 + 19 - Sk.TitleDy, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);
         if (expandable) ExpandKey($"{Region}.xp", new Vector2(x1 - 8 - bw / 2, y0 + 11), bw / 2, Big, () => X.Act.Expand(Region));
         return content;
     }
@@ -275,6 +302,31 @@ public abstract partial class ConsolePanel : Control, IControlSource
             DrawLine(p0, p1, ink, w, true);
             DrawPolyline(new[] { h + new Vector2(s * d * hd, 0), h, h + new Vector2(0, -s * d * hd) }, ink, w, true);
         }
+    }
+
+    // the meters' needles as last drawn: the ship they read, when, and where they pointed (the mockup's NEEDLE)
+    private readonly Dictionary<string, (string Ship, ulong Ms, float V)> _needles = new();
+
+    /// <summary>A strip's needle meter, in a skin whose strip art carries a printed scale (SkinStyle.Meter; the mockup's
+    /// stripMeter): the needle swings toward the reading and settles as a damped needle does, and names its reading on
+    /// hover. A display only: the value is the one the strip's bar and number show. A needle not drawn for a quarter of a
+    /// second, or on another ship, is set straight to its reading (after a pause, a scene change or a hop the gauge shows
+    /// the reading, not a swing from the last one).</summary>
+    protected void StripMeter(string id, double frac, string tip)
+    {
+        if (Sk.Meter is not { } m || Sk.Needle == null) return;
+        ulong now = Time.GetTicksMsec();
+        float v = (float)Math.Clamp(double.IsFinite(frac) ? frac : 0, 0, 1);
+        if (_needles.TryGetValue(id, out var n) && n.Ship == Me.Id)
+        {
+            float dt = (now - n.Ms) / 1000f;
+            if (dt <= 0.25f) v = n.V + (v - n.V) * Math.Min(1, dt * m.Settle);
+        }
+        _needles[id] = (Me.Id, now, v);
+        float ky = Size.Y / m.H, r = m.R * Math.Min(1, ky);
+        var pivot = new Vector2(m.Cx, m.Cy * ky);
+        Sk.Needle(this, pivot, r, m.A0 + (m.A1 - m.A0) * v);
+        Ui.Reg($"meter.{id}", new Rect2(pivot.X - m.R - 6, pivot.Y - m.R - 6, 2 * m.R + 12, m.R + 10), null, null, new Tip(tip));
     }
 
     /// <summary>The colour of a status (battle-console design, "The five statuses").</summary>

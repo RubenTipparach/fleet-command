@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The checks before a push (CLAUDE.md section 12): the headless C# tests of FleetCommand.Core (simulation, data, layout
-# model), a warnings-as-errors build of the Godot project, then the layout test in the engine (headless).
+# model), a warnings-as-errors build of the Godot project, then the layout test and the skin parity check in the engine
+# (headless), each in every skin.
 # Usage: scripts/run-tests.sh
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -27,6 +28,6 @@ out="$(timeout 300 "$GODOT" --headless --path . -- --layout-test 2>&1)" || { ech
 echo "$out" | grep -E "LAYOUT_(TEST|FAIL)"
 echo "$out" | grep -q "LAYOUT_TEST PASS"
 
-echo "== skin parity (Godot, headless): every control in both skins, inside its panel"
+echo "== skin parity (Godot, headless): every control in every skin, inside its panel; the console follows the ship you command"
 out="$(timeout 300 "$GODOT" --headless --path . --resolution 1920x1080 -- --parity-test --scenario=concord_battle 2>&1)" || { echo "$out" | grep -E "PARITY|ERROR"; exit 1; }
 echo "$out" | grep -E "PARITY_TEST"

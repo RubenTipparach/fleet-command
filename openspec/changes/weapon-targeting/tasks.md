@@ -15,3 +15,13 @@
 - [x] 1.11 Aims at the target's weapons (`w:<mount>`, `aimMount`, `aimHealth`, `aimExposed`), the expanded Tactical's weapon
   keys, the Target box's mounts; independently powered point defence and missiles (`own_power`, `WEAPONS_CONTROL`)
 - [ ] 1.12 The owner's review; W1-W6
+
+## 2. Game (openspec apply, 2026-11-06)
+
+- [x] 2.1 The chopping block in the game: `Strike`, tactical.json `strike` and `subsystems_half_len`; `Battle.Damage` uses it for every hit (golden seed re-pinned)
+- [x] 2.2 Aim at keys and the price of aiming (`Rules.HitChance`), aims at the target's weapons, the aim reset on a new lock
+- [x] 2.3 Pinned fire (`Battle.Pin`, `PinSelected`, `UnpinAll`, `Fireable`, pins that stop and say why)
+- [x] 2.4 The Tactical station docked and expanded, the Target box's aims and brackets, the pin flag, shift+click hit details
+- [x] 2.5 Point defence and missiles on their own power; weapons control disabled stops the rest; the Point defence station
+- [x] 2.6 Disable and Pinned fire scenes from both sides; the Disable scene ends on its objective; scripted captain runs
+- [ ] 2.7 Nebulae (ECM, ECCM, the lock rule) and the Nebula scene: the cloak and sensors package
