@@ -20,6 +20,16 @@ PAIRS = [
     ("battle-console-krai", "battle", "krai-battle"), ("battle-console-krai", "power", "krai-power"),
     ("battle-console-krai", "ship_expanded", "krai-ship-expanded"), ("battle-console-krai", "weapons_expanded", "krai-weapons-expanded"),
     ("battle-console-krai", "menu", "krai-menu"),
+    # mockup 15 beside the Hunt's Battle, and mockup 20 beside the Concord's Battle in the Kelvane skin (the Institute has
+    # no ships of its own yet, so no scenario of its own)
+    ("battle-console-ssarith", "battle", "ssarith-battle"), ("battle-console-ssarith", "power", "ssarith-power"),
+    ("battle-console-ssarith", "ship_expanded", "ssarith-ship-expanded"), ("battle-console-ssarith", "weapons_expanded", "ssarith-weapons-expanded"),
+    ("battle-console-ssarith", "menu", "ssarith-menu"),
+    ("battle-console-kelvane", "battle", "kelvane-battle"), ("battle-console-kelvane", "power", "kelvane-power"),
+    ("battle-console-kelvane", "ship_expanded", "kelvane-ship-expanded"), ("battle-console-kelvane", "weapons_expanded", "kelvane-weapons-expanded"),
+    ("battle-console-kelvane", "menu", "kelvane-menu"),
+    # mockup 12, the Ssarith Hunt ships (its shots in a folder of their own): the carrier's bays and the windows' rooms
+    ("ssarith-ship-concepts", "bays_side", "hunt-carrier-bays"), ("ssarith-ship-concepts", "rooms", "hunt-trident-windows"),
 ]
 
 
@@ -28,6 +38,8 @@ def main(mock_dir: Path, game_dir: Path, out_dir: Path) -> None:
     font = ImageFont.truetype(str(Path(__file__).resolve().parents[2] / "assets/fonts/Antonio-VariableFont_wght.ttf"), 30)
     for page, mock, game in PAIRS:
         ma, gb = mock_dir / f"{page}-{mock}-desktop.png", game_dir / f"{game}.png"
+        if not ma.exists():   # a page whose shots sit in a folder named after it
+            ma = mock_dir / page / f"{page}-{mock}-desktop.png"
         if not ma.exists() or not gb.exists():
             print("skipped", game, "(missing", ma if not ma.exists() else gb, ")")
             continue

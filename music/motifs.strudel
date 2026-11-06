@@ -1,5 +1,5 @@
 // @title Fleet Command: the motifs
-// @cycles 26
+// @cycles 43
 // @reverb 0.5
 // @space gm_french_horn 0.3
 // @space gm_trumpet 0.3
@@ -56,6 +56,46 @@ const LOST = note(`<
   [f4@4 gb4@2 f4@2]         [eb4@8]
 >`)
 const LOST_CHORDS = note("<[eb3,gb3,bb3] [cb3,eb3,gb3] [bb2,db3,f3] [eb3,gb3,bb3]>")
+// ── THE FACTIONS (owner, 2026-11-07: "we need custom music for each faction (just do the ones in game
+// right now)"). Each is built only from its faction's written culture, every choice naming its source in
+// docs/design/music.md, never from what the species looks like (CLAUDE.md section 1). Provisional until the
+// owner hears it (survey S5-S7).
+// THE KRAI WARHOST: "this faction believes strongly in tradition" (owner, 2026-11-04): tradition "is kept,
+// carried and added to, never replaced". THE LINE is a ground bass in D Phrygian that never changes; every
+// pass adds a voice over it. Phrases are five bars, after the livery's battle tallies in fives.
+const KRAI_LINE = note(`<
+  [d2@4 f2@2 eb2@2] [c2@4 d2@4] [bb1@4 c2@2 eb2@2] [d2@4 a1@4] [d2@8]
+>`)
+// The three great houses (owner: "a star ruling over the 3 great houses"), open fifths, unadorned.
+const KRAI_HOUSES = note("<[d3,a3] [c3,g3] [bb2,f3] [d3,a3] [d3,a3]>")
+// THE CROWN, the emperor over the houses, on trumpets: one high point (A5) in bar 3 of five.
+const KRAI_CROWN = note(`<
+  [a4@2 d5@2 f5@4] [eb5@3 d5 c5@2 d5@2] [f5@2 g5@2 a5@4] [g5@3 f5 eb5@2 d5@2] [d5@8]
+>`)
+// THE TALLY: five strikes in the fifth bar of every phrase, counted.
+const KRAI_TALLY = "<~ ~ ~ ~ [x x x x x ~ ~ ~]>"
+// THE SSARITH HUNT: THE BOWS, after the Bow Rites (owner, 2026-11-04: bows "different sizes to represent
+// their different stages", "3 bow and arrows overlapping pointed to the right"): one rising arrow figure in
+// B minor pentatonic at three sizes at once, the young bow quick and high, the elder's slow and low.
+const BOW_YOUNG = note("[b4 d5 e5 f#5 ~ ~ ~ ~]")
+const BOW_GROWN = note("[b3 d4 e4 f#4]/2")
+const BOW_ELDER = note("[b2 d3 e3 f#3]/4")
+// THE STALK, the Long Watch's patience ("its ships still wait rather than chase"): two bars, mostly rests.
+const SSARITH_STALK = note(`<
+  [b1 ~ ~ ~ ~ ~ b1 ~ ~ ~ ~ ~ ~ ~ ~ ~] [~ ~ ~ ~ f#1 ~ ~ ~ ~ ~ ~ ~ b1 ~ ~ ~]
+>`)
+// THE CALL, ending on the open fifth, never home: the Fair Chase's gate left open.
+const SSARITH_CALL = note("<[b4@6 a4 f#4] [e4@2 f#4@6]>")
+// THE STRIKE: "nothing moves until it strikes": one tutti chord, given once.
+const SSARITH_STRIKE = note("[b2,f#3,b3,d4]")
+// THE KELVANE INSTITUTE: THE BALMER MOTIF, hydrogen's first four visible spectral lines (656.3, 486.1,
+// 434.0, 410.2 nm: frequency ratios 1, 1.350, 1.512, 1.600) rounded to the nearest semitones above C:
+// C, F, G, A flat. The Institute's founding measurement (its emblem, the hydrogen atom, owner 2026-11-06).
+const BALMER = note("[c5 f5 g5 ab5]")
+// THE CALIBRATION: each line brought up to its true note from a semitone below, the needle to the mark.
+const CALIBRATE = note("<[b4 c5@3 e5 f5@3] [f#5 g5@3 g5 ab5@3]>")
+// THE BASELINE, the Long Baseline's measured steps: a bass falling one equal step a bar.
+const BASELINE = note("<c2 bb1 ab1 g1>")
 // ── END MOTIF LIBRARY ──────────────────────────────────────────
 
 const rest = note("~").s("gm_pad_poly")
@@ -88,4 +128,23 @@ const lost = stack(
   LOST_CHORDS.s("gm_string_ensemble_2").gain(0.45)
 )
 
-arrange([8, concord], [1, rest], [2, wonder], [1, rest], [4, threatBed], [4, threat], [1, rest], [4, lost], [1, rest])
+// 5. The Krai: the Line on trombones, the houses on horns, the crown on trumpets, the tally (5 bars)
+const krai = stack(
+  KRAI_LINE.s("gm_trombone").gain(0.85),
+  KRAI_HOUSES.s("gm_french_horn").gain(0.5), KRAI_CROWN.s("gm_trumpet").gain(1.0),
+  note("d4").struct(KRAI_TALLY).s("gm_tubular_bells").gain(0.6)
+)
+// 6. The Ssarith: the three bows together over the stalk, then the call and the strike (4 bars)
+const ssarith = stack(
+  BOW_YOUNG.s("gm_pizzicato_strings").gain(0.8), BOW_GROWN.s("gm_orchestral_harp").gain(0.7),
+  BOW_ELDER.s("gm_contrabass").gain(0.6), SSARITH_STALK.s("gm_timpani").gain(0.5),
+  SSARITH_CALL.late(2).s("gm_french_horn").gain(0.8)
+)
+// 7. The Kelvane: the Balmer motif on marimba, the calibration on vibraphone, the baseline (4 bars)
+const kelvane = stack(
+  BALMER.fast(2).s("gm_marimba").gain(0.7), CALIBRATE.s("gm_vibraphone").gain(0.8),
+  BASELINE.s("gm_cello").gain(0.6)
+)
+
+arrange([8, concord], [1, rest], [2, wonder], [1, rest], [4, threatBed], [4, threat], [1, rest], [4, lost], [1, rest],
+  [5, krai], [1, rest], [4, ssarith], [1, rest], [4, kelvane], [1, rest])

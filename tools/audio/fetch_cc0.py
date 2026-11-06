@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Download the CC0 and public domain recordings Fleet Command's sound effects are cut from.
+"""Download the CC0 and public domain recordings (and the few packs the owner asked for under another
+licence, listed with their attribution in tools/audio/licence_exceptions.json) Fleet Command's sound effects are cut from.
 
 Each pack in tools/audio/cc0_packs.json is fetched into --dest (default /opt/sfx-src, outside the
 repository: the originals are not committed, the cuts are). An OpenGameArt pack's page is read for
@@ -19,6 +20,9 @@ import sys
 import urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# packs the owner asked for under another licence, with its attribution (tools/audio/licence_exceptions.json)
+with open(os.path.join(HERE, "licence_exceptions.json")) as _f:
+    EXCEPTIONS = {k: v for k, v in json.load(_f).items() if not k.startswith("_")}
 UA = "fleet-command-sfx-fetch/1.0 (+https://github.com/RubenTipparach/fleet-command)"
 
 
@@ -48,7 +52,8 @@ def oga(slug: str, dest: str) -> dict:
     m = re.search(r"field-art-licenses.*?</div>\s*</div>", page, re.S)
     lic = sorted(set(re.findall(r"license-name'>([^<]+)<", m.group(0) if m else "")))
     author = re.search(r'field-name-author-submitter.*?<a href="/users/[^"]+">([^<]+)</a>', page, re.S)
-    if "CC0" not in lic:
+    exception = EXCEPTIONS.get(f"oga/{slug}")
+    if "CC0" not in lic and not (exception and exception["licence"] in lic):
         return {"pack": slug, "licences": lic, "refused": "no CC0 option"}
     files = sorted(set(re.findall(
         r"https://opengameart.org/sites/default/files/[^\"'<>]+\.(?:zip|7z|wav|ogg|mp3|flac)", page)))
@@ -59,8 +64,13 @@ def oga(slug: str, dest: str) -> dict:
         p = os.path.join(d, urllib.parse.unquote(os.path.basename(f)))
         download(f, p)
         unpack(p)
-    return {"pack": slug, "url": f"https://opengameart.org/content/{slug}", "licences": lic,
-            "author": author.group(1) if author else None, "files": [os.path.basename(f) for f in files]}
+    out = {"pack": slug, "url": f"https://opengameart.org/content/{slug}", "licences": lic,
+           "author": author.group(1).strip() if author else None, "files": [os.path.basename(f) for f in files]}
+    if "CC0" not in lic:
+        out["licences"] = [exception["licence"]]
+        out["attribution"] = exception["attribution"]
+        out["owner"] = exception["owner"]
+    return out
 
 
 def kenney(slug: str, dest: str) -> dict:

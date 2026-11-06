@@ -53,7 +53,7 @@ public sealed partial class MapHud : FlowPanel
         Shapes.RoundRect(this, new Rect2(4, 0, Size.X - 8, 64), Sk.R.Sheet, 0, 0, 22, 22);
         Kit.Piece(this, "frame.panel", new Rect2(0, -10, Size.X, 76));
         float x = 22;
-        Button("top.menu", new Rect2(x, 12, 104, 40), "Menu", F.ToMenu, center: true);
+        Button("top.menu", new Rect2(x, 12, 104, 40), "Menu", X.Act.Menu, X.State.MenuOpen, center: true);
         x += 124;
         void Stat(string label, string value, float max = 160)
         {

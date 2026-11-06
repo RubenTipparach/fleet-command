@@ -13,7 +13,7 @@ public class MinesTests
     private static MineDef M => TestData.Data.Systems.Mines;
 
     // a Concord cruiser with mines aboard and its transporter powered, and a Krai corvette far off holding still
-    private static Battle Field(string lethal = "", double foeZ = -9000)
+    private static Battle Field(string lethal = "", double foeZ = -90000)
     {
         string json = "{\"id\": \"m\", \"name\": \"M\", \"side\": \"concord\", \"sky\": \"quiet\", \"seed\": 3, \"objective\": \"O\", \"say\": [\"Comms\", \"Hi.\"]," + lethal + " \"ships\": ["
             + "{\"id\": \"r\", \"name\": \"R\", \"captain\": \"C\", \"class\": \"ca\", \"faction\": \"concord\", \"side\": 0, \"x_m\": 0, \"z_m\": 0, \"heading_deg\": 0, \"speed_m_s\": 0, \"kit\": {\"mines\": 6}, \"power_e\": {\"weapons\": 3, \"transport\": 3}},"
@@ -52,14 +52,14 @@ public class MinesTests
     public void A_mine_is_beamed_only_inside_the_transporters_reach_and_with_it_powered()
     {
         Battle b = Field();
-        b.PlaceMine(0, -(M.TransporterReachKm + 0.2) * 1000);
+        b.PlaceMine(0, -(M.TransporterReachKm + 2) * 1000);
         Assert.Empty(b.Mines);
-        b.PlaceMine(400, -900);
+        b.PlaceMine(4000, -9000);
         Mine mn = Assert.Single(b.Mines);
-        Assert.Equal((400.0, -900.0), (mn.X, mn.Z));
+        Assert.Equal((4000.0, -9000.0), (mn.X, mn.Z));
         Run(b, M.CooldownS + 0.1);
         b.SetPower("transport", 0);
-        b.PlaceMine(0, -500);
+        b.PlaceMine(0, -5000);
         Assert.Single(b.Mines);
         Assert.False(b.CanBeamMine(b.Player));
     }
@@ -67,10 +67,10 @@ public class MinesTests
     [Fact]
     public void A_mine_arms_before_it_can_go_off_and_then_goes_off_on_the_first_enemy_inside_its_range()
     {
-        Battle b = Field(foeZ: -1500);
+        Battle b = Field(foeZ: -15000);
         Ship k = b.ShipById("k")!;
         double hull = k.Hull;
-        b.PlaceMine(0, -1000);
+        b.PlaceMine(0, -10000);
         Run(b, M.ArmS - 0.5);
         Assert.Single(b.Mines);
         Run(b, 1);
@@ -82,7 +82,7 @@ public class MinesTests
     public void A_mine_never_goes_off_on_its_own_side()
     {
         Battle b = Field();
-        b.PlaceMine(0, -300);
+        b.PlaceMine(0, -3000);
         Run(b, M.ArmS + 2);
         Assert.Single(b.Mines);
     }
@@ -90,8 +90,8 @@ public class MinesTests
     [Fact]
     public void One_mine_destroys_its_target_where_mines_are_lethal()
     {
-        Battle b = Field(" \"lethal\": [\"mine\"],", -1500);
-        b.PlaceMine(0, -1000);
+        Battle b = Field(" \"lethal\": [\"mine\"],", -15000);
+        b.PlaceMine(0, -10000);
         Run(b, M.ArmS + 1);
         Assert.False(b.ShipById("k")!.Alive);
     }
@@ -99,11 +99,11 @@ public class MinesTests
     [Fact]
     public void The_placement_preview_turns_red_with_a_ship_inside_the_mine_range()
     {
-        Battle b = Field(foeZ: -1500);
-        Assert.True(b.ShipInMineRange(0, -1000));
-        Assert.False(b.ShipInMineRange(3000, 3000));
-        Assert.True(b.InMineReach(b.Player, 0, -1000));
-        Assert.False(b.InMineReach(b.Player, 0, -2000));
+        Battle b = Field(foeZ: -15000);
+        Assert.True(b.ShipInMineRange(0, -10000));
+        Assert.False(b.ShipInMineRange(30000, 30000));
+        Assert.True(b.InMineReach(b.Player, 0, -10000));
+        Assert.False(b.InMineReach(b.Player, 0, -20000));
     }
 
     [Fact]

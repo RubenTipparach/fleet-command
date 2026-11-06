@@ -45,6 +45,17 @@ shot krai-ship-expanded 1920x1080 --steps=600 --scenario=krai_battle --expand=sh
 shot krai-weapons-expanded 1920x1080 --steps=600 --scenario=krai_battle --expand=weapons
 shot krai-menu 1920x1080 --steps=300 --scenario=krai_battle --menu
 shot krai-duel 1920x1080 --steps=900 --scenario=krai_duel --zoom=0.6
+# the Ssarith Hunt's console (its own battle) and the Kelvane Institute's (no ships of its own yet: the Concord's battle)
+shot ssarith-battle 1920x1080 --steps=600 --scenario=ssarith_battle
+shot ssarith-power 1920x1080 --steps=600 --scenario=ssarith_battle --station=power
+shot ssarith-ship-expanded 1920x1080 --steps=600 --scenario=ssarith_battle --expand=ship
+shot ssarith-weapons-expanded 1920x1080 --steps=600 --scenario=ssarith_battle --expand=weapons
+shot ssarith-menu 1920x1080 --steps=300 --scenario=ssarith_battle --menu
+shot kelvane-battle 1920x1080 --steps=600 --skin=kelvane
+shot kelvane-power 1920x1080 --steps=600 --skin=kelvane --station=power
+shot kelvane-ship-expanded 1920x1080 --steps=600 --skin=kelvane --expand=ship
+shot kelvane-weapons-expanded 1920x1080 --steps=600 --skin=kelvane --expand=weapons
+shot kelvane-menu 1920x1080 --steps=300 --skin=kelvane --menu
 shot scene-list 1920x1080 --steps=300 --scene-list
 shot ships-close 1920x1080 --steps=900 --zoom=0.45
 # the camera (battle-console design 4e, 4n): locked on the target by default; Target view orbits the target
@@ -55,6 +66,8 @@ shot hunt-cruiser 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_cr
 shot hunt-carrier 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_carrier --target-view --zoom=0.5
 shot hunt-trident 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_trident --target-view --zoom=0.5
 shot hunt-range 1920x1080 --steps=300 --scenario=concord_range --target=t_hff2 --target-view --zoom=0.8
+shot hunt-carrier-bays 1920x1080 --steps=300 --scenario=concord_range --target=t_hcv --target-view --zoom=0.1
+shot hunt-trident-windows 1920x1080 --steps=300 --scenario=concord_range --target=t_hff4 --target-view --zoom=0.1
 shot hunt-battle-late 1920x1080 --steps=3600 --scenario=concord_hunt --target=hunt_cruiser --target-view --zoom=0.6
 shot krai-hunt 1920x1080 --steps=600 --scenario=krai_hunt --target=hunt_harpoon --target-view --zoom=0.5
 shot hunt-wrecks 1920x1080 --steps=2400 --scenario=concord_hunt_wrecks --target=hw_lance --target-view --zoom=0.7

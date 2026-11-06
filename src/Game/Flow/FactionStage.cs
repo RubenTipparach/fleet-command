@@ -274,7 +274,9 @@ public sealed partial class FactionStage : Node3D
             // the lamp: full on the picked faction, about half on the one under the pointer
             float want = i == chosen ? 1 : i == Hover ? 0.55f : 0;
             s.On = Frozen ? want : s.On + (want - s.On) * Math.Min(1, dt * (want > s.On ? 5 : 2.5f));
-            s.Lamp.LightEnergy = 0.25f + 6.5f * s.On;
+            // the page's intensity is in three.js 0.147's legacy light units, about pi times a physical (and Godot) unit's
+            // light, so the pool on the wood is as warm and bright as the page's (owner, 2026-11-06: "that light cone is wrong")
+            s.Lamp.LightEnergy = (0.25f + 6.5f * s.On) * Mathf.Pi;
             s.Beam.SetShaderParameter("level", s.On);
             s.Dust.SetShaderParameter("level", s.On);
             s.Dust.SetShaderParameter("t", _t);

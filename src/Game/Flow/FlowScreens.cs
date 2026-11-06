@@ -307,29 +307,23 @@ public sealed partial class SkirmishScreen : FlowPanel
     private static string Slug(string s) => new string(s.ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 }
 
-/// <summary>The mission strip over the battle: the mission's name and its objectives, each ticked once it is met (read live
-/// by MissionRun.MetNow, the same rule the debrief grades by). Its frame stands over the battle with nothing filled behind
-/// the objectives (owner, 2026-11-06: "make background transparent on goal"); Withdraw is in the battle's menu.</summary>
+/// <summary>The mission strip over the battle: the mission's name and its goals, each ticked once it is met (the console's
+/// Goals, read live by MissionRun.MetNow, the same rule the debrief grades by). Its frame stands over the battle with nothing
+/// filled behind the goals (owner, 2026-11-06: "make background transparent on goal"); Withdraw is in the battle's menu. Its X
+/// shuts it and Comms shows it again (owner, 2026-11-06: "add close button to goals, and put them in comms panel").</summary>
 public sealed partial class MissionStrip : FlowPanel
 {
     protected override void DrawPanel()
     {
         MissionPlan? p = F.Plan;
-        if (p == null || Camp == null) return;
+        if (p == null || X.State.Goals is not { } goals) return;
         Rect2 b = Frame(new Rect2(Vector2.Zero, Size), p.Scenario.Name, false);
-        var met = MissionRun.MetNow(Camp, p, X.Battle);
+        var xr = new Rect2(b.End.X - 26, b.Position.Y + 2, 26, 26);
+        KeyFace.Close(Kit, this, xr, Ui.Reg("goals.x", xr, _ => X.State.GoalsShown = false, null, new Tip("Close")).Hot);
         float y = b.Position.Y + 20;
-        foreach (MissionObjective o in p.Battle.Objectives)
+        foreach (GoalLine g in goals())
         {
-            bool done = met.GetValueOrDefault(o.Id);
-            Color ink = done ? C.Accord : o.Primary ? C.Text : C.Lilac;
-            var c = new Vector2(b.Position.X + 6, y - 6);
-            if (done) { DrawLine(c + new Vector2(-4, 0), c + new Vector2(-1, 3), C.Accord, 2.5f, true); DrawLine(c + new Vector2(-1, 3), c + new Vector2(5, -4), C.Accord, 2.5f, true); }
-            else DrawCircle(c, 4, o.Primary ? C.Sky : C.Lilac);
-            // a dark edge under the text, so it reads over a bright nebula with nothing behind it
-            string t = o.Text.Eval(new OfferScope(Camp, p.Mission)) + (o.Primary ? "" : " (bonus)");
-            Text(t, b.Position.X + 19, y + 1, 17, new Color(0, 0, 0, 0.8f), HorizontalAlignment.Left, b.Size.X - 18, 600);
-            Text(t, b.Position.X + 18, y, 17, ink, HorizontalAlignment.Left, b.Size.X - 18, 600);
+            Goal(g, b.Position.X, y, b.Size.X - 36, true);
             y += 24;
         }
     }
@@ -340,8 +334,9 @@ public sealed partial class DebriefScreen : FlowPanel
 {
     protected override void DrawPanel()
     {
-        // dimmed, not hidden: the battle (or the map) stays behind the debrief
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.5f));
+        // on black: the battle fades to black as it ends, so the debrief stays on the black it faded to (owner, 2026-11-06:
+        // "I think this background should be black. Because you faded to black")
+        DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black);
         Ui.Reg("db.block", new Rect2(Vector2.Zero, Size));
         Debrief? d = F.Last;
         if (d == null) return;

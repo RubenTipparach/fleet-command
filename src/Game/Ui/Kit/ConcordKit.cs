@@ -21,6 +21,8 @@ public sealed class ConcordKit : IKit
 
     /// <summary>The Concord's style: black ink on its lit keys, Antonio as written, its frame's own margins.</summary>
     public SkinStyle Style { get; }
+    /// <summary>A drawn key is all face.</summary>
+    public FleetCommand.Data.Rect KeyGlass { get; } = new(0, 0, 1, 1);
 
     private readonly HashSet<string> _supplies = new();
     public IReadOnlyCollection<string> Supplies => _supplies;

@@ -41,12 +41,12 @@ Every mockup and its approval stage (CLAUDE.md section 4, the `mockup-tracker` s
 
 ## Sound and music
 
-- Fleet Command Sounds (mockup 17): `docs/mockups/sounds.html`, record in `docs/artifacts/sounds/`. Every sound effect
+- Fleet Command Sounds (mockup 17): https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW (source `docs/mockups/sounds.html`, record in `docs/artifacts/sounds/`). Every sound effect
   with a play button; the method is the `sound-effects` skill, every original is in `AUDIO_SOURCES.md`.
-- Fleet Command Music (mockup 18): `docs/mockups/music.html`, record in `docs/artifacts/music/`. The score; its motifs
+- Fleet Command Music (mockup 18): https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov (source `docs/mockups/music.html`, record in `docs/artifacts/music/`). The score; its motifs
   are [`music.md`](music.md), the method the `music-authoring` skill.
 
-Both are published from the desktop session; their links go here and on the tracker.
+Both were published from the cloud session's account (2026-11-05); the tracker lists them once it is republished from its own account.
 
 ## The screen
 

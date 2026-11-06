@@ -587,12 +587,14 @@ def strips_and_glow(kind_is, P, glowp, cover, n=None):
     g = g * np.where(chan, PT.get("strip_k", 1.0), 1.0)[..., None]   # how bright a strip glows (a wide wall lit whole wants less)
     if PT["strip"] == "whole":
         r = PT.get("strip_rim_px", 6)
-        m = blur(blur(chan.astype(np.float32), r), r)          # 1 deep inside a wide face, falling toward its edges
+        b2 = lambda a: blur(blur(a.astype(np.float32), r), r)
+        m = b2(chan | kind_is("greeble"))   # 1 deep inside a wide face (machinery on it counts as the face), falling to its edges
         rim = np.clip((0.95 - m) / 0.3, 0, 1)
         inner = PT.get("strip_inner", 1.0)
         k = inner + (1 - inner) * rim
-        if PT.get("strip_cell_m") and n is not None:   # the middle an instrument's array, not blank glass
-            k = k + (1 - rim) * detector_cells(P, n) * PT.get("strip_cell_k", 0.6)
+        if PT.get("strip_cell_m") and n is not None:   # the open middle an instrument's array, not blank glass
+            open_ = np.clip((b2(chan) - 0.75) / 0.2, 0, 1)   # not in the gaps between machinery, where it reads as noise
+            k = k + (1 - rim) * open_ * detector_cells(P, n) * PT.get("strip_cell_k", 0.6)
         g = g * np.where(chan, k, 1.0)[..., None]
     g = g + kind_is("dome")[..., None] * hexrgb(PT["dome"]) * PT["dome_glow"]   # the domes' faint inner light
     emit = np.clip(g * 1.2 + np.dstack([blur(g[..., c], 2) for c in range(3)]) * 0.8, 0, 1)

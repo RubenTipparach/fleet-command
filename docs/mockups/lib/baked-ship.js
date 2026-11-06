@@ -3,9 +3,9 @@
 // one geometry (Painted: the painted map with the painter's sun in it; PBR: base colour, ORM and tangent normals under
 // the live light) with its baked hull lights added (diffuse x light^gamma x k, the light map stored with a gamma curve) and
 // its emission, and the fixtures that show themselves (strobes flash, beacons pulse, the rest burn steady). Used by
-// docs/mockups/kelvane-ship-concepts.html (mockup 23). The Ssarith Hunt page (mockup 12) still carries its own fuller copy
-// of these rules, with damage, panes and breakup woven in; moving it onto this file is a task of kelvane-ship-concepts
-// (CLAUDE.md 6.1). Edit it here, then re-run tools/mockups/inline_data.py on each page that inlines it.
+// docs/mockups/kelvane-ship-concepts.html (mockup 23), and for its windows (panes) by the Ssarith Hunt page (mockup 12),
+// which still carries its own copy of the rest, with damage and breakup woven in; moving it wholly onto this file is task
+// 3.4 of kelvane-ship-concepts (CLAUDE.md 6.1). Edit it here, then re-run tools/mockups/inline_data.py on each page that inlines it.
 //
 // FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes }. onTexture(promise):
 // called for every texture's load, so the page can wait for them before it calls itself ready. normals(points, deg): smooth

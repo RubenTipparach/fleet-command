@@ -24,7 +24,7 @@
      "count": 2,
      "role": "enemy",
      "label": "Group 1",
-     "range_km": 9
+     "range_km": 90
     },
     {
      "id": "g2",
@@ -32,7 +32,7 @@
      "count": 2,
      "role": "enemy",
      "label": "Group 2",
-     "range_km": 11
+     "range_km": 110
     },
     {
      "id": "g3",
@@ -40,7 +40,7 @@
      "count": 2,
      "role": "enemy",
      "label": "Group 3",
-     "range_km": 13
+     "range_km": 130
     },
     {
      "id": "g4",
@@ -48,7 +48,7 @@
      "count": 2,
      "role": "enemy",
      "label": "Group 4",
-     "range_km": 15
+     "range_km": 150
     }
    ],
    "objectives": [

@@ -24,12 +24,61 @@ loudness strip (`inspect_sfx.py inventory`, `envelope`), and the built set judge
 
 | Group | Cues | Placed |
 | --- | --- | --- |
-| Weapons | `lance_fire`, `disruptor_fire`, `torpedo_launch`, `overload_charge` (loops), `missile_launch`, `pd_burst` | at the mount node |
-| Impacts | `shield_hit`, `hull_hit`, `torpedo_detonate`, `explosion_small`, `ship_destroyed` | where the hit lands |
+| Weapons | `lance_fire` (0.55 s), `disruptor_fire` (0.55 s), `torpedo_launch` (0.9 s), `overload_charge` (loops), `missile_launch` (1.2 s), `pd_burst` (0.5 s) | at the mount node |
+| Impacts | `shield_hit`, `hull_hit`, `torpedo_detonate`, `explosion_small`, each with a short alternative (`*_short`, 0.6-1.1 s), and `ship_destroyed` | where the hit lands |
 | Ship | `engine_hum` (loops), `reactor_hum` (loops), `thruster_burst`, `shields_raise`, `shields_collapse` | at the ship |
 | Console | `ui_chirp` (Concord), `ui_clunk` (the metal skins), `ui_confirm`, `ui_deny`, `weapon_charged`, `target_lock`, `hail`, `pause_on`, `pause_off` | no |
-| Alerts | `red_alert` (loops), `shields_failing`, `hull_critical`, `core_breach` | no |
-| Ambience | `amb_bridge` (stereo, loops) | no |
+| Alerts | `red_alert` (loops; alternatives `red_alert_twotone`, `red_alert_wail`), `shields_failing`, `hull_critical`, `core_breach` | no |
+| Ambience | `amb_bridge` (stereo, a minute, loops: the air duct and a low hum, with soft bleeps scattered over it) | no |
+
+**The owner's first notes** (2026-11-06): "weapons all are too long, lance fire should sound more punchy": every weapon
+cut to 0.5-1.2 s, starting at its peak, with a kick under it (`punch_thump`) and, for the Lance, a crack and a snap
+(`beam_snap`); "hull hits are all great btw, I would make some shorter sfx as alternatives": the hits kept, a short
+alternative of each added; "red_alert sucks": the synthesised whoop replaced by a recorded klaxon, with two recorded
+alternatives; "amb_bridge - should be like aminute with bleeps and boops on theb ridge and scanning sounds": the bed
+made a minute long with sounds scattered over it (`scatter` in `cc0_cues.json`). Then (2026-11-07) "it has a really
+annoying whirling noise ... get rid of the sweep sound, just subtle bleeps and airduct noise": the sweeps, the pings and
+the swelling computer-room layer removed, the bleeps about 10 dB quieter. A bed stays background: no tone that moves
+in pitch, no swell, nothing more than about 12 dB over it.
+
+**Softened the Crab Breeze way** (owner, 2026-11-07: "soften bridge ambient along with a lot of the other weapons, check
+the procedure in crab breeze how audio was softened with low passes"). Crab Breeze has two rules, read at `6819b52`:
+its ambience beds (`openspec/changes/ambience/design.md` section 2, after its owner's "ambient sounds needs to be softer
+and queiter") are compressed 3:1 from -18 dB, low passed at 3.5 kHz, given a diffuse reverb and written 11 dB lower;
+every sound from outside its sealed cockpit (`openspec/changes/audio/design.md` section 3) is 6 dB down and low passed
+at 4 kHz, twice over. Here the bridge bed takes the first rule (`distance` 3.5 kHz, 35% wet, -14 dB peak, and a
+24 dB/octave low pass over the whole bed so the bleeps are softened with it), and every weapon the second, heard from
+the bridge through the hull (`lp` 4000, `lp_order` 4, `peak_db` -7). Measured: the Lance's spectral centre fell from
+1196 to 815 Hz and its energy above 4 kHz from 4.8% to 0.2%, 7 dB quieter on average, its first 20 ms still its
+loudest; every weapon is 6-7 dB quieter on average. The hits keep their level (the owner: "hull hits are all great").
+
+**A bed is comfortable, not only quiet** (owner, 2026-11-07: "low rumble bridge ambient, it hurts my ears a bit",
+"make it sound pleaasent like proper ambience"). Low-passing the bed at 3.5 kHz left only its low end, a 53 Hz hum and
+a boxy 200-400 Hz roar, which tires the ear. The bed is now a soft room tone (pink noise, equal energy per octave, from
+200 Hz to 6 kHz, two uncorrelated sides for width) under the air duct cut below 180 Hz, with nothing under 180 Hz
+(24 dB/octave) and a gentle top to 6.5 kHz. A bed's rules: no steady tone under 150 Hz, energy spread across the
+octaves rather than piled in one, nothing moving in pitch, its loudness within about 5 dB.
+
+**The bridge is a hum** (owner, 2026-11-07, on that version: "no, it got worse, now sounds like water!", "I want it to sound
+like a hum"). Broadband noise reads as water or rain, however it is filtered; a ship's bed is tonal. The bed is now our
+`ship_hum` (152 Hz with harmonics to about 1.2 kHz, each partial with a quieter twin 0.05 Hz above it so it breathes over
+twenty seconds without dipping out) under the recorded hum raised an octave (76 to 152 Hz, out of the range that hurt),
+the air duct faint beneath, nothing under 110 Hz. The rules for a bed, final: a warm tone between about 120 and 400 Hz,
+nothing under 100 Hz, no broadband noise wash, nothing moving in pitch, its loudness within about 3 dB, scattered sounds
+judged A-weighted (as loud as the ear hears them) at most about 10 dB over it.
+
+**The bridge is the owner's recording** (2026-11-07: "now it soiunds like electrical buz", "it sounds like electrical buzz
+which is wrong!", "why cant you do something like brownian noise", then the link to Little Robot Sound Factory's
+Sci-Fi Sound Effects Library, "space ambience right here"). A synthesised hum with stacked harmonics is mains buzz;
+the bed is now that pack's `Ambience_Space_00` (a soft drone between 60 and 120 Hz) looped to a minute, sub-bass under
+45 Hz trimmed, the bleeps about 10 dB over it A-weighted; `amb_bridge_brown` (brown noise, 60-600 Hz) is the
+alternative. **Licence**: the pack is CC-BY 3.0, the first non-CC0 pack, used because the owner asked for it; it is a
+named exception in `tools/audio/licence_exceptions.json` with the owner's words and its credit ("Little Robot Sound
+Factory, www.littlerobotsoundfactory.com"), printed on the Sounds page, in `AUDIO_SOURCES.md` and the sources tables, and
+owed in the game's credits.
+
+**Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
+so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.
 
 Levels as written: weapons and blasts peak at -1 dBFS, alerts -4 to -6, console keys -8 to -9, the bridge bed -6. The
 mix between cues is the cue table's `volume_db` in the game (section 3), not a re-cut.

@@ -10,9 +10,9 @@
    "objective": "Find the cloaked Vekk with ECCM sweeps and destroy it",
    "say": ["Science", "The Vekk cloaked as we arrived. ECCM widens our sweep: sweep to find it, then lock and fire. Cloak to lose it."],
    "ships": [
-    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 60,
+    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 600,
       "eccm": 2, "power_e": { "weapons": 4, "sensors": 3 }, "battery_frac": 1 },
-    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 3000, "z_m": -9000, "heading_deg": 200, "speed_m_s": 150,
+    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 30000, "z_m": -90000, "heading_deg": 200, "speed_m_s": 1500,
       "stance": "attack", "range": "close", "cloaked": true, "ai_cloak": true }
    ]
   },
@@ -25,9 +25,9 @@
    "objective": "Find the cloaked Meridian with ECCM sweeps and destroy it",
    "say": ["Science", "The Meridian cloaked as we arrived. ECCM widens our sweep: sweep to find it, then lock and fire. Cloak to lose it."],
    "ships": [
-    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 60,
+    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 600,
       "eccm": 2, "power_e": { "weapons": 6, "sensors": 3 }, "battery_frac": 1 },
-    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 3000, "z_m": -9000, "heading_deg": 200, "speed_m_s": 150,
+    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 30000, "z_m": -90000, "heading_deg": 200, "speed_m_s": 1500,
       "stance": "attack", "range": "close", "cloaked": true, "ai_cloak": true }
    ]
   },
@@ -38,12 +38,12 @@
    "side": "concord",
    "seed": 20261109,
    "objective": "Find and destroy the raider hiding in the nebula",
-   "say": ["Science", "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 6 km."],
-   "nebula": { "x_m": 0, "z_m": -7000, "r_m": 4800, "density": 0.85 },
+   "say": ["Science", "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."],
+   "nebula": { "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 },
    "ships": [
-    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 1000, "heading_deg": 0, "speed_m_s": 60,
+    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 10000, "heading_deg": 0, "speed_m_s": 600,
       "power_e": { "sensors": 4, "repair": 0, "engines": 5 } },
-    { "id": "ruhn", "name": "Ruhn", "captain": "Fang Idra", "class": "krai_cv", "faction": "krai", "side": 1, "x_m": 1200, "z_m": -7800, "heading_deg": 90, "speed_m_s": 50,
+    { "id": "ruhn", "name": "Ruhn", "captain": "Fang Idra", "class": "krai_cv", "faction": "krai", "side": 1, "x_m": 12000, "z_m": -78000, "heading_deg": 90, "speed_m_s": 500,
       "stance": "hold", "ecm": 3, "power_e": { "sensors": 4, "engines": 1 } }
    ]
   },
@@ -54,12 +54,12 @@
    "side": "krai",
    "seed": 20261110,
    "objective": "Find and destroy the raider hiding in the nebula",
-   "say": ["Science", "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 6 km."],
-   "nebula": { "x_m": 0, "z_m": -7000, "r_m": 4800, "density": 0.85 },
+   "say": ["Science", "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."],
+   "nebula": { "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 },
    "ships": [
-    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 1000, "heading_deg": 0, "speed_m_s": 60,
+    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 10000, "heading_deg": 0, "speed_m_s": 600,
       "power_e": { "sensors": 4, "weapons": 5 } },
-    { "id": "tallis", "name": "Tallis", "captain": "Cdr. Imre", "class": "ff", "faction": "concord", "side": 1, "x_m": 1200, "z_m": -7800, "heading_deg": 90, "speed_m_s": 50,
+    { "id": "tallis", "name": "Tallis", "captain": "Cdr. Imre", "class": "ff", "faction": "concord", "side": 1, "x_m": 12000, "z_m": -78000, "heading_deg": 90, "speed_m_s": 500,
       "stance": "hold", "ecm": 3, "power_e": { "sensors": 4, "engines": 1 } }
    ]
   },
@@ -75,7 +75,7 @@
    "ships": [
     { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 0,
       "shields_down": true, "marines": 9, "power_e": { "transport": 3 } },
-    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 700, "z_m": -600, "heading_deg": 230, "speed_m_s": 0,
+    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 7000, "z_m": -6000, "heading_deg": 230, "speed_m_s": 0,
       "stance": "hold", "hold_fire": true, "marines": 15, "ai_board": true, "board_first_s": 6, "power_e": { "weapons": 0, "transport": 6 } }
    ]
   },
@@ -91,7 +91,7 @@
    "ships": [
     { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 0,
       "shields_down": true, "marines": 9, "power_e": { "transport": 3 } },
-    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 700, "z_m": -600, "heading_deg": 230, "speed_m_s": 0,
+    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 7000, "z_m": -6000, "heading_deg": 230, "speed_m_s": 0,
       "stance": "hold", "hold_fire": true, "marines": 15, "ai_board": true, "board_first_s": 6, "power_e": { "weapons": 0, "transport": 6 } }
    ]
   }

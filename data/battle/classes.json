@@ -1,13 +1,13 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. kelvane_rv is a stand-in (no model, drawn as its shape), the Kelvane Institute having no designed ships: the battle console mockup's research cruiser Patience (mockup 2, the Four races scene), flown in that scene alone, with the heavy cruiser's figures less the Concord's chorus lance. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json).",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. shield_layers is how many bands the shield display shows at full strength, 1 to 3, 3 when absent (owner, 2026-11-06: frigates have one layer, larger ships more). hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. kelvane_rv is a stand-in (no model, drawn as its shape), the Kelvane Institute having no designed ships: the battle console mockup's research cruiser Patience (mockup 2, the Four races scene), flown in that scene alone, with the heavy cruiser's figures less the Concord's chorus lance. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json).",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
   "shape": "saucer",
   "model": "assets/ships/concord/albatross.glb",
   "length_m": 320,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 22,
   "capacitor_e": 14,
@@ -117,8 +117,8 @@
   "shape": "saucer",
   "model": "assets/ships/concord/petrel_level.glb",
   "length_m": 230,
-  "speed_max_m_s": 330,
-  "accel_m_s2": 55,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
   "turn_deg_s": 34,
   "reactor_e": 16,
   "capacitor_e": 10,
@@ -160,6 +160,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    32,
    24,
@@ -185,8 +186,8 @@
   "shape": "saucer",
   "model": "assets/ships/concord/swift_level.glb",
   "length_m": 160,
-  "speed_max_m_s": 360,
-  "accel_m_s2": 70,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
   "turn_deg_s": 44,
   "reactor_e": 12,
   "capacitor_e": 8,
@@ -214,6 +215,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    24,
    18,
@@ -238,8 +240,8 @@
   "code": "KDD",
   "shape": "wedge",
   "length_m": 250,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 50,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 500,
   "turn_deg_s": 30,
   "reactor_e": 18,
   "capacitor_e": 12,
@@ -274,6 +276,7 @@
     "arc_width_deg": 180
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    36,
    26,
@@ -298,8 +301,8 @@
   "code": "KFF",
   "shape": "wedge",
   "length_m": 170,
-  "speed_max_m_s": 350,
-  "accel_m_s2": 65,
+  "speed_max_m_s": 3500,
+  "accel_m_s2": 650,
   "turn_deg_s": 40,
   "reactor_e": 12,
   "capacitor_e": 8,
@@ -327,6 +330,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    26,
    18,
@@ -351,8 +355,8 @@
   "code": "VCR",
   "shape": "claw",
   "length_m": 200,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 38,
   "reactor_e": 14,
   "capacitor_e": 10,
@@ -382,6 +386,7 @@
     "arc_width_deg": 120
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    28,
    22,
@@ -407,8 +412,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/corvette.glb",
   "length_m": 140,
-  "speed_max_m_s": 380,
-  "accel_m_s2": 75,
+  "speed_max_m_s": 3800,
+  "accel_m_s2": 750,
   "turn_deg_s": 46,
   "reactor_e": 12,
   "capacitor_e": 8,
@@ -436,6 +441,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    26,
    18,
@@ -461,8 +467,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/frigate.glb",
   "length_m": 230,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -497,6 +503,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -522,8 +529,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/cruiser.glb",
   "length_m": 340,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 23,
   "capacitor_e": 14,
@@ -619,8 +626,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/dreadnought.glb",
   "length_m": 570,
-  "speed_max_m_s": 250,
-  "accel_m_s2": 32,
+  "speed_max_m_s": 2500,
+  "accel_m_s2": 320,
   "turn_deg_s": 18,
   "reactor_e": 28,
   "capacitor_e": 18,
@@ -737,8 +744,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/hooded_lance.glb",
   "length_m": 297,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -773,6 +780,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -798,8 +806,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/forked_prow.glb",
   "length_m": 297,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -834,6 +842,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -859,8 +868,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/harpoon.glb",
   "length_m": 313,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -895,6 +904,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -920,8 +930,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/trident.glb",
   "length_m": 302,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -956,6 +966,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -981,8 +992,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/cruiser.glb",
   "length_m": 405,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 23,
   "capacitor_e": 14,
@@ -1078,8 +1089,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/carrier.glb",
   "length_m": 455,
-  "speed_max_m_s": 260,
-  "accel_m_s2": 35,
+  "speed_max_m_s": 2600,
+  "accel_m_s2": 350,
   "turn_deg_s": 20,
   "reactor_e": 24,
   "capacitor_e": 14,
@@ -1175,8 +1186,8 @@
   "code": "RV",
   "shape": "saucer",
   "length_m": 320,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 22,
   "capacitor_e": 14,
@@ -1279,8 +1290,8 @@
   "shape": "saucer",
   "model": "assets/ships/concord/pelican.glb",
   "length_m": 180,
-  "speed_max_m_s": 320,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3200,
+  "accel_m_s2": 600,
   "turn_deg_s": 40,
   "reactor_e": 14,
   "capacitor_e": 6,
@@ -1301,6 +1312,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    22,
    18,

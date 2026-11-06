@@ -25,15 +25,16 @@ BODY = """<div class="wrap">
   <header class="mast">
     <div class="stripe" aria-hidden="true"></div>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <span class="eyebrow">Fleet Command sound effects · works sheet 1 · 2026-11-04</span>
+    <span class="eyebrow">Fleet Command sound effects · works sheet 2 · 2026-11-06</span>
     <h1>Fleet Command Sounds</h1>
-    <p>__COUNT__ sounds for the battle: every weapon mount firing, what the shots hit, the ship itself, the console keys and the alerts, and the bridge under it all. __REC__ are cut from real recordings (CC0 packs from OpenGameArt: digital lasers and phasers, electric charges and shield hits, real explosions, rocket motors, a ship's cannon, a computer room), slowed and layered to starship size; the console tones and alerts are synthesised. Battle sounds are mono and placed in 3D at their ship or mount; the console, the alerts and the bridge bed are not. Cues marked <em class="rec">rec</em> are recorded.</p>
+    <p>__COUNT__ sounds for the battle: every weapon mount firing, what the shots hit, the ship itself, the console keys and the alerts, and the bridge under it all. __REC__ are cut from real recordings (CC0 packs from OpenGameArt, and one CC-BY space ambience credited below: digital lasers and phasers, electric charges and shield hits, real explosions, rocket motors, a ship's cannon, a computer room), slowed and layered to starship size; the console tones and three of the alerts are synthesised. The hits have short alternatives for when they come fast, and the battle stations alarm has two alternatives to choose from. Battle sounds are mono and placed in 3D at their ship or mount; the console, the alerts and the bridge bed are not. Cues marked <em class="rec">rec</em> are recorded.</p>
     <div class="facts"><span>Cues <b>__COUNT__</b></span><span>Recorded <b>__REC__</b></span><span>Synthesised <b>__SYN__</b></span><span>Format <b>mono 44.1 kHz OGG</b></span><span>Licence <b>CC0 and ours</b></span></div>
     <p class="status">Each recorded cue names its originals in assets/audio/sfx/SOURCES.md. Not in the game yet: playing them is the sound plan (openspec/changes/sound-effects), after the owner's approval.</p>
   </header>
   <div id="groups" style="display:grid;gap:44px"></div>
   <footer>
     <span>Cuts: tools/audio/cut_cc0.py to tools/audio/cc0_cues.json · Synthesis: tools/audio/gen_sfx.py · Encode: tools/audio/render_sfx.sh · Game copies: assets/audio/sfx/*.ogg · Plan: openspec/changes/sound-effects</span>
+    <span>Credits: __CREDITS__</span>
     <span>Every pack and its licence: AUDIO_SOURCES.md · Method: the sound-effects skill</span>
   </footer>
 </div>
@@ -43,9 +44,19 @@ BODY = """<div class="wrap">
 def main() -> None:
     data = json.load(open(os.path.join(REPO, "output", "sfx", "sfx.json")))
     for s in data:
-        s["src"] = audio_page.embed(os.path.join(REPO, "output", "sfx", s["name"] + ".mp3"))
+        s["src"] = f"output/sfx/{s['name']}.mp3"
+        if not os.path.exists(os.path.join(REPO, s["src"])):
+            raise SystemExit(f"{s['src']} is missing: run tools/audio/render_sfx.sh")
     rec = sum(1 for s in data if s.get("recorded"))
     body = BODY.replace("__COUNT__", str(len(data))).replace("__REC__", str(rec)).replace("__SYN__", str(len(data) - rec))
+    # the credit every non-CC0 pack in use asks for (tools/audio/licence_exceptions.json), read from the records
+    lic = json.load(open(os.path.join(REPO, "tools", "audio", "cc0_licences.json")))
+    cues = json.load(open(os.path.join(REPO, "tools", "audio", "cc0_cues.json")))
+    used = {l["src"].split(":")[0] for k, cue in cues.items() if not k.startswith("_")
+            for l in list(cue["layers"]) + [p for grp in cue.get("scatter", []) for p in grp["pick"]] if "src" in l}
+    credits = [f"{lic[k]['attribution']} ({', '.join(lic[k]['licences'])}): {k.split('/', 1)[1].replace('-', ' ')}"
+               for k in sorted(used) if lic.get(k, {}).get("attribution")]
+    body = body.replace("__CREDITS__", (" · ".join(credits)) if credits else "none needed: every pack is CC0")
     out = os.path.join(REPO, "docs", "mockups", "sounds.html")
     audio_page.write(out, "Fleet Command Sounds", body, GROUPS, data)
     print(f"wrote {out}: {len(data)} sounds")

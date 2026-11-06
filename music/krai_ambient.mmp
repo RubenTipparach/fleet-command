@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<!DOCTYPE lmms-project>
+<lmms-project version="1.0" type="song" creator="LMMS" creatorversion="1.2.2">
+<head timesig_numerator="4" mastervol="50" masterpitch="0" timesig_denominator="4" bpm="60"/>
+<song>
+<trackcontainer type="song" width="600" maximized="0" height="300" x="5" y="5" visible="1">
+<track muted="0" type="0" name="gm_cello" solo="0">
+<instrumenttrack pitch="0" pitchrange="1" vol="90" basenote="57" pan="20" fxch="0" usemasterpitch="1">
+<instrument name="sf2player">
+<sf2player src="/opt/soundfonts/GeneralUser-GS.sf2" patch="42" bank="0" gain="1" reverbOn="1" reverbLevel="0.55" reverbRoomSize="0.8" reverbDamping="0.3" reverbWidth="1" chorusOn="0" chorusNum="3" chorusLevel="2" chorusSpeed="0.3" chorusDepth="8"/>
+</instrument>
+<eldata fwet="0" ftype="0" fcut="14000" fres="0.5">
+<elvol pdel="0" amt="0" latt="0" rel="0.1" sustain="1" hold="0" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elcut pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elres pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+</eldata>
+<chordcreator chordrange="1" chord="0" chord-enabled="0"/>
+<arpeggiator arprange="1" arptime="100" arpmode="0" arpdir="0" arp="0" arpgt="100" arp-enabled="0" arpskip="0" arpmiss="0" arpcycle="0"/>
+<midiport inputchannel="0" outputchannel="1" fixedoutputnote="-1" outputprogram="1" readable="0" writable="0" inputcontroller="0" outputcontroller="0" fixedinputvelocity="-1" fixedoutputvelocity="-1" basevelocity="127" receive="0" default-velocity="0"/>
+<fxchain numofeffects="0" enabled="0"/>
+</instrumenttrack>
+<pattern muted="0" type="1" name="gm_cello" pos="0" len="2880" steps="16">
+<note pan="0" key="26" vol="79" pos="0" len="95"/>
+<note pan="0" key="29" vol="79" pos="96" len="47"/>
+<note pan="0" key="27" vol="79" pos="144" len="47"/>
+<note pan="0" key="24" vol="79" pos="192" len="95"/>
+<note pan="0" key="26" vol="79" pos="288" len="95"/>
+<note pan="0" key="22" vol="79" pos="384" len="95"/>
+<note pan="0" key="24" vol="79" pos="480" len="47"/>
+<note pan="0" key="27" vol="79" pos="528" len="47"/>
+<note pan="0" key="26" vol="79" pos="576" len="95"/>
+<note pan="0" key="21" vol="79" pos="672" len="95"/>
+<note pan="0" key="26" vol="79" pos="768" len="191"/>
+<note pan="0" key="26" vol="79" pos="960" len="95"/>
+<note pan="0" key="29" vol="79" pos="1056" len="47"/>
+<note pan="0" key="27" vol="79" pos="1104" len="47"/>
+<note pan="0" key="24" vol="79" pos="1152" len="95"/>
+<note pan="0" key="26" vol="79" pos="1248" len="95"/>
+<note pan="0" key="22" vol="79" pos="1344" len="95"/>
+<note pan="0" key="24" vol="79" pos="1440" len="47"/>
+<note pan="0" key="27" vol="79" pos="1488" len="47"/>
+<note pan="0" key="26" vol="79" pos="1536" len="95"/>
+<note pan="0" key="21" vol="79" pos="1632" len="95"/>
+<note pan="0" key="26" vol="79" pos="1728" len="191"/>
+<note pan="0" key="26" vol="79" pos="1920" len="95"/>
+<note pan="0" key="29" vol="79" pos="2016" len="47"/>
+<note pan="0" key="27" vol="79" pos="2064" len="47"/>
+<note pan="0" key="24" vol="79" pos="2112" len="95"/>
+<note pan="0" key="26" vol="79" pos="2208" len="95"/>
+<note pan="0" key="22" vol="79" pos="2304" len="95"/>
+<note pan="0" key="24" vol="79" pos="2400" len="47"/>
+<note pan="0" key="27" vol="79" pos="2448" len="47"/>
+<note pan="0" key="26" vol="79" pos="2496" len="95"/>
+<note pan="0" key="21" vol="79" pos="2592" len="95"/>
+<note pan="0" key="26" vol="79" pos="2688" len="191"/>
+</pattern>
+</track>
+<track muted="0" type="0" name="gm_contrabass" solo="0">
+<instrumenttrack pitch="0" pitchrange="1" vol="152" basenote="57" pan="25" fxch="0" usemasterpitch="1">
+<instrument name="sf2player">
+<sf2player src="/opt/soundfonts/GeneralUser-GS.sf2" patch="43" bank="0" gain="1" reverbOn="1" reverbLevel="0.55" reverbRoomSize="0.8" reverbDamping="0.3" reverbWidth="1" chorusOn="0" chorusNum="3" chorusLevel="2" chorusSpeed="0.3" chorusDepth="8"/>
+</instrument>
+<eldata fwet="0" ftype="0" fcut="14000" fres="0.5">
+<elvol pdel="0" amt="0" latt="0" rel="0.1" sustain="1" hold="0" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elcut pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elres pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+</eldata>
+<chordcreator chordrange="1" chord="0" chord-enabled="0"/>
+<arpeggiator arprange="1" arptime="100" arpmode="0" arpdir="0" arp="0" arpgt="100" arp-enabled="0" arpskip="0" arpmiss="0" arpcycle="0"/>
+<midiport inputchannel="0" outputchannel="1" fixedoutputnote="-1" outputprogram="1" readable="0" writable="0" inputcontroller="0" outputcontroller="0" fixedinputvelocity="-1" fixedoutputvelocity="-1" basevelocity="127" receive="0" default-velocity="0"/>
+<fxchain numofeffects="0" enabled="0"/>
+</instrumenttrack>
+<pattern muted="0" type="1" name="gm_contrabass" pos="0" len="2880" steps="16">
+<note pan="0" key="14" vol="63" pos="0" len="95"/>
+<note pan="0" key="17" vol="63" pos="96" len="47"/>
+<note pan="0" key="15" vol="63" pos="144" len="47"/>
+<note pan="0" key="12" vol="63" pos="192" len="95"/>
+<note pan="0" key="14" vol="63" pos="288" len="95"/>
+<note pan="0" key="10" vol="63" pos="384" len="95"/>
+<note pan="0" key="12" vol="63" pos="480" len="47"/>
+<note pan="0" key="15" vol="63" pos="528" len="47"/>
+<note pan="0" key="14" vol="63" pos="576" len="95"/>
+<note pan="0" key="9" vol="63" pos="672" len="95"/>
+<note pan="0" key="14" vol="63" pos="768" len="191"/>
+<note pan="0" key="14" vol="63" pos="960" len="95"/>
+<note pan="0" key="17" vol="63" pos="1056" len="47"/>
+<note pan="0" key="15" vol="63" pos="1104" len="47"/>
+<note pan="0" key="12" vol="63" pos="1152" len="95"/>
+<note pan="0" key="14" vol="63" pos="1248" len="95"/>
+<note pan="0" key="10" vol="63" pos="1344" len="95"/>
+<note pan="0" key="12" vol="63" pos="1440" len="47"/>
+<note pan="0" key="15" vol="63" pos="1488" len="47"/>
+<note pan="0" key="14" vol="63" pos="1536" len="95"/>
+<note pan="0" key="9" vol="63" pos="1632" len="95"/>
+<note pan="0" key="14" vol="63" pos="1728" len="191"/>
+<note pan="0" key="14" vol="63" pos="1920" len="95"/>
+<note pan="0" key="17" vol="63" pos="2016" len="47"/>
+<note pan="0" key="15" vol="63" pos="2064" len="47"/>
+<note pan="0" key="12" vol="63" pos="2112" len="95"/>
+<note pan="0" key="14" vol="63" pos="2208" len="95"/>
+<note pan="0" key="10" vol="63" pos="2304" len="95"/>
+<note pan="0" key="12" vol="63" pos="2400" len="47"/>
+<note pan="0" key="15" vol="63" pos="2448" len="47"/>
+<note pan="0" key="14" vol="63" pos="2496" len="95"/>
+<note pan="0" key="9" vol="63" pos="2592" len="95"/>
+<note pan="0" key="14" vol="63" pos="2688" len="191"/>
+</pattern>
+</track>
+<track muted="0" type="0" name="gm_voice_oohs" solo="0">
+<instrumenttrack pitch="0" pitchrange="1" vol="72.4" basenote="57" pan="0" fxch="0" usemasterpitch="1">
+<instrument name="sf2player">
+<sf2player src="/opt/soundfonts/GeneralUser-GS.sf2" patch="53" bank="0" gain="1" reverbOn="1" reverbLevel="0.55" reverbRoomSize="0.8" reverbDamping="0.3" reverbWidth="1" chorusOn="0" chorusNum="3" chorusLevel="2" chorusSpeed="0.3" chorusDepth="8"/>
+</instrument>
+<eldata fwet="0" ftype="0" fcut="14000" fres="0.5">
+<elvol pdel="0" amt="0" latt="0" rel="0.1" sustain="1" hold="0" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elcut pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elres pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+</eldata>
+<chordcreator chordrange="1" chord="0" chord-enabled="0"/>
+<arpeggiator arprange="1" arptime="100" arpmode="0" arpdir="0" arp="0" arpgt="100" arp-enabled="0" arpskip="0" arpmiss="0" arpcycle="0"/>
+<midiport inputchannel="0" outputchannel="1" fixedoutputnote="-1" outputprogram="1" readable="0" writable="0" inputcontroller="0" outputcontroller="0" fixedinputvelocity="-1" fixedoutputvelocity="-1" basevelocity="127" receive="0" default-velocity="0"/>
+<fxchain numofeffects="1" enabled="1"><effect name="reverbsc" on="1" wet="0.45" gate="0" autoquit="1" autoquit_numerator="4" autoquit_denominator="4" syncmode="0"><ReverbSCControls input_gain="0" size="0.88" color="9000" output_gain="0"/><key/></effect></fxchain>
+</instrumenttrack>
+<pattern muted="0" type="1" name="gm_voice_oohs" pos="0" len="2880" steps="16">
+<note pan="0" key="38" vol="55" pos="0" len="191"/>
+<note pan="0" key="45" vol="55" pos="0" len="191"/>
+<note pan="0" key="36" vol="55" pos="192" len="191"/>
+<note pan="0" key="43" vol="55" pos="192" len="191"/>
+<note pan="0" key="34" vol="55" pos="384" len="191"/>
+<note pan="0" key="41" vol="55" pos="384" len="191"/>
+<note pan="0" key="38" vol="55" pos="576" len="191"/>
+<note pan="0" key="45" vol="55" pos="576" len="191"/>
+<note pan="0" key="38" vol="55" pos="768" len="191"/>
+<note pan="0" key="45" vol="55" pos="768" len="191"/>
+<note pan="0" key="38" vol="55" pos="960" len="191"/>
+<note pan="0" key="45" vol="55" pos="960" len="191"/>
+<note pan="0" key="36" vol="55" pos="1152" len="191"/>
+<note pan="0" key="43" vol="55" pos="1152" len="191"/>
+<note pan="0" key="34" vol="55" pos="1344" len="191"/>
+<note pan="0" key="41" vol="55" pos="1344" len="191"/>
+<note pan="0" key="38" vol="55" pos="1536" len="191"/>
+<note pan="0" key="45" vol="55" pos="1536" len="191"/>
+<note pan="0" key="38" vol="55" pos="1728" len="191"/>
+<note pan="0" key="45" vol="55" pos="1728" len="191"/>
+<note pan="0" key="38" vol="55" pos="1920" len="191"/>
+<note pan="0" key="45" vol="55" pos="1920" len="191"/>
+<note pan="0" key="36" vol="55" pos="2112" len="191"/>
+<note pan="0" key="43" vol="55" pos="2112" len="191"/>
+<note pan="0" key="34" vol="55" pos="2304" len="191"/>
+<note pan="0" key="41" vol="55" pos="2304" len="191"/>
+<note pan="0" key="38" vol="55" pos="2496" len="191"/>
+<note pan="0" key="45" vol="55" pos="2496" len="191"/>
+<note pan="0" key="38" vol="55" pos="2688" len="191"/>
+<note pan="0" key="45" vol="55" pos="2688" len="191"/>
+</pattern>
+</track>
+<track muted="0" type="0" name="gm_pad_warm" solo="0">
+<instrumenttrack pitch="0" pitchrange="1" vol="200" basenote="57" pan="0" fxch="0" usemasterpitch="1">
+<instrument name="sf2player">
+<sf2player src="/opt/soundfonts/GeneralUser-GS.sf2" patch="89" bank="0" gain="1" reverbOn="1" reverbLevel="0.55" reverbRoomSize="0.8" reverbDamping="0.3" reverbWidth="1" chorusOn="0" chorusNum="3" chorusLevel="2" chorusSpeed="0.3" chorusDepth="8"/>
+</instrument>
+<eldata fwet="0" ftype="0" fcut="14000" fres="0.5">
+<elvol pdel="0" amt="0" latt="0" rel="0.1" sustain="1" hold="0" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elcut pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elres pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+</eldata>
+<chordcreator chordrange="1" chord="0" chord-enabled="0"/>
+<arpeggiator arprange="1" arptime="100" arpmode="0" arpdir="0" arp="0" arpgt="100" arp-enabled="0" arpskip="0" arpmiss="0" arpcycle="0"/>
+<midiport inputchannel="0" outputchannel="1" fixedoutputnote="-1" outputprogram="1" readable="0" writable="0" inputcontroller="0" outputcontroller="0" fixedinputvelocity="-1" fixedoutputvelocity="-1" basevelocity="127" receive="0" default-velocity="0"/>
+<fxchain numofeffects="1" enabled="1"><effect name="reverbsc" on="1" wet="0.45" gate="0" autoquit="1" autoquit_numerator="4" autoquit_denominator="4" syncmode="0"><ReverbSCControls input_gain="0" size="0.88" color="9000" output_gain="0"/><key/></effect></fxchain>
+</instrumenttrack>
+<pattern muted="0" type="1" name="gm_pad_warm" pos="0" len="2880" steps="16">
+<note pan="0" key="38" vol="47" pos="0" len="191"/>
+<note pan="0" key="45" vol="47" pos="0" len="191"/>
+<note pan="0" key="36" vol="47" pos="192" len="191"/>
+<note pan="0" key="43" vol="47" pos="192" len="191"/>
+<note pan="0" key="34" vol="47" pos="384" len="191"/>
+<note pan="0" key="41" vol="47" pos="384" len="191"/>
+<note pan="0" key="38" vol="47" pos="576" len="191"/>
+<note pan="0" key="45" vol="47" pos="576" len="191"/>
+<note pan="0" key="38" vol="47" pos="768" len="191"/>
+<note pan="0" key="45" vol="47" pos="768" len="191"/>
+<note pan="0" key="38" vol="47" pos="960" len="191"/>
+<note pan="0" key="45" vol="47" pos="960" len="191"/>
+<note pan="0" key="36" vol="47" pos="1152" len="191"/>
+<note pan="0" key="43" vol="47" pos="1152" len="191"/>
+<note pan="0" key="34" vol="47" pos="1344" len="191"/>
+<note pan="0" key="41" vol="47" pos="1344" len="191"/>
+<note pan="0" key="38" vol="47" pos="1536" len="191"/>
+<note pan="0" key="45" vol="47" pos="1536" len="191"/>
+<note pan="0" key="38" vol="47" pos="1728" len="191"/>
+<note pan="0" key="45" vol="47" pos="1728" len="191"/>
+<note pan="0" key="38" vol="47" pos="1920" len="191"/>
+<note pan="0" key="45" vol="47" pos="1920" len="191"/>
+<note pan="0" key="36" vol="47" pos="2112" len="191"/>
+<note pan="0" key="43" vol="47" pos="2112" len="191"/>
+<note pan="0" key="34" vol="47" pos="2304" len="191"/>
+<note pan="0" key="41" vol="47" pos="2304" len="191"/>
+<note pan="0" key="38" vol="47" pos="2496" len="191"/>
+<note pan="0" key="45" vol="47" pos="2496" len="191"/>
+<note pan="0" key="38" vol="47" pos="2688" len="191"/>
+<note pan="0" key="45" vol="47" pos="2688" len="191"/>
+</pattern>
+</track>
+<track muted="0" type="0" name="gm_tubular_bells" solo="0">
+<instrumenttrack pitch="0" pitchrange="1" vol="94.2" basenote="57" pan="0" fxch="0" usemasterpitch="1">
+<instrument name="sf2player">
+<sf2player src="/opt/soundfonts/GeneralUser-GS.sf2" patch="14" bank="0" gain="1" reverbOn="1" reverbLevel="0.55" reverbRoomSize="0.8" reverbDamping="0.3" reverbWidth="1" chorusOn="0" chorusNum="3" chorusLevel="2" chorusSpeed="0.3" chorusDepth="8"/>
+</instrument>
+<eldata fwet="0" ftype="0" fcut="14000" fres="0.5">
+<elvol pdel="0" amt="0" latt="0" rel="0.1" sustain="1" hold="0" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elcut pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elres pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+</eldata>
+<chordcreator chordrange="1" chord="0" chord-enabled="0"/>
+<arpeggiator arprange="1" arptime="100" arpmode="0" arpdir="0" arp="0" arpgt="100" arp-enabled="0" arpskip="0" arpmiss="0" arpcycle="0"/>
+<midiport inputchannel="0" outputchannel="1" fixedoutputnote="-1" outputprogram="1" readable="0" writable="0" inputcontroller="0" outputcontroller="0" fixedinputvelocity="-1" fixedoutputvelocity="-1" basevelocity="127" receive="0" default-velocity="0"/>
+<fxchain numofeffects="0" enabled="0"/>
+</instrumenttrack>
+<pattern muted="0" type="1" name="gm_tubular_bells" pos="0" len="2880" steps="16">
+<note pan="0" key="50" vol="55" pos="768" len="23"/>
+<note pan="0" key="50" vol="55" pos="792" len="23"/>
+<note pan="0" key="50" vol="55" pos="816" len="23"/>
+<note pan="0" key="50" vol="55" pos="840" len="23"/>
+<note pan="0" key="50" vol="55" pos="864" len="23"/>
+<note pan="0" key="50" vol="55" pos="1728" len="23"/>
+<note pan="0" key="50" vol="55" pos="1752" len="23"/>
+<note pan="0" key="50" vol="55" pos="1776" len="23"/>
+<note pan="0" key="50" vol="55" pos="1800" len="23"/>
+<note pan="0" key="50" vol="55" pos="1824" len="23"/>
+<note pan="0" key="50" vol="55" pos="2688" len="23"/>
+<note pan="0" key="50" vol="55" pos="2712" len="23"/>
+<note pan="0" key="50" vol="55" pos="2736" len="23"/>
+<note pan="0" key="50" vol="55" pos="2760" len="23"/>
+<note pan="0" key="50" vol="55" pos="2784" len="23"/>
+</pattern>
+</track>
+<track muted="0" type="0" name="gm_french_horn" solo="0">
+<instrumenttrack pitch="0" pitchrange="1" vol="58" basenote="57" pan="-25" fxch="0" usemasterpitch="1">
+<instrument name="sf2player">
+<sf2player src="/opt/soundfonts/GeneralUser-GS.sf2" patch="60" bank="0" gain="1" reverbOn="1" reverbLevel="0.55" reverbRoomSize="0.8" reverbDamping="0.3" reverbWidth="1" chorusOn="0" chorusNum="3" chorusLevel="2" chorusSpeed="0.3" chorusDepth="8"/>
+</instrument>
+<eldata fwet="0" ftype="0" fcut="14000" fres="0.5">
+<elvol pdel="0" amt="0" latt="0" rel="0.1" sustain="1" hold="0" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elcut pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+<elres pdel="0" amt="0" latt="0" rel="0.1" sustain="0.5" hold="0.5" dec="0.5" att="0" lamt="0" x100="0" lshp="0" ctlenvamt="0" lspd="0.1" userwavefile=""/>
+</eldata>
+<chordcreator chordrange="1" chord="0" chord-enabled="0"/>
+<arpeggiator arprange="1" arptime="100" arpmode="0" arpdir="0" arp="0" arpgt="100" arp-enabled="0" arpskip="0" arpmiss="0" arpcycle="0"/>
+<midiport inputchannel="0" outputchannel="1" fixedoutputnote="-1" outputprogram="1" readable="0" writable="0" inputcontroller="0" outputcontroller="0" fixedinputvelocity="-1" fixedoutputvelocity="-1" basevelocity="127" receive="0" default-velocity="0"/>
+<fxchain numofeffects="0" enabled="0"/>
+</instrumenttrack>
+<pattern muted="0" type="1" name="gm_french_horn" pos="0" len="2880" steps="16">
+<note pan="0" key="45" vol="63" pos="1920" len="47"/>
+<note pan="0" key="50" vol="63" pos="1968" len="47"/>
+<note pan="0" key="53" vol="63" pos="2016" len="95"/>
+<note pan="0" key="51" vol="63" pos="2112" len="71"/>
+<note pan="0" key="50" vol="63" pos="2184" len="23"/>
+<note pan="0" key="48" vol="63" pos="2208" len="47"/>
+<note pan="0" key="50" vol="63" pos="2256" len="47"/>
+<note pan="0" key="53" vol="63" pos="2304" len="47"/>
+<note pan="0" key="55" vol="63" pos="2352" len="47"/>
+<note pan="0" key="57" vol="63" pos="2400" len="95"/>
+<note pan="0" key="55" vol="63" pos="2496" len="71"/>
+<note pan="0" key="53" vol="63" pos="2568" len="23"/>
+<note pan="0" key="51" vol="63" pos="2592" len="47"/>
+<note pan="0" key="50" vol="63" pos="2640" len="47"/>
+<note pan="0" key="50" vol="63" pos="2688" len="191"/>
+</pattern>
+</track>
+</trackcontainer>
+<fxmixer>
+<fxchannel num="0" name="Master" volume="1" muted="0">
+<fxchain numofeffects="0" enabled="0"/>
+</fxchannel>
+</fxmixer>
+<controllers/>
+<projectnotes><![CDATA[Fleet Command: Krai Warhost, the Forge at Rest. Generated by tools/music/strudel_to_lmms.mjs from music/krai_ambient.strudel; edit the score, not this file.]]></projectnotes>
+<timeline lp0pos="0" lpstate="0" lp1pos="192" stopbehaviour="0"/>
+</song>
+</lmms-project>

@@ -311,7 +311,9 @@ async function exportInPage(cfg) {
       return 'light_nav_' + (pShip.x > 0 ? 'port' : 'starboard'); // the mockups put port at +X
     };
     for (const nv of ship.navs) { if (/flood/.test(nv.kind)) continue; const p = shipPos(nv.s), col = nv.s.material.color;   // the Hunt's floods are baked, below
-      empty(navName(nv.kind, col, p, nv.P), p, nv.P || hullP, { kind: 'nav_' + nv.kind, colour: rgb(col), hex: col.getHexString(), behaviour: nv.kind === 'strobe' ? 'double flash every 1.4 s' : nv.kind === 'beacon' ? 'pulse, 0.25 + 0.75 max(0, sin 2.6 t)^3' : 'steady' }); }
+      empty(navName(nv.kind, col, p, nv.P), p, nv.P || hullP, { kind: 'nav_' + nv.kind, colour: rgb(col), hex: col.getHexString(), behaviour: nv.kind === 'strobe' ? 'double flash every 1.4 s' : nv.kind === 'beacon' ? 'pulse, 0.25 + 0.75 max(0, sin 2.6 t)^3' : 'steady',
+        // the Hunt's lamps are the page's glow sprites, drawn in the game too (change ssarith-ships-engine 2.4): their width, metres
+        ...(cfg.faction === 'ssarith' && nv.s.userData.big ? { glow_m: r6(nv.s.userData.big) } : {}) }); }
     if (cfg.faction === 'concord') {
       const C = ship.C, kinds = [];
       for (const t of C.turrets) kinds.push({ kind: C.pdc ? 'point_defence' : 'turret', facing: t[2] === 'bottom' ? 'ventral' : 'dorsal' });
@@ -336,9 +338,9 @@ async function exportInPage(cfg) {
       empty('reactor', ship.corePos, hullP, {});
       (sh.fixtures || []).filter((F) => /flood/.test(F.kind)).forEach((F, i) => empty('light_baked_flood_' + i, V3(...F.pos), hullP,
         { kind: 'flood_baked', colour: F.rgb.map(r6), hex: new THREE.Color(...F.rgb).getHexString(), note: 'its light is baked into the hull light map; the game draws only its lamp' }));
-      (sh.panes || []).forEach((P2, i) => { const n = V3(...P2.n), v = V3(...P2.v);
+      (sh.panes || []).forEach((P2, i) => { const n = V3(...P2.n), v = V3(...P2.v), u = V3(...P2.u);
         empty((P2.kind === 'bay' ? 'bay_' : 'window_') + i, V3(...P2.c), hullP, { kind: P2.kind === 'bay' ? 'launch_bay' : 'window', room: P2.kind, lit: P2.lit, w_m: P2.w_m, h_m: P2.h_m, frame_m: P2.frame_m,
-          normal: v3(turn(n)), up: v3(turn(v)) }); });
+          normal: v3(turn(n)), up: v3(turn(v)), across: v3(turn(u)) }); });   // across: a mirrored pane's own, not up x normal
     } else {
       ship.muzzles.forEach((p, i) => { let room = null, dz = Infinity; for (const r of ship.rooms) if (/^Spinal|^Bow guns/.test(r.name) && p.z >= r.b.z1 && p.z - r.b.z1 < dz) { dz = p.z - r.b.z1; room = r.name; }
         empty('mount_gun_' + i, p, hullP, { kind: 'gun_muzzle', arc: 'fore', room }); });

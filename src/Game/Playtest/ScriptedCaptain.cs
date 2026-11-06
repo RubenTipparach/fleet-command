@@ -104,7 +104,8 @@ public sealed partial class ScriptedCaptain : Node
             case "station": return await Click("st." + b.Arg) ?? (_x.State.Station == b.Arg ? null : $"station is {_x.State.Station}");
             case "expand": return await Click(b.Arg + ".xp") ?? (_x.State.Expanded?.ToString() == b.Arg ? null : "the panel did not expand");
             case "arm": return await Click("arm." + b.Arg);
-            case "helm": return await Click("helm." + b.Arg);
+            // a battle opens on Comms, so the captain opens the Helm first, as a player would
+            case "helm": return (_x.State.Station != "helm" ? await Click("st.helm") : null) ?? await Click("helm." + b.Arg);
             case "pick_scene":
             {
                 string id = b.Arg == "" ? _scene : b.Arg;
@@ -151,11 +152,13 @@ public sealed partial class ScriptedCaptain : Node
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
-        string? steering = null;
+        string? steering = null, commanding = B.Player.Id;
         while (B.Over == null && B.T - t0 < maxS)
         {
             Ship me = B.Player;
             if (!me.Alive) break;
+            // command passed to another ship (the last one was lost): its helm has had no order yet
+            if (me.Id != commanding) { commanding = me.Id; ordered = false; }
             // a battle with marker beacons and no enemy left: steer for the next beacon shown, by clicking it, as a player would
             if (B.Scenario.Markers != null && !B.EnemiesOf(me).Any())
             {

@@ -20,7 +20,7 @@ public static class MissionRun
 {
     /// <summary>A target drone is a light hulk: no shields, this share of its class's hull.</summary>
     public const double DroneHullFrac = 0.3;
-    public const double FleetSpacingM = 700, AllyOffsetM = 1600, GroupSpreadM = 800, EnemyRangeKm = 10, NeutralRangeKm = 5, EnemyArcDeg = 35;
+    public const double FleetSpacingM = 7000, AllyOffsetM = 16000, GroupSpreadM = 8000, EnemyRangeKm = 100, NeutralRangeKm = 50, EnemyArcDeg = 35;
 
     /// <summary>The battle for an offered mission, or null when the mission has none (done on arrival).</summary>
     public static MissionPlan? Plan(Campaign c, Offer m, GameData g)
@@ -38,8 +38,8 @@ public static class MissionRun
         {
             CampShip s = c.S.Fleet[i];
             string id = $"own{s.Id}";
-            double x = i == 0 ? 0 : (i % 2 == 1 ? -1 : 1) * FleetSpacingM * ((i + 1) / 2), z = i == 0 ? 0 : 500;
-            ships.Add(new ShipStart(id, s.Name, i == 0 ? c.S.Captain : "Captain", c.Data.Hulls[s.Hull].BattleClass, side, 0, x, z, 0, 120,
+            double x = i == 0 ? 0 : (i % 2 == 1 ? -1 : 1) * FleetSpacingM * ((i + 1) / 2), z = i == 0 ? 0 : 5000;
+            ships.Add(new ShipStart(id, s.Name, i == 0 ? c.S.Captain : "Captain", c.Data.Hulls[s.Hull].BattleClass, side, 0, x, z, 0, 1200,
                 Stance.Escort, HullFrac: Math.Clamp(s.HullPct / 100, 0.05, 1)));
             groups["fleet"].Add(id);
             fleetIds[id] = s.Id;
@@ -78,7 +78,7 @@ public static class MissionRun
                 {
                     int a = allySeen++;
                     x = (a % 2 == 0 ? -1 : 1) * (AllyOffsetM + GroupSpreadM * (a / 2));
-                    z = 900;
+                    z = 9000;
                     heading = 0;
                 }
                 else
@@ -91,7 +91,7 @@ public static class MissionRun
                 }
                 bool neutral = grp.Role == GroupRole.Neutral, drone = grp.Tag == "drone";
                 // a drone (a shakedown's target) stands where it is put, never fires, and is a light hulk with no shields
-                ships.Add(new ShipStart(id, name, label, hull.BattleClass, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading, drone ? 0 : neutral ? 60 : 140,
+                ships.Add(new ShipStart(id, name, label, hull.BattleClass, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading, drone ? 0 : neutral ? 600 : 1400,
                     grp.Role == GroupRole.Ally ? Stance.Escort : neutral || drone ? Stance.Hold : Stance.Attack, HoldFire: neutral || drone,
                     HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone ? 0 : 1, Prize: grp.Tag == "prize" && i == 0));
                 list.Add(id);

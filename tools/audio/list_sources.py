@@ -31,7 +31,7 @@ def main() -> int:
     for name, cue in cues.items():
         if name.startswith("_"):
             continue
-        for layer in cue["layers"]:
+        for layer in list(cue["layers"]) + [p for grp in cue.get("scatter", []) for p in grp["pick"]]:
             if "synth" in layer:
                 synth.add(name)
             else:
@@ -42,15 +42,18 @@ def main() -> int:
         site = {"oga": "OpenGameArt", "kenney": "Kenney", "archive": "Internet Archive"}[pack.split("/")[0]]
         title = pack.split("/", 1)[1].replace("-", " ")
         licence = "public domain" if any("publicdomain" in s for s in info.get("licences", [])) else ", ".join(info.get("licences", ["?"]))
+        if info.get("attribution"):
+            licence += f" (credit: {info['attribution']}; asked for by the owner)"
         rows.append(f"| [{title}]({info.get('url', '')}) | {site} | {info.get('author') or '-'} | {licence} | "
                     + ", ".join(f"`{c}`" for c in sorted(used[pack])) + " |")
     body = "\n".join([
         "# Audio sources",
         "",
         "Every recording Fleet Command's sounds are cut from. "
-        f"{len(used)} packs, every one CC0 by its own page when `tools/audio/fetch_cc0.py` read it (a pack "
-        "whose page does not say CC0 is refused). CC0 asks for no credit; the people who recorded them are "
-        "named anyway.",
+        f"{len(used)} packs, every one CC0 or public domain by its own page when `tools/audio/fetch_cc0.py` read "
+        "it (a pack whose page does not say so is refused), except the few the owner asked for under another "
+        "licence (`tools/audio/licence_exceptions.json`), each printed with the credit its page asks for, which "
+        "the game's credits must carry. CC0 asks for no credit; the people who recorded them are named anyway.",
         "",
         "This file is written by `python3 tools/audio/list_sources.py` (run by `tools/audio/render_sfx.sh`) "
         "from `tools/audio/cc0_cues.json` and `tools/audio/cc0_licences.json`: edit those, not this. Each "

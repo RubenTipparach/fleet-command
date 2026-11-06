@@ -28,3 +28,10 @@ scripts/game-stills.sh && python3 tools/compare/side_by_side.py /tmp/mock docs/s
 | View | Scene picker, Reset, the mockup badge (mockup tools) | Left out: they are tools of the mockup, not the game |
 | Other stations and ship pages | Tactical, point defence, science, comms, repair, transport, fleet; sensors, tractor, craft | Show "Not yet in the game" |
 | Battle state | The mockup's own stand-in battle | The game's simulation: same seed and rules, so positions are close but not identical (for example Ashkar's distance) |
+
+## The Ssarith Hunt and the Kelvane Institute (2026-11-06)
+
+`ssarith-*.png` put mockup 15 beside the Hunt's Battle (`ssarith_battle`); `kelvane-*.png` put mockup 20 beside the
+Concord's Battle worn in the Kelvane skin (`--skin=kelvane`: the Institute has no ships of its own yet). What still
+differs is listed in each change's tasks (`openspec/changes/ssarith-console-engine/tasks.md`,
+`openspec/changes/kelvane-console-engine/tasks.md`, section 2).

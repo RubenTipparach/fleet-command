@@ -108,7 +108,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
 /// and Next target, and the crest. Expanded, it is the tactical map (RadarPanel.Map.cs).</summary>
 public sealed partial class RadarPanel : ConsolePanel
 {
-    private const double ScaleKm = 15;
+    private const double ScaleKm = 150;
 
     protected override void DrawPanel()
     {
@@ -250,7 +250,7 @@ public sealed partial class BottomStrip : ConsolePanel
         Ship s = Me;
         double box = B.Tuning.SpeedPerBoxMS, top = box * 10;
         CellRow("spd", new Rect2(x, y + (h - 24) / 2, w, 24), 10, Math.Max(0, s.VOrder) / box, null, (int)Math.Floor(B.Rules.MaxSpeed(s) / box + 1e-6));
-        Ui.Reg("spd", new Rect2(x - 8, y, w + 16, h), null, (p, _) => B.SetSpeed(Math.Round(Math.Clamp((p.X - x) / w, 0, 1) * top / 5) * 5),
+        Ui.Reg("spd", new Rect2(x - 8, y, w + 16, h), null, (p, _) => B.SetSpeed(Math.Round(Math.Clamp((p.X - x) / w, 0, 1) * top / 50) * 50),
             new Tip($"Speed: ordered {Math.Round(s.VOrder)} m/s, limit {Math.Round(B.Rules.MaxSpeed(s))} m/s"));
         float f = (float)Math.Clamp(s.VOrder / top, 0, 1);
         Kit.Piece(this, "button.pressed", new Rect2(x + f * w - 11, y + (h - 36) / 2, 22, 36));
@@ -258,7 +258,7 @@ public sealed partial class BottomStrip : ConsolePanel
 }
 
 /// <summary>The in-battle menu: a sheet over everything that dims the console and takes all input while it is up
-/// (the mockup's uiSheet): resume, restart the battle, options, quit.</summary>
+/// (the mockup's uiSheet): resume, restart the battle (Withdraw in a mission, Main menu on the campaign map), options, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
     /// <summary>The sheet is over everything, never a panel in the column.</summary>
@@ -279,7 +279,9 @@ public sealed partial class MenuCard : ConsolePanel
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
         // in a campaign mission the menu holds Withdraw (owner, 2026-11-06: "withdraw button should be in main meny"), and a
         // mission's battle is not restarted
-        if (X.State.InMission)
+        if (X.State.OnMap)
+            Button("m.main", new Rect2(b.Position.X, y, bw, 44), "Main menu", X.Act.MainMenu, center: false, tip: new Tip("Saves the campaign"));
+        else if (X.State.InMission)
             Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), X.Battle.Over != null ? "Battle over" : "Withdraw",
                 X.Battle.Over != null ? null : () => { X.State.MenuOpen = false; X.Battle.Withdraw(); }, center: false, dis: X.Battle.Over != null,
                 tip: new Tip("Withdraw", new (string, string, Color?)[] { ("Ends", "the battle where it stands", null), ("Grade", "a draw, unless an objective says otherwise", null) }));

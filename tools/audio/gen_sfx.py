@@ -314,6 +314,44 @@ def sub_thump(r):
     return sine(sweep(90, 32, n, 0.5)) * exp_decay(n, 0.6)
 
 
+@sound("punch_thump", "_layer", "A weapon's kick: a sine dropping from 150 to 45 Hz in a tenth of a second, the punch under a shot.")
+def punch_thump(r):
+    n = int(0.22 * SR)
+    body = sine(sweep(150, 45, n, 0.35)) * exp_decay(n, 0.16)
+    click = onepole_hp(noise(r, n), 3000) * exp_decay(n, 0.004)
+    return mix(body, 0.25 * click)
+
+
+@sound("beam_snap", "_layer", "The Lance's snap: a detuned saw buzz falling from 330 to 130 Hz and gone in a third of a second.")
+def beam_snap(r):
+    n = int(0.36 * SR)
+    f = sweep(330, 130, n, 0.5)
+    body = chorus(f, n) + 0.4 * chorus(f * 2.01, n, fn=square)
+    return lp(body, sweep(7000, 1200, n, 0.6), order=2) * adsr(n, 0.002, 0.05, 0.55, 0.22)
+
+
+def slow_drift(r, n: int, depth: float = 0.1, points: int = 7) -> np.ndarray:
+    """A slow random swell, plus or minus `depth`, over the whole sound: a bed that lives without pulsing."""
+    return 1.0 + depth * np.interp(np.arange(n), np.linspace(0, n, points), r.uniform(-1, 1, points))
+
+
+@sound("brown_bed", "_layer", "Soft brown noise for a bed (the owner, 2026-11-07: \"why cant you do something like brownian noise\"): kept between 60 and 600 Hz, swelling a decibel either way over many seconds.")
+def brown_bed(r):
+    n = int(60.0 * SR)
+    body = hp(lp(brown(r, n), 600.0, order=4), 60.0, order=4)
+    return body / (np.max(np.abs(body)) or 1.0) * slow_drift(r, n, 0.08)
+
+
+sound("brown_bed_r", "_layer", "The brown bed again from its own seed, for the other side.")(brown_bed)
+
+
+@sound("console_bleep", "_layer", "A console working: two or three quick bleeps, the pitches seeded.")
+def console_bleep(r):
+    n = int(0.45 * SR)
+    notes = r.choice([1047, 1319, 1568, 1760, 2093, 2349, 2637], size=int(r.integers(2, 4)))
+    return mix(*[at(tone(f, 0.06, s=0.6, r=0.03, fn=lambda f: sine(f) + 0.15 * square(f)), i * 0.085, n) for i, f in enumerate(notes)])
+
+
 @sound("breach_whine", "_layer", "A reactor running away: a whine climbing for two seconds.")
 def breach_whine(r):
     n = int(2.4 * SR)
@@ -389,15 +427,6 @@ def triangle_like(f_hz) -> np.ndarray:
 
 
 # --- alerts (unplaced)
-
-@sound("red_alert", "Alerts", "Battle stations (loops): a whooping klaxon, rising then cut, every 1.2 s.", peak_db=-4.0)
-def red_alert(r):
-    n = int(1.2 * SR)
-    b = int(0.85 * SR)
-    f = sweep(380, 760, b, 0.9)
-    whoop = (chorus(f, b, fn=square) * 0.6 + sine(f) * 0.4) * adsr(b, 0.03, 0.05, 0.9, 0.06)
-    return at(lp(whoop, 2600, order=2), 0.0, n)
-
 
 @sound("shields_failing", "Alerts", "A shield facing about to fail: a pulsing two-tone warble.", peak_db=-6.0)
 def shields_failing(r):
