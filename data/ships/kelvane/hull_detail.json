@@ -91,7 +91,7 @@
     "strip_cell_gap": 0.14,
     "strip_cell_on": 0.7,
     "strip_cell_k": 0.55,
-    "greeble_ao_floor": 0.5,
+    "greeble_ao_floor": 0.6,
     "glass_cells_k": 0.45,
     "glass_cell_m": 0.8,
     "glass_cells_rgb": [
@@ -109,7 +109,8 @@
       "machine",
       "slat",
       "vent"
-    ]
+    ],
+    "machine_light": 0.7
   },
   "defaults": {
     "smooth_deg": 40,
@@ -181,7 +182,8 @@
       "coils": 0.2,
       "vents": 0.2
     },
-    "corner_m": 0.9
+    "corner_m": 0.9,
+    "cage_m": 2.0
   },
   "ships": {
     "kelvane_frigate": {
@@ -1094,8 +1096,14 @@
         }
       ],
       "pads": {
-        "spacing_m": 18.0,
-        "r_m": 4.5
+        "spacing_m": 16.0,
+        "r_m": 4.0,
+        "z_m": [
+          -56.0,
+          46.0
+        ],
+        "from_y_m": 0.0,
+        "x_max_m": 30.0
       }
     }
   }

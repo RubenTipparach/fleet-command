@@ -851,7 +851,7 @@ def machine(kind, P, Q, r):
             add("machine", bm_cyl(rad * 1.5, 0.24, 16, at=(-P * 0.5 + 0.25, v, rad + 0.1), axis="u"))
         add("greeble", bm_box(0.32, Q * 0.9, 0.14, at=(-P * 0.5 + 0.25, 0, 0)))
     elif kind == "pods":
-        R = Q * r.uniform(0.27, 0.33); L = P * 0.6; h = R + 0.28
+        R = Q * r.uniform(0.24, 0.28); L = P * 0.6; h = R + 0.22   # under the bake's reach (cage_m)
         add("machine", bm_cyl(R, L, 24, at=(0, 0, h), axis="u"))
         for sgn in (-1, 1):
             sp = bmesh.new(); bmesh.ops.create_uvsphere(sp, u_segments=24, v_segments=12, radius=R)
@@ -860,7 +860,7 @@ def machine(kind, P, Q, r):
             add("greeble", bm_box(0.36, R * 1.7, h - R * 0.4, at=(sgn * L * 0.28, 0, 0)))
         add("greeble", bm_cyl(0.09, P * 1.02, 10, at=(0, R * 1.05, 0.14), axis="u"))
     elif kind == "coils":
-        rc, rw = Q * 0.13, Q * r.uniform(0.27, 0.32); n = r.choice((5, 6, 7)); h = rw + 0.18; span = P * 0.66
+        rc, rw = Q * 0.12, Q * r.uniform(0.24, 0.28); n = r.choice((5, 6, 7)); h = rw + 0.14; span = P * 0.66
         add("greeble", bm_cyl(rc, P * 0.92, 16, at=(0, 0, h), axis="u"))
         for k in range(n):
             add("machine", bm_cyl(rw, span / n * 0.62, 28, at=(-span / 2 + (k + 0.5) * span / n, 0, h), axis="u"))
@@ -917,7 +917,7 @@ def inner_machinery(lo, armour, D, S, seed, holes=None):
             for b_ in (-1, 0, 1):
                 c = q + u * (a_ * hu) + v * (b_ * hv)
                 h = lbvh.ray_cast(c + n * 1.0, -n, 2.0)
-                if h[0] is None or h[2] not in inner or h[1].dot(n) < 0.85:
+                if h[0] is None or h[2] not in inner or h[1].dot(n) < 0.75:
                     return False
         if abvh is not None and abvh.ray_cast(q + n * 0.02, n, 0.9)[0] is not None:
             return False
@@ -960,11 +960,19 @@ def inner_machinery(lo, armour, D, S, seed, holes=None):
 
     pads = []
     PD = S.get("pads")
-    if PD:
-        for q, n, key in lattice(PD["spacing_m"], PD["spacing_m"], lambda n: n.y > 0.8):
-            M = frame_at(q, n)
-            if not on_wall(q, n, M, PD["r_m"], PD["r_m"]):
+    if PD:   # a pad at every station along the well, on the middle of the flat each floor offers there (found from above)
+        Rp, (za, zb) = PD["r_m"], PD["z_m"]
+        z = za + PD["spacing_m"] / 2
+        while z < zb:
+            ok = []
+            for k in range(int(0.3 / 0.5), int(PD.get("x_max_m", 30.0) / 0.5)):
+                h = lbvh.ray_cast(Vector((k * 0.5, PD.get("from_y_m", 0.0), z)), Vector((0, -1, 0)), 40.0)
+                if h[0] is not None and h[0].x > Rp + 0.5 and h[2] in inner and h[1].y > 0.8 and on_wall(h[0], h[1], frame_at(h[0], h[1]), Rp, Rp):
+                    ok.append(h)
+            z += PD["spacing_m"]
+            if not ok:
                 continue
+            q, n = ok[len(ok) // 2][0], ok[len(ok) // 2][1].copy()
             for mir in (False, True):
                 Mm = frame_at(q, n, mir); put(pad(PD["r_m"]), Mm)
                 c = Mm.to_translation(); R3 = Mm.to_3x3()

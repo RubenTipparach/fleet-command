@@ -363,11 +363,13 @@ def bake_ship(slug, px, samples, panes_only=False):
     ship.select_set(True); bpy.context.view_layer.objects.active = ship
     ship.visible_shadow = ship.visible_diffuse = ship.visible_glossy = False  # the low-poly hull only receives the bake
 
+    cage_m = D["defaults"].get("cage_m", 1.3)   # how far out the bake's rays start: past the tallest detail (the Hunt's 1.3 m)
+
     def bake(kind, what, **kw):
         t0 = time.time()
         HD.show(what)
         img.pixels.foreach_set(np.zeros(px * px * 4, np.float32))
-        bpy.ops.object.bake(type=kind, margin=8, use_selected_to_active=True, cage_extrusion=1.3, max_ray_distance=2.8, **kw)
+        bpy.ops.object.bake(type=kind, margin=8, use_selected_to_active=True, cage_extrusion=cage_m, max_ray_distance=cage_m + 1.5, **kw)
         print(f"  bake {kind} {what}: {time.time() - t0:.0f} s", flush=True)
         return img_array(img).copy()
     data = bake("EMIT", "data")
@@ -621,6 +623,9 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
         mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
         aoc = np.where(mach, np.maximum(aoc, PT["greeble_ao_floor"]), aoc)
     light = 0.12 + 0.26 * aoc ** 1.4 + 0.7 * (0.55 * sh + 0.45 * st)
+    if PT.get("machine_light"):   # machinery deep in an opening, out of the sun, lit by the opening's own work lamps
+        mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
+        light = np.where(mach, np.maximum(light, PT["machine_light"] * (0.75 + 0.25 * st)), light)
     col = base * light[..., None]
     col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
     ink = np.clip((0.4 - aoc) / 0.25, 0, 1)
