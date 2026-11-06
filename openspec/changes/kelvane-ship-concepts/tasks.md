@@ -19,8 +19,9 @@
 ## 3. Detail
 
 - [x] 3.0 Version 5: the bake tools take a faction (`--faction`, the paint in the faction's data, `cuts` grid, `facing_min`, glass, whole strips, the measuring scale, the logo from its SVG), the Hunt's values unchanged; each class baked onto its own UVs (`data/ships/kelvane/hull_detail.json`, `assets/ships/kelvane/`); the shared viewer `docs/mockups/lib/baked-ship.js`
+- [x] 3.0b Version 6 (D10): machinery inside the openings, an instrument's array on wide lit faces and forward glass, window rows from data with rooms behind them, the pane drawing shared in `docs/mockups/lib/baked-ship.js` (the Hunt's rooms identical)
 - [ ] 3.1 Each class designed rooms first (plans in `data/ships/kelvane/`), its hull refitted round them, its tradition named in every choice
-- [ ] 3.2 Windows by its rooms, with the rooms behind them (`lib/ship-rooms.js`); the carrier's bays into its launch well
+- [ ] 3.2 Windows moved to where its rooms are (v6 places them from data); the carrier's bays into its launch well
 - [ ] 3.3 Battle damage and breaking apart on the shared ship modules (`lib/ship-fx.js`, `lib/ship-break.js`, each hull's signed distance field)
 - [ ] 3.4 The Hunt page onto `docs/mockups/lib/baked-ship.js` (its own copy of the baked-ship look today), checked unchanged to the pixel
 - [ ] 3.5 The shared emblem library's Kelvane entry brought up to KID (faction-emblems), so the masks and crests draw from one copy

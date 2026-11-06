@@ -556,11 +556,11 @@ def cell_hash(i, j, k, seed=0):
     return (h >> np.uint64(11)).astype(np.float64) / float(1 << 53)
 
 
-def detector_cells(P, n):
+def detector_cells(P, n, cell_m=None):
     """The middle of a wide lit face as an instrument's array (owner, 2026-11-06, of a Kelvane nose aperture: "missing
     texture on the nose"): square cells strip_cell_m apart on the face's own plane, a dark gap round each, about
     strip_cell_on of them lit, each at its own level. Mirrored (|x|), so port and starboard match. Returns the glow level."""
-    c, gap = PT["strip_cell_m"], PT.get("strip_cell_gap", 0.14)
+    c, gap = cell_m or PT["strip_cell_m"], PT.get("strip_cell_gap", 0.14)
     ax = np.abs(n).argmax(axis=2)
     x = np.abs(P[..., 0])
     u = np.where(ax == 0, P[..., 2], x) / c
@@ -611,6 +611,8 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
     sh = blur(sh, 1)
     st = np.floor(sh * 4 + 0.5) / 4
     aoc = np.clip(blur(ao, 1), 0, 1)
+    if PT.get("greeble_ao_floor"):   # machinery deep in an opening still reads, as if lit by the work lamps inside it
+        aoc = np.where(is_("greeble"), np.maximum(aoc, PT["greeble_ao_floor"]), aoc)
     light = 0.12 + 0.26 * aoc ** 1.4 + 0.7 * (0.55 * sh + 0.45 * st)
     col = base * light[..., None]
     col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
@@ -629,6 +631,12 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
     col = col + (np.array([0.75, 0.95, 0.8]) * spec[..., None] * 0.7)
     col *= grain(h, w)[..., None]
     side, g, emit = strips_and_glow(is_, P, glowp, cover, n)
+    if PT.get("glass_cells_k"):   # glass that looks ahead (a sensor nose): an instrument's array glowing dimly behind it
+        fwd = is_("glass") & (np.abs(n[..., 2]) > 0.7)
+        rim = np.clip((0.95 - blur(blur(fwd.astype(np.float32), 6), 6)) / 0.3, 0, 1)
+        gc = (detector_cells(P, n, PT.get("glass_cell_m")) * (1 - rim) * fwd * PT["glass_cells_k"])[..., None] * np.array(PT.get("glass_cells_rgb", [1.0, 0.78, 0.4]), np.float32)
+        emit = np.clip(emit + gc, 0, 1)
+        g = g + gc
     col = np.where(side[..., None], hexrgb(PT["vent"]) * (0.6 + 0.6 * sh)[..., None], col)
     if PT["strip"] == "whole":   # a wall lit whole: its own shaded paint with the glow over it, not the glow's flat colour
         col = np.where(is_("strip")[..., None], np.clip(col + g * 0.6, 0, 1), col)

@@ -278,9 +278,32 @@ up to date.
   2.25 times as long). Task 3.7.
 
 **Not yet** (as the Hunt's ships took them in versions 14 and 15):
-- windows and the rooms behind them, once each class is planned rooms first;
+- windows placed by each class's room plan (v6 places them from data, D10);
 - the carrier's bays into the launch well;
 - battle damage and breaking apart.
+
+### D10. Version 6: inside, the nose and windows (owner, 2026-11-06)
+
+The owner, of v5: "we need greebles on the inside" (of the frigate's slot), "missing texture on the nose", "also where are
+windows to give scale", and "do we got normal maps for the insitue too?" (yes: each class's tangent normal map is baked
+from its detail layer and drawn in Painted and PBR).
+
+- **Clean outside, worked inside.** An instrument is smooth on its case and full of machinery inside it. The outer hull
+  keeps its rule (`greebles_per_m2` 0); a new pass, `inner_greebles()` in `tools/blender/hull_detail.py`, puts machinery on
+  every face that looks across an opening at the ship's own hull within 40 m (`inner_reach_m`), whatever it is made of, at
+  0.6 per m2 (`inner_greebles_per_m2`), mirrored, never under armour or in a hole. Deep in a slot the AO would paint it
+  black, so machinery's occlusion is floored at 0.5 (`greeble_ao_floor`), as if lit by work lamps; its paint is a warm grey
+  metal (#6a6252 to #a89c84).
+- **No flat fill.** v5 lit a wide lit face only at its rims, which left a nose aperture's middle black. Its middle is now an
+  instrument's array: square cells 1.6 m apart (`strip_cell_m`) with a 14 % gap, 70 % of them lit, each at its own level,
+  from a SplitMix64 hash of the cell (`cell_hash`, never a product modulo a constant: CLAUDE.md section 10). Forward glass
+  (the frigate's sensor nose) shows the same array dimly behind it, at 0.8 m (`glass_cell_m`).
+- **Windows.** Rows of 1.1 by 0.6 m windows (Ship Design Bible W1-W3) along each class's flanks, from data
+  (`windows` in `data/ships/kelvane/hull_detail.json`), clear of the measuring scale and the strips; a window that would
+  land on a strip or glass, or cross a bend, is left out. The bake cuts each window's recess; the page draws its pane with
+  the room behind it. The pane drawing is lifted from the Hunt's page into `docs/mockups/lib/baked-ship.js` (`panes`),
+  its room light a parameter (the Institute's warm, the Hunt's pale green); the Hunt's rooms and bays render identical.
+  The rows are provisional until each class is planned rooms first (task 3.1).
 
 ## Open questions
 

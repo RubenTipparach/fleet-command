@@ -72,8 +72,10 @@ name its class, its scientific work and the blockout it comes from.
 ### Requirement: Every class has its own baked textures
 
 Every class SHALL be unwrapped on its own and baked from a modelled detail layer onto its own UVs. The bake SHALL write a
-painted map, a PBR set (base colour, ORM, tangent normals, emission) and a hull-light map. Its detail SHALL be clean and
-smooth (seams, smooth round pods and glass domes; no greebles, trenches or slatted vents). The detail and paint SHALL be in
+painted map, a PBR set (base colour, ORM, tangent normals, emission) and a hull-light map. Its outer hull SHALL be clean
+and smooth (seams, smooth round pods and glass domes; no greebles, trenches or slatted vents); the insides of its openings
+SHALL carry machinery, and a wide lit face or a forward glass face SHALL show an instrument's array of cells, never a flat
+fill. The detail and paint SHALL be in
 the Institute's data, `data/ships/kelvane/hull_detail.json`. The page SHALL show each class Painted, PBR, Champagne or Clay,
 under Studio or Night light.
 
@@ -85,3 +87,16 @@ under Studio or Night light.
 - **WHEN** the bake tools run for the Ssarith Hunt
 - **THEN** they read the same paint and detail values as before the faction options, from the Hunt's own data
 
+#### Scenario: Machinery inside, clean outside
+- **WHEN** a class is baked
+- **THEN** machinery stands on the faces that look across its openings, and none on its outer plating
+
+### Requirement: Every class has windows to give it scale
+
+Every class SHALL carry rows of person-sized windows (1.1 by 0.6 m) along its flanks, cut into its plating, never on a light
+strip, glass or across a bend, and the page SHALL draw each as a pane with a room behind it, with the shared pane code of
+`docs/mockups/lib/baked-ship.js` that the Ssarith Hunt's page also uses.
+
+#### Scenario: Windows on the flanks
+- **WHEN** a class is shown Painted or PBR
+- **THEN** its windows show as framed panes with lit or dark rooms behind them

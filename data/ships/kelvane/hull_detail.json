@@ -21,8 +21,8 @@
     ],
     "under": "#2a2620",
     "greeble": [
-      "#4a443a",
-      "#8c826e"
+      "#6a6252",
+      "#a89c84"
     ],
     "dome": "#1b150d",
     "dome_glow": 0.0,
@@ -86,7 +86,15 @@
     "strip_cell_m": 1.6,
     "strip_cell_gap": 0.14,
     "strip_cell_on": 0.7,
-    "strip_cell_k": 0.55
+    "strip_cell_k": 0.55,
+    "greeble_ao_floor": 0.5,
+    "glass_cells_k": 0.45,
+    "glass_cell_m": 0.8,
+    "glass_cells_rgb": [
+      1.0,
+      0.78,
+      0.4
+    ]
   },
   "defaults": {
     "smooth_deg": 40,
