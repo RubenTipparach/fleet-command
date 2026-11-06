@@ -117,3 +117,9 @@
   triangles a cell in the middle of one got nothing and left a hole (and v20's flying pieces were missing their skin). Now
   every cell holds 1,000 to 6,000 triangles; a new shot, chunk_carrier, is the owner's case. Compared beside the Krai
   frigate's breakup.
+- 2026-11-06, cloud session (owner: "update mockup to be one ship at a time, we need a cruiser class, all the smaller ships
+  are frigates"): version 22, version id `1793926502-ac36`. One ship at a time, picked from a list grouped by class: the
+  four frigates, a new cruiser (blockout 14, 150 m: a broad hood, two low side prongs, a long keel lance, baked like the
+  others) and the carrier; views of the ship in view (three quarter, side, top, ahead) and the Concord Petrel beside it.
+  The board is gone. The page's copy of the ship maps is WebP at quality 84 (the manifest's `webp_quality`), so six ships
+  fit: page 12.0 MB.
