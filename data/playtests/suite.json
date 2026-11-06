@@ -15,6 +15,14 @@
   { "script": "battle", "play": "krai_hunt" },
   { "script": "wrecks", "play": "concord_hunt_wrecks" },
   { "script": "wrecks", "play": "krai_hunt_wrecks" },
+  { "script": "tractor", "play": "concord_tractor" },
+  { "script": "tractor", "play": "krai_tractor" },
+  { "script": "mines", "play": "concord_mines" },
+  { "script": "mines", "play": "krai_mines" },
+  { "script": "shuttle", "play": "concord_shuttle" },
+  { "script": "shuttle", "play": "krai_shuttle" },
+  { "script": "fighters", "play": "concord_fighters" },
+  { "script": "fighters", "play": "krai_fighters" },
   { "script": "campaign", "play": "campaign" }
  ]
 }
