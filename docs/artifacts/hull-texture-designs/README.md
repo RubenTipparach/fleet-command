@@ -14,3 +14,5 @@
   `1793959368-3126`. Five Concord designs (C1 Survey white, C2 Many yards, C3 Envoy sash, C4 Lightwork, C5 Home Guard)
   and five Krai designs (K1 Tempered blade, K2 House banner, K3 Blood record, K4 Blackened war plate, K5 Kept plate),
   each drawn live in the shader over the game's own model, one at a time or all five side by side, studio and night.
+- 2026-11-06, cloud session: version 2, version id `1793960466-acf6`. In the all-five view the first row's labels sit
+  below the header (on a phone in portrait they overlapped it). Every shot taken at desktop, phone landscape and portrait.

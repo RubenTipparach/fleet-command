@@ -3,8 +3,8 @@
 ## 1. The pitch (2026-11-06)
 
 - [x] 1.1 The designs written up: five for the Concord, five for the Krai, each from a named tradition (design.md)
-- [ ] 1.2 Mockup 23: the Petrel and the Krai frigate in each design, one at a time and all five side by side, studio and night
-- [ ] 1.3 Shots looked at, the page published, the tracker's repo copy and the records updated
+- [x] 1.2 Mockup 23: the Petrel and the Krai frigate in each design, one at a time and all five side by side, studio and night
+- [x] 1.3 Shots looked at, the page published, the tracker's repo copy and the records updated
 
 ## 2. After the owner picks (approved for build)
 

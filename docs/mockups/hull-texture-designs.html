@@ -81,7 +81,7 @@
   <div class="side" id="side">
     <h1>Hull texture designs</h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 23, v1. <code>hull-texture-designs</code>. The Concord's Petrel and the Krai frigate, the models the
+    <p class="sub">Mockup 23, v2. <code>hull-texture-designs</code>. The Concord's Petrel and the Krai frigate, the models the
       game flies, each in five texture designs drawn from its faction's culture. Pick a design, or see all five side by side.
       A pitch: the picked designs get unwrapped, detailed and baked like the Ssarith Hunt.</p>
     <h2>Ship</h2>
@@ -555,7 +555,8 @@ function render() {
     renderer.setViewport(cx, cy, cw, ch); renderer.setScissor(cx, cy, cw, ch);
     U.uDesign.value = i + 1; renderer.render(scene, camera);
     const D = DESIGNS[STATE.ship][i];
-    labels.append(el('div', { className: 'label', textContent: D.k + ' ' + D.name, style: `left:${cx + 6}px; top:${h - cy - ch + 44}px` }));
+    const top = Math.floor(i / cols) === 0 ? document.getElementById('head').offsetHeight + 6 : h - cy - ch + 4;   // the first row's labels clear the header
+    labels.append(el('div', { className: 'label', textContent: D.k + ' ' + D.name, style: `left:${cx + 6}px; top:${top}px` }));
   }
   renderer.setScissorTest(false);
 }
