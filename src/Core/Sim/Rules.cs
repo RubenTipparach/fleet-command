@@ -9,7 +9,7 @@ using FleetCommand.Data;
 
 namespace FleetCommand.Sim;
 
-public sealed class Rules
+public sealed partial class Rules
 {
     /// <summary>The systems energy is allocated to, in the power station's order.</summary>
     public static readonly string[] Systems = { "weapons", "shields", "engines", "sensors", "tractor", "transport", "repair" };
@@ -27,8 +27,8 @@ public sealed class Rules
     /// <summary>The reactor's output this moment, E.</summary>
     public double Output(Ship s) => s.Class.ReactorE;
 
-    /// <summary>What the allocation draws, E.</summary>
-    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k));
+    /// <summary>What the allocation draws, E, and the cloak while it is on (Rules.Cloak.cs).</summary>
+    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k)) + (int)Math.Round(s.CloakDrawE);
 
     /// <summary>How many more boxes a system holding <paramref name="current"/> may be given: up to ten, within the output.</summary>
     public int PowerRoom(Ship s, int current) => (int)Math.Floor(Output(s) + 1e-6) - Used(s) + current;
@@ -100,7 +100,7 @@ public sealed class Rules
         WeaponMode w = Mode(m);
         double d = DistKm(s, t);
         double p = _t.HitChanceNear - _t.HitChanceFalloff * d / w.RangeKm;
-        p -= _t.EcmStep * t.Ecm;
+        p += Ew(s, t);   // ECM, ECCM, the nebula, passive sensors and a cloak (Rules.Cloak.cs)
         p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
         p *= 0.5 + 0.5 * s.Sys["sensors"];
         // erratic manoeuvres: harder to hit, and harder to hit with

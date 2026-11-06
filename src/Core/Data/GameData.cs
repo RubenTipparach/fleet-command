@@ -73,14 +73,14 @@ public enum AiRange { Close, Mid, Long }
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false);
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, CloakStart? Cloak = null);
 
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
 /// objective, and the first officer's message. The first ship is the one the player commands. Sky is the nebula it is fought
 /// under; SunEnergy the sun's strength there (deep space is dim and moody; a scene by a warm star turns it up).</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
-    IReadOnlyList<MarkerDef>? Markers = null)
+    IReadOnlyList<MarkerDef>? Markers = null, NebulaDef? Nebula = null, bool Repel = false)
 {
     /// <summary>A battle with marker beacons ends when its mission's objectives are met (GameFlow checks them), not when
     /// the last enemy goes: a shakedown's target drones can be shot before its beacon is reached.</summary>

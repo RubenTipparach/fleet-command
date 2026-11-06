@@ -71,6 +71,16 @@ THEMES = [
     ("coral_drift", "Coral Drift", "Coral and turquoise side by side, like a reef seen from above, a warm core.",
      2114, [0.016, 0.016, 0.026], [0.85, 0.8, 0.8], [((1.0, 0.45, 0.35), (0.38, 0.08, 0.08)), ((0.3, 0.85, 0.8), (0.03, 0.22, 0.24))],
      [0.8, 0.9, 1.1], [((1.0, 0.92, 0.8), (1.0, 0.55, 0.4))], 1.15),
+    # the cloak and sensors scenes' skies (data/battle/scenes/cloak.json): every scenario has its own
+    ("night_shroud", "Night Shroud", "A dark slate shroud with faint steel-blue edges and one dim cold core: a sky to hide in.",
+     2115, [0.006, 0.008, 0.012], [0.55, 0.62, 0.72], [((0.36, 0.46, 0.6), (0.05, 0.08, 0.14)), ((0.5, 0.56, 0.7), (0.08, 0.1, 0.16))],
+     [0.9, 1.0, 1.2], [((0.8, 0.88, 1.0), (0.35, 0.45, 0.65))], 0.95),
+    ("static_haze", "Static Haze", "Pink-violet haze shot with white static, a hot magenta core: the jammer's nebula.",
+     2116, [0.02, 0.01, 0.024], [0.85, 0.65, 0.9], [((1.0, 0.45, 0.85), (0.34, 0.06, 0.3)), ((0.85, 0.6, 1.0), (0.24, 0.1, 0.36))],
+     [0.7, 0.9, 1.2], [((1.0, 0.92, 1.0), (1.0, 0.5, 0.9))], 1.2),
+    ("iris_drift", "Iris Drift", "Blue-violet iris petals drifting apart, gold at their hearts.",
+     2117, [0.012, 0.01, 0.03], [0.7, 0.7, 1.0], [((0.5, 0.45, 1.0), (0.1, 0.06, 0.36)), ((1.0, 0.8, 0.4), (0.3, 0.16, 0.08))],
+     [0.8, 0.95, 1.1], [((1.0, 0.95, 0.85), (0.6, 0.5, 1.0))], 1.15),
 ]
 
 

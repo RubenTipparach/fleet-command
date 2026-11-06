@@ -134,6 +134,7 @@ public sealed partial class Battle
         int cur = Player.Power[system];
         int n = Math.Clamp(boxes, 0, Math.Min(Rules.BoxesPerSystem, Rules.PowerRoom(Player, cur)));
         Player.Power[system] = n;
+        if (system == "sensors") ClampEw(Player);   // ECM and ECCM fit inside the sensors' energy (Battle.Sensors.cs)
         if (system == "engines") Player.VOrder = Math.Min(Player.VOrder, Rules.MaxSpeed(Player));
     }
 
@@ -176,7 +177,7 @@ public sealed partial class Battle
     }
 
     /// <summary>True when one mount could fire at the locked target now.</summary>
-    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
+    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !Player.Cloaking && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
 
     /// <summary>Fires one mount at the locked target.</summary>
     public bool FireOne(int index)
@@ -190,7 +191,7 @@ public sealed partial class Battle
     public Mount[] WouldFire()
     {
         Ship? t = TargetOf(Player);
-        if (t == null || !Player.Alive || t.Side == Player.Side) return Array.Empty<Mount>();
+        if (t == null || !Player.Alive || t.Side == Player.Side || Player.Cloaking) return Array.Empty<Mount>();
         Mount[] all = Player.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t)).ToArray();
         return Player.Volley ? all : all.Take(1).ToArray();
     }
@@ -198,6 +199,7 @@ public sealed partial class Battle
     /// <summary>Fires the selected mounts at the locked target.</summary>
     public int Fire()
     {
+        if (Player.Cloaking) { Say("Tactical", "Cannot fire while cloaked."); return 0; }
         Ship? t = TargetOf(Player);
         if (t == null) { Say("Tactical", "No target locked."); return 0; }
         if (t.Side == Player.Side) { Say("Tactical", $"The {t.Name} is friendly: weapons hold."); return 0; }
@@ -213,6 +215,9 @@ public sealed partial class Battle
     {
         Ship? t = ShipById(id);
         if (t is not { Alive: true } || t == Player) return;
+        // a cloaked enemy cannot be locked until it is seen, nor one a nebula hides (Battle.Cloak.cs)
+        if (t.Side != Player.Side && !Detected(Player, t)) { SayOnce("Science", "No lock: it is cloaked. Sweep to find it."); return; }
+        if (t.Side != Player.Side && !CanLock(Player, t)) { SayOnce("Science", $"No lock: the nebula hides it. Raise ECCM above its ECM, or close to {Cs.Nebula.LockKm:0} km."); return; }
         Player.Target = t.Id;
         Say("Tactical", t.Side == Player.Side ? $"Selected: {t.Name}, {t.Class.Name} (friendly)." : $"Target locked: {t.Name}, {t.Class.Name}.");
     }
@@ -223,7 +228,7 @@ public sealed partial class Battle
     /// <summary>Locks the next enemy by range, nearest first, after the one locked now.</summary>
     public void NextTarget()
     {
-        Ship[] foes = EnemiesOf(Player).OrderBy(o => Rules.DistKm(Player, o)).ThenBy(o => o.Order).ToArray();
+        Ship[] foes = SeenFoes(Player).OrderBy(o => Rules.DistKm(Player, o)).ThenBy(o => o.Order).ToArray();
         if (foes.Length == 0) return;
         int i = Array.FindIndex(foes, o => o.Id == Player.Target);
         Lock(foes[(i + 1) % foes.Length].Id);

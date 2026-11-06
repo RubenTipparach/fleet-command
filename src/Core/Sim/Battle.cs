@@ -92,6 +92,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
         RangeSetup();
         SystemsSetup();
+        CloakSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -244,7 +245,7 @@ public sealed partial class Battle
             else continue;
             m.Charge = Math.Min(1, m.Charge + dt / w.ChargeS);
         }
-        if (s.ShieldsUp)
+        if (s.ShieldsUp && s.CloakK <= 0)   // a cloak's shields neither hold nor regenerate (Battle.Cloak.cs)
         {
             double r = s.Power["shields"] * s.Brown * Tuning.ShieldRegenPerES * dt * s.Sys["shields"];
             for (int i = 0; i < 6; i++)
@@ -347,8 +348,9 @@ public sealed partial class Battle
 
     private void Think(Ship s)
     {
-        Ship[] foes = EnemiesOf(s).ToArray();
-        if (foes.Length == 0) { s.VOrder = 60; return; }
+        // the enemies it can see (Battle.Cloak.cs); seeing none, it sweeps for one and heads where it last saw one
+        Ship[] foes = SeenFoes(s).ToArray();
+        if (foes.Length == 0) { NoFoeSeen(s); return; }
         Ship near = foes.OrderBy(o => Geometry.Dist(s.X, s.Z, o.X, o.Z)).ThenBy(o => o.Order).First();
         Ship t = near;
         if (s.Side == 0 && Player.Alive && TargetOf(Player) is { } pt) t = pt;
@@ -358,6 +360,7 @@ public sealed partial class Battle
         else if (s.Stance == Stance.Escort && s.Side == 0 && Player.Alive && s != Player) Steer(s, Rules.DistKm(s, t) < range ? "circle" : "follow", Rules.DistKm(s, t) < range ? t : Player, range);
         else Steer(s, Rules.DistKm(s, t) > range * 1.3 ? "approach" : "circle", t, range);
         ThinkCharge(s, t);
+        ThinkSystems(s, t);
         if (s.HoldFire) return;
         foreach (Mount m in s.Mounts)
             if (!m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(s, m, t) && Rules.HitChance(s, m, t) >= Tuning.AiFireMinChance) FireMount(s, m, t);
@@ -376,6 +379,7 @@ public sealed partial class Battle
     private bool FireMount(Ship s, Mount m, Ship t)
     {
         if (!Rules.Ready(m) || !Rules.InArc(s, m, t) || !Rules.InRange(s, m, t)) return false;
+        if (s.Cloaking || !CanLock(s, t)) return false;   // no fire while cloaking, none at what cannot be locked (Battle.Cloak.cs)
         WeaponMode w = Rules.Mode(m);
         bool hit = _hit.Next() < Rules.HitChance(s, m, t);
         var (x, z) = MountWorld(s, m);
@@ -403,7 +407,7 @@ public sealed partial class Battle
         int f = Rules.FacingFrom(t, sx, sz);
         // a surging Krai bow holds bow_shield_x as much; pierce of the hit goes straight through (Rules.Pierced)
         double bowX = f == 0 && t.SurgeS > 0 ? Data.Specials.Charge.BowShieldX : 1;
-        double absorb = t.ShieldsUp ? Rules.Pierced(dmg, pierce, t.Shields[f] * bowX).Held : 0;
+        double absorb = t.ShieldsUp && t.CloakK <= 0 ? Rules.Pierced(dmg, pierce, t.Shields[f] * bowX).Held : 0;
         t.Shields[f] -= absorb / bowX;
         t.Flash[f] = 1;
         double rest = dmg - absorb;
