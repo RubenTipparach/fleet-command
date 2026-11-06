@@ -1,0 +1,23 @@
+{
+ "_doc": "The scripted captain's Escape scene (the battle console mockup's, openspec/changes/damage-control): pick the scenario; power the weapons and most of the shields down (room for the pumps and the warp coils); save the overheating reactor on the expanded Reactor page (the coils aligned with their keys, loop B's flow raised to 3); on the Repair station drag the reactor core to the top of the queue and the warp nacelles under it; arm the warp drive with the warp key and jump once the risk is low (or the pursuers are close). Played from both sides (suite.json).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "power", "arg": "weapons=0" },
+  { "do": "power", "arg": "shields=2" },
+  { "do": "align" },
+  { "do": "station", "arg": "power" },
+  { "do": "click", "arg": "pw.mode.reactor" },
+  { "do": "expand", "arg": "Station" },
+  { "do": "click", "arg": "rx.f.1.2" },
+  { "do": "collapse" },
+  { "do": "station", "arg": "repair" },
+  { "do": "drag", "arg": "rep.row.reactor>rep.row.engines" },
+  { "do": "drag", "arg": "rep.row.warp>rep.row.engines" },
+  { "do": "expand", "arg": "Station" },
+  { "do": "hold", "s": 2 },
+  { "do": "collapse" },
+  { "do": "click", "arg": "warp.key" },
+  { "do": "warp", "arg": "0.4", "s": 400 }
+ ]
+}
