@@ -10,10 +10,10 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 
 | # | Mockup | Live version | Game matches | Change |
 |---|---|---|---|---|
-| 2 | In-game UI (the battle console, Concord) | v81 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
+| 2 | In-game UI (the battle console, Concord) | v83 | v65's first slice, plus the pause menu's background and the shield view always on (v67), and the scene selector | `battle-console-engine`, `battle-scenarios` |
 | 6 | Concord line (the ships) | v24 | v24: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the lamps, the hot bells and the Albatross main hull's two-bell stern; its damage (hits, scorch marks, torpedo holes, parts blown off, the core breach and break-up into burning cells with cut faces) but not the subsystem signatures (`ship-damage-visuals` 3.2b); not its paint rules (below) | `ship-models-engine` |
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
-| 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
+| 8 | Battle console: Krai Warhost | v22 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 | 1 | Primary game flow (menus, faction screen, campaign, missions) | v15 | v15 (Accept sets course; the debrief over the battle); v14's flow and rules (2026-11-05): the menu, the faction screen, skirmish, the campaign map with the same territory, moves, routes by turn, factions' fleets, freighters, mission banners, briefing, port, debrief with prestige and reputation; missions from `data/missions/`; the differences below | `game-flow-engine`, `mission-scripting` |
 | 16 | Special weapons range | v5 | v5's simulation and looks: the four missile grades with flares, decoy shuttle and point defence; the chorus lance, quell torpedo, forge driver and blood charge with their rules and effects. Not its shield bubble ripple, haze or motes (below) | `weapon-fx`, `missiles`, `special-weapons` |
 | 12 | Ssarith Hunt ships | v24 | v24's ships (2026-11-06): the four frigates, the cruiser and the carrier exported by `tools/mockups/export_ships.mjs`, dressed by their own baked maps (`baked_hull.gdshader`), their lamps, and the same damage and breakup as the other lines (cut faces by each hull's signed distance field). Still open: rooms behind the windows and hangars behind the bays (2.1), strobe and beacon sprites (2.4); the Hunt is a foe only (2.2) | `ssarith-ships-engine` |
@@ -23,6 +23,13 @@ battle console mockup (mockup 2 v82, mockup 8 v21, mockup 15 v6) flies the same 
 `model` from `data/battle/classes.json`, with the Krai's ships as the Krai line. Still open on the mockup side: the hull
 paint (livery bands, windows, detail, light pools) is the game's `hull.gdshader` but has no shared three.js copy yet, so
 the console shows the glbs' stand-in paint. Task: `ship-models-engine` 2.5.
+
+Kelvane console (2026-11-06, change `kelvane-battle-console`): mockup 2 v83 and mockup 8 v22 change nothing the game's
+Concord or Krai console shows:
+- they add the Kelvane research cruiser to the allied and swap scenes, which the game does not have;
+- they add two skin hooks, `keyField` and `titleDy`, which the Concord and the Krai leave unset.
+
+The Kelvane console (mockup 20) is not approved for implementation, so the game has no Kelvane skin to keep in step.
 
 Beams and bolts (2026-11-04, owner: "source and destination of phaser and disruptors must maintain in sync"): in step in
 both. Mockup 2 v76 (and mockup 8 v15, written from it) resolve a beam's ends each step from the firing mount and the

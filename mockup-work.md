@@ -24,7 +24,7 @@ account and every link here is updated.
 | 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | **Approved for implementation** (2026-11-05, owner in conversation: "implement game flow into the game, but I want you to implmenent missions as well"; changes `game-flow-engine`, `mission-scripting`, `ship-schematics`). Drafted (2026-11-05, v16: the port redesigned; v15: Accept sets course) | `game-flow`, `faction-select`, `campaign-missions` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
 | 2 | In-game UI | Approved for implementation (2026-11-03; live v79: every skin in one console, following the ship you command; v80 committed, to publish: beams and disruptor bolts keep their ends on their ships, and lances, bolts and torpedoes drawn by the weapons range's effects) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-10-31, v25) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
+| 4 | Console skins | Drafted (2026-11-06, v28) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | **Approved for implementation** (2026-11-04, owner in conversation: "I've approved ships to be built", "we need to integrate proper ships in the game"; change `ship-models-engine`). Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | **Approved for implementation** (2026-11-04, owner in conversation, as mockup 6; change `ship-models-engine`). Drafted (2026-11-04, v21: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
@@ -34,11 +34,13 @@ account and every link here is updated.
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | **Retired** (2026-11-04: the emblem lives on the real model, mockup 6; owner: "Concord emblem on the hull - get rid of this"; off the tracker's mockup list, kept under Misc) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
 | 12 | Ssarith Hunt ships | **Approved for implementation** (2026-11-06, owner in conversation: "looks good, implement in game"; approved for build by the same words). Drafted (2026-11-06, v24: wide floods, the cruiser and carrier at 3072 px, in the game; v23: the cruiser's shell below, the carrier's in the middle with bays above and below, windows without glow; v22: one ship at a time, frigates, a new cruiser and the carrier; v21: breakup fixed, every cell has its skin; v20: hulls break apart; v19: bay lamps on the lintels; v18: all five rebaked with every pane fitted; v17: rooms and hangars level, every pane fitted to its face; v16: clean-framed windows and bays, each its own quad; v15: the four picks and a new carrier, each with modelled hull detail, a PBR set and baked hull lights; rooms behind the windows and hangars behind the bays, forward floods, a greener emission, battle damage on the shared ship-fx.js) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
-| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-05, v6) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
+| 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | Drafted (2026-11-06, v9) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
 | 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
+| 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v3) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
+| 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -895,3 +897,60 @@ orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/
 
 - Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
 - Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).
+
+## 20. Battle console: Kelvane Institute
+
+Owner, 2026-11-06: "start work on the UI for the institute, get latest from main and maintain the highest possible
+standard for UI design".
+
+- **The page.** It is the battle console of mockup 2, played in the Kelvane Institute skin of mockup 4, written by
+  `tools/mockups/skin_page.py` from the one source page. Every rule, panel and control is the same code.
+- **Hopping between ships.** The console follows the ship you command:
+  - the research cruiser Patience joins the allied fleet and the swap scene, which is now "Four races" (keys 1 to 4);
+  - the whole console turns Kelvane when you take her.
+- **The construction.** It is the Institute's instrument bench, built on the Analog Panel Bible:
+  - champagne bezels rolled round wells of dark smoked glass, where the readouts glow;
+  - amber for a reading, phosphor green for whole, amber-orange for damaged, needle red for an alarm;
+  - window keys whose light is their state (unlit at rest, amber on hover, hot when pressed);
+  - title placards with a lit pilot jewel;
+  - strips with their needle-meter bays;
+  - a column backing engraved with a measuring scale.
+
+  Every piece is rendered in Blender from fit-checked shapes, and every colour role is measured against the glass
+  (design.md D2).
+- **Live meters.** The owner, 2026-11-06: "that looks really good! can we have these meters be tied to the speed and hull
+  integrity?" The strips' needle meters are now live: hull integrity on the top strip, speed on the bottom.
+- **The emblem.** The owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem". Hydrogen's
+  3d z² orbital, computed and drawn as a wireframe eigen plot, is on the crest in brass wire, on the name plate and in the
+  live emblem.
+- **Type and icons.** Share Tech Mono sets every readout. All 24 icons of the icon guide are drawn in the Institute's
+  schematic hand.
+- **Names.** The ships, officers and ranks carry placeholder names until the owner sets the Institute's culture (K1).
+- **Change:** `openspec/changes/kelvane-battle-console`.
+- **Shots:** `docs/screenshots/mockups/battle-console-kelvane-*.png`.
+- **Stage:** Drafted (2026-11-06, v1).
+- **Questions:** K1-K3 in the change's design.
+
+## 21. Kelvane badge in 3D
+
+Owner, 2026-11-06, with a book cover's hydrogen-atom plot: "I would like this hydrogen atom eigen plot used as the
+logo/emblem", "in 2d logo, I also would like a 2 -tone render with wireframe and shape asw ell", "shade the 3d plot in
+the 3d render of the emblem, use our emblem designer for this please", "green hydrogen icon, irrdescent and red satin soft
+fabric background on an oval emblem coin", then "the 2d version the green wireframe and oval background can be used for
+ship hull logo".
+
+- **The emblem.** KID, as the Emblem Design Guide names it, picked: hydrogen's 3d z² orbital, computed (not traced from the
+  cover) by `tools/mockups/kelvane_emblem.py`. That one file writes every form of it, in KID's colours ("on the emblem,
+  background red, shape green"):
+  - the console crest's brass wire and the name plates' mark;
+  - the 2D logo and hull logo (`assets/ui/kelvane/emblem.svg`): the oval coin, red satin, the plot in two greens with its
+    wireframe light green and its outline deeper;
+  - the badge's relief, its grid and its satin.
+- **The badge.** Built on the emblem designer (`tools/blender/emblem_render.py`, `docs/mockups/lib/emblem-badge.js`): an
+  oval coin in a champagne rim, red velvet in broad soft folds, and the orbital embossed on it as a slight bump, iridescent,
+  its fill dark green and its wireframe green, shaded on the full 3D orbital's normals (owner: "the logo should be embossed
+  slightly , popping out with a slight bump, it sohuld also be irridescent, the wireframe lines should be green, the fill
+  should be darker green, and the background should be more like velvet fabric than plastic"). It is rendered in Blender
+  (`tools/blender/emblem_kelvane.py`) and built live from the same meshes on the page.
+- **Change:** `faction-emblems` and `kelvane-battle-console` (D9, D10).
+- **Stage:** Drafted (2026-11-06, v1).

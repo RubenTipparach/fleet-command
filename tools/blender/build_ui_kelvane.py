@@ -43,7 +43,8 @@ SHAPES = json.load(open(os.path.join(ui_render.ROOT, "assets", "ui", "kelvane", 
 # (the reading that matters), ink (the record). The palette and its meanings are in design.md.
 PAL = dict(champagne="#c9bfa9", knob="#d6d0c4", brass="#b0915a", amber="#f2c46e", amber_lo="#6b4a1c", dim="#b8945a",
            phos="#1c5a33", phos_lo="#03110a", grat="#4fd27a", ink="#5a3f16", unlit="#5a4520", red="#c0301f", slot="#241a10",
-           groove="#2e271c", engrave="#3a3328", tray="#a89f8e")
+           groove="#2e271c", engrave="#3a3328", tray="#a89f8e",
+           screen="#1b150d", smoke="#33261a", off="#120e09", green="#8af0a4", orange="#ff9a3c", redfilm="#f0533c")
 GLOW = float(os.environ.get("FILM_GLOW", 0.78))   # the film's own backlight, as in the study
 MAIN = (0.8, 60.0)                                  # the soft main light on the wells: strength, angular size (deg)
 DIMPLE = 2.2                                        # a dimple's depth, mm
@@ -52,7 +53,7 @@ DIMPLE = 2.2                                        # a dimple's depth, mm
 # (skins/kelvane.js --btn-sink is half of it), while the domed key goes KEY_PRESS_MM deeper into its dimple.
 PRESS_MM = 3.0
 KEY_PRESS_MM = 2.6
-DISPLAY = ("amber", "hot", "dim", "phos", "slotfilm", "ink", "grat", "unlit", "redink")
+DISPLAY = ("amber", "hot", "dim", "phos", "slotfilm", "ink", "grat", "unlit", "redink", "screen", "smoke", "off", "green", "orange", "redfilm")
 
 
 def jewel(name, col, es):
@@ -78,9 +79,17 @@ def mats(K, s):
                hot=K.mat("hot", lambda: film_mat("hot", col=PAL["amber"], shadow=PAL["amber_lo"], es=1.35, glow=GLOW, ao_mm=ao)),
                phos=K.mat("phos", lambda: film_mat("phos", col=PAL["phos"], shadow=PAL["phos_lo"], es=0.55, glow=1.0, ao_mm=ao)),
                slot=K.mat("slotfilm", lambda: film_mat("slotfilm", col=PAL["slot"], shadow="#0c0805", es=0.2, glow=1.0, ao_mm=1.5)),
+               # the battle console's glass (openspec/changes/kelvane-battle-console): the screens' dark smoked glass, a
+               # key's unlit window, an off window, and a status lit green, amber-orange or red
+               screen=K.mat("screen", lambda: film_mat("screen", col=PAL["screen"], shadow="#060403", es=0.14, glow=1.0, ao_mm=ao)),
+               smoke=K.mat("smoke", lambda: film_mat("smoke", col=PAL["smoke"], shadow="#0c0804", es=0.2, glow=1.0, ao_mm=ao)),
+               off=K.mat("off", lambda: film_mat("off", col=PAL["off"], shadow="#050403", es=0.05, glow=1.0, ao_mm=ao)),
+               green=K.mat("green", lambda: film_mat("green", col=PAL["green"], shadow="#1c5a33", es=0.85, glow=GLOW, ao_mm=ao)),
+               orange=K.mat("orange", lambda: film_mat("orange", col=PAL["orange"], shadow="#6b3a10", es=0.85, glow=GLOW, ao_mm=ao)),
+               red=K.mat("redfilm", lambda: film_mat("redfilm", col=PAL["redfilm"], shadow="#5a140c", es=0.85, glow=GLOW, ao_mm=ao)),
                tray=K.mat("tray", lambda: satin("tray", PAL["tray"])),
                ink=K.mat("ink", lambda: film_ink("ink", PAL["ink"], glow=GLOW)), grat=K.mat("grat", lambda: film_ink("grat", PAL["grat"], es=0.5)),
-               unlit=K.mat("unlit", lambda: film_ink("unlit", PAL["unlit"], es=0.3)), red=K.mat("redink", lambda: film_ink("redink", PAL["red"])),
+               unlit=K.mat("unlit", lambda: film_ink("unlit", PAL["unlit"], es=0.3)), redink=K.mat("redink", lambda: film_ink("redink", PAL["red"])),
                engrave=K.mat("engrave", lambda: printed("engrave", PAL["engrave"])),
                knurl=K.mat("knurl", lambda: metal("knurl", PAL["knob"], 0.2, True)))
 
@@ -154,6 +163,9 @@ def piece(name):
         K.roll, K.dz = s["roll"], s["dz"]
         K.pt = min(8.0, 2 * s["roll"] + 2.0)
         mats(K, s)
+        if name == "console.backing":  # the column's backing: a bead-blasted chassis plate, even from end to end, so the
+            # expanded panel's band of it tiles with no bright patch repeating (a satin plate this big catches the softbox)
+            K.m["plate"] = K.mat("bead", lambda: satin("bead", PAL["champagne"], rough=0.5, coat=0.0))
         wells = [(kind, [tuple(p) for p in w]) for kind, w in s["wells"]]
         plate = [tuple(p) for p in s["plate"]]
         press = PRESS_MM if name == "button.pressed" else 0.0
@@ -162,7 +174,7 @@ def piece(name):
             if press:  # its foot held where it was, so the moved glass never shows past the plate's rolled edge (rule B)
                 foot = max(y for _x, y in shape) - press
                 shape = [(x, min(y, foot)) for x, y in shape]
-            glass = K.film(None, shape=shape, m=K.m[{"amber": "amber", "hot": "hot", "dim": "dim", "phos": "phos", "slot": "slot", "tray": "tray"}[kind]],
+            glass = K.film(None, shape=shape, m=K.m[kind],
                            z=K.dz - press)
             glass.location.y -= press * MM
             if press:
@@ -190,15 +202,15 @@ def piece(name):
             press = KEY_PRESS_MM if (i == 0 and name.endswith(".pressed")) else 0.0
             stud(K, x, y, r, style, (round(x, 2), round(y, 2)) in sunk or in_cradle, press)
         for role, lines, w, ink in s["prints"]:
-            m = K.m[{"ink": "ink", "grat": "grat", "unlit": "unlit", "red": "red"}[ink]]
+            m = K.m[{"ink": "ink", "grat": "grat", "unlit": "unlit", "red": "redink"}[ink]]
             for line in lines:
                 K.stroke([tuple(p) for p in line], w, m)
         for line in s["engrave"]:
             K.stroke([tuple(p) for p in line], 0.8, K.m["engrave"], z=K.pt)
-        for line in s["emblem"]:
+        for w, line in s["emblem"]:  # inlaid brass wire, each line at its own width (the emblem's outline heavier)
             pts = [tuple(p) for p in line]
-            K.tube(pts, [1.2] * len(pts), K.m["bezel"], flat=0.55, z=[K.pt + 0.5] * len(pts))
-        if name.endswith(".hover") or name.endswith(".pressed"):  # the key's pilot ring, lit when the key is live
+            K.tube(pts, [w / 2] * len(pts), K.m["bezel"], flat=0.55, z=[K.pt + 0.5] * len(pts))
+        if name in ("button.hover", "button.pressed"):  # the key's pilot ring, lit when the key is live
             x, y, r, _st = s["studs"][0]
             dr = s["dimples"][0][2]
             ring = K.mat("pilot", lambda: glow("pilot", PAL["amber"], 3.0 if name.endswith(".pressed") else 1.4))
@@ -243,6 +255,8 @@ PIECES["bar.fill.red"] = ("nine", (64, 10), (0, 6, 0, 6), "x", fill("#ff5a3a", 3
 PIECES["bar.cell.off"] = ("cell", (12, 12), None, None, lamp_cell("#ffc35a", 0.03), 1)
 PIECES["bar.cell.on"] = ("cell", (12, 12), None, None, lamp_cell("#ffc35a", 2.6), 1)
 PIECES["bar.cell.warn"] = ("cell", (12, 12), None, None, lamp_cell("#ff4a2a", 2.6), 1)
+# a bar that reads whole and ready (the battle console's ok bars): the same jewel in phosphor green
+PIECES["bar.cell.ok"] = ("cell", (12, 12), None, None, lamp_cell("#5aff8a", 2.6), 1)
 ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "button.idle", "button.hover", "button.pressed",
          "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider", "nameplate", "helm.pad", "ssd.bezel", "dial",
          "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest"]

@@ -182,5 +182,59 @@ function ssarith(THREE, { mmMaterial, slab, badge }, PARTS, GROWN) {
   return none;
 }
 
-return { concord, krai, ssarith };
+// The Kelvane Institute, KID the hydrogen eigen plot, on an oval coin (owner, 2026-11-06: "I would like this hydrogen atom
+// eigen plot used as the logo/emblem", "shade the 3d plot in the 3d render of the emblem, use our emblem designer for this
+// please", "green hydrogen icon, irrdescent and red satin soft fabric background on an oval emblem coin"). All from
+// tools/mockups/kelvane_emblem.py: ORBITAL (assets/emblems/kelvane/ka.orbital.json: the relief's vertices in badge mm, the
+// full orbital's normals, UVs on longitude and colatitude), SATIN (ka.satin.json: the draped cloth's height field, the oval's
+// size, the rim's height, the emblem's palette) and GRID (the wireframe mask over the orbital's UVs, an image, white on the
+// lines). Parts, heights and materials as the Blender render (tools/blender/emblem_kelvane.py).
+function kelvane(THREE, { mmMaterial, slab, badge }, ORBITAL, SATIN, GRID) {
+  const K = SATIN.palette;
+  const srgb = (hex) => new THREE.Color(hex).convertSRGBToLinear();   // a palette colour as it is written (this three.js reads hex as linear)
+  const champagne = mmMaterial('emblem_platinum', { color: new THREE.Color(K.frame), envMapIntensity: 1.0 });   // the instruments' plate
+  const ellipse = (a, b, n = 180) => Array.from({ length: n }, (_, i) => [50 + Math.cos(i / n * 2 * Math.PI) * a, 50 - Math.sin(i / n * 2 * Math.PI) * b]);
+  slab([ellipse(...SATIN.oval_out), ellipse(...SATIN.oval_in)], 0.0, SATIN.rim_z, 0.8, champagne);   // the rim
+  const mesh = (D, material) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(D.positions), 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(D.normals), 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(D.uvs), 2));
+    // each triangle wound to face the way its normals do (three.js takes a face's front from its winding and, drawing both
+    // sides, turns the normals of a face it sees from behind: a mesh wound the other way would be lit from inside)
+    const P = D.positions, N = D.normals, F = D.faces.slice();
+    for (let i = 0; i < F.length; i += 3) {
+      const [a, b, c] = [F[i] * 3, F[i + 1] * 3, F[i + 2] * 3];
+      const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+      const gx = uy * vz - uz * vy, gy = uz * vx - ux * vz, gz = ux * vy - uy * vx;
+      if (gx * (N[a] + N[b] + N[c]) + gy * (N[a + 1] + N[b + 1] + N[c + 1]) + gz * (N[a + 2] + N[b + 2] + N[c + 2]) < 0) { F[i + 1] = c / 3; F[i + 2] = b / 3; }
+    }
+    g.setIndex(F);
+    const m = new THREE.Mesh(g, material); m.castShadow = m.receiveShadow = true; badge.add(m); return m;
+  };
+  // ---- the velvet (owner, 2026-11-06: "the background should be more like velvet fabric than plastic"): deep red and matte,
+  // almost no gloss, the pile's sheen glowing where the folds turn away, on the generator's draped folds -----------------
+  mesh(SATIN, new THREE.MeshPhysicalMaterial({ color: srgb(K.field), roughness: 0.9, metalness: 0,
+    sheen: 1.0, sheenColor: srgb(K.sheen), sheenRoughness: 0.26, specularIntensity: 0.12, envMapIntensity: 0.25 }));
+  // ---- the orbital: iridescent green under a hard coat, its wireframe inlaid light green, the mask choosing between them
+  // (colour, metal, roughness and a faint light on the lines), on the full orbital's normals so it shades as the 3D orbital
+  const w = GRID.width, h = GRID.height, cv = (fill) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); fill(x); return c; };
+  const mask = cv((x) => x.drawImage(GRID, 0, 0)).getContext('2d').getImageData(0, 0, w, h).data;
+  const rgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+  const paint = (lineRGB, fieldRGB) => cv((x) => { const im = x.createImageData(w, h);
+    for (let i = 0; i < mask.length; i += 4) { const m = mask[i] / 255; for (let c = 0; c < 3; c++) im.data[i + c] = fieldRGB[c] * (1 - m) + lineRGB[c] * m; im.data[i + 3] = 255; }
+    x.putImageData(im, 0, 0); });
+  const tex = (c, srgb) => { const t = new THREE.CanvasTexture(c); t.flipY = false; if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+  // (owner, 2026-11-06: "the wireframe lines should be green, the fill should be darker green", "it sohuld also be
+  // irridescent"): the fill dark green and the lines green, each with a faint light of its own, under a clear coat with a
+  // thin film; no metal, so the greens read as colour, not reflection
+  mesh(ORBITAL, new THREE.MeshPhysicalMaterial({
+    map: tex(paint(rgb(K.wire), rgb(K.lit)), true), metalness: 0, roughness: 0.32,
+    emissive: new THREE.Color(0xffffff), emissiveMap: tex(paint(rgb(K.wire), rgb(K.lit).map((v) => v * 0.5)), true), emissiveIntensity: 0.35,
+    clearcoat: 0.7, clearcoatRoughness: 0.05, iridescence: 1.0, iridescenceIOR: 1.9, iridescenceThicknessRange: [360, 600],
+    envMapIntensity: 0.9 }));   // front faces only: the relief's underside, pressed flat, is never seen
+  return none;
+}
+
+return { concord, krai, ssarith, kelvane };
 })();
