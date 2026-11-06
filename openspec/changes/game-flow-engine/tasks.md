@@ -18,7 +18,19 @@
   loadout, crew recruitment and supplies shopping"): Shipyard, Loadout, Supplies and Crew tabs with the fleet down the left;
   every price the rules' own quote (`RefitQuote`, `StockQuote`, `SupplyQuote`, `RestockQuote`, `RepairCost`, `SaleQuote`);
   one officer per station (`Hire` replaces, `Dismiss`); tests in `ShopTests`
-- [ ] 1.6 A playtest of the flow (menu, new campaign, move, a mission fought and debriefed, the port) at desktop and phone size, recorded
+- [ ] 1.6 A playtest of the flow (menu, new campaign, move, a mission fought and debriefed, the port) at desktop and phone size, recorded.
+  Desktop done (2026-11-05, `data/playtests/campaign.json`, `docs/playtests/2026-11-05-campaign.md`): menus, a new Concord
+  campaign, moves over two turns, three contracts start to end. Still to do: the port in the script, and phone size
+- [x] 1.11 Found by that playtest and fixed: the shut port panel took every press meant for the map's HUD (Move here, End
+  turn, Briefing) and passed it to the map; the map's drag moved it about seven times as far as the pointer (it now keeps
+  the point grabbed under the pointer); a headless boot waited forever for a frame to warm the shaders
+- [ ] 1.12 Also found: a mission that goes with a moving fleet (Assassination) leaves the fleet's course where it was set;
+  the player must set course again each turn from the briefing. Whether an accepted mission's course should follow it is
+  the owner's call; mockup 1 does the same (its `CAMP.order` is the sector the course was set for), so both would change together
+
+- [x] 1.13 (2026-11-06) Every mission flown: marker beacons, drones and battles that end on their objectives; the
+  Shakedown and Deliver the prize rewritten; the mission strip without its fill, objectives ticked live, Withdraw in the
+  battle's menu; ships slide on the map (no hop), in the game and mockup 1 v17
 
 ## 2. Still different from mockup 1 v14 (each a line in `docs/design/mockup-sync.md`)
 
@@ -35,3 +47,5 @@
 - [ ] 2.5 The phone layouts of the flow screens checked at phone sizes (landscape and portrait)
 - [ ] 2.7 The mockup's screens fade and show the same loading screen (the game has them first)
 - [ ] 2.6 Options beyond the display mode (sound levels, quality, UI scale)
+- [ ] 2.8 Mockup 1: the mission strip without its fill and with live ticks, Withdraw in the battle menu
+- [ ] 2.9 Mockup 1: the Skirmish screen by scenario type, then the faction to play it as, with a scroll bar

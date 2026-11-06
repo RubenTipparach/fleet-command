@@ -176,12 +176,12 @@ public sealed partial class Battle
     }
 
     /// <summary>True when one mount could fire at the locked target now.</summary>
-    public bool CanFire(Mount m) => TargetOf(Player) is { } t && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
+    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
 
     /// <summary>Fires one mount at the locked target.</summary>
     public bool FireOne(int index)
     {
-        if (index < 0 || index >= Player.Mounts.Count || TargetOf(Player) is not { } t) return false;
+        if (index < 0 || index >= Player.Mounts.Count || TargetOf(Player) is not { } t || t.Side == Player.Side) return false;
         Mount m = Player.Mounts[index];
         return !m.Weapon.IsPointDefence && FireMount(Player, m, t);
     }
@@ -190,7 +190,7 @@ public sealed partial class Battle
     public Mount[] WouldFire()
     {
         Ship? t = TargetOf(Player);
-        if (t == null || !Player.Alive) return Array.Empty<Mount>();
+        if (t == null || !Player.Alive || t.Side == Player.Side) return Array.Empty<Mount>();
         Mount[] all = Player.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t)).ToArray();
         return Player.Volley ? all : all.Take(1).ToArray();
     }
@@ -200,19 +200,21 @@ public sealed partial class Battle
     {
         Ship? t = TargetOf(Player);
         if (t == null) { Say("Tactical", "No target locked."); return 0; }
+        if (t.Side == Player.Side) { Say("Tactical", $"The {t.Name} is friendly: weapons hold."); return 0; }
         int n = 0;
         foreach (Mount m in WouldFire()) if (FireMount(Player, m, t)) n++;
         if (n == 0) Say("Tactical", "No weapon ready in arc and range.");
         return n;
     }
 
-    /// <summary>Locks an enemy ship as the target. A friendly ship cannot be locked.</summary>
+    /// <summary>Locks a ship as the target: an enemy to fire on, or a friendly one to hail, beam to, follow or watch (owner,
+    /// 2026-11-06: "I also cant target friendly units"); the weapons never fire on a friendly one. Not the ship you command.</summary>
     public void Lock(string id)
     {
         Ship? t = ShipById(id);
-        if (t is not { Alive: true } || t.Side == Player.Side) return;
+        if (t is not { Alive: true } || t == Player) return;
         Player.Target = t.Id;
-        Say("Tactical", $"Target locked: {t.Name}, {t.Class.Name}.");
+        Say("Tactical", t.Side == Player.Side ? $"Selected: {t.Name}, {t.Class.Name} (friendly)." : $"Target locked: {t.Name}, {t.Class.Name}.");
     }
 
     /// <summary>Releases the locked target.</summary>

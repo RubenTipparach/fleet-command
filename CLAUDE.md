@@ -126,7 +126,10 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   those and make sure they get generated in the future so it doesnt pile up as garbage on my pc"). Run
   `--headless --path . --import` after adding or changing an asset (`play.bat` does it on every launch) and commit the
   `.import` files it writes in the same commit as the asset; the cache in `.godot/` stays ignored. `.gitattributes`
-  keeps them LF, so a Windows checkout does not show every one as changed.
+  keeps them LF, so a Windows checkout does not show every one as changed. The same holds for the `.uid` file Godot
+  writes beside a new script or shader. `scripts/run-tests.sh` runs the import and fails if it leaves any `.import` or
+  `.uid` file uncommitted (owner, 2026-11-05, the same ask again after a session committed the Ssarith and Kelvane
+  assets without theirs).
 - **Platforms**: Windows desktop is the owner's playtest machine, Linux runs the headless tests,
   and phones are a target from the first screen. The builds are Windows desktop and native Android
   (survey T1). The renderer is Forward+ on desktop and Compatibility on Android, set per platform
@@ -537,6 +540,16 @@ saying what changes here. Where a note and the copied text below it disagree, th
   map and a PBR set (base colour, ORM, tangent normals, emission) with the hull lights baked into a light map
   (`ship-detailing`; Ship Design Bible chapter 15, T5-T8).
 - **No z-fighting, ever** (Undercity, Star Crew).
+- **Stars and every scatter come from a real generator, never a cheap hash** (owner, 2026-11-05, of the menu's stars drawn
+  with `i * 7919 % 1000`: "never to use poor RNG stuff for stars, this seems like a common low effort mistake", "you can see a
+  repetition pattern", "this always results in poror rng"). A product modulo a constant, `fract(sin(x) * 43758.5453)` and
+  their kin put points on lines, grids and repeats the eye finds at once. Stars, dust, debris and any scattered detail:
+  - draw from a seeded generator with full avalanche (the Core's `Rng`, SplitMix64; `Mulberry32` where a mockup's numbers
+    must match), or in a shader an integer hash (PCG or xxHash style on `uint`), never `fract(sin(...))` in new code;
+  - choose the distribution on purpose: stratified jitter or Poisson disc for even cover, a density field for a galaxy's
+    band and clusters, brightness and colour by the shares in `data/space/starfield.json`, most stars faint;
+  - reuse what exists before writing another (the sky files' stars from `tools/space/nebula_skies.py`, `Starfield2D` for a
+    flat backdrop), and look at a full-size still for lines, grids or repeats before calling it done.
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).
 

@@ -2,6 +2,7 @@
 // screen, and the map's HUD (MapHud: the top bar, the sector panel, the briefing and the port) is drawn over it. A press the
 // HUD does not take falls through to here: a click picks a sector, a drag pans, the wheel zooms; the view never turns.
 // The camera is the player's alone (CLAUDE.md section 8).
+using System.Collections.Generic;
 using FleetCommand.Campaign;
 using Godot;
 
@@ -16,6 +17,8 @@ public sealed partial class MapScreen : Control
     public MapHud Hud => _hud;
     private PortPanel _port = null!;
     public CampaignMap? Map { get; private set; }
+    /// <summary>The HUD and the port, the map screen's panels of controls.</summary>
+    public IEnumerable<Control> Panels => new Control[] { _hud, _port };
     private Vector2 _press;
     private bool _dragging, _left;
     public (int C, int R)? HoverHex { get; private set; }
@@ -51,6 +54,10 @@ public sealed partial class MapScreen : Control
         Map.Select(_f.Sel);
     }
 
+    // The port covers the whole screen, so it is shown only while a port is open: shut but shown, it took every press meant
+    // for the HUD under it (Move here, End turn, Briefing) and passed it on to the map, which picked a sector instead.
+    public override void _Process(double delta) => _port.Visible = _f.Port != null && _f.Camp != null;
+
     public void Refresh() { Map?.Rebuild(); Map?.Select(_f.Sel); Map?.ShowRoute(_f.Path); }
 
     public override void _GuiInput(InputEvent e)
@@ -74,12 +81,12 @@ public sealed partial class MapScreen : Control
             case InputEventMouseMotion m:
                 Mouse = m.Position;
                 if (_left && (m.Position - _press).Length() > 6) _dragging = true;
-                if (_left && _dragging) Map.Pan(m.Relative);
+                if (_left && _dragging) Map.Pan(m.Position - m.Relative, m.Position);
                 HoverHex = Map.Pick(m.Position);
                 Map.Hover(HoverHex);
                 break;
             case InputEventScreenDrag d:
-                Map.Pan(d.Relative);
+                Map.Pan(d.Position - d.Relative, d.Position);
                 AcceptEvent();
                 break;
         }

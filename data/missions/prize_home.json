@@ -15,15 +15,57 @@
   "taken_grade"
  ],
  "where": "is_home",
- "objective": "Tow the {prize_name} to the research yard at {home}.",
- "brief": "The {prize_name} is under tow. The research yard at {home} is waiting for her; the bounty is paid on delivery.",
+ "objective": "Bring the {prize_name} in to the research yard at {home}, and keep the {name(fac)} from taking her back.",
+ "brief": "The {prize_name} is under tow to the research yard at {home}. The {name(fac)} know where she is going: expect them to try to take her back on the last leg. The bounty is paid on delivery.",
  "result": [
   {
    "credits": "round(reward * (taken_grade == 'outstanding' ? 1.5 : 1))",
    "standing": {
     "{side}": "taken_grade == 'outstanding' ? 8 : 5"
    },
-   "log": "Research has the {prize_name}: the {name(fac)} {cls}'s drive and shields are being taken apart."
+   "log": "Research has the {prize_name}: the {name(fac)} {cls}'s drive and shields are being taken apart.",
+   "when": "win"
+  },
+  {
+   "log": "The {name(fac)} took the {prize_name} back before she reached {home}."
+  }
+ ],
+ "battle": [
+  {
+   "name": "Deliver the prize",
+   "groups": [
+    {
+     "id": "towed",
+     "faction": "{fac}",
+     "count": 1,
+     "role": "neutral",
+     "tag": "rescue",
+     "tier": "tier",
+     "ship_name": "{prize_name}",
+     "label": "The prize under tow"
+    },
+    {
+     "id": "recovery",
+     "faction": "{fac}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Recovery force",
+     "range_km": 9
+    }
+   ],
+   "objectives": [
+    {
+     "id": "deliver",
+     "text": "Bring the {prize_name} in",
+     "primary": true,
+     "done": "alive(towed) == 1 && alive(recovery) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Keep the {prize_name} above half her hull",
+     "done": "hull_min(towed) >= 0.5"
+    }
+   ]
   }
  ]
 }

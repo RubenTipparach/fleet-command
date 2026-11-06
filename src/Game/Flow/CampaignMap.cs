@@ -159,11 +159,22 @@ public sealed partial class CampaignMap : Node3D
     }
 
     /// <summary>Pans by a screen drag: the map follows the pointer.</summary>
-    public void Pan(Vector2 screenDelta)
+    public void Pan(Vector2 from, Vector2 to)
     {
+        // the map is grabbed: the point of the plane that was under the pointer stays under it (a fixed rate per pixel
+        // moved the map about seven times as far as the pointer at the usual distance)
+        if (Ground(from) is not { } a || Ground(to) is not { } b) return;
         _camGlide = null;
-        float k = Dist * 0.0016f;
-        Target += new Vector3(-screenDelta.X, 0, -screenDelta.Y / Mathf.Cos(Polar) * 0.75f) * k;
+        Target += a - b;
+    }
+
+    // the point of the map's plane under a screen point, or null when the ray misses it
+    private Vector3? Ground(Vector2 screen)
+    {
+        Vector3 o = _cam.ProjectRayOrigin(screen), d = _cam.ProjectRayNormal(screen);
+        if (Math.Abs(d.Y) < 1e-4) return null;
+        float t = -o.Y / d.Y;
+        return t < 0 ? null : o + d * t;
     }
 
     public void Select((int C, int R)? at)
@@ -661,7 +672,9 @@ public sealed partial class CampaignMap : Node3D
             if (p.Model != null)
             {
                 if (a.DistanceSquaredTo(b) > 1e-6f) p.Model.Rotation = new Vector3(0, Mathf.Atan2(b.X - a.X, b.Z - a.Z), 0);
-                p.Model.Position = new Vector3(0, p.Lift + Mathf.Sin(Mathf.Pi * Math.Min(1, p.T / legs)) * 0.35f, 0);
+                // the ship slides along its route at its stand's height (owner, 2026-11-06: "when ships move dont hop them lol,
+                // it looks funny, just slide them around the map is fine")
+                p.Model.Position = new Vector3(0, p.Lift, 0);
             }
             if (p.T >= legs)
             {

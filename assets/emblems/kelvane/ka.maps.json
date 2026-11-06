@@ -1,0 +1,13 @@
+{
+ "note": "The Kelvane badge's wireframe mask over the orbital's UVs (tools/mockups/kelvane_emblem.py), white on the lines; the 3D page and the Blender render both inlay the brass grid by it.",
+ "pieces": {
+  "grid": {
+   "size": [
+    2048,
+    1024
+   ],
+   "file": "ka.grid.png",
+   "lossless": true
+  }
+ }
+}
