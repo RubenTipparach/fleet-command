@@ -10,7 +10,7 @@
 ## 2. Still different from mockup 12 (docs/design/mockup-sync.md)
 
 - [x] 2.1 Rooms behind the windows and hangars behind the launch bays (2026-11-06, owner: "get main, implement these ships in game"): `pane.gdshader` on quads built from the window_* and bay_* empties, `ship_rooms.gdshaderinc` (a port of lib/ship-rooms.js)
-- [ ] 2.2 The Hunt as a side the player commands (its console skin, mockup 15, in the game)
+- [x] 2.2 The Hunt as a side the player commands: done by change `ssarith-console-engine` (its console skin, mockup 15, in the game; its campaign flies the Hunt's own classes)
 - [ ] 2.3 The Hunt's own weapons, once its culture is set (survey H1)
 - [x] 2.4 Strobe, beacon and position-light glows, as the page draws them over its lamps (`lamp_glow.gdshader`, from each lamp's `glow_m`); none at the floods (v26)
 - [ ] 2.5 `*.bin` in the export presets once there are any
