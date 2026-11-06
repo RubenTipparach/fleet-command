@@ -91,6 +91,7 @@ public sealed partial class Battle
         Scenario = scenario;
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
         RangeSetup();
+        SystemsSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -168,6 +169,22 @@ public sealed partial class Battle
         if (_log.Count > 80) _log.RemoveAt(0);
     }
 
+    partial void CommsStep(double dt);
+    partial void TransportStep(double dt);
+    partial void TractorStep(double dt);
+    partial void MinesStep(double dt);
+    partial void CraftStep(double dt);
+    partial void ReactorStep(double dt);
+    partial void WarpStep(double dt);
+    partial void RepairCrewsStep(double dt);
+    partial void CloakStep(double dt);
+    partial void SensorsStep(double dt);
+    partial void SecurityStep(double dt);
+    partial void TargetingStep(double dt);
+    partial void FleetStep(double dt);
+    /// <summary>Called once a battle is built, for each system to set its own state up from the scenario.</summary>
+    partial void SystemsSetup();
+
     /// <summary>One fixed step of the whole battle.</summary>
     public void Step()
     {
@@ -186,6 +203,9 @@ public sealed partial class Battle
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
         foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
         ChargeStep(dt);
+        // the mockup's other systems, each in its own file (Battle.<System>.cs; a hook with no body costs nothing)
+        CommsStep(dt); TransportStep(dt); TractorStep(dt); MinesStep(dt); CraftStep(dt); ReactorStep(dt); WarpStep(dt);
+        RepairCrewsStep(dt); CloakStep(dt); SensorsStep(dt); SecurityStep(dt); TargetingStep(dt); FleetStep(dt);
         RangeStep(dt);
         MarkersStep();
         PointDefenceStep();

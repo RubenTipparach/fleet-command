@@ -26,13 +26,30 @@ public sealed partial class StationPanel : ConsolePanel
         Rect2 p = Frame(st.Label);
         Rail("st", p.Position.X, p.Position.Y, Stations, cur, X.Act.Station);
         var b = new Rect2(p.Position.X + 56, p.Position.Y, p.Size.X - 56, p.Size.Y);
+        bool drawn = false;
         switch (cur)
         {
-            case "helm": Helm(b); break;
-            case "power": Power(b); break;
-            default: NotBuilt(b, st.Label, st.Icon); break;
+            case "helm": Helm(b); drawn = true; break;
+            case "power": Power(b); drawn = true; break;
+            // each other station in its own file (StationPanel.<Station>.cs); a station not yet built says so
+            case "tactical": TacticalPage(b, ref drawn); break;
+            case "pd": PointDefencePage(b, ref drawn); break;
+            case "science": SciencePage(b, ref drawn); break;
+            case "comms": CommsPage(b, ref drawn); break;
+            case "repair": RepairPage(b, ref drawn); break;
+            case "transport": TransportPage(b, ref drawn); break;
+            case "fleet": FleetPage(b, ref drawn); break;
         }
+        if (!drawn) NotBuilt(b, st.Label, st.Icon);
     }
+
+    partial void TacticalPage(Rect2 b, ref bool drawn);
+    partial void PointDefencePage(Rect2 b, ref bool drawn);
+    partial void SciencePage(Rect2 b, ref bool drawn);
+    partial void CommsPage(Rect2 b, ref bool drawn);
+    partial void RepairPage(Rect2 b, ref bool drawn);
+    partial void TransportPage(Rect2 b, ref bool drawn);
+    partial void FleetPage(Rect2 b, ref bool drawn);
 
     private void NotBuilt(Rect2 b, string label, string icon)
     {

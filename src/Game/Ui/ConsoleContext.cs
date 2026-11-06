@@ -8,7 +8,7 @@ using FleetCommand.Sim;
 
 namespace FleetCommand.Game.Ui;
 
-public sealed class ConsoleState
+public sealed partial class ConsoleState
 {
     public string Station = "helm";
     public string ShipPage = "systems";

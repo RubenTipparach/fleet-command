@@ -1,0 +1,4 @@
+{
+ "_doc": "The battle console mockup's test scenes for comms, transport and boarding, in the format of data/battle/scenarios.json, appended to its list in menu order.",
+ "scenarios": []
+}

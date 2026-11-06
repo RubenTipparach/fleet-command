@@ -190,6 +190,12 @@ public sealed partial class BattleView : Node3D
     }
 
     /// <summary>The view rectangle and the whole screen, in console units.</summary>
+    partial void SyncComms(Battle b, double dt);
+    partial void SyncTractor(Battle b, double dt);
+    partial void SyncReactor(Battle b, double dt);
+    partial void SyncCloak(Battle b, double dt);
+    partial void SyncTactical(Battle b, double dt);
+
     public void SetViewRect(Rect2 view, Vector2 screen) { _view = view; _screen = screen; }
 
     public override void _Process(double delta) => Sync(delta);
@@ -201,6 +207,9 @@ public sealed partial class BattleView : Node3D
         Battle b = _x.Battle;
         ShipSkin.Flash(_strobes, Time.GetTicksMsec() / 1000.0);
         Damage(b, _x.State.Paused || _x.State.MenuOpen ? 0 : dt);
+        // the mockup's other systems in 3D (transporter beams, tractor beams, mines, craft, cloaks), each in BattleView.<Package>.cs
+        double sdt = _x.State.Paused || _x.State.MenuOpen ? 0 : dt;
+        SyncComms(b, sdt); SyncTractor(b, sdt); SyncReactor(b, sdt); SyncCloak(b, sdt); SyncTactical(b, sdt);
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
