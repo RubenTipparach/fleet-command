@@ -18,6 +18,11 @@
 
 - [ ] 2.1 The other stations: tactical, point defence, science, comms, repair, transport, fleet (wingman behaviours)
 - [ ] 2.2 Ship pages: sensors, tractor (the contest), craft; the Target box with the target's systems display
+  - [x] 2.2a Tractor (the contest of rounds, the tow, reel, asteroids) and Craft (fighters on Attack, Defend and Defences,
+    the disguised shuttle, the missile barrage), mines (dropped astern, placed by transporter with the bullseye over the
+    view; their keys on the Craft page until the Transport station's Mines tab is built), the beam, craft, mines and rocks
+    in 3D, and the mockup's Tractor, Mines, Shuttle and Fighters scenes from both sides with their playtests
+  - [ ] 2.2b Mines spend a transporter pad and move to the Transport station's Mines tab (with the transport package)
 - [ ] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [ ] 2.5 The tactical map, the event log, the 3D shield hexagon, the transporter effect
 - [ ] 2.6 The scripted captain and a recorded desktop playtest on the owner's PC (CLAUDE.md section 9)
