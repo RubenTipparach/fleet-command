@@ -69,18 +69,20 @@ public sealed record Faction(string Id, string Name, string Hull, string Trim, s
 public enum AiRange { Close, Mid, Long }
 
 /// <summary>A ship at the start of a scenario, with its captain's standing orders when an AI flies it: its stance, its
-/// fighting range, whether it jinks (erratic) or holds its fire, and the hull and shields it starts with (fractions).</summary>
+/// fighting range, whether it jinks (erratic) or holds its fire, and the hull and shields it starts with (fractions); Start,
+/// its damage and energy past its class's (ScenarioStart), or null.</summary>
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false);
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, ShipStartState? Start = null);
 
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
 /// objective, and the first officer's message. The first ship is the one the player commands. Sky is the nebula it is fought
-/// under; SunEnergy the sun's strength there (deep space is dim and moody; a scene by a warm star turns it up).</summary>
+/// under; SunEnergy the sun's strength there (deep space is dim and moody; a scene by a warm star turns it up); Wells, the
+/// gravity wells whose field a warp jump must reckon with (ScenarioStart), or null.</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
-    IReadOnlyList<MarkerDef>? Markers = null)
+    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null)
 {
     /// <summary>A battle with marker beacons ends when its mission's objectives are met (GameFlow checks them), not when
     /// the last enemy goes: a shakedown's target drones can be shot before its beacon is reached.</summary>

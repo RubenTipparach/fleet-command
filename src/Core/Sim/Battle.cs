@@ -79,7 +79,7 @@ public sealed partial class Battle
     public Battle(GameData data, Scenario scenario)
     {
         Data = data;
-        Rules = new Rules(data.Tuning);
+        Rules = new Rules(data.Tuning) { SystemsData = data.Systems };
         _hit = Rng.Fork(scenario.Seed, "hit");
         _dmg = Rng.Fork(scenario.Seed, "damage");
         _ai = Rng.Fork(scenario.Seed, "ai");
@@ -91,6 +91,7 @@ public sealed partial class Battle
         Scenario = scenario;
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
         RangeSetup();
+        ReactorSetup();
         SystemsSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
@@ -219,8 +220,8 @@ public sealed partial class Battle
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
             }
-        // a damage range never ends: its last ship can be broken up and the range repaired
-        if (Scenario.DamageRange) return;
+        // a damage range never ends: its last ship can be broken up and the range repaired; a jump to warp ended it already
+        if (Scenario.DamageRange || Over != null) return;
         if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
         if (!_ships.Any(s => s.Side == 1 && s.Alive && !s.Struck)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
@@ -257,12 +258,7 @@ public sealed partial class Battle
         s.HetChance = Math.Min(Rules.HetMax(s), s.HetChance + Tuning.HetRecoverPerS * dt);
         s.Broke = Math.Max(0, s.Broke - dt);
         s.EstopT = Math.Max(0, s.EstopT - dt);
-        if (s.Power["repair"] > 0)
-        {
-            string worst = Rules.Subsystems.OrderBy(k => s.Sys[k]).First();
-            s.Sys[worst] = Math.Min(1, s.Sys[worst] + s.Power["repair"] * s.Brown * Tuning.RepairPerES * dt);
-            foreach (Mount m in s.Mounts) if (m.Hp is > 0 and < 1) m.Hp = Math.Min(1, m.Hp + s.Power["repair"] * Tuning.MountRepairPerES * dt);
-        }
+        // repair energy works through the crews on the repair queue (Battle.Repair, RepairCrewsStep)
     }
 
     private void Move(Ship s, double dt)
@@ -420,6 +416,7 @@ public sealed partial class Battle
             m.Hp = Math.Max(0, m.Hp - Tuning.MountDamage);
             if (m.Hp <= 0) m.Charge = 0;
         }
+        ReactorHit(t, rest);
         if (kind is "burn" or "chorus") { }   // a burn and a chorus land in ticks: their own lines say so
         else if (t == Player) Say("Engineering", $"Hull hit through the {Rules.Facings[f]} shield.");
         else if (src == Player) Say("Tactical", $"Hit on {t.Name}, {Rules.Facings[f]} facing.");

@@ -127,12 +127,14 @@ public sealed partial class Battle
         Say("Helm", "Emergency deceleration.");
     }
 
-    /// <summary>Gives a system <paramref name="boxes"/> energy boxes, within ten and the reactor's output.</summary>
+    /// <summary>Gives a system <paramref name="boxes"/> energy boxes, within ten and the reactor's output; lowering one is
+    /// always allowed, even while the output is short (the mockup's power). Warp is set here too (Battle.Warp).</summary>
     public void SetPower(string system, int boxes)
     {
+        if (system == "warp") { SetWarpPower(boxes); return; }
         if (!Rules.Systems.Contains(system)) return;
         int cur = Player.Power[system];
-        int n = Math.Clamp(boxes, 0, Math.Min(Rules.BoxesPerSystem, Rules.PowerRoom(Player, cur)));
+        int n = Math.Clamp(boxes, 0, Math.Max(0, Math.Max(Math.Min(cur, boxes), Math.Min(Rules.BoxesPerSystem, Rules.PowerRoom(Player, cur)))));
         Player.Power[system] = n;
         if (system == "engines") Player.VOrder = Math.Min(Player.VOrder, Rules.MaxSpeed(Player));
     }

@@ -9,7 +9,7 @@ using FleetCommand.Data;
 
 namespace FleetCommand.Sim;
 
-public sealed class Rules
+public sealed partial class Rules
 {
     /// <summary>The systems energy is allocated to, in the power station's order.</summary>
     public static readonly string[] Systems = { "weapons", "shields", "engines", "sensors", "tractor", "transport", "repair" };
@@ -24,14 +24,15 @@ public sealed class Rules
     public Rules(Tuning tuning) { _t = tuning; }
     public Tuning Tuning => _t;
 
-    /// <summary>The reactor's output this moment, E.</summary>
-    public double Output(Ship s) => s.Class.ReactorE;
+    /// <summary>The reactor's output this moment, E: its rating, less what misaligned coils lose (Rules.Reactor).</summary>
+    public double Output(Ship s) => s.Class.ReactorE * Efficiency(s);
 
-    /// <summary>What the allocation draws, E.</summary>
-    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k));
+    /// <summary>What the allocation draws, E: the systems' boxes, the coolant pumps and the warp coils (Rules.Reactor).</summary>
+    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k)) + ReactorDraw(s);
 
-    /// <summary>How many more boxes a system holding <paramref name="current"/> may be given: up to ten, within the output.</summary>
-    public int PowerRoom(Ship s, int current) => (int)Math.Floor(Output(s) + 1e-6) - Used(s) + current;
+    /// <summary>How many more boxes a system holding <paramref name="current"/> may be given: up to ten, within the output,
+    /// unless the captain lets the allocation draw past it (Ship.Overdraw).</summary>
+    public int PowerRoom(Ship s, int current) => s.Overdraw ? NoCap : (int)Math.Floor(Output(s) + 1e-6) - Used(s) + current;
 
     /// <summary>The speed limit, m/s: the engines' boxes, the class's top speed, the engines' health and any brownout.</summary>
     public double MaxSpeed(Ship s) =>
@@ -132,8 +133,9 @@ public sealed class Rules
     /// <summary>A class's best high energy turn chance: smaller hulls turn hard more safely.</summary>
     public static double HetMax(Ship s) => Math.Clamp(0.95 - s.Class.LengthM / 2000, 0.6, 0.95);
 
-    /// <summary>The chance the next high energy turn succeeds, as the helm shows it and Battle.Het rolls it.</summary>
-    public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0));
+    /// <summary>The chance the next high energy turn succeeds, as the helm shows it and Battle.Het rolls it: less erratic
+    /// manoeuvres, plus the helm officer's skill (officers).</summary>
+    public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0) + OfficerSkill(s, "helm") * SystemsData.Officers.Ability.Het);
 
     /// <summary>Range in km an AI captain closes to for its range setting.</summary>
     /// <summary>The range an AI captain fights at, km (the player's manoeuvres use the middle one).</summary>
