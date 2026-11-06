@@ -25,7 +25,8 @@
  "ssarith": {
   "name": "Ssarith Hunt",
   "hull": "#8a9478",
-  "trim": "#5fd07a"
+  "trim": "#5fd07a",
+  "skin": "ssarith"
  },
  "neutral": {
   "name": "Unclaimed",
