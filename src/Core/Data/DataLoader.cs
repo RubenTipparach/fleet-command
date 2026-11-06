@@ -14,7 +14,7 @@ public static class DataLoader
     /// <summary>The files GameData is built from, relative to data/.</summary>
     public static readonly string[] Files =
     {
-        "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json",
+        "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json", "battle/range.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -27,7 +27,36 @@ public static class DataLoader
         var factions = LoadFactions(J("battle/factions.json"));
         var scenarios = LoadScenarios(J("battle/scenarios.json"), classes, factions);
         LayoutDef layout = LoadLayout(J("console/layout.json"));
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout);
+        RangeDef range = LoadRange(J("battle/range.json"), weapons);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, range);
+    }
+
+    /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>
+    public static RangeDef LoadRange(StrictJson root, IReadOnlyDictionary<string, WeaponDef> weapons)
+    {
+        root.Str("_doc", "");
+        double from = Positive(root, "from_km");
+        var list = new List<RangeProgram>();
+        var ids = new HashSet<string>();
+        foreach (StrictJson o in root.ObjList("programs"))
+        {
+            string id = o.Str("id");
+            if (!ids.Add(id)) throw new DataError($"{o.Where}.id: '{id}' used twice");
+            string[] ws = o.StrList("weapons");
+            if (ws.Length == 0) throw new DataError($"{o.Where}.weapons: at least one weapon");
+            foreach (string w in ws)
+                if (!weapons.TryGetValue(w, out WeaponDef? wd) || wd.IsPointDefence) throw new DataError($"{o.Where}.weapons: no weapon '{w}' that can strike a ship");
+            int count = o.Int("count");
+            if (count < 1) throw new DataError($"{o.Where}.count: at least 1");
+            double? bearing = o.Has("bearing_deg") ? o.Num("bearing_deg") : null;
+            double stop = o.Num("stop_below_hull", 0);
+            if (stop is < 0 or >= 1) throw new DataError($"{o.Where}.stop_below_hull: 0 (never) up to below 1");
+            list.Add(new RangeProgram(id, o.Str("name"), ws, o.Bool("overload", false), Positive(o, "every_s"), count, bearing, stop));
+            o.Done();
+        }
+        if (list.Count == 0) throw new DataError($"{root.Where}.programs: at least one program");
+        root.Done();
+        return new RangeDef(from, list);
     }
 
     private static WeaponMode Mode(StrictJson o) => new(Positive(o, "range_km"), Positive(o, "charge_s"), NonNeg(o, "cost_e"), NonNeg(o, "damage"));
@@ -165,7 +194,9 @@ public static class DataLoader
         // the sun's strength there: deep space by default, more by a warm star
         double sun = root.Num("sun_energy", Scenario.DeepSpaceSun);
         if (!(sun > 0 && sun <= 4)) throw new DataError($"{root.Where}.sun_energy: above 0 and at most 4, not {sun}");
-        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun);
+        // a damage range (data/battle/range.json): its ships stand to be fired at, and it never ends
+        bool isRange = root.Bool("damage_range", false);
+        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange);
         root.Done();
         return scenario;
     }

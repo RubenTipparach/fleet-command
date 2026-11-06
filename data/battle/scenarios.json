@@ -2,7 +2,8 @@
  "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet.",
  "scenarios": [
   {
-   "id": "concord_battle", "sky": "deep_indigo",
+   "id": "concord_battle",
+   "sky": "deep_indigo",
    "name": "Battle",
    "side": "concord",
    "seed": 20261104,
@@ -87,7 +88,8 @@
    ]
   },
   {
-   "id": "concord_duel", "sky": "ice_halo",
+   "id": "concord_duel",
+   "sky": "ice_halo",
    "name": "Duel",
    "side": "concord",
    "seed": 20261109,
@@ -124,7 +126,8 @@
    ]
   },
   {
-   "id": "concord_arming", "sky": "twin_lights",
+   "id": "concord_arming",
+   "sky": "twin_lights",
    "name": "Arming",
    "side": "concord",
    "seed": 20261105,
@@ -177,7 +180,8 @@
    ]
   },
   {
-   "id": "krai_battle", "sky": "crimson_reach",
+   "id": "krai_battle",
+   "sky": "crimson_reach",
    "name": "Battle",
    "side": "krai",
    "seed": 20261106,
@@ -262,7 +266,8 @@
    ]
   },
   {
-   "id": "krai_duel", "sky": "violet_storm",
+   "id": "krai_duel",
+   "sky": "violet_storm",
    "name": "Duel",
    "side": "krai",
    "seed": 20261110,
@@ -299,7 +304,8 @@
    ]
   },
   {
-   "id": "krai_arming", "sky": "solar_furnace",
+   "id": "krai_arming",
+   "sky": "solar_furnace",
    "name": "Arming",
    "side": "krai",
    "seed": 20261108,
@@ -352,7 +358,8 @@
    ]
   },
   {
-   "id": "concord_wrecks", "sky": "emerald_rift",
+   "id": "concord_wrecks",
+   "sky": "emerald_rift",
    "name": "Wrecks",
    "side": "concord",
    "seed": 20261105,
@@ -441,7 +448,134 @@
    ]
   },
   {
-   "id": "krai_wrecks", "sky": "ember",
+   "id": "concord_range",
+   "sky": "ashen_void",
+   "name": "Damage range",
+   "side": "concord",
+   "seed": 20261106,
+   "damage_range": true,
+   "objective": "Fire on each class and watch it scar and break",
+   "say": [
+    "Range",
+    "Every class stands on the range, shields down. Pick a weapon and fire."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 3000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold"
+    },
+    {
+     "id": "t_ca",
+     "name": "Steadfast",
+     "captain": "Capt. Rhee",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -4500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_dd",
+     "name": "Petrel",
+     "captain": "Cdr. Amsel",
+     "class": "dd",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -3000,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_ff",
+     "name": "Swift",
+     "captain": "Lt. Cdr. Ivo",
+     "class": "ff",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -1500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kcv",
+     "name": "Ruhn",
+     "captain": "Sub-warlord Pekh",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kff",
+     "name": "Vekk",
+     "captain": "Raidmaster Ossk",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 1500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kca",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 3000,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kdn",
+     "name": "Draxx",
+     "captain": "High Warlord Zhen",
+     "class": "krai_dn",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 4500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    }
+   ]
+  },
+  {
+   "id": "krai_wrecks",
+   "sky": "ember",
    "name": "Wrecks",
    "side": "krai",
    "seed": 20261106,
@@ -510,6 +644,132 @@
      "hold_fire": true,
      "hull_frac": 0.3,
      "shields_frac": 0
+    }
+   ]
+  },
+  {
+   "id": "krai_range",
+   "sky": "rust_lanes",
+   "name": "Damage range",
+   "side": "krai",
+   "seed": 20261106,
+   "damage_range": true,
+   "objective": "Fire on each class and watch it scar and break",
+   "say": [
+    "Range",
+    "Every class stands on the range, shields down. Pick a weapon and fire."
+   ],
+   "ships": [
+    {
+     "id": "utrek",
+     "name": "Gorrh",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 3000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold"
+    },
+    {
+     "id": "t_ca",
+     "name": "Steadfast",
+     "captain": "Capt. Rhee",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -4500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_dd",
+     "name": "Petrel",
+     "captain": "Cdr. Amsel",
+     "class": "dd",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -3000,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_ff",
+     "name": "Swift",
+     "captain": "Lt. Cdr. Ivo",
+     "class": "ff",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -1500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kcv",
+     "name": "Ruhn",
+     "captain": "Sub-warlord Pekh",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kff",
+     "name": "Vekk",
+     "captain": "Raidmaster Ossk",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 1500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kca",
+     "name": "Kharz",
+     "captain": "Warlord Ghast",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 3000,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_kdn",
+     "name": "Draxx",
+     "captain": "High Warlord Zhen",
+     "class": "krai_dn",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 4500,
+     "z_m": -2500,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
     }
    ]
   }

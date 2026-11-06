@@ -244,7 +244,9 @@ public sealed partial class BattleView : Node3D
         LayoutDef l = _x.Data.Layout;
         float near = 0.5f, fov = (float)(l.ViewFovDeg * Math.PI / 180);
         float hs = 2 * near * Mathf.Tan(fov / 2) * (_screen.Y / _view.Size.Y), ws = hs * _screen.X / _screen.Y;
-        float cx = _view.Position.X + _view.Size.X / 2, cy = _view.Position.Y + _view.Size.Y * (float)l.ShipScreenY;
+        // the damage range centres the ship it watches, so a hull looked at up close is not cut off by the view's foot
+        float shipY = _x.Battle.Scenario.DamageRange ? 0.5f : (float)l.ShipScreenY;
+        float cx = _view.Position.X + _view.Size.X / 2, cy = _view.Position.Y + _view.Size.Y * shipY;
         _cam.SetFrustum(hs, new Vector2(ws * (0.5f - cx / _screen.X), hs * (cy / _screen.Y - 0.5f)), near, 4000);
     }
 
@@ -255,6 +257,16 @@ public sealed partial class BattleView : Node3D
         if (_cam.IsPositionBehind(p)) return null;
         return _cam.UnprojectPosition(p);
     }
+
+    /// <summary>The damage range's click to fire: the point of plating on a ship under a screen position (global space), or
+    /// null when the click missed it or it has no approved model.</summary>
+    public Vector3? PlatingAt(string shipId, Vector2 screen) => _damage.TryGetValue(shipId, out ShipDamage? d) ? d.PlatingAt(_cam, screen) : null;
+
+    /// <summary>The next shot from that side to land on the ship lands at this point of plating (the damage range's aim).</summary>
+    public void AimAt(string shipId, Vector3 global) { if (_damage.TryGetValue(shipId, out ShipDamage? d)) d.Aim(global); }
+
+    /// <summary>The camera's position on the battle plane, metres (where the damage range's Fire at it shoots from).</summary>
+    public (double X, double Z) CameraM => (_cam.GlobalPosition.X * MPerU, _cam.GlobalPosition.Z * MPerU);
 
     /// <summary>The point on the battle plane under a screen position, metres; null when the ray misses the plane.</summary>
     public (double X, double Z)? PlaneAt(Vector2 screen)
@@ -308,7 +320,9 @@ public sealed partial class BattleView : Node3D
         Pitch = Mathf.Clamp(Pitch + drag.Y * 0.004f, 0.08f, 1.45f);
     }
 
-    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, 5, 220);
+    /// <summary>The wheel: closer or further, down to 500 m in a battle, or 120 m on the damage range, where the player
+    /// looks at a hull's scars up close (owner, 2026-11-05: "and batle scars").</summary>
+    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, _x.Battle.Scenario.DamageRange ? 1.2f : 5, 220);
 
     /// <summary>The Camera lock key: back to your own ship (out of Target view) with the camera locked on the target.</summary>
     public void LockCamera()

@@ -8,6 +8,8 @@
   { "script": "battle", "play": "krai_duel" },
   { "script": "arming", "play": "krai_arming" },
   { "script": "wrecks", "play": "concord_wrecks" },
-  { "script": "wrecks", "play": "krai_wrecks" }
+  { "script": "wrecks", "play": "krai_wrecks" },
+  { "script": "range", "play": "concord_range" },
+  { "script": "range", "play": "krai_range" }
  ]
 }

@@ -74,6 +74,7 @@ public sealed partial class Battle
         Player = _ships[0];
         Scenario = scenario;
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
+        RangeSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -142,6 +143,7 @@ public sealed partial class Battle
         Ship p = Player;
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
         foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
+        RangeStep(dt);
         PointDefenceStep();
         ShotsStep(dt);
         foreach (Ship s in _ships)
@@ -152,6 +154,8 @@ public sealed partial class Battle
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
             }
+        // a damage range never ends: its last ship can be broken up and the range repaired
+        if (Scenario.DamageRange) return;
         if (!_ships.Any(s => s.Side == 1 && s.Alive && !s.Struck)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
     }

@@ -1,0 +1,13 @@
+{
+ "_doc": "The damage range (owner, 2026-11-05: \"make testing scenes for ship breaking tests from weapons fire like the artifacts\", \"and batle scars\"): the ship mockups' Damage tab (mockup 6 and 7: fire with a click, scenarios, repair) in the game. A range scenario (\"damage_range\": true in scenarios.json) stands every approved class still for the player to fire at. A shot is fired from from_km out along a bearing from the target's bow, by no ship, and lands through the battle's own damage rules (Battle.RangeFire), so its scars and breaks are the ones a battle makes. A program fires a run of shots: weapons cycled in order, one every every_s, count at most, from a random bearing (seeded) or bearing_deg; it stops early once the hull is below stop_below_hull (a share of the class's hull), or when the ship is destroyed. Battle scars stops above 0.6 of the hull, where parts start to come off (ShipDamage.ChunkBelowHull), so it leaves a whole ship, scarred.",
+ "from_km": 3,
+ "programs": [
+  { "id": "scars", "name": "Battle scars", "weapons": ["lance", "disruptor", "lance", "missile", "lance", "torpedo"], "every_s": 0.3, "count": 60, "stop_below_hull": 0.78 },
+  { "id": "rake", "name": "Lance rake", "weapons": ["lance"], "every_s": 0.2, "count": 14 },
+  { "id": "bolts", "name": "Bolt burns", "weapons": ["disruptor"], "every_s": 0.35, "count": 8 },
+  { "id": "torpedoes", "name": "Torpedo holes", "weapons": ["torpedo"], "every_s": 0.6, "count": 5 },
+  { "id": "missiles", "name": "Missile salvo", "weapons": ["missile"], "every_s": 0.25, "count": 6 },
+  { "id": "part", "name": "Break a part", "weapons": ["torpedo"], "overload": true, "every_s": 0.8, "count": 40, "bearing_deg": 90, "stop_below_hull": 0.4 },
+  { "id": "breach", "name": "Core breach", "weapons": ["torpedo"], "overload": true, "every_s": 0.2, "count": 400 }
+ ]
+}

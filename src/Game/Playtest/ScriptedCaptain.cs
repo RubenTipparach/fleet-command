@@ -24,7 +24,7 @@ public sealed partial class ScriptedCaptain : Node
 {
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
-        { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel" };
+        { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -104,6 +104,7 @@ public sealed partial class ScriptedCaptain : Node
             }
             case "wheel": return await Wheel(b.Arg == "in", (int)Math.Max(1, b.Seconds));
             case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS);
+            case "snap": return await Snap(b.Arg);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -142,6 +143,22 @@ public sealed partial class ScriptedCaptain : Node
             if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s)";
         }
         return null;
+    }
+
+    // A still of the screen as the player sees it, into docs/screenshots/game/<script>/<scenario>-<name>.png (a windowed
+    // run only: headless renders nothing, so there it does nothing).
+    private async Task<string?> Snap(string name)
+    {
+        if (DisplayServer.GetName() == "headless") return null;
+        // the pointer off the keys, so no hover card covers the still
+        Vector2 sz = GetViewport().GetVisibleRect().Size, away = new(sz.X * 0.97f, sz.Y * 0.6f);
+        GetViewport().PushInput(new InputEventMouseMotion { Position = away, GlobalPosition = away }, true);
+        await Frames(2);
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        string dir = ProjectSettings.GlobalizePath($"res://docs/screenshots/game/{_name}");
+        DirAccess.MakeDirRecursiveAbsolute(dir);
+        Error e = GetViewport().GetTexture().GetImage().SavePng($"{dir}/{_scene}-{name}.png");
+        return e == Error.Ok ? null : $"could not save the still ({e})";
     }
 
     private double HullSum() => B.Ships.Sum(s => s.Alive ? s.Hull : 0);
