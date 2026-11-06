@@ -53,9 +53,11 @@ function looks(M, U, { patch = null, env = 0.5 } = {}) {
       emissiveMap: M.em, emissive: 0xffffff, envMapIntensity: env }), U.none, 'baked-pbr-' + M.slug),
   };
 }
-/** The fixtures that show themselves, as additive sprites at their places (sh.fixtures): [{ s, kind }]. */
+/** The fixtures that show themselves, as additive sprites at their places (sh.fixtures): [{ s, kind }]. The nav lights only:
+ *  a flood shows by the light it paints on the hull, never as a dot in space (owner, 2026-11-06: "why do you still have
+ *  these little light dots?"; the Hunt's page, v26: "no dots at the floods, only the nav lights"). */
 function fixtures(sh, sprite, parent) {
-  return (sh.fixtures || []).map((F) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sprite, color: new THREE.Color(...F.rgb), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  return (sh.fixtures || []).filter((F) => !F.kind.endsWith('flood')).map((F) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sprite, color: new THREE.Color(...F.rgb), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
     s.position.set(...F.pos); const big = { strobe: 3.2, beacon: 3.0, position: 2.6 }[F.kind] || 1.6; s.scale.setScalar(big); s.userData.big = big; parent.add(s); return { s, kind: F.kind }; });
 }
 /** Strobes flash twice every 1.5 s, beacons pulse, the rest burn steady; brighter and larger at night. */
@@ -72,9 +74,11 @@ function blink(navs, t, night) {
 // Lifted from the Ssarith Hunt page (mockup 12), which now draws its panes with it, so the Institute's windows
 // (owner, 2026-11-06: "also where are windows to give scale") are the Hunt's windows (CLAUDE.md 6.1).
 const PANE_KIND = { quarters: 0, mess: 1, workshop: 2, hold: 3, bay: 4 };
-// A lit room's light by its kind k (GLSL): the Hunt's pale green, workshops greener, holds grey. A page passes GL.light for
-// its own faction's light.
-const PANE_LIGHT = 'k == 2 ? vec3(0.42, 0.95, 0.5) : k == 3 ? vec3(0.38, 0.45, 0.5) : vec3(0.78, 0.95, 0.74)';
+// A lit room's light by its kind k (GLSL), the same for every ship: warm lamplight, quarters and messes yellow, workshops
+// orange, holds dimmer (owner, 2026-11-06: "can we have the rooms in the windows be more yellow/orange tinted like they are
+// well lit for all ships?"). GL.light overrides it, for a page that needs another.
+const PANE_LIGHT = 'k == 2 ? vec3(1.0, 0.66, 0.3) : k == 3 ? vec3(0.85, 0.62, 0.36) : vec3(1.0, 0.82, 0.52)';
+const BAY_LIGHT = 'vec3(1.0, 0.84, 0.58)';   // a lit hangar behind a launch bay's mouth
 const paneGLSL = (GL) => `
 uniform float uRoomK; uniform float uFrameK; uniform float uLive;
 ${GL.hash}
@@ -102,7 +106,7 @@ vec3 paneColour(){
   vec3 D = normalize(vec3(dot(V, ru), dot(V, rv), dot(V, rn)) + vec3(1e-4)); if (D.z <= 0.0) D.z = 1e-3;
   vec3 q = vec3(dot(Pp, ru), dot(Pp, rv), dot(Pp, rn) + zext);
   vec2 mouth = 2.0*vec2(abs(dot(eu, ru))*hs.x + abs(dot(ev, ru))*hs.y, abs(dot(eu, rv))*hs.x + abs(dot(ev, rv))*hs.y);  // the mouth, level
-  vec3 room = k == 4 ? hangarBehind(q, D, floor(vC*0.3), mouth, lit ? vec3(0.75, 0.8, 0.7) : L)
+  vec3 room = k == 4 ? hangarBehind(q, D, floor(vC*0.3), mouth, lit ? ${BAY_LIGHT} : L)
                      : roomBehind(q, D, floor(vC*0.6), k == 1 ? 1 : k == 2 ? 2 : k == 3 ? 1 : 0, L);
   float fres = pow(1.0 - clamp(-dot(V, en), 0.0, 1.0), 4.0);             // the glass: a faint sky in it at a glancing look
   return room*uRoomK*uLive*(1.0 - 0.5*fres) + vec3(0.05, 0.07, 0.06)*fres*uFrameK;

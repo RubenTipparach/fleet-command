@@ -333,6 +333,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     print(f"  built the detail in {time.time() - t0:.0f} s", flush=True)
     print(f"  {slug}: {len(high)} high-poly pieces, {sum(len(o.data.polygons) for o in high)} faces", flush=True)
     panes = [dict(P) for P in HD.PANES]   # the page draws each pane as its own quad (hull_detail.pane_box)
+    pads = [dict(P) for P in HD.PADS]     # the page parks a craft on each landing pad (hull_detail.inner_machinery)
     if panes_only:
         return {"panes": panes}
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
@@ -399,7 +400,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     bm.free()
     return {"tris": len(pos) // 9, "tex_px": px, "smooth_deg": smooth, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
             "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "pads": pads, "mesh": {"pos": pos, "uv": uv},
             "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
 
 
@@ -503,6 +504,8 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     base = np.where(kind_is("sub")[..., None], spal[(rid * len(SUB) * 7).astype(int) % len(SUB)], base)
     g0, g1 = hexrgb(PT["greeble"][0]), hexrgb(PT["greeble"][1])
     base = np.where(kind_is("greeble")[..., None], g0 + (g1 - g0) * ((rid * 13.0) % 1.0)[..., None], base)
+    m0, m1 = (hexrgb(c) for c in PT.get("machine", PT["greeble"]))   # the machines' tanks, coils and pads (the greebles' unless given)
+    base = np.where(kind_is("machine")[..., None], m0 + (m1 - m0) * ((rid * 7.0) % 1.0)[..., None], base)
     for k in ("dome", "slat", "vent", "glass"):
         base = np.where(kind_is(k)[..., None], hexrgb(PT[k]), base)
     liv = np.zeros((h, w), bool)
@@ -588,7 +591,8 @@ def strips_and_glow(kind_is, P, glowp, cover, n=None):
     if PT["strip"] == "whole":
         r = PT.get("strip_rim_px", 6)
         b2 = lambda a: blur(blur(a.astype(np.float32), r), r)
-        m = b2(chan | kind_is("greeble"))   # 1 deep inside a wide face (machinery on it counts as the face), falling to its edges
+        mach = np.any([kind_is(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
+        m = b2(chan | mach)   # 1 deep inside a wide face (machinery on it counts as the face), falling to its edges
         rim = np.clip((0.95 - m) / 0.3, 0, 1)
         inner = PT.get("strip_inner", 1.0)
         k = inner + (1 - inner) * rim
@@ -614,12 +618,14 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
     st = np.floor(sh * 4 + 0.5) / 4
     aoc = np.clip(blur(ao, 1), 0, 1)
     if PT.get("greeble_ao_floor"):   # machinery deep in an opening still reads, as if lit by the work lamps inside it
-        aoc = np.where(is_("greeble"), np.maximum(aoc, PT["greeble_ao_floor"]), aoc)
+        mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
+        aoc = np.where(mach, np.maximum(aoc, PT["greeble_ao_floor"]), aoc)
     light = 0.12 + 0.26 * aoc ** 1.4 + 0.7 * (0.55 * sh + 0.45 * st)
     col = base * light[..., None]
     col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
     ink = np.clip((0.4 - aoc) / 0.25, 0, 1)
-    col = col * (1 - 0.75 * ink[..., None]) + hexrgb(PT["ink"]) * (0.75 * ink[..., None])
+    ik = PT.get("ink_k", 0.75)   # how hard the deepest crevices are inked (the Hunt 0.75; a lighter hand for a clean faction)
+    col = col * (1 - ik * ink[..., None]) + hexrgb(PT["ink"]) * (ik * ink[..., None])
     m = (is_("armour") | is_("sub")).astype(np.float32)
     pb = blur(blur(m, 4), 4)
     col *= np.where(m > 0, 0.7 + 0.3 * np.clip((pb - 0.45) / 0.5, 0, 1), 1.0)[..., None]

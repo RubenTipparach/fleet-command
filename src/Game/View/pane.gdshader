@@ -59,7 +59,7 @@ void fragment() {
 		METALLIC = 0.55; ROUGHNESS = 0.5;
 		NORMAL = normalize(to_view * nf);
 	} else {
-		vec3 L = !on ? vec3(0.015, 0.018, 0.016) : (k == 2 ? vec3(0.42, 0.95, 0.5) : (k == 3 ? vec3(0.38, 0.45, 0.5) : vec3(0.78, 0.95, 0.74)));
+		vec3 L = !on ? vec3(0.015, 0.018, 0.016) : (k == 2 ? vec3(1.0, 0.66, 0.3) : (k == 3 ? vec3(0.85, 0.62, 0.36) : vec3(1.0, 0.82, 0.52)));   // lib/baked-ship.js PANE_LIGHT
 		// the room's frame: up the ship's up, in the face's normal turned level; the pane cuts its front at a slant
 		vec3 rv = vec3(0.0, 1.0, 0.0), ri = vec3(-en.x, 0.0, -en.z), ru, rn; float hl = length(ri);
 		if (hl < 0.3) { ru = eu; rv = ev; rn = -en; } else { rn = ri / hl; ru = normalize(cross(rv, rn)); }
@@ -67,7 +67,7 @@ void fragment() {
 		vec3 D = normalize(vec3(dot(V, ru), dot(V, rv), dot(V, rn)) + vec3(1e-4)); if (D.z <= 0.0) D.z = 1e-3;
 		vec3 q = vec3(dot(Pp, ru), dot(Pp, rv), dot(Pp, rn) + zext);
 		vec2 mouth = 2.0 * vec2(abs(dot(eu, ru)) * hs.x + abs(dot(ev, ru)) * hs.y, abs(dot(eu, rv)) * hs.x + abs(dot(ev, rv)) * hs.y);
-		vec3 room = k == 4 ? hangar_behind(q, D, floor(v_c * 0.3), mouth, on ? vec3(0.75, 0.8, 0.7) : L)
+		vec3 room = k == 4 ? hangar_behind(q, D, floor(v_c * 0.3), mouth, on ? vec3(1.0, 0.84, 0.58) : L)
 			: room_behind(q, D, floor(v_c * 0.6), k == 1 ? 1 : (k == 2 ? 2 : (k == 3 ? 1 : 0)), L);
 		float fres = pow(1.0 - clamp(-dot(V, en), 0.0, 1.0), 4.0);   // a faint sky in the glass at a glancing look
 		ALBEDO = vec3(0.0); METALLIC = 0.0; ROUGHNESS = 0.08; SPECULAR = 0.5;

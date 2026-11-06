@@ -1441,16 +1441,26 @@ const LOOKS = { painted: 'Painted', pbr: 'PBR', champagne: 'Champagne', clay: 'C
 const TEXLOAD = [], BS = window.FCBakedShip(THREE, { onTexture: (p) => TEXLOAD.push(p), normals: HG.creasedNormals });
 const U = { lightK: { value: 0.3 }, selfP: { value: 0.55 }, none: { value: 0.0 }, roomK: { value: 1.0 }, frameK: { value: 1.0 } };
 // The windows: each pane the bake cut drawn as its own quad with its room behind it (baked-ship.js panes, the Hunt's).
-const SK = window.FCShipSkin(THREE), ROOMS = window.FCShipRooms, PANE_GL = { hash: SK.GLSL.hash, box: SK.GLSL.box, rooms: ROOMS.GLSL,
-  light: 'k == 2 ? vec3(0.98, 0.8, 0.5) : k == 3 ? vec3(0.5, 0.47, 0.42) : vec3(1.0, 0.9, 0.72)' };   // the Institute's rooms: warm lamplight, laboratories amber, holds dim
+const SK = window.FCShipSkin(THREE), ROOMS = window.FCShipRooms, PANE_GL = { hash: SK.GLSL.hash, box: SK.GLSL.box, rooms: ROOMS.GLSL };   // the rooms' light: the shared warm palette
 const BK = (() => { const el = document.querySelector('script[data-src="assets/ships/kelvane/manifest.json"]'); return el ? JSON.parse(el.textContent) : null; })();
 const glowSprite = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
   g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+// The carrier's survey craft, one parked on each landing pad its bake recorded (manifest pads; owner, 2026-11-06: "carrier
+// should have landing pads and fighters onthe inside here"): a 10 m craft grown like the line's hulls on the same section
+// (Ship Design Bible ch. 14), champagne with a belt of light and a dark glass canopy, nosed along the ship.
+const CRAFT = (() => { const g = new THREE.Group(), K = skin(g), c = { top: 0.9, bot: -0.8, r: 0.55, rt: 0.5, bh: 0.18, ym: -0.15, kw: 0.4 };
+  const S = K.body([[-5, { ...c, hb: 1.5, top: 0.7, bot: -0.6, r: 0.5, rt: 0.4 }], [-3.6, { ...c, hb: 2.3 }], [1.6, { ...c, hb: 2.1 }],
+    [4, { ...c, hb: 1.3, top: 0.62, bot: -0.6, r: 0.5, rt: 0.42 }], [5, { ...c, hb: 0.8, top: 0.4, bot: -0.42, r: 0.36, rt: 0.3, bh: 0.1, ym: -0.05 }]],
+    (k, z) => (E.belt(k) ? true : E.upper(k) && z > -1 ? 'well' : false));
+  K.branch('nose', S, 5, [[0, 1, 1, 0, 0]]); K.done(); g.traverse((o) => { o.userData.baked = true; }); return g; })();   // baked: kept out of the blockout export
+function parked(P) { const g = CRAFT.clone(), y = V3(...P.n).normalize(), z = V3(...P.u).normalize(), x = new THREE.Vector3().crossVectors(y, z).normalize();
+  g.matrix.makeBasis(x, y, z).setPosition(V3(...P.c).addScaledVector(y, 0.26 + 0.8)); g.matrixAutoUpdate = false; return g; }
 const BAKED = {};   // ship index: { mesh, looks, navs, root }
 if (BK) BLOCKS.forEach((b, i) => { if (!b.line || !BK.ships[b.slug]) return;
   const M = BS.maps(BK, b.slug), looks = BS.looks(M, U), root = new THREE.Group(); root.userData.baked = true;
   const mesh = new THREE.Mesh(M.geo, looks.painted); mesh.userData.baked = true; root.add(mesh); SHIPS[i].add(root);
   if (M.sh.panes && M.sh.panes.length) root.add(BS.panes(M.sh.panes, U, { value: 1 }, PANE_GL));
+  for (const P of M.sh.pads || []) root.add(parked(P));
   BAKED[i] = { mesh, looks, root, navs: BS.fixtures(M.sh, glowSprite, root) }; });
 // The look: a baked ship shows its maps in Painted and PBR and its grown skin in Champagne and Clay; a blockout has only its skin.
 function setLook(k) { look = k; const baked = k === 'painted' || k === 'pbr', skin = k === 'clay' ? CLAY : MAT;

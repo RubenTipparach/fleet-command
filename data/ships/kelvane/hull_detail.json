@@ -19,7 +19,7 @@
       "#8e8572",
       "#a8a08c"
     ],
-    "under": "#2a2620",
+    "under": "#7a7262",
     "greeble": [
       "#6a6252",
       "#a89c84"
@@ -30,7 +30,7 @@
     "vent": "#15120d",
     "glass": "#1b150d",
     "livery": "#6c0c15",
-    "ink": "#2a1a06",
+    "ink": "#5c4c34",
     "light_edge": "#f3e4c2",
     "strip": "whole",
     "strip_m": 0.7,
@@ -74,6 +74,10 @@
       "lamp": [
         0.3,
         0.0
+      ],
+      "machine": [
+        0.45,
+        0.6
       ]
     },
     "livery_pbr": [
@@ -94,6 +98,17 @@
       1.0,
       0.78,
       0.4
+    ],
+    "ink_k": 0.35,
+    "machine": [
+      "#b9ae96",
+      "#d8ccb0"
+    ],
+    "machine_kinds": [
+      "greeble",
+      "machine",
+      "slat",
+      "vent"
     ]
   },
   "defaults": {
@@ -154,8 +169,19 @@
       "tilt_deg": 22,
       "power_w": 1600
     },
-    "inner_greebles_per_m2": 0.6,
-    "inner_reach_m": 40.0
+    "inner_reach_m": 40.0,
+    "inner_machinery": true,
+    "inner_cell_m": [
+      4.0,
+      2.4
+    ],
+    "inner_mix": {
+      "pipes": 0.35,
+      "pods": 0.25,
+      "coils": 0.2,
+      "vents": 0.2
+    },
+    "corner_m": 0.9
   },
   "ships": {
     "kelvane_frigate": {
@@ -1066,7 +1092,11 @@
             -13.0
           ]
         }
-      ]
+      ],
+      "pads": {
+        "spacing_m": 18.0,
+        "r_m": 4.5
+      }
     }
   }
 }
