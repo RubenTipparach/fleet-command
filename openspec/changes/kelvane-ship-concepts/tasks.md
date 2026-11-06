@@ -7,7 +7,7 @@
 - [x] 1.3 Twelve frigate-sized blockouts in five drafted traditions, each one closed grown structure, in champagne or clay, at true scale with the Concord Petrel
 - [x] 1.4 Named shots at desktop, phone landscape and portrait, looked at; `dom_fit.mjs` passes
 - [x] 1.5 Survey section I; `mockup-work.md`; the tracker; the artifact record
-- [ ] 1.6 Published from the desktop session (CLAUDE.md section 8), the link recorded in `docs/artifacts/kelvane-ship-concepts/README.md`, `mockup-work.md` and the tracker
+- [x] 1.6 Published (from the cloud session: no desktop session was reachable), the link recorded in `docs/artifacts/kelvane-ship-concepts/README.md`, `mockup-work.md` and the tracker
 
 ## 2. The owner's picks (survey I1-I4)
 

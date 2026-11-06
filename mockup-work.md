@@ -42,7 +42,7 @@ account and every link here is updated.
 | 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v3) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
-| 23 | Kelvane Institute ships: a blockout board from five drafted traditions | Drafted (2026-11-06, v1, committed; to publish from the desktop session) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | |
+| 23 | Kelvane Institute ships: a blockout board from five drafted traditions | Drafted (2026-11-06, v1) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
