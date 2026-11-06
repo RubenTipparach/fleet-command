@@ -313,14 +313,30 @@ we use diagonals on corners like this?", "these lines are quire dark", "this one
 you still have these little light dots?", "can we have the rooms in the windows be more yellow/orange tinted like they are
 well lit for all ships?".
 
+- **After the owner's references** (owner, 2026-11-06, with images of worked hulls: "some examples of greebles for you to
+  study", "some hull armor examples", "details idea"; their shape, never their art, none committed). What they show, in
+  our words: detail is low relief in two or three layers (trays, inset panels, framed hatches), not blocks standing
+  proud; every panel, tray and door has its corners cut on the diagonal; detail sits where a function is (bays of doors
+  in a row, grilles in framed recesses, lit channels) with quiet plates between; each plate is a panel within a panel,
+  a groove inset from its edge; small marks (a red triangle, an outlined stencil box, a row of small squares, small lamps
+  at a hatch's corners) give it scale. The fuel pods are gone (owner: "I hate those pods").
 - **Machinery in order** (`inner_machinery()` in `tools/blender/hull_detail.py`). The faces that look across an opening
   carry a lattice of 4.0 by 2.4 m cells (`inner_cell_m`) laid on the ship's own axes, so a wall's faces share one grid.
-  Each row is one kind of machine, picked by `inner_mix` (pipes 35 %, fuel pods 25 %, coils 20 %, large vents 20 %),
-  broken into runs of three to six cells with pipe cells between; each cell's variant is seeded by its place. The kinds:
-  - pipe runs of two to four lines with a collar and a bracket at each join, so neighbouring cells read as one run;
-  - fuel pods on two cradles with a feed line;
-  - a core wound with five to seven coils between flanges;
-  - a large vent, a bank of slats in a framed tray.
+  Each row is one kind of machine, picked by `inner_mix`, broken into runs of three to six cells with conduit cells
+  between; each cell's variant is seeded by its place. The kinds (`machine()`), low relief, every corner on the diagonal:
+  - door bays (20 %): a framed tray with a pair of hatch doors and two indicator lamps;
+  - grilles (15 %): a framed tray of upright slats;
+  - lit channels (15 %): a glowing strip between two rails, running the row;
+  - conduits (12 %): two or three thin lines on brackets with a junction box and a lamp;
+  - plates (20 %): a plate with a smaller one laid on it and a row of small fittings, the quiet cells;
+  - coils (10 %): a core wound with five to seven coils between flanges;
+  - pipes (8 %): runs of two to four lines with a collar and a bracket at each join.
+- **Plates as panels within panels** (`plate_marks()` in `tools/blender/painted_bake.py`): a 0.08 m groove 0.3 m inside
+  every plate's edge; on plates over 3 by 2 m, by the plate's id (a plate and its mirror alike), a red triangle (45 %),
+  an outlined stencil box 1.8 by 0.8 m (40 %) and a row of four small squares in red, bronze and ink (30 %).
+- **Inspection hatches** (`hatches()`): on 40 % of the top and bottom plates of 18 m2 or more, a framed hatch up to 5.2 by
+  3.2 m, corners on the diagonal, its panel below its frame, an amber lamp at two corners; never on the flanks (the
+  windows), over a feature's hole or the logo.
 
   The tanks, coils and pads are a new paint kind, `machine` (champagne light, #b9ae96 to #d8ccb0). Out of the sun they get
   a floor of light (`machine_light` 0.7, `greeble_ao_floor` 0.6), as if lit by the opening's own work lamps. Everything

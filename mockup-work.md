@@ -1071,6 +1071,8 @@ Owner, 2026-11-06: "begin designs on the institute ships".
   landing pads and fighters", "diagonals on corners", "these lines are quire dark", windows "in awkward spotrs", the flood
   "light dots", rooms "more yellow/orange tinted like they are well lit for all ships"): rows of engineered machinery,
   the carrier's pads with a craft on each, diagonal plate corners, lighter seams, windows that look out, no flood dots,
-  warm rooms on every ship (mockups and game). Design D11.
+  warm rooms on every ship (mockups and game); then, after the owner's reference images ("some examples of greebles
+  for you to study", "some hull armor examples", "details idea"; their shape, never their art): low-relief panelled
+  machinery with no fuel pods ("I hate those pods"), plate grooves and small marks, inspection hatches. Design D11.
 - **Stage:** Drafted (2026-11-06, v7).
 - **Questions:** survey I1-I4 (traditions, picks, palette, the first class).
