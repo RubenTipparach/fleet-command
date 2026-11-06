@@ -126,7 +126,10 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   those and make sure they get generated in the future so it doesnt pile up as garbage on my pc"). Run
   `--headless --path . --import` after adding or changing an asset (`play.bat` does it on every launch) and commit the
   `.import` files it writes in the same commit as the asset; the cache in `.godot/` stays ignored. `.gitattributes`
-  keeps them LF, so a Windows checkout does not show every one as changed.
+  keeps them LF, so a Windows checkout does not show every one as changed. The same holds for the `.uid` file Godot
+  writes beside a new script or shader. `scripts/run-tests.sh` runs the import and fails if it leaves any `.import` or
+  `.uid` file uncommitted (owner, 2026-11-05, the same ask again after a session committed the Ssarith and Kelvane
+  assets without theirs).
 - **Platforms**: Windows desktop is the owner's playtest machine, Linux runs the headless tests,
   and phones are a target from the first screen. The builds are Windows desktop and native Android
   (survey T1). The renderer is Forward+ on desktop and Compatibility on Android, set per platform
