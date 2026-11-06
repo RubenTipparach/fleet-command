@@ -133,7 +133,7 @@ public abstract partial class ConsolePanel : Control, IControlSource
         string lab = label.ToUpperInvariant();
         if (Sk.KeyCenter)
         {
-            var (cl, cr) = Caps("button." + kst, h);
+            var (cl, cr) = Sk.KeyField is { } kf ? Field(kf, "button." + kst, h) : Caps("button." + kst, h);
             float room = r.Size.X - cl - cr - 8, tw = X.Fonts.Width(lab, size, 600, 1);
             int fs = tw > room ? Math.Max(11, (int)MathF.Floor(size * room / tw)) : size;
             Text(lab, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
@@ -141,6 +141,13 @@ public abstract partial class ConsolePanel : Control, IControlSource
         else if (center) Text(lab, r.Position.X + r.Size.X / 2, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
         else Text(lab, r.End.X - pad, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Right, r.Size.X - pad - 12, 600, 1);
         return st;
+    }
+
+    /// <summary>A skin's measured label field at a drawn height, shrunk with the piece's height as the kit draws it.</summary>
+    protected (float L, float R) Field((float L, float R) field, string piece, float h)
+    {
+        float k = Math.Min(1, h / Kit.Spec(piece).Size.Y);
+        return (field.L * k, field.R * k);
     }
 
     /// <summary>A key's end caps at a drawn height: its nine-slice margins, shrunk with its height as the kit draws them.</summary>
@@ -155,6 +162,16 @@ public abstract partial class ConsolePanel : Control, IControlSource
     protected void Tab(string id, Rect2 r, string label, Action click, bool on, string? icon = null, bool dis = false)
     {
         HitState st = dis ? default : Ui.Reg(id, r, _ => click(), null, icon != null ? new Tip(label) : null);
+        // an icon tab in a skin whose tab piece is a long tube or window (IconKeys): its square key instead, the icon
+        // inside the glass; dark at rest, lit on hover, flaring when chosen (the mockup's tab with CON.iconKeys)
+        if (icon != null && Sk.IconKeys && Sk.RenderedKeys)
+        {
+            float s2 = Math.Min(r.Size.X, r.Size.Y), isz = s2 * 0.56f;
+            var kr = new Rect2(r.Position + new Vector2((r.Size.X - s2) / 2, (r.Size.Y - s2) / 2), new Vector2(s2, s2));
+            Kit.Hero(this, on ? "key.on" : st.Hot ? "key.hover" : "key.idle", kr, dis ? 0.35f : 1);
+            Kit.Icon(this, icon, new Rect2(kr.Position + new Vector2((s2 - isz) / 2, (s2 - isz) / 2), new Vector2(isz, isz)), on ? Sk.R.Ink : Sk.TabIcon);
+            return;
+        }
         Kit.Piece(this, on ? "tab.active" : "tab.idle", r, dis ? 0.35f : 1);
         if (!on && st.Hot) Kit.Piece(this, "tab.active", r, 0.22f);
         if (icon != null)
@@ -167,10 +184,13 @@ public abstract partial class ConsolePanel : Control, IControlSource
         Color ink = on ? Sk.KeyInk.TabOn : Sk.KeyInk.TabOff;
         if (Sk.KeyCenter)
         {
-            // centred, shrinking to fit (down to 14 px) before it is trimmed (rule T)
-            float room = r.Size.X - 28, tw = X.Fonts.Width(lab, 19, 600, 1);
+            // centred in the open field between the tab's caps (a skin's measured TabField), shrinking to fit (down to 14 px)
+            // before it is trimmed (rule T)
+            var (tl, tr) = Sk.TabField is { } tf ? Field(tf, "tab.idle", r.Size.Y) : (0f, 0f);
+            float room = r.Size.X - Math.Max(28, tl + tr + 4), tw = X.Fonts.Width(lab, 19, 600, 1);
             int fs = tw > room ? Math.Max(14, (int)MathF.Floor(19 * room / tw)) : 19;
-            Text(lab, r.Position.X + r.Size.X / 2, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
+            float cx = tl + tr > 20 ? r.Position.X + tl + (r.Size.X - tl - tr) / 2 : r.Position.X + r.Size.X / 2;
+            Text(lab, cx, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
         }
         else Text(lab, r.End.X - 8, r.Position.Y + r.Size.Y / 2 + 7, 19, ink, HorizontalAlignment.Right, r.Size.X - 22, 600, 1);
     }
@@ -250,7 +270,7 @@ public abstract partial class ConsolePanel : Control, IControlSource
         float bw = expandable ? 21 : -10, x1 = content.End.X - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
         if (Sk.TitlePlacard) Kit.Piece(this, "plate.title", new Rect2(x0 - 18, y0 - 1, total + 22, 24));
         else DrawRect(new Rect2(x0, y0, total, 22), Sk.R.Plate);
-        Text(up, x0 + 8, y0 + 19, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);
+        Text(up, x0 + 8, y0 + 19 - Sk.TitleDy, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);
         if (expandable) ExpandKey($"{Region}.xp", new Vector2(x1 - 8 - bw / 2, y0 + 11), bw / 2, Big, () => X.Act.Expand(Region));
         return content;
     }

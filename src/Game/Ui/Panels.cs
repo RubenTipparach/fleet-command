@@ -144,6 +144,8 @@ public sealed partial class TopStrip : ConsolePanel
         DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.top.join" : "strip.top", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
+        double hf = s.Hull / s.Class.HullHp;
+        StripNeedle.Draw(this, Ui, Sk, "top", Me.Id, Size.Y, hf, $"Hull integrity {Pct(Math.Clamp(hf, 0, 1))}");
         float cx = 96, cw = Size.X - 192, cy = (44 - 35) / 2f + Sk.StripTopDy, fix = 70 + 100 + 80, gap = 22, u = (cw - fix - gap * 5) / 3.2f, xx = cx;
         double hull = s.Hull / s.Class.HullHp;
         Bar(xx, cy, u, "Hull integrity", hull, hull < 0.35); xx += u + gap;
@@ -166,6 +168,7 @@ public sealed partial class BottomStrip : ConsolePanel
         DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.bottom.join" : "strip.bottom", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
+        StripNeedle.Draw(this, Ui, Sk, "bottom", Me.Id, Size.Y, s.V / (B.Tuning.SpeedPerBoxMS * 10), $"Speed {Math.Round(s.V)} m/s");
         float cx = 96, cw = Size.X - 192, cy = 12 + Sk.StripBottomDy, ch = 44, gap = 22, fix = 120 + 138, u = (cw - fix - gap * 4) / 3.45f, xx = cx;
         Lbl("Speed", xx, cy + 28);
         Num(Math.Round(s.V).ToString(), xx + 58, cy + 31, 46);
@@ -279,5 +282,29 @@ public sealed partial class TooltipLayer : Control
             f.Draw(this, v, x + w - 12, yy, 17, col ?? c.Sky, HorizontalAlignment.Right);
             yy += 22;
         }
+    }
+}
+
+/// <summary>A strip's needle meter (the mockup's stripMeter; owner, 2026-11-06, of the Kelvane strips' meter bays: "can we
+/// have these meters be tied to the speed and hull integrity?"): over the printed scale of a skin whose strip carries one
+/// (SkinStyle.Meter), hull integrity on the top strip and speed on the bottom. It swings toward the reading and settles as
+/// a damped needle does, and names its reading on hover. A display only: the value is the one the strip's bar and number
+/// show. A needle not drawn for a quarter of a second, or on another ship, is set straight to its reading.</summary>
+public static class StripNeedle
+{
+    private static readonly System.Collections.Generic.Dictionary<string, (string Ship, ulong T, double V)> State = new();
+
+    public static void Draw(CanvasItem ci, Imm ui, Ui.Kit.SkinStyle sk, string id, string ship, float h, double frac, string tip)
+    {
+        if (sk.Meter is not { } m || sk.Needle == null) return;
+        ulong now = Time.GetTicksMsec();
+        double v = Math.Clamp(double.IsFinite(frac) ? frac : 0, 0, 1);
+        double dt = State.TryGetValue(id, out var n) && n.Ship == ship ? (now - n.T) / 1000.0 : double.PositiveInfinity;
+        double shown = dt > 0.25 ? v : n.V + (v - n.V) * Math.Min(1, dt * m.Settle);
+        State[id] = (ship, now, shown);
+        float ky = h / m.H, r = m.R * Math.Min(1, ky);
+        var pivot = new Vector2(m.Cx, m.Cy * ky);
+        sk.Needle(ci, pivot, r, (float)(m.A0 + (m.A1 - m.A0) * shown));
+        ui.Reg($"meter.{id}", new Rect2(pivot.X - r - 6, pivot.Y - r - 6, 2 * r + 12, r + 10), null, null, new Tip(tip));
     }
 }

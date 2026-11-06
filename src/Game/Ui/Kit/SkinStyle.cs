@@ -46,6 +46,11 @@ public sealed record TypeSet(string Body, string Heading, Func<int, int, Face> M
 /// face and colour.</summary>
 public readonly record struct PlateText(float X, float Y, float Max, Face Face, Color Col);
 
+/// <summary>A strip's needle meter (the Kelvane's printed meter bays; the mockup's meter): its pivot, its needle length,
+/// the sweep from empty (A0) to full (A1) in radians clockwise from +x, at the strip art's own height H, and how fast the
+/// needle settles toward its reading, per second.</summary>
+public readonly record struct StripMeter(float Cx, float Cy, float H, float R, float A0, float A1, float Settle);
+
 /// <summary>A skin's look for everything that is not a named piece.</summary>
 public sealed record SkinStyle
 {
@@ -87,4 +92,21 @@ public sealed record SkinStyle
     public bool SymbolBars { get; init; }
     /// <summary>Keys drawn as rendered glass lit by state ("key.*" and the wide "keyw.*") instead of filled shapes.</summary>
     public bool RenderedKeys { get; init; }
+
+    // ---- Label fields and the Institute's meters (openspec/changes/kelvane-console-engine) ---------------------------
+    /// <summary>A key's measured label field: pixels from each end at the key piece's own height, where its 9-slice caps
+    /// run past the field to keep a window's corners whole (the mockup's keyField: the Kelvane's). Null: the caps.</summary>
+    public (float L, float R)? KeyField { get; init; }
+    /// <summary>A tab's measured label field, the same way (the mockup's tabField). Null: the tab's own end caps.</summary>
+    public (float L, float R)? TabField { get; init; }
+    /// <summary>Icon tabs (the station and ship rails) drawn on the square rendered key ("key.idle", "key.hover",
+    /// "key.on"), the icon inside its glass, not on the long tab piece (the mockup's iconKeys).</summary>
+    public bool IconKeys { get; init; }
+    /// <summary>How far a panel title's baseline rises to centre it in the title placard's window (the mockup's titleDy).</summary>
+    public float TitleDy { get; init; }
+    /// <summary>The strips' needle meters, when the skin's strip art carries a printed scale (the mockup's meter): hull
+    /// integrity on the top strip, speed on the bottom. Needs <see cref="Needle"/>.</summary>
+    public StripMeter? Meter { get; init; }
+    /// <summary>Draws a meter's needle at its pivot, with its length and angle (the mockup's live.needle).</summary>
+    public Action<CanvasItem, Vector2, float, float>? Needle { get; init; }
 }
