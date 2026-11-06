@@ -49,6 +49,7 @@ public sealed class KraiKit : IKit
                 Mute: new Color("#2e2220"), Plate: new Color("#0a0707"), Title: red, Sheet: new Color("#0a0707")),
             // "Russo One" for titles and the name plate, Teko for everything else. Teko 500 at 1.1x is as wide as Antonio
             // 600, so every slot that fits a Concord label fits a Krai one; weight 700 at 22 px and up is a heading.
+            KeySound = "ui_clunk", // the modelled metal skins' clunk (sound-effects design section 2)
             Type = new TypeSet(Teko, RussoOne, (size, weight) =>
                 weight >= 700 && size >= 22 ? new Face(true, (int)MathF.Round(size * 0.75f), 400)
                 : weight >= 700 ? new Face(false, (int)MathF.Round(size * 1.05f), 600)

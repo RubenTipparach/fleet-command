@@ -75,7 +75,15 @@ the bed is now that pack's `Ambience_Space_00` (a soft drone between 60 and 120 
 alternative. **Licence**: the pack is CC-BY 3.0, the first non-CC0 pack, used because the owner asked for it; it is a
 named exception in `tools/audio/licence_exceptions.json` with the owner's words and its credit ("Little Robot Sound
 Factory, www.littlerobotsoundfactory.com"), printed on the Sounds page, in `AUDIO_SOURCES.md` and the sources tables, and
-owed in the game's credits.
+owed in the game's credits. Then (owner, 2026-11-07: "delete amb_bridge, use amb_bridge_brown") the brown-noise bed became `amb_bridge` and the
+space ambience was removed, so no CC-BY pack is in use; the exception stays recorded in case a cue returns to it.
+
+**In the game now** (owner, 2026-11-07: "Console keys - this should be implemented in the game", "put in game now"): the
+cue table is `data/audio/cues.json` (file, bus, level per cue, validated by `AudioCues` in Core). Each skin names its key
+cue in its style (`SkinStyle.KeySound`, required, checked against the table as the skin is made); `Imm`, the console's
+one click handler, calls `Pressed` when a press lands on a control that acts, and `ConsoleSounds` plays the skin's cue on
+the next of four voices on the Effects bus. The bridge bed loops on the Effects bus under a battle, fading in over 1.5 s
+and out on the menus and the map. The battle's own sounds (weapons, hits, the ship, alerts) are still to come (3.2-3.4).
 
 **Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
 so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.

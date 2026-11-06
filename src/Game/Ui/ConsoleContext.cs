@@ -41,6 +41,8 @@ public sealed class ConsoleContext
     public required TipBoard Tips { get; init; }
     public required ConsoleState State { get; init; }
     public required GameActions Act { get; init; }
+    /// <summary>The console's own sounds: its keys and the bridge bed (ConsoleSounds).</summary>
+    public required ConsoleSounds Sounds { get; init; }
     /// <summary>The battle being fought; replaced on a restart.</summary>
     public required Battle Battle { get; set; }
 

@@ -17,12 +17,16 @@
 
 ## 3. In the game (after approval for implementation)
 
-- [ ] 3.1 `data/audio/sfx.json` and its validator in `src/Core`, with tests
+- [x] 3.1 `data/audio/cues.json` and its validator in `src/Core` (`AudioCues`), with tests (2026-11-07: the console keys
+  and the bridge bed; the battle's cues join it with 3.2-3.3)
 - [ ] 3.2 The event-to-cue mapping in `src/Core` (pure, tested on golden-seed battles)
 - [ ] 3.3 A sound player in `src/Game` reading `Battle.Hits` and the shots, placing 3D players at the named nodes
 - [ ] 3.4 Buses and the Options volume boxes
-- [ ] 3.5 Skins' key sounds through the kit manifest
+- [x] 3.5 Skins' key sounds: each skin's style names its key cue (`SkinStyle.KeySound`, required), checked against the cue
+  table as the skin is made; every console key plays it (`Imm.Pressed`, `ConsoleSounds.Key`) (2026-11-07)
+- [x] 3.5a The bridge bed loops under a battle, silent on the menus and the map (`ConsoleSounds.Bed`) (2026-11-07)
+- [ ] 3.5b A playtest that hears the keys and the bed (the scripted captain logs `PLAYTEST_BEAT sound <cue>`, 3.7)
 - [ ] 3.6 The voice cap and pause behaviour
 - [ ] 3.7 `PLAYTEST_BEAT sound` lines and a playtest that checks them
-- [ ] 3.8 The game's credits carry every CC-BY pack's credit (`tools/audio/licence_exceptions.json`): Little Robot Sound
-  Factory, www.littlerobotsoundfactory.com
+- [ ] 3.8 The game's credits carry every CC-BY pack's credit in use (`tools/audio/licence_exceptions.json`); none is in
+  use since 2026-11-07 (the space ambience was replaced by the brown-noise bed)

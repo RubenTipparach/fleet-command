@@ -36,7 +36,7 @@ account and every link here is updated.
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | **Approved for implementation** (2026-11-06, owner in conversation: "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v9; v10 committed, to publish) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
-| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-07, v9 after the owner's notes; the console keys **approved for implementation**, owner in conversation: "Console keys - this should be implemented in the game"; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-07, v10 after the owner's notes; the console keys and the bridge bed **approved for implementation** and in the game, owner in conversation: "Console keys - this should be implemented in the game"; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-07, v3: a battle and an ambient loop for every faction in the game; published from the cloud session's account, audio served beside the page) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
@@ -924,6 +924,11 @@ heard, not seen, so its mockup is a page to listen on: every cue with a play but
   fingerprint of its file, so a sound changed at the same path is never played from the viewer's cache.
 - The owner, 2026-11-07: "Console keys - this should be implemented in the game": the console key sounds approved for
   implementation (`openspec/changes/sound-effects` tasks 3.x).
+- The owner, 2026-11-07: "delete amb_bridge, use amb_bridge_brown", "put in game now". Done in v10: the brown-noise bed is
+  `amb_bridge` and the recorded space ambience is gone (so the CC-BY pack is no longer used and no credit is owed); in
+  the game the bridge bed loops under a battle and every console key plays its skin's key sound
+  (`src/Game/Ui/ConsoleSounds.cs`, `data/audio/cues.json`; `docs/design/mockup-sync.md`). Built and checked by the tests,
+  not yet heard in a playtest.
 
 ## 18. Music
 

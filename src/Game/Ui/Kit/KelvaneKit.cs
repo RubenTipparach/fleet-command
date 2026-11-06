@@ -59,6 +59,7 @@ public sealed class KelvaneKit : IKit
                 Mute: new Color("#2a2318"), Plate: new Color("#16110a"), Title: new Color("#ffd27a"), Sheet: new Color("#1c1a16")),
             // Share Tech Mono, the instrument's readout face, for every readout; it runs 1.31 times as wide as Antonio, so
             // it is set at 0.8 times the size, and the keys' fit shrinks what still runs long (rule T)
+            KeySound = "ui_clunk", // the modelled metal skins' clunk (sound-effects design section 2)
             Type = new TypeSet(ShareTechMono, ShareTechMono, (size, weight) => new Face(false, (int)MathF.Round(size * 0.8f), 400)),
             // dark on the lit colours, amber on the dark glass; nothing on a key is white
             InkOn = fill => KitInk.On(fill, InkOn, Amber),
