@@ -1,0 +1,13 @@
+{
+ "_doc": "The scripted captain's Fighters scene (the battle console mockup's scene_fighters): lock the target, open the ship panel's Craft page, launch the fighters on Defences to strip its point defence, then fire a missile barrage. Played from both sides (concord_fighters, krai_fighters).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "click", "arg": "sh.craft" },
+  { "do": "click", "arg": "cr.l" },
+  { "do": "hold", "s": 45 },
+  { "do": "click", "arg": "cr.b" },
+  { "do": "hold", "s": 40 }
+ ]
+}

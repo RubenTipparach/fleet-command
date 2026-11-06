@@ -1,0 +1,72 @@
+{
+ "_doc": "The scripted captain's Distress scene: select the ship adrift, intercept it at speed, and beam spare parts over from Cargo whenever it is in reach, until it has the ten it asked for. Played from both sides.",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "select",
+   "arg": "lark|skarr"
+  },
+  {
+   "do": "station",
+   "arg": "helm"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "helm",
+   "arg": "int"
+  },
+  {
+   "do": "station",
+   "arg": "transport"
+  },
+  {
+   "do": "click",
+   "arg": "tr.tab.cargo"
+  },
+  {
+   "do": "repeat",
+   "arg": "tr.inv.us.parts",
+   "s": 240
+  },
+  {
+   "do": "until_over",
+   "s": 60
+  }
+ ]
+}

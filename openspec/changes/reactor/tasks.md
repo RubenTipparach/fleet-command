@@ -15,5 +15,5 @@
 
 ## 3. After approval for implementation (a separate request)
 
-- [ ] 3.1 `REACTOR` and per-class reactor data in `data/`, validated on load
-- [ ] 3.2 The reactor in `src/sim/`, with golden-seed tests for heat, drift and meltdown
+- [x] 3.1 `REACTOR` in `data/battle/systems/reactor.json`, validated on load (`SystemsDef.Reactor.cs`); every class's rating leaves room for its pumps
+- [x] 3.2 The reactor in `src/Core/Sim` (`Battle.Reactor.cs`, `Rules.Reactor.cs`), with tests for heat, drift and meltdown (`ReactorTests`), the golden seed re-pinned

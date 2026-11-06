@@ -28,7 +28,7 @@ The two factions as the console skins and the ship concepts wrote them (`openspe
 | Kind | Beam, precise | Torpedo (a seeker), by arc | Slug (direct fire), precise | Ram, by arc |
 | Fits | Albatross-class cruiser (CA), on its deflector | Any torpedo tube, as a load | The spinal cannon (Krai FF, CA, DN) | Every Krai ship, from the helm |
 | Range | 14 km | 12 km at 900 m/s | 10 km at 4,500 m/s | Contact |
-| Charge, cost | 14 s, 8 E | 16 s, 6 E | 10 s, 7 E | 8 E from the battery, 30 s to ready again |
+| Charge, cost | 14 s, 8 E | 16 s, 6 E | 10 s, 7 E | 8 E from the capacitor, then the battery, 30 s to ready again |
 | Damage | 7 a second for 2.5 s (17.5), +35 % for each ship that joins, up to 3 (35.9) | None | 18, 40 % through the shield; then 1 a second for 6 s | 5 for every 100 m/s closing, by the rammer's battle length over 230 m |
 | Else | A joiner must be within 8 km and spends its ready lance | The struck facing's shield to 0; every mount within 90 degrees of the facing stunned 8 s; point defence can shoot it down | Overload: 5 km, 14 s, 11 E, 30, 60 % through | Surge 5 s: 2.2 x top speed, 3 x thrust, 0.5 x turn, bow shield x 1.5; the bayonet ignores the struck facing's shield; 30 % back on the rammer's bow |
 

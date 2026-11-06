@@ -1,0 +1,47 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "station",
+ "name": "Enemy station assault",
+ "glyph": "S",
+ "type": "Base assault",
+ "reward_cr": 1200,
+ "where": "station != '' && hostile",
+ "objective": "Destroy the station's guard squadron.",
+ "brief": "{sector_station} anchors the {sector_owner_name} line here. Its guard squadron is the first wall: destroy it. (The station itself joins the battle once stations are built.)",
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "guard",
+     "faction": "{sector_owner}",
+     "count": "strength + 1",
+     "role": "enemy",
+     "label": "Station guard"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "win",
+     "text": "Destroy the guard squadron",
+     "primary": true,
+     "done": "alive(enemies) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -10,
+    "{side}": 5
+   }
+  }
+ ]
+}

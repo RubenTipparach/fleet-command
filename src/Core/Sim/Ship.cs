@@ -5,17 +5,20 @@ using FleetCommand.Data;
 
 namespace FleetCommand.Sim;
 
-public enum Arming { Offline, Normal, Overload }
+/// <summary>A mount's arming state: Offline, Normal, or one of its weapon's own modes (weapon-arming design).</summary>
+public enum Arming { Offline, Normal, Overload, Proximity }
 
 /// <summary>The five statuses of a system or mount (battle-console design, "The five statuses").</summary>
 public enum SystemStatus { Active, Damaged, Disabled, Off, Destroyed }
 
 public enum AlertLevel { Green, Yellow, Red }
 
-/// <summary>An AI captain's standing orders (survey G3); the Fleet station will set these for wingmen.</summary>
-public enum Stance { Attack, Escort, Hold }
+/// <summary>An AI captain's standing orders (survey G3), set for wingmen on the Fleet station; a hunter goes for the
+/// weakest enemy; Run is a test scene's lane run: straight on at full speed, turning back for another pass once far out
+/// (the mockup's 'run').</summary>
+public enum Stance { Attack, Escort, Hold, Hunt, Run }
 
-public sealed class Mount
+public sealed partial class Mount
 {
     public required int Index { get; init; }
     public required MountDef Def { get; init; }
@@ -26,11 +29,13 @@ public sealed class Mount
     public bool Selected { get; set; }
     /// <summary>Health, 0 (destroyed) to 1.</summary>
     public double Hp { get; set; } = 1;
+    /// <summary>Seconds it stays stunned by a quell torpedo: it neither charges nor fires.</summary>
+    public double StunS { get; set; }
     /// <summary>The mount's id as the console shows it: W and its place in the ship's list.</summary>
     public string Label => $"W{Index + 1}";
 }
 
-public sealed class Ship
+public sealed partial class Ship
 {
     public required string Id { get; init; }
     /// <summary>The ship's place in the scenario: the stable order every step iterates in (CLAUDE.md 6.3).</summary>
@@ -39,7 +44,8 @@ public sealed class Ship
     public required string Captain { get; init; }
     public required ShipClass Class { get; init; }
     public required Faction Faction { get; init; }
-    public required int Side { get; init; }
+    /// <summary>The side the ship fights for; a captured ship changes sides (Battle.Transport).</summary>
+    public required int Side { get; set; }
 
     public double X, Z, H, HOrder, V, VOrder;
     public double Hull;
@@ -59,11 +65,25 @@ public sealed class Ship
     public string? Target;
     public AlertLevel Alert = AlertLevel.Yellow;
     public bool Alive = true;
+    /// <summary>A prize: a ship a mission wants taken, not destroyed (ShipStart.Prize).</summary>
+    public bool Prize;
+    /// <summary>A prize beaten down to the capture line has struck: boarded and taken, it no longer fights or moves, and the
+    /// battle no longer counts it as an enemy. It can still be destroyed by a careless shot.</summary>
+    public bool Struck;
     /// <summary>Multiple fire: Fire looses every selected ready mount; off, one at a time.</summary>
     public bool Volley = true;
     public int Ecm;
     public Stance Stance = Stance.Attack;
     public double ThinkT;
+    /// <summary>Countermeasures: battle time its flares can be thrown again (s), decoy shuttles left, and the decoy it has out.</summary>
+    public double FlareReadyT;
+    /// <summary>A forge burn: seconds left, damage a second and where it struck from (m).</summary>
+    public double BurnS, BurnDps, BurnFromX, BurnFromZ, BurnTick;
+    /// <summary>A blood charge: seconds of surge left, its speed, thrust and turn factors (1 when not surging), and the
+    /// battle time it can be ordered again (s).</summary>
+    public double SurgeS, SurgeSpeedX = 1, SurgeAccelX = 1, SurgeTurnX = 1, ChargeReadyT;
+    public int DecoysLeft;
+    public Lure? Decoy;
 
     // The helm officer (battle-console design: helm orders, high energy turns, evasive, emergency stop).
     /// <summary>True while an order toward the target steers the ship (the autopilot); false is free heading.</summary>

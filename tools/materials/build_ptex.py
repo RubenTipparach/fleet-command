@@ -155,12 +155,197 @@ float metal_$name(vec2 uv) { return 0.0; }
     return finish(g, "emblem enamel pearl", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.2)
 
 
+# ---- the Ssarith Hunt's badge, the Bow Rites (owner, 2026-11-05: "shade the bow parts with like wood", "Arrow made of
+# wood"). The bow is the Hunt's own,
+# laminated from cut plate (the guide's SD), so the wood shows its laminations as well as its grain.
+
+def emblem_wood_laminate():
+    """A bow's laminated wood: thin plies of a warm and a darker wood glued edge to edge (the Hunt's makers build their
+    bows from cut plate), long grain running along the plies with fine pores, a slow drift of tone between boards, and an
+    oiled, satin finish. The plies and grain run along the tile's v (the bows' length). One tile is 0.05 m."""
+    g = Graph("Emblem Wood Laminate")
+    ins = [("grain", "f", g.node("fbm2", noise=2, scale_x=64, scale_y=2, folds=0, iterations=5, persistence=0.55, offset=0.0)),
+           ("pore", "f", g.node("fbm2", noise=2, scale_x=256, scale_y=16, folds=0, iterations=2, persistence=0.5, offset=0.0)),
+           ("board", "f", fbm(g, 3, iterations=4))]
+    body = """
+// The plies: 40 per tile across u (1.25 mm each, so a 3 mm limb shows two or three), alternating a warm and a dark
+// wood, a hairline of glue between them.
+vec2 ply_$name(vec2 uv) { float x = uv.x * 40.0; return vec2(mod(floor(x), 2.0), min(fract(x), 1.0 - fract(x))); }
+float height_$name(vec2 uv) {
+	vec2 p = ply_$name(uv);
+	return 0.5 + 0.1 * ($grain(uv) - 0.5) - 0.12 * smoothstep(0.75, 0.9, $pore(uv)) - 0.08 * (1.0 - smoothstep(0.0, 0.025, p.y));
+}
+vec3 albedo_$name(vec2 uv) {
+	vec2 p = ply_$name(uv);
+	vec3 warm = vec3(0.56, 0.35, 0.17), dark = vec3(0.47, 0.28, 0.13);
+	vec3 c = mix(warm, dark, p.x) * (0.85 + 0.3 * $board(uv));
+	c *= 0.78 + 0.34 * smoothstep(0.25, 0.75, $grain(uv));
+	c *= 1.0 - 0.35 * smoothstep(0.75, 0.9, $pore(uv));
+	return mix(c * 0.7, c, smoothstep(0.0, 0.025, p.y));
+}
+float rough_$name(vec2 uv) { return 0.42 + 0.12 * $grain(uv) + 0.2 * smoothstep(0.75, 0.9, $pore(uv)); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem wood laminate", ins, body, tile_m=0.05, depth_m=0.00008, ao_radius=4, ao_strength=0.4)
+
+
+def emblem_fern():
+    """A fern's leaf, for the fronds over the Ssarith badge's field (owner, 2026-11-05: "3d model Fern leaves", then "it should
+    be 3d", with a photograph of ferns in deep shadow): a deep, saturated green with fine parallel veins, lighter and yellower where the
+    leaf is thin, a waxy satin sheen. The veins run along u, the shader's own shading does the rest. One tile is 0.05 m."""
+    g = Graph("Emblem Fern")
+    ins = [("vein", "f", g.node("fbm2", noise=2, scale_x=4, scale_y=160, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("cloud", "f", fbm(g, 6, iterations=4)), ("speck", "f", fbm(g, 96, iterations=2, persistence=0.5))]
+    body = """
+float height_$name(vec2 uv) { return 0.5 + 0.18 * smoothstep(0.6, 0.85, $vein(uv)) + 0.05 * ($cloud(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 deep = vec3(0.03, 0.2, 0.04), bright = vec3(0.16, 0.5, 0.09), yellow = vec3(0.36, 0.6, 0.12);
+	vec3 c = mix(deep, bright, 0.3 + 0.6 * $cloud(uv));
+	c = mix(c, yellow, 0.35 * smoothstep(0.6, 0.85, $vein(uv)));
+	return c * (0.92 + 0.12 * $speck(uv));
+}
+float rough_$name(vec2 uv) { return 0.42 + 0.12 * $cloud(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem fern", ins, body, tile_m=0.05, depth_m=0.00005, ao_radius=4, ao_strength=0.3)
+
+def emblem_enamel_forest():
+    """The badge's field, the Hunt's hunting ground (owner, 2026-11-05: "Background should be like a beige, dull brown and
+    dry green forest"): a dry forest painted in enamel. A beige haze, dull brown trunks standing in it at uneven spacing and
+    widths, nearer trunks darker, and dappled dry-green and olive canopy over them, with light falling through. Every
+    trunk and blot repeats whole across the tile, so the field tiles. One tile is 0.05 m."""
+    g = Graph("Emblem Enamel Forest")
+    ins = [("leaf", "f", fbm(g, 4, iterations=5, persistence=0.55)), ("leaf2", "f", fbm(g, 12, iterations=4, persistence=0.5)),
+           ("bark", "f", g.node("fbm2", noise=2, scale_x=96, scale_y=4, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("haze", "f", fbm(g, 3, iterations=4)), ("peel", "f", fbm(g, 40, iterations=3, persistence=0.5))]
+    body = """
+// Trunks: 5 columns across the tile, each with a trunk at a hashed offset and width, near (dark, wide) or far (pale, thin).
+// Returns x the trunk's cover (0-1), y its depth (0 far, 1 near).
+vec2 trunk_$name(vec2 uv) {
+	float cols = 5.0; float c = floor(uv.x * cols); float f = fract(uv.x * cols);
+	float near = step(0.55, hs_$name(vec2(c, 5.0)));
+	float w = mix(0.1, 0.18, hs_$name(vec2(c, 9.0))) * mix(0.8, 1.8, near);
+	float x0 = mix(0.2, 0.8, hs_$name(vec2(c, 13.0)));
+	float lean = 0.03 * (hs_$name(vec2(c, 21.0)) - 0.5) * sin(6.2831853 * uv.y);
+	float t = 1.0 - smoothstep(w * 0.4, w * 0.5, abs(f - x0 - lean));
+	return vec2(t * step(0.15, hs_$name(vec2(c, 31.0))), near);
+}
+// The canopy: dry leaves where the leaf noise is high, thicker toward the top of the tile's repeat, broken by light.
+float canopy_$name(vec2 uv) {
+	float l = 0.65 * $leaf(uv) + 0.35 * $leaf2(uv);
+	return smoothstep(0.47, 0.57, l);
+}
+float height_$name(vec2 uv) {
+	vec2 t = trunk_$name(uv);
+	return 0.5 + 0.12 * ($peel(uv) - 0.5) + 0.12 * t.x * (0.5 + t.y) + 0.08 * canopy_$name(uv);
+}
+vec3 albedo_$name(vec2 uv) {
+	vec3 beige = vec3(0.64, 0.57, 0.43), haze = vec3(0.55, 0.5, 0.38);
+	vec3 c = mix(beige, haze, $haze(uv));
+	vec2 t = trunk_$name(uv);
+	vec3 farT = vec3(0.44, 0.35, 0.24), nearT = vec3(0.26, 0.18, 0.11);
+	vec3 trunkC = mix(farT, nearT, t.y) * (0.85 + 0.3 * $bark(uv));
+	c = mix(c, trunkC, t.x);
+	float can = canopy_$name(uv);
+	vec3 dry = vec3(0.42, 0.44, 0.25), olive = vec3(0.3, 0.33, 0.18), straw = vec3(0.56, 0.53, 0.33);
+	vec3 leafC = mix(olive, dry, smoothstep(0.3, 0.7, $leaf2(uv)));
+	leafC = mix(leafC, straw, 0.5 * smoothstep(0.72, 0.85, $leaf2(uv)));
+	return mix(c, leafC, can * 0.92);
+}
+float rough_$name(vec2 uv) { return 0.3 + 0.1 * $peel(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "emblem enamel forest", ins, body, tile_m=0.05, depth_m=0.00006, ao_radius=4, ao_strength=0.3)
+
+
+# ---- the faction screen's table (owner, 2026-11-06: "a wooden table", "generate the best wooden textture you can with
+# material maker").
+
+def table_wood():
+    """A polished walnut tabletop. Four boards across a 1 m tile (0.25 m each), each a different log, so each its own
+    tone and its own figure, butt-jointed once a tile at a staggered place, a hairline seam between boards. Flat-sawn
+    figure: the growth rings of a log cut lengthways, so where the board's plane rises and falls through the rings they
+    sweep up into cathedral arches, drawn from a ring field round each board's own pith (the board's depth in the log
+    drifting along its length). Earlywood a warm mid brown, latewood a dark chocolate band at each ring's end; open
+    pores streaking along the grain; the medullary rays as short bright flecks; a few dark mineral streaks. Under a deep
+    polished finish: low roughness, the pores and seams rougher, a faint burnish. The grain runs along the tile's u.
+    One tile is 1 m; every pattern repeats a whole number of times per tile."""
+    g = Graph("Table Wood")
+    ins = [("warp", "f", g.node("fbm2", noise=2, scale_x=2, scale_y=8, folds=0, iterations=2, persistence=0.5, offset=0.0)),
+           ("fine", "f", g.node("fbm2", noise=2, scale_x=2, scale_y=96, folds=0, iterations=5, persistence=0.55, offset=0.0)),
+           ("pore", "f", g.node("fbm2", noise=2, scale_x=12, scale_y=640, folds=0, iterations=2, persistence=0.5, offset=0.0)),
+           ("fleck", "f", g.node("fbm2", noise=2, scale_x=96, scale_y=384, folds=0, iterations=2, persistence=0.5, offset=0.0)),
+           ("mineral", "f", g.node("fbm2", noise=2, scale_x=1, scale_y=24, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("burnish", "f", fbm(g, 24, iterations=3, persistence=0.5))]
+    body = """
+// A board: t across it (0-1), du along it from its butt joint (0-1 a tile), its log's hash, and the distance (tile units,
+// metres) to the nearest seam or joint.
+vec4 board_$name(vec2 uv) {
+	float rows = 4.0;
+	float r = floor(uv.y * rows);
+	float t = fract(uv.y * rows);
+	float du = fract(uv.x - hs_$name(vec2(r, 5.0)));
+	float d = min(min(t, 1.0 - t) / rows, min(du, 1.0 - du));
+	return vec4(t, du, hs_$name(vec2(r * 7.0 + 1.0, 3.0)), d);
+}
+// The ring field: where the board's face cuts its log's growth rings, in metres. The pith sits beside or under the board
+// (a flat-sawn board is cut from one side of the log), 0.09-0.15 m below its face; the face's depth in the log rises and
+// falls a few centimetres along the board, so the rings sweep up into arches where the pith is under the board and run
+// straight where it is beside it. Rings 4.5-7 mm apart, as a walnut grows. The warp, stretched along the grain, waves
+// the rings without blotting them. Returns the ring's phase, 0-1 within a year.
+float ring_$name(vec2 uv, vec4 b) {
+	float pith = mix(-0.4, 1.4, hs_$name(vec2(b.z, 11.0)));
+	float f = 145.0 + 75.0 * hs_$name(vec2(b.z, 13.0));
+	float ph = hs_$name(vec2(b.z, 17.0));
+	float dx = (b.x - pith) * 0.25;
+	float depth = 0.09 + 0.06 * hs_$name(vec2(b.z, 19.0)) + 0.028 * sin(6.2831853 * (b.y + ph)) + 0.012 * sin(6.2831853 * (2.0 * b.y + ph * 3.0))
+		+ 0.008 * ($warp(uv) - 0.5);
+	float r = sqrt(dx * dx + depth * depth);
+	return fract(r * f + 0.55 * ($warp(uv) - 0.5) + 0.025 * ($fine(uv) - 0.5));
+}
+// a year's ring: light earlywood darkening slowly into the latewood, then the next year's earlywood starts at once
+float late_$name(float g) { return smoothstep(0.12, 0.93, g) * (1.0 - smoothstep(0.965, 1.0, g)); }
+float seam_$name(vec4 b) { return smoothstep(0.0004, 0.0013, b.w); }
+float pore_$name(vec2 uv) { return smoothstep(0.72, 0.9, $pore(uv)); }
+float height_$name(vec2 uv) {
+	vec4 b = board_$name(uv);
+	float g = ring_$name(uv, b);
+	return 0.62 + 0.05 * late_$name(g) - 0.12 * pore_$name(uv) + 0.02 * ($fine(uv) - 0.5) - 0.5 * (1.0 - seam_$name(b));
+}
+vec3 albedo_$name(vec2 uv) {
+	vec4 b = board_$name(uv);
+	float g = ring_$name(uv, b);
+	vec3 early = vec3(0.39, 0.24, 0.13), late = vec3(0.21, 0.115, 0.06);
+	// each board its own log: a little lighter or darker, a little redder or cooler
+	float tone = 0.86 + 0.28 * hs_$name(vec2(b.z, 23.0));
+	vec3 tint = mix(vec3(1.04, 0.98, 0.92), vec3(0.96, 1.0, 1.04), hs_$name(vec2(b.z, 29.0)));
+	vec3 c = mix(early, late, pow(late_$name(g), 1.6)) * tone * tint;
+	c *= 0.9 + 0.2 * $fine(uv);                                                    // the grain's long streaks
+	c = mix(c, c * 1.4, 0.45 * smoothstep(0.82, 0.96, $fleck(uv)));                 // ray flecks, catching the light
+	c *= 1.0 - 0.45 * pore_$name(uv);                                               // open pores, darker
+	c *= 1.0 - 0.3 * smoothstep(0.68, 0.9, $mineral(uv)) * (0.5 + 0.5 * hs_$name(vec2(b.z, 31.0)));   // mineral streaks
+	c = pow(c, vec3(1.06)) * vec3(1.05, 1.0, 0.92);                                 // the finish deepens and warms it
+	return mix(c * 0.35, c, seam_$name(b));
+}
+float rough_$name(vec2 uv) {
+	vec4 b = board_$name(uv);
+	return 0.16 + 0.07 * $burnish(uv) + 0.24 * pore_$name(uv) + 0.35 * (1.0 - seam_$name(b));
+}
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "table wood", ins, body, tile_m=1.0, depth_m=0.0004, ao_radius=6, ao_strength=0.6)
+
+
 GRAPHS = {
     "hull_plate": hull_plate,
     "emblem_platinum": emblem_platinum,
     "emblem_enamel_signal": emblem_enamel_signal,
     "emblem_enamel_night": emblem_enamel_night,
     "emblem_enamel_pearl": emblem_enamel_pearl,
+    "emblem_wood_laminate": emblem_wood_laminate,
+    "emblem_enamel_forest": emblem_enamel_forest,
+    "emblem_fern": emblem_fern,
+    "table_wood": table_wood,
 }
 
 

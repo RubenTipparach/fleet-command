@@ -9,7 +9,7 @@ using FleetCommand.Data;
 
 namespace FleetCommand.Sim;
 
-public sealed class Rules
+public sealed partial class Rules
 {
     /// <summary>The systems energy is allocated to, in the power station's order.</summary>
     public static readonly string[] Systems = { "weapons", "shields", "engines", "sensors", "tractor", "transport", "repair" };
@@ -21,24 +21,56 @@ public sealed class Rules
     public static readonly string[] Facings = { "F", "FR", "AR", "A", "AL", "FL" };
 
     private readonly Tuning _t;
-    public Rules(Tuning tuning) { _t = tuning; }
+    private readonly TacticalDef _tac;
+    public Rules(Tuning tuning, TacticalDef tactical) { _t = tuning; _tac = tactical; }
     public Tuning Tuning => _t;
+    /// <summary>Weapon targeting's numbers (data/battle/systems/tactical.json).</summary>
+    public TacticalDef Tactical => _tac;
 
-    /// <summary>The reactor's output this moment, E.</summary>
-    public double Output(Ship s) => s.Class.ReactorE;
+    /// <summary>The reactor's output this moment, E: its rating, less what misaligned coils lose (Rules.Reactor).</summary>
+    public double Output(Ship s) => s.Class.ReactorE * Efficiency(s);
 
-    /// <summary>What the allocation draws, E.</summary>
-    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k));
+    /// <summary>What the allocation draws, E: the systems' boxes, the coolant pumps and the warp coils (Rules.Reactor), and the
+    /// cloak while it is on (Rules.Cloak.cs).</summary>
+    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k)) + ReactorDraw(s) + (int)Math.Round(s.CloakDrawE);
 
-    /// <summary>How many more boxes a system holding <paramref name="current"/> may be given: up to ten, within the output.</summary>
-    public int PowerRoom(Ship s, int current) => (int)Math.Floor(Output(s) + 1e-6) - Used(s) + current;
+    /// <summary>How many more boxes a system holding <paramref name="current"/> may be given: up to ten, within the output,
+    /// unless the captain lets the allocation draw past it (Ship.Overdraw).</summary>
+    public int PowerRoom(Ship s, int current) => s.Overdraw ? NoCap : (int)Math.Floor(Output(s) + 1e-6) - Used(s) + current;
 
     /// <summary>The speed limit, m/s: the engines' boxes, the class's top speed, the engines' health and any brownout.</summary>
     public double MaxSpeed(Ship s) =>
-        Math.Min(s.Class.SpeedMaxMS, s.Power.GetValueOrDefault("engines") * _t.SpeedPerBoxMS) * (0.4 + 0.6 * s.Sys["engines"]) * s.Brown;
+        Math.Min(s.Class.SpeedMaxMS, s.Power.GetValueOrDefault("engines") * _t.SpeedPerBoxMS) * (0.4 + 0.6 * s.Sys["engines"]) * s.Brown * s.SurgeSpeedX;
+
+    /// <summary>What a hit does to a facing (special-weapons design): pierce of it goes straight to the hull, the shield
+    /// takes the rest up to what it holds, and what it cannot take goes to the hull too.</summary>
+    public static (double Held, double ToHull) Pierced(double dmg, double pierce, double shield)
+    {
+        double held = Math.Min(Math.Max(0, shield), dmg * (1 - Math.Clamp(pierce, 0, 1)));
+        return (held, dmg - held);
+    }
+
+    /// <summary>The chorus lance's damage a second with joined ships joining it.</summary>
+    public static double ChorusDps(ChorusDef c, int joined) => c.DmgPerS * (1 + c.PerJoinerX * Math.Min(joined, c.MaxJoiners));
+
+    /// <summary>A blood charge's ram: damage for the closing speed (m/s), by the rammer's battle length.</summary>
+    public static double RamDamage(ChargeDef c, double closingMS, double lengthM) => Math.Max(0, closingMS) / 100 * c.DmgPer100MS * lengthM / c.MassRefM;
 
     /// <summary>The figures a mount fires with in its arming state.</summary>
-    public static WeaponMode Mode(Mount m) => m.State == Arming.Overload && m.Weapon.Overload != null ? m.Weapon.Overload : m.Weapon.Normal;
+    public static WeaponMode Mode(Mount m) => ModeOf(m.Weapon, m.State) ?? m.Weapon.Normal;
+
+    /// <summary>A weapon's figures in an arming state, or null for a mode it does not have (Offline fires as Normal would).</summary>
+    public static WeaponMode? ModeOf(WeaponDef w, Arming a) => a switch { Arming.Overload => w.Overload, Arming.Proximity => w.Proximity, _ => w.Normal };
+
+    /// <summary>Whether a weapon can be armed in a state: Offline and Normal always, the others only where it has them.</summary>
+    public static bool CanArm(WeaponDef w, Arming a) => !w.IsPointDefence && ModeOf(w, a) != null;
+
+    /// <summary>The chopping block's reach of a mount's hits in its arming state, degrees either side of the facing struck.</summary>
+    public double ReachDeg(Mount m) => Mode(m).ReachDeg > 0 ? Mode(m).ReachDeg : _tac.Strike.ReachDeg;
+
+    /// <summary>How a mount's hits choose where they land as the hit details name it: precise, a proximity burst's wide
+    /// arc, or by arc.</summary>
+    public static string AimsBy(Mount m) => m.Weapon.Precise ? "Precise" : Mode(m).ReachDeg > 0 ? "Wide arc" : "By arc";
 
     /// <summary>Bearing of a point from a ship, radians: 0 dead ahead, positive to starboard.</summary>
     public static double Bearing(Ship s, double x, double z)
@@ -67,7 +99,7 @@ public sealed class Rules
 
     public static bool InRange(Ship s, Mount m, Ship t) => DistKm(s, t) <= Mode(m).RangeKm;
 
-    public static bool Ready(Mount m) => m.State != Arming.Offline && m.Charge >= 1 && m.Hp > 0;
+    public static bool Ready(Mount m) => m.State != Arming.Offline && m.Charge >= 1 && m.Hp > 0 && m.StunS <= 0;
 
     /// <summary>Seconds until a mount is ready at the rate Battle charges it, or null when it is not cooling.</summary>
     public static double? CooldownS(Mount m) => m.State == Arming.Offline || m.Hp <= 0 || m.Charge >= 1 ? null : (1 - m.Charge) * Mode(m).ChargeS;
@@ -79,15 +111,20 @@ public sealed class Rules
         return t < 10 ? t.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : ((int)Math.Ceiling(seconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    /// <summary>The chance a shot from mount m of s hits t. Every readout of it and the shot itself call this.</summary>
-    public double HitChance(Ship s, Mount m, Ship? t)
+    /// <summary>The chance a shot from mount m of s hits t, aimed at <paramref name="aim"/> (s's own aim when null). Every
+    /// readout of it and the shot itself call this.</summary>
+    public double HitChance(Ship s, Mount m, Ship? t, string? aim = null)
     {
         if (t == null || !t.Alive || !InRange(s, m, t)) return 0;
         WeaponMode w = Mode(m);
         double d = DistKm(s, t);
         double p = _t.HitChanceNear - _t.HitChanceFalloff * d / w.RangeKm;
-        p -= _t.EcmStep * t.Ecm;
-        p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
+        p += Ew(s, t);   // ECM, ECCM, the nebula, passive sensors and a cloak (Rules.Cloak.cs)
+        // a proximity burst ignores the target's speed and adds its bonus (weapon-arming design)
+        if (!w.IgnoreSpeed) p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
+        p += w.HitBonus;
+        // aiming at anything but the hull costs the captain's side some of its chance (weapon-targeting design)
+        if ((aim ?? s.Aim) != "hull" && s.Side == 0) p -= _tac.AimHitPenalty;
         p *= 0.5 + 0.5 * s.Sys["sensors"];
         // erratic manoeuvres: harder to hit, and harder to hit with
         if (t.Erratic) p *= _t.ErraticHit;
@@ -96,30 +133,35 @@ public sealed class Rules
     }
 
     /// <summary>A subsystem's status from its health and its energy.</summary>
-    public SystemStatus Status(Ship s, string subsystem)
-    {
-        double hp = s.Sys[subsystem];
-        if (hp <= 0) return SystemStatus.Destroyed;
-        if (hp < _t.StatusDisabledBelow) return SystemStatus.Disabled;
-        bool off = (Array.IndexOf(Systems, subsystem) >= 0 && s.Power.GetValueOrDefault(subsystem) <= 0) || (subsystem == "shields" && !s.ShieldsUp);
-        if (off) return SystemStatus.Off;
-        return hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
-    }
+    public SystemStatus Status(Ship s, string subsystem) =>
+        StatusOf(s.Sys[subsystem], (Array.IndexOf(Systems, subsystem) >= 0 && s.Power.GetValueOrDefault(subsystem) <= 0) || (subsystem == "shields" && !s.ShieldsUp));
 
     /// <summary>A mount's status from its health and its arming state.</summary>
-    public SystemStatus Status(Mount m)
+    public SystemStatus Status(Mount m) => StatusOf(m.Hp, m.State == Arming.Offline);
+
+    /// <summary>The status of anything with a health (a subsystem, a mount, a nacelle, a repair job): destroyed at 0,
+    /// disabled below status_disabled_below, then off when it has no energy, damaged below 1, else active.</summary>
+    public SystemStatus StatusOf(double hp, bool off = false) =>
+        hp <= 0 ? SystemStatus.Destroyed : hp < _t.StatusDisabledBelow ? SystemStatus.Disabled : off ? SystemStatus.Off : hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
+
+    /// <summary>A mount's status on its ship: as Status(m), and Off while weapons control is unpowered or disabled, unless
+    /// the mount has its own power (point defence, missiles; weapon-targeting design).</summary>
+    public SystemStatus Status(Ship s, Mount m)
     {
-        if (m.Hp <= 0) return SystemStatus.Destroyed;
-        if (m.Hp < _t.StatusDisabledBelow) return SystemStatus.Disabled;
-        if (m.State == Arming.Offline) return SystemStatus.Off;
-        return m.Hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
+        SystemStatus st = Status(m);
+        if (st is not (SystemStatus.Active or SystemStatus.Damaged) || m.Weapon.OwnPower) return st;
+        return s.Power.GetValueOrDefault("weapons") <= 0 || !ControlUp(s) ? SystemStatus.Off : st;
     }
+
+    /// <summary>True while weapons control is above the Disabled line, so the mounts it powers can charge.</summary>
+    public bool ControlUp(Ship s) => s.Sys["weapons"] >= _t.StatusDisabledBelow;
 
     /// <summary>A class's best high energy turn chance: smaller hulls turn hard more safely.</summary>
     public static double HetMax(Ship s) => Math.Clamp(0.95 - s.Class.LengthM / 2000, 0.6, 0.95);
 
-    /// <summary>The chance the next high energy turn succeeds, as the helm shows it and Battle.Het rolls it.</summary>
-    public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0));
+    /// <summary>The chance the next high energy turn succeeds, as the helm shows it and Battle.Het rolls it: less erratic
+    /// manoeuvres, plus the helm officer's skill (officers).</summary>
+    public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0) + OfficerSkill(s, "helm") * SystemsData.Officers.Ability.Het);
 
     /// <summary>Range in km an AI captain closes to for its range setting.</summary>
     /// <summary>The range an AI captain fights at, km (the player's manoeuvres use the middle one).</summary>

@@ -1,0 +1,47 @@
+{
+ "note": "Write the Emblem Gallery's pictures (docs/mockups/emblem-gallery.html): each faction's finished badge, its Blender\nrenders face on and at an angle, copied down to 640 px JPEGs on black so the gallery page stays light. A build product of\nthe renders in assets/emblems/<faction>/ (tools/blender/emblem_<faction>.py); re-run after a badge is re-rendered, then\nre-inline the page (tools/mockups/inline_data.py).",
+ "pieces": {
+  "concord/face": {
+   "size": [
+    640,
+    640
+   ],
+   "file": "concord-face.jpg"
+  },
+  "concord/angle": {
+   "size": [
+    640,
+    640
+   ],
+   "file": "concord-angle.jpg"
+  },
+  "krai/face": {
+   "size": [
+    640,
+    640
+   ],
+   "file": "krai-face.jpg"
+  },
+  "krai/angle": {
+   "size": [
+    640,
+    640
+   ],
+   "file": "krai-angle.jpg"
+  },
+  "ssarith/face": {
+   "size": [
+    640,
+    640
+   ],
+   "file": "ssarith-face.jpg"
+  },
+  "ssarith/angle": {
+   "size": [
+    640,
+    640
+   ],
+   "file": "ssarith-angle.jpg"
+  }
+ }
+}

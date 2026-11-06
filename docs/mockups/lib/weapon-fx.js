@@ -16,7 +16,8 @@
 //                                .facing[k] (0..1 held), .breakAt[k], .raycast(worldFrom, worldDir)
 //   scars(ship)                  patches the ship's materials: molten craters, beam burns, gouges and the quell lattice,
 //                                in ship space; .add(kind, pLocal, r, dirLocal, dur), .lattice(pLocal, t, stunS)
-//   orb(o), spike(o), dart(o)    the quell torpedo, the forge slug and a missile
+//   orb(o), spike(o), dart(o)    the quell's lattice head, the forge slug and a missile; quell(o) the quell torpedo whole
+//                                (a missile's body and plume, a torpedo's star, the lattice head); decoy(o) a decoy shuttle
 //   trail(o)                     a fading ribbon behind a moving point; beads(o) a discrete trail of glowing beads
 //   plume(r, len, o)             an exhaust with shock diamonds; bowShock(r, len, o) the shell before a charging bow
 //   ring(o)                      an impact shockwave ring, any orientation; haze(o) a heat haze sprite
@@ -128,6 +129,8 @@ function pipeline(opt = {}) {
 //   lance   the standard lance (every faction's beam): a white core in the weapon's colour, flowing light, pulses racing
 //           to the target
 //   bolt    a disruptor bolt: a short strip from its tail to its head, narrow and dim behind, a hot core at the head
+//   tracer  point defence cannon fire (owner, 2026-11-04: "pdc"): a stream of short bright rounds racing from the mount to
+//           the shot it fires on
 //   barrel  the forge driver's spine heating: blackbody along its length, brightest at the muzzle
 const RIBBON_FS = {
   chorus: `
@@ -160,6 +163,11 @@ const RIBBON_FS = {
     float core = exp(-xx*xx*18.0)*pow(k, 3.0), glow = exp(-abs(xx)*3.0)*k*k;
     float flick = 0.8 + 0.4*wn(vec3(s*0.3 - uTime*40.0, x*2.0, 4.0));
     vec3 c = uColor*glow*1.6*flick + hotOf(uColor)*core*2.6;`,
+  tracer: `
+    float per = uWidth*9.0, u = fract(s/per - uTime*55.0);
+    float dash = smoothstep(0.0, 0.06, u)*(1.0 - smoothstep(0.22, 0.32, u));
+    float core = exp(-x*x*28.0), glow = exp(-abs(x)*3.0)*0.5;
+    vec3 c = (hotOf(uColor)*core*2.2 + uColor*glow)*dash;`,
   barrel: `
     float k = s/max(uLen, 1.0); float heat = uIntensity*(0.35 + 0.65*k)*(0.75 + 0.5*wfbm(vec3(s*0.4, x*2.0, uTime*3.0)));
     vec3 c = blackbody(heat*1.1)*(exp(-x*x*6.0)*0.8 + exp(-abs(x)*2.0)*0.25);`,
@@ -388,9 +396,9 @@ function scars(ship) {
 function orb(opt = {}) {
   const g = new THREE.Group(), r = opt.r ?? 3;
   const shell = (rad, col, op) => new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(rad, 1)), new THREE.LineBasicMaterial({ color: new THREE.Color(col).multiplyScalar(op), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
-  const a = shell(r, 0xb7a6f2, 2.0), b = shell(r * 0.62, 0x3fa9f0, 2.4); g.add(a, b);
-  const core = flare({ look: 'soft', color: 0xb7a6f2, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = 1.2;
-  const lens = flare({ look: 'lens', color: 0xb7a6f2, size: r * 7 }); scene.remove(lens.mesh); g.add(lens.mesh); lens.u.uI.value = 0.5;
+  const a = shell(r, opt.outer ?? 0xb7a6f2, 2.0), b = shell(r * 0.62, opt.inner ?? 0x3fa9f0, 2.4); g.add(a, b);
+  const core = flare({ look: 'soft', color: opt.outer ?? 0x9a7ff0, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = opt.core ?? 1.2;
+  const lens = flare({ look: 'lens', color: 0xb7a6f2, size: r * 7 }); scene.remove(lens.mesh); g.add(lens.mesh); lens.u.uI.value = opt.lens === false ? 0 : 0.5;
   scene.add(g);
   const O = { group: g, step(dt) { a.rotation.x += dt * 2.1; a.rotation.y += dt * 1.3; b.rotation.y -= dt * 2.8; b.rotation.z += dt * 1.7; }, remove() { scene.remove(g); unlive(O); } };
   live.push(O); return O;
@@ -409,6 +417,29 @@ function dart(opt = {}) {
   const ball = flare({ look: 'ball', color: opt.color ?? 0xffd27a, size: len * 1.6 }); scene.remove(ball.mesh); ball.mesh.position.z = len * 0.75; g.add(ball.mesh);
   scene.add(g);
   return { group: g, flame: ball, remove() { scene.remove(g); } };
+}
+// A decoy shuttle (owner, 2026-11-04: missiles "can be countered with counter measures like flares, decoy shuttles, or
+// pdc"): a small blunt craft in gunmetal with a pulsing beacon (it shouts the ship's own sensor picture), its drive a
+// small flare; the page flies it and decides what it lures.
+function decoy(opt = {}) {
+  const g = new THREE.Group(), L = opt.len ?? 9, mat = new THREE.MeshStandardMaterial({ color: 0x6a6f78, metalness: 0.6, roughness: 0.45 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(L * 0.45, L * 0.3, L), mat); g.add(body);
+  const nose = new THREE.Mesh(new THREE.BoxGeometry(L * 0.35, L * 0.22, L * 0.25), mat); nose.position.z = -L * 0.6; g.add(nose);
+  const beacon = flare({ look: 'soft', color: opt.color ?? 0xffb030, size: L * 2.6 }); scene.remove(beacon.mesh); beacon.mesh.position.y = L * 0.25; g.add(beacon.mesh);
+  const drive = flare({ look: 'soft', color: opt.drive ?? 0x7fc4ff, size: L * 0.9 }); scene.remove(drive.mesh); drive.mesh.position.z = L * 0.55; g.add(drive.mesh);
+  scene.add(g);
+  const D = { group: g, beacon, drive, step() { beacon.u.uI.value = 0.6 + 1.4 * Math.max(0, Math.sin(T.value * 9)); drive.u.uI.value = 1.2; }, remove() { scene.remove(g); unlive(D); } };
+  live.push(D); return D;
+}
+// The quell torpedo as it flies (owner, 2026-11-05: "quell torpedo should be like a cross between a pulse torpedo and a
+// missle"): a missile's body and ball plume (dart), with the pulse torpedo's six-armed star at its nose and the quell's own
+// lattice shells turning round it, all in its deep blue ("needs to be deep blue"); the page gives it the torpedo's bead trail. One copy of each part.
+function quell(opt = {}) {
+  const len = opt.len ?? 8, col = opt.color ?? 0x2a4cff, body = dart({ len, color: opt.plume ?? col });
+  const head = orb({ r: len * 0.34, lens: false, core: 0.5, outer: col, inner: opt.inner ?? 0x5a7dff }); scene.remove(head.group); head.group.position.z = -len * 0.62; body.group.add(head.group);
+  const star = flare({ look: 'six', color: col, size: len * 5.5 }); scene.remove(star.mesh); star.mesh.position.z = -len * 0.62; body.group.add(star.mesh);
+  star.u.uI.value = 0.55;
+  return { group: body.group, flame: body.flame, star, head, remove() { body.remove(); head.remove(); } };
 }
 // The forge slug: a three-sided spike (the Krai's triangle) of white-hot metal, its surface flowing like a pour, the
 // colour by blackbody from white at the point to orange at its tail.
@@ -591,5 +622,5 @@ function motes(opt) {
 function step(dt) { T.value += dt; for (const e of live.slice()) e.step(dt); }
 function clear() { for (const e of live.slice()) { if (e.remove) e.remove(); else { if (e.mesh) scene.remove(e.mesh); unlive(e); } } }
 
-return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, spike, dart, trail, beads, plume, bowShock, ring, haze, motes, step, clear, live };
+return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, quell, spike, dart, decoy, trail, beads, plume, bowShock, ring, haze, motes, step, clear, live };
 };

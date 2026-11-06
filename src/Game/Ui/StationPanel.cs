@@ -1,8 +1,9 @@
 // StationPanel: the stations panel (battle-console design section 1): one panel whose page is picked by a narrow column
-// of nine icon tabs. Built in the game so far: Helm (orders toward the target, high energy turns) and Power (energy in
-// boxes). The
-// other seven stations are on the rail and show that they are not built yet; each comes in its own change.
+// of nine icon tabs, each with its officer's slot on the frame's top edge. Built here: Helm (orders toward the target, high
+// energy turns) and Power (energy in boxes; its Reactor and Warp modes in StationPanel.Reactor.cs). The other stations
+// each live in their own file (StationPanel.<Station>.cs); one not built yet says so.
 using System;
+using FleetCommand.ConsoleModel;
 using FleetCommand.Sim;
 using Godot;
 
@@ -25,14 +26,33 @@ public sealed partial class StationPanel : ConsolePanel
         var st = Array.Find(Stations, s => s.Id == cur);
         Rect2 p = Frame(st.Label);
         Rail("st", p.Position.X, p.Position.Y, Stations, cur, X.Act.Station);
+        // the station's officer slot, on the frame's top edge left of its title (StationPanel.Reactor.cs)
+        OfficerSlot(p.Position.X + 56, 0, Math.Min(Big ? 340 : 230, TitleLeft - 14 - (p.Position.X + 56)), cur);
         var b = new Rect2(p.Position.X + 56, p.Position.Y, p.Size.X - 56, p.Size.Y);
+        bool drawn = false;
         switch (cur)
         {
-            case "helm": Helm(b); break;
-            case "power": Power(b); break;
-            default: NotBuilt(b, st.Label, st.Icon); break;
+            case "helm": Helm(b); drawn = true; break;
+            case "power": Power(b); drawn = true; break;
+            // each other station in its own file (StationPanel.<Station>.cs); a station not yet built says so
+            case "tactical": TacticalPage(b, ref drawn); break;
+            case "pd": PointDefencePage(b, ref drawn); break;
+            case "science": SciencePage(b, ref drawn); break;
+            case "comms": CommsPage(b, ref drawn); break;
+            case "repair": RepairPage(b, ref drawn); break;
+            case "transport": TransportPage(b, ref drawn); break;
+            case "fleet": FleetPage(b, ref drawn); break;
         }
+        if (!drawn) NotBuilt(b, st.Label, st.Icon);
     }
+
+    partial void TacticalPage(Rect2 b, ref bool drawn);
+    partial void PointDefencePage(Rect2 b, ref bool drawn);
+    partial void SciencePage(Rect2 b, ref bool drawn);
+    partial void CommsPage(Rect2 b, ref bool drawn);
+    partial void RepairPage(Rect2 b, ref bool drawn);
+    partial void TransportPage(Rect2 b, ref bool drawn);
+    partial void FleetPage(Rect2 b, ref bool drawn);
 
     private void NotBuilt(Rect2 b, string label, string icon)
     {
@@ -156,14 +176,12 @@ public sealed partial class StationPanel : ConsolePanel
         Color fill = dis ? C.Deep : st.Down ? C.Lilac : on ? onCol ?? C.Accord : st.Hot ? C.Sky : C.Signal;
         KeyFace.Draw(Kit, this, r, sz * 0.22f, fill, false, dis ? 0.5f : 1);
         Color ink = dis ? Sk.R.InkDis : KeyFace.Ink(Kit, fill);
-        HelmGlyphs.Draw(this, X.Fonts, kind, x + sz / 2, y + sz / 2, sz * 0.42f, ink, Me.OrbitDir, C.Signal);
-        // the turn's angle, small in the corner, so 90 and 135 never read alike
+        // the glyph and a turn's angle inside the key's glass (HelmKeyLayout, shared with the mockup's helmKeyLayout)
         string? ang = kind switch { "het.l90" or "het.r90" => "90", "het.l135" or "het.r135" => "135", "het.180" => "180", _ => null };
+        HelmKeyContent L = HelmKeyLayout.For(new FleetCommand.Data.Rect(x, y, sz, sz), Kit.KeyGlass, ang != null, kind.Contains(".l"));
+        HelmGlyphs.Draw(this, X.Fonts, kind, (float)L.Cx, (float)L.Cy, (float)L.R, ink, Me.OrbitDir, C.Signal);
         if (ang != null)
-        {
-            bool left = kind.Contains(".l");
-            Text(ang, left ? x + sz - sz * 0.1f : x + sz * 0.1f, y + sz - sz * 0.1f, Math.Max(8, (int)Math.Round(sz * 0.2f)), ink, left ? HorizontalAlignment.Right : HorizontalAlignment.Left, 0, 700);
-        }
+            Text(ang, (float)L.Tx, (float)L.Ty, L.Size, ink, L.AlignRight ? HorizontalAlignment.Right : HorizontalAlignment.Left, 0, 700);
     }
 
     /// <summary>A slider: one handle, or two (min and max) when f1 is given.</summary>
@@ -181,9 +199,11 @@ public sealed partial class StationPanel : ConsolePanel
     private void Power(Rect2 b)
     {
         Ship s = Me;
-        // the power station's modes: Allocation is built; Reactor and Warp are not in the game yet
-        Tabs("pw.mode", new Rect2(b.Position, new Vector2(b.Size.X, 40)), new[] { ("alloc", "Allocation"), ("reactor", "Reactor"), ("warp", "Warp") }, "alloc", _ => { }, id => id != "alloc");
+        // the power station's modes: Allocation (the reference game's energy page), Reactor and Warp (StationPanel.Reactor.cs)
+        Tabs("pw.mode", new Rect2(b.Position, new Vector2(b.Size.X, 40)), new[] { ("alloc", "Allocation"), ("reactor", "Reactor"), ("warp", "Warp") }, X.State.PowerMode, m => X.State.PowerMode = m);
         b = new Rect2(b.Position.X, b.Position.Y + 46, b.Size.X, b.Size.Y - 46);
+        if (X.State.PowerMode == "reactor") { ReactorMode(b); return; }
+        if (X.State.PowerMode == "warp") { WarpMode(b); return; }
         double outE = B.Rules.Output(s);
         int used = B.Rules.Used(s);
         double spare = outE - used;
@@ -196,20 +216,17 @@ public sealed partial class StationPanel : ConsolePanel
             PowerRow("pw", b.Position.X + io, y, b.Size.X - io, rowH, k, lw - io);
             y += rowH + gap;
         }
-        y += 4;
+        // warp set by hand (the mockup's allocation: "warp should be in here to allocate power for"), and the pumps' draw
+        Kit.Icon(this, "warp", new Rect2(b.Position.X, y + (rowH - isz) / 2, isz, isz), C.Sky);
+        PowerRow("pw", b.Position.X + io, y, b.Size.X - io, rowH, "warp", lw - io);
+        y += rowH + gap;
+        Pairs("pw.c", b.Position.X, y + 16, new (string, string, Color?)[] { ("Coolant pumps", $"{B.Rules.CoolantDraw(s)} E", null) }, 18);
+        Lbl("set in Reactor", b.End.X, y + 16, 0, null, HorizontalAlignment.Right, 13);
+        y += 22;
         double bat = s.Battery / s.Class.BatteryE;
         Bar(b.Position.X, y, b.Size.X, $"Battery {s.Battery:0.0} / {s.Class.BatteryE:0} E", bat, bat < 0.25);
         if (Big)
             Pairs("pw.x", b.Position.X, y + 70, new (string, string, Color?)[] { ("Speed limit", $"{Math.Round(B.Rules.MaxSpeed(s))} m/s", null), ("Capacitor", $"{s.Capacitor:0.0} E", null),
                 ("Shield regen", $"{s.Power["shields"] * B.Tuning.ShieldRegenPerES:0.0}/s", null) });
-    }
-
-    /// <summary>One system's row of ten boxes: lit to its allocation, locked past what the output leaves.</summary>
-    public void PowerRow(string idp, float x, float y, float w, float h, string key, float lw)
-    {
-        int cur = Me.Power[key];
-        Lbl(key, x, y + h / 2 + 5, lw - 4);
-        CellRow($"{idp}.{key}", new Rect2(x + lw, y, w - lw - 32, h), Rules.BoxesPerSystem, cur, n => B.SetPower(key, n), Math.Min(Rules.BoxesPerSystem, B.Rules.PowerRoom(Me, cur)));
-        Num(cur.ToString(), x + w, y + h / 2 + 8, 0, null, HorizontalAlignment.Right, 20);
     }
 }

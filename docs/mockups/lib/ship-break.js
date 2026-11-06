@@ -4,7 +4,10 @@
 // breaking apart like concord. Please fix"). Edit it here, then re-run tools/mockups/inline_data.py on each page.
 //
 // A body is a lofted hull: { name, sys, intact (the piece it is while whole), stations (its loft), ox (x offset), geos
-// ([[geometry, paint key]]), n (how many pieces) }. FCShipBreak(THREE, o) needs:
+// ([[geometry, paint key]]), n (how many pieces) }; or, for a hull that is not a loft (the Ssarith Hunt's grown skins), the
+// same with sdf in place of stations: { lo, hi, dims, scale, bytes (Uint8Array, x fastest: 128 + scale x metres inside),
+// tex (the same as a THREE.Data3DTexture) }, written by tools/blender/hull_sdf.py (owner, 2026-11-05: "ship piece breaking
+// should be built next"). FCShipBreak(THREE, o) needs:
 //   o.scene, o.rand (the page's seeded generator), o.fx (the FCShipFX instance), o.CL ({ loftDist, chOf }), o.env() (the
 //   light's reflection strength), o.hullMat(paintKey, ship) (a hull material whose userData.u holds the damage uniforms:
 //   uCell, uSeeds, uSeedN, uOpen, uCuts, uCutC, uCutCount, uCutHeat, and the hull shader runs dmgBreak from ship-fx.js),
@@ -26,8 +29,17 @@ const NO_SEEDS = { uSeeds: { value: Array.from({ length: 16 }, () => V3()) }, uS
 // random?"). Seeds scattered through a body (the primary hull, the secondary hull) split it into cells: every piece is the body
 // clipped to one cell, its skin torn a little at the edge by noise. Where two cells meet, a cut face closes the piece. A body is
 // a lofted hull, so "inside" is the signed distance into its stations (loftDist), the same test the cut-face shader runs.
-function insideBody(b, p) { return loftDist(b.stations, V3(p.x - (b.ox || 0), p.y, p.z)) > 0; }
+function sdfAt(f, p) { // the field's distance at p, trilinear between cell centres, as the shader's texture() reads it
+  const g = [0, 1, 2].map((k) => ((p.getComponent(k) - f.lo[k]) / (f.hi[k] - f.lo[k])) * f.dims[k] - 0.5);
+  if (g.some((v, k) => v < -0.5 || v > f.dims[k] - 0.5)) return -1;
+  const i0 = g.map((v, k) => Math.max(0, Math.min(f.dims[k] - 1, Math.floor(v)))), t = g.map((v, k) => Math.max(0, Math.min(1, v - i0[k])));
+  const at = (x, y, z) => f.bytes[Math.min(x, f.dims[0] - 1) + f.dims[0] * (Math.min(y, f.dims[1] - 1) + f.dims[1] * Math.min(z, f.dims[2] - 1))];
+  let d = 0; for (let c = 0; c < 8; c++) { const dx = c & 1, dy = (c >> 1) & 1, dz = (c >> 2) & 1;
+    d += at(i0[0] + dx, i0[1] + dy, i0[2] + dz) * (dx ? t[0] : 1 - t[0]) * (dy ? t[1] : 1 - t[1]) * (dz ? t[2] : 1 - t[2]); }
+  return (d - 128) / f.scale; }
+function insideBody(b, p) { return b.sdf ? sdfAt(b.sdf, p) > 0 : loftDist(b.stations, V3(p.x - (b.ox || 0), p.y, p.z)) > 0; }
 function bodyBox(b) {
+  if (b.sdf) return [V3(...b.sdf.lo), V3(...b.sdf.hi)];
   const S = b.stations, hb = Math.max(...S.map((q) => q[1]));
   const o = b.ox || 0; return [V3(o - hb, Math.min(...S.map((q) => q[3])), Math.min(...S.map((q) => q[0]))), V3(o + hb, Math.max(...S.map((q) => q[2])), Math.max(...S.map((q) => q[0])))];
 }
@@ -93,6 +105,14 @@ float loftD(vec3 p){
   float d = min(min(s.y - ax, s.z - p.y), p.y - s.w);
   d = min(d, min((s.y + s.z - ch - ax - p.y)*0.70710678, (s.y - s.w - ch - ax + p.y)*0.70710678));
   return min(d, min(uSt[0].x - p.z, p.z - uSt[uStN - 1].x)); }
+#ifdef BODY_SDF
+uniform highp sampler3D uSdf; uniform vec3 uSdfLo; uniform vec3 uSdfHi; uniform float uSdfScale;
+float bodyD(vec3 p){ vec3 t = (p - uSdfLo)/(uSdfHi - uSdfLo);   // the hull's field (tools/blender/hull_sdf.py), as sdfAt()
+  if (any(lessThan(t, vec3(0.0))) || any(greaterThan(t, vec3(1.0)))) return -1.0;
+  return (texture(uSdf, t).r*255.0 - 128.0)/uSdfScale; }
+#else
+float bodyD(vec3 p){ return loftD(p); }
+#endif
 float band(float v, float period, float w){ float m = mod(v + 1000.0*period, period); return 1.0 - smoothstep(w*0.5, w, min(m, period - m)); }
 vec3 toF(vec3 p){ vec3 d = p - uMid; return vec3(dot(d, uAcross), p.y, dot(d, uDepth)); }
 vec3 dirF(vec3 v){ return vec3(dot(v, uAcross), v.y, dot(v, uDepth)); }
@@ -150,19 +170,20 @@ function cutFace(ship, b, a, c, pts) {
   u0 -= 7; u1 += 7; v0 -= 7; v1 += 7;
   const g = new THREE.PlaneGeometry(u1 - u0, v1 - v0); g.translate((u0 + u1) / 2, (v0 + v1) / 2, 0); g.applyMatrix4(new THREE.Matrix4().makeBasis(u, v, n).setPosition(mid));
   const nh = V3(n.x, 0, n.z); const depth = nh.length() > 0.3 ? nh.normalize().negate() : V3(1, 0, 0), across = V3(0, 1, 0).cross(depth).normalize();
-  const P = b.frags[a], S = cutStations(b);
+  const P = b.frags[a], S = b.sdf ? [] : cutStations(b);
   const st = Array.from({ length: 48 }, (_, i) => new THREE.Vector4(...(S[i] ? [S[i][0], S[i][1], S[i][2], S[i][3]] : [0, 0, 0, 0])));
   const ch = Array.from({ length: 48 }, (_, i) => (S[i] ? chOf(S[i][1], S[i][2], S[i][3], S[i][4]) : 0));
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.3, roughness: 0.85, emissive: 0xffffff, envMapIntensity: o.env() });
   const U = { uSeeds: b.u.uSeeds, uSeedN: b.u.uSeedN, uA: { value: a }, uB: { value: c }, uSt: { value: st }, uCh: { value: ch }, uStN: { value: S.length }, uOx: { value: b.ox || 0 },
     uHeat: P.mats[0] ? P.mats[0].userData.u.uCutHeat : { value: 0 }, uTime: sharedTime, uAcross: { value: across }, uDepth: { value: depth }, uMid: { value: mid.clone() } };
+  if (b.sdf) Object.assign(U, { uSdf: { value: b.sdf.tex }, uSdfLo: { value: V3(...b.sdf.lo) }, uSdfHi: { value: V3(...b.sdf.hi) }, uSdfScale: { value: b.sdf.scale } });
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vObj; varying vec3 vCamObj;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj = position; vCamObj = (inverse(modelMatrix) * vec4(cameraPosition, 1.0)).xyz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + CUTFACE_GLSL)
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + (b.sdf ? '#define BODY_SDF\n' : '') + CUTFACE_GLSL)
       .replace('#include <map_fragment>', `#include <map_fragment>
-        float sd = loftD(vObj); if (sd < 0.0) discard;
+        float sd = bodyD(vObj); if (sd < 0.0) discard;
         vec3 sA = uSeeds[uA]; float dA = length(vObj - sA); float edgeC = 1e9;
         for (int k = 0; k < 16; k++) { if (k >= uSeedN) break; if (k == uA || k == uB) continue; vec3 sk = uSeeds[k]; float dk = length(vObj - sk);
           if (dk < dA - 0.02) discard; edgeC = min(edgeC, (dk*dk - dA*dA)/(2.0*length(sk - sA))); }
@@ -183,7 +204,7 @@ function cutFace(ship, b, a, c, pts) {
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance = capEmit + vec3(1.0, 0.36, 0.07)*capEmber*2.8;`);
   };
-  m.customProgramCacheKey = () => 'fleet-tern-cutface';
+  m.customProgramCacheKey = () => 'fleet-tern-cutface' + (b.sdf ? '-sdf' : '');
   const mesh = new THREE.Mesh(g, m); mesh.visible = false; mesh.userData.other = c; P.inner.add(mesh); P.caps.push(mesh);
 }
 

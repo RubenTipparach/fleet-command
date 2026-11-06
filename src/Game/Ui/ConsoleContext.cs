@@ -8,19 +8,23 @@ using FleetCommand.Sim;
 
 namespace FleetCommand.Game.Ui;
 
-public sealed class ConsoleState
+public sealed partial class ConsoleState
 {
     public string Station = "helm";
     public string ShipPage = "systems";
     public Region? Expanded;
     public bool Paused;
     public bool MenuOpen;
+    /// <summary>The Options sheet is open (from the main menu or the battle's menu), over everything.</summary>
+    public bool OptionsOpen;
     /// <summary>The helm's free-angle high energy turn is waiting for a click in the view.</summary>
     public bool PlacingHet;
     /// <summary>The view's Target key: shows or hides the Target box (the locked target's systems display).</summary>
     public bool ShowTarget = true;
     /// <summary>The view's scene selector is open.</summary>
     public bool SceneOpen;
+    /// <summary>The battle is a campaign mission's: the mission strip shows its objectives, and there is no scene selector.</summary>
+    public bool InMission;
 }
 
 public sealed class ConsoleContext

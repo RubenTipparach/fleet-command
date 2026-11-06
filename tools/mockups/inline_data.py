@@ -15,6 +15,9 @@ piece's image as a "data" URI (high-quality WebP when smaller than the PNG; any 
 
 A JavaScript file (a mockup module, such as a faction skin in docs/mockups/skins/) is inlined as a script element.
 
+The ship schematics' manifest (assets/ships/schematics/manifest.json) is inlined with each ship's hull and wire layers as
+data URIs (hull_data, wire_data), so the shop draws the same pictures as the game.
+
 A glTF binary (an approved ship from assets/ships/, exported by tools/mockups/export_ships.mjs) is inlined as base64 in
 a script element of type application/octet-stream, which the page decodes and hands to three.js's GLTFLoader.parse(), so
 nothing is fetched (the artifact host serves no .glb).
@@ -36,13 +39,19 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 MARK = re.compile(r"(<!-- INLINE (\S+) -->\n)(.*?)(<!-- /INLINE -->)", re.S)
 
 
-def image_uri(png_path):
+def image_uri(png_path, lossless=False, quality=92):
     """A kit image as a data URI: high-quality WebP (alpha kept) when that is smaller than the PNG, else the PNG. The
     committed renders stay PNG; only the published page carries WebP, because a page holding ten rendered kits as PNG
-    passed the artifact host's 16 MiB limit (2026-10-31). The encoder's output is deterministic for the same input."""
+    passed the artifact host's 16 MiB limit (2026-10-31). The encoder's output is deterministic for the same input.
+    lossless: a map that carries data, not colour (a ship's pane map), kept exact: lossy WebP's colour subsampling would
+    mix its channels. quality: the WebP quality; a manifest may set its own ("webp_quality"), as the Ssarith Hunt's ship maps
+    do, six ships of seven 2048 px maps each being more than the host's 16 MiB at 92."""
     png = png_path.read_bytes()
     buf = io.BytesIO()
-    Image.open(io.BytesIO(png)).save(buf, "WEBP", quality=92, method=6)
+    if lossless:
+        Image.open(io.BytesIO(png)).save(buf, "WEBP", lossless=True, method=6)
+    else:
+        Image.open(io.BytesIO(png)).save(buf, "WEBP", quality=quality, method=6)
     webp = buf.getvalue()
     if len(webp) < len(png):
         return "data:image/webp;base64," + base64.b64encode(webp).decode("ascii")
@@ -55,7 +64,12 @@ def load(src):
     obj = json.loads(path.read_text())
     if isinstance(obj, dict) and isinstance(obj.get("pieces"), dict) and all("file" in p for p in obj["pieces"].values()):
         for piece in obj["pieces"].values():
-            piece["data"] = image_uri(path.parent / piece["file"])
+            piece["data"] = image_uri(path.parent / piece["file"], piece.get("lossless", False), obj.get("webp_quality", 92))
+    # the ship schematics' manifest (assets/ships/schematics/): each ship's two white layers carried as data URIs
+    if isinstance(obj, dict) and isinstance(obj.get("ships"), list) and all("hull" in s and "wire" in s for s in obj["ships"]):
+        for ship in obj["ships"]:
+            ship["hull_data"] = image_uri(path.parent / ship["hull"])
+            ship["wire_data"] = image_uri(path.parent / ship["wire"])
     return obj
 
 

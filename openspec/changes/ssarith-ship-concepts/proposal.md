@@ -1,48 +1,52 @@
 # Proposal: ssarith-ship-concepts
 
-> **Version 1 withdrawn** (owner, 2026-11-04: "you are over stereotyping an alien species which is extremely insensitive"). It read the species' body into the ships. See the design's
-> first section; the method carries over, the readings and directions do not.
-
 ## Why
 
 The owner, 2026-11-04: "using current bibles and mockups on ship design, lets consider the Ssarith Hunt culture and how
-their ships will look."
+their ships will look." Then, 2026-11-05, on version 8: "Bro why are you stuck on this. Delete this design. It sucks, look
+at the inspiration. Block out more stuff. We need a variety of designs. Not just 3 lame ones that look like coffins. Look
+at my examples - gorn from Starfleet command".
 
-The Ssarith Hunt has a console skin (`console-skins`, version 13 onward) and an emblem draft (`faction-emblems`, E11), but
-no ships. Its culture is already written and approved (survey U7, 2026-11-01: "yes, as written"): "The hunt is the only
-honest sport: the quarry must be worthy, the stalk patient, the kill earned and counted"; "Big-boned reptiles with heavy
-clawed hands, slow and silent until they strike"; "Squat armoured hunting ships with broad prows, dark and mottled, built
-to wait unseen". The owner set their silhouette in the ships thread (2026-11-02: "gorn emphasizes claw like features,
-since they enjoy hunting"), and survey A8 left blank gives the Hunt claws.
+Versions 1 to 8 are deleted: version 1 read the species' body into the ships (withdrawn, owner: "you are over
+stereotyping an alien species"), and versions 3 to 8 refined one long fitted hull into three ships that read as coffins.
+What the owner asks for now is breadth before depth: many massings to choose from, then detail on the chosen ones.
 
-The Krai taught the order to work in (owner on Krai version 1: "Those are fighter jets, not spaceships. Think about how
-we defined culture and story"): the culture first, then the Ship Design Bible's method, rooms first.
+> **Version 10** (2026-11-05, with the owner's examples: "they looked menacing!", "make ships like this, with this kind of
+> texture"): twelve blockouts in the examples' shape language, painted by a new skill, `painted-bake` (design, "Version 10").
+
+> **Version 12** (2026-11-05): the owner picked 1 Hooded lance, 3 Forked prow, 7 Harpoon and 9 Trident and withdrew the
+> Spearhead; asked that "every ship needs custom uv Unwraped textures ... tile textures are for DETAIL only ... dont forget
+> to bake AO as well"; and, on the picks, "these shapes need work, they arent connect together well, and violate our "no
+> deformed primitive rules", shapes must be made with purpose and flow into the grater structures". Each pick is rebuilt
+> as one grown structure and baked onto its own UVs (design, "Version 12"); both are now rules for every ship (CLAUDE.md
+> section 10, Ship Design Bible chapters 14 and 15).
+
+> **Version 13** (2026-11-05): "discard ships that I didnt want", and more on the hulls: "vents, lights, and sub armor
+> pieces, and primary armor peices", "liveries, smooth sphereical portions of armor, and specifically shaped vents", "no
+> repeating elemnts, single axis symmetry, and lots of shading to give the armor depth". Only the picks are kept; each
+> one's hull detail is modelled and baked onto its own UVs (design, "Version 13").
 
 ## What Changes
 
-- **The language**: each line of the Hunt's culture turned into a part of a spaceship (design, "From the culture").
-- **Rules for Hunt ships**, provisional: claws are the distinct feature; squat and broad; scute paneling; camouflage
-  over dark gunmetal; a ship that can run dark (Stalk) and light up only when it strikes (Strike).
-- **One frigate plan**, rooms first (`data/ships/ssarith/frigate_plan.json`, written by `tools/mockups/ssarith_plans.py`
-  on the Krai plan layer), three decks, squat and broad.
-- **Three directions on that one plan**, the bible's rule H2 (character added on top, never cut into a room):
-  - **A Grasp**: four hooked claws at the broad prow, closed in front of the bow while stalking, spread open when it strikes.
-  - **B Jaw**: a broad prow split into two jaws lined with fangs, the nacelles splayed low like a reptile's legs with
-    talons at their tips.
-  - **C Crouch**: a hump of armour scutes over a low dipped prow, the nacelles folded under the belly like forelegs, a
-    sickle claw at each.
-- **Mockup 12**, `docs/mockups/ssarith-ship-concepts.html` version 1 (https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris): the three at true scale beside the Concord Petrel
-  (the yardstick, from `docs/mockups/lib/concord-line.js`), Stalk and Strike, the deck plans, the 40 px silhouettes, the
-  bible's checks measured on the page, the console palette beside the hull's (X4).
-- **Survey section H**: version 1's H1-H8 withdrawn; one question in their place, how the Hunt's culture is set (C4).
-- Not in this change: the other classes, the Concord-standard skin (detail maps, interior-mapped windows, hull floods
-  with shadows), damage and breakup. Those follow once a direction is chosen, on the shared modules the Krai already use.
+- **Mockup 12 version 9**, `docs/mockups/ssarith-ship-concepts.html`: a blockout board of twelve frigate-sized massings in
+  grey clay, each its own silhouette (a flattened ovoid with high pods, a sphere on a neck, a catamaran, a ring ship,
+  stepped terraces, a T-bar, a crescent, a bundle of pods, a teardrop with an underslung hull, a delta, an asymmetric
+  offset ship, a disc over a drum), at true scale with the Concord Petrel to hand, each orbitable on its own.
+- **Deleted** with versions 1 to 8: the frigate's plans (`data/ships/ssarith/`, `tools/mockups/ssarith_plans.py`), the
+  baked plating tiles and their generator (`assets/textures/ssarith/`, `tools/blender/build_hull_tiles_ssarith.py`), the
+  old shots. Git history keeps them (the tile generator at commit 6f7a22c) for when a chosen blockout is detailed.
+- **Survey H4**: which blockouts go on.
+- **Kept**: the Ship Design Bible's rules apply to whatever is chosen (rooms first, culture not anatomy, C1-C5), and the
+  plan layer's tapering rooms in `tools/mockups/krai_plans.py`.
 
 ## Impact
 
-- New: `openspec/changes/ssarith-ship-concepts/`, `data/ships/ssarith/frigate_plan.json`, `tools/mockups/ssarith_plans.py`,
-  `docs/mockups/ssarith-ship-concepts.html`, `docs/artifacts/ssarith-ship-concepts/`, shots in
-  `docs/screenshots/mockups/ssarith-ship-concepts/`.
-- Changed: `tools/mockups/krai_plans.py` (its writer takes the classes and folder, and a room may name its own outer
-  width, so the Hunt's plans use the same layer; the Krai plans are unchanged, `--check` passes), `mockup-work.md`, `docs/design/survey.html` (section H), the tracker.
+- Changed: `docs/mockups/ssarith-ship-concepts.html` (replaced), `docs/design/survey.html` (section H), `mockup-work.md`,
+  `docs/artifacts/ssarith-ship-concepts/`, this change.
+- Version 12 also changes: `CLAUDE.md` (section 10), `docs/design/ship-bible.html` (chapters 14 and 15),
+  `.claude/skills/painted-bake/SKILL.md` (ship mode), `tools/blender/painted_bake.py`, `tools/mockups/export_blockouts.mjs`,
+  `assets/ships/ssarith/`, and a task in `ship-models-engine`, `concord-hull-concepts` and `krai-ship-concepts` to move
+  those lines onto their own unwrap.
+- Version 13 also adds `tools/blender/hull_detail.py` and `data/ships/ssarith/hull_detail.json`, and removes the unpicked
+  blockouts' shots.
 - No game code.

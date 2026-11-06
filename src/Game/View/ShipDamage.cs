@@ -46,6 +46,14 @@ public sealed class ShipDamage
     private readonly Random _rng;
     private readonly List<Body> _bodies = new();
     private readonly List<Part> _parts = new();
+    private readonly List<Piece> _clusters = new();
+    private int _groups;
+    /// <summary>How many cells a chunk of the breaking hull holds, and how often (owner, 2026-11-04: "dont break up all
+    /// pieces, some can stay in tact as 2-3 piece clusters"): one, two or three neighbouring cells.</summary>
+    public static readonly (int Cells, float Weight)[] ChunkSizes = { (1, 0.2f), (2, 0.25f), (3, 0.25f), (5, 0.3f) };
+    /// <summary>The share of a hull's cells that stay together as one big hulk (owner, 2026-11-04: "the ship parts look too
+    /// even"): the first chunk grows this large, so a broken ship leaves a hulk, some chunks and some small pieces.</summary>
+    public const float HulkShare = 0.4f;
     private readonly Vector4[] _scorch = new Vector4[MaxScars];
     private readonly float[] _heat = new float[MaxScars];
     private readonly Vector4[] _holes = new Vector4[MaxScars];
@@ -65,6 +73,8 @@ public sealed class ShipDamage
         public bool Off;
         public float Age;
         public double Hit;                        // hull points of damage it has taken
+        public int Group;                         // the chunk it left the ship in (0 still on the ship)
+        public readonly List<Piece> Members = new(); // a cluster's cells, which fly as one chunk
         public readonly List<ShaderMaterial> Mats = new();
         public readonly List<Node3D> Faces = new();
     }
@@ -82,7 +92,7 @@ public sealed class ShipDamage
         public required JsonElement Def;
     }
 
-    public ShipDamage(Node3D ship, Node fx, Ship sim, string file, float unitsPerMetre, Shader hull)
+    public ShipDamage(Node3D ship, Node fx, Ship sim, string file, float unitsPerMetre)
     {
         _ship = ship; _fx = fx; _sim = sim; _upm = unitsPerMetre;
         _rng = new Random(sim.Id.Aggregate(17, (h, ch) => h * 31 + ch));
@@ -97,7 +107,7 @@ public sealed class ShipDamage
         {
             if (n is not MeshInstance3D mi || mi.Mesh == null) return;
             for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++)
-                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && sm.Shader == hull)
+                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader))
                 {
                     if (!_mats.Contains(sm)) _mats.Add(sm);
                     Sample(mi, i);
@@ -111,7 +121,7 @@ public sealed class ShipDamage
             if (Find(p.GetProperty("node").GetString()!) is { } node)
             {
                 var piece = new Piece { Node = node, Centre = V(p.GetProperty("center")) };
-                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && sm.Shader == hull && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
+                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader) && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
                 _parts.Add(new Part { P = piece, Def = p });
             }
     }
@@ -143,13 +153,47 @@ public sealed class ShipDamage
         Wear(p, e.HullDamage);
     }
 
-    // Where a shot from dir lands: one of the points of plating that face it most.
+    // Where a shot from dir lands: the point the damage range aimed it at, if one waits for a shot from this side, else
+    // one of the points of plating that face it most.
     private (Vector3 P, Vector3 N) Struck(Vector3 dir)
     {
+        if (_aims.Count > 0) { var a = _aims[0]; _aims.RemoveAt(0); return (a.P, a.N); }
         var scored = _skin.Select(k => (k, Sc: (k.P - _centre).Dot(dir) + 4f * k.N.Dot(dir))).OrderByDescending(x => x.Sc).ToList();
         int top = Math.Max(1, scored.Count / 12);
         var pick = scored[_rng.Next(top)].k;
         return pick;
+    }
+
+    // ---- The damage range's aim --------------------------------------------------------------------------------------
+
+    // the points the range's clicks aimed at, in order, each with the seconds it has waited (a shot that never lands, as
+    // one fired into raised shields, lets its aim go after AimWaitS)
+    private readonly List<(Vector3 P, Vector3 N, float Age)> _aims = new();
+    private const float AimWaitS = 4f;
+
+    /// <summary>The point of plating under a screen position (the damage range's click to fire): the sampled plating point
+    /// nearest it on screen, of those facing the camera, within 40 px; null when the click missed the ship. Global space.</summary>
+    public Vector3? PlatingAt(Camera3D cam, Vector2 screen)
+    {
+        if (Broken) return null;
+        float best = 40;
+        Vector3? hit = null;
+        foreach (var (p, n) in _skin)
+        {
+            Vector3 at = World(p);
+            if (cam.IsPositionBehind(at) || (World(p + n) - at).Dot(cam.GlobalPosition - at) <= 0) continue;
+            float d = cam.UnprojectPosition(at).DistanceTo(screen);
+            if (d < best) { best = d; hit = at; }
+        }
+        return hit;
+    }
+
+    /// <summary>The next shot from that side lands at this point of plating (global space; the nearest sampled point).</summary>
+    public void Aim(Vector3 global)
+    {
+        Vector3 local = Turn(_ship.ToLocal(global) + _c);
+        var pick = _skin.OrderBy(k => k.P.DistanceSquaredTo(local)).FirstOrDefault();
+        if (_skin.Count > 0) _aims.Add((pick.P, pick.N, 0));
     }
 
     private void Scorch(Vector3 p, float r, float heat)
@@ -241,7 +285,7 @@ public sealed class ShipDamage
                             cell.Mats.Add(dup);
                             hull = true;
                         }
-                    if (!hull && NearestSeed(b.Seeds, Mock(mi, mi.Mesh.GetAabb().GetCenter())) != ci) mi.Visible = false;
+                    if (!hull) KeepCell(mi, b.Seeds, ci);
                 }
                 else if (n is Node3D e && e.Name.ToString().StartsWith("light_"))
                 {
@@ -256,6 +300,36 @@ public sealed class ShipDamage
         }
         Upload(b.Cells.SelectMany(k => k.Mats));
         b.Node.Visible = false;
+    }
+
+    // A detail mesh of a breaking body (windows, markings, glows, trim) keeps only its triangles nearest this cell's seed,
+    // as the mockup's subsetGeo (docs/mockups/lib/ship-break.js) cuts every mesh of a body: kept whole, a row of windows
+    // stayed in one cell and hung across the gap where its neighbours had blown away (owner, 2026-11-05: "what are these
+    // dashed lines?"). The hull's own surfaces are clipped by its shader instead. Done once, when the body first breaks.
+    private void KeepCell(MeshInstance3D mi, Vector3[] seeds, int cell)
+    {
+        Mesh src = mi.Mesh;
+        var cut = new ArrayMesh();
+        for (int k = 0; k < src.GetSurfaceCount(); k++)
+        {
+            var arr = src.SurfaceGetArrays(k);
+            Vector3[] vs = arr[(int)Mesh.ArrayType.Vertex].AsVector3Array();
+            int[] idx = arr[(int)Mesh.ArrayType.Index].VariantType == Variant.Type.Nil ? Enumerable.Range(0, vs.Length).ToArray() : arr[(int)Mesh.ArrayType.Index].AsInt32Array();
+            var keep = new List<int>();
+            for (int t = 0; t + 2 < idx.Length; t += 3)
+            {
+                Vector3 c = (vs[idx[t]] + vs[idx[t + 1]] + vs[idx[t + 2]]) / 3;
+                if (NearestSeed(seeds, Mock(mi, c)) == cell) keep.AddRange(new[] { idx[t], idx[t + 1], idx[t + 2] });
+            }
+            if (keep.Count == 0) continue;
+            arr[(int)Mesh.ArrayType.Index] = keep.ToArray();
+            cut.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arr);
+            int s = cut.GetSurfaceCount() - 1;
+            cut.SurfaceSetMaterial(s, mi.GetSurfaceOverrideMaterial(k) ?? src.SurfaceGetMaterial(k));
+        }
+        if (cut.GetSurfaceCount() == 0) { mi.Visible = false; return; }
+        mi.Mesh = cut;
+        for (int s = 0; s < cut.GetSurfaceCount(); s++) mi.SetSurfaceOverrideMaterial(s, null);
     }
 
     // A cut face: the quad the exporter wrote, in the copy's frame, closing cell a toward cell b; shown once either has gone.
@@ -277,6 +351,14 @@ public sealed class ShipDamage
         m.SetShaderParameter("seed_n", b.Seeds.Length);
         m.SetShaderParameter("cell_a", f.GetProperty("cell").GetInt32());
         m.SetShaderParameter("cell_b", f.GetProperty("other").GetInt32());
+        if (b.Def.TryGetProperty("sdf", out JsonElement sdf))   // a grown hull: its field is the inside test (cutface.gdshader body_d)
+        {
+            m.SetShaderParameter("use_sdf", true);
+            m.SetShaderParameter("sdf_tex", SdfTexture(sdf));
+            m.SetShaderParameter("sdf_lo", V(sdf.GetProperty("lo")));
+            m.SetShaderParameter("sdf_hi", V(sdf.GetProperty("hi")));
+            m.SetShaderParameter("sdf_scale", F(sdf.GetProperty("scale")));
+        }
         JsonElement st = b.Def.GetProperty("stations"), ch = b.Def.GetProperty("ch");
         var stv = new Vector4[48]; var chv = new float[48];
         int n = Math.Min(48, st.GetArrayLength());
@@ -295,6 +377,23 @@ public sealed class ShipDamage
         return mi;
     }
 
+    private static readonly Dictionary<string, ImageTexture3D> _sdfs = new();
+    /// <summary>A body's signed distance field as a 3D texture, one R8 image a z slice, from its .bin (the manifest's sdf: file,
+    /// dims; tools/blender/hull_sdf.py), loaded once.</summary>
+    private static ImageTexture3D SdfTexture(JsonElement sdf)
+    {
+        string file = sdf.GetProperty("file").GetString()!;
+        if (_sdfs.TryGetValue(file, out ImageTexture3D? t)) return t;
+        byte[] bytes = FileAccess.GetFileAsBytes("res://assets/ships/" + file);
+        int nx = sdf.GetProperty("dims")[0].GetInt32(), ny = sdf.GetProperty("dims")[1].GetInt32(), nz = sdf.GetProperty("dims")[2].GetInt32();
+        if (bytes.Length != nx * ny * nz) throw new InvalidOperationException($"sdf {file}: {bytes.Length} bytes, the manifest says {nx} x {ny} x {nz}");
+        var slices = new Godot.Collections.Array<Image>();
+        for (int z = 0; z < nz; z++) slices.Add(Image.CreateFromData(nx, ny, false, Image.Format.R8, bytes[(z * nx * ny)..((z + 1) * nx * ny)]));
+        t = new ImageTexture3D();
+        t.Create(Image.Format.R8, nx, ny, nz, false, slices);
+        return _sdfs[file] = t;
+    }
+
     private void BlowOff(Piece p, float speed)
     {
         if (p.Off) return;
@@ -310,19 +409,25 @@ public sealed class ShipDamage
     private void Detach(Piece p, Vector3 vel, Vector3 spin)
     {
         p.Off = true; p.Vel = vel; p.Spin = spin; p.Age = 0;
+        if (p.Group == 0) p.Group = ++_groups;
+        // a cluster's cells go with it: each torn from the ship, none from the others in its chunk
+        foreach (Piece c in p.Members) { c.Group = p.Group; Detach(c, Vector3.Zero, Vector3.Zero); }
         foreach (ShaderMaterial m in p.Mats) m.SetShaderParameter("cut_heat", 1f);
-        foreach (Node3D f in p.Faces) f.Visible = true;
-        // a cell's neighbours open toward it: their faces toward it show and their edges char
+        // the cells round a break open toward it: faces show and edges char only between cells in different chunks
         foreach (Body b in _bodies)
         {
-            int i = b.Cells.IndexOf(p);
-            if (i < 0) continue;
-            float[] open = new float[16];
-            for (int k = 0; k < b.Cells.Count; k++) open[k] = b.Cells[k].Off ? 1 : 0;
-            foreach (Piece c in b.Cells)
+            if (!b.Cells.Contains(p)) continue;
+            float[] open = new float[16], group = new float[16];
+            for (int k = 0; k < b.Cells.Count; k++) { open[k] = b.Cells[k].Off ? 1 : 0; group[k] = b.Cells[k].Group; }
+            for (int ci = 0; ci < b.Cells.Count; ci++)
             {
-                foreach (ShaderMaterial m in c.Mats) { m.SetShaderParameter("open_cells", open); if (!c.Off) m.SetShaderParameter("cut_heat", 1f); }
-                foreach (Node3D f in c.Faces) if ((int)f.GetMeta("other") == i) f.Visible = true;
+                Piece c = b.Cells[ci];
+                foreach (ShaderMaterial m in c.Mats) { m.SetShaderParameter("open_cells", open); m.SetShaderParameter("cell_group", group); if (!c.Off) m.SetShaderParameter("cut_heat", 1f); }
+                foreach (Node3D f in c.Faces)
+                {
+                    int o = (int)f.GetMeta("other");
+                    f.Visible = (c.Off || b.Cells[o].Off) && b.Cells[o].Group != c.Group;
+                }
             }
         }
         // a part (pylon, nacelle, command block) is charred at its cut, and so is the stump it leaves
@@ -338,8 +443,9 @@ public sealed class ShipDamage
             }
             foreach (ShaderMaterial m in p.Mats) { m.SetShaderParameter("cuts", cv); m.SetShaderParameter("cut_c", cc); m.SetShaderParameter("cut_count", cuts.Length); }
         }
-        // its lamps go out
+        // its lamps go out, and a baked hull's own lights with them (baked_hull.gdshader lit)
         Walk(p.Node, n => { if (n is Light3D l) l.Visible = false; });
+        foreach (ShaderMaterial m in p.Mats) if (m.Shader == ShipSkin.BakedHullShader) m.SetShaderParameter("lit", 0f);
     }
 
     // A broken piece burns: flames from its broken side for about 20 s.
@@ -347,15 +453,18 @@ public sealed class ShipDamage
     {
         float s = Math.Max(0.6f, _lenM / 150f);
         Vector3 local = Game(p.Centre) - PlaceInShip(p.Node);
+        // its own flame trail (owner, 2026-11-04: "my ship parts itself, should have that flame trail"); a big piece two
         Fx.Flame(p.Node, local, 0.07f * _lenU, 24f);
+        Vector3 off = new Vector3(R(-1, 1), R(-0.4f, 0.4f), R(-1, 1)) * (0.08f * _lenM);
+        if (_bodies.Any(b => b.Cells.Contains(p)) || _lenM > 120) Fx.Flame(p.Node, local + off, 0.05f * _lenU, 18f);
     }
 
     private void StartBreach()
     {
         if (_breachT >= 0) return;
         _breachT = 0;
-        foreach (Body b in _bodies) Swap(b);
-        var early = _bodies.Count > 0 ? _bodies[0].Cells.Where(c => !c.Off).OrderByDescending(c => c.Centre.DistanceTo(_core)).ToList() : new List<Piece>();
+        foreach (Body b in _bodies) { Swap(b); Cluster(b); }
+        var early = _bodies.Count > 0 ? Chunks(_bodies[0]).OrderByDescending(c => c.Centre.DistanceTo(_core)).ToList() : new List<Piece>();
         var pick = early.Take((int)Math.Ceiling(early.Count * BreachShare)).Concat(_parts.Select(pt => pt.P).Where(q => !q.Off)).ToList();
         for (int i = 0; i < pick.Count; i++)
         {
@@ -367,26 +476,72 @@ public sealed class ShipDamage
         Fx.Fireball(_fx, World(_core), 0.1f * _lenU, Vector3.Up);
     }
 
+    // The hull's cells still on the ship grouped into chunks of one to three neighbours (ChunkSizes), each chunk of more
+    // than one a node its cells are moved under, so the chunk flies and tumbles as one.
+    private void Cluster(Body b)
+    {
+        var next = new Dictionary<int, HashSet<int>>();
+        foreach (JsonElement f in b.Def.GetProperty("faces").EnumerateArray())
+        {
+            int a = f.GetProperty("cell").GetInt32(), o = f.GetProperty("other").GetInt32();
+            if (!next.ContainsKey(a)) next[a] = new HashSet<int>();
+            next[a].Add(o);
+        }
+        var left = Enumerable.Range(0, b.Cells.Count).Where(i => !b.Cells[i].Off).OrderBy(_ => _rng.Next()).ToList();
+        var taken = new HashSet<int>();
+        foreach (int start in left)
+        {
+            if (taken.Contains(start)) continue;
+            float roll = (float)_rng.NextDouble(), acc = 0; int want = 1;
+            foreach (var (n, w) in ChunkSizes) { acc += w; if (roll <= acc) { want = n; break; } }
+            if (_clusters.Count == 0 && b == _bodies[0]) want = Math.Max(3, (int)Math.Round(left.Count * HulkShare));   // the hulk
+            var group = new List<int> { start }; taken.Add(start);
+            while (group.Count < want)
+            {
+                int add = group.SelectMany(g => next.TryGetValue(g, out var ns) ? ns : new HashSet<int>()).FirstOrDefault(k => !taken.Contains(k) && !b.Cells[k].Off, -1);
+                if (add < 0) break;
+                group.Add(add); taken.Add(add);
+            }
+            if (group.Count < 2) continue;
+            var cells = group.Select(i => b.Cells[i]).ToList();
+            Vector3 centre = cells.Aggregate(Vector3.Zero, (sum, c) => sum + c.Centre) / cells.Count;
+            var node = new Node3D { Name = b.Node.Name + "_chunk" + _clusters.Count, Position = Game(centre) };
+            b.Node.GetParent().AddChild(node);
+            foreach (Piece c in cells) c.Node.Reparent(node, true);
+            var chunk = new Piece { Node = node, Centre = centre };
+            chunk.Members.AddRange(cells);
+            _clusters.Add(chunk);
+        }
+    }
+
+    // What of a body can still come off: its chunks, and its cells in no chunk.
+    private IEnumerable<Piece> Chunks(Body b) =>
+        _clusters.Where(k => !k.Off && k.Members.All(b.Cells.Contains)).Concat(b.Cells.Where(c => !c.Off && !_clusters.Any(k => k.Members.Contains(c))));
+
     private void MainBlast()
     {
         Broken = true;
         float s = _lenM / 150f;
-        foreach (Piece p in _bodies.SelectMany(b => b.Cells).Concat(_parts.Select(pt => pt.P)))
+        foreach (Piece p in _bodies.SelectMany(Chunks).Concat(_parts.Select(pt => pt.P)).ToList())
         {
             if (p.Off) continue;
             Vector3 out3 = p.Centre - _core; out3.Y *= 1.6f; float d = Math.Max(1f, out3.Length()); out3 = out3.Normalized();
-            float sp = (6 + 10 * (float)_rng.NextDouble()) * s * (1 + 40 / (d + 30)) * 2.5f;
-            Detach(p, Turn(out3) * sp + new Vector3(R(-2, 2), R(-2, 2), R(-2, 2)) * s, new Vector3(R(-0.35f, 0.35f), R(-0.35f, 0.35f), R(-0.35f, 0.35f)));
+            // half the mockup's pace times 2.5 (owner, 2026-11-04: "the whole explosion 2x slower")
+            float sp = (6 + 10 * (float)_rng.NextDouble()) * s * (1 + 40 / (d + 30)) * 1.25f / MathF.Sqrt(Math.Max(1, p.Members.Count));   // big pieces drift, small ones fly
+            Detach(p, Turn(out3) * sp + new Vector3(R(-1, 1), R(-1, 1), R(-1, 1)) * s, new Vector3(R(-0.18f, 0.18f), R(-0.18f, 0.18f), R(-0.18f, 0.18f)) / MathF.Sqrt(Math.Max(1, p.Members.Count)));
             Burn(p);
         }
         Vector3 w = World(_core);
-        Fx.Nova(_fx, w, 0.9f * _lenU);
+        // twice the first size (owner, 2026-11-04: "2x nova side"), growing slower than the ship so a dreadnought's does not
+        // white out the whole view
+        Fx.Nova(_fx, w, 1.8f * Mathf.Pow(_lenU, 0.7f));
     }
 
     /// <summary>Steps the damage on by dt seconds of battle time: embers cool, the breach runs, broken pieces drift and tumble.</summary>
     public void Step(float dt)
     {
         if (dt <= 0) return;
+        for (int i = _aims.Count - 1; i >= 0; i--) { var a = _aims[i]; if ((a.Age += dt) > AimWaitS) _aims.RemoveAt(i); else _aims[i] = a; }
         bool cooled = false;
         for (int i = 0; i < MaxScars; i++) if (_heat[i] > 0) { _heat[i] = Math.Max(0, _heat[i] - dt / ScorchCoolS); cooled = true; }
         if (cooled) foreach (ShaderMaterial m in _mats) m.SetShaderParameter("scorch_heat", _heat);
@@ -401,7 +556,7 @@ public sealed class ShipDamage
             }
             if (_breachT >= BreachMainS) MainBlast();
         }
-        foreach (Piece p in _bodies.SelectMany(b => b.Cells).Concat(_parts.Select(pt => pt.P)))
+        foreach (Piece p in _bodies.SelectMany(b => b.Cells).Concat(_parts.Select(pt => pt.P)).Concat(_clusters))
         {
             if (!p.Off) continue;
             p.Age += dt;

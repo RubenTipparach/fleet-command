@@ -136,13 +136,13 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/Pass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <!-- INLINE data/battle/special_weapons.json -->
-<script type="application/json" data-src="data/battle/special_weapons.json">{"_doc":"Each faction's special weapons (openspec/changes/special-weapons/design.md). Every number is a placeholder until the combat change, written so a captain can feel the weapon's idea. The weapons range mockup (docs/mockups/special-weapons.html) inlines this file and computes every readout from it; the game does not read it yet (the change's tasks). Units in every key: km, s, E (energy points), m/s, x (a multiplier), deg. faction: who fields it. fits: where it goes on a ship: a class id list for a fixed mount, 'torpedo' for a load any torpedo tube can take (SFC3 printed pages 28-29: loadout by hardpoint), 'spinal' for the Krai spinal cannon mount, 'helm' for a manoeuvre ordered from the helm. aim: as weapons.json (precise or arc).","chorus":{"name":"Chorus lance","faction":"concord","kind":"beam","aim":"precise","fits":["ca"],"fires_from":"deflector","range_km":14,"charge_s":14,"cost_e":8,"burn_s":2.5,"dmg_per_s":7,"join":{"range_km":8,"per_joiner_x":0.35,"max_joiners":3,"spends":"lance"},"color":"#3fa9f0","strand_color":"#b7a6f2"},"quell":{"name":"Quell torpedo","faction":"concord","kind":"torpedo","aim":"arc","fits":"torpedo","range_km":12,"charge_s":16,"cost_e":6,"speed_m_s":900,"dmg":0,"shield_left_x":0,"stun_s":8,"reach_deg":90,"point_defence_hits":true,"color":"#b7a6f2"},"forge":{"name":"Forge driver","faction":"krai","kind":"slug","aim":"precise","fits":"spinal","range_km":10,"charge_s":10,"cost_e":7,"speed_m_s":4500,"dmg":18,"pierce_x":0.4,"burn":{"dmg_per_s":1,"s":6},"overload":{"range_km":5,"charge_s":14,"cost_e":11,"dmg":30,"pierce_x":0.6},"color":"#ff8a2a"},"charge":{"name":"Blood charge","faction":"krai","kind":"ram","aim":"arc","fits":"helm","surge_s":5,"speed_x":2.2,"accel_x":3,"turn_x":0.5,"bow_shield_x":1.5,"cost_e":8,"cooldown_s":30,"dmg_per_100_m_s":5,"mass_ref_m":230,"pierce_x":1,"recoil_x":0.3,"color":"#d02a20"}}</script>
+<script type="application/json" data-src="data/battle/special_weapons.json">{"_doc":"Each faction's special weapons (openspec/changes/special-weapons/design.md). Every number is a placeholder until the combat change, written so a captain can feel the weapon's idea. The weapons range mockup (docs/mockups/special-weapons.html) inlines this file and computes every readout from it; the game does not read it yet (the change's tasks). Units in every key: km, s, E (energy points), m/s, x (a multiplier), deg. faction: who fields it. fits: where it goes on a ship: a class id list for a fixed mount, 'torpedo' for a load any torpedo tube can take (SFC3 printed pages 28-29: loadout by hardpoint), 'spinal' for the Krai spinal cannon mount, 'helm' for a manoeuvre ordered from the helm. aim: as weapons.json (precise or arc).","chorus":{"name":"Chorus lance","faction":"concord","kind":"beam","aim":"precise","fits":["ca"],"fires_from":"deflector","range_km":14,"charge_s":14,"cost_e":8,"burn_s":2.5,"dmg_per_s":7,"join":{"range_km":8,"per_joiner_x":0.35,"max_joiners":3,"spends":"lance"},"color":"#3fa9f0","strand_color":"#b7a6f2"},"quell":{"name":"Quell torpedo","faction":"concord","kind":"torpedo","aim":"arc","fits":"torpedo","range_km":12,"charge_s":16,"cost_e":6,"speed_m_s":900,"dmg":0,"shield_left_x":0,"stun_s":8,"reach_deg":90,"point_defence_hits":true,"color":"#2a4cff"},"forge":{"name":"Forge driver","faction":"krai","kind":"slug","aim":"precise","fits":"spinal","range_km":10,"charge_s":10,"cost_e":7,"speed_m_s":4500,"dmg":18,"pierce_x":0.4,"burn":{"dmg_per_s":1,"s":6},"overload":{"range_km":5,"charge_s":14,"cost_e":11,"dmg":30,"pierce_x":0.6},"color":"#ff8a2a"},"charge":{"name":"Blood charge","faction":"krai","kind":"ram","aim":"arc","fits":"helm","surge_s":5,"speed_x":2.2,"accel_x":3,"turn_x":0.5,"bow_shield_x":1.5,"cost_e":8,"cooldown_s":30,"dmg_per_100_m_s":5,"mass_ref_m":230,"pierce_x":1,"recoil_x":0.3,"color":"#d02a20"}}</script>
 <!-- /INLINE -->
 <!-- INLINE data/battle/weapons.json -->
-<script type="application/json" data-src="data/battle/weapons.json">{"_doc":"Weapon types (openspec/changes/battle-console-engine/design.md section 3). Ported from the battle console mockup's WEAPONS table (docs/mockups/battle-console.html, v65); every number a placeholder until the combat change. kind: beam hits at once; torpedo, bolt and missile fly at speed_m_s; pd shoots down shots in flight.","lance":{"name":"Lance","kind":"beam","range_km":12,"charge_s":3.5,"cost_e":2,"damage":7,"color":"#6fc4ff"},"torpedo":{"name":"Pulse torpedo","kind":"torpedo","range_km":18,"charge_s":8,"cost_e":5,"damage":14,"speed_m_s":2600,"color":"#8f2bff","overload":{"range_km":7,"charge_s":12,"cost_e":9,"damage":26}},"disruptor":{"name":"Disruptor","kind":"bolt","range_km":14,"charge_s":4.5,"cost_e":3,"damage":8,"speed_m_s":3200,"color":"#ff6a4a","overload":{"range_km":6,"charge_s":6.5,"cost_e":5,"damage":14}},"missile":{"name":"Missile","kind":"missile","range_km":22,"charge_s":10,"cost_e":2,"damage":11,"speed_m_s":1100,"color":"#ff8c1a"},"pd":{"name":"Point defence","kind":"pd","range_km":2,"charge_s":1.5,"cost_e":0.5,"damage":0,"color":"#ffc23d"}}</script>
+<script type="application/json" data-src="data/battle/weapons.json">{"_doc":"Weapon types (openspec/changes/battle-console-engine/design.md section 3). Ported from the battle console mockup's WEAPONS table (docs/mockups/battle-console.html, v65); every number a placeholder until the combat change. kind: beam hits at once; torpedo, bolt and missile fly at speed_m_s; pd shoots down shots in flight.","lance":{"name":"Lance","kind":"beam","range_km":12,"charge_s":3.5,"cost_e":2,"damage":7,"color":"#6fc4ff"},"torpedo":{"name":"Pulse torpedo","kind":"torpedo","range_km":18,"charge_s":8,"cost_e":5,"damage":14,"speed_m_s":2600,"color":"#8f2bff","overload":{"range_km":7,"charge_s":12,"cost_e":9,"damage":26}},"disruptor":{"name":"Disruptor","kind":"bolt","range_km":14,"charge_s":4.5,"cost_e":3,"damage":8,"speed_m_s":3200,"color":"#ff6a4a","overload":{"range_km":6,"charge_s":6.5,"cost_e":5,"damage":14}},"missile":{"name":"Missile","kind":"missile","range_km":9.6,"charge_s":10,"cost_e":2,"damage":11,"speed_m_s":320,"color":"#ff8c1a"},"pd":{"name":"Point defence","kind":"pd","range_km":2,"charge_s":1.5,"cost_e":0.5,"damage":0,"color":"#ffc23d"}}</script>
 <!-- /INLINE -->
 <!-- INLINE data/battle/missiles.json -->
-<script type="application/json" data-src="data/battle/missiles.json">{"_doc":"Missile grades (openspec/changes/missiles/design.md; owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\"). Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Read by the weapons range mockup (docs/mockups/special-weapons.html); the game does not read it yet. Every number is a placeholder until the combat change. pd_hits: point defence hits it takes to stop one.","grades":[{"id":"red","name":"Grade I","color":"#ff3b30","speed_m_s":900,"damage":8,"pd_hits":1,"fuel_s":20},{"id":"orange","name":"Grade II","color":"#ff8c1a","speed_m_s":1100,"damage":11,"pd_hits":1,"fuel_s":20},{"id":"blue","name":"Grade III","color":"#2f7bff","speed_m_s":1300,"damage":14,"pd_hits":2,"fuel_s":20},{"id":"green","name":"Grade IV","color":"#2fdc5a","speed_m_s":1500,"damage":18,"pd_hits":2,"fuel_s":20}]}</script>
+<script type="application/json" data-src="data/battle/missiles.json">{"_doc":"Missile grades and the countermeasures against them (openspec/changes/missiles/design.md). Owner, 2026-11-04: \"missiles depending on grade will have: red, orange, blue, green\", \"red being lowest grade, green being highest\", \"the missiles should move slower. Different grades have different speeds and damage values\", \"Missiles follow ships around. Can be countered with counter measures like flares, decoy shuttles, or pdc\". Any faction's racks can load any grade. The orange grade is today's missile (data/battle/weapons.json). Speeds near a ship's own, so a captain can outrun the lower grades. pd_hits: point defence hits it takes to stop one. When a ship throws flares or launches a decoy, each missile closing on it is fooled with its grade's fooled_by_flare_x or fooled_by_decoy_x chance (rolled once) and goes for the lure instead; the higher grades are harder to fool. Point defence cannon is weapons.json's pd, stopping a missile pd_intercept_chance of a burst (tuning.json). Read by the weapons range mockup (docs/mockups/special-weapons.html); the game does not read it yet. Every number is a placeholder until the combat change.","countermeasures":{"flare":{"count":4,"burn_s":4,"eject_m_s":70,"cooldown_s":20,"color":"#ffb347"},"decoy":{"speed_m_s":60,"life_s":30,"voided_by_firing":true,"color":"#ffb030"}},"grades":[{"id":"red","name":"Grade I","color":"#ff3b30","speed_m_s":240,"damage":8,"pd_hits":1,"fuel_s":30,"fooled_by_flare_x":0.6,"fooled_by_decoy_x":0.85},{"id":"orange","name":"Grade II","color":"#ff8c1a","speed_m_s":320,"damage":11,"pd_hits":1,"fuel_s":30,"fooled_by_flare_x":0.45,"fooled_by_decoy_x":0.7},{"id":"blue","name":"Grade III","color":"#2f7bff","speed_m_s":400,"damage":14,"pd_hits":2,"fuel_s":30,"fooled_by_flare_x":0.3,"fooled_by_decoy_x":0.55},{"id":"green","name":"Grade IV","color":"#2fdc5a","speed_m_s":480,"damage":18,"pd_hits":2,"fuel_s":30,"fooled_by_flare_x":0.15,"fooled_by_decoy_x":0.4}]}</script>
 <!-- /INLINE -->
 <!-- INLINE data/battle/tuning.json -->
 <script type="application/json" data-src="data/battle/tuning.json">{"_doc":"Battle tuning (openspec/changes/battle-console-engine/design.md section 3), from the battle console mockup (v65). Every number is a placeholder until the combat change.","step_s":0.0333333333333,"speed_per_box_m_s":30,"reverse_max_m_s":60,"demo_tough_x":4,"hit_chance_near":0.92,"hit_chance_falloff":0.5,"hit_chance_min":0.05,"hit_chance_max":0.95,"hit_speed_penalty_per_300_m_s":0.12,"ecm_step":0.03,"shield_regen_per_e_s":0.6,"battery_charge_per_spare_e_s":0.5,"start_capacitor_frac":0.6,"start_battery_frac":0.5,"repair_per_e_s":0.004,"mount_repair_per_e_s":0.003,"ai_think_s":0.5,"ai_fire_min_chance":0.35,"ai_range_close_km":4,"ai_range_mid_km":8,"ai_range_long_km":13,"shot_hit_radius_m":40,"beam_life_s":0.25,"pd_intercept_chance":0.45,"status_disabled_below":0.35,"subsystem_hit_chance":0.35,"subsystem_damage_per_hp":0.02,"mount_hit_chance":0.15,"mount_damage":0.6,"het_rate_deg_s":240,"het_cost_e":3,"het_chance_drop":0.2,"het_recover_per_s":0.01,"het_erratic_penalty":0.17,"het_breakdown_s":15,"het_breakdown_engines":0.3,"estop_decel_x":5,"estop_hold_s":4,"erratic_hit":0.75,"erratic_turn":0.8,"orbit_km":4,"hold_min_km":1,"hold_max_km":12}</script>
@@ -162,7 +162,7 @@
 // (docs/mockups/game-flow.html, docs/mockups/battle-console.html). One implementation (CLAUDE.md section 6.1): edit it
 // here, then re-run tools/mockups/inline_data.py on each page that inlines it.
 //
-// FCSpace(THREE, renderer, DATA, rng) returns { makeSpace, parallaxStars, shipModel, nebulaMesh }. DATA maps a data file's path to
+// FCSpace(THREE, renderer, DATA, rng) returns { makeSpace, parallaxStars, shipModel, loadShips, nebulaMesh }. DATA maps a data file's path to
 // its parsed JSON (the page's inlined data/space/ files); rng(seed) is the page's seeded generator.
 //
 
@@ -336,18 +336,41 @@ function makeSpace(skyId, finiteStars) {
   };
   return g;
 }
-// A ship. With `line` (a class id of the Concord line, docs/mockups/lib/concord-line.js, which the page inlines), the Concord
-// line's own model (owner, 2026-11-03: "start applying these spaceships into the ui mockup stuff"), sized to the stand-in's
-// length at this scale so every page keeps its framing. Without it, the stand-in: our own shape (a spine, a wedge bow, two
-// drive pods) for the factions whose ships are not designed yet.
+// A ship. With `ref`, an approved ship: an exported glb's path (assets/ships/, the very file the game flies, exported from
+// the Concord and Krai lines' own pages by tools/mockups/export_ships.mjs with their skins, liveries and emblems; owner,
+// 2026-11-05: "looks like the albatros is behind a version, please update ships to latest"), which the page inlines and
+// decodes once with loadShips() before it builds a ship; or, on a page that inlines no glb, a class id of the Concord line
+// (docs/mockups/lib/concord-line.js), its bare hull (owner, 2026-11-03: "start applying these spaceships into the ui
+// mockup stuff"). Either is sized to the stand-in's length at this scale so every page keeps its framing; a glb is turned
+// a half turn about Y (its bow is -Z, a mockup's +Z). Without `ref`, the stand-in: our own shape (a spine, a wedge bow,
+// two drive pods) for the factions whose ships are not designed yet.
+const GLB = {};   // an inlined glb's path -> its decoded scene, cloned for each ship
+function loadShips() {
+  const els = [...document.querySelectorAll('script[type="application/octet-stream"][data-src$=".glb"]')];
+  if (!els.length || !THREE.GLTFLoader) return Promise.resolve();
+  try { self.createImageBitmap = undefined; } catch (e) { /* textures decode through <img> instead */ }
+  const loader = new THREE.GLTFLoader();
+  return Promise.all(els.map((el) => {
+    const bin = atob(el.textContent.trim()), b = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+    return new Promise((ok, no) => loader.parse(b.buffer, '', (gl) => {
+      GLB[el.dataset.src] = { scene: gl.scene, len: new THREE.Box3().setFromObject(gl.scene).getSize(new THREE.Vector3()).z }; ok();
+    }, no));
+  }));
+}
 let standInLen = 0, concordLine = null;
-function shipModel(color, scale = 1, hullColor = 0xb9c2cc, line = null) {
-  if (line && window.FCConcordLine) {
+function shipModel(color, scale = 1, hullColor = 0xb9c2cc, ref = null) {
+  if (!ref) return standIn(color, scale, hullColor);
+  if (!standInLen) standInLen = new THREE.Box3().setFromObject(standIn(color, 1, hullColor)).getSize(new THREE.Vector3()).z;
+  const outer = new THREE.Group();
+  if (GLB[ref]) {
+    const m = GLB[ref].scene.clone(true); m.rotation.y = Math.PI; m.scale.setScalar(standInLen * scale / GLB[ref].len);
+    outer.add(m); outer.userData.file = ref; return outer;
+  }
+  if (window.FCConcordLine && !/\.glb$/.test(ref)) {
     concordLine ||= window.FCConcordLine(THREE);
-    if (!standInLen) standInLen = new THREE.Box3().setFromObject(standIn(color, 1, hullColor)).getSize(new THREE.Vector3()).z;
-    const outer = new THREE.Group(), m = concordLine.plainModel(line);
-    m.scale.setScalar(standInLen * scale / m.userData.length_m); outer.add(m); outer.userData.line = line;
-    return outer;
+    const m = concordLine.plainModel(ref); m.scale.setScalar(standInLen * scale / m.userData.length_m);
+    outer.add(m); outer.userData.line = ref; return outer;
   }
   return standIn(color, scale, hullColor);
 }
@@ -369,7 +392,7 @@ function standIn(color, scale, hullColor) {
   g.scale.setScalar(scale);
   return g;
 }
-return { makeSpace, parallaxStars, shipModel, nebulaMesh };
+return { makeSpace, parallaxStars, shipModel, loadShips, nebulaMesh };
 };
 </script>
 <!-- /INLINE -->
@@ -716,7 +739,8 @@ return { clearFX, stepFX, emitterStep, CELL_GLSL, DAMAGE_GLSL, Pool, glowPool, s
 //                                .facing[k] (0..1 held), .breakAt[k], .raycast(worldFrom, worldDir)
 //   scars(ship)                  patches the ship's materials: molten craters, beam burns, gouges and the quell lattice,
 //                                in ship space; .add(kind, pLocal, r, dirLocal, dur), .lattice(pLocal, t, stunS)
-//   orb(o), spike(o), dart(o)    the quell torpedo, the forge slug and a missile
+//   orb(o), spike(o), dart(o)    the quell's lattice head, the forge slug and a missile; quell(o) the quell torpedo whole
+//                                (a missile's body and plume, a torpedo's star, the lattice head); decoy(o) a decoy shuttle
 //   trail(o)                     a fading ribbon behind a moving point; beads(o) a discrete trail of glowing beads
 //   plume(r, len, o)             an exhaust with shock diamonds; bowShock(r, len, o) the shell before a charging bow
 //   ring(o)                      an impact shockwave ring, any orientation; haze(o) a heat haze sprite
@@ -828,6 +852,8 @@ function pipeline(opt = {}) {
 //   lance   the standard lance (every faction's beam): a white core in the weapon's colour, flowing light, pulses racing
 //           to the target
 //   bolt    a disruptor bolt: a short strip from its tail to its head, narrow and dim behind, a hot core at the head
+//   tracer  point defence cannon fire (owner, 2026-11-04: "pdc"): a stream of short bright rounds racing from the mount to
+//           the shot it fires on
 //   barrel  the forge driver's spine heating: blackbody along its length, brightest at the muzzle
 const RIBBON_FS = {
   chorus: `
@@ -860,6 +886,11 @@ const RIBBON_FS = {
     float core = exp(-xx*xx*18.0)*pow(k, 3.0), glow = exp(-abs(xx)*3.0)*k*k;
     float flick = 0.8 + 0.4*wn(vec3(s*0.3 - uTime*40.0, x*2.0, 4.0));
     vec3 c = uColor*glow*1.6*flick + hotOf(uColor)*core*2.6;`,
+  tracer: `
+    float per = uWidth*9.0, u = fract(s/per - uTime*55.0);
+    float dash = smoothstep(0.0, 0.06, u)*(1.0 - smoothstep(0.22, 0.32, u));
+    float core = exp(-x*x*28.0), glow = exp(-abs(x)*3.0)*0.5;
+    vec3 c = (hotOf(uColor)*core*2.2 + uColor*glow)*dash;`,
   barrel: `
     float k = s/max(uLen, 1.0); float heat = uIntensity*(0.35 + 0.65*k)*(0.75 + 0.5*wfbm(vec3(s*0.4, x*2.0, uTime*3.0)));
     vec3 c = blackbody(heat*1.1)*(exp(-x*x*6.0)*0.8 + exp(-abs(x)*2.0)*0.25);`,
@@ -1088,9 +1119,9 @@ function scars(ship) {
 function orb(opt = {}) {
   const g = new THREE.Group(), r = opt.r ?? 3;
   const shell = (rad, col, op) => new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(rad, 1)), new THREE.LineBasicMaterial({ color: new THREE.Color(col).multiplyScalar(op), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
-  const a = shell(r, 0xb7a6f2, 2.0), b = shell(r * 0.62, 0x3fa9f0, 2.4); g.add(a, b);
-  const core = flare({ look: 'soft', color: 0xb7a6f2, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = 1.2;
-  const lens = flare({ look: 'lens', color: 0xb7a6f2, size: r * 7 }); scene.remove(lens.mesh); g.add(lens.mesh); lens.u.uI.value = 0.5;
+  const a = shell(r, opt.outer ?? 0xb7a6f2, 2.0), b = shell(r * 0.62, opt.inner ?? 0x3fa9f0, 2.4); g.add(a, b);
+  const core = flare({ look: 'soft', color: opt.outer ?? 0x9a7ff0, size: r * 2.2 }); scene.remove(core.mesh); g.add(core.mesh); core.u.uI.value = opt.core ?? 1.2;
+  const lens = flare({ look: 'lens', color: 0xb7a6f2, size: r * 7 }); scene.remove(lens.mesh); g.add(lens.mesh); lens.u.uI.value = opt.lens === false ? 0 : 0.5;
   scene.add(g);
   const O = { group: g, step(dt) { a.rotation.x += dt * 2.1; a.rotation.y += dt * 1.3; b.rotation.y -= dt * 2.8; b.rotation.z += dt * 1.7; }, remove() { scene.remove(g); unlive(O); } };
   live.push(O); return O;
@@ -1109,6 +1140,29 @@ function dart(opt = {}) {
   const ball = flare({ look: 'ball', color: opt.color ?? 0xffd27a, size: len * 1.6 }); scene.remove(ball.mesh); ball.mesh.position.z = len * 0.75; g.add(ball.mesh);
   scene.add(g);
   return { group: g, flame: ball, remove() { scene.remove(g); } };
+}
+// A decoy shuttle (owner, 2026-11-04: missiles "can be countered with counter measures like flares, decoy shuttles, or
+// pdc"): a small blunt craft in gunmetal with a pulsing beacon (it shouts the ship's own sensor picture), its drive a
+// small flare; the page flies it and decides what it lures.
+function decoy(opt = {}) {
+  const g = new THREE.Group(), L = opt.len ?? 9, mat = new THREE.MeshStandardMaterial({ color: 0x6a6f78, metalness: 0.6, roughness: 0.45 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(L * 0.45, L * 0.3, L), mat); g.add(body);
+  const nose = new THREE.Mesh(new THREE.BoxGeometry(L * 0.35, L * 0.22, L * 0.25), mat); nose.position.z = -L * 0.6; g.add(nose);
+  const beacon = flare({ look: 'soft', color: opt.color ?? 0xffb030, size: L * 2.6 }); scene.remove(beacon.mesh); beacon.mesh.position.y = L * 0.25; g.add(beacon.mesh);
+  const drive = flare({ look: 'soft', color: opt.drive ?? 0x7fc4ff, size: L * 0.9 }); scene.remove(drive.mesh); drive.mesh.position.z = L * 0.55; g.add(drive.mesh);
+  scene.add(g);
+  const D = { group: g, beacon, drive, step() { beacon.u.uI.value = 0.6 + 1.4 * Math.max(0, Math.sin(T.value * 9)); drive.u.uI.value = 1.2; }, remove() { scene.remove(g); unlive(D); } };
+  live.push(D); return D;
+}
+// The quell torpedo as it flies (owner, 2026-11-05: "quell torpedo should be like a cross between a pulse torpedo and a
+// missle"): a missile's body and ball plume (dart), with the pulse torpedo's six-armed star at its nose and the quell's own
+// lattice shells turning round it, all in its deep blue ("needs to be deep blue"); the page gives it the torpedo's bead trail. One copy of each part.
+function quell(opt = {}) {
+  const len = opt.len ?? 8, col = opt.color ?? 0x2a4cff, body = dart({ len, color: opt.plume ?? col });
+  const head = orb({ r: len * 0.34, lens: false, core: 0.5, outer: col, inner: opt.inner ?? 0x5a7dff }); scene.remove(head.group); head.group.position.z = -len * 0.62; body.group.add(head.group);
+  const star = flare({ look: 'six', color: col, size: len * 5.5 }); scene.remove(star.mesh); star.mesh.position.z = -len * 0.62; body.group.add(star.mesh);
+  star.u.uI.value = 0.55;
+  return { group: body.group, flame: body.flame, star, head, remove() { body.remove(); head.remove(); } };
 }
 // The forge slug: a three-sided spike (the Krai's triangle) of white-hot metal, its surface flowing like a pour, the
 // colour by blackbody from white at the point to orange at its tail.
@@ -1291,7 +1345,7 @@ function motes(opt) {
 function step(dt) { T.value += dt; for (const e of live.slice()) e.step(dt); }
 function clear() { for (const e of live.slice()) { if (e.remove) e.remove(); else { if (e.mesh) scene.remove(e.mesh); unlive(e); } } }
 
-return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, spike, dart, trail, beads, plume, bowShock, ring, haze, motes, step, clear, live };
+return { GLSL, T, time: () => T.value, pipeline, ribbon, flare, shield, scars, orb, quell, spike, dart, decoy, trail, beads, plume, bowShock, ring, haze, motes, step, clear, live };
 };
 </script>
 <!-- /INLINE -->
@@ -1347,6 +1401,10 @@ const sprite = (() => { const c = document.createElement('canvas'); c.width = c.
   gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
 const SFX = window.FCShipFX(THREE, { scene, rand: () => rand(), spriteTex: sprite });
 const WFX = window.FCWeaponFX(THREE, { scene, hazeScene, camera, renderer, SFX, rand: () => rand() });
+// On the range nothing burns in air: the shared damage effects' dark smoke read as black specks at the bow of a ramming
+// ship (owner, 2026-11-05: "after the krai ship finishes chargin theres like the black discharge at the bow"), so the smoke
+// is not drawn here, and flying debris glows hot instead of showing as dark chips.
+SFX.smokePool.points.visible = false; SFX.shards.material.emissive.setHex(0xff5a1a); SFX.shards.material.emissiveIntensity = 1.3;
 const pipe = WFX.pipeline({ bloom: 0.7, radius: 0.6, threshold: 1.0, exposure: 0.95 });
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1515,10 +1573,10 @@ const RUNS = {
   },
   torpedo: {
     weapon: 'torpedo', std: true, shooter: 'albatross', target: 'cruiser', frame: ['albatross', 'cruiser'], end_s: 6,
-    say: 'The Albatross fires two pulse torpedoes from its tube. A torpedo is a seeker: it leaves the tube climbing, turns and homes on the cruiser, dropping a trail of beads where it flew.',
+    say: 'The Albatross fires two pulse torpedoes from its tube. A torpedo is a seeker: it leaves the tube straight at the cruiser, holding its line as it homes, dropping a trail of beads where it flew.',
     setup(R) {
       const A = SHIPS.albatross, T = SHIPS.cruiser; place(A, V3(0, 0, 0), FACE_R); place(T, V3(SEP_M, 0, 0), FACE_L);
-      R.shots = [{ t: 1.0, up: 0.5, side: 0.25 }, { t: 1.45, up: -0.4, side: -0.3 }]; R.glow = keep(WFX.flare({ look: 'soft', color: hexOf(WEAPONS.torpedo.color), size: 9 })); R.lens = keep(WFX.flare({ look: 'lens', color: hexOf(WEAPONS.torpedo.color), size: 34 }));
+      R.shots = [{ t: 1.0, dy: 3 }, { t: 1.6, dy: -3 }]; R.glow = keep(WFX.flare({ look: 'soft', color: hexOf(WEAPONS.torpedo.color), size: 9 })); R.lens = keep(WFX.flare({ look: 'lens', color: hexOf(WEAPONS.torpedo.color), size: 34 }));
     },
     step(R, t, dt) {
       const A = SHIPS.albatross, T = SHIPS.cruiser, w = WEAPONS.torpedo, tube = A.at('mount_torpedo_0');
@@ -1528,11 +1586,11 @@ const RUNS = {
         if (t >= s.t && !s.head && !s.done) {
           s.head = keep(WFX.flare({ look: 'six', color: hexOf(w.color), size: 64 })); s.core = keep(WFX.flare({ look: 'soft', color: 0xe8f4ff, size: 5 }));
           s.trail = keep(WFX.beads({ n: 160, size: 30, life: 0.6, every_s: 0.004, color: hexOf(w.color) })); s.p = tube.clone();
-          s.v = fwd(A.st.yaw).add(V3(0, s.up, s.side)).normalize().multiplyScalar(w.speed_m_s); SFX.fxLight(tube, hexOf(w.color), 2.5, 0.4, 120);
+          s.p.y += s.dy; s.v = T.st.p.clone().sub(s.p).normalize().multiplyScalar(w.speed_m_s); // fired straight at the target (owner: "Try to fire the torpedos straight") SFX.fxLight(tube, hexOf(w.color), 2.5, 0.4, 120);
         }
         if (!s.head) continue;
         // a seeker: it turns toward the cruiser as it now is and flies free; the trail stays in space where it flew
-        const want = T.st.p.clone().sub(s.p).normalize().multiplyScalar(w.speed_m_s); s.v.lerp(want, Math.min(1, dt * 9)).setLength(w.speed_m_s);
+        const want = T.st.p.clone().sub(s.p).normalize().multiplyScalar(w.speed_m_s); s.v.lerp(want, Math.min(1, dt * 20)).setLength(w.speed_m_s);
         const dir = s.v.clone().normalize(), stepLen = w.speed_m_s * dt, e = endOf(T, s.p, T.st.p);
         const meet = e.up ? e.end : T.toWorld(hullHit(T, s.p, T.st.p).local);
         if (meet.distanceTo(s.p) <= stepLen * 1.2) {
@@ -1545,49 +1603,73 @@ const RUNS = {
     },
   },
   missile: {
-    weapon: 'missile', std: true, shooter: 'albatross', target: 'cruiser', frame: ['albatross', 'cruiser'], end_s: 8,
-    say: 'Missiles are for every faction. The Albatross fires one of each grade from its racks (red, orange, blue, green, lowest to highest), then the Krai cruiser answers with the same. Each flies free and weaves as it homes; each ship\'s point defence fires on the ones closing on it, and a blue or green one takes two hits to stop.',
+    weapon: 'missile', std: true, shooter: 'albatross', target: 'cruiser', frame: ['albatross', 'cruiser'], end_s: 13,
+    say: 'Missiles are for every faction, in four grades (red, orange, blue, green, lowest to highest), and they follow their target. The Albatross fires one of each; the Krai cruiser throws flares and fires its point defence cannons. Then the cruiser answers, and the Albatross launches a decoy shuttle. Each missile is fooled by its grade\'s chance; the higher grades are harder to fool.',
     setup(R) {
       const A = SHIPS.albatross, K = SHIPS.cruiser; place(A, V3(0, 0, 0), FACE_R); place(K, V3(SEP_M, 0, 0), FACE_L);
-      R.ms = []; const salvo = (S, T, t0) => { for (let i = 0; i < 4; i++) R.ms.push({ S, T, t: t0 + i * 0.18, i, g: GRADES[i], hits: 0, rack: V3((i % 2 ? 1 : -1) * S.size.x * 0.3, S.size.y * 0.3, (i < 2 ? -0.1 : 0.15) * S.len) }); };
-      salvo(A, K, 1.0); salvo(K, A, 4.0);
-      R.pd = new Map([[A, [0, 0.7]], [K, [0, 0.7]]]); R.pdShots = [];
+      R.ms = []; const salvo = (S, T, t0) => { for (let i = 0; i < 4; i++) R.ms.push({ S, T, t: t0 + i * 0.25, i, g: GRADES[i], hits: 0, rack: V3((i % 2 ? 1 : -1) * S.size.x * 0.3, S.size.y * 0.3, (i < 2 ? -0.1 : 0.15) * S.len) }); };
+      salvo(A, K, 1.0); salvo(K, A, 6.0);
+      R.pd = new Map([[A, [0, 0.4]], [K, [0, 0.4]]]); R.pdShots = []; R.flares = []; R.decoy = null; R.n = { pd: 0, lured: 0, hit: 0 };
     },
+    // where a missile is headed: its lure (a flare or the decoy) while that lasts, else the ship it was fired at
+    aimOf(m) { return m.lure && m.lure.alive ? m.lure.p : m.T.st.p; },
     step(R, t, dt) {
-      const w = WEAPONS.missile, pd = WEAPONS.pd;
+      const pd = WEAPONS.pd, CM = DATA['data/battle/missiles.json'].countermeasures, A = SHIPS.albatross, K = SHIPS.cruiser;
+      // countermeasures: the cruiser throws its flares when the first missile closes inside 260 m; the Albatross launches
+      // its decoy as the reply leaves the racks. Each missile closing on that ship rolls once, by its grade.
+      const closing = (S) => R.ms.filter((m) => m.T === S && m.dart && !m.done);
+      if (!R.flared && closing(K).some((m) => m.p.distanceTo(K.st.p) < 260)) { R.flared = true;
+        for (let k = 0; k < CM.flare.count; k++) { const d = V3((k % 2 ? 0.3 : -0.3), 0.7 - (k >> 1) * 1.2, (k % 2 ? 1 : -1) * 0.8).normalize();
+          R.flares.push({ p: K.st.p.clone().addScaledVector(d, 40), v: d.multiplyScalar(CM.flare.eject_m_s), age: 0, alive: true, fx: keep(WFX.flare({ look: 'soft', color: hexOf(CM.flare.color), size: 22 })) }); }
+        for (const m of closing(K)) if (rand() < m.g.fooled_by_flare_x) { m.lure = R.flares[m.i % R.flares.length]; R.n.lured++; } }
+      if (!R.decoy && t >= 6.4) { const d = keep(WFX.decoy({ len: 14, color: hexOf(CM.decoy.color) })), p = A.toWorld(V3(0, -A.size.y * 0.4, A.len * 0.4));
+        R.decoy = { p, v: V3(0.55, -0.45, 0.2).normalize().multiplyScalar(CM.decoy.speed_m_s), alive: true, fx: d }; }
+      if (R.decoy && !R.decoyRolled && closing(A).length === 4) { R.decoyRolled = true; for (const m of closing(A)) if (rand() < m.g.fooled_by_decoy_x) { m.lure = R.decoy; R.n.lured++; } }
+      for (const f of R.flares) { if (!f.alive) continue; f.age += dt; f.v.multiplyScalar(Math.exp(-0.6 * dt)); f.p.addScaledVector(f.v, dt); f.fx.mesh.position.copy(f.p);
+        f.fx.u.uI.value = 1.6 * (1 - f.age / CM.flare.burn_s) * (0.8 + 0.4 * Math.sin(t * 40 + f.age * 7)); if (every(f, 'sp', 0.05, t)) SFX.emit('embers', f.p, V3(0, -1, 0), 2, 0.6);
+        if (f.age > CM.flare.burn_s) { f.alive = false; f.fx.u.uI.value = 0; } }
+      if (R.decoy && R.decoy.alive) { const D = R.decoy; D.p.addScaledVector(D.v, dt); D.fx.group.position.copy(D.p); D.fx.group.lookAt(D.p.clone().sub(D.v)); }
       for (const m of R.ms) {
         if (t < m.t || m.done) continue;
         if (!m.dart) { // ejected from its rack, the drive lights a quarter second later
-          m.p = m.S.toWorld(m.rack); m.v = m.p.clone().sub(m.S.st.p).setY(m.rack.y > 0 ? 40 : 0).normalize().multiplyScalar(160); m.age = 0;
+          m.p = m.S.toWorld(m.rack); m.v = m.p.clone().sub(m.S.st.p).setY(m.rack.y > 0 ? 15 : 0).normalize().multiplyScalar(60); m.age = 0;
           m.dart = keep(WFX.dart({ len: 7, color: hexOf(m.g.color) })); m.trail = keep(WFX.trail({ n: 90, width: 4.2, life: 1.8, color: hexOf(m.g.color), color2: 0x30343c })); }
-        m.age += dt; const T = m.T;
-        if (m.age > 0.25) { // a seeker: it homes on the target as it now is, weaving, and flies free
-          const sp = Math.min(m.g.speed_m_s, m.v.length() + 3000 * dt), to = T.st.p.clone().sub(m.p).normalize();
-          const side = V3(-to.z, 0, to.x).multiplyScalar(Math.sin(m.age * 13 + m.i * 1.7) * 0.35).add(V3(0, Math.cos(m.age * 11 + m.i) * 0.25, 0));
-          m.v.lerp(to.add(side).normalize().multiplyScalar(sp), Math.min(1, dt * 5)).setLength(sp); }
+        m.age += dt;
+        if (m.lure && !m.lure.alive && m.lure === R.decoy) m.lure = null; // the decoy gone, its missiles reacquire the ship (SFC2, printed page 136)
+        if (m.age > 0.25 && !(m.lure && !m.lure.alive)) { // a seeker: it follows what it is after as it now is, weaving
+          const sp = Math.min(m.g.speed_m_s, m.v.length() + 600 * dt), to = this.aimOf(m).clone().sub(m.p).normalize();
+          const side = V3(-to.z, 0, to.x).multiplyScalar(Math.sin(m.age * 5 + m.i * 1.7) * 0.3).add(V3(0, Math.cos(m.age * 4 + m.i) * 0.2, 0));
+          m.v.lerp(to.add(side).normalize().multiplyScalar(sp), Math.min(1, dt * 4)).setLength(sp); }
         m.dart.flame.u.uI.value = m.age > 0.25 ? Math.min(1, (m.age - 0.25) * 5) * (1.5 + 0.25 * Math.sin(t * 50 + m.i)) : 0; m.dart.flame.u.uSize.value = 7 * 2.6;
-        const stepLen = m.v.length() * dt, e = endOf(T, m.p, T.st.p), meet = e.up ? e.end : T.toWorld(hullHit(T, m.p, T.st.p).local);
-        if (m.age > 0.25 && meet.distanceTo(m.p) <= stepLen * 1.3) {
-          const r = RULE.hit(T, e.f, m.g.damage); if (r.failed) T.shield.fail(e.f); m.done = true; m.dart.remove();
+        const stepLen = m.v.length() * dt;
+        if (m.lure && m.lure.alive && m.lure.p.distanceTo(m.p) <= Math.max(10, stepLen * 1.3)) { // it spends itself on the lure
+          m.done = true; m.dart.remove(); SFX.flash(m.p, 16, 0.3); SFX.emit('sparks', m.p, V3(0, 1, 0), 40, 1); keep(WFX.ring({ at: m.p.clone(), normal: V3(0, 0, 1), size: 30, color: hexOf(m.g.color), dur: 0.6 }));
+          if (m.lure === R.decoy) { R.decoy.alive = false; R.decoy.fx.remove(); SFX.emit('fireball', m.p, V3(0, 1, 0), 6, 0.6); } continue; }
+        if (m.lure && !m.lure.alive && m.lure !== R.decoy) { m.lostT = m.lostT ?? t; if (t - m.lostT > 2) { m.done = true; m.dart.remove(); continue; } } // a burnt-out flare: it flies on, lost
+        const T = m.T, e = endOf(T, m.p, T.st.p), meet = e.up ? e.end : T.toWorld(hullHit(T, m.p, T.st.p).local);
+        if (!m.lure && m.age > 0.25 && meet.distanceTo(m.p) <= stepLen * 1.3) {
+          const r = RULE.hit(T, e.f, m.g.damage); if (r.failed) T.shield.fail(e.f); m.done = true; m.dart.remove(); R.n.hit++;
           landFx(T, meet, e.up, m.v.clone().normalize().negate(), { scar: 0, r: 4, dur: 2.5, sparks: 60, fire: 10, ring: 40, color: hexOf(m.g.color), light: 2.5, flash: 18 });
-          if (T === SHIPS.cruiser) R.result = `${r.held.toFixed(1)} held, ${r.toHull.toFixed(1)} to the hull`;
-          continue; }
+          R.result = `${m.g.name} (${m.g.id}) hit the ${T.C.name.toLowerCase()}: ${r.held.toFixed(1)} held, ${r.toHull.toFixed(1)} to the hull`; continue; }
         m.p.addScaledVector(m.v, dt); m.dart.group.position.copy(m.p); m.dart.group.lookAt(m.p.clone().sub(m.v)); m.trail.push(m.p, WFX.time());
       }
-      // point defence: each ship's two mounts fire on the nearest missile closing on it, every pd.charge_s, and stop it
-      // pd_intercept_chance of the time; the beam runs from the hull to the missile as both now stand
+      // point defence cannons: each ship's two mounts fire a burst at the nearest missile still coming for it, every
+      // pd.charge_s; a burst stops it pd_intercept_chance of the time. The tracers run from the hull to the missile as both
+      // now stand.
       for (const [S, ready] of R.pd) for (let k = 0; k < ready.length; k++) {
         if (t < ready[k]) continue;
-        const near = R.ms.filter((m) => m.T === S && m.dart && !m.done && m.age > 0.25 && m.p.distanceTo(S.st.p) < 330).sort((a, b) => a.p.distanceTo(S.st.p) - b.p.distanceTo(S.st.p))[k % 2];
+        const near = R.ms.filter((m) => m.T === S && m.dart && !m.done && !m.lure && m.age > 0.25 && m.p.distanceTo(S.st.p) < 330).sort((a, b) => a.p.distanceTo(S.st.p) - b.p.distanceTo(S.st.p))[k % 2];
         if (!near) continue;
         ready[k] = t + pd.charge_s; let best = S.samples[0], bd = 1e9; for (const s of S.samples) { const d = S.toWorld(s).distanceTo(near.p); if (d < bd) { bd = d; best = s; } }
-        const kill = rand() < TUNING.pd_intercept_chance, beam = keep(WFX.ribbon({ look: 'lance', width: 1.4, color: hexOf(pd.color) }));
-        R.pdShots.push({ beam, S, from: best, m: near, t0: t, end: null });
-        if (kill && ++near.hits >= near.g.pd_hits) { near.done = true; near.dart.remove(); near.killed = true; SFX.flash(near.p, 10, 0.25); SFX.emit('sparks', near.p, V3(0, 1, 0), 30, 0.8); keep(WFX.ring({ at: near.p, normal: V3(0, 0, 1), size: 14, color: 0xffffff, dur: 0.4 })); }
+        R.pdShots.push({ beam: keep(WFX.ribbon({ look: 'tracer', width: 1.8, color: hexOf(pd.color) })), S, from: best, m: near, t0: t, end: null, kill: rand() < TUNING.pd_intercept_chance });
       }
-      for (const s of R.pdShots) { const a = s.S.toWorld(s.from), b = s.m.killed || s.m.done ? (s.end || (s.end = s.m.p.clone())) : s.m.p; s.beam.set(a, b); s.beam.u.uIntensity.value = env(t, s.t0, s.t0 + 0.15, 0.02, 0.08); }
-      const flying = R.ms.filter((m) => m.dart && !m.done).length, killed = R.ms.filter((m) => m.killed).length;
-      R.state = `${flying} in flight, ${killed} shot down`; R.charge = 0;
+      for (const s of R.pdShots) {
+        if (s.kill && !s.m.done && t - s.t0 > 0.25 && ++s.m.hits >= s.m.g.pd_hits) { s.m.done = true; s.m.dart.remove(); s.m.killed = true; R.n.pd++; SFX.flash(s.m.p, 10, 0.25); SFX.emit('sparks', s.m.p, V3(0, 1, 0), 30, 0.8); keep(WFX.ring({ at: s.m.p.clone(), normal: V3(0, 0, 1), size: 14, color: hexOf(pd.color), dur: 0.4 })); }
+        if (s.kill && t - s.t0 > 0.25) s.kill = false;
+        const a = s.S.toWorld(s.from), b = s.m.done ? (s.end || (s.end = s.m.p.clone())) : s.m.p; s.beam.set(a, b); s.beam.u.uIntensity.value = env(t, s.t0, s.t0 + 0.35, 0.02, 0.08);
+      }
+      const flying = R.ms.filter((m) => m.dart && !m.done).length;
+      R.state = `${flying} in flight; ${R.n.pd} stopped by point defence, ${R.n.lured} decoyed, ${R.n.hit} hit`; R.charge = 0;
     },
   },
   // ---------------------------------------------------------------------------------------------------- special weapons
@@ -1643,21 +1725,24 @@ const RUNS = {
   },
   quell: {
     weapon: 'quell', shooter: 'petrel', target: 'cruiser', frame: ['petrel', 'cruiser'], end_s: 12, fire_s: 1.0,
-    say: 'A Petrel loads a quell into its torpedo tube and fires on a Krai cruiser. The torpedo is a seeker: it flies free and leaves its trail; where it strikes, the shield facing fails and that half of the ship goes dark.',
+    say: 'A Petrel loads a quell into its torpedo tube and fires on a Krai cruiser. Half torpedo, half missile: it leaves the tube straight under its star, then homes and weaves on its drive, dropping its trail of beads; where it strikes, the shield facing fails and that half of the ship goes dark.',
     setup(R) {
       const P = SHIPS.petrel, T = SHIPS.cruiser; place(P, V3(0, 0, 0), FACE_R); place(T, V3(SEP_M, 0, 0), FACE_L);
-      R.glow = keep(WFX.flare({ look: 'soft', color: 0xb7a6f2, size: 10 })); R.lens = keep(WFX.flare({ look: 'lens', color: 0xb7a6f2, size: 40 }));
+      const QC = hexOf(SW.quell.color); R.glow = keep(WFX.flare({ look: 'soft', color: QC, size: 10 })); R.lens = keep(WFX.flare({ look: 'lens', color: QC, size: 40 }));
       R.orb = null; R.done = false;
     },
     step(R, t, dt) {
       const P = SHIPS.petrel, T = SHIPS.cruiser, Q = SW.quell, F = this.fire_s, tube = P.at('mount_torpedo_0');
       R.glow.mesh.position.copy(tube); R.glow.u.uI.value = t < F ? 2 * t / F : 0.2;
-      R.lens.mesh.position.copy(tube); R.lens.u.uI.value = t < F ? 0 : 6 * Math.exp(-(t - F) * 8);
-      if (t >= F && !R.orb && !R.done) { R.orb = keep(WFX.orb({ r: 3 })); R.orb.group.position.copy(tube); R.trail = keep(WFX.trail({ n: 60, width: 5, life: 1.4, color: 0xb7a6f2, color2: 0x3fa9f0 }));
-        R.vel = fwd(P.st.yaw).add(V3(0, 0.45, 0.3)).normalize().multiplyScalar(Q.speed_m_s); SFX.fxLight(tube, 0xb7a6f2, 2.5, 0.5, 150); }
+      R.lens.mesh.position.copy(tube); R.lens.u.uI.value = t < F ? 0 : 2.2 * Math.exp(-(t - F) * 8);
+      if (t >= F && !R.orb && !R.done) { R.orb = keep(WFX.quell({ len: 8, color: hexOf(SW.quell.color) })); R.orb.group.position.copy(tube); R.trail = keep(WFX.beads({ n: 80, size: 16, life: 0.6, every_s: 0.011, color: hexOf(SW.quell.color) }));
+        R.vel = T.st.p.clone().sub(tube).normalize().multiplyScalar(Q.speed_m_s); R.fly = 0; SFX.fxLight(tube, hexOf(SW.quell.color), 2.5, 0.5, 150); } // launched straight, like a torpedo
       if (R.orb) {
-        const pos = R.orb.group.position, want = T.st.p.clone().sub(pos).normalize().multiplyScalar(Q.speed_m_s);
-        R.vel.lerp(want, Math.min(1, dt * 4)).setLength(Q.speed_m_s);
+        // then it homes and weaves like a missile, its drive's ball plume lit behind it
+        const pos = R.orb.group.position; R.fly += dt; const to = T.st.p.clone().sub(pos).normalize();
+        const weave = V3(-to.z, 0, to.x).multiplyScalar(Math.sin(R.fly * 7) * 0.22).add(V3(0, Math.cos(R.fly * 5) * 0.15, 0));
+        R.vel.lerp(to.add(weave).normalize().multiplyScalar(Q.speed_m_s), Math.min(1, dt * 4)).setLength(Q.speed_m_s);
+        R.orb.flame.u.uI.value = Math.min(1, R.fly * 5) * (0.8 + 0.15 * Math.sin(t * 50)); R.orb.flame.u.uSize.value = 8 * 2.6;
         const stepLen = Q.speed_m_s * dt, dir = R.vel.clone().normalize();
         const f = faceOf(T, pos), up = shieldsUp && T.sh[f] > 0, sp = T.shield.raycast(pos, dir);
         const meet = up && sp && sp.distanceTo(pos) <= stepLen ? sp : null;
@@ -1666,10 +1751,10 @@ const RUNS = {
           const at = meet || hw;
           if (up) { T.shield.hit(T.root.worldToLocal(at.clone())); T.sh[f] = T.sh[f] * Q.shield_left_x; T.shield.fail(f); }
           const hh = hullHit(T, at, T.st.p); T.scars.lattice(hh.local, Q.stun_s); T.stun = Q.stun_s; R.face = f;
-          keep(WFX.ring({ at, normal: dir.clone().negate(), size: 110, color: 0xb7a6f2, dur: 1.1 })); SFX.flash(at, 30, 0.45);
-          SFX.emit('arc', at, dir.clone().negate(), 90, 2.2); SFX.fxLight(at, 0xb7a6f2, 2.5, 0.9, 260);
+          keep(WFX.ring({ at, normal: dir.clone().negate(), size: 110, color: hexOf(SW.quell.color), dur: 1.1 }));
+          SFX.emit('arc', at, dir.clone().negate(), 24, 1.6); SFX.fxLight(at, hexOf(SW.quell.color), 2.5, 0.9, 260);
           R.orb.remove(); R.orb = null; R.done = true; R.hitT = t;
-        } else { pos.addScaledVector(R.vel, dt); R.orb.group.lookAt(pos.clone().add(R.vel)); R.trail.push(pos, WFX.time()); }
+        } else { pos.addScaledVector(R.vel, dt); R.orb.group.lookAt(pos.clone().sub(R.vel)); R.trail.push(pos, WFX.time()); }
       }
       if (T.stun > 0) { T.stun = Math.max(0, T.stun - dt); const rad = (t - R.hitT) * 60;
         if (every(R, 'arc', 0.1, t)) { for (let i = 0; i < 3; i++) { const s = T.samples[Math.floor(rand() * T.samples.length)]; if (s.distanceTo(T.scars.U.uLat.value) > rad) continue; SFX.emit('arc', T.toWorld(s), V3(0, 1, 0), 5, 1.4); } }
@@ -1831,7 +1916,7 @@ const $ = (id) => document.getElementById(id);
 const WHAT = {
   lance: 'Every faction\'s beam. It lands the moment it fires and recharges fastest of any weapon; it can be overloaded for more damage up close.',
   disruptor: 'A fast bolt from a spinal cannon. It flies the live line from its mount to its target, so both ends stay on the ships while it flies.',
-  missile: 'Every faction can fit missiles, in four grades: red, orange, blue and green, lowest to highest. A missile flies free and homes on its target, weaving as it closes; its warhead does the same damage at any range, and point defence can shoot it down.',
+  missile: 'Every faction can fit missiles, in four grades: red, orange, blue and green, lowest to highest. A missile follows its target, weaving as it closes, and does the same damage at any range. Flares and decoy shuttles can lure it away, and point defence cannons can shoot it down.',
   torpedo: 'A heavy warhead that flies free and homes on its target, leaving a trail. Point defence can shoot it down; overloaded it hits far harder up close.',
   chorus: 'The cruiser\'s deflector throws one long beam. Every Concord ship near it with a lance ready joins in, and each one that joins makes the beam stronger.',
   quell: 'A slow torpedo that does no damage. It knocks out the shield facing it hits and every weapon on that side of the target: the moment to board, or to bring every gun to bear.',
@@ -1839,7 +1924,7 @@ const WHAT = {
   charge: 'An order from the helm: the drive surges past top speed and the ship rams with its bayonet. The bayonet ignores shields; the faster the charge, the harder it hits, and the rammer takes a share of it back.',
 };
 function rows(key) {
-  if (key === 'missile') return GRADES.map((g) => [g.name, `${g.id}: ${g.speed_m_s} m/s, ${g.damage} damage, ${g.pd_hits} point defence hit${g.pd_hits > 1 ? 's' : ''} to stop, ${g.fuel_s} s of fuel`]).concat([['Rack', `${WEAPONS.missile.charge_s} s to reload, own power`]]);
+  if (key === 'missile') return GRADES.map((g) => [g.name, `${g.id}: ${g.speed_m_s} m/s, ${g.damage} damage, ${g.pd_hits} point defence hit${g.pd_hits > 1 ? 's' : ''} to stop, ${g.fuel_s} s of fuel`]).concat([['Rack', `${WEAPONS.missile.charge_s} s to reload, own power`], ['Flares', `${DATA['data/battle/missiles.json'].countermeasures.flare.count} a throw, burning ${DATA['data/battle/missiles.json'].countermeasures.flare.burn_s} s; fool red ${Math.round(GRADES[0].fooled_by_flare_x * 100)} % to green ${Math.round(GRADES[3].fooled_by_flare_x * 100)} %`], ['Decoy shuttle', `fools red ${Math.round(GRADES[0].fooled_by_decoy_x * 100)} % to green ${Math.round(GRADES[3].fooled_by_decoy_x * 100)} %; destroyed by the first missile it draws`]]);
   if (RUNS[key].std) { const w = WEAPONS[key], o = w.overload;
     return [['Range', `${w.range_km} km${w.speed_m_s ? ` at ${w.speed_m_s} m/s` : ', at once'}`], ['Charge', `${w.charge_s} s, ${w.cost_e} E`], ['Damage', String(w.damage)], ['Kind', { beam: 'Beam: both ends on their ships', bolt: 'Direct-fire bolt on the live line', torpedo: 'Seeker: flies free, leaves a trail', missile: 'Seeker: flies free and weaves; point defence can stop it' }[w.kind]]]
       .concat(o ? [['Overload', `${o.range_km} km, ${o.charge_s} s, ${o.cost_e} E, ${o.damage}`]] : []); }
@@ -1847,7 +1932,7 @@ function rows(key) {
   if (key === 'chorus') return [['Range', `${w.range_km} km`], ['Charge', `${w.charge_s} s, ${w.cost_e} E`], ['Burn', `${w.burn_s} s at ${w.dmg_per_s} a second`], ['Joining', `+${Math.round(w.join.per_joiner_x * 100)} % a ship, up to ${w.join.max_joiners}, within ${w.join.range_km} km; each spends its lance`], ['Fits', 'Albatross-class cruiser, on its deflector']];
   if (key === 'quell') return [['Range', `${w.range_km} km at ${w.speed_m_s} m/s`], ['Charge', `${w.charge_s} s, ${w.cost_e} E`], ['Damage', 'None'], ['On a hit', `the facing's shield to ${Math.round(w.shield_left_x * 100)} %; every mount within ${w.reach_deg} degrees stunned ${w.stun_s} s`], ['Fits', 'Any torpedo tube, as a load'], ['Point defence', w.point_defence_hits ? 'Can shoot it down' : 'Cannot']];
   if (key === 'forge') return [['Range', `${w.range_km} km at ${w.speed_m_s} m/s`], ['Charge', `${w.charge_s} s, ${w.cost_e} E`], ['Damage', `${w.dmg}, ${Math.round(w.pierce_x * 100)} % through the shield`], ['Burn', `${w.burn.dmg_per_s} a second for ${w.burn.s} s`], ['Overload', `${w.overload.range_km} km, ${w.overload.charge_s} s, ${w.overload.dmg}, ${Math.round(w.overload.pierce_x * 100)} % through`], ['Fits', 'The spinal cannon']];
-  return [['Surge', `${w.surge_s} s at ${w.speed_x} x top speed, ${w.accel_x} x thrust, ${w.turn_x} x turn`], ['Cost', `${w.cost_e} E from the battery, then ${w.cooldown_s} s to ready`], ['Damage', `${w.dmg_per_100_m_s} for every 100 m/s closing, by the rammer's size`], ['Shield', `the bayonet ignores it; own bow shield x ${w.bow_shield_x} while surging`], ['Recoil', `${Math.round(w.recoil_x * 100)} % back on the rammer's bow`], ['Fits', 'Every Krai ship, from the helm']];
+  return [['Surge', `${w.surge_s} s at ${w.speed_x} x top speed, ${w.accel_x} x thrust, ${w.turn_x} x turn`], ['Cost', `${w.cost_e} E from the capacitor and battery, then ${w.cooldown_s} s to ready`], ['Damage', `${w.dmg_per_100_m_s} for every 100 m/s closing, by the rammer's size`], ['Shield', `the bayonet ignores it; own bow shield x ${w.bow_shield_x} while surging`], ['Recoil', `${Math.round(w.recoil_x * 100)} % back on the rammer's bow`], ['Fits', 'Every Krai ship, from the helm']];
 }
 function showWeapon() {
   const run = RUNS[runName], std = !!run.std, w = std ? WEAPONS[run.weapon] : SW[run.weapon], fac = std ? SHIPS[run.shooter].faction : w.faction;
@@ -1923,11 +2008,13 @@ renderer.setAnimationLoop(() => {
 // Named shots, for tools/mockups/shoot.mjs: each starts its run over, plays it on the fixed step to a moment, and holds.
 const shot = (run, time, q = 'high') => () => { paused = true; setQuality(q); start(run); runTo(time); frameView(); readout(); };
 window.MOCKUP_SHOTS = {
-  lance_volley: shot('lance', 1.45), disruptor_bolts: shot('disruptor', 1.36), torpedo_flight: shot('torpedo', 1.55),
+  lance_volley: shot('lance', 1.45), disruptor_bolts: shot('disruptor', 1.36), torpedo_flight: shot('torpedo', 1.66),
   chorus_charge: shot('chorus', 1.9), chorus_burn: shot('chorus', 3.6), quell_flight: shot('quell', 1.3), quell_dark: shot('quell', 4),
   forge_charge: shot('forge', 1.8), forge_impact: shot('forge', 2.12), forge_cooling: shot('forge', 6),
-  charge_surge: shot('charge', 2.0), charge_impact: shot('charge', 3.4), lance_volley_phone: shot('lance', 1.45, 'phone'), missile_salvo: shot('missile', 1.75), missile_reply: shot('missile', 4.7),
+  charge_surge: shot('charge', 2.0), charge_impact: shot('charge', 3.4), lance_volley_phone: shot('lance', 1.45, 'phone'), missile_flares: shot('missile', 2.6), missile_decoy: shot('missile', 7.6), missile_reply: shot('missile', 8.6),
 };
+// any run at any moment, for checks: MOCKUP_AT('charge', 2.1)
+window.MOCKUP_AT = (run, time, q = 'high') => shot(run, time, q)();
 window.MOCKUP_SCENE = scene;
 window.MOCKUP_READY = true;
 })();

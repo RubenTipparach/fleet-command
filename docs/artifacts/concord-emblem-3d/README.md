@@ -18,3 +18,4 @@
 - 2026-11-04, version 5 (`1793787574-bb93`): rebuilt on B-E27, the smooth keyhole (accepted), with a satin cyan star (owner: "Also render the 3d version too"); Blender test render beside it, full render to follow.
 - 2026-11-04, version 6 (`1793788354-4ac8`): the full-quality Blender render of B-E27 (96 samples, 1200 px) beside the badge.
 - 2026-11-04, version 7 (`1793803224-f4be`): the same badge, its studio, materials, views and shots now from the shared library `docs/mockups/lib/emblem-badge.js` (shared with the Krai badge, mockup 14); no visible change.
+- 2026-11-05, version 8 (`1793863641-159e`), desktop session: the badge's parts and materials now come from the shared builder `docs/mockups/lib/emblem-builds.js` (shared with the game flow's faction screen, change `faction-select`); no visible change.

@@ -13,5 +13,5 @@ point defence.
   at any range
 
 #### Scenario: A missile runs out of fuel
-- **WHEN** a missile has flown 20 s without reaching its target
+- **WHEN** a missile has flown 30 s without reaching its target
 - **THEN** it drifts dead and can no longer hit anything

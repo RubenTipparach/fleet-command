@@ -32,8 +32,19 @@ public sealed class GameActions
         ["helm_port_45"] = () => B.Turn(-45), ["helm_starboard_45"] = () => B.Turn(45),
         ["speed_up"] = () => B.SpeedStep(1), ["speed_down"] = () => B.SpeedStep(-1), ["all_stop"] = () => B.AllStop(),
         ["fire"] = () => B.Fire(), ["next_target"] = () => B.NextTarget(), ["toggle_volley"] = () => B.ToggleVolley(),
-        ["pause"] = Pause, ["back"] = Back,
+        ["pause"] = Pause, ["back"] = Back, ["toggle_fullscreen"] = Fullscreen,
+        ["command_1"] = () => Command(1), ["command_2"] = () => Command(2), ["command_3"] = () => Command(3),
+        ["command_4"] = () => Command(4), ["command_5"] = () => Command(5), ["command_6"] = () => Command(6),
+        ["command_7"] = () => Command(7), ["command_8"] = () => Command(8), ["command_9"] = () => Command(9),
     };
+
+    /// <summary>Keys 1 to 9: take command of the n-th living ship of your fleet, in the scenario's order (the mockup's
+    /// takeFleet); a number past the fleet does nothing. The console then follows the ship (Main.FollowCommand).</summary>
+    public void Command(int n)
+    {
+        Ship[] fleet = B.Fleet();
+        if (n >= 1 && n <= fleet.Length) B.TakeCommand(fleet[n - 1].Id);
+    }
 
     public void Station(string id) => S.Station = id;
     public void ShipPage(string id) => S.ShipPage = id;
@@ -49,10 +60,14 @@ public sealed class GameActions
 
     public void Return() { if (S.Expanded != null) { S.Expanded = null; OnLayout?.Invoke(); } }
 
-    /// <summary>Esc: closes the menu, else returns an expanded panel, else opens the menu.</summary>
+    /// <summary>Opens or closes the Options sheet (the volumes and the window mode).</summary>
+    public void Options() { S.OptionsOpen = !S.OptionsOpen; }
+
+    /// <summary>Esc: closes the Options sheet, else the menu, else returns an expanded panel, else opens the menu.</summary>
     public void Back()
     {
-        if (S.MenuOpen) S.MenuOpen = false;
+        if (S.OptionsOpen) S.OptionsOpen = false;
+        else if (S.MenuOpen) S.MenuOpen = false;
         else if (S.Expanded != null) Return();
         else S.MenuOpen = true;
     }
@@ -61,4 +76,6 @@ public sealed class GameActions
     /// <summary>Plays the scenario with this id, from its start.</summary>
     public void Scene(string id) { S.SceneOpen = false; S.MenuOpen = false; OnScene?.Invoke(id); }
     public void Quit() => OnQuit?.Invoke();
+    /// <summary>Borderless fullscreen or a window (DisplaySettings), remembered.</summary>
+    public void Fullscreen() { DisplaySettings.Toggle(); OnLayout?.Invoke(); }
 }

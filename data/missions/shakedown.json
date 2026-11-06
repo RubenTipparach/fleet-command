@@ -1,0 +1,89 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "shakedown",
+ "name": "Shakedown cruise",
+ "glyph": "1",
+ "kind": "story",
+ "reward_cr": 250,
+ "where": "plain && dist_home >= 2 && dist_home <= 3 && terrain == 'open'",
+ "objective": "Take her out to the marker beacon, put her guns through their trials on the target drones, and bring her back.",
+ "brief": "Your first command is fresh from the yard. Take her out to the marker beacon, try her guns on the yard's target drones on the way, and bring her back to where you started, so the crew finds her faults before anyone else does. The drones hold still and never fire.",
+ "result": [
+  {
+   "when": "win",
+   "credits": 250,
+   "next": [
+    {
+     "mission": "first_blood"
+    }
+   ],
+   "log": "Shakedown done: the yard fixed what the crew found."
+  },
+  {
+   "next": [
+    {
+     "mission": "shakedown"
+    }
+   ],
+   "log": "Shakedown cut short: the yard wants her out again."
+  }
+ ],
+ "type": "Patrol",
+ "battle": [
+  {
+   "name": "Shakedown cruise",
+   "groups": [
+    {
+     "id": "drones",
+     "faction": "{side}",
+     "count": 3,
+     "role": "enemy",
+     "tag": "drone",
+     "label": "Target drones",
+     "tier": 1,
+     "bearing_deg": 40,
+     "range_km": 4
+    }
+   ],
+   "markers": [
+    {
+     "id": "beacon",
+     "label": "Marker beacon",
+     "bearing_deg": -25,
+     "range_km": 6
+    },
+    {
+     "id": "home",
+     "label": "Start point",
+     "at": "start",
+     "after": "beacon"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "beacon",
+     "text": "Reach the marker beacon",
+     "primary": true,
+     "done": "reached('beacon')"
+    },
+    {
+     "id": "drones",
+     "text": "Destroy the target drones",
+     "primary": true,
+     "done": "alive(drones) == 0"
+    },
+    {
+     "id": "home",
+     "text": "Return to the start point",
+     "primary": true,
+     "done": "reached('home')"
+    },
+    {
+     "id": "clean",
+     "text": "Keep your hull above 90 %",
+     "done": "hull_min(fleet) >= 0.9"
+    }
+   ]
+  }
+ ]
+}

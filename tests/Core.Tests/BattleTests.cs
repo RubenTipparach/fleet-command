@@ -125,8 +125,9 @@ public class BattleTests
         b.Lock("vorrak");
         foreach (Mount m in b.Player.Mounts) m.Charge = 1;
         Mount[] would = b.WouldFire();
-        // ahead in arc: both forward lances, both broadside lances (90 +- 90 reaches the bow), both torpedoes; not the aft lance, not point defence
-        Assert.Equal(new[] { 0, 1, 2, 3, 4, 5 }, would.Select(m => m.Index).ToArray());
+        // ahead in arc: both forward lances, both broadside lances (90 +- 90 reaches the bow), both torpedoes, the chorus lance
+        // on the deflector and the missile rack (it launches any way); not the aft lance, not point defence
+        Assert.Equal(new[] { 0, 1, 2, 3, 4, 5, 6, 10 }, would.Select(m => m.Index).ToArray());
         b.ToggleVolley();
         Assert.Single(b.WouldFire());
         Assert.Equal(1, b.Fire());
@@ -187,12 +188,30 @@ public class BattleTests
                 if (e.Seq <= last) continue;
                 Assert.Equal(last + 1, e.Seq);   // none missed, none twice
                 last = e.Seq;
-                Assert.True(e.Absorbed >= 0 && e.HullDamage >= 0 && e.Absorbed + e.HullDamage > 0);
+                // every hit does damage, but a quell, which by design does none (it drops a shield and stuns weapons)
+                Assert.True(e.Absorbed >= 0 && e.HullDamage >= 0 && (e.Absorbed + e.HullDamage > 0 || e.Kind == "quell"));
                 Assert.Contains(b.Ships, s => s.Id == e.ShipId);
                 if (e.Destroyed) Assert.False(b.Ships.First(s => s.Id == e.ShipId).Alive);
             }
             Assert.True(b.Hits.Count <= Battle.HitMemory);
         }
         Assert.True(last > 0, "no hit landed in two minutes");
+    }
+
+    [Fact]
+    public void A_friendly_ship_can_be_selected_but_the_weapons_never_fire_on_it()
+    {
+        Battle b = new(TestData.Data, TestData.Data.ScenarioById("concord_battle"));
+        Ship friend = b.Ships.First(s => s.Side == 0 && s != b.Player);
+        b.Lock(friend.Id);
+        Assert.Equal(friend.Id, b.Player.Target);
+        foreach (Mount m in b.Player.Mounts) m.Charge = 1;
+        Assert.Empty(b.WouldFire());
+        Assert.Equal(0, b.Fire());
+        Assert.All(b.Player.Mounts.Select((m, i) => i), i => Assert.False(b.FireOne(i)));
+        Assert.DoesNotContain(b.Shots, sh => sh.To == friend.Id);
+        // and Next target still steps through the enemy only
+        b.NextTarget();
+        Assert.Equal(1, b.ShipById(b.Player.Target)!.Side);
     }
 }

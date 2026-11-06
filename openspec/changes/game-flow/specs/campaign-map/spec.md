@@ -27,3 +27,30 @@ The fleet SHALL move along hexes paying each hex's move cost from 3 move points 
 #### Scenario: Stars are impassable
 - **WHEN** the player picks a star hex
 - **THEN** no path is offered and the fleet stays where it is
+
+### Requirement: The factions move their own fleets
+
+Every fleet but the player's SHALL be moved by its faction at End turn on its own cadence of 1 to 3 turns, SHALL face the
+direction of its last move, and SHALL NOT be ordered by the player.
+
+#### Scenario: Three turns on
+- **WHEN** the player ends three turns without moving
+- **THEN** every faction fleet whose cadence came round has moved, and each faces along its last leg
+
+### Requirement: Pieces show missions, the player's fleet and strength
+
+Each mission SHALL stand in its sector as a standee with its letter, the player's fleet SHALL stand on gold, and every
+fleet SHALL have a strength flag beside it showing 1 to 5 pips.
+
+#### Scenario: A new campaign's home sector
+- **WHEN** a new Concord campaign opens
+- **THEN** the fleet at Halcyon stands on a gold base with a one-pip flag, and the Shakedown cruise stands in its sector
+
+### Requirement: Freighters and routes for your side and your allies
+
+Each faction SHALL run freighters along routes between its own ports, and the map SHALL show the player's side's
+freighters and routes and the routes of factions at standing 25 or more, and SHALL NOT show any other faction's.
+
+#### Scenario: An ally's route
+- **WHEN** the player's standing with the Ssarith Hunt reaches 30
+- **THEN** the Calder to Pell Reach route shows, dimmer, without its freighter

@@ -46,6 +46,14 @@ public sealed record TypeSet(string Body, string Heading, Func<int, int, Face> M
 /// face and colour.</summary>
 public readonly record struct PlateText(float X, float Y, float Max, Face Face, Color Col);
 
+/// <summary>A strip's needle meter (the mockup's meter): its pivot, the strip height those are measured at, the needle's
+/// length in pixels, its sweep (radians, clockwise from +x, from the empty end to the full) and how fast it settles toward
+/// its reading (per second).</summary>
+public readonly record struct StripMeterDef(float Cx, float Cy, float H, float R, float A0, float A1, float Settle);
+
+/// <summary>Draws a meter's needle (the mockup's live.needle): pivot, length in pixels, angle in radians.</summary>
+public delegate void NeedleDraw(CanvasItem c, Vector2 pivot, float r, float angle);
+
 /// <summary>A skin's look for everything that is not a named piece.</summary>
 public sealed record SkinStyle
 {
@@ -72,6 +80,20 @@ public sealed record SkinStyle
     /// (the mockup's stripTop.h and stripBottom.h); null keeps the layout's.</summary>
     public double? StripTopH { get; init; }
     public double? StripBottomH { get; init; }
+    /// <summary>A key's measured label field (the mockup's keyField): pixels clear of each end at the key piece's own
+    /// height, where its nine-slice caps run past the field to keep a window's corner whole (the Kelvane's); null takes
+    /// the key's caps.</summary>
+    public (float L, float R)? KeyField { get; init; }
+    /// <summary>A tab's measured label field (the mockup's tabField), as KeyField; null takes the tab's caps.</summary>
+    public (float L, float R)? TabField { get; init; }
+    /// <summary>How far a panel title's baseline is raised to centre it in the title placard's window (the mockup's
+    /// titleDy), in pixels.</summary>
+    public float TitleDy { get; init; }
+    /// <summary>The strips' needle meters (hull integrity on the top strip, speed on the bottom), drawn live over the
+    /// meter scale printed in the skin's strip art; null for a skin without one.</summary>
+    public StripMeterDef? Meter { get; init; }
+    /// <summary>The meters' needle; set with Meter.</summary>
+    public NeedleDraw? Needle { get; init; }
 
     // ---- Features a skin's kit may carry (openspec/changes/krai-battle-console, decision 3) -------------------------
     /// <summary>One plate behind the whole left column ("console.column"), the docked panels formed into it as wells,
@@ -87,4 +109,12 @@ public sealed record SkinStyle
     public bool SymbolBars { get; init; }
     /// <summary>Keys drawn as rendered glass lit by state ("key.*" and the wide "keyw.*") instead of filled shapes.</summary>
     public bool RenderedKeys { get; init; }
+    /// <summary>Icon tabs (the station and ship rails) drawn on the square rendered key ("key.idle", ".hover", ".on"),
+    /// the icon inside its glass, instead of on the long tab piece (the mockup's iconKeys: a tab that is a long tube or
+    /// window).</summary>
+    public bool IconKeys { get; init; }
+    /// <summary>A rendered backing plate ("console.backing") behind the column and behind an expanded panel, so no black
+    /// shows behind a metallic skin's panels (CLAUDE.md section 7). A skin with a joined column draws the column instead
+    /// while its panels are docked.</summary>
+    public bool Backing { get; init; }
 }

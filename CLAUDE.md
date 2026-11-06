@@ -122,6 +122,14 @@ From the owner's brief, 2026-10-30. Quotes are the owner's words.
   Xvfb and `build.config`. Fleet Command follows the same split (section 6).
 - **Assets are glTF (`.glb`)** built by committed Blender generators (section 10). They are
   imported by Godot, and the import is a build product.
+- **Every asset's `.import` file is committed, and Godot's headless import writes it** (owner, 2026-11-04: "commit
+  those and make sure they get generated in the future so it doesnt pile up as garbage on my pc"). Run
+  `--headless --path . --import` after adding or changing an asset (`play.bat` does it on every launch) and commit the
+  `.import` files it writes in the same commit as the asset; the cache in `.godot/` stays ignored. `.gitattributes`
+  keeps them LF, so a Windows checkout does not show every one as changed. The same holds for the `.uid` file Godot
+  writes beside a new script or shader. `scripts/run-tests.sh` runs the import and fails if it leaves any `.import` or
+  `.uid` file uncommitted (owner, 2026-11-05, the same ask again after a session committed the Ssarith and Kelvane
+  assets without theirs).
 - **Platforms**: Windows desktop is the owner's playtest machine, Linux runs the headless tests,
   and phones are a target from the first screen. The builds are Windows desktop and native Android
   (survey T1). The renderer is Forward+ on desktop and Compatibility on Android, set per platform
@@ -511,7 +519,37 @@ saying what changes here. Where a note and the copied text below it disagree, th
   sampled or modelled from another game's assets.
 - **A hull is not a body.** A ship's shape, paneling and markings come from its makers' ideas and traditions,
   never from what the species looks like (section 1).
+- **A hull is one grown structure** (owner, 2026-11-05: "these shapes need work, they arent connect together well, and
+  violate our "no deformed primitive rules", shapes must be made with purpose and flow into the grater structures"). No
+  box, cylinder, cone or plate, stretched or tapered, is a visible part of a hull. A prong, lance, hood or rail grows out
+  of the body: its section is a region of the body's own, split along a cut line, its chines carried through, the skin
+  closed. Light strips are faces of the skin, drives are recesses. Ship Design Bible chapter 14 (F1-F5).
+- **Every ship has its own UV-unwrapped textures** (owner, 2026-11-05: "every ship needs custom uv Unwraped textures. From
+  NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP", "tile textures are for DETAIL only, we'll probably need
+  a detail mask in the future", "dont forget to bake AO as well"). Every ship is unwrapped on its own; its main colour map
+  is painted onto its own UVs, never a repeating tile; tiles add fine detail only (a detail mask to come); its AO is baked
+  onto its own UVs. The Concord and Krai lines are to be moved onto this (`ship-detailing`; Ship Design Bible chapter 15,
+  T1-T4).
+- **A hull's detail is modelled and baked: layered armour, distinct features, nothing repeated** (owner, 2026-11-05:
+  "vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the
+  same", "liveries, smooth sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis
+  symmetry, and lots of shading to give the armor depth"). A high-poly layer over the hull (`tools/blender/hull_detail.py`,
+  laid out in `data/ships/<faction>/hull_detail.json`): primary plates each cut to its own outline and standing proud by
+  its own amount, sub-armour beneath, machinery in the gaps and trenches, domes, shaped vents, lamps and liveries, mirrored
+  about the centreline, baked with a low sun's cast shadows and deep AO onto the ship's own UVs, painted into a painted
+  map and a PBR set (base colour, ORM, tangent normals, emission) with the hull lights baked into a light map
+  (`ship-detailing`; Ship Design Bible chapter 15, T5-T8).
 - **No z-fighting, ever** (Undercity, Star Crew).
+- **Stars and every scatter come from a real generator, never a cheap hash** (owner, 2026-11-05, of the menu's stars drawn
+  with `i * 7919 % 1000`: "never to use poor RNG stuff for stars, this seems like a common low effort mistake", "you can see a
+  repetition pattern", "this always results in poror rng"). A product modulo a constant, `fract(sin(x) * 43758.5453)` and
+  their kin put points on lines, grids and repeats the eye finds at once. Stars, dust, debris and any scattered detail:
+  - draw from a seeded generator with full avalanche (the Core's `Rng`, SplitMix64; `Mulberry32` where a mockup's numbers
+    must match), or in a shader an integer hash (PCG or xxHash style on `uint`), never `fract(sin(...))` in new code;
+  - choose the distribution on purpose: stratified jitter or Poisson disc for even cover, a density field for a galaxy's
+    band and clusters, brightness and colour by the shares in `data/space/starfield.json`, most stars faint;
+  - reuse what exists before writing another (the sky files' stars from `tools/space/nebula_skies.py`, `Starfield2D` for a
+    flat backdrop), and look at a full-size still for lines, grids or repeats before calling it done.
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).
 
@@ -580,6 +618,8 @@ Before claiming anything is done, run what applies:
 | `blender-ui-panels` | 1990s-style instrument panels in Blender: pillowed metal over a recessed backlit film, formed-metal shapes, lamps under the lip, flat ink, legibility and pixel comparison (sections 7, 10). Its companion guide is the Analog Panel Bible, `docs/design/ui-bible.html`. |
 | `blender-organic-panels` | Organic, grown panels in Blender (the Vhorr Brood first): one body of flesh, chitin and bone round crisp instruments, black smoked screens, rim-lit keys, panels floating over the game with no backdrop, growth measured clear of readouts (sections 7, 10). Its companion guide is the Organic Panel Bible, `docs/design/organic-bible.html`. |
 | `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
+| `painted-bake` | Hull textures that read drawn on: a high-poly tile's occlusion, normals, edges and plate ids rendered in Blender and painted over (flat plates, painted light, inked crevices, lit edges, glow), after the reference games' look, never their art (section 10). |
+| `ship-detailing` | Detailing a ship from blockout to game-ready textures: the hull grown as one structure, its own unwrap, a modelled detail layer (layered armour, machinery, domes, vents, lamps, windows, emblem, liveries, light fixtures), mirrored and never repeated, baked onto its UVs and painted into a painted map and a PBR set with emission and a hull-light map, with image samples (section 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 
@@ -595,6 +635,9 @@ Nothing is an exception until it is listed here with its reason.
   The Concord and Krai lines' geometry is defined by the mockup pages' builders; a Blender port would be a second copy
   of every hull rule (section 6.1). `tools/mockups/export_ships.mjs` exports them to glb from the pages themselves,
   deterministically, with named nodes and a manifest, so section 10's other rules still hold.
+- **The campaign mockup has no tracker link** (owner, 2026-11-05, of its "All Fleet Command mockups (the tracker)" link: "remove
+  this from the campaign mockup"). `docs/mockups/game-flow.html` (mockup 1) is drawn as the game's own screens, so it carries no
+  link back to the tracker; every other published page still does (section 4).
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from

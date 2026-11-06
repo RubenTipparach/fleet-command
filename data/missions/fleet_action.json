@@ -1,0 +1,84 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "fleet_action",
+ "name": "Fleet action",
+ "glyph": "F",
+ "type": "Fleet action",
+ "reward_cr": 900,
+ "where": "plain && owner == enemy && dist_home >= 5",
+ "setup": [
+  {
+   "set": "flag",
+   "expr": "name_of(enemy, 2)"
+  }
+ ],
+ "objective": "Destroy the {flag} or most of her group.",
+ "brief": "A {enemy_name} battle group under the {flag} holds this sector. Two wingmen of the line join you for the action: meet the group as equals and break it.",
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "wingmen",
+     "faction": "{side}",
+     "count": 2,
+     "role": "ally",
+     "label": "Wingmen"
+    },
+    {
+     "id": "flagship",
+     "faction": "{enemy}",
+     "count": 1,
+     "role": "enemy",
+     "tag": "flagship",
+     "label": "{flag}",
+     "ship_name": "{flag}",
+     "tier": 3
+    },
+    {
+     "id": "group",
+     "faction": "{enemy}",
+     "count": "fleet + 1",
+     "role": "enemy",
+     "label": "Battle group"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "flag",
+     "text": "Destroy the {flag} or most of her group",
+     "primary": true,
+     "done": "destroyed(flagship) == 1 || destroyed(enemies) * 2 > size(enemies)"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    },
+    {
+     "id": "wing",
+     "text": "Bring both wingmen home",
+     "done": "destroyed(wingmen) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 5,
+    "{enemy}": -5
+   }
+  },
+  {
+   "when": "draw",
+   "credits": "pay"
+  },
+  {
+   "standing": {
+    "{side}": -2
+   }
+  }
+ ]
+}

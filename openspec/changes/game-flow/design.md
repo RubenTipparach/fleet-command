@@ -150,8 +150,11 @@ in their hex with an orbit ring in the owner's colour; asteroid fields are belts
 the hex; nebulae are 3D clouds of puffs (Crab Breeze's billboard method: camera-facing quads with noise-eroded edges,
 lit as spheres and glowing from within, sorted back to front in one draw), and each connected nebula takes its own
 colour (owner: "nebulas can be of different color, make the clouds more pronounced and 3d looking, use the puffs method
-from crab-breeeze"). The fleet's miniature is the
-flagship's, with an amber ring. Names show at near zoom; hovering or tapping one names it. The models are
+from crab-breeeze"). **The nebulae's colours are the owner's palette** (2026-11-05: "here's a better pallete for nebulas, the
+colros are kinda random right now", 23 muted colours, in the page as `NEBULA_PALETTE`), **two to a cloud** ("a main color and an
+accent color"): the main colour through the body, the accent rising through the upper puffs, picked at least 0.28 apart
+in RGB so the two read as two. The fleet's miniature is the
+flagship's, on a gold stand with a gold ring (below). Names show at near zoom; hovering or tapping one names it. The models are
 stand-ins until mockup 3 sets each faction's ships.
 
 **Moving**: tap a hex; the route is traced as a line from the fleet through each sector to an arrowhead (owner: "I
@@ -162,6 +165,53 @@ turn (survey F2: turn based). **End turn** spends the rest, ages missions and sp
 tis not floating?"): captain, credits, turn, moves, **standing with** each faction by name (your reputation with it,
 -100 to 100; its ports close to you below 0), and the fleet's ships with hull integrity. **The hex panel**: the
 hex's owner, terrain and contents, and the port and mission buttons.
+
+### One fleet for the player; the factions move the rest
+
+The owner, 2026-11-05: "player ever controls one fleet at a time, the rest of the fleets are controlled by the factions. The
+map must be dynamic, all ships move move around every few turns." The player's fleet (up to 4 ships) is the only one the
+player orders. Every other fleet, your own side's included, belongs to its faction: at End turn each moves on its own
+cadence (every 1, 2 or 3 turns), toward a sector its faction sends it to (raiders roam within 6 sectors of their home,
+lone ships within 5, groups within 3, in their own or unclaimed space), one sector a move, a lone ship two. The moves are
+flown sector by sector after End turn, like the player's, and the camera stays where the player left it. A mission
+on a fleet (Capture a ship, Assassination) goes with that fleet.
+
+**Pieces on the board** (owner, 2026-11-05, with a screenshot of a strategy game's banners beside its pieces):
+- **Mission standees** ("misions should have standees so I know what tile they are on"): a pole on a small base in the
+  mission's sector, its banner showing the mission's letter: amber offered, green accepted, blue story. Tapping it opens
+  the briefing. It replaces the floating diamond marker.
+- **The player's fleet stands on gold** ("player fleet should have a gold standee"): a gold base, rim and ring.
+- **Ships face their last move** ("ship fleets should point in the direction they are facing (last move delta)"): the
+  heading of the last sector-to-sector leg, kept in the save.
+- **A strength flag beside every fleet** ("ship standees should have a flag next to them representing ship strength"): a
+  banner on its own pole in the faction's colour, one pip per step of strength, 1 to 5, longer the stronger. The player's
+  fleet by the tiers of its hulls (sum / 1.5, rounded); a faction fleet by its ships, a commander's counting two more.
+
+**Freighters** ("show freigthers and their routes for your empire, and show freighter routes for allies. develop and use
+placeholders for freighters"): every faction runs freighters between its own ports, one to a route (the Concord four, the
+Krai four, the Ssarith and the Vos one each), a sector a turn, turning back at each end. The map shows **your own
+freighters and routes**, and **your allies' routes** (a faction at standing 25 or more), dimmer and without their
+freighters; a rival's never show. A route is a dashed line through its sectors' centres in its faction's colour, along the
+cheapest path (the one path rule the player's moves use). The freighter is a placeholder: a spine, three cargo pods, a
+bridge aft and a drive, in the faction's hull tint with a band of its colour, on a small stand. Convoy defense is now
+offered on one of your own routes, and Convoy ambush on a hostile faction's.
+
+**Where pieces stand** (owner, 2026-11-05: "how come my ship isnt centered?", "if theres more ships or objects on it, then
+offset, otherwise I think ships should be centered"): a piece alone in its hex stands in the middle; where a hex holds more
+than one (a port, the player's fleet, faction fleets, your freighters, missions), each takes its slot so none stands on
+another: the port up right, the player's fleet down left, a faction fleet down right, a freighter right, a mission up
+left. Pieces settle again after every move, offer and End turn.
+
+**Routes over several turns** (owner: "need to show multi turn moves please"): a route is drawn all the way to the picked
+sector, split into legs by turn (the first leg what the moves left this turn reach, each later leg a full 3 move
+points), this turn's leg bright and later legs fainter, with a numbered badge where each turn ends. The sector panel says
+"7 moves · 3 turns". Moving flies this turn's leg; the rest becomes the fleet's order, flown on after each End turn (once
+the factions have moved) until it arrives or the player sends the fleet elsewhere.
+
+**A mission in the sector panel** is a row with its letter, its name, reward, time left and opposition, and a Briefing key
+(owner: "make this more obvious its a button").
+Banners (mission standees and strength flags) are cloth in the scene, rippling, not camera-facing cards (owner: "its angled
+weird lol, Ithink mission flags sould just be 3d").
 
 ## Campaign ports
 
@@ -249,3 +299,6 @@ trivial next to a battle. Campaign state is plain data: a few kilobytes to save.
 | F6 | What does selling return in the campaign? | **Decided**: a quarter, more from a rival of the builder, less from pirates who raise your standing; prizes can be repaired into the fleet |
 | F6a | Where can you sell to another faction? | **Decided** (survey, 2026-11-01): at that faction's ports, open while your standing with it is 0 or above |
 | F7 | How does standing work? | **Decided** (survey, 2026-11-01): per faction, -100 to 100, as recommended |
+| M1 | Do the factions' fleets fight each other, or block the player's moves? | Not yet: they only move |
+| M2 | Can freighters be raided on the map (a convoy mission on a moving freighter)? | Convoy missions sit on the routes' sectors |
+| M3 | Who is an ally? | A faction at standing 25 or more; no one at the start |

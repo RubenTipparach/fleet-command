@@ -1,0 +1,137 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "distress",
+ "name": "Distress call",
+ "glyph": "H",
+ "type": "Distress call",
+ "reward_cr": 500,
+ "where": "plain && (own || neutral) && dist_home >= 2",
+ "setup": [
+  {
+   "set": "trap",
+   "expr": "rand() < 0.4"
+  },
+  {
+   "set": "ship",
+   "pick": [
+    "Larkspur",
+    "Patience",
+    "Hollow Bell",
+    "Ninefold",
+    "Ember Reach"
+   ]
+  }
+ ],
+ "objective": "Answer the call and save the freighter {ship}.",
+ "brief": "The freighter {ship} is calling for help: raiders on her, her shields failing. You are the nearest ship.",
+ "battle": [
+  {
+   "when": "trap",
+   "intel": "Raiders, a few",
+   "groups": [
+    {
+     "id": "decoy",
+     "faction": "vos",
+     "count": 1,
+     "role": "enemy",
+     "tag": "decoy",
+     "label": "Decoy: {ship}",
+     "ship_name": "{ship}",
+     "range_km": 5
+    },
+    {
+     "id": "ambush",
+     "faction": "vos",
+     "count": "strength + 1",
+     "role": "enemy",
+     "label": "Waiting in ambush",
+     "range_km": 9
+    }
+   ],
+   "objectives": [
+    {
+     "id": "trap",
+     "text": "Beat the trap",
+     "primary": true,
+     "done": "alive(enemies) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    },
+    {
+     "id": "decoy",
+     "text": "Destroy the decoy ship",
+     "done": "destroyed(decoy) == 1"
+    }
+   ]
+  },
+  {
+   "intel": "Raiders, a few",
+   "groups": [
+    {
+     "id": "freighter",
+     "faction": "neutral",
+     "count": 1,
+     "role": "neutral",
+     "tag": "rescue",
+     "label": "{ship}",
+     "ship_name": "{ship}"
+    },
+    {
+     "id": "raiders",
+     "faction": "vos",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "save",
+     "text": "Keep the {ship} alive",
+     "primary": true,
+     "done": "alive(freighter) == 1 && how == 'end'"
+    },
+    {
+     "id": "drive",
+     "text": "Destroy the raiders",
+     "done": "alive(raiders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "trap && win",
+   "credits": "pay",
+   "standing": {
+    "vos": -3
+   },
+   "log": "The {ship} was a Vos decoy, and the trap was beaten."
+  },
+  {
+   "when": "trap",
+   "credits": "pay",
+   "log": "The {ship} was a Vos decoy."
+  },
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 3
+   },
+   "log": "The {ship} is safe and on her way."
+  },
+  {
+   "credits": "pay",
+   "log": "The {ship} was lost."
+  }
+ ]
+}

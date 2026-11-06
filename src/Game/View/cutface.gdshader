@@ -17,6 +17,13 @@ uniform vec4 st[48];
 uniform float ch[48];
 uniform int st_n = 0;
 uniform float ox = 0.0;
+// or, for a hull that is not a loft (the Ssarith Hunt's grown skins), its signed distance field (tools/blender/hull_sdf.py,
+// the manifest's break body sdf): one byte a cell, 128 + sdf_scale x metres inside, its grid from sdf_lo to sdf_hi
+uniform bool use_sdf = false;
+uniform sampler3D sdf_tex : filter_linear, repeat_disable;
+uniform vec3 sdf_lo = vec3(0.0);
+uniform vec3 sdf_hi = vec3(1.0);
+uniform float sdf_scale = 10.0;
 uniform float heat = 1.0;
 uniform vec3 across = vec3(1.0, 0.0, 0.0);
 uniform vec3 depth_dir = vec3(0.0, 0.0, 1.0);
@@ -51,6 +58,15 @@ float loft_d(vec3 p) {
 	float d = min(min(s.y - ax, s.z - p.y), p.y - s.w);
 	d = min(d, min((s.y + s.z - c - ax - p.y) * 0.70710678, (s.y - s.w - c - ax + p.y) * 0.70710678));
 	return min(d, min(st[0].x - p.z, p.z - st[st_n - 1].x));
+}
+// Signed distance into the body (positive inside): its field where it has one (lib/ship-break.js bodyD), else the loft.
+float body_d(vec3 p) {
+	if (use_sdf) {
+		vec3 t = (p - sdf_lo) / (sdf_hi - sdf_lo);
+		if (any(lessThan(t, vec3(0.0))) || any(greaterThan(t, vec3(1.0)))) return -1.0;
+		return (texture(sdf_tex, t).r * 255.0 - 128.0) / sdf_scale;
+	}
+	return loft_d(p);
 }
 float band(float v, float period, float w) { float m = mod(v + 1000.0 * period, period); return 1.0 - smoothstep(w * 0.5, w, min(m, period - m)); }
 vec3 to_f(vec3 p) { vec3 d = p - mid; return vec3(dot(d, across), p.y, dot(d, depth_dir)); }
@@ -91,7 +107,7 @@ vec3 interior_cut(vec3 f, vec3 V, out float solid) {
 }
 
 void fragment() {
-	float sd = loft_d(v_obj);
+	float sd = body_d(v_obj);
 	if (sd < 0.0) discard;
 	vec3 s_a = seeds[cell_a]; float d_a = length(v_obj - s_a); float edge_c = 1e9;
 	for (int k = 0; k < 16; k++) {

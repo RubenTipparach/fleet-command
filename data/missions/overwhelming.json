@@ -1,0 +1,115 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "overwhelming",
+ "name": "Stem the tide",
+ "glyph": "O",
+ "type": "Overwhelming fleet",
+ "reward_cr": 1600,
+ "where": "plain && own && dist_home >= 3",
+ "objective": "Neutralise as many of its four groups as you can.",
+ "brief": "A {enemy_name} fleet in four groups is pushing into our space, far more than one captain can beat. Two wingmen are with you. Destroy each group you can: every group stopped here is one that does not reach the yards.",
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "wingmen",
+     "faction": "{side}",
+     "count": 2,
+     "role": "ally",
+     "label": "Wingmen"
+    },
+    {
+     "id": "g1",
+     "faction": "{enemy}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Group 1",
+     "range_km": 9
+    },
+    {
+     "id": "g2",
+     "faction": "{enemy}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Group 2",
+     "range_km": 11
+    },
+    {
+     "id": "g3",
+     "faction": "{enemy}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Group 3",
+     "range_km": 13
+    },
+    {
+     "id": "g4",
+     "faction": "{enemy}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Group 4",
+     "range_km": 15
+    }
+   ],
+   "objectives": [
+    {
+     "id": "hold",
+     "text": "Neutralise at least two groups",
+     "primary": true,
+     "done": "(alive(g1) == 0) + (alive(g2) == 0) + (alive(g3) == 0) + (alive(g4) == 0) >= 2"
+    },
+    {
+     "id": "g1",
+     "text": "Neutralise the first group",
+     "done": "alive(g1) == 0"
+    },
+    {
+     "id": "g2",
+     "text": "Neutralise the second group",
+     "done": "alive(g2) == 0"
+    },
+    {
+     "id": "g3",
+     "text": "Neutralise the third group",
+     "done": "alive(g3) == 0"
+    },
+    {
+     "id": "g4",
+     "text": "Neutralise the fourth group",
+     "done": "alive(g4) == 0"
+    }
+   ]
+  }
+ ],
+ "grade": [
+  {
+   "when": "how == 'lost'",
+   "is": "crushing"
+  },
+  {
+   "when": "met('g1', 'g2', 'g3', 'g4') == 4",
+   "is": "outstanding"
+  },
+  {
+   "when": "met('g1', 'g2', 'g3', 'g4') >= 2",
+   "is": "victory"
+  },
+  {
+   "when": "met('g1', 'g2', 'g3', 'g4') == 1 || how == 'withdraw'",
+   "is": "draw"
+  },
+  {
+   "when": "true",
+   "is": "defeat"
+  }
+ ],
+ "result": [
+  {
+   "credits": "round(reward * met('g1', 'g2', 'g3', 'g4') / 4 * (met('g1', 'g2', 'g3', 'g4') == 4 ? 1.5 : 1))",
+   "standing": {
+    "{side}": "2 * met('g1', 'g2', 'g3', 'g4')"
+   },
+   "log": "Stem the tide: {met('g1', 'g2', 'g3', 'g4')} of 4 groups stopped."
+  }
+ ]
+}

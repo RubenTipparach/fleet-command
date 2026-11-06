@@ -33,12 +33,19 @@ public sealed partial class BattleView : Node3D
     private readonly Dictionary<string, Node3D> _models = new();
     private readonly List<OmniLight3D> _strobes = new();
     private readonly Dictionary<string, ShipDamage> _damage = new();
+    private readonly Dictionary<string, ShieldShell> _shields = new();
     private long _hitSeq;
     private NebulaSky? _sky;
+    private DirectionalLight3D _sun = null!;
     private ShaderMaterial _skyMat = null!;
+    private ShotView _shots = null!;
 
     /// <summary>How much of the hulls' ambient light comes from the nebula (the rest is the old cool blue fill).</summary>
-    public const float AmbientSkyShare = 0.5f;
+    public const float AmbientSkyShare = 1f;
+    /// <summary>The ambient light's strength, all of it from the nebula sky (the same baked sky the hulls reflect): 15 %
+    /// (owner, 2026-11-04: "also tune down ambient lighting", "which is the reflection probe (ambient light 10-20% str"), so
+    /// a hull's shadowed side falls dark in deep space, tinted by its nebula, and its floodlight pools carry it.</summary>
+    public const float AmbientEnergy = 0.15f;
     private Rect2 _view;
     private Vector2 _screen;
 
@@ -73,16 +80,31 @@ public sealed partial class BattleView : Node3D
         var env = new Godot.Environment
         {
             BackgroundMode = Godot.Environment.BGMode.Sky, Sky = sky,
-            AmbientLightSource = Godot.Environment.AmbientSource.Sky, AmbientLightColor = new Color("#3a4a6a"), AmbientLightEnergy = 0.6f,
+            AmbientLightSource = Godot.Environment.AmbientSource.Sky, AmbientLightColor = new Color("#3a4a6a"), AmbientLightEnergy = AmbientEnergy,
             AmbientLightSkyContribution = AmbientSkyShare, ReflectedLightSource = Godot.Environment.ReflectionSource.Sky,
             TonemapMode = Godot.Environment.ToneMapper.Filmic,
+            // glow, for the weapons' light (change weapon-fx: the weapons range's bloom): only what is brighter than 1
+            GlowEnabled = true, GlowIntensity = 0.7f, GlowBloom = 0f, GlowHdrThreshold = 1.0f, GlowBlendMode = Godot.Environment.GlowBlendModeEnum.Additive,
         };
         AddChild(new WorldEnvironment { Environment = env, Name = "Environment" });
-        var sun = new DirectionalLight3D { Name = "Sun", LightEnergy = 1.3f, LightColor = new Color("#fff4e6") };
+        // the sun casts high-quality shadows, the ships onto themselves too (owner, 2026-11-04: "need high quality shadows on
+        // ships too", "looks like you didnt enable self shadowing"): four cascades out to 60 units (6 km) round the camera,
+        // the nearest a few hundred metres for the ship in view; the bias set at the ships' scale (a unit is 100 m, so
+        // Godot's default would lift every shadow 10 m off the plating and lose the hull's shadow on itself)
+        var sun = new DirectionalLight3D
+        {
+            Name = "Sun", LightEnergy = (float)Scenario.DeepSpaceSun, LightColor = new Color("#fff4e6"),
+            ShadowEnabled = true, DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits,
+            DirectionalShadowMaxDistance = 60f, DirectionalShadowSplit1 = 0.04f, DirectionalShadowSplit2 = 0.12f, DirectionalShadowSplit3 = 0.35f,
+            DirectionalShadowBlendSplits = true, ShadowBias = 0.004f, ShadowNormalBias = 0.6f, ShadowBlur = 0.8f,
+        };
         sun.RotationDegrees = new Vector3(-48, -35, 0);
         AddChild(sun);
+        _sun = sun;
         _cam = new Camera3D { Name = "Camera", Current = true };
         AddChild(_cam);
+        _shots = new ShotView { Name = "Shots" };
+        AddChild(_shots);
         Rebuild();
     }
 
@@ -93,6 +115,7 @@ public sealed partial class BattleView : Node3D
         _models.Clear();
         _strobes.Clear();
         _damage.Clear();
+        _shields.Clear();
         _hitSeq = _x.Battle.Hits.Count > 0 ? _x.Battle.Hits[^1].Seq : 0;
         // the scenario's own nebula sky (each scene its own: data/battle/scenarios.json "sky")
         if (_sky == null || _sky.Name != "Sky_" + _x.Battle.Scenario.Sky)
@@ -102,14 +125,18 @@ public sealed partial class BattleView : Node3D
             AddChild(_sky);
             _skyMat.SetShaderParameter("panorama", GD.Load<Texture2D>($"res://assets/skies/{_x.Battle.Scenario.Sky}.jpg"));
         }
+        _sun.LightEnergy = (float)_x.Battle.Scenario.SunEnergy;   // the scene's own sun (scenarios.json "sun_energy")
         foreach (Ship s in _x.Battle.Ships)
         {
             Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.LengthM, _strobes) : StandIn(s);
             model.Name = s.Id;
             AddChild(model);
             _models[s.Id] = model;
+            var shell = new ShieldShell((float)(s.Class.LengthM / MPerU));   // every ship's (owner, 2026-11-04: "add shield display to all ships")
+            model.AddChild(shell);
+            _shields[s.Id] = shell;
             if (s.Class.Model is { } file && model.GetChild(0) is Node3D glb)
-                _damage[s.Id] = new ShipDamage(glb, this, s, file["assets/ships/".Length..], glb.Scale.X, ShipSkin.HullShader);
+                _damage[s.Id] = new ShipDamage(glb, this, s, file["assets/ships/".Length..], glb.Scale.X);
         }
     }
 
@@ -163,6 +190,12 @@ public sealed partial class BattleView : Node3D
     }
 
     /// <summary>The view rectangle and the whole screen, in console units.</summary>
+    partial void SyncComms(Battle b, double dt);
+    partial void SyncTractor(Battle b, double dt);
+    partial void SyncReactor(Battle b, double dt);
+    partial void SyncCloak(Battle b, double dt);
+    partial void SyncTactical(Battle b, double dt);
+
     public void SetViewRect(Rect2 view, Vector2 screen) { _view = view; _screen = screen; }
 
     public override void _Process(double delta) => Sync(delta);
@@ -174,12 +207,16 @@ public sealed partial class BattleView : Node3D
         Battle b = _x.Battle;
         ShipSkin.Flash(_strobes, Time.GetTicksMsec() / 1000.0);
         Damage(b, _x.State.Paused || _x.State.MenuOpen ? 0 : dt);
+        // the mockup's other systems in 3D (transporter beams, tractor beams, mines, craft, cloaks), each in BattleView.<Package>.cs
+        double sdt = _x.State.Paused || _x.State.MenuOpen ? 0 : dt;
+        SyncComms(b, sdt); SyncTractor(b, sdt); SyncReactor(b, sdt); SyncCloak(b, sdt); SyncTactical(b, sdt);
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
-            m.Visible = s.Alive || _damage.ContainsKey(s.Id);   // an approved ship stays to come apart; a stand-in just goes
+            m.Visible = !s.Jumped && (s.Alive || _damage.ContainsKey(s.Id)) && (!s.Alive || b.Detected(b.Player, s));   // an approved ship stays to come apart; a stand-in just goes; a ship gone to warp is gone; a cloaked ship unseen is not drawn
             m.Position = new Vector3((float)(s.X / MPerU), 0, (float)(s.Z / MPerU));
             m.Rotation = new Vector3(0, -(float)s.H, 0);
+            if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive && s.CloakK <= 0; if (sh.Visible) sh.Show(s, _x.Kit.C); }   // a cloak's shields are down
         }
         Ship p = b.Player;
         FollowTarget(p);
@@ -197,6 +234,7 @@ public sealed partial class BattleView : Node3D
         _cam.LookAt(focus, Vector3.Up);
         _sky?.Follow(_cam.GlobalPosition);
         Project();
+        _shots.Sync(b);
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every
@@ -221,7 +259,9 @@ public sealed partial class BattleView : Node3D
         LayoutDef l = _x.Data.Layout;
         float near = 0.5f, fov = (float)(l.ViewFovDeg * Math.PI / 180);
         float hs = 2 * near * Mathf.Tan(fov / 2) * (_screen.Y / _view.Size.Y), ws = hs * _screen.X / _screen.Y;
-        float cx = _view.Position.X + _view.Size.X / 2, cy = _view.Position.Y + _view.Size.Y * (float)l.ShipScreenY;
+        // the damage range centres the ship it watches, so a hull looked at up close is not cut off by the view's foot
+        float shipY = _x.Battle.Scenario.DamageRange ? 0.5f : (float)l.ShipScreenY;
+        float cx = _view.Position.X + _view.Size.X / 2, cy = _view.Position.Y + _view.Size.Y * shipY;
         _cam.SetFrustum(hs, new Vector2(ws * (0.5f - cx / _screen.X), hs * (cy / _screen.Y - 0.5f)), near, 4000);
     }
 
@@ -233,15 +273,58 @@ public sealed partial class BattleView : Node3D
         return _cam.UnprojectPosition(p);
     }
 
+    /// <summary>The damage range's click to fire: the point of plating on a ship under a screen position (global space), or
+    /// null when the click missed it or it has no approved model.</summary>
+    public Vector3? PlatingAt(string shipId, Vector2 screen) => _damage.TryGetValue(shipId, out ShipDamage? d) ? d.PlatingAt(_cam, screen) : null;
+
+    /// <summary>The next shot from that side to land on the ship lands at this point of plating (the damage range's aim).</summary>
+    public void AimAt(string shipId, Vector3 global) { if (_damage.TryGetValue(shipId, out ShipDamage? d)) d.Aim(global); }
+
+    /// <summary>The camera's position on the battle plane, metres (where the damage range's Fire at it shoots from).</summary>
+    public (double X, double Z) CameraM => (_cam.GlobalPosition.X * MPerU, _cam.GlobalPosition.Z * MPerU);
+
     /// <summary>The point on the battle plane under a screen position, metres; null when the ray misses the plane.</summary>
     public (double X, double Z)? PlaneAt(Vector2 screen)
     {
-        Vector3 o = _cam.ProjectRayOrigin(screen), d = _cam.ProjectRayNormal(screen);
+        // the ray through the camera's own projection, offset frustum and all: Godot's ProjectRayNormal assumes a centred
+        // frustum, so with the ship held low in the view it cast every click somewhere else (owner, 2026-11-04: "mouse to
+        // screen ray cast is wrong, its not working like the JS version", "cant properly turn my ship in the desired
+        // direction"). Unprojecting two depths of the same pixel gives a ray that ScreenOf's UnprojectPosition inverts exactly.
+        var (o, d) = Ray(screen);
         if (Mathf.Abs(d.Y) < 1e-5f) return null;
         float t = -o.Y / d.Y;
         if (t < 0) return null;
         Vector3 q = o + d * t;
         return (q.X * MPerU, q.Z * MPerU);
+    }
+
+    // The ray (origin, unit direction) through a screen point, in the screen space UnprojectPosition gives (the viewport's
+    // visible rectangle), by the inverse of the camera's projection.
+    private (Vector3 O, Vector3 D) Ray(Vector2 screen)
+    {
+        Vector2 vs = GetViewport().GetVisibleRect().Size;
+        float nx = screen.X / vs.X * 2 - 1, ny = 1 - screen.Y / vs.Y * 2;
+        Projection inv = _cam.GetCameraProjection().Inverse();
+        Vector3 At(float z) { Vector4 v = inv * new Vector4(nx, ny, z, 1); return new Vector3(v.X, v.Y, v.Z) / v.W; }
+        Transform3D xf = _cam.GlobalTransform;
+        Vector3 a = xf * At(0.0f), b = xf * At(0.5f);
+        return (a, (b - a).Normalized());
+    }
+
+    /// <summary>The worst miss, metres, of a click cast back through PlaneAt from where ScreenOf drew points of the
+    /// battle plane round your ship (the layout test's check that a click lands where the player pointed).</summary>
+    public double RayMissM()
+    {
+        Ship p = _x.Battle.Player;
+        double worst = 0;
+        for (int i = 0; i < 16; i++)
+        {
+            double a = i * Math.PI / 8, r = 400 + 600 * (i % 4);
+            double x = p.X + Math.Sin(a) * r, z = p.Z - Math.Cos(a) * r;
+            if (ScreenOf(x, z) is not { } sp || PlaneAt(sp) is not { } q) continue;
+            worst = Math.Max(worst, Math.Sqrt((q.X - x) * (q.X - x) + (q.Z - z) * (q.Z - z)));
+        }
+        return worst;
     }
 
     /// <summary>The player's drag: turns and tilts the camera, and frees the camera lock (zoom does not).</summary>
@@ -252,7 +335,9 @@ public sealed partial class BattleView : Node3D
         Pitch = Mathf.Clamp(Pitch + drag.Y * 0.004f, 0.08f, 1.45f);
     }
 
-    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, 5, 220);
+    /// <summary>The wheel: closer or further, down to 500 m in a battle, or 120 m on the damage range, where the player
+    /// looks at a hull's scars up close (owner, 2026-11-05: "and batle scars").</summary>
+    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, _x.Battle.Scenario.DamageRange ? 1.2f : 5, 220);
 
     /// <summary>The Camera lock key: back to your own ship (out of Target view) with the camera locked on the target.</summary>
     public void LockCamera()

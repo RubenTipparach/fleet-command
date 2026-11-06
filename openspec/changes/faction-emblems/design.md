@@ -186,3 +186,59 @@ The ship bible changes only if the owner accepts it.
 | E10 | Kelvane Institute | A tuning fork in a gauge over its wave |
 | E11 | Ssarith Hunt | A fang in brackets, notched for each kill |
 | E12 | Where on a hull? | Decided for the Concord (owner, 2026-11-04): one emblem on the port side, 3 % of ship length |
+
+## The Ssarith Hunt (2026-11-04)
+
+Owner, 2026-11-04: "lets design an emblem for the SSarith". Under the owner's rule that a species' looks are not its
+design (CLAUDE.md section 1; the Ship Design Bible chapter 13, C1-C5), nothing is taken from the Ssarith's bodies. The
+Hunt's culture is one line in the console skins design ("the hunt is the only honest sport: the quarry must be worthy, the
+stalk patient, the kill earned and counted"), too thin to design from, so, as survey H1 recommends (blank, so accepted),
+three traditions inside the Hunt are drafted for the owner to pick, change or reject, each with a sketch that names it:
+
+| Sketch | Tradition | Outline | What it shows |
+|---|---|---|---|
+| SA, the Open Gate | The Fair Chase, a school of law: a hunt that leaves the quarry no way out is slaughter | A marker stone (a hunting ground's boundary stone) | Three closing brackets, the fourth left out, and three Watch green chevrons running out through the gap |
+| SB, the Witness Tally | The Tally Keepers, a guild of witnesses: nothing counts unless witnessed and recorded | A hanging tablet | A cord tied at the notch with the count across it (long marks the witness's, short the hunter's), three to a season, the newest in Watch green, the witness's seal below |
+| SC, the Long Watch | The Watchers, stargazers turned navigators: patience first | A low blind | The horizon joined to the blind, the four-point watch star over it, its path across the sky half travelled |
+| SD, the Bow Rites (recommended; the owner's idea) | The Bow Rites (owner, 2026-11-04: "bows and arrows lined up ... it has to be ssarith bow and arrow", "different sizes to represent their different stages of manhood", then "3 bow and arrows overlapping pointed to the right"): a new bow made at each stage of life, the old ones kept | A pennon, square at the back, pointing right | Three of the Hunt's own bows (cut from flat plate: straight facets, a square-cut recurve, a heavy riser), each braced with its arrow nocked and aimed right, overlapping like a hand of cards, largest behind on the left, smallest in front on the right; a one-barbed leaf head; the youngest's head in Watch green |
+
+Palette (provisional, from the Hunt console): Bone (the Tally Keepers' tablets), Watch green (the phosphor of the tracking
+tubes), Canopy (the hunting ground at night). Each sketch passes the stereotype test (C5) and the measured checks (joins,
+contrast on black and on white). The guide gains a rule for every emblem: Culture, not anatomy. The traditions are the
+owner's to set (C4); all three are provisional until H1 is answered or a sketch is picked.
+
+**The 3D badge** (owner, 2026-11-05: "more colors and shading on the bow and green arrows on the 3d rendering", "shade the
+bow parts with like wood and the arrows green with blood", "Background should be like a beige, dull brown and dry green
+forest", "make each arrowhead unique", "holographic leaves", "Should be 3d leaves shapes"): mockup 19,
+`docs/mockups/ssarith-emblem-3d.html`, from the guide's own parts (`assets/emblems/ssarith/sd.parts.json`) in Blender
+(`tools/blender/emblem_ssarith.py`) and three.js (the shared badge library). Four new Material Maker graphs: laminated wood,
+Watch green lacquer, the lacquer under dried blood, and a dry forest in enamel; holographic leaves at three depths laid out
+by `tools/emblems/ssarith_leaves.py`. SD's three arrowheads are now each their own shape, one per stage. Heights and
+materials in mockup-work.md section 19.
+
+## The Kelvane Institute (2026-11-06)
+
+Owner, 2026-11-06: "lets design an emblem for the institute". The Institute's culture is one line in the console skins
+design ("truth is measured, never assumed; every reading is shown on an instrument a scientist can check by eye"), so, as
+for the Hunt, three traditions inside the Institute are drafted for the owner to pick, change or reject, each with a sketch
+that names it, none from the Kelvane's bodies (the console notes' "many-handed" is left out):
+
+| Sketch | Tradition | Outline | What it shows |
+|---|---|---|---|
+| KIA, the True Mark (recommended) | The Calibrators, the instrument makers: a reading is only as true as the standard it was checked against | A meter's face (a fan) | An engraved scale, the needle at rest exactly on the amber reference mark: the moment of calibration |
+| KIB, the Repeated Trace | The Open Notebook, the reviewers: no result is true until another laboratory repeats it | A scope's screen | Two identical traces, green and amber, and the cursor that compares them |
+| KIC, the Long Baseline | The surveyors and astronomers: the Institute began by measuring the distance to a star | A lens | A measured baseline with a station at each end, their sightlines meeting at one amber star |
+
+Palette (provisional, the Kelvane console's): Champagne (the enamelled plate), Phosphor green (the scope's trace), Amber (the
+backlit readout, the reference mark), Scope glass (the dark behind a trace). The console's crest today, a tuning fork over
+its wave, is a placeholder until a sketch is picked. Every sketch passes the measured checks (joins, outline, contrast).
+
+**Picked (owner, 2026-11-06, in the Kelvane console thread, with a book cover's hydrogen-atom plot): "I would like this
+hydrogen atom eigen plot used as the logo/emblem".** This supersedes the three sketches above. The emblem is hydrogen's 3d z²
+orbital (n 3, l 2, m 0): the surface at |3cos²θ − 1|, two lobes along the axis and a ring round the waist, drawn as a
+wireframe eigen plot. It is computed, not traced from the cover, whose art is its publisher's. Its one geometry is
+`tools/mockups/kelvane_emblem.py`, which writes `assets/ui/kelvane/emblem.json` (fine, coarse and mark levels, and the
+outline). It is already on the Kelvane crest in brass wire, the name plates and the console's live emblem
+(`openspec/changes/kelvane-battle-console`, D9, on `claude/brave-faraday-ilpu2q`). Still to do in this thread: the emblem
+guide's Kelvane section and the gallery's badge, built from the same lines.
+

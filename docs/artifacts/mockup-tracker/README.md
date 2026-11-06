@@ -104,3 +104,36 @@
 - 2026-11-04, desktop session (Mac): Concord line at version 24 (the Albatross stern down to two bells), a text edit on the live version; version id `1793817050-4098`.
 - 2026-11-04, desktop session (Mac): M2 at v79 and M8 at v18 (strips on black), M6 summary to two bells; version id `1793822422-f548`.
 - 2026-11-06, from the Kelvane console session (owner: "make sure all active branches get this artifact tracker change"): this branch's tracker on the new page (one-line summaries, each faction's mockups in a modal, the escaped apostrophes) with this branch's own entries kept; live tracker version 132 (`1793930222-562a`) is the Kelvane session's.
+- 2026-11-04, cloud session (faction emblems): version 109, version id `1793829600-eb98`, built on the live version (M2 v81, M8 v20): the guide at v25 (the Ssarith Hunt started).
+- 2026-11-04, cloud session (faction emblems): version 110, version id `1793830372-8f69`: the guide at v26 (the Bow Rites).
+- 2026-11-04, cloud session (faction emblems): version 111, version id `1793833883-7dce`: the guide at v27 (the Bow Rites redrawn).
+- 2026-11-05, cloud session (faction emblems): version 112, version id `1793839271-20ad`: M19 added (the Ssarith badge in 3D), the guide at v28.
+- 2026-11-05, cloud session (faction emblems): version 113, version id `1793841962-5e56`: M19 at v2 (ferns, steel, feathers, glowing blood), the guide at v29.
+- 2026-11-05, cloud session (faction emblems): version 114, version id `1793846057-df61`: M19 at v3 (the fern recess, steel and hard green arrows), the guide at v30.
+- 2026-11-05, cloud session (faction emblems): version 115, then 116: M19 at v4, the guide at v31, the Emblem Gallery added under Misc.
+- 2026-11-04, desktop session (Mac): M2 at v81 and M8 at v20 (the shield display on every ship); version id `1793828157-0f07`.
+- 2026-11-05, cloud session (faction emblems): version 117, version id `1793848268-4e78`, merging main: M16 (special weapons), M17 (sounds) and M18 (music), committed on main by another session, back beside M19 and the gallery.
+- 2026-11-05, cloud session (battle console thread): version 118, version id `1793850979-43ca`, built on the live version (M19, the Emblem Gallery and the guide at v31 from the emblem session, carried): M2 v82, M8 v21, M15 v6.
+- 2026-11-05, desktop session: version 119, version id `1793863693-e0b0`, edited on the live version 118: M1 v8 (the faction screen, skins on the campaign, missions as scripts, test maps), M10 v8, M14 v2, M19 v5 (the shared emblem builder).
+- 2026-11-05, desktop session: version 120, version id `1793865072-cc30`: M1 v9.
+- 2026-11-05, desktop session: version 121, version id `1793865429-5b9d`: M1 v10.
+- 2026-11-05, desktop session: version 122, version id `1793866185-85f0`: the Fleet Command Missions guide added under Guides.
+- 2026-11-05, desktop session: version 123, version id `1793871461-ad95`: M1 v11, the Missions guide v2.
+- 2026-11-05, desktop session: version 124, version id `1793872899-a201`: M1 v12.
+- 2026-11-05, desktop session: version 125, version id `1793874926-c06c`: M1 v13.
+- 2026-11-05, desktop session: version 126, version id `1793877957-f8cb`: M1 v14, the Missions guide v3.
+- 2026-11-05, desktop session: version 127, version id `1793911435-01fe`: M1 v15 (Accept sets course), and the flow running in the game.
+- 2026-11-05, desktop session: version 128, version id `1793915465-6c92`: M1 v16 (the port redesigned).
+- 2026-11-06, cloud session (faction emblems): version 129, version id `1793927639-c2c6`, built on the live version 128 (M1 v16, M2 v82, M10 v8, M19 v5 and the Missions guide from other sessions): the guide at v32 (the Kelvane started).
+- 2026-11-06, from the Kelvane console session (owner: "make sure all active branches get this artifact tracker change"): this branch's tracker on the new page (one-line summaries, each faction's mockups in a modal, the escaped apostrophes) with this branch's own entries kept; live tracker version 132 (`1793930222-562a`) is the Kelvane session's.
+- 2026-11-06, the Kelvane console session (owner, of an empty tracker: "what happened?"): version 130, version id `1793929318-5e9b`. Mockup 1's summary (its v13 sentence) had three unescaped apostrophes ("the player's", "your allies'", "the owner's") inside a single-quoted string: a syntax error, so the script never ran and every list was empty. Escaped; the script checked with `node --check` and rendered headless (16 mockup cards, 10 links, no errors). Merged onto the live version 129 (`1793927639-c2c6`), keeping its Emblem Design Guide v32.
+- 2026-11-06, the Kelvane console session: version 131, version id `1793930070-6d9c`. Every summary cut to one line (owner: "why did you add so much detail to the mockup tracker? the mockups themselves already have documentation, or you can add documentation to openspec"); each faction's mockups behind one card that opens them in a modal (owner: "coalesce faction mockups together in modals"): Concord (M6, M10), Krai Warhost (M7, M8, M14), Ssarith Hunt (M12, M15, M19). `tools/mockups/artifact_check.py` now fails a summary over 200 characters or carrying "New in v", and a tracker script that does not parse.
+- 2026-11-06, the Kelvane console session: version 132, version id `1793930222-562a`: M20, the Kelvane Institute battle console, in its faction's card.
+- 2026-11-06, the Kelvane console session: version 133, version id `1793930964-2992`: M2 v83, M4 v27, M8 v22, M15 v7.
+- 2026-11-06, the Kelvane console session: version 136, version id `1793934770-b61e`: M21, the Kelvane badge in 3D (KID on an oval coin), in the Kelvane card; M2 v84, M4 v28, M8 v23, M15 v8, M20 v2. Merged onto the live version `1793932305-689a`, keeping its Emblem Design Guide v34.
+- 2026-11-06, desktop session: version 137, version id `1793935850-c265`: M22, the space fly-through (an edit over the other session's v136, which this commit's `tracker.html` carries).
+- 2026-11-06, desktop session: version 138, version id `1793938020-eca6`: M22 at v2.
+- 2026-11-06, the Kelvane console session: version 139, version id `1793938207-f4a1`: M21 v2 (embossed, velvet), M2 v85, M8 v24, M15 v9, M20 v3. Merged onto the live version `1793938020-eca6`, keeping another session's M22 (Space fly-through; its page and record brought from `claude/campaign-mockups` so the check passes here).
+- 2026-11-06, desktop session: version 140, version id `1793945084-5a8d`: M1 v17 (ships slide on the map), over the Kelvane session's v139.
+- 2026-11-06, cloud session (branch `claude/brave-faraday-ilpu2q`): version 141, version id `1793949867-c088`: M1 v18 (the faction screen on a walnut table, stores, crew lists, kept routes, options), over the desktop session's v140.
+- 2026-11-06, cloud session: version 142, version id `1793950629-6aac`: M1 v19 (the faction view fits phones in portrait).

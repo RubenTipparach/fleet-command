@@ -9,12 +9,18 @@ using FleetCommand.Sim;
 
 namespace FleetCommand.Data;
 
-public static class DataLoader
+public static partial class DataLoader
 {
+    /// <summary>The system packages, each with its scenes file (data/battle/scenes/) and numbers (data/battle/systems/).</summary>
+    public static readonly string[] ScenePackages = { "comms", "tractor", "reactor", "cloak", "tactical" };
+
     /// <summary>The files GameData is built from, relative to data/.</summary>
     public static readonly string[] Files =
     {
         "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json",
+        "battle/missiles.json", "battle/special_weapons.json", "battle/range.json",
+        "battle/scenes/comms.json", "battle/scenes/tractor.json", "battle/scenes/reactor.json", "battle/scenes/cloak.json", "battle/scenes/tactical.json",
+        "battle/systems/comms.json", "battle/systems/tractor.json", "battle/systems/reactor.json", "battle/systems/cloak.json", "battle/systems/tactical.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -23,11 +29,60 @@ public static class DataLoader
         StrictJson J(string f) => StrictJson.Parse(read(f), "data/" + f);
         Tuning tuning = LoadTuning(J("battle/tuning.json"));
         var weapons = LoadWeapons(J("battle/weapons.json"));
-        var classes = LoadClasses(J("battle/classes.json"), weapons, tuning);
+        MissileData missiles = LoadMissiles(J("battle/missiles.json"));
+        SpecialWeapons specials = LoadSpecials(J("battle/special_weapons.json"), weapons);
+        var classes = LoadClasses(J("battle/classes.json"), weapons, tuning, missiles);
+        foreach (ShipClass c in classes.Values)
+            if (c.Mounts.Any(m => m.Weapon == "chorus") && !specials.Chorus.Fits.Contains(c.Id))
+                throw new DataError($"data/battle/classes.json.{c.Id}: the chorus lance fits only {string.Join(", ", specials.Chorus.Fits)}");
         var factions = LoadFactions(J("battle/factions.json"));
         var scenarios = LoadScenarios(J("battle/scenarios.json"), classes, factions);
+        // each system package's test scenes (data/battle/scenes/<package>.json), after the main list, ids unique across all
+        foreach (string pkg in ScenePackages)
+        {
+            StrictJson sf = J($"battle/scenes/{pkg}.json");
+            sf.Str("_doc", "");
+            foreach (StrictJson o in sf.ObjList("scenarios"))
+            {
+                Scenario sc = LoadScenario(o, classes, factions);
+                if (scenarios.Any(x => x.Id == sc.Id)) throw new DataError($"{o.Where}.id: '{sc.Id}' used twice");
+                scenarios.Add(sc);
+            }
+            sf.Done();
+        }
         LayoutDef layout = LoadLayout(J("console/layout.json"));
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout);
+        RangeDef range = LoadRange(J("battle/range.json"), weapons);
+        SystemsDef systems = SystemsDef.Load(J);
+        systems.CheckComms(classes);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems };
+    }
+
+    /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>
+    public static RangeDef LoadRange(StrictJson root, IReadOnlyDictionary<string, WeaponDef> weapons)
+    {
+        root.Str("_doc", "");
+        double from = Positive(root, "from_km");
+        var list = new List<RangeProgram>();
+        var ids = new HashSet<string>();
+        foreach (StrictJson o in root.ObjList("programs"))
+        {
+            string id = o.Str("id");
+            if (!ids.Add(id)) throw new DataError($"{o.Where}.id: '{id}' used twice");
+            string[] ws = o.StrList("weapons");
+            if (ws.Length == 0) throw new DataError($"{o.Where}.weapons: at least one weapon");
+            foreach (string w in ws)
+                if (!weapons.TryGetValue(w, out WeaponDef? wd) || wd.IsPointDefence) throw new DataError($"{o.Where}.weapons: no weapon '{w}' that can strike a ship");
+            int count = o.Int("count");
+            if (count < 1) throw new DataError($"{o.Where}.count: at least 1");
+            double? bearing = o.Has("bearing_deg") ? o.Num("bearing_deg") : null;
+            double stop = o.Num("stop_below_hull", 0);
+            if (stop is < 0 or >= 1) throw new DataError($"{o.Where}.stop_below_hull: 0 (never) up to below 1");
+            list.Add(new RangeProgram(id, o.Str("name"), ws, o.Bool("overload", false), Positive(o, "every_s"), count, bearing, stop));
+            o.Done();
+        }
+        if (list.Count == 0) throw new DataError($"{root.Where}.programs: at least one program");
+        root.Done();
+        return new RangeDef(from, list);
     }
 
     private static WeaponMode Mode(StrictJson o) => new(Positive(o, "range_km"), Positive(o, "charge_s"), NonNeg(o, "cost_e"), NonNeg(o, "damage"));
@@ -44,9 +99,22 @@ public static class DataLoader
             StrictJson? ov = o.ObjOrNull("overload");
             WeaponMode? over = null;
             if (ov != null) { over = Mode(ov); ov.Done(); }
+            // a proximity fuse: the normal range, charge and cost, its own damage, to-hit bonus, speed rule, reach and colour
+            StrictJson? px = o.ObjOrNull("proximity");
+            WeaponMode? prox = null;
+            if (px != null)
+            {
+                double bonus = px.Num("hit_bonus", 0), reach = px.Num("reach_deg", 0);
+                if (bonus is < 0 or > 1) throw new DataError($"{px.Where}.hit_bonus: between 0 and 1");
+                if (reach is < 0 or > 180) throw new DataError($"{px.Where}.reach_deg: between 0 and 180");
+                prox = normal with { Damage = NonNeg(px, "damage"), HitBonus = bonus, IgnoreSpeed = px.Bool("ignore_speed", false), ReachDeg = reach, Color = px.Str("color", "") is { Length: > 0 } pc ? pc : null };
+                px.Done();
+            }
+            string aim = o.Str("aim", "arc");
+            if (aim is not ("precise" or "arc")) throw new DataError($"{o.Where}.aim: precise or arc, not '{aim}'");
             double speed = o.Num("speed_m_s", 0);
             if (kind is "torpedo" or "bolt" or "missile" && speed <= 0) throw new DataError($"{o.Where}.speed_m_s: a {kind} needs a speed above 0");
-            d[id] = new WeaponDef(id, o.Str("name"), kind, normal, over, speed, o.Str("color"));
+            d[id] = new WeaponDef(id, o.Str("name"), kind, normal, over, speed, o.Str("color"), prox, aim, o.Bool("own_power", false));
             o.Done();
         }
         root.Done();
@@ -55,7 +123,80 @@ public static class DataLoader
 
     private static readonly string[] Shapes = { "saucer", "wedge", "claw", "station" };
 
-    public static Dictionary<string, ShipClass> LoadClasses(StrictJson root, IReadOnlyDictionary<string, WeaponDef> weapons, Tuning tuning)
+    /// <summary>The special weapons (data/battle/special_weapons.json). The chorus, the quell and the forge are added to
+    /// weapons as mounts (kinds chorus, quell, slug), so classes can carry them; every number is validated.</summary>
+    public static SpecialWeapons LoadSpecials(StrictJson root, Dictionary<string, WeaponDef> weapons)
+    {
+        // each one's faction, and how its hits choose where they land (precise or by arc, the weapon-targeting design)
+        string Fac(StrictJson o, string want)
+        {
+            if (o.Str("faction") != want) throw new DataError($"{o.Where}.faction: expected {want}");
+            o.Str("kind");
+            string aim = o.Str("aim");
+            if (aim is not ("precise" or "arc")) throw new DataError($"{o.Where}.aim: precise or arc, not '{aim}'");
+            return aim;
+        }
+        StrictJson c = root.Obj("chorus"), q = root.Obj("quell"), f = root.Obj("forge"), h = root.Obj("charge");
+        string cAim = Fac(c, "concord"), qAim = Fac(q, "concord"), fAim = Fac(f, "krai");
+        Fac(h, "krai");
+        // the chorus: a beam whose damage is its burn; its WeaponMode's damage is what one alone does over the burn
+        StrictJson j = c.Obj("join");
+        var chorus = new ChorusDef(Positive(c, "burn_s"), Positive(c, "dmg_per_s"), Positive(j, "range_km"), NonNeg(j, "per_joiner_x"), j.Int("max_joiners"), j.Str("spends"), c.Str("strand_color"), c.StrList("fits"));
+        j.Done();
+        c.Str("fires_from");
+        weapons["chorus"] = new WeaponDef("chorus", c.Str("name"), "chorus", new WeaponMode(Positive(c, "range_km"), Positive(c, "charge_s"), NonNeg(c, "cost_e"), chorus.DmgPerS * chorus.BurnS), null, 0, c.Str("color"), null, cAim);
+        c.Done();
+        q.Str("fits");
+        double shieldLeft = NonNeg(q, "shield_left_x");
+        if (shieldLeft > 1) throw new DataError($"{q.Where}.shield_left_x: at most 1");
+        var quell = new QuellDef(shieldLeft, Positive(q, "stun_s"), Positive(q, "reach_deg"));
+        q.Bool("point_defence_hits", true);
+        weapons["quell"] = new WeaponDef("quell", q.Str("name"), "quell", new WeaponMode(Positive(q, "range_km"), Positive(q, "charge_s"), NonNeg(q, "cost_e"), NonNeg(q, "dmg")), null, Positive(q, "speed_m_s"), q.Str("color"), null, qAim);
+        q.Done();
+        f.Str("fits");
+        StrictJson fb = f.Obj("burn"), fo = f.Obj("overload");
+        var forge = new ForgeDef(NonNeg(f, "pierce_x"), NonNeg(fo, "pierce_x"), NonNeg(fb, "dmg_per_s"), Positive(fb, "s"));
+        fb.Done();
+        WeaponMode over = new(Positive(fo, "range_km"), Positive(fo, "charge_s"), NonNeg(fo, "cost_e"), NonNeg(fo, "dmg"));
+        fo.Done();
+        weapons["forge"] = new WeaponDef("forge", f.Str("name"), "slug", new WeaponMode(Positive(f, "range_km"), Positive(f, "charge_s"), NonNeg(f, "cost_e"), NonNeg(f, "dmg")), over, Positive(f, "speed_m_s"), f.Str("color"), null, fAim);
+        f.Done();
+        h.Str("fits");
+        var charge = new ChargeDef(h.Str("name"), "krai", Positive(h, "surge_s"), Positive(h, "speed_x"), Positive(h, "accel_x"), Positive(h, "turn_x"), Positive(h, "bow_shield_x"),
+            NonNeg(h, "cost_e"), Positive(h, "cooldown_s"), NonNeg(h, "dmg_per_100_m_s"), Positive(h, "mass_ref_m"), NonNeg(h, "pierce_x"), NonNeg(h, "recoil_x"), h.Str("color"));
+        h.Done();
+        root.Done();
+        return new SpecialWeapons(chorus, quell, forge, charge);
+    }
+
+    /// <summary>The missile grades and countermeasures (data/battle/missiles.json): grades unique, each fooled-by chance a
+    /// fraction, speeds and fuel above 0.</summary>
+    public static MissileData LoadMissiles(StrictJson root)
+    {
+        StrictJson cm = root.Obj("countermeasures"), f = cm.Obj("flare"), d = cm.Obj("decoy");
+        var flare = new FlareDef(f.Int("count"), Positive(f, "burn_s"), Positive(f, "eject_m_s"), Positive(f, "cooldown_s"), Positive(f, "trigger_m"), f.Str("color"));
+        if (flare.Count < 1) throw new DataError($"{f.Where}.count: at least one flare a throw");
+        f.Done();
+        var decoy = new DecoyDef(Positive(d, "speed_m_s"), Positive(d, "life_s"), d.Bool("voided_by_firing", true), Positive(d, "trigger_km"), d.Int("per_ship"), d.Str("color"));
+        d.Done();
+        cm.Done();
+        var grades = new List<MissileGrade>();
+        foreach (StrictJson g in root.ObjList("grades"))
+        {
+            double Frac(string k) { double v = g.Num(k); if (v < 0 || v > 1) throw new DataError($"{g.Where}.{k}: a chance between 0 and 1, got {v}"); return v; }
+            var grade = new MissileGrade(g.Str("id"), g.Str("name"), g.Str("color"), Positive(g, "speed_m_s"), NonNeg(g, "damage"), g.Int("pd_hits"),
+                Positive(g, "fuel_s"), Frac("fooled_by_flare_x"), Frac("fooled_by_decoy_x"));
+            if (grade.PdHits < 1) throw new DataError($"{g.Where}.pd_hits: at least one");
+            if (grades.Any(o => o.Id == grade.Id)) throw new DataError($"{g.Where}.id: '{grade.Id}' is listed twice");
+            grades.Add(grade);
+            g.Done();
+        }
+        if (grades.Count == 0) throw new DataError($"{root.Where}.grades: no grades");
+        root.Done();
+        return new MissileData(grades, flare, decoy);
+    }
+
+    public static Dictionary<string, ShipClass> LoadClasses(StrictJson root, IReadOnlyDictionary<string, WeaponDef> weapons, Tuning tuning, MissileData missiles)
     {
         var d = new Dictionary<string, ShipClass>();
         foreach (string id in root.Keys())
@@ -74,7 +215,14 @@ public static class DataLoader
             {
                 string w = m.Str("weapon");
                 if (!weapons.ContainsKey(w)) throw new DataError($"{m.Where}.weapon: no weapon '{w}' in data/battle/weapons.json");
-                mounts.Add(new MountDef(w, m.Num("x"), m.Num("y"), m.Num("arc_centre_deg"), m.Num("arc_width_deg")));
+                string? grade = null;
+                if (weapons[w].Kind == "missile")
+                {
+                    grade = m.Str("grade", "orange");
+                    if (!missiles.Grades.Any(g => g.Id == grade)) throw new DataError($"{m.Where}.grade: no missile grade '{grade}' in data/battle/missiles.json");
+                }
+                else if (m.Has("grade")) throw new DataError($"{m.Where}.grade: only a missile rack has a grade");
+                mounts.Add(new MountDef(w, m.Num("x"), m.Num("y"), m.Num("arc_centre_deg"), m.Num("arc_width_deg"), grade));
                 m.Done();
             }
             int reactor = o.Int("reactor_e");
@@ -106,7 +254,7 @@ public static class DataLoader
         return d;
     }
 
-    private static readonly Dictionary<string, Stance> Stances = new() { ["attack"] = Stance.Attack, ["escort"] = Stance.Escort, ["hold"] = Stance.Hold };
+    private static readonly Dictionary<string, Stance> Stances = new() { ["attack"] = Stance.Attack, ["escort"] = Stance.Escort, ["hold"] = Stance.Hold, ["run"] = Stance.Run, ["hunt"] = Stance.Hunt };
     private static readonly Dictionary<string, AiRange> Ranges = new() { ["close"] = AiRange.Close, ["mid"] = AiRange.Mid, ["long"] = AiRange.Long };
 
     /// <summary>The scenarios (data/battle/scenarios.json), in menu order. Ids are unique, every scenario's player side is a
@@ -147,13 +295,16 @@ public static class DataLoader
             int sideNo = s.Int("side");
             if (sideNo is not (0 or 1)) throw new DataError($"{s.Where}.side: 0 (the player's) or 1");
             string stance = s.Str("stance", "attack"), range = s.Str("range", "mid");
-            if (!Stances.TryGetValue(stance, out Stance st)) throw new DataError($"{s.Where}.stance: attack, escort or hold, not '{stance}'");
+            if (!Stances.TryGetValue(stance, out Stance st)) throw new DataError($"{s.Where}.stance: attack, escort, hold, hunt or run, not '{stance}'");
             if (!Ranges.TryGetValue(range, out AiRange rg)) throw new DataError($"{s.Where}.range: close, mid or long, not '{range}'");
             double hullFrac = s.Num("hull_frac", 1), shieldsFrac = s.Num("shields_frac", 1);
             if (hullFrac is <= 0 or > 1) throw new DataError($"{s.Where}.hull_frac: above 0 and at most 1");
             if (shieldsFrac is < 0 or > 1) throw new DataError($"{s.Where}.shields_frac: between 0 and 1");
             ships.Add(new ShipStart(id, s.Str("name"), s.Str("captain"), cls, fac, sideNo, s.Num("x_m"), s.Num("z_m"), s.Num("heading_deg"), s.Num("speed_m_s"),
-                st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac));
+                st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac,
+                Start: s.ObjOrNull("start") is { } so ? ShipStartState.Read(so, classes[cls]) : null, Cloak: CloakShipStart(s),
+                Setup: CommsScenes.LoadSetup(s.ObjOrNull("setup"))));
+            ships[^1] = ScenarioExtras.Ship(s, ships[^1]);
             s.Done();
         }
         if (ships.Count == 0 || ships[0].Side != 0) throw new DataError($"{root.Where}.ships: the first ship is the player's and must be on side 0");
@@ -162,7 +313,17 @@ public static class DataLoader
         // since the loader reads only data/battle/)
         string sky = root.Str("sky");
         if (!System.Text.RegularExpressions.Regex.IsMatch(sky, "^[a-z][a-z0-9_]*$")) throw new DataError($"{root.Where}.sky: a sky id (lower case and underscores), not '{sky}'");
-        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky);
+        // the sun's strength there: deep space by default, more by a warm star
+        double sun = root.Num("sun_energy", Scenario.DeepSpaceSun);
+        if (!(sun > 0 && sun <= 4)) throw new DataError($"{root.Where}.sun_energy: above 0 and at most 4, not {sun}");
+        // a damage range (data/battle/range.json): its ships stand to be fired at, and it never ends
+        bool isRange = root.Bool("damage_range", false);
+        // a test scene's planets and goal (Scenes.Comms); its unarmed own ship is ScenarioExtras' armed
+        IReadOnlyList<PlanetDef>? planets = CommsScenes.LoadPlanets(root);
+        ScenarioGoal? goal = CommsScenes.LoadGoal(root);
+        CommsScenes.Check(root.Where, ships, planets, goal);
+        var scenario = ScenarioExtras.Scene(root, new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange, Wells: WellDef.ReadList(root),
+            Nebula: CloakNebula(root), Repel: root.Bool("repel", false))) with { Planets = planets, Goal = goal };
         root.Done();
         return scenario;
     }
@@ -179,7 +340,7 @@ public static class DataLoader
             Frac(o, "mount_hit_chance"), Frac(o, "mount_damage"),
             Positive(o, "het_rate_deg_s"), NonNeg(o, "het_cost_e"), Frac(o, "het_chance_drop"), NonNeg(o, "het_recover_per_s"), Frac(o, "het_erratic_penalty"),
             NonNeg(o, "het_breakdown_s"), Frac(o, "het_breakdown_engines"), Positive(o, "estop_decel_x"), NonNeg(o, "estop_hold_s"), Frac(o, "erratic_hit"), Frac(o, "erratic_turn"),
-            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"));
+            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac"));
         o.Done();
         return t;
     }

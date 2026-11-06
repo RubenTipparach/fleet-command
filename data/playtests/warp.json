@@ -1,0 +1,22 @@
+{
+ "_doc": "The scripted captain's Warp scene (the battle console mockup's, openspec/changes/warp): pick the scenario, look over the Power station's Warp and Reactor pages, arm the warp drive with the key at the end of the speed slider (it charges the banks and plots a course), turn hard to starboard and run out of the neutron star's field at full speed, then jump once the risk is low (or the corvettes are close). Played from both sides (suite.json).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "station", "arg": "power" },
+  { "do": "click", "arg": "pw.mode.warp" },
+  { "do": "hold", "s": 1 },
+  { "do": "click", "arg": "pw.mode.reactor" },
+  { "do": "hold", "s": 1 },
+  { "do": "click", "arg": "warp.key" },
+  { "do": "station", "arg": "helm" },
+  { "do": "helm", "arg": "het.r90" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "warp", "arg": "0.35", "s": 300 }
+ ]
+}
