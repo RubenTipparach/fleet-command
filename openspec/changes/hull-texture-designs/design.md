@@ -38,6 +38,68 @@ Ssarith Hunt's ships are (change `ssarith-ships-engine`, the `ship-detailing` sk
   - The paint worn bright round each bay, and grime under it.
   - It is broken up by noise, so no two streaks match.
 
+## Recipes from culture (version 5)
+
+The owner, of version 4: "AGAIN all of these are BAD ... there's so much mess and mistakes, you also used a pure white on
+black ... It looks like you just sketched random BLACK lines", "greebles dont look like greebles at all!", "the process is:
+render high poly model, and squash that down into a texture", "these empiures SHOULD BE SYMMETRIC", and "YOU CANT JUST USE
+THE CULTURE DEVELOPED FOR ONE FACTION AND SLAP THE SAME SKILLS ON TO OTHERS", "THE TECHNIQUES are a pallete that you can
+reuse between different ships". Version 4 laid the Hunt's recipe on both lines. Version 5 writes each faction's recipe
+from its own culture (the `ship-detailing` skill's method), and every design of a faction is a variation on its recipe.
+
+### The Concord
+
+The culture (survey U7, accepted): "A federation of many species that decides by consent; explores, mediates, defends";
+"Clean energy and light; screens are glass lit from behind"; the Ship Bible's "straight strakes and ring bands", "pearl
+armour, blue bands, warm-lit windows"; the Concord shows its broad face where the Krai show their edge.
+
+| Principle | What it means for a hull |
+|---|---|
+| CP1 Open and calm | A ship that arrives to talk shows one continuous face: flush plating, not armour piled on armour |
+| CP2 Order by consent | Everything on a shared grid: plates on the frames and decks, bands on the bulkheads, all mirrored |
+| CP3 Light as material | The ship shows itself by light: lit windows, glass, lit lines, floods |
+| CP4 Many makers, one standard | Plates differ by a tone, never by a patchwork; one standard of finish |
+| CP5 Kept with care | Machinery behind flush hatches, shown only where it is serviced (the service band, the keel); wear light and clean |
+
+| Technique | Setting | From |
+|---|---|---|
+| Hull form | The Concord line's lofted hull | |
+| Plating | Strakes on frames: butts on a 2.5 m frame, plates two to five frames long, strakes 1.8-2.8 m, ring seams at the bands | CP2 |
+| Relief | Flush skin: plates 0.12 m thick, barely proud (0.02 m), seams 6-8 cm, no trenches | CP1 |
+| Exposed machinery | The service band low on each flank and a keel trench only | CP5 |
+| Fasteners and frames | None seen | CP1 |
+| Features | Glass domes over the sensors, fans with white lamps, plain slots; windows wherever people live, mirrored | CP3, CP2 |
+| Paint | Pearl, a tone apart plate to plate; the design's bands, sash or sections | CP4 |
+| Wear | Light: soot only near the drives and vents, scuffs at the bays | CP5 |
+| Light | The render (sky, key and bounce); the gaps a pale grey-blue, never black | rule 3, 4 |
+
+### The Krai Warhost
+
+The culture (the owner's words and U7): "a combat focused race ... strong metal framing, almost blade like"; "rough gun
+metal, maybe sort of akin to volcanic magma type metal"; "this faction believes strongly in tradition"; "an emperor cheif
+... a star ruling over the 3 great houses"; "War is the only honest test; rank is won in blood"; tradition "kept, carried
+and added to, never replaced"; the Krai show their edge.
+
+| Principle | What it means for a hull |
+|---|---|
+| KP1 Forged, not assembled | Few, massive plates, thick, their edges chamfered wide, a hammered skin |
+| KP2 Edge first | The ship reads by its edges: chines and ridges ground bright, every plate edged |
+| KP3 Ranked and heraldic | Strict mirror symmetry; frames at a martial cadence down the flanks; the crest on the keel line |
+| KP4 Kept and added to | Marks added over time (tallies, honours), never painted over |
+| KP5 The heart is guarded | Machinery shows only at the engines and the reactor, in deep vented trenches |
+
+| Technique | Setting | From |
+|---|---|---|
+| Hull form | The Krai line's lofted hull | |
+| Plating | Split panels in big blocks (frames 9-13 m, panels at least 2.4 m), corners cut at 45 degrees | KP1 |
+| Relief | Layered and heavy: plates 0.5 m thick, proud up to 0.3 m, overlays on the big plates | KP1 |
+| Exposed machinery | The reactor's keel trench and the engine trenches aft only | KP5 |
+| Fasteners and frames | Raised frames at a fixed cadence down the flanks, bolt rows along them (to build) | KP3 |
+| Features | Raked slots and chevron vents, no domes or fans (nothing round) | KP1 |
+| Paint | The design's steel, edges picked out bright | KP2 |
+| Marks | Tallies in fives, honours | KP4 |
+| Light | The render; the gaps a dark steel, never black | rule 3, 4 |
+
 ## Rules every design keeps## Rules every design keeps
 
 All of these are already decided:

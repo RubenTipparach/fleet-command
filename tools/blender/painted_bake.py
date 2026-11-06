@@ -272,9 +272,13 @@ STRIP_M = 0.7                 # a light strip's lit line (the strips run down th
 EDGE_K = 0.55                 # how strongly a lit edge is picked out in the painter's light-edge colour
 BRONZE_SHARE = 0.06           # the share of armour plates painted BRONZE instead of from ARMOUR
 UNDER_GLOW, UNDER_GLOW_K = None, 0.8   # a glow in the gaps between plates (the under layer lit), and how strong
+PAINT_MODE = "painted"        # "painted": the painter's light, ink and steps (the Hunt); "render": a render of the high-poly
+SKY_RGB, SKY_K = (0.78, 0.82, 0.9), 0.9   # the render's sky: its colour and strength (the sun is the painter's, energy 1)
+AO_K = 0.35                   # in the render mode, how much of the AO pass deepens the render's own occlusion
 HUNT_PAINT = {"ARMOUR": ARMOUR, "SUB": SUB, "UNDER": UNDER, "GREEBLE": GREEBLE, "DOME": DOME, "SLAT": SLAT, "VENT": VENT,
               "LIVERY": LIVERY, "BRONZE": BRONZE, "INK": INK, "LIGHT_EDGE": LIGHT_EDGE, "EDGE_K": EDGE_K, "BRONZE_SHARE": BRONZE_SHARE,
-              "UNDER_GLOW": UNDER_GLOW, "UNDER_GLOW_K": UNDER_GLOW_K}
+              "UNDER_GLOW": UNDER_GLOW, "UNDER_GLOW_K": UNDER_GLOW_K, "PAINT_MODE": PAINT_MODE, "SKY_RGB": SKY_RGB,
+              "SKY_K": SKY_K, "AO_K": AO_K}
 
 
 def use_paint(pal):
@@ -404,6 +408,20 @@ def bake_ship(slug, px, samples, panes_only=False):
     ao = bake("AO", "shade")[:, :, 0]
     sc.cycles.samples = max(8, samples // 4)
     sunp = bake("DIFFUSE", "shade", pass_filter={"DIRECT"})[:, :, 0]
+    litp = None
+    if PAINT_MODE == "render":
+        # the owner, 2026-11-06: "the process is: render high poly model, and squash that down into a texture we can use on
+        # the ship"; "Black is not a good color here, because it doesnt look like the greebles on the ship are casting shadows
+        # or AO". So the light the paint wears is a render of the high-poly layer: a soft sky all round, the painter's sun
+        # with its cast shadows, and the light both bounce off the plating into the gaps (Cycles, direct and indirect), on
+        # white, so the plates' own colours multiply it after (paint_render). A gap is as dark as the light that reaches it.
+        world.node_tree.nodes["Background"].inputs["Color"].default_value = (*SKY_RGB, 1.0)
+        world.node_tree.nodes["Background"].inputs["Strength"].default_value = SKY_K
+        sc.cycles.samples = max(32, samples)
+        sc.cycles.max_bounces = 3; sc.cycles.diffuse_bounces = 2
+        litp = bake("DIFFUSE", "shade", pass_filter={"DIRECT", "INDIRECT"})[:, :, :3]
+        litp = np.dstack([blur(litp[..., c], 1) for c in range(3)])
+        world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
     # the hull lights: the fixtures alone, and the lamps' and windows' own faces, falling on white plating
     sun.hide_render = True
     for o in fixture_lights:
@@ -414,7 +432,10 @@ def bake_ship(slug, px, samples, panes_only=False):
     faction = D.get("faction", "ssarith")
     S["_story"] = HD.STORY
     wr = wear(P, nor, cover, HD.STORY, S)
-    col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr)
+    if litp is not None:
+        col, emit = paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr)
+    else:
+        col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr)
     pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction, wr)
     lref = D["defaults"]["light_ref"]
     lmap = half(np.clip(lightp / lref, 0, 1) ** (1 / 1.6))   # stored with a gentle curve; the page and game undo it
@@ -785,6 +806,31 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr=None):
         col = col * (1 - 0.55 * wr["scuff"][..., None]) + hexrgb(LIGHT_EDGE) * light[..., None] * (0.55 * wr["scuff"][..., None])
     side, g, emit = strips_and_glow(is_, P, glowp, cover)
     col = np.where(side[..., None], hexrgb(VENT) * (0.6 + 0.6 * sh)[..., None], col)
+    col = np.where((g.max(axis=2) > 0.05)[..., None], np.maximum(col, g), col)
+    return np.clip(col, 0, 1), emit
+
+
+def paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr=None):
+    """The colour map from a render of the high-poly layer (PAINT_MODE "render"): the flat paint (flat_paint: plates,
+    liveries, emblem) times the light the render put on each texel (sky, sun and bounce, with every shadow and occlusion
+    the geometry casts), lightly deepened by the AO pass, then the wear and the lamps. No ink and no drawn steps: a gap or
+    a greeble's foot is as dark as the light that reaches it."""
+    kind, rid, edge, is_ = classify(data, cover)
+    h, w = cover.shape
+    n = nor / np.maximum(np.linalg.norm(nor, axis=2, keepdims=True), 1e-6)
+    base, _ = flat_paint(is_, rid, P, n, cover, S, faction)
+    ref = max(float(np.percentile(litp[cover].max(axis=1), 98)), 1e-6)
+    lit = np.clip(litp / ref, 0, 1.15)
+    aoc = np.clip(blur(ao, 1), 0, 1)
+    lit = lit * (1 - AO_K + AO_K * aoc)[..., None]
+    col = base * (0.06 + 0.94 * lit)
+    col *= (1.0 + 0.5 * (grain(h, w) - 1.0))[..., None]
+    if wr:
+        col = col * (1 - 0.7 * wr["soot"][..., None]) + hexrgb(INK) * (0.18 * wr["soot"][..., None])
+        col = col * (1 - 0.8 * wr["scorch"][..., None]) + np.array([0.05, 0.035, 0.025]) * (0.8 * wr["scorch"][..., None])
+        col = col * (1 - 0.45 * wr["scuff"][..., None]) + hexrgb(LIGHT_EDGE) * lit * (0.45 * wr["scuff"][..., None])
+    side, g, emit = strips_and_glow(is_, P, glowp, cover)
+    col = np.where(side[..., None], hexrgb(VENT) * (0.4 + 0.6 * lit.mean(axis=2))[..., None], col)
     col = np.where((g.max(axis=2) > 0.05)[..., None], np.maximum(col, g), col)
     return np.clip(col, 0, 1), emit
 

@@ -334,31 +334,33 @@ def window_rows(F, surf):
 def window_rows_plan(F, surf):
     """Windows from the ship's room plan (Ship Design Bible W1: a room with people behind every window): for every room
     of the kinds named in F['rooms'] (plan kind or id: pane kind), one row at its deck's eye height along its outer wall,
-    1.6 m apart, kept 0.8 m clear of its bulkheads, on whichever side the room is (no mirroring: a mess to port and stores
-    to starboard give windows to port only), and only where the room meets the hull (within F['wall_m'] of the skin).
+    1.6 m apart, kept 0.8 m clear of its bulkheads, and only where the room meets the hull (within F['wall_m'] of the skin).
+    Symmetric (owner, 2026-11-06: "these empiures SHOULD BE SYMMETRIC"): the rooms of both sides are taken together, each
+    window placed once on the port side and mirrored, so a mess to port and quarters to starboard give one mirrored row.
     F['dz_m'], F['dy_m']: the plan's frame to the hull's (the export re-centres a ship). Returns [(loc, normal, lit,
-    pane kind, mirrored)]."""
+    pane kind, None)], None meaning built on both sides."""
     import json as _json
     import os as _os
     plan = _json.load(open(_os.path.join(_os.path.dirname(__file__), "..", "..", F["plan"])))
     dz, dy, wall = F.get("dz_m", 0.0), F.get("dy_m", 0.0), F.get("wall_m", 3.0)
-    floors, out = plan["deck_floor_m"], []
+    floors, out, seen = plan["deck_floor_m"], [], set()
     for room in plan["rooms"]:
         kind = F["rooms"].get(room["id"]) or F["rooms"].get(room["kind"])
         if not kind:
             continue
         r = random.Random(sum((i + 1) * 131 * ord(c) for i, c in enumerate(room["id"])))   # stable from run to run
         x0, x1 = room["x_m"]
-        side = 1 if (x0 + x1) > 0 else -1
         x_out = max(abs(x0), abs(x1))
         z0, z1 = room["z_m"][0] - dz, room["z_m"][1] - dz
         for d in room["decks"]:
             y = floors[d] + F.get("eye_m", 1.5) - dy
             z = z1 - 0.8
             while z > z0 + 0.8:
+                key = (d, round(z / 1.6))
                 h = surf.hit("port", [z, y])
-                if h and abs(h[1].x) > 0.6 and h[0].x - x_out < wall:
-                    out.append((h[0], h[1], r.random() > F.get("dark_share", 0.2), kind, side < 0))
+                if key not in seen and h and abs(h[1].x) > 0.6 and h[0].x - x_out < wall:
+                    seen.add(key)
+                    out.append((h[0], h[1], r.random() > F.get("dark_share", 0.2), kind, None))
                 z -= 1.6
     return out
 
@@ -643,13 +645,24 @@ def strake_cuts(rng, D, zr, xmax, yr):
         xs.append(xs[-1] + w)
     for x in xs:
         plan += seam_line(x, z0 - 2, z1 + 2, True)
+    fr = D.get("frame_m")   # butts on the frames (the hull's ribs), every plate whole frames long, as a yard plates a hull
+
+    def butts(seed_i):
+        if fr:
+            k0 = rng.randint(0, 3)
+            out, z = [], z1 - (k0 + 0.5) * fr
+            while z > z0:
+                out.append(z); z -= fr * rng.randint(*D.get("plate_frames", [2, 4]))
+            return out
+        lo_, hi_ = D["plate_l_m"]
+        out, z = [], z1 - rng.uniform(0, hi_)
+        while z > z0:
+            out.append(z); z -= rng.uniform(lo_, hi_) * rng.choice((0.6, 1.0, 1.0, 1.5))   # every strake its own run of plate lengths
+        return out
     for i in range(len(xs)):
         xa, xb = (0.0 if i == 0 else xs[i - 1]), xs[i]
-        lo_, hi_ = D["plate_l_m"]
-        z = z1 - rng.uniform(0, hi_)
-        while z > z0:
+        for z in butts(i):
             plan.append(((xa, z), (xb, z)))
-            z -= rng.uniform(lo_, hi_) * rng.choice((0.6, 1.0, 1.0, 1.5))   # every strake its own run of plate lengths
     ylo, yhi = yr
     ys = [ylo + rng.uniform(0.3, 1.2)]
     while ys[-1] < yhi:
@@ -658,11 +671,8 @@ def strake_cuts(rng, D, zr, xmax, yr):
     for y in ys:
         side += seam_line(y, z0 - 2, z1 + 2, False)
     for i in range(len(ys) - 1):
-        lo_, hi_ = D["plate_l_m"]
-        z = z1 - rng.uniform(0, hi_)
-        while z > z0:
+        for z in butts(100 + i):
             side.append(((z, ys[i]), (z, ys[i + 1])))
-            z -= rng.uniform(lo_, hi_) * rng.choice((0.6, 1.0, 1.0, 1.5))
     for zr_ in rings:
         plan.append(((0.0, zr_), (xmax + 2, zr_)))
         side.append(((zr_, ylo - 2), (zr_, yhi + 2)))
@@ -682,7 +692,7 @@ def kit_cuts(rng, D, zr, xmax, yr):
         mn = D["kit_min_m"]
         if depth >= D["kit_depth"] or (w < mn * 2 and h < mn * 2) or (depth > 0 and rng.random() < D["kit_stop"]):
             if rng.random() < D["kit_chamfer"] and min(w, h) > 2.2:
-                c = min(1.3, 0.3 * min(w, h))
+                c = min(D.get("kit_chamfer_m", 0.6), 0.2 * min(w, h))   # a small cut corner, never a diagonal seam across the face
                 ca, cb = (a0, b0) if rng.random() < 0.5 else (a1, b1)
                 sa, sb = (1 if ca == a0 else -1), (1 if cb == b0 else -1)
                 out[view].append(((ca + sa * c, cb), (ca, cb + sb * c)))
