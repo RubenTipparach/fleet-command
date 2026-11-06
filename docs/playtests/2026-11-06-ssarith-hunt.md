@@ -25,3 +25,6 @@ view), `hunt-battle-late.png` (the cruiser at 76 % hull, closing), `hunt-wrecks.
 
 Still open (change `ssarith-ships-engine` section 2): rooms behind the windows and hangars behind the bays, the Hunt as a
 side you command, its own weapons, strobe and beacon sprites.
+
+Rerun after the v25 floods (half as many, twice the pool) and main merged in (rubentipparach/fleet-command#39):
+`PLAYTEST_SUITE 15/15 ok` headless; `scripts/run-tests.sh` 119 of 119, build, layout and parity pass.
