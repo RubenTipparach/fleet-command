@@ -177,6 +177,14 @@ public sealed partial class ScriptedCaptain : Node
                     if (_x.State.Station != "science") await Click("st.science");
                     await Click("sci.sweep");
                 }
+                // the battery too low for a sweep and nothing spare to charge it (the allocation and the reactor's pumps
+                // take the whole output): free two boxes from the shields on the Power page, as a captain would
+                else if (sweep && B.TargetOf(me) == null && B.EnemiesOf(me).Any() && me.Battery < B.Data.Systems.Cloak.Cloak.SweepE
+                         && B.Rules.Output(me) - B.Rules.Used(me) <= 0 && me.Power["shields"] >= 2)
+                {
+                    lastChange = B.T;
+                    if (await SetBoxes($"shields={me.Power["shields"] - 2}") is { } sp) return sp;
+                }
             }
             hadTarget = B.TargetOf(me) != null;
             // the Intercept key lit is Intercept on: pressing it again would turn it off (free heading), so only press it unlit
@@ -203,7 +211,7 @@ public sealed partial class ScriptedCaptain : Node
             await Frames(3);
             double now = HullSum();
             if (Math.Abs(now - sum) > 1e-6) { sum = now; lastChange = B.T; }
-            if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s)";
+            if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s); last: {string.Join(" / ", B.Log.TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}";
         }
         return null;
     }
