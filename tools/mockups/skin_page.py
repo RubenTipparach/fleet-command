@@ -29,6 +29,10 @@ SKINS = {
         "title": "Ssarith Battle Console",
         "what": "Mockup 15: the battle console in the Ssarith Hunt skin (OpenSpec change ssarith-battle-console)",
     },
+    "kelvane": {
+        "title": "Kelvane Battle Console",
+        "what": "Mockup 20: the battle console in the Kelvane Institute skin (OpenSpec change kelvane-battle-console)",
+    },
 }
 # Every skin's library, kit and type are inlined in the source page itself (openspec/changes/fleet-skins: the console
 # follows the ship you command, so one page carries every skin); a faction's page differs only in its meta, title and

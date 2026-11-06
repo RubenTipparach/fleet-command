@@ -373,11 +373,12 @@ def metal(name, col, rough, knurl=False):
     return k.mat
 
 
-def satin(name, col="#bdb8ae"):
-    """Brushed satin plate metal: a fine wave grain under a light clear coat."""
+def satin(name, col="#bdb8ae", rough=0.22, coat=0.3):
+    """Brushed satin plate metal: a fine wave grain under a light clear coat. A rougher, uncoated satin (rough about 0.5,
+    coat 0) is a bead-blasted plate, for a big flat face that must not catch the softbox as one bright patch."""
     k = NodeKit(name)
     w = k.tex("ShaderNodeTexWave", 900.0, **{"Distortion": 1.5, "Detail": 2.0})
-    k.set(Base_Color=col, Metallic=0.75, Roughness=0.22, Coat_Weight=0.3, Coat_Roughness=0.1)
+    k.set(Base_Color=col, Metallic=0.75, Roughness=rough, Coat_Weight=coat, Coat_Roughness=0.1)
     k.bump(w.outputs["Fac"], 0.04)
     return k.mat
 

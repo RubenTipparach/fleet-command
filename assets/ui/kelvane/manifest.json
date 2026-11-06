@@ -92,7 +92,7 @@
         20,
         16,
         20,
-        46
+        54
       ],
       "stretch": "x"
     },
@@ -107,7 +107,7 @@
         20,
         16,
         20,
-        46
+        54
       ],
       "stretch": "x"
     },
@@ -122,7 +122,7 @@
         20,
         16,
         20,
-        46
+        54
       ],
       "stretch": "x"
     },
@@ -137,7 +137,7 @@
         12,
         14,
         12,
-        28
+        36
       ],
       "stretch": "x"
     },
@@ -152,7 +152,7 @@
         12,
         14,
         12,
-        28
+        36
       ],
       "stretch": "x"
     },
@@ -345,6 +345,363 @@
       ],
       "file": "icon.settings.png"
     },
+    "frame.screen": {
+      "kind": "nine",
+      "size": [
+        180,
+        140
+      ],
+      "file": "frame.screen.png",
+      "margins": [
+        28,
+        28,
+        28,
+        28
+      ],
+      "stretch": "xy"
+    },
+    "inset.screen": {
+      "kind": "nine",
+      "size": [
+        72,
+        56
+      ],
+      "file": "inset.screen.png",
+      "margins": [
+        14,
+        14,
+        14,
+        14
+      ],
+      "stretch": "xy"
+    },
+    "strip.top.screen": {
+      "kind": "nine",
+      "size": [
+        512,
+        72
+      ],
+      "file": "strip.top.screen.png",
+      "margins": [
+        12,
+        88,
+        12,
+        90
+      ],
+      "stretch": "x"
+    },
+    "strip.bottom.screen": {
+      "kind": "nine",
+      "size": [
+        512,
+        72
+      ],
+      "file": "strip.bottom.screen.png",
+      "margins": [
+        12,
+        88,
+        12,
+        90
+      ],
+      "stretch": "x"
+    },
+    "nameplate.console": {
+      "kind": "hero",
+      "size": [
+        460,
+        56
+      ],
+      "file": "nameplate.console.png"
+    },
+    "plate.title": {
+      "kind": "nine",
+      "size": [
+        140,
+        24
+      ],
+      "file": "plate.title.png",
+      "margins": [
+        0,
+        12,
+        0,
+        24
+      ],
+      "stretch": "x"
+    },
+    "console.backing": {
+      "kind": "hero",
+      "size": [
+        480,
+        1080
+      ],
+      "file": "console.backing.png"
+    },
+    "button.idle.screen": {
+      "kind": "nine",
+      "size": [
+        150,
+        48
+      ],
+      "file": "button.idle.screen.png",
+      "margins": [
+        20,
+        16,
+        20,
+        54
+      ],
+      "stretch": "x"
+    },
+    "tab.idle.screen": {
+      "kind": "nine",
+      "size": [
+        120,
+        40
+      ],
+      "file": "tab.idle.screen.png",
+      "margins": [
+        12,
+        14,
+        12,
+        36
+      ],
+      "stretch": "x"
+    },
+    "key.idle": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.idle.png"
+    },
+    "key.hover": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.hover.png"
+    },
+    "key.on": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.on.png"
+    },
+    "key.ok": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.ok.png"
+    },
+    "key.warn": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.warn.png"
+    },
+    "key.alert": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.alert.png"
+    },
+    "key.off": {
+      "kind": "hero",
+      "size": [
+        48,
+        48
+      ],
+      "file": "key.off.png"
+    },
+    "keyw.idle": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.idle.png",
+      "margins": [
+        0,
+        22,
+        0,
+        22
+      ],
+      "stretch": "x"
+    },
+    "keyw.hover": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.hover.png",
+      "margins": [
+        0,
+        22,
+        0,
+        22
+      ],
+      "stretch": "x"
+    },
+    "keyw.on": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.on.png",
+      "margins": [
+        0,
+        22,
+        0,
+        22
+      ],
+      "stretch": "x"
+    },
+    "keyw.ok": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.ok.png",
+      "margins": [
+        0,
+        22,
+        0,
+        22
+      ],
+      "stretch": "x"
+    },
+    "keyw.warn": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.warn.png",
+      "margins": [
+        0,
+        22,
+        0,
+        22
+      ],
+      "stretch": "x"
+    },
+    "keyw.alert": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.alert.png",
+      "margins": [
+        0,
+        22,
+        0,
+        22
+      ],
+      "stretch": "x"
+    },
+    "keyw.off": {
+      "kind": "nine",
+      "size": [
+        144,
+        48
+      ],
+      "file": "keyw.off.png",
+      "margins": [
+        0,
+        22,
+        0,
+        22
+      ],
+      "stretch": "x"
+    },
+    "cell.idle": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.idle.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.lit": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.lit.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.warn": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.warn.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.accord": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.accord.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.locked": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.locked.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
     "bar.cell.off": {
       "kind": "cell",
       "size": [
@@ -370,6 +727,15 @@
         12
       ],
       "file": "bar.cell.warn.png",
+      "gap": 1
+    },
+    "bar.cell.ok": {
+      "kind": "cell",
+      "size": [
+        12,
+        12
+      ],
+      "file": "bar.cell.ok.png",
       "gap": 1
     }
   }

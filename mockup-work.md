@@ -39,6 +39,7 @@ account and every link here is updated.
 | 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
+| 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v1) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) | |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -842,3 +843,31 @@ orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/
 
 - Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
 - Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).
+
+## 20. Battle console: Kelvane Institute
+
+Owner, 2026-11-06: "start work on the UI for the institute, get latest from main and maintain the highest possible
+standard for UI design".
+
+- **The page.** It is the battle console of mockup 2, played in the Kelvane Institute skin of mockup 4, written by
+  `tools/mockups/skin_page.py` from the one source page. Every rule, panel and control is the same code.
+- **Hopping between ships.** The console follows the ship you command:
+  - the research cruiser Patience joins the allied fleet and the swap scene, which is now "Four races" (keys 1 to 4);
+  - the whole console turns Kelvane when you take her.
+- **The construction.** It is the Institute's instrument bench, built on the Analog Panel Bible:
+  - champagne bezels rolled round wells of dark smoked glass, where the readouts glow;
+  - amber for a reading, phosphor green for whole, amber-orange for damaged, needle red for an alarm;
+  - window keys whose light is their state (unlit at rest, amber on hover, hot when pressed);
+  - title placards with a lit pilot jewel;
+  - strips with their needle-meter bays;
+  - a column backing engraved with a measuring scale.
+
+  Every piece is rendered in Blender from fit-checked shapes, and every colour role is measured against the glass
+  (design.md D2).
+- **Type and icons.** Share Tech Mono sets every readout. All 24 icons of the icon guide are drawn in the Institute's
+  schematic hand.
+- **Names.** The ships, officers and ranks carry placeholder names until the owner sets the Institute's culture (K1).
+- **Change:** `openspec/changes/kelvane-battle-console`.
+- **Shots:** `docs/screenshots/mockups/battle-console-kelvane-*.png`.
+- **Stage:** Drafted (2026-11-06, v1).
+- **Questions:** K1-K3 in the change's design.
