@@ -212,6 +212,8 @@ public sealed class CampaignState
     public List<string> Log { get; set; } = new();
     public List<Officer> Crew { get; set; } = new();
     public List<Officer> OfficerPool { get; set; } = new();
+    /// <summary>Systems bought and not fitted, by system id: fitting takes from here for free.</summary>
+    public Dictionary<string, int> Stores { get; set; } = new();
     public int Mid { get; set; }
     public int ShipSerial { get; set; }
     public string Captain { get; set; } = "Captain Ardent";

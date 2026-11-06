@@ -1,0 +1,34 @@
+{
+ "note": "The Material Maker maps of the faction screen's walnut table (docs/mockups/game-flow.html, buildFactionScene), inlined by tools/mockups/inline_data.py. Rendered from tools/materials/ptex/table_wood.ptex (tools/materials/export_materials.sh table_wood); one tile is 1 m; the specular map is derived from the graph's own roughness and occlusion (tools/materials/postprocess.py).",
+ "webp_quality": 88,
+ "pieces": {
+  "table_wood/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/table_wood/albedo.png"
+  },
+  "table_wood/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/table_wood/normal.png"
+  },
+  "table_wood/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/table_wood/orm.png"
+  },
+  "table_wood/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/table_wood/specular.png"
+  }
+ }
+}

@@ -712,13 +712,24 @@ public sealed partial class CampaignMap : Node3D
         return new MeshInstance3D { Mesh = st.Commit(), MaterialOverride = MapPieces.Unlit(col, alpha) };
     }
 
-    /// <summary>Shows a route by turn as a ribbon through the sectors' centres with round joints and an arrowhead: this
-    /// turn's leg bright, later legs fainter, a numbered badge where each turn ends (the mockup's showPath).</summary>
-    public void ShowRoute(Route? route)
+    /// <summary>Shows the fleet's course and the route to the picked sector. The course (owner, 2026-11-06: "when I click move
+    /// show a line to my destination, dont just remove it when I set course") stays drawn from where it was set until the
+    /// fleet arrives; the picked sector's route is drawn over it when it goes elsewhere, in the sky colour.</summary>
+    public void ShowRoute(Route? preview, (Route Route, (int C, int R) From)? course = null)
     {
         foreach (Node n in _path.GetChildren()) { _path.RemoveChild(n); n.QueueFree(); }
-        if (route == null || route.Path.Count == 0) return;
-        var mats = new[] { 0.95f, 0.55f, 0.35f }.Select(o => { StandardMaterial3D m = MapPieces.Unlit(new Color("#ffb547"), o); m.DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled; return m; }).ToArray();
+        if (course is { } cs && cs.Route.Path.Count > 0) DrawRoute(cs.Route, cs.From, new Color("#ffb547"));
+        bool same = course is { } cc && preview != null && preview.Path.Count > 0 && cc.Route.Path.Count > 0 && preview.Path[^1] == cc.Route.Path[^1];
+        if (preview != null && preview.Path.Count > 0 && !same)
+            DrawRoute(preview, (_c.S.AtC, _c.S.AtR), course != null ? new Color("#8fd0ff") : new Color("#ffb547"));
+    }
+
+    /// <summary>A route by turn through the sectors' centres (the mockup's showPath): this turn's leg a solid ribbon with
+    /// round joints, later turns dotted (owner, 2026-11-06: "future turns should be dotted lines"), a numbered badge where
+    /// each turn ends, and an arrowhead.</summary>
+    private void DrawRoute(Route route, (int C, int R) from, Color col)
+    {
+        var mats = new[] { 0.95f, 0.7f, 0.5f }.Select(o => { StandardMaterial3D m = MapPieces.Unlit(col, o); m.DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled; return m; }).ToArray();
         var legOf = new List<int>();
         var ends = new List<((int C, int R) At, int Leg)>();
         for (int i = 0; i < route.Legs.Count; i++)
@@ -726,15 +737,26 @@ public sealed partial class CampaignMap : Node3D
             legOf.AddRange(Enumerable.Repeat(i, route.Legs[i].Count));
             if (route.Legs[i].Count > 0) ends.Add((route.Legs[i][^1], i));
         }
-        var pts = new List<Vector3> { HexPos(_c.S.AtC, _c.S.AtR) };
+        var pts = new List<Vector3> { HexPos(from.C, from.R) };
         pts.AddRange(route.Path.Select(k => HexPos(k.C, k.R)));
-        const float Y = 0.05f, W = 0.07f;
+        const float Y = 0.05f, W = 0.07f, Dot = 0.2f;
+        var dot = new CylinderMesh { TopRadius = W * 0.85f, BottomRadius = W * 0.85f, Height = 0.001f, RadialSegments = 12 };
+        float run = 0;
         for (int i = 0; i < pts.Count - 1; i++)
         {
             Material mat = mats[Math.Min(2, legOf[i])];
             Vector3 a = pts[i], b = pts[i + 1];
             if (i == pts.Count - 2) b = b.Lerp(a, 0.32f / a.DistanceTo(b));
             float len = a.DistanceTo(b);
+            if (legOf[i] > 0)
+            {
+                // a later turn: dots at an even pitch, running on across the corners
+                float t0 = (Dot - run % Dot) % Dot;
+                for (float t = t0; t <= len; t += Dot)
+                    _path.AddChild(new MeshInstance3D { Mesh = dot, MaterialOverride = mat, Position = a.Lerp(b, t / len) with { Y = Y } });
+                run += len;
+                continue;
+            }
             var seg = new MeshInstance3D { Mesh = new PlaneMesh { Size = new Vector2(len, W * 2) }, MaterialOverride = mat, Position = new Vector3((a.X + b.X) / 2, Y, (a.Z + b.Z) / 2) };
             seg.Rotation = new Vector3(0, -Mathf.Atan2(b.Z - a.Z, b.X - a.X), 0);
             _path.AddChild(seg);

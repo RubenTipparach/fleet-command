@@ -49,10 +49,14 @@ public sealed class GameActions
 
     public void Return() { if (S.Expanded != null) { S.Expanded = null; OnLayout?.Invoke(); } }
 
-    /// <summary>Esc: closes the menu, else returns an expanded panel, else opens the menu.</summary>
+    /// <summary>Opens or closes the Options sheet (the volumes and the window mode).</summary>
+    public void Options() { S.OptionsOpen = !S.OptionsOpen; }
+
+    /// <summary>Esc: closes the Options sheet, else the menu, else returns an expanded panel, else opens the menu.</summary>
     public void Back()
     {
-        if (S.MenuOpen) S.MenuOpen = false;
+        if (S.OptionsOpen) S.OptionsOpen = false;
+        else if (S.MenuOpen) S.MenuOpen = false;
         else if (S.Expanded != null) Return();
         else S.MenuOpen = true;
     }

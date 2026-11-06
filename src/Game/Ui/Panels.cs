@@ -220,7 +220,7 @@ public sealed partial class BottomStrip : ConsolePanel
 }
 
 /// <summary>The in-battle menu: a sheet over everything that dims the console and takes all input while it is up
-/// (the mockup's uiSheet): resume, restart the battle, fullscreen or window, quit.</summary>
+/// (the mockup's uiSheet): resume, restart the battle, options, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
     /// <summary>The sheet is over everything, never a panel in the column.</summary>
@@ -240,9 +240,48 @@ public sealed partial class MenuCard : ConsolePanel
         float y = b.Position.Y + 8, bw = b.Size.X;
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
         Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false); y += 56;
-        Button("m.display", new Rect2(b.Position.X, y, bw, 44), DisplaySettings.Fullscreen ? "Display: fullscreen" : "Display: window", X.Act.Fullscreen,
-            center: false, tip: new Tip("Fullscreen or window (F11)")); y += 56;
+        // the window mode lives in Options with the volumes (owner, 2026-11-06: "also this display button should be in options")
+        Button("m.options", new Rect2(b.Position.X, y, bw, 44), "Options", X.Act.Options, center: false); y += 56;
         Button("m.quit", new Rect2(b.Position.X, y, bw, 44), "Quit", X.Act.Quit, center: false);
+    }
+}
+
+/// <summary>The Options sheet (the game-flow mockup's options screen), over everything, from the main menu or the battle's
+/// menu: each volume in ten boxes (a box is a step; tapping the lit end box takes one off), the window mode, Done.</summary>
+public sealed partial class OptionsCard : ConsolePanel
+{
+    protected override bool InColumn => false;
+
+    protected override void DrawPanel()
+    {
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
+        Ui.Reg("opt.block", new Rect2(Vector2.Zero, Size));
+        float w = Math.Min(640, Size.X - 32), h = 120 + 56 * (AudioSettings.Buses.Length + 1) + 60;
+        var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
+        Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, h)), Sk.R.Sheet, 24, 0, 0, 24);
+        Rect2 b = Frame(at, "Options", false);
+        float y = b.Position.Y + 8, lw = Math.Min(200, b.Size.X * 0.36f), bx = b.Position.X + lw, bw = b.Size.X - lw;
+        foreach (var (bus, label, _) in AudioSettings.Buses)
+        {
+            Text(label.ToUpperInvariant(), b.Position.X, y + 29, 17, C.Lilac, HorizontalAlignment.Left, lw - 12, 600, 1);
+            int v = AudioSettings.Get(bus);
+            float cw = (bw - 4 * (AudioSettings.Boxes - 1)) / AudioSettings.Boxes;
+            for (int i = 0; i < AudioSettings.Boxes; i++)
+            {
+                int n = i + 1;
+                var r = new Rect2(bx + i * (cw + 4), y, cw, 44);
+                HitState st = Ui.Reg($"opt.{bus}.{n}", r, _ => AudioSettings.Set(bus, v == n ? n - 1 : n), null, new Tip($"{label}: {n} of {AudioSettings.Boxes}"));
+                Kit.Shape(this, r.Grow(-3), 4, i < v ? C.Caution : C.Deep);
+                if (st.Hot) Kit.Shape(this, r.Grow(-1), 5, Sk.Mark.Hover, 2);
+            }
+            y += 56;
+        }
+        Text("DISPLAY", b.Position.X, y + 29, 17, C.Lilac, HorizontalAlignment.Left, lw - 12, 600, 1);
+        float hw = (bw - 8) / 2;
+        Tab("opt.full", new Rect2(bx, y, hw, 44), "Fullscreen", () => { if (!DisplaySettings.Fullscreen) X.Act.Fullscreen(); }, DisplaySettings.Fullscreen);
+        Tab("opt.window", new Rect2(bx + hw + 8, y, hw, 44), "Window", () => { if (DisplaySettings.Fullscreen) X.Act.Fullscreen(); }, !DisplaySettings.Fullscreen);
+        y += 72;
+        Button("opt.done", new Rect2(b.End.X - 200, y, 200, 48), "Done", X.Act.Options);
     }
 }
 

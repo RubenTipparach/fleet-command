@@ -28,6 +28,8 @@ public sealed partial class GameFlow : Node
     // the campaign map's selection, route preview, open briefing and port tab, and a line of feedback
     public (int C, int R)? Sel;
     public Route? Path;
+    /// <summary>The course set with Move here, from where it was set this turn, drawn until the fleet arrives.</summary>
+    public (Route Route, (int C, int R) From)? Course;
     public Offer? Brief;
     public string? Port;
     public string Msg = "";
@@ -39,6 +41,8 @@ public sealed partial class GameFlow : Node
     public string? YardHull;
     public string LoGroup = "primary";
     public int LoSlot;
+    /// <summary>The crew station whose list of officers on offer is open.</summary>
+    public string? CrewStation;
 
     // the battle under way: the mission and its plan, or a skirmish
     public Offer? Running { get; private set; }
@@ -78,7 +82,9 @@ public sealed partial class GameFlow : Node
         _map.Init(this);
         Add(FlowScreen.Map, _map);
         Add(FlowScreen.Menu, Panel(new MenuScreen()));
-        Add(FlowScreen.Factions, Panel(new FactionScreen()));
+        var factions = new FactionView();
+        factions.Init(Panel(new FactionScreen()));
+        Add(FlowScreen.Factions, factions);
         Add(FlowScreen.Skirmish, Panel(new SkirmishScreen()));
         Add(FlowScreen.Debrief, Panel(new DebriefScreen()));
         _strip = Panel(new MissionStrip());
@@ -258,6 +264,7 @@ public sealed partial class GameFlow : Node
             _useSkin(Data.Factions[Camp!.S.Side].Id);
             Sel = (Camp.S.AtC, Camp.S.AtR);
             Path = null; Brief = null; Port = null; Msg = "";
+            Course = Camp.OrderRoute() is { } o ? (o, (Camp.S.AtC, Camp.S.AtR)) : null;
         });
         await Step(report, 0.55f, "Placing ports, fleets and freighters", () => _map.NewMap(Camp!));
         await Step(report, 0.9f, "Saving", Save);
@@ -277,7 +284,7 @@ public sealed partial class GameFlow : Node
         Brief = null;
         Path = at is { } a && Camp != null ? Camp.PathTo(a.C, a.R) : null;
         _map.Map?.Select(at);
-        _map.Map?.ShowRoute(Path);
+        _map.Map?.ShowRoute(Path, Course);
     }
 
     /// <summary>Flies this turn's leg of the route to the selected sector; a longer route becomes the fleet's order.</summary>
@@ -285,6 +292,7 @@ public sealed partial class GameFlow : Node
     {
         if (Camp == null || Path == null) return;
         if (Path.Legs[0].Count == 0) { Msg = "No moves left this turn to make the first step. End the turn."; return; }
+        Course = (Path, (Camp.S.AtC, Camp.S.AtR));
         var steps = Camp.Move(Path);
         Msg = Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
         _map.Map?.Rebuild(null, steps);
@@ -298,7 +306,8 @@ public sealed partial class GameFlow : Node
         if (Camp == null) return;
         var moves = Camp.EndTurn();
         List<(int, int)>? own = null;
-        if (Camp.OrderRoute() is { } next && next.Legs[0].Count > 0) own = Camp.Move(next);
+        Course = null;
+        if (Camp.OrderRoute() is { } next && next.Legs[0].Count > 0) { Course = (next, (Camp.S.AtC, Camp.S.AtR)); own = Camp.Move(next); }
         _map.Map?.Rebuild(moves, own);
         Msg = $"Turn {Camp.S.Turn}.";
         SelectHex(Sel);

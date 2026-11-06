@@ -28,6 +28,8 @@ public sealed partial class Main : Node
     private Control _root = null!;
     private ColumnBacking _column = null!;
     private MenuCard _menu = null!;
+    private OptionsCard _options = null!;
+    private MusicPlayer _music = null!;
     private readonly Dictionary<Region, ConsolePanel> _panels = new();
     private double _acc;
     private Dictionary<string, Action> _bindings = new();
@@ -41,6 +43,7 @@ public sealed partial class Main : Node
         // the player's window mode (borderless fullscreen unless they chose a window); a scripted run keeps the window it
         // was started in
         if (!_args.ContainsKey("playtest") && !_args.ContainsKey("still") && !_args.ContainsKey("layout-test")) DisplaySettings.ApplySaved();
+        AudioSettings.ApplySaved();
         GameData data;
         CampaignData camp;
         try
@@ -91,6 +94,17 @@ public sealed partial class Main : Node
         var tips = new TooltipLayer();
         tips.Init(_x);
         _root.AddChild(tips);
+        // the Options sheet over every screen (the menus and the battle), under the loading screen's fade
+        var optLayer = new CanvasLayer { Name = "Options", Layer = 12 };
+        AddChild(optLayer);
+        _options = new OptionsCard();
+        _options.Init(_x, Region.Station);
+        _options.Name = "Options";
+        _options.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        _options.Visible = false;
+        optLayer.AddChild(_options);
+        _music = new MusicPlayer();
+        AddChild(_music);
 
         // the game flow (menus, campaign, missions) unless the run is one of the battle's own checks or a scenario asked for
         // a playtest whose script plays the campaign ("flow": true) runs the flow too, saving apart from the player's campaign
@@ -192,6 +206,8 @@ public sealed partial class Main : Node
     {
         if (_x == null) return;
         _menu.Visible = _x.State.MenuOpen;
+        _options.Visible = _x.State.OptionsOpen;
+        _music.Play(_flow == null || _flow.Screen == FlowScreen.Battle ? "battle" : "main_theme");
         if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still") || (_flow != null && _flow.Screen != FlowScreen.Battle)) return;
         double step = _x.Data.Tuning.StepS;
         _acc = Math.Min(_acc + delta, step * 6);
@@ -420,13 +436,16 @@ public sealed partial class Main : Node
         switch (what)
         {
             case "menu": break;
-            case "factions": await f.Show(FlowScreen.Factions); f.Picked = side; break;
+            case "options": _x.State.OptionsOpen = true; break;
+            case "factions": await f.Show(FlowScreen.Factions); f.Picked = side; await Frames(90); break;
             case "skirmish": await f.Show(FlowScreen.Skirmish); break;
             case "loading": break;
             default:
                 await f.NewCampaign(side);
                 Campaign.Campaign c = f.Camp!;
                 if (what == "route") f.SelectHex((c.S.AtC + 7, c.S.AtR + 1));
+                // a course set three turns out: its first leg flown, the rest dotted, the line kept
+                if (what == "course") { f.SelectHex((c.S.AtC + 9, c.S.AtR + 1)); f.MoveHere(); await Frames(200); }
                 if (what == "accept")
                 {
                     Offer m = c.S.Missions.Where(x => !c.ScriptOf(x).Story && c.PathTo(x.C, x.R) is { Turns: > 1 }).OrderBy(x => x.Id).FirstOrDefault() ?? Find("prize")!;

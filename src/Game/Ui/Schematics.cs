@@ -18,6 +18,12 @@ public static class Schematics
     private static Dictionary<string, Entry>? _all;
     private const string Dir = "res://assets/ships/schematics/";
 
+    /// <summary>A layer drawn smoothly at any size (owner, 2026-11-06: "use AA or something, sampling kinda sucks on these
+    /// ships"): the 1024 px pictures are imported with mipmaps and sampled trilinear, so a thumbnail a tenth the size
+    /// averages the lines instead of skipping them.</summary>
+    private static Texture2D Smooth(string path) =>
+        new CanvasTexture { DiffuseTexture = GD.Load<Texture2D>(path), TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
+
     private static Dictionary<string, Entry> All
     {
         get
@@ -32,7 +38,7 @@ public static class Schematics
                 string key = s.GetProperty("faction").GetString() + "/" + s.GetProperty("id").GetString();
                 float mpp = s.GetProperty("m_per_px").GetSingle();
                 JsonElement size = s.GetProperty("size_px"), origin = s.GetProperty("origin_px");
-                _all[key] = new Entry(GD.Load<Texture2D>(Dir + s.GetProperty("hull").GetString()), GD.Load<Texture2D>(Dir + s.GetProperty("wire").GetString()),
+                _all[key] = new Entry(Smooth(Dir + s.GetProperty("hull").GetString()), Smooth(Dir + s.GetProperty("wire").GetString()),
                     s.GetProperty("extent_m").GetProperty("length_z").GetSingle() / mpp, s.GetProperty("extent_m").GetProperty("beam_x").GetSingle() / mpp, new Vector2(size[0].GetSingle(), size[1].GetSingle()),
                     new Vector2(origin[0].GetSingle(), origin[1].GetSingle()));
             }

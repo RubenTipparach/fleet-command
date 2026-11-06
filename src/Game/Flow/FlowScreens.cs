@@ -130,50 +130,87 @@ public sealed partial class MenuScreen : FlowPanel
         var r = new Rect2(cx - w / 2, y, w, 52);
         Button("menu.campaign", r, "Campaign", () => _ = F.Show(FlowScreen.Factions)); r.Position += new Vector2(0, 66);
         Button("menu.skirmish", r, "Skirmish", () => _ = F.Show(FlowScreen.Skirmish)); r.Position += new Vector2(0, 66);
-        Button("menu.options", r, DisplaySettings.Fullscreen ? "Display: fullscreen" : "Display: window", X.Act.Fullscreen); r.Position += new Vector2(0, 66);
+        Button("menu.options", r, "Options", X.Act.Options); r.Position += new Vector2(0, 66);
         Button("menu.quit", r, "Quit", () => GetTree().Quit());
     }
 }
 
-/// <summary>The faction screen: each playable faction's emblem; picked, New campaign or Continue.</summary>
+/// <summary>The faction screen's 3D stage (FactionStage) in its own world, with the faction screen's keys over it.</summary>
+public sealed partial class FactionView : Control
+{
+    public FactionStage Stage { get; } = new();
+    private bool _built;
+
+    // the stage is built the first time the screen shows, after the boot has loaded its glbs (Prewarm)
+    public override void _Process(double delta)
+    {
+        if (_built || !IsVisibleInTree()) return;
+        _built = true;
+        Stage.Build();
+    }
+
+    public void Init(FactionScreen screen)
+    {
+        Name = "FactionView";
+        MouseFilter = MouseFilterEnum.Ignore;
+        var box = new SubViewportContainer { Stretch = true, MouseFilter = MouseFilterEnum.Ignore, Name = "View" };
+        box.SetAnchorsPreset(LayoutPreset.FullRect);
+        AddChild(box);
+        var vp = new SubViewport { OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa4X, HandleInputLocally = false, Name = "FactionWorld" };
+        box.AddChild(vp);
+        vp.AddChild(Stage);
+        screen.Stage = Stage;
+        screen.SetAnchorsPreset(LayoutPreset.FullRect);
+        AddChild(screen);
+    }
+}
+
+/// <summary>The faction screen (mockup 1's, docs/mockups/game-flow.html): the playable factions' badges floating over a walnut
+/// table (FactionStage, under this panel), each named on the table's edge; the one under the pointer half lit, the picked
+/// one lit full, with New campaign and Continue in a sheet below.</summary>
 public sealed partial class FactionScreen : FlowPanel
 {
-    private static readonly Dictionary<string, string> Emblem = new()
-    {
-        ["concord"] = "res://assets/emblems/concord/b-e27-angle.png", ["krai"] = "res://assets/emblems/krai/kc-angle.png", ["ssarith"] = "res://assets/emblems/ssarith/sd-angle.png",
-    };
-    private readonly Dictionary<string, Texture2D?> _tex = new();
+    public FactionStage? Stage;
 
     protected override void DrawPanel()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0.012f, 0.016f, 0.03f));
         Ui.Reg("fac.block", new Rect2(Vector2.Zero, Size));
-        Text("CHOOSE YOUR FACTION", Size.X / 2, 90, 40, C.Sky, HorizontalAlignment.Center, Size.X - 40, 700, 3);
+        Text("CHOOSE YOUR FACTION", 36, 64, 34, C.Sky, HorizontalAlignment.Left, Size.X - 300, 700, 3);
         var playable = F.Data.Factions.Values.Where(f => f.Playable).ToList();
-        int n = playable.Count;
-        float gap = 26, cw = Math.Min(380, (Size.X - 60 - gap * (n - 1)) / n), ch = Math.Min(560, Size.Y - 230), x0 = (Size.X - (n * cw + (n - 1) * gap)) / 2, y0 = 140;
-        for (int i = 0; i < n; i++)
+        int hover = -1;
+        if (Stage != null)
         {
-            CampFaction fac = playable[i];
-            bool skin = X.Data.Factions.TryGetValue(fac.Id, out Faction? bf) && bf.Skin != null;
-            var r = new Rect2(x0 + i * (cw + gap), y0, cw, ch);
-            HitState st = Ui.Reg($"fac.{fac.Id}", r, skin ? _ => F.Picked = fac.Id : null, null, skin ? null : new Tip(fac.Name, new (string, string, Color?)[] { ("In the game", "not yet: its console skin is to build", null) }));
-            bool picked = F.Picked == fac.Id;
-            Kit.Piece(this, picked ? "frame.panel" : "frame.inset", r, skin ? 1 : 0.4f);
-            if (!_tex.TryGetValue(fac.Id, out Texture2D? t)) _tex[fac.Id] = t = Emblem.TryGetValue(fac.Id, out string? p) && ResourceLoader.Exists(p) ? GD.Load<Texture2D>(p) : null;
-            float es = Math.Min(cw - 60, ch - 220) * (st.Hot || picked ? 1.04f : 1);
-            if (t != null) DrawTextureRect(t, new Rect2(r.GetCenter().X - es / 2, r.Position.Y + 30, es, es), false, skin ? Colors.White : new Color(1, 1, 1, 0.35f));
-            Text(fac.Name.ToUpperInvariant(), r.GetCenter().X, r.Position.Y + 60 + es, 28, new Color(fac.Color).Lightened(0.25f), HorizontalAlignment.Center, cw - 20, 700, 2);
-            if (!skin) { Lbl("Not in the game yet", r.GetCenter().X, r.Position.Y + 92 + es, cw - 20, null, HorizontalAlignment.Center); continue; }
-            if (!picked) { Lbl("Choose", r.GetCenter().X, r.Position.Y + 92 + es, cw - 20, null, HorizontalAlignment.Center); continue; }
-            float by = r.End.Y - 128;
-            // inside the frame's own padding (a Concord sweep's arm is wide)
-            float bx = r.Position.X + Sk.Pad.L + 8, bw = cw - Sk.Pad.L - Sk.Pad.R - 16;
-            Button($"fac.{fac.Id}.new", new Rect2(bx, by, bw, 48), "New campaign", () => _ = F.NewCampaign(fac.Id));
-            Button($"fac.{fac.Id}.cont", new Rect2(bx, by + 60, bw, 48), "Continue", () => _ = F.ContinueCampaign(fac.Id), dis: !F.HasSave(fac.Id));
+            Vector2 mp = GetLocalMousePosition();
+            Stage.Pointer = new Vector2(mp.X / Math.Max(1, Size.X) * 2 - 1, 1 - mp.Y / Math.Max(1, Size.Y) * 2);
+            Stage.Picked = F.Picked;
+            for (int i = 0; i < Stage.Factions.Count; i++)
+            {
+                string id = Stage.Factions[i];
+                CampFaction? fac = playable.FirstOrDefault(f => f.Id == id);
+                if (fac == null || Stage.ScreenRect(i) is not { } r) continue;
+                bool skin = X.Data.Factions.TryGetValue(fac.Id, out Faction? bf) && bf.Skin != null;
+                HitState st = Ui.Reg($"fac.{fac.Id}", r, skin ? _ => F.Picked = fac.Id : null, null, skin ? null : new Tip(fac.Name, new (string, string, Color?)[] { ("In the game", "not yet: its console skin is to build", null) }));
+                if (st.Hot) hover = i;
+                bool picked = F.Picked == fac.Id;
+                // the name on the table's edge, under its badge
+                float ly = r.End.Y + r.Size.Y * 0.62f;
+                Text(fac.Name.ToUpperInvariant(), r.GetCenter().X, ly, 24, picked ? new Color(fac.Color).Lightened(0.35f) : C.Text, HorizontalAlignment.Center, r.Size.X * 1.6f, 700, 2);
+                if (!skin) Lbl("Not in the game yet", r.GetCenter().X, ly + 24, r.Size.X * 1.6f, null, HorizontalAlignment.Center);
+            }
+            Stage.Hover = hover;
         }
-        Button("fac.back", new Rect2(30, Size.Y - 76, 200, 48), "Back", () => _ = F.Show(FlowScreen.Menu));
-        if (F.Msg.Length > 0) Text(F.Msg, Size.X / 2, Size.Y - 44, 19, C.Caution, HorizontalAlignment.Center, Size.X - 500);
+        // the picked faction's keys, in a sheet below the table
+        if (playable.FirstOrDefault(f => f.Id == F.Picked) is { } pf)
+        {
+            float w = Math.Min(560, Size.X - 40), h = 190;
+            Rect2 b = Sheet(new Rect2((Size.X - w) / 2, Size.Y - h - 24, w, h), pf.Name);
+            Text(F.HasSave(pf.Id) ? "A campaign is saved for this faction." : "No campaign saved for this faction yet.", b.Position.X, b.Position.Y + 22, 17, C.Lilac, HorizontalAlignment.Left, b.Size.X, 600);
+            float bw = (b.Size.X - 12) / 2, by = b.End.Y - 52;
+            Button($"fac.{pf.Id}.cont", new Rect2(b.Position.X, by, bw, 48), "Continue", () => _ = F.ContinueCampaign(pf.Id), dis: !F.HasSave(pf.Id));
+            Button($"fac.{pf.Id}.new", new Rect2(b.Position.X + bw + 12, by, bw, 48), "New campaign", () => _ = F.NewCampaign(pf.Id));
+        }
+        Button("fac.back", new Rect2(Size.X - 230, 30, 200, 48), "Back", () => _ = F.Show(FlowScreen.Menu));
+        if (F.Msg.Length > 0) Text(F.Msg, Size.X / 2, 110, 19, C.Caution, HorizontalAlignment.Center, Size.X - 500);
     }
 }
 

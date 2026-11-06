@@ -300,15 +300,49 @@ public sealed class Campaign
     public HashSet<(int, int)> RoutesOf(string fac) =>
         S.Freighters.Where(f => f.Fac == fac).SelectMany(f => f.Route).Select(k => (k[0], k[1])).ToHashSet();
 
+    /// <summary>The officers on offer at each station (owner, 2026-11-06: "for each crew slot, I should be able to click on it
+    /// and always geta list, even when I hire someone. Always 3 experienced of various levels and 5 cadets"): per station,
+    /// data's experienced count at different levels above cadet, then data's cadet count, each with a name no one else has.</summary>
     private void RollOfficers()
     {
         OfficerDef od = Data.Officers;
-        var names = od.Names.Where(n => S.Crew.All(o => o.Name != n)).Select(n => (R.Next(), n)).OrderBy(x => x.Item1).Select(x => x.n).ToList();
-        S.OfficerPool = names.Take(od.Pool).Select(name =>
+        S.OfficerPool = new List<Officer>();
+        foreach (string st in od.Stations)
         {
-            int sk = (int)Math.Floor(R.Next() * R.Next() * od.Skills.Count);
-            return new Officer { Name = name, Station = od.Stations[(int)Math.Floor(R.Next() * od.Stations.Count)], Skill = od.Skills[sk].Skill, Cost = od.Skills[sk].Cost };
-        }).ToList();
+            var levels = Enumerable.Range(1, od.Skills.Count - 1).Select(i => (R.Next(), i)).OrderBy(x => x.Item1).Select(x => x.i)
+                .Take(od.Experienced).OrderBy(i => i).ToList();
+            while (levels.Count < od.Experienced) levels.Add(1 + R.Below(od.Skills.Count - 1));
+            foreach (int sk in levels) S.OfficerPool.Add(NewOfficer(st, sk));
+            for (int i = 0; i < od.Cadets; i++) S.OfficerPool.Add(NewOfficer(st, 0));
+        }
+    }
+
+    /// <summary>A new officer for a station at a skill level (0 is a cadet), named from data's given and family names so
+    /// no one in the crew or on offer shares the name.</summary>
+    private Officer NewOfficer(string station, int skill)
+    {
+        OfficerDef od = Data.Officers;
+        string name = "";
+        for (int tries = 0; tries < 64; tries++)
+        {
+            name = od.Given[R.Below(od.Given.Count)] + " " + od.Family[R.Below(od.Family.Count)];
+            if (!S.Crew.Concat(S.OfficerPool).Any(o => o.Name == name)) break;
+        }
+        return new Officer { Name = name, Station = station, Skill = od.Skills[skill].Skill, Cost = od.Skills[skill].Cost };
+    }
+
+    /// <summary>Whether an officer is a cadet (the lowest skill level).</summary>
+    public bool IsCadet(Officer o) => o.Skill == Data.Officers.Skills[0].Skill;
+
+    /// <summary>The officers on offer for one station, experienced first by level, then the cadets.</summary>
+    public List<Officer> OnOffer(string station) => S.OfficerPool.Where(o => o.Station == station).ToList();
+
+    /// <summary>Puts an officer back on offer at their station in place of the last one of the same kind, so each station
+    /// keeps its count of experienced officers and cadets.</summary>
+    private void BackOnOffer(Officer o)
+    {
+        int at = S.OfficerPool.FindLastIndex(x => x.Station == o.Station && IsCadet(x) == IsCadet(o));
+        if (at >= 0) S.OfficerPool[at] = o; else S.OfficerPool.Add(o);
     }
 
     // ---- Missions on offer -----------------------------------------------------------------------------------------------
@@ -453,22 +487,57 @@ public sealed class Campaign
         return null;
     }
 
-    /// <summary>What fitting a system to a hardpoint (or emptying it with null) costs in credits: the new system's price
-    /// less what the old one fetches; below 0 is a refund. The shop shows this before the player decides; Refit pays it.</summary>
-    public int RefitQuote(CampShip s, string group, int i, string? sysId)
+    // ---- Stores: systems bought, held and fitted ------------------------------------------------------------------------
+    // Fitting is free (owner, 2026-11-06: "fitting stuff on a ship should be free, have the store below"): a system is
+    // bought into the fleet's stores at a port, fitted from the stores at no cost, and goes back to the stores when it comes
+    // off. Selling one from the stores returns the yard's share of its price.
+
+    /// <summary>How many of a system the fleet holds in its stores.</summary>
+    public int InStores(string sysId) => S.Stores.GetValueOrDefault(sysId);
+
+    private void Stow(string sysId, int n)
     {
-        string? old = s.Fit[group][i];
-        if (old == sysId) return 0;
-        return (sysId != null ? Data.Systems[sysId].Cost * Ru.CreditRate : 0) - (old != null ? SalePrice(Data.Systems[old].Cost * Ru.CreditRate, S.Side, S.Side) : 0);
+        int now = InStores(sysId) + n;
+        if (now > 0) S.Stores[sysId] = now; else S.Stores.Remove(sysId);
     }
 
-    /// <summary>Fits a system to a hardpoint (or empties it with null), paying its quote.</summary>
+    /// <summary>What a system costs new in the store.</summary>
+    public int SystemPrice(string sysId) => Data.Systems[sysId].Cost * Ru.CreditRate;
+
+    /// <summary>What the yard pays for a system from the stores.</summary>
+    public int SystemSale(string sysId) => SalePrice(SystemPrice(sysId), S.Side, S.Side);
+
+    /// <summary>Buys a system into the stores at your own port. Returns why not, or null.</summary>
+    public string? BuySystem(string sysId)
+    {
+        if (!IsPort(At)) return "The store is at your own ports.";
+        if (!Data.Systems.ContainsKey(sysId)) return $"No system '{sysId}'.";
+        string? err = Pay(SystemPrice(sysId));
+        if (err != null) return err;
+        Stow(sysId, 1);
+        return null;
+    }
+
+    /// <summary>Sells one of a system from the stores at your own port. Returns why not, or null.</summary>
+    public string? SellSystem(string sysId)
+    {
+        if (!IsPort(At)) return "The store is at your own ports.";
+        if (InStores(sysId) <= 0) return $"No {Data.Systems[sysId].Name} in the stores.";
+        Stow(sysId, -1);
+        S.Credits += SystemSale(sysId);
+        return null;
+    }
+
+    /// <summary>Fits a system from the stores to a hardpoint (or empties it with null), free: the system it replaces goes
+    /// back to the stores. Returns why not, or null.</summary>
     public string? Refit(CampShip s, string group, int i, string? sysId)
     {
         if (sysId != null && Data.Systems[sysId].Group != group) return $"{Data.Systems[sysId].Name} does not fit a {group} hardpoint.";
-        if (s.Fit[group][i] == sysId) return null;
-        string? err = Pay(RefitQuote(s, group, i, sysId));
-        if (err != null) return err;
+        string? old = s.Fit[group][i];
+        if (old == sysId) return null;
+        if (sysId != null && InStores(sysId) <= 0) return $"No {Data.Systems[sysId].Name} in the stores: buy one below.";
+        if (sysId != null) Stow(sysId, -1);
+        if (old != null) Stow(old, 1);
         s.Fit[group][i] = sysId;
         ClampSupplies(s);
         return null;
@@ -478,17 +547,30 @@ public sealed class Campaign
     public List<(string Group, int I)> EmptyHardpoints(CampShip s) =>
         s.Fit.SelectMany(kv => kv.Value.Select((x, i) => (kv.Key, i, x))).Where(t => t.x == null).Select(t => (t.Key, t.i)).ToList();
 
-    /// <summary>What filling every empty hardpoint with the stock system costs.</summary>
-    public int StockQuote(CampShip s) => EmptyHardpoints(s).Sum(h => RefitQuote(s, h.Group, h.I, Data.Stock[h.Group]));
+    /// <summary>What filling every empty hardpoint with the stock system costs: the stock systems the stores do not hold,
+    /// at the store's price.</summary>
+    public int StockQuote(CampShip s)
+    {
+        var need = EmptyHardpoints(s).GroupBy(h => Data.Stock[h.Group]);
+        return need.Sum(g => Math.Max(0, g.Count() - InStores(g.Key)) * SystemPrice(g.Key));
+    }
 
-    /// <summary>Fills every empty hardpoint with the stock system, paying for all at once.</summary>
+    /// <summary>Fills every empty hardpoint with the stock system: from the stores first, buying the rest. Buying needs a
+    /// port.</summary>
     public string? FitStock(CampShip s)
     {
         var empty = EmptyHardpoints(s);
         if (empty.Count == 0) return null;
-        string? err = Pay(StockQuote(s));
+        int quote = StockQuote(s);
+        if (quote > 0 && !IsPort(At)) return "The store is at your own ports.";
+        string? err = Pay(quote);
         if (err != null) return err;
-        foreach (var (g, i) in empty) s.Fit[g][i] = Data.Stock[g];
+        foreach (var (g, i) in empty)
+        {
+            string id = Data.Stock[g];
+            if (InStores(id) > 0) Stow(id, -1);
+            s.Fit[g][i] = id;
+        }
         ClampSupplies(s);
         return null;
     }
@@ -545,14 +627,17 @@ public sealed class Campaign
     public Officer? AtStation(string station) => S.Crew.FirstOrDefault(o => o.Station == station);
 
     /// <summary>Hires an officer for their station. One officer serves each station: whoever served there before leaves the
-    /// crew and goes back on offer.</summary>
+    /// crew and goes back on offer, and the hired one's place on offer is taken by someone new of the same kind, so a station
+    /// always has its list.</summary>
     public string? Hire(Officer o)
     {
         if (!IsPort(At)) return "Officers are recruited at your own ports.";
+        int at = S.OfficerPool.IndexOf(o);
+        if (at < 0) return $"{o.Name} is not on offer.";
         string? err = Pay(o.Cost);
         if (err != null) return err;
-        S.OfficerPool.Remove(o);
-        if (AtStation(o.Station) is { } was) { S.Crew.Remove(was); S.OfficerPool.Add(was); }
+        S.OfficerPool[at] = NewOfficer(o.Station, Data.Officers.Skills.ToList().FindIndex(s => s.Skill == o.Skill));
+        if (AtStation(o.Station) is { } was) { S.Crew.Remove(was); BackOnOffer(was); }
         S.Crew.Add(o);
         return null;
     }
@@ -561,7 +646,7 @@ public sealed class Campaign
     public void Dismiss(Officer o)
     {
         if (!S.Crew.Remove(o)) return;
-        S.OfficerPool.Add(o);
+        BackOnOffer(o);
     }
 
     /// <summary>A wingman's standing orders (data behaviours); the flagship has none.</summary>
