@@ -9,7 +9,7 @@ Owner, 2026-11-06: "record a playthrough of all the demo scenes, to make sure al
   window between `PLAYTEST_START` and `PLAYTEST_END`, one take per scene, capped at 200 s; one OBS at a time, closed after each
   take. The takes were joined into one H.264 MP4 at the window's own resolution.
 - **Scenes**: every Concord scene (26), and the Krai and Ssarith battle and duel (the Krai and Ssarith consoles).
-- **Video**: `fleet-command-2026-11-06-demo-scenes.mp4` (46 min, 293 MB) on Google Drive, `dungeon-crawler-2026/`. Link: DRIVE_LINK
+- **Video**: `fleet-command-2026-11-06-demo-scenes.mp4` (46 min, 293 MB) on Google Drive, `dungeon-crawler-2026/`. Link: https://drive.google.com/file/d/1Dja65UAOQ2HewlDouN5_DoD82H92ILtB/view
 - **Contact sheets**: three frames of each take, `2026-11-06-demo-scenes/contact0.jpg` to `contact2.jpg`.
 
 ## Takes
