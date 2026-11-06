@@ -174,13 +174,23 @@ const live = {
     x.restore();
   },
 };
-// The Institute's mark where the console draws an emblem (a portrait, the holder of a ship): the tuning fork over a sine
-// wave, as the crest has it, in brass light.
+// The Institute's emblem where the console draws one (a portrait, the holder of a ship): the hydrogen 3d z-squared eigen
+// plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem"), drawn from the lines
+// tools/mockups/kelvane_emblem.py computed (assets/ui/kelvane/emblem.json, inlined), the same lines the crest's brass
+// wire is rendered from: the fine wireframe when it is drawn large, the coarse one when small, the outline heavier, in the
+// title's amber with a soft glow, as a readout behind glass. r is the radius of the unit circle the plot fits in.
+const EMBLEM = 'assets/ui/kelvane/emblem.json';
+let emblemLines = null;
 function emblem(G, cx, cy, r) {
-  G.save(); G.translate(cx, cy); G.scale(r / 24, r / 24); G.strokeStyle = CC.title; G.lineWidth = 2.6; G.lineCap = 'round'; G.lineJoin = 'round';
-  G.beginPath(); G.moveTo(-8, -20); G.lineTo(-8, -2); G.arc(0, -2, 8, P, 0, true); G.lineTo(8, -20); G.stroke();
-  G.beginPath(); G.moveTo(0, 6); G.lineTo(0, 20); G.stroke();
-  G.lineWidth = 2; G.beginPath(); for (let i = 0; i <= 32; i++) { const px = -20 + i * 40 / 32, py = 12 - Math.sin(i / 32 * 4 * P) * 4; if (i) G.lineTo(px, py); else G.moveTo(px, py); } G.stroke();
+  if (!emblemLines) {
+    const n = document.querySelector(`script[data-src="${EMBLEM}"]`);
+    if (!n) throw new Error(`the Kelvane emblem (${EMBLEM}) is not inlined in this page`);
+    emblemLines = JSON.parse(n.textContent);
+  }
+  const e = emblemLines, path = (l) => { G.beginPath(); l.forEach(([x, y], k) => (k ? G.lineTo(cx + x * r, cy - y * r) : G.moveTo(cx + x * r, cy - y * r))); G.stroke(); };
+  G.save(); G.strokeStyle = CC.title; G.lineCap = 'round'; G.lineJoin = 'round'; G.shadowColor = hexA(CC.title, 0.5); G.shadowBlur = Math.max(2, r * 0.06);
+  G.lineWidth = Math.max(0.7, r * 0.016); for (const l of r >= 40 ? e.fine : r >= 16 ? e.coarse : e.mark) path(l);
+  G.lineWidth = Math.max(1.2, r * 0.035); path(e.outline);
   G.restore();
 }
 

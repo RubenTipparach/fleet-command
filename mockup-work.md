@@ -866,6 +866,9 @@ standard for UI design".
   (design.md D2).
 - **Live meters.** The owner, 2026-11-06: "that looks really good! can we have these meters be tied to the speed and hull
   integrity?" The strips' needle meters are now live: hull integrity on the top strip, speed on the bottom.
+- **The emblem.** The owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem". Hydrogen's
+  3d z² orbital, computed and drawn as a wireframe eigen plot, is on the crest in brass wire, on the name plate and in the
+  live emblem.
 - **Type and icons.** Share Tech Mono sets every readout. All 24 icons of the icon guide are drawn in the Institute's
   schematic hand.
 - **Names.** The ships, officers and ranks carry placeholder names until the owner sets the Institute's culture (K1).

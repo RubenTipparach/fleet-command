@@ -35,6 +35,16 @@ from formed_metal import DIMPLE_RIM, INSET, behind_layer, disc, fit, rbox, soft 
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "ui", "kelvane", "shapes.json")
+EMBLEM = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.json")
+
+
+def orbital(level, cx, cy, scale, wire, outline):
+    """The Institute's emblem, the hydrogen 3d z-squared eigen plot (tools/mockups/kelvane_emblem.py writes its lines;
+    owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem"), placed at (cx, cy) with
+    the unit circle at scale px, y down: its wires at one width and its outline heavier, as (width, polyline) pairs."""
+    e = json.load(open(EMBLEM))
+    place = lambda l: [(round(cx + x * scale, 3), round(cy - y * scale, 3)) for x, y in l]
+    return [(wire, place(l)) for l in e[level]] + [(outline, place(e["outline"]))]
 
 # Icon glyphs (48 px icons), drawn for the Institute: instruments and lab glassware, a line each. They are printed in
 # ink on a small amber window, so they are scaled into it about the icon's centre.
@@ -148,8 +158,8 @@ def pieces():
     add("divider", "nine", (128, 10), rbox(0.5, 1.5, 127.5, 8.5, 3.5), [], margins=(0, 12, 0, 12), stretch="x", roll=3.0)
     # Heroes. The name plate: an amber window for the live name, an engraved fork-and-wave mark at its left, a jewel and
     # a domed key in dimples at its right.
-    mark = [[(16, 16), (16, 30)] + [(22 + 6 * math.cos(a), 30 + 6 * math.sin(a)) for a in [math.pi - i * math.pi / 8 for i in range(9)]] + [(28, 16)],
-            [(22, 36), (22, 44)], [(10 + i, 28 + math.sin(i / 24 * 4 * math.pi) * 4) for i in range(25)]]
+    # (the Institute's mark engraved at the left end: the eigen plot, its mark level, 27 px tall)
+    mark = [l for _w, l in orbital("mark", 22, 28, 14.0, 0.8, 0.8)]
     add("nameplate", "hero", (460, 56), rbox(0.5, 0.5, 459.5, 55.5, 12), [("amber", rbox(46, 9, 360, 47, 6))],
         studs=[(386, 28, 5.5, "jewel"), (424, 28, 10.0, "key")], dimples=[(386, 28, 9.0), (424, 28, 15.0)],
         live=[("name", box(54, 12, 344, 44))], engrave=mark, roll=2.5, dz=-8.0, lamps=[(120, 9, 0.1), (280, 9, 0.1)], pad=2.9)
@@ -172,11 +182,11 @@ def pieces():
     for c in ("green", "yellow", "red"):
         add(f"lamp.alert.{c}", "hero", (64, 64), Point(32, 32).buffer(31.5, quad_segs=48), [],
             studs=[(32, 32, 13.0, f"jewel_{c}")], dimples=[(32, 32, 20.0)], roll=2.0, dz=-4.0)
-    # The crest: a round plate with a pressed ring channel and the Institute's mark (a tuning fork over a sine wave)
-    # inlaid in brass on the flat inside it.
-    fork = [[(40, 26), (40, 48)] + [(48 + 8 * math.cos(a), 48 + 8 * math.sin(a)) for a in [math.pi - i * math.pi / 8 for i in range(9)]] + [(56, 26)],
-            [(48, 56), (48, 70)], [(28 + i * 1.6, 60 + math.sin(i / 25 * 4 * math.pi) * 5) for i in range(26)]]
-    add("crest", "hero", (96, 96), Point(48, 48).buffer(47.5, quad_segs=48), [], cradle=(48, 48, 34.0, 4.0, 1.6), emblem=fork, roll=3.0, dz=-4.0)
+    # The crest: a round plate with a pressed ring channel and the Institute's emblem inlaid in brass wire on the flat
+    # inside it: the hydrogen 3d z-squared eigen plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used
+    # as the logo/emblem"; it replaces the tuning fork over a sine wave), its coarse level, the outline heavier.
+    add("crest", "hero", (96, 96), Point(48, 48).buffer(47.5, quad_segs=48), [], cradle=(48, 48, 34.0, 4.0, 1.6),
+        emblem=orbital("coarse", 48, 48, 25.0, 0.9, 1.7), roll=3.0, dz=-4.0)
     for n, g in GLYPHS.items():
         s = 0.62
         lines = [[(24 + (x - 24) * s, 24 + (y - 24) * s) for x, y in l] for l in g]
@@ -228,8 +238,7 @@ def console_pieces(add):
             margins=(12, 88, 12, 90), stretch="x", roll=2.5, dz=-6.0, lamps=[(46, 18, 0.06)], pad=2.0)
     # The name plate: the skins page's, its right end plain flat metal for the console's Fleet key (370-456 x 6-36),
     # two screws below the key.
-    mark = [[(16, 16), (16, 30)] + [(22 + 6 * math.cos(a), 30 + 6 * math.sin(a)) for a in [math.pi - i * math.pi / 8 for i in range(9)]] + [(28, 16)],
-            [(22, 36), (22, 44)], [(10 + i, 28 + math.sin(i / 24 * 4 * math.pi) * 4) for i in range(25)]]
+    mark = [l for _w, l in orbital("mark", 22, 28, 14.0, 0.8, 0.8)]
     add("nameplate.console", "hero", (460, 56), rbox(0.5, 0.5, 459.5, 55.5, 12), [("amber", rbox(46, 9, 360, 47, 6))],
         studs=[(384, 47, 2.2, "screw"), (442, 47, 2.2, "screw")],
         live=[("name", box(54, 12, 344, 44))], engrave=mark, roll=2.5, dz=-8.0, lamps=[(120, 9, 0.1), (280, 9, 0.1)], pad=2.9)
@@ -289,7 +298,7 @@ def check_all(P):
             res.append(("R", "the pressed cradle", d >= need, f"{d:.1f} mm to the nearest edge (needs {need:.1f})"))
         if p["emblem"]:  # the inlaid mark sits on the flat inside the cradle
             cx, cy, R, half, _d = p["cradle"]
-            g = lines_geom(p["emblem"], 2.4)
+            g = unary_union([lines_geom([l], w) for w, l in p["emblem"]])
             ok = Point(cx, cy).buffer(R - half - 2.0).contains(g)
             res.append(("K", "the inlaid mark", ok, "stays on the flat inside the channel"))
         fails = [r for r in res if not r[2]]
@@ -312,7 +321,7 @@ def write(P, films):
                                    dimples=[list(d) for d in p["dimples"]], cradle=list(p["cradle"]) if p["cradle"] else None,
                                    prints=[[role, [[[round(x, 3), round(y, 3)] for x, y in l] for l in ls], w, ink] for role, ls, w, ink in p["prints"]],
                                    engrave=[[[round(x, 3), round(y, 3)] for x, y in l] for l in p["engrave"]],
-                                   emblem=[[[round(x, 3), round(y, 3)] for x, y in l] for l in p["emblem"]],
+                                   emblem=[[w, [[round(x, 3), round(y, 3)] for x, y in l]] for w, l in p["emblem"]],
                                    live={role: [round(v, 2) for v in g.bounds] for role, g in p["live"]}, lamps=[list(l) for l in p["lamps"]])
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:

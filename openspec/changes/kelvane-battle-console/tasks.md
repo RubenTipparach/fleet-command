@@ -8,6 +8,7 @@
 - [x] 1.5 The page written by `skin_page.py`; every press matches the Concord's (parity)
 - [x] 1.6 Strip meters tied to hull integrity (top) and speed (bottom), drawn live (D8)
 - [x] 1.6a Shots looked at: battle, expanded panels, hover card, menu, swap and allied hops
+- [x] 1.6b The emblem: the hydrogen 3d z² eigen plot on the crest, the name plates and the live emblem (D9)
 - [ ] 1.7 The owner's review; K1-K3
 - [ ] 1.8 Re-render mockup 4's ten `icon.*` pieces from the icon guide's subjects as `lib/kelvane.js` draws them, so the
   Institute has one picture per subject everywhere (D6)

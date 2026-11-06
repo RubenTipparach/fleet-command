@@ -156,6 +156,34 @@ tied to the speed and hull integrity?"
 **How a skin opts in.** A skin gives the meter's geometry (`CON.meter`) and its needle (`CON.live.needle`). The other
 skins give neither, so their strips are unchanged. Mockup 4's strips keep their printed needle.
 
+### D9. The emblem: the hydrogen eigen plot
+
+**The decision.** The owner, 2026-11-06, with a book cover's hydrogen-atom plot: "I would like this hydrogen atom eigen
+plot used as the logo/emblem". This replaces the tuning fork over a sine wave (a placeholder; the emblem thread's three
+sketches in `faction-emblems` are superseded by the pick).
+
+**What we take.** The cover's art is its publisher's (CLAUDE.md section 1, "take the shape, not the text"). What we take
+is the mathematics it plots: hydrogen's 3d z² state (n 3, l 2, m 0), the surface at radius |3cos²θ − 1| from the nucleus:
+- two lobes along the axis and a ring round the waist;
+- meeting at the nodal cones (54.7 and 125.3 degrees), where the wavefunction is zero.
+
+**The tradition behind it.** The Institute's founding measurement: the simplest atom's states, computed and then checked
+against its spectrum ("truth is measured").
+
+**How it is drawn.**
+- **One geometry** (CLAUDE.md section 6.1): `tools/mockups/kelvane_emblem.py` computes the wireframe (meridians and
+  parallels), tilted 30 degrees toward the viewer. It removes the hidden lines with a depth buffer of the surface itself
+  and traces the outline from the same buffer.
+- **Three levels of detail**, written to `assets/ui/kelvane/emblem.json`:
+
+  | Level | Wires | Used on |
+  |---|---|---|
+  | fine | every 15 degrees, 12 parallels a lobe | the emblem drawn large |
+  | coarse | every 30 degrees, 5 parallels a lobe | the crest, inlaid in brass wire (rule K: inside its flat) |
+  | mark | every 90 degrees, 1 parallel a lobe | the name plates' engraved mark, 27 px tall |
+
+- **Users.** The crest, both name plates and `lib/kelvane.js`'s live emblem all read that one file.
+
 ## Measurements
 
 | Check | Result |

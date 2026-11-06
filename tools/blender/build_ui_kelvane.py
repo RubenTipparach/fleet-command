@@ -207,9 +207,9 @@ def piece(name):
                 K.stroke([tuple(p) for p in line], w, m)
         for line in s["engrave"]:
             K.stroke([tuple(p) for p in line], 0.8, K.m["engrave"], z=K.pt)
-        for line in s["emblem"]:
+        for w, line in s["emblem"]:  # inlaid brass wire, each line at its own width (the emblem's outline heavier)
             pts = [tuple(p) for p in line]
-            K.tube(pts, [1.2] * len(pts), K.m["bezel"], flat=0.55, z=[K.pt + 0.5] * len(pts))
+            K.tube(pts, [w / 2] * len(pts), K.m["bezel"], flat=0.55, z=[K.pt + 0.5] * len(pts))
         if name in ("button.hover", "button.pressed"):  # the key's pilot ring, lit when the key is live
             x, y, r, _st = s["studs"][0]
             dr = s["dimples"][0][2]
