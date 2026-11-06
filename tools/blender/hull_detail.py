@@ -407,6 +407,10 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
         fixture(name, p, aim, rgb, power, cone)
         lamp_at(loc, n, "flood", 0.45)
     D = S.get("lighting", {})
+    # every flood's throw (owner, 2026-11-06: "lights are kinda small here, can we get bigger cones that illuminate more of
+    # the ship?"): stood off the plating, tilted into it, a wide cone, so each lights a broad stretch of hull; a ship's own
+    # keys over the defaults', a flood's own keys over both
+    FL = {"standoff_m": 0.9, "cone_deg": 90, "tilt_deg": 14, "power_w": 2600, **(defaults or {}).get("flood", {}), **D.get("flood", {})}
     for F in D.get("floods", []):
         h = surf.hit(F["face"], F["at"])
         if not h:
@@ -416,7 +420,7 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
         for m in ((False, True) if (F["face"] == "port" or abs(loc.x) > 0.3) else (False,)):
             R = Matrix.Diagonal((-1, 1, 1)) if m else Matrix.Identity(3)
             ll, nn, tw = R @ loc, R @ n, R @ toward
-            spot(ll, nn, tangent_aim(nn, tw, F.get("tilt_deg", 14)), LAMP_RGB["flood"], F.get("power_w", 2600), F.get("cone_deg", 90), 0.9, "hull_flood")
+            spot(ll, nn, tangent_aim(nn, tw, F.get("tilt_deg", FL["tilt_deg"])), LAMP_RGB["flood"], F.get("power_w", FL["power_w"]), F.get("cone_deg", FL["cone_deg"]), FL["standoff_m"], "hull_flood")
     # rows of floods aimed forward along the flanks, the top and the belly, every step_m (owner, 2026-11-05: "we need some
     # more lights pointed forward to paint more of the hull"); the defaults' rows, the ship's own keys over them
     A = {**(defaults or {}).get("auto_floods", {}), **D.get("auto_floods", {})}
@@ -434,8 +438,8 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
                 loc, n = h
                 for m in (False, True):
                     R_ = Matrix.Diagonal((-1, 1, 1)) if m else Matrix.Identity(3)
-                    spot(R_ @ loc, R_ @ n, tangent_aim(R_ @ n, Vector((0, 0, 1)), A.get("tilt_deg", 12)), LAMP_RGB["flood"],
-                         A.get("power_w", 1800), A.get("cone_deg", 80), 0.9, "hull_flood")
+                    spot(R_ @ loc, R_ @ n, tangent_aim(R_ @ n, Vector((0, 0, 1)), A.get("tilt_deg", FL["tilt_deg"])), LAMP_RGB["flood"],
+                         A.get("power_w", FL["power_w"]), A.get("cone_deg", FL["cone_deg"]), FL["standoff_m"], "hull_flood")
             z += A["step_m"]
     lg = S.get("logo")
     if lg:
@@ -450,7 +454,7 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
     for zz, aim in ((zmid + 6, (0, 0, -1)), (zmid - 6, (0, 0, 1))):   # the belly pair, one forward, one aft, pools apart
         h = surf.hit("bottom", [0, zz])
         if h:
-            spot(h[0], h[1], tangent_aim(h[1], Vector(aim), 12), LAMP_RGB["flood"], 2200, 90, 0.9, "belly_flood")
+            spot(h[0], h[1], tangent_aim(h[1], Vector(aim), FL["tilt_deg"]), LAMP_RGB["flood"], FL["power_w"], FL["cone_deg"], FL["standoff_m"], "belly_flood")
     xmax = max(vs, key=lambda v: v.x)                                  # the widest frame: position lights
     for sign, colour in ((1, "red"), (-1, "green")):
         p = Vector((sign * xmax.x, xmax.y, xmax.z)); n = Vector((sign, 0, 0))

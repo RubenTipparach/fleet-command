@@ -118,7 +118,9 @@ Built over the low-poly hull, in ship space, never exported: it exists only to b
   `LIGHT_<kind>_<n>` (the light-baking skill), and is written to the manifest so the page can blink it.
 - **Forward floods** (owner: "we need some more lights pointed forward to paint more of the hull"): `auto_floods` adds rows
   of floods aimed forward along the port flank (mirrored), the top and the belly, every 22 m from the stern to the bow's
-  split (`to_z_m`), 1.8 kW in 80 degree cones, 0.9 m off the plating and tilted 12 degrees into it.
+  split (`to_z_m`). Every flood's throw is one setting, `defaults.flood`: 2.4 m off the plating, tilted 22 degrees into
+  it, a 120 degree cone, 1.6 kW (owner, 2026-11-06: "lights are kinda small here, can we get bigger cones"); a flood that
+  stands only 0.9 m off and grazes lights a narrow strip. Big ships bake at 3072 px so their texel stays near a frigate's.
 - **Panes** (owner: "we need to show interior of ships with windows"): every window and launch bay is a pane. Nothing of
   it is baked but the recess cut for it: no glass, no glowing dot in the maps under the page's pane (owner, 2026-11-06: "I
   would remove window dots from the ships texture since it overlaps with our window cutouts"); `pane_box` writes its entry

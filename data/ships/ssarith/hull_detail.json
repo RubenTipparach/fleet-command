@@ -47,10 +47,13 @@
     "auto_floods": {
       "step_m": 22,
       "from_stern_m": 6,
-      "top_x_frac": 0.4,
-      "tilt_deg": 12,
-      "power_w": 1800,
-      "cone_deg": 80
+      "top_x_frac": 0.4
+    },
+    "flood": {
+      "standoff_m": 2.4,
+      "cone_deg": 120,
+      "tilt_deg": 22,
+      "power_w": 1600
     }
   },
   "ships": {
