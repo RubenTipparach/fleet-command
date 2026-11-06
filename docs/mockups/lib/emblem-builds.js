@@ -191,6 +191,7 @@ function ssarith(THREE, { mmMaterial, slab, badge }, PARTS, GROWN) {
 // lines). Parts, heights and materials as the Blender render (tools/blender/emblem_kelvane.py).
 function kelvane(THREE, { mmMaterial, slab, badge }, ORBITAL, SATIN, GRID) {
   const K = SATIN.palette;
+  const srgb = (hex) => new THREE.Color(hex).convertSRGBToLinear();   // a palette colour as it is written (this three.js reads hex as linear)
   const champagne = mmMaterial('emblem_platinum', { color: new THREE.Color(K.frame), envMapIntensity: 1.0 });   // the instruments' plate
   const ellipse = (a, b, n = 180) => Array.from({ length: n }, (_, i) => [50 + Math.cos(i / n * 2 * Math.PI) * a, 50 - Math.sin(i / n * 2 * Math.PI) * b]);
   slab([ellipse(...SATIN.oval_out), ellipse(...SATIN.oval_in)], 0.0, SATIN.rim_z, 0.8, champagne);   // the rim
@@ -199,12 +200,22 @@ function kelvane(THREE, { mmMaterial, slab, badge }, ORBITAL, SATIN, GRID) {
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(D.positions), 3));
     g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(D.normals), 3));
     g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(D.uvs), 2));
-    g.setIndex(D.faces);
+    // each triangle wound to face the way its normals do (three.js takes a face's front from its winding and, drawing both
+    // sides, turns the normals of a face it sees from behind: a mesh wound the other way would be lit from inside)
+    const P = D.positions, N = D.normals, F = D.faces.slice();
+    for (let i = 0; i < F.length; i += 3) {
+      const [a, b, c] = [F[i] * 3, F[i + 1] * 3, F[i + 2] * 3];
+      const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+      const gx = uy * vz - uz * vy, gy = uz * vx - ux * vz, gz = ux * vy - uy * vx;
+      if (gx * (N[a] + N[b] + N[c]) + gy * (N[a + 1] + N[b + 1] + N[c + 1]) + gz * (N[a + 2] + N[b + 2] + N[c + 2]) < 0) { F[i + 1] = c / 3; F[i + 2] = b / 3; }
+    }
+    g.setIndex(F);
     const m = new THREE.Mesh(g, material); m.castShadow = m.receiveShadow = true; badge.add(m); return m;
   };
   // ---- the satin: red, a soft sheen at grazing angles, on the generator's draped folds ---------------------------------
-  mesh(SATIN, new THREE.MeshPhysicalMaterial({ color: new THREE.Color(K.field), roughness: 0.42, metalness: 0,
-    sheen: 1.0, sheenColor: new THREE.Color(K.sheen), sheenRoughness: 0.35, specularIntensity: 0.6, envMapIntensity: 0.5 }));
+  // (the sheen kept to a glow at grazing angles: at full strength the page's filmic tone map washed the red to pink)
+  mesh(SATIN, new THREE.MeshPhysicalMaterial({ color: srgb(K.field), roughness: 0.45, metalness: 0,
+    sheen: 0.8, sheenColor: srgb(K.sheen), sheenRoughness: 0.35, specularIntensity: 0.5, envMapIntensity: 0.35 }));
   // ---- the orbital: iridescent green under a hard coat, its wireframe inlaid light green, the mask choosing between them
   // (colour, metal, roughness and a faint light on the lines), on the full orbital's normals so it shades as the 3D orbital
   const w = GRID.width, h = GRID.height, cv = (fill) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); fill(x); return c; };
@@ -218,9 +229,9 @@ function kelvane(THREE, { mmMaterial, slab, badge }, ORBITAL, SATIN, GRID) {
     map: tex(paint(rgb(K.wire), rgb(K.lit)), true),
     metalnessMap: tex(paint([0, 0, 0], [0, 0, 64])), metalness: 1.0,             // the film 0.25 metal, the lines none (B channel)
     roughnessMap: tex(paint([0, 89, 0], [0, 56, 0])), roughness: 1.0,            // lines 0.35, film 0.22 (G channel)
-    emissive: new THREE.Color(K.wire), emissiveMap: tex(paint([255, 255, 255], [0, 0, 0]), true), emissiveIntensity: 0.25,
+    emissive: srgb(K.wire), emissiveMap: tex(paint([255, 255, 255], [0, 0, 0]), true), emissiveIntensity: 0.08,
     clearcoat: 1.0, clearcoatRoughness: 0.04, iridescence: 1.0, iridescenceIOR: 1.7, iridescenceThicknessRange: [380, 660],
-    envMapIntensity: 0.9, side: THREE.DoubleSide }));
+    envMapIntensity: 0.9 }));   // front faces only: the relief's underside, pressed flat, is never seen
   return none;
 }
 
