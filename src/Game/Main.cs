@@ -296,6 +296,14 @@ public sealed partial class Main : Node
     {
         var states = new List<(string Name, Action Set)> { ("battle", () => { }) };
         foreach (var st in StationPanel.Stations) { string id = st.Id; states.Add(("station." + id, () => _x.State.Station = id)); }
+        // the Power station's other modes, docked and expanded, and the Repair station expanded (the reactor package)
+        foreach (string pm in new[] { "reactor", "warp" })
+        {
+            string m = pm;
+            states.Add(("power." + m, () => { _x.State.Station = "power"; _x.State.PowerMode = m; }));
+            states.Add(("power." + m + ".expanded", () => { _x.State.Station = "power"; _x.State.PowerMode = m; _x.State.Expanded = Region.Station; }));
+        }
+        states.Add(("repair.expanded", () => { _x.State.Station = "repair"; _x.State.Expanded = Region.Station; }));
         foreach (var pg in ShipPanel.Pages) { string id = pg.Id; states.Add(("page." + id, () => _x.State.ShipPage = id)); }
         foreach (Region r in ConsoleLayout.Expandable) { Region e = r; states.Add(("expand." + e, () => _x.State.Expanded = e)); }
         states.Add(("menu", () => _x.State.MenuOpen = true));
@@ -326,6 +334,7 @@ public sealed partial class Main : Node
             {
                 _x.State.Station = "helm"; _x.State.ShipPage = "systems"; _x.State.Expanded = null; _x.State.MenuOpen = false; _x.State.SceneOpen = false;
                 _x.State.HitInfo = null; _x.State.LogOpen = false; _x.State.FleetPick = null;
+                _x.State.PowerMode = "alloc";
                 set();
                 Relayout();
                 _menu.Visible = _x.State.MenuOpen;

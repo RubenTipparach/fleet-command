@@ -1,5 +1,5 @@
 {
- "_doc": "The battle console mockup's test scenes for the tractor beam, mines and craft (docs/mockups/battle-console.html SCENES: tractor, mines, shuttle, fighters; owner, 2026-11-01: \"I also want different test scenes\"), in the format of data/battle/scenarios.json, appended to its list in menu order, from both sides with approved ships only. armed: false strips the player's ship of weapons and lethal makes the scene's tool decisive (owner, 2026-11-02: \"In mine scene, no weapons on my player ship please, enemies should be destroyed by one mine, same with other missions in this demo\"); rocks are asteroids (metres); kit, power_e and sys_hp are a ship's own mines and craft, energy boxes and subsystem health (the mockup's setup()). Placed at the mockup's positions, its 100 m unit in metres. The mockup's station target (Varn Outpost) is the largest approved hull, and its Kethran ships the Krai line, until stations are designed.",
+ "_doc": "The battle console mockup's test scenes for the tractor beam, mines and craft (docs/mockups/battle-console.html SCENES: tractor, mines, shuttle, fighters; owner, 2026-11-01: \"I also want different test scenes\"), in the format of data/battle/scenarios.json, appended to its list in menu order, from both sides with approved ships only. armed: false strips the player's ship of weapons and lethal makes the scene's tool decisive (owner, 2026-11-02: \"In mine scene, no weapons on my player ship please, enemies should be destroyed by one mine, same with other missions in this demo\"); rocks are asteroids (metres); kit, power_e and sys_hp are a ship's own mines and craft, energy boxes and subsystem health (the mockup's setup()). Placed at the mockup's positions, its 100 m unit in metres. The mockup's station target (Varn Outpost) is the largest approved hull, and its Kethran ships the Krai line, until stations are designed. The Fighters scenes' targets are frigates with two point-defence mounts added (extra_mounts), so each has three, as the mockup's Ironhold (a destroyer given three) has; a dreadnought or cruiser out-gunned the mockup's target and melted the player's reactor once the reactor came into the game.",
  "scenarios": [
   {
    "id": "concord_tractor",
@@ -248,14 +248,26 @@
      "id": "ironhold",
      "name": "Ironhold",
      "captain": "Warlord Brask",
-     "class": "krai_dn",
+     "class": "krai_ff",
      "faction": "krai",
      "side": 1,
      "x_m": 0,
      "z_m": -6000,
      "heading_deg": 180,
      "speed_m_s": 0,
-     "stance": "hold"
+     "stance": "hold",
+     "extra_mounts": [
+      {
+       "weapon": "pd",
+       "x": -0.3,
+       "y": 0.1
+      },
+      {
+       "weapon": "pd",
+       "x": 0.3,
+       "y": 0.1
+      }
+     ]
     }
    ]
   },
@@ -506,14 +518,26 @@
      "id": "bastion",
      "name": "Bastion",
      "captain": "Capt. Hale",
-     "class": "ca",
+     "class": "ff",
      "faction": "concord",
      "side": 1,
      "x_m": 0,
      "z_m": -6000,
      "heading_deg": 180,
      "speed_m_s": 0,
-     "stance": "hold"
+     "stance": "hold",
+     "extra_mounts": [
+      {
+       "weapon": "pd",
+       "x": -0.3,
+       "y": 0.1
+      },
+      {
+       "weapon": "pd",
+       "x": 0.3,
+       "y": 0.1
+      }
+     ]
     }
    ]
   }

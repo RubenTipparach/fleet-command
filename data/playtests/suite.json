@@ -38,6 +38,10 @@
   { "script": "hop", "play": "concord_four_races" },
   { "script": "hop", "play": "krai_four_races" },
   { "script": "hop", "play": "ssarith_four_races" },
+  { "script": "warp", "play": "concord_warp" },
+  { "script": "warp", "play": "krai_warp" },
+  { "script": "escape", "play": "concord_escape" },
+  { "script": "escape", "play": "krai_escape" },
   { "script": "campaign", "play": "campaign" }
  ]
 }

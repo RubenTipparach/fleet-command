@@ -184,4 +184,13 @@ public class ScenarioTests
         var shared = TestData.Data.Scenarios.GroupBy(s => s.Sky).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
         Assert.True(shared.Length == 0, $"skies used by more than one scenario: {string.Join(", ", shared)}");
     }
+
+    [Fact]
+    public void Every_mount_a_scene_adds_names_a_weapon_that_exists()
+    {
+        foreach (Scenario sc in TestData.Data.Scenarios)
+            foreach (ShipStart st in sc.Ships)
+                foreach (MountDef m in st.ExtraMounts ?? Array.Empty<MountDef>())
+                    Assert.True(TestData.Data.Weapons.ContainsKey(m.Weapon), $"{sc.Id}/{st.Id}: no weapon '{m.Weapon}'");
+    }
 }

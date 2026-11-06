@@ -75,11 +75,12 @@ public sealed record Faction(string Id, string Name, string Hull, string Trim, s
 public enum AiRange { Close, Mid, Long }
 
 /// <summary>A ship at the start of a scenario, with its captain's standing orders when an AI flies it: its stance, its
-/// fighting range, whether it jinks (erratic) or holds its fire, and the hull and shields it starts with (fractions).</summary>
+/// fighting range, whether it jinks (erratic) or holds its fire, and the hull and shields it starts with (fractions); Start,
+/// its damage and energy past its class's (ScenarioStart), or null.</summary>
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false)
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, ShipStartState? Start = null)
 {
     /// <summary>What it carries in place of its class's loadout (mines, fighters, shuttles, barrage missiles), or null.</summary>
     public ShipKit? Kit { get; init; }
@@ -87,6 +88,8 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     public IReadOnlyDictionary<string, int>? PowerE { get; init; }
     /// <summary>The health it starts with in a subsystem (Rules.Subsystems), 0 to 1, or null for all whole.</summary>
     public IReadOnlyDictionary<string, double>? SysHp { get; init; }
+    /// <summary>Mounts the scene adds after its class's (weapon ids checked against data/battle/weapons.json), or null.</summary>
+    public IReadOnlyList<MountDef>? ExtraMounts { get; init; }
 }
 
 /// <summary>A ship's craft and mines in a scenario, each null for its class's loadout; the fighters' first mission.</summary>
@@ -97,10 +100,11 @@ public sealed record RockDef(double XM, double ZM, double RadiusM, string? Name)
 
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
 /// objective, and the first officer's message. The first ship is the one the player commands. Sky is the nebula it is fought
-/// under; SunEnergy the sun's strength there (deep space is dim and moody; a scene by a warm star turns it up).</summary>
+/// under; SunEnergy the sun's strength there (deep space is dim and moody; a scene by a warm star turns it up); Wells, the
+/// gravity wells whose field a warp jump must reckon with (ScenarioStart), or null.</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
-    IReadOnlyList<MarkerDef>? Markers = null)
+    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null)
 {
     /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: the scene's tool is
     /// what destroys the target).</summary>

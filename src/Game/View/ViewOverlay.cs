@@ -284,7 +284,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             LogLine l = b.Log[^1];
             f.DrawRich(this, new[] { ($"{l.Who}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
         }
-        if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : "Fleet lost", over == "won" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
+        if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : over == "jumped" ? "Jumped to warp" : "Fleet lost",
+            over is "won" or "jumped" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
 
         // the Target box: the locked target's systems display, the same drawing as the ship panel (one component)
         if (_x.State.ShowTarget && t != null)

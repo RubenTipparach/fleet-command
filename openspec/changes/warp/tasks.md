@@ -15,5 +15,5 @@
 
 ## 3. After approval for implementation (a separate request)
 
-- [ ] 3.1 `WARP`, nacelles per class and gravity wells in `data/`, validated on load
-- [ ] 3.2 The warp drive in `src/sim/`, with golden-seed tests for charging, plotting, risk and the jump roll
+- [x] 3.1 `WARP` in `data/battle/systems/reactor.json` and gravity wells per scenario, validated on load
+- [x] 3.2 The warp drive in `src/Core/Sim` (`Battle.Warp.cs`), with tests for charging, plotting, risk and the jump (`WarpTests`); the Warp page, the warp key and the Warp scene from both sides

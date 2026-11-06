@@ -27,6 +27,7 @@
     in 3D, and the mockup's Tractor, Mines, Shuttle and Fighters scenes from both sides with their playtests
   - [ ] 2.2b Mines spend a transporter pad and move to the Transport station's Mines tab (with the transport package)
 - [ ] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
+- [x] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [ ] 2.5 The tactical map, the event log, the 3D shield hexagon, the transporter effect
   - [x] 2.5a The tactical map (the radar row expanded: Map key and dial, 10/20/40 km) and the event log sheet with its X;
     its key is the Comms station's (`ConsoleState.OpenLog`) (weapon-targeting package, 2026-11-06)

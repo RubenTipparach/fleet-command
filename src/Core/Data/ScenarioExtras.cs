@@ -54,7 +54,18 @@ public static class ScenarioExtras
             }
             h.Done();
         }
-        return start with { Kit = kit, PowerE = power, SysHp = hp };
+        // mounts a scene adds to its class's (the mockup's Fighters scene gives the Ironhold three point-defence mounts)
+        List<MountDef>? extra = null;
+        if (s.Has("extra_mounts"))
+        {
+            extra = new List<MountDef>();
+            foreach (StrictJson m in s.ObjList("extra_mounts"))
+            {
+                extra.Add(new MountDef(m.Str("weapon"), m.Num("x"), m.Num("y"), m.Num("arc_centre_deg", 0), m.Num("arc_width_deg", 360)));
+                m.Done();
+            }
+        }
+        return start with { Kit = kit, PowerE = power, SysHp = hp, ExtraMounts = extra };
     }
 
     /// <summary>A scene's armed flag, lethal tools and rocks, read from its object (root), on top of the scenario.</summary>

@@ -83,7 +83,7 @@ public sealed partial class Battle
     public Battle(GameData data, Scenario scenario)
     {
         Data = data;
-        Rules = new Rules(data.Tuning, data.Systems.Tactical);
+        Rules = new Rules(data.Tuning, data.Systems.Tactical) { SystemsData = data.Systems };
         _hit = Rng.Fork(scenario.Seed, "hit");
         _dmg = Rng.Fork(scenario.Seed, "damage");
         _ai = Rng.Fork(scenario.Seed, "ai");
@@ -95,6 +95,7 @@ public sealed partial class Battle
         Scenario = scenario;
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
         RangeSetup();
+        ReactorSetup();
         SystemsSetup();
         TractorSetup();
         Say(scenario.SayWho, scenario.SayText);
@@ -115,9 +116,10 @@ public sealed partial class Battle
         for (int i = 0; i < 6; i++) s.Shields[i] = c.ShieldsHp[i] * d.ShieldsFrac;
         foreach (string k in Rules.Systems) s.Power[k] = d.PowerE?.GetValueOrDefault(k, c.PowerE.GetValueOrDefault(k)) ?? c.PowerE.GetValueOrDefault(k);
         foreach (string k in Rules.Subsystems) s.Sys[k] = d.SysHp?.GetValueOrDefault(k, 1) ?? 1;
-        for (int i = 0; i < c.Mounts.Count; i++)
+        var mounts = d.ExtraMounts == null ? c.Mounts : c.Mounts.Concat(d.ExtraMounts).ToList();
+        for (int i = 0; i < mounts.Count; i++)
         {
-            MountDef md = c.Mounts[i];
+            MountDef md = mounts[i];
             WeaponDef w = Data.Weapons[md.Weapon];
             s.Mounts.Add(new Mount { Index = i, Def = md, Weapon = w, Charge = 0.6 + (i % 3) * 0.15, Selected = !w.IsPointDefence });
         }
@@ -230,7 +232,7 @@ public sealed partial class Battle
         // a scene's own end, registered by the system whose objective it is (a ship disabled, not destroyed): checked first
         foreach (Func<bool> end in _ends) if (end()) return;
         // a damage range never ends: its last ship can be broken up and the range repaired
-        if (Scenario.DamageRange) return;
+        if (Scenario.DamageRange || Over != null) return;
         if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
         if (!_ships.Any(s => s.Side == 1 && s.Alive && !s.Struck)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
@@ -271,12 +273,7 @@ public sealed partial class Battle
         s.HetChance = Math.Min(Rules.HetMax(s), s.HetChance + Tuning.HetRecoverPerS * dt);
         s.Broke = Math.Max(0, s.Broke - dt);
         s.EstopT = Math.Max(0, s.EstopT - dt);
-        if (s.Power["repair"] > 0)
-        {
-            string worst = Rules.Subsystems.OrderBy(k => s.Sys[k]).First();
-            s.Sys[worst] = Math.Min(1, s.Sys[worst] + s.Power["repair"] * s.Brown * Tuning.RepairPerES * dt);
-            foreach (Mount m in s.Mounts) if (m.Hp is > 0 and < 1) m.Hp = Math.Min(1, m.Hp + s.Power["repair"] * Tuning.MountRepairPerES * dt);
-        }
+        // repair energy works through the crews on the repair queue (Battle.Repair, RepairCrewsStep)
     }
 
     private void Move(Ship s, double dt)
@@ -444,6 +441,9 @@ public sealed partial class Battle
         if (k != null) t.Sys[k] = Math.Max(0, t.Sys[k] - rest * (k == "reactor" ? st.ReactorPerDmg : st.SysPerDmg));
         if (ex.Mounts.Count > 0 && _dmg.Next() < st.MountChance + (direct && aim == "weapons" ? st.MountAimChance : 0))
             HitMount(t.Mounts[ex.Mounts[_dmg.Below(ex.Mounts.Count)]], st);
+        // a hit rolls on the reactor; a burn's ticks are not hits (the mockup has no burn: the forge driver's is ours), so they
+        // do not, or a burning hull would knock coils and loops out every half second
+        if (kind != "burn") ReactorHit(t, rest);
         if (kind is "burn" or "chorus") { }   // a burn and a chorus land in ticks: their own lines say so
         else if (t == Player) Say("Engineering", $"Hull hit through the {Rules.Facings[f]} shield.");
         else if (src == Player) Say("Tactical", $"Hit on {t.Name}, {Rules.Facings[f]} facing.");

@@ -22,6 +22,9 @@ public abstract partial class ConsolePanel : Control, IControlSource
     /// <summary>The region this panel fills, which decides whether it can expand.</summary>
     public Region Region { get; private set; }
     private readonly Dictionary<string, float> _slots = new();
+    /// <summary>Where the last frame's title box (or placard) starts, x in the panel: what sits left of the title on the
+    /// frame's top edge (a station's officer slot) stops short of it.</summary>
+    protected float TitleLeft { get; private set; }
 
     protected IKit Kit => X.Kit;
     protected Palette C => X.Kit.C;
@@ -273,6 +276,7 @@ public abstract partial class ConsolePanel : Control, IControlSource
         // the title box ends inside the frame's corner (owner, 2026-11-06: "trim the box a bit so its corner matches the blue
         // border"): a panel without the expand key keeps it clear of the corner cap as one with the key does
         float bw = expandable ? 21 : -10, x1 = content.End.X - (expandable ? 6 : 20), total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
+        TitleLeft = x0 - (Sk.TitlePlacard ? 18 : 0);
         if (Sk.TitlePlacard) Kit.Piece(this, "plate.title", new Rect2(x0 - 18, y0 - 1, total + 22, 24));
         else DrawRect(new Rect2(x0, y0, total, 22), Sk.R.Plate);
         Text(up, x0 + 8, y0 + 19 - Sk.TitleDy, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);

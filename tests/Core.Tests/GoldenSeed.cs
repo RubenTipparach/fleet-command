@@ -9,9 +9,13 @@
 // struck exposes the subsystems and mounts on its side, precise weapons aim), point defence and missiles charge from their own
 // power, and weapons control stops the rest charging once it is disabled; so subsystems and mounts are hurt where the
 // mockup hurts them and the fourth ship's hull ends lower.
+// the cruiser's chorus lance and the destroyer's quell torpedoes; then the reactor (owner, 2026-11-06: "please add ALL
+// systems that are IN the mockup"): the coolant pumps draw from the output, hits knock coils out of alignment (the output
+// falls with them), and repair energy works through crews on the repair queue. Merged with the chopping block (both
+// packages, 2026-11-06), with a burn's ticks not rolling on the reactor (they are not hits), the Vorrak ends at 150.07.
 namespace FleetCommand.Tests;
 
 public static class GoldenSeed
 {
-    public const string Hulls = "560.00,240.00,380.00,122.93,260.00,320.00";
+    public const string Hulls = "560.00,240.00,380.00,150.07,260.00,320.00";
 }

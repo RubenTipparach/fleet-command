@@ -55,6 +55,10 @@ Eight more (2026-11-06), one for each of the tractor, mines and craft test scene
 | `orchid_deep` | Orchid and plum clouds, violet lanes, a pink-white core |
 | `slate_ember` | Slate-grey dust with embers glowing through it |
 | `copper_mist` | Copper beside verdigris, a bright brass core |
+| `reactor_neutron_glare` | A hard white-violet glare off a dead star (the reactor package's Warp scene, Concord side) |
+| `reactor_pulsar_wake` | A cold teal wake trailing a pulsar, pale gold knots (Warp, Krai side) |
+| `reactor_cinder_drift` | Smouldering brown and ember dust, a low red glow (Escape, Concord side) |
+| `reactor_smoke_veil` | Grey-violet smoke drawn thin, a faint rose core (Escape, Krai side) |
 
 `docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
 bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the
