@@ -1,7 +1,9 @@
-// Fleet Command mockups: a hull that carries its own baked maps, drawn the same way on every page that shows one (CLAUDE.md
-// 6.1: one implementation). Lifted from the Ssarith Hunt's page (docs/mockups/ssarith-ship-concepts.html, mockup 12) so the
-// Concord's and Krai's baked designs (docs/mockups/hull-texture-designs.html, mockup 23) are drawn by the same code. Edit
-// it here, then re-run tools/mockups/inline_data.py on each page that inlines it.
+// Fleet Command mockups: a hull that carries its own baked maps, drawn as the Ssarith Hunt's page (mockup 12) draws one,
+// for mockup 24 (docs/mockups/hull-texture-designs.html, the Concord's and Krai's baked designs). Lifted from the Hunt's
+// page. Known duplicate (CLAUDE.md 6.1): the Hunt page still carries this code itself, and another session's
+// docs/mockups/lib/baked-ship.js (change kelvane-ship-concepts, rubentipparach/fleet-command#47) does the same job; once that
+// merges, mockup 24 moves onto it and this file goes (hull-texture-designs task 4.1). Edit it here, then re-run
+// tools/mockups/inline_data.py on the page that inlines it.
 //
 // FCBakedHull(THREE, { SK, ROOMS, SFX, U, env }) returns:
 //   hullLooks(M, brkU)     a hull's two looks over its maps M (albedo, base, em, nm, orm, lt, g, slug, dU): 'painted', the

@@ -13,7 +13,7 @@ Ssarith Hunt's ships are (change `ssarith-ships-engine`, the `ship-detailing` sk
 | The detail layer | Primary armour cut into plates by the faction's own cut style, each plate raised by its own amount, overlays on the big plates, a sub-armour layer, machinery in the gaps, then the story's features | `hull_detail.py`, laid out in `data/ships/<faction>/hull_detail.json` |
 | The bake | Data (kind, plate id, edges), glow, position, normals (object and tangent), AO, a low sun's cast shadows, the hull lights | `painted_bake.py --detail data/ships/<faction>/hull_detail.json --ship ...` |
 | The paint | The design's palette by plate, its plate colours, its liveries and markings, and its wear. Painted into a painted map and a PBR set (base colour, ORM, normals, emission) and a hull-light map | `painted_bake.py` (`plate_colours`, `livery_paint`, `wear`) |
-| The page | The baked hull, its windows and bays as panes with rooms and hangars behind, its running lights, and the glb's other parts | `docs/mockups/lib/baked-hull.js`, shared with the Hunt's page |
+| The page | The baked hull, its windows and bays as panes with rooms and hangars behind, its running lights, and the glb's other parts | `docs/mockups/lib/baked-hull.js`, the Hunt page's code (to fold into `lib/baked-ship.js`, tasks 4.1) |
 
 **Cut styles, one for each faction's tradition:**
 - `strake` (the Concord): long fore-and-aft strakes, each its own width. Their end joints are staggered strake by strake,
