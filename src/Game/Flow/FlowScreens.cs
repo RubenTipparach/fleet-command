@@ -188,11 +188,12 @@ public sealed partial class FactionScreen : FlowPanel
             Vector2 mp = GetLocalMousePosition();
             Stage.Pointer = new Vector2(mp.X / Math.Max(1, Size.X) * 2 - 1, 1 - mp.Y / Math.Max(1, Size.Y) * 2);
             Stage.Picked = F.Picked;
+            Stage.ScreenSize = Size;
             for (int i = 0; i < Stage.Factions.Count; i++)
             {
                 string id = Stage.Factions[i];
                 CampFaction? fac = playable.FirstOrDefault(f => f.Id == id);
-                if (fac == null || Stage.ScreenRect(i) is not { } r) continue;
+                if (fac == null || Stage.ScreenRect(i, Size) is not { } r) continue;
                 bool skin = X.Data.Factions.TryGetValue(fac.Id, out Faction? bf) && bf.Skin != null;
                 HitState st = Ui.Reg($"fac.{fac.Id}", r, skin ? _ => F.Picked = fac.Id : null, null, skin ? null : new Tip(fac.Name, new (string, string, Color?)[] { ("In the game", "not yet: its console skin is to build", null) }));
                 if (st.Hot) hover = i;

@@ -3443,14 +3443,21 @@ function animateBattle(t, dt) {
 // ---------------------------------------------------------------------------------------------------------------
 const facScene = new THREE.Scene();
 const facCam = new THREE.PerspectiveCamera(36, 1, 0.1, 3000);
-facCam.position.set(0, 3.5, 7.3); facCam.lookAt(0, 1.22, 0.1);
+// The view: from 7.3 m back and 3.5 m up, at the table's middle. On a screen narrower than 16:9 (a phone in portrait) the
+// camera backs off along that line until the three badges fit across it (TABLE.fitW either side of the middle).
+const FAC_VIEW = { position: [0, 3.5, 7.3], target: [0, 1.22, 0.1] };
+function fitFacCam(aspect) {
+  const tgt = new THREE.Vector3(...FAC_VIEW.target), dir = new THREE.Vector3(...FAC_VIEW.position).sub(tgt), d0 = dir.length();
+  const d = Math.max(d0, TABLE.fitW / (Math.tan(THREE.MathUtils.degToRad(facCam.fov / 2)) * aspect));
+  facCam.position.copy(tgt).addScaledVector(dir.normalize(), d); facCam.lookAt(tgt);
+}
 const FAC = { built: false, slots: [], table: [], hover: -1, pointer: new THREE.Vector2(), time: 0, frozen: false };
 // The table's numbers (metres), shared by the scene and the game's FactionStage (src/Game/Flow/FactionStage.cs): the top's
 // height, the badges' spacing along it, the height each badge floats at (its centre over its brass ring), its bob and its
-// lift while lit, and the metres of table one wood tile covers.
-const TABLE = { top: 0.78, pitch: 3.3, float: 1.66, bob: 0.035, lift: 0.07, woodM: 3.0 };
+// lift while lit, the metres of table one wood tile covers, and the half width the view keeps in sight.
+const TABLE = { top: 0.78, pitch: 3.3, float: 1.66, bob: 0.035, lift: 0.07, woodM: 3.0, fitW: 4.3 };
 // for tools/mockups/export_faction.mjs, which exports the table and the badges for the game from this scene
-window.FC_FACTION = { FAC, TABLE, scene: facScene, cam: facCam, data: DATA };
+window.FC_FACTION = { FAC, TABLE, view: FAC_VIEW, scene: facScene, cam: facCam, data: DATA };
 // The studio's light falling through dust: a cone of light from the lamp to the floor, brightest down its middle and
 // near the lamp, added to the scene.
 const beamMat = () => new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
@@ -3592,6 +3599,7 @@ function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   renderer.setSize(w, h, false);
   for (const c of [menuCam, mapCam, battleCam, facCam]) { c.aspect = w / Math.max(1, h); c.updateProjectionMatrix(); }
+  fitFacCam(w / Math.max(1, h));
 }
 new ResizeObserver(resize).observe(stage);
 renderer.setAnimationLoop(() => {

@@ -115,7 +115,7 @@ async function exportInPage() {
     dust: { count: s0.seed.length, size_px: '(1.6 + 3.2 glint) * 8 / depth', glint: 'pow(0.5 + 0.5 sin(t (1.5 + 3 fract(seed 7.3)) + seed 40), 10)', lit: 'inside the cone only, (0.25 + 1.6 glint) * level',
       drift_m: [0.12, 0.18, 0.12], drift_rate: [0.21, 0.13, 0.17], colour: [1.0, 0.86, 0.66] },
     turn: { yaw_per_ndc: 1.6, pitch_per_ndc: 1.0, max_yaw_rad: 0.5, max_pitch_rad: 0.3, others: 0.35, rate_per_s: 6, bob_rate: 1.1, bob_phase: 2.1 },
-    camera: { position: v3(F.cam.position), fov_deg: F.cam.fov, target: [0, 1.22, 0.1] },
+    camera: { position: F.view.position, target: F.view.target, fov_deg: F.cam.fov, fit: 'on a screen narrower than 16:9 the camera backs off along its line to the target until table.fitW either side of the middle fits across (fitFacCam)' },
     badge_materials: out.materials,
     materials: { table_wood: 'the table_wood maps (assets/textures/materials/table_wood/), clearcoat 0.35 at roughness 0.28', table_under: 'the same wood times (0.55, 0.5, 0.46)',
       holo_field: 'the Concord badge\'s field: src/Game/Flow/holo_field.gdshader, a port of emblem-builds.js concord() holo',

@@ -31,7 +31,8 @@ public sealed partial class FactionStage : Node3D
     private readonly List<Slot> _slots = new();
     private readonly List<ShaderMaterial> _holo = new();
     private Camera3D _cam = null!;
-    private float _t, _float, _bob, _lift;
+    private float _t, _float, _bob, _lift, _fitW;
+    private Vector3 _camAt, _camTarget;
     private float _yawK, _pitchK, _maxYaw, _maxPitch, _others, _rate, _bobRate, _bobPhase;
 
     /// <summary>The faction under the pointer (its index), or -1.</summary>
@@ -40,6 +41,8 @@ public sealed partial class FactionStage : Node3D
     public string? Picked;
     /// <summary>The pointer in the view's normalised coordinates (-1 to 1, y up).</summary>
     public Vector2 Pointer;
+    /// <summary>The screen the stage is seen on, pixels (FactionScreen's size): the camera is fitted to it.</summary>
+    public Vector2 ScreenSize;
     /// <summary>A still: time stands at 6 s and every level and turn is where it is heading (the page's factionShot).</summary>
     public bool Frozen;
     public IReadOnlyList<string> Factions => _slots.ConvertAll(s => s.Fac);
@@ -54,6 +57,7 @@ public sealed partial class FactionStage : Node3D
         _float = table.GetProperty("float").GetSingle();
         _bob = table.GetProperty("bob").GetSingle();
         _lift = table.GetProperty("lift").GetSingle();
+        _fitW = table.GetProperty("fitW").GetSingle();
         _yawK = turn.GetProperty("yaw_per_ndc").GetSingle(); _pitchK = turn.GetProperty("pitch_per_ndc").GetSingle();
         _maxYaw = turn.GetProperty("max_yaw_rad").GetSingle(); _maxPitch = turn.GetProperty("max_pitch_rad").GetSingle();
         _others = turn.GetProperty("others").GetSingle(); _rate = turn.GetProperty("rate_per_s").GetSingle();
@@ -62,7 +66,9 @@ public sealed partial class FactionStage : Node3D
         // the camera, and a dim hall: the verdigris nebula behind, a cold rim from behind, a faint fill
         _cam = new Camera3D { Fov = cam.GetProperty("fov_deg").GetSingle(), Near = 0.1f, Far = 4000, Current = true };
         AddChild(_cam);
-        _cam.LookAtFromPosition(V(cam.GetProperty("position")), V(cam.GetProperty("target")), Vector3.Up);
+        _camAt = V(cam.GetProperty("position"));
+        _camTarget = V(cam.GetProperty("target"));
+        _cam.LookAtFromPosition(_camAt, _camTarget, Vector3.Up);
         // what the metal reflects is a soft studio (the page's FCEmblemStudio: a bright overhead, a grey horizon, a dark
         // floor), not the space behind, which the NebulaSky draws
         var studio = new ProceduralSkyMaterial
@@ -223,13 +229,32 @@ public sealed partial class FactionStage : Node3D
         return mesh;
     }
 
-    /// <summary>Where a faction's badge sits on screen, in the view's pixels: a square round its centre, or null behind the camera.</summary>
-    public Rect2? ScreenRect(int i)
+    /// <summary>On a screen narrower than 16:9 (a phone in portrait) the camera backs off along its line to the table's
+    /// middle until the three badges fit across it (the page's fitFacCam).</summary>
+    private void FitCamera(float aspect)
+    {
+        Vector3 dir = _camAt - _camTarget;
+        float d = Math.Max(dir.Length(), _fitW / (Mathf.Tan(Mathf.DegToRad(_cam.Fov) / 2) * aspect));
+        _cam.LookAtFromPosition(_camTarget + dir.Normalized() * d, _camTarget, Vector3.Up);
+    }
+
+    /// <summary>A point in the scene on a screen of this size (pixels, y down), or null behind the camera. Worked from the
+    /// camera's own pose and field of view, not its viewport, so it holds before the view has a size (a headless run).</summary>
+    public Vector2? Project(Vector3 p, Vector2 size)
+    {
+        if (_cam == null || size.X < 1 || size.Y < 1) return null;
+        Vector3 v = _cam.GlobalTransform.AffineInverse() * p;
+        if (v.Z > -0.01f) return null;
+        float f = 1 / Mathf.Tan(Mathf.DegToRad(_cam.Fov) / 2), x = v.X * f / (size.X / size.Y) / -v.Z, y = v.Y * f / -v.Z;
+        return new Vector2((x + 1) / 2 * size.X, (1 - y) / 2 * size.Y);
+    }
+
+    /// <summary>Where a faction's badge sits on a screen of this size: a square round its centre, or null behind the camera.</summary>
+    public Rect2? ScreenRect(int i, Vector2 size)
     {
         if (i < 0 || i >= _slots.Count) return null;
         Vector3 c = _slots[i].Holder.GlobalPosition;
-        if (_cam.IsPositionBehind(c)) return null;
-        Vector2 p = _cam.UnprojectPosition(c), e = _cam.UnprojectPosition(c + _cam.GlobalBasis.X * 0.62f);
+        if (Project(c, size) is not { } p || Project(c + _cam.GlobalBasis.X * 0.62f, size) is not { } e) return null;
         float r = p.DistanceTo(e);
         return new Rect2(p - new Vector2(r, r), new Vector2(2 * r, 2 * r));
     }
@@ -239,7 +264,9 @@ public sealed partial class FactionStage : Node3D
         if (_slots.Count == 0) return;
         float dt = Frozen ? 0 : (float)Math.Min(delta, 0.05);
         _t = Frozen ? 6 : _t + dt;
-        Vector2 vp = GetViewport().GetVisibleRect().Size;
+        Vector2 vp = ScreenSize.X >= 1 && ScreenSize.Y >= 1 ? ScreenSize : GetViewport().GetVisibleRect().Size;
+        if (vp.X < 1 || vp.Y < 1) vp = new Vector2(1920, 1080);
+        FitCamera(vp.X / vp.Y);
         int chosen = Picked == null ? -1 : _slots.FindIndex(s => s.Fac == Picked);
         for (int i = 0; i < _slots.Count; i++)
         {
@@ -255,7 +282,7 @@ public sealed partial class FactionStage : Node3D
             // the badge floats, bobbing on its own phase, rising a little higher while its lamp is on
             s.Holder.Position = new Vector3(0, _float + Mathf.Sin(_t * _bobRate + i * _bobPhase) * _bob + _lift * s.On, 0);
             // every badge turns toward the pointer, the one under it most
-            Vector2 c = _cam.UnprojectPosition(s.Holder.GlobalPosition);
+            Vector2 c = Project(s.Holder.GlobalPosition, vp) ?? vp / 2;
             Vector2 cn = new(c.X / vp.X * 2 - 1, 1 - c.Y / vp.Y * 2);
             float kk = i == Hover ? 1 : _others;
             float yaw = Math.Clamp((Pointer.X - cn.X) * _yawK * kk, -_maxYaw, _maxYaw), pitch = Math.Clamp(-(Pointer.Y - cn.Y) * _pitchK * kk, -_maxPitch, _maxPitch);

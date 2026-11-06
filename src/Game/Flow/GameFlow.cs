@@ -57,6 +57,8 @@ public sealed partial class GameFlow : Node
     private CanvasLayer _layer = null!;
     private MapScreen _map = null!;
     private readonly Dictionary<FlowScreen, Control> _screens = new();
+    // the faction screen's keys, over its 3D stage inside FactionView
+    private FactionScreen _factionScreen = null!;
     private MissionStrip _strip = null!;
     private LoadingScreen _loading = null!;
     private ColorRect _fade = null!;
@@ -83,7 +85,7 @@ public sealed partial class GameFlow : Node
         Add(FlowScreen.Map, _map);
         Add(FlowScreen.Menu, Panel(new MenuScreen()));
         var factions = new FactionView();
-        factions.Init(Panel(new FactionScreen()));
+        factions.Init(_factionScreen = Panel(new FactionScreen()));
         Add(FlowScreen.Factions, factions);
         Add(FlowScreen.Skirmish, Panel(new SkirmishScreen()));
         Add(FlowScreen.Debrief, Panel(new DebriefScreen()));
@@ -208,7 +210,7 @@ public sealed partial class GameFlow : Node
     /// <summary>The flow's controls on screen now (the scripted captain clicks them as a player would).</summary>
     public IEnumerable<Ui.IControlSource> Sources()
     {
-        var all = new List<Control>(_screens.Values) { _strip, _loading };
+        var all = new List<Control>(_screens.Values) { _strip, _loading, _factionScreen };
         all.AddRange(_map.Panels);
         return all.Where(c => c.IsVisibleInTree()).OfType<Ui.IControlSource>();
     }

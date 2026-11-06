@@ -2,7 +2,7 @@
  "_doc": "The faction screen, exported from mockup 1 (docs/mockups/game-flow.html, buildFactionScene) by tools/mockups/export_faction.mjs. Metres, +Y up, the camera looking toward -Z. Drawn by src/Game/Flow/FactionStage.cs.",
  "source": {
   "page": "docs/mockups/game-flow.html",
-  "sha256": "a28abb1a0a2f78d4b3d30ba24cf19b84a7b0b97672c23cee66c8d4e7b3a6cc17"
+  "sha256": "3903ca70ee3c407610dbb19de488a33a20779e84b1c9d088c10011fc734c1042"
  },
  "table": {
   "top": 0.78,
@@ -10,7 +10,8 @@
   "float": 1.66,
   "bob": 0.035,
   "lift": 0.07,
-  "woodM": 3
+  "woodM": 3,
+  "fitW": 4.3
  },
  "slots": [
   {
@@ -119,12 +120,13 @@
    3.5,
    7.3
   ],
-  "fov_deg": 36,
   "target": [
    0,
    1.22,
    0.1
-  ]
+  ],
+  "fov_deg": 36,
+  "fit": "on a screen narrower than 16:9 the camera backs off along its line to the target until table.fitW either side of the middle fits across (fitFacCam)"
  },
  "badge_materials": {
   "concord_0": {

@@ -134,3 +134,4 @@
 - 2026-11-06, desktop session: version 138, version id `1793938020-eca6`: M22 at v2.
 - 2026-11-06, the Kelvane console session: version 139, version id `1793938207-f4a1`: M21 v2 (embossed, velvet), M2 v85, M8 v24, M15 v9, M20 v3. Merged onto the live version `1793938020-eca6`, keeping another session's M22 (Space fly-through; its page and record brought from `claude/campaign-mockups` so the check passes here).
 - 2026-11-06, desktop session: version 140, version id `1793945084-5a8d`: M1 v17 (ships slide on the map), over the Kelvane session's v139.
+- 2026-11-06, cloud session (branch `claude/brave-faraday-ilpu2q`): version 141, version id `1793949867-c088`: M1 v18 (the faction screen on a walnut table, stores, crew lists, kept routes, options), over the desktop session's v140.

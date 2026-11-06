@@ -3,7 +3,9 @@
 ## The screen
 
 Main menu, Campaign, then this screen. In metres, seen from 7.3 m back and 3.5 m up, looking at (0, 1.22, 0.1), 36 degrees
-of field.
+of field. On a screen narrower than 16:9 (a phone in portrait) the camera backs off along that line until 4.3 m either side
+of the middle fits across, so all three badges stay in sight (`fitFacCam`; v18 and before showed only the middle one in
+portrait).
 
 The table (owner, 2026-11-06: "I need the light with the dust particle, and a wooden table, selecting a faction shines a
 light, and the emblem hovers a bit and turns with my mouse movement", "generate the best wooden textture you can with

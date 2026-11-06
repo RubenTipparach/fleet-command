@@ -292,7 +292,7 @@ public sealed partial class Main : Node
 
     /// <summary>Everything on the console that registers controls: the panels, the strips, the view and the menu.</summary>
     private IEnumerable<IControlSource> Sources() =>
-        _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu).Concat(_flow?.Sources() ?? Enumerable.Empty<IControlSource>());
+        _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu).Concat(_options.Visible ? new IControlSource[] { _options } : Array.Empty<IControlSource>()).Concat(_flow?.Sources() ?? Enumerable.Empty<IControlSource>());
 
     /// <summary>Starts the scripted captain on data/playtests/&lt;name&gt;.json; --play=&lt;scenario id&gt; is the scenario it picks
     /// from the scene selector (the playtest skill).</summary>
