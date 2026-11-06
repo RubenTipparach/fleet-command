@@ -3759,7 +3759,9 @@ const pct = (v) => `${Math.round(v * 100)}%`;
 const km = (v) => `${v.toFixed(1)} KM`;
 // A facing's strength as layers (owner, 2026-11-01: "going from red 1 layer -> yellow 2 layers -> green 3 layers"): one
 // rule for the systems display's arcs and the 3D hexagon. 0 when the shields are down or the facing is empty.
-const shieldLayers = (s, i) => { if (!s.shUp || s.shields[i] <= 0.5) return 0; const f = s.shields[i] / shieldMax(s, i); return f > 0.66 ? 3 : f > 0.33 ? 2 : 1; };
+// out of the class's shield_layers in the game's table (a frigate one band, larger ships more; owner, 2026-11-06: "frigates
+// have only 1 layer of shields as opposed to larger ships"), 3 for a class the table lacks
+const shieldLayers = (s, i) => { if (!s.shUp || s.shields[i] <= 0.5) return 0; const f = s.shields[i] / shieldMax(s, i), n = DATA['data/battle/classes.json']?.[s.cls]?.shield_layers ?? 3; return Math.max(1, Math.min(n, Math.ceil(f * n - 0.02))); };
 const shieldCol = (s, i) => !s.shUp ? CC.deep : s.shields[i] / shieldMax(s, i) > 0.66 ? CC.accord : s.shields[i] / shieldMax(s, i) > 0.33 ? CC.caution : CC.alert;
 const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 

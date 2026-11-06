@@ -50,6 +50,23 @@ still draws its outline, and the campaign mockup's shipyard its own. Task: `ship
 Missions (2026-11-05): the game reads `data/missions/`; the campaign mockup still runs `docs/mockups/lib/campaign-missions.js`,
 kept the same by hand (the files were written from it, 2026-11-05). Task: `mission-scripting` 2.1.
 
+Shield bands by class (2026-11-06, owner: "frigates have only 1 layer of shields as opposed to larger ships"): in step.
+`shield_layers` in `data/battle/classes.json` (frigates and corvettes 1, destroyers, corsairs and troop ships 2, cruisers and
+up 3) sets how many bands a facing shows at full strength, read by the game's `ShieldShell.Layers` and by the four battle
+console pages' `shieldLayers` from their inlined table.
+
+Shots between steps (2026-11-06, owner: "why does weapon appear jittery?"): the game draws a shot in flight between its last
+two fixed steps (`Battle.DrawnAt`), as the mockups already do by stepping every animation frame. Nothing to sync.
+
+Game-side changes the game-flow mockup (mockup 1) does not show yet (2026-11-06), task `game-flow-engine` 2.10 "sync mockup 1
+to the game's 2026-11-06 changes":
+- the mission goals over the view have a close key, and the Comms station lists them with an Over view key to show them
+  again; a battle opens on Comms (owner: "add close button to goals, and put them in comms panel. Start game with coms panel
+  open by default");
+- the campaign map's Menu opens the pause menu (Resume, Main menu, Options, Quit) in place of going straight to the main
+  menu (owner: "menu button in campaign map should be the pause menu");
+- the debrief stands on black, the black the battle fades to (owner: "I think this background should be black").
+
 ## Open differences
 
 ### Mockup 1 (the game flow)
