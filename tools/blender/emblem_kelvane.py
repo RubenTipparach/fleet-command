@@ -19,13 +19,14 @@ and it floats above the satin's crests, shadowing the cloth.
 
 Materials:
     champagne     the rim: the platinum graph tinted the Institute's champagne (its instruments' plate)
-    red satin     the field: red, a soft sheen at grazing angles and a highlight drawn out along the weave (anisotropic)
-    green film    the orbital: green under a hard coat with a thin film (iridescent), its wireframe light green, faintly lit
+    red velvet    the field: deep red and matte, the pile's sheen glowing on the folds' shoulders, a fine fibre bump
+    green film    the orbital: dark green under a hard coat with a thin film (iridescent), its wireframe green, faintly lit
 
 Heights (mm), no two faces sharing a plane (the generator's numbers):
-    satin       0.6 to 2.0    its floor where it is tucked under the rim, its highest crest
-    orbital     2.4 to 5.4    the relief, its farthest point 0.4 above the highest crest
-    rim         0.0 to 6.2    the frame, highest
+    velvet      0.6 to 3.6    its floor where it is tucked under the rim, its highest crest; smoothed to a bed at 1.2
+                              under the emblem, the folds dying away within 4 mm of its outline
+    orbital     1.25 to 2.6   the emblem, embossed: a slight bump of 1.35 mm proud of its bed
+    rim         0.0 to 5.0    the frame, highest
 
     /opt/blender/blender -b -P tools/blender/emblem_kelvane.py -- [--out DIR] [--samples N] [--px N] [--steps]
 
@@ -78,23 +79,30 @@ def node_mesh(path, name):
 
 
 def satin_material():
-    """Red satin: a soft sheen at grazing angles and a highlight drawn out along the weave (anisotropic, its tangent
-    round the oval, the generator's u)."""
-    m = bpy.data.materials.new("ka.satin")
+    """Red velvet (owner, 2026-11-06: "the background should be more like velvet fabric than plastic", with a photograph
+    of deep red velvet): deep red and matte, almost no gloss, the pile catching the light where the cloth turns away (a
+    strong sheen at grazing angles, so the folds' shoulders glow and their faces stay dark), and a fine fibre texture."""
+    m = bpy.data.materials.new("ka.velvet")
     m.use_nodes = True
     nt = m.node_tree
     p = nt.nodes["Principled BSDF"]
     p.inputs["Base Color"].default_value = R.hex_rgb(SATIN_RED)
-    p.inputs["Roughness"].default_value = 0.3
-    p.inputs["Anisotropic"].default_value = 0.85
-    p.inputs["Sheen Weight"].default_value = 0.9
-    p.inputs["Sheen Roughness"].default_value = 0.35
+    p.inputs["Roughness"].default_value = 0.88
+    p.inputs["Specular IOR Level"].default_value = 0.12
+    p.inputs["Sheen Weight"].default_value = 1.0
+    p.inputs["Sheen Roughness"].default_value = 0.26
     p.inputs["Sheen Tint"].default_value = R.hex_rgb(SHEEN)
-    p.inputs["Specular IOR Level"].default_value = 0.6
-    tg = nt.nodes.new("ShaderNodeTangent")
-    tg.direction_type = "UV_MAP"
-    tg.uv_map = "UVMap"
-    nt.links.new(tg.outputs["Tangent"], p.inputs["Tangent"])
+    # the pile: fine noise as a shallow bump, so the cloth's surface is not smooth plastic
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    noise = nt.nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 2600.0
+    noise.inputs["Detail"].default_value = 4.0
+    nt.links.new(tc.outputs["Object"], noise.inputs["Vector"])
+    bump = nt.nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.18
+    bump.inputs["Distance"].default_value = 0.00004
+    nt.links.new(noise.outputs["Fac"], bump.inputs["Height"])
+    nt.links.new(bump.outputs["Normal"], p.inputs["Normal"])
     return m
 
 
@@ -108,17 +116,20 @@ def orbital_material():
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     film = nt.nodes.new("ShaderNodeBsdfPrincipled")
     film.inputs["Base Color"].default_value = R.hex_rgb(GREEN)
-    film.inputs["Metallic"].default_value = 0.25
-    film.inputs["Roughness"].default_value = 0.22
-    film.inputs["Coat Weight"].default_value = 1.0
-    film.inputs["Coat Roughness"].default_value = 0.04
-    film.inputs["Thin Film Thickness"].default_value = 520.0
-    film.inputs["Thin Film IOR"].default_value = 1.7
+    film.inputs["Metallic"].default_value = 0.0
+    film.inputs["Roughness"].default_value = 0.3
+    film.inputs["Coat Weight"].default_value = 0.7
+    film.inputs["Coat Roughness"].default_value = 0.05
+    # a faint glow of its own, a trace lit from behind as on the console's scopes, so the dark green reads green
+    film.inputs["Emission Color"].default_value = R.hex_rgb(GREEN)
+    film.inputs["Emission Strength"].default_value = 0.22
+    film.inputs["Thin Film Thickness"].default_value = 480.0   # a stronger film over the darker green: its colours show
+    film.inputs["Thin Film IOR"].default_value = 1.9
     line = nt.nodes.new("ShaderNodeBsdfPrincipled")
     line.inputs["Base Color"].default_value = R.hex_rgb(LINE)
     line.inputs["Roughness"].default_value = 0.35
     line.inputs["Emission Color"].default_value = R.hex_rgb(LINE)   # a little light of its own, a trace on a scope
-    line.inputs["Emission Strength"].default_value = 0.25
+    line.inputs["Emission Strength"].default_value = 0.45
     line.inputs["Coat Weight"].default_value = 1.0
     line.inputs["Coat Roughness"].default_value = 0.04
     uv = nt.nodes.new("ShaderNodeUVMap")

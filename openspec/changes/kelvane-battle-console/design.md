@@ -209,6 +209,19 @@ data, and every form reads it from there.
 | The 3D badge (mockup 21) | Built on the emblem designer. An oval coin in a champagne rim; red satin draped in soft folds (the generator's height field, `ka.satin.json`), anisotropic with a sheen; the orbital floating over it, iridescent green under a hard coat, shaded on the full 3D orbital's normals, its wireframe light green and faintly lit | `tools/blender/emblem_kelvane.py`, `docs/mockups/lib/emblem-builds.js`'s `kelvane()` |
 | The console crest and name plates | Stay brass wire and engraving on champagne: metal pieces of the console kit | the console kit |
 
+**The badge, revised.** The owner, 2026-11-06, with a photograph of deep red velvet: "the logo should be embossed
+slightly, popping out with a slight bump, it should also be irridescent, the wireframe lines should be green, the fill should
+be darker green, and the background should be more like velvet fabric than plastic".
+- **The emblem is embossed.** It stands 1.35 mm proud of a smooth bed of velvet. The folds die away within 4 mm of its
+  outline, which is measured from the emblem's own silhouette. It keeps the full orbital's normals, so it still shades
+  round.
+- **The palette.** It now has the fill dark green, `#24995a` lit and `#126634` in shadow (the 2D logo's two tones), and the
+  wireframe green, `#3ee07a`.
+- **The velvet.** Deep red, `#6c0c15`, and matte. The pile's sheen glows where the folds turn away, with a fine fibre
+  bump, in broad folds up to 3.6 mm.
+- **The orbital's surface.** A thin film under a clear coat, with no metal, and a faint light of its own so the dark green
+  reads as green.
+
 The guide's KID card still shows the plot in a ring. The emblem thread moves it to the oval.
 
 ## Measurements

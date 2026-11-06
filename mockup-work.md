@@ -40,7 +40,7 @@ account and every link here is updated.
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 | 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v2) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
-| 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v1) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
+| 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -947,8 +947,10 @@ ship hull logo".
     wireframe light green and its outline deeper;
   - the badge's relief, its grid and its satin.
 - **The badge.** Built on the emblem designer (`tools/blender/emblem_render.py`, `docs/mockups/lib/emblem-badge.js`): an
-  oval coin in a champagne rim, red satin draped in soft folds, and the orbital floating over it in iridescent green with
-  its wireframe light green, shaded on the full 3D orbital's normals. It is rendered in Blender
+  oval coin in a champagne rim, red velvet in broad soft folds, and the orbital embossed on it as a slight bump, iridescent,
+  its fill dark green and its wireframe green, shaded on the full 3D orbital's normals (owner: "the logo should be embossed
+  slightly , popping out with a slight bump, it sohuld also be irridescent, the wireframe lines should be green, the fill
+  should be darker green, and the background should be more like velvet fabric than plastic"). It is rendered in Blender
   (`tools/blender/emblem_kelvane.py`) and built live from the same meshes on the page.
 - **Change:** `faction-emblems` and `kelvane-battle-console` (D9, D10).
 - **Stage:** Drafted (2026-11-06, v1).

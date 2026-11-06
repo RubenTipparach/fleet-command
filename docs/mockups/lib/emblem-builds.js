@@ -212,10 +212,10 @@ function kelvane(THREE, { mmMaterial, slab, badge }, ORBITAL, SATIN, GRID) {
     g.setIndex(F);
     const m = new THREE.Mesh(g, material); m.castShadow = m.receiveShadow = true; badge.add(m); return m;
   };
-  // ---- the satin: red, a soft sheen at grazing angles, on the generator's draped folds ---------------------------------
-  // (the sheen kept to a glow at grazing angles: at full strength the page's filmic tone map washed the red to pink)
-  mesh(SATIN, new THREE.MeshPhysicalMaterial({ color: srgb(K.field), roughness: 0.45, metalness: 0,
-    sheen: 0.8, sheenColor: srgb(K.sheen), sheenRoughness: 0.35, specularIntensity: 0.5, envMapIntensity: 0.35 }));
+  // ---- the velvet (owner, 2026-11-06: "the background should be more like velvet fabric than plastic"): deep red and matte,
+  // almost no gloss, the pile's sheen glowing where the folds turn away, on the generator's draped folds -----------------
+  mesh(SATIN, new THREE.MeshPhysicalMaterial({ color: srgb(K.field), roughness: 0.9, metalness: 0,
+    sheen: 1.0, sheenColor: srgb(K.sheen), sheenRoughness: 0.26, specularIntensity: 0.12, envMapIntensity: 0.25 }));
   // ---- the orbital: iridescent green under a hard coat, its wireframe inlaid light green, the mask choosing between them
   // (colour, metal, roughness and a faint light on the lines), on the full orbital's normals so it shades as the 3D orbital
   const w = GRID.width, h = GRID.height, cv = (fill) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); fill(x); return c; };
@@ -225,12 +225,13 @@ function kelvane(THREE, { mmMaterial, slab, badge }, ORBITAL, SATIN, GRID) {
     for (let i = 0; i < mask.length; i += 4) { const m = mask[i] / 255; for (let c = 0; c < 3; c++) im.data[i + c] = fieldRGB[c] * (1 - m) + lineRGB[c] * m; im.data[i + 3] = 255; }
     x.putImageData(im, 0, 0); });
   const tex = (c, srgb) => { const t = new THREE.CanvasTexture(c); t.flipY = false; if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+  // (owner, 2026-11-06: "the wireframe lines should be green, the fill should be darker green", "it sohuld also be
+  // irridescent"): the fill dark green and the lines green, each with a faint light of its own, under a clear coat with a
+  // thin film; no metal, so the greens read as colour, not reflection
   mesh(ORBITAL, new THREE.MeshPhysicalMaterial({
-    map: tex(paint(rgb(K.wire), rgb(K.lit)), true),
-    metalnessMap: tex(paint([0, 0, 0], [0, 0, 64])), metalness: 1.0,             // the film 0.25 metal, the lines none (B channel)
-    roughnessMap: tex(paint([0, 89, 0], [0, 56, 0])), roughness: 1.0,            // lines 0.35, film 0.22 (G channel)
-    emissive: srgb(K.wire), emissiveMap: tex(paint([255, 255, 255], [0, 0, 0]), true), emissiveIntensity: 0.08,
-    clearcoat: 1.0, clearcoatRoughness: 0.04, iridescence: 1.0, iridescenceIOR: 1.7, iridescenceThicknessRange: [380, 660],
+    map: tex(paint(rgb(K.wire), rgb(K.lit)), true), metalness: 0, roughness: 0.32,
+    emissive: new THREE.Color(0xffffff), emissiveMap: tex(paint(rgb(K.wire), rgb(K.lit).map((v) => v * 0.5)), true), emissiveIntensity: 0.35,
+    clearcoat: 0.7, clearcoatRoughness: 0.05, iridescence: 1.0, iridescenceIOR: 1.9, iridescenceThicknessRange: [360, 600],
     envMapIntensity: 0.9 }));   // front faces only: the relief's underside, pressed flat, is never seen
   return none;
 }

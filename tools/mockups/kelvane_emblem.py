@@ -36,14 +36,19 @@ BADGE_R_MM = 40.0             # the plot's unit circle on the badge, mm (inside 
 # satin draped inside it from SATIN_Z up through its folds, and the orbital floating above the folds' crests.
 OVAL_OUT = (39.0, 49.0)
 OVAL_IN = (35.0, 45.0)
-SATIN_Z = (0.6, 2.0)          # the satin's floor at the rim and its highest crest, mm
-RELIEF = (2.4, 5.4)           # the orbital's relief, its farthest point clear of the highest crest, under the 6.2 mm rim
-RIM_Z = 6.2
+# (owner, 2026-11-06: "the logo should be embossed slightly , popping out with a slight bump", "the background should be
+# more like velvet fabric than plastic", with a photograph of deep red velvet in broad soft folds)
+SATIN_Z = (0.6, 3.8)          # the velvet's floor at the rim and its highest crest, mm
+BED_Z = 1.2                   # the velvet smoothed flat under the emblem, which stands on it
+RELIEF = (1.25, 2.6)          # the emblem, a slight bump of 1.35 mm proud of its bed
+CALM_MM = 4.0                 # the folds die away within this distance of the emblem's outline
+RIM_Z = 5.0
 # The emblem's colours, KID's (the Emblem Design Guide; owner, 2026-11-06: "on the emblem, background red, shape green",
 # "the red background should be like a satin texture", "green hydrogen icon, irrdescent and red satin soft fabric
 # background on an oval emblem coin"): one palette for the 2D logo, the console's live emblem, the hull logo and the badge.
-PALETTE = {"frame": "#e6d8b8", "field": "#8c1a1f", "sheen": "#d4434a", "shade": "#4f0b0f",
-           "lit": "#2fd36a", "dark": "#137a3c", "wire": "#a6ffbe", "outline": "#0c4a24"}
+# (owner, 2026-11-06: "the wireframe lines should be green, the fill should be darker green")
+PALETTE = {"frame": "#e6d8b8", "field": "#6c0c15", "sheen": "#ff5f6a", "shade": "#3a060b",
+           "lit": "#24995a", "dark": "#126634", "wire": "#3ee07a", "outline": "#052a12"}
 
 TILT = math.radians(30.0)     # the view looks down on the ring by this much, so the ring reads as a ring
 TURN = math.radians(15.0)     # meridians turned off the view's axis, so no two lie on top of each other
@@ -314,27 +319,44 @@ def grid_mask(w=2048, h=1024, line_px=5.0, meridian_px=16.0):
     return Image.fromarray((np.broadcast_to(m, (h, w)) * 255).astype(np.uint8), "L")
 
 
-def satin_mesh(n_r=40, n_a=192):
+def satin_mesh(n_r=44, n_a=176):
     """The red satin the orbital floats over: a cloth draped inside the oval in soft rounded folds that run out from the
     middle, a few broad ones and some smaller between them, gathered a little toward the bottom, lying flat where it is
     tucked under the rim. A height field over the oval (polar rings, the centre one point), with its normals and UVs (u
     round the oval, v from the middle out: the direction its folds run, which the satin's sheen follows)."""
     a, b = OVAL_IN[0] + 0.6, OVAL_IN[1] + 0.6   # tucked a hair under the rim's inner edge
+    # where the folds calm: the distance (mm) of every point from the emblem's own outline (the 2D logo's silhouette)
+    from shapely.geometry import Polygon, Point
+    th2, ph2 = np.meshgrid(np.linspace(0, math.pi, 200), np.linspace(0, 2 * math.pi, 400), indexing="ij")
+    x2, y2, _ = point(th2, ph2)
+    to_mm = 0.96 / float(np.max(np.hypot(x2, y2))) * BADGE_R_MM
+    foot = Polygon(silhouette(depth_buffer(0.96 / float(np.max(np.hypot(x2, y2)))))).buffer(0)
+    foot = Polygon([(x * BADGE_R_MM, y * BADGE_R_MM) for x, y in foot.exterior.coords])
+
     def height(r, t):
-        fold = (0.55 * np.sin(7 * t + 0.9 * np.sin(2 * t) + 0.4) + 0.3 * np.sin(13 * t + 1.7 * np.cos(3 * t)) + 0.15 * np.sin(23 * t + 0.5))
-        gather = 1.0 + 0.35 * np.sin(t - math.pi / 2)        # deeper folds toward the bottom, where the cloth gathers
-        rise = np.clip(r / 0.25, 0, 1) ** 0.7 * (1 - np.clip((r - 0.86) / 0.14, 0, 1)) ** 1.5   # flat at the middle and the tuck
-        z = 0.5 + 0.5 * fold * gather * rise
-        return SATIN_Z[0] + (SATIN_Z[1] - SATIN_Z[0]) * np.clip(z * (0.45 + 0.55 * rise), 0, 1)
+        # velvet: a few broad soft folds swept round the oval, some lesser ones riding on them, deeper toward the bottom
+        fold = (0.6 * np.sin(4 * t + 1.1 * np.sin(2 * t) + 0.4 + 2.2 * r) + 0.28 * np.sin(9 * t + 1.7 * np.cos(3 * t) - 1.4 * r)
+                + 0.12 * np.sin(17 * t + 0.5))
+        gather = 1.0 + 0.3 * np.sin(t - math.pi / 2)
+        rise = (1 - np.clip((r - 0.86) / 0.14, 0, 1)) ** 1.5   # flat where it is tucked under the rim
+        z = 0.5 + 0.5 * fold * gather
+        return SATIN_Z[0] + (SATIN_Z[1] - SATIN_Z[0]) * np.clip(z, 0, 1) * rise
+    def calm(x, y):
+        """0 on and inside the emblem's outline, rising smoothly to 1 at CALM_MM out."""
+        d = np.vectorize(lambda px, py: 0.0 if foot.contains(Point(px, py)) else foot.exterior.distance(Point(px, py)))(x, y)
+        u = np.clip(d / CALM_MM, 0, 1)
+        return u * u * (3 - 2 * u)
+
     R = np.linspace(0.0, 1.0, n_r + 1)
     T = np.linspace(0.0, 2 * math.pi, n_a, endpoint=False)
     rr, tt = np.meshgrid(R, T, indexing="ij")
     X, Y = a * rr * np.cos(tt), b * rr * np.sin(tt)
-    Z = height(rr, tt)
+    C = calm(X, Y)
+    Z = BED_Z + (height(rr, tt) - BED_Z) * C
     e = 1e-3
     def hz(x, y):
         r = np.sqrt((x / a) ** 2 + (y / b) ** 2)
-        return height(np.clip(r, 0, 1), np.arctan2(y / b, x / a))
+        return BED_Z + (height(np.clip(r, 0, 1), np.arctan2(y / b, x / a)) - BED_Z) * calm(x, y)
     nx = -(hz(X + e, Y) - hz(X - e, Y)) / (2 * e)
     ny = -(hz(X, Y + e) - hz(X, Y - e)) / (2 * e)
     N = np.stack([nx, ny, np.ones_like(nx)], axis=-1)
