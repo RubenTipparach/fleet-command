@@ -102,6 +102,11 @@ lot of the other weapons, check the procedure in crab breeze how audio was softe
 - **A sound heard from the bridge through the hull** (the weapons) gets Crab Breeze's sealed-cockpit filter:
   `"lp": 4000, "lp_order": 4, "peak_db": -7` (4 kHz twice over, 6 dB down), and less `drive`.
 - Measure before and after (energy above 4 kHz, spectral centre, RMS, the first 20 ms of a shot) and say the numbers.
+- **Soft is not dark.** A bed low passed hard keeps only its low end, which hurts (owner, 2026-11-07: "low rumble
+  bridge ambient, it hurts my ears a bit", "make it sound pleaasent like proper ambience"). Cut a bed below about
+  180 Hz (`"hp": 180, "hp_order": 4`), drop any steady hum under 150 Hz, let soft air reach about 6 kHz (the `room_air`
+  layer: pink noise from 200 Hz to 6 kHz), and check the energy per octave is spread, not piled in one band. Set a
+  scattered sound's gain against the bed's average, not its peak: noise peaks about 13 dB over its average.
 
 ## Levels
 

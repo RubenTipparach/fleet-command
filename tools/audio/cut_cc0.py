@@ -200,7 +200,7 @@ def cut(cue: dict, src_root: str, name: str = "") -> np.ndarray:
     if extra:
         x = x / (np.max(np.abs(x)) or 1.0)
         x = x + sum(fit(p, n) for p in extra)
-    x = per_channel(g.hp, x, cue.get("hp", 20))
+    x = per_channel(g.hp, x, cue.get("hp", 20), order=cue.get("hp_order", 2))
     if "lp" in cue:
         x = per_channel(g.lp, x, cue["lp"], order=cue.get("lp_order", 2))
     if cue.get("loop"):

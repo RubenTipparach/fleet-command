@@ -24,3 +24,6 @@
   the bleeps about 10 dB quieter.
 - Version 5 published 2026-11-07, version id `1793953907-28eb`: the bridge and the weapons softened on Crab Breeze's
   low-pass rules (the bed at 3.5 kHz and -14 dB peak, bleeps included; every weapon at 4 kHz, 24 dB/octave, 6 dB down).
+- Version 6 published 2026-11-07, version id `1793954421-9912`: the bridge bed without its low rumble (owner: "low rumble
+  bridge ambient, it hurts my ears a bit", "make it sound pleaasent like proper ambience"): a soft room tone over the
+  air duct, nothing under 180 Hz.

@@ -173,6 +173,25 @@ def brown(rng: np.random.Generator, n: int) -> np.ndarray:
     return y / (np.max(np.abs(y)) or 1.0)
 
 
+def pink(rng: np.random.Generator, n: int) -> np.ndarray:
+    """Pink noise (equal energy per octave, Paul Kellet's filter on white noise): the colour of soft
+    air, gentler on the ear than white noise's hiss or brown noise's roar."""
+    w = rng.uniform(-1, 1, n)
+    b = np.zeros(7)
+    out = np.empty(n)
+    for i in range(n):
+        x = w[i]
+        b[0] = 0.99886 * b[0] + x * 0.0555179
+        b[1] = 0.99332 * b[1] + x * 0.0750759
+        b[2] = 0.96900 * b[2] + x * 0.1538520
+        b[3] = 0.86650 * b[3] + x * 0.3104856
+        b[4] = 0.55000 * b[4] + x * 0.5329522
+        b[5] = -0.7616 * b[5] - x * 0.0168980
+        out[i] = b[0] + b[1] + b[2] + b[3] + b[4] + b[5] + b[6] + x * 0.5362
+        b[6] = x * 0.115926
+    return out / (np.max(np.abs(out)) or 1.0)
+
+
 def turbulence(rng: np.random.Generator, n: int, rate_hz: float = 7.0, depth: float = 0.45) -> np.ndarray:
     """A burning flame's unsteady swell: slow random amplitude between 1 - depth and 1 + depth."""
     m = lp(rng.uniform(-1, 1, n), rate_hz, order=2)
@@ -328,6 +347,20 @@ def beam_snap(r):
     f = sweep(330, 130, n, 0.5)
     body = chorus(f, n) + 0.4 * chorus(f * 2.01, n, fn=square)
     return lp(body, sweep(7000, 1200, n, 0.6), order=2) * adsr(n, 0.002, 0.05, 0.55, 0.22)
+
+
+@sound("room_air", "_layer", "The bridge's room tone: soft pink air, nothing under 200 Hz, an open top to 6 kHz, drifting a decibel either way over many seconds.")
+def room_air(r):
+    n = int(60.0 * SR)
+    air = pink(r, n)
+    air = hp(air, 200.0, order=4)
+    air = lp(air, 6000.0, order=2)
+    drift = 1.0 + 0.11 * np.interp(np.arange(n), np.linspace(0, n, 9), r.uniform(-1, 1, 9))
+    return air * drift
+
+
+# the same room tone from a second seed, so the left and right of the bed are uncorrelated and the room sounds wide
+sound("room_air_r", "_layer", "The room tone again from its own seed, for the other side of the stereo bed.")(room_air)
 
 
 @sound("console_bleep", "_layer", "A console working: two or three quick bleeps, the pitches seeded.")

@@ -1,5 +1,5 @@
 {
-  "_about": "Recorded cues for tools/audio/cut_cc0.py (format from Crab Breeze, unchanged). A layer is {src: 'pack:file'} or {synth: '<gen_sfx layer or cue>'}, with optional shot (n-th shot of a multi-shot take), start, dur (s), pitch (tape-speed ratio), gain (dB after the layer is peak-normalised), lp, hp (Hz, steep), fadein, fadeout, delay (s), repeat. A cue may set len, drive (tanh), hp, lp (gentle, 12 dB/octave), distance (compressor, lowpass and reverb that push a bed into the background), loop, stereo, group, peak_db, what and edits. A cue whose what ends in (loops) loops in the game. A cue may also set scatter: a list of groups, each placing count short sounds picked from pick (layer specs) at seeded times inside within seconds (from 0, no closer than min_gap), with gain, pitch ranges and a pan width; scattered sounds are mixed after the distance treatment (this repository, 2026-11-06). A cue's lp_order (default 2, 12 dB/octave) makes its lp steeper: 4 is Crab Breeze's sealed-cockpit filter (two 2-pole passes at 4 kHz), used here for every weapon heard from the bridge through the hull, written 6 dB down (peak_db -7) (2026-11-07).",
+  "_about": "Recorded cues for tools/audio/cut_cc0.py (format from Crab Breeze, unchanged). A layer is {src: 'pack:file'} or {synth: '<gen_sfx layer or cue>'}, with optional shot (n-th shot of a multi-shot take), start, dur (s), pitch (tape-speed ratio), gain (dB after the layer is peak-normalised), lp, hp (Hz, steep), fadein, fadeout, delay (s), repeat. A cue may set len, drive (tanh), hp, lp (gentle, 12 dB/octave), distance (compressor, lowpass and reverb that push a bed into the background), loop, stereo, group, peak_db, what and edits. A cue whose what ends in (loops) loops in the game. A cue may also set scatter: a list of groups, each placing count short sounds picked from pick (layer specs) at seeded times inside within seconds (from 0, no closer than min_gap), with gain, pitch ranges and a pan width; scattered sounds are mixed after the distance treatment (this repository, 2026-11-06). A cue's lp_order (default 2, 12 dB/octave) makes its lp steeper: 4 is Crab Breeze's sealed-cockpit filter (two 2-pole passes at 4 kHz), used here for every weapon heard from the bridge through the hull, written 6 dB down (peak_db -7) (2026-11-07). A cue's hp_order (default 2) makes its hp steeper, as lp_order does its lp.",
   "lance_fire": {
     "group": "Weapons",
     "what": "The Lance firing: a hard electric crack and a kick, a beam that snaps out and is gone in half a second.",
@@ -382,24 +382,30 @@
   },
   "amb_bridge": {
     "group": "Ambience",
-    "what": "The bridge (loops, a minute): the air handling and the ship's low hum, with consoles bleeping softly now and then.",
+    "what": "The bridge (loops, a minute): soft air and the air handling, nothing low or booming, with consoles bleeping softly now and then.",
     "layers": [
+      {
+        "synth": "room_air",
+        "pan": -0.75
+      },
+      {
+        "synth": "room_air_r",
+        "pan": 0.75
+      },
       {
         "src": "oga/airvent-loop:airvent-large-loop.wav",
         "repeat": 8,
-        "pan": 0.25
+        "pan": 0.3,
+        "hp": 180,
+        "gain": -7
       },
       {
         "src": "oga/airvent-loop:airvent-large-loop.wav",
         "start": 3.7,
         "repeat": 8,
         "pan": -0.35,
-        "gain": -3
-      },
-      {
-        "src": "oga/generator-loop:loop_generator_1.mp3",
-        "repeat": 12,
-        "gain": -14
+        "hp": 180,
+        "gain": -9
       }
     ],
     "scatter": [
@@ -408,8 +414,8 @@
         "within": 57.0,
         "min_gap": 1.4,
         "gain": [
-          -27,
-          -19
+          -8,
+          -2
         ],
         "pan": 0.85,
         "pitch": [
@@ -472,8 +478,8 @@
         "within": 56.0,
         "min_gap": 4.0,
         "gain": [
-          -29,
-          -22
+          -10,
+          -5
         ],
         "pan": 0.7,
         "pitch": [
@@ -533,15 +539,17 @@
     "loop": true,
     "loop_fade": 1.5,
     "distance": {
-      "lp": 3500,
-      "wet": 0.35,
+      "lp": 6000,
+      "wet": 0.3,
       "threshold_db": -18,
       "ratio": 3
     },
     "peak_db": -14.0,
-    "edits": "the air duct recorded twice, offset and panned wide, over a low generator hum; recorded terminal and interface bleeps and our bleeps scattered softly over a minute at seeded times and pans; then Crab Breeze's background treatment for a bed, the bleeps included: compressed 3:1 from -18 dB, low passed at 3.5 kHz, a diffuse reverb, written at -14 dB peak; crossfaded into a loop",
-    "lp": 3500,
-    "lp_order": 4
+    "edits": "our room tone (soft pink air, 200 Hz to 6 kHz) under the air duct recorded twice, offset, panned wide and cut below 180 Hz; no low hum; recorded terminal and interface bleeps and our bleeps scattered softly over a minute at seeded times and pans; compressed 3:1, given a diffuse reverb, cut below 180 Hz at 24 dB/octave and above 6.5 kHz, written at -14 dB peak; crossfaded into a loop",
+    "lp": 6500,
+    "lp_order": 2,
+    "hp": 180,
+    "hp_order": 4
   },
   "shield_hit_short": {
     "group": "Impacts",

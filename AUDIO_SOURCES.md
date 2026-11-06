@@ -19,7 +19,7 @@ This file is written by `python3 tools/audio/list_sources.py` (run by `tools/aud
 | [chunky explosion](https://opengameart.org/content/chunky-explosion) | OpenGameArt | Joth | CC0 | `ship_destroyed` |
 | [electricity game sound pack](https://opengameart.org/content/electricity-game-sound-pack) | OpenGameArt | faxcorp | CC0 | `disruptor_fire`, `lance_fire`, `overload_charge`, `shield_hit`, `shield_hit_short`, `shields_collapse`, `shields_raise`, `ship_destroyed` |
 | [explosions 4](https://opengameart.org/content/explosions-4) | OpenGameArt | EZduzziteh | CC0 | `explosion_small`, `explosion_small_short`, `hull_hit`, `hull_hit_short`, `ship_destroyed`, `torpedo_detonate`, `torpedo_detonate_short` |
-| [generator loop](https://opengameart.org/content/generator-loop) | OpenGameArt | YCbCr | CC0 | `amb_bridge`, `engine_hum` |
+| [generator loop](https://opengameart.org/content/generator-loop) | OpenGameArt | YCbCr | CC0 | `engine_hum` |
 | [interface beeps](https://opengameart.org/content/interface-beeps) | OpenGameArt | bart | CC0 | `amb_bridge` |
 | [laser weapon burst fire](https://opengameart.org/content/laser-weapon-burst-fire) | OpenGameArt | celestialghost8 | CC0 | `pd_burst` |
 | [low rumbling](https://opengameart.org/content/low-rumbling) | OpenGameArt | Musheran | CC0 | `ship_destroyed` |

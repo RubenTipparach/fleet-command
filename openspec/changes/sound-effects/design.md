@@ -52,6 +52,13 @@ the bridge through the hull (`lp` 4000, `lp_order` 4, `peak_db` -7). Measured: t
 1196 to 815 Hz and its energy above 4 kHz from 4.8% to 0.2%, 7 dB quieter on average, its first 20 ms still its
 loudest; every weapon is 6-7 dB quieter on average. The hits keep their level (the owner: "hull hits are all great").
 
+**A bed is comfortable, not only quiet** (owner, 2026-11-07: "low rumble bridge ambient, it hurts my ears a bit",
+"make it sound pleaasent like proper ambience"). Low-passing the bed at 3.5 kHz left only its low end, a 53 Hz hum and
+a boxy 200-400 Hz roar, which tires the ear. The bed is now a soft room tone (pink noise, equal energy per octave, from
+200 Hz to 6 kHz, two uncorrelated sides for width) under the air duct cut below 180 Hz, with nothing under 180 Hz
+(24 dB/octave) and a gentle top to 6.5 kHz. A bed's rules: no steady tone under 150 Hz, energy spread across the
+octaves rather than piled in one, nothing moving in pitch, its loudness within about 5 dB.
+
 **Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
 so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.
 

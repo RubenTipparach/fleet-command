@@ -36,7 +36,7 @@ account and every link here is updated.
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | **Approved for implementation** (2026-11-06, owner in conversation: "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v9; v10 committed, to publish) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
-| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-07, v5 after the owner's notes; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
+| 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-07, v6 after the owner's notes; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-07, v3: a battle and an ambient loop for every faction in the game; published from the cloud session's account, audio served beside the page) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
@@ -903,6 +903,11 @@ heard, not seen, so its mockup is a page to listen on: every cue with a play but
   from -18 dB, low passed at 3.5 kHz, a diffuse reverb, written at -14 dB peak), the bleeps now filtered with it; every
   weapon gets its outside-sound seal (Crab Breeze `openspec/changes/audio`: low passed at 4 kHz twice over, 6 dB down),
   heard from the bridge through the hull, with less saturation on the Lance and the Disruptor.
+- The owner, 2026-11-07: "low rumble bridge ambient, it hurts my ears a bit", "make it sound pleaasent like proper
+  ambience". Done in v6: the generator layer (86% of it a 53 Hz hum) removed; a soft room tone (pink air, 200 Hz to
+  6 kHz, two uncorrelated sides) under the air duct, which is cut below 180 Hz; the whole bed cut below 180 Hz at
+  24 dB/octave and above 6.5 kHz, so the 3.5 kHz dark roar of v5 opens to soft air. Measured: 0.03% of the energy under
+  150 Hz, the rest even from 200 Hz to 3.5 kHz, the loudness within 5.3 dB, the bleeps soft over it (at most 11 dB).
 
 ## 18. Music
 
