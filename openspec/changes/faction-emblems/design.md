@@ -216,3 +216,29 @@ Watch green lacquer, the lacquer under dried blood, and a dry forest in enamel; 
 by `tools/emblems/ssarith_leaves.py`. SD's three arrowheads are now each their own shape, one per stage. Heights and
 materials in mockup-work.md section 19.
 
+## The Kelvane Institute (2026-11-06)
+
+Owner, 2026-11-06: "lets design an emblem for the institute". The Institute's culture is one line in the console skins
+design ("truth is measured, never assumed; every reading is shown on an instrument a scientist can check by eye"), so, as
+for the Hunt, three traditions inside the Institute are drafted for the owner to pick, change or reject, each with a sketch
+that names it, none from the Kelvane's bodies (the console notes' "many-handed" is left out):
+
+| Sketch | Tradition | Outline | What it shows |
+|---|---|---|---|
+| KIA, the True Mark (recommended) | The Calibrators, the instrument makers: a reading is only as true as the standard it was checked against | A meter's face (a fan) | An engraved scale, the needle at rest exactly on the amber reference mark: the moment of calibration |
+| KIB, the Repeated Trace | The Open Notebook, the reviewers: no result is true until another laboratory repeats it | A scope's screen | Two identical traces, green and amber, and the cursor that compares them |
+| KIC, the Long Baseline | The surveyors and astronomers: the Institute began by measuring the distance to a star | A lens | A measured baseline with a station at each end, their sightlines meeting at one amber star |
+
+Palette (provisional, the Kelvane console's): Champagne (the enamelled plate), Phosphor green (the scope's trace), Amber (the
+backlit readout, the reference mark), Scope glass (the dark behind a trace). The console's crest today, a tuning fork over
+its wave, is a placeholder until a sketch is picked. Every sketch passes the measured checks (joins, outline, contrast).
+
+**Picked (owner, 2026-11-06, in the Kelvane console thread, with a book cover's hydrogen-atom plot): "I would like this
+hydrogen atom eigen plot used as the logo/emblem".** This supersedes the three sketches above. The emblem is hydrogen's 3d z²
+orbital (n 3, l 2, m 0): the surface at |3cos²θ − 1|, two lobes along the axis and a ring round the waist, drawn as a
+wireframe eigen plot. It is computed, not traced from the cover, whose art is its publisher's. Its one geometry is
+`tools/mockups/kelvane_emblem.py`, which writes `assets/ui/kelvane/emblem.json` (fine, coarse and mark levels, and the
+outline). It is already on the Kelvane crest in brass wire, the name plates and the console's live emblem
+(`openspec/changes/kelvane-battle-console`, D9, on `claude/brave-faraday-ilpu2q`). Still to do in this thread: the emblem
+guide's Kelvane section and the gallery's badge, built from the same lines.
+
