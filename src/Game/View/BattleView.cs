@@ -249,7 +249,10 @@ public sealed partial class BattleView : Node3D
             _hitSeq = e.Seq;
             if (_damage.TryGetValue(e.ShipId, out ShipDamage? d)) d.OnHit(e);
             else if (_models.TryGetValue(e.ShipId, out Node3D? m))
-                Fx.Fireball(this, m.GlobalPosition, e.HullDamage > 0 ? 0.12f : 0.06f, Vector3.Up);
+            {
+                if (e.HullDamage > 0) Fx.Fireball(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.12f), Vector3.Up);
+                else Fx.ShieldFlare(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.06f, Fx.ShieldMinShare), Vector3.Up);
+            }
         }
         foreach (ShipDamage d in _damage.Values) d.Step((float)dt);
     }

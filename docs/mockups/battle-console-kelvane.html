@@ -5933,7 +5933,8 @@ const SHOT_POOL = {};
 // as the page's other looks are, until the game's version moves them to data). This page has no bloom pass: the range
 // shows the full look.
 const WFX = window.FCWeaponFX(THREE, { scene, hazeScene: new THREE.Scene(), camera, renderer, SFX: null, rand: rng(4242) });
-const SHOT_FX = { beam_w_u: 0.34, pd_w_u: 0.2, bolt_w_u: 0.45, bolt_len_u: 1.0, torpedo_u: 2.2, missile_u: 0.7, missile_len_u: 0.22, trail_w_u: 0.2, missile_trail_w_u: 0.45, missile_trail_s: 2.4, missile_trail_n: 80, missile_trail_every_s: 1 / 30, trail_s: 0.8, bead_u: 1.4, bead_s: 0.012, bead_life_s: 0.4 };
+const SHOT_FX = { beam_w_u: 0.34, pd_w_u: 0.2, bolt_w_u: 0.45, bolt_len_u: 1.0, torpedo_u: 2.2, missile_u: 0.7, missile_len_u: 0.22, trail_w_u: 0.2, missile_trail_w_u: 0.45, missile_trail_s: 2.4, missile_trail_n: 80, missile_trail_every_s: 1 / 30, trail_s: 0.8, bead_u: 1.4, bead_s: 0.012, bead_life_s: 0.4, shield_flash_white: 0.7, shield_flash_boost: 2.5 };
+const _white = new THREE.Color(1, 1, 1);   // a shield hit flares its facing toward white (owner, 2026-11-06: "missing shield reaction when weapon impacts")
 const FX_POOL = { lance: [], tracer: [], bolt: [], six: [], ball: [], dart: [] }, TRAILS = new Map(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 function takeFx(kind, used) {
   const pool = FX_POOL[kind]; let o = pool[used[kind]];
@@ -6018,7 +6019,7 @@ function syncScene(dt) {
     cloakLook(o, s);
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
     const show = showShields; // every ship shows its shields (owner, 2026-11-04: "add shield display to all ships as well")
-    o.sh.children.forEach((face, i) => { const nl = shieldLayers(s, i), col = shieldCol(s, i); face.children.forEach((m, l) => { m.material.opacity = Math.min(1, (show && l < nl ? 0.8 : 0) + (l === 0 ? s.flash[i] * 0.9 : 0)); m.material.color.set(col); }); });
+    o.sh.children.forEach((face, i) => { const nl = shieldLayers(s, i), col = shieldCol(s, i); face.children.forEach((m, l) => { const fl = s.flash[i], k = 1 + SHOT_FX.shield_flash_boost * fl; m.material.opacity = Math.min(1, (show && l < nl ? 0.8 : 0) + (l === 0 ? fl : show && l < nl ? fl * 0.5 : 0)); m.material.color.set(col).lerp(_white, SHOT_FX.shield_flash_white * fl).multiplyScalar(k); }); });
   }
   // Shots: beams as glowing cylinders, projectiles as glow sprites, each kind from its own pool, so an object is never
   // thrown away and rebuilt because the slot it sat in changed kind (that churn made the view stutter with mines out).

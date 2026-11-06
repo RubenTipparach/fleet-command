@@ -4,8 +4,8 @@
 // each of the six facings up to three glowing bands outward, a small gap between facings, each band a soft line of light
 // (bright along its middle, fading to either side), added to the scene. A facing shows as many bands as its strength
 // earns out of its class's shield_layers (a frigate one, larger ships more; for three: above two thirds three, above a third two, else one; none when the shields are down or the facing
-// is empty), in its strength's colour (the systems display's rule, ShipPanel.ShieldColorOf); a hit brightens its inner
-// band. Every ship carries one. View only: it reads the simulation, never writes it.
+// is empty), in its strength's colour (the systems display's rule, ShipPanel.ShieldColorOf); a hit flares its facing white and over-bright.
+// Every ship carries one. View only: it reads the simulation, never writes it.
 using System;
 using FleetCommand.Game.Ui.Kit;
 using FleetCommand.Sim;
@@ -17,6 +17,9 @@ public sealed partial class ShieldShell : Node3D
 {
     /// <summary>The hexagon's inner radius, band width and band spacing, as shares of the ship's length (the mockup's 0.62, 0.1, 0.13 of the radius).</summary>
     public const float RadiusShare = 0.62f, WidthShare = 0.1f, StepShare = 0.13f, Gap = 0.1f;
+
+    /// <summary>A hit's flare on its facing at full flash: the share of the way to white, and the extra brightness (the mockup's shield_flash_white, shield_flash_boost).</summary>
+    public const float FlashWhite = 0.7f, FlashBoost = 2.5f;
 
     private static Texture2D? _band;
     private readonly StandardMaterial3D[,] _mats = new StandardMaterial3D[6, 3];
@@ -79,9 +82,12 @@ public sealed partial class ShieldShell : Node3D
         {
             int n = Layers(s, i);
             Color col = s.ShieldsUp ? Ui.SystemsDisplay.ShieldColorOf(c, s.Shields[i] / s.Class.ShieldsHp[i]) : c.Deep;
-            float flash = (float)Math.Clamp(s.Flash[i], 0, 1);
+            // a hit (owner, 2026-11-06: "missing shield reaction when weapon impacts"): the struck facing's bands flare
+            // white and over-bright, and the inner one lights even when the facing is drained
+            float flash = (float)Math.Clamp(s.Flash[i], 0, 1), k = 1 + FlashBoost * flash;
+            Color lit = col.Lerp(Colors.White, FlashWhite * flash);
             for (int l = 0; l < 3; l++)
-                _mats[i, l].AlbedoColor = new Color(col, Math.Min(1f, (l < n ? 0.8f : 0f) + (l == 0 ? flash * 0.9f : 0f)));
+                _mats[i, l].AlbedoColor = new Color(lit.R * k, lit.G * k, lit.B * k, Math.Min(1f, (l < n ? 0.8f : 0f) + (l == 0 ? flash : l < n ? flash * 0.5f : 0f)));
         }
     }
 }
