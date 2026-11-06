@@ -24,8 +24,10 @@ reaches and radii) is tenfold, a scene unit is 1 km (`BattleView.MPerU`), and `t
 ship at ten times its `length_m`, so the battle looks and plays as before (the golden seed is unchanged) while every
 readout says ten times the figure: a ship 1.1 km off now reads 11 km. Ship lengths, deck plans and the boarding parties'
 walking inside a hull are not scaled. The mockups (2, 8, 15, 16 and the console skins) still use the old figures and
-`tools/mockups/inline_data.py` inlines the scaled data into them, so they are out of step until their scene unit is 1 km and
-their ships are drawn at `ship_frame_x` times their length. Task: `battle-console-engine` 2.8, "distances x10 in the
+the battle console pages carry the scaled class table (they read only each class's model and shield bands from it, so they
+draw as before), and the special weapons range (16) keeps its old inlined weapons, missiles and tuning (it flies by them, so
+the scaled figures would break it), which leaves its `inline_data.py --check` failing until its scene unit is 1 km and its
+ships are drawn at `ship_frame_x` times their length. Task: `battle-console-engine` 2.8, "distances x10 in the
 mockups".
 
 Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
