@@ -161,7 +161,8 @@ skins give neither, so their strips are unchanged. Mockup 4's strips keep their 
 | Check | Result |
 |---|---|
 | Fit rules K, L, R, P and B on every piece's shapes | 0 failures |
-| Parity, Kelvane page against the Concord's | 70 shots, 4,087 presses of 396 controls, every press matched |
+| Parity, Kelvane page against the Concord's (the final page, with the live meters) | 70 shots, 4,087 presses of 396 controls, every press matched |
+| Parity, Ssarith and Krai pages after the shared changes | each 70 shots, 4,087 presses, every press matched |
 | Rule B on the renders | every piece, 0 lit pixels outside its plate |
 | Pieces mockup 4 uses | byte-identical manifest entries |
 | Render time | about 4 minutes at 48 samples on 4 cores, the backing taking most of it |
