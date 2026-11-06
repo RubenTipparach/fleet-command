@@ -18,3 +18,4 @@
 - Version 6 (2026-11-05): the Concord and Krai ships in the allied scenes fly as their lines' exported glbs, the Hunt's fleet on its stand-in; parity 3,917 presses of 396 controls. Published version id `1793850905-1529`.
 - Version 7 (2026-11-06): the Patience in the allied and swap scenes; parity 70 shots, 4,087 presses of 396 controls, every press matched. Version id `1793930950-5037`.
 - Version 8 (2026-11-06): the Kelvane emblem KID in its colours. Version id `1793934558-a0f2`.
+- Version 9 (2026-11-06): the Kelvane emblem in KID's revised palette. Version id `1793937973-c141`.

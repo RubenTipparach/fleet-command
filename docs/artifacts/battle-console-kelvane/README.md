@@ -11,3 +11,4 @@
 - Link: https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty
 - Version 1 (2026-11-06): the Kelvane Institute skin of source v83, with the live strip meters; parity 70 shots, 4,087 presses of 396 controls, every press matched the Concord's. Version id `1793930210-1831`.
 - Version 2 (2026-11-06): the emblem KID (the hydrogen eigen plot) on the crest, the name plates and the live emblem, as the oval 2D logo in KID's colours. Version id `1793934554-99a8`.
+- Version 3 (2026-11-06): the live emblem and 2D logo in KID's revised palette (dark green fill, green lines, velvet red). Version id `1793937966-4030`.

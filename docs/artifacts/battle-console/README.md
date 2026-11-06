@@ -107,3 +107,4 @@
 - Version 82 (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): the ships are the exported glbs the game flies (data/battle/classes.json's model), the Krai's as the Krai line; published over the desktop session's live v81 (`1793828140-35fa`, its shield edit already in the source). Version id `1793850924-182a`.
 - Version 83 (2026-11-06, the Kelvane console session): the Kelvane research cruiser Patience in the allied fleet and the swap scene (Four races, key 4); the skin hooks keyField, titleDy and the strip meter, unset in the Concord. Version id `1793930939-f45f`.
 - Version 84 (2026-11-06): the Kelvane emblem KID in its colours (the oval coin, red satin, the plot in two greens). Version id `1793934552-88ae`.
+- Version 85 (2026-11-06): the Kelvane emblem in KID's revised palette (dark green fill, green lines, velvet red). Version id `1793937968-0f1b`.

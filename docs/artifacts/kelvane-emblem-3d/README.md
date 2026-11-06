@@ -11,3 +11,4 @@
 ## Publishes
 - Link: https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3
 - Version 1 (2026-11-06): KID on an oval coin: the orbital in iridescent green with its wireframe light green, over red satin draped in soft folds, in a champagne rim; the 2D hull logo beside the renders. Version id `1793934506-805f`.
+- Version 2 (2026-11-06, owner: "embossed slightly", "irridescent", "wireframe lines should be green, the fill should be darker green", "more like velvet fabric than plastic"): the emblem embossed as a 1.35 mm bump on a smooth bed of red velvet in broad soft folds, its fill dark green and lines green, iridescent. Version id `1793937964-82fe`.

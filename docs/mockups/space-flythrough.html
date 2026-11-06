@@ -1,0 +1,370 @@
+<!doctype html>
+<!--
+  Fleet Command mockup 22: a fly-through of space, ray-marched nebula clouds and stars (owner, 2026-11-05: "write up a
+  beautiful fly through of space with ray marched nebula clouds and stars"; with "can you make a better proc gen starfield?").
+  OpenSpec change: space-flythrough.
+
+  The clouds are ray-marched in a fragment shader: density from gradient noise on an integer hash (PCG3D on uint, never
+  fract(sin)), domain-warped fractal noise with a rotation between octaves so no axis shows, glowing gas that emits its
+  palette's colours, dust lanes that only absorb, and stars buried in the gas that light it from inside. Each pixel's first
+  step is jittered by the hash of the pixel and the frame, so the march shows no bands. The stars are real points from a
+  seeded generator (Mulberry32), placed in 3D (a far shell with the galaxy's disc thicker in it, and a near field round the
+  path), in the classes and colours of data/space/starfield.json, and the clouds in front dim them by the light they let
+  through. The camera flies a closed spline through the clouds; a drag looks round, and the look stays where it is left.
+
+  Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, window.MOCKUP_READY, window.MOCKUP_SCENE.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleet Command Space Fly-through</title>
+<style>
+  :root { --bg: #020306; --panel: #0b1320; --edge: #2c4a6b; --ink: #d7e6ff; --dim: #7f97b6; --accent: #49b8f0; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font: 14px/1.4 "Rajdhani", "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .title { position: fixed; left: 16px; top: 12px; max-width: min(460px, calc(100% - 32px));
+    background: color-mix(in srgb, var(--panel) 82%, transparent); border: 1px solid var(--edge);
+    padding: 8px 12px; border-radius: 6px; }
+  .title h1 { font-size: 16px; margin: 0 0 2px; letter-spacing: .06em; text-transform: uppercase; }
+  .title p { margin: 2px 0 0; color: var(--dim); }
+  .title a { color: var(--accent); }
+  .keys { position: fixed; left: 16px; bottom: 12px; display: flex; gap: 6px; flex-wrap: wrap; max-width: calc(100% - 140px); }
+  .keys button { min-width: 44px; min-height: 44px; background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--ink);
+    border: 1px solid var(--edge); border-radius: 22px; font: inherit; padding: 0 14px; cursor: pointer; }
+  .keys button[aria-pressed="true"] { background: var(--accent); color: #031018; border-color: var(--accent); }
+  .keys .sep { width: 8px; }
+  .meter { position: fixed; right: 16px; bottom: 14px; color: var(--dim); font-variant-numeric: tabular-nums; text-align: right; }
+  body.clean .title, body.clean .keys, body.clean .meter { display: none; }
+</style>
+</head>
+<body>
+<div class="title">
+  <h1>Space fly-through</h1>
+  <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+  <p>Mockup 22, <code>space-flythrough</code>. Ray-marched nebula clouds and seeded stars. Drag to look round; the look stays where you leave it. H hides the panels.</p>
+</div>
+<div class="keys" id="keys"></div>
+<div class="meter" id="meter"></div>
+
+<script type="application/json" data-src="data/space/starfield.json">{"schema":"starcrew.starfield/1","_status":"Built (2026-10-16): openspec/changes/nebula-skies design 5, docs/mockups/nebula-skies.html. Read by tools/space/nebula_skies.py (the classes and colours), the mockup and sc-core::sky (the engine's stars and streaks).","_doc":"The vector stars drawn over a nebula sky, and how they streak (nebula-skies design 5). Each star is a direction at infinity; every frame it is drawn as a line from where it is on screen now back toward where it was tail_s ago, so a turning view smears the stars into short lines (FreeSpace's way: the star's last position kept, a line drawn to it, its length capped and its brightness dimmed as it grows). A star's class sets its brightness range (the sky file holds each star's own) and its head's size at rest; its colour is a tint. streak: tail_s the seconds of turning a tail shows, max_deg the longest tail (angle), min_px the least line drawn (a star at rest is a point), dim_per_deg the brightness lost per degree of tail (FreeSpace 2's 7,800 per unit) and dim_floor the least kept (FreeSpace 2 kept 75 of 255 over black space; 0.5 here so a streak still reads over a bright cloud), tail_fade the tail end's share of the head's opacity, alpha_min and whiten: a star is alpha-blended (FreeSpace's alpha-blended lines) toward its colour mixed whiten of the way to white, at an opacity of alpha_min + (1 - alpha_min) x its brightness, times the dim, cut_deg_s a turn faster than this is a camera cut (no tail that frame), faint_floor the faint hashed stars' brightness while the tail is at its cap (design 5.5: they fade during a fast turn). motes: patrol-mission 11.4's dust round the eye, drawn by the same streak rule from eye-space points, so moving forward fast shows. Colours sRGB 0-1.","_owner":"2026-10-15: \"and drawing stars and simulating motion blur with gl lines\", \"like old school games\", \"freespace 1 did fake motion blur with vector graphics stars\"","classes":[{"name":"faint","share":0.56,"brightness":[0.1,0.28],"size_px":1.0},{"name":"plain","share":0.29,"brightness":[0.28,0.52],"size_px":1.0},{"name":"bright","share":0.12,"brightness":[0.52,0.82],"size_px":2.0},{"name":"brilliant","share":0.03,"brightness":[0.82,1.0],"size_px":3.0}],"colours":[{"name":"blue-white","share":0.16,"srgb":[0.74,0.84,1.0]},{"name":"white","share":0.34,"srgb":[1.0,1.0,1.0]},{"name":"cream","share":0.28,"srgb":[1.0,0.95,0.85]},{"name":"gold","share":0.15,"srgb":[1.0,0.85,0.62]},{"name":"red","share":0.07,"srgb":[1.0,0.7,0.56]}],"streak":{"tail_s":0.025,"max_deg":1.7,"min_px":1.0,"dim_per_deg":0.534,"dim_floor":0.5,"tail_fade":0.45,"alpha_min":0.3,"whiten":0.4,"cut_deg_s":720,"faint_floor":0.3},"motes":{"count":200,"cube_m":300,"tail_s":0.033,"fade_from_m":150,"brightness":0.35}}</script>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script>
+(function () {
+'use strict';
+const STARFIELD = JSON.parse(document.querySelector('script[data-src="data/space/starfield.json"]').textContent);
+
+// ---- Seeded numbers: Mulberry32 (full avalanche; never a modular or sine hash) ------------------------------------------
+function mulberry32(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function gauss(R) { const u = Math.max(1e-12, R()), v = R(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function pickShare(R, list) { let x = R() * list.reduce((s, c) => s + c.share, 0); for (let i = 0; i < list.length; i++) { x -= list[i].share; if (x <= 0) return i; } return list.length - 1; }
+
+// ---- Palettes: each a cloud's gas (two colours), its glow, its dust tint and its buried stars' light --------------------
+const PALETTES = {
+  verdigris: { label: 'Verdigris', gasA: [0.05, 0.55, 0.52], gasB: [0.18, 0.28, 0.75], hot: [1.0, 0.78, 0.45], dust: [0.10, 0.05, 0.03], bg: [0.0012, 0.0018, 0.0035] },
+  crimson:   { label: 'Crimson reach', gasA: [0.85, 0.12, 0.22], gasB: [0.38, 0.10, 0.70], hot: [1.0, 0.70, 0.55], dust: [0.06, 0.02, 0.05], bg: [0.0025, 0.0008, 0.002] },
+  ice:       { label: 'Ice halo', gasA: [0.30, 0.60, 1.00], gasB: [0.75, 0.80, 1.00], hot: [0.85, 0.92, 1.0], dust: [0.03, 0.04, 0.08], bg: [0.0010, 0.0016, 0.004] },
+  ember:     { label: 'Ember', gasA: [1.00, 0.45, 0.10], gasB: [0.70, 0.18, 0.08], hot: [1.0, 0.92, 0.70], dust: [0.08, 0.03, 0.01], bg: [0.0025, 0.0012, 0.0006] },
+};
+
+// ---- Renderer, camera ----------------------------------------------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(1);
+document.body.prepend(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 4000);
+
+// ---- The stars: a far shell (the galaxy's disc denser in it) and a near field round the path ----------------------------
+const R = mulberry32(20261105);
+const FAR = 26000, NEAR = 7000;
+const pos = new Float32Array((FAR + NEAR) * 3), col = new Float32Array((FAR + NEAR) * 3), siz = new Float32Array(FAR + NEAR);
+const disc = new THREE.Vector3(0.25, 0.92, 0.3).normalize();
+function addStar(i, p) {
+  const cl = STARFIELD.classes[pickShare(R, STARFIELD.classes)], co = STARFIELD.colours[pickShare(R, STARFIELD.colours)].srgb;
+  const b = cl.brightness[0] + (cl.brightness[1] - cl.brightness[0]) * R();
+  pos.set([p.x, p.y, p.z], i * 3);
+  // linear light, the colour mixed 40 % to white as the battle's stars are
+  for (let k = 0; k < 3; k++) col[i * 3 + k] = Math.pow(co[k] * 0.6 + 0.4, 2.2) * b * b * 1.6;
+  siz[i] = cl.size_px * (0.8 + 0.5 * b);
+}
+{
+  let i = 0, guard = 0;
+  while (i < FAR && guard++ < FAR * 20) {
+    // a direction uniform on the sphere, kept more often near the disc's plane
+    const z = 2 * R() - 1, th = 2 * Math.PI * R(), s = Math.sqrt(1 - z * z), d = new THREE.Vector3(s * Math.cos(th), z, s * Math.sin(th));
+    const lat = Math.asin(Math.abs(d.dot(disc)));
+    if (R() > 0.25 + 0.75 * Math.exp(-Math.pow(lat / 0.22, 2))) continue;
+    addStar(i++, d.multiplyScalar(1500 + 900 * R()));
+  }
+  for (let k = 0; k < NEAR; k++, i++) addStar(i, new THREE.Vector3(gauss(R) * 160, gauss(R) * 90, gauss(R) * 160));
+}
+const starGeo = new THREE.BufferGeometry();
+starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+starGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+starGeo.setAttribute('size', new THREE.BufferAttribute(siz, 1));
+const starMat = new THREE.ShaderMaterial({
+  uniforms: { uScale: { value: 1 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  vertexShader: `attribute float size; varying vec3 vCol; uniform float uScale;
+    void main() { vCol = color; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+      float near = clamp(60.0 / -mv.z, 1.0, 4.0); gl_PointSize = (size * 1.6 + 1.2) * near * uScale; vCol *= min(near, 2.0); }`,
+  fragmentShader: `varying vec3 vCol; void main() { vec2 q = gl_PointCoord * 2.0 - 1.0; float r = dot(q, q); if (r > 1.0) discard;
+    float core = exp(-r * 9.0), halo = exp(-r * 2.5) * 0.18; gl_FragColor = vec4(vCol * (core + halo), 1.0); }`,
+  vertexColors: true,
+});
+const starScene = new THREE.Scene();
+starScene.add(new THREE.Points(starGeo, starMat));
+const starRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
+
+// ---- The clouds: ray-marched in a full-screen pass, the stars composited behind them ------------------------------------
+// The noise is baked once, at load, into a tileable 3D texture on the GPU (VOL cells a side, half floats): r the cloud's
+// 5-octave gradient noise, g the dust's 3 octaves, b and a two 2-octave fields for the warp and the gas's tint. The march
+// then reads it five times a step with the hardware's filtering, where computing the noise in place cost about 130 hashes
+// a step (owner, 2026-11-06: "the performance is terrible!": 16 fps at High on an M4 Max).
+const VOL = 128;
+const HASH = `
+uvec3 pcg3d(uvec3 v) {
+  v = v * 1664525u + 1013904223u;
+  v.x += v.y * v.z; v.y += v.z * v.x; v.z += v.x * v.y;
+  v ^= v >> 16u;
+  v.x += v.y * v.z; v.y += v.z * v.x; v.z += v.x * v.y;
+  return v;
+}`;
+const BAKE_FRAG = `
+precision highp float; precision highp int;
+uniform float uZ; in vec2 vUv; out vec4 outColor;
+${HASH}
+// PCG3D (Jarzynski and Olano, "Hash Functions for GPU Rendering", 2020) on the lattice point wrapped to the period, so the
+// volume tiles; seed keeps the fields apart
+vec3 grad(ivec3 c, int period, uint seed) {
+  uvec3 w = uvec3((c % period + period) % period) + uvec3(seed, seed * 7u, seed * 13u);
+  vec3 h = vec3(pcg3d(w)) * (1.0 / 4294967295.0); return normalize(h * 2.0 - 1.0 + 1e-4);
+}
+float gnoise(vec3 p, int period, uint seed) {
+  ivec3 i = ivec3(floor(p)); vec3 f = fract(p), u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  float n000 = dot(grad(i, period, seed), f), n100 = dot(grad(i + ivec3(1,0,0), period, seed), f - vec3(1,0,0));
+  float n010 = dot(grad(i + ivec3(0,1,0), period, seed), f - vec3(0,1,0)), n110 = dot(grad(i + ivec3(1,1,0), period, seed), f - vec3(1,1,0));
+  float n001 = dot(grad(i + ivec3(0,0,1), period, seed), f - vec3(0,0,1)), n101 = dot(grad(i + ivec3(1,0,1), period, seed), f - vec3(1,0,1));
+  float n011 = dot(grad(i + ivec3(0,1,1), period, seed), f - vec3(0,1,1)), n111 = dot(grad(i + ivec3(1,1,1), period, seed), f - vec3(1,1,1));
+  return mix(mix(mix(n000, n100, u.x), mix(n010, n110, u.x), u.y), mix(mix(n001, n101, u.x), mix(n011, n111, u.x), u.y), u.z) * 1.6;
+}
+// octaves at exact doublings of an 8-cell period, so every octave tiles with the volume
+float fbm(vec3 x, int oct, uint seed) {
+  float s = 0.0, a = 0.5; int period = 8; vec3 p = x * 8.0;
+  for (int k = 0; k < 6; k++) { if (k >= oct) break; s += a * gnoise(p, period, seed + uint(k) * 101u); p *= 2.0; period *= 2; a *= 0.5; }
+  return s;
+}
+void main() {
+  vec3 x = vec3(vUv, uZ);
+  outColor = vec4(fbm(x, 5, 1u), fbm(x, 3, 977u), fbm(x, 2, 3301u), fbm(x, 2, 7919u));
+}`;
+const volRT = new THREE.WebGL3DRenderTarget(VOL, VOL, VOL);
+Object.assign(volRT.texture, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+  wrapS: THREE.RepeatWrapping, wrapT: THREE.RepeatWrapping, wrapR: THREE.RepeatWrapping, generateMipmaps: false });
+const bakeMat = new THREE.ShaderMaterial({ glslVersion: THREE.GLSL3, uniforms: { uZ: { value: 0 } }, depthTest: false, depthWrite: false,
+  vertexShader: `out vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`, fragmentShader: BAKE_FRAG });
+const bakeScene = new THREE.Scene(); bakeScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bakeMat));
+const bakeCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+function bakeVolume() {
+  for (let z = 0; z < VOL; z++) { bakeMat.uniforms.uZ.value = (z + 0.5) / VOL; renderer.setRenderTarget(volRT, z); renderer.render(bakeScene, bakeCam); }
+  renderer.setRenderTarget(null);
+}
+
+const NEB_FRAG = `
+precision highp float; precision highp int; precision highp sampler3D;
+uniform sampler3D uVol; uniform int uFrame; uniform int uSteps;
+uniform mat4 uInvProj; uniform mat4 uCamWorld; uniform vec3 uCamPos;
+uniform vec3 uGasA, uGasB, uHot, uDust;
+uniform vec3 uLamp[4]; uniform float uLampR[4];
+in vec2 vUv; out vec4 outColor;
+${HASH}
+// the clouds keep to a thick, wandering sheet, so there is open space to fly through and walls to fly past
+float sheetAt(vec3 p) { return exp(-pow((p.y + 18.0 * sin(p.x * 0.006) + 14.0 * cos(p.z * 0.005)) / 70.0, 2.0)); }
+
+void main() {
+  vec2 ndc = vUv * 2.0 - 1.0;
+  vec4 vp = uInvProj * vec4(ndc, 1.0, 1.0); vec3 dir = normalize((uCamWorld * vec4(normalize(vp.xyz / vp.w), 0.0)).xyz);
+  vec3 acc = vec3(0.0); float trans = 1.0;
+  // the first step jittered per pixel and per frame (no bands; the frames are blended after)
+  uvec3 h = pcg3d(uvec3(uvec2(gl_FragCoord.xy), uint(uFrame)));
+  float t = 0.5 + 2.5 * float(h.x) / 4294967295.0;
+  for (int i = 0; i < 128; i++) {
+    if (i >= uSteps || trans < 0.02 || t > 900.0) break;
+    vec3 p = uCamPos + dir * t;
+    float sheet = sheetAt(p), dt = max(1.6, t * 0.03);
+    // outside the sheet there is nothing to read: stride on
+    if (sheet < 0.03) { t += dt * 3.0; continue; }
+    vec3 q = p * 0.0023;
+    vec4 w = texture(uVol, q * 0.43 + 0.17);
+    q += vec3(w.b, w.a, w.r) * 0.21;
+    vec4 c = texture(uVol, q);
+    float n = c.r + 0.2 * texture(uVol, q * 2.7 + 0.31).r + 0.08 * texture(uVol, q * 7.3 + 0.53).r;
+    float gas = smoothstep(0.07, 0.6, n) * sheet;
+    float dust = smoothstep(0.10, 0.42, c.g * 1.25) * smoothstep(-0.05, 0.3, n) * sheet;
+    if (gas + dust < 0.004) { t += dt * 1.8; continue; }
+    float tint = clamp(0.5 + 1.2 * w.g, 0.0, 1.0);
+    // light from the stars buried in the gas: warm cores with a soft reach
+    vec3 lamp = vec3(0.0);
+    for (int k = 0; k < 4; k++) { vec3 d = p - uLamp[k]; float r = uLampR[k]; float dd = dot(d, d); lamp += uHot * (exp(-dd / (r * r)) * 1.3 + r * r / (dd + r * r) * 0.06); }
+    vec3 emit = mix(uGasA, uGasB, tint) * gas * gas * (0.25 + 0.75 * gas) + lamp * gas * 0.7;
+    float sigma = gas * 0.026 + dust * 0.16;
+    float a = exp(-sigma * dt);
+    acc += trans * (emit / max(sigma, 1e-4) * 0.05 + uDust * dust * 0.02) * (1.0 - a);
+    trans *= a;
+    t += dt;
+  }
+  // linear light, and how much of what is behind still shows (the stars are added at full size after)
+  outColor = vec4(max(acc, 0.0), trans);
+}`;
+
+const nebRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
+const LAMPS = [new THREE.Vector3(120, 4, -60), new THREE.Vector3(-150, -10, 140), new THREE.Vector3(40, 20, 260), new THREE.Vector3(-60, -6, -220)];
+const nebMat = new THREE.ShaderMaterial({
+  glslVersion: THREE.GLSL3,
+  uniforms: {
+    uVol: { value: volRT.texture }, uFrame: { value: 0 }, uSteps: { value: 64 },
+    uInvProj: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() }, uCamPos: { value: new THREE.Vector3() },
+    uGasA: { value: new THREE.Vector3() }, uGasB: { value: new THREE.Vector3() }, uHot: { value: new THREE.Vector3() }, uDust: { value: new THREE.Vector3() },
+    uLamp: { value: LAMPS }, uLampR: { value: [26, 34, 22, 30] },
+  },
+  vertexShader: `out vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: NEB_FRAG, depthTest: false, depthWrite: false,
+});
+const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), nebMat);
+const nebScene = new THREE.Scene(); nebScene.add(quad);
+const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+// the march renders at a share of the window; each frame is blended with the last (a light temporal filter), so the jittered
+// first steps average into smooth gas instead of shimmering grain, then drawn up to the window
+const histRT = [0, 1].map(() => new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter }));
+const accMat = new THREE.ShaderMaterial({
+  uniforms: { uCur: { value: null }, uPrev: { value: null }, uKeep: { value: 0.6 } }, depthTest: false, depthWrite: false,
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: `uniform sampler2D uCur, uPrev; uniform float uKeep; varying vec2 vUv;
+    void main() { gl_FragColor = mix(texture2D(uCur, vUv), texture2D(uPrev, vUv), uKeep); }`,
+});
+const accScene = new THREE.Scene(); accScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), accMat));
+let histI = 0;
+// the window: the clouds drawn up to it, the full-size stars behind them dimmed by what the clouds let through, then the
+// tone curve
+const blitMat = new THREE.ShaderMaterial({
+  uniforms: { uNeb: { value: histRT[0].texture }, uStars: { value: starRT.texture }, uBg: { value: new THREE.Vector3() },
+    uShowNeb: { value: 1 }, uShowStars: { value: 1 }, uExposure: { value: 1.3 } }, depthTest: false, depthWrite: false,
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: `uniform sampler2D uNeb, uStars; uniform vec3 uBg; uniform float uShowNeb, uShowStars, uExposure; varying vec2 vUv;
+    vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
+    void main() { vec4 n = texture2D(uNeb, vUv); if (uShowNeb < 0.5) n = vec4(0.0, 0.0, 0.0, 1.0);
+      vec3 c = uBg + n.rgb + texture2D(uStars, vUv).rgb * uShowStars * n.a;
+      gl_FragColor = vec4(pow(aces(c * uExposure), vec3(1.0 / 2.2)), 1.0); }`,
+});
+const blitScene = new THREE.Scene(); blitScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blitMat));
+
+// ---- The flight: a closed spline through the clouds; a drag looks round, and stays -------------------------------------
+const PATH = new THREE.CatmullRomCurve3([
+  [0, 0, 0], [110, 10, -40], [190, -8, 60], [130, 6, 190], [10, -4, 250], [-120, 12, 180], [-200, -6, 40], [-130, 4, -120], [-30, -10, -170], [60, 6, -120],
+].map((p) => new THREE.Vector3(...p)), true, 'centripetal');
+const LOOP_S = 240;
+const S = { t: 0, play: true, speed: 1, quality: 'high', palette: 'verdigris', neb: true, stars: true, yaw: 0, pitch: 0 };
+const QUALITY = { low: { scale: 0.4, steps: 48 }, high: { scale: 0.65, steps: 80 }, best: { scale: 1, steps: 120 } };
+
+function place(u) {
+  u = ((u % 1) + 1) % 1;   // a frame whose clock stepped back never reads off the path
+  const p = PATH.getPointAt(u % 1), ahead = PATH.getPointAt((u + 0.012) % 1), tan = PATH.getTangentAt(u % 1);
+  const tan2 = PATH.getTangentAt((u + 0.02) % 1);
+  const bank = THREE.MathUtils.clamp(new THREE.Vector3().crossVectors(tan, tan2).y * 18, -0.35, 0.35);
+  camera.position.copy(p);
+  camera.up.set(Math.sin(bank), Math.cos(bank), 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(tan.x, tan.z));
+  camera.lookAt(ahead);
+  camera.rotateY(S.yaw); camera.rotateX(S.pitch);
+  camera.updateMatrixWorld();
+}
+
+{ let drag = null;
+  renderer.domElement.addEventListener('pointerdown', (e) => { drag = [e.clientX, e.clientY]; renderer.domElement.setPointerCapture(e.pointerId); renderer.domElement.style.cursor = 'grabbing'; });
+  renderer.domElement.addEventListener('pointermove', (e) => { if (!drag) return; S.yaw -= (e.clientX - drag[0]) * 0.004; S.pitch = THREE.MathUtils.clamp(S.pitch - (e.clientY - drag[1]) * 0.004, -1.2, 1.2); drag = [e.clientX, e.clientY]; });
+  renderer.domElement.addEventListener('pointerup', () => { drag = null; renderer.domElement.style.cursor = 'grab'; });
+  addEventListener('keydown', (e) => { if (e.key === 'h' || e.key === 'H') document.body.classList.toggle('clean'); if (e.key === ' ') { S.play = !S.play; keys(); } });
+}
+
+// ---- Panel ---------------------------------------------------------------------------------------------------------------
+const keysEl = document.getElementById('keys');
+function keys() {
+  keysEl.innerHTML = '';
+  const add = (label, on, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', String(on)); b.onclick = () => { fn(); keys(); }; keysEl.append(b); };
+  const sep = () => { const s = document.createElement('span'); s.className = 'sep'; keysEl.append(s); };
+  add(S.play ? 'Pause' : 'Fly', S.play, () => S.play = !S.play);
+  for (const [k, v] of [['Slow', 0.4], ['Cruise', 1], ['Fast', 2.5]]) add(k, S.speed === v, () => S.speed = v);
+  add('Look ahead', false, () => { S.yaw = 0; S.pitch = 0; });
+  sep();
+  for (const [k, p] of Object.entries(PALETTES)) add(p.label, S.palette === k, () => S.palette = k);
+  sep();
+  add('Clouds', S.neb, () => S.neb = !S.neb);
+  add('Stars', S.stars, () => S.stars = !S.stars);
+  sep();
+  for (const k of Object.keys(QUALITY)) add(k[0].toUpperCase() + k.slice(1), S.quality === k, () => { S.quality = k; resize(); });
+}
+keys();
+
+function resize() {
+  const w = innerWidth, h = innerHeight, q = QUALITY[S.quality];
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  starRT.setSize(w, h);
+  nebRT.setSize(Math.round(w * q.scale), Math.round(h * q.scale));
+  for (const r of histRT) r.setSize(Math.round(w * q.scale), Math.round(h * q.scale));
+  starMat.uniforms.uScale.value = Math.min(2, Math.max(0.6, h / 900));
+}
+addEventListener('resize', resize);
+resize();
+
+// ---- One frame ---------------------------------------------------------------------------------------------------------
+let frame = 0, last = performance.now(), fps = 0;
+function render() {
+  place(S.t / LOOP_S);
+  const pal = PALETTES[S.palette], U = nebMat.uniforms, B = blitMat.uniforms;
+  U.uGasA.value.set(...pal.gasA); U.uGasB.value.set(...pal.gasB); U.uHot.value.set(...pal.hot); U.uDust.value.set(...pal.dust); B.uBg.value.set(...pal.bg);
+  B.uShowNeb.value = S.neb ? 1 : 0; B.uShowStars.value = S.stars ? 1 : 0; U.uSteps.value = QUALITY[S.quality].steps;
+  U.uInvProj.value.copy(camera.projectionMatrixInverse); U.uCamWorld.value.copy(camera.matrixWorld); U.uCamPos.value.copy(camera.position);
+  U.uFrame.value = frame++;
+  renderer.setRenderTarget(starRT); renderer.setClearColor(0x000000, 1); renderer.clear(); renderer.render(starScene, camera);
+  if (S.neb) { renderer.setRenderTarget(nebRT); renderer.render(nebScene, ortho); }
+  // blend into the history: more of the last frame while the view is still, less while it turns or flies fast
+  const out = histRT[histI ^ 1];
+  accMat.uniforms.uCur.value = nebRT.texture; accMat.uniforms.uPrev.value = histRT[histI].texture; accMat.uniforms.uKeep.value = keep;
+  renderer.setRenderTarget(out); renderer.render(accScene, ortho);
+  histI ^= 1; blitMat.uniforms.uNeb.value = out.texture;
+  renderer.setRenderTarget(null); renderer.render(blitScene, ortho);
+}
+let keep = 0;
+function loop(now) {
+  const dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
+  if (S.play) S.t = (S.t + dt * S.speed) % LOOP_S;
+  keep = 0.55 / Math.max(1, S.play ? S.speed : 0.5);
+  render();
+  fps = fps * 0.95 + (1 / Math.max(dt, 1e-3)) * 0.05;
+  document.getElementById('meter').textContent = `${fps.toFixed(0)} fps · ${QUALITY[S.quality].steps} steps at ${Math.round(QUALITY[S.quality].scale * 100)} % · ${(FAR + NEAR).toLocaleString()} stars`;
+  requestAnimationFrame(loop);
+}
+
+// ---- Shots (tools/mockups/shoot.mjs) -----------------------------------------------------------------------------------
+const shot = (t, pal, extra = {}) => () => { Object.assign(S, { t, palette: pal, play: false, neb: true, stars: true, yaw: 0, pitch: 0, quality: 'best' }, extra); resize(); keys(); keep = 0; render(); keep = 0.8; for (let i = 0; i < 12; i++) render(); };
+window.MOCKUP_SHOTS = {
+  approach: shot(6, 'verdigris'),
+  inside: shot(52, 'verdigris'),
+  lamp: shot(118, 'verdigris', { yaw: 0.5 }),
+  crimson: shot(170, 'crimson'),
+  ice: shot(30, 'ice'),
+  ember: shot(205, 'ember'),
+  stars: shot(90, 'verdigris', { neb: false }),
+};
+window.MOCKUP_SCENE = starScene;
+// a timing of n frames uncapped (the GPU finished after each), in milliseconds a frame, for the performance check
+window.MOCKUP_BENCH = (n = 60) => { const gl = renderer.getContext(), px = new Uint8Array(4); render(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t = (S.t + 0.05) % LOOP_S; render(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); } return (performance.now() - t0) / n; };
+window.MOCKUP_BAKE_MS = (() => { const t0 = performance.now(); bakeVolume(); const gl = renderer.getContext(); gl.finish(); return performance.now() - t0; })();
+render();
+window.MOCKUP_READY = true;
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
