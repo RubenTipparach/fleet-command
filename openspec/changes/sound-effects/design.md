@@ -59,6 +59,14 @@ a boxy 200-400 Hz roar, which tires the ear. The bed is now a soft room tone (pi
 (24 dB/octave) and a gentle top to 6.5 kHz. A bed's rules: no steady tone under 150 Hz, energy spread across the
 octaves rather than piled in one, nothing moving in pitch, its loudness within about 5 dB.
 
+**The bridge is a hum** (owner, 2026-11-07, on that version: "no, it got worse, now sounds like water!", "I want it to sound
+like a hum"). Broadband noise reads as water or rain, however it is filtered; a ship's bed is tonal. The bed is now our
+`ship_hum` (152 Hz with harmonics to about 1.2 kHz, each partial with a quieter twin 0.05 Hz above it so it breathes over
+twenty seconds without dipping out) under the recorded hum raised an octave (76 to 152 Hz, out of the range that hurt),
+the air duct faint beneath, nothing under 110 Hz. The rules for a bed, final: a warm tone between about 120 and 400 Hz,
+nothing under 100 Hz, no broadband noise wash, nothing moving in pitch, its loudness within about 3 dB, scattered sounds
+judged A-weighted (as loud as the ear hears them) at most about 10 dB over it.
+
 **Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
 so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.
 

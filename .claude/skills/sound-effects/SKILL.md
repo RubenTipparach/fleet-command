@@ -102,11 +102,13 @@ lot of the other weapons, check the procedure in crab breeze how audio was softe
 - **A sound heard from the bridge through the hull** (the weapons) gets Crab Breeze's sealed-cockpit filter:
   `"lp": 4000, "lp_order": 4, "peak_db": -7` (4 kHz twice over, 6 dB down), and less `drive`.
 - Measure before and after (energy above 4 kHz, spectral centre, RMS, the first 20 ms of a shot) and say the numbers.
-- **Soft is not dark.** A bed low passed hard keeps only its low end, which hurts (owner, 2026-11-07: "low rumble
-  bridge ambient, it hurts my ears a bit", "make it sound pleaasent like proper ambience"). Cut a bed below about
-  180 Hz (`"hp": 180, "hp_order": 4`), drop any steady hum under 150 Hz, let soft air reach about 6 kHz (the `room_air`
-  layer: pink noise from 200 Hz to 6 kHz), and check the energy per octave is spread, not piled in one band. Set a
-  scattered sound's gain against the bed's average, not its peak: noise peaks about 13 dB over its average.
+- **A bed is a hum, not a noise and not a rumble** (owner, 2026-11-07, over three versions of the bridge: "low rumble
+  bridge ambient, it hurts my ears a bit", then of pink noise "now sounds like water!", then "I want it to sound like a
+  hum"). Make a ship's bed tonal: a warm tone between about 120 and 400 Hz with soft harmonics (`ship_hum`), or a
+  recorded hum moved there by `pitch` (a 76 Hz hum at 2.0 is 152 Hz); cut it below about 110 Hz (`"hp": 110,
+  "hp_order": 4`) and drop any steady tone under 100 Hz (they hurt); no broadband noise wash, filtered or not (it reads
+  as water or rain); nothing that moves in pitch (it reads as whirling). Judge scattered sounds over it A-weighted, as
+  the ear hears them, at most about 10 dB over the bed, and set their gain against the bed's average, not its peak.
 
 ## Levels
 

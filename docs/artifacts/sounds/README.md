@@ -27,3 +27,5 @@
 - Version 6 published 2026-11-07, version id `1793954421-9912`: the bridge bed without its low rumble (owner: "low rumble
   bridge ambient, it hurts my ears a bit", "make it sound pleaasent like proper ambience"): a soft room tone over the
   air duct, nothing under 180 Hz.
+- Version 7 published 2026-11-07, version id `1793955211-d761`: the bridge bed as a hum (owner: "no, it got worse, now
+  sounds like water!", "I want it to sound like a hum"): a warm 152 Hz tone and a recorded hum an octave up, no noise wash.

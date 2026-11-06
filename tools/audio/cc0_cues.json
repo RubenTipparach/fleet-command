@@ -382,30 +382,37 @@
   },
   "amb_bridge": {
     "group": "Ambience",
-    "what": "The bridge (loops, a minute): soft air and the air handling, nothing low or booming, with consoles bleeping softly now and then.",
+    "what": "The bridge (loops, a minute): the ship's warm, steady hum, the air handling faint beneath it, consoles bleeping softly now and then.",
     "layers": [
       {
-        "synth": "room_air",
-        "pan": -0.75
+        "synth": "ship_hum",
+        "gain": 0
       },
       {
-        "synth": "room_air_r",
-        "pan": 0.75
+        "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Hum.mp3",
+        "pitch": 2.0,
+        "repeat": 9,
+        "hp": 110,
+        "lp": 1500,
+        "gain": -4,
+        "pan": -0.3
+      },
+      {
+        "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Hum.mp3",
+        "start": 3.1,
+        "pitch": 2.0,
+        "repeat": 9,
+        "hp": 110,
+        "lp": 1500,
+        "gain": -6,
+        "pan": 0.3
       },
       {
         "src": "oga/airvent-loop:airvent-large-loop.wav",
         "repeat": 8,
-        "pan": 0.3,
+        "pan": 0.4,
         "hp": 180,
-        "gain": -7
-      },
-      {
-        "src": "oga/airvent-loop:airvent-large-loop.wav",
-        "start": 3.7,
-        "repeat": 8,
-        "pan": -0.35,
-        "hp": 180,
-        "gain": -9
+        "gain": -16
       }
     ],
     "scatter": [
@@ -414,8 +421,8 @@
         "within": 57.0,
         "min_gap": 1.4,
         "gain": [
-          -8,
-          -2
+          -13,
+          -7
         ],
         "pan": 0.85,
         "pitch": [
@@ -478,8 +485,8 @@
         "within": 56.0,
         "min_gap": 4.0,
         "gain": [
-          -10,
-          -5
+          -15,
+          -10
         ],
         "pan": 0.7,
         "pitch": [
@@ -539,16 +546,16 @@
     "loop": true,
     "loop_fade": 1.5,
     "distance": {
-      "lp": 6000,
-      "wet": 0.3,
+      "lp": 4000,
+      "wet": 0.25,
       "threshold_db": -18,
       "ratio": 3
     },
     "peak_db": -14.0,
-    "edits": "our room tone (soft pink air, 200 Hz to 6 kHz) under the air duct recorded twice, offset, panned wide and cut below 180 Hz; no low hum; recorded terminal and interface bleeps and our bleeps scattered softly over a minute at seeded times and pans; compressed 3:1, given a diffuse reverb, cut below 180 Hz at 24 dB/octave and above 6.5 kHz, written at -14 dB peak; crossfaded into a loop",
-    "lp": 6500,
+    "edits": "our warm hum at 152 Hz with soft harmonics, under a recorded hum raised an octave (pitch 2.0, from 76 Hz to 152 Hz) twice, offset and panned, and the air duct faint beneath; nothing under 110 Hz; recorded terminal and interface bleeps and our bleeps scattered softly over a minute; compressed 3:1, a little room, written at -14 dB peak; crossfaded into a loop",
+    "lp": 4000,
     "lp_order": 2,
-    "hp": 180,
+    "hp": 110,
     "hp_order": 4
   },
   "shield_hit_short": {

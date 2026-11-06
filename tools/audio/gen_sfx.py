@@ -173,25 +173,6 @@ def brown(rng: np.random.Generator, n: int) -> np.ndarray:
     return y / (np.max(np.abs(y)) or 1.0)
 
 
-def pink(rng: np.random.Generator, n: int) -> np.ndarray:
-    """Pink noise (equal energy per octave, Paul Kellet's filter on white noise): the colour of soft
-    air, gentler on the ear than white noise's hiss or brown noise's roar."""
-    w = rng.uniform(-1, 1, n)
-    b = np.zeros(7)
-    out = np.empty(n)
-    for i in range(n):
-        x = w[i]
-        b[0] = 0.99886 * b[0] + x * 0.0555179
-        b[1] = 0.99332 * b[1] + x * 0.0750759
-        b[2] = 0.96900 * b[2] + x * 0.1538520
-        b[3] = 0.86650 * b[3] + x * 0.3104856
-        b[4] = 0.55000 * b[4] + x * 0.5329522
-        b[5] = -0.7616 * b[5] - x * 0.0168980
-        out[i] = b[0] + b[1] + b[2] + b[3] + b[4] + b[5] + b[6] + x * 0.5362
-        b[6] = x * 0.115926
-    return out / (np.max(np.abs(out)) or 1.0)
-
-
 def turbulence(rng: np.random.Generator, n: int, rate_hz: float = 7.0, depth: float = 0.45) -> np.ndarray:
     """A burning flame's unsteady swell: slow random amplitude between 1 - depth and 1 + depth."""
     m = lp(rng.uniform(-1, 1, n), rate_hz, order=2)
@@ -349,18 +330,18 @@ def beam_snap(r):
     return lp(body, sweep(7000, 1200, n, 0.6), order=2) * adsr(n, 0.002, 0.05, 0.55, 0.22)
 
 
-@sound("room_air", "_layer", "The bridge's room tone: soft pink air, nothing under 200 Hz, an open top to 6 kHz, drifting a decibel either way over many seconds.")
-def room_air(r):
+@sound("ship_hum", "_layer", "The ship's hum on the bridge: a warm steady tone at 152 Hz with soft harmonics to about 1.2 kHz, each partial with a quieter twin a twentieth of a hertz above it, so it breathes gently over twenty seconds, never wobbling or dipping out.")
+def ship_hum(r):
     n = int(60.0 * SR)
-    air = pink(r, n)
-    air = hp(air, 200.0, order=4)
-    air = lp(air, 6000.0, order=2)
-    drift = 1.0 + 0.11 * np.interp(np.arange(n), np.linspace(0, n, 9), r.uniform(-1, 1, 9))
-    return air * drift
-
-
-# the same room tone from a second seed, so the left and right of the bed are uncorrelated and the room sounds wide
-sound("room_air_r", "_layer", "The room tone again from its own seed, for the other side of the stereo bed.")(room_air)
+    t = t_axis(60.0)
+    f0 = 152.0
+    partials = [(1, 1.0), (2, 0.55), (3, 0.3), (4, 0.16), (6, 0.07), (8, 0.03)]
+    out = np.zeros(n)
+    for k, a in partials:
+        ph = r.uniform(0, 2 * np.pi, 2)
+        out += a * (0.77 * np.sin(2 * np.pi * f0 * k * t + ph[0]) + 0.23 * np.sin(2 * np.pi * (f0 * k + 0.05) * t + ph[1]))
+    drift = 1.0 + 0.1 * np.interp(np.arange(n), np.linspace(0, n, 7), r.uniform(-1, 1, 7))
+    return lp(out * drift, 1200.0, order=2)
 
 
 @sound("console_bleep", "_layer", "A console working: two or three quick bleeps, the pitches seeded.")
