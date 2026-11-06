@@ -39,6 +39,7 @@ account and every link here is updated.
 | 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-04, page written; to publish from the desktop session) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | |
 | 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-04, page written; to publish from the desktop session) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
+| 22 | Space fly-through: ray-marched nebula clouds and stars | Drafted (2026-11-05, v1) | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -842,3 +843,16 @@ orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/
 
 - Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
 - Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).
+
+## 22. Space fly-through
+
+Owner, 2026-11-05: "write up a beautiful fly through of space with ray marched nebula clouds and stars" (after "never to use
+poor RNG stuff for stars", "can you make a better proc gen starfield?").
+
+The camera flies a loop through volumetric nebula clouds, ray-marched in the shader (integer-hash gradient noise, warped,
+glowing gas, dark dust lanes, stars buried in the gas lighting it), past 33,000 seeded stars in the game's star classes and
+colours, which the clouds dim. Four palettes (Verdigris, Crimson reach, Ice halo, Ember), three quality levels, a free look
+that stays where it is left. A candidate backdrop for the main menu.
+
+- Change: `openspec/changes/space-flythrough`. Shots: `docs/screenshots/mockups/space-flythrough/`.
+- Stage: Drafted (2026-11-05, v1).

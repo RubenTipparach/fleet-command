@@ -513,6 +513,16 @@ saying what changes here. Where a note and the copied text below it disagree, th
 - **A hull is not a body.** A ship's shape, paneling and markings come from its makers' ideas and traditions,
   never from what the species looks like (section 1).
 - **No z-fighting, ever** (Undercity, Star Crew).
+- **Stars and every scatter come from a real generator, never a cheap hash** (owner, 2026-11-05, of the menu's stars drawn
+  with `i * 7919 % 1000`: "never to use poor RNG stuff for stars, this seems like a common low effort mistake", "you can see a
+  repetition pattern", "this always results in poror rng"). A product modulo a constant, `fract(sin(x) * 43758.5453)` and
+  their kin put points on lines, grids and repeats the eye finds at once. Stars, dust, debris and any scattered detail:
+  - draw from a seeded generator with full avalanche (the Core's `Rng`, SplitMix64; `Mulberry32` where a mockup's numbers
+    must match), or in a shader an integer hash (PCG or xxHash style on `uint`), never `fract(sin(...))` in new code;
+  - choose the distribution on purpose: stratified jitter or Poisson disc for even cover, a density field for a galaxy's
+    band and clusters, brightness and colour by the shares in `data/space/starfield.json`, most stars faint;
+  - reuse what exists before writing another (the sky files' stars from `tools/space/nebula_skies.py`, `Starfield2D` for a
+    flat backdrop), and look at a full-size still for lines, grids or repeats before calling it done.
 - Blender for cloud sessions: `scripts/install-blender.sh` (4.4.3 into `/opt/blender`, about a
   minute). Krita: `scripts/install-krita.sh` (into `/opt/krita`, about a minute; `krita-brushwork`).
 
