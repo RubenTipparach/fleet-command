@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -118,6 +118,7 @@ public sealed partial class ScriptedCaptain : Node
             case "end_turn": return await EndTurn();
             case "move": return await Move((int)Math.Max(1, b.Seconds));
             case "contract": return await Contract(b.Seconds > 0 ? b.Seconds : 600, b.Arg);
+            case "mine_at": return await MineAt(b.Arg);   // ScriptedCaptain.Tractor.cs
             default: return $"no beat '{b.Do}'";
         }
     }

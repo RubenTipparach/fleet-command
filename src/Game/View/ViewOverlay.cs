@@ -123,6 +123,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             if (_view.PlaneAt(local + Position) is { } h) B.HetTo(h.X, h.Z);
             return;
         }
+        if (MineClick(local)) return;   // Place mine armed (ViewOverlay.Tractor.cs)
         if (B.Scenario.DamageRange && _x.State.Expanded == null && RangeClick(local)) return;
         if (ShipAt(local) is { } s) { B.Lock(s.Id); return; }
         if (_x.State.Expanded != null) { _x.Act.Return(); return; }

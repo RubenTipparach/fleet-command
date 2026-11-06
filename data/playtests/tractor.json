@@ -1,0 +1,20 @@
+{
+ "_doc": "The scripted captain's Tractor scene (the battle console mockup's scene_tractor): lock the ship astern, open the ship panel's Tractor page, Hold, wait out the power-up, then run at full speed so the tow drags the held ship into the rock between them. Played from both sides (concord_tractor, krai_tractor).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "click", "arg": "sh.tractor" },
+  { "do": "click", "arg": "trc.hold" },
+  { "do": "hold", "s": 11 },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "press", "arg": "speed_up" },
+  { "do": "hold", "s": 60 }
+ ]
+}

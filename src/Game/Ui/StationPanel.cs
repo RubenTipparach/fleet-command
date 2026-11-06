@@ -220,13 +220,4 @@ public sealed partial class StationPanel : ConsolePanel
             Pairs("pw.x", b.Position.X, y + 70, new (string, string, Color?)[] { ("Speed limit", $"{Math.Round(B.Rules.MaxSpeed(s))} m/s", null), ("Capacitor", $"{s.Capacitor:0.0} E", null),
                 ("Shield regen", $"{s.Power["shields"] * B.Tuning.ShieldRegenPerES:0.0}/s", null) });
     }
-
-    /// <summary>One system's row of ten boxes: lit to its allocation, locked past what the output leaves.</summary>
-    public void PowerRow(string idp, float x, float y, float w, float h, string key, float lw)
-    {
-        int cur = Me.Power[key];
-        Lbl(key, x, y + h / 2 + 5, lw - 4);
-        CellRow($"{idp}.{key}", new Rect2(x + lw, y, w - lw - 32, h), Rules.BoxesPerSystem, cur, n => B.SetPower(key, n), Math.Min(Rules.BoxesPerSystem, B.Rules.PowerRoom(Me, cur)));
-        Num(cur.ToString(), x + w, y + h / 2 + 8, 0, null, HorizontalAlignment.Right, 20);
-    }
 }
