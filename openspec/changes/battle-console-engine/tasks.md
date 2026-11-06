@@ -18,7 +18,7 @@
 
 - [ ] 2.1 The other stations: tactical, point defence, science, comms, repair, transport, fleet (wingman behaviours)
 - [ ] 2.2 Ship pages: sensors, tractor (the contest), craft; the Target box with the target's systems display
-- [ ] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
+- [x] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [ ] 2.5 The tactical map, the event log, the 3D shield hexagon, the transporter effect
 - [ ] 2.6 The scripted captain and a recorded desktop playtest on the owner's PC (CLAUDE.md section 9)
 - [ ] 2.7 Phone layouts, once the mockup has them
