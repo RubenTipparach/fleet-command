@@ -1,5 +1,17 @@
 # Design: ssarith-ship-concepts
 
+## Version 23: the shell below and in the middle, no glowing windows (owner, 2026-11-06)
+
+"I dont really like the big shell being on top, can the cruiser and carrier have the shell be on the bottom? maybe the
+carrier can have the shell be in the middle, and launchers above and below"; "window borders should also not glow"; "I
+would remove window dots from the ships texture since it overlaps with our window cutouts".
+
+| What | How | Numbers |
+|---|---|---|
+| The cruiser's shell below | Its section turned over (`underHood`: every height mirrored, the order reversed): the broad shell is the underside, drawn to a point under the bow; the spine runs on above the side prongs as the dorsal lance with its light strip | 150 m by 60 m by 19 m, 456 triangles |
+| The carrier's shell in the middle | Its own section (`msec`, 22 points): a hangar block above and one below, the shell a deck reaching out of each side at mid-height with a light strip along its blunt edge, running on past the hangars; launch bays forward and on each flank, above and below the shell | shell 15-21 m out of each side, 2.2-2.4 m thick; forward bays 6 m by 4.4 m, flank bays 10 m by 3.2 m, two of each above and below; 168 m by 67 m by 23 m, 380 triangles |
+| No glowing windows | The window frames are dark metal lit by the scene, no line of light round the glass. The bake keeps each window's and bay's recess but no glass, so no glowing dot in the maps sits under the page's pane | |
+
 ## Version 22: the classes, one ship at a time (owner, 2026-11-06)
 
 "update mockup to be one ship at a time, we need a cruiser class, all the smaller ships are frigates".

@@ -1535,6 +1535,18 @@ function hsec(p) {
   const half = [[kw, bot - kd], [kwr, bot], [hb - ch, bot], [hb, bot + ch], [hb + sw, ym], [hb, top - ht - ch * 0.4], [hw, top - ht * 0.5], [hw - ch * 0.6, top]];
   return [V2(0, bot - kd), ...half.map(([x, y]) => V2(x, y)), V2(0, top + cr), ...half.reverse().map(([x, y]) => V2(-x, y))];
 }
+// The same layout turned over, the hood underneath (owner, 2026-11-06: "can the cruiser and carrier have the shell be on the
+// bottom?"): every point's height mirrored, the order reversed so the section still runs the same way round. Index k of
+// hsec is index (18 - k) % 18 here: 0 stays the keel line's point (now on top), 9 the crown's (now underneath).
+const underHood = (p) => { const S = hsec(p); return S.map((_, k) => S[(18 - k) % 18]).map((q) => V2(q.x, -q.y)); };
+// A section with the shell at mid-height (owner: "maybe the carrier can have the shell be in the middle, and launchers
+// above and below"): a hangar block above and one below, the shell a deck reaching sw2 out from the side at height sy,
+// st thick, its edge a blunt nose. 22 points: 0 the keel, 1-10 the port half from keel to crown (4 under the shell, 5 its
+// lower edge, 6 its tip, 7 its upper edge, 8 over it), 11 the crown, 12-21 the starboard half back down.
+function msec(p) {
+  const { hb, top, bot, ch = 2, kd = 0, kw = 1, sw2, sy = 0, st = 2 } = p;
+  const half = [[kw, bot - kd], [hb - ch, bot], [hb, bot + ch], [hb, sy - st / 2 - 0.8], [hb + sw2, sy - st / 2], [hb + sw2 + 0.6, sy], [hb + sw2, sy + st / 2], [hb, sy + st / 2 + 0.8], [hb, top - ch], [hb - ch, top]];
+  return [V2(0, bot - kd), ...half.map(([x, y]) => V2(x, y)), V2(0, top), ...half.reverse().map(([x, y]) => V2(-x, y))]; }
 const seg = (S, i, j) => { const o = []; for (let k = i; ; k = (k + 1) % S.length) { o.push(S[k]); if (k === j) break; } return o; };
 const cutLine = (a, b, m) => Array.from({ length: m }, (_, i) => a.clone().lerp(b, (i + 1) / (m + 1)));
 const at3 = (R, z) => R.map((q) => V3(q.x, q.y, z));
@@ -1555,13 +1567,14 @@ class Skin {
   cap(R, dz, kind = 'hull') { const f = THREE.ShapeUtils.triangulateShape(R.map((q) => V2(q.x, q.y)), []), h = V3(0, 0, dz);
     for (const [i, j, k] of f) this.tri(kind, R[i], R[j], R[k], h); }
   // the body: stations [z, hsec params] from the stern forward; the drive recessed into the stern; returns the last section
-  body(stations, glow = () => false) { this.part('body');
-    const rings = stations.map(([z, p]) => at3(hsec(p), z));
-    const S0 = hsec(stations[0][1]), c0 = S0.reduce((a, q) => a.add(q), V2(0, 0)).multiplyScalar(1 / S0.length), z0 = stations[0][0];
+  // (sec: the section layout, hsec unless a ship has its own: underHood turns it over, msec puts the shell mid-height)
+  body(stations, glow = () => false, sec = hsec) { this.part('body');
+    const rings = stations.map(([z, p]) => at3(sec(p), z));
+    const S0 = sec(stations[0][1]), c0 = S0.reduce((a, q) => a.add(q), V2(0, 0)).multiplyScalar(1 / S0.length), z0 = stations[0][0];
     const inset = S0.map((q) => c0.clone().add(q.clone().sub(c0).multiplyScalar(0.72)));
     this.frame(rings[0], at3(inset, z0), -1); this.band(at3(inset, z0), at3(inset, z0 + 1.6), () => false, 'dark'); this.cap(at3(inset, z0 + 1.6), -1, 'glow');
     for (let i = 0; i + 1 < rings.length; i++) { const zm = (stations[i][0] + stations[i + 1][0]) / 2; this.band(rings[i], rings[i + 1], (k) => glow(k, zm)); }
-    return hsec(stations[stations.length - 1][1]); }
+    return sec(stations[stations.length - 1][1]); }
   // a branch: a region of the split section lofted forward through [dz, sx, sy, dx, dy] (scaled about the region's centroid,
   // or about an anchor given as a fraction of its bounds), ending in a cap; a branch with one station is only its cap
   branch(name, R, z, steps, { glow = () => false, anchor = null } = {}) { this.part(name);
@@ -1636,36 +1649,39 @@ const BLOCKS = [
       K.branch('keel_prong', [...seg(S, 15, 3), ...via(3, 15)], 12,
         [[0, 1, 1, 0, 0], [12, 0.62, 0.72, 0, -3], [48, 0.24, 0.3, 0, -5.5], [52, 0.06, 0.08, 0, -5.6]], { glow: (k) => k === 2 || k === 3 });
       K.done(); } },
-  { n: 14, bake: true, cls: 'Cruiser', name: 'Cruiser', tell: 'A long heavy body under a broad hood; its bow splits low into two side prongs and a long keel lance between them.',
+  { n: 14, bake: true, cls: 'Cruiser', name: 'Cruiser', tell: 'A long heavy body over a broad shell; its bow splits into two side prongs, a dorsal lance above them and the shell drawn to a point below.',
     // version 22 (owner, 2026-11-06: "we need a cruiser class, all the smaller ships are frigates"), grown like the others,
-    // half again a frigate's length: the hood is the body's own top, swept wide aft and drawn to a point over the bow; the
-    // flanks reach forward low as the side prongs; the keel runs on longest as the lance, a light strip along it. About 150 m.
+    // half again a frigate's length; version 23 turns its section over (owner: "I dont really like the big shell being on
+    // top, can the cruiser and carrier have the shell be on the bottom?"): the broad shell is the body's underside, swept
+    // wide aft and drawn to a point under the bow; the flanks reach forward as the side prongs; the spine runs on longest
+    // above them as the lance, a light strip along it. About 150 m.
     build(g) { const K = new Skin(g);
-      const S = K.body([[-72, { hb: 8, top: 6, bot: -6, ch: 2.4, hw: 10, ht: 1.4, kd: 1, kw: 1.1, sw: 0.6 }],
-        [-60, { hb: 12, top: 8.5, bot: -8.5, ch: 3.2, hw: 30, ht: 2, kd: 2.5, kw: 1.3, sw: 2.2 }],
-        [-20, { hb: 12.5, top: 9, bot: -8.8, ch: 3.4, hw: 26, ht: 2.2, kd: 4, kw: 1.3, sw: 2.6 }],
-        [12, { hb: 10.5, top: 8, bot: -7.8, ch: 3, hw: 18, ht: 2.2, kd: 5, kw: 1.2, sw: 2, ym: -0.6 }]], (k, z) => KEEL(k) && z > -50);
-      const C = V2(0, -1.2), via = (i, j) => [...cutLine(S[i], C, 2), C, ...cutLine(C, S[j], 2)];
-      K.branch('hood', [...seg(S, 6, 12), ...via(12, 6)], 12, [[0, 1, 1, 0, 0], [18, 0.62, 0.8, 0, 0.3], [34, 0.08, 0.45, 0, -0.2]], { anchor: [0.5, 1] });
-      for (const [name, i, j, sx] of [['port_prong', 3, 6, 1], ['starboard_prong', 12, 15, -1]])
-        K.branch(name, [...seg(S, i, j), ...via(j, i)], 12, [[0, 1, 1, 0, 0], [12, 0.7, 0.7, sx * 3, -0.5], [50, 0.28, 0.32, sx * 6, -1.5], [56, 0.06, 0.08, sx * 6.2, -1.6]]);
-      K.branch('keel_lance', [...seg(S, 15, 3), ...via(3, 15)], 12,
-        [[0, 1, 1, 0, 0], [10, 0.5, 0.55, 0, -1], [58, 0.22, 0.24, 0, -2.5], [66, 0.05, 0.07, 0, -2.6]], { glow: (k) => k === 2 || k === 3 });
+      const S = K.body([[-72, { hb: 8, top: 6, bot: -6, ch: 2.4, hw: 10, ht: 1.4, kd: 0.6, kw: 1.6, sw: 0.6 }],
+        [-60, { hb: 12, top: 8.5, bot: -8.5, ch: 3.2, hw: 30, ht: 2, kd: 0.8, kw: 2, sw: 2.2 }],
+        [-20, { hb: 12.5, top: 9, bot: -8.8, ch: 3.4, hw: 26, ht: 2.2, kd: 1, kw: 2, sw: 2.6 }],
+        [12, { hb: 10.5, top: 8, bot: -7.8, ch: 3, hw: 18, ht: 2.2, kd: 1.2, kw: 1.8, sw: 2, ym: -0.6 }]], (k, z) => KEEL(k) && z > -50, underHood);
+      const C = V2(0, 1.2), via = (i, j) => [...cutLine(S[i], C, 2), C, ...cutLine(C, S[j], 2)];
+      K.branch('shell', [...seg(S, 6, 12), ...via(12, 6)], 12, [[0, 1, 1, 0, 0], [18, 0.62, 0.8, 0, -0.3], [34, 0.08, 0.45, 0, 0.2]], { anchor: [0.5, 0] });
+      for (const [i, j] of [[3, 6], [12, 15]]) { const sx = Math.sign(S[i].x + S[j].x);   // the turned section has its flanks the other way round
+        K.branch(sx > 0 ? 'port_prong' : 'starboard_prong', [...seg(S, i, j), ...via(j, i)], 12, [[0, 1, 1, 0, 0], [12, 0.7, 0.7, sx * 3, 0.2], [50, 0.28, 0.32, sx * 6, 0.6], [56, 0.06, 0.08, sx * 6.2, 0.6]]); }
+      K.branch('dorsal_lance', [...seg(S, 15, 3), ...via(3, 15)], 12,
+        [[0, 1, 1, 0, 0], [10, 0.5, 0.55, 0, 0.5], [58, 0.22, 0.24, 0, 1], [66, 0.05, 0.07, 0, 1]], { glow: (k) => k === 2 || k === 3 });
       K.done(); } },
-  { n: 13, bake: true, cls: 'Carrier', name: 'Carrier', tell: 'A broad flight deck over a hangar block: its launch bays open forward and to the sides; a keel blade runs on below the bow.',
-    // version 15 (owner, 2026-11-05: "we need a carrier"), grown like the picks: the hood is the flight deck, swept wide aft
-    // and running on past the hangar to a blunt end; the hangar block below it ends in a flat face where the forward bays
-    // open; the keel runs on as a blade. About 170 m.
-    build(g) { const K = new Skin(g);
-      const S = K.body([[-82, { hb: 9, top: 6, bot: -7, ch: 2.4, hw: 12, ht: 1.6, kd: 1, kw: 1.2, sw: 0.6 }],
-        [-70, { hb: 13, top: 8, bot: -9, ch: 3, hw: 30, ht: 2.2, kd: 2.5, kw: 1.4, sw: 1.4 }],
-        [-20, { hb: 14, top: 8.5, bot: -9.5, ch: 3.2, hw: 34, ht: 2.4, kd: 4, kw: 1.4, sw: 1.8 }],
-        [20, { hb: 13, top: 8.2, bot: -9, ch: 3, hw: 30, ht: 2.4, kd: 5, kw: 1.3, sw: 1.6 }],
-        [40, { hb: 11.5, top: 7.6, bot: -8.2, ch: 2.8, hw: 26, ht: 2.2, kd: 5.5, kw: 1.2, sw: 1.4 }]], (k, z) => KEEL(k) && z > -60);
-      K.branch('flight_deck', [...seg(S, 6, 12), ...cutLine(S[12], S[6], 3)], 40, [[0, 1, 1, 0, 0], [30, 0.85, 0.9, 0, 0.2], [46, 0.55, 0.7, 0, 0.4]], { anchor: [0.5, 1] });
-      K.branch('hangar', [...seg(S, 12, 16), ...cutLine(S[16], S[2], 2), ...seg(S, 2, 6), ...cutLine(S[6], S[12], 3)], 40, [[0, 1, 1, 0, 0]]);
-      K.branch('keel_blade', [...seg(S, 16, 2), ...cutLine(S[2], S[16], 2)], 40,
-        [[0, 1, 1, 0, 0], [24, 0.6, 0.9, 0, -2], [40, 0.12, 0.25, 0, -4]], { glow: (k) => k === 1 || k === 2 });
+  { n: 13, bake: true, cls: 'Carrier', name: 'Carrier', tell: 'A broad shell runs through the middle of the ship and on past the bow; hangar blocks above and below it, their launch bays opening forward and to the sides.',
+    // version 15 (owner, 2026-11-05: "we need a carrier"); version 23 puts the shell in the middle (owner, 2026-11-06:
+    // "maybe the carrier can have the shell be in the middle, and launchers above and below"): its own section (msec), the
+    // shell a deck reaching 15-21 m out of each side at mid-height, a light strip along its edge, running on past the
+    // hangars to a blunt end; the hangar blocks above and below it end in flat faces where the forward bays open. About 170 m.
+    build(g) { const K = new Skin(g), EDGE = (k) => k === 5 || k === 6 || k === 15 || k === 16, MKEEL = (k) => k === 21 || k === 0;
+      const S = K.body([[-82, { hb: 9, top: 7, bot: -7, ch: 2.2, kd: 0.6, kw: 1.2, sw2: 4, sy: 0, st: 1.6 }],
+        [-70, { hb: 12, top: 9.5, bot: -9.5, ch: 3, kd: 1.5, kw: 1.4, sw2: 18, sy: 0, st: 2.2 }],
+        [-20, { hb: 12.5, top: 10, bot: -10, ch: 3.2, kd: 2.5, kw: 1.4, sw2: 21, sy: 0, st: 2.4 }],
+        [20, { hb: 12, top: 9.6, bot: -9.6, ch: 3, kd: 3, kw: 1.3, sw2: 18, sy: 0, st: 2.4 }],
+        [40, { hb: 11, top: 9, bot: -9, ch: 2.8, kd: 3, kw: 1.2, sw2: 15, sy: 0, st: 2.2 }]], (k, z) => (MKEEL(k) && z > -60) || (EDGE(k) && z > -66), msec);
+      K.branch('shell', [...seg(S, 4, 8), ...cutLine(S[8], S[14], 3), ...seg(S, 14, 18), ...cutLine(S[18], S[4], 3)], 40,
+        [[0, 1, 1, 0, 0], [30, 0.9, 0.9, 0, 0], [46, 0.62, 0.7, 0, 0]], { glow: (k) => k === 1 || k === 2 || k === 9 || k === 10 });   // the edge's strip, in the region's own order
+      K.branch('upper_hangar', [...seg(S, 8, 14), ...cutLine(S[14], S[8], 3)], 40, [[0, 1, 1, 0, 0]]);
+      K.branch('lower_hangar', [...seg(S, 18, 4), ...cutLine(S[4], S[18], 3)], 40, [[0, 1, 1, 0, 0]]);
       K.done(); } },
 ];
 
@@ -1731,8 +1747,7 @@ vec3 paneColour(){
     vec2 dir = d2 / out_; vec3 nf = normalize(en*0.75 + (eu*dir.x + ev*dir.y)*0.65);
     float key = max(dot(nf, normalize(vec3(-0.25, 1.0, 0.35))), 0.0);
     vec3 col = vec3(0.105, 0.11, 0.095)*(0.35 + 0.9*key);
-    float lip = 1.0 - smoothstep(0.0, 0.035, out_);                       // the fine lit line round the glass
-    return col*uFrameK + L*lip*(lit ? 0.9 : 0.15);
+    return col*uFrameK;   // dark metal, no glow of its own (owner, 2026-11-06: "window borders should also not glow")
   }
   // The room or hangar stands level with the decks whatever the face's angle (owner, 2026-11-05: "Need to account for
   // normal angles on windows, and the hangar bay too"): up is the ship's up, in is the face's normal turned level, and the
@@ -2021,6 +2036,8 @@ Object.assign(window.MOCKUP_SHOTS, {
   chunk_carrier: shot('pbr', false, () => { repair(); fxSeed = 977; strike(IDX(13), [[0, -20, true], [-6, 20, true], [8, -50, true], [10, 25, true], [-10, -60, true]]); for (let k = 0; k < 40; k++) stepDamage(1 / 30); closeOn(IDX(13), [-60, 70, 70], [0, 0, -5]); }),
   chunk: shot('pbr', false, () => { repair(); fxSeed = 977; strike(IDX(1), [[0, -10, true], [4, -24, true], [-3, 4, true], [2, -30, true]]); for (let k = 0; k < 45; k++) stepDamage(1 / 30); focusOn(IDX(1)); }),
 });
+// For a check from outside: ship n in a view and look, rendered.
+window.__clay = (n, v, lk = 'clay') => { setLook(lk); focusOn(BLOCKS.findIndex((b) => b.n === n)); setView(v); renderer.render(scene, camera); };
 window.MOCKUP_SCENE = scene;
 Promise.all(TEXLOAD).then(() => { renderer.render(scene, camera); window.MOCKUP_READY = true; }); // ready once the baked maps are in
 })();

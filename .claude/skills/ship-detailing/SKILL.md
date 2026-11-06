@@ -119,8 +119,9 @@ Built over the low-poly hull, in ship space, never exported: it exists only to b
 - **Forward floods** (owner: "we need some more lights pointed forward to paint more of the hull"): `auto_floods` adds rows
   of floods aimed forward along the port flank (mirrored), the top and the belly, every 22 m from the stern to the bow's
   split (`to_z_m`), 1.8 kW in 80 degree cones, 0.9 m off the plating and tilted 12 degrees into it.
-- **Panes** (owner: "we need to show interior of ships with windows"): every window and launch bay is a pane. Its glass
-  is a thin box in the detail layer (it glows when lit, so it lights the hull round it), and `pane_box` writes its entry
+- **Panes** (owner: "we need to show interior of ships with windows"): every window and launch bay is a pane. Nothing of
+  it is baked but the recess cut for it: no glass, no glowing dot in the maps under the page's pane (owner, 2026-11-06: "I
+  would remove window dots from the ships texture since it overlaps with our window cutouts"); `pane_box` writes its entry
   to `PANES`: room kind (quarters, mess, workshop, hold or bay), lit or dark, size, centre and axes. The baker writes them
   into the manifest (`panes`), and the page draws each pane as its own quad from them (below). A window group shares one
   room kind. Never bake the panes into a map: a 1.1 m window is about 17 texels at 2048 px, so its edge comes out ragged
@@ -147,13 +148,13 @@ node graph switched per pass (`kind_material`, `show`).
 | Pass | Bake type | What it gives | Seconds at 1024 / 2048 |
 |---|---|---|---|
 | data | EMIT | kind code, piece id (`rid`), edge amount (Bevel node, armour rolled 0.3 m) | 10 / 40 |
-| glow | EMIT | each lamp's and window's colour | 1 / 4 |
+| glow | EMIT | each lamp's colour | 1 / 4 |
 | position | EMIT | ship-space position, for liveries, logo and strips | 2 / 6 |
 | normal (object) | NORMAL | the paint's own lighting | 11 / 45 |
 | normal (tangent) | NORMAL | the normal map for the game and the page | 12 / 45 |
 | AO | AO, 2.2 m | occlusion, deep in the trenches | 12 / 90 |
 | sun | DIFFUSE direct | a low painter's sun (ship space 0.6, 0.55, 0.58) with its cast shadows | 8 / 60 |
-| hull lights | DIFFUSE direct, sun off, fixtures on | the floods', lamps' and windows' light falling on white plating | 15 / 120 |
+| hull lights | DIFFUSE direct, sun off, fixtures on | the floods' and lamps' light falling on white plating | 15 / 120 |
 
 ## 6. The maps
 
@@ -172,7 +173,7 @@ near black, greebles, the dome's green, slats, vents), the liveries, and the emb
 | `base` (PBR) | `paint_pbr` | the flat paint with no light: cavities kept dark (AO), plates a little darker toward their gaps, worn edges lighter, grain |
 | `orm` (PBR) | `paint_pbr` | red AO, green roughness, blue metalness by kind (`PBR`), paint less metallic, worn edges smoother and barer |
 | `normal` | the tangent bake | the detail's relief, OpenGL convention |
-| `emit` | `strips_and_glow` | lamps, windows, the strips' lit line (0.7 m) in its dark channel, the domes' faint inner light, a soft halo |
+| `emit` | `strips_and_glow` | lamps, the strips' lit line (0.7 m) in its dark channel, the domes' faint inner light, a soft halo |
 | `light` | the hull lights bake | the light falling on the hull, over `light_ref`, stored with a 1/1.6 curve at half size |
 | `ao` | the AO bake | kept beside, not inlined (it is in the ORM and the paint) |
 
@@ -203,7 +204,8 @@ The board at night, each ship lit by its own floods, lamps, windows, strobes and
 **Rooms behind the panes.** Each ship's panes are one mesh of quads (`paneMesh`), laid 5 cm off the hull at the place
 the bake cut for each pane, each quad the pane plus its frame (0.1 m round a window, 0.35 m round a bay). Every vertex
 carries the pane's place in metres, its half size, its axes and its kind, so the frame is exact at any distance: a
-bevelled rim of the hull's dark metal lit from above, a fine lit line round the glass. Behind a window's glass the view
+bevelled rim of the hull's dark metal lit from above, with no glow of its own (owner, 2026-11-06: "window borders should
+also not glow"). Behind a window's glass the view
 ray draws the room with `roomBehind(q, D, room, kind, light)` from `docs/mockups/lib/ship-rooms.js` (the same rooms as the
 Concord line's), in a frame **level with the decks**, not the face's: up is the ship's up, in is the face's normal turned
 level, and the pane cuts the room's front at a slant (owner, 2026-11-05: "Need to account for normal angles on windows, and the hangar bay too").

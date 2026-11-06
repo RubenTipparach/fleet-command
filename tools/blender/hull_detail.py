@@ -339,9 +339,10 @@ def fits(surf, M, w, h, frame):
 
 
 def pane_box(w, h, kind, lit, M, frame):
-    """A pane w by h at frame M: its glass for the bake (a thin box that glows when lit, so it lights the hull round it),
-    and its entry in PANES, from which the page draws the pane itself as its own quad, with a clean frame and the room
-    or hangar behind it (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the
+    """A pane w by h at frame M: its entry in PANES, from which the page draws the pane itself as its own quad, with a
+    clean frame and the room or hangar behind it. Nothing of the pane is baked: the bake keeps only the recess cut for it,
+    so no glowing dot in the hull's maps sits under the page's window (owner, 2026-11-06: "I would remove window dots from
+    the ships texture since it overlaps with our window cutouts") (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the
     border clean"). A baked map of the panes was too coarse for that: a window is a few texels across."""
     R3 = M.to_3x3()
     PANES.append({"kind": kind, "lit": bool(lit), "w_m": w, "h_m": h, "frame_m": frame,
@@ -349,12 +350,12 @@ def pane_box(w, h, kind, lit, M, frame):
                   "u": [round(c, 5) for c in (R3 @ Vector((1, 0, 0))).normalized()],
                   "v": [round(c, 5) for c in (R3 @ Vector((0, 1, 0))).normalized()],
                   "n": [round(c, 5) for c in (R3 @ Vector((0, 0, 1))).normalized()]})
-    return place(bm_box(w, h, 0.06, at=(0, 0, 0.02)), M)
 
 
 def window(lit, M, cutters, frame, kind="quarters"):
     cutters.append(place(bm_box(1.1, 0.6, 3.0, at=(0, 0, -1.0)), M))
-    return [(pane_box(1.1, 0.6, kind, lit, M, frame), "lamp:window" if lit else "vent")]
+    pane_box(1.1, 0.6, kind, lit, M, frame)
+    return []
 
 
 def bay(F, M, cutters, surf, frame):
@@ -367,7 +368,8 @@ def bay(F, M, cutters, surf, frame):
     if not fits(surf, M, w, h, frame):
         raise ValueError(f"hull_detail: the bay at {F['face']} {F['at']} ({w} by {h} m) does not lie flat on its face; move it or make it smaller")
     cutters.append(place(bm_box(w, h, 3.0, at=(0, 0, -1.0)), M))
-    parts = [(pane_box(w, h, "bay", F.get("lit", True), M, frame), "lamp:bay")]
+    pane_box(w, h, "bay", F.get("lit", True), M, frame)
+    parts = []
     n = max(3, int(w / 2.2))
     up = 1.0 if M.col[1].y >= 0 else -1.0   # the lintel is the edge toward the ship's up, whichever way the frame runs
     for i in range(n):
