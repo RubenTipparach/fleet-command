@@ -23,7 +23,7 @@ public static class HelmKeyLayout
         double wx = key.X + glass.X * key.W, wy = key.Y + glass.Y * key.H, ww = glass.W * key.W, wh = glass.H * key.H, m = Math.Min(ww, wh);
         if (!hasAngle) return new HelmKeyContent(wx + ww / 2, wy + wh / 2, m * 0.4, false, 0, 0, 0, false);
         int size = Math.Max(8, (int)Math.Round(m * 0.26));
-        double pad = m * 0.07;
+        double pad = m * 0.11;
         return new HelmKeyContent(wx + ww / 2, wy + wh / 2 - m * 0.09, m * 0.34, true, leftTurn ? wx + ww - pad : wx + pad, wy + wh - pad, size, leftTurn);
     }
 }

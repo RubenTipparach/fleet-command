@@ -83,6 +83,9 @@ public sealed class SsarithKit : IKit
         };
         // the ok symbol: the lit claw marks' light turned toward bone, the count of the whole (ssarith.js load)
         _r.AddHueTurned("bar.cell.ok", "bar.cell.on", Bone);
+        // the green fill the console asks of a bar marked ok (never drawn while the bars are symbol rows, but the kit lists
+        // it): the render's fill turned to the state colour, as the Kelvane kit makes its own
+        if (!_r.Has("bar.fill.accord")) _r.AddHueTurned("bar.fill.accord", "bar.fill", C.Accord);
         DefineIcons();
         foreach (string k in _r.Names) _supplies.Add(k);
         foreach (string k in _icons.Keys) _supplies.Add("icon." + k);

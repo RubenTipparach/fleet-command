@@ -23,7 +23,7 @@ public sealed partial class PlatePanel : ConsolePanel
         Ship[] fleet = B.Fleet();
         int i = Array.IndexOf(fleet, Me);
         Button("fleet", new Rect2(Size.X - 90, 6, 86, 30), $"Fleet {i + 1}/{fleet.Length}", () => B.TakeCommand(fleet[(i + 1) % fleet.Length].Id),
-            tip: new Tip("Take command of the next ship"));
+            tip: new Tip("Take command of the next ship"), shortLabel: $"{i + 1}/{fleet.Length}");
     }
 }
 

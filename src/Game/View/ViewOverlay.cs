@@ -392,7 +392,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         HitState st = _ui.Reg(id, r, _ => click(), null, tip != null ? new Tip(tip) : null);
         string kst = st.Down || on ? "pressed" : st.Hot ? "hover" : "idle";
         _x.Kit.Piece(this, "button." + kst, r);
-        _x.Fonts.Draw(this, label.ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + 6, 17, _x.Kit.Style.KeyInk.For(kst), HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
+        ConsolePanel.KeyLabel(this, _x.Kit, _x.Fonts, r, kst, label);
     }
 
     /// <summary>A ship's hull: a short bar and its percentage, green above 60 %, amber above 30 %, red below (the same

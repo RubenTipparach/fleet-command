@@ -278,7 +278,7 @@ public sealed partial class Main : Node
         foreach (Region r in ConsoleLayout.Expandable) { Region e = r; states.Add(("expand." + e, () => _x.State.Expanded = e)); }
         states.Add(("menu", () => _x.State.MenuOpen = true));
         states.Add(("scene-list", () => _x.State.SceneOpen = true));
-        string[] skins = { "concord", "krai" };
+        string[] skins = { "concord", "krai", "ssarith", "kelvane" };
         var seen = new Dictionary<string, Dictionary<string, HashSet<string>>>();
         var fails = new List<string>();
         Scenario sc = _x.Battle.Scenario;

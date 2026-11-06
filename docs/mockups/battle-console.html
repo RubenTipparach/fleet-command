@@ -4263,7 +4263,7 @@ function helmGlyph(kind, cx, cy, r, col) {
 // One helm key: a rounded square in the Concord blue (lit lilac when its order or toggle is on, green when it is the
 // order in force), its glyph in black, its name on hover.
 // The glass of a rendered square key, as fractions of the key [x0, y0, x1, y1]: where the lit key (key.on) differs from the
-// key at rest (key.idle), measured once from the kit's own renders, so the frame round it is never drawn on. A drawn key
+// key at rest (key.idle) round the key's centre, measured once from the kit's own renders, so the frame round it is never drawn on. A drawn key
 // (Concord) is all face.
 let KEY_GLASS = null;
 function keyGlass() {
@@ -4272,13 +4272,16 @@ function keyGlass() {
   if (!a || !b) return (KEY_GLASS = [0, 0, 1, 1]);
   const W2 = a.width, H2 = a.height, c = document.createElement('canvas'); c.width = W2; c.height = H2;
   const x = c.getContext('2d', { willReadFrequently: true }), px = (im) => { x.clearRect(0, 0, W2, H2); x.drawImage(im, 0, 0, W2, H2); return x.getImageData(0, 0, W2, H2).data; };
-  const pa = px(a), pb = px(b);
-  let x0 = W2, y0 = H2, x1 = -1, y1 = -1;
-  for (let j = 0; j < H2; j++) for (let i = 0; i < W2; i++) {
-    const k = (j * W2 + i) * 4, d = Math.abs(pa[k] - pb[k]) + Math.abs(pa[k + 1] - pb[k + 1]) + Math.abs(pa[k + 2] - pb[k + 2]);
-    if (d > 90) { x0 = Math.min(x0, i); y0 = Math.min(y0, j); x1 = Math.max(x1, i); y1 = Math.max(y1, j); }
-  }
-  return (KEY_GLASS = x1 < 0 ? [0, 0, 1, 1] : [x0 / W2, y0 / H2, (x1 + 1) / W2, (y1 + 1) / H2]);
+  const pa = px(a), pb = px(b), lit = (i, j) => { const k = (j * W2 + i) * 4; return Math.abs(pa[k] - pb[k]) + Math.abs(pa[k + 1] - pb[k + 1]) + Math.abs(pa[k + 2] - pb[k + 2]) > 90; };
+  // walked out from the key's centre along its middle row and column while the two renders differ, so a stray pixel on
+  // the frame (a highlight that differs a little between the renders) never widens the glass
+  const cx = W2 >> 1, cy = H2 >> 1;
+  if (!lit(cx, cy)) return (KEY_GLASS = [0, 0, 1, 1]);
+  // (a gap of up to 4 px is stepped over: the Hunt's glass has dark scan lines)
+  const walk = (at, from, step, end) => { let last = from; for (let v = from + step, gap = 0; v !== end + step && gap <= 4; v += step) { if (at(v)) { last = v; gap = 0; } else gap++; } return last; };
+  const x0 = walk((i) => lit(i, cy), cx, -1, 0), x1 = walk((i) => lit(i, cy), cx, 1, W2 - 1);
+  const y0 = walk((j) => lit(cx, j), cy, -1, 0), y1 = walk((j) => lit(cx, j), cy, 1, H2 - 1);
+  return (KEY_GLASS = [x0 / W2, y0 / H2, (x1 + 1) / W2, (y1 + 1) / H2]);
 }
 // Where a helm key's glyph and turn angle go inside its glass (owner, 2026-11-06, on the Institute console: "the numbers
 // arent in the buttons for turn angle, also these icons need a little more space on these buttons"): the glyph a little
@@ -4287,7 +4290,7 @@ function keyGlass() {
 function helmKeyLayout(x, y, sz, angle, left) {
   const [f0, g0, f1, g1] = keyGlass(), wx = x + f0 * sz, wy = y + g0 * sz, ww = (f1 - f0) * sz, wh = (g1 - g0) * sz, m = Math.min(ww, wh);
   if (!angle) return { cx: wx + ww / 2, cy: wy + wh / 2, r: m * 0.4 };
-  const size = Math.max(8, Math.round(m * 0.26)), pad = m * 0.07;
+  const size = Math.max(8, Math.round(m * 0.26)), pad = m * 0.11;
   return { cx: wx + ww / 2, cy: wy + wh / 2 - m * 0.09, r: m * 0.34, size, tx: left ? wx + ww - pad : wx + pad, ty: wy + wh - pad, align: left ? 'right' : 'left' };
 }
 // One helm key: the skin's key face (lit when its order or toggle is on), its glyph in the ink that reads on it, its

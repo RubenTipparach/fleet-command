@@ -121,26 +121,44 @@ public abstract partial class ConsolePanel : Control, IControlSource
     /// <summary>A key: the kit's key, idle, hover or pressed (pressed also when it is on); its label in the skin's key
     /// ink. A skin whose keys end in a point (KeyCenter) centres the label in the open field between the key's caps,
     /// shrinking it to fit (down to 11 px) before it is trimmed (the Analog Panel Bible's rule T).</summary>
-    protected HitState Button(string id, Rect2 r, string label, Action? click, bool on = false, bool dis = false, bool center = true, Tip? tip = null)
+    protected HitState Button(string id, Rect2 r, string label, Action? click, bool on = false, bool dis = false, bool center = true, Tip? tip = null, string? shortLabel = null)
     {
         HitState st = dis ? default : Ui.Reg(id, r, click == null ? null : _ => click(), null, tip);
         string kst = dis ? "idle" : st.Down || on ? "pressed" : st.Hot ? "hover" : "idle";
         Kit.Piece(this, "button." + kst, r, dis ? 0.35f : 1);
+        KeyLabel(this, Kit, X.Fonts, r, kst, label, dis, center, shortLabel);
+        return st;
+    }
+
+    /// <summary>A key's label in the skin's key ink: one implementation for every key the console draws (the panels' and
+    /// the view's). A skin whose keys end in a point (KeyCenter) centres the label in the open field between the key's
+    /// caps (or its measured KeyField), shrinking it to fit (down to 11 px) before it is trimmed (the Analog Panel Bible's
+    /// rule T); a short form of the label, when given, is used when the full one cannot fit even at 11 px (the mockup's
+    /// o.short).</summary>
+    public static void KeyLabel(CanvasItem ci, IKit kit, Fonts fonts, Rect2 r, string kst, string label, bool dis = false, bool center = true, string? shortLabel = null)
+    {
+        SkinStyle sk = kit.Style;
         float h = r.Size.Y;
         int size = h >= 44 ? 22 : h >= 30 ? 17 : 15;
         float pad = h >= 44 ? 24 : 12;
-        Color k = Sk.KeyInk.For(kst), ink = dis ? new Color(k, k.A * 0.5f) : k;
+        Color k = sk.KeyInk.For(kst), ink = dis ? new Color(k, k.A * 0.5f) : k;
         string lab = label.ToUpperInvariant();
-        if (Sk.KeyCenter)
+        if (sk.KeyCenter)
         {
-            var (cl, cr) = Sk.KeyField is { } kf ? Field(kf, "button." + kst, h) : Caps("button." + kst, h);
-            float room = r.Size.X - cl - cr - 8, tw = X.Fonts.Width(lab, size, 600, 1);
+            float sc = Math.Min(1, h / kit.Spec("button." + kst).Size.Y);
+            var (cl, cr) = sk.KeyField is { } kf ? (kf.L * sc, kf.R * sc) : (kit.Spec("button." + kst).M.L * sc, kit.Spec("button." + kst).M.R * sc);
+            float room = r.Size.X - cl - cr - 8, tw = fonts.Width(lab, size, 600, 1);
             int fs = tw > room ? Math.Max(11, (int)MathF.Floor(size * room / tw)) : size;
-            Text(lab, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
+            if (shortLabel != null && fonts.Width(lab, fs, 600, 1) > room)
+            {
+                lab = shortLabel.ToUpperInvariant();
+                float sw = fonts.Width(lab, size, 600, 1);
+                fs = sw > room ? Math.Max(11, (int)MathF.Floor(size * room / sw)) : size;
+            }
+            fonts.Draw(ci, lab, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
         }
-        else if (center) Text(lab, r.Position.X + r.Size.X / 2, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
-        else Text(lab, r.End.X - pad, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Right, r.Size.X - pad - 12, 600, 1);
-        return st;
+        else if (center) fonts.Draw(ci, lab, r.Position.X + r.Size.X / 2, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
+        else fonts.Draw(ci, lab, r.End.X - pad, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Right, r.Size.X - pad - 12, 600, 1);
     }
 
     /// <summary>A skin's measured label field at a drawn height, shrunk with the piece's height as the kit draws it.</summary>

@@ -11,6 +11,8 @@ public static class Kits
     {
         ["concord"] = () => new ConcordKit(),
         ["krai"] = () => new KraiKit(),
+        ["ssarith"] = () => new SsarithKit(),
+        ["kelvane"] = () => new KelvaneKit(),
     };
 
     /// <summary>The kit for a skin id ("concord", "krai"); an unknown id throws, naming it and the ids there are.</summary>
