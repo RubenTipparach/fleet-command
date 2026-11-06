@@ -230,7 +230,7 @@ public static class DataLoader
         return d;
     }
 
-    private static readonly Dictionary<string, Stance> Stances = new() { ["attack"] = Stance.Attack, ["escort"] = Stance.Escort, ["hold"] = Stance.Hold };
+    private static readonly Dictionary<string, Stance> Stances = new() { ["attack"] = Stance.Attack, ["escort"] = Stance.Escort, ["hold"] = Stance.Hold, ["run"] = Stance.Run };
     private static readonly Dictionary<string, AiRange> Ranges = new() { ["close"] = AiRange.Close, ["mid"] = AiRange.Mid, ["long"] = AiRange.Long };
 
     /// <summary>The scenarios (data/battle/scenarios.json), in menu order. Ids are unique, every scenario's player side is a
@@ -271,13 +271,14 @@ public static class DataLoader
             int sideNo = s.Int("side");
             if (sideNo is not (0 or 1)) throw new DataError($"{s.Where}.side: 0 (the player's) or 1");
             string stance = s.Str("stance", "attack"), range = s.Str("range", "mid");
-            if (!Stances.TryGetValue(stance, out Stance st)) throw new DataError($"{s.Where}.stance: attack, escort or hold, not '{stance}'");
+            if (!Stances.TryGetValue(stance, out Stance st)) throw new DataError($"{s.Where}.stance: attack, escort, hold or run, not '{stance}'");
             if (!Ranges.TryGetValue(range, out AiRange rg)) throw new DataError($"{s.Where}.range: close, mid or long, not '{range}'");
             double hullFrac = s.Num("hull_frac", 1), shieldsFrac = s.Num("shields_frac", 1);
             if (hullFrac is <= 0 or > 1) throw new DataError($"{s.Where}.hull_frac: above 0 and at most 1");
             if (shieldsFrac is < 0 or > 1) throw new DataError($"{s.Where}.shields_frac: between 0 and 1");
             ships.Add(new ShipStart(id, s.Str("name"), s.Str("captain"), cls, fac, sideNo, s.Num("x_m"), s.Num("z_m"), s.Num("heading_deg"), s.Num("speed_m_s"),
                 st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac));
+            ships[^1] = ScenarioExtras.Ship(s, ships[^1]);
             s.Done();
         }
         if (ships.Count == 0 || ships[0].Side != 0) throw new DataError($"{root.Where}.ships: the first ship is the player's and must be on side 0");
@@ -291,7 +292,7 @@ public static class DataLoader
         if (!(sun > 0 && sun <= 4)) throw new DataError($"{root.Where}.sun_energy: above 0 and at most 4, not {sun}");
         // a damage range (data/battle/range.json): its ships stand to be fired at, and it never ends
         bool isRange = root.Bool("damage_range", false);
-        var scenario = new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange);
+        var scenario = ScenarioExtras.Scene(root, new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange));
         root.Done();
         return scenario;
     }

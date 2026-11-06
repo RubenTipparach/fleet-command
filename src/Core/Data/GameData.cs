@@ -73,7 +73,21 @@ public enum AiRange { Close, Mid, Long }
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false);
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false)
+{
+    /// <summary>What it carries in place of its class's loadout (mines, fighters, shuttles, barrage missiles), or null.</summary>
+    public ShipKit? Kit { get; init; }
+    /// <summary>Energy boxes it starts with in place of its class's, by system (data/battle/classes.json power_e), or null.</summary>
+    public IReadOnlyDictionary<string, int>? PowerE { get; init; }
+    /// <summary>The health it starts with in a subsystem (Rules.Subsystems), 0 to 1, or null for all whole.</summary>
+    public IReadOnlyDictionary<string, double>? SysHp { get; init; }
+}
+
+/// <summary>A ship's craft and mines in a scenario, each null for its class's loadout; the fighters' first mission.</summary>
+public sealed record ShipKit(int? Mines, int? Fighters, int? Shuttles, int? Missiles, string? Mission);
+
+/// <summary>An asteroid: where it is and its radius (metres), and its name in the log (null: "an asteroid").</summary>
+public sealed record RockDef(double XM, double ZM, double RadiusM, string? Name);
 
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
 /// objective, and the first officer's message. The first ship is the one the player commands. Sky is the nebula it is fought
@@ -82,6 +96,13 @@ public sealed record Scenario(string Id, string Name, string Side, ulong Seed, s
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
     IReadOnlyList<MarkerDef>? Markers = null)
 {
+    /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: the scene's tool is
+    /// what destroys the target).</summary>
+    public bool Armed { get; init; } = true;
+    /// <summary>The tools decisive in a test scene ("mine", "rock", "shuttle", "barrage"): one destroys its target.</summary>
+    public IReadOnlyList<string> Lethal { get; init; } = System.Array.Empty<string>();
+    /// <summary>The asteroids of the scene.</summary>
+    public IReadOnlyList<RockDef> Rocks { get; init; } = System.Array.Empty<RockDef>();
     /// <summary>A battle with marker beacons ends when its mission's objectives are met (GameFlow checks them), not when
     /// the last enemy goes: a shakedown's target drones can be shot before its beacon is reached.</summary>
     public bool EndsOnObjectives => Markers is { Count: > 0 };

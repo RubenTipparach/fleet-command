@@ -39,6 +39,19 @@ one being used all the time". The painter is now here, `tools/space/nebula_skies
 | `deep_indigo` | Indigo clouds lit blue from within, crossing black lanes |
 | `coral_drift` | Coral and turquoise side by side, a warm core |
 
+Eight more (2026-11-06), one for each of the tractor, mines and craft test scenes (`data/battle/scenes/tractor.json`):
+
+| Sky | Look |
+| --- | --- |
+| `iron_shoal` | Cold steel-blue banks of dust, a pale silver core |
+| `amber_tide` | A long amber swell over deep brown, a soft gold core |
+| `cobalt_drift` | Cobalt clouds over black, electric blue hearts |
+| `saffron_haze` | A saffron haze with rose edges, a cream core |
+| `jade_veil` | A thin jade veil, sea-green and grey |
+| `orchid_deep` | Orchid and plum clouds, violet lanes, a pink-white core |
+| `slate_ember` | Slate-grey dust with embers glowing through it |
+| `copper_mist` | Copper beside verdigris, a bright brass core |
+
 `docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
 bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the
 hulls reflect the nebula and take half their ambient light from it (owner, 2026-11-04: "reflection probes ... but dont

@@ -92,6 +92,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
         RangeSetup();
         SystemsSetup();
+        TractorSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -108,8 +109,8 @@ public sealed partial class Battle
         s.HOrder = s.H;
         s.HetChance = Rules.HetMax(s);
         for (int i = 0; i < 6; i++) s.Shields[i] = c.ShieldsHp[i] * d.ShieldsFrac;
-        foreach (string k in Rules.Systems) s.Power[k] = c.PowerE.GetValueOrDefault(k);
-        foreach (string k in Rules.Subsystems) s.Sys[k] = 1;
+        foreach (string k in Rules.Systems) s.Power[k] = d.PowerE?.GetValueOrDefault(k, c.PowerE.GetValueOrDefault(k)) ?? c.PowerE.GetValueOrDefault(k);
+        foreach (string k in Rules.Subsystems) s.Sys[k] = d.SysHp?.GetValueOrDefault(k, 1) ?? 1;
         for (int i = 0; i < c.Mounts.Count; i++)
         {
             MountDef md = c.Mounts[i];
@@ -355,6 +356,8 @@ public sealed partial class Battle
         s.Target = t.Id;
         double range = Rules.AiRangeKm(s.Range);
         if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
+        // a lane run (test scenes): straight on at full speed, turning back for another pass once lane_turn_km out
+        else if (s.Stance == Stance.Run) { if (Rules.DistKm(s, t) > Data.Systems.LaneTurnKm) Steer(s, "approach", t, range); else s.VOrder = Rules.MaxSpeed(s); }
         else if (s.Stance == Stance.Escort && s.Side == 0 && Player.Alive && s != Player) Steer(s, Rules.DistKm(s, t) < range ? "circle" : "follow", Rules.DistKm(s, t) < range ? t : Player, range);
         else Steer(s, Rules.DistKm(s, t) > range * 1.3 ? "approach" : "circle", t, range);
         ThinkCharge(s, t);

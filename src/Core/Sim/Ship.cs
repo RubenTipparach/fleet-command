@@ -12,8 +12,9 @@ public enum SystemStatus { Active, Damaged, Disabled, Off, Destroyed }
 
 public enum AlertLevel { Green, Yellow, Red }
 
-/// <summary>An AI captain's standing orders (survey G3); the Fleet station will set these for wingmen.</summary>
-public enum Stance { Attack, Escort, Hold }
+/// <summary>An AI captain's standing orders (survey G3); the Fleet station will set these for wingmen. Run is a test
+/// scene's lane run: straight on at full speed, turning back for another pass once far out (the mockup's 'run').</summary>
+public enum Stance { Attack, Escort, Hold, Run }
 
 public sealed class Mount
 {
