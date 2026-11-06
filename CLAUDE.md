@@ -175,8 +175,12 @@ build, and then need to be approved for actual game implementation after"):
   with each mockup's stage, change, page and link. A new mockup goes on the list before work starts.
 - **The mockup tracker** (`mockup-tracker` skill) is the master artifact: it lists every published artifact
   (owner, 2026-10-30: "master artifact shall contain a reference to ALL artifacts"), in three sections: game
-  mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A new
-  artifact goes on it when it is first published. Its link is in `mockup-work.md` and
+  mockups (each with its stage, where the owner approves each stage and leaves notes), guides, and misc. A
+  faction's mockups (its ships, its battle console, its badge) sit together behind one card that opens them in a modal
+  (owner, 2026-11-06: "coalesce faction mockups together in modals"). Each entry's summary is one short line saying what
+  the page is (owner, 2026-11-06: "why did you add so much detail to the mockup tracker? the mockups themselves already
+  have documentation, or you can add documentation to openspec"); a version's changes go in the page, its OpenSpec change
+  and its `docs/artifacts/` record. A new artifact goes on it when it is first published. Its link is in `mockup-work.md` and
   `docs/design/README.md`, and **every published page links back to it** (owner, 2026-10-31: "Make sure all
   published pages link back to the master"): an "All Fleet Command mockups (the tracker)" link near the page's top. An approval counts only when it is in the tracker or in the owner's own
   words in the conversation; record it in `mockup-work.md` either way.
