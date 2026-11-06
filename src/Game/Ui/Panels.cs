@@ -239,7 +239,14 @@ public sealed partial class MenuCard : ConsolePanel
         Rect2 b = Frame(at, "Menu", false);
         float y = b.Position.Y + 8, bw = b.Size.X;
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
-        Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false); y += 56;
+        // in a campaign mission the menu holds Withdraw (owner, 2026-11-06: "withdraw button should be in main meny"), and a
+        // mission's battle is not restarted
+        if (X.State.InMission)
+            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), X.Battle.Over != null ? "Battle over" : "Withdraw",
+                X.Battle.Over != null ? null : () => { X.State.MenuOpen = false; X.Battle.Withdraw(); }, center: false, dis: X.Battle.Over != null,
+                tip: new Tip("Withdraw", new (string, string, Color?)[] { ("Ends", "the battle where it stands", null), ("Grade", "a draw, unless an objective says otherwise", null) }));
+        else Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false);
+        y += 56;
         Button("m.display", new Rect2(b.Position.X, y, bw, 44), DisplaySettings.Fullscreen ? "Display: fullscreen" : "Display: window", X.Act.Fullscreen,
             center: false, tip: new Tip("Fullscreen or window (F11)")); y += 56;
         Button("m.quit", new Rect2(b.Position.X, y, bw, 44), "Quit", X.Act.Quit, center: false);

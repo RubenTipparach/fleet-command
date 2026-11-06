@@ -672,7 +672,9 @@ public sealed partial class CampaignMap : Node3D
             if (p.Model != null)
             {
                 if (a.DistanceSquaredTo(b) > 1e-6f) p.Model.Rotation = new Vector3(0, Mathf.Atan2(b.X - a.X, b.Z - a.Z), 0);
-                p.Model.Position = new Vector3(0, p.Lift + Mathf.Sin(Mathf.Pi * Math.Min(1, p.T / legs)) * 0.35f, 0);
+                // the ship slides along its route at its stand's height (owner, 2026-11-06: "when ships move dont hop them lol,
+                // it looks funny, just slide them around the map is fine")
+                p.Model.Position = new Vector3(0, p.Lift, 0);
             }
             if (p.T >= legs)
             {

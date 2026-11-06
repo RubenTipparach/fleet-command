@@ -42,16 +42,23 @@ The editor is an Avalonia app, so the same code runs on Windows and macOS. Its w
 | `setup` | a list of `{ "set": name, "expr": ... }` or `{ "set": name, "pick": [ ... ] }`, rolled when offered |
 | `brief`, `objective` | text, or a list of `{ "when": ..., "text": ... }` parts joined in order |
 | `needs` | a list of `{ "if": ..., "say": ... }`: while one holds, the fleet cannot launch it, and the briefing says why |
-| `battle` | a list of battles; the first whose `when` holds (or that has none) is fought. Leave it out for a mission done on arrival |
+| `battle` | a list of battles; the first whose `when` holds (or that has none) is fought. Every mission has one: none is done on arrival (owner, 2026-11-06: "you just skipped the mission!") |
 | `grade` | optional list of `{ "when": ..., "is": grade }`, the first that holds; otherwise the default rule below |
 | `result` | a list of outcomes; the first whose `when` holds (or that has none) is applied |
 
-A battle is `{ when?, name?, intel?, groups, objectives }`:
+A battle is `{ when?, name?, intel?, groups, markers?, objectives }`:
 - A **group** is `{ id, faction, count, role, label?, tag?, tier?, bearing_deg?, range_km?, ship_name? }`.
   - `role` is `enemy`, `ally` (wingmen beside your fleet) or `neutral` (ships to protect, which hold their fire).
-  - `tag` is `flagship`, `prize`, `rescue` or `decoy`. A **prize** is taken, not destroyed: beaten down to a quarter of
+  - `tag` is `flagship`, `prize`, `rescue`, `decoy` or `drone`. A **drone** (an enemy group, a shakedown's targets)
+    stands where it is put, never fires, and is a light hulk: no shields, 30 % of its hull. A **prize** is taken, not destroyed: beaten down to a quarter of
     its hull (`capture_hull_frac` in `data/battle/tuning.json`), it strikes and is boarded.
   - Enemy groups spread ahead at 10 km unless `bearing_deg` (clockwise from ahead) and `range_km` place them.
+- A **marker** is a beacon to fly to: `{ id, label, bearing_deg?, range_km?, at?, after?, radius_m? }`.
+  - It sits at `bearing_deg` (clockwise from ahead) and `range_km` (default 8) from the fleet's start, or at the start itself
+    with `"at": "start"`.
+  - `after` names a marker that must be reached first; until then it is not shown and cannot be reached.
+  - The ship you command reaches it within `radius_m` (default 800, 100 to 5000).
+  - A battle with markers ends when every primary objective is met (checked as it plays), not when the last enemy goes.
 - An **objective** is `{ id, text, primary?, by_withdraw?, done }`.
   - `done` is checked when the battle ends.
   - The primary objectives decide win or lose; the rest are bonuses.
@@ -97,7 +104,7 @@ Victory and outstanding are wins. Each grade pays a share of the reward and earn
 - **in `where`:** `owner`, `own`, `hostile`, `neutral`, `plain` (no port), `port`, `station`, `planet`, `terrain`,
   `dist_home`, `has_group`, `group_size_here`, `group_fac_here`, `commander_here`, `is_home` and `on_route(faction)`;
 - **in `done`:** `how` (`end`, `withdraw` or `lost`), and `size`, `alive`, `destroyed`, `taken` and `hull_min` of a
-  group id, `fleet`, `enemies` or `allies`;
+  group id, `fleet`, `enemies` or `allies`, and `reached('marker')` (the loader refuses a marker the battle does not place);
 - **in `grade` and `result`:** `grade`, `win`, `pay`, `how`, `crushing` to `outstanding` as true or false,
   `all_primary`, `all_bonus`, `bonus_count` and `met('id', ...)` (how many of those objectives were met).
 

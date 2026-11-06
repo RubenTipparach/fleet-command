@@ -1,5 +1,5 @@
 {
- "_doc": "The scripted captain plays the campaign (owner, 2026-11-05: \"launch game, and play through the menus and move ship around and play through general missions in the campaign\", \"no story yet, we're just looking to see how the game works with these missions\"): the menu, the Concord, a new campaign, the fleet moved round the map over a few turns, then three contracts start to end (brief, Accept, sail, Launch, fight, debrief). Contracts only, never a story mission. It saves to user://campaign-playtest-concord.json, never over the player's campaign. In a window, snap saves stills into docs/screenshots/game/campaign/.",
+ "_doc": "The scripted captain plays the campaign (owner, 2026-11-05: \"launch game, and play through the menus and move ship around and play through general missions in the campaign\", \"no story yet, we're just looking to see how the game works with these missions\"): the menu, the Concord, a new campaign, the fleet moved round the map over a few turns, then the Shakedown cruise (fly to its beacon, shoot its target drones, return to the start) and three contracts start to end (brief, Accept, sail, Launch, fight, debrief). It saves to user://campaign-playtest-concord.json, never over the player's campaign. In a window, snap saves stills into docs/screenshots/game/campaign/.",
  "flow": true,
  "beats": [
   {"do": "wait_ready"},
@@ -19,6 +19,7 @@
   {"do": "move", "s": 2},
   {"do": "end_turn"},
   {"do": "snap", "arg": "turn"},
+  {"do": "contract", "arg": "shakedown", "s": 500},
   {"do": "contract", "s": 300},
   {"do": "contract", "s": 300},
   {"do": "contract", "s": 300},

@@ -190,7 +190,7 @@ public sealed partial class GameFlow : Node
     {
         int n = Plan?.Battle.Objectives.Count ?? 0;
         _strip.Position = view.Position + new Vector2(16, -8);
-        _strip.Size = new Vector2(Math.Min(470, view.Size.X - 32), 92 + 24 * n);
+        _strip.Size = new Vector2(Math.Min(470, view.Size.X - 32), 52 + 24 * n);
     }
 
     // ---- Campaign ---------------------------------------------------------------------------------------------------
@@ -398,6 +398,12 @@ public sealed partial class GameFlow : Node
         if (Screen != FlowScreen.Battle) return;
         Sim.Battle b = X.Battle;
         if (Plan != null && b.Over == null && Plan.Groups["fleet"].All(id => b.ShipById(id) is not { Alive: true })) b.Lose();
+        // a battle with marker beacons ends when every primary objective is met, not when the last enemy goes
+        if (Plan != null && Camp != null && b.Over == null && Plan.Scenario.EndsOnObjectives)
+        {
+            var met = MissionRun.MetNow(Camp, Plan, b);
+            if (Plan.Battle.Objectives.Where(o => o.Primary).All(o => met.GetValueOrDefault(o.Id))) b.Win();
+        }
         if (b.Over == null) return;
         _overT += delta;
         if (_overT < 2.5) return;

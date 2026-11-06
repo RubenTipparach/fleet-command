@@ -3579,7 +3579,8 @@ function stepFlight(dt) {
   fleetStandee.position.lerpVectors(a, b, pts.length === 2 ? e : k);
   if (!done) model.rotation.y = Math.atan2(b.x - a.x, b.z - a.z);
   const legs = pts.length - 1, along = (flight.i + k) / legs;
-  model.position.y = 0.06 + 0.46 * 1.15 + Math.sin(Math.PI * Math.min(1, along)) * 0.35;
+  // the ship slides along its route at its stand's height (owner, 2026-11-06: "just slide them around the map is fine")
+  model.position.y = 0.06 + 0.46 * 1.15;
   if (done) {
     flight = null; model.rotation.y = CAMP.dir; settlePieces();
     if (CAMP.order && CAMP.order.c === CAMP.at.c && CAMP.order.r === CAMP.at.r) CAMP.order = null;
