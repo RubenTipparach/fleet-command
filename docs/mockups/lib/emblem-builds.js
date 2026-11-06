@@ -182,5 +182,44 @@ function ssarith(THREE, { mmMaterial, slab, badge }, PARTS, GROWN) {
   return none;
 }
 
-return { concord, krai, ssarith };
+// The Kelvane Institute, KA the hydrogen eigen plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as
+// the logo/emblem", "shade the 3d plot in the 3d render of the emblem, use our emblem designer for this please").
+// ORBITAL: assets/emblems/kelvane/ka.orbital.json (tools/mockups/kelvane_emblem.py: the relief's vertices in badge mm, the
+// full orbital's normals, UVs on longitude and colatitude); GRID: the wireframe mask over those UVs (an image, white on the
+// lines). Parts, heights and materials as the Blender render (tools/blender/emblem_kelvane.py).
+function kelvane(THREE, { mmMaterial, slab, badge }, ORBITAL, GRID) {
+  const champagne = mmMaterial('emblem_platinum', { color: new THREE.Color('#d8cbab'), envMapIntensity: 1.0 });   // the instruments' plate
+  const glass = mmMaterial('emblem_enamel_pearl', { metalness: 0, color: new THREE.Color('#1b150d'), clearcoat: 1.0, clearcoatRoughness: 0.03, envMapIntensity: 0.6 });   // the console's smoked glass
+  const brass = mmMaterial('emblem_platinum', { color: new THREE.Color('#b0915a'), envMapIntensity: 1.0 });
+  const circ = (r, n = 160) => Array.from({ length: n }, (_, i) => [50 + Math.cos(i / n * 2 * Math.PI) * r, 50 - Math.sin(i / n * 2 * Math.PI) * r]);
+  slab([circ(48), circ(44)], 0.0, 5.0, 0.8, champagne);    // the rim
+  slab([circ(44.4)], 0.3, 1.0, 0.15, glass);                // the field
+  for (const r of [22, 36]) slab([circ(r + 0.25), circ(r - 0.25)], 1.0, 1.15, 0.05, brass);   // the graticule's rings
+  slab([[[9, 49.8], [91, 49.8], [91, 50.2], [9, 50.2]]], 1.0, 1.15, 0.05, brass);              // and its cross
+  slab([[[49.8, 9], [50.2, 9], [50.2, 91], [49.8, 91]]], 1.0, 1.15, 0.05, brass);
+  // ---- the orbital: amber enamel with the wireframe inlaid in brass, the mask choosing between them (colour, metal and
+  // glow), on the full orbital's normals, so it shades as the 3D orbital does ---------------------------------------
+  const w = GRID.width, h = GRID.height, cv = (fill) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); fill(x); return c; };
+  const mask = cv((x) => x.drawImage(GRID, 0, 0)).getContext('2d').getImageData(0, 0, w, h).data;
+  const paint = (lineRGB, fieldRGB) => cv((x) => { const im = x.createImageData(w, h);
+    for (let i = 0; i < mask.length; i += 4) { const m = mask[i] / 255; for (let c = 0; c < 3; c++) im.data[i + c] = fieldRGB[c] * (1 - m) + lineRGB[c] * m; im.data[i + 3] = 255; }
+    x.putImageData(im, 0, 0); });
+  const tex = (c, srgb) => { const t = new THREE.CanvasTexture(c); t.flipY = false; if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+  const amber = [242, 208, 140], brassRGB = [176, 145, 90];
+  const enamel = new THREE.MeshPhysicalMaterial({
+    map: tex(paint(brassRGB, amber), true),
+    metalnessMap: tex(paint([0, 0, 255], [0, 0, 0])), metalness: 1.0,           // metal on the lines only (B channel)
+    roughnessMap: tex(paint([0, 72, 0], [0, 87, 0])), roughness: 1.0,           // brass 0.28, enamel 0.34 (G channel)
+    emissive: new THREE.Color('#f2d08c'), emissiveMap: tex(paint([0, 0, 0], [255, 255, 255]), true), emissiveIntensity: 0.12,
+    clearcoat: 0.35, clearcoatRoughness: 0.08, envMapIntensity: 0.8, side: THREE.DoubleSide });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ORBITAL.positions), 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(ORBITAL.normals), 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(ORBITAL.uvs), 2));
+  g.setIndex(ORBITAL.faces);
+  badge.add(new THREE.Mesh(g, enamel));
+  return none;
+}
+
+return { concord, krai, ssarith, kelvane };
 })();

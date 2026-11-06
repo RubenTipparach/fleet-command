@@ -175,11 +175,14 @@ const live = {
   },
 };
 // The Institute's emblem where the console draws one (a portrait, the holder of a ship): the hydrogen 3d z-squared eigen
-// plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem"), drawn from the lines
-// tools/mockups/kelvane_emblem.py computed (assets/ui/kelvane/emblem.json, inlined), the same lines the crest's brass
-// wire is rendered from: the fine wireframe when it is drawn large, the coarse one when small, the outline heavier, in the
-// title's amber with a soft glow, as a readout behind glass. r is the radius of the unit circle the plot fits in.
+// plot (owner, 2026-11-06: "I would like this hydrogen atom eigen plot used as the logo/emblem"), as the 2D logo: the
+// two-tone render of its shape, lit and in shadow, with the wireframe and the outline over it in ink (owner, 2026-11-06:
+// "in 2d logo, I also would like a 2 -tone render with wireframe and shape as well"). Drawn from what
+// tools/mockups/kelvane_emblem.py computed (assets/ui/kelvane/emblem.json, inlined), the lines the crest's brass wire is
+// rendered from and the shapes of assets/ui/kelvane/emblem.svg: the fine wireframe when drawn large, the coarse one when
+// small, the outline alone when tiny. r is the radius of the unit circle the plot fits in.
 const EMBLEM = 'assets/ui/kelvane/emblem.json';
+const LOGO = { lit: '#e9c47a', shade: '#8a6528', ink: '#2a1a06' };
 let emblemLines = null;
 function emblem(G, cx, cy, r) {
   if (!emblemLines) {
@@ -187,10 +190,18 @@ function emblem(G, cx, cy, r) {
     if (!n) throw new Error(`the Kelvane emblem (${EMBLEM}) is not inlined in this page`);
     emblemLines = JSON.parse(n.textContent);
   }
-  const e = emblemLines, path = (l) => { G.beginPath(); l.forEach(([x, y], k) => (k ? G.lineTo(cx + x * r, cy - y * r) : G.moveTo(cx + x * r, cy - y * r))); G.stroke(); };
-  G.save(); G.strokeStyle = CC.title; G.lineCap = 'round'; G.lineJoin = 'round'; G.shadowColor = hexA(CC.title, 0.5); G.shadowBlur = Math.max(2, r * 0.06);
-  G.lineWidth = Math.max(0.7, r * 0.016); for (const l of r >= 40 ? e.fine : r >= 16 ? e.coarse : e.mark) path(l);
-  G.lineWidth = Math.max(1.2, r * 0.035); path(e.outline);
+  const e = emblemLines, X = (x) => cx + x * r, Y = (y) => cy - y * r;
+  const line = (l) => { G.beginPath(); l.forEach(([x, y], k) => (k ? G.lineTo(X(x), Y(y)) : G.moveTo(X(x), Y(y)))); G.stroke(); };
+  G.save(); G.lineCap = 'round'; G.lineJoin = 'round';
+  // the shape in two tones, far to near, each run one fill (stroked in its own colour so no hairline shows between pieces)
+  for (const run of e.tones) {
+    G.beginPath();
+    for (const p of run.polys) { G.moveTo(X(p[0]), Y(p[1])); for (let k = 2; k < p.length; k += 2) G.lineTo(X(p[k]), Y(p[k + 1])); G.closePath(); }
+    G.fillStyle = G.strokeStyle = run.tone ? LOGO.lit : LOGO.shade; G.lineWidth = Math.max(0.4, r * 0.004); G.fill(); G.stroke();
+  }
+  G.strokeStyle = LOGO.ink;
+  if (r >= 16) { G.lineWidth = Math.max(0.6, r * 0.007); for (const l of r >= 40 ? e.fine : e.coarse) line(l); }
+  G.lineWidth = Math.max(1, r * 0.018); line(e.outline);
   G.restore();
 }
 

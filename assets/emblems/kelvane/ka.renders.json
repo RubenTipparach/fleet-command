@@ -1,0 +1,26 @@
+{
+ "note": "Blender renders of the Kelvane Institute badge KA, the hydrogen eigen plot (tools/blender/emblem_kelvane.py), and its 2D logo (assets/ui/kelvane/emblem.svg, rasterised), shown on the 3D page beside the live badge.",
+ "pieces": {
+  "logo": {
+   "size": [
+    600,
+    600
+   ],
+   "file": "ka-logo.png"
+  },
+  "face": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "ka-face.png"
+  },
+  "angle": {
+   "size": [
+    1200,
+    1200
+   ],
+   "file": "ka-angle.png"
+  }
+ }
+}

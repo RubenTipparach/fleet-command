@@ -29,6 +29,9 @@ import numpy as np
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.json")
 SVG = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.svg")   # the 2D logo: two tones, wireframe, outline
+BADGE = os.path.join(ROOT, "assets", "emblems", "kelvane")             # the 3D badge's orbital and its grid mask
+BADGE_R_MM = 40.0             # the plot's unit circle on the badge, mm (inside the rim's 44 mm opening)
+RELIEF = (1.05, 4.0)          # the relief's lowest and highest points, mm (the guide's device band, under the 5 mm frame)
 
 TILT = math.radians(30.0)     # the view looks down on the ring by this much, so the ring reads as a ring
 TURN = math.radians(15.0)     # meridians turned off the view's axis, so no two lie on top of each other
@@ -148,39 +151,65 @@ def view_point(theta, phi):
     return np.stack([x, y, d], axis=-1)
 
 
-def two_tone(scale, n_theta=48, n_phi=96):
+def two_tone(scale, n_theta=40, n_phi=80):
     """The two-tone render (owner, 2026-11-06: "in 2d logo, I also would like a 2 -tone render with wireframe and shape as
-    well"): the surface's faces that look toward the viewer, each lit (1) or in shadow (0) by the cosine of LIGHT on its
-    outward normal, painted far to near so the ring and the lobes cover each other as they do in 3D. Consecutive faces of
-    one tone are merged into one run, so a page fills each run in one pass, with no seams between its triangles."""
-    th = np.linspace(0.0, math.pi, n_theta + 1)
+    well"): the surface's faces that look toward the viewer, painted far to near so the ring and the lobes cover each other
+    as they do in 3D, each lit or in shadow by the cosine of LIGHT on the surface's outward normal. The light is taken at
+    every vertex and a face it crosses is split along the threshold (LIT), so the edge between the tones is a smooth line,
+    not the mesh's steps. Consecutive pieces of one tone are merged into one run (a list of polygons), so a page fills each
+    run in one pass, with no seams."""
+    th = np.linspace(1e-4, math.pi - 1e-4, n_theta + 1)
     ph = np.linspace(0.0, 2 * math.pi, n_phi + 1)
     T, F = np.meshgrid(th, ph, indexing="ij")
     P = view_point(T, F)
-    tris = []
+    # the outward normal at every vertex, from the surface's two tangents (central differences), and its light
+    h = 1e-4
+    dT = view_point(T + h, F) - view_point(T - h, F)
+    dF = view_point(T, F + h) - view_point(T, F - h)
+    N = np.cross(dT, dF)
+    N /= np.maximum(np.linalg.norm(N, axis=-1, keepdims=True), 1e-12)
+    N *= np.where(np.sum(N * P, axis=-1, keepdims=True) < 0, -1.0, 1.0)
+    L = N @ LIGHT - LIT
+    pieces = []
     for i in range(n_theta):
         for j in range(n_phi):
             for a, b, c in (((i, j), (i + 1, j), (i + 1, j + 1)), ((i, j), (i + 1, j + 1), (i, j + 1))):
                 v = np.array([P[a], P[b], P[c]])
                 n = np.cross(v[1] - v[0], v[2] - v[0])
-                if np.linalg.norm(n) < 1e-9:
+                if np.linalg.norm(n) < 1e-12:
                     continue
                 cen = v.mean(axis=0)
-                if np.dot(n, cen) < 0:          # outward: away from the nucleus
+                if np.dot(n, cen) < 0:
                     n = -n
-                n = n / np.linalg.norm(n)
                 if n[2] <= 0.0:                 # faces turned away from the viewer are never seen
                     continue
-                tone = 1 if float(np.dot(n, LIGHT)) > LIT else 0
-                tris.append((float(cen[2]), tone, [round(float(q * scale), 4) for q in v[:, :2].ravel()]))
-    tris.sort(key=lambda t: t[0])
+                d = float(cen[2])
+                lv = [L[a], L[b], L[c]]
+                for tone, poly in split(v[:, :2], lv):
+                    pieces.append((d, tone, [round(float(q * scale), 4) for xy in poly for q in xy]))
+    pieces.sort(key=lambda t: t[0])
     runs = []
-    for _d, tone, t in tris:
+    for _d, tone, poly in pieces:
         if runs and runs[-1]["tone"] == tone:
-            runs[-1]["tris"].append(t)
+            runs[-1]["polys"].append(poly)
         else:
-            runs.append({"tone": tone, "tris": [t]})
+            runs.append({"tone": tone, "polys": [poly]})
     return runs
+
+
+def split(xy, lv):
+    """A triangle cut along the light's threshold: its lit part (tone 1, where lv > 0) and its shadow part (tone 0), each a
+    polygon, the cut placed where the light crosses the threshold along each edge."""
+    lit, shade = [], []
+    for k in range(3):
+        p, q, a, b = xy[k], xy[(k + 1) % 3], lv[k], lv[(k + 1) % 3]
+        (lit if a > 0 else shade).append(p)
+        if (a > 0) != (b > 0):
+            t = a / (a - b)
+            m = p + (q - p) * t
+            lit.append(m)
+            shade.append(m)
+    return [(1, lit)] * (len(lit) >= 3) + [(0, shade)] * (len(shade) >= 3)
 
 
 def svg(d, size=512, lit="#e9c47a", shade="#8a6528", ink="#2a1a06"):
@@ -191,7 +220,7 @@ def svg(d, size=512, lit="#e9c47a", shade="#8a6528", ink="#2a1a06"):
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" width="{size}" height="{size}">',
            '<title>Kelvane Institute: the hydrogen 3d z2 eigen plot</title>']
     for r in d["tones"]:
-        path = "".join(f"M{P(t[0], t[1])}L{P(t[2], t[3])}L{P(t[4], t[5])}Z" for t in r["tris"])
+        path = "".join("M" + "L".join(P(t[k], t[k + 1]) for k in range(0, len(t), 2)) + "Z" for t in r["polys"])
         col = lit if r["tone"] else shade
         out.append(f'<path d="{path}" fill="{col}" stroke="{col}" stroke-width="0.6" stroke-linejoin="round"/>')
     for l in d["fine"]:
@@ -199,6 +228,65 @@ def svg(d, size=512, lit="#e9c47a", shade="#8a6528", ink="#2a1a06"):
     out.append(f'<polyline points="{" ".join(P(x, y) for x, y in d["outline"])}" fill="none" stroke="{ink}" stroke-width="{size / 512 * 4.2:.2f}" stroke-linejoin="round"/>')
     out.append("</svg>")
     return "\n".join(out) + "\n"
+
+
+def parallels():
+    """The fine level's parallels (theta, radians): spread evenly through each lobe and the ring, as wires() spreads them."""
+    out = []
+    for a, b in [(0.0, NODE), (NODE, math.pi - NODE), (math.pi - NODE, math.pi)]:
+        m = 12 if b - a < 1.2 else 13
+        out += [float(t) for t in np.linspace(a, b, m + 2)[1:-1]]
+    return out
+
+
+def badge_mesh(n_theta=48, n_phi=96):
+    """The orbital as the 3D badge's relief (owner, 2026-11-06: "shade the 3d plot in the 3d render of the emblem, use our
+    emblem designer for this please"): the surface seen as the 2D logo sees it (TILT, TURN), laid in the badge's plane at
+    BADGE_R_MM, its depth pressed into the guide's device band (RELIEF), so it stands as a low relief like every badge's
+    device. Each vertex keeps the true surface's outward normal, so the relief is lit and shaded as the full orbital is.
+    UVs: u the longitude (0-1 round the axis), v the colatitude (0 at the top pole, 1 at the bottom), which the grid
+    mask's lines follow. Vertices in badge mm (x right, y up, z out of the badge), faces as vertex index triples."""
+    th = np.linspace(1e-4, math.pi - 1e-4, n_theta + 1)
+    ph = np.linspace(0.0, 2 * math.pi, n_phi + 1)
+    T, F = np.meshgrid(th, ph, indexing="ij")
+    P = view_point(T, F)
+    h = 1e-4
+    N = np.cross(view_point(T + h, F) - view_point(T - h, F), view_point(T, F + h) - view_point(T, F - h))
+    N /= np.maximum(np.linalg.norm(N, axis=-1, keepdims=True), 1e-12)
+    N *= np.where(np.sum(N * P, axis=-1, keepdims=True) < 0, -1.0, 1.0)
+    th2, ph2 = np.meshgrid(np.linspace(0, math.pi, 200), np.linspace(0, 2 * math.pi, 400), indexing="ij")
+    x2, y2, _ = point(th2, ph2)
+    scale = 0.96 / float(np.max(np.hypot(x2, y2))) * BADGE_R_MM
+    d0, d1 = float(P[..., 2].min()), float(P[..., 2].max())
+    V = np.stack([P[..., 0] * scale, P[..., 1] * scale, RELIEF[0] + (P[..., 2] - d0) / (d1 - d0) * (RELIEF[1] - RELIEF[0])], axis=-1)
+    U = np.stack([F / (2 * math.pi), T / math.pi], axis=-1)
+    W = n_phi + 1
+    faces = []
+    for i in range(n_theta):
+        for j in range(n_phi):
+            a, b, c, d = i * W + j, (i + 1) * W + j, (i + 1) * W + j + 1, i * W + j + 1
+            faces += [[a, b, c], [a, c, d]]
+    r4 = lambda arr: [round(float(v), 4) for v in arr.reshape(-1)]
+    return {"units": "badge mm: x right, y up, z out of the badge", "relief_mm": list(RELIEF), "radius_mm": BADGE_R_MM,
+            "positions": r4(V), "normals": r4(N), "uvs": r4(U), "faces": [k for f in faces for k in f]}
+
+
+def grid_mask(w=2048, h=1024, line_px=5.0, meridian_px=16.0):
+    """The wireframe as a mask over the badge mesh's UVs (white on the lines): meridians every 15 degrees of longitude
+    and the fine level's parallels, the same lines the 2D logo and the crest draw. A meridian is drawn wider in the map
+    (meridian_px of its 2048 px round the axis) than a parallel (line_px of its 1024 px pole to pole), because the map is
+    stretched far more round a lobe's narrow girth than along its length; on the badge they come out near one width."""
+    from PIL import Image
+    u = np.arange(w)[None, :] / w
+    v = np.arange(h)[:, None] / h
+    m = np.zeros((h, w))
+    for k in range(24):
+        du = np.abs(((u - k / 24 + 0.5) % 1.0) - 0.5) * w
+        m = np.maximum(m, np.clip(meridian_px / 2 + 0.5 - du, 0, 1))
+    for t in parallels():
+        dv = np.abs(v - t / math.pi) * h
+        m = np.maximum(m, np.clip(line_px / 2 + 0.5 - dv, 0, 1))
+    return Image.fromarray((np.broadcast_to(m, (h, w)) * 255).astype(np.uint8), "L")
 
 
 def build():
@@ -227,8 +315,13 @@ def main():
         f.write("\n")
     with open(SVG, "w") as f:
         f.write(svg(d))
+    os.makedirs(BADGE, exist_ok=True)
+    with open(os.path.join(BADGE, "ka.orbital.json"), "w") as f:
+        json.dump(badge_mesh(), f, separators=(",", ":"))
+        f.write("\n")
+    grid_mask().save(os.path.join(BADGE, "ka.grid.png"), optimize=True)
     print(f"wrote {os.path.relpath(OUT, ROOT)}: fine {len(d['fine'])} lines, coarse {len(d['coarse'])} lines, "
-          f"{sum(len(r['tris']) for r in d['tones'])} faces in {len(d['tones'])} tone runs; and {os.path.relpath(SVG, ROOT)}")
+          f"{sum(len(r['polys']) for r in d['tones'])} pieces in {len(d['tones'])} tone runs; and {os.path.relpath(SVG, ROOT)}")
 
 
 if __name__ == "__main__":
