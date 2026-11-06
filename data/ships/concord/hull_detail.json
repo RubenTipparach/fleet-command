@@ -3,15 +3,15 @@
   "faction": "concord",
   "out": "assets/ships/concord/baked",
   "defaults": {
-    "cut_style": "strake", "strake_w_m": [1.8, 2.8], "strake_h_m": [1.5, 2.3], "plate_l_m": [6.0, 12.0], "rings_z_m": [],
+    "cut_style": "strake", "strake_w_m": [1.6, 3.2], "strake_h_m": [1.1, 2.6], "plate_l_m": [5.0, 14.0], "strake_merge": 0.3, "rings_z_m": [],
     "armour_t_m": 0.3, "sub_t_m": 0.12, "lift_m": 0.12, "gap_m": [0.12, 0.2], "trench_m": [0.5, 0.9], "trench_share": 0.06,
     "greebles_per_m2": 0.7, "overlay_min_m2": 34.0, "overlay_inset": 0.86, "overlay_lift_m": 0.08,
     "light_ref": 0.9, "pane_frame_m": {"window": 0.1, "bay": 0.3},
     "auto_floods": {"step_m": 30, "from_stern_m": 6, "top_x_frac": 0},
-    "flood": {"standoff_m": 3.6, "cone_deg": 110, "tilt_deg": 20, "power_w": 4200},
+    "flood": {"standoff_m": 3.6, "cone_deg": 110, "tilt_deg": 20, "power_w": 2000},
     "palette": {
       "ARMOUR": ["#e4e2dc", "#dedcd5", "#e8e6e0", "#d9d8d2", "#e1e0da"], "SUB": ["#9aa1a9", "#a3aab2", "#8e959d"],
-      "UNDER": "#3a4049", "GREEBLE": ["#5a626c", "#8f969e"], "DOME": "#7fa8d8", "SLAT": "#9aa1a9", "VENT": "#1c2027",
+      "UNDER": "#535b66", "GREEBLE": ["#5a626c", "#8f969e"], "DOME": "#7fa8d8", "SLAT": "#9aa1a9", "VENT": "#1c2027",
       "LIVERY": "#2f62e0", "BRONZE": "#b87a4b", "BRONZE_SHARE": 0.0, "INK": "#1a2230", "LIGHT_EDGE": "#ffffff", "EDGE_K": 0.4
     }
   },

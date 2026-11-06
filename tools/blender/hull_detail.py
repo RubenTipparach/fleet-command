@@ -625,28 +625,44 @@ def strake_cuts(rng, D, zr, xmax, yr):
     z0, z1 = zr
     plan, side = [], []
     rings = D.get("rings_z_m", [])
+    merge = D.get("strake_merge", 0.3)
+
+    def seam_line(a0, b0, b1, along_first):
+        """A strake's long seam from b0 to b1 at a0, broken off in stretches where two strakes run together as one wider
+        plate (so the strakes are not a brick bond: owner, 2026-11-06, "no repetitive patterns")."""
+        out, b = [], b1
+        while b > b0:
+            L = rng.uniform(*D["plate_l_m"]) * rng.uniform(1.0, 1.8)
+            if rng.random() > merge:
+                out.append(((a0, b), (a0, max(b0, b - L))) if along_first else ((b, a0), (max(b0, b - L), a0)))
+            b -= L
+        return out
     xs = [rng.uniform(*D["strake_w_m"]) / 2]                       # the centre strake straddles the keel line
     while xs[-1] < xmax + 1:
-        xs.append(xs[-1] + rng.uniform(*D["strake_w_m"]))
+        w = rng.uniform(*D["strake_w_m"]) * (2.0 if rng.random() < 0.2 else 1.0)   # now and then a strake twice as wide
+        xs.append(xs[-1] + w)
     for x in xs:
-        plan.append(((x, z0 - 2), (x, z1 + 2)))
+        plan += seam_line(x, z0 - 2, z1 + 2, True)
     for i in range(len(xs)):
         xa, xb = (0.0 if i == 0 else xs[i - 1]), xs[i]
-        z = z1 - rng.uniform(0, D["plate_l_m"][1])
+        lo_, hi_ = D["plate_l_m"]
+        z = z1 - rng.uniform(0, hi_)
         while z > z0:
             plan.append(((xa, z), (xb, z)))
-            z -= rng.uniform(*D["plate_l_m"])
+            z -= rng.uniform(lo_, hi_) * rng.choice((0.6, 1.0, 1.0, 1.5))   # every strake its own run of plate lengths
     ylo, yhi = yr
     ys = [ylo + rng.uniform(0.3, 1.2)]
     while ys[-1] < yhi:
-        ys.append(ys[-1] + rng.uniform(*D["strake_h_m"]))
+        h = rng.uniform(*D["strake_h_m"]) * (1.9 if rng.random() < 0.25 else 1.0)
+        ys.append(ys[-1] + h)
     for y in ys:
-        side.append(((z0 - 2, y), (z1 + 2, y)))
+        side += seam_line(y, z0 - 2, z1 + 2, False)
     for i in range(len(ys) - 1):
-        z = z1 - rng.uniform(0, D["plate_l_m"][1])
+        lo_, hi_ = D["plate_l_m"]
+        z = z1 - rng.uniform(0, hi_)
         while z > z0:
             side.append(((z, ys[i]), (z, ys[i + 1])))
-            z -= rng.uniform(*D["plate_l_m"])
+            z -= rng.uniform(lo_, hi_) * rng.choice((0.6, 1.0, 1.0, 1.5))
     for zr_ in rings:
         plan.append(((0.0, zr_), (xmax + 2, zr_)))
         side.append(((zr_, ylo - 2), (zr_, yhi + 2)))
