@@ -250,6 +250,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                     mp0.X, mp0.Y + 32, 16, col, HorizontalAlignment.Center);
             }
 
+        // the mockup's other systems over the view, each package in its own file (ViewOverlay.<Package>.cs)
+        DrawComms(f); DrawTractor(f); DrawReactor(f); DrawCloak(f); DrawTactical(f);
+
         // your own hull under your ship
         if (me.Alive && Local(me.X, me.Z) is { } mp) HullBar(mp.X, mp.Y + 74, me);
 
@@ -459,6 +462,12 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         B.HelmTo(m.XM, m.ZM);
         B.Say("Helm", $"Course for the {m.Label}.");
     }
+
+    partial void DrawComms(Fonts f);
+    partial void DrawTractor(Fonts f);
+    partial void DrawReactor(Fonts f);
+    partial void DrawCloak(Fonts f);
+    partial void DrawTactical(Fonts f);
 
     private void Diamond(Vector2 c, float r, Color col) =>
         DrawColoredPolygon(new[] { c + new Vector2(0, -r), c + new Vector2(r, 0), c + new Vector2(0, r), c + new Vector2(-r, 0) }, col);

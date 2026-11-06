@@ -1,0 +1,3 @@
+{
+ "_doc": "The numbers of comms, transport and boarding (src/Core/Data/SystemsDef.comms.cs reads them; empty until the package is built)."
+}

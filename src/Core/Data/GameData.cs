@@ -133,6 +133,9 @@ public sealed record GameData(
     /// <summary>The scenario the game starts in (the first).</summary>
     public Scenario StartScenario => Scenarios[0];
 
+    /// <summary>The numbers of the mockup's other systems (data/battle/systems/*.json).</summary>
+    public SystemsDef Systems { get; init; } = new();
+
     /// <summary>A scenario by id; throws naming the id when there is none.</summary>
     public Scenario ScenarioById(string id) =>
         Scenarios.FirstOrDefault(s => s.Id == id) ?? throw new KeyNotFoundException($"no scenario '{id}' in data/battle/scenarios.json");

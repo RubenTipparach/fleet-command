@@ -30,12 +30,22 @@ public sealed partial class ShipPanel : ConsolePanel
             case "systems": SystemsDisplay.Draw(this, Ui, X, Me, b, true, "ssd", Big); break;
             case "shields": Shields(b); break;
             default:
+                // each other page in its own file (ShipPanel.<Page>.cs); a page not yet built says so
+                bool drawn = false;
+                if (cur == "sensors") SensorsPage(b, ref drawn);
+                else if (cur == "tractor") TractorPage(b, ref drawn);
+                else if (cur == "craft") CraftPage(b, ref drawn);
+                if (drawn) break;
                 Kit.Icon(this, pg.Icon, new Rect2(b.GetCenter().X - 30, b.Position.Y + 40, 60, 60), C.Deep);
                 Text(pg.Label.ToUpperInvariant(), b.GetCenter().X, b.Position.Y + 130, 24, C.Sky, HorizontalAlignment.Center, b.Size.X, 700, 1);
                 Lbl("Not yet in the game", b.GetCenter().X, b.Position.Y + 156, b.Size.X, null, HorizontalAlignment.Center);
                 break;
         }
     }
+
+    partial void SensorsPage(Rect2 b, ref bool drawn);
+    partial void TractorPage(Rect2 b, ref bool drawn);
+    partial void CraftPage(Rect2 b, ref bool drawn);
 
     // Shield keys (owner, 2026-11-01): six big trapezoid keys in a hexagonal ring round the ship, the wide side outward,
     // each filling outward by its charge in its strength's colour; a click reinforces it (again to clear).

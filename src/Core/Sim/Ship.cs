@@ -32,7 +32,7 @@ public sealed class Mount
     public string Label => $"W{Index + 1}";
 }
 
-public sealed class Ship
+public sealed partial class Ship
 {
     public required string Id { get; init; }
     /// <summary>The ship's place in the scenario: the stable order every step iterates in (CLAUDE.md 6.3).</summary>

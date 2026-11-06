@@ -11,11 +11,16 @@ namespace FleetCommand.Data;
 
 public static class DataLoader
 {
+    /// <summary>The system packages, each with its scenes file (data/battle/scenes/) and numbers (data/battle/systems/).</summary>
+    public static readonly string[] ScenePackages = { "comms", "tractor", "reactor", "cloak", "tactical" };
+
     /// <summary>The files GameData is built from, relative to data/.</summary>
     public static readonly string[] Files =
     {
         "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json",
         "battle/missiles.json", "battle/special_weapons.json", "battle/range.json",
+        "battle/scenes/comms.json", "battle/scenes/tractor.json", "battle/scenes/reactor.json", "battle/scenes/cloak.json", "battle/scenes/tactical.json",
+        "battle/systems/comms.json", "battle/systems/tractor.json", "battle/systems/reactor.json", "battle/systems/cloak.json", "battle/systems/tactical.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -32,9 +37,22 @@ public static class DataLoader
                 throw new DataError($"data/battle/classes.json.{c.Id}: the chorus lance fits only {string.Join(", ", specials.Chorus.Fits)}");
         var factions = LoadFactions(J("battle/factions.json"));
         var scenarios = LoadScenarios(J("battle/scenarios.json"), classes, factions);
+        // each system package's test scenes (data/battle/scenes/<package>.json), after the main list, ids unique across all
+        foreach (string pkg in ScenePackages)
+        {
+            StrictJson sf = J($"battle/scenes/{pkg}.json");
+            sf.Str("_doc", "");
+            foreach (StrictJson o in sf.ObjList("scenarios"))
+            {
+                Scenario sc = LoadScenario(o, classes, factions);
+                if (scenarios.Any(x => x.Id == sc.Id)) throw new DataError($"{o.Where}.id: '{sc.Id}' used twice");
+                scenarios.Add(sc);
+            }
+            sf.Done();
+        }
         LayoutDef layout = LoadLayout(J("console/layout.json"));
         RangeDef range = LoadRange(J("battle/range.json"), weapons);
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = SystemsDef.Load(J) };
     }
 
     /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>

@@ -1,0 +1,3 @@
+{
+ "_doc": "The numbers of the tractor beam, mines and craft (src/Core/Data/SystemsDef.tractor.cs reads them; empty until the package is built)."
+}

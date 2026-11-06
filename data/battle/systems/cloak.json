@@ -1,0 +1,3 @@
+{
+ "_doc": "The numbers of cloaking, sensors, ECM and ECCM, and boarding defence (src/Core/Data/SystemsDef.cloak.cs reads them; empty until the package is built)."
+}

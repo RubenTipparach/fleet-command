@@ -1,0 +1,3 @@
+{
+ "_doc": "The numbers of weapon targeting, point defence, arming, the fleet, the tactical map and the event log (src/Core/Data/SystemsDef.tactical.cs reads them; empty until the package is built)."
+}

@@ -1,0 +1,3 @@
+{
+ "_doc": "The numbers of the reactor, warp, damage control and officers (src/Core/Data/SystemsDef.reactor.cs reads them; empty until the package is built)."
+}
