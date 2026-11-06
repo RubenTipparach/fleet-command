@@ -109,7 +109,12 @@ public sealed partial class ScriptedCaptain : Node
             {
                 string id = b.Arg == "" ? _scene : b.Arg;
                 if (B.Scenario.Id == id) return null;
-                return await Click("v.scene") ?? await Click("v.scene." + id) ?? (B.Scenario.Id == id ? null : $"scenario is {B.Scenario.Id}");
+                // the list by scenario type, then the faction to play it as: open it, pick the type (scrolled into view as a
+                // player scrolls), then the side
+                string type = _x.Data.ScenarioById(id).Name, slug = new string(type.ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+                if (await Click("v.scene") is { } s0) return s0;
+                for (int k = 0; k < 40 && await Find("v.scene.type." + slug) == null; k++) await WheelAt("v.scene.type.", true);
+                return await Click("v.scene.type." + slug) ?? await Click("v.scene." + id) ?? (B.Scenario.Id == id ? null : $"scenario is {B.Scenario.Id}");
             }
             case "wheel": return await Wheel(b.Arg == "in", (int)Math.Max(1, b.Seconds));
             case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS, b.Arg);
@@ -394,6 +399,28 @@ public sealed partial class ScriptedCaptain : Node
         Ship? w = B.FleetAll().FirstOrDefault(s => s != B.Player && s.Alive);
         if (w == null) return "no wingman in this battle";
         return await Click("fl." + w.Id) ?? (_x.State.FleetPick == w.Id ? null : $"the Fleet station shows {_x.State.FleetPick ?? B.Player.Id}");
+    }
+
+    /// <summary>A control on screen by id, as last drawn, or null.</summary>
+    private async Task<(string Id, Rect2 R, bool Live)?> Find(string id)
+    {
+        await Frames(2);
+        var c = _sources().SelectMany(s => s.Controls()).Reverse().FirstOrDefault(k => k.Id == id);
+        return c.Id == null ? null : c;
+    }
+
+    /// <summary>One wheel notch over the first control whose id starts with a prefix (a list to scroll), down or up.</summary>
+    private async Task WheelAt(string prefix, bool down)
+    {
+        var c = _sources().SelectMany(s => s.Controls()).FirstOrDefault(k => k.Id != null && k.Id.StartsWith(prefix));
+        if (c.Id == null) return;
+        Vector2 p = c.R.GetCenter();
+        Viewport vp = GetViewport();
+        vp.PushInput(new InputEventMouseMotion { Position = p, GlobalPosition = p }, true);
+        var bi = down ? MouseButton.WheelDown : MouseButton.WheelUp;
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = bi, Pressed = true, Position = p, GlobalPosition = p }, true);
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = bi, Pressed = false, Position = p, GlobalPosition = p }, true);
+        await Frames(2);
     }
 
     /// <summary>Points at a control where it was last drawn and clicks it (with Shift held when asked: shift+click opens

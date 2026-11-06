@@ -70,6 +70,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
     public override void _GuiInput(InputEvent e)
     {
+        if (SceneWheel(e)) { AcceptEvent(); return; }
         if (!_leftDown && !_rightDown && _ui.Handle(e)) { AcceptEvent(); return; }
         if (e is InputEventMouseMotion mm0) _mouse = mm0.Position;
         switch (e)
@@ -409,25 +410,67 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     // The open list, over everything in the view: the scenarios grouped by the side the player commands, each side under
     // its faction's name (picking one of the other side's swaps the console to that faction's skin). A click anywhere else
     // shuts it.
+    // The open list, over everything in the view, as the Skirmish screen has it (owner, 2026-11-06: "I only need the
+    // scenario type, then when I select a scenario, I need to see what faction I can play that scenario AS", "Also need a
+    // scroll bar"): the scenario types down the left, each once, scrolled by the wheel or the bar; the type picked (at
+    // first the one in play) its factions on the right, a click on one starting it (one of another side swaps the console
+    // to that faction's skin). A click anywhere else shuts it.
+    private string? _sceneType;
+    private float _sceneScroll;
+    private Rect2 _sceneList;
+
     private void SceneList()
     {
         _ui.Reg("v.scene.off", new Rect2(Vector2.Zero, Size), _ => _x.State.SceneOpen = false);
-        var groups = _x.Data.Scenarios.GroupBy(s => s.Side).ToArray();
-        float lx = SceneX, ly = 48, h = groups.Sum(g => SceneHeadH + g.Count() * SceneRowH) + 8;
-        Shapes.RoundRect(this, new Rect2(lx - 6, ly - 6, SceneW + 12, h), new Color(0, 0, 0, 0.85f), 10);
-        float y = ly;
-        foreach (var g in groups)
+        var types = _x.Data.Scenarios.GroupBy(s => s.Name).Select(g => (Name: g.Key, Sides: g.ToList())).ToList();
+        _sceneType ??= B.Scenario.Name;
+        float lx = SceneX, ly = 48, rowH = SceneRowH, sideW = 200;
+        float h = Math.Min(types.Count * rowH, Size.Y - ly - 120);
+        _sceneList = new Rect2(lx, ly, SceneW, h);
+        float max = Math.Max(0, types.Count * rowH - h);
+        _sceneScroll = Math.Clamp(_sceneScroll, 0, max);
+        var sel = types.FirstOrDefault(t => t.Name == _sceneType);
+        float sideH = (sel.Sides?.Count ?? 0) * rowH + SceneHeadH;
+        Shapes.RoundRect(this, new Rect2(lx - 6, ly - 6, SceneW + 30 + sideW + 18, Math.Max(h, sideH) + 12), new Color(0, 0, 0, 0.85f), 10);
+        for (int i = 0; i < types.Count; i++)
         {
-            _x.Fonts.Draw(this, _x.Data.Factions[g.Key].Name.ToUpperInvariant(), lx + 6, y + 18, 14, C.Lilac, HorizontalAlignment.Left, SceneW - 12, 600, 1);
+            float y = ly + i * rowH - _sceneScroll;
+            if (y < ly - 0.5f || y + 32 > ly + h + 0.5f) continue;
+            string name = types[i].Name;
+            Key("v.scene.type." + Slug(name), new Rect2(lx, y, SceneW, 32), name, () => _sceneType = name, name == _sceneType, types[i].Sides[0].Objective);
+        }
+        if (max > 0)
+        {
+            var track = new Rect2(lx + SceneW + 6, ly, 10, h);
+            float th = Math.Max(30, h * h / (h + max)), ty = ly + (h - th) * _sceneScroll / max;
+            void To(float y) => _sceneScroll = Math.Clamp((y - ly - th / 2) / Math.Max(1, h - th) * max, 0, max);
+            HitState st = _ui.Reg("v.scene.scroll", new Rect2(track.Position.X - 6, ly, track.Size.X + 12, h), at => To(at.Y), (at, _) => To(at.Y), new Tip("Scroll the scenarios"));
+            Shapes.RoundRect(this, track, new Color(C.Deep, 0.9f), 5);
+            Shapes.RoundRect(this, new Rect2(track.Position.X, ty, track.Size.X, th), st.Hot || st.Down ? C.Sky : C.Signal, 5);
+        }
+        if (sel.Sides != null)
+        {
+            float sx = lx + SceneW + 24, y = ly;
+            _x.Fonts.Draw(this, "PLAY AS", sx + 4, y + 18, 14, C.Lilac, HorizontalAlignment.Left, sideW, 600, 1);
             y += SceneHeadH;
-            foreach (Data.Scenario sc in g)
+            foreach (Data.Scenario sc in sel.Sides)
             {
                 string id = sc.Id;
-                Key("v.scene." + id, new Rect2(lx, y, SceneW, 32), sc.Name, () => _x.Act.Scene(id), id == B.Scenario.Id, sc.Objective);
-                y += SceneRowH;
+                Key("v.scene." + id, new Rect2(sx, y, sideW, 32), _x.Data.Factions[sc.Side].Name, () => _x.Act.Scene(id), id == B.Scenario.Id, sc.Objective);
+                y += rowH;
             }
         }
     }
+
+    /// <summary>The scene list's scrolling: the wheel over the list.</summary>
+    private bool SceneWheel(InputEvent e)
+    {
+        if (!_x.State.SceneOpen || e is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.WheelUp or MouseButton.WheelDown } w || !_sceneList.HasPoint(w.Position)) return false;
+        _sceneScroll += (w.ButtonIndex == MouseButton.WheelDown ? 1 : -1) * SceneRowH;
+        return true;
+    }
+
+    private static string Slug(string s) => new string(s.ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 
     /// <summary>A key over the view, lit when on, its label in the skin's key ink.</summary>
     private void Key(string id, Rect2 r, string label, Action click, bool on, string? tip = null)
