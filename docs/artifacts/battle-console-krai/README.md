@@ -43,3 +43,4 @@
 - 2026-11-04, desktop session (Mac), owner: "this top part needs a blcak background, same with bottom stuff too": version 18, version id `1793822395-b7e4`, a text edit on the live version: the strips drawn on black (no change where the Krai metal covers them).
 - 2026-11-04, desktop session (Mac), owner: "add shield display to all ships as well": version 20, version id `1793828141-484d`, a text edit on the live version: every ship shows its 3D shield display.
 - Version 21 (2026-11-05): the Krai page's own fleet and every Krai ship fly as the Krai line's exported glbs; published over the desktop session's live `1793828141-484d`; parity 3,917 presses of 396 controls. Version id `1793850935-983c`.
+- Version 22 (2026-11-06): the Patience in the allied and swap scenes; parity 70 shots, 4,087 presses of 396 controls, every press matched. Version id `1793930948-97b6`.
