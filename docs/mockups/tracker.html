@@ -74,6 +74,15 @@ textarea { font: 400 15px/1.45 var(--body); color: var(--ink); background: var(-
 .status.ok { color: var(--done); }
 .status.err { color: var(--warn); }
 code { font: 500 0.9em var(--mono); }
+/* A faction's mockups behind one card, opened in a modal (owner, 2026-11-06: "coalesce faction mockups together in modals"). */
+ul.gl { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+ul.gl li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+ul.gl li > .gt { flex: 1 1 160px; font-weight: 600; min-width: 0; }
+dialog.modal { width: min(860px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); }
+dialog.modal::backdrop { background: rgba(10, 8, 5, 0.6); }
+.mhead { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.mhead h2 { font: 800 30px/1 var(--display); margin: 0; }
+dialog.modal > .list { padding: 16px; }
 </style>
 
 <div class="wrap">
@@ -108,59 +117,54 @@ code { font: 500 0.9em var(--mono); }
 const MOCKUPS = [
   { id: 'M1', title: 'Primary game flow', change: 'game-flow', page: 'docs/mockups/game-flow.html',
     url: 'https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt', published: '2026-11-03', version: 7,
-    summary: 'Main menu, skirmish (scenario, point budget, fleet and loadout), the campaign hex map with standees, port panels and missions, deploy, a stand-in battle, results, and back to the map. Concord ships are the Concord line\'s (mockup 6) on the menu, the map\'s standees and in the battle.' },
+    summary: 'The game\'s flow from the main menu: the faction screen, skirmish and the campaign map with missions, port and debrief; now running in the game.' },
   { id: 'M2', title: 'In-game UI', change: 'battle-console', page: 'docs/mockups/battle-console.html',
     url: 'https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs', published: '2026-11-04', version: 75,
-    summary: 'The battle console in the Concord skin around a live stand-in battle, desktop first: nine stations and five ship pages on narrow columns of icon tabs named on hover, the ship systems display, weapons, radar and tactical map, a speed handle, Power over Systems with the battery, and the power station\'s Reactor mode: a diagram of the core, coils and coolant loops worked by hand, with a meltdown to avoid. Every panel works and expands. Weapon targeting (shared by every skin): icon Aim At keys, shift+click for each weapon\'s hit details, hits by the facing struck with brackets over the systems on the chopping block, precise weapons that favour the aimed system, pinned fire that holds a mount on a ship until it or its system is destroyed, and scenes to disable systems, fight several ships and hunt a raider in a nebula (ECM and ECCM); Aim At keys lit in the target\'s subsystem status, and the target\'s subsystems and weapons aim on a click (the expanded Tactical lists its weapons); point defence and missiles run on their own power, so disabling weapons control leaves them firing. New in v72: a repair queue ordered by drag and drop, with crews at work (the Escape scene), Proximity torpedoes and overloaded lances, cloaks on both sides found by an ECCM sweep, an officer slot on every station with a hover card of rank and abilities, and boarding defence: the deck plan in 3D with security teams walking or beamed to set ambushes against boarders. Boarding parties: marines beamed by default, marines with health that medics heal, hackers who speed a capture but need 5 marines to cover them, and a prize marked Pilot needed until a pilot beams over. The Concord ships in the 3D view are the Concord line\'s (mockup 6).' },
+    summary: 'The battle console in the Concord skin around a live battle: every station, panel and control working, and the console following the ship you command.' },
   { id: 'M3', title: 'Look dev', change: 'look-dev', page: 'docs/mockups/look-dev.html',
     url: '', published: '', version: 0,
-    summary: 'Ship detail level, faction design language, destructible hulls and interiors, engines and effects, and hull lighting.' },
+    summary: 'Ship detail level, faction design language, destructible hulls and interiors, engines, effects and hull lighting.' },
   { id: 'M4', title: 'Console skins', change: 'console-skins', page: 'docs/mockups/console-skins.html',
     url: 'https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb', published: '2026-11-01', version: 26,
-    summary: 'One UI kit in ten faction design languages: Concord flat back-lit vector after LCARS, the Vos hand-drawn, the rest modelled and rendered in Blender; the Aelith Conclave a gold shell with holograms drawn into its wells; the Kelvane Institute champagne plates over amber readouts and phosphor scopes; a pressed key pushes its inner part in on every rendered skin; the Vhorr Brood sculpted on the Organic Panel Bible: every slot at its exact size by parametric sculptors, no nine-slice, an overlay over the game, built from your survey W picks (tentacle frames, larva and wart keys, a grown tissue backing, a ship display across the column). No two share a button, palette or icon shape. Every label, bar, key and title measured to sit clear of its frame in every skin.' },
-  { id: 'M6', title: 'Concord line (the standard)', change: 'concord-hull-concepts', page: 'docs/mockups/concord-hull-concepts.html',
+    summary: 'One UI kit in ten faction design languages, each skin built its own way, no two sharing a button, palette or icon shape.' },
+  { id: 'M6', faction: 'concord', title: 'Concord line (the standard)', change: 'concord-hull-concepts', page: 'docs/mockups/concord-hull-concepts.html',
     url: 'https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP', published: '2026-11-04', version: 20,
-    summary: 'THE STANDARD for Concord ships (owner, 2026-11-03). The Concord ships in Star Crew\'s Tern family, beside the Tern (its latest model, in our paint) at true scale: the Swift corvette three ways, the Petrel frigate two ways, the Albatross cruiser in two hulls with its pylons from the main hull, the Condor battleship (four main guns in faceted gun houses, two on top and two under the keel, the rest point-defence cannons) and the Pelican carrier (the crew hull forward, a diamond-section hangar hull with numbered bay doors). Hull lamps and the sun cast real shadows on the ship in view. Mockup 5\'s lighting and whole damage system on every ship; detail and normal maps; windows with furnished rooms behind them (carpet, sci-fi panels, furniture, a plant); 90 degree spotlights grazing the hull; detailed thrusters on a closed mounting fairing; phaser hits leave burning scorch marks, torpedoes cut holes that show the deck behind by parallax; broken pieces burn and trail flames; one belly light pair, no overlapping pools; lights that settle on or off after a couple of flickers. The Concord\'s emblem (B-E27) on each ship\'s forward livery band, port side, the band broken round it (shared with M11).' },
-  { id: 'M7', title: 'Krai Warhost ships', change: 'krai-ship-concepts', page: 'docs/mockups/krai-ship-concepts.html',
+    summary: 'The Concord line, the standard for Concord ships: corvette to carrier at true scale, lit, damaged and breaking apart.' },
+  { id: 'M7', faction: 'krai', title: 'Krai Warhost ships', change: 'krai-ship-concepts', page: 'docs/mockups/krai-ship-concepts.html',
     url: 'https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD', published: '2026-11-04', version: 21,
-    summary: 'The Krai line, corvette (47 m) to dreadnought (211 m), each fitted round its own rooms by one builder, with a line-up; battle damage on the Concord line\'s shared code (phaser scorch marks, torpedo holes onto the plan\'s rooms, nacelles venting and breaking away, coolant leaks, a burning bridge, a core breach), and the hull breaking apart into burning cells as the Concord line\'s does, fired by a click, every part (bayonet, crest, keel blade, guns) cut cleanly with the cells and each floodlight going out only with its own piece; a bayonet shape per class (knife, needle, a clean crescent on the dreadnought, smaller and sharper on the cruiser); a painted crimson livery with battle tallies; nacelles lit by two glowing red panels each, with collars, fins and conduits; one nacelle pair on the cruiser; windows flat on one face with level rooms behind. The frigate first, rooms first: 24 rooms on four decks (the spinal cannon along the keel), the hull fitted round them with every room 1.05 m inside, then the Krai\'s own parts (an alien bayonet in polished steel at the prow, serrated and hooked, a crest, keel blade, edge-on blade nacelles on swept struts, a forge-slot drive) and an exterior of blued steel in square-cut armour plates (chamfered corners, conduits, vent banks, hatches, as a normal map), tempered bronze edges, 52 windows with Krai rooms behind them by interior mapping, six-sided thrusters and warm orange floodlights with shadows, all on the Concord line\'s shared code. Build it up steps through rooms, hull, parts and skin; the deck plans are on the Plan tab; the Concord Petrel beside it for scale on request. Names and markings are placeholders.' },
-  { id: 'M8', title: 'Battle console: Krai Warhost', change: 'krai-battle-console', page: 'docs/mockups/battle-console-krai.html',
+    summary: 'The Krai Warhost line, corvette to dreadnought, each ship fitted round its rooms, with its livery, lights and damage.' },
+  { id: 'M8', faction: 'krai', title: 'Battle console: Krai Warhost', change: 'krai-battle-console', page: 'docs/mockups/battle-console-krai.html',
     url: 'https://claude.ai/artifact/D6PacxkhuY6Q2n8TGHKDTv', published: '2026-11-04', version: 14,
-    summary: 'The battle console of mockup 2 in the Krai Warhost skin, every control live against the same stand-in battle and test scenes with the shared weapon targeting, damage control, arming modes, cloaking, officers and boarding defence. The column is one cast plate rendered in Blender with the panels formed into it as wells parted by one unbroken divider carrying each title, a red backlight, and a channel of red light crossing them; every icon key and status box a rendered key in the rail tabs\' style (wide keys rendered whole and nine-sliced), its state the light in its glass, in the Krai palette (orange, gold, red; no green, no white); panel tab icons red, functional icons orange; bloom on the column\'s light, always on; strips (60 px top, 80 px bottom) whose metal runs into the column; labels and titles on metal placards; blade-cut keys, Teko and Russo One type, the full icon set in the Krai\'s language; your fleet named Kharz, Vekk and Ruhn.' },
+    summary: 'The battle console in the Krai Warhost skin: a cast column rendered in Blender, every control live.' },
   { id: 'M9', title: 'Faction emblems', change: 'faction-emblems', page: 'docs/mockups/faction-emblems.html',
     url: '', published: '', version: 0,
-    summary: 'One emblem for each of the ten factions. The flat drafts are placeholders: each faction is now designed on the Emblem Design Guide, sketched with every choice explained and picked by you before it is modelled in 3D.' },
-  { id: 'M10', title: 'Concord badge in 3D', change: 'faction-emblems', page: 'docs/mockups/concord-emblem-3d.html',
+    summary: 'One emblem for each of the ten factions, each designed on the Emblem Design Guide before it is modelled.' },
+  { id: 'M10', faction: 'concord', title: 'Concord badge in 3D', change: 'faction-emblems', page: 'docs/mockups/concord-emblem-3d.html',
     url: 'https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN', published: '2026-11-04', version: 6,
-    summary: 'The Concord emblem you accepted (B-E27, the smooth keyhole) as an orbitable badge 100 mm across: a brushed platinum frame, an iridescent pearl ship with a two-tier saucer, segmented legs and a satin cyan star pressed into it, and a holographic night in the bell whose nebula and stars sit at different depths and move as you turn it. Material Maker maps (colour, normal, AO, roughness and metal, specular); the Blender renders beside it.' },
+    summary: 'The Concord emblem (B-E27, the smooth keyhole) as an orbitable 3D badge.' },
   { id: 'M11', title: 'Concord emblem on the hull', change: 'faction-emblems', page: 'docs/mockups/concord-emblem-hull.html',
     url: 'https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9', published: '2026-11-04', version: 10,
-    summary: 'The Concord emblem you accepted, B-E27 (the smooth keyhole), painted once on the Concord line\'s Petrel frigate (88 m): upright on the left (port) side on the forward livery band, half size at 2.6 m (3 % of the ship\'s length), in the stripe\'s own blue with no outline and a cyan star, the band broken tight round it by bare hull (an arc over the head, a flat edge under the foot), under its own logo floodlight, painted into the hull\'s colour (no sticker). No livery added. Views: three quarter, close and battle distance, with the emblem\'s height on screen.' },
+    summary: 'The Concord emblem you accepted, B-E27 (the smooth keyhole), painted once on the Concord line\'s Petrel frigate (88 m): upright on the left (port) side on the forward livery band, half size at 2.6.' },
 ];
 
 // Every other published artifact, by section. Each also has a record in docs/artifacts/<name>/README.md.
 const GUIDES = [
   { title: 'Analog Panel Bible', page: 'docs/design/ui-bible.html', url: 'https://claude.ai/artifact/Gzo38Dh7o1EqmfzfpJr8rF',
-    published: '2026-11-04', version: 4,
-    summary: 'Building 1990s-style instrument panels in Blender: named parts, depth, light, readability, measured fit rules (rolled edges never meet, layers stay inside their plate, text never reaches a piece\'s ends), formed metal rendered in 3D, seven lighting options, and the worked example that taught it.' },
+    published: '2026-11-04', version: 4, summary: 'How to build 1990s-style instrument panels in Blender, with measured fit rules.' },
   { title: 'Organic Panel Bible', page: 'docs/design/organic-bible.html', url: 'https://claude.ai/artifact/RNyM5ka91uporfETHjAQcD',
-    published: '2026-11-01', version: 4,
-    summary: 'Reviewed, still growing. Grown console panels in Blender: never raw primitives; one surface sculpted in layers (bone, muscle, leather stretched over both, veins under the skin); screens as live pixels under a fine hex filter; no nine-slice, so a console is blocked out with placeholders and then sculpted piece by piece; an overlay over the game, never a backdrop. A 26-step study shows how, with your rejected and accepted iterations marked.' },
+    published: '2026-11-01', version: 4, summary: 'How to build grown, organic console panels in Blender, sculpted at each slot\'s exact size.' },
   { title: 'Fleet Command Icons', page: 'docs/design/icon-guide.html', url: 'https://claude.ai/artifact/RWE6nzNQpPHE2LGTGCYCMb',
-    published: '2026-11-03', version: 1,
-    summary: 'The icon standard for every skin: a picture of the job, one subject one icon everywhere, readable at 20 px, solid for the thing and lines for what it gives off, one 48 px grid, colour for state only, and the subject list as the contract between skins. With the sheet of every station, ship panel and systems icon and what it pictures.' },
+    published: '2026-11-03', version: 1, summary: 'The icon standard every skin follows, and the sheet of what each icon pictures.' },
   { title: 'Ship Design Bible', page: 'docs/design/ship-bible.html', url: 'https://claude.ai/artifact/QxFV2qGabbN2chE3zd8km7',
-    published: '2026-11-03', version: 2,
-    summary: 'How every Fleet Command ship is designed, worked on the Concord line: rooms first as block floor plans, the hull fitted round them and measured (the Petrel: 23 rooms, every one 1.05 m inside), then the named parts (hulls, neck, bridge block, struts, nacelles; a bridge block only on super capital ships, otherwise by playtest), windows only on lived-in rooms, parallax interiors, hull lighting, markings and liveries, an exterior that complements its console (a guide, not a hard rule), and parallax damage. Live deck plans, fitted hull and exploded parts.' },
+    published: '2026-11-03', version: 2, summary: 'How every ship is designed: rooms first, the hull fitted round them, then parts, lights, markings and damage.' },
   { title: 'Emblem Design Guide', page: 'docs/design/emblem-guide.html', url: 'https://claude.ai/artifact/1ELwhue4vzFPjySnVc475V',
-    published: '2026-11-04', version: 21,
-    summary: 'How faction emblems are designed, and the record of your notes on them: sketch flat in SVG first with every choice explained, you pick, then sculpt in 3D. Rules compiled from your notes, the reference badges and the STARFLEET Visual Standards Manual (cited by page); each sketch measured for joins, one closed outline and contrast on black and on white. The Concord\'s sketches, with B worked furthest: B-E27, the smooth keyhole (B-E15 smoothed), accepted and painted on the hull (M11); and built as the 3D badge (M10).' },
+    published: '2026-11-04', version: 21, summary: 'How faction emblems are sketched, picked and built, with the record of your notes for each faction.' },
 ];
 const MISC = [
   { title: 'Concord ships and damage (retired)', page: 'docs/mockups/concord-ships.html', url: 'https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4',
-    published: '2026-11-03', version: 4, summary: 'Retired mockup 5, superseded by the Concord line (M6); off the game mockups list (owner, 2026-11-03). Kept for the record only.' },
+    published: '2026-11-03', version: 4, summary: 'Retired mockup 5, superseded by the Concord line (M6); kept for the record.' },
   { title: 'Survey', page: 'docs/design/survey.html', url: 'https://claude.ai/artifact/81ey21Ngrr8WPTdhce7y8a',
-    published: '2026-11-03', version: 33, summary: 'Open questions for you, with a recommendation each. A blank answer accepts the recommendation.' },
+    published: '2026-11-03', version: 33, summary: 'Open questions for you, each with a recommendation; a blank answer accepts it.' },
 ];
 
 const reviews = {}; // id -> { build, implementation, note }
@@ -210,6 +214,27 @@ function card(m) {
   return root;
 }
 
+// A faction's mockups (its ships, its battle console, its badge) sit together behind one card that opens them in a modal
+// (owner, 2026-11-06: "coalesce faction mockups together in modals"). The cards in the modal are the same cards, with the
+// same approvals and notes; the faction's card lists each mockup with its stage.
+const FACTIONS = [
+  { id: 'concord', name: 'Concord' }, { id: 'krai', name: 'Krai Warhost' },
+  { id: 'ssarith', name: 'Ssarith Hunt' }, { id: 'kelvane', name: 'Kelvane Institute' },
+];
+const groupChips = {};
+function group(f, ms) {
+  const dlg = el('dialog', { class: 'modal', id: `dlg-${f.id}`, 'aria-labelledby': `dlg-h-${f.id}` });
+  dlg.append(el('div', { class: 'mhead' }, el('h2', { id: `dlg-h-${f.id}`, text: f.name }),
+    el('button', { class: 'toggle', type: 'button', onclick: () => dlg.close() }, 'Close')), el('div', { class: 'list' }, ms.map(card)));
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); }); // a click on the backdrop closes it
+  const rows = ms.map((m) => { const chip = el('span', { class: 'chip' }); groupChips[m.id] = chip;
+    return el('li', {}, el('span', { class: 'mid', text: m.id }), el('span', { class: 'gt', text: m.title }), chip); });
+  return el('article', { class: 'card group', id: `group-${f.id}` },
+    el('div', { class: 'head' }, el('h2', { text: f.name }), el('span', { class: 'meta', text: `${ms.length} mockup${ms.length === 1 ? '' : 's'}` })),
+    el('ul', { class: 'gl' }, rows),
+    el('div', { class: 'row' }, el('button', { class: 'toggle', type: 'button', onclick: () => dlg.showModal() }, `Open the ${f.name} mockups`)), dlg);
+}
+
 function paint(id) {
   const m = MOCKUPS.find((x) => x.id === id);
   const c = cards[id];
@@ -224,6 +249,7 @@ function paint(id) {
   c.build.disabled = !canWrite || !m.url;
   c.impl.disabled = !canWrite || !m.url || !r.build;
   c.note.disabled = !canWrite;
+  if (groupChips[id]) { groupChips[id].className = `chip ${cls}`; groupChips[id].textContent = label; }
   if (document.activeElement !== c.note) c.note.value = r.note ?? '';
 }
 
@@ -313,7 +339,8 @@ function linkCard(a) {
 }
 
 const list = document.getElementById('list');
-MOCKUPS.forEach((m) => list.append(card(m)));
+MOCKUPS.filter((m) => !m.faction).forEach((m) => list.append(card(m)));
+FACTIONS.forEach((f) => { const ms = MOCKUPS.filter((m) => m.faction === f.id); if (ms.length) list.append(group(f, ms)); });
 GUIDES.forEach((a) => document.getElementById('guides').append(linkCard(a)));
 MISC.forEach((a) => document.getElementById('misc').append(linkCard(a)));
 MOCKUPS.forEach((m) => paint(m.id));

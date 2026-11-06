@@ -86,3 +86,4 @@
 - 2026-11-04, cloud session: M11 at v8; version 88, id `1793788922-ee81`.
 - 2026-11-04, cloud session: M11 at v9; version 89, id `1793789702-2c07`.
 - 2026-11-04, cloud session (Concord ships thread): version 91, version id `1793793088-d02f`, built on the live version 90: M7 v21, M6 v20.
+- 2026-11-06, from the Kelvane console session (owner: "make sure all active branches get this artifact tracker change"): this branch's tracker on the new page (one-line summaries, each faction's mockups in a modal, the escaped apostrophes) with this branch's own entries kept; live tracker version 132 (`1793930222-562a`) is the Kelvane session's.
