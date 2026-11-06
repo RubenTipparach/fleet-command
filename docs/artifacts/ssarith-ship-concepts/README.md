@@ -131,3 +131,8 @@
   section turned over, its broad shell underneath and the spine running on as a dorsal lance; the carrier on its own
   section, a shell through its middle with hangar blocks and launch bays above and below it; window frames dark, no glow;
   no window glass baked into any ship's maps. New shot: bays_low.
+- 2026-11-06, cloud session (owner: "the texture on carrier is pretty blury", "lights are kinda small here, can we get
+  bigger cones that illuminate more of the ship?"; then "looks good, implement in game"): version 24, version id
+  `1793936019-47ca`. All six rebaked: every flood 2.4 m off the plating, 22 degrees into it, a 120 degree cone (one data
+  setting, `defaults.flood`); the cruiser and carrier at 3072 px (6.4 cm a pixel). Page 14.5 MB. The same ships now fly in
+  the game (change `ssarith-ships-engine`).

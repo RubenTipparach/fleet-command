@@ -1,13 +1,15 @@
 # Ships
 
 The approved ship designs as glTF binary files for the game: the Concord line (mockup 6,
-`docs/mockups/concord-hull-concepts.html`) and the Krai Warhost line (mockup 7,
-`docs/mockups/krai-ship-concepts.html`).
+`docs/mockups/concord-hull-concepts.html`), the Krai Warhost line (mockup 7,
+`docs/mockups/krai-ship-concepts.html`) and the Ssarith Hunt (mockup 12, `docs/mockups/ssarith-ship-concepts.html`).
 
 | File | What it is |
 |---|---|
 | `concord/<id>.glb` | Every Concord line variant except the Tern (Star Crew's yardstick): `swift_below`, `swift_updown`, `swift_level`, `petrel_updown`, `petrel_level`, `albatross`, `condor`, `pelican` |
 | `krai/<id>.glb` | Every Krai class: `corvette`, `frigate`, `cruiser`, `dreadnought` |
+| `ssarith/<id>.glb` | The Ssarith Hunt (mockup 12, `docs/mockups/ssarith-ship-concepts.html`): the frigates `hooded_lance`, `forked_prow`, `harpoon`, `trident`, the `cruiser` and the `carrier`. Geometry, UVs and empties only: each hull's look is its own baked maps beside it (`ssarith/<id>_base.png`, `_orm`, `_normal`, `_emit`, `_light`, `_albedo`; `tools/blender/painted_bake.py --ship`, recorded in `ssarith/manifest.json`), named in the ship's `shader_params.maps` and drawn by `src/Game/View/baked_hull.gdshader` |
+| `ssarith/<id>_sdf.bin` | Each Hunt hull's signed distance field, the inside its cut faces clip to (one byte a cell, x fastest; the manifest's `break.bodies[].sdf` gives its grid; `tools/blender/hull_sdf.py`) |
 | `<faction>/detail_albedo.png`, `detail_normal.png` | The hull shader's detail tile, 1024 px square: grime and wear in the red channel, and a tangent-space normal map (xy). The mockups project it tri-planar in ship space, with no UVs |
 | `manifest.json` | For each ship: size, triangles, node names, materials, and the values its hull shader read. For each faction: what the hull shader did, its constants, and the detail tile's size in metres |
 
