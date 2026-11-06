@@ -1,0 +1,1072 @@
+{
+  "_doc": "The Kelvane Institute line's hull detail (mockup 23, version 5; OpenSpec change kelvane-ship-concepts): what tools/blender/hull_detail.py builds over each class's low-poly hull before painted_bake.py --faction kelvane --ship bakes it onto the ship's own UVs (Ship Design Bible chapters 14 and 15; the ship-detailing skill). Ship space: +x port, +y up, +z bow, metres. A feature off the centreline is mirrored to starboard; nothing repeats. face: where it sits, found by a ray (top: from above at [x, z]; bottom: from below at [x, z]; port: from the port side at [z, y]). The Institute's design language, from its console (kelvane-battle-console D1-D4) and the Calibrators' 'true faces': calibrated plating (cuts 'grid'), enamelled champagne plates pillowed at their edges, dark smoked glass, amber light, a measuring scale engraved down each flank, sensor domes of smoked glass, smooth round pods sunk into the plating, the KID logo; no greebles, trenches or slatted vents (owner, 2026-11-06: 'Mind the clean and sterile and almost scientific aesthetics. They would have decorated their ships with smooth round pieces rather than industrial greebles'). Owner, 2026-11-06: 'start detailing these', 'theme them after advanced science and research vessels, this faction will specialize in scientific missions'. Version 6 (owner, 2026-11-06: \"we need greebles on the inside\", \"missing texture on the nose\", \"also where are windows to give scale\"): machinery inside the openings (inner_greebles_per_m2, on faces that look across an opening at the hull), the middle of a wide lit face an instrument's array of cells (paint strip_cell_*), and rows of person-sized windows on the flanks, clear of the scale and the strips (provisional until each class's room plan places them, task 3.1).",
+  "faction": "kelvane",
+  "manifest_doc": "The Kelvane Institute's line: the frigate, destroyer, cruiser, battlecruiser and carrier of mockup 23.",
+  "paint": {
+    "armour": [
+      "#c9bfa9",
+      "#d4cab3",
+      "#bfb49b",
+      "#cfc2a5",
+      "#c3b9a3",
+      "#d8cfba",
+      "#b8ad95"
+    ],
+    "accent": "#8a6a3a",
+    "sub": [
+      "#9a907c",
+      "#a39882",
+      "#8e8572",
+      "#a8a08c"
+    ],
+    "under": "#2a2620",
+    "greeble": [
+      "#6a6252",
+      "#a89c84"
+    ],
+    "dome": "#1b150d",
+    "dome_glow": 0.0,
+    "slat": "#6e6656",
+    "vent": "#15120d",
+    "glass": "#1b150d",
+    "livery": "#6c0c15",
+    "ink": "#2a1a06",
+    "light_edge": "#f3e4c2",
+    "strip": "whole",
+    "strip_m": 0.7,
+    "pbr": {
+      "armour": [
+        0.42,
+        0.55
+      ],
+      "sub": [
+        0.5,
+        0.6
+      ],
+      "under": [
+        0.7,
+        0.6
+      ],
+      "greeble": [
+        0.55,
+        0.7
+      ],
+      "dome": [
+        0.08,
+        0.0
+      ],
+      "glass": [
+        0.06,
+        0.0
+      ],
+      "slat": [
+        0.5,
+        0.7
+      ],
+      "vent": [
+        0.9,
+        0.3
+      ],
+      "strip": [
+        0.4,
+        0.0
+      ],
+      "lamp": [
+        0.3,
+        0.0
+      ]
+    },
+    "livery_pbr": [
+      0.45,
+      0.1
+    ],
+    "strip_k": 0.5,
+    "strip_inner": 0.12,
+    "strip_rim_px": 7,
+    "strip_cell_m": 1.6,
+    "strip_cell_gap": 0.14,
+    "strip_cell_on": 0.7,
+    "strip_cell_k": 0.55,
+    "greeble_ao_floor": 0.5,
+    "glass_cells_k": 0.45,
+    "glass_cell_m": 0.8,
+    "glass_cells_rgb": [
+      1.0,
+      0.78,
+      0.4
+    ]
+  },
+  "defaults": {
+    "smooth_deg": 40,
+    "cuts": "grid",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+      1.0,
+      0.78,
+      0.4
+    ],
+    "armour_t_m": 0.3,
+    "sub_t_m": 0.12,
+    "lift_m": 0.05,
+    "gap_m": [
+      0.2,
+      0.32
+    ],
+    "trench_m": [
+      0.32,
+      0.32
+    ],
+    "trench_share": 0.0,
+    "top_station_m": [
+      9.0,
+      20.0
+    ],
+    "spine_half_m": [
+      1.6,
+      3.4
+    ],
+    "flank_station_m": [
+      10.0,
+      22.0
+    ],
+    "flank_rake": [
+      -0.04,
+      0.04
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+      "window": 0.1,
+      "bay": 0.35
+    },
+    "auto_floods": {
+      "step_m": 26,
+      "from_stern_m": 8,
+      "top_x_frac": 0.4
+    },
+    "flood": {
+      "standoff_m": 2.4,
+      "cone_deg": 120,
+      "tilt_deg": 22,
+      "power_w": 1600
+    },
+    "inner_greebles_per_m2": 0.6,
+    "inner_reach_m": 40.0
+  },
+  "ships": {
+    "kelvane_frigate": {
+      "seed": 211,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -48
+          ],
+          "r_m": 3.2,
+          "h_m": 1.0,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            6
+          ],
+          "r_m": 2.6,
+          "h_m": 0.9,
+          "straps": []
+        },
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            6
+          ],
+          "r_m": 2.6,
+          "h_m": 0.9,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            50
+          ],
+          "r_m": 2.0,
+          "h_m": 0.7,
+          "straps": []
+        }
+      ],
+      "pods": [
+        {
+          "face": "port",
+          "at": [
+            -48,
+            4
+          ],
+          "len_m": 9.0,
+          "w_m": 2.4,
+          "h_m": 0.9
+        },
+        {
+          "face": "top",
+          "at": [
+            5,
+            -16
+          ],
+          "len_m": 12.0,
+          "w_m": 2.2,
+          "h_m": 0.8
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            58
+          ],
+          "size_m": 0.4,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            5,
+            -56
+          ],
+          "size_m": 0.34,
+          "colour": "amber"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            52.0,
+            53.4
+          ]
+        },
+        {
+          "band_z_m": [
+            54.6,
+            55.2
+          ]
+        },
+        {
+          "scale": {
+            "y_m": [
+              0.8,
+              2.6
+            ],
+            "z_m": [
+              -56,
+              56
+            ],
+            "tick_m": 1.0,
+            "major_m": 5.0,
+            "w_m": 0.12
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -26
+        ],
+        "size_m": 7.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              6,
+              -50
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -44,
+              4
+            ],
+            "aim": "fwd"
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 56
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -56,
+            56
+          ],
+          "rows_y_m": [
+            4.2,
+            -1.6
+          ]
+        },
+        {
+          "z_m": [
+            -26,
+            26
+          ],
+          "rows_y_m": [
+            7.6,
+            -7.6
+          ]
+        }
+      ]
+    },
+    "kelvane_destroyer": {
+      "seed": 223,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -54
+          ],
+          "r_m": 4.0,
+          "h_m": 1.1,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            58
+          ],
+          "r_m": 2.4,
+          "h_m": 0.8,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            16,
+            -2
+          ],
+          "r_m": 1.8,
+          "h_m": 0.6,
+          "straps": []
+        },
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            -54
+          ],
+          "r_m": 3.0,
+          "h_m": 0.9,
+          "straps": []
+        }
+      ],
+      "pods": [
+        {
+          "face": "port",
+          "at": [
+            -54,
+            4
+          ],
+          "len_m": 10.0,
+          "w_m": 2.6,
+          "h_m": 0.9
+        },
+        {
+          "face": "top",
+          "at": [
+            6,
+            46
+          ],
+          "len_m": 8.0,
+          "w_m": 2.0,
+          "h_m": 0.7
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            17,
+            12
+          ],
+          "size_m": 0.4,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            64
+          ],
+          "size_m": 0.4,
+          "colour": "amber"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            60.0,
+            61.4
+          ]
+        },
+        {
+          "band_z_m": [
+            62.6,
+            63.2
+          ]
+        },
+        {
+          "scale": {
+            "y_m": [
+              0.8,
+              2.6
+            ],
+            "z_m": [
+              -60,
+              60
+            ],
+            "tick_m": 1.0,
+            "major_m": 5.0,
+            "w_m": 0.12
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          44
+        ],
+        "size_m": 8.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              7,
+              -58
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -50,
+              3
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              17,
+              -20
+            ],
+            "aim": "fwd"
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 60
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -62,
+            62
+          ],
+          "rows_y_m": [
+            4.2,
+            -2.0
+          ]
+        }
+      ]
+    },
+    "kelvane_cruiser": {
+      "seed": 227,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -66
+          ],
+          "r_m": 4.6,
+          "h_m": 1.2,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            20
+          ],
+          "r_m": 3.4,
+          "h_m": 1.0,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            50
+          ],
+          "r_m": 2.6,
+          "h_m": 0.8,
+          "straps": []
+        },
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            -70
+          ],
+          "r_m": 3.0,
+          "h_m": 0.9,
+          "straps": []
+        }
+      ],
+      "pods": [
+        {
+          "face": "port",
+          "at": [
+            -66,
+            3
+          ],
+          "len_m": 12.0,
+          "w_m": 2.6,
+          "h_m": 1.0
+        },
+        {
+          "face": "top",
+          "at": [
+            3,
+            -42
+          ],
+          "len_m": 14.0,
+          "w_m": 2.2,
+          "h_m": 0.8
+        },
+        {
+          "face": "port",
+          "at": [
+            -10,
+            3
+          ],
+          "len_m": 10.0,
+          "w_m": 2.4,
+          "h_m": 0.9
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            72
+          ],
+          "size_m": 0.45,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            3,
+            -56
+          ],
+          "size_m": 0.3,
+          "colour": "amber"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            66.0,
+            67.6
+          ]
+        },
+        {
+          "band_z_m": [
+            69.0,
+            69.6
+          ]
+        },
+        {
+          "scale": {
+            "y_m": [
+              0.8,
+              2.8
+            ],
+            "z_m": [
+              -76,
+              70
+            ],
+            "tick_m": 1.0,
+            "major_m": 5.0,
+            "w_m": 0.12
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -20
+        ],
+        "size_m": 9.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              6,
+              -78
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -60,
+              3
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -10,
+              3
+            ],
+            "aim": "fwd"
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 70
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -78,
+            76
+          ],
+          "rows_y_m": [
+            4.6,
+            8.0
+          ]
+        },
+        {
+          "z_m": [
+            -36,
+            36
+          ],
+          "rows_y_m": [
+            -16.5,
+            -13.0
+          ]
+        }
+      ]
+    },
+    "kelvane_battlecruiser": {
+      "seed": 229,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -86
+          ],
+          "r_m": 5.0,
+          "h_m": 1.2,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            1
+          ],
+          "r_m": 4.2,
+          "h_m": 1.1,
+          "straps": []
+        },
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            1
+          ],
+          "r_m": 3.6,
+          "h_m": 1.0,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            88
+          ],
+          "r_m": 2.8,
+          "h_m": 0.8,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            13,
+            -42
+          ],
+          "r_m": 2.0,
+          "h_m": 0.6,
+          "straps": []
+        }
+      ],
+      "pods": [
+        {
+          "face": "port",
+          "at": [
+            -86,
+            4
+          ],
+          "len_m": 12.0,
+          "w_m": 2.8,
+          "h_m": 1.0
+        },
+        {
+          "face": "top",
+          "at": [
+            5,
+            6
+          ],
+          "len_m": 10.0,
+          "w_m": 2.4,
+          "h_m": 0.9
+        },
+        {
+          "face": "port",
+          "at": [
+            1,
+            2.6
+          ],
+          "len_m": 12.0,
+          "w_m": 2.6,
+          "h_m": 0.9
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            94
+          ],
+          "size_m": 0.45,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            13,
+            -30
+          ],
+          "size_m": 0.4,
+          "colour": "amber"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            90.0,
+            91.6
+          ]
+        },
+        {
+          "band_z_m": [
+            93.0,
+            93.6
+          ]
+        },
+        {
+          "scale": {
+            "y_m": [
+              0.8,
+              3.0
+            ],
+            "z_m": [
+              -92,
+              92
+            ],
+            "tick_m": 1.0,
+            "major_m": 5.0,
+            "w_m": 0.12
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          78
+        ],
+        "size_m": 9.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              7,
+              -92
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -84,
+              3
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              10,
+              -2
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              0,
+              3
+            ],
+            "aim": "fwd"
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 92
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -96,
+            96
+          ],
+          "rows_y_m": [
+            4.6,
+            -2.6
+          ]
+        },
+        {
+          "z_m": [
+            22,
+            62
+          ],
+          "rows_y_m": [
+            12.5,
+            -11.5
+          ]
+        }
+      ]
+    },
+    "kelvane_carrier": {
+      "seed": 233,
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -90
+          ],
+          "r_m": 5.6,
+          "h_m": 1.3,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            86
+          ],
+          "r_m": 3.6,
+          "h_m": 1.0,
+          "straps": []
+        },
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            -90
+          ],
+          "r_m": 4.0,
+          "h_m": 1.0,
+          "straps": []
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            100
+          ],
+          "r_m": 2.4,
+          "h_m": 0.7,
+          "straps": []
+        }
+      ],
+      "pods": [
+        {
+          "face": "port",
+          "at": [
+            -92,
+            4
+          ],
+          "len_m": 14.0,
+          "w_m": 3.0,
+          "h_m": 1.1
+        },
+        {
+          "face": "top",
+          "at": [
+            6,
+            62
+          ],
+          "len_m": 12.0,
+          "w_m": 2.6,
+          "h_m": 0.9
+        },
+        {
+          "face": "top",
+          "at": [
+            7,
+            -100
+          ],
+          "len_m": 6.0,
+          "w_m": 2.0,
+          "h_m": 0.7
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            104
+          ],
+          "size_m": 0.5,
+          "colour": "amber"
+        },
+        {
+          "face": "top",
+          "at": [
+            0,
+            -76
+          ],
+          "size_m": 0.45,
+          "colour": "amber"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            96.0,
+            97.8
+          ]
+        },
+        {
+          "band_z_m": [
+            99.4,
+            100.0
+          ]
+        },
+        {
+          "scale": {
+            "y_m": [
+              0.8,
+              3.2
+            ],
+            "z_m": [
+              -100,
+              100
+            ],
+            "tick_m": 1.0,
+            "major_m": 5.0,
+            "w_m": 0.14
+          }
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          70
+        ],
+        "size_m": 11.0
+      },
+      "lighting": {
+        "floods": [
+          {
+            "face": "top",
+            "at": [
+              8,
+              -100
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "port",
+            "at": [
+              -94,
+              3
+            ],
+            "aim": "fwd"
+          },
+          {
+            "face": "top",
+            "at": [
+              12,
+              56
+            ],
+            "aim": "fwd"
+          }
+        ],
+        "auto_floods": {
+          "to_z_m": 100
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -104,
+            104
+          ],
+          "rows_y_m": [
+            4.8,
+            -2.6
+          ]
+        },
+        {
+          "z_m": [
+            -56,
+            40
+          ],
+          "rows_y_m": [
+            13.5,
+            -13.0
+          ]
+        }
+      ]
+    }
+  }
+}

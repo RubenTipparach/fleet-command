@@ -1,9 +1,10 @@
-// Export the Ssarith Hunt's picked blockouts from their page, as OBJ, for Blender to unwrap and bake (the painted-bake
-// skill; OpenSpec change ssarith-ship-concepts). The page builds every blockout itself (docs/mockups/ssarith-ship-concepts.html)
-// and hands each picked one out through window.MOCKUP_EXPORT_OBJ(n), in ship space (+x port, +y up, +z bow), one object per
-// piece (hull_* or glow_*). Nothing here shapes a part (CLAUDE.md 6.1: the page's builders are the one copy).
+// Export a ship page's picked hulls, as OBJ, for Blender to unwrap and bake (the painted-bake and ship-detailing skills;
+// OpenSpec changes ssarith-ship-concepts, kelvane-ship-concepts). The page builds every hull itself (the Ssarith Hunt's
+// docs/mockups/ssarith-ship-concepts.html by default, or the page named) and hands each pick out through
+// window.MOCKUP_EXPORT_OBJ(n), in ship space (+x port, +y up, +z bow), one object per piece (hull_*, glow_* or well_*, dark
+// glass). Nothing here shapes a part (CLAUDE.md 6.1: the page's builders are the one copy).
 //
-//   NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs
+//   NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs [docs/mockups/kelvane-ship-concepts.html]
 //
 // Writes tools/materials/raw/painted/ships/<slug>.obj (gitignored: a build intermediate) and prints each slug and size.
 import { createRequire } from 'node:module';
@@ -13,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const PAGE = path.join(ROOT, 'docs', 'mockups', 'ssarith-ship-concepts.html');
+const PAGE = process.argv[2] ? path.resolve(process.argv[2]) : path.join(ROOT, 'docs', 'mockups', 'ssarith-ship-concepts.html');
 const OUT = path.join(ROOT, 'tools', 'materials', 'raw', 'painted', 'ships');
 fs.mkdirSync(OUT, { recursive: true });
 const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' } : undefined;

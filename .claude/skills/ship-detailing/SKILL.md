@@ -244,6 +244,30 @@ every cell holds triangles (`window.__huntCells()` on the page) before looking a
 |---|---|---|
 | ![bays](images/10-bays.jpg) | ![rooms](images/11-rooms.jpg) | ![damage](images/12-damage.jpg) |
 
+## Another faction: its language is data
+
+The tools are one implementation for every faction (CLAUDE.md 6.1). A faction's look is its own
+`data/ships/<faction>/hull_detail.json`, never a copy of a tool. The Kelvane Institute (mockup 23, version 5) was the
+second faction through them.
+
+```sh
+NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs docs/mockups/kelvane-ship-concepts.html
+NODE_PATH=$(npm root -g) node tools/mockups/emblem_masks.mjs kelvane      # from its SVG hull logo (LOGO_SVG)
+/opt/blender/blender -b --python tools/blender/painted_bake.py -- --faction kelvane --ship kelvane_frigate --px 1024 --samples 16
+```
+
+| Key | What it sets | The Hunt | The Institute |
+|---|---|---|---|
+| `paint` | The palette by kind, the accent, the ink, the lit edges, the strip style (`centre` or `whole`), the PBR values | Olives, khakis, bronze | Champagne enamel, brass, smoked glass, velvet red |
+| `defaults.cuts` | How the armour is cut | `hunt`: swept chevrons, raked flanks | `grid`: square cuts, a stepped spine plate, seams |
+| `defaults.facing_min` | How square a face must be to carry armour | 0.55 | 0.38 (a rounded hull's rolls plated too) |
+| `defaults.smooth_deg` | The hull shaded smooth for the tangent bake; the page draws the same normals (`lib/baked-ship.js`) | none (flat) | 40 |
+| `defaults.strip_rgb` | The strips' light | green | amber |
+| greebles, trenches, overlays | Machinery in the gaps, wide gaps, plates over plates | 1.6 a m2, 40 %, over 22 m2 | none: "clean and sterile" (owner, 2026-11-06) |
+| `pods` | Smooth round pieces sunk into the plating | none | 6-14 m, the Institute's in place of machinery |
+| `well_*` objects | Dark glass on the low-poly hull, bare of armour, baked as `glass` | none | the wells and slots |
+| `liveries.scale` | A measuring scale engraved down the flanks | none | ticks every 1 m, long every 5 m |
+
 ## Judge it
 
 Look at the maps and at the ship close up and from the board, in every look and both lights:

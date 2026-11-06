@@ -606,6 +606,146 @@ return { detail, GLSL, thruster, mulberry };
 };
 </script>
 <!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/baked-ship.js -->
+<script data-src="docs/mockups/lib/baked-ship.js">
+// Fleet Command mockups: a baked ship on a page (the ship-detailing skill, "On the page"). One implementation of how a
+// ship baked by tools/blender/painted_bake.py --ship is shown: its UV mesh from the manifest, its maps, its two looks over
+// one geometry (Painted: the painted map with the painter's sun in it; PBR: base colour, ORM and tangent normals under
+// the live light) with its baked hull lights added (diffuse x light^gamma x k, the light map stored with a gamma curve) and
+// its emission, and the fixtures that show themselves (strobes flash, beacons pulse, the rest burn steady). Used by
+// docs/mockups/kelvane-ship-concepts.html (mockup 23), and for its windows (panes) by the Ssarith Hunt page (mockup 12),
+// which still carries its own copy of the rest, with damage and breakup woven in; moving it wholly onto this file is task
+// 3.4 of kelvane-ship-concepts (CLAUDE.md 6.1). Edit it here, then re-run tools/mockups/inline_data.py on each page that inlines it.
+//
+// FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes }. onTexture(promise):
+// called for every texture's load, so the page can wait for them before it calls itself ready. normals(points, deg): smooth
+// normals within deg (hull-grow.js creasedNormals), for a ship baked shaded smooth (its manifest's smooth_deg).
+window.FCBakedShip = function FCBakedShip(THREE, opts) {
+'use strict';
+const { onTexture = () => {}, normals = null } = opts || {};
+/** A texture from a data URI; flipY on, as Blender's UV v runs up the image. srgb: a colour map. */
+function tex(src, srgb = false) {
+  const img = new Image(), t = new THREE.Texture(img); t.anisotropy = 8; if (srgb) t.encoding = THREE.sRGBEncoding;
+  onTexture(new Promise((res) => { img.onload = () => { t.needsUpdate = true; res(); }; img.onerror = res; })); img.src = src; return t;
+}
+/** The ship's UV mesh (sh.mesh: flat triangle lists in ship space), indexed, with uv2 for the AO map and tangents; shaded
+ *  smooth within sh.smooth_deg when the bake was, else flat, so its normal map lies on the normals it was baked against. */
+function geometry(sh) {
+  const g = new THREE.BufferGeometry(), n = sh.mesh.pos.length / 3;
+  g.setAttribute('position', new THREE.Float32BufferAttribute(sh.mesh.pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(sh.mesh.uv, 2));
+  g.setAttribute('uv2', new THREE.Float32BufferAttribute(sh.mesh.uv, 2)); g.setIndex(Array.from({ length: n }, (_, k) => k));
+  if (sh.smooth_deg && normals) { const P = []; for (let k = 0; k < n; k++) P.push(new THREE.Vector3(sh.mesh.pos[3 * k], sh.mesh.pos[3 * k + 1], sh.mesh.pos[3 * k + 2]));
+    g.setAttribute('normal', new THREE.BufferAttribute(normals(P, sh.smooth_deg), 3)); } else g.computeVertexNormals();
+  g.computeTangents(); return g;
+}
+/** A ship's maps from its manifest BK (pieces <slug>_<map>, data URIs); a map not baked yet is black. */
+function maps(BK, slug) {
+  const sh = BK.ships[slug];
+  const t = (k, srgb) => { const pc = BK.pieces[slug + '_' + k]; if (pc) return tex(pc.data, srgb);
+    const d = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1); d.needsUpdate = true; return d; };
+  return { sh, slug, geo: geometry(sh), albedo: t('albedo', true), base: t('base', true), em: t('emit', true), nm: t('normal'), lt: t('light'), orm: t('orm'), g: sh.light_gamma || 1.6 };
+}
+/**
+ * The two looks over one geometry. U: { lightK, selfP, none } uniforms ({ value }) the page sets for its light (the
+ * hull lights' strength, and how much of the painted map's own light shows as emission). patch(shader): an optional hook
+ * after this file's own changes, for a page's further rules.
+ */
+function looks(M, U, { patch = null, env = 0.5 } = {}) {
+  const hull = (mat, self, key) => { mat.onBeforeCompile = (s) => { Object.assign(s.uniforms, { uHullLight: { value: M.lt }, uLightK: U.lightK, uSelf: self });
+      s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uHullLight; uniform float uLightK; uniform float uSelf;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          totalEmissiveRadiance += diffuseColor.rgb * (pow(texture2D(uHullLight, vUv).rgb, vec3(${M.g.toFixed(2)})) * uLightK + uSelf);`);
+      if (patch) patch(s); };
+    mat.customProgramCacheKey = () => key; return mat; };
+  return {
+    painted: hull(new THREE.MeshStandardMaterial({ map: M.albedo, emissiveMap: M.em, emissive: 0xffffff, normalMap: M.nm, roughness: 0.72, metalness: 0.15, envMapIntensity: 0 }), U.selfP, 'baked-painted-' + M.slug),
+    pbr: hull(new THREE.MeshStandardMaterial({ map: M.base, normalMap: M.nm, roughnessMap: M.orm, metalnessMap: M.orm, aoMap: M.orm, roughness: 1, metalness: 1,
+      emissiveMap: M.em, emissive: 0xffffff, envMapIntensity: env }), U.none, 'baked-pbr-' + M.slug),
+  };
+}
+/** The fixtures that show themselves, as additive sprites at their places (sh.fixtures): [{ s, kind }]. */
+function fixtures(sh, sprite, parent) {
+  return (sh.fixtures || []).map((F) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sprite, color: new THREE.Color(...F.rgb), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+    s.position.set(...F.pos); const big = { strobe: 3.2, beacon: 3.0, position: 2.6 }[F.kind] || 1.6; s.scale.setScalar(big); s.userData.big = big; parent.add(s); return { s, kind: F.kind }; });
+}
+/** Strobes flash twice every 1.5 s, beacons pulse, the rest burn steady; brighter and larger at night. */
+function blink(navs, t, night) {
+  for (const { s, kind } of navs) { const p = t % 1.5;
+    const on = kind === 'strobe' ? (p < 0.06 || (p > 0.2 && p < 0.26) ? 1 : 0) : kind === 'beacon' ? 0.25 + 0.75 * Math.max(0, Math.sin(t * Math.PI)) ** 3 : 0.8;
+    s.material.opacity = on * (night ? 1 : 0.55); s.scale.setScalar(s.userData.big * (night ? 1 : 0.6)); }
+}
+// The panes: every window and bay is a quad of its own, laid on the hull at the place the bake cut for it
+// (tools/blender/hull_detail.py pane_box writes each one's centre, axes and size), so its frame is exact at any distance
+// (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the border clean"). The quad
+// is the pane plus its frame: a bevelled rim of the hull's dark metal, lit from above, with a fine lit line round the
+// glass; behind the glass, the room (roomBehind) or the hangar (hangarBehind) from docs/mockups/lib/ship-rooms.js.
+// Lifted from the Ssarith Hunt page (mockup 12), which now draws its panes with it, so the Institute's windows
+// (owner, 2026-11-06: "also where are windows to give scale") are the Hunt's windows (CLAUDE.md 6.1).
+const PANE_KIND = { quarters: 0, mess: 1, workshop: 2, hold: 3, bay: 4 };
+// A lit room's light by its kind k (GLSL): the Hunt's pale green, workshops greener, holds grey. A page passes GL.light for
+// its own faction's light.
+const PANE_LIGHT = 'k == 2 ? vec3(0.42, 0.95, 0.5) : k == 3 ? vec3(0.38, 0.45, 0.5) : vec3(0.78, 0.95, 0.74)';
+const paneGLSL = (GL) => `
+uniform float uRoomK; uniform float uFrameK; uniform float uLive;
+${GL.hash}
+${GL.box}
+${GL.rooms}
+varying vec2 vQ; varying vec2 vHalf; varying vec3 vU; varying vec3 vV; varying vec3 vN; varying vec3 vC; varying float vKind;   // vObj, vCamObj: declared by the head
+vec3 paneColour(){
+  vec3 eu = normalize(vU), ev = normalize(vV), en = normalize(vN), V = normalize(vObj - vCamObj);
+  float kk = floor(vKind + 0.5); bool lit = kk >= 8.0; int k = int(lit ? kk - 8.0 : kk);   // rounded: an interpolated 8.0 can read 7.9999
+  vec2 hs = vHalf, d2 = vQ - clamp(vQ, -hs, hs); float out_ = length(d2);
+  vec3 L = !lit ? vec3(0.015, 0.018, 0.016) : ${GL.light || PANE_LIGHT};
+  if (out_ > 0.0) {   // the frame: a bevel rising from the glass, lit from above, a dark seam where it meets the hull
+    vec2 dir = d2 / out_; vec3 nf = normalize(en*0.75 + (eu*dir.x + ev*dir.y)*0.65);
+    float key = max(dot(nf, normalize(vec3(-0.25, 1.0, 0.35))), 0.0);
+    vec3 col = vec3(0.105, 0.11, 0.095)*(0.35 + 0.9*key);
+    return col*uFrameK;   // dark metal, no glow of its own (owner, 2026-11-06: "window borders should also not glow")
+  }
+  // The room or hangar stands level with the decks whatever the face's angle (owner, 2026-11-05: "Need to account for
+  // normal angles on windows, and the hangar bay too"): up is the ship's up, in is the face's normal turned level, and the
+  // pane cuts the room's front at a slant, its nearest corner on the room's front wall. The hangar stays painted, not
+  // geometry, for its parallax (owner: "I actually like the paralax so I'd keep it").
+  vec3 rv = vec3(0.0, 1.0, 0.0), ri = vec3(-en.x, 0.0, -en.z), ru, rn; float hl = length(ri);
+  if (hl < 0.3) { ru = eu; rv = ev; rn = -en; } else { rn = ri/hl; ru = normalize(cross(rv, rn)); }
+  vec3 Pp = eu*vQ.x + ev*vQ.y; float zext = abs(dot(eu, rn))*hs.x + abs(dot(ev, rn))*hs.y;
+  vec3 D = normalize(vec3(dot(V, ru), dot(V, rv), dot(V, rn)) + vec3(1e-4)); if (D.z <= 0.0) D.z = 1e-3;
+  vec3 q = vec3(dot(Pp, ru), dot(Pp, rv), dot(Pp, rn) + zext);
+  vec2 mouth = 2.0*vec2(abs(dot(eu, ru))*hs.x + abs(dot(ev, ru))*hs.y, abs(dot(eu, rv))*hs.x + abs(dot(ev, rv))*hs.y);  // the mouth, level
+  vec3 room = k == 4 ? hangarBehind(q, D, floor(vC*0.3), mouth, lit ? vec3(0.75, 0.8, 0.7) : L)
+                     : roomBehind(q, D, floor(vC*0.6), k == 1 ? 1 : k == 2 ? 2 : k == 3 ? 1 : 0, L);
+  float fres = pow(1.0 - clamp(-dot(V, en), 0.0, 1.0), 4.0);             // the glass: a faint sky in it at a glancing look
+  return room*uRoomK*uLive*(1.0 - 0.5*fres) + vec3(0.05, 0.07, 0.06)*fres*uFrameK;
+}`;
+/**
+ * One mesh of quads for a ship's panes (sh.panes). U: the page's { roomK, frameK } uniforms (how bright a room and a frame
+ * are); live: a { value } uniform, 0 when the panes' piece is lost. GL: { hash, box, rooms, light }, the GLSL of ship-skin.js
+ * (GLSL.hash, GLSL.box) and ship-rooms.js (GLSL), and optionally a lit room's light by kind k (PANE_LIGHT unless given). o.uniforms: more uniforms (a page's damage); o.head: GLSL before the
+ * pane's (it declares varyings vObj and vCamObj, and anything o.main calls); o.main: the fragment's body.
+ */
+function panes(list, U, live, GL, { uniforms = {}, head = 'varying vec3 vObj; varying vec3 vCamObj;\n', main = 'gl_FragColor = vec4(paneColour(), 1.0);' } = {}) {
+  const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+  const pos = [], q = [], half = [], au = [], av = [], an = [], ac = [], kind = [], idx = [];
+  list.forEach((P, j) => { const f = P.frame_m, hw = P.w_m / 2, hh = P.h_m / 2;
+    const C = V3(...P.c).addScaledVector(V3(...P.n), 0.05), U_ = V3(...P.u), V_ = V3(...P.v);
+    for (const [x, y] of [[-hw - f, -hh - f], [hw + f, -hh - f], [hw + f, hh + f], [-hw - f, hh + f]]) {
+      const p = C.clone().addScaledVector(U_, x).addScaledVector(V_, y); pos.push(p.x, p.y, p.z); q.push(x, y); half.push(hw, hh);
+      au.push(...P.u); av.push(...P.v); an.push(...P.n); ac.push(...P.c); kind.push(PANE_KIND[P.kind] + (P.lit ? 8 : 0)); }
+    const b = j * 4; idx.push(b, b + 1, b + 2, b, b + 2, b + 3); });
+  const g = new THREE.BufferGeometry(), A = (n, a, k) => g.setAttribute(n, new THREE.Float32BufferAttribute(a, k));
+  A('position', pos, 3); A('aQ', q, 2); A('aHalf', half, 2); A('aU', au, 3); A('aV', av, 3); A('aN', an, 3); A('aC', ac, 3); A('aKind', kind, 1); g.setIndex(idx);
+  const mat = new THREE.ShaderMaterial({ uniforms: { ...uniforms, uRoomK: U.roomK, uFrameK: U.frameK, uLive: live }, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+    vertexShader: `attribute vec2 aQ; attribute vec2 aHalf; attribute vec3 aU; attribute vec3 aV; attribute vec3 aN; attribute vec3 aC; attribute float aKind;
+      varying vec3 vObj; varying vec3 vCamObj; varying vec2 vQ; varying vec2 vHalf; varying vec3 vU; varying vec3 vV; varying vec3 vN; varying vec3 vC; varying float vKind;
+      void main(){ vObj = position; vCamObj = (inverse(modelMatrix)*vec4(cameraPosition, 1.0)).xyz; vQ = aQ; vHalf = aHalf; vU = aU; vV = aV; vN = aN; vC = aC; vKind = aKind;
+        gl_Position = projectionMatrix*modelViewMatrix*vec4(position, 1.0); }`,
+    fragmentShader: head + paneGLSL(GL) + `
+      void main(){ ${main} }` });
+  const m = new THREE.Mesh(g, mat); m.userData.panes = true; return m; }
+return { tex, geometry, maps, looks, fixtures, blink, panes };
+};
+</script>
+<!-- /INLINE -->
 <!-- INLINE docs/mockups/lib/ship-rooms.js -->
 <script data-src="docs/mockups/lib/ship-rooms.js">
 // Fleet Command mockups: the room behind a window, drawn by interior mapping, shared by every faction's ship page (CLAUDE.md
@@ -1491,6 +1631,130 @@ return { NO_SEEDS, fracture, cutFace, addCap, dedupe, ellipse, addEmitter, wreck
 };
 </script>
 <!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/hull-grow.js -->
+<script data-src="docs/mockups/lib/hull-grow.js">
+// Fleet Command mockups: the grown hull (Ship Design Bible chapter 14, F1-F5). One implementation (CLAUDE.md section 6.1)
+// of how a ship's skin is grown as one structure, shared by every ship page that grows its hulls:
+// docs/mockups/ssarith-ship-concepts.html (the Ssarith Hunt, mockup 12, which wrote it first, version 12) and
+// docs/mockups/kelvane-ship-concepts.html (the Kelvane Institute, mockup 23). A faction gives it its own cross-section
+// layout; nothing here is any faction's shape. Edit it here, then re-run tools/mockups/inline_data.py on each page that
+// inlines it.
+//
+// FCHullGrow(THREE) returns { V2, seg, cutLine, at3, Skin, creasedNormals }.
+//
+// A hull is one closed skin. Its body is lofted through cross-sections of one fixed layout (a function from a station's
+// parameters to a closed ring of points, counter-clockwise seen from the bow, the same count at every station), so any
+// two stations loft point to point. Every prong, lance, hood point or rail grows out of the body: the body's last section
+// is split along cut lines into regions (seg picks a run of the section's own points, cutLine the straight line across
+// that closes it), and each region lofts on as its own branch, its section a piece of the body's own. Neighbouring
+// branches share their cut line where they split, so the skin never opens and never overlaps. Two branches that loft on
+// unscaled to the same station and meet along their cut line again can be closed by a new body from that station
+// (body(..., { stern: 'open' })): the skin then runs round an opening through the ship. Light strips and dark glass
+// are faces of the skin given another material, the drive a recess cut into the stern. No box, cylinder or plate is placed.
+window.FCHullGrow = function FCHullGrow(THREE) {
+'use strict';
+const V2 = (x, y) => new THREE.Vector2(x, y);
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+/** The run of section points from index i round to index j (counter-clockwise, wrapping), both included. */
+const seg = (S, i, j) => { const o = []; for (let k = i; ; k = (k + 1) % S.length) { o.push(S[k]); if (k === j) break; } return o; };
+/** m points evenly spaced on the straight line from a to b, ends excluded: the cut that closes a region. */
+const cutLine = (a, b, m) => Array.from({ length: m }, (_, i) => a.clone().lerp(b, (i + 1) / (m + 1)));
+/** A 2D ring placed at station z (metres along the ship, +z the bow). */
+const at3 = (R, z) => R.map((q) => V3(q.x, q.y, z));
+const centroid = (R) => R.reduce((a, q) => a.add(q), V2(0, 0)).multiplyScalar(1 / R.length);
+
+// Normals shared across a vertex only by faces within `deg` of each other: a smooth skin that keeps its hard edges (a
+// cap's rim, a recess's lip). pts: a triangle list (Vector3s, three a face); returns a normal for each. Positions are
+// matched to 0.1 mm, so a branch and the body it grows from share normals along the seam.
+function creasedNormals(pts, deg) {
+  const n = pts.length, cos = Math.cos(deg * Math.PI / 180), fn = [], key = [], at = new Map();
+  for (let f = 0; f < n / 3; f++) { const [a, b, c] = [pts[3 * f], pts[3 * f + 1], pts[3 * f + 2]]; const v = V3().subVectors(b, a).cross(V3().subVectors(c, a)); fn.push([v, v.clone().normalize()]); }
+  for (let v = 0; v < n; v++) { const q = pts[v], k = `${Math.round(q.x * 1e4)},${Math.round(q.y * 1e4)},${Math.round(q.z * 1e4)}`; key.push(k);
+    if (!at.has(k)) at.set(k, []); at.get(k).push(v); }
+  const out = new Float32Array(n * 3), s = V3();
+  for (let v = 0; v < n; v++) { const me = fn[Math.floor(v / 3)][1]; s.set(0, 0, 0);
+    for (const w of at.get(key[v])) { const [o, on] = fn[Math.floor(w / 3)]; if (on.dot(me) >= cos) s.add(o); } // area weighted
+    if (s.lengthSq() < 1e-12) s.copy(me); s.normalize(); out[3 * v] = s.x; out[3 * v + 1] = s.y; out[3 * v + 2] = s.z; }
+  return out;
+}
+
+class Skin {
+  /**
+   * g: the group the skin's meshes go into. mats: a material for each kind of face ({ hull, glow, dark } and any other
+   * kind a glow selector names, such as a faction's dark glass). sec: the faction's section layout, params to a ring.
+   * crease: when set, normals are shared across faces within that many degrees (a smooth skin); else every face is flat.
+   * fanCaps: close a ring with a fan from its centre whenever the ring is star-shaped about it, so every point of the ring,
+   * the straight cut line's included, is a corner of the cap and the cap meets its bands edge to edge (the triangulator
+   * otherwise drops points that lie on a straight line, leaving the skin open there).
+   */
+  constructor(g, { mats, sec, crease = 0, fanCaps = false } = {}) { this.g = g; this.mats = mats; this.sec = sec; this.crease = crease; this.fanCaps = fanCaps; }
+  part(name) { const t = {}; this.cur = t; (this.parts ||= []).push([name, t]); return this; }
+  tri(kind, a, b, c, hint) { const n = V3().subVectors(b, a).cross(V3().subVectors(c, a)); if (n.lengthSq() < 1e-10) return;
+    const t = (this.cur[kind] ||= []); if (n.dot(hint) < 0) t.push(a, c, b); else t.push(a, b, c); }
+  /**
+   * A band of quads between two rings of the same layout. glow(k) picks what edge k (point k to k + 1) is: true for a
+   * light strip, a kind's name for a face of that kind (outward, like the hull), anything else for `kind`. 'dark' faces
+   * the other way: a recess's walls.
+   */
+  band(A, B, glow = () => false, kind = 'hull') { const n = A.length;
+    for (let k = 0; k < n; k++) { const a = A[k], b = A[(k + 1) % n], c = B[(k + 1) % n], d = B[k];
+      const e = V3().subVectors(b, a).lengthSq() > 1e-8 ? V3().subVectors(b, a) : V3().subVectors(c, d);
+      const hint = V3(e.y, -e.x, 0).multiplyScalar(kind === 'dark' ? -1 : 1), s = glow(k), kd = s === true ? 'glow' : (typeof s === 'string' ? s : kind);
+      this.tri(kd, a, b, c, hint); this.tri(kd, a, c, d, hint); } }
+  /** A flat ring between two rings at one station (the stern's frame round its drive). */
+  frame(A, B, dz, kind = 'hull') { const n = A.length, h = V3(0, 0, dz);
+    for (let k = 0; k < n; k++) { this.tri(kind, A[k], A[(k + 1) % n], B[(k + 1) % n], h); this.tri(kind, A[k], B[(k + 1) % n], B[k], h); } }
+  /** A flat face closing a ring; dz says which way along the ship it faces. */
+  cap(R, dz, kind = 'hull') { const h = V3(0, 0, dz);
+    if (this.fanCaps) { const c = R.reduce((a, q) => a.add(q), V3()).multiplyScalar(1 / R.length), n = R.length; let sg = 0, ok = true;
+      for (let i = 0; i < n && ok; i++) { const a = R[i], b = R[(i + 1) % n], ar = (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
+        if (Math.abs(ar) < 1e-9) continue; if (!sg) sg = Math.sign(ar); else if (Math.sign(ar) !== sg) ok = false; }
+      if (ok) { for (let i = 0; i < n; i++) this.tri(kind, c, R[i], R[(i + 1) % n], h); return; } }
+    const f = THREE.ShapeUtils.triangulateShape(R.map((q) => V2(q.x, q.y)), []);
+    for (const [i, j, k] of f) this.tri(kind, R[i], R[j], R[k], h); }
+  /** A drive recessed into a ring at station z, facing dz: a frame in to 0.72 of the ring, walls 1.6 m deep, a lit back. */
+  drive(R2, z, dz) { const c0 = centroid(R2), inset = R2.map((q) => c0.clone().add(q.clone().sub(c0).multiplyScalar(0.72)));
+    this.frame(at3(R2, z), at3(inset, z), dz); this.band(at3(inset, z), at3(inset, z - dz * 1.6), () => false, 'dark'); this.cap(at3(inset, z - dz * 1.6), dz, 'glow'); }
+  /**
+   * The body: stations [z, section params] from the stern forward; returns the last section. sec: the layout (the skin's
+   * own unless given). stern: 'drive' (the drive recessed into it), 'cap' (closed flat), 'open' (left open, where the
+   * body closes branches that met again). The first section is kept as this.first, for branches reaching aft.
+   */
+  body(stations, glow = () => false, sec = this.sec, { stern = 'drive', name = 'body' } = {}) { this.part(name);
+    const rings = stations.map(([z, p]) => at3(sec(p), z)), S0 = sec(stations[0][1]), z0 = stations[0][0];
+    if (stern === 'drive') this.drive(S0, z0, -1); else if (stern === 'cap') this.cap(rings[0], -1);
+    for (let i = 0; i + 1 < rings.length; i++) { const zm = (stations[i][0] + stations[i + 1][0]) / 2; this.band(rings[i], rings[i + 1], (k) => glow(k, zm)); }
+    this.first = S0; return sec(stations[stations.length - 1][1]); }
+  /**
+   * A branch: a region of a split section lofted through [dz, sx, sy, dx, dy] (scaled about the region's centroid, or
+   * about an anchor given as a fraction of its bounds, then moved), from station z; a branch with one station is only its
+   * end. end: 'cap' (closed flat), 'drive' (a drive recessed into it, for a branch reaching aft), 'open' (left open, to be
+   * closed by a body). capKind: what the end cap is made of (hull unless given, such as a faction's glass). glow(k, dz) as
+   * for band. The end ring is kept as this.end.
+   */
+  branch(name, R, z, steps, { glow = () => false, anchor = null, end = 'cap', capKind = 'hull' } = {}) { this.part(name);
+    let c = centroid(R);
+    if (anchor) { const b = new THREE.Box2().setFromPoints(R); c = V2(b.min.x + (b.max.x - b.min.x) * anchor[0], b.min.y + (b.max.y - b.min.y) * anchor[1]); }
+    const flat = steps.map(([, sx, sy, dx, dy]) => R.map((q) => V2(c.x + (q.x - c.x) * sx + dx, c.y + (q.y - c.y) * sy + dy)));
+    const rings = flat.map((F, i) => at3(F, z + steps[i][0]));
+    for (let i = 0; i + 1 < rings.length; i++) { const dm = (steps[i][0] + steps[i + 1][0]) / 2; this.band(rings[i], rings[i + 1], (k) => glow(k, dm)); }
+    const last = rings[rings.length - 1], zl = z + steps[steps.length - 1][0], dir = Math.sign(steps[steps.length - 1][0] - (steps.length > 1 ? steps[steps.length - 2][0] : -1)) || 1;
+    if (end === 'cap') this.cap(last, dir, capKind); else if (end === 'drive') this.drive(flat[flat.length - 1], zl, dir);
+    this.end = last; return this; }
+  /** Builds a mesh for every part and kind of face, named for its part, into the group. With a crease, the normals are
+   *  worked out over the whole skin at once, so they run smoothly across every seam between parts and kinds. */
+  done() { const chunks = [];
+    for (const [name, t] of this.parts) for (const kind of ['hull', 'glow', 'dark', ...Object.keys(t).filter((k) => !['hull', 'glow', 'dark'].includes(k))]) {
+      const pts = t[kind]; if (pts && pts.length && this.mats[kind]) chunks.push([name, kind, pts]); }
+    const all = this.crease ? creasedNormals(chunks.flatMap((c) => c[2]), this.crease) : null; let o = 0;
+    for (const [name, kind, pts] of chunks) { const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      if (all) { geo.setAttribute('normal', new THREE.BufferAttribute(all.slice(o * 3, (o + pts.length) * 3), 3)); o += pts.length; } else geo.computeVertexNormals();
+      const m = new THREE.Mesh(geo, this.mats[kind]); m.name = name; this.g.add(m); } }
+}
+return { V2, seg, cutLine, at3, Skin, creasedNormals };
+};
+</script>
+<!-- /INLINE -->
 <script>
 (function () {
 'use strict';
@@ -1531,7 +1795,7 @@ function add(g, geo, m, x = 0, y = 0, z = 0) { const k = new THREE.Mesh(geo, m);
 // last section is split along cut lines into regions, and each region lofts on forward as its own branch, its section a
 // piece of the body's own. Neighbouring branches share their cut line where they split, so the skin never opens and never
 // overlaps. Light strips are faces of the skin, the drive a recess cut into the stern. No box, cylinder or plate is placed.
-const V2 = (x, y) => new THREE.Vector2(x, y);
+const HG = window.FCHullGrow(THREE), { V2, seg, cutLine, at3 } = HG; // the grown skin, shared (docs/mockups/lib/hull-grow.js)
 // The cross-section, 18 points counter-clockwise from the keel's bottom centre (0) round the port side (+x) to the crown (9)
 // and back down the starboard side; point i and point 18 - i are mirrors. 1 keel corner, 2 keel root, 3 bottom chine,
 // 4 lower side, 5 side chine, 6 hood root, 7 hood edge, 8 hood top. Every station of a ship uses the same layout, so any
@@ -1554,45 +1818,8 @@ function msec(p) {
   const { hb, top, bot, ch = 2, kd = 0, kw = 1, sw2, sy = 0, st = 2 } = p;
   const half = [[kw, bot - kd], [hb - ch, bot], [hb, bot + ch], [hb, sy - st / 2 - 0.8], [hb + sw2, sy - st / 2], [hb + sw2 + 0.6, sy], [hb + sw2, sy + st / 2], [hb, sy + st / 2 + 0.8], [hb, top - ch], [hb - ch, top]];
   return [V2(0, bot - kd), ...half.map(([x, y]) => V2(x, y)), V2(0, top), ...half.reverse().map(([x, y]) => V2(-x, y))]; }
-const seg = (S, i, j) => { const o = []; for (let k = i; ; k = (k + 1) % S.length) { o.push(S[k]); if (k === j) break; } return o; };
-const cutLine = (a, b, m) => Array.from({ length: m }, (_, i) => a.clone().lerp(b, (i + 1) / (m + 1)));
-const at3 = (R, z) => R.map((q) => V3(q.x, q.y, z));
-class Skin {
-  constructor(g) { this.g = g; }
-  part(name) { const t = { hull: [], glow: [], dark: [] }; this.cur = t; (this.parts ||= []).push([name, t]); return this; }
-  tri(kind, a, b, c, hint) { const n = V3().subVectors(b, a).cross(V3().subVectors(c, a)); if (n.lengthSq() < 1e-10) return;
-    if (n.dot(hint) < 0) this.cur[kind].push(a, c, b); else this.cur[kind].push(a, b, c); }
-  // a band of quads between two rings of the same layout; glow(k) picks the edges that are light strips, dark the recess
-  band(A, B, glow = () => false, kind = 'hull') { const n = A.length;
-    for (let k = 0; k < n; k++) { const a = A[k], b = A[(k + 1) % n], c = B[(k + 1) % n], d = B[k];
-      const e = V3().subVectors(b, a).lengthSq() > 1e-8 ? V3().subVectors(b, a) : V3().subVectors(c, d);
-      const hint = V3(e.y, -e.x, 0).multiplyScalar(kind === 'dark' ? -1 : 1), kd = glow(k) ? 'glow' : kind;
-      this.tri(kd, a, b, c, hint); this.tri(kd, a, c, d, hint); } }
-  // a flat ring between two rings at one station (the stern's frame round its drive)
-  frame(A, B, dz, kind = 'hull') { const n = A.length, h = V3(0, 0, dz);
-    for (let k = 0; k < n; k++) { this.tri(kind, A[k], A[(k + 1) % n], B[(k + 1) % n], h); this.tri(kind, A[k], B[(k + 1) % n], B[k], h); } }
-  cap(R, dz, kind = 'hull') { const f = THREE.ShapeUtils.triangulateShape(R.map((q) => V2(q.x, q.y)), []), h = V3(0, 0, dz);
-    for (const [i, j, k] of f) this.tri(kind, R[i], R[j], R[k], h); }
-  // the body: stations [z, hsec params] from the stern forward; the drive recessed into the stern; returns the last section
-  // (sec: the section layout, hsec unless a ship has its own: underHood turns it over, msec puts the shell mid-height)
-  body(stations, glow = () => false, sec = hsec) { this.part('body');
-    const rings = stations.map(([z, p]) => at3(sec(p), z));
-    const S0 = sec(stations[0][1]), c0 = S0.reduce((a, q) => a.add(q), V2(0, 0)).multiplyScalar(1 / S0.length), z0 = stations[0][0];
-    const inset = S0.map((q) => c0.clone().add(q.clone().sub(c0).multiplyScalar(0.72)));
-    this.frame(rings[0], at3(inset, z0), -1); this.band(at3(inset, z0), at3(inset, z0 + 1.6), () => false, 'dark'); this.cap(at3(inset, z0 + 1.6), -1, 'glow');
-    for (let i = 0; i + 1 < rings.length; i++) { const zm = (stations[i][0] + stations[i + 1][0]) / 2; this.band(rings[i], rings[i + 1], (k) => glow(k, zm)); }
-    return sec(stations[stations.length - 1][1]); }
-  // a branch: a region of the split section lofted forward through [dz, sx, sy, dx, dy] (scaled about the region's centroid,
-  // or about an anchor given as a fraction of its bounds), ending in a cap; a branch with one station is only its cap
-  branch(name, R, z, steps, { glow = () => false, anchor = null } = {}) { this.part(name);
-    let c = R.reduce((a, q) => a.add(q), V2(0, 0)).multiplyScalar(1 / R.length);
-    if (anchor) { const b = new THREE.Box2().setFromPoints(R); c = V2(b.min.x + (b.max.x - b.min.x) * anchor[0], b.min.y + (b.max.y - b.min.y) * anchor[1]); }
-    const rings = steps.map(([dz, sx, sy, dx, dy]) => at3(R.map((q) => V2(c.x + (q.x - c.x) * sx + dx, c.y + (q.y - c.y) * sy + dy)), z + dz));
-    for (let i = 0; i + 1 < rings.length; i++) this.band(rings[i], rings[i + 1], glow);
-    this.cap(rings[rings.length - 1], 1); return this; }
-  done() { for (const [name, t] of this.parts) for (const [kind, m] of [['hull', M.a], ['glow', M.glow], ['dark', M.c]]) if (t[kind].length) {
-    const geo = new THREE.BufferGeometry().setFromPoints(t[kind]); geo.computeVertexNormals(); add(this.g, geo, m).name = name; } }
-}
+// The Hunt's skin: its section layout (hsec, unless a ship passes its own to body) and its clay; flat faces.
+class Skin extends HG.Skin { constructor(g) { super(g, { mats: { hull: M.a, glow: M.glow, dark: M.c }, sec: hsec }); } }
 const KEEL = (k) => k === 17 || k === 0;   // the keel's flat bottom, a light strip down the body's keel
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1728,71 +1955,20 @@ const U = { lightK: { value: 0.3 }, selfP: { value: 0.55 }, none: { value: 0.0 }
 // hangars behind bays (owner, 2026-11-05: "we need to show interior of ships with windows"), ship-fx.js for battle damage
 // (owner: "we need damage systems"): holes into the decks, scorch, embers, fire, smoke and sparks, phasers and torpedoes.
 const SK = window.FCShipSkin(THREE), ROOMS = window.FCShipRooms;
+const BSP = window.FCBakedShip(THREE);   // the shared baked-ship viewer: its panes (the rest of this page keeps its own copy, task 3.4)
 let fxSeed = 977; const fxRng = () => { fxSeed = (fxSeed * 16807) % 2147483647; return (fxSeed - 1) / 2147483646; };
 // The hull shader for both looks: the baked hull lights (diffuse x light^gamma x k) and the paint's own light, and the
 // shared damage rules. The windows and bays are not in it: each is its own quad (paneMesh, below).
 const HULL_GLSL = `
 uniform sampler2D uHullLight; uniform float uLightK; uniform float uSelf;`;
-// The panes: every window and bay is a quad of its own, laid on the hull at the place the bake cut for it
-// (tools/blender/hull_detail.py pane_box writes each one's centre, axes and size), so its frame is exact at any distance
-// (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the border clean"). The quad
-// is the pane plus its frame: a bevelled rim of the hull's dark metal, lit from above, with a fine lit line round the
-// glass; behind the glass, the room (roomBehind) or the hangar (hangarBehind) from docs/mockups/lib/ship-rooms.js.
-const PANE_KIND = { quarters: 0, mess: 1, workshop: 2, hold: 3, bay: 4 };
-const PANE_GLSL = `
-uniform float uRoomK; uniform float uFrameK; uniform float uLive;
-${SK.GLSL.hash}
-${SK.GLSL.box}
-${ROOMS.GLSL}
-varying vec2 vQ; varying vec2 vHalf; varying vec3 vU; varying vec3 vV; varying vec3 vN; varying vec3 vC; varying float vKind;   // vObj, vCamObj: declared by DAMAGE_GLSL
-vec3 paneColour(){
-  vec3 eu = normalize(vU), ev = normalize(vV), en = normalize(vN), V = normalize(vObj - vCamObj);
-  float kk = floor(vKind + 0.5); bool lit = kk >= 8.0; int k = int(lit ? kk - 8.0 : kk);   // rounded: an interpolated 8.0 can read 7.9999
-  vec2 hs = vHalf, d2 = vQ - clamp(vQ, -hs, hs); float out_ = length(d2);
-  vec3 L = !lit ? vec3(0.015, 0.018, 0.016) : k == 2 ? vec3(0.42, 0.95, 0.5) : k == 3 ? vec3(0.38, 0.45, 0.5) : vec3(0.78, 0.95, 0.74);
-  if (out_ > 0.0) {   // the frame: a bevel rising from the glass, lit from above, a dark seam where it meets the hull
-    vec2 dir = d2 / out_; vec3 nf = normalize(en*0.75 + (eu*dir.x + ev*dir.y)*0.65);
-    float key = max(dot(nf, normalize(vec3(-0.25, 1.0, 0.35))), 0.0);
-    vec3 col = vec3(0.105, 0.11, 0.095)*(0.35 + 0.9*key);
-    return col*uFrameK;   // dark metal, no glow of its own (owner, 2026-11-06: "window borders should also not glow")
-  }
-  // The room or hangar stands level with the decks whatever the face's angle (owner, 2026-11-05: "Need to account for
-  // normal angles on windows, and the hangar bay too"): up is the ship's up, in is the face's normal turned level, and the
-  // pane cuts the room's front at a slant, its nearest corner on the room's front wall. The hangar stays painted, not
-  // geometry, for its parallax (owner: "I actually like the paralax so I'd keep it").
-  vec3 rv = vec3(0.0, 1.0, 0.0), ri = vec3(-en.x, 0.0, -en.z), ru, rn; float hl = length(ri);
-  if (hl < 0.3) { ru = eu; rv = ev; rn = -en; } else { rn = ri/hl; ru = normalize(cross(rv, rn)); }
-  vec3 Pp = eu*vQ.x + ev*vQ.y; float zext = abs(dot(eu, rn))*hs.x + abs(dot(ev, rn))*hs.y;
-  vec3 D = normalize(vec3(dot(V, ru), dot(V, rv), dot(V, rn)) + vec3(1e-4)); if (D.z <= 0.0) D.z = 1e-3;
-  vec3 q = vec3(dot(Pp, ru), dot(Pp, rv), dot(Pp, rn) + zext);
-  vec2 mouth = 2.0*vec2(abs(dot(eu, ru))*hs.x + abs(dot(ev, ru))*hs.y, abs(dot(eu, rv))*hs.x + abs(dot(ev, rv))*hs.y);  // the mouth, level
-  vec3 room = k == 4 ? hangarBehind(q, D, floor(vC*0.3), mouth, lit ? vec3(0.75, 0.8, 0.7) : L)
-                     : roomBehind(q, D, floor(vC*0.6), k == 1 ? 1 : k == 2 ? 2 : k == 3 ? 1 : 0, L);
-  float fres = pow(1.0 - clamp(-dot(V, en), 0.0, 1.0), 4.0);             // the glass: a faint sky in it at a glancing look
-  return room*uRoomK*uLive*(1.0 - 0.5*fres) + vec3(0.05, 0.07, 0.06)*fres*uFrameK;
-}`;
-// One mesh of quads for a ship's panes; dmgU: the ship's damage uniforms, so a hole or a burn takes its panes with it.
-function paneMesh(panes, dmgU, live) {
-  const pos = [], q = [], half = [], au = [], av = [], an = [], ac = [], kind = [], idx = [];
-  panes.forEach((P, j) => { const f = P.frame_m, hw = P.w_m / 2, hh = P.h_m / 2;
-    const C = V3(...P.c).addScaledVector(V3(...P.n), 0.05), U_ = V3(...P.u), V_ = V3(...P.v);
-    for (const [x, y] of [[-hw - f, -hh - f], [hw + f, -hh - f], [hw + f, hh + f], [-hw - f, hh + f]]) {
-      const p = C.clone().addScaledVector(U_, x).addScaledVector(V_, y); pos.push(p.x, p.y, p.z); q.push(x, y); half.push(hw, hh);
-      au.push(...P.u); av.push(...P.v); an.push(...P.n); ac.push(...P.c); kind.push(PANE_KIND[P.kind] + (P.lit ? 8 : 0)); }
-    const b = j * 4; idx.push(b, b + 1, b + 2, b, b + 2, b + 3); });
-  const g = new THREE.BufferGeometry(), A = (n, a, k) => g.setAttribute(n, new THREE.Float32BufferAttribute(a, k));
-  A('position', pos, 3); A('aQ', q, 2); A('aHalf', half, 2); A('aU', au, 3); A('aV', av, 3); A('aN', an, 3); A('aC', ac, 3); A('aKind', kind, 1); g.setIndex(idx);
-  const mat = new THREE.ShaderMaterial({ uniforms: { ...dmgU, uRoomK: U.roomK, uFrameK: U.frameK, uLive: live }, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
-    vertexShader: `attribute vec2 aQ; attribute vec2 aHalf; attribute vec3 aU; attribute vec3 aV; attribute vec3 aN; attribute vec3 aC; attribute float aKind;
-      varying vec3 vObj; varying vec3 vCamObj; varying vec2 vQ; varying vec2 vHalf; varying vec3 vU; varying vec3 vV; varying vec3 vN; varying vec3 vC; varying float vKind;
-      void main(){ vObj = position; vCamObj = (inverse(modelMatrix)*vec4(cameraPosition, 1.0)).xyz; vQ = aQ; vHalf = aHalf; vU = aU; vV = aV; vN = aN; vC = aC; vKind = aKind;
-        gl_Position = projectionMatrix*modelViewMatrix*vec4(position, 1.0); }`,
-    fragmentShader: SFX.DAMAGE_GLSL + PANE_GLSL + `
-      void main(){ float dChar = 0.0, dEmber = 0.0; int holeIdx = -1; float nz = dfbm(vObj*0.45), nz2 = dfbm(vObj*0.9 + 7.0);
+// The panes: every window and bay a quad of its own, drawn by docs/mockups/lib/baked-ship.js (BSP.panes), with the
+// page's damage in its fragment so a hole or a burn takes its panes with it.
+const PANE_MAIN = `float dChar = 0.0, dEmber = 0.0; int holeIdx = -1; float nz = dfbm(vObj*0.45), nz2 = dfbm(vObj*0.9 + 7.0);
         dmgHoles(vObj, nz, dChar, dEmber, holeIdx); dmgScorch(vObj, nz2, dChar, dEmber);
         if (holeIdx >= 0 || dChar > 0.5) discard;
-        gl_FragColor = vec4(paneColour()*(1.0 - smoothstep(0.0, 0.5, dChar)), 1.0); }` });
-  const m = new THREE.Mesh(g, mat); m.userData.panes = true; return m; }
+        gl_FragColor = vec4(paneColour()*(1.0 - smoothstep(0.0, 0.5, dChar)), 1.0);`;
+function paneMesh(panes, dmgU, live) {
+  return BSP.panes(panes, U, live, { hash: SK.GLSL.hash, box: SK.GLSL.box, rooms: ROOMS.GLSL }, { uniforms: dmgU, head: SFX.DAMAGE_GLSL, main: PANE_MAIN }); }
 function hullShader(mat, lightTex, gamma, self, key, dmgU, brkU) {
   mat.onBeforeCompile = (s2) => { Object.assign(s2.uniforms, dmgU, brkU, { uHullLight: { value: lightTex }, uLightK: U.lightK, uSelf: self });
     s2.vertexShader = s2.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vObj; varying vec3 vCamObj;')

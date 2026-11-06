@@ -42,6 +42,7 @@ account and every link here is updated.
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
+| 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | Drafted (2026-11-06, v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -1010,3 +1011,61 @@ that stays where it is left. A candidate backdrop for the main menu.
 
 - Change: `openspec/changes/space-flythrough`. Shots: `docs/screenshots/mockups/space-flythrough/`.
 - Stage: Drafted (2026-11-05, v1).
+
+## 23. Kelvane Institute ships
+
+Owner, 2026-11-06: "begin designs on the institute ships".
+
+- **Breadth first.** As the Ssarith Hunt's ships went well once they went broad (mockup 12, version 9), the Institute
+  starts with a board to pick from: twelve frigate-sized blockouts, 104-122 m, beside the Concord Petrel's 88 m.
+- **Traditions, drafted.** The Institute's culture is one line ("truth is measured, never assumed"), so five traditions
+  inside it are drafted for the owner to pick, change or reject (Ship Design Bible C4), none from the Kelvane's bodies:
+  - the Calibrators, the Open Notebook and the Long Baseline (the three drafted for the emblem);
+  - the Field Stations and the Collider Halls (new: long voyages and a weapon).
+- **The blockouts.** Case, Stepped deck, Runners; Twin hulls, Slotted; Waisted baseline, Spread arms, Long spar; Gallery
+  bow, Terraces; Loop, Through-beam.
+- **How they are grown.** Each is one closed grown structure (chapter 14) on the shared `docs/mockups/lib/hull-grow.js`,
+  lifted from the Hunt page, whose ships are unchanged. The Institute has its own section layout: a rounded case after the
+  console's rolled plates.
+- **The look.** Champagne, dark glass and amber from the console, or plain clay.
+- **Change:** `openspec/changes/kelvane-ship-concepts`.
+- **Shots:** `docs/screenshots/mockups/kelvane-ship-concepts/`.
+- **The loop family** (version 3). Owner, 2026-11-06: "l1 loop looks cool, can you make me some more variations of ships
+  with loops? horizontal, vertical, both?". Seven more, 13 to 19, beside the Loop:
+  - horizontal: Long loop, Twin loops, Wide ring;
+  - vertical: Tall loop, Keel loop;
+  - both: Crossed loops, Quartered loop.
+
+  Each is the hull parting round an opening and closing again, its inner walls lit as the beamline. A Loop family switch
+  shows them alone (design D7).
+- **The line** (version 4). The owner, 2026-11-06: "12,11,18.19,17 all really good shapes, start detailing these, use more
+  complex ones for larger captial ships like destroyer, cruiser, batlecruiser and carrier, we might want to theme them after
+  advanced science and research vessels, this faction will specialize in scientific missions". The picks, simplest to most
+  complex, are the classes, each a research vessel, its accelerator its main instrument and its lance:
+  - the Parallax-class survey frigate (5 Slotted, 126 m; the owner: "12 is no go use 5");
+  - the Candour-class beamline destroyer (11 Loop, 136 m);
+  - the Patience-class research cruiser (17 Keel loop, 166 m);
+  - the Rigour-class collider battlecruiser (18 Crossed loops, 196 m);
+  - the Curiosity-class probe carrier (19 Quartered loop, 214 m).
+
+  Each is grown again at its size: two identical instrument decks round a glazed slot, stepped instrument and laboratory
+  decks with glass along their risers, a collision hall, a hangar deck, a launch well. The four larger ships are the Collider
+  Halls', the frigate the Open Notebook's. The names are placeholders (survey I6).
+- **The first detail pass** (version 5). Each class is unwrapped and baked onto its own UVs from a modelled detail layer (the
+  ship-detailing skill):
+  - clean and sterile (the owner: "Mind the clean and sterile and almost scientific aesthetics. They would have decorated
+    their ships with smooth round pieces rather than industrial greebles"): calibrated grid seams in enamelled champagne,
+    pillowed edges, no greebles, trenches or slatted vents;
+  - smoked-glass sensor domes and smooth round pods sunk into the plating;
+  - amber jewel lamps, red livery bands, the KID logo;
+  - a measuring scale engraved down each flank;
+  - floods, position lights, beacons and strobes.
+
+  The bake tools take the faction as data (`--faction kelvane`; the Hunt's values unchanged). Look: Painted, PBR,
+  Champagne, Clay. Light: Studio, Night. Windows, rooms, bays, damage and breakup come next, as they did for the Hunt.
+- **v6** (owner, 2026-11-06: "we need greebles on the inside", "missing texture on the nose", "also where are windows to
+  give scale"): machinery on every face that looks across an opening, the outer hull still clean; a lit aperture's middle and
+  the frigate's glass nose an instrument's array of cells; rows of windows along every flank with rooms behind them, drawn by
+  the pane code now shared with the Hunt (`docs/mockups/lib/baked-ship.js`). Design D10.
+- **Stage:** Drafted (2026-11-06, v6).
+- **Questions:** survey I1-I4 (traditions, picks, palette, the first class).
