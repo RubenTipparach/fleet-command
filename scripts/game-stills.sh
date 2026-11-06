@@ -66,6 +66,8 @@ shot hunt-cruiser 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_cr
 shot hunt-carrier 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_carrier --target-view --zoom=0.5
 shot hunt-trident 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_trident --target-view --zoom=0.5
 shot hunt-range 1920x1080 --steps=300 --scenario=concord_range --target=t_hff2 --target-view --zoom=0.8
+shot hunt-carrier-bays 1920x1080 --steps=300 --scenario=concord_range --target=t_hcv --target-view --zoom=0.1
+shot hunt-trident-windows 1920x1080 --steps=300 --scenario=concord_range --target=t_hff4 --target-view --zoom=0.1
 shot hunt-battle-late 1920x1080 --steps=3600 --scenario=concord_hunt --target=hunt_cruiser --target-view --zoom=0.6
 shot krai-hunt 1920x1080 --steps=600 --scenario=krai_hunt --target=hunt_harpoon --target-view --zoom=0.5
 shot hunt-wrecks 1920x1080 --steps=2400 --scenario=concord_hunt_wrecks --target=hw_lance --target-view --zoom=0.7

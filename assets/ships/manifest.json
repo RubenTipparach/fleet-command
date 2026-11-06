@@ -1,5 +1,5 @@
 {
- "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 885281a1eda6; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 c911be74453a; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt page v24, sha256 9c8dfbcad288): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
+ "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 885281a1eda6; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 c911be74453a; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt page v26, sha256 777fdb60f75f): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
  "conventions": {
   "units": "metres",
   "up": "+Y",
@@ -141,8 +141,8 @@
   "ssarith": {
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 24,
-    "sha256": "9c8dfbcad288e0bd9bb9e8847a7ca2152f56141f8c69baae2f5b8dcb824f2f89"
+    "version": 26,
+    "sha256": "777fdb60f75f0a4beb67ccbb2f58e181f5574c855db8ceff8077b92c18d75af5"
    },
    "hull_shader": {
     "source": "docs/mockups/ssarith-ship-concepts.html: hullLooks(), hullShader() (HULL_GLSL); maps by tools/blender/painted_bake.py --ship",
@@ -25337,19 +25337,6 @@
      "light_baked_flood_10",
      "light_baked_flood_11",
      "light_baked_flood_12",
-     "light_baked_flood_13",
-     "light_baked_flood_14",
-     "light_baked_flood_15",
-     "light_baked_flood_16",
-     "light_baked_flood_17",
-     "light_baked_flood_18",
-     "light_baked_flood_19",
-     "light_baked_flood_20",
-     "light_baked_flood_21",
-     "light_baked_flood_22",
-     "light_baked_flood_23",
-     "light_baked_flood_24",
-     "light_baked_flood_25",
      "window_0",
      "window_1",
      "window_2",
@@ -26664,8 +26651,8 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 24,
-    "sha256": "9c8dfbcad288e0bd9bb9e8847a7ca2152f56141f8c69baae2f5b8dcb824f2f89"
+    "version": 26,
+    "sha256": "777fdb60f75f0a4beb67ccbb2f58e181f5574c855db8ceff8077b92c18d75af5"
    }
   },
   {
@@ -26715,19 +26702,6 @@
      "light_baked_flood_10",
      "light_baked_flood_11",
      "light_baked_flood_12",
-     "light_baked_flood_13",
-     "light_baked_flood_14",
-     "light_baked_flood_15",
-     "light_baked_flood_16",
-     "light_baked_flood_17",
-     "light_baked_flood_18",
-     "light_baked_flood_19",
-     "light_baked_flood_20",
-     "light_baked_flood_21",
-     "light_baked_flood_22",
-     "light_baked_flood_23",
-     "light_baked_flood_24",
-     "light_baked_flood_25",
      "window_0",
      "window_1",
      "window_2",
@@ -27880,8 +27854,8 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 24,
-    "sha256": "9c8dfbcad288e0bd9bb9e8847a7ca2152f56141f8c69baae2f5b8dcb824f2f89"
+    "version": 26,
+    "sha256": "777fdb60f75f0a4beb67ccbb2f58e181f5574c855db8ceff8077b92c18d75af5"
    }
   },
   {
@@ -27931,19 +27905,6 @@
      "light_baked_flood_10",
      "light_baked_flood_11",
      "light_baked_flood_12",
-     "light_baked_flood_13",
-     "light_baked_flood_14",
-     "light_baked_flood_15",
-     "light_baked_flood_16",
-     "light_baked_flood_17",
-     "light_baked_flood_18",
-     "light_baked_flood_19",
-     "light_baked_flood_20",
-     "light_baked_flood_21",
-     "light_baked_flood_22",
-     "light_baked_flood_23",
-     "light_baked_flood_24",
-     "light_baked_flood_25",
      "window_0",
      "window_1",
      "window_2",
@@ -29330,8 +29291,8 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 24,
-    "sha256": "9c8dfbcad288e0bd9bb9e8847a7ca2152f56141f8c69baae2f5b8dcb824f2f89"
+    "version": 26,
+    "sha256": "777fdb60f75f0a4beb67ccbb2f58e181f5574c855db8ceff8077b92c18d75af5"
    }
   },
   {
@@ -29383,20 +29344,6 @@
      "light_baked_flood_10",
      "light_baked_flood_11",
      "light_baked_flood_12",
-     "light_baked_flood_13",
-     "light_baked_flood_14",
-     "light_baked_flood_15",
-     "light_baked_flood_16",
-     "light_baked_flood_17",
-     "light_baked_flood_18",
-     "light_baked_flood_19",
-     "light_baked_flood_20",
-     "light_baked_flood_21",
-     "light_baked_flood_22",
-     "light_baked_flood_23",
-     "light_baked_flood_24",
-     "light_baked_flood_25",
-     "light_baked_flood_26",
      "window_0",
      "window_1",
      "window_2",
@@ -30855,8 +30802,8 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 24,
-    "sha256": "9c8dfbcad288e0bd9bb9e8847a7ca2152f56141f8c69baae2f5b8dcb824f2f89"
+    "version": 26,
+    "sha256": "777fdb60f75f0a4beb67ccbb2f58e181f5574c855db8ceff8077b92c18d75af5"
    }
   },
   {
@@ -30911,26 +30858,6 @@
      "light_baked_flood_12",
      "light_baked_flood_13",
      "light_baked_flood_14",
-     "light_baked_flood_15",
-     "light_baked_flood_16",
-     "light_baked_flood_17",
-     "light_baked_flood_18",
-     "light_baked_flood_19",
-     "light_baked_flood_20",
-     "light_baked_flood_21",
-     "light_baked_flood_22",
-     "light_baked_flood_23",
-     "light_baked_flood_24",
-     "light_baked_flood_25",
-     "light_baked_flood_26",
-     "light_baked_flood_27",
-     "light_baked_flood_28",
-     "light_baked_flood_29",
-     "light_baked_flood_30",
-     "light_baked_flood_31",
-     "light_baked_flood_32",
-     "light_baked_flood_33",
-     "light_baked_flood_34",
      "window_0",
      "window_1",
      "window_2",
@@ -33379,8 +33306,8 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 24,
-    "sha256": "9c8dfbcad288e0bd9bb9e8847a7ca2152f56141f8c69baae2f5b8dcb824f2f89"
+    "version": 26,
+    "sha256": "777fdb60f75f0a4beb67ccbb2f58e181f5574c855db8ceff8077b92c18d75af5"
    }
   },
   {
@@ -33438,34 +33365,6 @@
      "light_baked_flood_14",
      "light_baked_flood_15",
      "light_baked_flood_16",
-     "light_baked_flood_17",
-     "light_baked_flood_18",
-     "light_baked_flood_19",
-     "light_baked_flood_20",
-     "light_baked_flood_21",
-     "light_baked_flood_22",
-     "light_baked_flood_23",
-     "light_baked_flood_24",
-     "light_baked_flood_25",
-     "light_baked_flood_26",
-     "light_baked_flood_27",
-     "light_baked_flood_28",
-     "light_baked_flood_29",
-     "light_baked_flood_30",
-     "light_baked_flood_31",
-     "light_baked_flood_32",
-     "light_baked_flood_33",
-     "light_baked_flood_34",
-     "light_baked_flood_35",
-     "light_baked_flood_36",
-     "light_baked_flood_37",
-     "light_baked_flood_38",
-     "light_baked_flood_39",
-     "light_baked_flood_40",
-     "light_baked_flood_41",
-     "light_baked_flood_42",
-     "light_baked_flood_43",
-     "light_baked_flood_44",
      "bay_0",
      "bay_1",
      "bay_2",
@@ -36014,8 +35913,8 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 24,
-    "sha256": "9c8dfbcad288e0bd9bb9e8847a7ca2152f56141f8c69baae2f5b8dcb824f2f89"
+    "version": 26,
+    "sha256": "777fdb60f75f0a4beb67ccbb2f58e181f5574c855db8ceff8077b92c18d75af5"
    }
   }
  ]

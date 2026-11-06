@@ -28,6 +28,8 @@ PAIRS = [
     ("battle-console-kelvane", "battle", "kelvane-battle"), ("battle-console-kelvane", "power", "kelvane-power"),
     ("battle-console-kelvane", "ship_expanded", "kelvane-ship-expanded"), ("battle-console-kelvane", "weapons_expanded", "kelvane-weapons-expanded"),
     ("battle-console-kelvane", "menu", "kelvane-menu"),
+    # mockup 12, the Ssarith Hunt ships (its shots in a folder of their own): the carrier's bays and the windows' rooms
+    ("ssarith-ship-concepts", "bays_side", "hunt-carrier-bays"), ("ssarith-ship-concepts", "rooms", "hunt-trident-windows"),
 ]
 
 
@@ -36,6 +38,8 @@ def main(mock_dir: Path, game_dir: Path, out_dir: Path) -> None:
     font = ImageFont.truetype(str(Path(__file__).resolve().parents[2] / "assets/fonts/Antonio-VariableFont_wght.ttf"), 30)
     for page, mock, game in PAIRS:
         ma, gb = mock_dir / f"{page}-{mock}-desktop.png", game_dir / f"{game}.png"
+        if not ma.exists():   # a page whose shots sit in a folder named after it
+            ma = mock_dir / page / f"{page}-{mock}-desktop.png"
         if not ma.exists() or not gb.exists():
             print("skipped", game, "(missing", ma if not ma.exists() else gb, ")")
             continue

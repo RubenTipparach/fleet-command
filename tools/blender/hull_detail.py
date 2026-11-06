@@ -422,7 +422,9 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
             ll, nn, tw = R @ loc, R @ n, R @ toward
             spot(ll, nn, tangent_aim(nn, tw, F.get("tilt_deg", FL["tilt_deg"])), LAMP_RGB["flood"], F.get("power_w", FL["power_w"]), F.get("cone_deg", FL["cone_deg"]), FL["standoff_m"], "hull_flood")
     # rows of floods aimed forward along the flanks, the top and the belly, every step_m (owner, 2026-11-05: "we need some
-    # more lights pointed forward to paint more of the hull"); the defaults' rows, the ship's own keys over them
+    # more lights pointed forward to paint more of the hull"); one column down the top and one down the belly, on the
+    # centreline (owner, 2026-11-06: "only need 1 column of ligtts on top and bottom of huull"); the defaults' rows, the
+    # ship's own keys over them
     A = {**(defaults or {}).get("auto_floods", {}), **D.get("auto_floods", {})}
     if A.get("step_m"):
         body = [v for v in vs if v.z < A.get("to_z_m", zmax)]
@@ -436,7 +438,7 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
                 if not h:
                     continue
                 loc, n = h
-                for m in (False, True):
+                for m in ((False, True) if abs(loc.x) > 0.3 else (False,)):   # one on the centreline, a pair off it
                     R_ = Matrix.Diagonal((-1, 1, 1)) if m else Matrix.Identity(3)
                     spot(R_ @ loc, R_ @ n, tangent_aim(R_ @ n, Vector((0, 0, 1)), A.get("tilt_deg", FL["tilt_deg"])), LAMP_RGB["flood"],
                          A.get("power_w", FL["power_w"]), A.get("cone_deg", FL["cone_deg"]), FL["standoff_m"], "hull_flood")

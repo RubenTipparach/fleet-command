@@ -107,10 +107,10 @@ public sealed class ShipDamage
         {
             if (n is not MeshInstance3D mi || mi.Mesh == null) return;
             for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++)
-                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader))
+                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && (ShipSkin.IsHull(sm.Shader) || sm.Shader == ShipSkin.PaneShader))
                 {
                     if (!_mats.Contains(sm)) _mats.Add(sm);
-                    Sample(mi, i);
+                    if (ShipSkin.IsHull(sm.Shader)) Sample(mi, i);   // the windows and bays take the hull's damage, but shots land on the plating
                 }
         });
         _centre = _skin.Count > 0 ? _skin.Aggregate(Vector3.Zero, (a, s) => a + s.P) / _skin.Count : Vector3.Zero;
@@ -121,7 +121,7 @@ public sealed class ShipDamage
             if (Find(p.GetProperty("node").GetString()!) is { } node)
             {
                 var piece = new Piece { Node = node, Centre = V(p.GetProperty("center")) };
-                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader) && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
+                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && (ShipSkin.IsHull(sm.Shader) || sm.Shader == ShipSkin.PaneShader) && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
                 _parts.Add(new Part { P = piece, Def = p });
             }
     }
@@ -267,7 +267,8 @@ public sealed class ShipDamage
             pivot.AddChild(copy);
             var cell = new Piece { Node = pivot, Centre = centres.Length > i ? centres[i] : b.Seeds[i] };
             int ci = i;
-            // a hull surface keeps only this cell's skin; anything else (glows, windows, lamps) stays with the cell it is nearest
+            // a hull surface (and the Hunt's window and bay quads, pane.gdshader) keeps only this cell's skin; anything else
+            // (glows, windows, lamps) stays with the cell it is nearest
             Walk(copy, n =>
             {
                 if (n is MeshInstance3D mi && mi.Mesh != null)
@@ -443,9 +444,9 @@ public sealed class ShipDamage
             }
             foreach (ShaderMaterial m in p.Mats) { m.SetShaderParameter("cuts", cv); m.SetShaderParameter("cut_c", cc); m.SetShaderParameter("cut_count", cuts.Length); }
         }
-        // its lamps go out, and a baked hull's own lights with them (baked_hull.gdshader lit)
-        Walk(p.Node, n => { if (n is Light3D l) l.Visible = false; });
-        foreach (ShaderMaterial m in p.Mats) if (m.Shader == ShipSkin.BakedHullShader) m.SetShaderParameter("lit", 0f);
+        // its lamps (and their glows) go out, and a baked hull's own lights and its rooms with them (baked_hull.gdshader and pane.gdshader lit)
+        Walk(p.Node, n => { if (n is Light3D l) l.Visible = false; else if (n is MeshInstance3D g && g.Name == "glow") g.Visible = false; });
+        foreach (ShaderMaterial m in p.Mats) if (m.Shader == ShipSkin.BakedHullShader || m.Shader == ShipSkin.PaneShader) m.SetShaderParameter("lit", 0f);
     }
 
     // A broken piece burns: flames from its broken side for about 20 s.
