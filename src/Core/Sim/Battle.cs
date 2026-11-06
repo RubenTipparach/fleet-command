@@ -17,6 +17,9 @@ public sealed class Shot
 {
     public required string Kind { get; init; }
     public double X, Z, SX, SZ, TX, TZ;
+    /// <summary>Where it was at the start of the last step (NaN until it has flown one), so the view can draw it between
+    /// steps (Battle.DrawnAt).</summary>
+    public double PX = double.NaN, PZ = double.NaN;
     public string? To, From;
     public int Mount = -1;
     public Shot? At;
@@ -208,12 +211,20 @@ public sealed partial class Battle
     partial void ObjectivesStep(ref bool ended);
 
     /// <summary>One fixed step of the whole battle.</summary>
+    /// <summary>Where a shot is drawn a share <paramref name="a"/> (0 to 1) of the way through the step now playing: between
+    /// where it stood before the last step and where it stands now, so a fast shot glides at any frame rate rather than
+    /// jumping a step at a time (owner, 2026-11-06: "why does weapon appear jittery?"). View only; the rules read X and Z.</summary>
+    public static (double X, double Z) DrawnAt(Shot sh, double a) =>
+        double.IsNaN(sh.PX) ? (sh.X, sh.Z) : (sh.PX + (sh.X - sh.PX) * a, sh.PZ + (sh.Z - sh.PZ) * a);
+
     public void Step()
     {
         if (Over != null) return;
         double dt = Tuning.StepS;
         T += dt;
         Steps++;
+        // where everything stood before this step, for the view to draw between steps
+        foreach (Shot sh in _shots) { sh.PX = sh.X; sh.PZ = sh.Z; }
         foreach (Ship s in _ships) if (s.Alive) SystemsStep(s, dt);
         foreach (Ship s in _ships)
         {

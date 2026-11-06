@@ -234,7 +234,7 @@ public sealed partial class BattleView : Node3D
         _cam.LookAt(focus, Vector3.Up);
         _sky?.Follow(_cam.GlobalPosition);
         Project();
-        _shots.Sync(b);
+        _shots.Sync(b, _x.StepShare);
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every

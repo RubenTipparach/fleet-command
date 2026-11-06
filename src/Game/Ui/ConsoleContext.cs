@@ -27,6 +27,9 @@ public sealed partial class ConsoleState
     public bool SceneOpen;
     /// <summary>The battle is a campaign mission's: the mission strip shows its objectives, and there is no scene selector.</summary>
     public bool InMission;
+    /// <summary>The campaign map is the screen: its menu is the same sheet as the battle's, with Main menu in place of
+    /// Restart or Withdraw (owner, 2026-11-06: "menu button in campaign map should be the pause menu").</summary>
+    public bool OnMap;
 }
 
 public sealed class ConsoleContext
@@ -43,6 +46,9 @@ public sealed class ConsoleContext
     public required TipBoard Tips { get; init; }
     public required ConsoleState State { get; init; }
     public required GameActions Act { get; init; }
+    /// <summary>How far through the next fixed step the frame is drawn, 0 to 1 (Main's accumulator over the step): shots in
+    /// flight are drawn that share of the way from their last step's place (Battle.DrawnAt).</summary>
+    public double StepShare = 1;
     /// <summary>The battle being fought; replaced on a restart.</summary>
     public required Battle Battle { get; set; }
 

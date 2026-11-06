@@ -187,6 +187,8 @@ public sealed partial class GameFlow : Node
         // the battle as it ended, frozen, or the map for a mission done on arrival
         FlowScreen behind = s == FlowScreen.Debrief ? (Screen == FlowScreen.Battle ? FlowScreen.Battle : FlowScreen.Map) : s;
         Screen = s;
+        X.State.OnMap = s == FlowScreen.Map;
+        if (s != FlowScreen.Map && s != FlowScreen.Battle) X.State.MenuOpen = false;
         foreach (var (k, c) in _screens) c.Visible = k == s || (k == behind && k != FlowScreen.Battle);
         _strip.Visible = s == FlowScreen.Battle && Running != null && X.State.GoalsShown;
         _showBattle(behind == FlowScreen.Battle);

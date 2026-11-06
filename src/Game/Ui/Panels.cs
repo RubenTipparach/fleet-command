@@ -258,7 +258,7 @@ public sealed partial class BottomStrip : ConsolePanel
 }
 
 /// <summary>The in-battle menu: a sheet over everything that dims the console and takes all input while it is up
-/// (the mockup's uiSheet): resume, restart the battle, options, quit.</summary>
+/// (the mockup's uiSheet): resume, restart the battle (Withdraw in a mission, Main menu on the campaign map), options, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
     /// <summary>The sheet is over everything, never a panel in the column.</summary>
@@ -279,7 +279,9 @@ public sealed partial class MenuCard : ConsolePanel
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
         // in a campaign mission the menu holds Withdraw (owner, 2026-11-06: "withdraw button should be in main meny"), and a
         // mission's battle is not restarted
-        if (X.State.InMission)
+        if (X.State.OnMap)
+            Button("m.main", new Rect2(b.Position.X, y, bw, 44), "Main menu", X.Act.MainMenu, center: false, tip: new Tip("Saves the campaign"));
+        else if (X.State.InMission)
             Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), X.Battle.Over != null ? "Battle over" : "Withdraw",
                 X.Battle.Over != null ? null : () => { X.State.MenuOpen = false; X.Battle.Withdraw(); }, center: false, dis: X.Battle.Over != null,
                 tip: new Tip("Withdraw", new (string, string, Color?)[] { ("Ends", "the battle where it stands", null), ("Grade", "a draw, unless an objective says otherwise", null) }));

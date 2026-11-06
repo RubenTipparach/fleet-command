@@ -334,8 +334,9 @@ public sealed partial class DebriefScreen : FlowPanel
 {
     protected override void DrawPanel()
     {
-        // dimmed, not hidden: the battle (or the map) stays behind the debrief
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.5f));
+        // on black: the battle fades to black as it ends, so the debrief stays on the black it faded to (owner, 2026-11-06:
+        // "I think this background should be black. Because you faded to black")
+        DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black);
         Ui.Reg("db.block", new Rect2(Vector2.Zero, Size));
         Debrief? d = F.Last;
         if (d == null) return;

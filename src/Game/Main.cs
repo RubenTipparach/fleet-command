@@ -93,7 +93,10 @@ public sealed partial class Main : Node
         _menu = new MenuCard();
         _menu.Init(_x, Region.Station);
         _menu.Name = "Menu";
-        _root.AddChild(_menu);
+        // the menu sheet on its own layer over the game flow (layer 4), so the campaign map's Menu opens it too
+        var menuLayer = new CanvasLayer { Name = "MenuLayer", Layer = 10 };
+        AddChild(menuLayer);
+        menuLayer.AddChild(_menu);
         var tips = new TooltipLayer();
         tips.Init(_x);
         _root.AddChild(tips);
@@ -119,6 +122,7 @@ public sealed partial class Main : Node
             _flow = new GameFlow();
             AddChild(_flow);
             _flow.Init(_x, camp, Start, ShowBattle, UseSkin);
+            act.OnMainMenu = _flow.ToMenu;
             act.OnQuit = () => { if (_flow.Screen == FlowScreen.Battle) { _x.State.MenuOpen = false; _flow.ToMenu(); } else GetTree().Quit(); };
         }
 
@@ -235,6 +239,7 @@ public sealed partial class Main : Node
         double step = _x.Data.Tuning.StepS;
         _acc = Math.Min(_acc + delta, step * 6);
         while (_acc >= step) { _x.Battle.Step(); _acc -= step; }
+        _x.StepShare = _acc / step;
     }
 
     public override void _UnhandledInput(InputEvent e)
@@ -549,6 +554,7 @@ public sealed partial class Main : Node
                     f.Accept(m);
                     _flow!.MapCentre(m.C, m.R);
                 }
+                if (what == "map-menu") _x.State.MenuOpen = true;
                 if (what == "map-far") { f.MapCentre(15, 11); f.MapView(64, null); }
                 if (what == "map-close") { f.MapCentre(c.S.AtC + 1, c.S.AtR - 1); f.MapView(6.5f, null); }
                 if (what == "log") { Offer m = Find("shakedown")!; c.Accept(m); f.MapView(null, true); }

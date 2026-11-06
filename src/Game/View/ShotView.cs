@@ -107,10 +107,13 @@ public sealed partial class ShotView : Node3D
         return m;
     }
 
+    // a shot in flight where it is drawn this frame, between its last two steps (Battle.DrawnAt)
+    private static Vector3 Drawn(Shot sh, double share) { var (x, z) = Battle.DrawnAt(sh, share); return At(x, z); }
+
     private static Vector3 At(double xM, double zM) => new((float)(xM / BattleView.MPerU), Y, (float)(zM / BattleView.MPerU));
 
     /// <summary>Draws every shot as it stands this frame.</summary>
-    public void Sync(Battle b)
+    public void Sync(Battle b, double share = 1)
     {
         float now = (float)b.T;
         _used.Clear();
@@ -139,7 +142,7 @@ public sealed partial class ShotView : Node3D
             else if (sh.Kind is "bolt" or "slug")
             {
                 var (sx, sz, tx, tz) = b.Ends(sh);
-                Vector3 s0 = At(sx, sz), t0 = At(tx, tz), head = At(sh.X, sh.Z);
+                Vector3 s0 = At(sx, sz), t0 = At(tx, tz), head = Drawn(sh, share);
                 bool slug = sh.Kind == "slug";
                 float len = Math.Max(1e-4f, s0.DistanceTo(t0)), k = Math.Min(1, (slug ? SlugLenU : BoltLenU) / len);
                 Beam(head - (t0 - s0) * k, head, slug ? SlugWU : BoltWU, 1, col, slug ? 1.8f : 1.4f, now);
@@ -148,7 +151,7 @@ public sealed partial class ShotView : Node3D
             {
                 // torpedoes and the quell (half torpedo, half missile) fly under the six-armed star and drop beads
                 bool torpedo = sh.Kind is "torpedo" or "quell";
-                Vector3 p = At(sh.X, sh.Z);
+                Vector3 p = Drawn(sh, share);
                 Flare(p, sh.Kind == "quell" ? QuellU : torpedo ? TorpedoU : MissileU, torpedo ? 1 : 2, col, torpedo ? 1.1f : 1.5f, now);
                 if (sh.Kind == "quell") Flare(p, QuellU * 0.45f, 2, col, 0.9f, now);   // and the missile's ball of drive light
                 if (!_trails.TryGetValue(sh, out Trail? tr)) _trails[sh] = tr = NewTrail(!torpedo, col);
