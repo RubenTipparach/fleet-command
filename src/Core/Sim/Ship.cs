@@ -41,7 +41,8 @@ public sealed partial class Ship
     public required string Captain { get; init; }
     public required ShipClass Class { get; init; }
     public required Faction Faction { get; init; }
-    public required int Side { get; init; }
+    /// <summary>The side the ship fights for; a captured ship changes sides (Battle.Transport).</summary>
+    public required int Side { get; set; }
 
     public double X, Z, H, HOrder, V, VOrder;
     public double Hull;

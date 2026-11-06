@@ -1,3 +1,85 @@
 {
- "_doc": "The numbers of comms, transport and boarding (src/Core/Data/SystemsDef.comms.cs reads them; empty until the package is built)."
+ "_doc": "The numbers of comms, transport and boarding (src/Core/Data/SystemsDef.Comms.cs reads them), from the battle console mockup (docs/mockups/battle-console.html: the hail, TRANSPORT, BOARD, INV, TEAM_DEFAULT, each class's pads, hold_t, marines and team, BEAM_FX and STREAM). The Krai and Ssarith Hunt classes take the mockup's numbers for the class of their size (krai_cv the frigate's, krai_ff the destroyer's, krai_ca and krai_dn the heavy cruiser's, the Hunt frigates the Hunt stalker's, hunt_ca and hunt_cv the heavy cruiser's) until their own are set.",
+ "hail": {
+  "_doc": "What a hailed ship answers (owner, 2026-11-06: \"I should be able to hail other ships, although most enemies wont respond\"): an enemy answers only if its faction has a reply here; the rest say no_answer. A friendly ship answers friend_reply, or friend_needs while it still asks for something ({needs}), or pilot_needed for a prize with no pilot. {name} is the ship's name.",
+  "no_answer": "No answer on any channel.",
+  "enemy_reply": {
+   "krai": "The Warhost does not parley with the weak.",
+   "kethran": "The Hegemony does not parley with the weak.",
+   "vos": "Your cargo or your hull. Choose quickly."
+  },
+  "friend_reply": "{name} here. Standing by.",
+  "friend_needs": "{name} here. We still need {needs}.",
+  "pilot_needed": "{name}: ours, but dead in space. Pilot needed."
+ },
+ "transport": {
+  "_doc": "The transporter's reach (owner, 2026-11-03: \"transport range is too wide! 1.5 km only!\"), shared by boarding, raids and the inventory transporter; the pads (owner, 2026-11-02: one pad beams one person or one load, then recharges, pad_charge_s at one energy point when it charges alone, that times the number charging at once); the longest boarding queue; a shield facing at or under shield_down_hp is down.",
+  "range_km": 1.5,
+  "pads_default": 2,
+  "pad_charge_s": 8,
+  "queue_max": 30,
+  "shield_down_hp": 0.5
+ },
+ "boarding": {
+  "_doc": "Boarding (after the-federation's boarding.gd and the owner's survey answers B14 and B15). Hit and run: a squad goes to one subsystem for raid_s; shooting takes shoot_per_marine a combat marine standing (at most shoot_max), bombing bomb_dmg if a demolition marine lives; a demolition marine is lost at demo_loss over (1 + escorting marines), a combat marine at marine_loss. Capture: a volley every volley_s, each marine one shot at hit_chance, both sides at once, the defenders its marines and guard_crew armed crew; a hit wounds a marine by wound; each medic heals the most wounded by heal a volley; each hacker locks out a guard at hacker_lock and shortens the volley by hacker_speed (hacker_speed_max at most), and with fewer than hacker_cover marines a hit finds a hacker at hacker_exposed_p; the envoy talks one defender down at vip_persuade. Taking it needs an engineer and a hacker (or the envoy); a pilot is needed to get it under way.",
+  "raid_s": 6,
+  "shoot_per_marine": 0.2,
+  "shoot_max": 0.6,
+  "bomb_dmg": 0.8,
+  "demo_loss": 0.6,
+  "marine_loss": 0.2,
+  "volley_s": 10,
+  "hit_chance": 0.5,
+  "guard_crew": 2,
+  "hacker_lock": 0.5,
+  "vip_persuade": 0.5,
+  "wound": 0.5,
+  "heal": 0.35,
+  "hacker_speed": 0.15,
+  "hacker_speed_max": 0.5,
+  "hacker_cover": 5,
+  "hacker_exposed_p": 0.5
+ },
+ "inventory": {
+  "_doc": "The inventory transporter: goods, supplies or the envoy to or from a friendly ship, station or planet in reach; one beam moves per_beam units and spends a pad. A class with no hold of its own has hold_default_t.",
+  "per_beam": 5,
+  "hold_default_t": 10
+ },
+ "team_default": { "demo": 2, "medics": 1, "engineers": 1, "hackers": 1, "pilots": 1 },
+ "classes": {
+  "ca": { "pads": 4, "hold_t": 20, "marines": 12, "team": { "demo": 4, "medics": 2, "engineers": 3, "hackers": 2, "pilots": 2 } },
+  "dd": { "pads": 3, "hold_t": 12, "marines": 6 },
+  "ff": { "pads": 2, "hold_t": 8, "marines": 4 },
+  "kdd": { "pads": 3, "hold_t": 12, "marines": 8 },
+  "kff": { "pads": 2, "hold_t": 8, "marines": 4 },
+  "vcr": { "pads": 3, "hold_t": 16, "marines": 10 },
+  "krai_cv": { "pads": 2, "hold_t": 8, "marines": 4 },
+  "krai_ff": { "pads": 3, "hold_t": 12, "marines": 6 },
+  "krai_ca": { "pads": 4, "hold_t": 20, "marines": 12, "team": { "demo": 4, "medics": 2, "engineers": 3, "hackers": 2, "pilots": 2 } },
+  "krai_dn": { "pads": 4, "hold_t": 20, "marines": 12, "team": { "demo": 4, "medics": 2, "engineers": 3, "hackers": 2, "pilots": 2 } },
+  "hunt_ff_lance": { "pads": 3, "hold_t": 12, "marines": 10, "team": { "demo": 3, "medics": 1, "engineers": 1, "hackers": 1, "pilots": 1 } },
+  "hunt_ff_prow": { "pads": 3, "hold_t": 12, "marines": 10, "team": { "demo": 3, "medics": 1, "engineers": 1, "hackers": 1, "pilots": 1 } },
+  "hunt_ff_harpoon": { "pads": 3, "hold_t": 12, "marines": 10, "team": { "demo": 3, "medics": 1, "engineers": 1, "hackers": 1, "pilots": 1 } },
+  "hunt_ff_trident": { "pads": 3, "hold_t": 12, "marines": 10, "team": { "demo": 3, "medics": 1, "engineers": 1, "hackers": 1, "pilots": 1 } },
+  "hunt_ca": { "pads": 4, "hold_t": 20, "marines": 12, "team": { "demo": 4, "medics": 2, "engineers": 3, "hackers": 2, "pilots": 2 } },
+  "hunt_cv": { "pads": 4, "hold_t": 20, "marines": 12, "team": { "demo": 4, "medics": 2, "engineers": 3, "hackers": 2, "pilots": 2 } },
+  "tr": { "pads": 6, "hold_t": 30, "marines": 14, "team": { "engineers": 2, "pilots": 1, "medics": 2 } },
+  "sb": { "pads": 8, "hold_t": 200, "marines": 10, "team": { "engineers": 3, "pilots": 2, "hackers": 1 } }
+ },
+ "beam_fx": {
+  "_doc": "The transporter effect (owner, 2026-11-03: \"there should be some shader + vfx for transporting stuff\", \"I want particles flying from one ship to the other\"): a column of light column_r_m wide and column_h_m tall at each end over beam_s (a planet's planet_x as wide), and stream_count motes leaving the sender over stream_spread_s, each crossing in stream_travel_s on a low arc stream_arc_m high, wobbling stream_wobble_m sideways, each stream_size_m across.",
+  "beam_s": 1.6,
+  "column_r_m": 90,
+  "column_h_m": 320,
+  "planet_x": 2.2,
+  "stream_count": 56,
+  "stream_spread_s": 0.9,
+  "stream_travel_s": 1.1,
+  "stream_arc_m": 140,
+  "stream_wobble_m": 50,
+  "stream_size_m": 80
+ },
+ "log_lines_docked": 4,
+ "log_lines_expanded": 22,
+ "distress_under_way_m_s": 120
 }

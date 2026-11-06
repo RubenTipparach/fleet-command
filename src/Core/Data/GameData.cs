@@ -73,7 +73,7 @@ public enum AiRange { Close, Mid, Long }
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false);
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, ShipSetup? Setup = null);
 
 /// <summary>A scenario: who plays it (Side, the player's faction, which picks the console skin), the seeded battle and its
 /// objective, and the first officer's message. The first ship is the one the player commands. Sky is the nebula it is fought
@@ -82,6 +82,13 @@ public sealed record Scenario(string Id, string Name, string Side, ulong Seed, s
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
     IReadOnlyList<MarkerDef>? Markers = null)
 {
+    /// <summary>A test scene's planets (data/battle/scenes/comms.json), or null.</summary>
+    public IReadOnlyList<PlanetDef>? Planets { get; init; }
+    /// <summary>A test scene's goal, met to win whatever enemies are left (Scenes.Comms), or null.</summary>
+    public ScenarioGoal? Goal { get; init; }
+    /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: owner, 2026-11-02,
+    /// "transport missions will also not have weapons on ship").</summary>
+    public bool Armed { get; init; } = true;
     /// <summary>A battle with marker beacons ends when its mission's objectives are met (GameFlow checks them), not when
     /// the last enemy goes: a shakedown's target drones can be shot before its beacon is reached.</summary>
     public bool EndsOnObjectives => Markers is { Count: > 0 };

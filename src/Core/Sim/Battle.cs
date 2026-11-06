@@ -92,6 +92,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Side == 1) s.Ecm = 1;
         RangeSetup();
         SystemsSetup();
+        CommsSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -184,6 +185,13 @@ public sealed partial class Battle
     partial void FleetStep(double dt);
     /// <summary>Called once a battle is built, for each system to set its own state up from the scenario.</summary>
     partial void SystemsSetup();
+    /// <summary>Comms and transport's set-up: crews, pads, holds and planets from the scenario (Battle.Transport).</summary>
+    partial void CommsSetup();
+    /// <summary>An AI captain's thinking taken over by a system (a prize waiting for its pilot, a capture order); handled
+    /// skips the rest of Think.</summary>
+    partial void ThinkHook(Ship s, ref bool handled);
+    /// <summary>A test scene's goal (Battle.Transport): ended skips the battle's usual end by its enemies.</summary>
+    partial void ObjectivesStep(ref bool ended);
 
     /// <summary>One fixed step of the whole battle.</summary>
     public void Step()
@@ -219,6 +227,10 @@ public sealed partial class Battle
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
             }
+        // a test scene with a goal ends on it, whatever enemies are left
+        bool goalEnds = false;
+        ObjectivesStep(ref goalEnds);
+        if (goalEnds) return;
         // a damage range never ends: its last ship can be broken up and the range repaired
         if (Scenario.DamageRange) return;
         if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
@@ -347,6 +359,9 @@ public sealed partial class Battle
 
     private void Think(Ship s)
     {
+        bool handled = false;
+        ThinkHook(s, ref handled);
+        if (handled) return;
         Ship[] foes = EnemiesOf(s).ToArray();
         if (foes.Length == 0) { s.VOrder = 60; return; }
         Ship near = foes.OrderBy(o => Geometry.Dist(s.X, s.Z, o.X, o.Z)).ThenBy(o => o.Order).First();

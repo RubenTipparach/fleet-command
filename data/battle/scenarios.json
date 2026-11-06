@@ -976,6 +976,20 @@
      "speed_m_s": 0,
      "stance": "hold",
      "hold_fire": true
+    },
+    {
+     "id": "t_tr",
+     "name": "Pelican",
+     "captain": "Lt. Bram",
+     "class": "tr",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -7600,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
     }
    ]
   },
@@ -1378,6 +1392,20 @@
      "side": 1,
      "x_m": 3750,
      "z_m": -5200,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    },
+    {
+     "id": "t_tr",
+     "name": "Pelican",
+     "captain": "Lt. Bram",
+     "class": "tr",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -7600,
      "heading_deg": 90,
      "speed_m_s": 0,
      "stance": "hold",
