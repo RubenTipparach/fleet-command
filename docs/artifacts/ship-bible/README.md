@@ -1,6 +1,7 @@
 # Ship Design Bible (guide)
 
-- Link: https://claude.ai/artifact/QxFV2qGabbN2chE3zd8km7
+- Link (the cloud session's account, published 2026-11-04 with the Culture, not anatomy rules): https://claude.ai/artifact/4nhxxoGusHfkXX63Xt25bm
+- Link (the main account, not reachable from cloud sessions): https://claude.ai/artifact/QxFV2qGabbN2chE3zd8km7
 - Source: `docs/design/ship-bible.html` (one copy, not duplicated here), its captures `docs/design/ship-bible/*.jpg`
   (published as supporting files; rendered from mockup 6's named shots, cropped to the 3D view and saved at 960 px),
   the Petrel plan `data/ships/concord/petrel_plan.json` and the Concord line `docs/mockups/lib/concord-line.js`, both
@@ -17,3 +18,12 @@
   notes are added to the cultural guides of designing spaceships"): chapter 13, Culture, not anatomy (rules C1-C5), added
   in `docs/design/ship-bible.html`, with a checklist line and a row in Other factions (now chapter 14). **To republish from
   the desktop session**: the cloud session's account cannot open this artifact.
+- 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/4nhxxoGusHfkXX63Xt25bm, version id `1793801590-d689`. Not on the tracker (the tracker stays on the main account).
+- 2026-11-05, cloud session (owner: "every ship needs custom uv Unwraped textures ...", "shapes must be made with purpose and
+  flow into the grater structures"): version 2 on the cloud account, version id `1793849492-26ef`. Chapter 14, One
+  structure, grown (F1-F5), and chapter 15, Every ship its own texture (T1-T4); Other factions is now chapter 16, the
+  checklist chapter 17.
+- 2026-11-05, cloud session (owner: "vents, lights, and sub armor pieces, and primary armor peices", "liveries, smooth
+  sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis symmetry, and lots of
+  shading"): version 3, version id `1793873085-5bf7`. Chapter 15 gains T5-T8 (armour in layers, distinct features,
+  nothing repeats with one axis of symmetry, shading for depth) and a checklist line.

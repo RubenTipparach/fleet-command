@@ -1,0 +1,638 @@
+"""Painted bake: a high-poly hull tile modelled in Blender, its occlusion, normals, edges and plate ids rendered face-on in
+Cycles, then painted over in numpy so it reads drawn on, the way late-1990s ship textures were painted over their renders
+(the painted-bake skill, .claude/skills/painted-bake/SKILL.md; OpenSpec change ssarith-ship-concepts, version 10).
+
+The owner, 2026-11-05, with the reference game's ships: "make ships like this, with this kind of texture", "might need a
+new skill to make high -poly AO baked texture that looks drawn on". What is taken from the references is the method and
+the look (painted light, dark crevices, lit edges, flat colour per plate, glowing strips), never their art (CLAUDE.md 1).
+
+One render writes these passes (the shared panel kit's camera and EXR reading, tools/blender/panel_kit.py):
+  normal   the Normal pass (the tile faces +z: tangent space, x along the ship, y across the face)
+  ao       the AO pass, reaching 0.45 m
+  edge     an AOV: how far the bevelled normal leaves the true normal, i.e. the lit and shaded edges a painter picks out
+  rid      an AOV: a random number per piece, so every plate can take its own paint
+  emit     the Emit pass (the light strips)
+and the paint-over writes the maps a page uses:
+  <tile>_albedo.png   painted colour with its light and shade in it (upper-left light, as a painter lights a sheet)
+  <tile>_normal.png   the normal map, for the live light over the paint
+  <tile>_emit.png     the strips' glow
+
+    /opt/blender/blender -b --python tools/blender/painted_bake.py -- [--tile hunt_chevron] [--samples 32] [--ppm 128]
+    /opt/blender/blender -b --python tools/blender/painted_bake.py -- --ship hooded_lance,forked_prow,harpoon,trident [--px 2048]
+
+Writes assets/textures/painted/ and its manifest.json (sizes in metres, sha256 of every file).
+"""
+
+import hashlib
+import json
+import math
+import os
+import random
+import sys
+import time
+
+import bpy
+import numpy as np
+from mathutils import Vector
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import panel_kit as K  # noqa: E402  the shared kit: Panel pieces, the camera, EXR reading, PNG writing
+
+ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
+OUT = os.path.join(ROOT, "assets", "textures", "painted")
+RAW = os.path.join(ROOT, "tools", "materials", "raw", "painted")
+
+
+# ----------------------------------------------------------------------------- materials that write the paint's passes
+def pass_material(name, emit=None):
+    """One material for every hull piece: a mid grey diffuse (the paint-over sets the colour), and two AOVs: `edge`
+    (1 - the bevelled normal against the true one) and `rid` (a random number per object). emit: an emission colour."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    N, L = m.node_tree.nodes, m.node_tree.links
+    for n in list(N):
+        N.remove(n)
+    out = N.new("ShaderNodeOutputMaterial")
+    if emit:
+        em = N.new("ShaderNodeEmission"); em.inputs[0].default_value = (*emit, 1.0); em.inputs[1].default_value = 4.0
+        L.new(em.outputs[0], out.inputs[0])
+    else:
+        bsdf = N.new("ShaderNodeBsdfDiffuse"); bsdf.inputs[0].default_value = (0.5, 0.5, 0.5, 1.0)
+        L.new(bsdf.outputs[0], out.inputs[0])
+    geo = N.new("ShaderNodeNewGeometry")
+    bev = N.new("ShaderNodeBevel"); bev.samples = 8; bev.inputs["Radius"].default_value = 0.035
+    dot = N.new("ShaderNodeVectorMath"); dot.operation = "DOT_PRODUCT"
+    L.new(bev.outputs[0], dot.inputs[0]); L.new(geo.outputs["Normal"], dot.inputs[1])
+    inv = N.new("ShaderNodeMath"); inv.operation = "SUBTRACT"; inv.inputs[0].default_value = 1.0
+    L.new(dot.outputs["Value"], inv.inputs[1])
+    a1 = N.new("ShaderNodeOutputAOV"); a1.aov_name = "edge"; L.new(inv.outputs[0], a1.inputs["Value"])
+    oi = N.new("ShaderNodeObjectInfo")
+    a2 = N.new("ShaderNodeOutputAOV"); a2.aov_name = "rid"; L.new(oi.outputs["Random"], a2.inputs["Value"])
+    return m
+
+
+def setup(w_px, h_px, samples):
+    sc = bpy.context.scene
+    sc.render.engine = "CYCLES"
+    cy = sc.cycles
+    cy.device, cy.samples, cy.use_adaptive_sampling, cy.use_denoising, cy.seed = "CPU", samples, False, False, 0
+    cy.max_bounces, cy.diffuse_bounces = 2, 1
+    sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = w_px, h_px, 100
+    sc.view_settings.view_transform = "Standard"
+    world = bpy.data.worlds.new("World"); world.use_nodes = True
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.0
+    world.light_settings.distance = 0.45
+    sc.world = world
+    vl = sc.view_layers[0]
+    vl.use_pass_normal = vl.use_pass_ambient_occlusion = vl.use_pass_emit = True
+    for name in ("edge", "rid"):
+        a = vl.aovs.add(); a.name = name; a.type = "VALUE"
+    sc.use_nodes = True
+    sc.render.use_compositing = True
+    nt = sc.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    rl = nt.nodes.new("CompositorNodeRLayers")
+    fo = nt.nodes.new("CompositorNodeOutputFile")
+    fo.base_path = RAW; fo.format.file_format = "OPEN_EXR"; fo.format.color_depth = "32"; fo.file_slots.clear()
+    return rl, fo, nt
+
+
+# ----------------------------------------------------------------------------- the tile: the Hunt's armour
+def tile_hunt_chevron(P, w, h, rng):
+    """8 m along the ship (x) by 6 m across (y): two rows of armour plates cut as chevrons pointing forward (+x), a raised
+    spine between them with a light strip in its groove, conduits in clamps either side of the spine, vent wells with
+    slats, bolts at the plates' corners and a seam band at each long edge (where the tile meets the next, one seam)."""
+    P.box(-w / 2, -h / 2, w / 2, h / 2, -0.15, 0.0, "dark")
+    for sy in (-1, 1):  # the seam bands at the tile's long edges (half a band each side, so the wrap shows one)
+        P.box(-w / 2, sy * h / 2 - (0.08 if sy > 0 else -0.08), w / 2, sy * h / 2, 0.0, 0.03, "hull")
+    for row, yc in enumerate((-1.6, 1.6)):
+        for k in range(4):  # under-plates: a seamed band of 2 m plates under each row
+            x0 = -w / 2 + k * 2.0
+            P.box(x0 + 0.03, yc - 1.32, x0 + 2.0 - 0.03, yc + 1.32, 0.0, 0.05, "hull", bevel=0.03)
+        off = 0.0 if row == 0 else 1.0
+        for k in range(4):
+            cx = -w / 2 + 1.0 + off + k * 2.0
+            if cx > w / 2 - 0.2:
+                cx -= w
+            a, hh, t = 0.92, 1.12, 0.5
+            z = 0.14 + rng.random() * 0.08
+            # each chevron is two convex arms meeting on its centreline (a concave outline bevels badly)
+            for sy in (1, -1):
+                arm = [(cx + a, yc), (cx - a, yc + sy * hh), (cx - a + t, yc + sy * hh), (cx + a - t * 1.3, yc)]
+                P.poly(arm if sy > 0 else list(reversed(arm)), 0.05, z, "hull", bevel=0.06)
+                P.cyl(cx - a + 0.25, yc + sy * (hh - 0.2), 0.05, z, z + 0.03, "hull", seg=8)
+    # the spine and its light strip, in segments so the strip has breaks
+    P.box(-w / 2, -0.32, w / 2, 0.32, 0.0, 0.14, "hull", bevel=0.04)
+    P.box(-w / 2, -0.1, w / 2, 0.1, 0.12, 0.15, "dark")
+    for x0, x1 in ((-3.6, -0.4), (0.4, 3.6)):
+        P.box(x0, -0.06, x1, 0.06, 0.15, 0.17, "glow")
+    for sy in (-1, 1):  # conduits either side of the spine, in clamps
+        P.tube([(-w / 2, sy * 0.62, 0.07), (w / 2, sy * 0.62, 0.07)], 0.06, "hull")
+        for x in (-3.0, -1.0, 1.0, 3.0):
+            P.box(x - 0.07, sy * 0.62 - 0.12, x + 0.07, sy * 0.62 + 0.12, 0.0, 0.15, "hull", bevel=0.015)
+    for yc in (-2.75, 2.75):  # vent wells near the edges
+        for x in (-2.0, 2.0):
+            P.box(x - 0.55, yc - 0.12, x + 0.55, yc + 0.12, 0.0, 0.04, "hull", bevel=0.015)
+            P.box(x - 0.48, yc - 0.08, x + 0.48, yc + 0.08, 0.0, 0.041, "dark")
+            for i in range(6):
+                xx = x - 0.4 + i * 0.16
+                P.box(xx - 0.03, yc - 0.07, xx + 0.03, yc + 0.07, 0.0, 0.05, "hull")
+
+
+TILES = {"hunt_chevron": (tile_hunt_chevron, 8.0, 6.0)}
+
+
+# ----------------------------------------------------------------------------- the paint-over
+PALETTE = ["#6b6b46", "#7d7450", "#5a5b3b", "#8a7d54", "#4f5236"]  # olive, khaki, dark olive, sand, deep olive
+BRONZE = "#7a5a36"
+INK = "#14160e"
+LIGHT_EDGE = "#d9d2a6"
+GLOW = "#46ff8a"
+
+
+def hexrgb(h):
+    h = h.lstrip("#")
+    return np.array([int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4)], np.float32)
+
+
+def blur(a, r):
+    """A box blur of radius r pixels, wrapping (the tile repeats)."""
+    if r <= 0:
+        return a
+    out = a.copy()
+    for ax in (0, 1):
+        acc = np.zeros_like(out)
+        for d in range(-r, r + 1):
+            acc += np.roll(out, d, axis=ax)
+        out = acc / (2 * r + 1)
+    return out
+
+
+def piece_paint(rid):
+    """Flat paint per piece, from the palette by its random id; a few pieces in bronze."""
+    pal = np.stack([hexrgb(c) for c in PALETTE])
+    idx = np.clip((rid * len(PALETTE) * 7).astype(int) % len(PALETTE), 0, len(PALETTE) - 1)
+    return np.where((rid > 0.93)[..., None], hexrgb(BRONZE), pal[idx])
+
+
+def paint(nor, ao, edge, rid, emit, rng_seed=5, light=(-0.5, 0.55, 0.67), base=None):
+    """Paint the passes into a drawn-on albedo (sRGB, 0..1) and a glow map. light: the painter's light direction in the
+    passes' own space (a tile's: x along, y across, z out; a ship's: +x port, +y up, +z bow). base: the flat paint, when
+    the caller has laid its own (a ship's plating and markings); by default, piece_paint(rid)."""
+    h, w = ao.shape
+    rng = np.random.default_rng(rng_seed)
+    n = nor / np.maximum(np.linalg.norm(nor, axis=2, keepdims=True), 1e-6)
+    if base is None:
+        base = piece_paint(rid)
+    # the painter's light from the upper left, a little toward the viewer, in a few soft steps
+    L = np.array(light, np.float32); L /= np.linalg.norm(L)
+    lam = np.clip((n * L).sum(axis=2), 0.0, 1.0)
+    steps = np.floor(lam * 4.0 + 0.5) / 4.0
+    shade = 0.62 + 0.5 * (0.55 * lam + 0.45 * steps)
+    col = base * shade[..., None]
+    # crevices painted dark (the occlusion, curved, then inked where it is deepest)
+    ao = blur(ao, 1)  # a pixel's softening takes the render's speckle out of the deepest shadows
+    aoc = np.clip(ao, 0.0, 1.0) ** 1.6
+    col *= (0.35 + 0.65 * aoc)[..., None]
+    ink = np.clip((0.42 - ao) / 0.2, 0.0, 1.0)
+    col = col * (1 - ink[..., None] * 0.8) + hexrgb(INK) * (ink[..., None] * 0.8)
+    # edges: lit edges lightened toward a pale highlight, shaded edges darkened
+    e = np.clip(edge * 6.0, 0.0, 1.0)
+    lit = e * np.clip((lam - 0.55) / 0.3, 0.0, 1.0)
+    dark = e * np.clip((0.45 - lam) / 0.3, 0.0, 1.0)
+    col = col * (1 - lit[..., None] * 0.6) + hexrgb(LIGHT_EDGE) * (lit[..., None] * 0.6)
+    col *= (1 - dark * 0.45)[..., None]
+    # brush grain: low streaks along the ship and a faint mottle, so the flats are not machine flat
+    streak = blur(rng.standard_normal((h, w)).astype(np.float32), 2)
+    sx = np.zeros_like(streak)
+    for d in range(-12, 13):
+        sx += np.roll(streak, d, axis=1)
+    sx /= 25.0
+    mott = blur(rng.standard_normal((h // 8 + 1, w // 8 + 1)).astype(np.float32), 1)
+    mott = np.kron(mott, np.ones((8, 8), np.float32))[:h, :w]
+    col *= (1.0 + 0.06 * sx / (np.abs(sx).max() + 1e-6) + 0.05 * mott / (np.abs(mott).max() + 1e-6))[..., None]
+    # the strips: their own paint, and the glow map
+    g = np.clip(emit.max(axis=2) / 2.0, 0.0, 1.0)
+    col = col * (1 - g[..., None]) + hexrgb(GLOW) * g[..., None]
+    glow = hexrgb(GLOW) * blur(g, 2)[..., None] * 1.6
+    return np.clip(col, 0, 1), np.clip(glow, 0, 1)
+
+
+def bake(name, w, h, ppm, samples):
+    K.reset_scene()
+    w_px, h_px = int(round(w * ppm)), int(round(h * ppm))
+    rl, fo, nt = setup(w_px, h_px, samples)
+    mats = {"hull": pass_material("hull"), "dark": pass_material("dark"), "glow": pass_material("glow", emit=(0.27, 1.0, 0.54))}
+    P = K.Panel(name, w, h, mats, seed=11)
+    TILES[name][0](P, w, h, random.Random(1201))
+    K.camera(w, h)
+    for sock, slot in (("Normal", "normal"), ("AO", "ao"), ("Emit", "emit"), ("edge", "edge"), ("rid", "rid")):
+        fo.file_slots.new(f"{name}_{slot}")
+        nt.links.new(rl.outputs[sock], fo.inputs[-1])
+    comp = nt.nodes.new("CompositorNodeComposite"); nt.links.new(rl.outputs["Image"], comp.inputs[0])
+    bpy.ops.render.render(write_still=False)
+    get = lambda p: K.read_exr(os.path.join(RAW, f"{name}_{p}0001.exr"))
+    nor, ao, emit, edge, rid = get("normal"), get("ao")[:, :, 0], get("emit"), get("edge")[:, :, 0], get("rid")[:, :, 0]
+    col, glow = paint(nor, ao, edge, rid, emit)
+    K.save_png(os.path.join(OUT, f"{name}_albedo.png"), col)
+    n = nor / np.maximum(np.linalg.norm(nor, axis=2, keepdims=True), 1e-6)
+    K.save_png(os.path.join(OUT, f"{name}_normal.png"), n * 0.5 + 0.5)
+    K.save_png(os.path.join(OUT, f"{name}_emit.png"), glow)
+    return {"u_m": w, "v_m": h, "px": [w_px, h_px], "samples": samples}
+
+
+# ----------------------------------------------------------------------------- a ship of its own (owner, 2026-11-05)
+# "every ship needs custom uv Unwraped textures. From NOW on . ALL SHIPS MUST AVOID REPETTIVE TILE FOR MAIN COLOR MAP",
+# "tile textures are for DETAIL only", "dont forget to bake AO as well"; then, on the plain plating: "I'd like more
+# features onthe hulls ... vents, lights, and sub armor pieces, and primary armor peices", "liveries, smooth sphereical
+# portions of armor, and specifically shaped vents", "no repeating elemnts, single axis symmetry, and lots of shading to
+# give the armor depth". A picked hull comes from its page as OBJ (tools/mockups/export_blockouts.mjs, ship space: +x port,
+# +y up, +z bow, imported as it is), is joined and unwrapped once (Smart UV Project, islands packed again by shape), and
+# hull_detail.py builds its high-poly layer over it (armour plates cut apart, the bare under layer with greebles, domes,
+# fans, louvres, lamps; data/ships/ssarith/hull_detail.json). That layer is baked onto the hull's own UVs, selected to
+# active: a data pass (kind, plate id, edges), glow, position, object-space normals, AO, and a sun's direct light with
+# its cast shadows. paint_ship turns them into the colour map, and the maps and the UV mesh are written out.
+SHIPS_RAW = os.path.join(RAW, "ships")
+SHIPS_OUT = os.path.join(ROOT, "assets", "ships", "ssarith")
+DETAIL = os.path.join(ROOT, "data", "ships", "ssarith", "hull_detail.json")
+SUN = (0.6, 0.55, 0.58)       # the painter's light, ship space: low, from port and ahead, so the relief throws shadows
+
+# the Hunt's paint, by what a texel is (hull_detail.KIND)
+ARMOUR = ["#6e6c45", "#7f7650", "#5b5d3c", "#8b7f55", "#525538", "#74704a", "#666a44"]  # olives, khakis, sands
+SUB = ["#4b4b37", "#575741", "#404331", "#5c5640"]   # the sub-armour: darker, greyer
+UNDER = "#202217"
+GREEBLE = ("#34362a", "#6a6650")
+DOME = "#215a3b"
+SLAT = "#5e5c46"
+VENT = "#121309"
+LIVERY = "#2c9a52"
+STRIP_M = 0.7                 # a light strip's lit line (the strips run down the keels and undersides, on x = 0)
+
+
+def lo_material(img, name):
+    m = bpy.data.materials.new(name); m.use_nodes = True
+    tex = m.node_tree.nodes.new("ShaderNodeTexImage"); tex.image = img; m.node_tree.nodes.active = tex
+    return m
+
+
+def ship_uv_m(ship):
+    """Metres of hull per UV unit: the square root of the mesh's area over its UV area."""
+    import bmesh
+    bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    uvl = bm.loops.layers.uv.active
+    a3 = a2 = 0.0
+    for f in bm.faces:
+        a3 += f.calc_area()
+        (u0, v0), (u1, v1), (u2, v2) = (tuple(l[uvl].uv) for l in f.loops)
+        a2 += abs((u1 - u0) * (v2 - v0) - (u2 - u0) * (v1 - v0)) / 2
+    bm.free()
+    return math.sqrt(a3 / max(a2, 1e-9))
+
+
+def img_array(img):
+    w, h = img.size
+    a = np.empty(w * h * 4, np.float32); img.pixels.foreach_get(a)
+    return a.reshape(h, w, 4)
+
+
+def bake_ship(slug, px, samples, panes_only=False):
+    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written)."""
+    import bmesh
+    import hull_detail as HD
+    import hull_sdf
+    K.reset_scene(); HD.MATS.clear()
+    sc = bpy.context.scene
+    sc.render.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = samples; sc.cycles.use_denoising = False; sc.cycles.seed = 0
+    world = bpy.data.worlds.new("World"); world.use_nodes = True; sc.world = world; world.light_settings.distance = 2.2
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
+    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, slug + ".obj"), forward_axis="Y", up_axis="Z")
+    obs = sorted((o for o in sc.objects if o.type == "MESH"), key=lambda o: o.name)
+    img = bpy.data.images.new(slug + "_bake", px, px, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
+    lo_hull, lo_glow = lo_material(img, "lo_hull"), lo_material(img, "lo_glow")
+    for o in obs:
+        o.data.materials.clear(); o.data.materials.append(lo_glow if o.name.startswith("glow") else lo_hull)
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in obs:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = obs[0]
+    bpy.ops.object.join()
+    ship = bpy.context.view_layer.objects.active
+    bpy.ops.object.mode_set(mode="EDIT"); bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.remove_doubles(threshold=0.001)
+    bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.006, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+    bpy.ops.uv.select_all(action="SELECT")
+    bpy.ops.uv.pack_islands(rotate=True, shape_method="CONCAVE", margin_method="FRACTION", margin=0.004)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    D = json.load(open(DETAIL))
+    S = D["ships"][slug]
+    t0 = time.time()
+    high = HD.build(ship, S, D["defaults"], S["seed"])
+    print(f"  built the detail in {time.time() - t0:.0f} s", flush=True)
+    print(f"  {slug}: {len(high)} high-poly pieces, {sum(len(o.data.polygons) for o in high)} faces", flush=True)
+    panes = [dict(P) for P in HD.PANES]   # the page draws each pane as its own quad (hull_detail.pane_box)
+    if panes_only:
+        return {"panes": panes}
+    sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
+    sun.data.energy = 1.0; sun.data.angle = math.radians(3)
+    sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
+    fixture_lights = []   # the hull's lamps, for the light pass only (named LIGHT_<kind>_<n>, the light-baking skill)
+    for i, F in enumerate(HD.FIXTURES):
+        kind = "SPOT" if F["cone_deg"] else "POINT"
+        L = bpy.data.lights.new(f"LIGHT_{F['kind']}_{i}", kind); L.energy = F["power_w"]; L.color = F["rgb"]
+        L.shadow_soft_size = F["size_m"] or 0.25
+        if kind == "SPOT":
+            L.spot_size = math.radians(F["cone_deg"]); L.spot_blend = 0.35
+        o = bpy.data.objects.new(L.name, L); sc.collection.objects.link(o)
+        o.location = F["pos"]
+        o.rotation_euler = (-Vector(F["dir"])).to_track_quat("Z", "Y").to_euler()
+        o.hide_render = True
+        fixture_lights.append(o)
+    nfaces = sum(len(o.data.polygons) for o in high)
+    bpy.ops.object.select_all(action="DESELECT")   # one object to bake from: the bakes' setup is per object
+    for o in high:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = high[0]
+    bpy.ops.object.join()
+    high = [high[0]]
+    bpy.ops.object.select_all(action="DESELECT")
+    high[0].select_set(True)
+    ship.select_set(True); bpy.context.view_layer.objects.active = ship
+    ship.visible_shadow = ship.visible_diffuse = ship.visible_glossy = False  # the low-poly hull only receives the bake
+
+    def bake(kind, what, **kw):
+        t0 = time.time()
+        HD.show(what)
+        img.pixels.foreach_set(np.zeros(px * px * 4, np.float32))
+        bpy.ops.object.bake(type=kind, margin=8, use_selected_to_active=True, cage_extrusion=1.3, max_ray_distance=2.8, **kw)
+        print(f"  bake {kind} {what}: {time.time() - t0:.0f} s", flush=True)
+        return img_array(img).copy()
+    data = bake("EMIT", "data")
+    cover = data[:, :, 3] > 0.5
+    glowp = bake("EMIT", "glow")[:, :, :3]
+    P = bake("EMIT", "position")[:, :, :3]
+    nor = bake("NORMAL", "shade", normal_space="OBJECT")[:, :, :3] * 2.0 - 1.0     # for the paint's own use
+    nts = bake("NORMAL", "shade", normal_space="TANGENT")[:, :, :3]                # the normal map, for the game and page
+    ao = bake("AO", "shade")[:, :, 0]
+    sc.cycles.samples = max(8, samples // 4)
+    sunp = bake("DIFFUSE", "shade", pass_filter={"DIRECT"})[:, :, 0]
+    # the hull lights: the fixtures alone, and the lamps' and windows' own faces, falling on white plating
+    sun.hide_render = True
+    for o in fixture_lights:
+        o.hide_render = False
+    sc.cycles.samples = max(32, samples)
+    lightp = bake("DIFFUSE", "light", pass_filter={"DIRECT"})[:, :, :3]
+    lightp = np.dstack([blur(lightp[..., c], 1) for c in range(3)])   # the emissive faces' sampling speckle out
+    faction = D.get("faction", "ssarith")
+    col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction)
+    pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction)
+    lref = D["defaults"]["light_ref"]
+    lmap = half(np.clip(lightp / lref, 0, 1) ** (1 / 1.6))   # stored with a gentle curve; the page and game undo it
+    os.makedirs(SHIPS_OUT, exist_ok=True)
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_albedo.png"), col)
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_ao.png"), np.dstack([ao, ao, ao]))
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_emit.png"), emit)
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_normal.png"), np.clip(nts, 0, 1))
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_base.png"), pbr)
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_orm.png"), orm)
+    K.save_png(os.path.join(SHIPS_OUT, f"{slug}_light.png"), lmap)
+    print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
+    # the UV mesh, in ship space, as flat triangle lists
+    bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    uvl = bm.loops.layers.uv.active
+    pos, uv = [], []
+    for f in bm.faces:
+        for l in f.loops:
+            pos += [round(c, 3) for c in l.vert.co]; uv += [round(l[uvl].uv[0], 5), round(l[uvl].uv[1], 5)]
+    bm.free()
+    return {"tris": len(pos) // 9, "tex_px": px, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
+            "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
+            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
+
+
+EMBLEMS = os.path.join(ROOT, "assets", "emblems")
+# PBR by what a texel is: (roughness, metalness). Painted armour is a worn painted metal; the glass of a dome is smooth.
+PBR = {"armour": (0.58, 0.45), "sub": (0.62, 0.55), "under": (0.8, 0.6), "greeble": (0.55, 0.7), "dome": (0.12, 0.0),
+       "slat": (0.6, 0.7), "vent": (0.9, 0.3), "strip": (0.4, 0.0), "lamp": (0.3, 0.0)}
+LIVERY_PBR = (0.5, 0.1)       # the liveries and the logo are paint on the metal
+
+
+def classify(data, cover):
+    """Each texel's kind (hull_detail.KIND), its piece id and its edge amount, from the data bake."""
+    from hull_detail import KIND
+    codes = np.array(list(KIND.values())); names = list(KIND.keys())
+    kind = np.array(names, dtype=object)[np.abs(data[:, :, 0][..., None] - codes).argmin(axis=2)]
+    return kind, data[:, :, 1], data[:, :, 2], (lambda k: (kind == k) & cover)
+
+
+def logo_mask(S, faction, P, n, plated):
+    """Where the faction's emblem is painted (S['logo']): its field and device masks, projected from above onto the
+    top-facing armour (assets/emblems/<faction>/hull_mask.png, drawn from docs/mockups/lib/emblems.js)."""
+    lg = S.get("logo")
+    h, w = P.shape[:2]
+    none = np.zeros((h, w), bool)
+    if not lg:
+        return none, none, none, None
+    path = os.path.join(EMBLEMS, faction, "hull_mask.png")
+    img = bpy.data.images.load(path, check_existing=True)
+    mw, mh = img.size
+    m = np.empty(mw * mh * 4, np.float32); img.pixels.foreach_get(m); m = m.reshape(mh, mw, 4)   # bottom row first
+    cx, cz = lg["at"]; size = lg["size_m"]
+    u = 0.5 - (P[..., 0] - cx) / size            # seen from above with the bow up the image, port (+x) is on the left
+    v = 0.5 + (P[..., 2] - cz) / size            # bottom-up, like Blender's rows: the bow at the top of the mark
+    inside = (u >= 0) & (u < 1) & (v >= 0) & (v < 1) & plated & (n[..., 1] > 0.35)
+    px_ = np.clip((u * mw).astype(int), 0, mw - 1); py_ = np.clip((v * mh).astype(int), 0, mh - 1)
+    s = m[py_, px_]
+    field = inside & (s[..., 3] > 0.5) & (s[..., 0] > 0.5)
+    device = inside & (s[..., 3] > 0.5) & (s[..., 1] > 0.5)
+    hull = json.load(open(os.path.join(EMBLEMS, faction, "hull_mask.json")))["hull"]
+    return inside, field, device, hull
+
+
+def flat_paint(kind_is, rid, P, n, cover, S, faction):
+    """The paint itself, before any light: each texel's colour by its kind (armour from the palette by its plate's id,
+    sub-armour greyer, the under layer near black, greebles, the dome's green, slats, vents), the liveries and the
+    emblem. The painted map and the PBR base colour both start here. Returns (colour, painted-on mask)."""
+    h, w = cover.shape
+    pal = np.stack([hexrgb(c) for c in ARMOUR])
+    arm = pal[(rid * len(ARMOUR) * 11).astype(int) % len(ARMOUR)] * (0.9 + 0.2 * ((rid * 37.0) % 1.0))[..., None]
+    arm = np.where((rid > 0.94)[..., None], hexrgb(BRONZE), arm)
+    base = np.zeros((h, w, 3), np.float32) + hexrgb(UNDER)
+    base = np.where(kind_is("armour")[..., None], arm, base)
+    spal = np.stack([hexrgb(c) for c in SUB])
+    base = np.where(kind_is("sub")[..., None], spal[(rid * len(SUB) * 7).astype(int) % len(SUB)], base)
+    g0, g1 = hexrgb(GREEBLE[0]), hexrgb(GREEBLE[1])
+    base = np.where(kind_is("greeble")[..., None], g0 + (g1 - g0) * ((rid * 13.0) % 1.0)[..., None], base)
+    base = np.where(kind_is("dome")[..., None], hexrgb(DOME), base)
+    base = np.where(kind_is("slat")[..., None], hexrgb(SLAT), base)
+    base = np.where(kind_is("vent")[..., None], hexrgb(VENT), base)
+    liv = np.zeros((h, w), bool)
+    for L in S.get("liveries", []):
+        if "band_z_m" in L:
+            z0, z1 = L["band_z_m"]; liv |= (P[..., 2] > z0) & (P[..., 2] < z1)
+        if "chevron" in L:
+            c = L["chevron"]; liv |= np.abs(P[..., 2] - (c["z_m"] - c["sweep"] * np.abs(P[..., 0]))) < c["w_m"] / 2
+    liv &= kind_is("armour")
+    base = np.where(liv[..., None], hexrgb(LIVERY) * (0.92 + 0.16 * rid)[..., None], base)
+    patch, field, device, hull = logo_mask(S, faction, P, n, kind_is("armour") | kind_is("sub"))
+    if hull:   # the emblem's own hull colours: its plate painted as a patch, the field and device on it
+        base = np.where(patch[..., None], hexrgb(hull["plate"]), base)
+        base = np.where(field[..., None], hexrgb(hull["field"]), base)
+        base = np.where(device[..., None], hexrgb(hull["device"]), base)
+    return base, liv | patch
+
+
+def grain(h, w, seed=17):
+    """Brush grain: streaks along the plates and a coarse mottle, as a multiplier about 1."""
+    rng = np.random.default_rng(seed)
+    streak = blur(rng.standard_normal((h, w)).astype(np.float32), 2)
+    sx = sum(np.roll(streak, d, axis=1) for d in range(-10, 11)) / 21.0
+    mott = blur(rng.standard_normal((h // 8 + 1, w // 8 + 1)).astype(np.float32), 1)
+    mott = np.kron(mott, np.ones((8, 8), np.float32))[:h, :w]
+    return 1.0 + 0.07 * sx / (np.abs(sx).max() + 1e-6) + 0.06 * mott / (np.abs(mott).max() + 1e-6)
+
+
+def strips_and_glow(kind_is, P, glowp, cover):
+    """The light strips are a dark channel with a lit line STRIP_M wide down the middle. Returns (channel mask, the
+    glow pass with the channel's sides put out, the emission map: lamps, windows and lines, each with a soft halo)."""
+    chan = kind_is("strip")
+    line = chan & (np.abs(P[..., 0]) < STRIP_M / 2)
+    side = chan & ~line
+    g = np.where(side[..., None], 0.0, np.clip(glowp, 0, 1)) * cover[..., None]
+    g = g + kind_is("dome")[..., None] * hexrgb(DOME) * 0.35          # the domes' faint inner light
+    emit = np.clip(g * 1.2 + np.dstack([blur(g[..., c], 2) for c in range(3)]) * 0.8, 0, 1)
+    return side, g, emit
+
+
+def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
+    """The painted colour map and the emission map. The flat paint (flat_paint), lit as a painter lights it: the sun's
+    direct light with its cast shadows in soft steps, the AO curved and inked where it is deepest, each plate pillowed
+    darker toward its gaps, lit and shaded edges, the dome's highlight, brush grain, and the lamps over it all."""
+    kind, rid, edge, is_ = classify(data, cover)
+    h, w = cover.shape
+    n = nor / np.maximum(np.linalg.norm(nor, axis=2, keepdims=True), 1e-6)
+    base, _ = flat_paint(is_, rid, P, n, cover, S, faction)
+    sh = np.clip(sunp / max(np.percentile(sunp[cover], 99), 1e-6), 0, 1)
+    sh = blur(sh, 1)
+    st = np.floor(sh * 4 + 0.5) / 4
+    aoc = np.clip(blur(ao, 1), 0, 1)
+    light = 0.12 + 0.26 * aoc ** 1.4 + 0.7 * (0.55 * sh + 0.45 * st)
+    col = base * light[..., None]
+    col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
+    ink = np.clip((0.4 - aoc) / 0.25, 0, 1)
+    col = col * (1 - 0.75 * ink[..., None]) + hexrgb(INK) * (0.75 * ink[..., None])
+    m = (is_("armour") | is_("sub")).astype(np.float32)
+    pb = blur(blur(m, 4), 4)
+    col *= np.where(m > 0, 0.7 + 0.3 * np.clip((pb - 0.45) / 0.5, 0, 1), 1.0)[..., None]
+    e = np.clip(edge * 5.0, 0, 1)
+    lit = e * np.clip((sh - 0.45) / 0.35, 0, 1); dark = e * np.clip((0.5 - sh) / 0.4, 0, 1)
+    col = col * (1 - 0.55 * lit[..., None]) + hexrgb(LIGHT_EDGE) * (0.55 * lit[..., None])
+    col *= (1 - 0.45 * dark)[..., None]
+    Lv = np.array(SUN, np.float32); Lv /= np.linalg.norm(Lv)
+    Hv = Lv + np.array([0.0, 0.25, 1.0], np.float32); Hv /= np.linalg.norm(Hv)
+    spec = np.clip((n * Hv).sum(axis=2), 0, 1) ** 28 * is_("dome")
+    col = col + (np.array([0.75, 0.95, 0.8]) * spec[..., None] * 0.7)
+    col *= grain(h, w)[..., None]
+    side, g, emit = strips_and_glow(is_, P, glowp, cover)
+    col = np.where(side[..., None], hexrgb(VENT) * (0.6 + 0.6 * sh)[..., None], col)
+    col = np.where((g.max(axis=2) > 0.05)[..., None], np.maximum(col, g), col)
+    return np.clip(col, 0, 1), emit
+
+
+def paint_pbr(data, P, nor, ao, cover, S, faction):
+    """The PBR set: a base colour with no light in it (the flat paint, darkened in its cavities, its plates a little
+    darker toward their gaps, edges worn lighter, grain), and ORM (red the AO, green the roughness, blue the metalness,
+    by kind; worn edges smoother and barer, paint less metallic)."""
+    kind, rid, edge, is_ = classify(data, cover)
+    h, w = cover.shape
+    n = nor / np.maximum(np.linalg.norm(nor, axis=2, keepdims=True), 1e-6)
+    base, painted = flat_paint(is_, rid, P, n, cover, S, faction)
+    aoc = np.clip(blur(ao, 1), 0, 1)
+    col = base * (0.45 + 0.55 * aoc ** 1.2)[..., None]                 # cavities keep their dark: the paint's own depth
+    m = (is_("armour") | is_("sub")).astype(np.float32)
+    pb = blur(blur(m, 4), 4)
+    col *= np.where(m > 0, 0.82 + 0.18 * np.clip((pb - 0.45) / 0.5, 0, 1), 1.0)[..., None]
+    e = np.clip(edge * 5.0, 0, 1) * (m > 0)
+    col = col * (1 - 0.3 * e[..., None]) + hexrgb(LIGHT_EDGE) * (0.3 * e[..., None])
+    gr = grain(h, w)
+    col *= gr[..., None]
+    rough = np.full((h, w), PBR["under"][0], np.float32); metal = np.full((h, w), PBR["under"][1], np.float32)
+    for k, (r, mm) in PBR.items():
+        rough = np.where(is_(k), r, rough); metal = np.where(is_(k), mm, metal)
+    rough = np.where(painted, LIVERY_PBR[0], rough); metal = np.where(painted, LIVERY_PBR[1], metal)
+    rough = np.clip(rough - 0.22 * e + 0.6 * (gr - 1.0), 0.05, 1.0)
+    metal = np.clip(metal + 0.35 * e, 0.0, 1.0)
+    orm = np.dstack([aoc, rough, metal])
+    side, _, _ = strips_and_glow(is_, P, np.zeros_like(P), cover)
+    col = np.where(side[..., None], hexrgb(VENT), col)
+    return np.clip(col, 0, 1), orm
+
+
+def half(a):
+    """Half the size, by 2 x 2 means (the light map is smooth)."""
+    h, w = a.shape[0] // 2 * 2, a.shape[1] // 2 * 2
+    a = a[:h, :w]
+    return (a[0::2, 0::2] + a[1::2, 0::2] + a[0::2, 1::2] + a[1::2, 1::2]) / 4
+
+
+def ship_main(slugs, px, samples, panes_only=False):
+    mpath = os.path.join(SHIPS_OUT, "manifest.json")
+    man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
+    man.setdefault("kept", {})
+    for k in [k for k in man["pieces"] if k.endswith("_ao")]:
+        del man["pieces"][k]
+    man["_doc"] = ("The Ssarith Hunt's picked blockouts, each unwrapped and baked onto its own UVs by tools/blender/painted_bake.py "
+                   "--ship (never edited by hand): the UV mesh in ship space (+x port, +y up, +z bow, metres) and its painted colour, "
+                   "AO and glow maps. uv_m is metres of hull per UV unit.")
+    for k in [k for k in man["pieces"] if k.endswith("_pane")]:   # panes are drawn from their data now, not a map
+        del man["pieces"][k]
+    for slug in slugs:
+        if panes_only:
+            man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
+            print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
+            continue
+        info = bake_ship(slug, px, samples)
+        n = int(open(os.path.join(SHIPS_RAW, slug + ".obj")).readline().split()[1])
+        info["n"] = n
+        man["ships"][slug] = info
+        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)
+            f = f"{slug}_{m}.png"
+            man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(SHIPS_OUT, f), "rb").read()).hexdigest()}
+        print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)
+    man["blender"] = bpy.app.version_string
+    man["webp_quality"] = 84   # the page's copy of the maps (tools/mockups/inline_data.py); the PNGs here stay exact
+    with open(mpath, "w") as fh:
+        json.dump(man, fh, separators=(",", ":"), sort_keys=True)
+        fh.write("\n")
+
+
+def main():
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    arg = lambda k, d: argv[argv.index(k) + 1] if k in argv else d
+    if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only]
+        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv)
+    names = arg("--tile", ",".join(TILES)).split(",")
+    samples, ppm = int(arg("--samples", "32")), float(arg("--ppm", "128"))
+    os.makedirs(OUT, exist_ok=True); os.makedirs(RAW, exist_ok=True)
+    mpath = os.path.join(OUT, "manifest.json")
+    man = json.load(open(mpath)) if os.path.exists(mpath) else {"tiles": {}, "pieces": {}}
+    man["_doc"] = ("Painted bake tiles, written by tools/blender/painted_bake.py (never edited by hand): a high-poly tile's "
+                   "passes painted over so it reads drawn on. u along the ship (x), v across the face (y), metres.")
+    for name in names:
+        build, w, h = TILES[name]
+        info = bake(name, w, h, ppm, samples)
+        man["tiles"][name] = info
+        for m in ("albedo", "normal", "emit"):
+            f = f"{name}_{m}.png"
+            man["pieces"][f"{name}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(OUT, f), "rb").read()).hexdigest()}
+        print(f"baked {name}: {info}", flush=True)
+    man["blender"] = bpy.app.version_string
+    with open(mpath, "w") as fh:
+        json.dump(man, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+
+
+if __name__ == "__main__":
+    main()

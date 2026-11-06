@@ -188,11 +188,15 @@ const SECTIONS = [
         why: 'Survey G1 chose classic space opera, where the battle is heard; Godot\'s 3D players dull a far sound by distance on their own.' },
     ] },
   { tag: 'H', name: 'Ssarith Hunt: their culture first',
-    lead: 'Mockup 12 version 1 is withdrawn: it read the species\' body into the ships. The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
+    lead: 'Mockup 12 versions 1 to 8 are deleted (version 1 read the species\' body into the ships; the rest were three coffins). Version 9 is a blockout board; your picks from it are decided (below). The Ship Design Bible now says a design never comes from a species\' looks, a culture holds many traditions, and every design choice names its source in the culture (chapter 13, C1-C5). The Hunt\'s culture is one line today, too thin to design from, and it is yours to set.',
     qs: [
       { id: 'H1', q: 'How should the Ssarith Hunt\'s culture be set before their ships are redrawn?',
         options: ['You write it (history, beliefs, how they live and work, their yards and makers); we design from that', 'We draft several traditions inside the Hunt (yards, eras, schools that disagree), none from their bodies, for you to pick and change', 'Pause the Hunt\'s ships for now'], rec: 1,
         why: 'Options to react to are quicker for you than a blank page, and you keep every cultural decision (U7).' },
+      { id: 'H5', q: 'Mockup 12 version 14 lights the Hunt ships at night by their own lamps. What colour are their windows and floodlights?',
+        options: ['Pale green-white windows, warm white floods (as drawn)', 'Warm amber windows and floods, like the Concord', 'Cool white windows, warm white floods', 'Something else (say in the notes)'], rec: 0,
+        why: 'The green of the windows ties them to the Hunt\'s strips and liveries; warm floods keep the plating its own colour when it is lit. A window\'s colour is also the light of the room behind it, so this can change per room once the rooms are planned.' },
+    ] },
   { tag: 'D', name: 'Missiles for every faction (mockup 16)',
     lead: 'You asked for missiles on every faction ("in starfleet command they are refered to as drones"). The weapons range fires salvos both ways with point defence; the rules are written up in openspec/changes/missiles after the reference manual (SFC2, printed pages 24 and 190-192). Every number is a placeholder.',
     qs: [
@@ -372,6 +376,7 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'H4: the blockouts that go on are 1 Hooded lance, 3 Forked prow, 7 Harpoon and 9 Trident; the Spearhead is withdrawn (owner, 2026-11-05: "spearhead: there we go again with the ltiterals lol / headedf lance: great! / forked prow, great! ... / trident: awesome! / harpoon yes!")', where: 'openspec/changes/ssarith-ship-concepts' },
   { text: 'A18: a bridge block of its own on larger super-capital ships; on other classes it depends on players\' feedback (owner, 2026-11-03: "larger super captial ships, otherwise it depends based on human feedback")', where: 'docs/design/ship-bible.html chapter 5' },
   { text: 'A15-A17 (Krai ship direction, sizes, names): withdrawn, the Krai ships are being redone on the Ship Design Bible (owner, 2026-11-03: "nuke the krai survey since we\'re redoing them")', where: 'openspec/changes/krai-ship-concepts' },
   { text: 'A13: the Albatross hangs its nacelle pylons from its main hull, the secondary hull clear beneath (owner, 2026-11-03: "I asked for the albatross pylons to be connected to the main hull instead")', where: 'openspec/changes/concord-hull-concepts' },
@@ -475,7 +480,7 @@ function questionCard(q) {
   const root = el('article', { class: 'q', id: 'q-' + q.id },
     el('div', { class: 'q-head' }, el('span', { class: 'qid', text: q.id }), el('p', { class: 'q-text', text: q.q })),
     optsEl,
-    el('p', { class: 'why' }, el('b', { text: 'Why I recommend it: ' }), q.why),
+    el('p', { class: 'why' }, el('b', { text: q.rec >= 0 ? 'Why I recommend it: ' : 'No recommendation: ' }), q.why),
     el('label', { class: 'note', for: 'note-' + q.id }, 'Your answer or note', textarea),
     status);
   cards[q.id] = { root, opts, textarea, status };
@@ -587,10 +592,10 @@ function snapshotHtml() {
     const note = (a?.text ?? '').trim();
     const answer = pick || note
       ? `${pick ? `<b>${esc(pick)}</b>` : ''}${pick && note ? '. ' : ''}${note ? esc(note) : ''}`
-      : `<i>Blank: recommendation accepted (${esc(q.options[q.rec])})</i>`;
+      : (q.rec >= 0 ? `<i>Blank: recommendation accepted (${esc(q.options[q.rec])})</i>` : '<i>Blank: no recommendation, still open</i>');
     return `<div class="q"><p class="h"><span class="id">${esc(q.id)}</span> ${esc(q.q)}</p>`
       + `<p class="o">Options: ${q.options.map(esc).join(' / ')}</p>`
-      + `<p class="r">Recommended: ${esc(q.options[q.rec])}. ${esc(q.why)}</p>`
+      + `<p class="r">${q.rec >= 0 ? `Recommended: ${esc(q.options[q.rec])}. ` : 'No recommendation. '}${esc(q.why)}</p>`
       + `<p class="a">Answer: ${answer}</p></div>`;
   }).join('')).join('');
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">`

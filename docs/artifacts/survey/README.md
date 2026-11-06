@@ -1,6 +1,7 @@
 # Fleet Command Survey
 
-- Link: https://claude.ai/artifact/81ey21Ngrr8WPTdhce7y8a
+- Link (the cloud session's account, published 2026-11-04 with the Culture, not anatomy rules): https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt
+- Link (the main account, not reachable from cloud sessions): https://claude.ai/artifact/81ey21Ngrr8WPTdhce7y8a
 - Shows: the owner's open questions (tech and platforms, the console and screens, game and feel, art,
   sound, playtesting), each with options and a recommendation, and the list of what is decided.
 - Made by: `docs/design/survey.html`, from the `html-survey` skill's template, published with the
@@ -40,3 +41,10 @@
 - 2026-11-03, cloud session (Concord ships thread): A13 closed (the Albatross's pylons from the main hull), on top of the live version 30; version 31, version id `1793702165-b129`.
 - 2026-11-03, cloud session (Concord ships thread): A18 (does the bridge need a shape) added on top of the live version 31; version 32, version id `1793722572-b53b`.
 - 2026-11-03, cloud session (Concord ships thread; owner: "nuke the krai survey since we're redoing them"): A15-A17 removed, A18 moved to decided with the owner's answer; version 33, version id `1793738368-a1c4`.
+- 2026-11-04, cloud session (owner: "publish new sets", "dont publish updates to the amster artifact mockup tracker on this account"): published as a new artifact on the cloud session's account, https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt, version id `1793801625-ca51` with capabilities db, user and downloads; its answers database starts empty (the main account's answers stay there). Not on the tracker (the tracker stays on the main account).
+- 2026-11-04, cloud session: version 2 on the cloud session's account (H2, Ssarith traditions), version id `1793802162-bb01`.
+- 2026-11-04, cloud session: version 3 (H2 rewritten for A, B or the new C, no recommendation; H3 C's layout; a question may have no recommendation), version id `1793803896-cbea`.
+- 2026-11-05, cloud session: version 4 (H2 and H3 replaced by H4, which Ssarith blockouts go on), version id `1793837618-10b4`.
+- 2026-11-05, cloud session: version 5 (H4 lists the version 10 blockouts), version id `1793842421-9921`.
+- 2026-11-05, cloud session: version 6, version id `1793849483-356d` (H4 decided by the owner's picks: 1, 3, 7, 9; Spearhead withdrawn).
+- 2026-11-05, cloud session: version 7, version id `1793882428-1f8c` (H5: the Hunt's window and flood colours, for mockup 12 version 14).
