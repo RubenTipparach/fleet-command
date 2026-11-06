@@ -35,7 +35,21 @@ public sealed class Rules
 
     /// <summary>The speed limit, m/s: the engines' boxes, the class's top speed, the engines' health and any brownout.</summary>
     public double MaxSpeed(Ship s) =>
-        Math.Min(s.Class.SpeedMaxMS, s.Power.GetValueOrDefault("engines") * _t.SpeedPerBoxMS) * (0.4 + 0.6 * s.Sys["engines"]) * s.Brown;
+        Math.Min(s.Class.SpeedMaxMS, s.Power.GetValueOrDefault("engines") * _t.SpeedPerBoxMS) * (0.4 + 0.6 * s.Sys["engines"]) * s.Brown * s.SurgeSpeedX;
+
+    /// <summary>What a hit does to a facing (special-weapons design): pierce of it goes straight to the hull, the shield
+    /// takes the rest up to what it holds, and what it cannot take goes to the hull too.</summary>
+    public static (double Held, double ToHull) Pierced(double dmg, double pierce, double shield)
+    {
+        double held = Math.Min(Math.Max(0, shield), dmg * (1 - Math.Clamp(pierce, 0, 1)));
+        return (held, dmg - held);
+    }
+
+    /// <summary>The chorus lance's damage a second with joined ships joining it.</summary>
+    public static double ChorusDps(ChorusDef c, int joined) => c.DmgPerS * (1 + c.PerJoinerX * Math.Min(joined, c.MaxJoiners));
+
+    /// <summary>A blood charge's ram: damage for the closing speed (m/s), by the rammer's battle length.</summary>
+    public static double RamDamage(ChargeDef c, double closingMS, double lengthM) => Math.Max(0, closingMS) / 100 * c.DmgPer100MS * lengthM / c.MassRefM;
 
     /// <summary>The figures a mount fires with in its arming state.</summary>
     public static WeaponMode Mode(Mount m) => m.State == Arming.Overload && m.Weapon.Overload != null ? m.Weapon.Overload : m.Weapon.Normal;
@@ -67,7 +81,7 @@ public sealed class Rules
 
     public static bool InRange(Ship s, Mount m, Ship t) => DistKm(s, t) <= Mode(m).RangeKm;
 
-    public static bool Ready(Mount m) => m.State != Arming.Offline && m.Charge >= 1 && m.Hp > 0;
+    public static bool Ready(Mount m) => m.State != Arming.Offline && m.Charge >= 1 && m.Hp > 0 && m.StunS <= 0;
 
     /// <summary>Seconds until a mount is ready at the rate Battle charges it, or null when it is not cooling.</summary>
     public static double? CooldownS(Mount m) => m.State == Arming.Offline || m.Hp <= 0 || m.Charge >= 1 ? null : (1 - m.Charge) * Mode(m).ChargeS;

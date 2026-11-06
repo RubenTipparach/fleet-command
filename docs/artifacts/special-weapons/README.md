@@ -19,3 +19,9 @@
 - Version 2 published 2026-11-04 from the cloud session, version id `1793830836-df78`: the standard weapons (lance,
   disruptor, pulse torpedo with its six-armed star and bead trail, missiles in four grades with point defence), one fixed
   side-on view fitted to the free screen, shields half again as large and invisible until hit, no white on any weapon.
+- Version 3 published 2026-11-04 from the cloud session, version id `1793834055-ace0`: torpedoes fired straight; missiles at near ship speeds by grade
+  (240 to 480 m/s, 8 to 18 damage); countermeasures: flares, a decoy shuttle, point defence cannon tracers.
+- Version 4 published 2026-11-05 from the cloud session, version id `1793848734-9e85`: the quell as a cross between a
+  pulse torpedo and a missile, in deep blue; no dark smoke or dark shards on the range (the black specks after a ram).
+- Version 5 published 2026-11-05 from the cloud session, version id `1793912527-5da1`: the blood charge's card reads its
+  cost from the capacitor and battery together, as the game now spends it.

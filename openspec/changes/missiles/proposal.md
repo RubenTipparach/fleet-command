@@ -22,6 +22,8 @@ fire one or fire all.
 - **Guidance**: a ship guides at most six missiles at once; a seventh launch drops the oldest. A launcher whose sensors
   are out loses its missiles' lock.
 - **Fire one or fire all** on the weapons panel.
+- **Countermeasures** (owner: "Missiles follow ships around. Can be countered with counter measures like flares, decoy
+  shuttles, or pdc"): flares, a decoy shuttle and point defence cannons, each lower grade easier to fool.
 - **The look** (change `weapon-fx`): a plain dart with a big ball of drive light and a long tail in its grade's colour,
   weaving as it homes; shown now on the weapons range and in the battle console mockup.
 

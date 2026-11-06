@@ -38,6 +38,7 @@ public sealed partial class BattleView : Node3D
     private NebulaSky? _sky;
     private DirectionalLight3D _sun = null!;
     private ShaderMaterial _skyMat = null!;
+    private ShotView _shots = null!;
 
     /// <summary>How much of the hulls' ambient light comes from the nebula (the rest is the old cool blue fill).</summary>
     public const float AmbientSkyShare = 1f;
@@ -82,6 +83,8 @@ public sealed partial class BattleView : Node3D
             AmbientLightSource = Godot.Environment.AmbientSource.Sky, AmbientLightColor = new Color("#3a4a6a"), AmbientLightEnergy = AmbientEnergy,
             AmbientLightSkyContribution = AmbientSkyShare, ReflectedLightSource = Godot.Environment.ReflectionSource.Sky,
             TonemapMode = Godot.Environment.ToneMapper.Filmic,
+            // glow, for the weapons' light (change weapon-fx: the weapons range's bloom): only what is brighter than 1
+            GlowEnabled = true, GlowIntensity = 0.7f, GlowBloom = 0f, GlowHdrThreshold = 1.0f, GlowBlendMode = Godot.Environment.GlowBlendModeEnum.Additive,
         };
         AddChild(new WorldEnvironment { Environment = env, Name = "Environment" });
         // the sun casts high-quality shadows, the ships onto themselves too (owner, 2026-11-04: "need high quality shadows on
@@ -100,6 +103,8 @@ public sealed partial class BattleView : Node3D
         _sun = sun;
         _cam = new Camera3D { Name = "Camera", Current = true };
         AddChild(_cam);
+        _shots = new ShotView { Name = "Shots" };
+        AddChild(_shots);
         Rebuild();
     }
 
@@ -220,6 +225,7 @@ public sealed partial class BattleView : Node3D
         _cam.LookAt(focus, Vector3.Up);
         _sky?.Follow(_cam.GlobalPosition);
         Project();
+        _shots.Sync(b);
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every

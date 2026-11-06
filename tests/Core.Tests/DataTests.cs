@@ -11,7 +11,9 @@ public class DataTests
         GameData d = TestData.Data;
         Assert.Equal(6, TestData.Raiders.Ships.Count);
         Assert.Equal("resolute", TestData.Raiders.Ships[0].Id);
-        Assert.Equal(9, d.Classes["ca"].Mounts.Count);
+        Assert.Equal(11, d.Classes["ca"].Mounts.Count);   // nine guns, the chorus lance and a missile rack (blue grade)
+        Assert.Equal("chorus", d.Classes["ca"].Mounts[6].Weapon);
+        Assert.Equal("blue", d.Classes["ca"].Mounts[10].Grade);
         Assert.Equal(140 * d.Tuning.DemoToughX, d.Classes["ca"].HullHp);
     }
 
@@ -52,7 +54,7 @@ public class DataTests
     public void A_mount_naming_an_unknown_weapon_is_refused()
     {
         string classes = TestData.Read("battle/classes.json").Replace("\"weapon\": \"lance\"", "\"weapon\": \"lancer\"");
-        var e = Assert.Throws<DataError>(() => DataLoader.LoadClasses(StrictJson.Parse(classes, "data/battle/classes.json"), TestData.Data.Weapons, TestData.Data.Tuning));
+        var e = Assert.Throws<DataError>(() => DataLoader.LoadClasses(StrictJson.Parse(classes, "data/battle/classes.json"), TestData.Data.Weapons, TestData.Data.Tuning, TestData.Data.Missiles));
         Assert.Contains("no weapon 'lancer'", e.Message);
     }
 }

@@ -6,7 +6,7 @@ implementation: the version the game matches, and every difference still open, e
 Update it with every change to the mockup or the game. Side-by-side sheets: `docs/screenshots/compare/`
 (`tools/compare/side_by_side.py`).
 
-## Where each implemented mockup stands (2026-11-04)
+## Where each implemented mockup stands (2026-11-05)
 
 | # | Mockup | Live version | Game matches | Change |
 |---|---|---|---|---|
@@ -15,6 +15,7 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | 7 | Krai Warhost ships | v21 | v21: the intact ships exported by `tools/mockups/export_ships.mjs` (2026-11-04, Mac), the detail tile, the livery and the lamps, and the same damage as mockup 6's | `ship-models-engine` |
 | 8 | Battle console: Krai Warhost | v13 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 | 1 | Primary game flow (menus, faction screen, campaign, missions) | v15 | v15 (Accept sets course; the debrief over the battle); v14's flow and rules (2026-11-05): the menu, the faction screen, skirmish, the campaign map with the same territory, moves, routes by turn, factions' fleets, freighters, mission banners, briefing, port, debrief with prestige and reputation; missions from `data/missions/`; the differences below | `game-flow-engine`, `mission-scripting` |
+| 16 | Special weapons range | v5 | v5's simulation and looks: the four missile grades with flares, decoy shuttle and point defence; the chorus lance, quell torpedo, forge driver and blood charge with their rules and effects. Not its shield bubble ripple, haze or motes (below) | `weapon-fx`, `missiles`, `special-weapons` |
 
 Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
 battle console mockup (mockup 2 v82, mockup 8 v21, mockup 15 v6) flies the same exported glbs the game flies, each class's
@@ -25,12 +26,13 @@ the console shows the glbs' stand-in paint. Task: `ship-models-engine` 2.5.
 Beams and bolts (2026-11-04, owner: "source and destination of phaser and disruptors must maintain in sync"): in step in
 both. Mockup 2 v76 (and mockup 8 v15, written from it) resolve a beam's ends each step from the firing mount and the
 target as they now stand (`shotEnds`) and fly disruptor bolts on that live line (`boltStep`); the game does the same in
-`Battle.Ends` and `BoltStep` (`src/Core/Sim/Battle.cs`), drawn by `ViewOverlay`. Torpedoes and missiles fly free in both.
+`Battle.Ends` and `BoltStep` (`src/Core/Sim/Battle.cs`), drawn by `ShotView`. Torpedoes and missiles fly free in both.
 Change `weapon-fx`, tasks 2.1-2.3.
 
-Shot looks (mockup 2 v77): open. The mockup draws lances as lit strips, disruptor bolts as hot streaks and torpedoes
-and missiles as glowing warheads with trails (`docs/mockups/lib/weapon-fx.js`); the game's overlay still draws lines and
-dots. Task: `weapon-fx` 3.4.
+Shot looks (mockup 2 v77, mockup 16 v5): in step since 2026-11-05. The game draws every shot in 3D as the range and the
+mockup draw it (`src/Game/View/ShotView.cs` with `beam`, `flare` and `beads` shaders, glow on): lances as lit strips,
+disruptor bolts as hot streaks, torpedoes as six-armed purple stars with bead trails, missiles as body, ball plume and
+tail in their grade's colour, point defence as gold tracers, flares and the decoy shuttle. Task `weapon-fx` 3.4.
 
 Schematics (2026-11-05, owner: "generate schematics for each ship ... I want these to be used in game, and in store"): the
 game is ahead of the mockups. The battle's systems display and the campaign's shipyard, fleet and outfitter draw each ship's
@@ -102,6 +104,19 @@ in both, every control inside its panel, in 20 console states. What the Krai ski
 
 Seen in a real window on the Mac (2026-11-04): `docs/screenshots/game/krai-battle.png`, `krai-duel.png`, and the six
 recorded bot runs (`docs/playtests/2026-11-04-scenario-bot-runs.md`).
+
+### Mockup 16 (the weapons range)
+
+The range is approved for implementation (2026-11-05, "Implement weapons in game"). Two kinds of difference remain: what
+the range shows that the game lacks, and what the game now has that the battle console mockups (2 and 8) do not show yet.
+
+| What | Mockup | Game | Task |
+|---|---|---|---|
+| Shield bubble | Invisible at rest, a ripple where a hit lands | A blue particle flare where a stopped shot strikes (`Fx.ShieldFlare`); no bubble ripple | `weapon-fx` 3.1 |
+| Haze, motes, scars | Haze round beams, drifting motes, scars on the hull | Not built (the hull's damage marks are `ship-damage-visuals`') | `weapon-fx` 3.1, 3.2 |
+| Blood charge order | The run is ordered on the range | Only the AI charges; no player input action or key yet | `special-weapons` 2.8, 1.5 |
+| Specials and grades on the panel | Not on the console mockups yet | Specials fire as ordinary mount rows with new glyphs (chorus, quell, slug); a rack's grade is not shown | `special-weapons` 1.5, `missiles` 1.5, 2.6 |
+| Flares and decoy orders | On the range they fire by themselves | Automatic, as on the range; no player order yet | `missiles` 2.6 |
 
 ### Mockups 6 and 7 (the ships)
 
