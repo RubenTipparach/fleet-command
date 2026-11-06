@@ -123,3 +123,4 @@
 - 2026-11-05, desktop session: version 126, version id `1793877957-f8cb`: M1 v14, the Missions guide v3.
 - 2026-11-05, desktop session: version 127, version id `1793911435-01fe`: M1 v15 (Accept sets course), and the flow running in the game.
 - 2026-11-05, desktop session: version 128, version id `1793915465-6c92`: M1 v16 (the port redesigned).
+- 2026-11-06, the Kelvane console session (owner, of an empty tracker: "what happened?"): version 130, version id `1793929318-5e9b`. Mockup 1's summary (its v13 sentence) had three unescaped apostrophes ("the player's", "your allies'", "the owner's") inside a single-quoted string: a syntax error, so the script never ran and every list was empty. Escaped; the script checked with `node --check` and rendered headless (16 mockup cards, 10 links, no errors). Merged onto the live version 129 (`1793927639-c2c6`), keeping its Emblem Design Guide v32.
