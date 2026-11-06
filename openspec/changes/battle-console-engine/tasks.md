@@ -26,6 +26,9 @@
     view; their keys on the Craft page until the Transport station's Mines tab is built), the beam, craft, mines and rocks
     in 3D, and the mockup's Tractor, Mines, Shuttle and Fighters scenes from both sides with their playtests
   - [ ] 2.2b Mines spend a transporter pad and move to the Transport station's Mines tab (with the transport package)
+  - [x] 2.1a Science (scan, active or passive, ECM and ECCM, cloak and sweep), with cloaking and nebulae in the battle (changes `cloaking`, `weapon-targeting`)
+- [ ] 2.2 Ship pages: sensors, tractor (the contest), craft; the Target box with the target's systems display
+  - [x] 2.2a Sensors (health, mode, ECM and ECCM, contacts, the target's ECM), and Security on its own entry with the deck plan in 3D (change `boarding-defence`)
 - [ ] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [x] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [ ] 2.5 The tactical map, the event log, the 3D shield hexagon, the transporter effect

@@ -59,6 +59,12 @@ Eight more (2026-11-06), one for each of the tractor, mines and craft test scene
 | `reactor_pulsar_wake` | A cold teal wake trailing a pulsar, pale gold knots (Warp, Krai side) |
 | `reactor_cinder_drift` | Smouldering brown and ember dust, a low red glow (Escape, Concord side) |
 | `reactor_smoke_veil` | Grey-violet smoke drawn thin, a faint rose core (Escape, Krai side) |
+| `cloak_still_water` | A calm grey-green pool of light, a pale core (the Concord's Cloak scene) |
+| `cloak_night_shroud` | A dark slate shroud, steel-blue edges, one dim cold core (the Krai's Cloak scene) |
+| `cloak_static_haze` | Pink-violet haze shot with static, a hot magenta core (the Concord's Nebula scene) |
+| `cloak_iris_drift` | Blue-violet petals drifting apart, gold at their hearts (the Krai's Nebula scene) |
+| `cloak_bulkhead` | Copper and teal clouds along a hard dark seam (the Concord's Repel boarders scene) |
+| `cloak_alarm_red` | A low scarlet glow under violet dust (the Krai's Repel boarders scene) |
 
 `docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
 bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the

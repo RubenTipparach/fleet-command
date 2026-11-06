@@ -151,6 +151,25 @@ THEMES = [
     ("reactor_smoke_veil", "Smoke Veil", "Grey-violet smoke drawn thin across the dark, a faint rose core far off: a quiet place to run.",
      2118, [0.01, 0.009, 0.016], [0.7, 0.65, 0.8], [((0.6, 0.52, 0.72), (0.14, 0.1, 0.22)), ((0.85, 0.5, 0.6), (0.24, 0.08, 0.14))],
      [0.85, 0.95, 1.1], [((1.0, 0.85, 0.9), (0.8, 0.45, 0.6))], 0.95),
+    # the cloak and sensors scenes' skies (data/battle/scenes/cloak.json): every scenario has its own
+    ("cloak_night_shroud", "Night Shroud", "A dark slate shroud with faint steel-blue edges and one dim cold core: a sky to hide in.",
+     2115, [0.006, 0.008, 0.012], [0.55, 0.62, 0.72], [((0.36, 0.46, 0.6), (0.05, 0.08, 0.14)), ((0.5, 0.56, 0.7), (0.08, 0.1, 0.16))],
+     [0.9, 1.0, 1.2], [((0.8, 0.88, 1.0), (0.35, 0.45, 0.65))], 0.95),
+    ("cloak_static_haze", "Static Haze", "Pink-violet haze shot with white static, a hot magenta core: the jammer's nebula.",
+     2116, [0.02, 0.01, 0.024], [0.85, 0.65, 0.9], [((1.0, 0.45, 0.85), (0.34, 0.06, 0.3)), ((0.85, 0.6, 1.0), (0.24, 0.1, 0.36))],
+     [0.7, 0.9, 1.2], [((1.0, 0.92, 1.0), (1.0, 0.5, 0.9))], 1.2),
+    ("cloak_iris_drift", "Iris Drift", "Blue-violet iris petals drifting apart, gold at their hearts.",
+     2117, [0.012, 0.01, 0.03], [0.7, 0.7, 1.0], [((0.5, 0.45, 1.0), (0.1, 0.06, 0.36)), ((1.0, 0.8, 0.4), (0.3, 0.16, 0.08))],
+     [0.8, 0.95, 1.1], [((1.0, 0.95, 0.85), (0.6, 0.5, 1.0))], 1.15),
+    ("cloak_still_water", "Still Water", "A calm grey-green pool of light, almost still, with a pale core: a quiet sky to lie in wait.",
+     2118, [0.008, 0.012, 0.012], [0.6, 0.75, 0.72], [((0.4, 0.7, 0.62), (0.05, 0.14, 0.12))],
+     [0.9, 1.0, 1.1], [((0.85, 1.0, 0.95), (0.4, 0.7, 0.62))], 1.0),
+    ("cloak_bulkhead", "Bulkhead", "Copper and teal clouds pressed against each other along a hard dark seam.",
+     2119, [0.016, 0.012, 0.012], [0.8, 0.75, 0.7], [((0.9, 0.5, 0.3), (0.3, 0.1, 0.05)), ((0.3, 0.8, 0.75), (0.04, 0.2, 0.2))],
+     [0.7, 0.9, 1.3], [((1.0, 0.9, 0.8), (0.9, 0.55, 0.35))], 1.1),
+    ("cloak_alarm_red", "Alarm Red", "A low scarlet glow under violet dust, like a ship's red alert seen through smoke.",
+     2120, [0.02, 0.008, 0.016], [0.85, 0.55, 0.7], [((1.0, 0.25, 0.35), (0.35, 0.03, 0.1)), ((0.6, 0.3, 0.9), (0.15, 0.05, 0.3))],
+     [0.7, 0.9, 1.2], [((1.0, 0.85, 0.85), (1.0, 0.35, 0.45))], 1.15),
 ]
 
 

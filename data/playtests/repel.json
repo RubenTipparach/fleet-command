@@ -1,0 +1,18 @@
+{
+ "_doc": "The scripted captain's Repel boarders scene (the battle console mockup's SCENES.repel and its shots scene_repel and repel_expanded; openspec/changes/boarding-defence): pick the scenario, open Security on the ship panel and expand it, wait for the first squad, send team T2 walking to the shield generator room and T3 beamed to engineering, back to the docked console, then hold until the boarders are spent or the bridge is lost. Played from both sides.",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "click", "arg": "sh.security" },
+  { "do": "expand", "arg": "Ship" },
+  { "do": "hold", "s": 8 },
+  { "do": "click", "arg": "sec.t.T2" },
+  { "do": "click", "arg": "sec.room.shield_room" },
+  { "do": "click", "arg": "sec.mode.beam" },
+  { "do": "click", "arg": "sec.t.T3" },
+  { "do": "click", "arg": "sec.room.engineering" },
+  { "do": "hold", "s": 5 },
+  { "do": "collapse" },
+  { "do": "hold", "s": 240 }
+ ]
+}

@@ -42,6 +42,12 @@
   { "script": "warp", "play": "krai_warp" },
   { "script": "escape", "play": "concord_escape" },
   { "script": "escape", "play": "krai_escape" },
+  { "script": "cloak", "play": "concord_cloak" },
+  { "script": "cloak", "play": "krai_cloak" },
+  { "script": "nebula", "play": "concord_nebula" },
+  { "script": "nebula", "play": "krai_nebula" },
+  { "script": "repel", "play": "concord_repel" },
+  { "script": "repel", "play": "krai_repel" },
   { "script": "campaign", "play": "campaign" }
  ]
 }

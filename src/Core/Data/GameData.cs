@@ -80,7 +80,7 @@ public enum AiRange { Close, Mid, Long }
 public sealed record ShipStart(string Id, string Name, string Captain, string Class, string Faction, int Side,
     double XM, double ZM, double HeadingDeg, double SpeedMS,
     Sim.Stance Stance = Sim.Stance.Attack, AiRange Range = AiRange.Mid, bool Erratic = false, bool HoldFire = false,
-    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, ShipStartState? Start = null)
+    double HullFrac = 1, double ShieldsFrac = 1, bool Prize = false, ShipStartState? Start = null, CloakStart? Cloak = null)
 {
     /// <summary>What it carries in place of its class's loadout (mines, fighters, shuttles, barrage missiles), or null.</summary>
     public ShipKit? Kit { get; init; }
@@ -104,7 +104,7 @@ public sealed record RockDef(double XM, double ZM, double RadiusM, string? Name)
 /// gravity wells whose field a warp jump must reckon with (ScenarioStart), or null.</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
-    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null)
+    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null, NebulaDef? Nebula = null, bool Repel = false)
 {
     /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: the scene's tool is
     /// what destroys the target).</summary>

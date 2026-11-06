@@ -53,7 +53,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         float bestD = 30;
         foreach (Ship s in B.Ships)
         {
-            if (!s.Alive || s == B.Player) continue;
+            if (!s.Alive || s == B.Player || !B.Detected(B.Player, s)) continue;   // a cloaked ship unseen cannot be picked
             if (Local(s.X, s.Z) is not { } p) continue;
             float d = p.DistanceTo(local);
             if (d < bestD) { bestD = d; best = s; }
@@ -180,7 +180,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         bool big = _x.State.Expanded != null;
         foreach (Ship s in b.Ships)
         {
-            if (!s.Alive || s == me) continue;
+            if (!s.Alive || s == me || !b.Detected(me, s)) continue;   // a cloaked ship unseen is not marked (Battle.Detected)
             Vector2? lp = Local(s.X, s.Z);
             bool locked = s == t;
             if (lp is not { } p || !view.Grow(-4).HasPoint(p))

@@ -122,7 +122,7 @@ public sealed partial class RadarPanel : ConsolePanel
         foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
         foreach (Ship o in B.Ships)
         {
-            if (!o.Alive || o == Me) continue;
+            if (!o.Alive || o == Me || !B.Detected(Me, o)) continue;   // a cloaked ship unseen is not on the radar
             double km = Rules.DistKm(Me, o), br = Rules.Bearing(Me, o.X, o.Z), r = Math.Min(1.08, km / ScaleKm) * rr;
             var p = c + new Vector2((float)(Math.Sin(br) * r), (float)(-Math.Cos(br) * r));
             DrawCircle(p, 120 * 0.035f, Aiming.ContactColor(C, Me, o), true, -1, true);
@@ -131,7 +131,7 @@ public sealed partial class RadarPanel : ConsolePanel
         DrawCircle(c, 120 * 0.03f, C.Sky, true, -1, true);
         float bx = x + 128, bw = Size.X - 128 - 80;
         Kit.Piece(this, "frame.inset", new Rect2(bx, y + 6, bw, 120));
-        Pairs("rr", bx + 14, y + 52, new (string, string, Color?)[] { ("", B.EnemiesOf(Me).Count().ToString(), null), ($"hostile · {ScaleKm:0} km", "", null) });
+        Pairs("rr", bx + 14, y + 52, new (string, string, Color?)[] { ("", B.SeenFoes(Me).Count().ToString(), null), ($"hostile · {ScaleKm:0} km", "", null) });
         Button("rr.map", new Rect2(bx + 14, y + 72, 70, 30), "Map", () => X.Act.Expand(Region), tip: new Tip("Tactical map"));
         Button("rr.next", new Rect2(bx + 92, y + 72, 120, 30), "Next target", () => B.NextTarget(), tip: new Tip("Lock the next enemy (Tab)"));
         Kit.Hero(this, "crest", new Rect2(Size.X - 74, y + 30, 72, 72));

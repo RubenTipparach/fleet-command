@@ -9,7 +9,7 @@ using FleetCommand.Sim;
 
 namespace FleetCommand.Data;
 
-public static class DataLoader
+public static partial class DataLoader
 {
     /// <summary>The system packages, each with its scenes file (data/battle/scenes/) and numbers (data/battle/systems/).</summary>
     public static readonly string[] ScenePackages = { "comms", "tractor", "reactor", "cloak", "tactical" };
@@ -300,7 +300,7 @@ public static class DataLoader
             if (shieldsFrac is < 0 or > 1) throw new DataError($"{s.Where}.shields_frac: between 0 and 1");
             ships.Add(new ShipStart(id, s.Str("name"), s.Str("captain"), cls, fac, sideNo, s.Num("x_m"), s.Num("z_m"), s.Num("heading_deg"), s.Num("speed_m_s"),
                 st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac,
-                Start: s.ObjOrNull("start") is { } so ? ShipStartState.Read(so, classes[cls]) : null));
+                Start: s.ObjOrNull("start") is { } so ? ShipStartState.Read(so, classes[cls]) : null, Cloak: CloakShipStart(s)));
             ships[^1] = ScenarioExtras.Ship(s, ships[^1]);
             s.Done();
         }
@@ -315,7 +315,8 @@ public static class DataLoader
         if (!(sun > 0 && sun <= 4)) throw new DataError($"{root.Where}.sun_energy: above 0 and at most 4, not {sun}");
         // a damage range (data/battle/range.json): its ships stand to be fired at, and it never ends
         bool isRange = root.Bool("damage_range", false);
-        var scenario = ScenarioExtras.Scene(root, new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange, Wells: WellDef.ReadList(root)));
+        var scenario = ScenarioExtras.Scene(root, new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange, Wells: WellDef.ReadList(root),
+            Nebula: CloakNebula(root), Repel: root.Bool("repel", false)));
         root.Done();
         return scenario;
     }

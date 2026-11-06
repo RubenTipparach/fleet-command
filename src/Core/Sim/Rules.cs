@@ -30,8 +30,9 @@ public sealed partial class Rules
     /// <summary>The reactor's output this moment, E: its rating, less what misaligned coils lose (Rules.Reactor).</summary>
     public double Output(Ship s) => s.Class.ReactorE * Efficiency(s);
 
-    /// <summary>What the allocation draws, E: the systems' boxes, the coolant pumps and the warp coils (Rules.Reactor).</summary>
-    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k)) + ReactorDraw(s);
+    /// <summary>What the allocation draws, E: the systems' boxes, the coolant pumps and the warp coils (Rules.Reactor), and the
+    /// cloak while it is on (Rules.Cloak.cs).</summary>
+    public int Used(Ship s) => Systems.Sum(k => s.Power.GetValueOrDefault(k)) + ReactorDraw(s) + (int)Math.Round(s.CloakDrawE);
 
     /// <summary>How many more boxes a system holding <paramref name="current"/> may be given: up to ten, within the output,
     /// unless the captain lets the allocation draw past it (Ship.Overdraw).</summary>
@@ -118,7 +119,7 @@ public sealed partial class Rules
         WeaponMode w = Mode(m);
         double d = DistKm(s, t);
         double p = _t.HitChanceNear - _t.HitChanceFalloff * d / w.RangeKm;
-        p -= _t.EcmStep * t.Ecm;
+        p += Ew(s, t);   // ECM, ECCM, the nebula, passive sensors and a cloak (Rules.Cloak.cs)
         // a proximity burst ignores the target's speed and adds its bonus (weapon-arming design)
         if (!w.IgnoreSpeed) p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
         p += w.HitBonus;
