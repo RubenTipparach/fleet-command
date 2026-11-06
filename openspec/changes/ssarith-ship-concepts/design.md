@@ -1,5 +1,17 @@
 # Design: ssarith-ship-concepts
 
+## Version 22: the classes, one ship at a time (owner, 2026-11-06)
+
+"update mockup to be one ship at a time, we need a cruiser class, all the smaller ships are frigates".
+
+| What | How | Numbers |
+|---|---|---|
+| The classes | The four picks are the frigates; a new cruiser; the carrier. The list groups them by class | frigates 110-116 m, cruiser 150 m, carrier 168 m |
+| The cruiser | Blockout 14, grown like the others: a long heavy body under a broad hood swept wide aft and drawn to a point over the bow; the flanks reach forward low as two side prongs, the keel runs on longest as a lance with a light strip. Its detail, maps, panes and field baked as the others | 150 m by 60 m by 20 m, 452 triangles |
+| One ship at a time | Every ship at the origin, only the picked one shown; views of it (three quarter, side, top, ahead) from its own size; the Concord Petrel beside it for scale; the board and its labels gone | |
+
+- Provisional: the cruiser's form and features (drafted, not yet reviewed by the owner); its rooms come with task 3.1.
+
 ## Version 15: the carrier, rooms behind the windows, forward floods, battle damage (owner, 2026-11-05)
 
 With two night shots: "we need some more lights pointed forward to paint more of the hull", "we need a carrier", "we need
