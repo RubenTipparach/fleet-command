@@ -126,7 +126,7 @@
 - 2026-11-06, cloud session (owner: "I dont really like the big shell being on top, can the cruiser and carrier have the
   shell be on the bottom? maybe the carrier can have the shell be in the middle, and launchers above and below", "window
   borders should also not glow", "I would remove window dots from the ships texture since it overlaps with our window
-  cutouts"): version 23, an interim publish on quick-bake maps (1024 px, 6 samples) while the full bake runs. The cruiser's
+  cutouts"): version 23, version id `1793928933-21bc`, an interim publish on quick-bake maps (1024 px, 6 samples) while the full bake runs. The cruiser's
   section turned over, its broad shell underneath and the spine running on as a dorsal lance; the carrier on its own
   section, a shell through its middle with hangar blocks and launch bays above and below it; window frames dark, no glow;
   no window glass baked into any ship's maps. New shot: bays_low.
