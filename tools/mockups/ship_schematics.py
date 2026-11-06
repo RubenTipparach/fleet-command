@@ -2,7 +2,7 @@
 """Top-down ship schematics: two white layers per ship (a shaded hull and a quad wireframe) for every console skin.
 
 What it owns: reading the exported ship glbs (assets/ships/<faction>/<id>.glb, written by
-tools/mockups/export_ships.mjs), turning their triangles back into quads, and rendering each ship from directly
+tools/mockups/export_ships.mjs, and the Ssarith Hunt's, built in Blender), turning their triangles back into quads, and rendering each ship from directly
 above, nose up, into assets/ships/schematics/<faction>/<id>.hull.png and <id>.wire.png, with
 assets/ships/schematics/manifest.json (sizes, metres per pixel, the origin's pixel, counts and the source glb's
 sha256) and a contact sheet, docs/screenshots/schematics/sheet.png.
@@ -34,7 +34,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SHIPS = ROOT / "assets" / "ships"
 OUT = SHIPS / "schematics"
 SHEET = ROOT / "docs" / "screenshots" / "schematics" / "sheet.png"
-FACTIONS = ("concord", "krai")
+FACTIONS = ("concord", "krai", "ssarith")
 
 SIZE_PX = 1024          # the square canvas of each layer
 MARGIN = 0.06           # fraction of the canvas left clear on each side of the longest extent
@@ -171,7 +171,8 @@ def axes_from_data(meshes, empties) -> dict:
     ext = allp.max(0) - allp.min(0)
     long_axis = int(np.argmax(ext))
     engines = [v for k, v in empties.items() if k.startswith("engine_")]
-    fore = [v for k, v in empties.items() if k in ("deflector", "bridge") or k.startswith("mount_")]
+    # the Ssarith Hunt's Blender ships carry no mount or bridge empties; their bow strobes stand for the fore fittings
+    fore = [v for k, v in empties.items() if k in ("deflector", "bridge") or k.startswith(("mount_", "light_strobe_hull"))]
     if long_axis != 2 or not engines or not fore:
         raise SystemExit("ship_schematics: cannot find the nose from the data (expected the long axis on Z)")
     # The bow is the end away from the engines: engines' mean Z is greater than the fore fittings' -> bow is -Z.

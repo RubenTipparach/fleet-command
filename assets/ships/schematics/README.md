@@ -23,7 +23,7 @@ top. Height (y) is not drawn. So a weapon mount's empty from the glb can be mark
 
 ## What made them
 
-`tools/mockups/ship_schematics.py` reads each glb in `assets/ships/concord/` and `assets/ships/krai/`, welds its
+`tools/mockups/ship_schematics.py` reads each glb in `assets/ships/concord/`, `assets/ships/krai/` and `assets/ships/ssarith/`, welds its
 vertices, pairs its triangles back into quads (near-coplanar, convex, best pairs first), and renders both layers at
 4x and scales them down. It also writes the contact sheet `docs/screenshots/schematics/sheet.png`: each ship's hull
 layer, wire layer, the two recombined in three tints, and a 200 px copy. Look at it after a change.

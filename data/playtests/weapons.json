@@ -1,0 +1,35 @@
+{
+ "_doc": "The scripted captain's weapon scenes (weapon_*, a quarter speed): lock the target, which locks the camera, and fire the one armed weapon from where the ship stands, watched over the ship's shoulder, then in Target view, then back. Seconds are battle seconds, so each takes four times as long in real time.",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "press",
+   "arg": "next_target"
+  },
+  {
+   "do": "fire",
+   "s": 10
+  },
+  {
+   "do": "click",
+   "arg": "v.tview"
+  },
+  {
+   "do": "fire",
+   "s": 10
+  },
+  {
+   "do": "click",
+   "arg": "v.camlock"
+  },
+  {
+   "do": "fire",
+   "s": 5
+  }
+ ]
+}

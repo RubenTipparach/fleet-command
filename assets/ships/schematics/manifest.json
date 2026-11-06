@@ -338,6 +338,168 @@
     "glb": "assets/ships/krai/dreadnought.glb",
     "sha256": "7cfccede0f655418b72cd6cc024f2e979bc8b6f9d09afb4c609b27aabcdd2b12"
    }
+  },
+  {
+   "faction": "ssarith",
+   "id": "hooded_lance",
+   "hull": "ssarith/hooded_lance.hull.png",
+   "wire": "ssarith/hooded_lance.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.12207,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 52.0,
+    "length_z": 110.0
+   },
+   "source_triangles": 394,
+   "quads": 171,
+   "triangles": 52,
+   "edges_drawn": 277,
+   "source": {
+    "glb": "assets/ships/ssarith/hooded_lance.glb",
+    "sha256": "6e4aa37c7954bac1a67d0081324d29ba2cfc192f8960c781e89b3fc3a75cf3ef"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "forked_prow",
+   "hull": "ssarith/forked_prow.hull.png",
+   "wire": "ssarith/forked_prow.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.12207,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 18.4,
+    "length_z": 110.0
+   },
+   "source_triangles": 374,
+   "quads": 167,
+   "triangles": 40,
+   "edges_drawn": 269,
+   "source": {
+    "glb": "assets/ships/ssarith/forked_prow.glb",
+    "sha256": "3eb9bc5621ea231cd3497f4994b2d6fea8ac4efe634f8972302b38846963bde4"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "harpoon",
+   "hull": "ssarith/harpoon.hull.png",
+   "wire": "ssarith/harpoon.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.128729,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 34.0,
+    "length_z": 116.0
+   },
+   "source_triangles": 294,
+   "quads": 125,
+   "triangles": 44,
+   "edges_drawn": 232,
+   "source": {
+    "glb": "assets/ships/ssarith/harpoon.glb",
+    "sha256": "5d008f53393ebcec297a6e5a81768fa69272109b9aea48fbfd84062bcbce68fe"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "trident",
+   "hull": "ssarith/trident.hull.png",
+   "wire": "ssarith/trident.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.12429,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 30.032,
+    "length_z": 112.0
+   },
+   "source_triangles": 454,
+   "quads": 197,
+   "triangles": 60,
+   "edges_drawn": 376,
+   "source": {
+    "glb": "assets/ships/ssarith/trident.glb",
+    "sha256": "b95467199cfd8880587485dd2500560dd9cc99f9865ee8643635962a3b10bbbd"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "cruiser",
+   "hull": "ssarith/cruiser.hull.png",
+   "wire": "ssarith/cruiser.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.16646,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 60.0,
+    "length_z": 150.0
+   },
+   "source_triangles": 456,
+   "quads": 195,
+   "triangles": 66,
+   "edges_drawn": 363,
+   "source": {
+    "glb": "assets/ships/ssarith/cruiser.glb",
+    "sha256": "0b4b424585ef585f1531712d2fa08a0948cbccd0dcb2286c1e2e036ad9b21457"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "carrier",
+   "hull": "ssarith/carrier.hull.png",
+   "wire": "ssarith/carrier.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.186435,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 68.2,
+    "length_z": 168.0
+   },
+   "source_triangles": 380,
+   "quads": 173,
+   "triangles": 34,
+   "edges_drawn": 283,
+   "source": {
+    "glb": "assets/ships/ssarith/carrier.glb",
+    "sha256": "957462f310bc5577816fe24b586b632d5159be6d2a1450dd30cae5c0742a390e"
+   }
   }
  ]
 }

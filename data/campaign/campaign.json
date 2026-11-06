@@ -310,7 +310,7 @@
    "name": "Hooded lance",
    "cls": "Frigate",
    "battle_class": "hunt_ff_lance",
-   "schematic": ""
+   "schematic": "ssarith/hooded_lance"
   },
   "hunt_2": {
    "side": "ssarith",
@@ -318,7 +318,7 @@
    "name": "Trident",
    "cls": "Frigate",
    "battle_class": "hunt_ff_trident",
-   "schematic": ""
+   "schematic": "ssarith/trident"
   },
   "hunt_3": {
    "side": "ssarith",
@@ -326,7 +326,7 @@
    "name": "Hunt cruiser",
    "cls": "Cruiser",
    "battle_class": "hunt_ca",
-   "schematic": ""
+   "schematic": "ssarith/cruiser"
   },
   "vos_raider": {
    "side": "vos",
