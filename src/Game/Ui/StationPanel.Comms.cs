@@ -23,14 +23,14 @@ public sealed partial class StationPanel
         Lbl("Fleet orders", x, y + 13);
         y += 20;
         float hw = (w - 6) / 2;
-        (string Label, string Id, Stance? St)[] orders = { ("All attack", "attack", Stance.Attack), ("Form on me", "escort", Stance.Escort), ("All hold", "hold", Stance.Hold), ("Hunt", "hunt", null) };
+        (string Label, string Id, Stance St)[] orders = { ("All attack", "attack", Stance.Attack), ("Form on me", "escort", Stance.Escort), ("All hold", "hold", Stance.Hold), ("Hunt", "hunt", Stance.Hunt) };
         bool wing = B.Ships.Any(o => o.Alive && o.Side == s.Side && o != s);
         for (int i = 0; i < orders.Length; i++)
         {
             var (label, id, st) = orders[i];
-            // the Hunt stance (the weakest enemy first) comes with the Fleet station
-            Button($"com.{id}", new Rect2(x + (i % 2) * (hw + 6), y + i / 2 * 36, hw, 30), label, st is { } v ? () => B.OrderFleet(v) : null, dis: st == null || !wing,
-                tip: new Tip(st == null ? "Hunt: not yet in the game" : wing ? $"Every wingman: {label.ToLowerInvariant()}" : "No wingmen"));
+            // the fleet's one order (Battle.Fleet); Hunt sends every wingman after the weakest enemy
+            Button($"com.{id}", new Rect2(x + (i % 2) * (hw + 6), y + i / 2 * 36, hw, 30), label, () => B.FleetOrder(st), dis: !wing,
+                tip: new Tip(wing ? $"Every wingman: {label.ToLowerInvariant()}" : "No wingmen"));
         }
         y += 76;
         Button("com.log", new Rect2(x, y, w, 36), "Event log", OpenLog, X.State.LogOpen, tip: new Tip("The whole log, over the view"));

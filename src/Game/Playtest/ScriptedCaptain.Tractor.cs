@@ -17,7 +17,9 @@ public sealed partial class ScriptedCaptain
         if (p.Length != 2 || !double.TryParse(p[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double dx) || !double.TryParse(p[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double dz))
             return $"mine_at needs \"dx,dz\" in metres, not '{arg}'";
         int before = B.Mines.Count;
-        if (await Click("cr.place") is { } stuck) return stuck;
+        // the Mines tab of the Transport station, then Place mine
+        string? stuck = await Click("st.transport") ?? await Click("tr.tab.mines") ?? await Click("mn.place");
+        if (stuck != null) return stuck;
         ViewOverlay? view = _sources().OfType<ViewOverlay>().FirstOrDefault();
         if (view?.ScreenOfPlane(B.Player.X + dx, B.Player.Z + dz) is not { } at) return "the point is not on screen";
         Viewport vp = GetViewport();

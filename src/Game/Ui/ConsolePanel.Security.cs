@@ -1,4 +1,4 @@
-// ShipPanel.Security: the Security page (boarding defence; the battle console mockup's stSecurity and secView,
+// ConsolePanel.Security: the Security view, on the Transport station's Security tab (boarding defence; the battle console mockup's stSecurity and secView,
 // openspec/changes/boarding-defence). The mockup puts it on the Transport station's Security tab; the Transport station is
 // the comms package's page, so here it is its own page on the ship panel's rail, the ship's interior beside its systems.
 // The teams as keys (pick one, then click a room to send it there), Walk or Beam, the deck plan in 3D, an exploded view
@@ -15,14 +15,15 @@ using Godot;
 
 namespace FleetCommand.Game.Ui;
 
-public sealed partial class ShipPanel
+public abstract partial class ConsolePanel
 {
     /// <summary>How far apart the decks are drawn, metres (an exploded view, so every deck shows), and the view's pitch.</summary>
     private const float DeckGapM = 13f, SecPitch = 0.5f;
 
-    partial void SecurityPage(Rect2 b, ref bool drawn)
+    /// <summary>The Security view in a rectangle: the teams, Walk or Beam, the deck plan and the expanded lists. Drawn by the
+    /// Transport station's Security tab, where the mockup has it (one component).</summary>
+    protected void SecurityPanel(Rect2 b)
     {
-        drawn = true;
         Ship s = Me;
         if (s.Sec is not { } sec) { Lbl("No security teams aboard", b.Position.X, b.Position.Y + 20, b.Size.X); return; }
         ConsoleState st = X.State;

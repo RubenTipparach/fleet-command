@@ -37,13 +37,6 @@ public sealed partial class Battle
         Say(t.Name, text.Replace("{name}", t.Name).Replace("{captain}", t.Captain).Replace("{needs}", needs));
     }
 
-    /// <summary>Fleet orders from comms: every wingman takes the stance (All attack, Form on me, All hold).</summary>
-    public void OrderFleet(Stance stance)
-    {
-        foreach (Ship s in _ships.Where(o => o.Alive && o.Side == Player.Side && o != Player)) s.Stance = stance;
-        Say("Comms", $"Fleet: {stance switch { Stance.Escort => "Form on me", Stance.Hold => "Hold", _ => "Attack" }}.");
-    }
-
     partial void CommsStep(double dt)
     {
         if (InvPick() is not { } d) { _reachDest = null; return; }

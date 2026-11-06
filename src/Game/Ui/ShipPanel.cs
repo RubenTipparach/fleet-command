@@ -18,7 +18,6 @@ public sealed partial class ShipPanel : ConsolePanel
     {
         ("systems", "Systems", "ship"), ("shields", "Shields", "shields"), ("sensors", "Sensors", "sensors"), ("tractor", "Tractor", "tractor"), ("craft", "Craft", "craft"),
         // boarding defence's Security page (ShipPanel.Security.cs): the mockup's Transport station Security tab, on its own entry
-        ("security", "Security", "transport"),
     };
 
     protected override void DrawPanel()
@@ -38,7 +37,6 @@ public sealed partial class ShipPanel : ConsolePanel
                 if (cur == "sensors") SensorsPage(b, ref drawn);
                 else if (cur == "tractor") TractorPage(b, ref drawn);
                 else if (cur == "craft") CraftPage(b, ref drawn);
-                else if (cur == "security") SecurityPage(b, ref drawn);
                 if (drawn) break;
                 Kit.Icon(this, pg.Icon, new Rect2(b.GetCenter().X - 30, b.Position.Y + 40, 60, 60), C.Deep);
                 Text(pg.Label.ToUpperInvariant(), b.GetCenter().X, b.Position.Y + 130, 24, C.Sky, HorizontalAlignment.Center, b.Size.X, 700, 1);
@@ -50,7 +48,6 @@ public sealed partial class ShipPanel : ConsolePanel
     partial void SensorsPage(Rect2 b, ref bool drawn);
     partial void TractorPage(Rect2 b, ref bool drawn);
     partial void CraftPage(Rect2 b, ref bool drawn);
-    partial void SecurityPage(Rect2 b, ref bool drawn);
 
     // Shield keys (owner, 2026-11-01): six big trapezoid keys in a hexagonal ring round the ship, the wide side outward,
     // each filling outward by its charge in its strength's colour; a click reinforces it (again to clear).

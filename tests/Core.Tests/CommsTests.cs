@@ -65,7 +65,7 @@ public class CommsTests
     public void Fleet_orders_set_every_wingmans_stance_and_leave_the_commanded_ship()
     {
         Battle b = Scene("concord_battle");
-        b.OrderFleet(Stance.Hold);
+        b.FleetOrder(Stance.Hold);
         Assert.All(b.Ships.Where(s => s.Side == 0 && s != b.Player), s => Assert.Equal(Stance.Hold, s.Stance));
         Assert.Equal(Stance.Attack, b.Player.Stance);
         Assert.Equal("Fleet: Hold.", b.Log[^1].Text);
