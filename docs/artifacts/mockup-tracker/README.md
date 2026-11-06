@@ -125,3 +125,4 @@
 - 2026-11-05, desktop session: version 128, version id `1793915465-6c92`: M1 v16 (the port redesigned).
 - 2026-11-06, cloud session (faction emblems): version 129, version id `1793927639-c2c6`, built on the live version 128 (M1 v16, M2 v82, M10 v8, M19 v5 and the Missions guide from other sessions): the guide at v32 (the Kelvane started).
 - 2026-11-06, from the Kelvane console session (owner: "make sure all active branches get this artifact tracker change"): this branch's tracker on the new page (one-line summaries, each faction's mockups in a modal, the escaped apostrophes) with this branch's own entries kept; live tracker version 132 (`1793930222-562a`) is the Kelvane session's.
+- 2026-11-06, cloud session (faction emblems): version 134 (`1793932216-3ea6`), main's tracker published over the live v133 (it carried M12 at v23 from another session's commit), the guide at v33; then version 135 (`1793932305-689a`), the guide at v34.
