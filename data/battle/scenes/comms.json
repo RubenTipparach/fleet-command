@@ -3,7 +3,7 @@
  "scenarios": [
   {
    "id": "concord_boarding",
-   "sky": "verdigris",
+   "sky": "comms_storm_slate",
    "name": "Boarding",
    "side": "concord",
    "seed": 20261111,
@@ -80,7 +80,7 @@
   },
   {
    "id": "krai_boarding",
-   "sky": "aurora",
+   "sky": "comms_copper_haze",
    "name": "Boarding",
    "side": "krai",
    "seed": 20261111,
@@ -157,7 +157,7 @@
   },
   {
    "id": "concord_relief",
-   "sky": "golden_veil",
+   "sky": "comms_harbour_dusk",
    "name": "Relief",
    "side": "concord",
    "seed": 20261112,
@@ -231,7 +231,7 @@
   },
   {
    "id": "krai_relief",
-   "sky": "ember",
+   "sky": "comms_amber_shoals",
    "name": "Relief",
    "side": "krai",
    "seed": 20261112,
@@ -305,7 +305,7 @@
   },
   {
    "id": "concord_vip",
-   "sky": "twin_lights",
+   "sky": "comms_orchid_reef",
    "name": "VIP",
    "side": "concord",
    "seed": 20261113,
@@ -385,7 +385,7 @@
   },
   {
    "id": "krai_vip",
-   "sky": "violet_storm",
+   "sky": "comms_garnet_veil",
    "name": "VIP",
    "side": "krai",
    "seed": 20261113,
@@ -473,7 +473,7 @@
   },
   {
    "id": "concord_distress",
-   "sky": "ice_halo",
+   "sky": "comms_frost_lantern",
    "name": "Distress",
    "side": "concord",
    "seed": 20261114,
@@ -537,7 +537,7 @@
   },
   {
    "id": "krai_distress",
-   "sky": "rust_lanes",
+   "sky": "comms_saffron_lanes",
    "name": "Distress",
    "side": "krai",
    "seed": 20261114,
@@ -601,7 +601,7 @@
   },
   {
    "id": "concord_assault",
-   "sky": "crimson_reach",
+   "sky": "comms_cobalt_drift",
    "name": "Assault",
    "side": "concord",
    "seed": 20261116,
@@ -682,7 +682,7 @@
   },
   {
    "id": "krai_assault",
-   "sky": "emerald_rift",
+   "sky": "comms_jade_mist",
    "name": "Assault",
    "side": "krai",
    "seed": 20261116,

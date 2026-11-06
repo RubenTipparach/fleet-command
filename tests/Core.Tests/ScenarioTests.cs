@@ -151,11 +151,7 @@ public class ScenarioTests
             Assert.True(File.Exists(Path.Combine(root, "data", "space", "skies", s.Sky + ".json")), $"{s.Id}: no sky data/space/skies/{s.Sky}.json");
             Assert.True(File.Exists(Path.Combine(root, "assets", "skies", s.Sky + ".jpg")), $"{s.Id}: no panorama assets/skies/{s.Sky}.jpg (tools/space/sky_panorama.py)");
         }
-        // the system packages' test scenes (data/battle/scenes/*.json) are not counted: there are not yet skies enough for
-        // every one of them, so they may share the skies of the battles
-        var packaged = DataLoader.ScenePackages.SelectMany(p => JsonDocument.Parse(TestData.Read($"battle/scenes/{p}.json")).RootElement.GetProperty("scenarios")
-            .EnumerateArray().Select(e => e.GetProperty("id").GetString()!)).ToHashSet();
-        var shared = TestData.Data.Scenarios.Where(s => !packaged.Contains(s.Id)).GroupBy(s => s.Sky).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+        var shared = TestData.Data.Scenarios.GroupBy(s => s.Sky).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
         Assert.True(shared.Length == 0, $"skies used by more than one scenario: {string.Join(", ", shared)}");
     }
 }
