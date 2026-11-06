@@ -14,7 +14,8 @@ itself, and writes the visible lines, in two levels of detail, to assets/ui/kelv
   - "fine": every 15 degrees of longitude and 12 parallels a lobe, for an emblem drawn large (a portrait, a page);
   - "coarse": every 30 degrees and 5 parallels a lobe, for the crest, read at 96 px;
   - "mark": every 90 degrees and 1 parallel a lobe, for the name plate's engraved mark, read at about 26 px;
-and "outline", the plot's silhouette, drawn heavier round either. Coordinates are in a unit circle about the nucleus, y up. tools/mockups/kelvane_shapes.py places them on the crest and the
+and "outline", the plot's silhouette, drawn heavier round either. It also writes the two-tone render (the shape filled lit and in shadow, far to near) and, from all of these, the 2D
+logo as assets/ui/kelvane/emblem.svg. Coordinates are in a unit circle about the nucleus, y up. tools/mockups/kelvane_shapes.py places them on the crest and the
 name plate (rendered by tools/blender/build_ui_kelvane.py); docs/mockups/lib/kelvane.js draws them live.
 
     python3 tools/mockups/kelvane_emblem.py      # writes assets/ui/kelvane/emblem.json
@@ -27,6 +28,7 @@ import numpy as np
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.json")
+SVG = os.path.join(ROOT, "assets", "ui", "kelvane", "emblem.svg")   # the 2D logo: two tones, wireframe, outline
 
 TILT = math.radians(30.0)     # the view looks down on the ring by this much, so the ring reads as a ring
 TURN = math.radians(15.0)     # meridians turned off the view's axis, so no two lie on top of each other
@@ -136,6 +138,69 @@ def wires(step_deg, parallels):
     return out
 
 
+LIGHT = np.array([-0.45, 0.62, 0.64]) / np.linalg.norm([-0.45, 0.62, 0.64])  # from the upper left, toward the viewer
+LIT = 0.38                    # a face whose light (cosine) is above this takes the lit tone, below it the shadow tone
+
+
+def view_point(theta, phi):
+    """A surface point in the view's frame as one array (x right, y up, z toward the viewer)."""
+    x, y, d = point(theta, phi)
+    return np.stack([x, y, d], axis=-1)
+
+
+def two_tone(scale, n_theta=48, n_phi=96):
+    """The two-tone render (owner, 2026-11-06: "in 2d logo, I also would like a 2 -tone render with wireframe and shape as
+    well"): the surface's faces that look toward the viewer, each lit (1) or in shadow (0) by the cosine of LIGHT on its
+    outward normal, painted far to near so the ring and the lobes cover each other as they do in 3D. Consecutive faces of
+    one tone are merged into one run, so a page fills each run in one pass, with no seams between its triangles."""
+    th = np.linspace(0.0, math.pi, n_theta + 1)
+    ph = np.linspace(0.0, 2 * math.pi, n_phi + 1)
+    T, F = np.meshgrid(th, ph, indexing="ij")
+    P = view_point(T, F)
+    tris = []
+    for i in range(n_theta):
+        for j in range(n_phi):
+            for a, b, c in (((i, j), (i + 1, j), (i + 1, j + 1)), ((i, j), (i + 1, j + 1), (i, j + 1))):
+                v = np.array([P[a], P[b], P[c]])
+                n = np.cross(v[1] - v[0], v[2] - v[0])
+                if np.linalg.norm(n) < 1e-9:
+                    continue
+                cen = v.mean(axis=0)
+                if np.dot(n, cen) < 0:          # outward: away from the nucleus
+                    n = -n
+                n = n / np.linalg.norm(n)
+                if n[2] <= 0.0:                 # faces turned away from the viewer are never seen
+                    continue
+                tone = 1 if float(np.dot(n, LIGHT)) > LIT else 0
+                tris.append((float(cen[2]), tone, [round(float(q * scale), 4) for q in v[:, :2].ravel()]))
+    tris.sort(key=lambda t: t[0])
+    runs = []
+    for _d, tone, t in tris:
+        if runs and runs[-1]["tone"] == tone:
+            runs[-1]["tris"].append(t)
+        else:
+            runs.append({"tone": tone, "tris": [t]})
+    return runs
+
+
+def svg(d, size=512, lit="#e9c47a", shade="#8a6528", ink="#2a1a06"):
+    """The 2D logo as an SVG: the two-tone fill, the fine wireframe over it and the outline, in ink."""
+    c = size / 2.0
+    k = c * 0.98
+    P = lambda x, y: f"{c + x * k:.2f},{c - y * k:.2f}"
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" width="{size}" height="{size}">',
+           '<title>Kelvane Institute: the hydrogen 3d z2 eigen plot</title>']
+    for r in d["tones"]:
+        path = "".join(f"M{P(t[0], t[1])}L{P(t[2], t[3])}L{P(t[4], t[5])}Z" for t in r["tris"])
+        col = lit if r["tone"] else shade
+        out.append(f'<path d="{path}" fill="{col}" stroke="{col}" stroke-width="0.6" stroke-linejoin="round"/>')
+    for l in d["fine"]:
+        out.append(f'<polyline points="{" ".join(P(x, y) for x, y in l)}" fill="none" stroke="{ink}" stroke-width="{size / 512 * 1.6:.2f}" stroke-linecap="round" stroke-linejoin="round"/>')
+    out.append(f'<polyline points="{" ".join(P(x, y) for x, y in d["outline"])}" fill="none" stroke="{ink}" stroke-width="{size / 512 * 4.2:.2f}" stroke-linejoin="round"/>')
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 def build():
     th, ph = np.meshgrid(np.linspace(0, math.pi, 200), np.linspace(0, 2 * math.pi, 400), indexing="ij")
     x, y, _d = point(th, ph)
@@ -149,6 +214,7 @@ def build():
             lines += visible_runs(t, p, buf, scale, eps)
         levels[name] = lines
     levels["outline"] = silhouette(buf)
+    levels["tones"] = two_tone(scale)
     return {"state": "hydrogen 3d z^2 (n 3, l 2, m 0): surface at |3 cos^2 theta - 1|", "tilt_deg": math.degrees(TILT),
             "turn_deg": math.degrees(TURN), "units": "unit circle about the nucleus, y up", **levels}
 
@@ -159,7 +225,10 @@ def main():
     with open(OUT, "w") as f:
         json.dump(d, f, separators=(",", ":"))
         f.write("\n")
-    print(f"wrote {os.path.relpath(OUT, ROOT)}: fine {len(d['fine'])} lines, coarse {len(d['coarse'])} lines")
+    with open(SVG, "w") as f:
+        f.write(svg(d))
+    print(f"wrote {os.path.relpath(OUT, ROOT)}: fine {len(d['fine'])} lines, coarse {len(d['coarse'])} lines, "
+          f"{sum(len(r['tris']) for r in d['tones'])} faces in {len(d['tones'])} tone runs; and {os.path.relpath(SVG, ROOT)}")
 
 
 if __name__ == "__main__":
