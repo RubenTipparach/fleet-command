@@ -364,33 +364,34 @@
   },
   "amb_bridge": {
     "group": "Ambience",
-    "what": "The bridge (loops, a minute): computers working, the air handling and the ship's hum, with consoles bleeping and booping and the sensors sweeping.",
+    "what": "The bridge (loops, a minute): the air handling and the ship's low hum, with consoles bleeping softly now and then.",
     "layers": [
-      {
-        "src": "oga/sci-fi-ambience-sfx:SFX SCI FI Computer room ambience.mp3",
-        "repeat": 4,
-        "pan": -0.3
-      },
       {
         "src": "oga/airvent-loop:airvent-large-loop.wav",
         "repeat": 8,
-        "gain": -6,
-        "pan": 0.4
+        "pan": 0.25
+      },
+      {
+        "src": "oga/airvent-loop:airvent-large-loop.wav",
+        "start": 3.7,
+        "repeat": 8,
+        "pan": -0.35,
+        "gain": -3
       },
       {
         "src": "oga/generator-loop:loop_generator_1.mp3",
         "repeat": 12,
-        "gain": -12
+        "gain": -14
       }
     ],
     "scatter": [
       {
-        "count": 34,
+        "count": 26,
         "within": 57.0,
-        "min_gap": 0.9,
+        "min_gap": 1.4,
         "gain": [
-          -15,
-          -7
+          -27,
+          -19
         ],
         "pan": 0.85,
         "pitch": [
@@ -435,18 +436,6 @@
             "src": "oga/50-cc0-sci-fi-sfx:beep_03.ogg"
           },
           {
-            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_01.ogg"
-          },
-          {
-            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_02.ogg"
-          },
-          {
-            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_05.ogg"
-          },
-          {
-            "src": "oga/50-cc0-sci-fi-sfx:retro_beep_06.ogg"
-          },
-          {
             "synth": "console_bleep"
           },
           {
@@ -461,12 +450,12 @@
         ]
       },
       {
-        "count": 14,
+        "count": 8,
         "within": 56.0,
-        "min_gap": 2.0,
+        "min_gap": 4.0,
         "gain": [
-          -15,
-          -9
+          -29,
+          -22
         ],
         "pan": 0.7,
         "pitch": [
@@ -519,36 +508,6 @@
             "src": "oga/60-cc0-sci-fi-sfx:sfx_09a.ogg"
           }
         ]
-      },
-      {
-        "count": 6,
-        "within": 54.0,
-        "min_gap": 7.0,
-        "gain": [
-          -11,
-          -7
-        ],
-        "pan": 0.6,
-        "pick": [
-          {
-            "synth": "scan_sweep"
-          }
-        ]
-      },
-      {
-        "count": 4,
-        "within": 55.0,
-        "min_gap": 11.0,
-        "gain": [
-          -13,
-          -9
-        ],
-        "pan": 0.9,
-        "pick": [
-          {
-            "synth": "scan_ping"
-          }
-        ]
       }
     ],
     "len": 60.0,
@@ -560,7 +519,7 @@
       "wet": 0.25
     },
     "peak_db": -6.0,
-    "edits": "three beds layered and panned, compressed, lowpassed and given a room; recorded terminal and interface bleeps and our bleeps, sensor sweeps and scan pings scattered over a minute at seeded times and pans; crossfaded into a loop"
+    "edits": "the air duct recorded twice, offset and panned wide, over a low generator hum, compressed, lowpassed and given a room; recorded terminal and interface bleeps and our bleeps scattered softly over a minute at seeded times and pans; crossfaded into a loop"
   },
   "shield_hit_short": {
     "group": "Impacts",

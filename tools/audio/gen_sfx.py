@@ -330,23 +330,6 @@ def beam_snap(r):
     return lp(body, sweep(7000, 1200, n, 0.6), order=2) * adsr(n, 0.002, 0.05, 0.55, 0.22)
 
 
-@sound("scan_sweep", "_layer", "A sensor sweep on the bridge: a soft pulsing tone that rises and falls over two seconds.")
-def scan_sweep(r):
-    n = int(2.2 * SR)
-    up = sweep(520, 1480, n // 2, 0.8)
-    f = np.concatenate([up, up[::-1]])[:n]
-    gate = 0.55 + 0.45 * np.clip(square(np.full(n, 14.0), 0.35), 0, 1)
-    tone = (sine(f) + 0.2 * sine(f * 2)) * onepole_lp(gate, 300.0)
-    return tone * adsr(n, 0.3, 0.2, 0.8, 0.7)
-
-
-@sound("scan_ping", "_layer", "A long-range scan returning: a high ping with a falling echo.")
-def scan_ping(r):
-    n = int(1.6 * SR)
-    ping = ring([2490, 3735], [0.5, 0.3], n) * adsr(n, 0.002, 0.08, 0.5, 0.6)
-    return reverb(mix(ping, 0.4 * at(ping, 0.28, n), 0.15 * at(ping, 0.56, n)), room=0.7, wet=0.35, tail_s=0.6)
-
-
 @sound("console_bleep", "_layer", "A console working: two or three quick bleeps, the pitches seeded.")
 def console_bleep(r):
     n = int(0.45 * SR)

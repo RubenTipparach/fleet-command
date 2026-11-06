@@ -18,3 +18,7 @@
 - Version 3 published 2026-11-06, version id `1793924827-1a74`: the owner's notes (shorter, punchier weapons; short
   alternatives of the hits; a recorded battle stations klaxon and two alternatives; a minute-long bridge bed with
   bleeps, boops and scans). 36 cues.
+- Version 4 published 2026-11-07, version id `1793952072-f1ca`: the bridge bed quieted (owner: "bridge loop is no longer
+  backgrouind noise, it has a really annoying whirling noise ... get rid of the sweep sound, just subtle bleeps and
+  airduct noise"): no sensor sweeps or scan pings, no swelling computer-room layer, the air duct twice over a low hum,
+  the bleeps about 10 dB quieter.

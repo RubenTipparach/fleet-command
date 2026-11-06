@@ -26,7 +26,7 @@ This file is written by `python3 tools/audio/list_sources.py` (run by `tools/aud
 | [missile sound](https://opengameart.org/content/missile-sound) | OpenGameArt | mikeask | CC0 | `missile_launch` |
 | [rocket engine](https://opengameart.org/content/rocket-engine) | OpenGameArt | theMinesAreShakin | CC0 | `engine_hum` |
 | [rocket launch](https://opengameart.org/content/rocket-launch) | OpenGameArt | qubodup | CC0 | `thruster_burst` |
-| [sci fi ambience sfx](https://opengameart.org/content/sci-fi-ambience-sfx) | OpenGameArt | Fun Gi Development | CC0 | `amb_bridge`, `reactor_hum` |
+| [sci fi ambience sfx](https://opengameart.org/content/sci-fi-ambience-sfx) | OpenGameArt | Fun Gi Development | CC0 | `reactor_hum` |
 | [seamless energy emission loop](https://opengameart.org/content/seamless-energy-emission-loop) | OpenGameArt | zeroisnotnull | CC0 | `shields_raise` |
 | [sirens and alarm noise](https://opengameart.org/content/sirens-and-alarm-noise) | OpenGameArt | aquinn | CC0 | `red_alert_wail` |
 | [space ship shield sounds](https://opengameart.org/content/space-ship-shield-sounds) | OpenGameArt | bart | CC0 | `shield_hit`, `shield_hit_short`, `shields_collapse` |

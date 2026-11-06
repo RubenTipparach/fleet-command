@@ -29,14 +29,17 @@ loudness strip (`inspect_sfx.py inventory`, `envelope`), and the built set judge
 | Ship | `engine_hum` (loops), `reactor_hum` (loops), `thruster_burst`, `shields_raise`, `shields_collapse` | at the ship |
 | Console | `ui_chirp` (Concord), `ui_clunk` (the metal skins), `ui_confirm`, `ui_deny`, `weapon_charged`, `target_lock`, `hail`, `pause_on`, `pause_off` | no |
 | Alerts | `red_alert` (loops; alternatives `red_alert_twotone`, `red_alert_wail`), `shields_failing`, `hull_critical`, `core_breach` | no |
-| Ambience | `amb_bridge` (stereo, a minute, loops: the bed with bleeps, boops, sensor sweeps and scan pings scattered over it) | no |
+| Ambience | `amb_bridge` (stereo, a minute, loops: the air duct and a low hum, with soft bleeps scattered over it) | no |
 
 **The owner's first notes** (2026-11-06): "weapons all are too long, lance fire should sound more punchy": every weapon
 cut to 0.5-1.2 s, starting at its peak, with a kick under it (`punch_thump`) and, for the Lance, a crack and a snap
 (`beam_snap`); "hull hits are all great btw, I would make some shorter sfx as alternatives": the hits kept, a short
 alternative of each added; "red_alert sucks": the synthesised whoop replaced by a recorded klaxon, with two recorded
 alternatives; "amb_bridge - should be like aminute with bleeps and boops on theb ridge and scanning sounds": the bed
-made a minute long with sounds scattered over it (`scatter` in `cc0_cues.json`).
+made a minute long with sounds scattered over it (`scatter` in `cc0_cues.json`). Then (2026-11-07) "it has a really
+annoying whirling noise ... get rid of the sweep sound, just subtle bleeps and airduct noise": the sweeps, the pings and
+the swelling computer-room layer removed, the bleeps about 10 dB quieter. A bed stays background: no tone that moves
+in pitch, no swell, nothing more than about 12 dB over it.
 
 **Alternatives in the game**: a hit plays its short alternative when another hit on the same ship is still sounding,
 so rapid fire stays crisp; which battle stations alarm plays is the owner's pick on the Sounds page.
