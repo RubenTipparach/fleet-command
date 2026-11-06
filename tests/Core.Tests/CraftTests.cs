@@ -116,7 +116,7 @@ public class CraftTests
         b.TractorHold();
         Run(b, 11);
         Assert.NotNull(b.Player.Beam);
-        b.SetSpeed(250);
+        b.SetSpeed(2500);
         Run(b, 60);
         Assert.Equal("won", b.Over);
     }
@@ -129,7 +129,7 @@ public class CraftTests
         Ship[] foes = b.EnemiesOf(me).ToArray();
         foreach (Ship f in foes)
         {
-            b.PlaceMine(f.X * 0.12, -1000);
+            b.PlaceMine(f.X * 0.12, -10000);
             Run(b, b.Data.Systems.Mines.CooldownS + 0.1);
         }
         Assert.Equal(2, b.Mines.Count);

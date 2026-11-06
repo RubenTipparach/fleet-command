@@ -76,9 +76,9 @@ public class CommsTests
     {
         Battle b = Scene("concord_distress");
         b.Lock("lark");
-        b.SetSpeed(300);
+        b.SetSpeed(3000);
         b.HelmOrder("intercept");
-        for (int i = 0; i < 4000 && Rules.DistKm(b.Player, b.ShipById("lark")!) > 1.2; i++) b.Step();
+        for (int i = 0; i < 4000 && Rules.DistKm(b.Player, b.ShipById("lark")!) > 12; i++) b.Step();
         b.AllStop();
         Run(b, 20);
         Assert.Single(b.Log, l => l.Text == "Lark in transporter range: transporters active.");

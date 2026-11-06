@@ -39,4 +39,7 @@
     its key is the Comms station's (`ConsoleState.OpenLog`) (weapon-targeting package, 2026-11-06)
   - [x] 2.5.1 The event log over the view (from Comms, its X), the transporter effect (columns, rings, flashes, the stream) and the dashed transport range ring
 - [ ] 2.6 The scripted captain and a recorded desktop playtest on the owner's PC (CLAUDE.md section 9)
+- [ ] 2.8 Sync task "distances x10 in the mockups" (owner, 2026-11-06: "1km -> 10km"): the game's battle distances are ten
+  times the mockups' and its ships are framed at `tuning.json` `ship_frame_x` times their length (`docs/design/mockup-sync.md`);
+  give mockups 2, 8, 15 and 16 a 1 km scene unit and draw their ships at the framed length, so the inlined data reads the same
 - [ ] 2.7 Phone layouts, once the mockup has them

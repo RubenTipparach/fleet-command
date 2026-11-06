@@ -10,11 +10,11 @@ public class RulesTests
     public void Engine_boxes_set_the_speed_limit()
     {
         Battle b = TestData.NewBattle();
-        Assert.Equal(180, b.Rules.MaxSpeed(b.Player), 6);
+        Assert.Equal(1800, b.Rules.MaxSpeed(b.Player), 6);
         b.SetPower("engines", 4);
-        Assert.Equal(120, b.Rules.MaxSpeed(b.Player), 6);
-        b.SetSpeed(300);
-        Assert.Equal(120, b.Player.VOrder, 6);
+        Assert.Equal(1200, b.Rules.MaxSpeed(b.Player), 6);
+        b.SetSpeed(3000);
+        Assert.Equal(1200, b.Player.VOrder, 6);
     }
 
     [Fact]
@@ -47,11 +47,11 @@ public class RulesTests
         Ship s = b.Player, t = b.ShipById("vorrak")!;
         Mount lance = s.Mounts[0];
         t.V = 0; t.Ecm = 0;
-        t.X = s.X; t.Z = s.Z - 2000;
+        t.X = s.X; t.Z = s.Z - 20000;
         double near = b.Rules.HitChance(s, lance, t);
-        t.Z = s.Z - 10000;
+        t.Z = s.Z - 100000;
         double far = b.Rules.HitChance(s, lance, t);
-        t.Z = s.Z - 13000;
+        t.Z = s.Z - 130000;
         Assert.True(near > far);
         Assert.Equal(0, b.Rules.HitChance(s, lance, t));
     }

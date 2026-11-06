@@ -39,7 +39,7 @@ public class TargetingTests
     [Fact]
     public void A_hit_through_the_bow_exposes_the_bow_and_the_internals_and_one_through_the_stern_the_engines()
     {
-        Battle b = Duel(("t", "krai_ff", 0, -3000, 0));
+        Battle b = Duel(("t", "krai_ff", 0, -30000, 0));
         Ship t = b.ShipById("t")!;
         StrikeDef st = b.Rules.Tactical.Strike;
         Exposure bow = Strike.Of(t, 0, st), stern = Strike.Of(t, 3, st);
@@ -54,7 +54,7 @@ public class TargetingTests
     [Fact]
     public void A_wider_reach_puts_the_mounts_of_the_neighbouring_facings_on_the_block()
     {
-        Battle b = Duel(("t", "krai_ff", 0, -3000, 0));
+        Battle b = Duel(("t", "krai_ff", 0, -30000, 0));
         StrikeDef st = b.Rules.Tactical.Strike;
         Ship me = b.Player;   // the cruiser's broadside lances sit 85 degrees off the bow
         Assert.True(Strike.Of(me, 0, st, 120).Mounts.Count > Strike.Of(me, 0, st).Mounts.Count);
@@ -64,11 +64,11 @@ public class TargetingTests
     public void Precise_lances_aimed_at_the_engines_wreck_them_from_astern_and_never_touch_them_from_ahead()
     {
         // the target's stern toward us: its engines are on the block
-        Battle astern = Duel(("t", "krai_ff", 0, -3000, 0));
+        Battle astern = Duel(("t", "krai_ff", 0, -30000, 0));
         astern.Lock("t"); astern.Aim("engines");
         Volleys(astern, 40, 0, 1);
         // its bow toward us: the engines are not on the block, so no hit, aimed or spread, can reach them
-        Battle ahead = Duel(("t", "krai_ff", 0, -3000, 180));
+        Battle ahead = Duel(("t", "krai_ff", 0, -30000, 180));
         ahead.Lock("t"); ahead.Aim("engines");
         Volleys(ahead, 40, 0, 1);
         Assert.True(astern.ShipById("t")!.Sys["engines"] < 0.5, $"engines from astern at {astern.ShipById("t")!.Sys["engines"]:0.00}");
@@ -79,7 +79,7 @@ public class TargetingTests
     [Fact]
     public void Every_shot_carries_its_aim_and_whether_its_weapon_aims_to_where_it_lands()
     {
-        Battle b = Duel(("t", "krai_ff", 0, -3000, 0));
+        Battle b = Duel(("t", "krai_ff", 0, -30000, 0));
         b.Lock("t"); b.Aim("engines");
         b.Player.Mounts[0].Charge = 1;
         b.Player.Mounts[4].Charge = 1;
@@ -95,7 +95,7 @@ public class TargetingTests
     [Fact]
     public void Aiming_at_a_subsystem_costs_the_captain_ten_points_of_hit_chance()
     {
-        Battle b = Duel(("t", "krai_ff", 0, -3000, 0));
+        Battle b = Duel(("t", "krai_ff", 0, -30000, 0));
         Ship me = b.Player, t = b.ShipById("t")!;
         double hull = b.Rules.HitChance(me, me.Mounts[0], t, "hull"), engines = b.Rules.HitChance(me, me.Mounts[0], t, "engines");
         Assert.Equal(b.Rules.Tactical.AimHitPenalty, hull - engines, 6);
@@ -106,7 +106,7 @@ public class TargetingTests
     [Fact]
     public void A_direct_hit_aimed_at_a_weapon_lands_on_that_mount()
     {
-        Battle b = Duel(("t", "krai_ff", 0, -3000, 180));
+        Battle b = Duel(("t", "krai_ff", 0, -30000, 180));
         b.Lock("t");
         Ship t = b.ShipById("t")!;
         int bow = b.ExposureFrom(t, b.Player).Mounts.First();
@@ -118,7 +118,7 @@ public class TargetingTests
     [Fact]
     public void Locking_a_new_target_turns_an_aim_at_a_weapon_into_an_aim_at_weapons_control()
     {
-        Battle b = Duel(("a", "krai_ff", 0, -3000, 180), ("c", "krai_cv", 2000, -3000, 180));
+        Battle b = Duel(("a", "krai_ff", 0, -30000, 180), ("c", "krai_cv", 20000, -30000, 180));
         b.Lock("a");
         b.Aim("w:1");
         b.Lock("c");
@@ -128,7 +128,7 @@ public class TargetingTests
     [Fact]
     public void A_pinned_weapon_fires_at_its_own_ship_with_its_own_aim_whatever_is_locked()
     {
-        Battle b = Duel(("a", "krai_ff", 0, -3000, 180), ("c", "krai_cv", -2500, -3000, 180));
+        Battle b = Duel(("a", "krai_ff", 0, -30000, 180), ("c", "krai_cv", -25000, -30000, 180));
         b.Lock("a"); b.Aim("engines");
         b.Pin(0, "c");
         b.Aim("hull");
@@ -144,7 +144,7 @@ public class TargetingTests
     [Fact]
     public void A_pin_stops_and_says_why_when_its_ship_or_its_aimed_subsystem_is_destroyed()
     {
-        Battle b = Duel(("a", "krai_ff", 0, -3000, 180), ("c", "krai_cv", -2500, -3000, 180));
+        Battle b = Duel(("a", "krai_ff", 0, -30000, 180), ("c", "krai_cv", -25000, -30000, 180));
         b.Lock("a"); b.Aim("sensors");
         b.Pin(0, "a");
         b.Aim("hull");
@@ -161,7 +161,7 @@ public class TargetingTests
     [Fact]
     public void The_hit_details_chance_on_the_aim_is_the_hit_chance_times_the_direct_chance_only_when_exposed()
     {
-        Battle b = Duel(("t", "krai_ff", 0, -3000, 0));
+        Battle b = Duel(("t", "krai_ff", 0, -30000, 0));
         Ship me = b.Player, t = b.ShipById("t")!;
         Assert.Equal(b.Rules.HitChance(me, me.Mounts[0], t, "engines") * b.Rules.Tactical.Strike.DirectChance, b.DirectHitChance(me, me.Mounts[0], t, "engines"), 6);
         Assert.Equal(0, b.DirectHitChance(me, me.Mounts[0], t, "sensors"));   // the bow is turned away
@@ -219,7 +219,7 @@ public class TargetingTests
     [Fact]
     public void Point_defence_and_missiles_keep_charging_when_weapons_control_is_disabled_and_the_rest_stop()
     {
-        Battle b = Duel(("t", "krai_ff", 0, -30000, 0));
+        Battle b = Duel(("t", "krai_ff", 0, -300000, 0));
         Ship me = b.Player;
         me.Sys["weapons"] = 0.2;
         foreach (Mount m in me.Mounts) m.Charge = 0;

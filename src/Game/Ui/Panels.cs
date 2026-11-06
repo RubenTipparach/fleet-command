@@ -108,7 +108,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
 /// and Next target, and the crest. Expanded, it is the tactical map (RadarPanel.Map.cs).</summary>
 public sealed partial class RadarPanel : ConsolePanel
 {
-    private const double ScaleKm = 15;
+    private const double ScaleKm = 150;
 
     protected override void DrawPanel()
     {
@@ -250,7 +250,7 @@ public sealed partial class BottomStrip : ConsolePanel
         Ship s = Me;
         double box = B.Tuning.SpeedPerBoxMS, top = box * 10;
         CellRow("spd", new Rect2(x, y + (h - 24) / 2, w, 24), 10, Math.Max(0, s.VOrder) / box, null, (int)Math.Floor(B.Rules.MaxSpeed(s) / box + 1e-6));
-        Ui.Reg("spd", new Rect2(x - 8, y, w + 16, h), null, (p, _) => B.SetSpeed(Math.Round(Math.Clamp((p.X - x) / w, 0, 1) * top / 5) * 5),
+        Ui.Reg("spd", new Rect2(x - 8, y, w + 16, h), null, (p, _) => B.SetSpeed(Math.Round(Math.Clamp((p.X - x) / w, 0, 1) * top / 50) * 50),
             new Tip($"Speed: ordered {Math.Round(s.VOrder)} m/s, limit {Math.Round(B.Rules.MaxSpeed(s))} m/s"));
         float f = (float)Math.Clamp(s.VOrder / top, 0, 1);
         Kit.Piece(this, "button.pressed", new Rect2(x + f * w - 11, y + (h - 36) / 2, 22, 36));

@@ -10,8 +10,8 @@
    "objective": "Disable the Vekk's engines and weapons without destroying it",
    "say": ["Tactical", "Take the Vekk intact: aim at its engines, then its weapons. Lances aim; torpedoes hit whatever its facing exposes."],
    "ships": [
-    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 60 },
-    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 0, "z_m": -7000, "heading_deg": 180, "speed_m_s": 90 }
+    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 600 },
+    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 0, "z_m": -70000, "heading_deg": 180, "speed_m_s": 900 }
    ]
   },
   {
@@ -23,10 +23,10 @@
    "objective": "Pin a weapon to each raider and destroy all three",
    "say": ["Tactical", "Three raiders from three sides. Expand Tactical and pin a weapon to each, then fire."],
    "ships": [
-    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 60 },
-    { "id": "ruhn", "name": "Ruhn", "captain": "Blade Oru", "class": "krai_cv", "faction": "krai", "side": 1, "x_m": -5000, "z_m": -4500, "heading_deg": 130, "speed_m_s": 140 },
-    { "id": "drask", "name": "Drask", "captain": "Blade Vey", "class": "krai_cv", "faction": "krai", "side": 1, "x_m": 5500, "z_m": -4000, "heading_deg": 235, "speed_m_s": 140 },
-    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 500, "z_m": -8500, "heading_deg": 180, "speed_m_s": 120 }
+    { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 600 },
+    { "id": "ruhn", "name": "Ruhn", "captain": "Blade Oru", "class": "krai_cv", "faction": "krai", "side": 1, "x_m": -50000, "z_m": -45000, "heading_deg": 130, "speed_m_s": 1400 },
+    { "id": "drask", "name": "Drask", "captain": "Blade Vey", "class": "krai_cv", "faction": "krai", "side": 1, "x_m": 55000, "z_m": -40000, "heading_deg": 235, "speed_m_s": 1400 },
+    { "id": "vekk", "name": "Vekk", "captain": "Blade Sora", "class": "krai_ff", "faction": "krai", "side": 1, "x_m": 5000, "z_m": -85000, "heading_deg": 180, "speed_m_s": 1200 }
    ]
   },
   {
@@ -38,8 +38,8 @@
    "objective": "Disable the Meridian's engines and weapons without destroying it",
    "say": ["Tactical", "Take the Meridian intact: aim at its engines, then its weapons. The forge and the disruptors aim; torpedoes hit whatever its facing exposes."],
    "ships": [
-    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 60 },
-    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 0, "z_m": -7000, "heading_deg": 180, "speed_m_s": 90 }
+    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 600 },
+    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 0, "z_m": -70000, "heading_deg": 180, "speed_m_s": 900 }
    ]
   },
   {
@@ -51,10 +51,10 @@
    "objective": "Pin a weapon to each raider and destroy all three",
    "say": ["Tactical", "Three Concord ships from three sides. Expand Tactical and pin a weapon to each, then fire."],
    "ships": [
-    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 60 },
-    { "id": "tallis", "name": "Tallis", "captain": "Cdr. Imre", "class": "ff", "faction": "concord", "side": 1, "x_m": -5000, "z_m": -4500, "heading_deg": 130, "speed_m_s": 140 },
-    { "id": "lark", "name": "Lark", "captain": "Lt. Cdr. Ines", "class": "ff", "faction": "concord", "side": 1, "x_m": 5500, "z_m": -4000, "heading_deg": 235, "speed_m_s": 140 },
-    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 500, "z_m": -8500, "heading_deg": 180, "speed_m_s": 120 }
+    { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 0, "heading_deg": 0, "speed_m_s": 600 },
+    { "id": "tallis", "name": "Tallis", "captain": "Cdr. Imre", "class": "ff", "faction": "concord", "side": 1, "x_m": -50000, "z_m": -45000, "heading_deg": 130, "speed_m_s": 1400 },
+    { "id": "lark", "name": "Lark", "captain": "Lt. Cdr. Ines", "class": "ff", "faction": "concord", "side": 1, "x_m": 55000, "z_m": -40000, "heading_deg": 235, "speed_m_s": 1400 },
+    { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 5000, "z_m": -85000, "heading_deg": 180, "speed_m_s": 1200 }
    ]
   }
  ]

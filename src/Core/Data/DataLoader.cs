@@ -233,7 +233,7 @@ public static partial class DataLoader
                 throw new DataError($"{o.Where}.model: expected a glb under assets/ships/, got '{model}'");
             d[id] = new ShipClass(id, o.Str("name"), o.Str("code"), shape, model, Positive(o, "length_m"), Positive(o, "hull_hp") * tuning.DemoToughX,
                 NonNeg(o, "speed_max_m_s"), NonNeg(o, "accel_m_s2"), NonNeg(o, "turn_deg_s"), reactor, NonNeg(o, "capacitor_e"), NonNeg(o, "battery_e"),
-                shields, power, mounts, Layers(o));
+                shields, power, mounts, Layers(o)) { FrameM = Positive(o, "length_m") * tuning.ShipFrameX };
             o.Done();
         }
         root.Done();
@@ -348,7 +348,7 @@ public static partial class DataLoader
             Frac(o, "mount_hit_chance"), Frac(o, "mount_damage"),
             Positive(o, "het_rate_deg_s"), NonNeg(o, "het_cost_e"), Frac(o, "het_chance_drop"), NonNeg(o, "het_recover_per_s"), Frac(o, "het_erratic_penalty"),
             NonNeg(o, "het_breakdown_s"), Frac(o, "het_breakdown_engines"), Positive(o, "estop_decel_x"), NonNeg(o, "estop_hold_s"), Frac(o, "erratic_hit"), Frac(o, "erratic_turn"),
-            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac"));
+            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac")) { ShipFrameX = Positive(o, "ship_frame_x") };
         o.Done();
         return t;
     }

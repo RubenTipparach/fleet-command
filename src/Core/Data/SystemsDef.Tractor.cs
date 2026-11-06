@@ -41,14 +41,14 @@ public sealed record Loadout(int Mines, int Fighters, int Shuttles, int Missiles
 
 public sealed partial class SystemsDef
 {
-    public TractorDef Tractor { get; private set; } = new(3, 0.2, 10, 0.5, 10, 0.1, 0.5, 0.8, 10, 150, 200, 300, 1, 6);
-    public MineDef Mines { get; private set; } = new(3, 3, 1200, 30, 300, 1.5);
-    public RockRules Rocks { get; private set; } = new(14, 150, 0.35, 0.3, 1.5, 3, 6, 0.2, 2, 500, 0.35);
-    public FighterDef Fighters { get; private set; } = new(900, 400, 1.4, 100, 300, 2, 0.5, 1.5, 0.25, 600, 0.3, 1, 0.5);
-    public ShuttleDef Shuttle { get; private set; } = new(500, 110, 1.5, 0.25, 0.4);
-    public BarrageDef Barrage { get; private set; } = new(6, 0.2, 0.85, "orange", 100, 30);
+    public TractorDef Tractor { get; private set; } = new(30, 2, 10, 0.5, 10, 0.1, 0.5, 0.8, 10, 1500, 2000, 3000, 1, 6);
+    public MineDef Mines { get; private set; } = new(3, 3, 12000, 30, 3000, 15);
+    public RockRules Rocks { get; private set; } = new(14, 1500, 0.35, 0.3, 1.5, 3, 6, 0.2, 2, 5000, 0.35);
+    public FighterDef Fighters { get; private set; } = new(9000, 4000, 1.4, 1000, 3000, 2, 0.5, 1.5, 0.25, 6000, 0.3, 1, 0.5);
+    public ShuttleDef Shuttle { get; private set; } = new(5000, 110, 15, 0.25, 0.4);
+    public BarrageDef Barrage { get; private set; } = new(6, 0.2, 0.85, "orange", 1000, 30);
     /// <summary>How far past what it runs at a ship on a lane run turns back for another pass, km.</summary>
-    public double LaneTurnKm { get; private set; } = 12;
+    public double LaneTurnKm { get; private set; } = 120;
     /// <summary>What a lethal tool deals past the target's hull, hit points.</summary>
     public double LethalOverkillHp { get; private set; } = 400;
     /// <summary>A lethal barrage missile's damage as a share of its target class's hull.</summary>

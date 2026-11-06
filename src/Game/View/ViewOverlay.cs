@@ -16,7 +16,7 @@ namespace FleetCommand.Game.View;
 
 public sealed partial class ViewOverlay : Control, Ui.IControlSource
 {
-    private const double RingM = 450, RingGrabM = 160;
+    private const double RingM = 4500, RingGrabM = 1600;
     private ConsoleContext _x = null!;
     private BattleView _view = null!;
     private Vector2 _press;

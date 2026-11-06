@@ -37,7 +37,7 @@
      "tag": "decoy",
      "label": "Decoy: {ship}",
      "ship_name": "{ship}",
-     "range_km": 5
+     "range_km": 50
     },
     {
      "id": "ambush",
@@ -45,7 +45,7 @@
      "count": "strength + 1",
      "role": "enemy",
      "label": "Waiting in ambush",
-     "range_km": 9
+     "range_km": 90
     }
    ],
    "objectives": [

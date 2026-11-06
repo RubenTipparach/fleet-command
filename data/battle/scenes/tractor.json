@@ -18,49 +18,49 @@
    ],
    "rocks": [
     {
-     "x_m": 100,
-     "z_m": -1200,
-     "radius_m": 240
+     "x_m": 1000,
+     "z_m": -12000,
+     "radius_m": 2400
     },
     {
-     "x_m": -1400,
-     "z_m": -3000,
-     "radius_m": 300
+     "x_m": -14000,
+     "z_m": -30000,
+     "radius_m": 3000
     },
     {
-     "x_m": 1300,
-     "z_m": -3600,
-     "radius_m": 360
+     "x_m": 13000,
+     "z_m": -36000,
+     "radius_m": 3600
     },
     {
-     "x_m": -300,
-     "z_m": -5000,
-     "radius_m": 260
+     "x_m": -3000,
+     "z_m": -50000,
+     "radius_m": 2600
     },
     {
-     "x_m": 2100,
-     "z_m": -1600,
-     "radius_m": 220
+     "x_m": 21000,
+     "z_m": -16000,
+     "radius_m": 2200
     },
     {
-     "x_m": -2200,
-     "z_m": -1200,
-     "radius_m": 280
+     "x_m": -22000,
+     "z_m": -12000,
+     "radius_m": 2800
     },
     {
-     "x_m": 700,
-     "z_m": -6200,
-     "radius_m": 400
+     "x_m": 7000,
+     "z_m": -62000,
+     "radius_m": 4000
     },
     {
-     "x_m": -1700,
-     "z_m": -5800,
-     "radius_m": 310
+     "x_m": -17000,
+     "z_m": -58000,
+     "radius_m": 3100
     },
     {
-     "x_m": 2600,
-     "z_m": -4800,
-     "radius_m": 240
+     "x_m": 26000,
+     "z_m": -48000,
+     "radius_m": 2400
     }
    ],
    "ships": [
@@ -87,10 +87,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": 200,
-     "z_m": -2200,
+     "x_m": 2000,
+     "z_m": -22000,
      "heading_deg": 90,
-     "speed_m_s": 60,
+     "speed_m_s": 600,
      "stance": "hold",
      "hold_fire": true,
      "sys_hp": {
@@ -141,10 +141,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 1,
-     "x_m": -600,
-     "z_m": -7500,
+     "x_m": -6000,
+     "z_m": -75000,
      "heading_deg": 178,
-     "speed_m_s": 160,
+     "speed_m_s": 1600,
      "stance": "run",
      "hold_fire": true
     },
@@ -155,10 +155,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 1,
-     "x_m": 800,
-     "z_m": -8400,
+     "x_m": 8000,
+     "z_m": -84000,
      "heading_deg": 182,
-     "speed_m_s": 160,
+     "speed_m_s": 1600,
      "stance": "run",
      "hold_fire": true
     }
@@ -203,7 +203,7 @@
      "faction": "krai",
      "side": 1,
      "x_m": 0,
-     "z_m": -10000,
+     "z_m": -100000,
      "heading_deg": 0,
      "speed_m_s": 0,
      "stance": "hold",
@@ -252,7 +252,7 @@
      "faction": "krai",
      "side": 1,
      "x_m": 0,
-     "z_m": -6000,
+     "z_m": -60000,
      "heading_deg": 180,
      "speed_m_s": 0,
      "stance": "hold",
@@ -288,49 +288,49 @@
    ],
    "rocks": [
     {
-     "x_m": 100,
-     "z_m": -1200,
-     "radius_m": 240
+     "x_m": 1000,
+     "z_m": -12000,
+     "radius_m": 2400
     },
     {
-     "x_m": -1400,
-     "z_m": -3000,
-     "radius_m": 300
+     "x_m": -14000,
+     "z_m": -30000,
+     "radius_m": 3000
     },
     {
-     "x_m": 1300,
-     "z_m": -3600,
-     "radius_m": 360
+     "x_m": 13000,
+     "z_m": -36000,
+     "radius_m": 3600
     },
     {
-     "x_m": -300,
-     "z_m": -5000,
-     "radius_m": 260
+     "x_m": -3000,
+     "z_m": -50000,
+     "radius_m": 2600
     },
     {
-     "x_m": 2100,
-     "z_m": -1600,
-     "radius_m": 220
+     "x_m": 21000,
+     "z_m": -16000,
+     "radius_m": 2200
     },
     {
-     "x_m": -2200,
-     "z_m": -1200,
-     "radius_m": 280
+     "x_m": -22000,
+     "z_m": -12000,
+     "radius_m": 2800
     },
     {
-     "x_m": 700,
-     "z_m": -6200,
-     "radius_m": 400
+     "x_m": 7000,
+     "z_m": -62000,
+     "radius_m": 4000
     },
     {
-     "x_m": -1700,
-     "z_m": -5800,
-     "radius_m": 310
+     "x_m": -17000,
+     "z_m": -58000,
+     "radius_m": 3100
     },
     {
-     "x_m": 2600,
-     "z_m": -4800,
-     "radius_m": 240
+     "x_m": 26000,
+     "z_m": -48000,
+     "radius_m": 2400
     }
    ],
    "ships": [
@@ -357,10 +357,10 @@
      "class": "dd",
      "faction": "concord",
      "side": 1,
-     "x_m": 200,
-     "z_m": -2200,
+     "x_m": 2000,
+     "z_m": -22000,
      "heading_deg": 90,
-     "speed_m_s": 60,
+     "speed_m_s": 600,
      "stance": "hold",
      "hold_fire": true,
      "sys_hp": {
@@ -411,10 +411,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": -600,
-     "z_m": -7500,
+     "x_m": -6000,
+     "z_m": -75000,
      "heading_deg": 178,
-     "speed_m_s": 160,
+     "speed_m_s": 1600,
      "stance": "run",
      "hold_fire": true
     },
@@ -425,10 +425,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": 800,
-     "z_m": -8400,
+     "x_m": 8000,
+     "z_m": -84000,
      "heading_deg": 182,
-     "speed_m_s": 160,
+     "speed_m_s": 1600,
      "stance": "run",
      "hold_fire": true
     }
@@ -473,7 +473,7 @@
      "faction": "concord",
      "side": 1,
      "x_m": 0,
-     "z_m": -10000,
+     "z_m": -100000,
      "heading_deg": 0,
      "speed_m_s": 0,
      "stance": "hold",
@@ -522,7 +522,7 @@
      "faction": "concord",
      "side": 1,
      "x_m": 0,
-     "z_m": -6000,
+     "z_m": -60000,
      "heading_deg": 180,
      "speed_m_s": 0,
      "stance": "hold",
