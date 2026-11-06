@@ -17,8 +17,12 @@
 ## 2. Next slices (each its own request)
 
 - [ ] 2.1 The other stations: tactical, point defence, science, comms, repair, transport, fleet (wingman behaviours)
+  - [x] 2.1.1 Comms (Battle.Comms, StationPanel.Comms): hail the locked ship (most enemies do not answer; a friendly says what it needs), fleet orders (All attack, Form on me, All hold; Hunt waits for the Fleet station's stance), the Event log key and the latest lines
+  - [x] 2.1.2 Transport (Battle.Transport, StationPanel.Transport, data/battle/systems/comms.json): the pads, the 1.5 km reach through a downed facing, the boarding queue, Capture (volleys, medics, hackers, the envoy, the deck held, the capture changing sides, pilot needed), Hit and run (a subsystem or one weapon, shoot or bomb), troops to a friendly ship, Cargo (supplies, goods and the envoy to a friendly ship, station or planet), the expanded party panel; the test scenes Boarding, Relief, VIP, Distress and Assault from both sides (data/battle/scenes/comms.json) with scripted runs
+  - [ ] 2.1.3 The Transport station's Mines and Security tabs (hooks in StationPanel.Transport, for the mines and boarding defence systems)
 - [ ] 2.2 Ship pages: sensors, tractor (the contest), craft; the Target box with the target's systems display
 - [ ] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [ ] 2.5 The tactical map, the event log, the 3D shield hexagon, the transporter effect
+  - [x] 2.5.1 The event log over the view (from Comms, its X), the transporter effect (columns, rings, flashes, the stream) and the dashed transport range ring
 - [ ] 2.6 The scripted captain and a recorded desktop playtest on the owner's PC (CLAUDE.md section 9)
 - [ ] 2.7 Phone layouts, once the mockup has them
