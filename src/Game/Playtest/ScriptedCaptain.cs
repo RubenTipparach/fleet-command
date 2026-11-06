@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract" };
+          "wait_screen", "end_turn", "move", "contract", "shift_click", "pin_grid", "fleet_wingman" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -112,7 +112,10 @@ public sealed partial class ScriptedCaptain : Node
                 return await Click("v.scene") ?? await Click("v.scene." + id) ?? (B.Scenario.Id == id ? null : $"scenario is {B.Scenario.Id}");
             }
             case "wheel": return await Wheel(b.Arg == "in", (int)Math.Max(1, b.Seconds));
-            case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS);
+            case "fight": return await Fight(b.Seconds > 0 ? b.Seconds : 600, b.LingerS, b.Arg);
+            case "shift_click": return await Click(b.Arg, true);
+            case "pin_grid": return await PinGrid();
+            case "fleet_wingman": return await FleetWingman();
             case "snap": return await Snap(b.Arg);
             case "wait_screen": return await WaitScreen(b.Arg, b.Seconds > 0 ? b.Seconds : 60);
             case "end_turn": return await EndTurn();
@@ -124,8 +127,10 @@ public sealed partial class ScriptedCaptain : Node
 
     // Fights the scenario out as a captain at the console would: lock the nearest enemy (Tab), order Intercept on the helm,
     // and fire (F) whenever the weapons panel shows a charged weapon in arc. Stuck when nobody's hull has changed for 60 s
-    // of battle time. With lingerS, a captain watching a kill: it stays on the wreck that long before locking the next.
-    private async Task<string?> Fight(double maxS, double lingerS = 0)
+    // of battle time. With lingerS, a captain watching a kill: it stays on the wreck that long before locking the next. With
+    // aims (a comma list, the Disable scene's "engines,weapons"), a captain disabling a ship: it aims, on the Tactical
+    // station's Aim at keys, at the first of them whose key is not yet lit Disabled or Destroyed on the locked target.
+    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "")
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
@@ -159,6 +164,16 @@ public sealed partial class ScriptedCaptain : Node
                 {
                     if (_x.State.Station != "helm") await Click("st.helm");
                     ordered = await Click("helm.int") == null;
+                }
+            }
+            if (aims != "" && B.TargetOf(me) is { } at)
+            {
+                string[] list = aims.Split(',');
+                string want = list.FirstOrDefault(a => a == "hull" || B.Rules.Status(at, a) is not (SystemStatus.Disabled or SystemStatus.Destroyed)) ?? list[^1];
+                if (me.Aim != want)
+                {
+                    if (_x.State.Station != "tactical") await Click("st.tactical");
+                    await Click("aim." + want);
                 }
             }
             if (B.WouldFire().Length > 0) Press("fire");
@@ -348,8 +363,41 @@ public sealed partial class ScriptedCaptain : Node
         Input.ParseInputEvent(new InputEventAction { Action = action, Pressed = false });
     }
 
-    /// <summary>Points at a control where it was last drawn and clicks it; null when it was there to click.</summary>
-    private async Task<string?> Click(string id)
+    // Pins one weapon to each contact on the expanded Tactical station's grid, as a captain reads it: for each contact's
+    // column, the first cell lit (in arc and range, so it shows a chance to hit) whose weapon is not pinned yet, else the
+    // first weapon not pinned yet; null once every contact has a weapon pinned to it.
+    private async Task<string?> PinGrid()
+    {
+        await Frames(2);
+        var cells = _sources().SelectMany(s => s.Controls()).Where(c => c.Id.StartsWith("tm.") && c.Id != "tm.unpin")
+            .Select(c => c.Id.Split('.')).Select(p => (Mount: int.Parse(p[1]), Ship: p[2])).ToList();
+        if (cells.Count == 0) return "no weapons-against-contacts grid on screen (expand the Tactical station)";
+        Ship me = B.Player;
+        foreach (string ship in cells.Select(c => c.Ship).Distinct().ToList())
+        {
+            if (B.ShipById(ship) is not { } f) continue;
+            var free = cells.Where(c => c.Ship == ship && me.Mounts[c.Mount].Pin == null).ToList();
+            if (free.Count == 0) continue;
+            var pick = free.FirstOrDefault(c => Rules.InArc(me, me.Mounts[c.Mount], f) && Rules.InRange(me, me.Mounts[c.Mount], f));
+            if (pick == default) pick = free[0];
+            if (await Click($"tm.{pick.Mount}.{ship}") is { } stuck) return stuck;
+        }
+        int pinned = cells.Select(c => c.Ship).Distinct().Count(s => me.Mounts.Any(m => m.Pin?.To == s));
+        return pinned == cells.Select(c => c.Ship).Distinct().Count() ? null : $"{pinned} contacts pinned of {cells.Select(c => c.Ship).Distinct().Count()}";
+    }
+
+    // Opens a wingman on the Fleet station (the first tab of a living ship you do not command); null once it is shown.
+    private async Task<string?> FleetWingman()
+    {
+        if (_x.State.Station != "fleet" && await Click("st.fleet") is { } s0) return s0;
+        Ship? w = B.FleetAll().FirstOrDefault(s => s != B.Player && s.Alive);
+        if (w == null) return "no wingman in this battle";
+        return await Click("fl." + w.Id) ?? (_x.State.FleetPick == w.Id ? null : $"the Fleet station shows {_x.State.FleetPick ?? B.Player.Id}");
+    }
+
+    /// <summary>Points at a control where it was last drawn and clicks it (with Shift held when asked: shift+click opens
+    /// the hit details); null when it was there to click.</summary>
+    private async Task<string?> Click(string id, bool shift = false)
     {
         await Frames(2);
         (string Id, Rect2 R, bool Live)? c = _sources().SelectMany(s => s.Controls()).Reverse().FirstOrDefault(k => k.Id == id);
@@ -359,8 +407,8 @@ public sealed partial class ScriptedCaptain : Node
         Viewport vp = GetViewport();
         vp.PushInput(new InputEventMouseMotion { Position = p, GlobalPosition = p }, true);
         await Frames(1);
-        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = p, GlobalPosition = p }, true);
-        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = p, GlobalPosition = p }, true);
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = p, GlobalPosition = p, ShiftPressed = shift }, true);
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = p, GlobalPosition = p, ShiftPressed = shift }, true);
         await Frames(2);
         return null;
     }

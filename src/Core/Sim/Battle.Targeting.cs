@@ -101,6 +101,11 @@ public sealed partial class Battle
     /// <summary>Sets point defence's mode (the Point defence station).</summary>
     public void SetPd(PdMode mode) => Player.Pd = mode;
 
+    /// <summary>Whether a ship's point defence fires on enemy craft (fighters, shuttles) now: on Auto or Craft. The hook for
+    /// the craft package (Battle.Craft.cs) to shoot craft down with; shots in flight are PointDefenceStep's, on Auto or
+    /// Missiles.</summary>
+    public static bool PdTakesCraft(Ship s) => s.Alive && s.Pd is PdMode.Auto or PdMode.Craft;
+
     /// <summary>The commanded ship's selected weapons that can fire now, each with its target (its pinned ship, else the
     /// locked enemy) and the aim it fires with (its pin's, else the captain's): what Fire looses and its key counts.</summary>
     public List<(Mount M, Ship T, string Aim)> Fireable()

@@ -1,0 +1,17 @@
+{
+ "_doc": "The scripted captain's Pinned fire scene (the battle console mockup's, openspec/changes/weapon-targeting): pick the scenario, lock the nearest raider, expand the Tactical station and pin a weapon to each raider on the weapons-against-contacts grid, return, look at the tactical map (the radar row's Map key, then its 10 km range) and return, then fight the three out with the pins firing at their own raiders whatever is locked. Played from both sides (concord_pinned, krai_pinned).",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "station", "arg": "tactical" },
+  { "do": "expand", "arg": "Station" },
+  { "do": "pin_grid" },
+  { "do": "collapse" },
+  { "do": "click", "arg": "rr.map" },
+  { "do": "click", "arg": "map.s.10" },
+  { "do": "hold", "s": 1 },
+  { "do": "collapse" },
+  { "do": "fight", "s": 600 }
+ ]
+}

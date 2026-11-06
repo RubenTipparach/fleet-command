@@ -38,6 +38,10 @@ one being used all the time". The painter is now here, `tools/space/nebula_skies
 | `solar_furnace` | A blazing yellow-white heart in orange fire |
 | `deep_indigo` | Indigo clouds lit blue from within, crossing black lanes |
 | `coral_drift` | Coral and turquoise side by side, a warm core |
+| `tactical_slate` | Cold slate-blue haze, steel-grey edges, a silver core (the Concord Disable scene, 2026-11-06) |
+| `tactical_amber` | Smouldering amber and copper, brown lanes, a gold core (the Concord Pinned fire scene) |
+| `tactical_jade` | Jade and moss veils over green-black, a mint core (the Krai Disable scene) |
+| `tactical_magenta` | Hot magenta and plum folds round a pink-white core (the Krai Pinned fire scene) |
 
 `docs/screenshots/skies/contact.png` (`tools/space/sky_sheet.py`) shows every sky unwrapped. `tools/space/sky_panorama.py`
 bakes each to a small panorama, `assets/skies/<id>.jpg` (1024 x 512), which the game uses as its environment's sky, so the

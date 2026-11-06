@@ -3,7 +3,7 @@
  "scenarios": [
   {
    "id": "concord_disable",
-   "sky": "aurora",
+   "sky": "tactical_slate",
    "name": "Disable",
    "side": "concord",
    "seed": 20261121,
@@ -16,7 +16,7 @@
   },
   {
    "id": "concord_pinned",
-   "sky": "verdigris",
+   "sky": "tactical_amber",
    "name": "Pinned fire",
    "side": "concord",
    "seed": 20261122,
@@ -31,7 +31,7 @@
   },
   {
    "id": "krai_disable",
-   "sky": "quiet",
+   "sky": "tactical_jade",
    "name": "Disable",
    "side": "krai",
    "seed": 20261123,
@@ -44,7 +44,7 @@
   },
   {
    "id": "krai_pinned",
-   "sky": "bloom",
+   "sky": "tactical_magenta",
    "name": "Pinned fire",
    "side": "krai",
    "seed": 20261124,
