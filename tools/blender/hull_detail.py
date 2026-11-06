@@ -41,7 +41,7 @@ LAMP_RGB = {"bay": (0.75, 0.8, 0.7), "red": (1.0, 0.12, 0.06), "amber": (1.0, 0.
 PANES = []  # every window's and bay's pane, filled by build(): kind, lit, w_m, h_m, centre c, axes u, v and normal n
 FIXTURES = []  # the lights the bake lights the hull with, filled by build(): dicts of kind, pos, dir, rgb, power_w, cone_deg
 MATS = []  # (material, switch) for every material made here: switch(what) relinks its output for the next bake
-
+STORY = []  # what the paint wears where (painted_bake.py --ship): dicts of kind (heat, bay, muzzle, drive), pos, n, size_m
 
 # ----------------------------------------------------------------------------- materials
 GLOW_W_M2 = 6.0   # how brightly a lamp's or window's own face lights the hull next to it, in the light pass
@@ -111,6 +111,17 @@ def rid_of(p, salt=0.0):
     """A number 0..1 from a position, the same for a point and its mirror."""
     x = round(abs(p.x), 1) * 12.9898 + round(p.y, 1) * 78.233 + round(p.z, 1) * 37.719 + salt * 19.31
     return (math.sin(x) * 43758.5453) % 1.0
+
+
+def sides_of(F, loc):
+    """Which sides a feature is built on (False port, True its starboard mirror): both, unless it sits on the centreline
+    or its data names one side ('side': 'port' or 'starboard', as a bay's room in the plan opens to one side only)."""
+    side = F.get("side", "both")
+    if side == "port":
+        return (False,)
+    if side == "starboard":
+        return (True,)
+    return (False, True) if (F["face"] == "port" or abs(loc.x) > 0.3) else (False,)
 
 
 def frame_at(p, n, mirror=False):
@@ -199,7 +210,7 @@ class Surface:
     def hit(self, face, at):
         a, b = at
         o, d = {"top": ((a, 300, b), (0, -1, 0)), "bottom": ((a, -300, b), (0, 1, 0)),
-                "port": ((300, b, a), (-1, 0, 0)), "bow": ((a, b, 400), (0, 0, -1))}[face]
+                "port": ((300, b, a), (-1, 0, 0)), "bow": ((a, b, 400), (0, 0, -1)), "stern": ((a, b, -400), (0, 0, 1))}[face]
         loc, nor, _, _ = self.bvh.ray_cast(Vector(o), Vector(d))
         if loc is None:
             print(f"hull_detail: no hull under {face} {at}", flush=True)
@@ -317,6 +328,38 @@ def window_rows(F, surf):
                 if h and abs(h[1].x) > 0.6:     # only on faces that look out to the side
                     out.append((h[0], h[1], r.random() > 0.2, kind))
             z -= n * 1.6 + r.uniform(2.0, 4.5)
+    return out
+
+
+def window_rows_plan(F, surf):
+    """Windows from the ship's room plan (Ship Design Bible W1: a room with people behind every window): for every room
+    of the kinds named in F['rooms'] (plan kind or id: pane kind), one row at its deck's eye height along its outer wall,
+    1.6 m apart, kept 0.8 m clear of its bulkheads, on whichever side the room is (no mirroring: a mess to port and stores
+    to starboard give windows to port only), and only where the room meets the hull (within F['wall_m'] of the skin).
+    F['dz_m'], F['dy_m']: the plan's frame to the hull's (the export re-centres a ship). Returns [(loc, normal, lit,
+    pane kind, mirrored)]."""
+    import json as _json
+    import os as _os
+    plan = _json.load(open(_os.path.join(_os.path.dirname(__file__), "..", "..", F["plan"])))
+    dz, dy, wall = F.get("dz_m", 0.0), F.get("dy_m", 0.0), F.get("wall_m", 3.0)
+    floors, out = plan["deck_floor_m"], []
+    for room in plan["rooms"]:
+        kind = F["rooms"].get(room["id"]) or F["rooms"].get(room["kind"])
+        if not kind:
+            continue
+        r = random.Random(sum((i + 1) * 131 * ord(c) for i, c in enumerate(room["id"])))   # stable from run to run
+        x0, x1 = room["x_m"]
+        side = 1 if (x0 + x1) > 0 else -1
+        x_out = max(abs(x0), abs(x1))
+        z0, z1 = room["z_m"][0] - dz, room["z_m"][1] - dz
+        for d in room["decks"]:
+            y = floors[d] + F.get("eye_m", 1.5) - dy
+            z = z1 - 0.8
+            while z > z0 + 0.8:
+                h = surf.hit("port", [z, y])
+                if h and abs(h[1].x) > 0.6 and h[0].x - x_out < wall:
+                    out.append((h[0], h[1], r.random() > F.get("dark_share", 0.2), kind, side < 0))
+                z -= 1.6
     return out
 
 
@@ -575,6 +618,80 @@ def armour_cuts(rng, D, zr, xmax, yr):
     return {"plan": plan, "side": side}
 
 
+def strake_cuts(rng, D, zr, xmax, yr):
+    """The Concord's plating (Ship Bible X3: "the Concord's straight strakes and ring bands"): long strakes running fore
+    and aft, each its own width, their end joints staggered strake by strake so no two line up (T4), and full ring seams
+    at the bulkhead stations the bands sit on (D['rings_z_m']). Port side only; mirrored by the caller."""
+    z0, z1 = zr
+    plan, side = [], []
+    rings = D.get("rings_z_m", [])
+    xs = [rng.uniform(*D["strake_w_m"]) / 2]                       # the centre strake straddles the keel line
+    while xs[-1] < xmax + 1:
+        xs.append(xs[-1] + rng.uniform(*D["strake_w_m"]))
+    for x in xs:
+        plan.append(((x, z0 - 2), (x, z1 + 2)))
+    for i in range(len(xs)):
+        xa, xb = (0.0 if i == 0 else xs[i - 1]), xs[i]
+        z = z1 - rng.uniform(0, D["plate_l_m"][1])
+        while z > z0:
+            plan.append(((xa, z), (xb, z)))
+            z -= rng.uniform(*D["plate_l_m"])
+    ylo, yhi = yr
+    ys = [ylo + rng.uniform(0.3, 1.2)]
+    while ys[-1] < yhi:
+        ys.append(ys[-1] + rng.uniform(*D["strake_h_m"]))
+    for y in ys:
+        side.append(((z0 - 2, y), (z1 + 2, y)))
+    for i in range(len(ys) - 1):
+        z = z1 - rng.uniform(0, D["plate_l_m"][1])
+        while z > z0:
+            side.append(((z, ys[i]), (z, ys[i + 1])))
+            z -= rng.uniform(*D["plate_l_m"])
+    for zr_ in rings:
+        plan.append(((0.0, zr_), (xmax + 2, zr_)))
+        side.append(((zr_, ylo - 2), (zr_, yhi + 2)))
+    return {"plan": plan, "side": side}
+
+
+def kit_cuts(rng, D, zr, xmax, yr):
+    """The Krai's plating (mockup 7's kit: "plates square to the hull with 45-degree cut corners", the owner: "the diagonal
+    plating kinda bugs me"): the hull cut into frames at irregular stations, each frame's panel split again and again
+    along its longer side at its own place, some plates left whole, and some corners cut at 45 degrees (the cut leaves a
+    small triangle the layer beneath shows through). Port side only; mirrored by the caller."""
+    z0, z1 = zr
+    out = {"plan": [], "side": []}
+
+    def split(view, a0, a1, b0, b1, depth):
+        w, h = a1 - a0, b1 - b0
+        mn = D["kit_min_m"]
+        if depth >= D["kit_depth"] or (w < mn * 2 and h < mn * 2) or (depth > 0 and rng.random() < D["kit_stop"]):
+            if rng.random() < D["kit_chamfer"] and min(w, h) > 2.2:
+                c = min(1.3, 0.3 * min(w, h))
+                ca, cb = (a0, b0) if rng.random() < 0.5 else (a1, b1)
+                sa, sb = (1 if ca == a0 else -1), (1 if cb == b0 else -1)
+                out[view].append(((ca + sa * c, cb), (ca, cb + sb * c)))
+            return
+        along_a = w > h * 1.2 or (h <= w * 1.2 and rng.random() < 0.5)
+        if along_a and w >= mn * 2:
+            m = a0 + w * rng.uniform(0.32, 0.68)
+            out[view].append(((m, b0), (m, b1)))
+            split(view, a0, m, b0, b1, depth + 1); split(view, m, a1, b0, b1, depth + 1)
+        elif h >= mn * 2:
+            m = b0 + h * rng.uniform(0.32, 0.68)
+            out[view].append(((a0, m), (a1, m)))
+            split(view, a0, a1, b0, m, depth + 1); split(view, a0, a1, m, b1, depth + 1)
+    # frames at irregular stations, then each frame's panels: plan (x, z) and side (z, y)
+    z = z1
+    while z > z0:
+        zn = max(z0, z - rng.uniform(*D["kit_frame_m"]))
+        out["plan"].append(((0.0, zn), (xmax + 2, zn)))
+        out["side"].append(((zn, yr[0] - 2), (zn, yr[1] + 2)))
+        split("plan", 0.0, xmax + 2, zn, z, 0)
+        split("side", zn, z, yr[0], yr[1], 0)
+        z = zn
+    return out
+
+
 def mirror_cuts(cuts):
     return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
 
@@ -586,7 +703,8 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     the trenches show a second layer of plating and, in its gaps, the machinery."""
     groups = shell_groups(lo)
     xs = [v.co.x for v in lo.data.vertices]; ys = [v.co.y for v in lo.data.vertices]; zs = [v.co.z for v in lo.data.vertices]
-    cuts = mirror_cuts(armour_cuts(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
+    style = {"hunt": armour_cuts, "strake": strake_cuts, "kit": kit_cuts}[D.get("cut_style", "hunt")]
+    cuts = mirror_cuts(style(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
     primary = layer == "primary"
     t = D["armour_t_m"] if primary else D["sub_t_m"]
     plates = []
@@ -748,6 +866,8 @@ def greeble(M, q):
 def build(lo, S, D, seed):
     """Build the hull detail for one ship over its low-poly hull `lo` (S: the ship's entry in hull_detail.json, D: the
     defaults). Returns the high-poly objects to bake from."""
+    D = {**D, **S.get("detail", {})}   # a design's own plating over the faction's defaults
+    LAMP_RGB.update({k: tuple(v) for k, v in D.get("lamp_rgb", {}).items()})
     rng = random.Random(seed)
     PANES.clear()
     mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "dome", "slat", "vent")}
@@ -768,8 +888,7 @@ def build(lo, S, D, seed):
         if not h:
             return
         loc, nor = h
-        mir = (F["face"] == "port") or abs(loc.x) > 0.3
-        for m in ((False, True) if mir else (False,)):
+        for m in sides_of(F, loc):
             cut = []
             feats.append((fn(F, frame_at(loc, nor, m), cut), loc))
             holes.extend(obj_from(c, "hole", mats["armour"]) for c in cut)
@@ -780,16 +899,32 @@ def build(lo, S, D, seed):
         at_both(F, fan)
     for F in S.get("louvres", []):
         at_both(F, louvre)
+    STORY.clear()
+    for kind, key, size in (("heat", "fans", "r_m"), ("heat", "louvres", "span_m"), ("bay", "bays", "w_m")):
+        for F in S.get(key, []):
+            h = surf.hit(F["face"], F["at"])
+            if h:
+                for m in sides_of(F, h[0]):
+                    sx = -1 if m else 1
+                    STORY.append({"kind": kind, "pos": [h[0].x * sx, h[0].y, h[0].z], "n": [h[1].x * sx, h[1].y, h[1].z],
+                                  "size_m": F[size], "h_m": F.get("h_m", F.get(size))})
+    for F in S.get("marks", []):     # muzzles and drives: where the guns and engines leave their scorch and soot
+        h = surf.hit(F["face"], F["at"])
+        if h:
+            for m in sides_of(F, h[0]):
+                sx = -1 if m else 1
+                STORY.append({"kind": F["kind"], "pos": [h[0].x * sx, h[0].y, h[0].z], "n": [h[1].x * sx, h[1].y, h[1].z], "size_m": F["size_m"]})
     for F in S.get("lamps", []):
         at_both(F, lambda F, M, cut: lamp(F, M))
     PF = D["pane_frame_m"]
     for F in S.get("bays", []):
         at_both(F, lambda F, M, cut: bay(F, M, cut, surf, PF["bay"]))
     for F in S.get("windows", []):
-        for loc, nor, lit_, kind in window_rows(F, surf):
+        rows = [(l, n_, lt, k, None) for l, n_, lt, k in window_rows(F, surf)] if "rows_y_m" in F else window_rows_plan(F, surf)
+        for loc, nor, lit_, kind, only in rows:
             if not fits(surf, frame_at(loc, nor), 1.1, 0.6, PF["window"]):
                 continue   # it would cross a bend
-            for m in (False, True):
+            for m in ((False, True) if only is None else (only,)):
                 cut = []
                 feats.append((window(lit_, frame_at(loc, nor, m), cut, PF["window"], kind), loc))
                 holes.extend(obj_from(c, "hole", mats["armour"]) for c in cut)

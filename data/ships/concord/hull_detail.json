@@ -1,0 +1,75 @@
+{
+  "_doc": "The Concord's hull texture designs (change hull-texture-designs, mockup 23): the Petrel frigate's detail layer and paint, built by tools/blender/hull_detail.py and baked by tools/blender/painted_bake.py --detail data/ships/concord/hull_detail.json --ship petrel_c1,... onto the Petrel's own UVs. The mesh is the game's model (tools/mockups/glb_hull_obj.py, in its export frame); the room plan (data/ships/concord/petrel_plan.json) sits 0.55 m forward of it (dz_m). The story (where the ship's rooms put its windows, sensors, vents, bay, gun and drives) is shared by every design; a design is its plating (detail), its paint (palette, plates, liveries) and how it wears. Each design names the tradition it comes from (CLAUDE.md section 1).",
+  "faction": "concord",
+  "out": "assets/ships/concord/baked",
+  "defaults": {
+    "cut_style": "strake", "strake_w_m": [1.8, 2.8], "strake_h_m": [1.5, 2.3], "plate_l_m": [6.0, 12.0], "rings_z_m": [],
+    "armour_t_m": 0.3, "sub_t_m": 0.12, "lift_m": 0.12, "gap_m": [0.12, 0.2], "trench_m": [0.5, 0.9], "trench_share": 0.06,
+    "greebles_per_m2": 0.7, "overlay_min_m2": 34.0, "overlay_inset": 0.86, "overlay_lift_m": 0.08,
+    "light_ref": 0.9, "pane_frame_m": {"window": 0.1, "bay": 0.3},
+    "auto_floods": {"step_m": 30, "from_stern_m": 6, "top_x_frac": 0},
+    "flood": {"standoff_m": 3.6, "cone_deg": 110, "tilt_deg": 20, "power_w": 4200},
+    "palette": {
+      "ARMOUR": ["#e4e2dc", "#dedcd5", "#e8e6e0", "#d9d8d2", "#e1e0da"], "SUB": ["#9aa1a9", "#a3aab2", "#8e959d"],
+      "UNDER": "#3a4049", "GREEBLE": ["#5a626c", "#8f969e"], "DOME": "#7fa8d8", "SLAT": "#9aa1a9", "VENT": "#1c2027",
+      "LIVERY": "#2f62e0", "BRONZE": "#b87a4b", "BRONZE_SHARE": 0.0, "INK": "#1a2230", "LIGHT_EDGE": "#ffffff", "EDGE_K": 0.4
+    }
+  },
+  "stories": {
+    "petrel": {
+      "_doc": "The Petrel's rooms, from the outside: the sensor bay's domes over deck 0 aft of the officers; the engineering spaces' cooling fans and the reactor's slots aft; life support's vents to port; the shuttle bay's door to port on deck 2 (the plan's 'port door'); the torpedo tube at the bow; the impulse drives astern; a window wherever people live or work against the hull (the plan's officers, crew quarters, mess, medbay).",
+      "domes": [{"face": "top", "at": [0, -12.5], "r_m": 2.4, "h_m": 0.7, "straps": [[0, 0.35]]},
+                {"face": "top", "at": [3.6, -8.6], "r_m": 1.1, "h_m": 0.5}],
+      "fans": [{"face": "top", "at": [0, -28.5], "r_m": 2.6, "fins": 16, "lamps": 10, "tilt_deg": 24, "lamp": "white"},
+               {"face": "top", "at": [6.0, -22.0], "r_m": 1.5, "fins": 12, "lamps": 6, "tilt_deg": 24, "lamp": "white"}],
+      "louvres": [{"face": "port", "at": [-31.0, -1.6], "shape": "slot", "len_m": 5.5, "span_m": 0.8, "rake_m": 0.0, "pitch_m": 0.3, "slant_deg": 30},
+                  {"face": "port", "at": [-23.5, -1.6], "shape": "slot", "len_m": 4.0, "span_m": 0.8, "rake_m": 0.0, "pitch_m": 0.3, "slant_deg": 30},
+                  {"face": "port", "at": [-6.0, 0.9], "shape": "slot", "len_m": 3.0, "span_m": 0.6, "rake_m": 0.0, "pitch_m": 0.26, "slant_deg": 28, "side": "port"}],
+      "bays": [{"face": "port", "at": [-2.5, -1.4], "w_m": 6.0, "h_m": 2.2, "side": "port"}],
+      "marks": [{"kind": "muzzle", "face": "bow", "at": [0, -1.4], "size_m": 1.6},
+                {"kind": "drive", "face": "stern", "at": [0, 1.0], "size_m": 5.5}],
+      "windows": [{"plan": "data/ships/concord/petrel_plan.json", "dz_m": 0.55, "wall_m": 3.2, "dark_share": 0.2,
+                   "rooms": {"officers_p": "quarters", "officers_s": "quarters", "quarters": "quarters", "mess": "mess", "medbay": "workshop"}}],
+      "lighting": {"auto_floods": {"to_z_m": 40}}
+    }
+  },
+  "ships": {
+    "petrel_c1": {"mesh": "petrel", "story": "petrel", "seed": 101,
+      "_tradition": "C1 Survey white: the explorers, the Survey Service, a ship that goes first and must be seen and known",
+      "detail": {"rings_z_m": [29.85, 31.05, -11.15, -9.95]},
+      "liveries": [{"band_z_m": [29.85, 31.05], "colour": "#2f62e0", "pin": "#1b2a6b", "pin_m": 0.16},
+                   {"band_z_m": [-11.15, -9.95], "colour": "#2f62e0", "pin": "#1b2a6b", "pin_m": 0.16}],
+      "wear": {"amount": 0.8}},
+    "petrel_c2": {"mesh": "petrel", "story": "petrel", "seed": 102,
+      "_tradition": "C2 Many yards: the member worlds' yards; a federation that decides by consent builds a ship by consent, a section from each world",
+      "detail": {"rings_z_m": [21.75, 22.25, -3.25, -2.75, -24.25, -23.75]},
+      "plates": {"mode": "sections", "sections": [
+        {"z_m": [22, 60], "colours": ["#e4e2dc", "#dedcd5", "#e8e6e0"]},
+        {"z_m": [-3, 22], "colours": ["#ddd6c6", "#d6cfbe", "#e2dccd"]},
+        {"z_m": [-24, -3], "colours": ["#dfe5ea", "#d7dee4", "#e6eaee"]},
+        {"z_m": [-60, -24], "colours": ["#e2d9c8", "#dbd1bf", "#e7dfd0"]}]},
+      "liveries": [{"band_z_m": [21.75, 22.25], "colour": "#2fbf5a", "pin": "#1b2a6b", "pin_m": 0.12},
+                   {"band_z_m": [-3.25, -2.75], "colour": "#2fbf5a", "pin": "#1b2a6b", "pin_m": 0.12},
+                   {"band_z_m": [-24.25, -23.75], "colour": "#2fbf5a", "pin": "#1b2a6b", "pin_m": 0.12}],
+      "wear": {"amount": 0.8}},
+    "petrel_c3": {"mesh": "petrel", "story": "petrel", "seed": 103,
+      "_tradition": "C3 Envoy sash: the mediators, the Concord's envoys, whose ships arrive to talk; ceremonial density",
+      "detail": {"strake_w_m": [2.6, 3.6], "strake_h_m": [2.2, 3.0], "plate_l_m": [10.0, 16.0], "greebles_per_m2": 0.4, "trench_share": 0.02},
+      "liveries": [{"sash": {"y_m": -0.7, "half_m": 0.85, "grow_m": 0.4, "z_m": [-40, 44], "colours": ["#b7a6f2", "#3fa9f0"]}, "colour": "#b7a6f2", "pin": "#1b2a6b", "pin_m": 0.16}],
+      "wear": {"amount": 0.5}},
+    "petrel_c4": {"mesh": "petrel", "story": "petrel", "seed": 104,
+      "_tradition": "C4 Lightwork: the lightwrights; clean energy and light, their screens glass lit from behind",
+      "detail": {"gap_m": [0.18, 0.26], "trench_share": 0.0, "rings_z_m": [30.2, 30.7, -10.8, -10.3]},
+      "palette": {"UNDER": "#22405f", "UNDER_GLOW": "#3fa9f0", "UNDER_GLOW_K": 0.9},
+      "liveries": [{"band_z_m": [30.2, 30.7], "colour": "#a9c9e8"}, {"band_z_m": [-10.8, -10.3], "colour": "#a9c9e8"}],
+      "wear": {"amount": 0.6}},
+    "petrel_c5": {"mesh": "petrel", "story": "petrel", "seed": 105,
+      "_tradition": "C5 Home Guard: the defenders, the Home Guard's yards; ships that patrol, take hits and are patched in the field",
+      "detail": {"plate_l_m": [4.0, 9.0], "strake_w_m": [1.6, 2.6], "rings_z_m": [29.85, 31.05, -11.15, -9.95], "greebles_per_m2": 1.0},
+      "palette": {"ARMOUR": ["#d3d2cc", "#cfcec7", "#dcdbd5", "#c4c3bc", "#e6e5df", "#bcbbb4"], "SUB": ["#7f868e", "#878e96", "#737a82"], "UNDER": "#30353d"},
+      "liveries": [{"band_z_m": [29.85, 31.05], "colour": "#2f62e0", "pin": "#1b2a6b", "pin_m": 0.16},
+                   {"band_z_m": [-11.15, -9.95], "colour": "#2f62e0", "pin": "#1b2a6b", "pin_m": 0.16},
+                   {"hazard": {"w_m": 0.35, "gap_m": 0.45, "pitch_m": 0.45, "other": "#efefea"}, "colour": "#e8352b"}],
+      "wear": {"amount": 1.8, "streak_k": 6.5}}
+  }
+}

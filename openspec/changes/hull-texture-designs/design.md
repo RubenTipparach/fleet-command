@@ -1,39 +1,44 @@
 # Design: hull-texture-designs
 
-## The pitch, and how a picked design gets made
+## How every design is made (version 3)
 
-Mockup 23 (`docs/mockups/hull-texture-designs.html`) shows two frigates, the very models the game flies:
-- the Concord's Petrel (`assets/ships/concord/petrel_level.glb`, 88.8 m);
-- the Krai frigate (`assets/ships/krai/frigate.glb`, 110.4 m).
+Version 2 drew the designs in a shader over the models. The owner: "None of this look good, they don't bring the same
+level as the ssarith ships. We need visual story telling no repetitive patterns". So every design is now made as the
+Ssarith Hunt's ships are (change `ssarith-ships-engine`, the `ship-detailing` skill):
 
-Each is shown five ways. A design is drawn by a shader over the ship's own geometry, in ship space (+x port, +y up, +z
-bow, metres). That lets ten designs share one page, and nothing is baked yet. Each design works out:
-- which plate a point is on;
-- the seams, panel lines and hatches as normals (so they catch the light) and as paint;
-- the plate's own colour;
-- the liveries and markings;
-- the night glow.
+| Step | What | Where |
+|---|---|---|
+| The hull | The game's own model's hull pieces, in its export frame (the Petrel: main hull, command block, pylons, nacelles; the Krai frigate: hull and nacelles) | `tools/mockups/glb_hull_obj.py` writes `tools/materials/raw/painted/ships/<mesh>.obj` from the glb |
+| The unwrap | Each ship unwrapped on its own (Smart UV Project, islands packed again) | `painted_bake.py --ship` |
+| The detail layer | Primary armour cut into plates by the faction's own cut style, each plate raised by its own amount, overlays on the big plates, a sub-armour layer, machinery in the gaps, then the story's features | `hull_detail.py`, laid out in `data/ships/<faction>/hull_detail.json` |
+| The bake | Data (kind, plate id, edges), glow, position, normals (object and tangent), AO, a low sun's cast shadows, the hull lights | `painted_bake.py --detail data/ships/<faction>/hull_detail.json --ship ...` |
+| The paint | The design's palette by plate, its plate colours, its liveries and markings, and its wear. Painted into a painted map and a PBR set (base colour, ORM, normals, emission) and a hull-light map | `painted_bake.py` (`plate_colours`, `livery_paint`, `wear`) |
+| The page | The baked hull, its windows and bays as panes with rooms and hangars behind, its running lights, and the glb's other parts | `docs/mockups/lib/baked-hull.js`, shared with the Hunt's page |
 
-Plate layouts are laid per row with their own jitter, so no two rows' joints line up into brickwork (T4) and no stretch
-repeats (T1, T7). Everything is mirrored about the centreline (T7).
+**Cut styles, one for each faction's tradition:**
+- `strake` (the Concord): long fore-and-aft strakes, each its own width. Their end joints are staggered strake by strake,
+  so no two line up (T4). Full ring seams sit at the bulkhead stations the bands sit on.
+- `kit` (the Krai): the hull is cut into frames at irregular stations. Each frame's panel is split again and again along
+  its longer side, at its own place, and some plates are left whole. Some corners are cut at 45 degrees, and the layer
+  beneath shows through the cut.
 
-A picked design is then made the binding way, as the Ssarith Hunt was (change `ssarith-ships-engine`):
-1. The ship is unwrapped on its own.
-2. A modelled detail layer is laid out in `data/ships/<faction>/hull_detail.json` (primary plates cut to the design's
-   layout, sub-armour, machinery in the trenches, vents, lamps).
-3. It is baked selected-to-active by `tools/blender/painted_bake.py --ship` and painted into the design's palette:
-   base colour, ORM, tangent normals, emission and a hull-light map.
-4. It is exported to the game.
+**The story, from the room plan** (`data/ships/<faction>/<ship>_plan.json`, shared by every design of one hull):
+- **Windows.** A window wherever people live or work against the hull: one row a deck at eye height, 1.6 m apart, clear
+  of the bulkheads, on the side the room is on, never mirrored blindly (Ship Bible W1).
+- **The Concord's features.**
+  - Sensor domes over the sensor bay.
+  - Cooling fans and reactor slots over the engine spaces.
+  - Life support's vents.
+  - The shuttle bay's door on the side the plan puts it.
+- **The Krai's features.** Raked slots in the keel over the reactor, and the boarding bay's door to starboard. Nothing is
+  round.
+- **The paint's wear.**
+  - Soot streaking aft from every vent and fan, and round the drives.
+  - Scorch at the gun's muzzle.
+  - The paint worn bright round each bay, and grime under it.
+  - It is broken up by noise, so no two streaks match.
 
-The shader in this page is a pitch instrument, not a second implementation. Its layouts and palettes become the
-`hull_detail.json` and paint settings of the bake.
-
-The Concord's "too much like primitives" (owner, 2026-11-06) is answered twice:
-- now, by each design's plates, seams and hatches, which break up the smooth octagon faces;
-- after the pick, by the modelled detail layer (T5, T6): plates standing proud by their own amounts, access hatches,
-  vents in holes cut for them, the service band's pipe and clamps as real geometry.
-
-## Rules every design keeps
+## Rules every design keeps## Rules every design keeps
 
 All of these are already decided:
 - **Tradition, not the body.** Each design names the tradition it comes from (CLAUDE.md section 1; Ship Bible C1-C5).
@@ -110,8 +115,8 @@ The hull today:
 
 | What | How |
 |---|---|
-| Ships | The two glbs inlined (`tools/mockups/inline_data.py`) and parsed by three.js's GLTFLoader. The hull materials are swapped for the design's (Concord `paint_*`, Krai `hull`); everything else (glows, bells, metals, registry) as exported |
-| Views | One design at a time (orbit, quarter, side, top, ahead), or all five side by side (five views of the same ship, one per design, the same camera). Studio light, and night (a dim key, the design's own glows) |
+| Ships | The two glbs inlined (`tools/mockups/inline_data.py`) and parsed by three.js's GLTFLoader, their hull pieces hidden; each design's baked hull, its panes and its running lights drawn by `lib/baked-hull.js` from the inlined bake manifests (`assets/ships/<faction>/baked/manifest.json`), lined up on the glb's hull by their bounding boxes |
+| Views | One design at a time (orbit, quarter, side, top, ahead, below, close on the bay), or all five side by side (one camera); Painted and PBR looks; studio light, and night (the ship lit by its own floods, lamps and windows) |
 | Notes | Each design's card: its tradition, why, what it shows, its palette swatches |
 | Shots | Each design in studio and night, each faction's five side by side, at desktop and phone sizes |
 

@@ -269,6 +269,32 @@ SLAT = "#5e5c46"
 VENT = "#121309"
 LIVERY = "#2c9a52"
 STRIP_M = 0.7                 # a light strip's lit line (the strips run down the keels and undersides, on x = 0)
+EDGE_K = 0.55                 # how strongly a lit edge is picked out in the painter's light-edge colour
+BRONZE_SHARE = 0.06           # the share of armour plates painted BRONZE instead of from ARMOUR
+UNDER_GLOW, UNDER_GLOW_K = None, 0.8   # a glow in the gaps between plates (the under layer lit), and how strong
+HUNT_PAINT = {"ARMOUR": ARMOUR, "SUB": SUB, "UNDER": UNDER, "GREEBLE": GREEBLE, "DOME": DOME, "SLAT": SLAT, "VENT": VENT,
+              "LIVERY": LIVERY, "BRONZE": BRONZE, "INK": INK, "LIGHT_EDGE": LIGHT_EDGE, "EDGE_K": EDGE_K, "BRONZE_SHARE": BRONZE_SHARE,
+              "UNDER_GLOW": UNDER_GLOW, "UNDER_GLOW_K": UNDER_GLOW_K}
+
+
+def use_paint(pal):
+    """A faction's or design's paint (data: defaults.palette, then the ship's palette) over the Hunt's, for the next ship."""
+    globals().update({**HUNT_PAINT, **{k: (tuple(v) if k == "GREEBLE" else v) for k, v in (pal or {}).items()}})
+
+
+def use_faction(detail_path):
+    """Read and write a faction's ships: its hull_detail.json, and where its maps go (the data's 'out', else
+    assets/ships/<faction>/). The Hunt's are the defaults."""
+    global DETAIL, SHIPS_OUT
+    DETAIL = detail_path if os.path.isabs(detail_path) else os.path.join(ROOT, detail_path)
+    D = json.load(open(DETAIL))
+    SHIPS_OUT = os.path.join(ROOT, D.get("out") or os.path.join("assets", "ships", D.get("faction", "ssarith")))
+
+
+def ship_entry(D, slug):
+    """A ship's entry, over its story (the features its rooms place, shared by every design of one hull)."""
+    S = D["ships"][slug]
+    return {**D.get("stories", {}).get(S.get("story", ""), {}), **S}
 
 
 def lo_material(img, name):
@@ -307,7 +333,10 @@ def bake_ship(slug, px, samples, panes_only=False):
     sc.render.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = samples; sc.cycles.use_denoising = False; sc.cycles.seed = 0
     world = bpy.data.worlds.new("World"); world.use_nodes = True; sc.world = world; world.light_settings.distance = 2.2
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
-    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, slug + ".obj"), forward_axis="Y", up_axis="Z")
+    D = json.load(open(DETAIL))
+    S = ship_entry(D, slug)
+    use_paint({**D["defaults"].get("palette", {}), **S.get("palette", {})})
+    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, S.get("mesh", slug) + ".obj"), forward_axis="Y", up_axis="Z")
     obs = sorted((o for o in sc.objects if o.type == "MESH"), key=lambda o: o.name)
     img = bpy.data.images.new(slug + "_bake", px, px, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
     lo_hull, lo_glow = lo_material(img, "lo_hull"), lo_material(img, "lo_glow")
@@ -325,8 +354,6 @@ def bake_ship(slug, px, samples, panes_only=False):
     bpy.ops.uv.select_all(action="SELECT")
     bpy.ops.uv.pack_islands(rotate=True, shape_method="CONCAVE", margin_method="FRACTION", margin=0.004)
     bpy.ops.object.mode_set(mode="OBJECT")
-    D = json.load(open(DETAIL))
-    S = D["ships"][slug]
     t0 = time.time()
     high = HD.build(ship, S, D["defaults"], S["seed"])
     print(f"  built the detail in {time.time() - t0:.0f} s", flush=True)
@@ -385,8 +412,10 @@ def bake_ship(slug, px, samples, panes_only=False):
     lightp = bake("DIFFUSE", "light", pass_filter={"DIRECT"})[:, :, :3]
     lightp = np.dstack([blur(lightp[..., c], 1) for c in range(3)])   # the emissive faces' sampling speckle out
     faction = D.get("faction", "ssarith")
-    col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction)
-    pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction)
+    S["_story"] = HD.STORY
+    wr = wear(P, nor, cover, HD.STORY, S)
+    col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr)
+    pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction, wr)
     lref = D["defaults"]["light_ref"]
     lmap = half(np.clip(lightp / lref, 0, 1) ** (1 / 1.6))   # stored with a gentle curve; the page and game undo it
     os.makedirs(SHIPS_OUT, exist_ok=True)
@@ -458,7 +487,7 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     h, w = cover.shape
     pal = np.stack([hexrgb(c) for c in ARMOUR])
     arm = pal[(rid * len(ARMOUR) * 11).astype(int) % len(ARMOUR)] * (0.9 + 0.2 * ((rid * 37.0) % 1.0))[..., None]
-    arm = np.where((rid > 0.94)[..., None], hexrgb(BRONZE), arm)
+    arm = np.where((rid > 1 - BRONZE_SHARE)[..., None], hexrgb(BRONZE), arm)
     base = np.zeros((h, w, 3), np.float32) + hexrgb(UNDER)
     base = np.where(kind_is("armour")[..., None], arm, base)
     spal = np.stack([hexrgb(c) for c in SUB])
@@ -468,20 +497,233 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     base = np.where(kind_is("dome")[..., None], hexrgb(DOME), base)
     base = np.where(kind_is("slat")[..., None], hexrgb(SLAT), base)
     base = np.where(kind_is("vent")[..., None], hexrgb(VENT), base)
+    base = plate_colours(base, kind_is, rid, P, n, S)
     liv = np.zeros((h, w), bool)
     for L in S.get("liveries", []):
-        if "band_z_m" in L:
+        if "band_z_m" in L and "colour" not in L:
             z0, z1 = L["band_z_m"]; liv |= (P[..., 2] > z0) & (P[..., 2] < z1)
         if "chevron" in L:
             c = L["chevron"]; liv |= np.abs(P[..., 2] - (c["z_m"] - c["sweep"] * np.abs(P[..., 0]))) < c["w_m"] / 2
     liv &= kind_is("armour")
     base = np.where(liv[..., None], hexrgb(LIVERY) * (0.92 + 0.16 * rid)[..., None], base)
+    base, painted = livery_paint(base, kind_is, rid, P, n, S)
+    liv |= painted
     patch, field, device, hull = logo_mask(S, faction, P, n, kind_is("armour") | kind_is("sub"))
     if hull:   # the emblem's own hull colours: its plate painted as a patch, the field and device on it
         base = np.where(patch[..., None], hexrgb(hull["plate"]), base)
         base = np.where(field[..., None], hexrgb(hull["field"]), base)
         base = np.where(device[..., None], hexrgb(hull["device"]), base)
     return base, liv | patch
+
+
+def plate_mean(v, rid, cover):
+    """Each plate's mean of a per-texel value (plates are told apart by their rid, which a plate and its mirror share)."""
+    key = np.round(rid * 65535).astype(np.int64)
+    k = key[cover]
+    uniq, inv = np.unique(k, return_inverse=True)
+    out = np.zeros_like(v)
+    if v.ndim == 2:
+        s = np.bincount(inv, weights=v[cover]); c = np.bincount(inv)
+        m = (s / np.maximum(c, 1))[inv]; out[cover] = m
+    return out
+
+
+def vnoise3(P, cell, seed):
+    """Smooth value noise over ship space (trilinear over a seeded grid), 0..1, for breaking up wear and grime."""
+    rng = np.random.default_rng(seed)
+    G = rng.random((40, 40, 40)).astype(np.float32)
+    q = P / cell
+    i = np.floor(q).astype(np.int64); f = q - i; f = f * f * (3 - 2 * f)
+    def g(dx, dy, dz):
+        return G[(i[..., 0] + dx) % 40, (i[..., 1] + dy) % 40, (i[..., 2] + dz) % 40]
+    x0 = g(0, 0, 0) * (1 - f[..., 0]) + g(1, 0, 0) * f[..., 0]; x1 = g(0, 1, 0) * (1 - f[..., 0]) + g(1, 1, 0) * f[..., 0]
+    x2 = g(0, 0, 1) * (1 - f[..., 0]) + g(1, 0, 1) * f[..., 0]; x3 = g(0, 1, 1) * (1 - f[..., 0]) + g(1, 1, 1) * f[..., 0]
+    y0 = x0 * (1 - f[..., 1]) + x1 * f[..., 1]; y1 = x2 * (1 - f[..., 1]) + x3 * f[..., 1]
+    return y0 * (1 - f[..., 2]) + y1 * f[..., 2]
+
+
+def ramp(stops, t):
+    """A colour ramp through hex stops, t 0..1."""
+    C = np.stack([hexrgb(c) for c in stops]); t = np.clip(t, 0, 1) * (len(stops) - 1)
+    i = np.minimum(np.floor(t).astype(int), len(stops) - 2); f = (t - i)[..., None]
+    return C[i] * (1 - f) + C[i + 1] * f
+
+
+def plate_colours(base, kind_is, rid, P, n, S):
+    """A design's armour colour, plate by plate (data: S['plates']): 'temper', the colours a quenched blade's steel runs
+    through, by how far a face turns from broad toward an edge and toward the bow (K1); 'generations', plates of three
+    ages by how near the ship's core each plate lies, the oldest at the core (K5). Without either, the palette's ARMOUR."""
+    Pl = S.get("plates")
+    if not Pl:
+        return base
+    arm = kind_is("armour")
+    cover = arm | kind_is("sub")
+    if Pl["mode"] == "temper":
+        edge = np.clip((1 - np.abs(n).max(axis=2)) * Pl.get("edge_k", 2.4), 0, 1)
+        bow = np.clip((P[..., 2] - Pl["bow_from_z_m"]) / max(Pl["bow_len_m"], 1), 0, 1)
+        t = np.clip(edge + Pl.get("bow_k", 0.35) * bow + 0.12 * (rid - 0.5), 0, 1)
+        col = ramp(Pl["ramp"], t) * (0.93 + 0.1 * rid)[..., None]
+        return np.where(arm[..., None], col, base)
+    if Pl["mode"] == "sections":   # each section of the hull its own yard's whites, bow to stern
+        cover = arm | kind_is("sub")
+        mz = plate_mean(P[..., 2].astype(np.float64), rid, cover)
+        col = base.copy()
+        for sec in Pl["sections"]:
+            m = arm & (mz > sec["z_m"][0]) & (mz <= sec["z_m"][1])
+            pal = np.stack([hexrgb(x) for x in sec["colours"]])
+            col = np.where(m[..., None], pal[(rid * len(pal) * 13).astype(int) % len(pal)] * (0.95 + 0.07 * ((rid * 31.0) % 1.0))[..., None], col)
+        return col
+    if Pl["mode"] == "generations":
+        c = Pl["core"]
+        core = np.sqrt((P[..., 0] / c["x_m"]) ** 2 + (P[..., 1] / c["y_m"]) ** 2) + np.abs(P[..., 2] - c["z_m"]) / c["z_len_m"]
+        cm = plate_mean(core.astype(np.float64), rid, cover).astype(np.float32) + 0.25 * (rid - 0.5)
+        gens = Pl["gens"]          # [{"below": 0.8, "colours": [...]}, ...] oldest first
+        col = base.copy()
+        done = np.zeros(rid.shape, bool)
+        for g in gens:
+            m = arm & ~done & (cm < g.get("below", 9e9))
+            pal = np.stack([hexrgb(x) for x in g["colours"]])
+            col = np.where(m[..., None], pal[(rid * len(pal) * 13).astype(int) % len(pal)] * (0.92 + 0.14 * ((rid * 31.0) % 1.0))[..., None], col)
+            done |= m
+        return col
+    return base
+
+
+def livery_paint(base, kind_is, rid, P, n, S):
+    """A design's liveries and markings, painted on the armour (data: S['liveries'] items with a 'colour'):
+    band_z_m   a ring band round the hull at a bulkhead, with pin seams 'pin_m' either side ('pin' colour)
+    sash       a band along the flank about a waterline y_m, half_m wide (growing toward the bow by grow_m), its colour
+               running from colours[0] astern to colours[1] forward, pin lines either side
+    stripe     a stripe along the flank from a = [z, y] to b = [z, y], widening from w[0] to w[1] (the Krai's war stripe),
+               between z_m, pin lines either side
+    field      whole plates in one colour: those whose middle lies above y_above_m within x_within_m of the keel line (a
+               crest), below y_below_m (a keel), or forward of z_above_m (a bow)
+    honour     plates (a share of them) edged in a colour
+    tally      marks in fives (four upright, a fifth across) on the flank at [z, y], count of them
+    Returns (colour, painted mask)."""
+    h, w = rid.shape
+    arm = kind_is("armour")
+    painted = np.zeros((h, w), bool)
+    side = np.abs(n[..., 0]) > 0.5
+    ax, y, z = np.abs(P[..., 0]), P[..., 1], P[..., 2]
+    for L in S.get("liveries", []):
+        if "colour" not in L:
+            continue
+        col = hexrgb(L["colour"]); pin = hexrgb(L.get("pin", L["colour"])); pw = L.get("pin_m", 0.0)
+        if "band_z_m" in L:
+            z0, z1 = L["band_z_m"]
+            m = arm & (z > z0) & (z < z1)
+            pm = arm & (((z > z0 - pw - 0.12) & (z < z0 - 0.12)) | ((z < z1 + pw + 0.12) & (z > z1 + 0.12))) if pw else np.zeros_like(m)
+        elif "sash" in L:
+            q = L["sash"]; zz = np.clip((z - q["z_m"][0]) / (q["z_m"][1] - q["z_m"][0]), 0, 1)
+            half = q["half_m"] + q.get("grow_m", 0.0) * zz
+            d = np.abs(y - q["y_m"])
+            inz = (z > q["z_m"][0]) & (z < q["z_m"][1])
+            m = arm & side & inz & (d < half)
+            pm = arm & side & inz & (d > half + 0.12) & (d < half + 0.12 + pw)
+            col = ramp(q["colours"], zz)
+        elif "stripe" in L:
+            q = L["stripe"]; (za, ya), (zb, yb) = q["a"], q["b"]
+            t = np.clip((z - za) / (zb - za), 0, 1)
+            c = ya + (yb - ya) * t; half = (q["w"][0] + (q["w"][1] - q["w"][0]) * t) / 2
+            d = np.abs(y - c)
+            inz = (z > q["z_m"][0]) & (z < q["z_m"][1]) & (ax < q.get("x_within_m", 1e9))
+            m = arm & side & inz & (d < half)
+            pm = arm & side & inz & (d > half + 0.1) & (d < half + 0.1 + pw)
+        elif "field" in L:
+            q = L["field"]
+            cover = arm | kind_is("sub")
+            my = plate_mean(y.astype(np.float64), rid, cover); mx = plate_mean(ax.astype(np.float64), rid, cover)
+            mz = plate_mean(z.astype(np.float64), rid, cover)
+            m = np.zeros((h, w), bool)
+            if "y_above_m" in q:
+                m |= (my > q["y_above_m"]) & (mx < q.get("x_within_m", 1e9))
+            if "y_below_m" in q:
+                m |= (my < q["y_below_m"]) & (mx < q.get("x_within_m", 1e9))
+            if "z_above_m" in q:
+                m |= mz > q["z_above_m"]
+            m &= arm
+            pm = np.zeros_like(m)
+        elif "honour" in L:
+            from hull_detail import KIND  # noqa: F401  (the data pass's edges are in the caller's 'edge'; here the plate rim)
+            sel = ((rid * 97.0) % 1.0) < L["honour"]["share"]
+            rim = blur((~arm).astype(np.float32), 3) > 0.02
+            m = arm & sel & rim
+            pm = np.zeros_like(m)
+        elif "star" in L:     # an eight-point star (the emperor's, from the KC emblem's forge star) on the flank
+            q = L["star"]; dz, dy = z - q["at"][0], y - q["at"][1]
+            a = np.arctan2(dy, dz); r = np.sqrt(dz * dz + dy * dy)
+            lim = q["r_m"] * (0.42 + 0.58 * (0.5 + 0.5 * np.cos(a * 8)) ** 3)
+            m = arm & side & (r < lim)
+            pm = np.zeros_like(m)
+        elif "hazard" in L:   # keep-clear frames round the bays, striped (red for danger only)
+            q = L["hazard"]; m = np.zeros((h, w), bool); pm = np.zeros_like(m)
+            for it in S.get("_story", []):
+                if it["kind"] != "bay":
+                    continue
+                p0 = np.array(it["pos"], np.float32); d = P - p0
+                hw_, hh_ = it["size_m"] / 2 + q.get("gap_m", 0.5), it.get("h_m", it["size_m"]) / 2 + q.get("gap_m", 0.5)
+                bx = np.maximum(np.abs(d[..., 2]) - hw_, 0); by = np.maximum(np.abs(d[..., 1]) - hh_, 0)
+                ring = (np.abs(d[..., 2]) < hw_ + q["w_m"]) & (np.abs(d[..., 1]) < hh_ + q["w_m"]) & ((bx > 0) | (by > 0)) & (np.abs(d[..., 0]) < 2.5)
+                stripe = ((d[..., 2] + d[..., 1]) / q.get("pitch_m", 0.5)) % 2 < 1
+                m |= arm & ring & stripe
+                pm |= arm & ring & ~stripe
+            pin = hexrgb(q.get("other", "#efefea"))
+        elif "tally" in L:
+            q = L["tally"]; z0, y0 = q["at"]; pitch, hh, gap = q.get("pitch_m", 0.34), q.get("h_m", 1.1), q.get("group_gap_m", 0.7)
+            u = z0 - z                       # aft from its first mark
+            g = np.floor(u / (pitch * 4 + gap)); lu = u - g * (pitch * 4 + gap)
+            left = q["count"] - g * 5
+            k = np.floor(lu / pitch)
+            upright = (np.abs(lu - (k + 0.5) * pitch) < pitch * 0.18) & (k < np.minimum(left, 4)) & (k >= 0)
+            across = (left >= 5) & (np.abs((lu - pitch * 2) - (y - y0) * (pitch * 4 / hh)) < pitch * 0.2) & (lu < pitch * 4)
+            m = arm & side & (u > 0) & (g >= 0) & (left > 0) & (np.abs(y - y0) < hh / 2) & (upright | across)
+            pm = np.zeros_like(m)
+        else:
+            continue
+        base = np.where(m[..., None], col * (0.95 + 0.08 * rid)[..., None], base)
+        base = np.where(pm[..., None], pin, base)
+        painted |= m | pm
+    return base, painted
+
+
+def wear(P, nor, cover, story, S):
+    """Where the ship's life marks its paint (owner, 2026-11-06: "We need visual story telling no repetitive patterns"):
+    soot streaking aft from every heat vent and fan, scorch round the guns' muzzles, soot on the stern round the drives,
+    and the paint worn bright round the bays and the grime under them. From the detail's STORY (hull_detail.py) and the
+    data's marks, broken up by noise so no two streaks match. Returns {soot, scorch, scuff} masks, 0..1."""
+    n = nor / np.maximum(np.linalg.norm(nor, axis=2, keepdims=True), 1e-6)
+    W = S.get("wear", {})
+    k = W.get("amount", 1.0)
+    soot = np.zeros(cover.shape, np.float32); scorch = np.zeros_like(soot); scuff = np.zeros_like(soot)
+    nz = vnoise3(P, 1.3, 7) * 0.6 + vnoise3(P, 0.45, 11) * 0.4
+    for it in story:
+        p = np.array(it["pos"], np.float32); nn = np.array(it["n"], np.float32); size = float(it["size_m"])
+        d = P - p
+        facing = np.clip((n * nn).sum(axis=2), 0, 1)
+        if it["kind"] == "heat":
+            aft = -d[..., 2]
+            lat = np.sqrt(d[..., 0] ** 2 + d[..., 1] ** 2)
+            L = size * W.get("streak_k", 5.0); wd = size * 0.55
+            s = np.clip(1 - aft / L, 0, 1) * np.exp(-(lat / (wd * (1 + aft / L))) ** 2) * (aft > -size * 0.6)
+            soot = np.maximum(soot, s * facing * 0.85)
+        elif it["kind"] == "bay":
+            r = np.linalg.norm(d, axis=2)
+            ring = np.exp(-((r - size * 0.75) / (size * 0.35)) ** 2) * facing
+            scuff = np.maximum(scuff, ring * 0.9)
+            below = np.clip(-d[..., 1] / (size * 1.5), 0, 1) * np.exp(-(np.abs(d[..., 2]) / size) ** 2) * facing
+            soot = np.maximum(soot, below * 0.45)
+        elif it["kind"] == "muzzle":
+            r = np.linalg.norm(d, axis=2)
+            fwd = np.clip(d[..., 2] / (size * 4), 0, 1)
+            sc = np.exp(-(r / size) ** 2) + 0.6 * np.exp(-((r * (1 - fwd)) / size) ** 2) * (d[..., 2] > 0)
+            scorch = np.maximum(scorch, np.clip(sc, 0, 1) * facing)
+        elif it["kind"] == "drive":
+            r = np.linalg.norm(d, axis=2)
+            soot = np.maximum(soot, np.exp(-(r / size) ** 2) * 0.9)
+    breakup = np.clip(0.35 + 0.9 * nz, 0, 1)
+    return {"soot": np.clip(soot * breakup * k, 0, 1) * cover, "scorch": np.clip(scorch * breakup * k, 0, 1) * cover,
+            "scuff": np.clip(scuff * np.clip(nz * 1.6 - 0.35, 0, 1) * k, 0, 1) * cover}
 
 
 def grain(h, w, seed=17):
@@ -502,11 +744,13 @@ def strips_and_glow(kind_is, P, glowp, cover):
     side = chan & ~line
     g = np.where(side[..., None], 0.0, np.clip(glowp, 0, 1)) * cover[..., None]
     g = g + kind_is("dome")[..., None] * hexrgb(DOME) * 0.35          # the domes' faint inner light
+    if UNDER_GLOW:   # light in the gaps: the layer beneath the plates lit (C4's channels, K4's embers)
+        g = g + kind_is("under")[..., None] * hexrgb(UNDER_GLOW) * UNDER_GLOW_K
     emit = np.clip(g * 1.2 + np.dstack([blur(g[..., c], 2) for c in range(3)]) * 0.8, 0, 1)
     return side, g, emit
 
 
-def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
+def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr=None):
     """The painted colour map and the emission map. The flat paint (flat_paint), lit as a painter lights it: the sun's
     direct light with its cast shadows in soft steps, the AO curved and inked where it is deepest, each plate pillowed
     darker toward its gaps, lit and shaded edges, the dome's highlight, brush grain, and the lamps over it all."""
@@ -528,20 +772,24 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
     col *= np.where(m > 0, 0.7 + 0.3 * np.clip((pb - 0.45) / 0.5, 0, 1), 1.0)[..., None]
     e = np.clip(edge * 5.0, 0, 1)
     lit = e * np.clip((sh - 0.45) / 0.35, 0, 1); dark = e * np.clip((0.5 - sh) / 0.4, 0, 1)
-    col = col * (1 - 0.55 * lit[..., None]) + hexrgb(LIGHT_EDGE) * (0.55 * lit[..., None])
+    col = col * (1 - EDGE_K * lit[..., None]) + hexrgb(LIGHT_EDGE) * (EDGE_K * lit[..., None])
     col *= (1 - 0.45 * dark)[..., None]
     Lv = np.array(SUN, np.float32); Lv /= np.linalg.norm(Lv)
     Hv = Lv + np.array([0.0, 0.25, 1.0], np.float32); Hv /= np.linalg.norm(Hv)
     spec = np.clip((n * Hv).sum(axis=2), 0, 1) ** 28 * is_("dome")
     col = col + (np.array([0.75, 0.95, 0.8]) * spec[..., None] * 0.7)
     col *= grain(h, w)[..., None]
+    if wr:   # the ship's life: soot, scorch, and paint worn to the metal
+        col = col * (1 - 0.78 * wr["soot"][..., None]) + hexrgb(INK) * (0.25 * wr["soot"][..., None])
+        col = col * (1 - 0.85 * wr["scorch"][..., None]) + np.array([0.05, 0.035, 0.025]) * (0.85 * wr["scorch"][..., None])
+        col = col * (1 - 0.55 * wr["scuff"][..., None]) + hexrgb(LIGHT_EDGE) * light[..., None] * (0.55 * wr["scuff"][..., None])
     side, g, emit = strips_and_glow(is_, P, glowp, cover)
     col = np.where(side[..., None], hexrgb(VENT) * (0.6 + 0.6 * sh)[..., None], col)
     col = np.where((g.max(axis=2) > 0.05)[..., None], np.maximum(col, g), col)
     return np.clip(col, 0, 1), emit
 
 
-def paint_pbr(data, P, nor, ao, cover, S, faction):
+def paint_pbr(data, P, nor, ao, cover, S, faction, wr=None):
     """The PBR set: a base colour with no light in it (the flat paint, darkened in its cavities, its plates a little
     darker toward their gaps, edges worn lighter, grain), and ORM (red the AO, green the roughness, blue the metalness,
     by kind; worn edges smoother and barer, paint less metallic)."""
@@ -564,6 +812,12 @@ def paint_pbr(data, P, nor, ao, cover, S, faction):
     rough = np.where(painted, LIVERY_PBR[0], rough); metal = np.where(painted, LIVERY_PBR[1], metal)
     rough = np.clip(rough - 0.22 * e + 0.6 * (gr - 1.0), 0.05, 1.0)
     metal = np.clip(metal + 0.35 * e, 0.0, 1.0)
+    if wr:   # soot dulls and blackens, scorch chars, a scuff is the bare metal
+        col = col * (1 - 0.75 * wr["soot"][..., None]) + hexrgb(INK) * (0.2 * wr["soot"][..., None])
+        col = col * (1 - 0.85 * wr["scorch"][..., None]) + np.array([0.04, 0.03, 0.02]) * (0.85 * wr["scorch"][..., None])
+        col = col * (1 - 0.5 * wr["scuff"][..., None]) + np.array([0.62, 0.63, 0.64]) * (0.5 * wr["scuff"][..., None])
+        rough = np.clip(rough + 0.3 * wr["soot"] + 0.25 * wr["scorch"] - 0.25 * wr["scuff"], 0.05, 1.0)
+        metal = np.clip(metal - 0.3 * wr["soot"] + 0.5 * wr["scuff"], 0.0, 1.0)
     orm = np.dstack([aoc, rough, metal])
     side, _, _ = strips_and_glow(is_, P, np.zeros_like(P), cover)
     col = np.where(side[..., None], hexrgb(VENT), col)
@@ -594,7 +848,8 @@ def ship_main(slugs, px, samples, panes_only=False):
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
             continue
         info = bake_ship(slug, px, samples)
-        n = int(open(os.path.join(SHIPS_RAW, slug + ".obj")).readline().split()[1])
+        mesh = ship_entry(json.load(open(DETAIL)), slug).get("mesh", slug)
+        n = int(open(os.path.join(SHIPS_RAW, mesh + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
         for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)
@@ -611,6 +866,8 @@ def ship_main(slugs, px, samples, panes_only=False):
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     arg = lambda k, d: argv[argv.index(k) + 1] if k in argv else d
+    if "--detail" in argv:   # another faction's ships (data/ships/<faction>/hull_detail.json); the Hunt's by default
+        use_faction(arg("--detail", ""))
     if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only]
         return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv)
     names = arg("--tile", ",".join(TILES)).split(",")
