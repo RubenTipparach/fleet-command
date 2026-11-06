@@ -65,3 +65,20 @@ own (`data/battle/scenarios.json` "sky"; a test checks the file exists and no tw
 **Not byte-reproducible across machines.** On the owner's Mac (NumPy 2.0.2 with Apple's Accelerate) the painter does not
 reproduce Star Crew's three files byte for byte, so those three are kept as copied and only the composed ones were
 painted here; `--check` is only meaningful on the machine that painted a file.
+
+## The faction skins package's skies (2026-11-06)
+
+Nine more composed by `tools/space/nebula_recipes.py` for the scenarios the faction skins package added (each scenario
+under a sky of its own; named `skins_` to keep apart from the other packages' skies):
+
+| Sky | Look | Scenario |
+| --- | --- | --- |
+| `skins_moss_haze` | An olive-green haze with amber knots, a dim gold core | `ssarith_battle` |
+| `skins_tidal_glass` | Clear sea-blue glass with one green current, a cool white core | `ssarith_duel` |
+| `skins_copper_tide` | Copper and teal clouds rolling together, a hot copper core | `ssarith_arming` |
+| `skins_saffron_ring` | A saffron cloud round a hot white core, rose at its edge | `concord_allied` |
+| `skins_cobalt_crown` | A ring of cobalt clouds round a violet-white core | `krai_allied` |
+| `skins_jade_lantern` | Jade-green veils lit by a warm yellow core | `ssarith_allied` |
+| `skins_slate_drift` | Slate-blue drifts, a faint lavender knot | `concord_four_races` |
+| `skins_amber_lull` | Still amber clouds low on the horizon, a pale honey core | `krai_four_races` |
+| `skins_pearl_mist` | Pale pearl-grey mist with faint rose and blue, a soft white core | `ssarith_four_races` |

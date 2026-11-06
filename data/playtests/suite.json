@@ -29,6 +29,15 @@
   { "script": "pinned", "play": "krai_pinned" },
   { "script": "fleet", "play": "concord_battle" },
   { "script": "fleet", "play": "krai_battle" },
+  { "script": "battle", "play": "ssarith_battle" },
+  { "script": "battle", "play": "ssarith_duel" },
+  { "script": "arming", "play": "ssarith_arming" },
+  { "script": "allied", "play": "concord_allied" },
+  { "script": "allied", "play": "krai_allied" },
+  { "script": "allied", "play": "ssarith_allied" },
+  { "script": "hop", "play": "concord_four_races" },
+  { "script": "hop", "play": "krai_four_races" },
+  { "script": "hop", "play": "ssarith_four_races" },
   { "script": "campaign", "play": "campaign" }
  ]
 }

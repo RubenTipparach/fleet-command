@@ -173,7 +173,7 @@ public sealed class CampaignTests
     {
         foreach (MissionScript def in Camp.Missions.Values)
         {
-            foreach (string side in new[] { "concord", "krai" })
+            foreach (string side in new[] { "concord", "krai", "ssarith" })
             {
                 Campaign.Campaign c = Campaign.Campaign.New(Camp, side);
                 c.S.Missions.Clear();
@@ -182,6 +182,9 @@ public sealed class CampaignTests
                     : null;
                 Offer? m = null;
                 for (int t = 0; t < 6 && m == null; t++) { m = c.OfferMission(def.Id, data: data); if (m == null) c.EndTurn(); }
+                // the Hunt, playable once its console was built, has no rival yet (data/campaign/campaign.json), so the one
+                // mission that needs a hostile planet is not offered to it
+                if (m == null && side == "ssarith" && def.Id == "planet") continue;
                 Assert.True(m != null, $"{def.Id} ({side}) is offered nowhere");
                 Assert.False(string.IsNullOrWhiteSpace(c.Brief(m!)), def.Id);
                 Assert.DoesNotContain("{", c.Brief(m!));
