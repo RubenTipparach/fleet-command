@@ -95,7 +95,7 @@ Measured from the built geometry. All about frigate size, beside the Concord Pet
 | 8 | Long spar | Long Baseline | The crown splits off as a spar reaching about 70 m forward to a glazed station | 116 x 28 x 15 | 538 |
 | 9 | Gallery bow | Field Stations | Split at the belt: the upper bow all glass, sweeping down, over a deep chin | 106 x 32 x 20 | 566 |
 | 10 | Terraces | Field Stations | Three decks stepping down to the bow, each riser glass | 104 x 32 x 19 | 660 |
-| 11 | Loop | Collider Halls | Split down the centreline; the halves bow out round an opening about 23 m across lit along its walls and meet again | 104 x 41 x 11 | 772 |
+| 11 | Loop (see D7 for the loop family, 13-19) | Collider Halls | Split down the centreline; the halves bow out round an opening about 23 m across lit along its walls and meet again | 104 x 41 x 11 | 772 |
 | 12 | Through-beam | Collider Halls | A long slender body lit end to end, with a stepped hall amidships | 118 x 24 x 16 | 588 |
 
 - **The stereotype test (C5).** Each line above describes a working shape (a case, a bench, a rangefinder, a gallery, a
@@ -141,6 +141,40 @@ faction passes its own section layout and materials. The Hunt page keeps its `hs
   - the board views and blockout 1 at desktop, phone landscape and portrait;
   - every blockout from its quarter and its side at desktop.
 - **Fit.** `tools/mockups/dom_fit.mjs` passes at every size.
+
+### D7. Version 3: the loop family (owner, 2026-11-06)
+
+**The ask.** "l1 loop looks cool, can you make me some more variations of ships with loops? horizontal, vertical, both?"
+
+**The decision.** Seven more loop ships, 13 to 19, join the Loop (11) in the Collider Halls. A ring may lie flat (a loop
+seen from above), stand on edge (seen from the side) or both. Each loop is grown one way, by `loopOf()` on the page:
+- **Split.** The body's section is split into regions:
+  - `halves`: port and starboard, down the centreline;
+  - `decks`: upper and lower, at the belt's upper edge;
+  - `quarters`: both cuts, through the centre at the belt's lower edge.
+- **Bow apart.** Each region lofts through 12 stations (14 on the Wide ring) on a smooth arch. Its offset and scale follow
+  sin(pi t)^0.7 (0.55 on the Wide ring, for longer straights), and it comes back to its split shape.
+- **Close.** A new body from that station closes the loop (`stern: 'open'`). `bow()` then takes it to a rounded nose with a
+  lit aperture.
+- **Light.** The walls that face the opening are lit: they are the beamline.
+
+| # | Blockout | Loop | Offset of each arc, scale | Size, m | Triangles |
+|---|---|---|---|---|---|
+| 13 | Long loop | Horizontal, 78 m long | 8 m out, 0.55 wide | 104 x 32 x 10 | 1,280 |
+| 14 | Twin loops | Horizontal, two in a row (40 m and 36 m) round an 8 m hall | 8.5 m, then 6 m | 106 x 35 x 11 | 2,196 |
+| 15 | Wide ring | Horizontal, 70 m long, nearly round, thin low arcs | 19 m out, 0.5 wide | 104 x 57 x 8 | 1,424 |
+| 16 | Tall loop | Vertical, 72 m long | 9 m up and down, 0.6 tall | 104 x 18 x 31 | 1,376 |
+| 17 | Keel loop | Vertical: the upper hull nearly straight, the keel dropping 12 m | 0.8 m up; 12 m down | 104 x 20 x 25 | 1,376 |
+| 18 | Crossed loops | Both, in series: a horizontal loop aft, a vertical loop forward, an 8 m hall between | 9 m out; 7 m up and down | 106 x 35 x 24 | 2,292 |
+| 19 | Quartered loop | Both at once: four quarters bow out diagonally round one hollow | 7 m out and 6 m up or down, 0.7 | 104 x 33 x 24 | 1,808 |
+
+**Checked.** Every one is closed (zero open edges) and passes the section check.
+
+**On the page.** A new switch, All ships or Loop family, lays out only that family on the board. The list groups the
+loops as horizontal, vertical and both. Each loop ship is shot from its quarter, its side, above and ahead.
+
+**Provisional.** The loops' purpose is the Collider Halls' (D1), which is survey I1. Their sizes and proportions are
+provisional, as in D4.
 
 ## Open questions
 

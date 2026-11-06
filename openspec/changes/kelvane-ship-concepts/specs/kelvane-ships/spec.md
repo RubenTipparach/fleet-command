@@ -16,13 +16,17 @@ the Institute's culture, every tradition SHALL be marked provisional.
 
 ### Requirement: The Institute page is a blockout board to pick from
 
-The Institute page SHALL show twelve frigate-sized blockouts. They SHALL be shown at true scale with the Concord Petrel to
-hand. Each SHALL show its length, beam, height and triangle count, measured from its built geometry, and SHALL be viewable on
-its own.
+The Institute page SHALL show nineteen frigate-sized blockouts, seven of them a family of loop ships beside the Loop. They
+SHALL be shown at true scale with the Concord Petrel to hand. Each SHALL show its length, beam, height and triangle count,
+measured from its built geometry, and SHALL be viewable on its own.
 
 #### Scenario: The board
 - **WHEN** the board is shown
-- **THEN** all twelve stand on it with their numbers and names, grouped by tradition in the list
+- **THEN** all nineteen stand on it with their numbers and names, grouped by tradition in the list
+
+#### Scenario: The loop family
+- **WHEN** Loop family is chosen
+- **THEN** only the eight loop ships stand on the board, listed as horizontal, vertical and both, each with an opening seen from above, from the side or both
 
 #### Scenario: One at a time
 - **WHEN** a blockout is picked from the list

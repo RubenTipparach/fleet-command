@@ -8,6 +8,7 @@
 - [x] 1.4 Named shots at desktop, phone landscape and portrait, looked at; `dom_fit.mjs` passes
 - [x] 1.5 Survey section I; `mockup-work.md`; the tracker; the artifact record
 - [x] 1.6 Published (from the cloud session: no desktop session was reachable), the link recorded in `docs/artifacts/kelvane-ship-concepts/README.md`, `mockup-work.md` and the tracker
+- [x] 1.7 Version 3: the loop family (13-19: horizontal, vertical, both), closed and shot, the Loop family switch, survey I2 updated
 
 ## 2. The owner's picks (survey I1-I4)
 

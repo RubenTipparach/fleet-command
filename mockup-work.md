@@ -42,7 +42,7 @@ account and every link here is updated.
 | 20 | Battle console: Kelvane Institute | Drafted (2026-11-06, v3) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
-| 23 | Kelvane Institute ships: a blockout board from five drafted traditions | Drafted (2026-11-06, v1) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
+| 23 | Kelvane Institute ships: a blockout board from five drafted traditions | Drafted (2026-11-06, v3: the loop family; v1 the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -988,5 +988,13 @@ Owner, 2026-11-06: "begin designs on the institute ships".
 - **The look.** Champagne, dark glass and amber from the console, or plain clay.
 - **Change:** `openspec/changes/kelvane-ship-concepts`.
 - **Shots:** `docs/screenshots/mockups/kelvane-ship-concepts/`.
-- **Stage:** Drafted (2026-11-06, v1).
+- **The loop family** (version 3). Owner, 2026-11-06: "l1 loop looks cool, can you make me some more variations of ships
+  with loops? horizontal, vertical, both?". Seven more, 13 to 19, beside the Loop:
+  - horizontal: Long loop, Twin loops, Wide ring;
+  - vertical: Tall loop, Keel loop;
+  - both: Crossed loops, Quartered loop.
+
+  Each is the hull parting round an opening and closing again, its inner walls lit as the beamline. A Loop family switch
+  shows them alone (design D7).
+- **Stage:** Drafted (2026-11-06, v3).
 - **Questions:** survey I1-I4 (traditions, picks, palette, the first class).

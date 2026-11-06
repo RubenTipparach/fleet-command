@@ -49,3 +49,4 @@
 - 2026-11-05, cloud session: version 6, version id `1793849483-356d` (H4 decided by the owner's picks: 1, 3, 7, 9; Spearhead withdrawn).
 - 2026-11-05, cloud session: version 7, version id `1793882428-1f8c` (H5: the Hunt's window and flood colours, for mockup 12 version 14).
 - 2026-11-06, cloud session: version 8 of the cloud account copy (https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt), version id `1793953194-4b7f`: the committed survey, which adds section I (the Kelvane Institute's ships, I1-I4, mockup 23) and brings over sections S, D and X. The desktop copy is still to republish.
+- 2026-11-06, cloud session: version 9 of the cloud account copy, version id `1793957212-1424`: I2 lists the loop family (13-19, mockup 23 version 3).

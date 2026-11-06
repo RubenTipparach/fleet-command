@@ -47,6 +47,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .row button[aria-pressed="true"] { background: var(--rule); border-color: var(--accent); }
 .list { display: grid; gap: 6px; }
 .list h3 { margin: 8px 0 0; font: 400 13px/1.2 var(--display); letter-spacing: 0.06em; color: var(--accent-hi); }
+.list h4 { margin: 4px 0 0; font: 600 12px/1.2 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
 .list p { margin: 0 0 2px; color: var(--dim); font-size: 12.5px; line-height: 1.3; }
 .list button { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 2px 8px; text-align: left; min-height: 44px; padding: 8px 10px; border: 1px solid var(--rule); background: transparent; color: var(--ink); }
 .list button[aria-pressed="true"] { background: var(--rule); border-color: var(--accent); }
@@ -77,10 +78,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Kelvane <span>ships</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 23, v1. <code>kelvane-ship-concepts</code>. A blockout board: twelve frigate-sized hulls from five traditions drafted inside the Institute, for you to pick from before any is detailed.</p>
+    <p class="sub">Mockup 23, v3. <code>kelvane-ship-concepts</code>. A blockout board of frigate-sized hulls from five traditions drafted inside the Institute, and now a family of loop ships: horizontal, vertical and both.</p>
   </header>
   <div class="scroll">
-    <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
+    <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div><div class="row" id="famRow"></div></div>
     <div class="grp"><h2>Blockouts</h2><div class="list" id="list"></div></div>
     <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
     <div class="grp"><h2>Measured</h2><dl class="facts" id="facts"></dl></div>
@@ -88,6 +89,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <p>Version 1 (you: "begin designs on the institute ships"). Breadth first, as with the Ssarith Hunt: twelve massings at frigate size, so you can pick before anything is detailed.</p>
       <p>The Institute's culture is still thin (one line: truth is measured, never assumed), so five traditions inside it are drafted for you to pick, change or reject. Each blockout names the one it comes from. Three are the traditions drafted for the emblem (the Calibrators, the Open Notebook, the Long Baseline); two are new (the Field Stations, the Collider Halls).</p>
       <p>Each hull is one grown structure on the same code as the Hunt's ships (Ship Design Bible, chapter 14): one body, its arms, decks and spars split from its own section, and where two branches meet again the skin runs round the opening. No primitive is placed.</p>
+      <p>Version 3 (you: "l1 loop looks cool, can you make me some more variations of ships with loops? horizontal, vertical, both?"): seven more loop ships, 13 to 19, beside the Loop. Horizontal loops open seen from above, vertical ones from the side, and the last two both ways. Each is the hull parting round an opening and closing again, its inner walls lit as the beamline. Loop family shows them alone.</p>
       <p>The skin answers the console (chapter 11): rolled champagne edges like its plates, wells of dark smoked glass, amber light for a reading. Clay shows the massing alone.</p>
       <p>None is drawn from the Kelvane's bodies (chapter 13). Described without the species' name, each is an instrument's or a laboratory's working shape, never a creature's.</p>
       <p>Survey section I asks which traditions and blockouts go on. <a href="https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt" target="_blank" rel="noopener">Open the survey</a>.</p>
@@ -557,6 +559,33 @@ const from = (i, test) => (k) => test((k + i) % N);
 const pick = (c, cut, own = () => false) => (k) => (k >= c ? cut : own(k));
 
 // ---------------------------------------------------------------------------------------------------------------
+// Loops: the body's section split into regions that bow apart and meet again (Ship Design Bible F2, the grown hull's
+// openings). Each region is [ring, the region's index where its cut line starts, the section edge its own edge 0 is].
+// halves: port and starboard, split down the centreline (an opening seen from above). decks: upper and lower, split at
+// the belt's upper edge (seen from the side). quarters: both cuts at once, through the centre at the belt's lower edge.
+const halves = (S) => ({ port: [[...seg(S, 0, 15), ...cutLine(S[15], S[0], 4)], 15, 0], stbd: [[...seg(S, 15, 0), ...cutLine(S[0], S[15], 4)], 15, 15] });
+const decks = (S) => ({ upper: [[...seg(S, 7, 23), ...cutLine(S[23], S[7], 6)], 16, 7], lower: [[...seg(S, 23, 7), ...cutLine(S[7], S[23], 6)], 14, 23] });
+function quarters(S) { const C = V2(0, S[6].y), via = (a, b) => [...cutLine(a, C, 3), C, ...cutLine(C, b, 3)];
+  return { upPort: [[...seg(S, 6, 15), ...via(S[15], S[6])], 9, 6], upStbd: [[...seg(S, 15, 24), ...via(S[24], S[15])], 9, 15],
+    loStbd: [[...seg(S, 24, 0), ...via(S[0], S[24])], 6, 24], loPort: [[...seg(S, 0, 6), ...via(S[6], S[0])], 6, 0] }; }
+// Grows a loop from station z, len metres long: each part [name, ring, cut index, start edge, [dx, dy, sx, sy]] bows out
+// to its offset and scale on a smooth arch (sin to the power `round`: under 1 squarer shoulders, the straights longer) through
+// n stations, and back to its split shape, left open; its cut walls lit (the beamline), its belt lit. Returns the station
+// where the loop closes, for the body that closes it.
+function loopOf(K, z, len, parts, n = 12, round = 0.7) {
+  for (const [name, R, cut, start, [dx, dy, sx, sy]] of parts) {
+    const steps = Array.from({ length: n + 1 }, (_, i) => { const t = i / n, f = i === 0 || i === n ? 0 : Math.pow(Math.sin(PI * t), round);
+      return [len * t, 1 - (1 - sx) * f, 1 - (1 - sy) * f, dx * f, dy * f]; });
+    K.branch(name, R, z, steps, { end: 'open', glow: pick(cut, true, from(start, (k) => E.belt(k))) });
+  }
+  return z + len; }
+// The bow that closes a loop: the body again from station z, to a rounded nose at zEnd with a lit aperture.
+function bow(K, z, c, zEnd) { const L = zEnd - z;
+  const B = K.body([[z, c], [z + L * 0.45, c], [z + L * 0.75, { ...c, hb: c.hb * 0.68, top: c.top * 0.75, bot: c.bot * 0.78, r: c.r * 0.8, rt: c.rt * 0.8 }],
+    [zEnd, { ...c, hb: c.hb * 0.34, top: c.top * 0.36, bot: c.bot * 0.4, r: c.r * 0.42, rt: c.rt * 0.4, bh: c.bh * 0.5 }]], (k) => E.belt(k), ksec, { stern: 'open', name: 'bow' });
+  K.branch('aperture', B, zEnd, [[0, 1, 1, 0, 0]], { capKind: 'glow' }); }
+
+// ---------------------------------------------------------------------------------------------------------------
 // The five traditions, drafted for the owner (Ship Design Bible C2-C4): each a school inside the Institute, with where its
 // way of building comes from. Provisional until the owner sets the Institute's culture (survey I1).
 const TRADITIONS = {
@@ -564,7 +593,7 @@ const TRADITIONS = {
   note: { name: 'The Open Notebook', src: 'The reviewers: no result is true until another laboratory repeats it. Ships that take every reading twice, two identical hulls or decks side by side.' },
   base: { name: 'The Long Baseline', src: 'The surveyors and astronomers, who began by measuring the distance to a star. Ships that range by parallax: two stations as far apart as the hull allows.' },
   field: { name: 'The Field Stations', src: 'The expedition scientists, who work years from home: deep self-sufficient hulls, the laboratory behind a wide gallery of glass that looks out.' },
-  coll: { name: 'The Collider Halls', src: 'The particle physicists, whose great machines are beamlines and rings: ships built round the accelerator that is also their lance.' },
+  coll: { name: 'The Collider Halls', src: 'The particle physicists, whose great machines are beamlines and rings: ships built round the accelerator that is also their lance. A ring may lie flat (a loop seen from above), stand on edge (seen from the side) or both.' },
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -666,7 +695,7 @@ const BLOCKS = [
         [36, step(5.4, 14.6, 1.2, 0.4)], [46, { ...base, top: 4.4, hb: 12, hbt: 11, sy: 0.6, sh: 0.2 }], [52, { ...base, top: 2.2, hb: 6, hbt: 5, bot: -3, r: 2.4, rt: 1.6, ym: -0.2, bh: 0.6, sy: 0.2, sh: 0 }]];
       const S = K.body(T, (k, z) => (E.belt(k) ? true : (z > -18 && z < -17) || (z > 12 && z < 13) ? (k >= 8 && k <= 21 ? 'well' : false) : E.riser(k) && z > -46 && z < 40 ? 'well' : false));
       K.branch('bow', S, 52, [[0, 1, 1, 0, 0]]); K.done(); } },
-  { n: 11, tr: 'coll', name: 'Loop', tell: 'From above an open loop: the hull parts round an opening about 23 m across, lit along its inner walls, and closes again at the bow.',
+  { n: 11, tr: 'coll', grp: 'Horizontal loops', loop: true, name: 'Loop', tell: 'From above an open loop: the hull parts round an opening about 23 m across, lit along its inner walls, and closes again at the bow.',
     // the storage ring: the beam runs round the loop and leaves through the bow, the ship's lance
     build(g) { const K = skin(g), c = { hb: 12, top: 5.5, bot: -5.5, r: 3.6, rt: 3.6, bh: 0.8, ym: 0 };
       const S = K.body([[-52, { ...c, hb: 9, top: 4.4, bot: -4.4, r: 2.8, rt: 2.8 }], [-46, c], [-34, c]], (k) => E.belt(k));
@@ -677,18 +706,75 @@ const BLOCKS = [
       const B = K.body([[26, c], [40, c], [48, { ...c, hb: 8, top: 4.2, bot: -4.4, r: 3, rt: 3 }], [52, { ...c, hb: 4, top: 2, bot: -2.2, r: 1.6, rt: 1.6 }]],
         (k) => E.belt(k), ksec, { stern: 'open', name: 'bow' });
       K.branch('aperture', B, 52, [[0, 1, 1, 0, 0]], { capKind: 'glow' }); K.done(); } },
-  { n: 12, tr: 'coll', name: 'Through-beam', tell: 'A long, slender hull with one stepped swell amidships, lit end to end along its beamline, the bow its aperture.',
+  { n: 12, tr: 'coll', grp: '', name: 'Through-beam', tell: 'A long, slender hull with one stepped swell amidships, lit end to end along its beamline, the bow its aperture.',
     // the linear accelerator: the beamline runs the whole length; the swell is the hall that feeds it
     build(g) { const K = skin(g), t = { hb: 6.5, top: 5.5, bot: -5.5, r: 3.6, rt: 3.6, bh: 1, ym: 0, kd: 0.4 }, s = { ...t, hb: 12, top: 9, bot: -6.5, hbt: 8, sy: 4, sh: 0.6, r: 4, rt: 3 };
       const S = K.body([[-56, { ...t, hb: 5, top: 4.4, bot: -4.4, r: 2.8, rt: 2.8 }], [-50, t], [-22, t], [-14, s], [10, s], [18, t], [52, t],
         [58, { ...t, hb: 4.6, top: 3.6, bot: -3.8, r: 2.6, rt: 2.6 }], [62, { ...t, hb: 2.6, top: 1.8, bot: -2, r: 1.4, rt: 1.2 }]],
         (k, z) => (E.belt(k) ? true : E.riser(k) && z > -14 && z < 10 ? 'well' : false));
       K.branch('aperture', S, 62, [[0, 1, 1, 0, 0]], { capKind: 'glow' }); K.done(); } },
+  // ---- The loop family (version 3; owner, 2026-11-06: "l1 loop looks cool, can you make me some more variations of ships
+  // with loops? horizontal, vertical, both?"). Each loop is the body split into regions that bow apart round an opening and
+  // meet again (loopOf()), the walls that face the opening lit as the beamline. Horizontal loops open seen from above, vertical
+  // loops seen from the side, and the last two both.
+  { n: 13, tr: 'coll', grp: 'Horizontal loops', loop: true, name: 'Long loop', tell: 'A long, slim loop from above: two narrow arcs round an opening about 70 m long, a short stern and a short bow.',
+    // a long storage ring: the longer the straights, the more beam it holds
+    build(g) { const K = skin(g), c = { hb: 10, top: 5, bot: -5, r: 3.4, rt: 3.4, bh: 0.8, ym: 0 };
+      const S = K.body([[-52, { ...c, hb: 7.5, top: 4, bot: -4, r: 2.6, rt: 2.6 }], [-46, c], [-40, c]], (k) => E.belt(k));
+      const H = halves(S), z = loopOf(K, -40, 78, [['port_arc', ...H.port, [8, 0, 0.55, 0.8]], ['starboard_arc', ...H.stbd, [-8, 0, 0.55, 0.8]]]);
+      bow(K, z, c, 52); K.done(); } },
+  { n: 14, tr: 'coll', grp: 'Horizontal loops', loop: true, name: 'Twin loops', tell: 'Two loops in a row from above, the second smaller, the hull closing between them round its hall.',
+    // two rings in series: the first stores the beam, the second shapes it before it leaves through the bow
+    build(g) { const K = skin(g), c = { hb: 11, top: 5.5, bot: -5.5, r: 3.6, rt: 3.6, bh: 0.8, ym: 0 };
+      const S = K.body([[-52, { ...c, hb: 8, top: 4.4, bot: -4.4, r: 2.8, rt: 2.8 }], [-46, c], [-44, c]], (k) => E.belt(k));
+      let H = halves(S), z = loopOf(K, -44, 40, [['port_arc', ...H.port, [8.5, 0, 0.6, 0.85]], ['starboard_arc', ...H.stbd, [-8.5, 0, 0.6, 0.85]]]);
+      const M = K.body([[z, c], [z + 8, c]], (k) => E.belt(k), ksec, { stern: 'open', name: 'hall' });
+      H = halves(M); z = loopOf(K, z + 8, 36, [['port_arc_2', ...H.port, [6, 0, 0.66, 0.88]], ['starboard_arc_2', ...H.stbd, [-6, 0, 0.66, 0.88]]]);
+      bow(K, z, c, 54); K.done(); } },
+  { n: 15, tr: 'coll', grp: 'Horizontal loops', loop: true, name: 'Wide ring', tell: 'A broad, flat ring from above, nearly round, 57 m across, its arcs thin and low, a stern and a bow on its axis.',
+    // the largest ring a frigate can carry: a wide ring bends the beam gently, so it can hold it at a higher energy
+    build(g) { const K = skin(g), c = { hb: 12, top: 4.2, bot: -4.2, r: 3, rt: 3, bh: 0.7, ym: 0 };
+      const S = K.body([[-52, { ...c, hb: 8, top: 3.6, bot: -3.6, r: 2.4, rt: 2.4 }], [-46, c], [-38, c]], (k) => E.belt(k));
+      const H = halves(S), z = loopOf(K, -38, 70, [['port_arc', ...H.port, [19, 0, 0.5, 0.75]], ['starboard_arc', ...H.stbd, [-19, 0, 0.5, 0.75]]], 14, 0.55);
+      bow(K, z, c, 52); K.done(); } },
+  { n: 16, tr: 'coll', grp: 'Vertical loops', loop: true, name: 'Tall loop', tell: 'A loop seen from the side: the hull parts into an upper and a lower arc round a tall opening, and closes at the bow.',
+    // the storage ring stood on edge, so the ship stays narrow head-on
+    build(g) { const K = skin(g), c = { hb: 9, top: 8, bot: -8, r: 4, rt: 4, bh: 0.8, ym: 0 };
+      const S = K.body([[-52, { ...c, hb: 7, top: 6, bot: -6, r: 3, rt: 3 }], [-46, c], [-38, c]], (k) => E.belt(k) || E.keel(k));
+      const D = decks(S), z = loopOf(K, -38, 72, [['upper_arc', ...D.upper, [0, 9, 0.9, 0.6]], ['lower_arc', ...D.lower, [0, -9, 0.9, 0.6]]]);
+      bow(K, z, c, 52); K.done(); } },
+  { n: 17, tr: 'coll', grp: 'Vertical loops', loop: true, name: 'Keel loop', tell: 'Seen from the side, a straight upper hull and, under it, a keel that drops away in a deep arc and rises to meet it again.',
+    // the decks stay level for the crew; only the beamline below them bends round
+    build(g) { const K = skin(g), c = { hb: 10, top: 7, bot: -7, r: 4, rt: 4, bh: 0.8, ym: 0, kd: 0.8 };
+      const S = K.body([[-52, { ...c, hb: 8, top: 5.6, bot: -5.6, r: 3.2, rt: 3.2, kd: 0 }], [-46, c], [-34, c]], (k) => E.belt(k) || E.keel(k));
+      const D = decks(S), z = loopOf(K, -34, 64, [['upper_hull', ...D.upper, [0, 0.8, 0.98, 0.92]], ['keel_arc', ...D.lower, [0, -12, 0.78, 0.6]]]);
+      bow(K, z, c, 52); K.done(); } },
+  { n: 18, tr: 'coll', grp: 'Both', loop: true, name: 'Crossed loops', tell: 'Two loops one after the other: aft, a loop seen from above; forward, a loop seen from the side, the hull closing between them.',
+    // two rings at right angles, so the two beams cross in the hall between them
+    build(g) { const K = skin(g), c = { hb: 10, top: 6, bot: -6, r: 3.6, rt: 3.6, bh: 0.8, ym: 0 };
+      const S = K.body([[-52, { ...c, hb: 7.5, top: 4.6, bot: -4.6, r: 2.8, rt: 2.8 }], [-46, c], [-44, c]], (k) => E.belt(k));
+      const H = halves(S); let z = loopOf(K, -44, 40, [['port_arc', ...H.port, [9, 0, 0.6, 0.85]], ['starboard_arc', ...H.stbd, [-9, 0, 0.6, 0.85]]]);
+      const M = K.body([[z, c], [z + 8, c]], (k) => E.belt(k), ksec, { stern: 'open', name: 'hall' });
+      const D = decks(M); z = loopOf(K, z + 8, 40, [['upper_arc', ...D.upper, [0, 7, 0.92, 0.62]], ['lower_arc', ...D.lower, [0, -7, 0.92, 0.62]]]);
+      bow(K, z, c, 54); K.done(); } },
+  { n: 19, tr: 'coll', grp: 'Both', loop: true, name: 'Quartered loop', tell: 'The hull parts four ways round one hollow: open from above, from the side and, head-on, in a cross.',
+    // four beamlines round one interaction point: they meet where the hull closes again
+    build(g) { const K = skin(g), c = { hb: 11, top: 7, bot: -7, r: 4, rt: 4, bh: 0.8, ym: 0 };
+      const S = K.body([[-52, { ...c, hb: 8, top: 5.4, bot: -5.4, r: 3, rt: 3 }], [-46, c], [-36, c]], (k) => E.belt(k));
+      const Q = quarters(S), z = loopOf(K, -36, 70, [['upper_port', ...Q.upPort, [7, 6, 0.7, 0.72]], ['upper_starboard', ...Q.upStbd, [-7, 6, 0.7, 0.72]],
+        ['lower_starboard', ...Q.loStbd, [-7, -6, 0.7, 0.72]], ['lower_port', ...Q.loPort, [7, -6, 0.7, 0.72]]]);
+      bow(K, z, c, 52); K.done(); } },
 ];
 
-// The board: four columns, three rows, read left to right and top to bottom from behind, so every bow (+z) points up the
-// screen; the traditions in order.
-const SHIPS = BLOCKS.map((b, i) => { const g = new THREE.Group(); b.build(g); g.position.set((1.5 - i % 4) * 150, 0, (1 - Math.floor(i / 4)) * 175); g.updateMatrixWorld(true); scene.add(g); return g; });
+// The board: four columns, read left to right and top to bottom from behind, so every bow (+z) points up the screen; the
+// traditions in order. A family (all, or the loops) lays only its own ships out (layout).
+const SHIPS = BLOCKS.map((b) => { const g = new THREE.Group(); b.build(g); scene.add(g); return g; });
+const FAMILIES = { all: { label: 'All ships', ids: BLOCKS.map((_, i) => i) }, loops: { label: 'Loop family', ids: BLOCKS.map((b, i) => (b.loop ? i : -1)).filter((i) => i >= 0) } };
+let family = 'all';
+const rowsOf = () => Math.ceil(FAMILIES[family].ids.length / 4);
+function layout() { const ids = FAMILIES[family].ids, rows = rowsOf();
+  SHIPS.forEach((g, i) => { const j = ids.indexOf(i); g.visible = j >= 0;
+    if (j >= 0) g.position.set((1.5 - j % 4) * 150, 0, ((rows - 1) / 2 - Math.floor(j / 4)) * 175); g.updateMatrixWorld(true); }); }
 const PETREL = CL.plainModel('petrel_level'); PETREL.visible = false; scene.add(PETREL);
 
 // Measured from the built geometry: size, triangles, and the skin's closure (every edge shared by exactly two triangles).
@@ -706,26 +792,30 @@ window.MOCKUP_MEASURE = () => BLOCKS.map((b, i) => ({ n: b.n, name: b.name, leng
 let focus = -1, showPetrel = false, showLabels = true, viewKey = 'board';
 const VIEWS = { board: { label: 'Board' }, top: { label: 'Board from above' }, side: { label: 'Board from ahead' } };
 const back = () => { const asp = stage.clientWidth / stage.clientHeight; return asp <= 0.75 ? 3.4 : asp < 1.5 ? 1.25 : 1; };
-function setView(k) { viewKey = k; focus = -1; SHIPS.forEach((g) => { g.visible = true; }); const v = { board: [[0, 560, -700], [0, -10, 20]], top: [[0, 980, -0.01], [0, 0, 0]], side: [[0, 160, 900], [0, -10, 0]] }[k];
-  camera.position.set(...v[0]); controls.target.set(...v[1]); camera.position.sub(controls.target).multiplyScalar(back()).add(controls.target); controls.update(); sync(); }
+function setView(k) { viewKey = k; focus = -1; layout(); const v = { board: [[0, 560, -700], [0, -10, 20]], top: [[0, 980, -0.01], [0, 0, 0]], side: [[0, 160, 900], [0, -10, 0]] }[k];
+  const deep = Math.max(1, rowsOf() / 3) ** (k === 'side' ? 0 : 0.8); // a deeper board is seen from further back
+  camera.position.set(...v[0]); controls.target.set(...v[1]); camera.position.sub(controls.target).multiplyScalar(back() * deep).add(controls.target); controls.update(); sync(); }
 // a ship from its bow quarter (what a target sees coming), or from the side or above
 function focusOn(i, from = [-105, 42, 138]) { focus = i; const p = SHIPS[i].position; SHIPS.forEach((g, j) => { g.visible = j === i; });
   controls.target.copy(p); camera.position.copy(p).add(V3(...from).multiplyScalar(back())); controls.update(); sync(); }
 function sync() {
   $('viewRow').innerHTML = Object.entries(VIEWS).map(([k, v]) => `<button data-k="${k}" aria-pressed="${focus < 0 && k === viewKey}">${v.label}</button>`).join('');
-  let html = '', tr = '';
-  BLOCKS.forEach((b, i) => { if (b.tr !== tr) { tr = b.tr; html += `<h3>${TRADITIONS[tr].name}</h3><p>${TRADITIONS[tr].src}</p>`; }
+  $('famRow').innerHTML = Object.entries(FAMILIES).map(([k, v]) => `<button data-f="${k}" aria-pressed="${k === family}">${v.label}</button>`).join('');
+  let html = '', tr = '', grp = '';
+  FAMILIES[family].ids.forEach((i) => { const b = BLOCKS[i]; if (b.tr !== tr) { tr = b.tr; grp = ''; html += `<h3>${TRADITIONS[tr].name}</h3><p>${TRADITIONS[tr].src}</p>`; }
+    if (b.grp && b.grp !== grp) { grp = b.grp; html += `<h4>${grp}</h4>`; }
     html += `<button data-i="${i}" aria-pressed="${i === focus}"><b>${b.n}</b><span>${b.name}</span><small>${b.tell}</small></button>`; });
   $('list').innerHTML = html;
   $('showRow').innerHTML = `<button data-s="paint" aria-pressed="${champagne}">Champagne</button><button data-s="clay" aria-pressed="${!champagne}">Clay</button><button data-s="labels" aria-pressed="${showLabels}">Labels</button><button data-s="petrel" aria-pressed="${showPetrel}">Concord Petrel</button>`;
   const f = focus >= 0 ? MEAS[focus] : null;
   $('facts').innerHTML = f ? `<dt>${BLOCKS[focus].n} ${BLOCKS[focus].name}</dt><dd>${f.size.z.toFixed(1)} m long, ${f.size.x.toFixed(1)} m beam, ${f.size.y.toFixed(1)} m tall, ${f.tris.toLocaleString('en')} triangles, ${f.open ? f.open + ' open edges' : 'skin closed'}</dd><dt>Tradition</dt><dd>${TRADITIONS[BLOCKS[focus].tr].name}</dd>`
-    : MEAS.map((m, i) => `<dt>${BLOCKS[i].n} ${BLOCKS[i].name}</dt><dd>${m.size.z.toFixed(0)} by ${m.size.x.toFixed(0)} by ${m.size.y.toFixed(0)} m</dd>`).join('');
-  PETREL.visible = showPetrel; if (focus >= 0) PETREL.position.copy(SHIPS[focus].position).add(V3(0, MEAS[focus].size.y / 2 + 16, 0)); else PETREL.position.set(0, 0, -330);
-  $('status').textContent = focus >= 0 ? `${BLOCKS[focus].n} ${BLOCKS[focus].name}` : 'Blockout board: twelve massings';
+    : FAMILIES[family].ids.map((i) => { const m = MEAS[i]; return `<dt>${BLOCKS[i].n} ${BLOCKS[i].name}</dt><dd>${m.size.z.toFixed(0)} by ${m.size.x.toFixed(0)} by ${m.size.y.toFixed(0)} m</dd>`; }).join('');
+  PETREL.visible = showPetrel; if (focus >= 0) PETREL.position.copy(SHIPS[focus].position).add(V3(0, MEAS[focus].size.y / 2 + 16, 0)); else PETREL.position.set(0, 0, -(rowsOf() / 2) * 175 - 70);
+  $('status').textContent = focus >= 0 ? `${BLOCKS[focus].n} ${BLOCKS[focus].name}` : (family === 'all' ? `Blockout board: ${BLOCKS.length} massings` : `The loop family: ${FAMILIES.loops.ids.length} ships`);
   $('tip').textContent = focus >= 0 ? `${TRADITIONS[BLOCKS[focus].tr].name}. ${BLOCKS[focus].tell}` : 'Bow toward the top of the board. Pick one to look closer. Drag to orbit, scroll or pinch to zoom.';
 }
 $('viewRow').onclick = (e) => { const b = e.target.closest('button'); if (b) setView(b.dataset.k); };
+$('famRow').onclick = (e) => { const b = e.target.closest('button'); if (b) { family = b.dataset.f; setView(viewKey); } };
 $('list').onclick = (e) => { const b = e.target.closest('button'); if (b) focusOn(+b.dataset.i); };
 $('showRow').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; const s = b.dataset.s;
   if (s === 'labels') showLabels = !showLabels; else if (s === 'paint') setLook(true); else if (s === 'clay') setLook(false); else showPetrel = !showPetrel; sync(); };
@@ -737,7 +827,7 @@ function setLook(on) { champagne = on; const from = on ? CLAY : MAT, to = on ? M
 const LBL = BLOCKS.map((b) => { const d = document.createElement('div'); d.innerHTML = `${b.n}<span class="nm"> ${b.name}</span>`; $('labels').append(d); return d; });
 function labels() { const w = stage.clientWidth, h = stage.clientHeight;
   SHIPS.forEach((g, i) => { const p = g.position.clone().add(V3(0, MEAS[i].size.y / 2 + 6, 0)).project(camera), d = LBL[i];
-    d.hidden = !showLabels || focus >= 0 || p.z > 1; d.style.left = ((p.x + 1) / 2 * w) + 'px'; d.style.top = ((1 - p.y) / 2 * h) + 'px'; }); }
+    d.hidden = !showLabels || focus >= 0 || !g.visible || p.z > 1; d.style.left = ((p.x + 1) / 2 * w) + 'px'; d.style.top = ((1 - p.y) / 2 * h) + 'px'; }); }
 
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false);
   const portrait = w / h <= 0.75, pw = portrait ? 0 : $('panel').offsetWidth;
@@ -752,12 +842,16 @@ resize(); setView('board'); requestAnimationFrame(loop);
 
 // Named shots for tools/mockups/shoot.mjs.
 const shot = (fn) => () => { fn(); renderer.render(scene, camera); labels(); };
-window.MOCKUP_SHOTS = { board: shot(() => { setLook(true); setView('board'); }), board_clay: shot(() => { setLook(false); setView('board'); }),
-  board_top: shot(() => { setLook(true); setView('top'); }), board_ahead: shot(() => { setLook(true); setView('side'); }) };
+const fam = (f) => { family = f; };
+window.MOCKUP_SHOTS = { loops: shot(() => { setLook(true); fam('loops'); setView('board'); }), loops_top: shot(() => { setLook(true); fam('loops'); setView('top'); }),
+  loops_ahead: shot(() => { setLook(true); fam('loops'); setView('side'); }),
+  board: shot(() => { setLook(true); fam('all'); setView('board'); }), board_clay: shot(() => { setLook(false); fam('all'); setView('board'); }),
+  board_top: shot(() => { setLook(true); fam('all'); setView('top'); }), board_ahead: shot(() => { setLook(true); fam('all'); setView('side'); }) };
 BLOCKS.forEach((b, i) => { const id = 'b' + String(b.n).padStart(2, '0');
   window.MOCKUP_SHOTS[id] = shot(() => { setLook(true); focusOn(i); });
   window.MOCKUP_SHOTS[id + '_side'] = shot(() => { setLook(true); focusOn(i, [-175, 6, 0.01]); });
-  window.MOCKUP_SHOTS[id + '_top'] = shot(() => { setLook(true); focusOn(i, [0, 175, -0.01]); }); });
+  window.MOCKUP_SHOTS[id + '_top'] = shot(() => { setLook(true); focusOn(i, [0, 175, -0.01]); });
+  window.MOCKUP_SHOTS[id + '_ahead'] = shot(() => { setLook(true); focusOn(i, [0.01, 8, 150]); }); });
 window.MOCKUP_SCENE = scene;
 if (KSEC_BAD.length) console.error('ksec: sections that are not simple rings: ' + KSEC_BAD.join('; '));
 renderer.render(scene, camera); window.MOCKUP_READY = true;

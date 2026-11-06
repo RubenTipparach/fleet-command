@@ -20,3 +20,8 @@
   carries section I (`https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt`).
 - To do from the desktop session: republish the tracker (`docs/mockups/tracker.html` already lists M23 with this link) and
   the survey (section I); the cloud session's account cannot open either.
+- 2026-11-06, cloud session (owner: "l1 loop looks cool, can you make me some more variations of ships with loops?
+  horizontal, vertical, both?"): version 3, the loop family. Seven more loop ships (13-19: Long loop, Twin loops, Wide ring;
+  Tall loop, Keel loop; Crossed loops, Quartered loop), each closed, grown by the page's `loopOf()`; an All ships / Loop
+  family switch; every loop ship shot from its quarter, side, above and ahead. Survey I2 lists them. Published, version id
+  `1793957210-7877`; survey cloud copy version 9, version id `1793957212-1424`.
