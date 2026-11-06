@@ -182,6 +182,12 @@ return { tex, geometry, maps, looks, fixtures, blink };
 };
 </script>
 <!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/ship-skin.js -->
+<script data-src="docs/mockups/lib/ship-skin.js"></script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/ship-rooms.js -->
+<script data-src="docs/mockups/lib/ship-rooms.js"></script>
+<!-- /INLINE -->
 <!-- INLINE docs/mockups/lib/concord-line.js -->
 <script data-src="docs/mockups/lib/concord-line.js">
 // Fleet Command mockups: the Concord line, the standard for Concord ships (owner, 2026-11-03: "Concord line (hull concepts) -
@@ -1013,7 +1019,10 @@ $('lightRow').onclick = (e) => { const b = e.target.closest('button'); if (b) { 
 // skin, as the blockouts are.
 const LOOKS = { painted: 'Painted', pbr: 'PBR', champagne: 'Champagne', clay: 'Clay' };
 const TEXLOAD = [], BS = window.FCBakedShip(THREE, { onTexture: (p) => TEXLOAD.push(p), normals: HG.creasedNormals });
-const U = { lightK: { value: 0.3 }, selfP: { value: 0.55 }, none: { value: 0.0 } };
+const U = { lightK: { value: 0.3 }, selfP: { value: 0.55 }, none: { value: 0.0 }, roomK: { value: 1.0 }, frameK: { value: 1.0 } };
+// The windows: each pane the bake cut drawn as its own quad with its room behind it (baked-ship.js panes, the Hunt's).
+const SK = window.FCShipSkin(THREE), ROOMS = window.FCShipRooms, PANE_GL = { hash: SK.GLSL.hash, box: SK.GLSL.box, rooms: ROOMS.GLSL,
+  light: 'k == 2 ? vec3(0.98, 0.8, 0.5) : k == 3 ? vec3(0.5, 0.47, 0.42) : vec3(1.0, 0.9, 0.72)' };   // the Institute's rooms: warm lamplight, laboratories amber, holds dim
 const BK = (() => { const el = document.querySelector('script[data-src="assets/ships/kelvane/manifest.json"]'); return el ? JSON.parse(el.textContent) : null; })();
 const glowSprite = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
   g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
@@ -1021,6 +1030,7 @@ const BAKED = {};   // ship index: { mesh, looks, navs, root }
 if (BK) BLOCKS.forEach((b, i) => { if (!b.line || !BK.ships[b.slug]) return;
   const M = BS.maps(BK, b.slug), looks = BS.looks(M, U), root = new THREE.Group(); root.userData.baked = true;
   const mesh = new THREE.Mesh(M.geo, looks.painted); mesh.userData.baked = true; root.add(mesh); SHIPS[i].add(root);
+  if (M.sh.panes && M.sh.panes.length) root.add(BS.panes(M.sh.panes, U, { value: 1 }, PANE_GL));
   BAKED[i] = { mesh, looks, root, navs: BS.fixtures(M.sh, glowSprite, root) }; });
 // The look: a baked ship shows its maps in Painted and PBR and its grown skin in Champagne and Clay; a blockout has only its skin.
 function setLook(k) { look = k; const baked = k === 'painted' || k === 'pbr', skin = k === 'clay' ? CLAY : MAT;
@@ -1030,7 +1040,7 @@ function setLook(k) { look = k; const baked = k === 'painted' || k === 'pbr', sk
       if (c.isMesh) for (const key of Object.keys(MAT)) if (c.material === MAT[key] || c.material === CLAY[key]) { c.material = skin[key]; break; } } }); }
 // The light: a studio, or night in deep space, where the ships are lit by their own floods, lamps and strips.
 function setNight(on) { night = on; hemi.intensity = on ? 0.025 : 0.45; sun.intensity = on ? 0.22 : 1.2; rim.intensity = on ? 0.14 : 0.55;
-  U.lightK.value = on ? 4.5 : 0.3; U.selfP.value = on ? 0.06 : 0.55; scene.background.set(on ? 0x010102 : 0x07060a); grid.visible = !on;
+  U.lightK.value = on ? 4.5 : 0.3; U.selfP.value = on ? 0.06 : 0.55; U.frameK.value = on ? 0.3 : 1.0; scene.background.set(on ? 0x010102 : 0x07060a); grid.visible = !on;
   for (const B of Object.values(BAKED)) B.looks.pbr.envMapIntensity = on ? 0.06 : 0.5; }
 setLook('painted');
 
