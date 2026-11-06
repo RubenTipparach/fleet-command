@@ -46,3 +46,4 @@
 - Version 22 (2026-11-06): the Patience in the allied and swap scenes; parity 70 shots, 4,087 presses of 396 controls, every press matched. Version id `1793930948-97b6`.
 - Version 23 (2026-11-06): the Kelvane emblem KID in its colours. Version id `1793934556-1828`.
 - Version 24 (2026-11-06): the Kelvane emblem in KID's revised palette. Version id `1793937970-b670`.
+- Version 25 (2026-11-06, committed from a cloud session, to publish from the desktop session): placing a mine no longer stops the page ("Uncaught ReferenceError: Rm is not defined": the mine preview read the transport ring's own copy of the reach); the helm keys' glyphs and turn angles sit inside the key's glass, measured from the kit's own key renders, with more room round the glyphs (owner: "the numbers arent in the buttons for turn angle, also these icons need a little more space on these buttons").

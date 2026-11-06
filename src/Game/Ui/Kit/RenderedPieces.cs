@@ -100,6 +100,26 @@ public sealed class RenderedPieces
         c.DrawTextureRectRegion(e.Tex, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), new Rect2(0, ts.Y * (1 - f), ts.X, ts.Y * f), new Color(1, 1, 1, alpha));
     }
 
+    /// <summary>The glass of a rendered key as fractions of the key (X, Y, W, H): the box round every pixel where the lit
+    /// render <paramref name="lit"/> differs from the one at rest <paramref name="rest"/>, so a key's glyph and label are
+    /// placed inside the window and never on its frame. The whole key when the two do not differ.</summary>
+    public FleetCommand.Data.Rect Glass(string rest, string lit)
+    {
+        Image a = Get(rest).Tex.GetImage() ?? throw new InvalidOperationException($"the {_skin} kit's '{rest}' has no image");
+        Image b = Get(lit).Tex.GetImage() ?? throw new InvalidOperationException($"the {_skin} kit's '{lit}' has no image");
+        if (a.IsCompressed()) a.Decompress();
+        if (b.IsCompressed()) b.Decompress();
+        int w = Math.Min(a.GetWidth(), b.GetWidth()), h = Math.Min(a.GetHeight(), b.GetHeight()), x0 = w, y0 = h, x1 = -1, y1 = -1;
+        for (int j = 0; j < h; j++)
+            for (int i = 0; i < w; i++)
+            {
+                Color ca = a.GetPixel(i, j), cb = b.GetPixel(i, j);
+                if ((Math.Abs(ca.R - cb.R) + Math.Abs(ca.G - cb.G) + Math.Abs(ca.B - cb.B)) * 255 <= 90) continue;
+                x0 = Math.Min(x0, i); y0 = Math.Min(y0, j); x1 = Math.Max(x1, i); y1 = Math.Max(y1, j);
+            }
+        return x1 < 0 ? new FleetCommand.Data.Rect(0, 0, 1, 1) : new FleetCommand.Data.Rect((double)x0 / w, (double)y0 / h, (double)(x1 + 1 - x0) / w, (double)(y1 + 1 - y0) / h);
+    }
+
     /// <summary>A new whole piece made from an existing one with its hue turned to <paramref name="hue"/>'s (the mockup's
     /// "hue" blend: the source keeps its saturation and brightness).</summary>
     public void AddHueTurned(string id, string from, Color hue)

@@ -39,6 +39,9 @@ public interface IKit
     void Shape(CanvasItem c, Rect2 r, float radius, Color col, float line = 0);
     /// <summary>A small round knob in this skin's shape (the mockup's knob), filled.</summary>
     void Knob(CanvasItem c, Vector2 centre, float r, Color col);
+    /// <summary>The glass of the square key as fractions of the key (X, Y, W, H): the part the skin lights, where a key's
+    /// glyph and label go. All of a drawn key; the window inside a rendered key's frame.</summary>
+    FleetCommand.Data.Rect KeyGlass { get; }
 }
 
 public static class KitPieces
