@@ -5,18 +5,20 @@ using FleetCommand.Data;
 
 namespace FleetCommand.Sim;
 
-public enum Arming { Offline, Normal, Overload }
+/// <summary>A mount's arming state: Offline, Normal, or one of its weapon's own modes (weapon-arming design).</summary>
+public enum Arming { Offline, Normal, Overload, Proximity }
 
 /// <summary>The five statuses of a system or mount (battle-console design, "The five statuses").</summary>
 public enum SystemStatus { Active, Damaged, Disabled, Off, Destroyed }
 
 public enum AlertLevel { Green, Yellow, Red }
 
-/// <summary>An AI captain's standing orders (survey G3); the Fleet station will set these for wingmen. Run is a test
-/// scene's lane run: straight on at full speed, turning back for another pass once far out (the mockup's 'run').</summary>
-public enum Stance { Attack, Escort, Hold, Run }
+/// <summary>An AI captain's standing orders (survey G3), set for wingmen on the Fleet station; a hunter goes for the
+/// weakest enemy; Run is a test scene's lane run: straight on at full speed, turning back for another pass once far out
+/// (the mockup's 'run').</summary>
+public enum Stance { Attack, Escort, Hold, Hunt, Run }
 
-public sealed class Mount
+public sealed partial class Mount
 {
     public required int Index { get; init; }
     public required MountDef Def { get; init; }

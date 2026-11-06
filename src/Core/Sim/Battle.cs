@@ -37,6 +37,10 @@ public sealed class Shot
     public double Pierce;
     /// <summary>The ships and lance mounts that joined a chorus lance.</summary>
     public List<(string Ship, int Mount)>? Joined;
+    /// <summary>Where its hit is meant to land (Strike: "hull", a subsystem, or "w:" and a mount index), whether its weapon aims
+    /// ("precise") or lands by arc, and its chopping block's reach (degrees; 0 is the strike's own).</summary>
+    public string Aim = "hull", AimBy = "arc";
+    public double ReachDeg;
 }
 
 public sealed record LogLine(double T, string Who, string Text);
@@ -79,7 +83,7 @@ public sealed partial class Battle
     public Battle(GameData data, Scenario scenario)
     {
         Data = data;
-        Rules = new Rules(data.Tuning);
+        Rules = new Rules(data.Tuning, data.Systems.Tactical);
         _hit = Rng.Fork(scenario.Seed, "hit");
         _dmg = Rng.Fork(scenario.Seed, "damage");
         _ai = Rng.Fork(scenario.Seed, "ai");
@@ -185,6 +189,9 @@ public sealed partial class Battle
     partial void FleetStep(double dt);
     /// <summary>Called once a battle is built, for each system to set its own state up from the scenario.</summary>
     partial void SystemsSetup();
+    /// <summary>The scene ends systems have registered: each is checked after every step, before the default end (the
+    /// last enemy gone, or the fleet), and one that returns true has ended the battle (set Over).</summary>
+    private readonly List<Func<bool>> _ends = new();
 
     /// <summary>One fixed step of the whole battle.</summary>
     public void Step()
@@ -220,6 +227,8 @@ public sealed partial class Battle
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
             }
+        // a scene's own end, registered by the system whose objective it is (a ship disabled, not destroyed): checked first
+        foreach (Func<bool> end in _ends) if (end()) return;
         // a damage range never ends: its last ship can be broken up and the range repaired
         if (Scenario.DamageRange) return;
         if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
@@ -239,6 +248,10 @@ public sealed partial class Battle
         {
             if (m.State == Arming.Offline || m.Charge >= 1 || m.Hp <= 0 || m.StunS > 0) continue;
             WeaponMode w = Rules.Mode(m);
+            // point defence and missiles charge from their own generators, whatever weapons control's state; every other
+            // mount draws on the capacitor, then the battery, and stops once weapons control is disabled (weapon-targeting)
+            if (m.Weapon.OwnPower) { m.Charge = Math.Min(1, m.Charge + dt / w.ChargeS); continue; }
+            if (!Rules.ControlUp(s)) continue;
             double need = w.CostE * dt / w.ChargeS;
             if (s.Capacitor >= need) s.Capacitor -= need;
             else if (s.Battery >= need) s.Battery -= need;
@@ -351,11 +364,11 @@ public sealed partial class Battle
         Ship[] foes = EnemiesOf(s).ToArray();
         if (foes.Length == 0) { s.VOrder = 60; return; }
         Ship near = foes.OrderBy(o => Geometry.Dist(s.X, s.Z, o.X, o.Z)).ThenBy(o => o.Order).First();
-        Ship t = near;
-        if (s.Side == 0 && Player.Alive && TargetOf(Player) is { } pt) t = pt;
+        Ship t = AiTarget(s, foes, near);   // its target rule (Battle.Fleet.cs)
         s.Target = t.Id;
         double range = Rules.AiRangeKm(s.Range);
-        if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
+        if (Retreating(s)) Steer(s, "evade", near, range);
+        else if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
         // a lane run (test scenes): straight on at full speed, turning back for another pass once lane_turn_km out
         else if (s.Stance == Stance.Run) { if (Rules.DistKm(s, t) > Data.Systems.LaneTurnKm) Steer(s, "approach", t, range); else s.VOrder = Rules.MaxSpeed(s); }
         else if (s.Stance == Stance.Escort && s.Side == 0 && Player.Alive && s != Player) Steer(s, Rules.DistKm(s, t) < range ? "circle" : "follow", Rules.DistKm(s, t) < range ? t : Player, range);
@@ -375,32 +388,40 @@ public sealed partial class Battle
         return (s.X + f.X * m.Def.Y * half + r.X * m.Def.X * half * 0.6, s.Z + f.Z * m.Def.Y * half + r.Z * m.Def.X * half * 0.6);
     }
 
-    /// <summary>Fires one mount at t if it is ready, in arc and in range. The roll uses Rules.HitChance.</summary>
-    private bool FireMount(Ship s, Mount m, Ship t)
+    /// <summary>Fires one mount at t if it is ready, in arc and in range, aimed at <paramref name="aim"/> (s's own aim when
+    /// null). The roll uses Rules.HitChance; the shot carries its aim, how its weapon aims and its block's reach to Damage.</summary>
+    private bool FireMount(Ship s, Mount m, Ship t, string? aim = null)
     {
         if (!Rules.Ready(m) || !Rules.InArc(s, m, t) || !Rules.InRange(s, m, t)) return false;
+        string a = aim ?? s.Aim;
         WeaponMode w = Rules.Mode(m);
-        bool hit = _hit.Next() < Rules.HitChance(s, m, t);
+        bool hit = _hit.Next() < Rules.HitChance(s, m, t, a);
         var (x, z) = MountWorld(s, m);
         m.Charge = 0;
         int mi = s.Mounts.IndexOf(m);
+        double reach = Rules.ReachDeg(m);
         if (!m.Weapon.IsPointDefence) VoidDecoy(s);   // firing main weapons voids its decoy (SFC2, printed page 136)
-        if (m.Weapon.Kind == "chorus") _shots.Add(FireChorus(s, m, t, x, z, mi, hit));
+        Shot sh;
+        if (m.Weapon.Kind == "chorus") sh = FireChorus(s, m, t, x, z, mi, hit);
         else if (!m.Weapon.Flies)
-        {
-            _shots.Add(new Shot { Kind = "beam", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, Life = Tuning.BeamLifeS, Color = m.Weapon.Color, To = t.Id, From = s.Id, Mount = mi, Hit = hit });
-            if (hit) Damage(t, s.X, s.Z, s, w.Damage, m.Weapon.Kind);
-        }
+            sh = new Shot { Kind = "beam", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, Life = Tuning.BeamLifeS, Color = m.Weapon.Color, To = t.Id, From = s.Id, Mount = mi, Hit = hit };
         else if (m.Weapon.Kind == "missile")
-            _shots.Add(LaunchMissile(s, m, t, x, z, mi, hit));
+            sh = LaunchMissile(s, m, t, x, z, mi, hit);
         else
-            _shots.Add(new Shot { Kind = m.Weapon.Kind, X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Mount = mi, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = m.Weapon.Color,
-                Pierce = m.Weapon.Kind == "slug" ? (m.State == Arming.Overload ? Data.Specials.Forge.OverloadPierceX : Data.Specials.Forge.PierceX) : 0 });
+            sh = new Shot { Kind = m.Weapon.Kind, X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Mount = mi, Hit = hit, Damage = w.Damage, SpeedMS = m.Weapon.SpeedMS, Life = 12, Color = w.Color ?? m.Weapon.Color,
+                Pierce = m.Weapon.Kind == "slug" ? (m.State == Arming.Overload ? Data.Specials.Forge.OverloadPierceX : Data.Specials.Forge.PierceX) : 0 };
+        sh.Aim = a; sh.AimBy = m.Weapon.Aim; sh.ReachDeg = reach;
+        _shots.Add(sh);
+        if (sh.Kind == "beam" && hit) Damage(t, s.X, s.Z, s, w.Damage, m.Weapon.Kind, 0, sh);
         return true;
     }
 
-    /// <summary>Damage from a source at (sx, sz): the facing it strikes absorbs what it can, the rest hits the hull and may hurt a subsystem or a mount.</summary>
-    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind, double pierce = 0)
+    /// <summary>Damage from a source at (sx, sz), the one rule every hit takes: the facing it strikes absorbs what it can,
+    /// the rest hits the hull, and may hurt what the facing exposes (the chopping block, Strike): a precise weapon's hit
+    /// (the shot <paramref name="by"/>, when it carries an aim) lands on the aimed subsystem or mount direct_chance of the
+    /// time when the block holds it; any other hit spreads over the block's subsystems spread_chance of the time; and a
+    /// hit may damage an exposed mount (weapon-targeting design; tactical.json strike).</summary>
+    private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind, double pierce = 0, Shot? by = null)
     {
         if (!t.Alive) return;
         int f = Rules.FacingFrom(t, sx, sz);
@@ -412,17 +433,17 @@ public sealed partial class Battle
         double rest = dmg - absorb;
         if (rest <= 0) { Record(t, sx, sz, kind, absorb, 0); return; }
         t.Hull -= rest;
-        if (_dmg.Next() < Tuning.SubsystemHitChance)
-        {
-            string k = Rules.Subsystems[_dmg.Below(Rules.Subsystems.Length)];
-            t.Sys[k] = Math.Max(0, t.Sys[k] - rest * Tuning.SubsystemDamagePerHp);
-        }
-        if (t.Mounts.Count > 0 && _dmg.Next() < Tuning.MountHitChance)
-        {
-            Mount m = t.Mounts[_dmg.Below(t.Mounts.Count)];
-            m.Hp = Math.Max(0, m.Hp - Tuning.MountDamage);
-            if (m.Hp <= 0) m.Charge = 0;
-        }
+        StrikeDef st = Rules.Tactical.Strike;
+        string aim = by?.Aim ?? "hull";
+        Exposure ex = Strike.Of(t, f, st, by?.ReachDeg ?? 0);
+        int mi = Strike.AimMount(aim);
+        bool direct = by?.AimBy == "precise" && aim != "hull" && Strike.Exposed(ex, aim) && _dmg.Next() < st.DirectChance;
+        string? k = direct ? (mi >= 0 ? null : aim) : ex.Sys.Count > 0 && _dmg.Next() < st.SpreadChance ? ex.Sys[_dmg.Below(ex.Sys.Count)] : null;
+        // a direct hit aimed at a weapon lands on that mount
+        if (direct && mi >= 0 && mi < t.Mounts.Count) HitMount(t.Mounts[mi], st);
+        if (k != null) t.Sys[k] = Math.Max(0, t.Sys[k] - rest * (k == "reactor" ? st.ReactorPerDmg : st.SysPerDmg));
+        if (ex.Mounts.Count > 0 && _dmg.Next() < st.MountChance + (direct && aim == "weapons" ? st.MountAimChance : 0))
+            HitMount(t.Mounts[ex.Mounts[_dmg.Below(ex.Mounts.Count)]], st);
         if (kind is "burn" or "chorus") { }   // a burn and a chorus land in ticks: their own lines say so
         else if (t == Player) Say("Engineering", $"Hull hit through the {Rules.Facings[f]} shield.");
         else if (src == Player) Say("Tactical", $"Hit on {t.Name}, {Rules.Facings[f]} facing.");
@@ -435,6 +456,13 @@ public sealed partial class Battle
             foreach (Ship o in _ships) if (o.Target == t.Id) o.Target = null;
             if (t == Player) PromoteNextCommand();
         }
+    }
+
+    // a hit on a mount takes mount_hit_frac of its health; one destroyed loses its charge
+    private static void HitMount(Mount m, StrikeDef st)
+    {
+        m.Hp = Math.Max(0, m.Hp - st.MountHitFrac);
+        if (m.Hp <= 0) m.Charge = 0;
     }
 
     private void Record(Ship t, double sx, double sz, string kind, double absorbed, double hull)
@@ -480,7 +508,7 @@ public sealed partial class Battle
             if (d <= stepM + Tuning.ShotHitRadiusM)
             {
                 Ship? from = ShipById(sh.From);
-                if (sh.Hit && !sh.Spent) { if (sh.Kind == "quell") Quelled(t, from?.X ?? sh.X, from?.Z ?? sh.Z); else Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind); }
+                if (sh.Hit && !sh.Spent) { if (sh.Kind == "quell") Quelled(t, from?.X ?? sh.X, from?.Z ?? sh.Z); else Damage(t, from?.X ?? sh.X, from?.Z ?? sh.Z, from, sh.Damage, sh.Kind, 0, sh); }
                 sh.Spent = true; sh.Life = 0;
             }
             else { sh.X += (t.X - sh.X) / d * stepM; sh.Z += (t.Z - sh.Z) / d * stepM; }
@@ -502,7 +530,7 @@ public sealed partial class Battle
             Ship? from = ShipById(sh.From);
             if (sh.Hit && !sh.Spent)
             {
-                Damage(t, from?.X ?? sx, from?.Z ?? sz, from, sh.Damage, sh.Kind, sh.Pierce);
+                Damage(t, from?.X ?? sx, from?.Z ?? sz, from, sh.Damage, sh.Kind, sh.Pierce, sh);
                 if (sh.Kind == "slug") Burn(t, from?.X ?? sx, from?.Z ?? sz);
             }
             sh.Spent = true; sh.Life = 0; sh.X = tx; sh.Z = tz;
@@ -517,19 +545,21 @@ public sealed partial class Battle
         var added = new List<Shot>();
         foreach (Ship s in _ships)
         {
-            if (!s.Alive) continue;
+            // the point defence station's mode: Off holds fire, Craft keeps it for craft, Missiles fires on missiles only
+            if (!s.Alive || s.Pd is PdMode.Off or PdMode.Craft) continue;
             foreach (Mount m in s.Mounts)
             {
                 if (!m.Weapon.IsPointDefence || !Rules.Ready(m)) continue;
                 // a missile chasing a lure or lost is no threat; the rest are, nearest first in the stable shot order
                 Shot? threat = _shots.FirstOrDefault(sh => sh.Kind != "beam" && sh.To == s.Id && !sh.Spent && sh.Lure == null && !sh.Lost
+                    && (s.Pd != PdMode.Missiles || sh.Kind == "missile")
                     && Geometry.Dist(sh.X, sh.Z, s.X, s.Z) / 1000 <= m.Weapon.Normal.RangeKm);
                 if (threat == null) continue;
                 m.Charge = 0;
                 var (px, pz) = MountWorld(s, m);
                 added.Add(new Shot { Kind = "beam", X = px, Z = pz, SX = px, SZ = pz, TX = threat.X, TZ = threat.Z, Life = 0.15, Color = m.Weapon.Color, Intercept = true, From = s.Id, Mount = s.Mounts.IndexOf(m), At = threat });
                 // a burst stops it pd_intercept_chance of the time; a blue or green missile needs two (its grade's pd_hits)
-                if (_hit.Next() < Tuning.PdInterceptChance && --threat.PdHitsLeft <= 0) { threat.Spent = true; threat.Life = 0; }
+                if (_hit.Next() < Tuning.PdInterceptChance && --threat.PdHitsLeft <= 0) { threat.Spent = true; threat.Life = 0; s.Intercepts++; }
             }
         }
         _shots.AddRange(added);

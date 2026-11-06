@@ -55,7 +55,7 @@ public sealed partial class Battle
         while (sh.TravelledM >= ChorusTickS - 1e-9)
         {
             sh.TravelledM -= ChorusTickS;
-            Damage(t, from.X, from.Z, from, sh.Damage * ChorusTickS, "chorus");
+            Damage(t, from.X, from.Z, from, sh.Damage * ChorusTickS, "chorus", 0, sh);
         }
     }
 

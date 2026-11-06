@@ -138,6 +138,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     {
         _ui.Begin();
         DrawView();
+        // sheets over the whole view, above the Target box (the hit details and the event log: ViewOverlay.Tactical.cs)
+        DrawTacticalSheets(_x.Fonts);
         if (_x.State.SceneOpen && _x.State.Expanded == null) SceneList();
         _ui.End();
         _x.Tips.Offer(this, _ui.CurrentTip(), Position);
@@ -469,6 +471,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     partial void DrawReactor(Fonts f);
     partial void DrawCloak(Fonts f);
     partial void DrawTactical(Fonts f);
+    partial void DrawTacticalSheets(Fonts f);
 
     private void Diamond(Vector2 c, float r, Color col) =>
         DrawColoredPolygon(new[] { c + new Vector2(0, -r), c + new Vector2(r, 0), c + new Vector2(0, r), c + new Vector2(-r, 0) }, col);

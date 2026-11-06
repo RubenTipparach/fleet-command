@@ -137,18 +137,19 @@ public sealed partial class Battle
         if (system == "engines") Player.VOrder = Math.Min(Player.VOrder, Rules.MaxSpeed(Player));
     }
 
-    /// <summary>Sets the arming state of every selected mount (point defence stays as it is unless it is selected).</summary>
+    /// <summary>Sets the arming state of every selected mount that has that mode (point defence is never armed here).</summary>
     public void SetArming(Arming state)
     {
-        foreach (Mount m in Player.Mounts)
-        {
-            if (!m.Selected || m.Hp <= 0) continue;
-            if (state == Arming.Overload && m.Weapon.Overload == null) continue;
-            if (m.State == state) continue;
-            // switching to or from overload keeps the charge already in the tube; offline drains it
-            if (state == Arming.Offline) m.Charge = 0;
-            m.State = state;
-        }
+        foreach (Mount m in Player.Mounts) if (m.Selected) Arm(m, state);
+    }
+
+    // One mount into a mode it has (weapon-arming design, the mockup's arm): offline drains the tube, any other change keeps
+    // at most half a charge, so a mode change is never a free shot.
+    private static void Arm(Mount m, Arming state)
+    {
+        if (m.Hp <= 0 || !Rules.CanArm(m.Weapon, state) || m.State == state) return;
+        m.Charge = state == Arming.Offline ? 0 : Math.Min(m.Charge, 0.5);
+        m.State = state;
     }
 
     public void ToggleMount(int index)
@@ -169,10 +170,7 @@ public sealed partial class Battle
     public void ArmOne(int index, Arming state)
     {
         if (index < 0 || index >= Player.Mounts.Count) return;
-        Mount m = Player.Mounts[index];
-        if (m.Hp <= 0 || (state == Arming.Overload && m.Weapon.Overload == null) || m.State == state) return;
-        if (state == Arming.Offline) m.Charge = 0;
-        m.State = state;
+        Arm(Player.Mounts[index], state);
     }
 
     /// <summary>True when one mount could fire at the locked target now.</summary>
@@ -186,23 +184,25 @@ public sealed partial class Battle
         return !m.Weapon.IsPointDefence && FireMount(Player, m, t);
     }
 
-    /// <summary>The mounts Fire would loose now at the locked target: selected, ready, in arc and in range.</summary>
+    /// <summary>The mounts Fire would loose now: selected, ready, in arc and in range of their target (a pinned mount's
+    /// ship, else the locked enemy); one at a time when not in a volley.</summary>
     public Mount[] WouldFire()
     {
-        Ship? t = TargetOf(Player);
-        if (t == null || !Player.Alive || t.Side == Player.Side) return Array.Empty<Mount>();
-        Mount[] all = Player.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t)).ToArray();
+        var all = Fireable().Select(f => f.M).ToArray();
         return Player.Volley ? all : all.Take(1).ToArray();
     }
 
-    /// <summary>Fires the selected mounts at the locked target.</summary>
+    /// <summary>Fires the selected mounts, each at its pinned ship with its pinned aim, else at the locked target with the
+    /// captain's aim (pinned fire, weapon-targeting design).</summary>
     public int Fire()
     {
         Ship? t = TargetOf(Player);
-        if (t == null) { Say("Tactical", "No target locked."); return 0; }
-        if (t.Side == Player.Side) { Say("Tactical", $"The {t.Name} is friendly: weapons hold."); return 0; }
+        bool pins = Player.Mounts.Any(m => m.Selected && PinTarget(m) != null);
+        if (t == null && !pins) { Say("Tactical", "No target locked."); return 0; }
+        if (t != null && t.Side == Player.Side && !pins) { Say("Tactical", $"The {t.Name} is friendly: weapons hold."); return 0; }
+        var able = Fireable();
         int n = 0;
-        foreach (Mount m in WouldFire()) if (FireMount(Player, m, t)) n++;
+        foreach (var (m, tt, aim) in Player.Volley ? able : able.Take(1).ToList()) if (FireMount(Player, m, tt, aim)) n++;
         if (n == 0) Say("Tactical", "No weapon ready in arc and range.");
         return n;
     }
@@ -213,6 +213,8 @@ public sealed partial class Battle
     {
         Ship? t = ShipById(id);
         if (t is not { Alive: true } || t == Player) return;
+        // an aim at the old target's weapon becomes an aim at the new one's weapons control
+        if (Player.Target != t.Id && Strike.AimMount(Player.Aim) >= 0) Player.Aim = "weapons";
         Player.Target = t.Id;
         Say("Tactical", t.Side == Player.Side ? $"Selected: {t.Name}, {t.Class.Name} (friendly)." : $"Target locked: {t.Name}, {t.Class.Name}.");
     }
@@ -235,6 +237,7 @@ public sealed partial class Battle
         Ship? s = ShipById(id);
         if (s is not { Alive: true } || s.Side != 0 || s == Player) return;
         Player.ThinkT = 0;
+        Player.Rule = TargetRule.Mine;   // the ship left behind follows its new captain's target (the mockup's command)
         Player = s;
         Say("Comms", $"{s.Captain} has the conn of {s.Name}.");
     }

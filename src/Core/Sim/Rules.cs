@@ -21,8 +21,11 @@ public sealed class Rules
     public static readonly string[] Facings = { "F", "FR", "AR", "A", "AL", "FL" };
 
     private readonly Tuning _t;
-    public Rules(Tuning tuning) { _t = tuning; }
+    private readonly TacticalDef _tac;
+    public Rules(Tuning tuning, TacticalDef tactical) { _t = tuning; _tac = tactical; }
     public Tuning Tuning => _t;
+    /// <summary>Weapon targeting's numbers (data/battle/systems/tactical.json).</summary>
+    public TacticalDef Tactical => _tac;
 
     /// <summary>The reactor's output this moment, E.</summary>
     public double Output(Ship s) => s.Class.ReactorE;
@@ -52,7 +55,20 @@ public sealed class Rules
     public static double RamDamage(ChargeDef c, double closingMS, double lengthM) => Math.Max(0, closingMS) / 100 * c.DmgPer100MS * lengthM / c.MassRefM;
 
     /// <summary>The figures a mount fires with in its arming state.</summary>
-    public static WeaponMode Mode(Mount m) => m.State == Arming.Overload && m.Weapon.Overload != null ? m.Weapon.Overload : m.Weapon.Normal;
+    public static WeaponMode Mode(Mount m) => ModeOf(m.Weapon, m.State) ?? m.Weapon.Normal;
+
+    /// <summary>A weapon's figures in an arming state, or null for a mode it does not have (Offline fires as Normal would).</summary>
+    public static WeaponMode? ModeOf(WeaponDef w, Arming a) => a switch { Arming.Overload => w.Overload, Arming.Proximity => w.Proximity, _ => w.Normal };
+
+    /// <summary>Whether a weapon can be armed in a state: Offline and Normal always, the others only where it has them.</summary>
+    public static bool CanArm(WeaponDef w, Arming a) => !w.IsPointDefence && ModeOf(w, a) != null;
+
+    /// <summary>The chopping block's reach of a mount's hits in its arming state, degrees either side of the facing struck.</summary>
+    public double ReachDeg(Mount m) => Mode(m).ReachDeg > 0 ? Mode(m).ReachDeg : _tac.Strike.ReachDeg;
+
+    /// <summary>How a mount's hits choose where they land as the hit details name it: precise, a proximity burst's wide
+    /// arc, or by arc.</summary>
+    public static string AimsBy(Mount m) => m.Weapon.Precise ? "Precise" : Mode(m).ReachDeg > 0 ? "Wide arc" : "By arc";
 
     /// <summary>Bearing of a point from a ship, radians: 0 dead ahead, positive to starboard.</summary>
     public static double Bearing(Ship s, double x, double z)
@@ -93,15 +109,20 @@ public sealed class Rules
         return t < 10 ? t.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : ((int)Math.Ceiling(seconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    /// <summary>The chance a shot from mount m of s hits t. Every readout of it and the shot itself call this.</summary>
-    public double HitChance(Ship s, Mount m, Ship? t)
+    /// <summary>The chance a shot from mount m of s hits t, aimed at <paramref name="aim"/> (s's own aim when null). Every
+    /// readout of it and the shot itself call this.</summary>
+    public double HitChance(Ship s, Mount m, Ship? t, string? aim = null)
     {
         if (t == null || !t.Alive || !InRange(s, m, t)) return 0;
         WeaponMode w = Mode(m);
         double d = DistKm(s, t);
         double p = _t.HitChanceNear - _t.HitChanceFalloff * d / w.RangeKm;
         p -= _t.EcmStep * t.Ecm;
-        p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
+        // a proximity burst ignores the target's speed and adds its bonus (weapon-arming design)
+        if (!w.IgnoreSpeed) p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
+        p += w.HitBonus;
+        // aiming at anything but the hull costs the captain's side some of its chance (weapon-targeting design)
+        if ((aim ?? s.Aim) != "hull" && s.Side == 0) p -= _tac.AimHitPenalty;
         p *= 0.5 + 0.5 * s.Sys["sensors"];
         // erratic manoeuvres: harder to hit, and harder to hit with
         if (t.Erratic) p *= _t.ErraticHit;
@@ -128,6 +149,18 @@ public sealed class Rules
         if (m.State == Arming.Offline) return SystemStatus.Off;
         return m.Hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
     }
+
+    /// <summary>A mount's status on its ship: as Status(m), and Off while weapons control is unpowered or disabled, unless
+    /// the mount has its own power (point defence, missiles; weapon-targeting design).</summary>
+    public SystemStatus Status(Ship s, Mount m)
+    {
+        SystemStatus st = Status(m);
+        if (st is not (SystemStatus.Active or SystemStatus.Damaged) || m.Weapon.OwnPower) return st;
+        return s.Power.GetValueOrDefault("weapons") <= 0 || !ControlUp(s) ? SystemStatus.Off : st;
+    }
+
+    /// <summary>True while weapons control is above the Disabled line, so the mounts it powers can charge.</summary>
+    public bool ControlUp(Ship s) => s.Sys["weapons"] >= _t.StatusDisabledBelow;
 
     /// <summary>A class's best high energy turn chance: smaller hulls turn hard more safely.</summary>
     public static double HetMax(Ship s) => Math.Clamp(0.95 - s.Class.LengthM / 2000, 0.6, 0.95);

@@ -96,6 +96,19 @@ THEMES = [
     ("copper_mist", "Copper Mist", "Copper and verdigris mist, burnished orange beside green, a bright brass core.",
      2122, [0.016, 0.014, 0.012], [0.85, 0.75, 0.62], [((0.95, 0.5, 0.25), (0.32, 0.1, 0.04)), ((0.35, 0.75, 0.6), (0.05, 0.2, 0.15))],
      [0.8, 0.95, 1.1], [((1.0, 0.92, 0.7), (1.0, 0.65, 0.35))], 1.15),
+    # the weapon-targeting package's test scenes (Disable and Pinned fire, from both sides)
+    ("tactical_slate", "Tactical Slate", "Cold slate-blue haze with steel-grey edges and a pale silver core.",
+     2201, [0.012, 0.014, 0.022], [0.7, 0.75, 0.85], [((0.55, 0.65, 0.85), (0.08, 0.1, 0.2)), ((0.7, 0.78, 0.9), (0.12, 0.14, 0.24))],
+     [0.8, 0.9, 1.0], [((0.95, 0.97, 1.0), (0.6, 0.7, 0.9))], 1.1),
+    ("tactical_amber", "Tactical Amber", "Smouldering amber and copper clouds with brown lanes and a gold core.",
+     2202, [0.02, 0.014, 0.008], [0.9, 0.75, 0.55], [((1.0, 0.65, 0.2), (0.4, 0.15, 0.03)), ((0.9, 0.45, 0.2), (0.35, 0.1, 0.04))],
+     [0.7, 0.95, 1.2], [((1.0, 0.95, 0.75), (1.0, 0.65, 0.25))], 1.15),
+    ("tactical_jade", "Tactical Jade", "Jade and moss veils over a dark green-black, a pale mint core.",
+     2203, [0.008, 0.02, 0.014], [0.6, 0.85, 0.7], [((0.3, 0.85, 0.5), (0.03, 0.22, 0.1)), ((0.55, 0.9, 0.45), (0.08, 0.25, 0.08))],
+     [0.8, 1.0, 1.1], [((0.9, 1.0, 0.92), (0.45, 0.9, 0.6))], 1.1),
+    ("tactical_magenta", "Tactical Magenta", "Hot magenta and plum folds, cut by black lanes round a pink-white core.",
+     2204, [0.02, 0.008, 0.02], [0.85, 0.6, 0.85], [((1.0, 0.3, 0.7), (0.32, 0.03, 0.22)), ((0.75, 0.3, 0.9), (0.2, 0.04, 0.3))],
+     [0.7, 0.9, 1.2], [((1.0, 0.9, 0.95), (1.0, 0.45, 0.75))], 1.2),
 ]
 
 

@@ -17,6 +17,9 @@
 ## 2. Next slices (each its own request)
 
 - [ ] 2.1 The other stations: tactical, point defence, science, comms, repair, transport, fleet (wingman behaviours)
+  - [x] 2.1a Tactical (aim keys, contacts, pins; expanded: target weapons as aims, the weapons-against-contacts grid),
+    Point defence (modes, mounts, intercepts) and Fleet (wingman standing orders, Take command); the fleet orders' keys
+    belong to Comms and call `Battle.FleetOrder` (weapon-targeting package, 2026-11-06)
 - [ ] 2.2 Ship pages: sensors, tractor (the contest), craft; the Target box with the target's systems display
   - [x] 2.2a Tractor (the contest of rounds, the tow, reel, asteroids) and Craft (fighters on Attack, Defend and Defences,
     the disguised shuttle, the missile barrage), mines (dropped astern, placed by transporter with the bullseye over the
@@ -25,5 +28,7 @@
   - [ ] 2.2b Mines spend a transporter pad and move to the Transport station's Mines tab (with the transport package)
 - [ ] 2.3 Power: Reactor and Warp modes, the warp key on the speed slider
 - [ ] 2.5 The tactical map, the event log, the 3D shield hexagon, the transporter effect
+  - [x] 2.5a The tactical map (the radar row expanded: Map key and dial, 10/20/40 km) and the event log sheet with its X;
+    its key is the Comms station's (`ConsoleState.OpenLog`) (weapon-targeting package, 2026-11-06)
 - [ ] 2.6 The scripted captain and a recorded desktop playtest on the owner's PC (CLAUDE.md section 9)
 - [ ] 2.7 Phone layouts, once the mockup has them

@@ -278,6 +278,14 @@ public sealed partial class Main : Node
         foreach (Region r in ConsoleLayout.Expandable) { Region e = r; states.Add(("expand." + e, () => _x.State.Expanded = e)); }
         states.Add(("menu", () => _x.State.MenuOpen = true));
         states.Add(("scene-list", () => _x.State.SceneOpen = true));
+        // weapon targeting, the fleet, point defence, the hit details and the event log (openspec/changes/weapon-targeting)
+        string? Wingman() => _x.Battle.FleetAll().FirstOrDefault(s => s != _x.Battle.Player && s.Alive)?.Id;
+        states.Add(("tactical.expanded", () => { _x.State.Station = "tactical"; _x.State.Expanded = Region.Station; }));
+        states.Add(("pd.expanded", () => { _x.State.Station = "pd"; _x.State.Expanded = Region.Station; }));
+        states.Add(("fleet.wingman", () => { _x.State.Station = "fleet"; _x.State.FleetPick = Wingman(); }));
+        states.Add(("fleet.wingman.expanded", () => { _x.State.Station = "fleet"; _x.State.FleetPick = Wingman(); _x.State.Expanded = Region.Station; }));
+        states.Add(("hit-details", () => _x.State.OpenHitInfo(new HitInfo("engines", null))));
+        states.Add(("event-log", () => _x.State.LogOpen = true));
         string[] skins = { "concord", "krai" };
         var seen = new Dictionary<string, Dictionary<string, HashSet<string>>>();
         var fails = new List<string>();
@@ -296,6 +304,7 @@ public sealed partial class Main : Node
             foreach (var (name, set) in states)
             {
                 _x.State.Station = "helm"; _x.State.ShipPage = "systems"; _x.State.Expanded = null; _x.State.MenuOpen = false; _x.State.SceneOpen = false;
+                _x.State.HitInfo = null; _x.State.LogOpen = false; _x.State.FleetPick = null;
                 set();
                 Relayout();
                 _menu.Visible = _x.State.MenuOpen;

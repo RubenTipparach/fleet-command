@@ -34,6 +34,7 @@ public sealed partial class PlatePanel : ConsolePanel
 public sealed partial class WeaponsPanel : ConsolePanel
 {
     private int _detail;
+    private static readonly (string Id, string Label)[] ArmModes = { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload"), ("proximity", "Proximity") };
 
     protected override void DrawPanel()
     {
@@ -47,8 +48,9 @@ public sealed partial class WeaponsPanel : ConsolePanel
             tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {t.Name} (F)"));
         Button("volley", new Rect2(x0 + w1 + 6, y0, b.Size.X - w1 - 6, 48), s.Volley ? "Multiple" : "Single", () => B.ToggleVolley(), s.Volley, center: false,
             tip: new Tip(s.Volley ? "Multiple: every ready weapon fires (M)" : "Single: one weapon per press (M)"));
-        Tabs("arm", new Rect2(x0, y0 + 54, b.Size.X, 40), new[] { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload") }, cur,
-            id => B.SetArming(Enum.Parse<Arming>(id, true)));
+        // every arming mode; one no selected weapon has is dimmed (weapon-arming design)
+        Tabs("arm", new Rect2(x0, y0 + 54, b.Size.X, 40), ArmModes, cur,
+            id => B.SetArming(Enum.Parse<Arming>(id, true)), id => !sel.Any(m => Rules.CanArm(m.Weapon, Enum.Parse<Arming>(id, true))));
         if (!Big) return;
         float y = y0 + 106;
         Lbl("Select", x0, y + 13);
@@ -74,7 +76,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
         if (s.Mounts.Count == 0) { Lbl("No weapons fitted", r.Position.X, r.Position.Y + 26, 0, null, HorizontalAlignment.Left, 18); return; }
         Mount m = s.Mounts[Math.Clamp(_detail, 0, s.Mounts.Count - 1)];
         WeaponMode w = Rules.Mode(m);
-        SystemStatus st = B.Rules.Status(m);
+        SystemStatus st = B.Rules.Status(s, m);
         double? cool = Rules.CooldownS(m);
         float x0 = r.Position.X, y = r.Position.Y, cw = r.Size.X / 2 - 12;
         Text($"{m.Label} · {m.Weapon.Name}".ToUpperInvariant(), x0, y + 26, 26, C.Sky, HorizontalAlignment.Left, cw, 700, 1);
@@ -84,8 +86,8 @@ public sealed partial class WeaponsPanel : ConsolePanel
             ("Ready in", cool is { } c ? $"{Rules.FormatCooldown(c)} s" : Rules.Ready(m) ? "Ready" : "--", null), ("Cost", $"{w.CostE:0.#} E", null) }, 20);
         float rx = x0 + r.Size.X / 2 + 12, rw = r.Size.X / 2 - 12;
         if (!m.Weapon.IsPointDefence)
-            Tabs("wd.arm", new Rect2(rx, y + 6, rw, 36), new[] { ("offline", "Offline"), ("normal", "Normal"), ("overload", "Overload") }, m.State.ToString().ToLowerInvariant(),
-                id => B.ArmOne(m.Index, Enum.Parse<Arming>(id, true)));
+            Tabs("wd.arm", new Rect2(rx, y + 6, rw, 36), ArmModes, m.State.ToString().ToLowerInvariant(),
+                id => B.ArmOne(m.Index, Enum.Parse<Arming>(id, true)), id => !Rules.CanArm(m.Weapon, Enum.Parse<Arming>(id, true)));
         if (t != null)
         {
             bool arc = Rules.InArc(s, m, t), rng = Rules.InRange(s, m, t);
@@ -102,17 +104,19 @@ public sealed partial class WeaponsPanel : ConsolePanel
     }
 }
 
-/// <summary>The radar row: the dial of contacts round your heading (a click opens the tactical map when it is built),
-/// the hostile count, Map and Next target, and the crest.</summary>
+/// <summary>The radar row: the dial of contacts round your heading (a click opens the tactical map), the hostile count, Map
+/// and Next target, and the crest. Expanded, it is the tactical map (RadarPanel.Map.cs).</summary>
 public sealed partial class RadarPanel : ConsolePanel
 {
     private const double ScaleKm = 15;
 
     protected override void DrawPanel()
     {
+        if (Big) { Map(); return; }
         float x = 0, y = 0;
         var dr = new Rect2(x, y + 6, 120, 120);
         Kit.Hero(this, "dial", dr);
+        Ui.Reg("radar", dr, _ => X.Act.Expand(Region), null, new Tip("Tactical map"));
         Vector2 c = dr.GetCenter();
         float rr = 120 * 0.4f;
         foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
@@ -121,15 +125,14 @@ public sealed partial class RadarPanel : ConsolePanel
             if (!o.Alive || o == Me) continue;
             double km = Rules.DistKm(Me, o), br = Rules.Bearing(Me, o.X, o.Z), r = Math.Min(1.08, km / ScaleKm) * rr;
             var p = c + new Vector2((float)(Math.Sin(br) * r), (float)(-Math.Cos(br) * r));
-            Color dot = o.Side == Me.Side ? C.Accord : o.Faction.Id == "vos" ? C.Caution : C.Alert;
-            DrawCircle(p, 120 * 0.035f, dot, true, -1, true);
+            DrawCircle(p, 120 * 0.035f, Aiming.ContactColor(C, Me, o), true, -1, true);
             if (o.Id == Me.Target) DrawArc(p, 120 * 0.07f, 0, Mathf.Tau, 20, C.Sky, 2, true);
         }
         DrawCircle(c, 120 * 0.03f, C.Sky, true, -1, true);
         float bx = x + 128, bw = Size.X - 128 - 80;
         Kit.Piece(this, "frame.inset", new Rect2(bx, y + 6, bw, 120));
         Pairs("rr", bx + 14, y + 52, new (string, string, Color?)[] { ("", B.EnemiesOf(Me).Count().ToString(), null), ($"hostile · {ScaleKm:0} km", "", null) });
-        Button("rr.map", new Rect2(bx + 14, y + 72, 70, 30), "Map", null, dis: true, tip: new Tip("Tactical map: not yet in the game"));
+        Button("rr.map", new Rect2(bx + 14, y + 72, 70, 30), "Map", () => X.Act.Expand(Region), tip: new Tip("Tactical map"));
         Button("rr.next", new Rect2(bx + 92, y + 72, 120, 30), "Next target", () => B.NextTarget(), tip: new Tip("Lock the next enemy (Tab)"));
         Kit.Hero(this, "crest", new Rect2(Size.X - 74, y + 30, 72, 72));
     }

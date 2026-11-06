@@ -23,6 +23,12 @@
   { "script": "shuttle", "play": "krai_shuttle" },
   { "script": "fighters", "play": "concord_fighters" },
   { "script": "fighters", "play": "krai_fighters" },
+  { "script": "disable", "play": "concord_disable" },
+  { "script": "disable", "play": "krai_disable" },
+  { "script": "pinned", "play": "concord_pinned" },
+  { "script": "pinned", "play": "krai_pinned" },
+  { "script": "fleet", "play": "concord_battle" },
+  { "script": "fleet", "play": "krai_battle" },
   { "script": "campaign", "play": "campaign" }
  ]
 }
