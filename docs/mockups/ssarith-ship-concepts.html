@@ -76,7 +76,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Ssarith <span>Hunt</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 12, v25. <code>ssarith-ship-concepts</code>. One ship at a time: the four frigates, a new cruiser and the carrier, each with rooms behind its windows, battle damage, and a hull that breaks apart. Pick a ship, a weapon, then click it, or Break up.</p>
+    <p class="sub">Mockup 12, v26. <code>ssarith-ship-concepts</code>. One ship at a time: the four frigates, a new cruiser and the carrier, each with rooms behind its windows, battle damage, and a hull that breaks apart. Pick a ship, a weapon, then click it, or Break up.</p>
   </header>
   <div class="scroll">
     <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
@@ -1876,8 +1876,10 @@ function buildHunt(i) {
   const looks = hullLooks(M, brkUniforms());
   const mesh = new THREE.Mesh(M.geo, looks[look === 'pbr' ? 'pbr' : 'painted']); mesh.userData = { ship, sys: 'life', piece: intact, skin: true }; intact.inner.add(mesh); intact.mats.push(looks.painted); ship.meshes.push(mesh); ship.hullMesh = mesh;
   if (sh.panes && sh.panes.length) { const pm = paneMesh(sh.panes, M.dU, { value: 1 }); pm.userData.skin = true; intact.inner.add(pm); }
-  // the fixtures that show themselves: strobes flash, beacons pulse, position lights and floods burn steady; each goes with its cell
-  for (const F of sh.fixtures || []) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowSprite, color: new THREE.Color(...F.rgb), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  // the fixtures that show themselves: strobes flash, beacons pulse, position lights burn steady; each goes with its cell. A
+  // flood shows only by the light it throws on the plating (owner, 2026-11-06: "I dont think we need the light source dots for
+  // hul lights, just nav lights are good enough"), as in the game (ShipSkin skips flood lamps)
+  for (const F of (sh.fixtures || []).filter((F) => !F.kind.endsWith('flood'))) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowSprite, color: new THREE.Color(...F.rgb), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
     sp.position.set(...F.pos); const big = { strobe: 3.2, beacon: 3.0, position: 2.6 }[F.kind] || 1.6; sp.scale.setScalar(big); sp.userData = { kind: F.kind, big, center: sp.position.clone() }; intact.inner.add(sp); ship.navs.push({ s: sp, kind: F.kind, P: intact }); }
   // the body that breaks: the hull cut into seeded cells, more for a bigger ship
   const L = ship.len, body = { name: 'hb', sys: 'life', intact, sdf: M.sdf, geos: [[M.geo, { mode: 1 }]], n: L > 150 ? 13 : L > 120 ? 11 : 9 };

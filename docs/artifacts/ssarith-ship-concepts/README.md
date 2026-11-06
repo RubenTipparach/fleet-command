@@ -141,3 +141,7 @@
   centreline on top and one on the belly (`auto_floods.top_x_frac` 0, a lamp on the centreline is not mirrored), every
   44 m instead of every 22 m, each standing 4.8 m off the plating at 6400 W so its pool is about twice as wide; the placed
   top and belly floods dropped, the flank ones kept. Page 14.5 MB. Exported to the game again.
+- 2026-11-06, cloud session (owner: "I dont think we need the light source dots for hul lights, just nav lights are good
+  enough"): version 26, version id `1793951356-d4bb`. The glowing dots at the floods (hull, belly and logo) are gone; a
+  flood shows only by the light it throws on the plating. Strobes, beacons and position lights keep theirs. The game
+  already drew no lamp at a flood (ShipSkin), so it needed no change.
