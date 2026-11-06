@@ -6,6 +6,7 @@
 - [x] 1.2 Shots in `docs/screenshots/mockups/space-flythrough/`, looked at (no bands, no grid, no grain after blending)
 - [x] 1.3 Published, on the tracker, recorded in `docs/artifacts/space-flythrough/README.md`
 - [x] 1.5 Version 2: the noise baked into a 3D texture (owner: "the performance is terrible!"); High from 16 fps to 4.5 ms a frame
+- [ ] 1.6 Paused by the owner (2026-11-06: "this is a waste of time, just stars is fine for now"). Version 2 drew no clouds in the owner's browser: its render targets were sized from a window that had no size yet ("Attachment has zero size"); the page now keeps every size at least 1 and resizes when the window does, and bakes into a portable 8-bit atlas, but is not republished
 - [ ] 1.4 The owner's approval for build, then for implementation
 
 ## 2. The starfield (done with the mockup)
