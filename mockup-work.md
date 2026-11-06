@@ -37,7 +37,7 @@ account and every link here is updated.
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | **Approved for implementation** (2026-11-06, owner in conversation: "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v9; v10 committed, to publish) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
 | 17 | Battle sounds: the first sound effects, heard on the Fleet Command Sounds page | Drafted (2026-11-07, v4 after the owner's notes; published from the cloud session's account, audio served beside the page) | `sound-effects` | `docs/mockups/sounds.html` (written by `tools/audio/gen_sfx_page.py`) | https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW |
-| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-05, v2; published from the cloud session's account, audio served beside the page) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov |
+| 18 | Music: the first score, heard on the Fleet Command Music page | Drafted (2026-11-07, v3: a battle and an ambient loop for every faction in the game; published from the cloud session's account, audio served beside the page) | `music` | `docs/mockups/music.html` (written by `tools/music/music_page.py`) | https://claude.ai/artifact/NRSwJgnSQkt3ZiKZtG9Lov |
 | 19 | Ssarith badge in 3D: the emblem SD (the Bow Rites) as a badge | Drafted (2026-11-05, v5) | `faction-emblems` | `docs/mockups/ssarith-emblem-3d.html` | https://claude.ai/artifact/NLspB15dVMS7dhnbM8PvCB |
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
@@ -908,6 +908,11 @@ orchestra. Checked by loudness profile and spectrogram (`docs/screenshots/audio/
 
 - Change: `openspec/changes/music`. Shots: `docs/screenshots/mockups/music-*.png`.
 - Stage: Drafted (2026-11-04). Questions: survey S2 (faction themes), S3 (battle layers).
+- The owner, 2026-11-07: "we need custom music for each faction (just do the ones in game right now) and add ambient
+  music as well". Done in v3: the Concord's ambient (Concord Watch) beside its title and battle; the Krai Warhost (the
+  Line, the Forge at Rest), the Ssarith Hunt (the Bows, the Long Watch) and the Kelvane Institute (the Measurement, the
+  Long Baseline), each from its written culture with every source named in `docs/design/music.md`. S2 decided by these
+  words; S5-S7 ask whether each reading is right. The Kethran and the Vos, opponents with no skin yet, wait.
 
 ## 20. Battle console: Kelvane Institute
 

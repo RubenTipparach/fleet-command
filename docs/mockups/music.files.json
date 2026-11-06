@@ -1,6 +1,13 @@
 {
  "output/music/main_theme.mp3": "output/music/main_theme.mp3",
+ "output/music/concord_ambient.mp3": "output/music/concord_ambient.mp3",
  "output/music/battle.mp3": "output/music/battle.mp3",
+ "output/music/krai_ambient.mp3": "output/music/krai_ambient.mp3",
+ "output/music/krai_battle.mp3": "output/music/krai_battle.mp3",
+ "output/music/ssarith_ambient.mp3": "output/music/ssarith_ambient.mp3",
+ "output/music/ssarith_battle.mp3": "output/music/ssarith_battle.mp3",
+ "output/music/kelvane_ambient.mp3": "output/music/kelvane_ambient.mp3",
+ "output/music/kelvane_battle.mp3": "output/music/kelvane_battle.mp3",
  "output/music/victory.mp3": "output/music/victory.mp3",
  "output/music/defeat.mp3": "output/music/defeat.mp3",
  "output/music/motifs.mp3": "output/music/motifs.mp3"

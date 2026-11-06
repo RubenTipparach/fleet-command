@@ -566,8 +566,11 @@ saying what changes here. Where a note and the copied text below it disagree, th
   this game!"): packs fetched and licence-checked by `tools/audio/fetch_cc0.py`, cut to the spec in
   `tools/audio/cc0_cues.json`, built by `tools/audio/render_sfx.sh`, judged by measurement and a spectrogram sheet
   (a cloud session cannot listen), and heard by the owner on the Fleet Command Sounds page.
-- **The motifs are `docs/design/music.md`**: the Concord, the wonder chord, the Threat and the Lost. No faction gets a
-  theme of its own until the owner sets its culture (section 1; survey S2).
+- **The motifs are `docs/design/music.md`**: the Concord, the wonder chord, the Threat and the Lost, and each faction's.
+  **Every faction in the game has its own music**, a battle loop and an ambient loop (owner, 2026-11-07: "we need
+  custom music for each faction (just do the ones in game right now) and add ambient music as well"), built only from
+  its written culture with each choice naming its source, never from the species' body (section 1) and never from a
+  real-world people's signature instrument; provisional until the owner hears it (survey S5-S7).
 - **Sounds from the battle are placed in 3D** at their ship or mount. Interface clicks, music and
   ambience are not.
 

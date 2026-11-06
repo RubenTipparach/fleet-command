@@ -23,3 +23,13 @@ between them, with contact decided by the same rule the console's alerts use.
 #### Scenario: The last enemy destroyed
 - **WHEN** the battle is won
 - **THEN** the loop fades over 1 s and Victory plays once
+
+### Requirement: Each faction has its own battle and ambient music
+
+Every faction the player can command SHALL have a battle loop and an ambient loop built from its own motifs, and the
+game SHALL play the commanded faction's ambient loop while no enemy is in contact and its battle loop from contact.
+
+#### Scenario: Commanding a Krai ship
+- **WHEN** the player commands a Krai Warhost ship and an enemy comes into contact
+- **THEN** the Krai's ambient loop crossfades over 2 s into the Line, the Krai battle loop, which loops at 42.86 s
+

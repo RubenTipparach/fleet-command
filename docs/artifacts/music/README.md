@@ -15,3 +15,7 @@
 - Version 1 published 2026-11-05 from the cloud session at the owner's request ("need to pubhlish music artifacts and sound"), version id `1793914827-bdd2`.
 - Version 2 published 2026-11-05, version id `1793916574-caa5`: version 1 inlined every sound in the page and never loaded in
   the viewer (owner: "artifact not loading"); the audio is now served beside the page.
+- Version 3 published 2026-11-07, version id `1793953431-54aa`: music for every faction in the game (owner: "we need
+  custom music for each faction (just do the ones in game right now) and add ambient music as well"): a battle and an
+  ambient loop each for the Concord (its ambient new), the Krai Warhost, the Ssarith Hunt and the Kelvane Institute. 12
+  cues.
