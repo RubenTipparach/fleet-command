@@ -18,6 +18,10 @@ public sealed partial class ConsoleSounds : Node
     private int _next;
     private string? _bedCue;
 
+    /// <summary>In a scripted run, each sound played is printed as PLAYTEST_SOUND <cue>, so a playtest can check what it
+    /// heard (CLAUDE.md section 9; openspec/changes/sound-effects task 3.7).</summary>
+    public bool Log { get; set; }
+
     /// <summary>Gives the sounds their cue table; call once, before the node enters the tree.</summary>
     public void Init(AudioCues cues) => _cues = cues;
 
@@ -40,6 +44,7 @@ public sealed partial class ConsoleSounds : Node
         p.Bus = cue.Bus;
         p.VolumeDb = (float)cue.VolumeDb;
         p.Play();
+        if (Log) GD.Print($"PLAYTEST_SOUND {cueId}");
     }
 
     /// <summary>Loops a bed (an ambience cue) under the screen, fading it in; null fades the bed out. The same cue again
@@ -63,6 +68,7 @@ public sealed partial class ConsoleSounds : Node
         _bed.VolumeDb = -40;
         _bed.Play();
         tw.TweenProperty(_bed, "volume_db", (float)cue.VolumeDb, BedFadeS);
+        if (Log) GD.Print($"PLAYTEST_SOUND {cueId} (bed)");
     }
 
     private static AudioStream? Load(AudioCue cue) => GD.Load<AudioStream>("res://" + cue.File);

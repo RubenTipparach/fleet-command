@@ -25,8 +25,11 @@
 - [x] 3.5 Skins' key sounds: each skin's style names its key cue (`SkinStyle.KeySound`, required), checked against the cue
   table as the skin is made; every console key plays it (`Imm.Pressed`, `ConsoleSounds.Key`) (2026-11-07)
 - [x] 3.5a The bridge bed loops under a battle, silent on the menus and the map (`ConsoleSounds.Bed`) (2026-11-07)
-- [ ] 3.5b A playtest that hears the keys and the bed (the scripted captain logs `PLAYTEST_BEAT sound <cue>`, 3.7)
+- [x] 3.5b A playtest that hears the keys and the bed: in a scripted run every sound played prints `PLAYTEST_SOUND <cue>`;
+  the Concord and Krai battles play the bed and their skin's key sound on every key press
+  (`docs/playtests/2026-11-07-console-sounds.md`)
 - [ ] 3.6 The voice cap and pause behaviour
-- [ ] 3.7 `PLAYTEST_BEAT sound` lines and a playtest that checks them
+- [ ] 3.7 `PLAYTEST_SOUND` lines (done for the console, 2026-11-07) and a playtest beat that checks them for the battle's
+  sounds
 - [ ] 3.8 The game's credits carry every CC-BY pack's credit in use (`tools/audio/licence_exceptions.json`); none is in
   use since 2026-11-07 (the space ambience was replaced by the brown-noise bed)

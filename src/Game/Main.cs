@@ -61,6 +61,7 @@ public sealed partial class Main : Node
         _audio = data.Audio;
         var sounds = new ConsoleSounds();
         sounds.Init(data.Audio);
+        sounds.Log = _args.ContainsKey("playtest");
         AddChild(sounds);
         IKit kit = KitById(_skinId);
         GameActions act = null!;
