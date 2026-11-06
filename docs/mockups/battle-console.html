@@ -3701,7 +3701,7 @@ const KITS = {};
 const HERO = { 'nameplate': [460, 56], 'helm.pad': [300, 300], 'dial': [120, 120], 'lamp.alert.green': [64, 64], 'lamp.alert.yellow': [64, 64], 'lamp.alert.red': [64, 64], 'crest': [96, 96] };
 const ICONS = ['warp', 'helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'map', 'pause', 'menu', 'fire', 'engines', 'reactor'];
 function buildKit() {
-  KIT = { nine: {}, src: {}, hero: {}, icon: {}, iconOn: {}, iconTab: {}, iconInk: {}, cell: {} };
+  KIT = { nine: {}, src: {}, hero: {}, icon: {}, iconOn: {}, iconTab: {}, iconInk: {}, cell: {} }; KEY_GLASS = null;
   Object.assign(KIT.nine, CON.kit, CON.cells);
   // a skin with symbol bars (owner, 2026-10-31: "have different repeated symbols for them"): its cells, lit, unlit, warning, ok
   if (CON.barCells) for (const [id, p] of Object.entries(CON.barCells)) KIT.cell[id] = paint(p.size[0], p.size[1], p.draw);
@@ -4262,15 +4262,48 @@ function helmGlyph(kind, cx, cy, r, col) {
 }
 // One helm key: a rounded square in the Concord blue (lit lilac when its order or toggle is on, green when it is the
 // order in force), its glyph in black, its name on hover.
+// The glass of a rendered square key, as fractions of the key [x0, y0, x1, y1]: where the lit key (key.on) differs from the
+// key at rest (key.idle) round the key's centre, measured once from the kit's own renders, so the frame round it is never drawn on. A drawn key
+// (Concord) is all face.
+let KEY_GLASS = null;
+function keyGlass() {
+  if (KEY_GLASS) return KEY_GLASS;
+  const a = KIT.hero['key.idle'], b = KIT.hero['key.on'];
+  if (!a || !b) return (KEY_GLASS = [0, 0, 1, 1]);
+  const W2 = a.width, H2 = a.height, c = document.createElement('canvas'); c.width = W2; c.height = H2;
+  const x = c.getContext('2d', { willReadFrequently: true }), px = (im) => { x.clearRect(0, 0, W2, H2); x.drawImage(im, 0, 0, W2, H2); return x.getImageData(0, 0, W2, H2).data; };
+  const pa = px(a), pb = px(b), lit = (i, j) => { const k = (j * W2 + i) * 4; return Math.abs(pa[k] - pb[k]) + Math.abs(pa[k + 1] - pb[k + 1]) + Math.abs(pa[k + 2] - pb[k + 2]) > 90; };
+  // walked out from the key's centre along its middle row and column while the two renders differ, so a stray pixel on
+  // the frame (a highlight that differs a little between the renders) never widens the glass
+  const cx = W2 >> 1, cy = H2 >> 1;
+  if (!lit(cx, cy)) return (KEY_GLASS = [0, 0, 1, 1]);
+  // (a gap of up to 4 px is stepped over: the Hunt's glass has dark scan lines)
+  const walk = (at, from, step, end) => { let last = from; for (let v = from + step, gap = 0; v !== end + step && gap <= 4; v += step) { if (at(v)) { last = v; gap = 0; } else gap++; } return last; };
+  const x0 = walk((i) => lit(i, cy), cx, -1, 0), x1 = walk((i) => lit(i, cy), cx, 1, W2 - 1);
+  const y0 = walk((j) => lit(cx, j), cy, -1, 0), y1 = walk((j) => lit(cx, j), cy, 1, H2 - 1);
+  return (KEY_GLASS = [x0 / W2, y0 / H2, (x1 + 1) / W2, (y1 + 1) / H2]);
+}
+// Where a helm key's glyph and turn angle go inside its glass (owner, 2026-11-06, on the Institute console: "the numbers
+// arent in the buttons for turn angle, also these icons need a little more space on these buttons"): the glyph a little
+// smaller than the glass, the angle in the glass's lower corner away from the turn, the glyph lifted to leave it room.
+// The game lays its keys out by the same numbers (src/Core/Console/HelmKeyLayout.cs).
+function helmKeyLayout(x, y, sz, angle, left) {
+  const [f0, g0, f1, g1] = keyGlass(), wx = x + f0 * sz, wy = y + g0 * sz, ww = (f1 - f0) * sz, wh = (g1 - g0) * sz, m = Math.min(ww, wh);
+  if (!angle) return { cx: wx + ww / 2, cy: wy + wh / 2, r: m * 0.4 };
+  const size = Math.max(8, Math.round(m * 0.26)), pad = m * 0.11;
+  return { cx: wx + ww / 2, cy: wy + wh / 2 - m * 0.09, r: m * 0.34, size, tx: left ? wx + ww - pad : wx + pad, ty: wy + wh - pad, align: left ? 'right' : 'left' };
+}
+// One helm key: the skin's key face (lit when its order or toggle is on), its glyph in the ink that reads on it, its
+// name on hover; a turn's angle small in the glass's corner, so 90 and 135 never read alike.
 function helmKey(id, x, y, sz, kind, name, click, o = {}) {
   const dis = o.dis && o.dis(), st = dis ? { hot: false, down: false } : hit(id, x, y, sz, sz, { click, tip: name });
   const on = o.on && o.on();
   const fill = dis ? CC.deep : st.down ? CC.lilac : on ? (o.onCol || CC.accord) : st.hot ? CC.sky : CC.signal; g.globalAlpha = dis ? 0.5 : 1;
   face(g, x, y, sz, sz, sz * 0.22, fill); g.globalAlpha = 1;
-  helmGlyph(kind, x + sz / 2, y + sz / 2, sz * 0.42, dis ? CC.inkDis : faceInk(fill));
-  // the turn's angle, small in the corner, so 90 and 135 never read alike
-  const ang = { 'het.l90': '90', 'het.r90': '90', 'het.l135': '135', 'het.r135': '135', 'het.180': '180' }[kind];
-  if (ang) { g.fillStyle = dis ? CC.inkDis : faceInk(fill); g.font = FNT(`700 ${Math.round(sz * 0.2)}px Antonio`); g.textAlign = kind.includes('.l') ? 'right' : 'left'; g.fillText(ang, kind.includes('.l') ? x + sz - sz * 0.1 : x + sz * 0.1, y + sz - sz * 0.1); }
+  const ang = { 'het.l90': '90', 'het.r90': '90', 'het.l135': '135', 'het.r135': '135', 'het.180': '180' }[kind], ink = dis ? CC.inkDis : faceInk(fill);
+  const L = helmKeyLayout(x, y, sz, ang, kind.includes('.l'));
+  helmGlyph(kind, L.cx, L.cy, L.r, ink);
+  if (ang) { g.fillStyle = ink; g.font = FNT(`700 ${L.size}px Antonio`); g.textAlign = L.align; g.fillText(ang, L.tx, L.ty); g.textAlign = 'left'; }
 }
 // The helm (owner, survey B4 and 2026-11-02; the Starfleet Command 2 manual's Helm Officer display, printed pages
 // 117-120, taken in shape, not art): a row of orders toward the target (intercept, trail and match speed, orbit and its
@@ -6132,7 +6165,10 @@ function helmArc(vw, vh, s) {
   // as a dotted line with the label "transport range" drawn on the radius. when crossing this range transporters become
   // active"): green while the destination (the selected friendly, or the enemy target for Capture and Hit and run) is
   // inside it, Sky otherwise, Caution while placing a mine
-  const reachRing = (col, label) => { const Rm = TRANSPORT.range_km * 10; g.strokeStyle = col; g.lineWidth = 2; g.setLineDash([10, 8]); g.beginPath();
+  // the transporter's reach in scene units: the dashed ring and the mine preview both use it (owner, 2026-11-06, a mine
+  // placed on the Institute console: "Uncaught ReferenceError: Rm is not defined" - the preview read the ring's own copy)
+  const Rm = TRANSPORT.range_km * 10;
+  const reachRing = (col, label) => { g.strokeStyle = col; g.lineWidth = 2; g.setLineDash([10, 8]); g.beginPath();
     for (let i = 0; i <= 96; i++) { const q = at(i / 96 * 2 * P, Rm); if (q) (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); }
     g.stroke(); g.setLineDash([]);
     // the label on the ring at its top on screen, following its curve
