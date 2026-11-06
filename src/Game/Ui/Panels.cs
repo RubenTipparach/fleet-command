@@ -256,7 +256,7 @@ public sealed partial class OptionsCard : ConsolePanel
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("opt.block", new Rect2(Vector2.Zero, Size));
-        float w = Math.Min(640, Size.X - 32), h = 120 + 56 * (AudioSettings.Buses.Length + 1) + 60;
+        float w = Math.Min(640, Size.X - 32), h = 64 + 56 * AudioSettings.Buses.Length + 72 + 48;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, h)), Sk.R.Sheet, 24, 0, 0, 24);
         Rect2 b = Frame(at, "Options", false);

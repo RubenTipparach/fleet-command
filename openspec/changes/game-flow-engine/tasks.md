@@ -24,13 +24,37 @@
 - [x] 1.11 Found by that playtest and fixed: the shut port panel took every press meant for the map's HUD (Move here, End
   turn, Briefing) and passed it to the map; the map's drag moved it about seven times as far as the pointer (it now keeps
   the point grabbed under the pointer); a headless boot waited forever for a frame to warm the shaders
+- [x] 1.13 The owner's port and map notes (2026-11-06), in the game and mockup 1 v17 together:
+  - fitting is free (owner: "fitting stuff on a ship should be free, have the store below"): systems are bought into the
+    fleet's stores at a port and fitted from them at no cost, and a system taken off goes back to them; the store below the
+    fitting list buys and sells (`Campaign.BuySystem`, `SellSystem`, `Refit`, `FitStock`, `CampaignState.Stores`); tests
+    `Fitting_is_free_and_takes_from_the_stores`, `Removing_a_system_stows_it_and_selling_it_pays_the_yard_share`,
+    `Empty_hardpoints_take_stock_from_the_stores_and_buy_the_rest`
+  - every crew station opens its list, kept full after a hire (owner: "for each crew slot, I should be able to click on it
+    and always geta list, even when I hire someone. Always 3 experienced of various levels and 5 cadets"): per station three
+    experienced officers at different levels and five cadets (`data/campaign/campaign.json` officers: `experienced`, `cadets`,
+    `given` and `family` names; the lowest level is now Cadet); the hired one's place goes to someone new of the same kind and
+    whoever served before goes back on the list (`RollOfficers`, `Hire`, `Dismiss`, `OnOffer`); tests
+    `Every_station_offers_three_experienced_officers_at_different_levels_and_five_cadets`,
+    `A_station_keeps_its_list_after_a_hire_and_one_officer_serves_it`
+  - the course stays drawn (owner: "future turns should be dotted lines, also when I click move show a line to my
+    destination, dont just remove it when I set course"): the course set with Move here is drawn from where it was set until
+    End turn, then from the fleet's place each turn after; this turn's leg solid, later turns dotted; the picked sector's
+    route over it in the sky colour when it goes elsewhere (`CampaignMap.ShowRoute`, `GameFlow.Course`)
+  - Options (owner: "need an options menu with audio controls too", "also this display button should be in options"):
+    master, music and effects volumes in ten boxes each and the window mode, from the main menu and the battle's menu, which
+    lose their Display keys; remembered in `user://settings.cfg` (`AudioSettings`, `OptionsCard`); the score plays on the
+    Music bus (`MusicPlayer`: the main theme on the menus and map, the battle cue in a battle)
+  - the ship schematics drawn smooth at thumbnail size (owner: "use AA or something, sampling kinda sucks on these ships"):
+    imported with mipmaps and sampled trilinear (`Schematics.Smooth`)
+  - stills `docs/screenshots/game/flow/outfit.png`, `crew.png`, `course.png`, `options.png`, `factions.png`
 - [ ] 1.12 Also found: a mission that goes with a moving fleet (Assassination) leaves the fleet's course where it was set;
   the player must set course again each turn from the briefing. Whether an accepted mission's course should follow it is
   the owner's call; mockup 1 does the same (its `CAMP.order` is the sector the course was set for), so both would change together
 
 ## 2. Still different from mockup 1 v14 (each a line in `docs/design/mockup-sync.md`)
 
-- [ ] 2.1 The faction screen's 3D pedestals, light and dust (the game shows the rendered emblems flat)
+- [x] 2.1 The faction screen's 3D scene, light and dust (2026-11-06: the walnut table, change `faction-select` 3.1)
 - [x] 2.2 The map's look and HUD at the mockup's (2026-11-05, owner: "map in godot needs to reach freature parity"): the sky and
   parallax stars, glass hexes and border ribbons, two-colour nebula puffs, asteroid belts, planets, stations, flight stands,
   cloth banners and strength flags, freighters and routes, fleets flying their moves, the route with turn badges, a fixed
@@ -42,4 +66,4 @@
 - [ ] 2.4 Officers hired doing something in the battle (change `officers`)
 - [ ] 2.5 The phone layouts of the flow screens checked at phone sizes (landscape and portrait)
 - [ ] 2.7 The mockup's screens fade and show the same loading screen (the game has them first)
-- [ ] 2.6 Options beyond the display mode (sound levels, quality, UI scale)
+- [ ] 2.6 Options beyond the display mode and the volumes (2026-11-06): graphics quality and interface scale, which mockup 1 shows
