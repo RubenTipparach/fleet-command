@@ -54,3 +54,34 @@ each passing its own section layout and materials.
 #### Scenario: The Hunt unchanged by the lift
 - **WHEN** the Hunt's ships are exported as OBJ (`window.MOCKUP_EXPORT_OBJ`) before and after the Hunt page inlines the shared code
 - **THEN** every file is identical
+
+### Requirement: The line is five classes from the owner's picks
+
+The Institute page SHALL show the line: blockouts 5, 11, 17, 18 and 19, the more complex ones the larger ships, as the frigate,
+destroyer, cruiser, battlecruiser and carrier. Each SHALL be grown at its class's size as one closed structure, and each SHALL
+name its class, its scientific work and the blockout it comes from.
+
+#### Scenario: One class at a time
+- **WHEN** a class is picked in the line
+- **THEN** it alone is shown, framed on its length, with its class, work, blockout, size and closure
+
+#### Scenario: The line-up
+- **WHEN** Line-up is chosen
+- **THEN** the five classes stand side by side at true scale
+
+### Requirement: Every class has its own baked textures
+
+Every class SHALL be unwrapped on its own and baked from a modelled detail layer onto its own UVs. The bake SHALL write a
+painted map, a PBR set (base colour, ORM, tangent normals, emission) and a hull-light map. Its detail SHALL be clean and
+smooth (seams, smooth round pods and glass domes; no greebles, trenches or slatted vents). The detail and paint SHALL be in
+the Institute's data, `data/ships/kelvane/hull_detail.json`. The page SHALL show each class Painted, PBR, Champagne or Clay,
+under Studio or Night light.
+
+#### Scenario: The looks
+- **WHEN** Painted or PBR is chosen
+- **THEN** each class shows its own maps; Champagne and Clay show its grown skin
+
+#### Scenario: The Hunt unchanged
+- **WHEN** the bake tools run for the Ssarith Hunt
+- **THEN** they read the same paint and detail values as before the faction options, from the Hunt's own data
+

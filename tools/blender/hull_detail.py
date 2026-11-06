@@ -16,13 +16,19 @@ What is built, in ship space (+x port, +y up, +z bow, metres; Blender's object s
             the data opens the armour onto the layer beneath
   greebles  machinery on the under layer (blocks, sub-armour slabs, pipe runs, ribs), only where the armour leaves it bare
   domes     smooth spherical armour sunk in a collar, held by straps that hug the sphere
+  pods      smooth round pieces of plating, ellipsoids sunk into the hull (the Kelvane's in place of machinery)
   fans      round vents: a recess, a hub, tilted fins, a ring of lamps
   louvres   shaped vents (a chevron, a raked slot) cut through the armour, slanted slats inside
   lamps     small lit blocks, the eye lamp in a housing
 Everything off the centreline is built once on the port side and mirrored, so the ship has one axis of symmetry. Each
 piece carries a colour attribute `rid` (a hash of its mirrored position), so a plate and its mirror take the same paint.
 
-The layout is data: data/ships/ssarith/hull_detail.json.
+The layout is data: data/ships/<faction>/hull_detail.json (the Ssarith Hunt's first; the Kelvane Institute's since
+mockup 23 version 5). A faction's design language is in its data, never in a copy of this file: how its armour is cut
+(defaults "cuts": "hunt", the swept chevrons and raked flanks above, or "grid", the Institute's calibrated plating: straight
+cuts square to the ship at stations of differing spacing, a spine plate, seams along the flanks), which faces carry
+armour ("facing_min", how square to top, bottom or flank a face must be), and its paint (painted_bake.py). Dark glass on
+the low-poly hull (its well_* objects) stays bare of armour and is baked as its own kind.
 """
 
 import math
@@ -33,8 +39,8 @@ import bpy
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
-KIND = {"under": 0.12, "greeble": 0.28, "sub": 0.39, "armour": 0.5, "dome": 0.64, "slat": 0.74, "vent": 0.82, "strip": 0.89,
-        "lamp": 0.95}
+KIND = {"under": 0.12, "greeble": 0.28, "sub": 0.39, "armour": 0.5, "glass": 0.58, "dome": 0.64, "slat": 0.74, "vent": 0.82,
+        "strip": 0.89, "lamp": 0.95}
 # the strips and green lamps a true green (owner, 2026-11-05, of the hull emission: "I wish it were more green")
 LAMP_RGB = {"bay": (0.75, 0.8, 0.7), "red": (1.0, 0.12, 0.06), "amber": (1.0, 0.78, 0.3), "green": (0.1, 1.0, 0.24), "strip": (0.1, 1.0, 0.24),
             "white": (1.0, 1.0, 1.0), "flood": (1.0, 0.92, 0.78), "window": (0.86, 1.0, 0.84)}
@@ -228,6 +234,21 @@ def dome(F, M, mats, cutters):
                     place(bm_box(foot * 2.4, w, r + 1.0, at=(0, 0, -0.2), rot=R), M), (r, h)))
     cutters.append(place(bm_cyl(foot * 1.16, 3.0, 48, at=(0, 0, -1.0)), M))
     return out
+
+
+def pod(F, M, cutters):
+    """A smooth round piece of plating (the Kelvane: owner, 2026-11-06, "they would have decorated their ships with smooth
+    round pieces rather than industrial greebles"): an ellipsoid len_m long and w_m wide, round in section, sunk so it stands
+    h_m proud of the hull, in a hole cut to its footprint. Plated and painted as the armour round it."""
+    L, W, h = F["len_m"], F["w_m"], F["h_m"]
+    c = W / 2                                                     # round in section: as tall as it is half wide
+    bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=24, radius=1.0)
+    bmesh.ops.transform(bm, matrix=Matrix.Translation((0, 0, h - c)) @ Matrix.Diagonal((L / 2, W / 2, c, 1.0)), verts=bm.verts)
+    k = math.sqrt(max(1.0 - ((h - c) / c) ** 2, 0.05)) * 1.04   # the footprint at the hull, a little over
+    cut = bm_cyl(1.0, 3.0, 48, at=(0, 0, -1.0))
+    bmesh.ops.transform(cut, matrix=Matrix.Diagonal((L / 2 * k, W / 2 * k, 1.0, 1.0)), verts=cut.verts)
+    cutters.append(place(cut, M))
+    return [(place(bm, M), "armour_pod", 0.61)]
 
 
 def fan(F, M, cutters):
@@ -482,23 +503,29 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
 
 
 # ----------------------------------------------------------------------------- the armour
-def shell_groups(lo):
+def bare_idx(me):
+    """The material slots whose faces carry no armour: the light strips (lo_glow) and the dark glass (lo_well)."""
+    return {i for i, m in enumerate(me.materials) if m and (m.name.startswith("lo_glow") or m.name.startswith("lo_well"))}
+
+
+def shell_groups(lo, facing_min=0.55):
     """The hull's faces by which way they face: top, bottom, port, starboard; the rest (bow, stern, the crotches between
-    branches) and the light strips carry no armour."""
+    branches), the light strips and the glass carry no armour. facing_min: how square a face must be to one of the four
+    (0.55 leaves a chamfer's faces bare; a rounded hull's rolls want less, so they are plated too)."""
     me = lo.data
     groups = {"top": [], "bottom": [], "port": [], "starboard": []}
-    glow_idx = {i for i, m in enumerate(me.materials) if m and m.name.startswith("lo_glow")}
+    bare = bare_idx(me)
     for p in me.polygons:
-        if p.material_index in glow_idx:
+        if p.material_index in bare:
             continue
         n = p.normal
-        if n.y > 0.55:
+        if n.y > facing_min:
             groups["top"].append(p.index)
-        elif n.y < -0.55:
+        elif n.y < -facing_min:
             groups["bottom"].append(p.index)
-        elif n.x > 0.55:
+        elif n.x > facing_min:
             groups["port"].append(p.index)
-        elif n.x < -0.55:
+        elif n.x < -facing_min:
             groups["starboard"].append(p.index)
     return groups
 
@@ -573,6 +600,43 @@ def armour_cuts(rng, D, zr, xmax, yr):
     return {"plan": plan, "side": side}
 
 
+def grid_cuts(rng, D, zr, xmax, yr):
+    """The Institute's calibrated plating (mockup 23; the Calibrators' "true faces"): on the top and bottom, straight cuts
+    square to the ship at stations of differing spacing, a spine plate down the centreline whose width steps at every
+    station, and a seam along the plating in some bays; on the flanks, upright cuts at their own stations and a seam along
+    the belt in some bays. No two stations share their spacing or spine. Port side only; mirrored by the caller."""
+    z0, z1 = zr
+    plan, side = [], []
+    z = z1 - rng.uniform(2, 5)
+    st = []
+    while z > z0 + 2:
+        st.append((z, rng.uniform(*D["spine_half_m"])))
+        z -= rng.uniform(*D["top_station_m"])
+    for i, (z, s) in enumerate(st):
+        sp = st[i - 1][1] if i else s
+        plan.append(((min(s, sp), z), (xmax + 2, z)))                    # the cut across, square to the ship
+        if i + 1 < len(st):
+            zn = st[i + 1][0]
+            plan.append(((s, z), (s, zn)))                                 # the spine plate's edge, straight to the next station
+            if rng.random() < 0.5:                                         # a seam along the plating in some bays only
+                xa = s + (xmax - s) * rng.uniform(0.4, 0.7)
+                plan.append(((xa, z), (xa, zn)))
+        if rng.random() < 0.35:                                            # the spine plate cut across at some stations
+            plan.append(((0.0, z), (s + 0.2, z)))
+    z = z1 - rng.uniform(3, 8)
+    ylo, yhi = yr
+    ym = D.get("seam_y_m", (ylo + yhi) / 2)
+    prev = None
+    while z > z0 + 2:
+        r = rng.uniform(*D["flank_rake"])
+        side.append(((z, ylo - 2), (z - r * (yhi - ylo + 4), yhi + 2)))
+        if prev is not None and rng.random() < 0.6:
+            side.append(((prev, ym), (z, ym)))
+        prev = z
+        z -= rng.uniform(*D["flank_station_m"])
+    return {"plan": plan, "side": side}
+
+
 def mirror_cuts(cuts):
     return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
 
@@ -582,9 +646,10 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     trenches), the data's exposed areas and the features' holes, and each plate then raised by its own amount so it
     casts its shadow on its neighbours. layer 'sub': thin, under the primary, cut by its own lines with wide gaps, so
     the trenches show a second layer of plating and, in its gaps, the machinery."""
-    groups = shell_groups(lo)
+    groups = shell_groups(lo, D.get("facing_min", 0.55))
     xs = [v.co.x for v in lo.data.vertices]; ys = [v.co.y for v in lo.data.vertices]; zs = [v.co.z for v in lo.data.vertices]
-    cuts = mirror_cuts(armour_cuts(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
+    cutter = grid_cuts if D.get("cuts", "hunt") == "grid" else armour_cuts
+    cuts = mirror_cuts(cutter(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
     primary = layer == "primary"
     t = D["armour_t_m"] if primary else D["sub_t_m"]
     plates = []
@@ -701,10 +766,10 @@ def greebles(lo, armour, D, rng, mats, holes=None):
         bm.from_mesh(o.data)
     abvh = BVHTree.FromBMesh(bm)
     me = lo.data
-    glow_idx = {i for i, m in enumerate(me.materials) if m and m.name.startswith("lo_glow")}
+    bare = bare_idx(me)
     parts = []
     for p in me.polygons:
-        if p.material_index in glow_idx or p.center.x < 0.25:
+        if p.material_index in bare or p.center.x < 0.25:
             continue
         nwant = p.area * D["greebles_per_m2"]
         k = int(nwant) + (1 if rng.random() < nwant % 1 else 0)
@@ -748,15 +813,16 @@ def build(lo, S, D, seed):
     defaults). Returns the high-poly objects to bake from."""
     rng = random.Random(seed)
     PANES.clear()
-    mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "dome", "slat", "vent")}
+    LAMP_RGB["strip"] = tuple(D.get("strip_rgb", (0.1, 1.0, 0.24)))   # the faction's strip light (the Hunt's green unless given)
+    mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "dome", "slat", "vent", "glass")}
     lamps = {c: kind_material("lamp", c) for c in LAMP_RGB}
     surf = Surface(lo)
     under = lo.copy(); under.data = lo.data.copy(); bpy.context.scene.collection.objects.link(under)
-    strip = [lo.data.materials[p.material_index].name.startswith("lo_glow") for p in lo.data.polygons]
-    under.data.materials.clear()  # (this zeroes every face's material index, so the strips were read off the hull first)
-    under.data.materials.append(mats["under"]); under.data.materials.append(kind_material("strip", "strip"))
-    for p, st in zip(under.data.polygons, strip):
-        p.material_index = 1 if st else 0
+    names = [lo.data.materials[p.material_index].name for p in lo.data.polygons]
+    under.data.materials.clear()  # (this zeroes every face's material index, so the strips and glass were read off the hull first)
+    under.data.materials.append(mats["under"]); under.data.materials.append(kind_material("strip", "strip")); under.data.materials.append(mats["glass"])
+    for p, nm in zip(under.data.polygons, names):
+        p.material_index = 1 if nm.startswith("lo_glow") else 2 if nm.startswith("lo_well") else 0
     set_rid(under, 0.0)
     high = [under]
     feats, holes = [], []
@@ -776,6 +842,8 @@ def build(lo, S, D, seed):
         at_both(F, lambda F, M, cut: dome(F, M, mats, cut))
     for F in S.get("fans", []):
         at_both(F, fan)
+    for F in S.get("pods", []):
+        at_both(F, pod)
     for F in S.get("louvres", []):
         at_both(F, louvre)
     for F in S.get("lamps", []):

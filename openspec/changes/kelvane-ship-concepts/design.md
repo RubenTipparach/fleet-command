@@ -176,12 +176,106 @@ loops as horizontal, vertical and both. Each loop ship is shot from its quarter,
 **Provisional.** The loops' purpose is the Collider Halls' (D1), which is survey I1. Their sizes and proportions are
 provisional, as in D4.
 
+### D8. Version 4: the line (owner, 2026-11-06)
+
+**The ask.** "12,11,18.19,17 all really good shapes, start detailing these, use more complex ones for larger captial ships
+like destroyer, cruiser, batlecruiser and carrier, we might want to theme them after advanced science and research vessels,
+this faction will specialize in scientific missions". Then: "12 is no go use 5"; and, of the first detail pass, "Mind the
+clean and sterile and almost scientific aesthetics. They would have decorated their ships with smooth round pieces rather
+than industrial greebles".
+
+**What the owner set.**
+- **The picks.** Blockouts 5, 11, 17, 18 and 19 (survey I2). The owner first picked 12, then: "12 is no go use 5".
+- **The classes.** The more complex blockouts go to the larger ships (survey I4).
+- **The culture, in part.** The Institute specialises in scientific missions, and its ships are advanced science and
+  research vessels (survey I1, in part).
+- **Two traditions.** The four larger ships come from the Collider Halls, the frigate from the Open Notebook (D1). The
+  other three schools are survey I5.
+
+**The decision.** The picks, simplest to most complex, become the five classes. Each is grown again at its size, with the
+structure its scientific work needs. Every class is a research vessel first. On the four larger ships the accelerator is
+the main instrument and also the lance; the frigate carries its instruments twice.
+
+| Code | Class (placeholder name, K1) | From | Its work | What grows at its size | Size, m | Triangles |
+|---|---|---|---|---|---|---|
+| FF | Parallax-class survey frigate | 5 Slotted | Charts a system on its own, every reading taken twice | Two identical instrument decks round a glazed slot 74 m long, joined at a glass nose; glass along the stern's upper side | 126 x 24 x 25 | 656 |
+| DD | Candour-class beamline destroyer | 11 Loop | Escort and picket, its beam held ready | A stepped instrument deck aft with glass, the storage ring (an opening 50 m long), the aperture | 136 x 47 x 17 | 1,516 |
+| CA | Patience-class research cruiser | 17 Keel loop | Research: laboratory decks over the ring | Stepped laboratory decks the length of the upper hull, glass on every riser; the keel ring dropping 15 m | 166 x 26 x 34 | 1,884 |
+| BC | Rigour-class collider battlecruiser | 18 Crossed loops | Line of battle: two beams crossing | A stepped reactor hall, a ring seen from above, a broad collision hall with glass, a ring seen from the side | 196 x 49 x 33 | 2,808 |
+| CV | Curiosity-class probe carrier | 19 Quartered loop | Probes and survey craft | A broad stepped hangar deck aft; four arms round a launch well 120 m long, open above, below and to each side | 214 x 52 x 37 | 2,596 |
+
+- **Checked.** Every class is closed and passes the section check.
+- **On the page.** The Line family (the default) shows one class at a time from the bow quarter, the side, above or ahead,
+  and a line-up of all five side by side at true scale. The blockout board and the loop family stay as the record, the
+  picks marked.
+- **Names.** The Patience keeps the name the console's research cruiser already has (kelvane-battle-console D7). All five
+  names are placeholders (survey I6).
+- **Provisional.**
+  - Each class's rooms: the Ship Design Bible designs them first (task 3.1), and the hull is then refitted round them.
+  - Its weapons' mounts.
+  - The carrier's bays into the launch well.
+
+### D9. Version 5: the first detail pass (owner, 2026-11-06: "start detailing these")
+
+**The method.** Each class is detailed the way the Hunt's ships were (the ship-detailing skill):
+1. The page hands its hull out as OBJ (`window.MOCKUP_EXPORT_OBJ`, through `tools/mockups/export_blockouts.mjs`, which now
+   takes the page).
+2. `tools/blender/painted_bake.py --faction kelvane --ship <slug>` unwraps it once.
+3. `tools/blender/hull_detail.py` builds a high-poly detail layer over it from `data/ships/kelvane/hull_detail.json`.
+4. The detail is baked onto the ship's own UVs and painted into a painted map, a PBR set (base colour, ORM, tangent normals,
+   emission) and a hull-light map.
+
+**The Institute's language is data, not a copy of the tools (CLAUDE.md 6.1).** The tools gained faction options. The Hunt
+keeps its own values, now read from its data. Its paint is moved into `data/ships/ssarith/hull_detail.json` with exactly
+the values the code had.
+
+| Option | The Hunt | The Institute | Where it comes from |
+|---|---|---|---|
+| `cuts` | `hunt`: swept chevrons, raked flanks | `grid`: straight cuts square to the ship at stations of differing spacing, a spine plate that steps at every station, seams along the plating and the belt | The Calibrators' "true faces" (D1) |
+| `smooth_deg` | none (flat: chamfered hulls) | 40: the hull shaded smooth for the tangent bake, and the page draws the same normals | The rolled case |
+| `facing_min` | 0.55 (chamfers bare) | 0.38 (the rounded hull's rolls plated too) | The rolled case (D2) |
+| Gaps, trenches | 0.5-1.0 m, trenches 2.6-4.6 m in 40 %, overlays on plates over 22 m2, greebles 1.6 a m2 | Seams of 0.2-0.32 m, no trenches, no overlays, no greebles, plates lifted no more than 0.05 m | Clean and sterile (owner: "Mind the clean and sterile and almost scientific aesthetics") |
+| `paint` | Olives and khakis, a bronze accent | Champagne enamel in seven tones, a brass accent, darker champagne sub-armour, a dark bronze under layer, smoked-glass domes and wells, the logo's velvet red for liveries, the console's dark ink | The console (kelvane-battle-console D2) |
+| Strips | `centre`: a lit line down a keel | `whole`: the belt and the beamline walls lit amber | The amber of a reading |
+| Glass | (none) | The hull's dark-glass faces (`well_*`) bare of armour, baked as their own kind (`glass`) | The console's wells |
+
+**What each ship carries** (`data/ships/kelvane/hull_detail.json`), smooth and round, never machinery (owner: "They would
+have decorated their ships with smooth round pieces rather than industrial greebles"):
+- smoked-glass sensor domes on its halls and decks, in collars, never strapped;
+- **pods**, a new feature of `hull_detail.py`: smooth ellipsoids, round in section, sunk into the plating to stand 0.7-1.1 m
+  proud, 6-14 m long, plated and painted as the champagne round them;
+- amber jewel lamps;
+- two red livery bands toward the bow;
+- the KID logo on the top plating, under its own flood;
+- **a measuring scale engraved down each flank**: a tick every 1 m and a long tick every 5 m, above the belt (the Institute
+  marks every surface it works on, the console's backing rule, D4 of kelvane-battle-console);
+- floods, position lights, beacons and strobes, placed as the Hunt's are.
+
+**The logo.** It is drawn from its own file, `assets/ui/kelvane/emblem.svg`. `tools/mockups/emblem_masks.mjs` now reads a
+faction's hull logo from its SVG: the satin oval is the field, the plot is the device, and the rim is left to the champagne
+plate. The shared emblem library still holds the Institute's old tuning-fork sketch; the faction-emblems change brings it
+up to date.
+
+**On the page.**
+- **The viewer.** The shared `docs/mockups/lib/baked-ship.js` shows the baked ships: geometry, maps, the Painted and PBR
+  looks with the hull lights, and blinking fixtures.
+- **The switches.** Look: Painted, PBR, Champagne, Clay. Light: Studio, Night.
+- **Duplication, reported.** The Hunt page still has its own copy of the same rules, woven into its damage, panes and
+  breakup. Moving it onto the library is task 3.4.
+
+**Not yet** (as the Hunt's ships took them in versions 14 and 15):
+- windows and the rooms behind them, once each class is planned rooms first;
+- the carrier's bays into the launch well;
+- battle damage and breaking apart.
+
 ## Open questions
 
 | Id | Question | Recommendation (provisional) |
 |---|---|---|
-| I1 | Which of the five traditions does the Institute keep (or how is its culture set)? | Keep all five as the Institute's schools for now; the owner renames, merges or drops |
-| I2 | Which blockouts go on to be grown in detail? | The owner's picks; until then none is detailed |
+| I1 | Which of the five traditions does the Institute keep (or how is its culture set)? | In part decided (D8): the Institute specialises in scientific missions; the line is the Collider Halls' and the Open Notebook's frigate. The rest is I5 |
+| I2 | Which blockouts go on to be grown in detail? | **Decided** (D8): 5, 11, 17, 18, 19 |
 | I3 | Do the hulls wear the console's palette (champagne, dark glass, amber)? | Yes, as drawn: the exterior complements the console (X1) |
-| I4 | Which class comes first, and at what size? | A frigate of about 105 m, as the Hunt's; the research cruiser the console flies today follows |
+| I4 | Which class comes first, and at what size? | **Decided** (D8): all five at once, frigate to carrier, 126-214 m (sizes provisional) |
+| I5 | What becomes of the other four schools? | Keep them as schools inside the Institute for its stations, support ships and the console |
+| I6 | The class names (Parallax, Candour, Patience, Rigour, Curiosity) | Placeholders until the owner names the Institute's ships (K1) |
 | K1 | The Institute's names for ships, ranks and officers (from kelvane-battle-console) | Placeholders until the owner sets the culture |

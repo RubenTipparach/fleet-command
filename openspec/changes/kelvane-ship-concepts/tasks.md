@@ -12,15 +12,19 @@
 
 ## 2. The owner's picks (survey I1-I4)
 
-- [ ] 2.1 The traditions kept, renamed or dropped, recorded in this design and the Ship Design Bible's other-factions chapter
-- [ ] 2.2 The picked blockouts kept, the rest discarded (git keeps them)
-- [ ] 2.3 The first class and its size
+- [x] 2.1 The picks (I2): 5 (owner: "12 is no go use 5"), 11, 17, 18, 19; the classes by complexity (I4); the science specialisation (I1, in part), recorded in D8 and the survey
+- [ ] 2.2 The other four schools (I5) and the class names (I6)
+- [x] 2.3 Version 4: the line, five classes grown at their sizes with the structure their work needs; the line view and line-up; the picks marked on the board
 
-## 3. After blockouts are picked
+## 3. Detail
 
-- [ ] 3.1 Each pick designed rooms first (plans in `data/ships/kelvane/`), its hull fitted round them, its tradition named in every choice
-- [ ] 3.2 Each pick unwrapped on its own, its hull detail modelled and baked onto its own UVs (`ship-detailing`; Ship Design Bible chapter 15), its PBR set and hull lights
-- [ ] 3.3 Windows by its rooms, the KID emblem on the hull (`assets/ui/kelvane/emblem.svg`), damage and breaking apart on the shared ship modules
+- [x] 3.0 Version 5: the bake tools take a faction (`--faction`, the paint in the faction's data, `cuts` grid, `facing_min`, glass, whole strips, the measuring scale, the logo from its SVG), the Hunt's values unchanged; each class baked onto its own UVs (`data/ships/kelvane/hull_detail.json`, `assets/ships/kelvane/`); the shared viewer `docs/mockups/lib/baked-ship.js`
+- [ ] 3.1 Each class designed rooms first (plans in `data/ships/kelvane/`), its hull refitted round them, its tradition named in every choice
+- [ ] 3.2 Windows by its rooms, with the rooms behind them (`lib/ship-rooms.js`); the carrier's bays into its launch well
+- [ ] 3.3 Battle damage and breaking apart on the shared ship modules (`lib/ship-fx.js`, `lib/ship-break.js`, each hull's signed distance field)
+- [ ] 3.4 The Hunt page onto `docs/mockups/lib/baked-ship.js` (its own copy of the baked-ship look today), checked unchanged to the pixel
+- [ ] 3.5 The shared emblem library's Kelvane entry brought up to KID (faction-emblems), so the masks and crests draw from one copy
+- [ ] 3.6 Weapon mounts placed on each class
 
 ## 4. After approval for implementation (a separate request)
 

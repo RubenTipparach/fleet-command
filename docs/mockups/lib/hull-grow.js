@@ -5,7 +5,7 @@
 // layout; nothing here is any faction's shape. Edit it here, then re-run tools/mockups/inline_data.py on each page that
 // inlines it.
 //
-// FCHullGrow(THREE) returns { V2, seg, cutLine, at3, Skin }.
+// FCHullGrow(THREE) returns { V2, seg, cutLine, at3, Skin, creasedNormals }.
 //
 // A hull is one closed skin. Its body is lofted through cross-sections of one fixed layout (a function from a station's
 // parameters to a closed ring of points, counter-clockwise seen from the bow, the same count at every station), so any
@@ -116,5 +116,5 @@ class Skin {
       if (all) { geo.setAttribute('normal', new THREE.BufferAttribute(all.slice(o * 3, (o + pts.length) * 3), 3)); o += pts.length; } else geo.computeVertexNormals();
       const m = new THREE.Mesh(geo, this.mats[kind]); m.name = name; this.g.add(m); } }
 }
-return { V2, seg, cutLine, at3, Skin };
+return { V2, seg, cutLine, at3, Skin, creasedNormals };
 };
