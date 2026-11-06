@@ -1,0 +1,92 @@
+{
+ "_doc": "The scripted captain's Relief scene (the mockup's delivery): select the station, take two beams of rations and one of medicine aboard from Cargo, select the planet, intercept it at speed and beam the supplies down once in reach, until the planet has all it asked for. Played from both sides.",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "select",
+   "arg": "harbor|ironmaw"
+  },
+  {
+   "do": "station",
+   "arg": "transport"
+  },
+  {
+   "do": "click",
+   "arg": "tr.tab.cargo"
+  },
+  {
+   "do": "click",
+   "arg": "tr.inv.them.rations"
+  },
+  {
+   "do": "click",
+   "arg": "tr.inv.them.rations"
+  },
+  {
+   "do": "click",
+   "arg": "tr.inv.them.medicine"
+  },
+  {
+   "do": "select",
+   "arg": "tessaly"
+  },
+  {
+   "do": "station",
+   "arg": "helm"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "press",
+   "arg": "speed_up"
+  },
+  {
+   "do": "helm",
+   "arg": "int"
+  },
+  {
+   "do": "station",
+   "arg": "transport"
+  },
+  {
+   "do": "repeat",
+   "arg": "tr.inv.us.rations,tr.inv.us.medicine",
+   "s": 300
+  },
+  {
+   "do": "until_over",
+   "s": 60
+  }
+ ]
+}

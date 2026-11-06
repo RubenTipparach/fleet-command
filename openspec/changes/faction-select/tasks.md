@@ -11,7 +11,7 @@
 - [x] 1.7 Disabled keys dark in every skin: the idle key darkened and solid (owner, 2026-11-05: "disabled butons should be like dark")
 - [x] 1.8 The walnut table (owner, 2026-11-06): the Material Maker graph `table_wood`, rendered headless; the pedestals and
   slab replaced by the table and brass rings; the badges float and bob; every badge turns toward the pointer; the picked
-  faction's lamp full, the hovered one's half (mockup 1 v17)
+  faction's lamp full, the hovered one's half (mockup 1 v18)
 
 ## 2. After approval for build
 

@@ -1,0 +1,15 @@
+{
+ "_doc": "The scripted captain's Nebula scene (the battle console mockup's SCENES.nebula; owner, 2026-11-04: \"We also need a nebula scenario to test out the ECM/ECCM systems\"): pick the scenario, try to lock the jamming raider (the nebula hides it), raise ECCM to four boxes on the Science station, above its ECM of three, then lock it, order Intercept and fight it out. Played from both sides.",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "station", "arg": "science" },
+  { "do": "click", "arg": "eccm.3" },
+  { "do": "click", "arg": "sh.sensors" },
+  { "do": "press", "arg": "next_target" },
+  { "do": "station", "arg": "helm" },
+  { "do": "helm", "arg": "int" },
+  { "do": "fight", "s": 600 }
+ ]
+}

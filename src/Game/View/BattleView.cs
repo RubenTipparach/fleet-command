@@ -190,6 +190,12 @@ public sealed partial class BattleView : Node3D
     }
 
     /// <summary>The view rectangle and the whole screen, in console units.</summary>
+    partial void SyncComms(Battle b, double dt);
+    partial void SyncTractor(Battle b, double dt);
+    partial void SyncReactor(Battle b, double dt);
+    partial void SyncCloak(Battle b, double dt);
+    partial void SyncTactical(Battle b, double dt);
+
     public void SetViewRect(Rect2 view, Vector2 screen) { _view = view; _screen = screen; }
 
     public override void _Process(double delta) => Sync(delta);
@@ -201,13 +207,16 @@ public sealed partial class BattleView : Node3D
         Battle b = _x.Battle;
         ShipSkin.Flash(_strobes, Time.GetTicksMsec() / 1000.0);
         Damage(b, _x.State.Paused || _x.State.MenuOpen ? 0 : dt);
+        // the mockup's other systems in 3D (transporter beams, tractor beams, mines, craft, cloaks), each in BattleView.<Package>.cs
+        double sdt = _x.State.Paused || _x.State.MenuOpen ? 0 : dt;
+        SyncComms(b, sdt); SyncTractor(b, sdt); SyncReactor(b, sdt); SyncCloak(b, sdt); SyncTactical(b, sdt);
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
-            m.Visible = s.Alive || _damage.ContainsKey(s.Id);   // an approved ship stays to come apart; a stand-in just goes
+            m.Visible = !s.Jumped && (s.Alive || _damage.ContainsKey(s.Id)) && (!s.Alive || b.Detected(b.Player, s));   // an approved ship stays to come apart; a stand-in just goes; a ship gone to warp is gone; a cloaked ship unseen is not drawn
             m.Position = new Vector3((float)(s.X / MPerU), 0, (float)(s.Z / MPerU));
             m.Rotation = new Vector3(0, -(float)s.H, 0);
-            if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive; if (s.Alive) sh.Show(s, _x.Kit.C); }
+            if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive && s.CloakK <= 0; if (sh.Visible) sh.Show(s, _x.Kit.C); }   // a cloak's shields are down
         }
         Ship p = b.Player;
         FollowTarget(p);

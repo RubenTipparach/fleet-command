@@ -53,7 +53,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         float bestD = 30;
         foreach (Ship s in B.Ships)
         {
-            if (!s.Alive || s == B.Player) continue;
+            if (!s.Alive || s == B.Player || !B.Detected(B.Player, s)) continue;   // a cloaked ship unseen cannot be picked
             if (Local(s.X, s.Z) is not { } p) continue;
             float d = p.DistanceTo(local);
             if (d < bestD) { bestD = d; best = s; }
@@ -70,6 +70,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
     public override void _GuiInput(InputEvent e)
     {
+        if (SceneWheel(e)) { AcceptEvent(); return; }
         if (!_leftDown && !_rightDown && _ui.Handle(e)) { AcceptEvent(); return; }
         if (e is InputEventMouseMotion mm0) _mouse = mm0.Position;
         switch (e)
@@ -92,7 +93,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Right } b:
                 if (b.Pressed) { _rightDown = true; _moved = false; _press = b.Position; }
-                else if (_rightDown) { _rightDown = false; if (!_moved && ShipAt(b.Position) is { } s && s.Side != B.Player.Side) B.Lock(s.Id); }
+                else if (_rightDown) { _rightDown = false; if (!_moved && ShipAt(b.Position) is { } s) B.Lock(s.Id); }
                 break;
             case InputEventMouseMotion m:
                 _mouse = m.Position;
@@ -123,8 +124,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             if (_view.PlaneAt(local + Position) is { } h) B.HetTo(h.X, h.Z);
             return;
         }
+        if (MineClick(local)) return;   // Place mine armed (ViewOverlay.Tractor.cs)
         if (B.Scenario.DamageRange && _x.State.Expanded == null && RangeClick(local)) return;
-        if (ShipAt(local) is { } s) { if (s.Side != B.Player.Side) B.Lock(s.Id); return; }
+        if (ShipAt(local) is { } s) { B.Lock(s.Id); return; }
         if (_x.State.Expanded != null) { _x.Act.Return(); return; }
         if (_view.PlaneAt(local + Position) is { } q)
         {
@@ -137,6 +139,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     {
         _ui.Begin();
         DrawView();
+        // sheets over the whole view, above the Target box (the hit details and the event log: ViewOverlay.Tactical.cs)
+        DrawTacticalSheets(_x.Fonts);
         if (_x.State.SceneOpen && _x.State.Expanded == null) SceneList();
         _ui.End();
         _x.Tips.Offer(this, _ui.CurrentTip(), Position);
@@ -176,7 +180,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         bool big = _x.State.Expanded != null;
         foreach (Ship s in b.Ships)
         {
-            if (!s.Alive || s == me) continue;
+            if (!s.Alive || s == me || !b.Detected(me, s)) continue;   // a cloaked ship unseen is not marked (Battle.Detected)
             Vector2? lp = Local(s.X, s.Z);
             bool locked = s == t;
             if (lp is not { } p || !view.Grow(-4).HasPoint(p))
@@ -187,8 +191,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 if (lp == null) dir = -dir;
                 float an = dir.Angle();
                 var ep = Size / 2 + new Vector2(Mathf.Cos(an) * (Size.X / 2 - 40), Mathf.Sin(an) * (Size.Y / 2 - 40));
-                DrawArc(ep, 14, 0, Mathf.Tau, 24, C.Alert, 3, true);
-                f.Draw(this, s.Name.ToUpperInvariant(), ep.X, ep.Y + 32, 16, C.Alert, HorizontalAlignment.Center);
+                Color edge = s.Side != me.Side ? C.Alert : C.Accord;
+                DrawArc(ep, 14, 0, Mathf.Tau, 24, edge, 3, true);
+                f.Draw(this, s.Name.ToUpperInvariant(), ep.X, ep.Y + 32, 16, edge, HorizontalAlignment.Center);
                 continue;
             }
             bool foe = s.Side != me.Side, hot = p.DistanceTo(_mouse) < (locked ? 50 : 22);
@@ -196,7 +201,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             if (locked)
             {
                 float kk = hot ? 1.08f : 1, w = 92 * kk, h = 72 * kk, c0 = 20;
-                Color bc = hot ? C.Alert.Lightened(0.3f) : C.Alert;
+                // a friendly ship selected is bracketed in its own green, never the enemy red
+                Color lockCol = foe ? C.Alert : C.Accord, bc = hot ? lockCol.Lightened(0.3f) : lockCol;
                 foreach (var (sx, sy) in new[] { (-1, -1), (1, -1), (1, 1), (-1, 1) })
                 {
                     var corner = p + new Vector2(sx * w / 2, sy * h / 2);
@@ -213,6 +219,44 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 f.Draw(this, s.Name.ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
             }
         }
+        // a mission's marker beacons: each shown one a diamond with its name and range, a click steering for it (as a click on
+        // open space does); one reached is drawn dim with a tick; one that follows a beacon not yet reached is not drawn
+        if (b.Scenario.Markers != null)
+            foreach (Data.MarkerDef mk in b.Scenario.Markers)
+            {
+                if (!b.MarkerActive(mk)) continue;
+                bool got = b.Reached.Contains(mk.Id);
+                Color col = got ? new Color(C.Accord, 0.6f) : C.Caution;
+                Vector2? lp = Local(mk.XM, mk.ZM);
+                if (lp is not { } mp0 || !view.Grow(-30).HasPoint(mp0))
+                {
+                    if (got) continue;
+                    // off screen: a diamond at the edge toward it
+                    Vector2 dir = (lp ?? Size / 2) - Size / 2;
+                    if (lp == null) dir = -dir;
+                    float an = dir.Angle();
+                    var ep = Size / 2 + new Vector2(Mathf.Cos(an) * (Size.X / 2 - 50), Mathf.Sin(an) * (Size.Y / 2 - 50));
+                    string eid = mk.Id;
+                    HitState es = _ui.Reg("v.marker." + eid, new Rect2(ep - new Vector2(22, 22), new Vector2(44, 44)), _ => SteerFor(eid), null,
+                        new Tip(mk.Label, new (string, string, Color?)[] { ("Click", "set course for it", null) }));
+                    Diamond(ep, es.Hot ? 12 : 10, col);
+                    f.Draw(this, $"{mk.Label.ToUpperInvariant()} · {Geometry.Dist(me.X, me.Z, mk.XM, mk.ZM) / 1000:0.0} KM", ep.X, ep.Y + 28, 15, col, HorizontalAlignment.Center);
+                    continue;
+                }
+                RingAt(mk.XM, mk.ZM, mk.RadiusM, new Color(col, 0.35f));
+                var r = new Rect2(mp0 - new Vector2(22, 22), new Vector2(44, 44));
+                string mid = mk.Id;
+                HitState hs = _ui.Reg("v.marker." + mid, r, _ => SteerFor(mid),
+                    null, new Tip(mk.Label, new (string, string, Color?)[] { ("Click", "set course for it", null) }));
+                Diamond(mp0, hs.Hot ? 13 : 11, col);
+                if (got) { DrawLine(mp0 + new Vector2(-5, 0), mp0 + new Vector2(-1, 4), C.Deep, 2.5f, true); DrawLine(mp0 + new Vector2(-1, 4), mp0 + new Vector2(6, -5), C.Deep, 2.5f, true); }
+                f.Draw(this, got ? mk.Label.ToUpperInvariant() : $"{mk.Label.ToUpperInvariant()} · {Geometry.Dist(me.X, me.Z, mk.XM, mk.ZM) / 1000:0.0} KM",
+                    mp0.X, mp0.Y + 32, 16, col, HorizontalAlignment.Center);
+            }
+
+        // the mockup's other systems over the view, each package in its own file (ViewOverlay.<Package>.cs)
+        DrawComms(f); DrawTractor(f); DrawReactor(f); DrawCloak(f); DrawTactical(f);
+
         // your own hull under your ship
         if (me.Alive && Local(me.X, me.Z) is { } mp) HullBar(mp.X, mp.Y + 74, me);
 
@@ -240,7 +284,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             LogLine l = b.Log[^1];
             f.DrawRich(this, new[] { ($"{l.Who}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
         }
-        if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : "Fleet lost", over == "won" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
+        if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : over == "jumped" ? "Jumped to warp" : "Fleet lost",
+            over is "won" or "jumped" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
 
         // the Target box: the locked target's systems display, the same drawing as the ship panel (one component)
         if (_x.State.ShowTarget && t != null)
@@ -366,25 +411,67 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     // The open list, over everything in the view: the scenarios grouped by the side the player commands, each side under
     // its faction's name (picking one of the other side's swaps the console to that faction's skin). A click anywhere else
     // shuts it.
+    // The open list, over everything in the view, as the Skirmish screen has it (owner, 2026-11-06: "I only need the
+    // scenario type, then when I select a scenario, I need to see what faction I can play that scenario AS", "Also need a
+    // scroll bar"): the scenario types down the left, each once, scrolled by the wheel or the bar; the type picked (at
+    // first the one in play) its factions on the right, a click on one starting it (one of another side swaps the console
+    // to that faction's skin). A click anywhere else shuts it.
+    private string? _sceneType;
+    private float _sceneScroll;
+    private Rect2 _sceneList;
+
     private void SceneList()
     {
         _ui.Reg("v.scene.off", new Rect2(Vector2.Zero, Size), _ => _x.State.SceneOpen = false);
-        var groups = _x.Data.Scenarios.GroupBy(s => s.Side).ToArray();
-        float lx = SceneX, ly = 48, h = groups.Sum(g => SceneHeadH + g.Count() * SceneRowH) + 8;
-        Shapes.RoundRect(this, new Rect2(lx - 6, ly - 6, SceneW + 12, h), new Color(0, 0, 0, 0.85f), 10);
-        float y = ly;
-        foreach (var g in groups)
+        var types = _x.Data.Scenarios.GroupBy(s => s.Name).Select(g => (Name: g.Key, Sides: g.ToList())).ToList();
+        _sceneType ??= B.Scenario.Name;
+        float lx = SceneX, ly = 48, rowH = SceneRowH, sideW = 200;
+        float h = Math.Min(types.Count * rowH, Size.Y - ly - 120);
+        _sceneList = new Rect2(lx, ly, SceneW, h);
+        float max = Math.Max(0, types.Count * rowH - h);
+        _sceneScroll = Math.Clamp(_sceneScroll, 0, max);
+        var sel = types.FirstOrDefault(t => t.Name == _sceneType);
+        float sideH = (sel.Sides?.Count ?? 0) * rowH + SceneHeadH;
+        Shapes.RoundRect(this, new Rect2(lx - 6, ly - 6, SceneW + 30 + sideW + 18, Math.Max(h, sideH) + 12), new Color(0, 0, 0, 0.85f), 10);
+        for (int i = 0; i < types.Count; i++)
         {
-            _x.Fonts.Draw(this, _x.Data.Factions[g.Key].Name.ToUpperInvariant(), lx + 6, y + 18, 14, C.Lilac, HorizontalAlignment.Left, SceneW - 12, 600, 1);
+            float y = ly + i * rowH - _sceneScroll;
+            if (y < ly - 0.5f || y + 32 > ly + h + 0.5f) continue;
+            string name = types[i].Name;
+            Key("v.scene.type." + Slug(name), new Rect2(lx, y, SceneW, 32), name, () => _sceneType = name, name == _sceneType, types[i].Sides[0].Objective);
+        }
+        if (max > 0)
+        {
+            var track = new Rect2(lx + SceneW + 6, ly, 10, h);
+            float th = Math.Max(30, h * h / (h + max)), ty = ly + (h - th) * _sceneScroll / max;
+            void To(float y) => _sceneScroll = Math.Clamp((y - ly - th / 2) / Math.Max(1, h - th) * max, 0, max);
+            HitState st = _ui.Reg("v.scene.scroll", new Rect2(track.Position.X - 6, ly, track.Size.X + 12, h), at => To(at.Y), (at, _) => To(at.Y), new Tip("Scroll the scenarios"));
+            Shapes.RoundRect(this, track, new Color(C.Deep, 0.9f), 5);
+            Shapes.RoundRect(this, new Rect2(track.Position.X, ty, track.Size.X, th), st.Hot || st.Down ? C.Sky : C.Signal, 5);
+        }
+        if (sel.Sides != null)
+        {
+            float sx = lx + SceneW + 24, y = ly;
+            _x.Fonts.Draw(this, "PLAY AS", sx + 4, y + 18, 14, C.Lilac, HorizontalAlignment.Left, sideW, 600, 1);
             y += SceneHeadH;
-            foreach (Data.Scenario sc in g)
+            foreach (Data.Scenario sc in sel.Sides)
             {
                 string id = sc.Id;
-                Key("v.scene." + id, new Rect2(lx, y, SceneW, 32), sc.Name, () => _x.Act.Scene(id), id == B.Scenario.Id, sc.Objective);
-                y += SceneRowH;
+                Key("v.scene." + id, new Rect2(sx, y, sideW, 32), _x.Data.Factions[sc.Side].Name, () => _x.Act.Scene(id), id == B.Scenario.Id, sc.Objective);
+                y += rowH;
             }
         }
     }
+
+    /// <summary>The scene list's scrolling: the wheel over the list.</summary>
+    private bool SceneWheel(InputEvent e)
+    {
+        if (!_x.State.SceneOpen || e is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.WheelUp or MouseButton.WheelDown } w || !_sceneList.HasPoint(w.Position)) return false;
+        _sceneScroll += (w.ButtonIndex == MouseButton.WheelDown ? 1 : -1) * SceneRowH;
+        return true;
+    }
+
+    private static string Slug(string s) => new string(s.ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 
     /// <summary>A key over the view, lit when on, its label in the skin's key ink.</summary>
     private void Key(string id, Rect2 r, string label, Action click, bool on, string? tip = null)
@@ -413,6 +500,36 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         var r = new Rect2(Size.X / 2 - w / 2, 100, w, 44);
         _x.Kit.Shape(this, r, 22, col);
         _x.Fonts.Draw(this, text.ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + 9, 24, _x.Kit.Style.InkOn(col), HorizontalAlignment.Center, w - 20, 700, 2);
+    }
+
+    // a click on a beacon (or its pointer at the edge): the helm comes to it
+    private void SteerFor(string id)
+    {
+        if (B.ScenarioMarker(id) is not { } m) return;
+        B.HelmTo(m.XM, m.ZM);
+        B.Say("Helm", $"Course for the {m.Label}.");
+    }
+
+    partial void DrawComms(Fonts f);
+    partial void DrawTractor(Fonts f);
+    partial void DrawReactor(Fonts f);
+    partial void DrawCloak(Fonts f);
+    partial void DrawTactical(Fonts f);
+    partial void DrawTacticalSheets(Fonts f);
+
+    private void Diamond(Vector2 c, float r, Color col) =>
+        DrawColoredPolygon(new[] { c + new Vector2(0, -r), c + new Vector2(r, 0), c + new Vector2(0, r), c + new Vector2(-r, 0) }, col);
+
+    // a ring on the battle plane round a point, radius in metres
+    private void RingAt(double xm, double zm, double radiusM, Color col)
+    {
+        var pts = new System.Collections.Generic.List<Vector2>();
+        for (int i = 0; i <= 48; i++)
+        {
+            double a = i * Math.PI * 2 / 48;
+            if (Local(xm + Math.Sin(a) * radiusM, zm - Math.Cos(a) * radiusM) is { } p) pts.Add(p);
+        }
+        if (pts.Count >= 2) DrawPolyline(pts.ToArray(), col, 1.5f, true);
     }
 
     private void RingArc(Ship s, float a0, float a1, Color col, float width)

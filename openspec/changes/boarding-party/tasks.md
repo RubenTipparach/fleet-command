@@ -6,3 +6,4 @@
 - [x] 1.4 Pilot needed after a capture: the prize holds, the label, the Fleet station, Take command refused
 - [x] 1.5 Expanded Capture's party panel and boarding log; shots; both skins
 - [ ] 1.6 The owner's review; P1-P3
+- [x] 1.7 In the game: the default load, marine health, medics, hackers, pilot needed and the expanded party panel (src/Core/Sim/Battle.Transport.cs, src/Game/Ui/StationPanel.Transport.cs; tests/Core.Tests/TransportTests.cs)

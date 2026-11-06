@@ -21,9 +21,9 @@ public class RulesTests
     public void Energy_is_never_allocated_past_the_reactor_output()
     {
         Battle b = TestData.NewBattle();
-        Assert.Equal(19, b.Rules.Used(b.Player)); // the cruiser's start: 6 + 5 + 6 + 1 + 1 of 22 E
+        Assert.Equal(21, b.Rules.Used(b.Player)); // the cruiser's start: 6 + 5 + 6 + 1 + 1, and two coolant pumps, of 22 E
         b.SetPower("tractor", 10);
-        Assert.Equal(3, b.Player.Power["tractor"]);
+        Assert.Equal(1, b.Player.Power["tractor"]);
         Assert.Equal(22, b.Rules.Used(b.Player));
         b.SetPower("transport", 1); // a box past the output is locked: tapping it changes nothing
         Assert.Equal(0, b.Player.Power["transport"]);

@@ -112,6 +112,8 @@ public sealed class EndScope : OfferScope
     public string? Grade { get; set; }
     public double Pay { get; set; }
     public bool HadBattle { get; set; } = true;
+    /// <summary>The marker beacons the fleet reached in the battle.</summary>
+    public IReadOnlyCollection<string> Reached { get; set; } = Array.Empty<string>();
 
     public EndScope(Campaign c, Offer m, IReadOnlyDictionary<string, List<ShipEnd>> groups, string how) : base(c, m) { _groups = groups; _how = how; }
 
@@ -140,6 +142,7 @@ public sealed class EndScope : OfferScope
     public override object Call(string n, IReadOnlyList<object> a)
     {
         if (n == "met") return (double)a.Count(x => Met != null && Met.GetValueOrDefault(Expr.Format(x)));
+        if (n == "reached") return a.Count > 0 && Reached.Contains(Expr.Format(a[0])) ? 1.0 : 0.0;
         List<ShipEnd> G() => a.Count > 0 && _groups.TryGetValue(Expr.Format(a[0]), out var g) ? g
             : throw new DataError($"{n}(): no group '{(a.Count > 0 ? Expr.Format(a[0]) : "")}' in this battle");
         return n switch

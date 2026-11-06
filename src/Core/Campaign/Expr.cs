@@ -9,6 +9,7 @@
 // when it is a non-zero number or a non-empty string. Templates are text with {expression} parts, for names in briefings.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Globalization;
 using System.Text;
 using FleetCommand.Data;
@@ -32,6 +33,10 @@ public abstract class Expr
 
     /// <summary>Every name and function this expression reads, so a loader can refuse a name the scope will not have.</summary>
     public abstract void Names(ICollection<string> vars, ICollection<string> calls);
+
+    /// <summary>The text arguments written in every call of a function (reached('beacon') gives beacon), so a loader can
+    /// check they name something that exists.</summary>
+    public virtual IEnumerable<string> Calls(string fn) => Array.Empty<string>();
 
     public double Num(IScope s) => ToNum(Eval(s), Text);
     public bool Bool(IScope s) => Truthy(Eval(s));
@@ -93,6 +98,12 @@ public abstract class Expr
             if (!Builtins.Contains(_n)) calls.Add(_n);
             foreach (Expr e in _args) e.Names(vars, calls);
         }
+        public override IEnumerable<string> Calls(string fn)
+        {
+            var found = _args.SelectMany(a => a.Calls(fn)).ToList();
+            if (_n == fn) found.AddRange(_args.OfType<Lit>().Select(l => Format(l.Eval(null!))));
+            return found;
+        }
     }
 
     /// <summary>The functions every scope has: min, max, floor, ceil, round, abs, and round10 (to the nearest 10, as credits are paid).</summary>
@@ -121,6 +132,7 @@ public abstract class Expr
         public Unary(char op, Expr a) { _op = op; _a = a; }
         public override object Eval(IScope s) => _op == '!' ? (Truthy(_a.Eval(s)) ? 0.0 : 1.0) : -ToNum(_a.Eval(s), _a.Text);
         public override void Names(ICollection<string> vars, ICollection<string> calls) => _a.Names(vars, calls);
+        public override IEnumerable<string> Calls(string fn) => _a.Calls(fn);
     }
 
     private sealed class Binary : Expr
@@ -150,6 +162,7 @@ public abstract class Expr
             };
         }
         public override void Names(ICollection<string> vars, ICollection<string> calls) { _a.Names(vars, calls); _b.Names(vars, calls); }
+        public override IEnumerable<string> Calls(string fn) => _a.Calls(fn).Concat(_b.Calls(fn));
     }
 
     private sealed class Cond : Expr
@@ -158,6 +171,7 @@ public abstract class Expr
         public Cond(Expr c, Expr a, Expr b) { _c = c; _a = a; _b = b; }
         public override object Eval(IScope s) => Truthy(_c.Eval(s)) ? _a.Eval(s) : _b.Eval(s);
         public override void Names(ICollection<string> vars, ICollection<string> calls) { _c.Names(vars, calls); _a.Names(vars, calls); _b.Names(vars, calls); }
+        public override IEnumerable<string> Calls(string fn) => _c.Calls(fn).Concat(_a.Calls(fn)).Concat(_b.Calls(fn));
     }
 
     private sealed class Parser

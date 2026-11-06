@@ -197,4 +197,21 @@ public class BattleTests
         }
         Assert.True(last > 0, "no hit landed in two minutes");
     }
+
+    [Fact]
+    public void A_friendly_ship_can_be_selected_but_the_weapons_never_fire_on_it()
+    {
+        Battle b = new(TestData.Data, TestData.Data.ScenarioById("concord_battle"));
+        Ship friend = b.Ships.First(s => s.Side == 0 && s != b.Player);
+        b.Lock(friend.Id);
+        Assert.Equal(friend.Id, b.Player.Target);
+        foreach (Mount m in b.Player.Mounts) m.Charge = 1;
+        Assert.Empty(b.WouldFire());
+        Assert.Equal(0, b.Fire());
+        Assert.All(b.Player.Mounts.Select((m, i) => i), i => Assert.False(b.FireOne(i)));
+        Assert.DoesNotContain(b.Shots, sh => sh.To == friend.Id);
+        // and Next target still steps through the enemy only
+        b.NextTarget();
+        Assert.Equal(1, b.ShipById(b.Player.Target)!.Side);
+    }
 }

@@ -5,6 +5,7 @@
 // Sensors, tractor and craft are on the rail and are not built yet.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FleetCommand.Game.Ui.Kit;
 using FleetCommand.Sim;
 using Godot;
@@ -16,6 +17,7 @@ public sealed partial class ShipPanel : ConsolePanel
     public static readonly (string Id, string Label, string Icon)[] Pages =
     {
         ("systems", "Systems", "ship"), ("shields", "Shields", "shields"), ("sensors", "Sensors", "sensors"), ("tractor", "Tractor", "tractor"), ("craft", "Craft", "craft"),
+        // boarding defence's Security page (ShipPanel.Security.cs): the mockup's Transport station Security tab, on its own entry
     };
 
     protected override void DrawPanel()
@@ -30,12 +32,22 @@ public sealed partial class ShipPanel : ConsolePanel
             case "systems": SystemsDisplay.Draw(this, Ui, X, Me, b, true, "ssd", Big); break;
             case "shields": Shields(b); break;
             default:
+                // each other page in its own file (ShipPanel.<Page>.cs); a page not yet built says so
+                bool drawn = false;
+                if (cur == "sensors") SensorsPage(b, ref drawn);
+                else if (cur == "tractor") TractorPage(b, ref drawn);
+                else if (cur == "craft") CraftPage(b, ref drawn);
+                if (drawn) break;
                 Kit.Icon(this, pg.Icon, new Rect2(b.GetCenter().X - 30, b.Position.Y + 40, 60, 60), C.Deep);
                 Text(pg.Label.ToUpperInvariant(), b.GetCenter().X, b.Position.Y + 130, 24, C.Sky, HorizontalAlignment.Center, b.Size.X, 700, 1);
                 Lbl("Not yet in the game", b.GetCenter().X, b.Position.Y + 156, b.Size.X, null, HorizontalAlignment.Center);
                 break;
         }
     }
+
+    partial void SensorsPage(Rect2 b, ref bool drawn);
+    partial void TractorPage(Rect2 b, ref bool drawn);
+    partial void CraftPage(Rect2 b, ref bool drawn);
 
     // Shield keys (owner, 2026-11-01): six big trapezoid keys in a hexagonal ring round the ship, the wide side outward,
     // each filling outward by its charge in its strength's colour; a click reinforces it (again to clear).
@@ -111,6 +123,11 @@ public static class SystemsDisplay
         Ship? t = bt.TargetOf(bt.Player);
         Ship? other = own ? t : bt.Player;
         int toward = other != null ? Rules.FacingFrom(s, other.X, other.Z) : -1;
+        // on an enemy's display its subsystems are aims, and on the locked target's its weapons too (weapon-targeting design:
+        // "I should be able to click to aim at specific systems here too"); the chopping block from you is bracketed
+        bool aims = !own && s.Side != bt.Player.Side, mountAims = aims && t == s;
+        Exposure? block = !own && toward >= 0 ? bt.ExposureFrom(s, bt.Player) : null;
+        float tk = big ? 7 : 5, bw = big ? 2.5f : 1.6f;
 
         // a dark disk inside the shield ring, and the grid faintly on it, clipped to the ring
         ci.DrawCircle(centre, R - 4, new Color(c.Deep, 0.35f), true, -1, true);
@@ -153,8 +170,13 @@ public static class SystemsDisplay
                 var r = new Rect2(sx, top + i * (box + (big ? 10 : 6)), box, box);
                 SystemStatus st = bt.Rules.Status(s, k);
                 Color fill = StatusColorOf(c, st);
-                HitState hs = ui.Reg($"{idp}.sys.{k}", r, null, null, new Tip(Title(k), new (string, string, Color?)[] { ("Health", $"{Math.Round(s.Sys[k] * 100)} %", null), ("Status", st.ToString(), fill) }));
+                string aim = k;
+                var rows = new List<(string, string, Color?)> { ("Health", $"{Math.Round(s.Sys[k] * 100)} %", null), ("Status", st.ToString(), fill) };
+                if (aims) rows.Add(("Click", bt.Player.Aim == k ? "Aimed here" : "Aim here · shift: details", null));
+                HitState hs = ui.Reg($"{idp}.sys.{k}", r, aims ? _ => Aiming.Click(x, ui, aim) : null, null, new Tip(Title(k), rows));
+                if (aims && bt.Player.Aim == k) x.Kit.Shape(ci, r.Grow(3), 9, c.Sky, 2.5f);
                 StatusKey(x.Kit, ci, r, 6, fill, st);
+                if (block != null && block.Sys.Contains(k)) Aiming.Bracket(ci, c, r, big ? 6 : 4, tk, bw);
                 Color ink = st == SystemStatus.Destroyed && !glass ? c.Alert : KeyFace.Ink(x.Kit, fill, true);
                 x.Kit.Icon(ci, SysIcon[k], glass ? r.Grow(-box * 0.21f) : r.Grow(-4), ink);
                 if (hs.Hot) x.Kit.Shape(ci, r.Grow(2), 8, mark.Hover, 2);
@@ -171,15 +193,23 @@ public static class SystemsDisplay
             if (taken.Contains(cell)) cell = NearestFree(cell, taken, px >= 0 ? 1 : -1);
             taken.Add(cell);
             var r = new Rect2(centre + new Vector2(cell.Item1 * g - mb / 2, cell.Item2 * g - mb / 2), new Vector2(mb, mb));
-            SystemStatus st = bt.Rules.Status(m);
+            SystemStatus st = bt.Rules.Status(s, m);
             Color sc = StatusColorOf(c, st);
             double? cd = Rules.CooldownS(m);
             var rows = new List<(string, string, Color?)> { ("Health", $"{Math.Round(m.Hp * 100)} %", null), ("Status", st.ToString(), sc), ("Arming", m.State.ToString(), null) };
             if (cd is { } secs) rows.Add(("Ready in", Rules.FormatCooldown(secs) + " s", null));
             if (own && t != null) rows.Add(("To hit " + t.Name, $"{Math.Round(bt.Rules.HitChance(s, m, t) * 100)} %", null));
+            if (own && !m.Weapon.IsPointDefence) rows.Add(("Aims", m.Weapon.Precise ? "Precise" : "By arc", null));
+            Ship? pinned = own ? bt.PinTarget(m) : null;
+            if (pinned != null) rows.Add(("Pinned", m.Pin!.Aim == "hull" ? pinned.Name : $"{pinned.Name} · {Strike.Name(m.Pin.Aim, pinned)}", null));
             int idx = m.Index;
-            Action<Vector2>? click = pick != null ? _ => pick(m) : own ? _ => bt.ToggleMount(idx) : null;
+            string mAim = $"w:{m.Index}";
+            // your own weapon: a click selects it (shift+click its hit details); the locked target's: a click aims at it
+            Action<Vector2>? click = pick != null ? _ => pick(m)
+                : own ? (m.Weapon.IsPointDefence ? null : _ => { if (ui.Shift) x.State.OpenHitInfo(new HitInfo(null, idx)); else bt.ToggleMount(idx); })
+                : mountAims ? _ => Aiming.Click(x, ui, mAim) : null;
             HitState hs = ui.Reg($"{idp}.m{m.Index}", r.Grow(2), click, null, new Tip($"{m.Label} {m.Weapon.Name}", rows));
+            if (mountAims && bt.Player.Aim == mAim) ci.DrawArc(r.GetCenter(), mb / 2 + 6, 0, Mathf.Tau, 24, c.Sky, 2.5f, true);
             boxes.Add((m, r));
             if (big) x.Fonts.Draw(ci, m.Label, r.End.X + 5, r.Position.Y + 9, 12, c.Lilac, HorizontalAlignment.Left, 0, 600);
             if (hs.Hot) x.Kit.Shape(ci, r.Grow(5), 7, mark.Hover, 2);
@@ -205,6 +235,13 @@ public static class SystemsDisplay
                 StatusKey(x.Kit, ci, r, 4, sc, st);
                 Glyph(ci, m.Weapon.Kind, r.GetCenter(), mb / 2 - 3, st == SystemStatus.Destroyed ? c.Alert : KeyFace.Ink(x.Kit, sc, true));
             }
+            // a pinned mount: a small flag on its box's corner; a mount on the chopping block from you: its bracket
+            if (pinned != null)
+            {
+                float fs = big ? 12 : 8;
+                ci.DrawColoredPolygon(new[] { new Vector2(r.End.X - fs, r.Position.Y - 2), new Vector2(r.End.X + 3, r.Position.Y - 2), new Vector2(r.End.X + 3, r.Position.Y + fs) }, c.Alert);
+            }
+            if (block != null && block.Mounts.Contains(m.Index)) Aiming.Bracket(ci, c, r, big ? 6 : 4, tk, bw);
         }
         return boxes;
     }

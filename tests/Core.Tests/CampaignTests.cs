@@ -173,7 +173,7 @@ public sealed class CampaignTests
     {
         foreach (MissionScript def in Camp.Missions.Values)
         {
-            foreach (string side in new[] { "concord", "krai" })
+            foreach (string side in new[] { "concord", "krai", "ssarith" })
             {
                 Campaign.Campaign c = Campaign.Campaign.New(Camp, side);
                 c.S.Missions.Clear();
@@ -182,6 +182,9 @@ public sealed class CampaignTests
                     : null;
                 Offer? m = null;
                 for (int t = 0; t < 6 && m == null; t++) { m = c.OfferMission(def.Id, data: data); if (m == null) c.EndTurn(); }
+                // the Hunt, playable once its console was built, has no rival yet (data/campaign/campaign.json), so the one
+                // mission that needs a hostile planet is not offered to it
+                if (m == null && side == "ssarith" && def.Id == "planet") continue;
                 Assert.True(m != null, $"{def.Id} ({side}) is offered nowhere");
                 Assert.False(string.IsNullOrWhiteSpace(c.Brief(m!)), def.Id);
                 Assert.DoesNotContain("{", c.Brief(m!));
@@ -189,9 +192,9 @@ public sealed class CampaignTests
                 c.S.Fleet[0].Supplies["marines"] = 2;
                 int credits = c.S.Credits;
                 MissionPlan? plan = MissionRun.Plan(c, m!, TestData.Data);
+                // every mission is flown: none is done on arrival (owner, 2026-11-06: "you just skipped the mission!")
+                Assert.True(plan != null, $"{def.Id} ({side}) has no battle");
                 Debrief d;
-                if (plan == null) d = MissionRun.Finish(c, m!, null, null);
-                else
                 {
                     Assert.Equal(side, plan.Scenario.Side);
                     Assert.Contains(plan.Scenario.Ships, s => s.Side == 1);
@@ -228,6 +231,45 @@ public sealed class CampaignTests
         Debrief d = MissionRun.Finish(c, m, plan, b);
         Assert.True(d.Win);
         Assert.Contains(c.S.Missions, x => x.Script == "prize_home" && x.C == c.S.HomeC && x.R == c.S.HomeR);
+    }
+
+    [Fact]
+    public void The_shakedown_is_flown_to_its_beacon_shot_at_its_drones_and_back_and_ends_only_then()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        Offer m = c.S.Missions.First(x => x.Script == "shakedown");
+        MissionPlan plan = MissionRun.Plan(c, m, TestData.Data)!;
+        Assert.True(plan.Scenario.EndsOnObjectives);
+        var b = new Battle(TestData.Data, plan.Scenario);
+        Ship me = b.Player;
+        MarkerDef beacon = plan.Scenario.Markers!.First(k => k.Id == "beacon"), home = plan.Scenario.Markers!.First(k => k.Id == "home");
+        // the drones stand still and hold their fire
+        foreach (string id in plan.Groups["drones"]) { Ship d0 = b.ShipById(id)!; Assert.True(d0.HoldFire); Assert.Equal(0, d0.V); }
+        // the start point does not count before the beacon
+        b.Step();
+        Assert.DoesNotContain("home", b.Reached);
+        // the drones destroyed: the battle goes on, the beacon and the way home still to fly
+        foreach (string id in plan.Groups["drones"]) { Ship d0 = b.ShipById(id)!; d0.Hull = 0; d0.Alive = false; }
+        b.Step();
+        Assert.Null(b.Over);
+        me.X = beacon.XM; me.Z = beacon.ZM; b.Step();
+        Assert.Contains("beacon", b.Reached);
+        Assert.False(MissionRun.MetNow(c, plan, b)["home"]);
+        me.X = home.XM; me.Z = home.ZM; b.Step();
+        var met = MissionRun.MetNow(c, plan, b);
+        Assert.True(plan.Battle.Objectives.Where(o => o.Primary).All(o => met[o.Id]));
+        b.Win();
+        Debrief d = MissionRun.Finish(c, m, plan, b);
+        Assert.True(d.Win);
+        Assert.Contains(c.S.Missions, x => x.Script == "first_blood");
+    }
+
+    [Fact]
+    public void A_mission_asking_for_a_beacon_it_does_not_place_is_refused_on_load()
+    {
+        string json = TestData.Read("missions/shakedown.json").Replace("reached('home')", "reached('hmoe')");
+        var e = Assert.Throws<DataError>(() => MissionLoader.Load(json, "missions/shakedown.json"));
+        Assert.Contains("hmoe", e.Message);
     }
 
     [Fact]

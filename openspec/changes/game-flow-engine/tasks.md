@@ -24,7 +24,7 @@
 - [x] 1.11 Found by that playtest and fixed: the shut port panel took every press meant for the map's HUD (Move here, End
   turn, Briefing) and passed it to the map; the map's drag moved it about seven times as far as the pointer (it now keeps
   the point grabbed under the pointer); a headless boot waited forever for a frame to warm the shaders
-- [x] 1.13 The owner's port and map notes (2026-11-06), in the game and mockup 1 v17 together:
+- [x] 1.13 The owner's port and map notes (2026-11-06), in the game and mockup 1 v18 together:
   - fitting is free (owner: "fitting stuff on a ship should be free, have the store below"): systems are bought into the
     fleet's stores at a port and fitted from them at no cost, and a system taken off goes back to them; the store below the
     fitting list buys and sells (`Campaign.BuySystem`, `SellSystem`, `Refit`, `FitStock`, `CampaignState.Stores`); tests
@@ -52,6 +52,10 @@
   the player must set course again each turn from the briefing. Whether an accepted mission's course should follow it is
   the owner's call; mockup 1 does the same (its `CAMP.order` is the sector the course was set for), so both would change together
 
+- [x] 1.13 (2026-11-06) Every mission flown: marker beacons, drones and battles that end on their objectives; the
+  Shakedown and Deliver the prize rewritten; the mission strip without its fill, objectives ticked live, Withdraw in the
+  battle's menu; ships slide on the map (no hop), in the game and mockup 1 v18
+
 ## 2. Still different from mockup 1 v14 (each a line in `docs/design/mockup-sync.md`)
 
 - [x] 2.1 The faction screen's 3D scene, light and dust (2026-11-06: the walnut table, change `faction-select` 3.1)
@@ -67,3 +71,5 @@
 - [ ] 2.5 The phone layouts of the flow screens checked at phone sizes (landscape and portrait)
 - [ ] 2.7 The mockup's screens fade and show the same loading screen (the game has them first)
 - [ ] 2.6 Options beyond the display mode and the volumes (2026-11-06): graphics quality and interface scale, which mockup 1 shows
+- [ ] 2.8 Mockup 1: the mission strip without its fill and with live ticks, Withdraw in the battle menu
+- [ ] 2.9 Mockup 1: the Skirmish screen by scenario type, then the faction to play it as, with a scroll bar
