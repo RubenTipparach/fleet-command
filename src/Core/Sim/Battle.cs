@@ -133,6 +133,32 @@ public sealed partial class Battle
         Say("Helm", "Disengaging. All ships, withdraw.");
     }
 
+    /// <summary>The mission's objectives are met (a battle that ends on its objectives): it is won where it stands.</summary>
+    public void Win() { if (Over == null) { Over = "won"; Say("Tactical", "Objectives complete."); } }
+
+    private readonly HashSet<string> _reached = new();
+    /// <summary>The marker beacons reached so far, by id.</summary>
+    public IReadOnlyCollection<string> Reached => _reached;
+
+    /// <summary>A marker beacon of this battle by id, or null.</summary>
+    public MarkerDef? ScenarioMarker(string id) => Scenario.Markers?.FirstOrDefault(m => m.Id == id);
+
+    /// <summary>A marker is shown and can be reached once the one it follows has been.</summary>
+    public bool MarkerActive(MarkerDef m) => m.After == null || _reached.Contains(m.After);
+
+    // the commanded ship reaches each shown marker by coming within its radius
+    private void MarkersStep()
+    {
+        if (Scenario.Markers == null || !Player.Alive) return;
+        foreach (MarkerDef m in Scenario.Markers)
+        {
+            if (_reached.Contains(m.Id) || !MarkerActive(m)) continue;
+            if (Geometry.Dist(Player.X, Player.Z, m.XM, m.ZM) > m.RadiusM) continue;
+            _reached.Add(m.Id);
+            Say("Helm", $"{m.Label} reached.");
+        }
+    }
+
     /// <summary>The battle is lost though ships of side 0 still fly (a mission whose own fleet is gone, its wingmen left).</summary>
     public void Lose() { if (Over == null) Over = "lost"; }
 
@@ -161,6 +187,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
         ChargeStep(dt);
         RangeStep(dt);
+        MarkersStep();
         PointDefenceStep();
         CountermeasuresStep(dt);
         ShotsStep(dt);
@@ -174,6 +201,7 @@ public sealed partial class Battle
             }
         // a damage range never ends: its last ship can be broken up and the range repaired
         if (Scenario.DamageRange) return;
+        if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
         if (!_ships.Any(s => s.Side == 1 && s.Alive && !s.Struck)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
     }

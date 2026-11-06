@@ -117,7 +117,7 @@ public sealed partial class ScriptedCaptain : Node
             case "wait_screen": return await WaitScreen(b.Arg, b.Seconds > 0 ? b.Seconds : 60);
             case "end_turn": return await EndTurn();
             case "move": return await Move((int)Math.Max(1, b.Seconds));
-            case "contract": return await Contract(b.Seconds > 0 ? b.Seconds : 600);
+            case "contract": return await Contract(b.Seconds > 0 ? b.Seconds : 600, b.Arg);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -129,10 +129,22 @@ public sealed partial class ScriptedCaptain : Node
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
+        string? steering = null;
         while (B.Over == null && B.T - t0 < maxS)
         {
             Ship me = B.Player;
             if (!me.Alive) break;
+            // a battle with marker beacons and no enemy left: steer for the next beacon shown, by clicking it, as a player would
+            if (B.Scenario.Markers != null && !B.EnemiesOf(me).Any())
+            {
+                if (B.Scenario.Markers.FirstOrDefault(k => B.MarkerActive(k) && !B.Reached.Contains(k.Id)) is { } mk && steering != mk.Id)
+                {
+                    if (await Click("v.marker." + mk.Id) == null) steering = mk.Id;
+                }
+                await Frames(3);
+                lastChange = B.T;   // flying to a beacon changes no hull
+                continue;
+            }
             if (B.TargetOf(me) == null)
             {
                 if (hadTarget && lingerS > 0) { await Seconds(lingerS); lastChange = B.T; if (B.Over != null) break; }
@@ -242,25 +254,26 @@ public sealed partial class ScriptedCaptain : Node
     // One contract, start to end, as a player plays it: the nearest contract the fleet can take (End turn until one is
     // offered), its sector clicked on the map and its Briefing opened, Accept (the fleet sets course), End turn until it
     // arrives and the briefing opens again, Launch, the battle fought out (Fight; a battle that stalls is withdrawn from
-    // with the mission strip's Withdraw), the debrief read and Continue back to the map.
-    private async Task<string?> Contract(double maxBattleS)
+    // with the menu's Withdraw), the debrief read and Continue back to the map.
+    private async Task<string?> Contract(double maxBattleS, string only = "")
     {
         var c = Camp;
         Campaign.Offer? m = null;
         for (int t = 0; t < 4 && m == null; t++)
         {
-            m = c.S.Missions.Where(o => !c.Data.Missions[o.Script].Story && c.Needs(o) == null)
+            m = c.S.Missions.Where(o => (only != "" ? o.Script == only : !c.Data.Missions[o.Script].Story) && c.Needs(o) == null)
                 .OrderBy(o => HexGrid.Dist(c.S.AtC, c.S.AtR, o.C, o.R)).ThenBy(o => o.Id).FirstOrDefault();
             if (m == null && await EndTurn() is { } st) return st;
         }
-        if (m == null) return "no contract offered in four turns";
+        if (m == null) return only != "" ? $"no '{only}' mission offered" : "no contract offered in four turns";
         string name = c.Data.Missions[m.Script].Name;
         GD.Print($"PLAYTEST_MISSION take {name} #{m.Id} at {m.C},{m.R} from {c.S.AtC},{c.S.AtR}, reward {m.Reward:0} cr");
         if (await ClickHex(m.C, m.R) is { } s1) return s1;
         if (await Click($"sec.brief.{m.Id}") is { } s2) return s2;
         await Snap($"brief-{m.Script}");
         bool here = (c.S.AtC, c.S.AtR) == (m.C, m.R);
-        if (!here && await Click("br.accept") is { } s3) return s3;
+        // a contract is accepted (which sets course); a story mission, waiting until it is done, has only Set course
+        if (!here && await Click(c.Data.Missions[m.Script].Story ? "br.go" : "br.accept") is { } s3) return s3;
         for (int t = 0; t < 16 && (c.S.AtC, c.S.AtR) != (m.C, m.R); t++)
         {
             await Seconds(1.2);
@@ -293,7 +306,7 @@ public sealed partial class ScriptedCaptain : Node
             await Frames(30);
             await Snap($"battle-{m.Script}");
             string? stalled = await Fight(maxBattleS);
-            if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("ms.withdraw"); }
+            if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("menu"); await Click("m.withdraw"); }
             else how = B.Over;
             await Snap($"end-{m.Script}");
         }

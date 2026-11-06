@@ -247,7 +247,9 @@ public abstract partial class ConsolePanel : Control, IControlSource
         var content = new Rect2(at.Position.X + p.L, at.Position.Y + p.T, at.Size.X - p.R - p.L, at.Size.Y - p.T - p.B);
         string up = title.ToUpperInvariant();
         float tw = Math.Min(X.Fonts.Width(up, 22, 700, 1), content.Size.X - 160);
-        float bw = expandable ? 21 : -10, x1 = content.End.X - 6, total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
+        // the title box ends inside the frame's corner (owner, 2026-11-06: "trim the box a bit so its corner matches the blue
+        // border"): a panel without the expand key keeps it clear of the corner cap as one with the key does
+        float bw = expandable ? 21 : -10, x1 = content.End.X - (expandable ? 6 : 20), total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
         if (Sk.TitlePlacard) Kit.Piece(this, "plate.title", new Rect2(x0 - 18, y0 - 1, total + 22, 24));
         else DrawRect(new Rect2(x0, y0, total, 22), Sk.R.Plate);
         Text(up, x0 + 8, y0 + 19, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);

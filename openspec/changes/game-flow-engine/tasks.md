@@ -28,6 +28,10 @@
   the player must set course again each turn from the briefing. Whether an accepted mission's course should follow it is
   the owner's call; mockup 1 does the same (its `CAMP.order` is the sector the course was set for), so both would change together
 
+- [x] 1.13 (2026-11-06) Every mission flown: marker beacons, drones and battles that end on their objectives; the
+  Shakedown and Deliver the prize rewritten; the mission strip without its fill, objectives ticked live, Withdraw in the
+  battle's menu; ships slide on the map (no hop), in the game and mockup 1 v17
+
 ## 2. Still different from mockup 1 v14 (each a line in `docs/design/mockup-sync.md`)
 
 - [ ] 2.1 The faction screen's 3D pedestals, light and dust (the game shows the rendered emblems flat)
@@ -43,3 +47,5 @@
 - [ ] 2.5 The phone layouts of the flow screens checked at phone sizes (landscape and portrait)
 - [ ] 2.7 The mockup's screens fade and show the same loading screen (the game has them first)
 - [ ] 2.6 Options beyond the display mode (sound levels, quality, UI scale)
+- [ ] 2.8 Mockup 1: the mission strip without its fill and with live ticks, Withdraw in the battle menu
+- [ ] 2.9 Mockup 1: the Skirmish screen by scenario type, then the faction to play it as, with a scroll bar
