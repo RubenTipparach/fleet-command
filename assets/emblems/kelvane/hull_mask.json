@@ -1,0 +1,10 @@
+{
+  "_doc": "Kelvane Institute's emblem as a mask for hull painting: red the field, green the device, transparent the ground. Written by tools/mockups/emblem_masks.mjs from assets/ui/kelvane/emblem.svg; never edited by hand.",
+  "size_px": 512,
+  "hull": {
+    "plate": "#d9d0bb",
+    "field": "#6c0c15",
+    "device": "#24995a",
+    "lit": false
+  }
+}
