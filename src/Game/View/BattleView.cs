@@ -25,8 +25,10 @@ namespace FleetCommand.Game.View;
 
 public sealed partial class BattleView : Node3D
 {
-    /// <summary>Metres per scene unit (the mockup's scale: 1 unit is 100 m).</summary>
-    public const float MPerU = 100f;
+    /// <summary>Metres per scene unit: 1 unit is 1 km, ten times the mockup's 100 m, as every battle distance is ten times the
+    /// mockup's (owner, 2026-11-06: "1km -> 10km"); ships are drawn at their framed length (ShipClass.FrameM), so the picture is
+    /// the mockup's.</summary>
+    public const float MPerU = 1000f;
 
     private ConsoleContext _x = null!;
     private Camera3D _cam = null!;
@@ -128,11 +130,11 @@ public sealed partial class BattleView : Node3D
         _sun.LightEnergy = (float)_x.Battle.Scenario.SunEnergy;   // the scene's own sun (scenarios.json "sun_energy")
         foreach (Ship s in _x.Battle.Ships)
         {
-            Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.LengthM, _strobes) : StandIn(s);
+            Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.FrameM, _strobes) : StandIn(s);
             model.Name = s.Id;
             AddChild(model);
             _models[s.Id] = model;
-            var shell = new ShieldShell((float)(s.Class.LengthM / MPerU));   // every ship's (owner, 2026-11-04: "add shield display to all ships")
+            var shell = new ShieldShell((float)(s.Class.FrameM / MPerU));   // every ship's (owner, 2026-11-04: "add shield display to all ships")
             model.AddChild(shell);
             _shields[s.Id] = shell;
             if (s.Class.Model is { } file && model.GetChild(0) is Node3D glb)
@@ -174,7 +176,7 @@ public sealed partial class BattleView : Node3D
     private static Node3D StandIn(Ship s)
     {
         var model = GD.Load<PackedScene>($"res://scenes/standins/{s.Class.Shape}.tscn").Instantiate<Node3D>();
-        model.Scale = Vector3.One * (float)(s.Class.LengthM / MPerU);
+        model.Scale = Vector3.One * (float)(s.Class.FrameM / MPerU);
         Paint(model, new Color(s.Faction.Hull), new Color(s.Faction.Trim));
         return model;
     }
@@ -319,7 +321,7 @@ public sealed partial class BattleView : Node3D
         double worst = 0;
         for (int i = 0; i < 16; i++)
         {
-            double a = i * Math.PI / 8, r = 400 + 600 * (i % 4);
+            double a = i * Math.PI / 8, r = 4000 + 6000 * (i % 4);
             double x = p.X + Math.Sin(a) * r, z = p.Z - Math.Cos(a) * r;
             if (ScreenOf(x, z) is not { } sp || PlaneAt(sp) is not { } q) continue;
             worst = Math.Max(worst, Math.Sqrt((q.X - x) * (q.X - x) + (q.Z - z) * (q.Z - z)));

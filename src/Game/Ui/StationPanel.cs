@@ -89,7 +89,7 @@ public sealed partial class StationPanel : ConsolePanel
         {
             float sx = x0 + ts + tg + 8, sw = half - ts - tg - 16;
             Slider("helm.holdkm", sx, y, sw, ts * 0.6f, Frac(s.HoldKm), null, f => B.SetHoldKm(Val(f)), "Distance to hold");
-            Lbl($"{s.HoldKm:0.0} km", sx + sw, y + ts - 2, 0, C.Sky, HorizontalAlignment.Right, lbl);
+            Lbl($"{s.HoldKm:0} km", sx + sw, y + ts - 2, 0, C.Sky, HorizontalAlignment.Right, lbl);
         }
         y += ts + tg;
         HelmKey("helm.orbit", x0, y, ts, "orbit", $"Orbit ({(s.OrbitDir > 0 ? "clockwise" : "anticlockwise")})", () => B.HelmOrder("orbit"), ordOn("orbit")(), noT);
@@ -106,7 +106,7 @@ public sealed partial class StationPanel : ConsolePanel
         }
         float yr = y0;
         HelmKey("helm.run", xr, yr, ts, "hit_run", $"Hit and run ({(s.RunPhase == "in" ? "running in" : "pulling away")})", () => B.HelmOrder("hit_run"), ordOn("hit_run")(), B.TargetOf(s) == null);
-        Lbl($"{s.RunMinKm:0.0}-{s.RunMaxKm:0.0} km", xr + ts + tg + 4, yr + ts * 0.62f, half - ts - tg, C.Sky, HorizontalAlignment.Left, (int)(14 * k));
+        Lbl($"{s.RunMinKm:0}-{s.RunMaxKm:0} km", xr + ts + tg + 4, yr + ts * 0.62f, half - ts - tg, C.Sky, HorizontalAlignment.Left, (int)(14 * k));
         yr += ts + tg;
         {
             float sx = xr + 8, sw = half - 16, f0 = Frac(s.RunMinKm), f1 = Frac(s.RunMaxKm);

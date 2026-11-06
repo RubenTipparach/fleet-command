@@ -27,7 +27,7 @@
      "role": "enemy",
      "label": "Behind",
      "bearing_deg": 180,
-     "range_km": 6
+     "range_km": 60
     }
    ],
    "objectives": [

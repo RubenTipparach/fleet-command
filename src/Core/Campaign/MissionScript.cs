@@ -187,7 +187,7 @@ public static class MissionLoader
             var grp = new MissionGroup(gid, Tpl(g, "faction"), NumEx(g, "count"), Enum.Parse<GroupRole>(role, true),
                 g.Has("label") ? Tpl(g, "label") : Template.Parse("", g.Where), tag, g.Has("tier") ? NumEx(g, "tier") : null,
                 g.Has("bearing_deg") ? g.Num("bearing_deg") : null, g.Has("range_km") ? g.Num("range_km") : null, g.Has("ship_name") ? Tpl(g, "ship_name") : null);
-            if (grp.RangeKm is <= 0 or > 40) throw new DataError($"{g.Where}.range_km: above 0 and at most 40");
+            if (grp.RangeKm is <= 0 or > 400) throw new DataError($"{g.Where}.range_km: above 0 and at most 400");
             if (grp.ShipName != null) Check(grp.ShipName.Names, vars, Scopes.OfferCalls, $"{g.Where}.ship_name");
             Check(grp.Faction.Names, vars, Scopes.OfferCalls, $"{g.Where}.faction");
             Check(grp.Count.Names, vars, Scopes.OfferCalls, $"{g.Where}.count");
@@ -209,9 +209,9 @@ public static class MissionLoader
                 if (at is not ("bearing" or "start")) throw new DataError($"{k.Where}.at: bearing or start");
                 string? after = k.Has("after") ? k.Str("after") : null;
                 if (after != null && !markers.Any(x => x.Id == after)) throw new DataError($"{k.Where}.after: no marker '{after}' before it");
-                double bearing = k.Num("bearing_deg", 0), range = k.Num("range_km", at == "start" ? 0 : 8), radius = k.Num("radius_m", 800);
-                if (at == "bearing" && range is <= 0 or > 40) throw new DataError($"{k.Where}.range_km: above 0 and at most 40");
-                if (radius is < 100 or > 5000) throw new DataError($"{k.Where}.radius_m: 100 to 5000");
+                double bearing = k.Num("bearing_deg", 0), range = k.Num("range_km", at == "start" ? 0 : 80), radius = k.Num("radius_m", 8000);
+                if (at == "bearing" && range is <= 0 or > 400) throw new DataError($"{k.Where}.range_km: above 0 and at most 400");
+                if (radius is < 1000 or > 50000) throw new DataError($"{k.Where}.radius_m: 1000 to 50000");
                 var mk = new MissionMarker(mid, Tpl(k, "label"), bearing, range, at == "start", after, radius);
                 Check(mk.Label.Names, vars, Scopes.OfferCalls, $"{k.Where}.label");
                 k.Done();

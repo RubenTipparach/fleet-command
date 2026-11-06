@@ -92,7 +92,7 @@ public sealed partial class Ship
     public string Manoeuvre = "intercept";
     /// <summary>1 clockwise, -1 anticlockwise.</summary>
     public int OrbitDir = 1;
-    public double HoldKm = 6, RunMinKm = 2, RunMaxKm = 8;
+    public double HoldKm = 60, RunMinKm = 20, RunMaxKm = 80;
     /// <summary>Hit and run: "in" closing to RunMinKm, "out" opening to RunMaxKm.</summary>
     public string RunPhase = "in";
     public bool Erratic;

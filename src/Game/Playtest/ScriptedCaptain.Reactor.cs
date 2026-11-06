@@ -87,7 +87,7 @@ public sealed partial class ScriptedCaptain
             if (!me.Alive) return "the ship was lost before it jumped";
             if (me.Warp.Out > 0) { await Frames(3); continue; }
             if (Rules.Misalignment(me) > 0.12 && B.T - lastAlign > 10) { lastAlign = B.T; if (await Align() is { } sa) return sa; }
-            bool close = B.EnemiesOf(me).Any(o => Rules.DistKm(me, o) < 9);
+            bool close = B.EnemiesOf(me).Any(o => Rules.DistKm(me, o) < 90);
             WarpRisk r = B.WarpRiskOf(me);
             bool needOverride = r.Why.Contains("override") && !me.Warp.Override && (close || B.T - t0 > 60);
             if (!me.Warp.Plotting || needOverride)

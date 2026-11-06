@@ -9,7 +9,7 @@
 // weapons: the chorus lance with its strands and the lances that join it, the quell (a star, a ball and beads in deep
 // blue), the forge slug (a hot streak on the live line) and a blood charge's bow and drive.
 // Colours are each weapon's own (data/battle/weapons.json), never white. View only: the simulation never reads it.
-// Sizes are scene units (BattleView.MPerU: 1 u is 100 m), the mockup's SHOT_FX.
+// Sizes are scene units (BattleView.MPerU: 1 u is 1 km, the mockup's 100 m tenfold), the mockup's SHOT_FX.
 using System;
 using System.Collections.Generic;
 using FleetCommand.Sim;
@@ -161,7 +161,7 @@ public sealed partial class ShotView : Node3D
         {
             if (!s.Alive || s.SurgeS <= 0) continue;
             var f = Geometry.Forward(s.H);
-            double half = s.Class.LengthM / 2;
+            double half = s.Class.FrameM / 2;
             float k = (float)Math.Clamp(s.SurgeS / b.Data.Specials.Charge.SurgeS, 0, 1);
             Flare(At(s.X + f.X * half, s.Z + f.Z * half), ChargeBowU, 0, new Color(b.Data.Specials.Charge.Color), 1.4f + 0.6f * k, now);
             Flare(At(s.X - f.X * half, s.Z - f.Z * half), ChargeDriveU, 2, new Color("#ff8a2a"), 1.2f + 0.8f * k, now);

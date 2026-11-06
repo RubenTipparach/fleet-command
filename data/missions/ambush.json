@@ -18,7 +18,7 @@
      "role": "enemy",
      "label": "Freighters",
      "tier": 1,
-     "range_km": 8
+     "range_km": 80
     },
     {
      "id": "escorts",
@@ -26,7 +26,7 @@
      "count": "strength",
      "role": "enemy",
      "label": "Escorts",
-     "range_km": 11
+     "range_km": 110
     }
    ],
    "objectives": [

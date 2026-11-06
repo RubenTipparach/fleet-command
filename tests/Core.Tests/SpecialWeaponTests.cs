@@ -13,7 +13,7 @@ public class SpecialWeaponTests
     private static SpecialWeapons Sp => TestData.Data.Specials;
 
     // two ships 3 km apart, bows toward each other; the second holds its fire
-    private static Battle Duel(string a, string fa, string b, string fb, double zM = -3000)
+    private static Battle Duel(string a, string fa, string b, string fb, double zM = -30000)
     {
         string json = "{\"id\": \"s\", \"name\": \"S\", \"side\": \"" + fa + "\", \"sky\": \"quiet\", \"seed\": 5, \"objective\": \"O\", \"say\": [\"Comms\", \"Hi.\"], \"ships\": ["
             + "{\"id\": \"a\", \"name\": \"A\", \"captain\": \"C\", \"class\": \"" + a + "\", \"faction\": \"" + fa + "\", \"side\": 0, \"x_m\": 0, \"z_m\": 0, \"heading_deg\": 0, \"speed_m_s\": 0},"
@@ -103,7 +103,7 @@ public class SpecialWeaponTests
     [Fact]
     public void A_blood_charge_surges_and_rams_harder_the_faster_it_closes()
     {
-        Battle b = Duel("krai_ff", "krai", "ca", "concord", -1200);
+        Battle b = Duel("krai_ff", "krai", "ca", "concord", -12000);
         Ship k = b.Player, t = b.ShipById("b")!;
         Assert.True(b.CanCharge(k));
         double vmax = b.Rules.MaxSpeed(k);

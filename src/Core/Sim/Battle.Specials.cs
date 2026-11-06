@@ -129,7 +129,7 @@ public sealed partial class Battle
             {
                 if (!t.Alive || t.Side == s.Side) continue;
                 double d = Geometry.Dist(s.X, s.Z, t.X, t.Z);
-                if (d > (s.Class.LengthM + t.Class.LengthM) * 0.35 || Math.Abs(Rules.Bearing(s, t.X, t.Z)) > 40 * Geometry.Deg) continue;
+                if (d > (s.Class.FrameM + t.Class.FrameM) * 0.35 || Math.Abs(Rules.Bearing(s, t.X, t.Z)) > 40 * Geometry.Deg) continue;
                 var sf = Geometry.Forward(s.H); var tf = Geometry.Forward(t.H);
                 double closing = s.V - (tf.X * sf.X + tf.Z * sf.Z) * t.V;
                 double dmg = Rules.RamDamage(c, closing, s.Class.LengthM);
@@ -148,7 +148,7 @@ public sealed partial class Battle
     {
         if (s.SurgeS > 0) { s.HOrder = Geometry.HeadingTo(s.X, s.Z, t.X, t.Z); s.VOrder = Rules.MaxSpeed(s); return; }
         if (s.HoldFire || !CanCharge(s)) return;
-        if (Rules.DistKm(s, t) <= 3 && Math.Abs(Rules.Bearing(s, t.X, t.Z)) <= 25 * Geometry.Deg && Charge(s))
+        if (Rules.DistKm(s, t) <= 30 && Math.Abs(Rules.Bearing(s, t.X, t.Z)) <= 25 * Geometry.Deg && Charge(s))
         { s.HOrder = Geometry.HeadingTo(s.X, s.Z, t.X, t.Z); }
     }
 }

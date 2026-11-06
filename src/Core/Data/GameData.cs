@@ -67,7 +67,13 @@ public sealed record MissileData(IReadOnlyList<MissileGrade> Grades, FlareDef Fl
 public sealed record ShipClass(
     string Id, string Name, string Code, string Shape, string? Model, double LengthM, double HullHp, double SpeedMaxMS, double AccelMS2,
     double TurnDegS, int ReactorE, double CapacitorE, double BatteryE, double[] ShieldsHp,
-    IReadOnlyDictionary<string, int> PowerE, IReadOnlyList<MountDef> Mounts, int ShieldLayers = 3);
+    IReadOnlyDictionary<string, int> PowerE, IReadOnlyList<MountDef> Mounts, int ShieldLayers = 3)
+{
+    private readonly double? _frameM;
+    /// <summary>The ship's length as the battle frames it, metres: LengthM times Tuning.ShipFrameX (LengthM when unset).
+    /// Its model is drawn this long, and every geometry of the hull in the battle (mounts, ramming, rocks) is at it.</summary>
+    public double FrameM { get => _frameM ?? LengthM; init => _frameM = value; }
+}
 
 /// <summary>A faction. Skin is the console skin its captains play in (a UI kit id); null for a faction the player
 /// cannot command yet.</summary>
@@ -152,7 +158,13 @@ public sealed record Tuning(
     double MountHitChance, double MountDamage,
     double HetRateDegS, double HetCostE, double HetChanceDrop, double HetRecoverPerS, double HetErraticPenalty,
     double HetBreakdownS, double HetBreakdownEngines, double EstopDecelX, double EstopHoldS, double ErraticHit, double ErraticTurn,
-    double OrbitKm, double HoldMinKm, double HoldMaxKm, double CaptureHullFrac);
+    double OrbitKm, double HoldMinKm, double HoldMaxKm, double CaptureHullFrac)
+{
+    /// <summary>How many times its length a ship is framed in the battle: drawn that size and fought at it (mount positions,
+    /// ramming contact, the hull a rock strikes), as the reference games draw their ships large against the space between
+    /// them (owner, 2026-11-06: "multiply all distance by 10", "1km -> 10km": every distance grew tenfold, the ships did not).</summary>
+    public double ShipFrameX { get; init; } = 1;
+}
 
 /// <summary>The console's layout in reference pixels (data/console/layout.json).</summary>
 public sealed record LayoutDef(

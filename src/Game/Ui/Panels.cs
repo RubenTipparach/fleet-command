@@ -108,7 +108,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
 /// and Next target, and the crest. Expanded, it is the tactical map (RadarPanel.Map.cs).</summary>
 public sealed partial class RadarPanel : ConsolePanel
 {
-    private const double ScaleKm = 15;
+    private const double ScaleKm = 150;
 
     protected override void DrawPanel()
     {

@@ -19,7 +19,7 @@ public class TractorTests
     {
         string json = "{\"id\": \"t\", \"name\": \"T\", \"side\": \"concord\", \"sky\": \"quiet\", \"seed\": 5, \"objective\": \"O\", \"say\": [\"Comms\", \"Hi.\"]," + rocks + " \"ships\": ["
             + "{\"id\": \"r\", \"name\": \"R\", \"captain\": \"C\", \"class\": \"ca\", \"faction\": \"concord\", \"side\": 0, \"x_m\": 0, \"z_m\": 0, \"heading_deg\": 180, \"speed_m_s\": 0, \"power_e\": {\"weapons\": 1, \"tractor\": 5}},"
-            + "{\"id\": \"v\", \"name\": \"V\", \"captain\": \"C\", \"class\": \"krai_ff\", \"faction\": \"krai\", \"side\": 1, \"x_m\": 0, \"z_m\": -2000, \"heading_deg\": 90, \"speed_m_s\": 0, \"stance\": \"hold\", \"hold_fire\": true" + extra + "}]}";
+            + "{\"id\": \"v\", \"name\": \"V\", \"captain\": \"C\", \"class\": \"krai_ff\", \"faction\": \"krai\", \"side\": 1, \"x_m\": 0, \"z_m\": -20000, \"heading_deg\": 90, \"speed_m_s\": 0, \"stance\": \"hold\", \"hold_fire\": true" + extra + "}]}";
         Scenario sc = DataLoader.LoadScenario(StrictJson.Parse(json, "test"), TestData.Data.Classes, TestData.Data.Factions);
         var b = new Battle(TestData.Data, sc);
         b.Lock("v");
@@ -150,15 +150,15 @@ public class TractorTests
     {
         Battle b = Pair();
         Ship v = b.ShipById("v")!;
-        v.Z = -(T.ReachKm + 0.5) * 1000;
+        v.Z = -(T.ReachKm + 5) * 1000;
         b.TractorHold();
         Run(b, T.PowerupS + 1);
         Assert.Null(b.Player.Beam);
         Assert.Equal(TractorMode.Hold, b.Player.Tractor);
-        v.Z = -2000;
+        v.Z = -20000;
         Run(b, 0.1);
         Assert.NotNull(b.Player.Beam);
-        v.Z = -(T.ReachKm + T.ReachSlackKm + 0.3) * 1000;
+        v.Z = -(T.ReachKm + T.ReachSlackKm + 3) * 1000;
         Run(b, 0.1);
         Assert.Null(b.Player.Beam);
         Assert.Equal(TractorMode.Off, b.Player.Tractor);
@@ -172,7 +172,7 @@ public class TractorTests
         Run(b, T.PowerupS + 0.5);
         Ship v = b.ShipById("v")!;
         double z0 = v.Z;
-        b.SetSpeed(150);
+        b.SetSpeed(1500);
         Run(b, 15);
         Assert.True(v.Z > z0 + 500, $"the held ship moved from {z0:0} to {v.Z:0}");
         Assert.True(Rules.DistKm(b.Player, v) < T.ReachKm, "the tether keeps it inside reach");
@@ -197,11 +197,11 @@ public class TractorTests
     [Fact]
     public void A_ship_dragged_into_a_rock_where_rocks_are_lethal_is_destroyed()
     {
-        Battle b = Pair(rocks: " \"lethal\": [\"rock\"], \"rocks\": [{\"x_m\": 0, \"z_m\": -1000, \"radius_m\": 240}],");
+        Battle b = Pair(rocks: " \"lethal\": [\"rock\"], \"rocks\": [{\"x_m\": 0, \"z_m\": -10000, \"radius_m\": 2400}],");
         b.TractorHold();
         Run(b, T.PowerupS + 0.5);
         Ship v = b.ShipById("v")!;
-        b.SetSpeed(200);
+        b.SetSpeed(2000);
         Run(b, 40);
         Assert.False(v.Alive);
     }
@@ -209,13 +209,13 @@ public class TractorTests
     [Fact]
     public void A_ship_that_hits_a_rock_is_set_back_on_its_surface_and_takes_damage_scaled_by_speed()
     {
-        Battle b = Pair(rocks: " \"rocks\": [{\"x_m\": 0, \"z_m\": 2000, \"radius_m\": 300}],");
+        Battle b = Pair(rocks: " \"rocks\": [{\"x_m\": 0, \"z_m\": 20000, \"radius_m\": 3000}],");
         b.Player.ShieldsUp = false;
         double hull = b.Player.Hull;
-        b.SetSpeed(200);
+        b.SetSpeed(2000);
         Run(b, 20);
         Assert.True(b.Player.Hull < hull, "the hit and the micrometeor grit cost hull");
         double reach = 300 + b.HullRadiusM(b.Player);
-        Assert.True(Geometry.Dist(b.Player.X, b.Player.Z, 0, 2000) >= reach - 1, "never inside the rock");
+        Assert.True(Geometry.Dist(b.Player.X, b.Player.Z, 0, 20000) >= reach - 1, "never inside the rock");
     }
 }

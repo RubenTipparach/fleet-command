@@ -313,7 +313,7 @@ public sealed partial class Battle
         if (s.Estop || s.EstopT > 0) s.VOrder = 0;
         double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1) * s.SurgeAccelX;
         s.V += Math.Clamp(goal - s.V, -a, a);
-        if (s.Estop && Math.Abs(s.V) < 1) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
+        if (s.Estop && Math.Abs(s.V) < 10) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
         var f = Geometry.Forward(s.H);
         s.X += f.X * s.V * dt;
         s.Z += f.Z * s.V * dt;
@@ -325,21 +325,21 @@ public sealed partial class Battle
         double vmax = Rules.MaxSpeed(s), toT = Geometry.HeadingTo(s.X, s.Z, t.X, t.Z), d = Rules.DistKm(s, t);
         switch (order)
         {
-            case "approach": s.HOrder = toT; s.VOrder = d > rangeKm ? vmax : Math.Max(60, Math.Abs(t.V)); break;
+            case "approach": s.HOrder = toT; s.VOrder = d > rangeKm ? vmax : Math.Max(600, Math.Abs(t.V)); break;
             case "circle": s.HOrder = Geometry.Wrap(toT + Math.PI / 2 - Math.Clamp((d - rangeKm) / rangeKm, -1, 1) * Math.PI / 4); s.VOrder = vmax * 0.8; break;
             case "evade": s.HOrder = Geometry.Wrap(toT + Math.PI); s.VOrder = vmax; break;
             case "follow":
             {
                 var f = Geometry.Forward(t.H);
                 var r = Geometry.Right(t.H);
-                double ax = t.X - f.X * 800 + r.X * 600, az = t.Z - f.Z * 800 + r.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
-                s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
+                double ax = t.X - f.X * 8000 + r.X * 6000, az = t.Z - f.Z * 8000 + r.Z * 6000, gap = Geometry.Dist(s.X, s.Z, ax, az);
+                s.HOrder = gap > 2000 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
                 s.VOrder = Math.Clamp(Math.Abs(t.V) + gap * 0.2, 0, vmax);
                 break;
             }
             case "intercept":
             {
-                double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(100, Math.Abs(s.V));
+                double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(1000, Math.Abs(s.V));
                 var f = Geometry.Forward(t.H);
                 s.HOrder = Geometry.HeadingTo(s.X, s.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
                 break;
@@ -347,14 +347,14 @@ public sealed partial class Battle
             case "trail":
             {
                 var f = Geometry.Forward(t.H);
-                double ax = t.X - f.X * 600, az = t.Z - f.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
-                s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
-                s.VOrder = Math.Clamp(Math.Abs(t.V) + (gap > 200 ? gap * 0.2 : 0), 0, vmax);
+                double ax = t.X - f.X * 6000, az = t.Z - f.Z * 6000, gap = Geometry.Dist(s.X, s.Z, ax, az);
+                s.HOrder = gap > 2000 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
+                s.VOrder = Math.Clamp(Math.Abs(t.V) + (gap > 2000 ? gap * 0.2 : 0), 0, vmax);
                 break;
             }
             case "hold_range":
                 s.HOrder = d > s.HoldKm * 1.1 ? toT : d < s.HoldKm * 0.9 ? Geometry.Wrap(toT + Math.PI) : Geometry.Wrap(toT + Math.PI / 2);
-                s.VOrder = d > s.HoldKm * 1.1 || d < s.HoldKm * 0.9 ? vmax : Math.Max(60, Math.Abs(t.V));
+                s.VOrder = d > s.HoldKm * 1.1 || d < s.HoldKm * 0.9 ? vmax : Math.Max(600, Math.Abs(t.V));
                 break;
             case "hit_run":
                 if (s.RunPhase == "in" && d <= s.RunMinKm) s.RunPhase = "out";
@@ -400,7 +400,7 @@ public sealed partial class Battle
     /// <summary>World position of a mount, metres.</summary>
     public static (double X, double Z) MountWorld(Ship s, Mount m)
     {
-        double half = s.Class.LengthM / 2;
+        double half = s.Class.FrameM / 2;
         var f = Geometry.Forward(s.H);
         var r = Geometry.Right(s.H);
         return (s.X + f.X * m.Def.Y * half + r.X * m.Def.X * half * 0.6, s.Z + f.Z * m.Def.Y * half + r.Z * m.Def.X * half * 0.6);

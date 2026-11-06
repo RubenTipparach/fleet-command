@@ -32,7 +32,7 @@ public class CloakTests
     [Fact]
     public void A_cloak_fades_in_over_its_fade_and_out_again_when_ordered_off()
     {
-        Battle b = Pair("ca", "concord", "krai_ff", "krai", -9000, extraB: ", \"hold_fire\": true");
+        Battle b = Pair("ca", "concord", "krai_ff", "krai", -90000, extraB: ", \"hold_fire\": true");
         b.ToggleCloak();
         Assert.True(b.Player.CloakOn);
         Run(b, Cs.Cloak.FadeS / 2);
@@ -47,7 +47,7 @@ public class CloakTests
     [Fact]
     public void A_ship_without_a_cloak_cannot_cloak()
     {
-        Battle b = Pair("ff", "concord", "krai_ff", "krai", -9000);
+        Battle b = Pair("ff", "concord", "krai_ff", "krai", -90000);
         b.ToggleCloak();
         Assert.False(b.Player.CloakOn);
         Assert.Contains(b.Log, l => l.Text == "Cannot cloak: no cloak fitted.");
@@ -56,7 +56,7 @@ public class CloakTests
     [Fact]
     public void Cloaking_draws_its_energy_and_drops_the_shields_and_the_guns()
     {
-        Battle b = Pair("ca", "concord", "krai_ff", "krai", -3000, extraB: ", \"hold_fire\": true");
+        Battle b = Pair("ca", "concord", "krai_ff", "krai", -30000, extraB: ", \"hold_fire\": true");
         int before = b.Rules.Used(b.Player);
         b.ToggleCloak();
         Assert.Equal(before + (int)Cs.Cloak.CostE, b.Rules.Used(b.Player));
@@ -71,21 +71,21 @@ public class CloakTests
     [Fact]
     public void A_fully_cloaked_enemy_is_unseen_and_unlockable_until_it_comes_within_the_detect_range()
     {
-        Battle b = Pair("ca", "concord", "krai_ff", "krai", -9000, extraB: ", \"cloaked\": true, \"hold_fire\": true");
+        Battle b = Pair("ca", "concord", "krai_ff", "krai", -90000, extraB: ", \"cloaked\": true, \"hold_fire\": true");
         Ship t = b.ShipById("b")!;
         Assert.False(b.Detected(b.Player, t));
         Assert.Empty(b.SeenFoes(b.Player));
         b.Lock("b");
         Assert.Null(b.Player.Target);
         Assert.True(b.Detected(t, b.Player));   // it sees you
-        t.Z = -(Cs.Cloak.DetectKm * 1000 - 100);
+        t.Z = -(Cs.Cloak.DetectKm * 1000 - 1000);
         Assert.True(b.Detected(b.Player, t));
     }
 
     [Fact]
     public void A_sweep_reveals_cloaked_ships_within_its_reach_for_its_reveal_time_and_then_cools_down()
     {
-        Battle b = Pair("ca", "concord", "krai_ff", "krai", -9000, extraA: ", \"eccm\": 2, \"power_e\": {\"sensors\": 3}, \"battery_frac\": 1", extraB: ", \"cloaked\": true, \"hold_fire\": true");
+        Battle b = Pair("ca", "concord", "krai_ff", "krai", -90000, extraA: ", \"eccm\": 2, \"power_e\": {\"sensors\": 3}, \"battery_frac\": 1", extraB: ", \"cloaked\": true, \"hold_fire\": true");
         b.Player.Officers.Clear();   // the base rule, without a science officer's reach
         Ship t = b.ShipById("b")!;
         double km = Cs.Cloak.BaseKm + 2 * Cs.Cloak.PerEccmKm;
@@ -109,7 +109,7 @@ public class CloakTests
     [Fact]
     public void A_sweep_beyond_its_reach_finds_nothing()
     {
-        Battle b = Pair("ca", "concord", "krai_ff", "krai", -9000, extraB: ", \"cloaked\": true, \"hold_fire\": true");
+        Battle b = Pair("ca", "concord", "krai_ff", "krai", -90000, extraB: ", \"cloaked\": true, \"hold_fire\": true");
         b.Player.Officers.Clear();   // the base rule, without a science officer's reach
         Assert.Equal(Cs.Cloak.BaseKm, b.SweepKm(b.Player), 9);
         b.Sweep();
@@ -119,7 +119,7 @@ public class CloakTests
     [Fact]
     public void A_revealed_cloaked_ship_is_harder_to_hit_by_the_cloaks_penalty()
     {
-        Battle b = Pair("ca", "concord", "krai_ff", "krai", -3000, extraB: ", \"hold_fire\": true");
+        Battle b = Pair("ca", "concord", "krai_ff", "krai", -30000, extraB: ", \"hold_fire\": true");
         Ship t = b.ShipById("b")!;
         Mount m = b.Player.Mounts.First(x => x.Weapon.Id == "lance");
         double open = b.Rules.HitChance(b.Player, m, t);
@@ -130,7 +130,7 @@ public class CloakTests
     [Fact]
     public void A_cloaking_ships_shields_take_nothing()
     {
-        Battle b = Pair("ca", "concord", "krai_ca", "krai", -3000, extraB: ", \"hold_fire\": true");
+        Battle b = Pair("ca", "concord", "krai_ca", "krai", -30000, extraB: ", \"hold_fire\": true");
         b.ToggleCloak();
         b.Step();
         double shields = b.Player.Shields.Sum(), hull = b.Player.Hull;
@@ -165,7 +165,7 @@ public class CloakTests
     [Fact]
     public void A_captain_that_sees_no_enemy_sweeps_for_one()
     {
-        Battle b = Pair("krai_ff", "krai", "ca", "concord", -6000, extraA: ", \"cloaked\": true");
+        Battle b = Pair("krai_ff", "krai", "ca", "concord", -60000, extraA: ", \"cloaked\": true");
         b.Player.CloakOn = true;
         Ship c = b.ShipById("b")!;
         c.Battery = c.Class.BatteryE;

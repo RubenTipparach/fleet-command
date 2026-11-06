@@ -20,7 +20,7 @@ public class ScenarioTests
 
     private const string Ships =
         "\"ships\": [{\"id\": \"a\", \"name\": \"A\", \"captain\": \"C\", \"class\": \"ff\", \"faction\": \"concord\", \"side\": 0, \"x_m\": 0, \"z_m\": 0, \"heading_deg\": 0, \"speed_m_s\": 0},"
-        + " {\"id\": \"b\", \"name\": \"B\", \"captain\": \"C\", \"class\": \"krai_ff\", \"faction\": \"krai\", \"side\": 1, \"x_m\": 0, \"z_m\": -5000, \"heading_deg\": 180, \"speed_m_s\": 0 STAND}]";
+        + " {\"id\": \"b\", \"name\": \"B\", \"captain\": \"C\", \"class\": \"krai_ff\", \"faction\": \"krai\", \"side\": 1, \"x_m\": 0, \"z_m\": -50000, \"heading_deg\": 180, \"speed_m_s\": 0 STAND}]";
 
     private static string One(string side = "concord", string stand = "") =>
         "{\"id\": \"t\", \"name\": \"T\", \"side\": \"" + side + "\", \"sky\": \"quiet\", \"seed\": 1, \"objective\": \"O\", \"say\": [\"Comms\", \"Hello.\"], " + Ships.Replace(" STAND", stand) + "}";
@@ -138,7 +138,7 @@ public class ScenarioTests
     [Fact]
     public void A_captain_holding_fire_never_shoots()
     {
-        Scenario s = Load(One(stand: ", \"hold_fire\": true, \"z_m\": -3000").Replace("\"z_m\": -5000, ", ""));
+        Scenario s = Load(One(stand: ", \"hold_fire\": true, \"z_m\": -30000").Replace("\"z_m\": -50000, ", ""));
         var b = new Battle(TestData.Data, s);
         for (int i = 0; i < 1800; i++) b.Step();
         Assert.DoesNotContain(b.Shots, x => x.From == "b");
