@@ -305,6 +305,41 @@ from its detail layer and drawn in Painted and PBR).
   its room light a parameter (the Institute's warm, the Hunt's pale green); the Hunt's rooms and bays render identical.
   The rows are provisional until each class is planned rooms first (task 3.1).
 
+### D11. Version 7: engineered insides, corners, pads (owner, 2026-11-06)
+
+The owner, of v6: "greebles look too random", "something interesting like large vents, fuel pods, coils and pipes would be
+cool", "carrier should have landing pads and fighters onthe inside here", "these sharp standalone corners arent good, can
+we use diagonals on corners like this?", "these lines are quire dark", "this one has windows in awkward spotrs", "why do
+you still have these little light dots?", "can we have the rooms in the windows be more yellow/orange tinted like they are
+well lit for all ships?".
+
+- **Machinery in order** (`inner_machinery()` in `tools/blender/hull_detail.py`). The faces that look across an opening
+  carry a lattice of 4.0 by 2.4 m cells (`inner_cell_m`) laid on the ship's own axes, so a wall's faces share one grid.
+  Each row is one kind of machine, picked by `inner_mix` (pipes 35 %, fuel pods 25 %, coils 20 %, large vents 20 %),
+  broken into runs of three to six cells with pipe cells between; each cell's variant is seeded by its place. The kinds:
+  - pipe runs of two to four lines with a collar and a bracket at each join, so neighbouring cells read as one run;
+  - fuel pods on two cradles with a feed line;
+  - a core wound with five to seven coils between flanges;
+  - a large vent, a bank of slats in a framed tray.
+
+  The tanks, coils and pads are a new paint kind, `machine` (champagne light, #b9ae96 to #d8ccb0). Out of the sun they get
+  a floor of light (`machine_light` 0.7, `greeble_ao_floor` 0.6), as if lit by the opening's own work lamps. Everything
+  stays under the bake's reach, now a faction value (`cage_m`: the Institute 2.0 m, the Hunt's 1.3 m unchanged).
+- **The carrier's pads.** At every 16 m along the well (`pads` in the carrier's data), a cast down from the well's middle
+  finds the floor; a 4 m pad goes on the middle of the flat found there, mirrored (12 pads). Each pad is a raised deck
+  with a dark centre ring and ten amber lamps. The bake records each pad (manifest `pads`); the page parks a 10 m survey
+  craft on each, grown on the same section as the line.
+- **Corners on the diagonal.** Where a plating cut ends on another (a T), `corner_cut()` cuts the two square corners at
+  45 degrees, 0.9 m (`corner_m`). An L at a run's first or last station has no corner to turn and is left.
+- **Lighter seams.** The under layer in the gaps is #7a7262 (was #2a2620), and the deepest crevices are inked at 0.35
+  (`ink_k`; the Hunt keeps 0.75).
+- **Windows look out.** A window row skips plating that looks across an opening at the hull (`Surface.looks_out`): the
+  carrier keeps 205 windows of 358.
+- **No flood dots.** `docs/mockups/lib/baked-ship.js` draws sprites at the nav lights only, as the Hunt's v26.
+- **Warm rooms, every ship.** One palette in `lib/ship-rooms.js` (a room picked from the hash: one in eight dark, the
+  rest yellow or orange, 1.9 times as bright) and `lib/baked-ship.js` (quarters and messes yellow, workshops orange, holds
+  dimmer, a lit hangar warm), carried into the game's `ship_rooms.gdshaderinc` and `pane.gdshader`.
+
 ## Open questions
 
 | Id | Question | Recommendation (provisional) |
