@@ -543,7 +543,38 @@ def grain(h, w, seed=17):
     return 1.0 + 0.07 * sx / (np.abs(sx).max() + 1e-6) + 0.06 * mott / (np.abs(mott).max() + 1e-6)
 
 
-def strips_and_glow(kind_is, P, glowp, cover):
+def cell_hash(i, j, k, seed=0):
+    """A well-mixed 64-bit hash of three integer arrays (SplitMix64's finaliser, CLAUDE.md section 10: never a product
+    modulo a constant), as floats in [0, 1)."""
+    with np.errstate(over="ignore"):
+        h = (i.astype(np.int64).astype(np.uint64) * np.uint64(0x9E3779B97F4A7C15)
+             ^ j.astype(np.int64).astype(np.uint64) * np.uint64(0xC2B2AE3D27D4EB4F)
+             ^ k.astype(np.int64).astype(np.uint64) * np.uint64(0x165667B19E3779F9) ^ np.uint64(seed))
+        h = (h ^ (h >> np.uint64(30))) * np.uint64(0xBF58476D1CE4E5B9)
+        h = (h ^ (h >> np.uint64(27))) * np.uint64(0x94D049BB133111EB)
+        h = h ^ (h >> np.uint64(31))
+    return (h >> np.uint64(11)).astype(np.float64) / float(1 << 53)
+
+
+def detector_cells(P, n):
+    """The middle of a wide lit face as an instrument's array (owner, 2026-11-06, of a Kelvane nose aperture: "missing
+    texture on the nose"): square cells strip_cell_m apart on the face's own plane, a dark gap round each, about
+    strip_cell_on of them lit, each at its own level. Mirrored (|x|), so port and starboard match. Returns the glow level."""
+    c, gap = PT["strip_cell_m"], PT.get("strip_cell_gap", 0.14)
+    ax = np.abs(n).argmax(axis=2)
+    x = np.abs(P[..., 0])
+    u = np.where(ax == 0, P[..., 2], x) / c
+    v = np.where(ax == 1, P[..., 2], P[..., 1]) / c
+    iu, iv = np.floor(u), np.floor(v)
+    fu, fv = u - iu, v - iv
+    sq = (fu > gap) & (fu < 1 - gap) & (fv > gap) & (fv < 1 - gap)
+    h = cell_hash(iu, iv, ax, 0x6B)
+    on = h < PT.get("strip_cell_on", 0.7)
+    lvl = 0.45 + 0.55 * cell_hash(iu, iv, ax, 0x1F)
+    return np.where(sq & on, lvl, 0.0).astype(np.float32)
+
+
+def strips_and_glow(kind_is, P, glowp, cover, n=None):
     """The light strips: a dark channel with a lit line strip_m wide down the middle (paint "strip": "centre"), or the strip
     face lit whole ("whole"). Lit whole, a wide face (a loop's inner wall) burns brightest along its rims and dims to
     strip_inner across its middle, the rim's width set by strip_rim_px, so a wall reads as a lit aperture with form rather
@@ -559,7 +590,10 @@ def strips_and_glow(kind_is, P, glowp, cover):
         m = blur(blur(chan.astype(np.float32), r), r)          # 1 deep inside a wide face, falling toward its edges
         rim = np.clip((0.95 - m) / 0.3, 0, 1)
         inner = PT.get("strip_inner", 1.0)
-        g = g * np.where(chan, inner + (1 - inner) * rim, 1.0)[..., None]
+        k = inner + (1 - inner) * rim
+        if PT.get("strip_cell_m") and n is not None:   # the middle an instrument's array, not blank glass
+            k = k + (1 - rim) * detector_cells(P, n) * PT.get("strip_cell_k", 0.6)
+        g = g * np.where(chan, k, 1.0)[..., None]
     g = g + kind_is("dome")[..., None] * hexrgb(PT["dome"]) * PT["dome_glow"]   # the domes' faint inner light
     emit = np.clip(g * 1.2 + np.dstack([blur(g[..., c], 2) for c in range(3)]) * 0.8, 0, 1)
     return side, g, emit
@@ -594,7 +628,7 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
     spec = np.clip((n * Hv).sum(axis=2), 0, 1) ** 28 * is_("dome")
     col = col + (np.array([0.75, 0.95, 0.8]) * spec[..., None] * 0.7)
     col *= grain(h, w)[..., None]
-    side, g, emit = strips_and_glow(is_, P, glowp, cover)
+    side, g, emit = strips_and_glow(is_, P, glowp, cover, n)
     col = np.where(side[..., None], hexrgb(PT["vent"]) * (0.6 + 0.6 * sh)[..., None], col)
     if PT["strip"] == "whole":   # a wall lit whole: its own shaded paint with the glow over it, not the glow's flat colour
         col = np.where(is_("strip")[..., None], np.clip(col + g * 0.6, 0, 1), col)

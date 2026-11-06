@@ -1,5 +1,5 @@
 {
-  "_doc": "The Kelvane Institute line's hull detail (mockup 23, version 5; OpenSpec change kelvane-ship-concepts): what tools/blender/hull_detail.py builds over each class's low-poly hull before painted_bake.py --faction kelvane --ship bakes it onto the ship's own UVs (Ship Design Bible chapters 14 and 15; the ship-detailing skill). Ship space: +x port, +y up, +z bow, metres. A feature off the centreline is mirrored to starboard; nothing repeats. face: where it sits, found by a ray (top: from above at [x, z]; bottom: from below at [x, z]; port: from the port side at [z, y]). The Institute's design language, from its console (kelvane-battle-console D1-D4) and the Calibrators' 'true faces': calibrated plating (cuts 'grid'), enamelled champagne plates pillowed at their edges, dark smoked glass, amber light, a measuring scale engraved down each flank, sensor domes of smoked glass, smooth round pods sunk into the plating, the KID logo; no greebles, trenches or slatted vents (owner, 2026-11-06: 'Mind the clean and sterile and almost scientific aesthetics. They would have decorated their ships with smooth round pieces rather than industrial greebles'). Owner, 2026-11-06: 'start detailing these', 'theme them after advanced science and research vessels, this faction will specialize in scientific missions'.",
+  "_doc": "The Kelvane Institute line's hull detail (mockup 23, version 5; OpenSpec change kelvane-ship-concepts): what tools/blender/hull_detail.py builds over each class's low-poly hull before painted_bake.py --faction kelvane --ship bakes it onto the ship's own UVs (Ship Design Bible chapters 14 and 15; the ship-detailing skill). Ship space: +x port, +y up, +z bow, metres. A feature off the centreline is mirrored to starboard; nothing repeats. face: where it sits, found by a ray (top: from above at [x, z]; bottom: from below at [x, z]; port: from the port side at [z, y]). The Institute's design language, from its console (kelvane-battle-console D1-D4) and the Calibrators' 'true faces': calibrated plating (cuts 'grid'), enamelled champagne plates pillowed at their edges, dark smoked glass, amber light, a measuring scale engraved down each flank, sensor domes of smoked glass, smooth round pods sunk into the plating, the KID logo; no greebles, trenches or slatted vents (owner, 2026-11-06: 'Mind the clean and sterile and almost scientific aesthetics. They would have decorated their ships with smooth round pieces rather than industrial greebles'). Owner, 2026-11-06: 'start detailing these', 'theme them after advanced science and research vessels, this faction will specialize in scientific missions'. Version 6 (owner, 2026-11-06: \"we need greebles on the inside\", \"missing texture on the nose\", \"also where are windows to give scale\"): machinery inside the openings (inner_greebles_per_m2, on faces that look across an opening at the hull), the middle of a wide lit face an instrument's array of cells (paint strip_cell_*), and rows of person-sized windows on the flanks, clear of the scale and the strips (provisional until each class's room plan places them, task 3.1).",
   "faction": "kelvane",
   "manifest_doc": "The Kelvane Institute's line: the frigate, destroyer, cruiser, battlecruiser and carrier of mockup 23.",
   "paint": {
@@ -82,7 +82,11 @@
     ],
     "strip_k": 0.5,
     "strip_inner": 0.12,
-    "strip_rim_px": 7
+    "strip_rim_px": 7,
+    "strip_cell_m": 1.6,
+    "strip_cell_gap": 0.14,
+    "strip_cell_on": 0.7,
+    "strip_cell_k": 0.55
   },
   "defaults": {
     "smooth_deg": 40,
@@ -141,7 +145,9 @@
       "cone_deg": 120,
       "tilt_deg": 22,
       "power_w": 1600
-    }
+    },
+    "inner_greebles_per_m2": 0.6,
+    "inner_reach_m": 40.0
   },
   "ships": {
     "kelvane_frigate": {
@@ -288,7 +294,29 @@
         "auto_floods": {
           "to_z_m": 56
         }
-      }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -56,
+            56
+          ],
+          "rows_y_m": [
+            4.2,
+            -1.6
+          ]
+        },
+        {
+          "z_m": [
+            -26,
+            26
+          ],
+          "rows_y_m": [
+            7.6,
+            -7.6
+          ]
+        }
+      ]
     },
     "kelvane_destroyer": {
       "seed": 223,
@@ -442,7 +470,19 @@
         "auto_floods": {
           "to_z_m": 60
         }
-      }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -62,
+            62
+          ],
+          "rows_y_m": [
+            4.2,
+            -2.0
+          ]
+        }
+      ]
     },
     "kelvane_cruiser": {
       "seed": 227,
@@ -606,7 +646,29 @@
         "auto_floods": {
           "to_z_m": 70
         }
-      }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -78,
+            76
+          ],
+          "rows_y_m": [
+            4.6,
+            8.0
+          ]
+        },
+        {
+          "z_m": [
+            -36,
+            36
+          ],
+          "rows_y_m": [
+            -16.5,
+            -13.0
+          ]
+        }
+      ]
     },
     "kelvane_battlecruiser": {
       "seed": 229,
@@ -788,7 +850,29 @@
         "auto_floods": {
           "to_z_m": 92
         }
-      }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -96,
+            96
+          ],
+          "rows_y_m": [
+            4.6,
+            -2.6
+          ]
+        },
+        {
+          "z_m": [
+            22,
+            62
+          ],
+          "rows_y_m": [
+            12.5,
+            -11.5
+          ]
+        }
+      ]
     },
     "kelvane_carrier": {
       "seed": 233,
@@ -952,7 +1036,29 @@
         "auto_floods": {
           "to_z_m": 100
         }
-      }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -104,
+            104
+          ],
+          "rows_y_m": [
+            4.8,
+            -2.6
+          ]
+        },
+        {
+          "z_m": [
+            -56,
+            40
+          ],
+          "rows_y_m": [
+            13.5,
+            -13.0
+          ]
+        }
+      ]
     }
   }
 }

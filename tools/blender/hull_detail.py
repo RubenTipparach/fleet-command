@@ -200,7 +200,12 @@ class Surface:
     """Rays against the low-poly hull, to sit a feature on it."""
     def __init__(self, lo):
         bm = bmesh.new(); bm.from_mesh(lo.data); bm.faces.ensure_lookup_table()
-        self.bvh = BVHTree.FromBMesh(bm); self.bm = bm
+        self.bvh = BVHTree.FromBMesh(bm); self.bm = bm; self.bare = bare_idx(lo.data)
+
+    def bare_at(self, loc, nor):
+        """Whether the hull at loc (its normal nor) is a light strip or glass, where no window or feature belongs."""
+        h = self.bvh.ray_cast(loc + nor * 0.5, -nor, 1.0)
+        return h[2] is not None and self.bm.faces[h[2]].material_index in self.bare
 
     def hit(self, face, at):
         a, b = at
@@ -335,7 +340,7 @@ def window_rows(F, surf):
                 if zk < z0:
                     break
                 h = surf.hit("port", [zk, y])
-                if h and abs(h[1].x) > 0.6:     # only on faces that look out to the side
+                if h and abs(h[1].x) > 0.6 and not surf.bare_at(*h):   # only on plating that looks out to the side
                     out.append((h[0], h[1], r.random() > 0.2, kind))
             z -= n * 1.6 + r.uniform(2.0, 4.5)
     return out
@@ -791,6 +796,48 @@ def greebles(lo, armour, D, rng, mats, holes=None):
     return parts
 
 
+def inner_greebles(lo, armour, D, rng, holes=None):
+    """Machinery inside the openings (owner, 2026-11-06, of the Kelvane frigate's slot: "we need greebles on the inside"):
+    on every face that looks across an opening at the ship's own hull within inner_reach_m (a slot's walls, a loop's inner
+    walls, the crotches where branches part), whatever it is made of, inner_greebles_per_m2 of them, never under armour or
+    inside a window's or dome's hole. The outer hull keeps its own rule (greebles_per_m2; none for a clean faction), so a
+    ship can be clean outside and worked inside, as an instrument is. Mirrored as greebles() is."""
+    dens = D.get("inner_greebles_per_m2", 0.0)
+    if dens <= 0:
+        return []
+    me = lo.data
+    bm = bmesh.new(); bm.from_mesh(me); lbvh = BVHTree.FromBMesh(bm); bm.free()
+    bm = bmesh.new()
+    for o in armour:
+        bm.from_mesh(o.data)
+    abvh = BVHTree.FromBMesh(bm) if bm.faces else None
+    reach = D.get("inner_reach_m", 40.0)
+    parts = []
+    for p in me.polygons:
+        n = p.normal
+        if lbvh.ray_cast(p.center + n * 0.05, n, reach)[0] is None:
+            continue   # it looks out into space: the outer hull
+        nwant = p.area * dens
+        k = int(nwant) + (1 if rng.random() < nwant % 1 else 0)
+        vs = [me.vertices[i].co for i in p.vertices]
+        for _ in range(k):
+            a, b = rng.random(), rng.random()
+            if a + b > 1:
+                a, b = 1 - a, 1 - b
+            q = vs[0] + (vs[1] - vs[0]) * a + (vs[2] - vs[0]) * b
+            if q.x < 0.3:
+                continue   # the port half is placed; starboard is its mirror
+            if abvh is not None and abvh.ray_cast(q + n * 0.02, n, 0.9)[0] is not None:
+                continue
+            g = greeble(frame_at(q, n, False), q)
+            if holes is not None and any(inside(holes, v.co) for v in g.verts):
+                g.free()
+                continue
+            parts.append(g)
+            parts.append(greeble(frame_at(q, n, True), q))
+    return parts
+
+
 def greeble(M, q):
     """One piece of machinery at q, its shape seeded by where it is, so its mirror is the same piece."""
     r = random.Random(int(abs(q.x) * 1000) * 7919 + int(q.y * 1000) * 104729 + int(q.z * 1000))
@@ -880,7 +927,7 @@ def build(lo, S, D, seed):
                 high.append(obj_from(bm, "lamp", lamps[kind[5:]], 0.5))
             else:
                 high.append(obj_from(bm, kind, mats[kind], rid_of(loc, salt=i * 0.37)))
-    gb = greebles(lo, armour + sub, D, rng, mats, hole_bvh)
+    gb = greebles(lo, armour + sub, D, rng, mats, hole_bvh) + inner_greebles(lo, armour + sub, D, random.Random(seed * 53 + 11), hole_bvh)
     if gb:
         high.append(obj_from(merge(gb), "greebles", mats["greeble"], 0.0))
         set_greeble_rids(high[-1])
