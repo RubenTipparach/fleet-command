@@ -359,6 +359,34 @@ well lit for all ships?".
   rest yellow or orange, 1.9 times as bright) and `lib/baked-ship.js` (quarters and messes yellow, workshops orange, holds
   dimmer, a lit hangar warm), carried into the game's `ship_rooms.gdshaderinc` and `pane.gdshader`.
 
+### D12. Version 8: shuttles, the corners, shuttles overhead (owner, 2026-11-07)
+
+The owner, of v7: "Love the carrier. I see some square corners on hull plating here. Please make mockup designs of
+shuttles. Carrier should have shuttles upside down as well. We are in space afterall".
+
+- **Every plate corner on the diagonal.** `junction_cuts()` in `tools/blender/hull_detail.py` replaces the corners listed
+  by hand in v7: it finds every point where two cuts meet (a T, an X or an L) from the cuts themselves, and cuts each
+  sector of the plating round it narrower than 180 degrees on the diagonal, 0.9 m along both edges. The far side of a T
+  and the outside of an L have no corner and are left. The frigate's top and bottom take 78 such cuts, its flanks 14.
+- **Shuttles overhead.** The carrier's pad scan casts up as well as down (`pads.ceiling`): 12 pads on the well's floors
+  and 12 on its ceilings, each with a shuttle parked up its pad's normal, so those overhead hang upside down.
+- **Small craft** (the page's new family). Eight shuttles, each grown from one of the board's hulls in its tradition,
+  reproportioned to a shuttle (beam, height and length in `SHUTTLES`, 10.5-13 m long), its bands of dark glass its
+  glazing, beside a 1.8 m person:
+
+  | No. | Shuttle | Role | From | Size |
+  |---|---|---|---|---|
+  | 201 | Case shuttle | Crew transfer | 1 Case | 10.5 x 4.2 x 2.6 m |
+  | 202 | Runner skiff (recommended) | Survey skiff | 3 Runners | 11 x 4.6 x 2.5 m |
+  | 203 | Twin-boom tender | Probe tender | 4 Twin hulls | 12 x 6.2 x 2.4 m |
+  | 204 | Waisted courier | Courier | 6 Waisted baseline | 12.5 x 3.6 x 2.6 m |
+  | 205 | Spar lander | Sample lander | 8 Long spar | 13 x 4.4 x 3.0 m |
+  | 206 | Gallery bus | Field crew bus | 9 Gallery bow | 12 x 5.0 x 3.6 m |
+  | 207 | Terrace launch | Laboratory launch | 10 Terraces | 12 x 5.0 x 3.2 m |
+  | 208 | Ring runabout | Calibration runabout | 11 Loop | 12 x 5.6 x 2.2 m |
+
+  Provisional (survey I7): the Runner skiff is the carrier's, as its runners are its skids.
+
 ## Open questions
 
 | Id | Question | Recommendation (provisional) |
@@ -369,4 +397,5 @@ well lit for all ships?".
 | I4 | Which class comes first, and at what size? | **Decided** (D8): all five at once, frigate to carrier, 126-214 m (sizes provisional) |
 | I5 | What becomes of the other four schools? | Keep them as schools inside the Institute for its stations, support ships and the console |
 | I6 | The class names (Parallax, Candour, Patience, Rigour, Curiosity) | Placeholders until the owner names the Institute's ships (K1) |
+| I7 | Which shuttles go on, and which the carrier parks | Provisional (D12): 202 Runner skiff for the carrier, the rest as other craft |
 | K1 | The Institute's names for ships, ranks and officers (from kelvane-battle-console) | Placeholders until the owner sets the culture |

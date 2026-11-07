@@ -80,7 +80,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Kelvane <span>ships</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 23, v7. <code>kelvane-ship-concepts</code>. The line: your five picks as the five classes, frigate to carrier, each a research vessel with its own baked detail and textures. The blockout board stays beside it.</p>
+    <p class="sub">Mockup 23, v8. <code>kelvane-ship-concepts</code>. The line: your five picks as the five classes, frigate to carrier, each a research vessel with its own baked detail and textures. The blockout board stays beside it.</p>
   </header>
   <div class="scroll">
     <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div><div class="row" id="famRow"></div></div>
@@ -98,6 +98,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
       <p>Version 5 (you: "start detailing these", then "Mind the clean and sterile and almost scientific aesthetics. They would have decorated their ships with smooth round pieces rather than industrial greebles"): every class is unwrapped on its own and baked from a modelled detail layer, as the Hunt's ships were. Calibrated seams in enamelled champagne, smooth round pods sunk into the plating, smoked-glass sensor domes, amber jewel lamps, red bands at the bow, the KID logo, a measuring scale engraved down each flank, and hull floods. The loops' inner walls are dark smoked glass lit along their rims, so each aperture reads as an opening, not a flat fill. No greebles, trenches or slatted vents. Painted and PBR show the bake; Champagne and Clay the grown skin; Night lights each ship by its own lamps. Windows, rooms, bays and damage come next.</p>
       <p>Version 6 (you: "we need greebles on the inside", "missing texture on the nose", "also where are windows to give scale"): clean outside, worked inside, as an instrument is. Machinery stands on every face that looks across an opening (the frigate's slot, the loops' inner walls), lit as if by work lamps; the outer plating stays smooth. A lit aperture's middle and the frigate's glass nose are an instrument's array of cells, not a blank face. Rows of person-sized windows run along every flank, each a pane with a room behind it, the Hunt's windows on the same code. Each class has its own baked normal map, drawn in Painted and PBR.</p>
       <p>Version 7 (you: "greebles look too random", "something interesting like large vents, fuel pods, coils and pipes would be cool", "carrier should have landing pads and fighters onthe inside here", "these sharp standalone corners arent good, can we use diagonals on corners", "these lines are quire dark", "this one has windows in awkward spotrs", "why do you still have these little light dots?", and the rooms "more yellow/orange tinted like they are well lit for all ships"): the openings are engineered bays in rows, each row one kind of machine (door bays with their lamps, grilles, lit channels, conduits, layered plates, coils, pipe runs) broken into runs, low relief with every corner cut on the diagonal, lit by their own work lamps; no fuel pods (you: "I hate those pods"). From your references ("some examples of greebles for you to study", "some hull armor examples", "details idea"): every plate is a panel within a panel, a groove inset from its edge, with small marks (a red triangle, a stencil box, a row of small squares), and the larger top and bottom plates carry framed inspection hatches with amber lamps at their corners. The carrier's well has landing pads ringed in amber, a survey craft parked on each. Where one plating cut ends on another, the corners are cut on the diagonal. The seams are lighter. Windows only look out into space. No light lines: the belt strips are plain seams and the loops have no lit rims (you: "i dont like this light line, get rid"). No dots at the floods, only the nav lights. Every ship's rooms are lit warm.</p>
+      <p>Version 8 (you: "Love the carrier. I see some square corners on hull plating here. Please make mockup designs of shuttles. Carrier should have shuttles upside down as well. We are in space afterall"): every plate corner where cuts meet is cut on the diagonal, found from the cuts themselves. The carrier's well has pads on its ceilings too, its shuttles parked there upside down. Small craft shows eight shuttle designs, each grown from a board hull in its own tradition at a shuttle's size, beside a person; the Runner skiff, whose runners are its skids, is the one the carrier parks. Survey I7 asks which go on.</p>
       <p>The skin answers the console (chapter 11): rolled champagne edges like its plates, wells of dark smoked glass, amber light for a reading. Clay shows the massing alone.</p>
       <p>None is drawn from the Kelvane's bodies (chapter 13). Described without the species' name, each is an instrument's or a laboratory's working shape, never a creature's.</p>
       <p>Survey section I asks which traditions and blockouts go on. <a href="https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt" target="_blank" rel="noopener">Open the survey</a>.</p>
@@ -1345,13 +1346,37 @@ const BLOCKS = [
 
 // The line's ships join the list after the blockouts, each in the tradition of the blockout it comes from.
 for (const L of LINE) BLOCKS.push({ ...L, tr: L.from === 5 ? 'note' : 'coll', line: true });
+// The Institute's small craft (owner, 2026-11-07: "Please make mockup designs of shuttles"). Each is grown from one of
+// the board's hulls in that hull's tradition, reproportioned to a shuttle's size (short and full-bodied, 10-13 m, its
+// bands of dark glass its cockpit and cabin glazing), its skin still one closed grown structure. The Runner skiff is
+// recommended: its two runners are its landing skids, so it is the one the carrier parks on its pads (survey I7).
+const SHUTTLES = [
+  { n: 201, from: 1, name: 'Case shuttle', role: 'Crew transfer', dims: [4.2, 2.6, 10.5], tell: 'Crew transfer: the Calibrators\' closed case at shuttle size, its band of dark glass the cabin\'s windows all round.' },
+  { n: 202, from: 3, name: 'Runner skiff', role: 'Survey skiff', dims: [4.6, 2.5, 11], pick: true, tell: 'Survey skiff: a cabin carried on two runners that are its landing skids, its sensors between them. Recommended; the carrier parks it.' },
+  { n: 203, from: 4, name: 'Twin-boom tender', role: 'Probe tender', dims: [6.2, 2.4, 12], tell: 'Probe tender: two identical booms from one cabin, a probe carried in the gap between them until it is let go.' },
+  { n: 204, from: 6, name: 'Waisted courier', role: 'Courier', dims: [3.6, 2.6, 12.5], tell: 'Courier: a cabin aft and a sensor head forward, joined by a slim waist: the Long Baseline\'s rangefinder made small.' },
+  { n: 205, from: 8, name: 'Spar lander', role: 'Sample lander', dims: [4.4, 3.0, 13], tell: 'Sample lander: a compact cabin with a spar reaching forward to the glazed head it lowers to a surface.' },
+  { n: 206, from: 9, name: 'Gallery bus', role: 'Field crew bus', dims: [5.0, 3.6, 12], tell: 'Field crew bus: a deep cabin for a long hop, its whole upper bow a gallery of glass for the crew to look out.' },
+  { n: 207, from: 10, name: 'Terrace launch', role: 'Laboratory launch', dims: [5.0, 3.2, 12], tell: 'Laboratory launch: decks stepping down toward the bow, each riser a window looking forward over the next.' },
+  { n: 208, from: 11, name: 'Ring runabout', role: 'Calibration runabout', dims: [5.6, 2.2, 12], tell: 'Calibration runabout: the Collider Halls\' loop at shuttle size, flown round the big ships to check their beams.' },
+];
+/** A board hull grown again into g at a shuttle's size: built, centred, scaled to dims (beam, height, length) in metres,
+ *  its normals creased again on the new proportions. */
+function shrink(g, src, dims) { const t = new THREE.Group(); src.build(t); t.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(t), sz = b.getSize(V3()), c = b.getCenter(V3()), k = V3(dims[0] / sz.x, dims[1] / sz.y, dims[2] / sz.z);
+  t.traverse((o) => { if (!o.isMesh) return; const gg = o.geometry; gg.translate(-c.x, -c.y, -c.z); gg.scale(k.x, k.y, k.z);
+    if (gg.index) { gg.computeVertexNormals(); return; }
+    const p = gg.attributes.position, P = []; for (let j = 0; j < p.count; j++) P.push(V3().fromBufferAttribute(p, j));
+    gg.setAttribute('normal', new THREE.BufferAttribute(HG.creasedNormals(P, 40), 3)); });
+  while (t.children.length) g.add(t.children[0]); }
+for (const S of SHUTTLES) { const src = BLOCKS.find((b) => b.n === S.from); BLOCKS.push({ ...S, tr: src.tr, craft: true, build(g) { shrink(g, src, S.dims); } }); }
 // The board: four columns, read left to right and top to bottom from behind, so every bow (+z) points up the screen; the
 // traditions in order. A family lays only its own ships out (layout): the line one ship at a time (or all five in a line-up
 // at true scale), the blockouts and the loop family on a board.
 const SHIPS = BLOCKS.map((b) => { const g = new THREE.Group(); b.build(g); scene.add(g); return g; });
 const idsOf = (f) => BLOCKS.map((b, i) => (f(b) ? i : -1)).filter((i) => i >= 0);
-const FAMILIES = { line: { label: 'The line', ids: idsOf((b) => b.line) }, all: { label: 'Blockouts', ids: idsOf((b) => !b.line) },
-  loops: { label: 'Loop family', ids: idsOf((b) => b.loop && !b.line) } };
+const FAMILIES = { line: { label: 'The line', ids: idsOf((b) => b.line) }, all: { label: 'Blockouts', ids: idsOf((b) => !b.line && !b.craft) },
+  loops: { label: 'Loop family', ids: idsOf((b) => b.loop && !b.line && !b.craft) }, craft: { label: 'Small craft', ids: idsOf((b) => b.craft) } };
 let family = 'line', lineShip = FAMILIES.line.ids[0];
 const rowsOf = () => Math.ceil(FAMILIES[family].ids.length / 4);
 function layout() { const ids = FAMILIES[family].ids, rows = rowsOf();
@@ -1361,8 +1386,13 @@ function layout() { const ids = FAMILIES[family].ids, rows = rowsOf();
     const mid = x / 2 + gap / 2; ids.forEach((i) => { SHIPS[i].position.x -= mid; });
   }
   SHIPS.forEach((g, i) => { const j = ids.indexOf(i); g.visible = j >= 0;
-    if (j >= 0 && family !== 'line') g.position.set((1.5 - j % 4) * 150, 0, ((rows - 1) / 2 - Math.floor(j / 4)) * 175); g.updateMatrixWorld(true); }); }
+    const px = family === 'craft' ? 20 : 150, pz = family === 'craft' ? 23 : 175;   // the small craft on a board of their own size
+    if (j >= 0 && family !== 'line') g.position.set((1.5 - j % 4) * px, 0, ((rows - 1) / 2 - Math.floor(j / 4)) * pz); g.updateMatrixWorld(true); }); }
 const PETREL = CL.plainModel('petrel_level'); PETREL.visible = false; scene.add(PETREL);
+// The small craft's yardstick: a person, 1.8 m, standing (the Petrel is too big to read beside a shuttle).
+const PERSON = (() => { const m = new THREE.MeshStandardMaterial({ color: 0x8c8c90, roughness: 0.8 }), g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.1, 6, 12), m); body.position.y = 0.77; g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 12), m); head.position.y = 1.67; g.add(head); g.visible = false; scene.add(g); return g; })();
 
 // Measured from the built geometry: size, triangles, and the skin's closure (every edge shared by exactly two triangles).
 function closure(g) { const cnt = new Map(), q = (v) => `${Math.round(v.x * 1e3)},${Math.round(v.y * 1e3)},${Math.round(v.z * 1e3)}`;
@@ -1398,10 +1428,11 @@ function setView(k) { if (!views()[k]) k = family === 'line' ? 'quarter' : 'boar
   if (family === 'line' && k !== 'lineup') return focusOn(lineShip, ANGLE[k]);
   const v = { board: [[0, 560, -700], [0, -10, 20]], top: [[0, 980, -0.01], [0, 0, 0]], side: [[0, 160, 900], [0, -10, 0]], lineup: [[0, 300, 470], [0, 0, 10]] }[k];
   const deep = family === 'line' ? 1 : Math.max(1, rowsOf() / 3) ** (k === 'side' ? 0 : 0.8); // a deeper board is seen from further back
-  camera.position.set(...v[0]); controls.target.set(...v[1]); camera.position.sub(controls.target).multiplyScalar(back() * deep).add(controls.target); controls.update(); sync(); }
+  const sc = family === 'craft' ? 0.135 : 1;   // the small craft's board, framed on its own size
+  camera.position.set(...v[0]).multiplyScalar(sc); controls.target.set(...v[1]).multiplyScalar(sc); camera.position.sub(controls.target).multiplyScalar(back() * deep).add(controls.target); controls.update(); sync(); }
 // a ship alone, from its bow quarter (what a target sees coming), the side, above or ahead, framed on its own length
 function focusOn(i, from = ANGLE.quarter) { focus = i; if (BLOCKS[i].line) { lineShip = i; SHIPS[i].position.set(0, 0, 0); SHIPS[i].updateMatrixWorld(true); }
-  const p = SHIPS[i].position, k = BLOCKS[i].line ? MEAS[i].size.z / 96 : 1; SHIPS.forEach((g, j) => { g.visible = j === i; });
+  const p = SHIPS[i].position, k = BLOCKS[i].line || BLOCKS[i].craft ? MEAS[i].size.z / 96 : 1; SHIPS.forEach((g, j) => { g.visible = j === i; });
   controls.target.copy(p); camera.position.copy(p).add(V3(...from).multiplyScalar(back() * k)); controls.update(); sync(); }
 function sync() {
   const vk = focus >= 0 && family !== 'line' ? '' : viewKey;
@@ -1414,18 +1445,19 @@ function sync() {
       html += `<button data-i="${i}" aria-pressed="${i === focus}"><b>${b.code}</b><span>${b.cls}: ${b.name}</span><small>${b.role} From blockout ${b.from}.</small></button>`; });
   } else FAMILIES[family].ids.forEach((i) => { const b = BLOCKS[i]; if (b.tr !== tr) { tr = b.tr; grp = ''; html += `<h3>${TRADITIONS[tr].name}</h3><p>${TRADITIONS[tr].src}</p>`; }
     if (b.grp && b.grp !== grp) { grp = b.grp; html += `<h4>${grp}</h4>`; }
-    html += `<button data-i="${i}" aria-pressed="${i === focus}"><b>${b.n}</b><span>${b.name}${PICKED.has(b.n) ? ' <em class="pick">picked</em>' : ''}</span><small>${b.tell}</small></button>`; });
+    html += `<button data-i="${i}" aria-pressed="${i === focus}"><b>${b.n}</b><span>${b.name}${PICKED.has(b.n) ? ' <em class="pick">picked</em>' : b.pick ? ' <em class="pick">recommended</em>' : ''}</span><small>${b.tell}${b.craft ? ' From blockout ' + b.from + '.' : ''}</small></button>`; });
   $('list').innerHTML = html;
   $('lookRow').innerHTML = Object.entries(LOOKS).map(([k, v]) => `<button data-l="${k}" aria-pressed="${k === look}">${v}</button>`).join('');
   $('lightRow').innerHTML = `<button data-n="0" aria-pressed="${!night}">Studio</button><button data-n="1" aria-pressed="${night}">Night</button>`;
-  $('showRow').innerHTML = `<button data-s="labels" aria-pressed="${showLabels}">Labels</button><button data-s="petrel" aria-pressed="${showPetrel}">Concord Petrel</button>`;
+  $('showRow').innerHTML = `<button data-s="labels" aria-pressed="${showLabels}">Labels</button><button data-s="petrel" aria-pressed="${family === 'craft' ? !showPetrel : showPetrel}">${family === 'craft' ? 'Person' : 'Concord Petrel'}</button>`;
   const f = focus >= 0 ? MEAS[focus] : null, B = focus >= 0 ? BLOCKS[focus] : null;
   $('facts').innerHTML = f ? `<dt>${B.line ? B.cls : B.n + ' ' + B.name}</dt><dd>${f.size.z.toFixed(1)} m long, ${f.size.x.toFixed(1)} m beam, ${f.size.y.toFixed(1)} m tall, ${f.tris.toLocaleString('en')} triangles, ${f.open ? f.open + ' open edges' : 'skin closed'}</dd><dt>Tradition</dt><dd>${TRADITIONS[B.tr].name}${B.line ? ', from blockout ' + B.from : ''}</dd>`
     : FAMILIES[family].ids.map((i) => { const m = MEAS[i], b = BLOCKS[i]; return `<dt>${b.line ? b.cls : b.n + ' ' + b.name}</dt><dd>${m.size.z.toFixed(0)} by ${m.size.x.toFixed(0)} by ${m.size.y.toFixed(0)} m</dd>`; }).join('');
-  PETREL.visible = showPetrel;
-  if (focus >= 0) PETREL.position.copy(SHIPS[focus].position).add(V3(MEAS[focus].size.x / 2 + 30, 0, 0));
-  else if (family === 'line') PETREL.position.set(0, 0, -150); else PETREL.position.set(0, 0, -(rowsOf() / 2) * 175 - 70);
-  $('status').textContent = B ? (B.line ? `${B.cls}: ${B.name}` : `${B.n} ${B.name}`) : family === 'line' ? 'The line: five classes' : family === 'all' ? `Blockout board: ${FAMILIES.all.ids.length} massings` : `The loop family: ${FAMILIES.loops.ids.length} ships`;
+  const small = family === 'craft'; PETREL.visible = showPetrel && !small; PERSON.visible = small && !showPetrel;   // a shuttle always beside its person (the toggle hides it)
+  grid.scale.setScalar(small ? 0.135 : 1); grid.position.y = small ? -1.4 - (focus >= 0 ? MEAS[focus].size.y / 2 - 1.2 : 0) : -40;
+  if (focus >= 0) { PETREL.position.copy(SHIPS[focus].position).add(V3(MEAS[focus].size.x / 2 + 30, 0, 0)); PERSON.position.copy(SHIPS[focus].position).add(V3(MEAS[focus].size.x / 2 + 1.5, -MEAS[focus].size.y / 2, MEAS[focus].size.z * 0.2)); }
+  else if (family === 'line') PETREL.position.set(0, 0, -150); else { PETREL.position.set(0, 0, -(rowsOf() / 2) * 175 - 70); PERSON.position.set(0, -1.4, -(rowsOf() / 2) * 23 - 4); }
+  $('status').textContent = B ? (B.line ? `${B.cls}: ${B.name}` : `${B.n} ${B.name}`) : family === 'line' ? 'The line: five classes' : family === 'all' ? `Blockout board: ${FAMILIES.all.ids.length} massings` : family === 'craft' ? `Small craft: ${FAMILIES.craft.ids.length} shuttles` : `The loop family: ${FAMILIES.loops.ids.length} ships`;
   $('tip').textContent = B ? (B.line ? B.tell : `${TRADITIONS[B.tr].name}. ${B.tell}`) : family === 'line' ? 'The five classes side by side at true scale, the bows toward the top. Pick one to see it alone.' : 'Bow toward the top of the board. Pick one to look closer. Drag to orbit, scroll or pinch to zoom.';
 }
 // the blockouts you picked (owner, 2026-11-06), marked on the board
@@ -1452,16 +1484,14 @@ const SK = window.FCShipSkin(THREE), ROOMS = window.FCShipRooms, PANE_GL = { has
 const BK = (() => { const el = document.querySelector('script[data-src="assets/ships/kelvane/manifest.json"]'); return el ? JSON.parse(el.textContent) : null; })();
 const glowSprite = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
   g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
-// The carrier's survey craft, one parked on each landing pad its bake recorded (manifest pads; owner, 2026-11-06: "carrier
-// should have landing pads and fighters onthe inside here"): a 10 m craft grown like the line's hulls on the same section
-// (Ship Design Bible ch. 14), champagne with a belt of light and a dark glass canopy, nosed along the ship.
-const CRAFT = (() => { const g = new THREE.Group(), K = skin(g), c = { top: 0.9, bot: -0.8, r: 0.4, rt: 0.36, bh: 0.16, ym: 0.0, kw: 0.3 };
-  const S = K.body([[-5, { ...c, hb: 1.5, top: 0.7, bot: -0.6 }], [-3.6, { ...c, hb: 2.3 }], [1.6, { ...c, hb: 2.1 }],
-    [4, { ...c, hb: 1.3, top: 0.62, bot: -0.6 }], [5, { ...c, hb: 0.8, top: 0.42, bot: -0.42, r: 0.3, rt: 0.28, bh: 0.1 }]],
-    (k, z) => (E.belt(k) ? true : E.upper(k) && z > -1 ? 'well' : false));
-  K.branch('nose', S, 5, [[0, 1, 1, 0, 0]]); K.done(); g.traverse((o) => { o.userData.baked = true; }); return g; })();   // baked: kept out of the blockout export
+// The carrier's shuttles, one parked on each landing pad its bake recorded (manifest pads; owner, 2026-11-06: "carrier
+// should have landing pads and fighters onthe inside here"; 2026-11-07: "Carrier should have shuttles upside down as well.
+// We are in space afterall"): the recommended small craft (the Runner skiff, SHUTTLES), nosed along the ship, standing up
+// its pad's normal, so those on the well's ceilings hang upside down.
+const CRAFT = (() => { const g = new THREE.Group(), S = SHUTTLES.find((x) => x.pick); shrink(g, BLOCKS.find((b) => b.n === S.from), S.dims);
+  g.traverse((o) => { o.userData.baked = true; }); g.userData.h = S.dims[1]; return g; })();   // baked: kept out of the blockout export
 function parked(P) { const g = CRAFT.clone(), y = V3(...P.n).normalize(), z = V3(...P.u).normalize(), x = new THREE.Vector3().crossVectors(y, z).normalize();
-  g.matrix.makeBasis(x, y, z).setPosition(V3(...P.c).addScaledVector(y, 0.26 + 0.8)); g.matrixAutoUpdate = false; return g; }
+  g.matrix.makeBasis(x, y, z).setPosition(V3(...P.c).addScaledVector(y, 0.26 + CRAFT.userData.h / 2)); g.matrixAutoUpdate = false; return g; }   // up the pad's normal: on a ceiling, upside down
 const BAKED = {};   // ship index: { mesh, looks, navs, root }
 if (BK) BLOCKS.forEach((b, i) => { if (!b.line || !BK.ships[b.slug]) return;
   const M = BS.maps(BK, b.slug), looks = BS.looks(M, U), root = new THREE.Group(); root.userData.baked = true;
@@ -1506,9 +1536,11 @@ window.MOCKUP_SHOTS = { lineup: shot(() => { setLook('painted'); fam('line'); se
   loops: shot(() => { setLook('champagne'); fam('loops'); setView('board'); }), loops_top: shot(() => { setLook('champagne'); fam('loops'); setView('top'); }),
   loops_ahead: shot(() => { setLook('champagne'); fam('loops'); setView('side'); }),
   board: shot(() => { setLook('champagne'); fam('all'); setView('board'); }), board_clay: shot(() => { setLook('clay'); fam('all'); setView('board'); }),
-  board_top: shot(() => { setLook('champagne'); fam('all'); setView('top'); }), board_ahead: shot(() => { setLook('champagne'); fam('all'); setView('side'); }) };
+  board_top: shot(() => { setLook('champagne'); fam('all'); setView('top'); }), board_ahead: shot(() => { setLook('champagne'); fam('all'); setView('side'); }),
+  craft: shot(() => { setLook('champagne'); fam('craft'); setView('board'); }), craft_top: shot(() => { setLook('champagne'); fam('craft'); setView('top'); }),
+  craft_clay: shot(() => { setLook('clay'); fam('craft'); setView('board'); }), craft_side: shot(() => { setLook('champagne'); fam('craft'); setView('side'); }) };
 BLOCKS.forEach((b, i) => { const id = b.line ? b.slug.replace('kelvane_', '') : 'b' + String(b.n).padStart(2, '0');
-  for (const [k, a] of Object.entries(ANGLE)) window.MOCKUP_SHOTS[k === 'quarter' ? id : id + '_' + k] = shot(() => { setLook(b.line ? 'painted' : 'champagne'); fam(b.line ? 'line' : 'all'); viewKey = k; focusOn(i, a); });
+  for (const [k, a] of Object.entries(ANGLE)) window.MOCKUP_SHOTS[k === 'quarter' ? id : id + '_' + k] = shot(() => { setLook(b.line ? 'painted' : 'champagne'); fam(b.line ? 'line' : b.craft ? 'craft' : 'all'); viewKey = k; focusOn(i, a); });
   if (b.line) for (const [k, f] of [['pbr', () => setLook('pbr')], ['night', () => { setLook('pbr'); setNight(true); }], ['clay', () => setLook('clay')]])
     window.MOCKUP_SHOTS[id + '_' + k] = shot(() => { fam('line'); viewKey = 'quarter'; f(); focusOn(i, ANGLE.quarter); for (const B of Object.values(BAKED)) BS.blink(B.navs, clock, night); }); });
 window.MOCKUP_SCENE = scene;

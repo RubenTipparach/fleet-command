@@ -21,6 +21,8 @@
 - [x] 3.0 Version 5: the bake tools take a faction (`--faction`, the paint in the faction's data, `cuts` grid, `facing_min`, glass, whole strips, the measuring scale, the logo from its SVG), the Hunt's values unchanged; each class baked onto its own UVs (`data/ships/kelvane/hull_detail.json`, `assets/ships/kelvane/`); the shared viewer `docs/mockups/lib/baked-ship.js`
 - [x] 3.0b Version 6 (D10): machinery inside the openings, an instrument's array on wide lit faces and forward glass, window rows from data with rooms behind them, the pane drawing shared in `docs/mockups/lib/baked-ship.js` (the Hunt's rooms identical)
 - [x] 3.0c Version 7 (D11): ordered machinery, the carrier's pads and parked craft, diagonal corners, lighter seams, windows that look out, no flood dots, warm rooms for every ship (mockups and game)
+- [x] 3.0d Version 8 (D12): every plate corner on the diagonal (junction_cuts), the carrier's ceiling pads with shuttles overhead, the Small craft family (eight shuttles), survey I7
+- [ ] 3.0e The shuttles detailed and baked once the owner picks (I7)
 - [ ] 3.1 Each class designed rooms first (plans in `data/ships/kelvane/`), its hull refitted round them, its tradition named in every choice
 - [ ] 3.2 Windows moved to where its rooms are (v6 places them from data); the carrier's bays into its launch well
 - [ ] 3.3 Battle damage and breaking apart on the shared ship modules (`lib/ship-fx.js`, `lib/ship-break.js`, each hull's signed distance field)
