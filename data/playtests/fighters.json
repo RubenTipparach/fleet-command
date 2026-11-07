@@ -1,5 +1,5 @@
 {
- "_doc": "The scripted captain's Fighters scene (the battle console mockup's scene_fighters): lock the target, open the ship panel's Craft page, launch the fighters on Defences to strip its point defence, then fire a missile barrage. Played from every side (concord_fighters, krai_fighters, kelvane_fighters).",
+ "_doc": "The scripted captain's Fighters scene (the battle console mockup's scene_fighters): lock the target, open the ship panel's Craft page, launch the fighters on Defences to strip its point defence, then fire a missile barrage. Played from every side (concord_fighters, krai_fighters, kelvane_fighters, ssarith_fighters).",
  "beats": [
   { "do": "wait_ready" },
   { "do": "pick_scene" },

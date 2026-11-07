@@ -1,5 +1,5 @@
 {
- "_doc": "The battle console mockup's test scenes for weapon targeting, point defence, arming, the fleet, the tactical map and the event log, in the format of data/battle/scenarios.json, appended to its list in menu order. Disable and Pinned fire (openspec/changes/weapon-targeting, owner 2026-11-04: disable a ship's subsystems without destroying it; pin weapons to several ships at once), each played from both sides in approved ships only: the mockup's Kethran destroyer and raiders are the Krai's ships on the Concord side and the Concord's on the Krai side. The Disable scene is won by disabling, not destroying (data/battle/systems/tactical.json objectives). The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own.",
+ "_doc": "The battle console mockup's test scenes for weapon targeting, point defence, arming, the fleet, the tactical map and the event log, in the format of data/battle/scenarios.json, appended to its list in menu order. Disable and Pinned fire (openspec/changes/weapon-targeting, owner 2026-11-04: disable a ship's subsystems without destroying it; pin weapons to several ships at once), each played from both sides in approved ships only: the mockup's Kethran destroyer and raiders are the Krai's ships on the Concord side and the Concord's on the Krai side. The Disable scene is won by disabling, not destroying (data/battle/systems/tactical.json objectives). The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own. So does the Ssarith Hunt (ssarith_<scene>, 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its ships in the same places (the Hunt Cruiser, the Trident or Hooded Lance frigate for the destroyer and the troop carrier, the Forked Prow in distress, Pell Reach the depot), named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4).",
  "scenarios": [
   {
    "id": "concord_disable",
@@ -81,6 +81,44 @@
    ]
   },
   {
+   "id": "ssarith_disable",
+   "sky": "hunt_pewter_lane",
+   "name": "Disable",
+   "side": "ssarith",
+   "seed": 20261411,
+   "objective": "Disable the Vekk's engines and weapons without destroying it",
+   "say": [
+    "Tactical",
+    "Take the Vekk intact: aim at its engines, then its weapons. Lances aim; torpedoes hit whatever its facing exposes."
+   ],
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 600
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -70000,
+     "heading_deg": 180,
+     "speed_m_s": 900
+    }
+   ]
+  },
+  {
    "id": "krai_pinned",
    "sky": "tactical_magenta",
    "name": "Pinned fire",
@@ -113,6 +151,68 @@
      "captain": "Dr. Orrel",
      "class": "kelvane_rv",
      "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 600
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Blade Oru",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -50000,
+     "z_m": -45000,
+     "heading_deg": 130,
+     "speed_m_s": 1400
+    },
+    {
+     "id": "drask",
+     "name": "Drask",
+     "captain": "Blade Vey",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 55000,
+     "z_m": -40000,
+     "heading_deg": 235,
+     "speed_m_s": 1400
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 5000,
+     "z_m": -85000,
+     "heading_deg": 180,
+     "speed_m_s": 1200
+    }
+   ]
+  },
+  {
+   "id": "ssarith_pinned",
+   "sky": "hunt_aqua_trellis",
+   "name": "Pinned fire",
+   "side": "ssarith",
+   "seed": 20261412,
+   "objective": "Pin a weapon to each raider and destroy all three",
+   "say": [
+    "Tactical",
+    "Three raiders from three sides. Expand Tactical and pin a weapon to each, then fire."
+   ],
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
      "side": 0,
      "x_m": 0,
      "z_m": 0,
