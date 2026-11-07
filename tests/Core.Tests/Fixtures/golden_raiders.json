@@ -20,7 +20,7 @@
    "x_m": 0,
    "z_m": 0,
    "heading_deg": 0,
-   "speed_m_s": 120
+   "speed_m_s": 1200
   },
   {
    "id": "tallis",
@@ -29,10 +29,10 @@
    "class": "ff",
    "faction": "concord",
    "side": 0,
-   "x_m": -900,
-   "z_m": 600,
+   "x_m": -9000,
+   "z_m": 6000,
    "heading_deg": 0,
-   "speed_m_s": 120
+   "speed_m_s": 1200
   },
   {
    "id": "meridian",
@@ -41,10 +41,10 @@
    "class": "dd",
    "faction": "concord",
    "side": 0,
-   "x_m": 900,
-   "z_m": 700,
+   "x_m": 9000,
+   "z_m": 7000,
    "heading_deg": 0,
-   "speed_m_s": 120
+   "speed_m_s": 1200
   },
   {
    "id": "vorrak",
@@ -53,10 +53,10 @@
    "class": "kdd",
    "faction": "kethran",
    "side": 1,
-   "x_m": -1800,
-   "z_m": -9500,
+   "x_m": -18000,
+   "z_m": -95000,
    "heading_deg": 175,
-   "speed_m_s": 150
+   "speed_m_s": 1500
   },
   {
    "id": "ashkar",
@@ -65,10 +65,10 @@
    "class": "kff",
    "faction": "kethran",
    "side": 1,
-   "x_m": 2200,
-   "z_m": -11000,
+   "x_m": 22000,
+   "z_m": -110000,
    "heading_deg": 190,
-   "speed_m_s": 160
+   "speed_m_s": 1600
   },
   {
    "id": "rattlejaw",
@@ -77,10 +77,10 @@
    "class": "vcr",
    "faction": "vos",
    "side": 1,
-   "x_m": 7000,
-   "z_m": -6000,
+   "x_m": 70000,
+   "z_m": -60000,
    "heading_deg": 240,
-   "speed_m_s": 140
+   "speed_m_s": 1400
   }
  ]
 }

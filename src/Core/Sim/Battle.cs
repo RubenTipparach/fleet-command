@@ -17,6 +17,9 @@ public sealed class Shot
 {
     public required string Kind { get; init; }
     public double X, Z, SX, SZ, TX, TZ;
+    /// <summary>Where it was at the start of the last step (NaN until it has flown one), so the view can draw it between
+    /// steps (Battle.DrawnAt).</summary>
+    public double PX = double.NaN, PZ = double.NaN;
     public string? To, From;
     public int Mount = -1;
     public Shot? At;
@@ -118,6 +121,9 @@ public sealed partial class Battle
         for (int i = 0; i < 6; i++) s.Shields[i] = c.ShieldsHp[i] * d.ShieldsFrac;
         foreach (string k in Rules.Systems) s.Power[k] = d.PowerE?.GetValueOrDefault(k, c.PowerE.GetValueOrDefault(k)) ?? c.PowerE.GetValueOrDefault(k);
         foreach (string k in Rules.Subsystems) s.Sys[k] = d.SysHp?.GetValueOrDefault(k, 1) ?? 1;
+        // a ship that starts with no shields keeps none: a target drone or a wreck range hulk has them down and unpowered,
+        // so they never build back up (owner, 2026-11-06: "drones have too much shields in shake down cruise")
+        if (d.ShieldsFrac <= 0) { s.ShieldsUp = false; s.Power["shields"] = 0; }
         var mounts = d.ExtraMounts == null ? c.Mounts : c.Mounts.Concat(d.ExtraMounts).ToList();
         for (int i = 0; i < mounts.Count; i++)
         {
@@ -205,12 +211,20 @@ public sealed partial class Battle
     partial void ObjectivesStep(ref bool ended);
 
     /// <summary>One fixed step of the whole battle.</summary>
+    /// <summary>Where a shot is drawn a share <paramref name="a"/> (0 to 1) of the way through the step now playing: between
+    /// where it stood before the last step and where it stands now, so a fast shot glides at any frame rate rather than
+    /// jumping a step at a time (owner, 2026-11-06: "why does weapon appear jittery?"). View only; the rules read X and Z.</summary>
+    public static (double X, double Z) DrawnAt(Shot sh, double a) =>
+        double.IsNaN(sh.PX) ? (sh.X, sh.Z) : (sh.PX + (sh.X - sh.PX) * a, sh.PZ + (sh.Z - sh.PZ) * a);
+
     public void Step()
     {
         if (Over != null) return;
         double dt = Tuning.StepS;
         T += dt;
         Steps++;
+        // where everything stood before this step, for the view to draw between steps
+        foreach (Shot sh in _shots) { sh.PX = sh.X; sh.PZ = sh.Z; }
         foreach (Ship s in _ships) if (s.Alive) SystemsStep(s, dt);
         foreach (Ship s in _ships)
         {
@@ -310,7 +324,7 @@ public sealed partial class Battle
         if (s.Estop || s.EstopT > 0) s.VOrder = 0;
         double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1) * s.SurgeAccelX;
         s.V += Math.Clamp(goal - s.V, -a, a);
-        if (s.Estop && Math.Abs(s.V) < 1) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
+        if (s.Estop && Math.Abs(s.V) < 10) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
         var f = Geometry.Forward(s.H);
         s.X += f.X * s.V * dt;
         s.Z += f.Z * s.V * dt;
@@ -322,21 +336,21 @@ public sealed partial class Battle
         double vmax = Rules.MaxSpeed(s), toT = Geometry.HeadingTo(s.X, s.Z, t.X, t.Z), d = Rules.DistKm(s, t);
         switch (order)
         {
-            case "approach": s.HOrder = toT; s.VOrder = d > rangeKm ? vmax : Math.Max(60, Math.Abs(t.V)); break;
+            case "approach": s.HOrder = toT; s.VOrder = d > rangeKm ? vmax : Math.Max(600, Math.Abs(t.V)); break;
             case "circle": s.HOrder = Geometry.Wrap(toT + Math.PI / 2 - Math.Clamp((d - rangeKm) / rangeKm, -1, 1) * Math.PI / 4); s.VOrder = vmax * 0.8; break;
             case "evade": s.HOrder = Geometry.Wrap(toT + Math.PI); s.VOrder = vmax; break;
             case "follow":
             {
                 var f = Geometry.Forward(t.H);
                 var r = Geometry.Right(t.H);
-                double ax = t.X - f.X * 800 + r.X * 600, az = t.Z - f.Z * 800 + r.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
-                s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
+                double ax = t.X - f.X * 8000 + r.X * 6000, az = t.Z - f.Z * 8000 + r.Z * 6000, gap = Geometry.Dist(s.X, s.Z, ax, az);
+                s.HOrder = gap > 2000 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
                 s.VOrder = Math.Clamp(Math.Abs(t.V) + gap * 0.2, 0, vmax);
                 break;
             }
             case "intercept":
             {
-                double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(100, Math.Abs(s.V));
+                double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(1000, Math.Abs(s.V));
                 var f = Geometry.Forward(t.H);
                 s.HOrder = Geometry.HeadingTo(s.X, s.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
                 break;
@@ -344,14 +358,14 @@ public sealed partial class Battle
             case "trail":
             {
                 var f = Geometry.Forward(t.H);
-                double ax = t.X - f.X * 600, az = t.Z - f.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
-                s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
-                s.VOrder = Math.Clamp(Math.Abs(t.V) + (gap > 200 ? gap * 0.2 : 0), 0, vmax);
+                double ax = t.X - f.X * 6000, az = t.Z - f.Z * 6000, gap = Geometry.Dist(s.X, s.Z, ax, az);
+                s.HOrder = gap > 2000 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
+                s.VOrder = Math.Clamp(Math.Abs(t.V) + (gap > 2000 ? gap * 0.2 : 0), 0, vmax);
                 break;
             }
             case "hold_range":
                 s.HOrder = d > s.HoldKm * 1.1 ? toT : d < s.HoldKm * 0.9 ? Geometry.Wrap(toT + Math.PI) : Geometry.Wrap(toT + Math.PI / 2);
-                s.VOrder = d > s.HoldKm * 1.1 || d < s.HoldKm * 0.9 ? vmax : Math.Max(60, Math.Abs(t.V));
+                s.VOrder = d > s.HoldKm * 1.1 || d < s.HoldKm * 0.9 ? vmax : Math.Max(600, Math.Abs(t.V));
                 break;
             case "hit_run":
                 if (s.RunPhase == "in" && d <= s.RunMinKm) s.RunPhase = "out";
@@ -397,7 +411,7 @@ public sealed partial class Battle
     /// <summary>World position of a mount, metres.</summary>
     public static (double X, double Z) MountWorld(Ship s, Mount m)
     {
-        double half = s.Class.LengthM / 2;
+        double half = s.Class.FrameM / 2;
         var f = Geometry.Forward(s.H);
         var r = Geometry.Right(s.H);
         return (s.X + f.X * m.Def.Y * half + r.X * m.Def.X * half * 0.6, s.Z + f.Z * m.Def.Y * half + r.Z * m.Def.X * half * 0.6);

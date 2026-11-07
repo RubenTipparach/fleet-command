@@ -99,10 +99,10 @@ vec3 room_behind(vec3 q, vec3 D, vec3 room, int kind_in, vec3 l_in) {
 		vec2 pp = vec2(h.x - o, h.y); float frame = step(0.42, max(abs(pp.x + 0.4) / 0.55 * 0.5, abs(pp.y) / 0.35 * 0.5));
 		col = frame > 0.5 ? vec3(0.12) : mix(vec3(0.16, 0.22, 0.42), vec3(0.85, 0.55, 0.3), smoothstep(-0.2, 0.25, pp.y + 0.2 * sin(pp.x * 5.0 + r * 9.0)));
 	} else col = accent * 0.45 + 0.08;
-	vec3 L = l_in.x >= 0.0 ? l_in : (r < 0.12 ? vec3(0.02, 0.022, 0.03) : (r < 0.3 ? vec3(0.42, 0.55, 0.8) : vec3(0.9, 0.72, 0.5)));
+	vec3 L = l_in.x >= 0.0 ? l_in : (r < 0.12 ? vec3(0.02, 0.022, 0.03) : (r < 0.4 ? vec3(1.0, 0.66, 0.32) : vec3(1.0, 0.82, 0.52)));   // warm and well lit, as lib/ship-rooms.js
 	float shade = 0.45 + 0.55 * max(n.y, 0.0) + 0.2 * max(-n.z, 0.0);
 	float lamp = 0.55 + 0.45 * clamp((h.y + 1.5) / 3.0, 0.0, 1.0);
-	vec3 lit_c = col * L * shade * lamp * 1.6;
+	vec3 lit_c = col * L * shade * lamp * 1.9;
 	bool dark = L.x + L.y + L.z < 0.1;
 	if (obj == 5 || (obj == 0 && emit > 0.9 && emit < 1.5)) lit_c += (dark ? vec3(0.0) : accent) * 0.7;   // screens
 	else if (emit > 0.0) lit_c += (dark ? vec3(0.0) : (emit > 2.0 ? accent : L)) * emit * 0.55;

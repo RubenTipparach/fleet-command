@@ -2,6 +2,82 @@
   "_doc": "The Ssarith Hunt picks' hull detail: what tools/blender/hull_detail.py builds over each low-poly hull before painted_bake.py --ship bakes it onto the ship's own UVs (Ship Design Bible chapters 14 and 15). Ship space: +x port, +y up, +z bow, metres. A feature off the centreline is mirrored to starboard (one axis of symmetry); nothing repeats. face: where it sits, found by a ray (top: from above at [x, z]; bottom: from below at [x, z]; port: from the port side at [z, y]; bow: from ahead at [x, y]). Owner, 2026-11-05: \"the gorn ships have things like vents, lights, and sub armor pieces, and primary armor peices. Armor pieces are carefully craftyer to not look the same\", \"notice stuff like liveries, smooth sphereical portions of armor, and specifically shaped vents\", \"no repeating elemnts, single axis symmetry, and lots of shading to give the armor depth\".",
   "_doc_lighting": "logo: the faction emblem (assets/emblems/<faction>/hull_mask.png) painted on the top armour, centred at [x, z], size_m across, lit by its own flood. lighting.floods: spotlights standing 0.9 m off the hull that graze the plating toward aim (aft, fwd, out, in, up, down), 90 degree cones (Ship Design Bible chapter 9). windows: person-sized window rows on the port flank (mirrored) between z_m, one row per rows_y_m, provisional until the ship's room plan places them (W1). Position lights, beacons, strobes and the belly pair are placed from the hull's own shape. auto_floods (defaults, a ship's own keys over them): rows of floods aimed forward along the port flank (mirrored), the top and the belly, every step_m from the stern, up to to_z_m. bays: launch bays, w_m by h_m openings cut through the armour, the hangar behind drawn by the page.",
   "faction": "ssarith",
+  "manifest_doc": "The Ssarith Hunt's picked blockouts.",
+  "paint": {
+    "armour": [
+      "#6e6c45",
+      "#7f7650",
+      "#5b5d3c",
+      "#8b7f55",
+      "#525538",
+      "#74704a",
+      "#666a44"
+    ],
+    "accent": "#7a5a36",
+    "sub": [
+      "#4b4b37",
+      "#575741",
+      "#404331",
+      "#5c5640"
+    ],
+    "under": "#202217",
+    "greeble": [
+      "#34362a",
+      "#6a6650"
+    ],
+    "dome": "#215a3b",
+    "dome_glow": 0.35,
+    "slat": "#5e5c46",
+    "vent": "#121309",
+    "glass": "#121309",
+    "livery": "#2c9a52",
+    "ink": "#14160e",
+    "light_edge": "#d9d2a6",
+    "strip": "centre",
+    "strip_m": 0.7,
+    "pbr": {
+      "armour": [
+        0.58,
+        0.45
+      ],
+      "sub": [
+        0.62,
+        0.55
+      ],
+      "under": [
+        0.8,
+        0.6
+      ],
+      "greeble": [
+        0.55,
+        0.7
+      ],
+      "dome": [
+        0.12,
+        0.0
+      ],
+      "slat": [
+        0.6,
+        0.7
+      ],
+      "vent": [
+        0.9,
+        0.3
+      ],
+      "strip": [
+        0.4,
+        0.0
+      ],
+      "lamp": [
+        0.3,
+        0.0
+      ]
+    },
+    "livery_pbr": [
+      0.5,
+      0.1
+    ]
+  },
   "defaults": {
     "armour_t_m": 0.5,
     "sub_t_m": 0.22,

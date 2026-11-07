@@ -73,3 +73,4 @@
 - [ ] 2.6 Options beyond the display mode and the volumes (2026-11-06): graphics quality and interface scale, which mockup 1 shows
 - [ ] 2.8 Mockup 1: the mission strip without its fill and with live ticks, Withdraw in the battle menu
 - [ ] 2.9 Mockup 1: the Skirmish screen by scenario type, then the faction to play it as, with a scroll bar
+- [ ] 2.10 Mockup 1: sync to the game's 2026-11-06 changes: the goals' close key and their list in Comms (a battle opens on Comms), the campaign map's Menu opening the pause menu, the debrief on black

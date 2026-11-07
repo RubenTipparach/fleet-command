@@ -222,7 +222,7 @@ public sealed partial class Battle
     }
 
     /// <summary>A ship's collision radius against rocks, metres.</summary>
-    public double HullRadiusM(Ship s) => s.Class.LengthM * Data.Systems.Rocks.HullRadiusX;
+    public double HullRadiusM(Ship s) => s.Class.FrameM * Data.Systems.Rocks.HullRadiusX;
 
     // Asteroids, every step: the micrometeor cloud round each rock grinds a ship flying through it (gathered and dealt in
     // whole points so the log does not chatter); a ship inside a rock is set back on its surface and, once its cool-down

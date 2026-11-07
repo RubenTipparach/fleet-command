@@ -83,7 +83,7 @@ public sealed partial class SystemsDef
 
         StrictJson t = Obj(o, "transport");
         t.Str("_doc", "");
-        var tr = new TransportDef(Pos(t, "range_km", 1.5), Count(t, "pads_default", 2), Pos(t, "pad_charge_s", 8), Count(t, "queue_max", 30), Non(t, "shield_down_hp", 0.5));
+        var tr = new TransportDef(Pos(t, "range_km", 15), Count(t, "pads_default", 2), Pos(t, "pad_charge_s", 8), Count(t, "queue_max", 30), Non(t, "shield_down_hp", 0.5));
         t.Done();
 
         StrictJson b = Obj(o, "boarding");
@@ -117,10 +117,10 @@ public sealed partial class SystemsDef
 
         StrictJson f = Obj(o, "beam_fx");
         f.Str("_doc", "");
-        var fx = new BeamFxDef(Pos(f, "beam_s", 1.6), Pos(f, "column_r_m", 90), Pos(f, "column_h_m", 320), Pos(f, "planet_x", 2.2), Count(f, "stream_count", 56),
-            Pos(f, "stream_spread_s", 0.9), Pos(f, "stream_travel_s", 1.1), Non(f, "stream_arc_m", 140), Non(f, "stream_wobble_m", 50), Pos(f, "stream_size_m", 80));
+        var fx = new BeamFxDef(Pos(f, "beam_s", 1.6), Pos(f, "column_r_m", 900), Pos(f, "column_h_m", 3200), Pos(f, "planet_x", 2.2), Count(f, "stream_count", 56),
+            Pos(f, "stream_spread_s", 0.9), Pos(f, "stream_travel_s", 1.1), Non(f, "stream_arc_m", 1400), Non(f, "stream_wobble_m", 500), Pos(f, "stream_size_m", 800));
         f.Done();
-        var def = new CommsDef(hail, tr, board, inv, teamDefault, classes, fx, Count(o, "log_lines_docked", 4), Count(o, "log_lines_expanded", 22), Non(o, "distress_under_way_m_s", 120));
+        var def = new CommsDef(hail, tr, board, inv, teamDefault, classes, fx, Count(o, "log_lines_docked", 4), Count(o, "log_lines_expanded", 22), Non(o, "distress_under_way_m_s", 1200));
         o.Done();
         return def;
     }

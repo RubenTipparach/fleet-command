@@ -52,7 +52,7 @@ public sealed record ReactorDef
     public double Nudge { get; init; } = 0.05;
     /// <summary>The crew moves flow off a loop whose health is below this.</summary>
     public double CrewLoopBelow { get; init; } = 0.3;
-    public double BlastKm { get; init; } = 3;
+    public double BlastKm { get; init; } = 30;
     public double BlastDmg { get; init; } = 45;
     public ReactorHitDef Hit { get; init; } = new();
 }
@@ -98,7 +98,7 @@ public sealed record WarpDef
     public double LeakPerS { get; init; } = 0.01;
     public double QgBlock { get; init; } = 0.5;
     public double OutS { get; init; } = 1.2;
-    public double OutSpeedMS { get; init; } = 6000;
+    public double OutSpeedMS { get; init; } = 60000;
     public WarpRiskDef Risk { get; init; } = new();
     public WarpMishapDef Mishap { get; init; } = new();
 }
@@ -126,7 +126,7 @@ public sealed record OfficerAbility
     public double Hit { get; init; } = 0.02;
     public double Pd { get; init; } = 0.05;
     public double Scan { get; init; } = 0.25;
-    public double SweepKm { get; init; } = 1;
+    public double SweepKm { get; init; } = 10;
     public double Jam { get; init; } = 0.25;
     public double RepairRate { get; init; } = 0.2;
     public double Ambush { get; init; } = 0.1;

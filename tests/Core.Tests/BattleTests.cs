@@ -121,7 +121,7 @@ public class BattleTests
     {
         Battle b = TestData.NewBattle();
         Ship t = b.ShipById("vorrak")!;
-        t.X = b.Player.X; t.Z = b.Player.Z - 5000; // dead ahead, 5 km
+        t.X = b.Player.X; t.Z = b.Player.Z - 50000; // dead ahead, 50 km
         b.Lock("vorrak");
         foreach (Mount m in b.Player.Mounts) m.Charge = 1;
         Mount[] would = b.WouldFire();

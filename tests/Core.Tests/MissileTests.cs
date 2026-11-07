@@ -16,7 +16,7 @@ public class MissileTests
     {
         string json = "{\"id\": \"m\", \"name\": \"M\", \"side\": \"krai\", \"sky\": \"quiet\", \"seed\": " + seed + ", \"objective\": \"O\", \"say\": [\"Comms\", \"Hi.\"], \"ships\": ["
             + "{\"id\": \"k\", \"name\": \"K\", \"captain\": \"C\", \"class\": \"krai_dn\", \"faction\": \"krai\", \"side\": 0, \"x_m\": 0, \"z_m\": 0, \"heading_deg\": 0, \"speed_m_s\": 0},"
-            + "{\"id\": \"c\", \"name\": \"C\", \"captain\": \"C\", \"class\": \"ca\", \"faction\": \"concord\", \"side\": 1, \"x_m\": 0, \"z_m\": -4000, \"heading_deg\": 90, \"speed_m_s\": 0, \"hold_fire\": true, \"stance\": \"hold\"}]}";
+            + "{\"id\": \"c\", \"name\": \"C\", \"captain\": \"C\", \"class\": \"ca\", \"faction\": \"concord\", \"side\": 1, \"x_m\": 0, \"z_m\": -40000, \"heading_deg\": 90, \"speed_m_s\": 0, \"hold_fire\": true, \"stance\": \"hold\"}]}";
         Scenario sc = DataLoader.LoadScenario(StrictJson.Parse(json, "test"), TestData.Data.Classes, TestData.Data.Factions);
         var b = new Battle(TestData.Data, sc);
         b.Lock("c");
@@ -77,7 +77,7 @@ public class MissileTests
     {
         Battle b = Duel(3);
         Ship k = b.Player;
-        var decoy = new Lure { Kind = "decoy", Owner = k.Id, X = k.X, Z = k.Z + 200, LifeS = 30 };
+        var decoy = new Lure { Kind = "decoy", Owner = k.Id, X = k.X, Z = k.Z + 2000, LifeS = 30 };
         k.Decoy = decoy;
         foreach (Mount m in k.Mounts) m.Charge = 1;
         Assert.True(b.Fire() > 0);
@@ -107,7 +107,7 @@ public class MissileTests
         Battle b = Duel();
         Shot sh = FireMissile(b);
         Ship c = b.ShipById("c")!;
-        c.X = 0; c.Z = -400000;   // far beyond any missile's reach
+        c.X = 0; c.Z = -4000000;   // far beyond any missile's reach
         int steps = (int)Math.Ceiling(sh.Life / TestData.Data.Tuning.StepS) + 2;
         for (int i = 0; i < steps; i++) b.Step();
         Assert.DoesNotContain(sh, b.Shots);

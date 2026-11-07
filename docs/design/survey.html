@@ -203,6 +203,22 @@ const SECTIONS = [
         options: ['Pale green-white windows, warm white floods (as drawn)', 'Warm amber windows and floods, like the Concord', 'Cool white windows, warm white floods', 'Something else (say in the notes)'], rec: 0,
         why: 'The green of the windows ties them to the Hunt\'s strips and liveries; warm floods keep the plating its own colour when it is lit. A window\'s colour is also the light of the room behind it, so this can change per room once the rooms are planned.' },
     ] },
+  { tag: 'I', name: 'Kelvane Institute ships (mockup 23)',
+    lead: 'Mockup 23 (Kelvane Institute Ships, docs/mockups/kelvane-ship-concepts.html; its link is on the tracker) now shows the line: your five picks as the frigate, destroyer, cruiser, battlecruiser and carrier, each a research vessel, each baked with its own detail and textures. Your picks, the classes and the science specialisation are recorded below as decided. Design: openspec/changes/kelvane-ship-concepts.',
+    qs: [
+      { id: 'I5', q: 'Four of your picks come from the Collider Halls (ships built round the accelerator that is also their lance) and the frigate from the Open Notebook (every reading taken twice), and you said the Institute specialises in scientific missions. What becomes of the other three drafted schools (the Calibrators, the Long Baseline, the Field Stations)?',
+        options: ['Keep them as schools inside the Institute, for its stations, support ships and the console, not the warships', 'Drop them: the Collider Halls are the Institute', 'Different (say in the notes)'], rec: 0,
+        why: 'A culture holds several traditions at once (Ship Design Bible C2); the Calibrators already shape the hull detail (calibrated plating, the measuring scale on the flanks), and the others can give the Institute its stations and survey craft.' },
+      { id: 'I3', q: 'The hulls wear the console\'s palette: champagne plating, bands of dark smoked glass, amber light. Keep it?',
+        options: ['Yes, as drawn', 'Champagne and glass, but phosphor green light', 'A palette of its own (say in the notes)'], rec: 0,
+        why: 'A ship\'s exterior complements its console (Ship Design Bible X1): the same plate, glass and light a captain sees on the bridge.' },
+      { id: 'I6', q: 'The classes carry placeholder names after the virtues of inquiry: the Parallax survey frigate, the Candour beamline destroyer, the Patience research cruiser (the console\'s research cruiser), the Rigour collider battlecruiser, the Curiosity probe carrier. Keep them?',
+        options: ['Keep them', 'Keep the idea, other names (say in the notes)', 'Name them another way (say how in the notes)'], rec: 0,
+        why: 'A people names its ships; until you set how the Institute does, these stay placeholders (kelvane-battle-console K1).' },
+      { id: 'I7', q: 'Eight shuttle designs (mockup 23, Small craft), each grown from a board hull in its own tradition: 201 Case shuttle, 202 Runner skiff, 203 Twin-boom tender, 204 Waisted courier, 205 Spar lander, 206 Gallery bus, 207 Terrace launch, 208 Ring runabout. Which go on, and which does the carrier park on its pads?',
+        options: ['202 Runner skiff for the carrier, the rest as other craft', 'One of the others for the carrier (say which in the notes)', 'Pick your own set (say which numbers in the notes)', 'None yet: new shuttle designs'], rec: 0,
+        why: 'The skiff\'s two runners are its landing skids, so it stands on a pad (or hangs from a ceiling pad) without legs; the carrier parks it now, floors and ceilings alike.' },
+    ] },
   { tag: 'D', name: 'Missiles for every faction (mockup 16)',
     lead: 'You asked for missiles on every faction ("in starfleet command they are refered to as drones"). The weapons range fires salvos both ways with point defence; the rules are written up in openspec/changes/missiles after the reference manual (SFC2, printed pages 24 and 190-192). Every number is a placeholder.',
     qs: [
@@ -382,6 +398,8 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'I2, I4 (owner, 2026-11-06): the Kelvane line is blockouts 5, 11, 17, 18 and 19 ("12,11,18.19,17 all really good shapes, start detailing these", then "12 is no go use 5"), the more complex ones for the larger ships ("use more complex ones for larger captial ships like destroyer, cruiser, batlecruiser and carrier"): frigate 5 Slotted, destroyer 11 Loop, cruiser 17 Keel loop, battlecruiser 18 Crossed loops, carrier 19 Quartered loop', where: 'openspec/changes/kelvane-ship-concepts (D8)' },
+  { text: 'I1, in part (owner, 2026-11-06): the Institute specialises in scientific missions, its ships themed as advanced science and research vessels ("we might want to theme them after advanced science and research vessels, this faction will specialize in scientific missions")', where: 'openspec/changes/kelvane-ship-concepts (D8); I5 asks about the other schools' },
   { text: 'H4: the blockouts that go on are 1 Hooded lance, 3 Forked prow, 7 Harpoon and 9 Trident; the Spearhead is withdrawn (owner, 2026-11-05: "spearhead: there we go again with the ltiterals lol / headedf lance: great! / forked prow, great! ... / trident: awesome! / harpoon yes!")', where: 'openspec/changes/ssarith-ship-concepts' },
   { text: 'A18: a bridge block of its own on larger super-capital ships; on other classes it depends on players\' feedback (owner, 2026-11-03: "larger super captial ships, otherwise it depends based on human feedback")', where: 'docs/design/ship-bible.html chapter 5' },
   { text: 'A15-A17 (Krai ship direction, sizes, names): withdrawn, the Krai ships are being redone on the Ship Design Bible (owner, 2026-11-03: "nuke the krai survey since we\'re redoing them")', where: 'openspec/changes/krai-ship-concepts' },

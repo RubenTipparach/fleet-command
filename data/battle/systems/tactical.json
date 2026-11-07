@@ -22,7 +22,7 @@
  },
  "aim_hit_penalty": 0.1,
  "retreat_below_hull_frac": { "half": 0.5, "quarter": 0.25 },
- "map_scales_km": [10, 20, 40],
+ "map_scales_km": [100, 200, 400],
  "objectives": [
   { "scenario": "concord_disable", "ship": "vekk", "disable": ["engines", "weapons"] },
   { "scenario": "krai_disable", "ship": "meridian", "disable": ["engines", "weapons"] }

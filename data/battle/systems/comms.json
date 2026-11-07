@@ -14,7 +14,7 @@
  },
  "transport": {
   "_doc": "The transporter's reach (owner, 2026-11-03: \"transport range is too wide! 1.5 km only!\"), shared by boarding, raids and the inventory transporter; the pads (owner, 2026-11-02: one pad beams one person or one load, then recharges, pad_charge_s at one energy point when it charges alone, that times the number charging at once); the longest boarding queue; a shield facing at or under shield_down_hp is down.",
-  "range_km": 1.5,
+  "range_km": 15,
   "pads_default": 2,
   "pad_charge_s": 8,
   "queue_max": 30,
@@ -232,17 +232,17 @@
  "beam_fx": {
   "_doc": "The transporter effect (owner, 2026-11-03: \"there should be some shader + vfx for transporting stuff\", \"I want particles flying from one ship to the other\"): a column of light column_r_m wide and column_h_m tall at each end over beam_s (a planet's planet_x as wide), and stream_count motes leaving the sender over stream_spread_s, each crossing in stream_travel_s on a low arc stream_arc_m high, wobbling stream_wobble_m sideways, each stream_size_m across.",
   "beam_s": 1.6,
-  "column_r_m": 90,
-  "column_h_m": 320,
+  "column_r_m": 900,
+  "column_h_m": 3200,
   "planet_x": 2.2,
   "stream_count": 56,
   "stream_spread_s": 0.9,
   "stream_travel_s": 1.1,
-  "stream_arc_m": 140,
-  "stream_wobble_m": 50,
-  "stream_size_m": 80
+  "stream_arc_m": 1400,
+  "stream_wobble_m": 500,
+  "stream_size_m": 800
  },
  "log_lines_docked": 4,
  "log_lines_expanded": 22,
- "distress_under_way_m_s": 120
+ "distress_under_way_m_s": 1200
 }

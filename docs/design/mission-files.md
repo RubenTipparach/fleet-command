@@ -52,12 +52,12 @@ A battle is `{ when?, name?, intel?, groups, markers?, objectives }`:
   - `tag` is `flagship`, `prize`, `rescue`, `decoy` or `drone`. A **drone** (an enemy group, a shakedown's targets)
     stands where it is put, never fires, and is a light hulk: no shields, 30 % of its hull. A **prize** is taken, not destroyed: beaten down to a quarter of
     its hull (`capture_hull_frac` in `data/battle/tuning.json`), it strikes and is boarded.
-  - Enemy groups spread ahead at 10 km unless `bearing_deg` (clockwise from ahead) and `range_km` place them.
+  - Enemy groups spread ahead at 100 km unless `bearing_deg` (clockwise from ahead) and `range_km` place them.
 - A **marker** is a beacon to fly to: `{ id, label, bearing_deg?, range_km?, at?, after?, radius_m? }`.
-  - It sits at `bearing_deg` (clockwise from ahead) and `range_km` (default 8) from the fleet's start, or at the start itself
+  - It sits at `bearing_deg` (clockwise from ahead) and `range_km` (default 80) from the fleet's start, or at the start itself
     with `"at": "start"`.
   - `after` names a marker that must be reached first; until then it is not shown and cannot be reached.
-  - The ship you command reaches it within `radius_m` (default 800, 100 to 5000).
+  - The ship you command reaches it within `radius_m` (default 8000, 1000 to 50000).
   - A battle with markers ends when every primary objective is met (checked as it plays), not when the last enemy goes.
 - An **objective** is `{ id, text, primary?, by_withdraw?, done }`.
   - `done` is checked when the battle ends.

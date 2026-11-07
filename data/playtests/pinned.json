@@ -9,7 +9,7 @@
   { "do": "pin_grid" },
   { "do": "collapse" },
   { "do": "click", "arg": "rr.map" },
-  { "do": "click", "arg": "map.s.10" },
+  { "do": "click", "arg": "map.s.100" },
   { "do": "hold", "s": 1 },
   { "do": "collapse" },
   { "do": "fight", "s": 600 }

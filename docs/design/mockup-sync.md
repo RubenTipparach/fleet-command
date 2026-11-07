@@ -16,7 +16,19 @@ Update it with every change to the mockup or the game. Side-by-side sheets: `doc
 | 8 | Battle console: Krai Warhost | v22 | the Krai kit on the game's console (the parts the game has), with the column plate and the 60 and 80 px strips | `krai-console-engine` |
 | 1 | Primary game flow (menus, faction screen, campaign, missions) | v19 | v18 and v19 (the walnut faction screen, stores, crew lists, kept routes, options; 2026-11-06); v17 (ships slide between sectors); v15 (Accept sets course; the debrief over the battle); v14's flow and rules (2026-11-05): the menu, the faction screen, skirmish, the campaign map with the same territory, moves, routes by turn, factions' fleets, freighters, mission banners, briefing, port, debrief with prestige and reputation; missions from `data/missions/`; the differences below | `game-flow-engine`, `mission-scripting` |
 | 16 | Special weapons range | v5 | v5's simulation and looks: the four missile grades with flares, decoy shuttle and point defence; the chorus lance, quell torpedo, forge driver and blood charge with their rules and effects. Not its shield bubble ripple, haze or motes (below) | `weapon-fx`, `missiles`, `special-weapons` |
-| 12 | Ssarith Hunt ships | v26 | v26's ships (2026-11-06; v25 halves the floods and doubles their pools; v26 drops the page's dots at the floods, which the game never drew): the four frigates, the cruiser and the carrier exported by `tools/mockups/export_ships.mjs`, dressed by their own baked maps (`baked_hull.gdshader`), their lamps with the page's glows (a strobe's flashing, a beacon's pulsing; none at the floods), every window and launch bay a pane with its room or hangar behind it (`pane.gdshader`, `ship_rooms.gdshaderinc`), and the same damage and breakup as the other lines (cut faces by each hull's signed distance field). Differs: which furniture a given window shows (the game's room hash is PCG, the page's fract(sin)). The Hunt is also a side you command (its console, change `ssarith-console-engine`). Still open: its own weapons (2.3), `*.bin` in an export preset (2.5) | `ssarith-ships-engine` |
+| 12 | Ssarith Hunt ships | v26 | v26's ships (2026-11-06; v25 halves the floods and doubles their pools; v26 drops the page's dots at the floods, which the game never drew): the four frigates, the cruiser and the carrier exported by `tools/mockups/export_ships.mjs`, dressed by their own baked maps (`baked_hull.gdshader`), their lamps with the page's glows (a strobe's flashing, a beacon's pulsing; none at the floods), every window and launch bay a pane with its room or hangar behind it (`pane.gdshader`, `ship_rooms.gdshaderinc`; the rooms lit warm and well, yellow quarters and orange workshops, for every ship, 2026-11-06, the same palette as `docs/mockups/lib/ship-rooms.js` and `lib/baked-ship.js`), and the same damage and breakup as the other lines (cut faces by each hull's signed distance field). Differs: which furniture a given window shows (the game's room hash is PCG, the page's fract(sin)). The Hunt is also a side you command (its console, change `ssarith-console-engine`). Still open: its own weapons (2.3), `*.bin` in an export preset (2.5) | `ssarith-ships-engine` |
+
+Distances (2026-11-06, owner: "also multiply all distance by 10", "1km -> 10km"): the game's battle distances are ten times
+the mockups'. Every distance in `data/battle/` and `data/missions/` (positions, ranges, speeds, accelerations, map scales,
+reaches and radii) is tenfold, a scene unit is 1 km (`BattleView.MPerU`), and `tuning.json` `ship_frame_x` (10) frames each
+ship at ten times its `length_m`, so the battle looks and plays as before (the golden seed is unchanged) while every
+readout says ten times the figure: a ship 1.1 km off now reads 11 km. Ship lengths, deck plans and the boarding parties'
+walking inside a hull are not scaled. The mockups (2, 8, 15, 16 and the console skins) still use the old figures and
+the battle console pages carry the scaled class table (they read only each class's model and shield bands from it, so they
+draw as before), and the special weapons range (16) keeps its old inlined weapons, missiles and tuning (it flies by them, so
+the scaled figures would break it), which leaves its `inline_data.py --check` failing until its scene unit is 1 km and its
+ships are drawn at `ship_frame_x` times their length. Task: `battle-console-engine` 2.8, "distances x10 in the
+mockups".
 
 Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
 battle console mockup (mockup 2 v82, mockup 8 v21, mockup 15 v6) flies the same exported glbs the game flies, each class's
@@ -49,6 +61,23 @@ still draws its outline, and the campaign mockup's shipyard its own. Task: `ship
 
 Missions (2026-11-05): the game reads `data/missions/`; the campaign mockup still runs `docs/mockups/lib/campaign-missions.js`,
 kept the same by hand (the files were written from it, 2026-11-05). Task: `mission-scripting` 2.1.
+
+Shield bands by class (2026-11-06, owner: "frigates have only 1 layer of shields as opposed to larger ships"): in step.
+`shield_layers` in `data/battle/classes.json` (frigates and corvettes 1, destroyers, corsairs and troop ships 2, cruisers and
+up 3) sets how many bands a facing shows at full strength, read by the game's `ShieldShell.Layers` and by the four battle
+console pages' `shieldLayers` from their inlined table.
+
+Shots between steps (2026-11-06, owner: "why does weapon appear jittery?"): the game draws a shot in flight between its last
+two fixed steps (`Battle.DrawnAt`), as the mockups already do by stepping every animation frame. Nothing to sync.
+
+Game-side changes the game-flow mockup (mockup 1) does not show yet (2026-11-06), task `game-flow-engine` 2.10 "sync mockup 1
+to the game's 2026-11-06 changes":
+- the mission goals over the view have a close key, and the Comms station lists them with an Over view key to show them
+  again; a battle opens on Comms (owner: "add close button to goals, and put them in comms panel. Start game with coms panel
+  open by default");
+- the campaign map's Menu opens the pause menu (Resume, Main menu, Options, Quit) in place of going straight to the main
+  menu (owner: "menu button in campaign map should be the pause menu");
+- the debrief stands on black, the black the battle fades to (owner: "I think this background should be black").
 
 ## Open differences
 
