@@ -39,3 +39,10 @@
   array of cells; rows of windows on every flank with rooms behind them, drawn by the pane code now shared with the Hunt
   (`docs/mockups/lib/baked-ship.js`). All five rebaked. Page 11.3 MB. Published as artifact version 6, version id
   `1793981351-4965`.
+- 2026-11-07, cloud session (owner, 2026-11-06 and 07: "greebles look too random", "large vents, fuel pods, coils and
+  pipes", "carrier should have landing pads and fighters", "diagonals on corners", "these lines are quire dark", windows
+  "in awkward spotrs", the flood "light dots", warm rooms, then reference images of greebles, hull armour and details, "I
+  hate those pods", "i dont like this light line, get rid"): version 7. Panelled machinery in rows (no fuel pods), plate
+  grooves and marks, inspection hatches, diagonal corners, the carrier's pads with a craft on each, no light lines, lighter
+  seams, windows clear of strips and openings, no flood dots, warm rooms. All five rebaked. Page 10.7 MB. Published as
+  artifact version 7, version id `1794016956-ca38`.
