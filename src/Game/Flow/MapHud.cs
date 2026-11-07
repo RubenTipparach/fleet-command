@@ -156,7 +156,9 @@ public sealed partial class MapHud : FlowPanel
     {
         Sector h = c.Hex(col, row);
         var missions = c.S.Missions.Where(m => m.C == col && m.R == row).ToList();
-        var groups = c.S.Groups.Where(g => g.C == col && g.R == row).ToList();
+        // the fog of war: other fleets only where you see now; an unexplored sector shows nothing of what is in it
+        bool seen = c.IsVisible(col, row);
+        var groups = seen ? c.S.Groups.Where(g => g.C == col && g.R == row).ToList() : new List<FactionFleet>();
         bool here = c.S.AtC == col && c.S.AtR == row;
         Sector at = c.At;
         bool port = c.IsPort(at), market = c.IsMarket(at);
@@ -164,10 +166,14 @@ public sealed partial class MapHud : FlowPanel
         float hgt = 286 + missions.Count * 84 + (groups.Count > 0 ? 28 : 0) + (!here && !t.Impassable ? 56 : 0) + (market ? 54 : 0);
         Rect2 b = Sheet(SidePanel(hgt), here ? "Your position" : "Selected sector");
         float x = b.Position.X, y = b.Position.Y + 30, w = b.Size.X;
-        Text((h.PortName ?? t.Name).ToUpperInvariant(), x, y + 6, 28, C.Text, HorizontalAlignment.Left, w, 700, 1);
+        Text((h.Known ? h.PortName ?? t.Name : "Unexplored").ToUpperInvariant(), x, y + 6, 28, C.Text, HorizontalAlignment.Left, w, 700, 1);
         y += 34;
-        DrawRect(new Rect2(x, y - 11, 11, 11), FacColor(h.Owner));
-        Text($"{FacName(h.Owner)} · {t.Name}{(t.Impassable ? "" : $" · move cost {t.Cost}")}", x + 18, y, 18, C.Sky, HorizontalAlignment.Left, w - 18, 600);
+        if (h.Known)
+        {
+            DrawRect(new Rect2(x, y - 11, 11, 11), FacColor(h.KnownOwner));
+            Text($"{FacName(h.KnownOwner)}{(seen ? "" : " (last seen)")} · {t.Name}{(t.Impassable ? "" : $" · move cost {t.Cost}")}", x + 18, y, 18, C.Sky, HorizontalAlignment.Left, w - 18, 600);
+        }
+        else Text("No charts of this sector yet", x, y, 18, C.Lilac, HorizontalAlignment.Left, w, 600);
         y += 28;
         if (groups.Count > 0)
         {

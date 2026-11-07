@@ -57,10 +57,11 @@ public sealed class Campaign
                     double d = HexGrid.Dist(c, r, sc, sr) + R.Next() * md.SeedJitter;
                     if (d < bd) { bd = d; best = f; }
                 }
-                double t = R.Next();
-                s.Sectors.Add(new Sector { C = c, R = r, Owner = best, Terrain = t < md.NebulaBelow ? "nebula" : t < md.AsteroidsBelow ? "asteroids" : "open" });
+                // one draw a sector, kept from the first map's scattered terrain so the borders stay as approved
+                R.Next();
+                s.Sectors.Add(new Sector { C = c, R = r, Owner = best });
             }
-        foreach (var (c, r) in md.Stars) s.Hex(c, r).Terrain = "star";
+        c0.MakeSpace();
         foreach (Place p in md.Places)
         {
             Sector h = s.Hex(p.C, p.R);
@@ -89,6 +90,7 @@ public sealed class Campaign
         first.Supplies["marines"] = Math.Min(ru.StartMarines, c0.SupplyMax(first, "marines"));
         s.Fleet.Add(first);
         c0.MakeFreighters();
+        c0.Reveal();
         c0.RollOfficers();
         if (data.Missions.ContainsKey("shakedown")) c0.OfferMission("shakedown");
         for (int i = 0; i < ru.MissionsStart; i++) c0.OfferMission();
@@ -108,11 +110,107 @@ public sealed class Campaign
         if (s.Version != 1) throw new FormatException($"save version {s.Version} is not 1");
         if (s.Sectors.Count != s.Cols * s.Rows || s.Cols < 1) throw new FormatException("the save's map is the wrong size");
         if (!data.Factions.ContainsKey(s.Side)) throw new FormatException($"the save's side '{s.Side}' is no faction");
-        return new Campaign(data, s);
+        var c = new Campaign(data, s);
+        // a save from before the fog of war knows nothing yet: what is seen now is revealed
+        c.Reveal();
+        return c;
     }
 
     /// <summary>Writes the random generator's state back into the state (before saving).</summary>
     private void Sync() => S.Rng = R.State;
+
+    // ---- Space: star systems and the deep between them ------------------------------------------------------------------
+
+    /// <summary>Lays out space (owner, 2026-11-07: "space is kinda random right now. we should have stars, with planets
+    /// asteriods and nebula clustered around them", "rogue planets, dust clouds, and asteroids with no stars are a thing
+    /// too"): each system's star, its asteroid belt (a share of the ring belt_r sectors out) and its nebula grown beside it;
+    /// then dust clouds and asteroid fields in the deep, clear of every star. Ports are placed over it afterwards.</summary>
+    private void MakeSpace()
+    {
+        MapDef md = Data.Map;
+        var places = md.Places.Select(p => (p.C, p.R)).ToHashSet();
+        var stars = md.Stars.ToHashSet();
+        bool Free((int C, int R) k) => !places.Contains(k) && !stars.Contains(k) && Hex(k.C, k.R).Terrain == "open";
+        foreach (var (c, r) in stars) Hex(c, r).Terrain = "star";
+        foreach (StarSystem y in md.Systems)
+        {
+            if (y.BeltR > 0)
+                foreach (Sector h in S.Sectors.Where(h => HexGrid.Dist(h.C, h.R, y.C, y.R) == y.BeltR))
+                    if (R.Next() < y.BeltShare && Free((h.C, h.R))) h.Terrain = "asteroids";
+            if (y.Nebula > 0)
+            {
+                var start = S.Sectors.Where(h => HexGrid.Dist(h.C, h.R, y.C, y.R) is 2 or 3 && Free((h.C, h.R))).ToList();
+                if (start.Count > 0) Grow(start[R.Below(start.Count)], y.Nebula, "nebula", Free);
+            }
+        }
+        DeepSpace dp = md.Deep;
+        bool Deep((int C, int R) k) => Free(k) && stars.All(t => HexGrid.Dist(k.C, k.R, t.C, t.R) >= dp.ClearOfStars);
+        for (int i = 0; i < dp.DustClouds + dp.Fields; i++)
+        {
+            bool dust = i < dp.DustClouds;
+            var start = S.Sectors.Where(h => Deep((h.C, h.R))).ToList();
+            if (start.Count == 0) break;
+            int n = dust ? dp.DustMin + R.Below(dp.DustMax - dp.DustMin + 1) : dp.FieldMin + R.Below(dp.FieldMax - dp.FieldMin + 1);
+            Grow(start[R.Below(start.Count)], n, dust ? "nebula" : "asteroids", Deep);
+        }
+    }
+
+    // Grows a patch of terrain from a sector to n sectors, each new one a random free neighbour of the patch so far
+    // (neighbours in the grid's fixed order, so the same seed grows the same patch).
+    private void Grow(Sector from, int n, string terrain, Func<(int C, int R), bool> free)
+    {
+        var patch = new List<Sector> { from };
+        from.Terrain = terrain;
+        while (patch.Count < n)
+        {
+            var edge = patch.SelectMany(h => HexGrid.Neighbours(h.C, h.R, S.Cols, S.Rows)).Distinct().Where(free).ToList();
+            if (edge.Count == 0) break;
+            var (c, r) = edge[R.Below(edge.Count)];
+            Sector h = Hex(c, r);
+            h.Terrain = terrain;
+            patch.Add(h);
+        }
+    }
+
+    /// <summary>Whether a planet is a rogue: no star within three sectors.</summary>
+    public bool IsRogue(Sector h) => h.Planet != null && Data.Map.Stars.All(t => HexGrid.Dist(h.C, h.R, t.C, t.R) > 3);
+
+    // ---- The fog of war ----------------------------------------------------------------------------------------------------
+
+    /// <summary>The sectors seen now (the fog's visible state; owner, 2026-11-07: "fog of war has three states: unexplored,
+    /// revealed, and visible"): your empire's own sectors, those within your fleet's sight, and those within friendly
+    /// ships' sight (your faction's fleets and freighters, and your allies').</summary>
+    public HashSet<(int C, int R)> Visible()
+    {
+        Sight sg = Data.Map.Sight;
+        var eyes = new List<(int C, int R, int Range)> { (S.AtC, S.AtR, sg.Fleet) };
+        foreach (FactionFleet g in S.Groups.Where(g => Friendly(g.Fac))) eyes.Add((g.C, g.R, sg.Friendly));
+        foreach (Freighter f in S.Freighters.Where(f => Friendly(f.Fac) && f.Route.Count > 0))
+        {
+            int[] at = f.Route[Math.Clamp(f.I, 0, f.Route.Count - 1)];
+            eyes.Add((at[0], at[1], sg.Friendly));
+        }
+        var seen = new HashSet<(int, int)>();
+        foreach (Sector h in S.Sectors)
+            if (h.Owner == S.Side || eyes.Any(e => HexGrid.Dist(h.C, h.R, e.C, e.R) <= e.Range)) seen.Add((h.C, h.R));
+        return seen;
+    }
+
+    /// <summary>A faction whose ships share what they see with you: your own, or an ally (standing at AllyStanding or more).</summary>
+    public bool Friendly(string fac) => fac == S.Side || SideOf(fac) == "ally";
+
+    /// <summary>Whether a sector is seen now.</summary>
+    public bool IsVisible(int c, int r) => Visible().Contains((c, r));
+
+    /// <summary>Marks every sector seen now as revealed, with the empire that holds it ("Any revealed area updates the tile
+    /// color (empire controled)"). Called when a campaign starts or loads, after each sector the fleet flies, and after the
+    /// factions' turn.</summary>
+    public void Reveal()
+    {
+        foreach (var (c, r) in Visible()) See(Hex(c, r));
+    }
+
+    private static void See(Sector h) { h.Known = true; h.KnownOwner = h.Owner; }
 
     // ---- Map -------------------------------------------------------------------------------------------------------------
 
@@ -206,6 +304,8 @@ public sealed class Campaign
             S.AtC = k.C;
             S.AtR = k.R;
             steps.Add(k);
+            // the fleet sees as it goes: everything within its sight of each sector it passes is revealed
+            Reveal();
         }
         bool arrived = S.AtC == target.C && S.AtR == target.R;
         S.OrderC = arrived ? null : target.C;
@@ -223,6 +323,7 @@ public sealed class Campaign
     {
         S.Turn++;
         List<FleetMove> moves = FactionsMove();
+        Reveal();
         S.Mp = Ru.MovePoints;
         S.Missions = S.Missions.Where(m => m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0).ToList();
         int n = 1 + R.Below(2);
@@ -351,10 +452,18 @@ public sealed class Campaign
     /// random contract. <paramref name="at"/> pins the sector and hands the mission data. Returns null when none fits.</summary>
     public Offer? OfferMission(string? id = null, (int C, int R)? at = null, IReadOnlyDictionary<string, object>? data = null)
     {
-        var ids = Data.Contracts.Select(m => m.Id).ToList();
+        var contracts = Data.Contracts.ToList();
+        double total = contracts.Sum(m => m.Weight);
+        // a contract picked by its weight (one draw, as before)
+        string Pick()
+        {
+            double x = R.Next() * total;
+            foreach (MissionScript m in contracts) { if (x < m.Weight) return m.Id; x -= m.Weight; }
+            return contracts[^1].Id;
+        }
         for (int tries = 0; tries < 20; tries++)
         {
-            string sid = id ?? ids[(int)Math.Floor(R.Next() * ids.Count)];
+            string sid = id ?? Pick();
             MissionScript def = Data.Missions[sid];
             var pool = (at is { } p ? new List<Sector> { Hex(p.C, p.R) } : Where(def))
                 .Where(h => !S.Missions.Any(m => m.C == h.C && m.R == h.R)).ToList();
@@ -367,6 +476,8 @@ public sealed class Campaign
                 Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
             };
             if (data != null) foreach (var (k, v) in data) m.Set(k, v);
+            // a mission's intel shows its sector on the map
+            See(h);
             if (def.FollowGroup) m.Group = GroupAt(h.C, h.R)?.Name;
             var sc = new OfferScope(this, m);
             foreach (SetupStep st in def.Setup)

@@ -359,7 +359,8 @@ public sealed partial class ScriptedCaptain : Node
             else how = B.Over;
             await Snap($"end-{m.Script}");
         }
-        if (await WaitScreen("Debrief", 30) is { } s6) return s6;
+        // a withdrawal warps out first: the drive charges and plots (about 21 s unopposed) before the jump
+        if (await WaitScreen("Debrief", how.StartsWith("withdrew") ? 120 : 30) is { } s6) return s6;
         await Snap($"debrief-{m.Script}");
         var d = _flow.Last;
         string line = $"{name}: {how}, {d?.Grade ?? "?"}";

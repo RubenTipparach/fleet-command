@@ -589,7 +589,7 @@ public sealed partial class Main : Node
                     b.HelmOrder("intercept");
                     b.SetSpeed(b.Rules.MaxSpeed(b.Player));
                     for (int i = 0; i < 600; i++) b.Step();
-                    if (what == "debrief-battle") { b.Withdraw(); while (f.Screen == FlowScreen.Battle) await Frames(10); await Settle(); }
+                    if (what == "debrief-battle") { b.EndWithdrawn(); while (f.Screen == FlowScreen.Battle) await Frames(10); await Settle(); }
                 }
                 break;
         }

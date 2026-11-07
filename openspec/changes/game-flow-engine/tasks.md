@@ -56,6 +56,19 @@
   Shakedown and Deliver the prize rewritten; the mission strip without its fill, objectives ticked live, Withdraw in the
   battle's menu; ships slide on the map (no hop), in the game and mockup 1 v18
 
+- [x] 1.14 (2026-11-07) The owner's notes on the Hunt campaign and the map:
+  - Move here with no moves left sets the course anyway, flown from the next End turn ("pressing the move button if move is
+    already exhasuted wont queue up move for the next turns"); Accept and Set course with no moves left queue it the same way.
+    The game had returned early; mockup 1 already queued it (`moveFleet` with an empty leg)
+  - fleets fly their moves as phases: turn on the spot to face the next sector, then slide there, then turn again ("turn
+    first, then move, not turn and move at the same time"), 0.5 s for half a turn (`CampaignMap.FlightTurnS`)
+  - the map's nebula puffs hashed with PCG on the integer lattice, their seed offset kept small: the `fract` hash had lost
+    its precision and drawn the clouds in blocks ("need to fix pixely clouds")
+  - the port draws a hull with no schematic as the systems display's stand-in silhouette (the Hunt hulls), so the fleet
+    cards' and shipyard's text never sits beside an empty space; the stores count no longer trimmed
+  - the menu card sized to its four keys
+- [ ] 1.15 Mockup 1: fleets turn, then move, as the game (`stepFlight` turns the model at once today)
+
 ## 2. Still different from mockup 1 v14 (each a line in `docs/design/mockup-sync.md`)
 
 - [x] 2.1 The faction screen's 3D scene, light and dust (2026-11-06: the walnut table, change `faction-select` 3.1)

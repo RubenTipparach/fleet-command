@@ -183,3 +183,22 @@ measure each key's glass from its own renders, walked out from the key's centre 
 RenderedPieces.Glass), and lay the glyph and the turn's angle inside it by the same numbers (the page's helmKeyLayout, the
 game's HelmKeyLayout, tested). The mine preview's crash was the mockup's alone (the game's mines are drawn elsewhere).
 
+
+Hunt campaign review and the owner's notes (2026-11-07; owner: "review for text misalignment in the SSarith campaign ui",
+"select withdraw from menu, then warp out", "close button stuck after I closed the goals panel", "target button should only
+reveal if target panel was closed", "Target button shold also be in the right corner", "turn first, then move", "pressing the
+move button if move is already exhasuted wont queue up move for the next turns", "need to fix pixely clouds"). Game side done;
+each mockup difference has its task:
+
+| Area | Mockups | Game | Task |
+|---|---|---|---|
+| Key and tab labels (game ahead) | Rule T: shrink by the measured width ratio, spacing 0.8 then 0.4 px, a key's `short` form | Rule T measured as drawn: shrink a pixel at a time until the label fits, spacing 1 then 0 px, the key's short form (the name plate's `1/3`), so a pixel face (VT323) is no longer trimmed: PROXIMITY, NEXT TARGET, FLEET 1/3 fit | none: the pages fit already in their faces |
+| Target key (game ahead) | Mockups 2, 8, 15, 20: Target key top left, always shown, toggling the box; the box's X releases the target | The Target key only while the box is shut, top right where the box was; the box's X shuts it | `battle-console-engine`: the four battle consoles to match |
+| Withdraw (game ahead) | Mockup 1's battle menu has no Withdraw | Withdraw orders a warp-out: weapons power to the coils, a course plotted, the jump as soon as the drive is ready; refused on a story or special mission (`kind` in the mission file) | `game-flow-engine` 2.8 |
+| Fleet flights (game ahead) | Mockup 1's `stepFlight` turns the model at once and moves | Turn on the spot, then move, sector by sector | `game-flow-engine` 1.15 |
+| Course with no moves left | Queued (`moveFleet` with an empty leg) | Queued (matched 2026-11-07; the game had refused) | none |
+| Hulls with no schematic | Mockup 1's shipyard: "No schematic" | The systems display's stand-in silhouette, in the shipyard, loadout, fleet cards and market | `game-flow-engine` 2.10 |
+| Nebula puffs | Mockup 1's puffMat: a fract hash (highp in WebGL) | PCG lattice hash, small seed offset (no blocks) | `game-flow-engine` 2.10 |
+| Space (game ahead) | Mockup 1's `buildCampaign` rolls each sector's terrain (a nebula one in ten, asteroids one in twelve) | Star systems from `map.systems` (a star, its belt, its nebula) and dust clouds and asteroid fields in the deep (`Campaign.MakeSpace`); the borders unchanged | `campaign-space` 2.1 |
+| Fog of war (game ahead) | Mockup 1 shows the whole map | Unexplored black and unlit, revealed in the empire last seen and darker, fleets only where seen now; "Unexplored" in the sector panel | `campaign-space` 2.2 |
+| Patrols (game ahead) | Mockup 1 offers contracts evenly | By weight (Patrol 4, the nebula, belt and orbital patrols 2) | `campaign-space` 2.1 |

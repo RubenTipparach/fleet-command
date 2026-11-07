@@ -17,12 +17,12 @@ The game SHALL open on the main menu. From it, the player SHALL be able to:
 
 ### Requirement: The campaign draws the mockup's map
 
-A new campaign SHALL grow its territory and terrain from `data/campaign/campaign.json` with the mockup's random generator,
-so the same seed gives the page's map.
+A new campaign SHALL grow its territory from `data/campaign/campaign.json` with the mockup's random generator, so the
+same seed gives the page's borders. Its terrain is laid out by star systems (change `campaign-space`).
 
 #### Scenario: The same territory
 - **WHEN** a new campaign is built with seed 7
-- **THEN** every sector of row 7 that is not a port or a star has the holder and terrain the page's generator gives it
+- **THEN** every sector of row 7 that is not a port or a star has the holder the page's generator gives it
 
 ### Requirement: A saved campaign continues exactly
 
