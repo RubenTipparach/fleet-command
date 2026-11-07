@@ -28,14 +28,14 @@ The SFC2 manual has no convoys (searched for freighter, convoy, cargo and escort
 "1,4,5,8, but with 8 having really skinny arms and link.tbe arms together with a thin bridge at the end to keep the loop
 design ethos", "All freighters should be 2x bigger. Along with the containers too..this way cargo ships are much bigger than any
 combat ships..as they should be", then "The institute freighter should be rounder at the tip", "You got the institute
-draft wrong". Survey V2 and V5, decided.
+draft wrong", and an outline of the shape wanted ("I made an outline of what I want"). Survey V2 and V5, decided.
 
 | # | Faction | Pick | Shown length | What changes from the blockout |
 |---|---|---|---|---|
 | 101 | Concord | 1 Gauge carrier | 300 m | Twice the size |
 | 102 | Krai Warhost | 4 Spear train | 320 m | Twice the size |
 | 103 | Ssarith Hunt | 5 Tally carrier | 340 m | Twice the size |
-| 104 | Kelvane Institute | 8 Twin ledger | 330 m | Twice the size, and a loop: the draft's stern case narrows to a slender section that splits into two really skinny arms, 15 m (30 m shown) either side, straight round two identical stacks of containers, curving in at the bow on a quarter circle to meet in a thin bridge with a domed nose (the loop of the Institute's line, `kelvane-ship-concepts`) |
+| 104 | Kelvane Institute | 8 Twin ledger | 321 m | Twice the size, and a loop on the outline the owner drew ("Fix the institute", "I made an outline of what I want"): the draft's stern case at full width, its two outer strips (one rolled radius wide) running straight on as really skinny arms round two identical stacks of containers, curving in at the bow on a quarter circle to meet in a thin bridge with a domed nose (the loop of the Institute's line, `kelvane-ship-concepts`) |
 
 **Twice the size.** Every freighter is shown at twice its drafted size, its containers with it (`FREIGHTER_X` on the
 page), so a container is 12 by 12 by 24 m and every freighter, 300-360 m, is longer than any warship (the largest, the

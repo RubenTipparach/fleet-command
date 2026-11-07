@@ -36,3 +36,6 @@
   bigger. Along with the containers too", "The institute freighter should be rounder at the tip", "Show m artifact with
   just the four"): the page opens on the four picks, every freighter and container twice the drafted size, the Twin
   ledger a loop curving in to a thin bridge with a domed nose; the board of eight beside them. Survey V2 and V5 decided.
+- 2026-11-07, cloud session: version 7, version id `1794053937-a0c7` (owner: "Fix the institute", with an outline of the
+  shape wanted, "I made an outline of what I want"): the Twin ledger's stern case at full width, its two outer strips
+  running straight on as the really skinny arms, curving in at the bow to a thin bridge with a domed nose.
