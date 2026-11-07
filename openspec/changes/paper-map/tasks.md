@@ -11,6 +11,9 @@
 
 - [x] 1.7 The owner's notes of 2026-11-07: the print a star map with a nebula background; rustic dark green walls with
   walnut trim and sconces; the room and the print darker; main merged and the fog of war drawn on the chart (`campaign-space` 2.2) (mockup 1 v22)
+- [x] 1.8 The chart as its own artifact (owner, 2026-11-07: "Our space chart mockup is not available to me as an artifact, please
+  make it"): `docs/mockups/space-chart.html` (mockup 24), written from mockup 1 by `tools/mockups/chart_page.py` and opening straight
+  onto the map through mockup 1's `startAt()`
 
 ## 2. After the owner's notes
 

@@ -4994,6 +4994,12 @@ resize();
 Promise.all([loadShips(), ...PLAYABLE.map((f) => window.FCKitCss(window.FCSkins[FACTIONS[f].skin], `body[data-skin="${FACTIONS[f].skin}"]`))]).then(([, ...css]) => {
   document.getElementById('kitcss').textContent = css.join('\n');
   return document.fonts.ready;
-}).then(() => { render(); window.MOCKUP_READY = true; }, (e) => { console.error(e); });
+}).then(() => { render(); startAt(); window.MOCKUP_READY = true; }, (e) => { console.error(e); });
+// A page written for one screen names it in <meta name="fc-start"> (tools/mockups/chart_page.py): "chart" opens the campaign
+// map straight away, the saved Concord campaign if there is one, else a new one. This page has none and opens on the menu.
+function startAt() {
+  if (document.querySelector('meta[name="fc-start"]')?.content !== 'chart') return;
+  if (savedCampaign('concord')) continueCampaign('concord'); else freshCampaign();
+}
 })();
 </script>
