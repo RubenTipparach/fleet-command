@@ -1,5 +1,5 @@
 {
- "note": "The Material Maker maps of the campaign map's room (docs/mockups/game-flow.html, buildRoom): the poster's paper (the page prints the map over it), the red carpet and the floral wallpaper; inlined by tools/mockups/inline_data.py. Rendered from tools/materials/ptex/<material>.ptex (tools/materials/export_materials.sh); the specular maps are derived from each graph's own roughness and occlusion (tools/materials/postprocess.py).",
+ "note": "The Material Maker maps of the campaign map's room (docs/mockups/game-flow.html, buildRoom): the poster's paper (the page prints the map over it), the red carpet and the green plaster walls; inlined by tools/mockups/inline_data.py. Rendered from tools/materials/ptex/<material>.ptex (tools/materials/export_materials.sh); the specular maps are derived from each graph's own roughness and occlusion (tools/materials/postprocess.py).",
  "webp_quality": 86,
  "pieces": {
   "map_paper/albedo": {
@@ -37,33 +37,33 @@
    ],
    "file": "../../../assets/textures/materials/carpet_red/specular.png"
   },
-  "wallpaper_floral/albedo": {
+  "wall_green_rustic/albedo": {
    "size": [
     1024,
     1024
    ],
-   "file": "../../../assets/textures/materials/wallpaper_floral/albedo.png"
+   "file": "../../../assets/textures/materials/wall_green_rustic/albedo.png"
   },
-  "wallpaper_floral/normal": {
+  "wall_green_rustic/normal": {
    "size": [
     1024,
     1024
    ],
-   "file": "../../../assets/textures/materials/wallpaper_floral/normal.png"
+   "file": "../../../assets/textures/materials/wall_green_rustic/normal.png"
   },
-  "wallpaper_floral/orm": {
+  "wall_green_rustic/orm": {
    "size": [
     1024,
     1024
    ],
-   "file": "../../../assets/textures/materials/wallpaper_floral/orm.png"
+   "file": "../../../assets/textures/materials/wall_green_rustic/orm.png"
   },
-  "wallpaper_floral/specular": {
+  "wall_green_rustic/specular": {
    "size": [
     1024,
     1024
    ],
-   "file": "../../../assets/textures/materials/wallpaper_floral/specular.png"
+   "file": "../../../assets/textures/materials/wall_green_rustic/specular.png"
   }
  }
 }

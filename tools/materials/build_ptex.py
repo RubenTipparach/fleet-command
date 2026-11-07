@@ -337,8 +337,9 @@ float metal_$name(vec2 uv) { return 0.0; }
 
 
 # ---- the paper map's room (owner, 2026-11-07: "make the space background a crusty print on old piece of paper with hexagon
-# grid drawn on it", "the big map poster sits on a large wooden table, of which sits in a room with red carpeting, and light
-# red-orange floral print"). The map's own print (its hexes, borders and terrain) is drawn live by the page over this paper.
+# grid drawn on it", "the big map poster sits on a large wooden table, of which sits in a room with red carpeting"; then "The
+# walls in that room should be like a rustic dark green wall with wood trimmings"). The map's own print is drawn live by the
+# page over this paper.
 
 def map_paper():
     """Old poster paper: a warm cream gone uneven with age, mottled in broad soft patches, its fibres showing as faint
@@ -396,74 +397,40 @@ float metal_$name(vec2 uv) { return 0.0; }
     return finish(g, "carpet red", ins, body, tile_m=0.5, depth_m=0.002, ao_radius=4, ao_strength=0.5)
 
 
-def wallpaper_floral():
-    """Floral wallpaper in a light red-orange print on cream: a half-drop repeat of open five-petalled roses with a second
-    ring of petals and a seeded heart, four leaves round each, and small three-dot sprigs between them; the print a little
-    soft and uneven, as surface-printed paper is, the paper's own grain under it. Four roses to a 0.5 m tile."""
-    g = Graph("Wallpaper Floral")
-    ins = [("grain", "f", fbm(g, 128, iterations=3, persistence=0.5)),
-           ("ink", "f", fbm(g, 24, iterations=4, persistence=0.55)),
-           ("fade", "f", fbm(g, 3, iterations=4, persistence=0.5))]
+def wall_green_rustic():
+    """A rustic wall in dark green: limewash over old lime plaster, the colour uneven where coats dried at different
+    rates, the brush's strokes running every way across it, the plaster's own lumps and dips under the paint, hairline
+    cracks, and the pale plaster showing through where the paint has worn thin. Matte. One tile is 1 m."""
+    g = Graph("Wall Green Rustic")
+    ins = [("tone", "f", fbm(g, 3, iterations=5, persistence=0.6)),
+           ("cloud", "f", fbm(g, 9, iterations=4, persistence=0.55)),
+           ("strokea", "f", g.node("fbm2", noise=2, scale_x=4, scale_y=40, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("strokeb", "f", g.node("fbm2", noise=2, scale_x=40, scale_y=5, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("lump", "f", fbm(g, 16, iterations=4, persistence=0.5)),
+           ("grain", "f", fbm(g, 192, iterations=3, persistence=0.5)),
+           ("crack", "f", fbm(g, 6, iterations=6, persistence=0.6)),
+           ("wear", "f", fbm(g, 7, iterations=5, persistence=0.55))]
     body = """
-// one rose's cell: q in -0.5..0.5; returns (petal, inner line, heart, leaf). An open rose: five broad rounded petals, a
-// second ring of five between them, each petal's edge and a line down its middle printed darker, a seeded heart
-vec4 rose_$name(vec2 q, float spin) {
-	float r = length(q), a = atan(q.y, q.x) + spin;
-	float e1 = 0.21 + 0.045 * abs(cos(2.5 * a)), e2 = 0.14 + 0.03 * abs(cos(2.5 * a + 0.628));
-	float outer = smoothstep(0.010, -0.010, r - e1);
-	float inner = smoothstep(0.010, -0.010, r - e2);
-	float edge = outer * (1.0 - smoothstep(0.004, 0.011, abs(r - e2)));
-	edge = max(edge, outer * (1.0 - smoothstep(0.004, 0.011, abs(r - e1 + 0.012))));
-	edge = max(edge, (1.0 - inner) * outer * (1.0 - smoothstep(0.004, 0.012, abs(cos(2.5 * a) * r))) * 0.55);
-	float heart = smoothstep(0.05, 0.04, r) * (0.6 + 0.4 * step(0.5, fract(a * 1.909)));
-	float leaf = 0.0, vein = 0.0;
-	for (int i = 0; i < 4; i++) {
-		float b = 0.785398 + 1.570796 * float(i) + spin * 0.5;
-		vec2 d = vec2(cos(b), sin(b));
-		vec2 p = q - d * 0.31;
-		vec2 l = vec2(dot(p, d), dot(p, vec2(-d.y, d.x)));
-		float m = smoothstep(0.012, -0.012, length(l / vec2(0.10, 0.042)) - 1.0);
-		leaf = max(leaf, m);
-		vein = max(vein, m * (1.0 - smoothstep(0.002, 0.007, abs(l.y))));
-	}
-	return vec4(max(outer, inner * 0.0), max(edge, vein), heart, leaf * (1.0 - outer));
+float crack_$name(vec2 uv) { float r = 1.0 - abs(2.0 * $crack(uv) - 1.0); return smoothstep(0.965, 0.995, r); }
+// worn through in a few places, where an old knock or rub took the paint: patches gathered where a broad mask is high
+float worn_$name(vec2 uv) { return smoothstep(0.70, 0.76, $wear(uv) + 0.12 * ($grain(uv) - 0.5)) * smoothstep(0.55, 0.75, $tone(uv)); }
+float height_$name(vec2 uv) {
+	float h = 0.5 + 0.22 * ($lump(uv) - 0.5) + 0.08 * ($strokea(uv) + $strokeb(uv) - 1.0) + 0.06 * ($grain(uv) - 0.5);
+	return h - 0.18 * crack_$name(uv) - 0.05 * worn_$name(uv);
 }
-// the repeat: two columns and two rows of roses to the tile, each column dropped half a row; sprigs (three dots on a
-// short stem) on a lattice of their own, half a cell over, so each sits whole between four roses
-vec4 print_$name(vec2 uv) {
-	vec2 s = uv * 2.0;
-	float col = floor(s.x);
-	vec2 sr = s + vec2(0.0, 0.5 * mod(col, 2.0));
-	vec2 cell = floor(sr), q = fract(sr) - 0.5;
-	float spin = 0.4 * sin(cell.x * 1.7 + cell.y * 2.3);
-	vec4 rose = rose_$name(q, spin);
-	vec2 ss = s + vec2(0.5, 0.25);
-	vec2 sc = fract(ss) - 0.5;
-	float sprig = 0.0;
-	for (int i = 0; i < 3; i++) {
-		float b = 2.094395 * float(i) + 1.5708;
-		sprig = max(sprig, smoothstep(0.020, 0.011, length(sc - 0.045 * vec2(cos(b), sin(b)))));
-	}
-	sprig = max(sprig, (1.0 - smoothstep(0.002, 0.006, abs(sc.x))) * step(-0.12, sc.y) * step(sc.y, -0.03));
-	return vec4(rose.x, max(rose.y, rose.z), rose.w, sprig);
-}
-float height_$name(vec2 uv) { vec4 p = print_$name(uv); return 0.5 + 0.1 * max(max(p.x, p.z), p.w) + 0.2 * ($grain(uv) - 0.5); }
 vec3 albedo_$name(vec2 uv) {
-	vec3 paper = vec3(0.94, 0.84, 0.72), petal = vec3(0.93, 0.55, 0.42), deep = vec3(0.80, 0.36, 0.27), leaf = vec3(0.95, 0.68, 0.52);
-	vec4 p = print_$name(uv);
-	float soft = 0.82 + 0.18 * $ink(uv);
-	vec3 c = paper * (0.97 + 0.06 * ($grain(uv) - 0.5));
-	c = mix(c, leaf, p.z * 0.85 * soft);
-	c = mix(c, petal, p.x * 0.9 * soft);
-	c = mix(c, deep, p.y * 0.85 * soft);
-	c = mix(c, deep, p.w * 0.7 * soft);
-	c = mix(c, c * vec3(0.96, 0.93, 0.88), smoothstep(0.55, 0.85, $fade(uv)) * 0.5);
+	vec3 deep = vec3(0.075, 0.15, 0.10), mid = vec3(0.13, 0.24, 0.16), olive = vec3(0.17, 0.25, 0.14);
+	vec3 c = mix(deep, mid, smoothstep(0.25, 0.75, $tone(uv)));
+	c = mix(c, olive, 0.35 * smoothstep(0.5, 0.8, $cloud(uv)));
+	c *= 0.9 + 0.12 * ($strokea(uv) + $strokeb(uv) - 1.0) + 0.06 * ($grain(uv) - 0.5);
+	c = mix(c, vec3(0.50, 0.47, 0.38) * (0.9 + 0.2 * $grain(uv)), 0.85 * worn_$name(uv));
+	c = mix(c, c * 0.35, crack_$name(uv));
 	return c;
 }
-float rough_$name(vec2 uv) { return 0.75; }
+float rough_$name(vec2 uv) { return 0.86 + 0.06 * worn_$name(uv); }
 float metal_$name(vec2 uv) { return 0.0; }
 """
-    return finish(g, "wallpaper floral", ins, body, tile_m=0.5, depth_m=0.0001, ao_radius=3, ao_strength=0.2)
+    return finish(g, "wall green rustic", ins, body, tile_m=1.0, depth_m=0.0015, ao_radius=5, ao_strength=0.5)
 
 
 GRAPHS = {
@@ -478,7 +445,7 @@ GRAPHS = {
     "table_wood": table_wood,
     "map_paper": map_paper,
     "carpet_red": carpet_red,
-    "wallpaper_floral": wallpaper_floral,
+    "wall_green_rustic": wall_green_rustic,
 }
 
 
