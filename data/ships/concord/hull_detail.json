@@ -355,19 +355,21 @@
       },
       "windows": [
         {
-          "z_m": [
-            -30,
-            38
-          ],
-          "rows_y_m": [
-            4.9,
-            1.4,
-            -2.1
-          ],
-          "x_max_m": 12.2
+          "plan": "data/ships/concord/petrel_plan.json",
+          "dz_m": 0.55,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers_p": "quarters",
+            "officers_s": "quarters",
+            "quarters": "quarters",
+            "mess": "mess",
+            "medbay": "workshop"
+          }
         }
       ],
-      "_fans": "Clear of the game model's radiators (x 4.7 m either side, z -34 to -26 m, standing over the deck: owner, 2026-11-07, \"what are these rectangles?\")"
+      "_fans": "Clear of the game model's radiators (x 4.7 m either side, z -34 to -26 m, standing over the deck: owner, 2026-11-07, \"what are these rectangles?\")",
+      "_windows": "From the room plan, as the original (owner, 2026-11-07: \"the number of windows on the concord shouldnt have changed from the original\"): one row wherever people live or work against the hull"
     }
   }
 }

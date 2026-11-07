@@ -360,6 +360,39 @@ def window_rows(F, surf):
             z -= n * 1.6 + r.uniform(2.0, 4.5)
     return out
 
+def window_rows_plan(F, surf):
+    """Windows from the ship's room plan (Ship Design Bible W1: a room with people behind every window): for every room
+    of the kinds named in F['rooms'] (plan kind or id: pane kind), one row at its deck's eye height along its outer wall,
+    1.6 m apart, kept 0.8 m clear of its bulkheads, and only where the room meets the hull (within F['wall_m'] of the skin).
+    Symmetric (owner, 2026-11-06: "these empiures SHOULD BE SYMMETRIC"): the rooms of both sides are taken together, each
+    window placed once on the port side and mirrored, so a mess to port and quarters to starboard give one mirrored row.
+    F['dz_m'], F['dy_m']: the plan's frame to the hull's (the export re-centres a ship). Returns [(loc, normal, lit,
+    pane kind)], each built on both sides."""
+    import json as _json
+    import os as _os
+    plan = _json.load(open(_os.path.join(_os.path.dirname(__file__), "..", "..", F["plan"])))
+    dz, dy, wall = F.get("dz_m", 0.0), F.get("dy_m", 0.0), F.get("wall_m", 3.0)
+    floors, out, seen = plan["deck_floor_m"], [], set()
+    for room in plan["rooms"]:
+        kind = F["rooms"].get(room["id"]) or F["rooms"].get(room["kind"])
+        if not kind:
+            continue
+        r = random.Random(sum((i + 1) * 131 * ord(c) for i, c in enumerate(room["id"])))   # stable from run to run
+        x0, x1 = room["x_m"]
+        x_out = max(abs(x0), abs(x1))
+        z0, z1 = room["z_m"][0] - dz, room["z_m"][1] - dz
+        for d in room["decks"]:
+            y = floors[d] + F.get("eye_m", 1.5) - dy
+            z = z1 - 0.8
+            while z > z0 + 0.8:
+                key = (d, round(z / 1.6))
+                h = surf.hit("port", [z, y])
+                if key not in seen and h and abs(h[1].x) > 0.6 and h[0].x - x_out < wall:
+                    seen.add(key)
+                    out.append((h[0], h[1], r.random() > F.get("dark_share", 0.2), kind))
+                z -= 1.6
+    return out
+
 
 def clear_around(surf, h, z, y, d=1.0):
     """Whether a window at (z, y) on the port flank has plain plating d above and below it: no strip, no glass, no edge of
@@ -1256,7 +1289,7 @@ def build(lo, S, D, seed):
                     return True
         return False
     for F in S.get("windows", []):
-        for loc, nor, lit_, kind in window_rows(F, surf):
+        for loc, nor, lit_, kind in (window_rows(F, surf) if "rows_y_m" in F else window_rows_plan(F, surf)):
             if not fits(surf, frame_at(loc, nor), 1.1, 0.6, PF["window"]):
                 continue   # it would cross a bend
             if in_a_bay(loc):
