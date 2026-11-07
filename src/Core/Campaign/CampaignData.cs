@@ -37,9 +37,27 @@ public sealed record CampRules(int Cols, int Rows, ulong Seed, int StartCredits,
     int StandingRival, int MissionsMax, int MissionsStart, IReadOnlyDictionary<string, double> Pay, IReadOnlyDictionary<string, double> Prestige,
     double StoryPrestigeX, IReadOnlyList<string> Strengths, int RewardSteps, int RewardStep, double RepairShare);
 
-public sealed record MapDef(IReadOnlyList<(string Fac, int C, int R)> Seeds, double SeedJitter, double NebulaBelow, double AsteroidsBelow,
-    IReadOnlyList<(int C, int R)> Stars, IReadOnlyList<Place> Places, IReadOnlyList<FleetDef> Fleets, int RangePirate, int RangeLone, int RangeGroup,
-    IReadOnlyList<(string Fac, string A, string B)> FreightRoutes, IReadOnlyList<string> FreighterNames);
+/// <summary>A star system: its star, the ring of asteroids belt_r sectors out (0: none) with that share of the ring taken,
+/// and a nebula of that many sectors beside it (owner, 2026-11-07: "we should have stars, with planets asteriods and nebula
+/// clustered around them").</summary>
+public sealed record StarSystem(int C, int R, int BeltR, double BeltShare, int Nebula);
+
+/// <summary>The deep space between the systems: dust clouds and asteroid fields with no star, each at least ClearOfStars
+/// sectors from any star, of a size from the range (owner: "rogue planets, dust clouds, and asteroids with no stars are a
+/// thing too").</summary>
+public sealed record DeepSpace(int ClearOfStars, int DustClouds, int DustMin, int DustMax, int Fields, int FieldMin, int FieldMax);
+
+/// <summary>How far, in sectors, your own fleet sees and how far friendly ships (your faction's fleets and freighters, your
+/// allies') see: the fog of war's visible sectors.</summary>
+public sealed record Sight(int Fleet, int Friendly);
+
+public sealed record MapDef(IReadOnlyList<(string Fac, int C, int R)> Seeds, double SeedJitter, IReadOnlyList<StarSystem> Systems, DeepSpace Deep,
+    Sight Sight, IReadOnlyList<Place> Places, IReadOnlyList<FleetDef> Fleets, int RangePirate, int RangeLone, int RangeGroup,
+    IReadOnlyList<(string Fac, string A, string B)> FreightRoutes, IReadOnlyList<string> FreighterNames)
+{
+    /// <summary>The stars, one to each system.</summary>
+    public IEnumerable<(int C, int R)> Stars => Systems.Select(s => (s.C, s.R));
+}
 
 /// <summary>The officers: the stations they serve (with what each does), the skill levels and their pay (the first is a
 /// cadet), the given and family names officers are named from, and how many experienced officers and cadets each station
@@ -165,7 +183,26 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
 
         StrictJson mo = root.Obj("map");
         var seeds = Rows(mo, "seeds", 3).Select(a => (a[0].ToString()!, Convert.ToInt32(a[1]), Convert.ToInt32(a[2]))).ToList();
-        var stars = Rows(mo, "stars", 2).Select(a => (Convert.ToInt32(a[0]), Convert.ToInt32(a[1]))).ToList();
+        var starSystems = new List<StarSystem>();
+        foreach (StrictJson y in mo.ObjList("systems"))
+        {
+            int[] at = y.IntList("star");
+            if (at.Length != 2) throw new DataError($"{y.Where}.star: [column, row]");
+            var sys = new StarSystem(at[0], at[1], y.Int("belt_r"), y.Num("belt_share"), y.Int("nebula"));
+            if (sys.BeltR < 0 || sys.BeltShare < 0 || sys.BeltShare > 1 || sys.Nebula < 0) throw new DataError($"{y.Where}: belt_r and nebula 0 or more, belt_share 0 to 1");
+            starSystems.Add(sys);
+            y.Done();
+        }
+        StrictJson dp = mo.Obj("deep");
+        int[] dsz = dp.IntList("dust_size"), fsz = dp.IntList("field_size");
+        if (dsz.Length != 2 || fsz.Length != 2 || dsz[0] < 1 || dsz[1] < dsz[0] || fsz[0] < 1 || fsz[1] < fsz[0]) throw new DataError($"{dp.Where}: dust_size and field_size are [least, most], 1 or more");
+        var deep = new DeepSpace(dp.Int("clear_of_stars"), dp.Int("dust_clouds"), dsz[0], dsz[1], dp.Int("asteroid_fields"), fsz[0], fsz[1]);
+        dp.Done();
+        StrictJson sg = mo.Obj("sight");
+        var sight = new Sight(sg.Int("fleet"), sg.Int("friendly"));
+        if (sight.Fleet < 0 || sight.Friendly < 0) throw new DataError($"{sg.Where}: 0 or more");
+        sg.Done();
+        var stars = starSystems.Select(y => (y.C, y.R)).ToList();
         var places = Rows(mo, "places", 5).Select(a => new Place(a[0].ToString()!, Convert.ToInt32(a[1]), Convert.ToInt32(a[2]), a[3].ToString()!, a[4].ToString()!)).ToList();
         var fleets = new List<FleetDef>();
         foreach (StrictJson f in mo.ObjList("fleets"))
@@ -177,7 +214,7 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
         int rp = fr.Int("pirate"), rl = fr.Int("lone"), rg = fr.Int("group");
         fr.Done();
         var routes = StrPairs(mo, "freight_routes", 3).Select(a => (a[0], a[1], a[2])).ToList();
-        var map = new MapDef(seeds, mo.Num("seed_jitter"), mo.Num("nebula_below"), mo.Num("asteroids_below"), stars, places, fleets, rp, rl, rg,
+        var map = new MapDef(seeds, mo.Num("seed_jitter"), starSystems, deep, sight, places, fleets, rp, rl, rg,
             routes, mo.StrList("freighter_names"));
         mo.Done();
         foreach (var (c, r) in stars.Concat(places.Select(p => (p.C, p.R))).Concat(fleets.Select(f => (f.C, f.R))))

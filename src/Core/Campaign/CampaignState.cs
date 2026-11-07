@@ -92,6 +92,10 @@ public sealed class Sector
     public string? Station { get; set; }
     public bool IsPort => Planet != null || Station != null;
     public string? PortName => Planet ?? Station;
+    /// <summary>The fog of war: true once the sector has been seen (revealed); an unexplored sector is drawn black.</summary>
+    public bool Known { get; set; }
+    /// <summary>Who held the sector when it was last seen: a revealed sector shows its empire as last known.</summary>
+    public string KnownOwner { get; set; } = "neutral";
 }
 
 /// <summary>A faction's fleet on the map, moved by its faction every few turns toward a goal near its home.</summary>

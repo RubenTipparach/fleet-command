@@ -32,3 +32,6 @@ Patience (the battle console mockup's, mockup 2) is one, so the scene now flies 
 | Its ships' names and captains | The class names (Parallax, Candour, Patience, Rigour, Curiosity) and "Institute captain", the mockup's Dr. Orrel of the Patience (culture is the owner's, C4) |
 | How many fighters the carrier carries | 12, half its pads; every pad is filled on the page |
 | Its campaign | None yet: the campaign's sides are the Concord, the Krai and the Hunt |
+| Whether it cloaks (survey I9) | The cruiser and destroyer carry a cloak, as the Concord's they are laid out like, so its Cloak scene plays as every side's (2026-11-07) |
+| Its marines and craft | The Concord's by size: 4, 6, 12, 14 and 10 marines frigate to carrier; mines 2, 2, 4, 4, 2 |
+| Its general scenes (2026-11-07) | Each the Concord's scene with its own ships in the Concord's places: the destroyer Candour carries the troops, the frigate Parallax is the ship in distress, Lyceum Depot the depot |

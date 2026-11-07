@@ -117,6 +117,8 @@ public sealed record Scenario(string Id, string Name, string Side, ulong Seed, s
     /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: the scene's tool is
     /// what destroys the target).</summary>
     public bool Armed { get; init; } = true;
+    /// <summary>Whether the captain may withdraw (warp out) from this battle: false for a story or special mission.</summary>
+    public bool CanWithdraw { get; init; } = true;
     /// <summary>The tools decisive in a test scene ("mine", "rock", "shuttle", "barrage"): one destroys its target.</summary>
     public IReadOnlyList<string> Lethal { get; init; } = System.Array.Empty<string>();
     /// <summary>The asteroids of the scene.</summary>

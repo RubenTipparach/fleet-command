@@ -33,7 +33,8 @@ The editor is an Avalonia app, so the same code runs on Windows and macOS. Its w
 |---|---|
 | `id` | lower case, digits and `_`; unique across files |
 | `name`, `glyph` | the mission's name, and the one letter on its banner on the map |
-| `kind` | `contract` (offered for `turns`, default 3, then gone) or `story` (waits until done) |
+| `kind` | `contract` (offered for `turns`, default 3, then gone; may be withdrawn from), `story` (waits until done; no withdrawal) or `special` (offered as a contract, no withdrawal) |
+| `weight` | how often a contract is offered against the others, default 1 (Patrol 4; the nebula, belt and orbital patrols 2) |
 | `type` | the Missions guide's mission type it plays (shown in the briefing) |
 | `reward_cr` | base reward in credits; a contract adds 0 to 200 cr when offered |
 | `where` | an expression, true for each sector the mission may be offered in |

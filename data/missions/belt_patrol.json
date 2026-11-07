@@ -1,0 +1,59 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "belt_patrol",
+ "name": "Belt patrol",
+ "glyph": "B",
+ "type": "Patrol",
+ "reward_cr": 350,
+ "weight": 2,
+ "where": "asteroids && (own || neutral)",
+ "objective": "Patrol the asteroid field and engage the raiders.",
+ "brief": [
+  {
+   "text": "Prospectors in this field report raiders lying among the rocks to jump their haulers. Patrol the field and see them off."
+  },
+  {
+   "text": " Keep your speed down near the rocks."
+  }
+ ],
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "raiders",
+     "faction": "vos",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "clear",
+     "text": "Destroy the raiders",
+     "primary": true,
+     "done": "alive(raiders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": "outstanding ? 3 : 2"
+   }
+  },
+  {
+   "when": "draw",
+   "credits": "pay",
+   "log": "Belt patrol: outnumbered among the rocks, the fleet drew off."
+  }
+ ]
+}

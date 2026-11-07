@@ -295,10 +295,14 @@ public sealed partial class GameFlow : Node
     public void MoveHere()
     {
         if (Camp == null || Path == null) return;
-        if (Path.Legs[0].Count == 0) { Msg = "No moves left this turn to make the first step. End the turn."; return; }
         Course = (Path, (Camp.S.AtC, Camp.S.AtR));
+        // with no moves left the course is still set: it is the fleet's order, flown from the next End turn (owner,
+        // 2026-11-07: "pressing the move button if move is already exhasuted wont queue up move for the next turns")
+        bool none = Path.Legs[0].Count == 0;
         var steps = Camp.Move(Path);
-        Msg = Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
+        Msg = none ? $"Course set: under way at End turn, {Path.Turns - 1} turn{(Path.Turns > 2 ? "s" : "")} to go."
+            : Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
+        if (none) { SelectHex(Sel); Save(); return; }
         _map.Map?.Rebuild(null, steps);
         SelectHex(Sel);
         Arrived();
