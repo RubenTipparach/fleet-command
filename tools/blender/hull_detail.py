@@ -574,12 +574,12 @@ def bare_idx(me):
     return {i for i, m in enumerate(me.materials) if m and (m.name.startswith("lo_glow") or m.name.startswith("lo_well"))}
 
 
-def shell_groups(lo, facing_min=0.55):
+def shell_groups(lo, facing_min=0.55, ends=False):
     """The hull's faces by which way they face: top, bottom, port, starboard; the rest (bow, stern, the crotches between
     branches), the light strips and the glass carry no armour. facing_min: how square a face must be to one of the four
     (0.55 leaves a chamfer's faces bare; a rounded hull's rolls want less, so they are plated too)."""
     me = lo.data
-    groups = {"top": [], "bottom": [], "port": [], "starboard": []}
+    groups = {"top": [], "bottom": [], "port": [], "starboard": [], "bow": [], "stern": []}
     bare = bare_idx(me)
     for p in me.polygons:
         if p.material_index in bare:
@@ -593,6 +593,10 @@ def shell_groups(lo, facing_min=0.55):
             groups["port"].append(p.index)
         elif n.x < -facing_min:
             groups["starboard"].append(p.index)
+        elif ends and n.z > facing_min:   # the faces looking forward and aft, plated too where asked (owner, 2026-11-07:
+            groups["bow"].append(p.index)   # "front, back ... are not wekll textrued")
+        elif ends and n.z < -facing_min:
+            groups["stern"].append(p.index)
     return groups
 
 
@@ -626,6 +630,8 @@ def view_prism(poly, axes, lo, hi):
     bm = bm_prism(poly, lo, hi)
     if axes == ("x", "z"):   # local (u, v, w) = (x, z, y)
         M = Matrix(((1, 0, 0, 0), (0, 0, 1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
+    elif axes == ("x", "y"):   # the bow and stern: local (u, v, w) = (x, y, z)
+        M = Matrix.Identity(4)
     else:                    # local (u, v, w) = (z, y, x)
         M = Matrix(((0, 0, 1, 0), (0, 1, 0, 0), (1, 0, 0, 0), (0, 0, 0, 1)))
     return place(bm, M)
@@ -727,14 +733,16 @@ def row_cuts(rng, D, zr, xmax, yr):
     xs = [x for x in D["strips_x_m"] if x < xmax]
     for x in xs:
         plan.append(((x, z0 - 2), (x, z1 + 2)))
+    front = [((0.0, y), (xmax + 2, y)) for y in ys] + [((x, ylo - 2), (x, yhi + 2)) for x in xs]   # the bow and stern faces
     for xa, xb in zip([0.0] + xs, xs + [xmax + 2]):
         for z in stations(random.Random(rng.random()), D["top_station_m"]):
             plan.append(((xa, z), (xb, z)))
-    return {"plan": plan, "side": side}
+    return {"plan": plan, "side": side, "front": front}
 
 
 def mirror_cuts(cuts):
-    return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
+    mir = lambda segs: segs + [((-a[0], a[1]), (-b[0], b[1])) for a, b in segs]
+    return {"plan": mir(cuts["plan"]), "side": cuts["side"], "front": mir(cuts.get("front", []))}
 
 
 def junction_cuts(segs, c, gap, view):
@@ -794,7 +802,7 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     trenches), the data's exposed areas and the features' holes, and each plate then raised by its own amount so it
     casts its shadow on its neighbours. layer 'sub': thin, under the primary, cut by its own lines with wide gaps, so
     the trenches show a second layer of plating and, in its gaps, the machinery."""
-    groups = shell_groups(lo, D.get("facing_min", 0.55))
+    groups = shell_groups(lo, D.get("facing_min", 0.55), D.get("plate_ends", False))
     xs = [v.co.x for v in lo.data.vertices]; ys = [v.co.y for v in lo.data.vertices]; zs = [v.co.z for v in lo.data.vertices]
     cutter = {"grid": grid_cuts, "rows": row_cuts}.get(D.get("cuts", "hunt"), armour_cuts)
     cuts = mirror_cuts(cutter(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
@@ -805,15 +813,16 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
         if not faces:
             continue
         sh = shell_of(lo, faces, t, f"{layer}_{g}", mats["armour" if primary else "sub"])
-        view = ("x", "z") if g in ("top", "bottom") else ("z", "y")
+        view = ("x", "z") if g in ("top", "bottom") else ("x", "y") if g in ("bow", "stern") else ("z", "y")
+        segs = cuts["plan"] if view == ("x", "z") else cuts.get("front", []) if view == ("x", "y") else cuts["side"]
         bms = []
-        for a, b in (cuts["plan"] if view == ("x", "z") else cuts["side"]):
+        for a, b in segs:
             wide = rng.random() < (D["trench_share"] if primary else 0.35)
             p = gap_slab(a, b, rng.uniform(*(D["trench_m"] if wide else D["gap_m"])), view)
             if p:
                 bms.append(p)
         if D.get("corner_m"):   # every plate corner where cuts meet, cut on the diagonal
-            bms += junction_cuts(cuts["plan"] if view == ("x", "z") else cuts["side"], D["corner_m"], D["gap_m"][1], view)
+            bms += junction_cuts(segs, D["corner_m"], D["gap_m"][1], view)
         if primary:
             for e in S.get("exposed", []):
                 bms.append(view_prism(e["plan"], ("x", "z"), *e["y_m"]))

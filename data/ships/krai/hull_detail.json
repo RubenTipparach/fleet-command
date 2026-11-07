@@ -205,7 +205,9 @@
       2.5,
       6.0,
       10.0
-    ]
+    ],
+    "plate_ends": true,
+    "sun_angle_deg": 120
   },
   "ships": {
     "krai_k1": {

@@ -345,7 +345,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     if panes_only:
         return {"panes": panes}
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
-    sun.data.energy = 1.0; sun.data.angle = math.radians(3)
+    sun.data.energy = 1.0; sun.data.angle = math.radians(D["defaults"].get("sun_angle_deg", 3))   # a broad sun casts no hard shadow (owner, 2026-11-07: "why is there an offset shadow? the blender model shouldve been lit without hard shadows")
     sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
     fixture_lights = []   # the hull's lamps, for the light pass only (named LIGHT_<kind>_<n>, the light-baking skill)
     for i, F in enumerate(HD.FIXTURES):
