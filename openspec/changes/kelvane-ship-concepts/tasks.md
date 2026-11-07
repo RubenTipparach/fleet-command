@@ -32,6 +32,7 @@
 - [ ] 3.5 The shared emblem library's Kelvane entry brought up to KID (faction-emblems), so the masks and crests draw from one copy
 - [ ] 3.6 Weapon mounts placed on each class
 - [ ] 3.7 The cruiser, battlecruiser and carrier baked at 3072 px, as the Hunt's large ships, if the page's size allows
+- [ ] 3.8 The plan view reworked (owner, 2026-11-07: "sillhouttes of instute ships are kinda bad btw, a bit phalic lol, maybe we need to adjust sillohute from teh top down"): seen from above the line reads as rods with a bulb or a ring at one end; the direction is survey I11. The mockup first, then the game's glbs and schematics re-exported
 
 ## 4. After approval for implementation (a separate request)
 

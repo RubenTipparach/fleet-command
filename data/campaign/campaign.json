@@ -327,7 +327,7 @@
    "name": "Hooded lance",
    "cls": "Frigate",
    "battle_class": "hunt_ff_lance",
-   "schematic": ""
+   "schematic": "ssarith/hooded_lance"
   },
   "hunt_2": {
    "side": "ssarith",
@@ -335,7 +335,7 @@
    "name": "Trident",
    "cls": "Frigate",
    "battle_class": "hunt_ff_trident",
-   "schematic": ""
+   "schematic": "ssarith/trident"
   },
   "hunt_3": {
    "side": "ssarith",
@@ -343,7 +343,7 @@
    "name": "Hunt cruiser",
    "cls": "Cruiser",
    "battle_class": "hunt_ca",
-   "schematic": ""
+   "schematic": "ssarith/cruiser"
   },
   "kelvane_1": {
    "side": "kelvane",
@@ -351,7 +351,7 @@
    "name": "Kelvane frigate",
    "cls": "Frigate",
    "battle_class": "kelvane_ff",
-   "schematic": ""
+   "schematic": "kelvane/kelvane_frigate"
   },
   "kelvane_2": {
    "side": "kelvane",
@@ -359,7 +359,7 @@
    "name": "Kelvane destroyer",
    "cls": "Destroyer",
    "battle_class": "kelvane_dd",
-   "schematic": ""
+   "schematic": "kelvane/kelvane_destroyer"
   },
   "kelvane_3": {
    "side": "kelvane",
@@ -367,7 +367,7 @@
    "name": "Kelvane cruiser",
    "cls": "Cruiser",
    "battle_class": "kelvane_rv",
-   "schematic": ""
+   "schematic": "kelvane/kelvane_cruiser"
   },
   "kelvane_4": {
    "side": "kelvane",
@@ -375,7 +375,7 @@
    "name": "Kelvane battlecruiser",
    "cls": "Battlecruiser",
    "battle_class": "kelvane_bc",
-   "schematic": ""
+   "schematic": "kelvane/kelvane_battlecruiser"
   },
   "kelvane_5": {
    "side": "kelvane",
@@ -383,7 +383,7 @@
    "name": "Kelvane carrier",
    "cls": "Carrier",
    "battle_class": "kelvane_cv",
-   "schematic": ""
+   "schematic": "kelvane/kelvane_carrier"
   },
   "vos_raider": {
    "side": "vos",
