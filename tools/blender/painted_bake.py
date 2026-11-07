@@ -658,6 +658,12 @@ def strips_and_glow(kind_is, P, glowp, cover, n=None):
         mach = np.any([kind_is(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
         m = b2(chan | mach)   # 1 deep inside a wide face (machinery on it counts as the face), falling to its edges
         rim = np.clip((0.95 - m) / 0.3, 0, 1)
+        if "strip_rim_k" in PT:   # how bright a wide face's rim burns (the Institute: not at all; owner, 2026-11-07, of
+            # a loop wall's lit edge: "i dont like this light line, get rid"); a narrow strip, far from any wide face, keeps its light
+            wide = blur(blur((m > 0.95).astype(np.float32), 2 * r), 2 * r) > 1e-3
+            rim = np.where(wide, rim * PT["strip_rim_k"], rim)
+            edge = wide & ~chan & ~kind_is("lamp")   # the face's own edge texels, blended with the hull beside it
+            g = g * np.where(edge, PT["strip_rim_k"], 1.0)[..., None]
         inner = PT.get("strip_inner", 1.0)
         k = inner + (1 - inner) * rim
         if PT.get("strip_cell_m") and n is not None:   # the open middle an instrument's array, not blank glass
