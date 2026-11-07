@@ -8,8 +8,9 @@
 // cylinder of the helm) and the cutters (blades, the trap-jaw keys). Nothing here is drawn from how the Tithe look
 // (CLAUDE.md section 1): the teeth are other crews' trophies, never their own.
 //
-// This first pass is painted in canvas: crusted, stained and scorched paper pinned to dark gun steel, the trophies shaded
-// by hand. A later pass models the metal (jaws, knives, cartridges, teeth) in Blender and paints the paper in Krita
+// This first pass is painted in canvas: crusted, stained and scorched paper nailed to the dark, scarred oak planks of the
+// Tithe's hall (owner, 2026-11-07: "More brown wood on the red tithe"), strap iron and rivets where steel is still needed,
+// the trophies shaded by hand. A later pass models the wood and metal (planks, jaws, knives, cartridges, teeth) in Blender and paints the paper in Krita
 // (krita-brushwork); until then this module is the one implementation. Every speck, stain, tear, drop and scratch comes
 // from the page's seeded generator (FCK.rng(FCK.hash('redtithe.<piece>'))), never a sine or product-modulo hash
 // (CLAUDE.md section 10). Blood, grime and burns sit only in a piece's margins, never under a label or readout.
@@ -20,7 +21,7 @@ const F = window.FCK, P = F.P;
 const RT = {
   steel: '#2e3236', steelHi: '#7c848b', steelLo: '#141618', paper: '#c9b48a', paperHi: '#ddcba1', paperLo: '#9c8256',
   dried: '#5a1a12', driedLo: '#33100a', fresh: '#c4141c', freshLo: '#6e0a0e', brass: '#c8963a', brassHi: '#f0cf7a', brassLo: '#6e4d16',
-  soot: '#1b1714', ink: '#1e1611', bone: '#e6d8b4', boneLo: '#9d8c6c', leather: '#3d2618', leatherHi: '#6b4429', bg: '#202326',
+  soot: '#1b1714', ink: '#1e1611', oak: '#4a301c', oakHi: '#62412a', oakLo: '#24160b', bone: '#e6d8b4', boneLo: '#9d8c6c', leather: '#3d2618', leatherHi: '#6b4429', bg: '#1a100a',
 };
 const RNG = (k) => F.rng(F.hash('redtithe.' + k));
 const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
@@ -147,6 +148,101 @@ function nail(x, px, py, r, R) {
   x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.5; x.strokeRect(px - r, py - r, 2 * r, 2 * r);
 }
 
+// ---- the hall's boards (owner, 2026-11-07: "More brown wood on the red tithe") -------------------------------------
+// Weathered plank: dark brown oak, its grain running along the board ('h' or 'v'), pores, silvered streaks where the
+// weather has raised the grain, lit from the upper left with its worn edges catching the light. Grain lines run the
+// board's whole length and drift only slowly, so a board stretched along its grain (a 9-slice edge) stays clean.
+function wood(x, pts, R, o = {}) {
+  const [x0, y0, x1, y1] = bbox(pts), w = x1 - x0, h = y1 - y0, H = (o.dir || 'h') === 'h', L = H ? w : h, A = H ? h : w;
+  const along = (p, t0, t1, wob) => { const out = []; for (let i = 0; i <= 12; i++) { const t = t0 + (t1 - t0) * i / 12, q = p + wob * Math.sin(i / 12 * P * (1 + R() * 0.2)) + (R() - 0.5) * 0.25; out.push(H ? [x0 + t, y0 + q] : [x0 + q, y0 + t]); } return out; };
+  x.save(); trace(x, pts, true); x.clip();
+  const g = H ? x.createLinearGradient(0, y0, 0, y1) : x.createLinearGradient(x0, 0, x1, 0);
+  g.addColorStop(0, o.hi || RT.oakHi); g.addColorStop(0.45, o.tone || RT.oak); g.addColorStop(1, o.lo || RT.oakLo); x.fillStyle = g; x.fillRect(x0, y0, w, h);
+  // broad bands of heart and sap wood along the grain
+  for (let i = 0; i < Math.max(3, A * 0.22); i++) { const p = R() * A, t = 1.5 + R() * 6; x.fillStyle = R() < 0.55 ? `rgba(22,11,4,${0.10 + R() * 0.16})` : `rgba(170,118,70,${0.05 + R() * 0.09})`; if (H) x.fillRect(x0, y0 + p, w, t); else x.fillRect(x0 + p, y0, t, h); }
+  // fine grain: long dark lines, a few pale ones, the whole length of the board
+  for (let i = 0; i < A * 1.1; i++) { const p = R() * A; trace(x, along(p, -4, L + 4, (R() - 0.5) * 2.4), false); x.strokeStyle = R() < 0.8 ? `rgba(18,8,3,${0.16 + R() * 0.3})` : `rgba(200,150,100,${0.08 + R() * 0.12})`; x.lineWidth = 0.4 + R() * 0.7; x.stroke(); }
+  // pores and silvered, raised grain
+  for (let i = 0; i < w * h / 14; i++) { const px = x0 + R() * w, py = y0 + R() * h, l = 1.5 + R() * 4; x.fillStyle = R() < 0.7 ? 'rgba(10,5,2,0.4)' : 'rgba(176,164,146,0.13)'; if (H) x.fillRect(px, py, l, 0.6); else x.fillRect(px, py, 0.6, l); }
+  // grime settled toward the foot, as on every board of the hall
+  const gr = x.createLinearGradient(0, y0 + h * 0.4, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(10,6,3,0.35)'); x.fillStyle = gr; x.fillRect(x0, y0, w, h);
+  x.restore();
+  // worn arrises: bright where the light from the upper left catches them, dark below and right
+  x.save(); trace(x, pts, true); x.clip(); x.translate(1, 1); trace(x, pts, true); x.strokeStyle = 'rgba(214,168,118,0.32)'; x.lineWidth = 1.4; x.stroke(); x.restore();
+  x.save(); trace(x, pts, true); x.clip(); x.translate(-1.2, -1.4); trace(x, pts, true); x.strokeStyle = 'rgba(8,4,2,0.55)'; x.lineWidth = 2; x.stroke(); x.restore();
+  trace(x, pts, true); x.strokeStyle = '#0c0704'; x.lineWidth = 1.1; x.stroke();
+}
+// A board laid as a rectangle: a shortcut for wood() with a per-board tone drawn from the generator, so no two match.
+function board(x, X, Y, W, H, R, dir, o = {}) {
+  const k = (R() - 0.5) * 0.22, sh = (hex) => { const n = parseInt(hex.slice(1), 16), f = (c) => Math.max(0, Math.min(255, Math.round(c * (1 + k)))); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; };
+  wood(x, rect(X, Y, W, H), R, Object.assign({ dir, tone: sh(o.tone || RT.oak), hi: sh(o.hi || RT.oakHi), lo: sh(o.lo || RT.oakLo) }, o.extra || {}));
+}
+// A knot: a dark eye drawn out along the grain, its rings round it and a check split from it.
+function knot(x, cx, cy, r, R, dir = 'h') {
+  const sx = dir === 'h' ? 1.9 : 1, sy = dir === 'h' ? 1 : 1.9;
+  grime(x, cx, cy, r * 2.4, 0.3, '30,14,5');
+  x.strokeStyle = 'rgba(20,9,3,0.45)'; x.lineWidth = 0.6; for (let k = 4; k >= 1; k--) { trace(x, blob(cx, cy, r * (0.6 + k * 0.4), R, 20, 0.12, sx, sy), true); x.stroke(); }
+  const g = x.createRadialGradient(cx - r * 0.2, cy - r * 0.2, 0, cx, cy, r); g.addColorStop(0, '#5a3418'); g.addColorStop(0.6, '#2a1608'); g.addColorStop(1, '#120803');
+  trace(x, blob(cx, cy, r, R, 16, 0.25, sx * 0.8, sy * 0.8), true); x.fillStyle = g; x.fill();
+  x.strokeStyle = 'rgba(8,4,2,0.8)'; x.lineWidth = 0.7; const a = dir === 'h' ? 0 : P / 2; x.beginPath(); x.moveTo(cx + Math.cos(a) * r * 1.2, cy + Math.sin(a) * r * 1.2); x.lineTo(cx + Math.cos(a) * r * (2.6 + R()), cy + Math.sin(a) * r * (2.6 + R()) + (R() - 0.5)); x.stroke();
+}
+// A knife gouge: a V cut, dark in its throat, the fresh pale wood of its lit wall along one side.
+function gouge(x, ax, ay, bx, by, wd = 1.6) {
+  const L = Math.hypot(bx - ax, by - ay) || 1, nx = -(by - ay) / L, ny = (bx - ax) / L;
+  x.save(); x.lineCap = 'round';
+  x.strokeStyle = 'rgba(205,160,110,0.55)'; x.lineWidth = wd * 0.7; x.beginPath(); x.moveTo(ax - nx * wd * 0.6, ay - ny * wd * 0.6); x.lineTo(bx - nx * wd * 0.6, by - ny * wd * 0.6); x.stroke();
+  x.strokeStyle = 'rgba(6,3,1,0.9)'; x.lineWidth = wd; x.beginPath(); x.moveTo(ax, ay); x.quadraticCurveTo((ax + bx) / 2 + nx * 0.6, (ay + by) / 2 + ny * 0.6, bx, by); x.stroke();
+  x.restore();
+}
+// A tally scratched into the board: `n` marks in fives, each five struck through, scored pale into the dark wood.
+function tally(x, X, Y, n, hgt, R, col = 'rgba(214,176,128,0.7)') {
+  x.save(); x.strokeStyle = col; x.lineWidth = 0.9; x.lineCap = 'round';
+  let px = X;
+  for (let i = 0; i < n; i++) {
+    if (i % 5 === 4) { x.beginPath(); x.moveTo(px - 4 * 3.2 - 1.5, Y + hgt * 0.8); x.lineTo(px + 0.5, Y + hgt * 0.15); x.stroke(); px += 4.5; continue; }
+    x.beginPath(); x.moveTo(px + (R() - 0.5) * 0.6, Y + (R() - 0.5)); x.lineTo(px + (R() - 0.5) * 1.2, Y + hgt + (R() - 0.5)); x.stroke(); px += 3.2;
+  }
+  x.restore();
+}
+// A scorch: wood charred black at its heart and checked into small blocks, browned round it.
+function scorch(x, cx, cy, r, R) {
+  grime(x, cx, cy, r * 2.2, 0.55, '40,18,6'); grime(x, cx, cy, r * 1.3, 0.75, '10,6,3');
+  x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.5;
+  for (let i = 0; i < r * 1.4; i++) { const px = cx + (R() - 0.5) * r * 1.6, py = cy + (R() - 0.5) * r * 1.2; x.beginPath(); x.moveTo(px - 2, py); x.lineTo(px + 2, py); x.moveTo(px, py - 1.5); x.lineTo(px, py + 1.5); x.stroke(); }
+  for (let i = 0; i < 5; i++) { x.fillStyle = `rgba(230,110,40,${0.18 + R() * 0.2})`; x.fillRect(cx + (R() - 0.5) * r, cy + (R() - 0.5) * r * 0.8, 0.9, 0.9); }
+}
+// Old blood soaked into the grain: drawn out along it, darkest where it pooled, its edges running down the grain lines.
+function soak(x, cx, cy, r, R, dir = 'h') {
+  const H = dir === 'h';
+  x.save(); x.translate(cx, cy); if (!H) x.rotate(P / 2);
+  const g = x.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, 'rgba(70,10,6,0.6)'); g.addColorStop(0.7, 'rgba(60,10,6,0.32)'); g.addColorStop(1, 'rgba(60,10,6,0)');
+  x.scale(2.2, 0.8); x.fillStyle = g; x.beginPath(); x.arc(0, 0, r, 0, 2 * P); x.fill();
+  x.restore();
+  x.save(); x.translate(cx, cy); if (!H) x.rotate(P / 2);
+  for (let i = 0; i < 9; i++) { const y = (R() - 0.5) * r * 1.1, l = r * (1.2 + R() * 1.6), s = (R() - 0.5) * r; x.strokeStyle = `rgba(80,12,8,${0.25 + R() * 0.3})`; x.lineWidth = 0.5 + R() * 0.9; x.beginPath(); x.moveTo(s - l, y); x.lineTo(s + l, y + (R() - 0.5)); x.stroke(); }
+  x.restore();
+}
+// A nail hole left by an older sheet: a dark square pit with a ring of rust.
+function nailHole(x, px, py, R) { grime(x, px, py + 1.5, 4, 0.4, '110,48,18'); x.fillStyle = '#080402'; x.fillRect(px - 1.1, py - 1.1, 2.2, 2.2); x.fillStyle = 'rgba(220,170,120,0.3)'; x.fillRect(px - 1.1, py + 1.1, 2.2, 0.5); }
+// Strap iron: a flat black-iron band, forged rough and rusted at its edges, riveted through.
+function iron(x, pts, R, rivets = []) {
+  steel(x, pts, R, { hi: '#474b4e', mid: '#26292b', lo: '#0f1011' });
+  x.save(); trace(x, pts, true); x.clip(); for (let i = 0; i < 6; i++) { const [px, py] = pts[Math.floor(R() * pts.length)]; grime(x, px + (R() - 0.5) * 6, py + (R() - 0.5) * 6, 5 + R() * 5, 0.35, '120,52,20'); } x.restore();
+  for (const [px, py, r] of rivets) rivet(x, px, py, r || 2.6);
+}
+// An iron corner strap: an L of strap iron over the joint of two boards, at corner (cx, cy) opening toward (sx, sy).
+function cornerStrap(x, cx, cy, sx, sy, arm, wd, R) {
+  const p = [[0, 0], [arm, 0], [arm, wd], [wd, wd], [wd, arm], [0, arm]].map(([a, b]) => [cx + a * sx, cy + b * sy]);
+  iron(x, p, R, [[cx + (arm - wd * 0.55) * sx, cy + wd * 0.5 * sy, 2.2], [cx + wd * 0.5 * sx, cy + (arm - wd * 0.55) * sy, 2.2], [cx + wd * 0.5 * sx, cy + wd * 0.5 * sy, 2.4]]);
+}
+// A frame of four boards round a rectangle: top and bottom with their grain across, the sides with theirs down, butted at
+// the corners. `t` is the boards' width. A dark plank backs the middle, where the torn sheet lets it show.
+function boardFrame(x, w, h, t, R, o = {}) {
+  board(x, 0.5, 0.5, w - 1, h - 1, R, 'h', { tone: '#2c1b0f', hi: '#3a2414', lo: '#160d06' });
+  board(x, 0.5, 0.5, w - 1, t, R, 'h', o); board(x, 0.5, h - t - 0.5, w - 1, t, R, 'h', o);
+  board(x, 0.5, t, t, h - 2 * t, R, 'v', o); board(x, w - t - 0.5, t, t, h - 2 * t, R, 'v', o);
+}
+
 // ---- trophies (the cutters' blades, the gunners' brass, the teeth of beaten crews) --------------------------------
 // A knife driven through the sheet: handle at (x0, y0), the blade entering the paper at (x1, y1); scale s.
 function knife(x, x0, y0, x1, y1, s, R, o = {}) {
@@ -165,10 +261,32 @@ function knife(x, x0, y0, x1, y1, s, R, o = {}) {
   // guard, wrapped grip, pommel
   x.save(); x.shadowColor = 'rgba(0,0,0,0.75)'; x.shadowBlur = 4; x.shadowOffsetX = 2; x.shadowOffsetY = 3;
   const gg = x.createLinearGradient(0, -bw * 2, 0, bw * 2); gg.addColorStop(0, '#9ba3aa'); gg.addColorStop(1, '#25292c'); x.fillStyle = gg; x.fillRect(gx - 2.2 * s, -bw * 1.9, 2.8 * s, bw * 3.8);
-  const hg = x.createLinearGradient(0, -hw, 0, hw); hg.addColorStop(0, RT.leatherHi); hg.addColorStop(0.5, RT.leather); hg.addColorStop(1, '#1a0f08'); x.fillStyle = hg; x.fillRect(3 * s, -hw, gx - 5 * s, 2 * hw);
+  // a grip of dark wood scales, worn pale where the hand holds it, pinned with brass
+  const hg = x.createLinearGradient(0, -hw, 0, hw); hg.addColorStop(0, '#8a5e38'); hg.addColorStop(0.45, RT.oak); hg.addColorStop(1, '#170d05'); x.fillStyle = hg; x.beginPath(); x.moveTo(3 * s, -hw * 0.8); x.lineTo(gx - 2 * s, -hw); x.lineTo(gx - 2 * s, hw); x.lineTo(3 * s, hw * 0.8); x.closePath(); x.fill();
   x.restore();
-  x.strokeStyle = 'rgba(10,6,4,0.8)'; x.lineWidth = 0.6; for (let t = 4 * s; t < gx - 3 * s; t += 2.4 * s) { x.beginPath(); x.moveTo(t, -hw); x.lineTo(t + 1.4 * s, hw); x.stroke(); }
+  x.strokeStyle = 'rgba(14,7,2,0.6)'; x.lineWidth = 0.4; for (let i = 0; i < 4; i++) { const y = (R() - 0.5) * hw * 1.5; x.beginPath(); x.moveTo(3.5 * s, y); x.lineTo(gx - 2.5 * s, y + (R() - 0.5) * 1.2); x.stroke(); }
+  for (const t of [0.3, 0.72]) { const px = 3 * s + (gx - 5 * s) * t; x.fillStyle = RT.brassHi; x.beginPath(); x.arc(px, 0, 0.9 * s, 0, 2 * P); x.fill(); x.fillStyle = RT.brassLo; x.beginPath(); x.arc(px + 0.25 * s, 0.25 * s, 0.5 * s, 0, 2 * P); x.fill(); }
   const pg = x.createRadialGradient(1.5 * s, -1 * s, 0.3, 2 * s, 0, 3.4 * s); pg.addColorStop(0, '#c9d0d6'); pg.addColorStop(1, '#1d2023'); x.fillStyle = pg; x.beginPath(); x.arc(2 * s, 0, 3.2 * s, 0, 2 * P); x.fill();
+  x.restore();
+}
+// A hatchet left buried in the boards (the cutters' tradition): an oak haft from its knob at (x0, y0) to the iron head
+// at (x1, y1), the bit sunk into the wood across the haft; scale s.
+function hatchet(x, x0, y0, x1, y1, s, R) {
+  const L = Math.hypot(x1 - x0, y1 - y0), a = Math.atan2(y1 - y0, x1 - x0);
+  x.save(); x.translate(x0, y0); x.rotate(a);
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.75)'; x.shadowBlur = 5; x.shadowOffsetX = 2; x.shadowOffsetY = 3;
+  x.beginPath(); x.moveTo(0, -3.4 * s); x.quadraticCurveTo(L * 0.5, -2.2 * s, L + 2 * s, -2.6 * s); x.lineTo(L + 2 * s, 2.6 * s); x.quadraticCurveTo(L * 0.5, 2.2 * s, 0, 3.4 * s); x.quadraticCurveTo(-2.6 * s, 0, 0, -3.4 * s); x.closePath();
+  const g = x.createLinearGradient(0, -3.4 * s, 0, 3.4 * s); g.addColorStop(0, '#a87648'); g.addColorStop(0.45, '#6a4426'); g.addColorStop(1, '#1e1108'); x.fillStyle = g; x.fill(); x.restore();
+  x.strokeStyle = '#0c0704'; x.lineWidth = 0.8; x.stroke();
+  x.strokeStyle = 'rgba(14,7,2,0.5)'; x.lineWidth = 0.4; for (const y of [-1.6, 0.4, 1.8]) { x.beginPath(); x.moveTo(2 * s, y * s); x.lineTo(L, y * s + (R() - 0.5)); x.stroke(); }
+  // a wrap of cord where the hand grips, darkened with old blood
+  x.fillStyle = '#3a1a10'; x.fillRect(L * 0.12, -3.3 * s, L * 0.2, 6.6 * s); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.6; for (let t = L * 0.12; t < L * 0.32; t += 2 * s) { x.beginPath(); x.moveTo(t, -3.3 * s); x.lineTo(t + s, 3.3 * s); x.stroke(); }
+  // the head: a bearded iron head round the haft's end, its bit sunk in the board
+  const hd = [[L - 5 * s, -5 * s], [L + 6 * s, -5 * s], [L + 6 * s, 3 * s], [L + 10 * s, 15 * s], [L - 11 * s, 15 * s], [L - 5 * s, 4 * s]];
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.75)'; x.shadowBlur = 4; x.shadowOffsetX = 2; x.shadowOffsetY = 3; trace(x, hd, true); x.fillStyle = '#2a2d30'; x.fill(); x.restore();
+  steel(x, hd, R, { hi: '#80888f', mid: '#3a3f44', lo: '#141618' });
+  x.fillStyle = '#050505'; x.fillRect(L - 12 * s, 14.6 * s, 23 * s, 1.6 * s);
+  x.fillStyle = 'rgba(230,236,240,0.5)'; x.fillRect(L - 9 * s, 12.6 * s, 17 * s, 0.8);
   x.restore();
 }
 // A trophy tooth, hung by its drilled root: a canine, a molar or a fang, from crews of every kind. (cx, cy) is the hole.
@@ -261,28 +379,33 @@ function trapJaw(state) {
     jaw(1, top, 1); jaw(bot, h - 1, -1);
     // sawteeth only in the ends, where the jaws bite hardest
     for (const [a, b] of [[15, 34], [w - 34, w - 15]]) { saw(x, a, top, b, top, 3, 7 + gap * 0.6, 1); saw(x, b, bot, a, bot, 3, 7 + gap * 0.6, 1); }
-    // hinge eyes: steel spring coils with a rivet, the jaws' pivot
+    // the trap's stakes: a block of the hall's oak at each end, bound top and bottom with strap iron, the jaws' pivot
+    // pinned through it
     for (const ex of [8, w - 8]) {
-      steel(x, F.rrPts(ex - 7, 2, 14, h - 4, 5), Rj);
-      x.strokeStyle = 'rgba(0,0,0,0.65)'; x.lineWidth = 1; for (let y = 8; y < h - 6; y += 4) { x.beginPath(); x.moveTo(ex - 7, y); x.quadraticCurveTo(ex, y + 2.2, ex + 7, y); x.stroke(); }
-      x.strokeStyle = 'rgba(220,226,232,0.25)'; x.lineWidth = 0.6; for (let y = 9; y < h - 6; y += 4) { x.beginPath(); x.moveTo(ex - 6, y); x.quadraticCurveTo(ex, y + 2, ex + 6, y); x.stroke(); }
+      const Rk = RNG('btn.stake' + (ex < w / 2 ? 'L' : 'R'));
+      wood(x, F.rrPts(ex - 7, 1.5, 14, h - 3, 3), Rk, { dir: 'v' });
+      for (const y of [4, h - 10]) iron(x, rect(ex - 7.5, y, 15, 6), Rk);
       rivet(x, ex, h / 2, 3);
     }
     if (state === 'hover') { x.fillStyle = 'rgba(255,220,150,0.08)'; x.fillRect(14, top, w - 28, bot - top); }
   };
 }
-// A tab: a slip of the ledger nailed at both ends. Idle: soot-darkened, read in pale ink. Active: clean paper with the
-// dried thumbprint of the captain who chose it, read in black.
+// A tab: a tally stick of the hall's oak, notched at both ends with the counts it has kept. Idle: the bare stick, read in
+// pale ink. Active: a slip of the ledger nailed over it with the dried thumbprint of the captain who chose it, read in
+// black. The notches and nails sit in the 20 px ends; the middle is plain.
 function ledgerTab(active) {
   return (x, w, h, R) => {
-    const p = tear([[4, 3], [w - 4, 4], [w - 3, h - 5], [w * 0.5, h - 3], [4, h - 4]], true, 1.6, RNG('tab.slip'), 3, 0.05);
-    steel(x, F.rrPts(1, 1, w - 2, h - 2, 3), RNG('tab.steel'), { hi: '#30353a', mid: '#23272a', lo: '#121416' });
-    paper(x, p, RNG('tab.paper'), { tone: active ? '#d4c092' : '#5c4c37', stains: active ? [] : [[w - 14, h / 2, 9]] });
-    x.save(); trace(x, p, true); x.clip();
-    if (active) { print(x, 13, h / 2 + 2, 6, -0.4, R, '90,26,16', 0.55); grime(x, w - 12, h - 8, 10, 0.3); }
-    else { grime(x, 10, h / 2, 12, 0.5); grime(x, w - 10, h / 2, 12, 0.5); }
-    x.restore();
-    nail(x, 9, h / 2, 2.6, R); nail(x, w - 9, h / 2, 2.6, R);
+    const Rw = RNG('tab.wood'), st = tear([[2, 4], [w - 2, 3], [w - 2, h - 4], [2, h - 3]], true, 0.8, RNG('tab.stick'), 4, 0.02);
+    wood(x, st, Rw, { dir: 'h', tone: active ? '#4a301c' : '#3e2716', hi: active ? '#644229' : '#56371f', lo: '#1c1008' });
+    for (const ex of [5, w - 15]) for (let i = 0; i < 3; i++) { const nx = ex + i * 4; trace(x, [[nx, 3], [nx + 1.8, 7], [nx + 3.6, 3]], true); x.fillStyle = '#0b0603'; x.fill(); trace(x, [[nx, h - 3], [nx + 1.8, h - 7], [nx + 3.6, h - 3]], true); x.fill(); }
+    if (active) {
+      const p = tear([[16, 7], [w - 16, 8], [w - 16, h - 8], [w * 0.5, h - 7], [16, h - 8]], true, 1.3, RNG('tab.slip'), 3, 0.05);
+      paper(x, p, RNG('tab.paper'), { tone: '#d4c092' });
+      x.save(); trace(x, p, true); x.clip(); print(x, 22, h / 2 + 2, 5.5, -0.4, R, '90,26,16', 0.55); grime(x, w - 20, h - 10, 9, 0.3); x.restore();
+    } else {
+      x.save(); trace(x, st, true); x.clip(); soak(x, w - 18, h / 2 + 4, 6, R, 'h'); grime(x, 14, h / 2, 10, 0.35); x.restore();
+    }
+    nail(x, 18, h / 2, 2.4, R); nail(x, w - 18, h / 2, 2.4, R);
   };
 }
 // The bandolier's strap (the gunners' tradition): stitched leather with a buckle and a tip; its middle tiles (--bt-rep).
@@ -314,9 +437,14 @@ function loop(state) {
 // A strip: a long bounty sheet nailed across a riveted steel beam; a knife and a burn at one end, trophies at the other.
 function stripPiece(bottom) {
   return (x, w, h, R) => {
-    steel(x, F.rrPts(0.5, 0.5, w - 1, h - 1, 3), RNG('strip.steel' + bottom));
-    for (const px of [8, w - 8]) for (const py of [9, h - 9]) rivet(x, px, py, 3);
-    const p = tear([[16, 7], [w - 16, 6], [w - 16, h - 7], [16, h - 6]], true, 2.2, RNG('strip.edge' + bottom), 3, 0.05);
+    // a beam of two planks laid along the strip, butted on a seam, banded with strap iron at both ends
+    const Rb = RNG('strip.wood' + bottom);
+    board(x, 0.5, 0.5, w - 1, h / 2, Rb, 'h'); board(x, 0.5, h / 2 + 0.5, w - 1, h / 2 - 1, Rb, 'h');
+    x.save(); x.beginPath(); x.rect(0, 0, w, h); x.clip();
+    if (bottom) { knot(x, w - 19, h - 30, 2.6, Rb, 'h'); tally(x, 15, 14, 3, 12, Rb); soak(x, w - 60, 4, 6, Rb); gouge(x, 30, h - 4, 60, h - 6, 1.1); } else { knot(x, 19, 36, 2.4, Rb); gouge(x, w - 98, 4, w - 80, 6); scorch(x, w - 19, h - 18, 5, Rb); tally(x, 60, h - 7, 9, 5, Rb); }
+    x.restore();
+    for (const ex of [0.5, w - 11.5]) iron(x, rect(ex, 0.5, 11, h - 1), Rb, [[ex + 5.5, 9, 2.4], [ex + 5.5, h - 9, 2.4]]);
+    const p = tear([[24, 9], [w - 24, 8.5], [w - 24, h - 9], [24, h - 8.5]], true, 1.5, RNG('strip.edge' + bottom), 3, 0.04);
     paper(x, p, RNG('strip.paper' + bottom), { stains: [[52, h - 22, 20], [w - 60, 22, 16]] });
     x.save(); trace(x, p, true); x.clip();
     if (bottom) {
@@ -342,25 +470,34 @@ const kit = {
   // A panel: a torn, scorched sheet nailed over riveted steel; a knife through its top-left corner, a string of teeth at
   // its top right, a burn and a smear of dried blood at its foot. The middle is plain paper.
   'frame.panel': piece('frame.panel', [220, 170], [36, 64, 36, 38], (x, w, h, R) => {
-    steel(x, F.rrPts(0.5, 0.5, w - 1, h - 1, 4), RNG('panel.steel'));
-    for (const [px, py] of [[7, 7], [w - 7, 7], [7, h - 7], [w - 7, h - 7]]) rivet(x, px, py, 3.2);
-    const p = tear([[12, 12], [w - 12, 13], [w - 13, h - 12], [w - 46, h - 11], [26, h - 12], [12, h - 26]], true, 2.2, RNG('panel.edge'), 3, 0.05);
+    // four boards of the hall's oak round the sheet, butted at the corners and bound there with strap iron
+    const Rw = RNG('panel.wood');
+    boardFrame(x, w, h, 19, Rw);
+    // the boards' scars, in the corners only: a knot, gouges, a captain's tally, a scorch and old blood in the grain
+    knot(x, w - 9, h - 30, 2.8, Rw, 'v'); gouge(x, 4, h - 34, 11, h - 26); gouge(x, 6, h - 29, 13, h - 22, 1.2);
+    tally(x, 19, h - 14, 5, 8, Rw); soak(x, w - 42, h - 10, 8, Rw, 'h'); scorch(x, w - 10, 27, 5, Rw); nailHole(x, w - 32, 8, Rw);
+    for (const [cx, cy, sx, sy] of [[0.5, h - 0.5, 1, -1], [w - 0.5, h - 0.5, -1, -1], [w - 0.5, 0.5, -1, 1]]) cornerStrap(x, cx, cy, sx, sy, 24, 8, Rw);
+    const p = tear([[15, 15], [w - 15, 16], [w - 16, h - 15], [w - 46, h - 14], [28, h - 15], [15, h - 28]], true, 2, RNG('panel.edge'), 3, 0.05);
     paper(x, p, RNG('panel.paper'), { stains: [[w - 34, h - 30, 18], [28, 46, 12]] });
     x.save(); trace(x, p, true); x.clip();
     burn(x, 22, h - 22, 5.5, R); grime(x, w - 26, h - 20, 22, 0.4); smear(x, [[w - 58, h - 17], [w - 38, h - 21], [w - 18, h - 26]], 6, R);
     spatter(x, w - 24, 52, 1.9, 10, 3, R, true); print(x, 22, 64, 7, 0.3, R); drip(x, w - 30, 30, 14, R, false); drip(x, 20, 30, 10, R, true);
     burn(x, w - 52, h - 16, 3.5, R);
     x.restore();
+    nail(x, w - 17, h - 17, 2.2, R);
     knife(x, 1, 1, 33, 31, 1.3, R);
     teethString(x, w - 60, 9, w - 10, 11, 10, 4, 1.25, R); nail(x, w - 60, 9, 2.4, R); nail(x, w - 10, 11, 2.4, R);
   }),
   // A readout well: a scrap of the sheet nailed into a steel recess.
   'frame.inset': piece('frame.inset', [80, 60], [15, 15, 15, 15], (x, w, h, R) => {
-    steel(x, F.rrPts(0.5, 0.5, w - 1, h - 1, 3), RNG('inset.steel'), { hi: '#272b2f', mid: '#1d2023', lo: '#0f1113' });
-    const p = tear([[5, 5], [w - 5, 5], [w - 5, h - 5], [5, h - 5]], true, 1.3, RNG('inset.edge'), 2.5, 0.04);
+    // a well cut into the board: its four sides dark oak, a scrap of the sheet nailed into it
+    const Rw = RNG('inset.wood');
+    boardFrame(x, w, h, 7, Rw, { tone: '#3a2415', hi: '#4f3320', lo: '#1a0f07' });
+    x.strokeStyle = 'rgba(0,0,0,0.7)'; x.lineWidth = 1.5; x.strokeRect(6.5, 6.5, w - 13, h - 13);
+    const p = tear([[6, 6], [w - 6, 6], [w - 6, h - 6], [6, h - 6]], true, 1.2, RNG('inset.edge'), 2.5, 0.04);
     paper(x, p, RNG('inset.paper'), { stains: [[w - 8, h - 8, 7]] });
-    x.save(); trace(x, p, true); x.clip(); grime(x, 6, h - 6, 10, 0.45); drop(x, w - 8, 9, 1.6, R, false); x.restore();
-    for (const [px, py] of [[7.5, 7.5], [w - 7.5, 7.5], [7.5, h - 7.5], [w - 7.5, h - 7.5]]) nail(x, px, py, 1.9, R);
+    x.save(); trace(x, p, true); x.clip(); grime(x, 7, h - 7, 10, 0.45); drop(x, w - 9, 10, 1.6, R, false); x.restore();
+    for (const [px, py] of [[8, 8], [w - 8, 8], [8, h - 8], [w - 8, h - 8]]) nail(x, px, py, 1.9, R);
   }),
   'bar.track': piece('bar.track', [120, 22], [0, 16, 0, 16], strap, { inset: [16, 3] }),
   'bar.fill': piece('bar.fill', [64, 10], [0, 8, 0, 6], (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, RT.brassHi); g.addColorStop(1, RT.brassLo); x.fillStyle = g; x.fillRect(0, 1, w, h - 2); }),
@@ -375,12 +512,13 @@ const kit = {
   'tab.active': piece('tab.active', [128, 40], [10, 20, 10, 20], ledgerTab(true)),
   'strip.top': piece('strip.top', [560, 72], [14, 100, 14, 100], stripPiece(false)),
   'strip.bottom': piece('strip.bottom', [560, 72], [14, 100, 14, 100], stripPiece(true)),
-  // A divider: a blade's back laid along the sheet, nailed at both ends.
+  // A divider: a lath of the hall's oak nailed along the sheet, a nick cut in it at each end.
   'divider': piece('divider', [128, 10], [0, 14, 0, 14], (x, w, h, R) => {
-    const g = x.createLinearGradient(0, 2, 0, 8); g.addColorStop(0, '#d5dbe0'); g.addColorStop(0.5, '#6d757c'); g.addColorStop(1, '#22262a');
-    x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 2; x.shadowOffsetY = 1; x.fillStyle = g; x.fillRect(8, 3, w - 16, 4); x.restore();
-    x.strokeStyle = 'rgba(0,0,0,0.7)'; x.lineWidth = 0.5; x.strokeRect(8, 3, w - 16, 4);
-    nail(x, 5, h / 2, 2.4, R); nail(x, w - 5, h / 2, 2.4, R);
+    const Rw = RNG('divider.wood');
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 2; x.shadowOffsetY = 1; x.fillStyle = RT.oakLo; x.fillRect(2, 1.5, w - 4, 7); x.restore();
+    wood(x, rect(2, 1.5, w - 4, 7), Rw, { dir: 'h' });
+    for (const nx of [11, w - 13]) { trace(x, [[nx, 1.5], [nx + 1, 4], [nx + 2, 1.5]], true); x.fillStyle = '#0b0603'; x.fill(); }
+    nail(x, 6, h / 2, 2.2, R); nail(x, w - 6, h / 2, 2.2, R);
   }),
 };
 
@@ -397,16 +535,41 @@ function seal(x, cx, cy, r, R) {
   x.strokeStyle = 'rgba(200,110,80,0.35)'; x.lineWidth = 0.7; x.stroke(); x.restore();
   x.fillStyle = 'rgba(255,200,170,0.25)'; x.beginPath(); x.ellipse(cx - r * 0.4, cy - r * 0.45, r * 0.25, r * 0.12, -0.6, 0, 2 * P); x.fill();
 }
+// A trophy molar for the crest, crown up and roots down so it reads as a tooth at any size (a long canine read as a bone
+// at 32 px): a glossy two-cusped crown of enamel over two darker roots, the line between them plain. (cx, cy) is the
+// crown's middle; k its scale.
+function crestTooth(x, cx, cy, k) {
+  x.save(); x.translate(cx, cy); x.scale(k, k);
+  const path = () => { x.beginPath(); x.moveTo(-12, 2); x.bezierCurveTo(-13.5, -8, -9, -14.5, -4.5, -12.5); x.quadraticCurveTo(-2, -10.5, 0, -10.2); x.quadraticCurveTo(2, -10.5, 4.5, -12.5);
+    x.bezierCurveTo(9, -14.5, 13.5, -8, 12, 2); x.quadraticCurveTo(11, 6, 10, 9); x.quadraticCurveTo(8.6, 18, 6, 20); x.quadraticCurveTo(4, 19, 3.4, 10); x.quadraticCurveTo(0, 6.5, -3.4, 10);
+    x.quadraticCurveTo(-4, 19, -6, 20); x.quadraticCurveTo(-8.6, 18, -10, 9); x.quadraticCurveTo(-11, 6, -12, 2); x.closePath(); };
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 4 / k; x.shadowOffsetX = 1.2 / k; x.shadowOffsetY = 2 / k; path(); x.fillStyle = '#f2ead2'; x.fill(); x.restore();
+  path(); x.save(); x.clip();
+  const g = x.createLinearGradient(-12, 0, 12, 0); g.addColorStop(0, '#fffaf0'); g.addColorStop(0.5, '#efe4c6'); g.addColorStop(1, '#a8987a'); x.fillStyle = g; x.fillRect(-14, -15, 28, 18);
+  const r = x.createLinearGradient(0, 3, 0, 20); r.addColorStop(0, '#c8a876'); r.addColorStop(1, '#6e5030'); x.fillStyle = r; x.fillRect(-14, 3, 28, 18);
+  x.strokeStyle = 'rgba(80,55,30,0.7)'; x.lineWidth = 0.8; x.beginPath(); x.moveTo(-13, 3.2); x.quadraticCurveTo(0, 5.2, 13, 3.2); x.stroke();
+  x.fillStyle = 'rgba(255,255,255,0.75)'; x.beginPath(); x.ellipse(-6, -7, 2.2, 4.2, 0.3, 0, 2 * P); x.fill();
+  x.fillStyle = 'rgba(90,20,12,0.55)'; x.beginPath(); x.ellipse(5, 15, 2.6, 4, 0, 0, 2 * P); x.fill();
+  x.restore();
+  path(); x.strokeStyle = '#1a0f08'; x.lineWidth = 1.3; x.stroke();
+  x.restore();
+}
 function crestMark(x, w, R) {
   const c = w / 2;
-  // a drop of blood, the tithe; two cutters' blades crossed behind; a tooth taken in trophy over all
-  const d = []; for (let i = 0; i < 48; i++) { const t = i * 2 * P / 48; d.push([c + 36 * Math.sin(t) * Math.sin(t / 2), c + 6 - 40 * Math.cos(t)]); }
+  // a roundel of the hall's oak bound in an iron hoop; on it a drop of blood, the tithe; two cutters' blades crossed
+  // behind; a tooth taken in trophy over all
+  const disc = F.arcPts(c, c, 46, 46, 0, 2 * P, 56);
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetY = 2; trace(x, disc, true); x.fillStyle = RT.oakLo; x.fill(); x.restore();
+  wood(x, disc, R, { dir: 'v' });
+  x.strokeStyle = '#1b1d1f'; x.lineWidth = 3.4; x.beginPath(); x.arc(c, c, 44.5, 0, 2 * P); x.stroke();
+  x.strokeStyle = 'rgba(190,196,200,0.35)'; x.lineWidth = 0.7; x.beginPath(); x.arc(c, c, 45.5, P * 0.95, P * 1.6); x.stroke();
+  knife(x, 14, 82, 72, 24, 1.15, R, { blood: false }); knife(x, 82, 82, 24, 24, 1.15, R, { blood: false });
+  const d = []; for (let i = 0; i < 48; i++) { const t = i * 2 * P / 48; d.push([c + 29 * Math.sin(t) * Math.sin(t / 2), c + 8 - 33 * Math.cos(t)]); }
   x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetY = 2; trace(x, d, true);
-  const g = x.createRadialGradient(c - 10, c, 2, c, c + 10, 38); g.addColorStop(0, '#d0262c'); g.addColorStop(0.6, '#8a0c12'); g.addColorStop(1, '#3a0406'); x.fillStyle = g; x.fill(); x.restore();
+  const g = x.createRadialGradient(c - 8, c + 2, 2, c, c + 10, 32); g.addColorStop(0, '#d0262c'); g.addColorStop(0.6, '#8a0c12'); g.addColorStop(1, '#3a0406'); x.fillStyle = g; x.fill(); x.restore();
   trace(x, d, true); x.strokeStyle = '#1a0304'; x.lineWidth = 1.4; x.stroke();
-  x.fillStyle = 'rgba(255,220,220,0.5)'; x.beginPath(); x.ellipse(c - 14, c + 2, 4, 9, 0.3, 0, 2 * P); x.fill();
-  knife(x, 10, 86, 74, 22, 1.25, R, { blood: false }); knife(x, 86, 86, 22, 22, 1.25, R, { blood: false });
-  tooth(x, c, c - 14, 3.3, 'canine', 0, R);
+  x.fillStyle = 'rgba(255,220,220,0.5)'; x.beginPath(); x.ellipse(c - 12, c + 6, 3.4, 7, 0.3, 0, 2 * P); x.fill();
+  crestTooth(x, c, c + 8, 1.15);
 }
 function lamp(col, hi) {
   return (x, w, h) => {
@@ -422,33 +585,56 @@ function lamp(col, hi) {
   };
 }
 const hero = {
-  // A bounty sheet with a burned seal: the captain's name typed into its field (64-404 x 10-46).
+  // A bounty sheet with a burned seal nailed to a plank of the hall's oak: the captain's name typed into its field
+  // (64-404 x 10-46). The plank's bare right end carries the knife and the captain's tally.
   'nameplate': (x, w, h) => {
-    const R = RNG('nameplate');
-    steel(x, F.rrPts(0.5, 0.5, w - 1, h - 1, 4), RNG('plate.steel'));
-    const p = tear([[6, 5], [w - 30, 4], [w - 8, 7], [w - 6, h - 5], [w * 0.6, h - 4], [6, h - 6]], true, 2, RNG('plate.edge'), 3, 0.05);
-    paper(x, p, RNG('plate.paper'), { stains: [[w - 34, h - 16, 14]] });
-    x.save(); trace(x, p, true); x.clip(); burn(x, w - 16, h - 12, 4.5, R); grime(x, 34, h - 6, 24, 0.4); spatter(x, w - 46, 12, 0.2, 7, 2.2, R, false);
+    const R = RNG('nameplate'), Rw = RNG('plate.wood');
+    board(x, 0.5, 0.5, w - 1, h - 1, Rw, 'h');
+    knot(x, w - 22, h - 13, 2.6, Rw); tally(x, w - 46, h - 15, 6, 9, Rw); soak(x, w - 30, 8, 6, Rw); gouge(x, w - 48, 6, w - 36, 9, 1.3); nailHole(x, 8, 7, Rw);
+    for (const ex of [0.5]) iron(x, rect(ex, 0.5, 10, h - 1), Rw, [[ex + 5, 8, 2.2], [ex + 5, h - 8, 2.2]]);
+    const p = tear([[13, 5], [w - 70, 4], [w - 50, 6], [w - 51, h - 5], [w * 0.6, h - 4], [13, h - 6]], true, 2, RNG('plate.edge'), 3, 0.05);
+    paper(x, p, RNG('plate.paper'), { stains: [[w - 76, h - 16, 12]] });
+    x.save(); trace(x, p, true); x.clip(); burn(x, w - 60, h - 11, 4, R); grime(x, 34, h - 6, 24, 0.4); spatter(x, w - 88, 12, 0.2, 7, 2.2, R, false);
     x.strokeStyle = 'rgba(60,40,20,0.25)'; x.lineWidth = 0.6; x.beginPath(); x.moveTo(62, h - 9); x.lineTo(404, h - 9); x.stroke(); x.restore();
+    nail(x, w - 56, 9, 2.2, R); nail(x, w - 57, h - 9, 2.2, R);
     seal(x, 32, h / 2, 17, R);
-    knife(x, w - 1, 1, w - 40, h / 2 + 6, 1.15, R);
+    knife(x, w - 1, 1, w - 30, h / 2 + 4, 1.15, R);
   },
-  // The helm: a revolver's cylinder (the gunners' tradition). Eight chambers, each a round's brass head, ring the
-  // ejector, the stop key; the arrows are stamped live on the brass.
+  // The helm: a revolver's cylinder (the gunners' tradition) set in a wheel of the hall's oak, its four turned handles
+  // reaching into the corners of a plank door banded with strap iron. Eight chambers, each a round's brass head, ring
+  // the ejector, the stop key; the arrows are stamped live on the brass.
   'helm.pad': (x, w, h) => {
-    const R = RNG('helm'), c = w / 2;
-    steel(x, F.rrPts(2, 2, w - 4, h - 4, 10), RNG('helm.plate'), { hi: '#30353a', mid: '#23272a', lo: '#101214' });
-    for (const [px, py] of [[16, 16], [w - 16, 16], [16, h - 16], [w - 16, h - 16]]) rivet(x, px, py, 4.5);
-    // a scrap of the ledger pinned behind the cylinder, burned and bloodied at its corners
-    const sp = tear([[34, 24], [w - 22, 34], [w - 30, h - 26], [24, h - 36]], true, 3, RNG('helm.scrap'), 4, 0.06);
-    paper(x, sp, RNG('helm.paper'), { tone: '#b39d71', stains: [[w - 50, h - 50, 22]] });
-    x.save(); trace(x, sp, true); x.clip(); burn(x, 46, h - 52, 7, R); spatter(x, w - 46, 52, 2.4, 12, 3.4, R, false); x.restore();
+    const R = RNG('helm'), Rw = RNG('helm.wood'), c = w / 2;
+    // three planks, grain down, scarred in the corners the wheel leaves bare
+    for (let i = 0; i < 3; i++) board(x, 1 + i * (w - 2) / 3, 1, (w - 2) / 3, h - 2, Rw, 'v');
+    tally(x, 12, 30, 9, 11, Rw); gouge(x, w - 40, 26, w - 18, 40, 1.8); gouge(x, w - 36, 34, w - 20, 46, 1.2); knot(x, w - 26, h - 50, 3.2, Rw, 'v');
+    soak(x, 26, h - 40, 11, Rw, 'v'); scorch(x, w - 30, h - 30, 7, Rw); nailHole(x, 40, 52, Rw); nailHole(x, w - 52, 12, Rw);
+    for (const y of [6, h - 18]) iron(x, rect(1, y, w - 2, 12), Rw, [[16, y + 6], [w / 3 + 14, y + 6], [2 * w / 3 + 14, y + 6], [w - 16, y + 6]]);
+    // the wheel's four handles, turned and worn pale where hands have hauled on them
+    for (let i = 0; i < 4; i++) {
+      const a = -P / 4 + i * P / 2; x.save(); x.translate(c, c); x.rotate(a);
+      x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetX = 2; x.shadowOffsetY = 3;
+      x.beginPath(); x.moveTo(140, -8); x.lineTo(160, -6); x.quadraticCurveTo(166, -11, 176, -10); x.quadraticCurveTo(192, -9, 192, 0); x.quadraticCurveTo(192, 9, 176, 10); x.quadraticCurveTo(166, 11, 160, 6); x.lineTo(140, 8); x.closePath();
+      const g = x.createLinearGradient(0, -11, 0, 11); g.addColorStop(0, '#9a6a40'); g.addColorStop(0.4, '#6a4426'); g.addColorStop(1, '#1e1108'); x.fillStyle = g; x.fill(); x.restore();
+      x.strokeStyle = '#0c0704'; x.lineWidth = 1; x.stroke();
+      x.strokeStyle = 'rgba(14,7,2,0.5)'; x.lineWidth = 0.5; for (const y of [-5, -1.5, 3, 6]) { x.beginPath(); x.moveTo(142, y * 0.9); x.lineTo(190, y); x.stroke(); }
+      x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 1.2; for (const t of [160, 170]) { x.beginPath(); x.moveTo(t, -9); x.lineTo(t, 9); x.stroke(); }
+      x.restore();
+    }
+    // the wheel's rim: eight felloes of oak round the cylinder, pinned at their joints, an iron tyre round the outside
+    const rim = F.arcPts(c, c, 148, 148, 0, 2 * P, 72);
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 10; x.shadowOffsetX = 3; x.shadowOffsetY = 5; trace(x, rim, true); x.fillStyle = RT.oakLo; x.fill(); x.restore();
+    wood(x, rim, Rw, { dir: 'h', tone: '#5a3a20', hi: '#7a5232', lo: '#24150a' });
+    x.strokeStyle = 'rgba(12,6,2,0.9)'; x.lineWidth = 1.4;
+    for (let i = 0; i < 8; i++) { const a = -P / 2 + (i + 0.5) * P / 4; x.beginPath(); x.moveTo(c + Math.cos(a) * 128, c + Math.sin(a) * 128); x.lineTo(c + Math.cos(a) * 146, c + Math.sin(a) * 146); x.stroke(); rivet(x, c + Math.cos(a + 0.07) * 138, c + Math.sin(a + 0.07) * 138, 2); }
+    x.strokeStyle = '#1b1d1f'; x.lineWidth = 3.5; x.beginPath(); x.arc(c, c, 146.5, 0, 2 * P); x.stroke();
+    x.strokeStyle = 'rgba(190,196,200,0.35)'; x.lineWidth = 0.8; x.beginPath(); x.arc(c, c, 147.5, P * 0.95, P * 1.6); x.stroke();
     // the cylinder
-    const cyl = []; for (let i = 0; i < 64; i++) { const a = i * 2 * P / 64, f = Math.cos(8 * (a + P / 8)) > 0.92 ? 0.95 : 1; cyl.push([c + Math.cos(a) * 136 * f, c + Math.sin(a) * 136 * f]); }
-    x.save(); x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 10; x.shadowOffsetX = 3; x.shadowOffsetY = 5; trace(x, cyl, true); x.fillStyle = '#2a2e32'; x.fill(); x.restore();
+    const cyl = []; for (let i = 0; i < 64; i++) { const a = i * 2 * P / 64, f = Math.cos(8 * (a + P / 8)) > 0.92 ? 0.95 : 1; cyl.push([c + Math.cos(a) * 128 * f, c + Math.sin(a) * 128 * f]); }
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 8; x.shadowOffsetX = 2; x.shadowOffsetY = 4; trace(x, cyl, true); x.fillStyle = '#2a2e32'; x.fill(); x.restore();
     steel(x, cyl, RNG('helm.cyl'), { hi: '#5a6168', mid: '#30353a', lo: '#121416' });
     // flutes between the chambers
-    for (let i = 0; i < 8; i++) { const a = -P / 2 + (i + 0.5) * P / 4; x.save(); x.translate(c + Math.cos(a) * 118, c + Math.sin(a) * 118); x.rotate(a); const g = x.createLinearGradient(0, -6, 0, 6); g.addColorStop(0, '#0d0f11'); g.addColorStop(1, '#5d646b'); x.fillStyle = g; x.beginPath(); x.ellipse(0, 0, 16, 5, 0, 0, 2 * P); x.fill(); x.restore(); }
+    for (let i = 0; i < 8; i++) { const a = -P / 2 + (i + 0.5) * P / 4; x.save(); x.translate(c + Math.cos(a) * 112, c + Math.sin(a) * 112); x.rotate(a); const g = x.createLinearGradient(0, -6, 0, 6); g.addColorStop(0, '#0d0f11'); g.addColorStop(1, '#5d646b'); x.fillStyle = g; x.beginPath(); x.ellipse(0, 0, 13, 5, 0, 0, 2 * P); x.fill(); x.restore(); }
     // eight chambers: a round's head in each
     for (let i = 0; i < 8; i++) {
       const a = -P / 2 + i * P / 4, px = c + Math.cos(a) * 92, py = c + Math.sin(a) * 92;
@@ -467,29 +653,40 @@ const hero = {
     x.fillStyle = b; x.beginPath(); x.arc(c, c, 34, 0, 2 * P); x.fill(); x.strokeStyle = 'rgba(40,25,5,0.9)'; x.lineWidth = 1.2; x.stroke();
     x.save(); x.beginPath(); x.arc(c, c, 34, 0, 2 * P); x.clip(); grime(x, c + 16, c + 20, 22, 0.35); x.restore();
   },
-  // The systems display: a bounty sheet pinned at each corner with a blade, its field clear for the ship drawn live.
+  // The systems display: a bounty sheet nailed into a frame of the hall's oak, a blade through three corners and a
+  // hatchet left in the fourth, strap iron at the middle of each long board; its field clear for the ship drawn live.
   'ssd.bezel': (x, w, h) => {
-    const R = RNG('ssd');
-    steel(x, F.rrPts(0.5, 0.5, w - 1, h - 1, 5), RNG('ssd.steel'));
-    for (const [px, py] of [[8, 8], [w - 8, 8], [8, h - 8], [w - 8, h - 8], [w / 2, 6], [w / 2, h - 6]]) rivet(x, px, py, 3);
-    const p = tear([[14, 14], [w * 0.45, 12], [w - 14, 15], [w - 13, h * 0.5], [w - 15, h - 14], [w * 0.55, h - 13], [14, h - 15], [12, h * 0.4]], true, 2.6, RNG('ssd.edge'), 3, 0.05);
-    paper(x, p, RNG('ssd.paper'), { stains: [[70, h - 60, 30], [w - 70, 60, 24]] });
+    const R = RNG('ssd'), Rw = RNG('ssd.wood');
+    boardFrame(x, w, h, 28, Rw);
+    knot(x, w * 0.3, 12, 3, Rw); knot(x, 13, h * 0.62, 3.2, Rw, 'v'); knot(x, w * 0.66, h - 9, 2.4, Rw); tally(x, w * 0.36, h - 19, 12, 10, Rw); tally(x, w - 19, 48, 4, 9, Rw);
+    gouge(x, w - 18, h * 0.32, w - 8, h * 0.48, 1.6); gouge(x, w - 14, h * 0.36, w - 6, h * 0.46, 1.1); gouge(x, w * 0.14, h - 8, w * 0.27, h - 17, 1.3); gouge(x, 8, 64, 18, 86, 1.4);
+    soak(x, w * 0.8, 13, 10, Rw); soak(x, 14, h * 0.8, 9, Rw, 'v'); scorch(x, 14, h * 0.3, 6, Rw); scorch(x, w * 0.58, 10, 5, Rw); nailHole(x, w * 0.4, h - 12, Rw); nailHole(x, w - 13, h * 0.7, Rw); nailHole(x, w * 0.18, 10, Rw);
+    for (const [px, py, ww, hh] of [[w / 2 - 8, 0.5, 16, 30], [w / 2 - 8, h - 30.5, 16, 30]]) iron(x, rect(px, py, ww, hh), Rw, [[px + 8, py + 6, 2.6], [px + 8, py + hh - 6, 2.6]]);
+    const p = tear([[24, 23], [w * 0.45, 21], [w - 24, 24], [w - 22, h * 0.5], [w - 24, h - 23], [w * 0.55, h - 22], [24, h - 24], [22, h * 0.4]], true, 2.4, RNG('ssd.edge'), 3, 0.05);
+    paper(x, p, RNG('ssd.paper'), { stains: [[76, h - 66, 28], [w - 76, 64, 22]] });
     x.save(); trace(x, p, true); x.clip();
     // margins only: the ship is drawn within 110 px of (230, 150)
-    burn(x, w - 50, h - 70, 11, R); burn(x, 50, 78, 5, R); burn(x, w - 92, 40, 3, R); grime(x, 40, h - 50, 34, 0.45); grime(x, w - 30, 40, 30, 0.4);
-    spatter(x, 66, h - 86, -0.5, 16, 4.4, R, false); smear(x, [[w - 26, 70], [w - 30, 110], [w - 24, 150]], 7, R); print(x, w - 64, 106, 9, 0.6, R); print(x, 66, 150, 9, -0.3, R, '80,22,14', 0.45);
-    drop(x, w - 116, 46, 3.2, R, true, P / 2); drip(x, w - 104, 38, 22, R, true); drip(x, 104, h - 70, 16, R, false);
+    burn(x, w - 64, h - 104, 9, R); burn(x, 56, 82, 5, R); burn(x, w - 96, 46, 3, R); grime(x, 46, h - 54, 32, 0.45); grime(x, w - 38, 46, 28, 0.4);
+    spatter(x, 70, h - 88, -0.5, 16, 4.2, R, false); smear(x, [[w - 34, 74], [w - 38, 112], [w - 32, 150]], 7, R); print(x, w - 66, 110, 9, 0.6, R); print(x, 70, 150, 9, -0.3, R, '80,22,14', 0.45);
+    drop(x, w - 118, 50, 3.2, R, true, P / 2); drip(x, w - 106, 42, 20, R, true); drip(x, 106, h - 72, 14, R, false);
     // the sheet's ruled frame and its typed header
-    x.strokeStyle = 'rgba(40,24,12,0.45)'; x.lineWidth = 0.8; x.strokeRect(24, 22, w - 48, h - 44);
-    x.fillStyle = 'rgba(30,20,12,0.75)'; x.font = '400 11px "Special Elite"'; x.fillText('TITHE OWED · SHEET 114', 56, 40); x.fillText('PAID IN FULL: NOT YET', 56, h - 26);
+    x.strokeStyle = 'rgba(40,24,12,0.45)'; x.lineWidth = 0.8; x.strokeRect(32, 30, w - 64, h - 60);
+    x.fillStyle = 'rgba(30,20,12,0.75)'; x.font = '400 11px "Special Elite"'; x.fillText('TITHE OWED · SHEET 114', 58, 46); x.fillText('PAID IN FULL: NOT YET', 58, h - 38);
     x.restore();
-    knife(x, 1, 1, 40, 34, 1.4, R); knife(x, w - 1, 1, w - 40, 34, 1.4, R); knife(x, 1, h - 1, 40, h - 34, 1.4, R); knife(x, w - 1, h - 1, w - 40, h - 34, 1.4, R);
+    for (const [px, py] of [[w * 0.25, 26], [w * 0.75, 26], [w * 0.25, h - 26], [w * 0.36, h - 26], [26, h * 0.5], [w - 26, h * 0.5]]) nail(x, px, py, 2.3, R);
+    knife(x, 1, 1, 46, 38, 1.4, R); knife(x, w - 1, 1, w - 46, 38, 1.4, R); knife(x, 1, h - 1, 46, h - 38, 1.4, R); hatchet(x, w - 96, h - 62, w - 30, h - 38, 1.3, R);
   },
-  // A gauge behind cracked, bloodied glass in a riveted steel ring.
+  // A gauge behind cracked, bloodied glass in a riveted steel ring, set in a case of the hall's oak.
   'dial': (x, w, h) => {
     const R = RNG('dial'), c = w / 2;
-    steel(x, F.arcPts(c, c, 58, 58, 0, 2 * P, 48), RNG('dial.ring'), { hi: '#6b737a', mid: '#353a3f', lo: '#121416' });
-    for (let i = 0; i < 8; i++) { const a = i * P / 4 + P / 8; rivet(x, c + Math.cos(a) * 52, c + Math.sin(a) * 52, 2.2); }
+    // a case of the hall's oak, its corners bound with strap iron, the gauge's steel ring set into it
+    const Rw = RNG('dial.wood');
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetY = 2; trace(x, F.rrPts(1, 1, w - 2, h - 2, 8), true); x.fillStyle = RT.oakLo; x.fill(); x.restore();
+    wood(x, F.rrPts(1, 1, w - 2, h - 2, 8), Rw, { dir: 'v' });
+    tally(x, 8, h - 15, 4, 7, Rw); knot(x, w - 10, 14, 2, Rw, 'v');
+    for (const [cx, cy, sx, sy] of [[1, 1, 1, 1], [w - 1, 1, -1, 1], [1, h - 1, 1, -1], [w - 1, h - 1, -1, -1]]) cornerStrap(x, cx, cy, sx, sy, 18, 6, Rw);
+    steel(x, F.arcPts(c, c, 53, 53, 0, 2 * P, 48), RNG('dial.ring'), { hi: '#6b737a', mid: '#353a3f', lo: '#121416' });
+    for (let i = 0; i < 8; i++) { const a = i * P / 4 + P / 8; rivet(x, c + Math.cos(a) * 49.5, c + Math.sin(a) * 49.5, 1.8); }
     const f = x.createRadialGradient(c, c - 8, 4, c, c, 46); f.addColorStop(0, '#2c2620'); f.addColorStop(1, '#0d0b09'); x.fillStyle = f; x.beginPath(); x.arc(c, c, 46, 0, 2 * P); x.fill();
     x.strokeStyle = 'rgba(200,150,58,0.7)'; x.lineWidth = 1;
     for (let i = 0; i < 36; i++) { const a = i * P / 18, r0 = i % 3 ? 41 : 37; x.beginPath(); x.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0); x.lineTo(c + Math.cos(a) * 45, c + Math.sin(a) * 45); x.stroke(); }
@@ -555,11 +752,41 @@ function icon(name) {
   });
 }
 
+// ---- the ground behind the column ---------------------------------------------------------------------------------
+// A wall of the hall (CLAUDE.md section 7: no black behind a metallic skin's panels): rough planks stood on end, each its
+// own width and tone, butted with dark gaps, nailed to two cross battens under strap iron, and scarred where the sheets
+// leave it bare: knots, nail holes of sheets long paid, knife gouges, tallies, scorches and old blood in the grain.
+// Drawn once at the column's size (472 x 1080) and handed to the page as the kit's optional `column` image.
+const GROUND = [472, 1080];
+function ground(x, w, h) {
+  const R = RNG('ground');
+  x.fillStyle = '#0c0704'; x.fillRect(0, 0, w, h);
+  const xs = [0]; while (xs[xs.length - 1] < w) xs.push(xs[xs.length - 1] + 66 + R() * 30);
+  for (let i = 0; i + 1 < xs.length; i++) board(x, xs[i] + 1, 0, xs[i + 1] - xs[i] - 2, h, R, 'v', { tone: '#3d2716', hi: '#523520', lo: '#1c1109' });
+  // the battens behind, seen as rows of nail heads and an iron band across the planks
+  for (const y of [h * 0.29, h * 0.71]) {
+    iron(x, rect(0, y - 7, w, 14), R, []);
+    for (let i = 0; i + 1 < xs.length; i++) for (const f of [0.3, 0.7]) nail(x, xs[i] + (xs[i + 1] - xs[i]) * f, y, 2.4, R);
+  }
+  // scars, spread by the seeded generator over the whole wall
+  for (let i = 0; i < 26; i++) nailHole(x, R() * w, R() * h, R);
+  for (let i = 0; i < 9; i++) { const cx = R() * w, cy = R() * h; knot(x, cx, cy, 2.5 + R() * 3, R, 'v'); }
+  for (let i = 0; i < 14; i++) { const cx = R() * w, cy = R() * h, a = R() * P, l = 8 + R() * 22; gouge(x, cx, cy, cx + Math.cos(a) * l, cy + Math.sin(a) * l, 1 + R()); }
+  for (let i = 0; i < 6; i++) tally(x, 10 + R() * (w - 60), 20 + R() * (h - 40), 4 + Math.floor(R() * 12), 8 + R() * 6, R);
+  for (let i = 0; i < 5; i++) scorch(x, R() * w, R() * h, 6 + R() * 10, R);
+  for (let i = 0; i < 6; i++) soak(x, R() * w, R() * h, 8 + R() * 12, R, 'v');
+  // the hall's soot: darker toward the floor and the corners
+  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(8,4,2,0.35)'); g.addColorStop(0.2, 'rgba(8,4,2,0)'); g.addColorStop(0.8, 'rgba(8,4,2,0)'); g.addColorStop(1, 'rgba(8,4,2,0.5)'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  const s = x.createLinearGradient(w - 30, 0, w, 0); s.addColorStop(0, 'rgba(0,0,0,0)'); s.addColorStop(1, 'rgba(0,0,0,0.55)'); x.fillStyle = s; x.fillRect(w - 30, 0, 30, h);
+}
+
 // ---- the skin -----------------------------------------------------------------------------------------------------
 F.register('redtithe', {
-  name: 'Red Tithe', kind: 'Painted in canvas: crusted, bloodied bounty sheets pinned to gun steel by knives, trap-jaw keys, a bandolier for every bar', bg: RT.bg, sampleBg: RT.paper,
+  name: 'Red Tithe', kind: 'Painted in canvas: crusted, bloodied bounty sheets nailed to scarred oak planks, strap iron and knives, trap-jaw keys, a bandolier for every bar', bg: RT.bg, sampleBg: RT.paper,
   css: { '--s-ink': RT.ink, '--s-dim': '#3b2a1e', '--s-num': '#1c130d', '--s-body': '"Special Elite", monospace', '--btn-ink': '#16100b', '--btn-justify': 'center',
-    '--btn-shadow': '0 1px 0 rgba(255,240,205,0.35)', '--btn-font': '700 17px/1 "Stardos Stencil", sans-serif', '--btn-track': '0.05em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.05s', '--btn-sink': '1.5px',
+    // a halo of the slip's own paper behind the stencil: invisible on the slip, it keeps a long label legible where a
+    // narrow key's label runs out over the jaws' teeth and the stakes (the kit sheet's 120 px key)
+    '--btn-shadow': '0 1px 0 rgba(255,240,205,0.35), 0 0 2px #bea77b, 0 0 3px #bea77b, 0 0 5px rgba(190,167,123,0.85)', '--btn-font': '700 17px/1 "Stardos Stencil", sans-serif', '--btn-track': '0.05em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.05s', '--btn-sink': '1.5px',
     '--tab-font': '400 14px/1 "Special Elite", monospace', '--tab-ink': '#d8c69a', '--tab-ink-on': '#1a120c',
     '--title-font': '700 19px/1 "Stardos Stencil", sans-serif', '--title-ink': '#6b1810', '--lbl-font': '400 15px/1 "Special Elite", monospace', '--num-font': '400 25px/1 "Special Elite", monospace',
     // The strips are 72 px; their open band is the sheet inside its torn edge, rows 11-61, so each label stands over its
@@ -572,7 +799,8 @@ F.register('redtithe', {
   plateText: { left: 64, top: 12, width: 336, height: 30, font: '400 21px/30px "Special Elite", monospace', color: '#1a120c', sub: 'RED LEDGER · CAPT. HESK VARRO' },
   helmKeys: 'ring', helmR: 92, shield: [RT.brass, '#b8561c', RT.fresh],
   fonts: ['700 20px "Stardos Stencil"', '400 20px "Special Elite"'], view: { title: '400 28px "Special Elite"', body: '400 24px "Special Elite"', upper: true, ink: RT.bone, dim: RT.brass },
-  build: () => F.fromPainters(kit, hero, icon, false),
+  // The column's ground: a wall of the hall's planks, drawn once at the column's size (a JPEG: it is all grain, and a PNG of it runs to megabytes).
+  build: () => Object.assign(F.fromPainters(kit, hero, icon, false), { column: F.paint(GROUND[0], GROUND[1], ground).toDataURL('image/jpeg', 0.88) }),
   live: {
     // A chevron stamped into the brass head of each chamber.
     arrow: (x) => { x.fillStyle = 'rgba(30,18,6,0.9)'; x.beginPath(); x.moveTo(13, 0); x.lineTo(-3, -12); x.lineTo(-3, -5); x.lineTo(-12, -5); x.lineTo(-12, 5); x.lineTo(-3, 5); x.lineTo(-3, 12); x.closePath(); x.fill(); x.strokeStyle = 'rgba(255,230,160,0.45)'; x.lineWidth = 0.8; x.save(); x.translate(0.7, 0.9); x.stroke(); x.restore(); },
@@ -602,16 +830,16 @@ F.register('redtithe', {
       }
     },
   },
-  world: ['Every crew boarded pays a tithe in blood; every debt is written on a sheet and pinned up with a knife until it is paid.',
-    'Raiders of many peoples; a captain\'s standing is counted in trophies taken from others: teeth of beaten crews, spent cartridges, broken blades.',
-    'Three traditions: the sheet-keepers\' ledgers and burned seals, the gunners\' bandoliers and brass, the cutters\' blades and traps.',
+  world: ['Every crew boarded pays a tithe in blood; every debt is written on a sheet and nailed to the boards of the hall with a knife until it is paid.',
+    'Raiders of many peoples; a captain\'s standing is counted in trophies taken from others: teeth of beaten crews, spent cartridges, broken blades, and tallies cut into the boards.',
+    'Three traditions: the sheet-keepers\' ledgers and burned seals, the gunners\' bandoliers and brass, the cutters\' blades and traps. They build as they build their halls: oak planks bound with strap iron, steel only where it must bite or fire.',
     'Scarred boarding hulls with ram prows and grapples, hung with the plates of ships they took.'],
-  shapes: 'Trap-jaw keys, torn bounty sheets nailed to riveted steel, knives through corners, strings of teeth, a revolver cylinder, bandolier bars.',
-  light: 'Painted: a hard light from the upper left, deep cast shadows under blades and paper, no glow but the alert lamps.',
+  shapes: 'Trap-jaw keys on oak stakes, torn bounty sheets nailed to scarred plank boards bound with strap iron, knives and a hatchet in the wood, strings of teeth, a revolver cylinder in an oak wheel, tally-stick tabs, bandolier bars.',
+  light: 'Painted: a hard hall light from the upper left; worn plank edges catch it, gouges, grain and tallies hold shadow, blades and iron glint, deep cast shadows under blades and paper; no glow but the alert lamps.',
   motion: 'A key\'s jaws snap shut and blood seeps along the bite; a bar loads round by round.',
   type: '"Stardos Stencil" stencilled titles and keys, "Special Elite" typed readouts.',
   palette: [['Dried blood', RT.dried, 'Stains, seals, titles', 'The tithe already taken'], ['Fresh blood', RT.fresh, 'Alerts only', 'The tithe being taken now'],
-    ['Old paper', RT.paper, 'Sheets, keys, readout grounds', 'The ledger: every debt written down'], ['Soot', RT.soot, 'Ink, burns, grime', 'A sheet closed by fire'],
-    ['Brass', RT.brass, 'Rounds, ready states', 'Spent cartridges counted as standing'], ['Gun steel', RT.steel, 'Plates, jaws, blades', 'What holds the sheet holds the crew']],
+    ['Old paper', RT.paper, 'Sheets, keys, readout grounds', 'The ledger: every debt written down'], ['Hall oak', RT.oak, 'Boards, frames, stakes, tally sticks, the column', 'The boards every sheet is nailed to: the Tithe\'s hall, where debts are posted and paid'],
+    ['Brass', RT.brass, 'Rounds, ready states', 'Spent cartridges counted as standing'], ['Gun steel', RT.steel, 'Jaws, blades, strap iron', 'What holds the sheet holds the crew']],
 });
 })();
