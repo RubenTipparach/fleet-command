@@ -1,474 +1,794 @@
-// The Exponent skin (mockup 4, OpenSpec change console-skins): the hybrid of the Axiom, a purely mathematical, fractal
-// faction, and the Vhorr Brood (owner, 2026-11-07: the mathematical faction "will merge with the organics creating a new
-// hybrid of fractal organic faction"; named by the owner: the Exponent, after growth that compounds by a fixed ratio).
-// Provisional culture, ours, to be corrected on the survey: when the Axiom met the Brood, the
-// Brood took the Axiom's rules into its growth, and its tissue now grows by rule. It holds several traditions at once:
-// phyllotaxis growers (seeds at the golden angle), branch-veiners (L-system veins that branch by exact ratios),
-// cell-builders (Voronoi membranes) and shell-turners (chambers along a logarithmic spiral). The design is drawn from
-// those ideas, never from any species' body (CLAUDE.md section 1).
+// The Exponent skin (mockup 4, OpenSpec change console-skins). The owner, 2026-11-07, replacing the earlier hybrid idea:
+// "Exponent is not a mix of two races. It is its own thing. Inspired by Borg. It's ship ui is a metalic utilitarian look.
+// With veins a and tentacles and barnacles growing. Like am abandoned rusted ship at sea. Take over by reefs and coral".
+// Take the shape, not the text (CLAUDE.md section 1): what we take is a collective that takes in whatever it meets and
+// runs on plain machinery. No names, glyphs, shapes, colours or art from any film or game.
 //
-// First pass, painted in canvas like the Brood's first pass: translucent plum membrane with a wet sheen, lit from within,
-// whose structure is computed by rule. Every scatter comes from the page's seeded generator (FCK.rng, Mulberry32) through
-// a Poisson disc (CLAUDE.md section 10). The final version is to be sculpted in Blender on the Organic Panel Bible (no
-// nine-slice); for now the kit's nine-slice pieces keep their detail in the margins and their centres plain: Voronoi cells
-// in the corners, fibres that run along the stretching edges. Registers itself with the page's skin registry
-// (docs/mockups/skins). Our own design: nothing traced from another game.
+// Provisional culture, ours, the owner's to correct on the survey: the Exponent is one collective that grows by taking in
+// ships, stations and crews. Nothing is decorated; everything is function. Its machines are kept running long past any
+// refit, and what it has absorbed keeps growing on them, like a hulk that has lain on a sea floor. Three traditions,
+// and which piece comes from which (never from a species' body, CLAUDE.md section 1):
+//   - the assimilators: whatever is taken is bolted on as found. The keys are access hatches on hinges with dog latches,
+//     the frames riveted plate with mismatched patches, the ship display a hull of joined modules, the crest a ring of
+//     seven unlike plates bolted shut;
+//   - the conduit-keepers: power carried in veins of cable and fluid line under translucent sheaths, a dim pulse in each;
+//     they run along the frames' feet, between the helm's hatches and up the column, and the bars fill as a lit conduit;
+//   - the reef: growth the collective tolerates and builds on, accreting in layers: barnacles (the bars' cells), brain and
+//     branching coral, tube worms, cabled kelp-like tendrils curling over edges, salt crust and verdigris on rusted plate.
+//     Growth keeps to margins and corners: it never covers a label, a key's slot or a readout.
+//
+// First pass, painted in canvas with shading lit from the upper left. Every scatter comes from the page's seeded generator
+// (FCK.rng over FCK.hash, Mulberry32), never a cheap hash (CLAUDE.md section 10). The kit's nine-slice pieces keep their
+// detail in the margins and their centres plain. A metal skin, so the column has a painted ground (CLAUDE.md section 7):
+// `column`, a deck bulkhead with conduits and reef, drawn behind the panels. Registers itself with the page's skin
+// registry (docs/mockups/skins). Our own design: nothing traced from another game.
 (function () {
 'use strict';
 const F = window.FCK, P = F.P;
-const PH = { void: '#0b0610', wall: '#1c0a17', membrane: '#3a1830', membraneHi: '#6e2f52', fibre: '#4b2040', glass: '#0a050c',
-  gold: '#f0bf4c', goldHot: '#ffe8a6', cyan: '#58dce0', cyanHot: '#d2fcff', pith: '#f2e6d0', dim: '#c9a3b8', magenta: '#ff4a7d', life: '#8ff0b0' };
-const PHI = (1 + Math.sqrt(5)) / 2, GA = P * (3 - Math.sqrt(5));   // the golden ratio and the golden angle (137.5 degrees)
-const B = Math.log(PHI * PHI) / (2 * P);                             // a shell that grows by phi squared every turn
+// The palette (six rows below) and the shades painted between them.
+const EX = {
+  steel: '#5d686d', steelHi: '#97a3a6', steelLo: '#262e31', deep: '#0b1113', bg: '#0d1315', glass: '#091012',
+  rust: '#8c4522', rustHi: '#c46d36', rustLo: '#43200f', verd: '#4f8c7a', verdHi: '#8cc4ae',
+  coral: '#d27a6a', coralHi: '#f2b19c', coralLo: '#7e3a3a', ochre: '#c6935a', ochreLo: '#6b4526',
+  bone: '#e3dbc6', boneLo: '#7d776a', kelp: '#46634c', kelpHi: '#a8cca6',
+  lumen: '#8be6dc', lumenHot: '#e2fffa', lumenLo: '#1d5e5c', breach: '#ff5a36', breachHot: '#ffd2c2', amber: '#f0b04a', sea: '#5fd68e',
+};
 const RNG = (k) => F.rng(F.hash('exponent.' + k));
 function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
 function mix(h1, h2, t) {
   const a = parseInt(h1.slice(1), 16), b = parseInt(h2.slice(1), 16), l = (s) => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t);
   return `rgb(${l(16)},${l(8)},${l(0)})`;
 }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-// ---- the rules ---------------------------------------------------------------------------------------------------
-// A closed path through points, smoothed by quadratic curves between midpoints (a cell's wall has no corners).
-function smooth(x, pts) {
-  const n = pts.length, m = (i) => [(pts[i % n][0] + pts[(i + 1) % n][0]) / 2, (pts[i % n][1] + pts[(i + 1) % n][1]) / 2];
-  x.beginPath(); const s = m(0); x.moveTo(s[0], s[1]);
-  for (let i = 1; i <= n; i++) { const p = pts[i % n], q = m(i); x.quadraticCurveTo(p[0], p[1], q[0], q[1]); }
-  x.closePath();
+// ---- shapes ------------------------------------------------------------------------------------------------------
+// A chamfered rectangle: plate cut at 45 degrees at each corner by c (an array of four for unequal corners).
+function cham(x, X, Y, W, H, c) {
+  const [a, b, d, e] = Array.isArray(c) ? c : [c, c, c, c];
+  x.beginPath(); x.moveTo(X + a, Y); x.lineTo(X + W - b, Y); x.lineTo(X + W, Y + b); x.lineTo(X + W, Y + H - d); x.lineTo(X + W - d, Y + H);
+  x.lineTo(X + e, Y + H); x.lineTo(X, Y + H - e); x.lineTo(X, Y + a); x.closePath();
 }
-// The cell-builders: a Poisson disc of sites (Bridson), no two closer than r, from the seeded generator.
-function poisson(R, x0, y0, x1, y1, r, k = 24) {
-  const cs = r / Math.SQRT2, gw = Math.ceil((x1 - x0) / cs), gh = Math.ceil((y1 - y0) / cs), grid = new Int32Array(gw * gh).fill(-1), pts = [], act = [];
-  const add = (p) => { pts.push(p); act.push(p); grid[Math.floor((p[1] - y0) / cs) * gw + Math.floor((p[0] - x0) / cs)] = pts.length - 1; };
-  add([x0 + R() * (x1 - x0), y0 + R() * (y1 - y0)]);
-  while (act.length) {
-    const i = Math.floor(R() * act.length), a = act[i]; let found = false;
-    for (let t = 0; t < k && !found; t++) {
-      const ang = R() * 2 * P, d = r * (1 + R()), p = [a[0] + Math.cos(ang) * d, a[1] + Math.sin(ang) * d];
-      if (p[0] < x0 || p[0] >= x1 || p[1] < y0 || p[1] >= y1) continue;
-      const gx = Math.floor((p[0] - x0) / cs), gy = Math.floor((p[1] - y0) / cs); let ok = true;
-      for (let yy = Math.max(0, gy - 2); yy <= Math.min(gh - 1, gy + 2) && ok; yy++) for (let xx = Math.max(0, gx - 2); xx <= Math.min(gw - 1, gx + 2); xx++) {
-        const j = grid[yy * gw + xx]; if (j >= 0 && Math.hypot(pts[j][0] - p[0], pts[j][1] - p[1]) < r) { ok = false; break; }
-      }
-      if (ok) { add(p); found = true; }
-    }
-    if (!found) act.splice(i, 1);
-  }
-  return pts;
-}
-// Keep the part of a polygon where nx * x + ny * y <= c.
-function clipHalf(poly, nx, ny, c) {
+function disc(x, cx, cy, r) { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); }
+// Points along a Catmull-Rom curve through pts, n per span.
+function curve(pts, n = 10) {
   const out = [];
-  for (let i = 0; i < poly.length; i++) {
-    const a = poly[i], b = poly[(i + 1) % poly.length], da = nx * a[0] + ny * a[1] - c, db = nx * b[0] + ny * b[1] - c;
-    if (da <= 0) out.push(a);
-    if ((da < 0 && db > 0) || (da > 0 && db < 0)) { const t = da / (da - db); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
-  }
-  return out;
-}
-// Each site's Voronoi cell inside a box, by clipping the box with the bisector of every near neighbour.
-function voronoi(pts, box, reach) {
-  return pts.map((p, i) => {
-    let poly = [[box[0], box[1]], [box[2], box[1]], [box[2], box[3]], [box[0], box[3]]];
-    for (let j = 0; j < pts.length && poly.length; j++) {
-      if (j === i) continue; const q = pts[j], nx = q[0] - p[0], ny = q[1] - p[1];
-      if (nx * nx + ny * ny > reach * reach) continue;
-      poly = clipHalf(poly, nx, ny, (nx * (p[0] + q[0]) + ny * (p[1] + q[1])) / 2);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    for (let k = 0; k < n; k++) {
+      const t = k / n, t2 = t * t, t3 = t2 * t;
+      out.push([0, 1].map((j) => 0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3)));
     }
-    return { p, poly };
-  });
+  }
+  out.push(pts[pts.length - 1]); return out;
 }
-// Membrane: Voronoi cells of translucent tissue, each lit from inside, walls dark, a wet bead of light on each.
-// lit(x, y) gives the light behind a cell, 0 to 1.
-function tissue(x, path, box, R, o = {}) {
-  const [x0, y0, x1, y1] = box, r = o.cell || 8, pad = r * 1.5;
+
+// ---- materials: the assimilators' plate ------------------------------------------------------------------------------
+// Painted steel kept running long past any refit: grey-blue paint over steel, lit from the top, brushed grain, paint
+// chipped through to rust bloom with its edge catching the light, rust run down from the chips, salt crust settled toward
+// the foot, a stain of verdigris. where(px, py) gives 0 to 1: how much wear a spot may take (0 keeps a stretching centre plain).
+function plate(x, path, box, R, o = {}) {
+  const [x0, y0, x1, y1] = box, w = x1 - x0, h = y1 - y0, where = o.where || (() => 1);
   x.save(); path(); x.clip();
-  x.fillStyle = PH.wall; x.fillRect(x0, y0, x1 - x0, y1 - y0);
-  const pts = poisson(R, x0 - pad, y0 - pad, x1 + pad, y1 + pad, r);
-  for (const c of voronoi(pts, [x0 - pad, y0 - pad, x1 + pad, y1 + pad], r * 3)) {
-    if (c.poly.length < 3) continue;
-    const [sx, sy] = c.p, k = o.wallK || 0.8, poly = c.poly.map(([px, py]) => [sx + (px - sx) * k, sy + (py - sy) * k]);
-    const lift = o.lit ? Math.max(0, Math.min(1, o.lit(sx, sy))) : 0.25;
-    const g = x.createRadialGradient(sx - r * 0.2, sy - r * 0.25, 0, sx, sy, r * 1.05);
-    g.addColorStop(0, mix(PH.membraneHi, o.glow || PH.gold, lift * 0.55)); g.addColorStop(0.7, mix(PH.membrane, PH.membraneHi, lift * 0.5)); g.addColorStop(1, PH.membrane);
-    x.fillStyle = g; smooth(x, poly); x.fill();
-    x.fillStyle = `rgba(255,240,235,${0.1 + lift * 0.18})`; x.beginPath(); x.ellipse(sx - r * 0.3, sy - r * 0.35, r * 0.22, r * 0.11, -0.6, 0, 2 * P); x.fill();
+  const g = x.createLinearGradient(x0, y0, x0 + w * 0.25, y1); g.addColorStop(0, o.hi || '#76838a'); g.addColorStop(0.5, o.mid || EX.steel); g.addColorStop(1, o.lo || '#3a4448');
+  x.fillStyle = g; x.fillRect(x0, y0, w, h);
+  // brushed grain, along the plate
+  for (let y = y0; y < y1; y += 1.3) { x.fillStyle = R() < 0.5 ? `rgba(255,255,255,${0.02 + R() * 0.035})` : `rgba(0,0,0,${0.03 + R() * 0.05})`; x.fillRect(x0, y, w, 0.6); }
+  // mottle
+  const nm = Math.round(w * h / 900);
+  for (let i = 0; i < nm; i++) {
+    const cx = x0 + R() * w, cy = y0 + R() * h, r = 4 + R() * 16, dark = R() < 0.6, k = where(cx, cy);
+    if (k <= 0.05) continue;
+    const b = x.createRadialGradient(cx, cy, 0, cx, cy, r); b.addColorStop(0, dark ? `rgba(15,20,22,${0.18 * k})` : `rgba(200,210,212,${0.08 * k})`); b.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = b; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
   }
-  x.restore();
-}
-// The branch-veiners' rule, F -> F[+F][-F]: every child is its parent's length over phi, turned by exactly `turn`.
-// mono: the main axis runs on and one side branch alternates (F -> F[+F]F), each side branch phi squared shorter.
-function lsys(x0, y0, a, len, depth, turn, segs, w = 1.6, mono = false, side = 1) {
-  const x1 = x0 + Math.cos(a) * len, y1 = y0 + Math.sin(a) * len; segs.push([x0, y0, x1, y1, w, depth === 0]);
-  if (depth <= 0) return segs;
-  if (mono) { lsys(x1, y1, a, len / PHI, depth - 1, turn, segs, w * 0.85, true, -side); lsys(x1, y1, a + side * turn, len / (PHI * PHI), depth - 1, turn, segs, w * 0.62, true, side); }
-  else { lsys(x1, y1, a + turn, len / PHI, depth - 1, turn, segs, w * 0.7); lsys(x1, y1, a - turn, len / PHI, depth - 1, turn, segs, w * 0.7); }
-  return segs;
-}
-// Veins carry light: a soft glow, the vessel, a hot thread down its middle, and a seed at every tip.
-function veins(x, segs, col = PH.gold, hot = PH.goldHot, k = 1) {
-  x.save(); x.lineCap = 'round';
-  for (const [a, b, c, d, w] of segs) { x.strokeStyle = hexA(col, 0.22 * k); x.lineWidth = w + 3.2; x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); }
-  for (const [a, b, c, d, w] of segs) { x.strokeStyle = hexA(col, 0.9 * k); x.lineWidth = w; x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); }
-  for (const [a, b, c, d, w] of segs) { x.strokeStyle = hexA(hot, 0.8 * k); x.lineWidth = w * 0.35; x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); }
-  for (const [, , c, d, w, tip] of segs) if (tip) { x.fillStyle = hexA(hot, 0.9 * k); x.beginPath(); x.arc(c, d, w * 0.9 + 0.5, 0, 2 * P); x.fill(); }
-  x.restore();
-}
-// A straight vein (along a stretching edge) drawn the same three ways.
-function vline(x, a, b, c, d, w, col = PH.gold, hot = PH.goldHot, k = 1) { veins(x, [[a, b, c, d, w, false]], col, hot, k); }
-// The phyllotaxis growers: seed k at radius c sqrt(k) and angle k times the golden angle. col(t) colours seed k of n.
-function seeds(x, cx, cy, n0, n1, c, sz, col, glow = 0) {
-  x.save();
-  for (let k = n0; k < n1; k++) {
-    const r = c * Math.sqrt(k), t = k * GA, px = cx + Math.cos(t) * r, py = cy + Math.sin(t) * r, s = sz * (0.55 + 0.45 * Math.sqrt(k / n1));
-    if (glow) { x.shadowColor = col(k / n1); x.shadowBlur = glow; }
-    x.fillStyle = col(k / n1); x.beginPath(); x.ellipse(px, py, s, s * 0.78, t, 0, 2 * P); x.fill();
-  }
-  x.restore();
-}
-// The shell-turners: a logarithmic spiral r = R exp(B (t - tMax)), turned by rot, its chambers parted by curved septa.
-// state: 0 dim, 1 septa lit, 2 chambers filled with light.
-function shell(x, cx, cy, R, rot, state, o = {}) {
-  const N = o.septa || 9, rad = (t) => R * Math.exp(B * t), pt = (t) => [cx + Math.cos(t + rot) * rad(t), cy + Math.sin(t + rot) * rad(t)];
-  const spiral = (t0, t1, first) => { const n = Math.max(4, Math.ceil(Math.abs(t1 - t0) / 0.15)); for (let i = 0; i <= n; i++) { const p = pt(t0 + (t1 - t0) * i / n); if (first && i === 0) x.moveTo(p[0], p[1]); else x.lineTo(p[0], p[1]); } };
-  const sept = (t, rev) => { const a = pt(t), b = pt(t - 2 * P), m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], tg = [-Math.sin(t + rot), Math.cos(t + rot)], L = Math.hypot(a[0] - b[0], a[1] - b[1]) * 0.28;
-    const c = [m[0] - tg[0] * L, m[1] - tg[1] * L], [s, e] = rev ? [b, a] : [a, b]; x.lineTo(s[0], s[1]); x.quadraticCurveTo(c[0], c[1], e[0], e[1]); };
-  // the whole shell: its last whorl and the aperture
-  x.save(); x.beginPath(); spiral(-2 * P, 0, true); x.closePath();
-  const g = x.createRadialGradient(cx, cy, 0, cx, cy, R); g.addColorStop(0, PH.membraneHi); g.addColorStop(1, PH.membrane);
-  x.fillStyle = g; x.fill(); x.clip();
-  for (let k = 0; ; k++) {
-    const t1 = -k * 2 * P / N, t0 = -(k + 1) * 2 * P / N;
-    if (rad(t0 - 2 * P) > 0 && rad(t1) < 0.8) break;
-    // chamber k, between septum k+1 and septum k (chamber 0 is the open, living one)
-    x.beginPath(); spiral(t0, t1, true); sept(t1, false); spiral(t1 - 2 * P, t0 - 2 * P, false); sept(t0, true); x.closePath();
-    if (state === 2) { const f = Math.pow(0.88, k); x.fillStyle = mix(PH.membraneHi, k % 2 ? PH.gold : PH.cyan, 0.35 + 0.6 * f); x.fill(); }
-    else { x.fillStyle = k % 2 ? hexA(PH.wall, 0.25) : hexA(PH.membraneHi, 0.25); x.fill(); }
-    if (k > 0) {
-      x.beginPath(); const a = pt(t1); x.moveTo(a[0], a[1]); sept(t1, false);
-      x.strokeStyle = state === 0 ? hexA(PH.dim, o.faint ? 0.25 : 0.45) : state === 1 ? PH.cyanHot : hexA(PH.wall, 0.7); x.lineWidth = state === 1 ? 1.1 : 0.9;
-      if (state === 1) { x.shadowColor = PH.cyan; x.shadowBlur = 4; } x.stroke(); x.shadowBlur = 0;
+  // rust: patches where the paint has failed, each a soft bloom stain round a crowd of chips (dense at its heart, thin
+  // at its edge), the bigger chips' lower lips catching the light, and a run of rust down from some
+  const nr = Math.round(w * h / (o.rustEvery || 6000)), sc = o.rustScale || 1;
+  for (let i = 0; i < nr; i++) {
+    const cx = x0 + R() * w, cy = y0 + R() * h, k = where(cx, cy), rc = (3 + R() * 10) * sc;
+    if (R() > k) continue;
+    for (let j = 0; j < 3; j++) {
+      const bx = cx + (R() - 0.5) * rc, by = cy + (R() - 0.5) * rc, br = rc * (0.7 + R() * 0.7), b = x.createRadialGradient(bx, by, 0, bx, by, br);
+      b.addColorStop(0, hexA(EX.rust, 0.28)); b.addColorStop(0.6, hexA(EX.rustLo, 0.12)); b.addColorStop(1, 'rgba(67,32,15,0)'); x.fillStyle = b; x.fillRect(bx - br, by - br, 2 * br, 2 * br);
+    }
+    const nchip = Math.round(rc * 1.6 + 2);
+    for (let j = 0; j < nchip; j++) {
+      const g3 = (R() + R() + R() - 1.5) / 1.5, g4 = (R() + R() + R() - 1.5) / 1.5, px = cx + g3 * rc, py = cy + g4 * rc * 0.8;
+      const r = (0.5 + Math.pow(R(), 2.2) * 3.2) * Math.sqrt(sc) * (1.2 - Math.hypot(g3, g4) * 0.5), n = 5 + Math.floor(R() * 3), pts = [];
+      if (r < 0.35) continue;
+      for (let q = 0; q < n; q++) { const a = q / n * 2 * P + R() * 0.5, rr = r * (0.5 + R() * 0.7); pts.push([px + Math.cos(a) * rr, py + Math.sin(a) * rr]); }
+      x.beginPath(); pts.forEach(([a, bb], q) => (q ? x.lineTo(a, bb) : x.moveTo(a, bb))); x.closePath();
+      x.fillStyle = mix(EX.rustLo, R() < 0.3 ? EX.rustHi : EX.rust, 0.3 + R() * 0.7); x.fill();
+      if (r > 1) { x.save(); x.translate(0.35, 0.45); x.strokeStyle = 'rgba(205,215,215,0.32)'; x.lineWidth = 0.45; x.stroke(); x.restore(); }
+    }
+    if (R() < 0.45) {
+      const L = 8 + R() * 30 * sc, sw = 0.8 + R() * 2, sx = cx + (R() - 0.5) * rc * 0.6, sg = x.createLinearGradient(0, cy, 0, cy + L);
+      sg.addColorStop(0, hexA(EX.rust, 0.5)); sg.addColorStop(1, 'rgba(140,69,34,0)'); x.fillStyle = sg;
+      x.beginPath(); x.moveTo(sx - sw / 2, cy); x.lineTo(sx + sw / 2, cy); x.lineTo(sx + sw * 0.2, cy + L); x.lineTo(sx - sw * 0.2, cy + L); x.closePath(); x.fill();
     }
   }
+  // verdigris and sea stain
+  const nv = Math.round(w * h / (o.verdEvery || 5000));
+  for (let i = 0; i < nv; i++) {
+    const cx = x0 + R() * w, cy = y0 + R() * h, k = where(cx, cy), r = 5 + R() * 14;
+    if (R() > k) continue;
+    const b = x.createRadialGradient(cx, cy, 0, cx, cy, r); b.addColorStop(0, hexA(EX.verd, 0.4)); b.addColorStop(1, 'rgba(79,140,122,0)'); x.fillStyle = b; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+  }
+  // salt crust, settled toward the foot
+  const ns = Math.round(w * h / (o.saltEvery || 40));
+  for (let i = 0; i < ns; i++) {
+    const px = x0 + R() * w, py = y0 + Math.pow(R(), 0.55) * h, k = where(px, py);
+    if (R() > k * (0.25 + 0.75 * (py - y0) / h)) continue;
+    x.fillStyle = `rgba(232,228,212,${0.18 + R() * 0.35})`; x.fillRect(px, py, 0.5 + R() * 0.9, 0.5 + R() * 0.7);
+  }
   x.restore();
-  // the seam: the spiral itself, wound in from the aperture
-  x.save(); x.beginPath(); spiral(-8 * P, 0, true); const a = pt(-2 * P); x.moveTo(pt(0)[0], pt(0)[1]); x.lineTo(a[0], a[1]);
-  x.strokeStyle = state === 0 ? hexA(PH.dim, o.faint ? 0.35 : 0.6) : PH.gold; x.lineWidth = state === 0 ? 1 : 1.3;
-  if (state) { x.shadowColor = PH.gold; x.shadowBlur = 4; } x.stroke(); x.restore();
 }
-const seedCol = (a, b) => (t) => mix(a, b, t);
+// The bevel of a plate's edge: lit along its top and left, shaded along its bottom and right.
+function bevel(x, path, lw = 1.2) {
+  x.save(); path(); x.clip();
+  x.save(); x.translate(lw * 0.6, lw * 0.6); path(); x.strokeStyle = 'rgba(210,222,224,0.45)'; x.lineWidth = lw * 1.6; x.stroke(); x.restore();
+  x.save(); x.translate(-lw * 0.6, -lw * 0.6); path(); x.strokeStyle = 'rgba(8,10,11,0.6)'; x.lineWidth = lw * 1.6; x.stroke(); x.restore();
+  x.restore();
+  path(); x.strokeStyle = '#070b0c'; x.lineWidth = lw; x.stroke();
+}
+// A recess (a slot, a screen well): dark, its top lip in shadow and its lower lip lit.
+function recess(x, path, box, fill = EX.glass) {
+  const [x0, y0, , y1] = box;
+  path(); x.fillStyle = fill; x.fill();
+  x.save(); path(); x.clip();
+  const g = x.createLinearGradient(0, y0, 0, y0 + Math.min(10, (y1 - y0) * 0.4)); g.addColorStop(0, 'rgba(0,0,0,0.75)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(x0 - 2, y0, box[2] - x0 + 4, y1 - y0);
+  x.restore();
+  x.save(); path(); x.clip(); x.translate(0, -1); path(); x.strokeStyle = 'rgba(190,205,205,0.35)'; x.lineWidth = 1.4; x.stroke(); x.restore();
+  path(); x.strokeStyle = '#050809'; x.lineWidth = 1; x.stroke();
+}
+// A domed rivet, lit from the upper left, with rust bled round it and sometimes run below.
+function rivet(x, cx, cy, r, R) {
+  x.fillStyle = 'rgba(0,0,0,0.45)'; x.beginPath(); x.ellipse(cx + r * 0.35, cy + r * 0.45, r * 1.1, r, 0, 0, 2 * P); x.fill();
+  if (R && R() < 0.55) { const L = 4 + R() * 12, g = x.createLinearGradient(0, cy, 0, cy + L); g.addColorStop(0, hexA(EX.rust, 0.6)); g.addColorStop(1, 'rgba(140,69,34,0)'); x.fillStyle = g; x.fillRect(cx - r * 0.4, cy, r * 0.8, L); }
+  const g = x.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r); g.addColorStop(0, '#c9d2d3'); g.addColorStop(0.45, '#6d787c'); g.addColorStop(1, '#1d2326');
+  disc(x, cx, cy, r); x.fillStyle = g; x.fill();
+  x.strokeStyle = hexA(EX.rust, 0.55); x.lineWidth = 0.7; x.stroke();
+}
+// A hex bolt, its flats catching the light in steps.
+function bolt(x, cx, cy, r, rot = 0.3) {
+  x.fillStyle = 'rgba(0,0,0,0.5)'; disc(x, cx + r * 0.3, cy + r * 0.4, r * 1.05); x.fill();
+  for (let i = 0; i < 6; i++) {
+    const a0 = rot + i * P / 3, a1 = a0 + P / 3, mid = (a0 + a1) / 2, lit = 0.5 - 0.5 * Math.cos(mid - (-3 * P / 4));
+    x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a0) * r, cy + Math.sin(a0) * r); x.lineTo(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r); x.closePath();
+    x.fillStyle = mix('#c4cdce', '#283034', 1 - lit); x.fill();
+  }
+  disc(x, cx, cy, r * 0.55); x.fillStyle = '#4c575b'; x.fill(); x.strokeStyle = 'rgba(10,12,12,0.6)'; x.lineWidth = 0.5; x.stroke();
+}
+
+// ---- the reef --------------------------------------------------------------------------------------------------------
+// A barnacle: a low cone of six wall plates seen from above, lit from the upper left, its dark aperture at the top.
+// lit: 0 dark, otherwise a colour the aperture glows (the symbol cells).
+function barnacle(x, cx, cy, r, R, lit) {
+  const rot = R() * P, n = 6, apx = cx - r * 0.08, apy = cy - r * 0.12, ar = r * 0.42;
+  x.fillStyle = 'rgba(0,0,0,0.42)'; x.beginPath(); x.ellipse(cx + r * 0.3, cy + r * 0.35, r * 1.08, r * 0.98, 0, 0, 2 * P); x.fill();
+  const base = [], top = [];
+  for (let i = 0; i < n; i++) { const a = rot + i * 2 * P / n, j = 0.85 + R() * 0.25; base.push([cx + Math.cos(a) * r * j, cy + Math.sin(a) * r * j]); top.push([apx + Math.cos(a) * ar, apy + Math.sin(a) * ar * 0.8]); }
+  for (let i = 0; i < n; i++) {
+    const a = base[i], b = base[(i + 1) % n], c = top[(i + 1) % n], d = top[i], mx = (a[0] + b[0]) / 2 - cx, my = (a[1] + b[1]) / 2 - cy, L = Math.hypot(mx, my) || 1;
+    const lit2 = clamp(0.5 - 0.5 * ((mx / L) * 0.62 + (my / L) * 0.78), 0, 1);
+    x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.lineTo(c[0], c[1]); x.lineTo(d[0], d[1]); x.closePath();
+    x.fillStyle = mix(EX.boneLo, EX.bone, 0.15 + lit2 * 0.85); x.fill();
+    x.strokeStyle = 'rgba(40,36,30,0.55)'; x.lineWidth = Math.max(0.35, r * 0.07); x.stroke();
+    // growth ridges across the plate
+    x.strokeStyle = 'rgba(60,54,44,0.25)'; x.lineWidth = Math.max(0.25, r * 0.04);
+    for (const t of [0.35, 0.65]) { x.beginPath(); x.moveTo(a[0] + (d[0] - a[0]) * t, a[1] + (d[1] - a[1]) * t); x.lineTo(b[0] + (c[0] - b[0]) * t, b[1] + (c[1] - b[1]) * t); x.stroke(); }
+  }
+  // the aperture: two closing plates over a dark opening, or a light deep inside
+  x.save(); x.beginPath(); x.ellipse(apx, apy, ar * 0.82, ar * 0.62, rot * 0.3, 0, 2 * P);
+  if (lit) { x.shadowColor = lit; x.shadowBlur = r * 1.4; x.fillStyle = lit; x.fill(); x.shadowBlur = 0; const g = x.createRadialGradient(apx, apy, 0, apx, apy, ar * 0.8); g.addColorStop(0, '#ffffff'); g.addColorStop(1, hexA(lit === EX.breach ? EX.breach : EX.lumen, 0)); x.fillStyle = g; x.fill(); }
+  else { x.fillStyle = '#16140f'; x.fill(); x.strokeStyle = 'rgba(160,150,130,0.4)'; x.lineWidth = Math.max(0.3, r * 0.05); x.beginPath(); x.moveTo(apx - ar * 0.6, apy); x.lineTo(apx + ar * 0.6, apy); x.stroke(); }
+  x.restore();
+}
+// A cluster of barnacles round a point, big ones first and small ones filling between, drawn back to front.
+function barnacles(x, cx, cy, sx, sy, n, rmin, rmax, R) {
+  const got = [];
+  for (let t = 0; t < n * 12 && got.length < n; t++) {
+    const k = got.length / n, r = rmax - (rmax - rmin) * Math.sqrt(k) * (0.7 + R() * 0.3), a = R() * 2 * P, d = Math.sqrt(R());
+    const p = [cx + Math.cos(a) * sx * d, cy + Math.sin(a) * sy * d, r];
+    if (got.every((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) > (q[2] + r) * 0.82)) got.push(p);
+  }
+  got.sort((a, b) => a[1] - b[1]);
+  for (const [px, py, r] of got) barnacle(x, px, py, r, R, 0);
+}
+// Brain coral: a dome grooved by meanders, lit from the upper left.
+function brain(x, cx, cy, rx, ry, R, col = EX.ochre) {
+  x.fillStyle = 'rgba(0,0,0,0.45)'; x.beginPath(); x.ellipse(cx + rx * 0.18, cy + ry * 0.25, rx * 1.05, ry * 1.02, 0, 0, 2 * P); x.fill();
+  x.save(); x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 2 * P); x.clip();
+  const g = x.createRadialGradient(cx - rx * 0.35, cy - ry * 0.4, 0, cx, cy, Math.max(rx, ry) * 1.1); g.addColorStop(0, mix(col, '#fff3e0', 0.45)); g.addColorStop(0.55, col); g.addColorStop(1, EX.ochreLo);
+  x.fillStyle = g; x.fillRect(cx - rx, cy - ry, 2 * rx, 2 * ry);
+  // the meanders: grooves traced along a smooth, seeded direction field from a jittered grid of starts, so neighbouring
+  // ridges run side by side and wind together like a maze
+  const f = 2.6 / Math.max(rx, ry), p1 = R() * 2 * P, p2 = R() * 2 * P, p3 = R() * 2 * P;
+  const th = (px, py) => 2.3 * Math.sin((px - cx) * f + p1) + 2.3 * Math.sin((py - cy) * f * 1.3 + p2) + 1.6 * Math.sin((px + py - cx - cy) * f * 0.7 + p3);
+  const sp = Math.max(1.5, Math.min(rx, ry) * 0.17), inside = (px, py) => ((px - cx) / rx) ** 2 + ((py - cy) / ry) ** 2 < 1.05;
+  for (let gy = cy - ry; gy < cy + ry; gy += sp * 1.6) for (let gx = cx - rx; gx < cx + rx; gx += sp * 1.6) {
+    const sx = gx + R() * sp, sy = gy + R() * sp; if (!inside(sx, sy)) continue;
+    const line = [[sx, sy]];
+    for (const dir of [1, -1]) { let px = sx, py = sy; for (let s = 0; s < 30; s++) { const a = th(px, py); px += Math.cos(a) * 0.8 * dir; py += Math.sin(a) * 0.8 * dir; if (!inside(px, py)) break; if (dir > 0) line.push([px, py]); else line.unshift([px, py]); } }
+    x.beginPath(); line.forEach(([a1, b1], j) => (j ? x.lineTo(a1, b1) : x.moveTo(a1, b1)));
+    x.strokeStyle = 'rgba(66,36,18,0.55)'; x.lineWidth = sp * 0.42; x.stroke();
+    x.save(); x.translate(-sp * 0.3, -sp * 0.35); x.strokeStyle = 'rgba(255,238,210,0.3)'; x.lineWidth = sp * 0.22; x.stroke(); x.restore();
+  }
+  const sh = x.createRadialGradient(cx - rx * 0.3, cy - ry * 0.35, Math.min(rx, ry) * 0.4, cx, cy, Math.max(rx, ry) * 1.05); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(25,12,5,0.55)');
+  x.fillStyle = sh; x.fillRect(cx - rx, cy - ry, 2 * rx, 2 * ry);
+  x.restore();
+}
+// Encrusting growth: a flat crust of coralline pink (or sea green) spread over the plate in an irregular lobe, its
+// surface pebbled, its edge raised a little. The reef's first layer, laid down before anything else settles.
+function crust(x, cx, cy, rx, ry, R, col = '#a1707a') {
+  const n = 18, pts = [];
+  for (let i = 0; i < n; i++) { const a = i / n * 2 * P, k = 0.55 + R() * 0.55; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+  const path = () => { const m = (i) => [(pts[i % n][0] + pts[(i + 1) % n][0]) / 2, (pts[i % n][1] + pts[(i + 1) % n][1]) / 2]; x.beginPath(); const s0 = m(0); x.moveTo(s0[0], s0[1]); for (let i = 1; i <= n; i++) { const p = pts[i % n], q = m(i); x.quadraticCurveTo(p[0], p[1], q[0], q[1]); } x.closePath(); };
+  x.save(); x.translate(0.6, 0.8); path(); x.fillStyle = 'rgba(0,0,0,0.35)'; x.fill(); x.restore();
+  x.save(); x.globalAlpha = 0.88;
+  path(); const g = x.createRadialGradient(cx - rx * 0.3, cy - ry * 0.3, 0, cx, cy, Math.max(rx, ry)); g.addColorStop(0, mix(col, '#e8e0d8', 0.12)); g.addColorStop(1, mix(col, '#1a1416', 0.5));
+  x.fillStyle = g; x.fill();
+  x.save(); path(); x.clip();
+  for (let i = 0; i < rx * ry * 1.1; i++) { const px = cx + (R() - 0.5) * 2 * rx, py = cy + (R() - 0.5) * 2 * ry, r = 0.4 + R() * 1.1; disc(x, px, py, r); x.fillStyle = R() < 0.45 ? 'rgba(240,230,225,0.2)' : 'rgba(30,18,22,0.35)'; x.fill(); }
+  x.restore();
+  path(); x.strokeStyle = 'rgba(20,14,16,0.6)'; x.lineWidth = 0.8; x.stroke();
+  x.restore();
+}
+// Branching coral: limbs that fork by a seeded rule, rounded tips with polyps, shaded along their lower side.
+function coral(x, x0, y0, a, len, w, depth, R, col = EX.coral) {
+  const segs = [];
+  const grow = (px, py, ang, L, W, d) => {
+    const bend = (R() - 0.5) * 0.5, mx = px + Math.cos(ang + bend) * L * 0.5, my = py + Math.sin(ang + bend) * L * 0.5, ex = px + Math.cos(ang) * L, ey = py + Math.sin(ang) * L;
+    segs.push([px, py, mx, my, ex, ey, W, d === 0]);
+    if (d <= 0) return;
+    const k = R() < 0.3 ? 3 : 2;
+    for (let i = 0; i < k; i++) grow(ex, ey, ang + (i - (k - 1) / 2) * (0.55 + R() * 0.35), L * (0.62 + R() * 0.18), W * 0.74, d - 1);
+  };
+  grow(x0, y0, a, len, w, depth);
+  const stroke = (dx, dy, wk, style) => { x.strokeStyle = style; x.lineCap = 'round'; for (const s of segs) { x.lineWidth = s[6] * wk; x.beginPath(); x.moveTo(s[0] + dx, s[1] + dy); x.quadraticCurveTo(s[2] + dx, s[3] + dy, s[4] + dx, s[5] + dy); x.stroke(); } };
+  stroke(1.2, 1.5, 1.15, 'rgba(0,0,0,0.4)');
+  stroke(0, 0, 1.25, mix(EX.coralLo, '#000000', 0.25));
+  stroke(0, 0, 1, mix(col, EX.coralLo, 0.35));
+  stroke(-0.25, -0.3, 0.6, col);
+  stroke(-0.45, -0.55, 0.22, hexA(EX.coralHi, 0.8));
+  for (const s of segs) if (s[7]) { disc(x, s[4], s[5], s[6] * 0.62); x.fillStyle = EX.coralHi; x.fill(); }
+  // polyps: pale pores along the limbs
+  for (const s of segs) for (let t = 0.3; t < 1; t += 0.35) { const px = s[0] + (s[4] - s[0]) * t + (R() - 0.5) * s[6] * 0.5, py = s[1] + (s[5] - s[1]) * t + (R() - 0.5) * s[6] * 0.5; x.fillStyle = 'rgba(255,225,210,0.55)'; x.fillRect(px - 0.4, py - 0.4, 0.8, 0.8); }
+}
+// Tube worms: chalk tubes with growth rings and dark mouths, some with a red plume fanned out.
+function tubes(x, cx, cy, n, len, R, dir = -P / 2) {
+  for (let i = 0; i < n; i++) {
+    const a = dir + (R() - 0.5) * 1.3, L = len * (0.55 + R() * 0.5), w = 1.2 + R() * 1.1, bx = cx + (R() - 0.5) * len * 0.8, by = cy + (R() - 0.5) * len * 0.4;
+    const ex = bx + Math.cos(a) * L, ey = by + Math.sin(a) * L, mx = (bx + ex) / 2 + (R() - 0.5) * L * 0.4, my = (by + ey) / 2 + (R() - 0.5) * L * 0.4;
+    x.lineCap = 'round';
+    x.strokeStyle = 'rgba(0,0,0,0.45)'; x.lineWidth = w + 1.4; x.beginPath(); x.moveTo(bx + 0.8, by + 1); x.quadraticCurveTo(mx + 0.8, my + 1, ex + 0.8, ey + 1); x.stroke();
+    x.strokeStyle = EX.boneLo; x.lineWidth = w + 0.6; x.beginPath(); x.moveTo(bx, by); x.quadraticCurveTo(mx, my, ex, ey); x.stroke();
+    x.strokeStyle = EX.bone; x.lineWidth = w * 0.55; x.beginPath(); x.moveTo(bx - 0.3, by - 0.3); x.quadraticCurveTo(mx - 0.3, my - 0.3, ex - 0.3, ey - 0.3); x.stroke();
+    x.fillStyle = '#17110c'; disc(x, ex, ey, w * 0.5); x.fill();
+    if (R() < 0.45) { x.strokeStyle = 'rgba(226,72,60,0.85)'; x.lineWidth = 0.45; for (let k = -3; k <= 3; k++) { const b = a + k * 0.24; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex + Math.cos(b) * w * 2.4, ey + Math.sin(b) * w * 2.4); x.stroke(); } }
+  }
+}
+// A cabled tendril: a kelp-like cable along a curve, tapering, wrapped in bands, its end curled.
+function tendril(x, pts, w0, w1, R, curl = 1) {
+  let c = curve(pts, 12);
+  if (curl) {   // curl the last point into a small spiral turning to one side
+    const [ex, ey] = c[c.length - 1], [px, py] = c[c.length - 2]; let a = Math.atan2(ey - py, ex - px), r = w0 * 1.6, cx = ex, cy = ey; const tail = [];
+    for (let i = 0; i < 18; i++) { a += curl * 0.38; r *= 0.93; cx += Math.cos(a) * r * 0.45; cy += Math.sin(a) * r * 0.45; tail.push([cx, cy]); }
+    c = c.concat(tail);
+  }
+  const n = c.length, W = (i) => w0 + (w1 - w0) * i / (n - 1);
+  const pass = (dx, dy, wk, style) => { x.strokeStyle = style; x.lineCap = 'round'; for (let i = 1; i < n; i++) { x.lineWidth = W(i) * wk; x.beginPath(); x.moveTo(c[i - 1][0] + dx, c[i - 1][1] + dy); x.lineTo(c[i][0] + dx, c[i][1] + dy); x.stroke(); } };
+  pass(1.4, 1.8, 1.05, 'rgba(0,0,0,0.42)');
+  pass(0, 0, 1.15, '#101a16');
+  pass(0, 0, 1, EX.kelp);
+  pass(-W(0) * 0.12, -W(0) * 0.16, 0.42, hexA(EX.kelpHi, 0.7));
+  // the cable's wrap: a slanted band every few pixels
+  let acc = 0;
+  for (let i = 1; i < n; i++) {
+    const dx = c[i][0] - c[i - 1][0], dy = c[i][1] - c[i - 1][1], L = Math.hypot(dx, dy); acc += L;
+    if (acc < 3.4 || L === 0) continue; acc = 0;
+    const nx = -dy / L, ny = dx / L, ww = W(i) * 0.5, sx = dx / L * ww * 0.5, sy = dy / L * ww * 0.5;
+    x.strokeStyle = 'rgba(8,14,12,0.55)'; x.lineWidth = Math.max(0.35, W(i) * 0.14); x.beginPath(); x.moveTo(c[i][0] + nx * ww - sx, c[i][1] + ny * ww - sy); x.lineTo(c[i][0] - nx * ww + sx, c[i][1] - ny * ww + sy); x.stroke();
+  }
+  // a few barnacle spat riding on it
+  for (let i = 0; i < 3; i++) { const p = c[Math.floor((0.15 + R() * 0.55) * n)]; if (W(0) > 3) barnacle(x, p[0] + (R() - 0.5), p[1] + (R() - 0.5), 1 + R() * 1.2, R, 0); }
+}
+// The conduit-keepers' vein: a line of power under a translucent sheath, a dim core with brighter beads of pulse.
+// k: how lit, 0 to 1. Clamps of steel hold it at the ends.
+function vein(x, pts, w, R, k = 0.6, clampEnds = true, col = EX.lumen, hot = EX.lumenHot) {
+  const c = curve(pts, 10), n = c.length;
+  const pass = (wd, style, dx = 0, dy = 0) => { x.strokeStyle = style; x.lineWidth = wd; x.lineCap = 'round'; x.lineJoin = 'round'; x.beginPath(); c.forEach(([a, b], i) => (i ? x.lineTo(a + dx, b + dy) : x.moveTo(a + dx, b + dy))); x.stroke(); };
+  pass(w + 2.2, 'rgba(0,0,0,0.45)', 0.8, 1.1);
+  pass(w + 1.4, '#08100f');
+  pass(w, '#1b3533');
+  if (k > 0) { x.save(); x.shadowColor = col; x.shadowBlur = 4 * k; pass(w * 0.42, hexA(col, 0.25 + 0.45 * k)); x.restore(); }
+  pass(w * 0.22, hexA(hot, 0.15 + 0.5 * k));
+  pass(w * 0.3, 'rgba(210,235,230,0.28)', -w * 0.18, -w * 0.24);   // the sheath's wet highlight
+  // beads of pulse along it
+  let acc = R() * 10;
+  for (let i = 1; i < n; i++) {
+    acc += Math.hypot(c[i][0] - c[i - 1][0], c[i][1] - c[i - 1][1]);
+    if (acc < 11) continue; acc = R() * 4;
+    const b = (0.3 + R() * 0.7) * k, g = x.createRadialGradient(c[i][0], c[i][1], 0, c[i][0], c[i][1], w * 1.3);
+    g.addColorStop(0, hexA(hot, 0.8 * b)); g.addColorStop(0.5, hexA(col, 0.4 * b)); g.addColorStop(1, hexA(col, 0)); x.fillStyle = g; x.fillRect(c[i][0] - w * 1.3, c[i][1] - w * 1.3, w * 2.6, w * 2.6);
+  }
+  if (clampEnds) for (const i of [2, n - 3]) {
+    const p = c[i], q = c[i + 1] || c[i - 1], a = Math.atan2(q[1] - p[1], q[0] - p[0]);
+    x.save(); x.translate(p[0], p[1]); x.rotate(a); const g = x.createLinearGradient(0, -w, 0, w); g.addColorStop(0, '#b5bfc1'); g.addColorStop(1, '#2a3134');
+    x.fillStyle = g; x.fillRect(-1.6, -w * 0.95, 3.2, w * 1.9); x.strokeStyle = '#070b0c'; x.lineWidth = 0.6; x.strokeRect(-1.6, -w * 0.95, 3.2, w * 1.9); x.restore();
+  }
+}
 
 // ---- the kit -----------------------------------------------------------------------------------------------------
-// The frame: one Voronoi membrane round the band, brighter at the corners (growing nodes), one vein running round it,
-// branching into each corner by the rule, a seed node where it turns; plain glass inside. The image is drawn large
-// (420 x 300) so a console panel's edges stretch its cells little.
+// The frame: riveted plate round a plain dark well. Rivets and growth only in the corners (the margins); along the top
+// edge a cabled tendril grown out of the upper-right corner's coral, along the foot a vein under its sheath, and the
+// sides plain (they stretch the most).
 function frame(x, w, h, o) {
-  const { m, band, r, key } = o, R = RNG(key);
-  const outer = () => F.rr(x, 1, 1, w - 2, h - 2, r);
-  // one membrane of cells round the whole band: the source image is long enough that a console panel barely stretches it
-  tissue(x, outer, [0, 0, w, h], R, { cell: o.cell, lit: (px, py) => 0.7 - Math.min(px, py, w - px, h - py) / (band * 1.4) + (Math.min(Math.hypot(px, py), Math.hypot(w - px, py), Math.hypot(px, h - py), Math.hypot(w - px, h - py)) < m * 1.2 ? 0.25 : 0) });
-  x.save(); outer(); x.clip();
-  x.strokeStyle = 'rgba(255,236,236,0.16)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(r, 2.5); x.lineTo(w - r, 2.5); x.stroke();
-  x.restore();
-  // the glass, plain
-  const gi = band;
-  F.rr(x, gi, gi, w - 2 * gi, h - 2 * gi, o.gr); x.fillStyle = PH.glass; x.fill();
-  x.strokeStyle = hexA(PH.gold, 0.32); x.lineWidth = 1; x.stroke();
-  // the vein round the band, and the rule branching from it into each corner
-  const vi = band / 2;
-  F.rr(x, vi, vi, w - 2 * vi, h - 2 * vi, Math.max(4, r - vi)); x.strokeStyle = hexA(PH.gold, 0.2); x.lineWidth = 3.4; x.stroke();
-  x.strokeStyle = hexA(PH.gold, 0.85); x.lineWidth = 1.1; x.stroke(); x.strokeStyle = hexA(PH.goldHot, 0.7); x.lineWidth = 0.4; x.stroke();
-  x.save(); outer(); x.clip();
-  for (const [sx, sy, a] of [[1, 1, -3 * P / 4], [-1, 1, -P / 4], [1, -1, 3 * P / 4], [-1, -1, P / 4]]) {
-    const px = sx > 0 ? vi + 3 : w - vi - 3, py = sy > 0 ? vi + 3 : h - vi - 3;
-    for (const turn of [0, 1]) {   // two rules per corner, one toward each edge
-      const along = a + (turn ? 1 : -1) * sx * sy * P / 2.6;
-      veins(x, lsys(px, py, along, m * 0.32, 2, P / 5, [], 0.9, true), PH.gold, PH.goldHot, 0.75);
-    }
-    seeds(x, px, py, 1, o.node || 13, 1.05, 1.0, seedCol(PH.cyanHot, PH.gold), 3);
+  const { m, band, c, key } = o, R = RNG(key), small = band < 14;
+  const outer = () => cham(x, 1, 1, w - 2, h - 2, c);
+  const inCorner = (px, py) => (Math.min(px, w - px) < m * 1.4 && Math.min(py, h - py) < m * 1.4 ? 1 : 0);
+  plate(x, outer, [0, 0, w, h], R, { where: (px, py) => Math.max(inCorner(px, py), 0.15), rustEvery: small ? 900 : 1300, rustScale: small ? 0.5 : 1, saltEvery: 26 });
+  bevel(x, outer, 1.3);
+  // a patch plate, bolted on as found (the assimilators), across the lower-left corner
+  if (!small) {
+    const pp = () => cham(x, 4, h - m - 6, m + 10, m + 3, [0, 0, 6, 0]);
+    plate(x, pp, [4, h - m - 6, m + 14, h - 3], R, { hi: '#6f6a5c', mid: '#57534a', lo: '#36332d', rustEvery: 500, rustScale: 0.7 });
+    bevel(x, pp, 0.8);
   }
+  // the well, plain
+  const well = () => cham(x, band, band, w - 2 * band, h - 2 * band, Math.max(3, c - band * 0.6));
+  recess(x, well, [band, band, w - band, h - band], EX.glass);
+  // corner rivets (the margins only)
+  const rr = small ? 1.6 : 2.6;
+  for (const [sx, sy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+    const px = sx ? w - band / 2 - 1 : band / 2 + 1, py = sy ? h - band / 2 - 1 : band / 2 + 1, along = small ? 0 : 10;
+    rivet(x, sx ? px - along * 0.2 : px + along * 0.2, py, rr, R);
+    if (!small) { rivet(x, sx ? px - m * 0.75 : px + m * 0.75, py, rr * 0.85, R); rivet(x, px, sy ? py - m * 0.75 : py + m * 0.75, rr * 0.85, R); }
+  }
+  if (small) {   // an inset: a little crust in one corner
+    barnacles(x, w - 7, h - 6, 6, 4, 5, 0.9, 2.6, R);
+    outer(); x.strokeStyle = '#060909'; x.lineWidth = 1; x.stroke();
+    return;
+  }
+  // the foot: a vein under its sheath along the bottom band (the conduit-keepers)
+  vein(x, [[m * 0.6, h - band / 2 + 1], [w / 2, h - band / 2 + 0.5], [w - m * 0.6, h - band / 2 + 1]], 4.2, R, 0.55);
+  // the reef, in the corners (inside the margins: nothing reaches the content)
+  x.save(); outer(); x.clip();
+  crust(x, 13, 12, 17, 13, R);
+  crust(x, w - 14, h - 26, 11, 15, R, '#567f6c');
+  crust(x, 18, h - 9, 15, 8, R);
+  crust(x, w - 22, 9, 14, 7, R, '#8f6f86');
+  brain(x, w - 17, h - 15, 15, 12, R);
+  barnacles(x, w - 38, h - 10, 9, 6, 8, 1.1, 4, R);
+  tubes(x, w - 10, h - 34, 6, 10, R, -P / 2 - 0.4);
+  barnacles(x, 13, 13, 12, 10, 12, 1.2, 5.4, R);
+  barnacles(x, 30, 27, 4, 3, 3, 0.9, 2.2, R);
+  barnacles(x, 15, h - 11, 10, 7, 8, 1, 3.8, R);
+  coral(x, w - 8, 30, P * 1.02, 10, 3.6, 3, R);
+  coral(x, w - 26, 4, P * 0.6, 7, 2.6, 2, R, '#e08a72');
+  // a tendril grown from the coral, run along the top band and curled over the edge before the far corner
+  tendril(x, [[w - 12, 15], [w - m - 20, 9], [w * 0.55, 13], [w * 0.3, 8], [m + 22, 12]], 4.6, 1.8, R, -1);
   x.restore();
-  outer(); x.strokeStyle = '#08030a'; x.lineWidth = 1.4; x.stroke();
+  outer(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
 }
-// The chambered key: a nautilus section seen flat at its left, its open living chamber the key's face, a seed at its
-// growing tip. state 0 idle (dim), 1 hover (veins and septa light), 2 pressed (the chambers fill with light).
-function keyShape(x, w) {
-  x.beginPath(); x.moveTo(37.5, 6); x.lineTo(w - 15, 6); x.arcTo(w - 1.5, 6, w - 1.5, 20, 14); x.lineTo(w - 1.5, 28); x.arcTo(w - 1.5, 42, w - 15, 42, 14);
-  x.lineTo(37.5, 42); x.arc(24, 24, 22.5, 0.9273, 2 * P - 0.9273); x.closePath();
-}
-function key(state) {
-  return (x, w, h) => {
-    x.save(); x.scale(1, h / 48);
-    keyShape(x, w);
-    const g = x.createLinearGradient(0, 6, 0, 42); g.addColorStop(0, state === 2 ? '#7a3558' : PH.membraneHi); g.addColorStop(0.5, state === 2 ? '#4e1f3e' : PH.membrane); g.addColorStop(1, PH.wall);
-    x.fillStyle = g; x.fill();
-    x.save(); keyShape(x, w); x.clip();
-    if (state === 2) { const b = x.createLinearGradient(0, 26, 0, 42); b.addColorStop(0, 'rgba(0,0,0,0)'); b.addColorStop(1, hexA(PH.gold, 0.35)); x.fillStyle = b; x.fillRect(0, 0, w, 48); }
-    x.strokeStyle = 'rgba(255,236,236,0.2)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(40, 8.2); x.lineTo(w - 16, 8.2); x.stroke();
-    x.restore();
-    // the veins along the face, idle dim, lit on hover and press
-    const k = state === 0 ? 0.32 : state === 1 ? 0.95 : 1;
-    vline(x, 46, 10, w - 18, 10, 1, PH.gold, PH.goldHot, k); vline(x, 46, 39.5, w - 18, 39.5, 0.9, PH.gold, PH.goldHot, k);
-    shell(x, 24, 24, 20, 0, state);
-    seeds(x, w - 15, 24, 1, 13, 1.6, 1.25, state ? seedCol(PH.cyanHot, PH.gold) : () => hexA(PH.dim, 0.55), state ? 4 : 0);
-    keyShape(x, w); x.strokeStyle = '#08030a'; x.lineWidth = 1.5; x.stroke();
+
+// The hatch key (the assimilators' access hatch, bolted on as found): a rectangular steel hatch on a hinge at its left,
+// a dog latch at its right, a hex bolt in each corner, a lit slot across its face, barnacles crusted on the hinge end.
+// Idle the slot is dim; hover lights it; pressed the hatch sinks a pixel and the slot's light flares.
+function hatch(state) {
+  return (x, w) => {
+    const R = RNG('hatch'), dy = state === 2 ? 1 : 0;
+    // the hatch's shadow on the panel
+    cham(x, 6, 4 + 2 - dy, w - 8, 42, 5); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    x.save(); x.translate(0, dy);
+    // the hinge: two knuckles on a pin, standing proud of the plate's left edge
+    for (const [y0, y1] of [[7, 21], [27, 41]]) {
+      const g = x.createLinearGradient(0, 0, 11, 0); g.addColorStop(0, '#1e2528'); g.addColorStop(0.4, '#a9b4b6'); g.addColorStop(1, '#2c3437');
+      F.rr(x, 1, y0, 10, y1 - y0, 3); x.fillStyle = g; x.fill(); x.strokeStyle = '#070b0c'; x.lineWidth = 0.8; x.stroke();
+    }
+    x.fillStyle = '#39423f'; x.fillRect(4.5, 21, 3, 6);
+    const body = () => cham(x, 7, 3, w - 9, 42, 5);
+    plate(x, body, [7, 3, w - 2, 45], R, { where: (px) => (px < 28 || px > w - 26 ? 1 : 0), rustEvery: 700, rustScale: 0.45, saltEvery: 18 });
+    bevel(x, body, 1.2);
+    // the slot: recessed, its light by state
+    const sx = 24, sw = w - 48, slot = () => F.rr(x, sx, 13, sw, 22, 3);
+    const glow = [0.0, 0.55, 1][state];
+    recess(x, slot, [sx, 13, sx + sw, 35], ['#0a1a1c', '#0f3b3d', '#16605f'][state]);
+    if (glow) {
+      x.save(); slot(); x.clip();
+      const g = x.createLinearGradient(0, 13, 0, 35); g.addColorStop(0, hexA(EX.lumen, 0.1 * glow)); g.addColorStop(0.5, hexA(EX.lumen, 0.2 * glow)); g.addColorStop(1, hexA(EX.lumen, 0.38 * glow));
+      x.fillStyle = g; x.fillRect(sx, 13, sw, 22);
+      x.restore();
+      x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8 * glow; slot(); x.strokeStyle = hexA(EX.lumen, 0.5 * glow); x.lineWidth = 1; x.stroke(); x.restore();
+    } else {
+      x.strokeStyle = hexA(EX.lumen, 0.18); x.lineWidth = 0.8; x.beginPath(); x.moveTo(sx + 4, 33.5); x.lineTo(sx + sw - 4, 33.5); x.stroke();
+    }
+    // bolts, the latch
+    for (const [bx, by] of [[17, 9], [17, 39], [w - 16, 9], [w - 16, 39]]) bolt(x, bx, by, 3, 0.2 + bx * 0.01);
+    const lg = x.createLinearGradient(w - 10, 0, w - 3, 0); lg.addColorStop(0, '#b8c2c4'); lg.addColorStop(1, '#2a3235');
+    x.beginPath(); x.moveTo(w - 10, 16); x.lineTo(w - 4, 18); x.lineTo(w - 4, 30); x.lineTo(w - 10, 32); x.closePath(); x.fillStyle = lg; x.fill(); x.strokeStyle = '#070b0c'; x.lineWidth = 0.8; x.stroke();
+    disc(x, w - 7, 24, 1.4); x.fillStyle = '#20282a'; x.fill();
+    // the hinge end crusted with barnacles and salt
+    crust(x, 10, 38, 10, 8, R);
+    barnacles(x, 10, 38, 8, 6, 6, 1, 4.4, R);
+    barnacles(x, 8, 9, 5, 4, 3, 0.8, 2.6, R);
     x.restore();
   };
 }
-// A tab: a plain membrane leaf with a seed node at each end; the active one lit, a vein along its foot.
+// A tab: a stencil plate with its upper corners cut, a rivet at each end, a lamp strip along its foot (lit when active).
 function tab(on) {
   return (x, w, h) => {
-    F.rr(x, 1, 2, w - 2, h - 4, 9);
-    const g = x.createLinearGradient(0, 2, 0, h - 2); g.addColorStop(0, on ? '#7a3558' : PH.membrane); g.addColorStop(1, PH.wall); x.fillStyle = g; x.fill();
-    x.strokeStyle = 'rgba(255,236,236,0.16)'; x.lineWidth = 1; x.beginPath(); x.moveTo(10, 4); x.lineTo(w - 10, 4); x.stroke();
-    vline(x, 14, h - 6, w - 14, h - 6, 1, PH.gold, PH.goldHot, on ? 1 : 0.3);
-    for (const cx of [8, w - 8]) seeds(x, cx, h / 2, 1, 8, 1.35, 1.05, on ? seedCol(PH.cyanHot, PH.gold) : () => hexA(PH.dim, 0.5), on ? 3 : 0);
-    F.rr(x, 1, 2, w - 2, h - 4, 9); x.strokeStyle = '#08030a'; x.lineWidth = 1.3; x.stroke();
+    const R = RNG('tab'), body = () => cham(x, 1, 2, w - 2, h - 4, [8, 8, 2, 2]);
+    plate(x, body, [0, 0, w, h], R, { where: (px) => (px < 16 || px > w - 16 ? 1 : 0), rustEvery: 800, rustScale: 0.4, saltEvery: 22 });
+    bevel(x, body, 1.1);
+    const lamp = () => F.rr(x, 14, h - 9, w - 28, 4, 2);
+    lamp(); x.fillStyle = on ? EX.lumen : '#14292a'; if (on) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.fill(); x.restore(); } else x.fill();
+    if (on) { lamp(); x.fillStyle = hexA(EX.lumenHot, 0.6); x.fill(); }
+    lamp(); x.strokeStyle = '#060909'; x.lineWidth = 0.7; x.stroke();
+    rivet(x, 7, h / 2 + 1, 2.1, R); rivet(x, w - 7, h / 2 + 1, 2.1, R);
+    barnacles(x, w - 6, h - 6, 4, 3, 3, 0.7, 1.8, R);
   };
 }
-// A strip, drawn long so it barely stretches: membrane lips top and bottom, a shell at the left end and a seed disc at the right, glass between.
+// A strip: a long plate with a rail along its outer lip and a plain dark channel for the readouts. At its left end a
+// hand wheel on a valve (the conduit-keepers' cock), crusted; at its right a bolted junction box under brain coral.
 function strip(flip) {
   return (x, w, h) => {
     const R = RNG('strip' + (flip ? 'b' : 't'));
     x.save(); if (flip) { x.translate(0, h); x.scale(1, -1); }
-    const outer = () => F.rr(x, 1, 1, w - 2, h - 2, 18);
-    x.save(); outer(); x.clip();
-    tissue(x, outer, [0, 0, w, h], R, { cell: 6, lit: (px, py) => Math.max(0.85 - Math.hypot(px - 40, py - 36) / 60, 0.85 - Math.hypot(px - w + 40, py - 36) / 60, 0.2) });
-    x.restore();
-    F.rr(x, 80, 10, w - 160, h - 20, 10); x.fillStyle = PH.glass; x.fill(); x.strokeStyle = hexA(PH.gold, 0.3); x.lineWidth = 1; x.stroke();
-    vline(x, 64, 5, w - 64, 5, 1.1); vline(x, 64, h - 5, w - 64, h - 5, 1.1);
-    shell(x, 40, 36, 29, P, 1, { septa: 11 });
-    x.beginPath(); x.arc(w - 40, 36, 27, 0, 2 * P); x.fillStyle = hexA(PH.wall, 0.75); x.fill();
-    seeds(x, w - 40, 36, 1, 89, 2.75, 1.5, seedCol(PH.cyanHot, PH.gold), 3);
-    outer(); x.strokeStyle = '#08030a'; x.lineWidth = 1.4; x.stroke();
+    const outer = () => cham(x, 1, 1, w - 2, h - 2, [2, 2, 14, 14]);
+    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 100 || px > w - 100 ? 1 : 0.04), rustEvery: 2200, saltEvery: 30 });
+    bevel(x, outer, 1.2);
+    const ch = () => F.rr(x, 92, 11, w - 184, h - 22, 3);
+    recess(x, ch, [92, 11, w - 92, h - 11], EX.glass);
+    // the rail on the outer lip: a vein in its sheath
+    vein(x, [[96, 5.5], [w / 2, 5.5], [w - 96, 5.5]], 3.2, R, 0.45, false);
+    // left: the valve wheel
+    const vx = 46, vy = 36;
+    disc(x, vx + 2, vy + 3, 27); x.fillStyle = 'rgba(0,0,0,0.45)'; x.fill();
+    disc(x, vx, vy, 27); const rg = x.createRadialGradient(vx - 8, vy - 10, 2, vx, vy, 27); rg.addColorStop(0, '#9aa5a8'); rg.addColorStop(1, '#2a3235'); x.strokeStyle = rg; x.lineWidth = 5; x.stroke();
+    for (let i = 0; i < 5; i++) { const a = i * 2 * P / 5 + 0.3; x.strokeStyle = '#3c4649'; x.lineWidth = 3.4; x.beginPath(); x.moveTo(vx, vy); x.lineTo(vx + Math.cos(a) * 25, vy + Math.sin(a) * 25); x.stroke(); x.strokeStyle = 'rgba(200,212,214,0.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(vx - 0.8, vy - 0.8); x.lineTo(vx + Math.cos(a) * 25 - 0.8, vy + Math.sin(a) * 25 - 0.8); x.stroke(); }
+    bolt(x, vx, vy, 6, 0.1);
+    crust(x, 72, 58, 18, 10, R); crust(x, 12, 30, 9, 20, R, '#567f6c');
+    barnacles(x, vx + 16, vy + 18, 14, 7, 8, 1, 4, R);
+    barnacles(x, 14, 12, 8, 6, 5, 0.9, 3, R);
+    // right: the junction box under the reef
+    const jx = w - 82;
+    const box = () => cham(x, jx, 12, 62, 48, 4);
+    plate(x, box, [jx, 12, jx + 62, 60], R, { hi: '#6b7478', rustEvery: 600, rustScale: 0.6 }); bevel(x, box, 1);
+    for (const [bx, by] of [[jx + 6, 18], [jx + 56, 18], [jx + 6, 54], [jx + 56, 54]]) bolt(x, bx, by, 2.4);
+    crust(x, w - 46, 34, 30, 22, R);
+    brain(x, w - 40, 40, 20, 15, R);
+    tubes(x, w - 72, 56, 6, 12, R, -P / 2 - 0.2);
+    coral(x, w - 14, 18, P * 0.8, 10, 3, 2, R);
+    tendril(x, [[w - 60, 64], [w - 80, 68], [w - 98, 63], [w - 104, 56]], 3, 1.4, R, 1);
     x.restore();
   };
 }
-// A symbol cell: one Voronoi cell of a fixed seed; off, lit (cyan heart, gold wall) or warning (divergence magenta).
-const CELL = (() => { const R = RNG('cell'), o = []; for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3 + (R() - 0.5) * 0.25, r = 5.3 + (R() - 0.5) * 0.9; o.push([6 + Math.cos(a) * r, 7 + Math.sin(a) * r * 1.12]); } return o; })();
+// A symbol cell: one barnacle, the same seed lit or unlit; its aperture glows lumen (on) or breach (warn).
 function cell(mode) {
   return (x) => {
-    smooth(x, CELL);
-    if (!mode) { x.fillStyle = PH.membrane; x.fill(); x.strokeStyle = hexA(PH.dim, 0.35); x.lineWidth = 0.8; x.stroke(); x.fillStyle = hexA(PH.dim, 0.35); x.beginPath(); x.arc(6, 7, 1.2, 0, 2 * P); x.fill(); return; }
-    const hot = mode === 2 ? '#ffd0dc' : PH.cyanHot, mid = mode === 2 ? PH.magenta : PH.cyan, rim = mode === 2 ? PH.magenta : PH.gold;
-    const g = x.createRadialGradient(6, 7, 0, 6, 7, 6.5); g.addColorStop(0, hot); g.addColorStop(0.55, mid); g.addColorStop(1, mix(rim, PH.membrane, 0.35));
-    x.fillStyle = g; x.fill(); x.strokeStyle = rim; x.lineWidth = 0.9; x.stroke();
-    x.fillStyle = '#ffffff'; x.beginPath(); x.arc(6, 7, 1.3, 0, 2 * P); x.fill();
+    const R = RNG('cell');
+    if (mode) { const g = x.createRadialGradient(6, 7, 0, 6, 7, 8); g.addColorStop(0, hexA(mode === 2 ? EX.breach : EX.lumen, 0.55)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 12, 14); }
+    barnacle(x, 6, 7.4, 5.4, R, mode === 2 ? EX.breach : mode ? EX.lumen : 0);
+    if (!mode) { x.fillStyle = 'rgba(8,12,12,0.35)'; disc(x, 6, 7.4, 5.6); x.fill(); }
   };
 }
 const nine = {
-  'frame.panel': { size: [420, 300], m: [30, 30, 30, 30], draw: (x, w, h) => frame(x, w, h, { m: 30, band: 22, r: 22, gr: 9, cell: 6.5, node: 13, key: 'panel' }) },
-  'frame.inset': { size: [220, 160], m: [14, 14, 14, 14], draw: (x, w, h) => frame(x, w, h, { m: 14, band: 9, r: 10, gr: 5, cell: 4, node: 6, key: 'inset' }) },
+  'frame.panel': { size: [420, 300], m: [32, 32, 32, 32], draw: (x, w, h) => frame(x, w, h, { m: 32, band: 24, c: 10, key: 'panel' }) },
+  'frame.inset': { size: [220, 160], m: [14, 14, 14, 14], draw: (x, w, h) => frame(x, w, h, { m: 14, band: 9, c: 5, key: 'inset' }) },
   'bar.track': { size: [96, 22], m: [0, 14, 0, 14], inset: [10, 4], draw: (x, w, h) => {
-    F.rr(x, 1, 1, w - 2, h - 2, 9); x.fillStyle = PH.membrane; x.fill();
-    F.rr(x, 9, 3.5, w - 18, h - 7, 4); x.fillStyle = PH.glass; x.fill(); x.strokeStyle = hexA(PH.gold, 0.3); x.lineWidth = 0.8; x.stroke();
-    for (const cx of [5, w - 5]) seeds(x, cx, h / 2, 1, 5, 1.2, 0.9, seedCol(PH.cyanHot, PH.gold), 2);
-    F.rr(x, 1, 1, w - 2, h - 2, 9); x.strokeStyle = '#08030a'; x.lineWidth = 1.2; x.stroke();
+    const R = RNG('track'), body = () => cham(x, 1, 1, w - 2, h - 2, 4);
+    plate(x, body, [0, 0, w, h], R, { where: (px) => (px < 12 || px > w - 12 ? 1 : 0), rustEvery: 500, rustScale: 0.35, saltEvery: 20 });
+    bevel(x, body, 1);
+    recess(x, () => F.rr(x, 9, 3.5, w - 18, h - 7, 2), [9, 3.5, w - 9, h - 3.5], '#071012');
+    rivet(x, 5, h / 2, 1.8); rivet(x, w - 5, h / 2, 1.8);
   } },
-  'bar.fill': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => vline(x, 4, h / 2, w - 4, h / 2, 5, PH.cyan, PH.cyanHot) },
-  'bar.fill.red': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => vline(x, 4, h / 2, w - 4, h / 2, 5, PH.magenta, '#ffd0dc') },
+  'bar.fill': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => vein(x, [[4, h / 2], [w - 4, h / 2]], 6, RNG('fill'), 1, false) },
+  'bar.fill.red': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => vein(x, [[4, h / 2], [w - 4, h / 2]], 6, RNG('fillr'), 1, false, EX.breach, EX.breachHot) },
   'bar.cell.off': { size: [12, 14], gap: 2, draw: cell(0) },
   'bar.cell.on': { size: [12, 14], gap: 2, draw: cell(1) },
   'bar.cell.warn': { size: [12, 14], gap: 2, draw: cell(2) },
-  'button.idle': { size: [150, 48], m: [24, 30, 24, 48], draw: key(0) },
-  'button.hover': { size: [150, 48], m: [24, 30, 24, 48], draw: key(1) },
-  'button.pressed': { size: [150, 48], m: [24, 30, 24, 48], draw: key(2) },
+  'button.idle': { size: [150, 48], m: [24, 26, 24, 28], draw: hatch(0) },
+  'button.hover': { size: [150, 48], m: [24, 26, 24, 28], draw: hatch(1) },
+  'button.pressed': { size: [150, 48], m: [24, 26, 24, 28], draw: hatch(2) },
   'tab.idle': { size: [120, 40], m: [16, 16, 16, 16], draw: tab(false) },
   'tab.active': { size: [120, 40], m: [16, 16, 16, 16], draw: tab(true) },
   'strip.top': { size: [1200, 72], m: [12, 100, 12, 100], draw: strip(false) },
   'strip.bottom': { size: [1200, 72], m: [12, 100, 12, 100], draw: strip(true) },
   'divider': { size: [128, 10], m: [0, 18, 0, 18], draw: (x, w, h) => {
-    vline(x, 10, h / 2, w - 10, h / 2, 1.2, PH.gold, PH.goldHot, 0.75);
-    for (const [cx, a] of [[10, P], [w - 10, 0]]) { veins(x, lsys(cx, h / 2, a, 4, 1, P / 4, [], 1), PH.gold, PH.goldHot, 0.9); }
+    const R = RNG('divider');
+    vein(x, [[6, h / 2], [w - 6, h / 2]], 3.6, R, 0.5, false);
+    for (const cx of [9, w - 9]) { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#b5bfc1'); g.addColorStop(1, '#262d30'); x.fillStyle = g; x.fillRect(cx - 3, 0.5, 6, h - 1); x.strokeStyle = '#060909'; x.lineWidth = 0.7; x.strokeRect(cx - 3, 0.5, 6, h - 1); }
   } },
 };
 
 // ---- hero pieces -------------------------------------------------------------------------------------------------
-// The helm's eight keys stand on one logarithmic spiral: north nearest the heart, each next key clockwise a fixed ratio
-// further out and larger, so the pad reads clockwise like a compass and grows like a shell.
-const HG = Math.pow(116 / 90, 1 / 7);
-const HELM = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const a = -P / 2 + i * P / 4, r = 90 * Math.pow(HG, i); return [150 + Math.cos(a) * r, 150 + Math.sin(a) * r, 21 * Math.pow(HG, i), a]; });
-function disc(x, cx, cy, r) { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); }
+// The helm: a bulkhead plate holding a three by three bank of square hatch keys, the stop a round valve hatch at the
+// heart, veins run in the gaps between keys, reef in the corners. Key centres clockwise from the north-west.
+const HELM = [[60, 60], [150, 60], [240, 60], [240, 150], [240, 240], [150, 240], [60, 240], [60, 150]];
+function squareHatch(x, cx, cy, s, R) {
+  const h = s / 2;
+  cham(x, cx - h + 2, cy - h + 3, s, s, 6); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+  const body = () => cham(x, cx - h, cy - h, s, s, 6);
+  plate(x, body, [cx - h, cy - h, cx + h, cy + h], R, { where: (px, py) => (Math.max(Math.abs(px - cx), Math.abs(py - cy)) > h - 10 ? 1 : 0), rustEvery: 1000, rustScale: 0.5, saltEvery: 22 });
+  bevel(x, body, 1.2);
+  const win = () => F.rr(x, cx - h + 11, cy - h + 11, s - 22, s - 22, 4);
+  recess(x, win, [cx - h + 11, cy - h + 11, cx + h - 11, cy + h - 11], '#0a1a1c');
+  x.save(); win(); x.clip(); const g = x.createRadialGradient(cx, cy, 0, cx, cy, h); g.addColorStop(0, hexA(EX.lumen, 0.16)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(cx - h, cy - h, s, s); x.restore();
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) bolt(x, cx + sx * (h - 5.5), cy + sy * (h - 5.5), 2.6, 0.3 + sx * 0.2);
+}
 const hero = {
   nameplate: (x, w, h) => {
-    const R = RNG('plate'), outer = () => F.rr(x, 1, 1, w - 2, h - 2, 16);
-    tissue(x, outer, [0, 0, w, h], R, { cell: 7, lit: (px) => 0.7 - Math.abs(px - 32) / 120 });
-    F.rr(x, 62, 9, 366, 38, 9); x.fillStyle = PH.glass; x.fill(); x.strokeStyle = hexA(PH.gold, 0.5); x.lineWidth = 1; x.stroke();
-    disc(x, 32, 28, 23); x.fillStyle = PH.wall; x.fill();
-    seeds(x, 32, 28, 1, 89, 2.3, 1.35, seedCol(PH.cyanHot, PH.gold), 3);
-    shell(x, 444, 28, 13, P / 2, 1, { septa: 8 });
+    const R = RNG('plate'), outer = () => cham(x, 1, 1, w - 2, h - 2, [10, 4, 10, 4]);
+    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 62 || px > 428 ? 1 : 0.15), rustEvery: 1400, rustScale: 0.7, saltEvery: 24 });
+    bevel(x, outer, 1.3);
+    const field = () => F.rr(x, 62, 9, 366, 38, 3);
+    recess(x, field, [62, 9, 428, 47], EX.glass);
+    // left: a porthole lens on the plate, ringed with bolts
+    disc(x, 32, 29, 21); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    disc(x, 31, 28, 21); const rg = x.createRadialGradient(25, 21, 2, 31, 28, 21); rg.addColorStop(0, '#a8b3b5'); rg.addColorStop(1, '#283033'); x.fillStyle = rg; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 1; x.stroke();
+    disc(x, 31, 28, 13); const lg = x.createRadialGradient(28, 24, 1, 31, 28, 13); lg.addColorStop(0, EX.lumenHot); lg.addColorStop(0.35, EX.lumen); lg.addColorStop(1, EX.lumenLo); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8; x.fillStyle = lg; x.fill(); x.restore();
+    x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
+    for (let i = 0; i < 6; i++) { const a = i * P / 3 + 0.4; bolt(x, 31 + Math.cos(a) * 17, 28 + Math.sin(a) * 17, 1.9, a); }
+    barnacles(x, 16, 45, 12, 6, 7, 0.9, 3.4, R);
+    // right: coral and worms grown over the end
     x.save(); outer(); x.clip();
-    veins(x, lsys(56, 6, 0, 16, 3, P / 5, [], 1, true), PH.gold, PH.goldHot, 0.8); veins(x, lsys(56, 50, 0, 16, 3, -P / 5, [], 1, true, -1), PH.gold, PH.goldHot, 0.8);
+    crust(x, w - 14, 30, 13, 22, R); crust(x, 50, 50, 14, 6, R, '#567f6c');
+    coral(x, w - 18, 54, -P / 2 - 0.25, 13, 3.2, 2, R);
+    tubes(x, w - 13, 18, 4, 10, R, -P / 2 + 0.6);
+    barnacles(x, w - 8, 44, 5, 8, 5, 0.9, 2.8, R);
     x.restore();
-    outer(); x.strokeStyle = '#08030a'; x.lineWidth = 1.5; x.stroke();
+    rivet(x, 440, 9, 2, R); rivet(x, 440, 47, 2, R);
   },
   'helm.pad': (x, w) => {
-    const R = RNG('helm'), c = w / 2;
-    tissue(x, () => disc(x, c, c, 148), [0, 0, w, w], R, { cell: 11, lit: (px, py) => 0.85 - Math.hypot(px - c, py - c) / 170 });
-    // eight veins grow out between the keys, each by the same rule
-    for (let i = 0; i < 8; i++) { const a = -P / 2 + (i + 0.5) * P / 4; veins(x, lsys(c + Math.cos(a) * 46, c + Math.sin(a) * 46, a, 40, 3, P / 7, [], 1.6), PH.gold, PH.goldHot, 0.75); }
-    // the heart: a disc of seeds round a plain glass core, the stop key
-    disc(x, c, c, 46); x.fillStyle = PH.wall; x.fill(); x.strokeStyle = hexA(PH.gold, 0.6); x.lineWidth = 1.4; x.stroke();
-    seeds(x, c, c, 76, 230, 2.95, 1.6, seedCol(PH.cyan, PH.gold), 2);
-    disc(x, c, c, 23); x.fillStyle = PH.glass; x.fill(); x.strokeStyle = hexA(PH.gold, 0.7); x.lineWidth = 1; x.stroke();
-    // the chambered keys, each a shell whose aperture faces out
-    for (const [kx, ky, kr, a] of HELM) {
-      x.save(); x.shadowColor = '#000'; x.shadowBlur = 8; disc(x, kx, ky, kr); x.fillStyle = PH.membrane; x.fill(); x.restore();
-      x.save(); disc(x, kx, ky, kr); x.clip(); shell(x, kx, ky, kr * 0.92, a, 0, { faint: true }); x.restore();
-      disc(x, kx, ky, kr); x.strokeStyle = hexA(PH.gold, 0.75); x.lineWidth = 1.4; x.stroke();
-      disc(x, kx, ky, kr + 1.6); x.strokeStyle = '#08030a'; x.lineWidth = 1.4; x.stroke();
-      x.fillStyle = 'rgba(255,240,235,0.22)'; x.beginPath(); x.ellipse(kx - kr * 0.35, ky - kr * 0.45, kr * 0.3, kr * 0.12, -0.6, 0, 2 * P); x.fill();
-    }
-    disc(x, c, c, 148); x.strokeStyle = '#08030a'; x.lineWidth = 1.6; x.stroke();
+    const R = RNG('helm'), outer = () => cham(x, 2, 2, w - 4, w - 4, 26);
+    plate(x, outer, [0, 0, w, w], R, { rustEvery: 2400, saltEvery: 28 });
+    bevel(x, outer, 1.5);
+    // the bank's floor: a grating seen through the gaps
+    x.save(); F.rr(x, 18, 18, w - 36, w - 36, 6); x.clip(); x.fillStyle = '#121a1c'; x.fillRect(18, 18, w - 36, w - 36);
+    for (let i = 18; i < w - 18; i += 6) { x.fillStyle = 'rgba(120,135,138,0.22)'; x.fillRect(i, 18, 1.4, w - 36); }
+    for (let j = 18; j < w - 18; j += 18) { x.fillStyle = 'rgba(0,0,0,0.55)'; x.fillRect(18, j, w - 36, 2); x.fillStyle = 'rgba(150,165,168,0.18)'; x.fillRect(18, j + 2, w - 36, 0.8); }
+    x.restore();
+    recess(x, () => F.rr(x, 18, 18, w - 36, w - 36, 6), [18, 18, w - 18, w - 18], 'rgba(0,0,0,0)');
+    // veins in the gaps between keys (the conduit-keepers)
+    vein(x, [[22, 105], [105, 106], [195, 104], [278, 105]], 3.6, R, 0.55);
+    vein(x, [[22, 196], [105, 195], [195, 196], [278, 194]], 3.6, R, 0.55);
+    vein(x, [[105, 22], [104, 105]], 3, R, 0.45); vein(x, [[196, 278], [195, 196]], 3, R, 0.45);
+    // the keys
+    for (const [kx, ky] of HELM) squareHatch(x, kx, ky, 68, R);
+    // the stop: a round valve hatch with a lit ring
+    disc(x, 152, 153, 36); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    disc(x, 150, 150, 36); const rg = x.createRadialGradient(140, 138, 4, 150, 150, 36); rg.addColorStop(0, '#9ca7aa'); rg.addColorStop(1, '#2b3336'); x.fillStyle = rg; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
+    disc(x, 150, 150, 25); x.fillStyle = '#0a1a1c'; x.fill(); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.strokeStyle = hexA(EX.lumen, 0.7); x.lineWidth = 1.6; x.stroke(); x.restore();
+    for (let i = 0; i < 8; i++) { const a = i * P / 4 + P / 8; bolt(x, 150 + Math.cos(a) * 30.5, 150 + Math.sin(a) * 30.5, 2.2, a); }
+    // the reef in the corners, clear of every key
+    x.save(); outer(); x.clip();
+    crust(x, 14, 260, 12, 34, R); crust(x, 70, 290, 40, 9, R, '#567f6c'); crust(x, 288, 60, 10, 30, R, '#8f6f86'); crust(x, 200, 10, 34, 8, R);
+    crust(x, 105, 196, 9, 9, R); barnacles(x, 105, 196, 8, 8, 6, 1, 3.6, R);
+    crust(x, 196, 104, 8, 9, R, '#567f6c'); barnacles(x, 196, 104, 7, 7, 4, 1, 3, R);
+    brain(x, 22, 280, 20, 16, R);
+    barnacles(x, 42, 290, 12, 6, 7, 1, 3.4, R);
+    coral(x, 290, 10, P * 0.72, 14, 3.6, 3, R);
+    barnacles(x, 285, 288, 10, 8, 9, 1, 4, R);
+    tubes(x, 270, 292, 5, 9, R, -P / 2 - 0.3);
+    barnacles(x, 14, 16, 9, 8, 7, 1, 3.6, R);
+    tendril(x, [[6, 40], [10, 110], [6, 175], [11, 228]], 3.6, 1.6, R, 1);
+    x.restore();
   },
   'ssd.bezel': (x, w, h) => {
-    const R = RNG('ssd'), outer = () => F.rr(x, 2, 2, w - 4, h - 4, 30);
-    tissue(x, outer, [0, 0, w, h], R, { cell: 10, lit: (px, py) => 0.75 - Math.min(Math.hypot(px - 30, py - 240), Math.hypot(px - 430, py - 60)) / 200 });
-    F.rr(x, 58, 16, w - 116, h - 32, 46); x.fillStyle = PH.glass; x.fill(); x.strokeStyle = hexA(PH.gold, 0.55); x.lineWidth = 1.2; x.stroke();
-    x.save(); outer(); x.clip();
-    veins(x, lsys(30, 215, -P / 2, 70, 4, P / 6, [], 1.6, true), PH.gold, PH.goldHot, 0.8);
-    veins(x, lsys(w - 30, 86, P / 2, 70, 4, P / 6, [], 1.6, true, -1), PH.gold, PH.goldHot, 0.8);
+    const R = RNG('ssd'), outer = () => cham(x, 2, 2, w - 4, h - 4, 18);
+    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 46 || px > w - 46 ? 1 : 0.4), rustEvery: 2000, saltEvery: 26 });
+    bevel(x, outer, 1.5);
+    const well = () => cham(x, 46, 14, w - 92, h - 28, 14);
+    recess(x, well, [46, 14, w - 46, h - 14], EX.glass);
+    // a faint graticule in the well
+    x.save(); well(); x.clip(); x.strokeStyle = hexA(EX.lumen, 0.06); x.lineWidth = 1;
+    for (let gx = 50; gx < w - 46; gx += 24) { x.beginPath(); x.moveTo(gx, 14); x.lineTo(gx, h - 14); x.stroke(); }
+    for (let gy = 18; gy < h - 14; gy += 24) { x.beginPath(); x.moveTo(46, gy); x.lineTo(w - 46, gy); x.stroke(); }
     x.restore();
-    shell(x, 30, 246, 24, -P / 2, 1, { septa: 10 });
-    disc(x, w - 30, 54, 24); x.fillStyle = PH.wall; x.fill(); seeds(x, w - 30, 54, 1, 89, 2.4, 1.4, seedCol(PH.cyanHot, PH.gold), 3);
-    outer(); x.strokeStyle = '#08030a'; x.lineWidth = 1.6; x.stroke();
+    // side veins, rivets
+    vein(x, [[23, 40], [24, 150], [22, 260]], 4, R, 0.55);
+    vein(x, [[w - 23, 40], [w - 22, 150], [w - 24, 260]], 4, R, 0.55);
+    for (const py of [24, 276]) { rivet(x, 12, py, 2.4, R); rivet(x, w - 12, py, 2.4, R); }
+    // the reef
+    x.save(); outer(); x.clip();
+    crust(x, 18, 250, 16, 40, R); crust(x, w - 20, 60, 16, 46, R, '#567f6c'); crust(x, w - 22, 250, 14, 26, R, '#8f6f86');
+    barnacles(x, 22, 150, 10, 30, 9, 1, 3.6, R);
+    brain(x, w - 24, 26, 18, 14, R);
+    coral(x, w - 40, 8, P * 0.62, 11, 3, 2, R);
+    barnacles(x, 24, 274, 16, 14, 12, 1, 5, R);
+    tubes(x, 30, h - 8, 5, 10, R, -P / 2 + 0.2);
+    tendril(x, [[8, 22], [36, 10], [70, 18], [96, 10]], 3.4, 1.4, R, 1);
+    barnacles(x, w - 20, h - 22, 10, 10, 6, 1, 3.4, R);
+    x.restore();
   },
   dial: (x, w) => {
     const R = RNG('dial'), c = w / 2;
-    tissue(x, () => disc(x, c, c, 58), [0, 0, w, w], R, { cell: 6, lit: (px, py) => 0.8 - Math.hypot(px - c, py - c) / 90 });
-    disc(x, c, c, 45); x.fillStyle = PH.glass; x.fill(); x.strokeStyle = hexA(PH.gold, 0.65); x.lineWidth = 1.2; x.stroke();
-    for (let i = 0; i < 8; i++) { const a = i * P / 4; seeds(x, c + Math.cos(a) * 51.5, c + Math.sin(a) * 51.5, 1, 4, 1.1, 1.1, seedCol(PH.cyanHot, PH.gold), 2); }
-    disc(x, c, c, 58); x.strokeStyle = '#08030a'; x.lineWidth = 1.4; x.stroke();
+    disc(x, c + 2, c + 3, 57); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    plate(x, () => disc(x, c, c, 57), [0, 0, w, w], R, { rustEvery: 900, rustScale: 0.6, saltEvery: 22 });
+    bevel(x, () => disc(x, c, c, 57), 1.3);
+    recess(x, () => disc(x, c, c, 45), [c - 45, c - 45, c + 45, c + 45], EX.glass);
+    for (let i = 0; i < 6; i++) { const a = i * P / 3 + 0.5; bolt(x, c + Math.cos(a) * 51, c + Math.sin(a) * 51, 2.6, a); }
+    x.save(); x.beginPath(); x.arc(c, c, 58, 0, 2 * P); x.arc(c, c, 46, 0, 2 * P, true); x.clip();
+    barnacles(x, c + 34, c + 38, 14, 10, 8, 1, 3.6, R);
+    x.restore();
   },
-  'lamp.alert.green': (x, w) => lamp(x, w, PH.life), 'lamp.alert.yellow': (x, w) => lamp(x, w, PH.gold), 'lamp.alert.red': (x, w) => lamp(x, w, PH.magenta),
-  // The Exponent's mark (original): a disc of seeds set at the golden angle inside a ring that branches by the rule.
+  'lamp.alert.green': (x, w) => lamp(x, w, EX.sea, 'green'), 'lamp.alert.yellow': (x, w) => lamp(x, w, EX.amber, 'yellow'), 'lamp.alert.red': (x, w) => lamp(x, w, EX.breach, 'red'),
+  // The Exponent's mark (original, ours): a ring of seven unlike plates bolted together (whatever is taken is joined as
+  // found), round a conduit that branches upward from one root to three lit ends (power carried where it is needed).
   crest: (x, w) => {
-    const c = w / 2;
-    disc(x, c, c, 46); x.fillStyle = PH.void; x.fill();
-    disc(x, c, c, 38); x.strokeStyle = hexA(PH.gold, 0.25); x.lineWidth = 4; x.stroke(); x.strokeStyle = PH.gold; x.lineWidth = 1.4; x.stroke();
-    for (let i = 0; i < 8; i++) {
-      const a = -P / 2 + i * P / 4, px = c + Math.cos(a) * 38, py = c + Math.sin(a) * 38;
-      veins(x, lsys(px, py, a, 5, 1, P / 5, [], 1.4), PH.gold, PH.goldHot); veins(x, lsys(px, py, a + P, 5, 1, P / 5, [], 1.2), PH.gold, PH.goldHot, 0.7);
+    const R = RNG('crest'), c = w / 2;
+    disc(x, c + 1.5, c + 2, 46); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    disc(x, c, c, 46); x.fillStyle = EX.deep; x.fill();
+    let a = -P / 2 + 0.2;
+    for (let i = 0; i < 7; i++) {
+      const span = 2 * P / 7 * (0.8 + R() * 0.4), a1 = Math.min(a + span, -P / 2 + 0.2 + 2 * P - 0.06 * (6 - i)) - 0.06, r0 = 31 + R() * 3, r1 = 44 - R() * 3;
+      const seg = () => { x.beginPath(); x.arc(c, c, r1, a, a1); x.arc(c, c, r0, a1, a, true); x.closePath(); };
+      plate(x, seg, [0, 0, w, w], R, { hi: i % 2 ? '#7a8589' : '#6d6a5e', mid: i % 3 ? EX.steel : '#5c5a50', rustEvery: 500, rustScale: 0.35 });
+      bevel(x, seg, 0.9);
+      const m = (a + a1) / 2; bolt(x, c + Math.cos(m) * (r0 + r1) / 2, c + Math.sin(m) * (r0 + r1) / 2, 2.2, m);
+      a = a1 + 0.06;
     }
-    seeds(x, c, c, 1, 144, 2.15, 1.45, seedCol(PH.goldHot, PH.cyan), 3);
+    vein(x, [[c, c + 24], [c, c + 4]], 4.2, R, 0.9, false);
+    vein(x, [[c, c + 4], [c - 7, c - 6], [c - 12, c - 16]], 3.2, R, 0.9, false);
+    vein(x, [[c, c + 4], [c, c - 20]], 3.2, R, 0.9, false);
+    vein(x, [[c, c + 4], [c + 7, c - 6], [c + 12, c - 16]], 3.2, R, 0.9, false);
+    for (const [px, py] of [[c - 12, c - 17], [c, c - 21], [c + 12, c - 17]]) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8; disc(x, px, py, 3.4); x.fillStyle = EX.lumenHot; x.fill(); x.restore(); }
+    disc(x, c, c + 25, 4.5); x.fillStyle = '#3a4447'; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 0.8; x.stroke();
   },
 };
-function lamp(x, w, col) {
-  const c = w / 2;
-  disc(x, c, c, 29); x.fillStyle = PH.membrane; x.fill();
-  const g = x.createRadialGradient(c, c, 0, c, c, 28); g.addColorStop(0, hexA(col, 0.55)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fill();
-  seeds(x, c, c, 1, 89, 2.7, 1.55, (t) => mix('#ffffff', col, Math.min(1, 0.25 + t)), 4);
-  disc(x, c, c, 29); x.strokeStyle = hexA(PH.gold, 0.6); x.lineWidth = 1.2; x.stroke(); disc(x, c, c, 30.5); x.strokeStyle = '#08030a'; x.lineWidth = 1.3; x.stroke();
+// A caged bulkhead lamp: a bolted housing, a glowing lens behind two guard bars, a little crust on the rim.
+function lamp(x, w, col, key) {
+  const R = RNG('lamp.' + key), c = w / 2;
+  disc(x, c + 1.5, c + 2, 30); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+  plate(x, () => disc(x, c, c, 30), [0, 0, w, w], R, { rustEvery: 700, rustScale: 0.4, saltEvery: 20 });
+  bevel(x, () => disc(x, c, c, 30), 1);
+  disc(x, c, c, 21); const g = x.createRadialGradient(c - 5, c - 6, 1, c, c, 21); g.addColorStop(0, '#ffffff'); g.addColorStop(0.3, col); g.addColorStop(1, mix(col, '#000000', 0.55));
+  x.save(); x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = g; x.fill(); x.restore(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
+  for (const dx of [-7, 7]) { const bg = x.createLinearGradient(c + dx - 2, 0, c + dx + 2, 0); bg.addColorStop(0, '#2a3235'); bg.addColorStop(0.5, '#b5bfc1'); bg.addColorStop(1, '#2a3235'); x.fillStyle = bg; x.fillRect(c + dx - 1.8, c - 21, 3.6, 42); }
+  for (let i = 0; i < 4; i++) { const a = i * P / 2 + P / 4; bolt(x, c + Math.cos(a) * 25.5, c + Math.sin(a) * 25.5, 2.2, a); }
+  barnacles(x, c + 18, c + 22, 7, 5, 4, 0.8, 2.4, R);
+}
+// The column's ground (CLAUDE.md section 7: no black behind a metal skin's panels): a bulkhead of riveted plates over
+// deck grating, two veins climbing it, and the reef grown up from its foot. 472 x 1080, drawn behind the panels.
+function column(x, w, h) {
+  const R = RNG('column');
+  x.fillStyle = '#121a1c'; x.fillRect(0, 0, w, h);
+  const seamsX = [0, 150, 322, w], seamsY = [0, 260, 540, 810, h];
+  for (let i = 0; i < seamsX.length - 1; i++) for (let j = 0; j < seamsY.length - 1; j++) {
+    const X = seamsX[i] + 1, Y = seamsY[j] + 1, W = seamsX[i + 1] - seamsX[i] - 2, H = seamsY[j + 1] - seamsY[j] - 2, p = () => { x.beginPath(); x.rect(X, Y, W, H); };
+    const tone = R();
+    plate(x, p, [X, Y, X + W, Y + H], R, { hi: mix('#4e585c', '#5a574d', tone), mid: mix('#3a4347', '#46443c', tone), lo: '#22292c', rustEvery: 4000, saltEvery: 34, rustScale: 1.6, where: (px, py) => (Math.min(Math.abs(px - X), Math.abs(px - X - W), Math.abs(py - Y), Math.abs(py - Y - H)) < 16 ? 1 : 0.35) });
+    bevel(x, p, 1.2);
+    for (let k = X + 10; k < X + W - 6; k += 22) { rivet(x, k, Y + 7, 1.9, R); rivet(x, k, Y + H - 7, 1.9, R); }
+  }
+  // veins climbing the bulkhead at its edges, and along the seams
+  vein(x, [[4, h], [5, 700], [3, 380], [5, 0]], 5, R, 0.5, false);
+  vein(x, [[w - 4, h], [w - 3, 600], [w - 5, 250], [w - 4, 0]], 5, R, 0.5, false);
+  vein(x, [[150, h], [151, 540], [149, 0]], 3.4, R, 0.35, false);
+  // the reef, grown up from the foot and down from the head, in layers: crust first, then what settles on it
+  for (let i = 0; i < 26; i++) crust(x, R() * w, h - Math.pow(R(), 1.6) * 160, 14 + R() * 26, 8 + R() * 16, R, R() < 0.6 ? '#a1707a' : '#567f6c');
+  for (let i = 0; i < 10; i++) crust(x, R() * w, Math.pow(R(), 1.6) * 60, 10 + R() * 20, 6 + R() * 10, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+  for (const sx of [150, 322]) for (let i = 0; i < 5; i++) crust(x, sx + (R() - 0.5) * 8, h - 160 - Math.pow(R(), 2) * 420, 4 + R() * 5, 8 + R() * 14, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+  for (let i = 0; i < 9; i++) brain(x, 20 + R() * (w - 40), h - 10 - R() * 40, 12 + R() * 16, 10 + R() * 10, R);
+  for (let i = 0; i < 6; i++) coral(x, 10 + R() * (w - 20), h - 4, -P / 2 + (R() - 0.5) * 0.8, 16 + R() * 14, 4, 3, R);
+  barnacles(x, w / 2, h - 30, w / 2, 30, 60, 1.2, 6, R);
+  barnacles(x, w / 2, 14, w / 2, 14, 40, 1, 4.6, R);
+  for (const [px, py] of [[8, 300], [w - 8, 520], [8, 780], [w - 8, 900]]) barnacles(x, px, py, 8, 40, 14, 1, 4, R);
+  tendril(x, [[2, 120], [16, 200], [4, 300], [14, 420]], 5, 2, R, 1);
+  tendril(x, [[w - 2, 640], [w - 14, 720], [w - 4, 820], [w - 14, 930]], 5, 2, R, -1);
 }
 
-// ---- icons: pictures of the job, drawn as grown lines ----------------------------------------------------------------
-// Every stroke tapers from root to tip like a vein, and every joint and tip is a seed. One ink (gold): colour is for state.
+// ---- icons: pictures of the job, cut as stencils ---------------------------------------------------------------------
+// Utilitarian stencil marks: solid shapes in one ink (lumen), broken by the bridges a stencil needs. Colour is for state.
 function icon(name) {
   return F.paint(48, 48, (x) => {
-    const ink = PH.gold;
-    x.strokeStyle = ink; x.fillStyle = ink; x.lineCap = 'round'; x.lineJoin = 'round';
-    const T = (pts, w0 = 3.6, w1 = 1.8) => { for (let i = 1; i < pts.length; i++) { x.lineWidth = w0 + (w1 - w0) * i / (pts.length - 1); x.beginPath(); x.moveTo(pts[i - 1][0], pts[i - 1][1]); x.lineTo(pts[i][0], pts[i][1]); x.stroke(); } };
-    const S = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); };
-    const A = (cx, cy, r, a0, a1, lw = 3) => { x.lineWidth = lw; x.beginPath(); x.arc(cx, cy, r, a0, a1); x.stroke(); };
+    const ink = EX.lumen;
+    x.fillStyle = ink; x.strokeStyle = ink; x.lineCap = 'butt'; x.lineJoin = 'miter';
+    const ring = (cx, cy, r, lw) => { x.lineWidth = lw; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
+    const bar = (a, b, c, d, lw) => { x.lineWidth = lw; x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); };
+    // a stencil bridge: a gap cut across the mark at (cx, cy), at angle a, gw wide
+    const cut = (cx, cy, a, gw = 2.4, L = 30) => { x.save(); x.globalCompositeOperation = 'destination-out'; x.translate(cx, cy); x.rotate(a); x.fillRect(-gw / 2, -L / 2, gw, L); x.restore(); };
     ({
-      // a ship's wheel: a rim, eight spokes grown from the hub, a seed at each handle
-      helm: () => { A(24, 24, 12, 0, 2 * P, 3); S(24, 24, 4.5); for (let i = 0; i < 8; i++) { const a = i * P / 4, c = Math.cos(a), s = Math.sin(a); T([[24 + c * 4, 24 + s * 4], [24 + c * 19, 24 + s * 19]], 3, 1.8); S(24 + c * 20, 24 + s * 20, 2.6); } },
-      // a target: two rings and a seed at its heart
-      fire: () => { A(24, 24, 18, 0, 2 * P, 3); A(24, 24, 10, 0, 2 * P, 2.6); S(24, 24, 4); for (const a of [0, P / 2, P, 1.5 * P]) T([[24 + Math.cos(a) * 18, 24 + Math.sin(a) * 18], [24 + Math.cos(a) * 23, 24 + Math.sin(a) * 23]], 3, 1.6); },
-      // six shield facings round the hull
-      shields: () => { for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; A(24, 24, 18, a - P / 6 + 0.17, a + P / 6 - 0.17, 4.2); } S(24, 24, 5.5); },
+      // a ship's wheel: rim, hub and eight handles, the rim bridged four times
+      helm: () => { ring(24, 24, 13, 4); disc(x, 24, 24, 5); x.fill(); for (let i = 0; i < 8; i++) { const a = i * P / 4; bar(24 + Math.cos(a) * 5, 24 + Math.sin(a) * 5, 24 + Math.cos(a) * 21, 24 + Math.sin(a) * 21, 3.2); } for (let i = 0; i < 4; i++) { const a = P / 8 + i * P / 2; cut(24 + Math.cos(a) * 13, 24 + Math.sin(a) * 13, a, 2.2, 7); } },
+      // a target: two rings and four ticks, bridged on the diagonals
+      fire: () => { ring(24, 24, 17, 3.6); ring(24, 24, 8.5, 3.2); disc(x, 24, 24, 2.6); x.fill(); for (const a of [0, P / 2, P, 1.5 * P]) bar(24 + Math.cos(a) * 12, 24 + Math.sin(a) * 12, 24 + Math.cos(a) * 23, 24 + Math.sin(a) * 23, 3.2); for (let i = 0; i < 4; i++) { const a = P / 4 + i * P / 2; cut(24 + Math.cos(a) * 13, 24 + Math.sin(a) * 13, a, 2.2, 16); } },
+      // six shield facings round a hull
+      shields: () => { for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.lineWidth = 4.4; x.beginPath(); x.arc(24, 24, 18, a - P / 6 + 0.16, a + P / 6 - 0.16); x.stroke(); } x.beginPath(); x.moveTo(24, 13); x.lineTo(30, 22); x.lineTo(29, 35); x.lineTo(19, 35); x.lineTo(18, 22); x.closePath(); x.fill(); cut(24, 27, P / 2, 2, 14); },
       // an emitter's widening beam drawing a crate in
-      tractor: () => { S(8, 24, 5); T([[12, 21], [32, 11]], 3, 1.6); T([[12, 27], [32, 37]], 3, 1.6); A(8, 24, 13, -0.4, 0.4, 2.2); A(8, 24, 19, -0.38, 0.38, 2.2); x.lineWidth = 3; x.strokeRect(34, 16, 10, 16); },
+      tractor: () => { x.fillRect(4, 18, 8, 12); x.lineWidth = 2.4; x.beginPath(); x.moveTo(12, 21); x.lineTo(32, 12); x.moveTo(12, 27); x.lineTo(32, 36); x.stroke(); for (const r of [11, 17]) { x.beginPath(); x.arc(8, 24, r, -0.38, 0.38); x.stroke(); } x.fillRect(33, 15, 12, 18); cut(39, 24, P / 2, 2, 14); cut(8, 24, 0, 2, 14); },
       // a figure, whole above, dissolving into slices below
-      transport: () => { S(24, 9, 5.5); x.beginPath(); x.moveTo(14, 36); x.lineTo(15, 21); x.quadraticCurveTo(24, 15, 33, 21); x.lineTo(34, 36); x.closePath(); x.fill(); x.fillRect(16, 35, 6, 9); x.fillRect(26, 35, 6, 9); x.globalCompositeOperation = 'destination-out'; for (let y = 26, k = 0; y < 46; y += 3.4, k++) x.fillRect(0, y, 48, 1 + k * 0.32); x.globalCompositeOperation = 'source-over'; },
-      // an atom: three orbits and a nucleus seed
-      science: () => { x.lineWidth = 2.6; for (const r of [0, P / 3, -P / 3]) { x.beginPath(); x.ellipse(24, 24, 20, 7.5, r, 0, 2 * P); x.stroke(); } S(24, 24, 4.2); },
+      transport: () => { disc(x, 24, 9, 5.5); x.fill(); x.beginPath(); x.moveTo(14, 36); x.lineTo(15, 21); x.lineTo(33, 21); x.lineTo(34, 36); x.closePath(); x.fill(); x.fillRect(16, 35, 6, 9); x.fillRect(26, 35, 6, 9); x.globalCompositeOperation = 'destination-out'; for (let y = 26, k = 0; y < 46; y += 3.4, k++) x.fillRect(0, y, 48, 1 + k * 0.32); x.globalCompositeOperation = 'source-over'; },
+      // an atom: three orbits and a nucleus, each orbit bridged
+      science: () => { x.lineWidth = 3; for (const r of [0, P / 3, -P / 3]) { x.beginPath(); x.ellipse(24, 24, 20, 7.5, r, 0, 2 * P); x.stroke(); } disc(x, 24, 24, 4.4); x.fill(); for (const r of [0, P / 3, -P / 3]) cut(24 + Math.cos(r) * 20, 24 + Math.sin(r) * 20, r, 2.2, 6); },
       // a dish on its stand, sending
-      comms: () => { x.lineWidth = 3; x.beginPath(); x.arc(17, 27, 12, P * 0.75, P * 1.75, true); x.closePath(); x.stroke(); T([[17, 27], [12, 44]], 3, 2); T([[17, 27], [22, 44]], 3, 2); S(26, 18, 2.6); A(26, 18, 8, -P / 2, 0, 2.6); A(26, 18, 15, -P / 2, 0, 2.6); },
+      comms: () => { x.beginPath(); x.arc(17, 27, 12, P * 0.75, P * 1.75, true); x.closePath(); x.fill(); bar(17, 27, 12, 44, 3.4); bar(17, 27, 22, 44, 3.4); disc(x, 27, 17, 2.6); x.fill(); x.lineWidth = 2.6; for (const r of [8, 15]) { x.beginPath(); x.arc(27, 17, r, -P / 2 + 0.1, -0.1); x.stroke(); } cut(17, 27, P * 0.25, 2.2, 26); },
       // a wrench
-      repair: () => { T([[11, 38], [27, 22]], 6, 4.4); A(31, 17, 9, -P / 4 + 0.95, -P / 4 - 0.95 + 2 * P, 5); S(11, 38, 3.2); },
-      // a star map: three systems joined by grown lanes
-      map: () => { for (const [a, b] of [[[12, 14], [36, 20]], [[36, 20], [20, 36]], [[20, 36], [12, 14]]]) T([a, b], 2.6, 1.4); for (const [cx, cy] of [[12, 14], [36, 20], [20, 36]]) { S(cx, cy, 5); } },
-      // a gear: a ring and its teeth
-      settings: () => { A(24, 24, 9, 0, 2 * P, 3.4); for (let i = 0; i < 8; i++) { const a = i * P / 4; T([[24 + Math.cos(a) * 12, 24 + Math.sin(a) * 12], [24 + Math.cos(a) * 19, 24 + Math.sin(a) * 19]], 5, 3.4); } S(24, 24, 3); },
+      repair: () => { bar(10, 38, 27, 21, 6.4); x.lineWidth = 5.4; x.beginPath(); x.arc(31, 17, 8.5, -P / 4 + 0.95, -P / 4 - 0.95 + 2 * P); x.stroke(); cut(19, 29, P / 4, 2.2, 12); },
+      // a star map: three systems joined by lanes
+      map: () => { x.lineWidth = 2.6; x.beginPath(); x.moveTo(11, 13); x.lineTo(37, 19); x.lineTo(20, 37); x.closePath(); x.stroke(); for (const [cx, cy] of [[11, 13], [37, 19], [20, 37]]) { x.fillRect(cx - 5, cy - 5, 10, 10); cut(cx, cy, 0, 1.8, 12); } },
+      // a gear: a ring and its teeth, cut at the hub
+      settings: () => { ring(24, 24, 11, 5); for (let i = 0; i < 8; i++) { const a = i * P / 4; bar(24 + Math.cos(a) * 13, 24 + Math.sin(a) * 13, 24 + Math.cos(a) * 20, 24 + Math.sin(a) * 20, 5.6); } cut(24, 24, P / 4, 2.2, 30); },
     })[name]();
   });
 }
 
+// ---- the live readouts -----------------------------------------------------------------------------------------------
+// A stencil arrow: a solid head and shaft in lumen, a bridge across the shaft, outlined dark so it reads on the hatch.
+function stencilArrow(x, col) {
+  const shape = () => { x.beginPath(); x.moveTo(13, 0); x.lineTo(1, -10); x.lineTo(1, -4); x.lineTo(-12, -4); x.lineTo(-12, 4); x.lineTo(1, 4); x.lineTo(1, 10); x.closePath(); };
+  shape(); x.strokeStyle = '#040707'; x.lineWidth = 3.2; x.lineJoin = 'round'; x.stroke();
+  x.save(); x.shadowColor = col; x.shadowBlur = 5; shape(); x.fillStyle = col; x.fill(); x.restore();
+  x.fillStyle = '#0a1a1c'; x.fillRect(-5.5, -5, 2.2, 10);
+}
+
 // ---- the skin --------------------------------------------------------------------------------------------------
 F.register('exponent', {
-  name: 'Exponent', kind: 'Fractal growth in living tissue, painted in canvas (first pass): Voronoi membrane, L-system veins, golden-angle seeds, chambered spiral keys', bg: PH.void, sampleBg: '#1e0c1a',
-  css: { '--s-ink': PH.pith, '--s-dim': PH.dim, '--s-num': PH.cyan, '--s-body': '"Jura", sans-serif', '--btn-ink': PH.pith, '--btn-shadow': '0 1px 2px #000, 0 0 6px rgba(240,191,76,0.35)', '--btn-justify': 'center',
-    '--btn-font': '600 17px/1 "Fraunces", serif', '--btn-track': '0.03em', '--btn-case': 'none', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1px', '--btn-pb': '3px',
-    '--tab-font': '600 14px/1 "Fraunces", serif', '--tab-ink': PH.dim, '--tab-ink-on': PH.goldHot, '--title-font': '600 19px/1 "Fraunces", serif', '--title-ink': PH.gold,
-    '--lbl-font': '700 15px/1 "Jura", sans-serif', '--num-font': '700 26px/1 "Jura", sans-serif',
-    // The strips are 72 px; their open band is the glass between the fibre lips, rows 10-62.
-    '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '44px' },
-  accent: PH.cyan, warn: PH.magenta,
-  // The frame's band (22 px) holds the vein and its cells, so the title heads the glass, in gold.
-  title: (t) => { t.style.cssText = 'position:relative;justify-self:start;align-self:flex-start;margin-left:2px;text-shadow:0 1px 2px #000;'; },
-  plateText: { left: 72, top: 13, width: 344, height: 30, font: '600 21px/1 "Fraunces", serif', color: PH.pith, shadow: '0 1px 2px #000', sub: 'Third Whorl · Tender Ossaine' },
-  helmKeys: HELM.map(([px, py]) => [Math.round(px * 10) / 10, Math.round(py * 10) / 10]), shield: [PH.cyan, PH.gold, PH.magenta],
-  fonts: ['600 20px "Fraunces"', '700 20px "Jura"'], view: { title: '600 28px "Fraunces"', body: '700 24px "Jura"', upper: false },
-  build: () => F.fromPainters(nine, hero, icon, false),
+  name: 'Exponent', kind: 'Painted in canvas (first pass): a utilitarian steel console overgrown like a wreck on a reef: rust, salt, barnacles, coral, cabled tendrils and lit veins, hatch keys', bg: EX.bg, sampleBg: '#2a3236',
+  css: { '--s-ink': EX.bone, '--s-dim': '#9fb0ad', '--s-num': EX.lumen, '--s-body': '"Chivo Mono", monospace', '--btn-ink': '#eef8f4', '--btn-shadow': '0 1px 2px #000, 0 0 3px #000', '--btn-justify': 'center',
+    '--btn-font': '400 15px/1 "Allerta Stencil", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1px', '--btn-pb': '2px',
+    '--tab-font': '400 12px/1 "Allerta Stencil", sans-serif', '--tab-ink': '#9fb0ad', '--tab-ink-on': EX.lumenHot, '--title-font': '400 18px/1 "Allerta Stencil", sans-serif', '--title-ink': EX.bone,
+    '--lbl-font': '500 13px/1 "Chivo Mono", monospace', '--num-font': '700 24px/1 "Chivo Mono", monospace',
+    // The strips are 72 px; their open band is the dark channel, rows 11-61.
+    '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '44px', '--tab-pb': '4px' },
+  accent: EX.lumen, warn: EX.breach,
+  // The title stencilled at the head of the well, in bone, over a shadow.
+  title: (t) => { t.style.cssText = 'position:relative;justify-self:start;align-self:flex-start;margin-left:2px;letter-spacing:0.1em;text-transform:uppercase;text-shadow:0 1px 2px #000;'; },
+  plateText: { left: 72, top: 13, width: 344, height: 30, font: '400 19px/1 "Allerta Stencil", sans-serif', color: EX.bone, shadow: '0 1px 2px #000', sub: 'ACCRETION 41 · KEEPER OF LINES' },
+  helmKeys: HELM, shield: [EX.lumen, EX.amber, EX.breach],
+  fonts: ['400 20px "Allerta Stencil"', '700 20px "Chivo Mono"', '500 20px "Chivo Mono"'], view: { title: '400 26px "Allerta Stencil"', body: '700 21px "Chivo Mono"', upper: true, ink: EX.bone, dim: '#a9c4bf' },
+  build: () => Object.assign(F.fromPainters(nine, hero, icon, false), { column: F.png(F.paint(472, 1080, column)) }),
   live: {
-    // A grown arrow: a tapered shaft, two barbs branched by the rule, a seed at the tip.
-    arrow: (x) => {
-      for (const [col, k] of [['#08030a', 2.2], [PH.pith, 0]]) {
-        x.strokeStyle = col; x.lineCap = 'round';
-        x.lineWidth = 3.4 + k; x.beginPath(); x.moveTo(-10, 0); x.lineTo(8, 0); x.stroke();
-        x.lineWidth = 2.4 + k; for (const s of [-1, 1]) { x.beginPath(); x.moveTo(8, 0); x.lineTo(8 - Math.cos(P / 5) * 10 / PHI * 1.4, s * Math.sin(P / 5) * 10 / PHI * 1.4); x.stroke(); }
-        x.fillStyle = col; x.beginPath(); x.arc(10, 0, 2.6 + k / 2, 0, 2 * P); x.fill();
-      }
-    },
-    helmCentre: (x, c) => { x.fillStyle = PH.goldHot; x.font = '700 13px Jura'; x.textAlign = 'center'; x.fillText('STOP', c, c + 4); },
-    // A grown hull: a lens of tissue whose chambers part along its spine, a vein to each mount; shields are rows of seeds.
+    arrow: (x) => stencilArrow(x, EX.lumen),
+    helmCentre: (x, c) => { x.fillStyle = EX.bone; x.font = '400 13px "Allerta Stencil"'; x.textAlign = 'center'; x.shadowColor = '#000'; x.shadowBlur = 3; x.fillText('STOP', c, c + 5); x.shadowBlur = 0; },
+    // The hull as the assimilators keep it: modules taken from other ships, joined by plain collars, a conduit down its
+    // spine to each mount. Shields: six banks of ticks, coloured by strength.
     ssd: (x, cx, cy, sh, col) => {
       for (let i = 0; i < 6; i++) {
-        const a = -P / 2 + i * P / 3; x.save(); x.shadowColor = col(sh[i]); x.shadowBlur = 6; x.fillStyle = col(sh[i]);
-        for (let k = -4; k <= 4; k++) { const t = a + k * (P / 3 - 0.2) / 8; x.beginPath(); x.arc(cx + Math.cos(t) * 100, cy + Math.sin(t) * 100, 3.6 - Math.abs(k) * 0.25, 0, 2 * P); x.fill(); }
+        const a = -P / 2 + i * P / 3; x.save(); x.strokeStyle = col(sh[i]); x.shadowColor = col(sh[i]); x.shadowBlur = 5;
+        for (let k = -5; k <= 5; k++) { const t = a + k * (P / 3 - 0.22) / 10, r0 = 94, r1 = k % 5 === 0 ? 106 : 101; x.lineWidth = 2.4; x.beginPath(); x.moveTo(cx + Math.cos(t) * r0, cy + Math.sin(t) * r0); x.lineTo(cx + Math.cos(t) * r1, cy + Math.sin(t) * r1); x.stroke(); }
         x.restore();
       }
-      const hull = []; for (let i = 0; i < 24; i++) { const t = i / 24 * 2 * P, s = Math.sin(t), c = Math.cos(t); hull.push([cx + c * (34 + 10 * Math.cos(2 * t)) * (1 - 0.25 * s), cy + s * 72]); }
-      smooth(x, hull); const g = x.createLinearGradient(cx - 40, 0, cx + 40, 0); g.addColorStop(0, PH.membrane); g.addColorStop(0.5, PH.membraneHi); g.addColorStop(1, PH.membrane);
-      x.fillStyle = g; x.fill(); x.strokeStyle = PH.gold; x.lineWidth = 1.6; x.stroke();
-      x.save(); smooth(x, hull); x.clip(); x.strokeStyle = hexA(PH.dim, 0.6); x.lineWidth = 1;
-      for (let k = 0; k < 7; k++) { const y = cy - 60 + 60 * (1 - Math.pow(1 / PHI, k * 0.6)) * 2; x.beginPath(); x.moveTo(cx - 50, y + 6); x.quadraticCurveTo(cx, y - 6, cx + 50, y + 6); x.stroke(); }
-      x.restore();
-      vline(x, cx, cy - 66, cx, cy + 66, 1.4, PH.gold, PH.goldHot);
-      for (const [mx, my] of [[cx, cy - 56], [cx - 30, cy + 8], [cx + 30, cy + 8], [cx, cy + 52]]) {
-        vline(x, cx, my, mx, my, 1, PH.gold, PH.goldHot, 0.8);
-        x.save(); x.shadowColor = PH.cyan; x.shadowBlur = 8; seeds(x, mx, my, 1, 13, 1.5, 1.2, seedCol(PH.cyanHot, PH.cyan)); x.restore();
-      }
+      const mods = [[-12, -70, 24, 26, 4], [-20, -44, 40, 30, 2], [-30, -14, 60, 34, 6], [-22, 20, 44, 26, 2], [-14, 46, 28, 22, 3], [-44, -6, 14, 26, 2], [30, -6, 14, 26, 2]];
+      for (const [mx, my, mw, mh, c] of mods) { cham(x, cx + mx, cy + my, mw, mh, c); x.fillStyle = hexA(EX.lumen, 0.12); x.fill(); x.strokeStyle = EX.lumen; x.lineWidth = 1.6; x.stroke(); }
+      for (const yy of [-44, -14, 20, 46]) { x.fillStyle = hexA(EX.lumen, 0.7); x.fillRect(cx - 8, cy + yy - 1.5, 16, 3); }
+      x.strokeStyle = hexA(EX.lumenHot, 0.8); x.lineWidth = 1.2; x.setLineDash([3, 2]); x.beginPath(); x.moveTo(cx, cy - 66); x.lineTo(cx, cy + 64); x.stroke(); x.setLineDash([]);
+      for (const [mx, my] of [[cx, cy - 58], [cx - 37, cy + 7], [cx + 37, cy + 7], [cx, cy + 58]]) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.fillStyle = EX.lumenHot; x.fillRect(mx - 3, my - 3, 6, 6); x.restore(); }
     },
-    // A sweep wound as a logarithmic spiral arm; contacts as seeds, coloured by nearness (cyan far, gold, magenta near).
+    // A sonar sweep in the gauge: range rings, a fading wedge, contacts as squares (lumen far, amber, breach near).
     dial: (x, c, cts) => {
-      x.save(); x.strokeStyle = hexA(PH.cyan, 0.7); x.lineWidth = 1.6; x.beginPath();
-      for (let i = 0; i <= 40; i++) { const t = -2 * P + i / 40 * 2 * P, r = 42 * Math.exp(B * t); const p = [c + Math.cos(t - 0.9) * r, c + Math.sin(t - 0.9) * r]; if (i) x.lineTo(p[0], p[1]); else x.moveTo(p[0], p[1]); }
-      x.stroke(); x.restore();
-      for (const r of [14, 28]) { x.strokeStyle = hexA(PH.gold, 0.22); x.lineWidth = 1; x.beginPath(); x.arc(c, c, r, 0, 2 * P); x.stroke(); }
+      for (const r of [14, 28, 40]) { x.strokeStyle = hexA(EX.lumen, 0.22); x.lineWidth = 1; x.beginPath(); x.arc(c, c, r, 0, 2 * P); x.stroke(); }
+      x.strokeStyle = hexA(EX.lumen, 0.16); x.beginPath(); x.moveTo(c - 42, c); x.lineTo(c + 42, c); x.moveTo(c, c - 42); x.lineTo(c, c + 42); x.stroke();
+      const a0 = -0.9; for (let i = 0; i < 14; i++) { x.fillStyle = hexA(EX.lumen, 0.05 + 0.02 * i); x.beginPath(); x.moveTo(c, c); x.arc(c, c, 41, a0 - 0.9 + i * 0.065, a0 - 0.9 + (i + 1) * 0.065); x.closePath(); x.fill(); }
+      x.strokeStyle = EX.lumenHot; x.lineWidth = 1.4; x.beginPath(); x.moveTo(c, c); x.lineTo(c + Math.cos(a0) * 41, c + Math.sin(a0) * 41); x.stroke();
       for (const [dx, dy] of cts) {
-        const d = Math.hypot(dx, dy), cl = d < 0.56 ? PH.magenta : d < 0.8 ? PH.gold : PH.cyan;
-        x.save(); x.shadowColor = cl; x.shadowBlur = 7; x.fillStyle = cl; x.beginPath(); x.arc(c + dx * 34, c + dy * 34, d < 0.56 ? 4.5 : 3.6, 0, 2 * P); x.fill(); x.restore();
+        const d = Math.hypot(dx, dy), cl = d < 0.56 ? EX.breach : d < 0.8 ? EX.amber : EX.lumen, s = d < 0.56 ? 7 : 5.5;
+        x.save(); x.shadowColor = cl; x.shadowBlur = 6; x.fillStyle = cl; x.fillRect(c + dx * 34 - s / 2, c + dy * 34 - s / 2, s, s); x.restore();
       }
     },
-    // Four corners grown by the rule: a vein down each edge, side branches reaching out, a seed node at the corner.
+    // Four corner brackets of flat bar, each bolted at its corner and bridged like a stencil.
     bracket: (x, bx, by, bw, bh) => {
       for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
         x.save(); x.translate(px, py); x.scale(sx, sy);
-        veins(x, lsys(0, 0, 0, 28, 3, -P / 4, [], 2.4, true, -1), PH.gold, PH.goldHot);
-        veins(x, lsys(0, 0, P / 2, 28, 3, P / 4, [], 2.4, true, 1), PH.gold, PH.goldHot);
-        seeds(x, 0, 0, 1, 21, 1.35, 1.2, seedCol(PH.cyanHot, PH.gold), 4);
+        const L = () => { x.beginPath(); x.moveTo(0, 0); x.lineTo(34, 0); x.lineTo(34, 5); x.lineTo(5, 5); x.lineTo(5, 34); x.lineTo(0, 34); x.closePath(); };
+        L(); x.strokeStyle = '#040707'; x.lineWidth = 2.4; x.stroke(); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; L(); x.fillStyle = EX.lumen; x.fill(); x.restore();
+        x.fillStyle = '#020306'; x.fillRect(18, -1, 2.4, 7); x.fillRect(-1, 18, 7, 2.4);
+        disc(x, 2.5, 2.5, 1.6); x.fillStyle = '#0a1a1c'; x.fill();
         x.restore();
       }
     },
   },
-  world: ['The Brood took the Axiom\'s rules into its growth: what grows by rule is kept; what grows without one is pruned.', 'Provisional and the owner\'s to set; the design draws on none of it. Four traditions shape its things: seed growers, branch veiners, cell builders, shell turners.', 'Tissue grown to a rule: veins that branch by exact ratios, membranes parted into cells, seeds at the golden angle, chambers along a logarithmic spiral.', 'Grown hulls whose chambers wind out along one spiral, each sealed behind a new septum as the ship grows.'],
-  shapes: 'Chambered keys (a shell section seen flat, its open chamber the key\'s face), Voronoi membrane at the corners, fibres along the edges, L-system veins, golden-angle seed discs.',
-  light: 'Lit from within: the veins carry the Axiom\'s gold and the seeds its cyan through translucent plum membrane under a wet sheen.',
-  motion: 'Hover lights a key\'s veins and septa; pressed, its chambers fill with light and the label sinks a pixel; the membrane stays put.',
-  type: '"Fraunces", a soft serif on a strict grid, for keys and titles over "Jura" numbers.',
-  palette: [['Membrane', PH.membrane, 'Every frame, key bodies', 'The Brood\'s one body, still growing'], ['Cell wall', PH.wall, 'Walls between cells, rims', 'The rule that parts growth into order'],
-    ['Pith', PH.pith, 'Text, arrows', 'The settled core: what the growth has proven'], ['Rule gold', PH.gold, 'Veins, titles, icons', 'Convergence: a rule that settles'],
-    ['Seed cyan', PH.cyan, 'Lit seeds and cells, readouts', 'Iteration: growth counted step by step'], ['Divergence', PH.magenta, 'Alerts only', 'Growth that obeys no rule']],
+  world: ['One collective that grows by taking in ships, stations and crews; nothing is decorated, everything is function, and nothing taken is thrown away.',
+    'Provisional and the owner\'s to set; the design draws on none of it. Three traditions shape its things: the assimilators, the conduit-keepers, the reef.',
+    'Machinery kept running long past any refit: whatever is taken is bolted on as found, power runs in sheathed veins of cable and fluid line, and the growth it has absorbed is left to accrete in layers.',
+    'Hulks of joined hulls under barnacle, coral and cable, like wrecks that have lain on a sea floor and still run.'],
+  shapes: 'Hatch keys (a steel access hatch on a hinge, a dog latch, four bolts, a lit slot), riveted plate with patches bolted on, barnacles, brain and branching coral, tube worms, cabled tendrils, sheathed veins.',
+  light: 'A hard work light from the upper left over chipped paint, rust and salt; the only glow is the cold lumen in the slots, the veins and the lenses.',
+  motion: 'Hover lights a hatch\'s slot; pressed, the hatch sinks a pixel and its slot flares; the growth on it never moves.',
+  type: '"Allerta Stencil", a stencilled sans, for keys and titles, over "Chivo Mono" for labels and numbers.',
+  palette: [['Hull steel', EX.steel, 'Frames, keys, plates', 'The assimilators: nothing decorated, the plate as it was taken'], ['Rust', EX.rust, 'Wear, chips, runs', 'Kept running long past any refit'],
+    ['Reef coral', EX.coral, 'Coral, tube worm plumes', 'The reef: growth tolerated and built on, in layers'], ['Barnacle bone', EX.bone, 'Text, barnacles, labels', 'What has settled and stays'],
+    ['Lumen', EX.lumen, 'Lit slots, veins, readouts, icons', 'The conduit-keepers: power carried where it is needed, no further'], ['Breach', EX.breach, 'Alerts only', 'The hull open to the sea']],
 });
 })();
