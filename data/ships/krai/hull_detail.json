@@ -131,7 +131,8 @@
       "groove": false
     },
     "strip_rim_k": 0.0,
-    "ao_floor": 0.5
+    "ao_floor": 0.5,
+    "area_mask": true
   },
   "defaults": {
     "cuts": "rows",

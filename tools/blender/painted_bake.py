@@ -438,6 +438,13 @@ def paint_and_write(slug, D, S, ps):
     K.save_png(os.path.join(ships_out(), f"{slug}_base.png"), pbr)
     K.save_png(os.path.join(ships_out(), f"{slug}_orm.png"), orm)
     K.save_png(os.path.join(ships_out(), f"{slug}_light.png"), lmap)
+    if PT.get("area_mask"):   # which surface a texel is (owner, 2026-11-07: "diffrent detail maps should be used for different
+        # "hull area", smooth armor plating layer vs sub hull layer"): red the plating (armour, accent), green the hull
+        # beneath it (sub-armour, the under layer, machinery, greebles, vents), from the bake's own kinds, at half size
+        _, _, _, is_ = classify(data, cover)
+        plate = (is_("armour") | is_("accent")).astype(np.float32)
+        under = np.any([is_(k) for k in ("sub", "under", "greeble", "machine", "slat", "vent")], axis=0).astype(np.float32)
+        K.save_png(os.path.join(ships_out(), f"{slug}_mask.png"), half(np.dstack([plate, under, np.zeros_like(plate)])))
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
 
 
@@ -451,7 +458,7 @@ def repaint_main(slugs):
     for slug in slugs:
         ps = dict(np.load(passes_path(slug)))
         paint_and_write(slug, D, D["ships"][slug], ps)
-        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):
+        for m in [m for m in MAPS if m != "mask" or PT.get("area_mask")]:
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}
         print(f"repainted {slug}", flush=True)
@@ -461,6 +468,7 @@ def repaint_main(slugs):
 
 
 EMBLEMS = os.path.join(ROOT, "assets", "emblems")
+MAPS = ("albedo", "ao", "emit", "normal", "base", "orm", "light", "mask")   # "mask" only where the paint has area_mask
 # The paint and the PBR by what a texel is (hull_detail.KIND) are the faction's, in its hull_detail.json "paint": the
 # armour's palette (by plate id) and its accent, the sub-armour's, the under layer, greebles, domes, slats, vents, glass,
 # liveries, the ink in the deepest cavities, the lit edges, how a light strip is lit ("centre": a lit line strip_m wide on
@@ -795,7 +803,7 @@ def ship_main(slugs, px, samples, panes_only=False):
         n = int(open(os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
-        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)
+        for m in [m for m in MAPS if m != "mask" or PT.get("area_mask")]:   # the AO is kept beside, not inlined (it is in the ORM)
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}
         print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)

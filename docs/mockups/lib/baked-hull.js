@@ -31,9 +31,13 @@ uniform sampler2D uHullLight; uniform float uLightK; uniform float uSelf;`;
 // wrapping lattice, small pits and short scratches mostly fore and aft. Its albedo shades the paint a little, its normal
 // map roughens the light a little; both are projected from three sides in ship space (lib/ship-skin.js GLSL.detail).
 const DETAIL_M = 2.5;
-const DETAIL = (() => {
-  const N = 512, rnd = SK.mulberry(9157), h = new Float32Array(N * N);
-  for (const [cells, amp] of [[6, 0.45], [24, 0.3], [96, 0.18]]) {
+// Two tiles from the one generator (owner, 2026-11-07: "diffrent detail maps should be used for different "hull area",
+// smooth armor plating layer vs sub hull layer"): 'plate', the smooth armour: a faint mottle, few pits, fine scratches;
+// 'under', the hull beneath it, its seams and machinery: coarse grain, many pits, grime. The bake's mask map says which
+// a texel is (painted_bake.py area_mask: red the plating, green the hull beneath).
+function detailTile(o) {
+  const N = 512, rnd = SK.mulberry(o.seed), h = new Float32Array(N * N);
+  for (const [cells, amp] of o.octaves) {
     const L = Array.from({ length: cells * cells }, () => rnd()), at = (i, j) => L[((j % cells) * cells) + (i % cells)];
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
       const u = x / N * cells, v = y / N * cells, i = Math.floor(u), j = Math.floor(v), fu = u - i, fv = v - j;
@@ -43,43 +47,60 @@ const DETAIL = (() => {
   }
   const dent = (cx, cy, r, d) => { for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) { const q = (x * x + y * y) / (r * r);
     if (q < 1) { const i = ((cy + y + N) % N) * N + ((cx + x + N) % N); h[i] -= d * (1 - q); } } };
-  for (let k = 0; k < 220; k++) dent(Math.floor(rnd() * N), Math.floor(rnd() * N), 1 + Math.floor(rnd() * 3), 0.35);   // pits
-  for (let k = 0; k < 160; k++) {   // short scratches, mostly along u (fore and aft)
+  for (let k = 0; k < o.pits; k++) dent(Math.floor(rnd() * N), Math.floor(rnd() * N), 1 + Math.floor(rnd() * o.pitR), o.pitD);
+  for (let k = 0; k < o.scratches; k++) {   // short scratches, mostly along u (fore and aft)
     let x = rnd() * N, y = rnd() * N; const a = (rnd() - 0.5) * 0.6, len = 8 + rnd() * 50;
-    for (let t = 0; t < len; t++) { x += Math.cos(a); y += Math.sin(a); const i = ((Math.floor(y) + N) % N) * N + ((Math.floor(x) + N) % N); h[i] -= 0.22; }
+    for (let t = 0; t < len; t++) { x += Math.cos(a); y += Math.sin(a); const i = ((Math.floor(y) + N) % N) * N + ((Math.floor(x) + N) % N); h[i] -= o.scratchD; }
   }
   let mean = 0; for (const v of h) mean += v; mean /= h.length;
   const ca = document.createElement('canvas'), cn = document.createElement('canvas'); ca.width = cn.width = ca.height = cn.height = N;
   const A = ca.getContext('2d').createImageData(N, N), Nm = cn.getContext('2d').createImageData(N, N);
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const i = y * N + x, g = Math.max(0, Math.min(255, 128 + (h[i] - mean) * 260));
+    const i = y * N + x, g = Math.max(0, Math.min(255, 128 + (h[i] - mean) * o.contrast));
     const dx = h[y * N + (x + 1) % N] - h[y * N + (x + N - 1) % N], dy = h[((y + 1) % N) * N + x] - h[((y + N - 1) % N) * N + x];
-    const nx = -dx * 3, ny = -dy * 3, l = Math.hypot(nx, ny, 1);
+    const nx = -dx * o.bump, ny = -dy * o.bump, l = Math.hypot(nx, ny, 1);
     A.data.set([g, g, g, 255], i * 4); Nm.data.set([(nx / l * 0.5 + 0.5) * 255, (ny / l * 0.5 + 0.5) * 255, (1 / l * 0.5 + 0.5) * 255, 255], i * 4);
   }
   ca.getContext('2d').putImageData(A, 0, 0); cn.getContext('2d').putImageData(Nm, 0, 0);
   const tex = (c) => { const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t; };
   return { albedo: tex(ca), normal: tex(cn) };
-})();
-const DETAIL_GLSL = `
-uniform sampler2D uDetA; uniform sampler2D uDetN; uniform vec2 uDetK;
+}
+const DETAIL = {
+  plate: detailTile({ seed: 9157, octaves: [[6, 0.4], [24, 0.2], [96, 0.08]], pits: 60, pitR: 2, pitD: 0.25, scratches: 90, scratchD: 0.12, contrast: 200, bump: 2.2 }),
+  under: detailTile({ seed: 4421, octaves: [[8, 0.5], [32, 0.4], [128, 0.35]], pits: 420, pitR: 3, pitD: 0.45, scratches: 220, scratchD: 0.3, contrast: 300, bump: 4.0 }),
+};
+// The tri-planar sampling is lib/ship-skin.js's (GLSL.detail), once a tile: the second copy only renamed.
+const TRI_PLATE = SK.GLSL.detail(DETAIL_M, DETAIL_M);
+const TRI_UNDER = TRI_PLATE.replace(/uDetA/g, 'uDetA2').replace(/uDetN/g, 'uDetN2').replace(/detailA\(/g, 'detailA2(')
+  .replace(/detailN\(/g, 'detailN2(').replace(/detW\(/g, 'detW2(');
+const DETAIL_GLSL = (masked) => `
+uniform sampler2D uDetA; uniform sampler2D uDetN; uniform sampler2D uDetA2; uniform sampler2D uDetN2; uniform vec2 uDetK;
+uniform sampler2D uArea; uniform float uAreaOn; uniform float uAreaFixed;
 varying vec3 vNObj; varying vec3 vMV0; varying vec3 vMV1; varying vec3 vMV2;
-${SK.GLSL.detail(DETAIL_M, DETAIL_M)}`;
-// Lays the detail layer into a material's shader (its own onBeforeCompile keeps running first).
-function detailInto(s2) {
-  Object.assign(s2.uniforms, { uDetA: { value: DETAIL.albedo }, uDetN: { value: DETAIL.normal }, uDetK: U.detK });
+${TRI_PLATE}
+${TRI_UNDER}
+float plateW(vec2 uv){ return ${masked ? 'texture2D(uArea, uv).r' : 'uAreaFixed'}; }   // 1 the smooth plating, 0 the hull beneath`;
+// Lays the detail layer into a material's shader (its own onBeforeCompile keeps running first). area: the mask map
+// (a baked hull) or a fixed share of plate (1 smooth, 0 the sub-hull's grain: the model's machinery parts).
+function detailInto(s2, area) {
+  const UVX = area.map ? 'vUv' : 'vec2(0.0)';   // a part with no UVs (the model's own pieces) takes its fixed share
+  Object.assign(s2.uniforms, { uDetA: { value: DETAIL.plate.albedo }, uDetN: { value: DETAIL.plate.normal }, uDetA2: { value: DETAIL.under.albedo },
+    uDetN2: { value: DETAIL.under.normal }, uDetK: U.detK, uArea: { value: area.map || null }, uAreaOn: { value: area.map ? 1 : 0 },
+    uAreaFixed: { value: area.fixed ?? 0 } });
   s2.vertexShader = s2.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vNObj; varying vec3 vMV0; varying vec3 vMV1; varying vec3 vMV2; varying vec3 vPObj;')
     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvNObj = normal; vPObj = position; vMV0 = (modelViewMatrix*vec4(1.0, 0.0, 0.0, 0.0)).xyz; vMV1 = (modelViewMatrix*vec4(0.0, 1.0, 0.0, 0.0)).xyz; vMV2 = (modelViewMatrix*vec4(0.0, 0.0, 1.0, 0.0)).xyz;');
-  s2.fragmentShader = s2.fragmentShader.replace('#include <common>', '#include <common>\n' + DETAIL_GLSL + '\nvarying vec3 vPObj;')
+  s2.fragmentShader = s2.fragmentShader.replace('#include <common>', '#include <common>\n' + DETAIL_GLSL(!!area.map) + '\nvarying vec3 vPObj;')
     .replace('#include <map_fragment>', `#include <map_fragment>
-      diffuseColor.rgb *= 1.0 + (detailA(vPObj, normalize(vNObj)) - 0.5)*uDetK.x;`)
+      { float pw = plateW(${UVX}); vec3 nO = normalize(vNObj);
+        diffuseColor.rgb *= 1.0 + (mix(detailA2(vPObj, nO), detailA(vPObj, nO), pw) - 0.5)*uDetK.x; }`)
     .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-      { vec3 nO = normalize(vNObj); vec3 dO = detailN(vPObj, nO, uDetK.y) - nO;
+      { float pw = plateW(${UVX}); vec3 nO = normalize(vNObj);
+        vec3 dO = mix(detailN2(vPObj, nO, uDetK.y*1.3), detailN(vPObj, nO, uDetK.y*0.6), pw) - nO;
         normal = normalize(normal + mat3(normalize(vMV0), normalize(vMV1), normalize(vMV2))*dO); }`);
 }
-function withDetail(mat, key) {
+function withDetail(mat, key, area = { fixed: 0 }) {
   const prev = mat.onBeforeCompile;
-  mat.onBeforeCompile = (s2, r) => { if (prev) prev.call(mat, s2, r); detailInto(s2); };
+  mat.onBeforeCompile = (s2, r) => { if (prev) prev.call(mat, s2, r); detailInto(s2, area); };
   const pk = mat.customProgramCacheKey ? mat.customProgramCacheKey.bind(mat) : () => '';
   mat.customProgramCacheKey = () => pk() + '|detail|' + key; return mat; }
 // The panes: every window and bay is a quad of its own, laid on the hull at the place the bake cut for it
@@ -165,10 +186,11 @@ const dmgUniforms = () => ({ uHoles: { value: Array.from({ length: 24 }, () => n
   uScorch: { value: Array.from({ length: 24 }, () => new THREE.Vector4()) }, uScorchHeat: { value: new Array(24).fill(0) }, uScorchCount: { value: 0 }, uTime: SFX.sharedTime, uParallax: { value: 1 } });
 // A hull material in both looks over one set of break uniforms; M: the ship's maps.
 function hullLooks(M, u) {
-  const looks = { painted: hullShader(new THREE.MeshStandardMaterial({ map: M.albedo, emissiveMap: M.em, emissive: 0xffffff, normalMap: M.nm, roughness: 0.72, metalness: 0.15, envMapIntensity: 0 }), M.lt, M.g, U.selfP, 'painted-' + M.slug, M.dU, u),
+  const looks = { painted: hullShader(new THREE.MeshStandardMaterial({ map: M.albedo, emissiveMap: M.em, emissive: 0xffffff, normalMap: M.nm,
+      roughnessMap: M.orm, roughness: 0.9, metalness: 0.15, envMapIntensity: 0 }), M.lt, M.g, U.selfP, 'painted-' + M.slug, M.dU, u),   // the bake's roughness in the painted look too
     pbr: hullShader(new THREE.MeshStandardMaterial({ map: M.base, normalMap: M.nm, roughnessMap: M.orm, metalnessMap: M.orm, aoMap: M.orm, roughness: 1, metalness: 1,
       emissiveMap: M.em, emissive: 0xffffff, envMapIntensity: env() }), M.lt, M.g, U.none, 'pbr-' + M.slug, M.dU, u) };
-  for (const [k, m] of Object.entries(looks)) { withDetail(m, k + '-' + M.slug); m.userData.u = u; m.userData.looks = looks; }
+  for (const [k, m] of Object.entries(looks)) { withDetail(m, k + '-' + M.slug, M.mask ? { map: M.mask } : { fixed: 1 }); m.userData.u = u; m.userData.looks = looks; }
   return looks; }
 return { hullLooks, hullShader, paneMesh, dmgUniforms, PANE_KIND, withDetail, DETAIL };
 };
