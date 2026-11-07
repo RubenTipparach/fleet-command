@@ -781,6 +781,22 @@ def mirror_cuts(cuts):
     return {"plan": cuts["plan"] + [((-c[0][0], c[0][1]), (-c[1][0], c[1][1]), *c[2:]) for c in cuts["plan"]], "side": cuts["side"]}
 
 
+def soften(o, width, segments=2, angle_deg=30):
+    """Round an object's edges with a real bevel (owner, 2026-11-07: "very little hard angles. Chamfer/bevel avoid
+    90degree in the extrustion of shapes and the shape of hull.plating"): every edge turning more than angle_deg
+    degrees, width metres, clamped where the bevels would meet."""
+    apply_mod(o, "BEVEL", width=width, segments=segments, limit_method="ANGLE", angle_limit=math.radians(angle_deg),
+              use_clamp_overlap=True)
+
+
+def softened_form(lo, width):
+    """A copy of the low-poly hull with its chines rounded (D['soft']['chine_m']): the plating and the under layer are
+    laid over it, so the plates bend round the hull's corners; the bake carries the rounding onto the faceted hull."""
+    f = lo.copy(); f.data = lo.data.copy(); bpy.context.scene.collection.objects.link(f)
+    soften(f, width, segments=3)
+    return f
+
+
 def build_armour(lo, D, S, rng, holes, mats, layer):
     """One layer of armour plates. layer 'primary': thick, cut by the ship's gap lines (most gaps narrow, some wide
     trenches), the data's exposed areas and the features' holes, and each plate then raised by its own amount so it
@@ -827,6 +843,10 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
                 lift = nrm.normalized() * (D["lift_m"] * ((r * 7.0) % 1.0))
                 for v in o.data.vertices:
                     v.co += lift
+    if D.get("soft"):   # every plate's edges rolled, its seams soft-shouldered
+        w = D["soft"]["plate_m"] * (1.0 if primary else 0.5)
+        for o in plates:
+            soften(o, w)
     if primary:
         plates += [ov for o in list(plates) if (ov := overlay(o, D, mats)) is not None]
         if D.get("rivets"):   # bolt holes and slots indented into the plate (owner: "I think indents might be better")
@@ -1234,7 +1254,7 @@ def scatter_kit(lo, S, D, surf, rng, taken):
             if in_exposed(q, S) or any((q - c).length < rad + rc + gap for c, rc in taken):
                 continue
             M = frame_at(q, p.normal, False)
-            if not fits(surf, M, w, h, 0.25):
+            if not fits(surf, M, w, h, 0.25 + D.get("soft", {}).get("chine_m", 0.0)):   # clear of a rounded chine too
                 continue
             taken.append((q.copy(), rad))
             if not centre:
@@ -1309,8 +1329,10 @@ def build(lo, S, D, seed):
     mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "accent", "dome", "slat", "vent")}
     lamps = {c: kind_material("lamp", c) for c in LAMP_RGB}
     surf = Surface(lo)
-    under = lo.copy(); under.data = lo.data.copy(); bpy.context.scene.collection.objects.link(under)
-    strip = [lo.data.materials[p.material_index].name.startswith("lo_glow") for p in lo.data.polygons]
+    SOFT = D.get("soft")
+    form = softened_form(lo, SOFT["chine_m"]) if SOFT else lo   # the shape the plating is laid over
+    under = form.copy(); under.data = form.data.copy(); bpy.context.scene.collection.objects.link(under)
+    strip = [form.data.materials[p.material_index].name.startswith("lo_glow") for p in form.data.polygons]
     under.data.materials.clear()  # (this zeroes every face's material index, so the strips were read off the hull first)
     under.data.materials.append(mats["under"]); under.data.materials.append(kind_material("strip", "strip"))
     for p, st in zip(under.data.polygons, strip):
@@ -1384,9 +1406,9 @@ def build(lo, S, D, seed):
         feats += kf
         holes.extend(obj_from(c, "hole", mats["armour"]) for c in kc)
     t0 = time.time()
-    armour = build_armour(lo, D, S, rng, holes, mats, "primary")
+    armour = build_armour(form, D, S, rng, holes, mats, "primary")
     print(f"  primary armour: {len(armour)} plates, {time.time() - t0:.0f} s", flush=True)
-    sub = build_armour(lo, D, S, random.Random(seed * 31 + 7), holes, mats, "sub")
+    sub = build_armour(form, D, S, random.Random(seed * 31 + 7), holes, mats, "sub")
     hole_bvh = bvh_of(holes)
     for h in holes:
         bpy.data.objects.remove(h)
@@ -1396,6 +1418,8 @@ def build(lo, S, D, seed):
             bm, kind = part[0], part[1]
             if kind.startswith("armour_"):
                 o = obj_from(bm, kind, mats["armour"], rid_of(loc, salt=part[2]))
+                if SOFT and kind != "armour_collar" and kind != "armour_strap":
+                    soften(o, SOFT["plate_m"] * 0.6)
                 if kind == "armour_holed":
                     inner = obj_from(part[3], "holes_in", mats["armour"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
                 if kind == "armour_collar":
@@ -1406,11 +1430,16 @@ def build(lo, S, D, seed):
             elif kind == "accent_holed":
                 o = obj_from(bm, kind, mats["accent"], rid_of(loc, salt=part[2]))
                 inner = obj_from(part[3], "holes_in", mats["accent"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
+                if SOFT:
+                    soften(o, SOFT["plate_m"] * 0.5)
                 high.append(o)
             elif kind.startswith("lamp:"):
                 high.append(obj_from(bm, "lamp", lamps[kind[5:]], 0.5))
             else:
-                high.append(obj_from(bm, kind, mats[kind], rid_of(loc, salt=i * 0.37)))
+                o = obj_from(bm, kind, mats[kind], rid_of(loc, salt=i * 0.37))
+                if SOFT and kind == "accent":
+                    soften(o, SOFT["plate_m"] * 0.5)
+                high.append(o)
     if D.get("well_cell_m"):
         for parts, loc in well_modules(lo, S, D):
             for i, part in enumerate(parts):
@@ -1421,6 +1450,8 @@ def build(lo, S, D, seed):
     if gb:
         high.append(obj_from(merge(gb), "greebles", mats["greeble"], 0.0))
         set_greeble_rids(high[-1])
+    if form is not lo:
+        bpy.data.objects.remove(form)
     return within_hull(lo, high)
 
 

@@ -932,6 +932,8 @@ const SHIPS = {
     designs: [
       { slug: 'petrel_c1', k: 'C1', name: 'Survey white', tr: 'The explorers: the Survey Service, a ship that goes first and must be seen and known',
         d: 'A clean off-white hull: large panels between the ship’s own bulkheads, split into sub panels at their own heights, every edge chamfered to catch the light; plates in several off-whites and pale greys, a few in copper; escape hatches and access panels set into the plating, vents, lit blue slots, small ports, grooves, thruster quads, copper modules, missile and bomb tubes, each with its warning marks; pill-shaped bolt wells at the plates’ corners; ordered machinery in the opened service bays; teal ring bands with deep blue pins; its name and number; light wear, chips on the edges, grime in the seams.', sw: ['#e7e5df', '#c9cbcd', '#b5643a', '#1f8f8a', '#c3342b'] },
+      { slug: 'petrel_c1s', k: 'C1S', name: 'Survey white, soft', tr: 'The explorers, as C1, with very little hard angle anywhere',
+        d: 'C1 with no 90-degree edges: every plate’s edge rolled 0.1 m, the hatches, modules and launchers bevelled, and the plating laid over the hull with its chines rounded 0.6 m, so the plates bend round its corners.', sw: ['#e7e5df', '#c9cbcd', '#b5643a', '#1f8f8a', '#c3342b'] },
       { slug: 'petrel_c2', k: 'C2', name: 'Many yards', tr: 'The member worlds’ yards: a federation that decides by consent builds a ship by consent, a section from each world',
         d: 'Four sections bow to stern, each plate taking its yard’s white (pearl, bone, cool white, sand), joined by Accord green treaty seams (green is “agreed”) with Deep pins.', sw: ['#e4e2dc', '#ddd6c6', '#dfe5ea', '#e2d9c8', '#2fbf5a'] },
       { slug: 'petrel_c3', k: 'C3', name: 'Envoy sash', tr: 'The mediators: the Concord’s envoys, whose ships arrive to talk; ceremonial density',
@@ -1077,7 +1079,7 @@ function cards() {
     c.onclick = () => { STATE.design = i + 1; STATE.compare = false; refresh(); }; host.append(c);
   });
 }
-function showOnly(key, idx) {   // idx: the design to draw (1-5)
+function showOnly(key, idx) {   // idx: the design to draw (1 on)
   for (const [k, B] of Object.entries(BUILT)) { B.root.visible = k === key; B.designs.forEach((d, i) => { if (d) d.g.visible = k === key && i === idx - 1; }); }
 }
 function refresh() {
@@ -1102,7 +1104,8 @@ function setNight(on) { STATE.night = night = on; hemi.intensity = on ? 0.025 : 
   U.lightK.value = on ? 4.5 : 0.3; U.selfP.value = on ? 0.06 : 0.55; U.frameK.value = on ? 0.3 : 1.0; scene.background.set(on ? 0x010203 : 0x05070a);
   for (const B of Object.values(BUILT)) for (const d of B.designs) if (d) d.looks.pbr.envMapIntensity = on ? 0.06 : 0.5; }
 function grid() { const w = stage.clientWidth, h = stage.clientHeight, portrait = h > w * 1.1, cols = portrait ? 2 : (w > 1300 ? 3 : 2);
-  return { w, h, cols, rows: Math.ceil(5 / cols) }; }
+  return { w, h, cols, rows: Math.ceil(shownIdx().length / cols) }; }
+function shownIdx() { const B = BUILT[STATE.ship]; const out = []; if (B) B.designs.forEach((d, i) => { if (d) out.push(i); }); return out.length ? out : [0]; }
 function cellAspect() { const g = grid(); return STATE.compare ? (g.w / g.cols) / (g.h / g.rows) : g.w / Math.max(1, g.h); }
 function frame() {
   const B = BUILT[STATE.ship]; if (!B) return;
@@ -1133,12 +1136,13 @@ function render() {
   const cw = w / cols, ch = h / rows;
   renderer.setScissorTest(true); renderer.setScissor(0, 0, w, h); renderer.setViewport(0, 0, w, h); renderer.setClearColor(scene.background); renderer.clear();
   camera.aspect = cw / ch; camera.updateProjectionMatrix();
-  for (let i = 0; i < 5; i++) {
-    const cx = (i % cols) * cw, cy = h - (Math.floor(i / cols) + 1) * ch;
+  const idx = shownIdx();
+  for (let j = 0; j < idx.length; j++) {
+    const i = idx[j], cx = (j % cols) * cw, cy = h - (Math.floor(j / cols) + 1) * ch;
     renderer.setViewport(cx, cy, cw, ch); renderer.setScissor(cx, cy, cw, ch);
     showOnly(STATE.ship, i + 1); renderer.render(scene, camera);
     const D = SHIPS[STATE.ship].designs[i];
-    const top = Math.floor(i / cols) === 0 ? document.getElementById('head').offsetHeight + 6 : h - cy - ch + 4;   // the first row's labels clear the header
+    const top = Math.floor(j / cols) === 0 ? document.getElementById('head').offsetHeight + 6 : h - cy - ch + 4;   // the first row's labels clear the header
     labels.append(el('div', { className: 'label', textContent: D.k + ' ' + D.name, style: `left:${cx + 6}px; top:${top}px` }));
   }
   renderer.setScissorTest(false);
@@ -1158,11 +1162,11 @@ loadGlbs().then((G) => {
     return syncMaps().then(() => { render(); }); };
   const S = {};
   for (const ship of ['concord', 'krai']) {
-    const p = ship === 'concord' ? 'c' : 'k';
-    for (let i = 1; i <= 5; i++) {
-      S[p + i] = shot(ship, i, false, 'painted'); S[p + i + '_pbr'] = shot(ship, i, false, 'pbr'); S[p + i + '_night'] = shot(ship, i, true, 'pbr');
-      S[p + i + '_close'] = shot(ship, i, false, 'painted', false, 'close');
-    }
+    SHIPS[ship].designs.forEach((D, j) => {
+      const i = j + 1, k = D.k.toLowerCase();
+      S[k] = shot(ship, i, false, 'painted'); S[k + '_pbr'] = shot(ship, i, false, 'pbr'); S[k + '_night'] = shot(ship, i, true, 'pbr');
+      S[k + '_close'] = shot(ship, i, false, 'painted', false, 'close');
+    });
     S[ship + '_all'] = shot(ship, 1, false, 'painted', true); S[ship + '_all_pbr'] = shot(ship, 1, false, 'pbr', true); S[ship + '_all_night'] = shot(ship, 1, true, 'pbr', true);
     S[ship + '_all_side'] = shot(ship, 1, false, 'painted', true, 'side');
   }

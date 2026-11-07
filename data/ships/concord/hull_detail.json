@@ -495,6 +495,89 @@
         ]
       }
     },
+    "petrel_c1s": {
+      "mesh": "petrel",
+      "story": "petrel",
+      "seed": 101,
+      "_tradition": "C1 Survey white, soft (owner, 2026-11-07: \"another version with very little hard angles. Chamfer/bevel avoid 90degree in the extrustion of shapes and the shape of hull.plating\"): C1 with every plate's edge rolled, the kit's pieces bevelled, and the plating laid over the hull with its chines rounded",
+      "liveries": [
+        {
+          "band_z_m": [
+            29.85,
+            31.05
+          ],
+          "colour": "#1f8f8a",
+          "pin": "#24486e",
+          "pin_m": 0.14
+        },
+        {
+          "band_z_m": [
+            -11.15,
+            -9.95
+          ],
+          "colour": "#1f8f8a",
+          "pin": "#24486e",
+          "pin_m": 0.14
+        }
+      ],
+      "wear": {
+        "amount": 0.6
+      },
+      "decals": [
+        {
+          "face": "port",
+          "at": [
+            24.0,
+            1.2
+          ],
+          "kind": "text",
+          "text": "PETREL",
+          "colour": "name",
+          "w_m": 6.0,
+          "h_m": 0.9
+        },
+        {
+          "face": "top",
+          "at": [
+            6.5,
+            20.0
+          ],
+          "kind": "text",
+          "text": "CS 214",
+          "colour": "name",
+          "w_m": 4.5,
+          "h_m": 1.1,
+          "turn": 90
+        },
+        {
+          "face": "port",
+          "at": [
+            -20.0,
+            1.6
+          ],
+          "kind": "band",
+          "colour": [
+            "#c3342b",
+            "#f1f0ec"
+          ],
+          "w_m": 5.0,
+          "h_m": 0.3
+        }
+      ],
+      "detail": {
+        "rings_z_m": [
+          29.85,
+          31.05,
+          -11.15,
+          -9.95
+        ],
+        "soft": {
+          "chine_m": 0.6,
+          "plate_m": 0.1
+        },
+        "chine_deg": 90
+      }
+    },
     "petrel_c2": {
       "mesh": "petrel",
       "story": "petrel",
