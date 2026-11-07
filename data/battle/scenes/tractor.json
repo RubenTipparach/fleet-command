@@ -1,5 +1,5 @@
 {
- "_doc": "The battle console mockup's test scenes for the tractor beam, mines and craft (docs/mockups/battle-console.html SCENES: tractor, mines, shuttle, fighters; owner, 2026-11-01: \"I also want different test scenes\"), in the format of data/battle/scenarios.json, appended to its list in menu order, from both sides with approved ships only. armed: false strips the player's ship of weapons and lethal makes the scene's tool decisive (owner, 2026-11-02: \"In mine scene, no weapons on my player ship please, enemies should be destroyed by one mine, same with other missions in this demo\"); rocks are asteroids (metres); kit, power_e and sys_hp are a ship's own mines and craft, energy boxes and subsystem health (the mockup's setup()). Placed at the mockup's positions, its 100 m unit in metres. The mockup's station target (Varn Outpost) is the largest approved hull, and its Kethran ships the Krai line, until stations are designed. The Fighters scenes' targets are frigates with two point-defence mounts added (extra_mounts), so each has three, as the mockup's Ironhold (a destroyer given three) has; a dreadnought or cruiser out-gunned the mockup's target and melted the player's reactor once the reactor came into the game.",
+ "_doc": "The battle console mockup's test scenes for the tractor beam, mines and craft (docs/mockups/battle-console.html SCENES: tractor, mines, shuttle, fighters; owner, 2026-11-01: \"I also want different test scenes\"), in the format of data/battle/scenarios.json, appended to its list in menu order, from both sides with approved ships only. armed: false strips the player's ship of weapons and lethal makes the scene's tool decisive (owner, 2026-11-02: \"In mine scene, no weapons on my player ship please, enemies should be destroyed by one mine, same with other missions in this demo\"); rocks are asteroids (metres); kit, power_e and sys_hp are a ship's own mines and craft, energy boxes and subsystem health (the mockup's setup()). Placed at the mockup's positions, its 100 m unit in metres. The mockup's station target (Varn Outpost) is the largest approved hull, and its Kethran ships the Krai line, until stations are designed. The Fighters scenes' targets are frigates with two point-defence mounts added (extra_mounts), so each has three, as the mockup's Ironhold (a destroyer given three) has; a dreadnought or cruiser out-gunned the mockup's target and melted the player's reactor once the reactor came into the game. The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own.",
  "scenarios": [
   {
    "id": "concord_tractor",
@@ -370,6 +370,104 @@
    ]
   },
   {
+   "id": "kelvane_tractor",
+   "name": "Tractor",
+   "side": "kelvane",
+   "seed": 20261213,
+   "sky": "institute_umber_vault",
+   "objective": "Hold the Vorrak and drag it into the rocks",
+   "say": [
+    "Tactical",
+    "The Vorrak is astern, a rock between us. Hold it, then run and drag it into the rocks."
+   ],
+   "armed": false,
+   "lethal": [
+    "rock"
+   ],
+   "rocks": [
+    {
+     "x_m": 1000,
+     "z_m": -12000,
+     "radius_m": 2400
+    },
+    {
+     "x_m": -14000,
+     "z_m": -30000,
+     "radius_m": 3000
+    },
+    {
+     "x_m": 13000,
+     "z_m": -36000,
+     "radius_m": 3600
+    },
+    {
+     "x_m": -3000,
+     "z_m": -50000,
+     "radius_m": 2600
+    },
+    {
+     "x_m": 21000,
+     "z_m": -16000,
+     "radius_m": 2200
+    },
+    {
+     "x_m": -22000,
+     "z_m": -12000,
+     "radius_m": 2800
+    },
+    {
+     "x_m": 7000,
+     "z_m": -62000,
+     "radius_m": 4000
+    },
+    {
+     "x_m": -17000,
+     "z_m": -58000,
+     "radius_m": 3100
+    },
+    {
+     "x_m": 26000,
+     "z_m": -48000,
+     "radius_m": 2400
+    }
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 180,
+     "speed_m_s": 0,
+     "power_e": {
+      "weapons": 2,
+      "tractor": 6
+     }
+    },
+    {
+     "id": "vorrak",
+     "name": "Vorrak",
+     "captain": "Warlord Tesk",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 2000,
+     "z_m": -22000,
+     "heading_deg": 90,
+     "speed_m_s": 600,
+     "stance": "hold",
+     "hold_fire": true,
+     "sys_hp": {
+      "tractor": 0.6
+     }
+    }
+   ]
+  },
+  {
    "id": "krai_mines",
    "name": "Mines",
    "side": "krai",
@@ -435,6 +533,71 @@
    ]
   },
   {
+   "id": "kelvane_mines",
+   "name": "Mines",
+   "side": "kelvane",
+   "seed": 20261214,
+   "sky": "institute_cobalt_lantern",
+   "objective": "Destroy both Krai ships with mines beamed into their path",
+   "say": [
+    "Tactical",
+    "Two Krai ships on a scouting run down the lane. Beam mines into their path."
+   ],
+   "armed": false,
+   "lethal": [
+    "mine"
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "kit": {
+      "mines": 8
+     },
+     "power_e": {
+      "weapons": 3,
+      "transport": 3
+     }
+    },
+    {
+     "id": "ashkar",
+     "name": "Ashkar",
+     "captain": "Blade Oru",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -6000,
+     "z_m": -75000,
+     "heading_deg": 178,
+     "speed_m_s": 1600,
+     "stance": "run",
+     "hold_fire": true
+    },
+    {
+     "id": "skarn",
+     "name": "Skarn",
+     "captain": "Blade Vey",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 8000,
+     "z_m": -84000,
+     "heading_deg": 182,
+     "speed_m_s": 1600,
+     "stance": "run",
+     "hold_fire": true
+    }
+   ]
+  },
+  {
    "id": "krai_shuttle",
    "name": "Shuttle",
    "side": "krai",
@@ -471,6 +634,53 @@
      "captain": "Capt. Ardent",
      "class": "ca",
      "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -100000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true
+    }
+   ]
+  },
+  {
+   "id": "kelvane_shuttle",
+   "name": "Shuttle",
+   "side": "kelvane",
+   "seed": 20261215,
+   "sky": "institute_sepia_shelf",
+   "objective": "Destroy the Varn Bastion with a disguised shuttle",
+   "say": [
+    "Flight deck",
+    "Three shuttles fitted out as freighters, charges aboard. Launch them at the Varn Bastion from the Craft page."
+   ],
+   "armed": false,
+   "lethal": [
+    "shuttle"
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "kit": {
+      "shuttles": 3
+     }
+    },
+    {
+     "id": "varn",
+     "name": "Varn Bastion",
+     "captain": "Castellan Dorr",
+     "class": "krai_dn",
+     "faction": "krai",
      "side": 1,
      "x_m": 0,
      "z_m": -100000,
@@ -520,6 +730,66 @@
      "captain": "Capt. Hale",
      "class": "ff",
      "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -60000,
+     "heading_deg": 180,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "extra_mounts": [
+      {
+       "weapon": "pd",
+       "x": -0.3,
+       "y": 0.1
+      },
+      {
+       "weapon": "pd",
+       "x": 0.3,
+       "y": 0.1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kelvane_fighters",
+   "name": "Fighters",
+   "side": "kelvane",
+   "seed": 20261216,
+   "sky": "institute_saffron_arc",
+   "objective": "Strip the Ironhold's point defence with fighters, then destroy it with a missile barrage",
+   "say": [
+    "Flight deck",
+    "The Ironhold has point-defence mounts. Launch fighters on Defences, then fire a missile barrage."
+   ],
+   "armed": false,
+   "lethal": [
+    "barrage"
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "kit": {
+      "fighters": 6,
+      "missiles": 12,
+      "mission": "defences"
+     }
+    },
+    {
+     "id": "ironhold",
+     "name": "Ironhold",
+     "captain": "Warlord Brask",
+     "class": "krai_ff",
+     "faction": "krai",
      "side": 1,
      "x_m": 0,
      "z_m": -60000,

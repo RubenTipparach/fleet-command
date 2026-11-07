@@ -79,3 +79,19 @@ shot institute-carrier-pads 1920x1080 --steps=300 --scenario=concord_range --tar
 shot institute-frigate 1920x1080 --steps=300 --scenario=concord_range --target=t_iff --target-view --zoom=0.3
 shot institute-wrecks 1920x1080 --steps=2400 --scenario=concord_institute_wrecks --target=kw_parallax --target-view --zoom=0.7
 shot kelvane-patience 1920x1080 --steps=600 --scenario=kelvane_battle
+# the Kelvane Institute's console end to end (2026-11-07, owner: "end to end test all kelvane ui systems"): every station
+# expanded, every ship page, the radar and the phone shapes, each in the Institute's own scenes
+for st in helm power tactical pd science comms repair transport fleet; do
+  shot "kelvane-ui-$st" 1920x1080 --steps=600 --scenario=kelvane_battle --station=$st --expand=station
+done
+shot kelvane-ui-vip 1920x1080 --steps=300 --scenario=kelvane_vip --station=transport --expand=station
+shot kelvane-ui-shields 1920x1080 --steps=600 --scenario=kelvane_battle --page=shields --expand=ship
+shot kelvane-ui-sensors 1920x1080 --steps=600 --scenario=kelvane_cloak --page=sensors --expand=ship
+shot kelvane-ui-tractor 1920x1080 --steps=300 --scenario=kelvane_tractor --page=tractor --expand=ship
+shot kelvane-ui-craft 1920x1080 --steps=300 --scenario=kelvane_fighters --page=craft --expand=ship
+shot kelvane-ui-radar 1920x1080 --steps=600 --scenario=kelvane_battle --expand=radar
+shot kelvane-ui-escape 1920x1080 --steps=300 --scenario=kelvane_escape --station=repair
+shot kelvane-phone-landscape 844x390 --steps=600 --scenario=kelvane_battle
+shot kelvane-phone-portrait 390x844 --steps=600 --scenario=kelvane_battle
+shot kelvane-phone-weapons 844x390 --steps=600 --scenario=kelvane_battle --expand=weapons
+shot kelvane-phone-portrait-station 390x844 --steps=600 --scenario=kelvane_battle --station=power --expand=station
