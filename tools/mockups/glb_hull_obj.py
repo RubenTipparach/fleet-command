@@ -9,6 +9,11 @@ mockup ship space (+x port, +y up, +z bow, metres: the glb's half turn about Y u
 export manifest), one object a piece. Plain Python, no Blender; the OBJ is a build intermediate (gitignored).
 
     python3 tools/mockups/glb_hull_obj.py assets/ships/concord/petrel_level.glb petrel paint_hull_2,paint_plain,paint_nacelle 1
+
+With --parts in place of the slug, it prints where each piece of the named materials sits instead (JSON: name, material
+and its box in the same ship space), so the bake's designed pieces can be placed where the model's flat parts are:
+
+    python3 tools/mockups/glb_hull_obj.py assets/ships/concord/swift_level.glb --parts glow_dish,glow_torpedo,glow_grille_2
 """
 import json
 import math
@@ -75,6 +80,21 @@ def main():
             M = mul(mat4(g["nodes"][i]), M)
         return M
     n = sys.argv[4] if len(sys.argv) > 4 else "0"   # painted_bake.py reads the first line's number as the page's ship number
+    if slug == "--parts":   # where the named materials' pieces sit, not an OBJ
+        out = []
+        for i, nd in enumerate(g["nodes"]):
+            if "mesh" not in nd:
+                continue
+            M = world(i)
+            for pr in g["meshes"][nd["mesh"]]["primitives"]:
+                if names[pr.get("material", 0)] not in mats:
+                    continue
+                pts = [[sum(M[r][c] * (list(p) + [1])[c] for c in range(4)) for r in range(3)] for p in accessor(g, bin_, pr["attributes"]["POSITION"])]
+                pts = [(-x + off[0], y + off[1], -z + off[2]) for x, y, z in pts]
+                out.append({"name": nd.get("name"), "material": names[pr.get("material", 0)],
+                            "min": [round(min(p[k] for p in pts), 3) for k in range(3)], "max": [round(max(p[k] for p in pts), 3) for k in range(3)]})
+        print(json.dumps(out))
+        return
     lines = [f"# {n} {entry.get('label') or slug}, ship space (+x port, +y up, +z bow), from {rel} (tools/mockups/glb_hull_obj.py)"]
     base, tris = 1, 0
     for i, nd in enumerate(g["nodes"]):

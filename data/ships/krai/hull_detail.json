@@ -334,6 +334,250 @@
         }
       ],
       "_windows": "From the frigate's room plan (owner, 2026-11-07, of the model's own window strips: \"these windows are not properly implemented\"): one row wherever crew live or work against the hull"
+    },
+    "krai_corvette_k1": {
+      "mesh": "krai_corvette",
+      "seed": 221,
+      "_tradition": "K1 Tempered blade on the corvette: the frigate's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            7.6
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            4.27,
+            5.87
+          ]
+        },
+        {
+          "band_z_m": [
+            -18.15,
+            -16.55
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -4.9
+        ],
+        "size_m": 5.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 9.5
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/corvette_plan.json",
+          "dz_m": 7.48,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers": "quarters",
+            "barracks": "quarters",
+            "mess": "mess",
+            "barracks_2": "quarters",
+            "medbay": "workshop"
+          },
+          "_dz": "The plan's frame to the hull's: its front room's edge plus its nose, less the hull's bow (the frigate's 25.93 m by the same rule)"
+        }
+      ]
+    },
+    "krai_cruiser_k1": {
+      "mesh": "krai_cruiser",
+      "seed": 231,
+      "_tradition": "K1 Tempered blade on the cruiser: the frigate's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            44.8
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            37.37,
+            38.97
+          ]
+        },
+        {
+          "band_z_m": [
+            -22.73,
+            -21.13
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          11.5
+        ],
+        "size_m": 9.3
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 63.6
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/cruiser_plan.json",
+          "dz_m": -9.56,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers": "quarters",
+            "officers_2": "quarters",
+            "officers_3": "quarters",
+            "officers_4": "quarters",
+            "officers_5": "quarters",
+            "officers_6": "quarters",
+            "barracks": "quarters",
+            "mess": "mess",
+            "barracks_2": "quarters",
+            "mess_2": "mess",
+            "barracks_3": "quarters",
+            "mess_3": "mess",
+            "barracks_4": "quarters",
+            "medbay": "workshop",
+            "barracks_5": "quarters",
+            "medbay_2": "workshop",
+            "barracks_6": "quarters",
+            "medbay_3": "workshop",
+            "barracks_7": "quarters",
+            "training_hall": "quarters",
+            "barracks_8": "quarters",
+            "training_hall_2": "quarters",
+            "barracks_9": "quarters",
+            "training_hall_3": "quarters",
+            "barracks_10": "quarters",
+            "barracks_11": "quarters",
+            "barracks_12": "quarters"
+          },
+          "_dz": "The plan's frame to the hull's: its front room's edge plus its nose, less the hull's bow (the frigate's 25.93 m by the same rule)"
+        }
+      ]
+    },
+    "krai_dreadnought_k1": {
+      "mesh": "krai_dreadnought",
+      "seed": 241,
+      "_tradition": "K1 Tempered blade on the dreadnought: the frigate's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            72.2
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            60.19,
+            61.79
+          ]
+        },
+        {
+          "band_z_m": [
+            -40.46,
+            -38.86
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          16.3
+        ],
+        "size_m": 10.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 108.9
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/dreadnought_plan.json",
+          "dz_m": -12.9,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers": "quarters",
+            "wardroom": "quarters",
+            "officers_2": "quarters",
+            "wardroom_2": "quarters",
+            "officers_3": "quarters",
+            "wardroom_3": "quarters",
+            "officers_4": "quarters",
+            "wardroom_4": "quarters",
+            "officers_5": "quarters",
+            "wardroom_5": "quarters",
+            "officers_6": "quarters",
+            "wardroom_6": "quarters",
+            "officers_7": "quarters",
+            "wardroom_7": "quarters",
+            "officers_8": "quarters",
+            "officers_9": "quarters",
+            "officers_10": "quarters",
+            "officers_11": "quarters",
+            "officers_12": "quarters",
+            "officers_13": "quarters",
+            "officers_14": "quarters",
+            "barracks": "quarters",
+            "mess": "mess",
+            "barracks_2": "quarters",
+            "mess_2": "mess",
+            "barracks_3": "quarters",
+            "mess_3": "mess",
+            "barracks_4": "quarters",
+            "mess_4": "mess",
+            "barracks_5": "quarters",
+            "mess_5": "mess",
+            "barracks_6": "quarters",
+            "medbay": "workshop",
+            "barracks_7": "quarters",
+            "medbay_2": "workshop",
+            "barracks_8": "quarters",
+            "medbay_3": "workshop",
+            "barracks_9": "quarters",
+            "medbay_4": "workshop",
+            "barracks_10": "quarters",
+            "medbay_5": "workshop",
+            "barracks_11": "quarters",
+            "training_hall": "quarters",
+            "barracks_12": "quarters",
+            "training_hall_2": "quarters",
+            "barracks_13": "quarters",
+            "training_hall_3": "quarters",
+            "barracks_14": "quarters",
+            "training_hall_4": "quarters",
+            "barracks_15": "quarters",
+            "barracks_16": "quarters",
+            "barracks_17": "quarters",
+            "barracks_18": "quarters"
+          },
+          "_dz": "The plan's frame to the hull's: its front room's edge plus its nose, less the hull's bow (the frigate's 25.93 m by the same rule)"
+        }
+      ]
     }
   }
 }
