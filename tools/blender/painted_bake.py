@@ -704,7 +704,8 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
         mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
         light = np.where(mach, np.maximum(light, PT["machine_light"] * (0.75 + 0.25 * st)), light)
     col = base * light[..., None]
-    col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
+    af = PT.get("ao_floor", 0.22)   # how dark the deepest cavity goes (a plate's rim shadow: owner, of the Krai, "the darker color is too tark")
+    col *= (af + (1 - af) * aoc ** 1.7)[..., None]
     ink = np.clip((0.4 - aoc) / 0.25, 0, 1)
     ik = PT.get("ink_k", 0.75)   # how hard the deepest crevices are inked (the Hunt 0.75; a lighter hand for a clean faction)
     col = col * (1 - ik * ink[..., None]) + hexrgb(PT["ink"]) * (ik * ink[..., None])

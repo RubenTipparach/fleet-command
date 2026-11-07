@@ -109,6 +109,8 @@
       "greeble",
       "machine",
       "slat",
+      "sub",
+      "under",
       "vent"
     ],
     "machine_light": 0.7,
@@ -128,7 +130,8 @@
       "dots_share": 0.3,
       "groove": false
     },
-    "strip_rim_k": 0.0
+    "strip_rim_k": 0.0,
+    "ao_floor": 0.5
   },
   "defaults": {
     "cuts": "rows",

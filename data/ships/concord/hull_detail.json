@@ -15,12 +15,12 @@
     ],
     "accent": "#a9b9c8",
     "sub": [
-      "#b8bdc3",
-      "#c2c6cb",
-      "#aeb4ba",
-      "#c8ccd0"
+      "#c9cdd2",
+      "#d0d4d8",
+      "#c2c7cc",
+      "#d5d8db"
     ],
-    "under": "#9ba2aa",
+    "under": "#b4bac1",
     "greeble": [
       "#6f777f",
       "#a9b0b7"
@@ -31,7 +31,7 @@
     "vent": "#1a1f25",
     "glass": "#132033",
     "livery": "#1f8f8a",
-    "ink": "#3c444d",
+    "ink": "#5a626c",
     "light_edge": "#ffffff",
     "strip": "whole",
     "strip_m": 0.7,
@@ -100,7 +100,7 @@
       0.9,
       1.0
     ],
-    "ink_k": 0.35,
+    "ink_k": 0.15,
     "machine": [
       "#b8bec4",
       "#d5d9dc"
@@ -109,6 +109,8 @@
       "greeble",
       "machine",
       "slat",
+      "sub",
+      "under",
       "vent"
     ],
     "machine_light": 0.7,
@@ -128,7 +130,8 @@
       "dots_share": 0.3,
       "groove": false
     },
-    "strip_rim_k": 0.0
+    "strip_rim_k": 0.0,
+    "ao_floor": 0.6
   },
   "defaults": {
     "cuts": "rows",

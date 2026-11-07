@@ -34,3 +34,6 @@
 - 2026-11-07, cloud session: version 7, version id `1794028003-dbe9`. K1 in staggered rows of plates (about twice as many;
   owner: "a different panneling design on the hull too, with 2x number of panels"), its darks lighter, no inner lines on
   the plates (both ships; C1 repainted).
+- 2026-11-07, cloud session: version 8, version id `1794029978-4709`. C1 in staggered rows of plates too; no windows on
+  the shuttle bay's mouth or the nacelles; the cooling fans clear of the game model's radiators; both ships' seams and
+  rim shadows lighter (the paint's cavity floor, `ao_floor`, now the faction's own).
