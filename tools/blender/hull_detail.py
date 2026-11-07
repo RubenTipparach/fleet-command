@@ -852,6 +852,20 @@ def flat_form(lo):
     return f
 
 
+def edge_of(D, what, t=0.0):
+    """How a piece's edges are made (owner, 2026-11-07, of square steps baked onto a flat hull: "how do you plan on doing
+    normals with hard angles?"): a wall square to the hull covers no texel of the bake and comes out as a hard jump in
+    the normal map, so no step is square. D['chamfer']: a 45-degree chamfer, D['chamfer']['plate_k'] of a plate's
+    thickness t on the plating (its rims, its seams and the edges of every hole cut in it), D['chamfer']['kit_m'] on the
+    kit's pieces; D['soft'] (C1 Soft) rounds them instead. what: 'plate' or 'kit'. Returns (width_m, segments) or None."""
+    if D.get("soft"):
+        return (D["soft"]["plate_m"] * (1.0 if what == "plate" else 0.6), 3)
+    if D.get("chamfer"):
+        C = D["chamfer"]
+        return (C["plate_k"] * t if what == "plate" else C["kit_m"], 1)
+    return None
+
+
 def softened_form(lo, width):
     """A copy of the low-poly hull with its chines rounded (D['soft']['chine_m']): the plating and the under layer are
     laid over it, so the plates bend round the hull's corners; the bake carries the rounding onto the faceted hull."""
@@ -906,10 +920,10 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
                 lift = nrm.normalized() * (D["lift_m"] * ((r * 7.0) % 1.0))
                 for v in o.data.vertices:
                     v.co += lift
-    if D.get("soft"):   # every plate's edges rolled, its seams soft-shouldered
-        w = D["soft"]["plate_m"] * (1.0 if primary else 0.5)
+    ed = edge_of(D, "plate", t)
+    if ed:   # every plate's rims chamfered (or rolled), so its seams and holes bake as slopes, never as square steps
         for o in plates:
-            soften(o, w)
+            soften(o, ed[0] * (1.0 if primary else 0.5), segments=ed[1])
     if primary:
         plates += [ov for o in list(plates) if (ov := overlay(o, D, mats)) is not None]
         if D.get("rivets"):   # bolt holes and slots indented into the plate (owner: "I think indents might be better")
@@ -1401,6 +1415,7 @@ def build(lo, S, D, seed):
     lamps = {c: kind_material("lamp", c) for c in LAMP_RGB}
     surf = Surface(lo)
     SOFT = D.get("soft")
+    KED = edge_of(D, "kit")   # the kit's pieces' edges
     form = softened_form(lo, SOFT["chine_m"]) if SOFT else flat_form(lo)   # the shape the plating is laid over
     under = form.copy(); under.data = form.data.copy(); bpy.context.scene.collection.objects.link(under)
     strip = [form.data.materials[p.material_index].name.startswith("lo_glow") for p in form.data.polygons]
@@ -1489,8 +1504,8 @@ def build(lo, S, D, seed):
             bm, kind = part[0], part[1]
             if kind.startswith("armour_"):
                 o = obj_from(bm, kind, mats["armour"], rid_of(loc, salt=part[2]))
-                if SOFT and kind != "armour_collar" and kind != "armour_strap":
-                    soften(o, SOFT["plate_m"] * 0.6)
+                if KED and kind != "armour_collar" and kind != "armour_strap":
+                    soften(o, KED[0], segments=KED[1])
                 if kind == "armour_holed":
                     inner = obj_from(part[3], "holes_in", mats["armour"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
                 if kind == "armour_collar":
@@ -1501,15 +1516,15 @@ def build(lo, S, D, seed):
             elif kind == "accent_holed":
                 o = obj_from(bm, kind, mats["accent"], rid_of(loc, salt=part[2]))
                 inner = obj_from(part[3], "holes_in", mats["accent"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
-                if SOFT:
-                    soften(o, SOFT["plate_m"] * 0.5)
+                if KED:
+                    soften(o, KED[0], segments=KED[1])
                 high.append(o)
             elif kind.startswith("lamp:"):
                 high.append(obj_from(bm, "lamp", lamps[kind[5:]], 0.5))
             else:
                 o = obj_from(bm, kind, mats[kind], rid_of(loc, salt=i * 0.37))
-                if SOFT and kind == "accent":
-                    soften(o, SOFT["plate_m"] * 0.5)
+                if KED and kind in ("accent", "greeble"):
+                    soften(o, KED[0], segments=KED[1])
                 high.append(o)
     if D.get("well_cell_m"):
         for parts, loc in well_modules(lo, S, D):

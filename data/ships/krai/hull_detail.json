@@ -156,6 +156,10 @@
       "armour": 0.22,
       "accent": 0.15,
       "sub": 0.12
+    },
+    "chamfer": {
+      "plate_k": 0.6,
+      "kit_m": 0.12
     }
   },
   "stories": {

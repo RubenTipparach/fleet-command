@@ -149,7 +149,12 @@
       "accent": 0.1,
       "sub": 0.08
     },
-    "_scale": "The kit at 1.8 times its real size, the seams 0.12-0.22 m and the panels 10 m: drawn at the scale the owner's reference sheets draw them, so they read on an 86 m hull (owner, 2026-11-07: \"the details dont show up well AT ALL\", \"that looks NOTHING like the examples I provided\")"
+    "_scale": "The kit at 1.8 times its real size, the seams 0.12-0.22 m and the panels 10 m: drawn at the scale the owner's reference sheets draw them, so they read on an 86 m hull (owner, 2026-11-07: \"the details dont show up well AT ALL\", \"that looks NOTHING like the examples I provided\")",
+    "chamfer": {
+      "plate_k": 0.8,
+      "kit_m": 0.1
+    },
+    "_chamfer": "No square steps (owner: \"how do you plan on doing normals with hard angles?\"): every plate rim, seam and hole edge chamfered at 45 degrees (0.8 of the plate's thickness), every kit piece's edges 0.1 m, so the bake catches each step as a slope"
   },
   "stories": {
     "petrel": {
