@@ -515,7 +515,7 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     ARMOUR, SUB = PT["armour"], PT["sub"]
     pal = np.stack([hexrgb(c) for c in ARMOUR])
     arm = pal[(rid * len(ARMOUR) * 11).astype(int) % len(ARMOUR)] * (0.9 + 0.2 * ((rid * 37.0) % 1.0))[..., None]
-    arm = np.where((rid > 0.94)[..., None], hexrgb(PT["accent"]), arm)
+    arm = np.where((rid > 1.0 - PT.get("accent_share", 0.06))[..., None], hexrgb(PT["accent"]), arm)   # a share of plates in the accent
     base = np.zeros((h, w, 3), np.float32) + hexrgb(PT["under"])
     base = np.where(kind_is("armour")[..., None], arm, base)
     spal = np.stack([hexrgb(c) for c in SUB])

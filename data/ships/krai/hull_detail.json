@@ -132,7 +132,9 @@
     },
     "strip_rim_k": 0.0,
     "ao_floor": 0.5,
-    "area_mask": true
+    "area_mask": true,
+    "accent_share": 0.025,
+    "_accent_share": "Fewer crimson plates than the Institute's one in sixteen: the Krai's long nacelle plates made a crimson patch of one"
   },
   "defaults": {
     "cuts": "rows",
@@ -356,12 +358,6 @@
             4.27,
             5.87
           ]
-        },
-        {
-          "band_z_m": [
-            -18.15,
-            -16.55
-          ]
         }
       ],
       "logo": {
@@ -391,7 +387,8 @@
           },
           "_dz": "The plan's frame to the hull's: its front room's edge plus its nose, less the hull's bow (the frigate's 25.93 m by the same rule)"
         }
-      ]
+      ],
+      "_liveries": "One band, forward: the corvette's nacelles run its whole aft hull, and a band aft lay along them as a crimson patch"
     },
     "krai_cruiser_k1": {
       "mesh": "krai_cruiser",
