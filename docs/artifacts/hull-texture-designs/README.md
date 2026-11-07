@@ -43,3 +43,7 @@
 - 2026-11-07, cloud session: version 10, version id `1794037122-34b0`. C1 with its bow and stern plated, a broad bake sun
   (no hard cast shadows), more flank floods, the fine detail layer on the hull and the game model's own parts, and room
   boxes that share a face no longer speckling.
+- 2026-11-07, cloud session: version 11, version id `1794040501-8e1b`. K1 with its bow and stern plated (each face grouped
+  by the way it faces most), soft bake light, the model's painted-on marking hidden; both ships with two detail tiles by
+  hull area (an area mask from the bake: smooth on the plating, coarse on the sub-hull) and the roughness map in the
+  painted look.
