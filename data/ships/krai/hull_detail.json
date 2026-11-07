@@ -1,20 +1,175 @@
 {
-  "_doc": "The Krai Warhost's hull texture designs (change hull-texture-designs, mockup 24): the frigate's detail layer and paint, built by tools/blender/hull_detail.py and baked by tools/blender/painted_bake.py --detail data/ships/krai/hull_detail.json --ship krai_k1,... onto the frigate's own UVs. The mesh is the game's model (tools/mockups/glb_hull_obj.py, in its export frame); the room plan (data/ships/krai/frigate_plan.json) sits 25.93 m forward of it. The story (where the ship's rooms put its vents, its boarding bay, its gun and its drives) is shared by every design; a design is its plating, its paint and how it wears. Each design names the tradition it comes from (CLAUDE.md section 1). Nothing round (the Krai cut, they do not turn): vents are slots and chevrons, no domes or fans. The frigate's window slits are the model's own.",
+  "_doc": "The Krai's hull texture designs (change hull-texture-designs, mockup 24), on the Kelvane Institute's method: the Krai frigate's detail layer and paint (tools/blender/painted_bake.py --faction krai --ship krai_k1), baked onto the frigate's own hull from the game's glb (tools/mockups/glb_hull_obj.py). Not in the game until the owner enthusiastically approves.",
   "faction": "krai",
   "out": "assets/ships/krai/baked",
-  "webp_quality": 72,
+  "manifest_doc": "The Krai's hull texture designs (mockup 24), baked: not used by the game.",
+  "paint": {
+    "armour": [
+      "#56637a",
+      "#5e6b82",
+      "#4f5a6e",
+      "#68768d",
+      "#5a6578",
+      "#636d7f",
+      "#535d70"
+    ],
+    "accent": "#8f2b2b",
+    "sub": [
+      "#3b414c",
+      "#434a56",
+      "#353b45",
+      "#474e5a"
+    ],
+    "under": "#7c8592",
+    "greeble": [
+      "#3a3f48",
+      "#6a707a"
+    ],
+    "dome": "#14171c",
+    "dome_glow": 0.0,
+    "slat": "#4a505a",
+    "vent": "#16181c",
+    "glass": "#14171c",
+    "livery": "#8f2b2b",
+    "ink": "#d9d6ce",
+    "light_edge": "#e2d6b8",
+    "strip": "whole",
+    "strip_m": 0.7,
+    "pbr": {
+      "armour": [
+        0.42,
+        0.55
+      ],
+      "sub": [
+        0.5,
+        0.6
+      ],
+      "under": [
+        0.7,
+        0.6
+      ],
+      "greeble": [
+        0.55,
+        0.7
+      ],
+      "dome": [
+        0.08,
+        0.0
+      ],
+      "glass": [
+        0.06,
+        0.0
+      ],
+      "slat": [
+        0.5,
+        0.7
+      ],
+      "vent": [
+        0.9,
+        0.3
+      ],
+      "strip": [
+        0.4,
+        0.0
+      ],
+      "lamp": [
+        0.3,
+        0.0
+      ],
+      "machine": [
+        0.45,
+        0.6
+      ]
+    },
+    "livery_pbr": [
+      0.45,
+      0.1
+    ],
+    "strip_k": 0.5,
+    "strip_inner": 0.12,
+    "strip_rim_px": 7,
+    "strip_cell_m": 1.6,
+    "strip_cell_gap": 0.14,
+    "strip_cell_on": 0.7,
+    "strip_cell_k": 0.55,
+    "greeble_ao_floor": 0.6,
+    "glass_cells_k": 0.45,
+    "glass_cell_m": 0.8,
+    "glass_cells_rgb": [
+      1.0,
+      0.6,
+      0.35
+    ],
+    "ink_k": 0.35,
+    "machine": [
+      "#5c636d",
+      "#868c95"
+    ],
+    "machine_kinds": [
+      "greeble",
+      "machine",
+      "slat",
+      "vent"
+    ],
+    "machine_light": 0.7,
+    "plate_marks": {
+      "groove_inset_m": 0.3,
+      "groove_w_m": 0.08,
+      "groove_k": 0.62,
+      "red": "#8f2b2b",
+      "ink": "#d9d6ce",
+      "dots": [
+        "#8f2b2b",
+        "#d9d6ce",
+        "#c9c3b4"
+      ],
+      "triangle_share": 0.45,
+      "frame_share": 0.4,
+      "dots_share": 0.3
+    },
+    "strip_rim_k": 0.0
+  },
   "defaults": {
-    "cut_style": "panels",
-    "kit_min_m": 1.8,
-    "armour_t_m": 0.55,
-    "sub_t_m": 0.16,
-    "lift_m": 0.16,
+    "cuts": "grid",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+      1.0,
+      0.55,
+      0.3
+    ],
+    "armour_t_m": 0.45,
+    "sub_t_m": 0.12,
+    "lift_m": 0.08,
     "gap_m": [
-      0.07,
-      0.09
+      0.2,
+      0.32
+    ],
+    "trench_m": [
+      0.32,
+      0.32
     ],
     "trench_share": 0.0,
-    "overlay_min_m2": 1000000000.0,
+    "top_station_m": [
+      10.0,
+      18.0
+    ],
+    "spine_half_m": [
+      1.6,
+      3.4
+    ],
+    "flank_station_m": [
+      10.0,
+      18.0
+    ],
+    "flank_rake": [
+      -0.04,
+      0.04
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
     "light_ref": 0.9,
     "pane_frame_m": {
       "window": 0.1,
@@ -31,140 +186,18 @@
       "tilt_deg": 22,
       "power_w": 4800
     },
-    "lamp_rgb": {
-      "flood": [
-        1.0,
-        0.54,
-        0.24
-      ],
-      "bay": [
-        1.0,
-        0.6,
-        0.3
-      ]
-    },
-    "palette": {
-      "ARMOUR": [
-        "#5a6578",
-        "#5e697c",
-        "#56606f",
-        "#636d7f",
-        "#6a7380",
-        "#596273",
-        "#666f7d"
-      ],
-      "SUB": [
-        "#2b303b",
-        "#323844",
-        "#272b34"
-      ],
-      "UNDER": "#2c3038",
-      "GREEBLE": [
-        "#3a3f48",
-        "#6a707a"
-      ],
-      "DOME": "#333333",
-      "SLAT": "#4a505a",
-      "VENT": "#16181c",
-      "LIVERY": "#d9d6ce",
-      "BRONZE": "#8a8f96",
-      "BRONZE_SHARE": 0.04,
-      "INK": "#2a2d33",
-      "LIGHT_EDGE": "#e2d6b8",
-      "EDGE_K": 0.55,
-      "PAINT_MODE": "render",
-      "ACCENT": [
-        "#8f2b2b",
-        "#742222",
-        "#c9c3b4"
-      ],
-      "DIRT": "#3e3226",
-      "DIRT_K": 0.65,
-      "DECAL": {
-        "warn": "#c3342b",
-        "ink": "#d9d6ce",
-        "hazard": [
-          "#e2a72a",
-          "#24262a"
-        ],
-        "name": "#d9d6ce",
-        "white": "#ecebe6"
-      },
-      "CHIPS_K": 0.8,
-      "AO_K": 0.75,
-      "_accent": "No orange (owner, 2026-11-07: \"ew the orange sucks\"): accent modules in crimson and bone",
-      "CHIP": "#9aa0a6"
-    },
-    "_recipe": "The Krai's recipe, version 6 (owner, 2026-11-06, with reference sheets: \"more detail variety\", \"notice large panels, and sub panels, liveries, varying colors of armor\", \"vents, lights, escape hatches, missile tubes, bombe tobes\", \"warning markings too\", \"tiny holes or slots for rivets and bolts\"): forged plates, large panels square to the hull split into sub panels at their own heights, thick and broad-bevelled so every edge shines (edge-first); the faction's steel in several tones, brass-orange accent modules, white war stripes; the detail kit weighted to its guns (missile and bomb tubes, thruster quads, vents), riveted heavily; ordered machinery in the reactor and engine trenches; grime and rust in the cavities.",
-    "plan": "data/ships/krai/frigate_plan.json",
-    "plan_dz_m": 25.93,
-    "panel_merge_m": 8.0,
-    "panel_merge_x_m": 3.0,
-    "station_sweep": 0.0,
-    "sub_depth": 2,
-    "sub_stop": 0.28,
-    "major_gap_m": 0.16,
-    "chine_deg": 35,
-    "bevel_m": {
-      "armour": 0.1,
-      "sub": 0.04,
-      "accent": 0.06,
-      "vent": 0.015,
-      "greeble": 0.04,
-      "slat": 0.015,
-      "dome": 0.03
-    },
-    "kit": {
-      "per_100m2": 12.0,
-      "gap_m": 0.35,
-      "lights": [
-        "amber",
-        "red",
-        "amber"
-      ],
-      "weights": {
-        "hatch": 2,
-        "vent": 3,
-        "light": 1.5,
-        "rcs": 1.2,
-        "module": 2.2,
-        "missiles": 1.6,
-        "bombs": 0.9,
-        "port": 3,
-        "groove": 2.5,
-        "tag": 2
-      }
-    },
-    "well_cell_m": [
-      1.6,
-      0.9
-    ],
-    "rivets": {
-      "inset_m": 0.26,
-      "r_m": 0.06,
-      "share": 0.6,
-      "slot_share": 0.6,
-      "slot_edge_m": 3.0,
-      "slot_l_m": 0.36
-    },
-    "_overlay": "No overlays (owner, 2026-11-06, of a plate copied over another: \"why is there two armor plates ontop of eachother?\"): the sub panels are the large panels split, each at its own height.",
-    "trench_m": [
-      0.8,
-      1.6
-    ],
-    "wear_bump": {
-      "armour": 0.22,
-      "accent": 0.15,
-      "sub": 0.12
-    },
-    "chamfer": {
-      "plate_k": 0.6,
-      "kit_m": 0.12
-    }
+    "inner_machinery": false,
+    "corner_m": 1.2,
+    "cage_m": 2.0,
+    "hatch_share": 0.4,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false
   },
-  "stories": {
-    "krai_frigate": {
-      "_doc": "The frigate's rooms, from the outside: the reactor along the keel aft (deck 3) breathing through slots in the keel; engineering to port and life support to starboard on deck 2 venting through the flanks aft; gun control under the dorsal crest; the boarding bay's door to starboard on deck 2 (the plan's boarding bay is on the starboard side); the spinal cannon's muzzle at the bow under the bayonet; the drives astern, the hull's and the nacelles'.",
+  "ships": {
+    "krai_k1": {
+      "mesh": "krai_frigate",
+      "seed": 201,
+      "_tradition": "K1 Tempered blade, on the Kelvane Institute's method (owner, 2026-11-07: \"exampline how the ionstitute does its hull, and replicate taht\"): the smiths; plates square to the hull with their corners cut (mockup 7's kit), the Warhost's steels, crimson and bone; no orange (owner: \"ew the orange sucks\")",
       "louvres": [
         {
           "face": "bottom",
@@ -230,469 +263,43 @@
           "h_m": 3.0
         }
       ],
-      "marks": [
+      "lamps": [
         {
-          "kind": "muzzle",
-          "face": "bow",
+          "face": "top",
           "at": [
             0,
-            -4.0
+            10
           ],
-          "size_m": 2.2
-        },
-        {
-          "kind": "drive",
-          "face": "stern",
-          "at": [
-            0,
-            -3.6
-          ],
-          "size_m": 6.0
+          "size_m": 0.45,
+          "colour": "red"
         }
       ],
+      "liveries": [
+        {
+          "band_z_m": [
+            8.0,
+            9.6
+          ]
+        },
+        {
+          "band_z_m": [
+            -40.0,
+            -38.4
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -14
+        ],
+        "size_m": 7.0
+      },
       "lighting": {
         "auto_floods": {
           "to_z_m": 15
         }
-      },
-      "exposed": [
-        {
-          "plan": [
-            [
-              -2.4,
-              -58
-            ],
-            [
-              2.4,
-              -58
-            ],
-            [
-              2.4,
-              -36
-            ],
-            [
-              -2.4,
-              -36
-            ]
-          ],
-          "y_m": [
-            -12.0,
-            -5.0
-          ]
-        },
-        {
-          "plan": [
-            [
-              6,
-              -58
-            ],
-            [
-              9,
-              -58
-            ],
-            [
-              9,
-              -38
-            ],
-            [
-              6,
-              -38
-            ]
-          ],
-          "y_m": [
-            -5.8,
-            -3.2
-          ]
-        },
-        {
-          "plan": [
-            [
-              -9,
-              -58
-            ],
-            [
-              -6,
-              -58
-            ],
-            [
-              -6,
-              -38
-            ],
-            [
-              -9,
-              -38
-            ]
-          ],
-          "y_m": [
-            -5.8,
-            -3.2
-          ]
-        }
-      ],
-      "_doc_exposed": "The armour opened where the ship's machinery runs: the reactor's trench along the keel aft, and the engine spaces' trenches low on each flank.",
-      "_doc_symmetry": "Mirror-symmetric: the boarding bay's door a pair."
-    }
-  },
-  "ships": {
-    "krai_k1": {
-      "mesh": "krai_frigate",
-      "story": "krai_frigate",
-      "seed": 201,
-      "_tradition": "K1 Tempered blade: the smiths; a Krai ship is forged like a blade, its edges bright as a whetted edge, its plates the steel's own tones",
-      "palette": {
-        "LIGHT_EDGE": "#ecd9a8"
-      },
-      "liveries": [
-        {
-          "stripe": {
-            "a": [
-              -55,
-              -4.4
-            ],
-            "b": [
-              16,
-              -1.0
-            ],
-            "w": [
-              0.6,
-              1.8
-            ],
-            "z_m": [
-              -56,
-              17
-            ],
-            "x_within_m": 8.0
-          },
-          "colour": "#d9d6ce",
-          "pin": "#8f2b2b",
-          "pin_m": 0.14
-        },
-        {
-          "tally": {
-            "at": [
-              -38,
-              1.6
-            ],
-            "count": 7,
-            "h_m": 1.1
-          },
-          "colour": "#e8dccb"
-        }
-      ],
-      "wear": {
-        "amount": 1.0
-      },
-      "decals": [
-        {
-          "face": "port",
-          "at": [
-            -8.0,
-            4.5
-          ],
-          "kind": "text",
-          "text": "07",
-          "colour": "name",
-          "w_m": 2.4,
-          "h_m": 2.2
-        },
-        {
-          "face": "top",
-          "at": [
-            5.0,
-            -10.0
-          ],
-          "kind": "text",
-          "text": "07",
-          "colour": "name",
-          "w_m": 3.0,
-          "h_m": 2.6,
-          "turn": 90
-        }
-      ]
-    },
-    "krai_k2": {
-      "mesh": "krai_frigate",
-      "story": "krai_frigate",
-      "seed": 202,
-      "_tradition": "K2 House banner: the three great houses under the emperor; a ship flies its house (the house one placeholder: blood)",
-      "palette": {
-        "ARMOUR": [
-          "#232120",
-          "#2a2725",
-          "#1e1c1c",
-          "#2d2a28"
-        ],
-        "SUB": [
-          "#3a3532",
-          "#423c38"
-        ],
-        "BRONZE_SHARE": 0.0,
-        "LIGHT_EDGE": "#c9d0d8"
-      },
-      "liveries": [
-        {
-          "field": {
-            "y_above_m": 9.4,
-            "x_within_m": 3.2
-          },
-          "colour": "#b3121b"
-        },
-        {
-          "field": {
-            "y_below_m": -6.6,
-            "x_within_m": 3.2
-          },
-          "colour": "#b3121b"
-        },
-        {
-          "field": {
-            "z_above_m": 12.0
-          },
-          "colour": "#b3121b"
-        },
-        {
-          "star": {
-            "at": [
-              -12.0,
-              6.0
-            ],
-            "r_m": 1.6
-          },
-          "colour": "#c9d0d8"
-        },
-        {
-          "tally": {
-            "at": [
-              -38,
-              1.6
-            ],
-            "count": 7,
-            "h_m": 1.1
-          },
-          "colour": "#e8dccb"
-        }
-      ],
-      "wear": {
-        "amount": 1.0
-      }
-    },
-    "krai_k3": {
-      "mesh": "krai_frigate",
-      "story": "krai_frigate",
-      "seed": 203,
-      "_tradition": "K3 Blood record: rank won in blood, and tradition added to; a ship's record is cut into its plates",
-      "detail": {
-        "gap_m": [
-          0.12,
-          0.2
-        ],
-        "trench_share": 0.05
-      },
-      "palette": {
-        "UNDER": "#9a1018",
-        "SUB": [
-          "#262a33",
-          "#2d323c"
-        ]
-      },
-      "liveries": [
-        {
-          "honour": {
-            "share": 0.09
-          },
-          "colour": "#b98a4e"
-        },
-        {
-          "stripe": {
-            "a": [
-              -55,
-              -4.4
-            ],
-            "b": [
-              16,
-              -1.0
-            ],
-            "w": [
-              0.6,
-              1.8
-            ],
-            "z_m": [
-              -56,
-              17
-            ],
-            "x_within_m": 8.0
-          },
-          "colour": "#b3121b",
-          "pin": "#b98a4e",
-          "pin_m": 0.14
-        },
-        {
-          "tally": {
-            "at": [
-              -38,
-              1.6
-            ],
-            "count": 7,
-            "h_m": 1.1
-          },
-          "colour": "#e8dccb"
-        }
-      ],
-      "wear": {
-        "amount": 1.1
-      }
-    },
-    "krai_k4": {
-      "mesh": "krai_frigate",
-      "story": "krai_frigate",
-      "seed": 204,
-      "_tradition": "K4 Blackened war plate: the war forge, edge first; rough gunmetal, and the edge is what a blade shows",
-      "detail": {
-        "kit_min_m": 2.4,
-        "lift_m": 0.34,
-        "trench_share": 0.1
-      },
-      "palette": {
-        "ARMOUR": [
-          "#1c1a1b",
-          "#222021",
-          "#18171a",
-          "#252324"
-        ],
-        "SUB": [
-          "#141314",
-          "#1b191a"
-        ],
-        "EDGE_K": 0.95,
-        "LIGHT_EDGE": "#c9d0d8",
-        "UNDER": "#1a0a05",
-        "UNDER_GLOW": "#ff5a1a",
-        "UNDER_GLOW_K": 0.3,
-        "BRONZE_SHARE": 0.0
-      },
-      "liveries": [
-        {
-          "stripe": {
-            "a": [
-              -55,
-              -4.4
-            ],
-            "b": [
-              16,
-              -1.0
-            ],
-            "w": [
-              0.6,
-              1.8
-            ],
-            "z_m": [
-              -56,
-              17
-            ],
-            "x_within_m": 8.0
-          },
-          "colour": "#7a1e2c"
-        },
-        {
-          "tally": {
-            "at": [
-              -38,
-              1.6
-            ],
-            "count": 7,
-            "h_m": 1.1
-          },
-          "colour": "#c9d0d8"
-        }
-      ],
-      "wear": {
-        "amount": 1.3
-      }
-    },
-    "krai_k5": {
-      "mesh": "krai_frigate",
-      "story": "krai_frigate",
-      "seed": 205,
-      "_tradition": "K5 Kept plate: 'kept, carried and added to, never replaced'; a ship carries the plates of the ships before it",
-      "detail": {
-        "kit_min_m": 1.5
-      },
-      "plates": {
-        "mode": "generations",
-        "core": {
-          "x_m": 10.0,
-          "y_m": 12.0,
-          "z_m": -20.0,
-          "z_len_m": 50.0
-        },
-        "gens": [
-          {
-            "below": 1.05,
-            "colours": [
-              "#8a6a3e",
-              "#7a6240",
-              "#5f6b4a",
-              "#6e5a38"
-            ]
-          },
-          {
-            "below": 1.45,
-            "colours": [
-              "#4c5a72",
-              "#55627a",
-              "#44526a"
-            ]
-          },
-          {
-            "colours": [
-              "#9aa4b0",
-              "#a3acb6",
-              "#8e98a4"
-            ]
-          }
-        ]
-      },
-      "liveries": [
-        {
-          "stripe": {
-            "a": [
-              -55,
-              -4.4
-            ],
-            "b": [
-              16,
-              -1.0
-            ],
-            "w": [
-              0.6,
-              1.8
-            ],
-            "z_m": [
-              -56,
-              17
-            ],
-            "x_within_m": 8.0
-          },
-          "colour": "#7a1e2c",
-          "pin": "#b98a4e",
-          "pin_m": 0.14
-        },
-        {
-          "tally": {
-            "at": [
-              -24,
-              2.4
-            ],
-            "count": 7,
-            "h_m": 1.1
-          },
-          "colour": "#e8dccb"
-        }
-      ],
-      "wear": {
-        "amount": 1.2
       }
     }
-  },
-  "maps_dir": "docs/mockups/hull-texture-designs-maps/krai"
+  }
 }
