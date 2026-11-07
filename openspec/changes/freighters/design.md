@@ -44,6 +44,23 @@ Krai dreadnought, is 226 m as built). The board's eight are shown at the same sc
 **Approved for build** (owner, 2026-11-07: "Adjust institute ship len to fit cargo better .After that change. Now I approve.
 Detail them"): the four picks are detailed (tasks section 2).
 
+## Detailing (v11)
+
+The four picks go through the ship-detailing pipeline as the Hunt's and the Institute's ships did: each grown hull leaves
+the page at the size shown (`MOCKUP_EXPORT_OBJ`, without its containers), is laid out in
+`data/ships/freighters/hull_detail.json`, built and baked by `tools/blender/painted_bake.py --faction freighters`, and
+shown in Painted and PBR looks under Studio or Night light, with its windows as panes.
+
+| Ship | Look | Where the look comes from |
+|---|---|---|
+| Gauge carrier | Concord: pearl plates cut in a tidy grid, grey sub-armour, Concord-blue liveries, the emblem B-E27 | Written in the freighters' file (the Concord line is not on this standard yet) |
+| Spear train | Krai: blued steel cut in chevrons, bronze liveries in fives, the fang torc | Written in the freighters' file (the Krai line is not on this standard yet) |
+| Tally carrier | The Hunt's olives and khakis, its dome, fan and louvres | `data/ships/ssarith/hull_detail.json` |
+| Twin ledger | The Institute's champagne, its grid plating, pods, dark glass | `data/ships/kelvane/hull_detail.json` |
+
+A freighter's light map is graded against `light_ref` 2.4 (more floods over more hull than a warship). The containers are
+cargo: on the page they keep a drawn face (ribs and a frame) until they are a game asset of their own (task 2.5).
+
 ## The rules every concept keeps
 
 - **Culture, never the body** (CLAUDE.md section 1; Ship Design Bible C1-C5). Each concept names the tradition it comes

@@ -269,6 +269,22 @@ def detail_path():
     return os.path.join(ROOT, "data", "ships", FACTION, "hull_detail.json")
 
 
+def load_detail(slug=None):
+    """The detail layout for FACTION (data/ships/<faction>/hull_detail.json). A ship that names a look ("look": name, as
+    the freighters do, every faction's in one file: openspec/changes/freighters) takes that look's paint, defaults and
+    faction from the file's "looks"; a look of {"from": "<faction>"} is that faction's own hull_detail.json, so a faction's
+    look has one copy (CLAUDE.md 6.1). The file's own "defaults" lie over the look's, and the ship's over both (for_ship)."""
+    D = json.load(open(detail_path()))
+    name = slug and D.get("ships", {}).get(slug, {}).get("look")
+    if not name:
+        return D
+    L = dict(D["looks"][name])
+    if "from" in L:
+        src = json.load(open(os.path.join(ROOT, "data", "ships", L.pop("from"), "hull_detail.json")))
+        L = {"faction": src.get("faction"), "paint": src["paint"], "defaults": src["defaults"], **L}
+    return {**D, "faction": L.get("faction") or name, "paint": L["paint"], "defaults": {**L["defaults"], **D.get("defaults", {})}}
+
+
 def lo_material(img, name):
     m = bpy.data.materials.new(name); m.use_nodes = True
     tex = m.node_tree.nodes.new("ShaderNodeTexImage"); tex.image = img; m.node_tree.nodes.active = tex
@@ -323,7 +339,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     bpy.ops.uv.select_all(action="SELECT")
     bpy.ops.uv.pack_islands(rotate=True, shape_method="CONCAVE", margin_method="FRACTION", margin=0.004)
     bpy.ops.object.mode_set(mode="OBJECT")
-    D = for_ship(json.load(open(detail_path())), slug)
+    D = for_ship(load_detail(slug), slug)
     smooth = D["defaults"].get("smooth_deg")   # a rounded hull (the Kelvane's rolled case) is shaded smooth across faces within
     if smooth:                                 # this angle, so its tangent normals are baked against the normals the page draws
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth), keep_sharp_edges=True)
@@ -444,11 +460,11 @@ def paint_and_write(slug, D, S, ps):
 def repaint_main(slugs):
     """Repaint ships from their kept passes (no bake): the maps and their hashes in the manifest; the mesh, fixtures and
     field are the bake's and stay."""
-    PT.clear(); PT.update(json.load(open(detail_path()))["paint"])
-    D = json.load(open(detail_path()))
     mpath = os.path.join(ships_out(), "manifest.json")
     man = json.load(open(mpath))
     for slug in slugs:
+        D = load_detail(slug)
+        PT.clear(); PT.update(D["paint"])
         ps = dict(np.load(passes_path(slug)))
         Ds = for_ship(D, slug)
         paint_and_write(slug, Ds, Ds["ships"][slug], ps)
@@ -774,18 +790,18 @@ def half(a):
 
 
 def ship_main(slugs, px, samples, panes_only=False):
-    PT.clear(); PT.update(json.load(open(detail_path()))["paint"])
     mpath = os.path.join(ships_out(), "manifest.json")
     man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
     man.setdefault("kept", {})
     for k in [k for k in man["pieces"] if k.endswith("_ao")]:
         del man["pieces"][k]
-    man["_doc"] = (json.load(open(detail_path())).get("manifest_doc") or "") + (
+    man["_doc"] = (load_detail().get("manifest_doc") or "") + (
         " Each unwrapped and baked onto its own UVs by tools/blender/painted_bake.py --ship (never edited by hand): the UV mesh "
         "in ship space (+x port, +y up, +z bow, metres) and its painted colour, AO and glow maps. uv_m is metres of hull per UV unit.")
     for k in [k for k in man["pieces"] if k.endswith("_pane")]:   # panes are drawn from their data now, not a map
         del man["pieces"][k]
     for slug in slugs:
+        PT.clear(); PT.update(load_detail(slug)["paint"])   # each ship's own faction's paint (a freighter's look)
         if panes_only:
             man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)

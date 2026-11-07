@@ -16,8 +16,15 @@
 - [ ] 2.1 Each pick grown again at its size on its faction's own section (the Institute's `ksec`, the Hunt's `hsec`, the
       Concord's octagonal loft); the container's size moved into `data/` for the page and the game
 - [ ] 2.2 Detailed and baked onto its own UVs (`ship-detailing`, `painted-bake`): plates, windows a person tall on the
-      lived-in decks, the faction emblem, hull lights
+      lived-in decks, the faction emblem, hull lights. First bake done (v11, 1024 px, 16 samples:
+      `tools/blender/painted_bake.py --faction freighters`, layout `data/ships/freighters/hull_detail.json`, maps in
+      `assets/ships/freighters/`); the 2048 px bake to follow
 - [ ] 2.3 Exported by `tools/mockups/export_ships.mjs` with named nodes (drive, point defence, holds as damage zones)
+- [x] 2.2a The baker's loader: a ship names its faction's look (`load_detail` in `tools/blender/painted_bake.py`), a look
+      `from` a faction's own hull_detail.json, so the Hunt's and the Institute's looks have one copy; the Concord's and
+      Krai's written in the freighters' file until their lines move onto the standard
+- [ ] 2.5 The container as a game asset (modelled and textured once, 6 by 6 by 12 m drafted, 12 by 12 by 24 m shown); on
+      the page a drawn face for now
 - [ ] 2.4 One cradle: the board's `cradle` and the Institute page's `loopOf` become one function in
       `docs/mockups/lib/hull-grow.js`, inlined by both pages (design, "One copy")
 

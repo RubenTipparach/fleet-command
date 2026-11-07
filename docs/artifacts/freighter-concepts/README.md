@@ -2,7 +2,8 @@
 
 - Link: https://claude.ai/artifact/Gkv9jzwEZd258noT7WGtv4
 - Source: `docs/mockups/freighter-concepts.html` (one copy, not duplicated here). The Concord line yardstick
-  (`docs/mockups/lib/concord-line.js`) and the shared grown hull (`docs/mockups/lib/hull-grow.js`) are inlined by
+  (`docs/mockups/lib/concord-line.js`), the shared grown hull (`docs/mockups/lib/hull-grow.js`), the baked-ship, ship-skin and
+  ship-rooms libraries and the freighters' baked maps (`assets/ships/freighters/manifest.json`) are inlined by
   `tools/mockups/inline_data.py`; re-run it before publishing.
 - OpenSpec change: `openspec/changes/freighters/`.
 - Shots: `docs/screenshots/mockups/freighter-concepts/` (`tools/mockups/shoot.mjs`): the board, the board from above, the
@@ -47,3 +48,7 @@
 - 2026-11-07, cloud session: version 10, version id `1794054480-2c51` (owner: "Adjust institute ship len to fit cargo
   better .After that change. Now I approve. Detail them"): the Twin ledger's straight run is its eight rows of containers
   with 1.5 m clear at each end (274 m shown). Approved for build.
+- 2026-11-07, cloud session: version 11, version id `1794057057-4ead` (owner: "Now I approve. Detail them"): the four
+  picks detailed: exported by `tools/mockups/export_blockouts.mjs docs/mockups/freighter-concepts.html`, laid out in
+  `data/ships/freighters/hull_detail.json`, baked by `tools/blender/painted_bake.py --faction freighters --px 1024
+  --samples 16` into `assets/ships/freighters/`; Painted, PBR, Studio and Night looks; the containers' drawn face.
