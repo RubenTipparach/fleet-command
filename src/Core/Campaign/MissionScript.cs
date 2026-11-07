@@ -65,7 +65,11 @@ public sealed record SetupStep(string Set, Expr? Value, IReadOnlyList<string>? P
 public sealed record MissionScript(
     string Id, string Name, string Glyph, bool Story, string Type, double Reward, int Turns, Expr Where, IReadOnlyList<SetupStep> Setup,
     MissionText Brief, MissionText Objective, IReadOnlyList<MissionNeed> Needs, IReadOnlyList<MissionBattle> Battles,
-    IReadOnlyList<GradeRule> Grades, IReadOnlyList<MissionOutcome> Results, bool FollowGroup, string File);
+    IReadOnlyList<GradeRule> Grades, IReadOnlyList<MissionOutcome> Results, bool FollowGroup, string File)
+{
+    /// <summary>Whether the fleet may withdraw from its battle: a contract yes, a story or special mission no.</summary>
+    public bool CanWithdraw { get; init; } = true;
+}
 
 /// <summary>Reads mission files. Each is checked against the names its scopes provide (Scopes below).</summary>
 public static class MissionLoader
@@ -98,8 +102,10 @@ public static class MissionLoader
         StrictJson o = StrictJson.Parse(text, file);
         string id = o.Str("id");
         if (id.Length == 0 || !id.All(c => char.IsLower(c) || char.IsDigit(c) || c == '_')) throw new DataError($"{file}.id: lower case letters, digits and _ only");
+        // a contract may be withdrawn from; a story or special mission is seen through (owner, 2026-11-07: "some missions
+        // withdraw is not possible (main story or special missions), general missions is fine to withdrawl")
         string kind = o.Str("kind", "contract");
-        if (kind is not ("contract" or "story")) throw new DataError($"{file}.kind: 'contract' or 'story', not '{kind}'");
+        if (kind is not ("contract" or "story" or "special")) throw new DataError($"{file}.kind: 'contract', 'story' or 'special', not '{kind}'");
         string glyph = o.Str("glyph");
         if (glyph.Length != 1) throw new DataError($"{file}.glyph: one character");
         double reward = o.Num("reward_cr");
@@ -164,7 +170,7 @@ public static class MissionLoader
             foreach (StrictJson r in o.ObjList("result")) results.Add(Outcome(r, offerVars.Concat(Scopes.Grade).Concat(Scopes.Result)));
 
         var m = new MissionScript(id, o.Str("name"), glyph, kind == "story", o.Str("type", ""), reward, turns, where, setup, brief, objective,
-            needs, battles, grades, results, follow, file);
+            needs, battles, grades, results, follow, file) { CanWithdraw = kind == "contract" };
         o.Done();
         return m;
     }

@@ -200,7 +200,7 @@ public sealed class CampaignTests
                     Assert.Contains(plan.Scenario.Ships, s => s.Side == 1);
                     var b = new Battle(TestData.Data, plan.Scenario);
                     for (int i = 0; i < 20000 && b.Over == null; i++) b.Step();
-                    if (b.Over == null) b.Withdraw();
+                    if (b.Over == null) b.EndWithdrawn();
                     d = MissionRun.Finish(c, m!, plan, b);
                     Assert.Equal(plan.Battle.Objectives.Count, d.Objectives.Count);
                 }
@@ -273,6 +273,27 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void A_story_mission_refuses_the_withdraw_and_fights_on()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        c.S.Missions.Clear();
+        Offer m = c.OfferMission("shakedown")!;
+        MissionPlan plan = MissionRun.Plan(c, m, TestData.Data)!;
+        Assert.False(plan.Scenario.CanWithdraw);
+        var b = new Battle(TestData.Data, plan.Scenario);
+        Assert.False(b.Withdraw());
+        Assert.False(b.Withdrawing);
+        Assert.False(b.Player.Warp.Armed);
+        Assert.Null(b.Over);
+    }
+
+    [Fact]
+    public void A_contract_may_be_withdrawn_from_and_a_story_mission_may_not()
+    {
+        foreach (MissionScript d in Camp.Missions.Values) Assert.Equal(!d.Story, d.CanWithdraw);
+    }
+
+    [Fact]
     public void Withdrawing_from_an_ambush_meets_the_breakout_and_is_a_victory()
     {
         Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
@@ -280,7 +301,14 @@ public sealed class CampaignTests
         Offer m = c.OfferMission("ambushed")!;
         MissionPlan plan = MissionRun.Plan(c, m, TestData.Data)!;
         var b = new Battle(TestData.Data, plan.Scenario);
-        b.Withdraw();
+        // the ambushers held far off, so the warp drive charges, plots and jumps the ship out
+        foreach (Ship e in b.Ships.Where(x => x.Side != b.Player.Side)) { e.X += 1e7; e.Z += 1e7; }
+        Assert.True(b.Withdraw());
+        Assert.True(b.Player.Warp.Armed && b.Player.Warp.Plotting);
+        for (int i = 0; i < 60000 && b.Over == null; i++) b.Step();
+        Assert.True(b.Over == "jumped", $"banks {b.Player.Warp.Banks} plot {b.Player.Warp.Plot} warp power {b.Player.Power["warp"]} why '{b.WarpRiskOf(b.Player).Why}' t {b.T}");
+        // unopposed, the drive charges, plots and jumps within a minute (about 21 s)
+        Assert.True(b.T < 60, $"warped out after {b.T:0.0} s");
         Debrief d = MissionRun.Finish(c, m, plan, b);
         Assert.Equal("withdraw", d.How);
         Assert.True(d.Objectives.First().Met);

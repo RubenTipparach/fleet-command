@@ -110,7 +110,8 @@ public static class MissionRun
             return new MarkerDef(k.Id, k.Label.Eval(sc), Math.Sin(rad) * r, -Math.Cos(rad) * r, k.RadiusM, k.After);
         }).ToList();
         var scen = new Scenario($"mission_{def.Id}_{m.Id}", b.Name?.Eval(sc) ?? def.Name, side, seed, obj, "Comms",
-            intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)), Markers: markers.Count > 0 ? markers : null);
+            intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)), Markers: markers.Count > 0 ? markers : null)
+            { CanWithdraw = def.CanWithdraw };
         return new MissionPlan(m, b, scen, groups, fleetIds, labels);
     }
 

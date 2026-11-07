@@ -109,6 +109,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     public override void _Notification(int what)
     {
         if (what == NotificationMouseExit) { _mouse = new Vector2(-1e5f, -1e5f); _ui.Leave(); }
+        else if (what == NotificationVisibilityChanged && !IsVisibleInTree()) { _ui.Leave(); _x.Tips.Offer(this, null, Position); }
     }
 
     private void SteerTo(Vector2 local)
@@ -262,7 +263,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
-        Key("v.target", new Rect2(14, 12, 90, 30), "Target", () => _x.State.ShowTarget = !_x.State.ShowTarget, _x.State.ShowTarget, "Show or hide the Target box");
+        // the Target key shows only while the Target box is shut, in the box's corner, top right (owner, 2026-11-07: "target
+        // button should only reveal if target panel was closed", "Target button shold also be in the right corner")
+        if (!_x.State.ShowTarget) Key("v.target", new Rect2(Size.X - 90 - 16, 14, 90, 30), "Target", () => _x.State.ShowTarget = true, false, "Show the Target box");
         // a campaign mission's battle has its own objectives (the mission strip) and no scene selector
         if (!_x.State.InMission) ScenePicker();
         if (b.Scenario.DamageRange && !_x.State.SceneOpen) RangePanel();
@@ -295,7 +298,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             _x.Kit.Piece(this, "frame.inset", new Rect2(bx, by, w, h));
             f.Draw(this, $"TARGET · {t.Name.ToUpperInvariant()}", bx + 18, by + 34, 18, C.Sky, HorizontalAlignment.Left, w - 90, 600, 1);
             var xr = new Rect2(bx + w - 34, by + 14, 24, 24);
-            HitState xs = _ui.Reg("v.untarget", xr, _ => B.Unlock(), null, new Tip("Release target"));
+            HitState xs = _ui.Reg("v.target.x", xr, _ => _x.State.ShowTarget = false, null, new Tip("Close the Target box"));
             Color xf = xs.Hot ? C.Alert : C.Signal, xi = _x.Kit.Style.InkOn(xf);
             _x.Kit.Knob(this, xr.GetCenter(), 12, xf);
             DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), xi, 2.6f, true);

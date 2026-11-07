@@ -85,7 +85,7 @@ public static class MissionPreview
                                 if (s.Prize) s.Hull = s.Class.HullHp * game.Tuning.CaptureHullFrac * 0.8; else { s.Hull = 0; s.Alive = false; }
                             b.Step();
                             break;
-                        case End.Withdraw: b.Withdraw(); break;
+                        case End.Withdraw: b.EndWithdrawn(); break;
                         case End.Lose:
                             foreach (string id in plan.Groups["fleet"]) { Ship s = b.ShipById(id)!; s.Hull = 0; s.Alive = false; }
                             b.Lose();

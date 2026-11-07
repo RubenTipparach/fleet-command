@@ -77,6 +77,10 @@ public abstract partial class ConsolePanel : Control, IControlSource
     public override void _Notification(int what)
     {
         if (what == NotificationMouseExit) Ui.Leave();
+        // a panel hidden under the pointer (the goals strip shut by its own X) draws no more, so it takes its hover card
+        // away now; else the card ("Close") stays on screen with nothing under it (owner, 2026-11-07: "close button stuck
+        // after I closed the goals panel")
+        else if (what == NotificationVisibilityChanged && X != null && !IsVisibleInTree()) { Ui.Leave(); X.Tips.Offer(this, null, Position); }
     }
 
     // ---- Text ----------------------------------------------------------------------------------------------------
@@ -124,12 +128,13 @@ public abstract partial class ConsolePanel : Control, IControlSource
     /// <summary>A key: the kit's key, idle, hover or pressed (pressed also when it is on); its label in the skin's key
     /// ink. A skin whose keys end in a point (KeyCenter) centres the label in the open field between the key's caps,
     /// shrinking it to fit (down to 11 px) before it is trimmed (the Analog Panel Bible's rule T).</summary>
-    protected HitState Button(string id, Rect2 r, string label, Action? click, bool on = false, bool dis = false, bool center = true, Tip? tip = null)
+    protected HitState Button(string id, Rect2 r, string label, Action? click, bool on = false, bool dis = false, bool center = true, Tip? tip = null,
+        string? shortLabel = null)
     {
         HitState st = dis ? default : Ui.Reg(id, r, click == null ? null : _ => click(), null, tip);
         string kst = dis ? "idle" : st.Down || on ? "pressed" : st.Hot ? "hover" : "idle";
         Kit.Piece(this, "button." + kst, r, dis ? 0.35f : 1);
-        KeyLabel(this, Kit, X.Fonts, r, kst, label, dis, center);
+        KeyLabel(this, Kit, X.Fonts, r, kst, label, dis, center, shortLabel);
         return st;
     }
 
@@ -137,7 +142,8 @@ public abstract partial class ConsolePanel : Control, IControlSource
     /// the view's (owner, 2026-11-06: the view's Target key read "ARGET" in the Kelvane skin, its label under the knob).
     /// A skin whose keys end in a point (KeyCenter) centres the label in the open field between the key's caps or its
     /// measured KeyField, shrinking it to fit (down to 11 px) before it is trimmed (the Analog Panel Bible's rule T).</summary>
-    public static void KeyLabel(CanvasItem ci, IKit kit, Fonts fonts, Rect2 r, string kst, string label, bool dis = false, bool center = true)
+    public static void KeyLabel(CanvasItem ci, IKit kit, Fonts fonts, Rect2 r, string kst, string label, bool dis = false, bool center = true,
+        string? shortLabel = null)
     {
         SkinStyle sk = kit.Style;
         float h = r.Size.Y;
@@ -150,12 +156,36 @@ public abstract partial class ConsolePanel : Control, IControlSource
             PieceSpec p = kit.Spec("button." + kst);
             float sc = Math.Min(1, h / p.Size.Y);
             var (cl, cr) = sk.KeyField is { } f ? (f.L * sc, f.R * sc) : (p.M.L * sc, p.M.R * sc);
-            float room = r.Size.X - cl - cr - 8, tw = fonts.Width(lab, size, 600, 1);
-            int fs = tw > room ? Math.Max(11, (int)MathF.Floor(size * room / tw)) : size;
-            fonts.Draw(ci, lab, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
+            float room = r.Size.X - cl - cr - 8;
+            var (fl, fs, sp) = FitLabel(fonts, lab, shortLabel, size, room);
+            fonts.Draw(ci, fl, r.Position.X + cl + (r.Size.X - cl - cr) / 2, r.Position.Y + h / 2 + fs * 0.36f, fs, ink, HorizontalAlignment.Center, room, 600, sp);
         }
         else if (center) fonts.Draw(ci, lab, r.Position.X + r.Size.X / 2, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Center, r.Size.X - 8, 600, 1);
         else fonts.Draw(ci, lab, r.End.X - pad, r.Position.Y + h / 2 + size * 0.36f, size, ink, HorizontalAlignment.Right, r.Size.X - pad - 12, 600, 1);
+    }
+
+    /// <summary>A label fitted to <paramref name="room"/> pixels, the mockup's rule T as drawn: at its size and 1 px
+    /// spacing if it fits; else closed up to no spacing and shrunk a pixel at a time, measured as drawn (a pixel face does
+    /// not scale evenly), down to 11 px; else the key's short form, fitted the same way. Only what still cannot fit at
+    /// 11 px is trimmed.</summary>
+    public static (string Label, int Size, int Spacing) FitLabel(Fonts fonts, string lab, string? shortLabel, int size, float room)
+    {
+        if (fonts.Width(lab, size, 600, 1) <= room) return (lab, size, 1);
+        int fs = Shrink(fonts, lab, size, room);
+        if (shortLabel != null && fonts.Width(lab, fs, 600, 0) > room)
+        {
+            string sl = shortLabel.ToUpperInvariant();
+            if (fonts.Width(sl, size, 600, 1) <= room) return (sl, size, 1);
+            return (sl, Shrink(fonts, sl, size, room), 0);
+        }
+        return (lab, fs, 0);
+    }
+
+    private static int Shrink(Fonts fonts, string lab, int size, float room)
+    {
+        int fs = size;
+        while (fs > 11 && fonts.Width(lab, fs, 600, 0) > room) fs--;
+        return fs;
     }
 
     /// <summary>A key's end caps at a drawn height: its nine-slice margins, shrunk with its height as the kit draws them.</summary>
@@ -205,10 +235,10 @@ public abstract partial class ConsolePanel : Control, IControlSource
             // centred in the open field between the tab's end caps (or the skin's measured field), shrinking to fit
             // (down to 11 px) before it is trimmed (rule T)
             var (tl, tr) = Field(Sk.TabField, on ? "tab.active" : "tab.idle", r.Size.Y);
-            float room = r.Size.X - Math.Max(28, tl + tr + 4), tw = X.Fonts.Width(lab, 19, 600, 1);
-            int fs = tw > room ? Math.Max(11, (int)MathF.Floor(19 * room / tw)) : 19;
+            float room = r.Size.X - Math.Max(28, tl + tr + 4);
+            var (fl, fs, sp) = FitLabel(X.Fonts, lab, null, 19, room);
             float cx = tl + tr > 20 ? r.Position.X + tl + (r.Size.X - tl - tr) / 2 : r.Position.X + r.Size.X / 2;
-            Text(lab, cx, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Center, room, 600, 1);
+            Text(fl, cx, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Center, room, 600, sp);
         }
         else Text(lab, r.End.X - 8, r.Position.Y + r.Size.Y / 2 + 7, 19, ink, HorizontalAlignment.Right, r.Size.X - 22, 600, 1);
     }

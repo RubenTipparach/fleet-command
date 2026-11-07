@@ -45,6 +45,8 @@ public sealed partial class CampaignMap : Node3D
         public float T;
         public float EndDir;
         public float Lift;
+        /// <summary>The model's heading when its flight began (radians), where its first turn starts from.</summary>
+        public float Yaw0;
     }
 
     /// <summary>The camera: the point it looks at on the map plane and its distance. Its angle is fixed (the mockup's polar
@@ -54,6 +56,9 @@ public sealed partial class CampaignMap : Node3D
     public const float Polar = 0.88f, MinDist = 7, MaxDist = 70;
     /// <summary>Sectors a second a fleet flies (the mockup's FLIGHT_SECTORS_S).</summary>
     public const float FlightSectorsS = 2.6f;
+    /// <summary>Seconds a fleet takes to turn half round on the spot before it moves on (owner, 2026-11-07: "turn first,
+    /// then move, not turn and move at the same time"); a smaller turn takes its share.</summary>
+    public const float FlightTurnS = 0.5f;
     /// <summary>Beyond this distance the name labels leave (they would pile on one another); the pieces never do.</summary>
     public const float FarDist = 34;
 
@@ -569,6 +574,8 @@ public sealed partial class CampaignMap : Node3D
     public void Rebuild(IEnumerable<FleetMove>? moves = null, List<(int C, int R)>? ownSteps = null)
     {
         var was = _fleets.ToDictionary(kv => kv.Key, kv => kv.Value.Node.Position);
+        // each piece's heading before the rebuild, where its first turn starts from
+        var yaws = _fleets.Where(kv => kv.Value.Model != null && IsInstanceValid(kv.Value.Model)).ToDictionary(kv => kv.Key, kv => kv.Value.Model!.Rotation.Y);
         foreach (Node n in _pieces.GetChildren()) { _pieces.RemoveChild(n); n.QueueFree(); }
         foreach (Node n in _routes.GetChildren()) { _routes.RemoveChild(n); n.QueueFree(); }
         _fleets.Clear();
@@ -638,21 +645,50 @@ public sealed partial class CampaignMap : Node3D
         if (moves != null)
             foreach (FleetMove mv in moves)
                 if (_fleets.TryGetValue(mv.Name, out Piece? p) && was.TryGetValue(mv.Name, out Vector3 from))
-                    Fly(p, mv.Steps, from, Slot("ship", mv.Steps[^1].C, mv.Steps[^1].R));
+                    Fly(p, mv.Steps, from, Slot("ship", mv.Steps[^1].C, mv.Steps[^1].R), yaws.GetValueOrDefault(mv.Name, p.EndDir));
         foreach (var (k, p) in _fleets.Where(kv => kv.Key.StartsWith("freighter:")))
-            if (was.TryGetValue(k, out Vector3 from) && from.DistanceSquaredTo(p.Node.Position) > 1e-4f) { p.Pts = new() { from, p.Node.Position }; p.T = 0; p.Node.Position = from; }
+            if (was.TryGetValue(k, out Vector3 from) && from.DistanceSquaredTo(p.Node.Position) > 1e-4f) { p.Pts = new() { from, p.Node.Position }; p.T = 0; p.Yaw0 = yaws.GetValueOrDefault(k, p.EndDir); p.Node.Position = from; }
         if (ownSteps is { Count: > 1 } && was.TryGetValue("__own", out Vector3 of))
-            Fly(own, ownSteps, of, Slot("fleet", ownSteps[^1].C, ownSteps[^1].R));
+            Fly(own, ownSteps, of, Slot("fleet", ownSteps[^1].C, ownSteps[^1].R), yaws.GetValueOrDefault("__own", own.EndDir));
     }
 
-    private static void Fly(Piece p, List<(int C, int R)> steps, Vector3 from, Vector3 to)
+    private static void Fly(Piece p, List<(int C, int R)> steps, Vector3 from, Vector3 to, float yaw0)
     {
         var pts = new List<Vector3> { from };
         for (int i = 1; i < steps.Count - 1; i++) pts.Add(HexPos(steps[i].C, steps[i].R));
         pts.Add(to);
         p.Pts = pts;
         p.T = 0;
+        p.Yaw0 = yaw0;
         p.Node.Position = from;
+        if (p.Model != null) p.Model.Rotation = new Vector3(0, yaw0, 0);
+    }
+
+    // One phase of a flight: a turn on the spot from one heading to another, or a move from one point to the next.
+    private readonly record struct Phase(float S, float Yaw0, float Yaw1, Vector3 A, Vector3 B, bool Turn);
+
+    // A flight as its phases, in order: for each leg a turn to face it (when the heading changes) and then the move,
+    // and at the end a turn to the fleet's final heading (owner, 2026-11-07: "turn first, then move", "a move maybe move
+    // then turn", "then move again").
+    private static List<Phase> Phases(Piece p, List<Vector3> pts)
+    {
+        var list = new List<Phase>();
+        float yaw = p.Yaw0;
+        void TurnTo(float to, Vector3 at)
+        {
+            float d = Mathf.Abs(Mathf.AngleDifference(yaw, to));
+            if (d > 1e-3f) list.Add(new Phase(FlightTurnS * d / Mathf.Pi, yaw, to, at, at, true));
+            yaw = to;
+        }
+        for (int i = 0; i + 1 < pts.Count; i++)
+        {
+            Vector3 a = pts[i], b = pts[i + 1];
+            if (a.DistanceSquaredTo(b) <= 1e-6f) continue;
+            TurnTo(Mathf.Atan2(b.X - a.X, b.Z - a.Z), a);
+            list.Add(new Phase(1 / FlightSectorsS, yaw, yaw, a, b, false));
+        }
+        TurnTo(p.EndDir, pts[^1]);
+        return list;
     }
 
     // the flights: each piece along its points, turning to face each leg, lifted off its stand while it flies (the
@@ -662,24 +698,26 @@ public sealed partial class CampaignMap : Node3D
         foreach (Piece p in _fleets.Values)
         {
             if (p.Pts is not { } pts || !IsInstanceValid(p.Node)) continue;
-            int legs = pts.Count - 1;
-            p.T = Math.Min(legs, p.T + dt * FlightSectorsS);
-            int i = Math.Min(legs - 1, (int)p.T);
-            float k = p.T - i;
-            Vector3 a = pts[i], b = pts[i + 1];
-            float e = legs == 1 ? k * k * (3 - 2 * k) : k;
-            p.Node.Position = a.Lerp(b, e);
-            if (p.Model != null)
+            p.T += dt;
+            float t = p.T;
+            bool done = true;
+            foreach (Phase ph in Phases(p, pts))
             {
-                if (a.DistanceSquaredTo(b) > 1e-6f) p.Model.Rotation = new Vector3(0, Mathf.Atan2(b.X - a.X, b.Z - a.Z), 0);
-                // the ship slides along its route at its stand's height (owner, 2026-11-06: "when ships move dont hop them lol,
-                // it looks funny, just slide them around the map is fine")
-                p.Model.Position = new Vector3(0, p.Lift, 0);
+                if (t >= ph.S) { t -= ph.S; continue; }
+                // eased within each phase, so the fleet comes to rest between a turn and a move
+                float k = t / ph.S, e = k * k * (3 - 2 * k);
+                p.Node.Position = ph.A.Lerp(ph.B, e);
+                if (p.Model != null) p.Model.Rotation = new Vector3(0, Mathf.LerpAngle(ph.Yaw0, ph.Yaw1, e), 0);
+                done = false;
+                break;
             }
-            if (p.T >= legs)
+            // the ship slides along its route at its stand's height (owner, 2026-11-06: "when ships move dont hop them lol,
+            // it looks funny, just slide them around the map is fine")
+            if (p.Model != null) p.Model.Position = new Vector3(0, p.Lift, 0);
+            if (done)
             {
                 p.Node.Position = pts[^1];
-                if (p.Model != null) { p.Model.Rotation = new Vector3(0, p.EndDir, 0); p.Model.Position = new Vector3(0, p.Lift, 0); }
+                if (p.Model != null) p.Model.Rotation = new Vector3(0, p.EndDir, 0);
                 p.Pts = null;
             }
         }
