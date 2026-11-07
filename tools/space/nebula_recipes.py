@@ -201,6 +201,32 @@ THEMES = [
     ("comms_storm_slate", "Storm Slate", "Slate-grey storm clouds lit from below in dull orange, a smouldering core.",
      2310, [0.01, 0.01, 0.014], [0.7, 0.7, 0.75], [((0.5, 0.55, 0.65), (0.1, 0.11, 0.16)), ((0.9, 0.5, 0.25), (0.25, 0.08, 0.03))],
      [0.7, 0.9, 1.2], [((1.0, 0.8, 0.6), (0.85, 0.4, 0.2))], 1.0),
+    # the Kelvane Institute's scenarios (2026-11-07, change kelvane-ships-engine): The Institute and Institute wrecks from
+    # each side, and the Institute's own Battle, Duel, Arming and Four races, each under a sky of its own
+    ("institute_champagne_haze", "Champagne Haze", "A pale champagne haze, amber knots through it and a soft cream core.",
+     2401, [0.016, 0.014, 0.012], [0.92, 0.86, 0.74], [((0.95, 0.85, 0.6), (0.3, 0.22, 0.1)), ((1.0, 0.7, 0.35), (0.3, 0.15, 0.04))],
+     [0.85, 1.0, 1.1], [((1.0, 0.97, 0.88), (1.0, 0.8, 0.5))], 1.05),
+    ("institute_phosphor_drift", "Phosphor Drift", "Phosphor-green drifts over a dark teal, thin and even, a pale mint core.",
+     2402, [0.006, 0.016, 0.014], [0.62, 0.86, 0.74], [((0.4, 0.95, 0.6), (0.04, 0.22, 0.12)), ((0.3, 0.75, 0.7), (0.03, 0.18, 0.18))],
+     [0.8, 1.0, 1.1], [((0.9, 1.0, 0.92), (0.5, 0.95, 0.7))], 1.1),
+    ("institute_brass_lanes", "Brass Lanes", "Brass-brown clouds parted by long straight lanes of dark, a warm gold core.",
+     2403, [0.014, 0.011, 0.008], [0.85, 0.75, 0.58], [((0.85, 0.62, 0.3), (0.24, 0.14, 0.04))],
+     [0.6, 0.85, 1.2], [((1.0, 0.92, 0.7), (0.95, 0.68, 0.3))], 1.1),
+    ("institute_parchment_veil", "Parchment Veil", "A faint parchment veil with rose in its folds, a quiet white core: an open sky.",
+     2404, [0.014, 0.012, 0.014], [0.9, 0.84, 0.8], [((0.9, 0.82, 0.7), (0.24, 0.18, 0.14)), ((0.95, 0.65, 0.6), (0.26, 0.1, 0.1))],
+     [0.9, 1.0, 1.05], [((1.0, 0.98, 0.95), (0.95, 0.85, 0.75))], 1.0),
+    ("institute_ink_tide", "Ink Tide", "Blue-black ink clouds rolling in from one side, an amber spark at their edge.",
+     2405, [0.006, 0.008, 0.02], [0.6, 0.65, 0.9], [((0.25, 0.35, 0.8), (0.03, 0.05, 0.22)), ((1.0, 0.7, 0.3), (0.3, 0.14, 0.03))],
+     [0.75, 0.9, 1.15], [((1.0, 0.94, 0.8), (1.0, 0.7, 0.35))], 1.15),
+    ("institute_beamline", "Beamline", "One long violet-white filament straight across the sky, blue glow along it.",
+     2406, [0.008, 0.008, 0.02], [0.75, 0.75, 1.0], [((0.7, 0.6, 1.0), (0.12, 0.08, 0.34)), ((0.4, 0.7, 1.0), (0.04, 0.14, 0.34))],
+     [0.85, 0.95, 1.05], [((1.0, 1.0, 1.0), (0.75, 0.7, 1.0))], 1.15),
+    ("institute_lamp_amber", "Lamp Amber", "Deep amber clouds round a lamp-bright yellow core, smoky brown at the edges.",
+     2407, [0.018, 0.012, 0.008], [0.92, 0.78, 0.6], [((1.0, 0.62, 0.2), (0.34, 0.14, 0.03)), ((0.7, 0.45, 0.25), (0.18, 0.1, 0.05))],
+     [0.7, 0.95, 1.2], [((1.0, 0.96, 0.7), (1.0, 0.75, 0.3))], 1.2),
+    ("institute_quartz_field", "Quartz Field", "Cold quartz-white wisps scattered wide, faint lilac between them, a small blue core.",
+     2408, [0.01, 0.011, 0.018], [0.8, 0.82, 0.95], [((0.85, 0.88, 1.0), (0.18, 0.2, 0.3)), ((0.75, 0.65, 0.95), (0.16, 0.1, 0.28))],
+     [0.9, 1.0, 1.05], [((0.95, 0.97, 1.0), (0.6, 0.75, 1.0))], 1.05),
 ]
 
 

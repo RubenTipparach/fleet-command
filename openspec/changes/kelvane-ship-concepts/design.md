@@ -387,7 +387,42 @@ shuttles. Carrier should have shuttles upside down as well. We are in space afte
 
   Provisional (survey I7): the Runner skiff is the carrier's, as its runners are its skids.
 
-## Open questions
+### D13. Version 9: the Gallery bus's variants (owner, 2026-11-07: "Make variants of 206.")
+
+The Gallery bow's build (blockout 9) is one function now, `galleryHull(g, v)`, its numbers the defaults (`GAL`): the board's
+hull, the Gallery bus (206) and its six variants are one implementation, and blockout 9 exports to the same OBJ byte for
+byte. Each variant changes one thing about how the bus is used, its numbers in `GALLERY_VARIANTS`:
+
+| No. | Variant | Role | What changes | Size |
+|---|---|---|---|---|
+| 211 | High gallery (recommended) | Observation bus | The gallery swells up over the cabin | 12 x 5.0 x 4.0 m |
+| 212 | Long hop | Long-range crew bus | Stretched, a shorter gallery and chin, a longer cabin | 14.5 x 4.6 x 3.4 m |
+| 213 | Glass nose | Survey bus | A short chin, the gallery running on nearly to the keel | 12 x 5.0 x 3.4 m |
+| 214 | Wide body | Field party transport | A wider, lower section | 11.5 x 6.4 x 3.2 m |
+| 215 | Keel skids | Lander bus | A deep keel whose edges are skids | 12 x 5.0 x 3.8 m |
+| 216 | Deep chin | Stores carrier | A deeper chin under the same gallery | 12 x 5.0 x 3.8 m |
+
+All are closed (566 triangles each). The page's Gallery bus (206) family shows the seven together beside a person.
+Provisional (survey I8): 211 as the bus.
+
+### D14. Version 10: the Gallery fighter (owner, 2026-11-07)
+
+The owner: "detail gallery bus 215 try adding mounts for phasers or something, these are supposed to be fighters".
+
+- **Phaser prongs, grown.** With `prongs`, `galleryHull()` parts the chin along the centreline into two branches, each a
+  half of the chin's own section, their top edges the gallery's cut line (the same points), their parting the centre cut,
+  so the skin stays closed (F2). They reach 46 m (board scale) past the bow, narrowing and spreading to 3 m off the
+  centreline, and end in a lit emitter cap: the phaser mounts. At 14 x 5.6 x 3.6 m, 745 triangles.
+- **Detailed and baked as the line is** (`kelvane_fighter`, 1024 px): the bake takes a ship's own `defaults` and `paint`
+  over the faction's (`for_ship()` in `tools/blender/painted_bake.py`), so the fighter's plating, gaps, cells, floods and
+  grooves are at its scale (plate stations 1.4-2.6 m, gaps 3-5 cm, a 0.35 m reach); no machinery or hatches; a sensor dome,
+  the logo, two red bands, its lamps.
+- **The carrier parks it.** Its 24 pads each hold the fighter's own baked mesh, its look swapped with the fighter's; the
+  glows of a craft's lamps are a fifth of a warship's.
+- **Mounts as named parts.** The prongs are the parts `port_prong` and `starboard_prong`; the game's mounts take their
+  caps when the fighter is exported (task 3.6).
+
+
 
 | Id | Question | Recommendation (provisional) |
 |---|---|---|
@@ -398,4 +433,5 @@ shuttles. Carrier should have shuttles upside down as well. We are in space afte
 | I5 | What becomes of the other four schools? | Keep them as schools inside the Institute for its stations, support ships and the console |
 | I6 | The class names (Parallax, Candour, Patience, Rigour, Curiosity) | Placeholders until the owner names the Institute's ships (K1) |
 | I7 | Which shuttles go on, and which the carrier parks | Provisional (D12): 202 Runner skiff for the carrier, the rest as other craft |
+| I8 | Which Gallery bus variants go on | Provisional (D13): 211 high gallery as the bus, the rest for their roles |
 | K1 | The Institute's names for ships, ranks and officers (from kelvane-battle-console) | Placeholders until the owner sets the culture |

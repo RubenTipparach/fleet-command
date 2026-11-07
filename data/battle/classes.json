@@ -1,5 +1,5 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. shield_layers is how many bands the shield display shows at full strength, 1 to 3, 3 when absent (owner, 2026-11-06: frigates have one layer, larger ships more). hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. kelvane_rv is a stand-in (no model, drawn as its shape), the Kelvane Institute having no designed ships: the battle console mockup's research cruiser Patience (mockup 2, the Four races scene), flown in that scene alone, with the heavy cruiser's figures less the Concord's chorus lance. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json).",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. shield_layers is how many bands the shield display shows at full strength, 1 to 3, 3 when absent (owner, 2026-11-06: frigates have one layer, larger ships more). hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. The Kelvane Institute (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"): its line, frigate, destroyer, cruiser, battlecruiser and carrier, each drawn as its own baked ship (assets/ships/kelvane/), battle lengths 2.7 times the true length; kelvane_rv keeps its id as the cruiser, the Patience-class research cruiser, which the battle console mockup's Patience (mockup 2, the Four races scene) now flies, with the heavy cruiser's figures less the Concord's chorus lance; the others' figures and weapons are placeholders at the Hunt's sizes until the combat change, the Institute's own weapons not designed yet (its culture is the owner's), the carrier slower and tougher, carrying fighters (data/battle/systems/tractor.json loadouts) that park on its pads in the view. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json).",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
@@ -1181,11 +1181,157 @@
   },
   "hull_hp": 170
  },
- "kelvane_rv": {
-  "name": "Research cruiser",
-  "code": "RV",
+ "kelvane_ff": {
+  "name": "Kelvane frigate",
+  "code": "FF",
   "shape": "saucer",
-  "length_m": 320,
+  "model": "assets/ships/kelvane/kelvane_frigate.glb",
+  "length_m": 340,
+  "speed_max_m_s": 3200,
+  "accel_m_s2": 560,
+  "turn_deg_s": 32,
+  "reactor_e": 17,
+  "capacitor_e": 10,
+  "battery_e": 7,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.18,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 100
+   },
+   {
+    "weapon": "lance",
+    "x": 0.18,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 100
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 1,
+  "shields_hp": [
+   34,
+   26,
+   22,
+   18,
+   22,
+   26
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 4,
+   "engines": 5,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 85
+ },
+ "kelvane_dd": {
+  "name": "Kelvane destroyer",
+  "code": "DD",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_destroyer.glb",
+  "length_m": 367,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 580,
+  "turn_deg_s": 34,
+  "reactor_e": 19,
+  "capacitor_e": 12,
+  "battery_e": 7,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.12,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 80
+   },
+   {
+    "weapon": "lance",
+    "x": 0.12,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 80
+   },
+   {
+    "weapon": "lance",
+    "x": -0.45,
+    "y": 0.1,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.45,
+    "y": 0.1,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 2,
+  "shields_hp": [
+   38,
+   28,
+   24,
+   20,
+   24,
+   28
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 4,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 100
+ },
+ "kelvane_rv": {
+  "name": "Kelvane cruiser",
+  "code": "CA",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_cruiser.glb",
+  "length_m": 448,
   "speed_max_m_s": 3000,
   "accel_m_s2": 450,
   "turn_deg_s": 26,
@@ -1283,6 +1429,210 @@
    "repair": 1
   },
   "hull_hp": 140
+ },
+ "kelvane_bc": {
+  "name": "Kelvane battlecruiser",
+  "code": "BC",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_battlecruiser.glb",
+  "length_m": 529,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.45,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.45,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ],
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160
+ },
+ "kelvane_cv": {
+  "name": "Kelvane carrier",
+  "code": "CV",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_carrier.glb",
+  "length_m": 578,
+  "speed_max_m_s": 2600,
+  "accel_m_s2": 340,
+  "turn_deg_s": 19,
+  "reactor_e": 24,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.45,
+    "y": 0.3,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.45,
+    "y": 0.3,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": -0.45,
+    "y": -0.2,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.45,
+    "y": -0.2,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": -0.2,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   },
+   {
+    "weapon": "missile",
+    "x": 0.2,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ],
+  "shield_layers": 3,
+  "shields_hp": [
+   48,
+   36,
+   30,
+   26,
+   30,
+   36
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 6,
+   "engines": 5,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 175
  },
  "tr": {
   "name": "Troop ship",

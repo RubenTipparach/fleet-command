@@ -30,6 +30,10 @@ PAIRS = [
     ("battle-console-kelvane", "menu", "kelvane-menu"),
     # mockup 12, the Ssarith Hunt ships (its shots in a folder of their own): the carrier's bays and the windows' rooms
     ("ssarith-ship-concepts", "bays_side", "hunt-carrier-bays"), ("ssarith-ship-concepts", "rooms", "hunt-trident-windows"),
+    # mockup 23, the Kelvane Institute ships: each class beside its still, the carrier's craft on its pads
+    ("kelvane-ship-concepts", "battlecruiser", "institute-battlecruiser"), ("kelvane-ship-concepts", "carrier", "institute-carrier"),
+    ("kelvane-ship-concepts", "cruiser", "institute-range"), ("kelvane-ship-concepts", "frigate", "institute-frigate"),
+    ("kelvane-ship-concepts", "carrier_side", "institute-carrier-pads"),
 ]
 
 

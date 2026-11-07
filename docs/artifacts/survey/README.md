@@ -52,3 +52,5 @@
 - 2026-11-06, cloud session: version 9 of the cloud account copy, version id `1793957212-1424`: I2 lists the loop family (13-19, mockup 23 version 3).
 - 2026-11-06, cloud session: version 10 of the cloud account copy, version id `1793969382-5dd1`: section I now asks I5 (the other schools), I3 (the palette) and I6 (the class names); I2 and I4 decided (the picks 5, 11, 17, 18, 19 and their classes), I1 in part (the science specialisation). The desktop copy is still to republish.
 - 2026-11-07, cloud session: version 11 of the cloud account copy, version id `1794019257-3c8b`: I7, which of the eight shuttle designs go on and which the carrier parks (mockup 23 v8). The desktop copy is still to republish.
+- 2026-11-07, cloud session: version 12 of the cloud account copy, version id `1794024680-3741`: I8, which Gallery bus variants go on (mockup 23 v9). The desktop copy is still to republish.
+- 2026-11-07, cloud session: version 13 of the cloud account copy, version id `1794029174-df5e`: I7 and I8 updated, the carrier parks 215, the Gallery fighter (mockup 23 v10). The desktop copy is still to republish.

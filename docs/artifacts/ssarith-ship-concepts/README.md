@@ -152,3 +152,6 @@
   lit for all ships?"): version 26 with the shared warm room palette (`lib/ship-rooms.js`, `lib/baked-ship.js`), published as
   artifact version 28, version id `1794009085-7277`. The game's `pane.gdshader` and `ship_rooms.gdshaderinc` carry the same
   palette.
+- 2026-11-07: version 26 unchanged to look at (its ship data and static shots checked identical), its damageable baked
+  ships moved into the shared `docs/mockups/lib/baked-fleet.js` for the Kelvane page and the exporter (change
+  `kelvane-ships-engine`). Published as artifact version 29, version id `1794033910-d3a7`.
