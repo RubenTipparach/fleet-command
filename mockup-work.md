@@ -42,7 +42,7 @@ account and every link here is updated.
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
-| 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | Drafted (2026-11-06, v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
+| 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | Drafted (2026-11-07, v8: every plate corner diagonal, shuttles overhead in the carrier, eight shuttle designs; v7: engineered machinery in rows, the carrier's pads and craft, diagonal corners, warm rooms; v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -1067,5 +1067,16 @@ Owner, 2026-11-06: "begin designs on the institute ships".
   give scale"): machinery on every face that looks across an opening, the outer hull still clean; a lit aperture's middle and
   the frigate's glass nose an instrument's array of cells; rows of windows along every flank with rooms behind them, drawn by
   the pane code now shared with the Hunt (`docs/mockups/lib/baked-ship.js`). Design D10.
-- **Stage:** Drafted (2026-11-06, v6).
+- **v7** (owner, 2026-11-06: "greebles look too random", "large vents, fuel pods, coils and pipes", "carrier should have
+  landing pads and fighters", "diagonals on corners", "these lines are quire dark", windows "in awkward spotrs", the flood
+  "light dots", rooms "more yellow/orange tinted like they are well lit for all ships"): rows of engineered machinery,
+  the carrier's pads with a craft on each, diagonal plate corners, lighter seams, windows that look out, no flood dots,
+  warm rooms on every ship (mockups and game); then, after the owner's reference images ("some examples of greebles
+  for you to study", "some hull armor examples", "details idea"; their shape, never their art): low-relief panelled
+  machinery with no fuel pods ("I hate those pods"), plate grooves and small marks, inspection hatches. Design D11.
+- **v8** (owner, 2026-11-07: "Love the carrier. I see some square corners on hull plating here. Please make mockup designs
+  of shuttles. Carrier should have shuttles upside down as well. We are in space afterall"): every plate corner where cuts
+  meet on the diagonal; the carrier's ceiling pads with shuttles hanging upside down; the Small craft family, eight
+  shuttles grown from the board's hulls, the Runner skiff the carrier's (survey I7). Design D12.
+- **Stage:** Drafted (2026-11-07, v8).
 - **Questions:** survey I1-I4 (traditions, picks, palette, the first class).

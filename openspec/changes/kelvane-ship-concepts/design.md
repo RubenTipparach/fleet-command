@@ -305,6 +305,88 @@ from its detail layer and drawn in Painted and PBR).
   its room light a parameter (the Institute's warm, the Hunt's pale green); the Hunt's rooms and bays render identical.
   The rows are provisional until each class is planned rooms first (task 3.1).
 
+### D11. Version 7: engineered insides, corners, pads (owner, 2026-11-06)
+
+The owner, of v6: "greebles look too random", "something interesting like large vents, fuel pods, coils and pipes would be
+cool", "carrier should have landing pads and fighters onthe inside here", "these sharp standalone corners arent good, can
+we use diagonals on corners like this?", "these lines are quire dark", "this one has windows in awkward spotrs", "why do
+you still have these little light dots?", "can we have the rooms in the windows be more yellow/orange tinted like they are
+well lit for all ships?".
+
+- **After the owner's references** (owner, 2026-11-06, with images of worked hulls: "some examples of greebles for you to
+  study", "some hull armor examples", "details idea"; their shape, never their art, none committed). What they show, in
+  our words: detail is low relief in two or three layers (trays, inset panels, framed hatches), not blocks standing
+  proud; every panel, tray and door has its corners cut on the diagonal; detail sits where a function is (bays of doors
+  in a row, grilles in framed recesses, lit channels) with quiet plates between; each plate is a panel within a panel,
+  a groove inset from its edge; small marks (a red triangle, an outlined stencil box, a row of small squares, small lamps
+  at a hatch's corners) give it scale. The fuel pods are gone (owner: "I hate those pods").
+- **Machinery in order** (`inner_machinery()` in `tools/blender/hull_detail.py`). The faces that look across an opening
+  carry a lattice of 4.0 by 2.4 m cells (`inner_cell_m`) laid on the ship's own axes, so a wall's faces share one grid.
+  Each row is one kind of machine, picked by `inner_mix`, broken into runs of three to six cells with conduit cells
+  between; each cell's variant is seeded by its place. The kinds (`machine()`), low relief, every corner on the diagonal:
+  - door bays (20 %): a framed tray with a pair of hatch doors and two indicator lamps;
+  - grilles (15 %): a framed tray of upright slats;
+  - lit channels (15 %): a glowing strip between two rails, running the row;
+  - conduits (12 %): two or three thin lines on brackets with a junction box and a lamp;
+  - plates (20 %): a plate with a smaller one laid on it and a row of small fittings, the quiet cells;
+  - coils (10 %): a core wound with five to seven coils between flanges;
+  - pipes (8 %): runs of two to four lines with a collar and a bracket at each join.
+- **Plates as panels within panels** (`plate_marks()` in `tools/blender/painted_bake.py`): a 0.08 m groove 0.3 m inside
+  every plate's edge; on plates over 3 by 2 m, by the plate's id (a plate and its mirror alike), a red triangle (45 %),
+  an outlined stencil box 1.8 by 0.8 m (40 %) and a row of four small squares in red, bronze and ink (30 %).
+- **Inspection hatches** (`hatches()`): on 40 % of the top and bottom plates of 18 m2 or more, a framed hatch up to 5.2 by
+  3.2 m, corners on the diagonal, its panel below its frame, an amber lamp at two corners; never on the flanks (the
+  windows), over a feature's hole or the logo.
+
+  The tanks, coils and pads are a new paint kind, `machine` (champagne light, #b9ae96 to #d8ccb0). Out of the sun they get
+  a floor of light (`machine_light` 0.7, `greeble_ao_floor` 0.6), as if lit by the opening's own work lamps. Everything
+  stays under the bake's reach, now a faction value (`cage_m`: the Institute 2.0 m, the Hunt's 1.3 m unchanged).
+- **The carrier's pads.** At every 16 m along the well (`pads` in the carrier's data), a cast down from the well's middle
+  finds the floor; a 4 m pad goes on the middle of the flat found there, mirrored (12 pads). Each pad is a raised deck
+  with a dark centre ring and ten amber lamps. The bake records each pad (manifest `pads`); the page parks a 10 m survey
+  craft on each, grown on the same section as the line.
+- **Corners on the diagonal.** Where a plating cut ends on another (a T), `corner_cut()` cuts the two square corners at
+  45 degrees, 0.9 m (`corner_m`). An L at a run's first or last station has no corner to turn and is left.
+- **No light lines** (owner, 2026-11-07: "i dont like this light line, get rid"). The belt strips on the outer hull are
+  plain seams now, with no light of their own and none cast on the plating (`strip_lines_lit` false); a loop's inner wall
+  has no lit rim (`strip_rim_k` 0). The loop walls and the nose apertures keep their instrument cells.
+- **Lighter seams.** The under layer in the gaps is #7a7262 (was #2a2620), and the deepest crevices are inked at 0.35
+  (`ink_k`; the Hunt keeps 0.75).
+- **Windows look out.** A window row skips plating that looks across an opening at the hull (`Surface.looks_out`): the
+  carrier keeps 205 windows of 358.
+- **No flood dots.** `docs/mockups/lib/baked-ship.js` draws sprites at the nav lights only, as the Hunt's v26.
+- **Warm rooms, every ship.** One palette in `lib/ship-rooms.js` (a room picked from the hash: one in eight dark, the
+  rest yellow or orange, 1.9 times as bright) and `lib/baked-ship.js` (quarters and messes yellow, workshops orange, holds
+  dimmer, a lit hangar warm), carried into the game's `ship_rooms.gdshaderinc` and `pane.gdshader`.
+
+### D12. Version 8: shuttles, the corners, shuttles overhead (owner, 2026-11-07)
+
+The owner, of v7: "Love the carrier. I see some square corners on hull plating here. Please make mockup designs of
+shuttles. Carrier should have shuttles upside down as well. We are in space afterall".
+
+- **Every plate corner on the diagonal.** `junction_cuts()` in `tools/blender/hull_detail.py` replaces the corners listed
+  by hand in v7: it finds every point where two cuts meet (a T, an X or an L) from the cuts themselves, and cuts each
+  sector of the plating round it narrower than 180 degrees on the diagonal, 0.9 m along both edges. The far side of a T
+  and the outside of an L have no corner and are left. The frigate's top and bottom take 78 such cuts, its flanks 14.
+- **Shuttles overhead.** The carrier's pad scan casts up as well as down (`pads.ceiling`): 12 pads on the well's floors
+  and 12 on its ceilings, each with a shuttle parked up its pad's normal, so those overhead hang upside down.
+- **Small craft** (the page's new family). Eight shuttles, each grown from one of the board's hulls in its tradition,
+  reproportioned to a shuttle (beam, height and length in `SHUTTLES`, 10.5-13 m long), its bands of dark glass its
+  glazing, beside a 1.8 m person:
+
+  | No. | Shuttle | Role | From | Size |
+  |---|---|---|---|---|
+  | 201 | Case shuttle | Crew transfer | 1 Case | 10.5 x 4.2 x 2.6 m |
+  | 202 | Runner skiff (recommended) | Survey skiff | 3 Runners | 11 x 4.6 x 2.5 m |
+  | 203 | Twin-boom tender | Probe tender | 4 Twin hulls | 12 x 6.2 x 2.4 m |
+  | 204 | Waisted courier | Courier | 6 Waisted baseline | 12.5 x 3.6 x 2.6 m |
+  | 205 | Spar lander | Sample lander | 8 Long spar | 13 x 4.4 x 3.0 m |
+  | 206 | Gallery bus | Field crew bus | 9 Gallery bow | 12 x 5.0 x 3.6 m |
+  | 207 | Terrace launch | Laboratory launch | 10 Terraces | 12 x 5.0 x 3.2 m |
+  | 208 | Ring runabout | Calibration runabout | 11 Loop | 12 x 5.6 x 2.2 m |
+
+  Provisional (survey I7): the Runner skiff is the carrier's, as its runners are its skids.
+
 ## Open questions
 
 | Id | Question | Recommendation (provisional) |
@@ -315,4 +397,5 @@ from its detail layer and drawn in Painted and PBR).
 | I4 | Which class comes first, and at what size? | **Decided** (D8): all five at once, frigate to carrier, 126-214 m (sizes provisional) |
 | I5 | What becomes of the other four schools? | Keep them as schools inside the Institute for its stations, support ships and the console |
 | I6 | The class names (Parallax, Candour, Patience, Rigour, Curiosity) | Placeholders until the owner names the Institute's ships (K1) |
+| I7 | Which shuttles go on, and which the carrier parks | Provisional (D12): 202 Runner skiff for the carrier, the rest as other craft |
 | K1 | The Institute's names for ships, ranks and officers (from kelvane-battle-console) | Placeholders until the owner sets the culture |

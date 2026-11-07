@@ -333,6 +333,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     print(f"  built the detail in {time.time() - t0:.0f} s", flush=True)
     print(f"  {slug}: {len(high)} high-poly pieces, {sum(len(o.data.polygons) for o in high)} faces", flush=True)
     panes = [dict(P) for P in HD.PANES]   # the page draws each pane as its own quad (hull_detail.pane_box)
+    pads = [dict(P) for P in HD.PADS]     # the page parks a craft on each landing pad (hull_detail.inner_machinery)
     if panes_only:
         return {"panes": panes}
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
@@ -362,11 +363,13 @@ def bake_ship(slug, px, samples, panes_only=False):
     ship.select_set(True); bpy.context.view_layer.objects.active = ship
     ship.visible_shadow = ship.visible_diffuse = ship.visible_glossy = False  # the low-poly hull only receives the bake
 
+    cage_m = D["defaults"].get("cage_m", 1.3)   # how far out the bake's rays start: past the tallest detail (the Hunt's 1.3 m)
+
     def bake(kind, what, **kw):
         t0 = time.time()
         HD.show(what)
         img.pixels.foreach_set(np.zeros(px * px * 4, np.float32))
-        bpy.ops.object.bake(type=kind, margin=8, use_selected_to_active=True, cage_extrusion=1.3, max_ray_distance=2.8, **kw)
+        bpy.ops.object.bake(type=kind, margin=8, use_selected_to_active=True, cage_extrusion=cage_m, max_ray_distance=cage_m + 1.5, **kw)
         print(f"  bake {kind} {what}: {time.time() - t0:.0f} s", flush=True)
         return img_array(img).copy()
     data = bake("EMIT", "data")
@@ -399,7 +402,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     bm.free()
     return {"tris": len(pos) // 9, "tex_px": px, "smooth_deg": smooth, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
             "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "pads": pads, "mesh": {"pos": pos, "uv": uv},
             "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
 
 
@@ -503,6 +506,8 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     base = np.where(kind_is("sub")[..., None], spal[(rid * len(SUB) * 7).astype(int) % len(SUB)], base)
     g0, g1 = hexrgb(PT["greeble"][0]), hexrgb(PT["greeble"][1])
     base = np.where(kind_is("greeble")[..., None], g0 + (g1 - g0) * ((rid * 13.0) % 1.0)[..., None], base)
+    m0, m1 = (hexrgb(c) for c in PT.get("machine", PT["greeble"]))   # the machines' tanks, coils and pads (the greebles' unless given)
+    base = np.where(kind_is("machine")[..., None], m0 + (m1 - m0) * ((rid * 7.0) % 1.0)[..., None], base)
     for k in ("dome", "slat", "vent", "glass"):
         base = np.where(kind_is(k)[..., None], hexrgb(PT[k]), base)
     liv = np.zeros((h, w), bool)
@@ -525,6 +530,9 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
             tick &= (z > za) & (z < zb) & (np.abs(n[..., 0]) > 0.5) & (kind_is("armour") | kind_is("sub"))
             base = np.where(tick[..., None], hexrgb(PT["ink"]) * 1.4, base)
             liv |= tick
+    if PT.get("plate_marks"):
+        base, marked = plate_marks(base, P, n, rid, kind_is("armour"), PT["plate_marks"])
+        liv |= marked
     patch, field, device, hull = logo_mask(S, faction, P, n, kind_is("armour") | kind_is("sub"))
     if hull:   # the emblem's own hull colours: its plate painted as a patch, the field and device on it
         base = np.where(patch[..., None], hexrgb(hull["plate"]), base)
@@ -574,6 +582,65 @@ def detector_cells(P, n, cell_m=None):
     return np.where(sq & on, lvl, 0.0).astype(np.float32)
 
 
+def plate_marks(base, P, n, rid, plate, M):
+    """Each armour plate as a panel within a panel, with the small marks a worked hull carries (owner, 2026-11-06, "some
+    hull armor examples", "details idea"): a groove inset M['groove_inset_m'] from every plate edge, and, on some plates
+    (by the plate's id, so a plate and its mirror match), a small red triangle near one corner, an outlined stencil box
+    near another, and a short row of small squares. Each mark is placed in the plate's own plane (the axes of its
+    facing, |x| for port and starboard alike) from the plate's extent there. Returns (colour, marked mask)."""
+    h, w = plate.shape
+    d = np.linalg.norm(np.diff(P, axis=1), axis=2)[:, :-1][plate[:, 1:-1]] if plate.any() else np.array([0.1])
+    texel = float(np.median(d[(d > 1e-4) & (d < 1.0)])) if d.size else 0.1   # metres per texel on the plating
+    q = np.round(rid * 4096).astype(np.int64)
+    edge = np.zeros_like(plate)
+    for ax in (0, 1):
+        for sh in (1, -1):
+            edge |= plate & ((np.roll(q, sh, axis=ax) != q) | ~np.roll(plate, sh, axis=ax))
+    r1 = max(1, int(round(M.get("groove_inset_m", 0.3) / texel)))
+    near = lambda r: blur(edge.astype(np.float32), r) > 1e-6
+    groove = plate & near(r1 + max(1, int(round(M.get("groove_w_m", 0.08) / texel)))) & ~near(r1)
+    base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
+    # the plate's own plane: (along, across) by its facing, the same on both sides
+    ax = np.abs(n).argmax(axis=2); x = np.abs(P[..., 0])
+    a = np.where(ax == 0, P[..., 2], x); b = np.where(ax == 1, P[..., 2], P[..., 1])
+    lab = np.where(plate, q, -1); ids, inv = np.unique(lab, return_inverse=True); inv = inv.reshape(lab.shape)
+    big = 1e9
+    amin = np.full(len(ids), big); amax = np.full(len(ids), -big); bmin = np.full(len(ids), big); bmax = np.full(len(ids), -big)
+    np.minimum.at(amin, inv[plate], a[plate]); np.maximum.at(amax, inv[plate], a[plate])
+    np.minimum.at(bmin, inv[plate], b[plate]); np.maximum.at(bmax, inv[plate], b[plate])
+    zero = np.zeros(len(ids), np.int64)
+    hsh = lambda salt: cell_hash(ids, zero, zero, salt)[inv]       # one draw a plate, by its id
+    A0, A1, B0, B1 = amin[inv], amax[inv], bmin[inv], bmax[inv]
+    room = ((A1 - A0) > 3.0) & ((B1 - B0) > 2.0) & plate               # a plate big enough to carry marks
+    ins = r1 * texel + 0.35                                            # inside the groove
+    marked = np.zeros_like(plate)
+    red = hexrgb(M.get("red", "#9a1c1c")); ink = hexrgb(M.get("ink", "#3a3022")); dots = [hexrgb(c) for c in M.get("dots", ["#9a1c1c", "#8a6a3a", "#3a3022"])]
+    # a small red triangle, pointing in, near the plate's top corner
+    tri = room & (hsh(0x11) < M.get("triangle_share", 0.45))
+    da, db = a - (A0 + ins + 0.45), (B1 - ins) - b
+    tri &= (db > 0) & (db < 0.7) & (np.abs(da) < 0.42 * (1 - db / 0.7))
+    base = np.where(tri[..., None], red, base); marked |= tri
+    # an outlined stencil box near the opposite corner
+    fr = room & (hsh(0x23) < M.get("frame_share", 0.4))
+    ua, vb = (A1 - ins) - a, b - (B0 + ins)
+    box = (ua > 0) & (ua < 1.8) & (vb > 0) & (vb < 0.8)
+    lw = max(texel * 1.2, 0.06)
+    inner = (ua > lw) & (ua < 1.8 - lw) & (vb > lw) & (vb < 0.8 - lw)
+    fr &= box & ~inner
+    base = np.where(fr[..., None], ink, base); marked |= fr
+    # a short row of small squares along the bottom edge, middle of the plate
+    sq = room & (hsh(0x37) < M.get("dots_share", 0.3))
+    k = np.floor((a - (A0 + A1) / 2) / 0.55 + 2)
+    fa = (a - (A0 + A1) / 2) / 0.55 + 2 - k
+    sq &= (k >= 0) & (k < 4) & (fa > 0.2) & (fa < 0.8) & ((b - (B0 + ins)) > 1.0) & ((b - (B0 + ins)) < 1.35)
+    pick = (hsh(0x41) * 3).astype(int)
+    for i, c in enumerate(dots):
+        m = sq & (((pick + k.astype(int)) % len(dots)) == i)
+        base = np.where(m[..., None], c, base)
+    marked |= sq
+    return base, marked
+
+
 def strips_and_glow(kind_is, P, glowp, cover, n=None):
     """The light strips: a dark channel with a lit line strip_m wide down the middle (paint "strip": "centre"), or the strip
     face lit whole ("whole"). Lit whole, a wide face (a loop's inner wall) burns brightest along its rims and dims to
@@ -588,8 +655,15 @@ def strips_and_glow(kind_is, P, glowp, cover, n=None):
     if PT["strip"] == "whole":
         r = PT.get("strip_rim_px", 6)
         b2 = lambda a: blur(blur(a.astype(np.float32), r), r)
-        m = b2(chan | kind_is("greeble"))   # 1 deep inside a wide face (machinery on it counts as the face), falling to its edges
+        mach = np.any([kind_is(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
+        m = b2(chan | mach)   # 1 deep inside a wide face (machinery on it counts as the face), falling to its edges
         rim = np.clip((0.95 - m) / 0.3, 0, 1)
+        if "strip_rim_k" in PT:   # how bright a wide face's rim burns (the Institute: not at all; owner, 2026-11-07, of
+            # a loop wall's lit edge: "i dont like this light line, get rid"); a narrow strip, far from any wide face, keeps its light
+            wide = blur(blur((m > 0.95).astype(np.float32), 2 * r), 2 * r) > 1e-3
+            rim = np.where(wide, rim * PT["strip_rim_k"], rim)
+            edge = wide & ~chan & ~kind_is("lamp")   # the face's own edge texels, blended with the hull beside it
+            g = g * np.where(edge, PT["strip_rim_k"], 1.0)[..., None]
         inner = PT.get("strip_inner", 1.0)
         k = inner + (1 - inner) * rim
         if PT.get("strip_cell_m") and n is not None:   # the open middle an instrument's array, not blank glass
@@ -614,12 +688,17 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
     st = np.floor(sh * 4 + 0.5) / 4
     aoc = np.clip(blur(ao, 1), 0, 1)
     if PT.get("greeble_ao_floor"):   # machinery deep in an opening still reads, as if lit by the work lamps inside it
-        aoc = np.where(is_("greeble"), np.maximum(aoc, PT["greeble_ao_floor"]), aoc)
+        mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
+        aoc = np.where(mach, np.maximum(aoc, PT["greeble_ao_floor"]), aoc)
     light = 0.12 + 0.26 * aoc ** 1.4 + 0.7 * (0.55 * sh + 0.45 * st)
+    if PT.get("machine_light"):   # machinery deep in an opening, out of the sun, lit by the opening's own work lamps
+        mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
+        light = np.where(mach, np.maximum(light, PT["machine_light"] * (0.75 + 0.25 * st)), light)
     col = base * light[..., None]
     col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
     ink = np.clip((0.4 - aoc) / 0.25, 0, 1)
-    col = col * (1 - 0.75 * ink[..., None]) + hexrgb(PT["ink"]) * (0.75 * ink[..., None])
+    ik = PT.get("ink_k", 0.75)   # how hard the deepest crevices are inked (the Hunt 0.75; a lighter hand for a clean faction)
+    col = col * (1 - ik * ink[..., None]) + hexrgb(PT["ink"]) * (ik * ink[..., None])
     m = (is_("armour") | is_("sub")).astype(np.float32)
     pb = blur(blur(m, 4), 4)
     col *= np.where(m > 0, 0.7 + 0.3 * np.clip((pb - 0.45) / 0.5, 0, 1), 1.0)[..., None]

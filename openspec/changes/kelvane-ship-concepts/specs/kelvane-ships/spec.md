@@ -100,3 +100,13 @@ strip, glass or across a bend, and the page SHALL draw each as a pane with a roo
 #### Scenario: Windows on the flanks
 - **WHEN** a class is shown Painted or PBR
 - **THEN** its windows show as framed panes with lit or dark rooms behind them
+
+### Requirement: The insides of the openings are engineered
+
+The machinery inside an Institute ship's openings SHALL be laid out in order: a lattice on the ship's own axes, each row
+one kind of machine (pipe runs, fuel pods, coils, large vents) in runs, never a scatter. A carrier's launch well SHALL carry
+landing pads, and the page SHALL park a craft on each.
+
+#### Scenario: The carrier's well
+- **WHEN** the carrier is shown Painted or PBR
+- **THEN** its well shows rows of machinery and landing pads with a craft on each

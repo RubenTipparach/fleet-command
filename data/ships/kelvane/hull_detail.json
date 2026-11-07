@@ -19,7 +19,7 @@
       "#8e8572",
       "#a8a08c"
     ],
-    "under": "#2a2620",
+    "under": "#7a7262",
     "greeble": [
       "#6a6252",
       "#a89c84"
@@ -30,7 +30,7 @@
     "vent": "#15120d",
     "glass": "#1b150d",
     "livery": "#6c0c15",
-    "ink": "#2a1a06",
+    "ink": "#5c4c34",
     "light_edge": "#f3e4c2",
     "strip": "whole",
     "strip_m": 0.7,
@@ -74,6 +74,10 @@
       "lamp": [
         0.3,
         0.0
+      ],
+      "machine": [
+        0.45,
+        0.6
       ]
     },
     "livery_pbr": [
@@ -87,14 +91,42 @@
     "strip_cell_gap": 0.14,
     "strip_cell_on": 0.7,
     "strip_cell_k": 0.55,
-    "greeble_ao_floor": 0.5,
+    "greeble_ao_floor": 0.6,
     "glass_cells_k": 0.45,
     "glass_cell_m": 0.8,
     "glass_cells_rgb": [
       1.0,
       0.78,
       0.4
-    ]
+    ],
+    "ink_k": 0.35,
+    "machine": [
+      "#b9ae96",
+      "#d8ccb0"
+    ],
+    "machine_kinds": [
+      "greeble",
+      "machine",
+      "slat",
+      "vent"
+    ],
+    "machine_light": 0.7,
+    "plate_marks": {
+      "groove_inset_m": 0.3,
+      "groove_w_m": 0.08,
+      "groove_k": 0.62,
+      "red": "#9a1c1c",
+      "ink": "#3a3022",
+      "dots": [
+        "#9a1c1c",
+        "#8a6a3a",
+        "#3a3022"
+      ],
+      "triangle_share": 0.45,
+      "frame_share": 0.4,
+      "dots_share": 0.3
+    },
+    "strip_rim_k": 0.0
   },
   "defaults": {
     "smooth_deg": 40,
@@ -154,8 +186,26 @@
       "tilt_deg": 22,
       "power_w": 1600
     },
-    "inner_greebles_per_m2": 0.6,
-    "inner_reach_m": 40.0
+    "inner_reach_m": 40.0,
+    "inner_machinery": true,
+    "inner_cell_m": [
+      4.0,
+      2.4
+    ],
+    "inner_mix": {
+      "bays": 0.2,
+      "grilles": 0.15,
+      "channels": 0.15,
+      "conduits": 0.12,
+      "plates": 0.2,
+      "coils": 0.1,
+      "pipes": 0.08
+    },
+    "corner_m": 0.9,
+    "cage_m": 2.0,
+    "hatch_share": 0.4,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false
   },
   "ships": {
     "kelvane_frigate": {
@@ -1066,7 +1116,18 @@
             -13.0
           ]
         }
-      ]
+      ],
+      "pads": {
+        "spacing_m": 16.0,
+        "r_m": 4.0,
+        "z_m": [
+          -56.0,
+          46.0
+        ],
+        "from_y_m": 0.0,
+        "x_max_m": 30.0,
+        "ceiling": true
+      }
     }
   }
 }
