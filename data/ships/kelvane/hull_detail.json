@@ -204,7 +204,8 @@
     "corner_m": 0.9,
     "cage_m": 2.0,
     "hatch_share": 0.4,
-    "hatch_min_m2": 18.0
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false
   },
   "ships": {
     "kelvane_frigate": {

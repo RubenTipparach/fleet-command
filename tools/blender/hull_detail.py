@@ -1128,8 +1128,16 @@ def build(lo, S, D, seed):
     names = [lo.data.materials[p.material_index].name for p in lo.data.polygons]
     under.data.materials.clear()  # (this zeroes every face's material index, so the strips and glass were read off the hull first)
     under.data.materials.append(mats["under"]); under.data.materials.append(kind_material("strip", "strip")); under.data.materials.append(mats["glass"])
+    under.data.materials.append(kind_material("strip"))   # a strip that is not lit: a plain seam (no light of its own)
+    lit_line = D.get("strip_lines_lit", True)
+    if not lit_line:   # a light strip on the outer hull goes dark (owner, 2026-11-07, of the Kelvane belt: "i dont like this
+        # light line, get rid"); a loop's inner wall and a nose's aperture keep their light (their instrument cells)
+        bm = bmesh.new(); bm.from_mesh(lo.data); lb = BVHTree.FromBMesh(bm); bm.free()
     for p, nm in zip(under.data.polygons, names):
         p.material_index = 1 if nm.startswith("lo_glow") else 2 if nm.startswith("lo_well") else 0
+        if p.material_index == 1 and not lit_line and abs(p.normal.z) < 0.7 and \
+                lb.ray_cast(p.center + p.normal * 0.05, p.normal, D.get("inner_reach_m", 40.0))[0] is None:
+            p.material_index = 3
     set_rid(under, 0.0)
     high = [under]
     feats, holes = [], []

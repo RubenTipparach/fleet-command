@@ -347,6 +347,9 @@ well lit for all ships?".
   craft on each, grown on the same section as the line.
 - **Corners on the diagonal.** Where a plating cut ends on another (a T), `corner_cut()` cuts the two square corners at
   45 degrees, 0.9 m (`corner_m`). An L at a run's first or last station has no corner to turn and is left.
+- **No light lines** (owner, 2026-11-07: "i dont like this light line, get rid"). The belt strips on the outer hull are
+  plain seams now, with no light of their own and none cast on the plating (`strip_lines_lit` false); a loop's inner wall
+  has no lit rim (`strip_rim_k` 0). The loop walls and the nose apertures keep their instrument cells.
 - **Lighter seams.** The under layer in the gaps is #7a7262 (was #2a2620), and the deepest crevices are inked at 0.35
   (`ink_k`; the Hunt keeps 0.75).
 - **Windows look out.** A window row skips plating that looks across an opening at the hull (`Surface.looks_out`): the
