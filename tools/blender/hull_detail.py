@@ -1355,7 +1355,9 @@ def build(lo, S, D, seed):
     for F in S.get("pods", []):
         at_both(F, pod)
     for F in S.get("fixtures", []):   # the designed pieces in place of the model's flat glowing parts
-        at_both(F, lambda F, M, cut: FIXTURES_KIT[F["kind"]](F, M, cut, D["armour_t_m"]))
+        # built on a base of at least 0.45 m, so the deepest recess (0.42 m) stays above the hull's own skin: the layer
+        # beneath the plating lies on that skin and would cover anything below it (the lamps came out unlit on thin plating)
+        at_both(F, lambda F, M, cut: FIXTURES_KIT[F["kind"]](F, M, cut, max(D["armour_t_m"], 0.45)))
     for F in S.get("louvres", []):
         at_both(F, louvre)
     for F in S.get("lamps", []):
