@@ -437,16 +437,63 @@ def bake_ship(slug, px, samples, panes_only=False, preview=None):
     sc.cycles.samples = max(32, samples)
     lightp = bake("DIFFUSE", "light", pass_filter={"DIRECT"})[:, :, :3]
     lightp = np.dstack([blur(lightp[..., c], 1) for c in range(3)])   # the emissive faces' sampling speckle out
+    # the UV mesh, in ship space, as flat triangle lists
+    bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    uvl = bm.loops.layers.uv.active
+    pos, uv = [], []
+    for f in bm.faces:
+        for l in f.loops:
+            pos += [round(c, 3) for c in l.vert.co]; uv += [round(l[uvl].uv[0], 5), round(l[uvl].uv[1], 5)]
+    bm.free()
+    info = {"tris": len(pos) // 9, "tex_px": px, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
+            "high_faces": nfaces, "light_ref": D["defaults"]["light_ref"], "light_gamma": 1.6,
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
+            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
+    passes = {"data": data, "glowp": glowp, "P": P, "nor": nor, "nts": nts, "ao": ao, "sunp": sunp, "lightp": lightp}
+    if litp is not None:
+        passes["litp"] = litp
+    save_passes(slug, passes, {"info": info, "story": HD.STORY, "decals": HD.DECALS})
+    return paint_and_save(slug, passes, info, HD.STORY, HD.DECALS)
+
+
+PASSES = os.path.join(RAW, "passes")   # every bake's passes, kept (gitignored with RAW) so the paint can be re-run alone
+
+
+def save_passes(slug, passes, meta):
+    """Keep a ship's baked passes and what the build placed, so `--repaint` can paint again without an hour's bake."""
+    os.makedirs(PASSES, exist_ok=True)
+    np.savez(os.path.join(PASSES, slug + ".npz"), **passes)
+    with open(os.path.join(PASSES, slug + ".json"), "w") as fh:
+        json.dump(meta, fh)
+
+
+def repaint_ship(slug):
+    """Paint a ship again from its kept passes (after a change to the palette, liveries, marks or wear): no build, no bake."""
+    z = np.load(os.path.join(PASSES, slug + ".npz"))
+    passes = {k: z[k] for k in z.files}
+    meta = json.load(open(os.path.join(PASSES, slug + ".json")))
+    return paint_and_save(slug, passes, meta["info"], meta["story"], meta["decals"])
+
+
+def paint_and_save(slug, passes, info, story, decals):
+    """Paint a ship's maps from its baked passes and write them: the painted colour, AO, emission, tangent normals, the PBR
+    base colour and ORM, the hull-light map."""
+    D = json.load(open(DETAIL))
+    S = ship_entry(D, slug)
+    use_paint({**D["defaults"].get("palette", {}), **S.get("palette", {})})
+    data, glowp, P, nor, nts, ao, sunp, lightp = (passes[k] for k in ("data", "glowp", "P", "nor", "nts", "ao", "sunp", "lightp"))
+    litp = passes.get("litp")
+    cover = data[:, :, 3] > 0.5
     faction = D.get("faction", "ssarith")
-    S["_story"] = HD.STORY
-    S["_decals"] = HD.DECALS
-    wr = wear(P, nor, cover, HD.STORY, S)
+    S["_story"] = story
+    S["_decals"] = decals
+    wr = wear(P, nor, cover, story, S)
     if litp is not None:
         col, emit = paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr)
     else:
         col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr)
     pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction, wr)
-    lref = D["defaults"]["light_ref"]
+    lref = info["light_ref"]
     lmap = half(np.clip(lightp / lref, 0, 1) ** (1 / 1.6))   # stored with a gentle curve; the page and game undo it
     os.makedirs(SHIPS_OUT, exist_ok=True)
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_albedo.png"), col)
@@ -457,18 +504,7 @@ def bake_ship(slug, px, samples, panes_only=False, preview=None):
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_orm.png"), orm)
     K.save_png(os.path.join(SHIPS_OUT, f"{slug}_light.png"), lmap)
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
-    # the UV mesh, in ship space, as flat triangle lists
-    bm = bmesh.new(); bm.from_mesh(ship.data); bmesh.ops.triangulate(bm, faces=bm.faces[:])
-    uvl = bm.loops.layers.uv.active
-    pos, uv = [], []
-    for f in bm.faces:
-        for l in f.loops:
-            pos += [round(c, 3) for c in l.vert.co]; uv += [round(l[uvl].uv[0], 5), round(l[uvl].uv[1], 5)]
-    bm.free()
-    return {"tris": len(pos) // 9, "tex_px": px, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
-            "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
-            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
+    return info
 
 
 def preview_render(slug, high, out, samples):
@@ -705,7 +741,7 @@ def paint_decals(base, P, n, on, decals, cell=2.0):
         if D_.get("mirror"):
             du = -du
         m1, m2 = decal_shape(D_["kind"], du / (wm / 2), dv / (hm / 2), du, dv, wm, hm, D_.get("text"))
-        col = DECAL.get(D_["colour"], D_["colour"])
+        col = D_["colour"] if isinstance(D_["colour"], list) else DECAL.get(D_["colour"], D_["colour"])
         c1 = hexrgb(col[0] if isinstance(col, list) else col)
         c2 = hexrgb(col[1]) if isinstance(col, list) else hexrgb(DECAL["white"])
         t1, t2 = idx[s_[m1]], idx[s_[m2]]
@@ -1090,7 +1126,7 @@ def half(a):
     return (a[0::2, 0::2] + a[1::2, 0::2] + a[0::2, 1::2] + a[1::2, 1::2]) / 4
 
 
-def ship_main(slugs, px, samples, panes_only=False, preview=None):
+def ship_main(slugs, px, samples, panes_only=False, preview=None, repaint=False):
     mpath = os.path.join(SHIPS_OUT, "manifest.json")
     man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
     man.setdefault("kept", {})
@@ -1109,7 +1145,7 @@ def ship_main(slugs, px, samples, panes_only=False, preview=None):
             man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
             continue
-        info = bake_ship(slug, px, samples)
+        info = repaint_ship(slug) if repaint else bake_ship(slug, px, samples)
         mesh = ship_entry(json.load(open(DETAIL)), slug).get("mesh", slug)
         n = int(open(os.path.join(SHIPS_RAW, mesh + ".obj")).readline().split()[1])
         info["n"] = n
@@ -1136,7 +1172,7 @@ def main():
         use_faction(arg("--detail", ""))
     if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only]
         return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv,
-                         arg("--preview", None))
+                         arg("--preview", None), "--repaint" in argv)
     names = arg("--tile", ",".join(TILES)).split(",")
     samples, ppm = int(arg("--samples", "32")), float(arg("--ppm", "128"))
     os.makedirs(OUT, exist_ok=True); os.makedirs(RAW, exist_ok=True)
