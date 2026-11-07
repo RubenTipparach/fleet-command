@@ -31,9 +31,10 @@ public enum GroupRole { Enemy, Ally, Neutral }
 /// <summary>A group of ships in a mission's battle. Tag marks the ship an objective is about: flagship, prize (to take,
 /// not destroy), rescue (to keep alive) or decoy.
 /// BearingDeg and RangeKm place an enemy group (clockwise from ahead; default spread ahead at 10 km); ShipName names its
-/// tagged ship (a prize, a flagship).</summary>
+/// tagged ship (a prize, a flagship). Hull "freighter" fields the faction's freighter (CampaignData.FreighterOf) in place of a
+/// warship of its tier; a freighter keeps her course and never closes to fight, whatever her side.</summary>
 public sealed record MissionGroup(string Id, Template Faction, Expr Count, GroupRole Role, Template Label, string? Tag, Expr? Tier,
-    double? BearingDeg, double? RangeKm, Template? ShipName);
+    double? BearingDeg, double? RangeKm, Template? ShipName, string? Hull = null);
 
 /// <summary>An objective: Primary ones decide win or lose, the rest lift the grade. Done is checked when the battle ends;
 /// ByWithdraw: withdrawing meets it, as breaking out of an ambush does.</summary>
@@ -50,9 +51,11 @@ public sealed record MissionMarker(string Id, Template Label, double BearingDeg,
 /// <summary>A next mission offered when this one ends: the script, where (its own where, home, here, or the fleet's sector), and data it carries.</summary>
 public sealed record NextMission(string Mission, string At, IReadOnlyDictionary<string, Template> Data);
 
-/// <summary>One outcome rule: when it holds, what it pays. Credits and prestige are expressions; null prestige is the grade's.</summary>
+/// <summary>One outcome rule: when it holds, what it pays. Credits and prestige are expressions; null prestige is the grade's.
+/// Haul (a faction) brings the battle's freighter into the fleet with her cargo, worth HaulCr credits when she is cashed out at
+/// a port (Campaign.CashOut).</summary>
 public sealed record MissionOutcome(Expr? When, Expr? Credits, Expr? Prestige, IReadOnlyDictionary<Template, Expr> Standing, Template? Prize,
-    IReadOnlyList<NextMission> Next, Template? Log);
+    IReadOnlyList<NextMission> Next, Template? Log, Template? Haul = null, Expr? HaulCr = null);
 
 /// <summary>A grading rule: when it holds, the grade.</summary>
 public sealed record GradeRule(Expr When, string Grade);
@@ -71,6 +74,10 @@ public sealed record MissionScript(
     public bool CanWithdraw { get; init; } = true;
     /// <summary>How often a contract is offered against the others: a weight of 4 is picked four times as often as 1.</summary>
     public double Weight { get; init; } = 1;
+    /// <summary>An encounter: never offered at random, only when the fleet shares a sector with a freighter (Campaign.Meet),
+    /// and gone at the end of the turn, when she moves on (owner, 2026-11-07: "no mision flag needed. Just whenever you are
+    /// on the same tile as freighter, you get a mission option").</summary>
+    public bool Encounter { get; init; }
 }
 
 /// <summary>Reads mission files. Each is checked against the names its scopes provide (Scopes below).</summary>
@@ -107,7 +114,7 @@ public static class MissionLoader
         // a contract may be withdrawn from; a story or special mission is seen through (owner, 2026-11-07: "some missions
         // withdraw is not possible (main story or special missions), general missions is fine to withdrawl")
         string kind = o.Str("kind", "contract");
-        if (kind is not ("contract" or "story" or "special")) throw new DataError($"{file}.kind: 'contract', 'story' or 'special', not '{kind}'");
+        if (kind is not ("contract" or "story" or "special" or "encounter")) throw new DataError($"{file}.kind: 'contract', 'story', 'special' or 'encounter', not '{kind}'");
         string glyph = o.Str("glyph");
         if (glyph.Length != 1) throw new DataError($"{file}.glyph: one character");
         double reward = o.Num("reward_cr");
@@ -175,7 +182,9 @@ public static class MissionLoader
             foreach (StrictJson r in o.ObjList("result")) results.Add(Outcome(r, offerVars.Concat(Scopes.Grade).Concat(Scopes.Result)));
 
         var m = new MissionScript(id, o.Str("name"), glyph, kind == "story", o.Str("type", ""), reward, turns, where, setup, brief, objective,
-            needs, battles, grades, results, follow, file) { CanWithdraw = kind == "contract", Weight = weight };
+            needs, battles, grades, results, follow, file) { CanWithdraw = kind is "contract" or "encounter", Weight = weight, Encounter = kind == "encounter" };
+        if (m.Encounter && !battles.Any(b => b.Groups.Any(g => g.Hull == "freighter")))
+            throw new DataError($"{file}.battle: an encounter is fought round the freighter met, so a group needs hull 'freighter'");
         o.Done();
         return m;
     }
@@ -197,7 +206,9 @@ public static class MissionLoader
             if (tag != null && !Tags.Contains(tag)) throw new DataError($"{g.Where}.tag: one of {string.Join(", ", Tags)}");
             var grp = new MissionGroup(gid, Tpl(g, "faction"), NumEx(g, "count"), Enum.Parse<GroupRole>(role, true),
                 g.Has("label") ? Tpl(g, "label") : Template.Parse("", g.Where), tag, g.Has("tier") ? NumEx(g, "tier") : null,
-                g.Has("bearing_deg") ? g.Num("bearing_deg") : null, g.Has("range_km") ? g.Num("range_km") : null, g.Has("ship_name") ? Tpl(g, "ship_name") : null);
+                g.Has("bearing_deg") ? g.Num("bearing_deg") : null, g.Has("range_km") ? g.Num("range_km") : null, g.Has("ship_name") ? Tpl(g, "ship_name") : null,
+                g.Has("hull") ? g.Str("hull") : null);
+            if (grp.Hull is not (null or "freighter")) throw new DataError($"{g.Where}.hull: 'freighter' or left out, not '{grp.Hull}'");
             if (grp.RangeKm is <= 0 or > 400) throw new DataError($"{g.Where}.range_km: above 0 and at most 400");
             if (grp.ShipName != null) Check(grp.ShipName.Names, vars, Scopes.OfferCalls, $"{g.Where}.ship_name");
             Check(grp.Faction.Names, vars, Scopes.OfferCalls, $"{g.Where}.faction");
@@ -267,8 +278,11 @@ public static class MissionLoader
             }
             s.Done();
         }
-        Template? prize = r.Has("prize") ? Tpl(r, "prize") : null, log = r.Has("log") ? Tpl(r, "log") : null;
-        foreach (Template? t in new[] { prize, log }) if (t != null) Check(t.Names, vars, calls, r.Where);
+        Template? prize = r.Has("prize") ? Tpl(r, "prize") : null, log = r.Has("log") ? Tpl(r, "log") : null, haul = r.Has("haul") ? Tpl(r, "haul") : null;
+        foreach (Template? t in new[] { prize, log, haul }) if (t != null) Check(t.Names, vars, calls, r.Where);
+        Expr? haulCr = r.Has("haul_cr") ? NumEx(r, "haul_cr") : null;
+        if ((haul == null) != (haulCr == null)) throw new DataError($"{r.Where}: haul and haul_cr go together");
+        if (haulCr != null) Check(haulCr.Names, vars, calls, $"{r.Where}.haul_cr");
         var next = new List<NextMission>();
         if (r.Has("next"))
             foreach (StrictJson n in r.ObjList("next"))
@@ -286,7 +300,7 @@ public static class MissionLoader
                 n.Done();
             }
         r.Done();
-        return new MissionOutcome(when, credits, prestige, standing, prize, next, log);
+        return new MissionOutcome(when, credits, prestige, standing, prize, next, log, haul, haulCr);
     }
 
     private static MissionText Text(StrictJson o, string key, IEnumerable<string> vars)

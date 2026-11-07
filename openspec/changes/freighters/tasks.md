@@ -19,7 +19,11 @@
       lived-in decks, the faction emblem, hull lights (v12: 2048 px, 32 samples, `tools/blender/painted_bake.py --faction
       freighters`, layout `data/ships/freighters/hull_detail.json`, maps in `assets/ships/freighters/`)
 - [ ] 2.2b The Twin ledger's bow: a thin seam shows down its centre where the two arms meet
-- [ ] 2.3 Exported by `tools/mockups/export_ships.mjs` with named nodes (drive, point defence, holds as damage zones)
+- [x] 2.3 Exported by `tools/mockups/export_ships.mjs` (approved for implementation, owner 2026-11-07: "implement in game"):
+      the page builds its picks on `docs/mockups/lib/baked-fleet.js`, each glb with its drive, reactor, lamps and breakup, its
+      containers written as `cargo` in `assets/ships/manifest.json` (`window.MOCKUP_CARGO`); the container's low box by
+      `tools/blender/build_container.py --glb`
+- [ ] 2.3b The holds as damage zones (each container stack a breakable piece)
 - [x] 2.2a The baker's loader: a ship names its faction's look (`load_detail` in `tools/blender/painted_bake.py`), a look
       `from` a faction's own hull_detail.json, so the Hunt's and the Institute's looks have one copy; the Concord's and
       Krai's written in the freighters' file until their lines move onto the standard
@@ -32,7 +36,11 @@
 
 ## 3. The game (after approval for implementation, a separate request)
 
-- [ ] 3.1 A freighter battle class for each approved faction in `data/battle/classes.json`, with its model; the campaign's
-      `freighter` hull takes its faction's class in place of `kff`
-- [ ] 3.2 The campaign map draws each faction's freighter in place of the placeholder (`MapPieces.cs`, `game-flow.html`)
-- [ ] 3.3 Convoy defense, Convoy ambush and Distress field the faction's own freighters; a playtest of each from both sides
+- [x] 3.1 A freighter battle class for each approved faction in `data/battle/classes.json` (`fr`, `krai_fr`, `hunt_fr`,
+      `kelvane_fr`), with its model and its containers (`src/Game/View/Cargo.cs`), on every damage range; each campaign
+      faction names its freighter hull (`factions.<id>.freighter`), the Vos keeping the `kff` stand-in
+- [x] 3.2 The campaign map draws each faction's freighter in place of the placeholder (`CampaignMap.cs`; the mockup's own
+      `game-flow.html` is a sync task, `openspec/changes/freighter-missions` 3.1)
+- [x] 3.3 Convoy defense, Convoy ambush and Distress field the faction's own freighters (`hull: "freighter"`)
+- [ ] 3.3b A playtest of each from both sides
+- [ ] 3.4 The Kelvane freighter in the campaign once the Institute joins it (it has no ports or routes yet)

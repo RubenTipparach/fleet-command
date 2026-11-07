@@ -116,7 +116,8 @@ public sealed class FactionFleet
     public int? GoalR { get; set; }
 }
 
-/// <summary>A freighter running between two of its faction's ports, one sector a turn, turning back at each end.</summary>
+/// <summary>A freighter running between two of its faction's ports, one sector a turn, turning back at each end. One that
+/// was destroyed or taken is off the route for Out turns (rules.freighter_refit_turns), then sails again from where she was.</summary>
 public sealed class Freighter
 {
     public string Fac { get; set; } = "";
@@ -127,6 +128,9 @@ public sealed class Freighter
     public int I { get; set; }
     public int Step { get; set; } = 1;
     public double Dir { get; set; }
+    public int Out { get; set; }
+    /// <summary>Her sector now.</summary>
+    public (int C, int R) Here() => (Route[I][0], Route[I][1]);
 }
 
 /// <summary>One ship of the player's fleet: its hull, fittings by hardpoint group, supplies, and hull left (percent).</summary>
@@ -140,6 +144,9 @@ public sealed class CampShip
     public Dictionary<string, int> Supplies { get; set; } = new();
     public string Behaviour { get; set; } = "Escort";
     public double HullPct { get; set; } = 100;
+    /// <summary>A freighter taken with her cargo: what her cargo pays when cashed out at a port (Campaign.CashOut), credits;
+    /// 0 for every other ship. A ship with a haul sails with the fleet but stays out of its battles.</summary>
+    public int Haul { get; set; }
 }
 
 /// <summary>A mission on offer (or accepted): its script, sector, turns left (null for a story mission), strength, reward

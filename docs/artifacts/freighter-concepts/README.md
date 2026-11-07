@@ -62,3 +62,7 @@
 - 2026-11-07, cloud session: version 15, version id `1794091115-0876` (owner, of the containers: "also containers dont seem
   to be lit correctly", "they are glowing"): the containers' room environment turned down (nearly off at night), metalness
   0.12, and their paint kept to the hulls' level (0.62 by day, 0.16 at night).
+- 2026-11-07, cloud session: version 16, not yet published (the desktop session publishes; owner: "implement in game"):
+  the four picks built on the shared `docs/mockups/lib/baked-fleet.js` (as the Hunt's and the Institute's), so
+  `tools/mockups/export_ships.mjs` exports them for the game; `window.MOCKUP_CARGO(slug)` gives each pick's containers
+  (place, turn, scale, colour) for the export. Looks the same as version 15.

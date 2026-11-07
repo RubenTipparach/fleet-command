@@ -72,12 +72,13 @@
    "groups": [
     {
      "id": "freighter",
-     "faction": "neutral",
+     "faction": "{side}",
      "count": 1,
      "role": "neutral",
      "tag": "rescue",
      "label": "{ship}",
-     "ship_name": "{ship}"
+     "ship_name": "{ship}",
+     "hull": "freighter"
     },
     {
      "id": "raiders",
