@@ -1242,10 +1242,23 @@ def build(lo, S, D, seed):
     PF = D["pane_frame_m"]
     for F in S.get("bays", []):
         at_both(F, lambda F, M, cut: bay(F, M, cut, surf, PF["bay"]))
+    def in_a_bay(p, margin=1.0):
+        """Whether p lies on a bay's mouth or within margin metres of it, on either side (the bays are placed first)."""
+        for B in PANES:
+            if B["kind"] != "bay":
+                continue
+            for sx in (1, -1):
+                d = Vector((p.x * sx, p.y, p.z)) - Vector(B["c"])
+                if abs(d.dot(Vector(B["n"]))) < 1.5 and abs(d.dot(Vector(B["u"]))) < B["w_m"] / 2 + margin \
+                        and abs(d.dot(Vector(B["v"]))) < B["h_m"] / 2 + margin:
+                    return True
+        return False
     for F in S.get("windows", []):
         for loc, nor, lit_, kind in window_rows(F, surf):
             if not fits(surf, frame_at(loc, nor), 1.1, 0.6, PF["window"]):
                 continue   # it would cross a bend
+            if in_a_bay(loc):
+                continue   # never through a bay's mouth (owner, 2026-11-07: "windows intersected with shuttle bay")
             for m in (False, True):
                 cut = []
                 feats.append((window(lit_, frame_at(loc, nor, m), cut, PF["window"], kind), loc))
