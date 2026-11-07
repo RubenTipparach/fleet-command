@@ -6,7 +6,7 @@
   `tools/mockups/inline_data.py`; re-run it before publishing.
 - OpenSpec change: `openspec/changes/freighters/`.
 - Shots: `docs/screenshots/mockups/freighter-concepts/` (`tools/mockups/shoot.mjs`): the board, the board from above, the
-  board in clay, each faction's three and each concept from its bow quarter, at desktop, phone landscape and portrait.
+  board in clay, each faction's two and each concept from its bow quarter, at desktop, phone landscape and portrait.
 
 ## Versions
 
@@ -21,3 +21,13 @@
   and ids are never reused). Its renaming also touched names inside the inlined libraries.
 - 2026-11-07, cloud session: version 3, version id `1794040627-3914`: the libraries re-inlined exactly
   (`inline_data.py --check` passes), the page loading with no errors.
+- 2026-11-07, cloud session: version 4, version id `1794051997-b796` (owner: "Freighter should only focus on approved
+  factions", "Narrow down freighter options to ones where cargo is visible. And make sure all cargo is the same size",
+  "The containers I mean", "The cargo hull shape it self can be the way it was in the draft"): eight concepts, two for each
+  approved faction (the Concord, the Krai Warhost, the Ssarith Hunt, the Kelvane Institute), every one carrying the same
+  6 by 6 by 12 m container in sight; the hulls as drafted. Survey section V is now V1-V5.
+- 2026-11-07, cloud session: version 5, version id `1794052249-66bc` (owner, on a phone: "Nothing renders", the labels and
+  meter drawn but the 3D view black): no flatShading on any material (the hulls are unindexed, so each face carries its
+  own normal; flatShading's screen-space derivatives can come out zero on a phone's GPU), the canvas resized whenever its
+  stage changes size, and a notice if the 3D view loses its graphics context. A phone emulation (Pixel 7) renders it;
+  the owner's phone is to confirm.

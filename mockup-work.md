@@ -43,7 +43,7 @@ account and every link here is updated.
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
 | 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | **Approved for implementation** (2026-11-07, owner in conversation: "perfect, implment these ships in game"; approved for build by the same words; in the game by change `kelvane-ships-engine`). Drafted (2026-11-07, v10: 215 the Gallery fighter, detailed, the carrier's craft; v9: six variants of the Gallery bus; v8: every plate corner diagonal, shuttles overhead in the carrier, eight shuttle designs; v7: engineered machinery in rows, the carrier's pads and craft, diagonal corners, warm rooms; v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
-| 24 | Freighters: a freighter for every faction in the game, a blockout board to pick from | Drafted (2026-11-07, v3) | `freighters` | `docs/mockups/freighter-concepts.html` | https://claude.ai/artifact/Gkv9jzwEZd258noT7WGtv4 |
+| 24 | Freighters: a freighter for every approved faction, a blockout board to pick from | Drafted (2026-11-07, v5) | `freighters` | `docs/mockups/freighter-concepts.html` | https://claude.ai/artifact/Gkv9jzwEZd258noT7WGtv4 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -1107,5 +1107,12 @@ frigate stand-in. The reference game's convoys: SFC3 manual, printed pages 37 an
   hull is one closed grown structure on `docs/mockups/lib/hull-grow.js`; only the cargo is placed. In faction colours or
   clay, beside the Concord Petrel and a person.
 - **v2, v3**: the notes name survey section V; the libraries re-inlined.
-- **Stage:** Drafted (2026-11-07, v3).
-- **Questions:** survey V1-V6 (traditions, picks, one class or three, arms, size, the Kethran and Vos now or later).
+- **v4** (owner, 2026-11-07: "Freighter should only focus on approved factions", "Narrow down freighter options to ones
+  where cargo is visible. And make sure all cargo is the same size", "The containers I mean", "The cargo hull shape it
+  self can be the way it was in the draft"): eight concepts, two for each of the Concord (1-2), Krai (3-4), Hunt (5-6) and
+  Institute (7-8), every one carrying the same 6 by 6 by 12 m container in sight; the holds and the Kethran and Vos
+  concepts are gone; the hulls are as drafted, the Twin ledger's containers stacked between its hulls.
+- **v5** (owner, on a phone: "Nothing renders"): no flatShading, the canvas follows its stage's size, a notice if the 3D
+  view loses its graphics context.
+- **Stage:** Drafted (2026-11-07, v5).
+- **Questions:** survey V1-V5 (traditions, picks, one class or two, arms, size).

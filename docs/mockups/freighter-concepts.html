@@ -6,9 +6,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap">
 <style>
-/* Mockup 24 (OpenSpec change freighters, mockup-work.md), version 1: a freighter for every faction in the game, a blockout
-   board. The owner, 2026-11-07: "we need to design freighter for every faction in the game currently". Breadth before
-   depth, as with the Ssarith Hunt (mockup 12) and the Kelvane Institute (mockup 23): eighteen massings, three a faction,
+/* Mockup 24 (OpenSpec change freighters, mockup-work.md), version 4: a freighter for every approved faction, a blockout
+   board. The owner, 2026-11-07: "we need to design freighter for every faction in the game currently", then "Freighter
+   should only focus on approved factions", "Narrow down freighter options to ones where cargo is visible. And make sure all
+   cargo is the same size". Breadth before depth, as with the Ssarith Hunt (mockup 12) and the Kelvane Institute (mockup 23):
+   eight massings, two for each of the Concord, Krai, Hunt and Institute, every one carrying the same container,
    each grown as one structure on the shared docs/mockups/lib/hull-grow.js, each from a tradition inside its faction
    (drafted where the owner has written none, for the owner to keep, change or reject), none from a species' body.
    Layout: one dark board, the controls in a column at the left (a sheet at the bottom in portrait), the hulls filling the rest. */
@@ -66,6 +68,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 #status { font: 400 18px/1.15 var(--display); letter-spacing: 0.04em; text-transform: uppercase; text-shadow: 0 0 6px #000; }
 #tip { font-size: 13px; color: var(--dim); text-shadow: 0 0 4px #000; }
 #meter { font: 400 11px/1 var(--mono); color: var(--faint); }
+#lost { position: fixed; z-index: 3; left: 50%; top: 40%; transform: translate(-50%, -50%); max-width: min(420px, calc(100vw - 32px)); margin: 0; padding: 12px 14px; background: var(--panel); border: 1px solid var(--accent); color: var(--ink); font-size: 14px; }
 @media (max-width: 900px) { :root { --pw: 300px; } #panel h1 { font-size: 20px; } }
 @media (max-width: 900px) and (max-height: 500px) { .sub { display: none; } #tip { display: none; } }
 @media (max-aspect-ratio: 3/4) {
@@ -81,7 +84,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Freight<span>ers</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 24, v1. <code>freighters</code>. Eighteen freighter blockouts, three for each faction in the game, to pick from.</p>
+    <p class="sub">Mockup 24, v4. <code>freighters</code>. Eight freighter blockouts, two for each approved faction, every one carrying the same container, to pick from.</p>
   </header>
   <div class="scroll">
     <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div><div class="row" id="facRow"></div></div>
@@ -90,11 +93,12 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
     <div class="grp"><h2>Measured</h2><dl class="facts" id="facts"></dl></div>
     <div class="grp notes"><h2>Notes</h2>
-      <p>Version 1 (you: "we need to design freighter for every faction in the game currently"). Breadth first, as with the Hunt and the Institute: three massings for each of the six factions, so you can pick before anything is detailed.</p>
+      <p>Version 1 (you: "we need to design freighter for every faction in the game currently"). Breadth first, as with the Hunt and the Institute, so you can pick before anything is detailed.</p>
+      <p>Version 4 (you: "Freighter should only focus on approved factions", "Narrow down freighter options to ones where cargo is visible. And make sure all cargo is the same size", "The containers I mean", "The cargo hull shape it self can be the way it was in the draft"): the four factions whose ships are approved and in the game, two freighters each with their cargo in sight, every one carrying the same container, 6 by 6 by 12 m. The hulls are as drafted.</p>
       <p>Freighters already have work in the game. The campaign map runs each faction's freighters along its trade routes, the convoy missions defend or raid three of them, and a Distress call can come from one. Today they fly as a placeholder.</p>
-      <p>Each faction offers three ways to carry cargo. A spine racks its loads outside along a spine, a hold shuts them inside a deep hull, and a cradle parts round its cargo and closes again beyond it.</p>
-      <p>No faction has a merchant tradition written down. The Kethran and the Vos have no ships yet, only a line each from their consoles. So every tradition here is drafted inside its faction for you to keep, change or reject. Each concept names the one it comes from, and none is drawn from a species' body.</p>
-      <p>Each hull is one grown structure on the same code as the Hunt's and the Institute's ships (Ship Design Bible, chapter 14), in its faction's colours. The cargo is the only thing placed, as a crate is set on a deck.</p>
+      <p>A spine racks its containers outside along a spine; a cradle parts round them and closes again; the Institute's Twin ledger carries them between two hulls open at the bow.</p>
+      <p>No faction has a merchant tradition written down, so each concept names a tradition inside its faction, drafted where you have written none, for you to keep, change or reject. None is drawn from a species' body.</p>
+      <p>Each hull is one grown structure on the same code as the Hunt's and the Institute's ships (Ship Design Bible, chapter 14), in its faction's colours. The containers are the only thing placed, as a crate is set on a deck.</p>
       <p>Survey section V asks which concept goes on for each faction, and which traditions stay. Its link is on the tracker.</p>
     </div>
   </div>
@@ -518,66 +522,52 @@ const rim = new THREE.DirectionalLight(0xb8c8e0, 0.5); rim.position.set(300, -10
 const grid = new THREE.GridHelper(1400, 28, 0x26303a, 0x141a20); grid.position.y = -40; scene.add(grid);
 
 // ---------------------------------------------------------------------------------------------------------------
-// The six factions: each one's colours from its console skin (openspec/changes/console-skins, the ship lines' designs),
+// The four approved factions (their ships approved and in the game: mockups 6, 7, 12 and 23): each one's colours from its console skin (openspec/changes/console-skins, the ship lines' designs),
 // and the drafted traditions its concepts come from (openspec/changes/freighters/design.md). Every tradition not written
 // by the owner is provisional (survey V1).
 const FACTIONS = [
   { id: 'concord', name: 'Concord', short: 'CON', line: 'A federation of many species that decides by consent; explores, mediates, defends. Octagonal hulls, pearl over grey, Concord blue.' },
-  { id: 'kethran', name: 'Kethran Hegemony', short: 'KET', line: 'An empire of rank and conquest; fusion, foundries, armour plate. No ships yet: stepped armoured hulls over a proud belt, gunmetal, oxide and ember.' },
-  { id: 'vos', name: 'Vos Syndicate', short: 'VOS', line: 'Free clans of raiders: luck, loot, loyalty to the crew; salvage, patched, nothing matches. No ships yet: rust plate, brass and verdigris patches.' },
   { id: 'krai', name: 'Krai Warhost', short: 'KRA', line: 'War is the only honest test; tradition kept, carried and added to. Blades edge first: blued steel, bronze edges, pale gold light.' },
   { id: 'ssarith', name: 'Ssarith Hunt', short: 'SSA', line: 'The hunt is the only honest sport. A hood over a narrow neck, reaching forward, light in strips: olive armour, green livery.' },
   { id: 'kelvane', name: 'Kelvane Institute', short: 'KEL', line: 'Truth is measured, never assumed. A rolled case, clean outside: champagne, dark smoked glass, amber light; never pods.' },
 ];
 const TRADITIONS = {
-  gauge: { name: 'The Common Gauge', drafted: true, src: 'Many worlds agree one standard: every member world packs to the same octagonal cassette, 12 m by 6 m, so any world\'s cargo fits any Concord hold and no world\'s own standard wins. Many colours, one gauge.' },
-  hand: { name: 'The Open Hand', drafted: true, src: 'The mediators\' way: aid goes first and in the open. The hold opens wide down both flanks, so anyone can see what is carried.' },
-  tithe: { name: 'The Tithe Road', drafted: true, src: 'The great houses send their due to the throne under armour. The cargo is never shown: the hold is a stepped citadel.' },
-  foundry: { name: 'The Foundries', drafted: false, src: 'From the written technology: fusion, foundries, armour plate; machines proud of their mass. Ore and metal carried in a deep hull that shows its weight.' },
-  houses: { name: 'The Great Houses', drafted: false, src: 'From the emblem: the empire\'s prow leads, its great houses flank it. Two hold hulls flank the cargo behind an armoured prow.' },
-  prize: { name: 'The Prize Share', drafted: true, src: 'What a crew takes is the crew\'s. Loads are lashed on as they are taken, no two alike.' },
-  breakers: { name: 'The Breakers', drafted: false, src: 'From the written technology: salvage, patched and grown over; nothing matches, everything works. A hull made of other ships\' sections.' },
-  raft: { name: 'The Clan Raft', drafted: true, src: 'A clan ties its hulls together and shares one drive. Two hulls of different sizes, joined, the loot slung between.' },
+  gauge: { name: 'The Common Gauge', drafted: true, src: 'Many worlds agree one standard: every member world packs to the same container, so any world\'s cargo fits any Concord freighter and no world\'s own standard wins. Many colours, one gauge.' },
   baggage: { name: 'The Host\'s Baggage', drafted: true, src: 'A war host carries its own, edge first: nothing flies that is not a blade, its cargo included.' },
-  carried: { name: 'Carried, never replaced', drafted: false, src: 'From the emblem: tradition is kept, carried and added to, never replaced. A barge lengthened hold by hold, each old hold kept, bronze seams between.' },
-  watch: { name: 'The Long Watch', drafted: false, src: 'Drafted for the emblem: stargazers turned navigators, who carry a hunt\'s stores the long way out. The navigators\' bridge reaches far forward.' },
   tally: { name: 'The Tally Keepers', drafted: false, src: 'Drafted for the emblem: the witnesses. Everything carried is counted, row by row, each row marked by its light.' },
   chase: { name: 'The Fair Chase', drafted: false, src: 'Drafted for the emblem: the hunt\'s law. Its stores are never prey: an unarmed tender, marked by its livery.' },
-  cal: { name: 'The Calibrators', drafted: false, src: 'One of the Institute\'s schools: a reading is only as true as its standard. The hold is one sealed case in whole ratios.' },
   field: { name: 'The Field Stations', drafted: false, src: 'One of the Institute\'s schools: expedition scientists years from home. The case parts round its sealed stores; a gallery of glass looks out forward.' },
   note: { name: 'The Open Notebook', drafted: false, src: 'One of the Institute\'s schools: no result is true until it is repeated. Every consignment carried twice, in two identical hulls.' },
 };
-const WAYS = { spine: 'Spine: loads racked outside along a spine', hold: 'Hold: the cargo shut inside a deep hull', cradle: 'Cradle: the hull parts round its cargo and closes again' };
+const WAYS = { spine: 'Spine: containers racked outside along a spine', cradle: 'Cradle: the hull parts round its containers and closes again', between: 'Between: the containers ride between two hulls, open at the bow' };
 
-// Each faction's materials: hull plate, the inner walls of an opening, its band and stripe, patches (the Vos), dark glass
+// Each faction's materials: hull plate, the inner walls of an opening, its band and stripe, dark glass
 // (well), light (glow) and the drive's recess (dark). Clay swaps in plain grey for the massing.
-const std = (c, rough = 0.55, metal = 0.35) => new THREE.MeshStandardMaterial({ color: c, roughness: rough, metalness: metal, flatShading: true });
+// Faceted without flatShading: the grown hulls are unindexed, so each face already carries its own normal (flatShading's
+// screen-space derivatives can come out zero on a phone's GPU at board distances and draw the whole hull black).
+const std = (c, rough = 0.55, metal = 0.35) => new THREE.MeshStandardMaterial({ color: c, roughness: rough, metalness: metal });
 const smooth = (c, rough = 0.5, metal = 0.35) => new THREE.MeshStandardMaterial({ color: c, roughness: rough, metalness: metal });
 const lit = (c) => new THREE.MeshBasicMaterial({ color: c });
 const darkM = new THREE.MeshStandardMaterial({ color: 0x15181c, roughness: 0.8, metalness: 0.2, side: THREE.DoubleSide });
 const FM = {
   concord: { hull: std(0xe6e3db, 0.5, 0.3), inner: std(0x9aa1a9), band: std(0x8d939b), stripe: std(0x1a66db, 0.45, 0.3), well: std(0x0e1724, 0.2, 0.1), glow: lit(0xa8d4ff), dark: darkM },
-  kethran: { hull: std(0x4a4f55, 0.5, 0.6), inner: std(0x2b2f33, 0.6, 0.6), band: std(0x9e2a1e, 0.6, 0.4), stripe: std(0xd9483b, 0.5, 0.3), well: std(0x121314, 0.3, 0.2), glow: lit(0xffb547), dark: darkM },
-  vos: { hull: std(0x8f4a2e, 0.75, 0.4), inner: std(0x4a2a1c, 0.8, 0.3), band: std(0xd6a043, 0.5, 0.6), patch: std(0x3fb7a3, 0.7, 0.3), patch2: std(0xd6a043, 0.55, 0.6), patch3: std(0xb9ab8c, 0.8, 0.2), well: std(0x2a1410, 0.4, 0.1), glow: lit(0xffd27a), dark: darkM },
   krai: { hull: std(0x46536a, 0.4, 0.7), inner: std(0x2b333d, 0.5, 0.6), band: std(0xb07a3a, 0.35, 0.8), well: std(0x0c1016, 0.25, 0.2), glow: lit(0xffe2a0), dark: darkM },
   ssarith: { hull: std(0x6e6c45, 0.65, 0.35), inner: std(0x4d4b31, 0.7, 0.3), band: std(0x2c9a52, 0.55, 0.3), stripe: std(0x8b7f55, 0.6, 0.3), well: std(0x10140c, 0.3, 0.1), glow: lit(0xd8ffe0), dark: darkM },
   kelvane: { hull: smooth(0xc9bfa9, 0.5, 0.35), inner: smooth(0x8f876f, 0.55, 0.3), well: smooth(0x1b150d, 0.18, 0.1), glow: lit(0xffc865), dark: darkM },
 };
-const CLAYC = { hull: 0x8a8a86, inner: 0x6c6c69, band: 0x9a9a96, stripe: 0x9a9a96, patch: 0x7d7d7a, patch2: 0x959591, patch3: 0x858582, well: 0x4e4e4c };
+const CLAYC = { hull: 0x8a8a86, inner: 0x6c6c69, band: 0x9a9a96, stripe: 0x9a9a96, well: 0x4e4e4c };
 const CLAY = {}; for (const [k, c] of Object.entries(CLAYC)) CLAY[k] = std(c, 0.85, 0.05);
 const CLAY_SMOOTH = {}; for (const [k, c] of Object.entries(CLAYC)) CLAY_SMOOTH[k] = smooth(c, 0.85, 0.05);
 // The cargo, each faction's loads (Concord: many worlds, one gauge, so many colours)
 const CARGO = {
   concord: [0xc9cfd6, 0xe0b84a, 0x4fa3a5, 0xc46a4a, 0x7d8fc9, 0xe6e3db, 0x8fb05a],
-  kethran: [0x2b2f33, 0x3a3f45, 0x9e2a1e, 0x4a4f55],
-  vos: [0xa8482a, 0xd6a043, 0x3fb7a3, 0xefe0bd, 0x5b4636, 0x7a6a4a, 0xd23a4a],
   krai: [0x2e3846, 0x3a4658, 0x8a5a2a],
   ssarith: [0x5c5a39, 0x7b7650, 0x2c6a42],
-  kelvane: [0xd8cfb8, 0xb9ae94],
+  kelvane: [0xb59a5e, 0x6f6450, 0xd8cfb8],   // amber, smoked and champagne, so they read against the hull
 };
 
 // ---------------------------------------------------------------------------------------------------------------
-// The board's cross-section, fsec (one layout for all eighteen, so they can be compared; each faction sets it its own
+// The board's cross-section, fsec (one layout for all eight, so they can be compared; each faction sets it its own
 // way, and a pick moves onto its faction's own section when it is grown again at its size). 28 points counter-clockwise
 // from the keel (0) up the port side (+x) to the crown (14) and back down the starboard side; point i and point 28 - i
 // mirror, edge k (point k to k + 1) and edge 27 - k too.
@@ -585,7 +575,7 @@ const CARGO = {
 //   5-6 the belt (bh tall, standing bw proud, at height ym), 7 the shoulder's outer edge (height sy), 8 its inner edge
 //   (half beam hbt, sh higher: inward for a step, outward for a hood), 9 the top corner's foot, 10-11 the top corner
 //   (radius rt), 12 its end, 13 the deck's inner end (cw), 14 the crown (cr above the deck); 0 the keel (kd below).
-// ox moves the whole section to one side; sa scales its starboard half (the Vos: nothing matches).
+// ox moves the whole section to one side; sa scales its starboard half (unused on this board).
 // Edges: 0 the bottom, 1-3 the bottom corner, 4 the lower side, 5 the belt, 6 the upper side, 7 the shelf, 8 the riser,
 // 9-11 the top corner, 12 the deck, 13 the crown.
 const FSEC_BAD = [];
@@ -644,24 +634,22 @@ const within = (zm, spans) => spans.some(([a, b]) => zm > a && zm < b);
 const skin = (g, f) => new HG.Skin(g, { mats: FM[f], sec: fsec, crease: f === 'kelvane' ? 40 : 0, fanCaps: true });
 const nose = (K, S, z, kind = 'hull') => K.branch('nose', S, z, [[0, 1, 1, 0, 0]], { capKind: kind });
 
-// The cargo: loads placed as a crate is set on a deck (the only placed pieces on the page), one instanced mesh a kind.
-// items: [x, y, z, w, h, l, colour index, turn about z (deg), turn about y (deg)]. oct: the Concord's octagonal cassette.
-const BOX = new THREE.BoxGeometry(1, 1, 1), OCT = new THREE.CylinderGeometry(0.5 / Math.cos(PI / 8), 0.5 / Math.cos(PI / 8), 1, 8).rotateY(PI / 8).rotateX(PI / 2);
-let rs = 1; const rnd = () => { rs = (rs * 16807) % 2147483647; return (rs - 1) / 2147483646; };
-function loads(g, f, items, { oct = false } = {}) {
+// The cargo: one container for every freighter, 6 by 6 by 12 m (owner, 2026-11-07: "make sure all cargo is the same size",
+// "The containers I mean"), placed as a crate is set on a deck (the only placed pieces on the page), one instanced mesh a
+// ship. items: [x, y, z, colour index, turn about x, y and z (deg)]; unturned, its 12 m runs along the ship.
+const CONTAINER_M = [6, 6, 12], BOX = new THREE.BoxGeometry(...CONTAINER_M);
+function loads(g, f, items) {
   if (!items.length) return;
-  const m = new THREE.InstancedMesh(oct ? OCT : BOX, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.65, metalness: 0.25, flatShading: true }), items.length);
-  const o = new THREE.Object3D(), cols = [];
-  items.forEach(([x, y, z, w, h, l, ci = 0, rz = 0, ry = 0], i) => { o.position.set(x, y, z); o.rotation.set(0, ry * PI / 180, rz * PI / 180); o.scale.set(w, h, l); o.updateMatrix(); m.setMatrixAt(i, o.matrix);
+  const m = new THREE.InstancedMesh(BOX, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.65, metalness: 0.25 }), items.length);
+  const o = new THREE.Object3D(), cols = [], d = PI / 180;
+  items.forEach(([x, y, z, ci = 0, rx = 0, ry = 0, rz = 0], i) => { o.position.set(x, y, z); o.rotation.set(rx * d, ry * d, rz * d); o.updateMatrix(); m.setMatrixAt(i, o.matrix);
     const c = new THREE.Color(CARGO[f][ci % CARGO[f].length]); cols.push(c); m.setColorAt(i, c); });
   m.userData.cargo = cols; m.name = 'cargo'; g.add(m);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// The eighteen. Bow toward +z, centred on z = 0; each `build` grows one hull and stows its cargo.
+// The eight. Bow toward +z, centred on z = 0; each `build` grows one hull and stows its cargo.
 const C0 = { hb: 8, top: 8, bot: -8, r: 3.2, bh: 1.4, ym: 0 };   // the Concord octagon (45 degree chamfers, upright sides)
-const KT = { hb: 14, top: 12, bot: -9, r: 1.6, rt: 2, bw: 1.6, bh: 2.4, ym: -3, hbt: 10, sy: 2, sh: 1.6 };   // the Kethran step over a proud belt
-const VS = { hb: 10, top: 9, bot: -8, r: 2.4, rt: 3, bw: 0.6, bh: 1.2, ym: -1 };   // the Vos: as the Kethran, nothing matching
 const KR = { hb: 8, top: 4, bot: -4, r: 3, rt: 3, kd: 6, cr: 5, bw: 0.7, bh: 0.6, ym: 0 };   // the Krai blade: a keel and a crest
 const SH = { hb: 11, top: 8, bot: -8, r: 3, rt: 2.2, hbt: 14, sy: 1.5, sh: 2.6, bh: 0.8, ym: -1 };   // the Ssarith hood over the lower hull
 const KV = { hb: 14, top: 10, bot: -10, r: 5, rt: 5, bh: 1.2, ym: 0, round: true };   // the Institute's rolled case
@@ -669,168 +657,86 @@ const KV = { hb: 14, top: 10, bot: -10, r: 5, rt: 5, bh: 1.2, ym: 0, round: true
 const BLOCKS = [
   // --- Concord --------------------------------------------------------------------------------------------------
   { n: 1, f: 'concord', tr: 'gauge', way: 'spine', name: 'Gauge carrier', len: 150,
-    tell: 'An octagonal spine with cassettes racked four round it, ring after ring; the command block raised aft over the drive.',
+    tell: 'An octagonal spine with containers racked four round it, ring after ring; the command block raised aft over the drive.',
     build(g) { const K = skin(g, 'concord'), base = { ...C0, hb: 11, top: 11, bot: -9, r: 4 }, blk = { ...base, top: 17, hbt: 6.5, sy: 11, sh: 0, rt: 2.2 }, sp = { ...C0, hb: 4.6, top: 4.6, bot: -4.6, r: 1.8, bh: 1 };
       const S = K.body([[-75, sc(base, 0.82)], [-70, base], [-66, base], [-65.5, blk], [-53, blk], [-52.5, base], [-49, base], [-45, sp], [64, sp], [70, sc(sp, 0.7)], [75, sc(sp, 0.32)]],
         (k, zm) => (E.belt(k) ? 'stripe' : E.riser(k) && zm > -65 && zm < -53 ? 'well' : E.lower(k) && zm < -46 ? 'band' : false));
       nose(K, S, 75, 'glow'); K.done();
-      const it = []; for (let z = -38; z <= 58; z += 13.2) for (const [x, y, ci] of [[0, 7.8, 0], [7.8, 0, 1], [0, -7.8, 2], [-7.8, 0, 3]]) it.push([x, y, z, 6, 6, 12, (ci + Math.round(z)) % 7]);
-      loads(g, 'concord', it, { oct: true }); } },
-  { n: 2, f: 'concord', tr: 'hand', way: 'hold', name: 'Open hall', len: 140,
-    tell: 'A deep octagonal hull with long dark bay doors down both flanks, its bridge on the crown forward.',
-    build(g) { const K = skin(g, 'concord'), c = { ...C0, hb: 15, top: 14, bot: -14, r: 6, bh: 1.6, ym: -2 }, blk = { ...c, top: 20, hbt: 7.5, sy: 14, sh: 0, rt: 2.5 };
-      const S = K.body([[-70, sc(c, 0.8)], [-64, c], [26, c], [26.5, blk], [44, blk], [44.5, c], [52, c], [62, { ...c, hb: 11, top: 10, bot: -11, r: 4.5 }], [70, { ...c, hb: 5, top: 4, bot: -5, r: 2, bh: 0.8, ym: -0.5 }]],
-        (k, zm) => (E.belt(k) ? 'stripe' : (E.lower(k) || E.upper(k)) && zm > -56 && zm < 22 ? 'well' : E.riser(k) && zm > 26 && zm < 44 ? 'well' : false));
-      nose(K, S, 70, 'well'); K.done(); } },
-  { n: 3, f: 'concord', tr: 'gauge', way: 'cradle', name: 'Gauge cradle', len: 160,
-    tell: 'The octagonal hull parts port and starboard round a rack of cassettes, three across and two high, and closes again at the bow.',
+      const it = []; for (let z = -38; z <= 58; z += 13.2) for (const [x, y, ci] of [[0, 7.8, 0], [7.8, 0, 1], [0, -7.8, 2], [-7.8, 0, 3]]) it.push([x, y, z, (ci + Math.round(z)) % 7]);
+      loads(g, 'concord', it); } },
+  { n: 2, f: 'concord', tr: 'gauge', way: 'cradle', name: 'Gauge cradle', len: 160,
+    tell: 'The octagonal hull parts port and starboard round a rack of containers, three across and two high, and closes again at the bow.',
     build(g) { const K = skin(g, 'concord'), c = { ...C0, hb: 13, top: 9, bot: -9, r: 3.8, bh: 1.4 }, blk = { ...c, top: 14, hbt: 7, sy: 9, sh: 0, rt: 2 };
       const glow = (k) => (E.belt(k) ? 'stripe' : false);
       const S = K.body([[-80, sc(c, 0.85)], [-74, c], [-73.5, blk], [-62, blk], [-61.5, c], [-54, c]], (k, zm) => (glow(k) || (E.riser(k) && zm < -62 ? 'well' : false)));
       const H = halves(S), C = cradle(K, -54, 110, [['port_hull', H.port, [12, 0, 0.85, 1], glow], ['starboard_hull', H.stbd, [-12, 0, 0.85, 1], glow]]);
       const B = K.body([[C.z, c], [66, sc(c, 0.75)], [80, sc(c, 0.3)]], glow, fsec, { stern: 'open', name: 'bow' }); nose(K, B, 80, 'glow'); K.done();
       const gap = C.walls[0].x, it = [], [a, b] = C.inside;
-      for (let z = -54 + 110 * a + 6; z <= -54 + 110 * b - 6; z += 13.2) for (const x of [-7, 0, 7]) for (const y of [-3.3, 3.3]) if (Math.abs(x) + 3 < gap) it.push([x, y, z, 6, 6, 12, Math.round(z + x * 3 + y) & 7]);
-      loads(g, 'concord', it, { oct: true }); } },
-  // --- Kethran Hegemony -------------------------------------------------------------------------------------------
-  { n: 4, f: 'kethran', tr: 'tithe', way: 'hold', name: 'Tithe citadel', len: 170,
-    tell: 'A stepped armoured wedge: three decks rising toward the stern, the prow forward, ember seams lit at each step. The cargo is never shown.',
-    build(g) { const K = skin(g, 'kethran'), d1 = { ...KT, hb: 16, top: 21, hbt: 9, sy: 4 }, d2 = { ...KT, hb: 16, top: 15, hbt: 11, sy: 3 }, d3 = { ...KT, hb: 16, top: 9, hbt: 12.5, sy: 1, sh: 1.2 };
-      const steps = [-38, 4];
-      const S = K.body([[-85, { ...d1, hb: 13, top: 17, hbt: 7 }], [-78, d1], [-38, d1], [-37.4, d2], [4, d2], [4.6, d3], [40, d3], [62, { ...KT, hb: 10, top: 5, bot: -8, hbt: 7.5, sy: 0, sh: 1, ym: -3.6, bh: 1.8, bw: 1.2 }],
-        [85, { hb: 1.4, top: 1.2, bot: -6.5, r: 0.5, rt: 0.5, hbt: 1.1, sy: -2.4, sh: 0.2, bw: 0.3, bh: 0.6, ym: -3.8, cw: 0.3 }]],
-        (k, zm) => (steps.some((s) => Math.abs(zm - s - 0.3) < 0.31) && !E.bottom(k) && !E.bcorner(k) && !E.lower(k) ? true : E.belt(k) ? 'band' : E.shelf(k) ? 'stripe' : false));
-      nose(K, S, 85); K.done(); } },
-  { n: 5, f: 'kethran', tr: 'foundry', way: 'hold', name: 'Foundry hauler', len: 190,
-    tell: 'A deep slab hull carrying ore and metal, a heavy proud belt along both sides, a row of dark hatches down its deck, a small armoured bridge aft.',
-    build(g) { const K = skin(g, 'kethran'), c = { ...KT, hb: 18, top: 15, bot: -16, hbt: 15, sy: 9, sh: 1.2, bw: 2.4, bh: 4, ym: -4, r: 2 }, blk = { ...c, top: 22, hbt: 7, sy: 15, sh: 0, rt: 2 };
-      const hatch = []; const zs = []; for (let z = -58; z < 66; z += 16) { hatch.push([z, z + 10]); zs.push(z, z + 10); }
-      const S = K.body([[-95, { ...c, hb: 15, top: 12, bot: -13, hbt: 12, sy: 7, bw: 1.8, bh: 3.2 }], [-88, c], [-82, c], [-81.5, blk], [-70, blk], [-69.5, c], ...run(zs, c), [78, c], [90, { ...c, hb: 13, top: 10, bot: -15, hbt: 10, sy: 6 }], [95, { ...c, hb: 7, top: 5, bot: -12, hbt: 5, sy: 2, sh: 0.6, bw: 1, bh: 2, ym: -6, rt: 1.2 }]],
-        (k, zm) => (E.deck(k) && within(zm, hatch) ? 'well' : E.belt(k) ? 'band' : E.riser(k) && zm > -81 && zm < -70 ? true : false));
-      nose(K, S, 95); K.done(); } },
-  { n: 6, f: 'kethran', tr: 'houses', way: 'cradle', name: 'House train', len: 180,
-    tell: 'A drive section, then two flanking hold hulls round armoured containers, then an armoured prow leading.',
-    build(g) { const K = skin(g, 'kethran'), c = { ...KT, hb: 15, top: 11, bot: -9 };
-      const own = (k) => (E.belt(k) ? 'band' : E.shelf(k) ? 'stripe' : false);
-      const S = K.body([[-90, { ...c, hb: 12, top: 9, hbt: 8 }], [-82, c], [-60, c]], own);
-      const H = halves(S), C = cradle(K, -60, 100, [['port_house', H.port, [15, 0, 0.92, 1.05], own], ['starboard_house', H.stbd, [-15, 0, 0.92, 1.05], own]]);
-      const B = K.body([[C.z, c], [58, c], [74, { ...c, hb: 10, top: 7, bot: -9, hbt: 7, sy: 0.5 }], [90, { hb: 1.6, top: 1.5, bot: -7, r: 0.5, rt: 0.5, hbt: 1.2, sy: -2.5, sh: 0.2, bw: 0.4, bh: 0.6, ym: -4, cw: 0.3 }]],
-        (k, zm) => (zm > 66 && zm < 74 && E.riser(k) ? true : own(k)), fsec, { stern: 'open', name: 'prow' });
-      nose(K, B, 90); K.done();
-      const gap = C.walls[0].x, it = [], [a, b] = C.inside;
-      for (let z = -60 + 100 * a + 7; z <= -60 + 100 * b - 7; z += 15) for (const x of [-6.5, 6.5]) for (const y of [-4, 4]) if (Math.abs(x) + 6 < gap) it.push([x, y, z, 12, 7.4, 14, (Math.round(z) + (x > 0 ? 1 : 0)) % 4]);
-      loads(g, 'kethran', it); } },
-  // --- Vos Syndicate ----------------------------------------------------------------------------------------------
-  { n: 7, f: 'vos', tr: 'prize', way: 'spine', name: 'Prize string', len: 160,
-    tell: 'A crooked spine of mismatched sections, its loads of every size lashed on at odd angles as they were taken.',
-    build(g) { rs = 707; const K = skin(g, 'vos'), sp = (ox, s, h) => ({ ...VS, hb: 5 * s, top: 4.5 * h, bot: -4.5 * h, r: 1.6 * s, rt: 1.8 * s, bw: 0.3, bh: 0.8, ym: 0, ox, sa: 0.9 + 0.2 * s });
-      const drive = { ...VS, hb: 12, top: 10, bot: -9, ox: 1.2, sa: 0.85 };
-      const S = K.body([[-80, { ...drive, hb: 10, top: 8 }], [-74, drive], [-58, { ...drive, hb: 11, ox: 0.6 }], [-50, sp(0.8, 1.1, 1)], [-30, sp(-1.2, 0.95, 1.1)], [-29, sp(-1.4, 1.2, 0.9)], [-6, sp(1.5, 1.05, 1)], [18, sp(-0.6, 0.9, 1.15)], [19, sp(-0.8, 1.15, 1)], [44, sp(1.1, 1, 0.95)], [62, sp(0.2, 1.1, 1)], [72, sp(0, 0.75, 0.8)], [80, sp(0.3, 0.35, 0.4)]],
-        (k, zm) => (E.belt(k) ? 'band' : (E.upper(k) && zm > -29 && zm < -6) || (E.lower(k) && zm > 19 && zm < 44) ? 'patch' : E.shelf(k) && zm < -50 ? 'patch2' : E.riser(k) && zm < -60 && zm > -74 ? 'well' : false));
-      nose(K, S, 80, 'glow'); K.done();
-      const it = []; for (let z = -44; z < 62; z += 7 + rnd() * 6) { const n2 = 1 + Math.floor(rnd() * 3);
-        for (let j = 0; j < n2; j++) { const a = rnd() * 2 * PI, w = 4 + rnd() * 6, h = 3.5 + rnd() * 5, l = 6 + rnd() * 9, r0 = 6 + Math.max(w, h) / 2;
-          it.push([Math.cos(a) * r0, Math.sin(a) * r0, z, w, h, l, Math.floor(rnd() * 7), (rnd() - 0.5) * 30, (rnd() - 0.5) * 16]); } }
-      loads(g, 'vos', it); } },
-  { n: 8, f: 'vos', tr: 'breakers', way: 'hold', name: 'Patchwork hauler', len: 150,
-    tell: 'A hold made of other ships\' sections, each a different size and set off true, patched in brass and verdigris.',
-    build(g) { const K = skin(g, 'vos'), p = (hb, top, bot, ox, sa = 1, o = {}) => ({ ...VS, hb, top, bot, ox, sa, ...o });
-      const a = p(12, 10, -9, 0.5, 0.9), b = p(14, 12, -10, -1, 1.1, { hbt: 11, sy: 3, sh: 1.2, bw: 1, bh: 1.6 }), c = p(13, 9, -11, 1.4, 0.95, { r: 4, rt: 1.6 }), d = p(11, 11, -8, -0.6, 1.05, { hbt: 9, sy: 4, sh: 0.8 });
-      const S = K.body([[-75, sc(a, 0.85)], [-70, a], [-46, a], [-45.2, b], [-14, b], [-13.2, c], [16, c], [16.8, d], [44, d], [56, p(9, 8, -7, -0.2, 1, { hbt: 7, sy: 3, sh: 0.6 })], [66, p(6, 5, -5, 0.4, 0.9, { r: 2, rt: 2 })], [75, p(2.4, 2, -2.4, 0.2, 1, { r: 0.8, rt: 0.8, bh: 0.5, bw: 0.2, cw: 0.4 })]],
-        (k, zm) => ((zm > -45 && zm < -14 && (E.upper(k) || k === 17)) || (zm > 16 && zm < 44 && E.lower(k) && k < 14) ? 'patch' : zm > -13 && zm < 16 && (E.deck(k) || E.tcorner(k)) && k > 13 ? 'patch2' : zm > -70 && zm < -46 && E.riser(k) ? 'well' : E.belt(k) ? 'band' : zm > 44 && E.shelf(k) ? 'patch3' : false));
-      nose(K, S, 75, 'glow'); K.done(); } },
-  { n: 9, f: 'vos', tr: 'raft', way: 'cradle', name: 'Clan raft', len: 170,
-    tell: 'Two hulls of different sizes joined at the stern and the bow, the loot slung between them on the one drive they share.',
-    build(g) { rs = 909; const K = skin(g, 'vos'), c = { ...VS, hb: 16, top: 9, bot: -9, r: 2.6, rt: 3.2 };
-      const own = (k) => (E.belt(k) ? 'band' : false);
-      const S = K.body([[-85, { ...c, hb: 13, top: 7, bot: -7, ox: 0.8 }], [-78, c], [-62, { ...c, ox: -0.5 }]], (k, zm) => (E.riser(k) && zm < -66 ? 'well' : own(k)));
-      const H = halves(S), C = cradle(K, -62, 112, [['big_hull', H.port, [17, 1.5, 1.2, 1.25], (k) => (E.upper(k) ? 'patch' : own(k))], ['small_hull', H.stbd, [-14, -1.5, 0.78, 0.8], (k) => (E.lower(k) ? 'patch2' : own(k))]], { ramp: 0.2 });
-      const B = K.body([[C.z, { ...c, ox: -0.5 }], [62, { ...c, hb: 12, top: 7, bot: -8, ox: 1 }], [78, { ...c, hb: 7, top: 4.5, bot: -5, r: 2, rt: 2, ox: 0.4 }], [85, { ...c, hb: 3, top: 2, bot: -2.5, r: 0.9, rt: 0.9, bh: 0.5, bw: 0.2, cw: 0.5 }]],
-        (k, zm) => (zm > 62 && E.shelf(k) ? 'patch3' : own(k)), fsec, { stern: 'open', name: 'bow' });
-      nose(K, B, 85, 'glow'); K.done();
-      const gl = C.walls[0].x, gr = C.walls[1].x, it = [], [a, b] = C.inside;
-      for (let z = -62 + 112 * a + 6; z <= -62 + 112 * b - 6; z += 8 + rnd() * 5) { const w = 5 + rnd() * 6, h = 4 + rnd() * 6, x = (gl + gr) / 2 + (rnd() - 0.5) * Math.max(0, gl - gr - w - 4);
-        it.push([x, -1 + (rnd() - 0.5) * 6, z, w, h, 5 + rnd() * 6, Math.floor(rnd() * 7), (rnd() - 0.5) * 24, (rnd() - 0.5) * 14]); }
-      loads(g, 'vos', it); } },
+      for (let z = -54 + 110 * a + 6; z <= -54 + 110 * b - 6; z += 13.2) for (const x of [-7, 0, 7]) for (const y of [-3.3, 3.3]) if (Math.abs(x) + 3 < gap) it.push([x, y, z, Math.round(z + x * 3 + y) & 7]);
+      loads(g, 'concord', it); } },
   // --- Krai Warhost -----------------------------------------------------------------------------------------------
-  { n: 10, f: 'krai', tr: 'baggage', way: 'cradle', name: 'Baggage blades', len: 170,
-    tell: 'Two blades part round the cargo and meet again edge first at the bow.',
+  { n: 3, f: 'krai', tr: 'baggage', way: 'cradle', name: 'Baggage blades', len: 170,
+    tell: 'Two blades part round the containers, three across and two high, and meet again edge first at the bow.',
     build(g) { const K = skin(g, 'krai'), c = { ...KR, hb: 12, top: 5, bot: -5, kd: 7, cr: 6 };
       const own = (k) => (E.belt(k) ? 'band' : false);
       const S = K.body([[-85, { ...c, hb: 9, top: 4, bot: -4, kd: 5, cr: 4.5 }], [-78, c], [-60, c]], (k, zm) => (E.riser(k) && zm < -72 ? 'well' : own(k)));
       const H = halves(S), C = cradle(K, -60, 104, [['port_blade', H.port, [13, 0, 0.9, 1.05], own], ['starboard_blade', H.stbd, [-13, 0, 0.9, 1.05], own]]);
       const B = K.body([[C.z, c], [56, c], [72, sc(c, 0.62, 0.8)], [85, sc(c, 0.08, 0.5)]], own, fsec, { stern: 'open', name: 'edge' }); nose(K, B, 85); K.done();
       const gap = C.walls[0].x, it = [], [a, b] = C.inside;
-      for (let z = -60 + 104 * a + 7; z <= -60 + 104 * b - 7; z += 15) for (const x of [-5, 5]) if (Math.abs(x) + 4 < gap) it.push([x, 0, z, 7, 14, 14, (Math.round(z) + (x > 0 ? 1 : 0)) % 3]);
+      for (let z = -60 + 104 * a + 6; z <= -60 + 104 * b - 6; z += 13) for (const x of [-7, 0, 7]) for (const y of [-3.3, 3.3]) if (Math.abs(x) + 3 < gap) it.push([x, y, z, (Math.round(z) + x + (y > 0 ? 1 : 0)) % 3]);
       loads(g, 'krai', it); } },
-  { n: 11, f: 'krai', tr: 'carried', way: 'hold', name: 'Ore barge', len: 210,
-    tell: 'A long low blade with a deep keel hold, lengthened hold by hold: each hold a little different, bronze seams between them. The mission guide\'s ore barges.',
-    build(g) { const K = skin(g, 'krai'), c = (i) => ({ ...KR, hb: 14 - i * 0.5, top: 5, bot: -7, kd: 9 + (i % 2) * 1.5, cr: 2.5, r: 3.6, rt: 2.4, bw: 0.8, bh: 0.7, ym: -1 });
-      const seams = [], st = [[-105, { ...c(0), hb: 11, top: 6, kd: 6, cr: 6 }], [-98, { ...c(0), top: 7, cr: 8 }], [-82, { ...c(0), top: 7, cr: 8 }], [-80, c(0)]];
-      for (let i = 0; i < 5; i++) { const z0 = -76 + i * 30; seams.push(z0); st.push([z0, c(i)], [z0 + 1.2, c(i)], [z0 + 28, c(i)]); }
-      st.push([80, c(4)], [94, sc(c(4), 0.6, 0.8)], [105, sc(c(4), 0.1, 0.5)]);
-      const S = K.body(st, (k, zm) => (seams.some((s) => zm > s && zm < s + 1.2) ? 'band' : E.belt(k) ? 'band' : E.riser(k) && zm > -98 && zm < -82 ? 'well' : false));
-      nose(K, S, 105); K.done(); } },
-  { n: 12, f: 'krai', tr: 'baggage', way: 'spine', name: 'Spear train', len: 160,
-    tell: 'A blade spine with its loads racked edge on down both sides, each canted out like a blade.',
+  { n: 4, f: 'krai', tr: 'baggage', way: 'spine', name: 'Spear train', len: 160,
+    tell: 'A blade spine with its containers stood on end down both sides, each canted out like a blade.',
     build(g) { const K = skin(g, 'krai'), sp = { ...KR, hb: 4.2, top: 3, bot: -3, kd: 5.5, cr: 5, r: 1.6, rt: 1.6, bw: 0.4, bh: 0.5 }, dr = { ...KR, hb: 9, top: 5, bot: -5, kd: 6, cr: 7 };
       const S = K.body([[-80, { ...dr, hb: 7 }], [-74, dr], [-58, dr], [-50, sp], [60, sp], [72, sc(sp, 0.6)], [80, sc(sp, 0.1, 0.5)]], (k, zm) => (E.belt(k) ? 'band' : E.riser(k) && zm > -74 && zm < -58 ? 'well' : false));
       nose(K, S, 80); K.done();
-      const it = []; for (let z = -42; z <= 52; z += 13) for (const s of [1, -1]) it.push([s * 7.8, 0.5, z, 3.2, 13, 12, (Math.round(z / 13) + (s > 0 ? 0 : 1)) % 3, s * -14]);
+      const it = []; for (let z = -46; z <= 54; z += 8) for (const s of [1, -1]) it.push([s * 7.8, 0.5, z, (Math.round(z / 8) + (s > 0 ? 0 : 1)) % 3, 90, 0, s * -12]);
       loads(g, 'krai', it); } },
   // --- Ssarith Hunt -----------------------------------------------------------------------------------------------
-  { n: 13, f: 'ssarith', tr: 'watch', way: 'hold', name: 'Long Watch provisioner', len: 180,
-    tell: 'A deep low hold, its navigators\' bridge hooded on a long neck reaching forward; light in strips along the hood.',
-    build(g) { const K = skin(g, 'ssarith'), h = { ...SH, hb: 14, top: 9, bot: -12, hbt: 16, sy: 1, sh: 2.4 }, nk = { ...SH, hb: 3.6, top: 3, bot: -3.4, r: 1.2, rt: 1, hbt: 3.6, sy: 0.6, sh: 0.4, bh: 0.6, ym: 0 };
-      const hood = { ...SH, hb: 4.2, top: 4, bot: -3, r: 1.2, rt: 1.4, hbt: 10, sy: 0.4, sh: 2.2, bh: 0.6, ym: -1 };
-      const S = K.body([[-90, { ...h, hb: 11, hbt: 13, top: 7, bot: -9 }], [-83, h], [22, h], [34, { ...h, hb: 9, hbt: 10, top: 6, bot: -8 }], [42, nk], [62, nk], [66, hood], [80, { ...hood, hbt: 8.5, hb: 3.6 }], [90, { ...hood, hb: 1.4, hbt: 3, top: 2, bot: -1.2, ym: -0.4, sy: 0, sh: 0.6, r: 0.5, rt: 0.6, cw: 0.4 }]],
-        (k, zm) => (E.belt(k) ? true : E.shelf(k) && zm < 34 ? 'band' : E.riser(k) && zm > 66 ? 'well' : false));
-      nose(K, S, 90, 'well'); K.done(); } },
-  { n: 14, f: 'ssarith', tr: 'tally', way: 'spine', name: 'Tally carrier', len: 170,
-    tell: 'Loads in counted rows along a low spine, a light strip at every row; the hooded bridge aft over the drive.',
+  { n: 5, f: 'ssarith', tr: 'tally', way: 'spine', name: 'Tally carrier', len: 170,
+    tell: 'Containers in counted rows of five along a low spine, a light strip between rows; the hooded bridge aft over the drive.',
     build(g) { const K = skin(g, 'ssarith'), hood = { ...SH, hb: 9, top: 8, bot: -8, hbt: 13, sy: 1, sh: 2.6 }, sp = { ...SH, hb: 4.4, top: 3.6, bot: -4, r: 1.4, rt: 1.2, hbt: 5.6, sy: 0.6, sh: 1, bh: 0.6, ym: -0.6 };
-      const rows = [], zs = []; for (let z = -46; z < 56; z += 13) { rows.push([z + 5.5, z + 7]); zs.push(z, z + 5.5, z + 7); }
+      const rows = [], zs = []; for (let z = -46; z < 50; z += 14) { rows.push([z + 12.4, z + 13.8]); zs.push(z, z + 12.4, z + 13.8); }
       const S = K.body([[-85, { ...hood, hb: 7, hbt: 10, top: 6, bot: -6 }], [-78, hood], [-58, hood], [-50, sp], ...run(zs, sp), [64, sp], [76, { ...sp, hb: 2.6, hbt: 3.6, top: 2.4, bot: -2.6, sy: 0.2, sh: 0.6 }], [85, { ...sp, hb: 0.9, hbt: 1.4, top: 1, bot: -1.2, sy: 0.2, sh: 0.3, r: 0.4, rt: 0.4, bh: 0.3, cw: 0.3, ym: -0.4 }]],
         (k, zm) => (within(zm, rows) && (E.riser(k) || E.shelf(k) || E.belt(k)) ? true : E.riser(k) && zm < -58 ? 'well' : E.shelf(k) && zm < -50 ? 'band' : false));
       nose(K, S, 85); K.done();
-      const it = []; for (let z = -46; z < 56; z += 13) for (const [x, y] of [[-9, 0], [9, 0], [0, 7.6], [-9, 7.6], [9, 7.6]]) it.push([x, y + 0.4, z + 2.7, 7.6, 6.6, 5.2, (Math.round(z / 13) + Math.round(x)) % 3]);
+      const it = []; for (let z = -46; z < 50; z += 14) for (const [x, y] of [[-8.8, 0], [8.8, 0], [0, 6.8], [-6.4, 6.8], [6.4, 6.8]]) it.push([x, y, z + 6.1, (Math.round(z / 14) + Math.round(x)) % 3]);
       loads(g, 'ssarith', it); } },
-  { n: 15, f: 'ssarith', tr: 'chase', way: 'cradle', name: 'Fair Chase tender', len: 175,
-    tell: 'A low raked hull parting round its cargo, unarmed, a green livery band down its length.',
+  { n: 6, f: 'ssarith', tr: 'chase', way: 'cradle', name: 'Fair Chase tender', len: 175,
+    tell: 'A low raked hull parting above and below round its containers, unarmed, a green livery band down its length.',
     build(g) { const K = skin(g, 'ssarith'), c = { ...SH, hb: 12, top: 6, bot: -7, hbt: 14, sy: 0.6, sh: 2 };
       const own = (k) => (E.shelf(k) ? 'band' : E.belt(k) ? true : false);
       const S = K.body([[-88, { ...c, hb: 9, hbt: 11, top: 5, bot: -6 }], [-81, { ...c, top: 9 }], [-64, { ...c, top: 9 }], [-58, c]], (k, zm) => (E.riser(k) && zm < -64 ? 'well' : own(k)));
       const D = decks(S), C = cradle(K, -58, 100, [['upper_deck', D.upper, [0, 6.5, 0.94, 0.9], own], ['lower_hold', D.lower, [0, -6, 0.94, 0.9], own]]);
       const B = K.body([[C.z, c], [56, c], [74, { ...c, hb: 6, hbt: 8, top: 3, bot: -4.5, sy: 0.2, sh: 0.5 }], [87, { ...c, hb: 1.2, hbt: 2.2, top: 0.8, bot: -1.4, sy: -0.2, sh: 0.4, r: 0.5, rt: 0.5, bh: 0.3, cw: 0.4, ym: -0.6 }]], own, fsec, { stern: 'open', name: 'bow' });
       nose(K, B, 87); K.done();
-      const top = C.walls[0].y, bot = C.walls[1].y, it = [], [a, b] = C.inside, h = top - bot - 1.6;
-      if (h > 2) for (let z = -58 + 100 * a + 5; z <= -58 + 100 * b - 5; z += 11) for (const x of [-6.2, 0, 6.2]) it.push([x, (top + bot) / 2, z, 5.6, h, 9.6, (Math.round(z) + Math.round(x)) % 3]);
+      const top = C.walls[0].y, bot = C.walls[1].y, it = [], [a, b] = C.inside, rows = Math.floor((top - bot - 0.8) / 6.3);
+      for (let z = -58 + 100 * a + 6; z <= -58 + 100 * b - 6; z += 13) for (const x of [-6.5, 0, 6.5]) for (let r = 0; r < rows; r++) it.push([x, (top + bot) / 2 + (r - (rows - 1) / 2) * 6.3, z, (Math.round(z) + Math.round(x) + r) % 3]);
       loads(g, 'ssarith', it); } },
   // --- Kelvane Institute ------------------------------------------------------------------------------------------
-  { n: 16, f: 'kelvane', tr: 'cal', way: 'hold', name: 'Sealed case', len: 150,
-    tell: 'One closed case in whole ratios, 10 by 3 by 2, a band of dark glass round it, the hold a sealed standard.',
-    build(g) { const K = skin(g, 'kelvane'), c = { ...KV, hb: 22.5, top: 15, bot: -15, r: 6, rt: 6, bh: 2.6 };
-      const S = K.body([[-75, sc(c, 0.8)], [-70, c], [62, c], [70, sc(c, 0.84)], [75, sc(c, 0.5)]], (k) => (E.belt(k) ? 'well' : false));
-      nose(K, S, 75, 'well'); K.done(); } },
-  { n: 17, f: 'kelvane', tr: 'field', way: 'cradle', name: 'Field tender', len: 180,
-    tell: 'The case parts above and below round a rack of sealed cases, and closes at a gallery of glass that looks out forward.',
+  { n: 7, f: 'kelvane', tr: 'field', way: 'cradle', name: 'Field tender', len: 180,
+    tell: 'The case parts above and below round its containers, and closes at a gallery of glass that looks out forward.',
     build(g) { const K = skin(g, 'kelvane'), c = { ...KV, hb: 15, top: 10, bot: -10, r: 5, rt: 5, bh: 1.2 };
       const own = (k) => (E.belt(k) ? 'well' : false);
       const S = K.body([[-90, sc(c, 0.8)], [-84, c], [-62, c]], own);
       const D = decks(S), C = cradle(K, -62, 104, [['upper_case', D.upper, [0, 9, 1, 0.9], own], ['lower_case', D.lower, [0, -9, 1, 0.9], own]], { arch: true });
       const B = K.body([[C.z, c], [60, c], [74, { ...c, top: 8, bot: -9 }], [90, { ...c, hb: 7, top: 3.5, bot: -5, r: 3, rt: 2.4 }]], (k, zm) => (zm > 60 && (E.upper(k) || E.riser(k) || E.shelf(k) || E.tcorner(k)) ? 'well' : own(k)), fsec, { stern: 'open', name: 'gallery' });
       nose(K, B, 90, 'well'); K.done();
-      const top = C.walls[0].y, bot = C.walls[1].y, it = [], [a, b] = C.inside, h = top - bot - 2;
-      if (h > 2) for (let z = -62 + 104 * a + 4; z <= -62 + 104 * b - 4; z += 9) for (const x of [-8.5, 0, 8.5]) it.push([x, (top + bot) / 2, z, 7.4, h, 7.4, (Math.round(z / 9) + Math.round(x)) % 2]);
+      const top = C.walls[0].y, bot = C.walls[1].y, it = [], [a, b] = C.inside, rows = Math.floor((top - bot - 0.8) / 6.3);
+      for (let z = -62 + 104 * a + 6; z <= -62 + 104 * b - 6; z += 13) for (const x of [-7, 0, 7]) for (let r = 0; r < rows; r++) it.push([x, (top + bot) / 2 + (r - (rows - 1) / 2) * 6.3, z, (Math.round(z / 13) + Math.round(x) + r) % 3]);
       loads(g, 'kelvane', it); } },
-  { n: 18, f: 'kelvane', tr: 'note', way: 'hold', name: 'Twin ledger', len: 160,
-    tell: 'Two identical hold hulls from one stern, parted all the way to their bows: every consignment carried twice.',
+  { n: 8, f: 'kelvane', tr: 'note', way: 'between', name: 'Twin ledger', len: 160,
+    tell: 'Two identical hulls from one stern, parted all the way to their bows, two identical stacks of containers three high between them: every consignment carried twice.',
     build(g) { const K = skin(g, 'kelvane'), c = { ...KV, hb: 20, top: 9, bot: -9, r: 4.6, rt: 4.6, bh: 1.2 };
       const S = K.body([[-80, sc(c, 0.8)], [-74, c], [-48, c]], (k) => (E.belt(k) ? 'well' : false)), H = halves(S);
       for (const [nm, [R, cut, start], s] of [['port_ledger', H.port, 1], ['starboard_ledger', H.stbd, -1]])
         K.branch(nm, R, -48, [[0, 1, 1, 0, 0], [16, 1, 1, s * 6, 0], [34, 1, 1, s * 8, 0], [108, 1, 1, s * 8, 0], [120, 0.78, 0.82, s * 8.4, 0], [128, 0.36, 0.5, s * 9, 0]],
           { glow: pick(cut, 'inner', from(start, (k) => (E.belt(k) ? 'well' : false))), capKind: 'well' });
-      K.done(); } },
+      K.done();
+      // two identical stacks three high, one beside each hull, between them where they run parallel (z -14 to 60), their
+      // tops level with the hulls' so they are seen from above
+      const it = []; for (let z = -8; z <= 54 - 6; z += 13) for (const x of [-3.5, 3.5]) for (const y of [-6.3, 0, 6.3]) it.push([x, y, z, (Math.round(z / 13) + Math.round(y / 6.3) + 3) % 3]);
+      loads(g, 'kelvane', it); } },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -850,23 +756,24 @@ window.MOCKUP_MEASURE = () => ({ bad_sections: FSEC_BAD.slice(), ships: BLOCKS.m
 
 // The yardsticks: the Concord Petrel (88 m), built by the Concord line's own code, and a person, 1.8 m.
 const PETREL = CL.plainModel('petrel_level'); scene.add(PETREL);
+PETREL.traverse((o) => { if (o.isMesh && o.material.flatShading) { o.material.flatShading = false; o.material.needsUpdate = true; if (o.geometry.index) { o.geometry = o.geometry.toNonIndexed(); } o.geometry.computeVertexNormals(); } });
 const PERSON = (() => { const m = new THREE.MeshStandardMaterial({ color: 0xffcc66, roughness: 0.8 }), g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.1, 6, 12), m); body.position.y = 0.77; g.add(body);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 12), m); head.position.y = 1.67; g.add(head); scene.add(g); return g; })();
 
 // ---------------------------------------------------------------------------------------------------------------
-// The board: six columns, one a faction (the Concord at the left as you look from the bow quarter), three rows, bows toward +z.
+// The board: four columns, one a faction (the Concord at the left as you look from the bow quarter), two rows, bows toward +z.
 const COLW = 120, ROWD = 250;
 const fi = (f) => FACTIONS.findIndex((x) => x.id === f);
 let mode = 'board', fac = null, focus = -1, look = 'faction', showLabels = true, showPetrel = true, viewKey = 'board';
 function layout() {
   SHIPS.forEach((g, i) => { const b = BLOCKS[i], col = fi(b.f), row = BLOCKS.filter((x) => x.f === b.f).indexOf(b);
-    if (mode === 'faction') { g.visible = b.f === fac; g.position.set((1 - row) * 90, 0, 0); }
+    if (mode === 'faction') { g.visible = b.f === fac; g.position.set((0.5 - row) * 90, 0, 0); }
     else if (mode === 'focus') { g.visible = i === focus; g.position.set(0, 0, 0); }
-    else { g.visible = true; g.position.set((col - 2.5) * COLW, 0, (1 - row) * ROWD); }
+    else { g.visible = true; g.position.set((col - 1.5) * COLW, 0, (0.5 - row) * ROWD); }
     g.updateMatrixWorld(true); });
   PETREL.visible = showPetrel; PERSON.visible = mode === 'focus' && showPetrel;
-  if (mode === 'board') PETREL.position.set(3.4 * COLW, 0, -ROWD);
+  if (mode === 'board') PETREL.position.set(2.4 * COLW, 0, -ROWD / 2);
   else if (mode === 'faction') PETREL.position.set(175, 0, -40);
   else { const m = MEAS[focus]; PETREL.position.set(m.size.x / 2 + 62, 0, -m.size.z * 0.3); PERSON.position.set(m.size.x / 2 + 3, -m.size.y / 2 - 1.8, m.size.z * 0.1); }
   grid.position.y = mode === 'focus' ? -MEAS[focus].size.y / 2 - 2 : -40;
@@ -886,14 +793,14 @@ const VIEWS = { board: 'Board', top: 'From above', side: 'From the side' };
 const FOCUS_VIEWS = { quarter: 'Bow quarter', side: 'Side', top: 'Above', ahead: 'Ahead' };
 function frame(from, target, dist) { controls.target.copy(target); camera.position.copy(target).add(V3(...from).multiplyScalar(dist * back())); controls.update(); }
 function setView(k) { viewKey = k; layout();
-  if (mode === 'board') { const v = { board: [[-560, 540, 820], [0, -10, 0]], top: [[0, 1350, -0.01], [0, 0, 0]], side: [[-1150, 120, 0.01], [0, -10, 0]] }[k] || [[-560, 540, 820], [0, -10, 0]];
+  if (mode === 'board') { const v = { board: [[-400, 380, 600], [0, -10, 0]], top: [[0, 900, -0.01], [0, 0, 0]], side: [[-900, 110, 0.01], [0, -10, 0]] }[k] || [[-400, 380, 600], [0, -10, 0]];
     controls.target.set(...v[1]); camera.position.set(...v[0]).sub(controls.target).multiplyScalar(back()).add(controls.target); controls.update(); }
   else if (mode === 'faction') frame(ANGLE[k] || ANGLE.quarter, V3(-20, 0, 0), 250);
   else frame(ANGLE[k] || ANGLE.quarter, V3(14, 0, 0), Math.max(MEAS[focus].size.z, 120) * 0.72);
   sync(); }
 function sync() {
   const views = mode === 'board' ? VIEWS : FOCUS_VIEWS;
-  $('viewRow').innerHTML = (mode === 'board' ? '' : '<button data-m="board">All eighteen</button>') + Object.entries(views).map(([k, v]) => `<button data-k="${k}" aria-pressed="${k === viewKey}">${v}</button>`).join('');
+  $('viewRow').innerHTML = (mode === 'board' ? '' : '<button data-m="board">All eight</button>') + Object.entries(views).map(([k, v]) => `<button data-k="${k}" aria-pressed="${k === viewKey}">${v}</button>`).join('');
   $('facRow').innerHTML = FACTIONS.map((f) => `<button data-f="${f.id}" aria-pressed="${mode === 'faction' && fac === f.id}" title="${f.name}">${f.short}</button>`).join('');
   let html = '';
   for (const f of FACTIONS) { if (mode !== 'board' && fac && f.id !== fac) continue;
@@ -904,11 +811,11 @@ function sync() {
   $('lookRow').innerHTML = `<button data-l="faction" aria-pressed="${look === 'faction'}">Faction colours</button><button data-l="clay" aria-pressed="${look === 'clay'}">Clay</button>`;
   $('showRow').innerHTML = `<button data-s="labels" aria-pressed="${showLabels}">Labels</button><button data-s="petrel" aria-pressed="${showPetrel}">Petrel and person</button>`;
   const B = focus >= 0 && mode === 'focus' ? BLOCKS[focus] : null, m = B ? MEAS[focus] : null;
-  $('facts').innerHTML = B ? `<dt>${B.n} ${B.name}</dt><dd>${m.size.z.toFixed(1)} m long, ${m.size.x.toFixed(1)} m beam, ${m.size.y.toFixed(1)} m tall</dd><dt>Skin</dt><dd>${m.tris.toLocaleString('en')} triangles, ${m.open ? m.open + ' open edges' : 'closed'}</dd><dt>Cargo</dt><dd>${m.loads ? m.loads + ' loads' : 'inside the hold'}</dd><dt>Way</dt><dd>${WAYS[B.way]}</dd><dt>Tradition</dt><dd>${TRADITIONS[B.tr].name}${TRADITIONS[B.tr].drafted ? ', drafted' : ''}: ${TRADITIONS[B.tr].src}</dd>`
+  $('facts').innerHTML = B ? `<dt>${B.n} ${B.name}</dt><dd>${m.size.z.toFixed(1)} m long, ${m.size.x.toFixed(1)} m beam, ${m.size.y.toFixed(1)} m tall</dd><dt>Skin</dt><dd>${m.tris.toLocaleString('en')} triangles, ${m.open ? m.open + ' open edges' : 'closed'}</dd><dt>Cargo</dt><dd>${m.loads} containers, 6 by 6 by 12 m</dd><dt>Way</dt><dd>${WAYS[B.way]}</dd><dt>Tradition</dt><dd>${TRADITIONS[B.tr].name}${TRADITIONS[B.tr].drafted ? ', drafted' : ''}: ${TRADITIONS[B.tr].src}</dd>`
     : BLOCKS.map((b, i) => (mode === 'faction' && b.f !== fac ? '' : `<dt>${b.n} ${b.name}</dt><dd>${MEAS[i].size.z.toFixed(0)} by ${MEAS[i].size.x.toFixed(0)} by ${MEAS[i].size.y.toFixed(0)} m</dd>`)).join('');
   const F = fac ? FACTIONS[fi(fac)] : null;
-  $('status').textContent = B ? `${B.n} ${B.name}` : mode === 'faction' ? `${F.name}: three freighters` : 'Eighteen freighters, six factions';
-  $('tip').textContent = B ? `${WAYS[B.way]}. ${TRADITIONS[B.tr].name}${TRADITIONS[B.tr].drafted ? ' (drafted)' : ''}.` : mode === 'faction' ? `Spine, hold and cradle side by side at true scale, the Concord Petrel (88 m) beside them. Pick one to see it alone.`
+  $('status').textContent = B ? `${B.n} ${B.name}` : mode === 'faction' ? `${F.name}: two freighters` : 'Eight freighters, four factions';
+  $('tip').textContent = B ? `${WAYS[B.way]}. ${TRADITIONS[B.tr].name}${TRADITIONS[B.tr].drafted ? ' (drafted)' : ''}.` : mode === 'faction' ? `Both side by side at true scale, the Concord Petrel (88 m) beside them. Pick one to see it alone.`
     : 'One column a faction, Concord at the left, bows toward you, the Concord Petrel (88 m) at the end. Pick one to look closer. Drag to orbit, scroll or pinch to zoom.';
 }
 $('viewRow').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.m) { mode = 'board'; fac = null; focus = -1; setView('board'); } else setView(b.dataset.k); };
@@ -924,7 +831,7 @@ const FLBL = FACTIONS.map((f) => { const d = document.createElement('div'); d.cl
 const PLBL = (() => { const d = document.createElement('div'); d.className = 'yard'; d.textContent = 'Concord Petrel, 88 m'; $('labels').append(d); return d; })();
 function labels() { const w = stage.clientWidth, h = stage.clientHeight;
   const put = (d, v, show) => { const p = v.project(camera); d.hidden = !show || p.z > 1; d.style.left = ((p.x + 1) / 2 * w) + 'px'; d.style.top = ((1 - p.y) / 2 * h) + 'px'; };
-  FACTIONS.forEach((f, c) => put(FLBL[c], V3((c - 2.5) * COLW, 20, -ROWD - 125), showLabels && mode === 'board'));
+  FACTIONS.forEach((f, c) => put(FLBL[c], V3((c - 1.5) * COLW, 20, -ROWD / 2 - 125), showLabels && mode === 'board'));
   put(PLBL, PETREL.position.clone().add(V3(0, 14, 0)), showLabels && showPetrel && mode !== 'focus');
   SHIPS.forEach((g, i) => { const p = g.position.clone().add(V3(0, MEAS[i].size.y / 2 + 8, 0)).project(camera), d = LBL[i];
     d.hidden = !showLabels || mode === 'focus' || !g.visible || p.z > 1; d.style.left = ((p.x + 1) / 2 * w) + 'px'; d.style.top = ((1 - p.y) / 2 * h) + 'px'; }); }
@@ -934,13 +841,19 @@ function resize() { const w = stage.clientWidth, h = stage.clientHeight; rendere
   if (portrait) { camera.aspect = w / (h * 1.5); camera.setViewOffset(w, h * 1.5, 0, h * 0.5, w, h); } else { camera.aspect = (w + pw) / h; camera.setViewOffset(w + pw, h, 0, 0, w, h); }
   camera.updateProjectionMatrix(); }
 addEventListener('resize', () => { resize(); });
+if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(stage);
+const lost = document.createElement('p'); lost.id = 'lost'; lost.hidden = true;
+lost.textContent = 'The 3D view lost its graphics context (too many 3D pages open at once?). Close some, then reload this page.';
+document.body.append(lost);
+renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost.hidden = false; });
+renderer.domElement.addEventListener('webglcontextrestored', () => { lost.hidden = true; });
 let frames = 0, last = performance.now();
 function loop(now) { controls.update(); renderer.render(scene, camera); labels(); frames++;
   if (now - last > 1000) { $('meter').textContent = `${renderer.info.render.triangles.toLocaleString('en')} triangles, ${renderer.info.render.calls} draw calls, ${frames} fps`; frames = 0; last = now; }
   requestAnimationFrame(loop); }
 resize(); setLook('faction'); setView('board'); requestAnimationFrame(loop);
 
-// Named shots for tools/mockups/shoot.mjs: the board, each faction's three, each concept from its bow quarter, and clay.
+// Named shots for tools/mockups/shoot.mjs: the board, each faction's two, each concept from its bow quarter, and clay.
 const shot = (f) => () => { f(); resize(); renderer.render(scene, camera); labels(); };
 window.MOCKUP_SHOTS = {
   board: shot(() => { setLook('faction'); mode = 'board'; fac = null; focus = -1; setView('board'); }),
