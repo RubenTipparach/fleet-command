@@ -174,6 +174,28 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'V', name: 'Freighters (mockup 24)',
+    lead: 'Mockup 24 (Fleet Command Freighters, docs/mockups/freighter-concepts.html; its link is on the tracker) is a board of eighteen freighter blockouts, three for each faction in the game: a spine (loads racked outside), a hold (the cargo shut inside) and a cradle (the hull parts round its cargo). No faction has a merchant tradition written down, and the Kethran and the Vos have no ships yet, so each concept comes from a tradition drafted inside its faction for you to keep, change or reject. Design: openspec/changes/freighters.',
+    qs: [
+      { id: 'V1', q: 'The concepts come from these traditions, most of them drafted: the Concord\'s Common Gauge (one cassette every world packs to) and Open Hand (aid carried in the open); the Kethran Tithe Road (the houses\' due under armour), Foundries and Great Houses; the Vos Prize Share (loads lashed on as they are taken), Breakers (hulls made of other ships) and Clan Raft (hulls tied together); the Krai Host\'s Baggage (carried edge first) and Carried, never replaced; the Hunt\'s Long Watch, Tally Keepers and Fair Chase; the Institute\'s Calibrators, Field Stations and Open Notebook. Keep them?',
+        options: ['Keep them all as drafted', 'Keep some (say which in the notes)', 'You write the merchant traditions; we redesign from them'], rec: 0,
+        why: 'Options to react to are quicker than a blank page, and every cultural decision stays yours (U7). The Kethran and Vos concepts leave out the console rows that read those species\' bodies.' },
+      { id: 'V2', q: 'Which concept goes on for each faction? (Concord 1-3, Kethran 4-6, Vos 7-9, Krai 10-12, Hunt 13-15, Institute 16-18)',
+        options: ['One number a faction, in the notes', 'More concepts first (say for which faction in the notes)'], rec: 0,
+        why: 'Breadth before depth: the picks are grown again at their size and detailed, as the Hunt\'s and the Institute\'s ships were.' },
+      { id: 'V3', q: 'One freighter class a faction, or one for each way of carrying (spine, hold, cradle)?',
+        options: ['One a faction now; the others later as variants', 'Three a faction from the start', 'One shared civilian freighter, painted per faction'], rec: 0,
+        why: 'One class is enough for the convoy missions and the campaign map\'s routes; a variant is cheap once its faction has a line.' },
+      { id: 'V4', q: 'How is a freighter armed?',
+        options: ['One point defence, nothing else', 'Unarmed', 'Point defence and one light weapon'], rec: 0,
+        why: 'A convoy needs its escorts; point defence lets a freighter thin a missile salvo without fighting back.' },
+      { id: 'V5', q: 'Size and speed: each about a cruiser to a battleship of its faction (140-210 m), slow (two-thirds of a frigate\'s top speed) and tough (hull 90 against the frigate\'s 60). Right?',
+        options: ['As drawn', 'Smaller, about a frigate', 'Bigger: bulk haulers longer than any warship'], rec: 0,
+        why: 'Big enough to read as a prize from across the battle, small enough for three to share a mission with their escorts.' },
+      { id: 'V6', q: 'The Kethran and the Vos have no warships yet. Draw their freighters now?',
+        options: ['Yes, now; their lines can grow from the picks', 'Wait until their warship lines are designed'], rec: 0,
+        why: 'Their freighters already fly in Distress and the convoy raids; a pick can seed the line\'s shape language.' },
+    ] },
   { tag: 'S', name: 'Sound and music: the first set',
     lead: 'Every faction in the game now has its own battle and ambient music (you asked on 2026-11-07), on the Music page, each built from its written culture. The first sound effects (30 cues: every weapon, shield and hull hits, explosions, the engines, the console keys, the alerts and a bridge bed) and the first score (the main title, the battle loop, a victory and a ship-lost stinger, and the motif sheet) are on the Fleet Command Sounds and Music pages, linked from the tracker. Approve or note each there. These questions are what the score and the mix are built on next.',
     qs: [
