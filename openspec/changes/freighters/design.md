@@ -35,13 +35,14 @@ draft wrong", and an outline of the shape wanted ("I made an outline of what I w
 | 101 | Concord | 1 Gauge carrier | 300 m | Twice the size |
 | 102 | Krai Warhost | 4 Spear train | 320 m | Twice the size |
 | 103 | Ssarith Hunt | 5 Tally carrier | 340 m | Twice the size |
-| 104 | Kelvane Institute | 8 Twin ledger | 298 m | Twice the size, and a loop on the outline the owner drew ("Fix the institute", "I made an outline of what I want"): the draft's stern case at full width, its two outer strips (one rolled radius wide) running straight on as really skinny arms round two identical stacks of containers, turning in at the bow on a squared quarter to meet across a flat bow, closed flush with nothing standing proud of it (owner: "No nipple at the end", "Flatter bow"; the loop of the Institute's line, `kelvane-ship-concepts`). The hull is lower than its cargo: 8 m tall (16 m shown) under stacks two containers high (owner: "The institute ship will be shorter than is cargo. That is the cargo is taller in height") |
+| 104 | Kelvane Institute | 8 Twin ledger | 274 m | Twice the size, and a loop on the outline the owner drew ("Fix the institute", "I made an outline of what I want"): the draft's stern case at full width, its two outer strips (one rolled radius wide) running straight on as really skinny arms round two identical stacks of containers, turning in at the bow on a squared quarter to meet across a flat bow, closed flush with nothing standing proud of it (owner: "No nipple at the end", "Flatter bow"; the loop of the Institute's line, `kelvane-ship-concepts`). The hull is lower than its cargo: 8 m tall (16 m shown) under stacks two containers high (owner: "The institute ship will be shorter than is cargo. That is the cargo is taller in height"), its straight run exactly its eight rows of containers with 1.5 m clear at each end ("Adjust institute ship len to fit cargo better") |
 
 **Twice the size.** Every freighter is shown at twice its drafted size, its containers with it (`FREIGHTER_X` on the
 page), so a container is 12 by 12 by 24 m and every freighter, 300-360 m, is longer than any warship (the largest, the
 Krai dreadnought, is 226 m as built). The board's eight are shown at the same scale.
 
-**Detailing waits** (owner, 2026-11-07: "Then go ahead and detail them", then "Don't do details yet").
+**Approved for build** (owner, 2026-11-07: "Adjust institute ship len to fit cargo better .After that change. Now I approve.
+Detail them"): the four picks are detailed (tasks section 2).
 
 ## The rules every concept keeps
 

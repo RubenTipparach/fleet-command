@@ -764,7 +764,9 @@ const BLOCKS = [
     // owner, 2026-11-07: "The institute ship will be shorter than is cargo. That is the cargo is taller in height": the
     // hull 8 m tall (16 m shown) under stacks two containers high, its arms one 3.2 m roll wide
     build(g) { const K = skin(g, 'kelvane'), c = { ...KV, hb: 20, top: 4, bot: -4, r: 3.2, rt: 3.2, bh: 1 };
-      const own = (k) => (E.belt(k) ? 'well' : false), zs = -60, run = 118, bend = 11, w = c.hb - c.r;
+      // owner, 2026-11-07: "Adjust institute ship len to fit cargo better": the straight run is the eight rows of containers
+      // (13 m a row: 12 m long, 1 m between) with 1.5 m clear at each end
+      const own = (k) => (E.belt(k) ? 'well' : false), rows = 8, clear = 1.5, zs = -60, run = rows * 13 - 1 + 2 * clear, bend = 11, w = c.hb - c.r;
       const S = K.body([[-80, sc(c, 0.8)], [-74, c], [zs, c]], own);
       // the three regions: port strip (points 1-12), starboard strip (16-27), the middle between them; each strip closed by
       // a straight cut at x = +-(hb - r), from its top corner's end to its bottom corner's start
@@ -788,7 +790,7 @@ const BLOCKS = [
       const B = K.body(dome, (k) => (k === 4 || k === 17 ? 'well' : false), usec, { stern: 'open', name: 'bridge' });
       K.branch('bow', B, dome[dome.length - 1][0], [[0, 1, 1, 0, 0]]); K.done();
       const it = [];   // two identical stacks, two across and two high, one inside each arm, along the straight run
-      for (let z = zs + 8; z <= zs + run - 8; z += 13) for (const x of [-11.3, -4.8, 4.8, 11.3]) for (const y of [-3.15, 3.15]) if (Math.abs(x) + 3 < w) it.push([x, y, z, (Math.round(z / 13) + Math.round(y) + 3) % 3]);
+      for (let r = 0, z = zs + clear + 6; r < rows; r++, z += 13) for (const x of [-11.3, -4.8, 4.8, 11.3]) for (const y of [-3.15, 3.15]) if (Math.abs(x) + 3 < w) it.push([x, y, z, (Math.round(z / 13) + Math.round(y) + 3) % 3]);
       loads(g, 'kelvane', it); } },
 ];
 

@@ -44,3 +44,6 @@
 - 2026-11-07, cloud session: version 9, version id `1794054377-452d` (owner: "The institute ship will be shorter than is
   cargo. That is the cargo is taller in height"): the Twin ledger's hull 16 m tall as shown (8 m drafted), its arms one
   3.2 m roll wide, under container stacks two high (25 m).
+- 2026-11-07, cloud session: version 10, version id `1794054480-2c51` (owner: "Adjust institute ship len to fit cargo
+  better .After that change. Now I approve. Detail them"): the Twin ledger's straight run is its eight rows of containers
+  with 1.5 m clear at each end (274 m shown). Approved for build.
