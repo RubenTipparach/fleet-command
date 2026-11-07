@@ -84,7 +84,7 @@ public sealed partial class PortPanel : FlowPanel
                 HitState st = Ui.Reg($"pf.{s.Id}", r, _ => F.PortShip = idx);
                 Card(r, on, st.Hot);
                 float sw = h * 0.55f;
-                Schematics.DrawFit(this, Key(hull), new Rect2(r.Position.X + 10, r.Position.Y + 8, sw, h - 16), C.Signal, C.Sky);
+                ShipPic(hull, new Rect2(r.Position.X + 10, r.Position.Y + 8, sw, h - 16));
                 float tx = r.Position.X + sw + 20, tww = r.End.X - tx - 10;
                 Text(s.Name, tx, r.Position.Y + 28, 19, on ? C.Sky : C.Text, HorizontalAlignment.Left, tww, 700);
                 Text(i == 0 ? $"{hull.Cls} · flagship" : $"{hull.Cls} · {s.Behaviour}", tx, r.Position.Y + 50, 15, C.Lilac, HorizontalAlignment.Left, tww, 600);
@@ -124,11 +124,16 @@ public sealed partial class PortPanel : FlowPanel
     private void Schematic(Hull h, Rect2 box, bool frame = true)
     {
         if (frame) Kit.Piece(this, "frame.inset", box);
-        if (!Schematics.DrawFit(this, Key(h), box.Grow(-10), C.Signal, C.Sky))
-        {
-            Text("NO SCHEMATIC", box.GetCenter().X, box.GetCenter().Y - 4, 15, C.Lilac, HorizontalAlignment.Center, box.Size.X - 8, 600, 1);
-            Text("a stand-in hull", box.GetCenter().X, box.GetCenter().Y + 18, 14, C.Lilac, HorizontalAlignment.Center, box.Size.X - 8, 500);
-        }
+        ShipPic(h, box.Grow(-10));
+    }
+
+    /// <summary>A hull fitted in a box, nose up: its schematic, or the battle's stand-in by its class's shape while it has
+    /// none (the systems display's, so a card's text never sits beside an empty space).</summary>
+    private void ShipPic(Hull h, Rect2 box)
+    {
+        if (Schematics.DrawFit(this, Key(h), box, C.Signal, C.Sky)) return;
+        float half = Math.Min(box.Size.Y * 0.46f, box.Size.X * 0.46f / 0.62f);
+        SystemsDisplay.StandIn(this, X.Data.Classes[h.BattleClass].Shape, box.GetCenter(), half, C.Sky);
     }
 
     // ---- Shipyard ----------------------------------------------------------------------------------------------------
@@ -154,7 +159,7 @@ public sealed partial class PortPanel : FlowPanel
             string id = h.Id;
             HitState st = Ui.Reg($"yard.pick.{h.Id}", r, _ => F.YardHull = id);
             Card(r, on, st.Hot);
-            Schematics.DrawFit(this, Key(h), new Rect2(r.Position.X + 10, r.Position.Y + 6, ch * 0.62f, ch - 12), C.Signal, C.Sky);
+            ShipPic(h, new Rect2(r.Position.X + 10, r.Position.Y + 6, ch * 0.62f, ch - 12));
             float tx = r.Position.X + ch * 0.62f + 22;
             Text(h.Name.ToUpperInvariant(), tx, r.Position.Y + 32, 22, on ? C.Sky : C.Text, HorizontalAlignment.Left, lw - 280, 700, 1);
             Text($"{h.Cls} · tier {h.Tier}", tx, r.Position.Y + 56, 16, C.Lilac, HorizontalAlignment.Left, lw - 280, 600);
@@ -252,8 +257,9 @@ public sealed partial class PortPanel : FlowPanel
         Kit.Piece(this, "frame.inset", box);
         string? key = Key(hull);
         Rect2 inner = box.Grow(-14);
-        float half = Schematics.FitHalf(key, inner);
-        Schematics.Draw(this, key, inner.GetCenter(), half, C.Signal, C.Sky, 0.75f);
+        // a stand-in (no schematic) is 1.1 half-lengths across, so it is held to the box's width too
+        float half = Schematics.HullRect(key, inner.GetCenter(), 1) != null ? Schematics.FitHalf(key, inner) : Math.Min(inner.Size.Y * 0.46f, inner.Size.X * 0.46f / 0.62f);
+        if (!Schematics.Draw(this, key, inner.GetCenter(), half, C.Signal, C.Sky, 0.75f)) SystemsDisplay.StandIn(this, X.Data.Classes[hull.BattleClass].Shape, inner.GetCenter(), half, new Color(C.Sky, 0.75f));
         Rect2 hr = Schematics.HullRect(key, inner.GetCenter(), half) ?? new Rect2(inner.GetCenter().X - half * 0.3f, inner.GetCenter().Y - half, half * 0.6f, half * 2);
         foreach (var (gid, _) in c.Data.Groups)
         {
@@ -316,8 +322,8 @@ public sealed partial class PortPanel : FlowPanel
             int held = c.InStores(o.Id);
             Card(r, isOn, false);
             Text(o.Name, r.Position.X + 14, r.Position.Y + 24, 19, isOn ? C.Sky : C.Text, HorizontalAlignment.Left, cw - 290, 700);
-            if (oh >= 60) Para(o.Desc, r.Position.X + 14, r.Position.Y + 46, cw - 300, 14, C.Lilac, 2);
-            Text(held > 0 ? $"{held} in stores" : "none in stores", r.End.X - 186, r.Position.Y + oh / 2 + 6, 15, held > 0 ? C.Accord : C.Lilac, HorizontalAlignment.Right, 110, 600, 1);
+            if (oh >= 60) Para(o.Desc, r.Position.X + 14, r.Position.Y + 46, cw - 350, 14, C.Lilac, 2);
+            Text(held > 0 ? $"{held} in stores" : "none in stores", r.End.X - 186, r.Position.Y + oh / 2 + 6, 15, held > 0 ? C.Accord : C.Lilac, HorizontalAlignment.Right, 150, 600, 1);
             string sid = o.Id;
             if (isOn) Text("FITTED", r.End.X - 14, r.Position.Y + oh / 2 + 6, 17, C.Accord, HorizontalAlignment.Right, 160, 700, 1);
             else Button($"lo.fit.{o.Id}", new Rect2(r.End.X - 170, r.Position.Y + (oh - 40) / 2, 160, 40), "Fit",
@@ -508,7 +514,7 @@ public sealed partial class PortPanel : FlowPanel
             var r = new Rect2(b.Position.X, y, b.Size.X, 90);
             Kit.Piece(this, "frame.inset", r);
             Hull h = c.Data.Hulls[s.Hull];
-            Schematics.DrawFit(this, Key(h), new Rect2(r.Position.X + 10, r.Position.Y + 6, 60, 78), C.Signal, C.Sky);
+            ShipPic(h, new Rect2(r.Position.X + 10, r.Position.Y + 6, 60, 78));
             Text(s.Name, r.Position.X + 90, r.Position.Y + 34, 20, C.Text, HorizontalAlignment.Left, 400, 700);
             Text($"{c.Data.Factions[s.Maker].Short}-built {h.Cls.ToLowerInvariant()} · hull {s.HullPct:0} %", r.Position.X + 90, r.Position.Y + 60, 16, C.Lilac, HorizontalAlignment.Left, 400, 600);
             int value = c.SaleQuote(s, buyer);

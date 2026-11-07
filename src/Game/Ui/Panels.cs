@@ -23,7 +23,7 @@ public sealed partial class PlatePanel : ConsolePanel
         Ship[] fleet = B.Fleet();
         int i = Array.IndexOf(fleet, Me);
         Button("fleet", new Rect2(Size.X - 90, 6, 86, 30), $"Fleet {i + 1}/{fleet.Length}", () => B.TakeCommand(fleet[(i + 1) % fleet.Length].Id),
-            tip: new Tip("Take command of the next ship"));
+            tip: new Tip("Take command of the next ship"), shortLabel: $"{i + 1}/{fleet.Length}");
     }
 }
 
@@ -268,7 +268,9 @@ public sealed partial class MenuCard : ConsolePanel
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("sheet.block", new Rect2(Vector2.Zero, Size));
-        float w = 600, h = 356;
+        // sized to its four keys, 56 px a row, and the frame round them (it held five before Display moved to Options)
+        const int Rows = 4;
+        float w = 600, h = 76 + Rows * 56;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         // a solid background inside the frame (owner, 2026-11-03: "Pause menu should have a background"), so the dimmed
         // console does not show through the keys; it stops short of the frame's end caps (near black with the skin's dark
@@ -282,9 +284,17 @@ public sealed partial class MenuCard : ConsolePanel
         if (X.State.OnMap)
             Button("m.main", new Rect2(b.Position.X, y, bw, 44), "Main menu", X.Act.MainMenu, center: false, tip: new Tip("Saves the campaign"));
         else if (X.State.InMission)
-            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), X.Battle.Over != null ? "Battle over" : "Withdraw",
-                X.Battle.Over != null ? null : () => { X.State.MenuOpen = false; X.Battle.Withdraw(); }, center: false, dis: X.Battle.Over != null,
-                tip: new Tip("Withdraw", new (string, string, Color?)[] { ("Ends", "the battle where it stands", null), ("Grade", "a draw, unless an objective says otherwise", null) }));
+        {
+            // Withdraw warps the ship out (owner, 2026-11-07: "select withdraw from menu, then warp out"): the drive arms,
+            // plots a course and jumps when ready; a story or special mission refuses it
+            Battle bt = X.Battle;
+            bool can = bt.Scenario.CanWithdraw, go = bt.Over == null && can && !bt.Withdrawing;
+            string lab = bt.Over != null ? "Battle over" : bt.Withdrawing ? "Withdrawing" : can ? "Withdraw" : "No withdrawal";
+            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), lab, go ? () => { X.State.MenuOpen = false; bt.Withdraw(); } : null, center: false, dis: !go,
+                tip: new Tip("Withdraw", can
+                    ? new (string, string, Color?)[] { ("Does", "charges the warp drive, plots a course out and jumps when ready", null), ("Grade", "a draw, unless an objective says otherwise", null) }
+                    : new (string, string, Color?)[] { ("Refused", "this mission must be seen through", null) }));
+        }
         else Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false);
         y += 56;
         // the window mode lives in Options with the volumes (owner, 2026-11-06: "also this display button should be in options")

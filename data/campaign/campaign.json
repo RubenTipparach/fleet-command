@@ -1,5 +1,5 @@
 {
- "_doc": "The campaign's data (openspec/changes/game-flow-engine): factions, sector terrain, hulls by tier, ship systems and supplies, the rules' numbers, and the map (its territory seeds, stars, ports, fleets and freight routes). The one copy the game and the campaign mockup (docs/mockups/game-flow.html, inlined by tools/mockups/inline_data.py) read. Missions are in data/missions/. Prices are points; the campaign charges points x credit_rate credits. Hulls: each faction's by tier (1 the smallest); battle_class is the ship class it fights as (data/battle/classes.json), schematic its top-down picture (assets/ships/schematics/), empty while the hull is a stand-in. Supplies: at most one per hp_per hull points, per_fit per fitted system fit, or fixed.",
+ "_doc": "The campaign's data (openspec/changes/game-flow-engine): factions, sector terrain, hulls by tier, ship systems and supplies, the rules' numbers, and the map (its territory seeds; its star systems, each a star with its belt of asteroids at belt_r sectors, a share of that ring taken, and a nebula of that many sectors beside it; the deep space between them, dust clouds and asteroid fields with no star, clear_of_stars sectors from any; how far your fleet and friendly ships see; ports, fleets and freight routes). A planet with no star within 3 sectors is a rogue planet. The one copy the game and the campaign mockup (docs/mockups/game-flow.html, inlined by tools/mockups/inline_data.py) read. Missions are in data/missions/. Prices are points; the campaign charges points x credit_rate credits. Hulls: each faction's by tier (1 the smallest); battle_class is the ship class it fights as (data/battle/classes.json), schematic its top-down picture (assets/ships/schematics/), empty while the hull is a stand-in. Supplies: at most one per hp_per hull points, per_fit per fitted system fit, or fixed.",
  "rules": {
   "cols": 30,
   "rows": 22,
@@ -578,34 +578,115 @@
    ]
   ],
   "seed_jitter": 2.2,
-  "nebula_below": 0.1,
-  "asteroids_below": 0.18,
-  "stars": [
-   [
-    12,
-    12
-   ],
-   [
-    21,
-    7
-   ],
-   [
-    6,
-    18
-   ],
-   [
-    25,
-    15
-   ],
-   [
-    3,
-    3
-   ],
-   [
-    20,
-    20
-   ]
+  "systems": [
+   {
+    "star": [
+     2,
+     9
+    ],
+    "belt_r": 3,
+    "belt_share": 0.5,
+    "nebula": 0
+   },
+   {
+    "star": [
+     5,
+     2
+    ],
+    "belt_r": 0,
+    "belt_share": 0,
+    "nebula": 5
+   },
+   {
+    "star": [
+     8,
+     15
+    ],
+    "belt_r": 3,
+    "belt_share": 0.45,
+    "nebula": 3
+   },
+   {
+    "star": [
+     12,
+     12
+    ],
+    "belt_r": 2,
+    "belt_share": 0.5,
+    "nebula": 0
+   },
+   {
+    "star": [
+     16,
+     1
+    ],
+    "belt_r": 2,
+    "belt_share": 0.5,
+    "nebula": 4
+   },
+   {
+    "star": [
+     17,
+     12
+    ],
+    "belt_r": 0,
+    "belt_share": 0,
+    "nebula": 6
+   },
+   {
+    "star": [
+     22,
+     10
+    ],
+    "belt_r": 3,
+    "belt_share": 0.5,
+    "nebula": 0
+   },
+   {
+    "star": [
+     28,
+     2
+    ],
+    "belt_r": 2,
+    "belt_share": 0.6,
+    "nebula": 3
+   },
+   {
+    "star": [
+     25,
+     15
+    ],
+    "belt_r": 2,
+    "belt_share": 0.7,
+    "nebula": 0
+   },
+   {
+    "star": [
+     20,
+     20
+    ],
+    "belt_r": 0,
+    "belt_share": 0,
+    "nebula": 5
+   }
   ],
+  "deep": {
+   "clear_of_stars": 4,
+   "dust_clouds": 4,
+   "dust_size": [
+    3,
+    6
+   ],
+   "asteroid_fields": 4,
+   "field_size": [
+    2,
+    4
+   ]
+  },
+  "sight": {
+   "fleet": 2,
+   "friendly": 1
+  },
   "places": [
    [
     "planet",
