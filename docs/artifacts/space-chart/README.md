@@ -12,3 +12,4 @@
 - Stage: drafted. Approvals are given in the mockup tracker.
 - Version 1 published 2026-11-07, version id `1794057082-da7c` (owner: "Our space chart mockup is not available to me as
   an artifact, please make it").
+- Version 2 published 2026-11-07, version id `1794092239-3938`: phones (owner, 2026-11-07: "Space chart not working on mobile"): the nebula print's noise read from a seeded lattice texture instead of integer maths, so it renders on WebGL 1 (it failed to compile there and printed black); the chart sheet drawn at 32 px a unit on a touch screen (1603 x 1394, 9 MB) instead of 56 (27 MB); the fog's soft edge drawn without the canvas blur filter where the browser lacks it (Safari).

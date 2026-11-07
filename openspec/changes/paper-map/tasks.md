@@ -14,6 +14,8 @@
 - [x] 1.8 The chart as its own artifact (owner, 2026-11-07: "Our space chart mockup is not available to me as an artifact, please
   make it"): `docs/mockups/space-chart.html` (mockup 24), written from mockup 1 by `tools/mockups/chart_page.py` and opening straight
   onto the map through mockup 1's `startAt()`
+- [x] 1.9 The chart on phones (owner, 2026-11-07: "Space chart not working on mobile"): the nebula's noise from a seeded lattice
+  texture so it compiles on WebGL 1; the sheet at 32 px a unit on a touch screen; `softDraw()` for browsers with no canvas filter
 
 ## 2. After the owner's notes
 

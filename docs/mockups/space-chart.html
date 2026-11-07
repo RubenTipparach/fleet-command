@@ -3090,7 +3090,21 @@ function buildMap() {
 // page is opened with ?look=space (the board of glass hexes over the nebula that came before).
 // ---------------------------------------------------------------------------------------------------------------
 const MAP_LOOK = { look: new URLSearchParams(location.search).get('look') === 'space' ? 'space' : 'paper',
-  unitM: 0.05, printPad: 0.5, border: 1.8, px: 56, tableTop: -0.03, tableH: 0.75, room: 62, wallH: 56 };
+  unitM: 0.05, printPad: 0.5, border: 1.8, tableTop: -0.03, tableH: 0.75, room: 62, wallH: 56,
+  // the chart's pixels per map unit: 56 (a 2806 x 2440 sheet, 27 MB as a canvas) on a desktop; 32 on a touch screen (1603 x
+  // 1394, 9 MB), so a phone's browser keeps the chart, its texture and the nebula pass in memory (owner, 2026-11-07: "Space
+  // chart not working on mobile")
+  px: matchMedia('(pointer: coarse)').matches ? 32 : 56 };
+// A soft-edged draw: the canvas blur filter where the browser has one, else the image shrunk and drawn back up, which the
+// smoothing softens to about the same width (Safari has no canvas filter).
+const CANVAS_FILTER = 'filter' in CanvasRenderingContext2D.prototype;
+function softDraw(g, src, x, y, w, h, blurPx) {
+  if (CANVAS_FILTER) { g.filter = `blur(${blurPx}px)`; g.drawImage(src, x, y, w, h); g.filter = 'none'; return; }
+  const k = Math.max(1, blurPx * src.width / w), s = document.createElement('canvas');
+  s.width = Math.max(1, Math.round(src.width / k)); s.height = Math.max(1, Math.round(src.height / k));
+  const c = s.getContext('2d'); c.imageSmoothingQuality = 'high'; c.drawImage(src, 0, 0, s.width, s.height);
+  g.imageSmoothingQuality = 'high'; g.drawImage(s, x, y, w, h);
+}
 const ROOM_MAPS = DATA['docs/mockups/lib/room-materials.json'].pieces;
 // a seed for the chart's generator (Mulberry32, rng) from a name, FNV-1a
 const strSeed = (s) => { let h = 2166136261; for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return h >>> 0; };
@@ -3222,8 +3236,7 @@ function paperSheet(regions) {
     for (const h of hexes) { fhex(h, 1.08); f.fill(); }
     f.globalCompositeOperation = 'source-over'; f.fillStyle = 'rgba(0, 0, 0, 0.45)';
     for (const h of hexes) if (fog(h) === 'revealed') { fhex(h, 1.0); f.fill(); }
-    g.globalCompositeOperation = 'source-over'; g.filter = `blur(${U(0.28)}px)`;
-    g.drawImage(fm, px0, py0, fm.width * MQ, fm.height * MQ); g.filter = 'none';
+    g.globalCompositeOperation = 'source-over'; softDraw(g, fm, px0, py0, fm.width * MQ, fm.height * MQ, U(0.28));
     // the ink worn: the paper showing through in pale patches and specks where it rubbed off
     g.globalCompositeOperation = 'screen';
     for (let k = 0; k < 40; k++) { const x = X(print[0] + R() * (print[2] - print[0])), y = Y(print[1] + R() * (print[3] - print[1])), r = U(0.8 + R() * 2.5);
@@ -3288,24 +3301,30 @@ function paperSheet(regions) {
 function nebulaPrint(w, h, seed) {
   const rt = new THREE.WebGLRenderTarget(w, h), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), sc = new THREE.Scene();
   const hex = (s) => new THREE.Color(s);
+  // the noise's lattice: 512 x 512 values from the seeded generator, read texel by texel, so the shader needs no integer
+  // maths and runs on WebGL 1 as well as 2 (a phone's browser may offer only WebGL 1)
+  const N = 512, R = rng(seed), lat = new Uint8Array(N * N * 4);
+  for (let i = 0; i < lat.length; i++) lat[i] = Math.floor(R() * 256);
+  const latTex = new THREE.DataTexture(lat, N, N, THREE.RGBAFormat);
+  latTex.magFilter = latTex.minFilter = THREE.NearestFilter; latTex.wrapS = latTex.wrapT = THREE.RepeatWrapping; latTex.needsUpdate = true;
   sc.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
-    uniforms: { uSeed: { value: seed >>> 8 }, uAspect: { value: w / h },
+    uniforms: { uLat: { value: latTex }, uAspect: { value: w / h },
       uBase: { value: hex('#0a0c1a') }, uBlue: { value: hex('#416aa3') }, uViolet: { value: hex('#8b5580') }, uRose: { value: hex('#c38890') },
       uTeal: { value: hex('#68aca9') }, uGold: { value: hex('#be955c') } },
     vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
     fragmentShader: `precision highp float; precision highp int;
-      uniform uint uSeed; uniform float uAspect; uniform vec3 uBase, uBlue, uViolet, uRose, uTeal, uGold; varying vec2 vUv;
-      uint pcg(uint v) { uint s = v * 747796405u + 2891336453u; uint w = ((s >> ((s >> 28u) + 4u)) ^ s) * 277803737u; return (w >> 22u) ^ w; }
-      float h2(ivec2 p, uint k) { return float(pcg(uint(p.x + 4096) * 1973u ^ pcg(uint(p.y + 4096) + k))) / 4294967295.0; }
-      float vn(vec2 x, uint k) { ivec2 i = ivec2(floor(x)); vec2 f = fract(x), u = f * f * (3.0 - 2.0 * f);
-        return mix(mix(h2(i, k), h2(i + ivec2(1, 0), k), u.x), mix(h2(i + ivec2(0, 1), k), h2(i + ivec2(1, 1), k), u.x), u.y); }
-      float fbm(vec2 p, uint k) { float v = 0.0, a = 0.5; mat2 r = mat2(0.8, 0.6, -0.6, 0.8);
-        for (int i = 0; i < 7; i++) { v += a * vn(p, k + uint(i) * 101u); p = r * p * 2.03 + 1.7; a *= 0.5; } return v; }
+      uniform sampler2D uLat; uniform float uAspect; uniform vec3 uBase, uBlue, uViolet, uRose, uTeal, uGold; varying vec2 vUv;
+      // one lattice value: the texel at the integer point, shifted per field k so each field reads its own stretch
+      float h2(vec2 i, float k) { vec2 t = mod(i + vec2(k * 37.0, k * 113.0), 512.0); return texture2D(uLat, (t + 0.5) / 512.0).r; }
+      float vn(vec2 x, float k) { vec2 i = floor(x), f = fract(x), u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(h2(i, k), h2(i + vec2(1.0, 0.0), k), u.x), mix(h2(i + vec2(0.0, 1.0), k), h2(i + vec2(1.0, 1.0), k), u.x), u.y); }
+      float fbm(vec2 p, float k) { float v = 0.0, a = 0.5; mat2 r = mat2(0.8, 0.6, -0.6, 0.8);
+        for (int i = 0; i < 7; i++) { v += a * vn(p, k + float(i) * 7.0); p = r * p * 2.03 + 1.7; a *= 0.5; } return v; }
       void main() {
         vec2 p = vec2(vUv.x * uAspect, vUv.y) * 3.2;
-        vec2 q = vec2(fbm(p, uSeed), fbm(p + 5.2, uSeed + 7u));
-        vec2 r = vec2(fbm(p + 4.0 * q + vec2(1.7, 9.2), uSeed + 13u), fbm(p + 4.0 * q + vec2(8.3, 2.8), uSeed + 29u));
-        float d = fbm(p + 3.5 * r, uSeed + 41u);
+        vec2 q = vec2(fbm(p, 0.0), fbm(p + 5.2, 1.0));
+        vec2 r = vec2(fbm(p + 4.0 * q + vec2(1.7, 9.2), 2.0), fbm(p + 4.0 * q + vec2(8.3, 2.8), 3.0));
+        float d = fbm(p + 3.5 * r, 4.0);
         // the galactic band: a broad sweep from the lower left to the upper right, the clouds thickest along it
         vec2 c = vUv - 0.5; float across = dot(c, normalize(vec2(-0.62, 1.0)));
         float band = exp(-across * across / 0.05) * 0.75 + 0.25;
@@ -3313,7 +3332,7 @@ function nebulaPrint(w, h, seed) {
         vec3 col = mix(uBlue, uViolet, smoothstep(0.3, 0.7, q.x));
         col = mix(col, uTeal, smoothstep(0.62, 0.8, r.y) * 0.8);
         col = mix(col, uRose, smoothstep(0.55, 0.85, d) * 0.6);
-        float lanes = smoothstep(0.52, 0.72, fbm(p * 2.2 + 2.0 * r, uSeed + 53u)) * smoothstep(0.1, 0.5, body);
+        float lanes = smoothstep(0.52, 0.72, fbm(p * 2.2 + 2.0 * r, 5.0)) * smoothstep(0.1, 0.5, body);
         vec3 o = uBase * (0.75 + 0.5 * band);
         o += col * body * 0.68;
         o += uGold * smoothstep(0.08, 0.0, abs(body - 0.35)) * 0.12 * band;
@@ -3323,7 +3342,7 @@ function nebulaPrint(w, h, seed) {
       }`,
   })));
   const prevRT = renderer.getRenderTarget(); renderer.setRenderTarget(rt); renderer.render(sc, cam); renderer.setRenderTarget(prevRT);
-  const px = new Uint8Array(w * h * 4); renderer.readRenderTargetPixels(rt, 0, 0, w, h, px); rt.dispose();
+  const px = new Uint8Array(w * h * 4); renderer.readRenderTargetPixels(rt, 0, 0, w, h, px); rt.dispose(); latTex.dispose();
   const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const img = cv.getContext('2d').createImageData(w, h);
   for (let y = 0; y < h; y++) img.data.set(px.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4);   // the target's rows run bottom up
   cv.getContext('2d').putImageData(img, 0, 0);
