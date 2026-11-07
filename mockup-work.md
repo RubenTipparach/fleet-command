@@ -1136,6 +1136,8 @@ frigate stand-in. The reference game's convoys: SFC3 manual, printed pages 37 an
 - **v14** (owner: "you need like better cargo textures, lookem up online for cc0 options, back ao and get diffuse and
   normals and specular for each container"): the container modelled and baked from Poly Haven's CC0 "Container Side":
   diffuse, normals, AO, roughness and specular.
+- **v15** (owner: "also containers dont seem to be lit correctly", "they are glowing"): the containers lit as the hulls are,
+  their paint kept to the hulls' level by day and dark at night.
 - **Stage:** **Approved for build** (2026-11-07, owner in conversation: "After that change. Now I approve. Detail them").
   Drafted v10. Survey V2 and V5 decided.
 - **Questions:** survey V1, V3, V4 (traditions, one class or two, arms).

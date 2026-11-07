@@ -59,3 +59,6 @@
   up online for cc0 options, back ao and get diffuse and normals and specular for each container"): the container
   modelled and baked by `tools/blender/build_container.py` from Poly Haven's CC0 "Container Side" (Dimitrios Savva;
   `assets/containers/SOURCES.md`): diffuse, normals, AO, roughness and specular, inlined from `assets/containers/manifest.json`.
+- 2026-11-07, cloud session: version 15, version id `1794091115-0876` (owner, of the containers: "also containers dont seem
+  to be lit correctly", "they are glowing"): the containers' room environment turned down (nearly off at night), metalness
+  0.12, and their paint kept to the hulls' level (0.62 by day, 0.16 at night).

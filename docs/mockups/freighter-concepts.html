@@ -1175,8 +1175,13 @@ function containerGeometry(M) { const [w, h, l] = M.size_m, A = M.atlas_m, P = [
   g.setAttribute('uv', new THREE.Float32BufferAttribute(UV, 2)); g.setAttribute('uv2', new THREE.Float32BufferAttribute(UV, 2)); g.setIndex(I); g.computeTangents(); return g; }
 const cTex = (k, srgb) => { const pc = CMAN.pieces[k], img = new Image(), t = new THREE.Texture(img); t.anisotropy = 8; if (srgb) t.encoding = THREE.sRGBEncoding;
   CONT_LOAD.push(new Promise((res) => { img.onload = () => { t.needsUpdate = true; res(); }; img.onerror = res; })); img.src = pc.data; return t; };
-const CONTAINER = CMAN ? { geo: containerGeometry(CMAN), mat: new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: cTex('diffuse', true), normalMap: cTex('normal'),
-    aoMap: cTex('ao'), roughnessMap: cTex('rough'), specularIntensityMap: cTex('specular'), specularIntensity: 1, roughness: 1, metalness: 0.3 }) }
+// The paint's strength, by the light (owner, 2026-11-07, of the containers: "they are glowing"): the baked hulls take their
+// light from their maps, so the containers are kept to the hulls' level, by day a little under white, at night as dark as
+// an unlit hull.
+const CONTAINER_K = { day: 0.62, night: 0.16 };
+const CONTAINER = CMAN ? { geo: containerGeometry(CMAN), mat: new THREE.MeshPhysicalMaterial({ color: new THREE.Color(CONTAINER_K.day, CONTAINER_K.day, CONTAINER_K.day), map: cTex('diffuse', true), normalMap: cTex('normal'),
+    aoMap: cTex('ao'), roughnessMap: cTex('rough'), specularIntensityMap: cTex('specular'), specularIntensity: 1, roughness: 1, metalness: 0.12,
+    envMapIntensity: 0.25 }) }   // lit by the key light like the hulls; the room environment only a little (night: setNight)
   : { geo: BOX, mat: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, metalness: 0.3 }) };
 function loads(g, f, items) {
   if (!items.length) return;
@@ -1389,7 +1394,8 @@ const LOOKS = { painted: 'Painted', pbr: 'PBR', faction: 'Faction colours', clay
 let night = false;
 function setNight(on) { night = on; hemi.intensity = on ? 0.03 : 0.8; sun.intensity = on ? 0.22 : 1.25; rim.intensity = on ? 0.12 : 0.5;
   U.lightK.value = on ? 4.5 : 0.3; U.selfP.value = on ? 0.06 : 0.55; U.frameK.value = on ? 0.3 : 1.0; scene.background.set(on ? 0x010102 : 0x06080b); grid.visible = !on;
-  for (const r of Object.values(BAKED)) r.traverse((o) => { if (o.isMesh && o.userData.looks) o.userData.looks.pbr.envMapIntensity = on ? 0.06 : 0.5; }); }
+  for (const r of Object.values(BAKED)) r.traverse((o) => { if (o.isMesh && o.userData.looks) o.userData.looks.pbr.envMapIntensity = on ? 0.06 : 0.5; });
+  CONTAINER.mat.envMapIntensity = on ? 0.03 : 0.25; CONTAINER.mat.color.setScalar(on ? CONTAINER_K.night : CONTAINER_K.day); }   // the containers as the hulls: at night lit by the ships' own floods
 
 // ---------------------------------------------------------------------------------------------------------------
 // The line: the four picks side by side, bows toward +z, the smallest beam first. The board: the eight blockouts in four
