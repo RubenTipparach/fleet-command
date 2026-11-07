@@ -51,3 +51,7 @@
   corner where cuts meet on the diagonal (junction_cuts); the carrier's 24 pads, floors and ceilings, shuttles overhead
   upside down; the Small craft family, eight shuttles grown from the board's hulls beside a person, the Runner skiff the
   carrier's (survey I7). All five rebaked. Page 10.7 MB. Published as artifact version 8, version id `1794023380-fba1`.
+- 2026-11-07, cloud session (owner: "Make variants of 206."): version 9. Six variants of the Gallery bus (211 high gallery,
+  212 long hop, 213 glass nose, 214 wide body, 215 keel skids, 216 deep chin) from one gallery hull function shared with
+  blockout 9 (its OBJ unchanged), shown together in the Gallery bus (206) family. Published as artifact version 9, version
+  id `1794024679-4618`.
