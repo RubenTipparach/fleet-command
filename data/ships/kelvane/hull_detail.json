@@ -1125,7 +1125,8 @@
           46.0
         ],
         "from_y_m": 0.0,
-        "x_max_m": 30.0
+        "x_max_m": 30.0,
+        "ceiling": true
       }
     }
   }

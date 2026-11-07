@@ -637,7 +637,7 @@ def grid_cuts(rng, D, zr, xmax, yr):
     station, and a seam along the plating in some bays; on the flanks, upright cuts at their own stations and a seam along
     the belt in some bays. No two stations share their spacing or spine. Port side only; mirrored by the caller."""
     z0, z1 = zr
-    plan, side, corners = [], [], []   # corners: (view, point, bar direction, stem direction) where a cut ends on another
+    plan, side = [], []
     z = z1 - rng.uniform(2, 5)
     st = []
     while z > z0 + 2:
@@ -646,22 +646,14 @@ def grid_cuts(rng, D, zr, xmax, yr):
     for i, (z, s) in enumerate(st):
         sp = st[i - 1][1] if i else s
         plan.append(((min(s, sp), z), (xmax + 2, z)))                    # the cut across, square to the ship
-        if 0 < i < len(st) - 1:   # the T where they meet (an L at the first and last station has no corner to turn)
-            if s == sp:
-                corners.append(("plan", (s, z), (0, 1), (1, 0)))           # the cut across ends on the straight spine edge
-            else:
-                corners.append(("plan", (max(s, sp), z), (1, 0), (0, 1) if sp > s else (0, -1)))   # the wider edge ends on it
         if i + 1 < len(st):
             zn = st[i + 1][0]
             plan.append(((s, z), (s, zn)))                                 # the spine plate's edge, straight to the next station
             if rng.random() < 0.5:                                         # a seam along the plating in some bays only
                 xa = s + (xmax - s) * rng.uniform(0.4, 0.7)
                 plan.append(((xa, z), (xa, zn)))
-                corners += [("plan", (xa, z), (1, 0), (0, -1)), ("plan", (xa, zn), (1, 0), (0, 1))]
         if rng.random() < 0.35:                                            # the spine plate cut across at some stations
             plan.append(((0.0, z), (s + 0.2, z)))
-            if s == sp and 0 < i < len(st) - 1:
-                corners.append(("plan", (s, z), (0, 1), (-1, 0)))
     z = z1 - rng.uniform(3, 8)
     ylo, yhi = yr
     ym = D.get("seam_y_m", (ylo + yhi) / 2)
@@ -671,27 +663,65 @@ def grid_cuts(rng, D, zr, xmax, yr):
         side.append(((z, ylo - 2), (z - r * (yhi - ylo + 4), yhi + 2)))
         if prev is not None and rng.random() < 0.6:
             side.append(((prev, ym), (z, ym)))
-            corners += [("side", (prev, ym), (0, 1), (-1, 0)), ("side", (z, ym), (0, 1), (1, 0))]
         prev = z
         z -= rng.uniform(*D["flank_station_m"])
-    return {"plan": plan, "side": side, "corners": corners}
+    return {"plan": plan, "side": side}
 
 
 def mirror_cuts(cuts):
-    cs = cuts.get("corners", [])
-    cs = cs + [(v, (-p[0], p[1]), (-b[0], b[1]), (-t[0], t[1])) for v, p, b, t in cs if v == "plan"]
-    return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"], "corners": cs}
+    return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
 
 
-def corner_cut(p, bar, stem, c, gap, view):
-    """A cut that turns the two square corners where a cut (the stem) ends on another (the bar) into 45 degree diagonals
-    c long (owner, 2026-11-06: "these sharp standalone corners arent good, can we use diagonals on corners like this?"):
-    a triangle with its base along the bar and its apex c up the stem, through the whole ship."""
-    (x, y), (bx, by), (sx, sy) = p, bar, stem
-    k = gap / 2 + 0.02   # the base sits just behind the bar's own gap, so nothing is left between them
-    tri = [(x + bx * (c + k) - sx * k, y + by * (c + k) - sy * k), (x + sx * (c + k), y + sy * (c + k)),
-           (x - bx * (c + k) - sx * k, y - by * (c + k) - sy * k)]
-    return view_prism(tri, view, -200.0, 200.0)
+def junction_cuts(segs, c, gap, view):
+    """Every plate corner where cut lines meet, cut on the diagonal (owner, 2026-11-06: "these sharp standalone corners
+    arent good, can we use diagonals on corners like this?", then 2026-11-07: "I see some square corners on hull plating
+    here"). At each point where two cuts meet (a T, an X or an L, found from the cuts themselves, never listed by hand),
+    the directions the cuts run away from it divide the plating round it into sectors; each sector narrower than 180
+    degrees is a plate's corner and gets a triangle that cuts it c along both its edges. A sector of 180 degrees or more
+    (the far side of a T, the outside of an L) has no corner and is left. Returns the cutters, through the whole ship."""
+    out, tol = [], gap * 0.6 + 0.05
+    def ends(a, b, p):
+        """The directions from p along the segment a-b that run on more than 0.5 m past p."""
+        d = Vector((b[0] - a[0], b[1] - a[1])); L = d.length
+        if L < 1e-6:
+            return []
+        d /= L; t = (p - Vector(a)).dot(d)
+        return ([d.copy()] if L - t > 0.5 else []) + ([-d] if t > 0.5 else [])
+    seen = []
+    for i in range(len(segs)):
+        a0, a1 = Vector(segs[i][0]), Vector(segs[i][1])
+        for j in range(i + 1, len(segs)):
+            b0, b1 = Vector(segs[j][0]), Vector(segs[j][1])
+            da, db = a1 - a0, b1 - b0
+            den = da.x * db.y - da.y * db.x
+            if abs(den) < 1e-6:
+                continue   # parallel
+            w = b0 - a0
+            t = (w.x * db.y - w.y * db.x) / den; u = (w.x * da.y - w.y * da.x) / den
+            la, lb = da.length, db.length
+            if not (-tol / la <= t <= 1 + tol / la and -tol / lb <= u <= 1 + tol / lb):
+                continue   # they do not meet
+            p = a0 + da * t
+            if any((p - q).length < 0.3 for q in seen):
+                continue
+            seen.append(p)
+            dirs = [d for sg in segs for d in ends(sg[0], sg[1], p) if distance_to_segment(p, sg) < tol]
+            angs = sorted({round(math.atan2(d.y, d.x), 3) for d in dirs})
+            for k in range(len(angs)):
+                a_, b_ = angs[k], angs[(k + 1) % len(angs)] + (2 * math.pi if k + 1 == len(angs) else 0)
+                if len(angs) < 2 or b_ - a_ >= math.pi - 0.05:
+                    continue
+                e1 = Vector((math.cos(a_), math.sin(a_))); e2 = Vector((math.cos(b_), math.sin(b_)))
+                L = c + gap / 2 + 0.02
+                tri = [tuple(p - (e1 + e2).normalized() * 0.02), tuple(p + e1 * L), tuple(p + e2 * L)]   # the corner, cut L along both edges
+                out.append(view_prism(tri, view, -200.0, 200.0))
+    return out
+
+
+def distance_to_segment(p, sg):
+    a, b = Vector(sg[0]), Vector(sg[1]); d = b - a; L2 = d.length_squared
+    t = 0.0 if L2 < 1e-12 else max(0.0, min(1.0, (p - a).dot(d) / L2))
+    return (p - (a + d * t)).length
 
 
 def build_armour(lo, D, S, rng, holes, mats, layer):
@@ -717,10 +747,8 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
             p = gap_slab(a, b, rng.uniform(*(D["trench_m"] if wide else D["gap_m"])), view)
             if p:
                 bms.append(p)
-        if D.get("corner_m"):   # the corners where one cut ends on another, cut on the diagonal
-            for v_, pt, bar, stem in cuts.get("corners", []):
-                if (v_ == "plan") == (view == ("x", "z")):
-                    bms.append(corner_cut(pt, bar, stem, D["corner_m"], D["gap_m"][1], view))
+        if D.get("corner_m"):   # every plate corner where cuts meet, cut on the diagonal
+            bms += junction_cuts(cuts["plan"] if view == ("x", "z") else cuts["side"], D["corner_m"], D["gap_m"][1], view)
         if primary:
             for e in S.get("exposed", []):
                 bms.append(view_prism(e["plan"], ("x", "z"), *e["y_m"]))
@@ -1078,14 +1106,16 @@ def inner_machinery(lo, armour, D, S, seed, holes=None):
     PD = S.get("pads")
     if PD:   # a pad at every station along the well, on the middle of the flat each floor offers there (found from above)
         Rp, (za, zb) = PD["r_m"], PD["z_m"]
-        z = za + PD["spacing_m"] / 2
-        while z < zb:
+        # the floors, and with "ceiling" the well's ceilings too, a craft parked there upside down (owner, 2026-11-07:
+        # "Carrier should have shuttles upside down as well. We are in space afterall")
+        stations = [(z, sy) for sy in ((-1, 1) if PD.get("ceiling") else (-1,))
+                    for z in [za + PD["spacing_m"] * (k + 0.5) for k in range(int((zb - za) / PD["spacing_m"]))]]
+        for z, sy in stations:
             ok = []
             for k in range(int(0.3 / 0.5), int(PD.get("x_max_m", 30.0) / 0.5)):
-                h = lbvh.ray_cast(Vector((k * 0.5, PD.get("from_y_m", 0.0), z)), Vector((0, -1, 0)), 40.0)
-                if h[0] is not None and h[0].x > Rp + 0.5 and h[2] in inner and h[1].y > 0.8 and on_wall(h[0], h[1], frame_at(h[0], h[1]), Rp, Rp):
+                h = lbvh.ray_cast(Vector((k * 0.5, PD.get("from_y_m", 0.0), z)), Vector((0, sy, 0)), 40.0)
+                if h[0] is not None and h[0].x > Rp + 0.5 and h[2] in inner and h[1].y * -sy > 0.8 and on_wall(h[0], h[1], frame_at(h[0], h[1]), Rp, Rp):
                     ok.append(h)
-            z += PD["spacing_m"]
             if not ok:
                 continue
             q, n = ok[len(ok) // 2][0], ok[len(ok) // 2][1].copy()
