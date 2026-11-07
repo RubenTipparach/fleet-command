@@ -101,8 +101,8 @@ function plate(x, path, box, R, o = {}) {
       x.fillStyle = mix(EX.rustLo, R() < 0.3 ? EX.rustHi : EX.rust, 0.3 + R() * 0.7); x.fill();
       if (r > 1) { x.save(); x.translate(0.35, 0.45); x.strokeStyle = 'rgba(205,215,215,0.32)'; x.lineWidth = 0.45; x.stroke(); x.restore(); }
     }
-    if (R() < 0.45) {
-      const L = 8 + R() * 30 * sc, sw = 0.8 + R() * 2, sx = cx + (R() - 0.5) * rc * 0.6, sg = x.createLinearGradient(0, cy, 0, cy + L);
+    if (R() < 0.75) {
+      const L = 12 + R() * 46 * sc, sw = 1 + R() * 2.6, sx = cx + (R() - 0.5) * rc * 0.6, sg = x.createLinearGradient(0, cy, 0, cy + L);
       sg.addColorStop(0, hexA(EX.rust, 0.5)); sg.addColorStop(1, 'rgba(140,69,34,0)'); x.fillStyle = sg;
       x.beginPath(); x.moveTo(sx - sw / 2, cy); x.lineTo(sx + sw / 2, cy); x.lineTo(sx + sw * 0.2, cy + L); x.lineTo(sx - sw * 0.2, cy + L); x.closePath(); x.fill();
     }
@@ -201,22 +201,78 @@ function brain(x, cx, cy, rx, ry, R, col = EX.ochre) {
   x.save(); x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 2 * P); x.clip();
   const g = x.createRadialGradient(cx - rx * 0.35, cy - ry * 0.4, 0, cx, cy, Math.max(rx, ry) * 1.1); g.addColorStop(0, mix(col, '#fff3e0', 0.45)); g.addColorStop(0.55, col); g.addColorStop(1, EX.ochreLo);
   x.fillStyle = g; x.fillRect(cx - rx, cy - ry, 2 * rx, 2 * ry);
-  // the meanders: grooves traced along a smooth, seeded direction field from a jittered grid of starts, so neighbouring
-  // ridges run side by side and wind together like a maze
-  const f = 2.6 / Math.max(rx, ry), p1 = R() * 2 * P, p2 = R() * 2 * P, p3 = R() * 2 * P;
-  const th = (px, py) => 2.3 * Math.sin((px - cx) * f + p1) + 2.3 * Math.sin((py - cy) * f * 1.3 + p2) + 1.6 * Math.sin((px + py - cx - cy) * f * 0.7 + p3);
-  const sp = Math.max(1.5, Math.min(rx, ry) * 0.17), inside = (px, py) => ((px - cx) / rx) ** 2 + ((py - cy) / ry) ** 2 < 1.05;
-  for (let gy = cy - ry; gy < cy + ry; gy += sp * 1.6) for (let gx = cx - rx; gx < cx + rx; gx += sp * 1.6) {
-    const sx = gx + R() * sp, sy = gy + R() * sp; if (!inside(sx, sy)) continue;
-    const line = [[sx, sy]];
-    for (const dir of [1, -1]) { let px = sx, py = sy; for (let s = 0; s < 30; s++) { const a = th(px, py); px += Math.cos(a) * 0.8 * dir; py += Math.sin(a) * 0.8 * dir; if (!inside(px, py)) break; if (dir > 0) line.push([px, py]); else line.unshift([px, py]); } }
-    x.beginPath(); line.forEach(([a1, b1], j) => (j ? x.lineTo(a1, b1) : x.moveTo(a1, b1)));
-    x.strokeStyle = 'rgba(66,36,18,0.55)'; x.lineWidth = sp * 0.42; x.stroke();
-    x.save(); x.translate(-sp * 0.3, -sp * 0.35); x.strokeStyle = 'rgba(255,238,210,0.3)'; x.lineWidth = sp * 0.22; x.stroke(); x.restore();
+  // the ridges: radial septa from a mouth near the top of the dome to its rim, each wavering a little and some forking,
+  // a dark groove between each pair, and growth bands round them
+  const rm = Math.max(rx, ry), n = Math.max(14, Math.round(2 * P * rm / 2.4)), mx = cx - rx * 0.08, my = cy - ry * 0.1, ph = R() * 2 * P;
+  for (let i = 0; i < n; i++) {
+    const a0 = i / n * 2 * P + (R() - 0.5) * 0.08, wob = 0.08 + R() * 0.1, t0 = i % 3 === 0 ? 0.12 : 0.3 + R() * 0.15, pts = [];
+    for (let t = t0; t <= 1.02; t += 0.06) { const a = a0 + Math.sin(t * 7 + ph + i) * wob * t; pts.push([mx + Math.cos(a) * rx * t, my + Math.sin(a) * ry * t]); }
+    const line = () => { x.beginPath(); pts.forEach(([a1, b1], j) => (j ? x.lineTo(a1, b1) : x.moveTo(a1, b1))); };
+    const lit = clamp(0.5 - 0.5 * (Math.cos(a0) * 0.62 + Math.sin(a0) * 0.78), 0, 1);
+    line(); x.strokeStyle = 'rgba(50,30,14,0.55)'; x.lineWidth = Math.max(0.9, rm * 0.085); x.stroke();
+    line(); x.strokeStyle = `rgba(255,240,214,${0.25 + 0.45 * lit})`; x.lineWidth = Math.max(0.45, rm * 0.035); x.stroke();
   }
+  for (const t of [0.45, 0.72]) { x.beginPath(); x.ellipse(mx, my, rx * t, ry * t, 0, 0, 2 * P); x.strokeStyle = 'rgba(60,34,16,0.22)'; x.lineWidth = Math.max(0.6, rm * 0.05); x.stroke(); }
+  x.beginPath(); x.ellipse(mx, my, rx * 0.14, ry * 0.1, 0, 0, 2 * P); x.fillStyle = 'rgba(40,22,10,0.7)'; x.fill();
   const sh = x.createRadialGradient(cx - rx * 0.3, cy - ry * 0.35, Math.min(rx, ry) * 0.4, cx, cy, Math.max(rx, ry) * 1.05); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(25,12,5,0.55)');
   x.fillStyle = sh; x.fillRect(cx - rx, cy - ry, 2 * rx, 2 * ry);
   x.restore();
+}
+// Plate coral: shelves stacked in tiers, each a fan grooved from its root to a pale lip, its underside in shadow.
+// a: the way the shelves face.
+function plateCoral(x, cx, cy, r, a, R, col = '#b9895c') {
+  for (let k = 0; k < 3; k++) {
+    const rr = r * (1 - k * 0.22), ox = cx + Math.cos(a) * r * 0.18 * k + (R() - 0.5) * r * 0.2, oy = cy + Math.sin(a) * r * 0.18 * k + (R() - 0.5) * r * 0.2, s = 0.85 + R() * 0.35;
+    const fan = () => { x.beginPath(); x.moveTo(ox, oy); x.arc(ox, oy, rr, a - s, a + s); x.closePath(); };
+    x.save(); x.translate(1.2, 1.8); fan(); x.fillStyle = 'rgba(0,0,0,0.45)'; x.fill(); x.restore();
+    fan(); const g = x.createRadialGradient(ox, oy, 0, ox, oy, rr); g.addColorStop(0, mix(col, '#2a1a10', 0.45)); g.addColorStop(0.75, col); g.addColorStop(1, mix(col, '#fff0dc', 0.45)); x.fillStyle = g; x.fill();
+    x.save(); fan(); x.clip(); x.strokeStyle = 'rgba(60,36,18,0.4)'; x.lineWidth = Math.max(0.4, rr * 0.03);
+    for (let i = 0; i <= 16; i++) { const b = a - s + 2 * s * i / 16; x.beginPath(); x.moveTo(ox, oy); x.lineTo(ox + Math.cos(b) * rr, oy + Math.sin(b) * rr); x.stroke(); }
+    for (const t of [0.5, 0.75]) { x.beginPath(); x.arc(ox, oy, rr * t, a - s, a + s); x.stroke(); }
+    x.restore();
+    x.beginPath(); x.arc(ox, oy, rr - 0.6, a - s, a + s); x.strokeStyle = mix(col, '#fff6e8', 0.6); x.lineWidth = Math.max(0.6, rr * 0.06); x.stroke();
+  }
+}
+// A sponge: an upright barrel seen from above and in front, its rim open on a dark well, its skin pitted with pores.
+function sponge(x, cx, cy, w, h, R, col = '#c07a3a') {
+  x.fillStyle = 'rgba(0,0,0,0.45)'; x.beginPath(); x.ellipse(cx + w * 0.25, cy + h * 0.1, w * 0.6, h * 0.2, 0, 0, 2 * P); x.fill();
+  const body = () => { x.beginPath(); x.moveTo(cx - w * 0.5, cy - h); x.bezierCurveTo(cx - w * 0.62, cy - h * 0.4, cx - w * 0.5, cy, cx, cy); x.bezierCurveTo(cx + w * 0.5, cy, cx + w * 0.62, cy - h * 0.4, cx + w * 0.5, cy - h); x.closePath(); };
+  body(); const g = x.createLinearGradient(cx - w * 0.6, 0, cx + w * 0.6, 0); g.addColorStop(0, mix(col, '#fff0d8', 0.3)); g.addColorStop(0.45, col); g.addColorStop(1, mix(col, '#1a0e08', 0.55)); x.fillStyle = g; x.fill();
+  x.save(); body(); x.clip(); for (let i = 0; i < w * h * 0.25; i++) { disc(x, cx + (R() - 0.5) * w * 1.1, cy - R() * h, 0.4 + R() * 0.6); x.fillStyle = 'rgba(40,20,8,0.45)'; x.fill(); } x.restore();
+  x.beginPath(); x.ellipse(cx, cy - h, w * 0.5, w * 0.2, 0, 0, 2 * P); x.fillStyle = mix(col, '#fff0d8', 0.35); x.fill();
+  x.beginPath(); x.ellipse(cx, cy - h + w * 0.02, w * 0.36, w * 0.13, 0, 0, 2 * P); x.fillStyle = '#140a06'; x.fill();
+}
+// An anemone: a ring of tapering tentacles round a disc, each curling at its tip, pale-tipped and translucent.
+function anemone(x, cx, cy, r, R, col = '#d9768a') {
+  const n = 16 + Math.floor(R() * 8), ph = R() * 2 * P;
+  for (let pass = 0; pass < 2; pass++) for (let i = 0; i < n; i++) {
+    const a = ph + i / n * 2 * P + (R() - 0.5) * 0.2, L = r * (0.75 + R() * 0.4), c = (R() - 0.5) * 1.4;
+    const ex = cx + Math.cos(a) * L, ey = cy + Math.sin(a) * L * 0.85, mx = cx + Math.cos(a + c * 0.4) * L * 0.6, my = cy + Math.sin(a + c * 0.4) * L * 0.5;
+    x.lineCap = 'round'; x.beginPath(); x.moveTo(cx, cy); x.quadraticCurveTo(mx, my, ex, ey);
+    if (pass === 0) { x.strokeStyle = 'rgba(0,0,0,0.35)'; x.lineWidth = r * 0.22; x.stroke(); }
+    else { x.strokeStyle = hexA(col, 0.85); x.lineWidth = r * 0.16; x.stroke(); x.strokeStyle = 'rgba(255,230,236,0.45)'; x.lineWidth = r * 0.05; x.stroke(); disc(x, ex, ey, r * 0.09); x.fillStyle = '#fbe2e6'; x.fill(); }
+  }
+  disc(x, cx, cy, r * 0.28); x.fillStyle = mix(col, '#2a1016', 0.4); x.fill(); disc(x, cx, cy, r * 0.1); x.fillStyle = '#1a0a0e'; x.fill();
+}
+// A tide line of salt: a ragged pale crust along a run, thickest where it dried last.
+function salt(x, x0, x1, y, th, R) {
+  for (let px = x0; px < x1; px += 0.7) {
+    const t = th * (0.3 + R() * 0.7) * (0.6 + 0.4 * Math.sin(px * 0.13 + y));
+    x.fillStyle = `rgba(234,230,216,${0.25 + R() * 0.4})`; x.fillRect(px, y - t * R(), 0.8 + R() * 0.6, t);
+  }
+}
+// A reef mass: the reef's layers over a patch, crust first, then shelves, sponges and domes, then branching coral,
+// anemones, worms and a dense crowd of barnacles over all. k scales it.
+function reef(x, cx, cy, rx, ry, R, k = 1, face = -P / 2) {
+  const at = () => [cx + (R() - 0.5) * rx * 1.6, cy + (R() - 0.5) * ry * 1.6];
+  for (let i = 0; i < 4; i++) { const [px, py] = at(); crust(x, px, py, rx * (0.35 + R() * 0.35), ry * (0.35 + R() * 0.35), R, ['#a1707a', '#567f6c', '#8f6f86', '#7d6a4e'][i]); }
+  { const [px, py] = at(); plateCoral(x, px, py, 9 * k + R() * 5 * k, face + (R() - 0.5), R); }
+  if (k > 0.7) { const [px, py] = at(); sponge(x, px, py, 7 * k, 10 * k, R, R() < 0.5 ? '#c07a3a' : '#7d4f7a'); }
+  { const [px, py] = at(); brain(x, px, py, 7 * k + R() * 4 * k, 6 * k + R() * 3 * k, R, R() < 0.5 ? '#b6a06a' : '#8fa07a'); }
+  { const [px, py] = at(); coral(x, px, py, face + (R() - 0.5) * 0.8, 6 * k + R() * 4 * k, 2.6 * k, 2, R, R() < 0.5 ? EX.coral : '#e0a24a'); }
+  for (let i = 0; i < (k > 0.7 ? 2 : 1); i++) { const [px, py] = at(); anemone(x, px, py, 5 * k + R() * 3 * k, R, ['#d9768a', '#d8b860', '#8fd0c0'][Math.floor(R() * 3)]); }
+  { const [px, py] = at(); tubes(x, px, py, 4, 7 * k, R, face); }
+  barnacles(x, cx, cy, rx, ry, Math.round(10 * k), 0.9, 2.2 + 2.6 * k, R);
 }
 // Encrusting growth: a flat crust of coralline pink (or sea green) spread over the plate in an irregular lobe, its
 // surface pebbled, its edge raised a little. The reef's first layer, laid down before anything else settles.
@@ -346,28 +402,30 @@ function frame(x, w, h, o) {
     if (!small) { rivet(x, sx ? px - m * 0.75 : px + m * 0.75, py, rr * 0.85, R); rivet(x, px, sy ? py - m * 0.75 : py + m * 0.75, rr * 0.85, R); }
   }
   if (small) {   // an inset: a little crust in one corner
-    barnacles(x, w - 7, h - 6, 6, 4, 5, 0.9, 2.6, R);
+    x.save(); outer(); x.rect(w - m, m, -(w - 2 * m), h - 2 * m); x.clip('evenodd');
+    crust(x, w - 8, h - 7, 10, 7, R); crust(x, 7, 7, 8, 6, R, '#567f6c');
+    barnacles(x, w - 7, h - 6, 7, 5, 7, 0.9, 3, R); barnacles(x, 6, 6, 5, 4, 4, 0.8, 2.4, R);
+    anemone(x, w - 10, 8, 4.5, R, '#d8b860');
+    x.restore();
     outer(); x.strokeStyle = '#060909'; x.lineWidth = 1; x.stroke();
     return;
   }
   // the foot: a vein under its sheath along the bottom band (the conduit-keepers)
-  vein(x, [[m * 0.6, h - band / 2 + 1], [w / 2, h - band / 2 + 0.5], [w - m * 0.6, h - band / 2 + 1]], 4.2, R, 0.55);
-  // the reef, in the corners (inside the margins: nothing reaches the content)
-  x.save(); outer(); x.clip();
-  crust(x, 13, 12, 17, 13, R);
-  crust(x, w - 14, h - 26, 11, 15, R, '#567f6c');
-  crust(x, 18, h - 9, 15, 8, R);
-  crust(x, w - 22, 9, 14, 7, R, '#8f6f86');
-  brain(x, w - 17, h - 15, 15, 12, R);
-  barnacles(x, w - 38, h - 10, 9, 6, 8, 1.1, 4, R);
-  tubes(x, w - 10, h - 34, 6, 10, R, -P / 2 - 0.4);
-  barnacles(x, 13, 13, 12, 10, 12, 1.2, 5.4, R);
-  barnacles(x, 30, 27, 4, 3, 3, 0.9, 2.2, R);
-  barnacles(x, 15, h - 11, 10, 7, 8, 1, 3.8, R);
-  coral(x, w - 8, 30, P * 1.02, 10, 3.6, 3, R);
-  coral(x, w - 26, 4, P * 0.6, 7, 2.6, 2, R, '#e08a72');
-  // a tendril grown from the coral, run along the top band and curled over the edge before the far corner
-  tendril(x, [[w - 12, 15], [w - m - 20, 9], [w * 0.55, 13], [w * 0.3, 8], [m + 22, 12]], 4.6, 1.8, R, -1);
+  salt(x, m, w - m, h - 3, 3, R); salt(x, 6, w - 6, band - 1, 2, R);
+  vein(x, [[m * 0.4, h - band / 2 + 1], [w * 0.3, h - band / 2 - 0.5], [w * 0.7, h - band / 2 + 1.5], [w - m * 0.4, h - band / 2 + 1]], 5, R, 0.85);
+  // the reef, swelling out of every corner, kept outside the content box (inside the margins: nothing reaches a label)
+  x.save(); outer(); x.rect(w - m, m, -(w - 2 * m), h - 2 * m); x.clip('evenodd');
+  reef(x, 15, 14, 16, 13, R, 1.1, -P * 0.75);
+  reef(x, w - 15, 15, 15, 13, R, 1, -P * 0.25);
+  reef(x, 16, h - 15, 15, 12, R, 1, P * 0.75);
+  reef(x, w - 16, h - 15, 16, 13, R, 1.15, P * 0.25);
+  brain(x, w - 18, h - 16, 12, 10, R, '#b6a06a');
+  coral(x, w - 6, 40, P * 1.05, 10, 3.6, 3, R);
+  coral(x, 6, h - 40, P * -0.05, 9, 3.2, 3, R, '#e0a24a');
+  barnacles(x, 45, h - 9, 14, 6, 10, 1, 3.6, R); barnacles(x, w - 48, 9, 14, 6, 10, 1, 3.6, R);
+  // tendrils grown from the corners: one along the top band, one down the right side, both curling at their ends
+  tendril(x, [[w - 12, 15], [w - m - 20, 9], [w * 0.55, 13], [w * 0.3, 8], [m + 22, 12]], 6.4, 2.2, R, -1);
+  tendril(x, [[w - 8, h - 20], [w - 13, h * 0.6], [w - 6, h * 0.35], [w - 12, m + 14]], 5.2, 2, R, 1);
   x.restore();
   outer(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
 }
@@ -391,17 +449,17 @@ function hatch(state) {
     plate(x, body, [7, 3, w - 2, 45], R, { where: (px) => (px < 28 || px > w - 26 ? 1 : 0), rustEvery: 700, rustScale: 0.45, saltEvery: 18 });
     bevel(x, body, 1.2);
     // the slot: recessed, its light by state
-    const sx = 24, sw = w - 48, slot = () => F.rr(x, sx, 13, sw, 22, 3);
+    const sx = 24, sw = w - 48, slot = () => F.rr(x, sx, 12, sw, 25, 3);
     const glow = [0.0, 0.55, 1][state];
-    recess(x, slot, [sx, 13, sx + sw, 35], ['#0a1a1c', '#0f3b3d', '#16605f'][state]);
+    recess(x, slot, [sx, 12, sx + sw, 37], ['#0a1a1c', '#0f3b3d', '#16605f'][state]);
     if (glow) {
       x.save(); slot(); x.clip();
-      const g = x.createLinearGradient(0, 13, 0, 35); g.addColorStop(0, hexA(EX.lumen, 0.1 * glow)); g.addColorStop(0.5, hexA(EX.lumen, 0.2 * glow)); g.addColorStop(1, hexA(EX.lumen, 0.38 * glow));
-      x.fillStyle = g; x.fillRect(sx, 13, sw, 22);
+      const g = x.createLinearGradient(0, 12, 0, 37); g.addColorStop(0, hexA(EX.lumen, 0.14 * glow)); g.addColorStop(0.5, hexA(EX.lumen, 0.2 * glow)); g.addColorStop(1, hexA(EX.lumen, 0.26 * glow));
+      x.fillStyle = g; x.fillRect(sx, 12, sw, 25);
       x.restore();
       x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8 * glow; slot(); x.strokeStyle = hexA(EX.lumen, 0.5 * glow); x.lineWidth = 1; x.stroke(); x.restore();
     } else {
-      x.strokeStyle = hexA(EX.lumen, 0.18); x.lineWidth = 0.8; x.beginPath(); x.moveTo(sx + 4, 33.5); x.lineTo(sx + sw - 4, 33.5); x.stroke();
+      x.strokeStyle = hexA(EX.lumen, 0.18); x.lineWidth = 0.8; x.beginPath(); x.moveTo(sx + 4, 35.5); x.lineTo(sx + sw - 4, 35.5); x.stroke();
     }
     // bolts, the latch
     for (const [bx, by] of [[17, 9], [17, 39], [w - 16, 9], [w - 16, 39]]) bolt(x, bx, by, 3, 0.2 + bx * 0.01);
@@ -448,19 +506,24 @@ function strip(flip) {
     disc(x, vx, vy, 27); const rg = x.createRadialGradient(vx - 8, vy - 10, 2, vx, vy, 27); rg.addColorStop(0, '#9aa5a8'); rg.addColorStop(1, '#2a3235'); x.strokeStyle = rg; x.lineWidth = 5; x.stroke();
     for (let i = 0; i < 5; i++) { const a = i * 2 * P / 5 + 0.3; x.strokeStyle = '#3c4649'; x.lineWidth = 3.4; x.beginPath(); x.moveTo(vx, vy); x.lineTo(vx + Math.cos(a) * 25, vy + Math.sin(a) * 25); x.stroke(); x.strokeStyle = 'rgba(200,212,214,0.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(vx - 0.8, vy - 0.8); x.lineTo(vx + Math.cos(a) * 25 - 0.8, vy + Math.sin(a) * 25 - 0.8); x.stroke(); }
     bolt(x, vx, vy, 6, 0.1);
-    crust(x, 72, 58, 18, 10, R); crust(x, 12, 30, 9, 20, R, '#567f6c');
+    salt(x, 96, w - 96, h - 2, 3, R);
+    x.save(); outer(); x.rect(90, 10, w - 180, h - 20); x.clip('evenodd');
+    reef(x, 70, 56, 20, 12, R, 1.1, P * 0.3); reef(x, 14, 22, 12, 18, R, 1, -P * 0.8);
+    reef(x, 30, 64, 16, 7, R, 0.9, P * 0.5);
     barnacles(x, vx + 16, vy + 18, 14, 7, 8, 1, 4, R);
-    barnacles(x, 14, 12, 8, 6, 5, 0.9, 3, R);
+    tendril(x, [[86, 66], [70, 40], [84, 18], [70, 6]], 6, 2.2, R, 1);
+    x.restore();
     // right: the junction box under the reef
     const jx = w - 82;
     const box = () => cham(x, jx, 12, 62, 48, 4);
     plate(x, box, [jx, 12, jx + 62, 60], R, { hi: '#6b7478', rustEvery: 600, rustScale: 0.6 }); bevel(x, box, 1);
     for (const [bx, by] of [[jx + 6, 18], [jx + 56, 18], [jx + 6, 54], [jx + 56, 54]]) bolt(x, bx, by, 2.4);
-    crust(x, w - 46, 34, 30, 22, R);
-    brain(x, w - 40, 40, 20, 15, R);
-    tubes(x, w - 72, 56, 6, 12, R, -P / 2 - 0.2);
-    coral(x, w - 14, 18, P * 0.8, 10, 3, 2, R);
-    tendril(x, [[w - 60, 64], [w - 80, 68], [w - 98, 63], [w - 104, 56]], 3, 1.4, R, 1);
+    x.save(); outer(); x.rect(90, 10, w - 180, h - 20); x.clip('evenodd');
+    reef(x, w - 46, 34, 30, 22, R, 1.3, -P * 0.4);
+    brain(x, w - 40, 42, 18, 14, R, '#b6a06a');
+    reef(x, w - 76, 60, 14, 8, R, 0.9, P * 0.5);
+    tendril(x, [[w - 60, 64], [w - 80, 68], [w - 98, 63], [w - 104, 56]], 5, 1.8, R, 1);
+    x.restore();
     x.restore();
   };
 }
@@ -530,13 +593,13 @@ const hero = {
     disc(x, 31, 28, 13); const lg = x.createRadialGradient(28, 24, 1, 31, 28, 13); lg.addColorStop(0, EX.lumenHot); lg.addColorStop(0.35, EX.lumen); lg.addColorStop(1, EX.lumenLo); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8; x.fillStyle = lg; x.fill(); x.restore();
     x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
     for (let i = 0; i < 6; i++) { const a = i * P / 3 + 0.4; bolt(x, 31 + Math.cos(a) * 17, 28 + Math.sin(a) * 17, 1.9, a); }
-    barnacles(x, 16, 45, 12, 6, 7, 0.9, 3.4, R);
-    // right: coral and worms grown over the end
-    x.save(); outer(); x.clip();
-    crust(x, w - 14, 30, 13, 22, R); crust(x, 50, 50, 14, 6, R, '#567f6c');
+    // both ends crusted over, kept off the name field and the lens
+    x.save(); outer(); x.rect(428, 7, -368, 42); x.moveTo(45, 28); x.arc(31, 28, 14, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
+    reef(x, 14, 46, 14, 9, R, 0.9, P * 0.7); reef(x, 50, 8, 12, 6, R, 0.7, -P / 2); reef(x, 52, 50, 10, 6, R, 0.7, P / 2);
+    barnacles(x, 31, 28, 21, 21, 14, 0.9, 3.2, R);
+    reef(x, w - 16, 28, 14, 24, R, 1.15, 0); reef(x, w - 26, 50, 12, 6, R, 0.7, P / 2);
     coral(x, w - 18, 54, -P / 2 - 0.25, 13, 3.2, 2, R);
-    tubes(x, w - 13, 18, 4, 10, R, -P / 2 + 0.6);
-    barnacles(x, w - 8, 44, 5, 8, 5, 0.9, 2.8, R);
+    tendril(x, [[w - 6, 6], [w - 20, 4], [w - 30, 12], [w - 26, 26]], 4.4, 1.6, R, 1);
     x.restore();
     rivet(x, 440, 9, 2, R); rivet(x, 440, 47, 2, R);
   },
@@ -561,18 +624,21 @@ const hero = {
     disc(x, 150, 150, 36); const rg = x.createRadialGradient(140, 138, 4, 150, 150, 36); rg.addColorStop(0, '#9ca7aa'); rg.addColorStop(1, '#2b3336'); x.fillStyle = rg; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
     disc(x, 150, 150, 25); x.fillStyle = '#0a1a1c'; x.fill(); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.strokeStyle = hexA(EX.lumen, 0.7); x.lineWidth = 1.6; x.stroke(); x.restore();
     for (let i = 0; i < 8; i++) { const a = i * P / 4 + P / 8; bolt(x, 150 + Math.cos(a) * 30.5, 150 + Math.sin(a) * 30.5, 2.2, a); }
-    // the reef in the corners, clear of every key
-    x.save(); outer(); x.clip();
-    crust(x, 14, 260, 12, 34, R); crust(x, 70, 290, 40, 9, R, '#567f6c'); crust(x, 288, 60, 10, 30, R, '#8f6f86'); crust(x, 200, 10, 34, 8, R);
-    crust(x, 105, 196, 9, 9, R); barnacles(x, 105, 196, 8, 8, 6, 1, 3.6, R);
-    crust(x, 196, 104, 8, 9, R, '#567f6c'); barnacles(x, 196, 104, 7, 7, 4, 1, 3, R);
-    brain(x, 22, 280, 20, 16, R);
-    barnacles(x, 42, 290, 12, 6, 7, 1, 3.4, R);
-    coral(x, 290, 10, P * 0.72, 14, 3.6, 3, R);
-    barnacles(x, 285, 288, 10, 8, 9, 1, 4, R);
-    tubes(x, 270, 292, 5, 9, R, -P / 2 - 0.3);
-    barnacles(x, 14, 16, 9, 8, 7, 1, 3.6, R);
-    tendril(x, [[6, 40], [10, 110], [6, 175], [11, 228]], 3.6, 1.6, R, 1);
+    // the reef packed into every gap and round the rim, clipped clear of every key and the stop
+    x.save(); outer();
+    for (const [kx, ky] of HELM) { x.moveTo(kx - 36, ky - 36); x.lineTo(kx - 36, ky + 36); x.lineTo(kx + 36, ky + 36); x.lineTo(kx + 36, ky - 36); x.closePath(); }
+    x.moveTo(188, 150); x.arc(150, 150, 38, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
+    vein(x, [[22, 150], [60, 113], [150, 108], [240, 113], [278, 150]], 2.6, R, 0.9, false);
+    for (const [px, py, rx, ry] of [[105, 60, 9, 24], [195, 60, 9, 24], [105, 240, 9, 24], [195, 240, 9, 24], [60, 105, 24, 9], [240, 105, 24, 9], [60, 195, 24, 9], [240, 195, 24, 9]]) reef(x, px, py, rx, ry, R, 0.6, rx > ry ? -P / 2 : 0);
+    for (const [px, py] of [[105, 105], [195, 105], [105, 195], [195, 195]]) { crust(x, px, py, 11, 11, R); barnacles(x, px, py, 9, 9, 8, 1, 3.8, R); }
+    anemone(x, 105, 196, 7, R, '#d8b860'); anemone(x, 196, 104, 6, R, '#8fd0c0');
+    reef(x, 18, 18, 16, 16, R, 1.1, -P * 0.75); reef(x, 282, 18, 16, 16, R, 1, -P * 0.25);
+    reef(x, 18, 282, 18, 16, R, 1.2, P * 0.75); reef(x, 282, 282, 16, 16, R, 1.1, P * 0.25);
+    brain(x, 24, 278, 15, 13, R, '#b6a06a'); plateCoral(x, 286, 150, 14, P, R);
+    for (const [px, py, rx, ry] of [[150, 12, 50, 8], [150, 288, 50, 8], [12, 150, 8, 50], [288, 150, 8, 40]]) reef(x, px, py, rx, ry, R, 0.7);
+    tendril(x, [[6, 40], [12, 110], [5, 175], [12, 228], [30, 284]], 6, 2, R, 1);
+    tendril(x, [[290, 260], [294, 200], [288, 140], [292, 70]], 5, 1.8, R, -1);
+    tendril(x, [[110, 6], [150, 12], [190, 5], [230, 12]], 4.6, 1.8, R, 1);
     x.restore();
   },
   'ssd.bezel': (x, w, h) => {
@@ -587,19 +653,18 @@ const hero = {
     for (let gy = 18; gy < h - 14; gy += 24) { x.beginPath(); x.moveTo(46, gy); x.lineTo(w - 46, gy); x.stroke(); }
     x.restore();
     // side veins, rivets
-    vein(x, [[23, 40], [24, 150], [22, 260]], 4, R, 0.55);
-    vein(x, [[w - 23, 40], [w - 22, 150], [w - 24, 260]], 4, R, 0.55);
+    vein(x, [[23, 40], [24, 150], [22, 260]], 5, R, 0.85);
+    vein(x, [[w - 23, 40], [w - 22, 150], [w - 24, 260]], 5, R, 0.85);
     for (const py of [24, 276]) { rivet(x, 12, py, 2.4, R); rivet(x, w - 12, py, 2.4, R); }
-    // the reef
-    x.save(); outer(); x.clip();
-    crust(x, 18, 250, 16, 40, R); crust(x, w - 20, 60, 16, 46, R, '#567f6c'); crust(x, w - 22, 250, 14, 26, R, '#8f6f86');
-    barnacles(x, 22, 150, 10, 30, 9, 1, 3.6, R);
-    brain(x, w - 24, 26, 18, 14, R);
-    coral(x, w - 40, 8, P * 0.62, 11, 3, 2, R);
-    barnacles(x, 24, 274, 16, 14, 12, 1, 5, R);
-    tubes(x, 30, h - 8, 5, 10, R, -P / 2 + 0.2);
-    tendril(x, [[8, 22], [36, 10], [70, 18], [96, 10]], 3.4, 1.4, R, 1);
-    barnacles(x, w - 20, h - 22, 10, 10, 6, 1, 3.4, R);
+    salt(x, 30, w - 30, h - 4, 3, R);
+    // the reef: up both side bands and into the well's corners, clear of the display's ring
+    x.save(); outer(); x.moveTo(230 + 118, 150); x.arc(230, 150, 118, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
+    reef(x, 24, 262, 22, 34, R, 1.3, P * 0.7); reef(x, 22, 40, 20, 26, R, 1, -P * 0.7); reef(x, 22, 150, 12, 40, R, 0.8, P);
+    reef(x, w - 24, 34, 22, 30, R, 1.25, -P * 0.25); reef(x, w - 22, 262, 20, 30, R, 1.1, P * 0.25); reef(x, w - 20, 150, 12, 36, R, 0.8, 0);
+    reef(x, 72, 266, 26, 18, R, 1, P / 2); reef(x, w - 74, 30, 24, 16, R, 0.9, -P / 2);
+    brain(x, w - 26, 28, 16, 13, R, '#b6a06a'); plateCoral(x, 56, 250, 18, -P * 0.3, R);
+    tendril(x, [[8, 22], [36, 10], [70, 18], [96, 10], [120, 18]], 6, 2, R, 1);
+    tendril(x, [[w - 8, 290], [w - 40, 288], [w - 70, 294], [w - 100, 286]], 5.4, 2, R, -1);
     x.restore();
   },
   dial: (x, w) => {
@@ -669,7 +734,13 @@ function column(x, w, h) {
   // the reef, grown up from the foot and down from the head, in layers: crust first, then what settles on it
   for (let i = 0; i < 26; i++) crust(x, R() * w, h - Math.pow(R(), 1.6) * 160, 14 + R() * 26, 8 + R() * 16, R, R() < 0.6 ? '#a1707a' : '#567f6c');
   for (let i = 0; i < 10; i++) crust(x, R() * w, Math.pow(R(), 1.6) * 60, 10 + R() * 20, 6 + R() * 10, R, R() < 0.5 ? '#a1707a' : '#567f6c');
-  for (const sx of [150, 322]) for (let i = 0; i < 5; i++) crust(x, sx + (R() - 0.5) * 8, h - 160 - Math.pow(R(), 2) * 420, 4 + R() * 5, 8 + R() * 14, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+  // most of the bulkhead is reef now: masses on a jittered grid, a few left out so patches of plate still show
+  for (let gy = 30; gy < h; gy += 58) for (let gx = 30; gx < w; gx += 62) {
+    if (R() < 0.22) continue;
+    reef(x, gx + (R() - 0.5) * 30, gy + (R() - 0.5) * 30, 26 + R() * 10, 22 + R() * 10, R, 1.2 + R() * 0.5, -P / 2 + (R() - 0.5) * 2);
+  }
+  for (let i = 0; i < 16; i++) { const px = R() * w, py = R() * h; if (R() < 0.5) brain(x, px, py, 10 + R() * 12, 9 + R() * 9, R, R() < 0.5 ? '#b6a06a' : '#8fa07a'); else plateCoral(x, px, py, 12 + R() * 10, -P / 2 + (R() - 0.5) * 2, R); }
+  for (let i = 0; i < 6; i++) { const sx = 20 + R() * (w - 40); tendril(x, [[sx, h], [sx + (R() - 0.5) * 80, h * 0.75], [sx + (R() - 0.5) * 80, h * 0.5], [sx + (R() - 0.5) * 80, h * 0.25], [sx + (R() - 0.5) * 60, 20 + R() * 100]], 8, 3, R, R() < 0.5 ? 1 : -1); }
   for (let i = 0; i < 9; i++) brain(x, 20 + R() * (w - 40), h - 10 - R() * 40, 12 + R() * 16, 10 + R() * 10, R);
   for (let i = 0; i < 6; i++) coral(x, 10 + R() * (w - 20), h - 4, -P / 2 + (R() - 0.5) * 0.8, 16 + R() * 14, 4, 3, R);
   barnacles(x, w / 2, h - 30, w / 2, 30, 60, 1.2, 6, R);
@@ -677,6 +748,48 @@ function column(x, w, h) {
   for (const [px, py] of [[8, 300], [w - 8, 520], [8, 780], [w - 8, 900]]) barnacles(x, px, py, 8, 40, 14, 1, 4, R);
   tendril(x, [[2, 120], [16, 200], [4, 300], [14, 420]], 5, 2, R, 1);
   tendril(x, [[w - 2, 640], [w - 14, 720], [w - 4, 820], [w - 14, 930]], 5, 2, R, -1);
+}
+
+// The overgrowth (the page's `overgrow` hook): what has grown across the console, between and over its pieces. It keeps
+// to what no label, readout or key face uses: the column's outer edges (14 px in), the gaps between pieces (a cable lies
+// in each, no thicker than the pieces' plain bands), the strips' outer lips and their ends, and a little way over the
+// battle's edge where the console meets it. r gives every slot's rectangle in console px.
+function overgrow(x, r) {
+  const R = RNG('over'), col = 472;
+  const blocks = ['nameplate', 'helm.pad', 'ssd.bezel', 'panel.weapons', 'dial'].map((k) => r[k]).filter(Boolean);
+  // the column's left edge: reef climbing it, a thick cable winding up through it
+  for (let y = 40; y < 1060; y += 64 + R() * 30) reef(x, 6 + R() * 4, y, 8, 22, R, 0.8, P);
+  tendril(x, [[4, 1080], [12, 900], [3, 720], [13, 540], [4, 360], [12, 200], [6, 70]], 8, 3, R, 1);
+  // its right edge, swelling a little over the battle
+  for (let y = 100; y < 1000; y += 70 + R() * 30) reef(x, col - 2 + R() * 6, y, 9, 24, R, 0.85, 0);
+  tendril(x, [[col + 4, 990], [col - 6, 820], [col + 6, 640], [col - 4, 470], [col + 6, 300], [col - 2, 120]], 8, 3, R, -1);
+  // a cable in every gap between the column's pieces, wrapping in from the edges, barnacles where it crosses
+  for (let i = 0; i < blocks.length - 1; i++) {
+    const a = blocks[i], gy = a[1] + a[3] + 3;
+    tendril(x, [[-4, gy + 2], [40, gy - 1], [90, gy + 1.5], [140, gy], [170, gy - 1]], 6, 2, R, i % 2 ? 1 : -1);
+    tendril(x, [[col + 6, gy - 1], [430, gy + 1.5], [380, gy - 1], [330, gy]], 6, 2, R, i % 2 ? -1 : 1);
+    barnacles(x, 14, gy, 8, 4, 6, 1, 3.4, R); barnacles(x, col - 12, gy, 8, 4, 6, 1, 3.4, R);
+    crust(x, 230 + (R() - 0.5) * 120, gy, 26, 3.5, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+  }
+  // the gap between the helm and its readout
+  const hp = r['helm.pad'];
+  if (hp) { const gx = hp[0] + hp[2] + 3; tendril(x, [[gx, hp[1] + hp[3] + 4], [gx - 1.5, hp[1] + hp[3] * 0.6], [gx + 1.5, hp[1] + hp[3] * 0.3], [gx, hp[1] - 2]], 5, 2, R, 1); barnacles(x, gx, hp[1] + hp[3] * 0.5, 3, 20, 6, 0.9, 2.6, R); }
+  // where the column meets the strips: big reef masses over the corners
+  for (const [cy, face] of [[74, P * 0.25], [1006, -P * 0.25]]) { reef(x, col + 2, cy, 30, 20, R, 1.5, face); reef(x, col + 30, cy + (cy < 500 ? -8 : 8), 22, 10, R, 1.1, face); brain(x, col - 6, cy, 13, 11, R, '#b6a06a'); }
+  // the strips: growth along their outer lips and hanging over the battle's edge, crusted ends
+  for (const [y, dir] of [[72, 1], [1008, -1]]) {
+    for (let px = 540; px < 1900; px += 70 + R() * 70) {
+      if (dir < 0 && px < 940) continue;   // keep the battle's readouts clear
+      const L = dir > 0 ? 18 + R() * 30 : 6 + R() * 8, k = R();
+      if (k < 0.35) tendril(x, [[px, y + dir * 2], [px + (R() - 0.5) * 16, y + dir * L * 0.5], [px + (R() - 0.5) * 20, y + dir * L]], 4.4, 1.6, R, R() < 0.5 ? 1 : -1);
+      else if (k < 0.7) coral(x, px, y + dir * 2, dir > 0 ? P / 2 + (R() - 0.5) * 0.7 : -P / 2 + (R() - 0.5) * 0.7, L * 0.42, 3.2, 2, R, R() < 0.5 ? EX.coral : '#e0a24a');
+      else if (dir > 0) anemone(x, px, y + 6, 7 + R() * 4, R, ['#d9768a', '#d8b860', '#8fd0c0'][Math.floor(R() * 3)]);
+      crust(x, px + 24, y + dir * 1, 26, 5, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+      barnacles(x, px + 26, y + dir * 3, 22, 4, 9, 1, 3.8, R);
+    }
+    tendril(x, [[560, y + dir * 3], [900, y + dir * 8], [1250, y + dir * 2], [1600, y + dir * 9], [1900, y + dir * 3]], 7, 3, R, dir);
+    reef(x, 1904, y, 24, 18, R, 1.3, dir > 0 ? P * 0.75 : -P * 0.75);
+  }
 }
 
 // ---- icons: pictures of the job, cut as stencils ---------------------------------------------------------------------
@@ -739,6 +852,7 @@ F.register('exponent', {
   helmKeys: HELM, shield: [EX.lumen, EX.amber, EX.breach],
   fonts: ['400 20px "Allerta Stencil"', '700 20px "Chivo Mono"', '500 20px "Chivo Mono"'], view: { title: '400 26px "Allerta Stencil"', body: '700 21px "Chivo Mono"', upper: true, ink: EX.bone, dim: '#a9c4bf' },
   build: () => Object.assign(F.fromPainters(nine, hero, icon, false), { column: F.png(F.paint(472, 1080, column)) }),
+  overgrow,
   live: {
     arrow: (x) => stencilArrow(x, EX.lumen),
     helmCentre: (x, c) => { x.fillStyle = EX.bone; x.font = '400 13px "Allerta Stencil"'; x.textAlign = 'center'; x.shadowColor = '#000'; x.shadowBlur = 3; x.fillText('STOP', c, c + 5); x.shadowBlur = 0; },
@@ -783,7 +897,7 @@ F.register('exponent', {
     'Provisional and the owner\'s to set; the design draws on none of it. Three traditions shape its things: the assimilators, the conduit-keepers, the reef.',
     'Machinery kept running long past any refit: whatever is taken is bolted on as found, power runs in sheathed veins of cable and fluid line, and the growth it has absorbed is left to accrete in layers.',
     'Hulks of joined hulls under barnacle, coral and cable, like wrecks that have lain on a sea floor and still run.'],
-  shapes: 'Hatch keys (a steel access hatch on a hinge, a dog latch, four bolts, a lit slot), riveted plate with patches bolted on, barnacles, brain and branching coral, tube worms, cabled tendrils, sheathed veins.',
+  shapes: 'Hatch keys (a steel access hatch on a hinge, a dog latch, four bolts, a lit slot), riveted plate with patches bolted on, and a reef over all of it: coralline crust, plate, brain and branching coral, sponges, anemones, tube worms, dense barnacles, thick cabled tendrils across the gaps between panels, sheathed veins pulsing along every foot. Growth keeps to margins, edges and gaps, never a label or key face.',
   light: 'A hard work light from the upper left over chipped paint, rust and salt; the only glow is the cold lumen in the slots, the veins and the lenses.',
   motion: 'Hover lights a hatch\'s slot; pressed, the hatch sinks a pixel and its slot flares; the growth on it never moves.',
   type: '"Allerta Stencil", a stencilled sans, for keys and titles, over "Chivo Mono" for labels and numbers.',
