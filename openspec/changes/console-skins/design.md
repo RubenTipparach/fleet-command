@@ -700,6 +700,42 @@ though".
   systems display. A pressed key's cap drops 2 mm and its label rides it down the same 2 px (`--btn-sink` 1 px, padding
   doubled).
 
+## Three more factions (page version 29)
+
+The owner, 2026-11-07: "I have a couple more faction ideas. Id like a faction that is purely mathematical. A faction based
+on fractal patterns and designs. Then that faction will merge with the organics creating a new hybrid of fractal organic
+faction. Id also like another pirate faction. One more brutal. Decorate their UI with sharp teeth, bullets and blades.
+Blood stained buttons and crusty paper with burn marks and drops of blood and grime on them". The hybrid's name is the
+owner's ("The Exponent"); the other names and every culture below are ours and provisional (survey N1 to N6). Each is a
+first-pass skin module (`docs/mockups/skins/axiom.js`, `exponent.js`, `redtithe.js`); none takes anything from a
+species' body (the Tithe's teeth are trophies taken from other crews, a tradition).
+
+| | The Axiom | The Exponent | The Red Tithe |
+|---|---|---|---|
+| World view | Every true thing is a rule and its iteration; a structure is honoured by how deep its rule has been carried. Three schools: escape-time (screens), tilers (frames), branchers (icons) | The Vhorr Brood after it took the Axiom's rules into its growth: tissue that grows by rule. Phyllotaxis growers, branch-veiners, cell-builders, shell-turners | Raiders who take a tithe of blood from every crew they board; orders on bounty sheets pinned with knives; standing counted in trophies (teeth of beaten crews, spent cartridges, broken blades) |
+| Method | Flat and exact, drawn by the rules in canvas: Koch, Sierpinski, Hilbert, Cantor, the dragon curve, a Julia set per pixel, golden-ratio proportions; no randomness | Painted membrane lit from within, its structure computed: Voronoi cells from a seeded Poisson disc, L-system veins (each child its parent over phi), seeds at the golden angle, chambers on a logarithmic spiral. To be sculpted in Blender on the organic bible | Painted crusted, scorched, bloodied bounty sheets on riveted gun steel. To be finished with the paper painted in Krita and the jaws, knives, cartridges and teeth modelled in Blender |
+| Button shape | **Koch key**: a long hexagon with Koch-edged ends; hover iterates one level deeper, pressed fills solid in a gold outline | **Chambered key**: a nautilus section at the left end whose open chamber is the face; hover lights veins and septa, pressed fills the chambers with light | **Trap jaw**: a paper slip clamped between sawtoothed steel jaws; hover eases them open, pressed snaps them shut and blood seeps along the bite |
+| Frame | Fine indigo border, Sierpinski corners (panel), Hilbert corners (inset) | A Voronoi membrane, a gold vein branching into each corner, a seed node at each turn | Torn scorched sheet on riveted steel, a knife pinning one corner, a cord of trophy teeth at another; grime only in the margins |
+| Light | None painted: lines and fills on the void; depth of iteration shown as indigo to cyan | From within: gold veins and cyan seeds through plum membrane, a wet bead on each cell | Hard light from the upper left, deep cast shadows; nothing glows but the alert lamps |
+| Icons | Pictures of the job in cyan, strokes cut by Cantor sets, routes branching, comms waves spaced by phi | Tapered grown strokes with seed tips, one gold ink | Cut into the sheet with a blade: a dark cut, a pale rim, scratches |
+| Type | Martian Mono over Space Mono | Fraunces over Jura | Stardos Stencil over Special Elite |
+| Progress | Sierpinski carpet cells; a Cantor-cut dial ring | One Voronoi cell per step, a cyan heart in a gold wall | A bandolier: empty loop, brass round, red-tipped round on warning |
+| Hero pieces | Koch nameplate; eight Koch snowflakes round a gold stop; a Julia screen in Sierpinski corners; snowflake lamps; a dragon-curve crest | Seed-disc nameplate; eight chambered keys on one log spiral round a seed-ring stop; seed-pod lamps; a golden-angle crest in a branching ring | Bounty-sheet nameplate with a burned wax seal; a revolver-cylinder helm with brass chamber keys; a sheet pinned by four knives; a gauge behind cracked, bloodied glass; a tooth over crossed blades on a drop of blood |
+
+| Colour | Axiom | Exponent | Red Tithe |
+|---|---|---|---|
+| 1 | Void `#05060c`: the unbounded plane | Membrane `#3a1830`: the one body, still growing | Dried blood `#5a1a12`: the tithe already taken |
+| 2 | Proof white `#e8ecf6`: stated truth | Cell wall `#1c0a17`: the rule that parts growth | Fresh blood `#c4141c` (alerts only): the tithe being taken |
+| 3 | Iteration indigo `#4b3fd8`: a shallow rule | Pith `#f2e6d0`: what growth has proven | Old paper `#c9b48a`: every debt written down |
+| 4 | Iteration cyan `#3fe0e6`: a rule carried deep | Rule gold `#f0bf4c`: a rule that settles | Soot `#1b1714`: a sheet closed by fire |
+| 5 | Convergence gold `#f2c14e`: true, ready | Seed cyan `#58dce0`: growth counted step by step | Brass `#c8963a`: spent rounds counted as standing |
+| 6 | Divergence magenta `#ff3d8b` (alerts only): escape | Divergence `#ff4a7d` (alerts only): growth with no rule | Gun steel `#2e3236`: what holds the sheet holds the crew |
+
+Still rough (first pass): the Axiom's small helm snowflakes read a little like gears; the Exponent's icons need a
+stronger language of their own and its inset cells are fine at console size; the Red Tithe has no rendered ground behind
+its column (CLAUDE.md section 7), its crest's tooth reads a little like a bone at small size, and on the kit sheet the
+narrowest 120 px key trims "Overload" in both painted skins (the console's own keys fit).
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per

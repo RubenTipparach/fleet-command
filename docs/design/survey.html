@@ -174,6 +174,28 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'N', name: 'Three new factions: the fractal people, their hybrid with the Brood, and a brutal pirate',
+    lead: 'You asked (2026-11-07) for a purely mathematical faction built on fractal patterns, a hybrid it becomes with the organic Vhorr Brood, and a second, more brutal pirate faction (sharp teeth, bullets, blades, blood-stained keys, crusty burned paper). Each now has a first-pass skin on the Console Skins page (mockup 4). Their names and cultures below are our drafts, built from your words; a culture is yours to set, so each skin is provisional until you answer.',
+    qs: [
+      { id: 'N1', q: 'The fractal faction is drafted as the Axiom: a people who hold that every true thing is a rule and its iteration, and who honour a structure by how deeply its rule has been iterated. Three schools keep it: the escape-time school (its screens), the tilers (its frames and plates) and the branchers (its icons). Keep it?',
+        options: ['Keep the name and the culture', 'Keep the culture, another name (say it in the notes)', 'Change the culture (say how in the notes)'], rec: 0,
+        why: 'Every shape on its console comes from those three schools, never from how the Axiom look.' },
+      { id: 'N2', q: 'The hybrid, the Exponent (your name, 2026-11-07), is the Vhorr Brood after it took the Axiom\'s rules into its growth, so its tissue now grows by rule. Is it a new faction beside the Axiom and the Brood, or what one of them becomes?',
+        options: ['A new faction; the Axiom and the Brood go on as they were', 'The Brood after the merger: it replaces the Vhorr Brood', 'The Axiom after the merger: it replaces the Axiom', 'Something else (say in the notes)'], rec: 0,
+        why: 'Three playable looks from two cultures, and the merger can be a campaign event later without retiring either skin.' },
+      { id: 'N3', q: 'The brutal pirates are drafted as the Red Tithe: raiders who take a tithe of blood from every crew they board, write their orders on bounty sheets pinned up with knives, and count a captain\'s standing in trophies (teeth taken from beaten crews of every species, spent cartridges, broken blades). Keep it?',
+        options: ['Keep the name and the culture', 'Keep the culture, another name (say it in the notes)', 'Change the culture (say how in the notes)'], rec: 0,
+        why: 'The teeth are trophies of the Tithe\'s raids, a tradition, not a picture of their own bodies (CLAUDE.md section 1).' },
+      { id: 'N4', q: 'How do the Red Tithe and the Vos Syndicate stand toward each other?',
+        options: ['Rivals: the Vos are free-booting clans, the Tithe a brutal order that preys on them too', 'Allies of convenience: they share ports and markets', 'The Tithe broke away from the Vos', 'Something else (say in the notes)'], rec: 0,
+        why: 'It sets whether their fleets share the map\'s pirate havens and how their standing moves; the skins differ either way (the Vos hand-drawn and playful, the Tithe grim).' },
+      { id: 'N5', q: 'How are the first passes to be finished, once you approve their looks?',
+        options: ['Each by its own method: the Axiom stays exact flat vector; the Axiom Brood sculpted in Blender on the organic bible; the Red Tithe\'s paper painted in Krita and its blades, teeth and cartridges modelled in Blender', 'All three stay as drawn on the page', 'Different (say in the notes)'], rec: 0,
+        why: 'CLAUDE.md section 7: vector for flat styles, Blender for anything with material and depth; the Axiom is flat by nature, the other two are not.' },
+      { id: 'N6', q: 'Do these three join the campaign map (territory, ports, fleets) or stay console skins for now?',
+        options: ['Console skins for now; the map later', 'Put them on the map now (say where in the notes)', 'Only some of them (say which in the notes)'], rec: 0,
+        why: 'The campaign map was just laid out by star systems; placing three more empires is its own change.' },
+    ] },
   { tag: 'S', name: 'Sound and music: the first set',
     lead: 'Every faction in the game now has its own battle and ambient music (you asked on 2026-11-07), on the Music page, each built from its written culture. The first sound effects (30 cues: every weapon, shield and hull hits, explosions, the engines, the console keys, the alerts and a bridge bed) and the first score (the main title, the battle loop, a victory and a ship-lost stinger, and the motif sheet) are on the Fleet Command Sounds and Music pages, linked from the tracker. Approve or note each there. These questions are what the score and the mix are built on next.',
     qs: [
