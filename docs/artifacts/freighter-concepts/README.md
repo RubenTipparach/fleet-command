@@ -52,3 +52,5 @@
   picks detailed: exported by `tools/mockups/export_blockouts.mjs docs/mockups/freighter-concepts.html`, laid out in
   `data/ships/freighters/hull_detail.json`, baked by `tools/blender/painted_bake.py --faction freighters --px 1024
   --samples 16` into `assets/ships/freighters/`; Painted, PBR, Studio and Night looks; the containers' drawn face.
+- 2026-11-07, cloud session: version 12, version id `1794060723-f419`: the four freighters baked again at 2048 px and 32
+  samples (9-18 minutes a ship on 4 cloud cores); the page 8.5 MB with its maps inlined.

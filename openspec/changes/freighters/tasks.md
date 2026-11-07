@@ -15,10 +15,10 @@
 
 - [ ] 2.1 Each pick grown again at its size on its faction's own section (the Institute's `ksec`, the Hunt's `hsec`, the
       Concord's octagonal loft); the container's size moved into `data/` for the page and the game
-- [ ] 2.2 Detailed and baked onto its own UVs (`ship-detailing`, `painted-bake`): plates, windows a person tall on the
-      lived-in decks, the faction emblem, hull lights. First bake done (v11, 1024 px, 16 samples:
-      `tools/blender/painted_bake.py --faction freighters`, layout `data/ships/freighters/hull_detail.json`, maps in
-      `assets/ships/freighters/`); the 2048 px bake to follow
+- [x] 2.2 Detailed and baked onto its own UVs (`ship-detailing`, `painted-bake`): plates, windows a person tall on the
+      lived-in decks, the faction emblem, hull lights (v12: 2048 px, 32 samples, `tools/blender/painted_bake.py --faction
+      freighters`, layout `data/ships/freighters/hull_detail.json`, maps in `assets/ships/freighters/`)
+- [ ] 2.2b The Twin ledger's bow: a thin seam shows down its centre where the two arms meet
 - [ ] 2.3 Exported by `tools/mockups/export_ships.mjs` with named nodes (drive, point defence, holds as damage zones)
 - [x] 2.2a The baker's loader: a ship names its faction's look (`load_detail` in `tools/blender/painted_bake.py`), a look
       `from` a faction's own hull_detail.json, so the Hunt's and the Institute's looks have one copy; the Concord's and
