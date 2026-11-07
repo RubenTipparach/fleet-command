@@ -46,3 +46,8 @@
   grooves and marks, inspection hatches, diagonal corners, the carrier's pads with a craft on each, no light lines, lighter
   seams, windows clear of strips and openings, no flood dots, warm rooms. All five rebaked. Page 10.7 MB. Published as
   artifact version 7, version id `1794016956-ca38`.
+- 2026-11-07, cloud session (owner: "Love the carrier. I see some square corners on hull plating here. Please make mockup
+  designs of shuttles. Carrier should have shuttles upside down as well. We are in space afterall"): version 8. Every plate
+  corner where cuts meet on the diagonal (junction_cuts); the carrier's 24 pads, floors and ceilings, shuttles overhead
+  upside down; the Small craft family, eight shuttles grown from the board's hulls beside a person, the Runner skiff the
+  carrier's (survey I7). All five rebaked. Page 10.7 MB. Published as artifact version 8, version id `1794023380-fba1`.
