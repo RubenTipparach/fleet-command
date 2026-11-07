@@ -1239,6 +1239,76 @@ def greeble(M, q):
     return place(bm, M)
 
 
+# ----------------------------------------------------------------------------- fixtures: designed pieces for the parts
+# The owner, 2026-11-07, of the game model's flat glowing rectangles and discs: "I will repeat again, we CANNOT implmenet
+# the game with basic rectangles, please add grey greeble details here", "add some cool design here as well". Each is
+# built in a feature frame (u, v on the face, w out of it, 0 at the low-poly skin), placed from the data's "fixtures"
+# list ({face, at, kind, w_m, h_m}), and cuts its own hole in the armour.
+def circle(r, n=24, du=0.0, dv=0.0):
+    return [(du + r * math.cos(2 * math.pi * k / n), dv + r * math.sin(2 * math.pi * k / n)) for k in range(n)]
+
+
+def fx_deflector(F, M, cutters, T):
+    """A deflector: a recessed housing with a grid of lit emitter cells, a grey frame round it standing proud, ribbed
+    conduits up each side and a machinery block either side of the frame."""
+    W, H = F["w_m"], F["h_m"]                      # across the face and up it (the frame turns to suit: frame_at's axes)
+    a, b = (H, W) if abs(M.col[0].y) > 0.7 else (W, H)   # (along u, along v)
+    parts = []
+    cutters.append(place(bm_prism(crect(a + 0.7, b + 0.7, 0.25), -1.0, 2.0), M.copy()))
+    parts.append((place(bm_ring(crect(a + 0.7, b + 0.7, 0.25), crect(a + 0.1, b + 0.1, 0.12), T - 0.1, T + 0.28), M.copy()), "greeble"))
+    parts.append((place(bm_prism(crect(a + 0.1, b + 0.1, 0.12), T - 0.42, T - 0.34), M.copy()), "vent"))
+    nu, nv = max(2, int(a / 0.7)), max(2, int(b / 0.7))
+    for i in range(nu):
+        for j in range(nv):
+            cu, cv = -a / 2 + (i + 0.5) * a / nu, -b / 2 + (j + 0.5) * b / nv
+            parts.append((place(bm_box(a / nu * 0.78, b / nv * 0.78, 0.08, at=(cu, cv, T - 0.35)), M.copy()), "lamp:" + F.get("lamp", "blue")))
+    for side in (-1, 1):   # conduits and blocks either side, along the frame's longer side
+        long_u = a >= b
+        for k in range(3):
+            off = (b / 2 + 0.55 + k * 0.22) * side
+            at = (0, off, T + 0.05) if long_u else (off, 0, T + 0.05)
+            parts.append((place(bm_cyl(0.08, (a if long_u else b) * 0.9, 12, at=at, axis="u" if long_u else "w"), M.copy()), "greeble"))
+        blk = (0, (b / 2 + 1.35) * side, T - 0.05) if long_u else (((a / 2 + 1.35) * side, 0, T - 0.05))
+        parts.append((place(bm_box(a * 0.5 if long_u else 0.9, 0.9 if long_u else b * 0.5, 0.3, at=blk), M.copy()), "machine"))
+    return parts
+
+
+def fx_launcher(F, M, cutters, T):
+    """A torpedo tube: a grey launcher block standing proud, a deep round mouth with ribbed rings and a lit throat, guide
+    rails either side."""
+    r = F.get("r_m", 0.45)
+    W, H = F.get("w_m", 2.2), F.get("h_m", 1.6)
+    cutters.append(place(bm_prism(crect(W + 0.4, H + 0.4, 0.2), -1.0, 2.0), M.copy()))
+    blk = bm_prism(crect(W, H, 0.22), T - 0.1, T + 0.35)
+    hole = bm_cyl(r, 1.0, 32, at=(0, 0, T - 0.6))
+    parts = [(place(blk, M.copy()), "armour_holed", 0.83, place(hole, M.copy()))]
+    for k in range(3):   # rings down the mouth
+        parts.append((place(bm_ring(circle(r, 32), circle(r - 0.05, 32), T - 0.15 - k * 0.12, T - 0.11 - k * 0.12), M.copy()), "greeble"))
+    parts.append((place(bm_cyl(r, 0.05, 32, at=(0, 0, T - 0.5)), M.copy()), "lamp:" + F.get("lamp", "amber")))
+    for side in (-1, 1):
+        parts.append((place(bm_box(W * 0.9, 0.12, 0.18, at=(0, side * (H / 2 + 0.25), T + 0.0)), M.copy()), "greeble"))
+    return parts
+
+
+def fx_intake(F, M, cutters, T):
+    """A nacelle's nose: a lit core in a grey ring, intake slots radiating round it, an outer rim."""
+    R = F.get("r_m", 1.6)
+    cutters.append(place(bm_prism(circle(R + 0.15, 32), -1.0, 2.0), M.copy()))
+    parts = [(place(bm_prism(circle(R + 0.15, 32), T - 0.4, T - 0.32), M.copy()), "vent"),
+             (place(bm_cyl(R * 0.26, 0.06, 32, at=(0, 0, T - 0.33)), M.copy()), "lamp:" + F.get("lamp", "blue")),
+             (place(bm_ring(circle(R * 0.42, 32), circle(R * 0.28, 32), T - 0.36, T + 0.05), M.copy()), "greeble"),
+             (place(bm_ring(circle(R + 0.15, 32), circle(R - 0.05, 32), T - 0.1, T + 0.2), M.copy()), "greeble")]
+    n = F.get("slots", 12)
+    for k in range(n):
+        ang = 2 * math.pi * k / n
+        rot = Matrix.Rotation(ang, 4, "Z") @ Matrix.Translation((R * 0.7, 0, 0))
+        parts.append((place(bm_box(R * 0.45, 0.12, 0.25, at=(0, 0, T - 0.34), rot=rot), M.copy()), "slat"))
+    return parts
+
+
+FIXTURES_KIT = {"deflector": fx_deflector, "launcher": fx_launcher, "intake": fx_intake}
+
+
 # ----------------------------------------------------------------------------- the whole layer
 def build(lo, S, D, seed):
     """Build the hull detail for one ship over its low-poly hull `lo` (S: the ship's entry in hull_detail.json, D: the
@@ -1284,6 +1354,8 @@ def build(lo, S, D, seed):
         at_both(F, fan)
     for F in S.get("pods", []):
         at_both(F, pod)
+    for F in S.get("fixtures", []):   # the designed pieces in place of the model's flat glowing parts
+        at_both(F, lambda F, M, cut: FIXTURES_KIT[F["kind"]](F, M, cut, D["armour_t_m"]))
     for F in S.get("louvres", []):
         at_both(F, louvre)
     for F in S.get("lamps", []):
@@ -1324,7 +1396,7 @@ def build(lo, S, D, seed):
             bm, kind = part[0], part[1]
             if kind.startswith("armour_"):
                 o = obj_from(bm, kind, mats["armour"], rid_of(loc, salt=part[2]))
-                if kind == "armour_collar":
+                if kind in ("armour_collar", "armour_holed"):   # a ring, or a block with its mouths cut (fx_launcher)
                     inner = obj_from(part[3], "collar_in", mats["armour"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
                 elif kind == "armour_strap":
                     slab = obj_from(part[3], "strap_slab", mats["armour"]); boolean(o, slab, "INTERSECT"); bpy.data.objects.remove(slab)

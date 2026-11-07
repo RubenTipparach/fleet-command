@@ -1010,7 +1010,7 @@ return { hullLooks, hullShader, paneMesh, dmgUniforms, PANE_KIND, withDetail, DE
 // hull_detail.json). Each names the tradition of its faction it comes from (CLAUDE.md section 1: never the body).
 const SHIPS = {
   concord: { label: 'Concord: Petrel-class frigate', glb: 'assets/ships/concord/petrel_level.glb', baked: 'assets/ships/concord/baked/manifest.json',
-    hull: ['paint_hull', 'paint_hull_2', 'paint_plain', 'paint_nacelle'], close: { at: [11.8, -0.8, -1.0], from: [1.0, -0.45, 0.5] },
+    hull: ['paint_hull', 'paint_hull_2', 'paint_plain', 'paint_nacelle', 'glow_dish', 'glow_torpedo', 'glow_grille_2'],   // the flat glowing parts: the bake models them now close: { at: [11.8, -0.8, -1.0], from: [1.0, -0.45, 0.5] },
     story: 'Placed from its room plan: a window wherever people live or work against the hull (the officers’ and crew quarters, the mess, the medbay; none at the reactor, the stores or the magazine); the sensor bay’s domes over deck 0; the cooling fans and the reactor’s slots aft, and the soot they streak back; life support’s vents to port; the shuttle bay’s door to port, worn bright round its mouth; the torpedo tube’s scorch at the bow; the drives’ soot astern.',
     designs: [
       { slug: 'petrel_c1', k: 'C1', name: 'Survey white', tr: 'The explorers: the Survey Service, a ship that goes first and must be seen and known',
@@ -1025,7 +1025,7 @@ const SHIPS = {
         d: 'Shorter plates of many ages (field repairs, whiter and greyer), more machinery, heavy wear: soot from every vent and the drives, the bay worn to the metal, a red-and-white keep-clear frame round the bay (red for danger only); Signal bands.', sw: ['#d3d2cc', '#bcbbb4', '#2f62e0', '#e8352b'] },
     ] },
   krai: { label: 'Krai Warhost: frigate', glb: 'assets/ships/krai/frigate.glb', baked: 'assets/ships/krai/baked/manifest.json',
-    hull: ['hull', 'marking'], close: { at: [-7.6, -0.4, -26], from: [-1.0, 0.25, 0.35] },
+    hull: ['hull', 'marking', 'window', 'metal_7b4013'],   // the model's own window strips and their frames: the bake's windows now close: { at: [-7.6, -0.4, -26], from: [-1.0, 0.25, 0.35] },
     story: 'Placed from its room plan: the reactor along the keel aft, breathing through raked slots in the keel and streaking them with soot; engineering and life support venting through the flanks aft; gun control’s chevron vent under the dorsal crest; the boarding bay’s door to starboard, worn round its mouth; the spinal cannon’s scorch at the bow; the drives’ soot astern. Nothing round: the Krai cut, they do not turn.',
     designs: [
       { slug: 'krai_k1', k: 'K1', name: 'Tempered blade', tr: 'The smiths: a Krai ship is forged like a blade, its plates square to the hull and their corners cut',

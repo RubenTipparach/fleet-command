@@ -316,7 +316,24 @@
         "auto_floods": {
           "to_z_m": 15
         }
-      }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/frigate_plan.json",
+          "dz_m": 25.93,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers_p": "quarters",
+            "officers_s": "quarters",
+            "barracks_p": "quarters",
+            "barracks_s": "quarters",
+            "mess": "mess",
+            "medbay": "workshop"
+          }
+        }
+      ],
+      "_windows": "From the frigate's room plan (owner, 2026-11-07, of the model's own window strips: \"these windows are not properly implemented\"): one row wherever crew live or work against the hull"
     }
   }
 }
