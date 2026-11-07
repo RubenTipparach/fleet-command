@@ -131,7 +131,7 @@
     "strip_rim_k": 0.0
   },
   "defaults": {
-    "cuts": "grid",
+    "cuts": "rows",
     "facing_min": 0.38,
     "seam_y_m": 0.0,
     "strip_rgb": [
@@ -152,16 +152,16 @@
     ],
     "trench_share": 0.0,
     "top_station_m": [
-      9.0,
-      20.0
+      5.0,
+      9.0
     ],
     "spine_half_m": [
       1.6,
       3.4
     ],
     "flank_station_m": [
-      10.0,
-      22.0
+      5.0,
+      9.0
     ],
     "flank_rake": [
       -0.04,
@@ -188,11 +188,21 @@
       "power_w": 2000
     },
     "inner_machinery": false,
-    "corner_m": 0.9,
+    "corner_m": 0.6,
     "cage_m": 2.0,
     "hatch_share": 0.4,
     "hatch_min_m2": 18.0,
-    "strip_lines_lit": false
+    "strip_lines_lit": false,
+    "rows_y_m": [
+      -3.5,
+      0.0,
+      3.5
+    ],
+    "strips_x_m": [
+      2.5,
+      6.0,
+      9.5
+    ]
   },
   "ships": {
     "petrel_c1": {
