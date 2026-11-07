@@ -16,7 +16,7 @@
 - [x] 1.5a Version 6 set aside for the Kelvane Institute's method (owner, 2026-11-07: "exampline how the ionstitute does its
       hull, and replicate taht", "lets try a new dirtection"): main merged, its bake tools taken whole, C1 rebuilt in the
       Institute's data format at 2048 px, mockup 24 v5
-- [ ] 1.5b K1 on the Institute's method
+- [x] 1.5b K1 on the Institute's method (mockup 24 v6)
 - [ ] 1.6 C2-C5 and K2-K5 on the Institute's method, once the owner has seen C1 and K1
 
 ## 2. After the owner picks (approved for build)

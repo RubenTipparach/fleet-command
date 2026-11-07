@@ -28,3 +28,6 @@
   hull method (owner: "exampline how the ionstitute does its hull, and replicate taht", "lets try a new dirtection"): grid
   plating with diagonal corners, painted plate marks, light seams, framed hatches, the Concord's colours and teal bands,
   2048 px; the Krai still on version 4 until K1 lands; the other designs shown as to come. Page 7.8 MB.
+- 2026-11-07, cloud session: version 6, version id `1794023316-8d53`. The Krai's K1 on the Institute's method too (plates
+  square to the hull with their corners cut, the Warhost's steels, crimson and bone, light seams, the KC emblem), 2048 px;
+  the old K2-K5 maps out of the manifest. Page 4.1 MB.
