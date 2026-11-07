@@ -58,8 +58,19 @@ shown in Painted and PBR looks under Studio or Night light, with its windows as 
 | Tally carrier | The Hunt's olives and khakis, its dome, fan and louvres | `data/ships/ssarith/hull_detail.json` |
 | Twin ledger | The Institute's champagne, its grid plating, pods, dark glass | `data/ships/kelvane/hull_detail.json` |
 
-A freighter's light map is graded against `light_ref` 2.4 (more floods over more hull than a warship). The containers are
-cargo: on the page they keep a drawn face (ribs and a frame) until they are a game asset of their own (task 2.5).
+A freighter's light map is graded against `light_ref` 2.4 (more floods over more hull than a warship).
+
+**The container** (v14; owner, 2026-11-07: "you need like better cargo textures, lookem up online for cc0 options, back ao
+and get diffuse and normals and specular for each container"): one asset for every freighter, `assets/containers/`.
+
+| Step | Tool | What |
+|---|---|---|
+| Source | `tools/textures/fetch_cc0.py container_side` | Poly Haven's "Container Side" by Dimitrios Savva, CC0, 2k: diffuse, OpenGL normals, roughness (refused if its page does not say CC0) |
+| Model | `tools/blender/build_container.py` | Panels set 0.15 m behind a frame of twelve 0.42 m bars, eight corner castings with sockets, two door leaves with four locking bars, brackets, handles and hinges; edges bevelled |
+| Bake | the same | Selected to active onto a 6 by 6 by 12 m box, its faces in one 24 m atlas: AO, tangent normals (the frame and the texture's ribs together), diffuse (the texture's luminance, so each container's colour tints it), roughness; specular drawn from roughness and AO; 2048 px, 64 samples |
+| Show | `docs/mockups/freighter-concepts.html` | The box built from the manifest's faces, one instanced mesh a ship, its colour per container |
+
+A CC0 source in place of a Material Maker graph is a documented exception (CLAUDE.md section 14).
 
 ## The rules every concept keeps
 

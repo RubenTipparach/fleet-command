@@ -55,3 +55,7 @@
 - 2026-11-07, cloud session: version 12, version id `1794060723-f419`: the four freighters baked again at 2048 px and 32
   samples (9-18 minutes a ship on 4 cloud cores); the page 8.5 MB with its maps inlined.
 - 2026-11-07, cloud session: version 13, version id `1794060763-9bc6`: the page's version line reads v12, as committed.
+- 2026-11-07, cloud session: version 14, version id `1794087815-bfbc` (owner: "you need like better cargo textures, lookem
+  up online for cc0 options, back ao and get diffuse and normals and specular for each container"): the container
+  modelled and baked by `tools/blender/build_container.py` from Poly Haven's CC0 "Container Side" (Dimitrios Savva;
+  `assets/containers/SOURCES.md`): diffuse, normals, AO, roughness and specular, inlined from `assets/containers/manifest.json`.

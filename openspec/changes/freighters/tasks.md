@@ -23,8 +23,10 @@
 - [x] 2.2a The baker's loader: a ship names its faction's look (`load_detail` in `tools/blender/painted_bake.py`), a look
       `from` a faction's own hull_detail.json, so the Hunt's and the Institute's looks have one copy; the Concord's and
       Krai's written in the freighters' file until their lines move onto the standard
-- [ ] 2.5 The container as a game asset (modelled and textured once, 6 by 6 by 12 m drafted, 12 by 12 by 24 m shown); on
-      the page a drawn face for now
+- [x] 2.5 The container as an asset (owner: "lookem up online for cc0 options, back ao and get diffuse and normals and
+      specular for each container"): `tools/textures/fetch_cc0.py` fetches Poly Haven's CC0 "Container Side" set,
+      `tools/blender/build_container.py` models the container (frame, castings, door bars, hinges) and bakes diffuse,
+      normals, AO, roughness and specular onto its box (`assets/containers/`, sources in `SOURCES.md`); the page draws it
 - [ ] 2.4 One cradle: the board's `cradle` and the Institute page's `loopOf` become one function in
       `docs/mockups/lib/hull-grow.js`, inlined by both pages (design, "One copy")
 
