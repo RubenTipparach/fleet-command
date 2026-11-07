@@ -747,15 +747,18 @@ def kit_split(rng, D, out, view, a0, a1, b0, b1, depth):
         kit_split(rng, D, out, view, a0, a1, b0, m, depth + 1); kit_split(rng, D, out, view, a0, a1, m, b1, depth + 1)
 
 
-def chine_slabs(lo, deg, gap):
+def chine_slabs(lo, deg, gap, faces=None):
     """Thin cutters along the hull's chines (every edge where its faces turn more than deg degrees), so the plating breaks
-    where the form turns and each facet's plates catch the light on their own."""
+    where the form turns and each facet's plates catch the light on their own. faces: only the chines touching these
+    faces (one shell group's), so each group's boolean carries only its own cutters."""
     me = lo.data
     glow_idx = {i for i, m in enumerate(me.materials) if m and m.name.startswith("lo_glow")}
     bm = bmesh.new(); bm.from_mesh(me)
     out, lim = [], math.cos(math.radians(deg))
     for e in bm.edges:
         if len(e.link_faces) != 2 or any(f.material_index in glow_idx for f in e.link_faces):
+            continue
+        if faces is not None and not any(f.index in faces for f in e.link_faces):
             continue
         f0, f1 = e.link_faces
         if f0.normal.dot(f1.normal) > lim:
@@ -828,7 +831,7 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
         for h in holes:
             bm = bmesh.new(); bm.from_mesh(h.data); bms.append(bm)
         if primary and D.get("chine_deg"):
-            bms += chine_slabs(lo, D["chine_deg"], D.get("major_gap_m", D["gap_m"][1]))
+            bms += chine_slabs(lo, D["chine_deg"], D.get("major_gap_m", D["gap_m"][1]), set(faces))
         cut = obj_from(merge(bms), "cut_" + g, mats["armour"])
         boolean(sh, cut, "DIFFERENCE")
         bpy.data.objects.remove(cut)
