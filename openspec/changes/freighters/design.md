@@ -182,3 +182,4 @@ the board's own section. That is two copies of one rule. When the picks are grow
 | V4 | How is a freighter armed? | One point defence, nothing else |
 | V5 | Size: a cruiser to a battleship of its own faction, about 140-210 m | As drawn |
 | V6 | The Kethran and Vos have no warships yet; should their freighters wait for their lines? | Draw them now; their lines can grow from the picks |
+| V7 | The Vos Syndicate and the Kethran Hegemony were named by a session (2026-10-30), not the owner (owner, 2026-11-07: "Vos? Who is Vos? I don't remember we ever implemented the."). Keep them? | Keep both; their concepts (4-9) stay provisional until the owner answers |
