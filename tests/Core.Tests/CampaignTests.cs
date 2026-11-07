@@ -61,7 +61,7 @@ public sealed class CampaignTests
         Assert.Contains("here.field", Assert.Throws<DataError>(() => Expr.Parse(text, "here.field")).Message);
 
     [Fact]
-    public void Every_mission_file_loads() => Assert.Equal(15, Camp.Missions.Count);
+    public void Every_mission_file_loads() => Assert.Equal(18, Camp.Missions.Count);
 
     [Fact]
     public void A_mission_naming_something_the_campaign_lacks_is_refused()
@@ -91,7 +91,9 @@ public sealed class CampaignTests
     [Fact]
     public void A_new_campaign_draws_the_mockups_territory()
     {
-        // row 7 of the map as the mockup's buildCampaign(seed 7) draws it, before ports and stars: owner initial and terrain
+        // row 7 of the map as the mockup's buildCampaign(seed 7) draws it, before ports and stars: owner initial and terrain.
+        // The terrain is now laid out by star systems (Campaign.MakeSpace; mockup 1 to follow, campaign-space 2.1), so
+        // only the owners, the territory, are compared
         const string mockup = "cococococacocococonanonononononosososnsnsososokoknkokokokoko";
         Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
         var stars = Camp.Map.Stars.ToHashSet();
@@ -99,7 +101,7 @@ public sealed class CampaignTests
         {
             Sector h = c.Hex(col, 7);
             if (h.IsPort || stars.Contains((col, 7))) continue;
-            Assert.Equal(mockup.Substring(col * 2, 2), $"{h.Owner[0]}{h.Terrain[0]}");
+            Assert.Equal(mockup[col * 2], h.Owner[0]);
         }
     }
 
@@ -139,8 +141,59 @@ public sealed class CampaignTests
     public void No_path_enters_a_star()
     {
         Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
-        var (sc, sr) = Camp.Map.Stars[0];
+        var (sc, sr) = Camp.Map.Stars.First();
         Assert.Null(c.PathTo(sc, sr));
+    }
+
+    [Fact]
+    public void Space_is_star_systems_with_their_belts_and_nebulae_and_a_deep_between()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        var stars = Camp.Map.Stars.ToList();
+        foreach (var (sc, sr) in stars) Assert.Equal("star", c.Hex(sc, sr).Terrain);
+        // a system with a belt has asteroids on its ring, and a system with a nebula has one within four sectors
+        foreach (StarSystem y in Camp.Map.Systems)
+        {
+            if (y.BeltR > 0 && y.BeltShare > 0)
+                Assert.Contains(c.S.Sectors, h => h.Terrain == "asteroids" && HexGrid.Dist(h.C, h.R, y.C, y.R) == y.BeltR);
+            if (y.Nebula > 0)
+                Assert.Contains(c.S.Sectors, h => h.Terrain == "nebula" && HexGrid.Dist(h.C, h.R, y.C, y.R) <= 4);
+        }
+        // dust clouds and asteroid fields with no star: some of each terrain far from every star
+        int Far(string t) => c.S.Sectors.Count(h => h.Terrain == t && stars.All(s => HexGrid.Dist(h.C, h.R, s.C, s.R) >= Camp.Map.Deep.ClearOfStars));
+        Assert.True(Far("nebula") >= Camp.Map.Deep.DustClouds * Camp.Map.Deep.DustMin / 2, "dust clouds in the deep");
+        Assert.True(Far("asteroids") >= Camp.Map.Deep.Fields, "asteroid fields in the deep");
+        // every settled world but the rogues lies in a system; Ouro and Sabine are rogues
+        Assert.True(c.IsRogue(c.S.Sectors.First(h => h.Planet == "Ouro")));
+        Assert.False(c.IsRogue(c.S.Sectors.First(h => h.Planet == "Halcyon")));
+        // the same seed lays out the same space
+        Campaign.Campaign d = Campaign.Campaign.New(Camp, "concord");
+        Assert.Equal(c.S.Sectors.Select(h => h.Terrain), d.S.Sectors.Select(h => h.Terrain));
+    }
+
+    [Fact]
+    public void The_fog_of_war_has_unexplored_revealed_and_visible_sectors()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        var seen = c.Visible();
+        // your own empire is seen, and the far side of the map is unexplored
+        Assert.All(c.S.Sectors.Where(h => h.Owner == "concord"), h => Assert.Contains((h.C, h.R), seen));
+        Sector far = c.S.Sectors.Where(h => h.Owner == "krai" && c.MissionAt(h.C, h.R) == null).OrderByDescending(h => HexGrid.Dist(h.C, h.R, c.S.AtC, c.S.AtR)).First();
+        Assert.False(far.Known);
+        Assert.DoesNotContain((far.C, far.R), seen);
+        // everything seen is revealed with the empire that holds it
+        Assert.All(seen, k => { Sector h = c.Hex(k.C, k.R); Assert.True(h.Known); Assert.Equal(h.Owner, h.KnownOwner); });
+        // flying out reveals what the fleet passes; once it has gone on, those sectors stay revealed but are no longer seen
+        Sector edge = c.S.Sectors.Where(h => !h.Known && !c.TerrainOf(h).Impassable).OrderBy(h => HexGrid.Dist(h.C, h.R, c.S.AtC, c.S.AtR)).First();
+        for (int t = 0; t < 8 && (c.S.AtC, c.S.AtR) != (edge.C, edge.R); t++)
+        {
+            if (c.PathTo(edge.C, edge.R) is { } r && r.Legs[0].Count > 0) c.Move(r);
+            c.EndTurn();
+        }
+        Assert.True(edge.Known);
+        Assert.Contains((edge.C, edge.R), c.Visible());
+        // an offered mission's sector is revealed by its intel
+        Assert.All(c.S.Missions, m => Assert.True(c.Hex(m.C, m.R).Known));
     }
 
     [Fact]
@@ -270,6 +323,27 @@ public sealed class CampaignTests
         string json = TestData.Read("missions/shakedown.json").Replace("reached('home')", "reached('hmoe')");
         var e = Assert.Throws<DataError>(() => MissionLoader.Load(json, "missions/shakedown.json"));
         Assert.Contains("hmoe", e.Message);
+    }
+
+    [Fact]
+    public void Patrols_are_offered_often_and_in_nebulae_belts_and_orbits()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        var patrols = new[] { "patrol", "nebula_sweep", "belt_patrol", "orbital_patrol" };
+        int n = 0, p = 0;
+        for (int i = 0; i < 300; i++)
+        {
+            c.S.Missions.Clear();
+            if (c.OfferMission() is not { } m) continue;
+            n++;
+            if (patrols.Contains(m.Script)) p++;
+            Sector h = c.Hex(m.C, m.R);
+            if (m.Script == "nebula_sweep") Assert.Equal("nebula", h.Terrain);
+            if (m.Script == "belt_patrol") Assert.Equal("asteroids", h.Terrain);
+            if (m.Script == "orbital_patrol") Assert.NotNull(h.Planet);
+        }
+        // the four patrols weigh 10 of the contracts' 21: close to half of what is offered
+        Assert.InRange(p / (double)n, 0.35, 0.65);
     }
 
     [Fact]

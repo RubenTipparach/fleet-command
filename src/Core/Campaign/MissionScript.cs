@@ -69,6 +69,8 @@ public sealed record MissionScript(
 {
     /// <summary>Whether the fleet may withdraw from its battle: a contract yes, a story or special mission no.</summary>
     public bool CanWithdraw { get; init; } = true;
+    /// <summary>How often a contract is offered against the others: a weight of 4 is picked four times as often as 1.</summary>
+    public double Weight { get; init; } = 1;
 }
 
 /// <summary>Reads mission files. Each is checked against the names its scopes provide (Scopes below).</summary>
@@ -111,6 +113,9 @@ public static class MissionLoader
         double reward = o.Num("reward_cr");
         if (reward < 0) throw new DataError($"{file}.reward_cr: not below 0");
         int turns = (int)o.Num("turns", 3);
+        // how often a contract is offered against the others (owner, 2026-11-07: "provide a healthy supply of patrol missions")
+        double weight = o.Num("weight", 1);
+        if (weight <= 0) throw new DataError($"{file}.weight: above 0");
         if (turns < 1) throw new DataError($"{file}.turns: at least 1");
 
         // names this mission is handed by the mission that offered it (a prize's name, its grade), and set by its setup
@@ -170,7 +175,7 @@ public static class MissionLoader
             foreach (StrictJson r in o.ObjList("result")) results.Add(Outcome(r, offerVars.Concat(Scopes.Grade).Concat(Scopes.Result)));
 
         var m = new MissionScript(id, o.Str("name"), glyph, kind == "story", o.Str("type", ""), reward, turns, where, setup, brief, objective,
-            needs, battles, grades, results, follow, file) { CanWithdraw = kind == "contract" };
+            needs, battles, grades, results, follow, file) { CanWithdraw = kind == "contract", Weight = weight };
         o.Done();
         return m;
     }

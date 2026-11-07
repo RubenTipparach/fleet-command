@@ -1,0 +1,59 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "orbital_patrol",
+ "name": "Orbital patrol",
+ "glyph": "O",
+ "type": "Patrol",
+ "reward_cr": 300,
+ "weight": 2,
+ "where": "planet != '' && (own || neutral)",
+ "objective": "Patrol the orbit of {sector_planet} and engage the raiders.",
+ "brief": [
+  {
+   "text": "Raiders have been shadowing the traffic in orbit of {sector_planet}. Hold the orbit for a turn and see them off."
+  },
+  {
+   "text": " Your {side_name} patrol pay is the reward."
+  }
+ ],
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "raiders",
+     "faction": "vos",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "clear",
+     "text": "Destroy the raiders",
+     "primary": true,
+     "done": "alive(raiders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": "outstanding ? 3 : 2"
+   }
+  },
+  {
+   "when": "draw",
+   "credits": "pay",
+   "log": "Orbital patrol: outnumbered over the planet, the fleet drew off."
+  }
+ ]
+}

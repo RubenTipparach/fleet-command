@@ -1,0 +1,59 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "nebula_sweep",
+ "name": "Nebula sweep",
+ "glyph": "N",
+ "type": "Patrol",
+ "reward_cr": 350,
+ "weight": 2,
+ "where": "nebula && (own || neutral)",
+ "objective": "Sweep the nebula and engage what hides in it.",
+ "brief": [
+  {
+   "text": "Raiders are using the cloud to hide from the lanes' pickets. Take the fleet into the nebula and flush them out."
+  },
+  {
+   "text": " Sensors are short in there: close in before you trust a contact."
+  }
+ ],
+ "battle": [
+  {
+   "groups": [
+    {
+     "id": "raiders",
+     "faction": "vos",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "clear",
+     "text": "Destroy the raiders",
+     "primary": true,
+     "done": "alive(raiders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": "outstanding ? 3 : 2"
+   }
+  },
+  {
+   "when": "draw",
+   "credits": "pay",
+   "log": "Nebula sweep: outnumbered in the cloud, the fleet drew off."
+  }
+ ]
+}

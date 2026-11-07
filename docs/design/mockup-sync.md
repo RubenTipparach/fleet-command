@@ -199,3 +199,6 @@ each mockup difference has its task:
 | Course with no moves left | Queued (`moveFleet` with an empty leg) | Queued (matched 2026-11-07; the game had refused) | none |
 | Hulls with no schematic | Mockup 1's shipyard: "No schematic" | The systems display's stand-in silhouette, in the shipyard, loadout, fleet cards and market | `game-flow-engine` 2.10 |
 | Nebula puffs | Mockup 1's puffMat: a fract hash (highp in WebGL) | PCG lattice hash, small seed offset (no blocks) | `game-flow-engine` 2.10 |
+| Space (game ahead) | Mockup 1's `buildCampaign` rolls each sector's terrain (a nebula one in ten, asteroids one in twelve) | Star systems from `map.systems` (a star, its belt, its nebula) and dust clouds and asteroid fields in the deep (`Campaign.MakeSpace`); the borders unchanged | `campaign-space` 2.1 |
+| Fog of war (game ahead) | Mockup 1 shows the whole map | Unexplored black and unlit, revealed in the empire last seen and darker, fleets only where seen now; "Unexplored" in the sector panel | `campaign-space` 2.2 |
+| Patrols (game ahead) | Mockup 1 offers contracts evenly | By weight (Patrol 4, the nebula, belt and orbital patrols 2) | `campaign-space` 2.1 |

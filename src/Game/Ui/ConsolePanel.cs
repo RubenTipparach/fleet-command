@@ -240,7 +240,12 @@ public abstract partial class ConsolePanel : Control, IControlSource
             float cx = tl + tr > 20 ? r.Position.X + tl + (r.Size.X - tl - tr) / 2 : r.Position.X + r.Size.X / 2;
             Text(fl, cx, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Center, room, 600, sp);
         }
-        else Text(lab, r.End.X - 8, r.Position.Y + r.Size.Y / 2 + 7, 19, ink, HorizontalAlignment.Right, r.Size.X - 22, 600, 1);
+        else
+        {
+            // right-aligned in the open end of the tab, fitted the same way before it is trimmed
+            var (fl, fs, sp) = FitLabel(X.Fonts, lab, null, 19, r.Size.X - 22);
+            Text(fl, r.End.X - 8, r.Position.Y + r.Size.Y / 2 + fs * 0.37f, fs, ink, HorizontalAlignment.Right, r.Size.X - 22, 600, sp);
+        }
     }
 
     /// <summary>A row of tabs across a width.</summary>
