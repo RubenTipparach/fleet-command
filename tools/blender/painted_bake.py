@@ -262,7 +262,15 @@ PT = {}                       # the faction's paint (hull_detail.json "paint"), 
 
 
 def ships_out():
-    return os.path.join(ROOT, "assets", "ships", FACTION)
+    """Where a faction's baked maps go: its data's "out" (the Concord's and Krai's own folders hold the game's models, so
+    their bakes go in a baked/ folder Godot does not import), else assets/ships/<faction>/."""
+    out = json.load(open(detail_path())).get("out") if os.path.exists(detail_path()) else None
+    return os.path.join(ROOT, out) if out else os.path.join(ROOT, "assets", "ships", FACTION)
+
+
+def mesh_of(slug):
+    """The hull a ship is baked on: its entry's "mesh" (several designs of one hull share its export), else its slug."""
+    return json.load(open(detail_path()))["ships"][slug].get("mesh", slug)
 
 
 def detail_path():
@@ -305,7 +313,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     sc.render.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = samples; sc.cycles.use_denoising = False; sc.cycles.seed = 0
     world = bpy.data.worlds.new("World"); world.use_nodes = True; sc.world = world; world.light_settings.distance = 2.2
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
-    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, slug + ".obj"), forward_axis="Y", up_axis="Z")
+    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj"), forward_axis="Y", up_axis="Z")
     obs = sorted((o for o in sc.objects if o.type == "MESH"), key=lambda o: o.name)
     img = bpy.data.images.new(slug + "_bake", px, px, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
     lo_hull, lo_glow, lo_well = lo_material(img, "lo_hull"), lo_material(img, "lo_glow"), lo_material(img, "lo_well")
@@ -782,7 +790,7 @@ def ship_main(slugs, px, samples, panes_only=False):
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
             continue
         info = bake_ship(slug, px, samples)
-        n = int(open(os.path.join(SHIPS_RAW, slug + ".obj")).readline().split()[1])
+        n = int(open(os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
         for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)

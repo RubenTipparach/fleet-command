@@ -1,19 +1,175 @@
 {
-  "_doc": "The Concord's hull texture designs (change hull-texture-designs, mockup 24): the Petrel frigate's detail layer and paint, built by tools/blender/hull_detail.py and baked by tools/blender/painted_bake.py --detail data/ships/concord/hull_detail.json --ship petrel_c1,... onto the Petrel's own UVs. The mesh is the game's model (tools/mockups/glb_hull_obj.py, in its export frame); the room plan (data/ships/concord/petrel_plan.json) sits 0.55 m forward of it (dz_m). The story (where the ship's rooms put its windows, sensors, vents, bay, gun and drives) is shared by every design; a design is its plating (detail), its paint (palette, plates, liveries) and how it wears. Each design names the tradition it comes from (CLAUDE.md section 1).",
+  "_doc": "The Concord's hull texture designs (change hull-texture-designs, mockup 24), on the Kelvane Institute's method (change kelvane-ship-concepts): the Petrel frigate's detail layer (tools/blender/hull_detail.py) and paint (tools/blender/painted_bake.py --faction concord --ship petrel_c1), baked onto the Petrel's own hull from the game's glb (tools/mockups/glb_hull_obj.py writes tools/materials/raw/painted/ships/petrel.obj). Not in the game until the owner enthusiastically approves.",
   "faction": "concord",
   "out": "assets/ships/concord/baked",
-  "webp_quality": 72,
+  "manifest_doc": "The Concord's hull texture designs (mockup 24), baked: not used by the game.",
+  "paint": {
+    "armour": [
+      "#e8e6e0",
+      "#e2e0d9",
+      "#ecebe6",
+      "#dcdad3",
+      "#e5e3dc",
+      "#d6d6d2",
+      "#eeede8"
+    ],
+    "accent": "#a9b9c8",
+    "sub": [
+      "#b8bdc3",
+      "#c2c6cb",
+      "#aeb4ba",
+      "#c8ccd0"
+    ],
+    "under": "#9ba2aa",
+    "greeble": [
+      "#6f777f",
+      "#a9b0b7"
+    ],
+    "dome": "#132033",
+    "dome_glow": 0.0,
+    "slat": "#7a828a",
+    "vent": "#1a1f25",
+    "glass": "#132033",
+    "livery": "#1f8f8a",
+    "ink": "#3c444d",
+    "light_edge": "#ffffff",
+    "strip": "whole",
+    "strip_m": 0.7,
+    "pbr": {
+      "armour": [
+        0.42,
+        0.55
+      ],
+      "sub": [
+        0.5,
+        0.6
+      ],
+      "under": [
+        0.7,
+        0.6
+      ],
+      "greeble": [
+        0.55,
+        0.7
+      ],
+      "dome": [
+        0.08,
+        0.0
+      ],
+      "glass": [
+        0.06,
+        0.0
+      ],
+      "slat": [
+        0.5,
+        0.7
+      ],
+      "vent": [
+        0.9,
+        0.3
+      ],
+      "strip": [
+        0.4,
+        0.0
+      ],
+      "lamp": [
+        0.3,
+        0.0
+      ],
+      "machine": [
+        0.45,
+        0.6
+      ]
+    },
+    "livery_pbr": [
+      0.45,
+      0.1
+    ],
+    "strip_k": 0.5,
+    "strip_inner": 0.12,
+    "strip_rim_px": 7,
+    "strip_cell_m": 1.6,
+    "strip_cell_gap": 0.14,
+    "strip_cell_on": 0.7,
+    "strip_cell_k": 0.55,
+    "greeble_ao_floor": 0.6,
+    "glass_cells_k": 0.45,
+    "glass_cell_m": 0.8,
+    "glass_cells_rgb": [
+      0.75,
+      0.9,
+      1.0
+    ],
+    "ink_k": 0.35,
+    "machine": [
+      "#b8bec4",
+      "#d5d9dc"
+    ],
+    "machine_kinds": [
+      "greeble",
+      "machine",
+      "slat",
+      "vent"
+    ],
+    "machine_light": 0.7,
+    "plate_marks": {
+      "groove_inset_m": 0.3,
+      "groove_w_m": 0.08,
+      "groove_k": 0.62,
+      "red": "#b3262a",
+      "ink": "#3c444d",
+      "dots": [
+        "#b3262a",
+        "#1f8f8a",
+        "#3c444d"
+      ],
+      "triangle_share": 0.45,
+      "frame_share": 0.4,
+      "dots_share": 0.3
+    },
+    "strip_rim_k": 0.0
+  },
   "defaults": {
-    "cut_style": "panels",
-    "armour_t_m": 0.4,
-    "sub_t_m": 0.1,
-    "lift_m": 0.12,
+    "cuts": "grid",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+      0.75,
+      0.9,
+      1.0
+    ],
+    "armour_t_m": 0.3,
+    "sub_t_m": 0.12,
+    "lift_m": 0.05,
     "gap_m": [
-      0.12,
-      0.15
+      0.2,
+      0.32
+    ],
+    "trench_m": [
+      0.32,
+      0.32
     ],
     "trench_share": 0.0,
-    "overlay_min_m2": 1000000000.0,
+    "top_station_m": [
+      9.0,
+      20.0
+    ],
+    "spine_half_m": [
+      1.6,
+      3.4
+    ],
+    "flank_station_m": [
+      10.0,
+      22.0
+    ],
+    "flank_rake": [
+      -0.04,
+      0.04
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
     "light_ref": 0.9,
     "pane_frame_m": {
       "window": 0.1,
@@ -30,135 +186,18 @@
       "tilt_deg": 20,
       "power_w": 2000
     },
-    "palette": {
-      "ARMOUR": [
-        "#e9e7e1",
-        "#e9e7e1",
-        "#e9e7e1",
-        "#e3e1da",
-        "#e3e1da",
-        "#eeece7",
-        "#c9ccd0",
-        "#c9ccd0",
-        "#a9b0b8"
-      ],
-      "SUB": [
-        "#9aa1a9",
-        "#a8aeb5",
-        "#8d949c"
-      ],
-      "UNDER": "#6d747d",
-      "GREEBLE": [
-        "#6a717a",
-        "#9aa2ab"
-      ],
-      "DOME": "#7fa8d8",
-      "SLAT": "#b4bac1",
-      "VENT": "#3d434b",
-      "LIVERY": "#1f8f8a",
-      "BRONZE": "#a9b9c8",
-      "BRONZE_SHARE": 0.06,
-      "INK": "#59606b",
-      "LIGHT_EDGE": "#ffffff",
-      "EDGE_K": 0.4,
-      "PAINT_MODE": "render",
-      "ACCENT": [
-        "#8e99a5",
-        "#a6b0ba",
-        "#1f8f8a"
-      ],
-      "DIRT": "#5a5248",
-      "DIRT_K": 0.6,
-      "DECAL": {
-        "warn": "#c3342b",
-        "ink": "#434951",
-        "hazard": [
-          "#e2a72a",
-          "#2c2e31"
-        ],
-        "name": "#24486e",
-        "white": "#f1f0ec",
-        "teal": "#1f8f8a"
-      },
-      "CHIPS_K": 0.7,
-      "AO_K": 0.75,
-      "SKY_K": 0.6,
-      "_accent": "No orange (owner, 2026-11-07, of the copper accents: \"ew the orange sucks\"): accent modules in cool greys and teal, the odd accent plate a pale steel blue",
-      "CHIP": "#6f747a"
-    },
-    "_recipe": "The Concord's recipe, version 6 (owner, 2026-11-06, with reference sheets: \"hull plating, clean hull\", \"notice large panels, and sub panels, liveries, varying colors of armor\", \"a clean off white ship, ideal for concord style\", \"vents, lights, escape hatches, missile tubes, bombe tobes\", \"warning markings too\", \"tiny holes or slots for rivets and bolts\"): large panels between the structure's stations, split into sub panels standing at their own heights, chamfered so every edge catches the light; off-white plates in several tones; the detail kit (hatches, vents, lit slots, thruster quads, accent modules, missile and bomb tubes) over the plating, mirrored; ordered machinery in the opened bays; rivet rows and painted warning marks; the render light with grime in the cavities.",
-    "plan": "data/ships/concord/petrel_plan.json",
-    "plan_dz_m": 0.55,
-    "panel_merge_m": 10.0,
-    "panel_merge_x_m": 3.0,
-    "station_sweep": 0.16,
-    "sub_depth": 1,
-    "sub_stop": 0.25,
-    "kit_min_m": 3.0,
-    "major_gap_m": 0.22,
-    "chine_deg": 35,
-    "bevel_m": {
-      "armour": 0.1,
-      "sub": 0.03,
-      "accent": 0.04,
-      "vent": 0.012,
-      "greeble": 0.03,
-      "slat": 0.012,
-      "dome": 0.03
-    },
-    "kit": {
-      "per_100m2": 7.0,
-      "gap_m": 0.4,
-      "lights": [
-        "blue"
-      ],
-      "weights": {
-        "hatch": 3,
-        "vent": 3,
-        "light": 2,
-        "rcs": 1.5,
-        "module": 2,
-        "missiles": 1,
-        "bombs": 0.5,
-        "port": 2,
-        "groove": 2,
-        "tag": 2
-      },
-      "scale": 1.8
-    },
-    "well_cell_m": [
-      2.6,
-      1.6
-    ],
-    "rivets": {
-      "inset_m": 0.35,
-      "r_m": 0.07,
-      "share": 0.7,
-      "slot_share": 0.5,
-      "slot_edge_m": 3.0,
-      "slot_l_m": 0.5,
-      "pill_l_m": 0.6
-    },
-    "_overlay": "No overlays (owner, 2026-11-06, of a plate copied over another: \"why is there two armor plates ontop of eachother?\"): the sub panels are the large panels split, each at its own height.",
-    "trench_m": [
-      0.3,
-      0.5
-    ],
-    "wear_bump": {
-      "armour": 0.12,
-      "accent": 0.1,
-      "sub": 0.08
-    },
-    "_scale": "The kit at 1.8 times its real size, the seams 0.12-0.22 m and the panels 10 m: drawn at the scale the owner's reference sheets draw them, so they read on an 86 m hull (owner, 2026-11-07: \"the details dont show up well AT ALL\", \"that looks NOTHING like the examples I provided\")",
-    "chamfer": {
-      "plate_k": 0.8,
-      "kit_m": 0.1
-    },
-    "_chamfer": "No square steps (owner: \"how do you plan on doing normals with hard angles?\"): every plate rim, seam and hole edge chamfered at 45 degrees (0.8 of the plate's thickness), every kit piece's edges 0.1 m, so the bake catches each step as a slope"
+    "inner_machinery": false,
+    "corner_m": 0.9,
+    "cage_m": 2.0,
+    "hatch_share": 0.4,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false
   },
-  "stories": {
-    "petrel": {
-      "_doc": "The Petrel's rooms, from the outside: the sensor bay's domes over deck 0 aft of the officers; the engineering spaces' cooling fans and the reactor's slots aft; life support's vents to port; the shuttle bay's door to port on deck 2 (the plan's 'port door'); the torpedo tube at the bow; the impulse drives astern; a window wherever people live or work against the hull (the plan's officers, crew quarters, mess, medbay).",
+  "ships": {
+    "petrel_c1": {
+      "mesh": "petrel",
+      "seed": 101,
+      "_tradition": "C1 Survey white, on the Kelvane Institute's method (owner, 2026-11-07: \"exampline how the ionstitute does its hull, and replicate taht\", \"lets try a new dirtection\"): the explorers, a ship that goes first and must be seen and known; a clean off-white hull (owner: \"a clean off white ship, ideal for concord style\")",
       "domes": [
         {
           "face": "top",
@@ -263,631 +302,56 @@
           "h_m": 2.2
         }
       ],
-      "marks": [
-        {
-          "kind": "muzzle",
-          "face": "bow",
-          "at": [
-            0,
-            -1.4
-          ],
-          "size_m": 1.6
-        },
-        {
-          "kind": "drive",
-          "face": "stern",
-          "at": [
-            0,
-            1.0
-          ],
-          "size_m": 5.5
-        }
-      ],
-      "windows": [
-        {
-          "plan": "data/ships/concord/petrel_plan.json",
-          "dz_m": 0.55,
-          "wall_m": 3.2,
-          "dark_share": 0.2,
-          "rooms": {
-            "officers_p": "quarters",
-            "officers_s": "quarters",
-            "quarters": "quarters",
-            "mess": "mess",
-            "medbay": "workshop"
-          }
-        }
-      ],
-      "lighting": {
-        "auto_floods": {
-          "to_z_m": 40
-        }
-      },
-      "exposed": [
-        {
-          "plan": [
-            [
-              9,
-              -36
-            ],
-            [
-              15,
-              -36
-            ],
-            [
-              15,
-              -7
-            ],
-            [
-              9,
-              -7
-            ]
-          ],
-          "y_m": [
-            -3.9,
-            -1.7
-          ]
-        },
-        {
-          "plan": [
-            [
-              9,
-              2
-            ],
-            [
-              15,
-              2
-            ],
-            [
-              15,
-              30
-            ],
-            [
-              9,
-              30
-            ]
-          ],
-          "y_m": [
-            -3.9,
-            -1.7
-          ]
-        },
-        {
-          "plan": [
-            [
-              -15,
-              -36
-            ],
-            [
-              -9,
-              -36
-            ],
-            [
-              -9,
-              -7
-            ],
-            [
-              -15,
-              -7
-            ]
-          ],
-          "y_m": [
-            -3.9,
-            -1.7
-          ]
-        },
-        {
-          "plan": [
-            [
-              -15,
-              2
-            ],
-            [
-              -9,
-              2
-            ],
-            [
-              -9,
-              30
-            ],
-            [
-              -15,
-              30
-            ]
-          ],
-          "y_m": [
-            -3.9,
-            -1.7
-          ]
-        },
-        {
-          "plan": [
-            [
-              -2,
-              -32
-            ],
-            [
-              2,
-              -32
-            ],
-            [
-              2,
-              24
-            ],
-            [
-              -2,
-              24
-            ]
-          ],
-          "y_m": [
-            -7.0,
-            -4.9
-          ]
-        }
-      ],
-      "_doc_exposed": "The armour opened where the ship's machinery runs: the service band low on each flank (pipes, valves, clamps; kept clear of the shuttle bay) and a trench along the keel.",
-      "_doc_symmetry": "Mirror-symmetric (owner: \"these empiures SHOULD BE SYMMETRIC\"): the windows of both sides' rooms as one mirrored set, the shuttle bay's door a pair, life support's vents a pair."
-    }
-  },
-  "ships": {
-    "petrel_c1": {
-      "mesh": "petrel",
-      "story": "petrel",
-      "seed": 101,
-      "_tradition": "C1 Survey white: the explorers, the Survey Service, a ship that goes first and must be seen and known",
-      "liveries": [
-        {
-          "band_z_m": [
-            28.85,
-            31.05
-          ],
-          "colour": "#1f8f8a",
-          "pin": "#24486e",
-          "pin_m": 0.3
-        },
-        {
-          "band_z_m": [
-            -12.15,
-            -9.95
-          ],
-          "colour": "#1f8f8a",
-          "pin": "#24486e",
-          "pin_m": 0.3
-        },
-        {
-          "stripe": {
-            "a": [
-              -36,
-              -1.0
-            ],
-            "b": [
-              38,
-              2.6
-            ],
-            "w": [
-              2.2,
-              1.0
-            ],
-            "z_m": [
-              -36,
-              38
-            ],
-            "x_within_m": 30
-          },
-          "colour": "#1f8f8a",
-          "pin": "#24486e",
-          "pin_m": 0.25
-        },
-        {
-          "field": {
-            "y_above_m": 7.0,
-            "x_within_m": 4.0
-          },
-          "colour": "#c9ccd0"
-        }
-      ],
-      "wear": {
-        "amount": 0.6
-      },
-      "decals": [
-        {
-          "face": "port",
-          "at": [
-            24.0,
-            1.2
-          ],
-          "kind": "text",
-          "text": "PETREL",
-          "colour": "name",
-          "w_m": 6.0,
-          "h_m": 0.9
-        },
+      "lamps": [
         {
           "face": "top",
           "at": [
-            6.5,
-            20.0
+            0,
+            40
           ],
-          "kind": "text",
-          "text": "CS 214",
-          "colour": "name",
-          "w_m": 4.5,
-          "h_m": 1.1,
-          "turn": 90
-        },
-        {
-          "face": "port",
-          "at": [
-            -20.0,
-            1.6
-          ],
-          "kind": "band",
-          "colour": [
-            "#c3342b",
-            "#f1f0ec"
-          ],
-          "w_m": 5.0,
-          "h_m": 0.3
+          "size_m": 0.4,
+          "colour": "white"
         }
       ],
-      "detail": {
-        "rings_z_m": [
-          28.85,
-          31.05,
-          -12.15,
-          -9.95
-        ]
-      }
-    },
-    "petrel_c1s": {
-      "mesh": "petrel",
-      "story": "petrel",
-      "seed": 101,
-      "_tradition": "C1 Survey white, soft (owner, 2026-11-07: \"another version with very little hard angles. Chamfer/bevel avoid 90degree in the extrustion of shapes and the shape of hull.plating\"): C1 with every plate's edge rolled, the kit's pieces bevelled, and the plating laid over the hull with its chines rounded",
-      "liveries": [
-        {
-          "band_z_m": [
-            28.85,
-            31.05
-          ],
-          "colour": "#1f8f8a",
-          "pin": "#24486e",
-          "pin_m": 0.3
-        },
-        {
-          "band_z_m": [
-            -12.15,
-            -9.95
-          ],
-          "colour": "#1f8f8a",
-          "pin": "#24486e",
-          "pin_m": 0.3
-        },
-        {
-          "stripe": {
-            "a": [
-              -36,
-              -1.0
-            ],
-            "b": [
-              38,
-              2.6
-            ],
-            "w": [
-              2.2,
-              1.0
-            ],
-            "z_m": [
-              -36,
-              38
-            ],
-            "x_within_m": 30
-          },
-          "colour": "#1f8f8a",
-          "pin": "#24486e",
-          "pin_m": 0.25
-        },
-        {
-          "field": {
-            "y_above_m": 7.0,
-            "x_within_m": 4.0
-          },
-          "colour": "#c9ccd0"
-        }
-      ],
-      "wear": {
-        "amount": 0.6
-      },
-      "decals": [
-        {
-          "face": "port",
-          "at": [
-            24.0,
-            1.2
-          ],
-          "kind": "text",
-          "text": "PETREL",
-          "colour": "name",
-          "w_m": 6.0,
-          "h_m": 0.9
-        },
-        {
-          "face": "top",
-          "at": [
-            6.5,
-            20.0
-          ],
-          "kind": "text",
-          "text": "CS 214",
-          "colour": "name",
-          "w_m": 4.5,
-          "h_m": 1.1,
-          "turn": 90
-        },
-        {
-          "face": "port",
-          "at": [
-            -20.0,
-            1.6
-          ],
-          "kind": "band",
-          "colour": [
-            "#c3342b",
-            "#f1f0ec"
-          ],
-          "w_m": 5.0,
-          "h_m": 0.3
-        }
-      ],
-      "detail": {
-        "rings_z_m": [
-          28.85,
-          31.05,
-          -12.15,
-          -9.95
-        ],
-        "soft": {
-          "chine_m": 0.6,
-          "plate_m": 0.1
-        },
-        "chine_deg": 90
-      }
-    },
-    "petrel_c2": {
-      "mesh": "petrel",
-      "story": "petrel",
-      "seed": 102,
-      "_tradition": "C2 Many yards: the member worlds' yards; a federation that decides by consent builds a ship by consent, a section from each world",
-      "plates": {
-        "mode": "sections",
-        "sections": [
-          {
-            "z_m": [
-              22,
-              60
-            ],
-            "colours": [
-              "#e4e2dc",
-              "#dedcd5",
-              "#e8e6e0"
-            ]
-          },
-          {
-            "z_m": [
-              -3,
-              22
-            ],
-            "colours": [
-              "#ddd6c6",
-              "#d6cfbe",
-              "#e2dccd"
-            ]
-          },
-          {
-            "z_m": [
-              -24,
-              -3
-            ],
-            "colours": [
-              "#dfe5ea",
-              "#d7dee4",
-              "#e6eaee"
-            ]
-          },
-          {
-            "z_m": [
-              -60,
-              -24
-            ],
-            "colours": [
-              "#e2d9c8",
-              "#dbd1bf",
-              "#e7dfd0"
-            ]
-          }
-        ]
-      },
-      "liveries": [
-        {
-          "band_z_m": [
-            21.75,
-            22.25
-          ],
-          "colour": "#2fbf5a",
-          "pin": "#1b2a6b",
-          "pin_m": 0.12
-        },
-        {
-          "band_z_m": [
-            -3.25,
-            -2.75
-          ],
-          "colour": "#2fbf5a",
-          "pin": "#1b2a6b",
-          "pin_m": 0.12
-        },
-        {
-          "band_z_m": [
-            -24.25,
-            -23.75
-          ],
-          "colour": "#2fbf5a",
-          "pin": "#1b2a6b",
-          "pin_m": 0.12
-        }
-      ],
-      "wear": {
-        "amount": 0.8
-      },
-      "detail": {
-        "rings_z_m": [
-          21.75,
-          22.25,
-          -3.25,
-          -2.75,
-          -24.25,
-          -23.75
-        ]
-      }
-    },
-    "petrel_c3": {
-      "mesh": "petrel",
-      "story": "petrel",
-      "seed": 103,
-      "_tradition": "C3 Envoy sash: the mediators, the Concord's envoys, whose ships arrive to talk; ceremonial density",
-      "detail": {
-        "trench_share": 0.02
-      },
-      "liveries": [
-        {
-          "sash": {
-            "y_m": -0.7,
-            "half_m": 0.85,
-            "grow_m": 0.4,
-            "z_m": [
-              -40,
-              44
-            ],
-            "colours": [
-              "#b7a6f2",
-              "#3fa9f0"
-            ]
-          },
-          "colour": "#b7a6f2",
-          "pin": "#1b2a6b",
-          "pin_m": 0.16
-        }
-      ],
-      "wear": {
-        "amount": 0.5
-      }
-    },
-    "petrel_c4": {
-      "mesh": "petrel",
-      "story": "petrel",
-      "seed": 104,
-      "_tradition": "C4 Lightwork: the lightwrights; clean energy and light, their screens glass lit from behind",
-      "detail": {
-        "gap_m": [
-          0.18,
-          0.26
-        ],
-        "trench_share": 0.0,
-        "rings_z_m": [
-          30.2,
-          30.7,
-          -10.8,
-          -10.3
-        ]
-      },
-      "palette": {
-        "UNDER": "#22405f",
-        "UNDER_GLOW": "#3fa9f0",
-        "UNDER_GLOW_K": 0.9
-      },
-      "liveries": [
-        {
-          "band_z_m": [
-            30.2,
-            30.7
-          ],
-          "colour": "#a9c9e8"
-        },
-        {
-          "band_z_m": [
-            -10.8,
-            -10.3
-          ],
-          "colour": "#a9c9e8"
-        }
-      ],
-      "wear": {
-        "amount": 0.6
-      }
-    },
-    "petrel_c5": {
-      "mesh": "petrel",
-      "story": "petrel",
-      "seed": 105,
-      "_tradition": "C5 Home Guard: the defenders, the Home Guard's yards; ships that patrol, take hits and are patched in the field",
-      "palette": {
-        "ARMOUR": [
-          "#d3d2cc",
-          "#cfcec7",
-          "#dcdbd5",
-          "#c4c3bc",
-          "#e6e5df",
-          "#bcbbb4"
-        ],
-        "SUB": [
-          "#7f868e",
-          "#878e96",
-          "#737a82"
-        ],
-        "UNDER": "#30353d"
-      },
       "liveries": [
         {
           "band_z_m": [
             29.85,
             31.05
-          ],
-          "colour": "#2f62e0",
-          "pin": "#1b2a6b",
-          "pin_m": 0.16
+          ]
         },
         {
           "band_z_m": [
             -11.15,
             -9.95
-          ],
-          "colour": "#2f62e0",
-          "pin": "#1b2a6b",
-          "pin_m": 0.16
-        },
-        {
-          "hazard": {
-            "w_m": 0.35,
-            "gap_m": 0.45,
-            "pitch_m": 0.45,
-            "other": "#efefea"
-          },
-          "colour": "#e8352b"
+          ]
         }
       ],
-      "wear": {
-        "amount": 1.8,
-        "streak_k": 6.5
+      "logo": {
+        "at": [
+          0,
+          12
+        ],
+        "size_m": 6.0
       },
-      "detail": {
-        "rings_z_m": [
-          29.85,
-          31.05,
-          -11.15,
-          -9.95
-        ]
-      }
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 40
+        }
+      },
+      "windows": [
+        {
+          "z_m": [
+            -30,
+            38
+          ],
+          "rows_y_m": [
+            4.9,
+            1.4,
+            -2.1
+          ]
+        }
+      ]
     }
-  },
-  "maps_dir": "docs/mockups/hull-texture-designs-maps/concord"
+  }
 }
