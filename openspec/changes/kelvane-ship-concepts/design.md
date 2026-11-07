@@ -405,7 +405,24 @@ byte. Each variant changes one thing about how the bus is used, its numbers in `
 All are closed (566 triangles each). The page's Gallery bus (206) family shows the seven together beside a person.
 Provisional (survey I8): 211 as the bus.
 
-## Open questions
+### D14. Version 10: the Gallery fighter (owner, 2026-11-07)
+
+The owner: "detail gallery bus 215 try adding mounts for phasers or something, these are supposed to be fighters".
+
+- **Phaser prongs, grown.** With `prongs`, `galleryHull()` parts the chin along the centreline into two branches, each a
+  half of the chin's own section, their top edges the gallery's cut line (the same points), their parting the centre cut,
+  so the skin stays closed (F2). They reach 46 m (board scale) past the bow, narrowing and spreading to 3 m off the
+  centreline, and end in a lit emitter cap: the phaser mounts. At 14 x 5.6 x 3.6 m, 745 triangles.
+- **Detailed and baked as the line is** (`kelvane_fighter`, 1024 px): the bake takes a ship's own `defaults` and `paint`
+  over the faction's (`for_ship()` in `tools/blender/painted_bake.py`), so the fighter's plating, gaps, cells, floods and
+  grooves are at its scale (plate stations 1.4-2.6 m, gaps 3-5 cm, a 0.35 m reach); no machinery or hatches; a sensor dome,
+  the logo, two red bands, its lamps.
+- **The carrier parks it.** Its 24 pads each hold the fighter's own baked mesh, its look swapped with the fighter's; the
+  glows of a craft's lamps are a fifth of a warship's.
+- **Mounts as named parts.** The prongs are the parts `port_prong` and `starboard_prong`; the game's mounts take their
+  caps when the fighter is exported (task 3.6).
+
+
 
 | Id | Question | Recommendation (provisional) |
 |---|---|---|

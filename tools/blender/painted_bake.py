@@ -323,7 +323,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     bpy.ops.uv.select_all(action="SELECT")
     bpy.ops.uv.pack_islands(rotate=True, shape_method="CONCAVE", margin_method="FRACTION", margin=0.004)
     bpy.ops.object.mode_set(mode="OBJECT")
-    D = json.load(open(detail_path()))
+    D = for_ship(json.load(open(detail_path())), slug)
     smooth = D["defaults"].get("smooth_deg")   # a rounded hull (the Kelvane's rolled case) is shaded smooth across faces within
     if smooth:                                 # this angle, so its tangent normals are baked against the normals the page draws
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth), keep_sharp_edges=True)
@@ -412,6 +412,14 @@ def passes_path(slug):
     return os.path.join(SHIPS_RAW, f"{FACTION}_{slug}_passes.npz")
 
 
+def for_ship(D, slug):
+    """The faction's data as one ship sees it: its own "defaults" and "paint" blocks laid over the faction's (a craft a
+    tenth of a warship's size needs its plating, cells and gaps at its own scale), and the paint set for it (PT)."""
+    S = D["ships"][slug]
+    PT.clear(); PT.update({**D["paint"], **S.get("paint", {})})
+    return {**D, "defaults": {**D["defaults"], **S.get("defaults", {})}}
+
+
 def paint_and_write(slug, D, S, ps):
     """Paint a ship from its passes (ps) and write its maps: painted colour, AO, emission, tangent normals, PBR base
     colour, ORM and the hull-light map."""
@@ -442,7 +450,8 @@ def repaint_main(slugs):
     man = json.load(open(mpath))
     for slug in slugs:
         ps = dict(np.load(passes_path(slug)))
-        paint_and_write(slug, D, D["ships"][slug], ps)
+        Ds = for_ship(D, slug)
+        paint_and_write(slug, Ds, Ds["ships"][slug], ps)
         for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}

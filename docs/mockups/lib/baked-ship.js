@@ -56,9 +56,9 @@ function looks(M, U, { patch = null, env = 0.5 } = {}) {
 /** The fixtures that show themselves, as additive sprites at their places (sh.fixtures): [{ s, kind }]. The nav lights only:
  *  a flood shows by the light it paints on the hull, never as a dot in space (owner, 2026-11-06: "why do you still have
  *  these little light dots?"; the Hunt's page, v26: "no dots at the floods, only the nav lights"). */
-function fixtures(sh, sprite, parent) {
+function fixtures(sh, sprite, parent, k = 1) {   // k: the glows' size, to the ship's (a 14 m fighter's are a quarter of a warship's)
   return (sh.fixtures || []).filter((F) => !F.kind.endsWith('flood')).map((F) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sprite, color: new THREE.Color(...F.rgb), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
-    s.position.set(...F.pos); const big = { strobe: 3.2, beacon: 3.0, position: 2.6 }[F.kind] || 1.6; s.scale.setScalar(big); s.userData.big = big; parent.add(s); return { s, kind: F.kind }; });
+    s.position.set(...F.pos); const big = ({ strobe: 3.2, beacon: 3.0, position: 2.6 }[F.kind] || 1.6) * k; s.scale.setScalar(big); s.userData.big = big; parent.add(s); return { s, kind: F.kind }; });
 }
 /** Strobes flash twice every 1.5 s, beacons pulse, the rest burn steady; brighter and larger at night. */
 function blink(navs, t, night) {

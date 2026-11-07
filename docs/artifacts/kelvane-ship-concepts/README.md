@@ -55,3 +55,7 @@
   212 long hop, 213 glass nose, 214 wide body, 215 keel skids, 216 deep chin) from one gallery hull function shared with
   blockout 9 (its OBJ unchanged), shown together in the Gallery bus (206) family. Published as artifact version 9, version
   id `1794024679-4618`.
+- 2026-11-07, cloud session (owner: "detail gallery bus 215 try adding mounts for phasers or something, these are supposed to
+  be fighters"): version 10. 215 is the Gallery fighter: its chin parted into two phaser prongs ending in emitters, detailed
+  and baked at its own scale (`kelvane_fighter`, 1024 px, the bake's per-ship defaults and paint), parked by the carrier on
+  its 24 pads. Published as artifact version 10, version id `1794029173-e384`.

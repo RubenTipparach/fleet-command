@@ -23,7 +23,8 @@
 - [x] 3.0c Version 7 (D11): ordered machinery, the carrier's pads and parked craft, diagonal corners, lighter seams, windows that look out, no flood dots, warm rooms for every ship (mockups and game)
 - [x] 3.0d Version 8 (D12): every plate corner on the diagonal (junction_cuts), the carrier's ceiling pads with shuttles overhead, the Small craft family (eight shuttles), survey I7
 - [x] 3.0f Version 9 (D13): six variants of the Gallery bus (211-216) from one gallery hull function, blockout 9 unchanged; survey I8
-- [ ] 3.0e The shuttles detailed and baked once the owner picks (I7)
+- [x] 3.0g Version 10 (D14): 215 the Gallery fighter, phaser prongs grown from its chin, detailed and baked at its own scale (per-ship defaults and paint), the carrier's craft
+- [ ] 3.0e The other shuttles detailed and baked once the owner picks (I7)
 - [ ] 3.1 Each class designed rooms first (plans in `data/ships/kelvane/`), its hull refitted round them, its tradition named in every choice
 - [ ] 3.2 Windows moved to where its rooms are (v6 places them from data); the carrier's bays into its launch well
 - [ ] 3.3 Battle damage and breaking apart on the shared ship modules (`lib/ship-fx.js`, `lib/ship-break.js`, each hull's signed distance field)
