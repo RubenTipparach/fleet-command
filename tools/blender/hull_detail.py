@@ -841,10 +841,21 @@ def soften(o, width, segments=2, angle_deg=30):
               use_clamp_overlap=True)
 
 
+def flat_form(lo):
+    """A copy of the low-poly hull with every flat facet one face (its triangles dissolved, never across a material): the
+    plating groups facets by the way they face, and the two triangles of one facet must not fall in different groups and
+    come out as two triangular plates."""
+    f = lo.copy(); f.data = lo.data.copy(); bpy.context.scene.collection.objects.link(f)
+    bm = bmesh.new(); bm.from_mesh(f.data)
+    bmesh.ops.dissolve_limit(bm, angle_limit=math.radians(2.0), verts=bm.verts, edges=bm.edges, delimit={"MATERIAL"})
+    bm.to_mesh(f.data); bm.free()
+    return f
+
+
 def softened_form(lo, width):
     """A copy of the low-poly hull with its chines rounded (D['soft']['chine_m']): the plating and the under layer are
     laid over it, so the plates bend round the hull's corners; the bake carries the rounding onto the faceted hull."""
-    f = lo.copy(); f.data = lo.data.copy(); bpy.context.scene.collection.objects.link(f)
+    f = flat_form(lo)
     soften(f, width, segments=3)
     return f
 
@@ -1390,7 +1401,7 @@ def build(lo, S, D, seed):
     lamps = {c: kind_material("lamp", c) for c in LAMP_RGB}
     surf = Surface(lo)
     SOFT = D.get("soft")
-    form = softened_form(lo, SOFT["chine_m"]) if SOFT else lo   # the shape the plating is laid over
+    form = softened_form(lo, SOFT["chine_m"]) if SOFT else flat_form(lo)   # the shape the plating is laid over
     under = form.copy(); under.data = form.data.copy(); bpy.context.scene.collection.objects.link(under)
     strip = [form.data.materials[p.material_index].name.startswith("lo_glow") for p in form.data.polygons]
     under.data.materials.clear()  # (this zeroes every face's material index, so the strips were read off the hull first)
