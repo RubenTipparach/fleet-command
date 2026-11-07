@@ -353,6 +353,8 @@ def window_rows(F, surf):
                 if zk < z0:
                     break
                 h = surf.hit("port", [zk, y])
+                if h and abs(h[0].x) > F.get("x_max_m", 1e9):
+                    continue   # the ray met an outboard part first (a nacelle: owner, 2026-11-07, "no windows on nacelles")
                 if h and abs(h[1].x) > 0.6 and not surf.bare_at(*h) and surf.looks_out(*h) and clear_around(surf, h, zk, y):
                     out.append((h[0], h[1], r.random() > 0.2, kind))
             z -= n * 1.6 + r.uniform(2.0, 4.5)
