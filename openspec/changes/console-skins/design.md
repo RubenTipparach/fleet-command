@@ -736,6 +736,36 @@ stronger language of their own and its inset cells are fine at console size; the
 its column (CLAUDE.md section 7), its crest's tooth reads a little like a bone at small size, and on the kit sheet the
 narrowest 120 px key trims "Overload" in both painted skins (the console's own keys fit).
 
+## The Exponent its own collective, the Red Tithe in wood (page version 30)
+
+The owner, 2026-11-07, on version 29: "I changed my mind. Exponent is not a mix of two races. It is its own thing.
+Inspired by Borg. It's ship ui is a metalic utilitarian look. With veins a and tentacles and barnacles growing. Like am
+abandoned rusted ship at sea. Take over by reefs and coral", and "More brown wood on the red tithe". The Exponent column
+of the version 29 table above is superseded by this one. We take the idea of an assimilating collective, never its
+names, symbols or look (CLAUDE.md section 1: take the shape, not the text).
+
+| | The Exponent (version 30) |
+|---|---|
+| World view | One collective that grows by taking in ships, stations and crews; nothing decorated, everything function; machines run long past any refit, and what it absorbs keeps growing on them (provisional, survey N2). Three traditions: the assimilators (hatch keys, patch plates, the modular hull, the crest), the conduit-keepers (sheathed veins with a dim pulse), the reef (barnacles, coral, sponge, anemones, tube worms, cabled tendrils, salt) |
+| Method | Painted in canvas (first pass): brushed steel and grating, rust blooms and runs, salt crust and verdigris, under a layered reef; every scatter from `FCK.rng`. A second hook, `overgrow(x, rects)`, paints one layer over the laid-out console: cables in the gaps between panels, reef along the column's outer edges, kelp and coral hanging from the top strip. To be modelled in Blender |
+| Button shape | **Hatch key**: a steel access hatch on a two-knuckle hinge, a dog latch, four hex bolts and a recessed slot, barnacles on the hinge end; hover lights the slot, pressed sinks it and flares |
+| Frame | Riveted chamfered plate round a dark well; a reef mass swelling out of every corner, cabled tendrils along the top and right, a pulsing vein along the foot, rust runs and tide lines |
+| Light | A hard work light from the upper left; the only glow is the cold lumen in slots, veins and lenses |
+| Icons | Solid stencil marks in lumen, broken by stencil bridges |
+| Type | Allerta Stencil over Chivo Mono |
+| Progress | Barnacle cells whose apertures glow lumen (breach on warning); fills are a lit vein |
+| Hero pieces | A name plate with a porthole lens; a helm of eight square hatch keys round a round valve-hatch stop over grating, its gaps packed with growth; a ship display bezel climbed by reef; a bolted gauge; caged bulkhead lamps; a crest of seven unlike plates bolted into a ring round a branching conduit; a column ground of riveted bulkhead plates mostly overgrown (the page's new optional `column` image, `docs/mockups/skins/README.md`) |
+| Palette | Hull steel `#5d686d` (the plate as it was taken), Rust `#8c4522` (running past any refit), Reef coral `#d27a6a` (growth tolerated and built on), Barnacle bone `#e3dbc6` (what has settled and stays), Lumen `#8be6dc` (power carried where needed, no further), Breach `#ff5a36` (alerts only: the hull open to the sea) |
+
+The Red Tithe in version 30: the sheets are nailed to dark, scarred oak (grain, knots, knife gouges, tallies, scorches,
+blood soaked into the grain) under strap iron; the column is a plank wall (the `column` image); frames are four boards
+with iron corner straps; the strips a two-plank beam; the trap jaws keep steel jaws on oak stakes; tabs are notched tally
+sticks; the helm's revolver cylinder sits in an oak wheel rim with an iron tyre; the systems display is pinned by knives
+with a hatchet in one corner; the dial in an oak case; the crest's tooth is now a two-rooted molar on an oak roundel.
+Palette row 4 is Hall oak `#4a301c` (the boards every sheet is nailed to: the Tithe's hall, where debts are posted and
+paid), replacing Soot. Still rough: on the kit sheet's narrowest 120 px key "Overload" still crosses the jaws (a halo of
+paper keeps it legible); the Exponent's corner reef is busy at 32 px.
+
 ## The kit
 
 Every screen draws only these pieces, by name (CLAUDE.md section 7). A skin supplies one image (or image set) per
