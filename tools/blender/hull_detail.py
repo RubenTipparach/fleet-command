@@ -59,8 +59,8 @@ WEAR_BUMP = {}   # how strongly each kind's surface wear (dents, scratches) show
 
 def kind_material(kind, glow=None):
     """A material that can show, by switch(what): 'data' (red the kind, green the piece's rid, blue its edges), 'glow'
-    (its light, black unless a lamp), 'position' (ship space) or 'shade' (white diffuse, bevelled normals, for the sun
-    and normal bakes)."""
+    (its light, black unless a lamp), 'position' (ship space), 'grime' (its dirt, wear and mottle: grime_nodes) or 'shade'
+    (white diffuse, bevelled normals, for the sun and normal bakes)."""
     m = bpy.data.materials.new(f"hd_{kind}" + ("_" + glow if glow else ""))
     m.use_nodes = True
     N, L = m.node_tree.nodes, m.node_tree.links
@@ -100,7 +100,7 @@ def kind_material(kind, glow=None):
         L.new(mix.outputs["Value"], bump.inputs["Height"]); L.new(bev.outputs[0], bump.inputs["Normal"])
         nout = bump.outputs["Normal"]
     L.new(nout, bs.inputs["Normal"])
-    src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"]}
+    src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"], "grime": grime_nodes(N, L, kind, inv)}
 
     def switch(what):
         if what == "light" and glow:      # the light pass: lamps and windows shine on the hull around them
@@ -112,6 +112,54 @@ def kind_material(kind, glow=None):
     switch("data")
     MATS.append((m, switch))
     return m
+
+
+GRIME = {"ao_m": 0.9}   # how far the dirt's occlusion looks (data: grime)
+
+
+def grime_nodes(N, L, kind, edge):
+    """Where the model's own grime and wear lie, in its material, so the render and the preview carry them (owner,
+    2026-11-07: "you didnt add any grime or diirt, you didnt even add in textures to the base ship"). Red: dirt, settled
+    where the surface is occluded within GRIME['ao_m'] (Blender's AO node, true local occlusion) and broken up by noise,
+    with streaks running aft; green: wear, the paint chipped on the edges (the bevelled normal's turn, `edge`) and here
+    and there on the faces; blue: a slow mottle across the plating. Blender's gradient noise throughout (no cheap hash).
+    Lamps and strips carry none. Returns the colour socket (named GRIME, so the preview can read it)."""
+    comb = N.new("ShaderNodeCombineColor"); comb.name = "GRIME"
+    if kind in ("lamp", "strip"):
+        return comb.outputs[0]
+    tc = N.new("ShaderNodeTexCoord")
+
+    def noise(scale, detail, vec=None):
+        n = N.new("ShaderNodeTexNoise"); n.inputs["Scale"].default_value = scale; n.inputs["Detail"].default_value = detail
+        L.new(vec if vec is not None else tc.outputs["Object"], n.inputs["Vector"])
+        return n.outputs["Fac"]
+
+    def math(op, a, b=None, clamp=False):
+        m = N.new("ShaderNodeMath"); m.operation = op; m.use_clamp = clamp
+        for i, v in enumerate((a, b)):
+            if v is None:
+                continue
+            if isinstance(v, (int, float)):
+                m.inputs[i].default_value = v
+            else:
+                L.new(v, m.inputs[i])
+        return m.outputs[0]
+
+    def band(x, lo, hi):
+        r = N.new("ShaderNodeMapRange"); r.inputs["From Min"].default_value = lo; r.inputs["From Max"].default_value = hi
+        L.new(x, r.inputs["Value"]); return r.outputs["Result"]
+    ao = N.new("ShaderNodeAmbientOcclusion"); ao.samples = 8; ao.inputs["Distance"].default_value = GRIME["ao_m"]
+    occ = math("SUBTRACT", 1.0, ao.outputs["AO"])
+    dirt = math("MULTIPLY", math("MULTIPLY", occ, 1.8), math("ADD", noise(1.2, 4.0), -0.15), clamp=True)
+    mp = N.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (3.0, 3.0, 0.22)   # streaks run fore and aft
+    L.new(tc.outputs["Object"], mp.inputs["Vector"])
+    streak = band(noise(2.0, 2.0, mp.outputs["Vector"]), 0.5, 0.72)
+    dirt = math("ADD", dirt, math("MULTIPLY", streak, 0.3), clamp=True)
+    chips = math("MULTIPLY", math("MULTIPLY", edge, 9.0, clamp=True), band(noise(9.0, 2.0), 0.5, 0.62))
+    specks = math("MULTIPLY", band(noise(16.0, 1.0), 0.7, 0.78), 0.5)
+    wear = math("ADD", chips, specks, clamp=True)
+    L.new(dirt, comb.inputs[0]); L.new(wear, comb.inputs[1]); L.new(noise(0.35, 3.0), comb.inputs[2])
+    return comb.outputs[0]
 
 
 def show(what):
@@ -1089,6 +1137,8 @@ def ring_prisms(outer, inner, w0, w1):
 def decal(kind, colour, M, du, dv, w, h):
     """A painted mark at (du, dv) in frame M, w along u by h along v (painted_bake.py paints DECALS)."""
     R3, o = M.to_3x3(), M.to_translation()
+    k = (R3 @ Vector((1, 0, 0))).length   # a kit piece's frame carries the kit's scale (scatter_kit): its marks scale with it
+    du, dv, w, h = du * k, dv * k, w * k, h * k
     u, v, n = (R3 @ Vector((1, 0, 0))).normalized(), (R3 @ Vector((0, 1, 0))).normalized(), (R3 @ Vector((0, 0, 1))).normalized()
     c = o + u * du + v * dv
     DECALS.append({"kind": kind, "colour": colour, "c": [round(x, 4) for x in c], "u": [round(x, 5) for x in u],
@@ -1223,6 +1273,10 @@ def scatter_kit(lo, S, D, surf, rng, taken):
     mirrored, kept off bends, off other pieces, out of the opened zones and clear of the windows and bays (taken: centres
     and radii already used). Every piece seeded by where it is. Returns [(parts, loc)], cutters."""
     K = D["kit"]
+    ks = K.get("scale", 1.0)   # the kit drawn at the scale the reference sheets draw it, not the real one (owner, 2026-11-07,
+    # of 1-3 m pieces on an 86 m hull: "the details dont show up well AT ALL", "that looks NOTHING like the examples"):
+    # each piece built at its own size in a frame scaled by ks, so it, its cutters and its marks grow together
+    SK = Matrix.Diagonal((ks, ks, ks, 1.0))
     kinds = list(K["weights"]); wts = [K["weights"][k] for k in kinds]
     LIGHTS_OF[:] = K.get("lights", ["blue"])
     T = D["armour_t_m"]
@@ -1243,7 +1297,8 @@ def scatter_kit(lo, S, D, surf, rng, taken):
             q = vs[0] + (vs[1] - vs[0]) * a + (vs[2] - vs[0]) * b
             kind = rng.choices(kinds, wts)[0]
             (u0, u1), (v0, v1) = SIZES[kind]
-            w, h = round(rng.uniform(u0, u1), 2), round(rng.uniform(v0, v1), 2)
+            w0, h0 = round(rng.uniform(u0, u1), 2), round(rng.uniform(v0, v1), 2)
+            w, h = w0 * ks, h0 * ks
             rad = math.hypot(w, h) / 2 + 0.35
             centre = abs(p.normal.y) > 0.8 and abs(q.x) < rad
             if centre:
@@ -1265,7 +1320,7 @@ def scatter_kit(lo, S, D, surf, rng, taken):
             for m in ((False,) if centre else (False, True)):
                 r = random.Random(int(abs(q.x) * 100) * 7919 + int(q.y * 100) * 104729 + int(q.z * 100) + sum(map(ord, kind)) * 31)
                 cut = []
-                parts = KIT[kind](r, frame_at(q, p.normal, m), T, w, h, cut)
+                parts = KIT[kind](r, frame_at(q, p.normal, m) @ SK, T / ks, w0, h0, cut)
                 feats.append((parts, q))
                 cutters.extend(cut)
     return feats, cutters
@@ -1327,6 +1382,7 @@ def build(lo, S, D, seed):
     LAMP_RGB.update({k: tuple(v) for k, v in D.get("lamp_rgb", {}).items()})
     BEVEL_M.update(D.get("bevel_m", {}))
     WEAR_BUMP.clear(); WEAR_BUMP.update(D.get("wear_bump", {}))
+    GRIME.update(D.get("grime", {}))
     rng = random.Random(seed)
     PANES.clear(); DECALS.clear()
     mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "accent", "dome", "slat", "vent")}

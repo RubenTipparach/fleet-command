@@ -67,19 +67,19 @@
       "SLAT": "#4a505a",
       "VENT": "#16181c",
       "LIVERY": "#d9d6ce",
-      "BRONZE": "#b98a4e",
+      "BRONZE": "#8a8f96",
       "BRONZE_SHARE": 0.04,
       "INK": "#2a2d33",
       "LIGHT_EDGE": "#e2d6b8",
       "EDGE_K": 0.55,
       "PAINT_MODE": "render",
       "ACCENT": [
-        "#c4692c",
-        "#cf7d3a",
-        "#b55d28"
+        "#8f2b2b",
+        "#742222",
+        "#c9c3b4"
       ],
-      "DIRT": "#4d3a2a",
-      "DIRT_K": 0.45,
+      "DIRT": "#3e3226",
+      "DIRT_K": 0.65,
       "DECAL": {
         "warn": "#c3342b",
         "ink": "#d9d6ce",
@@ -90,7 +90,10 @@
         "name": "#d9d6ce",
         "white": "#ecebe6"
       },
-      "CHIPS_K": 0.9
+      "CHIPS_K": 0.8,
+      "AO_K": 0.75,
+      "_accent": "No orange (owner, 2026-11-07: \"ew the orange sucks\"): accent modules in crimson and bone",
+      "CHIP": "#9aa0a6"
     },
     "_recipe": "The Krai's recipe, version 6 (owner, 2026-11-06, with reference sheets: \"more detail variety\", \"notice large panels, and sub panels, liveries, varying colors of armor\", \"vents, lights, escape hatches, missile tubes, bombe tobes\", \"warning markings too\", \"tiny holes or slots for rivets and bolts\"): forged plates, large panels square to the hull split into sub panels at their own heights, thick and broad-bevelled so every edge shines (edge-first); the faction's steel in several tones, brass-orange accent modules, white war stripes; the detail kit weighted to its guns (missile and bomb tubes, thruster quads, vents), riveted heavily; ordered machinery in the reactor and engine trenches; grime and rust in the cavities.",
     "plan": "data/ships/krai/frigate_plan.json",
@@ -357,7 +360,7 @@
             "x_within_m": 8.0
           },
           "colour": "#d9d6ce",
-          "pin": "#c4692c",
+          "pin": "#8f2b2b",
           "pin_m": 0.14
         },
         {

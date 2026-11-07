@@ -277,9 +277,9 @@ SKY_RGB, SKY_K = (0.78, 0.82, 0.9), 0.9   # the render's sky: its colour and str
 AO_K = 0.35                   # in the render mode, how much of the AO pass deepens the render's own occlusion
 ACCENT = ["#c06a32"]          # the accent modules' colours (hull_detail's 'accent' kind), by their rid
 DECAL = {"warn": "#c3342b", "ink": "#3b4048", "hazard": ["#e2a72a", "#2c2e31"], "name": "#2a3a56", "white": "#eeeeea"}
-DIRT, DIRT_K = "#4a3f33", 0.0  # grime in the cavities: its colour, and how much of it (0 none)
-CHIPS_K = 0.0                 # chipped and specked paint (0 none)
-HUNT_PAINT = {"ACCENT": ACCENT, "DECAL": DECAL, "DIRT": DIRT, "DIRT_K": DIRT_K, "CHIPS_K": CHIPS_K, "ARMOUR": ARMOUR, "SUB": SUB, "UNDER": UNDER, "GREEBLE": GREEBLE, "DOME": DOME, "SLAT": SLAT, "VENT": VENT,
+DIRT, DIRT_K = "#4a3f33", 0.0  # the model's dirt (hull_detail.grime_nodes, red): its colour, and how much of it (0 none)
+CHIP, CHIPS_K = "#70757b", 0.0  # its chipped paint (green): the metal beneath, and how much (0 none)
+HUNT_PAINT = {"ACCENT": ACCENT, "DECAL": DECAL, "DIRT": DIRT, "DIRT_K": DIRT_K, "CHIP": CHIP, "CHIPS_K": CHIPS_K, "ARMOUR": ARMOUR, "SUB": SUB, "UNDER": UNDER, "GREEBLE": GREEBLE, "DOME": DOME, "SLAT": SLAT, "VENT": VENT,
               "LIVERY": LIVERY, "BRONZE": BRONZE, "INK": INK, "LIGHT_EDGE": LIGHT_EDGE, "EDGE_K": EDGE_K, "BRONZE_SHARE": BRONZE_SHARE,
               "UNDER_GLOW": UNDER_GLOW, "UNDER_GLOW_K": UNDER_GLOW_K, "PAINT_MODE": PAINT_MODE, "SKY_RGB": SKY_RGB,
               "SKY_K": SKY_K, "AO_K": AO_K}
@@ -373,6 +373,8 @@ def bake_ship(slug, px, samples, panes_only=False, preview=None):
         return {"panes": panes}
     if preview:
         return preview_render(slug, high, preview, samples)
+    if PREVIEW_FIRST:   # the model rendered before its bake (--preview-first <dir>), then the bake goes on
+        preview_render(slug, high, PREVIEW_FIRST, 16, restore=True)
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
     sun.data.energy = 1.0; sun.data.angle = math.radians(3)
     sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
@@ -411,6 +413,7 @@ def bake_ship(slug, px, samples, panes_only=False, preview=None):
     cover = data[:, :, 3] > 0.5
     glowp = bake("EMIT", "glow")[:, :, :3]
     P = bake("EMIT", "position")[:, :, :3]
+    grimep = bake("EMIT", "grime")[:, :, :3]
     nor = bake("NORMAL", "shade", normal_space="OBJECT")[:, :, :3] * 2.0 - 1.0     # for the paint's own use
     nts = bake("NORMAL", "shade", normal_space="TANGENT")[:, :, :3]                # the normal map, for the game and page
     ao = bake("AO", "shade")[:, :, 0]
@@ -449,7 +452,7 @@ def bake_ship(slug, px, samples, panes_only=False, preview=None):
             "high_faces": nfaces, "light_ref": D["defaults"]["light_ref"], "light_gamma": 1.6,
             "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "mesh": {"pos": pos, "uv": uv},
             "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
-    passes = {"data": data, "glowp": glowp, "P": P, "nor": nor, "nts": nts, "ao": ao, "sunp": sunp, "lightp": lightp}
+    passes = {"data": data, "glowp": glowp, "P": P, "nor": nor, "nts": nts, "ao": ao, "sunp": sunp, "lightp": lightp, "grimep": grimep}
     if litp is not None:
         passes["litp"] = litp
     save_passes(slug, passes, {"info": info, "story": HD.STORY, "decals": HD.DECALS})
@@ -482,17 +485,17 @@ def paint_and_save(slug, passes, info, story, decals):
     S = ship_entry(D, slug)
     use_paint({**D["defaults"].get("palette", {}), **S.get("palette", {})})
     data, glowp, P, nor, nts, ao, sunp, lightp = (passes[k] for k in ("data", "glowp", "P", "nor", "nts", "ao", "sunp", "lightp"))
-    litp = passes.get("litp")
+    litp = passes.get("litp"); grimep = passes.get("grimep")
     cover = data[:, :, 3] > 0.5
     faction = D.get("faction", "ssarith")
     S["_story"] = story
     S["_decals"] = decals
     wr = wear(P, nor, cover, story, S)
     if litp is not None:
-        col, emit = paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr)
+        col, emit = paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr, grimep)
     else:
         col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr)
-    pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction, wr)
+    pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction, wr, grimep)
     lref = info["light_ref"]
     lmap = half(np.clip(lightp / lref, 0, 1) ** (1 / 1.6))   # stored with a gentle curve; the page and game undo it
     os.makedirs(SHIPS_OUT, exist_ok=True)
@@ -507,7 +510,10 @@ def paint_and_save(slug, passes, info, story, decals):
     return info
 
 
-def preview_render(slug, high, out, samples):
+PREVIEW_FIRST = None   # --preview-first <dir>: render the model there before baking it
+
+
+def preview_render(slug, high, out, samples, restore=False):
     """Render the built high-poly layer (clay, lamps lit, under the bake's sun and a soft sky) from a port quarter, above
     and close on the flank, into out/<slug>_<view>.png."""
     import hull_detail as HD
@@ -516,6 +522,7 @@ def preview_render(slug, high, out, samples):
     pal = {"armour": ARMOUR, "sub": SUB, "accent": ACCENT, "under": [UNDER], "greeble": list(GREEBLE), "dome": [DOME],
            "slat": [SLAT], "vent": [VENT], "strip": [VENT]}
     mult = {"armour": 11, "sub": 7, "accent": 7, "greeble": 13}
+    added = []
     for m, sw in HD.MATS:   # each piece in its palette colour by its rid, as flat_paint picks it (no liveries or decals)
         if m.name.startswith("hd_lamp"):
             sw("light"); continue
@@ -540,13 +547,27 @@ def preview_render(slug, high, out, samples):
             els.remove(els[1])
         for e, c in zip(sorted(els, key=lambda e: e.position), cols):
             e.color = (*[float(x) ** 2.2 for x in hexrgb(c)], 1)
-        L.new(fr.outputs[0], ramp.inputs[0]); L.new(ramp.outputs[0], bs.inputs["Color"])
+        L.new(fr.outputs[0], ramp.inputs[0])
+        made = [mul, fr, ramp]
+        colour = ramp.outputs[0]
+        g = N.get("GRIME")
+        if g is not None and g.inputs[0].is_linked:   # the model's own dirt, chips and mottle over it, as grime_paint lays them
+            sepg = N.new("ShaderNodeSeparateColor"); L.new(g.outputs[0], sepg.inputs[0]); made.append(sepg)
+            for ch, k, c in ((0, DIRT_K, DIRT), (1, CHIPS_K, CHIP)):
+                f = N.new("ShaderNodeMath"); f.operation = "MULTIPLY"; f.use_clamp = True; f.inputs[1].default_value = k
+                L.new(sepg.outputs[ch], f.inputs[0])
+                mx = N.new("ShaderNodeMix"); mx.data_type = "RGBA"; L.new(f.outputs[0], mx.inputs[0])
+                L.new(colour, mx.inputs[6]); mx.inputs[7].default_value = (*[float(x) ** 2.2 for x in hexrgb(c)], 1)
+                made += [f, mx]; colour = mx.outputs[2]
+        L.new(colour, bs.inputs["Color"])
+        added.append((m, made, bs))
     w = sc.world
     w.node_tree.nodes["Background"].inputs["Color"].default_value = (0.55, 0.6, 0.7, 1)
     w.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.25
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
     sun.data.energy = 2.2; sun.data.angle = math.radians(3)
     sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
+    kept_samples = sc.cycles.samples
     sc.cycles.samples = samples; sc.cycles.use_denoising = True
     sc.render.resolution_x, sc.render.resolution_y = 1600, 900
     sc.view_settings.view_transform = "AgX"
@@ -566,6 +587,16 @@ def preview_render(slug, high, out, samples):
         sc.render.filepath = os.path.join(out, f"{slug}_{view}.png")
         bpy.ops.render.render(write_still=True)
         print(f"  preview {sc.render.filepath}", flush=True)
+    if restore:   # back as the bake needs it: white diffuse, no sun or camera, a black world, denoising off
+        for m, nodes, bs in added:
+            for n in nodes:
+                m.node_tree.nodes.remove(n)
+            bs.inputs["Color"].default_value = (1, 1, 1, 1)
+        for o in (sun, cam):
+            bpy.data.objects.remove(o)
+        w.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
+        sc.cycles.use_denoising = False; sc.cycles.samples = kept_samples
+        sc.view_settings.view_transform = "Standard"
     return {}
 
 
@@ -775,31 +806,6 @@ def vnoise3(P, cell, seed):
     y0 = x0 * (1 - f[..., 1]) + x1 * f[..., 1]; y1 = x2 * (1 - f[..., 1]) + x3 * f[..., 1]
     return y0 * (1 - f[..., 2]) + y1 * f[..., 2]
 
-
-def hash3(i, j, k, seed):
-    """An integer hash of a lattice point (PCG-style mixing on uint32), 0..1: no repeat and no lines (CLAUDE.md section 10,
-    never a product-modulo or sin hash)."""
-    h = (i.astype(np.int64) * 73856093 ^ j.astype(np.int64) * 19349663 ^ k.astype(np.int64) * 83492791 ^ seed * 2654435761) & 0xFFFFFFFF
-    h = h.astype(np.uint64)
-    h = (h * np.uint64(747796405) + np.uint64(2891336453)) & np.uint64(0xFFFFFFFF)
-    h = ((h >> ((h >> np.uint64(28)) + np.uint64(4))) ^ h) * np.uint64(277803737) & np.uint64(0xFFFFFFFF)
-    h = (h >> np.uint64(22)) ^ h
-    return (h & np.uint64(0xFFFFFF)).astype(np.float32) / float(0xFFFFFF)
-
-
-def specks(P, cell, share, seed):
-    """Small round marks scattered over ship space: one candidate in each cell of `cell` metres, its middle jittered
-    inside the cell and its radius kept inside it, kept with probability `share`. Returns 0..1 (1 at a speck's middle)."""
-    q = P / cell
-    i = np.floor(q).astype(np.int64)
-    a, b, c = i[..., 0], i[..., 1], i[..., 2]
-    keep = hash3(a, b, c, seed) < share
-    r = 0.1 + 0.2 * hash3(a, b, c, seed + 4)
-    cx = a + 0.5 + (0.5 - r) * (2 * hash3(a, b, c, seed + 1) - 1)
-    cy = b + 0.5 + (0.5 - r) * (2 * hash3(a, b, c, seed + 2) - 1)
-    cz = c + 0.5 + (0.5 - r) * (2 * hash3(a, b, c, seed + 3) - 1)
-    d = np.sqrt((q[..., 0] - cx) ** 2 + (q[..., 1] - cy) ** 2 + (q[..., 2] - cz) ** 2) / r
-    return np.where(keep, np.clip(1.4 - d, 0, 1), 0).astype(np.float32)
 
 def ramp(stops, t):
     """A colour ramp through hex stops, t 0..1."""
@@ -1048,7 +1054,21 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction, wr=None):
     return np.clip(col, 0, 1), emit
 
 
-def paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr=None):
+def grime_paint(col, grime, is_, lit=None):
+    """The model's own grime on a colour (the painted map with its light, or the PBR base colour without): its dirt
+    (DIRT, DIRT_K), its chipped paint showing the metal (CHIP, CHIPS_K) and its mottle, from the grime pass the bake took
+    of hull_detail.grime_nodes. One implementation for both maps."""
+    if grime is None:
+        return col
+    L_ = lit if lit is not None else np.ones_like(col)
+    dirt = np.clip(grime[..., 0] * DIRT_K, 0, 1)[..., None]
+    chip = np.clip(grime[..., 1] * CHIPS_K, 0, 1) * (is_("armour") | is_("accent") | is_("sub"))
+    col = col * (0.93 + 0.14 * grime[..., 2])[..., None]
+    col = col * (1 - dirt) + hexrgb(DIRT) * L_ * dirt
+    return col * (1 - chip[..., None]) + hexrgb(CHIP) * L_ * chip[..., None]
+
+
+def paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr=None, passes_grime=None):
     """The colour map from a render of the high-poly layer (PAINT_MODE "render"): the flat paint (flat_paint: plates,
     liveries, emblem) times the light the render put on each texel (sky, sun and bounce, with every shadow and occlusion
     the geometry casts), lightly deepened by the AO pass, then the wear and the lamps. No ink and no drawn steps: a gap or
@@ -1063,17 +1083,7 @@ def paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr=None):
     lit = lit * (1 - AO_K + AO_K * aoc)[..., None]
     col = base * (0.06 + 0.94 * lit)
     col *= (1.0 + 0.5 * (grain(h, w) - 1.0))[..., None]
-    if CHIPS_K:   # paint chipped and specked (owner: "subtle wear and tear"): small chips mostly on the plates' edges,
-        # fine specks over the faces, both from a lattice hash so nothing repeats
-        _, _, edge_, is2 = classify(data, cover)
-        e = np.clip(edge_ * 6.0, 0, 1)
-        ch = np.clip(specks(P, 0.09, 0.55, 31) * 3, 0, 1) * np.clip(e * 1.5 + 0.08, 0, 1)
-        sp = np.clip(specks(P, 0.05, 0.22, 47) * 2.5, 0, 1) * 0.5
-        wearm = np.clip((ch + sp) * CHIPS_K, 0, 1) * (is2("armour") | is2("accent"))
-        col = col * (1 - 0.55 * wearm[..., None]) + hexrgb(DIRT) * lit * (0.35 * wearm[..., None])
-    if DIRT_K:   # grime settled in the cavities, broken up so it gathers here and there
-        dirt = np.clip((0.85 - aoc) / 0.5, 0, 1) ** 1.5 * np.clip(0.4 + 0.9 * vnoise3(P, 0.9, 23), 0, 1) * DIRT_K
-        col = col * (1 - dirt[..., None]) + hexrgb(DIRT) * lit * dirt[..., None]
+    col = grime_paint(col, passes_grime, is_, lit)
     if wr:
         col = col * (1 - 0.7 * wr["soot"][..., None]) + hexrgb(INK) * (0.18 * wr["soot"][..., None])
         col = col * (1 - 0.8 * wr["scorch"][..., None]) + np.array([0.05, 0.035, 0.025]) * (0.8 * wr["scorch"][..., None])
@@ -1084,7 +1094,7 @@ def paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr=None):
     return np.clip(col, 0, 1), emit
 
 
-def paint_pbr(data, P, nor, ao, cover, S, faction, wr=None):
+def paint_pbr(data, P, nor, ao, cover, S, faction, wr=None, grime=None):
     """The PBR set: a base colour with no light in it (the flat paint, darkened in its cavities, its plates a little
     darker toward their gaps, edges worn lighter, grain), and ORM (red the AO, green the roughness, blue the metalness,
     by kind; worn edges smoother and barer, paint less metallic)."""
@@ -1099,6 +1109,7 @@ def paint_pbr(data, P, nor, ao, cover, S, faction, wr=None):
     col *= np.where(m > 0, 0.82 + 0.18 * np.clip((pb - 0.45) / 0.5, 0, 1), 1.0)[..., None]
     e = np.clip(edge * 5.0, 0, 1) * (m > 0)
     col = col * (1 - 0.3 * e[..., None]) + hexrgb(LIGHT_EDGE) * (0.3 * e[..., None])
+    col = grime_paint(col, grime, is_)
     gr = grain(h, w)
     col *= gr[..., None]
     rough = np.full((h, w), PBR["under"][0], np.float32); metal = np.full((h, w), PBR["under"][1], np.float32)
@@ -1170,6 +1181,9 @@ def main():
     arg = lambda k, d: argv[argv.index(k) + 1] if k in argv else d
     if "--detail" in argv:   # another faction's ships (data/ships/<faction>/hull_detail.json); the Hunt's by default
         use_faction(arg("--detail", ""))
+    if "--preview-first" in argv:
+        global PREVIEW_FIRST
+        PREVIEW_FIRST = arg("--preview-first", None)
     if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only]
         return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv,
                          arg("--preview", None), "--repaint" in argv)
