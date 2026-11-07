@@ -107,8 +107,8 @@
       "dome": 0.03
     },
     "kit": {
-      "per_100m2": 2.6,
-      "gap_m": 0.35,
+      "per_100m2": 7.0,
+      "gap_m": 0.4,
       "lights": [
         "blue"
       ],
@@ -124,7 +124,7 @@
         "groove": 2,
         "tag": 2
       },
-      "scale": 2.6
+      "scale": 1.8
     },
     "well_cell_m": [
       2.6,
@@ -133,7 +133,7 @@
     "rivets": {
       "inset_m": 0.35,
       "r_m": 0.07,
-      "share": 0.45,
+      "share": 0.7,
       "slot_share": 0.5,
       "slot_edge_m": 3.0,
       "slot_l_m": 0.5,
@@ -149,7 +149,7 @@
       "accent": 0.1,
       "sub": 0.08
     },
-    "_scale": "The kit at 2.6 times its real size, the seams 0.12-0.22 m and the panels 10 m: drawn at the scale the owner's reference sheets draw them, so they read on an 86 m hull (owner, 2026-11-07: \"the details dont show up well AT ALL\", \"that looks NOTHING like the examples I provided\")"
+    "_scale": "The kit at 1.8 times its real size, the seams 0.12-0.22 m and the panels 10 m: drawn at the scale the owner's reference sheets draw them, so they read on an 86 m hull (owner, 2026-11-07: \"the details dont show up well AT ALL\", \"that looks NOTHING like the examples I provided\")"
   },
   "stories": {
     "petrel": {

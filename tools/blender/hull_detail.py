@@ -121,7 +121,7 @@ def grime_nodes(N, L, kind, edge):
     """Where the model's own grime and wear lie, in its material, so the render and the preview carry them (owner,
     2026-11-07: "you didnt add any grime or diirt, you didnt even add in textures to the base ship"). Red: dirt, settled
     where the surface is occluded within GRIME['ao_m'] (Blender's AO node, true local occlusion) and broken up by noise,
-    with streaks running aft; green: wear, the paint chipped on the edges (the bevelled normal's turn, `edge`) and here
+    with streaks running aft from the occluded places; green: wear, the paint chipped on the edges (the bevelled normal's turn, `edge`) and here
     and there on the faces; blue: a slow mottle across the plating. Blender's gradient noise throughout (no cheap hash).
     Lamps and strips carry none. Returns the colour socket (named GRIME, so the preview can read it)."""
     comb = N.new("ShaderNodeCombineColor"); comb.name = "GRIME"
@@ -154,7 +154,8 @@ def grime_nodes(N, L, kind, edge):
     mp = N.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (3.0, 3.0, 0.22)   # streaks run fore and aft
     L.new(tc.outputs["Object"], mp.inputs["Vector"])
     streak = band(noise(2.0, 2.0, mp.outputs["Vector"]), 0.5, 0.72)
-    dirt = math("ADD", dirt, math("MULTIPLY", streak, 0.3), clamp=True)
+    dirt = math("ADD", dirt, math("MULTIPLY", streak, math("MULTIPLY", occ, 1.2)), clamp=True)   # streaks only where dirt gathers
+    #   (on open plating they read as wood grain)
     chips = math("MULTIPLY", math("MULTIPLY", edge, 9.0, clamp=True), band(noise(9.0, 2.0), 0.5, 0.62))
     specks = math("MULTIPLY", band(noise(16.0, 1.0), 0.7, 0.78), 0.5)
     wear = math("ADD", chips, specks, clamp=True)

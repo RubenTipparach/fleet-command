@@ -1063,7 +1063,7 @@ def grime_paint(col, grime, is_, lit=None):
     L_ = lit if lit is not None else np.ones_like(col)
     dirt = np.clip(grime[..., 0] * DIRT_K, 0, 1)[..., None]
     chip = np.clip(grime[..., 1] * CHIPS_K, 0, 1) * (is_("armour") | is_("accent") | is_("sub"))
-    col = col * (0.93 + 0.14 * grime[..., 2])[..., None]
+    col = col * (0.96 + 0.08 * grime[..., 2])[..., None]
     col = col * (1 - dirt) + hexrgb(DIRT) * L_ * dirt
     return col * (1 - chip[..., None]) + hexrgb(CHIP) * L_ * chip[..., None]
 
