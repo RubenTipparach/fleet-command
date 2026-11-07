@@ -54,3 +54,4 @@
   --samples 16` into `assets/ships/freighters/`; Painted, PBR, Studio and Night looks; the containers' drawn face.
 - 2026-11-07, cloud session: version 12, version id `1794060723-f419`: the four freighters baked again at 2048 px and 32
   samples (9-18 minutes a ship on 4 cloud cores); the page 8.5 MB with its maps inlined.
+- 2026-11-07, cloud session: version 13, version id `1794060763-9bc6`: the page's version line reads v12, as committed.
