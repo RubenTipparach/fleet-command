@@ -1,5 +1,5 @@
 {
- "_doc": "The battle console mockup's test scenes for comms, transport and boarding (its SCENES boarding, delivery as Relief, vip, distress and assault), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides: the Concord against the Krai Warhost and the Krai against the Concord, with the approved ships (the troop ship is the Concord Pelican; a Krai frigate carries the Krai's troops, as the mockup's Krai line maps its troop ship) and the mockup's starbase. Optional keys (src/Core/Data/Scenes.Comms.cs): armed (false: the player's ship carries no weapons, the mockup's armed: false), goal (taken: a ship joined to the player's side; relieved: a ship or planet given all it asked for), planets, and each ship's setup (marines, team, hold, needs, vip, capture, need_marines, distress, shields_down, power_e, sys, mounts_hp). Positions in metres. The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own.",
+ "_doc": "The battle console mockup's test scenes for comms, transport and boarding (its SCENES boarding, delivery as Relief, vip, distress and assault), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides: the Concord against the Krai Warhost and the Krai against the Concord, with the approved ships (the troop ship is the Concord Pelican; a Krai frigate carries the Krai's troops, as the mockup's Krai line maps its troop ship) and the mockup's starbase. Optional keys (src/Core/Data/Scenes.Comms.cs): armed (false: the player's ship carries no weapons, the mockup's armed: false), goal (taken: a ship joined to the player's side; relieved: a ship or planet given all it asked for), planets, and each ship's setup (marines, team, hold, needs, vip, capture, need_marines, distress, shields_down, power_e, sys, mounts_hp). Positions in metres. The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own. So does the Ssarith Hunt (ssarith_<scene>, 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its ships in the same places (the Hunt Cruiser, the Trident or Hooded Lance frigate for the destroyer and the troop carrier, the Forked Prow in distress, Pell Reach the depot), named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4).",
  "scenarios": [
   {
    "id": "concord_boarding",
@@ -178,6 +178,83 @@
      "captain": "Dr. Orrel",
      "class": "kelvane_rv",
      "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "weapons": 2,
+       "transport": 8
+      }
+     }
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Raidmaster Ossk",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 4000,
+     "z_m": -11000,
+     "heading_deg": 200,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hull_frac": 0.1,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 3,
+      "shields_down": true,
+      "sys": {
+       "engines": 0
+      },
+      "mounts_hp": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "ssarith_boarding",
+   "sky": "hunt_iron_bloom",
+   "name": "Boarding",
+   "side": "ssarith",
+   "seed": 20261404,
+   "objective": "Board the Vekk and take it (raid its systems first, if you like)",
+   "say": [
+    "Tactical",
+    "The Vekk is crippled, shields down. Raid its systems, or board and take it."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "vekk"
+   },
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
      "side": 0,
      "x_m": 0,
      "z_m": 0,
@@ -423,6 +500,80 @@
      "captain": "Depot keeper",
      "class": "sb",
      "faction": "kelvane",
+     "side": 0,
+     "x_m": 6000,
+     "z_m": -9000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "hold": {
+       "rations": 20,
+       "medicine": 10,
+       "parts": 10,
+       "goods": 30
+      }
+     }
+    }
+   ],
+   "planets": [
+    {
+     "id": "tessaly",
+     "name": "Tessaly",
+     "x_m": 50000,
+     "z_m": -150000,
+     "radius_m": 16000,
+     "color": "#4f7fa8",
+     "needs": {
+      "rations": 10,
+      "medicine": 5
+     }
+    }
+   ],
+   "sun_energy": 1.0
+  },
+  {
+   "id": "ssarith_relief",
+   "sky": "hunt_dawn_terrace",
+   "name": "Relief",
+   "side": "ssarith",
+   "seed": 20261405,
+   "objective": "Take rations and medicine from Pell Reach and beam them down to Tessaly",
+   "say": [
+    "Comms",
+    "Pell Reach: Tessaly needs ten rations and five medicine. Select us, beam them aboard, then select Tessaly and take them down."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "relieved",
+    "id": "tessaly"
+   },
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "hold": {
+       "goods": 4
+      }
+     }
+    },
+    {
+     "id": "pell",
+     "name": "Pell Reach",
+     "captain": "Depot keeper",
+     "class": "sb",
+     "faction": "ssarith",
      "side": 0,
      "x_m": 6000,
      "z_m": -9000,
@@ -703,6 +854,93 @@
    ]
   },
   {
+   "id": "ssarith_vip",
+   "sky": "hunt_rose_quay",
+   "name": "VIP",
+   "side": "ssarith",
+   "seed": 20261406,
+   "objective": "Beam the envoy to the Hooded Lance and see Varn Outpost taken",
+   "say": [
+    "Comms",
+    "Envoy Saros is aboard. Beam him to the Hooded Lance; it takes him and its marines to Varn Outpost, whose shields have failed."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "varn"
+   },
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "vip": "Envoy Saros"
+     }
+    },
+    {
+     "id": "hunt_lance",
+     "name": "Hooded Lance",
+     "captain": "Hunt captain",
+     "class": "hunt_ff_lance",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": -7000,
+     "z_m": 4000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "team": {
+       "demo": 2,
+       "medics": 2,
+       "engineers": 2,
+       "hackers": 1,
+       "pilots": 1
+      },
+      "capture": "varn"
+     }
+    },
+    {
+     "id": "varn",
+     "name": "Varn Outpost",
+     "captain": "Castellan Dorr",
+     "class": "sb",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 10000,
+     "z_m": -70000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "hold_fire": true,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 8,
+      "shields_down": true,
+      "mounts_hp": [
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   ]
+  },
+  {
    "id": "concord_distress",
    "sky": "comms_frost_lantern",
    "name": "Distress",
@@ -874,6 +1112,70 @@
      "captain": "Institute captain",
      "class": "kelvane_ff",
      "faction": "kelvane",
+     "side": 0,
+     "x_m": 30000,
+     "z_m": -90000,
+     "heading_deg": 140,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "setup": {
+      "needs": {
+       "parts": 10
+      },
+      "distress": true,
+      "sys": {
+       "engines": 0,
+       "sensors": 0.3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "ssarith_distress",
+   "sky": "hunt_glacier_bell",
+   "name": "Distress",
+   "side": "ssarith",
+   "seed": 20261407,
+   "objective": "Beam 10 spare parts to the Forked Prow, adrift with failed engines",
+   "say": [
+    "Comms",
+    "Forked Prow: engines dead, drifting. We need ten spare parts. Click us to select us, close to transporter range and beam them over."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "relieved",
+    "id": "hunt_prow"
+   },
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 3
+      },
+      "hold": {
+       "parts": 15,
+       "rations": 5
+      }
+     }
+    },
+    {
+     "id": "hunt_prow",
+     "name": "Forked Prow",
+     "captain": "Hunt captain",
+     "class": "hunt_ff_prow",
+     "faction": "ssarith",
      "side": 0,
      "x_m": 30000,
      "z_m": -90000,
@@ -1103,6 +1405,94 @@
      "captain": "Institute captain",
      "class": "kelvane_dd",
      "faction": "kelvane",
+     "side": 0,
+     "x_m": -7000,
+     "z_m": 4000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "marines": 2,
+      "team": {
+       "demo": 2,
+       "medics": 2,
+       "engineers": 2,
+       "hackers": 1,
+       "pilots": 1
+      },
+      "capture": "varn",
+      "need_marines": 10
+     }
+    },
+    {
+     "id": "varn",
+     "name": "Varn Outpost",
+     "captain": "Castellan Dorr",
+     "class": "sb",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 10000,
+     "z_m": -70000,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "hold_fire": true,
+     "shields_frac": 0,
+     "setup": {
+      "marines": 6,
+      "shields_down": true,
+      "mounts_hp": [
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "ssarith_assault",
+   "sky": "hunt_brass_spindle",
+   "name": "Assault",
+   "side": "ssarith",
+   "seed": 20261408,
+   "objective": "Beam 8 marines to the Hooded Lance and see Varn Outpost taken",
+   "say": [
+    "Comms",
+    "Hooded Lance: we have two marines left and need ten to take Varn Outpost. Select us, open Transport, Capture, queue marines and energize."
+   ],
+   "armed": false,
+   "goal": {
+    "kind": "taken",
+    "id": "varn"
+   },
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "setup": {
+      "power_e": {
+       "transport": 4
+      }
+     }
+    },
+    {
+     "id": "hunt_lance",
+     "name": "Hooded Lance",
+     "captain": "Hunt captain",
+     "class": "hunt_ff_lance",
+     "faction": "ssarith",
      "side": 0,
      "x_m": -7000,
      "z_m": 4000,

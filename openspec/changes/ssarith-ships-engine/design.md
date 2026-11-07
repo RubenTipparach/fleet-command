@@ -27,3 +27,5 @@ rebake is picked up by the game with no export.
 | The Hunt's weapons | The generic ones (lances, torpedoes, point defence, missiles) until the culture is set (survey H1) |
 | Its ships' names and captains in the scenarios | Their class names and "Hunt captain" (culture is the owner's, C4) |
 | The `.bin` fields in an exported build | Read by `FileAccess`; an export preset must include `*.bin` (no preset in the repository yet) |
+| Its general scenes (2026-11-07) | Each the Concord's scene with the Hunt's ships in the Concord's places: the Hunt Cruiser the captain's ship, the Trident for the destroyer, the Hooded Lance carrying troops, the Forked Prow in distress, Pell Reach (its campaign station) the depot, on the mockups' station |
+| Its mines | The Concord's by size: 2 a frigate, 4 the cruiser, 2 the carrier (H1) |

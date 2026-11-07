@@ -117,7 +117,7 @@ public class SensorsTests
     [Fact]
     public void The_nebula_scenes_raider_jams_with_three_points_of_ecm_and_is_found_with_four_of_eccm()
     {
-        foreach (string id in new[] { "concord_nebula", "krai_nebula", "kelvane_nebula" })
+        foreach (string id in new[] { "concord_nebula", "krai_nebula", "kelvane_nebula", "ssarith_nebula" })
         {
             var b = new Battle(TestData.Data, TestData.Data.ScenarioById(id));
             Ship t = b.Ships[1];

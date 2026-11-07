@@ -1,5 +1,5 @@
 {
- "_doc": "The scripted captain with the fleet and point defence (the battle console mockup's Fleet and Point defence stations): pick the scenario, open the first wingman on the Fleet station, expand it and set it to hunt the weakest enemy and retreat below half its hull, return, set point defence to missiles only and back to auto, then fight it out. Played on the battles with wingmen, from every side (concord_battle, krai_battle, kelvane_battle).",
+ "_doc": "The scripted captain with the fleet and point defence (the battle console mockup's Fleet and Point defence stations): pick the scenario, open the first wingman on the Fleet station, expand it and set it to hunt the weakest enemy and retreat below half its hull, return, set point defence to missiles only and back to auto, then fight it out. Played on the battles with wingmen, from every side (concord_battle, krai_battle, kelvane_battle, ssarith_battle).",
  "beats": [
   { "do": "wait_ready" },
   { "do": "pick_scene" },

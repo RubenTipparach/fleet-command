@@ -66,7 +66,14 @@ public class ScenarioTests
     {
         Scenario[] hunt = TestData.Data.Scenarios.Where(s => s.Side == "ssarith").ToArray();
         foreach (string name in new[] { "Battle", "Duel", "Arming", "Allied fleet", "Four races" }) Assert.Contains(hunt, s => s.Name == name);
-        Assert.All(hunt, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith"), o => Assert.NotNull(TestData.Data.Classes[o.Class].Model)));
+        // and every general scene the Concord plays, bar its own line as the foe (owner, 2026-11-07: "Ensure spaceships for
+        // ssarith are also implemented")
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("The Hunt" or "Hunt wrecks")))
+            Assert.Contains(hunt, s => s.Name == c.Name);
+        // its ships are its own line's, but its depot in Relief, the mockups' station, as every side's is
+        string[] line = { "hunt_ff_lance", "hunt_ff_prow", "hunt_ff_harpoon", "hunt_ff_trident", "hunt_ca", "hunt_cv" };
+        Assert.All(TestData.Data.Scenarios, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.Contains(o.Class, line)));
+        Assert.All(hunt, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.NotNull(TestData.Data.Classes[o.Class].Model)));
         Assert.Equal("ssarith", TestData.Data.Factions["ssarith"].Skin);
         Assert.Equal("kelvane", TestData.Data.Factions["kelvane"].Skin);
     }
