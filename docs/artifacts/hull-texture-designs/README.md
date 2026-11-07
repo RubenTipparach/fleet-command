@@ -24,3 +24,7 @@
   its own plating, palette, liveries and wear (`data/ships/<faction>/hull_detail.json`). Page 11.7 MB.
 - 2026-11-06, cloud session: version 4, version id `1793989317-abb4`. Renumbered mockup 24 (another session's Kelvane
   Institute ships took mockup 23 first).
+- 2026-11-07, cloud session: version 5, version id `1794022545-6d92`. The Concord's C1 rebuilt on the Kelvane Institute's
+  hull method (owner: "exampline how the ionstitute does its hull, and replicate taht", "lets try a new dirtection"): grid
+  plating with diagonal corners, painted plate marks, light seams, framed hatches, the Concord's colours and teal bands,
+  2048 px; the Krai still on version 4 until K1 lands; the other designs shown as to come. Page 7.8 MB.

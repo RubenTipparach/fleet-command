@@ -1,5 +1,24 @@
 # Design: hull-texture-designs
 
+## Version 7: the Kelvane Institute's method
+
+The owner, 2026-11-07, of version 6's renders ("this is not good texturing, how do you plan on doing normals with hard
+angles?"): "exampline how the ionstitute does its hull, and replicate taht", "lets try a new dirtection". Main's bake tools
+(change `kelvane-ship-concepts`) are taken whole, and version 6's own tooling is set aside (it is in the branch's history).
+Each design is written in the Institute's data format, `data/ships/<faction>/hull_detail.json`:
+
+| Part | The Institute's method, in the faction's own terms | Keys |
+|---|---|---|
+| Plating | A calm grid: stations square to the ship, a stepped spine plate, a belt seam, every plate corner cut on the diagonal | `cuts` "grid", `top_station_m`, `flank_station_m`, `spine_half_m`, `corner_m` 0.9 |
+| Relief | Armour 0.3 m, sub-armour 0.12 m, plates lifted up to 0.05 m, gaps 0.2-0.32 m, no overlays, no greebles on the outer hull | `armour_t_m`, `lift_m`, `gap_m`, `overlay_min_m2`, `greebles_per_m2` 0 |
+| Hatches | Framed hatches on a share of the big plates, with their lamps | `hatch_share` 0.4, `hatch_min_m2` 18 |
+| Paint | The faction's palette; light seams; each plate's inset groove and its small marks (red triangles, stencil boxes, dot rows) | `paint` (`armour`, `under`, `plate_marks`) |
+| The ship's story | Its own domes, fans, vents, bays, windows and bands, from its room plan | the ship's entry |
+| Bake | 2048 px, 32 samples, `painted_bake.py --faction <faction> --ship <slug>`; `mesh` names the hull, `out` the folder | |
+
+The Concord's C1 (mockup 24 v5) is the first. Its paint: off-white plates in seven tones, a pale steel-blue accent, light
+grey seams, teal bands, the Concord emblem, red and teal marks.
+
 ## Version 6: a clean hull, large panels and sub panels, a kit of details
 
 The owner, of version 5's test bakes: "you have to make drastic changes to improve", then a run of reference sheets

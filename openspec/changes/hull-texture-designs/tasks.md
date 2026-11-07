@@ -13,7 +13,11 @@
 - [ ] 1.5 Version 6 (owner, 2026-11-06: "you have to make drastic changes to improve", with reference sheets): large panels
       and sub panels, the detail kit, bolt wells, marks, wear before the render, 4096 px maps beside the page; C1 and K1
       baked and shown first
-- [ ] 1.6 C2-C5 and K2-K5 moved onto version 6, once the owner has seen C1 and K1
+- [x] 1.5a Version 6 set aside for the Kelvane Institute's method (owner, 2026-11-07: "exampline how the ionstitute does its
+      hull, and replicate taht", "lets try a new dirtection"): main merged, its bake tools taken whole, C1 rebuilt in the
+      Institute's data format at 2048 px, mockup 24 v5
+- [ ] 1.5b K1 on the Institute's method
+- [ ] 1.6 C2-C5 and K2-K5 on the Institute's method, once the owner has seen C1 and K1
 
 ## 2. After the owner picks (approved for build)
 
@@ -30,6 +34,8 @@ kinda lame right now". Nothing here goes into the game until then; the baked map
 
 ## 4. One copy of the tooling (CLAUDE.md 6.1)
 
+- [x] 4.0 Main merged: this change's bake tools set aside, main's taken (task 4.1 below is moot for the tools; the page's
+      move onto `lib/baked-ship.js` remains)
 - [ ] 4.1 Change `kelvane-ship-concepts` (rubentipparach/fleet-command#47, another session's) generalised `painted_bake.py` and
       `hull_detail.py` for its own faction (a palette dict per faction, `--faction`, saved passes and `--repaint`) and made
       `docs/mockups/lib/baked-ship.js`, while this change did the same its own way (`--detail`, palettes and liveries from
