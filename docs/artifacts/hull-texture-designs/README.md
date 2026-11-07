@@ -37,3 +37,6 @@
 - 2026-11-07, cloud session: version 8, version id `1794029978-4709`. C1 in staggered rows of plates too; no windows on
   the shuttle bay's mouth or the nacelles; the cooling fans clear of the game model's radiators; both ships' seams and
   rim shadows lighter (the paint's cavity floor, `ao_floor`, now the faction's own).
+- 2026-11-07, cloud session: version 9, version id `1794032682-b2d0`. C1 with half the panels (the Krai keeps the dense
+  rows), thin plates and narrow light grey seams, plates in eight tones, and its windows from the room plan again (44
+  windows and bays, as the original).
