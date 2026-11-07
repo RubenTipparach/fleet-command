@@ -73,4 +73,7 @@
 - [ ] 2.6 Options beyond the display mode and the volumes (2026-11-06): graphics quality and interface scale, which mockup 1 shows
 - [ ] 2.8 Mockup 1: the mission strip without its fill and with live ticks, Withdraw in the battle menu
 - [ ] 2.9 Mockup 1: the Skirmish screen by scenario type, then the faction to play it as, with a scroll bar
+- [ ] 2.10 The map as a printed paper chart on a walnut table in a carpeted, papered room (mockup 1 v21, change `paper-map`;
+  owner, 2026-11-07: "make the space background a crusty print on old piece of paper with hexagon grid drawn on it"): the
+  game keeps the glass board until the owner asks for the paper map in the game
 - [ ] 2.10 Mockup 1: sync to the game's 2026-11-06 changes: the goals' close key and their list in Comms (a battle opens on Comms), the campaign map's Menu opening the pause menu, the debrief on black

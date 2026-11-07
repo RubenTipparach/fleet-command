@@ -336,6 +336,136 @@ float metal_$name(vec2 uv) { return 0.0; }
     return finish(g, "table wood", ins, body, tile_m=1.0, depth_m=0.0004, ao_radius=6, ao_strength=0.6)
 
 
+# ---- the paper map's room (owner, 2026-11-07: "make the space background a crusty print on old piece of paper with hexagon
+# grid drawn on it", "the big map poster sits on a large wooden table, of which sits in a room with red carpeting, and light
+# red-orange floral print"). The map's own print (its hexes, borders and terrain) is drawn live by the page over this paper.
+
+def map_paper():
+    """Old poster paper: a warm cream gone uneven with age, mottled in broad soft patches, its fibres showing as faint
+    crossed streaks, a fine tooth, and scattered foxing (small rust-brown spots, a few with a darker core). Matte. The
+    page lays the printed map over it and adds what belongs to this one sheet (its folds, stains and torn edge). One tile is
+    0.25 m."""
+    g = Graph("Map Paper")
+    ins = [("mott", "f", fbm(g, 4, iterations=5, persistence=0.6)),
+           ("blot", "f", fbm(g, 12, iterations=4, persistence=0.55)),
+           ("fibx", "f", g.node("fbm2", noise=2, scale_x=96, scale_y=6, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("fiby", "f", g.node("fbm2", noise=2, scale_x=6, scale_y=96, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("tooth", "f", fbm(g, 256, iterations=3, persistence=0.5)),
+           ("fox", "f", fbm(g, 40, iterations=4, persistence=0.5))]
+    body = """
+float foxing_$name(vec2 uv) { return smoothstep(0.80, 0.86, $fox(uv)); }
+float height_$name(vec2 uv) {
+	return 0.5 + 0.25 * ($tooth(uv) - 0.5) + 0.12 * ($fibx(uv) + $fiby(uv) - 1.0) + 0.1 * ($mott(uv) - 0.5);
+}
+vec3 albedo_$name(vec2 uv) {
+	vec3 cream = vec3(0.86, 0.79, 0.64), aged = vec3(0.74, 0.62, 0.43);
+	float age = smoothstep(0.35, 0.85, $mott(uv)) * 0.32 + smoothstep(0.6, 0.9, $blot(uv)) * 0.18;
+	vec3 c = mix(cream, aged, age);
+	c *= 0.96 + 0.06 * ($fibx(uv) + $fiby(uv) - 1.0) + 0.05 * ($tooth(uv) - 0.5);
+	float f = foxing_$name(uv);
+	c = mix(c, vec3(0.55, 0.36, 0.20), 0.55 * f);
+	c = mix(c, vec3(0.38, 0.22, 0.12), 0.5 * smoothstep(0.87, 0.91, $fox(uv)));
+	return c;
+}
+float rough_$name(vec2 uv) { return 0.88 + 0.08 * ($tooth(uv) - 0.5); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "map paper", ins, body, tile_m=0.25, depth_m=0.00008, ao_radius=3, ao_strength=0.2)
+
+
+def carpet_red():
+    """A deep red cut-pile carpet: the pile's tufts as fine bright and dark specks, the nap brushed in broad patches that
+    catch the light differently, a little wear. Matte. One tile is 0.5 m."""
+    g = Graph("Carpet Red")
+    ins = [("pile", "f", fbm(g, 512, iterations=2, persistence=0.5)),
+           ("tuft", "f", fbm(g, 128, iterations=3, persistence=0.5)),
+           ("nap", "f", fbm(g, 6, iterations=4, persistence=0.55)),
+           ("wear", "f", fbm(g, 3, iterations=4, persistence=0.5))]
+    body = """
+float height_$name(vec2 uv) { return 0.5 + 0.35 * ($pile(uv) - 0.5) + 0.25 * ($tuft(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 red = vec3(0.42, 0.045, 0.055), deep = vec3(0.22, 0.02, 0.03);
+	vec3 c = mix(deep, red, 0.55 + 0.8 * ($pile(uv) - 0.5) + 0.5 * ($tuft(uv) - 0.5));
+	c *= 0.86 + 0.28 * $nap(uv);
+	c = mix(c, c * vec3(1.18, 1.05, 1.05), 0.4 * smoothstep(0.62, 0.8, $wear(uv)));
+	return c;
+}
+float rough_$name(vec2 uv) { return 0.97; }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "carpet red", ins, body, tile_m=0.5, depth_m=0.002, ao_radius=4, ao_strength=0.5)
+
+
+def wallpaper_floral():
+    """Floral wallpaper in a light red-orange print on cream: a half-drop repeat of open five-petalled roses with a second
+    ring of petals and a seeded heart, four leaves round each, and small three-dot sprigs between them; the print a little
+    soft and uneven, as surface-printed paper is, the paper's own grain under it. Four roses to a 0.5 m tile."""
+    g = Graph("Wallpaper Floral")
+    ins = [("grain", "f", fbm(g, 128, iterations=3, persistence=0.5)),
+           ("ink", "f", fbm(g, 24, iterations=4, persistence=0.55)),
+           ("fade", "f", fbm(g, 3, iterations=4, persistence=0.5))]
+    body = """
+// one rose's cell: q in -0.5..0.5; returns (petal, inner line, heart, leaf). An open rose: five broad rounded petals, a
+// second ring of five between them, each petal's edge and a line down its middle printed darker, a seeded heart
+vec4 rose_$name(vec2 q, float spin) {
+	float r = length(q), a = atan(q.y, q.x) + spin;
+	float e1 = 0.21 + 0.045 * abs(cos(2.5 * a)), e2 = 0.14 + 0.03 * abs(cos(2.5 * a + 0.628));
+	float outer = smoothstep(0.010, -0.010, r - e1);
+	float inner = smoothstep(0.010, -0.010, r - e2);
+	float edge = outer * (1.0 - smoothstep(0.004, 0.011, abs(r - e2)));
+	edge = max(edge, outer * (1.0 - smoothstep(0.004, 0.011, abs(r - e1 + 0.012))));
+	edge = max(edge, (1.0 - inner) * outer * (1.0 - smoothstep(0.004, 0.012, abs(cos(2.5 * a) * r))) * 0.55);
+	float heart = smoothstep(0.05, 0.04, r) * (0.6 + 0.4 * step(0.5, fract(a * 1.909)));
+	float leaf = 0.0, vein = 0.0;
+	for (int i = 0; i < 4; i++) {
+		float b = 0.785398 + 1.570796 * float(i) + spin * 0.5;
+		vec2 d = vec2(cos(b), sin(b));
+		vec2 p = q - d * 0.31;
+		vec2 l = vec2(dot(p, d), dot(p, vec2(-d.y, d.x)));
+		float m = smoothstep(0.012, -0.012, length(l / vec2(0.10, 0.042)) - 1.0);
+		leaf = max(leaf, m);
+		vein = max(vein, m * (1.0 - smoothstep(0.002, 0.007, abs(l.y))));
+	}
+	return vec4(max(outer, inner * 0.0), max(edge, vein), heart, leaf * (1.0 - outer));
+}
+// the repeat: two columns and two rows of roses to the tile, each column dropped half a row; sprigs (three dots on a
+// short stem) on a lattice of their own, half a cell over, so each sits whole between four roses
+vec4 print_$name(vec2 uv) {
+	vec2 s = uv * 2.0;
+	float col = floor(s.x);
+	vec2 sr = s + vec2(0.0, 0.5 * mod(col, 2.0));
+	vec2 cell = floor(sr), q = fract(sr) - 0.5;
+	float spin = 0.4 * sin(cell.x * 1.7 + cell.y * 2.3);
+	vec4 rose = rose_$name(q, spin);
+	vec2 ss = s + vec2(0.5, 0.25);
+	vec2 sc = fract(ss) - 0.5;
+	float sprig = 0.0;
+	for (int i = 0; i < 3; i++) {
+		float b = 2.094395 * float(i) + 1.5708;
+		sprig = max(sprig, smoothstep(0.020, 0.011, length(sc - 0.045 * vec2(cos(b), sin(b)))));
+	}
+	sprig = max(sprig, (1.0 - smoothstep(0.002, 0.006, abs(sc.x))) * step(-0.12, sc.y) * step(sc.y, -0.03));
+	return vec4(rose.x, max(rose.y, rose.z), rose.w, sprig);
+}
+float height_$name(vec2 uv) { vec4 p = print_$name(uv); return 0.5 + 0.1 * max(max(p.x, p.z), p.w) + 0.2 * ($grain(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 paper = vec3(0.94, 0.84, 0.72), petal = vec3(0.93, 0.55, 0.42), deep = vec3(0.80, 0.36, 0.27), leaf = vec3(0.95, 0.68, 0.52);
+	vec4 p = print_$name(uv);
+	float soft = 0.82 + 0.18 * $ink(uv);
+	vec3 c = paper * (0.97 + 0.06 * ($grain(uv) - 0.5));
+	c = mix(c, leaf, p.z * 0.85 * soft);
+	c = mix(c, petal, p.x * 0.9 * soft);
+	c = mix(c, deep, p.y * 0.85 * soft);
+	c = mix(c, deep, p.w * 0.7 * soft);
+	c = mix(c, c * vec3(0.96, 0.93, 0.88), smoothstep(0.55, 0.85, $fade(uv)) * 0.5);
+	return c;
+}
+float rough_$name(vec2 uv) { return 0.75; }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "wallpaper floral", ins, body, tile_m=0.5, depth_m=0.0001, ao_radius=3, ao_strength=0.2)
+
+
 GRAPHS = {
     "hull_plate": hull_plate,
     "emblem_platinum": emblem_platinum,
@@ -346,6 +476,9 @@ GRAPHS = {
     "emblem_enamel_forest": emblem_enamel_forest,
     "emblem_fern": emblem_fern,
     "table_wood": table_wood,
+    "map_paper": map_paper,
+    "carpet_red": carpet_red,
+    "wallpaper_floral": wallpaper_floral,
 }
 
 
