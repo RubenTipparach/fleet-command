@@ -25,6 +25,7 @@
  "map_scales_km": [100, 200, 400],
  "objectives": [
   { "scenario": "concord_disable", "ship": "vekk", "disable": ["engines", "weapons"] },
-  { "scenario": "krai_disable", "ship": "meridian", "disable": ["engines", "weapons"] }
+  { "scenario": "krai_disable", "ship": "meridian", "disable": ["engines", "weapons"] },
+  { "scenario": "kelvane_disable", "ship": "vekk", "disable": ["engines", "weapons"] }
  ]
 }

@@ -266,7 +266,7 @@ public class TransportTests
     private static void Relief(string side)
     {
         Battle b = Scene(side + "_relief");
-        string station = side == "concord" ? "harbor" : "ironmaw";
+        string station = side switch { "concord" => "harbor", "krai" => "ironmaw", _ => "lyceum" };
         b.Lock(station);
         b.Transfer("rations", -1); b.Transfer("rations", -1); b.Transfer("medicine", -1);
         b.SelectPlanet("tessaly");
@@ -285,11 +285,12 @@ public class TransportTests
 
     [Fact] public void Relief_is_won_from_the_Concord_side() => Relief("concord");
     [Fact] public void Relief_is_won_from_the_Krai_side() => Relief("krai");
+    [Fact] public void Relief_is_won_from_the_Kelvane_side() => Relief("kelvane");
 
     private static void Vip(string side)
     {
         Battle b = Scene(side + "_vip");
-        string troops = side == "concord" ? "corrin" : "ruhn", outpost = side == "concord" ? "varn" : "calder";
+        string troops = side switch { "concord" => "corrin", "krai" => "ruhn", _ => "candour" }, outpost = side == "krai" ? "calder" : "varn";
         Ship t = b.ShipById(troops)!;
         Run(b, 5);
         Assert.Equal(0, t.V, 3);   // it waits for the envoy
@@ -305,11 +306,12 @@ public class TransportTests
 
     [Fact] public void VIP_is_won_from_the_Concord_side() => Vip("concord");
     [Fact] public void VIP_is_won_from_the_Krai_side() => Vip("krai");
+    [Fact] public void VIP_is_won_from_the_Kelvane_side() => Vip("kelvane");
 
     private static void Assault(string side)
     {
         Battle b = Scene(side + "_assault");
-        string troops = side == "concord" ? "corrin" : "ruhn";
+        string troops = side switch { "concord" => "corrin", "krai" => "ruhn", _ => "candour" };
         Ship t = b.ShipById(troops)!;
         b.Lock(troops);
         for (int i = 0; i < 4000 && t.Marines < t.NeedMarines; i++) { if (b.PadReady(b.Player)) b.EnergizeAll("capture"); b.Step(); }
@@ -321,6 +323,7 @@ public class TransportTests
 
     [Fact] public void Assault_is_won_from_the_Concord_side() => Assault("concord");
     [Fact] public void Assault_is_won_from_the_Krai_side() => Assault("krai");
+    [Fact] public void Assault_is_won_from_the_Kelvane_side() => Assault("kelvane");
 
     private static void Boarding(string side)
     {
@@ -342,12 +345,13 @@ public class TransportTests
 
     [Fact] public void Boarding_is_won_from_the_Concord_side() => Boarding("concord");
     [Fact] public void Boarding_is_won_from_the_Krai_side() => Boarding("krai");
+    [Fact] public void Boarding_is_won_from_the_Kelvane_side() => Boarding("kelvane");
 
     [Fact]
     public void Every_comms_scene_runs_a_minute_from_both_sides_and_replays_from_its_seed()
     {
         foreach (string id in Scenes)
-            foreach (string side in new[] { "concord", "krai" })
+            foreach (string side in new[] { "concord", "krai", "kelvane" })
             {
                 Battle a = Scene($"{side}_{id}"), c = Scene($"{side}_{id}");
                 Run(a, 60); Run(c, 60);

@@ -9,7 +9,7 @@
   },
   {
    "do": "select",
-   "arg": "harbor|ironmaw"
+   "arg": "harbor|ironmaw|lyceum"
   },
   {
    "do": "station",

@@ -76,6 +76,10 @@ public class ScenarioTests
     {
         Scenario[] own = TestData.Data.Scenarios.Where(s => s.Side == "kelvane").ToArray();
         foreach (string name in new[] { "Battle", "Duel", "Arming", "Four races" }) Assert.Contains(own, s => s.Name == name);
+        // and every general scene the Concord plays, bar the allied fleet (its three races are the Concord, Krai and Ssarith;
+        // the Institute joins them in Four races) (owner, 2026-11-07: "test all kelvan general mission scenarios")
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("Allied fleet" or "The Institute" or "Institute wrecks")))
+            Assert.Contains(own, s => s.Name == c.Name);
         foreach (string side in new[] { "concord", "krai" })
             foreach (string name in new[] { "The Institute", "Institute wrecks" })
                 Assert.Contains(TestData.Data.Scenarios, s => s.Side == side && s.Name == name && s.Ships.Any(o => o.Side == 1 && o.Faction == "kelvane"));
@@ -86,7 +90,8 @@ public class ScenarioTests
             Assert.StartsWith("assets/ships/kelvane/", TestData.Data.Classes[c].Model);
             Assert.Contains(TestData.Data.Scenarios, s => s.Ships.Any(o => o.Class == c && o.Faction == "kelvane"));
         }
-        Assert.All(TestData.Data.Scenarios, s => Assert.All(s.Ships.Where(o => o.Faction == "kelvane"), o => Assert.Contains(o.Class, line)));
+        // its depot in Relief is the mockups' station, as every side's is
+        Assert.All(TestData.Data.Scenarios, s => Assert.All(s.Ships.Where(o => o.Faction == "kelvane" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.Contains(o.Class, line)));
     }
 
     [Fact]

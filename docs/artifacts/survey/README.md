@@ -54,3 +54,4 @@
 - 2026-11-07, cloud session: version 11 of the cloud account copy, version id `1794019257-3c8b`: I7, which of the eight shuttle designs go on and which the carrier parks (mockup 23 v8). The desktop copy is still to republish.
 - 2026-11-07, cloud session: version 12 of the cloud account copy, version id `1794024680-3741`: I8, which Gallery bus variants go on (mockup 23 v9). The desktop copy is still to republish.
 - 2026-11-07, cloud session: version 13 of the cloud account copy, version id `1794029174-df5e`: I7 and I8 updated, the carrier parks 215, the Gallery fighter (mockup 23 v10). The desktop copy is still to republish.
+- 2026-11-07, desktop session (PR #53): I9 added (whether the Institute cloaks); committed, not yet published (the artifact tools stopped answering in this session); the next desktop session publishes it.
