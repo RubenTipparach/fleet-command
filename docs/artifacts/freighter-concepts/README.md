@@ -39,3 +39,5 @@
 - 2026-11-07, cloud session: version 7, version id `1794053937-a0c7` (owner: "Fix the institute", with an outline of the
   shape wanted, "I made an outline of what I want"): the Twin ledger's stern case at full width, its two outer strips
   running straight on as the really skinny arms, curving in at the bow to a thin bridge with a domed nose.
+- 2026-11-07, cloud session: version 8, version id `1794054085-fef1` (owner: "Fix the institute again.  No nipple at the
+  end", "Flatter bow"): the Twin ledger's arms turn in on a squared quarter to a flat bow, closed flush with the hull.
