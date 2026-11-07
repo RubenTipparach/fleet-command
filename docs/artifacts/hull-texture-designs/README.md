@@ -59,3 +59,6 @@
   crimson accent plates on the Krai (the corvette, frigate and cruiser repainted); the dreadnought still baking.
 - 2026-11-07, cloud session: version 15, version id `1794060545-e826`. The Krai dreadnought: the whole of both lines on the
   new hull method (nine ships). Page 12 MB, maps 11 MB beside it.
+- 2026-11-07, cloud session: version 16, version id `1794091931-65fc`. The Concord ships back on the original light
+  arrangement (a flood every 30 m; the owner: "too many lights ... go back to the way lights were arramged originally"),
+  their textures unchanged; all five rebaked.
