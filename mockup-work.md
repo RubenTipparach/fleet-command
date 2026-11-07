@@ -43,6 +43,7 @@ account and every link here is updated.
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
 | 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | **Approved for implementation** (2026-11-07, owner in conversation: "perfect, implment these ships in game"; approved for build by the same words; in the game by change `kelvane-ships-engine`). Drafted (2026-11-07, v10: 215 the Gallery fighter, detailed, the carrier's craft; v9: six variants of the Gallery bus; v8: every plate corner diagonal, shuttles overhead in the carrier, eight shuttle designs; v7: engineered machinery in rows, the carrier's pads and craft, diagonal corners, warm rooms; v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
+| 24 | Freighters: a freighter for every approved faction (picks 1, 4, 5 and 8) | **Approved for build** (2026-11-07, owner in conversation: "Adjust institute ship len to fit cargo better .After that change. Now I approve. Detail them"). Drafted (2026-11-07, v11: the four picks detailed) | `freighters` | `docs/mockups/freighter-concepts.html` | https://claude.ai/artifact/Gkv9jzwEZd258noT7WGtv4 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -1091,3 +1092,46 @@ played as a side of its own. To record in the tracker (the desktop session repub
   its own scale, parked by the carrier on its floors and ceilings. Design D14.
 - **Stage:** Drafted (2026-11-07, v10).
 - **Questions:** survey I1-I4 (traditions, picks, palette, the first class).
+
+## 24. Freighters
+
+The owner, 2026-11-07: "we need to design freighter for every faction in the game currently". Freighters already have
+work: the campaign map runs each faction's freighters along its routes, Convoy defense and Convoy ambush keep or destroy
+two of three, and a Distress call can come from one. Today the map draws a placeholder and the battle flies the Kethran
+frigate stand-in. The reference game's convoys: SFC3 manual, printed pages 37 and 42.
+
+- **v1**: a blockout board of eighteen, three a faction (Concord 1-3, Kethran 4-6, Vos 7-9, Krai 10-12, Hunt 13-15,
+  Institute 16-18), each a spine (loads racked outside), a hold (the cargo shut inside) or a cradle (the hull parts round
+  its cargo), 140-210 m. Each names a tradition inside its faction; no faction has a merchant tradition written down, so
+  most are drafted, and the Kethran and Vos concepts use none of their console rows that read the species' bodies. Each
+  hull is one closed grown structure on `docs/mockups/lib/hull-grow.js`; only the cargo is placed. In faction colours or
+  clay, beside the Concord Petrel and a person.
+- **v2, v3**: the notes name survey section V; the libraries re-inlined.
+- **v4** (owner, 2026-11-07: "Freighter should only focus on approved factions", "Narrow down freighter options to ones
+  where cargo is visible. And make sure all cargo is the same size", "The containers I mean", "The cargo hull shape it
+  self can be the way it was in the draft"): eight concepts, two for each of the Concord (1-2), Krai (3-4), Hunt (5-6) and
+  Institute (7-8), every one carrying the same 6 by 6 by 12 m container in sight; the holds and the Kethran and Vos
+  concepts are gone; the hulls are as drafted, the Twin ledger's containers stacked between its hulls.
+- **v5** (owner, on a phone: "Nothing renders"): no flatShading, the canvas follows its stage's size, a notice if the 3D
+  view loses its graphics context.
+- **v6** (owner, 2026-11-07: "1,4,5,8, but with 8 having really skinny arms and link.tbe arms together with a thin bridge
+  at the end to keep the loop design ethos", "All freighters should be 2x bigger. Along with the containers too..this way
+  cargo ships are much bigger than any combat ships..as they should be", "The institute freighter should be rounder at the
+  tip", "You got the institute draft wrong", "Show m artifact with just the four"): the page opens on the four picks
+  (101-104), every freighter and container twice the drafted size (300-360 m, 12 by 12 by 24 m containers), the Twin
+  ledger made a loop on really skinny arms curving in to a thin bridge with a domed nose; the board of eight beside them.
+  "Then go ahead and detail them", then "Don't do details yet": detailing waits.
+- **v7** (owner: "Fix the institute", with an outline of the shape wanted, "I made an outline of what I want"): the Twin
+  ledger's stern case at full width, its outer strips running straight on as the skinny arms to the rounded bow.
+- **v8** (owner: "Fix the institute again.  No nipple at the end", "Flatter bow"): the Twin ledger's arms turn in on a
+  squared quarter to a flat bow, closed flush, no nose standing proud.
+- **v9** (owner: "The institute ship will be shorter than is cargo. That is the cargo is taller in height"): the Twin
+  ledger's hull 16 m tall as shown, under container stacks 25 m tall.
+- **v10** (owner: "Adjust institute ship len to fit cargo better"): the Twin ledger's straight run is its eight rows of
+  containers with 1.5 m clear at each end; 274 m as shown.
+- **v11**: the four picks detailed (the ship-detailing pipeline): each unwrapped and baked at 1024 px with layered armour
+  in its faction's look, liveries, emblem, floods, lamps and windows with rooms; Painted, PBR, Studio and Night; the
+  containers given a drawn face. The 2048 px bake follows.
+- **Stage:** **Approved for build** (2026-11-07, owner in conversation: "After that change. Now I approve. Detail them").
+  Drafted v10. Survey V2 and V5 decided.
+- **Questions:** survey V1, V3, V4 (traditions, one class or two, arms).
