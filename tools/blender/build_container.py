@@ -12,6 +12,11 @@ grey (the texture's own green taken to its luminance), so each container's own c
 
     python3 tools/textures/fetch_cc0.py container_side          # the CC0 source maps, into tools/materials/raw/cc0/
     /opt/blender/blender -b --python tools/blender/build_container.py -- [--px 2048] [--samples 64]
+    /opt/blender/blender -b --python tools/blender/build_container.py -- --glb   # the low box alone, for the game
+
+--glb writes assets/containers/container.glb: the same low box (no bake), its atlas UVs and tangents, in the box's own frame
+(+Y up, long along z, metres, origin at its centre), which the game draws once per container under each freighter
+(src/Game/View/Cargo.cs, the places from assets/ships/manifest.json "cargo").
 
 Writes assets/containers/container_{diffuse,normal,ao,specular,rough}.png and assets/containers/manifest.json (its maps as
 "pieces", the box's
@@ -236,7 +241,20 @@ def save(path, rgb):
     im.filepath_raw = path; im.file_format = "PNG"; im.save()
 
 
+def export_glb():
+    reset(); lo = build_low()
+    mat = bpy.data.materials.new("container"); lo.data.materials.append(mat)
+    bpy.ops.object.select_all(action="DESELECT"); lo.select_set(True); bpy.context.view_layer.objects.active = lo
+    path = os.path.join(OUT, "container.glb")
+    # the box is authored +Y up already (FACES), so no axis conversion
+    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", use_selection=True, export_yup=False, export_tangents=True,
+                              export_normals=True, export_materials="PLACEHOLDER", export_apply=True)
+    print(f"wrote {path} sha256 {hashlib.sha256(open(path, 'rb').read()).hexdigest()}", flush=True)
+
+
 def main():
+    if "--glb" in sys.argv:
+        export_glb(); return
     px, samples = int(arg("--px", "2048")), int(arg("--samples", "64"))
     reset()
     hi = build_high(); lo = build_low()
