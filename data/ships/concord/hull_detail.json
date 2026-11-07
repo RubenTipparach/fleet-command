@@ -125,7 +125,8 @@
       ],
       "triangle_share": 0.45,
       "frame_share": 0.4,
-      "dots_share": 0.3
+      "dots_share": 0.3,
+      "groove": false
     },
     "strip_rim_k": 0.0
   },

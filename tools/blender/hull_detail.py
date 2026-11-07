@@ -668,6 +668,36 @@ def grid_cuts(rng, D, zr, xmax, yr):
     return {"plan": plan, "side": side}
 
 
+def row_cuts(rng, D, zr, xmax, yr):
+    """Plating in rows (owner, 2026-11-07, of the grid's plates: "I'd elect for a different panneling design on the hull
+    too, with 2x number of panels"): the flanks in rows between D['rows_y_m'] and the top and bottom in strips between
+    D['strips_x_m'] (|x|), each row and strip with its own stations (D['flank_station_m'], D['top_station_m']), so the
+    plates' joints stagger from row to row and no cut crosses the whole hull; the rows' and strips' seams run the ship's
+    length. Port side only; mirrored by the caller."""
+    z0, z1 = zr
+    ylo, yhi = yr
+    plan, side = [], []
+
+    def stations(r, span):
+        out, z = [], z1 - r.uniform(0.5, 1.0) * span[1]
+        while z > z0 + 1:
+            out.append(z); z -= r.uniform(*span)
+        return out
+    ys = [y for y in D["rows_y_m"] if ylo < y < yhi]
+    for y in ys:
+        side.append(((z0 - 2, y), (z1 + 2, y)))
+    for i, (ya, yb) in enumerate(zip([ylo - 2] + ys, ys + [yhi + 2])):
+        for z in stations(random.Random(rng.random()), D["flank_station_m"]):
+            side.append(((z, ya), (z, yb)))
+    xs = [x for x in D["strips_x_m"] if x < xmax]
+    for x in xs:
+        plan.append(((x, z0 - 2), (x, z1 + 2)))
+    for xa, xb in zip([0.0] + xs, xs + [xmax + 2]):
+        for z in stations(random.Random(rng.random()), D["top_station_m"]):
+            plan.append(((xa, z), (xb, z)))
+    return {"plan": plan, "side": side}
+
+
 def mirror_cuts(cuts):
     return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
 
@@ -731,7 +761,7 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     the trenches show a second layer of plating and, in its gaps, the machinery."""
     groups = shell_groups(lo, D.get("facing_min", 0.55))
     xs = [v.co.x for v in lo.data.vertices]; ys = [v.co.y for v in lo.data.vertices]; zs = [v.co.z for v in lo.data.vertices]
-    cutter = grid_cuts if D.get("cuts", "hunt") == "grid" else armour_cuts
+    cutter = {"grid": grid_cuts, "rows": row_cuts}.get(D.get("cuts", "hunt"), armour_cuts)
     cuts = mirror_cuts(cutter(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
     primary = layer == "primary"
     t = D["armour_t_m"] if primary else D["sub_t_m"]

@@ -607,7 +607,8 @@ def plate_marks(base, P, n, rid, plate, M):
     r1 = max(1, int(round(M.get("groove_inset_m", 0.3) / texel)))
     near = lambda r: blur(edge.astype(np.float32), r) > 1e-6
     groove = plate & near(r1 + max(1, int(round(M.get("groove_w_m", 0.08) / texel)))) & ~near(r1)
-    base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
+    if M.get("groove", True):   # the inset line (off where the owner asked: "I'd probably get rid of the inner lines on the panel")
+        base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
     # the plate's own plane: (along, across) by its facing, the same on both sides
     ax = np.abs(n).argmax(axis=2); x = np.abs(P[..., 0])
     a = np.where(ax == 0, P[..., 2], x); b = np.where(ax == 1, P[..., 2], P[..., 1])

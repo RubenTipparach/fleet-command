@@ -15,12 +15,12 @@
     ],
     "accent": "#8f2b2b",
     "sub": [
-      "#3b414c",
-      "#434a56",
-      "#353b45",
-      "#474e5a"
+      "#56607a",
+      "#5c6680",
+      "#525c72",
+      "#606a84"
     ],
-    "under": "#7c8592",
+    "under": "#8a93a0",
     "greeble": [
       "#3a3f48",
       "#6a707a"
@@ -100,7 +100,7 @@
       0.6,
       0.35
     ],
-    "ink_k": 0.35,
+    "ink_k": 0.2,
     "machine": [
       "#5c636d",
       "#868c95"
@@ -125,12 +125,13 @@
       ],
       "triangle_share": 0.45,
       "frame_share": 0.4,
-      "dots_share": 0.3
+      "dots_share": 0.3,
+      "groove": false
     },
     "strip_rim_k": 0.0
   },
   "defaults": {
-    "cuts": "grid",
+    "cuts": "rows",
     "facing_min": 0.38,
     "seam_y_m": 0.0,
     "strip_rgb": [
@@ -151,16 +152,16 @@
     ],
     "trench_share": 0.0,
     "top_station_m": [
-      10.0,
-      18.0
+      5.0,
+      9.0
     ],
     "spine_half_m": [
       1.6,
       3.4
     ],
     "flank_station_m": [
-      10.0,
-      18.0
+      5.0,
+      9.0
     ],
     "flank_rake": [
       -0.04,
@@ -187,11 +188,21 @@
       "power_w": 4800
     },
     "inner_machinery": false,
-    "corner_m": 1.2,
+    "corner_m": 0.6,
     "cage_m": 2.0,
     "hatch_share": 0.4,
     "hatch_min_m2": 18.0,
-    "strip_lines_lit": false
+    "strip_lines_lit": false,
+    "rows_y_m": [
+      -4.5,
+      0.5,
+      5.5
+    ],
+    "strips_x_m": [
+      2.5,
+      6.0,
+      10.0
+    ]
   },
   "ships": {
     "krai_k1": {
