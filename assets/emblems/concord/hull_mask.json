@@ -1,0 +1,10 @@
+{
+  "_doc": "Concord's emblem as a mask for hull painting: red the field, green the device, transparent the ground. Written by tools/mockups/emblem_masks.mjs from docs/mockups/lib/emblems.js; never edited by hand.",
+  "size_px": 512,
+  "hull": {
+    "plate": "#e4e6ea",
+    "field": "#1d3b8f",
+    "device": "#2f62e0",
+    "lit": false
+  }
+}
