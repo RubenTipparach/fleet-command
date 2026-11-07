@@ -51,3 +51,7 @@
   designed pieces (lit emitter cells in a grey frame, a ribbed launcher with a lit throat, intake rings round a lit core)
   in place of the model's flat glowing parts; K1's windows from its room plan in place of the model's strips; a class
   picker for the rest of both lines (each class shows once its bake lands).
+- 2026-11-07, cloud session: version 13, version id `1794053991-357f`. The Swift, the Albatross and the Krai corvette on
+  the line's first designs (the rest of both lines baking). The maps are published as files beside the page,
+  `docs/mockups/hull-texture-designs-maps/<faction>/`, written by `tools/mockups/inline_data.py` (the manifests'
+  `maps_dir`); the page is 7.7 MB, the maps 5.5 MB.
