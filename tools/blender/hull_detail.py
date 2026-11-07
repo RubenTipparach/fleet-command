@@ -208,7 +208,12 @@ class Surface:
     def looks_out(self, loc, nor, reach=60.0):
         """Whether the hull at loc looks out into space, not across an opening at the ship's own hull (owner, 2026-11-06, of
         windows on a loop's inner wall: \"this one has windows in awkward spotrs\")."""
-        return self.bvh.ray_cast(loc + nor * 0.05, nor, reach)[0] is None
+        n = nor.normalized(); t = Vector((0, 0, 1)) - n * n.z
+        t = t.normalized() if t.length > 0.2 else Vector((0, 1, 0))
+        b = n.cross(t)
+        rays = [n] + [(n + d).normalized() for d in (t, -t, b, -b)]   # straight out, and 45 degrees fore, aft, up and down
+        hits = sum(self.bvh.ray_cast(loc + n * 0.05, d, reach)[0] is not None for d in rays)
+        return hits < 2   # one hit is a fin or a step in view; two or more, the window is inside an opening
 
     def bare_at(self, loc, nor):
         """Whether the hull at loc (its normal nor) is a light strip or glass, where no window or feature belongs."""
@@ -348,10 +353,21 @@ def window_rows(F, surf):
                 if zk < z0:
                     break
                 h = surf.hit("port", [zk, y])
-                if h and abs(h[1].x) > 0.6 and not surf.bare_at(*h) and surf.looks_out(*h):   # plating that looks out to the side, into space
+                if h and abs(h[1].x) > 0.6 and not surf.bare_at(*h) and surf.looks_out(*h) and clear_around(surf, h, zk, y):
                     out.append((h[0], h[1], r.random() > 0.2, kind))
             z -= n * 1.6 + r.uniform(2.0, 4.5)
     return out
+
+
+def clear_around(surf, h, z, y, d=1.0):
+    """Whether a window at (z, y) on the port flank has plain plating d above and below it: no strip, no glass, no edge of
+    an opening (the hull there no more than d off the window's depth). A window at the lip of a slot or against a belt
+    sits awkwardly (owner, 2026-11-06: "this one has windows in awkward spotrs")."""
+    for dy in (d, -d):
+        g = surf.hit("port", [z, y + dy])
+        if not g or surf.bare_at(*g) or abs(g[0].x - h[0].x) > d or abs(g[1].x) < 0.6:
+            return False
+    return True
 
 
 ROOMS = ("quarters", "mess", "workshop", "hold", "bay")   # the room kinds a pane can show (the page's interior mapping)
