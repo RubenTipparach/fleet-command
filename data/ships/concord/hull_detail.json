@@ -182,7 +182,7 @@
       "bay": 0.3
     },
     "auto_floods": {
-      "step_m": 14,
+      "step_m": 30,
       "from_stern_m": 6,
       "top_x_frac": 0
     },
@@ -208,7 +208,8 @@
     ],
     "_plating": "Half the Krai's density (owner, 2026-11-07: \"go back to 50% number of panles on concord ships. Denser panels make sense for krai ships\"); thin plates and narrow gaps so the seams read light grey, not black (\"I dont like the black lines being black, they need to be a lighter grey color\"); plates in distinct tones (\"the panels need some various color\")",
     "plate_ends": true,
-    "sun_angle_deg": 120
+    "sun_angle_deg": 120,
+    "_lighting": "The original arrangement (owner, 2026-11-07: \"too many lights, the arrange ment of lights we had originally worked just fine, go back to the way lights were arramged originally\"): a flood every 30 m"
   },
   "ships": {
     "petrel_c1": {
@@ -354,49 +355,7 @@
       "lighting": {
         "auto_floods": {
           "to_z_m": 40
-        },
-        "floods": [
-          {
-            "face": "port",
-            "at": [
-              -30,
-              -3.0
-            ],
-            "aim": "fwd"
-          },
-          {
-            "face": "port",
-            "at": [
-              -8,
-              -3.0
-            ],
-            "aim": "fwd"
-          },
-          {
-            "face": "port",
-            "at": [
-              14,
-              -3.0
-            ],
-            "aim": "fwd"
-          },
-          {
-            "face": "port",
-            "at": [
-              32,
-              1.5
-            ],
-            "aim": "aft"
-          },
-          {
-            "face": "port",
-            "at": [
-              2,
-              5.5
-            ],
-            "aim": "aft"
-          }
-        ]
+        }
       },
       "windows": [
         {
@@ -415,7 +374,6 @@
       ],
       "_fans": "Clear of the game model's radiators (x 4.7 m either side, z -34 to -26 m, standing over the deck: owner, 2026-11-07, \"what are these rectangles?\")",
       "_windows": "From the room plan, as the original (owner, 2026-11-07: \"the number of windows on the concord shouldnt have changed from the original\"): one row wherever people live or work against the hull",
-      "_lighting": "More light on the flanks (owner, 2026-11-07: \"there needs to be more lighting on the side of the ship\"): flank floods every 14 m, and five more low on the flank and under the shoulder",
       "fixtures": [
         {
           "face": "bow",
