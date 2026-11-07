@@ -40,3 +40,6 @@
 - 2026-11-07, cloud session: version 9, version id `1794032682-b2d0`. C1 with half the panels (the Krai keeps the dense
   rows), thin plates and narrow light grey seams, plates in eight tones, and its windows from the room plan again (44
   windows and bays, as the original).
+- 2026-11-07, cloud session: version 10, version id `1794037122-34b0`. C1 with its bow and stern plated, a broad bake sun
+  (no hard cast shadows), more flank floods, the fine detail layer on the hull and the game model's own parts, and room
+  boxes that share a face no longer speckling.
