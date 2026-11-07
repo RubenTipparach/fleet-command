@@ -336,6 +336,103 @@ float metal_$name(vec2 uv) { return 0.0; }
     return finish(g, "table wood", ins, body, tile_m=1.0, depth_m=0.0004, ao_radius=6, ao_strength=0.6)
 
 
+# ---- the paper map's room (owner, 2026-11-07: "make the space background a crusty print on old piece of paper with hexagon
+# grid drawn on it", "the big map poster sits on a large wooden table, of which sits in a room with red carpeting"; then "The
+# walls in that room should be like a rustic dark green wall with wood trimmings"). The map's own print is drawn live by the
+# page over this paper.
+
+def map_paper():
+    """Old poster paper: a warm cream gone uneven with age, mottled in broad soft patches, its fibres showing as faint
+    crossed streaks, a fine tooth, and scattered foxing (small rust-brown spots, a few with a darker core). Matte. The
+    page lays the printed map over it and adds what belongs to this one sheet (its folds, stains and torn edge). One tile is
+    0.25 m."""
+    g = Graph("Map Paper")
+    ins = [("mott", "f", fbm(g, 4, iterations=5, persistence=0.6)),
+           ("blot", "f", fbm(g, 12, iterations=4, persistence=0.55)),
+           ("fibx", "f", g.node("fbm2", noise=2, scale_x=96, scale_y=6, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("fiby", "f", g.node("fbm2", noise=2, scale_x=6, scale_y=96, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("tooth", "f", fbm(g, 256, iterations=3, persistence=0.5)),
+           ("fox", "f", fbm(g, 40, iterations=4, persistence=0.5))]
+    body = """
+float foxing_$name(vec2 uv) { return smoothstep(0.80, 0.86, $fox(uv)); }
+float height_$name(vec2 uv) {
+	return 0.5 + 0.25 * ($tooth(uv) - 0.5) + 0.12 * ($fibx(uv) + $fiby(uv) - 1.0) + 0.1 * ($mott(uv) - 0.5);
+}
+vec3 albedo_$name(vec2 uv) {
+	vec3 cream = vec3(0.86, 0.79, 0.64), aged = vec3(0.74, 0.62, 0.43);
+	float age = smoothstep(0.35, 0.85, $mott(uv)) * 0.32 + smoothstep(0.6, 0.9, $blot(uv)) * 0.18;
+	vec3 c = mix(cream, aged, age);
+	c *= 0.96 + 0.06 * ($fibx(uv) + $fiby(uv) - 1.0) + 0.05 * ($tooth(uv) - 0.5);
+	float f = foxing_$name(uv);
+	c = mix(c, vec3(0.55, 0.36, 0.20), 0.55 * f);
+	c = mix(c, vec3(0.38, 0.22, 0.12), 0.5 * smoothstep(0.87, 0.91, $fox(uv)));
+	return c;
+}
+float rough_$name(vec2 uv) { return 0.88 + 0.08 * ($tooth(uv) - 0.5); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "map paper", ins, body, tile_m=0.25, depth_m=0.00008, ao_radius=3, ao_strength=0.2)
+
+
+def carpet_red():
+    """A deep red cut-pile carpet: the pile's tufts as fine bright and dark specks, the nap brushed in broad patches that
+    catch the light differently, a little wear. Matte. One tile is 0.5 m."""
+    g = Graph("Carpet Red")
+    ins = [("pile", "f", fbm(g, 512, iterations=2, persistence=0.5)),
+           ("tuft", "f", fbm(g, 128, iterations=3, persistence=0.5)),
+           ("nap", "f", fbm(g, 6, iterations=4, persistence=0.55)),
+           ("wear", "f", fbm(g, 3, iterations=4, persistence=0.5))]
+    body = """
+float height_$name(vec2 uv) { return 0.5 + 0.35 * ($pile(uv) - 0.5) + 0.25 * ($tuft(uv) - 0.5); }
+vec3 albedo_$name(vec2 uv) {
+	vec3 red = vec3(0.42, 0.045, 0.055), deep = vec3(0.22, 0.02, 0.03);
+	vec3 c = mix(deep, red, 0.55 + 0.8 * ($pile(uv) - 0.5) + 0.5 * ($tuft(uv) - 0.5));
+	c *= 0.86 + 0.28 * $nap(uv);
+	c = mix(c, c * vec3(1.18, 1.05, 1.05), 0.4 * smoothstep(0.62, 0.8, $wear(uv)));
+	return c;
+}
+float rough_$name(vec2 uv) { return 0.97; }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "carpet red", ins, body, tile_m=0.5, depth_m=0.002, ao_radius=4, ao_strength=0.5)
+
+
+def wall_green_rustic():
+    """A rustic wall in dark green: limewash over old lime plaster, the colour uneven where coats dried at different
+    rates, the brush's strokes running every way across it, the plaster's own lumps and dips under the paint, hairline
+    cracks, and the pale plaster showing through where the paint has worn thin. Matte. One tile is 1 m."""
+    g = Graph("Wall Green Rustic")
+    ins = [("tone", "f", fbm(g, 3, iterations=5, persistence=0.6)),
+           ("cloud", "f", fbm(g, 9, iterations=4, persistence=0.55)),
+           ("strokea", "f", g.node("fbm2", noise=2, scale_x=4, scale_y=40, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("strokeb", "f", g.node("fbm2", noise=2, scale_x=40, scale_y=5, folds=0, iterations=3, persistence=0.5, offset=0.0)),
+           ("lump", "f", fbm(g, 16, iterations=4, persistence=0.5)),
+           ("grain", "f", fbm(g, 192, iterations=3, persistence=0.5)),
+           ("crack", "f", fbm(g, 6, iterations=6, persistence=0.6)),
+           ("wear", "f", fbm(g, 7, iterations=5, persistence=0.55))]
+    body = """
+float crack_$name(vec2 uv) { float r = 1.0 - abs(2.0 * $crack(uv) - 1.0); return smoothstep(0.965, 0.995, r); }
+// worn through in a few places, where an old knock or rub took the paint: patches gathered where a broad mask is high
+float worn_$name(vec2 uv) { return smoothstep(0.70, 0.76, $wear(uv) + 0.12 * ($grain(uv) - 0.5)) * smoothstep(0.55, 0.75, $tone(uv)); }
+float height_$name(vec2 uv) {
+	float h = 0.5 + 0.22 * ($lump(uv) - 0.5) + 0.08 * ($strokea(uv) + $strokeb(uv) - 1.0) + 0.06 * ($grain(uv) - 0.5);
+	return h - 0.18 * crack_$name(uv) - 0.05 * worn_$name(uv);
+}
+vec3 albedo_$name(vec2 uv) {
+	vec3 deep = vec3(0.075, 0.15, 0.10), mid = vec3(0.13, 0.24, 0.16), olive = vec3(0.17, 0.25, 0.14);
+	vec3 c = mix(deep, mid, smoothstep(0.25, 0.75, $tone(uv)));
+	c = mix(c, olive, 0.35 * smoothstep(0.5, 0.8, $cloud(uv)));
+	c *= 0.9 + 0.12 * ($strokea(uv) + $strokeb(uv) - 1.0) + 0.06 * ($grain(uv) - 0.5);
+	c = mix(c, vec3(0.50, 0.47, 0.38) * (0.9 + 0.2 * $grain(uv)), 0.85 * worn_$name(uv));
+	c = mix(c, c * 0.35, crack_$name(uv));
+	return c;
+}
+float rough_$name(vec2 uv) { return 0.86 + 0.06 * worn_$name(uv); }
+float metal_$name(vec2 uv) { return 0.0; }
+"""
+    return finish(g, "wall green rustic", ins, body, tile_m=1.0, depth_m=0.0015, ao_radius=5, ao_strength=0.5)
+
+
 GRAPHS = {
     "hull_plate": hull_plate,
     "emblem_platinum": emblem_platinum,
@@ -346,6 +443,9 @@ GRAPHS = {
     "emblem_enamel_forest": emblem_enamel_forest,
     "emblem_fern": emblem_fern,
     "table_wood": table_wood,
+    "map_paper": map_paper,
+    "carpet_red": carpet_red,
+    "wall_green_rustic": wall_green_rustic,
 }
 
 

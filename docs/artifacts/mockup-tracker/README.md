@@ -137,3 +137,6 @@
 - 2026-11-06, desktop session: version 140, version id `1793945084-5a8d`: M1 v17 (ships slide on the map), over the Kelvane session's v139.
 - 2026-11-06, cloud session (branch `claude/brave-faraday-ilpu2q`): version 141, version id `1793949867-c088`: M1 v18 (the faction screen on a walnut table, stores, crew lists, kept routes, options), over the desktop session's v140.
 - 2026-11-06, cloud session: version 142, version id `1793950629-6aac`: M1 v19 (the faction view fits phones in portrait).
+- 2026-11-07, cloud session (branch `claude/brave-faraday-ilpu2q`): version 144, version id `1794044686-0f02`: M1 v21 (the paper map), merged onto the live version `1793980473-c263` (the desktop session's M1 v20, M2 v86, M8 v25, M15 v10, M20 v4), keeping main's M23.
+- 2026-11-07, cloud session: version 145, version id `1794054510-aa92`: M1 v22 (star map print, green walls, the fog of war on the chart).
+- 2026-11-07, cloud session: version 146, version id `1794057112-88e5`: M24 the Space Chart added; M1 v23.

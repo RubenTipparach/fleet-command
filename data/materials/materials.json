@@ -72,6 +72,30 @@
       "tile_m": 1.0,
       "status": "starter",
       "use": "the faction screen's table: polished walnut boards, flat-sawn figure, pores, ray flecks (owner, 2026-11-06: \"generate the best wooden textture you can with material maker\")"
+    },
+    {
+      "name": "map_paper",
+      "size_px": 1024,
+      "maps": ["albedo", "normal", "orm"],
+      "tile_m": 0.25,
+      "status": "starter",
+      "use": "the campaign map's poster paper: aged cream, mottled, fibres, foxing; the page prints the map over it (owner, 2026-11-07: \"a crusty print on old piece of paper with hexagon grid drawn on it\")"
+    },
+    {
+      "name": "carpet_red",
+      "size_px": 1024,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 0.5,
+      "status": "starter",
+      "use": "the map room's floor: deep red cut pile (owner, 2026-11-07: \"a room with red carpeting\")"
+    },
+    {
+      "name": "wall_green_rustic",
+      "size_px": 1024,
+      "maps": ["albedo", "normal", "orm", "specular"],
+      "tile_m": 1.0,
+      "status": "starter",
+      "use": "the map room's walls: dark green limewash on old plaster, worn through in places (owner, 2026-11-07: \"a rustic dark green wall with wood trimmings\")"
     }
   ]
 }
