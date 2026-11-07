@@ -45,7 +45,7 @@ KIND = {"under": 0.12, "machine": 0.20, "greeble": 0.28, "sub": 0.39, "armour": 
         "strip": 0.89, "lamp": 0.95}
 # the strips and green lamps a true green (owner, 2026-11-05, of the hull emission: "I wish it were more green")
 LAMP_RGB = {"bay": (0.75, 0.8, 0.7), "red": (1.0, 0.12, 0.06), "amber": (1.0, 0.78, 0.3), "green": (0.1, 1.0, 0.24), "strip": (0.1, 1.0, 0.24),
-            "white": (1.0, 1.0, 1.0), "flood": (1.0, 0.92, 0.78), "window": (0.86, 1.0, 0.84)}
+            "white": (1.0, 1.0, 1.0), "flood": (1.0, 0.92, 0.78), "window": (0.86, 1.0, 0.84), "blue": (0.3, 0.78, 1.0)}
 PANES = []  # every window's and bay's pane, filled by build(): kind, lit, w_m, h_m, centre c, axes u, v and normal n
 PADS = []  # the landing pads inside a carrier's well, filled by build(): centre c, normal n, axis u, radius r_m (the page parks a craft on each)
 FIXTURES = []  # the lights the bake lights the hull with, filled by build(): dicts of kind, pos, dir, rgb, power_w, cone_deg
