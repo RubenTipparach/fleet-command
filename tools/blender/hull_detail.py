@@ -585,6 +585,11 @@ def shell_groups(lo, facing_min=0.55, ends=False):
         if p.material_index in bare:
             continue
         n = p.normal
+        if ends:   # with the ends plated, each face goes to the way it faces most, so a forward face tilted up a little
+            ax = max(range(3), key=lambda i: abs(n[i]))   # is plated as the bow's, cut by the bow's own lines
+            if abs(n[ax]) >= facing_min:
+                groups[(("starboard", "port"), ("bottom", "top"), ("stern", "bow"))[ax][n[ax] > 0]].append(p.index)
+            continue
         if n.y > facing_min:
             groups["top"].append(p.index)
         elif n.y < -facing_min:
