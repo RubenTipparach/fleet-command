@@ -31,3 +31,6 @@
 - 2026-11-07, cloud session: version 6, version id `1794023316-8d53`. The Krai's K1 on the Institute's method too (plates
   square to the hull with their corners cut, the Warhost's steels, crimson and bone, light seams, the KC emblem), 2048 px;
   the old K2-K5 maps out of the manifest. Page 4.1 MB.
+- 2026-11-07, cloud session: version 7, version id `1794028003-dbe9`. K1 in staggered rows of plates (about twice as many;
+  owner: "a different panneling design on the hull too, with 2x number of panels"), its darks lighter, no inner lines on
+  the plates (both ships; C1 repainted).
