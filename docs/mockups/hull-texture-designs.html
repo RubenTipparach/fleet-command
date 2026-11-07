@@ -81,7 +81,8 @@
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <p class="sub">Mockup 24, v5. <code>hull-texture-designs</code>. The Concord's Petrel and the Krai frigate, the models the
       game flies, on a new recipe from the owner's reference sheets: large panels and sub panels, a kit of distinct
-      details, warning marks, bolt wells and wear, baked at 4096 px. C1 and K1 first; the other designs follow on it.</p>
+      details, warning marks, bolt wells and wear, baked at 4096 px, one ship at a time: C1 now, K1 next (the Krai still
+      shows version 4 until it lands); the other designs follow on the new recipe.</p>
     <h2>Ship</h2>
     <div class="row" id="ships"></div>
     <h2>Its story</h2>
@@ -945,7 +946,7 @@ const SHIPS = {
     story: 'Placed from its room plan: the reactor along the keel aft, breathing through raked slots in the keel and streaking them with soot; engineering and life support venting through the flanks aft; gun control’s chevron vent under the dorsal crest; the boarding bay’s door to starboard, worn round its mouth; the spinal cannon’s scorch at the bow; the drives’ soot astern. Nothing round: the Krai cut, they do not turn.',
     designs: [
       { slug: 'krai_k1', k: 'K1', name: 'Tempered blade', tr: 'The smiths: a Krai ship is forged and quenched like a blade, and wears the colours the temper leaves',
-        d: 'Forged plates: large panels square to the hull split into sub panels, thick and broad-bevelled so every edge shines like a whetted edge; the Warhost’s steel in several tones; orange accent modules; the white war stripe with orange pins and seven tallies; missile and bomb tubes, thruster quads and vents with their warning marks, bolt wells in every corner; ordered machinery in the reactor and engine trenches; its hull number; chipped edges and rust in the seams.', sw: ['#56637a', '#6f7478', '#7c838c', '#c4692c', '#d9d6ce'] },
+        d: 'Plates square to the hull with cut corners, split and split again; blued steel on the broad faces running to straw and bronze toward the chines and the bow; the crimson war stripe with bronze pins, and seven tallies in bone.', sw: ['#3a4a6a', '#56637a', '#c9a25a', '#b98a4e', '#7a1e2c'] },
       { slug: 'krai_k2', k: 'K2', name: 'House banner', tr: 'The three great houses under the emperor: a ship flies its house',
         d: 'Blackened steel; the dorsal crest, the keel and the bow plates in the house’s field (house one, blood, a placeholder until the owner names the houses); the emperor’s eight-point star once on each flank; the tallies.', sw: ['#232120', '#b3121b', '#c9d0d8', '#e8dccb'] },
       { slug: 'krai_k3', k: 'K3', name: 'Blood record', tr: 'Rank won in blood, and tradition added to: a ship’s record is cut into its plates',
@@ -987,9 +988,23 @@ const restBreak = () => ({ uCell: { value: -1 }, uSeeds: { value: Array.from({ l
 
 const DATA = {};
 for (const el of document.querySelectorAll('script[type="application/json"][data-src]')) DATA[el.dataset.src] = JSON.parse(el.textContent);
-const TEXLOAD = [];
-function ptex(src) { const img = new Image(), t = new THREE.Texture(img); t.anisotropy = 8;   // flipY on: Blender's UV v runs up the image
-  TEXLOAD.push(new Promise((res) => { img.onload = () => { t.needsUpdate = true; res(); }; img.onerror = res; })); img.src = src; return t; }
+// A design's maps load only while it is on screen, and are let go when it leaves (owner, 2026-11-07: "publish one ship at
+// a time to avoid memory issues"): seven 4096 px maps are about 470 MB of graphics memory, too much to hold for every design.
+function ptex(src) { const t = new THREE.Texture(new Image()); t.anisotropy = 8; t.userData.src = src; t.userData.on = false; return t; }   // flipY on: Blender's UV v runs up the image
+function mapsOn(t) {
+  if (t.userData.on) return t.userData.load; t.userData.on = true;
+  const img = new Image(); t.userData.load = new Promise((res) => { img.onload = () => { if (t.userData.on) { t.image = img; t.needsUpdate = true; } res(); }; img.onerror = res; });
+  img.src = t.userData.src; return t.userData.load;
+}
+function mapsOff(t) { if (!t.userData.on) return; t.userData.on = false; t.dispose(); t.image = new Image(); }
+function syncMaps() {   // the maps of the design (or, comparing, the designs) on screen in, every other design's out
+  const loads = [];
+  for (const [k, B] of Object.entries(BUILT)) B.designs.forEach((d, i) => {
+    if (!d) return; const want = k === STATE.ship && (STATE.compare || i === STATE.design - 1);
+    for (const t of d.texs) if (want) loads.push(mapsOn(t)); else mapsOff(t);
+  });
+  return Promise.all(loads);
+}
 function loadGlbs() {
   try { self.createImageBitmap = undefined; } catch (e) { /* textures decode through <img> */ }
   const loader = new THREE.GLTFLoader(), out = {};
@@ -1029,7 +1044,7 @@ function buildShip(key, glbScene) {
       sp.position.set(...F.pos); const big = { strobe: 3.2, beacon: 3.0, position: 2.6 }[F.kind] || 1.6; sp.scale.setScalar(big); g.add(sp); navs.push({ s: sp, kind: F.kind, big });
     }
     g.visible = false; root.add(g);
-    designs.push({ D, g, mesh, looks, navs, sh });
+    designs.push({ D, g, mesh, looks, navs, sh, texs: [M.albedo, M.base, M.em, M.nm, M.lt, M.orm].filter((t) => t.userData && t.userData.src) });
   }
   // the glb's other parts sit where its hull sat: the baked hull is the same hull, so their boxes line up
   const baked = designs.find(Boolean);
@@ -1066,6 +1081,7 @@ function showOnly(key, idx) {   // idx: the design to draw (1-5)
   for (const [k, B] of Object.entries(BUILT)) { B.root.visible = k === key; B.designs.forEach((d, i) => { if (d) d.g.visible = k === key && i === idx - 1; }); }
 }
 function refresh() {
+  syncMaps();
   buttons('ships', [['concord', 'Concord Petrel'], ['krai', 'Krai frigate']], STATE.ship, (k) => { STATE.ship = k; frame(); refresh(); });
   buttons('compare', [['one', 'One design'], ['all', 'All designs']], STATE.compare ? 'all' : 'one', (k) => { STATE.compare = k === 'all'; frame(); refresh(); });
   buttons('views', Object.keys(VIEWS).map((k) => [k, k[0].toUpperCase() + k.slice(1)]), STATE.view, (k) => { STATE.view = k; frame(); refresh(); });
@@ -1131,14 +1147,15 @@ function loop() { controls.update(); render(); requestAnimationFrame(loop); }
 
 loadGlbs().then((G) => {
   buildShip('concord', G[SHIPS.concord.glb]); buildShip('krai', G[SHIPS.krai.glb]);
-  return Promise.all(TEXLOAD);
-}).then(() => {
   setLook('painted'); frame(); refresh();
+  return syncMaps();
+}).then(() => {
   addEventListener('resize', () => { frame(); });
   loop();
   // the named shots (tools/mockups/shoot.mjs)
   const shot = (ship, design, nightOn, lk, compare = false, view = 'quarter') => () => {
-    Object.assign(STATE, { ship, design, compare, view }); window.MOCKUP_T = 0.1; setLook(lk); setNight(nightOn); frame(); refresh(); render(); };
+    Object.assign(STATE, { ship, design, compare, view }); window.MOCKUP_T = 0.1; setLook(lk); setNight(nightOn); frame(); refresh();
+    return syncMaps().then(() => { render(); }); };
   const S = {};
   for (const ship of ['concord', 'krai']) {
     const p = ship === 'concord' ? 'c' : 'k';
