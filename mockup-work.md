@@ -42,7 +42,7 @@ account and every link here is updated.
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
-| 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | Drafted (2026-11-07, v10: 215 the Gallery fighter, detailed, the carrier's craft; v9: six variants of the Gallery bus; v8: every plate corner diagonal, shuttles overhead in the carrier, eight shuttle designs; v7: engineered machinery in rows, the carrier's pads and craft, diagonal corners, warm rooms; v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
+| 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | **Approved for implementation** (2026-11-07, owner in conversation: "perfect, implment these ships in game"; approved for build by the same words; in the game by change `kelvane-ships-engine`). Drafted (2026-11-07, v10: 215 the Gallery fighter, detailed, the carrier's craft; v9: six variants of the Gallery bus; v8: every plate corner diagonal, shuttles overhead in the carrier, eight shuttle designs; v7: engineered machinery in rows, the carrier's pads and craft, diagonal corners, warm rooms; v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -1015,6 +1015,11 @@ that stays where it is left. A candidate backdrop for the main menu.
 ## 23. Kelvane Institute ships
 
 Owner, 2026-11-06: "begin designs on the institute ships".
+
+**Approved for implementation** (owner, 2026-11-07, of version 10: "perfect, implment these ships in game"; approved for
+build by the same words). In the game by change `kelvane-ships-engine`: the five classes and the Gallery fighter exported
+from the page, the carrier's fighters parked on its pads, the Institute fought from the Concord's and the Krai's side and
+played as a side of its own. To record in the tracker (the desktop session republishes it).
 
 - **Breadth first.** As the Ssarith Hunt's ships went well once they went broad (mockup 12, version 9), the Institute
   starts with a board to pick from: twelve frigate-sized blockouts, 104-122 m, beside the Concord Petrel's 88 m.

@@ -2494,14 +2494,15 @@ let fxSeed = 977; const fxRng = () => { fxSeed = (fxSeed * 16807) % 2147483647; 
 const FIGHTER = BLOCKS.findIndex((b) => b.craft && b.slug);
 function parked(P) { const F = FLEET.HB[FIGHTER];
   const g = F ? (() => { const looks = FLEET.hullLooks({ ...F.maps, dU: FLEET.dmgUniforms() }, FLEET.brkUniforms()), w = new THREE.Group();
-    const m = new THREE.Mesh(F.maps.geo, looks[look === 'pbr' ? 'pbr' : 'painted']); m.userData.baked = true; w.add(m); return w; })() : CRAFT.clone(),
+    const m = new THREE.Mesh(F.maps.geo, looks[look === 'pbr' ? 'pbr' : 'painted']); m.userData.baked = true; m.userData.parked = true; w.add(m); return w; })() : CRAFT.clone(),
     y = V3(...P.n).normalize(), z = V3(...P.u).normalize(), x = new THREE.Vector3().crossVectors(y, z).normalize();
   g.matrix.makeBasis(x, y, z).setPosition(V3(...P.c).addScaledVector(y, 0.26 + CRAFT.userData.h / 2)); g.matrixAutoUpdate = false; g.userData.baked = true; return g; }   // up the pad's normal: on a ceiling, upside down
 const FLEET = window.FCBakedFleet(THREE, { scene, camera, U, SK, ROOMS, BS, CL: { loftDist: CL.loftDist, chOf: CL.chOf }, glowSprite, rand: fxRng, normals: HG.creasedNormals,
   look: () => look, night: () => night, shown: (k) => k === 'painted' || k === 'pbr', group: (i) => SHIPS[i], onTexture: (p) => TEXLOAD.push(p),
   info: (i) => ({ cls: BLOCKS[i].cls || BLOCKS[i].role, name: BLOCKS[i].name, len: MEAS[i].size.z }),
   glowK: (i) => (BLOCKS[i].craft ? 0.22 : 1),
-  afterBuild: (ship) => { for (const P of ship.maps.sh.pads || []) ship.pieces.hull.inner.add(parked(P)); } });   // the carrier's fighters go with its hull
+  afterBuild: (ship) => { const pads = ship.maps.sh.pads || []; for (const P of pads) ship.pieces.hull.inner.add(parked(P));   // the carrier's fighters go with its hull
+    if (pads.length && FIGHTER >= 0) ship.parked = { craft: BLOCKS[FIGHTER].slug, stand_m: 0.26 + CRAFT.userData.h / 2 }; } });   // what the game parks there (export_ships.mjs)
 const { HB, BRK, stepDamage } = FLEET, slugAt = (slug) => BLOCKS.findIndex((b) => b.slug === slug);
 if (BK) { FLEET.load(BK, (slug) => (slugAt(slug) === FIGHTER ? FIGHTER : -1)); FLEET.load(BK, (slug) => (slugAt(slug) === FIGHTER ? -1 : slugAt(slug))); }
 // The look: a baked ship shows its maps in Painted and PBR and its grown skin in Champagne and Clay; a blockout has only its skin.

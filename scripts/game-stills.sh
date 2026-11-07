@@ -71,3 +71,11 @@ shot hunt-trident-windows 1920x1080 --steps=300 --scenario=concord_range --targe
 shot hunt-battle-late 1920x1080 --steps=3600 --scenario=concord_hunt --target=hunt_cruiser --target-view --zoom=0.6
 shot krai-hunt 1920x1080 --steps=600 --scenario=krai_hunt --target=hunt_harpoon --target-view --zoom=0.5
 shot hunt-wrecks 1920x1080 --steps=2400 --scenario=concord_hunt_wrecks --target=hw_lance --target-view --zoom=0.7
+# the Kelvane Institute (mockup 23, change kelvane-ships-engine): each class close, the carrier's pads, the Institute as a side
+shot institute-battlecruiser 1920x1080 --steps=600 --scenario=concord_institute --target=kv_rigour --target-view --zoom=0.5
+shot institute-carrier 1920x1080 --steps=600 --scenario=concord_institute --target=kv_curiosity --target-view --zoom=0.5
+shot institute-range 1920x1080 --steps=300 --scenario=concord_range --target=t_irv --target-view --zoom=0.5
+shot institute-carrier-pads 1920x1080 --steps=300 --scenario=concord_range --target=t_icv --target-view --zoom=0.15
+shot institute-frigate 1920x1080 --steps=300 --scenario=concord_range --target=t_iff --target-view --zoom=0.3
+shot institute-wrecks 1920x1080 --steps=2400 --scenario=concord_institute_wrecks --target=kw_parallax --target-view --zoom=0.7
+shot kelvane-patience 1920x1080 --steps=600 --scenario=kelvane_battle

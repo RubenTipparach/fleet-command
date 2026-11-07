@@ -156,7 +156,11 @@
    "hunt_cv": "petrel",
    "tr": "petrel",
    "sb": "petrel",
-   "kelvane_rv": "petrel"
+   "kelvane_rv": "petrel",
+   "kelvane_ff": "petrel",
+   "kelvane_dd": "petrel",
+   "kelvane_bc": "petrel",
+   "kelvane_cv": "petrel"
   }
  }
 }

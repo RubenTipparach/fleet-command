@@ -46,16 +46,15 @@ public class ScenarioTests
     {
         // owner, 2026-11-04: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"; the Ssarith Hunt joined them once its ships
         // were approved for the game (owner, 2026-11-06: "looks good, implement in game")
+        // and the Kelvane Institute once its ships were (owner, 2026-11-07: "perfect, implment these ships in game").
         // The one exception is the battle console mockup's allied scenes (openspec/changes/fleet-skins), as the mockup has
-        // them: their foes are its Kethran and Vos stand-ins, and Four races adds the Kelvane Institute's Patience, a
-        // stand-in, the Institute having no designed ships. The ships you can command beside it are approved ones.
+        // them: their foes are its Kethran and Vos stand-ins. The ships you can command beside them are approved ones.
         foreach (Scenario s in TestData.Data.Scenarios)
             foreach (ShipStart o in s.Ships)
             {
                 bool allied = s.Name is "Allied fleet" or "Four races";
                 if (allied && o.Side == 1 && o.Faction is "kethran" or "vos") continue;
-                if (s.Name == "Four races" && o.Faction == "kelvane" && o.Class == "kelvane_rv") continue;
-                Assert.True(o.Faction is "concord" or "krai" or "ssarith", $"{s.Id}: {o.Id} is of the {o.Faction}");
+                Assert.True(o.Faction is "concord" or "krai" or "ssarith" or "kelvane", $"{s.Id}: {o.Id} is of the {o.Faction}");
                 // a station is drawn as the mockup's station (its stationModel: scenes/standins/station.tscn), not a ship's stand-in
                 ShipClass c = TestData.Data.Classes[o.Class];
                 Assert.True(c.Model != null || c.Shape == "station", $"{s.Id}: {o.Id} ({o.Class}) would be a stand-in");
@@ -70,6 +69,24 @@ public class ScenarioTests
         Assert.All(hunt, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith"), o => Assert.NotNull(TestData.Data.Classes[o.Class].Model)));
         Assert.Equal("ssarith", TestData.Data.Factions["ssarith"].Skin);
         Assert.Equal("kelvane", TestData.Data.Factions["kelvane"].Skin);
+    }
+
+    [Fact]
+    public void The_Kelvane_Institute_is_played_as_itself_and_fought_in_its_approved_ships()
+    {
+        Scenario[] own = TestData.Data.Scenarios.Where(s => s.Side == "kelvane").ToArray();
+        foreach (string name in new[] { "Battle", "Duel", "Arming", "Four races" }) Assert.Contains(own, s => s.Name == name);
+        foreach (string side in new[] { "concord", "krai" })
+            foreach (string name in new[] { "The Institute", "Institute wrecks" })
+                Assert.Contains(TestData.Data.Scenarios, s => s.Side == side && s.Name == name && s.Ships.Any(o => o.Side == 1 && o.Faction == "kelvane"));
+        // every class of the line is in the game, each its own approved ship, and each is fought somewhere
+        string[] line = { "kelvane_ff", "kelvane_dd", "kelvane_rv", "kelvane_bc", "kelvane_cv" };
+        foreach (string c in line)
+        {
+            Assert.StartsWith("assets/ships/kelvane/", TestData.Data.Classes[c].Model);
+            Assert.Contains(TestData.Data.Scenarios, s => s.Ships.Any(o => o.Class == c && o.Faction == "kelvane"));
+        }
+        Assert.All(TestData.Data.Scenarios, s => Assert.All(s.Ships.Where(o => o.Faction == "kelvane"), o => Assert.Contains(o.Class, line)));
     }
 
     [Fact]
