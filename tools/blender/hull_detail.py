@@ -100,7 +100,7 @@ def kind_material(kind, glow=None):
         L.new(mix.outputs["Value"], bump.inputs["Height"]); L.new(bev.outputs[0], bump.inputs["Normal"])
         nout = bump.outputs["Normal"]
     L.new(nout, bs.inputs["Normal"])
-    src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"], "grime": grime_nodes(N, L, kind, inv)}
+    src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"], "grime": grime_nodes(N, L, kind, inv.outputs[0])}
 
     def switch(what):
         if what == "light" and glow:      # the light pass: lamps and windows shine on the hull around them
