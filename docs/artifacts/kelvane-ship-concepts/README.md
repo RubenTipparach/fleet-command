@@ -59,3 +59,6 @@
   be fighters"): version 10. 215 is the Gallery fighter: its chin parted into two phaser prongs ending in emitters, detailed
   and baked at its own scale (`kelvane_fighter`, 1024 px, the bake's per-ship defaults and paint), parked by the carrier on
   its 24 pads. Published as artifact version 10, version id `1794029173-e384`.
+- 2026-11-07 (owner: "perfect, implment these ships in game"; approved for implementation): version 10 unchanged to look
+  at, its ships now built on the Hunt's damageable baked-ship code (`docs/mockups/lib/baked-fleet.js`), which the game's
+  exporter reads (change `kelvane-ships-engine`). Published as artifact version 11, version id `1794033899-a0b0`.
