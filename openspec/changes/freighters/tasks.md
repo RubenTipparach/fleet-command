@@ -7,9 +7,11 @@
       faction, each naming its tradition, every one carrying the same container in sight, at true scale beside the Petrel
       and a person, measured; on `mockup-work.md` and the tracker
 - [x] 1.3 Survey section V (V1-V5) in `docs/design/survey.html`
-- [ ] 1.4 The owner's picks (survey V2) and the traditions kept (V1)
+- [x] 1.4 The owner's picks (survey V2: 1, 4, 5 and 8, 8 made a loop) and the size (V5: twice the draft)
+- [x] 1.5 Mockup 24 v6: the four picks as the line, twice the size, the Twin ledger's loop; the board beside them
+- [ ] 1.6 The traditions kept (survey V1)
 
-## 2. The picks (after the owner picks: approved for build)
+## 2. The picks (detailing waits: owner, 2026-11-07, "Don't do details yet")
 
 - [ ] 2.1 Each pick grown again at its size on its faction's own section (the Institute's `ksec`, the Hunt's `hsec`, the
       Concord's octagonal loft); the container's size moved into `data/` for the page and the game

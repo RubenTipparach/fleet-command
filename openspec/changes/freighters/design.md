@@ -23,6 +23,26 @@ The SFC2 manual has no convoys (searched for freighter, convoy, cargo and escort
 - "make sure all cargo is the same size", "The containers I mean", "The cargo hull shape it self can be the way it was in
   the draft": **one container for every freighter, 6 by 6 by 12 m**, in each faction's colours; the hulls stay as drafted.
 
+## The picks (the owner, 2026-11-07)
+
+"1,4,5,8, but with 8 having really skinny arms and link.tbe arms together with a thin bridge at the end to keep the loop
+design ethos", "All freighters should be 2x bigger. Along with the containers too..this way cargo ships are much bigger than any
+combat ships..as they should be", then "The institute freighter should be rounder at the tip", "You got the institute
+draft wrong". Survey V2 and V5, decided.
+
+| # | Faction | Pick | Shown length | What changes from the blockout |
+|---|---|---|---|---|
+| 101 | Concord | 1 Gauge carrier | 300 m | Twice the size |
+| 102 | Krai Warhost | 4 Spear train | 320 m | Twice the size |
+| 103 | Ssarith Hunt | 5 Tally carrier | 340 m | Twice the size |
+| 104 | Kelvane Institute | 8 Twin ledger | 330 m | Twice the size, and a loop: the draft's stern case narrows to a slender section that splits into two really skinny arms, 15 m (30 m shown) either side, straight round two identical stacks of containers, curving in at the bow on a quarter circle to meet in a thin bridge with a domed nose (the loop of the Institute's line, `kelvane-ship-concepts`) |
+
+**Twice the size.** Every freighter is shown at twice its drafted size, its containers with it (`FREIGHTER_X` on the
+page), so a container is 12 by 12 by 24 m and every freighter, 300-360 m, is longer than any warship (the largest, the
+Krai dreadnought, is 226 m as built). The board's eight are shown at the same scale.
+
+**Detailing waits** (owner, 2026-11-07: "Then go ahead and detail them", then "Don't do details yet").
+
 ## The rules every concept keeps
 
 - **Culture, never the body** (CLAUDE.md section 1; Ship Design Bible C1-C5). Each concept names the tradition it comes
@@ -33,7 +53,8 @@ The SFC2 manual has no convoys (searched for freighter, convoy, cargo and escort
   - Its branches are split from its own section.
   - Its skin is closed, with every edge shared by exactly two triangles, measured on the page.
 - **The containers are not hull.** They are placed, as a crate is set on a deck: the only placed pieces on the page.
-  Every one is the same 6 by 6 by 12 m box (`CONTAINER_M` on the page; `data/` when the game carries it).
+  Every one is the same box, 6 by 6 by 12 m as drafted and 12 by 12 by 24 m as shown (`CONTAINER_M` and `FREIGHTER_X`
+  on the page; `data/` when the game carries it).
 - **The cargo is in sight**: from the bow quarter and from above, every freighter's containers are seen.
 - **The faction's own colours** (bible X1, a hull complements its console). Clay shows the massing alone.
 - **True scale** beside the Concord Petrel (88 m) and a person (1.8 m).
@@ -154,7 +175,5 @@ the board's own section. That is two copies of one rule. When the picks are grow
 | # | Question | Provisional answer |
 |---|---|---|
 | V1 | The drafted traditions (the Common Gauge; the Host's Baggage; the Tally Keepers, the Fair Chase; the Field Stations, the Open Notebook) | Keep them as drafts until the owner changes them |
-| V2 | Which concept for each faction | None picked; the board waits |
 | V3 | One freighter class a faction, or both of its concepts? | One a faction now; the other later as a variant |
 | V4 | How is a freighter armed? | One point defence, nothing else |
-| V5 | Size: a cruiser to a battleship of its own faction, about 150-180 m | As drawn |

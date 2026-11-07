@@ -43,7 +43,7 @@ account and every link here is updated.
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
 | 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | **Approved for implementation** (2026-11-07, owner in conversation: "perfect, implment these ships in game"; approved for build by the same words; in the game by change `kelvane-ships-engine`). Drafted (2026-11-07, v10: 215 the Gallery fighter, detailed, the carrier's craft; v9: six variants of the Gallery bus; v8: every plate corner diagonal, shuttles overhead in the carrier, eight shuttle designs; v7: engineered machinery in rows, the carrier's pads and craft, diagonal corners, warm rooms; v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
-| 24 | Freighters: a freighter for every approved faction, a blockout board to pick from | Drafted (2026-11-07, v5) | `freighters` | `docs/mockups/freighter-concepts.html` | https://claude.ai/artifact/Gkv9jzwEZd258noT7WGtv4 |
+| 24 | Freighters: a freighter for every approved faction (picks 1, 4, 5 and 8) | Drafted (2026-11-07, v6; picks made, detailing waits) | `freighters` | `docs/mockups/freighter-concepts.html` | https://claude.ai/artifact/Gkv9jzwEZd258noT7WGtv4 |
 
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -1114,5 +1114,12 @@ frigate stand-in. The reference game's convoys: SFC3 manual, printed pages 37 an
   concepts are gone; the hulls are as drafted, the Twin ledger's containers stacked between its hulls.
 - **v5** (owner, on a phone: "Nothing renders"): no flatShading, the canvas follows its stage's size, a notice if the 3D
   view loses its graphics context.
-- **Stage:** Drafted (2026-11-07, v5).
-- **Questions:** survey V1-V5 (traditions, picks, one class or two, arms, size).
+- **v6** (owner, 2026-11-07: "1,4,5,8, but with 8 having really skinny arms and link.tbe arms together with a thin bridge
+  at the end to keep the loop design ethos", "All freighters should be 2x bigger. Along with the containers too..this way
+  cargo ships are much bigger than any combat ships..as they should be", "The institute freighter should be rounder at the
+  tip", "You got the institute draft wrong", "Show m artifact with just the four"): the page opens on the four picks
+  (101-104), every freighter and container twice the drafted size (300-360 m, 12 by 12 by 24 m containers), the Twin
+  ledger made a loop on really skinny arms curving in to a thin bridge with a domed nose; the board of eight beside them.
+  "Then go ahead and detail them", then "Don't do details yet": detailing waits.
+- **Stage:** Drafted (2026-11-07, v6; picks made, survey V2 and V5 decided).
+- **Questions:** survey V1, V3, V4 (traditions, one class or two, arms).

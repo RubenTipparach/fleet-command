@@ -31,3 +31,8 @@
   own normal; flatShading's screen-space derivatives can come out zero on a phone's GPU), the canvas resized whenever its
   stage changes size, and a notice if the 3D view loses its graphics context. A phone emulation (Pixel 7) renders it;
   the owner's phone is to confirm.
+- 2026-11-07, cloud session: version 6, version id `1794053733-a050` (owner: "1,4,5,8, but with 8 having really skinny arms
+  and link.tbe arms together with a thin bridge at the end to keep the loop design ethos", "All freighters should be 2x
+  bigger. Along with the containers too", "The institute freighter should be rounder at the tip", "Show m artifact with
+  just the four"): the page opens on the four picks, every freighter and container twice the drafted size, the Twin
+  ledger a loop curving in to a thin bridge with a domed nose; the board of eight beside them. Survey V2 and V5 decided.

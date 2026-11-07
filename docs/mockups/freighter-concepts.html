@@ -84,7 +84,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Freight<span>ers</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 24, v4. <code>freighters</code>. Eight freighter blockouts, two for each approved faction, every one carrying the same container, to pick from.</p>
+    <p class="sub">Mockup 24, v6. <code>freighters</code>. Your four picks, twice their drafted size, every freighter longer than any warship; the board of eight beside them.</p>
   </header>
   <div class="scroll">
     <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div><div class="row" id="facRow"></div></div>
@@ -95,6 +95,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     <div class="grp notes"><h2>Notes</h2>
       <p>Version 1 (you: "we need to design freighter for every faction in the game currently"). Breadth first, as with the Hunt and the Institute, so you can pick before anything is detailed.</p>
       <p>Version 4 (you: "Freighter should only focus on approved factions", "Narrow down freighter options to ones where cargo is visible. And make sure all cargo is the same size", "The containers I mean", "The cargo hull shape it self can be the way it was in the draft"): the four factions whose ships are approved and in the game, two freighters each with their cargo in sight, every one carrying the same container, 6 by 6 by 12 m. The hulls are as drafted.</p>
+      <p>Version 6 (you: "1,4,5,8, but with 8 having really skinny arms and link.tbe arms together with a thin bridge at the end to keep the loop design ethos", "All freighters should be 2x bigger. Along with the containers too..this way cargo ships are much bigger than any combat ships..as they should be"): your four picks, the Gauge carrier, the Spear train, the Tally carrier and the Twin ledger, made a loop on really skinny arms closed by a thin bridge at the bow. Every freighter is shown twice its drafted size, 300-360 m, its containers 12 by 12 by 24 m; the largest warship, the Krai dreadnought, is 226 m.</p>
       <p>Freighters already have work in the game. The campaign map runs each faction's freighters along its trade routes, the convoy missions defend or raid three of them, and a Distress call can come from one. Today they fly as a placeholder.</p>
       <p>A spine racks its containers outside along a spine; a cradle parts round them and closes again; the Institute's Twin ledger carries them between two hulls open at the bow.</p>
       <p>No faction has a merchant tradition written down, so each concept names a tradition inside its faction, drafted where you have written none, for you to keep, change or reject. None is drawn from a species' body.</p>
@@ -515,11 +516,11 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputEncoding =
 stage.append(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x06080b);
 const camera = new THREE.PerspectiveCamera(34, 1, 0.5, 30000), controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 10; controls.maxDistance = 5000;
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 10; controls.maxDistance = 9000;
 scene.add(new THREE.HemisphereLight(0xe8eef6, 0x2a2622, 0.8));
 const sun = new THREE.DirectionalLight(0xfff4e6, 1.25); sun.position.set(-320, 420, 520); scene.add(sun);
 const rim = new THREE.DirectionalLight(0xb8c8e0, 0.5); rim.position.set(300, -100, -400); scene.add(rim);
-const grid = new THREE.GridHelper(1400, 28, 0x26303a, 0x141a20); grid.position.y = -40; scene.add(grid);
+const grid = new THREE.GridHelper(2800, 28, 0x26303a, 0x141a20); grid.position.y = -80; scene.add(grid);
 
 // ---------------------------------------------------------------------------------------------------------------
 // The four approved factions (their ships approved and in the game: mockups 6, 7, 12 and 23): each one's colours from its console skin (openspec/changes/console-skins, the ship lines' designs),
@@ -637,7 +638,11 @@ const nose = (K, S, z, kind = 'hull') => K.branch('nose', S, z, [[0, 1, 1, 0, 0]
 // The cargo: one container for every freighter, 6 by 6 by 12 m (owner, 2026-11-07: "make sure all cargo is the same size",
 // "The containers I mean"), placed as a crate is set on a deck (the only placed pieces on the page), one instanced mesh a
 // ship. items: [x, y, z, colour index, turn about x, y and z (deg)]; unturned, its 12 m runs along the ship.
-const CONTAINER_M = [6, 6, 12], BOX = new THREE.BoxGeometry(...CONTAINER_M);
+// Every freighter is built at its drafted size and shown twice as big, its containers with it (owner, 2026-11-07: "All
+// freighters should be 2x bigger. Along with the containers too..this way cargo ships are much bigger than any combat
+// ships"): FREIGHTER_X scales the whole ship, so the container shown is 12 by 12 by 24 m.
+const FREIGHTER_X = 2, CONTAINER_M = [6, 6, 12], BOX = new THREE.BoxGeometry(...CONTAINER_M);
+const CONTAINER_SHOWN = CONTAINER_M.map((v) => v * FREIGHTER_X).join(' by ') + ' m';
 function loads(g, f, items) {
   if (!items.length) return;
   const m = new THREE.InstancedMesh(BOX, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.65, metalness: 0.25 }), items.length);
@@ -737,11 +742,45 @@ const BLOCKS = [
       // tops level with the hulls' so they are seen from above
       const it = []; for (let z = -8; z <= 54 - 6; z += 13) for (const x of [-3.5, 3.5]) for (const y of [-6.3, 0, 6.3]) it.push([x, y, z, (Math.round(z / 13) + Math.round(y / 6.3) + 3) % 3]);
       loads(g, 'kelvane', it); } },
+  // --- The line: the owner's picks (2026-11-07: "1,4,5,8, but with 8 having really skinny arms and link.tbe arms together
+  // with a thin bridge at the end to keep the loop design ethos"), grown by the same builders as their blockouts --------
+  { n: 101, f: 'concord', tr: 'gauge', way: 'spine', name: 'Gauge carrier', line: true, from: 1, len: 150,
+    tell: 'Blockout 1: an octagonal spine with containers racked four round it, ring after ring; the command block raised aft over the drive.',
+    build(g) { BLOCKS.find((b) => b.n === 1).build(g); } },
+  { n: 102, f: 'krai', tr: 'baggage', way: 'spine', name: 'Spear train', line: true, from: 4, len: 160,
+    tell: 'Blockout 4: a blade spine with its containers stood on end down both sides, each canted out like a blade.',
+    build(g) { BLOCKS.find((b) => b.n === 4).build(g); } },
+  { n: 103, f: 'ssarith', tr: 'tally', way: 'spine', name: 'Tally carrier', line: true, from: 5, len: 170,
+    tell: 'Blockout 5: containers in counted rows of five along a low spine, a light strip between rows; the hooded bridge aft over the drive.',
+    build(g) { BLOCKS.find((b) => b.n === 5).build(g); } },
+  { n: 104, f: 'kelvane', tr: 'note', way: 'between', name: 'Twin ledger', line: true, from: 8, len: 160,
+    tell: 'Blockout 8 made a loop: its stern case as drafted, then two really skinny arms that part and run straight round two identical stacks of containers, and curve in at the bow to meet in a thin bridge with a rounded nose.',
+    // owner, 2026-11-07: "8 having really skinny arms and link.tbe arms together with a thin bridge at the end to keep the
+    // loop design ethos", then "The institute freighter should be rounder at the tip", "You got the institute draft wrong".
+    // The draft's stern case (blockout 8), its belt of dark glass, narrows to a slender section that splits down the
+    // centreline; the two arms part 15 m each way and run straight; at the bow they curve in on a quarter circle (radius
+    // 15 m) and close into a slender bridge, its nose domed. The arms loft with rings across the ship, so the curve is
+    // drawn as steps of that circle, every one closed.
+    build(g) { const K = skin(g, 'kelvane'), c = { ...KV, hb: 20, top: 9, bot: -9, r: 4.6, rt: 4.6, bh: 1.2 }, t = { ...KV, hb: 3.4, top: 3.6, bot: -3.6, r: 1.6, rt: 1.6, bh: 0.6 };
+      const own = (k) => (E.belt(k) ? 'well' : false), R = 15, z0 = -46, run = 92, bend = 20;
+      const S = K.body([[-80, sc(c, 0.8)], [-74, c], [-60, c], [z0, t]], own), H = halves(S);
+      const arm = (s) => { const st = [[0, 1, 1, 0, 0]];
+        for (let q = 1; q <= 4; q++) { const u = q / 4, f = Math.sin(u * PI / 2); st.push([14 * u, 1, 1, s * R * f, 0]); }   // part, easing out
+        st.push([14 + run, 1, 1, s * R, 0]);                                                                      // the straight run
+        for (let q = 1; q <= 6; q++) { const a = q / 6 * PI / 2; st.push([14 + run + bend * Math.sin(a), 1, 1, s * R * Math.cos(a), 0]); }   // the curve in
+        return st; };
+      for (const [nm, [Rg, cut, start], sg] of [['port_arm', H.port, 1], ['starboard_arm', H.stbd, -1]]) K.branch(nm, Rg, z0, arm(sg), { end: 'open', glow: pick(cut, 'inner', from(start, own)) });
+      const zj = z0 + 14 + run + bend, dome = [[zj, t]];
+      for (let q = 1; q <= 4; q++) { const a = q / 5 * PI / 2; dome.push([zj + 5 * Math.sin(a), sc(t, Math.max(0.2, Math.cos(a)))]); }
+      const B = K.body(dome, own, fsec, { stern: 'open', name: 'bridge' }); nose(K, B, dome[dome.length - 1][0], 'well'); K.done();
+      const gap = R, it = [];   // two identical stacks, two across and two high, one inside each arm, along the straight run
+      for (let z = z0 + 14 + 7; z <= z0 + 14 + run - 7; z += 13) for (const x of [-11.3, -4.8, 4.8, 11.3]) for (const y of [-3.15, 3.15]) if (Math.abs(x) + 3 < gap) it.push([x, y, z, (Math.round(z / 13) + Math.round(y) + 3) % 3]);
+      loads(g, 'kelvane', it); } },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
 // Build every concept, measure it (size, triangles, the skin's closure), tag each mesh with its kind for the look.
-const SHIPS = BLOCKS.map((b) => { const g = new THREE.Group(); g.name = `freighter_${b.n}`; b.build(g); g.userData.ship = b.n; scene.add(g);
+const SHIPS = BLOCKS.map((b) => { const g = new THREE.Group(); g.name = `freighter_${b.n}`; b.build(g); g.userData.ship = b.n; g.scale.setScalar(FREIGHTER_X); scene.add(g);
   g.traverse((o) => { if (!o.isMesh || o.userData.cargo) return; const m = FM[b.f]; o.userData.kind = Object.keys(m).find((k) => m[k] === o.material) || 'hull'; o.userData.f = b.f; });
   return g; });
 function closure(g) { const cnt = new Map(), q = (v) => `${Math.round(v.x * 1e3)},${Math.round(v.y * 1e3)},${Math.round(v.z * 1e3)}`;
@@ -752,7 +791,7 @@ function closure(g) { const cnt = new Map(), q = (v) => `${Math.round(v.x * 1e3)
 const MEAS = SHIPS.map((g) => { g.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(g);
   let t = 0, loadsN = 0; g.traverse((o) => { if (!o.isMesh) return; if (o.userData.cargo) loadsN += o.count; else t += o.geometry.attributes.position.count / 3; });
   return { size: b.getSize(V3()), tris: Math.round(t), open: closure(g), loads: loadsN }; });
-window.MOCKUP_MEASURE = () => ({ bad_sections: FSEC_BAD.slice(), ships: BLOCKS.map((b, i) => ({ n: b.n, faction: b.f, name: b.name, way: b.way, length_m: +MEAS[i].size.z.toFixed(1), beam_m: +MEAS[i].size.x.toFixed(1), height_m: +MEAS[i].size.y.toFixed(1), tris: MEAS[i].tris, open_edges: MEAS[i].open, loads: MEAS[i].loads })) });
+window.MOCKUP_MEASURE = () => ({ bad_sections: FSEC_BAD.slice(), container_m: CONTAINER_M.map((v) => v * FREIGHTER_X), ships: BLOCKS.map((b, i) => ({ n: b.n, faction: b.f, name: b.name, way: b.way, length_m: +MEAS[i].size.z.toFixed(1), beam_m: +MEAS[i].size.x.toFixed(1), height_m: +MEAS[i].size.y.toFixed(1), tris: MEAS[i].tris, open_edges: MEAS[i].open, loads: MEAS[i].loads })) });
 
 // The yardsticks: the Concord Petrel (88 m), built by the Concord line's own code, and a person, 1.8 m.
 const PETREL = CL.plainModel('petrel_level'); scene.add(PETREL);
@@ -762,21 +801,29 @@ const PERSON = (() => { const m = new THREE.MeshStandardMaterial({ color: 0xffcc
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 12), m); head.position.y = 1.67; g.add(head); scene.add(g); return g; })();
 
 // ---------------------------------------------------------------------------------------------------------------
-// The board: four columns, one a faction (the Concord at the left as you look from the bow quarter), two rows, bows toward +z.
-const COLW = 120, ROWD = 250;
+// The line: the four picks side by side, bows toward +z, the smallest beam first. The board: the eight blockouts in four
+// columns, one a faction (the Concord at the left as you look from the bow quarter), two rows. Everything twice its
+// drafted size (FREIGHTER_X), so the spacings are too.
+const COLW = 120 * FREIGHTER_X, ROWD = 250 * FREIGHTER_X;
 const fi = (f) => FACTIONS.findIndex((x) => x.id === f);
-let mode = 'board', fac = null, focus = -1, look = 'faction', showLabels = true, showPetrel = true, viewKey = 'board';
+const LINE = BLOCKS.map((b, i) => (b.line ? i : -1)).filter((i) => i >= 0), BOARD = BLOCKS.map((b, i) => (b.line ? -1 : i)).filter((i) => i >= 0);
+let mode = 'line', fac = null, focus = -1, look = 'faction', showLabels = true, showPetrel = true, viewKey = 'quarter';
 function layout() {
-  SHIPS.forEach((g, i) => { const b = BLOCKS[i], col = fi(b.f), row = BLOCKS.filter((x) => x.f === b.f).indexOf(b);
-    if (mode === 'faction') { g.visible = b.f === fac; g.position.set((0.5 - row) * 90, 0, 0); }
+  let x = 0; const lx = {}; LINE.forEach((i, j) => { const w = MEAS[i].size.x; if (j) x += w / 2; lx[i] = x; x += w / 2 + 60; });
+  const mid = (x - 60) / 2;
+  SHIPS.forEach((g, i) => { const b = BLOCKS[i], col = fi(b.f), row = BOARD.filter((k) => BLOCKS[k].f === b.f).indexOf(i);
+    if (mode === 'line') { g.visible = !!b.line; g.position.set(b.line ? lx[i] - mid : 0, 0, 0); }   // a strict boolean: three.js hides only on false
+    else if (mode === 'faction') { const mine = BLOCKS.map((q, k) => (q.f === fac ? k : -1)).filter((k) => k >= 0), j = mine.indexOf(i);
+      g.visible = j >= 0; g.position.set((j - (mine.length - 1) / 2) * 180, 0, 0); }
     else if (mode === 'focus') { g.visible = i === focus; g.position.set(0, 0, 0); }
-    else { g.visible = true; g.position.set((col - 1.5) * COLW, 0, (0.5 - row) * ROWD); }
+    else { g.visible = !b.line; g.position.set((col - 1.5) * COLW, 0, (0.5 - row) * ROWD); }
     g.updateMatrixWorld(true); });
   PETREL.visible = showPetrel; PERSON.visible = mode === 'focus' && showPetrel;
   if (mode === 'board') PETREL.position.set(2.4 * COLW, 0, -ROWD / 2);
-  else if (mode === 'faction') PETREL.position.set(175, 0, -40);
-  else { const m = MEAS[focus]; PETREL.position.set(m.size.x / 2 + 62, 0, -m.size.z * 0.3); PERSON.position.set(m.size.x / 2 + 3, -m.size.y / 2 - 1.8, m.size.z * 0.1); }
-  grid.position.y = mode === 'focus' ? -MEAS[focus].size.y / 2 - 2 : -40;
+  else if (mode === 'line') PETREL.position.set(mid + 110, 0, -120);
+  else if (mode === 'faction') PETREL.position.set(360, 0, -80);
+  else { const m = MEAS[focus]; PETREL.position.set(m.size.x / 2 + 80, 0, -m.size.z * 0.3); PERSON.position.set(m.size.x / 2 + 3, -m.size.y / 2 - 1.8, m.size.z * 0.1); }
+  grid.position.y = mode === 'focus' ? -MEAS[focus].size.y / 2 - 2 : -40 * FREIGHTER_X;
 }
 // The look: each faction's colours, or clay.
 function setLook(k) { look = k;
@@ -789,52 +836,58 @@ function setLook(k) { look = k;
 // Views and the panel.
 const ANGLE = { quarter: [-1.05, 0.5, 1.25], side: [-1.75, 0.1, 0.01], top: [0, 1.85, -0.01], ahead: [0.01, 0.12, 1.7] };
 const back = () => { const asp = stage.clientWidth / stage.clientHeight; return asp <= 0.75 ? 2.6 : asp < 1.5 ? 1.25 : 1; };
-const VIEWS = { board: 'Board', top: 'From above', side: 'From the side' };
+const VIEWS = { board: 'Board', top: 'From above', side: 'From the side' }, LINE_VIEWS = { quarter: 'Bow quarter', top: 'From above', side: 'From the side' };
 const FOCUS_VIEWS = { quarter: 'Bow quarter', side: 'Side', top: 'Above', ahead: 'Ahead' };
 function frame(from, target, dist) { controls.target.copy(target); camera.position.copy(target).add(V3(...from).multiplyScalar(dist * back())); controls.update(); }
 function setView(k) { viewKey = k; layout();
   if (mode === 'board') { const v = { board: [[-400, 380, 600], [0, -10, 0]], top: [[0, 900, -0.01], [0, 0, 0]], side: [[-900, 110, 0.01], [0, -10, 0]] }[k] || [[-400, 380, 600], [0, -10, 0]];
-    controls.target.set(...v[1]); camera.position.set(...v[0]).sub(controls.target).multiplyScalar(back()).add(controls.target); controls.update(); }
-  else if (mode === 'faction') frame(ANGLE[k] || ANGLE.quarter, V3(-20, 0, 0), 250);
+    controls.target.set(...v[1]).multiplyScalar(FREIGHTER_X); camera.position.set(...v[0]).multiplyScalar(FREIGHTER_X).sub(controls.target).multiplyScalar(back()).add(controls.target); controls.update(); }
+  else if (mode === 'line') frame(ANGLE[k] || ANGLE.quarter, V3(20, 0, 0), k === 'side' ? 520 : 430);
+  else if (mode === 'faction') frame(ANGLE[k] || ANGLE.quarter, V3(-20, 0, 0), 520);
   else frame(ANGLE[k] || ANGLE.quarter, V3(14, 0, 0), Math.max(MEAS[focus].size.z, 120) * 0.72);
   sync(); }
 function sync() {
-  const views = mode === 'board' ? VIEWS : FOCUS_VIEWS;
-  $('viewRow').innerHTML = (mode === 'board' ? '' : '<button data-m="board">All eight</button>') + Object.entries(views).map(([k, v]) => `<button data-k="${k}" aria-pressed="${k === viewKey}">${v}</button>`).join('');
+  const views = mode === 'board' ? VIEWS : mode === 'line' ? LINE_VIEWS : FOCUS_VIEWS;
+  $('viewRow').innerHTML = `<button data-m="line" aria-pressed="${mode === 'line'}">The picks</button><button data-m="board" aria-pressed="${mode === 'board'}">The board</button>` + Object.entries(views).map(([k, v]) => `<button data-k="${k}" aria-pressed="${k === viewKey}">${v}</button>`).join('');
   $('facRow').innerHTML = FACTIONS.map((f) => `<button data-f="${f.id}" aria-pressed="${mode === 'faction' && fac === f.id}" title="${f.name}">${f.short}</button>`).join('');
-  let html = '';
-  for (const f of FACTIONS) { if (mode !== 'board' && fac && f.id !== fac) continue;
+  let html = '<h3>The picks</h3><p>Your four, each twice its drafted size, its containers 12 by 12 by 24 m: every freighter longer than any warship.</p>';
+  LINE.forEach((i) => { const b = BLOCKS[i], t = TRADITIONS[b.tr];
+    html += `<button data-i="${i}" aria-pressed="${i === focus}"><b>${b.n}</b><span>${FACTIONS[fi(b.f)].name}: ${b.name}</span><i>${b.way} &middot; ${t.name}${t.drafted ? ' (drafted)' : ''}</i><small>${b.tell}</small></button>`; });
+  html += '<h3>The board</h3><p>The eight blockouts you picked from, two a faction.</p>';
+  for (const f of FACTIONS) { if (mode !== 'board' && mode !== 'line' && fac && f.id !== fac) continue;
     html += `<h3>${f.name}</h3><p>${f.line}</p>`;
-    BLOCKS.forEach((b, i) => { if (b.f !== f.id) return; const t = TRADITIONS[b.tr];
+    BLOCKS.forEach((b, i) => { if (b.f !== f.id || b.line) return; const t = TRADITIONS[b.tr];
       html += `<button data-i="${i}" aria-pressed="${i === focus}"><b>${b.n}</b><span>${b.name}</span><i>${b.way} &middot; ${t.name}${t.drafted ? ' (drafted)' : ''}</i><small>${b.tell}</small></button>`; }); }
   $('list').innerHTML = html;
   $('lookRow').innerHTML = `<button data-l="faction" aria-pressed="${look === 'faction'}">Faction colours</button><button data-l="clay" aria-pressed="${look === 'clay'}">Clay</button>`;
   $('showRow').innerHTML = `<button data-s="labels" aria-pressed="${showLabels}">Labels</button><button data-s="petrel" aria-pressed="${showPetrel}">Petrel and person</button>`;
   const B = focus >= 0 && mode === 'focus' ? BLOCKS[focus] : null, m = B ? MEAS[focus] : null;
-  $('facts').innerHTML = B ? `<dt>${B.n} ${B.name}</dt><dd>${m.size.z.toFixed(1)} m long, ${m.size.x.toFixed(1)} m beam, ${m.size.y.toFixed(1)} m tall</dd><dt>Skin</dt><dd>${m.tris.toLocaleString('en')} triangles, ${m.open ? m.open + ' open edges' : 'closed'}</dd><dt>Cargo</dt><dd>${m.loads} containers, 6 by 6 by 12 m</dd><dt>Way</dt><dd>${WAYS[B.way]}</dd><dt>Tradition</dt><dd>${TRADITIONS[B.tr].name}${TRADITIONS[B.tr].drafted ? ', drafted' : ''}: ${TRADITIONS[B.tr].src}</dd>`
-    : BLOCKS.map((b, i) => (mode === 'faction' && b.f !== fac ? '' : `<dt>${b.n} ${b.name}</dt><dd>${MEAS[i].size.z.toFixed(0)} by ${MEAS[i].size.x.toFixed(0)} by ${MEAS[i].size.y.toFixed(0)} m</dd>`)).join('');
+  $('facts').innerHTML = B ? `<dt>${B.n} ${B.name}</dt><dd>${m.size.z.toFixed(1)} m long, ${m.size.x.toFixed(1)} m beam, ${m.size.y.toFixed(1)} m tall</dd><dt>Skin</dt><dd>${m.tris.toLocaleString('en')} triangles, ${m.open ? m.open + ' open edges' : 'closed'}</dd><dt>Cargo</dt><dd>${m.loads} containers, ${CONTAINER_SHOWN}</dd><dt>Way</dt><dd>${WAYS[B.way]}</dd><dt>Tradition</dt><dd>${TRADITIONS[B.tr].name}${TRADITIONS[B.tr].drafted ? ', drafted' : ''}: ${TRADITIONS[B.tr].src}</dd>`
+    : BLOCKS.map((b, i) => ((mode === 'faction' && b.f !== fac) || (mode === 'line' && !b.line) || (mode === 'board' && b.line) ? '' : `<dt>${b.n} ${b.name}</dt><dd>${MEAS[i].size.z.toFixed(0)} by ${MEAS[i].size.x.toFixed(0)} by ${MEAS[i].size.y.toFixed(0)} m</dd>`)).join('');
   const F = fac ? FACTIONS[fi(fac)] : null;
-  $('status').textContent = B ? `${B.n} ${B.name}` : mode === 'faction' ? `${F.name}: two freighters` : 'Eight freighters, four factions';
+  $('status').textContent = B ? `${B.n} ${B.name}` : mode === 'faction' ? `${F.name}: its pick and its blockouts` : mode === 'line' ? 'The four freighters' : 'The board: eight blockouts';
   $('tip').textContent = B ? `${WAYS[B.way]}. ${TRADITIONS[B.tr].name}${TRADITIONS[B.tr].drafted ? ' (drafted)' : ''}.` : mode === 'faction' ? `Both side by side at true scale, the Concord Petrel (88 m) beside them. Pick one to see it alone.`
+    : mode === 'line' ? 'Your four picks side by side at true scale, the Concord Petrel (88 m) beside them. The largest warship, the Krai dreadnought, is 226 m. Pick one to look closer.'
     : 'One column a faction, Concord at the left, bows toward you, the Concord Petrel (88 m) at the end. Pick one to look closer. Drag to orbit, scroll or pinch to zoom.';
 }
-$('viewRow').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.m) { mode = 'board'; fac = null; focus = -1; setView('board'); } else setView(b.dataset.k); };
+$('viewRow').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.m) { mode = b.dataset.m; fac = null; focus = -1; setView(mode === 'board' ? 'board' : 'quarter'); } else setView(b.dataset.k); };
 $('facRow').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; mode = 'faction'; fac = b.dataset.f; focus = -1; setView('quarter'); };
 $('list').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; focus = +b.dataset.i; fac = BLOCKS[focus].f; mode = 'focus'; setView('quarter'); };
 $('lookRow').onclick = (e) => { const b = e.target.closest('button'); if (b) { setLook(b.dataset.l); sync(); } };
 $('showRow').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.s === 'labels') showLabels = !showLabels; else showPetrel = !showPetrel; layout(); sync(); };
 
 // Labels over each ship, in screen space.
-const LBL = BLOCKS.map((b) => { const d = document.createElement('div'); d.innerHTML = `${b.n}<span class="nm"> ${b.name}</span>`; $('labels').append(d); return d; });
+const LBL = BLOCKS.map((b) => { const d = document.createElement('div'); d.innerHTML = b.line ? `<span class="cd">${FACTIONS[fi(b.f)].short}</span><span class="nm">${FACTIONS[fi(b.f)].name}: ${b.name}</span>` : `${b.n}<span class="nm"> ${b.name}</span>`; $('labels').append(d); return d; });
 // on the board, each column's faction at its far end, and the Petrel named
 const FLBL = FACTIONS.map((f) => { const d = document.createElement('div'); d.className = 'fac'; d.innerHTML = `<span class="cd">${f.short}</span><span class="nm">${f.name}</span>`; $('labels').append(d); return d; });
 const PLBL = (() => { const d = document.createElement('div'); d.className = 'yard'; d.textContent = 'Concord Petrel, 88 m'; $('labels').append(d); return d; })();
 function labels() { const w = stage.clientWidth, h = stage.clientHeight;
   const put = (d, v, show) => { const p = v.project(camera); d.hidden = !show || p.z > 1; d.style.left = ((p.x + 1) / 2 * w) + 'px'; d.style.top = ((1 - p.y) / 2 * h) + 'px'; };
-  FACTIONS.forEach((f, c) => put(FLBL[c], V3((c - 1.5) * COLW, 20, -ROWD / 2 - 125), showLabels && mode === 'board'));
-  put(PLBL, PETREL.position.clone().add(V3(0, 14, 0)), showLabels && showPetrel && mode !== 'focus');
-  SHIPS.forEach((g, i) => { const p = g.position.clone().add(V3(0, MEAS[i].size.y / 2 + 8, 0)).project(camera), d = LBL[i];
-    d.hidden = !showLabels || mode === 'focus' || !g.visible || p.z > 1; d.style.left = ((p.x + 1) / 2 * w) + 'px'; d.style.top = ((1 - p.y) / 2 * h) + 'px'; }); }
+  FACTIONS.forEach((f, c) => put(FLBL[c], V3((c - 1.5) * COLW, 40, -ROWD / 2 - 250), showLabels && mode === 'board'));
+  put(PLBL, PETREL.position.clone().add(V3(0, 14, 0)), showLabels && showPetrel && mode !== 'focus' && !(mode === 'line' && viewKey === 'side'));
+  SHIPS.forEach((g, i) => { const p = g.position.clone().add(V3(0, MEAS[i].size.y / 2 + 10, 0)).project(camera), d = LBL[i];
+  // side on, the line's four stand behind each other, so their labels are hidden: the list names them
+    d.hidden = !showLabels || mode === 'focus' || (mode === 'line' && viewKey === 'side') || !g.visible || p.z > 1; d.style.left = ((p.x + 1) / 2 * w) + 'px'; d.style.top = ((1 - p.y) / 2 * h) + 'px'; }); }
 // The camera sees past the panel: its view is offset so the hulls sit in the free part of the screen.
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false);
   const portrait = w / h <= 0.75, pw = portrait ? 0 : $('panel').offsetWidth;
@@ -851,17 +904,20 @@ let frames = 0, last = performance.now();
 function loop(now) { controls.update(); renderer.render(scene, camera); labels(); frames++;
   if (now - last > 1000) { $('meter').textContent = `${renderer.info.render.triangles.toLocaleString('en')} triangles, ${renderer.info.render.calls} draw calls, ${frames} fps`; frames = 0; last = now; }
   requestAnimationFrame(loop); }
-resize(); setLook('faction'); setView('board'); requestAnimationFrame(loop);
+resize(); setLook('faction'); setView('quarter'); requestAnimationFrame(loop);
 
 // Named shots for tools/mockups/shoot.mjs: the board, each faction's two, each concept from its bow quarter, and clay.
 const shot = (f) => () => { f(); resize(); renderer.render(scene, camera); labels(); };
 window.MOCKUP_SHOTS = {
+  line: shot(() => { setLook('faction'); mode = 'line'; fac = null; focus = -1; setView('quarter'); }),
+  line_top: shot(() => { setLook('faction'); mode = 'line'; fac = null; focus = -1; setView('top'); }),
+  line_side: shot(() => { setLook('faction'); mode = 'line'; fac = null; focus = -1; setView('side'); }),
   board: shot(() => { setLook('faction'); mode = 'board'; fac = null; focus = -1; setView('board'); }),
   board_top: shot(() => { setLook('faction'); mode = 'board'; fac = null; focus = -1; setView('top'); }),
   board_clay: shot(() => { setLook('clay'); mode = 'board'; fac = null; focus = -1; setView('board'); }),
 };
 for (const f of FACTIONS) window.MOCKUP_SHOTS['faction_' + f.id] = shot(() => { setLook('faction'); mode = 'faction'; fac = f.id; focus = -1; setView('quarter'); });
-BLOCKS.forEach((b, i) => { window.MOCKUP_SHOTS['f' + String(b.n).padStart(2, '0')] = shot(() => { setLook('faction'); focus = i; fac = b.f; mode = 'focus'; setView('quarter'); }); });
+BLOCKS.forEach((b, i) => { window.MOCKUP_SHOTS[(b.line ? 'l' : 'f') + String(b.n).padStart(2, '0')] = shot(() => { setLook('faction'); focus = i; fac = b.f; mode = 'focus'; setView('quarter'); }); });
 window.MOCKUP_SCENE = scene;
 renderer.render(scene, camera); window.MOCKUP_READY = true;
 })();
