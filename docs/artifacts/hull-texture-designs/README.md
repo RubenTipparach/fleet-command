@@ -47,3 +47,7 @@
   by the way it faces most), soft bake light, the model's painted-on marking hidden; both ships with two detail tiles by
   hull area (an area mask from the bake: smooth on the plating, coarse on the sub-hull) and the roughness map in the
   painted look.
+- 2026-11-07, cloud session: version 12, version id `1794051858-24a0`. C1's deflector, torpedo tube and nacelle noses as
+  designed pieces (lit emitter cells in a grey frame, a ribbed launcher with a lit throat, intake rings round a lit core)
+  in place of the model's flat glowing parts; K1's windows from its room plan in place of the model's strips; a class
+  picker for the rest of both lines (each class shows once its bake lands).
