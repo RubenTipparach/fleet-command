@@ -41,3 +41,6 @@
   running straight on as the really skinny arms, curving in at the bow to a thin bridge with a domed nose.
 - 2026-11-07, cloud session: version 8, version id `1794054085-fef1` (owner: "Fix the institute again.  No nipple at the
   end", "Flatter bow"): the Twin ledger's arms turn in on a squared quarter to a flat bow, closed flush with the hull.
+- 2026-11-07, cloud session: version 9, version id `1794054377-452d` (owner: "The institute ship will be shorter than is
+  cargo. That is the cargo is taller in height"): the Twin ledger's hull 16 m tall as shown (8 m drafted), its arms one
+  3.2 m roll wide, under container stacks two high (25 m).

@@ -754,14 +754,16 @@ const BLOCKS = [
     tell: 'Blockout 5: containers in counted rows of five along a low spine, a light strip between rows; the hooded bridge aft over the drive.',
     build(g) { BLOCKS.find((b) => b.n === 5).build(g); } },
   { n: 104, f: 'kelvane', tr: 'note', way: 'between', name: 'Twin ledger', line: true, from: 8, len: 160,
-    tell: 'Blockout 8 made a loop: its stern case as drafted, full width, and from its two outer edges two really skinny arms that run straight round two identical stacks of containers and round over at the bow, meeting across a flat bow, nothing standing proud of it.',
+    tell: 'Blockout 8 made a loop: its stern case as drafted, full width, and from its two outer edges two really skinny arms that run straight round two identical stacks of containers standing taller than the hull, meeting across a flat bow, nothing standing proud of it.',
     // owner, 2026-11-07: "8 having really skinny arms and link.tbe arms together with a thin bridge at the end to keep the
     // loop design ethos", "The institute freighter should be rounder at the tip", then "Fix the institute" with an outline of
     // the shape wanted ("I made an outline of what I want"): straight parallel sides from the stern case to a rounded bow. The stern case's section is split three ways at its
     // corners: its two outer strips (bottom corner, side and top corner, one rolled radius wide) run on as the arms, its
     // middle closes flat against the cargo. At the bow the arms turn in on a squared quarter until their cut walls meet
     // back to back, and the strip they make together runs on as a thin bridge, its nose domed.
-    build(g) { const K = skin(g, 'kelvane'), c = { ...KV, hb: 20, top: 9, bot: -9, r: 4.6, rt: 4.6, bh: 1.2 };
+    // owner, 2026-11-07: "The institute ship will be shorter than is cargo. That is the cargo is taller in height": the
+    // hull 8 m tall (16 m shown) under stacks two containers high, its arms one 3.2 m roll wide
+    build(g) { const K = skin(g, 'kelvane'), c = { ...KV, hb: 20, top: 4, bot: -4, r: 3.2, rt: 3.2, bh: 1 };
       const own = (k) => (E.belt(k) ? 'well' : false), zs = -60, run = 118, bend = 11, w = c.hb - c.r;
       const S = K.body([[-80, sc(c, 0.8)], [-74, c], [zs, c]], own);
       // the three regions: port strip (points 1-12), starboard strip (16-27), the middle between them; each strip closed by
