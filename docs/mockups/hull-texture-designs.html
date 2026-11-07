@@ -47,6 +47,7 @@
   .cards { display: grid; gap: 8px; }
   .card { border: 1px solid var(--edge); border-radius: 4px; padding: 8px 10px; background: var(--panel2); cursor: pointer; text-align: left; min-height: 44px; }
   .card.on { border-color: var(--accent); background: #12283a; }
+  .card.off { opacity: 0.45; cursor: default; }
   .card .t { display: flex; gap: 8px; align-items: baseline; }
   .card .k { font-weight: 700; color: var(--accent); min-width: 26px; }
   .card .n { font-weight: 700; font-size: 16px; }
@@ -78,9 +79,9 @@
   <div class="side" id="side">
     <h1>Hull texture designs</h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 24, v4. <code>hull-texture-designs</code>. The Concord's Petrel and the Krai frigate, the models the
-      game flies, each in five designs from its faction's culture, now modelled and baked like the Ssarith Hunt: armour
-      plates cut and raised one by one, and the ship's story placed from its own rooms.</p>
+    <p class="sub">Mockup 24, v5. <code>hull-texture-designs</code>. The Concord's Petrel and the Krai frigate, the models the
+      game flies, on a new recipe from the owner's reference sheets: large panels and sub panels, a kit of distinct
+      details, warning marks, bolt wells and wear, baked at 4096 px. C1 and K1 first; the other designs follow on it.</p>
     <h2>Ship</h2>
     <div class="row" id="ships"></div>
     <h2>Its story</h2>
@@ -929,7 +930,7 @@ const SHIPS = {
     story: 'Placed from its room plan: a window wherever people live or work against the hull (the officers’ and crew quarters, the mess, the medbay; none at the reactor, the stores or the magazine); the sensor bay’s domes over deck 0; the cooling fans and the reactor’s slots aft, and the soot they streak back; life support’s vents to port; the shuttle bay’s door to port, worn bright round its mouth; the torpedo tube’s scorch at the bow; the drives’ soot astern.',
     designs: [
       { slug: 'petrel_c1', k: 'C1', name: 'Survey white', tr: 'The explorers: the Survey Service, a ship that goes first and must be seen and known',
-        d: 'Pearl armour in long fore-and-aft strakes, every plate cut and raised on its own, their joints staggered so none line up; two Signal blue ring bands on bulkhead lines, kept clear of every window row, with Deep pin seams; light wear.', sw: ['#e4e2dc', '#9aa1a9', '#2f62e0', '#1b2a6b'] },
+        d: 'A clean off-white hull: large panels between the ship’s own bulkheads, split into sub panels at their own heights, every edge chamfered to catch the light; plates in several off-whites and pale greys, a few in copper; escape hatches and access panels set into the plating, vents, lit blue slots, small ports, grooves, thruster quads, copper modules, missile and bomb tubes, each with its warning marks; pill-shaped bolt wells at the plates’ corners; ordered machinery in the opened service bays; teal ring bands with deep blue pins; its name and number; light wear, chips on the edges, grime in the seams.', sw: ['#e7e5df', '#c9cbcd', '#b5643a', '#1f8f8a', '#c3342b'] },
       { slug: 'petrel_c2', k: 'C2', name: 'Many yards', tr: 'The member worlds’ yards: a federation that decides by consent builds a ship by consent, a section from each world',
         d: 'Four sections bow to stern, each plate taking its yard’s white (pearl, bone, cool white, sand), joined by Accord green treaty seams (green is “agreed”) with Deep pins.', sw: ['#e4e2dc', '#ddd6c6', '#dfe5ea', '#e2d9c8', '#2fbf5a'] },
       { slug: 'petrel_c3', k: 'C3', name: 'Envoy sash', tr: 'The mediators: the Concord’s envoys, whose ships arrive to talk; ceremonial density',
@@ -944,7 +945,7 @@ const SHIPS = {
     story: 'Placed from its room plan: the reactor along the keel aft, breathing through raked slots in the keel and streaking them with soot; engineering and life support venting through the flanks aft; gun control’s chevron vent under the dorsal crest; the boarding bay’s door to starboard, worn round its mouth; the spinal cannon’s scorch at the bow; the drives’ soot astern. Nothing round: the Krai cut, they do not turn.',
     designs: [
       { slug: 'krai_k1', k: 'K1', name: 'Tempered blade', tr: 'The smiths: a Krai ship is forged and quenched like a blade, and wears the colours the temper leaves',
-        d: 'Plates square to the hull with cut corners, split and split again; blued steel on the broad faces running to straw and bronze toward the chines and the bow; the crimson war stripe with bronze pins, and seven tallies in bone.', sw: ['#3a4a6a', '#56637a', '#c9a25a', '#b98a4e', '#7a1e2c'] },
+        d: 'Forged plates: large panels square to the hull split into sub panels, thick and broad-bevelled so every edge shines like a whetted edge; the Warhost’s steel in several tones; orange accent modules; the white war stripe with orange pins and seven tallies; missile and bomb tubes, thruster quads and vents with their warning marks, bolt wells in every corner; ordered machinery in the reactor and engine trenches; its hull number; chipped edges and rust in the seams.', sw: ['#56637a', '#6f7478', '#7c838c', '#c4692c', '#d9d6ce'] },
       { slug: 'krai_k2', k: 'K2', name: 'House banner', tr: 'The three great houses under the emperor: a ship flies its house',
         d: 'Blackened steel; the dorsal crest, the keel and the bow plates in the house’s field (house one, blood, a placeholder until the owner names the houses); the emperor’s eight-point star once on each flank; the tallies.', sw: ['#232120', '#b3121b', '#c9d0d8', '#e8dccb'] },
       { slug: 'krai_k3', k: 'K3', name: 'Blood record', tr: 'Rank won in blood, and tradition added to: a ship’s record is cut into its plates',
@@ -1052,7 +1053,9 @@ function buttons(id, items, cur, set) {
 function cards() {
   const host = document.getElementById('cards'); host.innerHTML = '';
   SHIPS[STATE.ship].designs.forEach((D, i) => {
-    const c = el('button', { className: 'card' + (STATE.design === i + 1 && !STATE.compare ? ' on' : '') });
+    const built = BUILT[STATE.ship] && BUILT[STATE.ship].designs[i];
+    const c = el('button', { className: 'card' + (STATE.design === i + 1 && !STATE.compare ? ' on' : '') + (built ? '' : ' off') });
+    if (!built) { c.disabled = true; c.title = 'To come on the new recipe, once C1 and K1 are right'; }
     const sw = el('div', { className: 'sw' }); for (const s of D.sw) sw.append(el('i', { style: 'background:' + s, title: s }));
     c.append(el('div', { className: 't' }, el('span', { className: 'k', textContent: D.k }), el('span', { className: 'n', textContent: D.name })),
       el('div', { className: 'tr', textContent: D.tr }), el('div', { className: 'd', textContent: D.d }), sw);
@@ -1064,7 +1067,7 @@ function showOnly(key, idx) {   // idx: the design to draw (1-5)
 }
 function refresh() {
   buttons('ships', [['concord', 'Concord Petrel'], ['krai', 'Krai frigate']], STATE.ship, (k) => { STATE.ship = k; frame(); refresh(); });
-  buttons('compare', [['one', 'One design'], ['all', 'All five']], STATE.compare ? 'all' : 'one', (k) => { STATE.compare = k === 'all'; frame(); refresh(); });
+  buttons('compare', [['one', 'One design'], ['all', 'All designs']], STATE.compare ? 'all' : 'one', (k) => { STATE.compare = k === 'all'; frame(); refresh(); });
   buttons('views', Object.keys(VIEWS).map((k) => [k, k[0].toUpperCase() + k.slice(1)]), STATE.view, (k) => { STATE.view = k; frame(); refresh(); });
   buttons('looks', [['painted', 'Painted'], ['pbr', 'PBR']], STATE.look, (k) => { setLook(k); refresh(); });
   buttons('lights', [['studio', 'Studio'], ['night', 'Night']], STATE.night ? 'night' : 'studio', (k) => { setNight(k === 'night'); refresh(); });
@@ -1073,7 +1076,7 @@ function refresh() {
   showOnly(STATE.ship, STATE.design);
   const D = SHIPS[STATE.ship].designs[STATE.design - 1];
   const head = document.getElementById('head');
-  head.querySelector('.n').textContent = SHIPS[STATE.ship].label + (STATE.compare ? ': all five designs' : ': ' + D.k + ' ' + D.name);
+  head.querySelector('.n').textContent = SHIPS[STATE.ship].label + (STATE.compare ? ': all designs' : ': ' + D.k + ' ' + D.name);
   head.querySelector('.tr').textContent = STATE.compare ? 'The same camera on each; drag to orbit them together' : D.tr;
   const B = BUILT[STATE.ship], d = B && B.designs[STATE.design - 1];
   document.getElementById('meter').textContent = d ? `${d.sh.tris} triangles, ${d.sh.tex_px} px maps (${(d.sh.uv_m / d.sh.tex_px * 100).toFixed(1)} cm a pixel), ${(d.sh.panes || []).length} windows and bays, ${B.len.toFixed(1)} m` : '';

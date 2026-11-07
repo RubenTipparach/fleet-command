@@ -58,13 +58,35 @@ def image_uri(png_path, lossless=False, quality=92):
     return "data:image/png;base64," + base64.b64encode(png).decode("ascii")
 
 
-def load(src):
-    """The JSON at src, with a kit manifest's piece images carried as data URIs."""
+def image_file(png_path, out_path, lossless=False, quality=92):
+    """A map written beside the page as WebP (a manifest with "maps_dir"): the page loads it as a file the artifact
+    publishes with it, so maps too large to inline (4096 px ship maps: owner, 2026-11-06, of a close-up, "close up ship
+    details") stay out of the 16 MiB page. Deterministic for the same input; rewritten only when it changes."""
+    buf = io.BytesIO()
+    im = Image.open(png_path)
+    if lossless:
+        im.save(buf, "WEBP", lossless=True, method=6)
+    else:
+        im.save(buf, "WEBP", quality=quality, method=6)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    if not out_path.exists() or out_path.read_bytes() != buf.getvalue():
+        out_path.write_bytes(buf.getvalue())
+
+
+def load(src, page=None):
+    """The JSON at src, with a kit manifest's piece images carried as data URIs, or, when the manifest names a
+    "maps_dir" (relative to the repository), written there as WebP files and referred to by their path from the page."""
     path = ROOT / src
     obj = json.loads(path.read_text())
     if isinstance(obj, dict) and isinstance(obj.get("pieces"), dict) and all("file" in p for p in obj["pieces"].values()):
-        for piece in obj["pieces"].values():
-            piece["data"] = image_uri(path.parent / piece["file"], piece.get("lossless", False), obj.get("webp_quality", 92))
+        md = obj.get("maps_dir")
+        for name, piece in obj["pieces"].items():
+            if md and page is not None:
+                out = ROOT / md / (pathlib.Path(piece["file"]).stem + ".webp")
+                image_file(path.parent / piece["file"], out, piece.get("lossless", False), obj.get("webp_quality", 92))
+                piece["data"] = str(out.relative_to(page.resolve().parent)).replace("\\", "/")
+            else:
+                piece["data"] = image_uri(path.parent / piece["file"], piece.get("lossless", False), obj.get("webp_quality", 92))
     # the ship schematics' manifest (assets/ships/schematics/): each ship's two white layers carried as data URIs
     if isinstance(obj, dict) and isinstance(obj.get("ships"), list) and all("hull" in s and "wire" in s for s in obj["ships"]):
         for ship in obj["ships"]:
@@ -73,7 +95,7 @@ def load(src):
     return obj
 
 
-def fill(text):
+def fill(text, page=None):
     def one(m):
         src = m.group(2)
         if src.endswith(".glb"):
@@ -84,7 +106,7 @@ def fill(text):
             if "</script" in code:
                 raise SystemExit(f"{src} contains a closing script tag and cannot be inlined")
             return f'{m.group(1)}<script data-src="{src}">\n{code}</script>\n{m.group(4)}'
-        data = json.dumps(load(src), separators=(",", ":"))
+        data = json.dumps(load(src, page), separators=(",", ":"))
         return f'{m.group(1)}<script type="application/json" data-src="{src}">{data}</script>\n{m.group(4)}'
     return MARK.sub(one, text)
 
@@ -95,7 +117,7 @@ def main():
     for page in [a for a in sys.argv[1:] if not a.startswith("--")]:
         p = pathlib.Path(page)
         text = p.read_text()
-        new = fill(text)
+        new = fill(text, p)
         if new != text:
             stale = True
             if not check:

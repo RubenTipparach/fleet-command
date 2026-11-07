@@ -33,7 +33,7 @@ import time
 
 import bpy
 import numpy as np
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -79,7 +79,7 @@ def setup(w_px, h_px, samples):
     cy.device, cy.samples, cy.use_adaptive_sampling, cy.use_denoising, cy.seed = "CPU", samples, False, False, 0
     cy.max_bounces, cy.diffuse_bounces = 2, 1
     sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = w_px, h_px, 100
-    sc.view_settings.view_transform = "Standard"
+    sc.view_settings.view_transform = "AgX"
     world = bpy.data.worlds.new("World"); world.use_nodes = True
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.0
     world.light_settings.distance = 0.45
@@ -275,7 +275,11 @@ UNDER_GLOW, UNDER_GLOW_K = None, 0.8   # a glow in the gaps between plates (the 
 PAINT_MODE = "painted"        # "painted": the painter's light, ink and steps (the Hunt); "render": a render of the high-poly
 SKY_RGB, SKY_K = (0.78, 0.82, 0.9), 0.9   # the render's sky: its colour and strength (the sun is the painter's, energy 1)
 AO_K = 0.35                   # in the render mode, how much of the AO pass deepens the render's own occlusion
-HUNT_PAINT = {"ARMOUR": ARMOUR, "SUB": SUB, "UNDER": UNDER, "GREEBLE": GREEBLE, "DOME": DOME, "SLAT": SLAT, "VENT": VENT,
+ACCENT = ["#c06a32"]          # the accent modules' colours (hull_detail's 'accent' kind), by their rid
+DECAL = {"warn": "#c3342b", "ink": "#3b4048", "hazard": ["#e2a72a", "#2c2e31"], "name": "#2a3a56", "white": "#eeeeea"}
+DIRT, DIRT_K = "#4a3f33", 0.0  # grime in the cavities: its colour, and how much of it (0 none)
+CHIPS_K = 0.0                 # chipped and specked paint (0 none)
+HUNT_PAINT = {"ACCENT": ACCENT, "DECAL": DECAL, "DIRT": DIRT, "DIRT_K": DIRT_K, "CHIPS_K": CHIPS_K, "ARMOUR": ARMOUR, "SUB": SUB, "UNDER": UNDER, "GREEBLE": GREEBLE, "DOME": DOME, "SLAT": SLAT, "VENT": VENT,
               "LIVERY": LIVERY, "BRONZE": BRONZE, "INK": INK, "LIGHT_EDGE": LIGHT_EDGE, "EDGE_K": EDGE_K, "BRONZE_SHARE": BRONZE_SHARE,
               "UNDER_GLOW": UNDER_GLOW, "UNDER_GLOW_K": UNDER_GLOW_K, "PAINT_MODE": PAINT_MODE, "SKY_RGB": SKY_RGB,
               "SKY_K": SKY_K, "AO_K": AO_K}
@@ -327,8 +331,10 @@ def img_array(img):
     return a.reshape(h, w, 4)
 
 
-def bake_ship(slug, px, samples, panes_only=False):
-    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written)."""
+def bake_ship(slug, px, samples, panes_only=False, preview=None):
+    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written). preview: a
+    folder to render the high-poly layer itself into (clay with its lamps lit, a quarter, a top and a close view), no bake:
+    the quick look at the model before the bake squashes it onto the hull."""
     import bmesh
     import hull_detail as HD
     import hull_sdf
@@ -365,6 +371,8 @@ def bake_ship(slug, px, samples, panes_only=False):
     panes = [dict(P) for P in HD.PANES]   # the page draws each pane as its own quad (hull_detail.pane_box)
     if panes_only:
         return {"panes": panes}
+    if preview:
+        return preview_render(slug, high, preview, samples)
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
     sun.data.energy = 1.0; sun.data.angle = math.radians(3)
     sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
@@ -431,6 +439,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     lightp = np.dstack([blur(lightp[..., c], 1) for c in range(3)])   # the emissive faces' sampling speckle out
     faction = D.get("faction", "ssarith")
     S["_story"] = HD.STORY
+    S["_decals"] = HD.DECALS
     wr = wear(P, nor, cover, HD.STORY, S)
     if litp is not None:
         col, emit = paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr)
@@ -462,9 +471,71 @@ def bake_ship(slug, px, samples, panes_only=False):
             "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
 
 
+def preview_render(slug, high, out, samples):
+    """Render the built high-poly layer (clay, lamps lit, under the bake's sun and a soft sky) from a port quarter, above
+    and close on the flank, into out/<slug>_<view>.png."""
+    import hull_detail as HD
+    sc = bpy.context.scene
+    HD.show("shade")
+    pal = {"armour": ARMOUR, "sub": SUB, "accent": ACCENT, "under": [UNDER], "greeble": list(GREEBLE), "dome": [DOME],
+           "slat": [SLAT], "vent": [VENT], "strip": [VENT]}
+    mult = {"armour": 11, "sub": 7, "accent": 7, "greeble": 13}
+    for m, sw in HD.MATS:   # each piece in its palette colour by its rid, as flat_paint picks it (no liveries or decals)
+        if m.name.startswith("hd_lamp"):
+            sw("light"); continue
+        kind = m.name[3:]
+        cols = pal.get(kind)
+        N, L = m.node_tree.nodes, m.node_tree.links
+        bs = next((n for n in N if n.type == "BSDF_DIFFUSE"), None)
+        if not cols or bs is None:
+            continue
+        attr = next(n for n in N if n.type == "ATTRIBUTE"); sep = next(n for n in N if n.type == "SEPARATE_COLOR")
+        mul = N.new("ShaderNodeMath"); mul.operation = "MULTIPLY"; mul.inputs[1].default_value = mult.get(kind, 1)
+        fr = N.new("ShaderNodeMath"); fr.operation = "FRACT"
+        L.new(sep.outputs[0], mul.inputs[0]); L.new(mul.outputs[0], fr.inputs[0])
+        ramp = N.new("ShaderNodeValToRGB"); ramp.color_ramp.interpolation = "CONSTANT"
+        els = ramp.color_ramp.elements
+        els[0].position = 0.0
+        if len(cols) > 1:
+            els[1].position = 1 / len(cols)
+            for i in range(2, len(cols)):
+                els.new(i / len(cols))
+        else:
+            els.remove(els[1])
+        for e, c in zip(sorted(els, key=lambda e: e.position), cols):
+            e.color = (*[float(x) ** 2.2 for x in hexrgb(c)], 1)
+        L.new(fr.outputs[0], ramp.inputs[0]); L.new(ramp.outputs[0], bs.inputs["Color"])
+    w = sc.world
+    w.node_tree.nodes["Background"].inputs["Color"].default_value = (0.55, 0.6, 0.7, 1)
+    w.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.25
+    sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
+    sun.data.energy = 2.2; sun.data.angle = math.radians(3)
+    sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
+    sc.cycles.samples = samples; sc.cycles.use_denoising = True
+    sc.render.resolution_x, sc.render.resolution_y = 1600, 900
+    sc.view_settings.view_transform = "AgX"
+    zs = [o.matrix_world @ Vector(c) for o in high for c in o.bound_box]
+    lo_, hi_ = Vector((min(p.x for p in zs), min(p.y for p in zs), min(p.z for p in zs))), Vector((max(p.x for p in zs), max(p.y for p in zs), max(p.z for p in zs)))
+    mid, L = (lo_ + hi_) / 2, (hi_ - lo_).length
+    cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam")); sc.collection.objects.link(cam); sc.camera = cam
+    cam.data.lens = 50; cam.data.clip_end = 2000
+    os.makedirs(out, exist_ok=True)
+    for view, d, k, at in (("quarter", (1.0, 0.6, 0.75), 1.25, mid), ("top", (0.25, 1.0, 0.05), 1.1, mid),
+                           ("close", (1.0, 0.25, 0.2), 0.32, mid + Vector((hi_.x * 0.6, 0, (hi_.z - mid.z) * 0.15))),
+                           ("aft", (0.9, 0.45, -0.8), 0.45, mid + Vector((hi_.x * 0.4, 0, (lo_.z - mid.z) * 0.55)))):
+        dv = Vector(d).normalized()
+        cam.location = at + dv * L * k
+        xx = Vector((0, 1, 0)).cross(dv).normalized(); yx = dv.cross(xx)   # the ship's up (+y) up the frame
+        cam.rotation_euler = Matrix((xx, yx, dv)).transposed().to_euler()
+        sc.render.filepath = os.path.join(out, f"{slug}_{view}.png")
+        bpy.ops.render.render(write_still=True)
+        print(f"  preview {sc.render.filepath}", flush=True)
+    return {}
+
+
 EMBLEMS = os.path.join(ROOT, "assets", "emblems")
 # PBR by what a texel is: (roughness, metalness). Painted armour is a worn painted metal; the glass of a dome is smooth.
-PBR = {"armour": (0.58, 0.45), "sub": (0.62, 0.55), "under": (0.8, 0.6), "greeble": (0.55, 0.7), "dome": (0.12, 0.0),
+PBR = {"armour": (0.58, 0.45), "accent": (0.5, 0.3), "sub": (0.62, 0.55), "under": (0.8, 0.6), "greeble": (0.55, 0.7), "dome": (0.12, 0.0),
        "slat": (0.6, 0.7), "vent": (0.9, 0.3), "strip": (0.4, 0.0), "lamp": (0.3, 0.0)}
 LIVERY_PBR = (0.5, 0.1)       # the liveries and the logo are paint on the metal
 
@@ -515,6 +586,8 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     base = np.where(kind_is("sub")[..., None], spal[(rid * len(SUB) * 7).astype(int) % len(SUB)], base)
     g0, g1 = hexrgb(GREEBLE[0]), hexrgb(GREEBLE[1])
     base = np.where(kind_is("greeble")[..., None], g0 + (g1 - g0) * ((rid * 13.0) % 1.0)[..., None], base)
+    apal = np.stack([hexrgb(c) for c in ACCENT])
+    base = np.where(kind_is("accent")[..., None], apal[(rid * len(ACCENT) * 7).astype(int) % len(ACCENT)] * (0.94 + 0.1 * ((rid * 23.0) % 1.0))[..., None], base)
     base = np.where(kind_is("dome")[..., None], hexrgb(DOME), base)
     base = np.where(kind_is("slat")[..., None], hexrgb(SLAT), base)
     base = np.where(kind_is("vent")[..., None], hexrgb(VENT), base)
@@ -529,12 +602,116 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     base = np.where(liv[..., None], hexrgb(LIVERY) * (0.92 + 0.16 * rid)[..., None], base)
     base, painted = livery_paint(base, kind_is, rid, P, n, S)
     liv |= painted
+    base, dm = paint_decals(base, P, n, kind_is("armour") | kind_is("accent") | kind_is("sub"), S.get("_decals", []))
+    liv |= dm
     patch, field, device, hull = logo_mask(S, faction, P, n, kind_is("armour") | kind_is("sub"))
     if hull:   # the emblem's own hull colours: its plate painted as a patch, the field and device on it
         base = np.where(patch[..., None], hexrgb(hull["plate"]), base)
         base = np.where(field[..., None], hexrgb(hull["field"]), base)
         base = np.where(device[..., None], hexrgb(hull["device"]), base)
     return base, liv | patch
+
+
+# a 5 by 7 block font for names and numbers on the hull (our own, drawn here)
+FONT = {
+    "A": "01110100011000111111100011000110001", "B": "11110100011000111110100011000111110", "C": "01111100001000010000100001000001111",
+    "D": "11110100011000110001100011000111110", "E": "11111100001000011110100001000011111", "F": "11111100001000011110100001000010000",
+    "G": "01111100001000010011100011000101111", "H": "10001100011000111111100011000110001", "I": "11111001000010000100001000010011111",
+    "J": "00111000100001000010000101001001100", "K": "10001100101010011000101001001010001", "L": "10000100001000010000100001000011111",
+    "M": "10001110111010110101100011000110001", "N": "10001110011010110011100011000110001", "O": "01110100011000110001100011000101110",
+    "P": "11110100011000111110100001000010000", "Q": "01110100011000110001101011001001101", "R": "11110100011000111110101001001010001",
+    "S": "01111100001000001110000010000111110", "T": "11111001000010000100001000010000100", "U": "10001100011000110001100011000101110",
+    "V": "10001100011000110001100010101000100", "W": "10001100011000110101101011101110001", "X": "10001100010101000100010101000110001",
+    "Y": "10001100010101000100001000010000100", "Z": "11111000010001000100010001000011111", "0": "01110100011001110101110011000101110",
+    "1": "00100011000010000100001000010001110", "2": "01110100010000100010001000100011111", "3": "11110000010000101110000010000111110",
+    "4": "00010001100101010010111110001000010", "5": "11111100001111000001000011000101110", "6": "00110010001000011110100011000101110",
+    "7": "11111000010001000100010000100001000", "8": "01110100011000101110100011000101110", "9": "01110100011000101111000010001001100",
+    "-": "00000000000000011111000000000000000", " ": "0" * 35}
+
+
+def decal_shape(kind, x, y, du, dv, w, h, text=None):
+    """Where a decal's mark is, in its own frame: x, y the frame's coordinates scaled to -1..1 over its w by h, du, dv the
+    same in metres. Returns (mark, second colour) masks."""
+    inside = (np.abs(x) <= 1) & (np.abs(y) <= 1)
+    none = np.zeros_like(inside)
+    t = 0.05
+    if kind == "frame":       # corner brackets round a hatch or a panel
+        tb, lr = np.abs(dv) > h / 2 - t, np.abs(du) > w / 2 - t
+        return inside & ((tb & (np.abs(x) > 0.62)) | (lr & (np.abs(y) > 0.55))), none
+    if kind == "box":         # a small outlined box
+        return inside & ((np.abs(du) > w / 2 - t) | (np.abs(dv) > h / 2 - t)), none
+    if kind == "arrow":       # a solid triangle pointing forward
+        return inside & (np.abs(y) <= (1 - x) / 2 + 0.02), none
+    if kind == "dashes":      # three short bars
+        return inside & (((x + 1) / 2 * 3) % 1.0 < 0.72), none
+    if kind == "block":
+        return inside, none
+    if kind in ("hazard", "chevrons"):   # hazard stripes, the two colours on a 45-degree rake
+        st = ((du + dv) / 0.22) % 2 < 1 if kind == "hazard" else ((du + np.abs(dv) * 1.2) / 0.3) % 2 < 1
+        return inside & st, inside & ~st
+    if kind == "band":        # a warning band, red and white
+        st = (du / 0.5) % 2 < 1
+        return inside & st, inside & ~st
+    if kind == "text" and text:   # letters across u, h tall, each 5 by 7 cells with a cell's gap
+        n = len(text); cw = h / 7.0; lw = cw * 6
+        tw = lw * n - cw
+        lu = du + tw / 2; lv = h / 2 - dv
+        i = np.floor(lu / lw).astype(int); cu = np.floor((lu - i * lw) / cw).astype(int); cv = np.floor(lv / cw).astype(int)
+        ok = (lu >= 0) & (lu < tw) & (cu < 5) & (cv >= 0) & (cv < 7) & (np.abs(dv) < h / 2)
+        out = np.zeros_like(ok)
+        for k, ch in enumerate(text.upper()):
+            g = FONT.get(ch, FONT[" "])
+            bits = np.array([c == "1" for c in g]).reshape(7, 5)
+            sel = ok & (i == k)
+            out[sel] = bits[cv[sel], cu[sel]]
+        return out, none
+    return none, none
+
+
+def paint_decals(base, P, n, on, decals, cell=2.0):
+    """The painted marks (hull_detail.DECALS and the data's own): warning frames, arrows, hazard stripes, bars, names and
+    numbers, each laid in its own frame on the plating it faces. Texels are bucketed in cells of `cell` metres so each mark
+    only looks at the texels near it. Returns (colour, painted mask)."""
+    h, w = on.shape
+    mask = np.zeros((h, w), bool)
+    if not decals:
+        return base, mask
+    idx = np.flatnonzero(on.ravel())
+    Pc = P.reshape(-1, 3)[idx]; Nc = n.reshape(-1, 3)[idx]
+    key = np.floor(Pc / cell).astype(np.int64) + 512
+    code = (key[:, 0] * 1024 + key[:, 1]) * 1024 + key[:, 2]
+    order = np.argsort(code, kind="stable"); sc = code[order]
+    flat = base.reshape(-1, 3)
+    mflat = mask.ravel()
+    for D_ in decals:
+        c = np.array(D_["c"], np.float32); u = np.array(D_["u"], np.float32); v = np.array(D_["v"], np.float32); nn = np.array(D_["n"], np.float32)
+        wm, hm = D_["w_m"], D_["h_m"]
+        r = math.hypot(wm, hm) / 2 + 0.1
+        lo_ = np.floor((c - r) / cell).astype(np.int64) + 512; hi_ = np.floor((c + r) / cell).astype(np.int64) + 512
+        sel = []
+        for a in range(lo_[0], hi_[0] + 1):
+            for b in range(lo_[1], hi_[1] + 1):
+                c0 = (a * 1024 + b) * 1024 + lo_[2]; c1 = (a * 1024 + b) * 1024 + hi_[2]
+                i0, i1 = np.searchsorted(sc, c0), np.searchsorted(sc, c1, side="right")
+                if i1 > i0:
+                    sel.append(order[i0:i1])
+        if not sel:
+            continue
+        s_ = np.concatenate(sel)
+        d = Pc[s_] - c
+        ok = (np.abs(d @ nn) < 0.35) & ((Nc[s_] @ nn) > 0.6)
+        s_ = s_[ok]; d = d[ok]
+        du, dv = d @ u, d @ v
+        if D_.get("mirror"):
+            du = -du
+        m1, m2 = decal_shape(D_["kind"], du / (wm / 2), dv / (hm / 2), du, dv, wm, hm, D_.get("text"))
+        col = DECAL.get(D_["colour"], D_["colour"])
+        c1 = hexrgb(col[0] if isinstance(col, list) else col)
+        c2 = hexrgb(col[1]) if isinstance(col, list) else hexrgb(DECAL["white"])
+        t1, t2 = idx[s_[m1]], idx[s_[m2]]
+        flat[t1] = c1; flat[t2] = c2
+        mflat[t1] = True; mflat[t2] = True
+    return flat.reshape(h, w, 3), mflat.reshape(h, w)
 
 
 def plate_mean(v, rid, cover):
@@ -562,6 +739,31 @@ def vnoise3(P, cell, seed):
     y0 = x0 * (1 - f[..., 1]) + x1 * f[..., 1]; y1 = x2 * (1 - f[..., 1]) + x3 * f[..., 1]
     return y0 * (1 - f[..., 2]) + y1 * f[..., 2]
 
+
+def hash3(i, j, k, seed):
+    """An integer hash of a lattice point (PCG-style mixing on uint32), 0..1: no repeat and no lines (CLAUDE.md section 10,
+    never a product-modulo or sin hash)."""
+    h = (i.astype(np.int64) * 73856093 ^ j.astype(np.int64) * 19349663 ^ k.astype(np.int64) * 83492791 ^ seed * 2654435761) & 0xFFFFFFFF
+    h = h.astype(np.uint64)
+    h = (h * np.uint64(747796405) + np.uint64(2891336453)) & np.uint64(0xFFFFFFFF)
+    h = ((h >> ((h >> np.uint64(28)) + np.uint64(4))) ^ h) * np.uint64(277803737) & np.uint64(0xFFFFFFFF)
+    h = (h >> np.uint64(22)) ^ h
+    return (h & np.uint64(0xFFFFFF)).astype(np.float32) / float(0xFFFFFF)
+
+
+def specks(P, cell, share, seed):
+    """Small round marks scattered over ship space: one candidate in each cell of `cell` metres, its middle jittered
+    inside the cell and its radius kept inside it, kept with probability `share`. Returns 0..1 (1 at a speck's middle)."""
+    q = P / cell
+    i = np.floor(q).astype(np.int64)
+    a, b, c = i[..., 0], i[..., 1], i[..., 2]
+    keep = hash3(a, b, c, seed) < share
+    r = 0.1 + 0.2 * hash3(a, b, c, seed + 4)
+    cx = a + 0.5 + (0.5 - r) * (2 * hash3(a, b, c, seed + 1) - 1)
+    cy = b + 0.5 + (0.5 - r) * (2 * hash3(a, b, c, seed + 2) - 1)
+    cz = c + 0.5 + (0.5 - r) * (2 * hash3(a, b, c, seed + 3) - 1)
+    d = np.sqrt((q[..., 0] - cx) ** 2 + (q[..., 1] - cy) ** 2 + (q[..., 2] - cz) ** 2) / r
+    return np.where(keep, np.clip(1.4 - d, 0, 1), 0).astype(np.float32)
 
 def ramp(stops, t):
     """A colour ramp through hex stops, t 0..1."""
@@ -825,6 +1027,17 @@ def paint_render(data, glowp, P, nor, ao, litp, cover, S, faction, wr=None):
     lit = lit * (1 - AO_K + AO_K * aoc)[..., None]
     col = base * (0.06 + 0.94 * lit)
     col *= (1.0 + 0.5 * (grain(h, w) - 1.0))[..., None]
+    if CHIPS_K:   # paint chipped and specked (owner: "subtle wear and tear"): small chips mostly on the plates' edges,
+        # fine specks over the faces, both from a lattice hash so nothing repeats
+        _, _, edge_, is2 = classify(data, cover)
+        e = np.clip(edge_ * 6.0, 0, 1)
+        ch = np.clip(specks(P, 0.09, 0.55, 31) * 3, 0, 1) * np.clip(e * 1.5 + 0.08, 0, 1)
+        sp = np.clip(specks(P, 0.05, 0.22, 47) * 2.5, 0, 1) * 0.5
+        wearm = np.clip((ch + sp) * CHIPS_K, 0, 1) * (is2("armour") | is2("accent"))
+        col = col * (1 - 0.55 * wearm[..., None]) + hexrgb(DIRT) * lit * (0.35 * wearm[..., None])
+    if DIRT_K:   # grime settled in the cavities, broken up so it gathers here and there
+        dirt = np.clip((0.85 - aoc) / 0.5, 0, 1) ** 1.5 * np.clip(0.4 + 0.9 * vnoise3(P, 0.9, 23), 0, 1) * DIRT_K
+        col = col * (1 - dirt[..., None]) + hexrgb(DIRT) * lit * dirt[..., None]
     if wr:
         col = col * (1 - 0.7 * wr["soot"][..., None]) + hexrgb(INK) * (0.18 * wr["soot"][..., None])
         col = col * (1 - 0.8 * wr["scorch"][..., None]) + np.array([0.05, 0.035, 0.025]) * (0.8 * wr["scorch"][..., None])
@@ -877,7 +1090,7 @@ def half(a):
     return (a[0::2, 0::2] + a[1::2, 0::2] + a[0::2, 1::2] + a[1::2, 1::2]) / 4
 
 
-def ship_main(slugs, px, samples, panes_only=False):
+def ship_main(slugs, px, samples, panes_only=False, preview=None):
     mpath = os.path.join(SHIPS_OUT, "manifest.json")
     man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
     man.setdefault("kept", {})
@@ -889,6 +1102,9 @@ def ship_main(slugs, px, samples, panes_only=False):
     for k in [k for k in man["pieces"] if k.endswith("_pane")]:   # panes are drawn from their data now, not a map
         del man["pieces"][k]
     for slug in slugs:
+        if preview:
+            bake_ship(slug, px, samples, preview=preview)
+            continue
         if panes_only:
             man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
@@ -902,8 +1118,12 @@ def ship_main(slugs, px, samples, panes_only=False):
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(SHIPS_OUT, f), "rb").read()).hexdigest()}
         print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)
+    if preview:
+        return
     man["blender"] = bpy.app.version_string
-    man["webp_quality"] = json.load(open(DETAIL)).get("webp_quality", 84)   # the page's copy of the maps (inline_data.py); the PNGs stay exact
+    man["webp_quality"] = json.load(open(DETAIL)).get("webp_quality", 84)
+    if json.load(open(DETAIL)).get("maps_dir"):   # the page loads these maps as files beside it (inline_data.py)
+        man["maps_dir"] = json.load(open(DETAIL))["maps_dir"]   # the page's copy of the maps (inline_data.py); the PNGs stay exact
     with open(mpath, "w") as fh:
         json.dump(man, fh, separators=(",", ":"), sort_keys=True)
         fh.write("\n")
@@ -915,7 +1135,8 @@ def main():
     if "--detail" in argv:   # another faction's ships (data/ships/<faction>/hull_detail.json); the Hunt's by default
         use_faction(arg("--detail", ""))
     if "--ship" in argv:  # a picked ship of its own: --ship hooded_lance,forked_prow [--px 2048] [--samples 64] [--panes-only]
-        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv)
+        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv,
+                         arg("--preview", None))
     names = arg("--tile", ",".join(TILES)).split(",")
     samples, ppm = int(arg("--samples", "32")), float(arg("--ppm", "128"))
     os.makedirs(OUT, exist_ok=True); os.makedirs(RAW, exist_ok=True)

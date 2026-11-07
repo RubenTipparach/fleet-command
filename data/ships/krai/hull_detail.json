@@ -4,31 +4,17 @@
   "out": "assets/ships/krai/baked",
   "webp_quality": 72,
   "defaults": {
-    "cut_style": "plan",
-    "kit_min_m": 2.4,
-    "kit_depth": 3,
-    "kit_stop": 0.22,
-    "kit_chamfer": 0.12,
-    "kit_frame_m": [
-      9.0,
-      13.0
-    ],
-    "armour_t_m": 0.5,
-    "sub_t_m": 0.18,
-    "lift_m": 0.3,
+    "cut_style": "panels",
+    "kit_min_m": 1.8,
+    "armour_t_m": 0.55,
+    "sub_t_m": 0.16,
+    "lift_m": 0.16,
     "gap_m": [
-      0.1,
-      0.18
+      0.07,
+      0.09
     ],
-    "trench_m": [
-      0.8,
-      1.6
-    ],
-    "trench_share": 0.08,
-    "greebles_per_m2": 2.4,
-    "overlay_min_m2": 20.0,
-    "overlay_inset": 0.84,
-    "overlay_lift_m": 0.2,
+    "trench_share": 0.0,
+    "overlay_min_m2": 1000000000.0,
     "light_ref": 0.9,
     "pane_frame_m": {
       "window": 0.1,
@@ -63,7 +49,10 @@
         "#5e6b82",
         "#4f5a6e",
         "#68768d",
-        "#536077"
+        "#6f7478",
+        "#5a5f66",
+        "#7c838c",
+        "#535d70"
       ],
       "SUB": [
         "#2b303b",
@@ -78,19 +67,89 @@
       "DOME": "#333333",
       "SLAT": "#4a505a",
       "VENT": "#16181c",
-      "LIVERY": "#7a1e2c",
+      "LIVERY": "#d9d6ce",
       "BRONZE": "#b98a4e",
-      "BRONZE_SHARE": 0.05,
+      "BRONZE_SHARE": 0.04,
       "INK": "#2a2d33",
-      "LIGHT_EDGE": "#d8dde4",
+      "LIGHT_EDGE": "#e2d6b8",
       "EDGE_K": 0.55,
-      "PAINT_MODE": "render"
+      "PAINT_MODE": "render",
+      "ACCENT": [
+        "#c4692c",
+        "#cf7d3a",
+        "#b55d28"
+      ],
+      "DIRT": "#4d3a2a",
+      "DIRT_K": 0.45,
+      "DECAL": {
+        "warn": "#c3342b",
+        "ink": "#d9d6ce",
+        "hazard": [
+          "#e2a72a",
+          "#24262a"
+        ],
+        "name": "#d9d6ce",
+        "white": "#ecebe6"
+      },
+      "CHIPS_K": 0.9
     },
-    "_recipe": "The Krai's recipe (design.md, Recipes from culture): big split panels (KP1), heavy layered relief (KP1), machinery only at the reactor and engines (KP5), the render light (rules 3, 4)",
+    "_recipe": "The Krai's recipe, version 6 (owner, 2026-11-06, with reference sheets: \"more detail variety\", \"notice large panels, and sub panels, liveries, varying colors of armor\", \"vents, lights, escape hatches, missile tubes, bombe tobes\", \"warning markings too\", \"tiny holes or slots for rivets and bolts\"): forged plates, large panels square to the hull split into sub panels at their own heights, thick and broad-bevelled so every edge shines (edge-first); the faction's steel in several tones, brass-orange accent modules, white war stripes; the detail kit weighted to its guns (missile and bomb tubes, thruster quads, vents), riveted heavily; ordered machinery in the reactor and engine trenches; grime and rust in the cavities.",
     "plan": "data/ships/krai/frigate_plan.json",
     "plan_dz_m": 25.93,
-    "plan_merge_m": 3.5,
-    "greebles_exposed_only": true
+    "panel_merge_m": 8.0,
+    "panel_merge_x_m": 3.0,
+    "station_sweep": 0.0,
+    "sub_depth": 2,
+    "sub_stop": 0.28,
+    "major_gap_m": 0.16,
+    "chine_deg": 35,
+    "bevel_m": {
+      "armour": 0.1,
+      "sub": 0.04,
+      "accent": 0.06,
+      "vent": 0.015,
+      "greeble": 0.04,
+      "slat": 0.015,
+      "dome": 0.03
+    },
+    "kit": {
+      "per_100m2": 12.0,
+      "gap_m": 0.35,
+      "lights": [
+        "amber",
+        "red",
+        "amber"
+      ],
+      "weights": {
+        "hatch": 2,
+        "vent": 3,
+        "light": 1.5,
+        "rcs": 1.2,
+        "module": 2.2,
+        "missiles": 1.6,
+        "bombs": 0.9,
+        "port": 3,
+        "groove": 2.5,
+        "tag": 2
+      }
+    },
+    "well_cell_m": [
+      1.6,
+      0.9
+    ],
+    "rivets": {
+      "inset_m": 0.26,
+      "r_m": 0.06,
+      "share": 0.6,
+      "slot_share": 0.6,
+      "slot_edge_m": 3.0,
+      "slot_l_m": 0.36
+    },
+    "_overlay": "No overlays (owner, 2026-11-06, of a plate copied over another: \"why is there two armor plates ontop of eachother?\"): the sub panels are the large panels split, each at its own height.",
+    "trench_m": [
+      0.8,
+      1.6
+    ]
   },
   "stories": {
     "krai_frigate": {
@@ -268,20 +327,7 @@
       "mesh": "krai_frigate",
       "story": "krai_frigate",
       "seed": 201,
-      "_tradition": "K1 Tempered blade: the smiths; a Krai ship is forged and quenched like a blade, and wears the colours the temper leaves",
-      "plates": {
-        "mode": "temper",
-        "ramp": [
-          "#3a4a6a",
-          "#56637a",
-          "#c9a25a",
-          "#b98a4e"
-        ],
-        "edge_k": 2.4,
-        "bow_k": 0.35,
-        "bow_from_z_m": 0,
-        "bow_len_m": 24
-      },
+      "_tradition": "K1 Tempered blade: the smiths; a Krai ship is forged like a blade, its edges bright as a whetted edge, its plates the steel's own tones",
       "palette": {
         "LIGHT_EDGE": "#ecd9a8"
       },
@@ -306,8 +352,8 @@
             ],
             "x_within_m": 8.0
           },
-          "colour": "#7a1e2c",
-          "pin": "#b98a4e",
+          "colour": "#d9d6ce",
+          "pin": "#c4692c",
           "pin_m": 0.14
         },
         {
@@ -324,7 +370,34 @@
       ],
       "wear": {
         "amount": 1.0
-      }
+      },
+      "decals": [
+        {
+          "face": "port",
+          "at": [
+            -8.0,
+            4.5
+          ],
+          "kind": "text",
+          "text": "07",
+          "colour": "name",
+          "w_m": 2.4,
+          "h_m": 2.2
+        },
+        {
+          "face": "top",
+          "at": [
+            5.0,
+            -10.0
+          ],
+          "kind": "text",
+          "text": "07",
+          "colour": "name",
+          "w_m": 3.0,
+          "h_m": 2.6,
+          "turn": 90
+        }
+      ]
     },
     "krai_k2": {
       "mesh": "krai_frigate",
@@ -531,7 +604,6 @@
       "seed": 205,
       "_tradition": "K5 Kept plate: 'kept, carried and added to, never replaced'; a ship carries the plates of the ships before it",
       "detail": {
-        "kit_stop": 0.12,
         "kit_min_m": 1.5
       },
       "plates": {
@@ -610,5 +682,6 @@
         "amount": 1.2
       }
     }
-  }
+  },
+  "maps_dir": "docs/mockups/hull-texture-designs-maps/krai"
 }

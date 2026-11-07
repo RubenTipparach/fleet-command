@@ -11,10 +11,16 @@ symmetry, and lots of shading to give the armor depth". What is taken is how suc
 What is built, in ship space (+x port, +y up, +z bow, metres; Blender's object space, imported as it is):
   under     a copy of the hull: the under-armour layer, dark, its light strips kept as lamps
   armour    the primary armour: the hull's own faces, grouped by which way they face, thickened outward and cut apart along
-            gap lines (swept chevrons on the top and bottom, raked cuts on the flanks, every station's spacing, sweep and
-            spine width its own), so no two plates share an outline; holes cut where a dome, fan or vent sits and where
+            gap lines (cut_style 'hunt': swept chevrons on the top and bottom, raked cuts on the flanks, every station's
+            spacing, sweep and spine width its own, so no two plates share an outline; 'panels': large panels between
+            the room plan's stations, decks and walls, split into sub panels, and cut at the hull's chines); holes cut where a dome, fan or vent sits and where
             the data opens the armour onto the layer beneath
-  greebles  machinery on the under layer (blocks, sub-armour slabs, pipe runs, ribs), only where the armour leaves it bare
+  greebles  machinery on the under layer (blocks, sub-armour slabs, pipe runs, ribs), only where the armour leaves it bare;
+            or, with well_cell_m, built in ordered rows in the opened zones (well_modules)
+  the kit   with D['kit'] (the Concord and Krai, version 6): escape hatches and access panels set into the plating, vents,
+            lit slots, small ports, thin grooves, tags, thruster quads, accent modules, missile and bomb tubes, laid over
+            the plating and mirrored (scatter_kit), and their painted warning marks (DECALS)
+  bolts     with D['rivets']: pill-shaped bolt wells indented into a plate's corners and long edges (rivets)
   domes     smooth spherical armour sunk in a collar, held by straps that hug the sphere
   fans      round vents: a recess, a hub, tilted fins, a ring of lamps
   louvres   shaped vents (a chevron, a raked slot) cut through the armour, slanted slats inside
@@ -22,25 +28,27 @@ What is built, in ship space (+x port, +y up, +z bow, metres; Blender's object s
 Everything off the centreline is built once on the port side and mirrored, so the ship has one axis of symmetry. Each
 piece carries a colour attribute `rid` (a hash of its mirrored position), so a plate and its mirror take the same paint.
 
-The layout is data: data/ships/ssarith/hull_detail.json.
+The layout is data: data/ships/<faction>/hull_detail.json (the Ssarith Hunt's, the Concord's, the Krai's).
 """
 
 import math
 import random
+import time
 
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
-KIND = {"under": 0.12, "greeble": 0.28, "sub": 0.39, "armour": 0.5, "dome": 0.64, "slat": 0.74, "vent": 0.82, "strip": 0.89,
+KIND = {"under": 0.12, "greeble": 0.28, "sub": 0.39, "armour": 0.5, "accent": 0.57, "dome": 0.64, "slat": 0.74, "vent": 0.82, "strip": 0.89,
         "lamp": 0.95}
 # the strips and green lamps a true green (owner, 2026-11-05, of the hull emission: "I wish it were more green")
 LAMP_RGB = {"bay": (0.75, 0.8, 0.7), "red": (1.0, 0.12, 0.06), "amber": (1.0, 0.78, 0.3), "green": (0.1, 1.0, 0.24), "strip": (0.1, 1.0, 0.24),
-            "white": (1.0, 1.0, 1.0), "flood": (1.0, 0.92, 0.78), "window": (0.86, 1.0, 0.84)}
+            "white": (1.0, 1.0, 1.0), "flood": (1.0, 0.92, 0.78), "window": (0.86, 1.0, 0.84), "blue": (0.3, 0.78, 1.0)}
 PANES = []  # every window's and bay's pane, filled by build(): kind, lit, w_m, h_m, centre c, axes u, v and normal n
 FIXTURES = []  # the lights the bake lights the hull with, filled by build(): dicts of kind, pos, dir, rgb, power_w, cone_deg
 MATS = []  # (material, switch) for every material made here: switch(what) relinks its output for the next bake
+DECALS = []  # painted marks (painted_bake.py paints them): dicts of kind, colour, c, u, v, n, w_m, h_m
 STORY = []  # what the paint wears where (painted_bake.py --ship): dicts of kind (heat, bay, muzzle, drive), pos, n, size_m
 
 # ----------------------------------------------------------------------------- materials
@@ -196,8 +204,13 @@ def apply_mod(o, kind, **kw):
     bpy.ops.object.modifier_apply(modifier=m.name)
 
 
-def boolean(o, cutter, op):
-    apply_mod(o, "BOOLEAN", operation=op, object=cutter, solver="EXACT", use_self=True)
+def boolean(o, cutter, op, solver="EXACT"):
+    if solver == "EXACT":
+        apply_mod(o, "BOOLEAN", operation=op, object=cutter, solver="EXACT", use_self=True)
+    elif solver == "EXACT_NOSELF":   # small cutters that never cross one another (the bolt wells): quicker
+        apply_mod(o, "BOOLEAN", operation=op, object=cutter, solver="EXACT", use_self=False)
+    else:
+        apply_mod(o, "BOOLEAN", operation=op, object=cutter, solver=solver)
 
 
 # ----------------------------------------------------------------------------- finding the surface
@@ -620,104 +633,6 @@ def armour_cuts(rng, D, zr, xmax, yr):
     return {"plan": plan, "side": side}
 
 
-def strake_cuts(rng, D, zr, xmax, yr):
-    """The Concord's plating (Ship Bible X3: "the Concord's straight strakes and ring bands"): long strakes running fore
-    and aft, each its own width, their end joints staggered strake by strake so no two line up (T4), and full ring seams
-    at the bulkhead stations the bands sit on (D['rings_z_m']). Port side only; mirrored by the caller."""
-    z0, z1 = zr
-    plan, side = [], []
-    rings = D.get("rings_z_m", [])
-    merge = D.get("strake_merge", 0.3)
-
-    def seam_line(a0, b0, b1, along_first):
-        """A strake's long seam from b0 to b1 at a0, broken off in stretches where two strakes run together as one wider
-        plate (so the strakes are not a brick bond: owner, 2026-11-06, "no repetitive patterns")."""
-        out, b = [], b1
-        while b > b0:
-            L = rng.uniform(*D["plate_l_m"]) * rng.uniform(1.0, 1.8)
-            if rng.random() > merge:
-                out.append(((a0, b), (a0, max(b0, b - L))) if along_first else ((b, a0), (max(b0, b - L), a0)))
-            b -= L
-        return out
-    xs = [rng.uniform(*D["strake_w_m"]) / 2]                       # the centre strake straddles the keel line
-    while xs[-1] < xmax + 1:
-        w = rng.uniform(*D["strake_w_m"]) * (2.0 if rng.random() < 0.2 else 1.0)   # now and then a strake twice as wide
-        xs.append(xs[-1] + w)
-    for x in xs:
-        plan += seam_line(x, z0 - 2, z1 + 2, True)
-    fr = D.get("frame_m")   # butts on the frames (the hull's ribs), every plate whole frames long, as a yard plates a hull
-
-    def butts(seed_i):
-        if fr:
-            k0 = rng.randint(0, 3)
-            out, z = [], z1 - (k0 + 0.5) * fr
-            while z > z0:
-                out.append(z); z -= fr * rng.randint(*D.get("plate_frames", [2, 4]))
-            return out
-        lo_, hi_ = D["plate_l_m"]
-        out, z = [], z1 - rng.uniform(0, hi_)
-        while z > z0:
-            out.append(z); z -= rng.uniform(lo_, hi_) * rng.choice((0.6, 1.0, 1.0, 1.5))   # every strake its own run of plate lengths
-        return out
-    for i in range(len(xs)):
-        xa, xb = (0.0 if i == 0 else xs[i - 1]), xs[i]
-        for z in butts(i):
-            plan.append(((xa, z), (xb, z)))
-    ylo, yhi = yr
-    ys = [ylo + rng.uniform(0.3, 1.2)]
-    while ys[-1] < yhi:
-        h = rng.uniform(*D["strake_h_m"]) * (1.9 if rng.random() < 0.25 else 1.0)
-        ys.append(ys[-1] + h)
-    for y in ys:
-        side += seam_line(y, z0 - 2, z1 + 2, False)
-    for i in range(len(ys) - 1):
-        for z in butts(100 + i):
-            side.append(((z, ys[i]), (z, ys[i + 1])))
-    for zr_ in rings:
-        plan.append(((0.0, zr_), (xmax + 2, zr_)))
-        side.append(((zr_, ylo - 2), (zr_, yhi + 2)))
-    return {"plan": plan, "side": side}
-
-
-def kit_cuts(rng, D, zr, xmax, yr):
-    """The Krai's plating (mockup 7's kit: "plates square to the hull with 45-degree cut corners", the owner: "the diagonal
-    plating kinda bugs me"): the hull cut into frames at irregular stations, each frame's panel split again and again
-    along its longer side at its own place, some plates left whole, and some corners cut at 45 degrees (the cut leaves a
-    small triangle the layer beneath shows through). Port side only; mirrored by the caller."""
-    z0, z1 = zr
-    out = {"plan": [], "side": []}
-
-    def split(view, a0, a1, b0, b1, depth):
-        w, h = a1 - a0, b1 - b0
-        mn = D["kit_min_m"]
-        if depth >= D["kit_depth"] or (w < mn * 2 and h < mn * 2) or (depth > 0 and rng.random() < D["kit_stop"]):
-            if rng.random() < D["kit_chamfer"] and min(w, h) > 2.2:
-                c = min(D.get("kit_chamfer_m", 0.6), 0.2 * min(w, h))   # a small cut corner, never a diagonal seam across the face
-                ca, cb = (a0, b0) if rng.random() < 0.5 else (a1, b1)
-                sa, sb = (1 if ca == a0 else -1), (1 if cb == b0 else -1)
-                out[view].append(((ca + sa * c, cb), (ca, cb + sb * c)))
-            return
-        along_a = w > h * 1.2 or (h <= w * 1.2 and rng.random() < 0.5)
-        if along_a and w >= mn * 2:
-            m = a0 + w * rng.uniform(0.32, 0.68)
-            out[view].append(((m, b0), (m, b1)))
-            split(view, a0, m, b0, b1, depth + 1); split(view, m, a1, b0, b1, depth + 1)
-        elif h >= mn * 2:
-            m = b0 + h * rng.uniform(0.32, 0.68)
-            out[view].append(((a0, m), (a1, m)))
-            split(view, a0, a1, b0, m, depth + 1); split(view, a0, a1, m, b1, depth + 1)
-    # frames at irregular stations, then each frame's panels: plan (x, z) and side (z, y)
-    z = z1
-    while z > z0:
-        zn = max(z0, z - rng.uniform(*D["kit_frame_m"]))
-        out["plan"].append(((0.0, zn), (xmax + 2, zn)))
-        out["side"].append(((zn, yr[0] - 2), (zn, yr[1] + 2)))
-        split("plan", 0.0, xmax + 2, zn, z, 0)
-        split("side", zn, z, yr[0], yr[1], 0)
-        z = zn
-    return out
-
-
 def plan_cuts(rng, D, zr, xmax, yr):
     """Plating laid from the ship's own structure (owner, 2026-11-06, of random plating: "still really messy on both
     ships"): a seam only where the room plan puts a bulkhead (every room's fore and aft wall, the stations closer than
@@ -754,8 +669,96 @@ def plan_cuts(rng, D, zr, xmax, yr):
     return {"plan": plan_cuts_, "side": side}
 
 
+def panel_cuts(rng, D, zr, xmax, yr):
+    """Large panels and their sub panels (owner, 2026-11-06, with reference sheets: "hull plating, clean hull", "notice
+    large panels, and sub panels, liveries, varying colors of armor"): the large panels between the structure's own
+    stations (the plan's bulkheads, merged within D['panel_merge_m'], each station seam swept back across the top by
+    D['station_sweep'] so the plating follows the form) and its decks and corridor walls, every seam of those 'major'
+    (D['major_gap_m'] wide); then each large panel split into sub panels at its own places (D['sub_depth'] levels,
+    D['sub_stop'] the share left whole, never under D['kit_min_m']). Port side only; mirrored by the caller."""
+    base = plan_cuts(rng, {**D, "plan_merge_m": D.get("panel_merge_m", 6.0), "plan_merge_x_m": D.get("panel_merge_x_m", 3.0)}, zr, xmax, yr)
+    z0, z1 = zr
+    sw = D.get("station_sweep", 0.0)
+    out = {"plan": [], "side": []}
+    zs = sorted({round(a[1], 3) for a, b in base["plan"] if abs(a[1] - b[1]) < 1e-6})
+    xs = sorted({round(a[0], 3) for a, b in base["plan"] if abs(a[0] - b[0]) < 1e-6})
+    ys = sorted({round(a[1], 3) for a, b in base["side"] if abs(a[1] - b[1]) < 1e-6})
+    W = xmax + 2
+    for z in zs:
+        out["plan"].append(((0.0, z), (W, z - sw * W), "major"))
+        out["side"].append(((z, yr[0] - 2), (z, yr[1] + 2), "major"))
+    for x in xs:
+        out["plan"].append(((x, z0 - 2), (x, z1 + 2), "major"))
+    for y in ys:
+        out["side"].append(((z0 - 2, y), (z1 + 2, y), "major"))
+    sub = {"kit_depth": D.get("sub_depth", 2), "kit_stop": D.get("sub_stop", 0.3), "kit_min_m": D.get("kit_min_m", 1.6),
+           "kit_chamfer": D.get("kit_chamfer", 0.0), "kit_chamfer_m": D.get("kit_chamfer_m", 0.3)}
+    zb = [z0 - 1] + zs + [z1 + 1]
+    for i in range(len(zb) - 1):
+        xb = [0.0] + [x for x in xs if 0 < x < W] + [W]
+        for j in range(len(xb) - 1):   # the sweep moves a station aft as it runs out; the sub cuts stay inside its panel
+            kit_split(rng, sub, out, "plan", xb[j], xb[j + 1], zb[i] - sw * xb[j + 1] + 0.3, zb[i + 1] - sw * xb[j + 1] - 0.3, 0)
+        yb = [yr[0]] + [y for y in ys if yr[0] < y < yr[1]] + [yr[1]]
+        for j in range(len(yb) - 1):
+            kit_split(rng, sub, out, "side", zb[i], zb[i + 1], yb[j], yb[j + 1], 0)
+    return out
+
+
+def kit_split(rng, D, out, view, a0, a1, b0, b1, depth):
+    """Split a panel a0..a1 by b0..b1 of a view again and again along its longer side, each cut at its own place, some
+    panels left whole (D: kit_depth, kit_stop, kit_min_m; kit_chamfer the share given a small cut corner)."""
+    w, h = a1 - a0, b1 - b0
+    mn = D["kit_min_m"]
+    if depth >= D["kit_depth"] or (w < mn * 2 and h < mn * 2) or (depth > 0 and rng.random() < D["kit_stop"]):
+        if rng.random() < D.get("kit_chamfer", 0) and min(w, h) > 2.2:
+            c = min(D.get("kit_chamfer_m", 0.6), 0.2 * min(w, h))
+            ca, cb = (a0, b0) if rng.random() < 0.5 else (a1, b1)
+            sa, sb = (1 if ca == a0 else -1), (1 if cb == b0 else -1)
+            out[view].append(((ca + sa * c, cb), (ca, cb + sb * c)))
+        return
+    along_a = w > h * 1.2 or (h <= w * 1.2 and rng.random() < 0.5)
+    if along_a and w >= mn * 2:
+        m = a0 + w * rng.uniform(0.32, 0.68)
+        out[view].append(((m, b0), (m, b1)))
+        kit_split(rng, D, out, view, a0, m, b0, b1, depth + 1); kit_split(rng, D, out, view, m, a1, b0, b1, depth + 1)
+    elif h >= mn * 2:
+        m = b0 + h * rng.uniform(0.32, 0.68)
+        out[view].append(((a0, m), (a1, m)))
+        kit_split(rng, D, out, view, a0, a1, b0, m, depth + 1); kit_split(rng, D, out, view, a0, a1, m, b1, depth + 1)
+
+
+def chine_slabs(lo, deg, gap):
+    """Thin cutters along the hull's chines (every edge where its faces turn more than deg degrees), so the plating breaks
+    where the form turns and each facet's plates catch the light on their own."""
+    me = lo.data
+    glow_idx = {i for i, m in enumerate(me.materials) if m and m.name.startswith("lo_glow")}
+    bm = bmesh.new(); bm.from_mesh(me)
+    out, lim = [], math.cos(math.radians(deg))
+    for e in bm.edges:
+        if len(e.link_faces) != 2 or any(f.material_index in glow_idx for f in e.link_faces):
+            continue
+        f0, f1 = e.link_faces
+        if f0.normal.dot(f1.normal) > lim:
+            continue
+        a, b = e.verts[0].co, e.verts[1].co
+        L = (b - a).length
+        if L < 0.3:
+            continue
+        u = (b - a) / L
+        w = (f0.normal + f1.normal).normalized()
+        v = w.cross(u).normalized(); w = u.cross(v)
+        M = Matrix.Identity(4)
+        for i, vec in enumerate((u, v, w)):
+            M[0][i], M[1][i], M[2][i] = vec.x, vec.y, vec.z
+        mid = (a + b) / 2
+        M[0][3], M[1][3], M[2][3] = mid.x, mid.y, mid.z
+        out.append(place(bm_box(L + gap, gap, 3.0, at=(0, 0, -1.0)), M))
+    bm.free()
+    return out
+
+
 def mirror_cuts(cuts):
-    return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
+    return {"plan": cuts["plan"] + [((-c[0][0], c[0][1]), (-c[1][0], c[1][1]), *c[2:]) for c in cuts["plan"]], "side": cuts["side"]}
 
 
 def build_armour(lo, D, S, rng, holes, mats, layer):
@@ -765,7 +768,7 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     the trenches show a second layer of plating and, in its gaps, the machinery."""
     groups = shell_groups(lo)
     xs = [v.co.x for v in lo.data.vertices]; ys = [v.co.y for v in lo.data.vertices]; zs = [v.co.z for v in lo.data.vertices]
-    style = {"hunt": armour_cuts, "strake": strake_cuts, "kit": kit_cuts, "plan": plan_cuts}[D.get("cut_style", "hunt")]
+    style = {"hunt": armour_cuts, "plan": plan_cuts, "panels": panel_cuts}[D.get("cut_style", "hunt")]
     cuts = mirror_cuts(style(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
     primary = layer == "primary"
     t = D["armour_t_m"] if primary else D["sub_t_m"]
@@ -776,9 +779,11 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
         sh = shell_of(lo, faces, t, f"{layer}_{g}", mats["armour" if primary else "sub"])
         view = ("x", "z") if g in ("top", "bottom") else ("z", "y")
         bms = []
-        for a, b in (cuts["plan"] if view == ("x", "z") else cuts["side"]):
+        for c in (cuts["plan"] if view == ("x", "z") else cuts["side"]):
+            a, b = c[0], c[1]
             wide = rng.random() < (D["trench_share"] if primary else 0.35)
-            p = gap_slab(a, b, rng.uniform(*(D["trench_m"] if wide else D["gap_m"])), view)
+            gw = D["major_gap_m"] if (len(c) > 2 and c[2] == "major" and "major_gap_m" in D) else rng.uniform(*(D["trench_m"] if wide else D["gap_m"]))
+            p = gap_slab(a, b, gw, view)
             if p:
                 bms.append(p)
         if primary:
@@ -786,6 +791,8 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
                 bms.append(view_prism(e["plan"], ("x", "z"), *e["y_m"]))
         for h in holes:
             bm = bmesh.new(); bm.from_mesh(h.data); bms.append(bm)
+        if primary and D.get("chine_deg"):
+            bms += chine_slabs(lo, D["chine_deg"], D.get("major_gap_m", D["gap_m"][1]))
         cut = obj_from(merge(bms), "cut_" + g, mats["armour"])
         boolean(sh, cut, "DIFFERENCE")
         bpy.data.objects.remove(cut)
@@ -802,7 +809,74 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
                     v.co += lift
     if primary:
         plates += [ov for o in list(plates) if (ov := overlay(o, D, mats)) is not None]
+        if D.get("rivets"):   # bolt holes and slots indented into the plate (owner: "I think indents might be better")
+            t0 = time.time()
+            for o in plates:
+                rv = rivets(o, D["rivets"])
+                if rv is not None:
+                    c = obj_from(rv, "bolts", mats["armour"])
+                    boolean(o, c, "DIFFERENCE", "EXACT_NOSELF")
+                    bpy.data.objects.remove(c)
+            print(f"  bolt wells in {len(plates)} plates: {time.time() - t0:.0f} s", flush=True)
     return plates
+
+
+def rivets(o, R):
+    """Bolt holes and slots on a plate (owner, 2026-11-06: "tiny holes or slots for rivets and bolts", then "we dont need
+    those old ww2 style rivets", "you can see these pill shaped holes here"): no rows. A pill-shaped hole lying along each
+    corner of the plate's face set diagonally, pointing at the corner (R['inset_m'] in, R['pill_l_m'] long), and on an
+    edge longer than R['slot_edge_m'] one standing across it at its middle, only on the plates the rid picks (R['share']).
+    Built from the plate's own corners and edges, so a plate and its mirror carry the same."""
+    r0 = o.data.color_attributes["rid"].data[0].color[0]
+    if (r0 * 17.3) % 1.0 > R.get("share", 0.4):
+        return None
+    me = o.data
+    nrm = sum((p.normal * p.area for p in me.polygons), Vector())
+    if nrm.length == 0:
+        return None
+    nrm.normalize()
+    bm = bmesh.new(); bm.from_mesh(me)
+    top = {f for f in bm.faces if f.normal.dot(nrm) > 0.5}   # the plate's outer face (its inner face looks the other way,
+    if not top:                                               # its rims across), however the plate curves
+        bm.free(); return None
+    out = []
+    inset = R["inset_m"]
+
+    def put(p, t, n, piece):
+        M = Matrix.Identity(4)
+        for i, vec in enumerate((t, n.cross(t), n)):
+            M[0][i], M[1][i], M[2][i] = vec.x, vec.y, vec.z
+        M[0][3], M[1][3], M[2][3] = p.x, p.y, p.z
+        out.append(place(piece, M))
+    for f in top:
+        c = f.calc_center_median()
+        bnd = [e for e in f.edges if not any(g in top for g in e.link_faces if g is not f)]
+        for e in bnd:
+            a, b = e.verts[0].co, e.verts[1].co
+            L = (b - a).length
+            if L < 0.5:
+                continue
+            t = (b - a) / L
+            inn = f.normal.cross(t)
+            if inn.dot(c - a) < 0:
+                inn = -inn
+            if L > R.get("slot_edge_m", 3.0) and (r0 * 7.7 + L) % 1.0 < R.get("slot_share", 0.5):
+                sl = R.get("slot_l_m", 0.28)   # across the edge, standing in from it
+                put((a + b) / 2 + inn * (inset + sl / 2), inn, f.normal, bm_prism(pill(sl, R["r_m"] * 1.4), -R.get("depth_m", 0.05), 0.6))
+            for v in e.verts:   # a corner: where this boundary edge turns into the next by more than 30 degrees
+                nxt = [g for g in bnd if g is not e and v in g.verts]
+                if not nxt:
+                    continue
+                w = nxt[0].other_vert(v).co - v.co
+                if w.length < 0.5 or abs(w.normalized().dot(t)) > 0.87 or e.index > nxt[0].index:
+                    continue   # (each corner once: from the lower-numbered of its two edges)
+                ww = w.normalized()
+                d = (v.co - a).normalized() if (v.co - a).length > 1e-6 else (v.co - b).normalized()
+                pl = R.get("pill_l_m", 0.34)   # a pill set diagonally into the corner, pointing at it
+                bis = (ww - d).normalized()
+                put(v.co + bis * (inset * 1.4 + pl / 2), bis, f.normal, bm_prism(pill(pl, R["r_m"] * 1.4), -R.get("depth_m", 0.05), 0.6))
+    bm.free()
+    return merge(out) if out else None
 
 
 def overlay(o, D, mats):
@@ -944,15 +1018,274 @@ def greeble(M, q):
     return place(bm, M)
 
 
+# ----------------------------------------------------------------------------- the detail kit
+# The owner, 2026-11-06, with close-up sheets of a clean hull: "vents, lights, escape hatches, missile tubes, bombe tobes",
+# "warning markings too", "tiny holes or slots for rivets and bolts", "close up ship details", "more detail variety".
+# Each piece is built in a feature frame (u along the ship, v across, w out of the hull, 0 at the low-poly skin; T the
+# armour's thickness, so the armour's face is at about w = T) and returns its parts [(bmesh, kind, ...)] and its cutters.
+def pill(l, w, seg=8):
+    """A pill (a slot with round ends) l long along u, w wide, centred, counter-clockwise (u, v)."""
+    r, a = w / 2, max(l / 2 - w / 2, 0.0)
+    pts = [(a + r * math.cos(-math.pi / 2 + math.pi * k / seg), r * math.sin(-math.pi / 2 + math.pi * k / seg)) for k in range(seg + 1)]
+    return pts + [(-a + r * math.cos(math.pi / 2 + math.pi * k / seg), r * math.sin(math.pi / 2 + math.pi * k / seg)) for k in range(seg + 1)]
+
+
+def crect(w, h, c):
+    """A w by h rectangle with corners cut by c, centred, counter-clockwise (u, v)."""
+    a, b = w / 2, h / 2
+    c = min(c, 0.45 * min(w, h))
+    return [(a - c, -b), (a, -b + c), (a, b - c), (a - c, b), (-a + c, b), (-a, b - c), (-a, -b + c), (-a + c, -b)]
+
+
+def ring_prisms(outer, inner, w0, w1):
+    """A frame between two matching polygons, as one convex quad prism a side (so each is a clean solid)."""
+    n = len(outer)
+    return merge([bm_prism([outer[i], outer[(i + 1) % n], inner[(i + 1) % n], inner[i]], w0, w1) for i in range(n)])
+
+
+def decal(kind, colour, M, du, dv, w, h):
+    """A painted mark at (du, dv) in frame M, w along u by h along v (painted_bake.py paints DECALS)."""
+    R3, o = M.to_3x3(), M.to_translation()
+    u, v, n = (R3 @ Vector((1, 0, 0))).normalized(), (R3 @ Vector((0, 1, 0))).normalized(), (R3 @ Vector((0, 0, 1))).normalized()
+    c = o + u * du + v * dv
+    DECALS.append({"kind": kind, "colour": colour, "c": [round(x, 4) for x in c], "u": [round(x, 5) for x in u],
+                   "v": [round(x, 5) for x in v], "n": [round(x, 5) for x in n], "w_m": w, "h_m": h})
+
+
+def k_hatch(r, M, T, w, h, cutters):
+    """An escape hatch or access panel, set into the plating (owner: "I think indents might be better"): a chamfered well
+    cut through the armour, the hatch's own plate (its own shade) sunk in it with a groove all round, a recessed grip at
+    one end, a warning frame and arrow painted beside it."""
+    g = 0.07
+    outer, inner = crect(w + 2 * g, h + 2 * g, 0.28), crect(w, h, 0.22)
+    cutters.append(place(bm_prism(outer, -1.0, 2.0), M.copy()))
+    sink = r.uniform(0.06, 0.1)
+    parts = [(place(bm_prism(inner, T * 0.3, T - sink), M.copy()), "armour_hatch", r.random()),
+             (place(bm_prism(outer, T * 0.2, T * 0.3), M.copy()), "vent")]
+    parts.append((place(bm_prism(crect(0.32, h * 0.42, 0.06), T - sink - 0.04, T - sink + 0.01), M @ Matrix.Translation((w / 2 - 0.3, 0, 0))), "vent"))
+    side = 1 if r.random() < 0.5 else -1
+    decal("frame", "warn", M, 0, 0, w + 0.5, h + 0.5)
+    decal("arrow", "warn", M, -w / 2 - 0.45, side * (h / 2 - 0.2), 0.32, 0.32)
+    if r.random() < 0.5:
+        decal("dashes", "ink", M, 0, -side * (h / 2 + 0.38), w * 0.6, 0.1)
+    return parts
+
+
+def k_vent(r, M, T, w, h, cutters):
+    """A vent: a chamfered recess with a raised rim, a dark floor and slats across it."""
+    rim, hole = crect(w + 0.24, h + 0.24, 0.2), crect(w, h, 0.14)
+    cutters.append(place(bm_prism(hole, -1.0, 2.0), M.copy()))
+    parts = [(place(ring_prisms(rim, hole, T - 0.06, T + 0.09), M.copy()), "armour_rim", 0.3 + r.random() * 0.4),
+             (place(bm_prism(hole, T - 0.32, T - 0.24), M.copy()), "vent")]
+    pitch = r.choice((0.14, 0.18, 0.22))
+    across = w < h
+    span, L = (h, w) if not across else (w, h)
+    k = -L / 2 + pitch
+    while k < L / 2 - pitch * 0.5:
+        at = (k, 0, T - 0.26) if not across else (0, k, T - 0.26)
+        sz = (pitch * 0.45, span * 0.94, 0.2) if not across else (span * 0.94, pitch * 0.45, 0.2)
+        parts.append((place(bm_box(*sz, at=at), M.copy()), "slat"))
+        k += pitch
+    if r.random() < 0.6:
+        decal("chevrons", "hazard", M, 0, (h / 2 + 0.3) * (1 if r.random() < 0.5 else -1), w, 0.22)
+    return parts
+
+
+def k_light(r, M, T, w, h, cutters, colour):
+    """A lit slot: a recess with a lamp bar in it (blue, amber or red), sometimes two or three bars side by side."""
+    n = r.choice((1, 1, 2, 3))
+    hole = crect(w, h, 0.06)
+    cutters.append(place(bm_prism(hole, -1.0, 2.0), M.copy()))
+    parts = [(place(bm_prism(hole, T - 0.2, T - 0.14), M.copy()), "vent")]
+    bw = (w - 0.06 * (n + 1)) / n
+    for i in range(n):
+        uu = -w / 2 + 0.06 + bw / 2 + i * (bw + 0.06)
+        parts.append((place(bm_box(bw, h - 0.1, 0.1, at=(uu, 0, T - 0.15)), M.copy()), "lamp:" + colour))
+    return parts
+
+
+def k_tubes(r, M, T, w, h, cutters, nu, nv, rad, accent=False):
+    """A launcher: a raised block with a grid of tube mouths (missile tubes nu by nv; a bomb tube one or two large),
+    each a round hole with a dark floor, a warning stripe painted on the block's lip."""
+    top = T + 0.18 + r.uniform(0, 0.08)
+    blk = bm_prism(crect(w, h, min(w, h) * 0.12), -0.1, top)
+    holes = []
+    for i in range(nu):
+        for j in range(nv):
+            uu = -w / 2 + w * (i + 0.5) / nu; vv = -h / 2 + h * (j + 0.5) / nv
+            holes.append(bm_cyl(rad, 1.0, 24, at=(uu, vv, top - 0.35)))
+    parts = [(place(blk, M.copy()), "armour_holed" if not accent else "accent_holed", r.random(), place(merge(holes), M.copy()))]
+    floors = [bm_cyl(rad * 1.02, 0.05, 24, at=(-w / 2 + w * (i + 0.5) / nu, -h / 2 + h * (j + 0.5) / nv, top - 0.3))
+              for i in range(nu) for j in range(nv)]
+    parts.append((place(merge(floors), M.copy()), "vent"))
+    decal("hazard", "hazard", M, 0, -h / 2 - 0.22, w, 0.26)
+    return parts
+
+
+def k_module(r, M, T, w, h, cutters):
+    """An accent module: a raised block in the design's accent colour, stepped once, with a small light and a mark."""
+    top = T + 0.14 + r.uniform(0, 0.12)
+    parts = [(place(bm_prism(crect(w, h, 0.18), -0.1, top), M.copy()), "accent")]
+    parts.append((place(bm_prism(crect(w * 0.62, h * 0.7, 0.12), top - 0.02, top + 0.08), M @ Matrix.Translation((-w * 0.12, 0, 0))), "accent"))
+    if r.random() < 0.5:
+        parts.append((place(bm_box(0.12, h * 0.4, 0.06, at=(w * 0.38, 0, top - 0.02)), M.copy()), "lamp:" + r.choice(("blue", "amber"))))
+    decal("block", "ink", M, w * 0.3, h / 2 - 0.18, 0.4, 0.12)
+    return parts
+
+
+def k_port(r, M, T, w, h, cutters):
+    """A small port: a round or square hole a hand or two across, dark, now and then lit."""
+    rnd = r.random() < 0.6
+    poly = pill(w, w, 10) if rnd else crect(w, w, w * 0.2)
+    cutters.append(place(bm_prism(poly, -1.0, 2.0), M.copy()))
+    parts = [(place(bm_prism(poly, T - 0.2, T - 0.12), M.copy()), "vent")]
+    if r.random() < 0.35:
+        parts.append((place(bm_prism([(x * 0.6, y * 0.6) for x, y in poly], T - 0.13, T - 0.08), M.copy()), "lamp:" + r.choice(LIGHTS_OF)))
+    return parts
+
+
+def k_groove(r, M, T, w, h, cutters):
+    """A thin indented line along the plating, ending in round ends, sometimes with a short second line beside it."""
+    cutters.append(place(bm_prism(pill(w, 0.07), T - 0.05, 2.0), M.copy()))
+    if r.random() < 0.4:
+        cutters.append(place(bm_prism(pill(w * 0.35, 0.07), T - 0.05, 2.0), M @ Matrix.Translation((w * 0.2, 0.22, 0))))
+    return []
+
+
+def k_tag(r, M, T, w, h, cutters):
+    """A small plate laid on the plating (a placard, a cover), its own shade, with a mark on it."""
+    parts = [(place(bm_prism(crect(w, h, 0.05), T - 0.05, T + 0.11), M.copy()), "armour_tag", r.random())]
+    decal(r.choice(("block", "box", "dashes")), r.choice(("ink", "warn", "ink")), M, 0, 0, w * 0.6, h * 0.4)
+    return parts
+
+
+def k_rcs(r, M, T, w, h, cutters):
+    """A thruster quad: a small block with four nozzles in a square."""
+    return k_tubes(r, M, T, 0.9, 0.9, cutters, 2, 2, 0.13)
+
+
+KIT = {"hatch": k_hatch, "vent": k_vent, "rcs": k_rcs, "module": k_module, "port": k_port, "groove": k_groove, "tag": k_tag,
+       "light": lambda r, M, T, w, h, c: k_light(r, M, T, w, h, c, r.choice(LIGHTS_OF)),
+       "missiles": lambda r, M, T, w, h, c: k_tubes(r, M, T, w, h, c, max(2, int(w / 0.7)), max(1, int(h / 0.7)), 0.22),
+       "bombs": lambda r, M, T, w, h, c: k_tubes(r, M, T, w, h, c, max(1, int(w / 1.6)), 1, min(0.55, h * 0.36), accent=True)}
+LIGHTS_OF = ["blue"]
+SIZES = {"port": ((0.22, 0.42), (0.22, 0.42)), "groove": ((1.2, 3.2), (0.1, 0.1)), "tag": ((0.5, 1.1), (0.3, 0.6)),
+         "hatch": ((1.2, 2.6), (0.9, 1.6)), "vent": ((1.0, 3.2), (0.4, 1.1)), "rcs": ((0.9, 0.9), (0.9, 0.9)),
+         "module": ((1.2, 2.8), (0.8, 1.6)), "light": ((0.6, 1.4), (0.2, 0.34)), "missiles": ((1.4, 2.8), (0.7, 1.4)),
+         "bombs": ((1.6, 3.4), (1.0, 1.5))}
+
+
+def scatter_kit(lo, S, D, surf, rng, taken):
+    """The kit laid over the hull (D['kit']: per_100m2, weights by kind, gap_m): port side and centreline only, each piece
+    mirrored, kept off bends, off other pieces, out of the opened zones and clear of the windows and bays (taken: centres
+    and radii already used). Every piece seeded by where it is. Returns [(parts, loc)], cutters."""
+    K = D["kit"]
+    kinds = list(K["weights"]); wts = [K["weights"][k] for k in kinds]
+    LIGHTS_OF[:] = K.get("lights", ["blue"])
+    T = D["armour_t_m"]
+    me = lo.data
+    glow_idx = {i for i, m in enumerate(me.materials) if m and m.name.startswith("lo_glow")}
+    feats, cutters = [], []
+    gap = K.get("gap_m", 0.8)
+    for p in sorted(me.polygons, key=lambda p: (round(p.center.z, 2), round(p.center.y, 2), round(p.center.x, 2))):
+        if p.material_index in glow_idx or p.center.x < -0.01:
+            continue
+        nwant = p.area * K["per_100m2"] / 100.0
+        k = int(nwant) + (1 if rng.random() < nwant % 1 else 0)
+        vs = [me.vertices[i].co for i in p.vertices]
+        for _ in range(k):
+            a, b = rng.random(), rng.random()
+            if a + b > 1:
+                a, b = 1 - a, 1 - b
+            q = vs[0] + (vs[1] - vs[0]) * a + (vs[2] - vs[0]) * b
+            kind = rng.choices(kinds, wts)[0]
+            (u0, u1), (v0, v1) = SIZES[kind]
+            w, h = round(rng.uniform(u0, u1), 2), round(rng.uniform(v0, v1), 2)
+            rad = math.hypot(w, h) / 2 + 0.35
+            centre = abs(p.normal.y) > 0.8 and abs(q.x) < rad
+            if centre:
+                q = Vector((0.0, q.y, q.z))
+                hh = surf.bvh.ray_cast(q + p.normal * 3, -p.normal, 6)
+                if hh[0] is None:
+                    continue
+                q = hh[0]
+            elif q.x < rad:
+                continue
+            if in_exposed(q, S) or any((q - c).length < rad + rc + gap for c, rc in taken):
+                continue
+            M = frame_at(q, p.normal, False)
+            if not fits(surf, M, w, h, 0.25):
+                continue
+            taken.append((q.copy(), rad))
+            if not centre:
+                taken.append((Vector((-q.x, q.y, q.z)), rad))
+            for m in ((False,) if centre else (False, True)):
+                r = random.Random(int(abs(q.x) * 100) * 7919 + int(q.y * 100) * 104729 + int(q.z * 100) + sum(map(ord, kind)) * 31)
+                cut = []
+                parts = KIT[kind](r, frame_at(q, p.normal, m), T, w, h, cut)
+                feats.append((parts, q))
+                cutters.extend(cut)
+    return feats, cutters
+
+
+def well_modules(lo, S, D):
+    """The machinery in the opened zones laid out in order (owner: "not messy"; the reference sheets' recessed bays): a
+    grid of cells D['well_cell_m'] (along, across) over every face in a zone, one module a cell, its kind by its place in
+    the grid, so a bay reads as rows of built machinery: blocks, pipe runs, slatted boxes, tanks, lit panels."""
+    cu, cv = D["well_cell_m"]
+    me = lo.data
+    T = D["armour_t_m"]
+    out = []
+    for p in me.polygons:
+        c = p.center
+        if c.x < -0.01 or not in_exposed(c, S):
+            continue
+        M0 = frame_at(c, p.normal, False)
+        Mi = M0.inverted()
+        loc = [(Mi @ me.vertices[i].co).to_2d() for i in p.vertices]
+        us = [l.x for l in loc]; vs_ = [l.y for l in loc]
+        iu = math.floor(min(us) / cu)
+        while iu * cu < max(us):
+            iv = math.floor(min(vs_) / cv)
+            while iv * cv < max(vs_):
+                uu, vv = (iu + 0.5) * cu, (iv + 0.5) * cv
+                q = M0 @ Vector((uu, vv, 0))
+                inside_ = all(in_exposed(M0 @ Vector((uu + du, vv + dv, 0)), S) for du in (-cu * 0.45, cu * 0.45) for dv in (-cv * 0.45, cv * 0.45))
+                if inside_ and (q.x > 0.3 or abs(q.x) <= 0.3):
+                    sel = (int(round(q.z / cu)) * 3 + int(round(abs(q.x) / cv)) * 5 + int(round(q.y))) % 6
+                    for m in ((False,) if abs(q.x) <= 0.3 else (False, True)):
+                        out.append((well_module(sel, frame_at(q, p.normal, m), cu * 0.88, cv * 0.86, T), q))
+                iv += 1
+            iu += 1
+    return out
+
+
+def well_module(sel, M, w, h, T):
+    top = T * 0.8
+    if sel == 0:     # a machinery block, stepped
+        return [(place(merge([bm_box(w, h, top * 0.6), bm_box(w * 0.6, h * 0.7, top * 0.9, at=(-w * 0.1, 0, 0))]), M), "greeble")]
+    if sel == 1:     # a pipe run along the bay
+        return [(place(merge([bm_cyl(h * 0.13, w * 1.02, 16, at=(0, (j - 1) * h * 0.3, h * 0.15), axis="u") for j in range(3)]), M), "greeble")]
+    if sel == 2:     # a slatted box
+        return [(place(bm_box(w, h, top * 0.5), M), "greeble")] + [
+            (place(bm_box(0.08, h * 0.9, top * 0.18, at=(-w / 2 + (k + 0.5) * w / 7, 0, top * 0.5)), M.copy()), "slat") for k in range(7)]
+    if sel == 3:     # a tank, lying along the bay
+        return [(place(bm_cyl(min(h * 0.4, top * 0.9), w * 0.9, 24, at=(0, 0, min(h * 0.4, top * 0.9) * 0.9), axis="u"), M), "greeble")]
+    if sel == 4:     # a lit panel
+        return [(place(bm_box(w, h, top * 0.4), M), "greeble"), (place(bm_box(w * 0.5, 0.12, 0.08, at=(0, 0, top * 0.4)), M.copy()), "lamp:" + LIGHTS_OF[0])]
+    return [(place(bm_box(w, h, top * 0.7), M), "accent")]   # an accent block
+
+
 # ----------------------------------------------------------------------------- the whole layer
 def build(lo, S, D, seed):
     """Build the hull detail for one ship over its low-poly hull `lo` (S: the ship's entry in hull_detail.json, D: the
     defaults). Returns the high-poly objects to bake from."""
     D = {**D, **S.get("detail", {})}   # a design's own plating over the faction's defaults
     LAMP_RGB.update({k: tuple(v) for k, v in D.get("lamp_rgb", {}).items()})
+    BEVEL_M.update(D.get("bevel_m", {}))
     rng = random.Random(seed)
-    PANES.clear()
-    mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "dome", "slat", "vent")}
+    PANES.clear(); DECALS.clear()
+    mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "accent", "dome", "slat", "vent")}
     lamps = {c: kind_material("lamp", c) for c in LAMP_RGB}
     surf = Surface(lo)
     under = lo.copy(); under.data = lo.data.copy(); bpy.context.scene.collection.objects.link(under)
@@ -1011,7 +1344,27 @@ def build(lo, S, D, seed):
                 feats.append((window(lit_, frame_at(loc, nor, m), cut, PF["window"], kind), loc))
                 holes.extend(obj_from(c, "hole", mats["armour"]) for c in cut)
     lights(lo, S, surf, mats, lamps, feats, D)
+    for F in S.get("decals", []):   # the data's own marks: names, numbers, warning bands
+        h = surf.hit(F["face"], F["at"])
+        if h:
+            for m in sides_of(F, h[0]):
+                M = frame_at(h[0], h[1], m)
+                if F.get("turn"):
+                    M = M @ Matrix.Rotation(math.radians(F["turn"]), 4, "Z")
+                decal(F["kind"], F.get("colour", "ink"), M, 0, 0, F["w_m"], F["h_m"])
+                if "text" in F:
+                    DECALS[-1]["text"] = F["text"]
+                DECALS[-1]["mirror"] = bool(m)
+    if D.get("kit"):
+        taken = [(loc, 1.2) for _, loc in feats]
+        for P_ in PANES:
+            taken.append((Vector(P_["c"]), math.hypot(P_["w_m"], P_["h_m"]) / 2 + 0.6))
+        kf, kc = scatter_kit(lo, S, D, surf, rng, taken)
+        feats += kf
+        holes.extend(obj_from(c, "hole", mats["armour"]) for c in kc)
+    t0 = time.time()
     armour = build_armour(lo, D, S, rng, holes, mats, "primary")
+    print(f"  primary armour: {len(armour)} plates, {time.time() - t0:.0f} s", flush=True)
     sub = build_armour(lo, D, S, random.Random(seed * 31 + 7), holes, mats, "sub")
     hole_bvh = bvh_of(holes)
     for h in holes:
@@ -1022,16 +1375,28 @@ def build(lo, S, D, seed):
             bm, kind = part[0], part[1]
             if kind.startswith("armour_"):
                 o = obj_from(bm, kind, mats["armour"], rid_of(loc, salt=part[2]))
+                if kind == "armour_holed":
+                    inner = obj_from(part[3], "holes_in", mats["armour"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
                 if kind == "armour_collar":
                     inner = obj_from(part[3], "collar_in", mats["armour"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
                 elif kind == "armour_strap":
                     slab = obj_from(part[3], "strap_slab", mats["armour"]); boolean(o, slab, "INTERSECT"); bpy.data.objects.remove(slab)
                 high.append(o)
+            elif kind == "accent_holed":
+                o = obj_from(bm, kind, mats["accent"], rid_of(loc, salt=part[2]))
+                inner = obj_from(part[3], "holes_in", mats["accent"]); boolean(o, inner, "DIFFERENCE"); bpy.data.objects.remove(inner)
+                high.append(o)
             elif kind.startswith("lamp:"):
                 high.append(obj_from(bm, "lamp", lamps[kind[5:]], 0.5))
             else:
                 high.append(obj_from(bm, kind, mats[kind], rid_of(loc, salt=i * 0.37)))
-    gb = greebles(lo, armour + sub, D, rng, mats, hole_bvh, S)
+    if D.get("well_cell_m"):
+        for parts, loc in well_modules(lo, S, D):
+            for i, part in enumerate(parts):
+                bm, kind = part[0], part[1]
+                mat = lamps[kind[5:]] if kind.startswith("lamp:") else mats[kind]
+                high.append(obj_from(bm, kind, mat, rid_of(loc, salt=1.7 + i * 0.37)))
+    gb = [] if D.get("well_cell_m") else greebles(lo, armour + sub, D, rng, mats, hole_bvh, S)
     if gb:
         high.append(obj_from(merge(gb), "greebles", mats["greeble"], 0.0))
         set_greeble_rids(high[-1])
