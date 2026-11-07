@@ -57,3 +57,5 @@
   `maps_dir`); the page is 7.7 MB, the maps 5.5 MB.
 - 2026-11-07, cloud session: version 14, version id `1794057593-9f56`. The Condor, the Pelican and the Krai cruiser; fewer
   crimson accent plates on the Krai (the corvette, frigate and cruiser repainted); the dreadnought still baking.
+- 2026-11-07, cloud session: version 15, version id `1794060545-e826`. The Krai dreadnought: the whole of both lines on the
+  new hull method (nine ships). Page 12 MB, maps 11 MB beside it.
