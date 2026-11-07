@@ -1,0 +1,319 @@
+{
+  "_doc": "The Krai's hull texture designs (change hull-texture-designs, mockup 24), on the Kelvane Institute's method: the Krai frigate's detail layer and paint (tools/blender/painted_bake.py --faction krai --ship krai_k1), baked onto the frigate's own hull from the game's glb (tools/mockups/glb_hull_obj.py). Not in the game until the owner enthusiastically approves.",
+  "faction": "krai",
+  "out": "assets/ships/krai/baked",
+  "manifest_doc": "The Krai's hull texture designs (mockup 24), baked: not used by the game.",
+  "paint": {
+    "armour": [
+      "#56637a",
+      "#5e6b82",
+      "#4f5a6e",
+      "#68768d",
+      "#5a6578",
+      "#636d7f",
+      "#535d70"
+    ],
+    "accent": "#8f2b2b",
+    "sub": [
+      "#56607a",
+      "#5c6680",
+      "#525c72",
+      "#606a84"
+    ],
+    "under": "#8a93a0",
+    "greeble": [
+      "#3a3f48",
+      "#6a707a"
+    ],
+    "dome": "#14171c",
+    "dome_glow": 0.0,
+    "slat": "#4a505a",
+    "vent": "#16181c",
+    "glass": "#14171c",
+    "livery": "#8f2b2b",
+    "ink": "#d9d6ce",
+    "light_edge": "#e2d6b8",
+    "strip": "whole",
+    "strip_m": 0.7,
+    "pbr": {
+      "armour": [
+        0.42,
+        0.55
+      ],
+      "sub": [
+        0.5,
+        0.6
+      ],
+      "under": [
+        0.7,
+        0.6
+      ],
+      "greeble": [
+        0.55,
+        0.7
+      ],
+      "dome": [
+        0.08,
+        0.0
+      ],
+      "glass": [
+        0.06,
+        0.0
+      ],
+      "slat": [
+        0.5,
+        0.7
+      ],
+      "vent": [
+        0.9,
+        0.3
+      ],
+      "strip": [
+        0.4,
+        0.0
+      ],
+      "lamp": [
+        0.3,
+        0.0
+      ],
+      "machine": [
+        0.45,
+        0.6
+      ]
+    },
+    "livery_pbr": [
+      0.45,
+      0.1
+    ],
+    "strip_k": 0.5,
+    "strip_inner": 0.12,
+    "strip_rim_px": 7,
+    "strip_cell_m": 1.6,
+    "strip_cell_gap": 0.14,
+    "strip_cell_on": 0.7,
+    "strip_cell_k": 0.55,
+    "greeble_ao_floor": 0.6,
+    "glass_cells_k": 0.45,
+    "glass_cell_m": 0.8,
+    "glass_cells_rgb": [
+      1.0,
+      0.6,
+      0.35
+    ],
+    "ink_k": 0.2,
+    "machine": [
+      "#5c636d",
+      "#868c95"
+    ],
+    "machine_kinds": [
+      "greeble",
+      "machine",
+      "slat",
+      "sub",
+      "under",
+      "vent"
+    ],
+    "machine_light": 0.7,
+    "plate_marks": {
+      "groove_inset_m": 0.3,
+      "groove_w_m": 0.08,
+      "groove_k": 0.62,
+      "red": "#8f2b2b",
+      "ink": "#d9d6ce",
+      "dots": [
+        "#8f2b2b",
+        "#d9d6ce",
+        "#c9c3b4"
+      ],
+      "triangle_share": 0.45,
+      "frame_share": 0.4,
+      "dots_share": 0.3,
+      "groove": false
+    },
+    "strip_rim_k": 0.0,
+    "ao_floor": 0.5
+  },
+  "defaults": {
+    "cuts": "rows",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+      1.0,
+      0.55,
+      0.3
+    ],
+    "armour_t_m": 0.45,
+    "sub_t_m": 0.12,
+    "lift_m": 0.08,
+    "gap_m": [
+      0.2,
+      0.32
+    ],
+    "trench_m": [
+      0.32,
+      0.32
+    ],
+    "trench_share": 0.0,
+    "top_station_m": [
+      5.0,
+      9.0
+    ],
+    "spine_half_m": [
+      1.6,
+      3.4
+    ],
+    "flank_station_m": [
+      5.0,
+      9.0
+    ],
+    "flank_rake": [
+      -0.04,
+      0.04
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+      "window": 0.1,
+      "bay": 0.35
+    },
+    "auto_floods": {
+      "step_m": 32,
+      "from_stern_m": 8,
+      "top_x_frac": 0
+    },
+    "flood": {
+      "standoff_m": 4.0,
+      "cone_deg": 110,
+      "tilt_deg": 22,
+      "power_w": 4800
+    },
+    "inner_machinery": false,
+    "corner_m": 0.6,
+    "cage_m": 2.0,
+    "hatch_share": 0.4,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false,
+    "rows_y_m": [
+      -4.5,
+      0.5,
+      5.5
+    ],
+    "strips_x_m": [
+      2.5,
+      6.0,
+      10.0
+    ]
+  },
+  "ships": {
+    "krai_k1": {
+      "mesh": "krai_frigate",
+      "seed": 201,
+      "_tradition": "K1 Tempered blade, on the Kelvane Institute's method (owner, 2026-11-07: \"exampline how the ionstitute does its hull, and replicate taht\"): the smiths; plates square to the hull with their corners cut (mockup 7's kit), the Warhost's steels, crimson and bone; no orange (owner: \"ew the orange sucks\")",
+      "louvres": [
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            -48.0
+          ],
+          "shape": "slot",
+          "len_m": 8.0,
+          "span_m": 1.6,
+          "rake_m": -1.6,
+          "pitch_m": 0.36,
+          "slant_deg": 38
+        },
+        {
+          "face": "bottom",
+          "at": [
+            3.4,
+            -42.0
+          ],
+          "shape": "slot",
+          "len_m": 5.0,
+          "span_m": 1.0,
+          "rake_m": -1.2,
+          "pitch_m": 0.34,
+          "slant_deg": 38
+        },
+        {
+          "face": "port",
+          "at": [
+            -47.0,
+            -3.6
+          ],
+          "shape": "slot",
+          "len_m": 6.0,
+          "span_m": 0.9,
+          "rake_m": -1.2,
+          "pitch_m": 0.32,
+          "slant_deg": 36
+        },
+        {
+          "face": "top",
+          "at": [
+            3.0,
+            -18.0
+          ],
+          "shape": "chevron",
+          "len_m": 3.0,
+          "span_m": 3.6,
+          "w_m": 0.8,
+          "pitch_m": 0.3,
+          "slant_deg": 34
+        }
+      ],
+      "bays": [
+        {
+          "face": "port",
+          "at": [
+            -26.0,
+            -0.4
+          ],
+          "w_m": 8.0,
+          "h_m": 3.0
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            10
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            8.0,
+            9.6
+          ]
+        },
+        {
+          "band_z_m": [
+            -40.0,
+            -38.4
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -14
+        ],
+        "size_m": 7.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 15
+        }
+      }
+    }
+  }
+}

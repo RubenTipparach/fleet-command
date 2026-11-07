@@ -353,9 +353,44 @@ def window_rows(F, surf):
                 if zk < z0:
                     break
                 h = surf.hit("port", [zk, y])
+                if h and abs(h[0].x) > F.get("x_max_m", 1e9):
+                    continue   # the ray met an outboard part first (a nacelle: owner, 2026-11-07, "no windows on nacelles")
                 if h and abs(h[1].x) > 0.6 and not surf.bare_at(*h) and surf.looks_out(*h) and clear_around(surf, h, zk, y):
                     out.append((h[0], h[1], r.random() > 0.2, kind))
             z -= n * 1.6 + r.uniform(2.0, 4.5)
+    return out
+
+def window_rows_plan(F, surf):
+    """Windows from the ship's room plan (Ship Design Bible W1: a room with people behind every window): for every room
+    of the kinds named in F['rooms'] (plan kind or id: pane kind), one row at its deck's eye height along its outer wall,
+    1.6 m apart, kept 0.8 m clear of its bulkheads, and only where the room meets the hull (within F['wall_m'] of the skin).
+    Symmetric (owner, 2026-11-06: "these empiures SHOULD BE SYMMETRIC"): the rooms of both sides are taken together, each
+    window placed once on the port side and mirrored, so a mess to port and quarters to starboard give one mirrored row.
+    F['dz_m'], F['dy_m']: the plan's frame to the hull's (the export re-centres a ship). Returns [(loc, normal, lit,
+    pane kind)], each built on both sides."""
+    import json as _json
+    import os as _os
+    plan = _json.load(open(_os.path.join(_os.path.dirname(__file__), "..", "..", F["plan"])))
+    dz, dy, wall = F.get("dz_m", 0.0), F.get("dy_m", 0.0), F.get("wall_m", 3.0)
+    floors, out, seen = plan["deck_floor_m"], [], set()
+    for room in plan["rooms"]:
+        kind = F["rooms"].get(room["id"]) or F["rooms"].get(room["kind"])
+        if not kind:
+            continue
+        r = random.Random(sum((i + 1) * 131 * ord(c) for i, c in enumerate(room["id"])))   # stable from run to run
+        x0, x1 = room["x_m"]
+        x_out = max(abs(x0), abs(x1))
+        z0, z1 = room["z_m"][0] - dz, room["z_m"][1] - dz
+        for d in room["decks"]:
+            y = floors[d] + F.get("eye_m", 1.5) - dy
+            z = z1 - 0.8
+            while z > z0 + 0.8:
+                key = (d, round(z / 1.6))
+                h = surf.hit("port", [z, y])
+                if key not in seen and h and abs(h[1].x) > 0.6 and h[0].x - x_out < wall:
+                    seen.add(key)
+                    out.append((h[0], h[1], r.random() > F.get("dark_share", 0.2), kind))
+                z -= 1.6
     return out
 
 
@@ -668,6 +703,36 @@ def grid_cuts(rng, D, zr, xmax, yr):
     return {"plan": plan, "side": side}
 
 
+def row_cuts(rng, D, zr, xmax, yr):
+    """Plating in rows (owner, 2026-11-07, of the grid's plates: "I'd elect for a different panneling design on the hull
+    too, with 2x number of panels"): the flanks in rows between D['rows_y_m'] and the top and bottom in strips between
+    D['strips_x_m'] (|x|), each row and strip with its own stations (D['flank_station_m'], D['top_station_m']), so the
+    plates' joints stagger from row to row and no cut crosses the whole hull; the rows' and strips' seams run the ship's
+    length. Port side only; mirrored by the caller."""
+    z0, z1 = zr
+    ylo, yhi = yr
+    plan, side = [], []
+
+    def stations(r, span):
+        out, z = [], z1 - r.uniform(0.5, 1.0) * span[1]
+        while z > z0 + 1:
+            out.append(z); z -= r.uniform(*span)
+        return out
+    ys = [y for y in D["rows_y_m"] if ylo < y < yhi]
+    for y in ys:
+        side.append(((z0 - 2, y), (z1 + 2, y)))
+    for i, (ya, yb) in enumerate(zip([ylo - 2] + ys, ys + [yhi + 2])):
+        for z in stations(random.Random(rng.random()), D["flank_station_m"]):
+            side.append(((z, ya), (z, yb)))
+    xs = [x for x in D["strips_x_m"] if x < xmax]
+    for x in xs:
+        plan.append(((x, z0 - 2), (x, z1 + 2)))
+    for xa, xb in zip([0.0] + xs, xs + [xmax + 2]):
+        for z in stations(random.Random(rng.random()), D["top_station_m"]):
+            plan.append(((xa, z), (xb, z)))
+    return {"plan": plan, "side": side}
+
+
 def mirror_cuts(cuts):
     return {"plan": cuts["plan"] + [((-a[0], a[1]), (-b[0], b[1])) for a, b in cuts["plan"]], "side": cuts["side"]}
 
@@ -731,7 +796,7 @@ def build_armour(lo, D, S, rng, holes, mats, layer):
     the trenches show a second layer of plating and, in its gaps, the machinery."""
     groups = shell_groups(lo, D.get("facing_min", 0.55))
     xs = [v.co.x for v in lo.data.vertices]; ys = [v.co.y for v in lo.data.vertices]; zs = [v.co.z for v in lo.data.vertices]
-    cutter = grid_cuts if D.get("cuts", "hunt") == "grid" else armour_cuts
+    cutter = {"grid": grid_cuts, "rows": row_cuts}.get(D.get("cuts", "hunt"), armour_cuts)
     cuts = mirror_cuts(cutter(rng, D, (min(zs), max(zs)), max(xs), (min(ys), max(ys))))
     primary = layer == "primary"
     t = D["armour_t_m"] if primary else D["sub_t_m"]
@@ -1212,10 +1277,23 @@ def build(lo, S, D, seed):
     PF = D["pane_frame_m"]
     for F in S.get("bays", []):
         at_both(F, lambda F, M, cut: bay(F, M, cut, surf, PF["bay"]))
+    def in_a_bay(p, margin=1.0):
+        """Whether p lies on a bay's mouth or within margin metres of it, on either side (the bays are placed first)."""
+        for B in PANES:
+            if B["kind"] != "bay":
+                continue
+            for sx in (1, -1):
+                d = Vector((p.x * sx, p.y, p.z)) - Vector(B["c"])
+                if abs(d.dot(Vector(B["n"]))) < 1.5 and abs(d.dot(Vector(B["u"]))) < B["w_m"] / 2 + margin \
+                        and abs(d.dot(Vector(B["v"]))) < B["h_m"] / 2 + margin:
+                    return True
+        return False
     for F in S.get("windows", []):
-        for loc, nor, lit_, kind in window_rows(F, surf):
+        for loc, nor, lit_, kind in (window_rows(F, surf) if "rows_y_m" in F else window_rows_plan(F, surf)):
             if not fits(surf, frame_at(loc, nor), 1.1, 0.6, PF["window"]):
                 continue   # it would cross a bend
+            if in_a_bay(loc):
+                continue   # never through a bay's mouth (owner, 2026-11-07: "windows intersected with shuttle bay")
             for m in (False, True):
                 cut = []
                 feats.append((window(lit_, frame_at(loc, nor, m), cut, PF["window"], kind), loc))

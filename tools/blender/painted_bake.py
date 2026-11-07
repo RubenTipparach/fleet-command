@@ -262,7 +262,15 @@ PT = {}                       # the faction's paint (hull_detail.json "paint"), 
 
 
 def ships_out():
-    return os.path.join(ROOT, "assets", "ships", FACTION)
+    """Where a faction's baked maps go: its data's "out" (the Concord's and Krai's own folders hold the game's models, so
+    their bakes go in a baked/ folder Godot does not import), else assets/ships/<faction>/."""
+    out = json.load(open(detail_path())).get("out") if os.path.exists(detail_path()) else None
+    return os.path.join(ROOT, out) if out else os.path.join(ROOT, "assets", "ships", FACTION)
+
+
+def mesh_of(slug):
+    """The hull a ship is baked on: its entry's "mesh" (several designs of one hull share its export), else its slug."""
+    return json.load(open(detail_path()))["ships"][slug].get("mesh", slug)
 
 
 def detail_path():
@@ -305,7 +313,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     sc.render.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = samples; sc.cycles.use_denoising = False; sc.cycles.seed = 0
     world = bpy.data.worlds.new("World"); world.use_nodes = True; sc.world = world; world.light_settings.distance = 2.2
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
-    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, slug + ".obj"), forward_axis="Y", up_axis="Z")
+    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj"), forward_axis="Y", up_axis="Z")
     obs = sorted((o for o in sc.objects if o.type == "MESH"), key=lambda o: o.name)
     img = bpy.data.images.new(slug + "_bake", px, px, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
     lo_hull, lo_glow, lo_well = lo_material(img, "lo_hull"), lo_material(img, "lo_glow"), lo_material(img, "lo_well")
@@ -599,7 +607,8 @@ def plate_marks(base, P, n, rid, plate, M):
     r1 = max(1, int(round(M.get("groove_inset_m", 0.3) / texel)))
     near = lambda r: blur(edge.astype(np.float32), r) > 1e-6
     groove = plate & near(r1 + max(1, int(round(M.get("groove_w_m", 0.08) / texel)))) & ~near(r1)
-    base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
+    if M.get("groove", True):   # the inset line (off where the owner asked: "I'd probably get rid of the inner lines on the panel")
+        base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
     # the plate's own plane: (along, across) by its facing, the same on both sides
     ax = np.abs(n).argmax(axis=2); x = np.abs(P[..., 0])
     a = np.where(ax == 0, P[..., 2], x); b = np.where(ax == 1, P[..., 2], P[..., 1])
@@ -695,7 +704,8 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
         mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
         light = np.where(mach, np.maximum(light, PT["machine_light"] * (0.75 + 0.25 * st)), light)
     col = base * light[..., None]
-    col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
+    af = PT.get("ao_floor", 0.22)   # how dark the deepest cavity goes (a plate's rim shadow: owner, of the Krai, "the darker color is too tark")
+    col *= (af + (1 - af) * aoc ** 1.7)[..., None]
     ink = np.clip((0.4 - aoc) / 0.25, 0, 1)
     ik = PT.get("ink_k", 0.75)   # how hard the deepest crevices are inked (the Hunt 0.75; a lighter hand for a clean faction)
     col = col * (1 - ik * ink[..., None]) + hexrgb(PT["ink"]) * (ik * ink[..., None])
@@ -782,7 +792,7 @@ def ship_main(slugs, px, samples, panes_only=False):
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
             continue
         info = bake_ship(slug, px, samples)
-        n = int(open(os.path.join(SHIPS_RAW, slug + ".obj")).readline().split()[1])
+        n = int(open(os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
         for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)
