@@ -13,6 +13,8 @@
 //   paneMesh(panes, dmgU, live)  one mesh of quads for a ship's windows and bays: a dark frame, the room or hangar behind
 //                          (lib/ship-rooms.js)
 //   dmgUniforms()          a ship's damage uniforms (lib/ship-fx.js DAMAGE_GLSL's half)
+//   withDetail(mat, key)   the fine detail layer laid on any standard material (the game model's own parts)
+//   DETAIL                 the detail layer's tile (albedo and normal textures) and its strength (U.detK)
 // SK: FCShipSkin(THREE), ROOMS: FCShipRooms, SFX: FCShipFX(THREE, ...), U: the page's shared uniforms (lightK, selfP, none,
 // roomK, frameK), env(): the page's environment strength now.
 window.FCBakedHull = function FCBakedHull(THREE, deps) {
@@ -23,6 +25,63 @@ const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 // shared damage rules. The windows and bays are not in it: each is its own quad (paneMesh, below).
 const HULL_GLSL = `
 uniform sampler2D uHullLight; uniform float uLightK; uniform float uSelf;`;
+// The fine detail layer (owner, 2026-11-07: "we're also missing detail texture layer"): a 2.5 m tile of the metal's own
+// surface, below the bake's scale and with no seams of its own (CLAUDE.md section 10: tiles add detail only, never the
+// main colour), drawn once from a seeded generator (lib/ship-skin.js mulberry): a slow mottle in three octaves on a
+// wrapping lattice, small pits and short scratches mostly fore and aft. Its albedo shades the paint a little, its normal
+// map roughens the light a little; both are projected from three sides in ship space (lib/ship-skin.js GLSL.detail).
+const DETAIL_M = 2.5;
+const DETAIL = (() => {
+  const N = 512, rnd = SK.mulberry(9157), h = new Float32Array(N * N);
+  for (const [cells, amp] of [[6, 0.45], [24, 0.3], [96, 0.18]]) {
+    const L = Array.from({ length: cells * cells }, () => rnd()), at = (i, j) => L[((j % cells) * cells) + (i % cells)];
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const u = x / N * cells, v = y / N * cells, i = Math.floor(u), j = Math.floor(v), fu = u - i, fv = v - j;
+      const a = at(i, j) * (1 - fu) + at(i + 1, j) * fu, b = at(i, j + 1) * (1 - fu) + at(i + 1, j + 1) * fu;
+      h[y * N + x] += amp * (a * (1 - fv) + b * fv);
+    }
+  }
+  const dent = (cx, cy, r, d) => { for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) { const q = (x * x + y * y) / (r * r);
+    if (q < 1) { const i = ((cy + y + N) % N) * N + ((cx + x + N) % N); h[i] -= d * (1 - q); } } };
+  for (let k = 0; k < 220; k++) dent(Math.floor(rnd() * N), Math.floor(rnd() * N), 1 + Math.floor(rnd() * 3), 0.35);   // pits
+  for (let k = 0; k < 160; k++) {   // short scratches, mostly along u (fore and aft)
+    let x = rnd() * N, y = rnd() * N; const a = (rnd() - 0.5) * 0.6, len = 8 + rnd() * 50;
+    for (let t = 0; t < len; t++) { x += Math.cos(a); y += Math.sin(a); const i = ((Math.floor(y) + N) % N) * N + ((Math.floor(x) + N) % N); h[i] -= 0.22; }
+  }
+  let mean = 0; for (const v of h) mean += v; mean /= h.length;
+  const ca = document.createElement('canvas'), cn = document.createElement('canvas'); ca.width = cn.width = ca.height = cn.height = N;
+  const A = ca.getContext('2d').createImageData(N, N), Nm = cn.getContext('2d').createImageData(N, N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const i = y * N + x, g = Math.max(0, Math.min(255, 128 + (h[i] - mean) * 260));
+    const dx = h[y * N + (x + 1) % N] - h[y * N + (x + N - 1) % N], dy = h[((y + 1) % N) * N + x] - h[((y + N - 1) % N) * N + x];
+    const nx = -dx * 3, ny = -dy * 3, l = Math.hypot(nx, ny, 1);
+    A.data.set([g, g, g, 255], i * 4); Nm.data.set([(nx / l * 0.5 + 0.5) * 255, (ny / l * 0.5 + 0.5) * 255, (1 / l * 0.5 + 0.5) * 255, 255], i * 4);
+  }
+  ca.getContext('2d').putImageData(A, 0, 0); cn.getContext('2d').putImageData(Nm, 0, 0);
+  const tex = (c) => { const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t; };
+  return { albedo: tex(ca), normal: tex(cn) };
+})();
+const DETAIL_GLSL = `
+uniform sampler2D uDetA; uniform sampler2D uDetN; uniform vec2 uDetK;
+varying vec3 vNObj; varying vec3 vMV0; varying vec3 vMV1; varying vec3 vMV2;
+${SK.GLSL.detail(DETAIL_M, DETAIL_M)}`;
+// Lays the detail layer into a material's shader (its own onBeforeCompile keeps running first).
+function detailInto(s2) {
+  Object.assign(s2.uniforms, { uDetA: { value: DETAIL.albedo }, uDetN: { value: DETAIL.normal }, uDetK: U.detK });
+  s2.vertexShader = s2.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vNObj; varying vec3 vMV0; varying vec3 vMV1; varying vec3 vMV2; varying vec3 vPObj;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvNObj = normal; vPObj = position; vMV0 = (modelViewMatrix*vec4(1.0, 0.0, 0.0, 0.0)).xyz; vMV1 = (modelViewMatrix*vec4(0.0, 1.0, 0.0, 0.0)).xyz; vMV2 = (modelViewMatrix*vec4(0.0, 0.0, 1.0, 0.0)).xyz;');
+  s2.fragmentShader = s2.fragmentShader.replace('#include <common>', '#include <common>\n' + DETAIL_GLSL + '\nvarying vec3 vPObj;')
+    .replace('#include <map_fragment>', `#include <map_fragment>
+      diffuseColor.rgb *= 1.0 + (detailA(vPObj, normalize(vNObj)) - 0.5)*uDetK.x;`)
+    .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      { vec3 nO = normalize(vNObj); vec3 dO = detailN(vPObj, nO, uDetK.y) - nO;
+        normal = normalize(normal + mat3(normalize(vMV0), normalize(vMV1), normalize(vMV2))*dO); }`);
+}
+function withDetail(mat, key) {
+  const prev = mat.onBeforeCompile;
+  mat.onBeforeCompile = (s2, r) => { if (prev) prev.call(mat, s2, r); detailInto(s2); };
+  const pk = mat.customProgramCacheKey ? mat.customProgramCacheKey.bind(mat) : () => '';
+  mat.customProgramCacheKey = () => pk() + '|detail|' + key; return mat; }
 // The panes: every window and bay is a quad of its own, laid on the hull at the place the bake cut for it
 // (tools/blender/hull_detail.py pane_box writes each one's centre, axes and size), so its frame is exact at any distance
 // (owner, 2026-11-05: "windows and hangar bay are kinda messed up, mmake them clean, make the border clean"). The quad
@@ -109,7 +168,7 @@ function hullLooks(M, u) {
   const looks = { painted: hullShader(new THREE.MeshStandardMaterial({ map: M.albedo, emissiveMap: M.em, emissive: 0xffffff, normalMap: M.nm, roughness: 0.72, metalness: 0.15, envMapIntensity: 0 }), M.lt, M.g, U.selfP, 'painted-' + M.slug, M.dU, u),
     pbr: hullShader(new THREE.MeshStandardMaterial({ map: M.base, normalMap: M.nm, roughnessMap: M.orm, metalnessMap: M.orm, aoMap: M.orm, roughness: 1, metalness: 1,
       emissiveMap: M.em, emissive: 0xffffff, envMapIntensity: env() }), M.lt, M.g, U.none, 'pbr-' + M.slug, M.dU, u) };
-  for (const m of Object.values(looks)) { m.userData.u = u; m.userData.looks = looks; }
+  for (const [k, m] of Object.entries(looks)) { withDetail(m, k + '-' + M.slug); m.userData.u = u; m.userData.looks = looks; }
   return looks; }
-return { hullLooks, hullShader, paneMesh, dmgUniforms, PANE_KIND };
+return { hullLooks, hullShader, paneMesh, dmgUniforms, PANE_KIND, withDetail, DETAIL };
 };

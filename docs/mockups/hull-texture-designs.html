@@ -975,7 +975,7 @@ const sun = new THREE.DirectionalLight(0xffffff, 1.15); sun.position.set(320, 42
 const rim = new THREE.DirectionalLight(0xa8c4e0, 0.5); rim.position.set(-300, -100, -400); scene.add(rim);
 scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new THREE.RoomEnvironment(), 0.04).texture;
 const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-const U = { lightK: { value: 0.3 }, selfP: { value: 0.55 }, none: { value: 0.0 }, roomK: { value: 1.0 }, frameK: { value: 1.0 } };
+const U = { lightK: { value: 0.3 }, selfP: { value: 0.55 }, none: { value: 0.0 }, roomK: { value: 1.0 }, frameK: { value: 1.0 }, detK: { value: new THREE.Vector2(0.42, 0.8) } };
 let night = false, look = 'painted';
 const glowSprite = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
   g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
@@ -1026,6 +1026,8 @@ function buildShip(key, glbScene) {
   glb.updateMatrixWorld(true);
   glb.traverse((o) => { if (o.isMesh && S.hull.includes(o.material.name)) { hullBox.expandByObject(o); hidden.push(o); } });
   for (const o of hidden) o.visible = false;
+  glb.traverse((o) => { if (o.isMesh && !hidden.includes(o) && o.material && o.material.isMeshStandardMaterial) {   // the model's own parts
+    o.material = BH.withDetail(o.material.clone(), key + '-' + o.material.name); } });                               // carry the detail layer too
   const designs = [];
   for (const D of S.designs) {
     const sh = BK && BK.ships[D.slug]; if (!sh) { designs.push(null); continue; }
