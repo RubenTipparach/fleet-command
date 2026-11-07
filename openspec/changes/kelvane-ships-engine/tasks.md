@@ -7,7 +7,7 @@
 - [x] 1.3 The exporter's baked branch for any baked faction; the Institute's six glbs, their fields, the carrier's pad empties
 - [x] 1.4 `ParkedCraft`: the fighter on the carrier's pads, one a fighter in the bay
 - [x] 1.5 Five classes, the carrier's fighters, The Institute and Institute wrecks from each side, the Institute as a side (Battle, Duel, Arming, Four races), its five on both damage ranges; the scenario test widened
-- [ ] 1.6 Stills of the Institute's ships in the running game, side by side with the mockup's shots
+- [x] 1.6 Stills of the Institute's ships in the running game, side by side with the mockup's shots, and the suite (docs/playtests/2026-11-07-kelvane-institute.md)
 
 ## 2. Still different from mockup 23 (docs/design/mockup-sync.md)
 
