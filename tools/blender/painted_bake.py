@@ -809,6 +809,9 @@ def ship_main(slugs, px, samples, panes_only=False):
         print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)
     man["blender"] = bpy.app.version_string
     man["webp_quality"] = 84   # the page's copy of the maps (tools/mockups/inline_data.py); the PNGs here stay exact
+    D_ = json.load(open(detail_path()))
+    if D_.get("maps_dir"):   # the page's maps written beside it as files (inline_data.py), for a page of many ships
+        man["maps_dir"] = D_["maps_dir"]
     with open(mpath, "w") as fh:
         json.dump(man, fh, separators=(",", ":"), sort_keys=True)
         fh.write("\n")
