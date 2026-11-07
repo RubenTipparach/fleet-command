@@ -5,22 +5,23 @@
   "manifest_doc": "The Concord's hull texture designs (mockup 24), baked: not used by the game.",
   "paint": {
     "armour": [
-      "#e8e6e0",
-      "#e2e0d9",
-      "#ecebe6",
-      "#dcdad3",
-      "#e5e3dc",
-      "#d6d6d2",
-      "#eeede8"
+      "#ebe9e3",
+      "#dcdfe2",
+      "#cfd4da",
+      "#e4ded3",
+      "#d3dae1",
+      "#c6ccd3",
+      "#efeee9",
+      "#d8d4cc"
     ],
     "accent": "#a9b9c8",
     "sub": [
-      "#c9cdd2",
-      "#d0d4d8",
-      "#c2c7cc",
-      "#d5d8db"
+      "#cdd1d6",
+      "#d3d6da",
+      "#c7ccd1",
+      "#d8dbde"
     ],
-    "under": "#b4bac1",
+    "under": "#b9bfc6",
     "greeble": [
       "#6f777f",
       "#a9b0b7"
@@ -100,7 +101,7 @@
       0.9,
       1.0
     ],
-    "ink_k": 0.15,
+    "ink_k": 0.08,
     "machine": [
       "#b8bec4",
       "#d5d9dc"
@@ -131,7 +132,7 @@
       "groove": false
     },
     "strip_rim_k": 0.0,
-    "ao_floor": 0.6
+    "ao_floor": 0.75
   },
   "defaults": {
     "cuts": "rows",
@@ -142,12 +143,12 @@
       0.9,
       1.0
     ],
-    "armour_t_m": 0.3,
-    "sub_t_m": 0.12,
-    "lift_m": 0.05,
+    "armour_t_m": 0.14,
+    "sub_t_m": 0.06,
+    "lift_m": 0.03,
     "gap_m": [
-      0.2,
-      0.32
+      0.1,
+      0.14
     ],
     "trench_m": [
       0.32,
@@ -155,16 +156,16 @@
     ],
     "trench_share": 0.0,
     "top_station_m": [
-      5.0,
-      9.0
+      10.0,
+      18.0
     ],
     "spine_half_m": [
       1.6,
       3.4
     ],
     "flank_station_m": [
-      5.0,
-      9.0
+      10.0,
+      18.0
     ],
     "flank_rake": [
       -0.04,
@@ -198,14 +199,13 @@
     "strip_lines_lit": false,
     "rows_y_m": [
       -3.5,
-      0.0,
       3.5
     ],
     "strips_x_m": [
-      2.5,
-      6.0,
-      9.5
-    ]
+      4.0,
+      9.0
+    ],
+    "_plating": "Half the Krai's density (owner, 2026-11-07: \"go back to 50% number of panles on concord ships. Denser panels make sense for krai ships\"); thin plates and narrow gaps so the seams read light grey, not black (\"I dont like the black lines being black, they need to be a lighter grey color\"); plates in distinct tones (\"the panels need some various color\")"
   },
   "ships": {
     "petrel_c1": {
