@@ -1,5 +1,33 @@
 # Design: hull-texture-designs
 
+## Version 6: a clean hull, large panels and sub panels, a kit of details
+
+The owner, of version 5's test bakes: "you have to make drastic changes to improve", then a run of reference sheets
+(stylised hard-surface ships, a clean off-white one "ideal for concord style", a Homeworld-like one) with notes: "hull
+plating, clean hull", "more detail variety", "notice large panels, and sub panels, liveries, varying colors of armor",
+"close up ship details", "vents, lights, escape hatches, missile tubes, bombe tobes", "warning markings too", "tiny holes
+or slots for rivets and bolts", then "we dont need those old ww2 style rivets", "I think indents might be better", "you can
+see these pill shaped holes here", "those indents I beleve are used for bolts to secrue armor panels in place", "you can
+also notice subtle wear and tear, accent colors, lights and small ports", "why is there two armor plates ontop of
+eachother?", "are you adding wear and tear textures before you render?". What is taken from the sheets is how such a hull
+is built and marked, never their art.
+
+| Part | Version 6 | Where |
+|---|---|---|
+| Plating | Large panels between the room plan's stations (merged within 7-8 m), decks and walls, each seam "major" (0.1 m Concord, 0.16 m Krai); each large panel split into sub panels at its own places (two levels, a share left whole); cut again at the hull's chines (faces turning over 35 degrees) | `panel_cuts`, `kit_split`, `chine_slabs` |
+| Relief | Plates 0.3 m (Concord) and 0.55 m (Krai) thick, each raised by its own amount (up to 0.09 m and 0.16 m), every edge chamfered (0.05 m and 0.1 m), so sub panels stand at their own heights and every edge catches the light. No overlays (the owner: "why is there two armor plates ontop of eachother?") | `build_armour`, `bevel_m` |
+| Colour | Plates in several tones of the faction's armour (off-whites and pale greys; the Warhost's steels), a few in an accent (copper; orange), accent modules | `palette` (`ARMOUR`, `ACCENT`, `BRONZE_SHARE`) |
+| The kit | Over the plating, mirrored, kept off bends, off one another, out of the opened zones and clear of windows and bays: escape hatches and access panels set into the plating, vents, lit slots (blue; amber and red), small ports, thin grooves, tags, thruster quads, accent modules, missile and bomb tubes, each with its warning marks | `scatter_kit`, `k_*` (`kit` in data) |
+| Bays | Ordered machinery in the opened zones, one module a grid cell (blocks, pipe runs, slatted boxes, tanks, lit panels, accent blocks) | `well_modules` (`well_cell_m`) |
+| Bolt wells | Pill-shaped wells indented into a plate's corners (diagonal) and across its long edges, on a share of the plates; no rivet rows | `rivets` |
+| Marks | Warning corner brackets and arrows by hatches, hazard stripes on launchers, chevrons by vents, bars and boxes on tags, warning bands, the ship's name and number in our own block font | `paint_decals` |
+| Wear | Before the render: shallow dents and fore-and-aft scratches in the high-poly's shading (the render light and the normal map carry them). In the paint: chips on the edges and specks on the faces from a lattice hash, grime in the cavities, the story's soot and scorch | `WEAR_BUMP`, `specks`, `paint_render`, `wear` |
+| Resolution | 4096 px a ship (about 2.9 cm a texel; 1536 px was 7.6 cm, too coarse for a bolt well or a mark), the maps beside the page as WebP files, published with it | `--px 4096`, `maps_dir` |
+| Checking | The high-poly rendered in its palette colours before every bake (`--preview`); any piece reaching past the hull is named and left out | `preview_render`, `within_hull` |
+
+C1 and K1 are made first on version 6, as the test of the look. The other designs (C2-C5, K2-K5) keep their traditions
+and liveries and move onto it once the owner has seen C1 and K1; until then the page shows them as to come.
+
 ## How every design is made (version 3)
 
 Version 2 drew the designs in a shader over the models. The owner: "None of this look good, they don't bring the same
@@ -15,12 +43,9 @@ Ssarith Hunt's ships are (change `ssarith-ships-engine`, the `ship-detailing` sk
 | The paint | The design's palette by plate, its plate colours, its liveries and markings, and its wear. Painted into a painted map and a PBR set (base colour, ORM, normals, emission) and a hull-light map | `painted_bake.py` (`plate_colours`, `livery_paint`, `wear`) |
 | The page | The baked hull, its windows and bays as panes with rooms and hangars behind, its running lights, and the glb's other parts | `docs/mockups/lib/baked-hull.js`, the Hunt page's code (to fold into `lib/baked-ship.js`, tasks 4.1) |
 
-**Cut styles, one for each faction's tradition:**
-- `strake` (the Concord): long fore-and-aft strakes, each its own width. Their end joints are staggered strake by strake,
-  so no two line up (T4). Full ring seams sit at the bulkhead stations the bands sit on.
-- `kit` (the Krai): the hull is cut into frames at irregular stations. Each frame's panel is split again and again along
-  its longer side, at its own place, and some plates are left whole. Some corners are cut at 45 degrees, and the layer
-  beneath shows through the cut.
+**Cut styles (versions 3-5, since removed):** `strake` for the Concord (staggered fore-and-aft strakes) and `kit` for the
+Krai (frames split and split again), then `plan` (seams only at the plan's bulkheads and decks). Version 6 replaces them
+with large panels and sub panels (above).
 
 **The story, from the room plan** (`data/ships/<faction>/<ship>_plan.json`, shared by every design of one hull):
 - **Windows.** A window wherever people live or work against the hull: one row a deck at eye height, 1.6 m apart, clear
@@ -100,7 +125,7 @@ and added to, never replaced"; the Krai show their edge.
 | Marks | Tallies in fives, honours | KP4 |
 | Light | The render; the gaps a dark steel, never black | rule 3, 4 |
 
-## Rules every design keeps## Rules every design keeps
+## Rules every design keeps
 
 All of these are already decided:
 - **Tradition, not the body.** Each design names the tradition it comes from (CLAUDE.md section 1; Ship Bible C1-C5).

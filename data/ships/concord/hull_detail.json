@@ -136,7 +136,12 @@
     "trench_m": [
       0.3,
       0.5
-    ]
+    ],
+    "wear_bump": {
+      "armour": 0.12,
+      "accent": 0.1,
+      "sub": 0.08
+    }
   },
   "stories": {
     "petrel": {

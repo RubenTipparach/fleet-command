@@ -53,7 +53,8 @@ STORY = []  # what the paint wears where (painted_bake.py --ship): dicts of kind
 
 # ----------------------------------------------------------------------------- materials
 GLOW_W_M2 = 6.0   # how brightly a lamp's or window's own face lights the hull next to it, in the light pass
-BEVEL_M = {"armour": 0.3, "sub": 0.14, "dome": 0.05}   # the armour's edges rolled wide, so each plate reads pillowed in the light
+BEVEL_M = {"armour": 0.3, "sub": 0.14, "dome": 0.05}
+WEAR_BUMP = {}   # how strongly each kind's surface wear (dents, scratches) shows in the render, by kind (data: wear_bump)   # the armour's edges rolled wide, so each plate reads pillowed in the light
 
 
 def kind_material(kind, glow=None):
@@ -79,7 +80,26 @@ def kind_material(kind, glow=None):
     rgb = N.new("ShaderNodeRGB"); rgb.outputs[0].default_value = (*(LAMP_RGB[glow] if glow else (0, 0, 0)), 1.0)
     em = N.new("ShaderNodeEmission")
     lit = N.new("ShaderNodeEmission"); L.new(rgb.outputs[0], lit.inputs[0]); lit.inputs[1].default_value = GLOW_W_M2
-    bs = N.new("ShaderNodeBsdfDiffuse"); bs.inputs["Color"].default_value = (1, 1, 1, 1); L.new(bev.outputs[0], bs.inputs["Normal"])
+    bs = N.new("ShaderNodeBsdfDiffuse"); bs.inputs["Color"].default_value = (1, 1, 1, 1)
+    nout = bev.outputs[0]
+    if WEAR_BUMP.get(kind):   # the surface's own wear before the render (owner: "are you adding wear and tear textures before
+        # you render? rthat might make it better"): shallow dents and fine scratches as bump over the bevelled normal, so the
+        # render's light and the normal map carry them; Blender's gradient noise (no cheap hash)
+        pos = N.new("ShaderNodeTexCoord")
+        dent = N.new("ShaderNodeTexNoise"); dent.inputs["Scale"].default_value = 0.6; dent.inputs["Detail"].default_value = 3.0
+        L.new(pos.outputs["Object"], dent.inputs["Vector"])
+        mp = N.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (2.0, 2.0, 60.0)   # scratches run fore and aft
+        L.new(pos.outputs["Object"], mp.inputs["Vector"])
+        scr = N.new("ShaderNodeTexNoise"); scr.inputs["Scale"].default_value = 3.0; scr.inputs["Detail"].default_value = 1.0
+        L.new(mp.outputs["Vector"], scr.inputs["Vector"])
+        ramp = N.new("ShaderNodeMapRange"); ramp.inputs["From Min"].default_value = 0.47; ramp.inputs["From Max"].default_value = 0.5
+        L.new(scr.outputs["Fac"], ramp.inputs["Value"])
+        mix = N.new("ShaderNodeMath"); mix.operation = "MULTIPLY_ADD"; mix.inputs[1].default_value = 0.35
+        L.new(ramp.outputs["Result"], mix.inputs[0]); L.new(dent.outputs["Fac"], mix.inputs[2])
+        bump = N.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = WEAR_BUMP[kind]; bump.inputs["Distance"].default_value = 0.02
+        L.new(mix.outputs["Value"], bump.inputs["Height"]); L.new(bev.outputs[0], bump.inputs["Normal"])
+        nout = bump.outputs["Normal"]
+    L.new(nout, bs.inputs["Normal"])
     src = {"data": comb.outputs[0], "glow": rgb.outputs[0], "position": geo.outputs["Position"]}
 
     def switch(what):
@@ -1283,6 +1303,7 @@ def build(lo, S, D, seed):
     D = {**D, **S.get("detail", {})}   # a design's own plating over the faction's defaults
     LAMP_RGB.update({k: tuple(v) for k, v in D.get("lamp_rgb", {}).items()})
     BEVEL_M.update(D.get("bevel_m", {}))
+    WEAR_BUMP.clear(); WEAR_BUMP.update(D.get("wear_bump", {}))
     rng = random.Random(seed)
     PANES.clear(); DECALS.clear()
     mats = {k: kind_material(k) for k in ("under", "greeble", "sub", "armour", "accent", "dome", "slat", "vent")}
@@ -1400,7 +1421,25 @@ def build(lo, S, D, seed):
     if gb:
         high.append(obj_from(merge(gb), "greebles", mats["greeble"], 0.0))
         set_greeble_rids(high[-1])
-    return high
+    return within_hull(lo, high)
+
+
+def within_hull(lo, high, margin=3.0):
+    """Every piece must lie within the hull's own bounds (plus margin metres): a piece reaching past them is a bug (a
+    cutter left behind, a frame gone wrong) that would spoil the bake. Such a piece is named in the log and left out."""
+    vs = [v.co for v in lo.data.vertices]
+    lo_ = Vector((min(v.x for v in vs), min(v.y for v in vs), min(v.z for v in vs))) - Vector((margin,) * 3)
+    hi_ = Vector((max(v.x for v in vs), max(v.y for v in vs), max(v.z for v in vs))) + Vector((margin,) * 3)
+    keep = []
+    for o in high:
+        bb = [o.matrix_world @ Vector(c) for c in o.bound_box]
+        if all(lo_.x <= p.x <= hi_.x and lo_.y <= p.y <= hi_.y and lo_.z <= p.z <= hi_.z for p in bb):
+            keep.append(o)
+        else:
+            size = Vector((max(p.x for p in bb) - min(p.x for p in bb), max(p.y for p in bb) - min(p.y for p in bb), max(p.z for p in bb) - min(p.z for p in bb)))
+            print(f"hull_detail: BUG: piece {o.name} ({len(o.data.polygons)} faces, {size.x:.1f} x {size.y:.1f} x {size.z:.1f} m) reaches past the hull; left out", flush=True)
+            bpy.data.objects.remove(o)
+    return keep
 
 
 def set_greeble_rids(o):

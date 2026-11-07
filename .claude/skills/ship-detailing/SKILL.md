@@ -59,12 +59,17 @@ Bible (`docs/design/ship-bible.html`): chapters 7 (windows), 9 (hull lighting), 
 | Hull form: grown skin | One body with branches split from its own section (the Hunt) | the ship's page (`Skin`, `hsec`), `export_blockouts.mjs` | section layout, branches |
 | Hull form: lofted line | A line's lofted hull (the Concord, the Krai) | the line's builder, the game's glb through `tools/mockups/glb_hull_obj.py` | as built |
 | Plating: chevrons | Swept chevrons and raked flank cuts, a kinked spine | `hull_detail.py` `armour_cuts` (`cut_style` "hunt") | stations, sweep, spine |
-| Plating: strakes on frames | Fore-and-aft strakes, butt joints on the hull's frames, ring seams at bulkheads | `strake_cuts` ("strake") | `strake_w_m`, `strake_h_m`, `frame_m`, `plate_frames`, `rings_z_m` |
-| Plating: split panels | Frames at stations, panels split and split again, some corners cut at 45 degrees | `kit_cuts` ("kit") | `kit_frame_m`, `kit_min_m`, `kit_depth`, `kit_stop`, `kit_chamfer` |
-| Relief: layered armour | Plates standing proud by their own amounts, overlays stepping up, a sub-armour layer, trenches | `build_armour`, `overlay` | `armour_t_m`, `lift_m`, `overlay_*`, `sub_t_m`, `trench_*` |
+| Relief: layered armour | Plates standing proud by their own amounts, overlays stepping up (a smaller copy of a plate over it: the Hunt only, never with windows or features on the plate: owner, "why is there two armor plates ontop of eachother?"), a sub-armour layer, trenches | `build_armour`, `overlay` | `armour_t_m`, `lift_m`, `overlay_*`, `sub_t_m`, `trench_*` |
 | Relief: flush skin | One continuous skin, its plates told apart by narrow seams only | the same, `lift_m` near 0, thin `armour_t_m`, narrow `gap_m`, no trenches | |
 | Exposed machinery | Machinery where the ship's systems run: trenches, service bands, round the drives | `exposed` zones, `greebles` | `greebles_per_m2`; never over the whole hull |
-| Fasteners and frames | Bolt rows along seams, raised ribs at the frames | to build | |
+| Plating: large panels and sub panels | Large panels between the room plan's stations, decks and walls (each seam "major"), each split into sub panels at their own places, cut again at the hull's chines; a clean hull | `panel_cuts`, `kit_split`, `chine_slabs` (`cut_style` "panels") | `panel_merge_m`, `station_sweep`, `sub_depth`, `sub_stop`, `kit_min_m`, `major_gap_m`, `chine_deg` |
+| Relief: chamfered edges | Every plate's edge rolled a little, so it catches the light (narrow for a crisp hull, broad for forged plate) | `bevel_m` (the Bevel node's radius by kind) | Concord 0.05 m, Krai 0.1 m |
+| The detail kit | Distinct pieces over the plating, mirrored, kept off bends and off one another: escape hatches and access panels set into the plating, vents, lit slots, small ports, thin grooves, tags, thruster quads, accent modules, missile and bomb tubes | `scatter_kit`, the `k_*` pieces | `kit`: `per_100m2`, `weights`, `lights`, `gap_m` |
+| Ordered machinery | Rows of built machinery in an opened bay: blocks, pipe runs, slatted boxes, tanks, lit panels, accent blocks, one a grid cell | `well_modules` | `well_cell_m` (with `exposed` zones) |
+| Bolt wells | Pill-shaped wells indented into a plate's corners (set diagonally) and across its long edges, where the bolts hold it down; never rivet rows | `rivets` | `rivets`: `inset_m`, `pill_l_m`, `share`, `slot_edge_m` |
+| Paint: marks | Warning corner brackets, arrows, hazard stripes, chevrons, bars, boxes, warning bands, names and numbers in a block font | `paint_decals`, `decal_shape` (`DECALS` from the kit, `decals` in data) | `DECAL` colours |
+| Wear: surface | Shallow dents and fine fore-and-aft scratches in the high-poly's own shading, so the render and the normal map carry them | `WEAR_BUMP` in `kind_material` | `wear_bump` by kind |
+| Wear: chips and grime | Paint chipped on the edges and specked on the faces (a lattice hash, no repeats), grime in the cavities | `specks`, `hash3`, `paint_render` | `CHIPS_K`, `DIRT`, `DIRT_K` |
 | Features | Domes, fans, louvres, lamps, bays, windows, the emblem | `hull_detail.py` features, from the story | sizes, places |
 | Paint: plates | One colour a plate from a palette; or by edge (temper), by section, by generation | `painted_bake.py` `flat_paint`, `plate_colours` | `palette`, `plates` |
 | Paint: liveries and marks | Bands, sash, stripe, fields, star, honour edges, tallies, hazard frames, chevrons | `livery_paint` | `liveries` |
@@ -96,7 +101,8 @@ What follows is how each tool works, first built for the Hunt. Where it gives nu
 | 3. Lay out its detail | `data/ships/<faction>/hull_detail.json` | where every dome, vent, lamp, window row, flood and logo sits |
 | 4. The emblem | `tools/mockups/emblem_masks.mjs <faction>` | `assets/emblems/<faction>/hull_mask.{png,json}` from `docs/mockups/lib/emblems.js` |
 | 5. Unwrap, build, bake, paint | `tools/blender/painted_bake.py --ship` with `tools/blender/hull_detail.py` | `assets/ships/<faction>/<ship>_{albedo,base,orm,normal,emit,light,ao}.png` and `manifest.json` |
-| 6. Show it | `tools/mockups/inline_data.py` on the page | the page's Painted, PBR and Clay looks under Studio or Night light |
+| 5a. Look at the model first | `painted_bake.py --ship <slug> --preview <dir>` | the high-poly itself rendered in its palette colours (quarter, top, close, aft), minutes before an hour's bake |
+| 6. Show it | `tools/mockups/inline_data.py` on the page (a manifest with `maps_dir` writes its maps beside the page as WebP files, published with it, for 4096 px maps) | the page's Painted, PBR and Clay looks under Studio or Night light |
 
 ```sh
 NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs

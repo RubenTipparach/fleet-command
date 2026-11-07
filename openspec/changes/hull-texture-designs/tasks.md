@@ -10,6 +10,11 @@
       repetitive patterns"): every design modelled and baked as the Hunt's (the strake and kit cut styles, windows and features
       from the room plan, story wear), drawn by the shared `docs/mockups/lib/baked-hull.js`
 
+- [ ] 1.5 Version 6 (owner, 2026-11-06: "you have to make drastic changes to improve", with reference sheets): large panels
+      and sub panels, the detail kit, bolt wells, marks, wear before the render, 4096 px maps beside the page; C1 and K1
+      baked and shown first
+- [ ] 1.6 C2-C5 and K2-K5 moved onto version 6, once the owner has seen C1 and K1
+
 ## 2. After the owner picks (approved for build)
 
 - [ ] 2.1 The picked designs' stories written for every class of both lines (their room plans), baked at full size
