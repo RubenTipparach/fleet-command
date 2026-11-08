@@ -214,7 +214,7 @@ table.kit code { font: 500 12px var(--mono); color: var(--accent); }
 <!-- INLINE docs/mockups/lib/kitdraw.js -->
 <script data-src="docs/mockups/lib/kitdraw.js">
 // Fleet Command mockups: the small drawing helpers every UI kit painter uses (docs/mockups/console-skins.html,
-// docs/mockups/battle-console.html, docs/mockups/lib/concord.js). One copy; inlined by tools/mockups/inline_data.py.
+// docs/mockups/battle-console.html, docs/mockups/lib/*.js). One copy; inlined by tools/mockups/inline_data.py.
 window.FCDraw = (function () {
 'use strict';
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -227,7 +227,11 @@ function paint(w, h, draw) {
 const png = (c) => c.toDataURL('image/png');
 const P = Math.PI;
 function rr(x, X, Y, W, H, r) { x.beginPath(); x.roundRect(X, Y, W, H, r); }
-return { rng, hash, paint, png, P, rr };
+// Points along an elliptical arc from a0 to a1 (n steps), a round rectangle as points, and a path through points.
+function arcPts(cx, cy, rx, ry, a0, a1, n = 24) { const o = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; o.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]); } return o; }
+function rrPts(X, Y, W, H, r) { return [...arcPts(X + W - r, Y + r, r, r, -P / 2, 0, 6), ...arcPts(X + W - r, Y + H - r, r, r, 0, P / 2, 6), ...arcPts(X + r, Y + H - r, r, r, P / 2, P, 6), ...arcPts(X + r, Y + r, r, r, P, 1.5 * P, 6)]; }
+function trace(x, pts, closed) { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0], p[1]); if (closed) x.closePath(); }
+return { rng, hash, paint, png, P, rr, arcPts, rrPts, trace };
 })();
 </script>
 <!-- /INLINE -->
@@ -459,9 +463,8 @@ function wob(pts, closed, amp, R, step = 2.5) {
   if (!closed) out.push(pts[pts.length - 1]);
   return out;
 }
-function arcPts(cx, cy, rx, ry, a0, a1, n = 24) { const o = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; o.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]); } return o; }
-function rrPts(X, Y, W, H, r) { return [...arcPts(X + W - r, Y + r, r, r, -P / 2, 0, 6), ...arcPts(X + W - r, Y + H - r, r, r, 0, P / 2, 6), ...arcPts(X + r, Y + H - r, r, r, P / 2, P, 6), ...arcPts(X + r, Y + r, r, r, P, 1.5 * P, 6)]; }
-function trace(x, pts, closed) { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0], p[1]); if (closed) x.closePath(); }
+// Points on an arc, a round rectangle as points, a path through points: docs/mockups/lib/kitdraw.js (one copy).
+const { arcPts, rrPts, trace } = window.FCDraw;
 // An ink line: a full stroke, then a thinner second pass a little off it, as a brush leaves.
 function ink(x, pts, closed, w = 2.4, col = VC.ink) {
   trace(x, pts, closed); x.strokeStyle = col; x.lineWidth = w; x.globalAlpha = 1; x.stroke();
@@ -2773,9 +2776,16 @@ F.register('ssarith', {
 })();
 </script>
 <!-- /INLINE -->
-<!-- INLINE docs/mockups/skins/axiom.js -->
-<script data-src="docs/mockups/skins/axiom.js">
-// The Axiom skin (mockup 4, OpenSpec change console-skins): a purely mathematical faction (owner, 2026-11-07: "Id like a
+<!-- INLINE docs/mockups/lib/axiom.js -->
+<script data-src="docs/mockups/lib/axiom.js">
+// Fleet Command mockups: the Axiom skin (openspec/changes/console-skins/design.md, "Three more factions";
+// openspec/changes/axiom-battle-console), shared by the console skins page (docs/mockups/skins/axiom.js registers it there)
+// and the battle console (docs/mockups/battle-console.html), where it is the skin of the Axiom's console. One
+// implementation of the Axiom's look (CLAUDE.md section 6.1): its rules, kit painters, hero pieces, icons and live
+// readouts, and the fields the battle console reads (the same as docs/mockups/lib/concord.js). Needs
+// docs/mockups/lib/kitdraw.js inlined first.
+//
+// The Axiom (mockup 4, OpenSpec change console-skins): a purely mathematical faction (owner, 2026-11-07: "Id like a
 // faction that is purely mathematical. A faction based on fractal patterns and designs."). Name and culture are ours and
 // provisional until the owner sets them on the survey. Their creed: every true thing is a rule and its iteration, and a
 // structure is honoured by how deep its rule has been carried. They keep three schools at once, and each one owns part of
@@ -2789,14 +2799,20 @@ F.register('ssarith', {
 // edges, Sierpinski triangles and carpets, Hilbert curves, Cantor sets, the dragon curve, a Julia set computed per
 // pixel, golden-ratio proportions), so every piece is deterministic and there is no randomness at all.
 // The key is the Koch key: an elongated hexagon whose short ends are Koch edges, one level deeper on hover, filled solid
-// when pressed. Registers itself with the page's skin registry (docs/mockups/skins). Our own design throughout.
-(function () {
+// when pressed. Our own design throughout.
+window.FCAxiom = (function () {
 'use strict';
-const F = window.FCK, P = F.P;
+const F = window.FCDraw, P = F.P;
 const AX = { void: '#05060c', plate: '#080a18', proof: '#e8ecf6', dim: '#9aa8e0', indigo: '#4b3fd8', indigoHi: '#6a5cf0', cyan: '#3fe0e6',
   gold: '#f2c14e', magenta: '#ff3d8b', solid: '#2f2696' };
 const PHI = (1 + Math.sqrt(5)) / 2;
 function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+// Relative luminance of a #rrggbb colour (WCAG), for picking the ink that reads on a fill.
+function lum(hex) {
+  if (typeof hex !== 'string' || hex[0] !== '#' || hex.length < 7) return 0;
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
 // The colour of an iteration depth t in [0, 1]: indigo (shallow) to cyan (deep).
 function band(t, a = 1) {
   const A = [0x4b, 0x3f, 0xd8], B = [0x3f, 0xe0, 0xe6], k = Math.max(0, Math.min(1, t));
@@ -3034,9 +3050,12 @@ function lamp(x, w, col) {
 }
 
 // ---- icons: the branchers' marks. One cyan ink, a 3 px line, solid for the thing, iterated strokes for what it gives off.
-function icon(name) {
+// Every subject of the icon guide (docs/design/icon-guide.html), so the battle console finds the same pictures as every
+// other skin. col: the ink (cyan by default; dark on a lit key, where the glow is left off).
+const ICON_NAMES = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'warp', 'engines', 'reactor', 'map', 'pause', 'menu', 'fire', 'cargo', 'settings'];
+function icon(name, col = AX.cyan) {
   return F.paint(48, 48, (x) => {
-    const C = AX.cyan; x.strokeStyle = C; x.fillStyle = C; x.lineWidth = 3; x.shadowColor = C; x.shadowBlur = 3; x.lineCap = 'butt';
+    const C = col; x.strokeStyle = C; x.fillStyle = C; x.lineWidth = 3; x.shadowColor = C; x.shadowBlur = lum(C) > 0.2 ? 3 : 0; x.lineCap = 'butt';
     const L = (pts, closed = false) => { path(x, pts, closed); x.stroke(); };
     const D = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); };
     const O = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
@@ -3065,9 +3084,195 @@ function icon(name) {
       map: () => { x.lineWidth = 2.2; L([[24, 40], [24, 28]]); L([[24, 28], [13, 16]]); L([[24, 28], [35, 16]]); L([[13, 16], [8, 8]]); L([[13, 16], [18, 7]]); L([[35, 16], [30, 7]]); L([[35, 16], [40, 8]]); D(24, 40, 4); D(24, 28, 3.2); D(13, 16, 3.2); D(35, 16, 3.2); for (const [px, py] of [[8, 8], [18, 7], [30, 7], [40, 8]]) D(px, py, 2.4); },
       // Settings: a solid gear with an exact bore.
       settings: () => { const o = []; for (let i = 0; i < 32; i++) { const a = i * 2 * P / 32 - P / 32, r = (i >> 1) % 2 ? 14.5 : 20; o.push([24 + Math.cos(a) * r, 24 + Math.sin(a) * r]); } x.beginPath(); path(x, o); x.arc(24, 24, 6, 0, 2 * P, true); x.fill('evenodd'); },
+      // Power: a solid bolt inside a ring cut by the Cantor set.
+      power: () => { x.lineWidth = 2.6; for (const [p, q] of cantor(-P / 2, 1.5 * P, 2)) { x.beginPath(); x.arc(24, 24, 19, p, q); x.stroke(); } x.beginPath(); x.moveTo(27, 8); x.lineTo(15, 26); x.lineTo(23, 26); x.lineTo(20, 40); x.lineTo(33, 21); x.lineTo(25, 21); x.closePath(); x.fill(); },
+      // Tactical: a turret on its base, twin barrels cut by the Cantor set.
+      tactical: () => { x.fillRect(7, 39, 34, 5); x.beginPath(); x.moveTo(12, 39); x.lineTo(15, 27); x.lineTo(33, 27); x.lineTo(36, 39); x.closePath(); x.fill(); x.lineWidth = 3.2; CANT(24, 30, 43, 11, 1); CANT(20, 28, 39, 9, 1); x.fillRect(19, 22, 10, 6); },
+      // Point defence: a shield, and on it a burst: a Koch star one level deep.
+      pd: () => { x.lineWidth = 2.6; L([[24, 4], [40, 10], [40, 26], [24, 44], [8, 26], [8, 10]], true); path(x, kochPoly([[24, 14], [31, 26], [17, 26]], 1, 1)); x.fill(); },
+      // Fleet: three chevrons, the lead ahead, the wing a step behind and smaller by the golden ratio.
+      fleet: () => { const chev = (cx, cy, k) => { x.beginPath(); x.moveTo(cx, cy - 9 * k); x.lineTo(cx + 9 * k, cy + 7 * k); x.lineTo(cx, cy + 2 * k); x.lineTo(cx - 9 * k, cy + 7 * k); x.closePath(); x.fill(); }; chev(24, 14, 1.3); chev(11, 34, 1.3 / PHI * 1.3); chev(37, 34, 1.3 / PHI * 1.3); },
+      // The ship from above: a Koch key on end (the hull the systems display draws), a spine, two nacelles.
+      ship: () => { const hull = kochKey(0, 0, 40, 14, 1, 9).map(([u, v]) => [24 + (v - 7), 4 + u]); path(x, hull); x.fill(); x.fillRect(6, 24, 5, 18); x.fillRect(37, 24, 5, 18); x.lineWidth = 2.4; L([[17, 30], [11, 28]]); L([[31, 30], [37, 28]]); },
+      // Sensors: a scope ring, a solid sweep and two contacts as triangles.
+      sensors: () => { O(24, 24, 19); x.beginPath(); x.moveTo(24, 24); x.arc(24, 24, 19, -P / 2, -P / 2 + 1); x.closePath(); x.fill(); fillTris(x, [[[34, 27], [38, 34], [30, 34]], [[14, 30], [18, 37], [10, 37]]], C, 0); },
+      // Craft: a fighter from above, a Sierpinski triangle one level deep: its wings and its tail.
+      craft: () => { fillTris(x, sierpinski([24, 4], [44, 42], [4, 42], 1), C, 0); },
+      // Weapons: an emitter, its bolt cut by the Cantor set, bursting as a Koch star.
+      weapons: () => { D(10, 38, 5.5); x.lineWidth = 3.6; CANT(14, 34, 30, 18, 1); path(x, snowflake(35, 13, 9, 1)); x.fill(); },
+      // Warp: a ring, speed lines trailing it, each the last over the golden ratio.
+      warp: () => { O(33, 24, 8); D(33, 24, 2.5); for (const [y, l] of [[15, 16 / PHI], [24, 18], [33, 16 / PHI]]) L([[21 - l, y], [21, y]]); },
+      // Engines: a solid nozzle and its flame in Cantor-cut lines.
+      engines: () => { x.fillRect(18, 4, 12, 8); x.beginPath(); x.moveTo(17, 12); x.lineTo(31, 12); x.lineTo(37, 26); x.lineTo(11, 26); x.closePath(); x.fill(); x.lineWidth = 2.6; CANT(14, 31, 34, 31, 1); CANT(17, 37, 31, 37, 1); CANT(20, 43, 28, 43, 0); },
+      // Reactor: the trefoil, a solid core.
+      reactor: () => { D(24, 24, 3.6); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; x.beginPath(); x.arc(24, 24, 19, a - 0.52, a + 0.52); x.arc(24, 24, 7, a + 0.52, a - 0.52, true); x.closePath(); x.fill(); } },
+      pause: () => { x.fillRect(13, 10, 8, 28); x.fillRect(27, 10, 8, 28); },
+      menu: () => { x.lineWidth = 5; for (const y of [13, 24, 35]) L([[10, y], [38, y]]); },
+      // Cargo: a Sierpinski carpet of crates, one level.
+      cargo: () => { const c = 12; for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) if (i !== 1 || j !== 1) x.fillRect(7 + i * c + 1, 7 + j * c + 1, c - 2, c - 2); },
     })[name]();
   });
 }
+
+// ---- the live readouts (the skins page and the battle console) -------------------------------------------------------
+const live = {
+  // A direction: a Sierpinski triangle of one level, pointing the way.
+  arrow: (x) => { fillTris(x, sierpinski([12, 0], [-7, -10], [-7, 10], 1), AX.proof, 3); },
+  helmCentre: (x, c) => { x.fillStyle = AX.gold; x.font = '700 15px "Space Mono"'; x.textAlign = 'center'; x.fillText('STOP', c, c + 7); },
+  // The ship from above, a Koch key turned on end; its shield facings as arcs cut by the Cantor set, mounts in gold.
+  ssd: (x, cx, cy, sh, col) => {
+    x.save(); x.lineCap = 'butt';
+    for (let i = 0; i < 6; i++) {
+      const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.shadowColor = col(sh[i]); x.shadowBlur = 5; x.lineWidth = 6;
+      for (const [p, q] of cantor(a - P / 6 + 0.07, a + P / 6 - 0.07, 2)) { x.beginPath(); x.arc(cx, cy, 100, p, q); x.stroke(); }
+    }
+    x.restore();
+    const hull = kochKey(0, 0, 150, 52, 2, 34).map(([u, v]) => [cx + (v - 26), cy - 75 + u]);
+    x.fillStyle = hexA(AX.void, 0.7); path(x, hull); x.fill(); glow(x, hull, AX.cyan, 2, 5);
+    glow(x, [[cx, cy - 62], [cx, cy + 62]], hexA(AX.cyan, 0.7), 1, 2, false);
+    for (const t of [1 / PHI / PHI, 1 / PHI]) { const y = cy - 75 + 150 * t; glow(x, [[cx - 24, y], [cx + 24, y]], hexA(AX.cyan, 0.7), 1, 2, false); }
+    for (const [mx, my] of [[cx, cy - 58], [cx - 16, cy + 4], [cx + 16, cy + 4], [cx, cy + 50]]) fillTris(x, [[[mx, my - 6], [mx + 6, my + 5], [mx - 6, my + 5]]], AX.gold, 4);
+  },
+  // The radar: a sweep in cyan, its wake a fan of fading rays; contacts as small magenta triangles.
+  dial: (x, c, cts) => {
+    const a0 = -0.9; for (let i = 0; i < 6; i++) glow(x, [[c, c], [c + Math.cos(a0 - i * 0.09) * 50, c + Math.sin(a0 - i * 0.09) * 50]], hexA(AX.cyan, 0.9 - i * 0.15), i ? 1 : 2, i ? 0 : 4, false);
+    for (const [dx, dy] of cts) { const px = c + dx * 36, py = c + dy * 36; fillTris(x, [[[px, py - 5], [px + 5, py + 4], [px - 5, py + 4]]], AX.magenta, 4); }
+  },
+  // The target: a Sierpinski triangle at each corner on two fine legs, scaled to the bracket (the battle's is 68 px).
+  bracket: (x, bx, by, bw, bh) => {
+    const n = Math.min(26, bw * 0.3), l = Math.min(48, bw * 0.46);
+    for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+      sierCorner(x, px, py, n, sx, sy, 3, AX.cyan, 4);
+      glow(x, [[px + sx * n, py], [px + sx * l, py]], AX.cyan, 1.4, 3, false); glow(x, [[px, py + sy * n], [px, py + sy * l]], AX.cyan, 1.4, 3, false);
+    }
+  },
+};
+
+// =====================================================================================================================
+// The battle console (openspec/changes/axiom-battle-console). The same fields as docs/mockups/lib/concord.js, so the
+// console swaps one skin for another and changes no rule and no layout.
+// =====================================================================================================================
+// Colour roles, the Concord's names, on the void and the frames' plate (#080a18). From the palette's roles (design.md):
+// cyan for a reading (a rule carried deep), proof white for prose, the frames' pale indigo for a label, gold for whole and
+// engaged (what converges is true; ready), magenta only for down and alarms (what escapes). Damaged needs a warm colour
+// the six do not give: a bound amber, a rule near the bound it must not cross (provisional, open question A2).
+const CC = {
+  deep: '#2c2a74', signal: AX.indigo, sky: AX.cyan, accord: AX.gold, lilac: '#a3afe6', caution: '#ff9d3a', alert: AX.magenta, text: AX.proof,
+  ink: AX.void, inkDis: '#262a5c', night: '#03040a', ghost: '#5b619a', void: AX.void, slate: '#1b1c4c', mute: '#22253e', ver: '#8a93d0',
+  char: '#3a0a22', plate: AX.plate, bg: AX.void, title: AX.cyan,
+};
+// The ink that reads on a fill: the void on a lit colour, proof white on indigo and the dark roles.
+const ink = (fill) => (lum(fill) > 0.18 ? AX.void : AX.proof);
+// The Koch keys are outlines round a faint fill (pressed: solid indigo inside gold), so their names are proof white, a
+// pressed key's gold; the chosen tab's name gold, as its rule, and a tab at rest pale indigo.
+const keyInk = { idle: AX.proof, hover: AX.proof, pressed: AX.gold, tabOn: AX.gold, tabOff: '#a3afe6' };
+// Type: "Space Mono" for every readout and key, "Martian Mono" for a panel's title (the skins page's pair). The page asks
+// for Antonio sizes; Space Mono runs 1.57 times as wide and Martian Mono 1.79 (measured on the console's own labels), so
+// each is set at the size that keeps a line about as long as the Antonio it replaces (rule T shrinks what still runs
+// long), never under 10 px.
+function font(spec) {
+  const m = /^(\d+) ([\d.]+)px Antonio$/.exec(spec); if (!m) return spec;
+  const s = +m[2], title = m[1] === '700' && s >= 20;
+  return title ? `700 ${Math.round(s * 0.62 * 10) / 10}px "Martian Mono"` : `${s >= 17 ? 700 : 400} ${Math.max(10, Math.round(s * 0.7 * 10) / 10)}px "Space Mono"`;
+}
+const fonts = ['400 20px "Space Mono"', '700 20px "Space Mono"', '700 20px "Martian Mono"'];
+// A drawn key's shape (face() fills it with the key's colour): the Koch key's hexagon, its ends pointed by a fifth of its
+// height, so every square key, status box and allocation row reads as one family with the Koch keys.
+function rr(G, X, Y, W, H) {
+  const e = Math.min(W / 3, H * 0.22), cy = Y + H / 2;
+  G.beginPath(); G.moveTo(X, cy); G.lineTo(X + e, Y); G.lineTo(X + W - e, Y); G.lineTo(X + W, cy); G.lineTo(X + W - e, Y + H); G.lineTo(X + e, Y + H); G.closePath();
+}
+// A round key (the expand key) is a hexagon, point up: a snowflake's first step.
+function knob(G, cx, cy, r) { G.beginPath(); for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; G.lineTo(cx + Math.cos(a) * r * 1.08, cy + Math.sin(a) * r * 1.08); } G.closePath(); }
+// The console's own pieces (mockup 4 keeps its own): the strips draw their depth ladders inside 92 px at each end, since
+// the console lays its readouts from 96 px in; and the name plate's Koch key stops short of the Fleet key at its right end
+// (x 370-456).
+function consoleStrip(x, w, h, flip) {
+  x.save(); if (flip) { x.translate(0, h); x.scale(1, -1); }
+  x.fillStyle = hexA('#06081a', 0.96); x.fillRect(0, 0, w, h - 4);
+  glow(x, [[0, h - 4.5], [w, h - 4.5]], AX.indigoHi, 1.2, 3, false);
+  glow(x, [[0, 1.5], [w, 1.5]], hexA(AX.indigo, 0.5), 0.8, 0, false);
+  for (let d = 0; d < 5; d++) cantorLine(x, 10, 82, 13 + d * 11, d, band(d / 4), 2.4, 3);
+  for (let d = 0; d < 4; d++) glow(x, [...koch([w - 84, 56], [w - 12, 56], d), [w - 12, 56]], band(d / 3, 0.55 + d * 0.15), d === 3 ? 1.4 : 1, d === 3 ? 4 : 0, false);
+  x.restore();
+}
+const kit = Object.assign({}, nine, {
+  'strip.top': { size: [512, 72], m: [12, 92, 12, 92], draw: (x, w, h) => consoleStrip(x, w, h, false) },
+  'strip.bottom': { size: [512, 72], m: [12, 92, 12, 92], draw: (x, w, h) => consoleStrip(x, w, h, true) },
+});
+// The allocation cells, the discrete boxes of CLAUDE.md section 7: a Koch key's hexagon, lit solid in its role's colour,
+// outlined at rest, dashed when locked.
+const cellDraw = (fill, line, dash) => (x, w, h) => {
+  const pts = [[1, h / 2], [7, 1], [w - 7, 1], [w - 1, h / 2], [w - 7, h - 1], [7, h - 1]];
+  if (fill) { x.save(); x.shadowColor = fill; x.shadowBlur = 4; x.fillStyle = fill; path(x, pts); x.fill(); x.restore(); }
+  x.save(); if (dash) x.setLineDash([2, 2]); glow(x, pts, line, 1.2, 0); x.restore();
+};
+const cells = {
+  'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: cellDraw(hexA(AX.indigo, 0.22), AX.indigoHi) },
+  'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: cellDraw(AX.cyan, AX.cyan) },
+  'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: cellDraw(AX.magenta, AX.magenta) },
+  'cell.accord': { size: [32, 28], m: [10, 10, 10, 10], draw: cellDraw(AX.gold, AX.gold) },
+  'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: cellDraw(null, hexA(AX.indigoHi, 0.5), true) },
+  'bar.fill.accord': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => fillBar(x, w, h, AX.gold) },
+};
+// The bars as rows of carpet cells: the skins page's three states, and a whole one in gold.
+const barCells = { 'bar.cell.off': nine['bar.cell.off'], 'bar.cell.on': nine['bar.cell.on'], 'bar.cell.warn': nine['bar.cell.warn'],
+  'bar.cell.ok': { size: [12, 12], gap: 3, draw: (x, w, h) => carpet(x, w, h, AX.gold, true) } };
+const consoleHero = Object.assign({}, hero, {
+  'nameplate': (x, w, h) => {
+    const pts = kochKey(3, 5, 360, h - 10, 3, 42);
+    x.fillStyle = hexA(AX.indigo, 0.14); path(x, pts); x.fill();
+    glow(x, kochKey(3, 5, 360, h - 10, 2, 42), hexA(AX.indigo, 0.5), 0.8, 0);
+    glow(x, pts, AX.cyan, 1.3, 5);
+    glow(x, [[54, h - 10.5], [308, h - 10.5]], hexA(AX.indigoHi, 0.6), 0.8, 0, false);
+  },
+});
+
+const api = {
+  id: 'axiom', name: 'The Axiom', AX, PHI, CC, kit, cells, barCells, live, icon, ICON_NAMES, ink, keyInk, font, fonts, hexA, lum, rr, knob,
+  // The skins page's kit (mockup 4): its nine-slice pieces and hero pieces as they were; the battle console's hero pieces.
+  nine, heroSheet: hero, hero: consoleHero,
+  load: () => Promise.resolve(), family: '"Space Mono", monospace',
+  // The content inside a panel: clear of the frame's rule (4.5 px) and its Sierpinski corners (19 px legs).
+  pad: [26, 24, 24, 24],
+  // The name plate's live field: the plain middle of the console's Koch key, clear of its Koch ends and the Fleet key.
+  plate: { x: 52, y: 35, max: 268, font: '700 16px "Space Mono"', col: AX.proof },
+  // The battle's helm ring under the ship, in cyan.
+  ring: ['rgba(63,224,230,0)', 'rgba(63,224,230,0.14)', 'rgba(150,240,245,0.9)'],
+  // Names for the player's side where the page shows it as the Axiom: ships named for what iteration finds, captains
+  // called Iterant, ranks by how far a statement has been carried. Ours and provisional until the owner sets the Axiom's
+  // culture (CLAUDE.md section 1; openspec/changes/axiom-battle-console, open question A1).
+  player: { faction: 'The Axiom', call: 'Iterant', trim: 0x3fe0e6, hull: 0x9aa8e0,
+    ships: { resolute: ['Fixed Point', 'Iterant Oru'], tallis: ['Attractor', 'Iterant Sela'], meridian: ['Limit Cycle', 'Iterant Tavo'] },
+    ranks: ['Conjecture', 'Lemma', 'Theorem', 'Canon'],
+    officers: { o1: 'Avel Rennic', o2: 'Isk Moroda', o3: 'Teno Vashe', o4: 'Pirra Quell', o5: 'Ossian Lute', o6: 'Hale Dorrin', o7: 'Bracca Vey', o8: 'Nim Sarath',
+      o9: 'Ilo Fennick', o10: 'Kett Aubrel', o11: 'Juno Tessar', o12: 'Mael Corvane', o13: 'Rhee Danto' } },
+  link: AX.gold,
+  // Labels centred on the Koch keys, in their plain middle between the Koch ends.
+  keyCenter: true,
+  // A hover name on a pressed Koch key: solid indigo inside a gold outline, its name gold.
+  tip: ['button.pressed', 'pressed'],
+  // Panel tab icons at rest in pale indigo, apart from the functional icons' cyan; glyphs on a dark key in cyan.
+  tabIcon: '#a3afe6', glyphOnDark: AX.cyan, mark: { hover: AX.proof, ready: AX.gold, count: AX.proof },
+  // The strips at their full 72 px (mockup 4's), the content, laid out for 56 px, moved down into the open band.
+  stripTop: { h: 72, dy: 10 }, stripBottom: { h: 72, dy: 4 },
+};
+window.FCSkins = window.FCSkins || {}; window.FCSkins.axiom = api;
+return api;
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/skins/axiom.js -->
+<script data-src="docs/mockups/skins/axiom.js">
+// The Axiom skin (mockup 4, OpenSpec change console-skins): a purely mathematical faction (owner, 2026-11-07: "Id like a
+// faction that is purely mathematical. A faction based on fractal patterns and designs."). Name and culture are ours and
+// provisional until the owner sets them on the survey. The look has one implementation, docs/mockups/lib/axiom.js
+// (window.FCAxiom, inlined before this module), shared with the battle console (openspec/changes/axiom-battle-console);
+// this module keeps the skins page's own tokens (its CSS, type, title and plate placement, world view and palette rows)
+// and registers the skin with this page's registry (docs/mockups/skins).
+(function () {
+'use strict';
+const F = window.FCK, H = window.FCAxiom, AX = H.AX;
 
 // ---- the skin ----------------------------------------------------------------------------------------------------
 F.register('axiom', {
@@ -3086,38 +3291,8 @@ F.register('axiom', {
   plateText: { left: 62, top: 12, width: 336, height: 28, font: '700 19px/28px "Space Mono", monospace', color: AX.proof, sub: 'FIXED POINT · ITERANT ORU' },
   helmKeys: 'ring', helmR: 100, shield: [AX.cyan, AX.gold, AX.magenta],
   fonts: ['400 20px "Space Mono"', '700 20px "Space Mono"', '700 20px "Martian Mono"'], view: { title: '700 26px "Space Mono"', body: '400 22px "Space Mono"', upper: true, ink: AX.proof, dim: AX.dim },
-  build: () => F.fromPainters(nine, hero, icon, false),
-  live: {
-    // A direction: a Sierpinski triangle of one level, pointing the way.
-    arrow: (x) => { fillTris(x, sierpinski([12, 0], [-7, -10], [-7, 10], 1), AX.proof, 3); },
-    helmCentre: (x, c) => { x.fillStyle = AX.gold; x.font = '700 15px "Space Mono"'; x.textAlign = 'center'; x.fillText('STOP', c, c + 7); },
-    // The ship from above, a Koch key turned on end; its shield facings as arcs cut by the Cantor set, mounts in gold.
-    ssd: (x, cx, cy, sh, col) => {
-      x.save(); x.lineCap = 'butt';
-      for (let i = 0; i < 6; i++) {
-        const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.shadowColor = col(sh[i]); x.shadowBlur = 5; x.lineWidth = 6;
-        for (const [p, q] of cantor(a - P / 6 + 0.07, a + P / 6 - 0.07, 2)) { x.beginPath(); x.arc(cx, cy, 100, p, q); x.stroke(); }
-      }
-      x.restore();
-      const hull = kochKey(0, 0, 150, 52, 2, 34).map(([u, v]) => [cx + (v - 26), cy - 75 + u]);
-      x.fillStyle = hexA(AX.void, 0.7); path(x, hull); x.fill(); glow(x, hull, AX.cyan, 2, 5);
-      glow(x, [[cx, cy - 62], [cx, cy + 62]], hexA(AX.cyan, 0.7), 1, 2, false);
-      for (const t of [1 / PHI / PHI, 1 / PHI]) { const y = cy - 75 + 150 * t; glow(x, [[cx - 24, y], [cx + 24, y]], hexA(AX.cyan, 0.7), 1, 2, false); }
-      for (const [mx, my] of [[cx, cy - 58], [cx - 16, cy + 4], [cx + 16, cy + 4], [cx, cy + 50]]) fillTris(x, [[[mx, my - 6], [mx + 6, my + 5], [mx - 6, my + 5]]], AX.gold, 4);
-    },
-    // The radar: a sweep in cyan, its wake a fan of fading rays; contacts as small magenta triangles.
-    dial: (x, c, cts) => {
-      const a0 = -0.9; for (let i = 0; i < 6; i++) glow(x, [[c, c], [c + Math.cos(a0 - i * 0.09) * 50, c + Math.sin(a0 - i * 0.09) * 50]], hexA(AX.cyan, 0.9 - i * 0.15), i ? 1 : 2, i ? 0 : 4, false);
-      for (const [dx, dy] of cts) { const px = c + dx * 36, py = c + dy * 36; fillTris(x, [[[px, py - 5], [px + 5, py + 4], [px - 5, py + 4]]], AX.magenta, 4); }
-    },
-    // The target: a Sierpinski triangle at each corner on two fine legs.
-    bracket: (x, bx, by, bw, bh) => {
-      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
-        sierCorner(x, px, py, 26, sx, sy, 3, AX.cyan, 4);
-        glow(x, [[px + sx * 26, py], [px + sx * 48, py]], AX.cyan, 1.4, 3, false); glow(x, [[px, py + sy * 26], [px, py + sy * 48]], AX.cyan, 1.4, 3, false);
-      }
-    },
-  },
+  build: () => F.fromPainters(H.nine, H.heroSheet, (n) => H.icon(n), false),
+  live: H.live,
   world: ['Every true thing is a rule and its iteration; a structure is honoured by how deep its rule has been carried.',
     'Their bodies are not described and shape nothing here: the console answers to their three schools of thought.',
     'Three schools at once: the escape-time school\'s boundary screens, the tilers\' self-similar frames and plates, the branchers\' grown marks.',
@@ -3133,9 +3308,15 @@ F.register('axiom', {
 })();
 </script>
 <!-- /INLINE -->
-<!-- INLINE docs/mockups/skins/exponent.js -->
-<script data-src="docs/mockups/skins/exponent.js">
-// The Exponent skin (mockup 4, OpenSpec change console-skins). The owner, 2026-11-07, replacing the earlier hybrid idea:
+<!-- INLINE docs/mockups/lib/exponent.js -->
+<script data-src="docs/mockups/lib/exponent.js">
+// Fleet Command mockups: the Exponent skin (openspec/changes/console-skins/design.md, "The Exponent its own collective";
+// openspec/changes/exponent-battle-console), shared by the console skins page (docs/mockups/skins/exponent.js registers it
+// there) and the battle console (docs/mockups/battle-console.html). One implementation of the Exponent's look (CLAUDE.md
+// section 6.1): its materials, reef, kit painters, hero pieces, icons and live readouts, and the fields the battle console
+// reads (the same as docs/mockups/lib/concord.js). Needs docs/mockups/lib/kitdraw.js inlined first.
+//
+// The Exponent (mockup 4, OpenSpec change console-skins). The owner, 2026-11-07, replacing the earlier hybrid idea:
 // "Exponent is not a mix of two races. It is its own thing. Inspired by Borg. It's ship ui is a metalic utilitarian look.
 // With veins a and tentacles and barnacles growing. Like am abandoned rusted ship at sea. Take over by reefs and coral".
 // Take the shape, not the text (CLAUDE.md section 1): what we take is a collective that takes in whatever it meets and
@@ -3155,13 +3336,12 @@ F.register('axiom', {
 //     Growth keeps to margins and corners: it never covers a label, a key's slot or a readout.
 //
 // First pass, painted in canvas with shading lit from the upper left. Every scatter comes from the page's seeded generator
-// (FCK.rng over FCK.hash, Mulberry32), never a cheap hash (CLAUDE.md section 10). The kit's nine-slice pieces keep their
+// (FCDraw.rng over FCDraw.hash, Mulberry32, docs/mockups/lib/kitdraw.js), never a cheap hash (CLAUDE.md section 10). The kit's nine-slice pieces keep their
 // detail in the margins and their centres plain. A metal skin, so the column has a painted ground (CLAUDE.md section 7):
-// `column`, a deck bulkhead with conduits and reef, drawn behind the panels. Registers itself with the page's skin
-// registry (docs/mockups/skins). Our own design: nothing traced from another game.
-(function () {
+// `column`, a deck bulkhead with conduits and reef, drawn behind the panels. Our own design: nothing traced from another game.
+window.FCExponent = (function () {
 'use strict';
-const F = window.FCK, P = F.P;
+const F = window.FCDraw, P = F.P;
 // The palette (six rows below) and the shades painted between them.
 const EX = {
   steel: '#5d686d', steelHi: '#97a3a6', steelLo: '#262e31', deep: '#0b1113', bg: '#0d1315', glass: '#091012',
@@ -3664,12 +3844,13 @@ function strip(flip) {
     x.restore();
   };
 }
-// A symbol cell: one barnacle, the same seed lit or unlit; its aperture glows lumen (on) or breach (warn).
+// A symbol cell: one barnacle, the same seed lit or unlit; its aperture glows lumen (on), breach (warn) or the condition
+// lamp's green (3: whole, the battle console's).
 function cell(mode) {
   return (x) => {
-    const R = RNG('cell');
-    if (mode) { const g = x.createRadialGradient(6, 7, 0, 6, 7, 8); g.addColorStop(0, hexA(mode === 2 ? EX.breach : EX.lumen, 0.55)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 12, 14); }
-    barnacle(x, 6, 7.4, 5.4, R, mode === 2 ? EX.breach : mode ? EX.lumen : 0);
+    const R = RNG('cell'), col = [0, EX.lumen, EX.breach, EX.sea][mode];
+    if (mode) { const g = x.createRadialGradient(6, 7, 0, 6, 7, 8); g.addColorStop(0, hexA(col, 0.55)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 12, 14); }
+    barnacle(x, 6, 7.4, 5.4, R, col);
     if (!mode) { x.fillStyle = 'rgba(8,12,12,0.35)'; disc(x, 6, 7.4, 5.6); x.fill(); }
   };
 }
@@ -3717,13 +3898,14 @@ function squareHatch(x, cx, cy, s, R) {
   x.save(); win(); x.clip(); const g = x.createRadialGradient(cx, cy, 0, cx, cy, h); g.addColorStop(0, hexA(EX.lumen, 0.16)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(cx - h, cy - h, s, s); x.restore();
   for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) bolt(x, cx + sx * (h - 5.5), cy + sy * (h - 5.5), 2.6, 0.3 + sx * 0.2);
 }
-const hero = {
-  nameplate: (x, w, h) => {
+// The name plate: a porthole lens, a recessed field for the captain's name from 62 px to fe, growth on both ends kept off
+// the field and the lens. key: a rectangle left plain for a key set on the plate (the battle console's Fleet key).
+function nameplate(x, w, h, fe = 428, key = null) {
     const R = RNG('plate'), outer = () => cham(x, 1, 1, w - 2, h - 2, [10, 4, 10, 4]);
-    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 62 || px > 428 ? 1 : 0.15), rustEvery: 1400, rustScale: 0.7, saltEvery: 24 });
+    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 62 || px > fe ? 1 : 0.15), rustEvery: 1400, rustScale: 0.7, saltEvery: 24 });
     bevel(x, outer, 1.3);
-    const field = () => F.rr(x, 62, 9, 366, 38, 3);
-    recess(x, field, [62, 9, 428, 47], EX.glass);
+    const field = () => F.rr(x, 62, 9, fe - 62, 38, 3);
+    recess(x, field, [62, 9, fe, 47], EX.glass);
     // left: a porthole lens on the plate, ringed with bolts
     disc(x, 32, 29, 21); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
     disc(x, 31, 28, 21); const rg = x.createRadialGradient(25, 21, 2, 31, 28, 21); rg.addColorStop(0, '#a8b3b5'); rg.addColorStop(1, '#283033'); x.fillStyle = rg; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 1; x.stroke();
@@ -3731,15 +3913,17 @@ const hero = {
     x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
     for (let i = 0; i < 6; i++) { const a = i * P / 3 + 0.4; bolt(x, 31 + Math.cos(a) * 17, 28 + Math.sin(a) * 17, 1.9, a); }
     // both ends crusted over, kept off the name field and the lens
-    x.save(); outer(); x.rect(428, 7, -368, 42); x.moveTo(45, 28); x.arc(31, 28, 14, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
+    x.save(); outer(); x.rect(fe, 7, -(fe - 60), 42); if (key) x.rect(key[0] + key[2], key[1], -key[2], key[3]); x.moveTo(45, 28); x.arc(31, 28, 14, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
     reef(x, 14, 46, 14, 9, R, 0.9, P * 0.7); reef(x, 50, 8, 12, 6, R, 0.7, -P / 2); reef(x, 52, 50, 10, 6, R, 0.7, P / 2);
     barnacles(x, 31, 28, 21, 21, 14, 0.9, 3.2, R);
     reef(x, w - 16, 28, 14, 24, R, 1.15, 0); reef(x, w - 26, 50, 12, 6, R, 0.7, P / 2);
     coral(x, w - 18, 54, -P / 2 - 0.25, 13, 3.2, 2, R);
     tendril(x, [[w - 6, 6], [w - 20, 4], [w - 30, 12], [w - 26, 26]], 4.4, 1.6, R, 1);
     x.restore();
-    rivet(x, 440, 9, 2, R); rivet(x, 440, 47, 2, R);
-  },
+    if (key) { rivet(x, fe + 6, 47, 2, R); rivet(x, w - 8, 47, 2, R); } else { rivet(x, 440, 9, 2, R); rivet(x, 440, 47, 2, R); }
+}
+const hero = {
+  nameplate: (x, w, h) => nameplate(x, w, h),
   'helm.pad': (x, w) => {
     const R = RNG('helm'), outer = () => cham(x, 2, 2, w - 4, w - 4, 26);
     plate(x, outer, [0, 0, w, w], R, { rustEvery: 2400, saltEvery: 28 });
@@ -3853,8 +4037,11 @@ function lamp(x, w, col, key) {
 }
 // The column's ground (CLAUDE.md section 7: no black behind a metal skin's panels): a bulkhead of riveted plates over
 // deck grating, two veins climbing it, and the reef grown up from its foot. 472 x 1080, drawn behind the panels.
-function column(x, w, h) {
-  const R = RNG('column');
+// plain: a rectangle [x0, y0, x1, y1] kept to plate and veins, where the masses of reef, the coral heads and the climbing
+// tendrils are left out (the battle console's backing: an expanded panel's ground is that band laid side by side, and
+// repeated reef would read as a pattern).
+function column(x, w, h, plain = null) {
+  const R = RNG('column'), inPlain = (px, py, m = 0) => !!plain && px > plain[0] - m && px < plain[2] + m && py > plain[1] - m && py < plain[3] + m;
   x.fillStyle = '#121a1c'; x.fillRect(0, 0, w, h);
   const seamsX = [0, 150, 322, w], seamsY = [0, 260, 540, 810, h];
   for (let i = 0; i < seamsX.length - 1; i++) for (let j = 0; j < seamsY.length - 1; j++) {
@@ -3869,19 +4056,20 @@ function column(x, w, h) {
   vein(x, [[w - 4, h], [w - 3, 600], [w - 5, 250], [w - 4, 0]], 5, R, 0.5, false);
   vein(x, [[150, h], [151, 540], [149, 0]], 3.4, R, 0.35, false);
   // the reef, grown up from the foot and down from the head, in layers: crust first, then what settles on it
-  for (let i = 0; i < 26; i++) crust(x, R() * w, h - Math.pow(R(), 1.6) * 160, 14 + R() * 26, 8 + R() * 16, R, R() < 0.6 ? '#a1707a' : '#567f6c');
-  for (let i = 0; i < 10; i++) crust(x, R() * w, Math.pow(R(), 1.6) * 60, 10 + R() * 20, 6 + R() * 10, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+  if (!plain) for (let i = 0; i < 26; i++) crust(x, R() * w, h - Math.pow(R(), 1.6) * 160, 14 + R() * 26, 8 + R() * 16, R, R() < 0.6 ? '#a1707a' : '#567f6c');
+  if (!plain) for (let i = 0; i < 10; i++) crust(x, R() * w, Math.pow(R(), 1.6) * 60, 10 + R() * 20, 6 + R() * 10, R, R() < 0.5 ? '#a1707a' : '#567f6c');
   // most of the bulkhead is reef now: masses on a jittered grid, a few left out so patches of plate still show
   for (let gy = 30; gy < h; gy += 58) for (let gx = 30; gx < w; gx += 62) {
     if (R() < 0.22) continue;
-    reef(x, gx + (R() - 0.5) * 30, gy + (R() - 0.5) * 30, 26 + R() * 10, 22 + R() * 10, R, 1.2 + R() * 0.5, -P / 2 + (R() - 0.5) * 2);
+    const rx = gx + (R() - 0.5) * 30, ry = gy + (R() - 0.5) * 30, a = 26 + R() * 10, b = 22 + R() * 10, k = 1.2 + R() * 0.5, f = -P / 2 + (R() - 0.5) * 2;
+    if (!inPlain(rx, ry, 40)) reef(x, rx, ry, a, b, R, k, f);
   }
-  for (let i = 0; i < 16; i++) { const px = R() * w, py = R() * h; if (R() < 0.5) brain(x, px, py, 10 + R() * 12, 9 + R() * 9, R, R() < 0.5 ? '#b6a06a' : '#8fa07a'); else plateCoral(x, px, py, 12 + R() * 10, -P / 2 + (R() - 0.5) * 2, R); }
-  for (let i = 0; i < 6; i++) { const sx = 20 + R() * (w - 40); tendril(x, [[sx, h], [sx + (R() - 0.5) * 80, h * 0.75], [sx + (R() - 0.5) * 80, h * 0.5], [sx + (R() - 0.5) * 80, h * 0.25], [sx + (R() - 0.5) * 60, 20 + R() * 100]], 8, 3, R, R() < 0.5 ? 1 : -1); }
+  for (let i = 0; i < 16; i++) { const px = R() * w, py = R() * h; if (inPlain(px, py, 30)) continue; if (R() < 0.5) brain(x, px, py, 10 + R() * 12, 9 + R() * 9, R, R() < 0.5 ? '#b6a06a' : '#8fa07a'); else plateCoral(x, px, py, 12 + R() * 10, -P / 2 + (R() - 0.5) * 2, R); }
+  for (let i = 0; i < 6; i++) { const sx = 20 + R() * (w - 40); if (plain) continue; tendril(x, [[sx, h], [sx + (R() - 0.5) * 80, h * 0.75], [sx + (R() - 0.5) * 80, h * 0.5], [sx + (R() - 0.5) * 80, h * 0.25], [sx + (R() - 0.5) * 60, 20 + R() * 100]], 8, 3, R, R() < 0.5 ? 1 : -1); }
   for (let i = 0; i < 9; i++) brain(x, 20 + R() * (w - 40), h - 10 - R() * 40, 12 + R() * 16, 10 + R() * 10, R);
   for (let i = 0; i < 6; i++) coral(x, 10 + R() * (w - 20), h - 4, -P / 2 + (R() - 0.5) * 0.8, 16 + R() * 14, 4, 3, R);
-  barnacles(x, w / 2, h - 30, w / 2, 30, 60, 1.2, 6, R);
-  barnacles(x, w / 2, 14, w / 2, 14, 40, 1, 4.6, R);
+  if (!plain) barnacles(x, w / 2, h - 30, w / 2, 30, 60, 1.2, 6, R);
+  if (!plain) barnacles(x, w / 2, 14, w / 2, 14, 40, 1, 4.6, R);
   for (const [px, py] of [[8, 300], [w - 8, 520], [8, 780], [w - 8, 900]]) barnacles(x, px, py, 8, 40, 14, 1, 4, R);
   tendril(x, [[2, 120], [16, 200], [4, 300], [14, 420]], 5, 2, R, 1);
   tendril(x, [[w - 2, 640], [w - 14, 720], [w - 4, 820], [w - 14, 930]], 5, 2, R, -1);
@@ -3931,9 +4119,12 @@ function overgrow(x, r) {
 
 // ---- icons: pictures of the job, cut as stencils ---------------------------------------------------------------------
 // Utilitarian stencil marks: solid shapes in one ink (lumen), broken by the bridges a stencil needs. Colour is for state.
-function icon(name) {
+// Every subject of the icon guide (docs/design/icon-guide.html), so the battle console finds the same pictures as every
+// other skin. col: the ink (lumen by default; dark on a lit key).
+const ICON_NAMES = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'warp', 'engines', 'reactor', 'map', 'pause', 'menu', 'fire', 'cargo', 'settings'];
+function icon(name, col = EX.lumen) {
   return F.paint(48, 48, (x) => {
-    const ink = EX.lumen;
+    const ink = col;
     x.fillStyle = ink; x.strokeStyle = ink; x.lineCap = 'butt'; x.lineJoin = 'miter';
     const ring = (cx, cy, r, lw) => { x.lineWidth = lw; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
     const bar = (a, b, c, d, lw) => { x.lineWidth = lw; x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); };
@@ -3960,6 +4151,32 @@ function icon(name) {
       map: () => { x.lineWidth = 2.6; x.beginPath(); x.moveTo(11, 13); x.lineTo(37, 19); x.lineTo(20, 37); x.closePath(); x.stroke(); for (const [cx, cy] of [[11, 13], [37, 19], [20, 37]]) { x.fillRect(cx - 5, cy - 5, 10, 10); cut(cx, cy, 0, 1.8, 12); } },
       // a gear: a ring and its teeth, cut at the hub
       settings: () => { ring(24, 24, 11, 5); for (let i = 0; i < 8; i++) { const a = i * P / 4; bar(24 + Math.cos(a) * 13, 24 + Math.sin(a) * 13, 24 + Math.cos(a) * 20, 24 + Math.sin(a) * 20, 5.6); } cut(24, 24, P / 4, 2.2, 30); },
+      // power: a bolt inside a ring, the ring bridged top and bottom
+      power: () => { ring(24, 24, 19, 3.6); cut(24, 5, P / 2, 2.6, 6); cut(24, 43, P / 2, 2.6, 6); x.beginPath(); x.moveTo(27, 8); x.lineTo(15, 26); x.lineTo(23, 26); x.lineTo(20, 40); x.lineTo(33, 21); x.lineTo(25, 21); x.closePath(); x.fill(); cut(24, 24, 0.5, 2, 6); },
+      // tactical: a turret on its base, twin barrels, each barrel bridged
+      tactical: () => { x.fillRect(7, 39, 34, 5); x.beginPath(); x.moveTo(12, 39); x.lineTo(15, 27); x.lineTo(33, 27); x.lineTo(36, 39); x.closePath(); x.fill(); bar(25, 31, 43, 13, 3.6); bar(21, 29, 39, 11, 3.6); x.fillRect(19, 22, 10, 6); cut(33, 21, P / 4, 2.2, 14); cut(24, 39, 0, 2.2, 6); },
+      // point defence: a shield, a burst on it, the shield bridged at its head
+      pd: () => { x.lineWidth = 3.4; x.beginPath(); x.moveTo(24, 5); x.lineTo(40, 11); x.lineTo(40, 25); x.lineTo(24, 43); x.lineTo(8, 25); x.lineTo(8, 11); x.closePath(); x.stroke(); x.beginPath(); for (let i = 0; i < 16; i++) { const a = -P / 2 + i * P / 8, r = i % 2 ? 4 : 9.5; x.lineTo(24 + Math.cos(a) * r, 23 + Math.sin(a) * r); } x.closePath(); x.fill(); cut(24, 5, 0, 2.4, 6); },
+      // fleet: three chevrons in formation, each bridged down its spine
+      fleet: () => { const chev = (cx, cy, k) => { x.beginPath(); x.moveTo(cx, cy - 8 * k); x.lineTo(cx + 9 * k, cy + 7 * k); x.lineTo(cx, cy + 2 * k); x.lineTo(cx - 9 * k, cy + 7 * k); x.closePath(); x.fill(); cut(cx, cy, 0, 1.8, 6 * k); }; chev(24, 14, 1.3); chev(11, 34, 1.05); chev(37, 34, 1.05); },
+      // the ship from above: modules taken from other hulls, joined by collars (the stencil's bridges), two pods
+      ship: () => { cham(x, 19, 4, 10, 9, 2); x.fill(); cham(x, 16, 15, 16, 12, 3); x.fill(); cham(x, 14, 29, 20, 10, 2); x.fill(); x.fillRect(6, 26, 6, 18); x.fillRect(36, 26, 6, 18); bar(12, 33, 14, 33, 3); bar(34, 33, 36, 33, 3); x.fillRect(19, 40, 10, 5); },
+      // sensors: a scope, its sweep and two contacts, the ring bridged
+      sensors: () => { ring(24, 24, 19, 3.4); x.beginPath(); x.moveTo(24, 24); x.arc(24, 24, 17, -P / 2, -P / 2 + 1); x.closePath(); x.fill(); x.fillRect(31, 28, 6, 6); x.fillRect(11, 30, 5, 5); cut(24, 43, P / 2, 2.6, 6); cut(5, 24, 0, 2.6, 6); },
+      // craft: a swept-wing craft, its wings bridged at the root
+      craft: () => { x.beginPath(); x.moveTo(24, 4); x.lineTo(29, 22); x.lineTo(44, 31); x.lineTo(44, 35); x.lineTo(29, 33); x.lineTo(28, 41); x.lineTo(33, 45); x.lineTo(15, 45); x.lineTo(20, 41); x.lineTo(19, 33); x.lineTo(4, 35); x.lineTo(4, 31); x.lineTo(19, 22); x.closePath(); x.fill(); cut(16, 30, 0.6, 2, 8); cut(32, 30, -0.6, 2, 8); },
+      // weapons: an emitter, its bolt bridged, bursting
+      weapons: () => { x.fillRect(5, 33, 10, 10); bar(14, 34, 30, 18, 4.4); cut(22, 26, P / 4, 2.2, 8); x.beginPath(); for (let i = 0; i < 12; i++) { const a = i * P / 6, r = i % 2 ? 3.5 : 9; x.lineTo(35 + Math.cos(a) * r, 13 + Math.sin(a) * r); } x.closePath(); x.fill(); },
+      // warp: a ring, speed lines trailing it
+      warp: () => { ring(33, 24, 8, 3.6); disc(x, 33, 24, 2.6); x.fill(); bar(5, 15, 21, 15, 3.4); bar(2, 24, 21, 24, 3.4); bar(5, 33, 21, 33, 3.4); cut(33, 16, P / 2, 2, 4); },
+      // engines: a nozzle, bridged, and its exhaust as chevrons
+      engines: () => { x.fillRect(18, 4, 12, 8); x.beginPath(); x.moveTo(17, 12); x.lineTo(31, 12); x.lineTo(37, 26); x.lineTo(11, 26); x.closePath(); x.fill(); cut(24, 19, P / 2, 2, 30); for (const [y, k] of [[31, 1], [39, 0.7]]) { x.lineWidth = 3.4; x.beginPath(); x.moveTo(24 - 10 * k, y); x.lineTo(24, y + 6 * k); x.lineTo(24 + 10 * k, y); x.stroke(); } },
+      // reactor: the trefoil, a solid core
+      reactor: () => { disc(x, 24, 24, 3.8); x.fill(); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; x.beginPath(); x.arc(24, 24, 19, a - 0.52, a + 0.52); x.arc(24, 24, 7, a + 0.52, a - 0.52, true); x.closePath(); x.fill(); } },
+      pause: () => { x.fillRect(13, 10, 8, 28); x.fillRect(27, 10, 8, 28); cut(17, 24, P / 2, 2, 10); cut(31, 24, P / 2, 2, 10); },
+      menu: () => { for (const y of [13, 24, 35]) { bar(10, y, 38, y, 5); cut(24, y, 0, 2, 7); } },
+      // cargo: four crates, each bridged
+      cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) { x.fillRect(cx - 7.5, cy - 7.5, 15, 15); cut(cx, cy, 0, 1.8, 16); } },
     })[name]();
   });
 }
@@ -3972,6 +4189,206 @@ function stencilArrow(x, col) {
   x.save(); x.shadowColor = col; x.shadowBlur = 5; shape(); x.fillStyle = col; x.fill(); x.restore();
   x.fillStyle = '#0a1a1c'; x.fillRect(-5.5, -5, 2.2, 10);
 }
+
+// ---- the live readouts (the skins page and the battle console) -------------------------------------------------------
+const live = {
+  arrow: (x) => stencilArrow(x, EX.lumen),
+  helmCentre: (x, c) => { x.fillStyle = EX.bone; x.font = '400 13px "Allerta Stencil"'; x.textAlign = 'center'; x.shadowColor = '#000'; x.shadowBlur = 3; x.fillText('STOP', c, c + 5); x.shadowBlur = 0; },
+  // The hull as the assimilators keep it: modules taken from other ships, joined by plain collars, a conduit down its
+  // spine to each mount. Shields: six banks of ticks, coloured by strength.
+  ssd: (x, cx, cy, sh, col) => {
+    for (let i = 0; i < 6; i++) {
+      const a = -P / 2 + i * P / 3; x.save(); x.strokeStyle = col(sh[i]); x.shadowColor = col(sh[i]); x.shadowBlur = 5;
+      for (let k = -5; k <= 5; k++) { const t = a + k * (P / 3 - 0.22) / 10, r0 = 94, r1 = k % 5 === 0 ? 106 : 101; x.lineWidth = 2.4; x.beginPath(); x.moveTo(cx + Math.cos(t) * r0, cy + Math.sin(t) * r0); x.lineTo(cx + Math.cos(t) * r1, cy + Math.sin(t) * r1); x.stroke(); }
+      x.restore();
+    }
+    const mods = [[-12, -70, 24, 26, 4], [-20, -44, 40, 30, 2], [-30, -14, 60, 34, 6], [-22, 20, 44, 26, 2], [-14, 46, 28, 22, 3], [-44, -6, 14, 26, 2], [30, -6, 14, 26, 2]];
+    for (const [mx, my, mw, mh, c] of mods) { cham(x, cx + mx, cy + my, mw, mh, c); x.fillStyle = hexA(EX.lumen, 0.12); x.fill(); x.strokeStyle = EX.lumen; x.lineWidth = 1.6; x.stroke(); }
+    for (const yy of [-44, -14, 20, 46]) { x.fillStyle = hexA(EX.lumen, 0.7); x.fillRect(cx - 8, cy + yy - 1.5, 16, 3); }
+    x.strokeStyle = hexA(EX.lumenHot, 0.8); x.lineWidth = 1.2; x.setLineDash([3, 2]); x.beginPath(); x.moveTo(cx, cy - 66); x.lineTo(cx, cy + 64); x.stroke(); x.setLineDash([]);
+    for (const [mx, my] of [[cx, cy - 58], [cx - 37, cy + 7], [cx + 37, cy + 7], [cx, cy + 58]]) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.fillStyle = EX.lumenHot; x.fillRect(mx - 3, my - 3, 6, 6); x.restore(); }
+  },
+  // A sonar sweep in the gauge: range rings, a fading wedge, contacts as squares (lumen far, amber, breach near).
+  dial: (x, c, cts) => {
+    for (const r of [14, 28, 40]) { x.strokeStyle = hexA(EX.lumen, 0.22); x.lineWidth = 1; x.beginPath(); x.arc(c, c, r, 0, 2 * P); x.stroke(); }
+    x.strokeStyle = hexA(EX.lumen, 0.16); x.beginPath(); x.moveTo(c - 42, c); x.lineTo(c + 42, c); x.moveTo(c, c - 42); x.lineTo(c, c + 42); x.stroke();
+    const a0 = -0.9; for (let i = 0; i < 14; i++) { x.fillStyle = hexA(EX.lumen, 0.05 + 0.02 * i); x.beginPath(); x.moveTo(c, c); x.arc(c, c, 41, a0 - 0.9 + i * 0.065, a0 - 0.9 + (i + 1) * 0.065); x.closePath(); x.fill(); }
+    x.strokeStyle = EX.lumenHot; x.lineWidth = 1.4; x.beginPath(); x.moveTo(c, c); x.lineTo(c + Math.cos(a0) * 41, c + Math.sin(a0) * 41); x.stroke();
+    for (const [dx, dy] of cts) {
+      const d = Math.hypot(dx, dy), cl = d < 0.56 ? EX.breach : d < 0.8 ? EX.amber : EX.lumen, s = d < 0.56 ? 7 : 5.5;
+      x.save(); x.shadowColor = cl; x.shadowBlur = 6; x.fillStyle = cl; x.fillRect(c + dx * 34 - s / 2, c + dy * 34 - s / 2, s, s); x.restore();
+    }
+  },
+  // Four corner brackets of flat bar, each bolted at its corner and bridged like a stencil.
+  bracket: (x, bx, by, bw, bh) => {
+    for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+      x.save(); x.translate(px, py); x.scale(sx, sy);
+      const L = () => { x.beginPath(); x.moveTo(0, 0); x.lineTo(34, 0); x.lineTo(34, 5); x.lineTo(5, 5); x.lineTo(5, 34); x.lineTo(0, 34); x.closePath(); };
+      L(); x.strokeStyle = '#040707'; x.lineWidth = 2.4; x.stroke(); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; L(); x.fillStyle = EX.lumen; x.fill(); x.restore();
+      x.fillStyle = '#020306'; x.fillRect(18, -1, 2.4, 7); x.fillRect(-1, 18, 7, 2.4);
+      disc(x, 2.5, 2.5, 1.6); x.fillStyle = '#0a1a1c'; x.fill();
+      x.restore();
+    }
+  },
+};
+
+// =====================================================================================================================
+// The battle console (openspec/changes/exponent-battle-console). The same fields as docs/mockups/lib/concord.js, so the
+// console swaps one skin for another and changes no rule and no layout.
+// =====================================================================================================================
+// Colour roles, the Concord's names, lit in the dark wells of the riveted plate (#091012) and over the battle: lumen for a
+// reading (power carried where it is needed), barnacle bone for prose and titles, the plate's pale steel for a label, the
+// green of the condition lamp for whole and engaged, the work lamp's amber for damaged, breach only for down and alarms.
+const CC = {
+  deep: '#22343a', signal: '#34474c', sky: EX.lumen, accord: EX.sea, lilac: '#9fb0ad', caution: EX.amber, alert: EX.breach, text: EX.bone,
+  ink: '#061012', inkDis: '#33464a', night: '#05090a', ghost: '#56696c', void: '#060b0c', slate: '#1b2a2e', mute: '#1e2729', ver: '#7f9894',
+  char: '#3a120a', plate: '#0d1517', bg: EX.bg, title: EX.bone,
+};
+// Relative luminance of a #rrggbb colour (WCAG), for picking the ink that reads on a fill.
+function lum(hex) {
+  if (typeof hex !== 'string' || hex[0] !== '#' || hex.length < 7) return 0;
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+// The ink that reads on a fill: dark on a lit window, bone on dark steel.
+const ink = (fill) => (lum(fill) > 0.2 ? CC.ink : EX.bone);
+// Ink on the hatch keys and stencil tabs: pale on the steel, the lit slot's own hot lumen when pressed and on the chosen tab.
+const keyInk = { idle: '#eef8f4', hover: '#eef8f4', pressed: EX.lumenHot, tabOn: EX.lumenHot, tabOff: '#9fb0ad' };
+// Type: "Allerta Stencil" (a stencilled sans) for titles, keys and the larger readouts, "Chivo Mono" for labels and small
+// numbers (the skins page's pair). The page asks for Antonio sizes; Allerta Stencil runs 1.43 times as wide and Chivo Mono
+// 1.54 (measured on the console's own labels), so each is set smaller to keep a line 1.1 times as long as the Antonio it
+// replaces (the same for both, so a key label rule T shrinks below 17 px measures as it was fitted); never under 10 px.
+function font(spec) {
+  const m = /^(\d+) ([\d.]+)px Antonio$/.exec(spec); if (!m) return spec;
+  const s = +m[2];
+  return s >= 17 ? `400 ${Math.round(s * 0.77 * 10) / 10}px "Allerta Stencil"` : `500 ${Math.max(10, Math.round(s * 0.715 * 10) / 10)}px "Chivo Mono"`;
+}
+const fonts = ['400 20px "Allerta Stencil"', '500 20px "Chivo Mono"', '700 20px "Chivo Mono"'];
+
+// The console's own pieces (mockup 4 keeps its own). A frame with a narrower rim and its well, so the console's panels keep
+// their room; the name plate's field stops short of the Fleet key at its right end (x 370-456 by 6-36), and the growth
+// there keeps off the key.
+const consoleFrame = (x, w, h) => frame(x, w, h, { m: 28, band: 20, c: 9, key: 'panel' });
+// A window key (the assimilators' inspection port, bolted on as found): a steel plate, four hex bolts, a recessed window
+// whose light is the key's state, a crust of barnacles in one corner of the plate. Seven lights, one plate.
+const LIGHT = { idle: null, hover: EX.lumen, on: EX.lumenHot, ok: EX.sea, warn: EX.amber, alert: EX.breach, off: null };
+function windowKey(state, wide) {
+  return (x, w, h) => {
+    const R = RNG(wide ? 'keyw' : 'key'), body = () => cham(x, 1, 1, w - 2, h - 2, 6), ix = wide ? 11 : 9, iy = 9;
+    cham(x, 2.5, 3, w - 3, h - 3, 6); x.fillStyle = 'rgba(0,0,0,0.45)'; x.fill();
+    plate(x, body, [0, 0, w, h], R, { where: (px, py) => (Math.min(px, w - px) < ix + 2 || Math.min(py, h - py) < iy + 2 ? 1 : 0), rustEvery: 500, rustScale: 0.4, saltEvery: 20 });
+    bevel(x, body, 1.1);
+    const win = () => F.rr(x, ix, iy, w - 2 * ix, h - 2 * iy, 3), col = LIGHT[state];
+    recess(x, win, [ix, iy, w - ix, h - iy], state === 'off' ? '#05090a' : '#0a1a1c');
+    if (col) {
+      x.save(); win(); x.clip();
+      const g = x.createLinearGradient(0, iy, 0, h - iy); g.addColorStop(0, mix(col, '#ffffff', 0.25)); g.addColorStop(0.55, col); g.addColorStop(1, mix(col, '#000000', 0.25));
+      x.fillStyle = g; x.fillRect(ix, iy, w - 2 * ix, h - 2 * iy);
+      x.fillStyle = 'rgba(255,255,255,0.18)'; x.fillRect(ix, iy, w - 2 * ix, 2);
+      x.restore();
+      x.save(); x.shadowColor = col; x.shadowBlur = 6; win(); x.strokeStyle = hexA(col, 0.8); x.lineWidth = 1; x.stroke(); x.restore();
+    }
+    for (const [bx, by] of [[5, 5], [w - 5, 5], [5, h - 5], [w - 5, h - 5]]) bolt(x, bx, by, 2.2, 0.2 + bx * 0.01);
+    if (state === 'off') { x.save(); body(); x.clip(); crust(x, w - 9, h - 8, 9, 7, R); barnacles(x, w - 8, h - 7, 6, 5, 5, 0.8, 2.6, R); x.restore(); }
+    else { x.save(); body(); x.rect(w - ix, iy, -(w - 2 * ix), h - 2 * iy); x.clip('evenodd'); barnacles(x, 5, h - 6, 4, 3, 3, 0.7, 2, R); x.restore(); }
+  };
+}
+const consoleHero = Object.assign({}, hero, {
+  nameplate: (x, w, h) => nameplate(x, w, h, 362, [368, 4, 90, 34]),
+  // The column's ground behind the panels and an expanded panel (CLAUDE.md section 7: no black behind metal panels).
+  'console.backing': (x, w, h) => column(x, w, h, [100, 40, 390, 1040]),
+});
+for (const s of Object.keys(LIGHT)) consoleHero['key.' + s] = windowKey(s, false);
+const heroSize = { 'console.backing': [480, 1080] };
+for (const s of Object.keys(LIGHT)) heroSize['key.' + s] = [48, 48];
+// A cell of an allocation row, the discrete boxes of CLAUDE.md section 7: a small inspection port, lit by its role, its
+// plate welded shut when locked.
+function allocCell(col, locked) {
+  return (x, w, h) => {
+    const R = RNG('cell.alloc'), body = () => cham(x, 1, 1, w - 2, h - 2, 4);
+    plate(x, body, [0, 0, w, h], R, { where: () => 0.5, rustEvery: 400, rustScale: 0.3, saltEvery: 30 });
+    bevel(x, body, 0.9);
+    if (locked) { x.strokeStyle = 'rgba(8,12,12,0.7)'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(6, 6); x.lineTo(w - 6, h - 6); x.moveTo(w - 6, 6); x.lineTo(6, h - 6); x.stroke(); return; }
+    const win = () => F.rr(x, 6, 6, w - 12, h - 12, 2);
+    recess(x, win, [6, 6, w - 6, h - 6], '#0a1a1c');
+    if (col) { x.save(); win(); x.clip(); x.fillStyle = col; x.fillRect(6, 6, w - 12, h - 12); x.fillStyle = 'rgba(255,255,255,0.2)'; x.fillRect(6, 6, w - 12, 2); x.restore(); x.save(); x.shadowColor = col; x.shadowBlur = 5; win(); x.strokeStyle = col; x.lineWidth = 0.8; x.stroke(); x.restore(); }
+  };
+}
+const cells = {
+  'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: allocCell(null) },
+  'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: allocCell(EX.lumen) },
+  'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: allocCell(EX.breach) },
+  'cell.accord': { size: [32, 28], m: [10, 10, 10, 10], draw: allocCell(EX.sea) },
+  'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: allocCell(null, true) },
+  'bar.fill.accord': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => vein(x, [[4, h / 2], [w - 4, h / 2]], 6, RNG('filla'), 1, false, EX.sea, '#d8ffe6') },
+};
+const kit = Object.assign({}, nine, {
+  'frame.panel': { size: [420, 300], m: [28, 28, 28, 28], draw: consoleFrame },
+  // A title placard: a stencil plate riveted at its head, the title in its dark slot (the officer slot's name too).
+  'plate.title': { size: [160, 24], m: [0, 8, 0, 18], draw: (x, w, h) => {
+    const R = RNG('plate.title'), body = () => cham(x, 0.5, 0.5, w - 1, h - 1, [5, 2, 5, 2]);
+    plate(x, body, [0, 0, w, h], R, { where: (px) => (px < 16 || px > w - 8 ? 1 : 0), rustEvery: 500, rustScale: 0.35, saltEvery: 24 });
+    bevel(x, body, 0.9);
+    recess(x, () => F.rr(x, 15, 3, w - 19, h - 6, 2), [15, 3, w - 4, h - 3], EX.glass);
+    rivet(x, 7.5, h / 2, 2.4, R);
+  } },
+});
+for (const s of Object.keys(LIGHT)) kit['keyw.' + s] = { size: [144, 48], m: [0, 22, 0, 22], draw: windowKey(s, true) };
+// The bars as barnacle cells: the skins page's three, and a whole one whose aperture glows the condition lamp's green.
+const barCells = { 'bar.cell.off': nine['bar.cell.off'], 'bar.cell.on': nine['bar.cell.on'], 'bar.cell.warn': nine['bar.cell.warn'],
+  'bar.cell.ok': { size: [12, 14], gap: 2, draw: cell(3) } };
+
+const api = {
+  id: 'exponent', name: 'Exponent', EX, HELM, CC, kit, cells, barCells, live, icon, ICON_NAMES, ink, keyInk, font, fonts, hexA, lum, heroSize,
+  // The skins page's kit (mockup 4): its nine-slice pieces, hero pieces, column and overgrowth as they were.
+  nine, heroSheet: hero, hero: consoleHero, column, overgrow,
+  load: () => Promise.resolve(), family: '"Chivo Mono", monospace',
+  // A drawn key (the expand key) is chamfered plate, as every hatch.
+  rr: (G, X, Y, W, H) => cham(G, X, Y, W, H, Math.min(W, H) * 0.22),
+  // The content inside a panel: clear of the console frame's rivets and corner reef (28 px margins, the reef clipped to them).
+  pad: [28, 28, 28, 28],
+  // The name plate's live field: its recessed field (62-362 x 9-47), 10 px clear of its left end.
+  plate: { x: 70, y: 35, max: 286, font: '400 15px "Allerta Stencil"', col: EX.bone },
+  // The battle's helm ring under the ship, in lumen.
+  ring: ['rgba(139,230,220,0)', 'rgba(139,230,220,0.14)', 'rgba(190,250,240,0.9)'],
+  // Names for the player's side where the page shows it as the Exponent: hulls numbered in the order they were taken in,
+  // captains named for what they keep, ranks by how long a part has been grown into the whole. Ours and provisional until
+  // the owner sets the Exponent's culture (CLAUDE.md section 1; openspec/changes/exponent-battle-console, question E1).
+  player: { faction: 'Exponent', call: 'Accretion', trim: 0x8be6dc, hull: 0x5d686d,
+    ships: { resolute: ['Accretion 41', 'Keeper of Lines'], tallis: ['Accretion 7', 'Keeper of Hatches'], meridian: ['Accretion 113', 'Keeper of Salt'] },
+    ranks: ['Taken', 'Joined', 'Grown', 'Keeper'],
+    officers: { o1: 'Tiller Nine', o2: 'Coil Two', o3: 'Sight Four', o4: 'Screen Eleven', o5: 'Lens Three', o6: 'Wire Six', o7: 'Weld One', o8: 'Hold Eight',
+      o9: 'Line Five', o10: 'Sight Twelve', o11: 'Lens Seven', o12: 'Hold Ten', o13: 'Weld Thirteen' } },
+  link: EX.lumen,
+  // Labels centred on the hatch keys, in the lit slot between the hinge and the latch.
+  keyCenter: true,
+  // A hover name on the hatch key with its slot lit, in the pale stencil ink.
+  tip: ['button.hover', 'hover'],
+  // Icon tabs (the station and ship rails) on the square window key, the icon in its window; dark at rest, lit on hover,
+  // hot when chosen.
+  iconKeys: true,
+  // Panel tab icons at rest in barnacle bone, apart from the functional icons' lumen; glyphs on a dark window in lumen.
+  tabIcon: EX.bone, glyphOnDark: EX.lumen, mark: { hover: EX.lumenHot, ready: EX.sea, count: EX.bone },
+  // The strips at their full 72 px (mockup 4's), the content, laid out for 56 px, moved down into the dark channel (11-61).
+  stripTop: { h: 72, dy: 8 }, stripBottom: { h: 72, dy: 0 },
+};
+window.FCSkins = window.FCSkins || {}; window.FCSkins.exponent = api;
+return api;
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/skins/exponent.js -->
+<script data-src="docs/mockups/skins/exponent.js">
+// The Exponent skin (mockup 4, OpenSpec change console-skins). The owner, 2026-11-07: "Exponent is not a mix of two races.
+// It is its own thing. Inspired by Borg. It's ship ui is a metalic utilitarian look. With veins a and tentacles and
+// barnacles growing. Like am abandoned rusted ship at sea. Take over by reefs and coral". Take the shape, not the text
+// (CLAUDE.md section 1). The look has one implementation, docs/mockups/lib/exponent.js (window.FCExponent, inlined before
+// this module), shared with the battle console (openspec/changes/exponent-battle-console); this module keeps the skins
+// page's own tokens (its CSS, type, title and plate placement, world view and palette rows) and registers the skin with
+// this page's registry (docs/mockups/skins).
+(function () {
+'use strict';
+const F = window.FCK, H = window.FCExponent, EX = H.EX;
 
 // ---- the skin --------------------------------------------------------------------------------------------------
 F.register('exponent', {
@@ -3986,50 +4403,11 @@ F.register('exponent', {
   // The title stencilled at the head of the well, in bone, over a shadow.
   title: (t) => { t.style.cssText = 'position:relative;justify-self:start;align-self:flex-start;margin-left:2px;letter-spacing:0.1em;text-transform:uppercase;text-shadow:0 1px 2px #000;'; },
   plateText: { left: 72, top: 13, width: 344, height: 30, font: '400 19px/1 "Allerta Stencil", sans-serif', color: EX.bone, shadow: '0 1px 2px #000', sub: 'ACCRETION 41 · KEEPER OF LINES' },
-  helmKeys: HELM, shield: [EX.lumen, EX.amber, EX.breach],
+  helmKeys: H.HELM, shield: [EX.lumen, EX.amber, EX.breach],
   fonts: ['400 20px "Allerta Stencil"', '700 20px "Chivo Mono"', '500 20px "Chivo Mono"'], view: { title: '400 26px "Allerta Stencil"', body: '700 21px "Chivo Mono"', upper: true, ink: EX.bone, dim: '#a9c4bf' },
-  build: () => Object.assign(F.fromPainters(nine, hero, icon, false), { column: F.png(F.paint(472, 1080, column)) }),
-  overgrow,
-  live: {
-    arrow: (x) => stencilArrow(x, EX.lumen),
-    helmCentre: (x, c) => { x.fillStyle = EX.bone; x.font = '400 13px "Allerta Stencil"'; x.textAlign = 'center'; x.shadowColor = '#000'; x.shadowBlur = 3; x.fillText('STOP', c, c + 5); x.shadowBlur = 0; },
-    // The hull as the assimilators keep it: modules taken from other ships, joined by plain collars, a conduit down its
-    // spine to each mount. Shields: six banks of ticks, coloured by strength.
-    ssd: (x, cx, cy, sh, col) => {
-      for (let i = 0; i < 6; i++) {
-        const a = -P / 2 + i * P / 3; x.save(); x.strokeStyle = col(sh[i]); x.shadowColor = col(sh[i]); x.shadowBlur = 5;
-        for (let k = -5; k <= 5; k++) { const t = a + k * (P / 3 - 0.22) / 10, r0 = 94, r1 = k % 5 === 0 ? 106 : 101; x.lineWidth = 2.4; x.beginPath(); x.moveTo(cx + Math.cos(t) * r0, cy + Math.sin(t) * r0); x.lineTo(cx + Math.cos(t) * r1, cy + Math.sin(t) * r1); x.stroke(); }
-        x.restore();
-      }
-      const mods = [[-12, -70, 24, 26, 4], [-20, -44, 40, 30, 2], [-30, -14, 60, 34, 6], [-22, 20, 44, 26, 2], [-14, 46, 28, 22, 3], [-44, -6, 14, 26, 2], [30, -6, 14, 26, 2]];
-      for (const [mx, my, mw, mh, c] of mods) { cham(x, cx + mx, cy + my, mw, mh, c); x.fillStyle = hexA(EX.lumen, 0.12); x.fill(); x.strokeStyle = EX.lumen; x.lineWidth = 1.6; x.stroke(); }
-      for (const yy of [-44, -14, 20, 46]) { x.fillStyle = hexA(EX.lumen, 0.7); x.fillRect(cx - 8, cy + yy - 1.5, 16, 3); }
-      x.strokeStyle = hexA(EX.lumenHot, 0.8); x.lineWidth = 1.2; x.setLineDash([3, 2]); x.beginPath(); x.moveTo(cx, cy - 66); x.lineTo(cx, cy + 64); x.stroke(); x.setLineDash([]);
-      for (const [mx, my] of [[cx, cy - 58], [cx - 37, cy + 7], [cx + 37, cy + 7], [cx, cy + 58]]) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.fillStyle = EX.lumenHot; x.fillRect(mx - 3, my - 3, 6, 6); x.restore(); }
-    },
-    // A sonar sweep in the gauge: range rings, a fading wedge, contacts as squares (lumen far, amber, breach near).
-    dial: (x, c, cts) => {
-      for (const r of [14, 28, 40]) { x.strokeStyle = hexA(EX.lumen, 0.22); x.lineWidth = 1; x.beginPath(); x.arc(c, c, r, 0, 2 * P); x.stroke(); }
-      x.strokeStyle = hexA(EX.lumen, 0.16); x.beginPath(); x.moveTo(c - 42, c); x.lineTo(c + 42, c); x.moveTo(c, c - 42); x.lineTo(c, c + 42); x.stroke();
-      const a0 = -0.9; for (let i = 0; i < 14; i++) { x.fillStyle = hexA(EX.lumen, 0.05 + 0.02 * i); x.beginPath(); x.moveTo(c, c); x.arc(c, c, 41, a0 - 0.9 + i * 0.065, a0 - 0.9 + (i + 1) * 0.065); x.closePath(); x.fill(); }
-      x.strokeStyle = EX.lumenHot; x.lineWidth = 1.4; x.beginPath(); x.moveTo(c, c); x.lineTo(c + Math.cos(a0) * 41, c + Math.sin(a0) * 41); x.stroke();
-      for (const [dx, dy] of cts) {
-        const d = Math.hypot(dx, dy), cl = d < 0.56 ? EX.breach : d < 0.8 ? EX.amber : EX.lumen, s = d < 0.56 ? 7 : 5.5;
-        x.save(); x.shadowColor = cl; x.shadowBlur = 6; x.fillStyle = cl; x.fillRect(c + dx * 34 - s / 2, c + dy * 34 - s / 2, s, s); x.restore();
-      }
-    },
-    // Four corner brackets of flat bar, each bolted at its corner and bridged like a stencil.
-    bracket: (x, bx, by, bw, bh) => {
-      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
-        x.save(); x.translate(px, py); x.scale(sx, sy);
-        const L = () => { x.beginPath(); x.moveTo(0, 0); x.lineTo(34, 0); x.lineTo(34, 5); x.lineTo(5, 5); x.lineTo(5, 34); x.lineTo(0, 34); x.closePath(); };
-        L(); x.strokeStyle = '#040707'; x.lineWidth = 2.4; x.stroke(); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; L(); x.fillStyle = EX.lumen; x.fill(); x.restore();
-        x.fillStyle = '#020306'; x.fillRect(18, -1, 2.4, 7); x.fillRect(-1, 18, 7, 2.4);
-        disc(x, 2.5, 2.5, 1.6); x.fillStyle = '#0a1a1c'; x.fill();
-        x.restore();
-      }
-    },
-  },
+  build: () => Object.assign(F.fromPainters(H.nine, H.heroSheet, (n) => H.icon(n), false), { column: F.png(F.paint(472, 1080, H.column)) }),
+  overgrow: H.overgrow,
+  live: H.live,
   world: ['One collective that grows by taking in ships, stations and crews; nothing is decorated, everything is function, and nothing taken is thrown away.',
     'Provisional and the owner\'s to set; the design draws on none of it. Three traditions shape its things: the assimilators, the conduit-keepers, the reef.',
     'Machinery kept running long past any refit: whatever is taken is bolted on as found, power runs in sheathed veins of cable and fluid line, and the growth it has absorbed is left to accrete in layers.',
@@ -4045,9 +4423,15 @@ F.register('exponent', {
 })();
 </script>
 <!-- /INLINE -->
-<!-- INLINE docs/mockups/skins/redtithe.js -->
-<script data-src="docs/mockups/skins/redtithe.js">
-// The Red Tithe skin (mockup 4, OpenSpec change console-skins): a second, more brutal pirate faction (owner,
+<!-- INLINE docs/mockups/lib/redtithe.js -->
+<script data-src="docs/mockups/lib/redtithe.js">
+// Fleet Command mockups: the Red Tithe skin (openspec/changes/console-skins/design.md, "Three more factions" and "the Red
+// Tithe in wood"; openspec/changes/redtithe-battle-console), shared by the console skins page (docs/mockups/skins/redtithe.js
+// registers it there) and the battle console (docs/mockups/battle-console.html). One implementation of the Tithe's look
+// (CLAUDE.md section 6.1): its materials, trophies, kit painters, hero pieces, icons and live readouts, and the fields the
+// battle console reads (the same as docs/mockups/lib/concord.js). Needs docs/mockups/lib/kitdraw.js inlined first.
+//
+// The Red Tithe (mockup 4, OpenSpec change console-skins): a second, more brutal pirate faction (owner,
 // 2026-11-07: "Id also like another pirate faction. One more brutal. Decorate their UI with sharp teeth, bullets and
 // blades. Blood stained buttons and crusty paper with burn marks and drops of blood and grime on them"). Name and culture
 // are provisional, ours, and go to the survey: raiders who take a tithe of blood from every crew they board, whose orders
@@ -4061,12 +4445,12 @@ F.register('exponent', {
 // Tithe's hall (owner, 2026-11-07: "More brown wood on the red tithe"), strap iron and rivets where steel is still needed,
 // the trophies shaded by hand. A later pass models the wood and metal (planks, jaws, knives, cartridges, teeth) in Blender and paints the paper in Krita
 // (krita-brushwork); until then this module is the one implementation. Every speck, stain, tear, drop and scratch comes
-// from the page's seeded generator (FCK.rng(FCK.hash('redtithe.<piece>'))), never a sine or product-modulo hash
+// from the seeded generator (FCDraw.rng(FCDraw.hash('redtithe.<piece>')), docs/mockups/lib/kitdraw.js), never a sine or product-modulo hash
 // (CLAUDE.md section 10). Blood, grime and burns sit only in a piece's margins, never under a label or readout.
-// Registers itself with the page's skin registry (docs/mockups/skins). Our own design: no other game's names, shapes or art.
-(function () {
+// Our own design: no other game's names, shapes or art.
+window.FCRedTithe = (function () {
 'use strict';
-const F = window.FCK, P = F.P;
+const F = window.FCDraw, P = F.P;
 const RT = {
   steel: '#2e3236', steelHi: '#7c848b', steelLo: '#141618', paper: '#c9b48a', paperHi: '#ddcba1', paperLo: '#9c8256',
   dried: '#5a1a12', driedLo: '#33100a', fresh: '#c4141c', freshLo: '#6e0a0e', brass: '#c8963a', brassHi: '#f0cf7a', brassLo: '#6e4d16',
@@ -4363,7 +4747,7 @@ function teethString(x, ax, ay, bx, by, sag, n, s, R) {
   for (let i = 0; i < n; i++) { const t = (i + 0.5 + (R() - 0.5) * 0.3) / n, [px, py] = at(t); tooth(x, px, py, s * (0.85 + R() * 0.3), kinds[Math.floor(R() * 3)], (R() - 0.5) * 0.35, R); }
 }
 // A cartridge standing at (cx, base y by), w wide, h tall: 'live' brass with its bullet, 'red' with a painted tip
-// (the warning round), 'spent' an empty dented case.
+// (the warning round), 'spent' an empty dented case, 'ok' a nickel case (the battle console's whole bar).
 function cartridge(x, cx, by, w, h, state, R) {
   const cw = w / 2, caseTop = by - h * 0.62, neck = by - h * 0.7;
   x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 1.5; x.shadowOffsetX = 0.8; x.shadowOffsetY = 1;
@@ -4374,7 +4758,7 @@ function cartridge(x, cx, by, w, h, state, R) {
   }
   x.beginPath(); x.moveTo(cx - cw * 0.7, neck); x.lineTo(cx - cw * 0.7, caseTop + 0.6); x.lineTo(cx - cw, caseTop + h * 0.06); x.lineTo(cx - cw, by - 1); x.lineTo(cx + cw, by - 1); x.lineTo(cx + cw, caseTop + h * 0.06); x.lineTo(cx + cw * 0.7, caseTop + 0.6); x.lineTo(cx + cw * 0.7, neck); x.closePath();
   const g = x.createLinearGradient(cx - cw, 0, cx + cw, 0);
-  if (state === 'spent') { g.addColorStop(0, '#7a6440'); g.addColorStop(0.4, '#4e3d22'); g.addColorStop(1, '#1d160c'); } else { g.addColorStop(0, RT.brassHi); g.addColorStop(0.35, RT.brass); g.addColorStop(1, RT.brassLo); }
+  if (state === 'spent') { g.addColorStop(0, '#7a6440'); g.addColorStop(0.4, '#4e3d22'); g.addColorStop(1, '#1d160c'); } else if (state === 'ok') { g.addColorStop(0, '#f2f4f6'); g.addColorStop(0.35, '#b8bec4'); g.addColorStop(1, '#4a5056'); } else { g.addColorStop(0, RT.brassHi); g.addColorStop(0.35, RT.brass); g.addColorStop(1, RT.brassLo); }
   x.fillStyle = g; x.fill(); x.restore();
   x.strokeStyle = 'rgba(20,12,4,0.8)'; x.lineWidth = 0.4; x.stroke();
   x.fillStyle = state === 'spent' ? '#2a2014' : RT.brassLo; x.fillRect(cx - cw, by - 1.6, w, 1.6);
@@ -4476,7 +4860,7 @@ function loop(state) {
   return (x, w, h) => {
     const R = RNG('cell');
     if (state === 'spent') { x.fillStyle = 'rgba(0,0,0,0.55)'; x.fillRect(w * 0.18, 1, w * 0.64, h * 0.62); cartridge(x, w / 2, h - 3, w * 0.6, h * 0.42, 'spent', R); }
-    else cartridge(x, w / 2, h - 1, w * 0.62, h - 1, state === 'warn' ? 'red' : 'live', R);
+    else cartridge(x, w / 2, h - 1, w * 0.62, h - 1, state === 'warn' ? 'red' : state === 'ok' ? 'ok' : 'live', R);
     // the leather loop over the round's waist
     const ly = h * 0.52, lh = h * 0.24, g = x.createLinearGradient(0, ly, 0, ly + lh); g.addColorStop(0, '#6b4429'); g.addColorStop(1, '#2a180c');
     x.fillStyle = g; x.fillRect(0, ly, w, lh); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.4; x.strokeRect(0.2, ly, w - 0.4, lh);
@@ -4757,7 +5141,12 @@ const hero = {
 // ---- icons: cut into the sheet with a blade -----------------------------------------------------------------------
 // Each subject is one path, cut in: a pale scored rim where the blade lifted the paper, the dark cut itself, stencil
 // bridges left uncut, and a scratch or two across it. Readable at 20 px; colour for state only.
-function icon(name) {
+// Every subject of the icon guide (docs/design/icon-guide.html), so the battle console finds the same pictures as every
+// other skin. col: the cut's ink, the sheet's black by default; a light ink (the battle console's, on dark boards) is cut
+// into the wood instead, its rim a shadow where the paper's was a lifted pale edge.
+const ICON_NAMES = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'warp', 'engines', 'reactor', 'map', 'pause', 'menu', 'fire', 'cargo', 'settings'];
+function icon(name, col = RT.ink) {
+  const n = parseInt(col.slice(1, 7), 16), light = ((n >> 16) * 0.3 + ((n >> 8) & 255) * 0.59 + (n & 255) * 0.11) > 110;
   return F.paint(48, 48, (x) => {
     const R = RNG('icon.' + name);
     const ops = [];   // [kind, fn]: 's' stroked path, 'f' filled path
@@ -4785,17 +5174,43 @@ function icon(name) {
       map: () => { S(poly([[5, 11], [17, 7], [31, 11], [43, 7], [43, 37], [31, 41], [17, 37], [5, 41]]), 3); S(poly([[17, 7], [17, 37]], false), 2); S(poly([[31, 11], [31, 41]], false), 2); S(poly([[10, 33], [20, 26], [28, 29]], false), 2.2); S(poly([[32, 17], [40, 25]], false), 2.6); S(poly([[40, 17], [32, 25]], false), 2.6); },
       // a gear
       settings: () => { const o = []; for (let i = 0; i < 16; i++) { const a = i * P / 8, r = i % 2 ? 13 : 19; o.push([24 + Math.cos(a - 0.12) * r, 24 + Math.sin(a - 0.12) * r], [24 + Math.cos(a + 0.12) * r, 24 + Math.sin(a + 0.12) * r]); } Fi(poly(o)); },
+      // power: a bolt in a ring
+      power: () => { S(circ(24, 24, 19), 3.4); Fi(poly([[27, 8], [15, 26], [23, 26], [20, 40], [33, 21], [25, 21]])); },
+      // tactical: a turret on its base, twin barrels
+      tactical: () => { Fi(poly([[7, 39], [41, 39], [41, 44], [7, 44]])); Fi(poly([[12, 39], [15, 27], [33, 27], [36, 39]])); S(poly([[25, 30], [42, 13]], false), 3.6); S(poly([[21, 28], [38, 11]], false), 3.6); },
+      // point defence: a shield with a burst on it
+      pd: () => { S(poly([[24, 5], [40, 11], [40, 25], [24, 43], [8, 25], [8, 11]]), 3.4); const o = []; for (let i = 0; i < 16; i++) { const a = -P / 2 + i * P / 8, r = i % 2 ? 4 : 9.5; o.push([24 + Math.cos(a) * r, 23 + Math.sin(a) * r]); } Fi(poly(o)); },
+      // fleet: three chevrons in formation, one ahead
+      fleet: () => { const ch = (cx, cy, k) => Fi(poly([[cx, cy - 8 * k], [cx + 9 * k, cy + 7 * k], [cx, cy + 2 * k], [cx - 9 * k, cy + 7 * k]])); ch(24, 14, 1.3); ch(11, 34, 1.05); ch(37, 34, 1.05); },
+      // the ship from above: a raider's long hull with a ram, two outrigger pods
+      ship: () => { Fi(poly([[24, 3], [30, 14], [29, 38], [24, 44], [19, 38], [18, 14]])); Fi(poly([[6, 24], [12, 24], [12, 44], [6, 44]])); Fi(poly([[36, 24], [42, 24], [42, 44], [36, 44]])); S(poly([[12, 31], [19, 29]], false), 2.6); S(poly([[36, 31], [29, 29]], false), 2.6); },
+      // sensors: a scope, its sweep and two contacts
+      sensors: () => { S(circ(24, 24, 19), 3); Fi((q) => { q.beginPath(); q.moveTo(24, 24); q.arc(24, 24, 17, -P / 2, -P / 2 + 1); q.closePath(); }); Fi(poly([[31, 28], [37, 28], [37, 34], [31, 34]])); Fi(poly([[11, 30], [16, 30], [16, 35], [11, 35]])); },
+      // craft: a fighter from above, swept wings, twin tails
+      craft: () => { Fi(poly([[24, 4], [29, 22], [44, 31], [44, 35], [29, 33], [28, 41], [33, 45], [15, 45], [20, 41], [19, 33], [4, 35], [4, 31], [19, 22]])); },
+      // weapons: an emitter firing a bolt that bursts
+      weapons: () => { Fi(circ(10, 38, 5.5)); S(poly([[14, 34], [30, 18]], false), 4); const o = []; for (let i = 0; i < 12; i++) { const a = i * P / 6, r = i % 2 ? 3.5 : 9; o.push([35 + Math.cos(a) * r, 13 + Math.sin(a) * r]); } Fi(poly(o)); },
+      // warp: a ring, speed lines trailing behind
+      warp: () => { S(circ(33, 24, 8), 3.4); Fi(circ(33, 24, 2.6)); S(poly([[5, 15], [21, 15]], false), 3.2); S(poly([[2, 24], [21, 24]], false), 3.2); S(poly([[5, 33], [21, 33]], false), 3.2); },
+      // engines: a nozzle and its flame
+      engines: () => { Fi(poly([[18, 4], [30, 4], [30, 12], [18, 12]])); Fi(poly([[17, 12], [31, 12], [37, 26], [11, 26]])); S(poly([[13, 30], [24, 37], [35, 30]], false), 3.4); S(poly([[17, 38], [24, 43], [31, 38]], false), 3); },
+      // reactor: the trefoil round a core
+      reactor: () => { Fi(circ(24, 24, 3.8)); for (let i = 0; i < 3; i++) { const a = -P / 2 + i * 2 * P / 3; Fi((q) => { q.beginPath(); q.arc(24, 24, 19, a - 0.52, a + 0.52); q.arc(24, 24, 7, a + 0.52, a - 0.52, true); q.closePath(); }); } },
+      pause: () => { Fi(poly([[13, 10], [21, 10], [21, 38], [13, 38]])); Fi(poly([[27, 10], [35, 10], [35, 38], [27, 38]])); },
+      menu: () => { for (const y of [13, 24, 35]) S(poly([[10, y], [38, y]], false), 5); },
+      // cargo: four crates
+      cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) Fi(poly([[cx - 7.5, cy - 7.5], [cx + 7.5, cy - 7.5], [cx + 7.5, cy + 7.5], [cx - 7.5, cy + 7.5]])); },
     })[name]();
     const draw = (lwAdd, col, dx = 0, dy = 0) => {
       x.save(); x.translate(dx, dy);
       for (const [k, fn, lw] of ops) { fn(x); if (k === 's') { x.strokeStyle = col; x.lineWidth = lw + lwAdd; x.lineCap = 'butt'; x.lineJoin = 'miter'; x.stroke(); } else { x.fillStyle = col; x.fill(); if (lwAdd) { x.strokeStyle = col; x.lineWidth = lwAdd; x.lineJoin = 'miter'; x.stroke(); } } }
       x.restore();
     };
-    draw(3.2, 'rgba(230,214,176,0.92)', 0.6, 0.8);   // the scored rim the blade lifted
-    draw(0, RT.ink);                                  // the cut
+    draw(3.2, light ? 'rgba(10,6,3,0.85)' : 'rgba(230,214,176,0.92)', 0.6, 0.8);   // the scored rim the blade lifted (a shadow, in wood)
+    draw(0, col);                                                                  // the cut
     // stencil bridges and blade scratches, taken out of the cut
     x.globalCompositeOperation = 'source-atop';
-    x.strokeStyle = 'rgba(120,96,70,0.9)'; x.lineWidth = 0.6;
+    x.strokeStyle = light ? 'rgba(90,64,40,0.8)' : 'rgba(120,96,70,0.9)'; x.lineWidth = 0.6;
     for (let i = 0; i < 3; i++) { const sx = 6 + R() * 36, sy = 6 + R() * 36, a = -0.9 + (R() - 0.5) * 0.4, L = 8 + R() * 12; x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + Math.cos(a) * L, sy + Math.sin(a) * L); x.stroke(); }
     x.globalCompositeOperation = 'source-over';
   });
@@ -4829,6 +5244,256 @@ function ground(x, w, h) {
   const s = x.createLinearGradient(w - 30, 0, w, 0); s.addColorStop(0, 'rgba(0,0,0,0)'); s.addColorStop(1, 'rgba(0,0,0,0.55)'); x.fillStyle = s; x.fillRect(w - 30, 0, 30, h);
 }
 
+// ---- the live readouts (the skins page and the battle console) -------------------------------------------------------
+const live = {
+  // A chevron stamped into the brass head of each chamber.
+  arrow: (x) => { x.fillStyle = 'rgba(30,18,6,0.9)'; x.beginPath(); x.moveTo(13, 0); x.lineTo(-3, -12); x.lineTo(-3, -5); x.lineTo(-12, -5); x.lineTo(-12, 5); x.lineTo(-3, 5); x.lineTo(-3, 12); x.closePath(); x.fill(); x.strokeStyle = 'rgba(255,230,160,0.45)'; x.lineWidth = 0.8; x.save(); x.translate(0.7, 0.9); x.stroke(); x.restore(); },
+  helmCentre: (x, c) => { x.fillStyle = '#1a1006'; x.font = '700 19px "Stardos Stencil"'; x.textAlign = 'center'; x.fillText('HOLD', c, c + 7); },
+  // The ship drawn in ink on the sheet; shields as heavy strokes in brass, rust and fresh blood by strength.
+  ssd: (x, cx, cy, sh, col) => {
+    for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.lineWidth = 7; x.lineCap = 'butt'; x.beginPath(); x.arc(cx, cy, 98, a - P / 6 + 0.1, a + P / 6 - 0.1); x.stroke(); x.strokeStyle = 'rgba(20,12,6,0.6)'; x.lineWidth = 0.8; x.stroke(); }
+    const hull = [[cx, cy - 76], [cx + 10, cy - 46], [cx + 34, cy - 30], [cx + 20, cy - 18], [cx + 22, cy + 14], [cx + 46, cy + 34], [cx + 18, cy + 36], [cx + 12, cy + 62], [cx, cy + 50], [cx - 12, cy + 62], [cx - 18, cy + 36], [cx - 46, cy + 34], [cx - 22, cy + 14], [cx - 20, cy - 18], [cx - 34, cy - 30], [cx - 10, cy - 46]];
+    trace(x, hull, true); x.fillStyle = 'rgba(40,26,14,0.12)'; x.fill(); x.strokeStyle = RT.ink; x.lineWidth = 2.2; x.lineJoin = 'miter'; x.stroke();
+    x.lineWidth = 1; x.beginPath(); x.moveTo(cx, cy - 40); x.lineTo(cx, cy + 40); x.moveTo(cx - 16, cy - 4); x.lineTo(cx + 16, cy - 4); x.stroke();
+    for (const [mx, my] of [[cx, cy - 58], [cx - 32, cy + 28], [cx + 32, cy + 28]]) { x.fillStyle = '#6b1810'; x.beginPath(); x.moveTo(mx, my - 7); x.lineTo(mx + 4, my + 4); x.lineTo(mx, my + 2); x.lineTo(mx - 4, my + 4); x.closePath(); x.fill(); }
+  },
+  // A bone needle on the dark face, contacts as brass pips.
+  dial: (x, c, cts) => {
+    x.strokeStyle = RT.bone; x.lineWidth = 2.4; x.lineCap = 'round'; x.beginPath(); x.moveTo(c - Math.cos(-0.9) * 8, c - Math.sin(-0.9) * 8); x.lineTo(c + Math.cos(-0.9) * 38, c + Math.sin(-0.9) * 38); x.stroke();
+    x.fillStyle = '#3a3e42'; x.beginPath(); x.arc(c, c, 4.5, 0, 2 * P); x.fill();
+    for (const [dx, dy] of cts) { x.fillStyle = RT.brassHi; x.beginPath(); x.moveTo(c + dx * 30, c + dy * 30 - 4); x.lineTo(c + dx * 30 + 3.5, c + dy * 30 + 3); x.lineTo(c + dx * 30 - 3.5, c + dy * 30 + 3); x.closePath(); x.fill(); }
+  },
+  // Toothed steel corners, a trap closing on the target.
+  bracket: (x, bx, by, bw, bh) => {
+    const R = RNG('bracket');
+    for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+      x.save(); x.translate(px, py); x.scale(sx, sy);
+      steel(x, [[0, 0], [48, 0], [48, 8], [8, 8], [8, 48], [0, 48]], R, { hi: '#9aa2a9', mid: '#565d63', lo: '#202326' });
+      saw(x, 12, 8, 46, 8, 4, 6, -1); saw(x, 8, 46, 8, 12, 4, 6, -1);
+      x.restore();
+    }
+  },
+};
+
+// =====================================================================================================================
+// The battle console (openspec/changes/redtithe-battle-console). The same fields as docs/mockups/lib/concord.js, so the
+// console swaps one skin for another and changes no rule and no layout.
+// =====================================================================================================================
+// The console draws its readouts in light, inside its panels and over the battle, so its panels are the hall's boards
+// tarred black where the tithe is chalked (#1f140b), not mockup 4's paper; the paper stays where dark ink is printed on it:
+// the keys, the chosen tab, the name plate. Colour roles, the Concord's names: old paper for a reading, bone for prose,
+// worn paper for a label, brass for whole and engaged (spent rounds counted as standing), burnt orange for damaged, fresh
+// blood only for down and alarms.
+const CC = {
+  deep: '#3d2a1b', signal: '#5a3a22', sky: '#efdcae', accord: '#e2ad48', lilac: '#c0a27a', caution: '#e07a32', alert: '#ff4b3e', text: '#f6ecd2',
+  ink: '#1a120c', inkDis: '#4a3828', night: '#0d0805', ghost: '#76604a', void: '#0e0905', slate: '#2a1d13', mute: '#251a12', ver: '#a88f6c',
+  char: '#3a0c08', plate: '#1a110a', bg: RT.bg, title: '#efdcae',
+};
+// Relative luminance of a #rrggbb colour (WCAG), for picking the ink that reads on a fill.
+function lum(hex) {
+  if (typeof hex !== 'string' || hex[0] !== '#' || hex.length < 7) return 0;
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+// The ink that reads on a fill: typewriter black on paper and brass, bone on the dark boards.
+const ink = (fill) => (lum(fill) > 0.2 ? CC.ink : CC.text);
+// Ink on the trap-jaw keys (black on their paper slips) and the tally-stick tabs (pale on the bare stick, black on the
+// chosen tab's slip).
+const keyInk = { idle: '#16100b', hover: '#16100b', pressed: '#16100b', tabOn: '#16100b', tabOff: '#d9c49a' };
+// Type: "Stardos Stencil" for titles, keys and the larger readouts, "Special Elite", the typed bounty sheet, for labels and
+// small numbers (the skins page's pair). The page asks for Antonio sizes; both run about 1.4 times as wide (measured on
+// the console's own labels), so each is set at 0.79 times the size (the same for both, so a label rule T shrinks below 17 px
+// measures as it was fitted); never under 10 px.
+function font(spec) {
+  const m = /^(\d+) ([\d.]+)px Antonio$/.exec(spec); if (!m) return spec;
+  const s = +m[2];
+  return s >= 17 ? `700 ${Math.round(s * 0.79 * 10) / 10}px "Stardos Stencil"` : `400 ${Math.max(10, Math.round(s * 0.79 * 10) / 10)}px "Special Elite"`;
+}
+const fonts = ['700 20px "Stardos Stencil"', '400 20px "Stardos Stencil"', '400 20px "Special Elite"'];
+// The icons for the console: cut into the dark boards in its reading colour, a shadowed cut (icon's default ink is the
+// sheet's black, for mockup 4's paper).
+const consoleIcon = (name, col = CC.sky) => icon(name, col);
+
+// ---- the console's own pieces (mockup 4 keeps its own) ---------------------------------------------------------------
+// A dark, tarred board: the field the tithe is chalked on (the strips' long middles, stretched only along their grain).
+const TAR = { tone: '#1f140b', hi: '#2a1b0f', lo: '#110a05' };
+// The same tar laid flat for a field that stretches both ways (a panel's, an inset's): the colour, a soft light from the
+// upper left and the tar's own sheen, nothing with a grain to smear when the 9-slice centre is stretched.
+function tar(x, X, Y, W, H) {
+  const g = x.createLinearGradient(X, Y, X + W * 0.3, Y + H); g.addColorStop(0, '#271a0e'); g.addColorStop(0.5, '#1f140b'); g.addColorStop(1, '#170e07');
+  x.fillStyle = g; x.fillRect(X, Y, W, H);
+  const s = x.createLinearGradient(X, Y, X, Y + Math.min(14, H * 0.3)); s.addColorStop(0, 'rgba(0,0,0,0.6)'); s.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = s; x.fillRect(X, Y, W, Math.min(14, H * 0.3));
+  x.strokeStyle = 'rgba(0,0,0,0.75)'; x.lineWidth = 2; x.strokeRect(X, Y, W, H);
+}
+// A panel: four boards of the hall's oak bound at the corners with strap iron round a tarred field; a scrap of a paid
+// sheet nailed in the top-left corner, a knife driven into the bottom board at the right; scars only in the margins.
+function consolePanel(x, w, h, R) {
+  const Rw = RNG('cpanel.wood');
+  boardFrame(x, w, h, 19, Rw);
+  tar(x, 19, 19, w - 38, h - 38);
+  knot(x, 9, h - 24, 2.4, Rw, 'v'); tally(x, 6, 34, 4, 8, Rw); gouge(x, w - 14, 34, w - 7, 46, 1.2); scorch(x, w - 10, h - 30, 4, Rw); soak(x, 40, h - 9, 7, Rw, 'h');
+  for (const [cx, cy, sx, sy] of [[0.5, 0.5, 1, 1], [w - 0.5, 0.5, -1, 1], [0.5, h - 0.5, 1, -1], [w - 0.5, h - 0.5, -1, -1]]) cornerStrap(x, cx, cy, sx, sy, 22, 7, Rw);
+  const p = tear([[9, 9], [27, 8], [28, 25], [10, 27]], true, 1.4, RNG('cpanel.scrap'), 2.5, 0.08);
+  paper(x, p, RNG('cpanel.paper')); x.save(); trace(x, p, true); x.clip(); burn(x, 25, 24, 3, R); x.restore(); nail(x, 16, 15, 2, R);
+  knife(x, w - 3, h - 5, w - 50, h - 19, 1.0, R);
+}
+// A readout well cut into the board: dark oak sides round a tarred floor, a nail at each corner.
+function consoleInset(x, w, h, R) {
+  boardFrame(x, w, h, 7, RNG('cinset.wood'), { tone: '#3a2415', hi: '#4f3320', lo: '#1a0f07' });
+  tar(x, 7, 7, w - 14, h - 14);
+  for (const [px, py] of [[4, 4], [w - 4, 4], [4, h - 4], [w - 4, h - 4]]) nail(x, px, py, 1.7, R);
+}
+// A strip: a beam of the hall's oak banded with strap iron at its ends, its long middle tarred for the readouts. The
+// ends (92 px each: the console lays its readouts from 96 px in) carry the trophies: a scrap of a bounty sheet knifed to
+// the beam and a string of teeth on the top strip, three spent rounds and a knife on the bottom.
+function consoleStrip(bottom) {
+  return (x, w, h, R) => {
+    const Rb = RNG('cstrip.wood' + bottom);
+    board(x, 0.5, 0.5, w - 1, h - 1, Rb, 'h');
+    wood(x, rect(90, 7, w - 180, h - 14), RNG('cstrip.tar' + bottom), Object.assign({ dir: 'h' }, TAR));
+    x.strokeStyle = 'rgba(0,0,0,0.75)'; x.lineWidth = 1.6; x.strokeRect(90, 7, w - 180, h - 14);
+    for (const ex of [0.5, w - 11.5]) iron(x, rect(ex, 0.5, 11, h - 1), Rb, [[ex + 5.5, 9, 2.4], [ex + 5.5, h - 9, 2.4]]);
+    if (bottom) {
+      knot(x, 70, 14, 2.4, Rb); tally(x, 18, 10, 7, 9, Rb); soak(x, w - 50, h - 12, 6, Rb);
+      for (let i = 0; i < 3; i++) cartridge(x, 40 + i * 13, h - 8, 8, 30, i === 2 ? 'spent' : 'live', R);
+      knife(x, w - 14, 10, w - 82, h - 18, 1.2, R);
+    } else {
+      const p = tear([[16, 10], [74, 9], [76, h - 10], [18, h - 9]], true, 1.6, RNG('cstrip.scrap'), 3, 0.06);
+      paper(x, p, RNG('cstrip.paper')); x.save(); trace(x, p, true); x.clip(); burn(x, 64, h - 18, 4, R); spatter(x, 28, 22, 0.4, 7, 2.6, R, false); x.restore();
+      knife(x, 4, h - 6, 52, 22, 1.2, R);
+      teethString(x, w - 84, 12, w - 18, 14, 9, 4, 1.2, R); nail(x, w - 84, 12, 2.2, R); nail(x, w - 18, 14, 2.2, R);
+      scorch(x, w - 50, h - 14, 5, Rb);
+    }
+  };
+}
+// A title placard: a slat of charred oak nailed on at its head, the title (and an officer slot's name) chalked on it.
+function titleSlat(x, w, h, R) {
+  board(x, 0.5, 0.5, w - 1, h - 1, RNG('slat.wood'), 'h', { tone: '#24170c', hi: '#3a2615', lo: '#100904' });
+  nail(x, 8, h / 2, 2.4, R);
+}
+// A slot key (the sheet-keepers' pigeonhole): a block of oak bound with strap iron, a slot cut in it. Empty (idle, off)
+// the slot is dark and its mark is cut pale into the wood behind; engaged, a slip of the ledger is pushed into the slot,
+// tinted by the state, its mark in black: hover old paper, on fresh paper, whole a brass-washed slip, damaged a
+// rust-stained one, down one soaked in blood. Off, the slot is barred with iron.
+const SLIP = { idle: null, hover: '#d8c597', on: '#f0e2bc', ok: '#e2ad48', warn: '#e08a4a', alert: '#ee5a48', off: null };
+function slotKey(state, wide) {
+  return (x, w, h) => {
+    const R = RNG('key.' + (wide ? 'w' : 's')), ix = wide ? 12 : 9, iy = 9;
+    board(x, 0.5, 0.5, w - 1, h - 1, R, wide ? 'h' : 'v');
+    for (const [cx, cy, sx, sy] of [[0.5, 0.5, 1, 1], [w - 0.5, 0.5, -1, 1], [0.5, h - 0.5, 1, -1], [w - 0.5, h - 0.5, -1, -1]]) cornerStrap(x, cx, cy, sx, sy, 10, 4, R);
+    const slot = rect(ix, iy, w - 2 * ix, h - 2 * iy);
+    trace(x, slot, true); x.fillStyle = '#0d0805'; x.fill();
+    x.save(); trace(x, slot, true); x.clip(); const g = x.createLinearGradient(0, iy, 0, iy + 8); g.addColorStop(0, 'rgba(0,0,0,0.85)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(ix, iy, w - 2 * ix, 8); x.restore();
+    trace(x, slot, true); x.strokeStyle = 'rgba(214,168,118,0.3)'; x.lineWidth = 1; x.stroke();
+    const col = SLIP[state];
+    if (col) {
+      const p = tear(rect(ix + 1.5, iy + 1.5, w - 2 * ix - 3, h - 2 * iy - 3), true, 0.7, RNG('key.slip'), 3, 0.02);
+      paper(x, p, RNG('key.paper'), { tone: col });
+      if (state === 'alert') { x.save(); trace(x, p, true); x.clip(); drop(x, w - ix - 4, iy + 4, 2.2, R, true); x.restore(); }
+    }
+    if (state === 'off') for (const t of [0.35, 0.65]) iron(x, rect(ix - 2, iy + (h - 2 * iy) * t - 2, w - 2 * ix + 4, 4), R);
+  };
+}
+// An allocation cell, the discrete boxes of CLAUDE.md section 7: a notch in a tally board, empty and dark at rest, a slip
+// of the role's colour pushed into it when lit, barred with iron when locked.
+function allocCell(col, locked) {
+  return (x, w, h) => {
+    const R = RNG('cell.alloc');
+    board(x, 0.5, 0.5, w - 1, h - 1, R, 'h', { tone: '#3a2415', hi: '#4f3320', lo: '#1a0f07' });
+    const s = rect(5, 5, w - 10, h - 10); trace(x, s, true); x.fillStyle = '#0d0805'; x.fill();
+    if (col) { trace(x, s, true); x.fillStyle = col; x.fill(); x.fillStyle = 'rgba(255,248,225,0.25)'; x.fillRect(5, 5, w - 10, 1.5); x.fillStyle = 'rgba(70,40,15,0.25)'; x.fillRect(5, h - 7, w - 10, 2); }
+    if (locked) iron(x, rect(3, h / 2 - 2, w - 6, 4), R);
+  };
+}
+const cells = {
+  'cell.idle': { size: [32, 28], m: [9, 9, 9, 9], draw: allocCell(null) },
+  'cell.lit': { size: [32, 28], m: [9, 9, 9, 9], draw: allocCell('#efdcae') },
+  'cell.warn': { size: [32, 28], m: [9, 9, 9, 9], draw: allocCell('#ee4a3c') },
+  'cell.accord': { size: [32, 28], m: [9, 9, 9, 9], draw: allocCell('#e2ad48') },
+  'cell.locked': { size: [32, 28], m: [9, 9, 9, 9], draw: allocCell(null, true) },
+  'bar.fill.accord': { size: [64, 10], m: [0, 8, 0, 6], draw: (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#f6dc8a'); g.addColorStop(1, RT.brassLo); x.fillStyle = g; x.fillRect(0, 1, w, h - 2); } },
+};
+const consoleKit = Object.assign({}, kit, {
+  'frame.panel': piece('cpanel', [220, 170], [30, 56, 30, 30], consolePanel),
+  'frame.inset': piece('cinset', [80, 60], [12, 12, 12, 12], consoleInset),
+  'strip.top': piece('cstrip.top', [560, 72], [12, 92, 12, 92], consoleStrip(false)),
+  'strip.bottom': piece('cstrip.bottom', [560, 72], [12, 92, 12, 92], consoleStrip(true)),
+  'plate.title': piece('slat', [160, 24], [0, 8, 0, 18], titleSlat),
+});
+for (const s of Object.keys(SLIP)) consoleKit['keyw.' + s] = { size: [144, 48], m: [0, 22, 0, 22], draw: slotKey(s, true) };
+const consoleHero = Object.assign({}, hero, {
+  // The name plate: the bounty sheet stops short of the Fleet key (x 370-456 by 6-36), a knife pinning its lower corner,
+  // the plank's bare end under the key.
+  'nameplate': (x, w, h) => {
+    const R = RNG('nameplate'), Rw = RNG('plate.wood');
+    board(x, 0.5, 0.5, w - 1, h - 1, Rw, 'h');
+    tally(x, 378, h - 15, 9, 9, Rw); knot(x, w - 22, h - 10, 2.4, Rw); nailHole(x, 8, 7, Rw);
+    iron(x, rect(0.5, 0.5, 10, h - 1), Rw, [[5.5, 8, 2.2], [5.5, h - 8, 2.2]]);
+    const p = tear([[13, 5], [352, 4], [362, 6], [361, h - 5], [220, h - 4], [13, h - 6]], true, 2, RNG('plate.edge'), 3, 0.05);
+    paper(x, p, RNG('plate.paper'), { stains: [[336, h - 16, 12]] });
+    x.save(); trace(x, p, true); x.clip(); burn(x, 348, h - 11, 4, R); grime(x, 34, h - 6, 24, 0.4); x.restore();
+    nail(x, 356, 9, 2.2, R);
+    seal(x, 32, h / 2, 17, R);
+    knife(x, 424, h - 3, 350, h - 13, 1.0, R);
+  },
+  'console.backing': (x, w, h) => ground(x, w, h),
+});
+for (const s of Object.keys(SLIP)) consoleHero['key.' + s] = slotKey(s, false);
+const heroSize = { 'console.backing': [480, 1080] };
+for (const s of Object.keys(SLIP)) heroSize['key.' + s] = [48, 48];
+// The bars as the bandolier: the skins page's spent, live and red rounds, and a whole one, nickel.
+const barCells = { 'bar.cell.off': kit['bar.cell.off'], 'bar.cell.on': kit['bar.cell.on'], 'bar.cell.warn': kit['bar.cell.warn'],
+  'bar.cell.ok': { size: [10, 16], gap: 1.5, draw: loop('ok') } };
+
+const api = {
+  id: 'redtithe', name: 'Red Tithe', RT, CC, kit: consoleKit, cells, barCells, live, icon: consoleIcon, iconSheet: icon, ICON_NAMES, ink, keyInk, font, fonts, lum, heroSize,
+  // The skins page's kit (mockup 4): its nine-slice pieces, hero pieces and column as they were.
+  nine: kit, heroSheet: hero, hero: consoleHero, ground, GROUND,
+  load: () => Promise.resolve(), family: '"Special Elite", monospace',
+  // The content inside a panel: clear of the boards (19 px), the corner straps and the knife in the bottom-right margin.
+  pad: [30, 28, 28, 28],
+  // The name plate's live field: on the bounty sheet, right of the seal (64-354), typed in black.
+  plate: { x: 62, y: 35, max: 290, font: '400 17px "Special Elite"', col: '#1a120c' },
+  // The battle's helm ring under the ship, in old paper.
+  ring: ['rgba(239,220,174,0)', 'rgba(239,220,174,0.14)', 'rgba(250,236,200,0.9)'],
+  // Names for the player's side where the page shows it as the Red Tithe: ships named for debts and their keeping,
+  // captains as the sheets name them, ranks by the share of the tithe a hand may take. Ours and provisional until the
+  // owner sets the Tithe's culture (CLAUDE.md section 1; openspec/changes/redtithe-battle-console, question R1).
+  player: { faction: 'Red Tithe', call: 'Tithe-taker', trim: 0xc4141c, hull: 0x4a301c,
+    ships: { resolute: ['Red Ledger', 'Capt. Hesk Varro'], tallis: ['Bone Tally', 'Capt. Morra Dask'], meridian: ['Last Due', 'Capt. Grell Anso'] },
+    ranks: ['Deckhand', 'Cutter', 'Bloodhand', 'Captain'],
+    officers: { o1: 'Tamsin Gall', o2: 'Rusk Odder', o3: 'Wen Harrow', o4: 'Kesk Mabry', o5: 'Lida Crane', o6: 'Ferro Dunn', o7: 'Haskel Bray', o8: 'Nell Scarrow',
+      o9: 'Coby Ashe', o10: 'Ulla Venn', o11: 'Pike Morrow', o12: 'Gant Sully', o13: 'Edda Rook' } },
+  link: '#e2ad48',
+  // Labels centred on the trap-jaw keys, on the paper slip between the stakes.
+  keyCenter: true, keyField: [24, 24],
+  // A hover name on a trap-jaw key eased open, in black on its slip.
+  tip: ['button.hover', 'hover'],
+  // Icon tabs (the station and ship rails) on the slot key, the icon in its slot.
+  iconKeys: true,
+  // Panel tab icons at rest in worn paper, apart from the functional icons' old paper; glyphs in an empty slot in old paper.
+  tabIcon: '#c0a27a', glyphOnDark: '#efdcae', mark: { hover: '#f6ecd2', ready: '#e2ad48', count: '#f6ecd2' },
+  // The strips at their full 72 px, the content, laid out for 56 px, moved down onto the tarred middle (7-65).
+  stripTop: { h: 72, dy: 10 }, stripBottom: { h: 72, dy: 0 },
+};
+window.FCSkins = window.FCSkins || {}; window.FCSkins.redtithe = api;
+return api;
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/skins/redtithe.js -->
+<script data-src="docs/mockups/skins/redtithe.js">
+// The Red Tithe skin (mockup 4, OpenSpec change console-skins): a second, more brutal pirate faction (owner,
+// 2026-11-07: "Id also like another pirate faction. One more brutal. Decorate their UI with sharp teeth, bullets and
+// blades. Blood stained buttons and crusty paper with burn marks and drops of blood and grime on them"; "More brown wood
+// on the red tithe"). Name and culture are ours and provisional. The look has one implementation,
+// docs/mockups/lib/redtithe.js (window.FCRedTithe, inlined before this module), shared with the battle console
+// (openspec/changes/redtithe-battle-console); this module keeps the skins page's own tokens (its CSS, type, title and plate
+// placement, world view and palette rows) and registers the skin with this page's registry (docs/mockups/skins).
+(function () {
+'use strict';
+const F = window.FCK, H = window.FCRedTithe, RT = H.RT;
+
 // ---- the skin -----------------------------------------------------------------------------------------------------
 F.register('redtithe', {
   name: 'Red Tithe', kind: 'Painted in canvas: crusted, bloodied bounty sheets nailed to scarred oak planks, strap iron and knives, trap-jaw keys, a bandolier for every bar', bg: RT.bg, sampleBg: RT.paper,
@@ -4849,36 +5514,8 @@ F.register('redtithe', {
   helmKeys: 'ring', helmR: 92, shield: [RT.brass, '#b8561c', RT.fresh],
   fonts: ['700 20px "Stardos Stencil"', '400 20px "Special Elite"'], view: { title: '400 28px "Special Elite"', body: '400 24px "Special Elite"', upper: true, ink: RT.bone, dim: RT.brass },
   // The column's ground: a wall of the hall's planks, drawn once at the column's size (a JPEG: it is all grain, and a PNG of it runs to megabytes).
-  build: () => Object.assign(F.fromPainters(kit, hero, icon, false), { column: F.paint(GROUND[0], GROUND[1], ground).toDataURL('image/jpeg', 0.88) }),
-  live: {
-    // A chevron stamped into the brass head of each chamber.
-    arrow: (x) => { x.fillStyle = 'rgba(30,18,6,0.9)'; x.beginPath(); x.moveTo(13, 0); x.lineTo(-3, -12); x.lineTo(-3, -5); x.lineTo(-12, -5); x.lineTo(-12, 5); x.lineTo(-3, 5); x.lineTo(-3, 12); x.closePath(); x.fill(); x.strokeStyle = 'rgba(255,230,160,0.45)'; x.lineWidth = 0.8; x.save(); x.translate(0.7, 0.9); x.stroke(); x.restore(); },
-    helmCentre: (x, c) => { x.fillStyle = '#1a1006'; x.font = '700 19px "Stardos Stencil"'; x.textAlign = 'center'; x.fillText('HOLD', c, c + 7); },
-    // The ship drawn in ink on the sheet; shields as heavy strokes in brass, rust and fresh blood by strength.
-    ssd: (x, cx, cy, sh, col) => {
-      for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.lineWidth = 7; x.lineCap = 'butt'; x.beginPath(); x.arc(cx, cy, 98, a - P / 6 + 0.1, a + P / 6 - 0.1); x.stroke(); x.strokeStyle = 'rgba(20,12,6,0.6)'; x.lineWidth = 0.8; x.stroke(); }
-      const hull = [[cx, cy - 76], [cx + 10, cy - 46], [cx + 34, cy - 30], [cx + 20, cy - 18], [cx + 22, cy + 14], [cx + 46, cy + 34], [cx + 18, cy + 36], [cx + 12, cy + 62], [cx, cy + 50], [cx - 12, cy + 62], [cx - 18, cy + 36], [cx - 46, cy + 34], [cx - 22, cy + 14], [cx - 20, cy - 18], [cx - 34, cy - 30], [cx - 10, cy - 46]];
-      trace(x, hull, true); x.fillStyle = 'rgba(40,26,14,0.12)'; x.fill(); x.strokeStyle = RT.ink; x.lineWidth = 2.2; x.lineJoin = 'miter'; x.stroke();
-      x.lineWidth = 1; x.beginPath(); x.moveTo(cx, cy - 40); x.lineTo(cx, cy + 40); x.moveTo(cx - 16, cy - 4); x.lineTo(cx + 16, cy - 4); x.stroke();
-      for (const [mx, my] of [[cx, cy - 58], [cx - 32, cy + 28], [cx + 32, cy + 28]]) { x.fillStyle = '#6b1810'; x.beginPath(); x.moveTo(mx, my - 7); x.lineTo(mx + 4, my + 4); x.lineTo(mx, my + 2); x.lineTo(mx - 4, my + 4); x.closePath(); x.fill(); }
-    },
-    // A bone needle on the dark face, contacts as brass pips.
-    dial: (x, c, cts) => {
-      x.strokeStyle = RT.bone; x.lineWidth = 2.4; x.lineCap = 'round'; x.beginPath(); x.moveTo(c - Math.cos(-0.9) * 8, c - Math.sin(-0.9) * 8); x.lineTo(c + Math.cos(-0.9) * 38, c + Math.sin(-0.9) * 38); x.stroke();
-      x.fillStyle = '#3a3e42'; x.beginPath(); x.arc(c, c, 4.5, 0, 2 * P); x.fill();
-      for (const [dx, dy] of cts) { x.fillStyle = RT.brassHi; x.beginPath(); x.moveTo(c + dx * 30, c + dy * 30 - 4); x.lineTo(c + dx * 30 + 3.5, c + dy * 30 + 3); x.lineTo(c + dx * 30 - 3.5, c + dy * 30 + 3); x.closePath(); x.fill(); }
-    },
-    // Toothed steel corners, a trap closing on the target.
-    bracket: (x, bx, by, bw, bh) => {
-      const R = RNG('bracket');
-      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
-        x.save(); x.translate(px, py); x.scale(sx, sy);
-        steel(x, [[0, 0], [48, 0], [48, 8], [8, 8], [8, 48], [0, 48]], R, { hi: '#9aa2a9', mid: '#565d63', lo: '#202326' });
-        saw(x, 12, 8, 46, 8, 4, 6, -1); saw(x, 8, 46, 8, 12, 4, 6, -1);
-        x.restore();
-      }
-    },
-  },
+  build: () => Object.assign(F.fromPainters(H.nine, H.heroSheet, (n) => H.iconSheet(n), false), { column: F.paint(H.GROUND[0], H.GROUND[1], H.ground).toDataURL('image/jpeg', 0.88) }),
+  live: H.live,
   world: ['Every crew boarded pays a tithe in blood; every debt is written on a sheet and nailed to the boards of the hall with a knife until it is paid.',
     'Raiders of many peoples; a captain\'s standing is counted in trophies taken from others: teeth of beaten crews, spent cartridges, broken blades, and tallies cut into the boards.',
     'Three traditions: the sheet-keepers\' ledgers and burned seals, the gunners\' bandoliers and brass, the cutters\' blades and traps. They build as they build their halls: oak planks bound with strap iron, steel only where it must bite or fire.',
