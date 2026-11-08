@@ -5,8 +5,8 @@
     "frame.panel": {
       "kind": "nine",
       "size": [
-        160,
-        120
+        1268,
+        1040
       ],
       "file": "frame.panel.png",
       "margins": [
@@ -159,7 +159,7 @@
     "strip.top": {
       "kind": "nine",
       "size": [
-        512,
+        1440,
         72
       ],
       "file": "strip.top.png",
@@ -174,7 +174,7 @@
     "strip.bottom": {
       "kind": "nine",
       "size": [
-        512,
+        1440,
         72
       ],
       "file": "strip.bottom.png",
@@ -291,6 +291,112 @@
       ],
       "file": "bar.cell.warn.png",
       "gap": 2
+    },
+    "console.column": {
+      "kind": "hero",
+      "size": [
+        480,
+        1080
+      ],
+      "file": "console.column.png"
+    },
+    "console.backing": {
+      "kind": "hero",
+      "size": [
+        480,
+        1080
+      ],
+      "file": "console.backing.png"
+    },
+    "plate.title": {
+      "kind": "nine",
+      "size": [
+        140,
+        24
+      ],
+      "file": "plate.title.png",
+      "margins": [
+        0,
+        18,
+        0,
+        18
+      ],
+      "stretch": "x"
+    },
+    "cell.idle": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.idle.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.lit": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.lit.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.warn": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.warn.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.accord": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.accord.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
+    },
+    "cell.locked": {
+      "kind": "nine",
+      "size": [
+        32,
+        28
+      ],
+      "file": "cell.locked.png",
+      "margins": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "stretch": "xy"
     }
   }
 }
