@@ -1110,7 +1110,7 @@ return { makeSpace, parallaxStars, shipModel, loadShips, nebulaMesh };
 // here (CLAUDE.md section 10), read with the two-channel trick so one 2D lookup gives 3D noise. It runs on WebGL 1 and 2.
 //
 //   const mat = FCPlanet.material(THREE, { kind: 'terran', seed: 7, ring: '#4f8fe8' });
-//   const quad = FCPlanet.billboard(THREE, mat, 1.6);   // a quad facing the camera, its foot at its origin, 1.6 units wide
+//   const quad = FCPlanet.billboard(THREE, mat, 1.2);   // a quad facing the camera, its foot at its origin, 1.2 units wide (the disc half that)
 //   each frame: mat.uniforms.uTime.value = seconds;
 //   FCPlanet.KINDS: the kinds and their palettes
 (function () {
@@ -1179,9 +1179,9 @@ return { makeSpace, parallaxStars, shipModel, loadShips, nebulaMesh };
     vec3 pick4(float t, vec3 c0, vec3 c1, vec3 c2, vec3 c3) { return t < 0.25 ? c0 : t < 0.5 ? c1 : t < 0.75 ? c2 : c3; }
     void main() {
       // pixelate: the disc is uPixels across (fine, so it reads drawn, not pixel art)
-      vec2 grid = floor(vUv * uPixels * 1.6) / (uPixels * 1.6) + 0.5 / (uPixels * 1.6);
-      vec2 p = (grid - 0.5) * 3.2;            // the quad spans 3.2 planet radii (room for the ring)
-      vec2 px = grid * uPixels * 1.6;          // pixel coordinates, for the hatching
+      vec2 grid = floor(vUv * uPixels * 2.0) / (uPixels * 2.0) + 0.5 / (uPixels * 2.0);
+      vec2 p = (grid - 0.5) * 4.0;            // the quad spans 4 planet radii: room for the ring at any tilt (owner, 2026-11-08: "planet rings ... are getting clipped")
+      vec2 px = grid * uPixels * 2.0;          // pixel coordinates, for the hatching
       float ct = cos(uTilt), st = sin(uTilt);
       vec2 q = vec2(ct * p.x + st * p.y, -st * p.x + ct * p.y);   // the planet's own frame, its axis tilted
       vec3 L = normalize(vec3(-0.55, 0.5, 0.67));                   // light from the upper left, as the lamp
@@ -3286,6 +3286,19 @@ function drawnTex(id, make) {
   if (!DRAWN.has(id)) { const d = make(), t = new THREE.CanvasTexture(d.canvas); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; DRAWN.set(id, { tex: t, foot: d.foot, aspect: d.canvas.width / d.canvas.height }); }
   return DRAWN.get(id);
 }
+// A cloud's shadow as the chart maker would lay it: a soft dark pool, edges feathered, cross-hatched in sepia through its
+// middle. One drawing, shared by every cloud.
+function cloudShadow() {
+  const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'), R = FCDrawn.rng(strSeed('cloud-shadow'));
+  const gr = g.createRadialGradient(N / 2, N / 2, N * 0.08, N / 2, N / 2, N * 0.48);
+  gr.addColorStop(0, 'rgba(8, 5, 3, 0.55)'); gr.addColorStop(0.6, 'rgba(8, 5, 3, 0.38)'); gr.addColorStop(1, 'rgba(8, 5, 3, 0)');
+  g.fillStyle = gr; g.fillRect(0, 0, N, N);
+  g.save(); g.beginPath(); g.ellipse(N / 2, N / 2, N * 0.36, N * 0.34, 0, 0, Math.PI * 2); g.clip();
+  FCDrawn.hatch(g, [0, 0, N, N], -0.8, N * 0.045, R, { w: 1.6, col: '#120a05', alpha: 0.45 });
+  FCDrawn.hatch(g, [0, 0, N, N], 0.8, N * 0.05, R, { w: 1.4, col: '#120a05', alpha: 0.35 });
+  g.restore();
+  return { canvas: c, foot: 1 };
+}
 function drawnSprite(d, width) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: d.tex, color: 0xe8e0d2, alphaTest: 0.08 }));
   s.center.set(0.5, 1 - d.foot); s.scale.set(width, width / d.aspect, 1);
@@ -3457,8 +3470,10 @@ function makeStandee(kind, fac, label, size = 1, ref, opts = {}) {
   } else if (MAP_LOOK.look === 'paper') {
     // on the paper chart a world is drawn live by the planet shader (lib/planet-shader.js): its kind, turning slowly, its
     // night side cross-hatched, ringed in its holder's colour
-    const w = 1.6 * size, mat = FCPlanet.material(THREE, { kind: PLANET_KIND[label] || 'moon', seed: strSeed(label), ring: FACTIONS[fac].color });
-    const q = FCPlanet.billboard(THREE, mat, w); q.position.y = 0.06 - w * 0.1875; g.add(q);
+    // the disc half the old sphere's size (owner, 2026-11-08: "they should be 1/2 size"); the quad twice the disc, so the
+    // ring fits, and stood high enough that its lower part, leaning toward the camera, stays clear of the paper
+    const d = 0.5 * size, w = 2 * d, mat = FCPlanet.material(THREE, { kind: PLANET_KIND[label] || 'moon', seed: strSeed(label), ring: FACTIONS[fac].color });
+    const q = FCPlanet.billboard(THREE, mat, w); q.position.y = 0.08 - (w - d) / 2 * 0.55; g.add(q);
     g.userData.planetMat = mat;
   } else {
     const r = 0.36 * size;
@@ -3565,10 +3580,15 @@ function buildMap() {
       // has three drawings, shared by its sectors.
       const R = rng(h.c * 17 + h.r * 5), reg = regions[key(h.c, h.r)], v = Math.floor(R() * 3);
       const d = drawnTex(`cloud:${reg.id}:${v}`, () => FCDrawn.cloud({ px: 256, main: reg.tint, accent: reg.accent, seed: reg.id * 31 + v * 7 + 1, storm: reg.id % 3 === 2 }));
-      const s = drawnSprite(d, 2.0 + R() * 0.45); s.position.set(p.x + (R() - 0.5) * 0.4, 0.03, p.z - 0.3 + (R() - 0.5) * 0.2); s.userData.fogKey = [h.c, h.r]; mapRoot.add(s);
+      const s = drawnSprite(d, 1.2 + R() * 0.3); s.position.set(p.x + (R() - 0.5) * 0.4, 0.06, p.z - 0.25 + (R() - 0.5) * 0.2); s.userData.fogKey = [h.c, h.r]; mapRoot.add(s);
+      // its shadow on the chart over the sector it hangs in (owner, 2026-11-08: "cast a shadow over the area of the map which
+      // they occupy"): a soft hatched patch lying on the paper, above the folds' highest ridge
+      const shTex = drawnTex('cloud-shadow', () => cloudShadow());
+      const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 1.55), new THREE.MeshBasicMaterial({ map: shTex.tex, transparent: true, depthWrite: false }));
+      sh.rotation.x = -Math.PI / 2; sh.position.set(p.x + (R() - 0.5) * 0.15, 0.033, p.z + 0.05); sh.renderOrder = 1; sh.userData.fogKey = [h.c, h.r]; mapRoot.add(sh);
       // a second, smaller puff in front, offset, in the same cloud's other drawing, so a cloud of sectors reads as a bank
       if (R() < 0.6) { const v2 = (v + 1) % 3, d2 = drawnTex(`cloud:${reg.id}:${v2}`, () => FCDrawn.cloud({ px: 256, main: reg.tint, accent: reg.accent, seed: reg.id * 31 + v2 * 7 + 1, storm: reg.id % 3 === 2 }));
-        const s2 = drawnSprite(d2, 1.2 + R() * 0.3); s2.position.set(p.x + (R() < 0.5 ? -1 : 1) * (0.35 + R() * 0.2), 0.03, p.z + 0.15 + R() * 0.2); s2.userData.fogKey = [h.c, h.r]; mapRoot.add(s2); }
+        const s2 = drawnSprite(d2, 0.75 + R() * 0.2); s2.position.set(p.x + (R() < 0.5 ? -1 : 1) * (0.3 + R() * 0.15), 0.06, p.z + 0.12 + R() * 0.15); s2.userData.fogKey = [h.c, h.r]; mapRoot.add(s2); }
     }
     if (h.terrain === 'nebula' && !paper) {
       // A cloud in depth: puffs at several heights, big and dim low, smaller and brighter on top.

@@ -12,7 +12,7 @@
 // here (CLAUDE.md section 10), read with the two-channel trick so one 2D lookup gives 3D noise. It runs on WebGL 1 and 2.
 //
 //   const mat = FCPlanet.material(THREE, { kind: 'terran', seed: 7, ring: '#4f8fe8' });
-//   const quad = FCPlanet.billboard(THREE, mat, 1.6);   // a quad facing the camera, its foot at its origin, 1.6 units wide
+//   const quad = FCPlanet.billboard(THREE, mat, 1.2);   // a quad facing the camera, its foot at its origin, 1.2 units wide (the disc half that)
 //   each frame: mat.uniforms.uTime.value = seconds;
 //   FCPlanet.KINDS: the kinds and their palettes
 (function () {
@@ -81,9 +81,9 @@
     vec3 pick4(float t, vec3 c0, vec3 c1, vec3 c2, vec3 c3) { return t < 0.25 ? c0 : t < 0.5 ? c1 : t < 0.75 ? c2 : c3; }
     void main() {
       // pixelate: the disc is uPixels across (fine, so it reads drawn, not pixel art)
-      vec2 grid = floor(vUv * uPixels * 1.6) / (uPixels * 1.6) + 0.5 / (uPixels * 1.6);
-      vec2 p = (grid - 0.5) * 3.2;            // the quad spans 3.2 planet radii (room for the ring)
-      vec2 px = grid * uPixels * 1.6;          // pixel coordinates, for the hatching
+      vec2 grid = floor(vUv * uPixels * 2.0) / (uPixels * 2.0) + 0.5 / (uPixels * 2.0);
+      vec2 p = (grid - 0.5) * 4.0;            // the quad spans 4 planet radii: room for the ring at any tilt (owner, 2026-11-08: "planet rings ... are getting clipped")
+      vec2 px = grid * uPixels * 2.0;          // pixel coordinates, for the hatching
       float ct = cos(uTilt), st = sin(uTilt);
       vec2 q = vec2(ct * p.x + st * p.y, -st * p.x + ct * p.y);   // the planet's own frame, its axis tilted
       vec3 L = normalize(vec3(-0.55, 0.5, 0.67));                   // light from the upper left, as the lamp
