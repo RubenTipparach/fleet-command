@@ -24,6 +24,9 @@
 - [x] 1.12 The planets drawn live by our planet shader (`docs/mockups/lib/planet-shader.js`, after Francisco Cidade's CC0 Pixel
   Planet: six kinds, spinning, clouds, caps, rings, finer pixels, cross-hatched night sides), and the clouds, rocks and sun
   cross-hatched in three zones (owner, 2026-11-08: "More cross hatch", "less pixelated") (mockup 1 v27, mockup 34 v5)
+- [x] 1.13 Planets half size and whole, clouds smaller with hatched shadows over their sectors (owner, 2026-11-08: "planet rings
+  and the bottom of the planet are getting clipped. they should be 1/2 size", "can the clouds be smaller? and cast a shadow") (mockup 1
+  v28, mockup 34 v6)
 
 ## 2. After the owner's notes
 
