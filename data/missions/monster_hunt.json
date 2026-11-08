@@ -1,0 +1,58 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "monster_hunt",
+ "name": "Monster hunt",
+ "glyph": "M",
+ "type": "Monster",
+ "reward_cr": 1000,
+ "weight": 0.4,
+ "where": "(nebula || asteroids) && !port",
+ "objective": "Kill the creature loose in the sector, or drive it off.",
+ "brief": "Something alive is hunting ships here: a void leviathan, long as a cruiser, drawn by drive wakes. Kill it or drive it off before it takes another freighter.",
+ "battle": [
+  {
+   "intel": "One contact, not a ship",
+   "groups": [
+    {
+     "id": "beast",
+     "faction": "fauna",
+     "count": 1,
+     "role": "enemy",
+     "label": "Void leviathan",
+     "hull": "monster",
+     "range_km": 90,
+     "tag": "flagship",
+     "ship_name": "Void leviathan"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "kill",
+     "text": "Kill or drive off the leviathan",
+     "primary": true,
+     "done": "alive(beast) == 0"
+    },
+    {
+     "id": "scan",
+     "text": "Scan it before it dies",
+     "done": "scanned(beast) >= 1"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 4
+   },
+   "log": "The leviathan is dead."
+  }
+ ]
+}

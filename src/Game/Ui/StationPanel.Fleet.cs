@@ -27,7 +27,7 @@ public sealed partial class StationPanel
         float x = b.Position.X, y = b.Position.Y;
         Ship[] own = B.FleetAll();
         Ship f = (X.State.FleetPick is { } pick ? B.ShipById(pick) : null) is { } p && p.Side == Me.Side ? p : Me;
-        Tabs("fl", new Rect2(x, y, b.Size.X, 40), own.Select(o => (o.Id, o.Name)).ToArray(), f.Id, id => X.State.FleetPick = id, id => B.ShipById(id) is not { Alive: true });
+        Tabs("fl", new Rect2(x, y, b.Size.X, 40), own.Select(o => (o.Id, o.Name)).ToArray(), f.Id, id => X.State.FleetPick = id, id => B.ShipById(id) is not { Alive: true, Absent: false });   // a ship not yet arrived cannot be picked
         y += 46;
         double hull = f.Hull / f.Class.HullHp;
         y += Bar(x, y, b.Size.X, $"{f.Name} · {f.Class.Name} · hull", hull, hull < 0.35) + 12;

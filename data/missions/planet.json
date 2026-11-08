@@ -1,30 +1,74 @@
 {
- "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
  "id": "planet",
  "name": "Planetary assault",
  "glyph": "A",
  "type": "Planetary assault",
- "reward_cr": 1000,
+ "reward_cr": 1200,
  "where": "planet != '' && hostile",
- "objective": "Destroy the orbital defence squadron.",
- "brief": "The orbital squadron over {sector_planet} covers the approach. Silence it. (The planet's own guns join the battle once planets are built.)",
+ "objective": "Silence every orbital battery over {sector_planet}.",
+ "brief": "{sector_planet}'s orbital batteries cover the approach for the {sector_owner_name}. Silence every battery; the orbital squadron will try to stop you. Survey the planet first to find the batteries on the ground, and an away team can spike a gun as well as a broadside can.",
  "battle": [
   {
+   "intel": "Batteries in orbit, a squadron",
+   "planets": [
+    {
+     "id": "world",
+     "name": "{sector_planet}",
+     "kind": "terran",
+     "bearing_deg": 0,
+     "range_km": 90,
+     "radius_km": 14,
+     "sites": [
+      {
+       "id": "guns",
+       "name": "Ground battery",
+       "kind": "battery",
+       "lat_deg": 20,
+       "lon_deg": 30,
+       "hostile": true,
+       "garrison": 3
+      },
+      {
+       "id": "port",
+       "name": "Spaceport",
+       "kind": "city",
+       "lat_deg": -10,
+       "lon_deg": -40
+      }
+     ]
+    }
+   ],
    "groups": [
+    {
+     "id": "batteries",
+     "faction": "{sector_owner}",
+     "count": "strength + 1",
+     "role": "enemy",
+     "label": "Orbital battery",
+     "hull": "battery",
+     "at_planet": "world"
+    },
     {
      "id": "orbit",
      "faction": "{sector_owner}",
      "count": "strength",
      "role": "enemy",
-     "label": "Orbital squadron"
+     "label": "Orbital squadron",
+     "range_km": 60
     }
    ],
    "objectives": [
     {
-     "id": "win",
-     "text": "Destroy the orbital squadron",
+     "id": "guns",
+     "text": "Silence the orbital batteries",
      "primary": true,
-     "done": "alive(enemies) == 0"
+     "done": "alive(batteries) == 0"
+    },
+    {
+     "id": "ground",
+     "text": "Spike the ground battery",
+     "done": "secured('world') >= 1"
     },
     {
      "id": "intact",
@@ -40,8 +84,9 @@
    "credits": "pay",
    "standing": {
     "{sector_owner}": -8,
-    "{side}": 4
-   }
+    "{side}": 5
+   },
+   "log": "The guns over {sector_planet} are silent."
   }
  ]
 }

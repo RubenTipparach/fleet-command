@@ -30,10 +30,10 @@ public sealed partial class StationPanel
         // as many contacts as fit above the keys at the foot (five docked, twelve expanded at most)
         float foot = b.End.Y - 48 - 6;
         int fit = Math.Max(0, (int)((foot - y + 4) / 44));
-        Ship[] foes = B.EnemiesOf(s).OrderBy(o => Rules.DistKm(s, o)).ThenBy(o => o.Order).Take(Math.Min(Big ? 12 : 5, fit)).ToArray();
+        Ship[] foes = B.SeenFoes(s).OrderBy(o => Rules.DistKm(s, o)).ThenBy(o => o.Order).Take(Math.Min(Big ? 12 : 5, fit)).ToArray();
         foreach (Ship f in foes) { Contact(f, x, y, lw); y += 44; }
         if (foes.Length == 0) Lbl("No contacts", x, y + 14);
-        if (Big) Matrix(x + lw + 24, b.Position.Y, b.Size.X - lw - 24, b.Size.Y - 60, B.EnemiesOf(s).OrderBy(o => Rules.DistKm(s, o)).ThenBy(o => o.Order).Take(6).ToArray());
+        if (Big) Matrix(x + lw + 24, b.Position.Y, b.Size.X - lw - 24, b.Size.Y - 60, B.SeenFoes(s).OrderBy(o => Rules.DistKm(s, o)).ThenBy(o => o.Order).Take(6).ToArray());
         float hw = (lw - 6) / 2, by = b.End.Y - 48;
         Ship? t = B.TargetOf(s);
         Button("tac.pin", new Rect2(x, by, hw, 48), "Pin weapons", () => B.PinSelected(),
@@ -48,10 +48,10 @@ public sealed partial class StationPanel
         bool on = s.Target == f.Id;
         var r = new Rect2(x, y, w, 40);
         string id = f.Id;
-        HitState st = Ui.Reg($"ct.{f.Id}", r, _ => B.Lock(id), null, new Tip(f.Name, new (string, string, Color?)[] { ("Class", f.Class.Name, null), ("Range", $"{Rules.DistKm(s, f):0.0} km", null) }));
+        HitState st = Ui.Reg($"ct.{f.Id}", r, _ => B.Lock(id), null, new Tip(Aiming.ContactName(B, f), new (string, string, Color?)[] { ("Class", Aiming.ContactClass(B, f), null), ("Range", $"{Rules.DistKm(s, f):0.0} km", null) }));
         if (on || st.Hot) Kit.Shape(this, r, 20, on ? C.Deep : new Color(C.Deep, 0.5f));
         DrawCircle(new Vector2(x + 18, y + 20), 7, Aiming.ContactColor(C, s, f), true, -1, true);
-        Text(Big ? $"{f.Name} · {f.Class.Name}" : f.Name, x + 34, y + 27, 20, C.Text, HorizontalAlignment.Left, w - 34 - 150);
+        Text(Big ? $"{Aiming.ContactName(B, f)} · {Aiming.ContactClass(B, f)}" : Aiming.ContactName(B, f), x + 34, y + 27, 20, C.Text, HorizontalAlignment.Left, w - 34 - 150);
         Lbl($"{Geometry.HeadingDeg(Rules.Bearing(s, f.X, f.Z)):000}", x + w - 96, y + 26, 0, C.Lilac, HorizontalAlignment.Right);
         Num($"{Rules.DistKm(s, f):0.0} km", x + w - 8, y + 28, 0, C.Sky, HorizontalAlignment.Right, 20);
     }

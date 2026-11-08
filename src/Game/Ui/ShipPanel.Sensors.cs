@@ -22,7 +22,7 @@ public sealed partial class ShipPanel
         int friendly = B.Ships.Count(o => o.Alive && o.Side == s.Side) - 1;
         Pairs("se.2", x, y, new (string, string, Color?)[] { ("Hostile", B.SeenFoes(s).Count().ToString(), null), ("Friendly", friendly.ToString(), null) });
         y += 34;
-        if (t != null && t.Side != s.Side) Pairs("se.3", x, y, new (string, string, Color?)[] { ("Lock", t.Name, null), ("Their ECM", t.Ecm.ToString(), null) });
+        if (t != null && t.Side != s.Side) Pairs("se.3", x, y, new (string, string, Color?)[] { ("Lock", Aiming.ContactName(B, t), null), ("Their ECM", t.Ecm.ToString(), null) });
         else Lbl("No lock", x, y);
     }
 }

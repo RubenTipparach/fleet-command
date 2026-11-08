@@ -1,5 +1,5 @@
 // BattleView.Comms: comms and transport in 3D (the battle console mockup's syncPlanets, beamFx, beamPair and beamStream):
-// a scene's planets as spheres sunk a little below the battle plane, and the transporter effect for every beam the battle
+// a scene's planets (drawn by BattleView.Planets), and the transporter effect for every beam the battle
 // records (Battle.Beams): at each end a column of light filled with climbing motes (transporter.gdshader), a ring spreading
 // on the plane and a flash, a planet's end wider; and a stream of motes flying from the sender to the receiver on a low arc
 // (owner, 2026-11-03: "I want particles flying from one ship to the other ... so that I can tell what ship transported to
@@ -33,7 +33,6 @@ public sealed partial class BattleView
 
     private Battle? _commsFor;
     private long _beamSeen;
-    private Node3D? _planets;
     private readonly List<BeamFxNode> _beamFx = new();
     private readonly List<StreamFx> _streams = new();
     private static Shader? _tpShader;
@@ -50,17 +49,7 @@ public sealed partial class BattleView
             foreach (BeamFxNode n in _beamFx) { n.Column.QueueFree(); n.Ring.QueueFree(); n.Flash.QueueFree(); }
             foreach (StreamFx s in _streams) s.Motes.QueueFree();
             _beamFx.Clear(); _streams.Clear();
-            _planets?.QueueFree();
-            _planets = new Node3D { Name = "Planets" };
-            AddChild(_planets);
-            foreach (Planet p in b.Planets)
-            {
-                float r = (float)(p.RadiusM / MPerU);
-                var m = new MeshInstance3D { Name = p.Id, Mesh = new SphereMesh { Radius = r, Height = 2 * r, RadialSegments = 48, Rings = 32 },
-                    MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(p.Color), Roughness = 0.85f } };
-                _planets.AddChild(m);
-                m.Position = new Vector3((float)(p.X / MPerU), -r * 0.35f, (float)(p.Z / MPerU));
-            }
+            BuildPlanets(b);
         }
         BeamFxDef fx = b.Comms.Fx;
         foreach (BeamEvent e in b.Beams)

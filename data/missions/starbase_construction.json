@@ -1,0 +1,70 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "starbase_construction",
+ "name": "Starbase construction",
+ "glyph": "=",
+ "type": "Starbase construction",
+ "reward_cr": 1100,
+ "weight": 0.4,
+ "where": "plain && own && dist_home >= 2",
+ "objective": "Guard the station frame until it is finished: three minutes.",
+ "brief": "Builders are raising a new station here. Its frame cannot fight. {enemy_name} raiders will try to wreck it before it is closed up: guard it until it is done.",
+ "battle": [
+  {
+   "intel": "Raiders",
+   "time_limit_s": 180,
+   "groups": [
+    {
+     "id": "frame",
+     "faction": "{side}",
+     "count": 1,
+     "role": "ally",
+     "label": "Station frame",
+     "hull": "outpost"
+    },
+    {
+     "id": "raiders",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders",
+     "range_km": 90,
+     "arrive_s": 30
+    },
+    {
+     "id": "more",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders",
+     "range_km": 90,
+     "bearing_deg": 120,
+     "arrive_s": 110
+    }
+   ],
+   "objectives": [
+    {
+     "id": "built",
+     "text": "The station finished",
+     "primary": true,
+     "done": "time_up && alive(frame) > 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 5
+   },
+   "log": "The new station is closed up."
+  }
+ ]
+}

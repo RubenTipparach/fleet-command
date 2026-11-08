@@ -1,0 +1,83 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "sabotage",
+ "name": "Sabotage",
+ "glyph": ">",
+ "type": "Planetary assault",
+ "reward_cr": 1100,
+ "weight": 0.4,
+ "where": "planet != '' && hostile",
+ "objective": "Beam a demolition team down to the {sector_owner_name} fuel depot on {sector_planet}.",
+ "brief": "The {sector_owner_name} fleet here fuels at a depot on {sector_planet}. Its shield is too strong for a bombardment; an away team can do it from the inside. Survey, beam down, take the depot.",
+ "needs": [
+  {
+   "if": "marines < 3",
+   "say": "The depot is guarded: carry at least 3 marines."
+  }
+ ],
+ "battle": [
+  {
+   "intel": "Guards in orbit",
+   "planets": [
+    {
+     "id": "world",
+     "name": "{sector_planet}",
+     "kind": "desert",
+     "bearing_deg": 15,
+     "range_km": 90,
+     "radius_km": 12,
+     "sites": [
+      {
+       "id": "depot",
+       "name": "Fuel depot",
+       "kind": "outpost",
+       "lat_deg": 10,
+       "lon_deg": 40,
+       "hostile": true,
+       "garrison": 3
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "id": "guard",
+     "faction": "{sector_owner}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Orbital guard",
+     "range_km": 60
+    }
+   ],
+   "objectives": [
+    {
+     "id": "depot",
+     "text": "Take the fuel depot",
+     "primary": true,
+     "done": "secured('world') >= 1"
+    },
+    {
+     "id": "guard",
+     "text": "Destroy the orbital guard",
+     "done": "alive(guard) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -8,
+    "{side}": 5
+   },
+   "log": "The depot on {sector_planet} is wrecked."
+  }
+ ]
+}

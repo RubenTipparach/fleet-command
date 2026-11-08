@@ -103,6 +103,7 @@ public sealed partial class Battle
         TractorSetup();
         CommsSetup();   // the crews first: the marines aboard, which the security teams are formed from
         CloakSetup();
+        FieldSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -226,6 +227,10 @@ public sealed partial class Battle
     partial void SecurityStep(double dt);
     partial void TargetingStep(double dt);
     partial void FleetStep(double dt);
+    /// <summary>Field operations (Battle.Field): late arrivals, sleepers, planets and away teams set up from the scenario.</summary>
+    partial void FieldSetup();
+    partial void FieldPreMove(double dt);
+    partial void FieldStep(double dt);
     /// <summary>Called once a battle is built, for each system to set its own state up from the scenario.</summary>
     partial void SystemsSetup();
     /// <summary>The scene ends systems have registered: each is checked after every step, before the default end (the
@@ -263,12 +268,15 @@ public sealed partial class Battle
         }
         Ship p = Player;
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
-        foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
+        FieldPreMove(dt);
+        foreach (Ship s in _ships) if (s.Alive && !s.Absent && !s.Fixed) Move(s, dt);
         ChargeStep(dt);
         // the mockup's other systems, each in its own file (Battle.<System>.cs; a hook with no body costs nothing)
         CommsStep(dt); TransportStep(dt); TractorStep(dt); MinesStep(dt); CraftStep(dt); ReactorStep(dt); WarpStep(dt);
         RepairCrewsStep(dt); CloakStep(dt); SensorsStep(dt); SecurityStep(dt); TargetingStep(dt); FleetStep(dt);
         RangeStep(dt);
+        FieldStep(dt);
+        if (Over != null) return;
         MarkersStep();
         PointDefenceStep();
         CountermeasuresStep(dt);
@@ -414,6 +422,8 @@ public sealed partial class Battle
 
     private void Think(Ship s)
     {
+        if (s.Absent || s.Dormant) return;
+        if (s.Runs) { s.VOrder = Rules.MaxSpeed(s); return; }
         bool handled = false;
         ThinkHook(s, ref handled);
         if (handled) return;
@@ -452,6 +462,7 @@ public sealed partial class Battle
     {
         if (!Rules.Ready(m) || !Rules.InArc(s, m, t) || !Rules.InRange(s, m, t)) return false;
         if (s.Cloaking || !CanLock(s, t)) return false;   // no fire while cloaking, none at what cannot be locked (Battle.Cloak.cs)
+        _firstFire ??= s.Side;
         string a = aim ?? s.Aim;
         WeaponMode w = Rules.Mode(m);
         bool hit = _hit.Next() < Rules.HitChance(s, m, t, a);

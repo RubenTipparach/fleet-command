@@ -1,0 +1,73 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "crossroads",
+ "name": "Crossroads",
+ "glyph": "^",
+ "type": "Crossroads",
+ "reward_cr": 800,
+ "weight": 0.4,
+ "where": "plain && (own || neutral) && dist_home >= 2",
+ "objective": "Hold the junction: stop the raiders and harm none of the passing traffic.",
+ "brief": "Neutral traffic keeps passing through this junction and {enemy_name} raiders are picking it off. Stop the raiders without harming the passers.",
+ "battle": [
+  {
+   "intel": "Traffic and raiders",
+   "groups": [
+    {
+     "id": "traffic",
+     "faction": "neutral",
+     "count": 3,
+     "role": "neutral",
+     "label": "Passing traffic",
+     "hull": "freighter"
+    },
+    {
+     "id": "raiders",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders",
+     "range_km": 80
+    },
+    {
+     "id": "more",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders",
+     "range_km": 80,
+     "bearing_deg": -90,
+     "arrive_s": 90
+    }
+   ],
+   "objectives": [
+    {
+     "id": "stop",
+     "text": "Stop the raiders",
+     "primary": true,
+     "done": "alive(raiders) + alive(more) == 0"
+    },
+    {
+     "id": "safe",
+     "text": "Harm none of the traffic",
+     "done": "destroyed(traffic) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 4
+   },
+   "log": "The junction is safe."
+  }
+ ]
+}

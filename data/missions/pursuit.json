@@ -1,0 +1,58 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "pursuit",
+ "kind": "event",
+ "name": "Hunted",
+ "glyph": "!",
+ "type": "Ambushed",
+ "reward_cr": 400,
+ "takes": [
+  "hunters",
+  "hunter_fac",
+  "hunter_size"
+ ],
+ "follow_group": true,
+ "where": "plain || !plain",
+ "objective": "Beat the {hunters} or slip away.",
+ "brief": "The {hunters} have run you down: {hunter_size} ships sent after you for crossing their space. Fight, or withdraw and keep moving. They will send more while you stay in their space.",
+ "battle": [
+  {
+   "intel": "{hunter_size} hunters",
+   "groups": [
+    {
+     "id": "hunters",
+     "faction": "{hunter_fac}",
+     "count": "hunter_size",
+     "role": "enemy",
+     "label": "{hunters}",
+     "range_km": 70
+    }
+   ],
+   "objectives": [
+    {
+     "id": "beat",
+     "text": "Beat the hunters",
+     "primary": true,
+     "by_withdraw": false,
+     "done": "alive(hunters) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{hunter_fac}": -3
+   },
+   "disband": true,
+   "log": "The {hunters} were beaten off."
+  }
+ ]
+}

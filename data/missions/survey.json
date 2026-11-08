@@ -1,0 +1,83 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "survey",
+ "name": "Survey",
+ "glyph": "Y",
+ "type": "Survey",
+ "reward_cr": 700,
+ "weight": 0.4,
+ "where": "planet != '' && !hostile",
+ "objective": "Survey {sector_planet} and hold while its data comes in.",
+ "brief": "Science wants {sector_planet} charted: what is built on it and where. Close to survey range, scan the planet and stay until it reports. Raiders have been seen.",
+ "battle": [
+  {
+   "intel": "Possible raiders",
+   "planets": [
+    {
+     "id": "world",
+     "name": "{sector_planet}",
+     "kind": "desert",
+     "bearing_deg": 0,
+     "range_km": 110,
+     "radius_km": 12,
+     "sites": [
+      {
+       "id": "camp",
+       "name": "Prospectors' camp",
+       "kind": "mine",
+       "lat_deg": 15,
+       "lon_deg": 20
+      },
+      {
+       "id": "ruin",
+       "name": "Old ruin",
+       "kind": "ruin",
+       "lat_deg": -30,
+       "lon_deg": -60
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "id": "raiders",
+     "faction": "vos",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders",
+     "range_km": 110,
+     "bearing_deg": 150,
+     "arrive_s": 70
+    }
+   ],
+   "objectives": [
+    {
+     "id": "survey",
+     "text": "Survey {sector_planet}",
+     "primary": true,
+     "done": "surveyed('world')"
+    },
+    {
+     "id": "raiders",
+     "text": "Drive off the raiders",
+     "done": "alive(raiders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 3
+   },
+   "log": "{sector_planet} is charted."
+  }
+ ]
+}

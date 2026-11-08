@@ -114,6 +114,10 @@ public sealed class FactionFleet
     public double Dir { get; set; }
     public int? GoalC { get; set; }
     public int? GoalR { get; set; }
+    /// <summary>Hunters sent after your fleet by a hostile faction (Campaign.Pursue): they make for the fleet each turn; once
+    /// the alarm dies down they are Recalled and go home, where they disband.</summary>
+    public bool Pursuit { get; set; }
+    public bool Recalled { get; set; }
 }
 
 /// <summary>A freighter running between two of its faction's ports, one sector a turn, turning back at each end. One that
@@ -209,6 +213,8 @@ public sealed class CampaignState
     /// <summary>Every sector, column-major: index c * Rows + r.</summary>
     public List<Sector> Sectors { get; set; } = new();
     public List<FactionFleet> Groups { get; set; } = new();
+    /// <summary>Each hostile faction's alarm at your fleet in its territory (Campaign.Pursue).</summary>
+    public Dictionary<string, int> Heat { get; set; } = new();
     public List<Freighter> Freighters { get; set; } = new();
     public List<CampShip> Fleet { get; set; } = new();
     public int AtC { get; set; }

@@ -96,3 +96,18 @@ shot kelvane-phone-landscape 844x390 --steps=600 --scenario=kelvane_battle
 shot kelvane-phone-portrait 390x844 --steps=600 --scenario=kelvane_battle
 shot kelvane-phone-weapons 844x390 --steps=600 --scenario=kelvane_battle --expand=weapons
 shot kelvane-phone-portrait-station 390x844 --steps=600 --scenario=kelvane_battle --station=power --expand=station
+# field operations (openspec/changes/mission-systems): planets ported from Falchion and godot-sandbox, the planet view down
+# to the surface, found sites and an away team, Scan planet and the Transport station's Sites, unknown contacts beyond the
+# sensors, and each placeholder stand-in (into docs/screenshots/game/mission-systems/ when run with that folder)
+MS="--scenario=concord_relief --steps=60"
+shot ms-planet-battle 1920x1080 $MS --select-planet
+for k in terran ocean desert ice lava barren gas; do shot "ms-planet-$k" 1920x1080 $MS --planet-kind=$k --planet-view=1.4 --yaw=1.9 --pitch=0.3; done
+shot ms-planet-surface 1920x1080 $MS --planet-view=0.012 --pitch=0.35
+shot ms-planet-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --planet-view=0.5 --yaw=0 --pitch=0.42
+shot ms-planet-sites-close 1920x1080 $MS --sites --survey --secure --near-planet --beam --planet-view=0.12 --yaw=-0.05 --pitch=0.3
+shot ms-science-planet 1920x1080 $MS --sites --near-planet --select-planet --station=science
+shot ms-transport-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --select-planet --station=transport --tab=cargo --cargo-view=sites
+shot ms-unknown-contact 1920x1080 --steps=10
+for c in yd:krai ab:krai op:krai pb:krai mon:fauna pod:krai; do
+  shot "ms-standin-${c%%:*}" 1920x1080 --steps=300 --swap=kharz:$c --target=kharz --target-view --zoom=0.5
+done

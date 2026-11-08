@@ -1,0 +1,68 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "defend_base",
+ "name": "Base defence",
+ "glyph": "U",
+ "type": "Defence",
+ "reward_cr": 1000,
+ "weight": 0.4,
+ "where": "station != '' && own",
+ "objective": "Hold {sector_station} against the attack.",
+ "brief": "{enemy_name} ships are on their way to {sector_station}. Hold the station: it has guns of its own, and the attack comes in waves.",
+ "battle": [
+  {
+   "intel": "Waves of attackers",
+   "groups": [
+    {
+     "id": "base",
+     "faction": "{side}",
+     "count": 1,
+     "role": "ally",
+     "label": "{sector_station}",
+     "hull": "station"
+    },
+    {
+     "id": "wave1",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "First wave",
+     "range_km": 110
+    },
+    {
+     "id": "wave2",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Second wave",
+     "range_km": 120,
+     "bearing_deg": 60,
+     "arrive_s": 90
+    }
+   ],
+   "objectives": [
+    {
+     "id": "hold",
+     "text": "Keep {sector_station} standing",
+     "primary": true,
+     "done": "alive(base) > 0 && alive(enemies) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 5
+   },
+   "log": "{sector_station} held."
+  }
+ ]
+}

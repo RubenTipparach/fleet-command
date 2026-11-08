@@ -79,7 +79,7 @@ public sealed partial class MapHud : FlowPanel
             string t = $"{c.Data.Factions[f].Short} {(st > 0 ? "+" : "")}{st}";
             float w = X.Fonts.Width(t, 17, 600) + 30;
             var chip = new Rect2(cx, 32, w, 26);
-            Ui.Reg($"top.st.{f}", chip, null, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", st.ToString(), null), ("Ports", st >= 0 ? "open to you" : "closed to you", st >= 0 ? C.Accord : C.Alert) }));
+            Ui.Reg($"top.st.{f}", chip, null, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", st.ToString(), null), ("Ports", c.GrantsOf(f) is { Count: > 0 } gr ? string.Join(", ", gr) : st >= 0 ? "market only" : "closed to you", st >= 0 ? C.Accord : C.Alert) }));
             Shapes.RoundRect(this, chip, new Color(Sk.R.Plate, 0.9f), 6);
             DrawRect(new Rect2(chip.Position + new Vector2(8, 9), new Vector2(9, 9)), FacColor(f));
             Text(t, chip.Position.X + 22, chip.Position.Y + 19, 17, C.Text, HorizontalAlignment.Left, w, 600);
@@ -166,8 +166,10 @@ public sealed partial class MapHud : FlowPanel
         Terrain t = c.TerrainOf(h);
         // the freighters here that your ships see; with the fleet beside one, her encounter's key (an escort or a raid)
         var freighters = seen || here ? c.FreightersAt(col, row) : new List<Freighter>();
+        // in a hostile faction's space, its alarm at your fleet and its hunters (Campaign.Alarm)
+        string? alarmFac = here && c.Hostile(h) && c.Data.Factions.ContainsKey(h.Owner) ? h.Owner : null;
         bool hauls = here && c.HaulValue > 0, kits = here && (c.Kits > 0 || c.S.Fleet.Any(s => s.HullPct < 100));
-        float hgt = 286 + missions.Count * 84 + (groups.Count > 0 ? 28 : 0) + (!here && !t.Impassable ? 56 : 0) + (market ? 54 : 0)
+        float hgt = 286 + missions.Count * 84 + (groups.Count > 0 ? 28 : 0) + (alarmFac != null ? 28 : 0) + (!here && !t.Impassable ? 56 : 0) + (market ? 54 : 0)
             + freighters.Count * 54 + (hauls ? 54 : 0) + (kits ? 54 : 0);
         Rect2 b = Sheet(SidePanel(hgt), here ? "Your position" : "Selected sector");
         float x = b.Position.X, y = b.Position.Y + 30, w = b.Size.X;
@@ -183,6 +185,13 @@ public sealed partial class MapHud : FlowPanel
         if (groups.Count > 0)
         {
             Text(string.Join(", ", groups.Select(g => $"{g.Name} ({g.Size} {(g.Size > 1 ? "ships" : "ship")})")), x, y, 17, C.Text, HorizontalAlignment.Left, w, 600);
+            y += 28;
+        }
+        if (alarmFac != null)
+        {
+            int lv = c.AlarmLevel(alarmFac), n = c.HuntersOf(alarmFac)?.Size ?? 0;
+            Text($"{FacName(alarmFac)} alarm {lv} of {c.Data.Rules.Pursuit.Levels.Count}" + (n > 0 ? $" · {n} hunters after you" : " · no hunters yet"),
+                x, y, 17, lv > 0 ? C.Alert : C.Lilac, HorizontalAlignment.Left, w, 600);
             y += 28;
         }
         if (!here && !t.Impassable)
@@ -238,18 +247,20 @@ public sealed partial class MapHud : FlowPanel
             y += 54;
         }
         // the port where the fleet stands: its keys, open only at a friendly port; a port that deals with you has a market
-        string plate = port ? $"Port: {at.PortName}" : market ? $"{FacName(at.Owner)} port: {at.PortName}"
+        string plate = port ? $"Port: {at.PortName}" : market ? $"{FacName(at.Owner)} port: {at.PortName} · standing {c.Standing(at.Owner)}"
             : at.IsPort ? $"Closed to you: standing {c.Standing(at.Owner)}" : "No friendly port here";
         Lbl(plate, x, y + 16, w);
         y += 28;
         // the port's tabs (PortPanel), as the mockup's sector panel names them
         float kw = (w - 8) / 2;
-        void PortKey(string id, string label, int i) =>
-            Button($"sec.port.{id}", new Rect2(x + (i % 2) * (kw + 8), y + (i / 2) * 50, kw, 44), label, () => { F.Port = id; F.Brief = null; }, dis: !port);
-        PortKey("yard", "Shipyard", 0);
-        PortKey("outfit", "Loadout", 1);
-        PortKey("supply", "Supplies", 2);
-        PortKey("crew", "Crew", 3);
+        // each key opens at your own port, or at a friendly faction's once your standing with it has earned that grant
+        void PortKey(string id, string label, int i, string grant) =>
+            Button($"sec.port.{id}", new Rect2(x + (i % 2) * (kw + 8), y + (i / 2) * 50, kw, 44), label, () => { F.Port = id; F.Brief = null; }, dis: !c.Allows(grant),
+                tip: !port && market && !c.Allows(grant) ? new Tip(label, new (string, string, Color?)[] { ("Opens at standing", $"{c.StandingFor(grant)}", null) }) : null);
+        PortKey("yard", "Shipyard", 0, "ships");
+        PortKey("outfit", "Loadout", 1, "weapons");
+        PortKey("supply", "Supplies", 2, "parts");
+        PortKey("crew", "Crew", 3, "officers");
         y += 104;
         if (market) Button("sec.market", new Rect2(x, y, w, 44), "Market", () => { F.Port = "market"; F.Brief = null; }, on: true);
     }
