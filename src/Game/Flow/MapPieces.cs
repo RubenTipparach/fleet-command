@@ -165,8 +165,12 @@ public static class MapPieces
         return g;
     }
 
-    /// <summary>A name label that keeps its size on screen (the mockup's labelSprite), in the faction's colour, outlined.</summary>
-    public static Label3D Label(string text, Color col) => new()
+    /// <summary>Whether names are hand-lettered in ink (the paper chart) rather than the console's outlined capitals.</summary>
+    public static bool Ink;
+
+    /// <summary>A name label that keeps its size on screen (the mockup's labelSprite), in the faction's colour, outlined; on
+    /// the paper chart, the page's inkLabel (ChartRoom.InkLabel).</summary>
+    public static Label3D Label(string text, Color col) => Ink ? ChartRoom.InkLabel(text) : new()
     {
         Text = text.ToUpperInvariant(), Modulate = col, FontSize = 44, OutlineSize = 12, OutlineModulate = new Color(0.012f, 0.024f, 0.04f, 0.9f),
         FixedSize = true, PixelSize = 0.00036f, Billboard = BaseMaterial3D.BillboardModeEnum.Enabled, NoDepthTest = true, RenderPriority = 4, OutlineRenderPriority = 3,
