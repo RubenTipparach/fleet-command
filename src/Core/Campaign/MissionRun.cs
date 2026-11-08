@@ -317,14 +317,7 @@ public static class MissionRun
                     d.Ships.Add((cs.Name, $"hull {cs.HullPct:0} %"));
                 }
             }
-            if (c.S.Fleet.Count == 0)
-            {
-                CampShip fresh = c.NewShip(c.Data.HullsOf(c.S.Side).First().Id, c.Side.Prefix + c.Side.Names[c.S.Battles % c.Side.Names.Count]);
-                c.S.Fleet.Add(fresh);
-                c.S.AtC = c.S.HomeC;
-                c.S.AtR = c.S.HomeR;
-                d.Ships.Add((fresh.Name, "commissioned at home to replace the fleet"));
-            }
+            if (c.Recommission() is { } fresh) d.Ships.Add((fresh.Name, "commissioned at home to replace the fleet"));
         }
         return d;
     }

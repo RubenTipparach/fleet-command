@@ -376,6 +376,24 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void Cashing_out_freighters_that_were_all_the_fleet_had_commissions_a_new_ship_at_home()
+    {
+        // found in the Krai playtest (2026-11-08): the warship lost taking her, the sale left no fleet and the map crashed
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        CampShip prize = c.NewShip("freighter_krai", "Ember Reach");
+        prize.Maker = "krai";
+        prize.Haul = 900;
+        c.S.Fleet.Clear();
+        c.S.Fleet.Add(prize);
+        Sector port = c.S.Sectors.First(h => c.IsPort(h) && (h.C, h.R) != (c.S.HomeC, c.S.HomeR));
+        (c.S.AtC, c.S.AtR) = (port.C, port.R);
+        Assert.Null(c.CashOut());
+        CampShip fresh = Assert.Single(c.S.Fleet);
+        Assert.Equal(0, fresh.Haul);
+        Assert.Equal((c.S.HomeC, c.S.HomeR), (c.S.AtC, c.S.AtR));
+    }
+
+    [Fact]
     public void A_boarded_and_captured_ship_counts_as_taken()
     {
         Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");

@@ -654,7 +654,21 @@ public sealed class Campaign
             S.Fleet.Remove(s);
             S.Log.Add($"Turn {S.Turn}: the {s.Name}'s cargo sold at {at.PortName} for {s.Haul} cr.");
         }
+        // the freighters sold were all the fleet had (its warships lost taking them): a new one, as after a fleet lost
+        if (Recommission() is { } fresh) S.Log.Add($"Turn {S.Turn}: the {fresh.Name} commissioned at {Home.PortName} to replace the fleet.");
         return null;
+    }
+
+    /// <summary>A fleet with no ships left is given a new one of its side's smallest hull, at home; null when it has ships.
+    /// After a battle that lost them all, and after cashing out freighters that were all it had.</summary>
+    public CampShip? Recommission()
+    {
+        if (S.Fleet.Count > 0) return null;
+        CampShip fresh = NewShip(Data.HullsOf(S.Side).First().Id, Side.Prefix + Side.Names[S.Battles % Side.Names.Count]);
+        S.Fleet.Add(fresh);
+        S.AtC = S.HomeC;
+        S.AtR = S.HomeR;
+        return fresh;
     }
 
     // ---- Repair: ships do not mend on their own ---------------------------------------------------------------------------

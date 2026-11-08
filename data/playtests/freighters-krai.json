@@ -1,0 +1,18 @@
+{
+ "_doc": "The scripted captain meets freighters in the campaign as the krai (openspec/changes/freighter-missions, tasks 2.7 and 3.4; owner, 2026-11-07: \"Just whenever you are on the same tile as freighter, you get a mission option\", \"capturing enemy freighter: bring it to a station to cash out\"): a new campaign, the fleet sailed into another faction's freighter's sector and her Raid key pressed, the raid fought out, any cargo taken cashed out at a port that buys it, then the fleet sailed to one of its own freighters and her Escort played. It saves to user://campaign-playtest-krai.json, never over the player's campaign. In a window, snap saves stills into docs/screenshots/game/freighters-krai/.",
+ "flow": true,
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_screen", "arg": "menu", "s": 120},
+  {"do": "click", "arg": "menu.campaign"},
+  {"do": "wait_screen", "arg": "factions"},
+  {"do": "click", "arg": "fac.krai"},
+  {"do": "click", "arg": "fac.krai.new"},
+  {"do": "wait_screen", "arg": "map", "s": 120},
+  {"do": "snap", "arg": "map"},
+  {"do": "meet", "arg": "raid", "s": 400},
+  {"do": "cash_out"},
+  {"do": "meet", "arg": "escort", "s": 400},
+  {"do": "snap", "arg": "after"}
+ ]
+}
