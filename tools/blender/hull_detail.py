@@ -394,6 +394,30 @@ def window_rows_plan(F, surf):
     return out
 
 
+def window_rows_line(F, surf):
+    """Windows by the Concord line's own rule (docs/mockups/concord-hull-concepts.html, countWindows: the line the game
+    flies), for a class with no room plan yet (owner, 2026-11-08, of the Albatross: "missing windows"): along the class's
+    lived-in stretch F['live_m'], a cell every F['pitch_m'] (2.2 m), every fifth cell a frame so the panes come in runs of
+    four, none within a pitch of a band F['stripes_m'], one row a deck at 1.5 m above each floor F['decks_m'], on the main
+    hull's own side (F['x_max_m']). Returns [(loc, normal, lit, room kind)], each built on both sides."""
+    out = []
+    z0, z1 = F["live_m"]
+    pitch = F.get("pitch_m", 2.2)
+    r = random.Random(int(z0 * 10) * 31 + len(F["decks_m"]))
+    z = z0 + pitch / 2
+    while z < z1:
+        cell = int((z - z0) // pitch)
+        if cell % 5 != 4 and not any(abs(z - sz) < pitch for sz in F.get("stripes_m", [])):
+            for fl in F["decks_m"]:
+                y = fl + F.get("eye_m", 1.5)
+                h = surf.hit("port", [z, y])
+                if not h or abs(h[0].x) > F.get("x_max_m", 1e9) or abs(h[1].x) < 0.6:
+                    continue
+                out.append((h[0], h[1], r.random() > F.get("dark_share", 0.2), r.choice(ROOMS[:3])))
+        z += pitch
+    return out
+
+
 def clear_around(surf, h, z, y, d=1.0):
     """Whether a window at (z, y) on the port flank has plain plating d above and below it: no strip, no glass, no edge of
     an opening (the hull there no more than d off the window's depth). A window at the lip of a slot or against a belt
@@ -1377,7 +1401,8 @@ def build(lo, S, D, seed):
                     return True
         return False
     for F in S.get("windows", []):
-        for loc, nor, lit_, kind in (window_rows(F, surf) if "rows_y_m" in F else window_rows_plan(F, surf)):
+        rows = window_rows(F, surf) if "rows_y_m" in F else window_rows_line(F, surf) if "live_m" in F else window_rows_plan(F, surf)
+        for loc, nor, lit_, kind in rows:
             if not fits(surf, frame_at(loc, nor), 1.1, 0.6, PF["window"]):
                 continue   # it would cross a bend
             if in_a_bay(loc):

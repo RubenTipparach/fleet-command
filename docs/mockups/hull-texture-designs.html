@@ -406,11 +406,14 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
     tb = bHit(q, D, vec3(o - 0.65, -1.0, DZ - 1.66), vec3(o - 0.15, -0.3, DZ - 1.6), nb, t); if (tb < t) { t = tb; n = nb; obj = 9; }
   }
   vec3 h = q + D*t, col; float emit = 0.0;
+  // the fine patterns (grooves, slats, weave, fibre) fade out as a pixel grows past them, so a room seen from afar is calm,
+  // not speckled (owner, 2026-11-08: "z fighting in windows here": it was these patterns aliasing)
+  float fp = length(fwidth(h)), fine = clamp(1.0 - (fp - 0.02)*25.0, 0.0, 1.0);
   vec3 carpet = r2 < 0.25 ? vec3(0.13, 0.17, 0.36) : r2 < 0.5 ? vec3(0.34, 0.09, 0.10) : r2 < 0.75 ? vec3(0.07, 0.27, 0.27) : vec3(0.26, 0.24, 0.12);
   vec3 accent = r < 0.5 ? vec3(0.25, 0.75, 1.0) : vec3(1.0, 0.62, 0.28);
   if (obj == 0) {
     if (n.y > 0.5) { // carpet: woven, a border, fibre noise
-      float weave = 0.85 + 0.15*step(0.5, fract(h.x*6.0))*step(0.5, fract(h.z*6.0)) + 0.06*ph1(floor(h.xz*40.0));
+      float weave = 0.85 + fine*(0.15*step(0.5, fract(h.x*6.0))*step(0.5, fract(h.z*6.0)) + 0.06*ph1(floor(h.xz*40.0))) + (1.0 - fine)*0.08;
       float border = step(min(min(h.x - xa, xb - h.x), min(h.z, DZ - h.z)), 0.3);
       col = mix(carpet*weave, carpet*0.55, border);
     } else if (n.y < -0.5) { // ceiling with light panels
@@ -420,8 +423,8 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
       float u = abs(n.z) > 0.5 ? h.x : h.z, bay = floor(u/0.8), fu = fract(u/0.8), y = h.y + 1.5;
       float groove = max(step(fu, 0.04), step(0.96, fu)) + step(abs(y - 0.9), 0.03) + step(abs(y - 2.55), 0.03);
       col = y < 0.9 ? vec3(0.10, 0.11, 0.13) : vec3(0.34, 0.38, 0.44)*(0.85 + 0.15*ph1(vec2(bay, n.x + n.z*3.0)));
-      if (ph1(vec2(bay, 4.0 + n.x)) > 0.78 && y > 1.2 && y < 2.2 && fu > 0.15 && fu < 0.85) col = mix(col, vec3(0.1), step(0.5, fract(y*8.0))*0.6);   // vent
-      col *= 1.0 - 0.6*clamp(groove, 0.0, 1.0);
+      if (ph1(vec2(bay, 4.0 + n.x)) > 0.78 && y > 1.2 && y < 2.2 && fu > 0.15 && fu < 0.85) col = mix(col, vec3(0.1), mix(0.3, step(0.5, fract(y*8.0)), fine)*0.6);   // vent
+      col *= 1.0 - 0.6*clamp(groove, 0.0, 1.0)*fine;
       float strip = step(abs(y - 2.35), 0.04); emit = strip*2.2;
       
     }
@@ -431,7 +434,7 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
   else if (obj == 4) col = vec3(0.22, 0.17, 0.13);
   else if (obj == 5) { col = vec3(0.02); emit = 1.0; }
   else if (obj == 6) col = vec3(0.55, 0.32, 0.18);
-  else if (obj == 7) col = vec3(0.10, 0.36, 0.10)*(0.6 + 0.6*ph1(floor(h.xy*14.0 + h.zx*9.0)));
+  else if (obj == 7) col = vec3(0.10, 0.36, 0.10)*(0.9 + fine*0.6*(ph1(floor(h.xy*14.0 + h.zx*9.0)) - 0.5));
   else if (obj == 8) col = vec3(0.45, 0.43, 0.40);
   else if (obj == 10) { vec2 pp = vec2(h.x - o, h.y); float frame = step(0.42, max(abs(pp.x + 0.4)/0.55*0.5, abs(pp.y)/0.35*0.5)); col = frame > 0.5 ? vec3(0.12) : mix(vec3(0.16, 0.22, 0.42), vec3(0.85, 0.55, 0.3), smoothstep(-0.2, 0.25, pp.y + 0.2*sin(pp.x*5.0 + r*9.0))); } // a picture: a planet's horizon
   else col = accent*0.45 + 0.08;
@@ -1052,6 +1055,9 @@ const SHIPS = {
     ] },
   krai: { label: 'Krai Warhost: frigate', glb: 'assets/ships/krai/frigate.glb', baked: 'assets/ships/krai/baked/manifest.json',
     // hull: the model's parts the bake replaces (its hull, its painted-on marking, its window strips and their frames)
+    // hideNodes: the model's own nacelle studs, rails and ribs (owner, 2026-11-08: "what the hell are these random cubes on krai
+    // ships? get rid of them"); the bake plates the nacelles now
+    hideNodes: /^nacelle_.*metal_14171d/,
     hull: ['hull', 'marking', 'window', 'metal_7b4013'], close: { at: [-7.6, -0.4, -26], from: [-1.0, 0.25, 0.35] },
     story: 'Placed from its room plan: the reactor along the keel aft, breathing through raked slots in the keel and streaking them with soot; engineering and life support venting through the flanks aft; gun control’s chevron vent under the dorsal crest; the boarding bay’s door to starboard, worn round its mouth; the spinal cannon’s scorch at the bow; the drives’ soot astern. Nothing round: the Krai cut, they do not turn.',
     designs: [
@@ -1078,7 +1084,7 @@ for (const [line, classes] of Object.entries(LINE)) for (const [key, name, glb, 
   if (key === line) continue;
   const F = SHIPS[line], D0 = F.designs[0];
   SHIPS[key] = { label: (line === 'concord' ? 'Concord: ' : 'Krai Warhost: ') + name + (line === 'concord' ? '-class' : ''), glb: 'assets/ships/' + glb, baked: F.baked,
-    hull: line === 'concord' ? ['paint_plain', 'paint_nacelle', 'glow_dish', 'glow_torpedo', 'glow_grille_2', ...own] : F.hull, close: null,
+    hull: line === 'concord' ? ['paint_plain', 'paint_nacelle', 'glow_dish', 'glow_torpedo', 'glow_grille_2', ...own] : F.hull, hideNodes: F.hideNodes, close: null,
     story: line === 'concord' ? 'From its own model: its deflector, torpedo tube and nacelle noses as designed pieces where the model had flat glowing parts; its bands and emblem placed from its own length. Its windows wait for its room plan.'
       : 'From its own model and its room plan: a window wherever crew live or work against the hull; its bands and emblem placed from its own length.',
     designs: [{ ...D0, slug: (line === 'concord' ? key : 'krai_' + key) + (line === 'concord' ? '_c1' : '_k1') }] };
@@ -1150,7 +1156,7 @@ function buildShip(key, glbScene) {
   const glb = glbScene; glb.rotation.y = Math.PI; root.add(glb);   // the glb's bow is -Z; ship space's +Z
   const hullBox = new THREE.Box3(), hidden = [];
   glb.updateMatrixWorld(true);
-  glb.traverse((o) => { if (o.isMesh && S.hull.includes(o.material.name)) { hullBox.expandByObject(o); hidden.push(o); } });
+  glb.traverse((o) => { if (o.isMesh && (S.hull.includes(o.material.name) || (S.hideNodes && S.hideNodes.test(o.name)))) { hullBox.expandByObject(o); hidden.push(o); } });
   for (const o of hidden) o.visible = false;
   glb.traverse((o) => { if (o.isMesh && !hidden.includes(o) && o.material && o.material.isMeshStandardMaterial) {   // the model's own parts
     o.material = BH.withDetail(o.material.clone(), key + '-' + o.material.name, { fixed: 0 }); } });   // the model's machinery parts: the sub-hull's grain                               // carry the detail layer too
