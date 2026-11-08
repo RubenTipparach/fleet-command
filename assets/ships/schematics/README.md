@@ -15,6 +15,17 @@ Both layers are pure white RGB; the drawing is in the alpha channel. A skin tint
 lays them together: the hull tinted with a dark skin colour, then the wire tinted with a bright one on top. The hull's
 alpha stays between 0.1 and 0.38, so it reads as tinted glass, darker than the wire (alpha up to 1), with the hidden edges showing through it.
 
+## Ships whose detail is in their bake
+
+The Kelvane Institute's hulls are smooth grown structures; their plating, machinery, domes and vents are modelled over
+them in Blender and baked into each ship's own maps (`tools/blender/painted_bake.py`), not cut into the glb. So their
+wire layer takes that detail from the bake (owner, 2026-11-08: "Top down shop sillohuet needs improvement. Let's add some
+details so the top down view of these kelvane ships don't look so bad"): each pixel's top surface is rasterised with its
+UV, the ship's tangent normal map and ORM (its occlusion) are looked up there, and a texel that tilts or darkens more than
+the plating around it (a plate's bevel, a gap, a dome's rim, a vent's slats) is drawn, up to 0.85 alpha. A smooth tilt or
+soft shading is not. Of their mesh edges only the outline and the real creases (over 30 degrees) are drawn: the loft's
+rings and facets are tessellation. The faction list is `DETAIL_FROM_BAKE` in the generator.
+
 ## Placing things over the picture
 
 A glb point (x, y, z), in metres, falls at pixel `(origin_px[0] + x / m_per_px, origin_px[1] + z / m_per_px)`, with

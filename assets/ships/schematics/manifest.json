@@ -522,7 +522,7 @@
    "source_triangles": 656,
    "quads": 311,
    "triangles": 34,
-   "edges_drawn": 474,
+   "edges_drawn": 120,
    "source": {
     "glb": "assets/ships/kelvane/kelvane_frigate.glb",
     "sha256": "5afdb79c1912835a1e35db885cddafbb55ae10acf6d623ceba78a87febb79f42"
@@ -549,7 +549,7 @@
    "source_triangles": 1516,
    "quads": 734,
    "triangles": 48,
-   "edges_drawn": 772,
+   "edges_drawn": 218,
    "source": {
     "glb": "assets/ships/kelvane/kelvane_destroyer.glb",
     "sha256": "f81dd1e9a39417b95b6bc8232fdec80919912eefb5e2414451a718e892cf7e5b"
@@ -576,7 +576,7 @@
    "source_triangles": 1884,
    "quads": 914,
    "triangles": 56,
-   "edges_drawn": 1144,
+   "edges_drawn": 388,
    "source": {
     "glb": "assets/ships/kelvane/kelvane_cruiser.glb",
     "sha256": "3036ad50d49298dabcfab0ab43dbba12eb6b93848d0bc80601fbfb943c577970"
@@ -603,7 +603,7 @@
    "source_triangles": 2808,
    "quads": 1364,
    "triangles": 80,
-   "edges_drawn": 1687,
+   "edges_drawn": 418,
    "source": {
     "glb": "assets/ships/kelvane/kelvane_battlecruiser.glb",
     "sha256": "89d6768ba45258e89e04eeb65836d8cbfb72dcff4977a9fe1bdac8fd3e9092b8"
@@ -630,7 +630,7 @@
    "source_triangles": 2596,
    "quads": 1243,
    "triangles": 110,
-   "edges_drawn": 1352,
+   "edges_drawn": 396,
    "source": {
     "glb": "assets/ships/kelvane/kelvane_carrier.glb",
     "sha256": "9633fe702df914e210b66f2acf280b1b8abe75311c3df2556c537220fe24292d"
@@ -657,7 +657,7 @@
    "source_triangles": 745,
    "quads": 345,
    "triangles": 55,
-   "edges_drawn": 483,
+   "edges_drawn": 194,
    "source": {
     "glb": "assets/ships/kelvane/kelvane_fighter.glb",
     "sha256": "c75883fc2825694d4e5678beba97bd5564eb0a7b5315b567c9a073f7ffcb1cd5"

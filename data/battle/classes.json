@@ -1,5 +1,5 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. shield_layers is how many bands the shield display shows at full strength, 1 to 3, 3 when absent (owner, 2026-11-06: frigates have one layer, larger ships more). hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. The Kelvane Institute (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"): its line, frigate, destroyer, cruiser, battlecruiser and carrier, each drawn as its own baked ship (assets/ships/kelvane/), battle lengths 2.7 times the true length; kelvane_rv keeps its id as the cruiser, the Patience-class research cruiser, which the battle console mockup's Patience (mockup 2, the Four races scene) now flies, with the heavy cruiser's figures less the Concord's chorus lance; the others' figures and weapons are placeholders at the Hunt's sizes until the combat change, the Institute's own weapons not designed yet (its culture is the owner's), the carrier slower and tougher, carrying fighters (data/battle/systems/tractor.json loadouts) that park on its pads in the view. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json). The freighters (mockup 24; owner, 2026-11-07: \"implement in game\"): one for each approved faction, fr the Concord's Gauge carrier, krai_fr the Warhost's Spear train, hunt_fr the Hunt's Tally carrier, kelvane_fr the Institute's Twin ledger, each drawn as its own baked ship with its containers (assets/ships/freighters/, the cargo in assets/ships/manifest.json), battle lengths 2.7 times the true length, longer than any warship; slow, tough and nearly unarmed (two point defence mounts), the figures openspec/changes/freighters/design.md's provisional ones until the combat change.",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. shield_layers is how many bands the shield display shows at full strength, 1 to 3, 3 when absent (owner, 2026-11-06: frigates have one layer, larger ships more). hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. The Kelvane Institute (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"): its line, frigate, destroyer, cruiser, battlecruiser and carrier, each drawn as its own baked ship (assets/ships/kelvane/), battle lengths 2.7 times the true length; kelvane_rv keeps its id as the cruiser, the Patience-class research cruiser, which the battle console mockup's Patience (mockup 2, the Four races scene) now flies, with the heavy cruiser's figures less the Concord's chorus lance; the others' figures and weapons are placeholders at the Hunt's sizes until the combat change, the Institute's own weapons not designed yet (its culture is the owner's), the carrier slower and tougher, carrying fighters (data/battle/systems/tractor.json loadouts) that park on its pads in the view. Its mounts sit on its own hulls (2026-11-08, with the schematics' bake detail): each moved across to the nearest hull at its station, 15 % in from the edge, read from the ship's schematic, so the systems display shows them on the plating, not beside a slim hull. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json). The freighters (mockup 24; owner, 2026-11-07: \"implement in game\"): one for each approved faction, fr the Concord's Gauge carrier, krai_fr the Warhost's Spear train, hunt_fr the Hunt's Tally carrier, kelvane_fr the Institute's Twin ledger, each drawn as its own baked ship with its containers (assets/ships/freighters/, the cargo in assets/ships/manifest.json), battle lengths 2.7 times the true length, longer than any warship; slow, tough and nearly unarmed (two point defence mounts), the figures openspec/changes/freighters/design.md's provisional ones until the combat change.",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
@@ -1293,14 +1293,14 @@
    },
    {
     "weapon": "pd",
-    "x": -0.3,
+    "x": -0.31,
     "y": -0.3,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    },
    {
     "weapon": "pd",
-    "x": 0.3,
+    "x": 0.31,
     "y": -0.3,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
@@ -1341,28 +1341,28 @@
   "mounts": [
    {
     "weapon": "lance",
-    "x": -0.42,
+    "x": -0.22,
     "y": 0.62,
     "arc_centre_deg": -50,
     "arc_width_deg": 200
    },
    {
     "weapon": "lance",
-    "x": 0.42,
+    "x": 0.22,
     "y": 0.62,
     "arc_centre_deg": 50,
     "arc_width_deg": 200
    },
    {
     "weapon": "lance",
-    "x": -0.62,
+    "x": -0.22,
     "y": 0.05,
     "arc_centre_deg": -90,
     "arc_width_deg": 180
    },
    {
     "weapon": "lance",
-    "x": 0.62,
+    "x": 0.22,
     "y": 0.05,
     "arc_centre_deg": 90,
     "arc_width_deg": 180
@@ -1390,14 +1390,14 @@
    },
    {
     "weapon": "pd",
-    "x": -0.32,
+    "x": -0.22,
     "y": -0.3,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    },
    {
     "weapon": "pd",
-    "x": 0.32,
+    "x": 0.22,
     "y": -0.3,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
@@ -1473,21 +1473,21 @@
    },
    {
     "weapon": "lance",
-    "x": -0.45,
+    "x": -0.26,
     "y": 0.05,
     "arc_centre_deg": -90,
     "arc_width_deg": 160
    },
    {
     "weapon": "lance",
-    "x": 0.45,
+    "x": 0.26,
     "y": 0.05,
     "arc_centre_deg": 90,
     "arc_width_deg": 160
    },
    {
     "weapon": "lance",
-    "x": 0,
+    "x": 0.04,
     "y": -0.75,
     "arc_centre_deg": 180,
     "arc_width_deg": 160
@@ -1508,7 +1508,7 @@
    },
    {
     "weapon": "missile",
-    "x": 0,
+    "x": 0.29,
     "y": -0.4,
     "arc_centre_deg": 0,
     "arc_width_deg": 360,
@@ -1550,56 +1550,56 @@
   "mounts": [
    {
     "weapon": "lance",
-    "x": -0.45,
+    "x": -0.31,
     "y": 0.3,
     "arc_centre_deg": -90,
     "arc_width_deg": 150
    },
    {
     "weapon": "lance",
-    "x": 0.45,
+    "x": 0.31,
     "y": 0.3,
     "arc_centre_deg": 90,
     "arc_width_deg": 150
    },
    {
     "weapon": "lance",
-    "x": -0.45,
+    "x": -0.37,
     "y": -0.2,
     "arc_centre_deg": -90,
     "arc_width_deg": 150
    },
    {
     "weapon": "lance",
-    "x": 0.45,
+    "x": 0.37,
     "y": -0.2,
     "arc_centre_deg": 90,
     "arc_width_deg": 150
    },
    {
     "weapon": "pd",
-    "x": -0.3,
+    "x": -0.21,
     "y": 0.5,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    },
    {
     "weapon": "pd",
-    "x": 0.3,
+    "x": 0.21,
     "y": 0.5,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    },
    {
     "weapon": "pd",
-    "x": 0,
+    "x": 0.1,
     "y": -0.6,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    },
    {
     "weapon": "missile",
-    "x": -0.2,
+    "x": -0.24,
     "y": 0,
     "arc_centre_deg": 0,
     "arc_width_deg": 360,
@@ -1607,7 +1607,7 @@
    },
    {
     "weapon": "missile",
-    "x": 0.2,
+    "x": 0.24,
     "y": 0,
     "arc_centre_deg": 0,
     "arc_width_deg": 360,

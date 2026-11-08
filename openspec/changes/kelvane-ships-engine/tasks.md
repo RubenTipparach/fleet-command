@@ -9,6 +9,7 @@
 - [x] 1.5 Five classes, the carrier's fighters, The Institute and Institute wrecks from each side, the Institute as a side (Battle, Duel, Arming, Four races), its five on both damage ranges; the scenario test widened
 - [x] 1.6 Stills of the Institute's ships in the running game, side by side with the mockup's shots, and the suite (docs/playtests/2026-11-07-kelvane-institute.md)
 - [x] 1.7 Every general scene from the Institute's side (owner, 2026-11-07: "test all kelvan general mission scenarios"): 18 scenes with skies of their own, its classes' cloak, marines and craft, the bot suite and the scene tests widened, its console's every station played and stilled (docs/playtests/2026-11-07-kelvane-e2e.md)
+- [x] 1.7 The top-down schematics (owner, 2026-11-08: "Top down shop sillohuet needs improvement. Let's add some details so the top down view of these kelvane ships don't look so bad"): `tools/mockups/ship_schematics.py` draws a Kelvane ship's wire from its bake (plate bevels and gaps from its normal map and occlusion, looked up through its UVs where each pixel's top surface is), its mesh only by its outline and real creases; the mounts moved onto the slim hulls, read from the schematics; game-flow and space-chart re-inlined
 
 ## 2. Still different from mockup 23 (docs/design/mockup-sync.md)
 
