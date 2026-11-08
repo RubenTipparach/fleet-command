@@ -262,11 +262,35 @@ PT = {}                       # the faction's paint (hull_detail.json "paint"), 
 
 
 def ships_out():
-    return os.path.join(ROOT, "assets", "ships", FACTION)
+    """Where a faction's baked maps go: its data's "out" (the Concord's and Krai's own folders hold the game's models, so
+    their bakes go in a baked/ folder Godot does not import), else assets/ships/<faction>/."""
+    out = json.load(open(detail_path())).get("out") if os.path.exists(detail_path()) else None
+    return os.path.join(ROOT, out) if out else os.path.join(ROOT, "assets", "ships", FACTION)
+
+
+def mesh_of(slug):
+    """The hull a ship is baked on: its entry's "mesh" (several designs of one hull share its export), else its slug."""
+    return json.load(open(detail_path()))["ships"][slug].get("mesh", slug)
 
 
 def detail_path():
     return os.path.join(ROOT, "data", "ships", FACTION, "hull_detail.json")
+
+
+def load_detail(slug=None):
+    """The detail layout for FACTION (data/ships/<faction>/hull_detail.json). A ship that names a look ("look": name, as
+    the freighters do, every faction's in one file: openspec/changes/freighters) takes that look's paint, defaults and
+    faction from the file's "looks"; a look of {"from": "<faction>"} is that faction's own hull_detail.json, so a faction's
+    look has one copy (CLAUDE.md 6.1). The file's own "defaults" lie over the look's, and the ship's over both (for_ship)."""
+    D = json.load(open(detail_path()))
+    name = slug and D.get("ships", {}).get(slug, {}).get("look")
+    if not name:
+        return D
+    L = dict(D["looks"][name])
+    if "from" in L:
+        src = json.load(open(os.path.join(ROOT, "data", "ships", L.pop("from"), "hull_detail.json")))
+        L = {"faction": src.get("faction"), "paint": src["paint"], "defaults": src["defaults"], **L}
+    return {**D, "faction": L.get("faction") or name, "paint": L["paint"], "defaults": {**L["defaults"], **D.get("defaults", {})}}
 
 
 def lo_material(img, name):
@@ -305,7 +329,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     sc.render.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = samples; sc.cycles.use_denoising = False; sc.cycles.seed = 0
     world = bpy.data.worlds.new("World"); world.use_nodes = True; sc.world = world; world.light_settings.distance = 2.2
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
-    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, slug + ".obj"), forward_axis="Y", up_axis="Z")
+    bpy.ops.wm.obj_import(filepath=os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj"), forward_axis="Y", up_axis="Z")
     obs = sorted((o for o in sc.objects if o.type == "MESH"), key=lambda o: o.name)
     img = bpy.data.images.new(slug + "_bake", px, px, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
     lo_hull, lo_glow, lo_well = lo_material(img, "lo_hull"), lo_material(img, "lo_glow"), lo_material(img, "lo_well")
@@ -323,7 +347,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     bpy.ops.uv.select_all(action="SELECT")
     bpy.ops.uv.pack_islands(rotate=True, shape_method="CONCAVE", margin_method="FRACTION", margin=0.004)
     bpy.ops.object.mode_set(mode="OBJECT")
-    D = for_ship(json.load(open(detail_path())), slug)
+    D = for_ship(load_detail(slug), slug)
     smooth = D["defaults"].get("smooth_deg")   # a rounded hull (the Kelvane's rolled case) is shaded smooth across faces within
     if smooth:                                 # this angle, so its tangent normals are baked against the normals the page draws
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth), keep_sharp_edges=True)
@@ -337,7 +361,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     if panes_only:
         return {"panes": panes}
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun)
-    sun.data.energy = 1.0; sun.data.angle = math.radians(3)
+    sun.data.energy = 1.0; sun.data.angle = math.radians(D["defaults"].get("sun_angle_deg", 3))   # a broad sun casts no hard shadow (owner, 2026-11-07: "why is there an offset shadow? the blender model shouldve been lit without hard shadows")
     sun.rotation_euler = Vector(SUN).normalized().to_track_quat("Z", "Y").to_euler()
     fixture_lights = []   # the hull's lamps, for the light pass only (named LIGHT_<kind>_<n>, the light-baking skill)
     for i, F in enumerate(HD.FIXTURES):
@@ -438,21 +462,28 @@ def paint_and_write(slug, D, S, ps):
     K.save_png(os.path.join(ships_out(), f"{slug}_base.png"), pbr)
     K.save_png(os.path.join(ships_out(), f"{slug}_orm.png"), orm)
     K.save_png(os.path.join(ships_out(), f"{slug}_light.png"), lmap)
+    if PT.get("area_mask"):   # which surface a texel is (owner, 2026-11-07: "diffrent detail maps should be used for different
+        # "hull area", smooth armor plating layer vs sub hull layer"): red the plating (armour, accent), green the hull
+        # beneath it (sub-armour, the under layer, machinery, greebles, vents), from the bake's own kinds, at half size
+        _, _, _, is_ = classify(data, cover)
+        plate = (is_("armour") | is_("accent")).astype(np.float32)
+        under = np.any([is_(k) for k in ("sub", "under", "greeble", "machine", "slat", "vent")], axis=0).astype(np.float32)
+        K.save_png(os.path.join(ships_out(), f"{slug}_mask.png"), half(np.dstack([plate, under, np.zeros_like(plate)])))
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
 
 
 def repaint_main(slugs):
     """Repaint ships from their kept passes (no bake): the maps and their hashes in the manifest; the mesh, fixtures and
     field are the bake's and stay."""
-    PT.clear(); PT.update(json.load(open(detail_path()))["paint"])
-    D = json.load(open(detail_path()))
     mpath = os.path.join(ships_out(), "manifest.json")
     man = json.load(open(mpath))
     for slug in slugs:
+        D = load_detail(slug)
+        PT.clear(); PT.update(D["paint"])
         ps = dict(np.load(passes_path(slug)))
         Ds = for_ship(D, slug)
         paint_and_write(slug, Ds, Ds["ships"][slug], ps)
-        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):
+        for m in [m for m in MAPS if m != "mask" or PT.get("area_mask")]:
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}
         print(f"repainted {slug}", flush=True)
@@ -462,6 +493,7 @@ def repaint_main(slugs):
 
 
 EMBLEMS = os.path.join(ROOT, "assets", "emblems")
+MAPS = ("albedo", "ao", "emit", "normal", "base", "orm", "light", "mask")   # "mask" only where the paint has area_mask
 # The paint and the PBR by what a texel is (hull_detail.KIND) are the faction's, in its hull_detail.json "paint": the
 # armour's palette (by plate id) and its accent, the sub-armour's, the under layer, greebles, domes, slats, vents, glass,
 # liveries, the ink in the deepest cavities, the lit edges, how a light strip is lit ("centre": a lit line strip_m wide on
@@ -508,7 +540,7 @@ def flat_paint(kind_is, rid, P, n, cover, S, faction):
     ARMOUR, SUB = PT["armour"], PT["sub"]
     pal = np.stack([hexrgb(c) for c in ARMOUR])
     arm = pal[(rid * len(ARMOUR) * 11).astype(int) % len(ARMOUR)] * (0.9 + 0.2 * ((rid * 37.0) % 1.0))[..., None]
-    arm = np.where((rid > 0.94)[..., None], hexrgb(PT["accent"]), arm)
+    arm = np.where((rid > 1.0 - PT.get("accent_share", 0.06))[..., None], hexrgb(PT["accent"]), arm)   # a share of plates in the accent
     base = np.zeros((h, w, 3), np.float32) + hexrgb(PT["under"])
     base = np.where(kind_is("armour")[..., None], arm, base)
     spal = np.stack([hexrgb(c) for c in SUB])
@@ -608,7 +640,8 @@ def plate_marks(base, P, n, rid, plate, M):
     r1 = max(1, int(round(M.get("groove_inset_m", 0.3) / texel)))
     near = lambda r: blur(edge.astype(np.float32), r) > 1e-6
     groove = plate & near(r1 + max(1, int(round(M.get("groove_w_m", 0.08) / texel)))) & ~near(r1)
-    base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
+    if M.get("groove", True):   # the inset line (off where the owner asked: "I'd probably get rid of the inner lines on the panel")
+        base = np.where(groove[..., None], base * M.get("groove_k", 0.62), base)
     # the plate's own plane: (along, across) by its facing, the same on both sides
     ax = np.abs(n).argmax(axis=2); x = np.abs(P[..., 0])
     a = np.where(ax == 0, P[..., 2], x); b = np.where(ax == 1, P[..., 2], P[..., 1])
@@ -704,7 +737,8 @@ def paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction):
         mach = np.any([is_(k) for k in PT.get("machine_kinds", ["greeble"])], axis=0)
         light = np.where(mach, np.maximum(light, PT["machine_light"] * (0.75 + 0.25 * st)), light)
     col = base * light[..., None]
-    col *= (0.22 + 0.78 * aoc ** 1.7)[..., None]
+    af = PT.get("ao_floor", 0.22)   # how dark the deepest cavity goes (a plate's rim shadow: owner, of the Krai, "the darker color is too tark")
+    col *= (af + (1 - af) * aoc ** 1.7)[..., None]
     ink = np.clip((0.4 - aoc) / 0.25, 0, 1)
     ik = PT.get("ink_k", 0.75)   # how hard the deepest crevices are inked (the Hunt 0.75; a lighter hand for a clean faction)
     col = col * (1 - ik * ink[..., None]) + hexrgb(PT["ink"]) * (ik * ink[..., None])
@@ -774,32 +808,35 @@ def half(a):
 
 
 def ship_main(slugs, px, samples, panes_only=False):
-    PT.clear(); PT.update(json.load(open(detail_path()))["paint"])
     mpath = os.path.join(ships_out(), "manifest.json")
     man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
     man.setdefault("kept", {})
     for k in [k for k in man["pieces"] if k.endswith("_ao")]:
         del man["pieces"][k]
-    man["_doc"] = (json.load(open(detail_path())).get("manifest_doc") or "") + (
+    man["_doc"] = (load_detail().get("manifest_doc") or "") + (
         " Each unwrapped and baked onto its own UVs by tools/blender/painted_bake.py --ship (never edited by hand): the UV mesh "
         "in ship space (+x port, +y up, +z bow, metres) and its painted colour, AO and glow maps. uv_m is metres of hull per UV unit.")
     for k in [k for k in man["pieces"] if k.endswith("_pane")]:   # panes are drawn from their data now, not a map
         del man["pieces"][k]
     for slug in slugs:
+        PT.clear(); PT.update(load_detail(slug)["paint"])   # each ship's own faction's paint (a freighter's look)
         if panes_only:
             man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
             continue
         info = bake_ship(slug, px, samples)
-        n = int(open(os.path.join(SHIPS_RAW, slug + ".obj")).readline().split()[1])
+        n = int(open(os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
-        for m in ("albedo", "ao", "emit", "normal", "base", "orm", "light"):   # the AO is kept beside, not inlined (it is in the ORM)
+        for m in [m for m in MAPS if m != "mask" or PT.get("area_mask")]:   # the AO is kept beside, not inlined (it is in the ORM)
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}
         print(f"baked ship {slug}: {info['tris']} triangles, {info['uv_m']} m per uv unit", flush=True)
     man["blender"] = bpy.app.version_string
     man["webp_quality"] = 84   # the page's copy of the maps (tools/mockups/inline_data.py); the PNGs here stay exact
+    D_ = json.load(open(detail_path()))
+    if D_.get("maps_dir"):   # the page's maps written beside it as files (inline_data.py), for a page of many ships
+        man["maps_dir"] = D_["maps_dir"]
     with open(mpath, "w") as fh:
         json.dump(man, fh, separators=(",", ":"), sort_keys=True)
         fh.write("\n")

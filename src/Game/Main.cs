@@ -521,7 +521,8 @@ public sealed partial class Main : Node
     }
 
     /// <summary>A still of a game flow screen (--flow=loading, menu, factions, skirmish, map, route, brief, accept, port, outfit, battle,
-    /// debrief or debrief-battle; --side=concord or krai; --out=path.png), for the mockup comparison (CLAUDE.md section 12). It sets the
+    /// debrief, debrief-battle, freighter (the fleet beside a rival freighter, her Raid key), raid (its briefing) or haul (a freighter
+    /// taken, at your home port with Cash out, a damaged ship and repair kits); --side=concord or krai; --out=path.png), for the mockup comparison (CLAUDE.md section 12). It sets the
     /// screen up as a player would reach it, through the flow's own actions, waits for it to draw, saves and quits.</summary>
     private async System.Threading.Tasks.Task FlowStill(string what)
     {
@@ -576,6 +577,27 @@ public sealed partial class Main : Node
                     c.S.Credits += 6000;
                     f.SelectHex((cal.C, cal.R));
                     f.Port = "market";
+                }
+                if (what is "freighter" or "raid")
+                {
+                    // the fleet beside a freighter of another faction (the rival's, or, with none, the first not your own)
+                    Freighter fr = c.S.Freighters.FirstOrDefault(x => x.Fac == c.Rival) ?? c.S.Freighters.First(x => x.Fac != side);
+                    (c.S.AtC, c.S.AtR) = fr.Here();
+                    c.Reveal();
+                    f.Redraw();
+                    f.SelectHex(fr.Here());
+                    f.MapCentre(fr.Here().C, fr.Here().R);
+                    f.MapView(6.5f, null);
+                    if (what == "raid") f.Meet(fr);
+                }
+                if (what == "haul")
+                {
+                    CampShip h = c.NewShip(c.Data.FreighterOf(c.Rival ?? "vos").Id, "Larkspur");
+                    h.Maker = c.Rival ?? "vos"; h.Haul = 1050; h.HullPct = 22;
+                    c.S.Fleet.Add(h);
+                    c.S.Fleet[0].HullPct = 46;
+                    c.S.Fleet[0].Supplies[Campaign.Campaign.KitSupply] = 2;
+                    f.SelectHex((c.S.AtC, c.S.AtR));
                 }
                 if (what == "debrief") { Offer m = Find("shakedown")!; FlyTo(m); f.Launch(m); await Settle(); }
                 if (what is "battle" or "debrief-battle")

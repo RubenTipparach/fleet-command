@@ -174,6 +174,19 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'V', name: 'Freighters (mockup 24)',
+    lead: 'Mockup 24 (Fleet Command Freighters, docs/mockups/freighter-concepts.html; its link is on the tracker) now shows your four picks (decided below), each twice its drafted size with containers of 12 by 12 by 24 m, the board of eight beside them. No faction has a merchant tradition written down, so each concept comes from a tradition drafted inside its faction for you to keep, change or reject. Design: openspec/changes/freighters.',
+    qs: [
+      { id: 'V1', q: 'The concepts come from these traditions, most of them drafted: the Concord\'s Common Gauge (one container every world packs to); the Krai Host\'s Baggage (a war host carries its own, edge first); the Hunt\'s Tally Keepers (everything carried is counted) and Fair Chase (its stores are never prey); the Institute\'s Field Stations and Open Notebook. Keep them?',
+        options: ['Keep them all as drafted', 'Keep some (say which in the notes)', 'You write the merchant traditions; we redesign from them'], rec: 0,
+        why: 'Options to react to are quicker than a blank page, and every cultural decision stays yours (U7).' },
+      { id: 'V3', q: 'One freighter class a faction, or both of its concepts?',
+        options: ['One a faction now; the other later as a variant', 'Both from the start'], rec: 0,
+        why: 'One class is enough for the convoy missions and the campaign map\'s routes; a variant is cheap once the first is detailed.' },
+      { id: 'V4', q: 'How is a freighter armed?',
+        options: ['One point defence, nothing else', 'Unarmed', 'Point defence and one light weapon'], rec: 0,
+        why: 'A convoy needs its escorts; point defence lets a freighter thin a missile salvo without fighting back.' },
+    ] },
   { tag: 'N', name: 'Three new factions: the fractal people, their hybrid with the Brood, and a brutal pirate',
     lead: 'You asked (2026-11-07) for a purely mathematical faction built on fractal patterns, the Exponent (first a hybrid, now its own collective overgrown like a wreck on a reef), and a second, more brutal pirate faction (sharp teeth, bullets, blades, blood-stained keys, crusty burned paper). Each now has a first-pass skin on the Console Skins page (mockup 4). Their names and cultures below are our drafts, built from your words; a culture is yours to set, so each skin is provisional until you answer.',
     qs: [
@@ -435,6 +448,8 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'V2 (owner, 2026-11-07): the freighters are blockouts 1 (the Concord Gauge carrier), 4 (the Krai Spear train), 5 (the Ssarith Tally carrier) and 8 (the Kelvane Twin ledger, made a loop: "really skinny arms and link.tbe arms together with a thin bridge at the end to keep the loop design ethos", "rounder at the tip")', where: 'openspec/changes/freighters, mockup 24 v6' },
+  { text: 'V5 (owner, 2026-11-07): every freighter and its containers twice the drafted size, 300-360 m with 12 by 12 by 24 m containers ("this way cargo ships are much bigger than any combat ships..as they should be")', where: 'openspec/changes/freighters, mockup 24 v6' },
   { text: 'I2, I4 (owner, 2026-11-06): the Kelvane line is blockouts 5, 11, 17, 18 and 19 ("12,11,18.19,17 all really good shapes, start detailing these", then "12 is no go use 5"), the more complex ones for the larger ships ("use more complex ones for larger captial ships like destroyer, cruiser, batlecruiser and carrier"): frigate 5 Slotted, destroyer 11 Loop, cruiser 17 Keel loop, battlecruiser 18 Crossed loops, carrier 19 Quartered loop', where: 'openspec/changes/kelvane-ship-concepts (D8)' },
   { text: 'I1, in part (owner, 2026-11-06): the Institute specialises in scientific missions, its ships themed as advanced science and research vessels ("we might want to theme them after advanced science and research vessels, this faction will specialize in scientific missions")', where: 'openspec/changes/kelvane-ship-concepts (D8); I5 asks about the other schools' },
   { text: 'H4: the blockouts that go on are 1 Hooded lance, 3 Forked prow, 7 Harpoon and 9 Trident; the Spearhead is withdrawn (owner, 2026-11-05: "spearhead: there we go again with the ltiterals lol / headedf lance: great! / forked prow, great! ... / trident: awesome! / harpoon yes!")', where: 'openspec/changes/ssarith-ship-concepts' },

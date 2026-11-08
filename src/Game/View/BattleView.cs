@@ -36,6 +36,7 @@ public sealed partial class BattleView : Node3D
     private readonly List<OmniLight3D> _strobes = new();
     private readonly Dictionary<string, ShipDamage> _damage = new();
     private readonly Dictionary<string, ParkedCraft> _parked = new();   // a carrier's craft on its pads
+    private readonly Dictionary<string, Cargo> _cargo = new();   // a freighter's containers
     private readonly Dictionary<string, ShieldShell> _shields = new();
     private long _hitSeq;
     private NebulaSky? _sky;
@@ -119,6 +120,7 @@ public sealed partial class BattleView : Node3D
         _strobes.Clear();
         _damage.Clear();
         _parked.Clear();
+        _cargo.Clear();
         _shields.Clear();
         _hitSeq = _x.Battle.Hits.Count > 0 ? _x.Battle.Hits[^1].Seq : 0;
         // the scenario's own nebula sky (each scene its own: data/battle/scenarios.json "sky")
@@ -143,6 +145,7 @@ public sealed partial class BattleView : Node3D
             {
                 _damage[s.Id] = new ShipDamage(glb, this, s, file["assets/ships/".Length..], glb.Scale.X);
                 if (ParkedCraft.Park(glb) is { } pc) _parked[s.Id] = pc;   // after the damage has walked the ship, so it never reads them
+                if (Cargo.Load(glb, file["assets/ships/".Length..]) is { } cg) _cargo[s.Id] = cg;   // the same
             }
         }
     }
@@ -223,7 +226,9 @@ public sealed partial class BattleView : Node3D
             m.Visible = !s.Jumped && (s.Alive || _damage.ContainsKey(s.Id)) && (!s.Alive || b.Detected(b.Player, s));   // an approved ship stays to come apart; a stand-in just goes; a ship gone to warp is gone; a cloaked ship unseen is not drawn
             m.Position = new Vector3((float)(s.X / MPerU), 0, (float)(s.Z / MPerU));
             m.Rotation = new Vector3(0, -(float)s.H, 0);
-            if (_parked.TryGetValue(s.Id, out ParkedCraft? pc)) pc.Show(s.Fighters, !s.Alive || (_damage.TryGetValue(s.Id, out ShipDamage? dm) && dm.Broken));
+            bool broken = !s.Alive || (_damage.TryGetValue(s.Id, out ShipDamage? dm) && dm.Broken);
+            if (_parked.TryGetValue(s.Id, out ParkedCraft? pc)) pc.Show(s.Fighters, broken);
+            if (_cargo.TryGetValue(s.Id, out Cargo? cg)) cg.Show(broken);
             if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive && s.CloakK <= 0; if (sh.Visible) sh.Show(s, _x.Kit.C); }   // a cloak's shields are down
         }
         Ship p = b.Player;

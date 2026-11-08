@@ -2,7 +2,7 @@
  "_doc": "The faction screen, exported from mockup 1 (docs/mockups/game-flow.html, buildFactionScene) by tools/mockups/export_faction.mjs. Metres, +Y up, the camera looking toward -Z. Drawn by src/Game/Flow/FactionStage.cs.",
  "source": {
   "page": "docs/mockups/game-flow.html",
-  "sha256": "38f690790f9243b7fe3add33f57f3f95cc6173a59cd74db6dd1e6a3e0e86d07e"
+  "sha256": "22247f9e52832d1fde580d5c9ba43a9e49d545bfa8516dd00812f0e55f4d5407"
  },
  "table": {
   "top": 0.78,

@@ -1,32 +1,98 @@
 ---
 name: ship-detailing
-description: Detail a Fleet Command starship from blockout to game-ready textures, the way the Ssarith Hunt ships were made - grow the hull as one structure (a body lofted through one cross-section layout, its prongs, lances, hoods and rails split from the body's own section), unwrap it once, model a high-poly detail layer over it in Blender (primary armour plates each cut to its own outline and height, overlays, sub-armour, machinery in the gaps and trenches, domes in collars with straps, fan vents, shaped louvres, lamps, person-sized windows, the faction emblem, liveries, light fixtures), mirrored about the centreline with nothing repeated, bake it selected-to-active onto the ship's own UVs (data, position, normals, AO, a low sun's cast shadows, the hull lights), and paint it into a painted map and a PBR set (base colour, ORM, tangent normals, emission, light map). Use whenever a ship needs detail, texturing, UVs, AO, armour, greebles, vents, windows, a logo, hull lights, PBR maps or normal maps, or when a hull "looks plain", "looks like primitives stuck together", "has no distinct features", "repeats", "is too flat" ("detail the ship", "texture the ship", "custom UVs", "bake the hull", "armour plates", "greebles", "hull lights", "PBR", "normal map", "logo on the hull").
+description: Detail and texture a Fleet Command starship from a recipe written out of its faction's culture. Read the faction's accepted culture, set down how its makers build (its principles), and compose the ship's recipe from a palette of reusable techniques (hull form, plating layout, relief, exposed machinery, fasteners and frames, features, paint and liveries, wear, light, hull lights), every feature placed from the ship's own rooms and the whole mirror-symmetric. Then model the high-poly detail over the ship's own unwrap in Blender, render it and squash it onto the ship's own UVs (the bake), and write the PBR set (base colour, ORM, tangent normals, emission, light map) and a painted map. Use whenever a ship needs detail, texturing, UVs, AO, armour, greebles, vents, windows, a logo, hull lights, PBR maps or normal maps, whenever a new faction's ships are textured, or when a hull "looks plain", "looks like primitives", "has no distinct features", "repeats", "is too flat", "is not symmetric", "looks like black lines" ("detail the ship", "texture the ship", "custom UVs", "bake the hull", "armour plates", "greebles", "hull lights", "PBR", "normal map", "logo on the hull").
 ---
 
-# Ship detailing: from blockout to game-ready textures
+# Ship detailing: techniques, composed by each faction's culture
 
-The owner, 2026-11-05, on the Ssarith Hunt ships this method made: "Now those my friend are gorgeous looking star
-ships", then "Since this is an incredible accomplishment, if like you to write up a skill for detailing space ships with
-custom texturing", "Include image samples in your documentation". Written in this repository from that work (provenance:
-`.claude/skills/PROVENANCE.md`). It is the binding way to detail and texture a ship. The rules it serves are CLAUDE.md
-section 10 and the Ship Design Bible (`docs/design/ship-bible.html`): chapter 9 (hull lighting), 7 (windows), 10
-(markings), 13 (culture, not anatomy), 14 (one structure, F1-F5) and 15 (its own texture, T1-T8).
+The owner, 2026-11-05, on the Ssarith Hunt ships this skill was first written from: "Now those my friend are gorgeous
+looking star ships", "write up a skill for detailing space ships with custom texturing". Then, 2026-11-06, when the Hunt's
+own process was laid on the Concord and Krai and failed: "YOU CANT JUST USE THE CULTURE DEVELOPED FOR ONE FACTION AND
+SLAP THE SAME SKILLS ON TO OTHERS", "THE SKILL SHOULD BE THE ABSTRACT NOT THE PROCESS", "the actual process for authoring
+textures MUST TAKE INTO ACCOUNT THE CULTURE", "THE TECHNIQUES are a pallete that you can reuse between different ships".
+So this skill is in three parts: **the rules every ship keeps**, **the method** that turns a culture into a recipe, and
+**the palette of techniques** a recipe picks from. The Hunt's recipe is one example of the method, not the method.
+Provenance: `.claude/skills/PROVENANCE.md`. The rules it serves are CLAUDE.md sections 1 and 10 and the Ship Design
+Bible (`docs/design/ship-bible.html`): chapters 7 (windows), 9 (hull lighting), 10 (markings), 13 (culture, not anatomy),
+14 (one structure, F1-F5) and 15 (its own texture, T1-T8).
 
-**Take the look, never the art** (CLAUDE.md section 1). The owner's reference sheets are someone else's and are never
-committed or traced. What is taken is how such a hull is layered and shaded.
+## The rules every ship keeps
 
-**Nothing from the species' body** (Ship Design Bible C1-C5). A dome is armour, not an eye; a prong is a structure,
-not a claw.
+1. **Its recipe comes from its culture.** Never reuse another faction's recipe, palette, plating or wear. Read the
+   faction's accepted culture first (survey U7, its console-skin and emblem designs); where it is thin, ask (CLAUDE.md
+   section 1). Each choice in the recipe names the principle and the tradition it comes from.
+2. **Symmetric** (owner, 2026-11-06: "these empires SHOULD BE SYMMETRIC, they are powerful, proud and have a strong
+   culture"). One axis, the keel line: everything off it is built on the port side and mirrored, plate for plate, colour
+   for colour, window for window. A room the plan puts on one side gets its windows on both, or the feature moves to the
+   centreline; a bay is a pair or sits on the keel. Asymmetry only where the culture asks for it, by name.
+3. **Render, then squash** (owner: "the process is: render high poly model, and squash that down into a texture we can use
+   on the ship"). The light a texture wears is a render of the high-poly detail: a sky all round, a key light with its
+   shadows, and their bounce into the gaps (Cycles, direct and indirect), baked onto the ship's own UVs and multiplied
+   with the flat paint. No drawn lines, no ink pass, no painted steps on a new faction.
+4. **No black** (owner: "Black is not a good color here, because it doesnt look like the greebles on the ship are casting
+   shadows or AO. It looks like you just sketched random BLACK lines"). A gap, a trench, a greeble's foot is as dark as
+   the light that reaches it, in the hull's own palette; the layer beneath the plates is a colour, never #000.
+5. **Its own UVs, nothing repeated, read at ship scale** (T1-T8): no tile as the main colour map; no plate, vent or
+   feature a copy of another (its mirror excepted); seams, plates and features sized so they read from the battle camera.
+6. **Order, not noise.** Joints land on the hull's own structure (frames, decks, chines), not at random; a line that
+   ends nowhere, a seam that breaks off mid-plate, a notch that serves nothing is a mistake (owner: "there's so much mess
+   and mistakes").
+7. **Not from the body** (C1-C5) and **one structure** (F1-F5).
 
-## What it took to get here
+## The method: culture, then principles, then the recipe
 
-| Before | Why it failed | The rule now |
-|---|---|---|
-| ![placed primitives](images/01-placed-primitives.jpg) | Boxes, tapered booms and plates placed against each other, one repeating tile over everything (owner: "they arent connect together well, and violate our "no deformed primitive rules"") | F1-F5: one grown skin |
-| ![grown, plain](images/02-grown-plain.jpg) | One skin, its own unwrap, but plain plating that read as brickwork and no features (owner: "armor pieces are square, and there are no distinct features") | T5-T8: modelled, layered detail |
-| ![grown, detailed](images/03-grown-detailed.jpg) | Layered armour, trenches of machinery, a strapped dome, liveries, the red eye | "gorgeous looking star ships" |
+1. **The culture.** Quote the faction's accepted words (and mark what is provisional).
+2. **Its principles**, three to six lines of *how this people builds*: what they value, and how that shows in a hull.
+   For example "edge first: a ship reads by its edges", "light as material: a ship shows itself by light", "kept and added
+   to, never replaced".
+3. **The recipe.** For every row of the palette below, a setting or "none", each citing its principle. Write it in the
+   faction's OpenSpec design and lay its numbers out in `data/ships/<faction>/hull_detail.json`.
+4. **The story**, from the ship's room plan (`data/ships/<faction>/<ship>_plan.json`): where its people live (windows),
+   where it breathes (vents), sees (sensors), docks (bays), fights (muzzles) and runs (drives), mirrored.
+5. **Test one ship** at 1024 px, judge it against the recipe close up and from the battle camera, in both lights; only
+   then bake the line. Several designs of one faction are several recipes over one story.
 
-## The pipeline
+## The palette of techniques
+
+| Technique | What it reads as | Where | Settings |
+|---|---|---|---|
+| Hull form: grown skin | One body with branches split from its own section (the Hunt) | the ship's page (`Skin`, `hsec`), `export_blockouts.mjs` | section layout, branches |
+| Hull form: lofted line | A line's lofted hull (the Concord, the Krai) | the line's builder, the game's glb through `tools/mockups/glb_hull_obj.py` | as built |
+| Plating: chevrons | Swept chevrons and raked flank cuts, a kinked spine | `hull_detail.py` `armour_cuts` (`cut_style` "hunt") | stations, sweep, spine |
+| Relief: layered armour | Plates standing proud by their own amounts, overlays stepping up (a smaller copy of a plate over it: the Hunt only, never with windows or features on the plate: owner, "why is there two armor plates ontop of eachother?"), a sub-armour layer, trenches | `build_armour`, `overlay` | `armour_t_m`, `lift_m`, `overlay_*`, `sub_t_m`, `trench_*` |
+| Relief: flush skin | One continuous skin, its plates told apart by narrow seams only | the same, `lift_m` near 0, thin `armour_t_m`, narrow `gap_m`, no trenches | |
+| Exposed machinery | Machinery where the ship's systems run: trenches, service bands, round the drives | `exposed` zones, `greebles` | `greebles_per_m2`; never over the whole hull |
+| Plating: large panels and sub panels | Large panels between the room plan's stations, decks and walls (each seam "major"), each split into sub panels at their own places, cut again at the hull's chines; a clean hull | `panel_cuts`, `kit_split`, `chine_slabs` (`cut_style` "panels") | `panel_merge_m`, `station_sweep`, `sub_depth`, `sub_stop`, `kit_min_m`, `major_gap_m`, `chine_deg` |
+| Relief: chamfered edges | Every plate's edge rolled a little, so it catches the light (narrow for a crisp hull, broad for forged plate) | `bevel_m` (the Bevel node's radius by kind) | Concord 0.05 m, Krai 0.1 m |
+| The detail kit | Distinct pieces over the plating, mirrored, kept off bends and off one another: escape hatches and access panels set into the plating, vents, lit slots, small ports, thin grooves, tags, thruster quads, accent modules, missile and bomb tubes | `scatter_kit`, the `k_*` pieces | `kit`: `per_100m2`, `weights`, `lights`, `gap_m` |
+| Ordered machinery | Rows of built machinery in an opened bay: blocks, pipe runs, slatted boxes, tanks, lit panels, accent blocks, one a grid cell | `well_modules` | `well_cell_m` (with `exposed` zones) |
+| Bolt wells | Pill-shaped wells indented into a plate's corners (set diagonally) and across its long edges, where the bolts hold it down; never rivet rows | `rivets` | `rivets`: `inset_m`, `pill_l_m`, `share`, `slot_edge_m` |
+| Paint: marks | Warning corner brackets, arrows, hazard stripes, chevrons, bars, boxes, warning bands, names and numbers in a block font | `paint_decals`, `decal_shape` (`DECALS` from the kit, `decals` in data) | `DECAL` colours |
+| Wear: surface | Shallow dents and fine fore-and-aft scratches in the high-poly's own shading, so the render and the normal map carry them | `WEAR_BUMP` in `kind_material` | `wear_bump` by kind |
+| Wear: chips and grime | Paint chipped on the edges and specked on the faces (a lattice hash, no repeats), grime in the cavities | `specks`, `hash3`, `paint_render` | `CHIPS_K`, `DIRT`, `DIRT_K` |
+| Features | Domes, fans, louvres, lamps, bays, windows, the emblem | `hull_detail.py` features, from the story | sizes, places |
+| Paint: plates | One colour a plate from a palette; or by edge (temper), by section, by generation | `painted_bake.py` `flat_paint`, `plate_colours` | `palette`, `plates` |
+| Paint: liveries and marks | Bands, sash, stripe, fields, star, honour edges, tallies, hazard frames, chevrons | `livery_paint` | `liveries` |
+| Wear | Soot from vents and drives, scorch at muzzles, scuffs round bays | `wear` (the story list) | `wear` |
+| Light: render | The high-poly rendered under sky, key and bounce and squashed onto the UVs | `paint_render` (`PAINT_MODE` "render") | `SKY_RGB`, `SKY_K`, `AO_K` |
+| Light: painted | A painter's light in soft steps, inked crevices (the Hunt's own art style) | `paint_ship` (`PAINT_MODE` "painted") | the Hunt only |
+| Glow | Light strips, lit gaps, lamps | `strips_and_glow`, `UNDER_GLOW` | |
+| Hull lights | Floods grazing the plating, logo flood, nav lights, the light map | `lights`, the light bake | `flood`, `auto_floods`, `lighting` |
+| Panes | Windows and bays drawn as quads with rooms and hangars behind | the bake's `panes`, the page's pane mesh | `pane_frame_m` |
+
+## Recipes
+
+- **The Ssarith Hunt** (mockup 12, change `ssarith-ship-concepts`): grown skin; chevrons; layered armour with deep
+  trenches of machinery; strapped domes, fans, shaped louvres, the eye lamp; olive and khaki plates, green liveries; the
+  painted light. Its numbers are in the tables of the tools below and in `data/ships/ssarith/hull_detail.json`.
+- **The Concord and the Krai Warhost** (mockup 35, change `hull-texture-designs`): each written from its own culture in
+  that change's design, "Recipes from culture".
+
+## The tools, step by step
+
+What follows is how each tool works, first built for the Hunt. Where it gives numbers, they are the Hunt's recipe.
+
+### The pipeline
 
 | Step | Where | Writes |
 |---|---|---|
@@ -35,7 +101,8 @@ not a claw.
 | 3. Lay out its detail | `data/ships/<faction>/hull_detail.json` | where every dome, vent, lamp, window row, flood and logo sits |
 | 4. The emblem | `tools/mockups/emblem_masks.mjs <faction>` | `assets/emblems/<faction>/hull_mask.{png,json}` from `docs/mockups/lib/emblems.js` |
 | 5. Unwrap, build, bake, paint | `tools/blender/painted_bake.py --ship` with `tools/blender/hull_detail.py` | `assets/ships/<faction>/<ship>_{albedo,base,orm,normal,emit,light,ao}.png` and `manifest.json` |
-| 6. Show it | `tools/mockups/inline_data.py` on the page | the page's Painted, PBR and Clay looks under Studio or Night light |
+| 5a. Look at the model first | `painted_bake.py --ship <slug> --preview <dir>` | the high-poly itself rendered in its palette colours (quarter, top, close, aft), minutes before an hour's bake |
+| 6. Show it | `tools/mockups/inline_data.py` on the page (a manifest with `maps_dir` writes its maps beside the page as WebP files, published with it, for 4096 px maps) | the page's Painted, PBR and Clay looks under Studio or Night light |
 
 ```sh
 NODE_PATH=$(npm root -g) node tools/mockups/export_blockouts.mjs
@@ -48,7 +115,7 @@ python3 tools/mockups/inline_data.py docs/mockups/ssarith-ship-concepts.html
 A full bake costs about 12 minutes a ship at 2048 px on 4 cloud cores, so bake at most two ships per background job (a
 job is stopped at 30 minutes). Iterate at 1024 px and 16 samples (about 1.5 minutes a ship).
 
-## 1. Grow the hull as one structure
+### 1. Grow the hull as one structure
 
 The low-poly hull is the silhouette and the thing the game hits. It is one closed skin (Ship Design Bible F1-F5):
 
@@ -67,7 +134,7 @@ The low-poly hull is the silhouette and the thing the game hits. It is one close
   the stern. Nothing is placed on top.
 - Every branch has one job and a name (the hood, the lance, the keel blade).
 
-## 2-3. Export it and lay out its detail
+### 2-3. Export it and lay out its detail
 
 `export_blockouts.mjs` asks the page for its picks (`MOCKUP_PICKS`) and their OBJ (`MOCKUP_EXPORT_OBJ`), in ship space
 (+x port, +y up, +z bow, metres), one object per part, strips as `glow_*`. Blender imports it with forward Y, up Z, so
@@ -90,7 +157,7 @@ at `[x, y]`). Anything off the centreline is mirrored to starboard.
 | `lighting.floods` | spotlights 0.9 m off the hull, grazing it toward `aim`, 90 degree cones | three a ship |
 | `windows` | `z_m` stretch and `rows_y_m` deck heights on the port flank | provisional until the room plan |
 
-## 4. The detail layer (`hull_detail.py`)
+### 4. The detail layer (`hull_detail.py`)
 
 Built over the low-poly hull, in ship space, never exported: it exists only to be baked.
 
@@ -142,7 +209,7 @@ Built over the low-poly hull, in ship space, never exported: it exists only to b
   reflected frame (`frame_at(p, n, mirror=True)`, faces reversed by `place`); every piece's `rid` is a hash of its
   mirrored position (`rid_of`), so a plate and its mirror take the same paint and no two others do.
 
-## 5. The bake
+### 5. The bake
 
 Join the whole detail layer into **one object** first (the bake's setup is per object: 600 pieces cost a minute a pass,
 one costs seconds). Select it, make the low-poly hull active, hide the hull from rays (`visible_shadow`, `visible_diffuse`,
@@ -160,7 +227,7 @@ node graph switched per pass (`kind_material`, `show`).
 | sun | DIFFUSE direct | a low painter's sun (ship space 0.6, 0.55, 0.58) with its cast shadows | 8 / 60 |
 | hull lights | DIFFUSE direct, sun off, fixtures on | the floods' and lamps' light falling on white plating | 15 / 120 |
 
-## 6. The maps
+### 6. The maps
 
 ![the unwrap and its painted map](images/04-unwrap-painted-map.jpg)
 
@@ -186,7 +253,7 @@ light map here brightened 1.6 times to read):
 
 ![the six maps of one ship](images/06-pbr-set.jpg)
 
-## 7. On the page
+### 7. On the page
 
 The page shows the UV mesh from the manifest (indexed, `uv2 = uv` for the AO map, tangents computed) with two materials
 over one geometry: **Painted** (the painted map, its own light kept as a third of its emission, no environment) and
@@ -203,7 +270,7 @@ The board at night, each ship lit by its own floods, lamps, windows, strobes and
 
 ![the four picks at night](images/09-board-night.jpg)
 
-### Rooms, hangars and damage on the page
+#### Rooms, hangars and damage on the page
 
 **Rooms behind the panes.** Each ship's panes are one mesh of quads (`paneMesh`), laid 5 cm off the hull at the place
 the bake cut for each pane, each quad the pane plus its frame (0.1 m round a window, 0.35 m round a bay). Every vertex
@@ -300,6 +367,11 @@ Look at the maps and at the ship close up and from the board, in every look and 
 | The hull shader will not compile on a damage page | Your uniform has a name the shared GLSL already declares (`uLight`) | Name yours apart (`uHullLight`) |
 | The page never becomes ready | A ship in the manifest lacks a map the page asks for | Bake every ship before inlining, or keep the old manifest |
 | A flat olive hull | Only the per-part paint, nothing modelled | The detail layer of step 4 |
+| Another faction's ships look like the Hunt in other colours | The Hunt's recipe (chevrons, layered armour, trenches, its painted light) laid on them | Write the faction's own recipe from its culture (the method) |
+| White plates outlined in black lines | The painted light's ink and double occlusion on a light palette, gaps over a near-black layer | The render light (`PAINT_MODE` "render"); the layer beneath a colour of the palette |
+| Seams that end nowhere, notches, T-cuts | Strake seams broken off at random, joints at random | Joints on the frames (`frame_m`); no broken seams |
+| Port and starboard differ | Windows and bays placed from a one-sided room plan | Mirror them (rule 2) |
+| Greebles cannot be seen | Machinery only in hairline gaps | Open the armour where the systems run (`exposed`), and render it lit |
 
 ## Into the game (when the mockup is approved for implementation)
 

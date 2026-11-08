@@ -1,0 +1,10 @@
+{
+  "_doc": "Krai Warhost's emblem as a mask for hull painting: red the field, green the device, transparent the ground. Written by tools/mockups/emblem_masks.mjs from docs/mockups/lib/emblems.js; never edited by hand.",
+  "size_px": 512,
+  "hull": {
+    "plate": "#2c3646",
+    "field": "#9e1420",
+    "device": "#c08a4a",
+    "lit": false
+  }
+}

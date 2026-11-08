@@ -15,6 +15,6 @@
 ## 2. Still to do
 
 - [ ] 2.1 Mockup 1: the same space from the same data (its `buildCampaign` still rolls terrain per sector)
-- [ ] 2.2 Mockup 1: the fog of war, as the game draws it
+- [x] 2.2 Mockup 1: the fog of war, as the game draws it (2026-11-07, on the paper chart, change `paper-map`; mockup 1 v22)
 - [ ] 2.3 Rocks on the battlefield in an asteroid sector's battle (open question F2)
 - [ ] 2.4 Look at the map from the owner's machine and tune the counts (dust clouds, fields, belts)

@@ -650,6 +650,10 @@ Nothing is an exception until it is listed here with its reason.
 - **The campaign mockup has no tracker link** (owner, 2026-11-05, of its "All Fleet Command mockups (the tracker)" link: "remove
   this from the campaign mockup"). `docs/mockups/game-flow.html` (mockup 1) is drawn as the game's own screens, so it carries no
   link back to the tracker; every other published page still does (section 4).
+- **The freighters' container takes its surface from a CC0 texture set**, not a Material Maker graph (owner, 2026-11-07:
+  "you need like better cargo textures, lookem up online for cc0 options, back ao and get diffuse and normals and specular for
+  each container"). `tools/textures/fetch_cc0.py` fetches it (refusing anything not CC0), `tools/blender/build_container.py`
+  bakes the modelled container from it, and every original is named with its SHA-256 in `assets/containers/SOURCES.md`.
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from
