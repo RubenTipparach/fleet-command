@@ -677,7 +677,7 @@ const hero = {
     drop(x, w - 118, 50, 3.2, R, true, P / 2); drip(x, w - 106, 42, 20, R, true); drip(x, 106, h - 72, 14, R, false);
     // the sheet's ruled frame and its typed header
     x.strokeStyle = 'rgba(40,24,12,0.45)'; x.lineWidth = 0.8; x.strokeRect(32, 30, w - 64, h - 60);
-    x.fillStyle = 'rgba(30,20,12,0.75)'; x.font = '400 11px "Special Elite"'; x.fillText('TITHE OWED · SHEET 114', 58, 46); x.fillText('PAID IN FULL: NOT YET', 58, h - 38);
+    x.fillStyle = 'rgba(30,20,12,0.75)'; x.font = '400 11px "IM Fell English SC"'; x.fillText('TITHE OWED · SHEET 114', 58, 46); x.fillText('PAID IN FULL: NOT YET', 58, h - 38);
     x.restore();
     for (const [px, py] of [[w * 0.25, 26], [w * 0.75, 26], [w * 0.25, h - 26], [w * 0.36, h - 26], [26, h * 0.5], [w - 26, h * 0.5]]) nail(x, px, py, 2.3, R);
     knife(x, 1, 1, 46, 38, 1.4, R); knife(x, w - 1, 1, w - 46, 38, 1.4, R); knife(x, 1, h - 1, 46, h - 38, 1.4, R); hatchet(x, w - 96, h - 62, w - 30, h - 38, 1.3, R);
@@ -821,7 +821,7 @@ function ground(x, w, h) {
 const live = {
   // A chevron stamped into the brass head of each chamber.
   arrow: (x) => { x.fillStyle = 'rgba(30,18,6,0.9)'; x.beginPath(); x.moveTo(13, 0); x.lineTo(-3, -12); x.lineTo(-3, -5); x.lineTo(-12, -5); x.lineTo(-12, 5); x.lineTo(-3, 5); x.lineTo(-3, 12); x.closePath(); x.fill(); x.strokeStyle = 'rgba(255,230,160,0.45)'; x.lineWidth = 0.8; x.save(); x.translate(0.7, 0.9); x.stroke(); x.restore(); },
-  helmCentre: (x, c) => { x.fillStyle = '#1a1006'; x.font = '700 19px "Stardos Stencil"'; x.textAlign = 'center'; x.fillText('HOLD', c, c + 7); },
+  helmCentre: (x, c) => { x.fillStyle = '#1a1006'; x.font = '400 19px "Pirata One"'; x.textAlign = 'center'; x.fillText('HOLD', c, c + 7); },
   // The ship drawn in ink on the sheet; shields as heavy strokes in brass, rust and fresh blood by strength.
   ssd: (x, cx, cy, sh, col) => {
     for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.lineWidth = 7; x.lineCap = 'butt'; x.beginPath(); x.arc(cx, cy, 98, a - P / 6 + 0.1, a + P / 6 - 0.1); x.stroke(); x.strokeStyle = 'rgba(20,12,6,0.6)'; x.lineWidth = 0.8; x.stroke(); }
@@ -873,16 +873,16 @@ const ink = (fill) => (lum(fill) > 0.2 ? CC.ink : CC.text);
 // Ink on the trap-jaw keys (black on their paper slips) and the tally-stick tabs (pale on the bare stick, black on the
 // chosen tab's slip).
 const keyInk = { idle: '#16100b', hover: '#16100b', pressed: '#16100b', tabOn: '#16100b', tabOff: '#d9c49a' };
-// Type: "Stardos Stencil" for titles, keys and the larger readouts, "Special Elite", the typed bounty sheet, for labels and
-// small numbers (the skins page's pair). The page asks for Antonio sizes; both run about 1.4 times as wide (measured on
-// the console's own labels), so each is set at 0.79 times the size (the same for both, so a label rule T shrinks below 17 px
-// measures as it was fitted); never under 10 px.
+// Type (owner, 2026-11-08: "the font for red tithe is too "millitary" when they should be more "pirates""): "Pirata One",
+// a cut blackletter, for titles, keys and the larger readouts; "IM Fell English SC", an old ship's-log print, for small
+// labels (the skins page's pair). The page asks for Antonio sizes: Pirata One is compact, set at 0.95 times the size; Fell
+// runs about 1.4 times as wide, set at 0.79 times; never under 10 px.
 function font(spec) {
   const m = /^(\d+) ([\d.]+)px Antonio$/.exec(spec); if (!m) return spec;
   const s = +m[2];
-  return s >= 17 ? `700 ${Math.round(s * 0.79 * 10) / 10}px "Stardos Stencil"` : `400 ${Math.max(10, Math.round(s * 0.79 * 10) / 10)}px "Special Elite"`;
+  return s >= 17 ? `400 ${Math.round(s * 0.95 * 10) / 10}px "Pirata One"` : `400 ${Math.max(10, Math.round(s * 0.79 * 10) / 10)}px "IM Fell English SC"`;
 }
-const fonts = ['700 20px "Stardos Stencil"', '400 20px "Stardos Stencil"', '400 20px "Special Elite"'];
+const fonts = ['400 20px "Pirata One"', '400 20px "Pirata One"', '400 20px "IM Fell English SC"'];
 // The icons for the console: cut into the dark boards in its reading colour, a shadowed cut (icon's default ink is the
 // sheet's black, for mockup 4's paper).
 const consoleIcon = (name, col = CC.sky) => icon(name, col);
@@ -1022,11 +1022,11 @@ const api = {
   id: 'redtithe', name: 'Red Tithe', RT, CC, kit: consoleKit, cells, barCells, live, icon: consoleIcon, iconSheet: icon, ICON_NAMES, ink, keyInk, font, fonts, lum, heroSize,
   // The skins page's kit (mockup 4): its nine-slice pieces, hero pieces and column as they were.
   nine: kit, heroSheet: hero, hero: consoleHero, ground, GROUND,
-  load: () => Promise.resolve(), family: '"Special Elite", monospace',
+  load: () => Promise.resolve(), family: '"IM Fell English SC", monospace',
   // The content inside a panel: clear of the boards (19 px), the corner straps and the knife in the bottom-right margin.
   pad: [30, 28, 28, 28],
   // The name plate's live field: on the bounty sheet, right of the seal (64-354), typed in black.
-  plate: { x: 62, y: 35, max: 290, font: '400 17px "Special Elite"', col: '#1a120c' },
+  plate: { x: 62, y: 35, max: 290, font: '400 17px "IM Fell English SC"', col: '#1a120c' },
   // The battle's helm ring under the ship, in old paper.
   ring: ['rgba(239,220,174,0)', 'rgba(239,220,174,0.14)', 'rgba(250,236,200,0.9)'],
   // Names for the player's side where the page shows it as the Red Tithe: ships named for debts and their keeping,
