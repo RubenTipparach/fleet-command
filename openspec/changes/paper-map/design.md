@@ -49,6 +49,34 @@ reveals its sector. On the chart (redrawn when the fog changes) the three states
 faction's fleets and freighters stand only where seen now, ports, suns, rocks and mission banners wherever charted, and
 nothing on the unexplored. The hover card and the sector panel say "Unexplored" or "(last seen)".
 
+## The drawn pieces (`docs/mockups/lib/drawn.js`)
+
+The owner, 2026-11-08: "Can we make the nebula or storm clouds like hand drawn billboard puffs of cloud. And make the planets
+have that hand drawn quality too? I just want everything in space campaign map to look very pirate and very space". The chart
+becomes a pirate's chart of the stars: what stands on it is drawn as a chart maker would draw it, and only the ships and
+stations stay as models (the owner, the same day: "The ships as their original models look great").
+
+| Piece | Drawn as | On the chart |
+|---|---|---|
+| Ink | Sepia (`#2a1b10`), the pen's line wobbling on a smooth seeded wave (never jitter), swelling and thinning with pressure, tapered at open ends, a faint second pass where it bled | Every outline |
+| Wash | Watercolour: an even coat, blooms of thicker and thinner paint, the paper's grain lifting through, pigment pooled darker at the edge | Every fill |
+| Light | From the upper left, as the lamp: shadowed sides (lower right) washed darker and hatched | Every piece |
+| Nebula cloud | A cartoon cumulus: crowns heaped at the back, a row of puffs in front overlapping them, each puff its own washed disc with its shadow crescent hatched and its edge inked, then a heavy silhouette and a flat base. The cloud's main colour low, its accent on the crowns. Three drawings per cloud, shared by its sectors | A billboard at the back of each nebula sector, 2.0-2.45 units wide, and in three sectors of five a smaller one in front, so a cloud of sectors reads as a bank |
+| Storm | The same cloud in slate, hatched heavier, a forked yellow bolt out of its base | One cloud in three (by its id); a look only, no rule changes |
+| Planet | A disc washed in the world's hue, curved bands, the night side washed dark and cross-hatched, a lit patch left bare, a ring in its holder's colour (back half behind the disc, front half over) | A billboard, 1.67 units wide for a home world |
+| Sun | A disc in warm wash with a darker rim and curls of churn, sixteen rays alternating a straight spike and a wavy flame | A billboard 2.0 units wide, with its warm point light kept |
+| Asteroid | A lumpy outline, grey-brown wash, a crater or two, the dark side hatched; twelve drawings shared by every belt | Half as many rocks as the 3D belt, each a small billboard |
+| Compass rose | Two rings with ticks, sixteen points (cardinals long, half and quarter points shorter), each point half washed red and half bare, a fleur at north | Printed on a patch of bare paper in the lower left of the print |
+| Rhumb lines | Lines fanning from two hubs (32 from the rose, 16 from the upper right), every fourth one red | Printed faintly across the whole print |
+| Names | The engraved face IM Fell English SC (SIL Open Font License, Google Fonts) in sepia with a paper halo, a stroke of the holder's colour under it; the chart's title in the same face | Every label on the map |
+
+Every drawing is seeded with Mulberry32 (CLAUDE.md section 10), drawn once into a canvas and kept as a texture for every map built
+after (`drawnTex`), and stood on the chart as a sprite whose foot is the drawing's lowest point (`drawnSprite`). The pieces hide
+under the fog of war as the 3D ones did (`fogKey`). The space look (`?look=space`) keeps its 3D clouds, planets and stars.
+
+Taken from the reference games: nothing. The look is a sea chart's (compass roses, rhumb lines, inked and washed vignettes),
+which is a tradition of map making, not anyone's artwork.
+
 ## The sheet in 3D (`paperMesh`)
 
 A plane of 150 by 130 quads lying 1.75 mm over the table, alpha-tested to the torn outline. Its corners lift 1.3 to 3.5 cm
@@ -57,7 +85,7 @@ where it has curled, its edges a little, and each fold is a ridge or a valley of
 ## Cost
 
 Four 1024 px maps for the carpet and the green wall each (albedo, normal, ORM, specular) and one for the paper, about 0.9 MB in
-the page as WebP. The nebula is rendered once per chart at half the chart's size (1,300 by 1,120 px), a few milliseconds. The chart is one 2,800 by 2,440 canvas texture (27 MB of texture memory) and one shadowed spot light (a
+the page as WebP. The nebula is rendered once per chart at half the chart's size (1,300 by 1,120 px), a few milliseconds. The drawn pieces are about fifty small canvases (clouds 256 by 200 px, planets 256 px, suns 320 px, rocks 96 px), about 10 MB of texture memory, drawn once. The chart is one 2,800 by 2,440 canvas texture (27 MB of texture memory) and one shadowed spot light (a
 2048 px map): fine on a desktop; in the game on phones it would be a 2048 px texture and a baked table shadow.
 
 ## Open questions
@@ -66,4 +94,6 @@ the page as WebP. The nebula is rendered once per chart at half the chart's size
 |---|---|---|
 | 1 | Paper map in the game, or the mockup only for now? | The mockup only until the owner asks (sync task `game-flow-engine` 2.10) |
 | 2 | Keep the space board as an option (a setting), or retire it? | Kept in the page behind `?look=space` |
-| 3 | Nebulae as printed washes only, or also their 3D clouds over the paper? | Printed only |
+| 3 | Nebulae as printed washes only, or also their 3D clouds over the paper? | Answered 2026-11-08: drawn billboard clouds over the printed washes |
+| 4 | Do storms do anything (a move cost, damage), or are they a look? | A look only, until the owner asks |
+| 5 | Should the stations and ships be drawn too? | No: the owner likes the ships as models; stations stay models with them |

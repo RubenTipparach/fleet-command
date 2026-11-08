@@ -18,6 +18,9 @@
   texture so it compiles on WebGL 1; the sheet at 32 px a unit on a touch screen; `softDraw()` for browsers with no canvas filter
 - [x] 1.10 Panels on a phone (owner, 2026-11-07: "Panels on my phone stuck open, I can't see"): the sector panel's Hide key, a
   Sector map key to bring it back, the portrait top bar in two rows (mockup 1 v25, mockup 24 v3; the game's sync task `game-flow-engine` 2.11)
+- [x] 1.11 The drawn pieces (owner, 2026-11-08: "hand drawn billboard puffs of cloud", "very pirate and very space"):
+  `docs/mockups/lib/drawn.js` (ink, wash, hatching; clouds, storms, planets, suns, rocks, the compass rose), billboards on the
+  chart, hand-lettered names, rhumb lines (mockup 1 v26, mockup 24 v4)
 
 ## 2. After the owner's notes
 

@@ -31,3 +31,17 @@ tear running into the border and one corner torn away.
 #### Scenario: The edge close up
 - **WHEN** the player zooms in on the chart's edge
 - **THEN** the white border shows a ragged, browned edge with tears, and the table's wood shows where the paper is torn away
+
+### Requirement: What stands on the chart is drawn by hand
+
+On the paper chart the nebulae, storms, planets, suns and asteroids SHALL be hand-drawn pieces (ink and watercolour, shaded
+away from the lamp) standing on the chart as billboards, the names SHALL be hand-lettered, and the chart SHALL carry a compass
+rose and rhumb lines; the ships and stations SHALL stay as their 3D models.
+
+#### Scenario: A nebula close up
+- **WHEN** the player zooms in on a nebula on the paper chart
+- **THEN** it stands as inked, washed puffs of cloud in its colours, facing the camera, with the ships among them still models
+
+#### Scenario: A storm
+- **WHEN** a cloud is one of the storms
+- **THEN** it is drawn in slate with a forked bolt of lightning out of its base, and moving through it costs what any nebula costs
