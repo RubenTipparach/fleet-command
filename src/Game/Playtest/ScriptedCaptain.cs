@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -138,6 +138,12 @@ public sealed partial class ScriptedCaptain : Node
             case "select": return await Select(b.Arg);
             case "repeat": return await Repeat(b.Arg.Split(','), b.Seconds > 0 ? b.Seconds : 60);
             case "until_over": return await UntilOver(b.Seconds > 0 ? b.Seconds : 300);
+            // the freighters' beats (ScriptedCaptain.Freighters.cs)
+            case "meet": return await Meet(b.Arg, b.Seconds > 0 ? b.Seconds : 600);
+            case "cash_out": return await CashOut();
+            case "offer": return await OfferBeat(b.Arg);
+            case "loiter": return await Loiter(b.Seconds > 0 ? (int)b.Seconds : 10);
+            case "port": return await PortBeat(b.Arg);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -147,8 +153,10 @@ public sealed partial class ScriptedCaptain : Node
     // of battle time. With lingerS, a captain watching a kill: it stays on the wreck that long before locking the next. With
     // aims (a comma list, the Disable scene's "engines,weapons"), a captain disabling a ship: it aims, on the Tactical
     // station's Aim at keys, at the first of them whose key is not yet lit Disabled or Destroyed on the locked target. With
-    // sweep, against cloaked ships: with none in sight, the Science station's Sweep.
-    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false)
+    // sweep, against cloaked ships: with none in sight, the Science station's Sweep. With take, a captain out to take a prize
+    // (a raid's freighter) rather than destroy her: with her hull under half, the weapons panel's Multiple key turned to
+    // Single, so one shot at a time brings her to strike, and back to Multiple once she has struck.
+    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool take = false)
     {
         double t0 = B.T, lastChange = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
@@ -210,11 +218,16 @@ public sealed partial class ScriptedCaptain : Node
                     await Click("aim." + want);
                 }
             }
+            if (take)
+            {
+                bool gentle = B.TargetOf(me) is { Prize: true, Struck: false } pz && pz.Hull < pz.Class.HullHp * 0.5;
+                if (me.Volley == gentle) await Click("volley");
+            }
             if (B.WouldFire().Length > 0) Press("fire");
             await Frames(3);
             double now = HullSum();
             if (Math.Abs(now - sum) > 1e-6) { sum = now; lastChange = B.T; }
-            if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s); last: {string.Join(" / ", B.Log.TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}";
+            if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s; {Standoff(me)}); last: {string.Join(" / ", B.Log.TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}";
         }
         return null;
     }
@@ -345,24 +358,41 @@ public sealed partial class ScriptedCaptain : Node
         if (!c.S.Missions.Contains(m)) return $"{name} was gone when the fleet arrived";
         await Seconds(1.5);
         if (_flow!.Brief?.Id != m.Id && await Click($"sec.brief.{m.Id}") is { } s4) return s4;
+        return await LaunchAndFight(m, maxBattleS);
+    }
+
+    // A mission whose briefing is open with the fleet in its sector, from there to the map again: Launch, the battle fought
+    // out (Fight; a battle that stalls is withdrawn from with the menu's Withdraw), the debrief read and Continue. Contracts
+    // and freighter encounters both end here.
+    private async Task<string?> LaunchAndFight(Campaign.Offer m, double maxBattleS)
+    {
+        var c = Camp;
+        GameFlow flow = _flow!;
+        string name = c.Data.Missions[m.Script].Name;
         if (await Click("br.launch") is { } s5) return s5;
         await Frames(10);
         ulong end = Time.GetTicksMsec() + 30000;
-        while (Time.GetTicksMsec() < end && (_flow.Busy || _flow.Screen == FlowScreen.Map)) await Frames(2);
+        while (Time.GetTicksMsec() < end && (flow.Busy || flow.Screen == FlowScreen.Map)) await Frames(2);
         string how = "done on arrival";
-        if (_flow.Screen == FlowScreen.Battle)
+        if (flow.Screen == FlowScreen.Battle)
         {
             await Frames(30);
             await Snap($"battle-{m.Script}");
-            string? stalled = await Fight(maxBattleS);
+            string? stalled = await Fight(maxBattleS, take: m.Script == Campaign.Campaign.RaidScript);
             if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("menu"); await Click("m.withdraw"); }
             else how = B.Over;
+            // how it went, from the battle log: every ship struck or lost, and the prize's lines
+            foreach (var l in B.Log.Where(l => !l.Text.StartsWith("Hit on") && (l.Text.Contains("struck") || l.Text.Contains("destroyed.") || l.Text.Contains("meltdown")
+                         || B.Ships.Any(s => s.Prize && l.Text.Contains(s.Name)))))
+                GD.Print($"PLAYTEST_LOG {l.T:0} s {l.Who}: {l.Text}");
+            GD.Print($"PLAYTEST_LOG sides: {string.Join("; ", B.Ships.GroupBy(s => s.Side).Select(g => $"side {g.Key}: " + string.Join(", ", g.Select(s => $"{s.Name} ({s.Class.Id}) {(s.Alive ? $"{s.Hull / s.Class.HullHp:P0}" : "lost")}"))))}");
             await Snap($"end-{m.Script}");
         }
         // a withdrawal warps out first: the drive charges and plots (about 21 s unopposed) before the jump
-        if (await WaitScreen("Debrief", how.StartsWith("withdrew") ? 120 : 30) is { } s6) return s6;
+        if (await WaitScreen("Debrief", how.StartsWith("withdrew") ? 120 : 30) is { } s6)
+            return B.Over == null ? $"{s6} ({(B.Scenario.CanWithdraw ? $"withdrawing {B.Withdrawing}, warp armed {B.Player.Warp.Armed} plot {B.Player.Warp.Plot:0.00} banks {B.Player.Warp.Banks:0.0}, warp power {B.Player.Power["warp"]} of {B.Player.Warp.Want}, nacelles {string.Join("/", B.Player.Warp.Nacelles.Select(n => n.ToString("0.00")))}, free {B.Rules.Output(B.Player) - B.Rules.Used(B.Player):0.0}, {(B.WarpRiskOf(B.Player).Why is { Length: > 0 } why ? "refused: " + why : "risk " + B.WarpRiskOf(B.Player).Total.ToString("P0"))}; last: {string.Join(" / ", B.Log.Where(l => l.Who is "Helm" or "Engineering" or "Navigation").TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}" : "this mission refuses a withdrawal")})" : s6;
         await Snap($"debrief-{m.Script}");
-        var d = _flow.Last;
+        var d = flow.Last;
         string line = $"{name}: {how}, {d?.Grade ?? "?"}";
         _missions.Add(line);
         GD.Print($"PLAYTEST_MISSION done {line}, credits {c.S.Credits:0}, prestige {c.S.Prestige:0}");
@@ -385,6 +415,11 @@ public sealed partial class ScriptedCaptain : Node
         Error e = GetViewport().GetTexture().GetImage().SavePng(file);
         return e == Error.Ok ? null : $"could not save the still ({e})";
     }
+
+    // where a stalled fight stands: the range to the target, both ships' speeds and how many mounts would fire
+    private string Standoff(Ship me) => B.TargetOf(me) is { } t
+        ? $"{t.Name} at {Math.Sqrt((t.X - me.X) * (t.X - me.X) + (t.Z - me.Z) * (t.Z - me.Z)) / 1000:0.0} km, speeds {me.V:0}/{t.V:0} m/s, {B.WouldFire().Length} mounts would fire, helm {me.Manoeuvre}"
+        : "no target";
 
     private double HullSum() => B.Ships.Sum(s => s.Alive ? s.Hull : 0);
 

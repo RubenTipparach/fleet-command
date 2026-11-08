@@ -316,6 +316,49 @@
     "pilots": 2
    }
   },
+  "yd": {
+   "pads": 6,
+   "hold_t": 300,
+   "marines": 8,
+   "team": {
+    "engineers": 4,
+    "pilots": 2
+   }
+  },
+  "ab": {
+   "pads": 6,
+   "hold_t": 200,
+   "marines": 10,
+   "team": {
+    "engineers": 2
+   }
+  },
+  "op": {
+   "pads": 3,
+   "hold_t": 60,
+   "marines": 6,
+   "team": {
+    "engineers": 1
+   }
+  },
+  "pb": {
+   "pads": 1,
+   "hold_t": 0,
+   "marines": 2,
+   "team": {}
+  },
+  "mon": {
+   "pads": 1,
+   "hold_t": 0,
+   "marines": 0,
+   "team": {}
+  },
+  "pod": {
+   "pads": 1,
+   "hold_t": 40,
+   "marines": 0,
+   "team": {}
+  },
   "axiom_ff": {
    "pads": 2,
    "hold_t": 8,

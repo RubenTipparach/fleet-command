@@ -14,7 +14,9 @@
 - [x] 2.4 The map draws each freighter as her approved ship with her containers, anyone's where your ships see
 - [x] 2.5 The sector panel's Escort and Raid keys and Cash out
 - [x] 2.6 Tests (`CampaignTests`) and flow stills (`--flow=freighter`, `raid`, `haul`; `docs/screenshots/game/freighters/`)
-- [ ] 2.7 A playtest of an escort and a raid, from the Concord and the Krai side
+- [x] 2.7 A playtest of an escort, a raid and a cash out from every side (`data/playtests/freighters-<side>.json`, beats `meet`
+      and `cash_out`; `docs/playtests/2026-11-08-freighter-missions.md`), and what it found: a prize strikes on a critical core,
+      locks on her drop, her core is shut down (survey V6); a cash out that empties the fleet recommissions a ship
 
 ## 3. Mockup sync (mockup 1, game-flow)
 

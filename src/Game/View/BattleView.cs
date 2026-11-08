@@ -193,10 +193,20 @@ public sealed partial class BattleView : Node3D
     {
         foreach (Node c in n.GetChildren())
         {
-            if (c is MeshInstance3D mi)
-                mi.MaterialOverride = new StandardMaterial3D { AlbedoColor = mi.Name.ToString().StartsWith("Trim") ? trim : hull, Metallic = 0.35f, Roughness = 0.45f };
+            if (c is MeshInstance3D mi) mi.MaterialOverride = StandInMaterial(mi.Name.ToString(), hull, trim);
             Paint(c, hull, trim);
         }
+    }
+
+    /// <summary>A stand-in part's material by its name: Trim* in the trim colour, Glow* lit in the trim colour (lamps, a
+    /// monster's maw), Rock* dark stone with a little of the hull's colour (an asteroid base), the rest the hull colour.</summary>
+    private static StandardMaterial3D StandInMaterial(string name, Color hull, Color trim)
+    {
+        if (name.StartsWith("Glow", StringComparison.Ordinal))
+            return new StandardMaterial3D { AlbedoColor = trim, EmissionEnabled = true, Emission = trim, EmissionEnergyMultiplier = 1.2f, Roughness = 0.6f };
+        if (name.StartsWith("Rock", StringComparison.Ordinal))
+            return new StandardMaterial3D { AlbedoColor = new Color("#4a4540").Lerp(hull, 0.2f), Metallic = 0.05f, Roughness = 0.95f };
+        return new StandardMaterial3D { AlbedoColor = name.StartsWith("Trim", StringComparison.Ordinal) ? trim : hull, Metallic = 0.35f, Roughness = 0.45f };
     }
 
     /// <summary>The view rectangle and the whole screen, in console units.</summary>
@@ -236,18 +246,30 @@ public sealed partial class BattleView : Node3D
         LockStep(p, dt);
         Ship? tv = TargetView ? b.TargetOf(p) ?? Wreck(b) : null;
         Ship f = tv ?? p;
-        var want = new Vector3((float)(f.X / MPerU), 0, (float)(f.Z / MPerU));
+        Planet? pv = ViewedPlanet();
+        if (PlanetView && pv == null) { PlanetView = false; StartGlide(_shipDist); }   // the planet is gone with its battle
+        var want = pv != null ? PlanetCentre(pv) : new Vector3((float)(f.X / MPerU), 0, (float)(f.Z / MPerU));
         if (!_focusSet) { _focus = want; _focusSet = true; }
         _glideT = Math.Min(GlideS, _glideT + (float)dt);
         float k = _glideT / GlideS, e = k * k * (3 - 2 * k);   // eased in and out
-        _focus = _glideT < GlideS ? _glideFrom.Lerp(want, e) : want;
+        bool gliding = _glideT < GlideS;
+        _focus = gliding ? _glideFrom.Lerp(want, e) : want;
+        // the distance glides with the focus: to the planet view's height, or back to the ship's distance
+        if (pv != null) _distTo = (float)(pv.RadiusM / MPerU) * (1 + _planetAlt);
+        if (gliding) Dist = Mathf.Lerp(_distFrom, _distTo, e);
+        else if (pv != null) Dist = _distTo;
         Vector3 focus = _focus;
-        var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Dist;
-        _cam.Position = focus + off;
-        _cam.LookAt(focus, Vector3.Up);
+        if (pv != null) PlanetCamera(pv, focus, gliding ? 1 - e : 0);
+        else
+        {
+            var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Dist;
+            _cam.Position = focus + off;
+            _cam.LookAt(focus, Vector3.Up);
+        }
         _sky?.Follow(_cam.GlobalPosition);
         Project();
         _shots.Sync(b, _x.StepShare);
+        SyncPlanets(b);
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every
@@ -270,10 +292,11 @@ public sealed partial class BattleView : Node3D
     {
         if (_screen.X <= 0 || _view.Size.Y <= 0) return;
         LayoutDef l = _x.Data.Layout;
-        float near = 0.5f, fov = (float)(l.ViewFovDeg * Math.PI / 180);
+        // in the planet view the near plane comes in with the camera, so the ground is never cut off as it comes down
+        float near = PlanetView ? Mathf.Clamp(PlanetAltU() * 0.3f, 0.004f, 0.5f) : 0.5f, fov = (float)(l.ViewFovDeg * Math.PI / 180);
         float hs = 2 * near * Mathf.Tan(fov / 2) * (_screen.Y / _view.Size.Y), ws = hs * _screen.X / _screen.Y;
         // the damage range centres the ship it watches, so a hull looked at up close is not cut off by the view's foot
-        float shipY = _x.Battle.Scenario.DamageRange ? 0.5f : (float)l.ShipScreenY;
+        float shipY = _x.Battle.Scenario.DamageRange || PlanetView ? 0.5f : (float)l.ShipScreenY;
         float cx = _view.Position.X + _view.Size.X / 2, cy = _view.Position.Y + _view.Size.Y * shipY;
         _cam.SetFrustum(hs, new Vector2(ws * (0.5f - cx / _screen.X), hs * (cy / _screen.Y - 0.5f)), near, 4000);
     }
@@ -349,13 +372,20 @@ public sealed partial class BattleView : Node3D
     }
 
     /// <summary>The wheel: closer or further, down to 500 m in a battle, or 120 m on the damage range, where the player
-    /// looks at a hull's scars up close (owner, 2026-11-05: "and batle scars").</summary>
-    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, _x.Battle.Scenario.DamageRange ? 1.2f : 5, 220);
+    /// looks at a hull's scars up close (owner, 2026-11-05: "and batle scars").
+    /// In the planet view the wheel moves the camera's height over the surface instead, from PlanetAltMax down to PlanetAltMin
+    /// radii (owner, 2026-11-08: "just zooming down to planets is supper cool").</summary>
+    public void Zoom(float factor)
+    {
+        if (PlanetView) { _planetAlt = Mathf.Clamp(_planetAlt * factor, PlanetAltMin, PlanetAltMax); return; }
+        Dist = Mathf.Clamp(Dist * factor, _x.Battle.Scenario.DamageRange ? 1.2f : 5, 220);
+    }
 
     /// <summary>The Camera lock key: back to your own ship (out of Target view) with the camera locked on the target.</summary>
     public void LockCamera()
     {
         if (_x.Battle.TargetOf(_x.Battle.Player) == null) return;
+        if (PlanetView) { PlanetView = false; StartGlide(_shipDist); }
         if (TargetView) { TargetView = false; StartGlide(); }
         CamLock = true;
     }
@@ -364,12 +394,15 @@ public sealed partial class BattleView : Node3D
     public void ToggleTargetView()
     {
         TargetView = !TargetView && _x.Battle.TargetOf(_x.Battle.Player) != null;
+        if (TargetView && PlanetView) { PlanetView = false; Dist = _shipDist; }
         if (TargetView) _watched = _x.Battle.TargetOf(_x.Battle.Player)!.Id;
         if (TargetView) CamLock = false;
         StartGlide();
     }
 
-    private void StartGlide() { _glideFrom = _focus; _glideT = 0; }
+    // a glide of the focus from where it is now; distTo, the distance to glide to (null: the planet view's height, or the
+    // distance it has)
+    private void StartGlide(float? distTo = null) { _glideFrom = _focus; _glideT = 0; _distFrom = Dist; _distTo = distTo ?? Dist; }
 
     // Follows the player's target: camera lock is the default when targeting a ship (owner, 2026-11-04: "camera lock is
     // the default when targeting other ships"), so a new lock locks the camera (in Target view it glides there instead);
@@ -389,6 +422,7 @@ public sealed partial class BattleView : Node3D
             return;
         }
         _watched = id;
+        if (PlanetView) return;   // the planet view stays until the player leaves it
         if (TargetView) StartGlide();
         else CamLock = true;
     }

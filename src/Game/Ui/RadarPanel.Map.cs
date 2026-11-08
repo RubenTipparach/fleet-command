@@ -63,7 +63,7 @@ public sealed partial class RadarPanel
     {
         Ship? best = null;
         float bd = 30;
-        foreach (Ship o in B.Ships.Where(o => o.Alive))
+        foreach (Ship o in B.Ships.Where(o => o.Alive && (o == Me || B.Detected(Me, o))))
         {
             float d = MapAt(o.X, o.Z, size, km).DistanceTo(at);
             if (d < bd) { bd = d; best = o; }
@@ -100,8 +100,11 @@ public sealed partial class RadarPanel
             Vector2 sp = MapAt(sh.X, sh.Z, size, km);
             c.DrawRect(new Rect2(sp - new Vector2(2, 2), new Vector2(4, 4)), Color.FromHtml(sh.Color));
         }
-        // every ship: a ring with its heading, the target bracketed, its name
-        foreach (Ship o in B.Ships.Where(o => o.Alive))
+        // your sensors' reach, a faint ring: beyond it an enemy is an unknown contact (Battle.Identified)
+        c.DrawArc(mid, (float)(B.SensorKm(me) * 1000) * k, 0, Mathf.Tau, 96, new Color(C.Sky, 0.35f), 1.5f, true);
+        // every ship seen (a ship not yet arrived or cloaked unseen is not on the map): a ring with its heading, the target
+        // bracketed, its name as the sensors know it
+        foreach (Ship o in B.Ships.Where(o => o.Alive && (o == me || B.Detected(me, o))))
         {
             Vector2 sp = MapAt(o.X, o.Z, size, km);
             Color col = o == me ? C.Sky : Aiming.ContactColor(C, me, o);
@@ -115,7 +118,7 @@ public sealed partial class RadarPanel
                     var corner = sp + new Vector2(sx * 34, sy * 34);
                     c.DrawPolyline(new[] { corner - new Vector2(sx * 14, 0), corner, corner - new Vector2(0, sy * 14) }, o.Side != me.Side ? C.Alert : C.Accord, 3, true);
                 }
-            X.Fonts.Draw(c, o.Name.ToUpperInvariant(), sp.X + 12, sp.Y + 18, 16, C.Text, HorizontalAlignment.Left, 0, 600);
+            X.Fonts.Draw(c, Aiming.ContactName(B, o).ToUpperInvariant(), sp.X + 12, sp.Y + 18, 16, C.Text, HorizontalAlignment.Left, 0, 600);
         }
     }
 }

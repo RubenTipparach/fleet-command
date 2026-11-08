@@ -1,0 +1,67 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "salvage",
+ "name": "Salvage",
+ "glyph": "$",
+ "type": "Salvage",
+ "reward_cr": 700,
+ "weight": 0.4,
+ "where": "(asteroids || nebula) && !port",
+ "objective": "Beam aboard the cargo from the wreck field's pods.",
+ "brief": "A convoy broke up in this field and its cargo pods are still drifting. Get within transporter range of each pod and beam the goods aboard before scavengers come.",
+ "battle": [
+  {
+   "intel": "Pods, and maybe scavengers",
+   "groups": [
+    {
+     "id": "pods",
+     "faction": "neutral",
+     "count": 3,
+     "role": "neutral",
+     "label": "Cargo pod",
+     "hull": "pod",
+     "hold": {
+      "goods": 4
+     }
+    },
+    {
+     "id": "scavs",
+     "faction": "vos",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Scavengers",
+     "range_km": 120,
+     "arrive_s": 90
+    }
+   ],
+   "objectives": [
+    {
+     "id": "cargo",
+     "text": "Recover 8 units of goods",
+     "primary": true,
+     "done": "cargo('goods') >= 8"
+    },
+    {
+     "id": "all",
+     "text": "Recover all 12",
+     "done": "cargo('goods') >= 12"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 2
+   },
+   "log": "The pods are emptied."
+  }
+ ]
+}

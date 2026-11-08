@@ -1,6 +1,7 @@
 // StationPanel.Science: the Science station, as the battle console mockup's stScience draws it: Scan target and the scan's
 // bar, Active or Passive sensors, ECM and ECCM as rows of energy boxes out of the sensors' energy, the Cloak and the Sweep
-// that finds cloaked ships, and the scanned target's detail (its shields by facing, its weakest, its weapons). Every
+// that finds cloaked ships, Scan planet with its survey's bar while a planet is selected (Battle.ScanPlanet), and the
+// scanned target's detail (its shields by facing, its weakest, its weapons). Every
 // figure is the battle's own: the sweep's reach is Battle.SweepKm, the boxes' cap what Battle.SetEw allows (CLAUDE.md
 // 6.1). Drawn only with the kit, so every skin has it.
 using System;
@@ -49,8 +50,20 @@ public sealed partial class StationPanel
                 dis: !B.CanSweep(s), tip: new Tip($"Reveal cloaked ships within {km:0} km (ECCM adds {cr.PerEccmKm:0} km a point)"));
             y += 46;
         }
+        // the planet selected (Battle.PlanetDest): Scan planet and the survey's bar, from within the survey reach
+        if (B.Planets.FirstOrDefault(p => p.Id == B.PlanetDest) is { } pl)
+        {
+            float kw = MathF.Round(w * 0.44f);
+            bool surveying = B.PlanetScanId == pl.Id, near = B.InSurveyReach(pl);
+            double reach = B.Data.Systems.Field.PlanetScanKm;
+            string key = pl.Scanned ? "Surveyed" : surveying ? (near ? "Surveying" : $"Close to {reach:0} km") : "Scan planet";
+            Button("sci.planet", new Rect2(x, y, kw, 44), key, () => B.ScanPlanet(), on: surveying, dis: pl.Scanned,
+                tip: new Tip(pl.Scanned ? $"{pl.Name}: {pl.Installations.Count(i => i.Known)} sites found" : $"Survey {pl.Name} for what stands on its surface (inside {reach:0} km)"));
+            Bar(x + kw + 8, y + 2, w - kw - 8, $"{pl.Name} · {Battle.PlanetKm(s, pl):0} km", pl.ScanP, !near && !pl.Scanned, pl.Scanned);
+            y += 50;
+        }
         if (t == null || !hostile) { Lbl("No target", x, y + 14); return; }
-        if (!B.Scanned(t)) { Lbl($"{t.Name}: scan for detail", x, y + 14, w); return; }
+        if (!B.Scanned(t)) { Lbl($"{Aiming.ContactName(B, t)}: scan for detail", x, y + 14, w); return; }
         int weak = Array.IndexOf(t.Shields, t.Shields.Min());
         var ws = new Dictionary<string, int>();
         foreach (Mount m in t.Mounts) ws[m.Weapon.Name] = ws.GetValueOrDefault(m.Weapon.Name) + 1;

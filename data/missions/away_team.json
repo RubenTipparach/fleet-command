@@ -1,0 +1,89 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "away_team",
+ "name": "Away team",
+ "glyph": "@",
+ "type": "Away team",
+ "reward_cr": 800,
+ "weight": 0.4,
+ "where": "planet != '' && !hostile",
+ "objective": "Send an away team down to examine the ruin on {sector_planet}.",
+ "brief": "Survey readings show a ruin on {sector_planet} older than anyone's charts. Survey the planet, beam a team down to examine it, and bring them back aboard.",
+ "needs": [
+  {
+   "if": "marines < 1",
+   "say": "An away team needs marines: carry at least 1."
+  }
+ ],
+ "battle": [
+  {
+   "intel": "Quiet, for now",
+   "planets": [
+    {
+     "id": "world",
+     "name": "{sector_planet}",
+     "kind": "terran",
+     "bearing_deg": 0,
+     "range_km": 80,
+     "radius_km": 12,
+     "sites": [
+      {
+       "id": "ruin",
+       "name": "Old ruin",
+       "kind": "ruin",
+       "lat_deg": 25,
+       "lon_deg": -30
+      },
+      {
+       "id": "wreck",
+       "name": "Crash site",
+       "kind": "wreck",
+       "lat_deg": -15,
+       "lon_deg": 50
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "id": "raiders",
+     "faction": "vos",
+     "count": 1,
+     "role": "enemy",
+     "label": "Scavenger",
+     "range_km": 140,
+     "arrive_s": 120
+    }
+   ],
+   "objectives": [
+    {
+     "id": "survey",
+     "text": "Survey the planet",
+     "primary": true,
+     "done": "surveyed('world')"
+    },
+    {
+     "id": "ruin",
+     "text": "Examine a site and bring the team home",
+     "primary": true,
+     "done": "secured('world') >= 1 && teams_down == 0"
+    },
+    {
+     "id": "both",
+     "text": "Examine both sites",
+     "done": "secured('world') >= 2"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 4
+   },
+   "log": "The ruin on {sector_planet} gave up its records."
+  }
+ ]
+}

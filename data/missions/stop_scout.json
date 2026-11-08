@@ -1,0 +1,59 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "stop_scout",
+ "name": "Stop the scout",
+ "glyph": "T",
+ "type": "Scout",
+ "reward_cr": 800,
+ "weight": 0.4,
+ "where": "own && dist_home <= 4",
+ "objective": "Catch the {enemy_name} scout before it gets home: two and a half minutes.",
+ "brief": "A {enemy_name} scout has charted our space and is running for home. Stop it before it jumps clear. Taking it intact is better than sinking it.",
+ "battle": [
+  {
+   "intel": "One fast ship, running",
+   "time_limit_s": 150,
+   "groups": [
+    {
+     "id": "scout",
+     "faction": "{enemy}",
+     "count": 1,
+     "role": "enemy",
+     "label": "Scout",
+     "tag": "scout",
+     "range_km": 45,
+     "bearing_deg": 30
+    }
+   ],
+   "objectives": [
+    {
+     "id": "stop",
+     "text": "Stop the scout",
+     "primary": true,
+     "done": "alive(scout) == 0"
+    },
+    {
+     "id": "take",
+     "text": "Take it intact",
+     "done": "taken(scout) >= 1"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 4,
+    "{enemy}": -3
+   },
+   "log": "The scout never got home."
+  }
+ ]
+}

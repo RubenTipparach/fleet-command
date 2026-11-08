@@ -74,6 +74,8 @@ public sealed partial class Battle
         {
             if (!s.Alive) continue;
             ReactorState rx = s.Reactor;
+            // a ship that has struck has her core shut down by the boarding party: it neither heats nor melts down
+            if (s.Struck) { rx.Melt = 0; rx.Temp = Math.Max(R.TempFloorPct, rx.Temp - R.CoolPerFlow * rx.Temp * dt); continue; }
             double conf = Rules.Confinement(s);
             if (conf < 1)
                 for (int i = 0; i < rx.Coils.Length; i++)

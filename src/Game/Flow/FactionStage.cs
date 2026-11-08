@@ -96,7 +96,7 @@ public sealed partial class FactionStage : Node3D
         AddChild(tbl);
         var wood = Wood(Colors.White, 0.35f, 0.28f);
         var under = Wood(new Color(0.55f, 0.5f, 0.46f), 0.2f, 0.4f);
-        Dress(tbl, name => name switch { "table_wood" => wood, "table_under" => under, _ => null });
+        GraphMaterial.Dress(tbl, name => name switch { "table_wood" => wood, "table_under" => under, _ => null });
 
         // each badge's materials: its Material Maker graph's maps, or the holographic field
         var badgeMats = new Dictionary<string, Material?>();
@@ -118,7 +118,7 @@ public sealed partial class FactionStage : Node3D
             slot.Holder.AddChild(tilt);
             Node3D badge = GD.Load<PackedScene>(Dir + fac + ".glb").Instantiate<Node3D>();
             tilt.AddChild(badge);
-            Dress(badge, name =>
+            GraphMaterial.Dress(badge, name =>
             {
                 if (name == "holo_field") { var h = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/holo_field.gdshader") }; _holo.Add(h); return h; }
                 return badgeMats.GetValueOrDefault(name);
@@ -177,16 +177,8 @@ public sealed partial class FactionStage : Node3D
         var mat = new OrmMaterial3D { AlbedoColor = C("tint").LinearToSrgb(), TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmapsAnisotropic };
         if (e.GetProperty("graph").ValueKind == JsonValueKind.String)
         {
-            string g = $"res://assets/textures/materials/{e.GetProperty("graph").GetString()}/";
-            mat.AlbedoTexture = GD.Load<Texture2D>(g + "albedo.png");
-            mat.NormalEnabled = true;
-            mat.NormalTexture = GD.Load<Texture2D>(g + "normal.png");
-            mat.NormalScale = F("normal_scale");
-            mat.OrmTexture = GD.Load<Texture2D>(g + "orm.png");
-            mat.Roughness = 1;
-            mat.Metallic = 1;
             float uv = F("uv_scale");
-            mat.Uv1Scale = new Vector3(uv, uv, 1);
+            mat = GraphMaterial.Make(e.GetProperty("graph").GetString()!, C("tint").LinearToSrgb(), new Vector2(uv, uv), F("normal_scale"));
         }
         else { mat.Roughness = F("roughness"); mat.Metallic = F("metalness"); }
         if (F("clearcoat") > 0) { mat.ClearcoatEnabled = true; mat.Clearcoat = F("clearcoat"); mat.ClearcoatRoughness = F("clearcoat_roughness"); }
@@ -194,18 +186,6 @@ public sealed partial class FactionStage : Node3D
         Color em = C("emissive");
         if (em.R + em.G + em.B > 0) { mat.EmissionEnabled = true; mat.Emission = em.LinearToSrgb(); mat.EmissionEnergyMultiplier = F("emissive_strength"); }
         return mat;
-    }
-
-    // Puts each surface's material in place by the name the glb gives it; a name the pick has no answer for keeps its own.
-    private static void Dress(Node n, Func<string, Material?> pick)
-    {
-        if (n is MeshInstance3D mi && mi.Mesh != null)
-        {
-            mi.CastShadow = GeometryInstance3D.ShadowCastingSetting.On;
-            for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++)
-                if (mi.Mesh.SurfaceGetMaterial(i) is { } m && pick(m.ResourceName) is { } r) mi.SetSurfaceOverrideMaterial(i, r);
-        }
-        foreach (Node c in n.GetChildren()) Dress(c, pick);
     }
 
     // The motes in a beam (the page's dust: each at a depth down the cone and a radius inside it), their seeds in UV.x.

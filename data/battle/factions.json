@@ -39,6 +39,11 @@
   "hull": "#a0a6ae",
   "trim": "#7c8794"
  },
+ "fauna": {
+  "name": "Void fauna",
+  "hull": "#5f6e4c",
+  "trim": "#c6ef6a"
+ },
  "axiom": {
   "name": "The Axiom",
   "hull": "#e8ecf6",

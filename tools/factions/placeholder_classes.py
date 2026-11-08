@@ -75,12 +75,14 @@ def build():
     for cid, tid in ids:
         comms['classes'][cid] = comms['classes'][tid]
     cloak_t = CLOAK.read_text(); cloak = json.loads(cloak_t)
-    for block, sec, anchor in (('marines', cloak['security']['marines'], '"kelvane_cv": 10\n  }'), ('deck_plans', cloak['deck_plans']['classes'], '"kelvane_cv": "petrel"\n  }')):
+    for block, sec, start in (('marines', cloak['security']['marines'], '"marines": {'), ('deck_plans', cloak['deck_plans']['classes'], '"classes": {')):
         missing = [(cid, tid) for cid, tid in ids if cid not in sec and tid in sec]
         if not missing: continue
-        if cloak_t.count(anchor) != 1: raise SystemExit(f'cloak.json: the {block} block changed; update its anchor here')
+        # the block's end: the first two-space closing brace after its opening (each block's entries sit three spaces in)
+        i = cloak_t.index(start, cloak_t.index('"deck_plans": {') if block == 'deck_plans' else 0)
+        j = cloak_t.index('\n  }', i)
         add = ''.join(f',\n   "{cid}": {json.dumps(sec[tid])}' for cid, tid in missing)
-        cloak_t = cloak_t.replace(anchor, anchor.split('\n')[0] + add + '\n  }')
+        cloak_t = cloak_t[:j].rstrip() + add + cloak_t[j:]
     scen = json.loads(SCEN.read_text())
     for sc in scen['scenarios']:
         if sc['id'] not in RANGES: continue

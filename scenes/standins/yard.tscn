@@ -1,0 +1,155 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="BoxMesh" id="beam"]
+size = Vector3(0.03, 0.03, 1.0)
+
+[sub_resource type="BoxMesh" id="rib"]
+size = Vector3(0.56, 0.025, 0.025)
+
+[sub_resource type="BoxMesh" id="post"]
+size = Vector3(0.025, 0.42, 0.025)
+
+[sub_resource type="CapsuleMesh" id="hull"]
+radius = 0.1
+height = 0.66
+radial_segments = 20
+rings = 6
+
+[sub_resource type="BoxMesh" id="tower"]
+size = Vector3(0.08, 0.16, 0.12)
+
+[sub_resource type="SphereMesh" id="lamp"]
+radius = 0.016
+height = 0.032
+radial_segments = 8
+rings = 4
+
+[node name="Yard" type="Node3D"]
+
+[node name="HullBeam0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, -0.21, 0)
+mesh = SubResource("beam")
+
+[node name="HullBeam1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.21, 0)
+mesh = SubResource("beam")
+
+[node name="HullBeam2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.21, 0)
+mesh = SubResource("beam")
+
+[node name="HullBeam3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.21, 0)
+mesh = SubResource("beam")
+
+[node name="HullRibTop0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, -0.48)
+mesh = SubResource("rib")
+
+[node name="HullRibFoot0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, -0.48)
+mesh = SubResource("rib")
+
+[node name="HullPostL0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, -0.48)
+mesh = SubResource("post")
+
+[node name="HullPostR0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0, -0.48)
+mesh = SubResource("post")
+
+[node name="HullRibTop1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, -0.24)
+mesh = SubResource("rib")
+
+[node name="HullRibFoot1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, -0.24)
+mesh = SubResource("rib")
+
+[node name="HullPostL1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, -0.24)
+mesh = SubResource("post")
+
+[node name="HullPostR1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0, -0.24)
+mesh = SubResource("post")
+
+[node name="HullRibTop2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
+mesh = SubResource("rib")
+
+[node name="HullRibFoot2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+mesh = SubResource("rib")
+
+[node name="HullPostL2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, 0)
+mesh = SubResource("post")
+
+[node name="HullPostR2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0, 0)
+mesh = SubResource("post")
+
+[node name="HullRibTop3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0.24)
+mesh = SubResource("rib")
+
+[node name="HullRibFoot3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0.24)
+mesh = SubResource("rib")
+
+[node name="HullPostL3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, 0.24)
+mesh = SubResource("post")
+
+[node name="HullPostR3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0, 0.24)
+mesh = SubResource("post")
+
+[node name="HullRibTop4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0.48)
+mesh = SubResource("rib")
+
+[node name="HullRibFoot4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0.48)
+mesh = SubResource("rib")
+
+[node name="HullPostL4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, 0.48)
+mesh = SubResource("post")
+
+[node name="HullPostR4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0, 0.48)
+mesh = SubResource("post")
+
+[node name="TrimDocked" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -0.75, 0, 0, -0.02, 0.02)
+mesh = SubResource("hull")
+
+[node name="HullControl" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38, 0.12, 0.42)
+mesh = SubResource("tower")
+
+[node name="GlowLamp0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.23, -0.48)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.23, -0.48)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.23, 0.48)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.23, 0.48)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, -0.19, 0)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.19, 0)
+mesh = SubResource("lamp")
