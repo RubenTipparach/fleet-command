@@ -1,0 +1,4197 @@
+{
+ "_doc": "Placeholder ship lines for the nine factions with no designed ships (owner, 2026-11-08: \"generate place holders for all of their ships, class design is your discretion\"). Written by tools/factions/placeholder_fleets.py; built by docs/mockups/lib/placeholder-hulls.js; shown on mockup 36 (docs/mockups/placeholder-fleets.html). Profiles run stern (t 0) to bow (t 1); limb paths are in fractions of (half-beam, half-height, half-length). Placeholders until each faction's ship mockup replaces them; the armament is a role sketch, not tuning.",
+ "factions": {
+  "axiom": {
+   "name": "The Axiom",
+   "colours": {
+    "hull": "#e8ecf6",
+    "trim": "#4b3fd8",
+    "dark": "#2f2696",
+    "glow": "#3fe0e6"
+   },
+   "hull": {
+    "n": 1.0,
+    "segs": 8,
+    "facet": true,
+    "plan": [
+     0.62,
+     0.9,
+     1,
+     0.618,
+     0.382,
+     0.236,
+     0.02
+    ],
+    "rise": [
+     0.5,
+     0.8,
+     1,
+     0.8,
+     0.5,
+     0.3,
+     0.04
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "tradition": "The tilers (exact sections at golden-ratio stations) and the branchers (fins iterated one level deeper per class)",
+   "classes": [
+    {
+     "id": "axiom_ff",
+     "name": "Lemma",
+     "role": "Frigate",
+     "code": "LM",
+     "length_m": 58,
+     "beam_ratio": 0.38,
+     "height_ratio": 0.2,
+     "armament": [
+      "2 rule lances",
+      "1 missile rack"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.3,
+         0,
+         -0.1
+        ],
+        [
+         1.4,
+         0.05,
+         -0.32
+        ],
+        [
+         2.1,
+         0.1,
+         -0.55
+        ]
+       ],
+       "w": [
+        0.5,
+        0.3,
+        0.04
+       ],
+       "h": [
+        0.35,
+        0.2,
+        0.03
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 1,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.2,
+        0.8
+       ],
+       "a_deg": [
+        -8,
+        8
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.4,
+        0.45
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "A small truth, carried one step"
+    },
+    {
+     "id": "axiom_dd",
+     "name": "Corollary",
+     "role": "Destroyer",
+     "code": "CR",
+     "length_m": 86,
+     "beam_ratio": 0.38,
+     "height_ratio": 0.2,
+     "armament": [
+      "4 rule lances",
+      "2 missile racks"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.3,
+         0,
+         -0.1
+        ],
+        [
+         1.4,
+         0.05,
+         -0.32
+        ],
+        [
+         2.1,
+         0.1,
+         -0.55
+        ]
+       ],
+       "w": [
+        0.5,
+        0.3,
+        0.04
+       ],
+       "h": [
+        0.35,
+        0.2,
+        0.03
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 2,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.15,
+        0.85
+       ],
+       "a_deg": [
+        -8,
+        8
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.38,
+        0.44
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "What follows from the Lemma"
+    },
+    {
+     "id": "axiom_ca",
+     "name": "Theorem",
+     "role": "Cruiser",
+     "code": "TH",
+     "length_m": 128,
+     "beam_ratio": 0.38,
+     "height_ratio": 0.2,
+     "armament": [
+      "6 rule lances",
+      "2 missile racks",
+      "iteration field"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.3,
+         0,
+         -0.1
+        ],
+        [
+         1.4,
+         0.05,
+         -0.32
+        ],
+        [
+         2.1,
+         0.1,
+         -0.55
+        ]
+       ],
+       "w": [
+        0.5,
+        0.3,
+        0.04
+       ],
+       "h": [
+        0.35,
+        0.2,
+        0.03
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 3,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.1,
+        0.9
+       ],
+       "a_deg": [
+        -8,
+        8
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.36,
+        0.42
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.6,
+        0.63
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "A rule stated and proven"
+    },
+    {
+     "id": "axiom_bb",
+     "name": "Proof",
+     "role": "Battleship",
+     "code": "PR",
+     "length_m": 190,
+     "beam_ratio": 0.38,
+     "height_ratio": 0.2,
+     "armament": [
+      "10 rule lances",
+      "4 missile racks",
+      "iteration field"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.3,
+         0,
+         -0.1
+        ],
+        [
+         1.4,
+         0.05,
+         -0.32
+        ],
+        [
+         2.1,
+         0.1,
+         -0.55
+        ]
+       ],
+       "w": [
+        0.5,
+        0.3,
+        0.04
+       ],
+       "h": [
+        0.35,
+        0.2,
+        0.03
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 4,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.06,
+        0.94
+       ],
+       "a_deg": [
+        -8,
+        8
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.34,
+        0.4
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.58,
+        0.62
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "The rule carried as deep as it goes"
+    }
+   ]
+  },
+  "exponent": {
+   "name": "The Exponent",
+   "colours": {
+    "hull": "#5d686d",
+    "trim": "#8c4522",
+    "dark": "#262e31",
+    "glow": "#8be6dc",
+    "accent": "#d27a6a"
+   },
+   "hull": {
+    "n": 5.0,
+    "segs": 20,
+    "facet": false,
+    "plan": [
+     0.9,
+     1,
+     1,
+     1,
+     0.95,
+     0.85,
+     0.6
+    ],
+    "rise": [
+     0.85,
+     1,
+     1,
+     0.95,
+     0.9,
+     0.8,
+     0.55
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "tradition": "The assimilators (a modular near-box hull, taken hulls kept on as pods) and the conduit-keepers (a lumen line)",
+   "classes": [
+    {
+     "id": "exponent_ff",
+     "name": "Tender",
+     "role": "Frigate",
+     "code": "TN",
+     "length_m": 64,
+     "beam_ratio": 0.36,
+     "height_ratio": 0.26,
+     "armament": [
+      "2 cutting beams",
+      "1 tractor"
+     ],
+     "limbs": [],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.1,
+        0.9
+       ],
+       "a_deg": [
+        -4,
+        4
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.25
+       ],
+       "a_deg": [
+        60,
+        140
+       ]
+      }
+     ],
+     "why": "Tends what the collective has taken"
+    },
+    {
+     "id": "exponent_dd",
+     "name": "Salvor",
+     "role": "Destroyer",
+     "code": "SV",
+     "length_m": 96,
+     "beam_ratio": 0.36,
+     "height_ratio": 0.26,
+     "armament": [
+      "4 cutting beams",
+      "2 tractors"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.5,
+         -0.2,
+         0.7
+        ],
+        [
+         0.75,
+         -0.25,
+         1.0
+        ],
+        [
+         0.55,
+         -0.3,
+         1.25
+        ]
+       ],
+       "w": [
+        0.18,
+        0.16,
+        0.1
+       ],
+       "h": [
+        0.2,
+        0.18,
+        0.12
+       ],
+       "n": 4,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.1,
+        0.9
+       ],
+       "a_deg": [
+        -4,
+        4
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.3
+       ],
+       "a_deg": [
+        60,
+        140
+       ]
+      }
+     ],
+     "why": "Clamp arms forward to take a wreck in"
+    },
+    {
+     "id": "exponent_ca",
+     "name": "Hulk",
+     "role": "Cruiser",
+     "code": "HK",
+     "length_m": 150,
+     "beam_ratio": 0.4,
+     "height_ratio": 0.28,
+     "armament": [
+      "6 cutting beams",
+      "2 missile racks",
+      "2 tractors"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.5,
+         0.04000000000000001,
+         -0.5
+        ],
+        [
+         1.25,
+         0.1,
+         -0.15
+        ],
+        [
+         1.25,
+         0.1,
+         0.2
+        ]
+       ],
+       "w": [
+        0.192,
+        0.32,
+        0.256
+       ],
+       "h": [
+        0.192,
+        0.32,
+        0.256
+       ],
+       "n": 2.2,
+       "segs": 14,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         0.6,
+         -0.4
+        ],
+        [
+         0,
+         1.4,
+         -0.1
+        ],
+        [
+         0,
+         1.4,
+         0.3
+        ]
+       ],
+       "w": [
+        0.3,
+        0.38,
+        0.28
+       ],
+       "h": [
+        0.3,
+        0.35,
+        0.25
+       ],
+       "n": 3,
+       "segs": 14,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.1,
+        0.9
+       ],
+       "a_deg": [
+        -4,
+        4
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.55,
+        0.75
+       ],
+       "a_deg": [
+        30,
+        120
+       ]
+      }
+     ],
+     "why": "Three hulls taken and grown into one"
+    },
+    {
+     "id": "exponent_cv",
+     "name": "Reef",
+     "role": "Carrier",
+     "code": "RF",
+     "length_m": 230,
+     "beam_ratio": 0.44,
+     "height_ratio": 0.3,
+     "armament": [
+      "8 cutting beams",
+      "4 tractors",
+      "24 drone tenders"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.52,
+         0.04000000000000001,
+         -0.6
+        ],
+        [
+         1.3,
+         0.1,
+         -0.15
+        ],
+        [
+         1.3,
+         0.1,
+         0.3
+        ]
+       ],
+       "w": [
+        0.20400000000000001,
+        0.34,
+        0.272
+       ],
+       "h": [
+        0.20400000000000001,
+        0.34,
+        0.272
+       ],
+       "n": 2.2,
+       "segs": 14,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.44000000000000006,
+         -0.24,
+         -0.3
+        ],
+        [
+         1.1,
+         -0.6,
+         0.1
+        ],
+        [
+         1.1,
+         -0.6,
+         0.5
+        ]
+       ],
+       "w": [
+        0.156,
+        0.26,
+        0.20800000000000002
+       ],
+       "h": [
+        0.156,
+        0.26,
+        0.20800000000000002
+       ],
+       "n": 4,
+       "segs": 14,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         0.6,
+         -0.5
+        ],
+        [
+         0,
+         1.45,
+         -0.2
+        ],
+        [
+         0,
+         1.45,
+         0.4
+        ]
+       ],
+       "w": [
+        0.32,
+        0.4,
+        0.28
+       ],
+       "h": [
+        0.3,
+        0.36,
+        0.26
+       ],
+       "n": 3,
+       "segs": 14,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.06,
+        0.94
+       ],
+       "a_deg": [
+        -4,
+        4
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.3,
+        0.5
+       ],
+       "a_deg": [
+        40,
+        130
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.7,
+        0.85
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      }
+     ],
+     "why": "A drifting yard where the taken are rebuilt"
+    }
+   ]
+  },
+  "redtithe": {
+   "name": "Red Tithe",
+   "colours": {
+    "hull": "#2e3236",
+    "trim": "#5a1a12",
+    "dark": "#141618",
+    "glow": "#f0cf7a",
+    "accent": "#c8963a"
+   },
+   "hull": {
+    "n": 1.5,
+    "segs": 16,
+    "facet": false,
+    "plan": [
+     0.7,
+     0.95,
+     1,
+     0.85,
+     0.6,
+     0.35,
+     0.12
+    ],
+    "rise": [
+     0.7,
+     0.9,
+     1,
+     0.95,
+     0.8,
+     0.6,
+     0.3
+    ],
+    "centre": [
+     0.1,
+     0.05,
+     0,
+     0,
+     0.05,
+     0.1,
+     0.2
+    ]
+   },
+   "tradition": "Boarding: a ram keel to hold a prize, boarding tubes forward, the flagship carrying the Hall where debts are posted",
+   "classes": [
+    {
+     "id": "redtithe_ff",
+     "name": "Cutter",
+     "role": "Frigate",
+     "code": "CT",
+     "length_m": 54,
+     "beam_ratio": 0.34,
+     "height_ratio": 0.24,
+     "armament": [
+      "2 cannons",
+      "1 boarding tube"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         -0.5,
+         0.6
+        ],
+        [
+         0,
+         -0.75,
+         1.0
+        ],
+        [
+         0,
+         -0.8,
+         1.28
+        ]
+       ],
+       "w": [
+        0.22,
+        0.14,
+        0.02
+       ],
+       "h": [
+        0.35,
+        0.25,
+        0.04
+       ],
+       "n": 1.2,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.55,
+        1.0
+       ],
+       "a_deg": [
+        -30,
+        30
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.3,
+        0.33
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Runs a prize down and holds it"
+    },
+    {
+     "id": "redtithe_dd",
+     "name": "Reaver",
+     "role": "Destroyer",
+     "code": "RV",
+     "length_m": 82,
+     "beam_ratio": 0.34,
+     "height_ratio": 0.24,
+     "armament": [
+      "4 cannons",
+      "2 boarding tubes",
+      "1 missile rack (red)"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         -0.5,
+         0.6
+        ],
+        [
+         0,
+         -0.75,
+         1.0
+        ],
+        [
+         0,
+         -0.8,
+         1.28
+        ]
+       ],
+       "w": [
+        0.22,
+        0.14,
+        0.02
+       ],
+       "h": [
+        0.35,
+        0.25,
+        0.04
+       ],
+       "n": 1.2,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         0.0,
+         0.4
+        ],
+        [
+         1.05,
+         0.0,
+         0.6000000000000001
+        ],
+        [
+         1.15,
+         0.0,
+         0.77
+        ]
+       ],
+       "w": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "h": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.5,
+        1.0
+       ],
+       "a_deg": [
+        -30,
+        30
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.28,
+        0.31
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Two tubes to put crews aboard"
+    },
+    {
+     "id": "redtithe_ca",
+     "name": "Bloodship",
+     "role": "Cruiser",
+     "code": "BS",
+     "length_m": 124,
+     "beam_ratio": 0.36,
+     "height_ratio": 0.26,
+     "armament": [
+      "6 cannons",
+      "4 boarding tubes",
+      "2 missile racks (red, orange)"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         -0.5,
+         0.6
+        ],
+        [
+         0,
+         -0.75,
+         1.0
+        ],
+        [
+         0,
+         -0.8,
+         1.28
+        ]
+       ],
+       "w": [
+        0.22,
+        0.14,
+        0.02
+       ],
+       "h": [
+        0.35,
+        0.25,
+        0.04
+       ],
+       "n": 1.2,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         0.2,
+         0.44999999999999996
+        ],
+        [
+         1.05,
+         0.2,
+         0.65
+        ],
+        [
+         1.15,
+         0.2,
+         0.82
+        ]
+       ],
+       "w": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "h": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         -0.35,
+         0.30000000000000004
+        ],
+        [
+         1.05,
+         -0.35,
+         0.5
+        ],
+        [
+         1.15,
+         -0.35,
+         0.67
+        ]
+       ],
+       "w": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "h": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.45,
+        1.0
+       ],
+       "a_deg": [
+        -30,
+        30
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.25,
+        0.28
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Boards a cruiser from four sides at once"
+    },
+    {
+     "id": "redtithe_fl",
+     "name": "Tithe Hall",
+     "role": "Flagship",
+     "code": "TH",
+     "length_m": 176,
+     "beam_ratio": 0.38,
+     "height_ratio": 0.26,
+     "armament": [
+      "8 cannons",
+      "4 boarding tubes",
+      "2 missile racks",
+      "the Hall"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         -0.5,
+         0.6
+        ],
+        [
+         0,
+         -0.75,
+         1.0
+        ],
+        [
+         0,
+         -0.8,
+         1.28
+        ]
+       ],
+       "w": [
+        0.22,
+        0.14,
+        0.02
+       ],
+       "h": [
+        0.35,
+        0.25,
+        0.04
+       ],
+       "n": 1.2,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         0.2,
+         0.47
+        ],
+        [
+         1.05,
+         0.2,
+         0.67
+        ],
+        [
+         1.15,
+         0.2,
+         0.84
+        ]
+       ],
+       "w": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "h": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         -0.35,
+         0.31999999999999995
+        ],
+        [
+         1.05,
+         -0.35,
+         0.52
+        ],
+        [
+         1.15,
+         -0.35,
+         0.69
+        ]
+       ],
+       "w": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "h": [
+        0.16,
+        0.14,
+        0.12
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         0.6,
+         -0.55
+        ],
+        [
+         0,
+         1.5,
+         -0.35
+        ],
+        [
+         0,
+         1.45,
+         0.05
+        ]
+       ],
+       "w": [
+        0.4,
+        0.42,
+        0.3
+       ],
+       "h": [
+        0.3,
+        0.32,
+        0.22
+       ],
+       "n": 3.2,
+       "segs": 14,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.45,
+        1.0
+       ],
+       "a_deg": [
+        -30,
+        30
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.22,
+        0.25
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Where debts are posted and paid"
+    }
+   ]
+  },
+  "vos": {
+   "name": "Vos Syndicate",
+   "colours": {
+    "hull": "#a8482a",
+    "trim": "#d6a043",
+    "dark": "#2a1410",
+    "glow": "#3fb7a3"
+   },
+   "hull": {
+    "n": 2.4,
+    "segs": 20,
+    "facet": false,
+    "plan": [
+     0.8,
+     1,
+     0.95,
+     0.8,
+     0.7,
+     0.6,
+     0.3
+    ],
+    "rise": [
+     0.8,
+     1,
+     0.95,
+     0.8,
+     0.65,
+     0.5,
+     0.3
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "tradition": "Free clans who take ships whole: boarding forks forward, salvaged outrigger hulls",
+   "classes": [
+    {
+     "id": "vos_ff",
+     "name": "Skiff",
+     "role": "Frigate",
+     "code": "SK",
+     "length_m": 50,
+     "beam_ratio": 0.4,
+     "height_ratio": 0.26,
+     "armament": [
+      "2 disruptors",
+      "1 missile rack (red)"
+     ],
+     "limbs": [],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.6,
+        0.9
+       ],
+       "a_deg": [
+        -40,
+        40
+       ]
+      }
+     ],
+     "why": "A clan's fast boat"
+    },
+    {
+     "id": "vos_dd",
+     "name": "Corsair",
+     "role": "Destroyer",
+     "code": "CS",
+     "length_m": 78,
+     "beam_ratio": 0.4,
+     "height_ratio": 0.26,
+     "armament": [
+      "4 disruptors",
+      "2 missile racks (red, orange)"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.35,
+         0,
+         0.7
+        ],
+        [
+         0.55,
+         0,
+         1.05
+        ],
+        [
+         0.45,
+         0.05,
+         1.3
+        ]
+       ],
+       "w": [
+        0.2,
+        0.14,
+        0.03
+       ],
+       "h": [
+        0.22,
+        0.16,
+        0.04
+       ],
+       "n": 1.6,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.5,
+        0.85
+       ],
+       "a_deg": [
+        -40,
+        40
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.0,
+        0.08
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "The raider every clan starts from"
+    },
+    {
+     "id": "vos_ca",
+     "name": "Privateer",
+     "role": "Cruiser",
+     "code": "PV",
+     "length_m": 118,
+     "beam_ratio": 0.42,
+     "height_ratio": 0.28,
+     "armament": [
+      "6 disruptors",
+      "2 missile racks",
+      "1 tractor"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.35,
+         0,
+         0.7
+        ],
+        [
+         0.55,
+         0,
+         1.05
+        ],
+        [
+         0.45,
+         0.05,
+         1.3
+        ]
+       ],
+       "w": [
+        0.2,
+        0.14,
+        0.03
+       ],
+       "h": [
+        0.22,
+        0.16,
+        0.04
+       ],
+       "n": 1.6,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         0,
+         -0.4
+        ],
+        [
+         1.5,
+         -0.1,
+         -0.2
+        ],
+        [
+         1.6,
+         -0.1,
+         0.35
+        ]
+       ],
+       "w": [
+        0.14,
+        0.26,
+        0.2
+       ],
+       "h": [
+        0.14,
+        0.24,
+        0.18
+       ],
+       "n": 2.4,
+       "segs": 14,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.45,
+        0.85
+       ],
+       "a_deg": [
+        -40,
+        40
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.0,
+        0.06
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Two salvaged hulls lashed to a third"
+    },
+    {
+     "id": "vos_cap",
+     "name": "Galleon",
+     "role": "Capital",
+     "code": "GL",
+     "length_m": 168,
+     "beam_ratio": 0.44,
+     "height_ratio": 0.3,
+     "armament": [
+      "10 disruptors",
+      "4 missile racks",
+      "2 tractors"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.35,
+         0,
+         0.7
+        ],
+        [
+         0.55,
+         0,
+         1.05
+        ],
+        [
+         0.45,
+         0.05,
+         1.3
+        ]
+       ],
+       "w": [
+        0.2,
+        0.14,
+        0.03
+       ],
+       "h": [
+        0.22,
+        0.16,
+        0.04
+       ],
+       "n": 1.6,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         0,
+         -0.4
+        ],
+        [
+         1.5,
+         -0.1,
+         -0.2
+        ],
+        [
+         1.6,
+         -0.1,
+         0.35
+        ]
+       ],
+       "w": [
+        0.14,
+        0.26,
+        0.2
+       ],
+       "h": [
+        0.14,
+        0.24,
+        0.18
+       ],
+       "n": 2.4,
+       "segs": 14,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         0.5,
+         -0.5
+        ],
+        [
+         0,
+         1.3,
+         -0.3
+        ],
+        [
+         0,
+         1.25,
+         0.1
+        ]
+       ],
+       "w": [
+        0.28,
+        0.32,
+        0.24
+       ],
+       "h": [
+        0.3,
+        0.32,
+        0.22
+       ],
+       "n": 2.4,
+       "segs": 14,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.4,
+        0.85
+       ],
+       "a_deg": [
+        -40,
+        40
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.0,
+        0.05
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "A clan's home and treasury"
+    }
+   ]
+  },
+  "kethran": {
+   "name": "Kethran Hegemony",
+   "colours": {
+    "hull": "#4a4f55",
+    "trim": "#9e2a1e",
+    "dark": "#2b2f33",
+    "glow": "#ffb547",
+    "accent": "#d9483b"
+   },
+   "hull": {
+    "n": 1.2,
+    "segs": 8,
+    "facet": true,
+    "plan": [
+     0.95,
+     1,
+     0.95,
+     0.8,
+     0.55,
+     0.3,
+     0.04
+    ],
+    "rise": [
+     0.9,
+     1,
+     1,
+     0.85,
+     0.6,
+     0.35,
+     0.08
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     -0.05,
+     -0.1,
+     -0.15
+    ]
+   },
+   "tradition": "Rank and the foundry: faceted plate to a blade prow, blade wings, a rank crest that grows with standing",
+   "classes": [
+    {
+     "id": "kethran_ff",
+     "name": "Lancer",
+     "role": "Frigate",
+     "code": "LN",
+     "length_m": 60,
+     "beam_ratio": 0.46,
+     "height_ratio": 0.22,
+     "armament": [
+      "2 heavy guns",
+      "1 missile rack"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         -0.1,
+         -0.2
+        ],
+        [
+         1.22,
+         -0.2,
+         -0.45
+        ],
+        [
+         1.46,
+         -0.25,
+         -0.62
+        ]
+       ],
+       "w": [
+        0.5,
+        0.35,
+        0.05
+       ],
+       "h": [
+        0.12,
+        0.08,
+        0.02
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "accent",
+       "t": [
+        0.4,
+        0.43
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.3
+       ],
+       "a_deg": [
+        -20,
+        20
+       ]
+      }
+     ],
+     "why": "The lowest rank that may fly alone"
+    },
+    {
+     "id": "kethran_dd",
+     "name": "Warden",
+     "role": "Destroyer",
+     "code": "WD",
+     "length_m": 92,
+     "beam_ratio": 0.46,
+     "height_ratio": 0.22,
+     "armament": [
+      "4 heavy guns",
+      "2 missile racks"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         -0.1,
+         -0.2
+        ],
+        [
+         1.46,
+         -0.2,
+         -0.45
+        ],
+        [
+         1.7800000000000002,
+         -0.25,
+         -0.62
+        ]
+       ],
+       "w": [
+        0.5,
+        0.35,
+        0.05
+       ],
+       "h": [
+        0.12,
+        0.08,
+        0.02
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         0.6,
+         -0.45
+        ],
+        [
+         0,
+         0.8999999999999999,
+         -0.35
+        ],
+        [
+         0,
+         0.73,
+         0.2
+        ]
+       ],
+       "w": [
+        0.12,
+        0.08,
+        0.02
+       ],
+       "h": [
+        0.4,
+        0.3,
+        0.05
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "accent",
+       "t": [
+        0.38,
+        0.41
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.35
+       ],
+       "a_deg": [
+        -20,
+        20
+       ]
+      }
+     ],
+     "why": "Holds a border world for its lord"
+    },
+    {
+     "id": "kethran_ca",
+     "name": "Bastion",
+     "role": "Cruiser",
+     "code": "BN",
+     "length_m": 140,
+     "beam_ratio": 0.48,
+     "height_ratio": 0.24,
+     "armament": [
+      "6 heavy guns",
+      "2 missile racks",
+      "spinal driver"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         -0.1,
+         -0.2
+        ],
+        [
+         1.7,
+         -0.2,
+         -0.45
+        ],
+        [
+         2.1,
+         -0.25,
+         -0.62
+        ]
+       ],
+       "w": [
+        0.5,
+        0.35,
+        0.05
+       ],
+       "h": [
+        0.12,
+        0.08,
+        0.02
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         0.6,
+         -0.45
+        ],
+        [
+         0,
+         1.15,
+         -0.35
+        ],
+        [
+         0,
+         0.8800000000000001,
+         0.2
+        ]
+       ],
+       "w": [
+        0.12,
+        0.08,
+        0.02
+       ],
+       "h": [
+        0.4,
+        0.3,
+        0.05
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "accent",
+       "t": [
+        0.36,
+        0.39
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.5,
+        0.52
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.4
+       ],
+       "a_deg": [
+        -20,
+        20
+       ]
+      }
+     ],
+     "why": "A fortress that moves"
+    },
+    {
+     "id": "kethran_dn",
+     "name": "Throne",
+     "role": "Dreadnought",
+     "code": "TR",
+     "length_m": 210,
+     "beam_ratio": 0.5,
+     "height_ratio": 0.25,
+     "armament": [
+      "10 heavy guns",
+      "4 missile racks",
+      "spinal driver"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         -0.1,
+         -0.2
+        ],
+        [
+         1.94,
+         -0.2,
+         -0.45
+        ],
+        [
+         2.42,
+         -0.25,
+         -0.62
+        ]
+       ],
+       "w": [
+        0.5,
+        0.35,
+        0.05
+       ],
+       "h": [
+        0.12,
+        0.08,
+        0.02
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         0.6,
+         -0.45
+        ],
+        [
+         0,
+         1.5,
+         -0.35
+        ],
+        [
+         0,
+         1.09,
+         0.2
+        ]
+       ],
+       "w": [
+        0.12,
+        0.08,
+        0.02
+       ],
+       "h": [
+        0.4,
+        0.3,
+        0.05
+       ],
+       "n": 1,
+       "segs": 4,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "accent",
+       "t": [
+        0.34,
+        0.37
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.48,
+        0.5
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.45
+       ],
+       "a_deg": [
+        -20,
+        20
+       ]
+      }
+     ],
+     "why": "A lord's seat in war"
+    }
+   ]
+  },
+  "tarsine": {
+   "name": "Tarsine Remnant",
+   "colours": {
+    "hull": "#6a5e50",
+    "trim": "#7a3b1c",
+    "dark": "#1c1814",
+    "glow": "#d6c76a",
+    "accent": "#a88a46"
+   },
+   "hull": {
+    "n": 3.2,
+    "segs": 16,
+    "facet": false,
+    "plan": [
+     0.85,
+     1,
+     1,
+     1,
+     0.95,
+     0.85,
+     0.55
+    ],
+    "rise": [
+     0.9,
+     1,
+     1,
+     1,
+     0.95,
+     0.85,
+     0.6
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "tradition": "Unchanged since the first age: one monolithic plan at every size, buttresses, lamps in arched windows",
+   "classes": [
+    {
+     "id": "tarsine_ff",
+     "name": "Votary",
+     "role": "Frigate",
+     "code": "VT",
+     "length_m": 72,
+     "beam_ratio": 0.34,
+     "height_ratio": 0.3,
+     "armament": [
+      "2 ancient beams"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         0.5,
+         -0.5
+        ],
+        [
+         0,
+         1.25,
+         -0.3
+        ],
+        [
+         0,
+         1.2,
+         0.35
+        ]
+       ],
+       "w": [
+        0.08,
+        0.06,
+        0.04
+       ],
+       "h": [
+        0.4,
+        0.35,
+        0.15
+       ],
+       "n": 1.4,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.3,
+        0.7
+       ],
+       "a_deg": [
+        80,
+        100
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.9,
+        0.95
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Even the smallest is old and large"
+    },
+    {
+     "id": "tarsine_dd",
+     "name": "Custodian",
+     "role": "Destroyer",
+     "code": "CU",
+     "length_m": 110,
+     "beam_ratio": 0.34,
+     "height_ratio": 0.3,
+     "armament": [
+      "4 ancient beams",
+      "1 missile rack"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         0.5,
+         -0.5
+        ],
+        [
+         0,
+         1.25,
+         -0.3
+        ],
+        [
+         0,
+         1.2,
+         0.35
+        ]
+       ],
+       "w": [
+        0.08,
+        0.06,
+        0.04
+       ],
+       "h": [
+        0.4,
+        0.35,
+        0.15
+       ],
+       "n": 1.4,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         -0.5,
+         -0.5
+        ],
+        [
+         0,
+         -1.25,
+         -0.3
+        ],
+        [
+         0,
+         -1.2,
+         0.35
+        ]
+       ],
+       "w": [
+        0.08,
+        0.06,
+        0.04
+       ],
+       "h": [
+        0.4,
+        0.35,
+        0.15
+       ],
+       "n": 1.4,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.25,
+        0.75
+       ],
+       "a_deg": [
+        80,
+        100
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.9,
+        0.95
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Guards what the Remnant still holds"
+    },
+    {
+     "id": "tarsine_ca",
+     "name": "Monument",
+     "role": "Cruiser",
+     "code": "MN",
+     "length_m": 170,
+     "beam_ratio": 0.34,
+     "height_ratio": 0.3,
+     "armament": [
+      "6 ancient beams",
+      "2 missile racks"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         0.5,
+         -0.5
+        ],
+        [
+         0,
+         1.25,
+         -0.3
+        ],
+        [
+         0,
+         1.2,
+         0.35
+        ]
+       ],
+       "w": [
+        0.08,
+        0.06,
+        0.04
+       ],
+       "h": [
+        0.4,
+        0.35,
+        0.15
+       ],
+       "n": 1.4,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         -0.5,
+         -0.5
+        ],
+        [
+         0,
+         -1.25,
+         -0.3
+        ],
+        [
+         0,
+         -1.2,
+         0.35
+        ]
+       ],
+       "w": [
+        0.08,
+        0.06,
+        0.04
+       ],
+       "h": [
+        0.4,
+        0.35,
+        0.15
+       ],
+       "n": 1.4,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.2,
+        0.8
+       ],
+       "a_deg": [
+        80,
+        100
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.88,
+        0.93
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.2
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Built to be seen from every world"
+    },
+    {
+     "id": "tarsine_dn",
+     "name": "Dominion",
+     "role": "Dreadnought",
+     "code": "DM",
+     "length_m": 300,
+     "beam_ratio": 0.34,
+     "height_ratio": 0.3,
+     "armament": [
+      "12 ancient beams",
+      "4 missile racks",
+      "the first-age cannon"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0,
+         0.5,
+         -0.5
+        ],
+        [
+         0,
+         1.25,
+         -0.3
+        ],
+        [
+         0,
+         1.2,
+         0.35
+        ]
+       ],
+       "w": [
+        0.08,
+        0.06,
+        0.04
+       ],
+       "h": [
+        0.4,
+        0.35,
+        0.15
+       ],
+       "n": 1.4,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0,
+         -0.5,
+         -0.5
+        ],
+        [
+         0,
+         -1.25,
+         -0.3
+        ],
+        [
+         0,
+         -1.2,
+         0.35
+        ]
+       ],
+       "w": [
+        0.08,
+        0.06,
+        0.04
+       ],
+       "h": [
+        0.4,
+        0.35,
+        0.15
+       ],
+       "n": 1.4,
+       "segs": 8,
+       "mirror": false,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.15,
+        0.85
+       ],
+       "a_deg": [
+        80,
+        100
+       ]
+      },
+      {
+       "role": "accent",
+       "t": [
+        0.86,
+        0.9
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.0,
+        0.25
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "From when the Remnant ruled"
+    }
+   ]
+  },
+  "aelith": {
+   "name": "Aelith Conclave",
+   "colours": {
+    "hull": "#e8e4da",
+    "trim": "#c9a646",
+    "dark": "#0f3a45",
+    "glow": "#6ff3ff"
+   },
+   "hull": {
+    "n": 2.0,
+    "segs": 28,
+    "facet": false,
+    "plan": [
+     0.5,
+     0.9,
+     1,
+     0.95,
+     0.8,
+     0.55,
+     0.15
+    ],
+    "rise": [
+     0.5,
+     0.8,
+     0.9,
+     0.85,
+     0.7,
+     0.5,
+     0.15
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "tradition": "Shells round a core of light: a smooth core, gold shells curving forward, one more shell for each age of service",
+   "classes": [
+    {
+     "id": "aelith_ff",
+     "name": "Seeker",
+     "role": "Frigate",
+     "code": "SE",
+     "length_m": 56,
+     "beam_ratio": 0.42,
+     "height_ratio": 0.24,
+     "armament": [
+      "2 light lances"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.4,
+         0,
+         -0.45
+        ],
+        [
+         1.3,
+         0,
+         -0.05
+        ],
+        [
+         0.9750000000000001,
+         0,
+         0.45
+        ]
+       ],
+       "w": [
+        0.06,
+        0.06,
+        0.03
+       ],
+       "h": [
+        0.18,
+        0.22,
+        0.08
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.35,
+        0.65
+       ],
+       "a_deg": [
+        70,
+        110
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.8,
+        0.85
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Sent to learn, rarely to fight"
+    },
+    {
+     "id": "aelith_dd",
+     "name": "Envoy",
+     "role": "Destroyer",
+     "code": "EN",
+     "length_m": 84,
+     "beam_ratio": 0.42,
+     "height_ratio": 0.24,
+     "armament": [
+      "4 light lances",
+      "1 missile rack"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.4,
+         0.15,
+         -0.45
+        ],
+        [
+         1.35,
+         0.15,
+         -0.05
+        ],
+        [
+         1.0125000000000002,
+         0.15,
+         0.45
+        ]
+       ],
+       "w": [
+        0.06,
+        0.06,
+        0.03
+       ],
+       "h": [
+        0.18,
+        0.22,
+        0.08
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.3,
+        0.7
+       ],
+       "a_deg": [
+        70,
+        110
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.8,
+        0.85
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Speaks for the Conclave"
+    },
+    {
+     "id": "aelith_ca",
+     "name": "Archive",
+     "role": "Cruiser",
+     "code": "AR",
+     "length_m": 130,
+     "beam_ratio": 0.42,
+     "height_ratio": 0.24,
+     "armament": [
+      "6 light lances",
+      "2 missile racks",
+      "mind field"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.4,
+         0.25,
+         -0.45
+        ],
+        [
+         1.35,
+         0.25,
+         -0.05
+        ],
+        [
+         1.0125000000000002,
+         0.25,
+         0.45
+        ]
+       ],
+       "w": [
+        0.06,
+        0.06,
+        0.03
+       ],
+       "h": [
+        0.18,
+        0.22,
+        0.08
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.4,
+         -0.25,
+         -0.45
+        ],
+        [
+         1.55,
+         -0.25,
+         -0.05
+        ],
+        [
+         1.1625,
+         -0.25,
+         0.45
+        ]
+       ],
+       "w": [
+        0.06,
+        0.06,
+        0.03
+       ],
+       "h": [
+        0.18,
+        0.22,
+        0.08
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.25,
+        0.75
+       ],
+       "a_deg": [
+        70,
+        110
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.8,
+        0.85
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Carries what the Conclave knows"
+    },
+    {
+     "id": "aelith_cap",
+     "name": "Sanctum",
+     "role": "Capital",
+     "code": "SA",
+     "length_m": 196,
+     "beam_ratio": 0.44,
+     "height_ratio": 0.26,
+     "armament": [
+      "10 light lances",
+      "4 missile racks",
+      "mind field"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.4,
+         0.35,
+         -0.45
+        ],
+        [
+         1.3,
+         0.35,
+         -0.05
+        ],
+        [
+         0.9750000000000001,
+         0.35,
+         0.45
+        ]
+       ],
+       "w": [
+        0.06,
+        0.06,
+        0.03
+       ],
+       "h": [
+        0.18,
+        0.22,
+        0.08
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.4,
+         0,
+         -0.45
+        ],
+        [
+         1.55,
+         0,
+         -0.05
+        ],
+        [
+         1.1625,
+         0,
+         0.45
+        ]
+       ],
+       "w": [
+        0.06,
+        0.06,
+        0.03
+       ],
+       "h": [
+        0.18,
+        0.22,
+        0.08
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.4,
+         -0.35,
+         -0.45
+        ],
+        [
+         1.3,
+         -0.35,
+         -0.05
+        ],
+        [
+         0.9750000000000001,
+         -0.35,
+         0.45
+        ]
+       ],
+       "w": [
+        0.06,
+        0.06,
+        0.03
+       ],
+       "h": [
+        0.18,
+        0.22,
+        0.08
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.2,
+        0.8
+       ],
+       "a_deg": [
+        70,
+        110
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.8,
+        0.85
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Where the eldest sit"
+    }
+   ]
+  },
+  "ombrai": {
+   "name": "Ombrai",
+   "colours": {
+    "hull": "#3b2a5c",
+    "trim": "#3b1763",
+    "dark": "#120822",
+    "glow": "#ff4fb0"
+   },
+   "hull": {
+    "n": 2.2,
+    "segs": 24,
+    "facet": false,
+    "plan": [
+     0.4,
+     0.85,
+     1,
+     1,
+     0.85,
+     0.55,
+     0.1
+    ],
+    "rise": [
+     0.35,
+     0.5,
+     0.55,
+     0.5,
+     0.4,
+     0.3,
+     0.1
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "tradition": "The watchers: flat dark hulls, petals closed forward, a lit eye under the bow",
+   "classes": [
+    {
+     "id": "ombrai_ff",
+     "name": "Veil",
+     "role": "Frigate",
+     "code": "VL",
+     "length_m": 54,
+     "beam_ratio": 0.5,
+     "height_ratio": 0.3,
+     "armament": [
+      "2 lances",
+      "cloak"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         0,
+         -0.5
+        ],
+        [
+         1.34,
+         0,
+         -0.1
+        ],
+        [
+         1.02,
+         0,
+         0.55
+        ]
+       ],
+       "w": [
+        0.3,
+        0.45,
+        0.04
+       ],
+       "h": [
+        0.08,
+        0.08,
+        0.02
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.82,
+        0.9
+       ],
+       "a_deg": [
+        150,
+        210
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.2,
+        0.6
+       ],
+       "a_deg": [
+        -50,
+        50
+       ]
+      }
+     ],
+     "why": "Seen once, then gone"
+    },
+    {
+     "id": "ombrai_dd",
+     "name": "Shade",
+     "role": "Destroyer",
+     "code": "SH",
+     "length_m": 82,
+     "beam_ratio": 0.5,
+     "height_ratio": 0.3,
+     "armament": [
+      "4 lances",
+      "1 missile rack",
+      "cloak"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         0,
+         -0.5
+        ],
+        [
+         1.6,
+         0,
+         -0.1
+        ],
+        [
+         1.2,
+         0,
+         0.55
+        ]
+       ],
+       "w": [
+        0.3,
+        0.45,
+        0.04
+       ],
+       "h": [
+        0.08,
+        0.08,
+        0.02
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.8,
+        0.9
+       ],
+       "a_deg": [
+        150,
+        210
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.2,
+        0.6
+       ],
+       "a_deg": [
+        -50,
+        50
+       ]
+      }
+     ],
+     "why": "Follows, and reports"
+    },
+    {
+     "id": "ombrai_ca",
+     "name": "Vigil",
+     "role": "Cruiser",
+     "code": "VG",
+     "length_m": 126,
+     "beam_ratio": 0.52,
+     "height_ratio": 0.3,
+     "armament": [
+      "6 lances",
+      "2 missile racks",
+      "cloak"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         0.05,
+         -0.5
+        ],
+        [
+         1.6,
+         0.05,
+         -0.1
+        ],
+        [
+         1.2,
+         0.05,
+         0.55
+        ]
+       ],
+       "w": [
+        0.3,
+        0.45,
+        0.04
+       ],
+       "h": [
+        0.08,
+        0.08,
+        0.02
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         -0.1,
+         -0.5
+        ],
+        [
+         1.21,
+         -0.1,
+         -0.1
+        ],
+        [
+         0.9299999999999999,
+         -0.1,
+         0.55
+        ]
+       ],
+       "w": [
+        0.3,
+        0.45,
+        0.04
+       ],
+       "h": [
+        0.08,
+        0.08,
+        0.02
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.78,
+        0.9
+       ],
+       "a_deg": [
+        150,
+        210
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.45,
+        0.5
+       ],
+       "a_deg": [
+        170,
+        190
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.2,
+        0.6
+       ],
+       "a_deg": [
+        -50,
+        50
+       ]
+      }
+     ],
+     "why": "Watches a whole system"
+    },
+    {
+     "id": "ombrai_cap",
+     "name": "Eclipse",
+     "role": "Capital",
+     "code": "EC",
+     "length_m": 186,
+     "beam_ratio": 0.54,
+     "height_ratio": 0.3,
+     "armament": [
+      "10 lances",
+      "4 missile racks",
+      "cloak"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.6,
+         0.05,
+         -0.5
+        ],
+        [
+         1.7300000000000002,
+         0.05,
+         -0.1
+        ],
+        [
+         1.29,
+         0.05,
+         0.55
+        ]
+       ],
+       "w": [
+        0.3,
+        0.45,
+        0.04
+       ],
+       "h": [
+        0.08,
+        0.08,
+        0.02
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.6,
+         -0.1,
+         -0.5
+        ],
+        [
+         1.34,
+         -0.1,
+         -0.1
+        ],
+        [
+         1.02,
+         -0.1,
+         0.55
+        ]
+       ],
+       "w": [
+        0.3,
+        0.45,
+        0.04
+       ],
+       "h": [
+        0.08,
+        0.08,
+        0.02
+       ],
+       "n": 2,
+       "segs": 12,
+       "mirror": true,
+       "glow_tip": false,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "glow",
+       "t": [
+        0.76,
+        0.9
+       ],
+       "a_deg": [
+        150,
+        210
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.42,
+        0.48
+       ],
+       "a_deg": [
+        170,
+        190
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.2,
+        0.6
+       ],
+       "a_deg": [
+        -50,
+        50
+       ]
+      }
+     ],
+     "why": "When it is seen, it is too late"
+    }
+   ]
+  },
+  "vhorr": {
+   "name": "Vhorr Brood",
+   "colours": {
+    "hull": "#5a3424",
+    "trim": "#2b1d2a",
+    "dark": "#2e1814",
+    "glow": "#a6e34a"
+   },
+   "hull": {
+    "n": 2.0,
+    "segs": 24,
+    "facet": false,
+    "plan": [
+     0.5,
+     0.9,
+     1,
+     0.75,
+     0.95,
+     0.7,
+     0.3
+    ],
+    "rise": [
+     0.5,
+     0.85,
+     1,
+     0.75,
+     0.9,
+     0.7,
+     0.35
+    ],
+    "centre": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "tradition": "Grown, not built: hulls grown in chambers, carapace bands over lit tissue, feeding tendrils aft",
+   "classes": [
+    {
+     "id": "vhorr_ff",
+     "name": "Drone",
+     "role": "Frigate",
+     "code": "DR",
+     "length_m": 52,
+     "beam_ratio": 0.44,
+     "height_ratio": 0.34,
+     "armament": [
+      "2 bile spitters"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.25,
+         0.0,
+         -0.4
+        ],
+        [
+         0.5,
+         0,
+         -0.9
+        ],
+        [
+         0.65,
+         0.0,
+         -1.2
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.38,
+        0.5
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.5,
+        0.55
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Spawned by the hundred"
+    },
+    {
+     "id": "vhorr_dd",
+     "name": "Ravager",
+     "role": "Destroyer",
+     "code": "RA",
+     "length_m": 80,
+     "beam_ratio": 0.44,
+     "height_ratio": 0.34,
+     "armament": [
+      "4 bile spitters",
+      "1 spore rack"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.25,
+         0.1,
+         -0.4
+        ],
+        [
+         0.5,
+         0.2,
+         -0.9
+        ],
+        [
+         0.65,
+         0.24,
+         -1.2
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.2,
+         -0.15,
+         -0.4
+        ],
+        [
+         0.4,
+         -0.3,
+         -0.9
+        ],
+        [
+         0.52,
+         -0.36,
+         -1.3499999999999999
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.38,
+        0.5
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.68,
+        0.8
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.5,
+        0.55
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Feeds on what it breaks"
+    },
+    {
+     "id": "vhorr_ca",
+     "name": "Broodship",
+     "role": "Cruiser",
+     "code": "BR",
+     "length_m": 130,
+     "beam_ratio": 0.46,
+     "height_ratio": 0.34,
+     "armament": [
+      "6 bile spitters",
+      "2 spore racks",
+      "12 swarmers"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.25,
+         0.125,
+         -0.4
+        ],
+        [
+         0.5,
+         0.25,
+         -0.9
+        ],
+        [
+         0.65,
+         0.3,
+         -1.2
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.225,
+         -0.15,
+         -0.4
+        ],
+        [
+         0.45,
+         -0.3,
+         -0.9
+        ],
+        [
+         0.5850000000000001,
+         -0.36,
+         -1.3499999999999999
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.125,
+         0.3,
+         -0.4
+        ],
+        [
+         0.25,
+         0.6,
+         -0.9
+        ],
+        [
+         0.325,
+         0.72,
+         -1.5
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.36,
+        0.5
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.66,
+        0.8
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.5,
+        0.55
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "Carries a brood to a new world"
+    },
+    {
+     "id": "vhorr_cv",
+     "name": "Hive",
+     "role": "Carrier",
+     "code": "HV",
+     "length_m": 220,
+     "beam_ratio": 0.5,
+     "height_ratio": 0.36,
+     "armament": [
+      "10 bile spitters",
+      "4 spore racks",
+      "48 swarmers"
+     ],
+     "limbs": [
+      {
+       "path": [
+        [
+         0.25,
+         0.125,
+         -0.4
+        ],
+        [
+         0.5,
+         0.25,
+         -0.9
+        ],
+        [
+         0.65,
+         0.3,
+         -1.2
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.225,
+         -0.15,
+         -0.4
+        ],
+        [
+         0.45,
+         -0.3,
+         -0.9
+        ],
+        [
+         0.5850000000000001,
+         -0.36,
+         -1.3499999999999999
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.125,
+         0.3,
+         -0.4
+        ],
+        [
+         0.25,
+         0.6,
+         -0.9
+        ],
+        [
+         0.325,
+         0.72,
+         -1.5
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      },
+      {
+       "path": [
+        [
+         0.15,
+         -0.35,
+         -0.4
+        ],
+        [
+         0.3,
+         -0.7,
+         -0.9
+        ],
+        [
+         0.39,
+         -0.84,
+         -1.65
+        ]
+       ],
+       "w": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "h": [
+        0.1,
+        0.07,
+        0.02
+       ],
+       "n": 2,
+       "segs": 10,
+       "mirror": true,
+       "glow_tip": true,
+       "iterate": 0,
+       "scale": 0.618
+      }
+     ],
+     "stripes": [
+      {
+       "role": "trim",
+       "t": [
+        0.34,
+        0.5
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      },
+      {
+       "role": "trim",
+       "t": [
+        0.64,
+        0.8
+       ],
+       "a_deg": [
+        -60,
+        60
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.5,
+        0.55
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      },
+      {
+       "role": "glow",
+       "t": [
+        0.25,
+        0.3
+       ],
+       "a_deg": [
+        -180,
+        180
+       ]
+      }
+     ],
+     "why": "The body's heart in a system"
+    }
+   ]
+  }
+ }
+}

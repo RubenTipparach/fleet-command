@@ -1,0 +1,344 @@
+<!doctype html>
+<!--
+  Mockup 36: Placeholder fleets. OpenSpec change: placeholder-fleets.
+  The nine factions with no designed ships, each with a four-class placeholder line (frigate to capital) and a
+  placeholder emblem (owner, 2026-11-08: "generate place holders for all of their ships, class design is your discretion,
+  and a place holder logo for the factions too"). The classes and profiles are data/ships/placeholders.json (written by
+  tools/factions/placeholder_fleets.py), the hulls are built by docs/mockups/lib/placeholder-hulls.js, and the emblems
+  are assets/emblems/placeholders.json (tools/factions/placeholder_emblems.py). Data and the library are inlined by
+  tools/mockups/inline_data.py.
+
+  Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, window.MOCKUP_READY, window.MOCKUP_SCENE.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Placeholder Fleets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap">
+<style>
+  :root { --bg: #05070b; --panel: #0d1622; --edge: #2c4a6b; --ink: #cfe3ff; --dim: #8aa3c0; --accent: #49d17d; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font: 15px/1.35 "Rajdhani", "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  .stage { position: fixed; inset: 0; }
+  .top { position: fixed; left: 16px; right: 16px; top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; pointer-events: none; }
+  .top > * { pointer-events: auto; }
+  .title { background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid var(--edge); padding: 8px 12px; border-radius: 4px; max-width: 460px; }
+  .title h1 { font-size: 17px; margin: 0 0 2px; letter-spacing: .06em; text-transform: uppercase; }
+  .title p { margin: 0; color: var(--dim); font-size: 13px; }
+  .title a { color: var(--accent); font-size: 13px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tabs button, .views button { min-width: 44px; min-height: 44px; background: var(--panel); color: var(--ink); border: 1px solid var(--edge);
+    border-radius: 4px; font: 600 14px "Rajdhani", sans-serif; padding: 0 12px; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; }
+  .tabs button[aria-pressed="true"] { border-color: var(--accent); color: #fff; background: #12301f; }
+  .card { position: fixed; right: 16px; top: 120px; width: 340px; max-height: calc(100% - 200px); overflow: auto;
+    background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--edge); border-radius: 4px; padding: 12px; }
+  .card .head { display: flex; gap: 12px; align-items: center; }
+  .card img { width: 88px; height: 88px; flex: none; }
+  .card h2 { margin: 0; font-size: 20px; letter-spacing: .04em; text-transform: uppercase; }
+  .card .why { color: var(--dim); font-size: 13px; margin: 4px 0 0; }
+  .card table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  .card td { border-top: 1px solid #1d3048; padding: 5px 4px; vertical-align: top; }
+  .card td.n { font-weight: 700; color: #fff; white-space: nowrap; }
+  .card td.m { color: var(--dim); }
+  .labels { position: fixed; inset: 0; pointer-events: none; }
+  .labels div { position: absolute; transform: translate(-50%, 0); text-align: center; font-size: 13px; white-space: nowrap;
+    color: #fff; text-shadow: 0 0 4px #000, 0 0 2px #000; }
+  .labels div small { display: block; color: var(--dim); }
+  .views { position: fixed; left: 16px; bottom: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .meter { position: fixed; left: 16px; bottom: 64px; color: var(--dim); font-variant-numeric: tabular-nums; font-size: 13px; }
+  @media (max-width: 900px) {
+    .card { top: auto; bottom: 64px; right: 8px; width: min(320px, calc(100% - 16px)); max-height: 40%; }
+    .card img { width: 56px; height: 56px; }
+    .title { max-width: 100%; }
+  }
+  @media (max-height: 450px) { .card { display: none; } .title p { display: none; } .title { padding: 4px 10px; }
+    .top { flex-wrap: nowrap; } .tabs { flex-wrap: nowrap; overflow-x: auto; min-width: 0; } .tabs button { flex: none; } }
+  @media (max-width: 500px) { .card { max-height: 30%; } .meter { display: none; } }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<div class="labels" id="labels"></div>
+<div class="top">
+  <div class="title">
+    <h1>Placeholder fleets · v1</h1>
+    <p>Mockup 36, OpenSpec change <code>placeholder-fleets</code>. Four placeholder classes and a placeholder emblem for each faction with no ships yet. True scale; drag to orbit.</p>
+    <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</div>
+<div class="card" id="card"></div>
+<div class="meter" id="meter"></div>
+<div class="views" id="views"></div>
+<!-- INLINE data/ships/placeholders.json -->
+<script type="application/json" data-src="data/ships/placeholders.json">{"_doc":"Placeholder ship lines for the nine factions with no designed ships (owner, 2026-11-08: \"generate place holders for all of their ships, class design is your discretion\"). Written by tools/factions/placeholder_fleets.py; built by docs/mockups/lib/placeholder-hulls.js; shown on mockup 36 (docs/mockups/placeholder-fleets.html). Profiles run stern (t 0) to bow (t 1); limb paths are in fractions of (half-beam, half-height, half-length). Placeholders until each faction's ship mockup replaces them; the armament is a role sketch, not tuning.","factions":{"axiom":{"name":"The Axiom","colours":{"hull":"#e8ecf6","trim":"#4b3fd8","dark":"#2f2696","glow":"#3fe0e6"},"hull":{"n":1.0,"segs":8,"facet":true,"plan":[0.62,0.9,1,0.618,0.382,0.236,0.02],"rise":[0.5,0.8,1,0.8,0.5,0.3,0.04],"centre":[0,0,0,0,0,0,0]},"tradition":"The tilers (exact sections at golden-ratio stations) and the branchers (fins iterated one level deeper per class)","classes":[{"id":"axiom_ff","name":"Lemma","role":"Frigate","code":"LM","length_m":58,"beam_ratio":0.38,"height_ratio":0.2,"armament":["2 rule lances","1 missile rack"],"limbs":[{"path":[[0.3,0,-0.1],[1.4,0.05,-0.32],[2.1,0.1,-0.55]],"w":[0.5,0.3,0.04],"h":[0.35,0.2,0.03],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":1,"scale":0.618}],"stripes":[{"role":"glow","t":[0.2,0.8],"a_deg":[-8,8]},{"role":"trim","t":[0.4,0.45],"a_deg":[-180,180]}],"why":"A small truth, carried one step"},{"id":"axiom_dd","name":"Corollary","role":"Destroyer","code":"CR","length_m":86,"beam_ratio":0.38,"height_ratio":0.2,"armament":["4 rule lances","2 missile racks"],"limbs":[{"path":[[0.3,0,-0.1],[1.4,0.05,-0.32],[2.1,0.1,-0.55]],"w":[0.5,0.3,0.04],"h":[0.35,0.2,0.03],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":2,"scale":0.618}],"stripes":[{"role":"glow","t":[0.15,0.85],"a_deg":[-8,8]},{"role":"trim","t":[0.38,0.44],"a_deg":[-180,180]}],"why":"What follows from the Lemma"},{"id":"axiom_ca","name":"Theorem","role":"Cruiser","code":"TH","length_m":128,"beam_ratio":0.38,"height_ratio":0.2,"armament":["6 rule lances","2 missile racks","iteration field"],"limbs":[{"path":[[0.3,0,-0.1],[1.4,0.05,-0.32],[2.1,0.1,-0.55]],"w":[0.5,0.3,0.04],"h":[0.35,0.2,0.03],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":3,"scale":0.618}],"stripes":[{"role":"glow","t":[0.1,0.9],"a_deg":[-8,8]},{"role":"trim","t":[0.36,0.42],"a_deg":[-180,180]},{"role":"trim","t":[0.6,0.63],"a_deg":[-180,180]}],"why":"A rule stated and proven"},{"id":"axiom_bb","name":"Proof","role":"Battleship","code":"PR","length_m":190,"beam_ratio":0.38,"height_ratio":0.2,"armament":["10 rule lances","4 missile racks","iteration field"],"limbs":[{"path":[[0.3,0,-0.1],[1.4,0.05,-0.32],[2.1,0.1,-0.55]],"w":[0.5,0.3,0.04],"h":[0.35,0.2,0.03],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":4,"scale":0.618}],"stripes":[{"role":"glow","t":[0.06,0.94],"a_deg":[-8,8]},{"role":"trim","t":[0.34,0.4],"a_deg":[-180,180]},{"role":"trim","t":[0.58,0.62],"a_deg":[-180,180]}],"why":"The rule carried as deep as it goes"}]},"exponent":{"name":"The Exponent","colours":{"hull":"#5d686d","trim":"#8c4522","dark":"#262e31","glow":"#8be6dc","accent":"#d27a6a"},"hull":{"n":5.0,"segs":20,"facet":false,"plan":[0.9,1,1,1,0.95,0.85,0.6],"rise":[0.85,1,1,0.95,0.9,0.8,0.55],"centre":[0,0,0,0,0,0,0]},"tradition":"The assimilators (a modular near-box hull, taken hulls kept on as pods) and the conduit-keepers (a lumen line)","classes":[{"id":"exponent_ff","name":"Tender","role":"Frigate","code":"TN","length_m":64,"beam_ratio":0.36,"height_ratio":0.26,"armament":["2 cutting beams","1 tractor"],"limbs":[],"stripes":[{"role":"glow","t":[0.1,0.9],"a_deg":[-4,4]},{"role":"trim","t":[0.0,0.25],"a_deg":[60,140]}],"why":"Tends what the collective has taken"},{"id":"exponent_dd","name":"Salvor","role":"Destroyer","code":"SV","length_m":96,"beam_ratio":0.36,"height_ratio":0.26,"armament":["4 cutting beams","2 tractors"],"limbs":[{"path":[[0.5,-0.2,0.7],[0.75,-0.25,1.0],[0.55,-0.3,1.25]],"w":[0.18,0.16,0.1],"h":[0.2,0.18,0.12],"n":4,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.1,0.9],"a_deg":[-4,4]},{"role":"trim","t":[0.0,0.3],"a_deg":[60,140]}],"why":"Clamp arms forward to take a wreck in"},{"id":"exponent_ca","name":"Hulk","role":"Cruiser","code":"HK","length_m":150,"beam_ratio":0.4,"height_ratio":0.28,"armament":["6 cutting beams","2 missile racks","2 tractors"],"limbs":[{"path":[[0.5,0.04000000000000001,-0.5],[1.25,0.1,-0.15],[1.25,0.1,0.2]],"w":[0.192,0.32,0.256],"h":[0.192,0.32,0.256],"n":2.2,"segs":14,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,0.6,-0.4],[0,1.4,-0.1],[0,1.4,0.3]],"w":[0.3,0.38,0.28],"h":[0.3,0.35,0.25],"n":3,"segs":14,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.1,0.9],"a_deg":[-4,4]},{"role":"accent","t":[0.55,0.75],"a_deg":[30,120]}],"why":"Three hulls taken and grown into one"},{"id":"exponent_cv","name":"Reef","role":"Carrier","code":"RF","length_m":230,"beam_ratio":0.44,"height_ratio":0.3,"armament":["8 cutting beams","4 tractors","24 drone tenders"],"limbs":[{"path":[[0.52,0.04000000000000001,-0.6],[1.3,0.1,-0.15],[1.3,0.1,0.3]],"w":[0.20400000000000001,0.34,0.272],"h":[0.20400000000000001,0.34,0.272],"n":2.2,"segs":14,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.44000000000000006,-0.24,-0.3],[1.1,-0.6,0.1],[1.1,-0.6,0.5]],"w":[0.156,0.26,0.20800000000000002],"h":[0.156,0.26,0.20800000000000002],"n":4,"segs":14,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,0.6,-0.5],[0,1.45,-0.2],[0,1.45,0.4]],"w":[0.32,0.4,0.28],"h":[0.3,0.36,0.26],"n":3,"segs":14,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.06,0.94],"a_deg":[-4,4]},{"role":"accent","t":[0.3,0.5],"a_deg":[40,130]},{"role":"trim","t":[0.7,0.85],"a_deg":[-60,60]}],"why":"A drifting yard where the taken are rebuilt"}]},"redtithe":{"name":"Red Tithe","colours":{"hull":"#2e3236","trim":"#5a1a12","dark":"#141618","glow":"#f0cf7a","accent":"#c8963a"},"hull":{"n":1.5,"segs":16,"facet":false,"plan":[0.7,0.95,1,0.85,0.6,0.35,0.12],"rise":[0.7,0.9,1,0.95,0.8,0.6,0.3],"centre":[0.1,0.05,0,0,0.05,0.1,0.2]},"tradition":"Boarding: a ram keel to hold a prize, boarding tubes forward, the flagship carrying the Hall where debts are posted","classes":[{"id":"redtithe_ff","name":"Cutter","role":"Frigate","code":"CT","length_m":54,"beam_ratio":0.34,"height_ratio":0.24,"armament":["2 cannons","1 boarding tube"],"limbs":[{"path":[[0,-0.5,0.6],[0,-0.75,1.0],[0,-0.8,1.28]],"w":[0.22,0.14,0.02],"h":[0.35,0.25,0.04],"n":1.2,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.55,1.0],"a_deg":[-30,30]},{"role":"accent","t":[0.3,0.33],"a_deg":[-180,180]}],"why":"Runs a prize down and holds it"},{"id":"redtithe_dd","name":"Reaver","role":"Destroyer","code":"RV","length_m":82,"beam_ratio":0.34,"height_ratio":0.24,"armament":["4 cannons","2 boarding tubes","1 missile rack (red)"],"limbs":[{"path":[[0,-0.5,0.6],[0,-0.75,1.0],[0,-0.8,1.28]],"w":[0.22,0.14,0.02],"h":[0.35,0.25,0.04],"n":1.2,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,0.0,0.4],[1.05,0.0,0.6000000000000001],[1.15,0.0,0.77]],"w":[0.16,0.14,0.12],"h":[0.16,0.14,0.12],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.5,1.0],"a_deg":[-30,30]},{"role":"accent","t":[0.28,0.31],"a_deg":[-180,180]}],"why":"Two tubes to put crews aboard"},{"id":"redtithe_ca","name":"Bloodship","role":"Cruiser","code":"BS","length_m":124,"beam_ratio":0.36,"height_ratio":0.26,"armament":["6 cannons","4 boarding tubes","2 missile racks (red, orange)"],"limbs":[{"path":[[0,-0.5,0.6],[0,-0.75,1.0],[0,-0.8,1.28]],"w":[0.22,0.14,0.02],"h":[0.35,0.25,0.04],"n":1.2,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,0.2,0.44999999999999996],[1.05,0.2,0.65],[1.15,0.2,0.82]],"w":[0.16,0.14,0.12],"h":[0.16,0.14,0.12],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,-0.35,0.30000000000000004],[1.05,-0.35,0.5],[1.15,-0.35,0.67]],"w":[0.16,0.14,0.12],"h":[0.16,0.14,0.12],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.45,1.0],"a_deg":[-30,30]},{"role":"accent","t":[0.25,0.28],"a_deg":[-180,180]}],"why":"Boards a cruiser from four sides at once"},{"id":"redtithe_fl","name":"Tithe Hall","role":"Flagship","code":"TH","length_m":176,"beam_ratio":0.38,"height_ratio":0.26,"armament":["8 cannons","4 boarding tubes","2 missile racks","the Hall"],"limbs":[{"path":[[0,-0.5,0.6],[0,-0.75,1.0],[0,-0.8,1.28]],"w":[0.22,0.14,0.02],"h":[0.35,0.25,0.04],"n":1.2,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,0.2,0.47],[1.05,0.2,0.67],[1.15,0.2,0.84]],"w":[0.16,0.14,0.12],"h":[0.16,0.14,0.12],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,-0.35,0.31999999999999995],[1.05,-0.35,0.52],[1.15,-0.35,0.69]],"w":[0.16,0.14,0.12],"h":[0.16,0.14,0.12],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,0.6,-0.55],[0,1.5,-0.35],[0,1.45,0.05]],"w":[0.4,0.42,0.3],"h":[0.3,0.32,0.22],"n":3.2,"segs":14,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.45,1.0],"a_deg":[-30,30]},{"role":"accent","t":[0.22,0.25],"a_deg":[-180,180]}],"why":"Where debts are posted and paid"}]},"vos":{"name":"Vos Syndicate","colours":{"hull":"#a8482a","trim":"#d6a043","dark":"#2a1410","glow":"#3fb7a3"},"hull":{"n":2.4,"segs":20,"facet":false,"plan":[0.8,1,0.95,0.8,0.7,0.6,0.3],"rise":[0.8,1,0.95,0.8,0.65,0.5,0.3],"centre":[0,0,0,0,0,0,0]},"tradition":"Free clans who take ships whole: boarding forks forward, salvaged outrigger hulls","classes":[{"id":"vos_ff","name":"Skiff","role":"Frigate","code":"SK","length_m":50,"beam_ratio":0.4,"height_ratio":0.26,"armament":["2 disruptors","1 missile rack (red)"],"limbs":[],"stripes":[{"role":"trim","t":[0.6,0.9],"a_deg":[-40,40]}],"why":"A clan's fast boat"},{"id":"vos_dd","name":"Corsair","role":"Destroyer","code":"CS","length_m":78,"beam_ratio":0.4,"height_ratio":0.26,"armament":["4 disruptors","2 missile racks (red, orange)"],"limbs":[{"path":[[0.35,0,0.7],[0.55,0,1.05],[0.45,0.05,1.3]],"w":[0.2,0.14,0.03],"h":[0.22,0.16,0.04],"n":1.6,"segs":10,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.5,0.85],"a_deg":[-40,40]},{"role":"glow","t":[0.0,0.08],"a_deg":[-180,180]}],"why":"The raider every clan starts from"},{"id":"vos_ca","name":"Privateer","role":"Cruiser","code":"PV","length_m":118,"beam_ratio":0.42,"height_ratio":0.28,"armament":["6 disruptors","2 missile racks","1 tractor"],"limbs":[{"path":[[0.35,0,0.7],[0.55,0,1.05],[0.45,0.05,1.3]],"w":[0.2,0.14,0.03],"h":[0.22,0.16,0.04],"n":1.6,"segs":10,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,0,-0.4],[1.5,-0.1,-0.2],[1.6,-0.1,0.35]],"w":[0.14,0.26,0.2],"h":[0.14,0.24,0.18],"n":2.4,"segs":14,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.45,0.85],"a_deg":[-40,40]},{"role":"glow","t":[0.0,0.06],"a_deg":[-180,180]}],"why":"Two salvaged hulls lashed to a third"},{"id":"vos_cap","name":"Galleon","role":"Capital","code":"GL","length_m":168,"beam_ratio":0.44,"height_ratio":0.3,"armament":["10 disruptors","4 missile racks","2 tractors"],"limbs":[{"path":[[0.35,0,0.7],[0.55,0,1.05],[0.45,0.05,1.3]],"w":[0.2,0.14,0.03],"h":[0.22,0.16,0.04],"n":1.6,"segs":10,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,0,-0.4],[1.5,-0.1,-0.2],[1.6,-0.1,0.35]],"w":[0.14,0.26,0.2],"h":[0.14,0.24,0.18],"n":2.4,"segs":14,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,0.5,-0.5],[0,1.3,-0.3],[0,1.25,0.1]],"w":[0.28,0.32,0.24],"h":[0.3,0.32,0.22],"n":2.4,"segs":14,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.4,0.85],"a_deg":[-40,40]},{"role":"glow","t":[0.0,0.05],"a_deg":[-180,180]}],"why":"A clan's home and treasury"}]},"kethran":{"name":"Kethran Hegemony","colours":{"hull":"#4a4f55","trim":"#9e2a1e","dark":"#2b2f33","glow":"#ffb547","accent":"#d9483b"},"hull":{"n":1.2,"segs":8,"facet":true,"plan":[0.95,1,0.95,0.8,0.55,0.3,0.04],"rise":[0.9,1,1,0.85,0.6,0.35,0.08],"centre":[0,0,0,0,-0.05,-0.1,-0.15]},"tradition":"Rank and the foundry: faceted plate to a blade prow, blade wings, a rank crest that grows with standing","classes":[{"id":"kethran_ff","name":"Lancer","role":"Frigate","code":"LN","length_m":60,"beam_ratio":0.46,"height_ratio":0.22,"armament":["2 heavy guns","1 missile rack"],"limbs":[{"path":[[0.6,-0.1,-0.2],[1.22,-0.2,-0.45],[1.46,-0.25,-0.62]],"w":[0.5,0.35,0.05],"h":[0.12,0.08,0.02],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"accent","t":[0.4,0.43],"a_deg":[-180,180]},{"role":"trim","t":[0.0,0.3],"a_deg":[-20,20]}],"why":"The lowest rank that may fly alone"},{"id":"kethran_dd","name":"Warden","role":"Destroyer","code":"WD","length_m":92,"beam_ratio":0.46,"height_ratio":0.22,"armament":["4 heavy guns","2 missile racks"],"limbs":[{"path":[[0.6,-0.1,-0.2],[1.46,-0.2,-0.45],[1.7800000000000002,-0.25,-0.62]],"w":[0.5,0.35,0.05],"h":[0.12,0.08,0.02],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,0.6,-0.45],[0,0.8999999999999999,-0.35],[0,0.73,0.2]],"w":[0.12,0.08,0.02],"h":[0.4,0.3,0.05],"n":1,"segs":4,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"accent","t":[0.38,0.41],"a_deg":[-180,180]},{"role":"trim","t":[0.0,0.35],"a_deg":[-20,20]}],"why":"Holds a border world for its lord"},{"id":"kethran_ca","name":"Bastion","role":"Cruiser","code":"BN","length_m":140,"beam_ratio":0.48,"height_ratio":0.24,"armament":["6 heavy guns","2 missile racks","spinal driver"],"limbs":[{"path":[[0.6,-0.1,-0.2],[1.7,-0.2,-0.45],[2.1,-0.25,-0.62]],"w":[0.5,0.35,0.05],"h":[0.12,0.08,0.02],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,0.6,-0.45],[0,1.15,-0.35],[0,0.8800000000000001,0.2]],"w":[0.12,0.08,0.02],"h":[0.4,0.3,0.05],"n":1,"segs":4,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"accent","t":[0.36,0.39],"a_deg":[-180,180]},{"role":"accent","t":[0.5,0.52],"a_deg":[-180,180]},{"role":"trim","t":[0.0,0.4],"a_deg":[-20,20]}],"why":"A fortress that moves"},{"id":"kethran_dn","name":"Throne","role":"Dreadnought","code":"TR","length_m":210,"beam_ratio":0.5,"height_ratio":0.25,"armament":["10 heavy guns","4 missile racks","spinal driver"],"limbs":[{"path":[[0.6,-0.1,-0.2],[1.94,-0.2,-0.45],[2.42,-0.25,-0.62]],"w":[0.5,0.35,0.05],"h":[0.12,0.08,0.02],"n":1,"segs":4,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,0.6,-0.45],[0,1.5,-0.35],[0,1.09,0.2]],"w":[0.12,0.08,0.02],"h":[0.4,0.3,0.05],"n":1,"segs":4,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"accent","t":[0.34,0.37],"a_deg":[-180,180]},{"role":"accent","t":[0.48,0.5],"a_deg":[-180,180]},{"role":"trim","t":[0.0,0.45],"a_deg":[-20,20]}],"why":"A lord's seat in war"}]},"tarsine":{"name":"Tarsine Remnant","colours":{"hull":"#6a5e50","trim":"#7a3b1c","dark":"#1c1814","glow":"#d6c76a","accent":"#a88a46"},"hull":{"n":3.2,"segs":16,"facet":false,"plan":[0.85,1,1,1,0.95,0.85,0.55],"rise":[0.9,1,1,1,0.95,0.85,0.6],"centre":[0,0,0,0,0,0,0]},"tradition":"Unchanged since the first age: one monolithic plan at every size, buttresses, lamps in arched windows","classes":[{"id":"tarsine_ff","name":"Votary","role":"Frigate","code":"VT","length_m":72,"beam_ratio":0.34,"height_ratio":0.3,"armament":["2 ancient beams"],"limbs":[{"path":[[0,0.5,-0.5],[0,1.25,-0.3],[0,1.2,0.35]],"w":[0.08,0.06,0.04],"h":[0.4,0.35,0.15],"n":1.4,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.3,0.7],"a_deg":[80,100]},{"role":"accent","t":[0.9,0.95],"a_deg":[-180,180]}],"why":"Even the smallest is old and large"},{"id":"tarsine_dd","name":"Custodian","role":"Destroyer","code":"CU","length_m":110,"beam_ratio":0.34,"height_ratio":0.3,"armament":["4 ancient beams","1 missile rack"],"limbs":[{"path":[[0,0.5,-0.5],[0,1.25,-0.3],[0,1.2,0.35]],"w":[0.08,0.06,0.04],"h":[0.4,0.35,0.15],"n":1.4,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,-0.5,-0.5],[0,-1.25,-0.3],[0,-1.2,0.35]],"w":[0.08,0.06,0.04],"h":[0.4,0.35,0.15],"n":1.4,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.25,0.75],"a_deg":[80,100]},{"role":"accent","t":[0.9,0.95],"a_deg":[-180,180]}],"why":"Guards what the Remnant still holds"},{"id":"tarsine_ca","name":"Monument","role":"Cruiser","code":"MN","length_m":170,"beam_ratio":0.34,"height_ratio":0.3,"armament":["6 ancient beams","2 missile racks"],"limbs":[{"path":[[0,0.5,-0.5],[0,1.25,-0.3],[0,1.2,0.35]],"w":[0.08,0.06,0.04],"h":[0.4,0.35,0.15],"n":1.4,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,-0.5,-0.5],[0,-1.25,-0.3],[0,-1.2,0.35]],"w":[0.08,0.06,0.04],"h":[0.4,0.35,0.15],"n":1.4,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.2,0.8],"a_deg":[80,100]},{"role":"accent","t":[0.88,0.93],"a_deg":[-180,180]},{"role":"trim","t":[0.0,0.2],"a_deg":[-180,180]}],"why":"Built to be seen from every world"},{"id":"tarsine_dn","name":"Dominion","role":"Dreadnought","code":"DM","length_m":300,"beam_ratio":0.34,"height_ratio":0.3,"armament":["12 ancient beams","4 missile racks","the first-age cannon"],"limbs":[{"path":[[0,0.5,-0.5],[0,1.25,-0.3],[0,1.2,0.35]],"w":[0.08,0.06,0.04],"h":[0.4,0.35,0.15],"n":1.4,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0,-0.5,-0.5],[0,-1.25,-0.3],[0,-1.2,0.35]],"w":[0.08,0.06,0.04],"h":[0.4,0.35,0.15],"n":1.4,"segs":8,"mirror":false,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.15,0.85],"a_deg":[80,100]},{"role":"accent","t":[0.86,0.9],"a_deg":[-180,180]},{"role":"trim","t":[0.0,0.25],"a_deg":[-180,180]}],"why":"From when the Remnant ruled"}]},"aelith":{"name":"Aelith Conclave","colours":{"hull":"#e8e4da","trim":"#c9a646","dark":"#0f3a45","glow":"#6ff3ff"},"hull":{"n":2.0,"segs":28,"facet":false,"plan":[0.5,0.9,1,0.95,0.8,0.55,0.15],"rise":[0.5,0.8,0.9,0.85,0.7,0.5,0.15],"centre":[0,0,0,0,0,0,0]},"tradition":"Shells round a core of light: a smooth core, gold shells curving forward, one more shell for each age of service","classes":[{"id":"aelith_ff","name":"Seeker","role":"Frigate","code":"SE","length_m":56,"beam_ratio":0.42,"height_ratio":0.24,"armament":["2 light lances"],"limbs":[{"path":[[0.4,0,-0.45],[1.3,0,-0.05],[0.9750000000000001,0,0.45]],"w":[0.06,0.06,0.03],"h":[0.18,0.22,0.08],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.35,0.65],"a_deg":[70,110]},{"role":"trim","t":[0.8,0.85],"a_deg":[-180,180]}],"why":"Sent to learn, rarely to fight"},{"id":"aelith_dd","name":"Envoy","role":"Destroyer","code":"EN","length_m":84,"beam_ratio":0.42,"height_ratio":0.24,"armament":["4 light lances","1 missile rack"],"limbs":[{"path":[[0.4,0.15,-0.45],[1.35,0.15,-0.05],[1.0125000000000002,0.15,0.45]],"w":[0.06,0.06,0.03],"h":[0.18,0.22,0.08],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.3,0.7],"a_deg":[70,110]},{"role":"trim","t":[0.8,0.85],"a_deg":[-180,180]}],"why":"Speaks for the Conclave"},{"id":"aelith_ca","name":"Archive","role":"Cruiser","code":"AR","length_m":130,"beam_ratio":0.42,"height_ratio":0.24,"armament":["6 light lances","2 missile racks","mind field"],"limbs":[{"path":[[0.4,0.25,-0.45],[1.35,0.25,-0.05],[1.0125000000000002,0.25,0.45]],"w":[0.06,0.06,0.03],"h":[0.18,0.22,0.08],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.4,-0.25,-0.45],[1.55,-0.25,-0.05],[1.1625,-0.25,0.45]],"w":[0.06,0.06,0.03],"h":[0.18,0.22,0.08],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.25,0.75],"a_deg":[70,110]},{"role":"trim","t":[0.8,0.85],"a_deg":[-180,180]}],"why":"Carries what the Conclave knows"},{"id":"aelith_cap","name":"Sanctum","role":"Capital","code":"SA","length_m":196,"beam_ratio":0.44,"height_ratio":0.26,"armament":["10 light lances","4 missile racks","mind field"],"limbs":[{"path":[[0.4,0.35,-0.45],[1.3,0.35,-0.05],[0.9750000000000001,0.35,0.45]],"w":[0.06,0.06,0.03],"h":[0.18,0.22,0.08],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.4,0,-0.45],[1.55,0,-0.05],[1.1625,0,0.45]],"w":[0.06,0.06,0.03],"h":[0.18,0.22,0.08],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.4,-0.35,-0.45],[1.3,-0.35,-0.05],[0.9750000000000001,-0.35,0.45]],"w":[0.06,0.06,0.03],"h":[0.18,0.22,0.08],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.2,0.8],"a_deg":[70,110]},{"role":"trim","t":[0.8,0.85],"a_deg":[-180,180]}],"why":"Where the eldest sit"}]},"ombrai":{"name":"Ombrai","colours":{"hull":"#3b2a5c","trim":"#3b1763","dark":"#120822","glow":"#ff4fb0"},"hull":{"n":2.2,"segs":24,"facet":false,"plan":[0.4,0.85,1,1,0.85,0.55,0.1],"rise":[0.35,0.5,0.55,0.5,0.4,0.3,0.1],"centre":[0,0,0,0,0,0,0]},"tradition":"The watchers: flat dark hulls, petals closed forward, a lit eye under the bow","classes":[{"id":"ombrai_ff","name":"Veil","role":"Frigate","code":"VL","length_m":54,"beam_ratio":0.5,"height_ratio":0.3,"armament":["2 lances","cloak"],"limbs":[{"path":[[0.6,0,-0.5],[1.34,0,-0.1],[1.02,0,0.55]],"w":[0.3,0.45,0.04],"h":[0.08,0.08,0.02],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.82,0.9],"a_deg":[150,210]},{"role":"trim","t":[0.2,0.6],"a_deg":[-50,50]}],"why":"Seen once, then gone"},{"id":"ombrai_dd","name":"Shade","role":"Destroyer","code":"SH","length_m":82,"beam_ratio":0.5,"height_ratio":0.3,"armament":["4 lances","1 missile rack","cloak"],"limbs":[{"path":[[0.6,0,-0.5],[1.6,0,-0.1],[1.2,0,0.55]],"w":[0.3,0.45,0.04],"h":[0.08,0.08,0.02],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.8,0.9],"a_deg":[150,210]},{"role":"trim","t":[0.2,0.6],"a_deg":[-50,50]}],"why":"Follows, and reports"},{"id":"ombrai_ca","name":"Vigil","role":"Cruiser","code":"VG","length_m":126,"beam_ratio":0.52,"height_ratio":0.3,"armament":["6 lances","2 missile racks","cloak"],"limbs":[{"path":[[0.6,0.05,-0.5],[1.6,0.05,-0.1],[1.2,0.05,0.55]],"w":[0.3,0.45,0.04],"h":[0.08,0.08,0.02],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,-0.1,-0.5],[1.21,-0.1,-0.1],[0.9299999999999999,-0.1,0.55]],"w":[0.3,0.45,0.04],"h":[0.08,0.08,0.02],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.78,0.9],"a_deg":[150,210]},{"role":"glow","t":[0.45,0.5],"a_deg":[170,190]},{"role":"trim","t":[0.2,0.6],"a_deg":[-50,50]}],"why":"Watches a whole system"},{"id":"ombrai_cap","name":"Eclipse","role":"Capital","code":"EC","length_m":186,"beam_ratio":0.54,"height_ratio":0.3,"armament":["10 lances","4 missile racks","cloak"],"limbs":[{"path":[[0.6,0.05,-0.5],[1.7300000000000002,0.05,-0.1],[1.29,0.05,0.55]],"w":[0.3,0.45,0.04],"h":[0.08,0.08,0.02],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618},{"path":[[0.6,-0.1,-0.5],[1.34,-0.1,-0.1],[1.02,-0.1,0.55]],"w":[0.3,0.45,0.04],"h":[0.08,0.08,0.02],"n":2,"segs":12,"mirror":true,"glow_tip":false,"iterate":0,"scale":0.618}],"stripes":[{"role":"glow","t":[0.76,0.9],"a_deg":[150,210]},{"role":"glow","t":[0.42,0.48],"a_deg":[170,190]},{"role":"trim","t":[0.2,0.6],"a_deg":[-50,50]}],"why":"When it is seen, it is too late"}]},"vhorr":{"name":"Vhorr Brood","colours":{"hull":"#5a3424","trim":"#2b1d2a","dark":"#2e1814","glow":"#a6e34a"},"hull":{"n":2.0,"segs":24,"facet":false,"plan":[0.5,0.9,1,0.75,0.95,0.7,0.3],"rise":[0.5,0.85,1,0.75,0.9,0.7,0.35],"centre":[0,0,0,0,0,0,0]},"tradition":"Grown, not built: hulls grown in chambers, carapace bands over lit tissue, feeding tendrils aft","classes":[{"id":"vhorr_ff","name":"Drone","role":"Frigate","code":"DR","length_m":52,"beam_ratio":0.44,"height_ratio":0.34,"armament":["2 bile spitters"],"limbs":[{"path":[[0.25,0.0,-0.4],[0.5,0,-0.9],[0.65,0.0,-1.2]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.38,0.5],"a_deg":[-60,60]},{"role":"glow","t":[0.5,0.55],"a_deg":[-180,180]}],"why":"Spawned by the hundred"},{"id":"vhorr_dd","name":"Ravager","role":"Destroyer","code":"RA","length_m":80,"beam_ratio":0.44,"height_ratio":0.34,"armament":["4 bile spitters","1 spore rack"],"limbs":[{"path":[[0.25,0.1,-0.4],[0.5,0.2,-0.9],[0.65,0.24,-1.2]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618},{"path":[[0.2,-0.15,-0.4],[0.4,-0.3,-0.9],[0.52,-0.36,-1.3499999999999999]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.38,0.5],"a_deg":[-60,60]},{"role":"trim","t":[0.68,0.8],"a_deg":[-60,60]},{"role":"glow","t":[0.5,0.55],"a_deg":[-180,180]}],"why":"Feeds on what it breaks"},{"id":"vhorr_ca","name":"Broodship","role":"Cruiser","code":"BR","length_m":130,"beam_ratio":0.46,"height_ratio":0.34,"armament":["6 bile spitters","2 spore racks","12 swarmers"],"limbs":[{"path":[[0.25,0.125,-0.4],[0.5,0.25,-0.9],[0.65,0.3,-1.2]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618},{"path":[[0.225,-0.15,-0.4],[0.45,-0.3,-0.9],[0.5850000000000001,-0.36,-1.3499999999999999]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618},{"path":[[0.125,0.3,-0.4],[0.25,0.6,-0.9],[0.325,0.72,-1.5]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.36,0.5],"a_deg":[-60,60]},{"role":"trim","t":[0.66,0.8],"a_deg":[-60,60]},{"role":"glow","t":[0.5,0.55],"a_deg":[-180,180]}],"why":"Carries a brood to a new world"},{"id":"vhorr_cv","name":"Hive","role":"Carrier","code":"HV","length_m":220,"beam_ratio":0.5,"height_ratio":0.36,"armament":["10 bile spitters","4 spore racks","48 swarmers"],"limbs":[{"path":[[0.25,0.125,-0.4],[0.5,0.25,-0.9],[0.65,0.3,-1.2]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618},{"path":[[0.225,-0.15,-0.4],[0.45,-0.3,-0.9],[0.5850000000000001,-0.36,-1.3499999999999999]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618},{"path":[[0.125,0.3,-0.4],[0.25,0.6,-0.9],[0.325,0.72,-1.5]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618},{"path":[[0.15,-0.35,-0.4],[0.3,-0.7,-0.9],[0.39,-0.84,-1.65]],"w":[0.1,0.07,0.02],"h":[0.1,0.07,0.02],"n":2,"segs":10,"mirror":true,"glow_tip":true,"iterate":0,"scale":0.618}],"stripes":[{"role":"trim","t":[0.34,0.5],"a_deg":[-60,60]},{"role":"trim","t":[0.64,0.8],"a_deg":[-60,60]},{"role":"glow","t":[0.5,0.55],"a_deg":[-180,180]},{"role":"glow","t":[0.25,0.3],"a_deg":[-180,180]}],"why":"The body's heart in a system"}]}}}</script>
+<!-- /INLINE -->
+<!-- INLINE assets/emblems/placeholders.json -->
+<script type="application/json" data-src="assets/emblems/placeholders.json">{"_doc":"Placeholder emblems, by faction: the SVG of assets/emblems/<faction>/placeholder.svg and why it is drawn so. Written by tools/factions/placeholder_emblems.py.","emblems":{"axiom":{"why":"A rule and its iteration: a Koch snowflake carried two levels, converging on a gold point","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#e8ecf6\" stroke=\"none\" stroke-width=\"0\"/><polygon points=\"50,88 46.34,81.67 39.03,81.67 42.69,75.33 39.03,69 31.72,69 28.06,75.33 24.4,69 17.09,69 20.75,62.67 17.09,56.33 24.4,56.33 28.06,50 24.4,43.67 17.09,43.67 20.75,37.33 17.09,31 24.4,31 28.06,24.67 31.72,31 39.03,31 42.69,24.67 39.03,18.33 46.34,18.33 50,12 53.66,18.33 60.97,18.33 57.31,24.67 60.97,31 68.28,31 71.94,24.67 75.6,31 82.91,31 79.25,37.33 82.91,43.67 75.6,43.67 71.94,50 75.6,56.33 82.91,56.33 79.25,62.67 82.91,69 75.6,69 71.94,75.33 68.28,69 60.97,69 57.31,75.33 60.97,81.67 53.66,81.67\" fill=\"#05060c\" stroke=\"#4b3fd8\" stroke-width=\"2.4\" stroke-linejoin=\"round\"/><polygon points=\"50,31 55.48,40.5 66.45,40.5 60.97,50 66.45,59.5 55.48,59.5 50,69 44.52,59.5 33.55,59.5 39.03,50 33.55,40.5 44.52,40.5\" fill=\"none\" stroke=\"#3fe0e6\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"4.5\" fill=\"#f2c14e\" stroke=\"none\" stroke-width=\"0\"/></svg>"},"exponent":{"why":"Seven unlike plates bolted into one ring round a branching conduit: what is taken is kept","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#0d1315\" stroke=\"none\" stroke-width=\"0\"/><path d=\"M50,24 A26,26 0 0 1 66.71,30.08 L75.71,19.36 A40,40 0 0 0 50,10 Z\" fill=\"#5d686d\" stroke=\"#0b1113\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path d=\"M69.78,30.9 A27.5,27.5 0 0 1 77.23,53.83 L87.63,55.29 A38,38 0 0 0 77.33,23.6 Z\" fill=\"#8c4522\" stroke=\"#0b1113\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path d=\"M78.14,57.02 A29,29 0 0 1 69.4,71.55 L76.77,79.73 A40,40 0 0 0 88.81,59.68 Z\" fill=\"#5d686d\" stroke=\"#0b1113\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path d=\"M65.28,71.03 A26,26 0 0 1 45.49,75.61 L43.4,87.42 A38,38 0 0 0 72.34,80.74 Z\" fill=\"#46634c\" stroke=\"#0b1113\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path d=\"M42.42,76.43 A27.5,27.5 0 0 1 27.75,66.16 L17.64,73.51 A40,40 0 0 0 38.97,88.45 Z\" fill=\"#5d686d\" stroke=\"#0b1113\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path d=\"M24.89,64.5 A29,29 0 0 1 23.51,38.2 L15.29,34.54 A38,38 0 0 0 17.09,69 Z\" fill=\"#8c4522\" stroke=\"#0b1113\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path d=\"M27.48,37 A26,26 0 0 1 47.28,24.14 L45.82,10.22 A40,40 0 0 0 15.36,30 Z\" fill=\"#7d776a\" stroke=\"#0b1113\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><polyline points=\"50,70 50,50 40,38\" fill=\"none\" stroke=\"#8be6dc\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><polyline points=\"50,50 60,36\" fill=\"none\" stroke=\"#8be6dc\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><polyline points=\"50,58 38,54\" fill=\"none\" stroke=\"#8be6dc\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><polyline points=\"50,58 62,55\" fill=\"none\" stroke=\"#8be6dc\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3.4\" fill=\"#e2fffa\" stroke=\"none\" stroke-width=\"0\"/></svg>"},"redtithe":{"why":"Two crossed boarding blades over the drop of blood each boarded crew pays","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#1a100a\" stroke=\"none\" stroke-width=\"0\"/><circle cx=\"50\" cy=\"50\" r=\"44\" fill=\"#4a301c\" stroke=\"#24160b\" stroke-width=\"2\"/><polygon points=\"80,78 75,82 28,24 20,16 24,28\" fill=\"#c9c2b4\" stroke=\"#141618\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><polygon points=\"20,78 25,82 72,24 80,16 76,28\" fill=\"#c9c2b4\" stroke=\"#141618\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><path d=\"M50,34 C56,46 62,53 62,60 A12,12 0 0 1 38,60 C38,53 44,46 50,34 Z\" fill=\"#c4141c\" stroke=\"#33100a\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/><circle cx=\"46\" cy=\"59\" r=\"2.4\" fill=\"#ff8a8a\" stroke=\"none\" stroke-width=\"0\"/></svg>"},"vos":{"why":"The crews' spiral cut into a coin: loot and luck","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#efe0bd\" stroke=\"none\" stroke-width=\"0\"/><circle cx=\"50\" cy=\"50\" r=\"40\" fill=\"#d6a043\" stroke=\"#2a1410\" stroke-width=\"3\"/><circle cx=\"50\" cy=\"50\" r=\"33\" fill=\"none\" stroke=\"#2a1410\" stroke-width=\"1.4\"/><polyline points=\"53,50 53.55,50.72 53.91,51.65 54.01,52.74 53.82,53.93 53.3,55.13 52.44,56.26 51.25,57.23 49.77,57.96 48.05,58.36 46.17,58.37 44.22,57.94 42.3,57.05 40.52,55.7 38.99,53.91 37.82,51.74 37.1,49.25 36.91,46.54 37.3,43.73 38.31,40.96 39.93,38.35 42.15,36.04 44.89,34.17 48.06,32.85 51.56,32.19 55.25,32.26 58.96,33.11 62.53,34.75 65.79,37.15 68.58,40.25 70.74,43.96 72.14,48.15 72.68,52.66 72.29,57.31 70.94,61.9 68.62,66.23 65.4,70.1 61.38,73.31 56.67,75.71 51.47,77.14 45.96,77.5 40.36,76.74 34.92,74.82 29.87,71.78 25.44,67.71 21.85,62.73 19.27,57.03 17.87,50.8 17.74,44.29 18.94,37.77 21.47,31.5 25.27,25.77\" fill=\"none\" stroke=\"#2a1410\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"50\" cy=\"50\" r=\"3\" fill=\"#3fb7a3\" stroke=\"none\" stroke-width=\"0\"/></svg>"},"kethran":{"why":"A forged prow between two blade chevrons of rank","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#2b2f33\" stroke=\"none\" stroke-width=\"0\"/><polygon points=\"50,14 64,46 56,82 44,82 36,46\" fill=\"#4a4f55\" stroke=\"#121417\" stroke-width=\"2\" stroke-linejoin=\"round\"/><polygon points=\"50,26 57,46 50,70 43,46\" fill=\"#d9483b\" stroke=\"none\" stroke-width=\"0\" stroke-linejoin=\"round\"/><polygon points=\"30,30 40,52 30,80 18,80 26,52 18,30\" fill=\"#8a9096\" stroke=\"#121417\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/><polygon points=\"70,30 60,52 70,80 82,80 74,52 82,30\" fill=\"#8a9096\" stroke=\"#121417\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/></svg>"},"tarsine":{"why":"The first age's arched tablet, its lamp still lit","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#7a3b1c\" stroke=\"none\" stroke-width=\"0\"/><path d=\"M26,84 L26,44 A24,24 0 0 1 74,44 L74,84 Z\" fill=\"#3a332c\" stroke=\"#1c1814\" stroke-width=\"2.4\" stroke-linejoin=\"round\"/><path d=\"M33,78 L33,46 A17,17 0 0 1 67,46 L67,78 Z\" fill=\"#1c1814\" stroke=\"none\" stroke-width=\"0\" stroke-linejoin=\"round\"/><circle cx=\"50\" cy=\"48\" r=\"10\" fill=\"#d6c76a\" stroke=\"none\" stroke-width=\"0\"/><circle cx=\"50\" cy=\"48\" r=\"15\" fill=\"none\" stroke=\"#a88a46\" stroke-width=\"1.6\"/><polyline points=\"30,84 70,84\" fill=\"none\" stroke=\"#a88a46\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"aelith":{"why":"Light held between two shells: act rarely, act exactly","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#0b2a33\" stroke=\"none\" stroke-width=\"0\"/><path d=\"M30,16 C12,34 12,66 30,84 C22,64 22,36 30,16 Z\" fill=\"#c9a646\" stroke=\"#6a4a14\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><path d=\"M70,16 C88,34 88,66 70,84 C78,64 78,36 70,16 Z\" fill=\"#c9a646\" stroke=\"#6a4a14\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><polygon points=\"50,18 62,50 50,82 38,50\" fill=\"#6ff3ff\" stroke=\"#dffcff\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><polygon points=\"50,34 55,50 50,66 45,50\" fill=\"#dffcff\" stroke=\"none\" stroke-width=\"0\" stroke-linejoin=\"round\"/></svg>"},"ombrai":{"why":"Rings round a watching point, a crescent veil closing over it","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#3b2a5c\" stroke=\"none\" stroke-width=\"0\"/><circle cx=\"50\" cy=\"50\" r=\"38\" fill=\"none\" stroke=\"#3b1763\" stroke-width=\"4\"/><circle cx=\"50\" cy=\"50\" r=\"28\" fill=\"none\" stroke=\"#c58cff\" stroke-width=\"1.6\"/><circle cx=\"50\" cy=\"50\" r=\"16\" fill=\"#ff4fb0\" stroke=\"none\" stroke-width=\"0\"/><circle cx=\"50\" cy=\"50\" r=\"6\" fill=\"#f4e6ff\" stroke=\"none\" stroke-width=\"0\"/><path d=\"M14,46 A36,36 0 0 1 86,46 A40,30 0 0 0 14,46 Z\" fill=\"#120822\" stroke=\"#c58cff\" stroke-width=\"1\" stroke-linejoin=\"round\"/></svg>"},"vhorr":{"why":"One body growing: six chambers round a lit heart","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"256\" height=\"256\"><circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"#2e1814\" stroke=\"none\" stroke-width=\"0\"/><circle cx=\"50\" cy=\"28\" r=\"11\" fill=\"#5a3424\" stroke=\"#2b1d2a\" stroke-width=\"2\"/><circle cx=\"69.05\" cy=\"39\" r=\"11\" fill=\"#5a3424\" stroke=\"#2b1d2a\" stroke-width=\"2\"/><circle cx=\"69.05\" cy=\"61\" r=\"11\" fill=\"#5a3424\" stroke=\"#2b1d2a\" stroke-width=\"2\"/><circle cx=\"50\" cy=\"72\" r=\"11\" fill=\"#5a3424\" stroke=\"#2b1d2a\" stroke-width=\"2\"/><circle cx=\"30.95\" cy=\"61\" r=\"11\" fill=\"#5a3424\" stroke=\"#2b1d2a\" stroke-width=\"2\"/><circle cx=\"30.95\" cy=\"39\" r=\"11\" fill=\"#5a3424\" stroke=\"#2b1d2a\" stroke-width=\"2\"/><circle cx=\"50\" cy=\"50\" r=\"12\" fill=\"#a6e34a\" stroke=\"#2b1d2a\" stroke-width=\"2\"/><circle cx=\"50\" cy=\"50\" r=\"5\" fill=\"#e4ff9a\" stroke=\"none\" stroke-width=\"0\"/></svg>"}}}</script>
+<!-- /INLINE -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<!-- INLINE docs/mockups/lib/placeholder-hulls.js -->
+<script data-src="docs/mockups/lib/placeholder-hulls.js">
+// Placeholder hulls: the one generator that builds every placeholder ship of the nine factions with no designed ships
+// (owner, 2026-11-08: "generate place holders for all of their ships, class design is your discretion"), from
+// data/ships/placeholders.json (written by tools/factions/placeholder_fleets.py). It lives in a library so mockup 36
+// (docs/mockups/placeholder-fleets.html) and, later, tools/mockups/export_ships.mjs build the same hulls (CLAUDE.md
+// section 6.1).
+//
+// Every hull is lofts, never a stretched primitive (CLAUDE.md section 10, "a hull is one grown structure"): the body is a
+// superellipse section swept stern to bow through the faction's plan and rise profiles, and every limb (fin, pod, ram,
+// shell, petal, tendril, crest) is a second loft whose root starts inside the body. The drives are recesses in the stern
+// cap that glow. Colour comes from stripes on the skin (trim, accent, glow), so a light strip is a face of the hull.
+//
+// Axes: metres, +Y up, bow toward +Z, starboard toward +X (the mockups' convention; the glb export turns it). The origin
+// is the body's centre.
+(function () {
+  const P = Math.PI;
+
+  // A profile of seven stations, stern (t 0) to bow (t 1): linear between stations for a faceted hull, Catmull-Rom for a
+  // smooth one.
+  function sample(arr, t, facet) {
+    const n = arr.length - 1, x = Math.min(n, Math.max(0, t * n)), i = Math.min(n - 1, Math.floor(x)), u = x - i;
+    if (facet) return arr[i] + (arr[i + 1] - arr[i]) * u;
+    const p0 = arr[Math.max(0, i - 1)], p1 = arr[i], p2 = arr[i + 1], p3 = arr[Math.min(n, i + 2)];
+    return 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
+  }
+
+  // A superellipse section point at angle phi (0 at the top, clockwise seen from the bow toward +X): exponent n, half-width
+  // a, half-height b.
+  function sect(phi, a, b, n) {
+    const s = Math.sin(phi), c = Math.cos(phi), e = 2 / n;
+    return [a * Math.sign(s) * Math.pow(Math.abs(s), e), b * Math.sign(c) * Math.pow(Math.abs(c), e)];
+  }
+
+  // The role of a face at (t along the loft, phi round it): the last stripe that covers it, else hull.
+  function roleAt(stripes, t, phiDeg) {
+    let r = 'hull';
+    let a = ((phiDeg + 180) % 360 + 360) % 360 - 180;
+    for (const s of stripes || []) if (t >= s.t[0] && t <= s.t[1] && a >= s.a_deg[0] && a <= s.a_deg[1]) r = s.role;
+    return r;
+  }
+
+  const ROLES = ['hull', 'trim', 'accent', 'dark', 'glow'];
+
+  // Mesh builder: shared vertices (smooth normals unless flat), faces bucketed by role into geometry groups.
+  function Builder() { this.pos = []; this.faces = Object.fromEntries(ROLES.map((r) => [r, []])); }
+  Builder.prototype.v = function (x, y, z) { this.pos.push(x, y, z); return this.pos.length / 3 - 1; };
+  Builder.prototype.f = function (role, a, b, c) { (this.faces[role] || this.faces.hull).push(a, b, c); };
+  Builder.prototype.geometry = function (THREE) {
+    const g = new THREE.BufferGeometry(), idx = [];
+    g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
+    ROLES.forEach((r, m) => { const f = this.faces[r]; if (f.length) { g.addGroup(idx.length, f.length, m); idx.push(...f); } });
+    g.setIndex(idx); g.computeVertexNormals(); return g;
+  };
+
+  // A loft through rings of points. rings[k] is an array of [x, y, z]; tOf(k) the loft position for stripes; caps: the
+  // stern (first ring) is a drive recess when 'drive', closed when 'close', open when 'open'; the last ring likewise
+  // ('close' or 'glow').
+  function loft(B, rings, tOf, stripes, phis, startCap, endCap, flat) {
+    const segs = rings[0].length, base = [];
+    for (const ring of rings) { const row = []; for (const p of ring) row.push(B.v(p[0], p[1], p[2])); base.push(row); }
+    // A flat (faceted) hull gets its own vertices per face, so normals stay crisp.
+    const quad = (role, a, b, c, d) => {
+      if (flat) { const P3 = (i) => B.pos.slice(i * 3, i * 3 + 3); const q = [a, b, c, d].map((i) => B.v(...P3(i))); B.f(role, q[0], q[1], q[2]); B.f(role, q[0], q[2], q[3]); }
+      else { B.f(role, a, b, c); B.f(role, a, c, d); }
+    };
+    for (let k = 0; k < rings.length - 1; k++) {
+      const t = (tOf(k) + tOf(k + 1)) / 2;
+      for (let j = 0; j < segs; j++) {
+        const j2 = (j + 1) % segs, phi = (phis[j] + phis[j2] + (j2 === 0 ? 2 * P : 0)) / 2;
+        quad(roleAt(stripes, t, phi * 180 / P), base[k][j], base[k + 1][j], base[k + 1][j2], base[k][j2]);
+      }
+    }
+    const cap = (row, ring, mode, outward) => {
+      if (mode === 'open') return;
+      const c = ring.reduce((s, p) => [s[0] + p[0] / segs, s[1] + p[1] / segs, s[2] + p[2] / segs], [0, 0, 0]);
+      if (mode === 'drive') {
+        // A drive recess: a dark lip to an inner ring set back, its floor glowing.
+        const inner = ring.map((p) => [c[0] + (p[0] - c[0]) * 0.62, c[1] + (p[1] - c[1]) * 0.62, c[2] + outward * 0.012 * Math.abs(c[2] || 1)]);
+        const ir = inner.map((p) => B.v(...p)), ci = B.v(c[0], c[1], inner[0][2]);
+        for (let j = 0; j < segs; j++) { const j2 = (j + 1) % segs; if (outward < 0) quad('dark', row[j], row[j2], ir[j2], ir[j]); else quad('dark', row[j], ir[j], ir[j2], row[j2]); }
+        for (let j = 0; j < segs; j++) { const j2 = (j + 1) % segs; if (outward < 0) B.f('glow', ci, ir[j2], ir[j]); else B.f('glow', ci, ir[j], ir[j2]); }
+        return;
+      }
+      const ci = B.v(...c), role = mode === 'glow' ? 'glow' : 'hull';
+      for (let j = 0; j < segs; j++) { const j2 = (j + 1) % segs; if (outward < 0) B.f(role, ci, row[j2], row[j]); else B.f(role, ci, row[j], row[j2]); }
+    };
+    cap(base[0], rings[0], startCap, -1);
+    cap(base[base.length - 1], rings[rings.length - 1], endCap, 1);
+  }
+
+  const phisOf = (segs) => Array.from({ length: segs }, (_, j) => (j / segs) * 2 * P);
+
+  // The body: the faction's profiles at the class's length, beam and height.
+  function body(B, F, C) {
+    const L = C.length_m, hb = L * C.beam_ratio / 2, hh = L * C.height_ratio / 2, h = F.hull, facet = !!h.facet;
+    const N = facet ? 6 * 4 : 40, phis = phisOf(h.segs), rings = [];
+    for (let k = 0; k <= N; k++) {
+      const t = k / N, a = Math.max(0.01, sample(h.plan, t, facet)) * hb, b = Math.max(0.01, sample(h.rise, t, facet)) * hh;
+      const yc = sample(h.centre, t, facet) * hh, z = (t - 0.5) * L;
+      rings.push(phis.map((phi) => { const [x, y] = sect(phi, a, b, h.n); return [x, y + yc, z]; }));
+    }
+    loft(B, rings, (k) => k / N, C.stripes, phis, 'drive', 'close', facet);
+  }
+
+  // A limb: a loft along a three-point path (fractions of half-beam, half-height, half-length), its section w by h in
+  // fractions of the half-beam, rooted inside the body.
+  function limb(B, F, C, Lm, sx, scale, dz) {
+    const L = C.length_m, hb = L * C.beam_ratio / 2, hh = L * C.height_ratio / 2, hl = L / 2;
+    const p0 = Lm.path[0];
+    const pts = Lm.path.map((p) => [sx * (p0[0] + (p[0] - p0[0]) * scale) * hb, (p0[1] + (p[1] - p0[1]) * scale) * hh, (p0[2] + (p[2] - p0[2]) * scale + dz) * hl]);
+    const N = 14, phis = phisOf(Lm.segs), rings = [];
+    const at = (u) => { const a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u; return [0, 1, 2].map((i) => a * pts[0][i] + b * pts[1][i] + c * pts[2][i]); };
+    const lin = (arr, u) => { const x = u * (arr.length - 1), i = Math.min(arr.length - 2, Math.floor(x)); return arr[i] + (arr[i + 1] - arr[i]) * (x - i); };
+    for (let k = 0; k <= N; k++) {
+      const u = k / N, c = at(u), d = at(Math.min(1, u + 0.01)), e = at(Math.max(0, u - 0.01));
+      let T = [d[0] - e[0], d[1] - e[1], d[2] - e[2]]; const tl = Math.hypot(...T) || 1; T = T.map((v) => v / tl);
+      let up = Math.abs(T[1]) > 0.8 ? [0, 0, 1] : [0, 1, 0];
+      let S = [T[1] * up[2] - T[2] * up[1], T[2] * up[0] - T[0] * up[2], T[0] * up[1] - T[1] * up[0]]; const sl = Math.hypot(...S) || 1; S = S.map((v) => v / sl);
+      const U = [S[1] * T[2] - S[2] * T[1], S[2] * T[0] - S[0] * T[2], S[0] * T[1] - S[1] * T[0]];
+      const w = lin(Lm.w, u) * hb * scale, h = lin(Lm.h, u) * hb * scale;
+      rings.push(phis.map((phi) => { const [x, y] = sect(phi, Math.max(0.05, w), Math.max(0.05, h), Lm.n); return [c[0] + S[0] * x + U[0] * y, c[1] + S[1] * x + U[1] * y, c[2] + S[2] * x + U[2] * y]; }));
+    }
+    // A limb wears the body's stripes by where it sits along the hull, so trim and glow carry on to it.
+    const tOf = (k) => { const u = k / N; return Math.min(1, Math.max(0, at(u)[2] / L + 0.5)); };
+    const stripes = (C.stripes || []).filter((s) => s.role !== 'glow');
+    loft(B, sx < 0 ? rings.map((r) => r.slice().reverse()) : rings, tOf, stripes, sx < 0 ? phis.slice().reverse() : phis, 'open', Lm.glow_tip ? 'glow' : 'close', !!F.hull.facet);
+  }
+
+  const MATS = {};
+  function materials(THREE, F) {
+    const key = JSON.stringify(F.colours);
+    if (MATS[key]) return MATS[key];
+    const c = F.colours, std = (hex, rough, metal) => new THREE.MeshStandardMaterial({ color: new THREE.Color(hex), roughness: rough, metalness: metal, flatShading: !!F.hull.facet, side: THREE.DoubleSide });
+    return (MATS[key] = [std(c.hull, 0.55, 0.35), std(c.trim, 0.5, 0.4), std(c.accent || c.trim, 0.45, 0.5), std(c.dark, 0.7, 0.3),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(c.glow), side: THREE.DoubleSide })]);
+  }
+
+  // Build one class of one faction as a THREE.Mesh, named for the class id, with its length in userData.
+  function build(THREE, F, C) {
+    const B = new Builder();
+    body(B, F, C);
+    for (const Lm of C.limbs || []) {
+      const copies = Math.max(1, Lm.iterate || 1);
+      for (let k = 0; k < copies; k++) {
+        const sc = Math.pow(Lm.scale || 0.618, k), dz = -0.22 * k;
+        limb(B, F, C, Lm, 1, sc, dz);
+        if (Lm.mirror) limb(B, F, C, Lm, -1, sc, dz);
+      }
+    }
+    const mesh = new THREE.Mesh(B.geometry(THREE), materials(THREE, F));
+    mesh.name = C.id; mesh.userData = { length_m: C.length_m, faction: F.name, cls: C.name };
+    return mesh;
+  }
+
+  window.PlaceholderHulls = { build, sample, sect };
+})();
+</script>
+<!-- /INLINE -->
+<script>
+(function () {
+const DATA = JSON.parse(document.querySelector('script[data-src="data/ships/placeholders.json"]').textContent);
+const EMB = JSON.parse(document.querySelector('script[data-src="assets/emblems/placeholders.json"]').textContent).emblems;
+const FIDS = Object.keys(DATA.factions);
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+stage.append(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070b);
+const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 20000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// three.js 0.147 uses the legacy light units.
+scene.add(new THREE.HemisphereLight(0xaac4ff, 0x1a1410, 0.55));
+const key = new THREE.DirectionalLight(0xfff2e0, 1.25); key.position.set(-300, 420, 380); scene.add(key);
+const rim = new THREE.DirectionalLight(0x8fb0ff, 0.5); rim.position.set(300, 120, -400); scene.add(rim);
+
+// Yardstick: a 10 m grid and a 100 m bar, so every ship is seen at true scale.
+const grid = new THREE.GridHelper(1400, 140, 0x22384f, 0x111c29); grid.position.y = -60; scene.add(grid);
+const bar = new THREE.Mesh(new THREE.BoxGeometry(100, 1.2, 1.2), new THREE.MeshBasicMaterial({ color: 0xffcc66 }));
+scene.add(bar);
+
+let group = null, labels = [];
+const labelBox = document.getElementById('labels');
+
+// One faction's line in a row, smallest to largest, 40 m apart, all at true scale.
+function show(fid) {
+  const F = DATA.factions[fid];
+  if (group) { scene.remove(group); group.traverse((o) => o.geometry && o.geometry.dispose()); }
+  group = new THREE.Group(); labelBox.textContent = ''; labels = [];
+  const ships = F.classes.map((C) => PlaceholderHulls.build(THREE, F, C));
+  const widths = F.classes.map((C) => C.length_m * C.beam_ratio * 2.6 + 30);
+  let x = -widths.reduce((a, b) => a + b, 0) / 2;
+  ships.forEach((m, i) => {
+    const C = F.classes[i]; x += widths[i] / 2; m.position.set(x, 0, 0); m.rotation.y = -0.35; group.add(m);
+    const el = document.createElement('div'); el.innerHTML = `${C.name}<small>${C.role} · ${C.length_m} m</small>`; labelBox.append(el);
+    labels.push({ el, at: new THREE.Vector3(x, -C.length_m * C.height_ratio * 0.9 - 14, C.length_m * 0.15) });
+    x += widths[i] / 2;
+  });
+  bar.position.set(-50 + x - 60, -58, 120);
+  scene.add(group);
+  document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === fid)));
+  const E = EMB[fid];
+  document.getElementById('card').innerHTML = `<div class="head"><img alt="${F.name} placeholder emblem" src="data:image/svg+xml;utf8,${encodeURIComponent(E.svg)}">
+    <div><h2>${F.name}</h2><p class="why">${E.why}</p></div></div><p class="why">${F.tradition}.</p>
+    <table>${F.classes.map((C) => `<tr><td class="n">${C.name}<br><small>${C.code} · ${C.role}</small></td><td>${C.length_m} m · ${C.armament.join(', ')}<div class="m">${C.why}</div></td></tr>`).join('')}</table>`;
+  current = fid;
+  VIEWS.line();
+}
+let current = FIDS[0];
+
+const tabs = document.getElementById('tabs');
+for (const fid of FIDS) {
+  const b = document.createElement('button'); b.dataset.f = fid; b.textContent = DATA.factions[fid].name.replace(/^The /, '');
+  b.onclick = () => show(fid); tabs.append(b);
+}
+
+function frame(span, el, az) {
+  const d = span * 1.05 / Math.tan(camera.fov * P / 360) / Math.max(0.4, Math.min(1.6, camera.aspect));
+  const ox = span * shift() * 1.6; camera.position.set(ox + Math.sin(az) * d * Math.cos(el), Math.sin(el) * d, Math.cos(az) * d * Math.cos(el)); controls.target.set(ox, -10, 0);
+}
+const P = Math.PI;
+const spanOf = () => { const b = new THREE.Box3().setFromObject(group); return Math.max(b.max.x - b.min.x, (b.max.z - b.min.z) * 1.6, 200) / 2; };
+// The faction card sits at the right on a wide screen, so the line is framed left of centre there.
+const shift = () => (stage.clientWidth > 900 ? 0.2 : 0);
+const VIEWS = {
+  line: () => frame(spanOf(), 0.32, 0.25),
+  top: () => frame(spanOf(), 1.45, 0.0001),
+  side: () => frame(spanOf(), 0.02, 0),
+};
+const views = document.getElementById('views');
+for (const [name, set] of Object.entries(VIEWS)) { const b = document.createElement('button'); b.textContent = name; b.onclick = set; views.append(b); }
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', () => { resize(); VIEWS.line(); });
+resize();
+show(FIDS[0]);
+
+const meter = document.getElementById('meter'), v = new THREE.Vector3();
+renderer.setAnimationLoop(() => {
+  controls.update(); renderer.render(scene, camera);
+  for (const l of labels) { v.copy(l.at).project(camera); l.el.style.left = ((v.x + 1) / 2 * stage.clientWidth) + 'px'; l.el.style.top = ((1 - v.y) / 2 * stage.clientHeight) + 'px'; l.el.style.display = v.z < 1 ? '' : 'none'; }
+  meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws · bar 100 m`;
+});
+
+window.MOCKUP_SCENE = scene;
+window.MOCKUP_SHOTS = Object.fromEntries(FIDS.map((f) => [f, () => show(f)]));
+window.MOCKUP_SHOTS.axiom_top = () => { show('axiom'); VIEWS.top(); };
+window.MOCKUP_READY = true;
+})();
+</script>
+</body>
+</html>

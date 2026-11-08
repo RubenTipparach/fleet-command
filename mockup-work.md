@@ -53,6 +53,7 @@ account and every link here is updated.
 | 32 | Battle console: Ombrai | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Ombrai skin from mockup 4 | `ombrai-battle-console` | `docs/mockups/battle-console-ombrai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/7SiSxjuoQU7uhQicQSndaP |
 | 33 | Battle console: Vhorr Brood | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Vhorr Brood skin from mockup 4 | `vhorr-battle-console` | `docs/mockups/battle-console-vhorr.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/MaZY7tPtShdswH2RmZqKYv |
 
+| 36 | Placeholder fleets | Drafted (2026-11-08, v1) (owner, 2026-11-08: "generate place holders for all of their ships, class design is your discretion, and a place holder logo for the factions too"): four placeholder classes and a placeholder emblem for each of the nine factions with no ships | `placeholder-fleets` | `docs/mockups/placeholder-fleets.html` | https://claude.ai/artifact/2oi3YHbpmssfDjwZ2WpzPT |
 New mockups are added at the bottom with the owner's words, never renumbered.
 
 ---
