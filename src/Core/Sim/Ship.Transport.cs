@@ -35,6 +35,44 @@ public sealed class Planet : ICargoHolder
     public Dictionary<string, int> Got { get; } = new();
     /// <summary>True once every need was met (said once).</summary>
     public bool Relieved;
+    /// <summary>The kind of world (PlanetDef.Kinds), for the view.</summary>
+    public string Kind { get; init; } = "terran";
+    /// <summary>What stands on its surface (Battle.Field).</summary>
+    public List<Installation> Installations { get; } = new();
+    /// <summary>The player's scan of it, 0 to 1; scanned at 1, when its installations are found.</summary>
+    public double ScanP;
+    public bool Scanned => ScanP >= 1;
+    /// <summary>Whether its people receive an envoy; the envoy landed there, or null.</summary>
+    public bool TakesEnvoy { get; init; }
+    public string? EnvoyLanded;
+    /// <summary>Someone on the surface waiting to be beamed up, or null once aboard.</summary>
+    public string? Waiting;
+}
+
+/// <summary>Something on a planet's surface (InstallationDef) and what the player knows and has done there: Known once found
+/// (by a scan, or from the start), Team while an away team is down, Secured once a team held it, Failed if a team lost.</summary>
+public sealed class Installation
+{
+    public required string Id { get; init; }
+    public required string Name { get; init; }
+    public required string Kind { get; init; }
+    public required double LatDeg { get; init; }
+    public required double LonDeg { get; init; }
+    public required bool Hostile { get; init; }
+    public int Garrison;
+    public bool Known, Secured, Failed;
+}
+
+/// <summary>An away team on a planet's surface: where, how many marines, the seconds until it has done its work, and the
+/// ship it came from (it beams back there once done and in reach).</summary>
+public sealed class AwayTeam
+{
+    public required string Ship { get; init; }
+    public required string Planet { get; init; }
+    public required string Site { get; init; }
+    public int Marines;
+    public double T;
+    public bool Done;
 }
 
 /// <summary>A hit and run raid out: the ship it is on, the subsystem (or one mount) it aims at, shoot or bomb, the squad

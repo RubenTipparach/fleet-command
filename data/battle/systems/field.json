@@ -1,0 +1,8 @@
+{
+ "_doc": "Field operations (openspec/changes/mission-systems): the sensors' reach and the planets' surveys and away teams. A contact further than every friendly ship's sensor reach is shown as an unknown contact, its name and class withheld until it comes within reach or is scanned; the reach is base_km plus per_e_km for each energy box in sensors, times the sensors' health, times passive_x on passive sensors. A planet is scanned like a ship (the scan rate of data/battle/systems/cloak.json sensors) at planet_scan_x of the speed, from within planet_scan_km of its surface; a finished scan finds its installations. An away team of up to team_marines marines beams down to an installation within the transporter's reach, spends away_s there, then fights its garrison in one roll per marine (each wins at win_p) and holds it if the wins reach the garrison; each loss of the fight costs a marine at loss_p. A ship that arrives late warps in at its place; until then it waits stage_km out. A sleeping ship wakes at its time, or at once when it is hit.",
+ "sensors": {"base_km": 70, "per_e_km": 14, "passive_x": 0.6},
+ "planet_scan_x": 0.6,
+ "planet_scan_km": 60,
+ "away": {"team_marines": 4, "away_s": 18, "win_p": 0.55, "loss_p": 0.35},
+ "stage_km": 2500
+}

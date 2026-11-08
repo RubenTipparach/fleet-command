@@ -98,6 +98,14 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     public IReadOnlyDictionary<string, double>? SysHp { get; init; }
     /// <summary>Mounts the scene adds after its class's (weapon ids checked against data/battle/weapons.json), or null.</summary>
     public IReadOnlyList<MountDef>? ExtraMounts { get; init; }
+    /// <summary>Seconds into the battle it arrives (warps in at its place), or 0 from the start (Battle.Field).</summary>
+    public double ArriveS { get; init; }
+    /// <summary>Seconds it lies dormant (a sleeping giant: no orders, no fire, shields down) unless hit first, or 0 awake.</summary>
+    public double WakeS { get; init; }
+    /// <summary>A stationary installation (a station, yard, battery): it never moves.</summary>
+    public bool Fixed { get; init; }
+    /// <summary>A runner (an enemy scout making for home): it holds its course at full speed and never turns to fight.</summary>
+    public bool Runs { get; init; }
 }
 
 /// <summary>A ship's craft and mines in a scenario, each null for its class's loadout; the fighters' first mission.</summary>
@@ -129,12 +137,23 @@ public sealed record Scenario(string Id, string Name, string Side, ulong Seed, s
     public ScenarioGoal? Goal { get; init; }
     /// <summary>A battle with marker beacons ends when its mission's objectives are met (GameFlow checks them), not when
     /// the last enemy goes: a shakedown's target drones can be shot before its beacon is reached.</summary>
-    public bool EndsOnObjectives => Markers is { Count: > 0 };
+    public bool EndsOnObjectives => Markers is { Count: > 0 } || ObjectiveEnd;
+    /// <summary>A mission battle whose objectives are not all about destroying ships (a scan, a survey, an away team, a
+    /// delivery): it ends when its primary objectives are met, as one with markers does.</summary>
+    public bool ObjectiveEnd { get; init; }
+    /// <summary>Seconds the battle lasts at most (a holding action, a scout's run home), or 0 for no limit: at the limit it ends
+    /// with Battle.TimeUp set.</summary>
+    public double TimeLimitS { get; init; }
+    /// <summary>A world condition that cuts every ship's engines for ForS seconds in every EveryS (Dead engines), or null.</summary>
+    public EngineOutage? DeadEngines { get; init; }
     /// <summary>The sun's strength in deep space, where most battles are (owner, 2026-11-04: "tune down sun brightness by 50%
     /// most of the game is set in deep space where lighting is more moody, if there is a warmer planet, then we can crank up
     /// solar strength"): half the 1.3 the view first used.</summary>
     public const double DeepSpaceSun = 0.65;
 }
+
+/// <summary>Every ship's engines cut for ForS seconds in every EveryS, first at EveryS (Battle.Field).</summary>
+public sealed record EngineOutage(double EveryS, double ForS);
 
 /// <summary>A marker beacon in a mission battle: where it is (metres), how near counts as reached, and the marker that must
 /// be reached before it shows (null: from the start).</summary>
