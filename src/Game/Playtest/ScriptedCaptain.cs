@@ -159,6 +159,8 @@ public sealed partial class ScriptedCaptain : Node
     private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool take = false)
     {
         double t0 = B.T, lastChange = B.T, lastBoost = B.T, sum = HullSum();
+        double closest = double.MaxValue;
+        string? closestOf = null;
         bool ordered = false, hadTarget = false;
         string? steering = null, commanding = B.Player.Id;
         while (B.Over == null && B.T - t0 < maxS)
@@ -198,7 +200,10 @@ public sealed partial class ScriptedCaptain : Node
                 }
             }
             hadTarget = B.TargetOf(me) != null;
-            // the Intercept key lit is Intercept on: pressing it again would turn it off (free heading), so only press it unlit
+            // the Intercept key lit is Intercept on: pressing it again would turn it off (free heading), so only press it unlit.
+            // A helm order lapses when its target dies and the next is locked by itself, so an order given before is checked
+            // again, not remembered (bot suite 2026-11-08: kelvane_hunt flew on free heading past the Hunt carrier)
+            if (ordered && !(me.Engaged && me.Manoeuvre == "intercept")) ordered = false;
             if (!ordered && B.TargetOf(me) != null)
             {
                 if (me.Engaged && me.Manoeuvre == "intercept") ordered = true;
@@ -242,6 +247,14 @@ public sealed partial class ScriptedCaptain : Node
             await Frames(3);
             double now = HullSum();
             if (Math.Abs(now - sum) > 1e-6) { sum = now; lastChange = B.T; }
+            // closing on the target is progress too: a long run back to a distant ship is no stall (bot suite 2026-11-08:
+            // kelvane_hunt's corvette chased the Harpoon 190 km out and was called stuck on its way back to the carrier)
+            if (B.TargetOf(me) is { } ct)
+            {
+                double gap = Rules.DistKm(me, ct);
+                if (gap < closest - 1) { closest = gap; lastChange = B.T; }
+                if (ct.Id != closestOf) { closestOf = ct.Id; closest = gap; }
+            }
             if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s; {Standoff(me)}); last: {string.Join(" / ", B.Log.TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}";
         }
         return null;
@@ -433,7 +446,7 @@ public sealed partial class ScriptedCaptain : Node
 
     // where a stalled fight stands: the range to the target, both ships' speeds and how many mounts would fire
     private string Standoff(Ship me) => B.TargetOf(me) is { } t
-        ? $"{t.Name} at {Math.Sqrt((t.X - me.X) * (t.X - me.X) + (t.Z - me.Z) * (t.Z - me.Z)) / 1000:0.0} km, speeds {me.V:0}/{t.V:0} m/s, {B.WouldFire().Length} mounts would fire, helm {me.Manoeuvre}"
+        ? $"{t.Name} at {Math.Sqrt((t.X - me.X) * (t.X - me.X) + (t.Z - me.Z) * (t.Z - me.Z)) / 1000:0.0} km, speeds {me.V:0}/{t.V:0} m/s, {B.WouldFire().Length} mounts would fire, helm {(me.Engaged ? me.Manoeuvre : "free")}, heading {me.H / Geometry.Deg:0} ordered {me.HOrder / Geometry.Deg:0} target bearing {Geometry.HeadingTo(me.X, me.Z, t.X, t.Z) / Geometry.Deg:0}, at ({me.X / 1000:0}, {me.Z / 1000:0}) km"
         : "no target";
 
     private double HullSum() => B.Ships.Sum(s => s.Alive ? s.Hull : 0);
