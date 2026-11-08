@@ -113,6 +113,8 @@
   { "script": "freighters-krai", "play": "campaign" },
   { "script": "freighters-ssarith", "play": "campaign" },
   { "script": "freighters-kelvane", "play": "campaign" },
-  { "script": "paper-chart", "play": "campaign" }
+  { "script": "paper-chart", "play": "campaign" },
+  { "script": "standing-concord", "play": "campaign" },
+  { "script": "standing-krai", "play": "campaign" }
  ]
 }

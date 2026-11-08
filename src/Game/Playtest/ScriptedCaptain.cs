@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -142,6 +142,8 @@ public sealed partial class ScriptedCaptain : Node
             case "meet": return await Meet(b.Arg, b.Seconds > 0 ? b.Seconds : 600);
             case "cash_out": return await CashOut();
             case "offer": return await OfferBeat(b.Arg);
+            case "loiter": return await Loiter(b.Seconds > 0 ? (int)b.Seconds : 10);
+            case "port": return await PortBeat(b.Arg);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -225,7 +227,7 @@ public sealed partial class ScriptedCaptain : Node
             await Frames(3);
             double now = HullSum();
             if (Math.Abs(now - sum) > 1e-6) { sum = now; lastChange = B.T; }
-            if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s); last: {string.Join(" / ", B.Log.TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}";
+            if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s; {Standoff(me)}); last: {string.Join(" / ", B.Log.TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}";
         }
         return null;
     }
@@ -387,7 +389,8 @@ public sealed partial class ScriptedCaptain : Node
             await Snap($"end-{m.Script}");
         }
         // a withdrawal warps out first: the drive charges and plots (about 21 s unopposed) before the jump
-        if (await WaitScreen("Debrief", how.StartsWith("withdrew") ? 120 : 30) is { } s6) return s6;
+        if (await WaitScreen("Debrief", how.StartsWith("withdrew") ? 120 : 30) is { } s6)
+            return B.Over == null ? $"{s6} ({(B.Scenario.CanWithdraw ? $"withdrawing {B.Withdrawing}, warp armed {B.Player.Warp.Armed} plot {B.Player.Warp.Plot:0.00} banks {B.Player.Warp.Banks:0.0}, warp power {B.Player.Power["warp"]} of {B.Player.Warp.Want}, nacelles {string.Join("/", B.Player.Warp.Nacelles.Select(n => n.ToString("0.00")))}, free {B.Rules.Output(B.Player) - B.Rules.Used(B.Player):0.0}, {(B.WarpRiskOf(B.Player).Why is { Length: > 0 } why ? "refused: " + why : "risk " + B.WarpRiskOf(B.Player).Total.ToString("P0"))}; last: {string.Join(" / ", B.Log.Where(l => l.Who is "Helm" or "Engineering" or "Navigation").TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}" : "this mission refuses a withdrawal")})" : s6;
         await Snap($"debrief-{m.Script}");
         var d = flow.Last;
         string line = $"{name}: {how}, {d?.Grade ?? "?"}";
@@ -412,6 +415,11 @@ public sealed partial class ScriptedCaptain : Node
         Error e = GetViewport().GetTexture().GetImage().SavePng(file);
         return e == Error.Ok ? null : $"could not save the still ({e})";
     }
+
+    // where a stalled fight stands: the range to the target, both ships' speeds and how many mounts would fire
+    private string Standoff(Ship me) => B.TargetOf(me) is { } t
+        ? $"{t.Name} at {Math.Sqrt((t.X - me.X) * (t.X - me.X) + (t.Z - me.Z) * (t.Z - me.Z)) / 1000:0.0} km, speeds {me.V:0}/{t.V:0} m/s, {B.WouldFire().Length} mounts would fire, helm {me.Manoeuvre}"
+        : "no target";
 
     private double HullSum() => B.Ships.Sum(s => s.Alive ? s.Hull : 0);
 
