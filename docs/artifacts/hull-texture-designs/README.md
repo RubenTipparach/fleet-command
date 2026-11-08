@@ -76,3 +76,5 @@
   (288) and Pelican (50) by the Concord line's own rule and numbers (the owner: "missing windows on albatross"); the Krai
   models' own nacelle studs, rails and ribs hidden ("what the hell are these random cubes on krai ships?"); the rooms'
   fine patterns fading with distance ("z fighting in windows here": aliasing).
+- 2026-11-08, cloud session: version 22, version id `1794139084-f64b`. The Condor down to three decks of windows, 160 (the
+  owner: "way too many windows on the condor", "temove top and bottom rows").
